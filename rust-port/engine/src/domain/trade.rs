@@ -9,6 +9,7 @@
 
 use super::PlayerId;
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::fmt;
 
@@ -139,10 +140,11 @@ impl TerrainType {
         matches!(self, Self::ShallowWater | Self::Ocean)
     }
 
-    /// Land routes may cross every land terrain except mountains and tundra
-    /// ("Polarny", impassable on the web).
+    /// Land routes may cross every land terrain except mountains (web pin `4bbef081d`,
+    /// `trade-routes.ts:198-200`: `!isWaterTerrain(tb) && tb !== TerenBazowy.Gory`). "Polarny" (Tundra)
+    /// IS passable for trade routes (R-RUSTPORT-P6-TRADE-INCOME-PIN-Q1; was wrongly excluded).
     pub const fn is_land_passable(self) -> bool {
-        !self.is_water() && !matches!(self, Self::Mountains | Self::Tundra)
+        !self.is_water() && !matches!(self, Self::Mountains)
     }
 
     pub const fn is_water_passable(self) -> bool {
@@ -221,13 +223,11 @@ impl TradeMap {
         self
     }
 
+    /// Web `computeCityConnection`: `Math.max(1, map.szerokoscQ + map.wysokoscR)` (`trade-routes.ts:710`).
     fn max_steps(&self) -> usize {
-        let dimensions = self.width_q.saturating_add(self.height_r);
-        if dimensions > 0 {
-            dimensions as usize
-        } else {
-            self.tiles.len().max(1)
-        }
+        (self.width_q as usize)
+            .saturating_add(self.height_r as usize)
+            .max(1)
     }
 }
 
@@ -259,8 +259,10 @@ impl TradeCity {
     }
 }
 
-/// A territory centre and its effective radius.  The map layer can construct
-/// this from its population/outpost/fort rules before calling this module.
+/// A territory centre and its effective radius (`radius` = web `cityTerritoryRadius(node)`, supplied by the
+/// map layer). `fort`/`outpost`/`order` mirror the web `TerritoryNode` fields used by `territoryOwnerAt`
+/// (`map/territory.ts:122-160`, pin `4bbef081d`): cities beat forts/outposts, the nearest wins, and two forts
+/// with `order` are decided by build order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TerritoryNode {
     #[serde(rename = "ownerId", alias = "owner_id")]
@@ -268,15 +270,26 @@ pub struct TerritoryNode {
     pub q: i32,
     pub r: i32,
     pub radius: u32,
+    #[serde(default)]
+    pub fort: bool,
+    #[serde(default)]
+    pub outpost: bool,
+    /// Web `order?: { turn, seq }`.
+    #[serde(default)]
+    pub order: Option<(i64, i64)>,
 }
 
 impl TerritoryNode {
+    /// A plain city node (no fort/outpost flags, no build order).
     pub const fn new(owner_id: PlayerId, q: i32, r: i32, radius: u32) -> Self {
         Self {
             owner_id,
             q,
             r,
             radius,
+            fort: false,
+            outpost: false,
+            order: None,
         }
     }
 
@@ -288,6 +301,12 @@ impl TerritoryNode {
 /// Lookup abstraction for the built-building snapshot supplied by the caller.
 pub trait BuildingLookup {
     fn contains_building(&self, city_id: &str, building_id: &str) -> bool;
+
+    /// Number of occurrences of `building_id` in the city's built list (web counts list ENTRIES:
+    /// `for (const id of built) if (TRADE_BUILDING_IDS.has(id)) n++`, `trade-routes.ts:919-921`).
+    fn building_count(&self, city_id: &str, building_id: &str) -> usize {
+        usize::from(self.contains_building(city_id, building_id))
+    }
 }
 
 impl BuildingLookup for BTreeMap<String, Vec<String>> {
@@ -295,12 +314,24 @@ impl BuildingLookup for BTreeMap<String, Vec<String>> {
         self.get(city_id)
             .is_some_and(|buildings| buildings.iter().any(|id| id == building_id))
     }
+
+    fn building_count(&self, city_id: &str, building_id: &str) -> usize {
+        self.get(city_id).map_or(0, |buildings| {
+            buildings.iter().filter(|id| *id == building_id).count()
+        })
+    }
 }
 
 impl BuildingLookup for HashMap<String, Vec<String>> {
     fn contains_building(&self, city_id: &str, building_id: &str) -> bool {
         self.get(city_id)
             .is_some_and(|buildings| buildings.iter().any(|id| id == building_id))
+    }
+
+    fn building_count(&self, city_id: &str, building_id: &str) -> usize {
+        self.get(city_id).map_or(0, |buildings| {
+            buildings.iter().filter(|id| *id == building_id).count()
+        })
     }
 }
 
@@ -322,8 +353,8 @@ where
 {
     TRADE_BUILDING_IDS
         .iter()
-        .filter(|building_id| built_by_city.contains_building(city_id, building_id))
-        .count() as u32
+        .map(|building_id| built_by_city.building_count(city_id, building_id))
+        .sum::<usize>() as u32
 }
 
 /// Existence has one baseline slot even when the city has no trade building.
@@ -499,43 +530,43 @@ impl CityConnectionResult {
 
 /// Legacy geometry fields.  They remain available for save/config parity but
 /// do not cap connectivity; physical BFS is the only route validator.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct TradeRouteParams {
     #[serde(rename = "ladMaxDist", alias = "land_max_distance")]
-    pub land_max_distance: u32,
+    pub land_max_distance: f64,
     #[serde(rename = "morzeMaxDist", alias = "sea_max_distance")]
-    pub sea_max_distance: u32,
+    pub sea_max_distance: f64,
 }
 
 impl Default for TradeRouteParams {
     fn default() -> Self {
         Self {
-            land_max_distance: 12,
-            sea_max_distance: 20,
+            land_max_distance: 12.0,
+            sea_max_distance: 20.0,
         }
     }
 }
 
 impl TradeRouteParams {
-    pub const fn new(land_max_distance: u32, sea_max_distance: u32) -> Self {
+    pub const fn new(land_max_distance: f64, sea_max_distance: f64) -> Self {
         Self {
             land_max_distance,
             sea_max_distance,
         }
     }
 
-    pub const fn lad_max_dist(self) -> u32 {
+    pub const fn lad_max_dist(self) -> f64 {
         self.land_max_distance
     }
 
-    pub const fn morze_max_dist(self) -> u32 {
+    pub const fn morze_max_dist(self) -> f64 {
         self.sea_max_distance
     }
 }
 
 pub const DEFAULT_TRADE_ROUTE_PARAMS: TradeRouteParams = TradeRouteParams {
-    land_max_distance: 12,
-    sea_max_distance: 20,
+    land_max_distance: 12.0,
+    sea_max_distance: 20.0,
 };
 
 fn is_land_passable(terrain: TerrainType) -> bool {
@@ -546,18 +577,32 @@ fn is_water_passable(terrain: TerrainType) -> bool {
     terrain.is_water_passable()
 }
 
+/// Web `territoryOwnerAt` (`map/territory.ts:122-160`, pin `4bbef081d`): cities decide a hex first (nearest,
+/// tie -> first node); forts/outposts only claim city-free land (nearest, or earlier `order` when both nodes
+/// carry one).
 fn territory_owner_at(coordinate: HexCoord, nodes: &[TerritoryNode]) -> Option<PlayerId> {
-    let mut best: Option<(u32, PlayerId)> = None;
+    let mut best_city: Option<(u32, PlayerId)> = None;
+    let mut best_fort: Option<(u32, PlayerId, Option<(i64, i64)>)> = None;
     for node in nodes {
         let distance = coordinate.distance(node.coordinate());
         if distance > node.radius {
             continue;
         }
-        if best.is_none_or(|(best_distance, _)| distance < best_distance) {
-            best = Some((distance, node.owner_id));
+        if node.fort || node.outpost {
+            let better = match (best_fort, node.order) {
+                (Some((_, _, Some(best_order))), Some(order)) => order < best_order,
+                _ => best_fort.is_none_or(|(best_distance, _, _)| distance < best_distance),
+            };
+            if better {
+                best_fort = Some((distance, node.owner_id, node.order));
+            }
+        } else if best_city.is_none_or(|(best_distance, _)| distance < best_distance) {
+            best_city = Some((distance, node.owner_id));
         }
     }
-    best.map(|(_, owner_id)| owner_id)
+    best_city
+        .map(|(_, owner)| owner)
+        .or(best_fort.map(|(_, owner, _)| owner))
 }
 
 /// Return whether two different owners have adjacent, passable land territory.
@@ -702,6 +747,109 @@ fn coastal_water_neighbours(map: &TradeMap, city: &TradeCity) -> Vec<HexCoord> {
         .collect()
 }
 
+/// Web `computeConnectivityComponents` (`trade-routes.ts:412-442`): flood-fill labels of passable hexes.
+fn connectivity_components(
+    map: &TradeMap,
+    passable: fn(TerrainType) -> bool,
+) -> BTreeMap<HexCoord, u32> {
+    let mut components: BTreeMap<HexCoord, u32> = BTreeMap::new();
+    let mut next_id = 0u32;
+    for (start, tile) in &map.tiles {
+        if components.contains_key(start) || !passable(tile.terrain) {
+            continue;
+        }
+        let id = next_id;
+        next_id += 1;
+        components.insert(*start, id);
+        let mut frontier = vec![*start];
+        while let Some(current) = frontier.pop() {
+            for neighbour in current.neighbours() {
+                if components.contains_key(&neighbour) {
+                    continue;
+                }
+                if !map
+                    .tile(neighbour)
+                    .is_some_and(|tile| passable(tile.terrain))
+                {
+                    continue;
+                }
+                components.insert(neighbour, id);
+                frontier.push(neighbour);
+            }
+        }
+    }
+    components
+}
+
+/// Per-map memo of the land/sea component labels (web `__landComponentsCache` / `__seaComponentsCache`,
+/// `trade-routes.ts:445-464`). Build one per batch of connection checks over the same map.
+#[derive(Default)]
+struct ConnectivityCache {
+    land: std::cell::OnceCell<BTreeMap<HexCoord, u32>>,
+    sea: std::cell::OnceCell<BTreeMap<HexCoord, u32>>,
+}
+
+impl ConnectivityCache {
+    fn land(&self, map: &TradeMap) -> &BTreeMap<HexCoord, u32> {
+        self.land
+            .get_or_init(|| connectivity_components(map, is_land_passable))
+    }
+
+    fn sea(&self, map: &TradeMap) -> &BTreeMap<HexCoord, u32> {
+        self.sea
+            .get_or_init(|| connectivity_components(map, is_water_passable))
+    }
+}
+
+/// Web `landComponentsMayConnect` (`:474-496`).
+fn land_components_may_connect(
+    map: &TradeMap,
+    cache: &ConnectivityCache,
+    from: &TradeCity,
+    to: &TradeCity,
+    distance: u32,
+) -> bool {
+    if distance <= 1 {
+        return true;
+    }
+    let components = cache.land(map);
+    let ids_of = |city: &TradeCity| -> BTreeSet<u32> {
+        let mut ids = BTreeSet::new();
+        if let Some(id) = components.get(&city.coordinate()) {
+            ids.insert(*id);
+        }
+        for neighbour in city.coordinate().neighbours() {
+            if let Some(id) = components.get(&neighbour) {
+                ids.insert(*id);
+            }
+        }
+        ids
+    };
+    let from_ids = ids_of(from);
+    !from_ids.is_empty() && ids_of(to).iter().any(|id| from_ids.contains(id))
+}
+
+/// Web `waterComponentsMayConnect` (`:503-520`).
+fn water_components_may_connect(
+    map: &TradeMap,
+    cache: &ConnectivityCache,
+    from_water: &[HexCoord],
+    to_water: &[HexCoord],
+) -> bool {
+    let components = cache.sea(map);
+    let from_ids: BTreeSet<u32> = from_water
+        .iter()
+        .filter_map(|hex| components.get(hex).copied())
+        .collect();
+    !from_ids.is_empty()
+        && to_water
+            .iter()
+            .filter_map(|hex| components.get(hex))
+            .any(|id| from_ids.contains(id))
+}
+
+/// Web `computeCityConnection` (`trade-routes.ts:695-785`). With `need_path == false` the web returns right
+/// after the component pre-filter (candidate generation does NOT run the step-limited BFS).
 fn find_city_connection_internal<B>(
     from_city: &TradeCity,
     to_city: &TradeCity,
@@ -710,6 +858,7 @@ fn find_city_connection_internal<B>(
     built_by_city: &B,
     territory_nodes: Option<&[TerritoryNode]>,
     need_path: bool,
+    cache: &ConnectivityCache,
 ) -> CityConnectionResult
 where
     B: BuildingLookup + ?Sized,
@@ -717,11 +866,21 @@ where
     let distance = from_city.coordinate().distance(to_city.coordinate());
     match medium {
         TradeRouteMedium::Land => {
+            // The same hex is connected BEFORE the shared-border check (`:718-720`).
+            if from_city.coordinate() == to_city.coordinate() {
+                return CityConnectionResult::connected(distance, vec![from_city.coordinate().key()]);
+            }
             if let Some(nodes) = territory_nodes {
                 if !owners_have_shared_land_border(from_city.owner_id, to_city.owner_id, nodes, map)
                 {
                     return CityConnectionResult::not_connected(distance);
                 }
+            }
+            if !land_components_may_connect(map, cache, from_city, to_city, distance) {
+                return CityConnectionResult::not_connected(distance);
+            }
+            if !need_path {
+                return CityConnectionResult::connected(distance, Vec::new());
             }
             let mut goals = BTreeSet::new();
             goals.insert(to_city.coordinate());
@@ -729,11 +888,7 @@ where
             else {
                 return CityConnectionResult::not_connected(distance);
             };
-            if need_path {
-                CityConnectionResult::connected(distance, path)
-            } else {
-                CityConnectionResult::connected(distance, Vec::new())
-            }
+            CityConnectionResult::connected(distance, path)
         }
         TradeRouteMedium::Sea => {
             if !city_has_port(&from_city.id, built_by_city)
@@ -742,13 +897,20 @@ where
                 return CityConnectionResult::not_connected(distance);
             }
             let starts = coastal_water_neighbours(map, from_city);
-            let goals: BTreeSet<_> = coastal_water_neighbours(map, to_city).into_iter().collect();
-            let Some(water_path) = bfs_path(map, &starts, &goals, is_water_passable) else {
+            let to_water = coastal_water_neighbours(map, to_city);
+            if starts.is_empty() || to_water.is_empty() {
                 return CityConnectionResult::not_connected(distance);
-            };
+            }
+            if !water_components_may_connect(map, cache, &starts, &to_water) {
+                return CityConnectionResult::not_connected(distance);
+            }
             if !need_path {
                 return CityConnectionResult::connected(distance, Vec::new());
             }
+            let goals: BTreeSet<_> = to_water.into_iter().collect();
+            let Some(water_path) = bfs_path(map, &starts, &goals, is_water_passable) else {
+                return CityConnectionResult::not_connected(distance);
+            };
             let mut path = Vec::with_capacity(water_path.len() + 2);
             path.push(from_city.coordinate().key());
             path.extend(water_path);
@@ -765,7 +927,16 @@ pub fn find_city_connection(
     map: &TradeMap,
     medium: TradeRouteMedium,
 ) -> CityConnectionResult {
-    find_city_connection_internal(from_city, to_city, map, medium, &(), None, true)
+    find_city_connection_internal(
+        from_city,
+        to_city,
+        map,
+        medium,
+        &(),
+        None,
+        true,
+        &ConnectivityCache::default(),
+    )
 }
 
 /// Extended validator used by the turn refresh path.
@@ -790,6 +961,7 @@ where
         built_by_city,
         territory_nodes,
         need_path,
+        &ConnectivityCache::default(),
     )
 }
 
@@ -849,6 +1021,7 @@ where
         built_by_city,
         territory_nodes,
         true,
+        &ConnectivityCache::default(),
     );
     let building_unlocked = trade_route_limit_for_city(&from_city.id, built_by_city) > 0
         && trade_route_limit_for_city(&to_city.id, built_by_city) > 0;
@@ -867,6 +1040,44 @@ where
         },
         building_unlocked,
     )
+}
+
+/// ICU root-collation order of printable ASCII (web `String.prototype.localeCompare`), derived from the running
+/// engine by the vector generator (`ascii_order`). Upper-case letters share the primary weight of their lower-case
+/// partner and sort AFTER it at the tertiary level.
+const LOCALE_ASCII_ORDER: &str =
+    " _-,;:!?.'\"()[]{}@*/\\&#%`^+<=>|~$0123456789abcdefghijklmnopqrstuvwxyz";
+
+fn locale_primary(c: char) -> u32 {
+    let lower = c.to_ascii_lowercase();
+    match LOCALE_ASCII_ORDER.find(lower) {
+        Some(position) => position as u32,
+        // Non-ASCII ids are not modelled (ZALOZENIE: ids are ASCII); code-point order after all ASCII.
+        None => 1_000 + c as u32,
+    }
+}
+
+/// Port of the web `a.localeCompare(b)` used for deterministic route/city ordering
+/// (`trade-routes.ts:1461,1484,1946,2095`): primary weights over the whole string first, then case
+/// (lower-case before upper-case) at the first difference.
+pub fn locale_compare(left: &str, right: &str) -> Ordering {
+    let primary = left
+        .chars()
+        .map(locale_primary)
+        .cmp(right.chars().map(locale_primary));
+    if primary != Ordering::Equal {
+        return primary;
+    }
+    for (a, b) in left.chars().zip(right.chars()) {
+        if a != b {
+            return if a.is_ascii_lowercase() {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            };
+        }
+    }
+    Ordering::Equal
 }
 
 pub fn trade_route_id(from_city_id: &str, to_city_id: &str, medium: TradeRouteMedium) -> String {
@@ -895,34 +1106,36 @@ fn detect_best_connection<'a, B>(
     to: &'a TradeCity,
     map: &TradeMap,
     built_by_city: &B,
-    params: &TradeRouteParams,
     territory_nodes: Option<&[TerritoryNode]>,
+    need_path: bool,
+    cache: &ConnectivityCache,
 ) -> Option<(TradeRouteMedium, u32)>
 where
     B: BuildingLookup + ?Sized,
 {
-    let land = find_city_connection_with_params(
+    // Web `detectBestConnection` (`:981-996`); the territory list is only used by the land check.
+    let land = find_city_connection_internal(
         from,
         to,
         map,
         TradeRouteMedium::Land,
-        params,
         built_by_city,
         territory_nodes,
-        false,
+        need_path,
+        cache,
     );
     if land.connected {
         return Some((TradeRouteMedium::Land, land.distance));
     }
-    let sea = find_city_connection_with_params(
+    let sea = find_city_connection_internal(
         from,
         to,
         map,
         TradeRouteMedium::Sea,
-        params,
         built_by_city,
         None,
-        false,
+        need_path,
+        cache,
     );
     sea.connected
         .then_some((TradeRouteMedium::Sea, sea.distance))
@@ -952,7 +1165,7 @@ where
         has_trade_treaty,
         &DEFAULT_TRADE_ROUTE_PARAMS,
         None,
-        &DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+        &TradeRouteIncomeParams::default(),
         |_owner_id| true,
     )
 }
@@ -981,6 +1194,8 @@ where
     if cities.is_empty() {
         return Vec::new();
     }
+    let cache = ConnectivityCache::default();
+    let _ = route_params;
 
     let city_by_id: BTreeMap<&str, &TradeCity> =
         cities.iter().map(|city| (city.id.as_str(), city)).collect();
@@ -1011,15 +1226,15 @@ where
             continue;
         }
         let territory = if internal { None } else { territory_nodes };
-        let connection = find_city_connection_with_params(
+        let connection = find_city_connection_internal(
             from,
             to,
             map,
             route.medium,
-            route_params,
             built_by_city,
             territory,
             false,
+            &cache,
         );
         if connection.connected {
             still_valid.push(TradeRouteCandidate {
@@ -1069,8 +1284,9 @@ where
                         to,
                         map,
                         built_by_city,
-                        route_params,
                         territory_nodes,
+                        false,
+                        &cache,
                     ) else {
                         continue;
                     };
@@ -1095,7 +1311,7 @@ where
             continue;
         }
         let mut sorted = owner_cities.clone();
-        sorted.sort_by(|left, right| left.id.cmp(&right.id));
+        sorted.sort_by(|left, right| locale_compare(&left.id, &right.id));
         for (index, from) in sorted.iter().enumerate() {
             for to in sorted.iter().skip(index + 1) {
                 let pair = trade_route_pair_key(&from.id, &to.id);
@@ -1103,7 +1319,7 @@ where
                     continue;
                 }
                 let Some((medium, distance)) =
-                    detect_best_connection(from, to, map, built_by_city, route_params, None)
+                    detect_best_connection(from, to, map, built_by_city, None, false, &cache)
                 else {
                     continue;
                 };
@@ -1121,15 +1337,37 @@ where
 
     let mut combined = unique_existing;
     combined.extend(fresh);
+    // Web `combined.sort` (`trade-routes.ts:1478-1485`): income desc (`tradeRouteIncomeForRoute`), existing
+    // first, then `id.localeCompare`.
+    let income_of = |candidate: &TradeRouteCandidate| {
+        let probe = TradeRoute::from_parts(
+            String::new(),
+            "",
+            "",
+            candidate.from.owner_id,
+            candidate.to.owner_id,
+            candidate.medium,
+            candidate.distance,
+            TradeRouteStatus::Connected,
+            false,
+        );
+        trade_route_income_for_route(&probe, income_params)
+    };
     combined.sort_by(|left, right| {
-        total_distance_income_impl(right.distance, right.medium, income_params)
-            .cmp(&total_distance_income_impl(
-                left.distance,
-                left.medium,
-                income_params,
-            ))
-            .then_with(|| right.is_existing.cmp(&left.is_existing))
-            .then_with(|| left.id.cmp(&right.id))
+        let (income_left, income_right) = (income_of(left), income_of(right));
+        // JS comparator `incomeY - incomeX`; a NaN/zero difference falls through to the next key.
+        let diff = income_right - income_left;
+        if diff != 0.0 && !diff.is_nan() {
+            return if diff < 0.0 {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            };
+        }
+        right
+            .is_existing
+            .cmp(&left.is_existing)
+            .then_with(|| locale_compare(&left.id, &right.id))
     });
 
     let mut used_existence_slots: BTreeMap<&str, u32> = BTreeMap::new();
@@ -1228,9 +1466,13 @@ pub fn cities_have_trade_connection_with_options<B>(
 where
     B: BuildingLookup + ?Sized,
 {
+    // Web `citiesHaveTradeConnection` (`:1011-1030`): `findCityConnection` with the default `needPath = true`.
+    let _ = params;
+    let cache = ConnectivityCache::default();
     cities_a.iter().any(|from| {
         cities_b.iter().any(|to| {
-            detect_best_connection(from, to, map, built_by_city, params, territory_nodes).is_some()
+            detect_best_connection(from, to, map, built_by_city, territory_nodes, true, &cache)
+                .is_some()
         })
     })
 }
@@ -1306,23 +1548,7 @@ where
     ) {
         return None;
     }
-    let any_ports = player_cities
-        .iter()
-        .any(|city| city_has_port(&city.id, built_by_city))
-        && partner_cities
-            .iter()
-            .any(|city| city_has_port(&city.id, built_by_city));
-    let sea_geometry = cities_have_trade_connection_with_options(
-        &player_cities,
-        &partner_cities,
-        map,
-        built_by_city,
-        params,
-        None,
-    );
-    if !any_ports && sea_geometry {
-        return Some(format!("{label}: wymagany Port w obu miastach"));
-    }
+    // Web `diagnoseMissingTradeRouteForPartner` (`trade-routes.ts:1103-1121`).
     if territory_nodes.is_some()
         && cities_have_trade_connection_with_options(
             &player_cities,
@@ -1333,177 +1559,198 @@ where
             None,
         )
     {
-        return Some(format!("{label}: brak wspólnej granicy lądowej"));
+        return Some(format!("brak wspólnej granicy lądowej z {label}"));
     }
-    Some(format!("{label}: brak fizycznego połączenia"))
+    let any_player_port = player_cities
+        .iter()
+        .any(|city| city_has_port(&city.id, built_by_city));
+    let any_partner_port = partner_cities
+        .iter()
+        .any(|city| city_has_port(&city.id, built_by_city));
+    if !any_player_port || !any_partner_port {
+        return Some(format!(
+            "brak fizycznego połączenia lądowego z {label} i brak Portu do szlaku morskiego"
+        ));
+    }
+    Some(format!(
+        "brak fizycznego połączenia (lądowego ani morskiego) z {label} — różne kontynenty/wyspy"
+    ))
 }
 
-/// Distance-income parameters.  Both media reach the same peak at different
-/// reference distances.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+// ---------------------------------------------------------------------------------------------------------------
+// Dochod tras 1:1 z pinem weba `4bbef081d` (`gra/src/game/trade-routes.ts:1533-1790`).
+// R-RUSTPORT-P6-TRADE-INCOME-PIN-Q1: zastepuje dawny wzor (interpolacja `dochod_podloga/dochod_szczyt`, skala
+// morza x2, zaokraglenie /5), ktory NIE istnial w pinie. Jedno zrodlo prawdy: `turn_economy_inputs_trade.rs` deleguje tutaj.
+// ---------------------------------------------------------------------------------------------------------------
+
+/// Web `DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodyLadowe` (`trade-routes.ts:1542`).
+pub const DEFAULT_DOCHODY_LADOWE: [f64; 13] = [
+    1.0, 1.0, 2.0, 3.0, 3.0, 4.0, 4.0, 5.0, 6.0, 6.0, 7.0, 7.0, 8.0,
+];
+/// Web `DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodyMorskie` (`trade-routes.ts:1543`).
+pub const DEFAULT_DOCHODY_MORSKIE: [f64; 21] = [
+    2.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 8.0, 9.0, 10.0, 10.0, 11.0, 12.0, 12.0, 13.0,
+    14.0, 14.0, 15.0, 16.0,
+];
+/// Web `TRADE_ROUTE_INTERNATIONAL_MULTIPLIER` (`:1558`).
+pub const TRADE_ROUTE_INTERNATIONAL_MULTIPLIER: f64 = 2.0;
+/// Web `TRADE_ROUTE_INCOME_HALF_DIVISOR` (`:1565`).
+pub const TRADE_ROUTE_INCOME_HALF_DIVISOR: f64 = 2.0;
+
+/// Web `TradeRouteIncomeParams` (krzywe indeksowane dystansem heksowym, `:1533-1539`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TradeRouteIncomeParams {
-    #[serde(rename = "dochodPodloga", alias = "income_floor")]
-    pub income_floor: u64,
-    #[serde(rename = "dochodSzczyt", alias = "income_peak")]
-    pub income_peak: u64,
-    #[serde(rename = "ladMaxDist", alias = "land_max_distance")]
-    pub land_max_distance: u32,
-    #[serde(rename = "morzeMaxDist", alias = "sea_max_distance")]
-    pub sea_max_distance: u32,
+    #[serde(rename = "dochodyLadowe", alias = "dochody_ladowe")]
+    pub dochody_ladowe: Vec<f64>,
+    #[serde(rename = "dochodyMorskie", alias = "dochody_morskie")]
+    pub dochody_morskie: Vec<f64>,
 }
 
 impl TradeRouteIncomeParams {
-    pub const fn new(
-        income_floor: u64,
-        income_peak: u64,
-        land_max_distance: u32,
-        sea_max_distance: u32,
-    ) -> Self {
+    pub fn new(dochody_ladowe: Vec<f64>, dochody_morskie: Vec<f64>) -> Self {
         Self {
-            income_floor,
-            income_peak,
-            land_max_distance,
-            sea_max_distance,
+            dochody_ladowe,
+            dochody_morskie,
         }
     }
 }
 
-pub const DEFAULT_TRADE_ROUTE_INCOME_PARAMS: TradeRouteIncomeParams = TradeRouteIncomeParams {
-    income_floor: 5,
-    income_peak: 40,
-    land_max_distance: 12,
-    sea_max_distance: 20,
-};
-
 impl Default for TradeRouteIncomeParams {
     fn default() -> Self {
-        DEFAULT_TRADE_ROUTE_INCOME_PARAMS
+        Self::new(DEFAULT_DOCHODY_LADOWE.to_vec(), DEFAULT_DOCHODY_MORSKIE.to_vec())
     }
 }
 
-fn distance_income_impl(
-    distance: u32,
+/// Web `tradeRouteIncomeByDistance` (`:1547-1556`): `curve[max(0, min(len-1, floor(d)))] ?? 0`.
+pub fn trade_route_income_by_distance(
+    dystans: f64,
     medium: TradeRouteMedium,
     params: &TradeRouteIncomeParams,
-) -> u64 {
-    let max_distance = match medium {
-        TradeRouteMedium::Land => params.land_max_distance,
-        TradeRouteMedium::Sea => params.sea_max_distance,
-    }
-    .max(1);
-    let clipped_distance = distance.min(max_distance);
-    let floor = params.income_floor as f64;
-    let peak = params.income_peak as f64;
-    let raw = floor + (peak - floor) * f64::from(clipped_distance) / f64::from(max_distance);
-    raw.floor().clamp(floor.min(peak), floor.max(peak)).max(0.0) as u64
-}
-
-/// Canonical distance curve using default tuning.
-pub fn trade_route_distance_income(distance: u32, medium: TradeRouteMedium) -> u64 {
-    distance_income_impl(distance, medium, &DEFAULT_TRADE_ROUTE_INCOME_PARAMS)
-}
-
-pub fn trade_route_distance_income_with_params(
-    distance: u32,
-    medium: TradeRouteMedium,
-    params: &TradeRouteIncomeParams,
-) -> u64 {
-    distance_income_impl(distance, medium, params)
-}
-
-fn total_distance_income_impl(
-    distance: u32,
-    medium: TradeRouteMedium,
-    params: &TradeRouteIncomeParams,
-) -> u64 {
-    let base = distance_income_impl(distance, medium, params);
-    let pre_scale = match medium {
-        TradeRouteMedium::Land => base,
-        TradeRouteMedium::Sea => base.saturating_mul(2),
+) -> f64 {
+    let curve = match medium {
+        TradeRouteMedium::Land => &params.dochody_ladowe,
+        TradeRouteMedium::Sea => &params.dochody_morskie,
     };
-    // Math.round(x) for a non-negative value is floor(x + 0.5).  Keeping the
-    // calculation in f64 matches the browser rule even for a custom peak.
-    ((pre_scale as f64 / 5.0).floor() + if pre_scale % 5 >= 3 { 1.0 } else { 0.0 }).max(1.0) as u64
+    let hi = curve.len() as f64 - 1.0;
+    let idx = dystans.floor().min(hi).max(0.0);
+    if idx.is_nan() {
+        // `curve[NaN]` -> undefined -> `?? 0`.
+        return 0.0;
+    }
+    curve.get(idx as usize).copied().unwrap_or(0.0)
 }
 
-pub fn trade_route_total_distance_income(distance: u32, medium: TradeRouteMedium) -> u64 {
-    total_distance_income_impl(distance, medium, &DEFAULT_TRADE_ROUTE_INCOME_PARAMS)
+/// Web `tradeRouteIncomeForRoute` (`:1568-1577`): x2 between different owners, then `ceil(x / 2)`.
+pub fn trade_route_income_for_route(route: &TradeRoute, params: &TradeRouteIncomeParams) -> f64 {
+    let base = trade_route_income_by_distance(f64::from(route.distance), route.medium, params);
+    let before_half = if route.owner_id == route.to_owner_id {
+        base
+    } else {
+        base * TRADE_ROUTE_INTERNATIONAL_MULTIPLIER
+    };
+    (before_half / TRADE_ROUTE_INCOME_HALF_DIVISOR).ceil()
 }
 
-pub fn trade_route_total_distance_income_with_params(
-    distance: u32,
-    medium: TradeRouteMedium,
-    params: &TradeRouteIncomeParams,
-) -> u64 {
-    total_distance_income_impl(distance, medium, params)
+/// Web `TradeRouteIncomeByCityBreakdown` (`:1622-1626`).
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct TradeIncomeBreakdown {
+    pub total_by_city: BTreeMap<String, f64>,
+    pub maritime_by_city: BTreeMap<String, f64>,
 }
 
-pub fn compute_trade_route_income_by_city(routes: &[TradeRoute]) -> BTreeMap<String, u64> {
-    compute_trade_route_income_by_city_with_params(
-        routes,
-        &DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
-        |_owner_id, _medium| 0.0,
-    )
-}
-
-pub fn compute_trade_route_income_by_city_with_params<F>(
+/// Web `computeTradeRouteIncomeByCityBreakdown` (`:1628-1659`): every connected route credits BOTH cities, the
+/// wonder `handel_procent` bonus (per owner/medium) and the Targowisko bonus (per city) are floored.
+pub fn compute_trade_route_income_by_city_breakdown<F, G>(
     routes: &[TradeRoute],
     params: &TradeRouteIncomeParams,
     wonder_trade_bonus_for_owner: F,
-) -> BTreeMap<String, u64>
+    targowisko_bonus_for_city: G,
+) -> TradeIncomeBreakdown
 where
     F: Fn(PlayerId, TradeRouteMedium) -> f64,
+    G: Fn(&str) -> f64,
 {
-    let mut result = BTreeMap::new();
+    let mut out = TradeIncomeBreakdown::default();
     for route in routes.iter().filter(|route| route.is_connected()) {
-        let base = total_distance_income_impl(route.distance, route.medium, params);
-        let from_bonus = wonder_trade_bonus_for_owner(route.owner_id, route.medium);
-        let to_bonus = wonder_trade_bonus_for_owner(route.to_owner_id, route.medium);
-        let from_income = if from_bonus == 0.0 {
-            base
-        } else {
-            (base as f64 * (1.0 + from_bonus)).floor().max(0.0) as u64
+        let route_income = trade_route_income_for_route(route, params);
+        let side = |wonder: f64, targ: f64| {
+            let after_wonder = if wonder == 0.0 {
+                route_income
+            } else {
+                (route_income * (1.0 + wonder)).floor()
+            };
+            if targ == 0.0 {
+                after_wonder
+            } else {
+                (after_wonder * (1.0 + targ)).floor()
+            }
         };
-        let to_income = if to_bonus == 0.0 {
-            base
-        } else {
-            (base as f64 * (1.0 + to_bonus)).floor().max(0.0) as u64
-        };
-        *result.entry(route.from_city_id.clone()).or_default() += from_income;
-        *result.entry(route.to_city_id.clone()).or_default() += to_income;
+        let from_income = side(
+            wonder_trade_bonus_for_owner(route.owner_id, route.medium),
+            targowisko_bonus_for_city(&route.from_city_id),
+        );
+        let to_income = side(
+            wonder_trade_bonus_for_owner(route.to_owner_id, route.medium),
+            targowisko_bonus_for_city(&route.to_city_id),
+        );
+        *out.total_by_city
+            .entry(route.from_city_id.clone())
+            .or_insert(0.0) += from_income;
+        *out.total_by_city
+            .entry(route.to_city_id.clone())
+            .or_insert(0.0) += to_income;
+        if route.medium == TradeRouteMedium::Sea {
+            *out.maritime_by_city
+                .entry(route.from_city_id.clone())
+                .or_insert(0.0) += from_income;
+            *out.maritime_by_city
+                .entry(route.to_city_id.clone())
+                .or_insert(0.0) += to_income;
+        }
     }
-    result
+    out
 }
 
-/// Udział bonusu budynku trasy (web `TRADE_ROUTE_BUILDING_BONUS_RATE`), z tabeli
+/// Web `computeTradeRouteIncomeByCity` (`:1661-1668`): the total map of the breakdown.
+pub fn compute_trade_route_income_by_city<F, G>(
+    routes: &[TradeRoute],
+    params: &TradeRouteIncomeParams,
+    wonder_trade_bonus_for_owner: F,
+    targowisko_bonus_for_city: G,
+) -> BTreeMap<String, f64>
+where
+    F: Fn(PlayerId, TradeRouteMedium) -> f64,
+    G: Fn(&str) -> f64,
+{
+    compute_trade_route_income_by_city_breakdown(
+        routes,
+        params,
+        wonder_trade_bonus_for_owner,
+        targowisko_bonus_for_city,
+    )
+    .total_by_city
+}
+
+/// Udział bonusu budynku trasy (web `TRADE_ROUTE_BUILDING_BONUS_RATE`, `:1675`), z tabeli
 /// `data/derived/trade-multipliers.json` (P3-22, wiersz ROZWINIĘTE).
 pub fn trade_route_building_bonus_rate() -> f64 {
     crate::data::derived::trade_multiplier_value("TRADE_ROUTE_BUILDING_BONUS_RATE")
 }
 
-pub fn trade_route_building_bonus_for_route(route: &TradeRoute) -> f64 {
-    trade_route_building_bonus_for_route_with_params(route, &DEFAULT_TRADE_ROUTE_INCOME_PARAMS)
-}
-
-pub fn trade_route_building_bonus_for_route_with_params(
+/// Web `tradeRouteBuildingBonusForRoute` (`:1693-1703`): `0.05 x tradeRouteIncomeForRoute` for a connected route
+/// with `budynekOdblokowany`.
+pub fn trade_route_building_bonus_for_route(
     route: &TradeRoute,
     params: &TradeRouteIncomeParams,
 ) -> f64 {
     if !route.is_connected() || !route.building_unlocked {
         return 0.0;
     }
-    trade_route_building_bonus_rate()
-        * total_distance_income_impl(route.distance, route.medium, params) as f64
+    trade_route_building_bonus_rate() * trade_route_income_for_route(route, params)
 }
 
-pub fn compute_trade_route_building_bonus_by_city(routes: &[TradeRoute]) -> BTreeMap<String, f64> {
-    compute_trade_route_building_bonus_by_city_with_params(
-        routes,
-        &DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
-    )
-}
-
-pub fn compute_trade_route_building_bonus_by_city_with_params(
+/// Web `computeTradeRouteBuildingBonusByCity` (`:1712-1729`): only routes that contribute get a map entry.
+pub fn compute_trade_route_building_bonus_by_city(
     routes: &[TradeRoute],
     params: &TradeRouteIncomeParams,
 ) -> BTreeMap<String, f64> {
@@ -1512,13 +1759,14 @@ pub fn compute_trade_route_building_bonus_by_city_with_params(
         .iter()
         .filter(|route| route.is_connected() && route.building_unlocked)
     {
-        let bonus = trade_route_building_bonus_for_route_with_params(route, params);
-        *result.entry(route.from_city_id.clone()).or_default() += bonus;
-        *result.entry(route.to_city_id.clone()).or_default() += bonus;
+        let bonus = trade_route_building_bonus_for_route(route, params);
+        *result.entry(route.from_city_id.clone()).or_insert(0.0) += bonus;
+        *result.entry(route.to_city_id.clone()).or_insert(0.0) += bonus;
     }
     result
 }
 
+/// Web `computeSeaTradeRouteCountByCity` (`:1739-1749`).
 pub fn compute_sea_trade_route_count_by_city(routes: &[TradeRoute]) -> BTreeMap<String, u32> {
     let mut result = BTreeMap::new();
     for route in routes
@@ -1531,16 +1779,25 @@ pub fn compute_sea_trade_route_count_by_city(routes: &[TradeRoute]) -> BTreeMap<
     result
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Web `bonusPerRoutePieniadz` argument of `computeSeaTradeBonusIncomeByCity` (any finite number).
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct SeaTradeBonusParams {
     #[serde(rename = "bonusPerExtraRoute", alias = "bonus_per_extra_route")]
-    pub bonus_per_extra_route: u64,
+    pub bonus_per_extra_route: f64,
 }
 
 impl Default for SeaTradeBonusParams {
     fn default() -> Self {
         Self {
-            bonus_per_extra_route: port_sea_trade_bonus_pieniadz(),
+            bonus_per_extra_route: port_sea_trade_bonus_pieniadz() as f64,
+        }
+    }
+}
+
+impl From<f64> for SeaTradeBonusParams {
+    fn from(bonus_per_extra_route: f64) -> Self {
+        Self {
+            bonus_per_extra_route,
         }
     }
 }
@@ -1548,21 +1805,22 @@ impl Default for SeaTradeBonusParams {
 impl From<u64> for SeaTradeBonusParams {
     fn from(bonus_per_extra_route: u64) -> Self {
         Self {
-            bonus_per_extra_route,
+            bonus_per_extra_route: bonus_per_extra_route as f64,
         }
     }
 }
 
-/// Premia Pieniądza za dodatkową trasę morską portu (web `PORT_SEA_TRADE_BONUS_PIENIADZ`),
+/// Premia Pieniądza za dodatkową trasę morską portu (web `PORT_SEA_TRADE_BONUS_PIENIADZ`, `:1771`),
 /// z tabeli `data/derived/trade-multipliers.json` (P3-22, wiersz ROZWINIĘTE).
 pub fn port_sea_trade_bonus_pieniadz() -> u64 {
     crate::data::derived::trade_multiplier_value("PORT_SEA_TRADE_BONUS_PIENIADZ") as u64
 }
 
+/// Web `computeSeaTradeBonusIncomeByCity` (`:1773-1783`): `max(0, count - 1) x bonus`, only when positive.
 pub fn compute_sea_trade_bonus_income_by_city<P>(
     sea_trade_route_count_by_city: &BTreeMap<String, u32>,
     params: P,
-) -> BTreeMap<String, u64>
+) -> BTreeMap<String, f64>
 where
     P: Into<SeaTradeBonusParams>,
 {
@@ -1576,7 +1834,7 @@ where
                 .map(|extra| {
                     (
                         city_id.clone(),
-                        u64::from(extra) * params.bonus_per_extra_route,
+                        f64::from(extra) * params.bonus_per_extra_route,
                     )
                 })
         })
@@ -1691,29 +1949,29 @@ pub fn first_trade_route_resource_grant<'a>(
     grants
         .iter()
         .filter(|grant| grant.owner_id == owner_id && grant.resource_key == resource_key)
-        .min_by(|left, right| left.route_id.cmp(&right.route_id))
+        .min_by(|left, right| locale_compare(&left.route_id, &right.route_id))
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Web `TradeRouteResourceFlowParams` (`:1992-2004`): `minStockReserve` is any finite number.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct TradeRouteResourceFlowParams {
     #[serde(rename = "minStockReserve", alias = "min_stock_reserve")]
-    pub min_stock_reserve: u64,
+    pub min_stock_reserve: f64,
 }
 
 impl Default for TradeRouteResourceFlowParams {
     fn default() -> Self {
-        Self {
-            min_stock_reserve: 2,
-        }
+        DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS
     }
 }
 
 pub const DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS: TradeRouteResourceFlowParams =
     TradeRouteResourceFlowParams {
-        min_stock_reserve: 2,
+        min_stock_reserve: 2.0,
     };
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// Web `TradeRouteResourceFlow` (`:2042-2051`); stocks and amounts are JS numbers (`f64`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TradeRouteResourceFlow {
     #[serde(rename = "routeId", alias = "route_id")]
     pub route_id: String,
@@ -1723,7 +1981,7 @@ pub struct TradeRouteResourceFlow {
     pub from_owner_id: PlayerId,
     #[serde(rename = "toOwnerId", alias = "to_owner_id")]
     pub to_owner_id: PlayerId,
-    pub amount: u64,
+    pub amount: f64,
 }
 
 impl TradeRouteResourceFlow {
@@ -1732,7 +1990,7 @@ impl TradeRouteResourceFlow {
         resource_key: impl Into<String>,
         from_owner_id: PlayerId,
         to_owner_id: PlayerId,
-        amount: u64,
+        amount: f64,
     ) -> Self {
         Self {
             route_id: route_id.into(),
@@ -1749,7 +2007,7 @@ pub fn compute_trade_route_resource_flow<F>(
     owner_stock: F,
 ) -> Vec<TradeRouteResourceFlow>
 where
-    F: Fn(PlayerId, &str) -> u64,
+    F: Fn(PlayerId, &str) -> f64,
 {
     compute_trade_route_resource_flow_with_options(
         routes,
@@ -1759,6 +2017,8 @@ where
     )
 }
 
+/// Web `computeTradeRouteResourceFlow` (`:2073-2120`): a per-call ledger, connected routes sorted by
+/// `id.localeCompare`, the richer owner gives `floor(donorStock - reserve)` when positive.
 pub fn compute_trade_route_resource_flow_with_options<F>(
     routes: &[TradeRoute],
     owner_stock: F,
@@ -1766,12 +2026,12 @@ pub fn compute_trade_route_resource_flow_with_options<F>(
     resource_keys: &[&str],
 ) -> Vec<TradeRouteResourceFlow>
 where
-    F: Fn(PlayerId, &str) -> u64,
+    F: Fn(PlayerId, &str) -> f64,
 {
-    let mut ledger: BTreeMap<(PlayerId, String), u64> = BTreeMap::new();
+    let mut ledger: BTreeMap<(PlayerId, String), f64> = BTreeMap::new();
     let mut active_routes: Vec<&TradeRoute> =
         routes.iter().filter(|route| route.is_connected()).collect();
-    active_routes.sort_by(|left, right| left.id.cmp(&right.id));
+    active_routes.sort_by(|left, right| locale_compare(&left.id, &right.id));
 
     let mut flows = Vec::new();
     for route in active_routes {
@@ -1781,23 +2041,25 @@ where
             if from_stock == to_stock {
                 continue;
             }
-            let (donor, recipient, donor_stock) = if from_stock > to_stock {
-                (route.owner_id, route.to_owner_id, from_stock)
+            let (donor, recipient) = if from_stock > to_stock {
+                (route.owner_id, route.to_owner_id)
             } else {
-                (route.to_owner_id, route.owner_id, to_stock)
+                (route.to_owner_id, route.owner_id)
             };
-            let amount = donor_stock.saturating_sub(params.min_stock_reserve);
-            if amount == 0 {
+            let donor_stock = from_stock.max(to_stock);
+            let surplus = donor_stock - params.min_stock_reserve;
+            if surplus <= 0.0 || surplus.is_nan() {
                 continue;
             }
-            let donor_key = (donor, (*resource_key).to_owned());
-            let recipient_key = (recipient, (*resource_key).to_owned());
-            let donor_after =
-                ledger_stock(&mut ledger, donor, resource_key, &owner_stock).saturating_sub(amount);
-            let recipient_after = ledger_stock(&mut ledger, recipient, resource_key, &owner_stock)
-                .saturating_add(amount);
-            ledger.insert(donor_key, donor_after);
-            ledger.insert(recipient_key, recipient_after);
+            let amount = surplus.floor();
+            if amount <= 0.0 {
+                continue;
+            }
+            let donor_after = ledger_stock(&mut ledger, donor, resource_key, &owner_stock) - amount;
+            let recipient_after =
+                ledger_stock(&mut ledger, recipient, resource_key, &owner_stock) + amount;
+            ledger.insert((donor, (*resource_key).to_owned()), donor_after);
+            ledger.insert((recipient, (*resource_key).to_owned()), recipient_after);
             flows.push(TradeRouteResourceFlow::new(
                 &route.id,
                 *resource_key,
@@ -1811,13 +2073,13 @@ where
 }
 
 fn ledger_stock<F>(
-    ledger: &mut BTreeMap<(PlayerId, String), u64>,
+    ledger: &mut BTreeMap<(PlayerId, String), f64>,
     owner_id: PlayerId,
     resource_key: &str,
     owner_stock: &F,
-) -> u64
+) -> f64
 where
-    F: Fn(PlayerId, &str) -> u64,
+    F: Fn(PlayerId, &str) -> f64,
 {
     *ledger
         .entry((owner_id, resource_key.to_owned()))
@@ -1850,101 +2112,79 @@ pub fn diff_trade_routes(prev_routes: &[TradeRoute], next_routes: &[TradeRoute])
 /// Difficulty labels used by the data loader. Typ wspólny: `domain::types::Difficulty`.
 pub use super::types::Difficulty;
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Default)]
-pub struct RawParamRow {
-    pub easy: Option<f64>,
-    pub normal: Option<f64>,
-    pub hard: Option<f64>,
+/// Web `raw.<group>[key][difficulty]` (`trade-routes.ts:884-886`, `:2025-2028`): the row value for the
+/// difficulty key, `None` when the group/row/key is missing.
+fn econ_row_value<'a>(
+    econ: Option<&'a serde_json::Value>,
+    group: &str,
+    key: &str,
+    difficulty: &str,
+) -> Option<&'a serde_json::Value> {
+    econ?.get(group)?.get(key)?.get(difficulty)
 }
 
-impl RawParamRow {
-    fn value(self, difficulty: Difficulty) -> Option<f64> {
-        let value = match difficulty {
-            Difficulty::Easy => self.easy,
-            Difficulty::Normal => self.normal,
-            Difficulty::Hard => self.hard,
-        }?;
-        value.is_finite().then_some(value)
-    }
+/// A JS `typeof v === 'number' && Number.isFinite(v)` value.
+fn finite_number(value: Option<&serde_json::Value>) -> Option<f64> {
+    value
+        .filter(|v| v.is_number())
+        .and_then(serde_json::Value::as_f64)
+        .filter(|v| v.is_finite())
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct RawTradeParameters {
-    #[serde(default, rename = "handel_szlaki")]
-    pub trade_routes: BTreeMap<String, RawParamRow>,
-    #[serde(default, rename = "ekonomia_miasta")]
-    pub city_economy: BTreeMap<String, RawParamRow>,
-}
-
+/// Web `loadTradeRouteParams` (`:878-891`): any finite number (also negative / fractional) or the fallback.
 pub fn load_trade_route_params(
-    raw: &RawTradeParameters,
-    difficulty: Difficulty,
+    econ: Option<&serde_json::Value>,
+    difficulty: &str,
 ) -> TradeRouteParams {
-    let value = |key: &str, fallback: u32| {
-        raw.trade_routes
-            .get(key)
-            .and_then(|row| row.value(difficulty))
-            .filter(|value| *value >= 0.0)
-            .map(|value| value as u32)
-            .unwrap_or(fallback)
+    let read = |key: &str, fallback: f64| {
+        finite_number(econ_row_value(econ, "handel_szlaki", key, difficulty)).unwrap_or(fallback)
     };
     TradeRouteParams::new(
-        value(
-            "lad_max_dystans",
-            DEFAULT_TRADE_ROUTE_PARAMS.land_max_distance,
-        ),
-        value(
-            "morze_max_dystans",
-            DEFAULT_TRADE_ROUTE_PARAMS.sea_max_distance,
-        ),
+        read("lad_max_dystans", DEFAULT_TRADE_ROUTE_PARAMS.land_max_distance),
+        read("morze_max_dystans", DEFAULT_TRADE_ROUTE_PARAMS.sea_max_distance),
     )
 }
 
+/// Web `loadTradeRouteIncomeParams` (`:1584-1604`): the curve must be a non-empty array of finite numbers,
+/// otherwise the default curve.
 pub fn load_trade_route_income_params(
-    raw: &RawTradeParameters,
-    difficulty: Difficulty,
+    econ: Option<&serde_json::Value>,
+    difficulty: &str,
 ) -> TradeRouteIncomeParams {
-    let value = |key: &str, fallback: u64| {
-        raw.trade_routes
-            .get(key)
-            .and_then(|row| row.value(difficulty))
-            .filter(|value| *value >= 0.0)
-            .map(|value| value as u64)
-            .unwrap_or(fallback)
+    let read = |key: &str, fallback: &[f64]| -> Vec<f64> {
+        let curve = econ_row_value(econ, "handel_szlaki", key, difficulty)
+            .and_then(serde_json::Value::as_array);
+        match curve {
+            Some(values)
+                if !values.is_empty() && values.iter().all(|v| finite_number(Some(v)).is_some()) =>
+            {
+                values
+                    .iter()
+                    .filter_map(serde_json::Value::as_f64)
+                    .collect()
+            }
+            _ => fallback.to_vec(),
+        }
     };
     TradeRouteIncomeParams::new(
-        value(
-            "dochod_podloga",
-            DEFAULT_TRADE_ROUTE_INCOME_PARAMS.income_floor,
-        ),
-        value(
-            "dochod_szczyt",
-            DEFAULT_TRADE_ROUTE_INCOME_PARAMS.income_peak,
-        ),
-        value(
-            "lad_max_dystans",
-            u64::from(DEFAULT_TRADE_ROUTE_INCOME_PARAMS.land_max_distance),
-        ) as u32,
-        value(
-            "morze_max_dystans",
-            u64::from(DEFAULT_TRADE_ROUTE_INCOME_PARAMS.sea_max_distance),
-        ) as u32,
+        read("dochody_ladowe", &DEFAULT_DOCHODY_LADOWE),
+        read("dochody_morskie", &DEFAULT_DOCHODY_MORSKIE),
     )
 }
 
+/// Web `loadTradeRouteResourceFlowParams` (`:2021-2033`): `ekonomia_miasta.handel_surowiec_min_stock[difficulty]`.
 pub fn load_trade_route_resource_flow_params(
-    raw: &RawTradeParameters,
-    difficulty: Difficulty,
+    econ: Option<&serde_json::Value>,
+    difficulty: &str,
 ) -> TradeRouteResourceFlowParams {
-    let reserve = raw
-        .city_economy
-        .get("handel_surowiec_min_stock")
-        .and_then(|row| row.value(difficulty))
-        .filter(|value| *value >= 0.0)
-        .map(|value| value as u64)
-        .unwrap_or(DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.min_stock_reserve);
     TradeRouteResourceFlowParams {
-        min_stock_reserve: reserve,
+        min_stock_reserve: finite_number(econ_row_value(
+            econ,
+            "ekonomia_miasta",
+            "handel_surowiec_min_stock",
+            difficulty,
+        ))
+        .unwrap_or(DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.min_stock_reserve),
     }
 }
 
