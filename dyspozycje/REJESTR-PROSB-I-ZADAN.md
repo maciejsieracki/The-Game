@@ -8467,3 +8467,6 @@ Zgłoszenie: inne cywilizacje budują forty poza terenem swojej cywilizacji, nie
 
 ## 2026-11-03 — zgłoszenie + reguła: wojsko AI w wojnie nie może przechodzić przez cudzy teren bez zgody
 Zgłoszenie: cywilizacja prowadząca wojnę z inną zamiast iść naokoło idzie wprost przez teren gracza, bez zgody, narażając się na kary. Reguła (właściciel): jeśli cywilizacja prowadzi wojnę z inną, NIE może przechodzić przez teren trzeciej cywilizacji, lecz musi wybrać drogę okrężną morską lub przez ziemie wroga (bez wkraczania na cudze tereny); jeśli ma zgodę (umowa o przemarsz), musi o nią poprosić. Mechanizm umowy przemarszu i kar za naruszenie granic już istnieje (`R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1`, `border-march-scan.ts`). Temat `R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1` — dispatch zapisany; START po zwolnieniu miejsca (dysk ~6,7 GB, 4 tematy web + 2 Rust w toku).
+
+## 2026-11-03 — zgłoszenie: palisada w bitwie nie działa jak mur
+Właściciel: gdy miasto ma palisadę, bitwa wygląda tak, jakby nie było muru; palisada jest formą muru, więc zasady obrony (i wygląd bitwy) mają być takie jak przy murze. Potrzebne grafiki palisady zamiast murów. Temat `R-WEB-PALISADE-BATTLE-WALL-RULES-Q1` (faza A: reguły/logika bitwy; faza B: grafika palisady w widoku bitwy i miasta). Dispatch zapisany; START po zwolnieniu miejsca (dysk).
