@@ -21,6 +21,7 @@ use std::collections::HashSet;
 
 use serde_json::Value;
 
+use crate::domain::freshwater::is_lake_adjacent_cached;
 use crate::domain::improvement_build::{hex_keys_within_radius, BuildMap};
 use crate::domain::society_breakdown::{js_round, pick_osiedle_pop_bonus};
 use crate::domain::start_position::Overlay;
@@ -160,12 +161,16 @@ pub fn city_has_water_access_in(
     {
         return true;
     }
-    if rivers.contains(&(cq, cr)) {
+    if rivers.contains(&(cq, cr))
+        || HEX_NEIGHBORS
+            .iter()
+            .any(|(dq, dr)| rivers.contains(&(cq.wrapping_add(*dq), cr.wrapping_add(*dr))))
+    {
         return true;
     }
-    HEX_NEIGHBORS
-        .iter()
-        .any(|(dq, dr)| rivers.contains(&(cq.wrapping_add(*dq), cr.wrapping_add(*dr))))
+    // REPIN-DELTA-4 (turn-economy.ts:417-425 @23dd158e9 -> `hasFreshwaterAccess`): rzeka LUB jezioro
+    // na heksie miasta / sasiedzie; morze/ocean nigdy. Dla map bez jezior wynik jak dotad.
+    is_lake_adjacent_cached(map, cq, cr)
 }
 
 /// Web `cityHasWaterAccess(city, map)` (`:420-445`).

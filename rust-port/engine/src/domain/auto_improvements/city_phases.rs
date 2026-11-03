@@ -68,6 +68,8 @@ pub(super) struct Acc {
     pub(super) scheduled_wyrab: BTreeSet<String>,
     pub(super) forest_left: f64,
     pub(super) city_budget_exhausted: bool,
+    /// Web `ownFortCircles` (U-3, R-WEB-AUTO-FORT-DIAG-Q1): leniwie liczone kola WLASNYCH fortow/posterunkow.
+    pub(super) own_fort_circles: Option<Vec<(i32, i32, f64)>>,
 }
 
 pub(super) fn hex_dist(city: &AutoImprovementCity, q: i32, r: i32) -> f64 {
@@ -108,7 +110,8 @@ impl CityEnv {
         if !self.wyrab_ma_sens(sh, q, r) {
             return false;
         }
-        if !sh.river_hex_keys.contains(&hk) {
+        // REPIN-DELTA-4 hunk auto-improvements.ts:1671 (`riverHexKeys.has` -> `onRiverHex`).
+        if !sh.on_river_hex(&hk) {
             return false;
         }
         if acc.scheduled_wyrab.contains(&hk) {
@@ -146,7 +149,8 @@ impl CityEnv {
             if hx.terrain != TerrainType::Wzgorza || hx.overlay != Overlay::Las {
                 continue;
             }
-            if sh.has_river_access(&hk) {
+            // hunk :1778 (`hasRiverAccess` -> `foodReservedHex`).
+            if sh.food_reserved_hex(&hk) {
                 continue;
             }
             if sh.hex_layers_contain(&hk, "tartak") {
@@ -177,7 +181,8 @@ impl CityEnv {
         hex_key: &str,
     ) -> bool {
         let livestock = key == "bydlo" || key == "owce" || key == "lama";
-        if livestock && !sh.river_hex_keys.contains(hex_key) {
+        // hunk :1791 (`riverHexKeys.has` -> `onRiverHex`).
+        if livestock && !sh.on_river_hex(hex_key) {
             return true;
         }
         if key == "irygacja"
@@ -189,7 +194,8 @@ impl CityEnv {
         if key == "tartak" && !self.tartak_dozwolony {
             return true;
         }
-        if (key == "tartak" || key == "oboz_lowiecki") && sh.has_river_access(hex_key) {
+        // hunk :1808 (`hasRiverAccess` -> `foodReservedHex`; zero awaryjnego tartaku/obozu).
+        if (key == "tartak" || key == "oboz_lowiecki") && sh.food_reserved_hex(hex_key) {
             return true;
         }
         if key == "tartak"
@@ -284,11 +290,22 @@ pub(super) fn build_city_env(
     let mut ordered_hexes: Vec<(i32, i32)> = candidate_hexes
         .iter()
         .copied()
-        .filter(|&(q, r)| !opts.river_hexes_only || sh.river_hex_keys.contains(&format!("{q},{r}")))
+        .filter(|&(q, r)| !opts.river_hexes_only || sh.on_river_hex(&format!("{q},{r}")))
         .collect();
     ordered_hexes.sort_by(|a, b| {
-        let ar = i32::from(!sh.river_hex_keys.contains(&format!("{},{}", a.0, a.1)));
-        let br = i32::from(!sh.river_hex_keys.contains(&format!("{},{}", b.0, b.1)));
+        // hunk :1481-1491: 3 stopnie - NA rzece (0) < tylko sasiad rzeki (1) < reszta (2).
+        let rank = |h: (i32, i32)| -> i32 {
+            let k = format!("{},{}", h.0, h.1);
+            if sh.is_on_river(&k) {
+                0
+            } else if sh.on_river_hex(&k) {
+                1
+            } else {
+                2
+            }
+        };
+        let ar = rank(*a);
+        let br = rank(*b);
         ar.cmp(&br)
             .then(
                 hex_dist(city, a.0, a.1)
@@ -399,7 +416,8 @@ pub(super) fn pop_or_zero(p: f64) -> f64 {
 /// Wnetrze `rzekiDoZagospodarowania.some(...)` dla jednego heksu kandydata.
 pub(super) fn river_to_develop(sh: &Shared, acc: &Acc, env: &CityEnv, q: i32, r: i32) -> bool {
     let hk = format!("{q},{r}");
-    if !sh.river_hex_keys.contains(&hk) {
+    // hunk :1697 (`riverHexKeys.has` -> `onRiverHex`).
+    if !sh.on_river_hex(&hk) {
         return false;
     }
     if acc.scheduled_wyrab.contains(&hk) {
@@ -417,7 +435,7 @@ pub(super) fn river_to_develop(sh: &Shared, acc: &Acc, env: &CityEnv, q: i32, r:
         if placed_here.iter().any(|p| p == k) {
             return false;
         }
-        if (k == "bydlo" || k == "owce" || k == "lama") && !sh.river_hex_keys.contains(&hk) {
+        if (k == "bydlo" || k == "owce" || k == "lama") && !sh.on_river_hex(&hk) {
             return false;
         }
         if !sh.tech_ok(k) || !sh.civ_ok(k) {

@@ -1,4 +1,4 @@
-//! P6.8I (8I-P1/P2) - picker auto-ulepszen. Wektory z URUCHOMIONEGO weba (pin 4bbef081d):
+//! P6.8I (8I-P1/P2) - picker auto-ulepszen. Wektory z URUCHOMIONEGO weba (pin 23dd158e9):
 //! `tests/p6_8i_vectors/pick.json` (scenariusze `pickAutoImprovements`) i `helpers.json` (helpery P1),
 //! generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-8I-AUTO-ULEPSZENIA-Q1/gen-p6-8i-pick-vectors.mjs`.
 //! Kodowanie liczb: skonczona -> liczba, NaN/Infinity/-Infinity -> napis.
@@ -294,11 +294,11 @@ fn expected_picks(v: &Value) -> Vec<Pick> {
 }
 
 #[test]
-fn vectors_pin_is_4bbef081d() {
+fn vectors_pin_is_23dd158e9() {
     let d: Value = serde_json::from_str(PICK).unwrap();
-    assert_eq!(d["pin"].as_str(), Some("4bbef081d"));
+    assert_eq!(d["pin"].as_str(), Some("23dd158e9"));
     let h: Value = serde_json::from_str(HELPERS).unwrap();
-    assert_eq!(h["pin"].as_str(), Some("4bbef081d"));
+    assert_eq!(h["pin"].as_str(), Some("23dd158e9"));
 }
 
 #[test]
@@ -318,7 +318,7 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
     );
     let mut bad: Vec<String> = Vec::new();
     let mut nonempty = 0;
-    // Tryb OSTRY (REPIN-TERYTORIUM-FORTY): bez tolerancji dryfu; promienie fort/posterunek = 5/3 (pin 4bbef081d).
+    // Tryb OSTRY (REPIN-TERYTORIUM-FORTY): bez tolerancji dryfu; promienie fort/posterunek = 5/3 (pin 23dd158e9).
     assert_eq!(city_territory_radius(&fort_probe(true)), 5.0);
     assert_eq!(city_territory_radius(&fort_probe(false)), 3.0);
     for s in scenarios {
