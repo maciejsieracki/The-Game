@@ -8585,3 +8585,5 @@ Pytania bez odpowiedzi (domyślne założenia obowiązują): Milicja — „garn
 
 ## 2026-11-03 — DECYZJA WŁAŚCICIELA (ABC): fortyfikacja jednostki w mieście — bez zmian
 Stan: ufortyfikowany garnizon w mieście dostaje +50% Obrony (jak w polu, `fortify_obrona_proc`) tylko gdy miasto nie ma budynku obronnego (`shouldApplyGarrisonFortifyBonus`, decyzja 2026-07-31); z palisadą/murem/cytadelą/basztą zostaje sam bonus budynku. Stały +2 pkt (`fortify_obrona_bonus`) to starszy parametr. Właściciel wybrał **B: zostawić jak jest**. Brak zmian w kodzie.
+
+## 2026-11-03 — wdrożono ROBOCZA 4e022fcd (main f832f6223): panel „Rozdziel armię” (przewijanie, siatka 3×5, brandbook)
