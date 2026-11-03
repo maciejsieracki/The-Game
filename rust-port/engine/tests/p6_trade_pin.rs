@@ -5,6 +5,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use civ_engine::domain::building_costs::p6_7b::{StockCity, StockRecord};
 use civ_engine::domain::trade::{
     cities_have_trade_connection_with_options, compute_sea_trade_bonus_income_by_city,
     compute_sea_trade_route_count_by_city, compute_trade_route_building_bonus_by_city,
@@ -20,7 +21,6 @@ use civ_engine::domain::trade::{
     TradeRouteIncomeParams, TradeRouteMedium, TradeRouteParams, TradeRouteResourceFlowParams,
     TradeRouteStatus, TRADE_ROUTE_RESOURCE_KEYS, TRADE_ROUTE_STOCK_FLOW_KEYS,
 };
-use civ_engine::domain::building_costs::p6_7b::{StockCity, StockRecord};
 use civ_engine::domain::trade_flow_apply::apply_trade_route_resource_flows;
 use civ_engine::domain::PlayerId;
 use serde_json::Value;
@@ -129,7 +129,11 @@ fn flows_json(flows: &[civ_engine::domain::trade::TradeRouteResourceFlow]) -> Ve
         .collect()
 }
 
-fn check_flows(label: &str, got: &[civ_engine::domain::trade::TradeRouteResourceFlow], want: &Value) -> usize {
+fn check_flows(
+    label: &str,
+    got: &[civ_engine::domain::trade::TradeRouteResourceFlow],
+    want: &Value,
+) -> usize {
     let want = arr(want);
     assert_eq!(got.len(), want.len(), "{label}: liczba przeplywow");
     for (g, w) in got.iter().zip(want) {
@@ -137,7 +141,12 @@ fn check_flows(label: &str, got: &[civ_engine::domain::trade::TradeRouteResource
         assert_eq!(g.resource_key, s(&w["resourceKey"]), "{label}");
         assert_eq!(g.from_owner_id, pid(&w["fromOwnerId"]), "{label}");
         assert_eq!(g.to_owner_id, pid(&w["toOwnerId"]), "{label}");
-        assert!(same(g.amount, num(&w["amount"])), "{label}: amount {} vs {}", g.amount, num(&w["amount"]));
+        assert!(
+            same(g.amount, num(&w["amount"])),
+            "{label}: amount {} vs {}",
+            g.amount,
+            num(&w["amount"])
+        );
     }
     want.len() + 1
 }
@@ -187,10 +196,21 @@ fn trade_matches_the_running_web_pin() {
         let d = c["distance"].as_u64().unwrap();
         let by = trade_route_income_by_distance(d as f64, m, &params);
         assert!(same(by, num(&c["by_distance"])), "by_distance {c}");
-        let to = if c["same_owner"].as_bool().unwrap() { 0 } else { 1 };
+        let to = if c["same_owner"].as_bool().unwrap() {
+            0
+        } else {
+            1
+        };
         let route = TradeRoute::from_parts(
-            "r", "a", "b", PlayerId::new(0), PlayerId::new(to), m, d as u32,
-            TradeRouteStatus::Connected, false,
+            "r",
+            "a",
+            "b",
+            PlayerId::new(0),
+            PlayerId::new(to),
+            m,
+            d as u32,
+            TradeRouteStatus::Connected,
+            false,
         );
         let fr = trade_route_income_for_route(&route, &params);
         assert!(same(fr, num(&c["for_route"])), "for_route {c}");
@@ -202,28 +222,105 @@ fn trade_matches_the_running_web_pin() {
         let raw = &l["raw"];
         let diff = s(&l["difficulty"]);
         let p = load_trade_route_params(Some(raw), diff);
-        assert!(same(p.land_max_distance, num(&l["params"]["lad"])), "lad {l}");
-        assert!(same(p.sea_max_distance, num(&l["params"]["morze"])), "morze {l}");
+        assert!(
+            same(p.land_max_distance, num(&l["params"]["lad"])),
+            "lad {l}"
+        );
+        assert!(
+            same(p.sea_max_distance, num(&l["params"]["morze"])),
+            "morze {l}"
+        );
         let ip = load_trade_route_income_params(Some(raw), diff);
         let want_l: Vec<f64> = arr(&l["income"]["ladowe"]).iter().map(num).collect();
         let want_m: Vec<f64> = arr(&l["income"]["morskie"]).iter().map(num).collect();
         assert_eq!(ip.dochody_ladowe.len(), want_l.len(), "{l}");
-        assert!(ip.dochody_ladowe.iter().zip(&want_l).all(|(a, b)| same(*a, *b)), "{l}");
+        assert!(
+            ip.dochody_ladowe
+                .iter()
+                .zip(&want_l)
+                .all(|(a, b)| same(*a, *b)),
+            "{l}"
+        );
         assert_eq!(ip.dochody_morskie.len(), want_m.len(), "{l}");
-        assert!(ip.dochody_morskie.iter().zip(&want_m).all(|(a, b)| same(*a, *b)), "{l}");
+        assert!(
+            ip.dochody_morskie
+                .iter()
+                .zip(&want_m)
+                .all(|(a, b)| same(*a, *b)),
+            "{l}"
+        );
         let fp = load_trade_route_resource_flow_params(Some(raw), diff);
-        assert!(same(fp.min_stock_reserve, num(&l["flow_reserve"])), "reserve {l}");
+        assert!(
+            same(fp.min_stock_reserve, num(&l["flow_reserve"])),
+            "reserve {l}"
+        );
         checks += 4;
     }
     // brak econ (`undefined`): wartosci domyslne jak w webie.
-    assert_eq!(load_trade_route_income_params(None, "normal"), TradeRouteIncomeParams::default());
+    assert_eq!(
+        load_trade_route_income_params(None, "normal"),
+        TradeRouteIncomeParams::default()
+    );
+
+    // ---- granica ladowa: gesto nakladajace sie wezly (miasta, forty, posterunki, `order`) ----
+    for bc in arr(&root["border_cases"]) {
+        let dims = arr(&bc["dims"]);
+        let mut map = TradeMap::new(
+            dims[0].as_u64().unwrap() as u32,
+            dims[1].as_u64().unwrap() as u32,
+        );
+        for h in arr(&bc["hexes"]) {
+            let h = arr(h);
+            map.insert(
+                HexCoord::new(h[0].as_i64().unwrap() as i32, h[1].as_i64().unwrap() as i32),
+                terrain(s(&h[2])),
+            );
+        }
+        let nodes: Vec<TerritoryNode> = arr(&bc["nodes"])
+            .iter()
+            .map(|n| {
+                let mut node = TerritoryNode::new(
+                    pid(&n["ownerId"]),
+                    n["q"].as_i64().unwrap() as i32,
+                    n["r"].as_i64().unwrap() as i32,
+                    n["radius"].as_u64().unwrap() as u32,
+                );
+                node.fort = n["fort"].as_bool().unwrap();
+                node.outpost = n["outpost"].as_bool().unwrap();
+                node.order = (!n["order"].is_null()).then(|| {
+                    (
+                        n["order"][0].as_i64().unwrap(),
+                        n["order"][1].as_i64().unwrap(),
+                    )
+                });
+                node
+            })
+            .collect();
+        for p in arr(&bc["pairs"]) {
+            let got = civ_engine::domain::trade::owners_have_shared_land_border(
+                pid(&p["a"]),
+                pid(&p["b"]),
+                &nodes,
+                &map,
+            );
+            assert_eq!(got, p["shared"].as_bool().unwrap(), "granica {p} w {bc}");
+            checks += 1;
+        }
+    }
 
     // ---- scenariusze ----
     for sc in arr(&root["scenarios"]) {
         let map = build_map(sc);
         let cities: Vec<TradeCity> = arr(&sc["cities"])
             .iter()
-            .map(|c| TradeCity::new(s(&c["id"]), pid(&c["ownerId"]), c["q"].as_i64().unwrap() as i32, c["r"].as_i64().unwrap() as i32))
+            .map(|c| {
+                TradeCity::new(
+                    s(&c["id"]),
+                    pid(&c["ownerId"]),
+                    c["q"].as_i64().unwrap() as i32,
+                    c["r"].as_i64().unwrap() as i32,
+                )
+            })
             .collect();
         let params = TradeRouteParams::new(
             sc["params"]["ladMaxDist"].as_f64().unwrap(),
@@ -256,7 +353,12 @@ fn trade_matches_the_running_web_pin() {
             let tech: Option<BTreeSet<u64>> = if tick["tech"].is_null() {
                 None
             } else {
-                Some(arr(&tick["tech"]).iter().map(|x| x.as_u64().unwrap()).collect())
+                Some(
+                    arr(&tick["tech"])
+                        .iter()
+                        .map(|x| x.as_u64().unwrap())
+                        .collect(),
+                )
             };
             let has_tech = |o: PlayerId| tech.as_ref().is_none_or(|t| t.contains(&o.get()));
             let territory: Option<Vec<TerritoryNode>> = if tick["territory"].is_null() {
@@ -277,7 +379,10 @@ fn trade_matches_the_running_web_pin() {
                             node.order = if n["order"].is_null() {
                                 None
                             } else {
-                                Some((n["order"][0].as_i64().unwrap(), n["order"][1].as_i64().unwrap()))
+                                Some((
+                                    n["order"][0].as_i64().unwrap(),
+                                    n["order"][1].as_i64().unwrap(),
+                                ))
                             };
                             node
                         })
@@ -289,7 +394,16 @@ fn trade_matches_the_running_web_pin() {
 
             // refresh
             let got = refresh_trade_routes_with_options(
-                &cities, &existing, &map, &built, is_war, has_treaty, &params, terr, &income_params, has_tech,
+                &cities,
+                &existing,
+                &map,
+                &built,
+                is_war,
+                has_treaty,
+                &params,
+                terr,
+                &income_params,
+                has_tech,
             );
             let got_json = serde_json::to_value(&got).unwrap();
             assert_eq!(got_json, tick["routes"], "scenariusz {} refresh", sc["idx"]);
@@ -303,96 +417,252 @@ fn trade_matches_the_running_web_pin() {
                     let want = &c["route"];
                     let m = medium(s(&want["medium"]));
                     let route = create_trade_route_with_options(from, to, &map, m, &built, None);
-                    assert_eq!(&serde_json::to_value(&route).unwrap(), want, "create {} sc {}", c, sc["idx"]);
+                    assert_eq!(
+                        &serde_json::to_value(&route).unwrap(),
+                        want,
+                        "create {} sc {}",
+                        c,
+                        sc["idx"]
+                    );
                 } else {
                     let need_path = c["need_path"].as_bool().unwrap();
                     let r = find_city_connection_with_params(
-                        from, to, &map, medium(s(&c["medium"])), &params, &built, terr, need_path,
+                        from,
+                        to,
+                        &map,
+                        medium(s(&c["medium"])),
+                        &params,
+                        &built,
+                        terr,
+                        need_path,
                     );
-                    assert_eq!(r.connected, c["connected"].as_bool().unwrap(), "conn {} sc {}", c, sc["idx"]);
-                    assert_eq!(u64::from(r.distance), c["distance"].as_u64().unwrap(), "dist {c}");
+                    assert_eq!(
+                        r.connected,
+                        c["connected"].as_bool().unwrap(),
+                        "conn {} sc {}",
+                        c,
+                        sc["idx"]
+                    );
+                    assert_eq!(
+                        u64::from(r.distance),
+                        c["distance"].as_u64().unwrap(),
+                        "dist {c}"
+                    );
                     if need_path {
                         let want: Vec<&str> = arr(&c["path"]).iter().map(s).collect();
-                        assert_eq!(r.path_hexes.iter().map(String::as_str).collect::<Vec<_>>(), want, "path {} sc {}", c, sc["idx"]);
+                        assert_eq!(
+                            r.path_hexes.iter().map(String::as_str).collect::<Vec<_>>(),
+                            want,
+                            "path {} sc {}",
+                            c,
+                            sc["idx"]
+                        );
                     } else {
-                        assert!(r.path_hexes.is_empty() || !r.connected || from.coordinate() == to.coordinate(), "{c}");
+                        assert!(
+                            r.path_hexes.is_empty()
+                                || !r.connected
+                                || from.coordinate() == to.coordinate(),
+                            "{c}"
+                        );
                     }
                 }
                 checks += 1;
             }
             for h in arr(&tick["have"]) {
                 let (a, b) = (pid(&h["a"]), pid(&h["b"]));
-                let ca: Vec<TradeCity> = cities.iter().filter(|c| c.owner_id == a).cloned().collect();
-                let cb: Vec<TradeCity> = cities.iter().filter(|c| c.owner_id == b).cloned().collect();
-                assert_eq!(cities_have_trade_connection_with_options(&ca, &cb, &map, &built, &params, terr), h["with_territory"].as_bool().unwrap(), "have {h}");
-                assert_eq!(cities_have_trade_connection_with_options(&ca, &cb, &map, &built, &params, None), h["without"].as_bool().unwrap(), "have0 {h}");
+                let ca: Vec<TradeCity> =
+                    cities.iter().filter(|c| c.owner_id == a).cloned().collect();
+                let cb: Vec<TradeCity> =
+                    cities.iter().filter(|c| c.owner_id == b).cloned().collect();
+                assert_eq!(
+                    cities_have_trade_connection_with_options(
+                        &ca, &cb, &map, &built, &params, terr
+                    ),
+                    h["with_territory"].as_bool().unwrap(),
+                    "have {h}"
+                );
+                assert_eq!(
+                    cities_have_trade_connection_with_options(
+                        &ca, &cb, &map, &built, &params, None
+                    ),
+                    h["without"].as_bool().unwrap(),
+                    "have0 {h}"
+                );
                 checks += 2;
             }
             for d in arr(&tick["diag"]) {
                 let (a, b) = (pid(&d["a"]), pid(&d["b"]));
                 let label = d["label"].as_str();
-                let got = diagnose_missing_trade_route_for_partner_with_options(a, b, &cities, &map, &built, is_war, &params, label, terr);
-                assert_eq!(got.as_deref(), d["msg"].as_str(), "diag {d} sc {}", sc["idx"]);
-                let got0 = diagnose_missing_trade_route_for_partner_with_options(a, b, &cities, &map, &built, is_war, &params, label, None);
+                let got = diagnose_missing_trade_route_for_partner_with_options(
+                    a, b, &cities, &map, &built, is_war, &params, label, terr,
+                );
+                assert_eq!(
+                    got.as_deref(),
+                    d["msg"].as_str(),
+                    "diag {d} sc {}",
+                    sc["idx"]
+                );
+                let got0 = diagnose_missing_trade_route_for_partner_with_options(
+                    a, b, &cities, &map, &built, is_war, &params, label, None,
+                );
                 assert_eq!(got0.as_deref(), d["msg_no_territory"].as_str(), "diag0 {d}");
                 checks += 2;
             }
             for l in arr(&tick["limits"]) {
                 let id = s(&l["id"]);
-                assert_eq!(u64::from(trade_route_limit_for_city(id, &built)), l["limit"].as_u64().unwrap(), "limit {l}");
-                assert_eq!(u64::from(trade_route_existence_limit_for_city(id, &built)), l["existence"].as_u64().unwrap(), "exist {l}");
+                assert_eq!(
+                    u64::from(trade_route_limit_for_city(id, &built)),
+                    l["limit"].as_u64().unwrap(),
+                    "limit {l}"
+                );
+                assert_eq!(
+                    u64::from(trade_route_existence_limit_for_city(id, &built)),
+                    l["existence"].as_u64().unwrap(),
+                    "exist {l}"
+                );
                 checks += 2;
             }
 
             // dochod i bonusy
             let inc = &tick["income"];
             let routes_in = routes_of(&inc["routes_in"]);
-            let wonder = |o: PlayerId, m: TradeRouteMedium| inc["wonder"].get(format!("{}|{}", o.get(), m.key())).map_or(0.0, num);
+            let wonder = |o: PlayerId, m: TradeRouteMedium| {
+                inc["wonder"]
+                    .get(format!("{}|{}", o.get(), m.key()))
+                    .map_or(0.0, num)
+            };
             let targ = |id: &str| inc["targ"].get(id).map_or(0.0, num);
-            let br = compute_trade_route_income_by_city_breakdown(&routes_in, &income_params, wonder, targ);
+            let br = compute_trade_route_income_by_city_breakdown(
+                &routes_in,
+                &income_params,
+                wonder,
+                targ,
+            );
             checks += check_map("total", &br.total_by_city, &inc["total"]);
             checks += check_map("maritime", &br.maritime_by_city, &inc["maritime"]);
-            let nb = compute_trade_route_income_by_city_breakdown(&routes_in, &income_params, |_, _| 0.0, |_| 0.0);
+            let nb = compute_trade_route_income_by_city_breakdown(
+                &routes_in,
+                &income_params,
+                |_, _| 0.0,
+                |_| 0.0,
+            );
             checks += check_map("total_nobonus", &nb.total_by_city, &inc["total_nobonus"]);
             let counts = compute_sea_trade_route_count_by_city(&routes_in);
-            let counts_f: BTreeMap<String, f64> = counts.iter().map(|(k, v)| (k.clone(), f64::from(*v))).collect();
+            let counts_f: BTreeMap<String, f64> = counts
+                .iter()
+                .map(|(k, v)| (k.clone(), f64::from(*v)))
+                .collect();
             checks += check_map("sea_counts", &counts_f, &inc["sea_counts"]);
             let rate = num(&inc["sea_bonus_rate"]);
-            checks += check_map("sea_bonus", &compute_sea_trade_bonus_income_by_city(&counts, rate), &inc["sea_bonus"]);
-            checks += check_map("sea_bonus_default", &compute_sea_trade_bonus_income_by_city(&counts, SeaTradeBonusParams::default()), &inc["sea_bonus_default"]);
-            checks += check_map("building_bonus", &compute_trade_route_building_bonus_by_city(&routes_in, &income_params), &inc["building_bonus"]);
+            checks += check_map(
+                "sea_bonus",
+                &compute_sea_trade_bonus_income_by_city(&counts, rate),
+                &inc["sea_bonus"],
+            );
+            checks += check_map(
+                "sea_bonus_default",
+                &compute_sea_trade_bonus_income_by_city(&counts, SeaTradeBonusParams::default()),
+                &inc["sea_bonus_default"],
+            );
+            checks += check_map(
+                "building_bonus",
+                &compute_trade_route_building_bonus_by_city(&routes_in, &income_params),
+                &inc["building_bonus"],
+            );
             for (route, want) in routes_in.iter().zip(arr(&inc["per_route"])) {
-                assert!(same(trade_route_income_for_route(route, &income_params), num(&want["income"])), "per-route income");
-                assert!(same(trade_route_building_bonus_for_route(route, &income_params), num(&want["bonus"])), "per-route bonus");
+                assert!(
+                    same(
+                        trade_route_income_for_route(route, &income_params),
+                        num(&want["income"])
+                    ),
+                    "per-route income"
+                );
+                assert!(
+                    same(
+                        trade_route_building_bonus_for_route(route, &income_params),
+                        num(&want["bonus"])
+                    ),
+                    "per-route bonus"
+                );
                 checks += 2;
             }
 
             // granty i przeplyw
             let res = &tick["res"];
-            let native = |o: PlayerId, k: &str| res["native"].get(format!("{}|{k}", o.get())).and_then(Value::as_bool).unwrap_or(false);
-            let stock = |o: PlayerId, k: &str| res["stock"].get(format!("{}|{k}", o.get())).map_or(0.0, num);
-            let grants = compute_trade_route_resource_grants_with_keys(&routes_in, native, &TRADE_ROUTE_RESOURCE_KEYS);
-            assert_eq!(serde_json::to_value(&grants).unwrap(), res["grants"], "grants");
-            let grants2 = compute_trade_route_resource_grants_with_keys(&routes_in, native, &["braz", "cegla"]);
-            assert_eq!(serde_json::to_value(&grants2).unwrap(), res["grants_keys2"], "grants keys");
+            let native = |o: PlayerId, k: &str| {
+                res["native"]
+                    .get(format!("{}|{k}", o.get()))
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false)
+            };
+            let stock = |o: PlayerId, k: &str| {
+                res["stock"]
+                    .get(format!("{}|{k}", o.get()))
+                    .map_or(0.0, num)
+            };
+            let grants = compute_trade_route_resource_grants_with_keys(
+                &routes_in,
+                native,
+                &TRADE_ROUTE_RESOURCE_KEYS,
+            );
+            assert_eq!(
+                serde_json::to_value(&grants).unwrap(),
+                res["grants"],
+                "grants"
+            );
+            let grants2 = compute_trade_route_resource_grants_with_keys(
+                &routes_in,
+                native,
+                &["braz", "cegla"],
+            );
+            assert_eq!(
+                serde_json::to_value(&grants2).unwrap(),
+                res["grants_keys2"],
+                "grants keys"
+            );
             for f in arr(&res["firsts"]) {
                 let (o, k) = (pid(&f["owner"]), s(&f["key"]));
-                assert_eq!(has_trade_route_resource_access(&grants, o, k), f["has"].as_bool().unwrap(), "has {f}");
+                assert_eq!(
+                    has_trade_route_resource_access(&grants, o, k),
+                    f["has"].as_bool().unwrap(),
+                    "has {f}"
+                );
                 let first = first_trade_route_resource_grant(&grants, o, k);
-                assert_eq!(first.map(|g| g.route_id.as_str()), f["first_route"].as_str(), "first {f}");
+                assert_eq!(
+                    first.map(|g| g.route_id.as_str()),
+                    f["first_route"].as_str(),
+                    "first {f}"
+                );
                 if let Some(g) = first {
-                    assert_eq!(g.via_owner_id.get(), f["first_via"][0].as_u64().unwrap(), "via {f}");
+                    assert_eq!(
+                        g.via_owner_id.get(),
+                        f["first_via"][0].as_u64().unwrap(),
+                        "via {f}"
+                    );
                     assert_eq!(g.via_city_id, s(&f["first_via"][1]), "via city {f}");
                 }
                 checks += 2;
             }
-            let reserve = TradeRouteResourceFlowParams { min_stock_reserve: num(&res["reserve"]) };
-            let flows = compute_trade_route_resource_flow_with_options(&routes_in, stock, &reserve, &TRADE_ROUTE_STOCK_FLOW_KEYS);
+            let reserve = TradeRouteResourceFlowParams {
+                min_stock_reserve: num(&res["reserve"]),
+            };
+            let flows = compute_trade_route_resource_flow_with_options(
+                &routes_in,
+                stock,
+                &reserve,
+                &TRADE_ROUTE_STOCK_FLOW_KEYS,
+            );
             checks += check_flows("flows", &flows, &res["flows"]);
-            let flows_def = civ_engine::domain::trade::compute_trade_route_resource_flow(&routes_in, stock);
+            let flows_def =
+                civ_engine::domain::trade::compute_trade_route_resource_flow(&routes_in, stock);
             checks += check_flows("flows_default", &flows_def, &res["flows_default"]);
             let flows_k = compute_trade_route_resource_flow_with_options(
-                &routes_in, stock, &TradeRouteResourceFlowParams { min_stock_reserve: 1.0 }, &["sol", "zloto"],
+                &routes_in,
+                stock,
+                &TradeRouteResourceFlowParams {
+                    min_stock_reserve: 1.0,
+                },
+                &["sol", "zloto"],
             );
             checks += check_flows("flows_keys", &flows_k, &res["flows_keys"]);
             let _ = flows_json(&flows);
@@ -416,7 +686,9 @@ fn trade_matches_the_running_web_pin() {
             let applied = apply_trade_route_resource_flows(
                 &mut stock_cities,
                 &got,
-                &TradeRouteResourceFlowParams { min_stock_reserve: num(&ap["reserve"]) },
+                &TradeRouteResourceFlowParams {
+                    min_stock_reserve: num(&ap["reserve"]),
+                },
                 &cap_of,
             );
             checks += check_flows("apply flows", &applied, &ap["flows"]);
@@ -426,9 +698,19 @@ fn trade_matches_the_running_web_pin() {
                 match (&city.surowce, &want_rec) {
                     (None, None) => {}
                     (Some(g), Some(w)) => {
-                        assert_eq!(g.keys().collect::<Vec<_>>(), w.keys().collect::<Vec<_>>(), "apply keys {}", city.id);
+                        assert_eq!(
+                            g.keys().collect::<Vec<_>>(),
+                            w.keys().collect::<Vec<_>>(),
+                            "apply keys {}",
+                            city.id
+                        );
                         for (k, v) in w {
-                            assert!(same(g[k], *v), "apply {}[{k}]: rust {} web {v}", city.id, g[k]);
+                            assert!(
+                                same(g[k], *v),
+                                "apply {}[{k}]: rust {} web {v}",
+                                city.id,
+                                g[k]
+                            );
                         }
                     }
                     (g, w) => panic!("apply surowce {}: rust {g:?} web {w:?}", city.id),
@@ -440,8 +722,22 @@ fn trade_matches_the_running_web_pin() {
             let d = diff_trade_routes(&prev, &got);
             let added: Vec<&str> = d.added.iter().map(|r| r.id.as_str()).collect();
             let removed: Vec<&str> = d.removed.iter().map(|r| r.id.as_str()).collect();
-            assert_eq!(added, arr(&tick["diff"]["added"]).iter().map(s).collect::<Vec<_>>(), "diff added");
-            assert_eq!(removed, arr(&tick["diff"]["removed"]).iter().map(s).collect::<Vec<_>>(), "diff removed");
+            assert_eq!(
+                added,
+                arr(&tick["diff"]["added"])
+                    .iter()
+                    .map(s)
+                    .collect::<Vec<_>>(),
+                "diff added"
+            );
+            assert_eq!(
+                removed,
+                arr(&tick["diff"]["removed"])
+                    .iter()
+                    .map(s)
+                    .collect::<Vec<_>>(),
+                "diff removed"
+            );
             checks += 2;
             prev = got;
         }
@@ -455,18 +751,62 @@ fn pin_curves_and_international_halving_hand_checked() {
     // Reczne wartosci z pinu (`econ-params.json handel_szlaki`, `trade-routes.ts:1568-1577`), niezalezne od wektorow.
     let p = TradeRouteIncomeParams::default();
     let mk = |d: u32, m: TradeRouteMedium, to: u64| {
-        TradeRoute::from_parts("r", "a", "b", PlayerId::new(0), PlayerId::new(to), m, d, TradeRouteStatus::Connected, false)
+        TradeRoute::from_parts(
+            "r",
+            "a",
+            "b",
+            PlayerId::new(0),
+            PlayerId::new(to),
+            m,
+            d,
+            TradeRouteStatus::Connected,
+            false,
+        )
     };
     // lad dystans 12 -> 8; ten sam owner: ceil(8/2) = 4; inny owner: ceil(16/2) = 8.
-    assert_eq!(trade_route_income_for_route(&mk(12, TradeRouteMedium::Land, 0), &p), 4.0);
-    assert_eq!(trade_route_income_for_route(&mk(12, TradeRouteMedium::Land, 1), &p), 8.0);
+    assert_eq!(
+        trade_route_income_for_route(&mk(12, TradeRouteMedium::Land, 0), &p),
+        4.0
+    );
+    assert_eq!(
+        trade_route_income_for_route(&mk(12, TradeRouteMedium::Land, 1), &p),
+        8.0
+    );
     // lad dystans 0 -> 1: ceil(1/2) = 1; inny owner: ceil(2/2) = 1.
-    assert_eq!(trade_route_income_for_route(&mk(0, TradeRouteMedium::Land, 0), &p), 1.0);
-    assert_eq!(trade_route_income_for_route(&mk(0, TradeRouteMedium::Land, 1), &p), 1.0);
+    assert_eq!(
+        trade_route_income_for_route(&mk(0, TradeRouteMedium::Land, 0), &p),
+        1.0
+    );
+    assert_eq!(
+        trade_route_income_for_route(&mk(0, TradeRouteMedium::Land, 1), &p),
+        1.0
+    );
     // morze dystans 20 -> 16: 8 / 16; dystans poza koncem krzywej -> ostatnia wartosc.
-    assert_eq!(trade_route_income_for_route(&mk(20, TradeRouteMedium::Sea, 0), &p), 8.0);
-    assert_eq!(trade_route_income_for_route(&mk(500, TradeRouteMedium::Sea, 1), &p), 16.0);
+    assert_eq!(
+        trade_route_income_for_route(&mk(20, TradeRouteMedium::Sea, 0), &p),
+        8.0
+    );
+    assert_eq!(
+        trade_route_income_for_route(&mk(500, TradeRouteMedium::Sea, 1), &p),
+        16.0
+    );
     // lad dystans 3 -> 3: ceil(1.5) = 2; inny owner: ceil(6/2) = 3.
-    assert_eq!(trade_route_income_for_route(&mk(3, TradeRouteMedium::Land, 0), &p), 2.0);
-    assert_eq!(trade_route_income_for_route(&mk(3, TradeRouteMedium::Land, 1), &p), 3.0);
+    assert_eq!(
+        trade_route_income_for_route(&mk(3, TradeRouteMedium::Land, 0), &p),
+        2.0
+    );
+    assert_eq!(
+        trade_route_income_for_route(&mk(3, TradeRouteMedium::Land, 1), &p),
+        3.0
+    );
+    // Web `curve[NaN]` -> undefined -> `?? 0` (`trade-routes.ts:1554-1555`).
+    assert_eq!(
+        trade_route_income_by_distance(f64::NAN, TradeRouteMedium::Land, &p),
+        0.0
+    );
+    // Ulamkowy dystans: `Math.floor`.
+    assert_eq!(
+        trade_route_income_by_distance(2.9, TradeRouteMedium::Land, &p),
+        2.0
+    );
 }

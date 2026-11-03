@@ -1,0 +1,2 @@
+cargo fmt --check (rust-port/engine), po ostatniej zmianie kodu
+EXIT=0

@@ -135,9 +135,29 @@ function makeScenario(idx) {
     if (cities.some((c) => c.id === id)) continue;
     cities.push({ id, ownerId: ri(0, 3), q, r });
   }
+  // wymuszone przypadki brzegowe: (a) dwa miasta roznych ownerow na TYM SAMYM heksie, (b) sasiednie miasta na nieprzejezdnych heksach
+  if (chance(0.2) && cities.length >= 2) {
+    const a = cities[0], b = cities[cities.length - 1];
+    if (a.id !== b.id) { b.q = a.q; b.r = a.r; b.ownerId = (a.ownerId + 1) % 4; }
+  }
+  if (chance(0.2) && list.length) {
+    const h = pick(list);
+    const nb = nbr(h[0], h[1]).map((x, i) => [x, i]).filter(([x]) => x);
+    if (nb.length) {
+      const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]];
+      const [, di] = pick(nb);
+      const q2 = h[0] + dirs[di][0], r2 = h[1] + dirs[di][1];
+      const kind = pick(['gory', 'morze']);
+      for (const [q, r] of [[h[0], h[1]], [q2, r2]]) { map.hexes[`${q},${r}`].terenBazowy = kind; const e = list.find((x) => x[0] === q && x[1] === r); if (e) e[2] = kind; }
+      for (const [q, r, i] of [[h[0], h[1], 90], [q2, r2, 91]]) {
+        const id = `adj_${i}_${idx}`;
+        if (!cities.some((c) => c.id === id)) cities.push({ id, ownerId: ri(0, 3), q, r });
+      }
+    }
+  }
+  const ownerList = [...new Set(cities.map((c) => c.ownerId))].sort((a, b) => a - b);
   const ticks = [];
   let prevRoutes = [];
-  const ownerList = [...new Set(cities.map((c) => c.ownerId))].sort((a, b) => a - b);
   const curveName = pick(Object.keys(CURVES));
   const params = { ladMaxDist: ri(0, 20), morzeMaxDist: ri(0, 30) };
   for (let t = 0; t < 3; t++) {
@@ -295,8 +315,33 @@ function makeScenario(idx) {
 }
 
 const SCENARIOS = [];
-const N = Number(process.env.N_SCEN ?? 78);
+const N = Number(process.env.N_SCEN ?? 62);
 for (let i = 0; i < N; i++) SCENARIOS.push(makeScenario(i));
+
+// ---- 3b. granica ladowa: gesto nakladajace sie wezly (miasta/forty/posterunki z `order`) --------------------------------
+const borderCases = [];
+for (let i = 0; i < 260; i++) {
+  const w = ri(4, 8), h = ri(4, 8);
+  const hexes = {}; const list = [];
+  for (let q = 0; q < w; q++) for (let r = 0; r < h; r++) {
+    if (chance(0.04)) continue;
+    const t = wpick(['laka', 'gory', 'polarny', 'morze', 'rownina'], [6, 1, 2, 1, 3]);
+    hexes[`${q},${r}`] = { terenBazowy: t }; list.push([q, r, t]);
+  }
+  const nodesWeb = [];
+  const nn = ri(2, 6);
+  for (let k = 0; k < nn; k++) {
+    const node = { q: ri(0, w - 1), r: ri(0, h - 1), pop: ri(1, 8), level: 1, ownerId: ri(0, 2) };
+    const kind = rnd();
+    if (kind < 0.35) node.isFort = true; else if (kind < 0.6) node.isOutpost = true;
+    if ((node.isFort || node.isOutpost) && chance(0.7)) node.order = { turn: ri(1, 3), seq: ri(0, 2) };
+    nodesWeb.push(node);
+  }
+  const map = { szerokoscQ: w, wysokoscR: h, hexes };
+  const pairs = [];
+  for (let a = 0; a <= 2; a++) for (let b = 0; b <= 2; b++) pairs.push({ a, b, shared: W.ownersHaveSharedLandBorder(a, b, nodesWeb, map) });
+  borderCases.push({ dims: [w, h], hexes: list, nodes: nodesWeb.map((n) => ({ ownerId: n.ownerId, q: n.q, r: n.r, radius: W.cityTerritoryRadius(n), fort: !!n.isFort, outpost: !!n.isOutpost, order: n.order ? [n.order.turn, n.order.seq] : null })), pairs });
+}
 
 // ---- 4. tabela ids: kolejnosc localeCompare dla ASCII (wyprowadzona z uruchomionego silnika ICU) -----------------------
 const ASCII = []; for (let c = 32; c < 127; c++) ASCII.push(String.fromCharCode(c));
@@ -308,12 +353,12 @@ for (let i = 0; i < 2500; i++) { const a = pick(idPool), b = pick(idPool); collP
 const asciiOrder = [...ASCII].sort((a, b) => a.localeCompare(b));
 
 const out = { pin: PIN, scenarios: SCENARIOS, income_cases: incomeCases, curves: Object.fromEntries(Object.entries(CURVES).map(([k, v]) => [k, curveJson(v)])),
-  loaders: loaderCases, collation_pairs: collPairs, ascii_order: asciiOrder.join('') };
+  loaders: loaderCases, border_cases: borderCases, collation_pairs: collPairs, ascii_order: asciiOrder.join('') };
 writeFileSync(outFile, JSON.stringify(out));
 const stat = {
   scenarios: SCENARIOS.length, ticks: SCENARIOS.length * 3,
   routes: SCENARIOS.reduce((s, c) => s + c.ticks.reduce((x, t) => x + t.routes.length, 0), 0),
   conns: SCENARIOS.reduce((s, c) => s + c.ticks.reduce((x, t) => x + t.conns.length, 0), 0),
-  income_cases: incomeCases.length, loaders: loaderCases.length, collation_pairs: collPairs.length,
+  border_cases: borderCases.length, border_true: borderCases.reduce((s, c) => s + c.pairs.filter((p) => p.shared).length, 0), income_cases: incomeCases.length, loaders: loaderCases.length, collation_pairs: collPairs.length,
 };
 console.log(JSON.stringify(stat));

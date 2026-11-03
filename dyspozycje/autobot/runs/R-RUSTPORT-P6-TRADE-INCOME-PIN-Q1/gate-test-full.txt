@@ -1,0 +1,3 @@
+cargo test -j 2 --no-fail-fast (rust-port/engine), pelny worktree, PO ostatniej zmianie kodu
+SUMA: passed 2059, failed 0
+EXIT=0

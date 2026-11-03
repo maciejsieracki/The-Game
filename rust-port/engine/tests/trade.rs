@@ -354,8 +354,7 @@ fn route_income_building_and_sea_bonuses_are_aggregated_per_city() {
     assert_eq!(with_wonder["a"], 6.0);
     assert_eq!(with_wonder["b"], 4.0);
 
-    let building_bonus =
-        trade::compute_trade_route_building_bonus_by_city(&routes, &params);
+    let building_bonus = trade::compute_trade_route_building_bonus_by_city(&routes, &params);
     assert_eq!(building_bonus["a"], 0.2);
     assert_eq!(building_bonus["b"], 0.2);
     assert!(!building_bonus.contains_key("c"));

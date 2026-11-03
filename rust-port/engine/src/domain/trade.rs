@@ -344,6 +344,9 @@ impl BuildingLookup for () {
 /// Buildings which provide a building-covered route slot.
 pub const TRADE_BUILDING_IDS: [&str; 3] = ["targowisko", "port", "port_wielki"];
 
+/// Web `TRADE_TECH` (`trade-routes.ts:1132`): the technology that gates trade routes (the `hasTradeTech` callback input).
+pub const TRADE_TECH: &str = "Wymiana";
+
 /// Port levels which enable a sea route endpoint.
 pub const PORT_BUILDING_IDS: [&str; 2] = ["port", "port_wielki"];
 
@@ -577,12 +580,15 @@ fn is_water_passable(terrain: TerrainType) -> bool {
     terrain.is_water_passable()
 }
 
+/// Best fort/outpost claim so far: (distance, owner, build order).
+type FortClaim = (u32, PlayerId, Option<(i64, i64)>);
+
 /// Web `territoryOwnerAt` (`map/territory.ts:122-160`, pin `4bbef081d`): cities decide a hex first (nearest,
 /// tie -> first node); forts/outposts only claim city-free land (nearest, or earlier `order` when both nodes
 /// carry one).
 fn territory_owner_at(coordinate: HexCoord, nodes: &[TerritoryNode]) -> Option<PlayerId> {
     let mut best_city: Option<(u32, PlayerId)> = None;
-    let mut best_fort: Option<(u32, PlayerId, Option<(i64, i64)>)> = None;
+    let mut best_fort: Option<FortClaim> = None;
     for node in nodes {
         let distance = coordinate.distance(node.coordinate());
         if distance > node.radius {
@@ -850,6 +856,7 @@ fn water_components_may_connect(
 
 /// Web `computeCityConnection` (`trade-routes.ts:695-785`). With `need_path == false` the web returns right
 /// after the component pre-filter (candidate generation does NOT run the step-limited BFS).
+#[allow(clippy::too_many_arguments)]
 fn find_city_connection_internal<B>(
     from_city: &TradeCity,
     to_city: &TradeCity,
@@ -868,7 +875,10 @@ where
         TradeRouteMedium::Land => {
             // The same hex is connected BEFORE the shared-border check (`:718-720`).
             if from_city.coordinate() == to_city.coordinate() {
-                return CityConnectionResult::connected(distance, vec![from_city.coordinate().key()]);
+                return CityConnectionResult::connected(
+                    distance,
+                    vec![from_city.coordinate().key()],
+                );
             }
             if let Some(nodes) = territory_nodes {
                 if !owners_have_shared_land_border(from_city.owner_id, to_city.owner_id, nodes, map)
@@ -1617,7 +1627,10 @@ impl TradeRouteIncomeParams {
 
 impl Default for TradeRouteIncomeParams {
     fn default() -> Self {
-        Self::new(DEFAULT_DOCHODY_LADOWE.to_vec(), DEFAULT_DOCHODY_MORSKIE.to_vec())
+        Self::new(
+            DEFAULT_DOCHODY_LADOWE.to_vec(),
+            DEFAULT_DOCHODY_MORSKIE.to_vec(),
+        )
     }
 }
 
@@ -1631,12 +1644,12 @@ pub fn trade_route_income_by_distance(
         TradeRouteMedium::Land => &params.dochody_ladowe,
         TradeRouteMedium::Sea => &params.dochody_morskie,
     };
-    let hi = curve.len() as f64 - 1.0;
-    let idx = dystans.floor().min(hi).max(0.0);
-    if idx.is_nan() {
-        // `curve[NaN]` -> undefined -> `?? 0`.
+    if dystans.is_nan() {
+        // JS `Math.min/Math.max` propagate NaN (Rust `f64::min/max` do not): `curve[NaN]` -> undefined -> `?? 0`.
         return 0.0;
     }
+    let hi = curve.len() as f64 - 1.0;
+    let idx = dystans.floor().min(hi).max(0.0);
     curve.get(idx as usize).copied().unwrap_or(0.0)
 }
 
@@ -2140,8 +2153,14 @@ pub fn load_trade_route_params(
         finite_number(econ_row_value(econ, "handel_szlaki", key, difficulty)).unwrap_or(fallback)
     };
     TradeRouteParams::new(
-        read("lad_max_dystans", DEFAULT_TRADE_ROUTE_PARAMS.land_max_distance),
-        read("morze_max_dystans", DEFAULT_TRADE_ROUTE_PARAMS.sea_max_distance),
+        read(
+            "lad_max_dystans",
+            DEFAULT_TRADE_ROUTE_PARAMS.land_max_distance,
+        ),
+        read(
+            "morze_max_dystans",
+            DEFAULT_TRADE_ROUTE_PARAMS.sea_max_distance,
+        ),
     )
 }
 
@@ -2156,7 +2175,8 @@ pub fn load_trade_route_income_params(
             .and_then(serde_json::Value::as_array);
         match curve {
             Some(values)
-                if !values.is_empty() && values.iter().all(|v| finite_number(Some(v)).is_some()) =>
+                if !values.is_empty()
+                    && values.iter().all(|v| finite_number(Some(v)).is_some()) =>
             {
                 values
                     .iter()

@@ -1,0 +1,2 @@
+git add -N (nowe pliki) + git diff --check, po ostatniej zmianie
+EXIT=0
