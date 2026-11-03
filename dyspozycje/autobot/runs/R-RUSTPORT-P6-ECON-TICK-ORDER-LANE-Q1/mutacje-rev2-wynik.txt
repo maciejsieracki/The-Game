@@ -1,0 +1,6 @@
+# Powtorka mutantow 27,43,50,61,67 na wektorach rev.2 (commit 5679418af), mutate-order-lane.py, cargo test --test p6_order_lane
+[27] ZABITA    order_effects_culture.rs :: defaultCityReligionState: brak floor
+[43] ZABITA    order_effects_lane.rs :: lane: bez mnoznika podboju
+[50] ZABITA    order_effects_lane.rs :: lane: zly parametr macierzy kultury
+[61] ZABITA    order_effects_lane.rs :: lane: brak happiness_base macierzy
+[67] ZABITA    order_effects_lane.rs :: modyfikator kultury pominiety
