@@ -3,6 +3,7 @@
 pub mod ai_era_unit_promotion;
 pub mod ai_general_war_campaign;
 pub mod ai_move_range;
+pub mod alliance_war_obligation;
 pub mod army_consolidation;
 pub mod army_leadership;
 pub mod auto_improvements;
@@ -16,7 +17,10 @@ pub mod civ_matrix;
 pub mod civ_names;
 pub mod combat;
 pub mod diplomacy;
+pub mod diplomacy_aggressor;
 pub mod diplomacy_tick_war_brake;
+pub mod diplomacy_truce;
+pub mod diplomacy_war_gates;
 pub mod economy_city_fns;
 pub mod economy_city_params;
 pub mod economy_city_terrain;
