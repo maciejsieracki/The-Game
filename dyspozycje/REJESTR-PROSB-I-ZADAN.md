@@ -8582,3 +8582,6 @@ Pytania bez odpowiedzi (domyślne założenia obowiązują): Milicja — „garn
 
 ## 2026-11-03 — DECYZJA WŁAŚCICIELA: bonus obrony muru/palisady dla wszystkich obrońców w mieście + podwójny zasięg strzelców na murze
 (1) Bonus obrony z muru/palisady (+200% / +100%, Cytadela, Baszta) liczy się dla WSZYSTKICH jednostek na murach lub wewnątrz murów (wewnątrz miasta) — nie tylko tych stojących na koronie muru. (2) Jednostki strzeleckie (dystansowe) stojące na murze (i za palisadą na jej koronie) mają DWUKROTNIE większy zasięg. Temat `R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1` (battleScene/siege — SEKWENCYJNIE po `R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1`).
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA (ABC): fortyfikacja jednostki w mieście — bez zmian
+Stan: ufortyfikowany garnizon w mieście dostaje +50% Obrony (jak w polu, `fortify_obrona_proc`) tylko gdy miasto nie ma budynku obronnego (`shouldApplyGarrisonFortifyBonus`, decyzja 2026-07-31); z palisadą/murem/cytadelą/basztą zostaje sam bonus budynku. Stały +2 pkt (`fortify_obrona_bonus`) to starszy parametr. Właściciel wybrał **B: zostawić jak jest**. Brak zmian w kodzie.
