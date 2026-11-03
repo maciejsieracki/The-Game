@@ -25,11 +25,14 @@ fn load(s: &str) -> Value {
 
 /// `String(x)` -> f64; "undefined" -> NaN.
 fn n(v: &Value) -> f64 {
-    let s = v.as_str().unwrap_or_else(|| panic!("liczba jako ciag, jest {v}"));
+    let s = v
+        .as_str()
+        .unwrap_or_else(|| panic!("liczba jako ciag, jest {v}"));
     if s == "undefined" {
         return f64::NAN;
     }
-    s.parse::<f64>().unwrap_or_else(|_| panic!("nie liczba: {s}"))
+    s.parse::<f64>()
+        .unwrap_or_else(|_| panic!("nie liczba: {s}"))
 }
 
 fn on(v: &Value) -> Option<f64> {
@@ -106,15 +109,38 @@ fn pf_from(v: &Value) -> WarPeaceProfile {
 fn assert_profile(got: &WarPeaceProfile, want: &WarPeaceProfile, ctx: &str) {
     assert_eq!(got.civ_key, want.civ_key, "{ctx}: civ_key");
     assert_eq!(got.has_data, want.has_data, "{ctx}: has_data");
-    assert_eq!(got.profil_obronny, want.profil_obronny, "{ctx}: profil_obronny");
+    assert_eq!(
+        got.profil_obronny, want.profil_obronny,
+        "{ctx}: profil_obronny"
+    );
     for (name, g, w) in [
         ("agresywnosc", got.agresywnosc, want.agresywnosc),
         ("ekspansywnosc", got.ekspansywnosc, want.ekspansywnosc),
-        ("sklonnosc_podboju", got.sklonnosc_podboju, want.sklonnosc_podboju),
-        ("tolerancja_ryzyka", got.tolerancja_ryzyka, want.tolerancja_ryzyka),
-        ("prog_wojny_macierz", got.prog_wojny_macierz, want.prog_wojny_macierz),
-        ("prog_wojny_relacji", got.prog_wojny_relacji, want.prog_wojny_relacji),
-        ("prog_pokoj_slabosc", got.prog_pokoj_slabosc, want.prog_pokoj_slabosc),
+        (
+            "sklonnosc_podboju",
+            got.sklonnosc_podboju,
+            want.sklonnosc_podboju,
+        ),
+        (
+            "tolerancja_ryzyka",
+            got.tolerancja_ryzyka,
+            want.tolerancja_ryzyka,
+        ),
+        (
+            "prog_wojny_macierz",
+            got.prog_wojny_macierz,
+            want.prog_wojny_macierz,
+        ),
+        (
+            "prog_wojny_relacji",
+            got.prog_wojny_relacji,
+            want.prog_wojny_relacji,
+        ),
+        (
+            "prog_pokoj_slabosc",
+            got.prog_pokoj_slabosc,
+            want.prog_pokoj_slabosc,
+        ),
         ("prog_krytyczny", got.prog_krytyczny, want.prog_krytyczny),
         ("prog_zdrowia", got.prog_zdrowia, want.prog_zdrowia),
         ("min_tur_wojny", got.min_tur_wojny, want.min_tur_wojny),
@@ -189,8 +215,14 @@ fn zdrowie_baza_wartosc_ai_i_dane_osadzone() {
     assert_eq!(embedded_zdrowie_ai_value(), Some(0.4));
     assert_eq!(zdrowie_baza_z_ai_params(p), 0.4);
     assert_eq!(zdrowie_baza_z_ai_params_value(None, p), p.prog_zdrowia.baza);
-    assert_eq!(zdrowie_baza_z_ai_params_value(Some(f64::NAN), p), p.prog_zdrowia.baza);
-    assert_eq!(zdrowie_baza_z_ai_params_value(Some(f64::INFINITY), p), p.prog_zdrowia.baza);
+    assert_eq!(
+        zdrowie_baza_z_ai_params_value(Some(f64::NAN), p),
+        p.prog_zdrowia.baza
+    );
+    assert_eq!(
+        zdrowie_baza_z_ai_params_value(Some(f64::INFINITY), p),
+        p.prog_zdrowia.baza
+    );
     assert_eq!(zdrowie_baza_z_ai_params_value(Some(0.9), p), 0.9);
     assert_eq!(war_weariness_max_share(), 0.5);
     assert_eq!(ZDROWIE_AI_PARAM_KEY, "dyplomacja_zdrowie_armii_pokój");
@@ -202,8 +234,16 @@ fn zmeczenie_zgodne_z_webem() {
     assert_same(war_weariness_max_share(), n(&d["maxShare"]), "maxShare");
     for c in d["cases"].as_array().unwrap() {
         let (t, tt) = (n(&c[0]), n(&c[1]));
-        assert_same(war_weariness_fraction(t, tt), n(&c[2]), &format!("fraction t={t} T={tt}"));
-        assert_same(war_weariness_share(t, tt), n(&c[3]), &format!("share t={t} T={tt}"));
+        assert_same(
+            war_weariness_fraction(t, tt),
+            n(&c[2]),
+            &format!("fraction t={t} T={tt}"),
+        );
+        assert_same(
+            war_weariness_share(t, tt),
+            n(&c[3]),
+            &format!("share t={t} T={tt}"),
+        );
     }
 }
 
@@ -225,7 +265,11 @@ fn rec_from(v: &Value) -> Option<WarCityRecord> {
 
 fn assert_rec(got: &WarCityRecord, want: &WarCityRecord, ctx: &str) {
     assert_same(got.od, want.od, &format!("{ctx}: od"));
-    assert_opt(got.ostatnia_tura, want.ostatnia_tura, &format!("{ctx}: ostatnia_tura"));
+    assert_opt(
+        got.ostatnia_tura,
+        want.ostatnia_tura,
+        &format!("{ctx}: ostatnia_tura"),
+    );
     assert_eq!(
         got.utraty.keys().collect::<Vec<_>>(),
         want.utraty.keys().collect::<Vec<_>>(),
@@ -254,9 +298,17 @@ fn rejestr_utraconych_miast_zgodny_z_webem() {
             _ => {
                 let got = war_state_from_record(prev.as_ref(), od, key, turn);
                 let o = &c["out"];
-                assert_same(got.turns_at_war, n(&o[0]), &format!("state #{i} turnsAtWar"));
+                assert_same(
+                    got.turns_at_war,
+                    n(&o[0]),
+                    &format!("state #{i} turnsAtWar"),
+                );
                 assert_same(got.lost_cities, n(&o[1]), &format!("state #{i} lostCities"));
-                assert_same(got.turns_since_city_change, n(&o[2]), &format!("state #{i} since"));
+                assert_same(
+                    got.turns_since_city_change,
+                    n(&o[2]),
+                    &format!("state #{i} since"),
+                );
                 ns += 1;
             }
         }
@@ -271,7 +323,11 @@ fn prog_kryzysu_hamulca_zgodny_z_webem() {
     for c in d["cases"].as_array().unwrap() {
         let p = &ps[c["p"].as_u64().unwrap() as usize];
         let x = n(&c["x"]);
-        assert_same(brake_relation_threshold(x, p), n(&c["out"]), &format!("brake x={x}"));
+        assert_same(
+            brake_relation_threshold(x, p),
+            n(&c["out"]),
+            &format!("brake x={x}"),
+        );
     }
 }
 
@@ -309,7 +365,10 @@ fn sygnaly_pokoju_zgodne_z_webem() {
             with_empty += 1;
         }
     }
-    assert!(with_c > 100 && with_empty > 100, "pokrycie: c={with_c} puste={with_empty}");
+    assert!(
+        with_c > 100 && with_empty > 100,
+        "pokrycie: c={with_c} puste={with_empty}"
+    );
 }
 
 #[test]
@@ -371,10 +430,17 @@ fn bramka_pokoju_ai_zgodna_z_webem() {
             other => panic!("nieznany werdykt {other}"),
         };
         assert_eq!(got.verdict, verdict, "bramka #{i} werdykt {input:?}");
-        assert_same(got.price_multiplier, n(&o[1]), &format!("bramka #{i} mnoznik"));
+        assert_same(
+            got.price_multiplier,
+            n(&o[1]),
+            &format!("bramka #{i} mnoznik"),
+        );
         assert_eq!(got.reason.as_deref(), o[2].as_str(), "bramka #{i} reason");
     }
-    assert!(ok > 1000 && early > 1000 && strong > 100, "{ok} {early} {strong}");
+    assert!(
+        ok > 1000 && early > 1000 && strong > 100,
+        "{ok} {early} {strong}"
+    );
 }
 
 #[test]
@@ -485,5 +551,8 @@ fn dane_osadzone_rowne_pinowi_i_przyklady_z_opisu_jsona() {
     assert_eq!(none.civ_key, None);
     assert_eq!(none.prog_wojny_relacji, 30.0);
     assert_eq!(none.hamulec_n, 6.0); // round(8 - 0.5*5) = round(5.5) = 6
-    assert_eq!(resolve_war_peace_profile(Some(""), p).civ_key.as_deref(), Some(""));
+    assert_eq!(
+        resolve_war_peace_profile(Some(""), p).civ_key.as_deref(),
+        Some("")
+    );
 }

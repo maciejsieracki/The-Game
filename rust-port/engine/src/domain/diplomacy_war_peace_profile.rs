@@ -319,7 +319,8 @@ pub fn resolve_war_peace_profile_with(
                 zmeczenie_t: params.zmeczenie.baza_tur_brak_danych,
                 hamulec_n: clamp_num(
                     js_math_round(
-                        params.hamulec_relacji.baza_n - params.hamulec_relacji.waga_prog_wojny * 5.0,
+                        params.hamulec_relacji.baza_n
+                            - params.hamulec_relacji.waga_prog_wojny * 5.0,
                     ),
                     params.hamulec_relacji.min_n,
                     params.hamulec_relacji.max_n,
@@ -349,13 +350,21 @@ pub fn resolve_war_peace_profile_with(
     let s = &params.prog_pokoj_slabosc;
     let prog_pokoj_slabosc = clamp_num(
         s.baza - s.waga_agresja * (agr - s.agresja_srodek)
-            + (if obronny { s.premia_profil_obronny } else { 0.0 }),
+            + (if obronny {
+                s.premia_profil_obronny
+            } else {
+                0.0
+            }),
         s.min,
         s.max,
     );
 
     let k = &params.prog_krytyczny;
-    let prog_krytyczny = clamp_num(k.baza - k.waga_agresja * (agr - k.agresja_srodek), k.min, k.max);
+    let prog_krytyczny = clamp_num(
+        k.baza - k.waga_agresja * (agr - k.agresja_srodek),
+        k.min,
+        k.max,
+    );
 
     let z = &params.prog_zdrowia;
     let prog_zdrowia = clamp_num(
@@ -412,7 +421,10 @@ pub fn resolve_war_peace_profile_with(
 }
 
 /// Web `resolveWarPeaceProfile(civKey, params)` (:97) na osadzonej macierzy i osadzonym `ai-params`.
-pub fn resolve_war_peace_profile(civ_key: Option<&str>, params: &WarPeaceParams) -> WarPeaceProfile {
+pub fn resolve_war_peace_profile(
+    civ_key: Option<&str>,
+    params: &WarPeaceParams,
+) -> WarPeaceProfile {
     resolve_war_peace_profile_with(
         civ_key,
         params,
