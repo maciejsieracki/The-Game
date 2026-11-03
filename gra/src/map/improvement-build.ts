@@ -22,6 +22,8 @@ import { hexKeysWithinRadius } from '../game/okolica';
 import { isWaterTerrain } from '../units/setup';
 import terrainImprovements from '../../data/terrain-improvements.json';
 import {
+  hexHasHorseDeposit,
+  STADNINA_HORSE_COST,
   isLivestockAllowed,
   isLivestockUnlockedForPlacement,
   livestockKeyFromImprovement,
@@ -1407,6 +1409,93 @@ export function getForestBuildBlockReason(
   return 'Brak lasu w twoim terytorium';
 }
 
+/**
+ * R-WEB-STADNINA-NO-HEX-FALSE-NEGATIVE-Q1: zbiór heksów, które w ogóle MOGĄ przejść
+ * `qualifies()` (D13 perf — zamiast skanu całej mapy). PRZYCZYNA FAŁSZYWEGO „Brak heksów w
+ * twoim terytorium": zbiór był liczony WYŁĄCZNIE z `state.cityNodes` (miasta), a od
+ * R-WEB-OUTPOST-FORT-TERRITORY-Q1 (2026-10-31) posterunek (r=3) i fort (r=5) tworzą TWARDE
+ * terytorium (`state.territoryNodes`, `ownerId` = gracz) — złoże konia (i każde inne złoże)
+ * w terytorium posterunku/fortu poza pierścieniem miast+1 NIE było kandydatem, mimo że
+ * `inPlayerTerritory()` je akceptował. Teraz dodajemy też węzły terytorium NALEŻĄCE do gracza.
+ * EN: candidate set now also covers the player's fort/outpost territory nodes.
+ */
+export function buildCandidateHexKeys(state: ImprovementBuildState, margin = 1): Set<string> {
+  const { map } = state;
+  const set = new Set<string>();
+  for (const node of state.cityNodes) {
+    const rad = cityTerritoryRadius(node) + margin;
+    for (const k of hexKeysWithinRadius(node.q, node.r, rad, map)) set.add(k);
+  }
+  const ownerNum = state.playerOwnerIdNum ?? 0;
+  if (state.territoryNodes) {
+    for (const node of state.territoryNodes) {
+      if (node.ownerId !== ownerNum) continue;
+      const rad = cityTerritoryRadius(node) + margin;
+      for (const k of hexKeysWithinRadius(node.q, node.r, rad, map)) set.add(k);
+    }
+  }
+  if (state.roadKeys) for (const k of state.roadKeys) set.add(k);
+  if (state.placedKeys) for (const k of state.placedKeys) set.add(k);
+  if (state.pendingUndoKeys) {
+    for (const composite of state.pendingUndoKeys) {
+      const idx = composite.lastIndexOf(':');
+      if (idx > 0) set.add(composite.slice(0, idx));
+    }
+  }
+  if (state.ownUnitHexKeys) for (const k of state.ownUnitHexKeys) set.add(k);
+  return set;
+}
+
+/** Test „heks w terytorium gracza" dla skanu przyczyn — ta sama logika co `inPlayerTerritory` w createQualifier. */
+function isHexInPlayerTerritoryForState(state: ImprovementBuildState, q: number, r: number): boolean {
+  const territoryNodes = state.territoryNodes ?? [];
+  const owner = state.playerOwnerIdNum ?? 0;
+  if (territoryNodes.length > 0) return isTerritoryHexOwnedBy(q, r, owner, territoryNodes);
+  return isPlayerTerritoryHex(q, r, state.cityNodes, territoryNodes, owner);
+}
+
+/**
+ * Prawdziwy powód braku heksów dla Stadniny — rozróżnia (a) brak złoża konia w terytorium,
+ * (b) złoże poza terytorium, (c) wszystkie złoża już zabudowane stadniną, (d) zły teren.
+ * Zwraca null gdy istnieje kwalifikujący heks. Nie zmienia reguł — tylko komunikat.
+ */
+export function getStadninaBuildBlockReason(state: ImprovementBuildState): string | null {
+  const ownerNum = state.playerOwnerIdNum ?? 0;
+  if (state.cityNodes.length === 0 && !(state.territoryNodes ?? []).some(n => n.ownerId === ownerNum)) {
+    return 'Najpierw załóż miasto — bez terytorium nie zbudujesz stadniny.';
+  }
+  const qual = createQualifier(state);
+  const placedMap = buildPlacedImprovementsMap(state.map, state.placedImprovements);
+  let inTerritory = 0;
+  let alreadyBuilt = 0;
+  let wrongTerrain = 0;
+  let outside = 0;
+  // margin 4: widzimy też złoża tuż POZA terytorium (komunikat „poza twoim terytorium"); wołane tylko gdy brak kandydata.
+  for (const hk of buildCandidateHexKeys(state, 4)) {
+    const hex = state.map.hexes[hk];
+    if (!hex) continue;
+    if (qual('stadnina', hex.coords.q, hex.coords.r)) return null;
+    if (!hexHasHorseDeposit(hex)) continue;
+    if (!isHexInPlayerTerritoryForState(state, hex.coords.q, hex.coords.r)) { outside++; continue; }
+    inTerritory++;
+    if (getHexLayers(hk, hex, placedMap).includes('stadnina')) { alreadyBuilt++; continue; }
+    if (hex.terenBazowy !== TerenBazowy.Laka && hex.terenBazowy !== TerenBazowy.Rownina) wrongTerrain++;
+  }
+  if (inTerritory > 0) {
+    if (alreadyBuilt >= inTerritory) {
+      return 'Wszystkie złoża konia w twoim terytorium mają już stadninę.';
+    }
+    if (wrongTerrain > 0) {
+      return 'Złoże konia w twoim terytorium leży na terenie, na którym stadnina nie stanie (wymaga łąki lub równiny).';
+    }
+  }
+  if (outside > 0 && inTerritory === 0) {
+    return 'Złoże konia jest poza twoim terytorium — powiększ miasto albo postaw posterunek bliżej.';
+  }
+  const stock = Math.floor(state.horseStockAvailable ?? 0);
+  return `Wymagane złoże konia na twoim terytorium (albo ${STADNINA_HORSE_COST} koni w magazynie imperium, masz ${stock}).`;
+}
+
 // ---------------------------------------------------------------------------
 // Fabryka API
 // ---------------------------------------------------------------------------
@@ -1435,23 +1524,7 @@ export function createImprovementBuildApi(
   //     terytorium kwalifikują się WYŁĄCZNIE na hexie z własną jednostką — patrz Q1=B).
   // Każdy heks SPOZA tego zbioru zwróciłby z qualifies() false, więc wynik jest
   // IDENTYCZNY jak przy pełnym skanie (predykat qualifies bez zmian).
-  const candidateHexKeys: Set<string> = (() => {
-    const set = new Set<string>();
-    for (const node of state.cityNodes) {
-      const rad = cityTerritoryRadius(node) + 1;
-      for (const k of hexKeysWithinRadius(node.q, node.r, rad, map)) set.add(k);
-    }
-    if (state.roadKeys) for (const k of state.roadKeys) set.add(k);
-    if (state.placedKeys) for (const k of state.placedKeys) set.add(k);
-    if (state.pendingUndoKeys) {
-      for (const composite of state.pendingUndoKeys) {
-        const idx = composite.lastIndexOf(':');
-        if (idx > 0) set.add(composite.slice(0, idx));
-      }
-    }
-    if (state.ownUnitHexKeys) for (const k of state.ownUnitHexKeys) set.add(k);
-    return set;
-  })();
+  const candidateHexKeys: Set<string> = buildCandidateHexKeys(state);
 
   const getWorkCost = (key: ImprovementKey): number =>
     getImprovementMeta(key)?.kosztPraca ?? readWorkCost(key);
@@ -1486,7 +1559,9 @@ export function createImprovementBuildApi(
       const territoryHint = unlocked && !canPlaceAny
         ? (key === 'wyrab' || key === 'tartak'
           ? (getForestBuildBlockReason(state, key) ?? 'Brak lasu w twoim terytorium')
-          : 'Brak heksów w twoim terytorium')
+          : key === 'stadnina'
+            ? (getStadninaBuildBlockReason(state) ?? 'Brak heksów w twoim terytorium')
+            : 'Brak heksów w twoim terytorium')
         : null;
       return {
         key,
