@@ -535,6 +535,8 @@ import { unitIconSvg, brandIconSvg, buildingIconSvg } from './ui/icons/brandAsse
 import { techIconSvg } from './ui/techIcons';
 import {
   visibleStackOnHex,
+  healUnitStates,
+  hasOwnCityAt,
   coLocatedForMergePrompt,
   stackHudMergeSplitActions,
   adjacentVisibleArmyHexes,
@@ -6568,6 +6570,7 @@ async function boot(): Promise<void> {
     }
 
     function selectPlayerUnit(unitId: string, keepListOpen = false, preserveDetailExpanded = false): void {
+      healInconsistentUnits('wybor jednostki', { render: false });
       const u = units.find(x => x.id === unitId);
       if (!u || !isMe(u.ownerId)) return;
       // R-SCOUT-ZWIEDZAJ-HIGHLIGHT 2026-08-04: NIE czyść autoExplore przy zaznaczeniu —
@@ -11758,6 +11761,29 @@ async function boot(): Promise<void> {
       return u.inGarnizon === true;
     }
 
+    /**
+     * R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: ciche samoleczenie niespojnych jednostek
+     * (osierocony garnizon bez wlasnego miasta, zalegly snapshot fortyfikacji, zalegle
+     * oblezenie). Idempotentne; gracz i AI ta sama logika (healUnitStates, armyMerge.ts).
+     * Licznik trafia do logu diagnostycznego (F10) i `window.__unitHealCount`.
+     */
+    let unitHealTotal = 0;
+    function healInconsistentUnits(reason: string, opts?: { siege?: boolean; render?: boolean }): number {
+      const rep = healUnitStates(units, cities, { siege: opts?.siege === true });
+      if (rep.duplicateIds > 0) {
+        diagWarn('unit-heal', `${reason}: duplikaty id jednostek = ${rep.duplicateIds} (nienaprawiane)`);
+      }
+      if (rep.total === 0) return 0;
+      unitHealTotal += rep.total;
+      (window as unknown as { __unitHealCount?: number }).__unitHealCount = unitHealTotal;
+      diagWarn(
+        'unit-heal',
+        `${reason}: naprawiono ${rep.total} (garnizon-sierota=${rep.orphanGarrison}, snapshot=${rep.staleSnapshot}, oblezenie=${rep.staleSiege}), razem ${unitHealTotal}`,
+      );
+      if (opts?.render !== false) syncUnitsRender();
+      return rep.total;
+    }
+
     function cityAtUnit(u: RuntimeUnit): City | undefined {
       return cities.find(
         c => c.ownerId === u.ownerId && c.q === u.q && c.r === u.r,
@@ -13213,6 +13239,9 @@ async function boot(): Promise<void> {
         if (!dest) continue;
         u.q = dest.q;
         u.r = dest.r;
+        // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: wypchnieta jednostka opuszcza heks
+        // miasta -> musi opuscic tez garnizon (inaczej niewidoczna i niewybieralna).
+        exitGarnizon(u);
         moved = true;
         // RUNDA 3 pkt 6: wypchnięcie jednostki (np. cywila z heksu miasta po
         // walce) może wylądować na żywym obozie barbarzyńskim -- ta sama
@@ -13341,7 +13370,9 @@ async function boot(): Promise<void> {
         moveCost,
         onMerge: () => {
           const garnizonMode = existing.every(x => x.inGarnizon === true);
-          if (garnizonMode) {
+          // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: garnizon dziedziczony tylko na heksie
+          // WLASNEGO miasta (inaczej nowoprzybyli stawaliby sie niewybieralni).
+          if (garnizonMode && hasOwnCityAt(cities, rep.q, rep.r, rep.ownerId)) {
             for (const id of movedUnitIds) {
               const mu = units.find(x => x.id === id);
               if (mu && mu.inGarnizon !== true) enterGarnizon(mu);
@@ -13667,7 +13698,10 @@ async function boot(): Promise<void> {
             // Ujednolić inGarnizon — inaczej zostają dwa stosy na tym samym heksie.
             // Preferuj koszary, jeśli którakolwiek strona już jest w garnizonie.
             const all = [...sameHexOthers, ...arrivingUnits];
-            const preferGarnizon = all.some(x => x.inGarnizon === true);
+            // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: garnizon tylko na heksie WLASNEGO
+            // miasta; poza nim lacznie NORMALIZUJE (zdejmuje) flage zamiast ja propagowac.
+            const preferGarnizon = all.some(x => x.inGarnizon === true)
+              && hasOwnCityAt(cities, srcQ, srcR, active.ownerId);
             for (const u of all) u.inGarnizon = preferGarnizon;
             const merged = coLocatedForMergePrompt(units, srcQ, srcR, active.ownerId);
             assignSharedStackGroupId(merged); // BB2: jedna tożsamość po scaleniu.
@@ -24962,6 +24996,53 @@ async function boot(): Promise<void> {
     // in `tools/era-change-toast-live-test.cjs`. Fast-forwards player state to stage a REAL,
     // single Stone->Bronze era transition through the EOT auto-research path (same path a
     // real player takes), without playing dozens of turns in headless Chromium.
+    // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: hak live-testu (wzor __eraTestDebug) --
+    // inscenizuje WYLACZNIE dane wejsciowe (jednostki gracza z flagami garnizonu/fortyfikacji
+    // na zadanym heksie); klik, wybor, samoleczenie i merge ida REALNYMI sciezkami gry.
+    (window as any).__frozenTestDebug = {
+      spawn: (q: number, r: number, n: number, flags: { garnizon?: boolean; field?: boolean; ruchLeft?: number }): string[] => {
+        const tpl = units.find(u => u.ownerId === 0 && u.category !== 'osadnik' && u.category !== 'robotnik' && u.category !== 'zwiadowca') ?? units.find(u => u.ownerId === 0);
+        if (!tpl) throw new Error('brak szablonu jednostki gracza');
+        const ids: string[] = [];
+        for (let i = 0; i < n; i++) {
+          const id = 'frozen_' + q + '_' + r + '_' + i + '_' + units.length;
+          const nu = { ...tpl, id, q, r, ownerId: 0, inGarnizon: flags.garnizon === true,
+            ufortyfikowanyWPolu: flags.field === true, ruchLeft: flags.ruchLeft ?? tpl.ruch,
+            fortifyRuchSnapshot: flags.garnizon || flags.field ? tpl.ruch : undefined,
+            stackGroupId: undefined, oblegaCityId: undefined, sentry: false } as RuntimeUnit;
+          units.push(nu);
+          ids.push(id);
+        }
+        syncUnitsRender();
+        return ids;
+      },
+      focus: (q: number, r: number): void => {
+        const { x, z } = axialToWorld(q, r, HEX_R);
+        camCtrl.focusAt(x, z, camCtrl.getFocusState().dist);
+      },
+      screenOf: (q: number, r: number): { x: number; y: number } => {
+        const { x, z } = axialToWorld(q, r, HEX_R);
+        const v = new THREE.Vector3(x, unitRenderer.topYAt(q, r), z).project(camera);
+        const rc = canvas.getBoundingClientRect();
+        return { x: rc.left + (v.x + 1) / 2 * rc.width, y: rc.top + (1 - v.y) / 2 * rc.height };
+      },
+      selectedId: (): string | null => selectedId,
+      unitsAt: (q: number, r: number) => units.filter(u => u.q === q && u.r === r).map(u => ({
+        id: u.id, ownerId: u.ownerId, inGarnizon: u.inGarnizon === true, field: u.ufortyfikowanyWPolu === true, ruchLeft: u.ruchLeft,
+      })),
+      healCount: (): number => unitHealTotal,
+      freeLandHex: (): { q: number; r: number } | null => {
+        for (const key of Object.keys(map.hexes)) {
+          const h = map.hexes[key]!;
+          const { q, r } = h.coords;
+          if (isWaterTerrain(h.terenBazowy)) continue;
+          if (cities.some(c => c.q === q && c.r === r) || units.some(u => u.q === q && u.r === r)) continue;
+          if (isHexPassableForUnit(q, r)) return { q, r };
+        }
+        return null;
+      },
+      hasOwnCityAt: (q: number, r: number): boolean => hasOwnCityAt(cities, q, r, 0),
+    };
     (window as any).__eraTestDebug = {
       prepareOneTechFromBronze: (): { remaining: string; era1Count: number } => {
         const era1 = data.tech.filter(t => t.Epoka === 'Kamień');
@@ -29667,6 +29748,9 @@ async function boot(): Promise<void> {
         return;
       }
 
+      // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: osierocony garnizon (poza wlasnym
+      // miastem) jest niewidoczny dla unitAtRepresentative -> wyprowadz go PRZED hit-testem.
+      healInconsistentUnits('klik mapy');
       const cu = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore);
 
       if (cu && isMe(cu.ownerId)) {
@@ -33060,6 +33144,7 @@ async function boot(): Promise<void> {
         if (u) {
           u.q = mv.q;
           u.r = mv.r;
+          exitGarnizon(u); // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1
         }
       }
       // Produkcja: jak przy podboju — legacy Praca wraca do DAWCY, kolejka przechodzi
@@ -34687,6 +34772,9 @@ async function boot(): Promise<void> {
         }
         evictForeignUnitsFromCityHexes();
         sweepFortCaptures(); // R3 Q-A=A: jednostki stojace na wrogim forcie (koniec tury)
+        // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: samoleczenie PRZED resetem ruchu
+        // (garnizon-sierota, zalegle oblezenie zerujace ruch co ture).
+        healInconsistentUnits('start tury', { siege: true, render: false });
         // Restore movement for all units
         movedByPlayerThisTurn.clear();
         for (const u of units) {
@@ -42507,6 +42595,9 @@ async function boot(): Promise<void> {
       // already the final game map (regenerateWorldForLoad, when needed, always
       // finishes BEFORE this call -- see loadGameFromSlot), so the same arguments as
       // seedCityOwnerDefaults are safe here.
+      // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: stary zapis z jednostka-sierota (garnizon
+      // bez wlasnego miasta) -- napraw cicho, licznik w logu diagnostycznym.
+      healInconsistentUnits('wczytanie zapisu', { siege: true, render: false });
       reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1: per-owner, dla WSZYSTKICH fotoli
       // ludzkich z zapisu (nie tylko fotela 1) -- ten sam heurystyczny odczyt "ma
