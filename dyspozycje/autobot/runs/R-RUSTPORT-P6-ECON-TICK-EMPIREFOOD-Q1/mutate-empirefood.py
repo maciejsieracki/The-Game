@@ -111,7 +111,7 @@ M = [
     ('N01-garrison-flag-ignored', A, '.filter(|(_, u)| u.owner_id == owner && u.q == q && u.r == r && u.in_garnizon)', '.filter(|(_, u)| u.owner_id == owner && u.q == q && u.r == r)', ''),
     ('N02-garrison-owner-ignored', A, '.filter(|(_, u)| u.owner_id == owner && u.q == q && u.r == r && u.in_garnizon)', '.filter(|(_, u)| u.q == q && u.r == r && u.in_garnizon)', ''),
     ('N03-empty-garrison-logged', A, '        if idxs.is_empty() {\n            continue;\n        }', '', ''),
-    ('N04-hpmax-not-written-back', A, '            units[i].hp_max = sub[k].hp_max;\n', '', ''),
+    ('N04-hpmax-not-written-back', A, '            units[i].hp_max = sub[k].hp_max;\n', '', 'EKW'),
     ('N05-hp-not-written-back', A, '            units[i].hp = sub[k].hp;\n', '', ''),
     ('N06-destroyed-not-removed', A, 'if !starv.destroyed_ids.is_empty() {\n            units.retain', 'if false {\n            units.retain', ''),
     ('N07-garnizon-not-synced', A, '        cities[ci].garnizon = Some(n as f64);\n        log.push', '        log.push', ''),

@@ -1261,7 +1261,7 @@ fn empire_food_block_matches_running_web() {
     let d: Value = serde_json::from_str(VECTORS).expect("empirefood.json");
     let ctx = make_ctx(&d);
     let scenarios = arr(&d, "scenarios");
-    assert!(scenarios.len() >= 330, "scenariuszy {}", scenarios.len());
+    assert!(scenarios.len() >= 340, "scenariuszy {}", scenarios.len());
     let (mut n_ticks, mut n_ef, mut n_adj, mut n_pending, mut n_clamp, mut n_atr) =
         (0, 0, 0, 0, 0, 0);
     let (mut n_destroyed, mut n_ended, mut n_garn, mut n_glod, mut n_human, mut n_deficyt) =

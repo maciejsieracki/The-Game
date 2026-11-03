@@ -54,7 +54,7 @@ use crate::domain::turn_economy_loop::CityLoopTick;
 use crate::domain::turn_economy_tick::EconomyTickResult;
 use crate::domain::turn_economy_upkeep::raw_econ_for_upkeep;
 
-/// Web `econUnits` (`main.ts:34413-34430`): `EconUnit & {inGarnizon, garrisonCityId}` + `camping`, `onOwnTerritory`.
+/// Web `econUnits` (`main.ts:34421-34436`): `EconUnit & {inGarnizon, garrisonCityId}` + `camping`, `onOwnTerritory`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FoodUnit {
     pub owner_id: i64,

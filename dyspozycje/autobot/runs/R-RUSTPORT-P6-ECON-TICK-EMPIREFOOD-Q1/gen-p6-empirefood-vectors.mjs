@@ -421,6 +421,11 @@ function edgeScenario(sc, how) {
     live.push(mkU('fh1', c0.owner, c0.q + 2, c0.r + 1, { hp: NaN }));
     live.push(mkU('fh2', c0.owner, c0.q - 2, c0.r, { hp: -Infinity }));
     for (let k = 0; k < 3; k++) live.push(mkU('fl' + k, c0.owner, c0.q, c0.r + 2, { hp: 1 }));
+  } else if (how === 5) {
+    // N3 + garnizon obcego wlasciciela na heksie miasta oblezonego (filtr ownerId w realGarnizonUnits)
+    c0.obl = true; c0.sOwner = other; c0.sCap = false; c0.sMach = false;
+    for (let k = 0; k < 3; k++) live.push(mkU('fo' + k, c0.owner, c0.q, c0.r, { inGarnizon: true, hp: pick([1, 2, 40]) }));
+    for (let k = 0; k < 3; k++) live.push(mkU('ff' + k, other, c0.q, c0.r, { inGarnizon: true, hp: pick([1, 2, 40]) }));
   } else if (how === 4) {
     // N3: miasto oblezone z realnym garnizonem o niskim HP (atrycja garnizonu + syncGarnizonForCity)
     c0.obl = true; c0.sOwner = other; c0.sCap = false; c0.sMach = false;
@@ -443,6 +448,7 @@ function edgeScenario(sc, how) {
 for (let i = 0; i < 30; i++) scenarios.push(edgeScenario(mk(`ef-edge-${i}`, 'ef-edge', ri(2, 5), { kind: 'army' }), i % 3));
 for (let i = 0; i < 10; i++) scenarios.push(edgeScenario(mk(`ef-edge-hp-${i}`, 'ef-edge', ri(2, 5), { kind: 'army' }), 3));
 for (let i = 0; i < 12; i++) scenarios.push(edgeScenario(mk(`ef-edge-n3-${i}`, 'ef-edge', ri(2, 5), { kind: 'army' }), 4));
+for (let i = 0; i < 10; i++) scenarios.push(edgeScenario(mk(`ef-edge-n3f-${i}`, 'ef-edge', ri(2, 5), { kind: 'army' }), 5));
 
 // ---- uruchomienie weba ---------------------------------------------------------------------------------------------
 const recEnc = (r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, enc(v)]));

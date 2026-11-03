@@ -1,10 +1,11 @@
-sprawdzen: 20270, rozbieznosci: 0
+== wektory (oczekiwane: 0 rozbieznosci)
+sprawdzen: 22505, rozbieznosci: 0
 EXIT=0
-== --neg
-sprawdzen: 20270, rozbieznosci: 325
+== kontrola negatywna 1 (zapasyPo +1; oczekiwane: wykryto)
+sprawdzen: 22505, rozbieznosci: 347
    ef-0 ef[1] zapasyPo 603.0 vs 604.0
 EXIT=0
-== --neg2
-sprawdzen: 20270, rozbieznosci: 250
-   ef-0 unit u0 (nietknieta) hp 5.0 vs 6.0
+== kontrola negatywna 2 (hp +1, ended, n3.before; oczekiwane: wykryto)
+sprawdzen: 22505, rozbieznosci: 403
+   ef-0 unit u0 hp 5.0 vs 6.0
 EXIT=0

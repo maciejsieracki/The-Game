@@ -432,7 +432,10 @@ pub fn run_economy_tick_for_game_with_food(
             runtime_max_hp: f.runtime_max_hp,
         };
         let sol = &tick.city_loop.resources.phase.tick;
-        let (sol_army, sol_cities) = (sol.sol_army_by_owner.clone(), sol.sol_city_ids_by_owner.clone());
+        let (sol_army, sol_cities) = (
+            sol.sol_army_by_owner.clone(),
+            sol.sol_city_ids_by_owner.clone(),
+        );
         run_empire_food_block(
             cities,
             &mut tick.result,

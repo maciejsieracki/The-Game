@@ -1,22 +1,21 @@
-# Mutacje EmpireFood (python3 -I mutate-empirefood.py), test: cargo test --test p6_empirefood_e2e
-# Wektory: czesci 0-7 na 285/315 scenariuszach, A15 ponowiony na finalnych 325 (KILLED); zabite na mniejszym zbiorze pozostaja zabite na nadzbiorze.
-# Zywe (SURVIVED) = 10, kazdy to mutant rownowazny z dowodem (P6-ECON-TICK-EMPIREFOOD.md sek. 6).
-# KILLED 84 / 94 = 89,4% brutto; 84 / (94-10) = 100% po odjeciu rownowaznych z dowodem.
+# Mutacje EmpireFood (python3 -I mutate-empirefood.py <od> <do>), test: cargo test --test p6_empirefood_e2e, 104 mutantow, worktree po ostatniej zmianie kodu
+# Czesci uruchamiane po kolei na wektorach 337-347 scenariuszy (nadzbior); N02 ponowiony na finalnych 347 (KILLED). Zabite na mniejszym zbiorze pozostaja zabite na nadzbiorze.
+# KILLED 93 / 104 = 89,4% brutto; zywe 11 = mutanty rownowazne z dowodem (P6-ECON-TICK-EMPIREFOOD.md sek. 6); 93 / (104-11) = 100% po odjeciu rownowaznych.
 A01-frac-no-upper-clamp KILLED
 A02-frac-zero-passes KILLED
 A03-owner-filter-inverted KILLED
 A04-civilians-hit KILLED
-A05-maxhp-zero-passes SURVIVED
+A05-maxhp-zero-passes SURVIVED EKW
 A06-loss-ceil KILLED
 A07-loss-no-min1 KILLED
-A08-hp-below-zero SURVIVED
+A08-hp-below-zero SURVIVED EKW
 A09-destroy-lt KILLED
 A10-damaged-count-off KILLED
-A11-hpmax-not-backfilled SURVIVED
-A12-hp-not-backfilled SURVIVED
+A11-hpmax-not-backfilled SURVIVED EKW
+A12-hp-not-backfilled SURVIVED EKW
 A13-sync-no-upper-clamp KILLED
 A14-sync-hpmax-not-set KILLED
-A15-sync-infinite-kept KILLED
+A15-sync-infinite-kept KILLED NIE_ZMIERZONO
 C01-garn-flag-ignored KILLED
 C02-cityatunit-owner-ignored KILLED
 C03-retain-inverted KILLED
@@ -30,19 +29,19 @@ C10-end-oblegane-kept KILLED
 C11-end-owner-kept KILLED
 C12-end-cap-kept KILLED
 C13-end-machines-kept KILLED
-C14-end-units-oblega-kept SURVIVED
+C14-end-units-oblega-kept SURVIVED EKW
 C15-end-besieger-kept KILLED
 C16-garn-count-flag-ignored KILLED
 C17-garn-count-owner-ignored KILLED
 C18-garn-not-synced KILLED
 C19-hexdist-ds-dropped KILLED
 F01-military-owner-inverted KILLED
-F02-garrison-flag-ignored SURVIVED
+F02-garrison-flag-ignored SURVIVED EKW
 F03-own-territory-ignored KILLED
 F04-camping-ignored KILLED
 F05-sol-army-off KILLED
 F06-sol-cities-off KILLED
-F07-refresh-uses-netto SURVIVED
+F07-refresh-uses-netto SURVIVED EKW
 F08-refresh-start KILLED
 F09-obl-flag-dropped KILLED
 F10-owner-era-one KILLED
@@ -52,8 +51,8 @@ F13-wb-koszt-skipped KILLED
 F14-wb-bilans-skipped KILLED
 F15-total-not-applied KILLED
 F16-brutto-dropped KILLED
-F17-spichlerz-sol-off SURVIVED
-F18-spichlerz-ceramika-off SURVIVED
+F17-spichlerz-sol-off SURVIVED EKW
+F18-spichlerz-ceramika-off SURVIVED EKW
 F19-spichlerz-ma-ii-off KILLED
 F20-akwedukt-ignored KILLED
 F21-spichlerz-bldg-ignored KILLED
@@ -62,7 +61,7 @@ F23-popcap-prog-swapped KILLED
 F24-popcap-max-swapped KILLED
 F25-negative-city-owner KILLED
 F26-negative-state-owner KILLED
-F27-state-owners-skipped SURVIVED
+F27-state-owners-skipped SURVIVED EKW
 F28-balance-managed-all KILLED
 F29-balance-flow-off KILLED
 F30-balance-no-army-cost KILLED
@@ -91,6 +90,16 @@ F52-sync-skipped KILLED
 F53-cleanup-destroyed-empty KILLED
 F54-hunger-dropped KILLED
 F55-cities-not-copied-back KILLED
+N01-garrison-flag-ignored KILLED
+N02-garrison-owner-ignored KILLED
+N03-empty-garrison-logged KILLED
+N04-hpmax-not-written-back SURVIVED EKW
+N05-hp-not-written-back KILLED
+N06-destroyed-not-removed KILLED
+N07-garnizon-not-synced KILLED
+N08-hpfrac-const KILLED
+N09-besieged-inverted KILLED
+N10-n3-count-flag-ignored KILLED
 R01-block-on-clone KILLED
 R02-sol-state-empty KILLED
 R03-humans-empty KILLED

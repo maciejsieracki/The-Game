@@ -89,6 +89,8 @@ def main():
                     f['units'][0]['hp'] = num(f['units'][0]['hp']) + 1
                 if f['ended']:
                     f['ended'] = f['ended'][:-1]
+                if f['n3']:
+                    f['n3'][0]['before'] = f['n3'][0]['before'] + 1
             elif f['efTicks']:
                 f['efTicks'][0]['zapasyPo'] = num(f['efTicks'][0]['zapasyPo']) + 1
     for s in sc_list:
@@ -198,56 +200,67 @@ def main():
                 order.append(o)
         chk(owners_seen == [o for o in order if o != -1], f'{name} kolejnosc wlascicieli {owners_seen} vs {[o for o in order if o != -1]}')
 
-        # --- atrycja HP ---
+        # --- atrycja HP (glod panstwa) + N3 (atrycja garnizonu miast oblezonych) ---
         frac = max(0.0, min(1.0, hp_frac))
         live_in = {u['id']: u for u in s['ef']['live']}
         out_units = {u['id']: u for u in f['units']}
         atr_owners = [tk['ownerId'] for tk in f['efTicks'] if tk['atrycja']]
-        exp_destroyed = []
-        exp_hp = {}
-        # hpMax po sync = hpMax z wyjscia weba (atrycja go nie zmienia); dla zniszczonych brak w wyjsciu -> przeliczenie wstecz niemozliwe,
-        # wiec wymagane tylko dla przezywajacych; zniszczone weryfikowane przez warunek hp<=0 (patrz nizej)
         destroyed_set = set(f['destroyed'])
-        for o in atr_owners:
-            if frac <= 0:
-                continue
-            for u in s['ef']['live']:
-                if u['ownerId'] != o:
-                    continue
-                if u['category'] in CIVIL_CAT or u['typeId'] in CIVIL_TYPE:
-                    continue
-                if u['id'] in out_units:
-                    ou = out_units[u['id']]
-                    hm = num(ou['hpMax'])
-                    if hm <= 0:
-                        continue
-                    hp0 = num(u['hp'])
-                    if hp0 is None:
-                        hp0 = hm
-                    else:
-                        hp0 = max(0.0, min(hm, hp0)) if math.isfinite(hp0) else hm
-                    loss = max(1.0, math.floor(hm * frac))
-                    nh = max(0.0, hp0 - loss)
-                    exp_hp[u['id']] = nh
-                    chk(eq(nh, num(ou['hp'])), f'{name} unit {u["id"]} hp {nh} vs {ou["hp"]}')
-                    chk(nh > 0, f'{name} unit {u["id"]} powinien byc zniszczony')
-                else:
-                    chk(u['id'] in destroyed_set, f'{name} unit {u["id"]} zniknal bez wpisu w destroyed')
+        cities_by_id = {c['id']: c for c in s['cities']}
+        besieged = [t['cityId'] for t in ticks if t['oblegany']]
+
+        def is_civil(u):
+            return u['category'] in CIVIL_CAT or u['typeId'] in CIVIL_TYPE
+
+        def n3_city_of(u):
+            # miasto oblezone, ktorego garnizon (ownerId, q, r, inGarnizon) obejmuje jednostke
+            if not u['inGarnizon']:
+                return None
+            for cid in besieged:
+                c = cities_by_id.get(cid)
+                if c and c['owner'] == u['ownerId'] and c['q'] == u['q'] and c['r'] == u['r']:
+                    return cid
+            return None
+
+        absent_n3 = []  # zniszczone dopiero w N3 (poza lista destroyed glodu panstwa)
+        for uid, u in live_in.items():
+            if uid in out_units:
+                ou = out_units[uid]
+                hm = num(ou['hpMax'])
+                hp = num(u['hp'])
+                if hp is not None:
+                    hp = max(0.0, min(hm, hp)) if math.isfinite(hp) else hm  # sync
+                if (u['ownerId'] in atr_owners and frac > 0 and not is_civil(u) and hm > 0):
+                    if hp is None:
+                        hp = hm
+                    hp = max(0.0, hp - max(1.0, math.floor(hm * frac)))
+                    chk(hp > 0, f'{name} unit {uid} powinien byc zniszczony (glod panstwa)')
+                if n3_city_of(u) is not None and frac > 0 and not is_civil(u) and hm > 0:
+                    if hp is None:
+                        hp = hm
+                    hp = max(0.0, hp - max(1.0, math.floor(hm * frac)))
+                    chk(hp > 0, f'{name} unit {uid} powinien byc zniszczony (N3)')
+                chk(eq(hp, num(ou['hp'])), f'{name} unit {uid} hp {hp} vs {ou["hp"]}')
+            elif uid in destroyed_set:
+                chk(u['ownerId'] in atr_owners and not is_civil(u), f'{name} {uid} zniszczona poza atrycja')
+            else:
+                absent_n3.append(uid)
+                chk(n3_city_of(u) is not None and not is_civil(u), f'{name} unit {uid} zniknal bez powodu')
         for uid in destroyed_set:
             chk(uid not in out_units, f'{name} zniszczona jednostka {uid} nadal zyje')
-            chk(live_in[uid]['ownerId'] in atr_owners, f'{name} {uid} zniszczona poza atrycja')
-        # jednostki nietkniete: hp zsynchronizowane (clamp) a nie zmienione
-        for uid, ou in out_units.items():
-            if uid in exp_hp:
+        # log N3: kandydaci = jednostki zywe po glodzie panstwa (przed N3) w garnizonie miasta oblezonego
+        exp_n3 = []
+        for cid in besieged:
+            c = cities_by_id.get(cid)
+            if not c:
                 continue
-            u = live_in[uid]
-            hm = num(ou['hpMax'])
-            hp0 = num(u['hp'])
-            if hp0 is None:
-                chk(ou['hp'] is None, f'{name} unit {uid} hp powinno zostac undefined')
-            else:
-                nh = max(0.0, min(hm, hp0)) if math.isfinite(hp0) else hm
-                chk(eq(nh, num(ou['hp'])), f'{name} unit {uid} (nietknieta) hp {nh} vs {ou["hp"]}')
+            cands = [u for u in live_in.values() if u['id'] not in destroyed_set and u['ownerId'] == c['owner'] and u['q'] == c['q'] and u['r'] == c['r'] and u['inGarnizon']]
+            if not cands:
+                continue
+            gone = sum(1 for u in cands if u['id'] in absent_n3)
+            exp_n3.append((cid, len(cands), float(len(cands) - gone)))
+        got_n3 = [(x['city'], x['before'], num(x['after'])) for x in f['n3']]
+        chk(exp_n3 == got_n3, f'{name} n3 {exp_n3} vs {got_n3}')
 
         # --- oblezenia: ktore powinny sie zakonczyc ---
         cities = {c['id']: c for c in s['cities']}
