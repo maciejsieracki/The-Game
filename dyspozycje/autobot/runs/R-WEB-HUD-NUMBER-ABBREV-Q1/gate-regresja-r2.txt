@@ -1,0 +1,1 @@
+EXIT=0 (identyczny zbior 13 failow srodowiskowych PRZED i PO)

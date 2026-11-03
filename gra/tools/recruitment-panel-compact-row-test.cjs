@@ -449,7 +449,7 @@ async function main() {
         m.rows.filter((r) => !r.contentInsideRow || !r.submitVisible || !r.costVisible).map((r) => ({ n: r.name, w: r.widths })));
       check(`(${w.label}) K5: jedna linia puli rekrutów nad listą, tekst nie powtarza się na kartach`,
         m.poolCount === 1 && m.poolVisible && m.poolAboveList && m.poolTextOccurrences === 1
-          && /^Rekruci: dostępne 1 mln$/.test(m.poolText || ''),
+          && /^Rekruci: dostępne 1M$/.test(m.poolText || ''),
         { poolCount: m.poolCount, poolVisible: m.poolVisible, poolAboveList: m.poolAboveList,
           occurrences: m.poolTextOccurrences, poolText: m.poolText });
       check(`(${w.label}) K5: każdy wiersz ma widoczny wskaźnik potrzebnych rekrutów z pełnym tooltipem`,

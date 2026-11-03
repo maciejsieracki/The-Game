@@ -234,12 +234,12 @@ const armiaChipMatch = hudTsSrc.match(/label: 'Armia',[\s\S]{0,1500}?title: armi
 check('hud.ts zawiera blok chip6cHtml({ label: \'Armia\', ... })', armiaChipMatch !== null);
 const armiaChipBody = armiaChipMatch ? armiaChipMatch[0] : '';
 check(
-  'chip "Armia": rate: signed(s.rekrutEkw ?? 0) -- pelne jednostki, nie surowa pula/regen',
-  /rate: signed\(s\.rekrutEkw \?\? 0\),/.test(armiaChipBody),
+  'chip "Armia": rate = s.rekrutEkw (przez ...cn(..., s.rekrutEkw ?? 0), skrot k/M) -- pelne jednostki, nie surowa pula/regen',
+  /\.\.\.cn\(s\.armyUnitsOnMap \?\? 0, s\.rekrutEkw \?\? 0\),/.test(armiaChipBody),
 );
 check(
-  'chip "Armia": value dalej String(s.armyUnitsOnMap ?? 0) -- NIEZMIENIONE (wojsko na mapie)',
-  /value: String\(s\.armyUnitsOnMap \?\? 0\),/.test(armiaChipBody),
+  'chip "Armia": value dalej s.armyUnitsOnMap ?? 0 (przez ...cn, skrot k/M) -- ZRODLO NIEZMIENIONE (wojsko na mapie)',
+  /\.\.\.cn\(s\.armyUnitsOnMap \?\? 0,/.test(armiaChipBody),
 );
 check(
   'chip "Armia" NIE uzywa juz s.rekruciRegenPerTurn jako "rate" (przeniesione do tooltipu)',
