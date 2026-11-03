@@ -108,13 +108,15 @@ async function main() {
     const geometry = await page.evaluate(() => {
       const box = document.querySelector('.civ-amp')?.getBoundingClientRect();
       const foot = document.querySelector('.civ-amp-foot')?.getBoundingClientRect();
-      const roster = document.querySelector('.civ-amp-body');
-      const thumb = document.querySelector('.civ-amp-scrollbar');
+      // R-WEB-ARMY-MERGE-PANEL-LIST-VISIBILITY-Q1: przewija sie lista „Na polu” (nie caly body),
+      // a zamiast suwaka jest wskaznik „jeszcze N ponizej”.
+      const roster = document.querySelector('[data-sec="field"] .civ-amp-units');
+      const thumb = document.querySelector('.civ-amp-more');
       return {
         box: box && { top: box.top, bottom: box.bottom, left: box.left, right: box.right },
         foot: foot && { top: foot.top, bottom: foot.bottom },
         roster: roster && { top: roster.getBoundingClientRect().top, client: roster.clientHeight, height: roster.scrollHeight },
-        thumb: thumb && { disabled: thumb.disabled, visible: thumb.getBoundingClientRect().width > 0 },
+        thumb: thumb && { disabled: thumb.getAttribute('aria-hidden') === 'true', visible: getComputedStyle(thumb).visibility === 'visible' },
         overlayParent: document.querySelector('.civ-amp-overlay')?.parentElement?.tagName,
         document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
         rowCount: document.querySelectorAll('.civ-amp-row').length,
@@ -130,22 +132,22 @@ async function main() {
       !!geometry.box && geometry.box.top >= 24 && 413 - geometry.box.bottom >= 24, geometry.box);
     check('88 oddziałów: strona nie dostaje zewnętrznego overflow',
       geometry.document.width <= 600 && geometry.document.height <= 413, geometry.document);
-    check('CTA pozostają w kadrze, a roster ma 89 wierszy i aktywny przewijany suwak',
+    check('CTA pozostają w kadrze, a roster ma 89 wierszy i aktywny wskaźnik „jeszcze N poniżej”',
       geometry.rowCount === 89 && geometry.buttons.length === 2 && geometry.buttons.every((button) => button.visible)
         && geometry.roster.height > geometry.roster.client && geometry.thumb.visible && !geometry.thumb.disabled,
       geometry);
 
-    await page.locator('.civ-amp-scrollbar').fill('1000');
+    await page.locator('.civ-amp-more').click();
     await page.waitForTimeout(40);
     const endReached = await page.evaluate(() => {
-      const roster = document.querySelector('.civ-amp-body');
-      const rows = [...document.querySelectorAll('.civ-amp-body .civ-amp-row')];
+      const roster = document.querySelector('[data-sec="field"] .civ-amp-units');
+      const rows = [...roster.querySelectorAll('.civ-amp-row')];
       const last = rows[rows.length - 1]?.getBoundingClientRect();
       const body = roster?.getBoundingClientRect();
       return !!last && !!body && last.bottom <= body.bottom + 1
         && roster.scrollTop >= roster.scrollHeight - roster.clientHeight - 1;
     });
-    check('suwak na stronie Roboczej przewija listę do ostatniego oddziału', endReached);
+    check('wskaźnik „jeszcze N poniżej” na stronie Roboczej przewija listę do ostatniego oddziału', endReached);
 
     const merge = page.locator('[data-act="merge"]');
     await merge.click();
