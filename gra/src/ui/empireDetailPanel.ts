@@ -28,6 +28,7 @@ import {
 } from './powerOverlayHud';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
 import { formatLiczbaPl, signedPl } from './formatPl';
+import { formatCompactNumber } from './formatCompactNumber';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
@@ -828,6 +829,8 @@ function deltaHtml(n: number): string {
 function formatRawCount(n: number): string {
   if (!Number.isFinite(n)) return '—';
   const r = Math.round(n * 10) / 10;
+  // R-WEB-HUD-NUMBER-ABBREV-Q1: od 1000 skrócony zapis („1,2k"); poniżej bez zmian.
+  if (Math.abs(r) >= 1000) return formatCompactNumber(r);
   return Number.isInteger(r) ? String(r) : r.toFixed(1);
 }
 

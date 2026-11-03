@@ -27,6 +27,9 @@ export interface Chip6cOpts {
   valClass?: string;
   act?: string;
   title?: string;
+  /** R-WEB-HUD-NUMBER-ABBREV-Q1: pełna (nieskrócona) wartość, np. „Dokładnie: 20 860 (+1 257)" —
+   *  dopisywana do `title` i do `aria-label`, gdy value/rate są skrócone („20,9k"). */
+  exact?: string;
   /** Postęp badań [0..1] — pierścień wokół medalionu Nauki. */
   researchProgress?: number;
 }
@@ -50,8 +53,10 @@ function chipIconHtml(id: IconId, _medVariant: ChipMedVariant, assetOverride?: s
 export function chip6cHtml(opts: Chip6cOpts): string {
   const med = opts.medVariant ?? (opts.iconId === 'res-science' ? 'science' : 'gold');
   const clickCls = opts.act ? ' civ-hud-chip-click' : '';
+  const titleTxt = (opts.title ?? opts.label) + (opts.exact ? ' · ' + opts.exact : '');
+  const ariaAttr = opts.exact ? ` aria-label="${escHtml(opts.label + ': ' + opts.exact)}"` : '';
   const actAttr = opts.act
-    ? ` data-act="${opts.act}" role="button" tabindex="0" title="${escHtml(opts.title ?? opts.label)}"`
+    ? ` data-act="${opts.act}" role="button" tabindex="0" title="${escHtml(titleTxt)}"${ariaAttr}`
     : '';
   const valCls = opts.valClass ?? (med === 'science' ? ' science' : '');
   const rateCls = opts.rateWarn ? ' warn' : '';

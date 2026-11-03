@@ -280,6 +280,7 @@ import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 // formatLiczbaPl: separator polski (przecinek) — P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD 2026-08-09,
 // wiersz WZROST% w chipie „Wyżywienie i wzrost" dogania konwencję plakietki mapy (przecinek).
 import { formatLiczbaPl, signedPl } from './formatPl';
+import { formatCompactNumber, formatFullNumber } from './formatCompactNumber';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -9187,10 +9188,13 @@ function renderPurchasableUnits(
     const poolValue = Math.max(0, Math.floor(poolAvailable));
     pool.dataset.available = String(poolValue);
     pool.title = 'Pula rekrutów imperium — wspólna dla wszystkich jednostek; '
-      + 'wiersz jednostki pokazuje, ile potrzebuje i ile brakuje';
+      + 'wiersz jednostki pokazuje, ile potrzebuje i ile brakuje'
+      + ` · Dostępne dokładnie: ${formatFullNumber(poolValue)}`;
     pool.textContent = 'Rekruci: dostępne ';
     const b = document.createElement('b');
-    b.textContent = formatManpower(poolValue);
+    // R-WEB-HUD-NUMBER-ABBREV-Q1: pula rekrutów skrócona do „71,7k" (pełna wartość w title/aria-label).
+    b.textContent = formatCompactNumber(poolValue);
+    pool.setAttribute('aria-label', `Rekruci: dostępne ${formatFullNumber(poolValue)}`);
     pool.appendChild(b);
     mount.appendChild(pool);
   }
