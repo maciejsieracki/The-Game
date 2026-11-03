@@ -1485,6 +1485,52 @@ pub mod p6_7a {
             opts: &PostCentralGrowthOpts<'_>,
             hooks: &mut dyn PopulationChangeHooks,
         ) {
+            apply_post_central_population_growth_ext(
+                cities,
+                econ,
+                ef_per_owner,
+                opts,
+                &PostCentralGrowthExt::default(),
+                hooks,
+            );
+        }
+
+        /// R-RUSTPORT-P6-ECON-TICK-POST-Q1: pola `PostCentralGrowthOpts` weba (pin `4bbef081d`,
+        /// `population-growth-v85.ts:446-448`) nieobecne w [`PostCentralGrowthOpts`] (P6.7A, pin `edb8fb56`).
+        /// `Default` = zachowanie `edb8fb56` (bez mnoznika Porzadku, `max_mult` z bonusow legacy).
+        #[derive(Debug, Clone, Copy, Default)]
+        pub struct PostCentralGrowthExt<'a> {
+            /// Web `orderGrowthMultByCity` (`growthMultMap`); `None` = pole `undefined` (mnoznik 1).
+            pub order_growth_mult_by_city: Option<&'a BTreeMap<String, f64>>,
+            /// Web `manpowerMaxMultByOwnerId`.
+            pub manpower_max_mult_by_owner_id: Option<&'a BTreeMap<i64, f64>>,
+            /// `Some` wlacza sciezke pinu `4bbef081d` dla `max_mult` bez wpisu w mapie:
+            /// `civManpowerMatrixMults(civ, undefined).maxMult` (macierz zamiast bonusow legacy).
+            pub pin_matrix: Option<&'a crate::data::civilizations::CivMatrixFile>,
+        }
+
+        /// Web `growthPercentWithOrderMultiplier` (`population-growth-v85.ts:288`).
+        pub fn growth_percent_with_order_multiplier(
+            growth_percent: f64,
+            order_growth_mult: f64,
+        ) -> f64 {
+            let factor = if order_growth_mult.is_finite() {
+                js_max(0.0, order_growth_mult)
+            } else {
+                1.0
+            };
+            growth_percent * factor
+        }
+
+        /// Jak [`apply_post_central_population_growth`], z polami weba spoza P6.7A ([`PostCentralGrowthExt`]).
+        pub fn apply_post_central_population_growth_ext(
+            cities: &mut [GrowthCity],
+            econ: &mut EconomyTickResult,
+            ef_per_owner: &mut [EmpireFoodTick],
+            opts: &PostCentralGrowthOpts<'_>,
+            ext: &PostCentralGrowthExt<'_>,
+            hooks: &mut dyn PopulationChangeHooks,
+        ) {
             let difficulty = opts.difficulty.unwrap_or_default();
             for owner_tick in ef_per_owner.iter_mut() {
                 for row_index in 0..owner_tick.per_city_rows.len() {
@@ -1553,7 +1599,7 @@ pub mod p6_7a {
                         .city
                         .wealth_state
                         .map_or(1.0, |w| w.poziom);
-                    let breakdown = compute_growth_percent_v85(&GrowthPercentInput {
+                    let base_breakdown = compute_growth_percent_v85(&GrowthPercentInput {
                         population: cities[city_index].city.population,
                         poziom_racji: get_city_ration_level(&cities[city_index].city),
                         zdrowie: tick_snapshot.zdrowie,
@@ -1566,6 +1612,23 @@ pub mod p6_7a {
                         citizen_resource_growth_pct: Some(citizen_growth_pct),
                         population_matrix: Some(population_matrix),
                     });
+                    let breakdown = match ext.order_growth_mult_by_city {
+                        None => base_breakdown,
+                        Some(m) => {
+                            let raw = m.get(&row_city_id).copied().unwrap_or(1.0);
+                            let adjusted =
+                                growth_percent_with_order_multiplier(base_breakdown.total, raw);
+                            // JS `adjusted === total` (NaN != NaN, -0 === 0)
+                            if adjusted == base_breakdown.total {
+                                base_breakdown
+                            } else {
+                                GrowthPercentBreakdown {
+                                    total: adjusted,
+                                    ..base_breakdown
+                                }
+                            }
+                        }
+                    };
                     {
                         let row = &mut owner_tick.per_city_rows[row_index];
                         row.wzrost_procent = breakdown.total;
@@ -1623,11 +1686,28 @@ pub mod p6_7a {
                             .copied()
                             .unwrap_or(1.0);
                         // KOMPATYBILNOSC P6.7A (pin edb8fb56) do portu population-growth-v85 (Czesc B).
-                        let (_regen, max_mult) = civ_manpower_mults_legacy_edb8fb56(
+                        let (_regen, legacy_max_mult) = civ_manpower_mults_legacy_edb8fb56(
                             opts.civ_bonusy_by_owner
                                 .and_then(|m| m.get(&owner_id))
                                 .map(Vec::as_slice),
                         );
+                        // pin `4bbef081d`: `manpowerMaxMultByOwnerId?.get(o) ?? civManpowerMatrixMults(civ).maxMult`
+                        let max_mult = match ext
+                            .manpower_max_mult_by_owner_id
+                            .and_then(|m| m.get(&owner_id))
+                        {
+                            Some(v) => *v,
+                            None => match ext.pin_matrix {
+                                Some(matrix) => {
+                                    crate::domain::recruitment::manpower::civ_manpower_matrix_mults(
+                                        None,
+                                        owner_civ.map(|k| (matrix, k)),
+                                    )
+                                    .max_mult
+                                }
+                                None => legacy_max_mult,
+                            },
+                        };
                         let mp_city = ManpowerCity {
                             id: city_id.clone(),
                             owner_id,
@@ -1676,8 +1756,10 @@ pub mod p6_7a {
     }
 
     pub use growth_v85::{
-        apply_post_central_population_growth, clamp_poziom_racji, get_city_ration_level,
-        GrowthCity, GrowthPercentBreakdown, PopulationMatrixResolved, RationParams,
+        apply_post_central_population_growth, apply_post_central_population_growth_ext,
+        clamp_poziom_racji, get_city_ration_level, growth_percent_with_order_multiplier,
+        GrowthCity, GrowthPercentBreakdown, PopulationMatrixResolved, PostCentralGrowthExt,
+        RationParams,
     };
 
     // =======================================================================

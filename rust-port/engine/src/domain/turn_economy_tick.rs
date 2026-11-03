@@ -67,7 +67,7 @@ pub struct HealRequest<'a> {
 }
 
 /// Web `EconomyTickResult` (`:1108-1148`), wszystkie pola.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct EconomyTickResult {
     pub per_city: Vec<CityLoopTick>,
     pub cities: f64,

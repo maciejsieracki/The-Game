@@ -140,7 +140,7 @@ pub struct CityLoopData<'a> {
 }
 
 /// Pola `CityEconomyTick` (web `:1049`) zapisywane przez petle miast.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct CityLoopTick {
     pub city_id: String,
     pub owner_id: i64,

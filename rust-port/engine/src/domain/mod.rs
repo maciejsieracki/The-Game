@@ -68,6 +68,7 @@ pub mod turn_economy_inputs_state;
 pub mod turn_economy_inputs_trade;
 pub mod turn_economy_inputs_wonders;
 pub mod turn_economy_loop;
+pub mod turn_economy_post;
 pub mod turn_economy_preview;
 pub mod turn_economy_resources;
 pub mod turn_economy_territory;
