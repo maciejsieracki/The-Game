@@ -20,6 +20,8 @@ use civ_engine::domain::trade::{
     TradeRouteIncomeParams, TradeRouteMedium, TradeRouteParams, TradeRouteResourceFlowParams,
     TradeRouteStatus, TRADE_ROUTE_RESOURCE_KEYS, TRADE_ROUTE_STOCK_FLOW_KEYS,
 };
+use civ_engine::domain::building_costs::p6_7b::{StockCity, StockRecord};
+use civ_engine::domain::trade_flow_apply::apply_trade_route_resource_flows;
 use civ_engine::domain::PlayerId;
 use serde_json::Value;
 
@@ -394,6 +396,45 @@ fn trade_matches_the_running_web_pin() {
             );
             checks += check_flows("flows_keys", &flows_k, &res["flows_keys"]);
             let _ = flows_json(&flows);
+
+            // sklejka `main.ts:34470-34498` (pobor u dawcy + cap odbiorcy) na zapasach miast
+            let ap = &tick["apply"];
+            let rec = |v: &Value| -> Option<StockRecord> {
+                v.as_object()
+                    .map(|o| o.iter().map(|(k, x)| (k.clone(), num(x))).collect())
+            };
+            let mut stock_cities: Vec<StockCity> = arr(&ap["cities_in"])
+                .iter()
+                .map(|c| StockCity {
+                    id: s(&c["id"]).to_owned(),
+                    owner_id: c["ownerId"].as_i64().unwrap(),
+                    surowce: rec(&c["surowce"]),
+                })
+                .collect();
+            let caps = &ap["cap"];
+            let cap_of = |o: i64| num(&caps[o.to_string()]);
+            let applied = apply_trade_route_resource_flows(
+                &mut stock_cities,
+                &got,
+                &TradeRouteResourceFlowParams { min_stock_reserve: num(&ap["reserve"]) },
+                &cap_of,
+            );
+            checks += check_flows("apply flows", &applied, &ap["flows"]);
+            for (city, want) in stock_cities.iter().zip(arr(&ap["cities_out"])) {
+                assert_eq!(city.id, s(&want["id"]));
+                let want_rec = rec(&want["surowce"]);
+                match (&city.surowce, &want_rec) {
+                    (None, None) => {}
+                    (Some(g), Some(w)) => {
+                        assert_eq!(g.keys().collect::<Vec<_>>(), w.keys().collect::<Vec<_>>(), "apply keys {}", city.id);
+                        for (k, v) in w {
+                            assert!(same(g[k], *v), "apply {}[{k}]: rust {} web {v}", city.id, g[k]);
+                        }
+                    }
+                    (g, w) => panic!("apply surowce {}: rust {g:?} web {w:?}", city.id),
+                }
+                checks += 1;
+            }
 
             // diff
             let d = diff_trade_routes(&prev, &got);

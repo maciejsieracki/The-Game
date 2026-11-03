@@ -1,0 +1,1 @@
+sprawdzen: 65871, rozbieznosci: 0, kontrola negatywna: 2/2

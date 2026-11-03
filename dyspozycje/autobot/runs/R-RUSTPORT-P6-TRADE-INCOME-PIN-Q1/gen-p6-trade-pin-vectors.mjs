@@ -18,7 +18,7 @@ const game = join(workDir, 'gra/src/game');
 const esbuild = await import(pathToFileURL(esbuildMain).href);
 const built = await esbuild.build({
   stdin: {
-    contents: `export * from './trade-routes';\nexport { cityTerritoryRadius, territoryOwnerAt } from '../map/territory';`,
+    contents: `export * from './trade-routes';\nexport { ownerResourceStockAll, deductBuildingStockCostAcrossCities, creditOwnerResourceStock } from './building-stock-cost';\nexport { cityTerritoryRadius, territoryOwnerAt } from '../map/territory';`,
     resolveDir: game, loader: 'ts',
   },
   bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'error', loader: { '.json': 'json', '.png': 'dataurl' },
@@ -249,7 +249,28 @@ function makeScenario(idx) {
     const flowsKeys = W.computeTradeRouteResourceFlow(all, stockFn, { minStockReserve: 1 }, ['sol', 'zloto']);
     const diff = W.diffTradeRoutes(prevRoutes, routes);
 
+    // sklejka `main.ts:34470-34498`: przeplyw surowcow przez trasy na prawdziwych zapasach miast
+    const encRec = (rec) => (rec == null ? null : Object.fromEntries(Object.keys(rec).sort().map((k) => [k, enc(rec[k])])));
+    const stockCities = cities.map((c) => ({ id: c.id, ownerId: c.ownerId,
+      surowce: chance(0.12) ? undefined : Object.fromEntries(RES_KEYS.filter(() => chance(0.7)).map((k) => [k, pick([0, 1, 3, 5.5, 8, 12, 20, 40, 2.25, 16])])) }));
+    const capTab = {};
+    for (const o of ownerList) capTab[o] = pick([5, 10, 20, 50, 100.5, 0, 7.25, 1000]);
+    const applyReserve = pick([2, 0, 1.5, 4]);
+    const live = JSON.parse(JSON.stringify(stockCities));
+    const applyFlows = W.computeTradeRouteResourceFlow(routes, (o, k) => W.ownerResourceStockAll(live, o)[k] ?? 0, { minStockReserve: applyReserve });
+    for (const f of applyFlows) {
+      W.deductBuildingStockCostAcrossCities(live, f.fromOwnerId, { [f.resourceKey]: f.amount });
+      W.creditOwnerResourceStock(live, f.toOwnerId, f.resourceKey, f.amount, capTab[f.toOwnerId]);
+    }
+    const apply = {
+      reserve: enc(applyReserve), cap: Object.fromEntries(Object.entries(capTab).map(([k, v]) => [k, enc(v)])),
+      cities_in: stockCities.map((c) => ({ id: c.id, ownerId: c.ownerId, surowce: encRec(c.surowce) })),
+      flows: applyFlows.map((f) => ({ ...f, amount: enc(f.amount) })),
+      cities_out: live.map((c) => ({ id: c.id, ownerId: c.ownerId, surowce: encRec(c.surowce) })),
+    };
+
     ticks.push({
+      apply,
       existing, war, treaty: treatyList, tech: techOwners, territory, built: builtObj,
       routes, conns, have, diag, limits,
       income: {
@@ -274,7 +295,7 @@ function makeScenario(idx) {
 }
 
 const SCENARIOS = [];
-const N = Number(process.env.N_SCEN ?? 84);
+const N = Number(process.env.N_SCEN ?? 78);
 for (let i = 0; i < N; i++) SCENARIOS.push(makeScenario(i));
 
 // ---- 4. tabela ids: kolejnosc localeCompare dla ASCII (wyprowadzona z uruchomionego silnika ICU) -----------------------
