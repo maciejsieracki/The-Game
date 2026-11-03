@@ -49,7 +49,8 @@ for (const typ of TYPES) for (const seed of SEEDS) {
   const nodes = [{ q: c.q, r: c.r, pop: 3, level: 1, ownerId: 0 }];
   const own = (q, r) => M.territoryOwnerAt(q, r, nodes) === 0;
   const border = (q, r) => NB.some(([dq, dr]) => !own(q + dq, r + dr));
-  const base = { improvementTechs: new Set(['Wojskowość', 'Obróbka drewna', 'Murarstwo']), placedImprovements: new Map(),
+  const TECHS = arg('techs', 'Wojskowość,Obróbka drewna,Murarstwo').split(',').filter(Boolean);
+  const base = { improvementTechs: new Set(TECHS), placedImprovements: new Map(),
     fortNodes: [], pracaAvailable: 5000, territoryNodes: nodes, currentTurn: 50 };
   const run = { typ, seed, cmds: 0 };
   for (let i = 0; i < NU; i++) {

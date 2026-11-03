@@ -115,6 +115,27 @@ console.log('\n--- C: AI -- planExpansionFortBuilding (jednostka poza zasiegiem)
   assert(!cmd3 || cmd3.key !== 'posterunek' || FT.isOutpostPlacementAllowed(cmd3.q, cmd3.r, 0, nodes), 'C4: wszelki posterunek AI spelnia predykat');
 }
 
+{
+  // Obrona r1 (zarzut 2): bez techu fortu AI ekspanduje POSTERUNKIEM, ale tylko z heksu wlasnej granicy.
+  const aiCity = { id: 'c0', ownerId: 0, q: 0, r: 0, population: 3 };
+  const noFort = { improvementTechs: new Set(['Obróbka drewna', 'Murarstwo']), placedImprovements: new Map(),
+    fortNodes: [], pracaAvailable: 1000, territoryNodes: nodes, currentTurn: 10 };
+  const uBorder = { id: 'u3', ownerId: 0, q: R, r: 0, inGarnizon: false };
+  const uDeep = { id: 'u4', ownerId: 0, q: 1, r: 0, inGarnizon: false };
+  const uFar = { id: 'u5', ownerId: 0, q: 30, r: 0, inGarnizon: false };
+  const c5 = planExpansionFortBuilding(0, [aiCity], [uBorder], map, noFort);
+  assert(c5 && c5.key === 'posterunek' && c5.q === R && c5.r === 0, 'C5: bez techu fortu AI stawia posterunek z heksu przy wlasnej granicy');
+  assert(!planExpansionFortBuilding(0, [aiCity], [uDeep], map, noFort), 'C6: jednostka w glebi terytorium -> brak posterunku');
+  assert(!planExpansionFortBuilding(0, [aiCity], [uFar], map, noFort), 'C7: jednostka poza terenem, bez techu fortu -> brak komendy');
+  const withFort = { ...noFort, improvementTechs: new Set(['Wojskowość', 'Obróbka drewna', 'Murarstwo']) };
+  const c8 = planExpansionFortBuilding(0, [aiCity], [uFar, uBorder], map, withFort);
+  assert(c8 && c8.key === 'fort' && c8.q === 30, 'C8: z techem fortu priorytet ma fort zamorski');
+  const noOutpostTech = { ...noFort, improvementTechs: new Set() };
+  assert(!planExpansionFortBuilding(0, [aiCity], [uBorder], map, noOutpostTech), 'C9: bez techu posterunku brak komendy');
+  const onOutpost = { ...noFort, placedImprovements: new Map([[`${R},0`, ['posterunek']]]) };
+  assert(!planExpansionFortBuilding(0, [aiCity], [uBorder], map, onOutpost), 'C10: heks z istniejacym posterunkiem pomijany');
+}
+
 console.log('\n--- D: straznik tekstowy (main.ts, ai.ts) -- jedna sciezka predykatu ---');
 {
   const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
