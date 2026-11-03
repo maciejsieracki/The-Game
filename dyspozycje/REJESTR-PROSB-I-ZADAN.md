@@ -8611,3 +8611,5 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 
 ## 2026-11-03 — DECYZJE WŁAŚCICIELA (ABC): Pieniądz też +1/epokę; aneksja państwa-miasta przenosi majątek; atakujący na koronie bez bonusu
 (1) Pieniądz z Obozu łowieckiego i Warzelni soli rośnie +1 za epokę (dopisane do `R-WEB-IMPROVEMENT-ERA-SCALING-Q1`). (2) Aneksja (wchłonięcie) państwa-miasta drogą dyplomatyczną przenosi majątek jak przy eliminacji — temat `R-WEB-ANNEX-CITYSTATE-SPOILS-Q1`. (3) Atakujący na koronie muru wieżą nie ma bonusu obrony muru — tak jest (WALL-DEFENDERS wdrożone).
+
+- 2026-11-03 — R-WEB-IRON-NATIVE-ACCESS-FIX-Q1: FC PASS-WITH-NOTES (`c62c1064f`), zdeployowane do ROBOCZEJ `a7b56a71` (main). Notatki: brak pomiaru w symulacji; `zelazo-gate`/`deposit-building-gate` czerwone też na bazie; REPIN Rust po wznowieniu portu.

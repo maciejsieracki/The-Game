@@ -702,3 +702,6 @@ FC PASS-WITH-NOTES (`5f83250c7`, `rust-port-wip/DYPL2-fc`); merge z parity-v2 `6
 
 ## 2026-11-03 — kontrola cykliczna 22:11
 Nic do integracji po stronie Rust (port wstrzymany). Pięć workflowów web wznowionych po restarcie kontenera (IRON, HORSE, AI-WAR, PLAYER-MOVES, ARMY-MERGE-PANEL) — trwają. Bez zmian.
+
+## 2026-11-03 — web: R-WEB-IRON-NATIVE-ACCESS-FIX-Q1 wdrożone (ROBOCZA a7b56a71)
+Web naprawił natywny dostęp do żelaza (`ownerHasNativeZelazoAccess`: Kopalnia na złożu + zapas żelaza > 0 + Odlewnia; wcześniej `boolean` w miejscu zapasu → zawsze false). Port Rust (pin `4bbef081d`) odtwarza stary błąd 1:1 → **REPIN i poprawka po wznowieniu portu**. Granty z tras mogą migotać przy zapasie 0. Pomiar balansu NIE_ZMIERZONO.
