@@ -179,20 +179,20 @@ check(
   /label: 'Obywatele'/.test(rightChipsBody),
 );
 check(
-  'Chip \'Obywatele\': value: String(s.ludnosc) -- CZYTA pole HudState, nie liczy sam',
-  /label: 'Obywatele',\s*\n\s*value: String\(s\.ludnosc\)/.test(rightChipsBody),
+  'Chip \'Obywatele\': value z s.ludnosc (...cn(s.ludnosc, ...), skrot k/M) -- CZYTA pole HudState, nie liczy sam',
+  /label: 'Obywatele',\s*\n\s*\.\.\.cn\(s\.ludnosc,/.test(rightChipsBody),
 );
 check(
   'Chip \'Obywatele\': act: \'ludnosc\' (klik otwiera panel MIASTA/populacja)',
   /label: 'Obywatele',[\s\S]{0,200}?act: 'ludnosc',/.test(rightChipsBody),
 );
 check(
-  'Chip \'Miasta\': value: String(s.osiedla) NIEZMIENIONE -- nadal liczba miast, nie populacja',
-  /label: 'Miasta',\s*\n\s*value: String\(s\.osiedla\)/.test(rightChipsBody),
+  'Chip \'Miasta\': value z s.osiedla (...cn(s.osiedla, ...)) NIEZMIENIONE ZRODLO -- nadal liczba miast, nie populacja',
+  /label: 'Miasta',\s*\n\s*\.\.\.cn\(s\.osiedla,/.test(rightChipsBody),
 );
 check(
   'Chip \'Miasta\' i chip \'Obywatele\' to DWA ROZNE pola HudState (s.osiedla != s.ludnosc jako expr)',
-  rightChipsBody.includes("value: String(s.osiedla)") && rightChipsBody.includes("value: String(s.ludnosc)"),
+  rightChipsBody.includes("...cn(s.osiedla,") && rightChipsBody.includes("...cn(s.ludnosc,"),
 );
 console.log('');
 

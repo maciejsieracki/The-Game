@@ -25,6 +25,7 @@ import {
 import { naukaHudWordHtml } from './naukaLabel';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
 import { signedPl } from './formatPl';
+import { exactCompactNote, formatCompactNumber, formatCompactSigned } from './formatCompactNumber';
 import {
   createSidePanelHud,
   type ContextPanelData,
@@ -549,7 +550,9 @@ const MINI_H = MINIMAP_H_PX;
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'civ-hud-css-w2ring7-util-z';
-function ensureStyles(): void {
+// R-WEB-HUD-NUMBER-ABBREV-Q1: `export` WYŁĄCZNIE dla bramki tools/hud-number-abbrev-test.cjs
+// (pomiar układu w Chromium z prawdziwym CSS); zero zmiany zachowania.
+export function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-hud-css')?.remove();
   document.getElementById('civ-hud-css-w2')?.remove();
@@ -763,14 +766,25 @@ function res(icon: string, val: string, lbl: string, rate?: string, rateO?: bool
 
 function signed(n: number): string { return signedPl(n); }
 
+/** R-WEB-HUD-NUMBER-ABBREV-Q1: value/rate chipu w formie skróconej („20,9k", „+1,3k") + nota „Dokładnie…". */
+function cn(value: number | undefined, rate?: number): { value: string; rate?: string; exact: string } {
+  return {
+    value: formatCompactNumber(value),
+    ...(rate !== undefined ? { rate: formatCompactSigned(rate) } : {}),
+    exact: exactCompactNote(value, rate),
+  };
+}
+
 /** Pierścień Nauki: postęp bieżącej tech (nie epoki). buildHudState ustawia researchProgress. */
 function resolveResearchProgress(s: HudState): number {
   const p = s.researchProgress ?? s.epokaPostep ?? 0;
   return Math.max(0, Math.min(1, p));
 }
 
-function formatFoodHudLabel(s: HudState): string {
-  return s.zywnoscLabel;
+/** Spichlerz: `zywnoscLabel` to liczba w stringu (main.ts: String(foodReserve)); nienumeryczna → 0. */
+function foodHudValue(s: HudState): number | undefined {
+  const n = Number(s.zywnoscLabel);
+  return Number.isFinite(n) ? n : undefined;
 }
 
 /** Odmiana „tura" w bierniku ("za 1 turę" / "za 2 tury" / "za 5 tur"). */
@@ -1076,12 +1090,11 @@ export function renderBarD1B(s: HudState): string {
     chip6cHtml({
       iconId: 'res-treasury',
       label: 'Skarbiec',
-      value: String(s.bogactwo),
+      ...cn(s.bogactwo, s.bogactwoWplywyBrutto ?? s.bogactwoRate ?? 0),
       valClass: ` ${resourceTextClass('skarbiec')}`,
       // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: żeton pokazuje WPŁYWY BRUTTO (przed
       // utrzymaniem budynków/jednostek), nie `bogactwoRate` (netto) — redukcja do
       // netto zostaje wyłącznie w rozpisce `skarbiecChipTitle()` i w panelu.
-      rate: signed(s.bogactwoWplywyBrutto ?? s.bogactwoRate ?? 0),
       act: 'skarbiec',
       title: skarbiecChipTitle(s),
     }),
@@ -1089,14 +1102,13 @@ export function renderBarD1B(s: HudState): string {
     chip6cHtml({
       iconId: 'res-work',
       label: 'Praca',
-      value: String(s.praca),
+      ...cn(s.praca, pracaWplywBrutto(s)),
       valClass: ` ${resourceTextClass('praca')}`,
       // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: żeton pokazuje WPŁYW BRUTTO do puli
       // imperium (przed utrzymaniem/auto-ulepszeniami/Cudami na mapie), nie
       // `pracaRate` (netto) — redukcja do netto zostaje wyłącznie w rozpisce
       // `pracaChipTitle()` i w panelu. Ostrzeżenie (`rateWarn`) nadal patrzy na
       // netto — to realny sygnał, że pula SIĘ KURCZY, niezależnie od brutto.
-      rate: signed(pracaWplywBrutto(s)),
       rateWarn: s.pracaRate < 0,
       act: 'praca',
       title: pracaChipTitle(s),
@@ -1105,9 +1117,8 @@ export function renderBarD1B(s: HudState): string {
     chip6cHtml({
       iconId: 'res-food',
       label: 'Spichlerz',
-      value: formatFoodHudLabel(s),
+      ...cn(foodHudValue(s), s.zywnoscRate ?? 0),
       valClass: ` ${resourceTextClass('zywnosc')}`,
-      rate: signed(s.zywnoscRate ?? 0),
       // P-SPICHLERZ-ZERO-MYLACE: chip czerwony też przy niedokarmionych miastach, nie
       // tylko przy głodzie wojska/ujemnym tempie — sam kolor ma sygnalizować deficyt.
       // / EN: chip turns red for unfed cities too, not only army hunger/negative rate —
@@ -1120,8 +1131,7 @@ export function renderBarD1B(s: HudState): string {
     chip6cHtml({
       iconId: 'res-science',
       label: 'Nauka',
-      value: String(Math.floor(s.nauka)),
-      rate: signed(s.naukaRate ?? 0),
+      ...cn(Math.floor(s.nauka), s.naukaRate ?? 0),
       medVariant: 'science',
       valClass: ` ${resourceTextClass('nauka')}`,
       act: 'nauka',
@@ -1144,7 +1154,8 @@ export function renderBarD1B(s: HudState): string {
     + chip6cHtml({
       iconId: 'res-trade',
       label: 'Handel',
-      value: signed(s.handelIncome ?? 0),
+      value: formatCompactSigned(s.handelIncome ?? 0),
+      exact: exactCompactNote(s.handelIncome ?? 0),
       act: 'handel',
       title: handelChipTitle(s),
     });
@@ -1154,7 +1165,7 @@ export function renderBarD1B(s: HudState): string {
     chip6cHtml({
       iconId: 'tb-army',
       label: 'Armia',
-      value: String(s.armyUnitsOnMap ?? 0),
+      ...cn(s.armyUnitsOnMap ?? 0, s.rekrutEkw ?? 0),
       // P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): "+" pokazywał surową odnowę puli
       // rekrutów/turę (mylące dla dużej puli — czytało się jak liczba rekrutów, nie jak
       // ile wojska da się wystawić). Teraz pokazuje PEŁNE jednostki możliwe do zwerbowania
@@ -1165,7 +1176,6 @@ export function renderBarD1B(s: HudState): string {
       // recruitable from the whole empire pool (rekrutEkw = floor(rekruci / kosztJednostki),
       // main.ts, same source as the "Rekruci (pula werbu)" panel). Regen/turn stays in the
       // tooltip.
-      rate: signed(s.rekrutEkw ?? 0),
       rateWarn: !!s.glodWojska,
       act: 'armia',
       title: armiaChipTitle(s),
@@ -1180,8 +1190,7 @@ export function renderBarD1B(s: HudState): string {
       // same icon for two different numbers.
       iconId: 'res-settlements',
       label: 'Miasta',
-      value: String(s.osiedla),
-      rate: signed(s.ludnoscRate ?? 0),
+      ...cn(s.osiedla, s.ludnoscRate ?? 0),
       act: 'miasta',
       title: miastaChipTitle(s),
     }),
@@ -1189,8 +1198,7 @@ export function renderBarD1B(s: HudState): string {
     chip6cHtml({
       iconId: 'res-population',
       label: 'Obywatele',
-      value: String(s.ludnosc),
-      rate: signed(s.ludnoscRate ?? 0),
+      ...cn(s.ludnosc, s.ludnoscRate ?? 0),
       act: 'ludnosc',
       title: obywateleChipTitle(s),
     }),
@@ -1203,9 +1211,8 @@ export function renderBarD1B(s: HudState): string {
     withChipRangeActive(chip6cHtml({
       iconId: 'res-culture',
       label: 'Kultura',
-      value: String(Math.floor(s.kultura)),
+      ...cn(Math.floor(s.kultura), s.kulturaRate ?? 0),
       valClass: ` ${resourceTextClass('kultura')}`,
-      rate: signed(s.kulturaRate ?? 0),
       act: 'kultura',
       title: kulturaChipTitle(s),
     }), cfg?.minimapLayers?.isCultureActive?.() ?? false),
@@ -1213,9 +1220,8 @@ export function renderBarD1B(s: HudState): string {
     withChipRangeActive(chip6cHtml({
       iconId: 'res-religion',
       label: 'Religia',
-      value: String(Math.round(s.religionStock ?? 0)),
+      ...cn(Math.round(s.religionStock ?? 0), s.religionRate ?? 0),
       valClass: ` ${resourceTextClass('religia')}`,
-      rate: signed(s.religionRate ?? 0),
       act: 'religia',
       title: religiaChipTitle(s),
     }), cfg?.minimapLayers?.isReligionActive?.() ?? false),

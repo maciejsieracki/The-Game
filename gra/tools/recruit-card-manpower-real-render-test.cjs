@@ -113,7 +113,8 @@ async function buildBundle(outfile) {
     "import { configureCityPanel, appendUnitRecruitCompactRow } from '../src/ui/cityPanel';",
     "import { UNIT_RECRUIT_CARD_CSS } from '../src/ui/unitRecruitCard';",
     "import { unitManpowerCostForType, formatManpower } from '../src/game/manpower';",
-    'window.__api = { configureCityPanel, appendUnitRecruitCompactRow, UNIT_RECRUIT_CARD_CSS, unitManpowerCostForType, formatManpower };',
+    "import { formatCompactNumber } from '../src/ui/formatCompactNumber';",
+    'window.__api = { configureCityPanel, appendUnitRecruitCompactRow, UNIT_RECRUIT_CARD_CSS, unitManpowerCostForType, formatManpower, formatCompactNumber };',
     '',
   ].join('\n'), 'utf8');
   const plugins = [stubPlugin];
@@ -215,6 +216,10 @@ async function main() {
     const required = requiredProbe.required;
     const format = value => page.evaluate(value => window.__api.formatManpower(value), value);
     const requiredLabel = await format(required);
+    // R-WEB-HUD-NUMBER-ABBREV-Q1 r2: WIDOCZNY zapis na karcie (summary, „brak N") = formatCompactNumber (jak pula nad listą);
+    // title zostaje pełnym opisem przez formatManpower.
+    const fmtC = value => page.evaluate(value => window.__api.formatCompactNumber(value), value);
+    const requiredCompact = await fmtC(required);
 
     console.log('\n-- BRAK REKRUTÓW + BRAK DREWNA --');
     const none = await run(0, {});
@@ -225,11 +230,11 @@ async function main() {
     // listą (cityPanel.renderPurchasableUnits); karta pokazuje widocznie „potrzebne”
     // (summary) i „brak N”, a pełny tekst „dostępne X / potrzebne Y” jest w tooltipie.
     check('B2: status pokazuje potrzebne na karcie, a dostępne/potrzebne/brak w tooltipie',
-      none.statusText === requiredLabel
+      none.statusText === requiredCompact
         && none.statusTitle === `Rekruci: dostępne 0 / potrzebne ${requiredLabel} — brakuje ${requiredMissing}`,
       { statusText: none.statusText, statusTitle: none.statusTitle });
     check('B3: status pokazuje widoczną, czerwoną brakującą pulę',
-      none.shortfallText === `brak ${requiredMissing}` && none.shortfallVisible
+      none.shortfallText === `brak ${requiredCompact}` && none.shortfallVisible
         && none.shortfallColor === 'rgb(232, 138, 122)',
       { text: none.shortfallText, visible: none.shortfallVisible, color: none.shortfallColor });
     check('B4: data attributes przechowują available/required/missing',
@@ -254,12 +259,13 @@ async function main() {
     await page.screenshot({ path: path.join(shotDir, 'recruit-card-manpower-partial.png'), fullPage: true });
     const partialAvailableLabel = await format(partialAvailable);
     const partialMissingLabel = await format(required - partialAvailable);
+    const partialMissingCompact = await fmtC(required - partialAvailable);
     check('B8: częściowa pula: potrzebne na karcie, dostępne / potrzebne / brak w tooltipie',
-      partial.statusText === requiredLabel
+      partial.statusText === requiredCompact
         && partial.statusTitle === `Rekruci: dostępne ${partialAvailableLabel} / potrzebne ${requiredLabel} — brakuje ${partialMissingLabel}`,
       { statusText: partial.statusText, statusTitle: partial.statusTitle });
     check('B9: częściowa pula pokazuje widoczny, dokładny shortfall',
-      partial.shortfallText === `brak ${partialMissingLabel}` && partial.shortfallVisible
+      partial.shortfallText === `brak ${partialMissingCompact}` && partial.shortfallVisible
         && partial.statusMissing === String(required - partialAvailable),
       partial);
     check('B10: brak rekrutów blokuje przy częściowym stanie i wskazuje przyczynę',
@@ -271,7 +277,7 @@ async function main() {
     console.log('\n-- PEŁNA PULA REKRUTÓW --');
     const full = await run(required, { drewno: 50 });
     check('B12: pełna pula: potrzebne na karcie, dostępne / potrzebne w tooltipie (bez „brakuje”)',
-      full.statusText === requiredLabel
+      full.statusText === requiredCompact
         && full.statusTitle === `Rekruci: dostępne ${requiredLabel} / potrzebne ${requiredLabel}`,
       { statusText: full.statusText, statusTitle: full.statusTitle });
     check('B13: pełna pula nie pokazuje fałszywego shortfallu',

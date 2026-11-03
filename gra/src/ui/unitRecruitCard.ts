@@ -6,6 +6,8 @@
 import type { GameData, UnitDef } from '../data/loader';
 import type { ProductionItem } from '../game/production';
 import { formatManpower } from '../game/manpower';
+// R-WEB-HUD-NUMBER-ABBREV-Q1 (runda 2): widoczny zapis na karcie = ten sam „k"/„M" co pula nad listą; title zostaje pełnym opisem.
+import { formatCompactNumber } from './formatCompactNumber';
 import { categoryOf } from '../units/setup';
 import { unitIconSvg } from './icons/brandAssets';
 import {
@@ -201,11 +203,11 @@ function buildManpowerStatus(opts: {
   status.setAttribute('aria-label', status.title);
   status.insertAdjacentHTML('afterbegin', MANPOWER_ICON_SVG);
   const summary = el('span', 'unit-recruit-manpower-summary');
-  summary.textContent = formatManpower(required);
+  summary.textContent = formatCompactNumber(required);
   status.appendChild(summary);
   if (missing > 0) {
     const shortfall = el('span', 'unit-recruit-manpower-missing');
-    shortfall.textContent = `brak ${formatManpower(missing)}`;
+    shortfall.textContent = `brak ${formatCompactNumber(missing)}`;
     status.appendChild(shortfall);
   }
   return status;

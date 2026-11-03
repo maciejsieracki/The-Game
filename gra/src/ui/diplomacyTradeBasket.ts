@@ -2,6 +2,7 @@
  * diplomacyTradeBasket.ts — koszyk handlu / daru (PN) v1.0 (lane UI, P4).
  * Import katalogu PN z lane D; callback przez NegotiationPayload → audiencja.
  */
+import { formatCompactNumber } from './formatCompactNumber';
 import type { AudienceAction } from './diplomacyAudience';
 import type { NegotiationModalContext, NegotiationPayload } from './diplomacyNegotiationModal';
 import { isCurrencyProposalForbiddenDuringWar } from '../game/diplomacy-war-gates';
@@ -135,18 +136,8 @@ function buildChipBtn(
  * chipa (już budowany przez wywołującego, patrz `qtyResChips`), nie do tej odznaki.
  */
 function formatCompactQty(n: number): string {
-  const v = Math.trunc(n);
-  const abs = Math.abs(v);
-  if (abs < 1000) return String(v);
-  const units: Array<[number, string]> = [[1_000_000_000, 'B'], [1_000_000, 'M'], [1_000, 'k']];
-  for (const [div, suf] of units) {
-    if (abs >= div) {
-      const scaled = Math.round((v / div) * 10) / 10;
-      const str = Number.isInteger(scaled) ? String(scaled) : scaled.toFixed(1);
-      return str + suf;
-    }
-  }
-  return String(v);
+  // R-WEB-HUD-NUMBER-ABBREV-Q1: deleguje do wspólnego formattera (ten sam zapis „1,2k" / „1M").
+  return formatCompactNumber(Math.trunc(n));
 }
 
 /**
