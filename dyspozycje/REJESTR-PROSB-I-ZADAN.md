@@ -8513,3 +8513,6 @@ Właściciel: w opisach ulepszeń powinno być najpierw podane, ile surowca dane
 
 ## 2026-11-03 — DECYZJA WŁAŚCICIELA: powiększyć 2× wizerunki surowców oraz fortu i posterunku na mapie
 Właściciel: wizerunki surowców na mapie (koń, kopalnie/surowce pod kopalnie, wszystkie inne surowce) powiększyć dwukrotnie — praktycznie niewidoczne; to samo fort i posterunek jako ulepszenia (2×). Resztę ulepszeń zostawić bez zmian. Temat `R-WEB-MAP-MODELS-SCALE-2X-Q1`. Założenie: dotyczy modeli/sprajtów na mapie świata (nie minimapy ani ikon UI).
+
+## 2026-11-03 — zgłoszenie (zrzut: „ELIMINACJA! Xi'an — Bilans zdobycia”): przejęcie ostatniego miasta nie przenosi całego majątku cywilizacji
+Właściciel: przy zdobyciu OSTATNIEGO miasta (eliminacja cywilizacji Chińczyków) okno pokazuje tylko Glinę +134 i Rudę +40 oraz Ludność/Budynki/Punkty nauki/Moc/Pulę pracy +15 — „niemożliwe, żeby tylko ta cywilizacja miała glinę i rudę”. Ma być lista WSZYSTKICH przejmowanych surowców, pula pracy, pula nauki, a także ZŁOTO ZE SKARBCA oraz CAŁA żywność zgromadzona w SPICHLERZU. Temat `R-WEB-ELIMINATION-FULL-SPOILS-Q1` (diagnoza + poprawka, stała zgoda).
