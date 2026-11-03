@@ -8535,3 +8535,23 @@ Do osobnych tematów (z notatek FC): zapis w save rejestru wyciętych heksów (Q
 
 ## 2026-11-03 — wdrożono ROBOCZA abb556ee (main 1a2f1c721): skracanie liczb HUD + widoczna zamiana Pracy na podatek
 LABOR: złoto dochodziło na koniec tury (zmierzone 0→20 903); błąd = brak odświeżenia „+N/turę”, brak podglądu i komunikatu. Do Skarbca idzie udział „Podatek” suwaka stolicy (domyślnie 60%; reszta na Naukę i Zamożność) — decyzja produktowa „100% do Skarbca” NIEPODJĘTA (pytanie do właściciela).
+
+## 2026-11-03 — UZUPEŁNIENIE REJESTRU (audyt kompletności) + BACKLOG luźnych końców
+**Brakujący wpis:** zgłoszenie właściciela — lista jednostek do rekrutacji (panel miasta i Armia): najnowsza epoka na górze, w epoce od najsilniejszej. Temat `R-WEB-RECRUIT-LIST-ORDER-BY-ERA-Q1` — ZDEPLOYOWANE w ROBOCZEJ `c02b4df4` (FC `d9b58d21f`).
+**Gotowe, niewdrożone:** `R-WEB-HEX-TOOLTIP-IMPROVEMENT-PRODUCTION-TEXT-Q1` (FC `db8fabacc`, `web-wip/TIP-fc`).
+**W toku:** EVENTS-DEFER, PALISADE (z regułami oblężenia), HORSE-RESOURCE-TERRAIN (+ powody odmowy Stadniny), MAP-MODELS-SCALE-2X.
+**W kolejce (dispatch gotowy):** MILITIA-NO-DEFENDERS, ELIMINATION-FULL-SPOILS, AI-WAR-NEAREST-CITY-PEACE-2T (cel, pokój po 2 turach za cenę, zajmowanie miast), PLAYER-MOVES-BEFORE-AI-TURN, AI-ARMY-CONCENTRATION-REPLACEMENT, AI-MOVE-FULL-RANGE, AI-MARCH-AVOID-FOREIGN-TERRITORY (objazd lub prośba o przemarsz; bez umowy teren zablokowany).
+**BACKLOG (znalezione przy okazji, BEZ tematu — do zlecenia):**
+1. Q3: zapis w save rejestru wyciętych heksów (wyjątek farmy znika po wczytaniu); `markAutoCleared` ustawiane przy planowaniu, nie po wykonaniu wycinki.
+2. Q3: wskaźnik „Budżet niewydany” niezweryfikowany w żywej grze; licznik „X pól czeka” może być zawyżony; zużycie Pracy przez forty/posterunki bez limitu NIE_ZMIERZONO; `lesneMin` (czy to limit).
+3. Tooltip: etykieta „· Drewno” dublująca produkcję (`labelsForImprovementUnlock`, `resource-access.ts:117`) — temat `R-WEB-HEX-TOOLTIP-UNLOCK-LABEL-DEDUP-Q1`.
+4. HUD: etykieta „Rekruci” (`main.ts`/`manpower.ts`, „tys./mln”), znaczniki mapy i liczebność kart armii bez skracania „k”.
+5. Stadnina: skan kandydatów AI (`ai.ts` ~:2589) per miasto nie obejmuje terytorium fortów; przyczyna zgłoszenia „bardzo często nie da się zbudować” może być szersza niż posterunek/fort.
+6. Zamiana Pracy na podatek: decyzja czy 100% do Skarbca (dziś udział suwaka 60%) — PYTANIE do właściciela.
+7. Wieże przy murze: sposób powstawania — pytanie bez odpowiedzi (domyślnie automatycznie, ZAŁOŻENIE).
+8. Wojny wymuszone epokowe a pokój po 2 turach — zostawione bez zmian (ZAŁOŻENIE); pytanie jeśli właściciel chce objąć.
+9. Natywny dostęp do żelaza zawsze false w webie (`main.ts:5101`/`:3275`) — pytanie do właściciela (z wcześniejszych sesji, bez odpowiedzi).
+10. Niskie web: U-5 (farma 5 tur po wycince poza rzeką), `R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1`, hook `setCityLimit` do testów fortów; test `oboz-lowiecki-las` pada na bazie (19 FAIL), `ai4-popyt-obywatele`, `grupa-b-lane`.
+11. Zmiana generatora konia zmienia hashe map → repin wektorów mapgen w porcie Rust (po wznowieniu Rusta).
+12. Rust WSTRZYMANY (decyzja właściciela); kolejka: 3 MULTIWAR-ERA-BRAMKI … (LEDGER).
+13. PRZYPOMNIENIE DLA WŁAŚCICIELA: ręczne usunięcie scalonych gałęzi `web-wip/*` i `rust-port-wip/*` na GitHubie (obecnie ~60+, w tym nowe `web-wip/*-fc`); oraz zgoda na kasowanie starych plików w `/tmp` (`esbuild-*.map`, `tmp.*`, ok. 8 GB).
