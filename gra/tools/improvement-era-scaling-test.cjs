@@ -40,7 +40,7 @@ export * from '${terrainModule}';
 export { tileYield } from '../src/game/economy';
 export { computeTerritoryResourceYieldByCity, hexToWorkedTile, cityWorkedTilesForEconomy } from '../src/game/turn-economy';
 export { buildTerritoryNodesFromCities } from '../src/map/territory-work';
-export { yieldOfMapHex } from '../src/game/okolica';
+export { yieldOfMapHex, collectWorkedHexOwnerMap, collectWorkedHexKeysForOwner, seedReczneFromAuto } from '../src/game/okolica';
 export { buildHexContextTooltipHtml } from '../src/ui/hexContextTooltip';
 `, 'utf8');
 const BUNDLE = path.join(TMP, 'bundle.cjs');
@@ -190,6 +190,37 @@ for (const era of [1, 2, 3]) {
   eq(nums, [2 + era, 2 + era, 2 + era], `tooltip Farma epoka ${era}`);
   const plain2 = M.buildHexContextTooltipHtml({ q: 6, r: 5, hex: HEX2, esc: s => s, currentEra: era }).replace(/<[^>]+>/g, '');
   ok(plain2.includes(`+${[50, 75, 113][era - 1]} Drewno/t`), `tooltip Tartak produkcja epoka ${era}`);
+}
+
+console.log('-- (4) ranking pol (okolica.ts) uzywa epoki wlasciciela, jak silnik --');
+{
+  const mk = (teren, ul) => ({ coords: { q: 0, r: 0 }, terenBazowy: teren, nakladka: 'brak', ulepszenie: 'brak', ulepszenia: ul ? [ul] : [], rzeka: { obecna: false, krawedzie: [] } });
+  const hexes = {};
+  const put = (q, r, h) => { hexes[`${q},${r}`] = { ...h, coords: { q, r } }; };
+  put(0, 0, mk('rownina'));
+  put(1, 0, mk('wzgorza', 'kopalnia_zelaza')); // era 1: 11, era 3: 15
+  put(-1, 0, mk('pustynia', 'farma'));          // era 1: 10, era 3: 16 -> ranking odwraca sie z epoka
+  const map = { hexes, riverPaths: [] };
+  const base = M.yieldOfMapHex(map, 1, 0, 1);
+  const f1 = M.yieldOfMapHex(map, -1, 0, 1);
+  const f3 = M.yieldOfMapHex(map, -1, 0, 3);
+  const sum = (y) => (y.zywnosc || 0) + (y.praca || 0) + (y.handel || 0);
+  ok(sum(f3) > sum(f1), `yieldOfMapHex: ulepszony heks rosnie z epoka (${sum(f1)} -> ${sum(f3)})`);
+  // wspolna sciezka: eraForOwner przekazuje epoke do rankingu
+  const city = { id: 'c0', ownerId: 0, q: 0, r: 0, population: 1, okolicaFocus: 'imperium', okolicaTryb: 'auto' };
+  const calls = [];
+  const seen = (era) => {
+    const got = M.collectWorkedHexOwnerMap([city], map, { eraForOwner: (o) => { calls.push([o, era]); return era; } });
+    return [...got.keys()].sort();
+  };
+  seen(3);
+  ok(calls.length > 0 && calls.every(c => c[1] === 3), 'collectWorkedHexOwnerMap wola eraForOwner dla wlasciciela miasta');
+  const e1 = M.seedReczneFromAuto(city, map, undefined, undefined, 1);
+  const e3 = M.seedReczneFromAuto(city, map, undefined, undefined, 3);
+  eq(Object.keys(e1), ['1,0'], 'epoka 1: wybrany heks z Kopalnia zelaza (11 > 10)');
+  eq(Object.keys(e3), ['-1,0'], 'epoka 3: wybrany heks z Farma (16 > 15) -- ranking zalezy od epoki');
+  eq(Object.keys(e3), seen(3).filter(k => k !== '0,0'), 'seedReczneFromAuto(era 3) == wybor silnika (collectWorkedHexOwnerMap era 3)');
+  eq(Object.keys(e1), seen(1).filter(k => k !== '0,0'), 'seedReczneFromAuto(era 1) == wybor silnika (era 1)');
 }
 
 console.log(`\n${passed} PASS, ${failed} FAIL`);

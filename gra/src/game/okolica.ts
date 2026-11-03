@@ -408,12 +408,14 @@ export function seedReczneFromAuto(
   territoryNodes?: readonly TerritoryNode[],
   /** P-HEKS-SPOR-SASIAD: patrz `AssignOptions.excludeHexKeys`. */
   excludeHexKeys?: ReadonlySet<string>,
+  /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: epoka właściciela miasta (ranking pól jak w silniku). */
+  ownerEra?: number,
 ): Record<string, number> {
   const pop = Math.max(0, Math.floor(city.population ?? 0));
   if (pop <= 0) return {};
   const radius = cityRangeForPopulation(pop);
   const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
-  const tiles = assignWorkedTiles(city.q, city.r, pop, map, (q, r) => yieldOfMapHex(map, q, r), assignOptionsForFocus({
+  const tiles = assignWorkedTiles(city.q, city.r, pop, map, (q, r) => yieldOfMapHex(map, q, r, ownerEra), assignOptionsForFocus({
     radius,
     territoryNodes,
     ownerId: city.ownerId,
@@ -454,6 +456,8 @@ export function rebalanceWorkersAfterPopulationChange(
    * dalej może (rzadko) posadzić 👤 na spornym heksie do czasu osobnej naprawy.
    */
   excludeHexKeys?: ReadonlySet<string>,
+  /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: epoka właściciela miasta. */
+  ownerEra?: number,
 ): void {
   const tryb = city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
   const pop = Math.max(0, Math.floor(popAfter));
@@ -468,13 +472,13 @@ export function rebalanceWorkersAfterPopulationChange(
   const wagi = wagiForFocus(focus);
   const workFilter = terrainAndTerritoryFilter(map, territoryNodes, city.ownerId, excludeHexKeys);
   const tiles = okolicaTiles(city.q, city.r, radius, map, workFilter);
-  const yieldOf = (q: number, r: number) => yieldOfMapHex(map, q, r);
+  const yieldOf = (q: number, r: number) => yieldOfMapHex(map, q, r, ownerEra);
 
   let reczne: Record<string, number> = { ...(city.okolicaReczne ?? {}) };
 
   if (popAfter > popBefore) {
     if (countAssignedWorkers(reczne) === 0 && pop > 0) {
-      city.okolicaReczne = seedReczneFromAuto({ ...city, population: pop }, map, territoryNodes, excludeHexKeys);
+      city.okolicaReczne = seedReczneFromAuto({ ...city, population: pop }, map, territoryNodes, excludeHexKeys, ownerEra);
       return;
     }
     let need = pop - countAssignedWorkers(reczne);
@@ -705,10 +709,12 @@ export function collectWorkedHexKeysForOwner(
   opts: {
     isWorkable?: (q: number, r: number) => boolean;
     territoryNodes?: readonly TerritoryNode[];
+    /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: epoka właściciela (ranking pól jak w silniku). */
+    eraForOwner?: (ownerId: number) => number;
   } = {},
 ): Set<string> {
   const keys = new Set<string>();
-  const yieldOf = (q: number, r: number) => yieldOfMapHex(map, q, r);
+  const yieldOf = (q: number, r: number) => yieldOfMapHex(map, q, r, opts.eraForOwner?.(ownerId));
   // P-HEKS-SPOR-SASIAD: liczone RAZ dla całej listy miast (nie per-city), jak w advanceCityEconomy.
   const lostToSiblingByCity = computeLostToNearerSiblingByCity(cities, map);
   for (const city of cities) {
@@ -731,14 +737,16 @@ export function collectWorkedHexOwnerMap(
   opts: {
     isWorkable?: (q: number, r: number) => boolean;
     territoryNodes?: readonly TerritoryNode[];
+    /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: epoka właściciela (ranking pól jak w silniku). */
+    eraForOwner?: (ownerId: number) => number;
   } = {},
 ): Map<string, number> {
   const byKey = new Map<string, number>();
-  const yieldOf = (q: number, r: number) => yieldOfMapHex(map, q, r);
+  const yieldOfForOwner = (ownerId: number) => (q: number, r: number) => yieldOfMapHex(map, q, r, opts.eraForOwner?.(ownerId));
   // P-HEKS-SPOR-SASIAD: liczone RAZ dla całej listy miast (nie per-city), jak w advanceCityEconomy.
   const lostToSiblingByCity = computeLostToNearerSiblingByCity(cities, map);
   for (const city of cities) {
-    const worked = resolveWorkedTiles(city, map, yieldOf, {
+    const worked = resolveWorkedTiles(city, map, yieldOfForOwner(city.ownerId), {
       isWorkable: opts.isWorkable,
       territoryNodes: opts.territoryNodes,
       ownerId: city.ownerId,

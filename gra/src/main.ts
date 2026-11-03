@@ -6149,6 +6149,7 @@ async function boot(): Promise<void> {
         const workedMap = collectWorkedHexOwnerMap(cities, map, {
           isWorkable: okolicaHexWorkable,
           territoryNodes: buildAllTerritoryNodes(),
+          eraForOwner: empireEpochForOwner,
         });
         hexWorkedForMagazyn = workedMap.has(hexKey);
       }
@@ -8129,7 +8130,7 @@ async function boot(): Promise<void> {
           if (!city) return;
           city.okolicaTryb = 'reczny';
           const hasReczne = city.okolicaReczne && Object.values(city.okolicaReczne).some(n => n > 0);
-          if (!hasReczne) city.okolicaReczne = seedReczneFromAuto(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city));
+          if (!hasReczne) city.okolicaReczne = seedReczneFromAuto(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city), empireEpochForOwner(city.ownerId));
           // P-AUTO-WYZYWIENIE-BUG1: przejście auto -> ręczny może zmienić przydział pól
           // (seedReczneFromAuto) -> produkcja żywności tego miasta na żywo.
           applyLiveSafeRationForCity(cityId);
@@ -13881,6 +13882,7 @@ async function boot(): Promise<void> {
       const workedByOwner = collectWorkedHexOwnerMap(cities, map, {
         isWorkable: okolicaHexWorkable,
         territoryNodes: buildAllTerritoryNodes(),
+        eraForOwner: empireEpochForOwner,
       });
       if (workedByOwner.size === 0) return;
       workerFieldOverlayGroup = syncWorkerFieldOverlay(scene, null, map, workedByOwner, ME());
