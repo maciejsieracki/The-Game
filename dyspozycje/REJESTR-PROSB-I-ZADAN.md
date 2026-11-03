@@ -8494,3 +8494,6 @@ Limitu liczby ulepszeń na miasto NIE ma (`maxItemsPerCity` = Infinity dla gracz
 
 ## 2026-11-03 — zgłoszenie (zrzuty: lista ulepszeń z „Stadnina — Brak heksów w twoim terytorium”): fałszywy brak złoża koni
 Właściciel: mimo że na moim terenie jest dostęp do koni, ulepszenie Stadnina informuje „Brak heksów w twoim terytorium”, jakby nie było zasobu. Temat `R-WEB-STADNINA-NO-HEX-FALSE-NEGATIVE-Q1` (diagnoza + poprawka, stała zgoda). Kod: `gra/src/map/improvement-build.ts:1486`, `terrain-improvements.json` (stadnina), `resource-access.ts`, `livestock-unlock.ts`.
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA: złoże konia tylko na równinach/trawie/łąkach, nie na lesie (+ potwierdzenie błędu Stadniny)
+Właściciel: (1) surowiec „koń” NIE powinien być generowany na lesie, a jedynie na równinach lub terenach trawiastych/łąkach; (2) bardzo często mimo złoża konia nie da się wybudować stadniny — błąd do sprawdzenia (jest w toku jako `R-WEB-STADNINA-NO-HEX-FALSE-NEGATIVE-Q1`; ten sam temat dostał potwierdzenie „bardzo często”). Zmiana (1): temat `R-WEB-HORSE-RESOURCE-TERRAIN-Q1` — dispatch zapisany, START po `STADNINA` (te same pliki) i po zwolnieniu miejsca. UWAGA: zmiana generatora map zmienia hashe map → konsekwencja dla portu Rust (repin wektorów mapgen) — wpis do LEDGER przy integracji. Zastępuje ECHO 2026-09-03 w zakresie „koń na lesie”.
