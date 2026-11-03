@@ -36,3 +36,5 @@ GOAL: Palisada = forma muru w bitwie/oblezeniu (R1 zdobycie tylko po wylomie + m
 ## NASTEPNY KROK: Evaluator r1 (weryfikacja R1-R3, przegladanie wiringu), potem runda 2 Operatora: R4 + palisada w _placeSiegeWall (przekazac rodzaj obwarowania do buildSiegeWall) + zrzuty.
 ## ZMIANY/COMMIT: patrz SHA w dopisku ponizej
 ## DEPLOY/PUSH: NIE WYKONANO
+
+## COMMIT: 1461c0dfa (worktree branch worktree-wf_3daf429c-ff2-1, baza origin/main 1247214fd; PUSH NIE)
