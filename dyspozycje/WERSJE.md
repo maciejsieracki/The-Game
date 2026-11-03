@@ -1,3 +1,12 @@
+## ROBOCZA 4cff1d23 -- 2026-11-03 -- generator map: koń nie leży pod lasem (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` i commit wdrożenia bundla; decyzja właściciela (koń tylko równiny/trawa/łąki), stała zgoda na poprawki.
+- Bundle MD5 `4cff1d2384438a0dead09b37e514eb7d`, 70,166,764 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: złoże konia nigdy na lesie przy generowaniu mapy (przed: 59% koni na lesie, Stadnina odmawiała); przesunięcie na najbliższą wolną Równinę, liczba koni bez zmian. Tylko nowe mapy.
+- Testy: tsc PASS; determinism PASS; horse-resource-terrain 14/0 (FC); stadnina 15/0 i 28/0.
+- Ograniczenia: wyspy 4/8 ziaren; zapisy z koniem pod lasem bez naprawy; Rust wymaga REPIN mapgen.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `7c6b06c7e7e89c1f842d4257193a2717`, 70,165,138 bajtów.
+
 ## ROBOCZA 7c6b06c7 -- 2026-11-03 -- ulepszenia: plony +1 za epokę, surowce ×1,5 za epokę (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`7c0c57a2a` + IMPROVEMENT-ERA-SCALING `0c4f6062e`) i commit wdrożenia bundla; decyzje właściciela (baza = epoka gracza, Pieniądz +1/epokę, złoto ×1,5), stała zgoda na poprawki.
