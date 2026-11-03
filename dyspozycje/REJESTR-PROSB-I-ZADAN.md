@@ -8579,3 +8579,6 @@ Właściciel: (1) przy wyborze jednostek do odłączenia lista przewijania wraca
 ## 2026-11-03 — DECYZJA WŁAŚCICIELA: skala ×2 złóż zostaje; rudy mogą wystawać poza heks
 Właściciel: zostawiamy ×2, wystawanie poza krawędź heksa (rudy do ok. 0,35 promienia) akceptowane. Brak zmian w kodzie; wariant 1,5 odrzucony. Zamknięte (`R-WEB-MAP-MODELS-SCALE-2X-Q1`).
 Pytania bez odpowiedzi (domyślne założenia obowiązują): Milicja — „garnizon” = budynek Garnizon; wieża oblężnicza w bitwie taktycznej nie liczy się jako wyłom; żelazo natywne — najpierw pomiar (C).
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA: bonus obrony muru/palisady dla wszystkich obrońców w mieście + podwójny zasięg strzelców na murze
+(1) Bonus obrony z muru/palisady (+200% / +100%, Cytadela, Baszta) liczy się dla WSZYSTKICH jednostek na murach lub wewnątrz murów (wewnątrz miasta) — nie tylko tych stojących na koronie muru. (2) Jednostki strzeleckie (dystansowe) stojące na murze (i za palisadą na jej koronie) mają DWUKROTNIE większy zasięg. Temat `R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1` (battleScene/siege — SEKWENCYJNIE po `R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1`).
