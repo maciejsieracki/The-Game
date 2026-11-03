@@ -1,3 +1,12 @@
+## ROBOCZA 7c6b06c7 -- 2026-11-03 -- ulepszenia: plony +1 za epokę, surowce ×1,5 za epokę (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`7c0c57a2a` + IMPROVEMENT-ERA-SCALING `0c4f6062e`) i commit wdrożenia bundla; decyzje właściciela (baza = epoka gracza, Pieniądz +1/epokę, złoto ×1,5), stała zgoda na poprawki.
+- Bundle MD5 `7c6b06c7e7e89c1f842d4257193a2717`, 70,165,138 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: plony Żywność/Praca/Handel/Pieniądz +1 za epokę (Farma 3/4/5, Irygacja żywność 5/6/7, Obóz łowiecki i Warzelnia soli Pieniądz 1/2/3); surowce ×1,5 za epokę (50/75/113 drewno, kamień, glina, sól; Stadnina 25/38/56; rudy 20/30/45; złoto 1/2/2); gracz i AI jednakowo.
+- Testy: tsc PASS; era-scaling 144/0; kamieniolom-epoka 37/0; tooltip 19/0.
+- Ograniczenia: symulacja AI 100+ tur NIE_ZMIERZONO (pomiar silnikowy: epoka 3 Żywność +24%, Praca +36%, Handel +29%); tryb ręczny przy zmianie populacji bez epoki (osobny temat); Rust wymaga REPIN.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `b23f563741c7c93c45438f2612986ed4`, 70,163,803 bajtów.
+
 ## ROBOCZA b23f5637 -- 2026-11-03 -- Milicja: 5 tur odnowy po zniszczeniu (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (po MERGE-PANEL + CITY-MILITIA-REGEN-COOLDOWN `97e5e9108`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.

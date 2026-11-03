@@ -1,113 +1,113 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b23f563741c7c93c45438f2612986ed4",
-  "bundleSha256": "395cf7460597793e1c4f7d34354ff76b6700c4e08c4338544d2def90ee1f0561",
-  "bundleBytes": 70163803,
+  "bundleMd5": "7c6b06c7e7e89c1f842d4257193a2717",
+  "bundleSha256": "5915f19634ff71c1bd5794e527cf87c514d35c8f9b1f9a248245866be90b4d83",
+  "bundleBytes": 70165138,
   "sourceSnapshot": {
-    "source": "main (po MERGE-PANEL) + CITY-MILITIA-REGEN-COOLDOWN (97e5e9108)",
+    "source": "main 7c0c57a2a + IMPROVEMENT-ERA-SCALING (0c4f6062e)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: po CAŁKOWITYM zniszczeniu Milicji miasto przez 5 tur (parametr militia_regen_turns) nie wystawia Milicji, potem odnowa w pełnym składzie wg ludności; działa w bitwie taktycznej, Pomiń/Auto (wygrana atakującego = Milicja zniszczona), oblężeniu i szturmie; straty częściowe nie uruchamiają odnowy; licznik w zapisie (stare zapisy bez odnowy); wiersz „Milicja odnawia się: za N tur” w panelu oblężenia."
+    "R-WEB-IMPROVEMENT-ERA-SCALING-Q1: plony ulepszeń terenu (Żywność, Praca, Handel, Pieniądz) rosną o +1 za epokę ponad Kamień wg epoki właściciela; produkcja surowca ×1,5 za epokę dla wszystkich ulepszeń surowcowych (Tartak i Kamieniołom bez podwójnego skalowania); gracz i AI jednakowo; tooltip pokazuje wartości epoki gracza."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "city-militia-regen-cooldown 53/0 (RED przed; 7 mutacji łamie test); city-militia-no-defenders 113/0; regresje oblężenia zielone"
+    "improvement-era-scaling 144/0 (RED przed; mutacje łamią); kamieniolom-kamien-epoka 37/0; hex-tooltip-improvement-production-text 19/0"
   ],
   "limits": [
-    "Wiersz UI nie zweryfikowany w Chromium (NIE_ZMIERZONO)",
-    "Zniszczona w Pomiń/Auto = wygrana atakującego (definicja)",
-    "Klucz militia_regen_turns do dopisania w panele-sterowania/export-c.py OBL_MAP",
-    "Padały na bazie: budynek-garnizon, pre-battle-save, wall-defenders-bonus-range (timeout)"
+    "Pełna symulacja AI 100+ tur i czas tury NIE_ZMIERZONO; balans zmierzony silnikowo (epoka 3: Żywność +24%, Praca +36%, Handel +29%)",
+    "population-growth-v85.ts:582 rebalanceWorkersAfterPopulationChange bez epoki (tryb ręczny) — osobny temat",
+    "Karty encyklopedii i improvementBuildConfirm na wartościach bazowych",
+    "Znane czerwone na bazie: mennica-magazyn, okolica-load-reconcile, okolica-ownership-change-reconcile; port Rust: REPIN po wznowieniu"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "CITY-MILITIA-REGEN-COOLDOWN (r2): Operator → Evaluator FAIL r1 → Obrona → FC PASS-WITH-NOTES."
+    "notes": "IMPROVEMENT-ERA-SCALING (r2): Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-03T22:48:05",
+  "hubGeneratedAt": "2026-11-03T23:03:25",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b23f563741c7c93c45438f2612986ed4",
-      "sizeBytes": 70163803
+      "md5": "7c6b06c7e7e89c1f842d4257193a2717",
+      "sizeBytes": 70165138
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b23f563741c7c93c45438f2612986ed4",
-      "sizeBytes": 70163803
+      "md5": "7c6b06c7e7e89c1f842d4257193a2717",
+      "sizeBytes": 70165138
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "b23f563741c7c93c45438f2612986ed4",
-      "sizeBytes": 70163803
+      "md5": "7c6b06c7e7e89c1f842d4257193a2717",
+      "sizeBytes": 70165138
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "b23f563741c7c93c45438f2612986ed4",
-      "sizeBytes": 70163803
+      "md5": "7c6b06c7e7e89c1f842d4257193a2717",
+      "sizeBytes": 70165138
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "b23f563741c7c93c45438f2612986ed4",
-      "sizeBytes": 70163803
+      "md5": "7c6b06c7e7e89c1f842d4257193a2717",
+      "sizeBytes": 70165138
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "b23f563741c7c93c45438f2612986ed4",
-      "sizeBytes": 70163803
+      "md5": "7c6b06c7e7e89c1f842d4257193a2717",
+      "sizeBytes": 70165138
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "b23f563741c7c93c45438f2612986ed4",
-      "sizeBytes": 70163803
+      "md5": "7c6b06c7e7e89c1f842d4257193a2717",
+      "sizeBytes": 70165138
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "b23f563741c7c93c45438f2612986ed4",
-      "sizeBytes": 70163803
+      "md5": "7c6b06c7e7e89c1f842d4257193a2717",
+      "sizeBytes": 70165138
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "b23f563741c7c93c45438f2612986ed4",
-      "sizeBytes": 70163803
+      "md5": "7c6b06c7e7e89c1f842d4257193a2717",
+      "sizeBytes": 70165138
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "b23f563741c7c93c45438f2612986ed4",
-      "sizeBytes": 70163803
+      "md5": "7c6b06c7e7e89c1f842d4257193a2717",
+      "sizeBytes": 70165138
     }
   ],
-  "md5": "b23f563741c7c93c45438f2612986ed4",
-  "sizeBytes": 70163803,
+  "md5": "7c6b06c7e7e89c1f842d4257193a2717",
+  "sizeBytes": 70165138,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "f937a3f9f349786247df6d0af64ff70a"
+    "bundleMd5": "b23f563741c7c93c45438f2612986ed4"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 f937a3f9f349786247df6d0af64ff70a, 70162448 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 b23f563741c7c93c45438f2612986ed4, 70163803 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1283,8 +1283,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-03T22:48:06+00:00",
-  "buildStamp": "2026-11-03 22:48",
+  "publishedAt": "2026-11-03T23:03:26+00:00",
+  "buildStamp": "2026-11-03 23:03",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
