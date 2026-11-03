@@ -79,7 +79,7 @@ import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import { loadGameData, getTechDef, getUnitDef, type GameData, type BuildingDef, type UnitDef } from '../data/loader';
-import { sortByUnitPowerDescending, type UnitPowerInput } from '../game/unit-power';
+import { sortRecruitListByEra, type RecruitOrderInput } from '../game/recruit-list-order';
 import { parsePrerequisites } from '../game/research';
 import {
   buildableProduction,
@@ -8219,9 +8219,11 @@ function unitResourceUpkeepChipsHtml(u: UnitDef): string {
  */
 export function recruitPanelPurchasableUnits(city: City, data: GameData) {
   const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-  return sortByUnitPowerDescending(
+  // R-WEB-RECRUIT-LIST-ORDER-BY-ERA-Q1: epoka malejąco, w epoce siła malejąco (jeden komparator
+  // dla panelu miasta i panelu Armia — oba renderują tę listę przez renderPurchasableUnits).
+  return sortRecruitListByEra(
     purchasableUnits(city, data, techs, { ...productionCtxForCity(city), showStockGatedUnits: true }),
-    unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
+    unit => getUnitDef(data, unit.id) as unknown as RecruitOrderInput,
   );
 }
 
