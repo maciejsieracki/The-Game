@@ -56,3 +56,4 @@ G06-matrix-fallback-neutral        KILLED
 G07-legacy-fallback-neutral        KILLED
 G08-total-replaced-by-base         KILLED
 EXIT=0
+OBRONA-R1 P11 KILLED: tests/p6_econ_post_unit.rs::gold_deficit_step_writes_back_hp_and_hp_max_when_unset; brutto 51/57 = 89.5 proc.

@@ -102,12 +102,12 @@ Wniosek: `settle_turn` NIE jest portem żadnej funkcji weba i jego podpięcie z�
   scenariusze/seed co `EMPIREFOOD-Q1` (347), stan graniczny = stan PO bloku EmpireFood i bankowaniu. Fixture: `tests/p6_econ_post_vectors/post_0.json` (4,5 MB < 6 MB).
 * Test `tests/p6_econ_post_e2e.rs`: porównanie BITOWE wszystkich pól wyjścia (ticki deficytu, stany, jednostki, oblężenia, besieger, `ended`, `garnSynced`, populacja,
   `wzrostUlamkowy`, `turyBezDoplaty`, `hungerLossUlamkowy`, MP, pola ticku, `growth`/`starved`, wiersze EmpireFood z `breakdown`, kolejność i argumenty `rebalance`,
-  pule Pracy, `_lastPracaRate`); progi pokrycia w teście. `tests/p6_econ_post_unit.rs`: 3 testy czystych funkcji.
+  pule Pracy, `_lastPracaRate`); progi pokrycia w teście. `tests/p6_econ_post_unit.rs`: 5 testów (3 czyste funkcje + OBRONA R1: zapis `hp`/`hpMax` przy `None`, kolejność właścicieli Z-POST-3).
 * Niezależny weryfikator `verify-p6-econ-post.py` (`python3 -I`, bez Rust/weba): 25 097 sprawdzeń, 0 rozbieżności; kontrola negatywna `--neg` wykrywa manipulację (`verify-output.txt`).
-* Mutacje `mutate-econ-post.py` (`mutacje-wynik.txt`): 57 mutantów, 50 zabitych, 7 przeżyło, wszystkie 7 równoważne z dowodem; brutto 50/57 = 87,7%, bez równoważnych 50/50.
+* Mutacje `mutate-econ-post.py` (`mutacje-wynik.txt`): 57 mutantów; po OBRONIE R1 51 zabitych (P11 zabity testem `gold_deficit_step_writes_back_hp_and_hp_max_when_unset`, sprawdzone ręcznie: `left: (Some(30.0), None)`), 6 przeżyło, wszystkie 6 równoważne z dowodem; brutto 51/57 = 89,5% (nadal poniżej 90%, równoważniki wg kryterium dispatchu), bez równoważnych 51/51.
   * P02 (barbarzyńca w liście AI): odfiltrowany później `.filter(o != -1)` (zabijany przez P06) i pomijany przez `states.entry` (P05).
   * P05: `-1` trafia do `gd_owner_ids` tylko przez `states.keys()` (stan już istnieje, `or_insert_with` bez efektu) albo listę AI (wykluczona).
-  * P11: `hp_max` nie jest odtwarzany z `get_max_hp`, bo każda jednostka na granicy ma `hpMax` (`syncAllRuntimeUnitHpState` `main.ts:29894-29906` = `sync_runtime_unit_hp_state`).
+  * P11 (ZABITY w OBRONIE R1, już nie ekwiwalent): wcześniejszy dowód przez `syncAllRuntimeUnitHpState` (`main.ts:29894-29906`) był tylko warunkowy; `AttritionUnit.hp_max` to `Option<f64>`, a web (`gold-deficit.ts:239-240`) ustawia `u.hpMax`/`u.hp` gdy brak. Pokryte testem z `hp`/`hp_max` = `None`.
   * P14: `GoldDeficitRuntime::advance` sam robi `or_insert_with(fresh)` (`turn_economy.rs:553`), wstępne zasianie jest redundantne.
   * P20, P21: wzrost czyta tylko `maSpichlerzPop`/`maSpichlerzIIPop` (`building-resource-gate.ts:477-481`), nie `ceramikaActive`/`solActive`.
   * G04: gałąź `adjusted === total` zwraca strukturę o identycznych wartościach jak `{...base, total: adjusted}`.
@@ -125,7 +125,9 @@ Wniosek: `settle_turn` NIE jest portem żadnej funkcji weba i jego podpięcie z�
 * Z-POST-1: wektory startują ze stanu granicznego po `advanceCityEconomy` + EmpireFood + bankowaniu (łańcuch do tego miejsca jest porównany bitowo w `p6_empirefood_e2e.rs`); nie powtarzamy go w jednym teście.
 * Z-POST-2: między deficytem Złota a wzrostem web wykonuje pętlę per miasto (kultura/porządek/produkcja, `:35358-36008`), która zmienia stan miast; wzrost testowany na wejściu losowanym
   (`happiness`, `citizen`, `growthMult`, `manpowerMax`), nie na wyjściu tej pętli (dług `-PRODUCTION-LANE`, `-AUTOMANAGE`).
-* Z-POST-3: kolejność kluczy `goldDeficitStates` ponad `[0, AI]` w webie = kolejność wstawiania `Map`, w Rust `BTreeMap` rosnąco; wpływa tylko na kolejność list (`ownerIds`, `destroyed`), nie na stan; test porównuje je jako zbiory.
+* Z-POST-3 (odstępstwo od 1:1, jawne): web `new Set([0, ...gdAiOwnerIds, ...goldDeficitStates.keys()])` zachowuje kolejność wstawiania `Map` (klucze 5,3 => `[0,5,3]`); Rust `BTreeMap` iteruje rosnąco (`[0,3,5]`, komentarz w `run_gold_deficit_step`). Wpływa wyłącznie na kolejność `owner_ids`, `per_owner`, `destroyed_ids` (właściciele niezależni: filtr po `ownerId`, brak współdzielonego stanu), nie na stany ani jednostki. e2e porównuje listy jako zbiory; test `gold_deficit_step_owner_order_is_ascending_z_post_3` przypina kolejność Rust.
+* Z-POST-8: nowe pola `szczescie` / `citizen_growth_pct_delta` (Z-POST-4) nie mają wektora z weba (`citizenUpkeep?.growthPctDelta ?? 0`, `main.ts:36020-36024`, w tym przypadek `citizenUpkeep` undefined) -- NIE_ZMIERZONO; wzór `szczescie` sprawdzony odczytem kodu (`:35765`). Dług: wektory ORDER-LANE z tymi polami.
+* Z-POST-9: baza regresu 2087/0 przyjęta z dispatchu (`c8782b58d`), PRZED nie zmierzono ponownie; rachunek: po OBRONIE R1 pełny zestaw = 2087 + 4 (1 e2e + 3 unit) + 2 (unit OBRONY) = 2093.
 * Z-POST-4: patrz sek. 7 (`order_effects_lane.rs` poza allowlistą, pola nie zmierzone vs web).
 * Z-POST-5: upkeep Pracy drugiego fotela człowieka trafia do `aiPracaPoolByOwner` (web `:36108-36113`, `oid === 0` jest jedyny wyjątek) -- odtworzone 1:1, prawdopodobna luka weba (hot-seat), nie poprawiana.
 * Z-POST-6: `rebalanceWorkersAfterPopulationChange` w wektorach z pustą mapą i `territoryNodes = []` (jak P6.7A); porównujemy kolejność i argumenty wywołań, nie zmiany `okolicaReczne`.

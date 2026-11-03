@@ -1,0 +1,2 @@
+fmt+clippy -D warnings
+EXIT=0

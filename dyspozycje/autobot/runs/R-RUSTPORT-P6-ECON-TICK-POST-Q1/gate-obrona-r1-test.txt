@@ -1,0 +1,2 @@
+cargo test -j 2 --no-fail-fast (pelny, po OBRONIE R1): 2093 passed / 0 failed
+EXIT=0

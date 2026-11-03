@@ -84,3 +84,120 @@ fn growth_inputs_from_order_lane_maps_reports() {
     assert_eq!(c["b"], 0.0);
     assert_eq!(h.len(), 2);
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// OBRONA R1: P11 (zapis hp/hpMax z powrotem po `applyGoldDeficitHpLoss`) i Z-POST-3 (kolejnosc wlascicieli).
+// ---------------------------------------------------------------------------------------------------------------
+
+use std::collections::BTreeSet;
+
+use civ_engine::domain::turn_economy::gold_deficit::{
+    GoldDeficitParams, GoldDeficitRuntime, GoldDeficitState,
+};
+use civ_engine::domain::turn_economy_attrition::AttritionUnit;
+use civ_engine::domain::turn_economy_post::{run_gold_deficit_step, GoldDeficitStepInput};
+
+fn attrition_unit(id: &str, owner: i64, hp: Option<f64>, hp_max: Option<f64>) -> AttritionUnit {
+    AttritionUnit {
+        id: id.to_string(),
+        owner_id: owner,
+        type_id: "Hoplita".to_string(),
+        category: "Piechota".to_string(),
+        hp,
+        hp_max,
+        oblega_city_id: None,
+        in_garnizon: false,
+        q: 0.0,
+        r: 0.0,
+    }
+}
+
+/// Web `gold-deficit.ts:239-240`: jednostka bez `hpMax`/`hp` dostaje `hpMax = getMaxHp(type)`, `hp = hpMax`
+/// (przed odjeciem straty), a mutacja jest widoczna w globalnej liscie jednostek. Rust musi zapisac OBA pola
+/// z powrotem (mutant P11 przezywal, bo fixture nie mial jednostek z `hpMax = None`).
+#[test]
+fn gold_deficit_step_writes_back_hp_and_hp_max_when_unset() {
+    let params = GoldDeficitParams {
+        zloto_deficyt_stat_mult: 0.5,
+        zloto_deficyt_karencja_tur: 1.0,
+        zloto_deficyt_hp_frac: 0.25,
+    };
+    let humans: BTreeSet<i64> = [0].into_iter().collect();
+    let treasury = |_o: i64| -5.0;
+    let health = |t: &str| if t == "Hoplita" { 40.0 } else { 0.0 };
+    let input = GoldDeficitStepInput {
+        params: &params,
+        human_owner_ids: &humans,
+        owner_treasury: &treasury,
+        unit_health_by_type: &health,
+    };
+    let mut units = vec![
+        attrition_unit("a", 0, None, None),
+        attrition_unit("b", 0, Some(25.0), None),
+        attrition_unit("c", 0, Some(30.0), Some(60.0)),
+        attrition_unit("d", 7, None, None),
+    ];
+    let mut states: BTreeMap<i64, GoldDeficitState> = BTreeMap::new();
+    let mut runtime = GoldDeficitRuntime::new();
+    let mut sieges = Vec::new();
+    let mut besieger = BTreeMap::new();
+    let out = run_gold_deficit_step(
+        &[],
+        &mut states,
+        &mut runtime,
+        &mut units,
+        &mut sieges,
+        &mut besieger,
+        &input,
+    );
+    assert_eq!(out.player_damaged_count, 3);
+    assert_eq!(out.player_destroyed_count, 0);
+    // a: hpMax=40, hp=40-10=30
+    assert_eq!((units[0].hp, units[0].hp_max), (Some(30.0), Some(40.0)));
+    // b: hpMax=40, hp=25-10=15
+    assert_eq!((units[1].hp, units[1].hp_max), (Some(15.0), Some(40.0)));
+    // c: hpMax bez zmian, hp=30-15=15
+    assert_eq!((units[2].hp, units[2].hp_max), (Some(15.0), Some(60.0)));
+    // d: obcy wlasciciel, nietkniety
+    assert_eq!((units[3].hp, units[3].hp_max), (None, None));
+}
+
+/// Z-POST-3: web `new Set([0, ...ai, ...goldDeficitStates.keys()])` zachowuje kolejnosc wstawiania `Map`
+/// (tu 5, 3 => [0, 5, 3]); Rust `BTreeMap` iteruje rosnaco => [0, 3, 5]. Udokumentowane odstepstwo: wlasciciele sa
+/// niezalezni, wiec zmienia sie tylko kolejnosc `owner_ids`/`per_owner`, nie stany ani jednostki.
+#[test]
+fn gold_deficit_step_owner_order_is_ascending_z_post_3() {
+    let params = GoldDeficitParams {
+        zloto_deficyt_stat_mult: 0.5,
+        zloto_deficyt_karencja_tur: 99.0,
+        zloto_deficyt_hp_frac: 0.25,
+    };
+    let humans: BTreeSet<i64> = [0].into_iter().collect();
+    let treasury = |o: i64| if o == 5 { -1.0 } else { 10.0 };
+    let health = |_t: &str| 40.0;
+    let input = GoldDeficitStepInput {
+        params: &params,
+        human_owner_ids: &humans,
+        owner_treasury: &treasury,
+        unit_health_by_type: &health,
+    };
+    let mut states: BTreeMap<i64, GoldDeficitState> = BTreeMap::new();
+    states.insert(5, GoldDeficitState::default());
+    states.insert(3, GoldDeficitState::default());
+    let mut units: Vec<AttritionUnit> = Vec::new();
+    let mut runtime = GoldDeficitRuntime::new();
+    let mut sieges = Vec::new();
+    let mut besieger = BTreeMap::new();
+    let out = run_gold_deficit_step(
+        &[],
+        &mut states,
+        &mut runtime,
+        &mut units,
+        &mut sieges,
+        &mut besieger,
+        &input,
+    );
+    assert_eq!(out.owner_ids, vec![0, 3, 5]);
+    assert_eq!(states[&5].tury_deficytu_zlota, 1);
+    assert_eq!(states[&3].tury_deficytu_zlota, 0);
+}
