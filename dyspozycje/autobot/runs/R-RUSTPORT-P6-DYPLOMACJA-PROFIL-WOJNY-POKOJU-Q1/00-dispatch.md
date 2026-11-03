@@ -8,3 +8,4 @@ DYSK/PAMIĘĆ: `CARGO_TARGET_DIR=/dev/shm/<unikalna>`, `-j 2`, CARGO_INCREMENTAL
 MODELE: Operator/Obrona/Evaluator/FC Sonnet 5.5. Raport max ok. 450 słów, SHA commitu w treści. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO
 ANTY-HALUCYNACJA: twierdzenie o webie/Rust = plik:linia/komenda; niepewne = NIE_ZMIERZONO. Bez pytań ABC.
 RUNDA: 1/5
+UWAGA (orkiestrator, powtórka rundy 1/5 — poprzedni przebieg zmarnowany: podagenci wzięli komunikat właściciela o sprzątaniu /tmp za polecenie dla siebie; sprzątanie WYKONANE przez orkiestratora, nic z tym nie rób). Wykonaj WYŁĄCZNIE ten dispatch. Runda nie liczy się jako zużyta.
