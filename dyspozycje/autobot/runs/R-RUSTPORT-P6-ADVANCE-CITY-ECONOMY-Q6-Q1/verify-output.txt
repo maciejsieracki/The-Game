@@ -1,0 +1,5 @@
+sprawdzen 14058, rozbieznosci 0
+EXIT=0
+miast z targowisko: 148
+NEG1 exit 1 sprawdzen 14058, rozbieznosci 1
+NEG2 exit 1 sprawdzen 14058, rozbieznosci 1
