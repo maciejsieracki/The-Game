@@ -1,0 +1,4 @@
+OK=117196 BAD=2
+BAD honor {'in': {'allyId': 0, 'mustDeclareWarOn': 2, 'attackerId': 3, 'victimId': 4, 'militaryRatio': 0.74, 'activeWarCount': 0, 'peacefulArchetype': False}, 'out': False}
+BAD ustawFlage {'state': {'0': 22, '1.5': 20}, 'owner': 1, 'turn': 6, 'cause': 'bez_powodu', 'params': {'flagaAgresora': {'trwaTur': 0}, 'wplywNaAI': {'relacjaDeltaSojusz': -2, 'willingnessAllyMnoznik': 1}, 'casusBelli': {'trwaTur': 0}}, 'out': {'0': 22, '1': 6, '1.5': 20, '9': 99}}
+EXIT=1

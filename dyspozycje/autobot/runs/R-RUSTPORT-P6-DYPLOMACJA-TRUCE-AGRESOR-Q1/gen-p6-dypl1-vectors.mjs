@@ -169,6 +169,12 @@ for (const mt of [undefined, 25]) for (const tr of [-1, 0, 1].map((d) => (mt ?? 
   if (mt !== undefined) inp.minTrustHonor = mt;
   pushHonor(inp);
 }
+// minTrustHonor nieskonczony / NaN (bez losowania: nie zmienia sekwencji PRNG pozostalych wektorow)
+for (const mt of [Infinity, NaN]) for (const tr of [undefined, 5, 50, Infinity, NaN]) {
+  const inp = { allyId: 1, mustDeclareWarOn: 2, attackerId: 3, victimId: 4, militaryRatio: 1, activeWarCount: 0, peacefulArchetype: false, minTrustHonor: mt };
+  if (tr !== undefined) inp.trustToRequestingAlly = tr;
+  pushHonor(inp);
+}
 
 // ================= TREATIES =================
 const KINDS = ['pakt_nieagresji', 'sojusz_defensywny', 'sojusz_pelny', 'sojusz_wojskowy', 'otwarte_granice', 'prawo_wojskowe_przemarszu', 'wspolna_walka_barbarzyncy', 'umowa_handlowa', 'umowa_szlakow', 'umowa_wymiany', 'wasalizacja'];

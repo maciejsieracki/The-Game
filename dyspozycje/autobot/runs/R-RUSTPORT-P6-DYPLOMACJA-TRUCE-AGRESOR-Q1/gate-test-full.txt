@@ -1,0 +1,11 @@
+SHARD 0/8 targets=36 exit=0 passed=306 failed=0
+SHARD 1/8 targets=36 exit=0 passed=280 failed=0
+SHARD 2/8 targets=36 exit=0 passed=247 failed=0
+SHARD 3/8 targets=36 exit=0 passed=216 failed=0
+SHARD 4/8 targets=35 exit=0 passed=273 failed=0
+SHARD 5/8 targets=35 exit=0 passed=256 failed=0
+SHARD 6/8 targets=35 exit=0 passed=268 failed=0
+SHARD 7/8 targets=35 exit=0 passed=260 failed=0
+DOC passed=0 failed=0
+SUMA passed=2106 failed=0 (baza z dispatchu/audytu 2093/0 + 13 nowych; PRZED w tym worktree NIE_ZMIERZONO)
+EXIT=0

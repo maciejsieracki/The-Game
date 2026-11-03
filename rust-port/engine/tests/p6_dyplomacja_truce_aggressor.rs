@@ -25,8 +25,8 @@ use civ_engine::domain::diplomacy_aggressor::{
 use civ_engine::domain::diplomacy_truce::{
     filter_alliance_obligations_respecting_peace_lock, is_peace_treaty_locked, is_truce_active,
     is_truce_breach, normalize_truce_duration, pair_meta_from_save, pair_meta_to_save,
-    start_peace_treaty_lock, truce_expiry_action, truce_until_turn, PairMetaWeb,
-    TruceExpiryAction, PEACE_TREATY_LOCK_TURNS, TRUCE_DEFAULT_TURNS, TRUCE_DURATION_OPTIONS,
+    start_peace_treaty_lock, truce_expiry_action, truce_until_turn, PairMetaWeb, TruceExpiryAction,
+    PEACE_TREATY_LOCK_TURNS, TRUCE_DEFAULT_TURNS, TRUCE_DURATION_OPTIONS,
 };
 use civ_engine::domain::diplomacy_war_gates::{
     is_currency_proposal_forbidden_during_war, is_nap_blocking_war_declaration,
@@ -149,7 +149,12 @@ fn constants_and_params_match_pin() {
     let p = &t["params"];
     assert_eq!(PEACE_TREATY_LOCK_TURNS, dec(&p["peaceLockTurns"]));
     assert_eq!(TRUCE_DEFAULT_TURNS, dec(&p["truceDefault"]));
-    let opts: Vec<f64> = p["truceOptions"].as_array().unwrap().iter().map(dec).collect();
+    let opts: Vec<f64> = p["truceOptions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(dec)
+        .collect();
     assert_eq!(TRUCE_DURATION_OPTIONS.to_vec(), opts);
     let ids: Vec<&str> = p["peaceCurrencyIds"]
         .as_array()
@@ -244,7 +249,8 @@ fn peace_lock_matches_web() {
 fn peace_lock_filter_matches_web_including_call_order() {
     let t = load("truce.json");
     for r in t["truce"]["filter"].as_array().unwrap() {
-        let obs: Vec<AllianceObligation> = serde_json::from_value(r["obligations"].clone()).unwrap();
+        let obs: Vec<AllianceObligation> =
+            serde_json::from_value(r["obligations"].clone()).unwrap();
         let locked: BTreeSet<(u64, u64)> = r["locked"]
             .as_array()
             .unwrap()
@@ -280,11 +286,15 @@ fn pair_state_save_load_round_trip() {
         for (_, m) in &parsed {
             // truceUntilTurn / peaceUntilTurn przezywaja zapis, brak pola = None
             let v = serde_json::to_value(m).unwrap();
-            assert_eq!(v.get("truceUntilTurn").is_some(), m.truce_until_turn.is_some());
+            assert_eq!(
+                v.get("truceUntilTurn").is_some(),
+                m.truce_until_turn.is_some()
+            );
         }
     }
     // stary zapis bez pola rozejmu = brak rozejmu; zly ksztalt pomijany
-    let legacy = json!([["0-1", {"trustPnGainedThisTurn": 1, "dobraWolaRemainingTur": 0}], 5, ["x"]]);
+    let legacy =
+        json!([["0-1", {"trustPnGainedThisTurn": 1, "dobraWolaRemainingTur": 0}], 5, ["x"]]);
     let parsed = pair_meta_from_save(&legacy);
     assert_eq!(parsed.len(), 1);
     assert_eq!(parsed[0].1.truce_until_turn, None);
@@ -326,7 +336,10 @@ fn war_gates_match_web() {
     }
     for r in g["nap"].as_array().unwrap() {
         let b = r["in"].as_bool().unwrap();
-        assert_eq!(is_nap_blocking_war_declaration(b), r["out"].as_bool().unwrap());
+        assert_eq!(
+            is_nap_blocking_war_declaration(b),
+            r["out"].as_bool().unwrap()
+        );
     }
     for r in g["payload"].as_array().unwrap() {
         let p = payload_dec(&r["payload"]);
@@ -363,9 +376,17 @@ fn war_gates_existing_rust_gate_diverges_from_pin() {
         ..CurrencyPayloadSlice::default()
     };
     assert!(existing_gate(ProposalAction::Trade, &gold, true));
-    assert!(is_currency_proposal_forbidden_during_war("handel", Some(&slice), None));
+    assert!(is_currency_proposal_forbidden_during_war(
+        "handel",
+        Some(&slice),
+        None
+    ));
     assert!(!existing_gate(ProposalAction::Peace, &gold, true));
-    assert!(!is_currency_proposal_forbidden_during_war("pokoj", Some(&slice), None));
+    assert!(!is_currency_proposal_forbidden_during_war(
+        "pokoj",
+        Some(&slice),
+        None
+    ));
     // Rozbieznosc 1: goldOnce = Infinity (web: Infinity > 0 = true; istniejacy Rust wymaga is_finite).
     let inf = ProposalPayload {
         gold_once: Some(f64::INFINITY),
@@ -376,20 +397,34 @@ fn war_gates_existing_rust_gate_diverges_from_pin() {
         ..CurrencyPayloadSlice::default()
     };
     assert!(!existing_gate(ProposalAction::Trade, &inf, true));
-    assert!(is_currency_proposal_forbidden_during_war("handel", Some(&inf_slice), None));
+    assert!(is_currency_proposal_forbidden_during_war(
+        "handel",
+        Some(&inf_slice),
+        None
+    ));
     // Rozbieznosc 2: pozycja zloto o ilosci 0 (web: liczy sie typ, nie ilosc).
     let zero = ProposalPayload {
         give_items: vec![BasketItem::new(BasketItemKind::Gold, "zloto", 0.0)],
         ..ProposalPayload::default()
     };
     let zero_slice = CurrencyPayloadSlice {
-        give_items: Some(vec![CurrencyBasketItem { typ: "zloto".into() }]),
+        give_items: Some(vec![CurrencyBasketItem {
+            typ: "zloto".into(),
+        }]),
         ..CurrencyPayloadSlice::default()
     };
     assert!(!existing_gate(ProposalAction::Trade, &zero, true));
-    assert!(is_currency_proposal_forbidden_during_war("handel", Some(&zero_slice), None));
+    assert!(is_currency_proposal_forbidden_during_war(
+        "handel",
+        Some(&zero_slice),
+        None
+    ));
     // Rozbieznosc 3: akcja `rozejm` istnieje tylko jako lancuch (ProposalAction nie ma wariantu).
-    assert!(!is_currency_proposal_forbidden_during_war("rozejm", Some(&slice), Some(true)));
+    assert!(!is_currency_proposal_forbidden_during_war(
+        "rozejm",
+        Some(&slice),
+        Some(true)
+    ));
 }
 
 #[test]
@@ -474,7 +509,8 @@ fn treaties_obligations_and_broken_by_war_match_web() {
     }
     assert!(non_empty > 100 && broken_non_empty > 100);
     for r in tr["refusal"].as_array().unwrap() {
-        let obs: Vec<AllianceObligation> = serde_json::from_value(r["obligations"].clone()).unwrap();
+        let obs: Vec<AllianceObligation> =
+            serde_json::from_value(r["obligations"].clone()).unwrap();
         let joined: Vec<PlayerId> = r["joined"].as_array().unwrap().iter().map(pid).collect();
         assert_eq!(
             json!(treaties_broken_by_refusal(&obs, &joined)),
@@ -510,7 +546,11 @@ fn aggressor_pure_fns_match_web() {
             casus_belli_aktywny: flag("casusBelliAktywny"),
             zlamanie_rozejmu: flag("zlamanieRozejmu"),
         };
-        assert_eq!(cause_enc(przyczyna_wypowiedzenia(&inp)), r["out"], "cause {r}");
+        assert_eq!(
+            cause_enc(przyczyna_wypowiedzenia(&inp)),
+            r["out"],
+            "cause {r}"
+        );
         // serde wejscia (camelCase, brak pola = false) daje to samo
         let via_serde: WarCauseInput = serde_json::from_value(i.clone()).unwrap();
         assert_eq!(via_serde, inp);
@@ -559,7 +599,12 @@ fn aggressor_pure_fns_match_web() {
     }
     for r in a["maCasus"].as_array().unwrap() {
         assert_eq!(
-            ma_casus_belli(&map_dec(&r["state"]), dec(&r["req"]), dec(&r["tgt"]), dec(&r["turn"])),
+            ma_casus_belli(
+                &map_dec(&r["state"]),
+                dec(&r["req"]),
+                dec(&r["tgt"]),
+                dec(&r["turn"])
+            ),
             r["out"].as_bool().unwrap(),
             "maCasus {r}"
         );
@@ -595,7 +640,9 @@ fn aggressor_engine_state_sequences_and_save_load_match_web() {
                     dec(&op["turn"]),
                     cause_dec(op["cause"].as_str().unwrap()),
                 ),
-                "cb" => st.zarejestruj_casus_belli(dec(&op["req"]), dec(&op["tgt"]), dec(&op["turn"])),
+                "cb" => {
+                    st.zarejestruj_casus_belli(dec(&op["req"]), dec(&op["tgt"]), dec(&op["turn"]))
+                }
                 "reset" => st.reset(),
                 "save" => {
                     // zapis Rust == zapis weba, potem odczyt zapisu weba
@@ -625,7 +672,11 @@ fn aggressor_engine_state_sequences_and_save_load_match_web() {
                 if !q[3].is_boolean() {
                     // [owner, turn, aktywna, doTury]
                     let (o, tu) = (dec(&q[0]), dec(&q[1]));
-                    assert_eq!(st.czy_agresor_aktywny(o, tu), q[2].as_bool().unwrap(), "{si}/{k} {q:?}");
+                    assert_eq!(
+                        st.czy_agresor_aktywny(o, tu),
+                        q[2].as_bool().unwrap(),
+                        "{si}/{k} {q:?}"
+                    );
                     assert_eq!(
                         canon(&enc_opt(st.do_tury_flagi_agresora(o, tu))),
                         canon(&q[3]),
@@ -645,7 +696,10 @@ fn aggressor_engine_state_sequences_and_save_load_match_web() {
             }
         }
     }
-    assert!(total_active > 100, "scenariusze obejmuja aktywne flagi: {total_active}");
+    assert!(
+        total_active > 100,
+        "scenariusze obejmuja aktywne flagi: {total_active}"
+    );
 }
 
 #[test]
