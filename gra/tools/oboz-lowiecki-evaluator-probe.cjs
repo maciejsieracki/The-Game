@@ -74,7 +74,7 @@ function pickerBuilds(map, hex, placed) {
     territoryNodes: [{ q: hex.coords.q, r: hex.coords.r, ownerId: 0, cityId: 'c0' }],
     placedImprovements: placed ?? new Map(), pracaAvailable: 1e6,
     unlockedTechs: new Set(['lowiectwo', 'Łowiectwo']),
-    pracaSurplusThreshold: 0, pracaBudgetPercent: 100, maxItemsPerCity: 8,
+    pracaSurplusThreshold: 0, pracaBudgetPercent: 100,
     skipWyrab: true, playerEra: 1, priorityOverride: ['oboz_lowiecki'],
   });
   return picks.some(p => p.key === 'oboz_lowiecki' && p.q === hex.coords.q && p.r === hex.coords.r);

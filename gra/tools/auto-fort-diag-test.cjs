@@ -143,7 +143,6 @@ function callInfra(map, over = {}) {
     pracaSurplusThreshold: 30, skipWyrab: true, demandDriven: false,
     getFocus: () => 'infrastruktura', getOnlyWorked: () => false, getWorkedHexKeys: () => new Set(),
     pracaBudgetPercent: 100, civArchetype: 'grecy', playerEra: 3,
-    maxItemsPerCity: over.maxItems ?? 1,
   });
 }
 const RAD = key => (key === 'fort' ? 5 : 3);

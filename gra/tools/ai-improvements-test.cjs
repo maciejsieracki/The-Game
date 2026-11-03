@@ -247,8 +247,8 @@ console.log('4. Praca + tech -> 1 buildImprovement (farma)');
   const city = makeCity('city0', PLAYER_ID, 15, 15);
   const opts = baseOpts(city);
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu maxItemsPerCity:1 (ai.ts ~2651) —
-  // etap zywnosciowy: do FOOD_STAGE_MAX_ITEMS_PER_CITY=3 rozkazow/miasto/ture (jak gracz). Poprzednio: dokladnie 1.
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu liczby sztuk na miasto —
+  // etap zywnosciowy: bez gornego limitu rozkazow/miasto/ture (jak gracz; ogranicza tylko budzet). Poprzednio: dokladnie 1.
   assert(cmds.length >= 1 && cmds.length <= 3, `1..3 buildImprovement (ABC-D=B), got ${cmds.length}`);
   eq(cmds[0].key, 'farma', 'typ = farma (najwyzszy priorytet, plaska mapa)');
   eq(cmds[0].ownerId, PLAYER_ID, 'ownerId = AI');
@@ -263,8 +263,8 @@ console.log('5. limit etapu zywnosciowego na miasto/ture, bez limitu 1 (wiele kw
   const opts = baseOpts(city);
   opts.territoryNodes = [{ q: city.q, r: city.r, pop: city.population, level: 1, ownerId: city.ownerId }];
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu maxItemsPerCity:1 (ai.ts ~2651) —
-  // etap zywnosciowy: do FOOD_STAGE_MAX_ITEMS_PER_CITY=3 rozkazow/miasto/ture (jak gracz). Poprzednio: dokladnie 1.
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu liczby sztuk na miasto —
+  // etap zywnosciowy: bez gornego limitu rozkazow/miasto/ture (jak gracz; ogranicza tylko budzet). Poprzednio: dokladnie 1.
   // R-WEB-AUTOIMPROVE-STAGES3-Q1 S3-2=C (wlasciciel 2026-10-31): limit 3/etap ZDJETY — liczbe rozkazow ogranicza tylko budzet (i obrabiane heksy).
   assert(cmds.length > 3, `S3-2: brak limitu 3 budowli na etap na miasto na ture — wiecej niz 3 rozkazy przy duzej puli, got ${cmds.length}`);
 }
@@ -291,8 +291,8 @@ console.log('6. 2 miasta -- do 3 rozkazow na miasto, bez limitu 1 (ABC-D=B)');
     civEra: 1,
   };
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [cityA, cityB], map, data, opts));
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu maxItemsPerCity:1 (ai.ts ~2651) —
-  // etap zywnosciowy: do FOOD_STAGE_MAX_ITEMS_PER_CITY=3 rozkazow/miasto/ture (jak gracz). Poprzednio: dokladnie 1.
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu liczby sztuk na miasto —
+  // etap zywnosciowy: bez gornego limitu rozkazow/miasto/ture (jak gracz; ogranicza tylko budzet). Poprzednio: dokladnie 1.
   assert(cmds.length > 2 && cmds.length <= 6, `2 miasta -> wiecej niz 2, najwyzej 3 na miasto (ABC-D=B), got ${cmds.length}`);
   const hexKeys = new Set(cmds.map(c => `${c.q},${c.r}`));
   eq(hexKeys.size, cmds.length, 'kazdy rozkaz na innym heksie');
@@ -308,8 +308,8 @@ console.log('7. wyrab na mapie lasu gdy brak innych tech');
   const opts = baseOpts(city);
   opts.improvementTechs = new Set(); // pusty zbior -- TYLKO wyrab jest bezwarunkowo odblokowany
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], forestMap, data, opts));
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu maxItemsPerCity:1 (ai.ts ~2651) —
-  // etap zywnosciowy: do FOOD_STAGE_MAX_ITEMS_PER_CITY=3 rozkazow/miasto/ture (jak gracz). Poprzednio: dokladnie 1.
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu liczby sztuk na miasto —
+  // etap zywnosciowy: bez gornego limitu rozkazow/miasto/ture (jak gracz; ogranicza tylko budzet). Poprzednio: dokladnie 1.
   assert(cmds.length >= 1 && cmds.length <= 3, `AI buduje wyrab gdy tylko ten typ jest dostepny (1..3), got ${cmds.length}`);
   assert(cmds.every(c => c.key === 'wyrab'), 'mapa lasu + brak tech -> wylacznie wyrab');
 }
@@ -340,8 +340,8 @@ console.log('9. defensiveCopy -- ta sama intensywnosc co zwykle AI');
   const opts = baseOpts(city);
   opts.defensiveCopy = true;
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu maxItemsPerCity:1 (ai.ts ~2651) —
-  // etap zywnosciowy: do FOOD_STAGE_MAX_ITEMS_PER_CITY=3 rozkazow/miasto/ture (jak gracz). Poprzednio: dokladnie 1.
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu liczby sztuk na miasto —
+  // etap zywnosciowy: bez gornego limitu rozkazow/miasto/ture (jak gracz; ogranicza tylko budzet). Poprzednio: dokladnie 1.
   assert(cmds.length >= 1 && cmds.length <= 3, `defensiveCopy=true -> ta sama intensywnosc co zwykle AI (1..3), got ${cmds.length}`);
   eq(cmds[0].key, 'farma', 'defensiveCopy -- ten sam wybor typu co zwykle AI');
 }

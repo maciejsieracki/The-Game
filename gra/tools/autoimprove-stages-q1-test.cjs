@@ -5,7 +5,7 @@
  *   S3-1 tartak/oboz NIGDY na heksie z rzeka ORAZ NIGDY na heksie Z DOSTEPEM do rzeki (sasiadujacym z rzeka — ta sama
  *        definicja co irygacja: `isRiverAdjacent`); blokada D-R5-1 (`farmWouldClaimForest`) USUNIETA — tartak moze stac na
  *        lesie pod farme, jesli heks nie ma dostepu do rzeki; preferencja: najpierw WZGORZA, potem reszta lasu bez rzeki;
- *   S3-2 limit „3 budowle na etap na miasto na ture” (FOOD_STAGE_MAX_ITEMS_PER_CITY) ZDJETY dla wszystkich; ogranicza tylko budzet.
+ *   S3-2 limit „3 budowle na etap na miasto na ture” (dawna stala; od 2026-11-03 usunieta) ZDJETY dla wszystkich; ogranicza tylko budzet.
  * R-WEB-AUTOIMPROVE-STAGES2-Q1 (2026-10-31, decyzje wlasciciela, WIAZACE — nadpisuja czesc oczekiwan R5):
  *   B$ budzet SZTYWNO: procent budzetu Pracy gracza (K1/K2) to TWARDY SUFIT, bez wyjatkow (Q2=B z R3 i D-R5-3 ODWOLANE);
  *       AI cywilizacji i panstwa-miasta = 100% puli, bez limitu %;
@@ -113,7 +113,7 @@ function sim({
         getFocus: () => FOCUS_OF[profil],
         getOnlyWorked: () => true, getWorkedHexKeys: () => workedSet,
         pracaBudgetPercent: pct, civArchetype: civ, playerEra: era,
-        foodImprovementStages: () => FOCUS_OF[profil] === 'zywnosc' || FOCUS_OF[profil] === 'zrownowazone', ...(maxItems ? { maxItemsPerCity: maxItems } : {}),
+        foodImprovementStages: () => FOCUS_OF[profil] === 'zywnosc' || FOCUS_OF[profil] === 'zrownowazone',
       });
     }
     for (const p of picks) {
@@ -357,7 +357,7 @@ console.log('(i) [K2] cykl: niedobor -> ulepszenie surowca NA PRZOD -> zaspokoje
   ok(wrocil, '[K2] po ponownym niedoborze brak zakleszczenia: zywnosc nadal budowana (brak histerezy)');
 }
 
-console.log('(j) parytet K2 <-> K3: ten sam stan => ta sama kolejnosc i zestaw budow (R3 ABC-D=B: BEZ limitu maxItemsPerCity AI)');
+console.log('(j) parytet K2 <-> K3: ten sam stan => ta sama kolejnosc i zestaw budow (R3 ABC-D=B: BEZ limitu liczby sztuk AI)');
 {
   const FOR = [[14, 12], [11, 13]];
   const scenariusze = [
@@ -1029,7 +1029,7 @@ console.log('(s7) S3-2: LIMIT „3 budowle na etap na miasto na ture” ZDJETY (
     ok(r.turnSpend[0].spent <= 300, `[K3] S3-2: AI nie wydaje wiecej niz 100% puli (${r.turnSpend[0].spent} <= 300)`);
   }
   const picker = fs.readFileSync(path.resolve(SRC, 'game/auto-improvements.ts'), 'utf8');
-  ok(/export const FOOD_STAGE_MAX_ITEMS_PER_CITY = Infinity;/.test(picker), 'auto-improvements.ts: FOOD_STAGE_MAX_ITEMS_PER_CITY = Infinity (limit zdjety)');
+  ok(!/FOOD_STAGE_MAX_ITEMS_PER_CITY|maxItemsPerCity/.test(picker), 'auto-improvements.ts: limit liczby sztuk USUNIETY calkowicie (brak stalej i parametru; R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1)');
 }
 
 console.log(`\nautoimprove-stages-q1-test: ${passed} passed, ${failed} failed`);

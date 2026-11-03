@@ -166,7 +166,7 @@ console.log('2. onlyWorked=true — pomija nieobrabiane');
   // jest najblizszym kandydatem. Niezmienione: heks NIEobrabiany (12,10, 10,11...) nadal jest pomijany.
   eq(picks.length, 1, 'znajduje ulepszenie na worked');
   eq(picks[0].q === 10 && picks[0].r === 10, true, 'centrum (zawsze pracowane) jest zwyklym kandydatem');
-  const wszystkie = pickAutoImprovements({ ...opts, maxItemsPerCity: 50, pracaAvailable: 100000 });
+  const wszystkie = pickAutoImprovements({ ...opts, pracaAvailable: 100000 });
   eq(wszystkie.every(p => (p.q === 10 && p.r === 10) || (p.q === 11 && p.r === 10)), true, 'onlyWorked: tylko centrum i worked 11,10 (zadnego nieobrabianego heksu)');
   eq(wszystkie.some(p => p.q === 11 && p.r === 10), true, 'worked hex 11,10 tez dostaje ulepszenie');
 }

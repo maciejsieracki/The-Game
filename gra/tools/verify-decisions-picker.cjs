@@ -17,7 +17,7 @@ const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-dec-'));
 const entry = path.join(temp, 'entry.ts');
 const bundle = path.join(temp, 'bundle.cjs');
 fs.writeFileSync(entry,
-  `export { pickAutoImprovements, ULEPSZENIA_FOCUS_ZYWNOSC, IMPROVEMENT_FOR_DEFICIT, FOOD_STAGE_MAX_ITEMS_PER_CITY, JEDEN_NA_ILU_OBYWATELI } from ${JSON.stringify(SRC + '/game/auto-improvements')};\n`
+  `export { pickAutoImprovements, ULEPSZENIA_FOCUS_ZYWNOSC, IMPROVEMENT_FOR_DEFICIT, JEDEN_NA_ILU_OBYWATELI } from ${JSON.stringify(SRC + '/game/auto-improvements')};\n`
   + `export { decideAITurn } from ${JSON.stringify(SRC + '/game/ai')};\n`);
 esbuild.buildSync({
   entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
@@ -80,7 +80,7 @@ function sim({ map, worked, profil = 'K2', pop = 12, turns = 40, deficitFn = () 
         placedImprovements: placed, pracaAvailable: pool, unlockedTechs: new Set(techs), pracaSurplusThreshold: 30,
         skipWyrab: !wolnoWycinac, demandDriven: true, resourceDeficitKeys: deficit, getFocus: () => FOCUS_OF[profil],
         getOnlyWorked: () => onlyWorked, getWorkedHexKeys: () => wk, pracaBudgetPercent: 100, civArchetype: 'grecy', playerEra: 3,
-        foodImprovementStages: () => true, ...(maxItems ? { maxItemsPerCity: maxItems } : {}),
+        foodImprovementStages: () => true,
       });
     }
     for (const p of picks) {
@@ -211,7 +211,7 @@ for (const pop of [12, 30]) {
     civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: [{ q: CQ, r: CR, ownerId: 0, cityId: 'c0', pop: 12, level: 1 }],
     placedImprovements: new Map(), improvementTechs: new Set(FULL), pracaAvailable: 6000, civEra: 3, resourceDeficitKeys: [], improvementBudgetCap: 6000,
   }).filter(c => c.type === 'buildImprovement');
-  verdict('M10-K3', 'AI: więcej niż 1 ulepszenie/miasto/turę (brak limitu maxItemsPerCity:1; limit etapu zdjęty (S3-2), ogranicza tylko budżet)',
+  verdict('M10-K3', 'AI: więcej niż 1 ulepszenie/miasto/turę (brak limitu liczby sztuk na miasto; ogranicza tylko budżet)',
     cmds.length > 1, '>1 rozkaz w turze 1', `rozkazów=${cmds.length}: ${cmds.map(c => c.key + '@' + c.q + ',' + c.r).join(' ')}`);
 }
 
@@ -291,8 +291,8 @@ for (const p of ['K2', 'K3']) {
   console.log(`[INFO] M15 wolno_wycinac=OFF: wyrab@rzeka=${log.filter(e => e.key === 'wyrab' && RIV.some(([q, r]) => K(q, r) === e.hk)).length}, wyrab@poza=${log.filter(e => e.key === 'wyrab' && !RIV.some(([q, r]) => K(q, r) === e.hk)).length} (pin testu c3: rzeka tak, poza nie — do potwierdzenia intencji właściciela)`);
 }
 
-// ---- M11: FOOD_STAGE_MAX_ITEMS_PER_CITY — limit per etap per miasto per wywołanie (czy to „limit”) ----
-console.log(`[INFO] M11 FOOD_STAGE_MAX_ITEMS_PER_CITY=${M.FOOD_STAGE_MAX_ITEMS_PER_CITY}, JEDEN_NA_ILU_OBYWATELI=${M.JEDEN_NA_ILU_OBYWATELI}; IMPROVEMENT_FOR_DEFICIT=${JSON.stringify(M.IMPROVEMENT_FOR_DEFICIT)}`);
+// ---- M11: stala FOOD_STAGE_MAX_ITEMS_PER_CITY USUNIETA (2026-11-03) — brak limitu per etap per miasto ----
+console.log(`[INFO] M11 (stala FOOD_STAGE_MAX_ITEMS_PER_CITY usunieta) JEDEN_NA_ILU_OBYWATELI=${M.JEDEN_NA_ILU_OBYWATELI}; IMPROVEMENT_FOR_DEFICIT=${JSON.stringify(M.IMPROVEMENT_FOR_DEFICIT)}`);
 
 const bad = results.filter(r => r.ok === false);
 console.log(`\n=== verify-decisions-picker: ${results.filter(r => r.ok).length} ZGODNE, ${bad.length} NIEZGODNE (${bad.map(b => b.id).join(', ') || '-'}) ===`);

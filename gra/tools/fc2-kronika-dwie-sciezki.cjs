@@ -11,7 +11,7 @@
  * nie tylko liczby.
  *
  * DWIE SCIEZKI, OSOBNO (ECHO wlasciciela 2026-08-27):
- *   AI CYWILIZACJI — PRAWDZIWE wejscie `decideAITurn` (ai.ts), maxItemsPerCity=1.
+ *   AI CYWILIZACJI — PRAWDZIWE wejscie `decideAITurn` (ai.ts), limit sztuk/miasto usuniety.
  *   AI GRACZA      — konfiguracja `main.ts` (~:27066-27094) odtworzona; `main.ts`
  *                    to closure `boot()`, niebundlowalna w Node → to jest ODTWORZENIE
  *                    konfiguracji, NIE prawdziwe wejscie. Raportowane jako BRAK DOWODU.
@@ -324,7 +324,7 @@ console.log(`# ziarna: ${SEEDS.join(', ')} · tur: ${TURNS} · mapa 36x28 „kon
 console.log(`# profil AI GRACZA w tym przebiegu: ${PROFILE}`);
 
 const civ = SEEDS.map(runCiv);
-tabela('AI CYWILIZACJI — PRAWDZIWE wejscie decideAITurn (maxItemsPerCity=1)', civ);
+tabela('AI CYWILIZACJI — PRAWDZIWE wejscie decideAITurn (limit sztuk/miasto usuniety)', civ);
 const pl = SEEDS.map(s => runPlayer(s, PROFILE));
 tabela(`AI GRACZA — konfiguracja main.ts ODTWORZONA (BRAK DOWODU), profil „${PROFILE}"`, pl);
 

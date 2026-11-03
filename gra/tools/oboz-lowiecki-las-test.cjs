@@ -234,7 +234,6 @@ async function main() {
       unlockedTechs: new Set(['lowiectwo', 'Łowiectwo']),
       pracaSurplusThreshold: 0,
       pracaBudgetPercent: 100,
-      maxItemsPerCity: 5,
       skipWyrab: true,
       playerEra: 1,
       priorityOverride: ['oboz_lowiecki'],
@@ -340,7 +339,7 @@ async function main() {
       territoryNodes: [{ q: 0, r: 0, ownerId: 0, cityId: 'c0' }],
       placedImprovements: new Map(), pracaAvailable: 100000,
       unlockedTechs: new Set(['lowiectwo', 'Łowiectwo']),
-      pracaSurplusThreshold: 0, pracaBudgetPercent: 100, maxItemsPerCity: 5,
+      pracaSurplusThreshold: 0, pracaBudgetPercent: 100,
       skipWyrab: true, playerEra: 1, priorityOverride: ['oboz_lowiecki'],
     });
     ok(picks1.every(p => p.key !== 'oboz_lowiecki'),
@@ -369,7 +368,7 @@ async function main() {
       territoryNodes: [{ q: hex.coords.q, r: hex.coords.r, ownerId: 0, cityId: 'c0' }],
       placedImprovements: new Map(), pracaAvailable: 100000,
       unlockedTechs: new Set(['lowiectwo', 'Łowiectwo']),
-      pracaSurplusThreshold: 0, pracaBudgetPercent: 100, maxItemsPerCity: 5,
+      pracaSurplusThreshold: 0, pracaBudgetPercent: 100,
       skipWyrab: true, playerEra: 1, priorityOverride: ['oboz_lowiecki'],
     });
     return picks.some(p => p.key === 'oboz_lowiecki'

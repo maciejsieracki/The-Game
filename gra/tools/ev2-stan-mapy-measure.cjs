@@ -346,8 +346,8 @@ console.log(`# src: ${SRC}`);
 console.log(`# ziarna: ${SEEDS.join(', ')} · tur: ${TURNS} · mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6`);
 
 const civ = SEEDS.map(seed => ({ seed, ...runCiv(seed) }));
-const aggCiv = agregat('AI CYWILIZACJI — decideAITurn (prawdziwe wejscie, maxItemsPerCity=1)', civ);
-console.log(`  ASERCJA maxItemsPerCity=1 (behawioralna): max rozkazow na miasto na ture = ${Math.max(...civ.map(c => c.maxNaMiastoNaTure))}`);
+const aggCiv = agregat('AI CYWILIZACJI — decideAITurn (prawdziwe wejscie, limit sztuk/miasto usuniety)', civ);
+console.log(`  ASERCJA limit sztuk/miasto usuniety (behawioralna): max rozkazow na miasto na ture = ${Math.max(...civ.map(c => c.maxNaMiastoNaTure))}`);
 
 const PROFILE = ['zywnosc', 'surowce', 'infrastruktura', 'zrownowazone'];
 const aggP = {};
