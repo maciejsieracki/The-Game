@@ -1044,6 +1044,11 @@ import {
   DIPLOMACY_MSG_PREFIX,
   type DeferredEotHint,
 } from './game/eot-event-defer';
+import {
+  createEventDeferQueue,
+  shouldDeferNotice,
+  type DeferrableNoticeChannel,
+} from './game/event-defer-queue';
 import { isBlockingSidePanelEvent } from './game/side-panel-event-priority';
 import {
   sidePanelEventLinkKind,
@@ -4040,7 +4045,7 @@ async function boot(): Promise<void> {
             const label = w?.nazwa ?? wonderId;
             const placed = placedWorldWonders.find(p => p.wonderId === wonderId);
             const builderLabel = placed ? civWonderDisplayName(civTypeForOwner(placed.ownerId)) : 'inna cywilizacja';
-            showWonderCompletedNotice({
+            showWonderCompletedNoticeDeferred({
               variant: 'rival',
               nazwa: label,
               locationLabel: `Tura ${turn} · ${builderLabel}`,
@@ -4598,7 +4603,7 @@ async function boot(): Promise<void> {
       console.log(`[Cuda] Tura ${turn} ${cityName}: ukończono ${label} @ ${site.q},${site.r}`);
       if (site.ownerId === 0) {
         const civLabel = civWonderDisplayName(player.civType as string);
-        showWonderCompletedNotice({
+        showWonderCompletedNoticeDeferred({
           variant: 'mine',
           nazwa: label,
           locationLabel: `${cityName} · Tura ${turn} · ${civLabel} — Ty`,
@@ -4610,7 +4615,7 @@ async function boot(): Promise<void> {
         });
       } else if (city) {
         const civLabel = civWonderDisplayName(civTypeForOwner(city.ownerId));
-        showWonderCompletedNotice({
+        showWonderCompletedNoticeDeferred({
           variant: 'rival',
           nazwa: label,
           locationLabel: `${city.name} · Tura ${turn} · ${civLabel}`,
@@ -8712,6 +8717,7 @@ async function boot(): Promise<void> {
       // game in that window used to clear endTurnInProgress but NOT the pending toast, so the
       // original async sequence still fired the "New era" toast into the freshly loaded game.
       pendingEraChangeToastForNextTurn = null;
+      eventDeferQueue.clear();
       endTurnTransition();
       if (isPreBattleOpen()) hidePreBattle();
       // F4: deferredAutoRequests (ui/preBattle.ts) nie miała ŻADNEGO resetu -- żądanie z
@@ -11384,6 +11390,33 @@ async function boot(): Promise<void> {
     /** R-WEB-TRUCE-Q1 (r5): wyłącznie hak live `__truceTestDebug.suppressVictoryForTest` — mapa testowa ma 2 miasta i kończy grę zwycięstwem przy pierwszym EOT. Domyślnie false. */
     let truceTestSuppressVictory = false;
     let endTurnInProgress = false;
+    /** R-WEB-EVENTS-DEFER-TO-TURN-START-Q1: modale (odkrycie tech., cud, zdobycie miasta) wygenerowane w
+     *  fazie EOT (tury innych cywilizacji / PM) czekaja tu do poczatku tury gracza. Dyplomacja = wyjatek. */
+    const eventDeferQueue = createEventDeferQueue();
+    /** Pokaz modal od razu (faza gracza) albo odloz do poczatku nastepnej tury gracza (faza EOT). */
+    function emitOrDeferNotice(channel: DeferrableNoticeChannel, ownerId: number, fire: () => void): void {
+      if (shouldDeferNotice(endTurnInProgress, channel)) {
+        eventDeferQueue.enqueue(channel, ownerId, fire);
+        return;
+      }
+      fire();
+    }
+    /** Argumenty liczone od razu (np. numer tury), pokaz odlozony do poczatku tury gracza w fazie EOT. */
+    function showWonderCompletedNoticeDeferred(opts: Parameters<typeof showWonderCompletedNotice>[0]): void {
+      emitOrDeferNotice('wonder-completed', 0, () => showWonderCompletedNotice(opts));
+    }
+    function showCityCaptureNoticeDeferred(...args: Parameters<typeof showCityCaptureNotice>): void {
+      emitOrDeferNotice('city-capture', 0, () => showCityCaptureNotice(...args));
+    }
+    /** Poczatek tury gracza: odpal odlozone modale aktywnego fotela (kolejnosc wystapienia). Bezpieczne
+     *  z definicji: no-op w EOT i gdy otwarta bitwa/audiencja (kolejka zostaje do ponowienia). */
+    function flushDeferredNotices(): void {
+      if (endTurnInProgress || eventDeferQueue.size() === 0) return;
+      if (isPreBattleOpen() || isDiplomacyAudienceOpen()) return;
+      eventDeferQueue.flushFor(humanSeats.activeHumanOwnerId, (err, entry) => {
+        console.warn('[EventDefer] blad odpalenia odlozonego powiadomienia', entry.channel, err);
+      });
+    }
     /** True only while endActiveHumanTurn's async world-EOT pipeline is alive. */
     let activeWorldEndTurnPipeline = false;
     /** Timestamp (ms) — wykrywanie zawieszonego przejścia tury (>8 s → force heal). */
@@ -13376,6 +13409,7 @@ async function boot(): Promise<void> {
 
     /** Po starcie tury gracza: pokaż odłożone prompty połączenia armii (kolejno). */
     function flushDeferredMergePrompts(): void {
+      flushDeferredNotices();
       if (deferredMergePrompts.length === 0 || endTurnInProgress) return;
       if (isArmyMergePanelOpen()) return;
       // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: nie flushuj na wierzch wciąż otwartego
@@ -15592,7 +15626,7 @@ async function boot(): Promise<void> {
       // backdrop (.civ-emp-backdrop z-index 449) is always active -- the default
       // 320 renders underneath it, dimming the toast ~35%. 600 (same value as the
       // main-menu branch -- the two panels cannot be open at once) clears it.
-      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : ((isMainMenuOpen() || isEmpireDetailPanelOpen()) ? '600' : '320');
+      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : (isMainMenuOpen() ? '600' : '320');
       hintOverrideTimer = setTimeout(() => {
         hintToast.style.display = 'none';
         hintOverrideTimer = null;
@@ -15640,11 +15674,12 @@ async function boot(): Promise<void> {
       const eraTechName = pendingEraDiscoveryTech;
       pendingEraDiscoveryTech = null;
       if (eraTechName !== null) {
-        showTechDiscoveryNotice({
+        const eraIdx = player.era;
+        emitOrDeferNotice('tech-discovery', 0, () => showTechDiscoveryNotice({
           techName: eraTechName,
-          eraIndex: player.era,
+          eraIndex: eraIdx,
           onOpenTree: () => showTechTreeView(0),
-        });
+        }));
       }
     }
 
@@ -28792,12 +28827,14 @@ async function boot(): Promise<void> {
             } else if (step.completed.length > 0) {
               // Nagroda nauki może dokończyć technologię bez awansu epoki — pokaż tę
               // samą pełną kartę co przy EOT, ale z komunikatem zwykłego ukończenia.
-              showTechDiscoveryNotice({
-                techName: step.completed[step.completed.length - 1]!.id,
-                eraIndex: player.era,
+              const villageTechName = step.completed[step.completed.length - 1]!.id;
+              const villageEraIdx = player.era;
+              emitOrDeferNotice('tech-discovery', 0, () => showTechDiscoveryNotice({
+                techName: villageTechName,
+                eraIndex: villageEraIdx,
                 kind: 'completion',
                 onOpenTree: () => showTechTreeView(0),
-              });
+              }));
             }
           } else {
             // AI/MP: dolicz do puli nauki ownera i odpal TEN SAM resolver co coroczne
@@ -31458,7 +31495,7 @@ async function boot(): Promise<void> {
           refreshMapAfterCityCapture(lead);
           if (atkOwner === 0) {
             const capturedCity = cityOnHex;
-            showCityCaptureNotice(capturedCity.name, {
+            showCityCaptureNoticeDeferred(capturedCity.name, {
               onEnterCity: () => openCityPanelForPlayer(capturedCity),
               eliminatedCivLabel: captureResult.eliminatedCivLabel ?? undefined,
               eliminatedDetails: captureResult.eliminatedDetails ?? undefined,
@@ -32754,7 +32791,7 @@ async function boot(): Promise<void> {
       refreshMapAfterCityCapture(captureResult.lead ?? anchor);
 
       if (atkOwner === 0) {
-        showCityCaptureNotice(city.name, {
+        showCityCaptureNoticeDeferred(city.name, {
           onEnterCity: () => openCityPanelForPlayer(city),
           eliminatedCivLabel: captureResult.eliminatedCivLabel ?? undefined,
           eliminatedDetails: captureResult.eliminatedDetails ?? undefined,
@@ -35328,12 +35365,14 @@ async function boot(): Promise<void> {
               } else {
                 // Auto-research ukończył technologię bez przejścia epoki: karta jest
                 // komunikatem głównym, a dotychczasowy toast pozostaje krótkim śladem.
-                showTechDiscoveryNotice({
-                  techName: step.completed[step.completed.length - 1]!.id,
-                  eraIndex: player.era,
+                const autoTechName = step.completed[step.completed.length - 1]!.id;
+                const autoEraIdx = player.era;
+                emitOrDeferNotice('tech-discovery', 0, () => showTechDiscoveryNotice({
+                  techName: autoTechName,
+                  eraIndex: autoEraIdx,
                   kind: 'completion',
                   onOpenTree: () => showTechTreeView(0),
-                });
+                }));
               }
               console.log(
                 '[Nauka] Skarbiec=' + player.skarbiec +
@@ -39797,6 +39836,8 @@ async function boot(): Promise<void> {
         // building-blockiem -- kontrakt bramki `hotseat-etap5-no-leak-test.cjs` Scenariusz B
         // wymaga, żeby SAM switch nie otwierał automatycznie build-mode).
         if (isAwaitingFirstPlayerCity()) beginOnboardingFoundCity();
+        // R-WEB-EVENTS-DEFER-TO-TURN-START-Q1 (hot-seat): odlozone modale fotela WCHODZACEGO w ture.
+        flushDeferredNotices();
         return;
       }
       // Wszystkie fotele skończyły turę w tej rundzie -- reset PRZED wołaniem
@@ -39968,6 +40009,9 @@ async function boot(): Promise<void> {
 
     function renderLoop() {
       requestAnimationFrame(renderLoop);
+      // R-WEB-EVENTS-DEFER-TO-TURN-START-Q1: odlozone modale czekajace za bitwa/audiencja (brak
+      // jednego hooka "zamknieto preBattle") -- O(1) gdy kolejka pusta; sam flush pilnuje guardow.
+      if (eventDeferQueue.size() > 0) flushDeferredNotices();
 
       // --- Delta time (capped at 100 ms to skip large jumps on tab switch) ---
       const now = performance.now() / 1000;
