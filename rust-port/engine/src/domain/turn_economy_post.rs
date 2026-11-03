@@ -367,18 +367,18 @@ pub struct PostPracaPools {
     pub ai_praca_pool_by_owner: BTreeMap<i64, f64>,
 }
 
-/// Wynik: `_lastPracaUpkeep` i skladnik `_lastPracaRate` (`-= playerUpkeep`).
+/// Wynik: `_lastPracaUpkeep` i nowe `_lastPracaRate` (`_lastPracaRate -= playerUpkeep`, takze gdy `playerUpkeep <= 0`).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PracaUpkeepOutcome {
     pub last_praca_upkeep: f64,
-    /// Odjecie od `_lastPracaRate` (`playerUpkeep` surowe, takze gdy `<= 0`).
-    pub last_praca_rate_delta: f64,
+    pub last_praca_rate: f64,
 }
 
 /// `econ.pracaUpkeepByOwner` -> pule.
 pub fn apply_praca_upkeep_post(
     pools: &mut PostPracaPools,
     praca_upkeep_by_owner: &BTreeMap<i64, f64>,
+    last_praca_rate: f64,
 ) -> PracaUpkeepOutcome {
     let player_upkeep = praca_upkeep_by_owner.get(&0).copied().unwrap_or(0.0);
     if player_upkeep > 0.0 {
@@ -395,7 +395,7 @@ pub fn apply_praca_upkeep_post(
     }
     PracaUpkeepOutcome {
         last_praca_upkeep: player_upkeep,
-        last_praca_rate_delta: -player_upkeep,
+        last_praca_rate: last_praca_rate - player_upkeep,
     }
 }
 
