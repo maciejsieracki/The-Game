@@ -184,7 +184,7 @@ export interface CapitalCaptureOutcome {
   zywnoscOfiaryRazem: number;
   /**
    * R-WEB-ELIMINATION-FULL-SPOILS-Q1: WSZYSTKIE surowce magazynu panstwa ofiary
-   * (suma `City.surowce` po przejetym miescie + ew. innych miastach ofiary), tylko
+   * (`City.surowce` przejetego, ostatniego miasta ofiary), tylko
    * wartosci > 0, klucze w stalej kolejnosci. Magazyn panstwa to suma magazynow miast
    * (SUROW-CIV-01), a `City.surowce` przechodzi na zdobywce razem z miastem
    * (ownerId), wiec ten rekord jest lista TEGO, co fizycznie przeszlo. Puste poza
@@ -261,12 +261,12 @@ export function applyCapitalCapturePlunder(
   if (eliminacja) {
     // --- Zdarzenie 2 — R-WEB-ELIMINATION-FULL-SPOILS-Q1: caly majatek panstwa ---
     // Surowce: lista tego, co fizycznie przechodzi z miastem (City.surowce nie jest
-    // zerowane przy zmianie ownerId) + magazyny ewentualnych innych miast ofiary.
-    for (const c of [city, ...remaining]) {
-      for (const key of Object.keys(c.surowce ?? {})) {
-        const v = Math.floor(c.surowce![key] ?? 0);
-        if (v > 0) surowcePrzejete[key] = (surowcePrzejete[key] ?? 0) + v;
-      }
+    // zerowane przy zmianie ownerId). Eliminacja => remaining.length === 0, wiec ofiara
+    // nie ma juz innych miast: magazyn panstwa = magazyn TEGO miasta. Wartosci w liscie
+    // sa calkowite (floor) -- miasto zachowuje ulamki; okno pokazuje pelne jednostki.
+    for (const key of Object.keys(city.surowce ?? {})) {
+      const v = Math.floor(city.surowce![key] ?? 0);
+      if (v > 0) surowcePrzejete[key] = v;
     }
     // Zywnosc Spichlerza imperium: przejmowana do pojemnosci spichlerza zdobywcy.
     if (access.getFoodReserve && access.setFoodReserve) {

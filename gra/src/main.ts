@@ -32448,7 +32448,7 @@ async function boot(): Promise<void> {
         moc: powerGain,
         barbarzyncaZdobywca: barbCaptor,
         // R-WEB-ELIMINATION-FULL-SPOILS-Q1: WSZYSTKIE surowce magazynu panstwa ofiary
-        // (outcome.surowcePrzejete -- suma po przejetym miescie i ewent. innych miastach).
+        // (outcome.surowcePrzejete -- magazyn ostatniego miasta ofiary).
         surowce: outcome.surowcePrzejete,
         zywnoscPrzejeta: outcome.zywnoscPrzejeta,
         zywnoscUtracona: outcome.zywnoscUtracona,
