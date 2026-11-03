@@ -8558,3 +8558,6 @@ LABOR: złoto dochodziło na koniec tury (zmierzone 0→20 903); błąd = brak o
 
 ## 2026-11-03 — DECYZJA WŁAŚCICELA: zamiana Pracy na podatek dzielona suwakiem (bez zmian)
 Właściciel: podatek z zamiany Pracy ma iść zależnie od podziału suwaka Skarbiec/Badania/Bogactwo — dzielenie jest OK. Obecne zachowanie (60/20/20 domyślnie, korupcja, Mennica) jest zgodne; brak zmian w kodzie. Backlog pkt 6 ZAMKNIĘTY. Wdrożona ROBOCZA `abb556ee` (podgląd i komunikaty) pozostaje.
+
+## 2026-11-03 — DECYZJA WŁAŚCICELA: wieże przy murze/palisadzie — automatycznie, za darmo (Baszta bez zmian)
+Właściciel potwierdził: wieże strzeleckie co 4 heksy powstają automatycznie przy murze lub palisadzie, bez kosztu; budynek Baszta zostaje bez zmian (+100% obrony). Zgodne z domyślnym ZAŁOŻENIEM w dispatchu `R-WEB-PALISADE-BATTLE-WALL-RULES-Q1` — brak zmian w dispatchu. Backlog pkt 7 ZAMKNIĘTY.
