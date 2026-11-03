@@ -8480,3 +8480,6 @@ Właściciel: część cywilizacji zbiera armię w jednym miejscu, część nie.
 
 ## 2026-11-03 — zgłoszenie (zrzut: oblężenie miasta Delfy): AI oblega moje miasto bez wypowiedzenia wojny
 Właściciel: inna cywilizacja oblega miasto gracza (Delfy, czerwona nakładka „OBLĘŻENIE Delfy”, kilkanaście stosów z herbami AI wokół) bez wypowiedzenia w ogóle wojny. Temat `R-WEB-AI-SIEGE-WITHOUT-WAR-Q1` (diagnoza: realne oblężenie bez wojny vs błędna nakładka/stan; poprawka; stała zgoda).
+
+## 2026-11-03 — zgłoszenie: AI nie wykorzystuje całego zapasu ruchu
+Właściciel: inne cywilizacje nie wykorzystują całego zapasu ruchu — chodzą grupami, ale nie w pełnym zakresie możliwości (poruszają się na krótszy dystans niż pozwalają punkty ruchu). Temat `R-WEB-AI-MOVE-FULL-RANGE-Q1` (diagnoza + poprawka, stała zgoda). Powiązane wcześniejsze: `ai-move-range-test`, koncentracja armii. START po zwolnieniu miejsca.
