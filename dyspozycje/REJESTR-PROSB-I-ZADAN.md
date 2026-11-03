@@ -8491,3 +8491,6 @@ Właściciel: wszystkie informacje, wydarzenia i odkrycia technologii powinny po
 
 ## 2026-11-03 — WYNIK DIAGNOZY R-WEB-AUTO-IMPROVE-BUDGET-UNSPENT-DIAG-Q1 (FC PASS, `e5faadfc2`, `web-wip/DIAG-UNSPENT-fc`)
 Limitu liczby ulepszeń na miasto NIE ma (`maxItemsPerCity` = Infinity dla gracza; AI dostaje 1 w `ai.ts:2633` — temat REMOVE-ITEM-CAP w toku). Główna przyczyna niewydawanego budżetu: filtr „Tylko pola z obywatelami” (domyślnie ON, `cities.ts:217`) odrzuca ~90% heksów terytorium; do tego `break` po pierwszym etapie na turę (`auto-improvements.ts:883`) i rezerwa płaska 30 Pracy. Pytanie ABC do właściciela (filtr): A zostawić + wyraźniejszy sygnał, B (rekomendowane) gdy brak kandydatów przy obywatelach i brak niedoboru — dopuścić heksy bez obywatela, C domyślnie wyłączyć filtr. Tabela: `dyspozycje/autobot/runs/R-WEB-AUTO-IMPROVE-BUDGET-UNSPENT-DIAG-Q1/tabela-przyczyn.md`.
+
+## 2026-11-03 — zgłoszenie (zrzuty: lista ulepszeń z „Stadnina — Brak heksów w twoim terytorium”): fałszywy brak złoża koni
+Właściciel: mimo że na moim terenie jest dostęp do koni, ulepszenie Stadnina informuje „Brak heksów w twoim terytorium”, jakby nie było zasobu. Temat `R-WEB-STADNINA-NO-HEX-FALSE-NEGATIVE-Q1` (diagnoza + poprawka, stała zgoda). Kod: `gra/src/map/improvement-build.ts:1486`, `terrain-improvements.json` (stadnina), `resource-access.ts`, `livestock-unlock.ts`.
