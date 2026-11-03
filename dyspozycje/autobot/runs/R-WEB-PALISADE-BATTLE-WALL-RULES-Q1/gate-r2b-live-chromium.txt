@@ -1,0 +1,13 @@
+tools/palisade-towers-live.cjs -- Chromium headless (/opt/pw-browsers/chromium), prawdziwa BattleScene, ?playtest=oblezenie-duze&fort=<palisada|mury>
+bundle PO = vite build z drzewa roboczego; bundle PRZED = vite build z HEAD e0b20f430 (+ tylko hook ?fort= w playtescie, zeby wymusic palisade).
+
+PO palisada: fortKind=palisada, wiezyczek=39 (rzedy 2,6,10,...; brama 76-77 bez wiezyczki), strzelec=Oszczepnik (epoka 1 Kamien), zasieg=2
+  probe: atakujacy Hastati ustawiony 2 kafle przed murem na rzedzie wiezyczki 86; _fireSiegeTowers() ->
+  log: "Wieza strzelnicza (rzad 86) strzela do Hastati." / "Wieza (Oszczepnik) trafia Hastati za 1 (HP 37/38)."  hp 38 -> 37
+  bledy JS: 0
+PO mury:     fortKind=mur, wiezyczek=39, strzelec=Oszczepnik, zasieg=2
+  probe: identyczny wynik (hp 38 -> 37, ten sam log); bledy JS: 0
+PRZED (oba): brak wiezyczek (towers=0), palisada rysowana jako KAMIENNY mur wg cywilizacji (zrzut przed-palisada-*.png)
+
+Zrzuty (<= 1 MB): zrzuty-r2/{przed,po}-{palisada,mury}-{daleko,blisko}.png
+EXIT=0

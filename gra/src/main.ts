@@ -33584,7 +33584,18 @@ async function boot(): Promise<void> {
       // builtBuildingIds: ['mury'] -- preset/playtest bez realnego miasta w
       // cityBuilt; zachowuje dawne domyslne zachowanie (zawsze +200% mur w
       // trybie oblezenia preset) sprzed refaktoru na cityWallDefenseBonusPercent.
-      if (siege) bOpts.siege = { defCiv: 'grecja', builtBuildingIds: ['mury'] };
+      // R4/faza B: ?fort=palisada w playtescie oblezenia -> palisada zamiast murow
+      // (podglad modelu palisady + drewnianych wiezyczek; domyslnie 'mury' jak dotad).
+      if (siege) {
+        let fortParam = '';
+        try { fortParam = new URLSearchParams(window.location.search).get('fort') ?? ''; } catch { /* brak location */ }
+        bOpts.siege = { defCiv: 'grecja', builtBuildingIds: [fortParam === 'palisada' ? 'palisada' : 'mury'] };
+        // R4 (obrona r2): ?defera=1..3 -- epoka obroncy w playtescie (pomiar zywy ostrzalu wiezyczek w epokach 2-3).
+        try {
+          const de = Number(new URLSearchParams(window.location.search).get('defera'));
+          if (de >= 1 && de <= 3) bOpts.defenderEra = Math.round(de);
+        } catch { /* brak location */ }
+      }
       // Ten preset to jednocześnie pierwszy gest gracza w tym trybie playtest
       // (patrz doStartPlaytestWalkaMapy: gałąź bitwaDuza/oblezDuze returnuje
       // przed startGameMusic) — więc epoka + muzyka startują tu wprost w 'bitwa'.
