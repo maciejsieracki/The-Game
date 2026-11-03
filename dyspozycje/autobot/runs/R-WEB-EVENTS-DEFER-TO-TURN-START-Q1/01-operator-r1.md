@@ -37,3 +37,11 @@ Zapis/wczytanie: kolejka jest zawsze oproznona w `finally` tury przed mozliwosci
 RUNDY: 1/5
 NASTEPNY KROK: Evaluator (weryfikacja Z2/Z3, ew. dodatkowy pomiar wonder/capture na zywo)
 DEPLOY/PUSH: NIE WYKONANO
+
+## Obrona r1 (SHA 9ecf6e112)
+1. PRZYJMUJE: przywrocono `|| isEmpireDetailPanelOpen()` w main.ts:15629 (nieautoryzowana edycja przy emisji); `hint-toast-zindex-empire-panel-test` 18/0 EXIT=0; nowy check C11 pilnuje formuly.
+2. PRZYJMUJE: z-index = moja regresja (naprawiona). `hotseat-drugi-fotel-tura-test`: ten sam BLOCK (`.civ-newgame .start` timeout 30s, 3 proby) na bazie `c7328569e~1` i na obu stanach po zmianie => infra/przestarzaly selektor, nie regresja.
+3. ODRZUCAM jako blad kodu; potwierdzenie wyjatku pre-battle (Z1) = do orkiestratora. Faza AI czeka na odpowiedz gracza w tym oknie; odroczone modale czekaja za nim (guard w flushDeferredNotices).
+4. PRZYJMUJE: ownerId = `humanSeats.activeHumanOwnerId` w 5 miejscach emisji; check C10. Na zywo w 2+ fotelach: NIE_ZMIERZONO (strukturalnie + 14 testow kolejki per fotel).
+5. PRZYJMUJE czesciowo: cud/zdobycie miasta/chatka i laczenie armii na zywo: NIE_ZMIERZONO. Armia AI nie ma komunikatu o scalaniu (brak punktu emisji).
+6. PRZYJMUJE: zapis/wczytanie = argument (kolejka zawsze pusta po EOT, `clear()` w resetEndTurnBlockers main.ts:8720), nie pomiar: NIE_ZMIERZONO.
