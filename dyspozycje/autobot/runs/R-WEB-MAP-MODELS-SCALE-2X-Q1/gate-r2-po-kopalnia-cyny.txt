@@ -1,0 +1,34 @@
+kopalnia-cyny-render-test (P-CYNA-BRAK-WIZUALIZACJI-3D-NA-MAPIE)
+
+PASS: A1 roblox + zloze="cyna" → overlay != null (było null = niewidoczne złoże)
+PASS: A2 roblox overlay ma >=18 meshy (4 skupiska)
+PASS: A3 minecraft + zloze="cyna" → overlay != null (styledTinOre)
+PASS: A4 minecraft overlay ma >=6 meshy
+PASS: A5 civ + zloze="cyna" → overlay != null (tinOreRocks)
+PASS: A6 buildResourceOverlayFromZloze("cyna") != null
+PASS: A7 buildZlozeCyna() eksportowane
+PASS: A8 złoże cyny ma barwę kasyterytu 0x2a201a
+PASS: A9 złoże cyny NIE używa żadnej barwy złota (brak fallbacku na złoto)
+PASS: A10 złoże cyny NIE używa barw miedzi (brak fallbacku na miedź)
+PASS: A11 paleta cyny różna od palety złota
+PASS: B1 buildKopalniaCyny() zwraca grupę
+PASS: B2 to NIE generyczna kopalnia (tri cyna=944 vs generyczna=300)
+PASS: B3 robloxImprovements wpięte na własny model (tri=944)
+PASS: B4 improvements.ts wpięte na własny model (tri=944)
+
+   maxRadiusXZ = 0.606 (limit wpisany 0.866)
+   bbox y      = -0.0005 … 0.580
+   bbox xz     = x[-0.544, 0.526]  z[-0.529, 0.488]
+   meshy=56  tri=944
+
+PASS: B5 cały model w obrysie heksa (maxR=0.606 <= 0.866)
+PASS: B6 zapas na kompaktowanie sektorowe (maxR=0.606 <= 0.700)
+PASS: B7 nic nie wchodzi pod teren (minY=-0.0005)
+PASS: B8 dominanta pionowa czytelna z 52° (maxY=0.580 >= 0.450)
+PASS: B9 nie wyższa niż Kopalnia złota+zapas (maxY=0.580 <= 0.620)
+PASS: B10 budżet trójkątów wobec Kopalni złota=992 (944 <= 1000)
+PASS: B11 geometrie są SINGLETONAMI modułu (zero alokacji per instancja)
+PASS: B12 userData.mats puste (współdzielone materiały nie mogą być zwalniane per żeton)
+
+23 passed, 0 failed
+EXIT=0

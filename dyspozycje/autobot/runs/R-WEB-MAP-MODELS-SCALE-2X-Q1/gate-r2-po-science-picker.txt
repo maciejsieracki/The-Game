@@ -1,0 +1,147 @@
+PASS: (0) sciencePicker.ts eksportuje techRequirementItems() — producent danych, nie stringu
+PASS: (0) buildTooltipHTML() nie emituje już żadnego surowego emoji kategorii
+PASS: (0) tooltip nie skleja już warunku płaskim stringiem z glifem kategorii
+PASS: (0) tooltip renderuje ikonę przez resolver marki reużyty z huba (unlockIconSvg)
+PASS: (0) scienceHubHud.ts udostępnia ten sam resolver (export, bez zmiany logiki listy)
+PASS: (0) budynek warunku niesie iconCategory (def z kategorią) — inaczej tooltip ≠ cityPanel
+PASS: (0) techRequirementItems() odsiewa placeholdery w OBU gałęziach (reużyta isPlaceholderLabel)
+PASS: (0) ulepszenie warunku idzie przez IMPROVEMENT_NAME_TO_KEY, nie przez surową etykietę
+PASS: (0) techRequirementItems() rozbija OBIE gałęzie po przecinku (splitLabels), nie bierze pola w całości
+PASS: (0) lustro placeholdera w bramce zgodne z produkcyjnym isPlaceholderLabel()
+PASS: fixture: tech.json ma technologie z warunkiem badania (jest co sprawdzać)
+PASS: fixture: pokryte są OBIE gałęzie warunku (budynek i ulepszenie)
+[science-picker-tooltip-icons-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: fixture: drzewko wyrenderowało węzły technologii
+PASS: fixture: element tooltipa istnieje w DOM
+PASS: (A) „Żegluga" — węzeł w drzewku i tooltip pokazany po hoverze
+PASS: (A) „Żegluga" — sekcja „Warunek badania:" obecna z kompletem pozycji
+PASS: (A) „Żegluga" — każda pozycja ma DOKŁADNIE jedną ikonę SVG
+PASS: (A) „Żegluga" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Żegluga" — ZERO surowych emoji w sekcji widzianej przez gracza
+PASS: (A) „Żegluga" — treść etykiet zachowana 1:1 z tech.json (człon po członie)
+PASS: (A) „Pismo" — węzeł w drzewku i tooltip pokazany po hoverze
+PASS: (A) „Pismo" — sekcja „Warunek badania:" obecna z kompletem pozycji
+PASS: (A) „Pismo" — każda pozycja ma DOKŁADNIE jedną ikonę SVG
+PASS: (A) „Pismo" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Pismo" — ZERO surowych emoji w sekcji widzianej przez gracza
+PASS: (A) „Pismo" — treść etykiet zachowana 1:1 z tech.json (człon po członie)
+PASS: (A) „Religia" — węzeł w drzewku i tooltip pokazany po hoverze
+PASS: (A) „Religia" — sekcja „Warunek badania:" obecna z kompletem pozycji
+PASS: (A) „Religia" — każda pozycja ma DOKŁADNIE jedną ikonę SVG
+PASS: (A) „Religia" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Religia" — ZERO surowych emoji w sekcji widzianej przez gracza
+PASS: (A) „Religia" — treść etykiet zachowana 1:1 z tech.json (człon po członie)
+PASS: (A) „Hutnictwo żelaza" — węzeł w drzewku i tooltip pokazany po hoverze
+PASS: (A) „Hutnictwo żelaza" — sekcja „Warunek badania:" obecna z kompletem pozycji
+PASS: (A) „Hutnictwo żelaza" — każda pozycja ma DOKŁADNIE jedną ikonę SVG
+PASS: (A) „Hutnictwo żelaza" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Hutnictwo żelaza" — ZERO surowych emoji w sekcji widzianej przez gracza
+PASS: (A) „Hutnictwo żelaza" — treść etykiet zachowana 1:1 z tech.json (człon po członie)
+PASS: (A) „Oblężnictwo" — węzeł w drzewku i tooltip pokazany po hoverze
+PASS: (A) „Oblężnictwo" — sekcja „Warunek badania:" obecna z kompletem pozycji
+PASS: (A) „Oblężnictwo" — każda pozycja ma DOKŁADNIE jedną ikonę SVG
+PASS: (A) „Oblężnictwo" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Oblężnictwo" — ZERO surowych emoji w sekcji widzianej przez gracza
+PASS: (A) „Oblężnictwo" — treść etykiet zachowana 1:1 z tech.json (człon po członie)
+PASS: (A) „Filozofia" — węzeł w drzewku i tooltip pokazany po hoverze
+PASS: (A) „Filozofia" — sekcja „Warunek badania:" obecna z kompletem pozycji
+PASS: (A) „Filozofia" — każda pozycja ma DOKŁADNIE jedną ikonę SVG
+PASS: (A) „Filozofia" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Filozofia" — ZERO surowych emoji w sekcji widzianej przez gracza
+PASS: (A) „Filozofia" — treść etykiet zachowana 1:1 z tech.json (człon po członie)
+PASS: (A) „Medycyna" — węzeł w drzewku i tooltip pokazany po hoverze
+PASS: (A) „Medycyna" — sekcja „Warunek badania:" obecna z kompletem pozycji
+PASS: (A) „Medycyna" — każda pozycja ma DOKŁADNIE jedną ikonę SVG
+PASS: (A) „Medycyna" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Medycyna" — ZERO surowych emoji w sekcji widzianej przez gracza
+PASS: (A) „Medycyna" — treść etykiet zachowana 1:1 z tech.json (człon po członie)
+PASS: (A) „Obróbka żelaza" — węzeł w drzewku i tooltip pokazany po hoverze
+PASS: (A) „Obróbka żelaza" — sekcja „Warunek badania:" obecna z kompletem pozycji
+PASS: (A) „Obróbka żelaza" — każda pozycja ma DOKŁADNIE jedną ikonę SVG
+PASS: (A) „Obróbka żelaza" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Obróbka żelaza" — ZERO surowych emoji w sekcji widzianej przez gracza
+PASS: (A) „Obróbka żelaza" — treść etykiet zachowana 1:1 z tech.json (człon po członie)
+PASS: (A) „Sztuka wojenna" — węzeł w drzewku i tooltip pokazany po hoverze
+PASS: (A) „Sztuka wojenna" — sekcja „Warunek badania:" obecna z kompletem pozycji
+PASS: (A) „Sztuka wojenna" — każda pozycja ma DOKŁADNIE jedną ikonę SVG
+PASS: (A) „Sztuka wojenna" — żaden slot ikony nie jest zerowy wizualnie
+PASS: (A) „Sztuka wojenna" — ZERO surowych emoji w sekcji widzianej przez gracza
+PASS: (A) „Sztuka wojenna" — treść etykiet zachowana 1:1 z tech.json (człon po członie)
+PASS: (B) „Żegluga" / ulepszenie „tartak" — encja rozwiązana w danych gry (buildModeHud/IMPROVEMENTS:tartak (Tartak))
+PASS: (B) „Żegluga" / ulepszenie „tartak" — ikona w tooltipie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Pismo" / budynek „cegielnia" — encja rozwiązana w danych gry (cityPanel/buildings.json:cegielnia (Cegielnia))
+PASS: (B) „Pismo" / budynek „cegielnia" — ikona w tooltipie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Religia" / budynek „cegielnia" — encja rozwiązana w danych gry (cityPanel/buildings.json:cegielnia (Cegielnia))
+PASS: (B) „Religia" / budynek „cegielnia" — ikona w tooltipie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Hutnictwo żelaza" / budynek „odlewnia_brazu" — encja rozwiązana w danych gry (cityPanel/buildings.json:odlewnia_brazu (Odlewnia brązu))
+PASS: (B) „Hutnictwo żelaza" / budynek „odlewnia_brazu" — ikona w tooltipie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Oblężnictwo" / budynek „koszary" — encja rozwiązana w danych gry (cityPanel/buildings.json:koszary (Koszary))
+PASS: (B) „Oblężnictwo" / budynek „koszary" — ikona w tooltipie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Filozofia" / budynek „biblioteka" — encja rozwiązana w danych gry (cityPanel/buildings.json:biblioteka (Biblioteka))
+PASS: (B) „Filozofia" / budynek „biblioteka" — ikona w tooltipie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Medycyna" / budynek „studnia" — encja rozwiązana w danych gry (cityPanel/buildings.json:studnia (Studnia))
+PASS: (B) „Medycyna" / budynek „studnia" — ikona w tooltipie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Obróbka żelaza" / budynek „kuznia_zelaza" — encja rozwiązana w danych gry (cityPanel/buildings.json:kuznia_zelaza (Kuźnia żelaza))
+PASS: (B) „Obróbka żelaza" / budynek „kuznia_zelaza" — ikona w tooltipie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) „Sztuka wojenna" / budynek „koszary" — encja rozwiązana w danych gry (cityPanel/buildings.json:koszary (Koszary))
+PASS: (B) „Sztuka wojenna" / budynek „koszary" — ikona w tooltipie IDENTYCZNA z tą samą encją gdzie indziej w grze
+PASS: (B) porównanie objęło obie kategorie warunku (budynek + ulepszenie)
+PASS: (B2) hub badań wyrenderował swoje ikony (jest z czym porównywać)
+PASS: (B2) „tartak" — ikona w tooltipie drzewka IDENTYCZNA z ikoną w wierszu „Odblok." huba badań
+PASS: (B2) „odlewnia_brazu" — ikona w tooltipie drzewka IDENTYCZNA z ikoną w wierszu „Odblok." huba badań
+PASS: (B2) „koszary" — ikona w tooltipie drzewka IDENTYCZNA z ikoną w wierszu „Odblok." huba badań
+PASS: (B2) „biblioteka" — ikona w tooltipie drzewka IDENTYCZNA z ikoną w wierszu „Odblok." huba badań
+PASS: (B2) „studnia" — ikona w tooltipie drzewka IDENTYCZNA z ikoną w wierszu „Odblok." huba badań
+PASS: (B2) „koszary" — ikona w tooltipie drzewka IDENTYCZNA z ikoną w wierszu „Odblok." huba badań
+PASS: (B2) znaleziono encje występujące na OBU powierzchniach (porównanie nie było puste)
+PASS: (C) każda technologia z tech.json ma węzeł w drzewku
+PASS: (C) sprawdzono rozrzut technologii, nie tylko te z warunkiem
+PASS: (C) żadna technologia nie ma złamanego/pustego slotu ikony w warunku badania
+PASS: (C) ŻADNA technologia nie pokazuje już surowego emoji w „Warunek badania:"
+PASS: (C) zero wyjątków JS przy hoverze przez całe drzewko
+PASS: (G) sekcja „Warunek badania:" pojawia się DOKŁADNIE tam, gdzie tech.json ma warunek
+PASS: (G) żadna pozycja warunku nie jest placeholderem („—", „brak") z ikoną marki obok
+PASS: (G) technologia bez warunku nie dostaje pustego nagłówka sekcji
+PASS: (S) fixture: „Garncarstwo" nie ma warunku w prawdziwej tech.json
+PASS: (S) fixture: „Murarstwo" nie ma warunku w prawdziwej tech.json
+PASS: (S) fixture: „Rolnictwo" nie ma warunku w prawdziwej tech.json
+PASS: (S) fixture: wszystkie przypadki syntetyczne wstrzyknięte
+PASS: (S) drzewko na danych syntetycznych wyrenderowało węzły
+PASS: (S) „Garncarstwo" — węzeł znaleziony na danych syntetycznych
+PASS: (S) „Garncarstwo" — sekcja obecna DOKŁADNIE wtedy, gdy zostaje choć jedna realna pozycja
+PASS: (S) „Garncarstwo" — pozycje co do kolejności i treści zgodne z regułą produkcji
+PASS: (S) „Garncarstwo" — żadna pozycja nie łączy dwóch encji w jednej etykiecie
+PASS: (S) „Garncarstwo" — każda pozycja ma jedną, niezerową ikonę i ZERO emoji
+PASS: (S) „Garncarstwo" — ikona KAŻDEGO członu identyczna z tą samą encją gdzie indziej w grze
+PASS: (S) „Garncarstwo" — różne encje mają RÓŻNE ikony (nie jedna powtórzona)
+PASS: (S) „Murarstwo" — węzeł znaleziony na danych syntetycznych
+PASS: (S) „Murarstwo" — sekcja obecna DOKŁADNIE wtedy, gdy zostaje choć jedna realna pozycja
+PASS: (S) „Murarstwo" — pozycje co do kolejności i treści zgodne z regułą produkcji
+PASS: (S) „Murarstwo" — żadna pozycja nie łączy dwóch encji w jednej etykiecie
+PASS: (S) „Murarstwo" — każda pozycja ma jedną, niezerową ikonę i ZERO emoji
+PASS: (S) „Murarstwo" — ikona KAŻDEGO członu identyczna z tą samą encją gdzie indziej w grze
+PASS: (S) „Murarstwo" — różne encje mają RÓŻNE ikony (nie jedna powtórzona)
+PASS: (S) „Rolnictwo" — węzeł znaleziony na danych syntetycznych
+PASS: (S) „Rolnictwo" — sekcja obecna DOKŁADNIE wtedy, gdy zostaje choć jedna realna pozycja
+PASS: (S) „Rolnictwo" — pozycje co do kolejności i treści zgodne z regułą produkcji
+PASS: (S) „Rolnictwo" — żadna pozycja nie łączy dwóch encji w jednej etykiecie
+PASS: (S) „Rolnictwo" — każda pozycja ma jedną, niezerową ikonę i ZERO emoji
+PASS: (S) „Rolnictwo" — ikona KAŻDEGO członu identyczna z tą samą encją gdzie indziej w grze
+PASS: (S) „Rolnictwo" — różne encje mają RÓŻNE ikony (nie jedna powtórzona)
+PASS: (S) kontrola negatywna: etykieta „Cegielnia, Koszary" z jedną ikoną NIE występuje
+PASS: (S) zero wyjątków JS na danych syntetycznych
+
+-- Mutacja (kontrola negatywna): odtworzenie renderu sprzed poprawki --
+PASS: (E) mutacja „Żegluga" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) mutacja „Pismo" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) mutacja „Religia" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) mutacja „Hutnictwo żelaza" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) mutacja „Oblężnictwo" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) mutacja „Filozofia" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) mutacja „Medycyna" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) mutacja „Obróbka żelaza" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) mutacja „Sztuka wojenna" — asercja (A) faktycznie czerwienieje (emoji wraca, ikony znikają)
+PASS: (E) kontrola negatywna objęła wszystkie technologie z warunkiem badania
+
+Wynik: 141 PASS / 0 FAIL
+EXIT=0
