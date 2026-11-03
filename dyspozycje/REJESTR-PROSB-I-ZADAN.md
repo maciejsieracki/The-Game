@@ -8477,3 +8477,6 @@ Doprecyzowanie właściciela (2026-11-03, zrzut panelu miasta: „Kolejka rekrut
 
 ## 2026-11-03 — zgłoszenie: niektóre cywilizacje AI nadal nie zbierają całej armii w jednym miejscu
 Właściciel: część cywilizacji zbiera armię w jednym miejscu, część nie. Hipoteza właściciela (do sprawdzenia): pierwszą armię zbierają, a kolejne po jej utracie są tworzone „bez ładu i składu”. Poprzednie tematy: `P-AI-ARMIA-ROZPROSZENIE-BRAK-KONCENTRACJI-Q1`, `R-WEB-ARMY-CONSOLIDATION-Q1`, `R-WEB-AI-ARMY-UPKEEP-Q1` (kod `army-concentration.ts`). Temat `R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1` (diagnoza + poprawka, stała zgoda). START po zwolnieniu miejsca.
+
+## 2026-11-03 — zgłoszenie (zrzut: oblężenie miasta Delfy): AI oblega moje miasto bez wypowiedzenia wojny
+Właściciel: inna cywilizacja oblega miasto gracza (Delfy, czerwona nakładka „OBLĘŻENIE Delfy”, kilkanaście stosów z herbami AI wokół) bez wypowiedzenia w ogóle wojny. Temat `R-WEB-AI-SIEGE-WITHOUT-WAR-Q1` (diagnoza: realne oblężenie bez wojny vs błędna nakładka/stan; poprawka; stała zgoda).
