@@ -1427,7 +1427,7 @@ function renderPracaSection(
       + `<input type="number" min="0" max="${max}" step="1" value="0" data-work-tax-amount aria-label="Praca do zamiany na podatek" />`
       + `<button type="button" data-work-tax-submit${max < 1 ? ' disabled' : ''}>Zamień na podatek</button></div>`
       + `<div class="civ-emp-foot" data-work-tax-preview>0 Pracy → 0 Podatku</div>`
-      + '<div class="civ-emp-foot">Zamiana trafia do zwykłego strumienia podatku w najbliższej turze. Niewykorzystana Praca zostaje w puli.</div></div>';
+      + '<div class="civ-emp-foot">Zamiana trafia do zwykłego strumienia podatku stolicy na koniec tury: po korupcji i Mennicy dzieli się wg suwaka Podatek/Nauka/Zamożność — do Skarbca idzie tylko udział „Podatek”. Dokładny wpływ pokaże komunikat po zamianie i „+N/turę” przy Skarbcu. Niewykorzystana Praca zostaje w puli.</div></div>';
     queueMicrotask(() => {
       const host = document.querySelector<HTMLElement>('[data-work-tax-convert]');
       const input = host?.querySelector<HTMLInputElement>('[data-work-tax-amount]');
@@ -1441,7 +1441,8 @@ function renderPracaSection(
         if (!input) return;
         const amount = Math.max(0, Math.min(max, Math.floor(Number(input.value) || 0)));
         const tax = taxForWorkAmount(amount, taxRate);
-        if (amount < 1 || tax < 1 || !window.confirm(`Zamienić ${amount} Pracy na ${tax} Podatku?`)) return;
+        // Odmowa (0 Pracy / 0 Podatku) idzie do hooka, ktory pokazuje powod - nie cichy brak reakcji.
+        if (amount >= 1 && tax >= 1 && !window.confirm(`Zamienić ${amount} Pracy na ${tax} Podatku?`)) return;
         empireGlobalDefaultsUi.onConvertOwnerWorkToTax?.(ownerId, amount);
       });
     });

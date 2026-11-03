@@ -57,6 +57,31 @@ export function convertWorkPoolToTax(
   };
 }
 
+/**
+ * Komunikat po akcji zamiany (zawsze zgodny ze stanem: powod odmowy albo realny skutek).
+ * `skarbDelta`/`naukaDelta` = zmiana projekcji przychodu/ture z silnika ekonomii (przed -> po).
+ * Podatek NIE trafia w calosci do Skarbca: silnik stosuje korupcje, Mennice i suwak
+ * Podatek/Nauka/Zamoznosc stolicy (economy.ts, Step 5-8) - komunikat to wprost mowi.
+ */
+export function workTaxResultMessage(
+  conversion: WorkTaxConversion,
+  requestedWork: number,
+  enabled: boolean,
+  poolBefore: number,
+  skarbDelta: number,
+  naukaDelta: number,
+): string {
+  if (!enabled) return 'Zamiana Pracy na podatek wymaga Targowiska w imperium.';
+  const req = Number.isFinite(requestedWork) ? Math.floor(requestedWork) : 0;
+  if (req < 1) return 'Podaj ilość Pracy większą od 0.';
+  if (!Number.isFinite(poolBefore) || poolBefore < 1) return 'Brak Pracy w puli imperium - nie ma czego zamienić.';
+  if (conversion.workSpent < 1) return 'Przy tym kursie ta ilość Pracy daje 0 Podatku - Praca nie została odjęta.';
+  const s = Math.max(0, Math.round(skarbDelta));
+  const n = Math.max(0, Math.round(naukaDelta));
+  return `Zamieniono ${conversion.workSpent} Pracy na ${conversion.taxGained} Podatku. `
+    + `Na koniec tury: +${s} do Skarbca, +${n} do Nauki (reszta: Zamożność i korupcja wg suwaka Podatek/Nauka/Zamożność stolicy).`;
+}
+
 export function executeManualWorkTaxConversion(
   ownerId: number,
   requestedWork: number,

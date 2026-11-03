@@ -1,0 +1,39 @@
+PASS: hook onConvertOwnerWorkToTax istnieje w main.ts
+PASS: hook oznacza ekonomie jako brudna (HUD +N/ture doliczy podatek)
+PASS: hook zawsze pokazuje komunikat (sukces i odmowa)
+PASS: hook przelicza projekcje przychodu po akcji
+PASS: panel nie gubi cicho odmowy (0 Pracy / 0 Podatku)
+PASS: panel mowi, ze do Skarbca idzie tylko udzial "Podatek"
+PASS: Praca maleje o 20 000 (got 5000, want 5000)
+PASS: workSpent = 20 000 (got 20000, want 20000)
+PASS: zakolejkowano 20 000 Podatku (kurs 1:1 z danych) (got 20000, want 20000)
+PASS: bilans Pracy zgodny (got 25000, want 25000)
+PASS: 20 000 Podatku -> +12 000 Skarbca (udzial 60%) (got 12000, want 12000)
+PASS: ... +4 000 Nauki (udzial 20%) (got 4000, want 4000)
+PASS: ... +4 000 Zamoznosci/Luksusu (udzial 20%) (got 4000, want 4000)
+PASS: z korupcja 20%: ~+9 600 Skarbca (got 9600)
+PASS: workTaxResultMessage wyeksportowana
+PASS: komunikat sukcesu: Praca, Podatek, Skarbiec, Nauka
+PASS: bez Targowiska: komunikat z powodem
+PASS: ilosc 0: komunikat z powodem
+PASS: ilosc ujemna: komunikat z powodem
+PASS: ilosc NaN: komunikat z powodem
+PASS: pusta pula: komunikat z powodem
+PASS: kurs daje 0 Podatku: komunikat z powodem
+PASS: cala pula: Praca = 0 (got 0, want 0)
+PASS: cala pula: 20 000 Podatku (got 20000, want 20000)
+PASS: zadanie ponad pule: obciete do puli (got 0, want 0)
+PASS: zadanie ponad pule: Podatek = pula (got 20000, want 20000)
+PASS: 0: pula nietknieta (got 100, want 100)
+PASS: 0: brak podatku (got 0, want 0)
+PASS: ujemna: pula nietknieta (got 100, want 100)
+PASS: ujemna: brak podatku (got 0, want 0)
+PASS: NaN: pula nietknieta (got 100, want 100)
+PASS: NaN: brak podatku (got 0, want 0)
+PASS: kurs 0.5, 1 Praca: nie marnuje Pracy (got 100, want 100)
+PASS: kurs 0.5, 1 Praca: brak podatku (got 0, want 0)
+PASS: mala kwota: Praca -5 (got 95, want 95)
+PASS: mala kwota: +5 Podatku (got 5, want 5)
+
+36 passed, 0 failed
+EXIT=0

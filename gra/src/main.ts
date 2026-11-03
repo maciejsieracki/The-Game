@@ -270,6 +270,7 @@ import {
 import { applyCityFoundingToHex, cityKeepsImprovement, clearForestUnderCity } from './game/city-hex-clear';
 import {
   executeManualWorkTaxConversion,
+  workTaxResultMessage,
   ownerCanConvertWorkToTax,
   restorePendingWorkTax,
   serializePendingWorkTax,
@@ -24778,13 +24779,26 @@ async function boot(): Promise<void> {
           const configuredRate = rawParams.budynki?.targowisko_praca_na_podatek_kurs?.[_menuDifficulty];
           const rate = typeof configuredRate === 'number' && Number.isFinite(configuredRate) && configuredRate >= 0
             ? configuredRate : 1;
+          // R-WEB-LABOR-TO-TAX-CONVERSION-NO-GOLD-Q1: projekcja przychodu PRZED akcja
+          // (refresh jest no-op gdy nie brudne) -> roznica PO = realny skutek w silniku.
+          const poolBefore = ownerPracaPool(ownerId);
+          refreshLiveEmpireRates();
+          const skarbBefore = _lastPieniadzRate;
+          const naukaBefore = _lastNaukaRate;
           const conversion = executeManualWorkTaxConversion(ownerId, requested, rate, enabled, {
             getWorkPool: ownerPracaPool,
             setWorkPool: setOwnerPracaPool,
             queueTax: (id, tax) => pendingManualWorkTaxByOwner.set(id,
               (pendingManualWorkTaxByOwner.get(id) ?? 0) + tax),
           });
-          if (conversion.workSpent < 1) return 0;
+          if (conversion.workSpent >= 1) {
+            // Bez tego HUD (`refreshLiveEmpireRates` ma bramke `empireEconDirty`) nie
+            // doliczal zakolejkowanego podatku do "+N/ture" - gracz widzial brak wplywu.
+            markCityStateDirty();
+            refreshLiveEmpireRates();
+          }
+          showHintMessage(workTaxResultMessage(conversion, requested, enabled, poolBefore,
+            _lastPieniadzRate - skarbBefore, _lastNaukaRate - naukaBefore), 6000);
           updateHud();
           return conversion.workSpent;
         },
