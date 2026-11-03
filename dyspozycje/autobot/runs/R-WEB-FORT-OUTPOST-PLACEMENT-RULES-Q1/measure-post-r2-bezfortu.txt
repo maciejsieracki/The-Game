@@ -1,0 +1,56 @@
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=9 terrain=69 landSea=540 relief=552 coast=97 riversMain=12001 riversFill=1140 forest=22 deposits=140 starts=374 total=14943
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=4 terrain=40 landSea=643 relief=486 coast=62 riversMain=10632 riversFill=1417 forest=20 deposits=64 starts=259 total=13628
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=30 landSea=585 relief=435 coast=93 riversMain=12669 riversFill=532 forest=29 deposits=79 starts=219 total=14674
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=61 landSea=448 relief=499 coast=79 riversMain=9865 riversFill=686 forest=17 deposits=28 starts=188 total=11873
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=23 landSea=317 relief=453 coast=86 riversMain=13644 riversFill=2775 forest=16 deposits=30 starts=280 total=17627
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=75 landSea=1016 relief=674 coast=503 riversMain=2218 riversFill=402 forest=19 deposits=54 starts=352 total=5313
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=49 landSea=500 relief=466 coast=263 riversMain=1965 riversFill=436 forest=20 deposits=38 starts=175 total=3913
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=29 landSea=417 relief=482 coast=275 riversMain=5598 riversFill=603 forest=24 deposits=35 starts=208 total=7672
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=56 landSea=489 relief=678 coast=409 riversMain=9247 riversFill=871 forest=41 deposits=32 starts=320 total=12141
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=80 landSea=589 relief=751 coast=524 riversMain=848 riversFill=102 forest=77 deposits=51 starts=324 total=3348
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=8 terrain=44 landSea=320 relief=472 coast=84 riversMain=38092 riversFill=6184 forest=19 deposits=32 starts=165 total=45420
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=14 landSea=409 relief=473 coast=89 riversMain=34895 riversFill=10117 forest=34 deposits=43 starts=172 total=46251
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=14 landSea=284 relief=330 coast=64 riversMain=42225 riversFill=10059 forest=28 deposits=68 starts=225 total=53299
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=14 landSea=293 relief=354 coast=60 riversMain=40467 riversFill=9026 forest=23 deposits=34 starts=191 total=50463
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=14 landSea=247 relief=358 coast=64 riversMain=43688 riversFill=11191 forest=24 deposits=42 starts=261 total=55890
+{
+ "src": "/home/user/The-Game/.claude/worktrees/wf_5de1771a-bef-3/gra/src",
+ "W": 80,
+ "H": 56,
+ "units": 200,
+ "seeds": [
+  1,
+  2,
+  3,
+  4,
+  5
+ ],
+ "types": [
+  "kontynenty",
+  "pangea",
+  "wyspy"
+ ],
+ "histogram": {
+  "posterunek": {
+   "wewnatrz-przy-granicy": 29,
+   "RAZEM": 29
+  }
+ },
+ "runs": 15
+}
+EXIT=0

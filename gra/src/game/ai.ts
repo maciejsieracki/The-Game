@@ -57,7 +57,7 @@ import type { CivAiProfile } from './civ-ai-data';
 import type { ImprovementKey } from '../render/improvements';
 import type { TerritoryNode, CityNode } from '../map/territory';
 import { cityTerritoryRadius, territoryOwnerAt } from '../map/territory';
-import { type FortNode, fortNodeAsCityNode } from './fort-territory';
+import { type FortNode, fortNodeAsCityNode, isOutpostPlacementAllowed } from './fort-territory';
 import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
 import {
   epochGateMet,
@@ -2788,10 +2788,14 @@ export function planExpansionFortBuilding(
   if (opts.defensiveCopy) return null;
   if (myCities.length === 0) return null; // brak wlasnego terytorium do rozszerzenia (parytet z founding)
   const pracaAvailable = opts.pracaAvailable ?? 0;
-  const meta = getImprovementMeta('posterunek');
-  if (!meta) return null;
-  if (pracaAvailable < meta.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return null;
-  // Ten sam absolutny budżet obowiązuje także posterunek, aby koszt
+  // R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1 (wlasciciel 2026-11-03): ekspansja poza zasieg (jednostka stoi
+  // POZA terytorium/zasiegiem, np. inna wyspa/kontynent) to wylacznie FORT -- posterunek wolno stawiac tylko
+  // na wlasnym terytorium przy granicy (isOutpostPlacementAllowed), a tu hex z definicji jest poza zasiegiem.
+  // Obrona r1 (zarzut 2): gdy fort niedostepny (tech Wojskowosc/praca), AI nadal ekspanduje POSTERUNKIEM,
+  // ale wylacznie z heksu wlasnej granicy (isOutpostPlacementAllowed) -- zob. petla 2 nizej.
+  const EXPANSION_KEY = 'fort' as const;
+  const improvementTechs = opts.improvementTechs ?? new Set();
+  // Ten sam absolutny budżet obowiązuje fort i posterunek, aby koszt
   // zaplanowanych ulepszeń i ekspansji dzielił jedną kopertę.
   // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2): silnik podaje absolutna koperte automatu
   // ulepszen policzona z `pracaAutoPercent% x SKUMULOWANA pula` tego ownera
@@ -2804,15 +2808,23 @@ export function planExpansionFortBuilding(
   const plannedCost = Number.isFinite(opts.plannedImprovementCost)
     ? Math.max(0, opts.plannedImprovementCost as number)
     : 0;
-  if (plannedCost + meta.kosztPraca > improvementBudget) return null;
-  if (!isImprovementTechUnlocked('posterunek', opts.improvementTechs ?? new Set())) return null;
+  const canAfford = (key: 'fort' | 'posterunek'): boolean => {
+    const m = getImprovementMeta(key);
+    if (!m) return false;
+    if (pracaAvailable < m.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return false;
+    if (plannedCost + m.kosztPraca > improvementBudget) return false;
+    return isImprovementTechUnlocked(key, improvementTechs);
+  };
+  const fortOk = canAfford(EXPANSION_KEY);
+  const outpostOk = canAfford('posterunek');
+  if (!fortOk && !outpostOk) return null;
 
   const territoryNodes = opts.territoryNodes ?? [];
   const myFortNodes = (opts.fortNodes ?? [])
     .filter(f => f.ownerId === playerId && !f.contestedUseless)
     .map(fortNodeAsCityNode);
 
-  for (const u of myUnits) {
+  for (const u of fortOk ? myUnits : []) {
     if (u.inGarnizon) continue;
     const { q, r } = u;
     const hex = map.hexes[`${q},${r}`];
@@ -2838,7 +2850,25 @@ export function planExpansionFortBuilding(
     if (isHexWithinAnyCityReach(q, r, myCities, myFortNodes)) continue;
     const owner = territoryNodes.length > 0 ? territoryOwnerAt(q, r, territoryNodes) : null;
     if (owner !== null && owner !== playerId) continue; // teren INNEJ cywilizacji (regula 1)
-    return { type: 'buildImprovement', ownerId: playerId, q, r, key: 'posterunek' };
+    return { type: 'buildImprovement', ownerId: playerId, q, r, key: EXPANSION_KEY };
+  }
+  // Petla 2 (obrona r1): posterunek tylko na wlasnym heksie przy granicy (jeden wspolny predykat).
+  if (outpostOk && territoryNodes.length > 0) {
+    for (const u of myUnits) {
+      if (u.inGarnizon) continue;
+      const { q, r } = u;
+      const hex = map.hexes[`${q},${r}`];
+      if (!hex) continue;
+      const t = hex.terenBazowy as string;
+      if (t === 'morze' || t === 'plytkie_morze' || t === 'gory') continue;
+      const layers = opts.placedImprovements?.get(`${q},${r}`);
+      const has = Array.isArray(layers)
+        ? (layers.includes('fort') || layers.includes('posterunek'))
+        : (layers === 'fort' || layers === 'posterunek');
+      if (has) continue;
+      if (!isOutpostPlacementAllowed(q, r, playerId, territoryNodes)) continue;
+      return { type: 'buildImprovement', ownerId: playerId, q, r, key: 'posterunek' };
+    }
   }
   return null;
 }
