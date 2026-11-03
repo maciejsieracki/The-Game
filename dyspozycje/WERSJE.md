@@ -1,3 +1,12 @@
+## ROBOCZA b05e9674 -- 2026-11-03 -- Milicja nie zabija mieszkańców; zdobycie miasta −1 obywatel (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`60621493a` + MILITIA-NO-POPULATION-LOSS `6daf342d4`) i commit wdrożenia bundla; pilne zgłoszenie właściciela (zrzut), stała zgoda na poprawki.
+- Bundle MD5 `b05e96749bdfeefae4e9aa909b222ca9`, 70,174,827 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: usunięty błędny mechanizm — straty Milicji nie zmniejszają ludności (tylko 5 tur odnowy); zdobycie obcego miasta −1 obywatel (min. 1), parametr `capture_pop_loss`, wiersz „Ludność: −1”; wyłączone: odzyskanie własnego/zbuntowanego miasta, cesja, aneksja.
+- Testy: tsc PASS; capture-pop-loss 29/0; no-population-loss PASS; regen-cooldown 53/0.
+- Ograniczenia: utraconej ludności w starych zapisach nie da się odzyskać; wiersz UI nieoglądany wizualnie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `83961b9bca4234b85f0a635e6f49e6de`, 70,173,786 bajtów.
+
 ## ROBOCZA 83961b9b -- 2026-11-03 -- wojny AI↔AI: najbliższe miasto, pokój po 2 turach z ceną, zajmowanie miast (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`c1581619f` + AI-WAR-NEAREST-CITY-PEACE-2T `954a130cd`) i commit wdrożenia bundla; decyzje właściciela (cel = najbliższe miasto, pokój wymuszony po 2 turach, przegrywający płaci), stała zgoda na poprawki.
