@@ -36,3 +36,5 @@ Zmieniają się hashe KAŻDEJ mapy z koniem pod lasem (praktycznie wszystkie): t
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (powtórzyć GREEN dla wysp 7/2026/99/314 oraz regresje map-gen/pangea/capital-sep/cluster; ocenić ZAŁOŻENIE terenu i temat zapisów).
 DEPLOY/PUSH: NIE WYKONANO
+
+COMMIT: 3aac69141 (gałąź worktree-wf_b9d1a905-60f-1, worktree /home/user/The-Game/.claude/worktrees/wf_b9d1a905-60f-1)
