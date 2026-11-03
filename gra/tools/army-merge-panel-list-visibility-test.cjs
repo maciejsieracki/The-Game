@@ -306,6 +306,21 @@ async function main() {
         const mTop = await measure(page);
         check(tag + ': po powrocie na górę wskaźnik wraca z tą samą liczbą', mTop.moreVisible && mTop.moreTxt === m.moreTxt, { a: mTop.moreTxt, b: m.moreTxt });
         if (total === 20 && vp.name === '1280x720') {
+          // przemiatanie scrollTop co 7 px: N we wskaźniku == liczba kafelków NIE w całości widocznych
+          // (łapie mutanta liczącego kafel częściowo widoczny jako widoczny, np. samo offsetTop).
+          const maxTop = mEnd.grid.scrollHeight - mEnd.grid.clientHeight;
+          const sweepBad = [];
+          let sweepPartial = 0;
+          for (let st = 0; st <= maxTop + 7; st += 7) {
+            await page.evaluate((v) => { const g = document.querySelector('[data-sec="field"] .civ-amp-units'); g.scrollTop = v; }, st);
+            await settle(page);
+            const ms = await measure(page);
+            const shown = ms.moreVisible ? ((/jeszcze (\d+)/.exec(ms.moreTxt || '') || [])[1] | 0) : 0;
+            if (shown !== ms.below) sweepBad.push({ st, shown, below: ms.below });
+            if (ms.fullyVisible < ms.fieldRowsCount - ms.below) sweepPartial++;
+          }
+          check(tag + ': przemiatanie scrollTop (krok 7 px) — N we wskaźniku == liczba niewidocznych w całości kafelków w KAŻDYM położeniu',
+            sweepBad.length === 0, sweepBad.slice(0, 5));
           // pośrednie położenie: N maleje
           await page.evaluate(() => { const g = document.querySelector('[data-sec="field"] .civ-amp-units'); g.scrollTop = 52; });
           await settle(page);
@@ -344,6 +359,21 @@ async function main() {
           await page.locator('[data-act="merge"]').click();
           const c2 = await page.evaluate(() => ({ calls: window.__calls, open: !!document.querySelector('.civ-amp-overlay') }));
           check(tag + ': klik „Połącz armie" wywołuje onMerge i zamyka panel', c2.calls.merge === 1 && c2.calls.separate === 0 && !c2.open, c2);
+          // domyślny fokus + Enter poza przyciskiem => merge (zachowanie sprzed zmiany zachowane)
+          await open(page, post, field, arrN);
+          const defFocus = await page.evaluate(() => document.activeElement && document.activeElement.getAttribute('data-act'));
+          await page.evaluate(() => { document.activeElement && document.activeElement.blur(); });
+          await page.keyboard.press('Enter');
+          const c3 = await page.evaluate(() => ({ calls: window.__calls, open: !!document.querySelector('.civ-amp-overlay') }));
+          check(tag + ': domyślny fokus = „Połącz armie"; Enter bez fokusu na przycisku => onMerge (jak przed zmianą)',
+            defFocus === 'merge' && c3.calls.merge === 1 && c3.calls.separate === 0 && !c3.open, { defFocus, c3 });
+          // Spacja tuż po otwarciu przy globalnym skrócie Spacji z main.ts (preventDefault na keydown)
+          await page.evaluate(() => { window.__spaceKeydown = 0; window.addEventListener('keydown', (e) => { if (e.code === 'Space') { window.__spaceKeydown++; e.preventDefault(); } }); });
+          await open(page, post, field, arrN);
+          await page.keyboard.press('Space');
+          const c4 = await page.evaluate(() => ({ calls: window.__calls, spaceKeydown: window.__spaceKeydown }));
+          check(tag + ': Spacja tuż po otwarciu (globalny skrót Spacji z main.ts) NIE łączy armii',
+            c4.calls.merge === 0 && c4.calls.separate === 0, c4);
         }
         await page.close();
       }
