@@ -56,6 +56,8 @@ pub mod trade;
 pub mod trade_flow_apply;
 pub mod turn_economy;
 pub mod turn_economy_advance;
+pub mod turn_economy_attrition;
+pub mod turn_economy_empirefood;
 pub mod turn_economy_health;
 pub mod turn_economy_inputs_civ;
 pub mod turn_economy_inputs_native;

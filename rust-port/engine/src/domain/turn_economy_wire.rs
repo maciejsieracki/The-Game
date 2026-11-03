@@ -38,6 +38,11 @@ use crate::domain::turn_economy::economy_upkeep_p2::UnitRow;
 use crate::domain::turn_economy_advance::{
     AdvanceCityEconomyInput, AdvanceResolvers, UpkeepHealthInput,
 };
+use crate::domain::turn_economy_attrition::AttritionUnit;
+use crate::domain::turn_economy_empirefood::{
+    run_empire_food_block, EmpireFoodBlockCtx, EmpireFoodBlockOutcome, EmpireFoodBlockState,
+    FoodUnit,
+};
 use crate::domain::turn_economy_inputs_state::{
     build_manual_work_tax_by_city, finalize_mennica_zloto_grace_after_tick,
     owner_zloto_access_for_mennica, prepare_mennica_zloto_grace_for_tick, MennicaZlotoGraceState,
@@ -153,6 +158,22 @@ pub struct GameEconomyTickOutcome {
     pub banks: Vec<OwnerBank>,
     /// `ownerIdsOnMap()` uzyte do lask Mennicy.
     pub map_owner_ids: Vec<i64>,
+    /// Wynik bloku EmpireFood (`main.ts:34594-34850`); `None` gdy wolajacy go nie podal
+    /// ([`run_economy_tick_for_game`]).
+    pub empire_food: Option<EmpireFoodBlockOutcome>,
+}
+
+/// Wejscia bloku EmpireFood uzupelniajace [`GameEconomyContext`] (R-RUSTPORT-P6-ECON-TICK-EMPIREFOOD-Q1).
+pub struct EmpireFoodWireInput<'a> {
+    /// Migawka `econUnits` z poczatku tury.
+    pub econ_units: &'a [FoodUnit],
+    /// `typCityCopyOwners`.
+    pub typ_city_copy_owners: &'a BTreeSet<i64>,
+    /// `unitHealth(data.units.find(...) ?? {})`.
+    pub unit_health_by_type: &'a dyn Fn(&str) -> f64,
+    /// `effectiveRuntimeUnitMaxHp(u)`.
+    pub runtime_max_hp: &'a dyn Fn(&AttritionUnit) -> f64,
+    pub state: EmpireFoodBlockState<'a>,
 }
 
 /// Wejscia wiazania: stan gry + dane statyczne + resolvery, ktore web czerpie ze stanu poza ekonomia.
@@ -216,6 +237,19 @@ pub fn run_economy_tick_for_game(
     grace: &mut MennicaZlotoGraceState,
     ctx: &GameEconomyContext<'_>,
     heal: Option<HealRequest<'_>>,
+) -> GameEconomyTickOutcome {
+    run_economy_tick_for_game_with_food(cities, extras, grace, ctx, heal, None)
+}
+
+/// Jak [`run_economy_tick_for_game`], ale z blokiem EmpireFood/auto-racje/atrycja MIEDZY tickiem a bankowaniem
+/// (`main.ts:34594-34850`), czyli w kolejnosci weba. `food = None` odtwarza dawne zachowanie.
+pub fn run_economy_tick_for_game_with_food(
+    cities: &mut [City],
+    extras: &mut BTreeMap<String, CityLoopExtra>,
+    grace: &mut MennicaZlotoGraceState,
+    ctx: &GameEconomyContext<'_>,
+    heal: Option<HealRequest<'_>>,
+    food: Option<EmpireFoodWireInput<'_>>,
 ) -> GameEconomyTickOutcome {
     // `HealRequest<'a>` jest inwariantne w `'a` (`&'a mut dyn FnMut + 'a`); przepozyczamy na lokalny, krotszy zakres.
     let mut heal = heal;
@@ -283,7 +317,7 @@ pub fn run_economy_tick_for_game(
     };
     prepare_mennica_zloto_grace_for_tick(grace, &map_owner_ids, &has_now_pre);
 
-    let tick = {
+    let mut tick = {
         let grace_ro: &MennicaZlotoGraceState = grace;
         let zloto_cache: RefCell<BTreeMap<i64, bool>> = RefCell::new(BTreeMap::new());
         let zloto = |o: i64| -> bool {
@@ -380,6 +414,35 @@ pub fn run_economy_tick_for_game(
         finalize_mennica_zloto_grace_after_tick(grace, &map_owner_ids, &has_now_post);
     }
 
+    // ---- blok EmpireFood / auto-racje / atrycja (:34594-34850): PO ticku, PRZED bankowaniem ----
+    let empire_food = food.map(|mut f| {
+        let human_ids: Vec<i64> = ctx.human_owner_ids.iter().copied().collect();
+        let block_ctx = EmpireFoodBlockCtx {
+            econ_params: ctx.econ_params,
+            difficulty: ctx.difficulty,
+            matrix: ctx.matrix,
+            unit_rows: ctx.unit_rows,
+            built_by_city: ctx.built_by_city,
+            owner_civ_by_owner_id: ctx.owner_civ_by_owner_id,
+            econ_units: f.econ_units,
+            human_owner_ids: &human_ids,
+            typ_city_copy_owners: f.typ_city_copy_owners,
+            owner_era: ctx.owner_era,
+            unit_health_by_type: f.unit_health_by_type,
+            runtime_max_hp: f.runtime_max_hp,
+        };
+        let sol = &tick.city_loop.resources.phase.tick;
+        let (sol_army, sol_cities) = (sol.sol_army_by_owner.clone(), sol.sol_city_ids_by_owner.clone());
+        run_empire_food_block(
+            cities,
+            &mut tick.result,
+            &sol_army,
+            &sol_cities,
+            &block_ctx,
+            &mut f.state,
+        )
+    });
+
     // ---- bankowanie (:35045-35131) ----
     let result = &tick.result;
     let mut banks: Vec<OwnerBank> = Vec::new();
@@ -432,5 +495,6 @@ pub fn run_economy_tick_for_game(
         tick,
         banks,
         map_owner_ids,
+        empire_food,
     }
 }
