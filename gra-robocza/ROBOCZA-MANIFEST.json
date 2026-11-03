@@ -1,112 +1,112 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a7b56a71335b8e9632c7666fcd01fe95",
-  "bundleSha256": "c00470d7b0407ebc8a4d0c461781da4de382bced9b9c795330a61903cb99154f",
-  "bundleBytes": 70161374,
+  "bundleMd5": "f937a3f9f349786247df6d0af64ff70a",
+  "bundleSha256": "dad93035fd1c9d85f95ab79e87b942103cfc0f6ee226249e49bef6d18e81c760",
+  "bundleBytes": 70162448,
   "sourceSnapshot": {
-    "source": "main f568e1ed3 + IRON-NATIVE-ACCESS-FIX (c62c1064f)",
+    "source": "main db9433d62 + ARMY-MERGE-PANEL-LIST-VISIBILITY (90e2d4ec3)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-IRON-NATIVE-ACCESS-FIX-Q1: natywny dostęp do żelaza z własnego złoża działa (dotąd zawsze false przez błędną sklejkę boolean w miejscu zapasu państwa). Reguła: Kopalnia żelaza na złożu + zapas żelaza > 0 + Odlewnia. Dotyczy grantów z tras handlowych i etykiety Żelazo w dyplomacji (wspólna ścieżka gracz i AI)."
+    "R-WEB-ARMY-MERGE-PANEL-LIST-VISIBILITY-Q1: panel „Połączenie armii” — lista „Na polu” jako siatka 3×5 z własnym przewijaniem, osobna sekcja „Przybywa (N)”, licznik „Na polu · Dołącza · Razem”, wskaźnik „▼ jeszcze N jednostek”; logika łączenia bez zmian; Enter wykonuje akcję sfokusowanego przycisku, domyślny fokus „Połącz armie”."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "iron-native-access-fix 17/0 (RED 2/4); 4 mutacje łamią test"
+    "army-merge-panel-list-visibility 104/0; scroll-real-render 27/0; production-mount 9/0"
   ],
   "limits": [
-    "Pomiar przed/po w symulacji NIE_ZMIERZONO (INFRA Chromium)",
-    "Padały już na bazie: zelazo-gate, deposit-building-gate; timeouty deposit-coast, forced-war-iron-player-target-live",
-    "Port Rust odtwarza stary błąd — REPIN po wznowieniu portu"
+    "Zgłoszonego ucięcia przy 18+2 jednostkach nie odtworzono (rozwiązane licznikiem i wskaźnikiem)",
+    "army-split-panel-scroll-grid-test czerwony na bazie (wariant PRZED z main)",
+    "Zmiana klawiatury (Enter/autofokus) poza literalnym GOAL"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "IRON-NATIVE-ACCESS-FIX (r1): Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
+    "notes": "ARMY-MERGE-PANEL-LIST-VISIBILITY (r2): Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-03T22:17:06",
+  "hubGeneratedAt": "2026-11-03T22:43:48",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a7b56a71335b8e9632c7666fcd01fe95",
-      "sizeBytes": 70161374
+      "md5": "f937a3f9f349786247df6d0af64ff70a",
+      "sizeBytes": 70162448
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a7b56a71335b8e9632c7666fcd01fe95",
-      "sizeBytes": 70161374
+      "md5": "f937a3f9f349786247df6d0af64ff70a",
+      "sizeBytes": 70162448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "a7b56a71335b8e9632c7666fcd01fe95",
-      "sizeBytes": 70161374
+      "md5": "f937a3f9f349786247df6d0af64ff70a",
+      "sizeBytes": 70162448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "a7b56a71335b8e9632c7666fcd01fe95",
-      "sizeBytes": 70161374
+      "md5": "f937a3f9f349786247df6d0af64ff70a",
+      "sizeBytes": 70162448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "a7b56a71335b8e9632c7666fcd01fe95",
-      "sizeBytes": 70161374
+      "md5": "f937a3f9f349786247df6d0af64ff70a",
+      "sizeBytes": 70162448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "a7b56a71335b8e9632c7666fcd01fe95",
-      "sizeBytes": 70161374
+      "md5": "f937a3f9f349786247df6d0af64ff70a",
+      "sizeBytes": 70162448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "a7b56a71335b8e9632c7666fcd01fe95",
-      "sizeBytes": 70161374
+      "md5": "f937a3f9f349786247df6d0af64ff70a",
+      "sizeBytes": 70162448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "a7b56a71335b8e9632c7666fcd01fe95",
-      "sizeBytes": 70161374
+      "md5": "f937a3f9f349786247df6d0af64ff70a",
+      "sizeBytes": 70162448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "a7b56a71335b8e9632c7666fcd01fe95",
-      "sizeBytes": 70161374
+      "md5": "f937a3f9f349786247df6d0af64ff70a",
+      "sizeBytes": 70162448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "a7b56a71335b8e9632c7666fcd01fe95",
-      "sizeBytes": 70161374
+      "md5": "f937a3f9f349786247df6d0af64ff70a",
+      "sizeBytes": 70162448
     }
   ],
-  "md5": "a7b56a71335b8e9632c7666fcd01fe95",
-  "sizeBytes": 70161374,
+  "md5": "f937a3f9f349786247df6d0af64ff70a",
+  "sizeBytes": 70162448,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "83d4cbb583fed6cffb4f26b362dd085a"
+    "bundleMd5": "a7b56a71335b8e9632c7666fcd01fe95"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 83d4cbb583fed6cffb4f26b362dd085a, 70161331 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 a7b56a71335b8e9632c7666fcd01fe95, 70161374 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-03T22:17:30+00:00",
-  "buildStamp": "2026-11-03 22:17",
+  "publishedAt": "2026-11-03T22:43:48+00:00",
+  "buildStamp": "2026-11-03 22:43",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",

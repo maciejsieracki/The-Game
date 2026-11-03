@@ -1,3 +1,12 @@
+## ROBOCZA f937a3f9 -- 2026-11-03 -- panel „Połączenie armii”: siatka, licznik i wskaźnik „jeszcze N jednostek” (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`db9433d62` + ARMY-MERGE-PANEL-LIST-VISIBILITY `90e2d4ec3`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzut), stała zgoda na poprawki.
+- Bundle MD5 `f937a3f9f349786247df6d0af64ff70a`, 70,162,448 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: lista „Na polu” w siatce 3×5 z przewijaniem, „Przybywa (N)”, licznik „Na polu · Dołącza · Razem”, wskaźnik „▼ jeszcze N jednostek”; Enter wykonuje akcję sfokusowanego przycisku.
+- Testy: tsc PASS; list-visibility 104/0; scroll-real-render 27/0; production-mount 9/0.
+- Ograniczenia: ucięcia przy 18+2 nie odtworzono; army-split-panel-scroll-grid czerwony na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `a7b56a71335b8e9632c7666fcd01fe95`, 70,161,374 bajtów.
+
 ## ROBOCZA a7b56a71 -- 2026-11-03 -- żelazo: natywny dostęp z własnego złoża naprawiony (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`f568e1ed3` + IRON-NATIVE-ACCESS-FIX `c62c1064f`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
