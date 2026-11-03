@@ -8570,3 +8570,8 @@ Palisada r1 (R1–R3) + tooltip. W toku: runda 2 palisady (wieżyczki przy murze
 
 ## 2026-11-03 — DECYZJA WŁAŚCICIELA: nowe zasady Milicji
 Liczba milicji = liczba mieszkańców (nie 20%); milicja powstaje ZAWSZE przy ataku jako jednostki wspierające (niezależnie od obecności wojska), pod warunkiem GARNIZONU (przyjęto: budynek Garnizon — ZAŁOŻENIE); połowa wręcz, połowa dystans: Kamień — Oszczepnik, Brąz — Łucznik, Żelazo — Procarz (pełne statystyki; tylko morale niższe); wręcz: Kamień — Wojownik, Brąz — Włócznik, Żelazo — Miecznik z tarczą, każdy ×0,5 statystyk. Wpisane do dispatchu `R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1` (nadrzędne). Start po rundzie 2 palisady (te same pliki).
+
+## 2026-11-03 — wdrożono ROBOCZE: 8409e6ac (EVENTS-DEFER, SCALE-2X; main bb6cac3d4), 6ee8f07f (PALISADE r2: wieżyczki; main ae292911f)
+
+## 2026-11-03 — zgłoszenie (zrzut „ROZDZIEL ARMIĘ”): panel podziału armii — przewijanie, układ, brandbook
+Właściciel: (1) przy wyborze jednostek do odłączenia lista przewijania wraca za każdym razem na początek — ma zostać w miejscu kliknięcia; (2) lista jednostek w trzech kolumnach i pięciu rzędach (5 wysokość × 3 szerokość) — więcej widocznych i zaznaczanych naraz; (3) wygląd panelu niezgodny z brandbookiem gry — przepracować. Temat `R-WEB-ARMY-SPLIT-PANEL-SCROLL-GRID-BRAND-Q1` (stała zgoda). Kod: `gra/src/ui/armySplitPanel.ts`.
