@@ -742,6 +742,31 @@ for (const [nm, nodes] of d4Nodes) {
     placed: { '5,-2': ['fort'], '-6,3': 'posterunek', '3,3': ['posterunek', 'droga'] }, praca: 6000, opts: { priorityOverride: ['fort', 'posterunek'] },
   }));
 }
+// M12/M17 (obrona rundy 1, mutanty ocalale): wycinka poza rzeka obok `rzeka.obecna` bez riverPaths (step0 `!onRiverHex`)
+// oraz licznik `placedThisCity` po cofnieciu posterunku (maxItemsPerCity = 2 + FAZA 1 po rollbacku).
+const obecnaN = new Set(['2,0', '-2,1']);
+const nbrs = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]];
+const nearObecna = (q, r) => [...obecnaN].some(k => { const [a, b] = k.split(',').map(Number); return nbrs.some(([dq, dr]) => q === a + dq && r === b + dr); });
+const D4_OBECNA2 = addMap(pureMap((q, r) => ({
+  teren: TB.Rownina, nak: nearObecna(q, r) || (hillForest(q, r) >= 3 && hillForest(q, r) <= 4) ? NK.Las : NK.Brak, rzeka: obecnaN.has(`${q},${r}`),
+}), 8, []));
+for (const focus of ['zywnosc', 'zrownowazone', 'surowce']) {
+  for (const extra of [{ offRiverClearing: true }, { offRiverClearing: true, foodImprovementStages: true }, { foodImprovementStages: true }, {}]) {
+    for (const pop of [3, 8]) {
+      add(mkSpec(`d4-obecna2-${focus}-${JSON.stringify(extra)}-p${pop}`, D4_OBECNA2, { cities: [{ ...d4city, population: pop, focus }], praca: 6000, opts: { ...extra } }));
+    }
+  }
+}
+const D4_FARMLAND = addMap(pureMap((q, r) => ({ teren: TB.Rownina, nak: NK.Brak, zloze: null }), 12, []));
+const farmPlaced = {};
+for (const [q, r] of disk(0, 0, 3)) if (!(q === 0 && r === 0)) farmPlaced[`${q},${r}`] = ['farma'];
+for (const mx of [1, 2, 3, 4]) for (const pr of [['posterunek', 'fort'], ['fort', 'posterunek'], undefined]) {
+  add(mkSpec(`d4-rollback-max${mx}-${pr ? pr.join('-') : 'prof'}`, D4_FARMLAND, {
+    cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 12, focus: 'infrastruktura' }], placed: farmPlaced, praca: 8000,
+    opts: { maxItemsPerCity: mx, ...(pr ? { priorityOverride: [...pr, 'droga', 'farma'] } : {}) },
+  }));
+}
+
 // losowe scenariusze na mapach D4 (osobny strumien PRNG nie jest potrzebny: dopisane PO wszystkich wczesniejszych)
 for (let i = 0; i < 160; i++) {
   const mi = pick([D4_LAKE, D4_OCEAN, D4_TWOWATER, D4_OBECNA, D4_OBECNA, D4_LAKE]);
