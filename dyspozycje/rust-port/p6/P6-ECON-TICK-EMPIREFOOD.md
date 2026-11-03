@@ -38,14 +38,14 @@ Legenda: ISTNIAL = bylo w `p6_7a` przed tematem (wektory `p6_7a_empire.rs`); NOW
 | 1 | `main.ts:34591-34592` | `loadUpkeepParams`, `buildEmpireFoodParams` | `economy_upkeep_p2::load_upkeep_params` (`turn_economy.rs:1604`), `empire_food::build_empire_food_params` (`city_growth.rs:1866`) | ISTNIAL; wpiete NOWE |
 | 2 | `empire-food.ts:136` | `freshEmpireFoodState` | `fresh_empire_food_state` (`city_growth.rs:1901`) | ISTNIAL |
 | 3 | `main.ts:34594-34608` | mapa Spichlerza per miasto z ticku | `spichlerz_state_of` (`turn_economy_empirefood.rs`) | NOWE |
-| 4 | `main.ts:34625-34636` | `cityPopulationCap`, `resolvePopulationCapMatrixDelta`, `cityHasSpichlerzBuilding` | `p6_7a::city_population_cap` (`:893`), `resolve_population_cap_matrix_delta_in` (`:918`), `city_has_spichlerz_building` (`:815`) | ISTNIAL; `PopCapParams` z `econ_params` wejscia - NOWE |
+| 4 | `main.ts:34625-34636` | `cityPopulationCap`, `resolvePopulationCapMatrixDelta`, `cityHasSpichlerzBuilding` | `p6_7a::city_population_cap` (`:893`), `resolve_population_cap_matrix_delta_in` (`:924`), `city_has_spichlerz_building` (`:815`) | ISTNIAL; `PopCapParams` z `econ_params` wejscia - NOWE |
 | 5 | `main.ts:34637-34643` | `ownerIdsForAutoRation` (miasta, potem klucze stanow; `>= 0`) | `run_empire_food_block` | NOWE |
 | 6 | `turn-economy.ts:1325-1349` | `militaryFoodConsumptionWithSpichlerz` (+ `unitFoodPerTurn`, `spichlerzArmyFoodCostMultiplier`) | `military_food_consumption_with_spichlerz`; `unit_food_per_turn` (`turn_economy.rs:2049`), `spichlerz_army_food_cost_multiplier` (`building_costs.rs:1525`) | NOWE (skladniki ISTNIALY) |
 | 7 | `empire-food.ts:805` | `autoBalanceRationsToSolvency` | `auto_balance_rations_to_solvency` (`city_growth.rs:2616`) | ISTNIAL |
 | 8 | `empire-food.ts:873` | `autoRaiseRationsForGrowth` | `auto_raise_rations_for_growth` (`:2683`) | ISTNIAL |
 | 9 | `main.ts:34706-34708`, `turn-economy.ts:1654` | `refreshEconomyFoodTotals` | `refresh_economy_food_totals` | NOWE |
 | 10 | `main.ts:34710-34747`, `empire-food.ts:948` | clamp foteli czlowieka, `maxSafePoziomRacjiForCity` | `max_safe_poziom_racji_for_city` (`:2756`) + petla w `run_empire_food_block` | ISTNIAL + NOWE (petla) |
-| 11 | `turn-economy.ts:1620` | `recomputeCityFoodBalancesInEcon` | `recompute_city_food_balances_in_econ` (`:1728`) | ISTNIAL |
+| 11 | `turn-economy.ts:1620` | `recomputeCityFoodBalancesInEcon` | `recompute_city_food_balances_in_econ` (`:1742`) | ISTNIAL |
 | 12 | `main.ts:34749`, `empire-food.ts:186` | `advanceEmpireFood` | `advance_empire_food` (`:2125`) | ISTNIAL |
 | 13 | `main.ts:34777`, `:29894-29906` | `syncAllRuntimeUnitHpState` | `sync_runtime_unit_hp_state` (attrition) | NOWE (`maxHp` = closure wolajacego) |
 | 14 | `army-starvation.ts:58-87` | `applyArmyStarvationHpLoss` (+ `isCivilianUnit`) | `apply_army_starvation_hp_loss` (attrition); `recruitment::is_civilian_unit` | NOWE |
@@ -96,12 +96,13 @@ Pokrycie: 20/20 pozycji sklasyfikowanych (zaportowane lub istniejace: 17; dlug z
 
 ## 6. Mutacje
 
-104 mutanty (`mutate-empirefood.py`, wynik `mutacje-wynik.txt`): zabite 93, zywe 11, **brutto 89,4%; po odjeciu 11 rownowaznych z dowodem 100%**
-(dispatch dopuszcza "ekwiwalenty z dowodem"). Dowody rownowaznosci zywych:
+104 mutanty (`mutate-empirefood.py`, wynik `mutacje-wynik.txt`): w R1 zabite 93, zywe 11 (brutto 89,4%). Obrona R1: A05 zabity
+testem jednostkowym `tests/p6_empirefood_unit.rs` (`hpMax = 0`, sprawdzone recznie: mutant `< 0` -> 2 z 3 testow FAILED) =>
+**zabite 94/104 = 90,4% brutto (>= 90%); pozostale 10 rownowaznych z dowodem** (dispatch dopuszcza "ekwiwalenty z dowodem").
+Wszystkie ekwiwalenty opieraja sie na niezmienniku WYWOLUJACEGO (nie logicznej rownowaznosci funkcji). Dowody rownowaznosci zywych:
 
 | Mutant | Dowod |
 |---|---|
-| A05 `maxHp <= 0` -> `< 0` | min zdrowia w `units.json` = 10 (`Zwiadowca`); `effective_max_hp` >= baza; `maxHp == 0` nieosiagalne z danych |
 | A08 brak `max(0, ..)` w `hp` | `hp <= 0` => jednostka niszczona i USUWANA z listy (`army-starvation.ts:83`, `main.ts:34813`); ujemne hp nieobserwowalne |
 | A11, N04 brak backfillu `hpMax` | `syncAllRuntimeUnitHpState` (`main.ts:34777`) ustawia `hpMax` wszystkim przed atrycja; N3 dziala na tych samych jednostkach |
 | A12 brak backfillu `hp` | `u.hp` ustawiane i natychmiast uzywane w tej samej funkcji (`unwrap_or(max_hp)`) - identyczny wynik |
