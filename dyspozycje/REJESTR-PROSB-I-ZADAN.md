@@ -8504,3 +8504,6 @@ Odpowiedzi właściciela: (1) filtr „Tylko pola z obywatelami”: **A — zost
 
 ## 2026-11-03 — zgłoszenie: niewykorzystane ruchy gracza wykonują się w trakcie tur innych cywilizacji
 Właściciel: ruchy niewykorzystane w trakcie tury gracza, które mogą się odbyć (zakolejkowane marsze/rozkazy), mają wykonać się WSZYSTKIE w momencie zakończenia tury gracza, ZANIM zaczną się ruchy i tury innych cywilizacji — nie mają trwać/odbywać się w trakcie tur innych cywilizacji. Kolejność: ruchy gracza (w tym dokończenie zakolejkowanych) → dopiero potem końcowa faza tury i działania innych cywilizacji/PM. Temat `R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1`. Te same pliki co `R-WEB-EVENTS-DEFER-TO-TURN-START-Q1` (koniec tury w `main.ts`) — SEKWENCYJNIE.
+
+## 2026-11-03 — zgłoszenie: zamiana 20 tys. Pracy na podatek nie dała pieniędzy do skarbca
+Właściciel: „Zamieniłem 20 tysięcy pracy na podatek, ale niestety tych pieniędzy nie dostałem do skarbca.” Mechanizm zamiany nie jest w zgłoszeniu nazwany (do ustalenia z kodu: konwerter/przeliczenie Praca→Podatek/Złoto, mennica, handel Praca za złoto, polityka). Temat `R-WEB-LABOR-TO-TAX-CONVERSION-NO-GOLD-Q1` (diagnoza + poprawka, stała zgoda).
