@@ -23,9 +23,12 @@ const M = require(BUNDLE);
 const opts = { worldDensity: { resources: 'medium', rivers: 'medium', desert: 'medium', forest: 'medium', relief: 'medium' } };
 const SEEDS = [1, 42, 99, 7777];
 const EXPECTED = {
-  'kontynenty:1': 'e74242c34ecb7f0b', 'kontynenty:42': '0e77e0b16879956b', 'kontynenty:99': '57284d6ef0161ba8', 'kontynenty:7777': '9cf2edabb5b7c0a2',
-  'wyspy:1': '9cc4bc9535c46b18', 'wyspy:42': '2c1d8c5b5b889fe4', 'wyspy:99': 'aacd8ddc9bb95bcf', 'wyspy:7777': '38f56785b1a59cbc',
-  'ziemia:1': '458ee817695e84f2', 'ziemia:42': '4a5f002feaaccc86', 'ziemia:99': '9487a92ea5b2cbb0', 'ziemia:7777': '70d790e81f76a606',
+  // R-WEB-HORSE-RESOURCE-TERRAIN-Q1 (2026-11-03): hashe `hexes` zmienione CELOWO - relocateForestHorses przenosi
+  // zloze konia z lasu na najblizsza wolna Rownine. Dowod: gate-hexes-diff-fast.txt (12/12 map: liczba koni rowna,
+  // 0 koni na lesie, roznice wylacznie w polach zloze/nakladka/nakladki). Poprzednie (baza 57a7ada40) w komentarzu run-u.
+  'kontynenty:1': 'd4129ac5a700b221', 'kontynenty:42': '4db90d6e807ceb5f', 'kontynenty:99': 'be3f9c573ab42d05', 'kontynenty:7777': 'eac663ea51e76718',
+  'wyspy:1': '5af15091eec73d5d', 'wyspy:42': '58191dcbaf2f237f', 'wyspy:99': '90a0b2438aa2c44d', 'wyspy:7777': 'aea744461a035d68',
+  'ziemia:1': '37a4b9d4c5f56da8', 'ziemia:42': 'c9f78b075f353f11', 'ziemia:99': 'a70a97fd31536d74', 'ziemia:7777': 'fdfb833fbe69dff9',
 };
 const fails = [];
 const lines = [];
