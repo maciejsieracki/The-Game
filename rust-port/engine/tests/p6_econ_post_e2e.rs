@@ -319,11 +319,10 @@ fn run_scenario(
     let unit_health_by_type = |t: &str| {
         civ_engine::domain::unit_health::unit_health(units_db.iter().find(|u| u.jednostka == t))
     };
-    let mut states: BTreeMap<i64, GoldDeficitState> = owner_map(&inp["gdStates"], |v| {
-        GoldDeficitState {
+    let mut states: BTreeMap<i64, GoldDeficitState> =
+        owner_map(&inp["gdStates"], |v| GoldDeficitState {
             tury_deficytu_zlota: v.as_u64().unwrap(),
-        }
-    });
+        });
     let mut runtime = GoldDeficitRuntime::new();
     let out = run_gold_deficit_step(
         &cities,
@@ -348,7 +347,10 @@ fn run_scenario(
         .map(|v| v.as_i64().unwrap())
         .collect();
     want_ids.sort_unstable();
-    chk!(got_ids == want_ids, "{name} gd owner ids {got_ids:?} vs {want_ids:?}");
+    chk!(
+        got_ids == want_ids,
+        "{name} gd owner ids {got_ids:?} vs {want_ids:?}"
+    );
     chk!(
         out.tick.per_owner.len() == arr(gd, "ticks").len(),
         "{name} gd liczba tickow"
@@ -360,8 +362,15 @@ fn run_scenario(
             .by_owner
             .get(&o)
             .ok_or(format!("{name} gd brak ticku {o}"))?;
-        chk_bits(&format!("{name} gd[{o}] skarbiec"), t.skarbiec, num(&wt["skarbiec"]))?;
-        chk!(t.deficyt_zlota == wt["deficyt"].as_bool().unwrap(), "{name} gd[{o}] deficyt");
+        chk_bits(
+            &format!("{name} gd[{o}] skarbiec"),
+            t.skarbiec,
+            num(&wt["skarbiec"]),
+        )?;
+        chk!(
+            t.deficyt_zlota == wt["deficyt"].as_bool().unwrap(),
+            "{name} gd[{o}] deficyt"
+        );
         chk!(
             t.tury_deficytu_zlota_po == wt["po"].as_u64().unwrap(),
             "{name} gd[{o}] po"
@@ -376,12 +385,18 @@ fn run_scenario(
         .iter()
         .map(|(k, v)| (*k, v.tury_deficytu_zlota))
         .collect();
-    chk!(got_states == want_states, "{name} gd stany {got_states:?} vs {want_states:?}");
+    chk!(
+        got_states == want_states,
+        "{name} gd stany {got_states:?} vs {want_states:?}"
+    );
     let mut got_d = out.destroyed_ids.clone();
     got_d.sort();
     let mut want_d = strings(&gd["destroyed"]);
     want_d.sort();
-    chk!(got_d == want_d, "{name} gd zniszczone {got_d:?} vs {want_d:?}");
+    chk!(
+        got_d == want_d,
+        "{name} gd zniszczone {got_d:?} vs {want_d:?}"
+    );
     chk!(
         out.player_damaged_count == gd["playerDamaged"].as_u64().unwrap() as usize,
         "{name} gd playerDamaged"
@@ -391,7 +406,10 @@ fn run_scenario(
         "{name} gd playerDestroyed"
     );
     let want_units = arr(gd, "units");
-    chk!(units.len() == want_units.len(), "{name} gd liczba jednostek");
+    chk!(
+        units.len() == want_units.len(),
+        "{name} gd liczba jednostek"
+    );
     for (u, w) in units.iter().zip(want_units) {
         chk!(u.id == text(&w["id"]), "{name} gd jednostka id");
         chk_opt(&format!("{name} gd {} hp", u.id), u.hp, &w["hp"])?;
@@ -404,13 +422,22 @@ fn run_scenario(
     }
     for (c, w) in siege.iter().zip(arr(gd, "siege")) {
         let l = format!("{name} gd siege {}", c.id);
-        chk!(c.oblegane == w["oblegane"].as_bool().unwrap(), "{l} oblegane");
-        chk!(c.oblegajacy_owner_id == w["oblOwner"].as_i64(), "{l} oblOwner");
+        chk!(
+            c.oblegane == w["oblegane"].as_bool().unwrap(),
+            "{l} oblegane"
+        );
+        chk!(
+            c.oblegajacy_owner_id == w["oblOwner"].as_i64(),
+            "{l} oblOwner"
+        );
         chk!(
             c.siege_capitulation_pending == w["cap"].as_bool().unwrap(),
             "{l} cap"
         );
-        chk!(c.has_siege_machines == w["mach"].as_bool().unwrap(), "{l} mach");
+        chk!(
+            c.has_siege_machines == w["mach"].as_bool().unwrap(),
+            "{l} mach"
+        );
         chk_opt(&format!("{l} garn"), c.garnizon, &w["garn"])?;
     }
     let want_besieger: BTreeMap<String, i64> = str_map(&gd["besieger"], |v| v.as_i64().unwrap());
@@ -463,15 +490,31 @@ fn run_scenario(
         outcome.changed_city_ids,
         strings(&g["changed"])
     );
-    chk!(hooks.changed == outcome.changed_city_ids, "{name} wzrost hooki");
     chk!(
-        hooks.rebalance.iter().map(|r| r.0.clone()).collect::<Vec<_>>() == outcome.changed_city_ids,
+        hooks.changed == outcome.changed_city_ids,
+        "{name} wzrost hooki"
+    );
+    chk!(
+        hooks
+            .rebalance
+            .iter()
+            .map(|r| r.0.clone())
+            .collect::<Vec<_>>()
+            == outcome.changed_city_ids,
         "{name} wzrost rebalans kolejnosc"
     );
     let pop_before: BTreeMap<String, f64> = str_map(&g["popBefore"], num);
     for (id, before, after) in &hooks.rebalance {
-        chk_bits(&format!("{name} rebalans {id} przed"), *before, pop_before[id])?;
-        let fin = cities.iter().find(|c| &c.id == id).map(|c| c.population).unwrap();
+        chk_bits(
+            &format!("{name} rebalans {id} przed"),
+            *before,
+            pop_before[id],
+        )?;
+        let fin = cities
+            .iter()
+            .find(|c| &c.id == id)
+            .map(|c| c.population)
+            .unwrap();
         chk_bits(&format!("{name} rebalans {id} po"), *after, fin)?;
     }
     for (c, w) in cities.iter().zip(arr(g, "cities")) {
@@ -494,10 +537,18 @@ fn run_scenario(
     for (t, w) in tick.per_city.iter().zip(arr(g, "ticks")) {
         let l = format!("{name} wzrost tick {}", t.city_id);
         chk!(t.city_id == text(&w["cityId"]), "{l} id");
-        chk_bits(&format!("{l} ludnoscPo"), t.ludnosc_po, opt_num(&w["ludnoscPo"]).unwrap_or(f64::NAN))?;
+        chk_bits(
+            &format!("{l} ludnoscPo"),
+            t.ludnosc_po,
+            opt_num(&w["ludnoscPo"]).unwrap_or(f64::NAN),
+        )?;
         chk!(opt_bool_eq(t.wzrost, &w["wzrost"]), "{l} wzrost");
         chk!(opt_bool_eq(t.ubytek, &w["ubytek"]), "{l} ubytek");
-        chk_opt(&format!("{l} wzrostProcent"), t.wzrost_procent, &w["wzrostProcent"])?;
+        chk_opt(
+            &format!("{l} wzrostProcent"),
+            t.wzrost_procent,
+            &w["wzrostProcent"],
+        )?;
         chk_opt(
             &format!("{l} wzrostUlamkowyPo"),
             t.wzrost_ulamkowy_po,
@@ -509,15 +560,33 @@ fn run_scenario(
             opt_num(&w["magazynPoTurze"]).unwrap_or(f64::NAN),
         )?;
     }
-    chk_bits(&format!("{name} econ.growth"), tick.growth, num(&g["econGrowth"]))?;
-    chk_bits(&format!("{name} econ.starved"), tick.starved, num(&g["econStarved"]))?;
+    chk_bits(
+        &format!("{name} econ.growth"),
+        tick.growth,
+        num(&g["econGrowth"]),
+    )?;
+    chk_bits(
+        &format!("{name} econ.starved"),
+        tick.starved,
+        num(&g["econStarved"]),
+    )?;
     for (o, w) in ef.per_owner.iter().zip(arr(g, "ef")) {
-        chk!(o.owner_id == w["ownerId"].as_i64().unwrap(), "{name} ef owner");
+        chk!(
+            o.owner_id == w["ownerId"].as_i64().unwrap(),
+            "{name} ef owner"
+        );
         for (r, wr) in o.per_city_rows.iter().zip(arr(w, "rows")) {
             let l = format!("{name} ef {}", r.city_id);
             chk!(r.name == wr["name"].as_str().unwrap_or(""), "{l} name");
-            chk_bits(&format!("{l} wzrostProcent"), r.wzrost_procent, opt_num(&wr["wzrostProcent"]).unwrap_or(0.0))?;
-            chk!(opt_bool_eq(r.nakarmione, &wr["nakarmione"]), "{l} nakarmione");
+            chk_bits(
+                &format!("{l} wzrostProcent"),
+                r.wzrost_procent,
+                opt_num(&wr["wzrostProcent"]).unwrap_or(0.0),
+            )?;
+            chk!(
+                opt_bool_eq(r.nakarmione, &wr["nakarmione"]),
+                "{l} nakarmione"
+            );
             match (&r.breakdown, wr["breakdown"].as_object()) {
                 (Some(bd), Some(wb)) => {
                     for (got, key) in [
@@ -550,7 +619,11 @@ fn run_scenario(
         num(&inp["pools"]["rate0"]),
     );
     let wp = &p["praca"];
-    chk_bits(&format!("{name} praca player"), pools.player_praca_pool, num(&wp["player"]))?;
+    chk_bits(
+        &format!("{name} praca player"),
+        pools.player_praca_pool,
+        num(&wp["player"]),
+    )?;
     let want_ai: BTreeMap<i64, f64> = owner_map(&wp["ai"], num);
     chk!(
         pools.ai_praca_pool_by_owner.keys().eq(want_ai.keys()),
@@ -559,11 +632,24 @@ fn run_scenario(
     for (o, v) in &pools.ai_praca_pool_by_owner {
         chk_bits(&format!("{name} praca ai[{o}]"), *v, want_ai[o])?;
     }
-    chk_bits(&format!("{name} praca lastUpkeep"), pr.last_praca_upkeep, num(&wp["lastUpkeep"]))?;
-    chk_bits(&format!("{name} praca rate"), pr.last_praca_rate, num(&wp["rate"]))?;
+    chk_bits(
+        &format!("{name} praca lastUpkeep"),
+        pr.last_praca_upkeep,
+        num(&wp["lastUpkeep"]),
+    )?;
+    chk_bits(
+        &format!("{name} praca rate"),
+        pr.last_praca_rate,
+        num(&wp["rate"]),
+    )?;
 
     Ok([
-        usize::from(out.tick.per_owner.iter().any(|t| t.zloto_deficyt_atrycja_aktywna)),
+        usize::from(
+            out.tick
+                .per_owner
+                .iter()
+                .any(|t| t.zloto_deficyt_atrycja_aktywna),
+        ),
         out.destroyed_ids.len(),
         out.cleanup.ended_sieges.len(),
         outcome.changed_city_ids.len(),

@@ -17,7 +17,10 @@ fn growth_percent_with_order_multiplier_matches_js() {
     assert_eq!(growth_percent_with_order_multiplier(10.0, 0.5), 5.0);
     assert_eq!(growth_percent_with_order_multiplier(10.0, -3.0), 0.0); // max(0, -3)
     assert_eq!(growth_percent_with_order_multiplier(10.0, f64::NAN), 10.0); // !isFinite -> 1
-    assert_eq!(growth_percent_with_order_multiplier(10.0, f64::INFINITY), 10.0);
+    assert_eq!(
+        growth_percent_with_order_multiplier(10.0, f64::INFINITY),
+        10.0
+    );
     assert_eq!(growth_percent_with_order_multiplier(-4.0, 2.0), -8.0);
 }
 

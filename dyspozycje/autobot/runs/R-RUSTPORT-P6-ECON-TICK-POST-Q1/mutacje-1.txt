@@ -1,7 +1,0 @@
-P01-rebel-counted-ai               SURVIVED  
-P02-barbarian-counted-ai           SURVIVED  
-P03-owner0-not-seeded              KILLED    
-P04-state-keys-ignored             KILLED    
-P05-barb-state-created             SURVIVED  
-P06-barb-not-filtered              KILLED    
-P07-atrycja-flag-ignored           KILLED    

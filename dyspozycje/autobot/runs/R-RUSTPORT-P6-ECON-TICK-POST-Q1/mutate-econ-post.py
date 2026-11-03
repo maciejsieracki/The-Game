@@ -24,7 +24,7 @@ M = [
     ('P09-player-counter-inverted', P, '        if t.owner_id == 0 {\n            player_damaged', '        if t.owner_id != 0 {\n            player_damaged', ''),
     ('P10-player-destroyed-wrong', P, 'player_destroyed += res.destroyed_ids.len();', 'player_destroyed += res.damaged_count;', ''),
     ('P11-hpmax-not-written-back', P, '            dst.hp = src.hp;\n            dst.hp_max = src.hp_max;', '            dst.hp = src.hp;', ''),
-    ('P12-cleanup-skipped', P, '        &destroyed_ids,\n    );\n    GoldDeficitStepOutcome', '        &[],\n    );\n    GoldDeficitStepOutcome', ''),
+    ('P12-cleanup-skipped', P, 'besieger_by_city, &destroyed_ids);\n    GoldDeficitStepOutcome', 'besieger_by_city, &[]);\n    GoldDeficitStepOutcome', ''),
     ('P13-hp-frac-from-stat-mult', P, 'input.params.zloto_deficyt_hp_frac,\n            input.unit_health_by_type', 'input.params.zloto_deficyt_stat_mult,\n            input.unit_health_by_type', ''),
     ('P14-state-seed-skipped', P, '        states.entry(oid).or_insert_with(fresh_gold_deficit_state);', '        let _ = oid;', 'EKW'),
     # ---- wzrost po centrali ----
@@ -53,15 +53,15 @@ M = [
     ('P42-wzrost-procent-not-saved', P, '        dst.wzrost_procent = Some(v);', '        let _ = v;', ''),
     ('P43-frac-po-not-saved', P, '        dst.wzrost_ulamkowy_po = Some(v);', '        let _ = v;', ''),
     ('P44-magazyn-po-not-saved', P, '        dst.magazyn_po_turze = v;', '        let _ = v;', ''),
-    ('P45-hooks-bypassed', P, '        self.inner\n            .rebalance_workers_after_population_change(city, pop_before, pop_after, exclude_hex_keys);', '        let _ = (city, pop_before, pop_after, exclude_hex_keys);', ''),
+    ('P45-hooks-bypassed', P, '        self.inner.rebalance_workers_after_population_change(\n            city,\n            pop_before,\n            pop_after,\n            exclude_hex_keys,\n        );', '        let _ = (city, pop_before, pop_after, exclude_hex_keys);', ''),
     ('P46-changed-not-collected', P, '        self.changed.push(city_id.to_string());', '        let _ = city_id;', ''),
     # ---- upkeep Pracy ----
     ('P50-upkeep-ge', P, '    if player_upkeep > 0.0 {', '    if player_upkeep >= 0.0 {', ''),
     ('P51-ai-owner0-not-skipped', P, '        if oid == 0 || up <= 0.0 {', '        if up <= 0.0 {', ''),
     ('P52-ai-nonpositive-applied', P, '        if oid == 0 || up <= 0.0 {', '        if oid == 0 {', ''),
-    ('P53-ai-default-pool-one', P, 'let cur = pools.ai_praca_pool_by_owner.get(&oid).copied().unwrap_or(0.0);', 'let cur = pools.ai_praca_pool_by_owner.get(&oid).copied().unwrap_or(1.0);', ''),
+    ('P53-ai-default-pool-one', P, '            .copied()\n            .unwrap_or(0.0);', '            .copied()\n            .unwrap_or(1.0);', ''),
     ('P54-rate-not-reduced', P, 'last_praca_rate: last_praca_rate - player_upkeep,', 'last_praca_rate,', ''),
-    ('P55-ai-no-floor', P, '            .insert(oid, js_max0(cur - up));', '            .insert(oid, cur - up);', ''),
+    ('P55-ai-no-floor', P, 'insert(oid, js_max0(cur - up));', 'insert(oid, cur - up);', ''),
     ('P56-player-owner-wrong', P, 'let player_upkeep = praca_upkeep_by_owner.get(&0)', 'let player_upkeep = praca_upkeep_by_owner.get(&1)', ''),
     ('P57-player-no-floor', P, '        pools.player_praca_pool = js_max0(pools.player_praca_pool - player_upkeep);', '        pools.player_praca_pool -= player_upkeep;', ''),
     # ---- city_growth.rs (ext) ----

@@ -74,7 +74,7 @@ pub fn run_gold_deficit_step(
     states: &mut BTreeMap<i64, GoldDeficitState>,
     runtime: &mut GoldDeficitRuntime,
     units: &mut Vec<AttritionUnit>,
-    siege_cities: &mut Vec<SiegeCityState>,
+    siege_cities: &mut [SiegeCityState],
     besieger_by_city: &mut BTreeMap<String, i64>,
     input: &GoldDeficitStepInput<'_>,
 ) -> GoldDeficitStepOutcome {
@@ -149,12 +149,8 @@ pub fn run_gold_deficit_step(
         destroyed_ids.extend(res.destroyed_ids);
     }
     // Identyczne sprzatanie oblezenia/garnizonu co atrycja glodu wojska (`main.ts:35311-35340`).
-    let cleanup = cleanup_after_starvation_destroy(
-        units,
-        siege_cities,
-        besieger_by_city,
-        &destroyed_ids,
-    );
+    let cleanup =
+        cleanup_after_starvation_destroy(units, siege_cities, besieger_by_city, &destroyed_ids);
     GoldDeficitStepOutcome {
         owner_ids,
         tick,
@@ -227,8 +223,12 @@ impl PopulationChangeHooks for CollectHooks<'_> {
         pop_after: f64,
         exclude_hex_keys: Option<&BTreeSet<String>>,
     ) {
-        self.inner
-            .rebalance_workers_after_population_change(city, pop_before, pop_after, exclude_hex_keys);
+        self.inner.rebalance_workers_after_population_change(
+            city,
+            pop_before,
+            pop_after,
+            exclude_hex_keys,
+        );
     }
 
     fn on_city_population_changed(&mut self, city_id: &str) {
@@ -403,10 +403,12 @@ pub fn apply_praca_upkeep_post(
         if oid == 0 || up <= 0.0 {
             continue;
         }
-        let cur = pools.ai_praca_pool_by_owner.get(&oid).copied().unwrap_or(0.0);
-        pools
+        let cur = pools
             .ai_praca_pool_by_owner
-            .insert(oid, js_max0(cur - up));
+            .get(&oid)
+            .copied()
+            .unwrap_or(0.0);
+        pools.ai_praca_pool_by_owner.insert(oid, js_max0(cur - up));
     }
     PracaUpkeepOutcome {
         last_praca_upkeep: player_upkeep,
