@@ -28,12 +28,12 @@
 use crate::data::derived::{mapgen_cluster_layout, ClusterActiveTypes};
 use crate::domain::hex::HexCoord;
 use crate::domain::improvements::js_round;
-use crate::domain::map_generator::GeneratedMap;
+use crate::domain::map_generator::{GeneratedMap, Terrain};
 use crate::domain::mapgen::cluster_mass::{
     allocate_typy_to_masses, assign_voronoi_regions, development_space_score, js_array_sort_by,
     local_land_fraction, mass_land_cache_from_masses, passes_local_land_gate,
     passes_player_start_mass_gate, pick_best_local_land_spawn, pick_center_in_mass_spread,
-    pick_player_cluster_center, pick_tied_spawn_land_candidate, qualifying_mass_indices_for_spawn,
+    pick_player_cluster_center, pick_tied_spawn_land_candidate, polar_proximity_tier, qualifying_mass_indices_for_spawn,
     sort_spawn_candidates_with_spread_bias, sort_spawn_land_candidates, ClusterCity,
     ClusterLayoutHooks, LandBBox, MassLandCache, MassesOrCache, QuadrantSpread, RandRef, SeaDist,
     SpawnLandCandidate, TypeCluster,
@@ -266,12 +266,11 @@ pub fn capital_min_separation(rozmiar: MapSizeLabel) -> i64 {
     )
 }
 
-/// Web `capitalMinSeparationForMap` (`clusters.ts:1485`).
+/// Web `capitalMinSeparationForMap(rozmiar, mapW, mapH)` BEZ `civCount`/`landCount` (`clusters.ts:1569`
+/// @23dd158e9, REPIN-DELTA-4 hunk 23): stare wywolania 3-argumentowe = `..._pin(.., None, None)`
+/// (short < 80 -> 0; short >= 80 -> `capitalMinSeparationProportional`, bez sufitu wykonalnosci).
 pub fn capital_min_separation_for_map(rozmiar: MapSizeLabel, map_w: i64, map_h: i64) -> i64 {
-    if map_w.min(map_h) < min_short_side() {
-        return 0;
-    }
-    capital_min_separation(rozmiar)
+    capital_min_separation_for_map_pin(rozmiar, map_w, map_h, None, None)
 }
 
 /// Web `FALLBACK_CAPITAL_SEP_COEF` (`map-gen-params-loader.ts:224`).
@@ -294,9 +293,8 @@ pub fn map_gen_capital_sep_short_side_coef() -> f64 {
 }
 
 /// Web `capitalMinSeparationProportional` (`clusters.ts:1530` @23dd158e9): `max(tabela, round(wsp x
-/// krotszy bok))`. REPIN-DELTA-4: NIE podpiete jeszcze do `compute_clusters` (patrz
-/// `REPIN-DELTA-4.md`, dlug CLUSTERS-SEP-POLAR) - stary `capital_min_separation_for_map` nie ma
-/// tej semantyki.
+/// krotszy bok))`. REPIN-DELTA-4 (runda 2): podpiete do `compute_clusters` przez
+/// `capital_min_separation_for_map_pin` / `capital_min_separation_for_map`.
 pub fn capital_min_separation_proportional(rozmiar: MapSizeLabel, map_w: i64, map_h: i64) -> i64 {
     let short = map_w.min(map_h);
     let table = capital_min_separation(rozmiar);
@@ -380,12 +378,29 @@ pub fn cluster_body_separation_for_map(rozmiar: MapSizeLabel, map_w: i64, map_h:
     cluster_body_separation(rozmiar)
 }
 
-/// Web `clusterCenterPlacementSepForMap` (`clusters.ts:1522`).
-pub fn cluster_center_placement_sep_for_map(rozmiar: MapSizeLabel, map_w: i64, map_h: i64) -> i64 {
-    if map_w.min(map_h) < min_short_side() {
-        return 0;
+/// Web `clusterCenterPlacementSepForMap(rozmiar, mapW, mapH, civCount?, landCount?)` (`clusters.ts:1601`
+/// @23dd158e9, REPIN-DELTA-4 hunk 23): `sep = capitalMinSeparationForMap(..)`; `sep > 0 ? sep + 2 : 0`.
+pub fn cluster_center_placement_sep_for_map_civ(
+    rozmiar: MapSizeLabel,
+    map_w: i64,
+    map_h: i64,
+    civ_count: Option<i64>,
+    land_count: Option<i64>,
+) -> i64 {
+    let sep = capital_min_separation_for_map_pin(rozmiar, map_w, map_h, civ_count, land_count);
+    if sep > 0 {
+        sep + mapgen_cluster_layout()
+            .separacja_stolic
+            .dodatek_odstepu_srodkow
+            .wartosc
+    } else {
+        0
     }
-    cluster_center_placement_sep(rozmiar)
+}
+
+/// `clusterCenterPlacementSepForMap` bez `civCount`/`landCount` (wywolanie 3-argumentowe).
+pub fn cluster_center_placement_sep_for_map(rozmiar: MapSizeLabel, map_w: i64, map_h: i64) -> i64 {
+    cluster_center_placement_sep_for_map_civ(rozmiar, map_w, map_h, None, None)
 }
 
 /// Web `clusterBodyBufferRadius` (`clusters.ts:1533`): `ceil(S / 2)`; nieskonczone lub `<= 0` -> 0.
@@ -687,8 +702,23 @@ pub fn pick_spawn_hex_with_capital_gates(
         vec![min_sea_dist]
     };
 
+    // REPIN-DELTA-4 hunk 25 (`clusters.ts:1816-1819` @23dd158e9, R-WEB-AI-AVOID-POLAR-CITIES-Q1): stolice/MP AI
+    // (nie gracz) - heks Polarny zakazany, o ile pula ma jakikolwiek niepolarny; sasiedztwo polarne = kara w sortowaniu.
+    let avoid_polar = !opts.require_player_mass_gate
+        && pool
+            .iter()
+            .any(|h| polar_proximity_tier(map, h.q, h.r) < 3);
     for sea_min in sea_steps {
         let passes = |h: HexCoord| -> bool {
+            if avoid_polar
+                && u32::try_from(h.q)
+                    .ok()
+                    .zip(u32::try_from(h.r).ok())
+                    .and_then(|(q, r)| map.tile(q, r))
+                    .is_some_and(|t| t.terrain == Terrain::Polar)
+            {
+                return false;
+            }
             if opts.require_local_land && !passes_local_land_gate(map, h.q, h.r, None, None) {
                 return false;
             }
@@ -742,6 +772,11 @@ pub fn pick_spawn_hex_with_capital_gates(
                 sea: opts
                     .sea_dist
                     .map_or(sea_min, |sd| sea_dist_at(sd, h.q, h.r)),
+                polar: if avoid_polar {
+                    polar_proximity_tier(map, h.q, h.r)
+                } else {
+                    0
+                },
             })
             .collect();
         if candidates.is_empty() {
@@ -1045,7 +1080,8 @@ pub fn pick_capital_hex_in_region(
         let db = dist_hp(*b, blob_center);
         let jitter = rand() * jitter_w;
         or0(
-            or0((db + jitter) - (da + jitter), f64::from(a.q - b.q)),
+            // REPIN-DELTA-4 hunk 24 (`clusters.ts:2358` @23dd158e9): komparator ODWROCONY (blizej srodka bloba = lepiej).
+            or0((da + jitter) - (db + jitter), f64::from(a.q - b.q)),
             f64::from(a.r - b.r),
         )
     };
@@ -1371,6 +1407,8 @@ pub fn enforce_local_land_dominance(
     map_center: PointF64,
     sea_dist: Option<&SeaDist>,
     min_sea_dist: f64,
+    // REPIN-DELTA-4 hunk 25 (`clusters.ts:2564` @23dd158e9): pula gracza (z Polarny); web: domyslnie `ladowe`.
+    ladowe_player: &[HexCoord],
 ) -> Option<LocalLandDominanceResult> {
     let masses = &land_cache.masses;
     let mut relocated = false;
@@ -1398,7 +1436,7 @@ pub fn enforce_local_land_dominance(
             new_center = pick_player_cluster_center(
                 map,
                 MassesOrCache::Cache(land_cache),
-                ladowe,
+                ladowe_player,
                 map_center,
                 &mut *rand,
                 sea_dist,
@@ -1462,7 +1500,7 @@ pub fn enforce_local_land_dominance(
         .map(|(ci, c)| ci == 0 || passes_local_land_gate(map, c.q, c.r, None, None))
         .collect();
 
-    let land_bbox = LandBBox::from_hexes(ladowe);
+    let land_bbox = LandBBox::from_hexes(ladowe_player);
     let dominance_spread_gate = SpreadGateOpts {
         land_bbox,
         spread_n: centrumy.len() as i64,
@@ -1527,7 +1565,7 @@ pub fn enforce_local_land_dominance(
         let forced = pick_player_cluster_center(
             map,
             MassesOrCache::Cache(land_cache),
-            ladowe,
+            ladowe_player,
             map_center,
             &mut *rand,
             sea_dist,
@@ -1621,6 +1659,8 @@ pub fn build_cluster_cities_with_land_gate(
     min_sea_dist: f64,
     prior_capitals: &[HexCoord],
     min_capital_sep: f64,
+    // REPIN-DELTA-4 hunk 25 (`clusters.ts:2711` @23dd158e9): uklad gracza moze miec stolice na Polarny.
+    is_player_layout: bool,
 ) -> Option<ClusterCitiesWithCentrum> {
     let masses = &land_cache.masses;
     let mut active_centrum = centrum;
@@ -1640,7 +1680,13 @@ pub fn build_cluster_cities_with_land_gate(
             min_capital_sep,
         );
         let cap = cluster_capital_pos(&layout.cities, active_centrum);
-        let land_ok = passes_local_land_gate(map, cap.q, cap.r, None, None);
+        let land_ok = passes_local_land_gate(map, cap.q, cap.r, None, None)
+            && (is_player_layout
+                || u32::try_from(cap.q)
+                    .ok()
+                    .zip(u32::try_from(cap.r).ok())
+                    .and_then(|(q, r)| map.tile(q, r))
+                    .is_none_or(|t| t.terrain != Terrain::Polar));
         let sea_ok = sea_dist.is_none_or(|sd| {
             min_sea_dist <= 0.0 || passes_min_sea_dist_gate(sd, cap.q, cap.r, min_sea_dist)
         });

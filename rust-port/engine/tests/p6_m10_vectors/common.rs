@@ -247,6 +247,8 @@ pub fn candidate_of(v: &Value) -> SpawnLandCandidate {
         },
         dev: i(&v[5]) as f64,
         sea: fv(&v[6]),
+        // REPIN-DELTA-4: wektory M10/M11 nie niosa `polar` (web: `undefined` => 0).
+        polar: 0,
     }
 }
 

@@ -1400,6 +1400,49 @@ pub struct SpawnLandCandidate {
     pub land: LocalLandFraction,
     pub dev: f64,
     pub sea: f64,
+    /// REPIN-DELTA-4 (hunk 25, `clusters.ts:615-619` @23dd158e9): poziom polarnosci
+    /// (`polarProximityTier`); web: pole opcjonalne (`?? 0`) - tu 0 = brak.
+    pub polar: i64,
+}
+
+/// Web `polarProximityTier` (`clusters.ts:372-395` @23dd158e9, R-WEB-AI-AVOID-POLAR-CITIES-Q1):
+/// 3 = sam heks Polarny, 2 = Polarny w promieniu 1, 1 = w promieniu 2, 0 = brak.
+pub fn polar_proximity_tier(map: &GeneratedMap, q: i32, r: i32) -> i64 {
+    let is_polar = |qq: i32, rr: i32| hex_tile(map, qq, rr).is_some_and(|t| t.terrain == Terrain::Polar);
+    if is_polar(q, r) {
+        return 3;
+    }
+    let mut tier = 0i64;
+    for dq in -2i32..=2 {
+        for dr in -2i32..=2 {
+            if dq == 0 && dr == 0 {
+                continue;
+            }
+            let d = dist_hh(HexCoord::new(q, r), HexCoord::new(q + dq, r + dr));
+            if d > 2.0 {
+                continue;
+            }
+            if is_polar(q + dq, r + dr) {
+                let t = if d <= 1.0 { 2 } else { 1 };
+                if t > tier {
+                    tier = t;
+                }
+            }
+        }
+    }
+    tier
+}
+
+/// Web `dropPolarHexCandidates` (`clusters.ts:782-785` @23dd158e9): kandydaci bez heksu Polarny,
+/// o ile taki istnieje (inaczej bez zmian). Zwraca indeksy zachowane z `cands`.
+fn drop_polar_hex_candidates<T>(map: &GeneratedMap, cands: Vec<T>, h_of: impl Fn(&T) -> HexCoord) -> Vec<T> {
+    let non_polar =
+        |c: &T| !hex_tile(map, h_of(c).q, h_of(c).r).is_some_and(|t| t.terrain == Terrain::Polar);
+    if cands.iter().any(non_polar) {
+        cands.into_iter().filter(|c| non_polar(c)).collect()
+    } else {
+        cands
+    }
 }
 
 fn sea_at(
@@ -1432,6 +1475,10 @@ pub fn sort_spawn_land_candidates(
     hooks: &dyn ClusterLayoutHooks,
 ) {
     js_array_sort_by(candidates, |a, b| {
+        let pol = (a.polar - b.polar) as f64;
+        if pol != 0.0 {
+            return pol;
+        }
         let da = dist_hp(a.h, map_center);
         let db = dist_hp(b.h, map_center);
         if sea_first && b.sea != a.sea {
@@ -1513,6 +1560,10 @@ pub fn sort_spawn_candidates_with_spread_bias(
     }
 
     js_array_sort_by(&mut pool, |a, b| {
+        let pol = (a.c.polar - b.c.polar) as f64;
+        if pol != 0.0 {
+            return pol;
+        }
         if b.min_exist != a.min_exist {
             return b.min_exist - a.min_exist;
         }
@@ -1597,6 +1648,7 @@ pub fn player_start_candidates_on_masses(
                 dev: development_space_score(map, h.q, h.r, MassesOrCache::Cache(land_cache), None)
                     as f64,
                 sea,
+                polar: 0,
             });
         }
     }
@@ -1633,6 +1685,7 @@ pub fn pick_player_cluster_center(
             dev: development_space_score(map, h.q, h.r, MassesOrCache::Cache(&land_cache), None)
                 as f64,
             sea: sea_at(hooks, sea_dist, h.q, h.r, min_sea_dist),
+            polar: 0,
         })
         .filter(|x| {
             passes_player_start_mass_gate(map, x.h.q, x.h.r, MassesOrCache::Cache(&land_cache))
@@ -1673,6 +1726,7 @@ pub fn pick_best_local_land_spawn(
             dev: development_space_score(map, h.q, h.r, MassesOrCache::Cache(land_cache), None)
                 as f64,
             sea: sea_at(hooks, sea_dist, h.q, h.r, min_sea_dist),
+            polar: 0,
         })
         .filter(|x| x.land.ratio >= frac)
         .collect();
@@ -1685,6 +1739,8 @@ pub fn pick_best_local_land_spawn(
     if sea_first {
         candidates = base.clone();
     }
+    // REPIN-DELTA-4 hunk 25 (`clusters.ts:815` @23dd158e9): zakaz heksu Polarny (AI/MP), o ile jest niepolarny.
+    let mut candidates = drop_polar_hex_candidates(map, candidates, |c| c.h);
     js_array_sort_by(&mut candidates, |a, b| {
         if sea_first && b.sea != a.sea {
             return b.sea - a.sea;
@@ -1960,6 +2016,8 @@ pub fn pick_center_in_mass_spread(
     if candidates.is_empty() {
         return None;
     }
+    // REPIN-DELTA-4 hunk 25 (`clusters.ts:997` @23dd158e9): zakaz heksu Polarny (AI/MP), o ile jest niepolarny.
+    candidates = drop_polar_hex_candidates(map, candidates, |i| base[*i].h);
 
     if let (Some(_), Some(qc), Some(so)) = (land_bbox, quad_counts.as_ref(), spread_opts) {
         if so.n_needed >= p.min_liczba_typow_filtra_cwiartek.wartosc {
@@ -2347,6 +2405,8 @@ pub fn place_cluster_centers_across_landmasses(
     bounds: MapBounds,
     sea_dist: Option<&SeaDist>,
     min_sea_dist: f64,
+    // REPIN-DELTA-4 hunk 25 (`clusters.ts:1205` @23dd158e9): pula gracza (z Polarny); web: domyslnie `ladowe`.
+    ladowe_player: &[HexCoord],
     hooks: &dyn ClusterLayoutHooks,
 ) -> Vec<HexCoord> {
     let pl = &mapgen_cluster_mass().rozmieszczenie;
@@ -2354,7 +2414,7 @@ pub fn place_cluster_centers_across_landmasses(
         .wybor_hexu
         .sentinel_brak_srodkow
         .wartosc;
-    let land_bbox = LandBBox::from_hexes(ladowe);
+    let land_bbox = LandBBox::from_hexes(ladowe_player);
     let masses = &land_cache.masses;
     let hex_index = &land_cache.hex_index;
     let mut centers: Vec<HexCoord> = Vec::new();
@@ -2389,7 +2449,7 @@ pub fn place_cluster_centers_across_landmasses(
     let player_center = pick_player_cluster_center(
         map,
         MassesOrCache::Cache(land_cache),
-        ladowe,
+        ladowe_player,
         map_center,
         &mut *rand,
         sea_dist,

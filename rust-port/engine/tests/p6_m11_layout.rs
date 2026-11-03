@@ -341,6 +341,8 @@ fn cities_with_land_gate_match_web() {
             i(&c["minSea"]) as f64,
             &hexes(&c["prior"]),
             i(&c["minSep"]) as f64,
+            // REPIN-DELTA-4: web `isPlayerLayout = false` (domyslnie).
+            false,
         );
         assert_eq!(rng.calls, u(&c["randCalls"]), "licznik rand {c}");
         assert!(
@@ -457,6 +459,8 @@ fn enforce_local_land_dominance_matches_web() {
             center_of(id),
             c["useSea"].as_bool().unwrap().then(|| sea(id)),
             i(&c["minSea"]) as f64,
+            // REPIN-DELTA-4: web `ladowePlayer = ladowe` (domyslnie).
+            lad(id),
         );
         assert_eq!(rng.calls, u(&c["randCalls"]), "licznik rand {c}");
         assert_eq!(c["threw"].as_bool().unwrap(), got.is_none(), "{c}");
@@ -507,6 +511,7 @@ fn enforce_local_land_dominance_matches_web() {
         center_of(id),
         None,
         0.0,
+        lad(id),
     );
     assert!(none.is_none());
 }
