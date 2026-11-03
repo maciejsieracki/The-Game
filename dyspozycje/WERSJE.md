@@ -1,3 +1,12 @@
+## ROBOCZA 3b1c46da -- 2026-11-03 -- eliminacja cywilizacji: żywność ze Spichlerza w bilansie zdobycia (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`f832f6223` + ELIMINATION-FULL-SPOILS `b88ace31b`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzut), stała zgoda na poprawki.
+- Bundle MD5 `3b1c46dadf8bcd29c49f8bb18ba71946`, 70,157,366 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: przy eliminacji zwycięzca przejmuje żywność ze Spichlerza ofiary (do pojemności swojego Spichlerza), okno „Bilans zdobycia” ma wiersz „Żywność ze spichlerza”. Surowce, Praca, Nauka i złoto były przenoszone wcześniej.
+- Testy: tsc PASS; 114/0 (RED przed); mutacje łamią test.
+- Ograniczenia: brak pomiaru w przeglądarce; wchłonięcie dyplomatyczne państwa-miasta bez majątku (poza zakresem).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `4e022fcd0c2f3602d9a184a6434c849e`, 70,156,155 bajtów.
+
 ## ROBOCZA 4e022fcd -- 2026-11-03 -- panel „Rozdziel armię”: przewijanie, siatka 3×5, brandbook (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`ae292911f` + ARMY-SPLIT-PANEL `798ec59eb`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
