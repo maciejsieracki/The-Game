@@ -3,7 +3,7 @@ DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-DYPLOMACJA-PROFIL-WOJNY-POKOJU-Q1
 GOAL: port 1:1 profilu wojny/pokoju per cywilizacja (`diplomacy-war-peace-profile.ts`, dane `diplomacy-war-peace-params.json`, czyste rdzenie `main.ts:10225-10324`) z pinu `23dd158e9`; baza `origin/rust-port/parity-v2` (`66df65a1b`).
 
-ZMIANY/COMMIT: kod+wektory+dowody `CODE_SHA` (poprzedzają go commity WIP `ec61b2461`, `470e45912`, `f5b02b036` i trzy doskalowania wektorów); commit raportu = HEAD gałęzi worktree (SHA w odpowiedzi).
+ZMIANY/COMMIT: kod+wektory+dowody `646400914` (poprzedzają go commity WIP `ec61b2461`, `470e45912`, `f5b02b036` i trzy doskalowania wektorów); ten commit jest ostatni (zawiera raport); WIP wcześniejsze wymienione obok.
 * NOWE: `rust-port/engine/src/domain/diplomacy_war_peace_profile.rs` (nagłówek: mapowanie web plik:linia + ZAŁOŻENIA), `rust-port/engine/data/derived/diplomacy-war-peace-params.json` (kopia pinu, `cmp` bajt w bajt), `tests/p6_dyplomacja_profil_wojny_pokoju.rs` + `tests/p6_dyplomacja_profil_wojny_pokoju_vectors/*.json` (8 plików, ok. 9 MB, każdy ≤ 3,2 MB), `dyspozycje/rust-port/p6/P6-DYPL-2.md`, generator/weryfikator/mutacje/shard-test w katalogu runu.
 * ISTNIEJĄCE: `domain/mod.rs` +1 linia `pub mod diplomacy_war_peace_profile;`. Zero zmian w `gra/**`, `diplomacy.rs`, `session.rs`, `state.rs`, `Cargo.toml`, `renderer/**`, `src-tauri/**`, `WERSJE.md`. Poza allowlistą: `rust-port/engine/Cargo.lock` powstał przy buildzie (nieśledzony, NIE commitowany). Dane `civ-matrix.json` i `ai-params.json` w Rust identyczne z pinem (`cmp`), więc brak nowych danych pochodnych.
 
