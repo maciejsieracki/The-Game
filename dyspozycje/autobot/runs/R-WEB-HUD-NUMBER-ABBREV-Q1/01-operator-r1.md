@@ -3,7 +3,7 @@ DOMAIN: GAME
 TEMAT: R-WEB-HUD-NUMBER-ABBREV-Q1
 GOAL: Skracanie liczb >= 1000 do „k"/„M" z jednym miejscem po przecinku (PL) w pasku zasobów i oczywistych miejscach HUD, jedną wspólną funkcją, z pełną wartością w title/aria-label.
 
-ZMIANY/COMMIT: SHA w sekcji końcowej (commit raportu). Pliki (allowlista, jawny git add):
+ZMIANY/COMMIT: 62884e25f (commit zawiera też ten raport). Pliki (allowlista, jawny git add):
 - NOWY gra/src/ui/formatCompactNumber.ts: `formatCompactNumber`, `formatCompactSigned`, `formatFullNumber`, `exactCompactNote`. Half-up na |n|, awans „1000k" -> „1M" (999 950 -> „1M"), < 1000 bez zmian, NaN/±Inf/undefined/null -> „0" (ZAŁOŻENIE: ten sam fallback co `formatLiczbaPl`).
 - gra/src/ui/hud.ts: żetony Skarbiec/Praca/Spichlerz/Nauka/Armia/Miasta/Obywatele/Kultura/Religia/Handel przez `cn()`; usunięte nieużywane `formatFoodHudLabel`; `ensureStyles` dostał `export` (wyłącznie dla bramki pomiaru układu, zero zmiany zachowania).
 - gra/src/ui/hudChip6c.ts: opcja `exact` -> dopisek „Dokładnie: 20 860 (+1 257)" w `title` i `aria-label` (tylko gdy coś skrócono).
