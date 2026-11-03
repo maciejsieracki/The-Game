@@ -11,6 +11,7 @@
 //! | `battle/siegeWall.ts` (1 047 LOC) | [`siege_wall`] | [`siege_wall::SiegeWall`]: the wall group as a [`crate::scene::Scene`] + its `userData` contract | 1 |
 //! | `battle/battleScene.ts` (static field: `_buildBattlefield`, margins, `_carveWallTiles`, city interior, deploy zone, constructor lights/fog/camera) | [`field`] | [`field::BattleField`]: [`crate::scene::Scene`] + side tables (instanced meshes, lights, outlines) + render metadata | 2 (topic …-Q2) |
 //! | `battle/battleScene.ts` (units, dynamics, picking) | — | — | 3–5 (plan in the document) |
+//! | `battle/battleScene.ts` @ `origin/main` (order queue, attack-move, immediate removal of the killed) | [`orders`], [`units::kill_unit`], [`units::PlayerOrder::AttackMove`] | queue state + arrows | REPIN-3D A1 (`dyspozycje/rust-port/p4/P4-REPIN-3D.md`) |
 //!
 //! Only the 3D scene is ported here. Battle game logic (turn order, AI,
 //! damage) belongs to `domain/combat.rs` (P6.13) and the DOM UI to P5; the
@@ -23,6 +24,7 @@
 
 pub mod dynamics;
 pub mod field;
+pub mod orders;
 pub mod picking;
 pub mod siege_wall;
 pub mod units;

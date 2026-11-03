@@ -623,6 +623,25 @@ pub fn remove_unit_from_scene(scene: &mut Scene, u: &mut PlacedUnit) {
     scene.nodes[u.bars.group].visible = false;
 }
 
+/// `_startFade(ru)` of the CURRENT web (`origin/main` `battleScene.ts:9440-9451`,
+/// REPIN-3D batch A1; pin `edb8fb56` faded the model out over
+/// [`super::dynamics::DEATH_FADE_MS`], see [`super::dynamics::Fade`]): a killed
+/// unit has no corpse / death visual any more — it is detached at once
+/// through [`remove_unit_from_scene`]. A no-op (returns `false`) when the
+/// unit is already `fadingOut`, `dead` or removed; `dead` / `fading_out` are
+/// the logic flags of `RuntimeBattleUnit` (the scene keeps only `removed`).
+/// The army-commander side effects (`_removeCommanderMoraleBonus` →
+/// [`update_morale_bar`] of the units that lose the bonus,
+/// `_disableManualIfCommanderLost`) run BEFORE the removal in the web and are
+/// the caller's (P6.13 decides the new morale; the scene updates the bars).
+pub fn kill_unit(scene: &mut Scene, u: &mut PlacedUnit, dead: bool, fading_out: bool) -> bool {
+    if fading_out || dead || u.removed {
+        return false;
+    }
+    remove_unit_from_scene(scene, u);
+    true
+}
+
 /// `_moveDeployUnit(ru, col, row)` (`:16092-16105`), scene part: the unit
 /// and its bars stand on `tileTopY` of the new cell (also a defender placed on
 /// the wall walk — `onWallWalkway` is not touched, like the web).
@@ -1226,6 +1245,16 @@ pub enum PlayerOrder {
         /// `targetId`.
         target: String,
     },
+    /// `{ type: 'attackMove', col, row }` — "Atakuj-marszem" (web `origin/main`
+    /// `battleScene.ts:1984`, REPIN-3D batch A1): march to the waypoint,
+    /// engaging threats on the route (the route logic is P6.13; the scene
+    /// draws it like a move order, in the attack colour).
+    AttackMove {
+        /// Waypoint column.
+        col: i32,
+        /// Waypoint row.
+        row: i32,
+    },
 }
 
 /// A runtime unit as the order / preview overlays read it.
@@ -1273,8 +1302,10 @@ pub fn move_target_for_unit(u: &OrderUnit, col: i32, row: i32) -> (i32, i32) {
     )
 }
 
-/// `_refreshQueuedOrderVisuals()` (`:10626-10647`): one arrow per live
-/// player unit with a move order, or an attack order on a live target.
+/// `_refreshQueuedOrderVisuals()` (`:10626-10647`; REPIN-3D A1: web
+/// `origin/main` `:11013-11034`): one arrow per live player unit with a move
+/// order (move colour), an attack-move order (the same tile arrow in the
+/// attack colour) or an attack order on a live target.
 pub fn refresh_queued_order_visuals(
     scene: &mut Scene,
     layer: &mut OrderLayer,
@@ -1294,9 +1325,10 @@ pub fn refresh_queued_order_visuals(
         }
         let is_queued = queued.iter().any(|q| q == &ru.id);
         match &ru.order {
-            PlayerOrder::Move { col, row } => {
+            PlayerOrder::Move { col, row } | PlayerOrder::AttackMove { col, row } => {
                 let to = world_at_tile(grid, *col, *row);
-                let a = make_order_arrow(scene, unit_world_pos(grid, ru), to, false, is_queued);
+                let is_attack = matches!(ru.order, PlayerOrder::AttackMove { .. });
+                let a = make_order_arrow(scene, unit_world_pos(grid, ru), to, is_attack, is_queued);
                 scene.attach(layer.lines, a);
                 layer.queued.push(a);
             }
