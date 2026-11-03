@@ -1,112 +1,113 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f937a3f9f349786247df6d0af64ff70a",
-  "bundleSha256": "dad93035fd1c9d85f95ab79e87b942103cfc0f6ee226249e49bef6d18e81c760",
-  "bundleBytes": 70162448,
+  "bundleMd5": "b23f563741c7c93c45438f2612986ed4",
+  "bundleSha256": "395cf7460597793e1c4f7d34354ff76b6700c4e08c4338544d2def90ee1f0561",
+  "bundleBytes": 70163803,
   "sourceSnapshot": {
-    "source": "main db9433d62 + ARMY-MERGE-PANEL-LIST-VISIBILITY (90e2d4ec3)",
+    "source": "main (po MERGE-PANEL) + CITY-MILITIA-REGEN-COOLDOWN (97e5e9108)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-ARMY-MERGE-PANEL-LIST-VISIBILITY-Q1: panel „Połączenie armii” — lista „Na polu” jako siatka 3×5 z własnym przewijaniem, osobna sekcja „Przybywa (N)”, licznik „Na polu · Dołącza · Razem”, wskaźnik „▼ jeszcze N jednostek”; logika łączenia bez zmian; Enter wykonuje akcję sfokusowanego przycisku, domyślny fokus „Połącz armie”."
+    "R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: po CAŁKOWITYM zniszczeniu Milicji miasto przez 5 tur (parametr militia_regen_turns) nie wystawia Milicji, potem odnowa w pełnym składzie wg ludności; działa w bitwie taktycznej, Pomiń/Auto (wygrana atakującego = Milicja zniszczona), oblężeniu i szturmie; straty częściowe nie uruchamiają odnowy; licznik w zapisie (stare zapisy bez odnowy); wiersz „Milicja odnawia się: za N tur” w panelu oblężenia."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "army-merge-panel-list-visibility 104/0; scroll-real-render 27/0; production-mount 9/0"
+    "city-militia-regen-cooldown 53/0 (RED przed; 7 mutacji łamie test); city-militia-no-defenders 113/0; regresje oblężenia zielone"
   ],
   "limits": [
-    "Zgłoszonego ucięcia przy 18+2 jednostkach nie odtworzono (rozwiązane licznikiem i wskaźnikiem)",
-    "army-split-panel-scroll-grid-test czerwony na bazie (wariant PRZED z main)",
-    "Zmiana klawiatury (Enter/autofokus) poza literalnym GOAL"
+    "Wiersz UI nie zweryfikowany w Chromium (NIE_ZMIERZONO)",
+    "Zniszczona w Pomiń/Auto = wygrana atakującego (definicja)",
+    "Klucz militia_regen_turns do dopisania w panele-sterowania/export-c.py OBL_MAP",
+    "Padały na bazie: budynek-garnizon, pre-battle-save, wall-defenders-bonus-range (timeout)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "ARMY-MERGE-PANEL-LIST-VISIBILITY (r2): Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
+    "notes": "CITY-MILITIA-REGEN-COOLDOWN (r2): Operator → Evaluator FAIL r1 → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-03T22:43:48",
+  "hubGeneratedAt": "2026-11-03T22:48:05",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f937a3f9f349786247df6d0af64ff70a",
-      "sizeBytes": 70162448
+      "md5": "b23f563741c7c93c45438f2612986ed4",
+      "sizeBytes": 70163803
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f937a3f9f349786247df6d0af64ff70a",
-      "sizeBytes": 70162448
+      "md5": "b23f563741c7c93c45438f2612986ed4",
+      "sizeBytes": 70163803
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f937a3f9f349786247df6d0af64ff70a",
-      "sizeBytes": 70162448
+      "md5": "b23f563741c7c93c45438f2612986ed4",
+      "sizeBytes": 70163803
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f937a3f9f349786247df6d0af64ff70a",
-      "sizeBytes": 70162448
+      "md5": "b23f563741c7c93c45438f2612986ed4",
+      "sizeBytes": 70163803
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f937a3f9f349786247df6d0af64ff70a",
-      "sizeBytes": 70162448
+      "md5": "b23f563741c7c93c45438f2612986ed4",
+      "sizeBytes": 70163803
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f937a3f9f349786247df6d0af64ff70a",
-      "sizeBytes": 70162448
+      "md5": "b23f563741c7c93c45438f2612986ed4",
+      "sizeBytes": 70163803
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f937a3f9f349786247df6d0af64ff70a",
-      "sizeBytes": 70162448
+      "md5": "b23f563741c7c93c45438f2612986ed4",
+      "sizeBytes": 70163803
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f937a3f9f349786247df6d0af64ff70a",
-      "sizeBytes": 70162448
+      "md5": "b23f563741c7c93c45438f2612986ed4",
+      "sizeBytes": 70163803
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f937a3f9f349786247df6d0af64ff70a",
-      "sizeBytes": 70162448
+      "md5": "b23f563741c7c93c45438f2612986ed4",
+      "sizeBytes": 70163803
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f937a3f9f349786247df6d0af64ff70a",
-      "sizeBytes": 70162448
+      "md5": "b23f563741c7c93c45438f2612986ed4",
+      "sizeBytes": 70163803
     }
   ],
-  "md5": "f937a3f9f349786247df6d0af64ff70a",
-  "sizeBytes": 70162448,
+  "md5": "b23f563741c7c93c45438f2612986ed4",
+  "sizeBytes": 70163803,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "a7b56a71335b8e9632c7666fcd01fe95"
+    "bundleMd5": "f937a3f9f349786247df6d0af64ff70a"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 a7b56a71335b8e9632c7666fcd01fe95, 70161374 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 f937a3f9f349786247df6d0af64ff70a, 70162448 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1283,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-03T22:43:48+00:00",
-  "buildStamp": "2026-11-03 22:43",
+  "publishedAt": "2026-11-03T22:48:06+00:00",
+  "buildStamp": "2026-11-03 22:48",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",

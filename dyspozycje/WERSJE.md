@@ -1,3 +1,12 @@
+## ROBOCZA b23f5637 -- 2026-11-03 -- Milicja: 5 tur odnowy po zniszczeniu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (po MERGE-PANEL + CITY-MILITIA-REGEN-COOLDOWN `97e5e9108`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
+- Bundle MD5 `b23f563741c7c93c45438f2612986ed4`, 70,163,803 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: po całkowitym zniszczeniu Milicji miasto przez 5 tur jej nie wystawia, potem odnowa w pełnym składzie; także Pomiń/Auto (wygrana atakującego); straty częściowe bez odnowy; licznik w zapisie; wiersz „Milicja odnawia się: za N tur”.
+- Testy: tsc PASS; regen-cooldown 53/0; no-defenders 113/0.
+- Ograniczenia: wiersz UI bez weryfikacji w Chromium; klucz do dopisania w export-c.py.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f937a3f9f349786247df6d0af64ff70a`, 70,162,448 bajtów.
+
 ## ROBOCZA f937a3f9 -- 2026-11-03 -- panel „Połączenie armii”: siatka, licznik i wskaźnik „jeszcze N jednostek” (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`db9433d62` + ARMY-MERGE-PANEL-LIST-VISIBILITY `90e2d4ec3`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzut), stała zgoda na poprawki.
