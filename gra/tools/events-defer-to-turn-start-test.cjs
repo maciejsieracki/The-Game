@@ -156,6 +156,9 @@ async function main() {
   // finally przejscia tury: endTurnInProgress=false PRZED flushDeferredMergePrompts
   const iFalse = main.indexOf('endTurnInProgress = false;\n          endTurnStartedAt = 0;');
   const iFlush = main.indexOf('flushDeferredMergePrompts();', iFalse);
+  { const bad = (main.match(/emitOrDeferNotice\('[a-z-]+',\s*0\s*,/g) || []);
+    ok('C10 ownerId wpisu = aktywny fotel (nie stale 0) — hot-seat fotel 1+', bad.length === 0 && /emitOrDeferNotice\('tech-discovery', humanSeats\.activeHumanOwnerId,/.test(main), bad); }
+  ok('C11 naprawa z-index toastu przy panelu imperium zachowana', /\(isMainMenuOpen\(\) \|\| isEmpireDetailPanelOpen\(\)\) \? '600' : '320'/.test(main));
   ok('C9 renderLoop ponawia flush odlozonych modali (czekajacych za bitwa/audiencja)', /requestAnimationFrame\(renderLoop\);[^]{0,400}eventDeferQueue\.size\(\) > 0\) flushDeferredNotices\(\)/.test(main));
   ok('C8 w finally przejscia tury flush po zgaszeniu endTurnInProgress', iFalse > 0 && iFlush > iFalse && iFlush - iFalse < 4000);
 

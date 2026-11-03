@@ -11403,10 +11403,10 @@ async function boot(): Promise<void> {
     }
     /** Argumenty liczone od razu (np. numer tury), pokaz odlozony do poczatku tury gracza w fazie EOT. */
     function showWonderCompletedNoticeDeferred(opts: Parameters<typeof showWonderCompletedNotice>[0]): void {
-      emitOrDeferNotice('wonder-completed', 0, () => showWonderCompletedNotice(opts));
+      emitOrDeferNotice('wonder-completed', humanSeats.activeHumanOwnerId, () => showWonderCompletedNotice(opts));
     }
     function showCityCaptureNoticeDeferred(...args: Parameters<typeof showCityCaptureNotice>): void {
-      emitOrDeferNotice('city-capture', 0, () => showCityCaptureNotice(...args));
+      emitOrDeferNotice('city-capture', humanSeats.activeHumanOwnerId, () => showCityCaptureNotice(...args));
     }
     /** Poczatek tury gracza: odpal odlozone modale aktywnego fotela (kolejnosc wystapienia). Bezpieczne
      *  z definicji: no-op w EOT i gdy otwarta bitwa/audiencja (kolejka zostaje do ponowienia). */
@@ -15626,7 +15626,7 @@ async function boot(): Promise<void> {
       // backdrop (.civ-emp-backdrop z-index 449) is always active -- the default
       // 320 renders underneath it, dimming the toast ~35%. 600 (same value as the
       // main-menu branch -- the two panels cannot be open at once) clears it.
-      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : (isMainMenuOpen() ? '600' : '320');
+      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : ((isMainMenuOpen() || isEmpireDetailPanelOpen()) ? '600' : '320');
       hintOverrideTimer = setTimeout(() => {
         hintToast.style.display = 'none';
         hintOverrideTimer = null;
@@ -15675,7 +15675,7 @@ async function boot(): Promise<void> {
       pendingEraDiscoveryTech = null;
       if (eraTechName !== null) {
         const eraIdx = player.era;
-        emitOrDeferNotice('tech-discovery', 0, () => showTechDiscoveryNotice({
+        emitOrDeferNotice('tech-discovery', humanSeats.activeHumanOwnerId, () => showTechDiscoveryNotice({
           techName: eraTechName,
           eraIndex: eraIdx,
           onOpenTree: () => showTechTreeView(0),
@@ -28829,7 +28829,7 @@ async function boot(): Promise<void> {
               // samą pełną kartę co przy EOT, ale z komunikatem zwykłego ukończenia.
               const villageTechName = step.completed[step.completed.length - 1]!.id;
               const villageEraIdx = player.era;
-              emitOrDeferNotice('tech-discovery', 0, () => showTechDiscoveryNotice({
+              emitOrDeferNotice('tech-discovery', humanSeats.activeHumanOwnerId, () => showTechDiscoveryNotice({
                 techName: villageTechName,
                 eraIndex: villageEraIdx,
                 kind: 'completion',
@@ -35367,7 +35367,7 @@ async function boot(): Promise<void> {
                 // komunikatem głównym, a dotychczasowy toast pozostaje krótkim śladem.
                 const autoTechName = step.completed[step.completed.length - 1]!.id;
                 const autoEraIdx = player.era;
-                emitOrDeferNotice('tech-discovery', 0, () => showTechDiscoveryNotice({
+                emitOrDeferNotice('tech-discovery', humanSeats.activeHumanOwnerId, () => showTechDiscoveryNotice({
                   techName: autoTechName,
                   eraIndex: autoEraIdx,
                   kind: 'completion',
