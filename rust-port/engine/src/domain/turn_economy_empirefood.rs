@@ -186,6 +186,12 @@ pub struct EmpireFoodBlockOutcome {
     pub player_damaged_count: usize,
     pub player_destroyed_count: usize,
     pub cleanup: StarvationCleanup,
+    /// `popCapByCityId` (diagnostyka bloku).
+    pub pop_cap_by_city_id: BTreeMap<String, f64>,
+    /// `hungerLossUlamkowy` per miasto po `ensureCityRationDefaults` (pole poza Rust `City`, wlasnosc `GrowthCity`).
+    pub hunger_loss_by_city: BTreeMap<String, Option<f64>>,
+    /// `militaryFoodConsumptionWithSpichlerz` per wlasciciel (wlasciciele miast, potem jednostek).
+    pub koszt_armii_by_owner: BTreeMap<i64, f64>,
 }
 
 fn spichlerz_state_of(tick: Option<&CityEconomyTick>) -> SpichlerzCityBonusState {
@@ -435,6 +441,28 @@ pub fn run_empire_food_block(
         &destroyed_all,
     );
 
+    let hunger_loss_by_city: BTreeMap<String, Option<f64>> = gcities
+        .iter()
+        .map(|g| (g.city.id.clone(), g.hunger_loss_ulamkowy))
+        .collect();
+    let mut koszt_armii_by_owner: BTreeMap<i64, f64> = BTreeMap::new();
+    for o in cities
+        .iter()
+        .map(|c| c.owner_id)
+        .chain(ctx.econ_units.iter().map(|u| u.owner_id))
+    {
+        koszt_armii_by_owner.entry(o).or_insert_with(|| {
+            military_food_consumption_with_spichlerz(
+                ctx.econ_units,
+                o,
+                &upkeep_params,
+                &food_table,
+                sol_army_by_owner.contains(&o),
+                sol_city_ids_by_owner.get(&o).unwrap_or(&empty_set),
+            )
+        });
+    }
+
     EmpireFoodBlockOutcome {
         ef,
         auto_ration_any_adjusted: any_adjusted,
@@ -445,5 +473,8 @@ pub fn run_empire_food_block(
         player_damaged_count: player_damaged,
         player_destroyed_count: player_destroyed,
         cleanup,
+        pop_cap_by_city_id,
+        hunger_loss_by_city,
+        koszt_armii_by_owner,
     }
 }
