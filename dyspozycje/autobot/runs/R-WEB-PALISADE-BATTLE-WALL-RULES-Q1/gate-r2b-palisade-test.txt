@@ -1,0 +1,61 @@
+
+CZESC A -- prawdziwe funkcje
+  [OK] palisada => obwarowanie "palisada"
+  [OK] mury => "mur"
+  [OK] mury+cytadela => "mur"
+  [OK] pierwszenstwo: mur > palisada (bez podwojnego liczenia)
+  [OK] brak obwarowania => none
+  [OK] sama baszta nie jest obwarowaniem
+  [OK] palisada i mur: ta sama klasyfikacja "obwarowane"
+  [OK] cityIsFortified: flaga maMur LUB lista budynkow
+  [OK] R1 palisada: bez wylomu miasto NIE do zdobycia
+  [OK] R1 palisada: po wylomie do zdobycia
+  [OK] R1 mur: bez wylomu miasto NIE do zdobycia
+  [OK] R1 mur: po wylomie do zdobycia
+  [OK] R1 bez obwarowania: bez zmian (zdobycie mozliwe)
+  [OK] szturm Auto: wylom <=> machina oblezenicza
+  [OK] R2: melee NIE atakuje obroncy na murze/za palisada
+  [OK] R2: dystansowy/machina atakuje obroncy na murze/za palisada
+  [OK] R2: melee po wylomie (obronca zszedl z muru) walczy
+  [OK] R2: melee wspiety wieza walczy mur-na-murze
+  [OK] wartosci z danych: palisada=100, mur=200 (bez zmiany)
+  [OK] bonus obrony: palisada +100
+  [OK] bonus obrony: mur +200
+  [OK] bonus: mur zastepuje palisade (200, nie 300)
+  [OK] bonus: mur+cytadela+baszta = 400 (bez zmiany)
+  [OK] bonus: bez obwarowania 0 (bez zmiany)
+  [OK] garnizon: fortify tylko bez obwarowania (bez zmiany)
+  [OK] dane: palisada i mury odblokowuja te sama flage maMur
+  [OK] post-battle: bez obwarowania/po wylomie atakujacy wchodzi na heks miasta
+  [OK] post-battle: obwarowanie bez wylomu -- atakujacy zostaje pod murami
+
+CZESC B -- okablowanie (zrodlo) + mutacje
+  [OK] pinezka: battleScene: melee filtr R2 w _targetInRange
+  [OK] mutacja lamie pinezke: battleScene: melee filtr R2 w _targetInRange
+  [OK] pinezka: battleScene: R2 w _canAttackFrom
+  [OK] mutacja lamie pinezke: battleScene: R2 w _canAttackFrom
+  [OK] pinezka: battleScene: R2 w _canStrikeTargetFrom
+  [OK] mutacja lamie pinezke: battleScene: R2 w _canStrikeTargetFrom
+  [OK] pinezka: battleScene: wylom ustawiany (kafel + brama)
+  [OK] mutacja lamie pinezke: battleScene: wylom ustawiany (kafel + brama)
+  [OK] pinezka: battleScene: BattleResult.wallBreached przekazane w onFinish
+  [OK] mutacja lamie pinezke: battleScene: BattleResult.wallBreached przekazane w onFinish
+  [OK] pinezka: battleScene: szturm odparty gdy pat bez wylomu
+  [OK] mutacja lamie pinezke: battleScene: szturm odparty gdy pat bez wylomu
+  [OK] pinezka: main: R1 bramka zdobycia (szturm/AI/puste miasto)
+  [OK] mutacja lamie pinezke: main: R1 bramka zdobycia (szturm/AI/puste miasto)
+  [OK] pinezka: main: wejscie do pustego miasta objete R1
+  [OK] mutacja lamie pinezke: main: wejscie do pustego miasta objete R1
+  [OK] pinezka: main: wygrana bez wylomu nie zdobywa miasta
+  [OK] mutacja lamie pinezke: main: wygrana bez wylomu nie zdobywa miasta
+  [OK] pinezka: main: wallKind z jednego pojecia obwarowania
+  [OK] mutacja lamie pinezke: main: wallKind z jednego pojecia obwarowania
+  [OK] pinezka: post-battle-map: hold po wygranej
+  [OK] mutacja lamie pinezke: post-battle-map: hold po wygranej
+
+CZESC C -- mutacja PRAWDZIWEJ funkcji: pomijanie palisady lamie test
+  [OK] mutacja zastosowana (palisada pominieta w cityFortificationKind)
+  [OK] zmutowany modul: miasto z palisada traktowane jak bez obwarowania => asercje A.1/A.R1 CZERWONE
+
+WYNIK: 52 OK, 0 FAIL
+EXIT=0

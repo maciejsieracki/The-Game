@@ -106,7 +106,16 @@ import {
   cityGatedTerrainMultiplier,
   fieldFortifyDefenseBonus,
 } from '../game/city-defense';
-import { meleeBlockedByWall } from '../game/city-fortification';
+import { meleeBlockedByWall, cityFortificationKind } from '../game/city-fortification';
+import {
+  towerMaterialFor,
+  towerRows,
+  strongestRangedUnitForEra,
+  towerRangeFor,
+  pickTowerTarget,
+  DEFAULT_TOWER_SPACING,
+  DEFAULT_TOWER_MIN_RANGE,
+} from '../game/city-towers';
 import { buildUnitModel } from '../render/units';
 import { clientRectToNdc, refreshInstancedPickBounds, worldToClientPx } from '../input/picker';
 import {
@@ -119,7 +128,8 @@ import {
 } from './battle-terrain';
 import combatParamsData from '../../data/combat-params.json';
 import miastoParamsData from '../../data/miasto-params.json';
-import { buildSiegeWall, attachRowBreachPanels } from './siegeWall';
+import unitsDataForTowers from '../../data/units.json';
+import { buildSiegeWall, attachRowBreachPanels, buildWallTower } from './siegeWall';
 import type { BronzeCiv } from '../render/bronzeCity';
 import {
   drawBattleMinimap,
@@ -2372,6 +2382,18 @@ export class BattleScene {
   // --- Siege state ---
   /** The wall mesh group (siegeWall.ts output), or null in non-siege battles. */
   private siegeWallGroup: THREE.Group | null = null;
+  /**
+   * R4 (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1): rodzaj obwarowania ('palisada'/'mur'/'none')
+   * z opts.siege.builtBuildingIds (city-fortification.ts) -- steruje modelem muru/palisady,
+   * materialem wiezyczek i tym, czy wiezyczki w ogole stoja.
+   */
+  private _siegeDefCiv: string | null = null;
+  private fortKind: import('../game/city-fortification').CityFortificationKind = 'none';
+  /** R4: wiezyczki strzeleckie na obwodzie muru/palisady (rzad kafla muru = row). */
+  private siegeTowers: { row: number; mesh: THREE.Group | null; destroyed: boolean }[] = [];
+  /** R4: jednostka dystansowa epoki obroncy, ktorej moca strzela kazda wiezyczka. */
+  private towerShooterRow: Record<string, unknown> | null = null;
+  private towerRange = DEFAULT_TOWER_MIN_RANGE;
   /** Column on the battlefield where the siege wall is placed. */
   private siegeWallCol: number = -1;
   /** Column(s) of the gate tile. */
@@ -2646,6 +2668,8 @@ export class BattleScene {
     this._attackerSideLabel = opts.attackerSideLabel?.trim() || '';
     // C-COMBAT-Q2 (Maciej 2026-07-26): patrz doc na polu isCityDefenseBattle.
     this.isCityDefenseBattle = opts.cityDefense === true || opts.siege != null;
+    this.fortKind = cityFortificationKind(opts.siege?.builtBuildingIds);
+    this._siegeDefCiv = (opts.siege?.defCiv ?? opts.siege?.civ ?? null) as string | null;
     // Wall/Cytadela/Baszta defence multiplier (Maciej 2026-07-25, rozszerzone
     // 41B) -- data-driven from miasto-params.json, not hardcoded. +200% (mur),
     // +300% (mur+Cytadela) or +400% (mur+Cytadela+Baszta). Scalone w
@@ -3948,6 +3972,8 @@ export class BattleScene {
       tileSize: TILE_S,
       height: 2.5,
       gateWidthTiles: 2,
+      // Faza B: palisada = drewniane pale + drewniana brama; mur = model wg cywilizacji.
+      kind: this.fortKind === 'palisada' ? 'palisada' : 'mur',
     });
 
     // siegeWall.ts builds the wall along X axis, centred at origin.
@@ -3992,6 +4018,9 @@ export class BattleScene {
     this._syncSiegeHudChromeVisibility();
     requestAnimationFrame(() => this._syncSiegeHudLayout());
 
+    // R4: wiezyczki strzeleckie na obwodzie muru/palisady (wlasna grupa = wlasne wyłomy).
+    this._placeSiegeTowers(wallCol, rLo, rHi);
+
     // Register mesh resources for disposal
     wallGroup.traverse(obj => {
       const mesh = obj as THREE.Mesh;
@@ -4001,6 +4030,125 @@ export class BattleScene {
         if (Array.isArray(mm)) this.ownedMats.push(...mm);
         else if (mm) this.ownedMats.push(mm as THREE.Material);
       }
+    });
+  }
+
+  /**
+   * R4 (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1, decyzja wlasciciela 2026-11-03):
+   * wiezyczki strzeleckie co `wieze_strzeleckie_odstep_kafli` (4) kafli obwodu
+   * muru I palisady -- automatycznie i za darmo (budynek Baszta bez zmian).
+   * Moc strzalu = najmocniejsza jednostka dystansowa epoki obroncy, zasieg =
+   * jej zasieg (min. `wieze_strzeleckie_zasieg_min`). Model drewniany przy
+   * palisadzie, kamienny przy murze. Gracz i AI -- ta sama sciezka (_fireSiegeTowers).
+   */
+  private _placeSiegeTowers(wallCol: number, rLo: number, rHi: number): void {
+    this.siegeTowers = [];
+    const material = towerMaterialFor(this.fortKind);
+    if (material === null) return;
+    const spacing = (miastoParamsData as any)?.wieze_strzeleckie_odstep_kafli?.wartosc ?? DEFAULT_TOWER_SPACING;
+    const minRange = (miastoParamsData as any)?.wieze_strzeleckie_zasieg_min?.wartosc ?? DEFAULT_TOWER_MIN_RANGE;
+    const unitList: readonly Record<string, unknown>[] =
+      ((this._battleData as any).units as Record<string, unknown>[] | undefined)
+      ?? (unitsDataForTowers as unknown as Record<string, unknown>[]);
+    this.towerShooterRow = strongestRangedUnitForEra(unitList, this._defenderEra, this._siegeDefCiv);
+    this.towerRange = towerRangeFor(this.towerShooterRow, minRange);
+    const rows = towerRows({
+      rowLo: rLo, rowHi: rHi,
+      gateRowLo: this.siegeGateRow - 1, gateRowHi: this.siegeGateRow,
+      spacing,
+    });
+    const tower = buildWallTower(material, TILE_S, 2.5);
+    for (const row of rows) {
+      const mesh = tower.clone(true);
+      const { x, z } = cellToWorld(wallCol, row);
+      // wysunieta na zewnatrz (strona atakujacego, -X) -- nie koliduje z obroncami na koronie
+      mesh.position.set(x - TILE_S * 0.5, 0, z);
+      this.scene.add(mesh);
+      mesh.traverse(obj => {
+        const m = obj as THREE.Mesh;
+        if (m.isMesh) {
+          this.ownedGeos.push(m.geometry as THREE.BufferGeometry);
+          const mm = m.material;
+          if (Array.isArray(mm)) this.ownedMats.push(...mm); else this.ownedMats.push(mm as THREE.Material);
+        }
+      });
+      this.siegeTowers.push({ row, mesh, destroyed: false });
+    }
+  }
+
+  /** R4: wyłom kafla muru/palisady burzy stojaca na nim wiezyczke. */
+  private _destroyTowerAtRow(wallRow: number): void {
+    const t = this.siegeTowers.find(x => x.row === wallRow && !x.destroyed);
+    if (!t) return;
+    t.destroyed = true;
+    if (t.mesh) t.mesh.visible = false;
+    this.log.push('Wieza strzelnicza w wyłomie (rzad ' + wallRow + ') zburzona.');
+  }
+
+  /**
+   * R4: raz na ture bitwy KAZDA zywa wiezyczka strzela do jednego wroga w zasiegu
+   * (strzelaja wiezyczki obroncy -- wlasciciela miasta -- do atakujacych; gracz i AI
+   * przez ta sama sciezke). Strzal = `_singleBlow(..., ranged=true)` ze statystykami
+   * najmocniejszej jednostki dystansowej epoki (nie osobna matematyka).
+   */
+  private _fireSiegeTowers(): void {
+    if (this.finished || this.siegeTowers.length === 0 || !this.towerShooterRow) return;
+    const shooterRow = this.towerShooterRow;
+    const nazwa = String(shooterRow['Jednostka'] ?? 'Strzelec');
+    const hp = Number(shooterRow['Health'] ?? shooterRow['health'] ?? 1) || 1;
+    let stagger = 0;
+    for (const t of this.siegeTowers) {
+      if (t.destroyed) continue;
+      if (!this.wallTileHp.has(t.row)) { this._destroyTowerAtRow(t.row); continue; }
+      const delay = stagger;
+      stagger += 180;
+      this._schedule(delay, () => this._fireOneTower(t, shooterRow, nazwa, hp));
+    }
+  }
+
+  private _fireOneTower(
+    t: { row: number; mesh: THREE.Group | null; destroyed: boolean },
+    shooterRow: Record<string, unknown>, nazwa: string, hp: number,
+  ): void {
+    if (this.finished || t.destroyed) return;
+    const wallCol = this.siegeWallCol;
+    const enemies = this.atk.filter(u => !u.dead && !u.fadingOut && !u.routed && !u.removed);
+    const idx = pickTowerTarget(
+      { q: wallCol, r: t.row }, this.towerRange,
+      enemies.map(u => ({ q: u.q, r: u.r, hp: u.bu.hp })),
+    );
+    if (idx < 0) return;
+    const target = enemies[idx]!;
+    // Syntetyczny "strzelec": nie jest w zadnym rosterze, nie ma morale ani modelu
+    // (dead:true => _gainMorale/_updateMoraleBar pomijaja go); caly strzal liczy _singleBlow.
+    const shooter = {
+      bu: {
+        id: 'wieza:' + t.row, nazwa: 'Wieza (' + nazwa + ')', kategoria: String(shooterRow['Typ'] ?? 'Distance'),
+        ownerColor: 0xc84040, stats: shooterRow, hp, maxHp: hp,
+      } as BattleUnit,
+      side: 'def', q: wallCol, r: t.row, facing: Dir.W,
+      dead: true, fadingOut: false, routed: false, mounted: false, onWallWalkway: false,
+      morale: 0, moraleMax: 0,
+    } as unknown as RuntimeBattleUnit;
+    this.log.push('Wieza strzelnicza (rzad ' + t.row + ') strzela do ' + target.bu.nazwa + '.');
+    const tw = cellToWorld(wallCol, t.row);
+    const from = new THREE.Vector3(tw.x - TILE_S * 0.5, 4.2, tw.z);
+    const dw = cellToWorld(target.q, target.r);
+    const to = new THREE.Vector3(dw.x, tileTopY(this.terrainMap, target.q, target.r) + 0.5, dw.z);
+    const { group: proj, geos, mats } = makeProjectileMesh(projectileKind(shooter.bu));
+    proj.position.copy(from);
+    const dir = new THREE.Vector3().subVectors(to, from);
+    if (dir.lengthSq() > 1e-6) {
+      dir.normalize();
+      proj.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(1, 0, 0), dir));
+    }
+    this.scene.add(proj);
+    this._sfxShot();
+    this.projectiles.push({ mesh: proj, from, to, t0: this._now(), dur: RANGED_FLY_MS, geos, mats });
+    this._schedule(RANGED_FLY_MS, () => {
+      if (this.finished || target.dead || target.fadingOut) return;
+      const dmg = this._singleBlow(shooter, target, true);
+      if (dmg > 0 && !target.dead && !target.fadingOut) this._spawnDamageLabel(target, dmg);
     });
   }
 
@@ -5347,6 +5495,9 @@ export class BattleScene {
     // R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 GOAL 1: nowa tura => stan "obronca juz
     // kontratakowal" wraca do zera i kazdy obronca znow moze kontratakowac raz.
     this._counterBudget.beginTurn();
+
+    // R4: wiezyczki strzeleckie muru/palisady -- jeden strzal na ture bitwy.
+    if (this.siegeWallCol >= 0) this._fireSiegeTowers();
 
     // Snapshot of all living, non-routed units for this turn, interleaved
     // atk/def so both sides participate throughout the turn (initiative order).
@@ -7373,6 +7524,7 @@ export class BattleScene {
     }
     this.wallTileHp.delete(wallRow);
     this.wallEverBreached = true;
+    this._destroyTowerAtRow(wallRow); // R4: wiezyczka na zburzonym kaflu znika
     this._spawnWallLabel(wallCol, wallRow, 'MUR WYBURZONY!', '#ff4400');
 
     // NAPRAWA problem 3: WYRWA — ukryj segment muru (visible=false), dodaj gruz.

@@ -22,6 +22,12 @@ export type SiegeWallOpts = {
   height?: number;
   ownerColor?: number;
   gateWidthTiles?: number;
+  /**
+   * R-WEB-PALISADE-BATTLE-WALL-RULES-Q1 (faza B): rodzaj obwarowania miasta.
+   * 'palisada' => drewniane zaostrzone pale + drewniana brama (niezaleznie od
+   * cywilizacji); 'mur' / brak => dotychczasowy mur wg cywilizacji (bez zmian).
+   */
+  kind?: 'palisada' | 'mur';
 };
 
 const mk = (c: number, side?: boolean) =>
@@ -975,6 +981,209 @@ function buildGermanie(opts: Required<SiegeWallOpts>): THREE.Group {
   return g;
 }
 
+
+// ===== PALISADA (drewniane zaostrzone pale, brama z bali) =====
+/**
+ * buildPalisade -- palisada drewniana jako FORMA MURU (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1,
+ * faza B). Ten sam kontrakt co kazdy mur (wallWalkY, depth, gate, wallSegsByLocalX),
+ * wiec wyłom per-kafel, brama i schody dzialaja identycznie. Kazdy kafel to osobna
+ * GRUPA pali (userData.wallSegsByLocalX[key] -> Group; wyłom ustawia visible=false),
+ * pale to jeden zwezony walec (szpic) -- wspolne geometrie i materialy, deterministyczne.
+ */
+function buildPalisade(opts: Required<SiegeWallOpts>): THREE.Group {
+  const g = new THREE.Group();
+  const { lengthTiles, tileSize: T, height: H, gateWidthTiles } = opts;
+  const L = lengthTiles * T;
+  const gateW = gateWidthTiles * T;
+  const wallD = T;
+  const woodColor = 0x7a5230;
+  const woodDkColor = 0x4d3119;
+  const woodMats = [mk(woodColor), mk(shadeColor(woodColor, 0.1)), mk(shadeColor(woodColor, -0.1))];
+  const woodDk = mk(woodDkColor);
+  const rope = mk(0x2f2414);
+  const earth = mk(0x5a4530);
+
+  const poleR = T * 0.075;
+  const geoCache = new Map<string, THREE.BufferGeometry>();
+  const poleGeo = (h: number): THREE.BufferGeometry => {
+    const key = h.toFixed(3);
+    let geo = geoCache.get(key);
+    if (!geo) {
+      // zwezony walec = zaostrzony pal (promien szczytu ~12% podstawy)
+      geo = new THREE.CylinderGeometry(poleR * 0.12, poleR, h, 6);
+      geoCache.set(key, geo);
+    }
+    return geo;
+  };
+  const beamGeo = new THREE.BoxGeometry(T * 0.98, H * 0.05, poleR * 1.4);
+  const plankGeo = new THREE.BoxGeometry(T, H * 0.05, wallD * 0.8);
+  const bankGeo = new THREE.BoxGeometry(T, H * 0.16, wallD * 1.05);
+
+  const segsByLocalX = new Map<number, THREE.Object3D>();
+  const gateHalfW = gateW / 2;
+  for (let sx = -L / 2; sx < L / 2 - T * 0.01; sx += T) {
+    const cx = sx + T / 2;
+    if (Math.abs(cx) < gateHalfW + T * 0.01) continue;
+    const key = Math.round(cx / T);
+    const seg = new THREE.Group();
+    seg.position.set(cx, 0, 0);
+
+    // niski wal ziemny u podstawy
+    const bank = new THREE.Mesh(bankGeo, earth);
+    bank.position.set(0, H * 0.08, 0);
+    bank.receiveShadow = true;
+    seg.add(bank);
+
+    // zewnetrzny rzad pali (-Z, strona atakujacego) -- 4 pale, wysokosci naprzemienne
+    for (let i = 0; i < 4; i++) {
+      const hv = H * (0.93 + 0.12 * hash01(key * 9.1 + i * 3.7));
+      const pole = new THREE.Mesh(poleGeo(hv), woodMats[(i + Math.abs(key)) % 3]!);
+      pole.position.set(-T * 0.375 + i * (T * 0.25), hv / 2, -wallD * 0.3);
+      pole.castShadow = true;
+      seg.add(pole);
+    }
+    // wewnetrzny rzad (+Z) -- 3 pale, nieco nizsze, ciemniejsze
+    for (let i = 0; i < 3; i++) {
+      const hv = H * (0.82 + 0.1 * hash01(key * 5.3 + i * 2.9 + 1));
+      const pole = new THREE.Mesh(poleGeo(hv), woodDk);
+      pole.position.set(-T * 0.3 + i * (T * 0.3), hv / 2, wallD * 0.3);
+      pole.castShadow = true;
+      seg.add(pole);
+    }
+    // wiazanie (belka z powrozem) i pomost bojowy na koronie
+    const beam = new THREE.Mesh(beamGeo, rope);
+    beam.position.set(0, H * 0.62, -wallD * 0.3 - poleR * 0.2);
+    seg.add(beam);
+    const plank = new THREE.Mesh(plankGeo, woodDk);
+    plank.position.set(0, H * 0.97, 0);
+    plank.castShadow = true;
+    seg.add(plank);
+
+    g.add(seg);
+    segsByLocalX.set(key, seg);
+  }
+  g.userData['wallSegsByLocalX'] = segsByLocalX;
+
+  // Brama -- 2 grube slupy po bokach + poprzeczka (jak palisada Zulu)
+  for (const sx of [-1, 1]) {
+    const gatePost = new THREE.Mesh(new THREE.CylinderGeometry(T * 0.12, T * 0.16, H * 1.25, 8), woodDk);
+    gatePost.position.set(sx * gateW / 2, H * 0.625, 0);
+    gatePost.castShadow = true;
+    g.add(gatePost);
+  }
+  const crossbar = new THREE.Mesh(
+    new THREE.CylinderGeometry(poleR * 1.5, poleR * 1.5, gateW + T * 0.3, 6), woodDk);
+  crossbar.rotation.z = Math.PI / 2;
+  crossbar.position.set(0, H * 1.15, 0);
+  crossbar.castShadow = true;
+  g.add(crossbar);
+
+  const leftW = (L - gateW) / 2;
+  addStairs(g, -L / 2, gateW / 2, leftW, wallD, H, 0, woodDk);
+
+  const gateGroup = addWoodenGate(g, gateW, H, wallD, 0, 0x6b4a2a, 0x3d2510);
+
+  g.userData['wallWalkY'] = H;
+  g.userData['depth'] = wallD;
+  g.userData['gateCenterX'] = 0;
+  g.userData['gate'] = gateGroup;
+  g.userData['gateOpen'] = false;
+  g.userData['fortKind'] = 'palisada';
+  return g;
+}
+
+/**
+ * buildWallTower -- wiezyczka strzelnicza na obwodzie muru/palisady (R4).
+ * Zrodlo w (0,0,0) = srodek podstawy na gruncie; +Y gora. Zwrocona grupa jest
+ * pelna wiezyczka (podstawa + platforma strzelecka), bez oswietlenia/animacji.
+ *   material 'kamien' (mur): kamienny trzon, blanki, strzelnice, plaski daszek;
+ *   material 'drewno' (palisada): 4 pale-nogi, pomost, balustrada, stozkowy dach.
+ */
+export function buildWallTower(
+  material: 'drewno' | 'kamien',
+  tileSize: number,
+  wallHeight: number,
+): THREE.Group {
+  const g = new THREE.Group();
+  const T = tileSize;
+  const H = wallHeight * 1.75; // wiezyczka wyzsza od muru
+  const w = T * 0.55;
+  if (material === 'kamien') {
+    const stone = mk(0x8a8478);
+    const stoneDk = mk(0x6f6a60);
+    const slit = mk(0x1c1a17);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(w, H, w), stone);
+    body.position.y = H / 2;
+    body.castShadow = true; body.receiveShadow = true;
+    g.add(body);
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(w * 1.3, H * 0.08, w * 1.3), stoneDk);
+    deck.position.y = H + H * 0.04;
+    deck.castShadow = true;
+    g.add(deck);
+    const mH = H * 0.1, mW = w * 0.3;
+    for (const [cx, cz] of [[-1, -1], [1, -1], [-1, 1], [1, 1], [0, -1], [0, 1], [-1, 0], [1, 0]] as [number, number][]) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(mW, mH, mW), stone);
+      m.position.set(cx * w * 0.6, H + H * 0.08 + mH / 2, cz * w * 0.6);
+      m.castShadow = true;
+      g.add(m);
+    }
+    for (const sz of [-1, 1]) {
+      const s = new THREE.Mesh(new THREE.BoxGeometry(w * 0.12, H * 0.2, w * 0.05), slit);
+      s.position.set(0, H * 0.78, sz * (w / 2 + 0.01));
+      g.add(s);
+    }
+    const s2 = new THREE.Mesh(new THREE.BoxGeometry(w * 0.05, H * 0.2, w * 0.12), slit);
+    s2.position.set(-(w / 2 + 0.01), H * 0.78, 0);
+    g.add(s2);
+  } else {
+    const wood = mk(0x7a5230);
+    const woodDk = mk(0x4d3119);
+    const roofM = mk(0x6a4a28);
+    const legGeo = new THREE.CylinderGeometry(w * 0.07, w * 0.1, H, 6);
+    for (const [cx, cz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as [number, number][]) {
+      const leg = new THREE.Mesh(legGeo, wood);
+      leg.position.set(cx * w * 0.42, H / 2, cz * w * 0.42);
+      leg.castShadow = true;
+      g.add(leg);
+    }
+    // rozpórki
+    for (const y of [H * 0.35, H * 0.65]) {
+      for (const sz of [-1, 1]) {
+        const b = new THREE.Mesh(new THREE.BoxGeometry(w * 0.9, H * 0.03, w * 0.04), woodDk);
+        b.position.set(0, y, sz * w * 0.42);
+        g.add(b);
+        const b2 = new THREE.Mesh(new THREE.BoxGeometry(w * 0.04, H * 0.03, w * 0.9), woodDk);
+        b2.position.set(sz * w * 0.42, y, 0);
+        g.add(b2);
+      }
+    }
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(w * 1.25, H * 0.06, w * 1.25), woodDk);
+    deck.position.y = H;
+    deck.castShadow = true;
+    g.add(deck);
+    // balustrada (pale z szpicem) wokol pomostu
+    const railGeo = new THREE.CylinderGeometry(w * 0.02, w * 0.045, H * 0.22, 5);
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      const r = new THREE.Mesh(railGeo, wood);
+      r.position.set(Math.cos(a) * w * 0.6, H + H * 0.14, Math.sin(a) * w * 0.6);
+      g.add(r);
+    }
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(w * 0.85, H * 0.32, 6), roofM);
+    roof.position.y = H + H * 0.03 + H * 0.5;
+    roof.castShadow = true;
+    g.add(roof);
+    for (const [cx, cz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as [number, number][]) {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(w * 0.025, w * 0.03, H * 0.5, 5), woodDk);
+      post.position.set(cx * w * 0.5, H + H * 0.28, cz * w * 0.5);
+      g.add(post);
+    }
+  }
+  g.userData['towerHeight'] = H;
+  g.userData['towerTopY'] = H + H * 0.1;
+  return g;
+}
+
 // ===== MAIN EXPORT =====
 export function buildSiegeWall(civ: BronzeCiv, opts: SiegeWallOpts): THREE.Group {
   const resolved: Required<SiegeWallOpts> = {
@@ -983,7 +1192,11 @@ export function buildSiegeWall(civ: BronzeCiv, opts: SiegeWallOpts): THREE.Group
     height: opts.height ?? 3,
     ownerColor: opts.ownerColor ?? 0xffffff,
     gateWidthTiles: opts.gateWidthTiles ?? 2,
+    kind: opts.kind ?? 'mur',
   };
+
+  // Faza B: palisada = drewniane zaostrzone pale i drewniana brama, bez wzgledu na cywilizacje.
+  if (resolved.kind === 'palisada') return buildPalisade(resolved);
 
   switch (civ) {
     case 'grecja':   return buildGrecja(resolved);
