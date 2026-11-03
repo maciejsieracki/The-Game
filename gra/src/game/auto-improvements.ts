@@ -185,9 +185,8 @@ export const ZERO_YIELD_IMPROVEMENTS: ReadonlySet<ImprovementKey> = new Set<Impr
  * Dzielnik „1 na 10 obywateli" (dawne ECHO właściciela 2026-08-27: „jeden tartak i obóz; ale tylko
  * jeden na każde dziesięć obywateli wystarcza") — STAN AKTUALNY (właściciel 2026-10-31: „Te ustalenia
  * są już kompletnie nieaktualne"):
- *  • AKTUALNE: pułap ulepszeń ZEROPLONOWYCH (obronnych: posterunek/fort) na miasto i na klucz —
- *    `ceil(pop / 10)`, minimum 1 (FAZA 0, `defenseCap`; tylko profile bez `demandDriven`, np.
- *    „infrastruktura"). Bez pułapu FAZA 0 zjadałaby tyle samo tur co wariant W-A (193 z 600 rozkazów).
+ *  • ZLIKWIDOWANE (właściciel 2026-11-03): pułap ulepszeń ZEROPLONOWYCH (posterunek/fort) `defenseCap =
+ *    ceil(pop / 10)` — FAZA 0 ogranicza już tylko budżet Pracy i reguły położenia.
  *  • NIEAKTUALNE (zostaje wyłącznie dla profili „surowce"/„infrastruktura" i wywołań bez `demandDriven`):
  *    „minimum leśne" miasta (`ceil(pop / 10)` tartaków i obozów) jako warunek wyrębu poza rzeką
  *    (`lesneMin`). W K2 (gracz „Zrównoważone") i K3 (AI cywilizacji, państwa-miasta) NIE obowiązuje:
@@ -239,11 +238,57 @@ export interface AutoImprovementSurplusReport {
   anyCandidate: boolean;
   /** ZASADA 3: brak niedoboru ORAZ brak kandydatów „przy obywatelach" = nadwyżka budżetu. */
   surplus: boolean;
+  /**
+   * R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: klucze heksów (`q,r`) z promienia miast, które odpadły WYŁĄCZNIE
+   * przez filtr „Tylko pola z obywatelami” (bez obywatela, nie-złoże), a które kwalifikowałyby jakieś ulepszenie profilu.
+   * Wypełniane tylko gdy nic nie znaleziono (`!anyCandidate`). Zasila `unspentBudgetWarning`.
+   */
+  filterWaitingKeys: Set<string>;
 }
 
 /** Świeży, pusty raport nadwyżki (wołający przekazuje go do pickera i czyta po powrocie). */
 export function freshSurplusReport(): AutoImprovementSurplusReport {
-  return { demandActive: false, deficitActive: false, anyCandidate: false, surplus: false };
+  return { demandActive: false, deficitActive: false, anyCandidate: false, surplus: false, filterWaitingKeys: new Set<string>() };
+}
+
+/** Ostrzeżenie UI o niewydanym budżecie przez filtr „Tylko pola z obywatelami” (jeden stały element, nie toast). */
+export interface UnspentBudgetWarning {
+  /** Ile pól (heksów) czeka na ulepszenie, a odpada przez filtr. */
+  waitingHexes: number;
+}
+
+/**
+ * R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1 (decyzja właściciela 2026-11-03): czy pokazać stały wskaźnik „Budżet niewydany”.
+ * Warunek (jak `surplusReport`): brak kandydatów przy obywatelach, brak niedoboru surowca, filtr włączony, pula powyżej rezerwy+progu
+ * (`poolAboveReserve`: picker w ogóle ruszył) i co najmniej jedno pole czeka za filtrem. Czysta funkcja — stan liczony od nowa co turę,
+ * więc wskaźnik znika sam, gdy warunek ustąpi.
+ */
+export function unspentBudgetWarning(
+  report: AutoImprovementSurplusReport | null | undefined,
+  ctx: { onlyWorkedOn: boolean; poolAboveReserve: boolean },
+): UnspentBudgetWarning | null {
+  if (!report || !ctx.onlyWorkedOn || !ctx.poolAboveReserve) return null;
+  if (report.anyCandidate || report.deficitActive) return null;
+  const n = report.filterWaitingKeys.size;
+  return n > 0 ? { waitingHexes: n } : null;
+}
+
+/**
+ * Przycisk „Wyłącz filtr” przy wskaźniku „Budżet niewydany”: miasta gracza z własnym ustawieniem (override) mają własny
+ * filtr „Tylko pola z obywatelami” i nie dziedziczą wyłączenia z państwa — wyłącz go także tam. Zwraca liczbę zmienionych miast.
+ */
+export function disableOnlyWorkedFilterForOwnerCities(
+  cities: ReadonlyArray<{ ownerId: number; ulepszeniaOverride?: boolean; ulepszeniaOnlyWorked?: boolean }>,
+  ownerId: number,
+): number {
+  let n = 0;
+  for (const c of cities) {
+    if (c.ownerId === ownerId && c.ulepszeniaOverride === true && c.ulepszeniaOnlyWorked === true) {
+      c.ulepszeniaOnlyWorked = false;
+      n++;
+    }
+  }
+  return n;
 }
 
 /** Zwraca listę typów ulepszeń wg profilu focus. */
@@ -773,6 +818,27 @@ export function actionableDeficitKeys(deficitKeys?: readonly string[]): string[]
  *     znika razem z nim (zero histerezy — stan liczony od nowa w każdym wywołaniu).
  */
 export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
+  const picks = pickAutoImprovementsStaged(opts);
+  // Q3: zapamiętaj heksy, na których automat zaplanował wycinkę — tylko one dostają potem wyjątek „farma bez obywatela” (`riverClearedFarmHex`).
+  for (const p of picks) if (p.key === 'wyrab') markAutoCleared(opts.map, `${p.q},${p.r}`);
+  return picks;
+}
+
+/**
+ * R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: rejestr heksów, z których AUTOMAT wyciął (zaplanował wycinkę) las.
+ * Gra nie zapisuje na heksie, że kiedyś był lasem, a wyjątek „farma na wyciętym heksie rzeki bez obywatela” ma dotyczyć WYŁĄCZNIE
+ * tych heksów (nie każdego otwartego pola przy rzece — to łamałoby filtr „Tylko pola z obywatelami” dla reszty ulepszeń i testy E1/E4).
+ * Klucz = obiekt mapy (`WeakMap`): nowa gra/wczytanie zapisu = nowa mapa = pusty rejestr. OGRANICZENIE (jawne): po wczytaniu zapisu
+ * heksy wycięte PRZED zapisem nie mają wyjątku, dopóki gra nie utrwali znacznika (zmiana w `main.ts` poza zakresem tego tematu).
+ */
+const autoClearedByMap = new WeakMap<object, Set<string>>();
+function markAutoCleared(map: GameMap, hexKey: string): void {
+  let set = autoClearedByMap.get(map);
+  if (!set) { set = new Set<string>(); autoClearedByMap.set(map, set); }
+  set.add(hexKey);
+}
+
+function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
   const stagedCities = opts.cities.filter(city => isFoodStageCity(opts, city));
   if (stagedCities.length === 0 || !opts.territoryNodes) {
     return pickAutoImprovementsSinglePass(opts);
@@ -1383,20 +1449,35 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // wokół rzek pod farmy”). PRZYCZYNA (zmierzona: gra/tools/autoclear-river-forest-priority-test.cjs, PRZED): las przy
     // rzece zwykle NIE ma obywatela (obywatele stoją na lepszych polach), więc filtr Zasady 2 („tylko pola z obywatelami”)
     // wycinał ten heks z kandydatów, a E2 (wycinka przy rzece) nigdy nie dostawał celu — automat schodził do trzody,
-    // irygacji i wycinki poza rzeką. WYJĄTEK: w profilu „Żywność” (K1; K2 „Zrównoważone” poza zakresem tego tematu) wycinka lasu na heksie rzeki/przy rzece,
+    // irygacji i wycinki poza rzeką. WYJĄTEK: w profilach „Żywność” (K1) i „Zrównoważone” (K2; R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1,
+    // decyzja właściciela 2026-11-03 — dawne zawężenie do K1 zdjęte) wycinka lasu na heksie rzeki/przy rzece,
     // którego bazą jest teren pod farmę (`isFarmBaseTerrain`), jest PRZYGOTOWANIEM POLA pod farmę (wycinka → farma),
     // więc filtr „tylko pola z obywatelami” jej nie dotyczy. Filtr zostaje dla pozostałych ulepszeń i dla wycinki poza
     // rzeką. „Wolno wycinać las” OFF nadal blokuje całą wycinkę (`citySkipWyrab`, decyzja U-6 = A).
     const riverForestPrepHex = (q: number, r: number): boolean => {
-      if (citySkipWyrab || focus !== 'zywnosc') return false;
+      if (citySkipWyrab || (focus !== 'zywnosc' && focus !== 'zrownowazone')) return false;
       const hk = `${q},${r}`;
       const hx = map.hexes[hk];
       return !!hx && hx.nakladka === Nakladka.Las && onRiverHex(hk) && isFarmBaseTerrain(hx.terenBazowy, Nakladka.Brak);
+    };
+    // R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1 (decyzja właściciela 2026-11-03): po wycince lasu na/przy rzece farma
+    // może powstać na wyciętym heksie BEZ obywatela mimo „Tylko pola z obywatelami” ON — inaczej wycinka (przygotowanie pola, wyżej)
+    // kończyła się pustym heksem, bo obywatel zwykle stoi gdzie indziej. Wyjątek dotyczy WYŁĄCZNIE klucza `farma` na heksie rzeki
+    // BEZ lasu (z bazą pod farmę), z którego AUTOMAT wyciął las (rejestr `autoClearedByMap`), w profilach Żywność i Zrównoważone, gdy
+    // wycinka nie jest wyłączona („Wolno wycinać las” OFF = wyjątek nie działa). Naturalnie otwarte pola przy rzece i pola wycięte ręcznie
+    // wyjątku NIE dostają. Pozostałe ulepszenia (trzoda, irygacja, obóz…) nadal podlegają filtrowi.
+    const riverClearedFarmHex = (q: number, r: number): boolean => {
+      if (citySkipWyrab || (focus !== 'zywnosc' && focus !== 'zrownowazone')) return false;
+      const hk = `${q},${r}`;
+      const hx = map.hexes[hk];
+      return !!hx && hx.nakladka === Nakladka.Brak && autoClearedByMap.get(map)?.has(hk) === true
+        && onRiverHex(hk) && isFarmBaseTerrain(hx.terenBazowy, Nakladka.Brak);
     };
     /** Czy na tym heksie wolno postawić TEN klucz, biorąc pod uwagę Zasadę 2. */
     const hexAllowsKey = (q: number, r: number, key: ImprovementKey): boolean => {
       if (!workedKeys) return true;
       if (key === 'wyrab' && riverForestPrepHex(q, r)) return true;
+      if (key === 'farma' && riverClearedFarmHex(q, r)) return true;
       if (workedKeys.has(`${q},${r}`)) return true;
       return isDepositHexForKey(q, r, key);
     };
@@ -1413,7 +1494,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     if (workedKeys) {
       candidateHexes = candidateHexes.filter(({ q, r }) => {
         if (workedKeys.has(`${q},${r}`)) return true;
-        if (riverForestPrepHex(q, r)) return true;
+        if (riverForestPrepHex(q, r) || riverClearedFarmHex(q, r)) return true;
         const hex = map.hexes[`${q},${r}`];
         return !!hex && hexHasDepositReserve(hex);
       });
@@ -1489,8 +1570,10 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // = GRANICA zasięgu miasta, więc kandydatami są heksy NAJDALSZE od centrum miasta
     // (odwrotna kolejność niż w FAZIE 1, która idzie od centrum na zewnątrz — dzięki temu
     // obrona i praca na plon nie biją się o te same heksy).
-    // Pułap `ceil(pop / JEDEN_NA_ILU_OBYWATELI)` na klucz i na miasto trzyma wydatek na
-    // poziomie kilku procent rozkazów zamiast 32 % (W-A). Faza idzie PRZED FAZĄ 1, bo w czasach
+    // [R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1, decyzja właściciela 2026-11-03: pułap
+    // `defenseCap = max(1, ceil(pop/10))` na klucz i miasto ZLIKWIDOWANY — limitem zostaje budżet Pracy, zwłoka
+    // `plonoweWPromieniu >= pop`, reguły położenia posterunku (`qualifies` → `isOutpostPlacementAllowed`) i test inkluzji kół
+    // (U-3); jeden pick na klucz na wywołanie zostaje jako rozłożenie w czasie.] Faza idzie PRZED FAZĄ 1, bo w czasach
     // limitu 1 sztuki/miasto (AI CYWILIZACJI; limit zdjęty — decyzja #10) faza ustawiona PO niej nigdy by nie ruszyła —
     // FAZA 1 stawia coś w każdej turze, więc „po wyczerpaniu heksów plonowych" znaczyłoby
     // w praktyce „nigdy" (zmierzone: 600 na 600 rozkazów).
@@ -1507,7 +1590,6 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
 
     if (defensePriority.length > 0 && plonoweWPromieniu >= (city.population || 0)) {
       const zeroStart = picks.length;
-      const defenseCap = Math.max(1, Math.ceil((city.population || 0) / JEDEN_NA_ILU_OBYWATELI));
       const borderHexes = [...candidateHexes].sort((a, b) =>
         (hexDist(b.q, b.r) - hexDist(a.q, a.r)) || (a.q - b.q) || (a.r - b.r));
       for (const key of defensePriority) {
@@ -1517,12 +1599,6 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         if (!meta) continue;
         if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
         if (!civGate(key, civArchetype)) continue;
-        // ile sztuk tego klucza miasto już ma w swoim promieniu (stan trwały, między turami)
-        let have = 0;
-        for (const { q, r } of radiusHexes) {
-          if ((workingPlaced.get(`${q},${r}`) ?? []).includes(key)) have++;
-        }
-        if (have >= defenseCap) continue;
         for (const { q, r } of borderHexes) {
           if (meta.kosztPraca > pracaLeft) break;
           if (pracaLeft - meta.kosztPraca < reserve) break;
@@ -1550,7 +1626,6 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
           pracaLeft -= meta.kosztPraca;
           globalSpent += meta.kosztPraca;
           workingPlaced.set(hexKey, [...(workingPlaced.get(hexKey) ?? []), key]);
-          have++;
           break;
         }
       }
@@ -2004,6 +2079,25 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
           if (keyBlockedOnHex(key, hexKey)) continue;
           if (!qualifies(key, q, r)) continue;
           surplusReport.anyCandidate = true;
+          break;
+        }
+      }
+    }
+    // Q3 (wskaźnik niewydanego budżetu): gdy nadal brak kandydatów, a filtr „Tylko pola z obywatelami” jest włączony, policz pola promienia,
+    // które odpadły WYŁĄCZNIE przez ten filtr (te same bramki co sonda, ale bez `hexAllowsKey`). Nie dodaje picków.
+    if (surplusReport && !surplusReport.anyCandidate && workedKeys) {
+      for (const { q, r } of radiusHexes) {
+        const hexKey = `${q},${r}`;
+        if (surplusReport.filterWaitingKeys.has(hexKey)) continue;
+        if (candidateHexes.some(c => c.q === q && c.r === r)) continue;
+        for (const key of hexPhasePriority) {
+          if (!getImprovementMeta(key)) continue;
+          if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
+          if (!civGate(key, civArchetype)) continue;
+          if ((workingPlaced.get(hexKey) ?? []).includes(key)) continue;
+          if (keyBlockedOnHex(key, hexKey)) continue;
+          if (!qualifies(key, q, r)) continue;
+          surplusReport.filterWaitingKeys.add(hexKey);
           break;
         }
       }

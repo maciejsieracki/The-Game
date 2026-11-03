@@ -142,11 +142,17 @@ console.log('(d3) las NIE-farmowy (wzgorza) przy rzece nie jest wycinany pod far
   ok(!log.some(e => e.key === 'wyrab' && isRiver(e.q, e.r)), `brak wycinki wzgorz przy rzece (log: ${dl(log.slice(0, 6))})`);
 }
 
-console.log('(d4) zakres: profil „Zrownowazone” (K2) bez zmian — las przy rzece bez obywatela nie jest wycinany (wyjatek tylko dla „Zywnosc”)');
+console.log('(d4) zakres: profil „Zrownowazone” (K2) — ZAKTUALIZOWANE w R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1 (decyzja wlasciciela 2026-11-03)');
 {
+  // Dawna asercja kodowala zawezenie wyjatku do K1 („Zywnosc”) — swiadomy zakres tematu Q2, nie wymog wlasciciela. Wlasciciel zdjal zawezenie:
+  // K2 wycina las na/przy rzece bez obywatela jak K1. Zamiast osłabiać, odwracamy asercje i dokladamy zachowanie filtra dla reszty lasu.
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
   const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: true, focus: 'zrownowazone' });
-  ok(!log.some(e => e.key === 'wyrab' && isRiver(e.q, e.r)), `K2: brak wycinki na heksie rzeki bez obywatela (log: ${dl(log.slice(0, 6))})`);
+  const rc = firstRiverClear(log);
+  ok(!!rc && rc.t < MAXT, `K2: wycinka na heksie rzeki bez obywatela w turze ${rc && rc.t} (log: ${dl(log.slice(0, 6))})`);
+  const map2 = makeMap({ river: [], forest: FOREST_AROUND });
+  const r2 = sim({ map: map2, worked: WORKED_NO_RIVER, onlyWorked: true, focus: 'zrownowazone', turns: 12 });
+  ok(!r2.log.some(e => e.key === 'wyrab' && !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r)), 'K2: las bez rzeki poza polami obywateli nadal NIE jest wycinany (filtr zachowany)');
 }
 
 console.log("(e) wycinka -> farma, gdy obywatel wejdzie na wyciete pole (zalozenie jawne; bez obywatela patrz e2)");
@@ -163,7 +169,7 @@ console.log("(e) wycinka -> farma, gdy obywatel wejdzie na wyciete pole (zalozen
   }
 }
 
-console.log('(e2) REALISTYCZNIE (bez recznego dopisywania do worked): ZNANE OGRANICZENIE onlyWorked=ON — wycinka rzeczna bez obywatela nie ma farmy (DECYZJA_WYMAGANA)');
+console.log('(e2) REALISTYCZNIE (bez recznego dopisywania do worked): ZAKTUALIZOWANE w Q3 — wycinka rzeczna bez obywatela KONCZY SIE FARMA takze przy onlyWorked=ON (decyzja wlasciciela 2026-11-03)');
 {
   for (const onlyWorked of [true, false]) {
     const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
@@ -172,8 +178,9 @@ console.log('(e2) REALISTYCZNIE (bez recznego dopisywania do worked): ZNANE OGRA
     const withFarm = rc.filter(c => log.some(e => e.key === 'farma' && e.hk === c.hk));
     console.log(`  [INFO] onlyWorked=${onlyWorked}: wycinek rzecznych ${rc.length}, z farma w 12 turach ${withFarm.length}`);
     ok(rc.length === 3, `onlyWorked=${onlyWorked}: wszystkie 3 heksy rzeczne wycinane (${rc.length})`);
-    if (!onlyWorked) ok(withFarm.length === rc.length, 'OFF: kazda wycinka rzeczna konczy sie farma');
-    else ok(withFarm.length === 0, 'ON: pin znanego ograniczenia — brak farmy na wycietym heksie bez obywatela (zmiana wymaga zmiany filtra i testow d1/q1/stages poza allowlista)');
+    // Dawny pin ON („0 farm”) kodowal znane ograniczenie Q2; Q3 je zdejmuje, wiec pin zamieniony na wymog pelnego domkniecia wycinka -> farma
+    // (ta sama asercja co dla OFF — silniejsza, nie slabsza).
+    ok(withFarm.length === rc.length, `onlyWorked=${onlyWorked}: kazda wycinka rzeczna konczy sie farma (${withFarm.length}/${rc.length})`);
   }
 }
 console.log('(f) log pickera: wybor ma etykiete „E2 wycinka (rzeka+las)” (naRzece) takze przy onlyWorked ON; zmierzony koszt wycinki');

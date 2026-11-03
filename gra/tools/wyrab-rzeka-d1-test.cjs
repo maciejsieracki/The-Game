@@ -78,8 +78,14 @@ function pickOnce({ forest, worked }) {
 // 2) Kontrola: las poza rzeką, bez obywatela, bez tartaku/obozu => brak wyrębu (minimum leśne poza rzeką).
 {
   const picks = pickOnce({ forest: [FAR], worked: ['12,12'] });
-  const wyrabPozaRzeka = picks.some(p => p.key === 'wyrab');
+  // R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1 (decyzja właściciela 2026-11-03): fixture zawsze ma las NA rzece (13,12),
+  // bez obywatela. Od Q3 K2 „Zrównoważone” wycina las na/przy rzece także bez obywatela (jak K1), więc asercja „żaden wyrab” mierzyła
+  // też ten rzeczny wyrab. Kontrola dotyczy LASU POZA RZEKĄ (minimum leśne) — liczymy wyrab wyłącznie poza heksem rzeki; wyrab rzeczny
+  // bez obywatela ma własną asercję niżej (nowe zachowanie), więc pokrycie nie maleje.
+  const wyrabPozaRzeka = picks.some(p => p.key === 'wyrab' && `${p.q},${p.r}` !== RIVER);
   assert(!wyrabPozaRzeka, 'kontrola: wyrab poza rzeką bez tartaku/obozu nie może wystąpić (minimum leśne)');
+  assert(picks.some(p => p.key === 'wyrab' && `${p.q},${p.r}` === RIVER),
+    'Q3: K2 wycina las NA rzece także bez obywatela (filtr „tylko pola z obywatelami” nie dotyczy wycinki rzecznej)');
 }
 
 console.log(`wyrab-rzeka-d1-test: ${passed} passed, ${failed} failed`);

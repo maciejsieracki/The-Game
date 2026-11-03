@@ -87,6 +87,10 @@ export interface BuildModeHudConfig {
   getUlepszeniaCityId?: () => string | null;
   onUlepszeniaCityIdChange?: (cityId: string) => void;
   getUlepszeniaEmpireState?: () => UlepszeniaEmpirePolicy | null;
+  /** Q3: stały wskaźnik „Budżet niewydany” (filtr „Tylko pola z obywatelami”); `null` = brak ostrzeżenia. */
+  getUnspentBudgetWarning?: () => { waitingHexes: number } | null;
+  /** Q3: przycisk „Wyłącz filtr” przy wskaźniku — wyłącza „Tylko pola z obywatelami” dla państwa. */
+  onUnspentBudgetDisableFilter?: () => void;
   /**
    * R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: pozycje `getEmpirePracaSplit` /
    * `onEmpirePracaSplitChange` USUNIETE. Sterowaly warstwa (a) — polem
@@ -300,6 +304,13 @@ html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
 .civ-build-percent-head{display:flex;align-items:baseline;gap:6px;font-size:10px;color:#9a9070;}
 .civ-build-percent-head b{font-size:11px;color:#f0e8b8;}
 .civ-build-city-split-note{font-size:9px;color:#9a9070;line-height:1.35;margin:4px 0 2px;}
+/* R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: stały wskaźnik „Budżet niewydany” pod suwakiem puli automatu.
+   Jeden element (nie toast), zawija tekst — bez poziomego przewijania na wąskim ekranie. */
+.civ-build-unspent{margin:6px 0 2px;padding:6px 8px;border:1px solid rgba(240,170,70,.55);border-left-width:3px;
+  background:rgba(240,170,70,.10);color:#f3dcae;border-radius:4px;font-size:10px;line-height:1.4;
+  display:flex;flex-direction:column;gap:5px;min-width:0;overflow-wrap:anywhere;word-break:break-word;}
+.civ-build-unspent b{color:#ffd58a;}
+.civ-build-unspent .civ-build-hbtn{align-self:flex-start;max-width:100%;}
 /* R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: suwak warstwy (c) jest renderowany takze
    przy trybie recznym — wtedy nieaktywny, z krotkim wyjasnieniem pod spodem. */
 .civ-build-percent-row.off .civ-build-percent-head{opacity:.55;}
@@ -598,6 +609,15 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
                 : 'Tryb ręczny — cała pula zostaje na pracę ręczną. Suwak zadziała po włączeniu automatyzacji (profil powyżej).',
             },
           );
+          // R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: stały wskaźnik niewydanego budżetu (znika, gdy warunek ustąpi).
+          const unspent = trybAuto ? (config.getUnspentBudgetWarning?.() ?? null) : null;
+          if (unspent && unspent.waitingHexes > 0) {
+            html += '<div class="civ-build-unspent" role="status" data-ulepszenia-unspent>'
+              + `<span><b>Budżet niewydany:</b> włączony filtr „Tylko pola z obywatelami” (${unspent.waitingHexes} pól czeka). `
+              + 'Wyłącz filtr, by go wydać.</span>'
+              + '<button type="button" class="civ-build-hbtn" data-ulepszenia-unspent-disable-filter>Wyłącz filtr</button>'
+              + '</div>';
+          }
         }
         if (playerCities.length > 1) {
           html += '<div class="civ-build-auto-city-wrap">';
@@ -837,6 +857,11 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     empireOnlyWorkedBtn?.addEventListener('click', () => {
       const current = config.getUlepszeniaEmpireState?.()?.onlyWorked ?? false;
       config.onUlepszeniaEmpireOnlyWorkedChange?.(!current);
+      render();
+    });
+
+    el.querySelector('[data-ulepszenia-unspent-disable-filter]')?.addEventListener('click', () => {
+      config.onUnspentBudgetDisableFilter?.();
       render();
     });
 
