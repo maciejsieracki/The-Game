@@ -1,3 +1,12 @@
+## ROBOCZA 6ee8f07f -- 2026-11-03 -- wieżyczki strzeleckie przy murze i palisadzie, model palisady w bitwie (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`bb6cac3d4` + PALISADE r2 `7553d5f11`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
+- Bundle MD5 `6ee8f07f2ac5ecdee81a713a80b4847d`, 70,151,183 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: wieżyczki co 4 kafle obwodu przy palisadzie (drewniane) i murze (kamienne) strzelają w bitwie o miasto mocą najlepszej jednostki dystansowej epoki; model palisady w widoku bitwy.
+- Testy: tsc PASS; 59/0, 52/0, 50/0; Chromium: 39 wieżyczek, strzał w wroga; mutacje łamią testy.
+- Ograniczenia: wieżyczki tylko w bitwie taktycznej (nie w Auto/„Pomiń”); ostrzał zmierzony na żywo dla epoki 1.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `8409e6acbadad4ea4014278a2a579dd4`, 70,142,370 bajtów.
+
 ## ROBOCZA 8409e6ac -- 2026-11-03 -- powiadomienia po turach AI, skala ×2 złóż i fortów (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`e0b20f430` + EVENTS-DEFER `0d86a0d5c`, MAP-MODELS-SCALE-2X `ad7c81907`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.

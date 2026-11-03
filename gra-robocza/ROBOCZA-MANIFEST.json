@@ -1,115 +1,114 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "8409e6acbadad4ea4014278a2a579dd4",
-  "bundleSha256": "ef6a4718e2223ebf287838e70bb492c2c66e89bb2c77d33a5451518d359c97de",
-  "bundleBytes": 70142370,
+  "bundleMd5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+  "bundleSha256": "a29a9c10f2cd57a31c804c1270a57f8564f9bc085288eb9bf663487247e8a2d4",
+  "bundleBytes": 70151183,
   "sourceSnapshot": {
-    "source": "main e0b20f430 + EVENTS-DEFER (0d86a0d5c) + MAP-MODELS-SCALE-2X (ad7c81907)",
+    "source": "main bb6cac3d4 + PALISADE r2 (7553d5f11)",
     "build": "Vite 5.4.x direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-EVENTS-DEFER-TO-TURN-START-Q1: modale z tur innych cywilizacji i państw-miast (odkrycie technologii, ukończenie cudu, zdobycie miasta przez gracza) są odraczane do początku nowej tury gracza — jedna kolejka, per fotel (hot-seat); wyjątek: dyplomacja i okno przed bitwą (faza AI czeka na odpowiedź gracza).",
-    "R-WEB-MAP-MODELS-SCALE-2X-Q1: wizerunki wszystkich złóż/surowców oraz ulepszeń Fort i Posterunek na mapie świata powiększone ×2 (jeden mnożnik RESOURCE_MODEL_SCALE i FORT_OUTPOST_MODEL_SCALE); pozostałe ulepszenia bez zmian."
+    "R-WEB-PALISADE-BATTLE-WALL-RULES-Q1 (runda 2, R4): w bitwie o miasto wieżyczki strzeleckie co 4 kafle obwodu przy palisadzie (drewniane) i murze (kamienne); strzał mocą najmocniejszej jednostki dystansowej epoki właściciela (jeden strzał na turę bitwy, zasięg min. 2); wyłom burzy wieżyczkę; model palisady (zaostrzone pale, wał, brama z bali) w widoku bitwy zamiast muru."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "events-defer-to-turn-start 40/0 (RED 27/9), elimination-toast-merge 56/0, hint-toast-zindex 18/0; map-models-scale-2x 285/0 (WebGL w Chromium), web-memory-leaks 55/0, zloze-zloto-render 7/0",
-    "mutacje łamią testy kolejki (7)"
+    "city-wall-towers 59/0 (RED na bazie), palisade-battle-wall-rules 52/0, city-siege-wall-rules 50/0 — po scaleniu",
+    "Chromium: 39 wieżyczek, strzał w wroga HP 38→37, 0 błędów JS; zrzuty PRZED/PO"
   ],
   "limits": [
-    "SCALE: rudy po ×2 wystają do ok. 0,35 promienia heksa poza krawędź (koń mieści się); wariant skali 1,5 to jedna linia — DO DECYZJI właściciela",
-    "SCALE: hitbox, mgła, cień, nakładanie na las nie zmierzone w pełnej grze; zrzuty z harnessu",
-    "EVENTS: cud, zdobycie miasta i chatka sprawdzone tylko strukturalnie/jednostkowo; hot-seat 2+ foteli i zapis w trakcie tury NIE_ZMIERZONO; test hotseat-drugi-fotel-tura ma przestarzały selektor (osobny temat)",
-    "Okno przed bitwą nie jest odraczane (decyzja domyślna)"
+    "Wieżyczki liczone tylko w bitwie taktycznej — NIE w automatycznym rozstrzyganiu (Auto/„Pomiń”, executeSilentSiegeStorm); wpływ na balans NIE_ZMIERZONO",
+    "Ostrzał zmierzony na żywo tylko w epoce 1 (Oszczepnik); epoki 2–3 tylko funkcje czyste",
+    "Wieżyczki nie są narysowane na mapie świata (tylko w scenie bitwy); model palisady na mapie miasta od rundy 1",
+    "Wieża oblężnicza w bitwie taktycznej nie liczy się jako wyłom (w Auto liczy się) — DO DECYZJI"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "EVENTS-DEFER i MAP-MODELS-SCALE: Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
+    "notes": "PALISADE (runda 2): Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-03T19:49:17",
+  "hubGeneratedAt": "2026-11-03T19:53:12",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "8409e6acbadad4ea4014278a2a579dd4",
-      "sizeBytes": 70142370
+      "md5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+      "sizeBytes": 70151183
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "8409e6acbadad4ea4014278a2a579dd4",
-      "sizeBytes": 70142370
+      "md5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+      "sizeBytes": 70151183
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "8409e6acbadad4ea4014278a2a579dd4",
-      "sizeBytes": 70142370
+      "md5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+      "sizeBytes": 70151183
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "8409e6acbadad4ea4014278a2a579dd4",
-      "sizeBytes": 70142370
+      "md5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+      "sizeBytes": 70151183
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "8409e6acbadad4ea4014278a2a579dd4",
-      "sizeBytes": 70142370
+      "md5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+      "sizeBytes": 70151183
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "8409e6acbadad4ea4014278a2a579dd4",
-      "sizeBytes": 70142370
+      "md5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+      "sizeBytes": 70151183
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "8409e6acbadad4ea4014278a2a579dd4",
-      "sizeBytes": 70142370
+      "md5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+      "sizeBytes": 70151183
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "8409e6acbadad4ea4014278a2a579dd4",
-      "sizeBytes": 70142370
+      "md5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+      "sizeBytes": 70151183
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "8409e6acbadad4ea4014278a2a579dd4",
-      "sizeBytes": 70142370
+      "md5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+      "sizeBytes": 70151183
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "8409e6acbadad4ea4014278a2a579dd4",
-      "sizeBytes": 70142370
+      "md5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+      "sizeBytes": 70151183
     }
   ],
-  "md5": "8409e6acbadad4ea4014278a2a579dd4",
-  "sizeBytes": 70142370,
+  "md5": "6ee8f07f2ac5ecdee81a713a80b4847d",
+  "sizeBytes": 70151183,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "bba4ae4efc75a18c55886ce2abfe934a"
+    "bundleMd5": "8409e6acbadad4ea4014278a2a579dd4"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 bba4ae4efc75a18c55886ce2abfe934a, 70141011 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 8409e6acbadad4ea4014278a2a579dd4, 70142370 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1285,8 +1284,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-03T19:49:17+00:00",
-  "buildStamp": "2026-11-03 19:49",
+  "publishedAt": "2026-11-03T19:53:12+00:00",
+  "buildStamp": "2026-11-03 19:53",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
