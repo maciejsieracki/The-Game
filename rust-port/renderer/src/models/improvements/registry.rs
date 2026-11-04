@@ -192,6 +192,11 @@ pub const DEFAULT_OWNER_COL: u32 = 0x00ff_d54a;
 pub const SECTOR_R: f64 = 0.72;
 /// `SECTOR_SCALE` (`:393`).
 pub const SECTOR_SCALE: f64 = 0.30;
+/// `FORT_OUTPOST_MODEL_SCALE` (web `origin/main` `improvements.ts:398`,
+/// REPIN-3D-B1): owner decision ×2 for fort / outpost in sectors.
+pub const FORT_OUTPOST_MODEL_SCALE: f64 = 2.0;
+/// `FORT_OUTPOST_BASE_SCALE` (`:399`) — the pin `edb8fb56` factor 0,5.
+pub const FORT_OUTPOST_BASE_SCALE: f64 = 0.5;
 /// `SECTOR_R_ELEVATED` (`:402`).
 pub const SECTOR_R_ELEVATED: f64 = 0.86;
 
@@ -327,9 +332,11 @@ pub fn build_improvement_sectored(
             n.position.x -= c.x;
             n.position.z -= c.z;
             if is_fort_key(k) {
-                n.scale.x *= 0.5;
-                n.scale.y *= 0.5;
-                n.scale.z *= 0.5;
+                // `multiplyScalar(FORT_OUTPOST_BASE_SCALE * FORT_OUTPOST_MODEL_SCALE)` (`:507`)
+                let f = FORT_OUTPOST_BASE_SCALE * FORT_OUTPOST_MODEL_SCALE;
+                n.scale.x *= f;
+                n.scale.y *= f;
+                n.scale.z *= f;
             }
             m.attach(sub, model);
         }

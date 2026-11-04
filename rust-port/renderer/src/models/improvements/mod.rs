@@ -50,4 +50,4 @@ pub use registry::{
     IMPROVEMENTS, SECTOR_R_ELEVATED,
 };
 pub use roblox::build_roblox_food_stack;
-pub use zasoby::{build_styled_resource_overlay, Nakladka};
+pub use zasoby::{build_styled_resource_overlay, Nakladka, RESOURCE_MODEL_SCALE};

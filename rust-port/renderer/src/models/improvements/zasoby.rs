@@ -515,10 +515,38 @@ fn zloze_konie_into(m: &mut ImprovementModel, g: NodeId) {
     m.graft_children(g, &um);
 }
 
-/// `buildStyledResourceOverlay(nakladka, 'roblox', zloze)`
-/// (`styleResources.ts:444-499`); `None` = the web `null`.
+/// `RESOURCE_MODEL_SCALE` (web `origin/main` `resources.ts:18`, REPIN-3D-B1):
+/// the one ×2 size multiplier of every deposit model on the world map, read
+/// through `userData.depositDisplayScale` by `main.ts` `compactDepositAtEdge`.
+pub const RESOURCE_MODEL_SCALE: f64 = 2.0;
+
+/// `buildStyledResourceOverlay(nakladka, 'roblox', zloze)` (web `origin/main`
+/// `styleResources.ts:448-452`): the base builder, then
+/// `userData.depositDisplayScale = (depositDisplayScale || 1) * RESOURCE_MODEL_SCALE`
+/// on the returned group; `None` = the web `null`.
 #[must_use]
 pub fn build_styled_resource_overlay(
+    nakladka: Nakladka,
+    zloze: Option<&str>,
+) -> Option<ImprovementModel> {
+    let mut m = build_styled_resource_overlay_base(nakladka, zloze)?;
+    let ud = &mut m.nodes[ROOT].user_data;
+    // `(x as number) || 1`: absent, 0, -0 and NaN fall back to 1
+    let prev = ud
+        .num("depositDisplayScale")
+        .filter(|v| *v != 0.0 && !v.is_nan())
+        .unwrap_or(1.0);
+    ud.set(
+        "depositDisplayScale",
+        crate::scene::UserValue::Num(prev * RESOURCE_MODEL_SCALE),
+    );
+    Some(m)
+}
+
+/// `buildStyledResourceOverlayBase(nakladka, 'roblox', zloze)`
+/// (`origin/main` `styleResources.ts:454-509`, = pin `buildStyledResourceOverlay`
+/// `:444-499`).
+fn build_styled_resource_overlay_base(
     nakladka: Nakladka,
     zloze: Option<&str>,
 ) -> Option<ImprovementModel> {

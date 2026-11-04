@@ -10,6 +10,7 @@
 //! | `render/siegeMarker.ts` | [`siege`] | [`siege::SiegeMarkerRenderer`] (disc, ring, sprite, camps) |
 //! | `render/siegeCampSync.ts` | [`siege`] | machine / owner maps per camp hex |
 //! | `render/robloxCity.ts` (`addRobloxSkyDecor` only, D-MOD-2) | [`sky`] | cloud groups |
+//! | `render/buildHighlight.ts` (REPIN-3D-B1, `origin/main`) | [`build_highlight`] | build-highlight constants + filter |
 //! | `render/rangeOverlay.ts` | [`range`] | range / territory overlays as CPU buffers |
 //! | `map/territory-border.ts` | [`territory`] | boundary loops (input of the territory band) |
 //! | `render/tradeRoutesOverlay.ts` | [`trade`] | trade-route arcs as CPU line buffers |
@@ -24,6 +25,7 @@
 //! Verified against vectors produced by running the web code
 //! (`tests/misc_web_parity.rs`, `tests/fixtures/misc/`).
 
+pub mod build_highlight;
 pub mod model;
 pub mod overlay;
 pub mod range;

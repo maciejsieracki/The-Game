@@ -76,8 +76,10 @@ pub const RELIGION_RANGE_STYLE: RangeOverlayStyle = RangeOverlayStyle {
 
 /// `MINE_ELIGIBLE_TINT_COLOR` (`:474`).
 pub const MINE_ELIGIBLE_TINT_COLOR: u32 = 0x66_ccff;
-/// `MINE_ELIGIBLE_TINT_OPACITY` (`:476`).
-pub const MINE_ELIGIBLE_TINT_OPACITY: f64 = 0.30;
+/// `MINE_ELIGIBLE_TINT_OPACITY` (web `origin/main` `:477` =
+/// `MINE_BUILD_HIGHLIGHT_OPACITY` = 0,3 × 1,2; pin `edb8fb56` `:476` was 0,30;
+/// REPIN-3D-B1).
+pub const MINE_ELIGIBLE_TINT_OPACITY: f64 = super::build_highlight::MINE_BUILD_HIGHLIGHT_OPACITY;
 /// `MINE_ELIGIBLE_STYLE` (`:477-484`).
 pub const MINE_ELIGIBLE_STYLE: RangeOverlayStyle = RangeOverlayStyle {
     tint_color: MINE_ELIGIBLE_TINT_COLOR,
