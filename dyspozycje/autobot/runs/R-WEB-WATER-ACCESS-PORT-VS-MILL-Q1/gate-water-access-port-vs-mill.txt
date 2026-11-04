@@ -1,0 +1,20 @@
+(A) Port: morze LUB rzeka
+  [OK] miasto nad morzem -> Port TAK
+  [OK] miasto na rzece -> Port TAK
+  [OK] miasto obok rzeki -> Port TAK
+  [OK] miasto suche -> Port NIE
+(B) Tylko rzeka (młyn / słodka woda)
+  [OK] morze samo NIE daje „tylko rzeka”
+  [OK] rzeka na heksie i sąsiedzie TAK
+  [OK] sucho NIE
+  [OK] ujście rzeki do morza -> TAK wyłącznie przez rzekę
+  [OK] wybrzeże bez rzeki: Port TAK, „tylko rzeka” NIE
+(C) production.ts
+  [OK] Port i Port wielki w bramce wodnej
+  [OK] mlyn NIE ma bramki wodnej (brak definicji budynku w buildings.json)
+  [OK] Port dostępny przy dostępie do wody
+  [OK] Port niedostępny bez dostępu do wody
+(D) pin main.ts
+  [OK] cityHasCoastOrRiverAccess = isCoastalCity || cityHasWaterAccess
+ALL PASS
+EXIT=0

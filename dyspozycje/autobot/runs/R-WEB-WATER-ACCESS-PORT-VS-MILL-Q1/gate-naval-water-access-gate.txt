@@ -1,0 +1,62 @@
+  PASS: sanity: Galera ma Typ="Naval" w units.json (jeśli to padnie, dane się zmieniły)
+
+(a) miasto z dostępem do morza -- Galera dostępna w availableProduction
+  PASS: availableProduction zawiera Galera gdy cityHasCoastOrRiver=true (morze)
+
+(b) miasto z dostępem do rzeki -- Galera dostępna (rzeka traktowana jak woda)
+  PASS: availableProduction zawiera Galera gdy cityHasCoastOrRiver=true (rzeka, ta sama flaga co morze)
+
+(c) miasto śródlądowe (bez wody) -- Galera NIEDOSTĘPNA w availableProduction
+  PASS: availableProduction NIE zawiera Galera gdy cityHasCoastOrRiver=false
+  PASS: availableProduction: cityHasCoastOrRiver nieprzekazane (undefined) -- fail-closed, Galera niedostępna
+
+(a/c dla "Zastąp") availableReplacementsFor -- ta sama bramka dla ścieżki "Zastąp"
+  PASS: availableReplacementsFor("Galera", cityHasCoastOrRiver=false) -- pusta lista (jedyna jednostka Naval to Galera sama, samo-zastępowanie wykluczone niezależnie)
+  PASS: availableReplacementsFor("Galera", cityHasCoastOrRiver=true) -- nie wybucha, zwraca tablicę
+
+MUTACJA: gate w availableProduction (odwrócenie warunku) -- FAIL potwierdzony, przywrócenie -- PASS potwierdzony
+  PASS: gate line znaleziona w production.ts (availableProduction) przed mutacją
+  PASS: mutacja faktycznie zmieniła tekst źródłowy
+  PASS: MUTACJA (warunek odwrócony): Galera znika przy cityHasCoastOrRiver=true -- dowód, że gate faktycznie kontroluje wynik (FAIL scenariusza (a) potwierdzony pod mutacją)
+  PASS: PO PRZYWRÓCENIU: Galera znów dostępna przy cityHasCoastOrRiver=true (scenariusz (a) ponownie zielony)
+
+MUTACJA: gate w passesAvailabilityGates (availableReplacementsFor) -- FAIL potwierdzony, przywrócenie -- PASS potwierdzony
+  PASS: gate line znaleziona w production.ts (passesAvailabilityGates) przed mutacją
+  PASS: mutacja (usunięcie bramki) faktycznie zmieniła tekst źródłowy
+  PASS: MUTACJA (bramka usunięta): "Galera Testowa" (Typ=Naval) dostępna w Zastąp mimo cityHasCoastOrRiver=false -- dowód, że bramka faktycznie blokowała
+  PASS: PO PRZYWRÓCENIU: "Galera Testowa" znów zablokowana bez wody (bramka Zastąp ponownie zielona)
+
+(d) grandfather (decyzja B) -- availableProduction/availableReplacementsFor NIE przyjmują rosteru jednostek ani mapy
+  PASS: znaleziono sygnaturę availableProduction w production.ts
+  PASS: sygnatura availableProduction nie przyjmuje rosteru jednostek/mapy jako parametru -- export function availableProduction( city: City, data: ProductionData, unlockedTechs: readonly string[], ctx: AvailabilityContext = {}, ): ProductionItem[] {
+  PASS: znaleziono sygnaturę availableReplacementsFor w production.ts
+  PASS: sygnatura availableReplacementsFor nie przyjmuje rosteru jednostek/mapy jako parametru -- export function availableReplacementsFor( currentUnitName: string, data: ProductionData, unlockedTechs: readonly string[], ctx: AvailabilityContext = {}, ): ProductionItem[] {
+  PASS: strukturalnie: production.ts jest pure-logic (brak dostępu do main.ts `units`/`map`) -- istniejąca Galera w mieście bez wody nie może zostać tu usunięta/przeniesiona
+
+(e) pięć pinów tekstowych main.ts
+  FAIL: main.ts wpina bonus morski do tradeIncomeByCity: for ([cityIdSea, bonusSea] of seaTradeBonusIncomeByCity) tradeIncomeByCity.set(...)
+  PASS: main.ts woła computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(tradeRoutes))
+  PASS: znaleziono kotwicę "function replaceAvailabilityCtxForCity("
+  PASS: replaceAvailabilityCtxForCity zawiera cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city)
+  PASS: znaleziono kotwicę "function replaceAvailabilityCtxEmpireWide("
+  FAIL: replaceAvailabilityCtxEmpireWide zawiera wariant cities.some(...)
+  PASS: znaleziono kotwicę "getCityHasCoastOrRiver:"
+  PASS: getCityHasCoastOrRiver zwraca wynik cityHasCoastOrRiverAccess(c), nie stałą
+
+Dodatkowe piny źródłowe main.ts (import, gate zakupu za złoto, rzeka=woda)
+  PASS: main.ts importuje computeSeaTradeRouteCountByCity i computeSeaTradeBonusIncomeByCity z trade-routes.ts
+  PASS: znaleziono function purchaseRecruitmentUnit(
+  FAIL: purchaseRecruitmentUnit zawiera bramkę Naval + !cityHasCoastOrRiverAccess(city) (siatka bezpieczeństwa dla zakupu za złoto)
+  PASS: cityHasCoastOrRiverAccess = isCoastalCity(...) || cityHasWaterAccess(...) -- rzeka traktowana jak woda (decyzja Macieja, pokrywa scenariusz (b))
+  FAIL: purchaseRecruitmentUnit: bramka Naval zawiera "return false;" w ciele bloku (nie tylko sam warunek if)
+
+(B2 runda 3) trzy piny parytetu AI: productionAvailabilityCtxForCity / isProductionAllowed / isBuildAllowed
+  PASS: znaleziono kotwicę "function productionAvailabilityCtxForCity("
+  PASS: productionAvailabilityCtxForCity zawiera cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city) (lista rekrutacji gracza)
+  PASS: znaleziono kotwicę "isProductionAllowed: (cityId: string, itemId: string)"
+  FAIL: isProductionAllowed zawiera cityHasCoastOrRiver: cityHasCoastOrRiverAccess(c) (planowanie AI -- chooseCityProduction)
+  PASS: znaleziono kotwicę "isBuildAllowed: (id) =>"
+  PASS: isBuildAllowed zawiera cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city) (egzekucja AI -- executeBuild)
+
+naval-water-access-gate-test: 34 pass, 5 fail
+EXIT=1
