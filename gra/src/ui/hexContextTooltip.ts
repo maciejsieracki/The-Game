@@ -170,6 +170,20 @@ function formatTerrainMagazynWorkedNotes(hex: Hex, ownerEra?: number): string[] 
   return notes;
 }
 
+/**
+ * R-WEB-HEX-TOOLTIP-UNLOCK-LABEL-DEDUP-Q1: etykieta odblokowania (`labelsForImprovementUnlock`)
+ * nie powtarza surowca już podanego w wierszu produkcji ("+113 Drewno/t"). Zostają tylko
+ * etykiety niosące dodatkową informację (inny surowiec niż w produkcji). Czysta prezentacja.
+ */
+function unlockLabelsBeyondProduction(key: string, zloze?: string | null, ownerEra?: number): string[] {
+  const unlocks = labelsForImprovementUnlock(key);
+  if (!unlocks.length) return unlocks;
+  const row = territoryResourceYieldForImprovement(key, zloze, ownerEra);
+  if (!row || !(row.amount > 0)) return unlocks;
+  const prod = TERRITORY_RESOURCE_LABEL[row.resourceKey].trim().toLowerCase();
+  return unlocks.filter(u => u.trim().toLowerCase() !== prod);
+}
+
 function formatImprovementDesc(
   key: string,
   hex: Hex,
@@ -180,7 +194,7 @@ function formatImprovementDesc(
   const name = esc(improvementDisplayName(key));
   const bonus = formatCityBonusParts(improvementBonusForKey(key, ownerEra));
   const mag = formatTerritoryMagazynPart(key, (hex as { zloze?: string }).zloze, ownerEra);
-  const unlocks = labelsForImprovementUnlock(key);
+  const unlocks = unlockLabelsBeyondProduction(key, (hex as { zloze?: string }).zloze, ownerEra);
   let s = `<b>${name}</b>`;
   if (tag) s += ` (${esc(tag)})`;
   if (mag) {
@@ -499,7 +513,7 @@ function listTerrainPossibleImprovements(
     if (key === 'irygacja' && !hexHasRiverAccess(hex, map)) continue;
     const bonus = formatCityBonusParts(improvementBonusForKey(key, ownerEra));
     const mag = formatTerritoryMagazynPart(key, undefined, ownerEra);
-    const unlocks = labelsForImprovementUnlock(key);
+    const unlocks = unlockLabelsBeyondProduction(key, undefined, ownerEra);
     let line = `<b>${improvementDisplayName(key)}</b> → ${mag ? `${mag} · ` : ''}plony miasta: ${bonus}`;
     if (unlocks.length) line += ` · odblok. ${unlocks.join(', ')}`;
     out.push(line);
