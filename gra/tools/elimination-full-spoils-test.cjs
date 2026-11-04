@@ -342,7 +342,8 @@ ok(surviving(coreSrc), '8-0: niezmutowany rdzen przechodzi (kontrola)');
 mutate('access.setFoodReserve(oldOwner, 0);', '', 'ofiara nie jest zerowana');
 mutate('if (zywnoscPrzejeta > 0) access.setFoodReserve(newOwner, winnerFood + zywnoscPrzejeta);', '', 'zywnosc nie trafia do zdobywcy');
 mutate('zywnoscPrzejeta = Math.min(zywnoscOfiaryRazem, room);', 'zywnoscPrzejeta = zywnoscOfiaryRazem;', 'brak przyciecia do limitu');
-mutate('if (v > 0) surowcePrzejete[key] = v;', '', 'surowce nie sa zbierane');
+// R-WEB-ANNEX-CITYSTATE-SPOILS-Q1: zbieranie surowcow wydzielone do wspolnego rdzenia (sumowanie po miastach).
+mutate('if (v > 0) surowcePrzejete[key] = (surowcePrzejete[key] ?? 0) + v;', '', 'surowce nie sa zbierane');
 mutate('if (access.getFoodReserve && access.setFoodReserve) {', 'if (false) {', 'zywnosc w ogole pominieta');
 mutate('const winnerFood = access.getFoodReserve(newOwner);', 'const winnerFood = 0;', 'zywnosc nadpisuje zapas zdobywcy');
 

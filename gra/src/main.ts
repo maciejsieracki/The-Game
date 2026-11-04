@@ -910,6 +910,7 @@ import {
 } from './game/battle-loot';
 import {
   applyBarbarianAwareCapitalCapturePlunder,
+  applyAnnexCityStateSpoils,
   barbarianCapturedPowerGain,
   disbandOwnerUnits,
   oldestCityOfOwner,
@@ -22405,7 +22406,16 @@ async function boot(): Promise<void> {
           .filter(c => c.ownerId === responderId)
           .reduce((sum, c) => sum + (c.population ?? 0), 0);
         const koszt = graczWchloniecieKosztZloto(pop, _diplomacyParams());
-        applyOneShotGoldTransfer(proposerId, responderId, koszt, buildDiploTreasury());
+        const annexPay = applyOneShotGoldTransfer(proposerId, responderId, koszt, buildDiploTreasury());
+        // R-WEB-ANNEX-CITYSTATE-SPOILS-Q1: cena aneksji wplynela do skarbca MP, a aneksja
+        // przejmuje teraz caly skarbiec MP -- odejmij cene, zeby nie wracala do platnika
+        // (dawniej cena po prostu znikala razem ze skarbcem eliminowanego MP).
+        if (annexPay.ok) {
+          capitalCaptureResourceAccess.setTreasury(
+            responderId,
+            Math.max(0, capitalCaptureResourceAccess.getTreasury(responderId) - koszt),
+          );
+        }
         // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 5 (Maciej, ECHO B+C): eliminacja przez
         // wchłonięcie dyplomatyczne NIE jest już komunikowana przez showHintMessage/#hintToast
         // w ogóle — annexCityStateToOwner() (wołana niżej) emituje JEDNO zdarzenie side-panelu
@@ -32320,6 +32330,14 @@ async function boot(): Promise<void> {
       syncUnitsRender();
       refreshFog();
       markCityStateDirty();
+      // R-WEB-ANNEX-CITYSTATE-SPOILS-Q1: aneksja przenosi MAJATEK panstwa-miasta tak jak
+      // eliminacja przez zdobycie -- ten sam rdzen (capital-capture.ts) i te same akcesory
+      // (skarbiec, Praca, Nauka, Spichlerz z limitem pojemnosci). To NIE zdobycie: bez kar za
+      // wojne, bez zmian relacji, bez technologii. Surowce jada z miastami (ownerId wyzej).
+      // MUSI isc PRZED eliminateOwner() (ono kasuje skarbiec/pule MP).
+      const annexSpoils = applyAnnexCityStateSpoils(
+        csOwnerId, annexerId, csCities, capitalCaptureResourceAccess, isBarbarian,
+      );
       eliminateOwner(csOwnerId);
       // RUNDA 5 (Maciej, ECHO B+C): JEDYNE miejsce, które emituje sygnał o eliminacji przez
       // wchłonięcie — karta side-panelu „Wydarzenia" (persystentna w warEventLog, przeżywa
@@ -32333,12 +32351,30 @@ async function boot(): Promise<void> {
       // (applyProposalOutcome, 'wchloniecie' branch) no longer emits anything for this case —
       // see comment there. Clicking the card opens civElimNotice.ts with the full content
       // (csLabel + city count).
+      // R-WEB-ANNEX-CITYSTATE-SPOILS-Q1: komunikat niesie KOMPLET przejetego majatku
+      // (te same wiersze co okno „Bilans zdobycia” przy eliminacji).
+      let annexDetails = `Wszystkie miasta (${cityCount}) wchłonięte dyplomatycznie.`;
+      if (annexSpoils) {
+        const annexRows = buildCityCaptureReportRows({
+          kind: 'eliminacja',
+          mocEtykieta: mocLabel(),
+          ludnosc: Math.max(0, Math.floor(csCities.reduce((sum, c) => sum + (c.population ?? 0), 0))),
+          budynki: csCities.reduce((sum, c) => sum + (cityBuilt.get(c.id) ?? []).length, 0),
+          zloto: Math.floor(annexSpoils.skarbiecPrzejety),
+          nauka: Math.floor(annexSpoils.naukaPrzejeta),
+          technologie: 0,
+          moc: 0,
+          barbarzyncaZdobywca: isBarbarian(annexerId),
+          surowce: annexSpoils.surowcePrzejete,
+          zywnoscPrzejeta: annexSpoils.zywnoscPrzejeta,
+          zywnoscUtracona: annexSpoils.zywnoscUtracona,
+          zywnoscOfiaryRazem: annexSpoils.zywnoscOfiaryRazem,
+          pracaPoolPrzejeta: Math.floor(annexSpoils.pracaPoolPrzejeta),
+        });
+        annexDetails += ' ' + captureReportOneLine(annexRows);
+      }
       if (annexerId === 0) {
-        recordCivElimEvent(
-          csOwnerId,
-          csLabel,
-          `Wszystkie miasta (${cityCount}) wchłonięte dyplomatycznie.`,
-        );
+        recordCivElimEvent(csOwnerId, csLabel, annexDetails);
       }
       console.log(
         `[Dyplomacja] AI${annexerId} wchłania miasto-państwo ownerId=${csOwnerId} (dyplomatyczne)`,
