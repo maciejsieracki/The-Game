@@ -42,11 +42,11 @@ Hunki = początki zakresów po stronie `origin/main` (`git diff -U0`, `plik:lini
 | 15 | `hexContextTooltip.ts` | +57/−51 | +57/−51 | MOD | `:135+7 :160+2 :177 :180+2 :184 :186+4 :194 :253 :260 :270 :282 :293+3 :439 :499+2 …` | tooltip heksu: produkcja ulepszeń przed plonami (`db8fabacc`) | port DOM (C2) | `src/ui/hexContextTooltip.ts` | UI-2-D |
 | 16 | `preBattle.ts` | +38/−7 | 0 | MOD | `:14 :155+4 :254+7 :717 :725+4 :820+7 :852+2 :878+3 …` | ekran przed bitwą | port DOM (C5) | `src/ui/preBattle.ts` | UI-2-D |
 | 17 | `buildModeHud.ts` | +26/−1 | +26/−1 | MOD | `:90+4 :215 :307+7 :612+9 :863+5` | HUD trybu budowy | port DOM | `src/ui/buildModeHud.ts` | UI-2-D |
-| 18 | `diploListHud.ts` | +44/−0 | 0 | MOD | `:39+3 :44+9 :180+2 :367+19 :512+4 :538+7` | lista dyplomacji | port DOM (import `game/diplomacy-display` → DTO) | `src/ui/diploListHud.ts` | UI-2-E |
-| 19 | `diplomacyAudience.ts` | +4/−17 | 0 | MOD | `:4 :304 :1267 :1342 :1383 :1395 :1433 :2172 :2195 :2207` | audiencja | port DOM (C2) | `src/ui/diplomacyAudience.ts` | UI-2-E |
-| 20 | `diplomacyNegotiationModal.ts` | +15/−0 | +13/−0 | MOD | `:14+2 :25+2 :103+10 :565` | negocjacje | port DOM | `src/ui/diplomacyNegotiationModal.ts` | UI-2-E |
-| 21 | `diplomacyPanel.ts` | +19/−0 | +19/−0 | MOD | `:34+2 :220+16 :266` | panel dyplomacji | port DOM | `src/ui/diplomacyPanel.ts` | UI-2-E |
-| 22 | `diplomacyTradeBasket.ts` | +295/−34 | +203/−19 | MOD | `:5 :20 :43 :71 :139+2 :158 :171+5 :206+2 :225+18 :360+2 :531+4 :632+2 :839+21 :874+6 …` | koszyk handlu | port DOM (C2) | `src/ui/diplomacyTradeBasket.ts` | UI-2-E |
+| 18 | `diploListHud.ts` | +44/−0 | 0 | MOD | `:39+3 :44+9 :180+2 :367+19 :512+4 :538+7` | lista dyplomacji | port DOM (import `game/diplomacy-display` → DTO) | `src/ui/diploListHud.ts` | **ZROBIONE UI-2-E** (§2E) |
+| 19 | `diplomacyAudience.ts` | +4/−17 | 0 | MOD | `:4 :304 :1267 :1342 :1383 :1395 :1433 :2172 :2195 :2207` | audiencja | port DOM (C2) | `src/ui/diplomacyAudience.ts` | **ZROBIONE UI-2-E** (§2E) |
+| 20 | `diplomacyNegotiationModal.ts` | +15/−0 | +13/−0 | MOD | `:14+2 :25+2 :103+10 :565` | negocjacje | port DOM | `src/ui/diplomacyNegotiationModal.ts` | **ZROBIONE UI-2-E** (§2E) |
+| 21 | `diplomacyPanel.ts` | +19/−0 | +19/−0 | MOD | `:34+2 :220+16 :266` | panel dyplomacji | port DOM | `src/ui/diplomacyPanel.ts` | **ZROBIONE UI-2-E** (§2E) |
+| 22 | `diplomacyTradeBasket.ts` | +295/−34 | +203/−19 | MOD | `:5 :20 :43 :71 :139+2 :158 :171+5 :206+2 :225+18 :360+2 :531+4 :632+2 :839+21 :874+6 …` | koszyk handlu | port DOM (C2) | `src/ui/diplomacyTradeBasket.ts` | **ZROBIONE UI-2-E** (§2E) |
 | 23 | `newGameFlow.ts` | +283/−144 | +144/−95 | MOD | `:80 :176+6 :243+5 :250 :252+4 :258 :558 :565 :670+7 :687+5 :693+4 :700 :810 :854 …` | kreator nowej gry | port DOM (P5.7 r2) | `src/ui/newGameFlow.ts` | UI-2-F |
 | 24 | `entityCards/buildingAdapter.ts` | +3/−3 | 0 | MOD | `:68 :70 :279` | adapter karty budynku | adapter (importy `game/*` → DTO) | `src/ui/entityCards/buildingAdapter.ts` | UI-2-D |
 | 25 | `entityCards/improvementAdapter.ts` | +7/−1 | 0 | MOD | `:27 :160+6` | adapter karty ulepszenia | adapter | `src/ui/entityCards/improvementAdapter.ts` | UI-2-D |
@@ -202,3 +202,50 @@ node tools/repin-ui2-overlay.mjs --pin-dir "$PIN" --web-dir "$WEB" --out "$PINOV
 node tools/dom-harness/run-cycles.mjs --pin-dir "$PINOV"     # (i pozostałe run-*.mjs)
 node tools/dom-harness/measure-repin-ui2-kblocks-drift.mjs --pin-dir "$PIN" --cur-dir "$WEB"
 ```
+
+## 2E. Partia UI-2-E — dyplomacja #18–#22 (`R-RUSTPORT-REPIN-UI-2-E-Q1`, runda 1)
+
+Baza `rust-port/parity-v2` `2198eaf7e`; web `origin/main` = `86d510c66` (`git log 86d510c66..origin/main -- gra/src/ui` = 0 commitów
+w chwili pracy). Wszystkie 5 plików = klasa PD (port DOM, NIE kopie bajtowe): hunki webu `edb8fb56 → 86d510c66` nałożone
+3-drożnie (`diff3 -m port pin main`) na port; konflikty (importy `game/*`, `basketPnOpts`/`toPnItems`, typ `lines` listy)
+rozstrzygnięte adapterem DTO. Różnica plik webu ↔ port (linie `diff`), przed → po: `diploListHud` 15 → 15,
+`diplomacyAudience` 197 → 196, `diplomacyNegotiationModal` 25 → 25, `diplomacyPanel` 3 → 3, `diplomacyTradeBasket` 285 → 307
+(+22 = adapter bramki miasta, pole `basketActionId` w `rulesCtx`, typ `renderBasketItemValueHtml`, komentarze).
+
+Funkcje webu przeniesione: znacznik „Agresor (N)” (`diplomacyPanel` `agresorBadgeHtml`), wiersze „Wojny / Sojusze / Handel”
+z „+N” i tooltipem (`diploListHud`), rozejm 5/10/15 tur (akcja '10', `rodzaj`/`turns`, `proposalActionIdFromPayload`),
+oddanie miasta w pokoju/wasalizacji (picker + formularz „Dodaj”, pozycja `'miasto'`), wymiana cykliczna max 30 tur
++ „Bezterminowo” (`exchangeDurationTurns`), `formatCompactQty` → `formatCompactNumber` (UI-2-A), audiencja bez bonusów
+cywilizacji (`getCivBonusy` usunięte z konfiguracji).
+
+Kontrakt DTO (addytywnie, `viewmodel/types.ts`): `BasketItemTyp |= 'miasto'`; `BasketItemDto.cityPn?/cityWeight?/cityLabel?`;
+`BasketRulesCtxDto.basketActionId?` (= web `basketPnOpts.actionId`); `StaticCatalogDto.constants.miastoAkcjeDozwolone?`
+(= `MIASTO_AKCJE_DOZWOLONE`). ZAŁOŻENIE E-Z1: bramka `diplomacyMiastoAkcjaDozwolona` = odczyt listy z katalogu (brak pola =
+pusta lista = brak pozycji 'miasto', fail-safe jak web bez actionId); producent Rust (wycena miasta, `cityPn` w opcjach
+`miastoOptions`, actionId w `diplomacySumPn`) = P6. ZAŁOŻENIE E-Z2: `diploListEntryFromRelation` przyjmuje nowe pola
+`warPartnerNames/alliancePartnerNames/dealPartnerNames` obok `lines` (P5.5) — producent nazw partnerów = kontroler/Rust (P6).
+
+Harnessy partii (z `src-tauri/frontend-v2/`):
+- `tools/dom-harness/run-repin-ui2e.mjs` — Chromium 141 (Playwright), web z `git archive` vs port, wspólny kod
+  `repin-ui2e-scenes.mjs`, „Rust” = `repin-ui2e-rust.mjs` (funkcje `game/*` webu): 6 funkcji / 183 wektory, 13 scen × 2
+  viewporty (1280×720, 360×640) = 26 zrzutów: DOM równy, PNG bajtowo równy (próg 0), `pageerror`/`console.error` = 0.
+  Fixtura `tools/dom-harness/fixtures/repin_ui2e-web-vectors.json` (sha256 `0540e487…d038`),
+  `webFixtureSha256=fc1cc8d7ee369fc0c2418fe487c60a3b0426bc9e3d31a8b40a483a4fc9036fef` — identyczny z 2 osobnych katalogów
+  `git archive 86d510c66` (niezależny weryfikator).
+- `tools/dom-harness/run-repin-ui2e-cycles.mjs` — pochodna `run-cycles.mjs` z odniesieniem = web main (jsdom, eksploracja):
+  audiencja 224, negocjacje 171, koszyk 8940 przypadków; łącznie 9335, różnic 0, jsdomErrors 0, consoleErrors 0.
+- `tools/dom-harness/mutate-repin-ui2e.mjs` — 67 mutacji (DP 6, LH 8, NM 2, AU 2, TB 49) — 67/67 wykrytych (przebieg w częściach
+  `--from/--to`; TB12 `'rozejm'→'pokoj'` byłaby równoważna: web `diplomacy-war-gates.ts:11` — mutowano na `'handel'`).
+
+Nakładka starszych harnessów: `repin-ui2-manifest.json` + klucz `overlayPd` (4 pliki PD z sha256 webu: `diploListHud`,
+`diplomacyPanel`, `diplomacyNegotiationModal`, `diplomacyAudience`), `repin-ui2-overlay.mjs` podmienia je w odniesieniu.
+Regresja na nakładce: L0 3861/0, L1A 3618/0, L2 1784/0 (jsdomErrors 354 / consoleErrors 150 = jak przed), C4 1649/0 (75),
+hud 927/0, newgame 1194/0, cityux 164/0, UI-2-A 2292/0, `run-cycles` moduły spoza E (hexContextTooltip, sidePanelHud,
+sidePanelEventFilter, preBattle) i `diplomacyNegotiationModal` 0. ZAŁOŻENIE E-Z3: `run-cycles` dla `diplomacyTradeBasket.ts`
+(i 31 przypadków `diplomacyAudience.ts` otwierających koszyk — przykłady: CSS `.cdb-duration-indefinite`) porównuje z pinem,
+którego `diplomacyTradeBasket.ts` wymaga `game/diplomacy-value-catalog` z main (nie da się podmienić w nakładce bez kaskady
+`game/*`) — odniesieniem dla tych modułów jest `run-repin-ui2e-cycles.mjs` (web main, 0 różnic).
+
+GPU / natywne okno Tauri: NIE_ZMIERZONO. Wycena (ZAŁOŻENIE Z3): UI-2-E 25,5 h / 428 LP wyceniane na 4 rundy — zużyta 1 runda
+(łącznie z jednorazową infrastrukturą harnessu dyplomacji); pozostało po A+E: 126,25 − 25,5 = **100,75 h** (B, C, D, F, G).
+Rekalibracja: klasa PD z czystym `diff3` (bez konfliktów w 3/5 plików) kosztuje istotnie mniej niż `L/50` — do weryfikacji na UI-2-C/F.

@@ -46,5 +46,20 @@ for (const f of manifest.files) {
   writeFileSync(dst, buf);
   console.log(`nakładka ${srcPath} (${buf.length} B)`);
 }
-console.log(`repin-ui2-overlay: plików=${manifest.files.length} niezgodnych=${bad} out=${out}`);
+// R-RUSTPORT-REPIN-UI-2-E-Q1: pliki portu DOM (PD) zrepinowane na web — w odniesieniu wersja webu (sha256 z manifestu).
+for (const f of manifest.overlayPd ?? []) {
+  const srcPath = f.pin.slice(f.pin.indexOf(':') + 1);
+  const buf = readFileSync(join(resolve(webDir), srcPath));
+  const sha = createHash('sha256').update(buf).digest('hex');
+  if (sha !== f.sha256) {
+    bad++;
+    console.error(`SHA ${srcPath} web=${sha} manifest(overlayPd)=${f.sha256}`);
+    continue;
+  }
+  const dst = join(resolve(out), srcPath);
+  mkdirSync(dirname(dst), { recursive: true });
+  writeFileSync(dst, buf);
+  console.log(`nakładka PD ${srcPath} (${buf.length} B)`);
+}
+console.log(`repin-ui2-overlay: plików=${manifest.files.length} PD=${(manifest.overlayPd ?? []).length} niezgodnych=${bad} out=${out}`);
 process.exitCode = bad === 0 ? 0 : 1;

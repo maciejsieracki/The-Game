@@ -27,5 +27,36 @@
       "sha256": "a9c291e44fc0f423e9ca78a411c8499725fbe86a517b3eb21b0b65e0b34647a5",
       "bytes": 10501
     }
+  ],
+  "overlayPdNote": "Pliki portu DOM (klasa PD, NIE kopie bajtowe — poza bramką verify-repin-ui2-copies): w odniesieniu nakładki starszych harnessów pin zastępowany wersją webu z SHA (tools/repin-ui2-overlay.mjs).",
+  "overlayPd": [
+    {
+      "path": "src/ui/diploListHud.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/diploListHud.ts",
+      "sha256": "89457a348452c89812e4674ddc9335ea1f349bb0702278d3b6d4666d8a0c6531",
+      "bytes": 21600,
+      "topic": "R-RUSTPORT-REPIN-UI-2-E-Q1"
+    },
+    {
+      "path": "src/ui/diplomacyPanel.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/diplomacyPanel.ts",
+      "sha256": "06886277ba16e12db6accdbe7e1c56e473259166cff6281965fa35e0a674656e",
+      "bytes": 23975,
+      "topic": "R-RUSTPORT-REPIN-UI-2-E-Q1"
+    },
+    {
+      "path": "src/ui/diplomacyNegotiationModal.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/diplomacyNegotiationModal.ts",
+      "sha256": "5abbc4db78b7a0b99e00bd334a08ed38fc10174f68cc20c5f765ddebd99c00b2",
+      "bytes": 27396,
+      "topic": "R-RUSTPORT-REPIN-UI-2-E-Q1"
+    },
+    {
+      "path": "src/ui/diplomacyAudience.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/diplomacyAudience.ts",
+      "sha256": "52eac2b814facfce8b756bd6a36c9a882d52db8bd0d40470ca1c1acf909616c6",
+      "bytes": 127495,
+      "topic": "R-RUSTPORT-REPIN-UI-2-E-Q1"
+    }
   ]
 }
