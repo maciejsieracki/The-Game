@@ -1,3 +1,12 @@
+## ROBOCZA b6f88c94 -- 2026-11-04 -- limit ludności: Spichlerz II = 12, Akwedukt = 20 (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`c4a541a27` + POPCAP `913b60189`) i commit wdrożenia; decyzja właściciela, stała zgoda.
+- Bundle MD5 `b6f88c94de970b4c63a7ac3fd3354732`, 70206378 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: limit ludności 5 / Spichlerz I 8 / **Spichlerz II 12** / **Akwedukt 20** (niezależnie od Spichlerza).
+- Testy: tsc PASS; popcap 46/0; akwedukt-popcap 7/0; spichlerz-cap-citypanel-wiring 12/0; population-growth-v85 50/0; matrix 122/0; empire-food-b5 34/0.
+- Ograniczenia: pełny pomiar balansu niezmierzony (proxy: Akwedukt+Spichlerz II pop 20 zamiast 12 po 100 turach); kilka testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `e1f1f5297522993e129c52c34927ee5e`, 70205406 bajtów.
+
 ## ROBOCZA e1f1f529 -- 2026-11-04 -- atak ostatniej woli obleganej armii; jedna definicja „przy rzece” dla irygacji (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`319a84052` + SIEGE-LAST-STAND-SORTIE `a731027b8` + IRRIGATION-RIVER-DEFINITION-UNIFY `bbc761892`) i commit wdrożenia; zgłoszenia/decyzje właściciela, stała zgoda.
