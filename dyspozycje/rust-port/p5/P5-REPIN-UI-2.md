@@ -235,6 +235,10 @@ Weryfikacja:
   pinie bez zmian). Na nakładce: L0 3861/0, L1A 3618/0, L2 1784/0 (jsdomErrors 354, consoleErrors 150 = baza), C4 1649/0
   (75/0 = baza), cycles 6401/0, hud 927/0, newgame 1194/0, cityux 164/0, k05b 384/0.
 - `verify-repin-ui2-copies` sprawdza dodatkowo odniesienia `overlayPorts*` (sha256 = `git show 86d510c66:…`, 3/3).
+- r2 (Evaluator r1 Z1/Z2): mutacja H11 w `mutate-cycles.mjs` celowała w usunięte `formatHexMagazynSummary` (wzorzec 0×) →
+  zastąpiona mutacją wiersza produkcji ulepszenia (`if (mag)` → `cp-prod-line`), dodana H14 (blok „Surowce z terenu
+  (przy 👤)”); `mutate-c4.mjs`/`mutate-level2.mjs` dostały opcjonalne `--only` (porcje ≤ 570 s). Na nakładce:
+  mutate-cycles 67/67, mutate-c4 20/20, mutate-level2 34/34 wykryte; run-cycles 6401/0.
 
 Wycena po partii (ZAŁOŻENIE Z3): plan D = 15,25 h / 194 LP / 2 rundy; zużyto 1 rundę Operatora (+242/−51 linii w 11 plikach,
 w tym reużywalna infrastruktura nakładki portów i harness Chromium dla portów DOM). Pozostało po A i D:
