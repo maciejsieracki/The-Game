@@ -502,6 +502,12 @@ import {
 import { getCityFood } from './game/turn-economy';
 import { SiegeMarkerRenderer } from './render/siegeMarker';
 import {
+  turnsUntilSiegeSurrender,
+  siegeConsumptionPerTurn,
+  siegeSurrenderBadgeText,
+  siegeSurrenderTooltip,
+} from './game/siege-surrender-forecast';
+import {
   showSiegeMapPanel, hideSiegeMapPanel, updateSiegeMapPanelTurn, isSiegeMapPanelOpen,
   getActiveSiegeCityId, setSiegePanelBesiegerCount, setSiegePanelMilitiaEstimator, setSiegePanelMilitiaRegenLeft,
 } from './ui/siegeMapPanel';
@@ -16090,11 +16096,26 @@ async function boot(): Promise<void> {
     /** Etykiety HTML nad obleganymi miastami (zawsze widoczne na ekranie). */
     const siegeHtmlLabels: HTMLDivElement[] = [];
     const siegeHtmlLabelAnchors: Array<{ x: number; y: number; z: number; name: string }> = [];
+    /** R-WEB-SIEGE-BADGE-TURNS-TO-SURRENDER-Q1: id miasta + element licznika tur do poddania (równolegle do siegeHtmlLabels). */
+    const siegeHtmlLabelCityIds: string[] = [];
+    const siegeHtmlLabelBadgeEls: HTMLElement[] = [];
+
+    /** Tekst + tooltip licznika poddania (czysta prognoza z siege-surrender-forecast.ts; zero zmian logiki kapitulacji). */
+    function siegeSurrenderBadgeFor(city: City): { text: string; title: string } {
+      const food = getCityFood(city);
+      const turns = turnsUntilSiegeSurrender(city, { food });
+      return {
+        text: siegeSurrenderBadgeText(turns),
+        title: siegeSurrenderTooltip(turns, food, siegeConsumptionPerTurn(city)),
+      };
+    }
 
     function clearSiegeHtmlLabels(): void {
       for (const el of siegeHtmlLabels) el.remove();
       siegeHtmlLabels.length = 0;
       siegeHtmlLabelAnchors.length = 0;
+      siegeHtmlLabelCityIds.length = 0;
+      siegeHtmlLabelBadgeEls.length = 0;
     }
 
     function refreshSiegeHtmlLabels(): void {
@@ -16106,7 +16127,14 @@ async function boot(): Promise<void> {
         siegeHtmlLabelAnchors.push({ x: pos.x, y: topY + 1.1, z: pos.z, name: city.name });
         const el = document.createElement('div');
         el.className = 'civ-siege-html-label';
-        el.innerHTML = '<span style="font-size:18px">\u2694</span> OB\u0141\u0118\u017bENIE<br><small>' + city.name + '</small>';
+        el.innerHTML = '<span style="font-size:18px">\u2694</span> OB\u0141\u0118\u017bENIE<br><small>' + city.name + '</small>'
+          + '<br><small class="civ-siege-surrender" data-siege-surrender="1" style="color:#ffd9a0;pointer-events:auto;cursor:help"></small>';
+        const badge = el.querySelector('.civ-siege-surrender') as HTMLElement;
+        const sb = siegeSurrenderBadgeFor(city);
+        badge.textContent = sb.text;
+        el.title = sb.title;
+        siegeHtmlLabelCityIds.push(city.id);
+        siegeHtmlLabelBadgeEls.push(badge);
         el.style.cssText = [
           'position:fixed', 'z-index:340', 'pointer-events:none', 'transform:translate(-50%,-100%)',
           'padding:4px 10px', 'border-radius:8px', 'text-align:center', 'line-height:1.25',
@@ -16121,6 +16149,19 @@ async function boot(): Promise<void> {
 
     function updateSiegeHtmlLabels(): void {
       if (siegeHtmlLabels.length === 0) return;
+      // Licznik tur do poddania: odświeżany co klatkę tylko gdy tekst się zmienił (tani porównanie),
+      // więc nadąża za końcem tury, kapitulacją "pending" i zmianą zapasów bez osobnych hooków.
+      for (let i = 0; i < siegeHtmlLabelBadgeEls.length; i++) {
+        const sc = cities.find(c => c.id === siegeHtmlLabelCityIds[i]);
+        const be = siegeHtmlLabelBadgeEls[i];
+        if (!sc || !be) continue;
+        const sb = siegeSurrenderBadgeFor(sc);
+        if (be.textContent !== sb.text) {
+          be.textContent = sb.text;
+          const host = siegeHtmlLabels[i];
+          if (host) host.title = sb.title;
+        }
+      }
       const cw = canvas.clientWidth || window.innerWidth;
       const ch = canvas.clientHeight || window.innerHeight;
       const wp = new THREE.Vector3();
@@ -27136,6 +27177,23 @@ async function boot(): Promise<void> {
     // R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1 — hak testowy WYLACZNIE dla tools/player-moves-before-ai-turn-test.cjs
     // (tylko przy ?civTest=1). Ustawia zakolejkowany marsz gracza tak jak `planMarchTo` BEZ natychmiastowego
     // wykonania segmentu i BEZ `markPlayerMovedUnit` (czyli "marsz z poprzednich tur"); reszta idzie REALNYM endTurn.
+    // R-WEB-SIEGE-BADGE-TURNS-TO-SURRENDER-Q1 — hak testowy WYLACZNIE dla tools/siege-surrender-forecast-live-test.cjs
+    // (tylko przy ?civTest=1): ustawia stan oblezenia na zywym miescie i odswieza plakietki; zero wplywu bez parametru.
+    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      (window as any).__siegeBadgeTestDebug = {
+        setSiege: (cityId: string, food: number, pending: boolean): boolean => {
+          const c = cities.find(x => x.id === cityId);
+          if (!c) return false;
+          c.oblegane = true;
+          c.magazynZywnosci = food;
+          c.siegeCapitulationPending = pending;
+          refreshSiegeMarkers();
+          return true;
+        },
+        badgeTexts: (): string[] => siegeHtmlLabelBadgeEls.map(e => e.textContent ?? ''),
+      };
+    }
+
     if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
       (window as any).__playerMovesTestDebug = {
         queueMarch: (unitId: string, destQ: number, destR: number): boolean => {
