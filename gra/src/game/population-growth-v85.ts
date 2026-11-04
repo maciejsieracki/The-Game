@@ -298,16 +298,20 @@ export function growthPercentWithOrderMultiplier(
  * Tylko gdy miasto nakarmione w tej turze (fed=true).
  *
  * `maSpichlerz` = R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09): sam fakt posiadania Spichlerza
- * (I lub II), niezależnie od Akweduktu — środkowy stopień drabinki capu (cap=8 zamiast 5).
+ * (I lub II), niezależnie od Akweduktu — środkowy stopień drabinki capu (cap=8 zamiast 5);
+ * `maSpichlerzII` (R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1) podnosi go do spichlerzIIProgLudnosci (12);
+ * Akwedukt = akweduktMaxLudnosci (20) niezależnie od Spichlerza.
  */
 export function applyFractionalGrowthV85(
   city: Pick<City, 'population' | 'wzrostUlamkowy'>,
   growthPct: number,
   fed: boolean,
   maAkwedukt: boolean,
-  econParams: Pick<EconParams, 'akweduktProgLudnosci' | 'spichlerzProgLudnosci' | 'akweduktMaxLudnosci'>,
+  econParams: Pick<EconParams, 'akweduktProgLudnosci' | 'spichlerzProgLudnosci' | 'akweduktMaxLudnosci'>
+    & Partial<Pick<EconParams, 'spichlerzIIProgLudnosci'>>,
   maSpichlerz: boolean = false,
   populationCapDelta: number = 0,
+  maSpichlerzII: boolean = false,
 ): FractionalGrowthResult {
   let pop = city.population;
   let frac = city.wzrostUlamkowy ?? 0;
@@ -315,7 +319,7 @@ export function applyFractionalGrowthV85(
   let ubytek = false;
 
   if (fed && growthPct !== 0 && pop > 0) {
-    const popCap = cityPopulationCap(maAkwedukt, maSpichlerz, econParams, populationCapDelta);
+    const popCap = cityPopulationCap(maAkwedukt, maSpichlerz, econParams, populationCapDelta, maSpichlerzII);
     if (growthPct > 0 && pop < popCap) {
       frac += pop * growthPct / 100;
       while (frac >= 1 && pop < popCap) {
@@ -567,6 +571,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
         econParams,
         maSpichlerzBuilding,
         populationMatrix.populationCapDelta,
+        builtIds.includes('spichlerz_ii'),
       );
       city.population = growth.nowaLudnosc;
       city.wzrostUlamkowy = growth.wzrostUlamkowy;

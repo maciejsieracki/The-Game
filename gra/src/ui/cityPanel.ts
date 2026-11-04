@@ -1196,6 +1196,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // więc samo `built.includes('spichlerz')` gubi cap 8 po ulepszeniu.
     const maSpichlerz = cityHasSpichlerzBuilding(built);
     const maAkwedukt = built.includes('akwedukt');
+    const maSpichlerzII = built.includes('spichlerz_ii');
     // P-HEKS-SPOR-SASIAD runda 2 nota A: excludeHexKeys tak samo jak silnik tury /
     // overlay 👤 (getWorkedTiles) -- bez tego panel liczyl A=4/B=2 zamiast A=3/B=2.
     const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id), cfg.getEpoch?.(city.ownerId) ?? 1);
@@ -1330,10 +1331,11 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // B3 (R-SPICHLERZ-CAP-LUDNOSCI-ETAP runda 2): "bez Akweduktu" musi liczyć AKTUALNY
     // cap uwzględniający Spichlerz tego miasta (5 albo 8) — NIE sztywny param 5, bo dla
     // miasta z Akweduktem I Spichlerzem to dawało fałszywe "bez niego max 5" (realnie 8).
-    const popCapBezAkweduktu = cityPopulationCap(false, maSpichlerz, params);
-    const popCapSpichlerz = params.spichlerzProgLudnosci;
+    const popCapBezAkweduktu = cityPopulationCap(false, maSpichlerz, params, 0, maSpichlerzII);
+    // Spichlerz I = 8, Spichlerz II = 12 (R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1) -- liczba z parametrów.
+    const popCapSpichlerz = maSpichlerzII ? params.spichlerzIIProgLudnosci : params.spichlerzProgLudnosci;
     const popCapZAkweduktem = params.akweduktMaxLudnosci;
-    const popCapAktualny = cityPopulationCap(maAkwedukt, maSpichlerz, params);
+    const popCapAktualny = cityPopulationCap(maAkwedukt, maSpichlerz, params, 0, maSpichlerzII);
     const atPopCap = city.population >= popCapAktualny;
     return {
       praca: y.praca, pieniadz: y.pieniadz, nauka: y.nauka, kultura: y.kultura,

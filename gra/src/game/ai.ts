@@ -1703,8 +1703,9 @@ const AI_MAJOR_WALL_BORDER_BONUS = 120;
  * DOKŁADNIE tych samych progów co silnik ekonomii (`cityPopulationCap` w
  * `economy.ts`, `econ-params.json`: bez budynku -- `akwedukt_prog_ludnosci`,
  * SKALUJE SIĘ z trudnością (easy=6/normal=5/hard=4); ze Spichlerzem/Spichlerzem
- * II bez Akweduktu -- `spichlerz_prog_ludnosci`, PŁASKIE 8 na wszystkich
- * trudnościach; z Akweduktem=12 -- ai.ts nie importuje `economy.ts` wprost, żeby
+ * I bez Akweduktu -- `spichlerz_prog_ludnosci`, PŁASKIE 8 na wszystkich
+ * trudnościach; ze Spichlerzem II bez Akweduktu -- `spichlerz_ii_prog_ludnosci`
+ * (12); z Akweduktem=20 -- ai.ts nie importuje `economy.ts` wprost, żeby
  * nie ciągnąć całego modułu ekonomii do testów jednostkowych AI, więc progi są
  * zduplikowane jako nazwane stałe `AI_POP_CAP_*` niżej z jawnym odnośnikiem do
  * źródła prawdy). Gdy miasto jest NA suficie (populacja >= aktualny sufit --
@@ -1712,7 +1713,7 @@ const AI_MAJOR_WALL_BORDER_BONUS = 120;
  * rangi Koszar/Biblioteki (`AI_MAJOR_GRANARY_PRIORITY_BONUS_STRONG`). Gdy
  * miasto ma jeszcze zapas do sufitu (jak `ai-jednostki-tylko-zakup-test` B,
  * populacja 4 < sufit "normal"=5) -- SŁABY, niezmieniony bonus (`_WEAK` = dawne
- * 8, zbisekcjonowane jako bezpieczne). Miasto z Akweduktem (sufit 12) nigdy nie
+ * 8, zbisekcjonowane jako bezpieczne). Miasto z Akweduktem (sufit 20) nigdy nie
  * dostaje silnego bonusu -- Spichlerz przestał być wąskim gardłem wzrostu.
  *
  * TRUDNOŚĆ (P-GRANARY-BONUS-IGNORUJE-TRUDNOSC, Evaluator runda 3, PRZYJĘTE):
@@ -1749,11 +1750,13 @@ const AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY: Record<DifficultyLevel, number> = {
 };
 /** Sufit populacji ZE Spichlerzem/Spichlerzem II, BEZ Akweduktu -- `economy.ts` `cityPopulationCap`, `econ-params.json` `spichlerz_prog_ludnosci` -- PŁASKIE 8 na wszystkich trudnościach (nie skaluje się, w przeciwieństwie do `akwedukt_prog_ludnosci`). */
 const AI_POP_CAP_WITH_GRANARY_I = 8;
+/** Sufit populacji ze Spichlerzem II, BEZ Akweduktu -- `economy.ts` `cityPopulationCap`, `econ-params.json` `spichlerz_ii_prog_ludnosci` -- PŁASKIE 12 (R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1, 2026-11-04). */
+const AI_POP_CAP_WITH_GRANARY_II = 12;
 
 /**
  * Czy i jak mocno miasto POTRZEBUJE Spichlerza/Spichlerza II TERAZ (zadania 1-2
  * dispatchu rundy 3) -- patrz komentarz przy stałych wyżej dla pełnego
- * uzasadnienia. Zwraca 0 gdy Akwedukt już stoi (sufit 12, Spichlerz przestał
+ * uzasadnienia. Zwraca 0 gdy Akwedukt już stoi (sufit 20, Spichlerz przestał
  * być wąskim gardłem wzrostu). `menuDifficulty` brakujący (stare
  * wywołania/testy) -> "normal", zero zmiany zachowania.
  */
@@ -1763,10 +1766,13 @@ function granaryPriorityBonus(
   menuDifficulty: DifficultyLevel | undefined,
 ): number {
   if (built.includes('akwedukt')) return 0;
-  const hasGranaryI = built.includes('spichlerz') || built.includes('spichlerz_ii');
-  const capNow = hasGranaryI
-    ? AI_POP_CAP_WITH_GRANARY_I
-    : AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY[menuDifficulty ?? 'normal'];
+  const hasGranaryII = built.includes('spichlerz_ii');
+  const hasGranaryI = built.includes('spichlerz');
+  const capNow = hasGranaryII
+    ? AI_POP_CAP_WITH_GRANARY_II
+    : hasGranaryI
+      ? AI_POP_CAP_WITH_GRANARY_I
+      : AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY[menuDifficulty ?? 'normal'];
   return city.population >= capNow
     ? AI_MAJOR_GRANARY_PRIORITY_BONUS_STRONG
     : AI_MAJOR_GRANARY_PRIORITY_BONUS_WEAK;

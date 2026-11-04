@@ -19891,6 +19891,7 @@ async function boot(): Promise<void> {
           cityHasSpichlerzBuilding(builtIds),
           econParamsForPopCapHud,
           resolvePopulationCapMatrixDelta(ownerCivMap.get(0) ?? null),
+          builtIds.includes('spichlerz_ii'),
         ));
       }
       // R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13): "bezpieczny poziom" = przyrost zapasów
@@ -35601,6 +35602,7 @@ async function boot(): Promise<void> {
               popCapByCityId.set(city.id, cityPopulationCap(
                 maAkwedukt, maSpichlerzBuilding, econParamsForPopCap,
                 resolvePopulationCapMatrixDelta(civKey),
+                builtIds.includes('spichlerz_ii'),
               ));
             }
             const ownerIdsForAutoRation = new Set<number>();

@@ -108,11 +108,17 @@ export interface EconParams {
   /** Twardy cap ludności bez ŻADNEGO budynku (Spichlerz/Akwedukt) — dolny stopień drabinki, domyślnie 5. */
   akweduktProgLudnosci:             number;
   /**
-   * Twardy cap ludności ze Spichlerzem (I lub II), ale BEZ Akweduktu — środkowy stopień
+   * Twardy cap ludności ze Spichlerzem I (bez Spichlerza II i bez Akweduktu) — środkowy stopień
    * drabinki (R-SPICHLERZ-CAP-LUDNOSCI-ETAP, Maciej 2026-08-09, ECHO A), domyślnie 8.
    */
   spichlerzProgLudnosci:            number;
-  /** Twardy cap ludności po zbudowaniu Akweduktu — górny stopień (domyślnie 12, obniżka z dawnych 15). */
+  /**
+   * Twardy cap ludności ze Spichlerzem II, ale BEZ Akweduktu — stopień drabinki dodany przez
+   * R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1 (decyzja właściciela 2026-11-04), domyślnie 12.
+   * Opcjonalny w typie `Pick`-ów wołających (brak → spadek do `spichlerzProgLudnosci`).
+   */
+  spichlerzIIProgLudnosci:          number;
+  /** Twardy cap ludności po zbudowaniu Akweduktu — górny stopień (domyślnie 20, niezależnie od Spichlerza; wcześniej 12, a przed tym 15). */
   akweduktMaxLudnosci:              number;
   zywnoscZuzytkaPopulacja:          number;
   zdrowieModyfikatorWspolczynnik:   number;  // health->growth coeff [PT 0.05]
@@ -219,7 +225,8 @@ export function loadEconParams(
     spichlerzZachowaniePoPrzroscie: read(em, 'spichlerz_zachowanie_po_wzroscie', 0.5),
     akweduktProgLudnosci:           read(em, 'akwedukt_prog_ludnosci', 5),
     spichlerzProgLudnosci:          read(em, 'spichlerz_prog_ludnosci', 8),
-    akweduktMaxLudnosci:            read(em, 'akwedukt_max_ludnosci', 12),
+    spichlerzIIProgLudnosci:        read(em, 'spichlerz_ii_prog_ludnosci', 12),
+    akweduktMaxLudnosci:            read(em, 'akwedukt_max_ludnosci', 20),
     zywnoscZuzytkaPopulacja:        read(em, 'zywnosc_zuzytka_populacja', 1),
     zdrowieModyfikatorWspolczynnik: read(em, 'zdrowie_modyfikator_wspolczynnik', 0.05),
     korupcjaWspolczynnikDystansu:   read(em, 'korupcja_wspolczynnik_dystansu', 2),
@@ -1043,29 +1050,39 @@ export function cityYieldPerTurn(
 // ---------------------------------------------------------------------------
 
 /**
- * Aktualny twardy cap ludności miasta — drabinka 3 stopni (R-SPICHLERZ-CAP-LUDNOSCI-ETAP,
- * Maciej 2026-08-09, ECHO A): bez żadnego budynku → akweduktProgLudnosci (normal=5); ze
- * Spichlerzem (I lub II), ale bez Akweduktu → spichlerzProgLudnosci (normal=8); z Akweduktem
- * (niezależnie od Spichlerza) → akweduktMaxLudnosci (normal=12, obniżka z dawnych 15).
+ * Aktualny twardy cap ludności miasta — drabinka 4 stopni (R-SPICHLERZ-CAP-LUDNOSCI-ETAP,
+ * Maciej 2026-08-09, ECHO A; rozszerzona przez R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1,
+ * decyzja właściciela 2026-11-04): bez żadnego budynku → akweduktProgLudnosci (normal=5);
+ * ze Spichlerzem I, bez Akweduktu → spichlerzProgLudnosci (normal=8); ze Spichlerzem II,
+ * bez Akweduktu → spichlerzIIProgLudnosci (normal=12); z Akweduktem (niezależnie od
+ * Spichlerza) → akweduktMaxLudnosci (normal=20).
  * `maSpichlerz` = sam fakt POSIADANIA budynku w DOWOLNYM tierze (I lub II) — cap to stały
  * parametr strukturalny, nie zależy od odprowadzenia Ceramiki/Soli w danej turze (to inny
  * mechanizm, patrz `SpichlerzCityBonusState` w `building-resource-gate.ts`).
+ * `maSpichlerzII` = posiadanie `spichlerz_ii` w builtIds (ulepszenie usuwa `spichlerz`);
+ * Spichlerz II sam implikuje `maSpichlerz`. Domyślnie false (stare wywołania = tier I).
+ * Górny clamp = akweduktMaxLudnosci + 2 (największa dodatnia delta macierzy cywilizacji).
  */
 export function cityPopulationCap(
   maAkwedukt: boolean,
   maSpichlerz: boolean,
-  params: Pick<EconParams, 'akweduktProgLudnosci' | 'spichlerzProgLudnosci' | 'akweduktMaxLudnosci'>,
+  params: Pick<EconParams, 'akweduktProgLudnosci' | 'spichlerzProgLudnosci' | 'akweduktMaxLudnosci'>
+    & Partial<Pick<EconParams, 'spichlerzIIProgLudnosci'>>,
   matrixDelta: number = 0,
+  maSpichlerzII: boolean = false,
 ): number {
+  const granaryIICap = params.spichlerzIIProgLudnosci ?? params.spichlerzProgLudnosci;
   const buildingCap = maAkwedukt
     ? params.akweduktMaxLudnosci
-    : maSpichlerz
-      ? params.spichlerzProgLudnosci
-      : params.akweduktProgLudnosci;
+    : maSpichlerzII
+      ? granaryIICap
+      : maSpichlerz
+        ? params.spichlerzProgLudnosci
+        : params.akweduktProgLudnosci;
   const safeDelta = matrixDelta === -1 || matrixDelta === 0 || matrixDelta === 1 || matrixDelta === 2
     ? matrixDelta
     : 0;
-  return Math.min(14, buildingCap + safeDelta);
+  return Math.min(params.akweduktMaxLudnosci + 2, buildingCap + safeDelta);
 }
 
 /** Resolve the owner civilization's approved additive population-cap delta. */
@@ -1083,8 +1100,9 @@ export function resolvePopulationCapMatrixDelta(civKey: string | null | undefine
  *   - Po wzroście: bez Spichlerza bufor → 0; ze Spichlerzem bufor × spichlerzZachowaniePoPrzroscie (50%).
  *   - Deficyt: magazyn maleje; przy 0 i ujemnej nadwyżce → −1 ludność (min 1).
  *   - Cap bez żadnego budynku: akweduktProgLudnosci (normal=5).
- *   - Cap ze Spichlerzem (I lub II), bez Akweduktu: spichlerzProgLudnosci (normal=8).
- *   - Cap z Akweduktem: akweduktMaxLudnosci (normal=12).
+ *   - Cap ze Spichlerzem I, bez Akweduktu: spichlerzProgLudnosci (normal=8).
+ *   - Cap ze Spichlerzem II, bez Akweduktu: spichlerzIIProgLudnosci (normal=12).
+ *   - Cap z Akweduktem: akweduktMaxLudnosci (normal=20).
  *   - Zdrowie: modifier = max(0, 1 + zdrowie * wsp) [PT]
  */
 export function populationGrowth(
@@ -1105,6 +1123,7 @@ export function populationGrowth(
     maSpichlerz || !!maSpichlerzII,
     params,
     resolvePopulationCapMatrixDelta(city.civKey),
+    !!maSpichlerzII,
   );
 
   let nowaLudnosc  = ludnosc;

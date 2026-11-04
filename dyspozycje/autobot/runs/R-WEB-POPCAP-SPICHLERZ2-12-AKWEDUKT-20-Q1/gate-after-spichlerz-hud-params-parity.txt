@@ -1,0 +1,71 @@
+[1] parytet podgląd HUD <-> advanceCityEconomy (dane 10/40/60 wg trudności)
+  PASS: easy spichlerz magazyn 9 (próg 10): Ceramika podgląd=false silnik=false
+  PASS: easy spichlerz magazyn 9 (próg 10): tooltip nieaktywności zgodny z silnikiem
+  PASS: easy spichlerz magazyn 10 (próg 10): Ceramika podgląd=true silnik=true
+  PASS: easy spichlerz magazyn 10 (próg 10): tooltip nieaktywności zgodny z silnikiem
+  PASS: easy spichlerz magazyn 11 (próg 10): Ceramika podgląd=true silnik=true
+  PASS: easy spichlerz magazyn 11 (próg 10): tooltip nieaktywności zgodny z silnikiem
+  PASS: easy spichlerz magazyn 25 (próg 10): Ceramika podgląd=true silnik=true
+  PASS: easy spichlerz magazyn 25 (próg 10): tooltip nieaktywności zgodny z silnikiem
+  PASS: easy spichlerz_ii magazyn 9 (próg 10): Ceramika podgląd=false silnik=false
+  PASS: easy spichlerz_ii magazyn 9 (próg 10): Sól podgląd=false silnik=false
+  PASS: easy spichlerz_ii magazyn 9 (próg 10): tooltip nieaktywności zgodny z silnikiem
+  PASS: easy spichlerz_ii magazyn 10 (próg 10): Ceramika podgląd=true silnik=true
+  PASS: easy spichlerz_ii magazyn 10 (próg 10): Sól podgląd=true silnik=true
+  PASS: easy spichlerz_ii magazyn 10 (próg 10): tooltip nieaktywności zgodny z silnikiem
+  PASS: easy spichlerz_ii magazyn 11 (próg 10): Ceramika podgląd=true silnik=true
+  PASS: easy spichlerz_ii magazyn 11 (próg 10): Sól podgląd=true silnik=true
+  PASS: easy spichlerz_ii magazyn 11 (próg 10): tooltip nieaktywności zgodny z silnikiem
+  PASS: easy spichlerz_ii magazyn 25 (próg 10): Ceramika podgląd=true silnik=true
+  PASS: easy spichlerz_ii magazyn 25 (próg 10): Sól podgląd=true silnik=true
+  PASS: easy spichlerz_ii magazyn 25 (próg 10): tooltip nieaktywności zgodny z silnikiem
+  PASS: normal spichlerz magazyn 39 (próg 40): Ceramika podgląd=false silnik=false
+  PASS: normal spichlerz magazyn 39 (próg 40): tooltip nieaktywności zgodny z silnikiem
+  PASS: normal spichlerz magazyn 40 (próg 40): Ceramika podgląd=true silnik=true
+  PASS: normal spichlerz magazyn 40 (próg 40): tooltip nieaktywności zgodny z silnikiem
+  PASS: normal spichlerz magazyn 41 (próg 40): Ceramika podgląd=true silnik=true
+  PASS: normal spichlerz magazyn 41 (próg 40): tooltip nieaktywności zgodny z silnikiem
+  PASS: normal spichlerz magazyn 25 (próg 40): Ceramika podgląd=false silnik=false
+  PASS: normal spichlerz magazyn 25 (próg 40): tooltip nieaktywności zgodny z silnikiem
+  PASS: normal spichlerz_ii magazyn 39 (próg 40): Ceramika podgląd=false silnik=false
+  PASS: normal spichlerz_ii magazyn 39 (próg 40): Sól podgląd=false silnik=false
+  PASS: normal spichlerz_ii magazyn 39 (próg 40): tooltip nieaktywności zgodny z silnikiem
+  PASS: normal spichlerz_ii magazyn 40 (próg 40): Ceramika podgląd=true silnik=true
+  PASS: normal spichlerz_ii magazyn 40 (próg 40): Sól podgląd=true silnik=true
+  PASS: normal spichlerz_ii magazyn 40 (próg 40): tooltip nieaktywności zgodny z silnikiem
+  PASS: normal spichlerz_ii magazyn 41 (próg 40): Ceramika podgląd=true silnik=true
+  PASS: normal spichlerz_ii magazyn 41 (próg 40): Sól podgląd=true silnik=true
+  PASS: normal spichlerz_ii magazyn 41 (próg 40): tooltip nieaktywności zgodny z silnikiem
+  PASS: normal spichlerz_ii magazyn 25 (próg 40): Ceramika podgląd=false silnik=false
+  PASS: normal spichlerz_ii magazyn 25 (próg 40): Sól podgląd=false silnik=false
+  PASS: normal spichlerz_ii magazyn 25 (próg 40): tooltip nieaktywności zgodny z silnikiem
+  PASS: hard spichlerz magazyn 59 (próg 60): Ceramika podgląd=false silnik=false
+  PASS: hard spichlerz magazyn 59 (próg 60): tooltip nieaktywności zgodny z silnikiem
+  PASS: hard spichlerz magazyn 60 (próg 60): Ceramika podgląd=true silnik=true
+  PASS: hard spichlerz magazyn 60 (próg 60): tooltip nieaktywności zgodny z silnikiem
+  PASS: hard spichlerz magazyn 61 (próg 60): Ceramika podgląd=true silnik=true
+  PASS: hard spichlerz magazyn 61 (próg 60): tooltip nieaktywności zgodny z silnikiem
+  PASS: hard spichlerz magazyn 25 (próg 60): Ceramika podgląd=false silnik=false
+  PASS: hard spichlerz magazyn 25 (próg 60): tooltip nieaktywności zgodny z silnikiem
+  PASS: hard spichlerz_ii magazyn 59 (próg 60): Ceramika podgląd=false silnik=false
+  PASS: hard spichlerz_ii magazyn 59 (próg 60): Sól podgląd=false silnik=false
+  PASS: hard spichlerz_ii magazyn 59 (próg 60): tooltip nieaktywności zgodny z silnikiem
+  PASS: hard spichlerz_ii magazyn 60 (próg 60): Ceramika podgląd=true silnik=true
+  PASS: hard spichlerz_ii magazyn 60 (próg 60): Sól podgląd=true silnik=true
+  PASS: hard spichlerz_ii magazyn 60 (próg 60): tooltip nieaktywności zgodny z silnikiem
+  PASS: hard spichlerz_ii magazyn 61 (próg 60): Ceramika podgląd=true silnik=true
+  PASS: hard spichlerz_ii magazyn 61 (próg 60): Sól podgląd=true silnik=true
+  PASS: hard spichlerz_ii magazyn 61 (próg 60): tooltip nieaktywności zgodny z silnikiem
+  PASS: hard spichlerz_ii magazyn 25 (próg 60): Ceramika podgląd=false silnik=false
+  PASS: hard spichlerz_ii magazyn 25 (próg 60): Sól podgląd=false silnik=false
+  PASS: hard spichlerz_ii magazyn 25 (próg 60): tooltip nieaktywności zgodny z silnikiem
+[2] mutacja: podgląd z fallbackiem 25 rozjeżdża się z silnikiem (test wykrywa regres)
+  PASS: mutacja (podgląd 25): rozjazd z silnikiem w 6 przypadkach (>=3)
+[3] wiring źródła: cityPanel.ts i brak defaultów
+  PASS: cityPanel.ts: 2 wywołania loadSpichlerzDrainParams(data.econParams, cfg.difficulty) (got 2)
+  PASS: cityPanel.ts: paySpichlerzDrainForCity dostaje params z loadSpichlerzDrainParams
+  PASS: cityPanel.ts: resolveOwnedBuildingInactiveStatus dostaje drainParams
+  PASS: building-resource-gate.ts: brak defaultu params / SPICHLERZ_DRAIN_DEFAULT_PARAMS
+  PASS: building-resource-gate.ts: drainParams w resolveOwnedBuildingInactiveStatus wymagany
+spichlerz-hud-params-parity-test: 66 pass, 0 fail
+EXIT=0
