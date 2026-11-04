@@ -1,0 +1,16 @@
+  pomiar: plaskich heksow=2445, heksow gdzie STARA reczna definicja odmawia a automat/definicja mowi TAK=179
+17 OK, 13 FAIL
+  [FAIL] reczna budowa (kwalifikator): sasiad z samym rzeka.obecna (bez riverPaths) — przypadek zgloszony -> true
+  [FAIL] tooltip (hexHasRiverAccess): sasiad z samym rzeka.obecna (bez riverPaths) — przypadek zgloszony -> true
+  [FAIL] reczna budowa (kwalifikator): sasiad (q+1,r-1) z samym rzeka.obecna -> true
+  [FAIL] tooltip (hexHasRiverAccess): sasiad (q+1,r-1) z samym rzeka.obecna -> true
+  [FAIL] tooltip == definicja na wszystkich plaskich heksach (roznic 179 tip pangea/1@15,4 tip pangea/1@18,7 tip pangea/1@8,8 tip pangea/1@10,12 tip pangea/1@19,13)
+  [FAIL] kwalifikator irygacji (reczna budowa) == definicja na probce wokol miasta (roznic 11 tip pangea/1@15,4 tip pangea/1@18,7 tip pangea/1@8,8 tip pangea/1@10,12 tip pangea/1@1
+  [FAIL] flaga visibleRiverNeighborCountsForIrrigation nie wystepuje w src
+  [FAIL] improvement-build.ts eksportuje isHexNearRiver
+  [FAIL] kwalifikator (isRiverAdjacent) uzywa isHexNearRiver
+  [FAIL] picker (onRiverHex) uzywa isHexNearRiver
+  [FAIL] tooltip (hexHasRiverAccess) uzywa isHexNearRiver
+  [FAIL] reczna budowa na tym samym heksie rowniez kwalifikuje
+  [FAIL] automat == reczna budowa
+EXIT=1

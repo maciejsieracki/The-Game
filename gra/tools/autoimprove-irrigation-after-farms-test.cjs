@@ -278,17 +278,17 @@ console.log('(D) PRZYCZYNA: sasiad z samym `rzeka.obecna` (bez wpisu w riverPath
     const picks = pickAutoImprovements({ ...common, getFocus: () => focus });
     ok(picks.some(p => p.key === 'irygacja' && K(p.q, p.r) === target), `${focus}: irygacja na polu obywatela z farma+trzoda przy widocznej rzece (sasiad bez wpisu w riverPaths) — picki: ${picks.map(p => `${p.key}@${p.q},${p.r}`).join(' ') || 'brak'}`);
   }
-  // RECZNA budowa (bez flagi) — regula BEZ ZMIAN: sasiad z samym `rzeka.obecna` nie kwalifikuje irygacji; z flaga (automat) tak.
+  // R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1 (D2=A): flaga `visibleRiverNeighborCountsForIrrigation` USUNIETA — jedna definicja „przy rzece”;
+  // reczna budowa (kwalifikator bez zadnej flagi) = automat: sasiad z samym `rzeka.obecna` KWALIFIKUJE irygacje.
   const stBase = {
     map, cityNodes: [{ q: CQ, r: CR, pop: 2, level: 1 }], territoryNodes: tn, playerOwnerIdNum: PID,
     placedImprovements: new Map([[target, ['farma', 'bydlo']]]), researchedTechs: TECHS, playerCivArchetype: 'grecy', playerEra: ERA,
   };
   const [tq, tr] = target.split(',').map(Number);
-  ok(buildImprovementQualifier(stBase)('irygacja', tq, tr) === false, 'ręczna budowa (bez flagi): irygacja przy samym sasiedzie `rzeka.obecna` NIE kwalifikuje (regula reczna bez zmian)');
-  ok(buildImprovementQualifier({ ...stBase, visibleRiverNeighborCountsForIrrigation: true })('irygacja', tq, tr) === true, 'automat (flaga): ta sama irygacja kwalifikuje');
-  // brak jakiejkolwiek rzeki w poblizu — flaga nic nie poszerza
+  ok(buildImprovementQualifier(stBase)('irygacja', tq, tr) === true, 'reczna budowa (bez flagi): irygacja przy sasiedzie `rzeka.obecna` KWALIFIKUJE (jedna definicja z automatem)');
+  // brak jakiejkolwiek rzeki w poblizu — nic nie poszerza
   const farTarget = [K(13, 15), 13, 15];
-  ok(buildImprovementQualifier({ ...stBase, visibleRiverNeighborCountsForIrrigation: true, placedImprovements: new Map([[farTarget[0], ['farma']]]) })('irygacja', farTarget[1], farTarget[2]) === false, 'flaga nie poszerza reguly poza sasiada rzeki: heks bez rzeki w sasiedztwie nadal NIE kwalifikuje');
+  ok(buildImprovementQualifier({ ...stBase, placedImprovements: new Map([[farTarget[0], ['farma']]]) })('irygacja', farTarget[1], farTarget[2]) === false, 'heks bez rzeki w sasiedztwie nadal NIE kwalifikuje');
 }
 
 console.log(`\n${passed} OK, ${failed} FAIL`);

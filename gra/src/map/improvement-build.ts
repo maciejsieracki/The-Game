@@ -108,14 +108,6 @@ export interface ImprovementBuildState {
    * territory (fail-closed).
    */
   ownUnitHexKeys?: ReadonlySet<string>;
-  /**
-   * R-WEB-AUTOIMPROVE-IRRIGATION-NOT-BUILT-Q1 (zgłoszenie właściciela 2026-11-04: „po farmach i trzodzie irygacje nie są budowane”):
-   * czy SĄSIAD z samym `rzeka.obecna` (rzeka WIDOCZNA na mapie, bez wpisu w `riverPaths`) liczy się jako „przy rzece” dla irygacji.
-   * Picker automatu traktuje takiego sąsiada jako rzekę dla farmy/trzody (`onRiverHex`, E1–E3), więc stawiał farmę i trzodę,
-   * a irygacja (`isRiverAdjacent`: własne `rzeka.obecna` LUB `riverPaths` na heksie/sąsiedzie) odpadała na stałe. Ustawia WYŁĄCZNIE
-   * automat (`pickAutoImprovements`, gracz i AI). Brak pola / false = reguła RĘCZNEJ budowy i tooltipów BEZ ZMIAN.
-   */
-  visibleRiverNeighborCountsForIrrigation?: boolean;
 }
 
 export interface ImprovementTypeInfo {
@@ -901,12 +893,36 @@ function hexNeighbors(q: number, r: number): Array<{ q: number; r: number }> {
   ];
 }
 
-function buildRiverHexSet(map: GameMap): Set<string> {
+export function buildRiverHexSet(map: GameMap): Set<string> {
   const set = new Set<string>();
   for (const path of map.riverPaths) {
     for (const p of path) set.add(`${p.q},${p.r}`);
   }
   return set;
+}
+
+/**
+ * R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1 (decyzja właściciela 2026-11-04, ABC D2=A): JEDNA definicja „przy rzece”
+ * dla ręcznej budowy irygacji, kwalifikatora, tooltipów i automatu (picker FOOD E1–E3, `onRiverHex`).
+ * Heks jest „przy rzece”, gdy: ma własne `rzeka.obecna`, LUB leży w `riverPaths`, LUB którykolwiek z 6 sąsiadów leży
+ * w `riverPaths` albo ma `rzeka.obecna` (rzeka WIDOCZNA na mapie). Jezioro/morze NIE wchodzą (D1=A).
+ * `riverHexSet` opcjonalny — wołający z pętli podaje gotowy (`buildRiverHexSet(map)`), by nie liczyć go per heks.
+ * EN: single "next to a river" definition shared by manual build, qualifier, tooltips and the auto-improver.
+ */
+export function isHexNearRiver(
+  map: GameMap,
+  q: number,
+  r: number,
+  riverHexSet: ReadonlySet<string> = buildRiverHexSet(map),
+): boolean {
+  if (map.hexes[`${q},${r}`]?.rzeka?.obecna) return true;
+  if (riverHexSet.has(`${q},${r}`)) return true;
+  for (const nb of hexNeighbors(q, r)) {
+    const nk = `${nb.q},${nb.r}`;
+    if (riverHexSet.has(nk)) return true;
+    if (map.hexes[nk]?.rzeka?.obecna) return true;
+  }
+  return false;
 }
 
 type JsonImprovement = { koszt_praca?: number; nazwa?: string; epoka?: number };
@@ -940,7 +956,6 @@ function createQualifier(state: ImprovementBuildState) {
   const roadKeys = state.roadKeys ?? new Set<string>();
   const ownUnitHexKeys = state.ownUnitHexKeys ?? new Set<string>();
   const riverHexSet = buildRiverHexSet(map);
-  const visibleRiverNeighbor = state.visibleRiverNeighborCountsForIrrigation === true;
   const placedMap = buildPlacedImprovementsMap(map, state.placedImprovements);
   // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): dawne `empireUnlocks` (Model B —
   // computeEmpireLivestockUnlocks(placedMap) dającе "kon" na stałe po pierwszej stadninie na
@@ -974,16 +989,8 @@ function createQualifier(state: ImprovementBuildState) {
     return false;
   }
 
-  function isRiverAdjacent(q: number, r: number): boolean {
-    const hex = map.hexes[`${q},${r}`];
-    if (hex?.rzeka?.obecna) return true;
-    if (riverHexSet.has(`${q},${r}`)) return true;
-    for (const nb of hexNeighbors(q, r)) {
-      if (riverHexSet.has(`${nb.q},${nb.r}`)) return true;
-      if (visibleRiverNeighbor && map.hexes[`${nb.q},${nb.r}`]?.rzeka?.obecna) return true;
-    }
-    return false;
-  }
+  // Jedna wspólna definicja „przy rzece” (R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1) — `isHexNearRiver`.
+  const isRiverAdjacent = (q: number, r: number): boolean => isHexNearRiver(map, q, r, riverHexSet);
 
   function qualifies(key: ImprovementKey, q: number, r: number): boolean {
     const hexKey = `${q},${r}`;

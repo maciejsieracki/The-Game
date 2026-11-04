@@ -105,11 +105,8 @@ const riverFnMatch = tooltipSrc.match(
 assert(riverFnMatch !== null, 'znaleziono ciało funkcji hexHasRiverAccess() (i że jest eksportowana -- F2)');
 const riverFnBody = riverFnMatch ? riverFnMatch[0] : '';
 
-const riverSetFnMatch = tooltipSrc.match(
-  /function buildRiverHexSet\(map: GameMap\): Set<string> \{[\s\S]*?\n\}/,
-);
-assert(riverSetFnMatch !== null, 'znaleziono ciało funkcji buildRiverHexSet()');
-const riverSetFnBody = riverSetFnMatch ? riverSetFnMatch[0] : '';
+// R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1: tooltip NIE ma już własnej kopii buildRiverHexSet/offsetów — deleguje do wspólnego isHexNearRiver.
+assert(!/function buildRiverHexSet\(/.test(tooltipSrc), 'tooltip nie reimplementuje buildRiverHexSet() (jedna definicja w improvement-build.ts)');
 
 const REQUIRED_LINES = [
   // pre-istniejące (nie regresja tej naprawy, ale muszą przetrwać)
@@ -137,26 +134,13 @@ for (const line of REQUIRED_LINES) {
 const REQUIRED_RIVER_FN_LINES = [
   'if (hex.rzeka?.obecna) return true;',
   'if (!map) return false;',
-  'const riverHexSet = buildRiverHexSet(map);',
-  'if (riverHexSet.has(`${q},${r}`)) return true;',
-  'for (const [dq, dr] of HEX_NEIGHBOR_OFFSETS) {',
-  'if (riverHexSet.has(`${q + dq},${r + dr}`)) return true;',
+  'return isHexNearRiver(map, hex.coords.q, hex.coords.r);',
 ];
 for (const line of REQUIRED_RIVER_FN_LINES) {
   assert(riverFnBody.includes(line), `hexHasRiverAccess() zawiera: ${line}`);
 }
-const REQUIRED_RIVER_SET_LINES = [
-  'for (const path of map.riverPaths) {',
-  'for (const p of path) set.add(`${p.q},${p.r}`);',
-];
-for (const line of REQUIRED_RIVER_SET_LINES) {
-  assert(riverSetFnBody.includes(line), `buildRiverHexSet() zawiera: ${line}`);
-}
-// F1 -- dowód, że sąsiedzi NIE są już sprawdzani przez ich rzeka.obecna (stary, wadliwy warunek).
-assert(
-  !riverFnBody.includes('map.hexes[`${q + dq},${r + dr}`]?.rzeka?.obecna'),
-  'hexHasRiverAccess() NIE zawiera już starego warunku sąsiada przez rzeka.obecna (F1 naprawione)',
-);
+// Decyzja właściciela D2=A: sąsiad z rzeka.obecna LICZY SIĘ (stara asercja F1 odwrócona); definicja żyje w isHexNearRiver.
+assert(!riverFnBody.includes('riverHexSet'), 'hexHasRiverAccess() nie ma własnej logiki riverHexSet (deleguje)');
 
 // --- [2] BUNDLE A -- realne funkcje bez map.riverPaths (warunki nakładka/złoże/droga) ------
 console.log('\n[2] bundle A: realne funkcje silnika (bez hexContextTooltip.ts) dla warunków nakładka/złoże');
@@ -390,7 +374,7 @@ async function main() {
 
     // Mapa bez żadnej rzeki (riverPaths puste) -> brak Irygacji.
     const hexEmptyMap = makeHex(TerenBazowy.Laka, Nakladka.Brak, undefined, { coords: { q: 5, r: 5 } });
-    const emptyMap = { riverPaths: [] };
+    const emptyMap = { riverPaths: [], hexes: {} };
     assert(!computePossibleKeys(hexEmptyMap, null, null, emptyMap).includes('irygacja'),
       'Łąka + mapa z riverPaths=[] (brak rzek): lista NIE zawiera Irygacji');
 
@@ -398,31 +382,30 @@ async function main() {
     const hexRiverOnSelfFlag = makeHex(TerenBazowy.Laka, Nakladka.Brak, undefined, {
       coords: { q: 5, r: 5 }, rzeka: { obecna: true },
     });
-    assert(computePossibleKeys(hexRiverOnSelfFlag, null, null, { riverPaths: [] }).includes('irygacja'),
+    assert(computePossibleKeys(hexRiverOnSelfFlag, null, null, { riverPaths: [], hexes: {} }).includes('irygacja'),
       'Łąka z rzeka.obecna=true NA heksie (riverPaths puste): lista ZAWIERA Irygacji (fallback własnej flagi)');
 
     // Rzeka NA samym heksie via riverPaths (bez flagi rzeka.obecna) -> Irygacja OK (riverHexSet.has(ownKey)).
     const hexRiverOnSelfPath = makeHex(TerenBazowy.Laka, Nakladka.Brak, undefined, { coords: { q: 5, r: 5 } });
-    const mapOwnInPaths = { riverPaths: [[{ q: 5, r: 5 }]] };
+    const mapOwnInPaths = { riverPaths: [[{ q: 5, r: 5 }]], hexes: {} };
     assert(computePossibleKeys(hexRiverOnSelfPath, null, null, mapOwnInPaths).includes('irygacja'),
       'Łąka BEZ rzeka.obecna, ale własny heks JEST w riverPaths: lista ZAWIERA Irygacji (riverHexSet.has(ownKey))');
 
     // Sąsiad (q+1,r) jest w riverPaths -> Irygacja OK (isRiverAdjacent sprawdza sąsiadów).
     const hexCenter = makeHex(TerenBazowy.Laka, Nakladka.Brak, undefined, { coords: { q: 5, r: 5 } });
-    const mapNeighborInPaths = { riverPaths: [[{ q: 6, r: 5 }]] };
+    const mapNeighborInPaths = { riverPaths: [[{ q: 6, r: 5 }]], hexes: {} };
     assert(computePossibleKeys(hexCenter, null, null, mapNeighborInPaths).includes('irygacja'),
       'Łąka bez rzeki na sobie, sąsiad (q+1,r) JEST w riverPaths: lista ZAWIERA Irygacji');
 
-    // *** F1 -- rdzeń naprawy rundy 4 ***: sąsiad ma "rozlaną" flagę rzeka.obecna=true (jak
-    // syncRiverEdgeBonusHexes w grze), ale NIE jest w riverPaths -- silnik (isRiverAdjacent)
-    // mówi NIE, więc tooltip też musi mówić NIE. Przed naprawą F1 to był fałszywy pozytyw
-    // (~7% heksów FLAT_IRR, zmierzone przez Evaluatora na 3 seedach).
+    // R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1 (decyzja właściciela D2=A): sąsiad z samym `rzeka.obecna` (widoczna rzeka, bez
+    // wpisu w riverPaths) LICZY SIĘ jako „przy rzece” — tak jak w automacie i ręcznej budowie. Dawna asercja F1 (NIE) odwrócona.
     const hexCenter2 = makeHex(TerenBazowy.Laka, Nakladka.Brak, undefined, { coords: { q: 9, r: 9 } });
-    // hex sąsiada nie jest w ogóle potrzebny w map.hexes -- hexHasRiverAccess czyta wyłącznie
-    // map.riverPaths (nie map.hexes) -- dlatego mapa niżej celowo NIE zawiera "hexes".
-    const mapSpreadFlagNotOnPath = { riverPaths: [] };
-    assert(!computePossibleKeys(hexCenter2, null, null, mapSpreadFlagNotOnPath).includes('irygacja'),
-      'F1: sąsiad z "rozlaną" rzeka.obecna, ale riverPaths PUSTE: lista NIE zawiera Irygacji (dawny fałszywy pozytyw naprawiony)');
+    const mapVisibleNeighbor = { riverPaths: [], hexes: { '10,9': { rzeka: { obecna: true } } } };
+    assert(computePossibleKeys(hexCenter2, null, null, mapVisibleNeighbor).includes('irygacja'),
+      'UNIFY: sąsiad z widoczną rzeka.obecna (riverPaths puste): lista ZAWIERA Irygacji (jedna definicja z automatem)');
+    const mapFarVisible = { riverPaths: [], hexes: { '12,9': { rzeka: { obecna: true } } } };
+    assert(!computePossibleKeys(hexCenter2, null, null, mapFarVisible).includes('irygacja'),
+      'UNIFY: rzeka 3 heksy dalej (nie sąsiad): lista NIE zawiera Irygacji');
   }
 
   // --- [3] MUTACJA -- cofnięcie warunku 'tartak' odtwarza stary bug -----------------------
@@ -451,54 +434,31 @@ async function main() {
   {
     const realSrc = fs.readFileSync(TOOLTIP_SRC, 'utf8');
 
-    // [3c] usunięcie CAŁEJ pętli po sąsiadach -- powinno cofnąć wykrywanie rzeki na sąsiedzie.
-    const LOOP_BLOCK =
-      '  for (const [dq, dr] of HEX_NEIGHBOR_OFFSETS) {\n' +
-      '    if (riverHexSet.has(`${q + dq},${r + dr}`)) return true;\n' +
-      '  }\n';
-    assert(realSrc.includes(LOOP_BLOCK), '[3c] przygotowanie: prawdziwe źródło zawiera dosłowny blok pętli po sąsiadach (kotwica mutacji)');
-    const mutantNoLoopSrc = realSrc.replace(LOOP_BLOCK, '');
-    assert(mutantNoLoopSrc.length < realSrc.length, '[3c] przygotowanie: mutant jest krótszy niż oryginał (pętla faktycznie usunięta)');
-    const mutantNoLoopPath = path.join(GRA, 'src', 'ui', '.mutant-no-loop.hexContextTooltip.ts');
-    fs.writeFileSync(mutantNoLoopPath, mutantNoLoopSrc, 'utf8');
-    let mutantNoLoopFn;
+    // [3c] usunięcie delegacji do wspólnej definicji -- cofa wykrywanie rzeki na sąsiedzie.
+    const DELEGATION = 'return isHexNearRiver(map, hex.coords.q, hex.coords.r);';
+    assert(realSrc.includes(DELEGATION), '[3c] przygotowanie: prawdziwe źródło zawiera dosłowną delegację do isHexNearRiver (kotwica mutacji)');
+    const mutantSrc = realSrc.replace(DELEGATION, 'return false;');
+    const mutantPath = path.join(GRA, 'src', 'ui', '.mutant-no-delegation.hexContextTooltip.ts');
+    fs.writeFileSync(mutantPath, mutantSrc, 'utf8');
+    let mutantFn;
     try {
-      mutantNoLoopFn = await bundleRealHexHasRiverAccess(mutantNoLoopPath, 'no-loop');
+      mutantFn = await bundleRealHexHasRiverAccess(mutantPath, 'no-deleg');
     } finally {
-      try { fs.unlinkSync(mutantNoLoopPath); } catch { /* noop */ }
+      try { fs.unlinkSync(mutantPath); } catch { /* noop */ }
     }
     const hexForLoopTest = makeHex(TerenBazowy.Laka, Nakladka.Brak, undefined, { coords: { q: 5, r: 5 } });
-    const mapNeighborOnPath = { riverPaths: [[{ q: 6, r: 5 }]] };
+    const mapNeighborOnPath = { riverPaths: [[{ q: 6, r: 5 }]], hexes: {} };
     assert(realHexHasRiverAccess(hexForLoopTest, mapNeighborOnPath) === true,
-      '[3c] kontrola: PRAWDZIWA funkcja (bez mutacji) wykrywa rzekę na sąsiedzie (q+1,r) w riverPaths');
-    assert(mutantNoLoopFn(hexForLoopTest, mapNeighborOnPath) === false,
-      '[3c] MUTANT (pętla po sąsiadach usunięta z PRAWDZIWEGO pliku): przestaje wykrywać rzekę na sąsiedzie -- mutacja złapana');
+      '[3c] kontrola: PRAWDZIWA funkcja wykrywa rzekę na sąsiedzie (q+1,r) w riverPaths');
+    assert(mutantFn(hexForLoopTest, mapNeighborOnPath) === false,
+      '[3c] MUTANT (delegacja usunięta): przestaje wykrywać rzekę na sąsiedzie -- mutacja złapana');
 
-    // [3d] przywrócenie starego warunku sąsiada przez rzeka.obecna zamiast riverHexSet --
-    // powinno ODTWORZYĆ dokładnie zgłoszony przez Evaluatora błąd F1.
-    const NEW_NEIGHBOR_CHECK = 'if (riverHexSet.has(`${q + dq},${r + dr}`)) return true;';
-    const OLD_BUGGY_NEIGHBOR_CHECK = 'if (map.hexes[`${q + dq},${r + dr}`]?.rzeka?.obecna) return true;';
-    assert(realSrc.includes(NEW_NEIGHBOR_CHECK), '[3d] przygotowanie: prawdziwe źródło zawiera dosłowny nowy warunek sąsiada (riverHexSet)');
-    const mutantOldBugSrc = realSrc.replace(NEW_NEIGHBOR_CHECK, OLD_BUGGY_NEIGHBOR_CHECK);
-    const mutantOldBugPath = path.join(GRA, 'src', 'ui', '.mutant-old-bug.hexContextTooltip.ts');
-    fs.writeFileSync(mutantOldBugPath, mutantOldBugSrc, 'utf8');
-    let mutantOldBugFn;
-    try {
-      mutantOldBugFn = await bundleRealHexHasRiverAccess(mutantOldBugPath, 'old-bug');
-    } finally {
-      try { fs.unlinkSync(mutantOldBugPath); } catch { /* noop */ }
-    }
-    // Heks z sąsiadem, którego map.hexes ma rzeka.obecna=true (rozlana flaga), ale sąsiad
-    // NIE jest w riverPaths -- dokładnie scenariusz F1 zgłoszony przez Evaluatora.
-    const hexForBugTest = makeHex(TerenBazowy.Laka, Nakladka.Brak, undefined, { coords: { q: 9, r: 9 } });
-    const spreadFlagMap = {
-      riverPaths: [], // silnik: sąsiad NIE jest na rzece
-      hexes: { '10,9': { rzeka: { obecna: true } } }, // ale flaga "rozlana" mówi TAK
-    };
-    assert(realHexHasRiverAccess(hexForBugTest, spreadFlagMap) === false,
-      '[3d] kontrola: PRAWDZIWA funkcja (bez mutacji) ignoruje rozlaną rzeka.obecna sąsiada spoza riverPaths (F1 naprawione)');
-    assert(mutantOldBugFn(hexForBugTest, spreadFlagMap) === true,
-      '[3d] MUTANT (przywrócony stary warunek rzeka.obecna sąsiada): odtwarza dokładnie zgłoszony błąd F1 -- mutacja złapana');
+    // [3d] sąsiad z widoczną rzeka.obecna (D2=A) -- prawdziwa funkcja TAK, mutant NIE.
+    const hexForVis = makeHex(TerenBazowy.Laka, Nakladka.Brak, undefined, { coords: { q: 9, r: 9 } });
+    const visMap = { riverPaths: [], hexes: { '10,9': { rzeka: { obecna: true } } } };
+    assert(realHexHasRiverAccess(hexForVis, visMap) === true,
+      '[3d] PRAWDZIWA funkcja: sąsiad z widoczną rzeka.obecna liczy się (D2=A)');
+    assert(mutantFn(hexForVis, visMap) === false, '[3d] MUTANT (delegacja usunięta) -- mutacja złapana');
   }
 
   // --- [N1] 4 kopie offsetów sąsiadów heksa -- asercja równości (Evaluator nota N1) --------
@@ -508,16 +468,8 @@ async function main() {
     const normalize = (pairs) => pairs.map(([a, b]) => `${a},${b}`).sort().join('|');
     const refKey = normalize(REFERENCE);
 
-    // hexContextTooltip.ts -- const HEX_NEIGHBOR_OFFSETS = [...]
-    const tooltipOffsetsMatch = tooltipSrc.match(
-      /const HEX_NEIGHBOR_OFFSETS: ReadonlyArray<readonly \[number, number\]> = \[([\s\S]*?)\];/,
-    );
-    assert(tooltipOffsetsMatch !== null, '[N1] znaleziono HEX_NEIGHBOR_OFFSETS w hexContextTooltip.ts');
-    const tooltipPairs = tooltipOffsetsMatch
-      ? [...tooltipOffsetsMatch[1].matchAll(/\[(-?\d+),\s*(-?\d+)\]/g)].map(m => [Number(m[1]), Number(m[2])])
-      : [];
-    assert(normalize(tooltipPairs) === refKey, '[N1] HEX_NEIGHBOR_OFFSETS (hexContextTooltip.ts) == referencja (6 przesunięć)',
-      { got: tooltipPairs });
+    // hexContextTooltip.ts nie ma już własnej kopii offsetów (R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1) — deleguje do isHexNearRiver.
+    assert(!/HEX_NEIGHBOR_OFFSETS/.test(tooltipSrc), '[N1] hexContextTooltip.ts nie ma kopii HEX_NEIGHBOR_OFFSETS');
 
     // improvement-build.ts -- function hexNeighbors(q, r) { return [...]; }
     const improvementSrc = fs.readFileSync(path.join(GRA, 'src', 'map', 'improvement-build.ts'), 'utf8');
