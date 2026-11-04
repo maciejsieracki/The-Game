@@ -3966,7 +3966,7 @@ export function decideAITurn(
   // armia idzie na stolice przeciwnika. Nadpisuje komendy RUCHU jednostek bojowych (zostawia
   // ataki oraz wejscie na heks wrogiego miasta); gracz nigdy tu nie trafia (decideAITurn = AI).
   if (isWarAllInCapitalEnabled() && opts.warAllIn !== undefined && opts.warAllIn.targets.length > 0) {
-    applyWarAllInCapitalToCommands(commands, myUnits, units, cities, playerId, map, opts.warAllIn, data, true);
+    applyWarAllInCapitalToCommands(commands, myUnits, units, cities, playerId, map, opts.warAllIn, data, true, opts.currentTurn);
   }
 
   commands.push({ type: 'endTurn' });
@@ -3987,6 +3987,7 @@ function applyWarAllInCapitalToCommands(
   ctx: WarAllInContext,
   data: GameData,
   gateLooseUnits = false,
+  currentTurn?: number,
 ): void {
   // Zaokretowane jednostki zostaja poza zwyklym marszem ladowym. Kampania
   // wodna wodza jest wyjatkiem: jej planner musi kontynuowac ruch na wodzie i
@@ -4027,6 +4028,7 @@ function applyWarAllInCapitalToCommands(
       eligible.filter(u => keep.has(u.id)),
       cities.filter(c => c.ownerId === playerId),
       ctx.targets,
+      { ownerId: playerId, currentTurn },
     );
     if (rallyPlan !== null) {
       const looseIds = new Set(rallyPlan.looseUnitIds);

@@ -30,7 +30,7 @@ async function buildBundle(name, mutate) {
 export { decideAITurn } from ${JSON.stringify(path.join(srcDir, 'ai.ts'))};
 export {
   ARMY_CONCENTRATION_MIN_UNITS, ARMY_CONCENTRATION_RADIUS, clusterUnitsByProximity,
-  planWarReplacementRally, pickReplacementRallyCity,
+  planWarReplacementRally, pickReplacementRallyCity, resetReplacementRallyState, WAR_REPLACEMENT_RALLY_MAX_WAIT_TURNS, WAR_REPLACEMENT_RALLY_MAX_LOOSE_TURNS,
 } from ${JSON.stringify(path.join(srcDir, 'army-concentration.ts'))};
 export { hexDistance } from ${JSON.stringify(path.resolve(__dirname, '..', 'src', 'units', 'setup.ts'))};
 `);
@@ -83,10 +83,10 @@ const mk = (q, r) => ({ id: 'w' + (nextUid++), ownerId: 1, typeId: 'Wojownik', c
  * (rekrutacja/strata). Zwraca metryki: marsze na cel z rozmiarem skupiska < progu, historie pozycji.
  */
 function play(B, ownUnits, turns, hook) {
-  const stats = { marchBelowThreshold: 0, marchTotal: 0, looseNotApproaching: 0, looseMoves: 0, gatheredTurn: null, gatheredHex: null, clusterTurn: null, launchedTurn: null, minDistToTarget: Infinity, hist: [] };
+  const stats = { marchBelowThreshold: 0, marchTotal: 0, looseNotApproaching: 0, looseMoves: 0, gatheredTurn: null, gatheredHex: null, clusterTurn: null, launchedTurn: null, minDistToTarget: Infinity, hist: [], violTurns: [], notApproachTurns: [], legitLaunchTurn: null };
   const rally = B.pickReplacementRallyCity([CITY_A, CITY_B], TARGETS);
   for (let t = 1; t <= turns; t++) {
-    if (hook) hook(t, ownUnits);
+    if (hook && hook(t, ownUnits) === 'reset') stats.legitLaunchTurn = null;
     for (const u of ownUnits) u.ruchLeft = u.ruch;
     const clusters = B.clusterUnitsByProximity(ownUnits, B.ARMY_CONCENTRATION_RADIUS);
     const sizeOf = new Map();
@@ -103,13 +103,14 @@ function play(B, ownUnits, turns, hook) {
       if (!u) continue;
       if (cmd.targetCityId !== undefined) {
         stats.marchTotal++;
-        if ((sizeOf.get(u.id) ?? 1) < B.ARMY_CONCENTRATION_MIN_UNITS) stats.marchBelowThreshold++;
+        if ((sizeOf.get(u.id) ?? 1) < B.ARMY_CONCENTRATION_MIN_UNITS) { stats.marchBelowThreshold++; stats.violTurns.push(t); }
+        else if (stats.legitLaunchTurn === null) stats.legitLaunchTurn = t;
         if (stats.launchedTurn === null) stats.launchedTurn = t;
       }
       if ((sizeOf.get(u.id) ?? 1) < B.ARMY_CONCENTRATION_MIN_UNITS) {
         // jednostka luzna: kazdy jej ruch ma byc zblizeniem do miasta zbiorki (nie marszem na cel)
         stats.looseMoves++;
-        if (B.hexDistance(cmd.toQ, cmd.toR, rally.q, rally.r) >= B.hexDistance(u.q, u.r, rally.q, rally.r)) stats.looseNotApproaching++;
+        if (B.hexDistance(cmd.toQ, cmd.toR, rally.q, rally.r) >= B.hexDistance(u.q, u.r, rally.q, rally.r)) { stats.looseNotApproaching++; stats.notApproachTurns.push(t); }
       }
       u.q = cmd.toQ; u.r = cmd.toR;
     }
@@ -124,6 +125,11 @@ function play(B, ownUnits, turns, hook) {
     for (const u of ownUnits) stats.minDistToTarget = Math.min(stats.minDistToTarget, B.hexDistance(u.q, u.r, ENEMY.q, ENEMY.r));
     stats.hist.push(ownUnits.map(u => `${u.q},${u.r}`).join(' '));
   }
+  // Naruszenia liczone DO pierwszego legalnego startu skupiska >= progu. Po nim reszta (np. para bez
+  // uzupelnienia) jest z zalozenia zwalniana limitem oczekiwania (anty-zastoj) i maszeruje -- patrz S4.
+  const cut = stats.legitLaunchTurn === null ? Infinity : stats.legitLaunchTurn;
+  stats.violPre = stats.violTurns.filter(x => x <= cut).length;
+  stats.notApproachPre = stats.notApproachTurns.filter(x => x <= cut).length;
   return stats;
 }
 
@@ -139,7 +145,7 @@ function scenarioReplacementAfterLoss(B) {
   for (let i = 0; i < 6; i++) units.push(mk(10, 10));
   let spawned = 0;
   const hook = (t, arr) => {
-    if (t === 5) arr.splice(0, arr.length); // armia glowna zniszczona
+    if (t === 5) { arr.splice(0, arr.length); return 'reset'; } // armia glowna zniszczona; nowa fala
     if (t >= 6 && t % 2 === 0 && spawned < 8) {
       const c = spawned % 2 === 0 ? CITY_A : CITY_B;
       arr.push(mk(c.q, c.r));
@@ -164,11 +170,11 @@ function scenarioReplacementAfterLoss(B) {
   ok(B.pickReplacementRallyCity([CITY_B, CITY_A], TARGETS).id === nearT.id, 'miasto zbiorki niezalezne od kolejnosci listy');
   ok(B.pickReplacementRallyCity([], TARGETS) === undefined, 'brak miast -> brak punktu zbiorki');
   {
-    const loose = [mk(0, 0), mk(30, 0)];
+    const loose = [mk(0, 0), mk(30, 0), mk(0, 30)];
     ok(B.planWarReplacementRally(loose, [], [CITY_A], []) === null, 'brak celow -> null (zachowanie dotychczasowe)');
     ok(B.planWarReplacementRally(loose, [], [], TARGETS) === null, 'brak miast -> null (zachowanie dotychczasowe)');
     const plan = B.planWarReplacementRally(loose, [], [CITY_A], TARGETS);
-    ok(plan !== null && plan.looseUnitIds.length === 2 && plan.moveUnitIds.length === 2, '2 luzne jednostki (<3) -> obie zbieraja sie');
+    ok(plan !== null && plan.looseUnitIds.length === 3 && plan.moveUnitIds.length === 3, '3 rozproszone jednostki (zadne skupisko >=3) -> wszystkie zbieraja sie');
     const army = [mk(0, 0), mk(1, 0), mk(0, 1), mk(40, 0)];
     const plan2 = B.planWarReplacementRally(army, [], [CITY_A], TARGETS);
     ok(plan2 !== null && plan2.looseUnitIds.length === 1 && plan2.looseUnitIds[0] === army[3].id, 'skupisko >=3 rusza, tylko osamotniona jednostka jest luzna');
@@ -179,16 +185,16 @@ function scenarioReplacementAfterLoss(B) {
     const lone = mk(0, 0);
     ok(B.planWarReplacementRally([lone], fighting, [CITY_A], TARGETS) === null, 'jednostka obok 2 walczacych (razem 3) nie jest luzna');
     const atRally = mk(CITY_A.q, CITY_A.r);
-    const plan4 = B.planWarReplacementRally([atRally], [], [CITY_A], [{ q: ENEMY.q, r: ENEMY.r }]);
-    ok(plan4 !== null && plan4.moveUnitIds.length === 0 && plan4.looseUnitIds.length === 1, 'jednostka juz w miescie zbiorki: czeka, bez ruchu');
+    const plan4 = B.planWarReplacementRally([atRally, mk(30, 0), mk(0, 30)], [], [CITY_A], [{ q: ENEMY.q, r: ENEMY.r }]);
+    ok(plan4 !== null && plan4.looseUnitIds.includes(atRally.id) && !plan4.moveUnitIds.includes(atRally.id), 'jednostka juz w miescie zbiorki: czeka, bez ruchu');
   }
 
   // ---- Scenariusz 1: swieza, rozproszona armia ----
   const s1 = scenarioFreshArmy(B);
-  ok(s1.stats.marchBelowThreshold === 0,
-    `S1: ZADNA jednostka nie maszeruje na cel z skupiska < 3 (naruszen: ${s1.stats.marchBelowThreshold})`);
-  ok(s1.stats.looseMoves > 0 && s1.stats.looseNotApproaching === 0,
-    `S1: kazdy ruch jednostki luznej zbliza ja do miasta zbiorki ${nearT.id} (ruchow: ${s1.stats.looseMoves}, niezgodnych: ${s1.stats.looseNotApproaching})`);
+  ok(s1.stats.violPre === 0,
+    `S1: ZADNA jednostka nie maszeruje na cel z skupiska < 3 (naruszen przed startem armii: ${s1.stats.violPre})`);
+  ok(s1.stats.looseMoves > 0 && s1.stats.notApproachPre === 0,
+    `S1: kazdy ruch jednostki luznej zbliza ja do miasta zbiorki ${nearT.id} (ruchow: ${s1.stats.looseMoves}, niezgodnych: ${s1.stats.notApproachPre})`);
   ok(s1.stats.clusterTurn !== null && s1.stats.launchedTurn !== null && s1.stats.launchedTurn > s1.stats.clusterTurn - 1,
     `S1: skupisko >=3 powstaje (t=${s1.stats.clusterTurn}) i dopiero po nim rusza marsz na cel (t=${s1.stats.launchedTurn})`);
   ok(s1.stats.minDistToTarget < B.hexDistance(nearT.q, nearT.r, ENEMY.q, ENEMY.r),
@@ -196,17 +202,101 @@ function scenarioReplacementAfterLoss(B) {
 
   // ---- Scenariusz 2: armia zastepcza po utracie glownej ----
   const s2 = scenarioReplacementAfterLoss(B);
-  ok(s2.stats.marchBelowThreshold === 0,
-    `S2: po utracie armii glownej nowe jednostki nie ida pojedynczo na cel (naruszen: ${s2.stats.marchBelowThreshold})`);
-  ok(s2.stats.looseMoves > 0 && s2.stats.looseNotApproaching === 0,
-    `S2: nowe jednostki luzne ida do JEDNEGO miasta zbiorki ${nearT.id} (ruchow: ${s2.stats.looseMoves}, niezgodnych: ${s2.stats.looseNotApproaching})`);
+  ok(s2.stats.violPre === 0,
+    `S2: po utracie armii glownej nowe jednostki nie ida pojedynczo na cel (naruszen przed startem armii: ${s2.stats.violPre})`);
+  ok(s2.stats.looseMoves > 0 && s2.stats.notApproachPre === 0,
+    `S2: nowe jednostki luzne ida do JEDNEGO miasta zbiorki ${nearT.id} (ruchow: ${s2.stats.looseMoves}, niezgodnych: ${s2.stats.notApproachPre})`);
   ok(s2.stats.clusterTurn !== null, `S2: z nowych jednostek powstaje nowa armia glowna (skupisko >=3, t=${s2.stats.clusterTurn})`);
+
+  // ---- Scenariusz 3 (zastoj): AI z lacznie < 3 jednostkami wojennymi -- czeka ograniczony czas, potem marsz ----
+  {
+    B.resetReplacementRallyState();
+    const solo = [mk(nearT.q, nearT.r)];
+    const st = play(B, solo, 20);
+    ok(st.launchedTurn !== null && st.launchedTurn <= B.WAR_REPLACEMENT_RALLY_MAX_WAIT_TURNS + 2,
+      `S3: jedyna jednostka w miescie zbiorki czeka najwyzej ${B.WAR_REPLACEMENT_RALLY_MAX_WAIT_TURNS} tur i rusza (t=${st.launchedTurn})`);
+    B.resetReplacementRallyState();
+    const pair = [mk(nearT.q, nearT.r), mk(nearT.q, nearT.r)];
+    const st2 = play(B, pair, 20);
+    ok(st2.launchedTurn !== null && st2.launchedTurn <= B.WAR_REPLACEMENT_RALLY_MAX_WAIT_TURNS + 2 && st2.minDistToTarget < B.hexDistance(nearT.q, nearT.r, ENEMY.q, ENEMY.r),
+      `S3: para bez uzupelnienia nie stoi w zastoju (marsz od t=${st2.launchedTurn}, zblizenie do celu)`);
+  }
+
+  // ---- Scenariusz 4 (zastoj): para czeka w miescie zbiorki, trzecia jednostka nigdy nie dociera -> limity ----
+  {
+    B.resetReplacementRallyState();
+    // 4a: jednostkowo -- wszystkie luzne stoja w miescie zbiorki (a 3 jednostka jest w skupisku z kontekstu? nie: poza). Limit czekania.
+    const rallyC = nearT;
+    const mkAt = () => mk(rallyC.q, rallyC.r);
+    const p1 = mkAt(); const p2 = mkAt();
+    const far = mk(rallyC.q + 30, rallyC.r); // jedyna trzecia, daleko; zawsze luzna, ale poza miastem
+    let releasedAt = null;
+    for (let t = 1; t <= 12; t++) {
+      const plan = B.planWarReplacementRally([p1, p2, far], [], [CITY_A, CITY_B], TARGETS, { ownerId: 91, currentTurn: t });
+      if (plan === null || !plan.looseUnitIds.includes(p1.id)) { releasedAt = t; break; }
+    }
+    ok(releasedAt === null, '4a: dopoki trzecia jednostka jest w drodze (poza miastem), para czeka (licznik czekania nie biegnie)');
+    // wszystkie luzne w miescie zbiorki (kontekst = jednostka tez w miescie, ale kandydat) -> licznik biegnie
+    const q1 = mkAt(); const q2 = mkAt();
+    let rel = null;
+    // trzecia jednostka jako kontekst w tym samym miescie utworzylaby skupisko; uzyj kandydatow: 2 w miescie + 1 kandydat w innym miescie stoi
+    const q3 = mk(CITY_A.q === rallyC.q && CITY_A.r === rallyC.r ? CITY_B.q : CITY_A.q, CITY_A.q === rallyC.q && CITY_A.r === rallyC.r ? CITY_B.r : CITY_A.r);
+    for (let t = 1; t <= 12; t++) {
+      // q3 stoi w drugim miescie -> nie jest w miescie zbiorki -> nie biegnie; zatem odtworz sytuacje 'wszyscy w miescie' przez 2 jednostki + kontekst 1 daleko
+      const plan = B.planWarReplacementRally([q1, q2], [mk(rallyC.q + 40, rallyC.r + 40)], [CITY_A, CITY_B], TARGETS, { ownerId: 92, currentTurn: t });
+      void q3;
+      if (plan === null || !plan.looseUnitIds.includes(q1.id)) { rel = t; break; }
+    }
+    ok(rel === B.WAR_REPLACEMENT_RALLY_MAX_WAIT_TURNS, `4a: gdy wszystkie luzne kandydaci stoja w miescie zbiorki, limit czekania = ${B.WAR_REPLACEMENT_RALLY_MAX_WAIT_TURNS} tur (zwolnione w t=${rel})`);
+    // lepkosc: po zwolnieniu nadal zwolnione
+    const again = B.planWarReplacementRally([q1, q2], [mk(rallyC.q + 40, rallyC.r + 40)], [CITY_A, CITY_B], TARGETS, { ownerId: 92, currentTurn: 50 });
+    ok(again === null || !again.looseUnitIds.includes(q1.id), '4a: zwolnienie jest lepkie (brak oscylacji)');
+    // limit wieku luznej jednostki w tranzycie
+    const wanderer = mk(0, 0);
+    let relAge = null;
+    for (let t = 1; t <= B.WAR_REPLACEMENT_RALLY_MAX_LOOSE_TURNS + 5; t++) {
+      const plan = B.planWarReplacementRally([wanderer], [mk(40, 40), mk(0, 40)], [CITY_A, CITY_B], TARGETS, { ownerId: 93, currentTurn: t });
+      if (plan === null || !plan.looseUnitIds.includes(wanderer.id)) { relAge = t; break; }
+    }
+    ok(relAge === B.WAR_REPLACEMENT_RALLY_MAX_LOOSE_TURNS + 1, `4a: luzna jednostka w tranzycie zwolniona po ${B.WAR_REPLACEMENT_RALLY_MAX_LOOSE_TURNS} turach (t=${relAge})`);
+
+    // 4b: zywa petla -- para w miescie zbiorki + trzecia, ktora nigdy nie dociera: AI w koncu rusza na cel
+    B.resetReplacementRallyState();
+    const a = mkAt(); const b = mkAt();
+    const stuck = mk(2, 2);
+    const hook = () => { stuck.q = 2; stuck.r = 2; };
+    const st = play(B, [a, b, stuck], 45, hook);
+    ok(st.launchedTurn !== null && st.launchedTurn <= B.WAR_REPLACEMENT_RALLY_MAX_LOOSE_TURNS + 2,
+      `4b: bez trzeciej jednostki para NIE stoi w nieskonczonosc -- ruszyla w t=${st.launchedTurn} (limit ${B.WAR_REPLACEMENT_RALLY_MAX_LOOSE_TURNS})`);
+  }
+
+  // ---- Scenariusz 5: brak trasy do miasta zbiorki (firstStep === null) -> fallback do marszu na cel, bez porzucenia ----
+  {
+    B.resetReplacementRallyState();
+    const saved = [];
+    // Miasto zbiorki otoczone morzem (nieosiagalne ladem); cel wojny osiagalny.
+    for (const [dq, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]]) {
+      const h = MAP.hexes[`${nearT.q + dq},${nearT.r + dr}`];
+      if (h) { saved.push([h, h.terenBazowy]); h.terenBazowy = 'morze'; }
+    }
+    const units = [mk(20, 5), mk(30, 30), mk(25, 14)];
+    const cmds = B.decideAITurn(1, units, CITIES, MAP, data, {
+      civType: 'grecy', currentTurn: 31, canEngageOwner: () => true, capitalCityId: CITY_A.id, atWarWithCiv: true,
+      warAllIn: { targets: TARGETS, enemyArmies: [], engageRadius: 6, enemyStrength: [{ ownerId: 2, strength: 0 }] },
+    });
+    for (const [h, t] of saved) h.terenBazowy = t;
+    const moves = cmds.filter(c => c.type === 'move');
+    ok(moves.length === 3, `S5: kazda jednostka bez trasy do miasta zbiorki dostaje komende (fallback, nie porzucenie): ${moves.length}/3`);
+    ok(moves.every(c => c.allowFriendlyStack !== true), 'S5: fallback -- zadna komenda nie jest ruchem na miasto zbiorki');
+    ok(moves.every(c => B.hexDistance(c.toQ, c.toR, ENEMY.q, ENEMY.r) < B.hexDistance(units.find(u => u.id === c.unitId).q, units.find(u => u.id === c.unitId).r, ENEMY.q, ENEMY.r)),
+      'S5: fallback -- komendy zblizaja jednostki do celu wojny (dawny marsz)');
+  }
 
   // ---- Mutacja: bramka wylaczona -> test MUSI zawiesc ----
   const m1 = scenarioFreshArmy(MUT);
   const m2 = scenarioReplacementAfterLoss(MUT);
-  ok(m1.stats.marchBelowThreshold > 0, `MUTACJA S1: bez bramki jednostki ida pojedynczo (naruszen: ${m1.stats.marchBelowThreshold}) -- test lapie regresje`);
-  ok(m2.stats.marchBelowThreshold > 0, `MUTACJA S2: bez bramki armia zastepcza trickluje (naruszen: ${m2.stats.marchBelowThreshold}) -- test lapie regresje`);
+  ok(m1.stats.violPre > 0, `MUTACJA S1: bez bramki jednostki ida pojedynczo (naruszen: ${m1.stats.marchBelowThreshold}) -- test lapie regresje`);
+  ok(m2.stats.violPre > 0, `MUTACJA S2: bez bramki armia zastepcza trickluje (naruszen: ${m2.stats.marchBelowThreshold}) -- test lapie regresje`);
 
   // ---- Regresja: zdrowa armia (skupisko >= 3) nadal rusza od razu, bez opoznienia przez bramke ----
   {

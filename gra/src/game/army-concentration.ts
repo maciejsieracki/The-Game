@@ -344,6 +344,29 @@ export function planArmyFrontMerge(
 // nowa armia glowna i normalnie rusza (progi i promien: te same stale co planArmyConcentration).
 // ---------------------------------------------------------------------------
 
+/**
+ * Limity zastoju. Luzna jednostka przestaje czekac i rusza na cel jak przed bramka, gdy:
+ *  - przez MAX_WAIT_TURNS tur WSZYSTKIE luzne jednostki stoja juz w miescie zbiorki (nikt nie
+ *    dociera, a prog nadal niezebrany), albo
+ *  - jest luzna dluzej niz MAX_LOOSE_TURNS tur lacznie (np. petla w tranzycie).
+ * Zwolnienie jest lepkie, dopoki jednostka nie dolaczy do skupiska >= MIN albo zginie.
+ * Zalozenie: bramka dziala tez przy < MIN jednostek lacznie (kolejne rekruty maja szanse dolaczyc);
+ * koszt to jednorazowe opoznienie <= MAX_WAIT_TURNS, nie trwaly zastoj.
+ */
+export const WAR_REPLACEMENT_RALLY_MAX_WAIT_TURNS = 6;
+export const WAR_REPLACEMENT_RALLY_MAX_LOOSE_TURNS = 30;
+
+interface RallyWaitEntry { lastTurn: number; waited: number; age: number }
+const rallyWaitState = new Map<string, RallyWaitEntry>();
+/** Czysci stan oczekiwania (nowa gra / testy). */
+export function resetReplacementRallyState(): void { rallyWaitState.clear(); }
+
+export interface ReplacementRallyOptions {
+  ownerId: number | string;
+  currentTurn?: number;
+  maxWaitTurns?: number;
+}
+
 export interface ReplacementRallyCity {
   id: string;
   q: number;
@@ -393,6 +416,7 @@ export function planWarReplacementRally(
   contextUnits: readonly ConcentrationUnit[],
   ownCities: readonly ReplacementRallyCity[],
   targets: readonly ReplacementRallyTarget[],
+  options?: ReplacementRallyOptions,
 ): ReplacementRallyPlan | null {
   if (candidateUnits.length === 0 || ownCities.length === 0 || targets.length === 0) return null;
   const candidateIds = new Set(candidateUnits.map(u => u.id));
@@ -405,9 +429,35 @@ export function planWarReplacementRally(
     if (group.length >= ARMY_CONCENTRATION_MIN_UNITS) continue;
     for (const u of group) if (candidateIds.has(u.id)) loose.add(u.id);
   }
-  if (loose.size === 0) return null;
   const rally = pickReplacementRallyCity(ownCities, targets);
-  if (rally === undefined) return null;
+  // Stan oczekiwania: wpisy tego wlasciciela, ktore juz nie sa luzne, sa kasowane.
+  const prefix = options !== undefined ? `${options.ownerId}:` : null;
+  if (prefix !== null) {
+    for (const key of [...rallyWaitState.keys()]) {
+      if (key.startsWith(prefix) && !loose.has(key.slice(prefix.length))) rallyWaitState.delete(key);
+    }
+  }
+  if (loose.size === 0 || rally === undefined) return null;
+  if (prefix !== null && options !== undefined) {
+    const maxWait = options.maxWaitTurns ?? WAR_REPLACEMENT_RALLY_MAX_WAIT_TURNS;
+    const looseUnitsNow = candidateUnits.filter(u => loose.has(u.id));
+    const allAtRally = looseUnitsNow.every(u => u.q === rally.q && u.r === rally.r);
+    for (const u of looseUnitsNow) {
+      const key = prefix + u.id;
+      let entry = rallyWaitState.get(key);
+      if (entry === undefined) { entry = { lastTurn: -1, waited: 0, age: 0 }; rallyWaitState.set(key, entry); }
+      const newTurn = options.currentTurn === undefined || entry.lastTurn !== options.currentTurn;
+      if (newTurn) {
+        entry.age++;
+        // Czekanie liczy sie tylko, gdy nikt juz nie jest w drodze (reszta tez stoi w miescie zbiorki).
+        if (allAtRally && entry.waited < maxWait) entry.waited++;
+      }
+      entry.lastTurn = options.currentTurn ?? entry.lastTurn;
+      // Limit wyczerpany: zwolniona (lepko) -- rusza na cel jak przed bramka.
+      if (entry.waited >= maxWait || entry.age > WAR_REPLACEMENT_RALLY_MAX_LOOSE_TURNS) loose.delete(u.id);
+    }
+    if (loose.size === 0) return null;
+  }
   const looseUnits = candidateUnits.filter(u => loose.has(u.id)).sort(compareUnits);
   return {
     rallyCity: { id: rally.id, q: rally.q, r: rally.r },
