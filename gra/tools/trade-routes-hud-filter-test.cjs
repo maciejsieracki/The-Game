@@ -509,6 +509,10 @@ console.log('\n-- R2-MARITIME: toast for second sea route includes marginal sea 
 {
   const existingSea = { id: 'sea-existing', status: 'polaczony', fromCityId: 'p1', toCityId: 'a1', ownerId: 0, toOwnerId: 1, medium: 'morze', dystans: 8, budynekOdblokowany: true };
   const addedSea = { id: 'sea-added', status: 'polaczony', fromCityId: 'p1', toCityId: 'a2', ownerId: 0, toOwnerId: 1, medium: 'morze', dystans: 9, budynekOdblokowany: true };
+  // R-WEB-TRADE-SEA-BONUS-REQUIRES-PORT-Q1: bonus morski ponad pierwszą trasę wymaga Portu —
+  // p1 dostaje Port na czas tego bloku (inaczej marginalny +1 byłby 0 i test nic nie dowodził).
+  const p1BuiltBefore = CITY_BUILT.get('p1');
+  CITY_BUILT.set('p1', [...(p1BuiltBefore ?? []), 'port']);
   const ctx = reportCtx();
   ctx.__prev = [existingSea];
   ctx.__routes = [existingSea, addedSea];
@@ -517,12 +521,15 @@ console.log('\n-- R2-MARITIME: toast for second sea route includes marginal sea 
   const endpointReceipt = routes => {
     const routeReceipts = TR.computeTradeRouteIncomeByCityBreakdown(routes, incP, WONDER_BONUS,
       cityId => CITY_BUILT.get(cityId)?.includes('targowisko') ? MARKET_BONUS : 0).totalByCity.get('p1') ?? 0;
-    const seaBonus = TR.computeSeaTradeBonusIncomeByCity(TR.computeSeaTradeRouteCountByCity(routes)).get('p1') ?? 0;
+    const seaBonus = TR.computeSeaTradeBonusIncomeByCity(TR.computeSeaTradeRouteCountByCity(routes), CITY_BUILT).get('p1') ?? 0;
     return routeReceipts + seaBonus;
   };
   const marginal = endpointReceipt([existingSea, addedSea]) - endpointReceipt([existingSea]);
   assert(ctx.state.hints.some(h => h.includes(`+${marginal} złota/turę`)),
     `R2-MARITIME: second sea-route toast includes settlement marginal including +1 extra sea route (expected ${marginal})`);
+  assert(marginal >= 1 + 0 && TR.computeSeaTradeBonusIncomeByCity(TR.computeSeaTradeRouteCountByCity([existingSea, addedSea]), CITY_BUILT).get('p1') === 1,
+    'R2-MARITIME: p1 z Portem dostaje +1 bonusu morskiego (nietautologiczne)');
+  if (p1BuiltBefore) CITY_BUILT.set('p1', p1BuiltBefore);
 }
 
 // ===========================================================================

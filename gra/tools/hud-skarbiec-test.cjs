@@ -223,6 +223,7 @@ if (city) {
   );
   const seaBonusByCityFixture = computeSeaTradeBonusIncomeByCity(
     computeSeaTradeRouteCountByCity(tradeRoutesFixture),
+    new Map([[city.id, ['port']]]), // R-WEB-TRADE-SEA-BONUS-REQUIRES-PORT-Q1: bonus morski wymaga Portu
   );
   for (const [cid, bonus] of seaBonusByCityFixture) {
     tradeIncomeByCityFixture.set(cid, (tradeIncomeByCityFixture.get(cid) ?? 0) + bonus);

@@ -17051,7 +17051,7 @@ async function boot(): Promise<void> {
         const breakdown = computeTradeRouteIncomeByCityBreakdown(
           routes, incomeParams, wonderTradeRouteBonusForOwner, targowiskoTradeRouteBonusForCity,
         );
-        const seaBonus = computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(routes));
+        const seaBonus = computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(routes), builtByCity);
         return (breakdown.totalByCity.get(cityId) ?? 0) + (seaBonus.get(cityId) ?? 0);
       };
       // Treat new-route events as sequential additions so a second sea route
@@ -20173,6 +20173,7 @@ async function boot(): Promise<void> {
       const maritimeTradeIncomeByCityPreview = routeIncomePreview.maritimeByCity;
       const seaTradeBonusIncomeByCityPreview = computeSeaTradeBonusIncomeByCity(
         computeSeaTradeRouteCountByCity(tradeRoutes),
+        cityBuilt,
       );
       for (const [cityIdSeaPreview, bonusSeaPreview] of seaTradeBonusIncomeByCityPreview) {
         routeIncomePreview.totalByCity.set(
@@ -28242,7 +28243,7 @@ async function boot(): Promise<void> {
         const routeIncome = computeTradeRouteIncomeByCityBreakdown(
           tradeRoutes, params, wonderTradeRouteBonusForOwner, targowiskoTradeRouteBonusForCity,
         );
-        const seaBonus = computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(tradeRoutes));
+        const seaBonus = computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(tradeRoutes), cityBuilt);
         for (const [id, amount] of seaBonus) {
           routeIncome.totalByCity.set(id, (routeIncome.totalByCity.get(id) ?? 0) + amount);
           routeIncome.maritimeByCity.set(id, (routeIncome.maritimeByCity.get(id) ?? 0) + amount);
@@ -35415,6 +35416,7 @@ async function boot(): Promise<void> {
           // w sygnaturach advanceCityEconomy.
           const seaTradeBonusIncomeByCity = computeSeaTradeBonusIncomeByCity(
             computeSeaTradeRouteCountByCity(tradeRoutes),
+            cityBuilt,
           );
           for (const [cityIdSea, bonusSea] of seaTradeBonusIncomeByCity) {
             tradeIncomeByCity.set(cityIdSea, (tradeIncomeByCity.get(cityIdSea) ?? 0) + bonusSea);

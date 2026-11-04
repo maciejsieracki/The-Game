@@ -1756,10 +1756,16 @@ export const PORT_SEA_TRADE_BONUS_PIENIADZ = 1;
 
 export function computeSeaTradeBonusIncomeByCity(
   seaTradeRouteCountByCity: ReadonlyMap<string, number>,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
   bonusPerRoutePieniadz: number = PORT_SEA_TRADE_BONUS_PIENIADZ,
 ): Map<string, number> {
   const out = new Map<string, number>();
   for (const [cityId, count] of seaTradeRouteCountByCity) {
+    // R-WEB-TRADE-SEA-BONUS-REQUIRES-PORT-Q1 (decyzja właściciela 2026-11-04, ABC B):
+    // po R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 trasa morska powstaje bez Portu, więc
+    // bonus ponad pierwszą trasę morską należy się TYLKO miastu z Portem.
+    // Trasa i dochód dystansowy zostają bez zmian.
+    if (!cityHasPort(cityId, builtByCity)) continue;
     const extraRoutes = Math.max(0, count - 1);
     if (extraRoutes > 0) out.set(cityId, extraRoutes * bonusPerRoutePieniadz);
   }
