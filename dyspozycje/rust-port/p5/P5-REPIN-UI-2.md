@@ -39,17 +39,17 @@ Hunki = początki zakresów po stronie `origin/main` (`git diff -U0`, `plik:lini
 | 12 | `empireDetailTypes.ts` | +6/−0 | +6/−0 | MOD | `:111+6` | typy panelu imperium | adapter typów | `src/ui/empireDetailTypes.ts` | UI-2-C |
 | 13 | `armyStackHud.ts` | +43/−8 | 0 | MOD | `:29+2 :39+16 :135+5 :146+4 :202 :205+2 :208 :211+2 :306+7 :314+3` | HUD stosu armii | port DOM (import `game/unit-card-stats` → DTO) | `src/ui/armyStackHud.ts` | UI-2-C |
 | 14 | `unitRecruitCard.ts` | +126/−38 | +4/−2 | MOD | `:9+2 :18+12 :31+23 :55+5 :61+5 :67+9 :113+2 :144 :163+26 :202+3 …` | karta rekrutacji, wspólna pula rekrutów (`65b031ac8`) | port DOM | `src/ui/unitRecruitCard.ts` | UI-2-C |
-| 15 | `hexContextTooltip.ts` | +57/−51 | +57/−51 | MOD | `:135+7 :160+2 :177 :180+2 :184 :186+4 :194 :253 :260 :270 :282 :293+3 :439 :499+2 …` | tooltip heksu: produkcja ulepszeń przed plonami (`db8fabacc`) | port DOM (C2) | `src/ui/hexContextTooltip.ts` | UI-2-D |
-| 16 | `preBattle.ts` | +38/−7 | 0 | MOD | `:14 :155+4 :254+7 :717 :725+4 :820+7 :852+2 :878+3 …` | ekran przed bitwą | port DOM (C5) | `src/ui/preBattle.ts` | UI-2-D |
-| 17 | `buildModeHud.ts` | +26/−1 | +26/−1 | MOD | `:90+4 :215 :307+7 :612+9 :863+5` | HUD trybu budowy | port DOM | `src/ui/buildModeHud.ts` | UI-2-D |
+| 15 | `hexContextTooltip.ts` | +57/−51 | +57/−51 | MOD | `:135+7 :160+2 :177 :180+2 :184 :186+4 :194 :253 :260 :270 :282 :293+3 :439 :499+2 …` | tooltip heksu: produkcja ulepszeń przed plonami (`db8fabacc`) | port DOM (C2) | `src/ui/hexContextTooltip.ts` | **ZROBIONE UI-2-D** (`e0eef2b84`, §6) |
+| 16 | `preBattle.ts` | +38/−7 | 0 | MOD | `:14 :155+4 :254+7 :717 :725+4 :820+7 :852+2 :878+3 …` | ekran przed bitwą | port DOM (C5) | `src/ui/preBattle.ts` | **ZROBIONE UI-2-D** (`e0eef2b84`, §6) |
+| 17 | `buildModeHud.ts` | +26/−1 | +26/−1 | MOD | `:90+4 :215 :307+7 :612+9 :863+5` | HUD trybu budowy | port DOM | `src/ui/buildModeHud.ts` | **ZROBIONE UI-2-D** (`e0eef2b84`, §6) |
 | 18 | `diploListHud.ts` | +44/−0 | 0 | MOD | `:39+3 :44+9 :180+2 :367+19 :512+4 :538+7` | lista dyplomacji | port DOM (import `game/diplomacy-display` → DTO) | `src/ui/diploListHud.ts` | UI-2-E |
 | 19 | `diplomacyAudience.ts` | +4/−17 | 0 | MOD | `:4 :304 :1267 :1342 :1383 :1395 :1433 :2172 :2195 :2207` | audiencja | port DOM (C2) | `src/ui/diplomacyAudience.ts` | UI-2-E |
 | 20 | `diplomacyNegotiationModal.ts` | +15/−0 | +13/−0 | MOD | `:14+2 :25+2 :103+10 :565` | negocjacje | port DOM | `src/ui/diplomacyNegotiationModal.ts` | UI-2-E |
 | 21 | `diplomacyPanel.ts` | +19/−0 | +19/−0 | MOD | `:34+2 :220+16 :266` | panel dyplomacji | port DOM | `src/ui/diplomacyPanel.ts` | UI-2-E |
 | 22 | `diplomacyTradeBasket.ts` | +295/−34 | +203/−19 | MOD | `:5 :20 :43 :71 :139+2 :158 :171+5 :206+2 :225+18 :360+2 :531+4 :632+2 :839+21 :874+6 …` | koszyk handlu | port DOM (C2) | `src/ui/diplomacyTradeBasket.ts` | UI-2-E |
 | 23 | `newGameFlow.ts` | +283/−144 | +144/−95 | MOD | `:80 :176+6 :243+5 :250 :252+4 :258 :558 :565 :670+7 :687+5 :693+4 :700 :810 :854 …` | kreator nowej gry | port DOM (P5.7 r2) | `src/ui/newGameFlow.ts` | UI-2-F |
-| 24 | `entityCards/buildingAdapter.ts` | +3/−3 | 0 | MOD | `:68 :70 :279` | adapter karty budynku | adapter (importy `game/*` → DTO) | `src/ui/entityCards/buildingAdapter.ts` | UI-2-D |
-| 25 | `entityCards/improvementAdapter.ts` | +7/−1 | 0 | MOD | `:27 :160+6` | adapter karty ulepszenia | adapter | `src/ui/entityCards/improvementAdapter.ts` | UI-2-D |
+| 24 | `entityCards/buildingAdapter.ts` | +3/−3 | 0 | MOD | `:68 :70 :279` | adapter karty budynku | adapter (importy `game/*` → DTO) | `src/ui/entityCards/buildingAdapter.ts` | **ZROBIONE UI-2-D** (`e0eef2b84`, §6) |
+| 25 | `entityCards/improvementAdapter.ts` | +7/−1 | 0 | MOD | `:27 :160+6` | adapter karty ulepszenia | adapter | `src/ui/entityCards/improvementAdapter.ts` | **ZROBIONE UI-2-D** (`e0eef2b84`, §6) |
 | 26 | `cityPanel.ts` | +341/−100 | +86/−31 | — (bloki K01–K09 w `src/ui/cityPanel/*.ts`) | `:82 :108+2 :164 :234 :245 :268 :283 :551+10 :567+2 :597+2 :630+24 :775 :834 :929+3 …` | kolejka rekrutacji w panelu (↑↓✕, `ff6ac152c`), kolejność rekrutacji wg epoki (`6f61f1d70`), skracanie liczb (`62884e25f`) | K (bloki kopii z markerami) | `src/ui/cityPanel/k0*.ts` | §3 + UI-2-G |
 
 ### 1a. Wycena per plik (runda 2 — odpowiedź na zarzut Z1 Evaluatora r1)
@@ -86,17 +86,17 @@ nie zawiera tej infrastruktury, bo kolejne partie ją reużywają.
 | 12 | `empireDetailTypes` | AD | 6 | 1 | 6 | 0,75 | C |
 | 13 | `armyStackHud` | PD + DTO | 51 | 10 | 51 | 4,5 | C |
 | 14 | `unitRecruitCard` | PD | 164 | 25 | 164 | 8 | C |
-| 15 | `hexContextTooltip` | PD | 108 | 28 | 108 | 7,25 | D |
-| 16 | `preBattle` | PD | 45 | 13 | 45 | 3,75 | D |
-| 17 | `buildModeHud` | PD | 27 | 5 | 27 | 2,25 | D |
+| 15 | `hexContextTooltip` | PD | 108 | 28 | 108 | 7,25 | D (zrobione) |
+| 16 | `preBattle` | PD | 45 | 13 | 45 | 3,75 | D (zrobione) |
+| 17 | `buildModeHud` | PD | 27 | 5 | 27 | 2,25 | D (zrobione) |
 | 18 | `diploListHud` | PD + DTO | 44 | 6 | 44 | 3,75 | E |
 | 19 | `diplomacyAudience` | PD | 21 | 10 | 21 | 3 | E |
 | 20 | `diplomacyNegotiationModal` | PD | 15 | 4 | 15 | 2 | E |
 | 21 | `diplomacyPanel` | PD | 19 | 3 | 19 | 1,75 | E |
 | 22 | `diplomacyTradeBasket` | PD | 329 | 50 | 329 | 15 | E |
 | 23 | `newGameFlow` | PD | 427 | 76 | 427 | 21 | F |
-| 24 | `entityCards/buildingAdapter` | AD | 6 | 3 | 6 | 1 | D |
-| 25 | `entityCards/improvementAdapter` | AD | 8 | 2 | 8 | 1 | D |
+| 24 | `entityCards/buildingAdapter` | AD | 6 | 3 | 6 | 1 | D (zrobione) |
+| 25 | `entityCards/improvementAdapter` | AD | 8 | 2 | 8 | 1 | D (zrobione) |
 | 26 | `cityPanel` (bloki K) | K | 441 | 89 | 277 | 20 | G |
 | | **Razem** | | **2709** | | **1945** | **129,25** | |
 
@@ -202,3 +202,40 @@ node tools/repin-ui2-overlay.mjs --pin-dir "$PIN" --web-dir "$WEB" --out "$PINOV
 node tools/dom-harness/run-cycles.mjs --pin-dir "$PINOV"     # (i pozostałe run-*.mjs)
 node tools/dom-harness/measure-repin-ui2-kblocks-drift.mjs --pin-dir "$PIN" --cur-dir "$WEB"
 ```
+
+## 6. Partia UI-2-D (R-RUSTPORT-REPIN-UI-2-D-Q1 r1, kod `e0eef2b84`)
+
+Baza: `rust-port/parity-v2` `2198eaf7e`; web = `origin/main` `86d510c66` (`git log 86d510c66..origin/main -- gra/src/ui` = pusto,
+2026-11-04). Klasa wszystkich 5 plików = port DOM/adapter (żaden nie był w `pin-manifest.json` — nic do usunięcia).
+
+| # | Plik portu | Hunki main przeniesione | Reguły (→ Rust/DTO) |
+|---|---|---|---|
+| 15 | `src/ui/hexContextTooltip.ts` | `:135-147` produkcja ulepszenia bez „magazyn państwa · bez 👤”; `:177-192` produkcja (klasa `cp-prod-line`) NAD „→ plony miasta”, gałąź bez produkcji; `formatHexMagazynSummary` usunięte; `:590-596` blok „Surowce z terenu (przy 👤)” tylko z terenu; `:602` nowa stopka; `:502` możliwe ulepszenia `→ {produkcja} · plony miasta`; `:691-772,913-919` stos: `commanderTitle` (Wódz/Generał: klasa `commander`, `data-commander`, `aria-label`/`title`, rola „★ …”, „Wybrana jednostka: Wódz — …”); `:881-883` CSS | `ownerEra` (`:253,270,282,293,439,549`) — `HexTooltipViewDto` liczy Rust z epoką gracza (ZAŁOŻENIE **UI2D-Z1**, komentarz w `viewmodel/types.ts`) |
+| 16 | `src/ui/preBattle.ts` | `:155-158` opcje `automaticOnly`/`manualControlAllowed`; `:254-260` `automaticOnly` → `onAuto()` PO bramce kolejki odroczonych (FIFO); `:820-826,878-880,894,905,930` notka „Bez Wodza lub Generała…”; `:935-938` | chipy `effectiveCombatBonusChipTexts(bonusy, skład → civCombatUnitShapeFromCategory, {side, terrain: teren, isChargeRound: false})` (`:725-728`) — `PreBattleSide.bonusChips` z Rust (ZAŁOŻENIE **UI2D-Z2**) |
+| 17 | `src/ui/buildModeHud.ts` | `:90-93` hooki `getUnspentBudgetWarning`/`onUnspentBudgetDisableFilter`; `:215` etykieta Zrównoważone; `:307-313` CSS `.civ-build-unspent`; `:612-620` wskaźnik (tylko tryb auto, `waitingHexes > 0`); `:863-866` klik → callback + render | warunek ostrzeżenia = kontroler/Rust (hook) |
+| 24 | `src/ui/entityCards/buildingAdapter.ts` | `:68-70` `ownerId` (komentarz), `civBonusy?` w stanie karty | `workCost` = `buildingWorkCost(…, civBonusy, …)` (`:279`) — `BuildingCardStateDto.civBonusy?` (addytywnie) |
+| 25 | `src/ui/entityCards/improvementAdapter.ts` | `:27,160-165` „Koszt (Praca)” skalowany | `scaleTerrainImprovementWorkCost(koszt_praca, epoka)` → `StaticCatalogDto.terrainImprovementWorkCost?[key]` (addytywnie; brak → surowe `koszt_praca`, ZAŁOŻENIE **UI2D-Z3**) |
+
+Producent Rust nowych pól DTO (`terrainImprovementWorkCost`, `civBonusy`, epoka w `HexTooltipViewDto`, chipy wg składu/terenu):
+NIE_ZMIERZONO — `src-tauri/src/**` poza allowlistą (kolejka P6). Hak `getUnspentBudgetWarning` i opcje `automaticOnly`/
+`manualControlAllowed` — wołający (kontroler v2) jeszcze ich nie podaje; wartości domyślne = zachowanie pinu.
+
+Weryfikacja:
+- `tools/dom-harness/run-repin-ui2d.mjs` — web main i port w Chromium 141 (DTO liczone na stronie web funkcjami `game/**`
+  main): 797 przypadków (tooltip heksa 440: 88 heksów × epoka {brak,1,2,3,4}; karta stosu 10; CSS 1; okno przed bitwą 147
+  = 4 sytuacje × 7 zestawów opcji × {brak, deploy, auto, cancel, Enter} + kolejka odroczonych × 7; HUD budowy 15; karta
+  budynku 160; karta ulepszenia 23 + 1 kopia wiersza), DOM po parsowaniu przeglądarki 0 różnic; 6 zrzutów PNG (3 sceny ×
+  1280×720 / 360×640) bajtowo równe; znaczniki nowych hunków 16/16, usunięte teksty 0; asercje UI2D-Z3 2/2;
+  `pageerror`/`console.error` 0. Fixtura `fixtures/repin_ui2d-web-vectors.json`: `webVectorsSha256=4f79e00e…a23b81d50`,
+  plik sha256 `6b6fa408…158a51` — identyczne z dwóch osobnych `git archive` (niezależny weryfikator).
+- `tools/dom-harness/mutate-repin-ui2d.mjs` — 32 mutacje (każda gałąź/tekst/CSS nowych hunków) na kopii `src/`: 32/32 wykryte.
+- Starsze harnessy: `repin-ui2-overlay.mjs` podmienia też porty z sekcji `overlayPortsUI2D` manifestu (`hexContextTooltip`,
+  `buildModeHud`, `buildingAdapter` — wersje main; `preBattle` i `improvementAdapter` poza nakładką: import reguł
+  nieobecnych na pinie / pole DTO). `run-cycles.mjs` liczy DTO heksa z epoką, gdy odniesienie zawiera `ownerEra` (na czystym
+  pinie bez zmian). Na nakładce: L0 3861/0, L1A 3618/0, L2 1784/0 (jsdomErrors 354, consoleErrors 150 = baza), C4 1649/0
+  (75/0 = baza), cycles 6401/0, hud 927/0, newgame 1194/0, cityux 164/0, k05b 384/0.
+- `verify-repin-ui2-copies` sprawdza dodatkowo odniesienia `overlayPorts*` (sha256 = `git show 86d510c66:…`, 3/3).
+
+Wycena po partii (ZAŁOŻENIE Z3): plan D = 15,25 h / 194 LP / 2 rundy; zużyto 1 rundę Operatora (+242/−51 linii w 11 plikach,
+w tym reużywalna infrastruktura nakładki portów i harness Chromium dla portów DOM). Pozostało po A i D:
+**111 h / 1751 LP ≈ 14 rund** (B, C, E, F, G; B i C w toku równolegle — ich zużycie wpiszą ich partie).
