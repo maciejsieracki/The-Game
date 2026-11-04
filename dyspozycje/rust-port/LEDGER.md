@@ -813,3 +813,5 @@ Restart kontenera zatrzymał workflowy webowe FOOD-ONLY-WORKED-HEXES i HUNTING-C
 Zmiana w `gra/src/game/auto-improvements.ts` (eksport `FOOD_IMPROVEMENT_KEYS`, `hexAllowsKey` dla żywności wymaga obywatela, usunięte wyjątki rzeczne `riverForestPrepHex`/`riverClearedFarmHex`, `farmPriorityOnlyWorked` czytane). Logika gry (nie render) — port Rust `auto-improvements`/AI (P6, wstrzymane) wymaga REPIN; nie dotyczy grafiki.
 
 - 2026-11-04 · ROBOCZA `a9279738` wdrożona (main `16195968b`): R-WEB-ANNEX-CITYSTATE-SPOILS-Q1 + R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1. REPIN dla Rust (grafika): `models/improvements/**` — obóz łowiecki ma zachowywać relief wzgórza jak tartak (`oboz_lowiecki` w zbiorze zachowującym relief). ANNEX = logika (P6).
+
+- 2026-11-04 · ROBOCZA `a53cbc62` (AI-ARMY-CONCENTRATION-REPLACEMENT) i `ac12379e` (ROSTER-SPACE + HUD-RESOURCE-DEFICIT-RED) wdrożone. REPIN UI (grafika): `hud.ts` i `hudChip6c.ts` mają kopie bajtowe w Rust (UI-2-A/UI-2-C) — czerwień niedoboru złota/żywności/surowców (`--civ-hud-shortage`, klasa `civ-hud-chip-short`). Logika (AI zbiórka, kolejka Spacji) = P6.
