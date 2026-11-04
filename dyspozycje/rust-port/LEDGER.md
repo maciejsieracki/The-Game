@@ -779,3 +779,6 @@ Nic do integracji. Trwa 6 workflowów UI (Opus 5.5): B, C, D, E, F, G (ponowione
 
 ## 2026-11-04 — kontrola cykliczna 08:11
 Nic do integracji. Trwa 6 workflowów UI (Opus 5.5): B, C, D, E (wznowiony po padnięciu worktree), F, G (wznowiony). Incydent: dysk 100% → `WorktreeIsolationError` dla Evaluatora E i G; odzyskano z commitów Operatora (`refs/keep/RUI2E-op`, `refs/keep/RUI2G-op`, `rust-port-wip/RUI2G-op`), zwolniono 3,3 GB (worktree zakończonych etapów), `resumeFromRunId`. Dysk ≈ 3 GB. Prośba do właściciela o regułę Bash na `rm -rf /tmp/tmp.*` (≈4 GB).
+
+## 2026-11-04 — kontrola cykliczna 09:11
+Nic do integracji. Trwa 6 workflowów UI (B, C, D, E, F, G; Evaluator/Obrona/FC). Dysk spadł do 644 MB → zwolniono worktree zakończonych etapów (E-2, D-2) → ≈ 2,7 GB. Reguła robocza: po każdym etapie usuwam jego worktree (odblokowane = zakończone), commity w `refs/keep/auto-*`.
