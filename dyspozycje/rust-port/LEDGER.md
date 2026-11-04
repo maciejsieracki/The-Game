@@ -717,3 +717,6 @@ Kolejność: (1) dokończyć webowe w toku (AI-WAR, PLAYER-MOVES, FROZEN-FORTIFI
 
 ## 2026-11-04 — R-RUSTPORT-REPIN-3D-A-Q1 ZINTEGROWANE (grafika Rust, Opus 5.5)
 Operator (`c88f96c2c`,`c2f0798e6`,`481eeed26`) → Evaluator PASS-WITH-NOTES (0 zarzutów) → Final Control PASS (`776bede11`). Fast-forward `rust-port/parity-v2` `e1c040160` → `776bede11` (push). Zakres: `battle::orders` (kolejka rozkazów, atakuj-marszem, anulowanie), `PlayerOrder::AttackMove`, `kill_unit`; wektory z webu `c1581619f`, bit w bit, mutacje 35/35 (+1 test strażnika), fmt/clippy EXIT=0, renderer 439/0, MSRV 1.87 OK. Dryf sceny bitwy zmierzony: `gra/src/battle/battleScene.ts` +872/−200 (plik w `gra/src/battle/`, nie `render/`). Plan A1…A6 i REPIN-3D-B w `dyspozycje/rust-port/p4/P4-REPIN-3D.md`. NIE_ZMIERZONO: ocena wizualna (brak GPU), `clippy --features gpu`. Następne: A2 (palisada + wieżyczki) — `R-RUSTPORT-REPIN-3D-A2-Q1` uruchomione.
+
+## 2026-11-04 — kontrola cykliczna 00:11
+Nic do integracji. Trwają: web PLAYER-MOVES, FROZEN-FORTIFIED; Rust REPIN-3D-A2 (Opus 5.5). Wdrożone dziś do ROBOCZEJ: IRON, MERGE-PANEL, MILITIA-REGEN, ERA-SCALING, HORSE, AI-WAR, MILITIA-NO-POPULATION-LOSS. Pierwszeństwo grafiki Rust nad nowymi tematami webowymi — nadrzędne polecenie właściciela z 2026-11-03/04.
