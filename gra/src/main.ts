@@ -1359,7 +1359,6 @@ import {
   freshSurplusReport,
   unspentBudgetWarning,
   disableOnlyWorkedFilterForOwnerCities,
-  skipWyrabForFocus,
   type UnspentBudgetWarning,
   // R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1: kanoniczny zbiór ulepszeń
   // żywnościowych — CZYTANY (nie kopiowany) przez `syncImprovementDecorForHex`,
@@ -37187,14 +37186,9 @@ async function boot(): Promise<void> {
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
                   // R4-Q2=C: `skipWyrab` przestaje być stałą `true` — decyduje przełącznik
                   // „wolno wycinać las" (państwo albo override miasta), domyślnie WYŁĄCZONY,
-                  // więc bez zmiany ustawień zachowanie jest identyczne jak przed rundą 4 — WYJĄTEK: profile „Żywność”/„Zrównoważony”
-                  // (skipWyrabForFocus, zgłoszenie właściciela 2026-11-04) wycinają pod farmy niezależnie od przełącznika.
+                  // więc bez zmiany ustawień zachowanie jest identyczne jak przed rundą 4.
                   skipWyrab: true,
-                  // R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-Q1: Żywność/Zrównoważony wycinają pod farmy niezależnie od przełącznika.
-                  getSkipWyrab: c => {
-                    const pol = effectiveUlepszeniaForCity(c as City);
-                    return skipWyrabForFocus(pol.focus, pol.wolnoWycinacLas);
-                  },
+                  getSkipWyrab: c => !effectiveUlepszeniaForCity(c as City).wolnoWycinacLas,
                   // ZASADA 1: automat gracza na profilu „zrównoważone" buduje domyślnie
                   // samą żywność; niedobór surowca otwiera resztę listy (picker sam pilnuje,
                   // że trzech pozostałych profili to NIE dotyczy).
