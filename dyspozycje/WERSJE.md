@@ -1,3 +1,12 @@
+## ROBOCZA ca2a0d57 -- 2026-11-04 -- automat wycina las pod farmy (Żywność i Zrównoważony), także przy rzece (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`6983bbb4d` + RIVER-FOREST-CLEAR `43465cdf7` + WAR-ALLIN-CAPITAL-TEST-DEBT `fc629f392`) i commit wdrożenia; zgłoszenie właściciela (zrzut Ostia), stała zgoda.
+- Bundle MD5 `ca2a0d57f78560d5ef4dbfabb03db9e7`, 70203042 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: przyczyna braku wycinki = domyślnie wyłączony przełącznik „Wolno wycinać las” obcinał wycinkę z listy pickera także dla Żywności/Zrównoważonego; teraz te profile wycinają zawsze (tylko pola obywateli, pod farmę); pomiar: 0 → 13 wycinek (12 przy rzece), farmy i irygacje +13.
+- Testy: tsc PASS; river-forest-clear 28/0; ai-food-only 81/0; auto-improvements 46/0; irrigation-after-farms 43/0; testy wojny zielone (98/0, 17/0, 129/0).
+- Ograniczenia: bez przeglądarki; przełącznik w UI bez efektu dla Żywności/Zrównoważonego (do osobnej poprawki etykiety).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `81e45a205be36ed8f8b57a5017ddb567`, 70202943 bajtów.
+
 ## ROBOCZA 81e45a20 -- 2026-11-04 -- automat buduje irygację po farmach i trzodzie przy widocznej rzece (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`f3831912a` + AUTOIMPROVE-IRRIGATION-NOT-BUILT `1b0833d54` + OBOZ-LOWIECKI-LAS-TEST-DEBT `6228d8c3a`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.

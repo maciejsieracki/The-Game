@@ -1,112 +1,112 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "81e45a205be36ed8f8b57a5017ddb567",
-  "bundleSha256": "6ba1cdb067a50da2ea4c23db97b2541b21a804f069680a68982b69231c8e6a12",
-  "bundleBytes": 70202943,
+  "bundleMd5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+  "bundleSha256": "d04a5ae1ff9d98be4cb8fc49277391e214b5c8a7783256534623081677eaa060",
+  "bundleBytes": 70203042,
   "sourceSnapshot": {
-    "source": "main f3831912a + AUTOIMPROVE-IRRIGATION-NOT-BUILT (1b0833d54) + OBOZ-LOWIECKI-LAS-TEST-DEBT (6228d8c3a, tylko test)",
+    "source": "main 6983bbb4d + AUTOIMPROVE-RIVER-FOREST-CLEAR (43465cdf7) + WAR-ALLIN-CAPITAL-TEST-DEBT (fc629f392, tylko testy)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-AUTOIMPROVE-IRRIGATION-NOT-BUILT-Q1: automat ulepszeń (gracz Żywność/Zrównoważone i AI) uznaje sąsiada z samym rzeka.obecna za „przy rzece” także dla irygacji (jak już robiły to farma i trzoda) — heksy po farmie i trzodzie dostają irygację; filtr „tylko pola obywateli” i ręczna budowa bez zmian. Pomiar: zalegające pola 2→0 na aktora, +3 irygacje. Na mapach bez rzek irygacja i trzoda nadal nie powstają (reguła kanonu).",
-    "R-WEB-OBOZ-LOWIECKI-LAS-TEST-DEBT-Q1: tylko test (19 FAIL → 94/0, przestarzałe fixture), bez zmian kodu gry."
+    "R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-Q1: automat gracza z profilami Żywność i Zrównoważony wycina las pod farmy na polach obywateli (także przy rzece) niezależnie od przełącznika „Wolno wycinać las” (wcześniej domyślnie wyłączony blokował wycinkę: 0 wycinek, 12/12 pól lasu przy rzece nietkniętych; po zmianie 13 wycinek, 12 przy rzece, +13 farm i irygacji). Surowce i Infrastruktura nadal podlegają przełącznikowi; AI bez zmian. Zachowane: tylko pola obywateli, las z tartakiem/obozem chroniony, brak awaryjnego tartaku i jezior.",
+    "R-WEB-WAR-ALLIN-CAPITAL-TEST-DEBT-Q1: tylko testy (war-allin-capital 94/4→98/0, ai-siege-requires-war, forced-war-waves, march-attack-queue-persist, promote-to-front), bez zmian kodu gry."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "autoimprove-irrigation-after-farms 43/0 (RED na bazie 37/6, mutacje); ai-food-only-worked-hexes 81/0; ai-improvements 56/0; auto-improvements 46/0; oboz-lowiecki-las-test 94/0"
+    "autoimprove-river-forest-clear-q1 28/0 (RED na bazie 14 FAIL, mutacje); ai-food-only 81/0; auto-improvements 46/0; autoimprove-irrigation-after-farms 43/0; war-allin-capital 98/0; forced-war-waves 17/0; promote-to-front 129/0"
   ],
   "limits": [
-    "Chromium/live i mapa właściciela NIE_ZMIERZONO; na mapach bez rzek (reguła kanonu) irygacja/trzoda = 0; próg budżetu irygacji: pula 183+ (3× koszt farmy przy 33% i rezerwie 30)",
-    "Dwie definicje „przy rzece” (ręczna budowa vs automat) — decyzje D1–D3 do właściciela"
+    "Przeglądarka NIE_URUCHOMIONO (4 testy live/render); przełącznik „Wolno wycinać las” w UI nadal klikalny, ale nie działa dla Żywności i Zrównoważonego (osobny temat na etykietę); cofnięcie decyzji STAGES2-Q1 na polecenie właściciela 2026-11-04",
+    "Czerwone na bazie: tartak-oboz-wyscig-race, autoimprove-live-hooks-test 36/1"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "IRRIGATION: Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES; OBOZ-TEST-DEBT: PASS-WITH-NOTES."
+    "notes": "RIVER-FOREST-CLEAR: Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES; WAR-ALLIN-CAPITAL-TEST-DEBT: PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T19:17:22",
+  "hubGeneratedAt": "2026-11-04T20:02:00",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "81e45a205be36ed8f8b57a5017ddb567",
-      "sizeBytes": 70202943
+      "md5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+      "sizeBytes": 70203042
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "81e45a205be36ed8f8b57a5017ddb567",
-      "sizeBytes": 70202943
+      "md5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+      "sizeBytes": 70203042
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "81e45a205be36ed8f8b57a5017ddb567",
-      "sizeBytes": 70202943
+      "md5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+      "sizeBytes": 70203042
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "81e45a205be36ed8f8b57a5017ddb567",
-      "sizeBytes": 70202943
+      "md5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+      "sizeBytes": 70203042
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "81e45a205be36ed8f8b57a5017ddb567",
-      "sizeBytes": 70202943
+      "md5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+      "sizeBytes": 70203042
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "81e45a205be36ed8f8b57a5017ddb567",
-      "sizeBytes": 70202943
+      "md5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+      "sizeBytes": 70203042
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "81e45a205be36ed8f8b57a5017ddb567",
-      "sizeBytes": 70202943
+      "md5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+      "sizeBytes": 70203042
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "81e45a205be36ed8f8b57a5017ddb567",
-      "sizeBytes": 70202943
+      "md5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+      "sizeBytes": 70203042
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "81e45a205be36ed8f8b57a5017ddb567",
-      "sizeBytes": 70202943
+      "md5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+      "sizeBytes": 70203042
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "81e45a205be36ed8f8b57a5017ddb567",
-      "sizeBytes": 70202943
+      "md5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+      "sizeBytes": 70203042
     }
   ],
-  "md5": "81e45a205be36ed8f8b57a5017ddb567",
-  "sizeBytes": 70202943,
+  "md5": "ca2a0d57f78560d5ef4dbfabb03db9e7",
+  "sizeBytes": 70203042,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "d5345611fe5bc89764f847b3a4029b53"
+    "bundleMd5": "81e45a205be36ed8f8b57a5017ddb567"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 d5345611fe5bc89764f847b3a4029b53, 70202771 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 81e45a205be36ed8f8b57a5017ddb567, 70202943 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T19:17:21+00:00",
-  "buildStamp": "2026-11-04 19:17",
+  "publishedAt": "2026-11-04T20:01:58+00:00",
+  "buildStamp": "2026-11-04 20:01",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
