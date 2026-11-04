@@ -5481,6 +5481,9 @@ import {
 import type { GameDifficulty } from './difficulty-cost';
 import { TypCywilizacji } from '../types/player';
 import {
+  WAR_WEARINESS_PARAMS, warWearinessLevel, isWarWeary, loserDespair, despairStage, offerMultiplier,
+} from './war-weariness';
+import {
   AI_TRADE_GOLD_MAX,
   AI_TRIBUTE_PEACE_MAX,
   AI_TRADE_AGREEMENT_SWEETENER_MARGIN,
@@ -5821,13 +5824,16 @@ export function aiMiastoWagaOddawanego(ekspansywnosc?: number): number {
 export function aiPickMiastoDoOddania(
   miasta: ReadonlyArray<MiastoWycenaWejscie>,
   ekspansywnosc?: number,
+  /** R-WEB-AI-WAR-WEARINESS-PEACE-Q1: eskalacja — niższy próg liczby miast i wyższa wymagana wartość oferty. */
+  opcje?: { minMiast?: number; cenaPn?: number },
 ): MiastoWycenaWejscie | null {
-  if (miasta.length < AI_MIASTO_PRZEKAZ_MIN_MIAST) return null;
+  if (miasta.length < (opcje?.minMiast ?? AI_MIASTO_PRZEKAZ_MIN_MIAST)) return null;
   const waga = aiMiastoWagaOddawanego(ekspansywnosc);
+  const cena = opcje?.cenaPn ?? AI_MIASTO_CENA_POKOJU_PN;
   let best: MiastoWycenaWejscie | null = null;
   for (const m of miasta) {
     if (m.zakazane) continue;
-    if (!(m.cityPn * waga >= AI_MIASTO_CENA_POKOJU_PN)) continue;
+    if (!(m.cityPn * waga >= cena)) continue;
     if (best === null || m.cityPn < best.cityPn) best = m;
   }
   return best;
@@ -6284,15 +6290,35 @@ export function decideAIDiplomacy(
     // miasto AI pokrywa cenę pokoju (najtańsze z pokrywających). Brak takiego miasta →
     // przechodzimy do priorytetu 1 (trybut), jak dotąd. r4: + bramki czasu wojny (R5a/R5b).
     const csBlocksCession = inp.isMinorCivSelf === true || rel.isMinorCivPartner === true;
+    // R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną + wyraźna przegrana podnoszą próg oddania miasta
+    // (do +rwProgBonusMax), obniżają minimum miast AI i podnoszą wartość oferowanego miasta (eskalacja).
+    // Gracz decyduje o przyjęciu; powtórki ogranicza istniejący cooldown odrzuconych ofert.
+    const wearyLevel = rel.stanWojny
+      ? warWearinessLevel({
+          turnsAtWar: turnsAtWarRel,
+          lostCitiesTotal: Math.max(0, rel.lostCitiesInWar ?? 0) + Math.max(0, rel.zdobyteMiastaPartnera ?? 0),
+          turnsSinceCityChange: rel.turnsSinceCityChange,
+        })
+      : 0;
+    const wearyDespair = rel.stanWojny && isWarWeary(wearyLevel)
+      ? loserDespair({ level: wearyLevel, share: rw, lostCities: Math.max(0, rel.lostCitiesInWar ?? 0) })
+      : 0;
+    const wearyStage = despairStage(wearyDespair);
+    const wearyCityBonus = wearyStage >= 2 ? WAR_WEARINESS_PARAMS.czlowiek.rwProgBonusMax * wearyDespair : 0;
+    const wearyOfferMult = wearyStage >= 2 ? offerMultiplier(wearyStage, 0) : 1;
     if (
       rel.stanWojny
       && rel.partnerId === '0'
       && !csBlocksCession
       && !aiFeelsStronger
       && aiPeaceTimeOk
-      && rw <= aiMiastoPrzekazRwProg(inp.agresywnoscRaw)
+      && rw <= aiMiastoPrzekazRwProg(inp.agresywnoscRaw) + wearyCityBonus
     ) {
-      const pick = aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc);
+      const wearyMinMiast = wearyDespair > 0 ? WAR_WEARINESS_PARAMS.czlowiek.minMiastAi : undefined;
+      const pick = aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, {
+        minMiast: wearyMinMiast,
+        cenaPn: AI_MIASTO_CENA_POKOJU_PN * wearyOfferMult,
+      }) ?? aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, { minMiast: wearyMinMiast });
       if (pick) {
         komendy.push({
           type:       'oferuj_miasto_za_pokoj',
