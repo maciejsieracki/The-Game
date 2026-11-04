@@ -18,6 +18,7 @@ export {
   filterRuntimeActiveBuiltIds,
 } from '../src/game/building-resource-gate';
 export { buildableProduction, eraBuildingCatalog } from '../src/game/production';
+export { buildingStockCost } from '../src/game/building-stock-cost';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
 `, 'utf8');
 
@@ -196,9 +197,19 @@ function mapWith(...hexes) {
   const catNoStock = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx()).find(e => e.id === 'stolarnia');
   ok(catNoStock && catNoStock.status === 'locked',
     'stolarnia eraBuildingCatalog locked bez drewna w magazynie');
-  const catStock = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx({ empireResourceStock: { drewno: 10 } }));
+  // (A, R-WEB-NAVAL-DEPOSIT-GATE-TEST-DEBT-Q1) Stolarnia ma koszt_surowce {drewno: 25} w buildings.json,
+  // a efektywny koszt magazynowy to buildingStockCost() (FALA2 x2 + mnoznik ery). eraBuildingCatalog
+  // liczy status z canAffordBuildingStock, wiec stary pin z drewno:10 (zalozenie "brak kosztu
+  // magazynowego") jest przestarzaly: 10 < koszt => 'locked'. Test uzywa realnego kosztu z kodu.
+  const stolarniaDef = rawBuildings.find(b => b.id === 'stolarnia');
+  const stolarniaDrewnoKoszt = M.buildingStockCost(stolarniaDef).drewno ?? 0;
+  ok(stolarniaDrewnoKoszt > 10, 'sanity: efektywny koszt drewna stolarni > 10 (' + stolarniaDrewnoKoszt + ')');
+  const catLow = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx({ empireResourceStock: { drewno: stolarniaDrewnoKoszt - 1 } }));
+  ok(catLow.find(e => e.id === 'stolarnia')?.status === 'locked',
+    'stolarnia eraBuildingCatalog locked gdy drewna w magazynie = koszt-1 (' + (stolarniaDrewnoKoszt - 1) + ')');
+  const catStock = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx({ empireResourceStock: { drewno: stolarniaDrewnoKoszt } }));
   ok(catStock.find(e => e.id === 'stolarnia')?.status === 'ready',
-    'stolarnia eraBuildingCatalog ready z drewnem w magazynie (bez Tartaku)');
+    'stolarnia eraBuildingCatalog ready z drewnem w magazynie >= koszt (bez Tartaku)');
 }
 
 // --- PYTANIE-84 + DOSTEP-SUROWCE-Q1: runtime gate = magazyn ---

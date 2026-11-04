@@ -302,7 +302,10 @@ const MAIN_TS = path.join(__dirname, '..', 'src', 'main.ts');
 const mainTs = fs.readFileSync(MAIN_TS, 'utf8');
 
 // Pin 1 (M11, najważniejszy -- łapie brak wpięcia bonusu ekonomicznego)
-const seaBonusLoopRe = /for\s*\(const\s*\[cityIdSea,\s*bonusSea\]\s*of\s*seaTradeBonusIncomeByCity\)\s*\{\s*tradeIncomeByCity\.set\(cityIdSea,\s*\(tradeIncomeByCity\.get\(cityIdSea\)\s*\?\?\s*0\)\s*\+\s*bonusSea\);\s*\}/;
+const seaBonusLoopRe = /for\s*\(const\s*\[cityIdSea,\s*bonusSea\]\s*of\s*seaTradeBonusIncomeByCity\)\s*\{\s*tradeIncomeByCity\.set\(cityIdSea,\s*\(tradeIncomeByCity\.get\(cityIdSea\)\s*\?\?\s*0\)\s*\+\s*bonusSea\);(?:\s*maritimeTradeIncomeByCity\.set\(\s*cityIdSea,\s*\(maritimeTradeIncomeByCity\.get\(cityIdSea\)\s*\?\?\s*0\)\s*\+\s*bonusSea,?\s*\);)?\s*\}/;
+// R-WEB-NAVAL-DEPOSIT-GATE-TEST-DEBT-Q1 (A): ciało pętli w main.ts dopisuje od czasu rozbicia
+// dochodu na kanał morski drugi wpis `maritimeTradeIncomeByCity.set(...)` -- pin dopuszcza go
+// opcjonalnie, ale wciąż WYMAGA wpięcia bonusu do tradeIncomeByCity (sedno M11).
 ok(seaBonusLoopRe.test(mainTs), 'main.ts wpina bonus morski do tradeIncomeByCity: for ([cityIdSea, bonusSea] of seaTradeBonusIncomeByCity) tradeIncomeByCity.set(...)');
 
 // Pin 2
@@ -318,12 +321,14 @@ ok(seaBonusCallRe.test(mainTs), 'main.ts woła computeSeaTradeBonusIncomeByCity(
     'replaceAvailabilityCtxForCity zawiera cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city)');
 }
 
-// Pin 4 -- okno ok. 1800 znaków od "function replaceAvailabilityCtxEmpireWide("
+// Pin 4 (A, R-WEB-NAVAL-DEPOSIT-GATE-TEST-DEBT-Q1: funkcja jest parametryczna `ownerId = 0`,
+// wariant sprawdza właściciela z parametru, nie stałą 0 -- stały literał `=== 0` był przestarzały)
+// -- okno ok. 1800 znaków od "function replaceAvailabilityCtxEmpireWide("
 {
   const anchorIdx = mainTs.indexOf('function replaceAvailabilityCtxEmpireWide(');
   ok(anchorIdx >= 0, 'znaleziono kotwicę "function replaceAvailabilityCtxEmpireWide("');
   const win = anchorIdx >= 0 ? mainTs.slice(anchorIdx, anchorIdx + 1800) : '';
-  ok(/cityHasCoastOrRiver:\s*cities\.some\(c\s*=>\s*c\.ownerId\s*===\s*0\s*&&\s*cityHasCoastOrRiverAccess\(c\)\)/.test(win),
+  ok(/cityHasCoastOrRiver:\s*cities\.some\(c\s*=>\s*c\.ownerId\s*===\s*ownerId\s*&&\s*cityHasCoastOrRiverAccess\(c\)\)/.test(win),
     'replaceAvailabilityCtxEmpireWide zawiera wariant cities.some(...)');
 }
 
@@ -344,9 +349,11 @@ console.log('\nDodatkowe piny źródłowe main.ts (import, gate zakupu za złoto
   ok(/computeSeaTradeRouteCountByCity,\s*\n\s*computeSeaTradeBonusIncomeByCity,/.test(mainTs),
     'main.ts importuje computeSeaTradeRouteCountByCity i computeSeaTradeBonusIncomeByCity z trade-routes.ts');
 
+  // (A) okno 1600 -> 3400 zn.: bramka Naval leży ~2460 zn. od kotwicy (blok walidacji generałów/
+  // limitów dodany przed nią); "return false;" ~2770 zn. Okno nadal ogranicza się do tej funkcji.
   const purchaseIdx = mainTs.indexOf('function purchaseRecruitmentUnit(');
   ok(purchaseIdx >= 0, 'znaleziono function purchaseRecruitmentUnit(');
-  const purchaseWin = purchaseIdx >= 0 ? mainTs.slice(purchaseIdx, purchaseIdx + 1600) : '';
+  const purchaseWin = purchaseIdx >= 0 ? mainTs.slice(purchaseIdx, purchaseIdx + 3400) : '';
   ok(/unitDefForGate\?\.Typ.*'Naval'.*!cityHasCoastOrRiverAccess\(city\)/s.test(purchaseWin),
     'purchaseRecruitmentUnit zawiera bramkę Naval + !cityHasCoastOrRiverAccess(city) (siatka bezpieczeństwa dla zakupu za złoto)');
 
@@ -383,7 +390,16 @@ console.log('\n(B2 runda 3) trzy piny parytetu AI: productionAvailabilityCtxForC
 {
   const anchorIdx = mainTs.indexOf('isProductionAllowed: (cityId: string, itemId: string)');
   ok(anchorIdx >= 0, 'znaleziono kotwicę "isProductionAllowed: (cityId: string, itemId: string)"');
-  const win = anchorIdx >= 0 ? mainTs.slice(anchorIdx, anchorIdx + 1800) : '';
+  // (A, R-WEB-NAVAL-DEPOSIT-GATE-TEST-DEBT-Q1) okno stałe 1800 zn. było za krótkie: między kotwicą a
+  // polem doszła memoizacja AI (R-WEB-TURN-SLOWDOWN-Q2), pole leży ~3750 zn. dalej. Zamiast
+  // zgadywać długość, okno kończy się na końcu wywołania availableProduction w tym closure
+  // ("const ids = new Set<string>();") -- nie wchodzi w sąsiednie closure.
+  let win = '';
+  if (anchorIdx >= 0) {
+    const endIdx = mainTs.indexOf('const ids = new Set<string>();', anchorIdx);
+    win = endIdx > anchorIdx ? mainTs.slice(anchorIdx, endIdx) : '';
+  }
+  ok(win.length > 0, 'isProductionAllowed: znaleziono koniec okna (const ids = new Set<string>();)');
   ok(/cityHasCoastOrRiver:\s*cityHasCoastOrRiverAccess\(c\)/.test(win),
     'isProductionAllowed zawiera cityHasCoastOrRiver: cityHasCoastOrRiverAccess(c) (planowanie AI -- chooseCityProduction)');
 }
