@@ -1,3 +1,12 @@
+## ROBOCZA 88ca0b0d -- 2026-11-04 -- wydarzenia żyją jedną turę; cofnięcie błędnej wycinki lasu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`124661ef2` + EVENTS-ONE-TURN `1fbfb080a`) oraz cofnięcie RIVER-FOREST-CLEAR; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `88ca0b0d410937d88501797936057ca1`, 70203589 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: wydarzenia informacyjne wygasają po jednej turze (nieprzeczytane znikają i nie wracają); decyzyjne bez zmian. Cofnięta zmiana `ca2a0d57` (wycinka zawsze w Żywności/Zrównoważonym) — wycinka znów zależy od włączonego przełącznika „Wolno wycinać las” w każdym profilu.
+- Testy: tsc PASS; events 25/0; ai-food-only 81/0; auto-improvements 46/0; irrigation 43/0; autoclear-priority 60/0; farma-lesie-usun 143/0.
+- Ograniczenia: część przeglądarkowych testów wydarzeń niezmierzona.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `1e206e6b93ead83afb1da71f589010d4`, 70203077 bajtów.
+
 ## ROBOCZA 1e206e6b -- 2026-11-04 -- bonus za trasę morską tylko z Portem (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`c005d7500` + TRADE-SEA-BONUS-REQUIRES-PORT `2ecb33c7e`) i commit wdrożenia; decyzja właściciela (ABC B), stała zgoda.

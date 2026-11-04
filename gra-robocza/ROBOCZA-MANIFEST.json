@@ -1,110 +1,111 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "1e206e6b93ead83afb1da71f589010d4",
-  "bundleSha256": "3299bed1bbaa68db3651533c8e74de04d658131cc5f8f055efdcc32d72653b84",
-  "bundleBytes": 70203077,
+  "bundleMd5": "88ca0b0d410937d88501797936057ca1",
+  "bundleSha256": "abe85b4cdd933fbdc3cd11c5f4bd7b2467b32aa935eb1da88a9600f23b6cebb7",
+  "bundleBytes": 70203589,
   "sourceSnapshot": {
-    "source": "main c005d7500 + TRADE-SEA-BONUS-REQUIRES-PORT (2ecb33c7e)",
+    "source": "main 124661ef2 + EVENTS-ONE-TURN-LIFETIME (1fbfb080a) + REVERT RIVER-FOREST-CLEAR (4533d4d21, f4ef94523)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-TRADE-SEA-BONUS-REQUIRES-PORT-Q1: bonus +1 za trasę morską ponad pierwszą (computeSeaTradeBonusIncomeByCity) tylko dla miast z Portem (Port/Port wielki); trasy i dochód dystansowy bez zmian (decyzja właściciela ABC B, 2026-11-04)."
+    "R-WEB-EVENTS-ONE-TURN-LIFETIME-Q1: wydarzenia informacyjne (wszystkie dzienniki wydarzeń) żyją jedną turę gracza — nieprzeczytane i nieusunięte znikają przy przejściu tury i nie wracają, w nowej turze są tylko nowe; decyzyjne (blocking: bunt, pusta produkcja, propozycje dyplomatyczne, negocjacje) bez zmian.",
+    "COFNIĘCIE R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-Q1 (ROBOCZA ca2a0d57): zmiana była błędna — wycinka lasu ma zależeć od WŁĄCZONEGO przełącznika „Wolno wycinać las” w każdym profilu (Żywność, Zrównoważony i inne), a nie wycinać zawsze. Przywrócone zachowanie z przełącznikiem w każdym profilu; faktyczny problem właściciela (las nie jest wycinany mimo włączonego przełącznika) zlecony osobnym tematem."
   ],
   "verification": [
-    "tsc --noEmit PASS po scaleniu",
-    "trade-sea-bonus-requires-port 30/0 (RED na bazie 7/19, 4 mutanty); trade-routes 96/0; trade-routes-hud-filter 64/0; trade-routes-contact-only 36/0; naval-water-access-gate 40/0"
+    "tsc --noEmit PASS po scaleniu i cofnięciu",
+    "events-one-turn-lifetime 25/0; ai-food-only-worked-hexes 81/0; auto-improvements 46/0; autoimprove-irrigation-after-farms 43/0; autoclear-priority-q1 60/0; farma-lesie-usun-istniejace 143/0"
   ],
   "limits": [
-    "Symulacja 3 ziaren NIE_ZMIERZONO (zastąpiona mapą wysp w teście); opisy/tooltipy UI o wymogu Portu niesprawdzone; hud-skarbiec 33/1 i trade-ilosc 35/5 czerwone na bazie"
+    "Przeglądarkowe testy wydarzeń częściowo NIE_ZMIERZONO; 3 testy czerwone na bazie bez zmian (end-turn-modal-sequencing, era-change-toast-defer, load-fail-toast-zindex)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "TRADE-SEA-BONUS-REQUIRES-PORT: Operator → Evaluator PASS-WITH-NOTES → FC PASS-WITH-NOTES."
+    "notes": "EVENTS-ONE-TURN: Operator → Evaluator PASS-WITH-NOTES → FC PASS-WITH-NOTES; cofnięcie RIVER-FOREST-CLEAR na polecenie właściciela."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T20:05:30",
+  "hubGeneratedAt": "2026-11-04T20:13:02",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "1e206e6b93ead83afb1da71f589010d4",
-      "sizeBytes": 70203077
+      "md5": "88ca0b0d410937d88501797936057ca1",
+      "sizeBytes": 70203589
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "1e206e6b93ead83afb1da71f589010d4",
-      "sizeBytes": 70203077
+      "md5": "88ca0b0d410937d88501797936057ca1",
+      "sizeBytes": 70203589
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "1e206e6b93ead83afb1da71f589010d4",
-      "sizeBytes": 70203077
+      "md5": "88ca0b0d410937d88501797936057ca1",
+      "sizeBytes": 70203589
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "1e206e6b93ead83afb1da71f589010d4",
-      "sizeBytes": 70203077
+      "md5": "88ca0b0d410937d88501797936057ca1",
+      "sizeBytes": 70203589
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "1e206e6b93ead83afb1da71f589010d4",
-      "sizeBytes": 70203077
+      "md5": "88ca0b0d410937d88501797936057ca1",
+      "sizeBytes": 70203589
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "1e206e6b93ead83afb1da71f589010d4",
-      "sizeBytes": 70203077
+      "md5": "88ca0b0d410937d88501797936057ca1",
+      "sizeBytes": 70203589
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "1e206e6b93ead83afb1da71f589010d4",
-      "sizeBytes": 70203077
+      "md5": "88ca0b0d410937d88501797936057ca1",
+      "sizeBytes": 70203589
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "1e206e6b93ead83afb1da71f589010d4",
-      "sizeBytes": 70203077
+      "md5": "88ca0b0d410937d88501797936057ca1",
+      "sizeBytes": 70203589
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "1e206e6b93ead83afb1da71f589010d4",
-      "sizeBytes": 70203077
+      "md5": "88ca0b0d410937d88501797936057ca1",
+      "sizeBytes": 70203589
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "1e206e6b93ead83afb1da71f589010d4",
-      "sizeBytes": 70203077
+      "md5": "88ca0b0d410937d88501797936057ca1",
+      "sizeBytes": 70203589
     }
   ],
-  "md5": "1e206e6b93ead83afb1da71f589010d4",
-  "sizeBytes": 70203077,
+  "md5": "88ca0b0d410937d88501797936057ca1",
+  "sizeBytes": 70203589,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "ca2a0d57f78560d5ef4dbfabb03db9e7"
+    "bundleMd5": "1e206e6b93ead83afb1da71f589010d4"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 ca2a0d57f78560d5ef4dbfabb03db9e7, 70203042 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 1e206e6b93ead83afb1da71f589010d4, 70203077 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1280,8 +1281,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T20:05:29+00:00",
-  "buildStamp": "2026-11-04 20:05",
+  "publishedAt": "2026-11-04T20:13:01+00:00",
+  "buildStamp": "2026-11-04 20:13",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
