@@ -765,3 +765,6 @@ Uruchomione równolegle (Opus 5.5, rozłączne pliki `src/ui/*`): UI-2-B (w toku
 
 ## 2026-11-04 — kontrola cykliczna 06:11
 Nic do integracji. Trwa 5 workflowów UI (Opus 5.5): UI-2-B, C, D, E, F. `parity-v2` = `2198eaf7e`. Dysk ≈ 1,9 GB wolnego (5 worktree ≈ 1,1 GB każdy) — wąskie gardło; UI-2-G czeka na zwolnienie miejsca; po każdym wyniku sprzątanie worktree. Posprzątano scratchpad (≈1,2 GB). Czeka na zgodę właściciela: skasowanie ~14 GB starych `esbuild-*.map` w `/tmp`.
+
+## 2026-11-04 — POLECENIE WŁAŚCICIELA: „tylko dokończ co zacząłeś (Opus) i tyle”
+Nie uruchamiam nowych tematów (UI-2-G, kolejne partie, tematy webowe). Dokańczam trwające: UI-2-B, C, D, E, F (Opus 5.5) — po każdym wyniku: integracja na `parity-v2`, sprzątanie worktree, wpis w LEDGER; ewentualne rundy FAIL tego samego ID są częścią dokończenia. Po zakończeniu wszystkich pięciu — stop, raport końcowy dla właściciela.
