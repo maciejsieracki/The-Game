@@ -207,6 +207,18 @@ Measured: two runs in two different scratch directories (separate `npm install`,
 `git archive`) give identical `units.json` (`6fb3b65a…12b171`, = MANIFEST) and `gen_units.mjs` (`f59b9842…4bc3`).
 No `Math.random` is reached: placement is deterministic, unit models are procedural.
 
+**REPIN-3D A4 (R-RUSTPORT-REPIN-3D-A4-Q1): `units.json` regenerated on `origin/main` @ `86d510c66`.** The web
+placement changed (`_placeUnits` / `_placeUnitsOneSide` use `initialBattleSlots` of `battle/formationRules.ts`,
+mounted wings, `formationRank`; `dyspozycje/rust-port/p4/P4-REPIN-3D.md` §2.1 #12), the scene did not. The SAME
+`gen_units.ts` and `build_units.mjs` (unchanged files) run on `git archive 86d510c66 gra/src gra/data` instead of
+`edb8fb56`: `units.json` `4242bc10c46a4d6a042c59867af24c07c4f16c26b3ddbdcf562f0c1c7af15e54` (645 448 B; three
+directories, = MANIFEST), `gen_units.mjs` `2a35e6f4e07eb312edb323cb604600749a413c01a757efcadea2783e0a7684d8`
+(not committed). Leaf diff against the pin file (`6fb3b65a…`): only `ctor/*/{spawn,units,moves,posts,scene}` of 10
+of the 11 cases (`maly` byte for byte); `direct`, `consts`, every `wall` and `tilesRle`, the unit id sets and the
+spawn / deploy-move counts are identical. `tests/battle3d_units.rs` passes on the new file with the Rust scene code
+unchanged. The `edb8fb56` recipe above reproduces the pin file only. The A4 constructor vectors (`fortKind`, Militia,
+siege towers) are `tests/repin3d_fixtures/a4.json` (`gen_a4.ts`, README there).
+
 ## Cases
 
 | group | n | what |

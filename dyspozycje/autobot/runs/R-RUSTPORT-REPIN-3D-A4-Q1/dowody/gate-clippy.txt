@@ -1,0 +1,5 @@
+## rustc 1.97.0 (2d8144b78 2026-07-07); CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0
+## $ cargo clippy --locked --all-targets -- -D warnings
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d74f9aed-5b2-1/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 9.70s
+EXIT=0

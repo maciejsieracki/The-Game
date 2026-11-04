@@ -1,0 +1,11 @@
+KILLED   [5] wall kind ignored (test failed)
+KILLED   [6] wall_kind mur -> palisada (test failed)
+KILLED   [7] towers not placed (test failed)
+KILLED   [8] towers material swapped (test failed)
+KILLED   [9] towers before the wall (test failed)
+KILLED   [10] route: siege tower rule off (test failed)
+KILLED   [11] route: militia wojownik (test failed)
+KILLED   [12] route: militia wlocznik (test failed)
+KILLED   [13] route: militia miecz (test failed)
+KILLED   [14] route: militia procarz (test failed)
+KILLED 10/10

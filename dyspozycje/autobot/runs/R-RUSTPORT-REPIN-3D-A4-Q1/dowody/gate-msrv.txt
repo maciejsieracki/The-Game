@@ -1,0 +1,45 @@
+## rustc 1.97.0 (2d8144b78 2026-07-07); CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0
+## $ cargo +1.87.0 test --locked --test battle3d_units --test battle3d_dynamics --test battle3d_picking
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d74f9aed-5b2-1/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 8.21s
+     Running tests/battle3d_dynamics.rs (target/debug/deps/battle3d_dynamics-1767499cde8498a7)
+
+running 5 tests
+test constants_and_easing_equal_web ... ok
+test projectiles_match_web ... ok
+test gate_styles_and_rout_facing_match_web ... ok
+test deploy_phase_matches_web ... ok
+test dynamics_match_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+
+     Running tests/battle3d_picking.rs (target/debug/deps/battle3d_picking-0c63eab7d1b1d334)
+
+running 8 tests
+test bars_toggle_matches_web ... ok
+test camera_control_matches_web ... ok
+test extra_siege_cases_match_web ... ok
+test helpers_and_constants_equal_web ... ok
+test battle_clicks_and_box_select_match_web ... ok
+test extra_deploy_cases_match_web ... ok
+test deploy_picking_and_clicks_match_web ... ok
+test siege_picking_matches_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.15s
+
+     Running tests/battle3d_units.rs (target/debug/deps/battle3d_units-734c6a4ed9df00f4)
+
+running 9 tests
+test ghosts_match_web ... ok
+test constants_equal_web ... ok
+test order_arrows_match_web ... ok
+test order_preview_matches_web ... ok
+test queued_order_visuals_match_web ... ok
+test bars_and_fallback_match_web ... ok
+test selection_rings_match_web ... ok
+test units_constructor_matches_web ... ok
+test fort_militia_siege_tower_constructor_matches_web ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.08s
+
+EXIT=0
