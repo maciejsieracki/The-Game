@@ -5,9 +5,9 @@
 
 import type { GameData, UnitDef } from '../data/loader';
 import type { ProductionItem } from '../game/production';
-import { formatManpower } from '../game/manpower';
+import { formatManpowerCompact } from '../game/manpower';
 // R-WEB-HUD-NUMBER-ABBREV-Q1 (runda 2): widoczny zapis na karcie = ten sam „k"/„M" co pula nad listą; title zostaje pełnym opisem.
-import { formatCompactNumber } from './formatCompactNumber';
+import { formatCompactNumber, formatFullNumber } from './formatCompactNumber';
 import { categoryOf } from '../units/setup';
 import { unitIconSvg } from './icons/brandAssets';
 import {
@@ -175,8 +175,8 @@ export function manpowerStatusTitle(available: number, required: number): string
   const a = normalizedManpower(available);
   const r = normalizedManpower(required);
   const missing = Math.max(0, r - a);
-  const base = `Rekruci: dostępne ${formatManpower(a)} / potrzebne ${formatManpower(r)}`;
-  return missing > 0 ? `${base} — brakuje ${formatManpower(missing)}` : base;
+  const base = `Rekruci: dostępne ${formatFullNumber(a)} / potrzebne ${formatFullNumber(r)}`;
+  return missing > 0 ? `${base} — brakuje ${formatFullNumber(missing)}` : base;
 }
 
 /**

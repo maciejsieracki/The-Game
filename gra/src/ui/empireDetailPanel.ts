@@ -10,7 +10,7 @@ import {
   type EmpireResourceRow,
   type EmpireUchwalaRow,
 } from './empireDetailTypes';
-import { formatObywateleLabel, formatManpower } from '../game/manpower';
+import { formatObywateleLabel, formatManpowerCompact } from '../game/manpower';
 import { stockResourceLabel } from '../game/building-stock-cost';
 import { CITIZEN_UPKEEP_RATE_PER_CITIZEN } from '../game/citizen-resource-upkeep';
 import { resourceUsageTotal } from '../game/resource-usage-breakdown';
@@ -1710,7 +1710,7 @@ function renderReligiaSection(religion: EmpireDetailSnap['religion']): string {
     + '<span class="civ-emp-relig-sub">religia państwowa · własna</span></span></div>';
 
   h += '<div class="civ-emp-two">'
-    + `<div class="civ-emp-box"><div class="k">WYZNAWCY</div><div class="v">${formatManpower(religion.totalAdherents)} `
+    + `<div class="civ-emp-box"><div class="k">WYZNAWCY</div><div class="v">${formatManpowerCompact(religion.totalAdherents)} `
     + `<span style="font-size:11px;color:#78c95a;font-weight:600">${religion.ownSharePct}%</span></div></div>`
     + `<div class="civ-emp-box"><div class="k">WIARA / TURĘ</div><div class="v">${signedTxt(religion.faithRatePerTurn)}</div></div>`
     + '</div>';
@@ -1737,7 +1737,7 @@ function renderReligiaSection(religion: EmpireDetailSnap['religion']): string {
     const relCell = c.religionLabel === '—'
       ? '<span style="color:#6f7889">—</span>'
       : `<span style="color:${c.isOwn ? '#d9a441' : '#9aa4b2'}">${esc(c.religionLabel)}</span>`;
-    h += miniRow([esc(c.name), relCell, formatManpower(c.adherents)], grid);
+    h += miniRow([esc(c.name), relCell, formatManpowerCompact(c.adherents)], grid);
   }
   h += '</div>';
 
@@ -1901,7 +1901,7 @@ export function cityMiastaMiniDetail(
     switch (colId) {
       case 'miasto': return 'SUMA / ŚREDNIA';
       case 'obyw': return String(summary.obywTotal);
-      case 'ludnosc': return esc(formatManpower(summary.ludnoscAbsolutnaTotal));
+      case 'ludnosc': return esc(formatManpowerCompact(summary.ludnoscAbsolutnaTotal));
       case 'wzrost': return summary.wzrostProcentAvg != null ? `${summary.wzrostProcentAvg}%` : '—';
       case 'praca': return signedTxt(summary.pracaTotal);
       case 'pieniadz': return signedTxt(summary.pieniadzTotal);
@@ -2328,7 +2328,7 @@ export function renderMiastoSection(
     }
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
       + `<div>CAŁA CYWILIZACJA</div><div>${sObyw}</div>`
-      + `<div>${esc(formatManpower(sAbs))}</div></div>`;
+      + `<div>${esc(formatManpowerCompact(sAbs))}</div></div>`;
     h += '</div>';
     h += '<div class="civ-emp-foot">Tempo wzrostu i obrabiane pola — panel miasta.</div>';
   }
@@ -2469,7 +2469,7 @@ export function renderObywateleSection(
   const zadow = e.zadowolenie ?? (happiness.hasData ? happiness.totalNetto : null);
   const przyrost = Math.round(e.ludnoscRate ?? 0);
 
-  h += `<div class="civ-emp-hero">${esc(formatObywateleLabel(sumObyw))} · ${esc(formatManpower(sumAbs))} ludzi</div>`;
+  h += `<div class="civ-emp-hero">${esc(formatObywateleLabel(sumObyw))} · ${esc(formatManpowerCompact(sumAbs))} ludzi</div>`;
   h += '<div class="civ-emp-hero-sub">'
     + (zadow != null ? `Zadowolenie <b>${signedIntTxt(zadow)} Sz</b> · ` : '')
     + `przyrost <b>${signedIntTxt(przyrost)}</b> obyw./turę · `
@@ -2513,7 +2513,7 @@ export function renderObywateleSection(
     + `<span style="display:block;font-size:13px;font-weight:700;color:#d9a441">${esc(religion.stateReligionLabel)}</span>`
     + '<span style="display:block;font-size:11px;color:#7d8798;margin-top:2px">religia państwowa · własna</span></span>'
     + '<span style="flex:none;text-align:right">'
-    + `<span style="display:block;font-size:13px;font-weight:700;color:#e8ebf0">${esc(formatManpower(religion.totalAdherents))}</span>`
+    + `<span style="display:block;font-size:13px;font-weight:700;color:#e8ebf0">${esc(formatManpowerCompact(religion.totalAdherents))}</span>`
     + `<span style="display:block;font-size:10.5px;color:#7d8798">wyznawców · ${religion.ownSharePct}%</span></span></div>`;
   if (religion.foreignSharePct > 0) {
     h += `<div style="font-size:11px;color:#9aa4b2;margin-top:6px">Obca religia: `

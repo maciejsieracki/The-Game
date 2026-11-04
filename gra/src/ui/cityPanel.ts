@@ -167,7 +167,7 @@ import {
 } from '../game/building-resource-gate';
 import { daninaLabel, daninaLabelGenitive, daninaLabelAccusative, type DaninaLabel } from '../game/danina-nazwa';
 import type { CityManpowerSnapshot } from '../game/manpower';
-import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpower, unitManpowerCost, unitManpowerCostForType } from '../game/manpower';
+import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpowerCompact, unitManpowerCost, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
 import {
   unitInfographicMedallionHtml,
@@ -1671,13 +1671,13 @@ function buildGrowthProgressTooltipCard(
   gridDetailRow(
     g,
     'Skala absolutna',
-    `≈ ${formatManpower(fracPeople)} / ${formatManpower(osobNaObywatela)} os.`,
+    `≈ ${formatManpowerCompact(fracPeople)} / ${formatManpowerCompact(osobNaObywatela)} os.`,
   );
   if (gainSlots > 0) {
     gridDetailRow(
       g,
       'Tempo',
-      `+${fmtDecPl(gainSlots)} obywatela/t (≈ +${formatManpower(gainPeople)}/t)`,
+      `+${fmtDecPl(gainSlots)} obywatela/t (≈ +${formatManpowerCompact(gainPeople)}/t)`,
     );
   }
   const note = el('div', 'dc-note');
@@ -5311,8 +5311,8 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   const popHero = el('div', 'food-pop-hero');
   popHero.innerHTML =
     `<div class="pop-slots">${cityPanelChipIcon('res-population', 14)} Ludność ${city.population}</div>` +
-    `<div class="pop-abs">≈ ${formatManpower(osobRazem)} osób` +
-    ` (1 obywatel = ${formatManpower(osobNaObywatela)})</div>`;
+    `<div class="pop-abs">≈ ${formatManpowerCompact(osobRazem)} osób` +
+    ` (1 obywatel = ${formatManpowerCompact(osobNaObywatela)})</div>`;
   mount.appendChild(popHero);
 
   const chips: TabIndicatorChip[] = [
@@ -5572,8 +5572,8 @@ function buildRacjeWzrostDetailCard(
   const g0 = appendDetailGrid(card);
   const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
   gridDetailRow(g0, 'Obywatele (sloty)', String(city.population));
-  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpower(osobRazem)} osób`);
-  gridDetailRow(g0, 'Skala epoki', `1 obywatel = ${formatManpower(cityLudnoscAbsolutna(1, epoch))}`);
+  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpowerCompact(osobRazem)} osób`);
+  gridDetailRow(g0, 'Skala epoki', `1 obywatel = ${formatManpowerCompact(cityLudnoscAbsolutna(1, epoch))}`);
 
   appendDetailSection(card, 'Bilans lokalny (to miasto)');
   const g1 = appendDetailGrid(card);
@@ -5736,12 +5736,12 @@ function buildTopBarRekruciDetailCard(
 
   appendDetailSection(card, 'Stan puli');
   const g = appendDetailGrid(card);
-  gridDetailRow(g, 'Bieżąca pula', formatManpower(mp.manpowerBiezacy));
-  gridDetailRow(g, 'Maksimum', formatManpower(mp.manpowerMax));
-  gridDetailRow(g, 'Odnowa', `+${formatManpower(mp.regenPerTurn)}`);
-  gridDetailRow(g, 'Koszt 1 jednostki', formatManpower(mp.kosztJednostki));
+  gridDetailRow(g, 'Bieżąca pula', formatManpowerCompact(mp.manpowerBiezacy));
+  gridDetailRow(g, 'Maksimum', formatManpowerCompact(mp.manpowerMax));
+  gridDetailRow(g, 'Odnowa', `+${formatManpowerCompact(mp.regenPerTurn)}`);
+  gridDetailRow(g, 'Koszt 1 jednostki', formatManpowerCompact(mp.kosztJednostki));
   gridDetailRow(g, 'Werb przy pełnej puli', String(mp.werbMaxPrzyPelnejPuli));
-  gridDetailRow(g, 'Ludność abs.', formatManpower(mp.ludnoscAbsolutna));
+  gridDetailRow(g, 'Ludność abs.', formatManpowerCompact(mp.ludnoscAbsolutna));
   gridDetailRow(g, 'Obywatele', `${mp.ludki} · epoka ${mp.epoka}`);
 
   appendDetailAlgo(card, 'Skąd bierze się pula', [
@@ -5784,7 +5784,7 @@ function buildTopBarLudnoscDetailCard(
   appendDetailSection(card, 'Co widzisz na pasku');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Duża liczba 👥', `${city.population} — obywatele (sloty) tego miasta`);
-  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpower(osobRazem)} osób`);
+  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpowerCompact(osobRazem)} osób`);
   gridDetailRow(g0, 'Epoka', String(epoch));
   gridDetailRow(g0, 'WZROST%', bd ? `${bd.total}%` : '—');
 
@@ -8257,7 +8257,7 @@ export function appendUnitRecruitCompactRow(
     canPurchase: (opts?.onRecruit ? !opts.disabledReason : !!cfg.onPurchaseUnit) && canMp && recruitOk,
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
-    mpCostLabel: formatManpower(mpCost),
+    mpCostLabel: formatManpowerCompact(mpCost),
     maxQuantity: maxAffordableRecruitQuantity(city, item, mpCost, skarb, stockCost),
     manpowerAvailable: mpAvailable,
     manpowerRequired: mpCost,
@@ -8270,7 +8270,7 @@ export function appendUnitRecruitCompactRow(
       : undefined,
     disabledReason: opts?.disabledReason,
     manpowerMissingLabel: mpMissing != null && mpMissing > 0
-      ? `Brakuje rekrutów: ${formatManpower(mpMissing)}`
+      ? `Brakuje rekrutów: ${formatManpowerCompact(mpMissing)}`
       : undefined,
     onRecruit: (quantity) => opts?.onRecruit
       ? opts.onRecruit(quantity)
@@ -8313,7 +8313,7 @@ export function mountGeneralRecruitmentCardForArmy(cityId: string, host: HTMLEle
     canPurchase: !!cfg.onPurchaseGeneral && !offer.disabledReason && generalMpOk && generalStockOk,
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost: generalMpCost,
-    mpCostLabel: formatManpower(generalMpCost),
+    mpCostLabel: formatManpowerCompact(generalMpCost),
     manpowerAvailable: generalMpAvailable,
     manpowerRequired: generalMpCost,
     maxQuantity: 1,
@@ -8322,7 +8322,7 @@ export function mountGeneralRecruitmentCardForArmy(cityId: string, host: HTMLEle
     stockMissingLabel: generalStockOk ? undefined : 'Brakuje w magazynie: ' + Object.entries(generalStockMissing)
       .map(([key, amount]) => `${amount} ${stockResourceLabel(key)}`).join(', '),
     manpowerMissingLabel: !generalMpOk && generalMpAvailable != null
-      ? `Brakuje rekrutów: ${formatManpower(Math.max(0, generalMpCost - generalMpAvailable))}`
+      ? `Brakuje rekrutów: ${formatManpowerCompact(Math.max(0, generalMpCost - generalMpAvailable))}`
       : undefined,
     disabledReason: offer.disabledReason,
     onRecruit: () => cfg.onPurchaseGeneral?.(cityId, offer.item!.id, offer.item!.koszt),
@@ -9105,11 +9105,11 @@ function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number 
   gridDetailRow(g, 'Dostępne jednostki', String(unitCount));
   gridDetailRow(g, 'Skarb imperium', skarb != null ? `${skarb} 💰` : '—');
   if (mpSnap) {
-    gridDetailRow(g, 'Rekruci (pula miasta)', `${formatManpower(mpSnap.manpowerBiezacy)} / ${formatManpower(mpSnap.manpowerMax)}`);
-    gridDetailRow(g, 'Odnowa rekrutów (miasto / turę)', `+${formatManpower(mpSnap.regenPerTurn)}`);
-    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpSnap.kosztJednostki)} · epoka ${mpSnap.epoka}`);
+    gridDetailRow(g, 'Rekruci (pula miasta)', `${formatManpowerCompact(mpSnap.manpowerBiezacy)} / ${formatManpowerCompact(mpSnap.manpowerMax)}`);
+    gridDetailRow(g, 'Odnowa rekrutów (miasto / turę)', `+${formatManpowerCompact(mpSnap.regenPerTurn)}`);
+    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpowerCompact(mpSnap.kosztJednostki)} · epoka ${mpSnap.epoka}`);
   } else {
-    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpCostStd)} · epoka ${epoch}`);
+    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpowerCompact(mpCostStd)} · epoka ${epoch}`);
   }
   const rq = getProd(city.id).rekrutacja?.length ?? 0;
   gridDetailRow(g, 'W kolejce', String(rq));
@@ -10850,9 +10850,9 @@ function buildCityResourceStatItems(
     items += `<span class="civ-v-res-sep"></span>`;
     items += resLocalOnly(
       cityPanelChipIcon('tb-army', 20),
-      `${formatManpower(mpSnap.manpowerBiezacy)}/${formatManpower(mpSnap.manpowerMax)}`,
+      `${formatManpowerCompact(mpSnap.manpowerBiezacy)}/${formatManpowerCompact(mpSnap.manpowerMax)}`,
       'gold',
-      `Rekruci (Manpower) · +${formatManpower(mpSnap.regenPerTurn)} · kliknij po szczegóły`,
+      `Rekruci (Manpower) · +${formatManpowerCompact(mpSnap.regenPerTurn)} · kliknij po szczegóły`,
       'rekruci',
     );
   }
@@ -11061,7 +11061,7 @@ function renderCityHeaderCompact(mount: HTMLElement, city: City, view: CityView 
   const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
   mount.innerHTML =
     `<div class="civ-v-city-name">${city.name}</div>` +
-    `<div class="civ-v-city-pop">${city.population} obywateli · ≈ ${formatManpower(osobRazem)} · epoka ${epoch}</div>`;
+    `<div class="civ-v-city-pop">${city.population} obywateli · ≈ ${formatManpowerCompact(osobRazem)} · epoka ${epoch}</div>`;
   if (!view) {
     mount.appendChild(el('div', 'muted', 'Brak danych ekonomii'));
     return;
