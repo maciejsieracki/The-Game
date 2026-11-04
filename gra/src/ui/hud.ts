@@ -211,6 +211,9 @@ export interface HudState {
   surowceSummary?: string;
   /** true → czerwony/bursztynowy alert: co najmniej jeden surowiec na capie lub w niedoborze. */
   surowceAlert?: boolean;
+  /** R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1: etykiety surowców magazynowanych w niedoborze
+   *  (ratePerTurn<0 — ta sama definicja „niedoboru" co alert chipu „Surowce" w main.ts). */
+  surowceNiedoborLabels?: string[];
   /** TEMAT 14 (Maciej 2026-07-24) — dochód z aktywnych tras handlowych (gracz↔obca cyw.) tej tury. */
   handelIncome?: number;
   /** Liczba aktywnych tras handlowych gracza (do tytułu chipa). */
@@ -747,7 +750,13 @@ html.civ-ui-zoom-active .civ-hud-util-dock{
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
-  s.textContent = css + '\n' + resourceColorClassCss('.civ-hud') + '\n';
+  // R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1: niedobór = czerwona czcionka (--tg-red, rozjaśniona do AA
+  // na ciemnym pasku: #c84040 daje ~3.9:1 < 4.5:1). Reguła PO palecie, swoistość (0,4,0) > (0,2,0).
+  const shortCss = '.civ-hud{--civ-hud-shortage:#ee6c6c;}\n'
+    + '.civ-hud .civ-hud-chip.civ-hud-chip-short .civ-hud-chip-val,'
+    + '.civ-hud .civ-hud-chip.civ-hud-chip-short .civ-hud-chip-lbl,'
+    + '.civ-hud .civ-hud-chip.civ-hud-chip-short .civ-hud-chip-rate{color:var(--civ-hud-shortage);}\n';
+  s.textContent = css + '\n' + resourceColorClassCss('.civ-hud') + '\n' + shortCss;
   document.head.appendChild(s);
 }
 
@@ -827,7 +836,8 @@ function skarbiecChipTitle(s: HudState): string {
   const utrzymanieBudynkow = s.bogactwoUtrzymanieBudynkow ?? 0;
   const utrzymanieJednostek = s.bogactwoUtrzymanieJednostek ?? 0;
   const netto = s.bogactwoRate ?? 0;
-  return `${base}: Podatek i budynki: ${signed(daninaIBudynki)} pkt Pieniądza`
+  const short = hudGoldShortage(s) ? ' · ⚠ Zaczyna brakować pieniędzy (czerwony)' : '';
+  return `${base}${short}: Podatek i budynki: ${signed(daninaIBudynki)} pkt Pieniądza`
     + ` · Handel ze szlaków: ${signed(handel)} pkt Pieniądza`
     + ` · Utrzymanie budynków: ${signed(-utrzymanieBudynkow)} pkt Pieniądza`
     + ` · Utrzymanie jednostek: ${signed(-utrzymanieJednostek)} pkt Pieniądza`
@@ -918,6 +928,7 @@ function spichlerzChipTitle(s: HudState): string {
     const n = s.zywnoscMiastNiedokarmionych!;
     title += ` · ⚠ Realny niepokryty deficyt: ${n} ${miastoNiedokarmioneWordHud(n)}`;
   }
+  if (hudFoodShortage(s)) title += ` · ⚠ Zaczyna brakować żywności (czerwony)`;
   if (s.glodWojska) title += ` · Głód wojska: atrycja HP trwa!`;
   else if (s.zywnoscKarencjaZaTur != null && s.zywnoscKarencjaZaTur > 0) {
     title += ` · Głód wojska za ${s.zywnoscKarencjaZaTur} ${slowoTuraHud(s.zywnoscKarencjaZaTur)} — magazyn ujemny!`;
@@ -992,12 +1003,49 @@ function religiaChipTitle(s: HudState): string {
     + ` · Kliknij po szczegóły.`;
 }
 
+/**
+ * R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1 — „zaczyna brakować" (tylko prezentacja, bez zmian logiki gry).
+ * Okno zapasu: bilans netto < 0 i zapas starcza na <= tyle tur (lub zapas <= 0). Gra nie ma
+ * istniejącego progu „bankructwa" złota; dla żywności reużywamy istniejących ostrzeżeń o głodzie.
+ */
+export const HUD_SHORTAGE_RUNWAY_TURNS = 5;
+
+function runwayShort(stock: number, rate: number): boolean {
+  // Zapas ujemny = zawsze niedobór. Bilans >= 0 (także 0 po floor() z dodatniego ułamka, np. +0,6)
+  // NIE jest niedoborem, nawet przy zapasie 0 (start gry). Zapas 0 + bilans < 0 = niedobór.
+  if (stock < 0) return true;
+  if (rate >= 0) return false;
+  return stock <= 0 || stock / -rate <= HUD_SHORTAGE_RUNWAY_TURNS;
+}
+
+/** Skarbiec: zapas < 0 albo ujemny bilans netto wyczerpujący zapas w <= N turach. */
+export function hudGoldShortage(s: HudState): boolean {
+  return runwayShort(s.bogactwo, s.bogactwoRate ?? 0);
+}
+
+/** Spichlerz: istniejące ostrzeżenia o głodzie (głód wojska, karencja, niedokarmione miasta) lub okno zapasu. */
+export function hudFoodShortage(s: HudState): boolean {
+  if (s.glodWojska) return true;
+  if ((s.zywnoscKarencjaZaTur ?? 0) > 0) return true;
+  if ((s.zywnoscMiastNiedokarmionych ?? 0) > 0) return true;
+  const stock = Number(s.zywnoscLabel);
+  return runwayShort(Number.isFinite(stock) ? stock : 0, s.zywnoscRate ?? 0);
+}
+
+/** Surowce: choć jeden magazynowany surowiec w niedoborze. */
+export function hudResourceShortage(s: HudState): boolean {
+  return (s.surowceNiedoborLabels?.length ?? 0) > 0;
+}
+
 function surowceChipTitle(s: HudState): string {
   const summary = s.surowceSummary ?? '—';
   let title = `Surowce — magazyn państwa`
     + ` · Podsumowanie: ${summary} surowców magazynowanych bez alertu (OK / wszystkie)`;
   if (s.surowceAlert) {
     title += ` · ⚠ Alert: co najmniej jeden surowiec na limicie magazynu lub w niedoborze`;
+  }
+  if (hudResourceShortage(s)) {
+    title += ` · Niedobór (czerwony): ${s.surowceNiedoborLabels!.join(', ')}`;
   }
   return `${title} · Kliknij po szczegóły.`;
 }
@@ -1092,6 +1140,7 @@ export function renderBarD1B(s: HudState): string {
       label: 'Skarbiec',
       ...cn(s.bogactwo, s.bogactwoWplywyBrutto ?? s.bogactwoRate ?? 0),
       valClass: ` ${resourceTextClass('skarbiec')}`,
+      shortage: hudGoldShortage(s),
       // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: żeton pokazuje WPŁYWY BRUTTO (przed
       // utrzymaniem budynków/jednostek), nie `bogactwoRate` (netto) — redukcja do
       // netto zostaje wyłącznie w rozpisce `skarbiecChipTitle()` i w panelu.
@@ -1124,6 +1173,7 @@ export function renderBarD1B(s: HudState): string {
       // / EN: chip turns red for unfed cities too, not only army hunger/negative rate —
       // the color alone should signal a deficit.
       rateWarn: !!(s.glodWojska || (s.zywnoscRate ?? 0) < 0 || (s.zywnoscMiastNiedokarmionych ?? 0) > 0),
+      shortage: hudFoodShortage(s),
       act: 'spichlerz',
       title: spichlerzChipTitle(s),
     }),
@@ -1147,6 +1197,7 @@ export function renderBarD1B(s: HudState): string {
     value: '',   // Maciej 2026-07-24: bez liczby na chipie (był „9/9") — sam żeton + klik po magazyn
     rate: s.surowceAlert ? '⚠' : undefined,
     rateWarn: !!s.surowceAlert,
+    shortage: hudResourceShortage(s),
     act: 'surowce',
     title: surowceChipTitle(s),
   })

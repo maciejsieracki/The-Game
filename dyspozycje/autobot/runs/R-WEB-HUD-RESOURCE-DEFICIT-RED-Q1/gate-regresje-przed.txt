@@ -1,0 +1,10 @@
+citizen-resource-upkeep-test: EXIT=1 | FAIL: F1 (mutant 1): "citizenResourceHappinessDelta: citizenUpkeep.happinessDelta," obecne w oknie wywołania evaluateOrderFromBreakdown -- j
+hud-moc-warstwa-test: EXIT=1 | ⚡ Done in 5ms
+hud-obywatele-chip-test: EXIT=1 | ⚡ Done in 4ms
+hud-skarbiec-test: EXIT=1 | hud-skarbiec-test: 33 passed, 1 failed
+hud-tooltip-body-mounted-panels-test: EXIT=1 | -- Scenariusz 1: panel Imperium (.civ-emp-panel), montowany na document.body, poza .civ-hud --
+resource-usage-breakdown-test: EXIT=1 | FAIL: D4: gracz -- unitResourceUpkeepByOwner.set(0, ...) czyta WPROST econ.resourceUpkeepUnitsByOwner.get(0)
+sidepanel-hud-deadzone-test: EXIT=1 | -- A. Martwa strefa .civ-side-panel -> canvas (przed mutacją = PO naprawie) --
+unit-resource-upkeep-test: EXIT=1 | FAIL: 2× Włócznik -> {braz:4} (got {"braz":20}, want {"braz":4})
+horse-resource-terrain-test: EXIT=null | --- (B) prawdziwy generator, Standardowy ---
+saveload-hud-cache-hotseat-live-test: EXIT=2 | [saveload-hud-cache-hotseat] vite build -> /tmp/civ-saveload-hudcache-hs-Ic1H81

@@ -1,0 +1,7 @@
+MUT runway0: 32 pass, 3 fail -> ZABITA (test czerwony)
+MUT runway9: 34 pass, 1 fail -> ZABITA (test czerwony)
+MUT res-never: 28 pass, 7 fail -> ZABITA (test czerwony)
+MUT food-ignore-hunger: 34 pass, 1 fail -> ZABITA (test czerwony)
+MUT color-gold: 24 pass, 11 fail -> ZABITA (test czerwony)
+MUT color-tgred(AA): 24 pass, 11 fail -> ZABITA (test czerwony)
+EXIT=0
