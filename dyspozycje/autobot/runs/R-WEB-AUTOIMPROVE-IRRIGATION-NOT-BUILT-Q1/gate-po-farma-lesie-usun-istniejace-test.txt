@@ -1,0 +1,165 @@
+
+--- (1) PRYMITYWY: farma + Las ---
+  [OK] prymityw: farma na Las = relikt do usuniecia
+  [OK] prymityw: farma bez lasu NIE jest reliktem
+  [OK] prymityw: tartak na Las NIE jest reliktem (ma wlasna, odrebna zasade)
+  [OK] prymityw: oboz lowiecki na Las NIE jest reliktem
+  [OK] prymityw: glinianka na Las NIE jest reliktem
+  [OK] zakres §14: irygacja na lesie NIE jest ruszana tym tematem
+  [OK] prymityw: farma na nakladce „brak" (nie-las) NIE jest reliktem
+  [OK] prymityw: farma na nakladce „zloze_gliny" (nie-las) NIE jest reliktem
+  [OK] prymityw: farma na nakladce „zloze_rudy" (nie-las) NIE jest reliktem
+  [OK] prymityw: farma na nakladce „zloze_konia" (nie-las) NIE jest reliktem
+  [OK] prymityw: farma na nakladce „zloze_owiec" (nie-las) NIE jest reliktem
+  [OK] prymityw: farma na nakladce „zloze_bydla" (nie-las) NIE jest reliktem
+  [OK] prymityw: farma na nakladce „zloze_lamy" (nie-las) NIE jest reliktem
+  [OK] strip: z lesnego heksa znika TYLKO farma, tartak zostaje
+  [OK] strip: poza lasem lista wraca bez zmian
+  [OK] strip: pusta lista na lesie = pusta lista (brak wyjatku)
+
+--- (2) SYNTETYK: wszystkie tereny, las vs otwarte ---
+  [OK] plan: przejrzano wszystkie 8 heksow (kontrola istotnosci)
+  [OK] plan: 5 heksow z farma na lesie (Laka/Rownina/Wzgorza/mix/tylko-pola)
+  [OK] plan: 2 farmy na otwartym terenie policzone OSOBNO
+  [OK] usuniecie: 5 farm-reliktow zniknelo
+  [OK] usuniecie: heksy z sama farma znikaja z rejestru placedImprovements
+  [OK] WZGORZA+Las: farma znika BEZ wyjatku terenowego (byla farma lesna z definicji starej reguly)
+  [OK] LAS ZOSTAJE: nakladka Las nietknieta na kazdym sprzatanym heksie
+  [OK] heks wraca do stanu „las, bez ulepszenia" (legacy pole `ulepszenie` = brak)
+  [OK] mix farma+tartak na lesie: znika TYLKO farma, tartak zostaje
+  [OK] mix: pola heksa (zrodlo plonow) tez pokazuja juz tylko tartak
+  [OK] heks z samym tartakiem w lesie: NIETKNIETY
+  [OK] farma obecna TYLKO w polach heksa (bez wpisu w rejestrze) tez znika, tartak zostaje
+  [OK] sprzatanie NIE tworzy wpisu w rejestrze tam, gdzie go nie bylo (naprawa nie jest za szeroka)
+  [OK] KONTROLA: farmy na Lace/Rowninie BEZ lasu przetrwaly bez zmian
+  [OK] KONTROLA: pola heksa farmy na otwartym terenie nietkniete
+  [OK] idempotencja: drugi przebieg usuwa 0 heksow
+  [OK] idempotencja: drugi przebieg nie zglasza ZADNEJ zmiany heksa
+  [OK] idempotencja: rejestr bez zmian po drugim przebiegu (4 wpisy)
+  [OK] idempotencja: drugi przebieg nie kasuje niczego ponownie (kontrolna farma stoi)
+  [OK] idempotencja: trzeci przebieg BEZ callbacku nie rzuca bledu i nie zmienia nic
+
+--- (3) SKUTEK: miasto traci plon z farmy, las zostaje ---
+  [OK] skutek: zywnosc heksa SPADA po usunieciu farmy
+  [OK] skutek: spadek = dokladnie bonus farmy z terrain-improvements.json (nic wiecej nie znika)
+  [OK] skutek: heks jest teraz IDENTYCZNY z golym lasem — „las, bez ulepszenia"
+  [OK] skutek: plon farmy na otwartym terenie BEZ ZMIAN
+  [OK] praca NIE wraca: raport sprzatania nie ma ZADNEGO pola zwrotu pracy/surowca
+
+--- (4) PRZED/PO na ziarnach: zywy stan gry (trwajaca partia) ---
+  [OK] ziarno 42: PRZED — sa farmy na lesie (warunek istotnosci)
+  [OK] ziarno 42: PRZED — sa farmy na otwartym terenie (kontrola)
+  [OK] ziarno 42: PO — DOKLADNIE 0 farm na lesie
+  [OK] ziarno 42: raport zgadza sie z pomiarem (101 = 101)
+  [OK] ziarno 42: farmy na Lace/Rowninie BEZ lasu przetrwaly WSZYSTKIE
+  [OK] ziarno 42: LAS nietkniety — liczba heksow z nakladka Las bez zmian
+  [OK] ziarno 42: rejestr placedImprovements tez czysty
+  [OK] ziarno 42: idempotencja na realnej mapie (drugi przebieg = 0)
+  [OK] ziarno 4242: PRZED — sa farmy na lesie (warunek istotnosci)
+  [OK] ziarno 4242: PRZED — sa farmy na otwartym terenie (kontrola)
+  [OK] ziarno 4242: PO — DOKLADNIE 0 farm na lesie
+  [OK] ziarno 4242: raport zgadza sie z pomiarem (100 = 100)
+  [OK] ziarno 4242: farmy na Lace/Rowninie BEZ lasu przetrwaly WSZYSTKIE
+  [OK] ziarno 4242: LAS nietkniety — liczba heksow z nakladka Las bez zmian
+  [OK] ziarno 4242: rejestr placedImprovements tez czysty
+  [OK] ziarno 4242: idempotencja na realnej mapie (drugi przebieg = 0)
+  [OK] ziarno 777: PRZED — sa farmy na lesie (warunek istotnosci)
+  [OK] ziarno 777: PRZED — sa farmy na otwartym terenie (kontrola)
+  [OK] ziarno 777: PO — DOKLADNIE 0 farm na lesie
+  [OK] ziarno 777: raport zgadza sie z pomiarem (107 = 107)
+  [OK] ziarno 777: farmy na Lace/Rowninie BEZ lasu przetrwaly WSZYSTKIE
+  [OK] ziarno 777: LAS nietkniety — liczba heksow z nakladka Las bez zmian
+  [OK] ziarno 777: rejestr placedImprovements tez czysty
+  [OK] ziarno 777: idempotencja na realnej mapie (drugi przebieg = 0)
+  [OK] ziarno 90210: PRZED — sa farmy na lesie (warunek istotnosci)
+  [OK] ziarno 90210: PRZED — sa farmy na otwartym terenie (kontrola)
+  [OK] ziarno 90210: PO — DOKLADNIE 0 farm na lesie
+  [OK] ziarno 90210: raport zgadza sie z pomiarem (103 = 103)
+  [OK] ziarno 90210: farmy na Lace/Rowninie BEZ lasu przetrwaly WSZYSTKIE
+  [OK] ziarno 90210: LAS nietkniety — liczba heksow z nakladka Las bez zmian
+  [OK] ziarno 90210: rejestr placedImprovements tez czysty
+  [OK] ziarno 90210: idempotencja na realnej mapie (drugi przebieg = 0)
+
+--- (5) PRZED/PO na ziarnach: pelny round-trip zapis -> wczytanie ---
+  [OK] zapis 42: PRZED — stary zapis niesie farmy na lesie
+  [OK] zapis 42: mapSnapshot po migracji nadal POPRAWNY KSZTALTOWO (migracja nie psuje zapisu)
+  [OK] zapis 42: PO wczytaniu — 0 farm na lesie w odtworzonej mapie
+  [OK] zapis 42: farmy na otwartym terenie przezyly wczytanie
+  [OK] zapis 42: LAS nietkniety po wczytaniu
+  [OK] zapis 42: meta.placedImprovements bez farm na lesie
+  [OK] zapis 42: w rejestrze zostaly DOKLADNIE farmy z otwartego terenu
+  [OK] zapis 42: idempotencja migracji ladunku (drugie wywolanie = 0 zmian)
+  [OK] zapis 42: reszta zapisu nietknieta (tura/seed)
+  [OK] zapis 4242: PRZED — stary zapis niesie farmy na lesie
+  [OK] zapis 4242: mapSnapshot po migracji nadal POPRAWNY KSZTALTOWO (migracja nie psuje zapisu)
+  [OK] zapis 4242: PO wczytaniu — 0 farm na lesie w odtworzonej mapie
+  [OK] zapis 4242: farmy na otwartym terenie przezyly wczytanie
+  [OK] zapis 4242: LAS nietkniety po wczytaniu
+  [OK] zapis 4242: meta.placedImprovements bez farm na lesie
+  [OK] zapis 4242: w rejestrze zostaly DOKLADNIE farmy z otwartego terenu
+  [OK] zapis 4242: idempotencja migracji ladunku (drugie wywolanie = 0 zmian)
+  [OK] zapis 4242: reszta zapisu nietknieta (tura/seed)
+  [OK] zapis 777: PRZED — stary zapis niesie farmy na lesie
+  [OK] zapis 777: mapSnapshot po migracji nadal POPRAWNY KSZTALTOWO (migracja nie psuje zapisu)
+  [OK] zapis 777: PO wczytaniu — 0 farm na lesie w odtworzonej mapie
+  [OK] zapis 777: farmy na otwartym terenie przezyly wczytanie
+  [OK] zapis 777: LAS nietkniety po wczytaniu
+  [OK] zapis 777: meta.placedImprovements bez farm na lesie
+  [OK] zapis 777: w rejestrze zostaly DOKLADNIE farmy z otwartego terenu
+  [OK] zapis 777: idempotencja migracji ladunku (drugie wywolanie = 0 zmian)
+  [OK] zapis 777: reszta zapisu nietknieta (tura/seed)
+  [OK] zapis 90210: PRZED — stary zapis niesie farmy na lesie
+  [OK] zapis 90210: mapSnapshot po migracji nadal POPRAWNY KSZTALTOWO (migracja nie psuje zapisu)
+  [OK] zapis 90210: PO wczytaniu — 0 farm na lesie w odtworzonej mapie
+  [OK] zapis 90210: farmy na otwartym terenie przezyly wczytanie
+  [OK] zapis 90210: LAS nietkniety po wczytaniu
+  [OK] zapis 90210: meta.placedImprovements bez farm na lesie
+  [OK] zapis 90210: w rejestrze zostaly DOKLADNIE farmy z otwartego terenu
+  [OK] zapis 90210: idempotencja migracji ladunku (drugie wywolanie = 0 zmian)
+  [OK] zapis 90210: reszta zapisu nietknieta (tura/seed)
+
+--- (5b) Zapis bez mapSnapshotu: migracja ladunku nie zgaduje ---
+  [OK] bez mapSnapshotu: migracja ladunku zwraca 0 (nie zna nakladek) i nie rzuca
+  [OK] bez mapSnapshotu: rejestr NIETKNIETY — sprzatanie takiego zapisu robi przebieg po zywym stanie (main.ts)
+  [OK] zapis bez meta i bez mapSnapshotu: migracja nie rzuca bledu
+
+--- (6) NOWA PARTIA: generator nie stawia farm w lesie ---
+  [OK] nowa partia 42: mapa MA lasy (warunek istotnosci pomiaru)
+  [OK] nowa partia 42: 0 farm na lesie od razu po generacji (pomiar)
+  [OK] nowa partia 42: sprzatanie nie ma czego usuwac (removed=0)
+  [OK] nowa partia 42: przejrzano CALA mape (1008 heksow)
+  [OK] nowa partia 4242: mapa MA lasy (warunek istotnosci pomiaru)
+  [OK] nowa partia 4242: 0 farm na lesie od razu po generacji (pomiar)
+  [OK] nowa partia 4242: sprzatanie nie ma czego usuwac (removed=0)
+  [OK] nowa partia 4242: przejrzano CALA mape (1008 heksow)
+  [OK] nowa partia 777: mapa MA lasy (warunek istotnosci pomiaru)
+  [OK] nowa partia 777: 0 farm na lesie od razu po generacji (pomiar)
+  [OK] nowa partia 777: sprzatanie nie ma czego usuwac (removed=0)
+  [OK] nowa partia 777: przejrzano CALA mape (1008 heksow)
+  [OK] nowa partia 90210: mapa MA lasy (warunek istotnosci pomiaru)
+  [OK] nowa partia 90210: 0 farm na lesie od razu po generacji (pomiar)
+  [OK] nowa partia 90210: sprzatanie nie ma czego usuwac (removed=0)
+  [OK] nowa partia 90210: przejrzano CALA mape (1008 heksow)
+
+--- (7) WPIECIE main.ts (dowod strukturalny, NIE pomiar zachowania) ---
+  [OK] main.ts: istnieje funkcja sweepLegacyFarmsOnForest
+  [OK] main.ts: sweep deleguje decyzje do removeLegacyFarmsOnForest (jedno zrodlo reguly)
+  [OK] main.ts: wpiecie na sciezce WCZYTANIA ZAPISU (stan a)
+  [OK] main.ts: wpiecie na GRANICY TURY — trwajaca partia (stan b) i nowa partia (stan c)
+  [OK] main.ts: dokladnie 1 definicja + 2 wywolania (zmiana punktowa, wspolbieznosc)
+  [OK] main.ts: sprzatanie stoi W restorePlacedImprovementsFromSave, przed odbudowa meshy
+  [OK] main.ts: sprzatanie na granicy tury stoi PO turn++ i PRZED rotacyjnym autozapisem
+
+--- (8) STRAZNIK ZAKRESU: co ten temat NIE zmienia ---
+  [OK] kanon nietkniety: WYRAB lasu spod farmy nadal NIE kasuje farmy (las znika, farma zostaje)
+  [OK] kanon nietkniety: wyrab nadal kasuje oboz lowiecki (ulepszenie zalezne od lasu)
+  [OK] kwalifikacja nietknieta: isFarmBaseTerrain dziala jak po R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1
+  [OK] kwalifikacja nietknieta: budowa farmy na lesie nadal zablokowana, tartak nadal wolny
+  [OK] migrateImprovementLayers (migracja KLUCZY legacy) nadal nie kasuje warstw — kasowanie to osobna warstwa
+  [OK] zakres: heks lesny z tartakiem i obozem NIETKNIETY
+  [OK] zakres §14: irygacja stojaca na lesie NIE jest ruszana (osobny, nieotwarty temat)
+  [OK] zakres: hodowla na zlozu (bez lasu) NIETKNIETA
+
+=== farma-lesie-usun-istniejace: 143 OK / 0 FAIL ===
+
+EXIT=0

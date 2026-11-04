@@ -108,6 +108,14 @@ export interface ImprovementBuildState {
    * territory (fail-closed).
    */
   ownUnitHexKeys?: ReadonlySet<string>;
+  /**
+   * R-WEB-AUTOIMPROVE-IRRIGATION-NOT-BUILT-Q1 (zgłoszenie właściciela 2026-11-04: „po farmach i trzodzie irygacje nie są budowane”):
+   * czy SĄSIAD z samym `rzeka.obecna` (rzeka WIDOCZNA na mapie, bez wpisu w `riverPaths`) liczy się jako „przy rzece” dla irygacji.
+   * Picker automatu traktuje takiego sąsiada jako rzekę dla farmy/trzody (`onRiverHex`, E1–E3), więc stawiał farmę i trzodę,
+   * a irygacja (`isRiverAdjacent`: własne `rzeka.obecna` LUB `riverPaths` na heksie/sąsiedzie) odpadała na stałe. Ustawia WYŁĄCZNIE
+   * automat (`pickAutoImprovements`, gracz i AI). Brak pola / false = reguła RĘCZNEJ budowy i tooltipów BEZ ZMIAN.
+   */
+  visibleRiverNeighborCountsForIrrigation?: boolean;
 }
 
 export interface ImprovementTypeInfo {
@@ -932,6 +940,7 @@ function createQualifier(state: ImprovementBuildState) {
   const roadKeys = state.roadKeys ?? new Set<string>();
   const ownUnitHexKeys = state.ownUnitHexKeys ?? new Set<string>();
   const riverHexSet = buildRiverHexSet(map);
+  const visibleRiverNeighbor = state.visibleRiverNeighborCountsForIrrigation === true;
   const placedMap = buildPlacedImprovementsMap(map, state.placedImprovements);
   // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): dawne `empireUnlocks` (Model B —
   // computeEmpireLivestockUnlocks(placedMap) dającе "kon" na stałe po pierwszej stadninie na
@@ -971,6 +980,7 @@ function createQualifier(state: ImprovementBuildState) {
     if (riverHexSet.has(`${q},${r}`)) return true;
     for (const nb of hexNeighbors(q, r)) {
       if (riverHexSet.has(`${nb.q},${nb.r}`)) return true;
+      if (visibleRiverNeighbor && map.hexes[`${nb.q},${nb.r}`]?.rzeka?.obecna) return true;
     }
     return false;
   }
