@@ -776,3 +776,6 @@ Właściciel: celem jest zużycie limitu na ciężkich workerach Opus przez noc.
 
 ## 2026-11-04 — kontrola cykliczna 07:11
 Nic do integracji. Trwa 6 workflowów UI (Opus 5.5): B, C, D, E, F, G (ponowione po błędzie procesu: Operator G r1 wziął wiadomość właściciela za zadanie). Dysk ≈ 1,5 GB (wąskie gardło). Plan webowy zapisany (`BACKLOG-WEB-ZGLOSZENIA-20261103.md`): start po zakończeniu UI; nowe zgłoszenie: R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1 (niedobór złota/żywności/surowców czerwoną czcionką).
+
+## 2026-11-04 — kontrola cykliczna 08:11
+Nic do integracji. Trwa 6 workflowów UI (Opus 5.5): B, C, D, E (wznowiony po padnięciu worktree), F, G (wznowiony). Incydent: dysk 100% → `WorktreeIsolationError` dla Evaluatora E i G; odzyskano z commitów Operatora (`refs/keep/RUI2E-op`, `refs/keep/RUI2G-op`, `rust-port-wip/RUI2G-op`), zwolniono 3,3 GB (worktree zakończonych etapów), `resumeFromRunId`. Dysk ≈ 3 GB. Prośba do właściciela o regułę Bash na `rm -rf /tmp/tmp.*` (≈4 GB).
