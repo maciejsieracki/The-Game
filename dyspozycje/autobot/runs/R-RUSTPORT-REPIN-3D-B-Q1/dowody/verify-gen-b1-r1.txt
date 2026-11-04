@@ -1,0 +1,24 @@
+# Niezalezny weryfikator generatora B1 (R-RUSTPORT-REPIN-3D-B-Q1, runda 1)
+# katalog A = mktemp -d (tmp.EuKGZxl9EM), katalog B = mktemp -d (tmp.fIXqWtpRww)
+# kazdy: osobne `npm install --ignore-scripts three@0.169.0 esbuild@0.24.0`, osobne
+# `git archive 86d510c66 gra/src gra/data` (origin/main), node v22.22.0
+# A: gen_b1 + improvements gen.ts + misc gen.ts (do regeneracji fixtur pinu); B: to samo, od zera
+# $ sha256sum (B, A, repo):
+fa57d2dd8dd0eb6e78b5090d18f8c4db5808529c86e65e23a83f69cd1296c258  B/out/b1.json
+fa57d2dd8dd0eb6e78b5090d18f8c4db5808529c86e65e23a83f69cd1296c258  A/out/b1.json
+fa57d2dd8dd0eb6e78b5090d18f8c4db5808529c86e65e23a83f69cd1296c258  REPO/rust-port/renderer/tests/repin3d_fixtures/b1.json
+5766bfcbdf034f7b70681ec9803498c7c66a2cfe5480f4d9aeff8c451e2163ce  B/out/improvements/models.json
+591f9527f819991f26d83feba307bf61f8227592b6432f336bf0dd40614e4c6d  B/out/improvements/sigs.json
+5766bfcbdf034f7b70681ec9803498c7c66a2cfe5480f4d9aeff8c451e2163ce  REPO/rust-port/renderer/tests/fixtures/improvements/models.json  (= A)
+591f9527f819991f26d83feba307bf61f8227592b6432f336bf0dd40614e4c6d  REPO/rust-port/renderer/tests/fixtures/improvements/sigs.json    (= A)
+dc62fa14df77e261e30633290fbe5376ce6bf53358fe7d97614550ab5bb926bb  B/out/misc/overlays.json
+dc62fa14df77e261e30633290fbe5376ce6bf53358fe7d97614550ab5bb926bb  REPO/rust-port/renderer/tests/fixtures/misc/overlays.json        (= A)
+cf17ac9d66604ffd62c21835f990db9b1432315e1ea94947b66372e3c24de8e0  B/out/misc/models.json   (= SHA pinu w tests/fixtures/misc/README.md -> bez zmian)
+06383e4d19e6abeb34b70be136e63b6260f8009796a35ad7c29c7f9de7e6be81  B/out/misc/siege.json    (= SHA pinu w README -> bez zmian)
+# improvements legacy.json / protokeys.json / data.json: cmp z repo (pin) = identyczne (katalog A)
+# Diff liści JSON nowe vs pin (A, skrypt porownujacy):
+#   improvements models.json: 33 przypadki = 32 x res:* (klucz depositDisplayScale) + sect-full:mix-mask5 (fort)
+#   improvements sigs.json: 7 = sect:{all,forts,fort,mix-mask5,owner,posterunek,sectorR0.5}
+#   misc overlays.json: styles/mine (tintOpacity 3fd3333333333333 -> 3fd70a3d70a3d70a) + 51 przypadkow range stylu mine
+# b1: wejscia esbuild (metafile) 45 plikow, 2 879 077 B (<= 10 MB)
+# Katalogi A i B usuniete jawnymi sciezkami po weryfikacji.

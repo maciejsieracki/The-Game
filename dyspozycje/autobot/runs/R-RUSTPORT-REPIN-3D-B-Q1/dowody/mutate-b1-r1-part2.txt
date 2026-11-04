@@ -1,0 +1,13 @@
+[11] KILLED   js_num -0 branch removed
+[12] KILLED   js_num lower bound 1e-7
+[13] KILLED   js_num upper bound 1e22
+[14] KILLED   js_num no e+ sign
+[15] KILLED   deposit wrapper skipped
+[16] KILLED   deposit previous ignored
+[17] KILLED   deposit scale 1
+[18] KILLED   fort factor pin 0.5
+[19] KILLED   fort model scale 1
+[20] SURVIVED fort factor y only
+KILLED 9/10
+SURVIVED: ['fort factor y only']
+EXIT=1

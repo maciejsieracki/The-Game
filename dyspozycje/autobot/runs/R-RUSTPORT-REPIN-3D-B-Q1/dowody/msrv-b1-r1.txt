@@ -1,0 +1,85 @@
+   Compiling simd-adler32 v0.3.10
+   Compiling libm v0.2.16
+   Compiling bytemuck v1.25.2
+   Compiling adler2 v2.0.1
+   Compiling arrayvec v0.7.8
+   Compiling crc32fast v1.5.3
+   Compiling log v0.4.34
+   Compiling float-cmp v0.9.0
+   Compiling cfg-if v1.0.5
+   Compiling smallvec v1.16.3
+   Compiling strict-num v0.1.1
+   Compiling polycool v0.4.0
+   Compiling miniz_oxide v0.9.1
+   Compiling arrayref v0.3.9
+   Compiling bitflags v2.13.2
+   Compiling kurbo v0.13.1
+   Compiling tiny-skia-path v0.12.0
+   Compiling core_maths v0.1.1
+   Compiling ttf-parser v0.25.1
+   Compiling flate2 v1.1.10
+   Compiling fdeflate v0.3.7
+   Compiling miniz_oxide v0.8.9
+   Compiling memchr v2.8.3
+   Compiling siphasher v1.0.4
+   Compiling roxmltree v0.21.1
+   Compiling svgtypes v0.16.1
+   Compiling png v0.18.1
+   Compiling simplecss v0.2.2
+   Compiling data-url v0.3.2
+   Compiling pico-args v0.5.0
+   Compiling imagesize v0.15.0
+   Compiling owned_ttf_parser v0.25.1
+   Compiling usvg v0.48.1
+   Compiling tiny-skia v0.12.0
+   Compiling rgb v0.8.53
+   Compiling unicode-script v0.5.8
+   Compiling unicode-properties v0.1.4
+   Compiling zune-core v0.5.3
+   Compiling unicode-bidi-mirroring v0.4.0
+   Compiling unicode-ccc v0.4.0
+   Compiling ab_glyph_rasterizer v0.1.10
+   Compiling rustybuzz v0.20.1
+   Compiling ab_glyph v0.2.32
+   Compiling zune-jpeg v0.5.15
+   Compiling resvg v0.48.1
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_94bd9c21-186-1/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 14.63s
+     Running tests/improvements_web_parity.rs (target/debug/deps/improvements_web_parity-afeafc0cd4a8a3eb)
+
+running 3 tests
+test data_tables_match_web ... ok
+test prototype_keys_documented_deviation ... ok
+test models_are_bit_identical_to_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+
+     Running tests/misc_web_parity.rs (target/debug/deps/misc_web_parity-182f8e80a26ee829)
+
+running 11 tests
+test quadratic_bezier_matches_three ... ok
+test relief_sampler_matches_web ... ok
+test models_match_web ... ok
+test siege_sync_matches_web ... ok
+test siege_marker_matches_web ... ok
+test territory_border_matches_web ... ok
+test territory_loops_match_web ... ok
+test to_fixed_on_hex_corners_is_sign_stable ... ok
+test trade_routes_match_web ... ok
+test range_overlay_matches_web ... ok
+test range_overlay_real_relief_matches_web ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.09s
+
+     Running tests/repin3d_b1.rs (target/debug/deps/repin3d_b1-22a2ef49f94c48d3)
+
+running 4 tests
+test constants_match_the_web_bit_for_bit ... ok
+test filter_build_highlight_hexes_matches_the_web ... ok
+test deposit_display_scale_matches_the_web ... ok
+test js_num_matches_the_web_template_literal ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0

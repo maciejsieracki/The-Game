@@ -1,0 +1,13 @@
+[0] KILLED   mine tint back to pin 0.30
+[1] KILLED   mine opacity from map base
+[2] KILLED   improvement opacity no brightness
+[3] KILLED   brightness 1.25
+[4] KILLED   map base 0.3
+[5] KILLED   filter inverted
+[6] KILLED   filter keeps all
+[7] KILLED   filter key without improvement
+[8] KILLED   filter key q/r swapped
+[9] KILLED   js_num NaN text
+[10] KILLED   js_num inf text
+KILLED 11/11
+EXIT=0

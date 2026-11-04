@@ -4,6 +4,7 @@
 **Baza:** `rust-port/parity-v2` @ `e1c040160` · **Pin dotychczasowy:** `edb8fb56` (MOD-14, P4-36 cz. 1–5)
 **Web docelowy:** `origin/main` @ `c1581619f` (wektory A1); w trakcie pracy `origin/main` przesunął się na
 `60621493a` — `git diff --stat c1581619f..60621493a -- gra/src/battle gra/src/render gra/src/game/siege.ts gra/src/game/siegeDefenders.ts gra/data/units.json` = pusto (zakres bez zmian).
+**Partia B1:** R-RUSTPORT-REPIN-3D-B-Q1 (runda 1/5, Operator) na `parity-v2` @ `65e81ae4d`, web `origin/main` @ `86d510c66` — §9.
 **Partia A2:** R-RUSTPORT-REPIN-3D-A2-Q1 (runda 1/5, Operator) na `parity-v2` @ `776bede11`, web `origin/main` @ `5fa0c1a84` — §8.
 **Plan nadrzędny:** `dyspozycje/rust-port/PLAN-AKTUALIZACJI-PORTU-DO-WEBA-20261030.md` §3, faza U5.
 
@@ -102,16 +103,16 @@ komentarz / pamięć bez zmiany obrazu.
 |---|---|---|---|---|
 | `units.ts` | `HIGHLIGHT_OPACITY` = `MAP_HEX_HIGHLIGHT_BASE_OPACITY` (0,35 = jak było), gwiazda dowódcy `applyUnitCommanderStar`, cache sprite'ów odznak stosu (bez przebudowy co sync) | SC (gwiazda) / K (stała, cache) | `units::*`, `models::unit_core` | **REPIN-3D-B** |
 | `unitVeteranBadges.ts` | `applyUnitCommanderStar` (+33) | SC | `units::overlay` | REPIN-3D-B |
-| `unitStatPlate.ts` | `PLATE_OWNER_ICON_SIZE` 0,20 → **0,80**·HEX_R | SC (zmiana obrazu) | `units::overlay` (P4-32) | REPIN-3D-B |
+| `unitStatPlate.ts` | `PLATE_OWNER_ICON_SIZE` 0,20 → **0,80**·HEX_R | SC (zmiana obrazu) | `units::overlay::stat_plate` (P4-32) | **B2** (§9.5: łamie `overlay_web_parity`, fixtury przez Chromium — razem z `unitOwnerEmblem.ts`) |
 | `unitOwnerEmblem.ts` | warianty dysku, klucz emblematu (+41/−12) | SC (canvas) | `raster`/`units` (P4-28/P4-32) | REPIN-3D-B |
 | `cities.ts` | model osady wg stylu (+70/−4) | SC | `cities::*` (P4-21) | REPIN-3D-B |
-| `improvements.ts` | fort/posterunek ×2 (`FORT_OUTPOST_MODEL_SCALE`) | SC | `models` improvements (P4-20) | REPIN-3D-B |
-| `resources.ts`, `styleResources.ts` | `RESOURCE_MODEL_SCALE = 2` → `userData.depositDisplayScale` | SC | `decor`/resources | REPIN-3D-B |
-| `kopalnia-cyny/zlota-opus5.ts` | materiały/geometrie współdzielone (`markSharedTransient…`) | K (pamięć) — do potwierdzenia w B | P4-20 | REPIN-3D-B (weryfikacja „bez zmiany obrazu”) |
+| `improvements.ts` | fort/posterunek ×2 (`FORT_OUTPOST_MODEL_SCALE`) | SC | `models::improvements::registry` (P4-20) | **B1 PORTOWANE** (§9) |
+| `resources.ts`, `styleResources.ts` | `RESOURCE_MODEL_SCALE = 2` → `userData.depositDisplayScale` | SC | `models::improvements::zasoby` (pomiar) | **B1 PORTOWANE** (§9) |
+| `kopalnia-cyny/zlota-opus5.ts` | materiały/geometrie współdzielone (`markSharedTransient…`) | K (pamięć) | P4-20 | **B1 POTWIERDZONE bez zmiany obrazu** (§9.4) |
 | `bronzeCityRoblox.ts`, `stoneCityRoblox.ts` | `markSharedTransientGeometry(geo)` | K (pamięć) | — | NIE-DOTYCZY obrazu |
 | `transientObjectResources.ts`, `memDebug.ts` | nowe: zarządzanie zwalnianiem, `?memdebug=1` | K/GPU (dispose) | — | NIE-DOTYCZY (Rust: własność) |
-| `buildHighlight.ts` | nowe stałe podświetleń (0,35 / 0,3 × 1,2) + filtr | SC (stałe) / LB (filtr) | overlays | REPIN-3D-B |
-| `rangeOverlay.ts` | `MINE_ELIGIBLE_TINT_OPACITY` 0,30 → 0,36 (0,3 × 1,2) | SC | `overlays` | REPIN-3D-B |
+| `buildHighlight.ts` | nowe stałe podświetleń (0,35 / 0,3 × 1,2) + filtr | SC (stałe) / LB (filtr) | nowy `models::misc::build_highlight` | **B1 PORTOWANE** (§9) |
+| `rangeOverlay.ts` | `MINE_ELIGIBLE_TINT_OPACITY` 0,30 → 0,36 (0,3 × 1,2) | SC | `models::misc::range` (pomiar) | **B1 PORTOWANE** (§9) |
 | `braz-rydwan-woly-opus5.ts` | tylko komentarz (Epoka) | K | — | NIE-DOTYCZY |
 
 ### 2.4 Logika oblężenia (`game/siege.ts`, `game/siegeDefenders.ts`, `game/city-*.ts`, `battle/formationRules.ts`, `battle/mapFieldBattle.ts`)
@@ -130,7 +131,7 @@ jako źródło DTO: `cityFortificationKind` (palisada/mur → A2), `towerRows`/`
 | A4 | regeneracja wektorów cz. 3 (`units.json`) na nowym szyku #12 (scena bez zmian, zmienia się tylko DTO) | testy `battle3d_units` | generator cz. 3 na `origin/main`; ryzyko: dryf modeli `render/units.ts` (gwiazda dowódcy) → razem z REPIN-3D-B |
 | A5 | regeneracja cz. 4–5 (`dynamics.json`, `picking.json`) na `origin/main`; usunięcie martwego `Fade` (Z-RP-3) | `dynamics`, `picking` | generator cz. 4–5; zmiana oczekiwana tylko w przypadkach „fade” |
 | A6 | regeneracja cz. 1–2 (`siege_wall.json`, `field.json`) — kontrola, że `mur` bez zmian | — | tylko pomiar (oczekiwane 0 różnic, §2.2) |
-| REPIN-3D-B | §2.3 (`render/*`) | `units`, `cities`, `overlays`, `models` | osobny temat (inna allowlista) |
+| REPIN-3D-B | §2.3 (`render/*`) | `units`, `cities`, `overlays`, `models` | R-RUSTPORT-REPIN-3D-B-Q1: **B1 WYKONANA** (§9), kolejka B2…B4 (§9.5) |
 
 ## 4. Partia A1 — implementacja i weryfikacja
 
@@ -314,3 +315,83 @@ równoważności: `build_wall_tower` tworzy wyłącznie `Scene::mesh`/korzeń `G
 
 A3 (następna): `_destroyTowerAtRow` + `_fireOneTower` + wyłom/brama palisady w `dynamics` (§3). Potem A4 (wektory cz. 3,
 `fortKind` w konstruktorze), A5, A6, REPIN-3D-B.
+
+## 9. Partia B1 — stałe podświetleń, odcień kopalni, skala złóż i fortów (R-RUSTPORT-REPIN-3D-B-Q1, runda 1)
+
+**Baza:** `rust-port/parity-v2` @ `65e81ae4d` (renderer 444/0, A1+A2). **Web:** `origin/main` @ `86d510c66`.
+Pomiar dryfu: `git diff --numstat edb8fb56..origin/main -- gra/src/render` = 17 plików (jak §2.3 + `units.ts` +72/−46,
+`unitOwnerEmblem.ts` +41/−12, `unitVeteranBadges.ts` +36, `cities.ts` +70/−4, `memDebug.ts` +59, `transientObjectResources.ts` +68).
+Partia A3 (równoległa) nie dotyka żadnego pliku B1 (B1: wyłącznie `src/models/**` + nowe pliki testów/fixtur `*_b*`/`*B*`).
+
+### 9.1 Kod (ścieżki zmierzone `grep` stałych w `rust-port/renderer/src`)
+
+- `models/misc/build_highlight.rs` (NOWY, `buildHighlight.ts:1-28`): 5 stałych (`IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY =
+  0,35 × 1,2`, `MINE_BUILD_HIGHLIGHT_OPACITY = 0,3 × 1,2` — wyrażenia jak w webie, nie literały), `filter_build_highlight_hexes`
+  (klucz `${q},${r}:${key}` przez `js_num` = V8 `Number.prototype.toString`, kolejność `Array.filter`).
+- `models/misc/range.rs`: `MINE_ELIGIBLE_TINT_OPACITY = MINE_BUILD_HIGHLIGHT_OPACITY` (web `rangeOverlay.ts:477`; pin 0,30).
+- `models/improvements/registry.rs`: `FORT_OUTPOST_MODEL_SCALE = 2`, `FORT_OUTPOST_BASE_SCALE = 0,5`; sektor forta mnoży
+  przez `0,5 × 2` (`improvements.ts:398-399`, `:507`).
+- `models/improvements/zasoby.rs`: `RESOURCE_MODEL_SCALE = 2` (`resources.ts:18`); `build_styled_resource_overlay` =
+  baza (dawna funkcja, bez zmian) + `depositDisplayScale = (dds || 1) × 2` (`styleResources.ts:448-452`): koń 2 → **4**,
+  pozostałe złoża brak → **2**. Ścieżka nie `decor` ani `overlays.rs` (dispatch „wg pomiaru”): symbole żyją w `models/**`.
+- `Cargo.toml`/`Cargo.lock` bez zmian. `units/**`, `cities/**`, `overlays.rs`, `decor/**` w B1 bez zmian.
+
+### 9.2 Wektory
+
+`tests/repin3d_fixtures/gen_b1.ts` → `b1.json` (`README_B.md`; wejścia esbuild 45 plików 2,9 MB ≤ 10 MB): stałe (10, `to_bits`),
+`filter` (14: puste, trafienie/pudło, duplikaty, `−0`, NaN, ±∞, ułamki, `1e-7`, `1e+21`, pusty klucz, `:` w kluczu, przekątna
+9 heksów z trafieniami na końcach i poza zakresem = N−1/N/N+1), `jsnum` (18 granic notacji V8), `deposit` (8 `Nakladka` ×
+13 `zloze` = 104: klucze `userData` + `depositDisplayScale`). `cargo test --test repin3d_b1`: 4/4, 0 różnic (constants 11
+skalarów, filter 49 + 30, deposit 202 + 98).
+
+**ZAŁOŻENIE Z-RP-B-1 (fixtury pinu poza allowlistą — niezbędne, uzasadnienie):** zmiana obrazu łamie wektory pinu
+`tests/improvements_web_parity.rs` (fort, złoża) i `tests/misc_web_parity.rs` (odcień kopalni) — bez nich `cargo test` nie
+jest zielony. Pliki `.rs` testów NIETKNIĘTE; zregenerowane WYŁĄCZNIE fixtury JSON ich własnymi, niezmienionymi
+generatorami (`tests/fixtures/improvements/gen.ts`, `tests/fixtures/misc/gen.ts`) na `origin/main` zamiast `edb8fb56`.
+Diff względem pinu (porównanie liści JSON) = dokładnie oczekiwane przypadki: improvements `models.json` 32 × `res:*`
+(klucz `depositDisplayScale`) + `sect-full:mix-mask5`; `sigs.json` 7 układów sektorów z fortem/posterunkiem; `legacy`,
+`protokeys`, `data` bajt w bajt; misc `overlays.json` tylko `styles.mine` + 51 przypadków `range` stylu `mine`;
+`models.json`, `siege.json` bajt w bajt (SHA = README misc). README fixtur pinu NIE edytowane: SHA `overlays.json` w
+`tests/fixtures/misc/README.md` (`d590e026…`) jest teraz nieaktualne (nowe `dc62fa14…`) — do poprawy przy integracji / A6.
+
+### 9.3 Mutacje i weryfikator
+
+`tests/repin3d_fixtures/mutate_b1.py` (testy: `repin3d_b1` + `improvements_web_parity` + `misc_web_parity`): 21 mutantów
+w r1 — 20 zabitych, 1 przeżył: „fort factor y only” (usunięte `n.scale.y *= f`) = **równoważny**: `f = 0,5 × 2 = 1` dokładnie,
+`x × 1,0 = x` bit w bit (IEEE-754); usunięty z listy z dowodem w docstringu. Drugi równoważny (nie na liście): strażnik `|| 1`
+(`filter(v ≠ 0 ∧ ¬NaN)`) — baza pisze `depositDisplayScale` tylko jako `2,0` (`depo2`) albo wcale. Wynik końcowy **20/20**
+(`dowody/mutate-b1-r1-part{1,2}.txt`). Niezależny weryfikator: 2 katalogi `mktemp -d` (osobne `npm install`, osobne
+`git archive`) → `b1.json`, improvements `models/sigs.json`, misc `overlays.json` identyczne SHA = repo (`dowody/verify-gen-b1-r1.txt`).
+
+### 9.4 Potwierdzone „bez zmiany obrazu” (pkt 5 dispatchu)
+
+- `kopalnia-cyny/zlota-opus5.ts`: `markSharedTransient{Geometry,Material}` ustawia tylko flagę `userData` geometrii/materiału
+  (`transientObjectResources.ts:7-16`, zwalnianie) — modele `imp:kopalnia_*` w regenerowanym `improvements/models.json` = pin.
+- `braz-rydwan-woly-opus5.ts`: tylko komentarz (Epoka) — diff = 2 linie komentarza.
+- `transientObjectResources.ts`, `memDebug.ts`: zarządzanie zwalnianiem / `?memdebug=1` — K/GPU, Rust: własność; NIE-DOTYCZY.
+- `bronzeCityRoblox.ts`, `stoneCityRoblox.ts`: `markSharedTransientGeometry` (jw.) — wektory `cities` na `origin/main`
+  NIE_ZMIERZONO (→ B4 razem z `cities.ts`).
+
+### 9.5 Kolejka B2…B4
+
+| partia | zakres | moduły Rust | uwagi |
+|---|---|---|---|
+| **B2** (następna) | `unitStatPlate.ts` `PLATE_OWNER_ICON_SIZE` 0,80 + `unitOwnerEmblem.ts` (warianty dysku `ringColorFor`/`normalizeRingHex`, klucz emblematu, `883afa6da`) | `units::overlay::{stat_plate, emblem}` | zmiana samej stałej zmierzona w r1 i cofnięta: łamie `overlay_web_parity` (5 testów: drzewa + tekstury); fixtury `overlay` wymagają headless Chromium 141 (playwright) — jedna regeneracja razem z emblematem |
+| **B3** | `unitVeteranBadges.ts` `applyUnitCommanderStar` (+33), `units.ts` gwiazda dowódcy + cache odznak stosu (`:6199-6290`), `HIGHLIGHT_OPACITY = MAP_HEX_HIGHLIGHT_BASE_OPACITY` (= 0,35, wartość bez zmian) | `units::overlay`, `units::*` | po B2 (wspólne fixtury `overlay`) |
+| **B4** | `cities.ts` (+70/−4: `registerOwnedMeshResources` + `CityRenderer`; wg nagłówków hunków głównie zwalnianie M1 `5d9534e0b`; zmiana obrazu NIE_ZMIERZONO), `bronze/stoneCityRoblox.ts` | `cities::*` | regeneracja `tests/fixtures/cities` na `origin/main` rozstrzygnie SC vs K |
+
+Ocena wizualna GPU: **NIE_ZMIERZONO** (brak `/dev/dri`; nie blokuje). Do oceny wzrokiem: forty/posterunki 2× większe w
+sektorze, złoża 2× większe na mapie świata (koń 4×), podświetlenie kopalni nieco mocniejsze (0,36).
+
+### 9.6 Bramy (surowe logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-3D-B-Q1/dowody/`)
+
+```text
+# rustc 1.97.0; CARGO_INCREMENTAL=0, CARGO_PROFILE_DEV_DEBUG=0, CARGO_PROFILE_TEST_DEBUG=0
+## $ cargo fmt --all -- --check                                   EXIT=0
+## $ cargo clippy --locked --all-targets -- -D warnings            EXIT=0
+## $ cargo test --locked --no-fail-fast   passed=448 failed=0 binaries=59   EXIT=0   (baza 65e81ae4d: 444)
+## $ cargo +1.87.0 test --locked --test repin3d_b1 --test improvements_web_parity --test misc_web_parity   4 + 3 + 11   EXIT=0
+## $ python3 tests/repin3d_fixtures/mutate_b1.py (RANGE 0:11 + 11:30)   11/11 + 9/10 (1 równoważny) → 20/20
+## $ sha256sum -c tests/repin3d_fixtures/MANIFEST_B.sha256   4 OK
+## generator 2 katalogi: b1.json fa57d2dd… = fa57d2dd… = repo
+```
