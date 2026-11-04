@@ -127,7 +127,14 @@ function territoryResourceIconHtml(key: TerritoryResourceKey): string {
   return `<span class="cp-yield-ic">${mapResourceIconSvg(key, 16)}</span>`;
 }
 
-/** Magazyn państwa z ulepszenia (automatycznie, bez 👤). P5.6: wiersz `territoryResourceYieldForImprovement` z Rust. */
+/**
+ * Produkcja surowca przez ulepszenie (ikona + „+50 Kamień/t"). Działa automatycznie, bez 👤 —
+ * to reguła domyślna, więc nie dopisujemy „automatycznie"/„bez 👤" ani „magazyn państwa"
+ * (R-WEB-HEX-TOOLTIP-IMPROVEMENT-PRODUCTION-TEXT-Q1).
+ * P5.6: wiersz `territoryResourceYieldForImprovement` z Rust. REPIN UI-2-D (main `86d510c66` `:135-147`): web woła
+ * `territoryResourceYieldForImprovement(key, zloze, ownerEra)` — skalowanie epoką właściciela liczy Rust w
+ * `HexImprovementLineDto.magazyn` (ZAŁOŻENIE UI2D-Z1).
+ */
 function formatTerritoryMagazynPart(row: TerritoryResourceYieldDto | null): string | null {
   if (!row || !(row.amount > 0)) return null;
   const label = TERRITORY_RESOURCE_LABEL[row.resourceKey];
@@ -170,26 +177,18 @@ function formatImprovementDesc(
   const unlocks = imp.unlockLabels;
   let s = `<b>${name}</b>`;
   if (tag) s += ` (${esc(tag)})`;
-  s += ` → plony miasta: ${bonus}`;
   if (mag) {
-    s += `<br><span class="cp-magazyn-line">magazyn państwa: ${mag} · bez 👤</span>`;
+    // Produkcja surowca NAJPIERW (pod nazwą), potem plony miasta.
+    s += `<br><span class="cp-magazyn-line cp-prod-line">${mag}</span><br>→ plony miasta: ${bonus}`;
+  } else {
+    s += ` → plony miasta: ${bonus}`;
   }
   if (unlocks.length) s += ` · ${esc(unlocks.join(', '))}`;
   return s;
 }
 
-/** Podsumowanie wpływu do magazynu państwa z tego heksa (tylko ulepszenia SUROW-TERYT-01). */
-function formatHexMagazynSummary(view: HexTooltipViewDto, esc: (raw: string) => string): string | null {
-  const lines: string[] = [];
-
-  for (const imp of view.built) {
-    const mag = formatTerritoryMagazynPart(imp.magazyn);
-    if (!mag) continue;
-    lines.push(`${esc(imp.name)}: ${mag} · automatycznie`);
-  }
-
-  return lines.length ? lines.join('<br>') : null;
-}
+// REPIN UI-2-D: `formatHexMagazynSummary` (pin `:188-199`) usunięte w main `86d510c66` (`db8fabacc`) — produkcja
+// ulepszeń jest w ich własnych wierszach (`formatImprovementDesc`).
 
 function formatCityYieldLine(y: TileYield, empty = '—'): string {
   const parts: string[] = [];
@@ -279,8 +278,7 @@ function formatPossibleImprovementLine(p: HexImprovementLineDto): string {
     const bonus = formatCityBonusParts(p.bonus);
     const mag = formatTerritoryMagazynPart(p.magazyn);
     const unlocks = p.unlockLabels;
-    let line = `<b>${p.name}</b> → plony miasta: ${bonus}`;
-    if (mag) line += ` · magazyn państwa: ${mag} · bez 👤`;
+    let line = `<b>${p.name}</b> → ${mag ? `${mag} · ` : ''}plony miasta: ${bonus}`;
     if (unlocks.length) line += ` · odblok. ${unlocks.join(', ')}`;
     return line;
 }
@@ -357,24 +355,19 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
     lines.push(subLine('Ulepszenie', 'brak — goły teren'));
   }
 
-  const magazynSummary = formatHexMagazynSummary(view, esc);
   const terrainMagazyn = input.hexWorkedForMagazyn
     ? formatTerrainMagazynWorkedNotes(view)
     : [];
-  if (magazynSummary || terrainMagazyn.length > 0) {
-    lines.push('<div class="cp-yield-head">Do magazynu państwa</div>');
-    const parts: string[] = [];
-    if (magazynSummary) parts.push(magazynSummary);
-    if (terrainMagazyn.length) {
-      parts.push(terrainMagazyn.map(n => `<span class="cp-magazyn-line">${n}</span>`).join('<br>'));
-    }
-    lines.push(`<div class="cp-sub cp-magazyn-block">${parts.join('<br>')}</div>`);
+  // Produkcja ulepszeń jest w ich własnych wierszach (wyżej); tu zostaje tylko teren (przy 👤).
+  if (terrainMagazyn.length > 0) {
+    lines.push('<div class="cp-yield-head">Surowce z terenu (przy 👤)</div>');
+    lines.push(`<div class="cp-sub cp-magazyn-block">${terrainMagazyn.map(n => `<span class="cp-magazyn-line">${n}</span>`).join('<br>')}</div>`);
   }
 
   lines.push('<div class="cp-yield-head">Plony miasta — rozbicie (przy 👤)</div>');
   lines.push(formatCityYieldBreakdownHtml(view));
   lines.push(`<div class="cp-total">Razem (miasto): ${formatCityYieldLine(cityYieldOnly(view.yieldFull), '0')}</div>`);
-  lines.push('<div class="cp-sub cp-yield-foot">Żywność · Praca · Podatek → ekonomia miasta (przy 👤). Magazyn → ulepszenia (Tartak, Kamieniołom… — auto) + drewno/kamień/glina z terenu (przy 👤 lub centrum).</div>');
+  lines.push('<div class="cp-sub cp-yield-foot">Żywność · Praca · Podatek → ekonomia miasta (przy 👤). Surowce z ulepszeń (Tartak, Kamieniołom…) — w wierszu produkcji przy ulepszeniu; drewno/kamień/glina z terenu — przy 👤 lub centrum.</div>');
 
   if (possible.length > 0) {
     lines.push('<div class="cp-yield-head">Możliwe ulepszenia (teren)</div>');
@@ -470,6 +463,8 @@ export interface UnitContextTooltipInput extends UnitSufferingStatusFields {
   stackCards?: ReadonlyArray<{
     id: string;
     name: string;
+    /** Rola jednostki dowodzącej, odróżniana od zwykłej jednostki tego samego typu. */
+    commanderTitle?: 'Wódz' | 'Generał';
     icon: string;
     hp: number;
     hpMax: number;
@@ -542,9 +537,15 @@ function buildUnitStackCardsHtml(
   for (const c of cards) {
     const hpPct = c.hpMax > 0 ? (c.hp / c.hpMax) * 100 : 0;
     const movPct = c.ruchMax > 0 ? (c.ruchLeft / c.ruchMax) * 100 : 0;
-    html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}" data-unit="${esc(c.id)}" role="button" tabindex="0">`
+    const isCommander = c.commanderTitle === 'Wódz' || c.commanderTitle === 'Generał';
+    const cardLabel = isCommander ? `${c.commanderTitle} — ${c.name}` : c.name;
+    html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}${isCommander ? ' commander' : ''}" data-unit="${esc(c.id)}"`
+      + (isCommander ? ` data-commander="true" aria-label="${esc(cardLabel)}" title="${esc(cardLabel)}"` : '')
+      + ' role="button" tabindex="0">'
       + `<div class="sp-unit-stack-ic">${c.icon || unitIconSvg(undefined)}</div>`
-      + `<div class="sp-unit-stack-name">${esc(c.name)}</div>`
+      + (isCommander
+        ? `<div class="sp-unit-stack-commander-role">★ ${esc(c.commanderTitle!)}</div><div class="sp-unit-stack-name sp-unit-stack-commander-type">${esc(c.name)}</div>`
+        : `<div class="sp-unit-stack-name">${esc(c.name)}</div>`)
       + '<div class="sp-unit-stack-bars">'
       + buildUnitStackBarHtml(hpPct, 'hp')
       + buildUnitStackBarHtml(movPct, 'mov')
@@ -645,6 +646,9 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-stack-card{flex:0 0 auto;width:76px;padding:6px 4px;border-radius:8px;cursor:pointer;
   border:1px solid rgba(212,175,90,.22);background:rgba(16,20,28,.85);text-align:center;}
 .sp-unit-stack-card.on{border-color:rgba(212,175,90,.55);box-shadow:0 0 10px rgba(212,175,90,.12);}
+.sp-unit-stack-card.commander{border-color:rgba(232,216,138,.78);background:linear-gradient(180deg,rgba(92,73,28,.4),rgba(10,14,22,.72));box-shadow:inset 0 0 0 1px rgba(232,216,138,.12);}
+.sp-unit-stack-commander-role{font-size:8px;font-weight:800;line-height:1.15;color:var(--civ-gold-primary,#e8d88a);white-space:nowrap;}
+.sp-unit-stack-commander-type{font-size:8px!important;color:var(--civ-text-muted,#a09880);}
 .sp-unit-stack-ic{font-size:18px;line-height:1;min-height:20px;}
 .sp-unit-stack-name{font-size:9px;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sp-unit-stack-bars{display:flex;flex-direction:column;gap:3px;margin-top:5px;padding:0 3px;}
@@ -677,7 +681,10 @@ function buildArmySelectedUnitLabelHtml(
 ): string {
   const active = cards.find(c => c.active);
   if (!active) return '';
-  return `<div class="sp-army-sel-lbl">Wybrana jednostka: <b>${esc(active.name)}</b></div>`;
+  const activeName = active.commanderTitle
+    ? `${active.commanderTitle} — ${active.name}`
+    : active.name;
+  return `<div class="sp-army-sel-lbl">Wybrana jednostka: <b>${esc(activeName)}</b></div>`;
 }
 
 function buildUnitDetailExtrasHtml(u: UnitContextTooltipInput, statusInput: UnitCardStatusInput): string {

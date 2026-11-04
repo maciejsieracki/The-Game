@@ -106,5 +106,36 @@ if (existsSync(portsDir)) {
     }
   }
 }
+// R-RUSTPORT-REPIN-UI-2-D-Q1 (addytywnie): sekcje `overlayPorts*` — porty DOM repinowane do main (NIE kopie). Sprawdzamy, że
+// odniesienie nakładki (sha256/rozmiar webu) zgadza się ze źródłem (`git show`/`--web-dir`), że port istnieje i NIE jest
+// w `pin-manifest.json` ani w `files` (kopie) — inaczej starsze harnessy porównywałyby z nieaktualnym odniesieniem.
+const copyPaths = new Set(manifest.files.map((f) => f.path));
+let portsCheckedD = 0;
+for (const [key, sec] of Object.entries(manifest)) {
+  if (!key.startsWith('overlayPorts') || !sec || !Array.isArray(sec.files)) continue;
+  for (const f of sec.files) {
+    if (!existsSync(join(ROOT, f.path))) fail(`${key} BRAK portu ${f.path}`);
+    if (pinPaths.has(f.path)) fail(`${key} DISJ ${f.path} występuje w pin-manifest.json`);
+    if (copyPaths.has(f.path)) fail(`${key} DISJ ${f.path} występuje w files (kopie)`);
+    const [obj, srcPath] = [f.pin.slice(0, f.pin.indexOf(':')), f.pin.slice(f.pin.indexOf(':') + 1)];
+    let ref = null;
+    if (webDir) {
+      const p = join(webDir, srcPath);
+      if (existsSync(p)) ref = readFileSync(p);
+      else fail(`${key} WEB brak ${p}`);
+    } else if (!noGit) {
+      try {
+        ref = execFileSync('git', ['show', `${obj}:${srcPath}`], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024 });
+      } catch {
+        console.error(`${key} GIT NIE_ZMIERZONO ${f.pin}`);
+      }
+    }
+    if (ref) {
+      portsCheckedD++;
+      if (sha256(ref) !== f.sha256 || ref.length !== f.bytes) fail(`${key} SHA ${srcPath} źródło ${sha256(ref)}/${ref.length} manifest ${f.sha256}/${f.bytes}`);
+    }
+  }
+}
+console.log(`verify-repin-ui2-copies: overlayPorts* odniesień sprawdzonych=${portsCheckedD}`);
 console.log(`verify-repin-ui2-copies: pin=${manifest.pin} plików=${manifest.files.length} źródło_sprawdzone=${gitChecked} porty_nakładki=${portsChecked} niezgodnych=${bad}`);
 process.exitCode = bad === 0 ? 0 : 1;

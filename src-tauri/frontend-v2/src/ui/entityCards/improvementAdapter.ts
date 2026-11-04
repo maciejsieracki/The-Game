@@ -77,6 +77,27 @@ const NAME_TO_KEY: Record<string, string> = (() => {
   return map;
 })();
 
+/**
+ * REPIN UI-2-D (main `86d510c66` `improvementAdapter.ts:27,160-165`, `R-WEB-IMPROVEMENT-ERA-SCALING-Q1`): web liczy
+ * „Koszt (Praca)” jako `scaleTerrainImprovementWorkCost(koszt_praca, epoka)` (`game/terrain-improvements.ts:108-115`:
+ * FALA2 × mnożnik epoki budowy). Reguła = Rust; wynik jest statyczny (zależy wyłącznie od wiersza danych), więc
+ * przychodzi w `StaticCatalogDto.terrainImprovementWorkCost[key]` (wzorzec `techTerrainUnlockLabels`, P5.4).
+ * Klucz wiersza: tożsamość obiektu w katalogu (wiersz pochodzi z `resolveImprovementRow`), inaczej `NAME_TO_KEY`.
+ * ZAŁOŻENIE UI2D-Z3: brak pola/klucza (atrapa MOCK bez mapy) → surowe `koszt_praca` (panel niczego nie liczy, P5.13).
+ */
+function improvementKeyOf(row: object, nazwa: string): string | undefined {
+  for (const [k, v] of Object.entries(staticCatalog().terrainImprovements as Record<string, unknown>)) {
+    if (v === row) return k;
+  }
+  return NAME_TO_KEY[nazwa];
+}
+
+function improvementWorkCostValue(row: object, nazwa: string, raw: unknown): unknown {
+  const key = improvementKeyOf(row, nazwa);
+  const scaled = key !== undefined ? staticCatalog().terrainImprovementWorkCost?.[key] : undefined;
+  return scaled ?? raw;
+}
+
 function text(value: unknown): string {
   return value == null ? '' : String(value).trim();
 }
@@ -157,7 +178,12 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
       value: techName,
       linkTo: techLinkTo,
     },
-    { label: 'Koszt (Praca)', value: hasValue(improvement.koszt_praca) ? `${text(improvement.koszt_praca)} P` : '' },
+    {
+      label: 'Koszt (Praca)',
+      value: hasValue(improvement.koszt_praca)
+        ? `${text(improvementWorkCostValue(improvementRaw, nazwa, improvement.koszt_praca))} P`
+        : '',
+    },
     { label: 'Warunek', value: text(improvement.warunek) },
     {
       // T-KARTY-HISTORIA-INFRA-Q1 (c): `improvement.cywilizacje_uwaga` NIE jest już

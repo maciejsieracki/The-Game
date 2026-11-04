@@ -36,7 +36,7 @@
 // `economy-upkeep`, `economy`, `building-stock-cost`, `unit-building-bonuses`, `building-upgrades`) →
 // `BuildingCardRulesDto` z silnika (`controller/entityCardRules.ts`, P5-0 §6.11, ROZSZ. Z4-1); dane
 // statyczne z `StaticCatalogDto` (D-UI-4). Kształt `BuildingDef` = podzbiór pól czytanych niżej.
-import type { BuildingDefDto, BuildingCardRulesDto, BuildingCardStateDto } from '../../viewmodel/types';
+import type { BuildingDefDto, BuildingCardRulesDto, BuildingCardStateDto, CivBonusLiteDto } from '../../viewmodel/types';
 import { staticCatalog } from '../../controller/staticCatalog';
 import { buildingCardRules } from '../../controller/entityCardRules';
 import { buildingIconSvg } from '../icons/brandAssets';
@@ -75,9 +75,11 @@ export interface BuildingCardCityState extends BuildingCardStateDto {
   buildCostPace: BuildingCostPace;
   /** `cfg.getDifficulty?.() ?? 'normal'` policzone przez hosta. */
   difficulty: GameDifficulty;
-  /** Zawsze `0` w dzisiejszym `buildBuildingDetailCard` (świadomy, niezmieniony hardcode
-   * — `const ownerId = 0;`), zachowane 1:1. */
+  /** Owner of the city used to resolve price effects. */
   ownerId: number;
+  /** REPIN UI-2-D (main `86d510c66` `:70`): web `readonly CivBonusLite[]` (`game/production`) → `CivBonusLiteDto[]`;
+   * Rust podaje je do `buildingWorkCost` (`BuildingCardRulesDto.workCost`, main `:279`). */
+  civBonusy?: readonly CivBonusLiteDto[];
 }
 
 const EPOCH_LABEL: Record<number, string> = { 1: 'Kamień', 2: 'Brąz', 3: 'Żelazo' };
