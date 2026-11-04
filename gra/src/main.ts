@@ -27072,6 +27072,8 @@ async function boot(): Promise<void> {
       setWar: (a, b) => { getDiploRelation(a, b).status = 'wojna'; },
       endTurn: () => { triggerPlayerEndTurn(); },
       meOwnerId: () => ME(),
+      setCityLimitBase: base => { _menuCityLimitBase = base; }, // R-WEB-TEST-HOOK-SETCITYLIMIT-Q1 (tylko ?civTest=1)
+      meEra: () => empireEpochForOwner(ME()),
     });
 
     // R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1 — hak testowy WYLACZNIE dla tools/player-moves-before-ai-turn-test.cjs

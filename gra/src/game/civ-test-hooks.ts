@@ -55,6 +55,18 @@ export interface CivTestDeps {
   /** Koniec tury gracza — w nim uruchamia sie automat ulepszen (REALNY `triggerPlayerEndTurn`). */
   endTurn: () => void;
   meOwnerId: () => number;
+  /** R-WEB-TEST-HOOK-SETCITYLIMIT-Q1: zapisuje bazowy limit miast gry (`_menuCityLimitBase`). */
+  setCityLimitBase: (base: number) => void;
+  /** Biezaca epoka (imperium) gracza — limit = baza + (epoka-1)*5. */
+  meEra: () => number;
+}
+
+/**
+ * R-WEB-TEST-HOOK-SETCITYLIMIT-Q1: baza, przy ktorej limit miast w danej epoce wynosi dokladnie `limit`.
+ * Wzor limitu (cities.ts `canFoundCity`, auto-improvements.ts `isCityLimitExhausted`): baza + (max(1,epoka)-1)*5.
+ */
+export function cityLimitBaseForTarget(limit: number, era: number): number {
+  return limit - (Math.max(1, era) - 1) * 5;
 }
 
 /** Czy tryb testowy jest wlaczony: tylko `?civTest=1` (dokladnie "1"). */
@@ -75,6 +87,8 @@ export interface CivTestApi {
   forts: () => Array<{ q: number; r: number; ownerId: number; type: string; builtAtTurn?: number; seq?: number }>;
   ownerAt: (q: number, r: number) => number | null;
   unlockAllTech: () => void;
+  /** Nadpisuje limit miast GRACZA (w jego biezacej epoce) na `n` (>=0); wywolaj PO unlockAllTech (awans epoki zmienia limit). */
+  setCityLimit: (n: number) => void;
   setPraca: (n: number) => void;
   setPolicy: (ownerId: number, patch: CivTestPolicyPatch) => unknown;
   foundCandidates: (limit: number) => Array<{ q: number; r: number }>;
@@ -124,6 +138,10 @@ export function installCivTestHooks(win: Record<string, unknown>, search: string
     forts: () => deps.getFortNodes().map(f => ({ q: f.q, r: f.r, ownerId: f.ownerId, type: f.type, builtAtTurn: f.builtAtTurn, seq: f.seq })),
     ownerAt: (q, r) => deps.territoryOwnerAt(q, r),
     unlockAllTech: () => deps.unlockAllTech(),
+    setCityLimit: n => {
+      if (!Number.isFinite(n) || n < 0) return;
+      deps.setCityLimitBase(cityLimitBaseForTarget(Math.floor(n), deps.meEra()));
+    },
     setPraca: n => deps.setPracaPool(n),
     setPolicy: (ownerId, patch) => { deps.setUlepszeniaPolicy(ownerId, patch); return deps.getUlepszeniaPolicy(ownerId); },
     foundCandidates: limit => deps.foundCandidates(limit),
