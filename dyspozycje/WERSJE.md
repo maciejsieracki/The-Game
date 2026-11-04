@@ -1,3 +1,12 @@
+## ROBOCZA 067ed2a9 -- 2026-11-04 -- tooltip bez dubli etykiety odblokowania + skrócone Rekruci w HUD (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`f54fb5c18` + TOOLTIP-UNLOCK-LABEL-DEDUP `34e1c8a60` + HUD-RECRUITS-NUMBER-ABBREV `ffd8bd2df`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `067ed2a946232d7939ad67f353073e96`, 70191875 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: tooltip heksu nie dubluje surowca (etykieta odblokowania vs wiersz produkcji); HUD „Rekruci” i tooltip Armia skracają liczby jak reszta HUD (k/M), pełna wartość w tooltipie.
+- Testy: tsc PASS; hex-tooltip-unlock-label-dedup 28/0; hud-recruits-abbrev OK; hud-number-abbrev OK.
+- Ograniczenia: formatManpower „tys./mln” zostaje w panelach miasta/rekrutacji/imperium; kilka testów tooltip/HUD czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `924471846c25768a31499d8dccd74b1c`, 70191473 bajtów.
+
 ## ROBOCZA 92447184 -- 2026-11-04 -- AI omija obce terytorium w marszu (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`96ec14f76` + AI-MARCH-AVOID-FOREIGN-TERRITORY `7cda8542a`) i commit wdrożenia; stała zgoda właściciela.
