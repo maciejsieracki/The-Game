@@ -8639,3 +8639,5 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 - 2026-11-03 — R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1 zdeployowane (ROBOCZA — patrz WERSJE.md, FC PASS `6daf342d4`): Milicja nie zabija mieszkańców, zdobycie obcego miasta −1 obywatel. Do obejrzenia wizualnie: wiersz „Ludność: −1” w bilansie zdobycia. Straty ludności w istniejących zapisach nieodwracalne.
 
 - 2026-11-04 — R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1 zdeployowane (FC PASS-WITH-NOTES `dceaab0fa`): przyczyna = garnizon-sierota (flaga inGarnizon bez własnego miasta) + łączenie armii nadające garnizon bez sprawdzenia miasta; samoleczenie przy kliku/wyborze/hoverze/starcie tury/wczytaniu. NIE_ZMIERZONO: organiczne odtworzenie, follow-leader, tooltip. Jeśli problem wróci — prośba o zapis gry tuż po zamrożeniu.
+
+- 2026-11-04 — R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1 zdeployowane (FC PASS-WITH-NOTES `1ff8657fc`). DO DECYZJI WŁAŚCICIELA (nie blokuje): w hot-seat atak z marszu kończącego fotela NIE odpala się przy zmianie fotela (marsz dochodzi do celu; wcześniej przepadał). Domyślnie zostaje.
