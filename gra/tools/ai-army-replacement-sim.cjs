@@ -46,7 +46,7 @@ const mutatePlugin = {
     b.onLoad({ filter: /game[\\/]ai\.ts$/ }, (args) => {
       let text = fs.readFileSync(args.path, 'utf8');
       if (process.env.ARS_MUTATE === 'gate-off' && text.includes(GATE_ON)) text = text.replace(GATE_ON, 'if (false) {');
-      if (process.env.ARS_MUTATE === 'gate-off' && text.includes(GATE_GATHER)) text = text.replace(GATE_GATHER, 'if (false) {');
+      if ((process.env.ARS_MUTATE === 'gate-off' || process.env.ARS_MUTATE === 'gather-off') && text.includes(GATE_GATHER)) text = text.replace(GATE_GATHER, 'if (false) {');
       return { contents: text, loader: 'ts' };
     });
   },

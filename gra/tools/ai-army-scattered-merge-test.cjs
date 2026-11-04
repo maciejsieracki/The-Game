@@ -154,6 +154,17 @@ const cloud = (n, q0, r0, step) => { const u = []; const side = Math.ceil(Math.s
       B.noteStackGatherTurn(96, pl.groups.flatMap(g => g.moveUnitIds), t);
     }
     ok(releasedAt === B.WAR_STACK_GATHER_MAX_TURNS + 1, `gather: limit zastoju zwalnia jednostke po ${B.WAR_STACK_GATHER_MAX_TURNS} turach zbierania (t=${releasedAt})`);
+    // Samoczyszczenie stanu bez resetStackGatherState (main.ts go nie wola): nowa gra / wczytanie wczesniejszego zapisu
+    // = tura mniejsza niz ostatnio widziana dla wlasciciela. Te same id jednostek, wyczerpany limit z "poprzedniej gry".
+    const afterLoad = B.planFieldStackGather([x, y], { ownerId: 96, currentTurn: 2 });
+    ok(afterLoad !== null && afterLoad.groups[0].moveUnitIds.length === 1, 'gather: cofniecie tury (nowa gra/wczytanie) czysci wyczerpany limit z poprzedniej gry bez jawnego resetu');
+    // Kontrola: ta sama tura po wyczerpaniu (bez cofniecia) nadal zwalnia jednostke (lepki stan nie znika).
+    reset(B);
+    for (let t = 1; t <= B.WAR_STACK_GATHER_MAX_TURNS; t++) {
+      const pl = B.planFieldStackGather([x, y], { ownerId: 96, currentTurn: 10 + t });
+      B.noteStackGatherTurn(96, pl.groups.flatMap(g => g.moveUnitIds), 10 + t);
+    }
+    ok(B.planFieldStackGather([x, y], { ownerId: 96, currentTurn: 10 + B.WAR_STACK_GATHER_MAX_TURNS + 1 }) === null, 'gather: bez cofniecia tury wyczerpany limit pozostaje lepki');
   }
 
   // ---- Scenariusz 1: chmura 16 jednostek (zrzuty: po jednej na heksie, rozstaw 2) w wojnie ----

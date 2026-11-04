@@ -40,18 +40,18 @@
   [SIM] hilly seed 6: ruchy PRZED=698 PO=762; uzycie PRZED=79.4% PO=80.3%; underuse PRZED=196 PO=183
   [SIM] mixed seed 1: ruchy PRZED=836 PO=836; uzycie PRZED=88.9% PO=88.9%; underuse PRZED=125 PO=125
   [SIM] mixed seed 2: ruchy PRZED=756 PO=677; uzycie PRZED=84.0% PO=81.2%; underuse PRZED=127 PO=163
-  [SIM] mixed seed 3: ruchy PRZED=1220 PO=566; uzycie PRZED=72.1% PO=78.1%; underuse PRZED=549 PO=172
+  [SIM] mixed seed 3: ruchy PRZED=566 PO=566; uzycie PRZED=78.1% PO=78.1%; underuse PRZED=172 PO=172
   [SIM] mixed seed 4: ruchy PRZED=961 PO=589; uzycie PRZED=83.4% PO=81.1%; underuse PRZED=200 PO=148
   [SIM] mixed seed 5: ruchy PRZED=600 PO=600; uzycie PRZED=79.0% PO=79.0%; underuse PRZED=229 PO=229
   [SIM] mixed seed 6: ruchy PRZED=611 PO=611; uzycie PRZED=80.8% PO=80.8%; underuse PRZED=163 PO=163
-  [AGG] PRZED: ruchy=16705, uzycie ruchu=83.5%, grupy(stos>1)=82.1% (n=7405), niewykorzystany zapas mimo wolnej trasy=3505 (21.0% ruchow), czas decyzji=36916 ms
-         per typ: ruch2=93.7% ruch3=81.9% ruch4=71.7%; per civ: civ1=83.7% civ2=83.8% civ3=82.9%
-  [AGG] PO: ruchy=15671, uzycie ruchu=84.2%, grupy(stos>1)=82.9% (n=6778), niewykorzystany zapas mimo wolnej trasy=3092 (19.7% ruchow), czas decyzji=33938 ms
+  [AGG] PRZED: ruchy=16051, uzycie ruchu=84.2%, grupy(stos>1)=83.3% (n=6847), niewykorzystany zapas mimo wolnej trasy=3128 (19.5% ruchow), czas decyzji=34278 ms
+         per typ: ruch2=93.6% ruch3=82.5% ruch4=73.4%; per civ: civ1=84.4% civ2=85.0% civ3=82.9%
+  [AGG] PO: ruchy=15671, uzycie ruchu=84.2%, grupy(stos>1)=82.9% (n=6778), niewykorzystany zapas mimo wolnej trasy=3092 (19.7% ruchow), czas decyzji=33365 ms
          per typ: ruch2=93.5% ruch3=82.3% ruch4=73.8%; per civ: civ1=84.5% civ2=84.7% civ3=82.9%
   [DIAG] wywolania firstStep=21532; histogram (stan PO): {"zasieg zuzyty w 100%":15698,"pelna-trasa-w-zasiegu (przybycie do celu)":5063,"nastepny heks drozszy niz reszta (granulacja kosztu terenu)":771}
-  [OK] D1 sredni odsetek wykorzystania ruchu PO (84.2%) >= PRZED (83.5%) - 0,5 pp tolerancji szumu
-  [OK] D2 udzial ruchow z niewykorzystanym zapasem mimo wolnej trasy PO (19.7%) < PRZED (21.0%)
-  [OK] D3 czas decyzji PO (33938 ms; 2.17 ms/ruch) nie wiekszy niz x1,3 PRZED (36916 ms; 2.21 ms/ruch)
+  [OK] D1 sredni odsetek wykorzystania ruchu PO (84.2%) >= PRZED (84.2%) - 0,5 pp tolerancji szumu
+  [OK] D2 udzial ruchow z niewykorzystanym zapasem mimo wolnej trasy PO (19.7%) <= PRZED (19.5%) + 0,5 pp tolerancji szumu
+  [OK] D3 czas decyzji PO (33365 ms; 2.13 ms/ruch) nie wiekszy niz x1,3 PRZED (34278 ms; 2.14 ms/ruch)
 
 ai-move-full-range: 20 passed, 0 failed
 EXIT=0

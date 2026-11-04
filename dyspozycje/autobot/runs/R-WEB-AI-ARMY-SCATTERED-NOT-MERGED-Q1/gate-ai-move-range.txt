@@ -57,10 +57,10 @@
   [OK] F-AVG8 PO: srednio 8 heksow na jednostke (budzet 8)
 
 --- E: koszt obliczen: PRZED (mutant = path[0]) vs PO, ten sam stan ---
-  [INFO] planer, budzet 5, mediana 9x20 wywolan: PRZED=35.6 ms, PO=40.4 ms, stosunek=1.13
-  [OK] E1 planer: PO nie wolniejszy niz PRZED x1,3 (stosunek 1.13, bez tolerancji addytywnej)
-  [INFO] ai firstStep, 300 wywolan, mediana 9x: PRZED=215.1 ms, PO=222.8 ms, stosunek=1.04
-  [OK] E2 ai firstStep: PO nie wolniejszy niz PRZED x1,3 (stosunek 1.04)
+  [INFO] planer, budzet 5, mediana 9x20 wywolan: PRZED=40.2 ms, PO=44.0 ms, stosunek=1.09
+  [OK] E1 planer: PO nie wolniejszy niz PRZED x1,3 (stosunek 1.09, bez tolerancji addytywnej)
+  [INFO] ai firstStep, 300 wywolan, mediana 9x: PRZED=245.1 ms, PO=253.6 ms, stosunek=1.03
+  [OK] E2 ai firstStep: PO nie wolniejszy niz PRZED x1,3 (stosunek 1.03)
 
 --- G: okablowanie w main.ts (statyczne) ---
   [OK] G1 main.ts: executeAiCityMove dostaje truncatePath (przycinanie do ruchLeft przed zerowaniem)

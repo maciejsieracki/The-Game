@@ -490,8 +490,24 @@ export const WAR_STACK_GATHER_MAX_TURNS = 6;
 
 interface GatherEntry { lastTurn: number; turns: number }
 const stackGatherState = new Map<string, GatherEntry>();
+/**
+ * Ostatnia tura planowania zbiorki per wlasciciel. Stan modulowy nie wchodzi do zapisu gry, a main.ts go nie
+ * resetuje, wiec wykrywamy "cofniecie czasu" (nowa gra / wczytanie wczesniejszego zapisu w tej samej karcie):
+ * tura mniejsza niz ostatnio widziana dla wlasciciela => jego wpisy sa z innej gry i sa kasowane.
+ */
+const stackGatherLastTurn = new Map<string, number>();
 /** Czysci stan limitu zastoju (nowa gra / testy). */
-export function resetStackGatherState(): void { stackGatherState.clear(); }
+export function resetStackGatherState(): void { stackGatherState.clear(); stackGatherLastTurn.clear(); }
+
+function dropStaleOwnerGatherState(ownerKey: string, turn: number | undefined): void {
+  if (turn === undefined) return;
+  const prev = stackGatherLastTurn.get(ownerKey);
+  if (prev !== undefined && turn < prev) {
+    const prefix = `${ownerKey}:`;
+    for (const key of [...stackGatherState.keys()]) if (key.startsWith(prefix)) stackGatherState.delete(key);
+  }
+  stackGatherLastTurn.set(ownerKey, turn);
+}
 
 export interface StackGatherOptions {
   ownerId: number | string;
@@ -523,6 +539,7 @@ export function planFieldStackGather(
 ): StackGatherPlan | null {
   const prefix = `${options.ownerId}:`;
   const turn = options.currentTurn;
+  dropStaleOwnerGatherState(String(options.ownerId), turn);
   // Limit zastoju: wpisy bez ciaglosci tur sa kasowane, a jednostki z wyczerpanym limitem pomijane.
   for (const key of [...stackGatherState.keys()]) {
     if (!key.startsWith(prefix)) continue;

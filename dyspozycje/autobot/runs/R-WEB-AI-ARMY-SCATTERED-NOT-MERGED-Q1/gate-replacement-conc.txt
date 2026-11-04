@@ -1,3 +1,4 @@
-POMIAR (2 ziarna x 70 tur, flat): marsz-ponizej-progu PO=0.021 (mutacja 0.132); ms/tura AI PO=16.5 (mutacja 15.9)
-34 passed, 0 failed
+POMIAR atrybucja: marsz-ponizej-progu obie bramki OFF=0.132; tylko zbiorka stosu OFF (= czysty main)=0.024; PO=0.021
+POMIAR (2 ziarna x 70 tur, flat): marsz-ponizej-progu PO=0.021 (mutacja 0.132); ms/tura AI PO=27.5 (mutacja 25.3)
+35 passed, 0 failed
 EXIT=0
