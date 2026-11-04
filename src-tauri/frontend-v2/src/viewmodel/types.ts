@@ -123,6 +123,13 @@ export interface StaticCatalogConstantsDto {
    */
   audienceMultiOwnActionIds: string[];
   /**
+   * R-RUSTPORT-REPIN-UI-2-E-Q1 (`diplomacyTradeBasket.ts` web `86d510c66` `:1537-1543,1767-1368`): id akcji PROPOZYCJI,
+   * w których wolno oddać miasto — web `MIASTO_AKCJE_DOZWOLONE` (`game/diplomacy-value-catalog.ts:830`: dziś
+   * `['pokoj', 'wasal']`), czytane przez `diplomacyMiastoAkcjaDozwolona` (`:833-835`). Pole opcjonalne (addytywne):
+   * brak = pusta lista = pozycja 'miasto' niedostępna (fail-safe, jak web bez actionId).
+   */
+  miastoAkcjeDozwolone?: string[];
+  /**
    * P5.7 r2 (`newGameFlow.ts`; P5-0 §6.10 `defaults: {player_civ, start_epoch, render_quality}`): domyślna cywilizacja
    * gracza, epoka startowa i jakość mapy kreatora — web `DEFAULT_PLAYER_CIV_ID`, `DEFAULT_START_EPOCH_ID`,
    * `DEFAULT_RENDER_QUALITY` (`map/newGameMapDefaults.ts:131,134,141`, Panel-E).
@@ -767,7 +774,9 @@ export interface EmpireMiastaSummaryDto {
 // ─── §6.6 Dyplomacja ─────────────────────────────────────────────────────────
 
 /** P5.3: typ pozycji koszyka = web `WartoscPozycjaTyp` (`game/diplomacy-value-catalog.ts:18-26`). */
-export type BasketItemTyp = 'zloto' | 'praca' | 'zloze' | 'tech' | 'jednostka' | 'surowiec_boolean' | 'surowiec_ilosc' | 'zywnosc';
+export type BasketItemTyp = 'zloto' | 'praca' | 'zloze' | 'tech' | 'jednostka' | 'surowiec_boolean' | 'surowiec_ilosc' | 'zywnosc'
+  /** R-RUSTPORT-REPIN-UI-2-E-Q1: web `86d510c66` `'miasto'` (`game/diplomacy-value-catalog.ts:27`, R-WEB-PEACE-CITY-CESSION-Q1). */
+  | 'miasto';
 
 /** P5.3: = web `BasketItem` (`game/diplomacy-pn-engine.ts:107-112`). */
 export interface BasketItemDto {
@@ -775,6 +784,12 @@ export interface BasketItemDto {
   id: string;
   ilosc?: number;
   hexKey?: string;
+  /** R-RUSTPORT-REPIN-UI-2-E-Q1: web `86d510c66` `BasketItem.cityPn` (`game/diplomacy-pn-engine.ts:121-122`) — wycena miasta (PW), tylko typ 'miasto'. */
+  cityPn?: number;
+  /** R-RUSTPORT-REPIN-UI-2-E-Q1: web `BasketItem.cityWeight` (`:123-124`) — waga miasta po stronie oddającej. */
+  cityWeight?: number;
+  /** R-RUSTPORT-REPIN-UI-2-E-Q1: web `BasketItem.cityLabel` (`:125-126`) — czytelna nazwa miasta (tylko UI). */
+  cityLabel?: string;
 }
 
 export interface DiplomacyBasketPreviewRequest {
@@ -1054,6 +1069,11 @@ export interface BasketRulesCtxDto {
   tempoGry?: string | number;
   difficulty?: string;
   playerSkarbiec?: number;
+  /**
+   * R-RUSTPORT-REPIN-UI-2-E-Q1: web `86d510c66` `basketPnOpts(...).actionId = ctx.basketActionId` (`diplomacyTradeBasket.ts:206-207`)
+   * — id akcji PROPOZYCJI (`'pokoj'`, `'wasal'`, `'rozejm'`, …), bramka pozycji 'miasto' w `diplomacySumPn`; brak = fail-safe `null`.
+   */
+  basketActionId?: string;
 }
 
 /** P5.6: zapytanie wyceny strony koszyka (web `sumBasketPn` → `diplomacySumPn(toPnItems, basketPnOpts)`, pin `:194-227`). */

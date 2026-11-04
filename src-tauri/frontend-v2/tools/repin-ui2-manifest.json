@@ -86,5 +86,36 @@
       "note": "port DOM UI-2-B #9 (DTO milicjaRegen, bez \"~\")"
     }
   ],
-  "portDomRefsNote": "Pliki portu DOM (NIE kopie bajtowe): w drzewie frontend-v2 różnią się od weba (DTO zamiast importów game/*). Wpis = wersja weba, którą nakładka repin-ui2-overlay.mjs wstawia do odniesienia pinu starszych harnessów; verify-repin-ui2-copies sprawdza tylko sha256 źródła weba (nie pliku portu) i rozłączność z pin-manifest.json."
+  "portDomRefsNote": "Pliki portu DOM (NIE kopie bajtowe): w drzewie frontend-v2 różnią się od weba (DTO zamiast importów game/*). Wpis = wersja weba, którą nakładka repin-ui2-overlay.mjs wstawia do odniesienia pinu starszych harnessów; verify-repin-ui2-copies sprawdza tylko sha256 źródła weba (nie pliku portu) i rozłączność z pin-manifest.json.",
+  "overlayPdNote": "Pliki portu DOM (klasa PD, NIE kopie bajtowe — poza bramką verify-repin-ui2-copies): w odniesieniu nakładki starszych harnessów pin zastępowany wersją webu z SHA (tools/repin-ui2-overlay.mjs).",
+  "overlayPd": [
+    {
+      "path": "src/ui/diploListHud.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/diploListHud.ts",
+      "sha256": "89457a348452c89812e4674ddc9335ea1f349bb0702278d3b6d4666d8a0c6531",
+      "bytes": 21600,
+      "topic": "R-RUSTPORT-REPIN-UI-2-E-Q1"
+    },
+    {
+      "path": "src/ui/diplomacyPanel.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/diplomacyPanel.ts",
+      "sha256": "06886277ba16e12db6accdbe7e1c56e473259166cff6281965fa35e0a674656e",
+      "bytes": 23975,
+      "topic": "R-RUSTPORT-REPIN-UI-2-E-Q1"
+    },
+    {
+      "path": "src/ui/diplomacyNegotiationModal.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/diplomacyNegotiationModal.ts",
+      "sha256": "5abbc4db78b7a0b99e00bd334a08ed38fc10174f68cc20c5f765ddebd99c00b2",
+      "bytes": 27396,
+      "topic": "R-RUSTPORT-REPIN-UI-2-E-Q1"
+    },
+    {
+      "path": "src/ui/diplomacyAudience.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/diplomacyAudience.ts",
+      "sha256": "52eac2b814facfce8b756bd6a36c9a882d52db8bd0d40470ca1c1acf909616c6",
+      "bytes": 127495,
+      "topic": "R-RUSTPORT-REPIN-UI-2-E-Q1"
+    }
+  ]
 }

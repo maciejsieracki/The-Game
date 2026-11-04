@@ -2,6 +2,7 @@
  * diplomacyTradeBasket.ts — koszyk handlu / daru (PN) v1.0 (lane UI, P4).
  * Import katalogu PN z lane D; callback przez NegotiationPayload → audiencja.
  */
+import { formatCompactNumber } from './formatCompactNumber';
 import type { AudienceAction } from './diplomacyAudience';
 import type { NegotiationModalContext, NegotiationPayload } from './diplomacyNegotiationModal';
 // P5.6 (R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1): reguły koszyka PW (wycena stron, podsumowanie handlu/daru, PW traktatu,
@@ -21,7 +22,7 @@ import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { DIPLO_1E_SHARED_CSS, ensureDiploBrandScope } from './diploUiSkin';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import {
-  renderBasketItemValueHtml,
+  renderBasketItemValueHtml as renderBasketItemValueBaseHtml,
   type BasketItemFormatCtx,
 } from './diplomacyDealDisplay';
 import { renderPnBalancePanelFromBasket, renderPnBalancePanelForTreaty } from './diplomacyAcceptanceBalance';
@@ -44,6 +45,13 @@ const diplomacyProgDarRelacja = (): number => staticCatalog().constants.progDarR
 const diplomacyZywnoscNaPn = (): number => staticCatalog().constants.zywnoscNaPn;
 const diplomacyHandelZaufaniePerTura = (): number => staticCatalog().constants.handelZaufaniePerTura;
 const BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS = staticCatalog().constants.barbarianCooperationDefaultDurationTurns;
+/**
+ * R-RUSTPORT-REPIN-UI-2-E-Q1: web `86d510c66` `diplomacyMiastoAkcjaDozwolona` (`game/diplomacy-value-catalog.ts:833-835`:
+ * `typeof actionId === 'string' && MIASTO_AKCJE_DOZWOLONE.includes(actionId)`) — lista z `StaticCatalogDto.constants`
+ * (brak pola = pusta lista, fail-safe).
+ */
+const diplomacyMiastoAkcjaDozwolona = (actionId: string | null | undefined): boolean =>
+  typeof actionId === 'string' && (staticCatalog().constants.miastoAkcjeDozwolone ?? []).includes(actionId);
 
 /**
  * P5.6: web `resourceDisplayLabel` (`game/diplomacy-display.ts:434-437`) — nazwa z `StaticCatalogDto.labels.resourceKeyLabels`
@@ -67,6 +75,8 @@ function rulesCtx(ctx: NegotiationModalContext): BasketRulesCtxDto {
     tempoGry: ctx.tempoGry,
     difficulty: ctx.difficulty,
     playerSkarbiec: ctx.playerSkarbiec,
+    // R-RUSTPORT-REPIN-UI-2-E-Q1: web `86d510c66` `basketPnOpts.actionId` (`:206-207`).
+    basketActionId: ctx.basketActionId,
   };
 }
 
@@ -85,6 +95,7 @@ const TYP_LABELS: Record<WartoscPozycjaTyp, string> = {
   jednostka: 'Jednostka',
   surowiec_boolean: 'Dostęp do surowca',
   surowiec_ilosc: 'Surowiec (sztuki)',
+  miasto: 'Miasto (tylko pokój)',
 };
 
 /** Krótkie etykiety chipów (te same ikony co HUD / magazyn). */
@@ -152,18 +163,8 @@ function buildChipBtn(
  * chipa (już budowany przez wywołującego, patrz `qtyResChips`), nie do tej odznaki.
  */
 function formatCompactQty(n: number): string {
-  const v = Math.trunc(n);
-  const abs = Math.abs(v);
-  if (abs < 1000) return String(v);
-  const units: Array<[number, string]> = [[1_000_000_000, 'B'], [1_000_000, 'M'], [1_000, 'k']];
-  for (const [div, suf] of units) {
-    if (abs >= div) {
-      const scaled = Math.round((v / div) * 10) / 10;
-      const str = Number.isInteger(scaled) ? String(scaled) : scaled.toFixed(1);
-      return str + suf;
-    }
-  }
-  return String(v);
+  // R-WEB-HUD-NUMBER-ABBREV-Q1: deleguje do wspólnego formattera (ten sam zapis „1,2k" / „1M").
+  return formatCompactNumber(Math.trunc(n));
 }
 
 /**
@@ -181,6 +182,7 @@ function qtyStepperHtml(
   min = 1,
   max?: number,
   step = 1,
+  thirdButton?: { label: string; action: string },
 ): string {
   const maxAttr = max != null ? ' max="' + max + '"' : '';
   const stepAttr = step > 1 ? ' step="' + step + '"' : '';
@@ -193,8 +195,11 @@ function qtyStepperHtml(
     + '" data-target="' + inputClass + '" data-delta="' + d1 + '">+' + d1 + '</button>'
     + '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
     + '" data-target="' + inputClass + '" data-delta="' + d2 + '">+' + d2 + '</button>'
-    + '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
-    + '" data-target="' + inputClass + '" data-delta="' + d3 + '">+' + d3 + '</button>'
+    + (thirdButton
+      ? '<button type="button" class="cdb-duration-indefinite dip-muted-btn" data-action="' + thirdButton.action
+        + '" aria-pressed="false">' + esc(thirdButton.label) + '</button>'
+      : '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
+        + '" data-target="' + inputClass + '" data-delta="' + d3 + '">+' + d3 + '</button>')
     + '<input type="number" class="' + inputClass + '" data-side="' + side
     + '" value="' + value + '" min="' + min + '"' + maxAttr + stepAttr + ' />'
     + '</div>'
@@ -215,7 +220,22 @@ function sumBasketPn(
   resourceTradeMode: 'once' | 'per_turn' = 'once',
   dealTurns = 1,
 ): number | null {
+  // R-RUSTPORT-REPIN-UI-2-E-Q1 (web `86d510c66` `:195-227`): `basketPnOpts.actionId = ctx.basketActionId` i
+  // `toPnItems` z `cityPn`/`cityWeight` docierają do Rust przez `rulesCtx(ctx).basketActionId` i pola `BasketItemDto`
+  // (pozycje przekazywane w całości) — wycenę pozycji 'miasto' (fail-safe `null` bez actionId) liczy Rust.
   return diplomacyQueries().basketSumPn({ items, side, resourceTradeMode, dealTurns, ctx: rulesCtx(ctx) });
+}
+
+/**
+ * R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 2 Evaluatora — allowlista): renderowanie pozycji 'miasto'
+ * (1 sztuka, wycena PW, „(pokój)") żyje w pliku z allowlisty, a nie w diplomacyDealDisplay.ts.
+ * Pozostałe typy — bez zmian, przez renderBasketItemValueBaseHtml.
+ */
+function renderBasketItemValueHtml(item: DealBasketItemViewDto, fmtCtx: BasketItemFormatCtx): string {
+  if (item.typ !== 'miasto') return renderBasketItemValueBaseHtml(item, fmtCtx);
+  const name = item.cityLabel ?? item.id;
+  const pn = item.cityPn != null ? ' · ' + Math.round(item.cityPn) + ' PW' : '';
+  return '<span class="da-deal-amt">miasto: ' + esc(name) + pn + '</span><span class="da-deal-once">(pokój)</span>';
 }
 
 function ensureStyles(): void {
@@ -333,6 +353,8 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .cdb-chip.cdb-chip-turn{min-width:36px;padding:6px 10px;font-size:0.78em;font-weight:600;}
 .civ-diplo-basket .cdb-qty-stepper{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:4px 0;}
 .civ-diplo-basket .cdb-qty-step{padding:5px 9px;font-size:0.72em;min-width:42px;}
+.civ-diplo-basket .cdb-duration-indefinite{padding:5px 9px;font-size:0.72em;min-width:42px;}
+.civ-diplo-basket .cdb-duration-indefinite.selected{border-color:#d4b658;color:#f2df9b;background:rgba(212,182,88,.15);}
 .civ-diplo-basket .cdb-qty-stepper input[type=number]{flex:1;min-width:72px;max-width:110px;}
 .civ-diplo-basket .cdb-add-section{margin:6px 0 4px;}
 .civ-diplo-basket .cdb-add-section-title{font-size:0.7em;color:#a8a090;margin:0 0 4px;text-transform:uppercase;letter-spacing:.05em;}
@@ -484,6 +506,10 @@ interface TreatyFormState {
   techOfferId: string;
   bribeGold: number;
   targetOwnerId: number;
+  /** R-WEB-TRUCE-Q1 (N5): akcja '10' - 'pokoj' (domyslnie) albo 'rozejm' na `truceTurns` tur. */
+  peaceKind: 'pokoj' | 'rozejm';
+  /** R-WEB-TRUCE-Q1 (N5): dlugosc rozejmu 5/10/15 tur (uzywana tylko gdy peaceKind === 'rozejm'). */
+  truceTurns: number;
 }
 
 /**
@@ -581,6 +607,8 @@ function defaultTreatyState(actionId: string, initial?: TradeBasketInitial, ctx?
     techOfferId: initial?.techOfferId ?? offerTechs[0]?.id ?? '',
     bribeGold: initial?.bribeGold ?? 30,
     targetOwnerId: initial?.targetOwnerId ?? rivals[0]?.ownerId ?? -1,
+    peaceKind: initial?.peaceKind === 'rozejm' ? 'rozejm' : 'pokoj',
+    truceTurns: initial?.truceTurns === 5 || initial?.truceTurns === 15 ? initial.truceTurns : 10,
   };
 }
 
@@ -786,7 +814,27 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
       // odsyłające do koszyka byłoby martwym, mylącym tekstem. Zdanie identyczne w case '5'
       // ZOSTAJE bez zmian — ta ścieżka jest martwa (akcja 5 nie otwiera tego modala, patrz
       // diplomacyAudience.ts), poza zakresem tej naprawy.
-      body = '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%).</p>';
+      {
+        // R-WEB-TRUCE-Q1 (N5): przełącznik pokój/rozejm + wybór 5/10/15 tur (tylko rozejm).
+        const isTruce = state.peaceKind === 'rozejm';
+        const kindChips = (['pokoj', 'rozejm'] as const).map(k =>
+          '<button type="button" class="cdb-chip cdb-chip-peacekind' + (state.peaceKind === k ? ' selected' : '')
+          + '" data-kind="' + k + '">' + (k === 'pokoj' ? 'Pokój' : 'Rozejm') + '</button>',
+        ).join('');
+        const truceChips = [5, 10, 15].map(t =>
+          '<button type="button" class="cdb-chip cdb-chip-truceturns' + (state.truceTurns === t ? ' selected' : '')
+          + '" data-turns="' + t + '">' + t + ' tur</button>',
+        ).join('');
+        body = '<label>Rodzaj</label>'
+          + '<div class="cdb-chip-row">' + kindChips + '</div>'
+          + '<input type="hidden" id="cdb-treaty-peacekind" class="cdb-treaty-peacekind" value="' + state.peaceKind + '" />'
+          + (isTruce
+            ? '<label>Czas rozejmu</label>'
+              + '<div class="cdb-chip-row cdb-turn-presets">' + truceChips + '</div>'
+              + '<input type="hidden" id="cdb-treaty-truceturns" class="cdb-treaty-truceturns" value="' + state.truceTurns + '" />'
+              + '<p class="cdb-sub">Rozejm: po wygaśnięciu wojna wraca bez kary. Wypowiedzenie wojny w jego trakcie = złamanie (kara jak za pakt). Baza ~200 PW.</p>'
+            : '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%).</p>');
+      }
       break;
     default:
       body = '<p class="cdb-sub">Brak dodatkowych warunków traktatu.</p>';
@@ -801,6 +849,12 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState, ctx?: N
   if (actionId === '2') {
     const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '15', 10);
     state.turns = turns <= 0 ? 0 : Math.max(10, Math.min(20, turns));
+  } else if (actionId === '10') {
+    // R-WEB-TRUCE-Q1 (N5): brak pola w DOM (przed pierwszym renderem) = zachowaj `prev`.
+    const k = (document.querySelector('.cdb-treaty-peacekind') as HTMLInputElement | null)?.value;
+    if (k === 'pokoj' || k === 'rozejm') state.peaceKind = k;
+    const t = parseInt((document.querySelector('.cdb-treaty-truceturns') as HTMLInputElement | null)?.value ?? '', 10);
+    if (t === 5 || t === 10 || t === 15) state.truceTurns = t;
   } else if (actionId === '3') {
     const v = (document.querySelector('.cdb-treaty-alliance') as HTMLSelectElement)?.value;
     state.allianceKind = v === 'defensywny' ? 'defensywny' : 'pelny';
@@ -1124,6 +1178,14 @@ function buildTreatyPayload(
   //     `umowa_szlakow` transferuje koszyk JEDNORAZOWO, i rozjeżdżało podgląd koszyka
   //     (`givePn` liczone z `dealTurns`) z tym, co silnik przelicza przy akceptacji.
   switch (actionId) {
+    case '10':
+      // R-WEB-TRUCE-Q1 (N5): rozejm niesie `rodzaj` i dlugosc w `turns` (5/10/15, jak w
+      // main.ts applyProposalOutcome -> normalizeTruceDuration); pokoj - bez zmian.
+      if (state.peaceKind === 'rozejm') {
+        payload.rodzaj = 'rozejm';
+        payload.turns = state.truceTurns;
+      }
+      break;
     case '2':
       payload.turns = state.turns;
       payload.treatyTurns = state.turns;
@@ -1241,7 +1303,9 @@ function validateBasketForm(
   if (blocked) {
     return { valid: false, reason: 'Nie spełniasz progu Relacji dla tej akcji' };
   }
-  const propActionId = proposalActionIdFromUi(actionId, mode, treatyState?.tributeMode);
+  const propActionId = actionId === '10' && treatyState?.peaceKind === 'rozejm'
+    ? 'rozejm'
+    : proposalActionIdFromUi(actionId, mode, treatyState?.tributeMode);
   const currencyPayload = {
     goldOnce: treatyState?.tributeMode === 'offer' ? treatyState.goldPerTurn : undefined,
     goldPerTurn: treatyState?.goldPerTurn,
@@ -1270,8 +1334,9 @@ function validateBasketForm(
     const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
     const hasQtyRes = !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
     const needsTurns = hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn');
-    if (needsTurns && (dealTurns < 1 || dealTurns > 20)) {
-      return { valid: false, reason: 'Wybierz czas umowy od 1 do 20 tur' };
+    const maxTurns = hasResourceAccess ? 20 : 30;
+    if (needsTurns && (dealTurns < 1 || dealTurns > maxTurns)) {
+      return { valid: false, reason: `Wybierz czas umowy od 1 do ${maxTurns} tur` };
     }
     return { valid: true };
   }
@@ -1297,15 +1362,23 @@ function validateBasketForm(
   const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
   const hasQtyRes = mode === 'trade' && !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
   const needsTurns = mode === 'trade' && (hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn'));
-  if (needsTurns && (dealTurns < 1 || dealTurns > 20)) {
-    return { valid: false, reason: 'Wybierz czas umowy od 1 do 20 tur' };
+  const maxTurns = hasResourceAccess ? 20 : 30;
+  if (needsTurns && (dealTurns < 1 || dealTurns > maxTurns)) {
+    return { valid: false, reason: `Wybierz czas umowy od 1 do ${maxTurns} tur` };
   }
   return { valid: true };
 }
 
-function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (tur, max 20)', sub = 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'): string {
+export function dealDurationHtml(
+  turns: number,
+  visible: boolean,
+  label = 'Czas umowy (tur, max 20)',
+  sub = 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).',
+  maxTurns = 20,
+  allowIndefinite = false,
+): string {
   if (!visible) return '';
-  const turnChips = [5, 10, 15].map(t =>
+  const turnChips = (maxTurns > 20 ? [5, 10, 15, 20, 30] : [5, 10, 15, 20]).map(t =>
     '<button type="button" class="cdb-chip cdb-chip-turn' + (turns === t ? ' selected' : '')
     + '" data-turns="' + t + '">' + t + '</button>',
   ).join('');
@@ -1313,10 +1386,24 @@ function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (
     '<div class="cdb-duration">'
       + '<label for="cdb-deal-turns">' + esc(label) + '</label>'
       + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
-      + qtyStepperHtml('cdb-deal-turns', 'deal', turns, 1, 20)
+      + (allowIndefinite
+        ? qtyStepperHtml('cdb-deal-turns', 'deal', turns, 1, maxTurns, 1, { label: 'Bezterminowo', action: 'indefinite-exchange' })
+        : qtyStepperHtml('cdb-deal-turns', 'deal', turns, 1, maxTurns))
       + '<p class="cdb-sub">' + esc(sub) + '</p>'
     + '</div>'
   );
+}
+
+export function dealDurationControlOptions(
+  hasResourceAccess: boolean,
+  resourceTradeMode: 'once' | 'per_turn',
+  hasQtyRes: boolean,
+  showResModeSelector: boolean,
+): { maxTurns: number; allowIndefinite: boolean } {
+  const cyclicExchange = !hasResourceAccess
+    && resourceTradeMode === 'per_turn'
+    && (hasQtyRes || showResModeSelector);
+  return { maxTurns: cyclicExchange ? 30 : 20, allowIndefinite: cyclicExchange };
 }
 
 /**
@@ -1350,6 +1437,8 @@ function dealSettingsBlockHtml(
   dealDurationLabel: string,
   dealDurationSub: string,
   hintWhenIdle?: string,
+  maxTurns = 20,
+  allowIndefinite = false,
 ): string {
   let html = '<div class="cdb-deal-settings">';
   html += '<div class="cdb-deal-settings-title">Czas umowy</div>';
@@ -1357,7 +1446,7 @@ function dealSettingsBlockHtml(
     html += '<p class="cdb-sub">' + esc(hintWhenIdle) + '</p>';
   }
   html += resourceTradeModeHtml(resourceTradeMode, showMode);
-  html += dealDurationHtml(dealTurns, showDuration, dealDurationLabel, dealDurationSub);
+  html += dealDurationHtml(dealTurns, showDuration, dealDurationLabel, dealDurationSub, maxTurns, allowIndefinite);
   html += '</div>';
   return html;
 }
@@ -1431,6 +1520,14 @@ export function computeAvailableTypes(
       if (WITHDRAWN_BASKET_ACCESS_TYPES.has(t)) return false;
       if (t === 'jednostka') return false;
       if (!allowWarCurrency && (t === 'zloto' || t === 'praca')) return false;
+      // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): miasto tylko po stronie „Daję", tylko w akcji
+      // pokoju/wasalizacji (MIASTO_AKCJE_DOZWOLONE) i tylko gdy są miasta do oddania.
+      if (t === 'miasto') {
+        return side === 'give'
+          && mode !== 'gift'
+          && diplomacyMiastoAkcjaDozwolona(ctx.basketActionId ?? proposalActionIdFromUi(actionId, mode))
+          && (ctx.miastoOptions?.length ?? 0) > 0;
+      }
       if (mode === 'gift') return true;
       if (t === 'tech' && side === 'receive') {
         const rel = ctx.relacjaTotal ?? 0;
@@ -1528,6 +1625,31 @@ export function buildAddForm(
     ).join('')
     : '<span class="cdb-sub">— brak technologii (SILNIK) —</span>';
 
+  // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): wybór miasta do oddania (lista PW). Miasto już dodane
+  // do koszyka znika z listy, poza edytowanym (jak technologia wyżej). Pusta lista = placeholder.
+  const editMiastoId = editTyp === 'miasto' ? editItem!.item.id : undefined;
+  const miastoIdsInBasket = new Set(
+    existingItems.filter(it => it.typ === 'miasto' && it.id !== editMiastoId).map(it => it.id),
+  );
+  const miastoAll = availableTypes.includes('miasto') ? (ctx.miastoOptions ?? []) : [];
+  const miastoOpts = miastoAll.filter(m => !miastoIdsInBasket.has(m.id));
+  const defaultMiasto = (editMiastoId != null && miastoOpts.some(m => m.id === editMiastoId))
+    ? editMiastoId
+    : (miastoOpts[0]?.id ?? '');
+  const miastoChips = miastoOpts.length > 0
+    ? miastoOpts.map(m =>
+      buildChipBtn(
+        'cdb-chip-miasto',
+        m.id,
+        prefix,
+        m.id === defaultMiasto,
+        typChipIconHtml('miasto'),
+        m.label + ' · ' + m.pn + ' PW',
+        ' title="' + esc(m.label + ' — wycena ' + m.pn + ' PW') + '"',
+      ),
+    ).join('')
+    : '<span class="cdb-sub">— brak miast do oddania (stolica i ostatnie miasto są wyłączone) —</span>';
+
   const qtyResources = side === 'give'
     ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())
     : (ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions());
@@ -1604,6 +1726,11 @@ export function buildAddForm(
     + '<div class="cdb-chip-grid cdb-tech-chips">' + techChips + '</div>'
     + '<input type="hidden" class="cdb-tech" data-side="' + prefix + '" value="' + esc(defaultTech) + '" />'
     + '</div>'
+    + '<div class="cdb-fields-extra" data-extra="' + prefix + '-miasto">'
+    + '<label>Miasto do oddania <span style="color:#7a8494">(wycena PW)</span></label>'
+    + '<div class="cdb-chip-grid cdb-miasto-chips">' + miastoChips + '</div>'
+    + '<input type="hidden" class="cdb-miasto" data-side="' + prefix + '" value="' + esc(defaultMiasto) + '" />'
+    + '</div>'
     + '<div class="cdb-fields-extra" data-extra="' + prefix + '-resqty">'
     + '<label>Surowiec</label>'
     + '<div class="cdb-chip-grid cdb-resqty-chips">' + qtyResChips + '</div>'
@@ -1616,6 +1743,40 @@ export function buildAddForm(
     + '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '"' + editAttrs + '>' + esc(submitLabel) + '</button>'
     + cancelBtn
     + '</div>'
+    + '</div>'
+  );
+}
+
+/**
+ * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): wybór miasta do oddania w formularzu traktatu pokoju/wasala
+ * (formularze „tylko traktat" nie mają koszyka „Dodaj", więc miasto dokłada się osobnym blokiem).
+ * Klik → pozycja 'miasto' w giveItems (ta sama lista co słodzik traktatu, widoczna w podsumowaniu).
+ * Miasta już w koszyku znikają z listy. Pusta lista / inna akcja → ''.
+ */
+function miastoPickerHtml(ctx: NegotiationModalContext, actionId: string, giveItems: readonly BasketItem[]): string {
+  // R-WEB-TRUCE-Q1 r5 (N5): rozejm (basketActionId='rozejm') nie oddaje miast — picker ukryty.
+  if (!diplomacyMiastoAkcjaDozwolona(ctx.basketActionId ?? proposalActionIdFromUi(actionId, 'treaty'))) return '';
+  const all = ctx.miastoOptions ?? [];
+  if (all.length === 0) return '';
+  const inBasket = new Set(giveItems.filter(it => it.typ === 'miasto').map(it => it.id));
+  const opts = all.filter(m => !inBasket.has(m.id));
+  const chips = opts.length > 0
+    ? opts.map(m =>
+      buildChipBtn(
+        'cdb-city-pick',
+        m.id,
+        'give',
+        false,
+        typChipIconHtml('miasto'),
+        m.label + ' · ' + m.pn + ' PW',
+        ' title="' + esc(m.label + ' — wycena ' + m.pn + ' PW') + '"',
+      ),
+    ).join('')
+    : '<span class="cdb-sub">— wszystkie miasta do oddania są już w propozycji —</span>';
+  return (
+    '<div class="cdb-basket-opt cdb-city-pick-block">'
+    + '<div class="cdb-basket-opt-title">Miasto do oddania (wycena PW; tylko w pokoju)</div>'
+    + '<div class="cdb-chip-grid cdb-city-pick-chips">' + chips + '</div>'
     + '</div>'
   );
 }
@@ -2018,6 +2179,14 @@ export function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: Ne
       if (!id) return null;
       return { typ, id };
     }
+    case 'miasto': {
+      // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): miasto = 1 sztuka, wycena PW z opcji (ctx.miastoOptions).
+      const id = (box.querySelector('.cdb-miasto[data-side="' + prefix + '"]') as HTMLInputElement)?.value;
+      if (!id) return null;
+      const opt = ctx.miastoOptions?.find(m => m.id === id);
+      if (!opt || !(opt.pn >= 0)) return null;
+      return { typ, id, ilosc: 1, cityPn: opt.pn, cityLabel: opt.label };
+    }
     case 'jednostka': {
       const id = (box.querySelector('.cdb-unit[data-side="' + prefix + '"]') as HTMLInputElement)?.value;
       if (!id) return null;
@@ -2053,13 +2222,13 @@ export function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: Ne
 function updateTypFields(box: Element, side: 'give' | 'receive'): void {
   const prefix = side === 'give' ? 'give' : 'recv';
   const typ = (box.querySelector('.cdb-typ[data-side="' + prefix + '"]') as HTMLInputElement)?.value ?? 'zloto';
-  const extras = ['qty', 'city', 'tech', 'resqty'];
+  const extras = ['qty', 'city', 'tech', 'resqty', 'miasto'];
   for (const ex of extras) {
     const el = box.querySelector('[data-extra="' + prefix + '-' + ex + '"]');
     if (el) el.classList.remove('visible');
   }
   const map: Record<string, string> = {
-    zloto: 'qty', praca: 'qty', zywnosc: 'city', tech: 'tech', surowiec_ilosc: 'resqty',
+    zloto: 'qty', praca: 'qty', zywnosc: 'city', tech: 'tech', surowiec_ilosc: 'resqty', miasto: 'miasto',
   };
   const show = map[typ];
   if (show) {
@@ -2173,10 +2342,12 @@ function renderBasket(
       + '<button type="button" class="dip-gold-btn cdb-submit"' + (blocked || !validation.valid ? ' disabled' : '') + '>'
       + esc(modalOpts?.submitLabel ?? 'Zaproponuj') + '</button>'
       + '</div>';
+    // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): blok wyboru miasta (tylko pokój/wasal, nie gdy blocked).
+    const cityPickHtml = blocked ? '' : miastoPickerHtml(ctx, action.id, giveItems);
     const scrollBody = blocked
       ? blocked
       : '<div class="cdb-landscape">'
-        + '<div class="cdb-land-main">' + treatyHtml + '</div>'
+        + '<div class="cdb-land-main">' + treatyHtml + cityPickHtml + '</div>'
         + '<div class="cdb-land-side">' + summaryBlock + '</div>'
         + '</div>';
     box.className = 'civ-diplo-basket cdb-treaty-mode cdb-treaty-only-mode cdb-landscape-mode';
@@ -2228,9 +2399,13 @@ function renderBasket(
   const showDealDuration = showReceiveCol
     && (hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn')
       || (showResModeSelector && resourceTradeMode === 'per_turn'));
+  const durationOptions = dealDurationControlOptions(
+    hasResourceAccess, resourceTradeMode, hasQtyRes, showResModeSelector,
+  );
+  const durationMaxTurns = durationOptions.maxTurns;
   const dealDurationLabel = hasResourceAccess
     ? 'Czas umowy (tur, max 20)'
-    : 'Co ile tur trwa wymiana (tur, max 20)';
+    : 'Co ile tur trwa wymiana (tur, max 30)';
   const dealDurationSub = hasResourceAccess
     ? 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'
     : 'Surowiec i zapłata płyną CO TURĘ przez wybrany czas. Deal znika po wygaśnięciu, zerwaniu traktatu lub wojnie.';
@@ -2248,6 +2423,8 @@ function renderBasket(
       dealDurationLabel,
       dealDurationSub,
       dealSettingsHint,
+      durationMaxTurns,
+      durationOptions.allowIndefinite,
     );
 
   const treatyHtmlRest = mode === 'treaty' ? treatySectionHtml(action.id, ctx, treatyState) : '';
@@ -2308,6 +2485,9 @@ export interface TradeBasketModalOptions {
 }
 
 export interface TradeBasketInitial {
+  /** R-WEB-TRUCE-Q1 (N5): prefill rodzaju akcji '10' (pokoj/rozejm) i dlugosci rozejmu. */
+  peaceKind?: 'pokoj' | 'rozejm';
+  truceTurns?: number;
   giveItems?: readonly BasketItem[];
   receiveItems?: readonly BasketItem[];
   /**
@@ -2316,6 +2496,8 @@ export interface TradeBasketInitial {
    * dokładnie jak przed R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1.
    */
   turns?: number;
+  /** Czas cyklicznej wymiany: null = bezterminowo, brak = starsza oferta/czas z `turns`. */
+  exchangeDurationTurns?: number | null;
   /**
    * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Evaluator R3, zarzut 3): czas TRWANIA traktatu
    * (0 = bezterminowy) jako prefill formularza „Warunki traktatu", ODDZIELNY od `turns`.
@@ -2352,12 +2534,16 @@ export function showTradeBasketModal(
   closeModal();
   ensureStyles();
   activeOnCancel = onCancel;
+  // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): akcja koszyka trafia do ctx → basketPnOpts (bramka 'miasto').
+  // (UI '10' → 'pokoj', '12' → 'wasal': ten sam mapping co przy wysyłce propozycji.)
+  ctx = { ...ctx, basketActionId: proposalActionIdFromUi(action.id, mode) };
 
   // Zaległość #1 (SZYBKA UMOWA) — koszyk może otwierać się WYPEŁNIONY propozycją
   // (computeQuickDealBasket), użytkownik dalej może edytować/usuwać pozycje normalnie.
   let giveItems: BasketItem[] = stripWithdrawnResourceAccessItems(initial?.giveItems ?? []);
   let receiveItems: BasketItem[] = stripWithdrawnResourceAccessItems(initial?.receiveItems ?? []);
-  let dealTurns = initial?.turns != null ? Math.max(1, Math.min(20, initial.turns)) : 15;
+  let dealTurns = initial?.turns != null ? Math.max(1, Math.min(30, initial.turns)) : 15;
+  let exchangeDurationTurns: number | null | undefined = initial?.exchangeDurationTurns;
   let resourceTradeMode: 'once' | 'per_turn' = initial?.resourceTradeMode ?? 'once';
   let warThreat = action.id === '9';
   let treatyState = defaultTreatyState(action.id, initial, ctx);
@@ -2375,7 +2561,7 @@ export function showTradeBasketModal(
 
   const readDealTurnsFromDom = (): void => {
     const inp = box.querySelector('.cdb-deal-turns') as HTMLInputElement | null;
-    if (inp) dealTurns = Math.max(1, Math.min(20, parseInt(inp.value, 10) || 15));
+    if (inp) dealTurns = Math.max(1, Math.min(30, parseInt(inp.value, 10) || 15));
   };
 
   const readResourceTradeModeFromDom = (): void => {
@@ -2387,7 +2573,21 @@ export function showTradeBasketModal(
     readDealTurnsFromDom();
     readResourceTradeModeFromDom();
     if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState, ctx);
+    // R-WEB-TRUCE-Q1 (N5): podglad PW dla rozejmu liczony jak akcja 'rozejm' (baza 200).
+    if (action.id === '10') ctx = { ...ctx, basketActionId: treatyState.peaceKind === 'rozejm' ? 'rozejm' : 'pokoj' };
     renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState, warThreat, editingItem, modalOpts);
+    const indefiniteBtn = box.querySelector('.cdb-duration-indefinite') as HTMLButtonElement | null;
+    if (indefiniteBtn) {
+      const selected = exchangeDurationTurns === null;
+      indefiniteBtn.classList.toggle('selected', selected);
+      indefiniteBtn.setAttribute('aria-pressed', String(selected));
+    }
+    const schedule = box.querySelector('.da-deal-sched-foot');
+    if (schedule && resourceTradeMode === 'per_turn' && basketHasQuantityResource(giveItems, receiveItems)) {
+      schedule.textContent = exchangeDurationTurns === null
+        ? 'Wymiana co turę bezterminowo'
+        : 'Wymiana co turę przez ' + dealTurns + ' tur';
+    }
     bindEvents();
   };
 
@@ -2418,6 +2618,28 @@ export function showTradeBasketModal(
     box.querySelectorAll('.cdb-chip-tech').forEach(btn => {
       btn.addEventListener('click', () => {
         selectChipInGroup(btn, 'cdb-chip-tech', '.cdb-tech');
+      });
+    });
+
+    // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): wybór miasta do oddania w pokoju.
+    box.querySelectorAll('.cdb-chip-miasto').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectChipInGroup(btn, 'cdb-chip-miasto', '.cdb-miasto');
+      });
+    });
+    // Formularz traktatu pokoju/wasala: klik miasta = dołożenie pozycji 'miasto' do giveItems.
+    box.querySelectorAll('.cdb-city-pick').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-value') ?? '';
+        const opt = ctx.miastoOptions?.find(m => m.id === id);
+        if (!opt) return;
+        giveItems = addOrMergeBasketItem(
+          giveItems,
+          { typ: 'miasto', id, ilosc: 1, cityPn: opt.pn, cityLabel: opt.label },
+          'give',
+          ctx,
+        );
+        refresh();
       });
     });
 
@@ -2509,7 +2731,8 @@ export function showTradeBasketModal(
           return;
         }
         const durationRoot = btn.closest('.cdb-duration');
-        dealTurns = Math.max(1, Math.min(20, turns));
+        dealTurns = Math.max(1, Math.min(30, turns));
+        exchangeDurationTurns = dealTurns;
         const inp = (durationRoot ?? box).querySelector('.cdb-deal-turns') as HTMLInputElement | null;
         if (inp) inp.value = String(dealTurns);
         (durationRoot ?? box).querySelectorAll('.cdb-chip-turn').forEach(c => {
@@ -2552,7 +2775,20 @@ export function showTradeBasketModal(
         const max = inp.max ? parseInt(inp.max, 10) : Infinity;
         const next = Math.min(max, Math.max(min, (parseInt(inp.value, 10) || 0) + delta));
         inp.value = String(next);
+        if (target === 'cdb-deal-turns') {
+          exchangeDurationTurns = next;
+          const indefiniteBtn = box.querySelector('.cdb-duration-indefinite');
+          indefiniteBtn?.classList.remove('selected');
+          indefiniteBtn?.setAttribute('aria-pressed', 'false');
+          const schedule = box.querySelector('.da-deal-sched-foot');
+          if (schedule && resourceTradeMode === 'per_turn') schedule.textContent = 'Wymiana co turę przez ' + next + ' tur';
+        }
       });
+    });
+
+    box.querySelector('.cdb-duration-indefinite')?.addEventListener('click', () => {
+      exchangeDurationTurns = null;
+      refresh();
     });
 
     for (const side of ['give', 'recv'] as const) {
@@ -2560,7 +2796,11 @@ export function showTradeBasketModal(
       updateTypFields(box, uiSide);
     }
 
-    box.querySelector('.cdb-deal-turns')?.addEventListener('input', () => refresh());
+    box.querySelector('.cdb-deal-turns')?.addEventListener('input', () => {
+      const inp = box.querySelector('.cdb-deal-turns') as HTMLInputElement | null;
+      exchangeDurationTurns = inp ? Math.max(1, Math.min(30, parseInt(inp.value, 10) || 15)) : undefined;
+      refresh();
+    });
 
     box.querySelectorAll(
       '.cdb-treaty-turns, .cdb-treaty-alliance, .cdb-treaty-trib-mode, .cdb-treaty-gpt, .cdb-treaty-trib-turns, .cdb-treaty-wasal-gpt, .cdb-treaty-wchlon-gold',
@@ -2593,6 +2833,24 @@ export function showTradeBasketModal(
         const inp = box.querySelector('.cdb-treaty-barbturns') as HTMLInputElement | null;
         if (inp) inp.value = String(val);
         box.querySelectorAll('.cdb-chip-barbturns').forEach(c => c.classList.toggle('selected', c === btn));
+        refresh();
+      });
+    });
+
+    // R-WEB-TRUCE-Q1 (N5): przelacznik pokoj/rozejm i wybor dlugosci rozejmu (klasy dedykowane,
+    // poza wspolnym klampem `.cdb-chip-turn`).
+    box.querySelectorAll('.cdb-chip-peacekind').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const inp = box.querySelector('.cdb-treaty-peacekind') as HTMLInputElement | null;
+        if (inp) inp.value = btn.getAttribute('data-kind') === 'rozejm' ? 'rozejm' : 'pokoj';
+        refresh();
+      });
+    });
+    box.querySelectorAll('.cdb-chip-truceturns').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = parseInt(btn.getAttribute('data-turns') ?? '10', 10);
+        const inp = box.querySelector('.cdb-treaty-truceturns') as HTMLInputElement | null;
+        if (inp) inp.value = String(t === 5 || t === 15 ? t : 10);
         refresh();
       });
     });
@@ -2745,6 +3003,13 @@ export function showTradeBasketModal(
           payload.resourceTradeMode = 'per_turn';
           payload.turns = dealTurns;
         }
+      }
+      if (
+        (mode === 'trade' || mode === 'treaty')
+        && resourceTradeMode === 'per_turn'
+        && basketHasQuantityResource(giveItems, receiveItems)
+      ) {
+        payload.exchangeDurationTurns = exchangeDurationTurns === null ? null : dealTurns;
       }
       closeModal();
       onSubmit(payload);
