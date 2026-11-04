@@ -163,6 +163,7 @@ import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, computeVisibleAlongPath, buildUnitSightResolver, computePlayerVisibility, unitsVisibleOnMap } from './game/visibility';
 import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
 import { cyclablePlayerArmyLeadsBase, resolveAdjacentPlayerUnitCycle } from './game/army-cycle';
+import { activeUnitQueue } from './game/next-active-unit';
 import {
   shouldShowPlayerTriumphCityStateUnification,
   // buildTriumphCityStateUnificationMessage / TRIUMPH_CS_HINT_MS: nie używane tu
@@ -6644,6 +6645,13 @@ async function boot(): Promise<void> {
       return cyclablePlayerArmyLeadsBase(units, true, stackCanMove, (u) => isMe(u.ownerId));
     }
 
+    /** R-WEB-ROSTER-SPACE-NEXT-ACTIVE-UNIT-Q1: kolejka WYŁĄCZNIE dla Spacji -- jak wyżej + jednostki
+     * oblegające / oblegane (bez ruchu, ale wymagają decyzji). Bęben i „Zwiedzaj” zostają na
+     * `cyclablePlayerArmyLeads()` (inaczej po każdym ruchu kamera skakałaby na oblężenie). */
+    function spaceActiveUnitQueue(): RuntimeUnit[] {
+      return activeUnitQueue(units, { cities, isMe: (u) => isMe(u.ownerId), canMove: stackCanMove });
+    }
+
     /** Wszystkie armie gracza (1 wiodąca/heks), NIEZALEŻNIE od dostępnego ruchu — kolejność
      * przestrzenna. Używane przez strzałki HUD ◀▶ (decyzja właściciela 2026-08-08). */
     function cyclablePlayerArmyLeadsAll(): RuntimeUnit[] {
@@ -6659,10 +6667,11 @@ async function boot(): Promise<void> {
     function cycleToAdjacentPlayerUnit(
       afterId: string | null,
       delta: 1 | -1,
-      opts?: { all?: boolean },
+      opts?: { all?: boolean; siege?: boolean },
     ): void {
       if (!isWorldMapUnitMode()) return;
-      const list = opts?.all === true ? cyclablePlayerArmyLeadsAll() : cyclablePlayerArmyLeads();
+      const list = opts?.all === true ? cyclablePlayerArmyLeadsAll()
+        : opts?.siege === true ? spaceActiveUnitQueue() : cyclablePlayerArmyLeads();
       const nextId = resolveAdjacentPlayerUnitCycle(units, list, afterId, delta);
       if (nextId === null) {
         clearPlayerUnitSelection();
@@ -25047,7 +25056,7 @@ async function boot(): Promise<void> {
     // Runda 2: hak powstaje WYLACZNIE przy `?civTest=1` (ta sama bramka co window.__civTest);
     // w produkcji `window.__frozenTestDebug === undefined`, zero powierzchni.
     if (isCivTestEnabled(window.location.search)) (window as any).__frozenTestDebug = {
-      spawn: (q: number, r: number, n: number, flags: { garnizon?: boolean; field?: boolean; ruchLeft?: number; group?: string }): string[] => {
+      spawn: (q: number, r: number, n: number, flags: { garnizon?: boolean; field?: boolean; ruchLeft?: number; group?: string; oblegaCityId?: string }): string[] => {
         const tpl = units.find(u => u.ownerId === 0 && u.category !== 'osadnik' && u.category !== 'robotnik' && u.category !== 'zwiadowca') ?? units.find(u => u.ownerId === 0);
         if (!tpl) throw new Error('brak szablonu jednostki gracza');
         const ids: string[] = [];
@@ -25056,12 +25065,24 @@ async function boot(): Promise<void> {
           const nu = { ...tpl, id, q, r, ownerId: 0, inGarnizon: flags.garnizon === true,
             ufortyfikowanyWPolu: flags.field === true, ruchLeft: flags.ruchLeft ?? tpl.ruch,
             fortifyRuchSnapshot: flags.garnizon || flags.field ? tpl.ruch : undefined,
-            stackGroupId: flags.group, oblegaCityId: undefined, sentry: false } as RuntimeUnit;
+            stackGroupId: flags.group, oblegaCityId: flags.oblegaCityId, sentry: false } as RuntimeUnit;
           units.push(nu);
           ids.push(id);
         }
         syncUnitsRender();
         return ids;
+      },
+      /** Test-only (R-WEB-ROSTER-SPACE-NEXT-ACTIVE-UNIT-Q1): ustaw flagę `oblegane` miasta. */
+      setCityBesieged: (cityId: string, on: boolean): boolean => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) return false;
+        c.oblegane = on;
+        return true;
+      },
+      firstCityId: (ownerId: number): string | null => cities.find(c => c.ownerId === ownerId)?.id ?? null,
+      cityHex: (cityId: string): { q: number; r: number } | null => {
+        const c = cities.find(x => x.id === cityId);
+        return c ? { q: c.q, r: c.r } : null;
       },
       focus: (q: number, r: number): void => {
         const { x, z } = axialToWorld(q, r, HEX_R);
@@ -40518,7 +40539,7 @@ async function boot(): Promise<void> {
         if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
         if (e.repeat || galleryOn || isAnimating || endTurnInProgress || !isWorldMapUnitMode()) return;
         e.preventDefault();
-        cycleToAdjacentPlayerUnit(selectedId, 1);
+        cycleToAdjacentPlayerUnit(selectedId, 1, { siege: true });
         return;
       }
 
