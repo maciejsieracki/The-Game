@@ -291,6 +291,22 @@ export function disableOnlyWorkedFilterForOwnerCities(
   return n;
 }
 
+/**
+ * R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-Q1 (zgłoszenie właściciela 2026-11-04: „nie jest wycinany las przy rzece …
+ * priorytetem ma być wycinanie lasu, rzek i budowanie farm, zależnie od wyboru, czy wybrano żywność, czy zrównoważony”).
+ * PRZYCZYNA (zmierzona, `tools/river-forest-clear-measure.cjs`): przełącznik gracza „Wolno wycinać las”
+ * (`DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS=false`, cities.ts) przez `getSkipWyrab` usuwał `wyrab` z listy KAŻDEGO profilu,
+ * więc przy ustawieniach domyślnych profile „Żywność” i „Zrównoważony” wycinały 0 pól (7/7 pól z lasem przy rzece nietknięte).
+ * ROZSTRZYGNIĘCIE (ZAŁOŻENIE operatora, do potwierdzenia przez właściciela): wycinka pod farmy jest CZĘŚCIĄ profili
+ * „Żywność”/„Zrównoważony” (etapy E2/E5; picker i tak ogranicza ją do pól obywateli, terenu pod farmę i nie rusza lasu
+ * z tartakiem/obozem) — przełącznik jej nie wyłącza. Przełącznik nadal rządzi wycinką „na drewno” w profilach
+ * „Surowce”/„Infrastruktura”. `true` = wycinka WYŁĄCZONA dla miasta.
+ */
+export function skipWyrabForFocus(focus: UlepszeniaFocus, wolnoWycinacLas: boolean): boolean {
+  if (focus === 'zywnosc' || focus === 'zrownowazone') return false;
+  return !wolnoWycinacLas;
+}
+
 /** Zwraca listę typów ulepszeń wg profilu focus. */
 export function prioritiesForUlepszeniaFocus(
   focus: UlepszeniaFocus,
