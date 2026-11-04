@@ -89,6 +89,7 @@ import type { AiTargetMemoryEntry } from './ai-fog';
 import {
   planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity, planWarReplacementRally,
   ARMY_CONCENTRATION_RADIUS, isEligibleForArmyConcentration,
+  pickNearestAvailableLeader, collectLeaderCandidates, type LeaderPathLength,
 } from './army-concentration';
 import { allocateGroupsToEnemies, type ArmyGroupRef, type EngageArmyHex, type EnemyStrengthRef } from './war-rules-multiwar';
 import {
@@ -908,15 +909,45 @@ function firstStep(
   allowFriendlyDestination = false,
 ): { q: number; r: number } | null {
   const occ = occupiedExcluding(units, unit.id);
+  const path = marchPathFor(unit, map, destQ, destR, units, occ, allowFriendlyDestination);
+  if (path.length === 0) return null;
+  return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? null;
+}
+
+/** Trasa marszu jednostki (ta sama co w firstStep: straz terytorium, zajetosc); `occ` jest modyfikowane. */
+function marchPathFor(
+  unit: RuntimeUnit,
+  map: GameMap,
+  destQ: number,
+  destR: number,
+  units: RuntimeUnit[],
+  occ: Set<string>,
+  allowFriendlyDestination: boolean,
+): { q: number; r: number }[] {
   if (allowFriendlyDestination && units.some(u =>
     u.ownerId === unit.ownerId && u.id !== unit.id && u.q === destQ && u.r === destR,
   )) occ.delete(keyOf(destQ, destR));
   const guard = activeMarchGuard;
-  const path = guard !== null && !isCivilianUnit(unit)
+  return guard !== null && !isCivilianUnit(unit)
     ? guardedMarchPath(guard, unit, map, destQ, destR, occ)
     : computePath(unit, map, destQ, destR, occ);
-  if (path.length === 0) return null;
-  return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? null;
+}
+
+/**
+ * R-WEB-ARMY-TO-NEAREST-LEADER-Q1: dlugosc realnej trasy marszu `unit` do wodza (null = brak trasy,
+ * wodz niedostepny). Ta sama trasa co przy faktycznym marszu (firstStep), nie linia prosta.
+ */
+function leaderPathLengthFor(unit: RuntimeUnit, map: GameMap, units: RuntimeUnit[]): LeaderPathLength {
+  // Zajetosc liczona RAZ na jednostke (nie na kazdego wodza); marchPathFor zdejmuje z niej heks celu,
+  // wiec przywracamy go po kazdym wywolaniu.
+  const occ = occupiedExcluding(units, unit.id);
+  return (_from, to) => {
+    const destKey = keyOf(to.q, to.r);
+    const hadDest = occ.has(destKey);
+    const path = marchPathFor(unit, map, to.q, to.r, units, occ, true);
+    if (hadDest) occ.add(destKey);
+    return path.length === 0 ? null : path.length;
+  };
 }
 
 /**
@@ -4574,13 +4605,26 @@ function appendAiGeneralCampaignOrders(
   if (campaign.stage === 'recruiting' || campaign.stage === 'gathering') {
     const rallyQ = general?.q ?? campaign.rallyQ;
     const rallyR = general?.r ?? campaign.rallyR;
+    // R-WEB-ARMY-TO-NEAREST-LEADER-Q1: kazda jednostka zbiera sie u NAJBLIZSZEGO dostepnego wodza
+    // (dlugosc realnej trasy), nie u jednego wodza kampanii. Brak dostepnego wodza -> dotychczasowy punkt.
+    const blockedIds = campaign.stage === 'recruiting' ? campaign.blockedGeneralIds ?? [] : [];
+    // Ten sam filtr zywych wodzow co gracz (dead/removed/routed/hp) -- collectLeaderCandidates.
+    // onExpedition=false: etapy recruiting/gathering z definicji nie maja wodza w marszu na cel.
+    const leaders = collectLeaderCandidates({ id: '', ownerId: playerId, q: 0, r: 0 }, myUnits, () => false)
+      .filter(l => !blockedIds.includes(l.id));
     for (const unit of myUnits) {
       if (!isEligibleForArmyConcentration(unit, playerId)) continue;
-      if (unit.q === rallyQ && unit.r === rallyR) continue;
-      const step = firstStep(unit, map, rallyQ, rallyR, units, true);
+      // Jeden wodz -> bez wyboru (bez kosztu liczenia trasy), zachowanie jak dotad.
+      const choice = leaders.length > 1
+        ? pickNearestAvailableLeader(unit, leaders, leaderPathLengthFor(unit, map, units))
+        : leaders.length === 1 ? { leader: leaders[0]!, distance: 0 } : null;
+      const toQ = choice?.leader.q ?? rallyQ;
+      const toR = choice?.leader.r ?? rallyR;
+      if (unit.q === toQ && unit.r === toR) continue;
+      const step = firstStep(unit, map, toQ, toR, units, true);
       if (step !== null) commands.push({
         type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
-        allowFriendlyStack: step.q === rallyQ && step.r === rallyR,
+        allowFriendlyStack: step.q === toQ && step.r === toR,
       });
     }
     if (general && campaign.stage === 'gathering') {

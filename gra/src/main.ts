@@ -1309,7 +1309,7 @@ import type { BarbCamp, BarbUnit } from './game/barbarians';
 import { isWarAllInCapitalEnabled, classifyWarTargetRoutes, preferSeaReachableWarTargets,
   type WarAllInContext, type WarCapitalTarget } from './game/warAllInCapital';
 import { isArmyConsolidationEnabled } from './game/army-consolidation';
-import { isEligibleForArmyConcentration } from './game/army-concentration';
+import { isEligibleForArmyConcentration, pickNearestAvailableLeader, pickNearestLeaderUnit } from './game/army-concentration';
 // R-WEB-WAR-RULES-MULTIWAR-Q1: bramki wojen (R1 tura 40, R2 limit Kamienia; R3 max 1 wojna epoki na epokę globalnie) + W1/W2.
 import {
   WAR_RULES_PARAMS,
@@ -7133,7 +7133,7 @@ async function boot(): Promise<void> {
 
       const previousLeader = prior?.generalUnitId;
       const aliveGenerals = units.filter(unit => unit.ownerId === ownerId && unit.isGeneral === true);
-      const livingGeneral = aliveGenerals
+      const generalPool = aliveGenerals
         .filter(unit => {
           if (!prior) return true;
           if (prior.stage === 'recruiting') {
@@ -7142,7 +7142,15 @@ async function boot(): Promise<void> {
           }
           return !previousLeader || unit.id === previousLeader;
         })
-        .sort((a, b) => a.id.localeCompare(b.id))[0];
+        .sort((a, b) => a.id.localeCompare(b.id));
+      // R-WEB-ARMY-TO-NEAREST-LEADER-Q1: wodz kampanii = NAJBLIZSZY stolicy po trasie (dotad pierwszy wg id).
+      // Brak wodzow z trasa (np. inna wyspa) -> stare zachowanie (pierwszy wg id).
+      const livingGeneral = (routeProbe && generalPool.length > 1
+        ? pickNearestAvailableLeader({ q: routeProbe.q, r: routeProbe.r }, generalPool, (_from, to) => {
+          const path = computePath(routeProbe, map, to.q, to.r, new Set());
+          return path.length > 0 ? path.length : null;
+        })?.leader
+        : undefined) ?? generalPool[0];
       const queuedGeneralExists = cities.filter(city => city.ownerId === ownerId)
         .some(city => (cityProd.get(city.id)?.rekrutacja ?? []).some(item => item.isGeneral === true));
       let campaign = reconcileAiGeneralWarCampaign(
@@ -13585,7 +13593,8 @@ async function boot(): Promise<void> {
     function planSpawnedUnitFollowGeneral(newUnitId: string): boolean {
       const u = units.find(x => x.id === newUnitId);
       if (!u || u.ownerId !== 0) return false;
-      const general = units.find(x => x.ownerId === u.ownerId && x.isGeneral === true);
+      // R-WEB-ARMY-TO-NEAREST-LEADER-Q1: najblizszy dostepny wodz (trasa), nie pierwszy na liscie.
+      const general = pickNearestLeaderForUnit(u);
       const follow = generalFollowDestination(u, general);
       return !!follow && planGeneralFollowMarch(u, follow.point, follow.generalTargetId, false);
     }
@@ -23757,14 +23766,16 @@ async function boot(): Promise<void> {
           return;
         }
         u.followGeneral = true;
-        const commander = nearestLivingGeneral(u, units);
+        // R-WEB-ARMY-TO-NEAREST-LEADER-Q1: najblizszy dostepny wodz po trasie; reszta roster-u
+        // pomijana, zeby issueGeneralQuickFollow (nearestLivingGeneral) nie wybral innego w linii prostej.
+        const commander = pickNearestLeaderForUnit(u) ?? nearestLivingGeneral(u, units);
         if (commander && hexDistance(u.q, u.r, commander.q, commander.r) === 0) {
           showHintMessage('Idź do wodza włączone — jednostka dołączy do ruchu, gdy wódz wyruszy.', 3200);
           refreshD1bHud();
           return;
         }
         const leaderTitle = armyLeaderTitle(empireBuiltIdsForOwner(u.ownerId));
-        issueGeneralQuickFollow(u, units, leaderTitle, {
+        issueGeneralQuickFollow(u, commander ? [u, commander] : units, leaderTitle, {
           planMarch: (unit, point, targetId) => planGeneralFollowMarch(unit, point, targetId),
           movementLeft: unit => planningStackRuchLeft(playerStackAt(unit)),
           enqueue: unitIds => enqueueMarchSegments(unitIds),
@@ -28700,13 +28711,38 @@ async function boot(): Promise<void> {
       }, markAsPlayerIssued);
     }
 
+    /**
+     * R-WEB-ARMY-TO-NEAREST-LEADER-Q1: najblizszy DOSTEPNY wodz jednostki gracza -- odleglosc =
+     * dlugosc realnej trasy marszu (nie linia prosta, nie "pierwszy na liscie"); wodz bez trasy
+     * pomijany, wodz w marszu na cel (wyprawa) tylko gdy brak dostepnego zbierajacego.
+     */
+    function pickNearestLeaderForUnit(u: RuntimeUnit): RuntimeUnit | undefined {
+      if (u.isGeneral === true) return undefined;
+      // Filtr zywych wodzow (dead/removed/routed/hp) i wybor: army-concentration.pickNearestLeaderUnit.
+      if (!units.some(c => c.id !== u.id && c.ownerId === u.ownerId && c.isGeneral === true)) return undefined;
+      const stack = playerStackAt(u);
+      const mover = unitWithPlanningStackRuch(u, stack);
+      const occupied = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
+      const perTurn = perTurnMoveForUnit(u);
+      return pickNearestLeaderUnit(u, units, id => plannedMarches.has(id), (_from, to) => {
+        const plan = marchPathPlan(mover, to.q, to.r, occupied, perTurn, undefined, undefined, moveCostFnForUnit(u));
+        return plan.reachable && plan.fullPath.length > 0 ? plan.fullPath.length : null;
+      });
+    }
+
     /** Keep every queued General-following march aimed at that General's live position. */
     function syncGeneralMarchTargets(): void {
       syncTrackedGeneralFollowMarches(units, plannedMarches, unitId => marchAttackTargets.delete(unitId));
       const newlyPlanned = planEnabledGeneralFollowMarches(
         units,
         unitId => plannedMarches.has(unitId),
-        (unit, point, targetId) => planGeneralFollowMarch(unit, point, targetId, false),
+        (unit, point, targetId) => {
+          // Lista wybiera wodza w linii prostej; marsz kierujemy do najblizszego po trasie.
+          const best = pickNearestLeaderForUnit(unit);
+          return best !== undefined
+            ? planGeneralFollowMarch(unit, { q: best.q, r: best.r }, best.id, false)
+            : planGeneralFollowMarch(unit, point, targetId, false);
+        },
       );
       for (const unitId of newlyPlanned) {
         const unit = units.find(candidate => candidate.id === unitId);

@@ -1,0 +1,31 @@
+PASS: A1 najblizszy wodz wg trasy
+PASS: A2 wodz bez trasy (null) pomijany
+PASS: A3 brak dostepnych -> null
+PASS: A4 jeden wodz -> ten wodz
+PASS: A5 remis -> wieksza armia
+PASS: A6 remis i armia -> id
+PASS: A7 wodz na wyprawie bliski przegrywa z dalszym zbierajacym
+PASS: A8 jedyny wodz na wyprawie nadal dostepny
+PASS: A9 jednostka na heksie wodza -> dystans 0
+PASS: B1 dwoch wodzow: jednostka idzie do BLIZSZEGO, nie do wodza kampanii
+PASS: B2 wodz za zablokowanym terenem pomijany (idzie do osiagalnego)
+PASS: B3 jeden wodz: marsz do niego jak dotad
+PASS: B4 zniknal wodz kampanii: ponowny wybor zyjacego wodza
+PASS: B5 remis (zalozenie symetrii 6==6): wodz z wieksza armia
+PASS: C mutacja lamie test: picker: pierwszy z listy zamiast najblizszego
+PASS: C mutacja lamie test: picker: null/nieosiagalny traktowany jak dystans 0
+PASS: C mutacja lamie test: ai.ts: zbiorka tylko do wodza kampanii (bez wyboru najblizszego)
+PASS: C mutacja lamie test: picker: remis nie patrzy na armie
+SIM seed=1 koniec: jednostek u wodzow=38, u nie-najblizszego=0
+SIM seed=2 koniec: jednostek u wodzow=38, u nie-najblizszego=0
+SIM seed=3 koniec: jednostek u wodzow=38, u nie-najblizszego=0
+SIM seed=1 turns=120 ruchow=55 do_nie_najblizszego=0 odsetek=0.000
+SIM seed=2 turns=120 ruchow=58 do_nie_najblizszego=0 odsetek=0.000
+SIM seed=3 turns=120 ruchow=82 do_nie_najblizszego=0 odsetek=0.000
+SIM razem ruchow=195 do_nie_najblizszego=0 odsetek=0.000 (PO)
+PASS: D odsetek jednostek idacych do nie-najblizszego wodza < 5%
+PASS: E1 main.ts: planSpawnedUnitFollowGeneral wybiera najblizszego (nie units.find)
+PASS: E2 main.ts: wodz kampanii AI wybierany przez pickNearestAvailableLeader
+
+WYNIK: 21 PASS, 0 FAIL
+EXIT=0
