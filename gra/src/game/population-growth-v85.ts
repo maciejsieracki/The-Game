@@ -579,11 +579,14 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
       tick.magazynPoTurze = city.wzrostUlamkowy;
 
       if (city.population !== before) {
+        // R-WEB-MANUAL-REBALANCE-OWNER-ERA-Q1: ranking pol rebalansu (tryb reczny) liczony wg
+        // epoki WLASCICIELA miasta, jak w pozostalych sciezkach (yieldOfMapHex/silnik).
+        const ownerEra = ownerEraByOwner?.get(city.ownerId) ?? 1;
         rebalanceWorkersAfterPopulationChange(
           city, map, before, city.population, territoryNodes,
           excludeHexKeysByCity?.get(city.id),
+          ownerEra,
         );
-        const ownerEra = ownerEraByOwner?.get(city.ownerId) ?? 1;
         const legacyMpMults = civManpowerMults(civBonusyByOwner?.get(city.ownerId));
         const maxMult = manpowerMaxMultByOwnerId?.get(city.ownerId)
           ?? civManpowerMatrixMults(ownerCivByOwnerId?.get(city.ownerId), undefined, legacyMpMults).maxMult;
