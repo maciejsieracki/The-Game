@@ -8689,3 +8689,4 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 - 2026-11-04 — ZGŁOSZENIE: nazwa miasta zużyta raz jest zużyta na zawsze (np. Rzym po utracie nie wraca do puli; kolejne miasta biorą następne nazwy z puli) → temat `R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1`.
 - 2026-11-04 — ZGŁOSZENIE (zrzut 40, Kisz): plakietka „OBLĘŻENIE” zawsze pokazuje, za ile tur miasto się podda → temat `R-WEB-SIEGE-BADGE-TURNS-TO-SURRENDER-Q1`.
 - 2026-11-04 — ZGŁOSZENIE: po poddaniu się obleganego miasta oblegająca jednostka ma wejść do miasta, a nie stać pod nim → temat `R-WEB-SIEGE-SURRENDER-ENTER-CITY-Q1`.
+- 2026-11-04 — ZGŁOSZENIE (zrzut): suwaki „Domyślny podział podatków” (Skarb/Nauka/Zamożność) — kropka (thumb) ma stać na końcu kolorowego wypełnienia, a nie dalej na szarej części (Nauka 40%: wypełnienie 40%, kropka ~66%) → temat `R-WEB-TAX-SLIDER-THUMB-ALIGN-Q1`.
