@@ -134,11 +134,15 @@ for (const [name, re, rep] of muts) {
 console.log('C. strukturalna main.ts');
 const main = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
 ok(/import \{ activeUnitQueue \} from '\.\/game\/next-active-unit';/.test(main), 'main.ts importuje activeUnitQueue');
-ok(/function cyclablePlayerArmyLeads\(\): RuntimeUnit\[\] \{[\s\S]{0,400}return activeUnitQueue\(units, \{ cities, isMe: \(u\) => isMe\(u\.ownerId\), canMove: stackCanMove \}\);/.test(main), 'cyclablePlayerArmyLeads() (Spacja/bęben) deleguje do activeUnitQueue');
+ok(/function cyclablePlayerArmyLeads\(\): RuntimeUnit\[\] \{\s*return cyclablePlayerArmyLeadsBase\(units, true, stackCanMove/.test(main), 'beben/Zwiedzaj (cyclablePlayerArmyLeads) BEZ oblezenia -- stara kolejka');
+ok(/function spaceActiveUnitQueue\(\): RuntimeUnit\[\] \{\s*return activeUnitQueue\(units, \{ cities, isMe: \(u\) => isMe\(u\.ownerId\), canMove: stackCanMove \}\);/.test(main), 'spaceActiveUnitQueue() deleguje do activeUnitQueue');
+ok(/opts\?\.siege === true \? spaceActiveUnitQueue\(\) : cyclablePlayerArmyLeads\(\)/.test(main), 'cycleToAdjacentPlayerUnit: opts.siege -> kolejka Spacji');
+ok((main.match(/cycleToAdjacentPlayerUnit\([^)]*\{ siege: true \}\)/g) || []).length === 1, 'tylko 1 wywolanie z siege:true (Spacja); bęben (finishedId) i Zwiedzaj (u.id) bez');
+ok(/cycleToAdjacentPlayerUnit\(finishedId, 1\);/.test(main) && /cycleToAdjacentPlayerUnit\(u\.id, 1\);/.test(main), 'bęben i Zwiedzaj bez siege');
 ok(/function cyclablePlayerArmyLeadsAll\(\): RuntimeUnit\[\] \{\s*return cyclablePlayerArmyLeadsBase\(units, false/.test(main), 'strzalki HUD (All) bez zmian');
 const sp = main.slice(main.indexOf("if (e.code === 'Space' || e.key === ' ')"), main.indexOf("if (e.code === 'Space' || e.key === ' ')") + 700);
 ok(/tagName === 'INPUT' \|\| ae\.tagName === 'TEXTAREA' \|\| ae\.isContentEditable\)\) return;/.test(sp), 'Spacja: pole tekstowe -> return');
-ok(/!isWorldMapUnitMode\(\)\) return;/.test(sp) && /cycleToAdjacentPlayerUnit\(selectedId, 1\)/.test(sp), 'Spacja: modal/panel (isWorldMapUnitMode) -> return; inaczej cykl +1');
+ok(/!isWorldMapUnitMode\(\)\) return;/.test(sp) && /cycleToAdjacentPlayerUnit\(selectedId, 1, \{ siege: true \}\)/.test(sp), 'Spacja: modal/panel (isWorldMapUnitMode) -> return; inaczej cykl +1');
 
 async function live() {
   const outDir = '/dev/shm/rsnau-live-' + process.pid;
@@ -174,6 +178,23 @@ async function live() {
     await page.keyboard.press('Space'); await page.waitForTimeout(200);
     ok(before === await page.evaluate(() => window.__frozenTestDebug.selectedId()), 'D5 pole tekstowe aktywne -> Spacja bez efektu');
     await page.evaluate(() => document.getElementById('rsnau-in').remove());
+    // oblezenie end-to-end (haki test-only: setCityBesieged / spawn.oblegaCityId)
+    const myCity = await page.evaluate(() => window.__frozenTestDebug.firstCityId(0));
+    const hx = await page.evaluate((c) => window.__frozenTestDebug.cityHex(c), myCity);
+    ok(!!(myCity && hx), 'D7 jest wlasne miasto do testu oblezenia');
+    const sg = await page.evaluate(([c]) => { const h = window.__frozenTestDebug.freeLandHex(); return window.__frozenTestDebug.spawn(h.q, h.r, 1, { ruchLeft: 0, oblegaCityId: c })[0]; }, [myCity]);
+    const bs = await page.evaluate(([h]) => window.__frozenTestDebug.spawn(h.q, h.r, 1, { ruchLeft: 0 })[0], [hx]);
+    await page.evaluate((id) => window.__frozenTestDebug.select(id), ids.active);
+    const loop0 = new Set(); for (let i = 0; i < 14; i++) loop0.add(await press());
+    ok(!loop0.has(sg) && !loop0.has(bs), 'D8 miasto NIEoblegane: oblegajaca i oblegana (ruch 0) poza kolejka Spacji');
+    await page.evaluate((c) => window.__frozenTestDebug.setCityBesieged(c, true), myCity);
+    await page.evaluate((id) => window.__frozenTestDebug.select(id), ids.active);
+    const loop1 = new Set(); for (let i = 0; i < 14; i++) loop1.add(await press());
+    ok(loop1.has(sg), 'D9 Spacja doskakuje na jednostke OBLEGAJACA (oblegaCityId -> oblegane)');
+    const atCity = await page.evaluate(([h]) => window.__frozenTestDebug.unitsAt(h.q, h.r).map(u => u.id), [hx]);
+    ok(atCity.includes(bs) && [...loop1].some(id => atCity.includes(id)), 'D10 Spacja doskakuje na stos OBLEGANY (jednostki w oblegamym miescie; lider stosu reprezentuje hex)');
+    ok(!loop1.has(ids.nomove) && !loop1.has(ids.field), 'D11 przy oblezeniu nadal pomijane: bez ruchu i ufortyfikowana');
+    await page.evaluate((c) => window.__frozenTestDebug.setCityBesieged(c, false), myCity);
     ok(errs.length === 0, 'D6 zero pageerror', errs.join('|').slice(0, 200));
   } finally { await browser.close(); fs.rmSync(outDir, { recursive: true, force: true }); }
 }
