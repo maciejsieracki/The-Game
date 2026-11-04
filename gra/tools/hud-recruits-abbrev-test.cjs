@@ -66,11 +66,14 @@ import { renderBarD1B, ensureStyles } from ${JSON.stringify(path.join(GRA, 'src/
       const root = document.getElementById('r');
       root.innerHTML = '<div class="civ-hud" style="position:relative;display:block">' + window.__render(s) + '</div>';
       const v = root.querySelector('.p-recruit-val'); const side = root.querySelector('.p-side-left');
-      return { txt: v.textContent, title: side.getAttribute('title') || '', w: Math.round(side.getBoundingClientRect().width) };
+      const arm = root.querySelector('[data-act="armia"]');
+      return { armTitle: arm ? (arm.getAttribute('title') || '') : null, txt: v.textContent, title: side.getAttribute('title') || '', w: Math.round(side.getBoundingClientRect().width) };
     }, st);
     const m = /^(.+) \(\d+\)$/.exec(res.txt);
     eq(m && m[1], compact, `Rekruci HUD ${n}`);
     ok(res.title.replace(/\u00a0/g, ' ').includes('Manpower: ' + full + ' '), `title ma pelna wartosc "${full}"`);
+    const at = res.armTitle === null ? null : res.armTitle.replace(/\u00a0/g, ' ');
+    ok(at !== null && at.includes('Pula rekrutów: ' + compact + ' ') && !/tys\.|mln/.test(at), `tooltip chipa Armia: pula rekrutow "${compact}" (bez tys./mln)`);
     console.log(`  info ${n}: txt=${JSON.stringify(res.txt)} szer=${res.w}px`);
     if (process.env.SHOT && n === 12345) await page.screenshot({ path: path.join(process.env.SHOT, (process.env.TAG || 'po') + '.png'), clip: { x: 760, y: 0, width: 400, height: 120 } });
   }

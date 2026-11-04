@@ -956,7 +956,7 @@ function armiaChipTitle(s: HudState): string {
   // regen/turn (the latter stays in the tooltip, it moved off the chip itself).
   let title = `Armia — wojsko i rekruci`
     + ` · Jednostki na mapie: ${units}`
-    + ` · Pula rekrutów: ${s.rekruciLabel ?? '—'}`
+    + ` · Pula rekrutów: ${typeof s.rekruci === 'number' && Number.isFinite(s.rekruci) ? formatCompactNumber(s.rekruci) : (s.rekruciLabel ?? '—')}`
     + ` · Można zwerbować: ${rekrutEkw} pełnych jednostek z całej puli`
     + (s.kosztJednostki != null ? ` (koszt ${s.kosztJednostki} rekr./szt.)` : '')
     + ` · Odnowa puli: ${signed(regen)} rekr./turę`;
