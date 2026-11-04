@@ -1,0 +1,11 @@
+Regresja gra/tools (obrona r1): *army*test*, *concentrat*test*, *merge*test*, ai-*test*.cjs = 95 plikow, timeout 100 s/plik, 4 rownolegle (xargs -P4).
+PRZED = ten sam worktree, ale ai.ts/army-concentration.ts/main.ts + ai-march-avoid-foreign-territory-test.cjs z origin/main f54fb5c18 (git checkout f54fb5c18 -- ...), potem przywrocone z HEAD.
+PO = fe60b40a5.
+PRZED: 27 nie-zerowych, PO: 25 nie-zerowych.
+Roznice PRZED vs PO (tylko 2): army-to-nearest-leader-test (nowy: 1 -> 0), army-merge-panel-list-visibility-test (1 -> 0; test przegladarkowy, poprawa/flaky, nie regresja).
+Wszystkie pozostale nie-zerowe sa identyczne PRZED i PO (w tym ai-*-TIMEOUT=124 przy obciazeniu rownoleglym).
+ai-move-full-range-test samodzielnie na PO: EXIT=0, 20 passed, 0 failed (D3 czas decyzji PO 3.03 ms/ruch vs PRZED 3.16 ms/ruch) -> timeout w siatce to obciazenie, nie regresja.
+ai-test.cjs (najdrobniejsza siatka, 274 passed / 20 failed): lista linii FAIL identyczna PRZED i PO (diff pusty).
+Przyczyna wiekszosci pozostalych awarii (zmierzone lokalnie): asercje regex po zrodle (army-leadership-test, army-panel-recruit-rally-general-test) lub proces bez stdout (ai-general-war-campaign-live-test) -- na bazie tak samo.
+Nowe regresje: 0.
+EXIT=0

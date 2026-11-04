@@ -1,0 +1,55 @@
+PASS: A1 najblizszy wodz wg trasy
+PASS: A2 wodz bez trasy (null) pomijany
+PASS: A3 brak dostepnych -> null
+PASS: A4 jeden wodz -> ten wodz
+PASS: A5 remis -> wieksza armia
+PASS: A6 remis i armia -> id
+PASS: A7 wodz na wyprawie bliski przegrywa z dalszym zbierajacym
+PASS: A8 jedyny wodz na wyprawie nadal dostepny
+PASS: A9 jednostka na heksie wodza -> dystans 0
+PASS: B1 dwoch wodzow: jednostka idzie do BLIZSZEGO, nie do wodza kampanii
+PASS: B2 zalozenie mapy z przejsciem: trasa do X (14) > trasa do Y (7), a prosta X < prosta Y
+PASS: B2 zalozenie pelnego muru: brak trasy do X
+PASS: B2a wodz kampanii za pelnym murem pomijany: jednostka idzie trasa do osiagalnego
+PASS: B2b wodz blizszy w linii prostej, ale dalszy po trasie: wybor wg trasy
+PASS: B3 jeden wodz: marsz do niego jak dotad
+PASS: B4 zniknal wodz kampanii: ponowny wybor zyjacego wodza
+PASS: B5 remis (zalozenie symetrii 6==6): wodz z wieksza armia
+PASS: F fNear (pickNearestLeaderUnit)
+PASS: F fRouted (pickNearestLeaderUnit)
+PASS: F fRemoved (pickNearestLeaderUnit)
+PASS: F fDead (pickNearestLeaderUnit)
+PASS: F fHp0 (pickNearestLeaderUnit)
+PASS: F fOtherOwner (pickNearestLeaderUnit)
+PASS: F fOnlyDeadNone (pickNearestLeaderUnit)
+PASS: F fExpedition (pickNearestLeaderUnit)
+PASS: F fUnreachable (pickNearestLeaderUnit)
+PASS: F fReselect (pickNearestLeaderUnit)
+PASS: F fGeneralNoLeader (pickNearestLeaderUnit)
+PASS: F fSelfExcluded (pickNearestLeaderUnit)
+PASS: C mutacja lamie test: picker: pierwszy z listy zamiast najblizszego
+PASS: C mutacja lamie test: picker: null/nieosiagalny traktowany jak dystans 0
+PASS: C mutacja lamie test: picker: przycinanie przerywa przy rownej linii prostej (gubi remisy)
+PASS: C mutacja lamie test: ai.ts: zbiorka tylko do wodza kampanii (bez wyboru najblizszego)
+PASS: C mutacja lamie test: picker: remis nie patrzy na armie
+PASS: C mutacja lamie test: ai.ts: odleglosc w linii prostej zamiast dlugosci trasy
+PASS: C mutacja lamie test: collectLeaderCandidates: routed wodz dopuszczony
+PASS: C mutacja lamie test: collectLeaderCandidates: removed wodz dopuszczony
+PASS: C mutacja lamie test: collectLeaderCandidates: wyprawa ignorowana
+SIM seed=1 koniec: jednostek u wodzow=38, u nie-najblizszego=0
+SIM seed=2 koniec: jednostek u wodzow=38, u nie-najblizszego=0
+SIM seed=3 koniec: jednostek u wodzow=38, u nie-najblizszego=0
+SIM seed=1 turns=120 ruchow=55 do_nie_najblizszego=0 odsetek=0.000
+SIM seed=2 turns=120 ruchow=58 do_nie_najblizszego=0 odsetek=0.000
+SIM seed=3 turns=120 ruchow=82 do_nie_najblizszego=0 odsetek=0.000
+PERF decideAITurn: 360 wywolan, srednio 0.19 ms/ture (lacznie 68 ms)
+PERF stres (80 jednostek, 4 wodzow, 20 tur): srednio 5.3 ms/ture
+SIM razem ruchow=195 do_nie_najblizszego=0 odsetek=0.000 (PO)
+PASS: D odsetek jednostek idacych do nie-najblizszego wodza < 5%
+PASS: E1 main.ts: planSpawnedUnitFollowGeneral wybiera najblizszego (nie units.find)
+PASS: E2 main.ts: wodz kampanii AI wybierany przez pickNearestAvailableLeader
+PASS: E3 main.ts: przycisk "Idz do wodza" przekazuje wybranego wodza do issueGeneralQuickFollow
+PASS: E4 main.ts: syncGeneralMarchTargets nadpisuje cel marszu najblizszym po trasie
+
+WYNIK: 43 PASS, 0 FAIL
+EXIT=0
