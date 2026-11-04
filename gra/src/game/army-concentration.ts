@@ -330,3 +330,88 @@ export function planArmyFrontMerge(
   }
   return { ownerId, moveOrders, deferredUnitIds };
 }
+
+// ---------------------------------------------------------------------------
+// R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1 -- armia zastepcza w wojnie.
+//
+// Przyczyna (zmierzona, tools/ai-army-replacement-sim.cjs): w wojnie `planWarAllInCapital`
+// grupuje jednostki lancuchowo (link 3) i wysyla KAZDA grupe -- takze 1-2 swiezo zrekrutowane
+// jednostki po zniszczeniu glownej armii -- samodzielnie na cel. Nowe jednostki rekrutowane w
+// roznych miastach nie maja wspolnego punktu zbiorki, wiec "trickluja" na front pojedynczo.
+// Regula: jednostka spoza zadnego skupiska >= ARMY_CONCENTRATION_MIN_UNITS (w promieniu
+// ARMY_CONCENTRATION_RADIUS) NIE maszeruje na cel, tylko zbiera sie w JEDNYM miescie
+// zbiorki (wlasne miasto najblizsze celow wojny). Gdy zbierze sie prog -- skupisko staje sie
+// nowa armia glowna i normalnie rusza (progi i promien: te same stale co planArmyConcentration).
+// ---------------------------------------------------------------------------
+
+export interface ReplacementRallyCity {
+  id: string;
+  q: number;
+  r: number;
+}
+
+export interface ReplacementRallyTarget {
+  q: number;
+  r: number;
+}
+
+export interface ReplacementRallyPlan {
+  rallyCity: ReplacementRallyCity;
+  /** Jednostki, ktore NIE maja marszu na cel w tej turze (zbieraja sie / czekaja na punkcie). */
+  looseUnitIds: readonly string[];
+  /** Podzbior `looseUnitIds`, ktore musza jeszcze dojsc na punkt zbiorki. */
+  moveUnitIds: readonly string[];
+}
+
+/** Punkt zbiorki zastepczej: wlasne miasto najblizsze ktoregokolwiek celu wojny (stabilny remis: id). */
+export function pickReplacementRallyCity<C extends ReplacementRallyCity>(
+  ownCities: readonly C[],
+  targets: readonly ReplacementRallyTarget[],
+): C | undefined {
+  let best: C | undefined;
+  let bestDist = Infinity;
+  for (const c of ownCities) {
+    let d = Infinity;
+    for (const t of targets) d = Math.min(d, hexDistance(c.q, c.r, t.q, t.r));
+    if (d < bestDist || (d === bestDist && best !== undefined && c.id < best.id)) {
+      best = c;
+      bestDist = d;
+    }
+  }
+  return best;
+}
+
+/**
+ * Rozdziela jednostki wojenne na "armie" (skupiska >= MIN w promieniu RADIUS -- ruszaja jak
+ * dotad) i "luzne" (reszta -- zbieraja sie w miescie zbiorki). `candidateUnits` = jednostki,
+ * ktorymi wolno kierowac; `contextUnits` = dodatkowe wlasne jednostki bojowe liczone do
+ * skupisk (np. juz walczace), ale nigdy nie przekierowywane. Zwraca null, gdy nie ma luznych
+ * jednostek albo brak miasta/celu (zachowanie dotychczasowe).
+ */
+export function planWarReplacementRally(
+  candidateUnits: readonly ConcentrationUnit[],
+  contextUnits: readonly ConcentrationUnit[],
+  ownCities: readonly ReplacementRallyCity[],
+  targets: readonly ReplacementRallyTarget[],
+): ReplacementRallyPlan | null {
+  if (candidateUnits.length === 0 || ownCities.length === 0 || targets.length === 0) return null;
+  const candidateIds = new Set(candidateUnits.map(u => u.id));
+  const all = [
+    ...candidateUnits,
+    ...contextUnits.filter(u => !candidateIds.has(u.id)),
+  ];
+  const loose = new Set<string>();
+  for (const group of clusterUnitsByProximity(all, ARMY_CONCENTRATION_RADIUS)) {
+    if (group.length >= ARMY_CONCENTRATION_MIN_UNITS) continue;
+    for (const u of group) if (candidateIds.has(u.id)) loose.add(u.id);
+  }
+  if (loose.size === 0) return null;
+  const rally = pickReplacementRallyCity(ownCities, targets);
+  if (rally === undefined) return null;
+  const looseUnits = candidateUnits.filter(u => loose.has(u.id)).sort(compareUnits);
+  return {
+    rallyCity: { id: rally.id, q: rally.q, r: rally.r },
+    looseUnitIds: looseUnits.map(u => u.id),
+    moveUnitIds: looseUnits.filter(u => u.q !== rally.q || u.r !== rally.r).map(u => u.id),
+  };
+}
