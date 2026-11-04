@@ -3,7 +3,7 @@ DOMAIN: GAME (WEB)
 TEMAT: R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1
 GOAL: Górny panel HUD — Skarbiec, Spichlerz i Surowce pokazują czerwoną czcionkę zamiast złotej, gdy zaczyna brakować pieniędzy / żywności / surowca; bez niedoboru kolor jak dotąd. Tylko prezentacja.
 
-ZMIANY/COMMIT: SHA w nagłówku commita (patrz git log tej gałęzi; brak push).
+ZMIANY/COMMIT: 8ef220a0e884ccacfb4cd2d2f43a1798b3ed94d7 (brak push).
 Pliki: `gra/src/ui/hud.ts` (helpery `hudGoldShortage`/`hudFoodShortage`/`hudResourceShortage`, `HUD_SHORTAGE_RUNWAY_TURNS=5`, pole `HudState.surowceNiedoborLabels`, reguła CSS, dopiski w tooltipach), `gra/src/ui/hudChip6c.ts` (opcja `shortage` -> klasa `civ-hud-chip-short`), `gra/src/main.ts` (tylko podanie `surowceNiedoborLabels` z już liczonych `storedResourceRows`), NOWY `gra/tools/hud-resource-deficit-red-test.cjs`, run-dir. `empireDetailPanel.ts` NIE ruszony (patrz Z-notes).
 
 POMIARY (plik:linia, stan bazy b89ecee44):
