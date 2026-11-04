@@ -20,6 +20,7 @@ import {
   galleryTerrainEligible,
   hexHasClayDeposit,
   isFarmBaseTerrain,
+  isHexNearRiver,
   isImprovementBlockedOnForest,
 } from '../map/improvement-build';
 import type { ImprovementKey } from '../render/improvements';
@@ -392,66 +393,17 @@ function collectResourceLabels(hex: Hex, era: number, playerCivType?: string | n
  */
 
 /**
- * Te same przesunięcia osi aksjalnej co `hexNeighbors()` w map/improvement-build.ts i
- * `hexNeighborCoords()` w units/setup.ts — skopiowane lokalnie (nie importowane), żeby nie
- * ciągnąć do tego modułu UI całego łańcucha importów `units/setup.ts` (m.in. `map/startScoring`)
- * tylko dla 6 stałych.
- * EN: same axial-offset pairs as `hexNeighbors()` in map/improvement-build.ts and
- * `hexNeighborCoords()` in units/setup.ts — copied locally (not imported) to avoid pulling this
- * UI module's dependency graph through `units/setup.ts` (incl. `map/startScoring`) just for 6
- * constants.
- */
-const HEX_NEIGHBOR_OFFSETS: ReadonlyArray<readonly [number, number]> = [
-  [1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1],
-];
-
-/**
- * Zbiór kluczy heksów `"q,r"` faktycznie leżących NA rzece, zbudowany z `map.riverPaths` —
- * kopia lokalna `buildRiverHexSet()` z map/improvement-build.ts (linia ~563). Ten zbiór jest
- * ŚCIŚLE WĘŻSZY niż flaga `hex.rzeka.obecna`: `syncRiverEdgeBonusHexes()`
- * (gen-helpers.ts:~7241) świadomie ROZLEWA `rzeka.obecna` na wszystkie heksy stykające się
- * z rzeką jednym bokiem (bonus plonu), więc `rzeka.obecna` sąsiada NIE jest dowodem, że ten
- * sąsiad leży na `riverPaths` — a to właśnie `riverPaths`/`riverHexSet`, nie `rzeka.obecna`,
- * silnik sprawdza dla SĄSIADÓW w `isRiverAdjacent()`.
- * EN: set of hex keys `"q,r"` actually ON a river, built from `map.riverPaths` — local copy of
- * `buildRiverHexSet()` in map/improvement-build.ts (line ~563). This set is STRICTLY NARROWER
- * than the `hex.rzeka.obecna` flag: `syncRiverEdgeBonusHexes()` deliberately SPREADS
- * `rzeka.obecna` onto every hex touching a river on one edge (yield bonus), so a neighbor's
- * `rzeka.obecna` is not proof it's on `riverPaths` — and it's `riverPaths`/`riverHexSet`, not
- * `rzeka.obecna`, that the engine checks for NEIGHBORS in `isRiverAdjacent()`.
- */
-function buildRiverHexSet(map: GameMap): Set<string> {
-  const set = new Set<string>();
-  for (const path of map.riverPaths) {
-    for (const p of path) set.add(`${p.q},${p.r}`);
-  }
-  return set;
-}
-
-/**
- * Rzeka NA heksie LUB na dowolnym z 6 sąsiadów — lustrzane odbicie `isRiverAdjacent()` z
- * `createQualifier()` w map/improvement-build.ts (linia ~636): `hex?.rzeka?.obecna` LUB
- * `riverHexSet.has(ownKey)` dla sam heks; WYŁĄCZNIE `riverHexSet` (nie `rzeka.obecna`) dla
- * sąsiadów — dokładnie ta sama kolejność i te same trzy warunki co silnik. Bez dostępu do `map`
- * (np. wołający nie ma jej pod ręką) sprawdzamy tylko flagę na samym heksie — bezpieczny,
- * węższy fallback (podzbiór poprawnego wyniku, nigdy fałszywy pozytyw).
- * EN: river ON the hex OR any of its 6 neighbors — mirrors `isRiverAdjacent()` from
- * `createQualifier()` in map/improvement-build.ts (line ~636): `hex?.rzeka?.obecna` OR
- * `riverHexSet.has(ownKey)` for the hex itself; `riverHexSet` ONLY (not `rzeka.obecna`) for
- * neighbors — same order, same three conditions as the engine. Without a `map` reference
- * (caller doesn't have one) we fall back to the hex's own flag only — a safe, narrower fallback
- * (subset of the correct result, never a false positive).
+ * Rzeka NA heksie LUB w sąsiedztwie — R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1: JEDNA wspólna definicja z silnika
+ * (`isHexNearRiver`, map/improvement-build.ts) używana też przez kwalifikator ręcznej budowy i automat: własne
+ * `rzeka.obecna`, heks w `riverPaths`, albo sąsiad w `riverPaths` / z `rzeka.obecna`. Bez `map` sprawdzamy tylko flagę na samym
+ * heksie — bezpieczny, węższy fallback (podzbiór poprawnego wyniku, nigdy fałszywy pozytyw).
+ * EN: river ON the hex or next to it — delegates to the shared engine definition `isHexNearRiver`. Without `map`
+ * falls back to the hex's own flag only (safe, narrower subset).
  */
 export function hexHasRiverAccess(hex: Hex, map?: GameMap): boolean {
   if (hex.rzeka?.obecna) return true;
   if (!map) return false;
-  const riverHexSet = buildRiverHexSet(map);
-  const { q, r } = hex.coords;
-  if (riverHexSet.has(`${q},${r}`)) return true;
-  for (const [dq, dr] of HEX_NEIGHBOR_OFFSETS) {
-    if (riverHexSet.has(`${q + dq},${r + dr}`)) return true;
-  }
-  return false;
+  return isHexNearRiver(map, hex.coords.q, hex.coords.r);
 }
 
 function listTerrainPossibleImprovements(

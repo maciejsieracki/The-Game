@@ -29,6 +29,7 @@ import {
   hexHasDepositReserve,
   isFarmBaseTerrain,
   type ImprovementBuildState,
+  isHexNearRiver,
 } from '../map/improvement-build';
 import { hexKeysWithinRadius } from './okolica';
 import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
@@ -1243,9 +1244,6 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     playerEra,
     horseStockAvailable,
     tradeRouteKonUnlocked: false,
-    // R-WEB-AUTOIMPROVE-IRRIGATION-NOT-BUILT-Q1: ta sama definicja „przy rzece” co `onRiverHex` (farma/trzoda E1–E3) —
-    // inaczej heks z samym widocznym sąsiadem-rzeką dostawał farmę i trzodę, a irygacji nigdy. Tylko automat; ręczna budowa bez zmian.
-    visibleRiverNeighborCountsForIrrigation: true,
   };
   const qualifies = buildImprovementQualifier(state);
 
@@ -1288,8 +1286,17 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
   // r3 (zarzut Evaluatora r2 #1): sąsiad z własnym `rzeka.obecna` (rzeka WIDOCZNA na mapie, bez wpisu w `riverPaths`) też liczy się
   // jako „przy rzece” DLA PICKERA FOOD (E1–E3). Celowo NIE zmieniamy `hasRiverAccess` (tartak/obóz, `isRiverAdjacent`/irygacja
   // zostają bez zmian — osobny temat), tylko rozszerzamy `onRiverHex`. Sweep 778899: 11/200 układów wcześniej miało trzodę przed farmą.
-  const onRiverHex = (hk: string): boolean =>
-    hasRiverAccess(hk) || riverNeighborKeys(hk).some(n => map.hexes[n]?.rzeka?.obecna === true);
+  // R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1: JEDNA wspólna definicja z `map/improvement-build.ts` (`isHexNearRiver`) — ta sama co ręczna
+  // budowa irygacji, kwalifikator i tooltipy (semantyka identyczna z dawnym `hasRiverAccess || sąsiad z rzeka.obecna`). Memo per wywołanie.
+  const onRiverMemo = new Map<string, boolean>();
+  const onRiverHex = (hk: string): boolean => {
+    const hit = onRiverMemo.get(hk);
+    if (hit !== undefined) return hit;
+    const [qs, rs] = hk.split(',');
+    const v = isHexNearRiver(map, Number(qs), Number(rs), riverHexKeys);
+    onRiverMemo.set(hk, v);
+    return v;
+  };
 
   // R-WEB-FRESHWATER-ACCESS-LAKE-Q1: heks ZAREZERWOWANY pod żywność = słodka woda (rzeka na heksie/sąsiedzie, także sama
   // `rzeka.obecna` sąsiada, albo jezioro — `map/freshwater.ts`). Używany WYŁĄCZNIE do blokady tartaku/obozu; priorytety E1–E3
