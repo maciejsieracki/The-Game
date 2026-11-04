@@ -1,113 +1,112 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f55a07c9025cd7bf230d8055b236a7a8",
-  "bundleSha256": "f83824a116f44006bf1c7abde3827dd7b20ac3c679d15d7465cfc11cfd826d6d",
-  "bundleBytes": 70216974,
+  "bundleMd5": "f34ab067cb42f24f3fcd0a25e805c153",
+  "bundleSha256": "a5eb2ec31c40ff248a9323fcd4f0cb22cd8b1f6129666ef263a55bb22c46db8b",
+  "bundleBytes": 70220331,
   "sourceSnapshot": {
-    "source": "main ac3698a97 + WAR-WEARINESS-PEACE (6c0df7773) + CITY-NAME-UNIQUE-FOREVER (41d1b53e3) + TAX-SLIDER-THUMB-ALIGN (1c5eab9e2)",
+    "source": "main 01fdd771f + AI-ARMY-SCATTERED (5065852a2) + SIEGE-BADGE-ZORDER (46776364f)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną rośnie z czasem (≈200 tur) i utratami miast; AI chętnie podpisuje pokój; przegrywający eskaluje ofertę (złoto/surowce → miasto → do 2 miast), nigdy stolica/ostatnie miasto.",
-    "R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1: nazwa miasta raz nadana jest zużyta na zawsze (globalnie, także stolice na starcie).",
-    "R-WEB-TAX-SLIDER-THUMB-ALIGN-Q1: suwaki podziału podatku — kropka na końcu kolorowej części."
+    "R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1: skupisko ≥2 jednostek AI na różnych heksach najpierw schodzi się na jeden heks (stos), dopiero potem maszeruje; limit zbiórki 6 tur; grupa w kontakcie z wrogiem nie zbiera się.",
+    "R-WEB-SIEGE-BADGE-ZORDER-Q1: plakietka oblężenia leży pod panelami, tooltipami i toastami (z-index 250), nad terenem."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "ai-war-weariness-peace 66/0; city-name-unique-forever PASS; city-name-start-overlap 15/15; tax-slider-thumb-align 3/0"
+    "ai-army-scattered-merge 33/0; army-concentration 56/0; ai-move-full-range 20/0; siege-badge-zorder 13/0 (+Chromium 17/0 u Operatora)"
   ],
   "limits": [
-    "Zmęczenie wojną: balans do oceny w grze; Firefox suwaków NIE_ZMIERZONO",
-    "Czerwone testy bazowe bez zmian"
+    "SCATTERED: pomiar live (Chromium, 100–150 tur) NIE_ZMIERZONO; zbiórka może opóźnić marsz o ≥1 turę",
+    "army-recruitment-concentration 26/3 odziedziczone z bazy"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "WEARY, NAME, TAX: Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
+    "notes": "SCATTERED: 2 rundy do FC; ZORDER: 1 runda."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T23:18:55",
+  "hubGeneratedAt": "2026-11-04T23:28:12",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
-      "sizeBytes": 70216974
+      "md5": "f34ab067cb42f24f3fcd0a25e805c153",
+      "sizeBytes": 70220331
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
-      "sizeBytes": 70216974
+      "md5": "f34ab067cb42f24f3fcd0a25e805c153",
+      "sizeBytes": 70220331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
-      "sizeBytes": 70216974
+      "md5": "f34ab067cb42f24f3fcd0a25e805c153",
+      "sizeBytes": 70220331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
-      "sizeBytes": 70216974
+      "md5": "f34ab067cb42f24f3fcd0a25e805c153",
+      "sizeBytes": 70220331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
-      "sizeBytes": 70216974
+      "md5": "f34ab067cb42f24f3fcd0a25e805c153",
+      "sizeBytes": 70220331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
-      "sizeBytes": 70216974
+      "md5": "f34ab067cb42f24f3fcd0a25e805c153",
+      "sizeBytes": 70220331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
-      "sizeBytes": 70216974
+      "md5": "f34ab067cb42f24f3fcd0a25e805c153",
+      "sizeBytes": 70220331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
-      "sizeBytes": 70216974
+      "md5": "f34ab067cb42f24f3fcd0a25e805c153",
+      "sizeBytes": 70220331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
-      "sizeBytes": 70216974
+      "md5": "f34ab067cb42f24f3fcd0a25e805c153",
+      "sizeBytes": 70220331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
-      "sizeBytes": 70216974
+      "md5": "f34ab067cb42f24f3fcd0a25e805c153",
+      "sizeBytes": 70220331
     }
   ],
-  "md5": "f55a07c9025cd7bf230d8055b236a7a8",
-  "sizeBytes": 70216974,
+  "md5": "f34ab067cb42f24f3fcd0a25e805c153",
+  "sizeBytes": 70220331,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main ac3698a97 + merge WEARY/NAME/TAX",
+  "source": "gra/src; main 01fdd771f + merge SCATTERED/ZORDER",
   "immediatePreviousRelease": {
-    "bundleMd5": "7db5378a1d78e11025c72601b2b09c2d"
+    "bundleMd5": "f55a07c9025cd7bf230d8055b236a7a8"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 7db5378a1d78e11025c72601b2b09c2d, 70208994 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 f55a07c9025cd7bf230d8055b236a7a8, 70216974 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1283,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T23:18:54+00:00",
-  "buildStamp": "2026-11-04 23:18",
+  "publishedAt": "2026-11-04T23:28:10+00:00",
+  "buildStamp": "2026-11-04 23:28",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1292,5 +1291,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "R-WEB-AI-WAR-WEARINESS-PEACE-Q1 R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1 R-WEB-TAX-SLIDER-THUMB-ALIGN-Q1"
+  "releaseScope": "R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1 R-WEB-SIEGE-BADGE-ZORDER-Q1"
 }

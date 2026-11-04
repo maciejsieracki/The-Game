@@ -1,3 +1,12 @@
+## ROBOCZA f34ab067 -- 2026-11-05 -- zbiórka armii AI w stos, plakietka oblężenia pod panelami (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`01fdd771f` + SCATTERED `5065852a2` + ZORDER `46776364f`) i commit wdrożenia; zgłoszenia właściciela, stała zgoda.
+- Bundle MD5 `f34ab067cb42f24f3fcd0a25e805c153`, 70220331 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: rozproszone jednostki AI schodzą się w jeden stos przed marszem; plakietka oblężenia pod panelami/tooltipami/toastami.
+- Testy: tsc PASS; scattered 33/0; army-concentration 56/0; move-full-range 20/0; badge-zorder 13/0.
+- Ograniczenia: brak pomiaru live SCATTERED; zbiórka może opóźnić marsz o ≥1 turę.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f55a07c9025cd7bf230d8055b236a7a8`, 70216974 bajtów.
+
 ## ROBOCZA f55a07c9 -- 2026-11-04 -- zmęczenie wojną + pokój, unikalne nazwy miast, suwaki podatków (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`ac3698a97` + WEARY `6c0df7773` + NAME `41d1b53e3` + TAX `1c5eab9e2`) i commit wdrożenia; zgłoszenia właściciela, stała zgoda.
