@@ -1,0 +1,13 @@
+## $ RANGE=10:20 python3 tests/repin3d_fixtures/mutate_a3.py   (final vectors 452f127e)
+KILLED   [10] volley destroyed shoots (test failed)
+KILLED   [11] volley tile check off (test failed)
+KILLED   [12] volley lost tile still shoots (test failed)
+KILLED   [13] volley lost tile not destroyed (test failed)
+KILLED   [14] volley stagger (test failed)
+KILLED   [15] volley stagger not advanced (test failed)
+KILLED   [16] volley stagger before push (test failed)
+KILLED   [17] kind default category (test failed)
+KILLED   [18] kind ignores Typ (test failed)
+KILLED   [19] kind nazwa fallback (test failed)
+KILLED 10/10
+EXIT=0

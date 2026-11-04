@@ -16,8 +16,19 @@
 //! `strongestRangedUnitForEra`, `towerRangeFor` of `game/city-towers.ts`,
 //! `miasto-params.json` spacing) is P6.13: the material and the rows come in
 //! as a DTO ([`TowerMaterial`] / `rows`), exactly what the web computed
-//! (ASSUMPTION Z-RP-A2-1 in the document). Breaking a tower
-//! (`_destroyTowerAtRow`) and its shot (`_fireOneTower`) are batch A3.
+//! (ASSUMPTION Z-RP-A2-1 in the document).
+//!
+//! REPIN-3D A3 (`P4-REPIN-3D.md` §2.1 #10, #11, §9):
+//! - [`destroy_tower_at_row`] = `_destroyTowerAtRow(wallRow)` (`:4089-4095`),
+//!   called from the wall breach ([`super::dynamics::breach_wall_tile_fort`],
+//!   web `_breachWallTile` `:7563`) and from the volley;
+//! - [`fire_siege_towers`] = `_fireSiegeTowers()` (`:4103-4116`): which tower
+//!   shoots when (stagger 180 ms) and which loses its tile;
+//! - [`fire_one_tower`] = the scene part of `_fireOneTower` (`:4118-4162`):
+//!   the projectile from `(x − 0.5, 4.2, z)` through
+//!   [`super::dynamics::launch_projectile`]. The target (`pickTowerTarget`),
+//!   the shooter row (`strongestRangedUnitForEra`) and the blow
+//!   (`_singleBlow`) are battle logic (P6.13) — DTO.
 
 use std::f64::consts::PI;
 
@@ -25,7 +36,12 @@ use crate::jsmath::{js_cos, js_sin};
 use crate::models::units_kamien::kit::euler_from_quat;
 use crate::scene::{MatId, Material, NodeId, NodeKind, Prim, Scene, UserValue, ROOT};
 
-use super::field::{cell_to_world, TILE_S};
+use crate::geom::Vec3;
+
+use super::dynamics::{
+    launch_projectile, projectile_kind, Projectile, ProjectileKind, RANGED_FLY_MS,
+};
+use super::field::{cell_to_world, tile_top_y, TerrainGrid, TILE_S};
 use super::siege_wall::{WALL_METALNESS, WALL_ROUGHNESS};
 
 /// The wall height `_placeSiegeTowers` passes to `buildWallTower`
@@ -305,9 +321,221 @@ pub fn place_siege_towers(
     out
 }
 
+// ------------------------------------------------------------ REPIN-3D A3
+
+/// Stagger between the shots of one volley (`stagger += 180`,
+/// `battleScene.ts:4113`, virtual ms).
+pub const TOWER_STAGGER_MS: f64 = 180.0;
+/// Launch height of a tower shot (`new THREE.Vector3(tw.x − TILE_S · 0.5,
+/// 4.2, tw.z)`, `:4144`).
+pub const TOWER_SHOT_Y: f64 = 4.2;
+
+/// `_destroyTowerAtRow(wallRow)` (`origin/main` `battleScene.ts:4089-4095`):
+/// the FIRST tower of `towers` on `wall_row` that is not destroyed yet is
+/// marked `destroyed` and its clone hidden (`mesh.visible = false`). Returns
+/// the battle-log line (`'Wieza strzelnicza w wyłomie (rzad N) zburzona.'`),
+/// `None` when no live tower stands on the row (no-op).
+pub fn destroy_tower_at_row(
+    scene: &mut Scene,
+    towers: &mut [SiegeTower],
+    wall_row: i32,
+) -> Option<String> {
+    let t = towers
+        .iter_mut()
+        .find(|x| x.row == wall_row && !x.destroyed)?;
+    t.destroyed = true;
+    if let Some(m) = t.mesh {
+        scene.nodes[m].visible = false;
+    }
+    Some(format!(
+        "Wieza strzelnicza w wyłomie (rzad {wall_row}) zburzona."
+    ))
+}
+
+/// One shot scheduled by [`fire_siege_towers`]:
+/// `this._schedule(delay, () => this._fireOneTower(t, …))`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TowerShotPlan {
+    /// Index of the tower in the `towers` slice.
+    pub tower: usize,
+    /// `delay` (virtual ms: `0, 180, 360, …` over the live towers).
+    pub delay: f64,
+}
+
+/// What `_fireSiegeTowers` did: the scheduled shots and the log lines of the
+/// towers it destroyed (wall tile gone).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct TowerVolley {
+    /// The `_schedule` calls, in order.
+    pub shots: Vec<TowerShotPlan>,
+    /// `this.log.push(…)` of `_destroyTowerAtRow` called from the volley.
+    pub log: Vec<String>,
+}
+
+/// `_fireSiegeTowers()` (`origin/main` `battleScene.ts:4103-4116`), scene and
+/// scheduling part: nothing when `finished`, no tower or no shooter row
+/// (`!this.towerShooterRow`); otherwise every tower that is not destroyed
+/// either loses its tile (`!this.wallTileHp.has(t.row)` →
+/// [`destroy_tower_at_row`]) or gets one shot at `stagger` (+180 ms per
+/// scheduled shot). `wall_tile_alive(row)` = `this.wallTileHp.has(row)` and
+/// the shooter row are battle logic (P6.13, DTO).
+pub fn fire_siege_towers(
+    scene: &mut Scene,
+    towers: &mut [SiegeTower],
+    finished: bool,
+    has_shooter: bool,
+    wall_tile_alive: impl Fn(i32) -> bool,
+) -> TowerVolley {
+    let mut v = TowerVolley::default();
+    if finished || towers.is_empty() || !has_shooter {
+        return v;
+    }
+    let mut stagger = 0.0;
+    for i in 0..towers.len() {
+        if towers[i].destroyed {
+            continue;
+        }
+        let row = towers[i].row;
+        if !wall_tile_alive(row) {
+            if let Some(l) = destroy_tower_at_row(scene, towers, row) {
+                v.log.push(l);
+            }
+            continue;
+        }
+        v.shots.push(TowerShotPlan {
+            tower: i,
+            delay: stagger,
+        });
+        stagger += TOWER_STAGGER_MS;
+    }
+    v
+}
+
+/// `projectileKind(shooter.bu)` of the synthetic tower shooter of
+/// `_fireOneTower` (`:4133-4137`, `:4147`): `kategoria = String(shooterRow.Typ
+/// ?? 'Distance')`, `nazwa = 'Wieza (' + (Jednostka ?? 'Strzelec') + ')'`,
+/// `stats = shooterRow` — so the name `projectileKind` reads is
+/// `Jednostka ?? nazwa`.
+#[must_use]
+pub fn tower_projectile_kind(typ: Option<&str>, jednostka: Option<&str>) -> ProjectileKind {
+    let cat = typ.unwrap_or("Distance");
+    let nazwa = format!("Wieza ({})", jednostka.unwrap_or("Strzelec"));
+    projectile_kind(cat, jednostka.unwrap_or(&nazwa))
+}
+
+/// Launch / target points of a tower shot (`:4143-4146`): from
+/// `(cellToWorld(wallCol, row).x − TILE_S · 0.5, 4.2, z)` to the target's
+/// torso `(x, tileTopY + 0.5, z)`.
+#[must_use]
+pub fn tower_shot_endpoints(
+    grid: &TerrainGrid,
+    wall_col: i32,
+    row: i32,
+    target: (i32, i32),
+) -> (Vec3, Vec3) {
+    let (tx, tz) = cell_to_world(f64::from(wall_col), f64::from(row));
+    let (dx, dz) = cell_to_world(f64::from(target.0), f64::from(target.1));
+    (
+        Vec3::new(tx - TILE_S * 0.5, TOWER_SHOT_Y, tz),
+        Vec3::new(dx, tile_top_y(grid, target.0, target.1) + 0.5, dz),
+    )
+}
+
+/// The target chosen by `pickTowerTarget` (battle logic, P6.13): cell and
+/// `bu.nazwa` (for the log line).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TowerTarget<'a> {
+    /// `target.q`.
+    pub col: i32,
+    /// `target.r`.
+    pub row: i32,
+    /// `target.bu.nazwa`.
+    pub name: &'a str,
+}
+
+/// A fired tower shot: the projectile in flight (`this.projectiles` entry),
+/// the log line and the delay of the blow callback.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TowerShot {
+    /// The projectile ([`launch_projectile`]; `t0 = this._now()`).
+    pub projectile: Projectile,
+    /// `'Wieza strzelnicza (rzad N) strzela do X.'`.
+    pub log: String,
+    /// `this._schedule(RANGED_FLY_MS, …)`: the blow (`_singleBlow`, P6.13) and
+    /// `_spawnDamageLabel` fire after the flight.
+    pub blow_delay: f64,
+}
+
+/// `_fireOneTower(t, …)` (`origin/main` `battleScene.ts:4118-4162`), scene
+/// part: nothing when `finished`, the tower is destroyed (e.g. broken
+/// between scheduling and firing) or no target (`pickTowerTarget` < 0);
+/// otherwise the projectile of `kind` ([`tower_projectile_kind`]) flies from
+/// [`tower_shot_endpoints`] with `t0`.
+#[allow(clippy::too_many_arguments)]
+pub fn fire_one_tower(
+    scene: &mut Scene,
+    grid: &TerrainGrid,
+    tower: &SiegeTower,
+    wall_col: i32,
+    finished: bool,
+    target: Option<TowerTarget<'_>>,
+    kind: ProjectileKind,
+    t0: f64,
+) -> Option<TowerShot> {
+    if finished || tower.destroyed {
+        return None;
+    }
+    let target = target?;
+    let log = format!(
+        "Wieza strzelnicza (rzad {}) strzela do {}.",
+        tower.row, target.name
+    );
+    let (from, to) = tower_shot_endpoints(grid, wall_col, tower.row, (target.col, target.row));
+    let projectile = launch_projectile(scene, kind, from, to, t0);
+    Some(TowerShot {
+        projectile,
+        log,
+        blow_delay: RANGED_FLY_MS,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn destroy_and_volley_edges() {
+        let mut s = Scene::new();
+        let mut t = place_siege_towers(&mut s, 3, Some(TowerMaterial::Kamien), &[2, 6, 10]);
+        // no tower on the row: no-op
+        assert_eq!(destroy_tower_at_row(&mut s, &mut t, 3), None);
+        let l = destroy_tower_at_row(&mut s, &mut t, 6).expect("destroyed");
+        assert_eq!(l, "Wieza strzelnicza w wyłomie (rzad 6) zburzona.");
+        assert!(t[1].destroyed && !s.nodes[t[1].mesh.expect("m")].visible);
+        // the second call on the same row finds no live tower
+        assert_eq!(destroy_tower_at_row(&mut s, &mut t, 6), None);
+        // guards
+        assert!(fire_siege_towers(&mut s, &mut t, true, true, |_| true)
+            .shots
+            .is_empty());
+        assert!(fire_siege_towers(&mut s, &mut t, false, false, |_| true)
+            .shots
+            .is_empty());
+        assert!(fire_siege_towers(&mut s, &mut [], false, true, |_| true)
+            .shots
+            .is_empty());
+        // tower 0 loses its tile, tower 1 is destroyed, tower 2 shoots at 0
+        let v = fire_siege_towers(&mut s, &mut t, false, true, |r| r != 2);
+        assert_eq!(
+            v.shots,
+            vec![TowerShotPlan {
+                tower: 2,
+                delay: 0.0
+            }]
+        );
+        assert_eq!(v.log.len(), 1);
+        assert!(t[0].destroyed);
+    }
 
     #[test]
     fn clones_share_the_first_copy_materials() {

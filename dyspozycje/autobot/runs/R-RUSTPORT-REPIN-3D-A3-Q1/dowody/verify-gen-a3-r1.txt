@@ -1,0 +1,18 @@
+# R-RUSTPORT-REPIN-3D-A3-Q1 r1 — independent generator verification (2 directories)
+# web: git archive origin/main (86d510c66) gra/src gra/data; three@0.169.0, esbuild@0.24.0, node v22.22.0
+# git log 5fa0c1a84..origin/main -- gra/src/battle gra/src/game/siege.ts gra/src/game/siegeDefenders.ts
+#   gra/src/game/city-towers.ts gra/src/game/city-fortification.ts   -> (empty: scope unchanged since A2)
+#
+# A = mktemp -d /home/user/webA3.XXXXXX : full gra/src + gra/data (65 912 982 B), own npm install
+# B = mktemp -d /home/user/webA3B.XXXXXX: only the 166 files of a3_web_inputs.txt (6 298 828 B <= 10 MB),
+#     own git archive, own npm install
+#
+## A $ node build_a1.mjs gen_a3 && node gen_a3.mjs out     -> repin3d a3 breach=4 gate=6 fire=13  EXIT=0
+## B $ node build_a1.mjs gen_a3 && node gen_a3.mjs out     -> repin3d a3 breach=4 gate=6 fire=13  EXIT=0
+## $ sha256sum
+452f127e0367bea47336905c81058e862108b965bbab1a8bbcb2fa22a3584e2f  B/out/a3.json
+3afa8d31439b230d7b9a3a55e53a517177d237a008f78df27470bd24bb7459b8  B/refscript/gen_a3.mjs
+452f127e0367bea47336905c81058e862108b965bbab1a8bbcb2fa22a3584e2f  A/out/a3.json
+3afa8d31439b230d7b9a3a55e53a517177d237a008f78df27470bd24bb7459b8  A/refscript/gen_a3.mjs
+452f127e0367bea47336905c81058e862108b965bbab1a8bbcb2fa22a3584e2f  rust-port/renderer/tests/repin3d_fixtures/a3.json
+# RESULT: a3.json and gen_a3.mjs identical in A, B and the repo. Both copies removed by explicit paths after use.

@@ -1,0 +1,27 @@
+## $ cargo +1.87.0 test --locked --test repin3d_a3 --test repin3d_a2 --test repin3d_a1
+test kill_guard_removed_alone_is_a_no_op ... ok
+test activation_queue_matches_web ... ok
+test issue_and_cancel_attack_move_match_web ... ok
+test queued_attack_move_arrows_match_web ... ok
+test killed_units_are_removed_at_once_like_web ... ok
+test wall_breach_removes_defender_catapult_like_web ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+test wall_tower_models_match_web ... ok
+test palisade_sweep_matches_web ... ok
+test placed_wall_and_towers_match_web ... ok
+test walls_every_civ_and_kind_match_web ... ok
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.42s
+test wall_and_palisade_gate_breach_match_web ... ok
+test wall_and_palisade_breach_with_towers_match_web ... ok
+test tower_volley_shot_and_flight_match_web ... ok
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 31.16s
+EXIT=0
+## $ cargo +1.87.0 test --locked --lib battle::siege
+test battle::siege_wall::tests::js_round_matches_ecmascript ... ok
+test battle::siege_wall::tests::map_helpers_follow_js_map_same_value_zero ... ok
+test battle::siege_wall::tests::style_dispatch_follows_the_web_switch ... ok
+test battle::siege_towers::tests::destroy_and_volley_edges ... ok
+test battle::siege_towers::tests::clones_share_the_first_copy_materials ... ok
+test battle::siege_wall::tests::shade_color_clamps_and_rounds ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 101 filtered out; finished in 0.00s
+EXIT=0

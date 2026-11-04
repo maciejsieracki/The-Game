@@ -1,0 +1,13 @@
+## $ RANGE=0:10 python3 tests/repin3d_fixtures/mutate_a3.py   (final vectors 452f127e)
+KILLED   [0] destroy ignores destroyed flag (test failed)
+KILLED   [1] destroy any row (test failed)
+KILLED   [2] destroy flag not set (test failed)
+KILLED   [3] destroy mesh stays visible (test failed)
+KILLED   [4] destroy log text (test failed)
+KILLED   [5] breach skips tower (test failed)
+KILLED   [6] breach tower row + 1 (test failed)
+KILLED   [7] breach drops the wall (test failed)
+KILLED   [8] volley ignores finished (test failed)
+KILLED   [9] volley ignores shooter (test failed)
+KILLED 10/10
+EXIT=0
