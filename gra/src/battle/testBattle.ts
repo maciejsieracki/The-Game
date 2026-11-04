@@ -456,12 +456,13 @@ export function ensureSiegeMachines(armies: TestArmies, units: ReadonlyArray<any
  * do armii atakujacego (unikalne id 'atkM*'). Brak/0 => armia bez zmian.
  */
 export function addSiegeMachinesCount(
-  armies: TestArmies, units: ReadonlyArray<any>, rams: number, towers: number,
+  armies: TestArmies, units: ReadonlyArray<any>, rams: number, towers: number, chariots = 0,
 ): TestArmies {
   const blocks: PresetBlock[] = [];
   if (rams > 0) blocks.push({ unitTypeId: 'Taran', count: Math.min(12, Math.floor(rams)) });
   if (towers > 0) blocks.push({ unitTypeId: 'Wieża oblężnicza', count: Math.min(12, Math.floor(towers)) });
-  if (blocks.length === 0) return armies;
+  if (blocks.length === 0 && !(chariots > 0)) return armies;
+  if (chariots > 0) blocks.push({ unitTypeId: 'Rydwan konny', count: Math.min(12, Math.floor(chariots)) });
   const missing = new Set<string>();
   const extras = buildSide(blocks, units ?? [], 'atkM', ATK_COLOR, missing);
   if (extras.length === 0) return armies;

@@ -67,6 +67,12 @@ const TBsrc = fs.readFileSync(path.join(GRA, 'src/battle/testBattle.ts'), 'utf8'
   assert(r.towers === 2, `hak towers=2 dodaje 2 wieze oblezne (${r.towers})`);
   const none = TB.addSiegeMachinesCount(TB.buildTestArmies(units, 'oblezenie_duze'), units, 0, 0);
   assert(none.attacker.length === TB.buildTestArmies(units, 'oblezenie_duze').attacker.length, 'rams=0/towers=0 => armia bez zmian');
+  const base0 = TB.buildTestArmies(units, 'oblezenie_duze');
+  const ch = TB.addSiegeMachinesCount(base0, units, 0, 0, 2);
+  const chN = ch.attacker.filter(u => /rydwan/i.test(String(u.nazwa || '') + String(u.stats && u.stats['Jednostka'] || ''))).length;
+  const chBase = base0.attacker.filter(u => /rydwan/i.test(String(u.nazwa || '') + String(u.stats && u.stats['Jednostka'] || ''))).length;
+  assert(ch.attacker.length === base0.attacker.length + 2 && chN - chBase === 2, `hak chariots=2 dodaje 2 rydwany (+${chN - chBase}, razem +${ch.attacker.length - base0.attacker.length})`);
+  assert(new Set(ch.attacker.map(u => u.id)).size === ch.attacker.length, 'id unikalne po chariots=2');
 }
 
 console.log('\nCZESC B -- okablowanie (zrodlo) + mutacje');
@@ -86,7 +92,8 @@ const pins = [
   ['ograniczenie: piechota po wylomie/wiezy', BS, /return !\(this\.wallEverBreached \|\| this\.towerAtWallRows\.size > 0\);/],
   ['ograniczenie: strzelcy (luk/proca) zwolnieni', BS, /if \(ru\.primaryRanged && canShoot\(ru\) && ru\.shootingEnabled !== false\) return false; \/\/ strzelec/],
   ['zrodla ognia: lucznicy z amunicja + wiezyczki muru', BS, /for \(const t of this\.siegeTowers\) \{\s*\n\s*if \(t\.destroyed\) continue;\s*\n\s*out\.push\(\{ q: this\.siegeWallCol, r: t\.row, range: this\.towerRange \}\);/],
-  ['main: hak ?rams/towers/bare', MAIN, /addSiegeMachinesCount\(armies, \(data as any\)\.units, Number\(qp\.get\('rams'\)\) \|\| 0, Number\(qp\.get\('towers'\)\) \|\| 0\)/],
+  ['main: hak ?rams/towers/bare', MAIN, /addSiegeMachinesCount\(armies, \(data as any\)\.units, Number\(qp\.get\('rams'\)\) \|\| 0, Number\(qp\.get\('towers'\)\) \|\| 0, Number\(qp\.get\('chariots'\)\) \|\| 0\)/],
+  ['AUTO: machiny oblezenia atakujacego pomijaja doktryne (taran jedzie do bramy, nie flankuje)', BS, /const siegeMachineNeverDoctrine = ru\.side === 'atk' && this\.siegeWallCol >= 0 && isSiegeUnit\(ru\.bu\);\s*\n\s*if \(!this\._manualMode && !siegeDefenderNeverDoctrine && !siegeMachineNeverDoctrine\) \{/],
 ];
 for (const [name, text, re] of pins) {
   const ok = re.test(text);

@@ -5956,7 +5956,11 @@ export class BattleScene {
     // HOLD" + `ru.onWallWalkway` galezie nizej) -- wiec doktryna dla tej strony
     // w tym trybie jest celowo pomijana, nie tylko lagodzona.
     const siegeDefenderNeverDoctrine = ru.side === 'def' && this.siegeWallCol >= 0;
-    if (!this._manualMode && !siegeDefenderNeverDoctrine) {
+    // R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1 (runda 2): machiny oblezenia atakujacego (taran/wieza)
+    // tez pomijaja doktryne -- doktryna AUTO wysylala tarany flanka wokol muru (zmierzone: rzedy 72/84
+    // zamiast bramy), zanim kod dotarl do _siegeRamTowerStep (wspolnego z trybem recznym).
+    const siegeMachineNeverDoctrine = ru.side === 'atk' && this.siegeWallCol >= 0 && isSiegeUnit(ru.bu);
+    if (!this._manualMode && !siegeDefenderNeverDoctrine && !siegeMachineNeverDoctrine) {
       if (this._isUnitDoctrineAuto(ru)) {
         if (ru.playerOrder.type !== 'none') ru.playerOrder = { type: 'none' };
         const meta = this._effectiveMetaForUnit(ru);

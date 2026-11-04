@@ -34044,7 +34044,7 @@ async function boot(): Promise<void> {
         // Hak testowy: ?rams=N&towers=M -- dodatkowe tarany / wieze oblezne (harness bitwy).
         try {
           const qp = new URLSearchParams(window.location.search);
-          armies = addSiegeMachinesCount(armies, (data as any).units, Number(qp.get('rams')) || 0, Number(qp.get('towers')) || 0);
+          armies = addSiegeMachinesCount(armies, (data as any).units, Number(qp.get('rams')) || 0, Number(qp.get('towers')) || 0, Number(qp.get('chariots')) || 0);
         } catch { /* brak location */ }
       }
       if (armies.attacker.length === 0 || armies.defender.length === 0) {
