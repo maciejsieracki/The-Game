@@ -15,6 +15,7 @@
 //! | `battle/siegeWall.ts` + `battle/battleScene.ts` @ `origin/main` (palisade `kind`, `buildPalisade`, `buildWallTower`, `_placeSiegeTowers`, `fortKind`) | [`siege_wall::build_palisade`], [`siege_towers`], [`units::place_siege_wall_fort`] | palisade / tower models + placed towers | REPIN-3D A2 |
 //! | `battle/battleScene.ts` @ `origin/main` (`_destroyTowerAtRow`, `_fireSiegeTowers`, `_fireOneTower`, `_breachWallTile` with towers / palisade, `_breachGate` on the palisade) | [`siege_towers::destroy_tower_at_row`], [`siege_towers::fire_siege_towers`], [`siege_towers::fire_one_tower`], [`dynamics::breach_wall_tile_fort`] | tower break / shot, palisade breach | REPIN-3D A3 |
 //! | `battle/battleScene.ts` @ `origin/main` (constructor with `fortKind`: `_placeSiegeWall` kind + `_placeSiegeTowers`; Militia / siege towers = spawn DTOs) | [`units::build_battle_scene_with_units_fort`] | the scene with wall towers | REPIN-3D A4 |
+//! | `battle/battleScene.ts` @ `origin/main` (parts 4–5 re-pinned: `dynamics.json` / `picking.json` regenerated; `_startFade` → `_removeUnitFromScene`; pickers vs palisade / towers / `fortKind`) | [`units::kill_unit`] (fade + breach catapult), [`picking`] unchanged; [`dynamics::Fade`] / [`dynamics::tick_fades`] = pin-only, kept for the A1 no-op test | picking ignores towers / wall (web: ground meshes + unit groups only) | REPIN-3D A5 |
 //!
 //! Only the 3D scene is ported here. Battle game logic (turn order, AI,
 //! damage) belongs to `domain/combat.rs` (P6.13) and the DOM UI to P5; the

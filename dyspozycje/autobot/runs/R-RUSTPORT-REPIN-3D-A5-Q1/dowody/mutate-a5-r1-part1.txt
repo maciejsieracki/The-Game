@@ -1,0 +1,7 @@
+KILLED   [0] kill_unit no-op --test battle3d_dynamics (test failed)
+KILLED   [1] remove keeps group attached --test battle3d_dynamics (test failed)
+KILLED   [2] remove keeps bars attached --test battle3d_dynamics (test failed)
+KILLED   [3] remove keeps model visible --test battle3d_dynamics (test failed)
+KILLED   [4] remove keeps bars visible --test battle3d_dynamics (test failed)
+KILLED 5/5
+EXIT=0

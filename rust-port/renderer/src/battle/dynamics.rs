@@ -16,7 +16,7 @@
 //! | `_doRangedAttack` (3D, `:8444-8489`) + `_tickProjectiles` (`:8584-8600`) | [`ranged_shot_endpoints`], [`launch_projectile`], [`tick_projectiles`] |
 //! | `_doMove` (3D, `:8011-8072`) | [`MoveAnim`] |
 //! | `_doMeleeAttack` (3D, `:8361-8440`) | [`MeleeLunge`] |
-//! | `_startFade` / `_tickFades` (`:9082-9089`, `:8602-8622`) | [`Fade`], [`tick_fades`] |
+//! | `_startFade` / `_tickFades` of the PIN (`:9082-9089`, `:8602-8622`) | [`Fade`], [`tick_fades`] — dead on `origin/main` (REPIN-3D Z-RP-3 / A5: `_startFade` → `units::kill_unit`); kept only for `tests/repin3d_a1.rs` |
 //! | `_attackGate` (3D) / `_animateRam` (`:7000-7053`) | [`RamAnim`] |
 //! | `_attackWallTile` (3D) / `_spawnCatapultBoulder` (`:7204-7269`) | [`wall_shot_endpoints`], [`Boulder`] |
 //! | `_breachWallTile` (`:7302-7416`) | [`breach_wall_tile`], [`retreat_from_wall`] |
@@ -516,7 +516,18 @@ pub const fn rout_facing(side: BattleSide) -> i32 {
 
 // ------------------------------------------------------------ death fade
 
-/// `_startFade(ru)` (`:9082-9089`): fade start in virtual ms.
+// REPIN-3D A5 (Z-RP-3, R-RUSTPORT-REPIN-3D-A5-Q1): DEAD CODE ON THE CURRENT WEB.
+// On `origin/main` nothing writes `fadingUnits` (the only assignment is the
+// field initialiser `battleScene.ts:2601`); `_startFade` (`:9440-9451`) calls
+// `_removeUnitFromScene` = [`super::units::kill_unit`], and the regenerated
+// part-4 vectors (`dynamics.json`, A5) contain no fade any more (`fade` event:
+// `fadingUnits.length` 0 at every sample). `Fade` / `tick_fades` are KEPT,
+// not removed, because `tests/repin3d_a1.rs` (A1, outside the A5 allowlist)
+// calls `tick_fades` to prove the no-op on the current web. Remove both
+// together with that check in a batch whose allowlist covers `repin3d_a1.rs`.
+
+/// `_startFade(ru)` of the PIN `edb8fb56` (`:9082-9089`): fade start in
+/// virtual ms. Not reached on the current web (see above).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Fade {
     /// `ru.fadeStart`.
@@ -556,7 +567,8 @@ impl Fade {
 }
 
 /// `_tickFades(t)` over `(unit index, fade)` pairs of `units`; the finished
-/// fades leave `list`.
+/// fades leave `list`. On the current web the list is always empty, so the
+/// call is a no-op (REPIN-3D A1 test; see the note above [`Fade`]).
 pub fn tick_fades(scene: &mut Scene, units: &[PlacedUnit], list: &mut Vec<(usize, Fade)>, t: f64) {
     list.retain(|&(i, f)| !f.step(scene, &units[i], t));
 }

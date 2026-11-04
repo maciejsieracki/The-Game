@@ -183,3 +183,51 @@ links to B's).
 the A4 path (`build_battle_scene_with_units` → `_fort` → `place_siege_wall_fort` → `place_siege_towers`) + 5 EVIDENCE
 mutants of the name routing in `src/models/unit_core/routing.rs` (siege tower, Militia types; edited transiently,
 restored): `KILLED 15/15` (r1).
+
+## Batch A5: parts 4–5 on `origin/main`, picking vs palisade / wall towers / `fortKind` (R-RUSTPORT-REPIN-3D-A5-Q1)
+
+`a5.json` (`gen_a5.ts`; `tests/repin3d_a5.rs`) — the REAL web of `origin/main` @ `86d510c66`, bundled UNCHANGED by
+`tests/fixtures/battle3d/build_picking.mjs` (part-5 bundler). Three siege scenes (`oblezenie`, civ `rzym`,
+`builtBuildingIds` `[]` / `['palisada']` / `['mury']` → `fortKind` `none` / `palisada` / `mur`; 0 / 39 / 39 wall towers,
+material — / `drewno` / `kamien`), each with its DTO (`rec`) and `fort` record (kind, material, tower rows, root index of
+every tower clone); per case 5 poses on a 1280×720 canvas at (13, 7): `gate` (12×8 grid, one ray at every unit, the
+gate tile and its row neighbours N−1 / N / N+1 in the wall column and in front of it), `tower<i>` for the first /
+middle / last tower (tower base, +1, +3 up; wall tiles of rows N−1 / N / N+1), `edges` (client x / y at the rect
+border −1 / 0 / +1, NaN, ±Infinity) and `relief` (28 tile kinds changed WITHOUT rebuilding the ground meshes, as part 5
+`siege.relief`; grid + 3 rays near the border of every changed tile, so mesh pick and plane pick disagree both ways).
+Per ray: `[ground, fromMeshes, fromPlane, unit, nGround, nUnit, nTower, nWall]`; the pose FNV covers every hit
+(ground meshes, live unit groups, tower clones, `siegeWallGroup`: distance, point, `traverse` index). The two
+tower / wall intersections are NOT part of any web picker (`_pickGroundTile`, `_pickUnitAtScreen`, `_onBattleClick`
+use `_battleGroundPickMeshes` and the live unit groups only) — they measure that those elements lie on the ray.
+Totals: 1 191 rays, 97 through a tower (6 of them still pick a unit), 265 through the wall, 21 non-finite; mesh/plane
+disagreements: plane wins 36, mesh wins 30. Client coordinates are stored as binary64 hex (NaN-safe).
+
+### Regeneration (outside the repository only)
+
+```bash
+S=$(mktemp -d)
+mkdir -p $S/ref $S/websrc $S/refscript $S/out
+(cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)
+git archive -o $S/web.tar 86d510c66 gra/src gra/data && tar -xf $S/web.tar -C $S/websrc && rm $S/web.tar
+cp rust-port/renderer/tests/repin3d_fixtures/gen_a5.ts $S/refscript/
+cp rust-port/renderer/tests/fixtures/battle3d/{gen_dynamics.ts,build_dynamics.mjs,gen_picking.ts,build_picking.mjs,dom_stub.ts,three_shim.ts,dynamics_a5_gen.patch} $S/refscript/
+ln -s $S/ref/node_modules $S/refscript/node_modules
+(cd $S/refscript && patch -p1 < dynamics_a5_gen.patch)
+(cd $S/refscript && node build_dynamics.mjs && node gen_dynamics.mjs $S/out)   # battle3d dynamics events=23
+(cd $S/refscript && node build_picking.mjs && node gen_picking.mjs $S/out)     # battle3d picking poses=6
+(cd $S/refscript && node build_picking.mjs gen_a5 && node gen_a5.mjs $S/out)   # repin3d a5 cases=3 rays=1191 towerHitRays=97 wallHitRays=265
+sha256sum $S/out/*.json   # a5.json = MANIFEST.sha256; dynamics.json / picking.json = tests/fixtures/battle3d/MANIFEST.sha256
+```
+
+Measured (r1): two full copies (separate `npm install` and `git archive`): `a5.json`
+`e98d8e86bc2f31c359c158022dd8e54483f6f1f177feda01ec2b3a21e4a259b1` (117 037 B) and `gen_a5.mjs`
+`e4b0fe1394b9d001fa67979bd24c05b6ec4fe9e2114088eaf0c66c2102d30635` (2 814 483 B, not committed) identical in both;
+`dynamics.json` `6bdaca3e…` and `picking.json` `2daec761…` identical in both = the committed part-4/5 files.
+
+### Mutations
+
+`mutate_a5.py` (13 mutants; each runs only the test binary named with it, so a kill is due to the A5 vectors):
+5 on `units::kill_unit` / `remove_unit_from_scene` (`--test battle3d_dynamics`: the `fade` event and the breach
+catapults), 6 on the pickers (`pick_unit_at_screen` occupancy branch and K2 rule, `pick_ground_tile` tie / higher
+`tileTopY`, `intersect_objects` recursion / sort; `--test repin3d_a5`) and 2 EVIDENCE mutants of `clientRectToNdc`
+in `src/pick/hex.rs` (non-finite → no ray, x off by one pixel; edited transiently, restored): `KILLED 13/13` (r1).

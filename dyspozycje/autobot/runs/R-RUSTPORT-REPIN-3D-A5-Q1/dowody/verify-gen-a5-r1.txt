@@ -1,0 +1,29 @@
+# R-RUSTPORT-REPIN-3D-A5-Q1 r1 — niezalezny weryfikator generatorow (2 katalogi mktemp -d)
+# web: git archive 86d510c667268880414d693532ca012c9310589e gra/src gra/data (osobno w kazdym katalogu)
+# toolchain: osobne `npm install --ignore-scripts three@0.169.0 esbuild@0.24.0` w kazdym katalogu; node v22.22.0
+# katalog A = /tmp/tmp.ZR8FSI0fSL, katalog B = /tmp/tmp.dGWPDJArBx (usuniete jawnymi sciezkami po etapie)
+# kroki: patch -p1 < dynamics_a5_gen.patch; node build_dynamics.mjs && node gen_dynamics.mjs ../out;
+#        node build_picking.mjs && node gen_picking.mjs ../out; node build_picking.mjs gen_a5 && node gen_a5.mjs ../out
+# stdout: "battle3d dynamics events=23" / "battle3d picking poses=6" / "repin3d a5 cases=3 rays=1191 towerHitRays=97 wallHitRays=265"
+#
+# PRZED patchem (katalog A, generator pinu bez zmian): node gen_dynamics.mjs ../out ->
+#   TypeError: Cannot read properties of undefined (reading 'q')   (gen_dynamics.mjs:69742 = gen_dynamics.ts:521-522, wybor ofiary `flee`: u.q >= 14)
+#   gen_picking.mjs (bez zmian) przeszedl od razu: "battle3d picking poses=6"
+$ sha256sum (A, B, repo)
+6bdaca3eb70d276c2f96d8a96052d53789267b8e180e361245124194d481a9b7  /tmp/tmp.ZR8FSI0fSL/out/dynamics.json
+2daec761ecceda9c39122c4e27022517f4bc6a22a85455620c18f3d261ff34c8  /tmp/tmp.ZR8FSI0fSL/out/picking.json
+e98d8e86bc2f31c359c158022dd8e54483f6f1f177feda01ec2b3a21e4a259b1  /tmp/tmp.ZR8FSI0fSL/out/a5.json
+99040dd9fe4a54c1ee639b7fc532b909bc93c0ee5a65b3c93ec76fd0a48f21fd  /tmp/tmp.ZR8FSI0fSL/refscript/gen_dynamics.mjs
+305f30d9493a6289bd2cc9da352b7fc74478804e7d31a9d66102547903249b90  /tmp/tmp.ZR8FSI0fSL/refscript/gen_picking.mjs
+e4b0fe1394b9d001fa67979bd24c05b6ec4fe9e2114088eaf0c66c2102d30635  /tmp/tmp.ZR8FSI0fSL/refscript/gen_a5.mjs
+6bdaca3eb70d276c2f96d8a96052d53789267b8e180e361245124194d481a9b7  /tmp/tmp.dGWPDJArBx/out/dynamics.json
+2daec761ecceda9c39122c4e27022517f4bc6a22a85455620c18f3d261ff34c8  /tmp/tmp.dGWPDJArBx/out/picking.json
+e98d8e86bc2f31c359c158022dd8e54483f6f1f177feda01ec2b3a21e4a259b1  /tmp/tmp.dGWPDJArBx/out/a5.json
+99040dd9fe4a54c1ee639b7fc532b909bc93c0ee5a65b3c93ec76fd0a48f21fd  /tmp/tmp.dGWPDJArBx/refscript/gen_dynamics.mjs
+305f30d9493a6289bd2cc9da352b7fc74478804e7d31a9d66102547903249b90  /tmp/tmp.dGWPDJArBx/refscript/gen_picking.mjs
+e4b0fe1394b9d001fa67979bd24c05b6ec4fe9e2114088eaf0c66c2102d30635  /tmp/tmp.dGWPDJArBx/refscript/gen_a5.mjs
+6bdaca3eb70d276c2f96d8a96052d53789267b8e180e361245124194d481a9b7  rust-port/renderer/tests/fixtures/battle3d/dynamics.json
+2daec761ecceda9c39122c4e27022517f4bc6a22a85455620c18f3d261ff34c8  rust-port/renderer/tests/fixtures/battle3d/picking.json
+e98d8e86bc2f31c359c158022dd8e54483f6f1f177feda01ec2b3a21e4a259b1  rust-port/renderer/tests/repin3d_fixtures/a5.json
+$ grep -c 'u.q >= 12' A/refscript/gen_dynamics.ts B/refscript/gen_dynamics.ts   -> 1 / 1 (patch zastosowany identycznie)
+# WYNIK: A = B = repo (3 JSON, 3 bundle)

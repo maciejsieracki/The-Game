@@ -310,6 +310,25 @@ generator, run in two directories (separate `npm install`, separate `git archive
 `dynamics.json` (149 178 B, SHA-256 `68ae2085…` = `MANIFEST.sha256`) and `gen_dynamics.mjs`
 (2 793 451 B, SHA-256 `bdb8c7ad23e5c9042329f5c17d790da8e009ff72647864410fee49add1baf74c`).
 
+**REPIN-3D A5 (R-RUSTPORT-REPIN-3D-A5-Q1): `dynamics.json` regenerated on `origin/main` @ `86d510c66`.** The pin
+generator run UNCHANGED on `git archive 86d510c66 gra/src gra/data` stops with `TypeError: Cannot read properties of
+undefined (reading 'q')` in event 10 (`flee`, `gen_dynamics.ts:521`): its rout victim is "the first live attacker with
+`q >= 14`", and the new placement (`initialBattleSlots`, A4) puts the `oblezenie` attackers in columns 9–12 (pin:
+10–14). ONE documented generator change, `dynamics_a5_gen.patch` (apply with `patch -p1` in `$S/refscript` before
+bundling): `u.q >= 14` → `u.q >= 12` = the same "front rank" choice on the new placement; nothing else in
+`gen_dynamics.ts` or `build_dynamics.mjs` changes, and the committed `gen_dynamics.ts` stays the pin file. Two
+directories (separate `npm install`, separate `git archive`): `dynamics.json`
+`6bdaca3eb70d276c2f96d8a96052d53789267b8e180e361245124194d481a9b7` (148 609 B, = MANIFEST), `gen_dynamics.mjs`
+`99040dd9fe4a54c1ee639b7fc532b909bc93c0ee5a65b3c93ec76fd0a48f21fd` (2 835 442 B, not committed). What changed and why
+(`dyspozycje/rust-port/p4/P4-REPIN-3D.md` §15): every spawn-dependent record (new placement: `siege.spawn` 31 rows,
+`tilesNow`, positions in `move` / `melee` / `shots` / `ram` / `boulder` / `labels` / `markers` / `billboard`, the
+`flee` victim `atk21`, the whole `deploy` block) and the `_startFade` → `_removeUnitFromScene` hunk
+(`battleScene.ts:9440-9451`): the `fade` event now shows both victims removed at once (`dead`, not `fadingOut`,
+hidden, `fadingUnits.length` 0 at every sample), and in `breachWall` row 73 the two defender catapults are removed
+from the scene (4 root children fewer: the recorded `rubble` is the last 3 of the 7 pieces). `projectileKinds`,
+`projectileMeshes`, `consts`, `easing`, `pomiary` are byte-identical. `tests/battle3d_dynamics.rs` replays `fade` and
+the breach catapults through `units::kill_unit` (A1) — no `src/` change.
+
 ## Cases (`dynamics.json`)
 
 | key | what |
@@ -328,8 +347,9 @@ binary64 hex (`hx`). Mirrored in `battle3d_dynamics.rs`.
 
 | File (part 4) | Content |
 |---|---|
-| `dynamics.json` | the vectors above (149 178 B) |
+| `dynamics.json` | the vectors above (A5: 148 609 B; pin file 149 178 B) |
 | `gen_dynamics.ts`, `build_dynamics.mjs` | generator and bundler (uses `dom_stub.ts`, `three_shim.ts` of part 2) |
+| `dynamics_a5_gen.patch` | REPIN-3D A5: the one-line generator change for `origin/main` (rout victim `q >= 12`; see above) |
 | `mutate_dynamics.py` | mutation run (50 mutants of `src/battle/dynamics.rs`; runs `--lib battle::dynamics` and `--test battle3d_dynamics`). Operator "pomiary" r1 on 1.87.0: first pass 45/48 (survivors `gate band`, `gate height rule`, `rout west`); after `pomiary` vectors + two lib tests and 2 new mutants (`rout east`, `gate centre band`): **50/50 killed**. `gate height rule` is equivalent on every reachable wall (killed only by the lib probe test, P4-36 §38) |
 
 # Part 5: picking and camera (R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q5)
@@ -376,6 +396,17 @@ give identical `picking.json` (92 307 B, `454daef2…` = `MANIFEST.sha256`) and 
 other than `extra` is byte-identical to the 81 669 B file above (and that file reproduced as
 `3a3b1f38…` in a third directory before the change). The generator prints the same line.
 
+**REPIN-3D A5 (R-RUSTPORT-REPIN-3D-A5-Q1): `picking.json` regenerated on `origin/main` @ `86d510c66`** with the
+UNCHANGED `gen_picking.ts` / `build_picking.mjs` (scenes = the A5 `dynamics.json` ones): `picking.json`
+`2daec761ecceda9c39122c4e27022517f4bc6a22a85455620c18f3d261ff34c8` (80 890 B, two directories, = MANIFEST),
+`gen_picking.mjs` `305f30d9493a6289bd2cc9da352b7fc74478804e7d31a9d66102547903249b90` (2 834 660 B, not committed).
+Changed keys = the spawn-dependent ones only (`*.dto`, `*.occ`, `*.poses`, `siege.relief`, `siege.battleClicks`,
+`*.box`, `deploy.deployClicks`, `extra.{staleBox,fieldBattleClicks,deployClicks}`); `siege.{cam0,camOps,toScreen,
+clientPx,bars,flagged,panFlags,emptyRect}`, `deploy.zone`, `extra.{staleRays,camOps,siegeInstanced,deployInstanced,
+groundTies}`, `helpers` are byte-identical (`input/picker.ts`: `git diff edb8fb56 86d510c66` empty).
+`tests/battle3d_picking.rs` passes unchanged (8/8). Picking against the palisade / wall towers / `fortKind`:
+`tests/repin3d_fixtures/a5.json` (`gen_a5.ts`, README there).
+
 ## Cases (`picking.json`)
 
 | key | what |
@@ -401,6 +432,6 @@ other than `extra` is byte-identical to the 81 669 B file above (and that file r
 
 | File (part 5) | Content |
 |---|---|
-| `picking.json` | the vectors above (92 307 B) |
+| `picking.json` | the vectors above (A5: 80 890 B; pin file 92 307 B) |
 | `gen_picking.ts`, `build_picking.mjs` | generator and bundler (uses `dom_stub.ts`, `three_shim.ts` of part 2) |
 | `mutate_picking.py` | mutation run (62 mutants of `src/battle/view.rs` / `src/battle/picking.rs`; runs `--lib battle::` and `--test battle3d_picking`; `RANGE=a:b` batches; `EQUIVALENT` = 1 mutant proven equivalent, printed `EQUIV`) — full run = Operator "pomiary" call: 61/61 killed + 1 equivalent on 1.87.0 |

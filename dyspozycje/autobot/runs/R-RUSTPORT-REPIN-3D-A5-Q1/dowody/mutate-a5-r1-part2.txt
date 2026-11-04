@@ -1,0 +1,10 @@
+KILLED   [5] pick unit: no occupancy branch --test repin3d_a5 (test failed)
+KILLED   [6] pick unit: K2 rule off --test repin3d_a5 (test failed)
+KILLED   [7] pick ground: tie -> plane --test repin3d_a5 (test failed)
+KILLED   [8] pick ground: lower wins --test repin3d_a5 (test failed)
+KILLED   [9] intersect: never recursive --test repin3d_a5 (test failed)
+KILLED   [10] intersect: unsorted --test repin3d_a5 (test failed)
+KILLED   [11] ndc: non-finite -> no ray (evidence) --test repin3d_a5 (test failed)
+KILLED   [12] ndc: x off by one pixel (evidence) --test repin3d_a5 (test failed)
+KILLED 8/8
+EXIT=0

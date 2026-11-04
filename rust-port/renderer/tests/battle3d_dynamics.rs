@@ -23,18 +23,19 @@ use std::path::PathBuf;
 use civ_renderer::battle::dynamics::{
     billboard_all, breach_gate, breach_wall_tile, deploy_phase_frame, ease_in, ease_out,
     end_deploy_phase, launch_projectile, lerp, make_projectile_mesh, projectile_kind,
-    ranged_shot_endpoints, retreat_from_wall, rout_facing, set_facing, tick_fades,
-    tick_projectiles, wall_shot_endpoints, Boulder, CanvasOp, Fade, FloatLabel, GroupMarkers,
-    GroupNumberTexture, MeleeLunge, MoveAnim, Projectile, ProjectileKind, RamAnim, BLOW_HIT_T,
-    BLOW_LUNGE_MS, BLOW_SETTLE_MS, DEATH_FADE_MS, MORALE_GATE_BREACH, MORALE_WALL_BREACH,
-    MOVE_STEP_MS, RANGED_FLY_MS, RANGED_GAP_MS, STEP_GAP_MS,
+    ranged_shot_endpoints, retreat_from_wall, rout_facing, set_facing, tick_projectiles,
+    wall_shot_endpoints, Boulder, CanvasOp, FloatLabel, GroupMarkers, GroupNumberTexture,
+    MeleeLunge, MoveAnim, Projectile, ProjectileKind, RamAnim, BLOW_HIT_T, BLOW_LUNGE_MS,
+    BLOW_SETTLE_MS, DEATH_FADE_MS, MORALE_GATE_BREACH, MORALE_WALL_BREACH, MOVE_STEP_MS,
+    RANGED_FLY_MS, RANGED_GAP_MS, STEP_GAP_MS,
 };
 use civ_renderer::battle::field::{
     BattleSceneOpts, DeploySide, FieldScene, LightKind, TerrainGrid, BF_COLS, BF_ROWS,
 };
 use civ_renderer::battle::units::{
-    self, build_battle_scene_with_units, remove_unit_from_scene, siege_wall_civ, update_ammo_bar,
-    update_morale_bar, BattleScene3, BattleSide, BattleUnitsOpts, PlacedUnit, UnitSpawn,
+    self, build_battle_scene_with_units, kill_unit, remove_unit_from_scene, siege_wall_civ,
+    update_ammo_bar, update_morale_bar, BattleScene3, BattleSide, BattleUnitsOpts, PlacedUnit,
+    UnitSpawn,
 };
 use civ_renderer::geom::{Mat4, Vec3};
 use civ_renderer::models::cities::model::js_number_to_string;
@@ -1088,23 +1089,35 @@ fn run_event(c: &mut Cmp, w: &mut World, e: &Json, k: usize) {
             }
         }
         "fade" => {
+            // REPIN-3D A5: `_startFade` of the current web (`battleScene.ts:9440-9451`)
+            // has no death animation any more — it calls `_removeUnitFromScene` at
+            // once (`units::kill_unit`, A1); `fadingUnits` has no writer (`:2601`), so
+            // the web's `_tickFades` at the sample times is a no-op (n = 0 in every
+            // sample) and is not replayed (`dynamics::Fade` / `tick_fades` = pin only).
             let ids: Vec<&str> = e.get("ids").arr().iter().map(Json::str).collect();
-            let t0s: Vec<f64> = e.get("t0s").arr().iter().map(Json::num).collect();
-            let mut list: Vec<(usize, Fade)> = ids
-                .iter()
-                .zip(&t0s)
-                .map(|(id, &t)| (unit_ix(&w.b, id).1, Fade { start: t }))
-                .collect();
+            let t0s = e.get("t0s").arr();
+            c.eq(&format!("{cx} t0s n"), t0s.len(), ids.len());
+            for id in &ids {
+                let dead = w.is_dead(id);
+                let mut u = unit(&w.b, id).clone();
+                let removed = kill_unit(&mut w.b.field.field.scene, &mut u, dead, false);
+                c.eq(&format!("{cx} {id} removed"), removed, true);
+                *unit_mut(&mut w.b, id) = u;
+                // `_removeUnitFromScene`: dead = true, fadingOut = false (logic flags)
+                w.dead.insert((*id).to_owned(), true);
+            }
             for s in e.get("samples").arr() {
                 let a = s.arr();
                 let t = a[0].num();
-                let atk = w.b.atk.clone();
-                tick_fades(&mut w.b.field.field.scene, &atk, &mut list, t);
                 for (id, wv) in ids.iter().zip(a[1].arr()) {
                     let v = wv.arr();
-                    let fading = list.iter().any(|(i, _)| w.b.atk[*i].spawn.id == *id);
                     compare_unit_state(c, &format!("{cx} t={t}"), &w.b, &v[0]);
-                    c.eq(&format!("{cx} {id} fading t={t}"), fading, v[2].i64() == 1);
+                    c.eq(
+                        &format!("{cx} {id} dead t={t}"),
+                        w.is_dead(id),
+                        v[1].i64() == 1,
+                    );
+                    c.eq(&format!("{cx} {id} fading t={t}"), false, v[2].i64() == 1);
                     let u = unit(&w.b, id);
                     let sc = &w.b.field.field.scene;
                     c.eq(
@@ -1117,13 +1130,10 @@ fn run_event(c: &mut Cmp, w: &mut World, e: &Json, k: usize) {
                         sc.nodes[u.bars.group].visible,
                         v[4].bool(),
                     );
-                    if v[1].i64() == 1 {
-                        w.dead.insert((*id).to_owned(), true);
-                    }
                 }
                 c.eq(
                     &format!("{cx} t={t} n"),
-                    list.len(),
+                    0,
                     usize::try_from(a[2].i64()).expect("n"),
                 );
             }
@@ -1607,25 +1617,27 @@ fn breach(c: &mut Cmp, w: &mut World, e: &Json, cx: &str, row: i32, clock: f64) 
         clock,
     );
     w.labels.push(label);
-    let fs = &w.b.field.field;
     c.eq(
         &format!("{cx} rubble root"),
-        fs.scene.nodes[ROOT].children[kids0..].to_vec(),
+        w.b.field.field.scene.nodes[ROOT].children[kids0..].to_vec(),
         rubble.clone(),
     );
-    let wr = e.get("rubble").arr();
-    c.eq(&format!("{cx} rubble n"), rubble.len(), wr.len());
-    for (i, (n, x)) in rubble.iter().zip(wr).enumerate() {
-        compare_tree(c, &format!("{cx} rubble {i}"), fs, *n, x);
-    }
     if let Some(changed) = e.opt("changed") {
         for ch in changed.arr() {
             let a = ch.arr();
             let id = a[0].str();
             if a[4].i64() == 1 {
-                // a defender catapult on the tile is destroyed: dead, fadingOut set,
-                // fadeStart = performance.now() — no scene change (W-17).
+                // a defender catapult on the tile is destroyed: `_startFade` of the
+                // current web (`battleScene.ts:7614-7619` → `:9440-9451`) removes it
+                // from the scene at once (`units::kill_unit`, REPIN-3D A1/A5; the pin
+                // only set dead / fadingOut, W-17). Runs after the rubble, like the web.
+                let dead = w.is_dead(id);
+                let mut u = unit(&w.b, id).clone();
+                let removed = kill_unit(&mut w.b.field.field.scene, &mut u, dead, false);
+                c.eq(&format!("{cx} {id} removed"), removed, true);
+                *unit_mut(&mut w.b, id) = u;
                 w.dead.insert(id.to_owned(), true);
+                c.eq(&format!("{cx} {id} fadingOut"), false, a[5].i64() == 1);
             } else {
                 let mut u = unit(&w.b, id).clone();
                 retreat_from_wall(
@@ -1661,8 +1673,22 @@ fn breach(c: &mut Cmp, w: &mut World, e: &Json, cx: &str, row: i32, clock: f64) 
             compare_unit_state(c, cx, &w.b, &ch.arr()[7]);
         }
     }
-    c.eq(&format!("{cx} routs"), e.get("routs").arr().len(), 0);
+    // `scene.children.slice(kids1)` AFTER the breach: removed units shift the
+    // rubble left, so only its tail lies past the old child count.
     let fs = &w.b.field.field;
+    let tail =
+        fs.scene.nodes[ROOT].children[kids0.min(fs.scene.nodes[ROOT].children.len())..].to_vec();
+    c.eq(
+        &format!("{cx} rubble tail"),
+        tail.clone(),
+        rubble[rubble.len() - tail.len().min(rubble.len())..].to_vec(),
+    );
+    let wr = e.get("rubble").arr();
+    c.eq(&format!("{cx} rubble n"), tail.len(), wr.len());
+    for (i, (n, x)) in tail.iter().zip(wr).enumerate() {
+        compare_tree(c, &format!("{cx} rubble {i}"), fs, *n, x);
+    }
+    c.eq(&format!("{cx} routs"), e.get("routs").arr().len(), 0);
     let wall = w.b.wall.as_ref().expect("wall");
     c.eq(
         &format!("{cx} wall"),

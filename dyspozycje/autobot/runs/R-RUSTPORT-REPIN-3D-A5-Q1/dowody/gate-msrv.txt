@@ -1,0 +1,95 @@
+$ cargo +1.87.0 test --locked --test battle3d_dynamics --test battle3d_picking --test repin3d_a5 --test repin3d_a1
+cargo 1.87.0 (99624be96 2025-05-06)
+   Compiling libm v0.2.16
+   Compiling simd-adler32 v0.3.10
+   Compiling adler2 v2.0.1
+   Compiling bytemuck v1.25.2
+   Compiling crc32fast v1.5.3
+   Compiling arrayvec v0.7.8
+   Compiling log v0.4.34
+   Compiling cfg-if v1.0.5
+   Compiling smallvec v1.16.3
+   Compiling float-cmp v0.9.0
+   Compiling strict-num v0.1.1
+   Compiling polycool v0.4.0
+   Compiling miniz_oxide v0.9.1
+   Compiling bitflags v2.13.2
+   Compiling arrayref v0.3.9
+   Compiling tiny-skia-path v0.12.0
+   Compiling kurbo v0.13.1
+   Compiling flate2 v1.1.10
+   Compiling core_maths v0.1.1
+   Compiling ttf-parser v0.25.1
+   Compiling miniz_oxide v0.8.9
+   Compiling fdeflate v0.3.7
+   Compiling siphasher v1.0.4
+   Compiling memchr v2.8.3
+   Compiling svgtypes v0.16.1
+   Compiling png v0.18.1
+   Compiling roxmltree v0.21.1
+   Compiling simplecss v0.2.2
+   Compiling imagesize v0.15.0
+   Compiling pico-args v0.5.0
+   Compiling data-url v0.3.2
+   Compiling tiny-skia v0.12.0
+   Compiling owned_ttf_parser v0.25.1
+   Compiling usvg v0.48.1
+   Compiling rgb v0.8.53
+   Compiling unicode-properties v0.1.4
+   Compiling unicode-script v0.5.8
+   Compiling zune-core v0.5.3
+   Compiling ab_glyph_rasterizer v0.1.10
+   Compiling unicode-ccc v0.4.0
+   Compiling unicode-bidi-mirroring v0.4.0
+   Compiling ab_glyph v0.2.32
+   Compiling rustybuzz v0.20.1
+   Compiling zune-jpeg v0.5.15
+   Compiling resvg v0.48.1
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_f4a33a99-aff-1/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 12.49s
+     Running tests/battle3d_dynamics.rs (target/debug/deps/battle3d_dynamics-1767499cde8498a7)
+
+running 5 tests
+test constants_and_easing_equal_web ... ok
+test projectiles_match_web ... ok
+test gate_styles_and_rout_facing_match_web ... ok
+test deploy_phase_matches_web ... ok
+test dynamics_match_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+
+     Running tests/battle3d_picking.rs (target/debug/deps/battle3d_picking-0c63eab7d1b1d334)
+
+running 8 tests
+test camera_control_matches_web ... ok
+test bars_toggle_matches_web ... ok
+test extra_siege_cases_match_web ... ok
+test helpers_and_constants_equal_web ... ok
+test battle_clicks_and_box_select_match_web ... ok
+test extra_deploy_cases_match_web ... ok
+test deploy_picking_and_clicks_match_web ... ok
+test siege_picking_matches_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.16s
+
+     Running tests/repin3d_a1.rs (target/debug/deps/repin3d_a1-636c3d7283c962af)
+
+running 6 tests
+test activation_queue_matches_web ... ok
+test kill_guard_removed_alone_is_a_no_op ... ok
+test issue_and_cancel_attack_move_match_web ... ok
+test queued_attack_move_arrows_match_web ... ok
+test killed_units_are_removed_at_once_like_web ... ok
+test wall_breach_removes_defender_catapult_like_web ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/repin3d_a5.rs (target/debug/deps/repin3d_a5-2a17c7c5564ac48f)
+
+running 1 test
+test fort_picking_matches_web ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 20.34s
+
+EXIT=0

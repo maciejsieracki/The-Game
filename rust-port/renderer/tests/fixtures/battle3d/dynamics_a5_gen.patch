@@ -1,0 +1,11 @@
+--- a/gen_dynamics.ts
++++ b/gen_dynamics.ts
+@@ -518,7 +518,7 @@
+ //     only) so it walks; each "turn" is one `_fleeStep` chain (scheduled steps run between
+ //     frames) until it is stuck at the fenced margin twice and leaves the field.
+ {
+-  const ru = [...s.atk].filter((u: any) => !u.dead && !u.routed && !u.fadingOut && u.q >= 14 && ![a0, a1, a2, a3].includes(u)).sort((x: any, y: any) => x.q - y.q || x.r - y.r)[0];
++  const ru = [...s.atk].filter((u: any) => !u.dead && !u.routed && !u.fadingOut && u.q >= 12 && ![a0, a1, a2, a3].includes(u)).sort((x: any, y: any) => x.q - y.q || x.r - y.r)[0];
+   for (const k of [...s.occByKey.keys()]) { const [c, r] = k.split(',').map(Number); if (c < ru.q && Math.abs(r - ru.r) <= 2) s.occByKey.delete(k); }
+   routLog = [];
+   const finishedBefore = s.finished;

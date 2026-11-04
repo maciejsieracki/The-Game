@@ -1,0 +1,49 @@
+$ (cd tests/fixtures/battle3d && sha256sum -c MANIFEST.sha256)
+README.md: OK
+build.mjs: OK
+build_dynamics.mjs: OK
+build_field.mjs: OK
+build_picking.mjs: OK
+build_units.mjs: OK
+dom_stub.ts: OK
+dynamics.json: OK
+dynamics_a5_gen.patch: OK
+field.json: OK
+gen.mjs: OK
+gen.ts: OK
+gen_dynamics.ts: OK
+gen_field.ts: OK
+gen_picking.ts: OK
+gen_units.ts: OK
+mutate.py: OK
+mutate_dynamics.py: OK
+mutate_field.py: OK
+mutate_picking.py: OK
+mutate_units.py: OK
+picking.json: OK
+siege_wall.json: OK
+three_shim.ts: OK
+units.json: OK
+EXIT=0
+$ (cd tests/repin3d_fixtures && sha256sum -c MANIFEST.sha256)
+a1.json: OK
+build_a1.mjs: OK
+gen_a1.ts: OK
+mutate_a1.py: OK
+README.md: OK
+a2.json: OK
+a2_web_inputs.txt: OK
+gen_a2.ts: OK
+mutate_a2.py: OK
+a3.json: OK
+a3_web_inputs.txt: OK
+gen_a3.ts: OK
+mutate_a3.py: OK
+a4.json: OK
+a4_web_inputs.txt: OK
+gen_a4.ts: OK
+mutate_a4.py: OK
+a5.json: OK
+gen_a5.ts: OK
+mutate_a5.py: OK
+EXIT=0
