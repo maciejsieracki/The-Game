@@ -1,0 +1,118 @@
+## $ cargo test --locked --no-fail-fast  (rust-port/renderer, rustc 1.97.0)
+     Running unittests src/lib.rs (target/debug/deps/civ_renderer-415aa63799900207)
+test result: ok. 106 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/assets_nturns.rs (target/debug/deps/assets_nturns-c71ee1b3b9f1d55f)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/assets_registry.rs (target/debug/deps/assets_registry-86339d11d876bad4)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_gpu.rs (target/debug/deps/atlas_gpu-f45017a21099e866)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_json.rs (target/debug/deps/atlas_json-80417938dde3527e)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_keys.rs (target/debug/deps/atlas_keys-f2c1cbb18f72b1da)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/atlas_mip.rs (target/debug/deps/atlas_mip-adb5419506e735d2)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running tests/atlas_nturns.rs (target/debug/deps/atlas_nturns-3391f29972f81078)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+     Running tests/battle3d_dynamics.rs (target/debug/deps/battle3d_dynamics-a485ecd6f534246f)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+     Running tests/battle3d_field.rs (target/debug/deps/battle3d_field-dac71aa026e50479)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.52s
+     Running tests/battle3d_picking.rs (target/debug/deps/battle3d_picking-199b035c8df4a8f1)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.24s
+     Running tests/battle3d_siege_wall.rs (target/debug/deps/battle3d_siege_wall-981c0fea427e638e)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.35s
+     Running tests/battle3d_units.rs (target/debug/deps/battle3d_units-5c9acd32845fd9e3)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.24s
+     Running tests/camera_web_parity.rs (target/debug/deps/camera_web_parity-a0b2fa0f06bb9dd7)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/cities_web_parity.rs (target/debug/deps/cities_web_parity-e3f711a09ff99e7d)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.34s
+     Running tests/cityoverlay_web_parity.rs (target/debug/deps/cityoverlay_web_parity-8637ab54d92b6f1c)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.06s
+     Running tests/core_web_parity.rs (target/debug/deps/core_web_parity-e04a100442768078)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/cpu_sanity.rs (target/debug/deps/cpu_sanity-f9e40b23efe942f9)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/decor_web_parity.rs (target/debug/deps/decor_web_parity-56537f96dfeba1a8)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+     Running tests/geom_three_parity.rs (target/debug/deps/geom_three_parity-b0b358e02b13db4c)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/gpu_probe.rs (target/debug/deps/gpu_probe-d1e62fac1586f6d4)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/image_assets.rs (target/debug/deps/image_assets-310f70886c7c6ab0)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+     Running tests/image_metrics.rs (target/debug/deps/image_metrics-e62279e88096846b)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/image_scenes.rs (target/debug/deps/image_scenes-b36c031bd1e2556d)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.21s
+     Running tests/improvements_web_parity.rs (target/debug/deps/improvements_web_parity-92201854eb95c388)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+     Running tests/jsmath_v8_parity.rs (target/debug/deps/jsmath_v8_parity-c9aeaef9eb5c0b17)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/jsmath_wiring.rs (target/debug/deps/jsmath_wiring-da90b0d04c2429c1)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+     Running tests/jsnum_to_fixed_v8.rs (target/debug/deps/jsnum_to_fixed_v8-a355c5ba0f0f9126)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/labels_anchors.rs (target/debug/deps/labels_anchors-ca7eb7a335710c58)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+     Running tests/labels_layout.rs (target/debug/deps/labels_layout-840fa294cfbfa41b)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.31s
+     Running tests/labels_scenes.rs (target/debug/deps/labels_scenes-1c806f90c26d77ed)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.10s
+     Running tests/misc_web_parity.rs (target/debug/deps/misc_web_parity-1148be654a01e9d9)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.62s
+     Running tests/overlay_web_parity.rs (target/debug/deps/overlay_web_parity-f7914e194d794a2e)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.40s
+     Running tests/pick_golden.rs (target/debug/deps/pick_golden-10c032ce692a4904)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.34s
+     Running tests/raster_api_closed.rs (target/debug/deps/raster_api_closed-82f838fade47ecf9)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/raster_color.rs (target/debug/deps/raster_color-469c9741abb21d49)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/raster_scenes.rs (target/debug/deps/raster_scenes-8b0bcaf73fa801b6)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.83s
+     Running tests/raster_unit.rs (target/debug/deps/raster_unit-c0835d24e48081c5)
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/repin3d_a1.rs (target/debug/deps/repin3d_a1-9d67e37f6347f803)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/repin3d_a2.rs (target/debug/deps/repin3d_a2-f47896f1a1812e77)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.49s
+     Running tests/terrain_web_parity.rs (target/debug/deps/terrain_web_parity-09cd3f83f8b9824b)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+     Running tests/text_api_closed.rs (target/debug/deps/text_api_closed-a2a3d2ee245938fd)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/text_fonts.rs (target/debug/deps/text_fonts-98572513c09757fa)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+     Running tests/text_metrics.rs (target/debug/deps/text_metrics-ba89b210bc724226)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.11s
+     Running tests/text_scenes.rs (target/debug/deps/text_scenes-70d43aa9341d3c84)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.48s
+     Running tests/text_upper.rs (target/debug/deps/text_upper-5193ed35a1b2dc9d)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/textmix_chromium.rs (target/debug/deps/textmix_chromium-21db452a05fb294c)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s
+     Running tests/textmix_manifest.rs (target/debug/deps/textmix_manifest-241983ea8e0fc41d)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+     Running tests/textmix_unify.rs (target/debug/deps/textmix_unify-e540a292242bfc1e)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+     Running tests/unit_core_json.rs (target/debug/deps/unit_core_json-43d1465e4f9c4fbe)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/unit_core_model_rule.rs (target/debug/deps/unit_core_model_rule-12b575805bc2039a)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+     Running tests/unit_core_trig.rs (target/debug/deps/unit_core_trig-35e65152f9e1b3ae)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/unit_core_web_parity.rs (target/debug/deps/unit_core_web_parity-72914bb5ff30948f)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+     Running tests/units_braz_web_parity.rs (target/debug/deps/units_braz_web_parity-8ef5ddeb7a3135a7)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.97s
+     Running tests/units_kamien_web_parity.rs (target/debug/deps/units_kamien_web_parity-663398b62f78b29b)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+     Running tests/units_zelazo_web_parity.rs (target/debug/deps/units_zelazo_web_parity-3c726a841bc40151)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.61s
+     Running tests/wonders_web_parity.rs (target/debug/deps/wonders_web_parity-2c0eba5ec7d38510)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+## passed=444 failed=0 binaries=58
+EXIT=0

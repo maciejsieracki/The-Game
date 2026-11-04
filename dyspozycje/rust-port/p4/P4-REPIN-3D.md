@@ -1,9 +1,10 @@
-# P4-REPIN-3D — REPIN sceny bitwy 3D do aktualnego weba (część A: pomiar + plan + partia A1)
+# P4-REPIN-3D — REPIN sceny bitwy 3D do aktualnego weba (część A: pomiar + plan + partie A1, A2)
 
 **TEMAT:** R-RUSTPORT-REPIN-3D-A-Q1 · **DOMAIN:** GAME · **RUNDA:** 1/5 · **ROLA:** Operator
 **Baza:** `rust-port/parity-v2` @ `e1c040160` · **Pin dotychczasowy:** `edb8fb56` (MOD-14, P4-36 cz. 1–5)
 **Web docelowy:** `origin/main` @ `c1581619f` (wektory A1); w trakcie pracy `origin/main` przesunął się na
 `60621493a` — `git diff --stat c1581619f..60621493a -- gra/src/battle gra/src/render gra/src/game/siege.ts gra/src/game/siegeDefenders.ts gra/data/units.json` = pusto (zakres bez zmian).
+**Partia A2:** R-RUSTPORT-REPIN-3D-A2-Q1 (runda 1/5, Operator) na `parity-v2` @ `776bede11`, web `origin/main` @ `5fa0c1a84` — §8.
 **Plan nadrzędny:** `dyspozycje/rust-port/PLAN-AKTUALIZACJI-PORTU-DO-WEBA-20261030.md` §3, faza U5.
 
 ## 0. Streszczenie
@@ -72,8 +73,8 @@ komentarz / pamięć bez zmiany obrazu.
 | 5 | `_activateNext`: zdejmowanie id pominiętych (`:5862-5866`) i aktywowanych (`:5881-5883`) z kolejki | `:5847-5898` | SC (stan kolejki → styl strzałek) | `orders::next_activation`, `consume_on_activation`, `QueuedOrders` | **A1 PORTOWANE** |
 | 6 | `_issueBattleAttackMove`, `_cancelAttackMoveSelected`, Escape | `:18076-18106`, `:16850-16856` | SC | `orders::issue_attack_move`, `cancel_attack_move_selected` | **A1 PORTOWANE** |
 | 7 | `playerOrder` + `attackMove` (typ) | `:1984` | SC | `PlayerOrder::AttackMove` | **A1 PORTOWANE** |
-| 8 | `_placeSiegeWall` `kind: palisada/mur` | `:3984-3985`, `fortKind` `:2678` | SC | `units::place_siege_wall` + `siege_wall` | A2 |
-| 9 | `_placeSiegeTowers` (klon `buildWallTower`, poz. `x − TILE_S/2`) | `:4053-4086` | SC | nowy `battle::siege_towers` | A2 |
+| 8 | `_placeSiegeWall` `kind: palisada/mur` | `:3984-3985`, `fortKind` `:2678` | SC | `units::place_siege_wall_fort` (+ `FortKind`, `FortDto`) + `siege_wall` | **A2 PORTOWANE** (§8) |
+| 9 | `_placeSiegeTowers` (klon `buildWallTower`, poz. `x − TILE_S/2`) | `:4053-4086` | SC | nowy `battle::siege_towers::place_siege_towers` | **A2 PORTOWANE** (§8) |
 | 10 | `_destroyTowerAtRow` (`mesh.visible = false`), wołane z `_breachWallTile` `:7563` i `_fireSiegeTowers` | `:4089-4095` | SC | `siege_towers` | A3 |
 | 11 | `_fireOneTower` — pocisk (`makeProjectileMesh`, `from = (x − 0,5, 4,2, z)`, kwaternion) | `:4103-4161` (`_fireSiegeTowers` + `_fireOneTower` `:4118`) | SC (3D) + LB (cel, obrażenia) | `dynamics::launch_projectile` (istnieje) + `siege_towers` | A3 |
 | 12 | `_placeUnits` / `_placeUnitsOneSide`: szyk `initialBattleSlots` (`formationRules.ts`), skrzydła konnicy, `formationRank` | `:5197-5247`, `:16580-16622`, `:16743-16748` | LB (pozycje = DTO `UnitSpawn`) | — (scena bez zmian) | NIE-DOTYCZY sceny; wektory cz. 3 (`units.json`) do regeneracji w A4 |
@@ -91,9 +92,9 @@ komentarz / pamięć bez zmiany obrazu.
 
 | symbol | hunk | klasa | status |
 |---|---|---|---|
-| `SiegeWallOpts.kind?: 'palisada' \| 'mur'` + `resolved.kind ?? 'mur'` | `:22-33`, `:1192-1198` | SC | A2 — dla `kind` pustego / `'mur'` wynik **bez zmian** (diff wyłącznie addytywny: nowa gałąź `if (resolved.kind === 'palisada') return buildPalisade(...)` przed `switch (civ)`) |
-| `buildPalisade` (~110 LOC, pale + drewniana brama, kontrakt `userData` jak mur) | `:981-1089` | SC | A2 |
-| `buildWallTower(material, tileSize, height)` (~85 LOC) | `:1090-1189` | SC | A2 |
+| `SiegeWallOpts.kind?: 'palisada' \| 'mur'` + `resolved.kind ?? 'mur'` | `:22-33`, `:1189-1199` | SC | **A2 PORTOWANE** — dla `kind` pustego / `'mur'` wynik **bez zmian** (diff wyłącznie addytywny: nowa gałąź `if (resolved.kind === 'palisada') return buildPalisade(...)` przed `switch (civ)`) |
+| `buildPalisade` (~110 LOC, pale + drewniana brama, kontrakt `userData` jak mur) | `:993-1093` | SC | **A2 PORTOWANE** (`siege_wall::build_palisade`) |
+| `buildWallTower(material, tileSize, height)` (~85 LOC) | `:1102-1185` | SC | **A2 PORTOWANE** (`siege_towers::build_wall_tower`) |
 
 ### 2.3 `render/*` (14 plików; moduły poza `battle::*` — poza allowlistą A)
 
@@ -124,8 +125,8 @@ jako źródło DTO: `cityFortificationKind` (palisada/mur → A2), `towerRows`/`
 | partia | zakres (§2) | moduły Rust | wycena |
 |---|---|---|---|
 | **A1** | #1–#7 | `orders` (nowy), `units` | **WYKONANA** w tej rundzie (~320 LOC Rust + generator) |
-| A2 | #8, #9, §2.2 (palisada + wieżyczka jako modele; umieszczenie wieżyczek z DTO `towerRows`) | `siege_wall`, nowy `siege_towers`, `units::place_siege_wall` | ~200 LOC weba → ~600 LOC Rust; wektory: 9 stylów × {mur, palisada} + wieżyczki 2 materiały |
-| A3 | #10, #11 (burzenie wieżyczki, pocisk wieżyczki) | `siege_towers`, `dynamics` | ~60 LOC weba; wektory jak cz. 4 |
+| **A2** | #8, #9, §2.2 (palisada + wieżyczka jako modele; umieszczenie wieżyczek z DTO `towerRows`) | `siege_wall`, nowy `siege_towers`, `units::place_siege_wall_fort` | **WYKONANA** (§8; ~650 LOC Rust + generator) |
+| A3 (**następna**) | #10, #11 (burzenie wieżyczki `_destroyTowerAtRow` → `SiegeTower.destroyed` + `mesh.visible = false`, wołane z `_breachWallTile` `:7563`; pocisk `_fireOneTower`); + wyłom/brama PALISADY w `dynamics::breach_wall_tile` / `breach_gate` (grupa pali zamiast meshu segmentu — §8.4) | `siege_towers`, `dynamics` | ~60 LOC weba; wektory jak cz. 4 + palisada |
 | A4 | regeneracja wektorów cz. 3 (`units.json`) na nowym szyku #12 (scena bez zmian, zmienia się tylko DTO) | testy `battle3d_units` | generator cz. 3 na `origin/main`; ryzyko: dryf modeli `render/units.ts` (gwiazda dowódcy) → razem z REPIN-3D-B |
 | A5 | regeneracja cz. 4–5 (`dynamics.json`, `picking.json`) na `origin/main`; usunięcie martwego `Fade` (Z-RP-3) | `dynamics`, `picking` | generator cz. 4–5; zmiana oczekiwana tylko w przypadkach „fade” |
 | A6 | regeneracja cz. 1–2 (`siege_wall.json`, `field.json`) — kontrola, że `mur` bez zmian | — | tylko pomiar (oczekiwane 0 różnic, §2.2) |
@@ -209,3 +210,107 @@ budowa wgpu przy ~3,6 GB wolnego dysku pominięta).
 - Strzałka atakuj-marszem: kolor ataku (czerwony), do kafla (nie do jednostki); dyspozycja = linia przerywana.
 - Po aktywacji jednostki jej strzałka dyspozycji przestaje być przerywana (kolejka zdjęta).
 - Katapulta obrońcy na wyburzonym kaflu znika (na pinie zostawała widoczna — błąd pinu, nie portu).
+
+## 8. Partia A2 — palisada jako forma muru, wieżyczki (R-RUSTPORT-REPIN-3D-A2-Q1, runda 1)
+
+**Baza:** `rust-port/parity-v2` @ `776bede11` (renderer 439/0). **Web:** `origin/main` @ `5fa0c1a84`;
+`git log c1581619f..origin/main -- gra/src/battle` = pusto (siegeWall.ts / battleScene.ts bez zmian od A1),
+jedyna zmiana w zakresie §1: `game/siegeDefenders.ts` +5/−17 (`d4ca8b748`, Milicja bez strat ludności) — LB, §8.4.
+
+### 8.1 Kod (`rust-port/renderer/src/battle/`)
+
+- `siege_wall.rs`: `WallKind { Palisada, Mur }`, `SiegeWallOpts.kind: Option<WallKind>` (+ `with_kind`;
+  `new`/`battle` = `None` = pole nieobecne), `WallStyle::Palisada` (poza `WALL_STYLES`), `SiegeWallUserData.fort_kind`
+  (klucz `fortKind` po `gateOpen`, tylko palisada, web `:1091`), `build_palisade` (`:993-1093`).
+  `build_siege_wall_style`: `if opts.kind == Some(Palisada) { return palisade(o) }` PRZED `match style`
+  (= web `:1199` przed `switch`); dla `None`/`Mur` gałąź mur bez zmian — diff addytywny
+  (`tests/battle3d_siege_wall.rs` 95 przypadków P4.36 nadal bit w bit; `repin3d_a2` sprawdza `mur` = brak = budowa cz. 1).
+- `siege_towers.rs` (NOWY): `TowerMaterial`, `build_wall_tower` (`:1102-1185`, `userData.towerHeight/towerTopY` też na
+  węźle korzenia), `SiegeTower { row, mesh, destroyed }`, `place_siege_towers(scene, wallCol, material, rows)`
+  (`battleScene.ts:4053-4086`).
+- `units.rs`: `FortKind { None, Palisada, Mur }` (+ `wall_kind()` = `:3985`), `FortDto { kind, tower_material, tower_rows }`,
+  `place_siege_wall_fort` (`:3971-4044`: mur/palisada, potem wieżyczki po murze, `:4031`); `PlacedWall` + `fort_kind`, `towers`.
+  `place_siege_wall` = `place_siege_wall_fort(.., &FortDto::none())` (bez zmiany zachowania; wywołania cz. 3–5 nietknięte).
+- `mod.rs`: moduł + wiersz tabeli + re-eksporty. `Cargo.toml`/`Cargo.lock` bez zmian.
+
+### 8.2 Kwirki weba przeniesione 1:1 (zmierzone na uruchomionym webie)
+
+1. **Cache geometrii pali po `h.toFixed(3)`** (`:1007-1017`): pal o wysokości z tym samym kluczem co wcześniejszy dostaje
+   JEGO geometrię (inną wysokość), pozycja `hv/2` własna. Wektory: 97 trafień cache (`cacheHits`) w 20 przypadkach sweep.
+2. **`tower.clone(true)` → `rotation = (−0, 0, −0)`**: `Object3D.copy` robi `quaternion.copy`, którego callback
+   przelicza Euler z kwaternionu (`atan2(−0, 1) = −0`); Rust: `rotation = euler_from_quat(quaternion)` na każdym
+   sklonowanym węźle (`units_kamien::kit::euler_from_quat`). Macierze bez zmian; `dumpTree` haszuje Euler.
+3. **Klony dzielą materiały** (three `clone` trzyma referencje): `graft_clone` przemapowuje sloty na materiały
+   pierwszej kopii (scena `game`: 16/11 materiałów zamiast 16 + 3·39).
+
+### 8.3 Wektory, testy, mutacje
+
+Generator `tests/repin3d_fixtures/gen_a2.ts` (bundler `build_a1.mjs` BEZ zmian: `node build_a1.mjs gen_a2`), wynik
+`a2.json` (1 524 929 B, sha256 `66549532…`); README tam. Przypadki: `walls` 36 (12 kluczy civ × {brak, mur, palisada},
+rozmiar gry + `attachRowBreachPanels`; generator sam asertuje `sig(mur) = sig(brak)` na webie), `palisades` 20
+(N−1/N/N+1 wokół bramy: `len-1`, `no-side`, `len-3`, `len-4`; `gate-zero/half`, `tile-zero/neg`, `len-neg`, NaN
+wysokości/kafla/długości/bramy, `len-eps` = granica pętli `sx < L/2 − 0,01·T`, `cache`), `towers` 18 (2 materiały ×
+{gra, 0,5/1,8, 1,3/4,4, 0, H=0, ujemny, NaN×2, ∞}), `place` 27 (`_placeSiegeWall` → `_placeSiegeTowers` na
+`Object.create(BattleScene.prototype)` z PRAWDZIWYMI `towerMaterialFor`/`towerRows`/`miasto-params.json`; 7 układów:
+gra, pas, 1 rząd, 3 rzędy, 4 rzędy bez bramy, brama na 1. wieżyczce, `wallCol = −1`; × fortKind {none, mur, palisada}).
+
+`cargo test --locked --test repin3d_a2`: **4/4 ok**, 0 różnic (checks: walls 17 244 + 16 812 skalarów, palisades
+1 375 + 385, towers 477 + 72, place 4 937 + 3 005; 248 wieżyczek). Test jednostkowy
+`siege_towers::tests::clones_share_the_first_copy_materials`. Porównanie = pełny strumień bajtów `dumpTree`
+(rodzaj, rodzic, p/r/q/s, macierz świata, cienie, widoczność, materiał, geometria) + kontrakt `userData`.
+
+**Mutacje** `tests/repin3d_fixtures/mutate_a2.py`: 49 mutantów (dyspozycja `kind`, gałąź `WallStyle::Palisada`,
+`fortKind`, każda gałąź `build_palisade` w tym pętla/brama/klucz/cache/indeks materiału, `FortKind::wall_kind`,
+`place_siege_wall_fort`, obie gałęzie materiału wieżyczki i ich pętle, `null` materiału, pozycja/wiersz/flaga klonu,
+współdzielenie materiałów, Euler klonu). Pierwszy przebieg 48/49 — przeżył „segment loop bound” (`sx < L/2` zamiast
+`sx < L/2 − 0,01·T`; brak przypadku z ostatnim kaflem w marginesie 1%) → dodany przypadek `len-eps` (6,005 kafla),
+wektory zregenerowane i ponownie zweryfikowane; przebieg końcowy **49/49** (`dowody/mutate-a2-r1-part{1,2}.txt`).
+Ramiona `NodeKind::LineLoop/Sprite` w `graft_clone` są nieosiągalne (wieżyczka ma tylko Group/Mesh) — dowód
+równoważności: `build_wall_tower` tworzy wyłącznie `Scene::mesh`/korzeń `Group`.
+
+**Niezależny weryfikator:** 2 katalogi `mktemp -d` (osobny `npm install`, osobny `git archive`): A = pełne `gra/src` +
+`gra/data` (66 MB), B = tylko 167 plików z `a2_web_inputs.txt` (wejścia `metafile` esbuild, **6,5 MB ≤ 10 MB**) →
+`a2.json` i `gen_a2.mjs` identyczne bajt w bajt, = repo (`dowody/verify-gen-a2-r1.txt`). Kopie usunięte jawnymi ścieżkami.
+
+### 8.4 ZAŁOŻENIA i dryf
+
+- **Z-RP-A2-1 (DTO):** `towerMaterialFor`, `towerRows`, `strongestRangedUnitForEra`, `towerRangeFor`, odstęp z
+  `miasto-params.json` i `cityFortificationKind` to logika (P6.13, `game/city-towers.ts`, `city-fortification.ts`) —
+  NIE zportowane; scena dostaje `FortDto { kind, tower_material, tower_rows }`, w testach = dokładnie to, co policzył web.
+- **Z-RP-A2-2 (konstruktor):** `build_battle_scene_with_units` nadal stawia mur przez `place_siege_wall` (= `fortKind 'none'`:
+  mur wg cywilizacji, zero wieżyczek — identycznie jak web z `'none'`). Pole `fortKind` w `BattleUnitsOpts` → A4
+  (razem z regeneracją wektorów cz. 3; zmiana pola struktury łamałaby testy cz. 3–5 spoza allowlisty).
+- **Z-RP-A2-3 (`userData` klonu):** three kopiuje `userData` przez JSON; NaN/∞ → `null`. W grze `towerHeight = 4,375`,
+  `towerTopY = 4,8125` (stałe `TILE_S = 1`, `2,5`) — round-trip JSON = tożsamość; brzegi NaN/∞ testowane na
+  `build_wall_tower` (bez klonu).
+- **Z-RP-A2-4 (materiał spoza typu):** `buildWallTower` z napisem innym niż `'kamien'` idzie gałęzią drewnianą; enum Rust
+  dopuszcza tylko 2 wartości (typ TS też) — brak przypadku.
+- **Dryf do A3/A4 (reguły oblężenia weba, kontekst właściciela):** (a) palisada ma kafle jako GRUPY pali —
+  `dynamics::breach_wall_tile` ukrywa `rowWallMeshes[row]` (tu: grupa pali) — zachowanie na palisadzie NIE_ZMIERZONO (A3); ponadto wyłom muru burzy też
+  wieżyczkę (`_destroyTowerAtRow` z `_breachWallTile` `:7563`) — A3; (b) `isSiegeTower` (`:1516`, `:6088`, wieże
+  oblężnicze jako jednostki) i Milicja (`siegeDefenders.ts`, `d4ca8b748`) = LB (P6.13) — dla sceny tylko DTO jednostek → A4;
+  (c) `_fireSiegeTowers`/`_fireOneTower` (pocisk z `(x − 0,5, 4,2, z)`) — A3.
+- Ocena wizualna GPU: **NIE_ZMIERZONO** (brak `/dev/dri`; nie blokuje). Do oceny wzrokiem: pale palisady (2 rzędy,
+  szpice), drewniana brama ze słupami i poprzeczką, wieżyczki co 4 kafle wysunięte o pół kafla na stronę atakującego,
+  kamienne przy murze / drewniane przy palisadzie.
+
+### 8.5 Bramy (surowe logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-3D-A2-Q1/dowody/`)
+
+```text
+# rustc 1.97.0; CARGO_INCREMENTAL=0, CARGO_PROFILE_DEV_DEBUG=0, CARGO_PROFILE_TEST_DEBUG=0
+## $ cargo fmt --all -- --check                                   EXIT=0
+## $ cargo clippy --locked --all-targets -- -D warnings            EXIT=0
+## $ cargo test --locked --no-fail-fast   passed=444 failed=0 binaries=58   EXIT=0   (baza 776bede11: 439)
+## $ cargo +1.87.0 test --locked --test repin3d_a2 --test repin3d_a1   4 + 6 passed   EXIT=0
+## $ cargo +1.87.0 test --locked --lib battle::siege                   5 passed       EXIT=0
+## $ python3 tests/repin3d_fixtures/mutate_a2.py (RANGE 0:25 + 25:60)   KILLED 25/25 + 24/24 = 49/49   EXIT=0
+## $ sha256sum -c tests/repin3d_fixtures/MANIFEST.sha256   9 OK
+## generator 2 katalogi: a2.json 66549532… = 66549532… = repo
+```
+
+`cargo clippy --features gpu`: NIE_ZMIERZONO (A2 nie dotyka kodu za cechą `gpu`).
+
+### 8.6 Kolejka
+
+A3 (następna): `_destroyTowerAtRow` + `_fireOneTower` + wyłom/brama palisady w `dynamics` (§3). Potem A4 (wektory cz. 3,
+`fortKind` w konstruktorze), A5, A6, REPIN-3D-B.

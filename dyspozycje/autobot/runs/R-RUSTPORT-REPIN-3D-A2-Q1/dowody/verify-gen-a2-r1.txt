@@ -1,0 +1,13 @@
+# R-RUSTPORT-REPIN-3D-A2-Q1 r1 - niezalezny weryfikator generatora gen_a2.ts
+# web: origin/main = 5fa0c1a844261d6c8b14809d3fb643aae79096b3 (battle/siegeWall.ts, battle/battleScene.ts bez zmian od c1581619f)
+# node v22.22.0, three@0.169.0, esbuild@0.24.0; kazdy katalog: osobny mktemp -d, osobny npm install, osobny git archive
+## dir A /tmp/tmp.2n764e9lZ7: pelne gra/src + gra/data (66M); node build_a1.mjs gen_a2 && node gen_a2.mjs out
+66549532561ffe4ecd36a99d636d3616bc5d8ede05491baa441b8bdaa760eeab  /tmp/tmp.2n764e9lZ7/out/a2.json
+4d639b27f3282d483b516cc90e4fd8335bd394fd977b7f89c0faf1c3a6cca532  /tmp/tmp.2n764e9lZ7/refscript/gen_a2.mjs
+## dir B /tmp/tmp.TipNzg2CYZ: TYLKO 167 plikow z tests/repin3d_fixtures/a2_web_inputs.txt (wejscia metafile esbuild), 6.5M
+66549532561ffe4ecd36a99d636d3616bc5d8ede05491baa441b8bdaa760eeab  /tmp/tmp.TipNzg2CYZ/out/a2.json
+4d639b27f3282d483b516cc90e4fd8335bd394fd977b7f89c0faf1c3a6cca532  /tmp/tmp.TipNzg2CYZ/refscript/gen_a2.mjs
+## repo
+66549532561ffe4ecd36a99d636d3616bc5d8ede05491baa441b8bdaa760eeab  /home/user/The-Game/.claude/worktrees/wf_ad482676-c1f-1/rust-port/renderer/tests/repin3d_fixtures/a2.json
+cmp A B EXIT=0
+cmp B repo EXIT=0

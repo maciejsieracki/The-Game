@@ -58,9 +58,10 @@ use super::field::{
     BattleSceneOpts, DeploySide, FieldGeo, FieldScene, SiegeLayout, TerrainGrid, BF_COLS, BF_ROWS,
     TILE_S,
 };
+use super::siege_towers::{place_siege_towers, SiegeTower, TowerMaterial};
 use super::siege_wall::{
     attach_row_breach_panels, build_siege_wall_web_id, js_round, SiegeWall, SiegeWallOpts,
-    SiegeWallUserData,
+    SiegeWallUserData, WallKind,
 };
 
 // ------------------------------------------------------------ constants
@@ -683,6 +684,65 @@ pub struct PlacedWall {
     pub style: super::siege_wall::WallStyle,
     /// `wallGroup.userData` with node ids of the battle scene.
     pub user_data: SiegeWallUserData,
+    /// `this.fortKind` the wall was placed with (REPIN-3D A2).
+    pub fort_kind: FortKind,
+    /// `this.siegeTowers` after `_placeSiegeTowers` (REPIN-3D A2; empty for
+    /// [`FortDto::none`]).
+    pub towers: Vec<SiegeTower>,
+}
+
+/// `CityFortificationKind` of the scene field `fortKind`
+/// (`origin/main` `battleScene.ts:2393`, set at `:2678` from
+/// `cityFortificationKind(opts.siege?.builtBuildingIds)` — battle logic,
+/// P6.13; here an input).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum FortKind {
+    /// `'none'` (the default; the pin `edb8fb56` had no field — its walls are
+    /// this case).
+    None,
+    /// `'palisada'`.
+    Palisada,
+    /// `'mur'`.
+    Mur,
+}
+
+impl FortKind {
+    /// `kind: this.fortKind === 'palisada' ? 'palisada' : 'mur'`
+    /// (`origin/main` `battleScene.ts:3985`).
+    #[must_use]
+    pub const fn wall_kind(self) -> WallKind {
+        match self {
+            Self::Palisada => WallKind::Palisada,
+            Self::None | Self::Mur => WallKind::Mur,
+        }
+    }
+}
+
+/// The fortification DTO of `_placeSiegeWall` / `_placeSiegeTowers`
+/// (REPIN-3D A2, ASSUMPTION Z-RP-A2-1): `fortKind`, and what the battle logic
+/// of `game/city-towers.ts` computed for it — `towerMaterialFor(fortKind)`
+/// and `towerRows({ rowLo, rowHi, gateRowLo, gateRowHi, spacing })`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FortDto {
+    /// `this.fortKind`.
+    pub kind: FortKind,
+    /// `towerMaterialFor(this.fortKind)` (`None` = `null`).
+    pub tower_material: Option<TowerMaterial>,
+    /// `towerRows(…)`.
+    pub tower_rows: Vec<i32>,
+}
+
+impl FortDto {
+    /// `fortKind = 'none'`: the civ wall (`kind: 'mur'`) and no tower
+    /// (`towerMaterialFor('none') = null`) — the wall of the pin.
+    #[must_use]
+    pub const fn none() -> Self {
+        Self {
+            kind: FortKind::None,
+            tower_material: None,
+            tower_rows: Vec::new(),
+        }
+    }
 }
 
 /// `(opts.siege.defCiv ?? opts.siege.civ) ?? 'rzym'` (`:3371`).
@@ -708,6 +768,7 @@ fn shift_user_data(ud: &SiegeWallUserData, base: NodeId) -> SiegeWallUserData {
         gate_center_x: ud.gate_center_x,
         gate: ud.gate + base,
         gate_open: ud.gate_open,
+        fort_kind: ud.fort_kind,
         row_wall_meshes: ud.row_wall_meshes.as_ref().map(sh),
         row_breach_panels: ud.row_breach_panels.as_ref().map(sh),
     }
@@ -717,16 +778,34 @@ fn shift_user_data(ud: &SiegeWallUserData, base: NodeId) -> SiegeWallUserData {
 /// builds the wall (`buildSiegeWall`, part 1), turns it `π/2` about Y, puts it
 /// at `(cellToWorld(wallCol).x, 0, cellToWorld(centre row).z)`, appends it to
 /// the scene root and registers the row breach panels. `None` when
-/// `wallCol < 0`.
+/// `wallCol < 0`. Same as [`place_siege_wall_fort`] with [`FortDto::none`]
+/// (the pin had no `fortKind`; the current web with `'none'` builds the
+/// same wall and no tower).
 pub fn place_siege_wall(scene: &mut Scene, civ: &str, layout: &SiegeLayout) -> Option<PlacedWall> {
+    place_siege_wall_fort(scene, civ, layout, &FortDto::none())
+}
+
+/// `_placeSiegeWall(civ)` of the current web (`origin/main`
+/// `battleScene.ts:3971-4044`, 3D part): as [`place_siege_wall`], with
+/// `kind: fortKind === 'palisada' ? 'palisada' : 'mur'` (`:3985`) passed to
+/// `buildSiegeWall`, then `_placeSiegeTowers(wallCol, rLo, rHi)` (`:4031`,
+/// [`place_siege_towers`] with the DTO's material and rows) after the wall.
+pub fn place_siege_wall_fort(
+    scene: &mut Scene,
+    civ: &str,
+    layout: &SiegeLayout,
+    fort: &FortDto,
+) -> Option<PlacedWall> {
     let wall_col = layout.wall_col;
     if wall_col < 0 {
         return None;
     }
     let (r_lo, r_hi) = (layout.row_lo, layout.row_hi);
     let wall_length_tiles = f64::from(r_hi - r_lo + 1);
-    let mut wall: SiegeWall =
-        build_siege_wall_web_id(civ, &SiegeWallOpts::battle(wall_length_tiles, TILE_S));
+    let mut wall: SiegeWall = build_siege_wall_web_id(
+        civ,
+        &SiegeWallOpts::battle(wall_length_tiles, TILE_S).with_kind(Some(fort.kind.wall_kind())),
+    );
     let wall_center_row = (f64::from(r_lo) + f64::from(r_hi)) / 2.0;
     let (wall_x, _) = cell_to_world(f64::from(wall_col), 0.0);
     let (_, wall_z) = cell_to_world(0.0, wall_center_row);
@@ -746,10 +825,13 @@ pub fn place_siege_wall(scene: &mut Scene, civ: &str, layout: &SiegeLayout) -> O
     let group = scene.graft(ROOT, wall.scene);
     scene.nodes[group].rot_y(PI / 2.0);
     scene.nodes[group].set_pos(wall_x, 0.0, wall_z);
+    let towers = place_siege_towers(scene, wall_col, fort.tower_material, &fort.tower_rows);
     Some(PlacedWall {
         group,
         style,
         user_data: shift_user_data(&ud, group),
+        fort_kind: fort.kind,
+        towers,
     })
 }
 

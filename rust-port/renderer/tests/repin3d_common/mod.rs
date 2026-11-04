@@ -12,9 +12,11 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use civ_renderer::battle::field::{FieldScene, LightKind};
+use civ_renderer::battle::siege_wall::{self, ArchCylinder};
 use civ_renderer::battle::units;
 use civ_renderer::geom::Mat4;
-use civ_renderer::scene::{geo_hash, Fnv, Geo, MaterialKind, NodeId, NodeKind};
+use civ_renderer::geom::Mesh;
+use civ_renderer::scene::{Fnv, Geo, MaterialKind, NodeId, NodeKind};
 
 // Minimal JSON reader (no dependencies; fixtures are trusted files produced
 // by the reference script). UTF-8 strings and `\uXXXX` escapes supported.
@@ -479,6 +481,53 @@ pub fn mat_sig(fs: &FieldScene, slot: usize) -> u32 {
     r.hash()
 }
 
+/// `geoHash` of the generators with NaN hashed as ONE canonical `f32`
+/// pattern (`Fnv.f32` of `gen_a1.ts` / `gen_a2.ts`; NaN bit patterns are
+/// implementation-defined, P4-36 §3a). Identical to `scene::geo_hash` for
+/// every NaN-free geometry (REPIN-3D A2: NaN / ∞ / zero-size wall and tower
+/// geometries are cases; added in A2, A1 has no NaN geometry).
+pub fn geo_hash(m: &Mesh) -> u32 {
+    let len = |n: usize| u32::try_from(n).expect("len");
+    let mut f = Fnv::default();
+    f.u32(len(m.vertex_count()));
+    for arr in [&m.positions, &m.normals, &m.uvs] {
+        f.u32(len(arr.len()));
+        for &v in arr {
+            f.f32(if v.is_nan() {
+                f32::from_bits(0x7fc0_0000)
+            } else {
+                v
+            });
+        }
+    }
+    match &m.indices {
+        Some(idx) => {
+            f.byte(1);
+            f.u32(len(idx.len()));
+            for &i in idx {
+                f.u32(i);
+            }
+        }
+        None => f.byte(0),
+    }
+    f.u32(len(m.groups.len()));
+    for g in &m.groups {
+        f.u32(g.start);
+        f.u32(g.count);
+        f.u32(g.material_index);
+    }
+    f.finish()
+}
+
+/// `geoParams` of the generators: the part-3 table plus the Sumer gate arch
+/// ([`ArchCylinder`], `siege_wall::geo_parameters`; REPIN-3D A2).
+pub fn geo_params(g: &Geo) -> Vec<f64> {
+    if g.body_as::<ArchCylinder>().is_some() {
+        return siege_wall::geo_parameters(g).expect("arch");
+    }
+    units::geo_parameters(g)
+}
+
 /// One node of a dumped sub-tree, as Rust sees it (for diagnostics).
 pub struct NodeView {
     sig: u32,
@@ -577,7 +626,7 @@ pub fn dump_tree(fs: &FieldScene, root: NodeId, root_is_scene: bool) -> (u32, Ve
             r.str(g.three_type());
             let gh = geo_hash(&g.mesh());
             r.u32(gh);
-            let par = units::geo_parameters(g);
+            let par = geo_params(g);
             for &v in &par {
                 r.f64(v);
             }

@@ -15,10 +15,20 @@
 //! [`crate::jsmath::js_sin`]), no random numbers.
 //!
 //! Verified bit for bit against the web (`tests/battle3d_siege_wall.rs`).
+//!
+//! REPIN-3D A2 (`dyspozycje/rust-port/p4/P4-REPIN-3D.md`, web `origin/main`
+//! `siegeWall.ts`, 1 260 LOC): `SiegeWallOpts.kind` (`'palisada' | 'mur'`,
+//! `:30`, resolved `kind ?? 'mur'` at `:1195`) and [`build_palisade`]
+//! (`buildPalisade`, `:993-1093`), taken BEFORE the `switch (civ)` (`:1199`).
+//! For an absent kind or [`WallKind::Mur`] every builder is the part-1 code,
+//! unchanged (`tests/battle3d_siege_wall.rs` vectors still pass bit for bit;
+//! `tests/repin3d_a2.rs` checks `mur` = absent on the current web).
+//! `buildWallTower` is [`super::siege_towers`].
 
 use std::f64::consts::PI;
 
 use crate::core::bronze::BronzeCiv;
+use crate::core::jsnum::js_to_fixed;
 use crate::geom::{self, Mesh};
 use crate::jsmath::{js_atan2, js_sin};
 use crate::scene::{Geo, GeoBody, MatId, Material, NodeId, Prim, Scene, ROOT};
@@ -50,6 +60,30 @@ pub struct SiegeWallOpts {
     pub owner_color: Option<u32>,
     /// `gateWidthTiles` (default [`DEFAULT_GATE_WIDTH_TILES`]).
     pub gate_width_tiles: Option<f64>,
+    /// `kind` (`origin/main` `siegeWall.ts:30`; default `'mur'`, `:1195`).
+    pub kind: Option<WallKind>,
+}
+
+/// `SiegeWallOpts.kind` (`origin/main` `siegeWall.ts:30`): the city
+/// fortification model. `'palisada'` builds [`build_palisade`] whatever the
+/// civilisation; `'mur'` (or absent) is the civ wall of the `switch`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum WallKind {
+    /// `'palisada'`.
+    Palisada,
+    /// `'mur'`.
+    Mur,
+}
+
+impl WallKind {
+    /// The web string.
+    #[must_use]
+    pub const fn web_id(self) -> &'static str {
+        match self {
+            Self::Palisada => "palisada",
+            Self::Mur => "mur",
+        }
+    }
 }
 
 impl SiegeWallOpts {
@@ -62,6 +96,7 @@ impl SiegeWallOpts {
             height: None,
             owner_color: None,
             gate_width_tiles: None,
+            kind: None,
         }
     }
 
@@ -75,7 +110,15 @@ impl SiegeWallOpts {
             height: Some(2.5),
             owner_color: None,
             gate_width_tiles: Some(2.0),
+            kind: None,
         }
+    }
+
+    /// The same options with `kind` set (`None` = the field is absent).
+    #[must_use]
+    pub const fn with_kind(mut self, kind: Option<WallKind>) -> Self {
+        self.kind = kind;
+        self
     }
 }
 
@@ -100,6 +143,10 @@ pub enum WallStyle {
     Celtowie,
     /// `buildGermanie` (`:910-976`).
     Germanie,
+    /// `buildPalisade` (`origin/main` `:993-1093`): built for
+    /// `kind: 'palisada'` whatever the civilisation (never a `switch` branch,
+    /// so not in [`WALL_STYLES`]).
+    Palisada,
 }
 
 /// The 9 styles in the order of the web `switch` (`siegeWall.ts:988-997`).
@@ -159,6 +206,9 @@ pub struct SiegeWallUserData {
     pub gate: NodeId,
     /// `gateOpen` (`false` at build time).
     pub gate_open: bool,
+    /// `fortKind` (`'palisada'`, set by `buildPalisade` only, `origin/main`
+    /// `:1091`; `None` = the key is absent).
+    pub fort_kind: Option<WallKind>,
     /// `rowWallMeshes`: battlefield row → wall segment meshes
     /// (`attachRowBreachPanels`, `:1033-1043`); `None` until it runs.
     pub row_wall_meshes: Option<Vec<(f64, Vec<NodeId>)>>,
@@ -179,6 +229,9 @@ impl SiegeWallUserData {
             "gate",
             "gateOpen",
         ];
+        if self.fort_kind.is_some() {
+            k.push("fortKind");
+        }
         if self.row_wall_meshes.is_some() {
             k.push("rowWallMeshes");
         }
@@ -737,6 +790,7 @@ impl W {
                 gate_center_x: 0.0,
                 gate,
                 gate_open: false,
+                fort_kind: None,
                 row_wall_meshes: None,
                 row_breach_panels: None,
             },
@@ -1399,6 +1453,172 @@ fn build_germanie(o: Resolved) -> SiegeWall {
     w.finish(WallStyle::Germanie, h, wall_d, gate)
 }
 
+// ------------------------------------------------------------ palisade (REPIN-3D A2)
+
+/// `buildPalisade(opts)` (`origin/main` `siegeWall.ts:993-1093`): the wooden
+/// palisade as a FORM of the wall — the same `userData` contract
+/// (`wallSegsByLocalX`, `wallWalkY`, `depth`, `gateCenterX`, `gate`,
+/// `gateOpen`) plus `fortKind = 'palisada'`. Every tile is its own GROUP of
+/// poles (`wallSegsByLocalX[key]` → the group; a breach hides it).
+///
+/// Web quirk kept 1:1: the pole geometries are cached by `h.toFixed(3)`
+/// (`:1007-1017`), so a pole whose height rounds to the key of an earlier
+/// pole REUSES that pole's geometry (its exact height), not its own `hv` —
+/// only the position (`hv / 2`) uses the own height.
+#[must_use]
+pub fn build_palisade(opts: &SiegeWallOpts) -> SiegeWall {
+    palisade(resolve(opts))
+}
+
+#[allow(clippy::too_many_lines)]
+fn palisade(o: Resolved) -> SiegeWall {
+    let mut w = new_w();
+    let Dims {
+        t,
+        h,
+        l,
+        gate_w,
+        left_w,
+    } = dims(o);
+    let wall_d = t;
+    let wood_color = 0x7a_5230;
+    let wood_dk_color = 0x4d_3119;
+    let wood_mats = [
+        w.mk(wood_color),
+        w.mk(shade_color(wood_color, 0.1)),
+        w.mk(shade_color(wood_color, -0.1)),
+    ];
+    let wood_dk = w.mk(wood_dk_color);
+    let rope = w.mk(0x2f_2414);
+    let earth = w.mk(0x5a_4530);
+
+    let pole_r = t * 0.075;
+    // `geoCache: Map<string, BufferGeometry>` keyed by `h.toFixed(3)`.
+    let mut geo_cache: Vec<(String, Prim)> = Vec::new();
+    let mut pole_geo = |hv: f64| -> Prim {
+        let key = js_to_fixed(hv, 3);
+        if let Some((_, g)) = geo_cache.iter().find(|(k, _)| *k == key) {
+            return *g;
+        }
+        let g = Prim::cyl(pole_r * 0.12, pole_r, hv, 6);
+        geo_cache.push((key, g));
+        g
+    };
+    let beam_geo = Prim::bx(t * 0.98, h * 0.05, pole_r * 1.4);
+    let plank_geo = Prim::bx(t, h * 0.05, wall_d * 0.8);
+    let bank_geo = Prim::bx(t, h * 0.16, wall_d * 1.05);
+
+    let mut segs: Vec<(f64, NodeId)> = Vec::new();
+    let gate_half_w = gate_w / 2.0;
+    let mut sx = -l / 2.0;
+    while sx < l / 2.0 - t * 0.01 {
+        let cx = sx + t / 2.0;
+        if cx.abs() < gate_half_w + t * 0.01 {
+            sx += t;
+            continue;
+        }
+        let key = js_round(cx / t);
+        // `new THREE.Group()`, filled, then `g.add(seg)`; nothing else is
+        // added to `g` in between, so creating it under the root first keeps
+        // the child order.
+        let seg = w.m.group(ROOT);
+        w.m.node(seg).set_pos(cx, 0.0, 0.0);
+
+        let bank = w.mesh(seg, bank_geo, earth, 0.0, h * 0.08, 0.0);
+        w.m.receive_shadow(bank);
+
+        for i in 0..4u32 {
+            let fi = f64::from(i);
+            let hv = h * (0.93 + 0.12 * hash01(key * 9.1 + fi * 3.7));
+            let mat = wood_mats[wood_index(fi + key.abs())];
+            let g = pole_geo(hv);
+            w.cast(
+                seg,
+                g,
+                mat,
+                -t * 0.375 + fi * (t * 0.25),
+                hv / 2.0,
+                -wall_d * 0.3,
+            );
+        }
+        for i in 0..3u32 {
+            let fi = f64::from(i);
+            let hv = h * (0.82 + 0.1 * hash01(key * 5.3 + fi * 2.9 + 1.0));
+            let g = pole_geo(hv);
+            w.cast(
+                seg,
+                g,
+                wood_dk,
+                -t * 0.3 + fi * (t * 0.3),
+                hv / 2.0,
+                wall_d * 0.3,
+            );
+        }
+        w.mesh(
+            seg,
+            beam_geo,
+            rope,
+            0.0,
+            h * 0.62,
+            -wall_d * 0.3 - pole_r * 0.2,
+        );
+        w.cast(seg, plank_geo, wood_dk, 0.0, h * 0.97, 0.0);
+
+        map_set(&mut segs, key, seg);
+        sx += t;
+    }
+    w.segs = segs;
+
+    for sx in [-1.0, 1.0] {
+        w.cast(
+            ROOT,
+            Prim::cyl(t * 0.12, t * 0.16, h * 1.25, 8),
+            wood_dk,
+            sx * gate_w / 2.0,
+            h * 0.625,
+            0.0,
+        );
+    }
+    let crossbar = w.cast(
+        ROOT,
+        Prim::cyl(pole_r * 1.5, pole_r * 1.5, gate_w + t * 0.3, 6),
+        wood_dk,
+        0.0,
+        h * 1.15,
+        0.0,
+    );
+    w.m.node(crossbar).rot_z(PI / 2.0);
+
+    w.stairs(-l / 2.0, gate_w / 2.0, left_w, wall_d, h, 0.0, wood_dk);
+    let gate = w.wooden_gate(gate_w, h, wall_d, 0.0, 0x6b_4a2a, 0x3d_2510);
+    let mut out = w.finish(WallStyle::Palisada, h, wall_d, gate);
+    out.user_data.fort_kind = Some(WallKind::Palisada);
+    out
+}
+
+/// `woodMats[(i + Math.abs(key)) % 3]`: `key` is an integer (`Math.round`
+/// of a finite segment centre), so the index is 0, 1 or 2.
+fn wood_index(v: f64) -> usize {
+    let r = v % 3.0;
+    if r >= 2.0 {
+        2
+    } else if r >= 1.0 {
+        1
+    } else {
+        0
+    }
+}
+
+/// `Required<SiegeWallOpts>` of `buildSiegeWall` (`origin/main` `:1189-1196`).
+fn resolve(opts: &SiegeWallOpts) -> Resolved {
+    Resolved {
+        length_tiles: opts.length_tiles,
+        t: opts.tile_size,
+        h: opts.height.unwrap_or(DEFAULT_HEIGHT),
+        gate_width_tiles: opts.gate_width_tiles.unwrap_or(DEFAULT_GATE_WIDTH_TILES),
+    }
+}
+
 // ------------------------------------------------------------ public API
 
 /// `buildSiegeWall(civ, opts)` (`siegeWall.ts:979-1001`).
@@ -1413,15 +1633,15 @@ pub fn build_siege_wall_web_id(civ: &str, opts: &SiegeWallOpts) -> SiegeWall {
     build_siege_wall_style(WallStyle::for_web_id(civ), opts)
 }
 
-/// One of the 9 builders directly.
+/// One of the builders directly. `opts.kind == Some(WallKind::Palisada)`
+/// builds the palisade whatever `style` is (`origin/main` `:1199`, before
+/// the `switch`); [`WallStyle::Palisada`] does too.
 #[must_use]
 pub fn build_siege_wall_style(style: WallStyle, opts: &SiegeWallOpts) -> SiegeWall {
-    let o = Resolved {
-        length_tiles: opts.length_tiles,
-        t: opts.tile_size,
-        h: opts.height.unwrap_or(DEFAULT_HEIGHT),
-        gate_width_tiles: opts.gate_width_tiles.unwrap_or(DEFAULT_GATE_WIDTH_TILES),
-    };
+    let o = resolve(opts);
+    if opts.kind == Some(WallKind::Palisada) {
+        return palisade(o);
+    }
     match style {
         WallStyle::Grecja => build_grecja(o),
         WallStyle::Rzym => build_rzym(o),
@@ -1432,6 +1652,7 @@ pub fn build_siege_wall_style(style: WallStyle, opts: &SiegeWallOpts) -> SiegeWa
         WallStyle::Zulu => build_zulu(o),
         WallStyle::Celtowie => build_celtowie(o),
         WallStyle::Germanie => build_germanie(o),
+        WallStyle::Palisada => palisade(o),
     }
 }
 
