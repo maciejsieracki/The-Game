@@ -1,0 +1,33 @@
+R-RUSTPORT-REPIN-3D-A4-Q1 r1 — niezależny weryfikator generatorów (gen_units.ts BEZ ZMIAN, gen_a4.ts NOWY)
+web: git archive 86d510c667268880414d693532ca012c9310589e (= origin/main w chwili pomiaru) gra/src gra/data
+toolchain: node v22.22.0, three@0.169.0, esbuild@0.24.0 (npm install --ignore-scripts, osobno w A i B)
+bundler: tests/fixtures/battle3d/build_units.mjs BEZ ZMIAN (`node build_units.mjs` i `node build_units.mjs gen_a4`)
+
+A = /home/user/a4ref.GuAPn8   (mktemp -d; pełne gra/src + gra/data, 66 MB; własny npm install)
+B = /home/user/a4verB.pA12Hs  (mktemp -d; pełne gra/src + gra/data; własny npm install, własny git archive)
+C = /home/user/a4verC.IfTUNc  (mktemp -d; TYLKO 167 plików z metafile esbuild obu wejść, 6 317 283 B <= 10 MB;
+                               node_modules = dowiązanie do B)
+
+$ node gen_units.mjs out   -> battle3d units ctor=11 units=1230 bars=10 arrows=12 preview=11 ghosts=16   (A, B, C)
+$ node gen_a4.mjs out      -> repin3d a4 ctor=19 units=1324 militia=25 siegeTowerUnits=44 wallTowers=468 (A, B, C)
+
+sha256:
+units.json  A 4242bc10c46a4d6a042c59867af24c07c4f16c26b3ddbdcf562f0c1c7af15e54
+units.json  B 4242bc10c46a4d6a042c59867af24c07c4f16c26b3ddbdcf562f0c1c7af15e54
+units.json  C 4242bc10c46a4d6a042c59867af24c07c4f16c26b3ddbdcf562f0c1c7af15e54
+units.json  repo tests/fixtures/battle3d/units.json 4242bc10c46a4d6a042c59867af24c07c4f16c26b3ddbdcf562f0c1c7af15e54
+a4.json     A 75c00498c3632621079f7af955988184cf2ae7f54945aea5f021f7c2bf9098c7
+a4.json     B 75c00498c3632621079f7af955988184cf2ae7f54945aea5f021f7c2bf9098c7
+a4.json     C 75c00498c3632621079f7af955988184cf2ae7f54945aea5f021f7c2bf9098c7
+a4.json     repo tests/repin3d_fixtures/a4.json 75c00498c3632621079f7af955988184cf2ae7f54945aea5f021f7c2bf9098c7
+gen_units.mjs A = B 2a35e6f4e07eb312edb323cb604600749a413c01a757efcadea2783e0a7684d8 (niezacommitowany)
+gen_a4.mjs    A = B 772d9f781befeb95ebcb0f4c9c681f1671a9f1d9bba947415ce5cc535a32b1f9 (niezacommitowany, 2 823 559 B)
+C: bundle różni się WYŁĄCZNIE komentarzami ścieżek (node_modules C -> B: `// ../../a4verB.pA12Hs/ref/node_modules/...`);
+   `diff <(grep -v '^//' C/gen_a4.mjs) <(grep -v '^//' A/gen_a4.mjs)` = 0 linii.
+
+pin poprzedni units.json (edb8fb56) 6fb3b65a970716a25b46f86bd394db78e32fad1e51463f56ff5b839f4112b171
+diff liści pin -> origin/main: 13 100 liści, WYŁĄCZNIE ctor/*/{spawn,units,moves,posts,scene} w 10 z 11 przypadków
+(`maly` bajt w bajt); `direct` (bars/fallback/barUpdates/dirYaw/sideColor/rings/arrows/queued/preview/ghosts) i
+`consts` identyczne; we wszystkich 11: `wall`, `tilesRle`, zbiór id jednostek, liczba spawnów i ruchów deploy identyczne.
+
+Kopie usunięte jawnymi ścieżkami po etapie (rm -rf /home/user/a4ref.GuAPn8 /home/user/a4verB.pA12Hs /home/user/a4verC.IfTUNc).

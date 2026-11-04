@@ -7,6 +7,7 @@
 **Partia B1:** R-RUSTPORT-REPIN-3D-B-Q1 (runda 1/5, Operator) na `parity-v2` @ `65e81ae4d`, web `origin/main` @ `86d510c66` — §9.
 **Partia A2:** R-RUSTPORT-REPIN-3D-A2-Q1 (runda 1/5, Operator) na `parity-v2` @ `776bede11`, web `origin/main` @ `5fa0c1a84` — §8.
 **Partia A3:** R-RUSTPORT-REPIN-3D-A3-Q1 (runda 1/5, Operator) na `parity-v2` @ `65e81ae4d`, web `origin/main` @ `86d510c66` — §9.
+**Partia A4:** R-RUSTPORT-REPIN-3D-A4-Q1 (runda 1/5, Operator) na `parity-v2` @ `54c481e81`, web `origin/main` @ `86d510c66` — §12.
 **Plan nadrzędny:** `dyspozycje/rust-port/PLAN-AKTUALIZACJI-PORTU-DO-WEBA-20261030.md` §3, faza U5.
 
 ## 0. Streszczenie
@@ -79,7 +80,7 @@ komentarz / pamięć bez zmiany obrazu.
 | 9 | `_placeSiegeTowers` (klon `buildWallTower`, poz. `x − TILE_S/2`) | `:4053-4086` | SC | nowy `battle::siege_towers::place_siege_towers` | **A2 PORTOWANE** (§8) |
 | 10 | `_destroyTowerAtRow` (`mesh.visible = false`), wołane z `_breachWallTile` `:7563` i `_fireSiegeTowers` | `:4089-4095` | SC | `siege_towers::destroy_tower_at_row` + `dynamics::breach_wall_tile_fort` | **A3 PORTOWANE** (§9) |
 | 11 | `_fireOneTower` — pocisk (`makeProjectileMesh`, `from = (x − 0,5, 4,2, z)`, kwaternion) | `:4103-4161` (`_fireSiegeTowers` + `_fireOneTower` `:4118`) | SC (3D) + LB (cel, obrażenia) | `siege_towers::fire_siege_towers` / `fire_one_tower` / `tower_projectile_kind` + `dynamics::launch_projectile` | **A3 PORTOWANE** (§9; cel/obrażenia = DTO) |
-| 12 | `_placeUnits` / `_placeUnitsOneSide`: szyk `initialBattleSlots` (`formationRules.ts`), skrzydła konnicy, `formationRank` | `:5197-5247`, `:16580-16622`, `:16743-16748` | LB (pozycje = DTO `UnitSpawn`) | — (scena bez zmian) | NIE-DOTYCZY sceny; wektory cz. 3 (`units.json`) do regeneracji w A4 |
+| 12 | `_placeUnits` / `_placeUnitsOneSide`: szyk `initialBattleSlots` (`formationRules.ts`), skrzydła konnicy, `formationRank` | `:5197-5247`, `:16580-16622`, `:16743-16748` | LB (pozycje = DTO `UnitSpawn`) | — (scena bez zmian) | NIE-DOTYCZY sceny; wektory cz. 3 (`units.json`) **A4 ZREGENEROWANE** (§12) |
 | 13 | `_placeSiegeDefenders`: `_applyTerrainRange` | `:4625` | LB | — | NIE-DOTYCZY |
 | 14 | `dispose()`: `renderer.forceContextLoss()` | `:3716-3720` | GPU | RR (cykl życia kontekstu wgpu) | opis: w Rust odpowiednik = drop `wgpu::Device/Surface` sceny bitwy; NIE_ZMIERZONO |
 | 15 | zdejmowanie `_deployToolbarDocClick` / `resize` | `:3771-3781`, `:12306-12310` | UI | P5 | NIE-DOTYCZY |
@@ -129,7 +130,7 @@ jako źródło DTO: `cityFortificationKind` (palisada/mur → A2), `towerRows`/`
 | **A1** | #1–#7 | `orders` (nowy), `units` | **WYKONANA** w tej rundzie (~320 LOC Rust + generator) |
 | **A2** | #8, #9, §2.2 (palisada + wieżyczka jako modele; umieszczenie wieżyczek z DTO `towerRows`) | `siege_wall`, nowy `siege_towers`, `units::place_siege_wall_fort` | **WYKONANA** (§8; ~650 LOC Rust + generator) |
 | **A3** | #10, #11 (burzenie wieżyczki `_destroyTowerAtRow` → `SiegeTower.destroyed` + `mesh.visible = false`, wołane z `_breachWallTile` `:7563`; pocisk `_fireOneTower`); + wyłom/brama PALISADY w `dynamics::breach_wall_tile` / `breach_gate` (grupa pali zamiast meshu segmentu — §8.4) | `siege_towers`, `dynamics` | **WYKONANA** (§9; ~200 LOC Rust + generator) |
-| A4 | regeneracja wektorów cz. 3 (`units.json`) na nowym szyku #12 (scena bez zmian, zmienia się tylko DTO) | testy `battle3d_units` | generator cz. 3 na `origin/main`; ryzyko: dryf modeli `render/units.ts` (gwiazda dowódcy) → razem z REPIN-3D-B |
+| **A4** | regeneracja wektorów cz. 3 (`units.json`) na nowym szyku #12 (scena bez zmian, zmienia się tylko DTO); `fortKind` w konstruktorze (Z-RP-A2-2); Milicja i wieża oblężnicza jako DTO | testy `battle3d_units`, `units::build_battle_scene_with_units_fort` | **WYKONANA** (§12; ~30 LOC Rust + generator `gen_a4.ts`) |
 | A5 | regeneracja cz. 4–5 (`dynamics.json`, `picking.json`) na `origin/main`; usunięcie martwego `Fade` (Z-RP-3) | `dynamics`, `picking` | generator cz. 4–5; zmiana oczekiwana tylko w przypadkach „fade” |
 | A6 | regeneracja cz. 1–2 (`siege_wall.json`, `field.json`) — kontrola, że `mur` bez zmian | — | tylko pomiar (oczekiwane 0 różnic, §2.2) |
 | REPIN-3D-B | §2.3 (`render/*`) | `units`, `cities`, `overlays`, `models` | R-RUSTPORT-REPIN-3D-B-Q1: **B1 WYKONANA** (§9), kolejka B2…B4 (§9.5) |
@@ -605,3 +606,100 @@ dowódcy nad listwą odznak.
 
 A4 (następna): regeneracja wektorów cz. 3 na szyku `initialBattleSlots`, `fortKind` w `BattleUnitsOpts` (Z-RP-A2-2), Milicja
 jako DTO jednostek; potem A5, A6. REPIN-3D-B (równolegle, rozłączne pliki): `render/*`, w tym model wieży oblężniczej.
+
+## 12. Partia A4 — wektory cz. 3 na nowym szyku, `fortKind` w konstruktorze, Milicja i wieża oblężnicza jako DTO (R-RUSTPORT-REPIN-3D-A4-Q1, runda 1)
+
+**Baza:** `rust-port/parity-v2` @ `54c481e81` (renderer 460/0; A1–A3, B1–B2). **Web:** `origin/main` @ `86d510c66`
+(= SHA zmierzony `git fetch` + `git log -1 origin/main` na starcie i przy końcu rundy; zakres §1 bez zmian od A3).
+Surowe logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-3D-A4-Q1/dowody/`.
+
+### 12.1 Kod (`rust-port/renderer/src/battle/`)
+
+- `units.rs`: NOWE `build_battle_scene_with_units_fort(opts, &FortDto)` = konstruktor weba z polem `fortKind`
+  (`battleScene.ts:2678` `cityFortificationKind(opts.siege?.builtBuildingIds)`, `:3410-3428`): dla oblężenia
+  `place_siege_wall_fort` (mur/palisada wg `kind`, `:3985`, potem `_placeSiegeTowers` `:4031`), dalej zabudowa, jednostki,
+  strefa rozstawienia — kolejność węzłów jak w webie. `build_battle_scene_with_units(opts)` = to samo z `FortDto::none()`
+  (zachowanie bez zmian; wywołania testów cz. 4–5 `battle3d_dynamics` / `battle3d_picking` nietknięte).
+  Domyka **Z-RP-A2-2**.
+- `mod.rs`: wiersz tabeli A4. `Cargo.*` bez zmian. `src/{units,cities,overlays,models,raster}/**` bez zmian (B4).
+
+**ZAŁOŻENIE Z-RP-A4-1 (API):** dispatch mówi „konstruktor z polem `fortKind`”. Nowe pole w `BattleUnitsOpts` wymusiłoby
+edycję literałów struktury w `tests/battle3d_dynamics.rs` i `tests/battle3d_picking.rs` (poza allowlistą) — dlatego
+osobna funkcja z `&FortDto` (kind + DTO wieżyczek, Z-RP-A2-1), a stara deleguje z `FortDto::none()`. Semantyka = web.
+
+### 12.2 Regeneracja wektorów cz. 3 (`tests/fixtures/battle3d/units.json`, plan #12)
+
+**ZAŁOŻENIE Z-RP-A4-2 (fixtury pinu — niezbędne, uzasadnienie jak Z-RP-B-1):** `units.json` był z `edb8fb56`; nowy szyk
+(`initialBattleSlots`, skrzydła konnicy, `formationRank`, `battleScene.ts:5171-5320`, `:16535-16675`) zmienia wyłącznie DTO
+`UnitSpawn`. Zregenerowany TYM SAMYM, NIEZMIENIONYM generatorem (`gen_units.ts` + `build_units.mjs`) na `86d510c66`:
+`4242bc10…` (było `6fb3b65a…`). Diff liści: wyłącznie `ctor/*/{spawn,units,moves,posts,scene}` w 10 z 11 przypadków
+(`maly` bajt w bajt); `direct`, `consts`, każde `wall`, `tilesRle`, zbiory id, liczby spawnów i ruchów deploy — identyczne.
+**Kod sceny Rust bez zmian przechodzi nowe wektory** (`units_constructor_matches_web`: 11 przypadków, 1 230 jednostek,
+160 ruchów, 11 123 sprawdzeń) — potwierdza tezę planu „scena bez zmian”. Zaktualizowane: `MANIFEST.sha256` (units.json,
+README), README cz. 3 (akapit A4). Pliki `.rs` innych testów nietknięte.
+
+### 12.3 Pomiar: Milicja i wieża oblężnicza (co web renderuje)
+
+- **Milicja** (`game/siegeDefenders.ts`): w bitwie taktycznej to POJEDYNCZY milicjant = zwykła jednostka z `units.json`
+  (`buildMilitiaSquad` `:261`, typy z `combat-params.json` `militia_roster`: kamień Wojownik/Oszczepnik, brąz
+  Włócznik/Łucznik, żelazo Wojownik z mieczem i tarczą/Procarz), `collectCityDefRoster` `:299-325` (`category: 'domyslny'`),
+  `main.ts:30344` `runtimeToBattleUnit` (`kategoria = u.category`, `nazwa = typeId`, `stats = def` z `Jednostka` = nazwa
+  wiersza). Scena: `buildUnitModel('domyslny', kolor, <nazwa wiersza>)` — **brak osobnego modelu/ikony „Milicja”** w
+  `gra/src/battle/**` i `gra/src/render/**` (`grep -i milicj` = tylko komentarz `render/units.ts:399`). `'Jednostka': 'Milicja'`
+  występuje wyłącznie w `militiaDefRecord` (`:135`, matematyka oblężenia abstrakcyjnego; brak wywołań poza definicją).
+  Wniosek: Milicja = DTO `UnitSpawn { category: "domyslny", model_name: <wiersz> }`, zero kodu sceny.
+- **Wieża oblężnicza:** model `render/units.ts:1661` → `buildSiegeTower` `:3694` (Rust: `routing.rs:471` → `B::SiegeTower`);
+  `isSiegeTower` (`battleScene.ts:1516`, użycie `:6088-6133`: jedzie pod mur, `towerAtWallRows`) istniał już w pinie
+  (`git diff edb8fb56 86d510c66` — tylko przesunięcie linii) = LB; ruch → `MoveAnim` (cz. 4). **Dryf modelu: 0** (wektory).
+- Wektory `tests/repin3d_fixtures/a4.json` (`gen_a4.ts`; README tam): 19 konstruktorów — 10 `fort-*` (`builtBuildingIds`
+  [], palisada, mury, fort, palisada+mury, `['koszary','Palisada']` → none; 5 cywilizacji; deploy atk/def + reset; wspinaczka
+  na palisadę), 6 `militia-*` (epoki 1–3, liczebność 0/3/4/5/6/7, sama / z garnizonem, pole / korona muru), 3 `towers-*`
+  (6 kategorii × wieża oblężnicza; pole, palisada, mur). 1 324 jednostki, 25 milicjantów, 44 wieże oblężnicze, 468 wieżyczek.
+  Test `battle3d_units::fort_militia_siege_tower_constructor_matches_web`: 0 różnic (12 781 sprawdzeń + 1 550 skalarów;
+  wieżyczki: rząd, indeks w korzeniu, sygnatura modelu, pozycja bit w bit) + brzeg: 5 bitew polowych z DTO palisady =
+  scena bez muru (web nie woła `_placeSiegeWall`).
+
+### 12.4 Mutacje i weryfikator
+
+`mutate_a4.py`: 15 mutantów — 10 na każdej gałęzi ścieżki A4 (fort ignorowany, tylko kind, wieżyczki bez kind, zwykły
+konstruktor z fortem / palisadą, `kind` ignorowany, `wall_kind` mur→palisada, brak wieżyczek, zamiana materiału, wieżyczki
+przed murem) + 5 DOWODOWYCH w `src/models/unit_core/routing.rs` (reguła wieży oblężniczej, 4 typy Milicji; edycja
+przejściowa, przywrócona) → **KILLED 15/15** (`dowody/mutate-a4-r1-part{1,2}.txt`). Weryfikator: 3 katalogi `mktemp -d`
+(A, B pełne z osobnym `npm install`/`git archive`; C = 167 plików `a4_web_inputs.txt`, 6,3 MB ≤ 10 MB) → `units.json`
+`4242bc10…`, `a4.json` `75c00498…` identyczne = repo (`dowody/verify-gen-a4-r1.txt`). Kopie usunięte jawnymi ścieżkami.
+
+### 12.5 Hunki SCENY reguł oblężenia (P6.13 poza zakresem) i ZGŁOSZENIE WŁAŚCICIELA
+
+- Scena po A1–A4 pokrywa: mur/palisada (`kind`), wieżyczki (model, rozmieszczenie, burzenie, strzał), wyłom/brama palisady,
+  konstruktor z `fortKind`, Milicja i wieża oblężnicza jako jednostki. Logika (LB → P6.13): R1–R4 (`city-fortification.ts`,
+  `meleeBlockedByWall`, `_wallBonusProcFor`, zasięg ×2), cele wieżyczek, `isSiegeTower`/`towerAtWallRows`, skład i
+  odnowa Milicji (`militiaRegenTurnsLeft`, straty bez ubytku ludności `d4ca8b748`) — NIE portowane.
+- **ZGŁOSZENIE WŁAŚCICIELA (odnotowane, NIE portowane):** zasady szarży / „atakuj” / „atakuj marszem” wręcz bez machin
+  oblężniczych (podejście poza zasięg ostrzału, ostrzał tylko łucznicy, tarany do bramy, wieże dają wejście na mur, konnica
+  i rydwany czekają na bramę) są w backlogu weba `dyspozycje/autobot/BACKLOG-WEB-ZGLOSZENIA-20261103.md` pkt 3
+  (R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1 + dopiski 1–2; plik na gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`,
+  nie na `parity-v2`). To logika rozkazów/AI (LB); po naprawie w webie wymagają
+  **REPIN** (pomiar dryfu `battle/battleScene.ts` ścieżek rozkazów, ewentualne DTO tras dla `orders`/`dynamics`).
+  Niezatwierdzonej logiki nie portowano.
+- Ocena wizualna GPU: **NIE_ZMIERZONO** (brak `/dev/dri`; nie blokuje). Do oceny wzrokiem: oblężenie miasta z palisadą
+  (pale + drewniane wieżyczki co 4 kafle) i z murem (kamienne wieżyczki), Milicja jako zwykłe figury jednostek epoki.
+
+### 12.6 Bramy (surowe logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-3D-A4-Q1/dowody/`)
+
+```text
+# rustc 1.97.0; CARGO_INCREMENTAL=0, CARGO_PROFILE_DEV_DEBUG=0, CARGO_PROFILE_TEST_DEBUG=0
+## $ cargo fmt --all -- --check                                   EXIT=0
+## $ cargo clippy --locked --all-targets -- -D warnings            EXIT=0
+## $ cargo test --locked --no-fail-fast   passed=461 failed=0 binaries=61   EXIT=0   (baza 54c481e81: 460)
+## $ cargo +1.87.0 test --locked --test battle3d_units --test battle3d_dynamics --test battle3d_picking   9 + 8 + 5   EXIT=0
+## $ python3 tests/repin3d_fixtures/mutate_a4.py (RANGE 0:5 + 5:15)   KILLED 5/5 + 10/10 = 15/15   EXIT=0
+## $ sha256sum -c tests/repin3d_fixtures/MANIFEST.sha256   17 OK;  tests/fixtures/battle3d/MANIFEST.sha256   24 OK
+## generator 3 katalogi: units.json 4242bc10… ×3 = repo; a4.json 75c00498… ×3 = repo
+```
+
+`cargo clippy --features gpu`: NIE_ZMIERZONO (A4 nie dotyka kodu za cechą `gpu`).
+
+### 12.7 Kolejka
+
+A5 (następna): regeneracja cz. 4–5 (`dynamics.json`, `picking.json`) na `origin/main` + usunięcie martwego `Fade` (Z-RP-3);
+A6: kontrola cz. 1–2. Po naprawie weba z backlogu pkt 3 (§12.5) — REPIN ścieżek rozkazów. REPIN-3D-B: B4 (w toku).

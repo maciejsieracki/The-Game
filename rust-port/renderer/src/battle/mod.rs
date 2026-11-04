@@ -14,6 +14,7 @@
 //! | `battle/battleScene.ts` @ `origin/main` (order queue, attack-move, immediate removal of the killed) | [`orders`], [`units::kill_unit`], [`units::PlayerOrder::AttackMove`] | queue state + arrows | REPIN-3D A1 (`dyspozycje/rust-port/p4/P4-REPIN-3D.md`) |
 //! | `battle/siegeWall.ts` + `battle/battleScene.ts` @ `origin/main` (palisade `kind`, `buildPalisade`, `buildWallTower`, `_placeSiegeTowers`, `fortKind`) | [`siege_wall::build_palisade`], [`siege_towers`], [`units::place_siege_wall_fort`] | palisade / tower models + placed towers | REPIN-3D A2 |
 //! | `battle/battleScene.ts` @ `origin/main` (`_destroyTowerAtRow`, `_fireSiegeTowers`, `_fireOneTower`, `_breachWallTile` with towers / palisade, `_breachGate` on the palisade) | [`siege_towers::destroy_tower_at_row`], [`siege_towers::fire_siege_towers`], [`siege_towers::fire_one_tower`], [`dynamics::breach_wall_tile_fort`] | tower break / shot, palisade breach | REPIN-3D A3 |
+//! | `battle/battleScene.ts` @ `origin/main` (constructor with `fortKind`: `_placeSiegeWall` kind + `_placeSiegeTowers`; Militia / siege towers = spawn DTOs) | [`units::build_battle_scene_with_units_fort`] | the scene with wall towers | REPIN-3D A4 |
 //!
 //! Only the 3D scene is ported here. Battle game logic (turn order, AI,
 //! damage) belongs to `domain/combat.rs` (P6.13) and the DOM UI to P5; the

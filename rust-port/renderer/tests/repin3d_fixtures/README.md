@@ -137,3 +137,49 @@ Measured (r1): the full copy (66 MB) and the 166-file copy (6.3 MB), separate `n
 `mutate_a3.py` (30 mutants, every control branch of the A3 code; `RANGE=a:b` splits the run): `KILLED 30/30`
 (r1, after the generator records the `pickTowerTarget` DTO also for shots the guard stops — the first run left
 `shot ignores finished` / `shot ignores destroyed` alive because a stopped shot had no target in the vectors).
+
+## Batch A4: constructor with `fortKind`, Militia, siege towers; part-3 vectors on `origin/main` (R-RUSTPORT-REPIN-3D-A4-Q1)
+
+`a4.json` (473 845 B) — produced by `gen_a4.ts` on `origin/main` @ `86d510c66`, bundled by
+`tests/fixtures/battle3d/build_units.mjs` UNCHANGED (`node build_units.mjs gen_a4`; part-3 bundler), three@0.169.0,
+esbuild@0.24.0, node v22.22.0. Test: `tests/battle3d_units.rs::fort_militia_siege_tower_constructor_matches_web`
+(the records are the part-3 `ctor` records, read by the same code; `gen_a4.ts` copies the part-3 hashing /
+records / instrumentation VERBATIM and adds the `fort` record).
+
+| group | n | what (web `origin/main`) | Rust |
+|---|---|---|---|
+| `fort-*` | 10 | `new BattleScene(opts)` with `siege.builtBuildingIds` = `[]`, `['palisada']`, `['mury']`, `['fort']`, `['palisada','mury']`, `['koszary','Palisada']` (case-sensitive → `none`); civs `rzym` / `egipt` (defCiv) / `zulu` / `chiny` / `grecja`; deploy `def` + `resetDef`, deploy `atk` + `resetAtk`, `climb` on the palisade. `fortKind` asserted = `cityFortificationKind(builtBuildingIds)` (`battleScene.ts:2678`) | `units::build_battle_scene_with_units_fort` + `FortDto { kind, tower_material, tower_rows }` (DTO = what the web computed) |
+| `militia-*` | 6 | defenders from `buildMilitiaSquad(pop, era)` (`game/siegeDefenders.ts:261`) turned into a `BattleUnit` as `main.ts:30344` `runtimeToBattleUnit` does (`kategoria 'domyslny'` = `collectCityDefRoster` `:320`, `nazwa = typeId`, `stats = def`); eras 1/2/3, headcounts 0 / 3 / 4 / 5 / 6 / 7 (odd → one extra melee), alone or with the garrison, field and siege (palisada, mur: wall-crown placement) | spawn DTO only (`UnitSpawn`) |
+| `towers-*` | 3 | 6 × `Wieża oblężnicza` with category keys `wlocznik` … `konnica` added to the attackers; field, siege + palisada, siege + mur | spawn DTO only |
+
+`fort` record: `kind`, `material` (`towerMaterialFor`), `towers[]` (`row`, root index, part-3 `modelRecord`,
+position bits) of `this.siegeTowers` after `_placeSiegeTowers` (`:4053-4086`).
+
+### Regeneration (outside the repository only; web copy ≤ 10 MB)
+
+```bash
+S=$(mktemp -d)
+mkdir -p $S/ref $S/websrc $S/refscript $S/out
+(cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)
+git archive -o $S/web.tar 86d510c66 gra/src gra/data
+tar -xf $S/web.tar -C $S/websrc -T rust-port/renderer/tests/repin3d_fixtures/a4_web_inputs.txt && rm $S/web.tar
+cp rust-port/renderer/tests/repin3d_fixtures/gen_a4.ts $S/refscript/
+cp rust-port/renderer/tests/fixtures/battle3d/{gen_units.ts,build_units.mjs,dom_stub.ts,three_shim.ts} $S/refscript/
+ln -s $S/ref/node_modules $S/refscript/node_modules
+(cd $S/refscript && node build_units.mjs gen_a4 && node gen_a4.mjs $S/out)   # repin3d a4 ctor=19 units=1324 militia=25 siegeTowerUnits=44 wallTowers=468
+(cd $S/refscript && node build_units.mjs && node gen_units.mjs $S/out)       # part 3: units.json (tests/fixtures/battle3d)
+sha256sum $S/out/a4.json $S/out/units.json   # = MANIFEST.sha256 / tests/fixtures/battle3d/MANIFEST.sha256
+```
+
+`a4_web_inputs.txt` = the esbuild `metafile` inputs of `gen_units` + `gen_a4` (167 files, 6 317 283 B; = the A3 list
++ `battle/testBattle.ts`; `?raw` suffixes stripped). Measured (r1): full copies A and B (66 MB, separate `npm install`
+and `git archive`) and the 167-file copy C: `a4.json` `75c00498…` and `units.json` `4242bc10…` identical in all three;
+`gen_a4.mjs` `772d9f78…` (not committed) identical in A and B (C differs only in path comments: its `node_modules`
+links to B's).
+
+### Mutations
+
+`mutate_a4.py` (15 mutants; `RANGE=a:b` splits the run; runs `--test battle3d_units`): 10 on every control branch of
+the A4 path (`build_battle_scene_with_units` → `_fort` → `place_siege_wall_fort` → `place_siege_towers`) + 5 EVIDENCE
+mutants of the name routing in `src/models/unit_core/routing.rs` (siege tower, Militia types; edited transiently,
+restored): `KILLED 15/15` (r1).

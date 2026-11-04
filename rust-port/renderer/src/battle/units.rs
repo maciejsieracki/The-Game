@@ -871,9 +871,24 @@ pub struct BattleScene3 {
 /// The 3D part of `new BattleScene(opts)` with armies (`:3304-3389`): the
 /// static field of part 2, then the siege wall (`_placeSiegeWall`) before the
 /// city interior, the units (`_placeUnits`), and the deploy zone + ghost
-/// layer — the web's insertion order.
+/// layer — the web's insertion order. The wall is the one of
+/// `fortKind = 'none'` (civ wall, no tower): [`build_battle_scene_with_units_fort`]
+/// with [`FortDto::none`].
 #[must_use]
 pub fn build_battle_scene_with_units(opts: BattleUnitsOpts) -> BattleScene3 {
+    build_battle_scene_with_units_fort(opts, &FortDto::none())
+}
+
+/// The 3D part of `new BattleScene(opts)` of the current web (`origin/main`
+/// `battleScene.ts:3410-3428`) with the scene field `fortKind`
+/// (`:2678` `cityFortificationKind(opts.siege?.builtBuildingIds)` — battle
+/// logic, an input here, REPIN-3D A4 / ASSUMPTION Z-RP-A2-2): for a siege the
+/// wall is `_placeSiegeWall` with `kind` and `_placeSiegeTowers`
+/// ([`place_siege_wall_fort`]), then the city interior, the units and the
+/// deploy zone as in [`build_battle_scene_with_units`]. `fort` is ignored
+/// without a siege (the web never calls `_placeSiegeWall` then).
+#[must_use]
+pub fn build_battle_scene_with_units_fort(opts: BattleUnitsOpts, fort: &FortDto) -> BattleScene3 {
     let mut grid = opts.field.grid;
     let siege = opts.field.siege.then(|| carve_wall_tiles(&mut grid));
     let mut bf = build_battle_scene(BattleSceneOpts {
@@ -884,7 +899,7 @@ pub fn build_battle_scene_with_units(opts: BattleUnitsOpts) -> BattleScene3 {
     });
     let mut wall = None;
     if let Some(s) = &siege {
-        wall = place_siege_wall(&mut bf.field.scene, &opts.siege_civ, s);
+        wall = place_siege_wall_fort(&mut bf.field.scene, &opts.siege_civ, s, fort);
         bf.field
             .build_siege_interior_buildings(&bf.grid, s.wall_col, s.gate_row);
     }

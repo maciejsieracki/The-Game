@@ -1,0 +1,6 @@
+KILLED   [0] ctor ignores fort (test failed)
+KILLED   [1] ctor fort kind only (test failed)
+KILLED   [2] ctor towers without kind (test failed)
+KILLED   [3] plain ctor builds a fort (test failed)
+KILLED   [4] plain ctor palisade (test failed)
+KILLED 5/5
