@@ -41,3 +41,6 @@ Znalezione przez Operatora w raportach (do weryfikacji i ewentualnych dispatchó
 Kryterium końca pętli: każdy temat = deploy do ROBOCZEJ + wpis w WERSJE.md + rejestr; niezrealizowane = jawnie uzasadnione.
 
 ## NOWE ZGŁOSZENIE (2026-11-04): R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1 — górny panel: surowiec w niedoborze czerwoną czcionką (zamiast złotej). Dispatch zapisany. Grupa: HUD (`hud.ts`/`hudChip6c.ts`) — po UI-2-C/REPIN albo równolegle; dodane do listy obowiązkowej pętli webowej.
+
+## 2026-11-04 (3 zrzuty z ROBOCZEJ): automat nadal buduje farmy bez obywateli, nie buduje irygacji ani trzody — gracz i AI, profile „żywność” i „zrównoważone”
+Zakres włączony do R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (rozszerzony; obejmuje irygację zamiast osobnego tematu i otwarty FAIL R-WEB-AUTOIMPROVE-PRIORITY-Q1). PRIORYTET NAJWYŻSZY — pierwszy temat webowy po zwolnieniu dysku (grupa 1).

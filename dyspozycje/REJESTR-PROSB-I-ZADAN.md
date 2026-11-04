@@ -8645,3 +8645,5 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 - 2026-11-04 — POTWIERDZENIE (zrzut): obóz łowiecki nadal wyrównuje wzgórze i usuwa las (ROBOCZA b05e9674/34d2cada) → R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1 pozostaje otwarty, priorytet wysoki (grupa 4 planu webowego, pierwszy do uruchomienia po zwolnieniu dysku).
 
 - 2026-11-04 — ZGŁOSZENIE (zrzut „Surowce”): w górnym panelu surowiec w niedoborze ma być czerwoną czcionką zamiast złotej → R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1 (dispatch zapisany; kolejka pętli webowej).
+
+- 2026-11-04 — ZGŁOSZENIE POWTÓRNE (3 zrzuty, Ateny): automat nadal buduje ulepszenia żywności na heksach BEZ obywateli mimo włączonego filtra, i nie buduje irygacji ani trzody (gracz + AI, profile żywność i zrównoważone) → R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 rozszerzony (obejmuje irygację/trzodę i FAIL AUTOIMPROVE-PRIORITY-Q1), priorytet najwyższy.
