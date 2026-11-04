@@ -73,6 +73,8 @@ const ENV_NAMES = [
   'refreshCityPanelIfOpen',
   'refundManpowerToEmpire',
   'creditOwnerResourceStock',
+  'isCityUnderSiege',
+  'CITY_SIEGE_RECRUIT_BLOCK_PL',
 ];
 
 // eslint-disable-next-line no-new-func
@@ -217,6 +219,9 @@ function makeHarness({ gold = 100, manpower = 100, homeStock = 1, depotStock = 1
     refreshCityPanelIfOpen,
     refundManpowerToEmpire,
     creditOwnerResourceStock,
+    // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: nowa bramka oblezenia w purchaseRecruitmentUnit.
+    (cs, c) => c.oblegane === true,
+    'Miasto jest oblezone',
   );
 
   function snapshot() {

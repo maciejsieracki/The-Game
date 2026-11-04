@@ -698,6 +698,25 @@ export function embarkMoveCost(hex: Hex): number {
 }
 
 // ---------------------------------------------------------------------------
+// R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: blokada wejścia do obleganego miasta
+// ---------------------------------------------------------------------------
+
+/**
+ * Rejestr blokady wejścia (ustawiany przez main.ts; null = brak blokady = zachowanie sprzed tematu).
+ * Zwraca true, gdy `unit` NIE MOŻE wejść na heks (q,r) -- ani jako cel, ani jako heks pośredni trasy.
+ * Jeden punkt dla gracza, AI i barbarzyńców (wszyscy idą przez computePath/computeReachable).
+ */
+let siegeEntryBlocker: ((unit: RuntimeUnit, q: number, r: number) => boolean) | null = null;
+
+export function setSiegeEntryBlocker(fn: ((unit: RuntimeUnit, q: number, r: number) => boolean) | null): void {
+  siegeEntryBlocker = fn;
+}
+
+function siegeBlocksEntry(unit: RuntimeUnit, q: number, r: number): boolean {
+  return siegeEntryBlocker !== null && siegeEntryBlocker(unit, q, r);
+}
+
+// ---------------------------------------------------------------------------
 // computeReachable
 // ---------------------------------------------------------------------------
 
@@ -812,6 +831,9 @@ export function computeReachable(
       // Occupied hexes block entry.
       if (occupied.has(nKey)) continue;
 
+      // Oblężone miasto: wejście zablokowane (też jako hex pośredni).
+      if (siegeBlocksEntry(unit, nq, nr)) continue;
+
       const newCost = cost + movCost;
 
       // Check if within movement budget.
@@ -840,7 +862,7 @@ export function computeReachable(
       const movCost = costFn(hex);
 
       // Passable and unoccupied neighbor is always reachable.
-      if (movCost !== Infinity && !occupied.has(nKey)) {
+      if (movCost !== Infinity && !occupied.has(nKey) && !siegeBlocksEntry(unit, nq, nr)) {
         reachable.add(nKey);
       }
     }
@@ -992,6 +1014,9 @@ export function computePath(
 
       const hex = map.hexes[nKey]!;
       const movCost = costFn(hex);
+
+      // Oblężone miasto: wejście zablokowane -- także gdy to cel (trasa odrzucona).
+      if (siegeBlocksEntry(unit, nq, nr)) continue;
 
       if (nKey === destKey) {
         // Destination: always passable as final step.

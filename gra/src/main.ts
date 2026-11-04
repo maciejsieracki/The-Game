@@ -155,7 +155,8 @@ import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
 import { installCivTestHooks, isCivTestEnabled } from './game/civ-test-hooks';
-import { computeStartPlacements, computeReachable, computePath, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit } from './units/setup';
+import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit } from './units/setup';
+import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';
 import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
@@ -4133,6 +4134,15 @@ async function boot(): Promise<void> {
         console.log(`[Produkcja] Tura ${turn} ${city.name}: budynek ${completed.id}`);
         return { prod: prodAfterAdvance };
       }
+      // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: oblężone miasto nie wypuszcza nowych jednostek
+      // -- pozycja wraca na front kolejki (jak przy braku Manpower) i czeka na przełamanie oblężenia.
+      if (isCityUnderSiege(cities, city)) {
+        console.log(`[Produkcja] Tura ${turn} ${city.name}: miasto oblężone — odłożono ${completed.id}`);
+        return {
+          prod: insertAtFront(prodAfterAdvance, completed, completed.koszt),
+          requeueManpower: true,
+        };
+      }
       const ep = empireEpochForOwner(city.ownerId);
       const mpMults = civManpowerMultsForOwner(city.ownerId);
       const d = tryDeductUnitSpawnCostsEmpire(
@@ -4241,6 +4251,11 @@ async function boot(): Promise<void> {
       if (ownerTreasury(ownerId) < totalGoldCost) return false;
       const city = cities.find(ct => ct.id === cityId);
       if (!city || city.ownerId !== ownerId) return false;
+      // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: oblężone miasto nie rekrutuje (gracz i AI, jedna bramka).
+      if (isCityUnderSiege(cities, city)) {
+        if (ownerId === 0) showHintMessage(CITY_SIEGE_RECRUIT_BLOCK_PL, 2800);
+        return false;
+      }
       // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): siatka bezpieczeństwa —
       // itemId dociera tu zwykle już przefiltrowany przez purchasableUnits()/availableProduction
       // (UI pokazuje tylko dostępne pozycje), ale ta funkcja jest wołana bezpośrednio (onPurchaseUnit,
@@ -4371,6 +4386,10 @@ async function boot(): Promise<void> {
       if (!Number.isSafeInteger(count) || count <= 0) return false;
       const city = cities.find(ct => ct.id === cityId);
       if (!city || city.ownerId !== ownerId) return false;
+      if (isCityUnderSiege(cities, city)) {
+        if (ownerId === 0) showHintMessage(CITY_SIEGE_RECRUIT_BLOCK_PL, 2800);
+        return false;
+      }
 
       // Ta sama lista dostępności co pojedynczy panel miasta: epoka/tech/nacja/koszary,
       // dostęp do zasobu i woda dla jednostek morskich są bramkami przed zakupem.
@@ -11863,6 +11882,11 @@ async function boot(): Promise<void> {
       if (isBarbarian(a) || isBarbarian(b)) return true;
       return getDiploRelation(a, b).status === 'wojna';
     }
+
+    // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: jednostki spoza oblężonego miasta (własne /
+    // sojusznicze / neutralne) nie mogą wejść na jego heks -- ani celem, ani heksem pośrednim trasy.
+    // Wróg właściciela (oblegający / szturm) wchodzi. Jeden punkt dla gracza, AI i barbarzyńców.
+    setSiegeEntryBlocker((unit, q, r) => isSiegeEntryBlocked(cities, unit, q, r, areEnemyOwners));
 
     /** Czy gracz (0) jest w stanie wojny z danym właścicielem (barbarzyńcy = zawsze tak). */
     function playerIsAtWarWith(ownerId: number): boolean {
@@ -25133,6 +25157,38 @@ async function boot(): Promise<void> {
     // na zadanym heksie); klik, wybor, samoleczenie i merge ida REALNYMI sciezkami gry.
     // Runda 2: hak powstaje WYLACZNIE przy `?civTest=1` (ta sama bramka co window.__civTest);
     // w produkcji `window.__frozenTestDebug === undefined`, zero powierzchni.
+    // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: hak live-testu (tylko ?civTest=1). Wejścia testowe:
+    // zakup rekrutacji / trasa / osiągalność idą REALNYMI funkcjami gry (purchaseRecruitmentUnit,
+    // computePath, reachableWithMergeTargets); hak tylko je woła i zwraca wynik.
+    if (isCivTestEnabled(window.location.search)) (window as any).__siegeBlockTestDebug = {
+      tryPurchase: (cityId: string): { ok: boolean; queued: number; item: string | null } => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) return { ok: false, queued: -1, item: null };
+        setOwnerTreasury(c.ownerId, 999999);
+        c.manpower = 99999;
+        const it = purchasableUnits(c, data, unlockedTechsForOwner(c.ownerId), productionAvailabilityCtxForCity(c))
+          .find(x => x.kind === 'jednostka');
+        if (!it) return { ok: false, queued: -2, item: null };
+        const ok = purchaseRecruitmentUnit(cityId, it.id, it.koszt, c.ownerId);
+        return { ok, queued: (cityProd.get(cityId)?.rekrutacja ?? []).length, item: it.id };
+      },
+      queuedLen: (cityId: string): number => (cityProd.get(cityId)?.rekrutacja ?? []).length,
+      pathLen: (unitId: string, q: number, r: number): number => {
+        const u = units.find(x => x.id === unitId);
+        if (!u) return -1;
+        return computePath(u, map, q, r, new Set(), moveCostFnForUnit(u)).length;
+      },
+      reachableHas: (unitId: string, q: number, r: number): boolean => {
+        const u = units.find(x => x.id === unitId);
+        return !!u && reachableWithMergeTargets(u).has(keyOf(q, r));
+      },
+      spawnFor: (ownerId: number, q: number, r: number): string => {
+        const tpl = units.find(u => u.ownerId === 0 && u.category !== 'osadnik' && u.category !== 'robotnik' && u.category !== 'zwiadowca') ?? units.find(u => u.ownerId === 0)!;
+        const id = 'sbt_' + ownerId + '_' + q + '_' + r + '_' + units.length;
+        units.push({ ...tpl, id, ownerId, q, r, ruchLeft: tpl.ruch, inGarnizon: false, ufortyfikowanyWPolu: false, oblegaCityId: undefined, sentry: false } as RuntimeUnit);
+        return id;
+      },
+    };
     if (isCivTestEnabled(window.location.search)) (window as any).__frozenTestDebug = {
       spawn: (q: number, r: number, n: number, flags: { garnizon?: boolean; field?: boolean; ruchLeft?: number; group?: string; oblegaCityId?: string }): string[] => {
         const tpl = units.find(u => u.ownerId === 0 && u.category !== 'osadnik' && u.category !== 'robotnik' && u.category !== 'zwiadowca') ?? units.find(u => u.ownerId === 0);
@@ -31048,6 +31104,14 @@ async function boot(): Promise<void> {
       showPostBattleSummary(summaryData, onContinue);
     }
 
+    /**
+     * R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1 r2: odwrót/rozproszenie po bitwie nie może
+     * zakończyć się na heksie obleganego miasta (odwrót do obleganego miasta = posiłek).
+     */
+    function retreatHexPassable(q: number, r: number): boolean {
+      return mapHexPassableForUnit(q, r) && !besiegedCityAtHex(cities, q, r);
+    }
+
     function mapHexPassableForUnit(q: number, r: number): boolean {
       const hk = keyOf(q, r);
       const hex = map.hexes[hk];
@@ -31655,7 +31719,7 @@ async function boot(): Promise<void> {
               battleR: battleHex.r,
               atkRoster: atkRosterRef,
               defRoster: defRosterRef,
-              isPassableHex: mapHexPassableForUnit,
+              isPassableHex: retreatHexPassable,
               isUnitAt: isOccupiedHex,
             });
             // P-WYCOFANIE-JEDNORAZOWE-TURA: oznacz cały roster obrony jako "wycofany
@@ -31814,7 +31878,7 @@ async function boot(): Promise<void> {
           health: effectiveRuntimeUnitMaxHp(u),
         }),
         maxHpOf: def => unitHealth(def),
-        isPassableHex: mapHexPassableForUnit,
+        isPassableHex: retreatHexPassable,
         isUnitAt: isOccupiedHex,
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,
@@ -36790,10 +36854,14 @@ async function boot(): Promise<void> {
                 1,
                 civMatrixParamForOwner(city.ownerId, 'prod_szybkosc_jednostki_proc'),
               );
-              const recResult = advanceRecruitmentGated(
-                prodFinal, city, empireEpochForOwner(city.ownerId), recMaxPerTurn, true,
-                recMpMults.maxMult, recMpMults.costMult,
-              );
+              // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: kolejka rekrutacji stoi, gdy miasto oblężone
+              // (nic nie schodzi z kolejki, opłacone zostaje do końca oblężenia).
+              const recResult = isCityUnderSiege(cities, city)
+                ? { prod: prodFinal, completed: [] as ProductionItem[], population: city.population, manpower: city.manpower }
+                : advanceRecruitmentGated(
+                  prodFinal, city, empireEpochForOwner(city.ownerId), recMaxPerTurn, true,
+                  recMpMults.maxMult, recMpMults.costMult,
+                );
               prodFinal = recResult.prod;
               city.population = recResult.population;
               city.manpower = recResult.manpower;
