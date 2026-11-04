@@ -738,3 +738,6 @@ Operator (`585ee848d`,`e160a0ee4`) → Evaluator PASS-WITH-NOTES (0 zarzutów) �
 
 ## 2026-11-04 — R-RUSTPORT-REPIN-3D-B4-Q1 ZINTEGROWANE
 Operator (`8f5aa88d7`,`57c4fa9dc`) → Evaluator PASS-WITH-NOTES (0 zarzutów) → Final Control PASS (`0945d928c`); merge z `parity-v2` (`54c481e81`) = `2962d0a7b` (konflikt tylko w `P4-REPIN-3D.md`: B4 przenumerowane na §13; §12 zarezerwowane dla A4). Zakres: `register_owned_mesh_resources` (`models/cities/renderer.rs`, `cities.ts:238-278`), potwierdzone „bez zmiany obrazu” dla bronze/stoneCityRoblox (fixtury pinu zregenerowane na webie `86d510c66` identyczne bajt w bajt — zamyka NIE_ZMIERZONO z B1), reszta B3 = K (pamięć/kosmetyka), README fixtur zaktualizowane, `misc/relief_real.json` zregenerowany (69 wartości: kopalnia 0,30 → 0,36; Z-RP-B4-2 ZAAKCEPTOWANE). Bramki FC na próbnym merge z `54c481e81`: fmt/clippy EXIT=0, renderer 463/0; po moim merge: fmt EXIT=0 (pełne testy nie powtórzone — dysk; pliki rozłączne, wynik FC). Start A6 (kontrola cz. 1–2): `R-RUSTPORT-REPIN-3D-A6-Q1`; A4 w toku; A5 (cz. 4–5 dynamics/picking) po A4 (te same pliki).
+
+## 2026-11-04 — kontrola cykliczna 03:11
+Nic do integracji. Trwają (Opus 5.5): A4 (szyk jednostek, `fortKind` w konstruktorze, Milicja, wieża oblężnicza) i A6 (kontrola cz. 1–2 + lista nowych hunków). `parity-v2` = `2962d0a7b`. Następne: A5 po A4 (dynamics/picking, te same pliki).
