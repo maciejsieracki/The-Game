@@ -156,7 +156,7 @@ import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } fro
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
 import { installCivTestHooks, isCivTestEnabled } from './game/civ-test-hooks';
 import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit } from './units/setup';
-import { isCityUnderSiege, isSiegeEntryBlocked, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';
+import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';
 import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
@@ -31094,6 +31094,14 @@ async function boot(): Promise<void> {
       showPostBattleSummary(summaryData, onContinue);
     }
 
+    /**
+     * R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1 r2: odwrót/rozproszenie po bitwie nie może
+     * zakończyć się na heksie obleganego miasta (odwrót do obleganego miasta = posiłek).
+     */
+    function retreatHexPassable(q: number, r: number): boolean {
+      return mapHexPassableForUnit(q, r) && !besiegedCityAtHex(cities, q, r);
+    }
+
     function mapHexPassableForUnit(q: number, r: number): boolean {
       const hk = keyOf(q, r);
       const hex = map.hexes[hk];
@@ -31701,7 +31709,7 @@ async function boot(): Promise<void> {
               battleR: battleHex.r,
               atkRoster: atkRosterRef,
               defRoster: defRosterRef,
-              isPassableHex: mapHexPassableForUnit,
+              isPassableHex: retreatHexPassable,
               isUnitAt: isOccupiedHex,
             });
             // P-WYCOFANIE-JEDNORAZOWE-TURA: oznacz cały roster obrony jako "wycofany
@@ -31860,7 +31868,7 @@ async function boot(): Promise<void> {
           health: effectiveRuntimeUnitMaxHp(u),
         }),
         maxHpOf: def => unitHealth(def),
-        isPassableHex: mapHexPassableForUnit,
+        isPassableHex: retreatHexPassable,
         isUnitAt: isOccupiedHex,
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,

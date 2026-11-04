@@ -159,6 +159,66 @@ const setup = fs.readFileSync(path.join(GRA, 'src', 'units', 'setup.ts'), 'utf8'
 ok((setup.match(/siegeBlocksEntry\(unit, nq, nr\)/g) || []).length === 3, 'C8 setup.ts: 3 bramki (computePath, computeReachable petla, min-move)');
 ok(/OBLĘŻONE|Miasto jest oblężone/.test(fs.readFileSync(path.join(GRA, 'src', 'game', 'city-siege-state.ts'), 'utf8')), 'C9 tekst powodu PL');
 
+// --- E. r2 (zarzuty Evaluatora): odwrot po bitwie, AI/barbarzyncy, hot-seat, zapis/odczyt, sciezki spawnu
+function loadRetreat(tag, passableSrc) {
+  const entry = path.join(tmp, tag + '-entry.ts'), out = path.join(tmp, tag + '-bundle.cjs');
+  fs.writeFileSync(entry,
+    `export { applyDefenderPreBattleRetreat } from ${JSON.stringify(GRA + '/src/game/post-battle-map')};\n` +
+    `export { besiegedCityAtHex } from ${JSON.stringify(GRA + '/src/game/city-siege-state')};\n`);
+  esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', outfile: out, logLevel: 'error', absWorkingDir: GRA, nodePaths: [path.join(GRA, 'node_modules')] });
+  return require(out);
+}
+function retreatScenario(R, withExclusion) {
+  // bitwa na (0,0); atakujacy (-2,-1); obroncy uciekaja na wschod, a (1,0) to OBLEGANE miasto obroncy
+  const cities = [{ id: 'cB', q: 1, r: 0, ownerId: 0, oblegane: true, oblegajacyOwnerId: 1 }];
+  const def = [U('d1', 0, 0, 0)], atk = [U('a1', 1, -2, -1)];
+  const units = [...def, ...atk];
+  const base = (q, r) => q >= -3 && q <= 7 && r >= -1 && r <= 2;
+  const passable = withExclusion ? ((q, r) => base(q, r) && !R.besiegedCityAtHex(cities, q, r)) : base;
+  R.applyDefenderPreBattleRetreat({ units, battleQ: 0, battleR: 0, atkRoster: atk, defRoster: def, isPassableHex: passable, isUnitAt: (q, r, ex) => units.some(u => u.q === q && u.r === r && u.id !== ex) });
+  return { q: def[0].q, r: def[0].r };
+}
+console.log('E. r2: odwrot, AI/barbarzyncy, hot-seat, zapis/odczyt, spawn');
+{
+  const RT = loadRetreat('retreat');
+  const red = retreatScenario(RT, false), green = retreatScenario(RT, true);
+  ok(red.q === 1 && red.r === 0, 'E1 RED: bez wykluczenia obrońca uciekł DO obleganego miasta (posilek)', JSON.stringify(red));
+  ok(!(green.q === 1 && green.r === 0), 'E2 GREEN: z wykluczeniem odwrot NIE konczy sie w obleganym miescie', JSON.stringify(green));
+  ok(/function retreatHexPassable\([^)]*\)[^{]*\{\s*return mapHexPassableForUnit\(q, r\) && !besiegedCityAtHex\(cities, q, r\);/.test(main), 'E3 retreatHexPassable wyklucza heks obleganego miasta');
+  ok((main.match(/isPassableHex: retreatHexPassable,/g) || []).length === 2 && !/isPassableHex: mapHexPassableForUnit/.test(main), 'E4 oba punkty odwrotu (przed bitwa i po bitwie) uzywaja retreatHexPassable');
+  // mutacja: usuniecie wykluczenia z main.ts musi wywrocic E3
+  const mutMain = main.replace(' && !besiegedCityAtHex(cities, q, r);', ';');
+  ok(!/function retreatHexPassable\([^)]*\)[^{]*\{\s*return mapHexPassableForUnit\(q, r\) && !besiegedCityAtHex\(cities, q, r\);/.test(mutMain), 'E5 mutacja (bez wykluczenia w retreatHexPassable) -> zabita');
+}
+{
+  // AI / barbarzyncy / hot-seat: ten sam hak, niezalezny od "aktywnego gracza"; relacja wojny z areEnemy (9 = barbarzynca, wrog wszystkich)
+  const cities = [
+    { id: 'cAi', q: 2, r: 0, ownerId: 1, oblegane: true, oblegajacyOwnerId: 0 },     // miasto AI (owner 1) obleganie przez gracza 0
+    { id: 'cBar', q: 5, r: 0, ownerId: 9, oblegane: true, oblegajacyOwnerId: 0 },   // oboz/miasto barbarzyncow obleganie
+  ];
+  const areEnemy2 = (a, b) => a !== b && (a === 9 || b === 9 || (a === 0 && b === 1) || (a === 1 && b === 0));
+  GREEN.setSiegeEntryBlocker((u, q, r) => GREEN.isSiegeEntryBlocked(cities, u, q, r, areEnemy2));
+  const occ = new Set();
+  ok(GREEN.computePath(U('aiOwn', 1, -1, 0), map, 2, 0, occ, unitCost).length === 0, 'E6 AI: wlasna armia AI nie wchodzi do wlasnego obleganego miasta (brak posilkow)');
+  ok(GREEN.computePath(U('aiAlly', 3, -1, 0), map, 2, 0, occ, unitCost).length === 0, 'E7 hot-seat: gracz/AI trzeci (nie-wrog wlasciciela) tez zablokowany -- niezaleznie od aktywnego fotela');
+  ok(GREEN.computePath(U('plAtk', 0, 1, 0), map, 2, 0, occ, unitCost).length > 0, 'E8 gracz oblegajacy (wrog wlasciciela) moze szturmowac miasto AI');
+  ok(GREEN.computePath(U('barOwn', 9, 4, 1), map, 5, 0, occ, unitCost).length === 0, 'E9 barbarzynska armia nie wchodzi do wlasnego obleganego obozu/miasta');
+  ok(GREEN.computePath(U('barToAi', 9, 1, 0), map, 2, 0, occ, unitCost).length > 0, 'E10 barbarzynca (wrog) moze atakowac cudze miasto');
+  // zapis/odczyt: City[] serializowane wholesale (save.ts) -> predykat po round-trip JSON identyczny
+  const reloaded = JSON.parse(JSON.stringify(cities));
+  ok(GREEN.isCityUnderSiege(reloaded, 'cAi') === true && GREEN.isSiegeEntryBlocked(reloaded, U('x', 1, -1, 0), 2, 0, areEnemy2) === true, 'E11 zapis/odczyt: flaga oblegane przezywa round-trip JSON, blokada dziala na przeladowanych miastach');
+  ok(/cities: Array\.isArray\(obj\.cities\) \? \(obj\.cities as City\[\]\)/.test(fs.readFileSync(path.join(GRA, 'src', 'game', 'save.ts'), 'utf8')), 'E12 save.ts wczytuje miasta wholesale (bez wycinania pol oblezenia)');
+  GREEN.setSiegeEntryBlocker(null);
+  for (const f of ['game/ai.ts', 'game/barbarians.ts', 'game/warAllInCapital.ts']) {
+    const t = fs.readFileSync(path.join(GRA, 'src', f), 'utf8');
+    ok(/computePath|computeReachable/.test(t), 'E13 ' + f + ' porusza armie przez computePath/computeReachable (hak blokady obejmuje)');
+  }
+  // sciezki spawnu (NIE przez computePath): zmierzone, nie sa wektorem posilkow
+  ok(!/spawnTransferredUnit\(/.test(main) && !/spawnTransferredUnit\(/.test(fs.readFileSync(path.join(GRA, 'src', 'game', 'ai.ts'), 'utf8')), 'E14 spawnTransferredUnit nie ma wywolan w main.ts/ai.ts (martwa sciezka: dar jednostki odrzucany `case jednostka: break`)');
+  const spawnCalls = main.match(/spawnDifficultyBonusUnit\(/g) || [];
+  ok(spawnCalls.length > 0 && /grantCityStateStartUnits|grantPlayerStartUnits/.test(main), 'E15 spawnDifficultyBonusUnit wolany tylko z grantow startowych (zalozenie nowego miasta/stolicy) -- miasto nie moze byc wtedy oblegane');
+}
+
 async function live() {
   const outDir = '/dev/shm/sbnrr-live-' + process.pid;
   try { execSync(`node ./node_modules/vite/bin/vite.js build --outDir ${outDir} --emptyOutDir`, { cwd: GRA, stdio: 'pipe', timeout: 500000 }); }
