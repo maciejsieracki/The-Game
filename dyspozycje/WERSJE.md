@@ -1,3 +1,12 @@
+## ROBOCZA e1f1f529 -- 2026-11-04 -- atak ostatniej woli obleganej armii; jedna definicja „przy rzece” dla irygacji (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`319a84052` + SIEGE-LAST-STAND-SORTIE `a731027b8` + IRRIGATION-RIVER-DEFINITION-UNIFY `bbc761892`) i commit wdrożenia; zgłoszenia/decyzje właściciela, stała zgoda.
+- Bundle MD5 `e1f1f5297522993e129c52c34927ee5e`, 70205406 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: atak ostatniej woli (AI i barbarzyńcy; siła ≥ 80% oblegającego, ostatnia tura przed kapitulacją); ręczna budowa irygacji i tooltipy uznają te same heksy „przy rzece” co automat.
+- Testy: tsc PASS; last-stand 58/0; river-definition 30/0; irrigation-after-farms 42/0; ai-food-only 81/0; auto-improvements 46/0; qualify 133/0; siege-blockade 57/0.
+- Ograniczenia: wynik bitwy po wypadzie i żywa tura niezmierzone; kilka testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `88ca0b0d410937d88501797936057ca1`, 70203589 bajtów.
+
 ## ROBOCZA 88ca0b0d -- 2026-11-04 -- wydarzenia żyją jedną turę; cofnięcie błędnej wycinki lasu (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`124661ef2` + EVENTS-ONE-TURN `1fbfb080a`) oraz cofnięcie RIVER-FOREST-CLEAR; zgłoszenie właściciela, stała zgoda.
