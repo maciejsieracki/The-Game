@@ -118,8 +118,11 @@ ok(!aiCommands.some(c => c.type === 'move' && ['b1', 'b2', 'b3'].includes(c.unit
 ok(aiCommands.some(c => c.type === 'attack' && c.unitId === 'b4' && c.targetUnitId === 'enemy-1'),
   'a free unit still performs a higher-priority adjacent attack while wave 1 is active');
 
+// R-WEB-WAR-ALLIN-CAPITAL-TEST-DEBT-Q1 (kat. A): od R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ON) lokalna planArmyConcentration
+// dziala tylko gdy wolajacy zglasza wojne (`atWarWithCiv: true`, main.ts atWarWithCivFor); w pokoju jedyna zbiorka to
+// stolica. Wymuszona wojna = stan wojny, wiec scenariusz pierwszej fali musi go zglaszac.
 const firstWaveOpts = {
-  civType: 'grecy', currentTurn: 1, canEngageOwner: ownerId => ownerId === 2,
+  civType: 'grecy', currentTurn: 1, canEngageOwner: ownerId => ownerId === 2, atWarWithCiv: true,
   forcedWar: {
     targetOwnerId: 2, role: 'attacker', era: 'bronze', capturedByAttacker: 0, capturedByDefender: 0,
     activeWaves: [],

@@ -110,8 +110,11 @@ function simulate(state, o) {
   const unitAt = (q, r) => state.units.find(u => u.q === q && u.r === r && u.hp > 0);
   // R-WEB-ARMY-CONSOLIDATION-Q1 (o.consolidation): wlasne jednostki moga stac na jednym heksie
   // (stos armii, jak w grze); obcy/wrogi blokuja nadal.
-  const ownAwareOcc = (q, r, un) => state.units.find(x => x.q === q && x.r === r && x.hp > 0
-    && !(o.consolidation && x.ownerId === un.ownerId));
+  // R-WEB-WAR-ALLIN-CAPITAL-TEST-DEBT-Q1: komenda z `allowFriendlyStack` (ai.ts, 92d124b72 -- ruch koncentracji/zbiorki
+  // moze skonczyc na heksie ze stosem WLASNYCH jednostek; main.ts przepuszcza ja przez allowFriendlyStack) nie jest
+  // blokowana przez wlasne jednostki na heksie DOCELOWYM. Obce/wrogie nadal blokuja; flaga dotyczy tylko celu komendy.
+  const ownAwareOcc = (q, r, un, stackOk) => state.units.find(x => x.q === q && x.r === r && x.hp > 0
+    && !((o.consolidation || stackOk) && x.ownerId === un.ownerId));
   const cityAt = (q, r) => state.cities.find(c => c.q === q && c.r === r);
 
   function applyCmds(cmds, ownerId) {
@@ -136,7 +139,8 @@ function simulate(state, o) {
           || (destinationCity !== undefined
             && !(o.allowFriendlyCityDestinations && destinationCity.ownerId === u.ownerId))) continue;
         const blocked = new Set();
-        for (const x of state.units) if (x !== u && x.hp > 0 && !(o.consolidation && x.ownerId === u.ownerId)) blocked.add(`${x.q},${x.r}`);
+        for (const x of state.units) if (x !== u && x.hp > 0 && !(o.consolidation && x.ownerId === u.ownerId)
+          && !(c.allowFriendlyStack && x.ownerId === u.ownerId && x.q === c.toQ && x.r === c.toR)) blocked.add(`${x.q},${x.r}`);
         for (const ct of state.cities) if (ct.ownerId !== u.ownerId) blocked.add(`${ct.q},${ct.r}`);
         const full = E.computePath(u, state.map, c.toQ, c.toR, blocked);
         if (full.length === 0) continue;
@@ -144,12 +148,12 @@ function simulate(state, o) {
         let end = cut.length;
         if (end < full.length) while (end > 0 && blocked.has(`${cut[end - 1].q},${cut[end - 1].r}`)) end--;
         if (end === 0) continue;
-        if (end === full.length && ownAwareOcc(c.toQ, c.toR, u)) { stats.moveBlockedByUnit++; continue; }
+        if (end === full.length && ownAwareOcc(c.toQ, c.toR, u, c.allowFriendlyStack)) { stats.moveBlockedByUnit++; continue; }
         const dst = cut[end - 1];
         u.q = dst.q; u.r = dst.r; u.ruchLeft = 0; moved++; stats.cmdMoves++;
         continue;
       }
-      const occ = ownAwareOcc(c.toQ, c.toR, u);
+      const occ = ownAwareOcc(c.toQ, c.toR, u, c.allowFriendlyStack);
       const city = cityAt(c.toQ, c.toR);
       if (occ) { stats.moveBlockedByUnit++; continue; }
       if (city && city.ownerId !== u.ownerId) {

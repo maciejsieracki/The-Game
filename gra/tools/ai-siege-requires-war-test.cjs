@@ -128,7 +128,17 @@ function mainGuard() {
   inFn('startMapSiege', /siegeAllowedBetween\([^)]*areEnemyOwners/, 'main.ts startMapSiege: bramka wojny');
   inFn('validateActiveSieges', /siegeAllowedBetween\([^)]*areEnemyOwners/, 'main.ts validateActiveSieges: zdejmuje oblężenie bez wojny');
   inFn('validateActiveSieges', /isSiegeStillValid\(/, 'main.ts validateActiveSieges: isSiegeStillValid');
-  inFn('scanAutoSiegesAfterAiTurn', /detectWarAutoSiegeOnCity\([^)]*areEnemyOwners/, 'main.ts scanAutoSiegesAfterAiTurn: detekcja z bramką wojny');
+  // R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (a5bb11156): detekcja wydzielona z main.ts do autoSiegeCandidateForScan
+  // (diplomacy-siege-war-gate.ts). main.ts musi ja wolac z areEnemyOwners, a funkcja musi wolac detectWarAutoSiegeOnCity
+  // z przekazana bramka wojny (areEnemies) -- oba ogniwa pinowane (kat. A, TEST-DEBT-Q1).
+  inFn('scanAutoSiegesAfterAiTurn', /autoSiegeCandidateForScan\([^)]*areEnemyOwners/, 'main.ts scanAutoSiegesAfterAiTurn: autoSiegeCandidateForScan z bramką wojny (areEnemyOwners)');
+  {
+    const gate = fs.readFileSync(GATE_SRC, 'utf8');
+    const i = gate.indexOf('export function autoSiegeCandidateForScan');
+    const fnBody = i < 0 ? '' : gate.slice(i, i + 1200);
+    if (/detectWarAutoSiegeOnCity\([^)]*areEnemies/.test(fnBody)) { ok++; console.log('  [OK]', 'autoSiegeCandidateForScan: detekcja z bramką wojny (areEnemies)'); }
+    else { fail++; console.error('  [FAIL]', 'autoSiegeCandidateForScan: detekcja z bramką wojny (areEnemies)'); }
+  }
   inFn('executeSilentSiegeStorm', /siegeAllowedBetween\([^)]*areEnemyOwners/, 'main.ts executeSilentSiegeStorm: bramka wojny');
   inFn('offerCityAttackChoice', /siegeAllowedBetween\([^)]*areEnemyOwners/, 'main.ts offerCityAttackChoice: bramka wojny');
   inFn('refreshSiegeMarkers', /siegeAllowedBetween\([^)]*areEnemyOwners/, 'main.ts refreshSiegeMarkers: obóz tylko z wrogich jednostek');
