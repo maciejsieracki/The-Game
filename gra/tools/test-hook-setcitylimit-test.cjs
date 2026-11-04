@@ -117,5 +117,31 @@ console.log('E. wejscia niepoprawne ignorowane; 0 dozwolone');
   ok(g.base === 0 && isCityLimitExhausted([], g.base, 1) === true, 'n=0 -> limit 0, wyczerpany nawet bez miast');
 }
 
+console.log('F. zmiana epoki PO wywolaniu: limit wspolny przelicza sie z nowa epoka (udokumentowane zachowanie, wolaj PO unlockAllTech)');
+{
+  const win = {}; const g = mkGame(1);
+  installCivTestHooks(win, '?civTest=1', g.deps);
+  win.__civTest.setCityLimit(1);
+  ok(isCityLimitExhausted([CITY], g.base, 1) === true, 'epoka 1, limit 1 -> wyczerpany');
+  g.era = 3; // awans epoki po wywolaniu haka (np. unlockAllTech wywolane POZNIEJ)
+  ok(isCityLimitExhausted([CITY], g.base, g.era) === false, 'po awansie na epoke 3 limit = 1+10 = 11 -> NIE wyczerpany (stad: setCityLimit po unlockAllTech)');
+  win.__civTest.setCityLimit(1);
+  ok(isCityLimitExhausted([CITY], g.base, g.era) === true, 'ponowne setCityLimit(1) w epoce 3 -> znow wyczerpany');
+}
+
+console.log('G. podpiecie w main.ts (sonda tekstowa; tsc nie zlapie zlej zmiennej/epoki)');
+{
+  const mainTs = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
+  const hooksTs = fs.readFileSync(path.join(SRC, 'game', 'civ-test-hooks.ts'), 'utf8');
+  ok(/setCityLimitBase:\s*base\s*=>\s*\{\s*_menuCityLimitBase\s*=\s*base;\s*\}/.test(mainTs), 'main.ts: setCityLimitBase zapisuje _menuCityLimitBase = base');
+  ok(/meEra:\s*\(\)\s*=>\s*empireEpochForOwner\(ME\(\)\)/.test(mainTs), 'main.ts: meEra = empireEpochForOwner(ME())');
+  ok(/cityLimitBase:\s*_menuCityLimitBase/.test(mainTs), 'main.ts: gra czyta limit z tej samej zmiennej _menuCityLimitBase (canFoundCity / AI)');
+  const callIdx = mainTs.indexOf('installCivTestHooks(window');
+  const wiringIdx = mainTs.indexOf('setCityLimitBase:');
+  ok(callIdx > 0 && wiringIdx > callIdx && wiringIdx - callIdx < 6000, 'main.ts: podpiecie jest wewnatrz wywolania installCivTestHooks(window, ...)');
+  ok(/if \(!isCivTestEnabled\(search\)\) return false;/.test(hooksTs) && /get\('civTest'\) === '1'/.test(hooksTs), 'civ-test-hooks.ts: bramka ?civTest=1 (jak w autoimprove-live-hooks-test)');
+  ok(!/setCityLimit/.test(mainTs.replace(/setCityLimitBase/g, '')), 'main.ts nie wystawia setCityLimit poza bramkowanym modulem');
+}
+
 console.log(`\nPASS=${passed} FAIL=${failed}`);
 process.exit(failed ? 1 : 0);
