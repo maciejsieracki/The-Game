@@ -8,7 +8,7 @@
  *   hudChip6c.ts            (chip6cHtml, chip6cSep — nowe pole `exact`)
  *   unitActionBarHtml.ts    (buildUnitActionBarHtml — ikony split/merge, przycisk `general-follow`)
  *
- * WEB:  te same moduły z URUCHOMIONEGO weba — katalog `git archive origin/main gra/src` (`--web-dir`), spakowane
+ * WEB:  te same moduły z URUCHOMIONEGO weba — katalog `git archive origin/main gra/src gra/data` (`--web-dir`; bez `gra/data` build webu się wywala), spakowane
  *       `build.mjs` (emulacja Vite) i WYKONANE w Chromium (Playwright, `/opt/node-tools`), serwowane po HTTP z localhost.
  * PORT: moduły `src/ui/**` frontend-v2 (`--src`), spakowane tym samym `build.mjs`, wykonane w TEJ SAMEJ instancji Chromium.
  *

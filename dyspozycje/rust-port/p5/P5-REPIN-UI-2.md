@@ -1,6 +1,6 @@
 # P5-REPIN-UI-2 — repin UI frontend-v2 do aktualnego weba (Faza U3, część A)
 
-TEMAT: `R-RUSTPORT-REPIN-UI-2-A-Q1` · runda 1 (Operator) · baza `rust-port/parity-v2` `612ad455e`
+TEMAT: `R-RUSTPORT-REPIN-UI-2-A-Q1` · runda 1 (Operator), runda 2 = wycena §1a/§4 · baza `rust-port/parity-v2` `612ad455e`
 Plan nadrzędny: `dyspozycje/rust-port/PLAN-AKTUALIZACJI-PORTU-DO-WEBA-20261030.md` §3 „UI”.
 
 ## 0. Punkty odniesienia (zmierzone)
@@ -51,6 +51,57 @@ Hunki = początki zakresów po stronie `origin/main` (`git diff -U0`, `plik:lini
 | 24 | `entityCards/buildingAdapter.ts` | +3/−3 | 0 | MOD | `:68 :70 :279` | adapter karty budynku | adapter (importy `game/*` → DTO) | `src/ui/entityCards/buildingAdapter.ts` | UI-2-D |
 | 25 | `entityCards/improvementAdapter.ts` | +7/−1 | 0 | MOD | `:27 :160+6` | adapter karty ulepszenia | adapter | `src/ui/entityCards/improvementAdapter.ts` | UI-2-D |
 | 26 | `cityPanel.ts` | +341/−100 | +86/−31 | — (bloki K01–K09 w `src/ui/cityPanel/*.ts`) | `:82 :108+2 :164 :234 :245 :268 :283 :551+10 :567+2 :597+2 :630+24 :775 :834 :929+3 …` | kolejka rekrutacji w panelu (↑↓✕, `ff6ac152c`), kolejność rekrutacji wg epoki (`6f61f1d70`), skracanie liczb (`62884e25f`) | K (bloki kopii z markerami) | `src/ui/cityPanel/k0*.ts` | §3 + UI-2-G |
+
+### 1a. Wycena per plik (runda 2 — odpowiedź na zarzut Z1 Evaluatora r1)
+
+Wejście wyceny jest **zmierzone**: `L = (+) + (−)` z `git diff --numstat edb8fb56 86d510c66 -- gra/src/ui/<plik>.ts`,
+`H` = liczba hunków `git diff -U0 edb8fb56 86d510c66 -- gra/src/ui/<plik>.ts | grep -c '^@@'` (obie wartości
+odtworzone w r2 dla 26/26 plików, zgodne z kolumną `e→m` tabeli §1). **Wzór wyceny jest ZAŁOŻENIEM Z3** (nie pomiarem
+czasu), zależnym od klasy:
+
+| Klasa | Linie portu do napisania `LP` | Godziny Operatora `h` (zaokr. do 0,25 h) | Uzasadnienie |
+|---|---|---|---|
+| kopia bajtowa (KB) | 0 | `0,5 + 0,1·H + L/400` (+1 h, gdy plik renderuje scenę wymagającą zrzutu PNG) | kopia + manifest stałe; koszt = wektory/mutacje na każdy hunk |
+| port DOM (PD) | `L` | `1 + 0,15·H + L/50` (+1 h, gdy import `game/*` trzeba zastąpić polem DTO) | każda zmieniona linia webu = linia portu; harness web↔port + mutacja na hunk |
+| adapter (AD) | `L` | `0,5 + 0,15·H + L/50` | jak PD bez nowej sceny DOM |
+| K (bloki `cityPanel`) | `±` LCS z §3 (277) | `0,5·bloki DRIFT + ±/50 + 2 h` (markery K02–K04) | przepięcie markera + `verify-k0*-copies` na blok |
+
+Runda pracy Operatora = ≤ 8 h (ZAŁOŻENIE Z3). Kalibracja na UI-2-A: wzór daje 3 h za 4 pliki; r1 zmieściła je w jednej
+rundzie razem z jednorazową infrastrukturą (manifest, weryfikator, nakładka, harness, mutacje, pomiar §1/§3) — wzór
+nie zawiera tej infrastruktury, bo kolejne partie ją reużywają.
+
+| # | Plik | Klasa | L | H | LP | h | Partia |
+|---|---|---|---|---|---|---|---|
+| 1 | `formatCompactNumber` | KB | 77 | 1 | 0 | 0,75 | A (zrobione) |
+| 2 | `recruitHudLabel` | KB | 5 | 1 | 0 | 0,5 | A (zrobione) |
+| 3 | `hudChip6c` | KB | 7 | 3 | 0 | 0,75 | A (zrobione) |
+| 4 | `unitActionBarHtml` | KB | 13 | 4 | 0 | 1 | A (zrobione) |
+| 5 | `aiOwnerProgressFrame` | KB | 16 | 1 | 0 | 0,75 | B |
+| 6 | `armyMergePanel` | KB + PNG | 211 | 25 | 0 | 4,5 | B |
+| 7 | `armySplitPanel` | KB + PNG | 271 | 19 | 0 | 4 | B |
+| 8 | `unitReplacePicker` | PD | 20 | 3 | 20 | 1,75 | B |
+| 9 | `siegeMapPanel` | PD + DTO | 25 | 3 | 25 | 3 | B |
+| 10 | `hud` | PD | 60 | 24 | 60 | 5,75 | C |
+| 11 | `empireDetailPanel` | PD | 293 | 31 | 293 | 11,5 | C |
+| 12 | `empireDetailTypes` | AD | 6 | 1 | 6 | 0,75 | C |
+| 13 | `armyStackHud` | PD + DTO | 51 | 10 | 51 | 4,5 | C |
+| 14 | `unitRecruitCard` | PD | 164 | 25 | 164 | 8 | C |
+| 15 | `hexContextTooltip` | PD | 108 | 28 | 108 | 7,25 | D |
+| 16 | `preBattle` | PD | 45 | 13 | 45 | 3,75 | D |
+| 17 | `buildModeHud` | PD | 27 | 5 | 27 | 2,25 | D |
+| 18 | `diploListHud` | PD + DTO | 44 | 6 | 44 | 3,75 | E |
+| 19 | `diplomacyAudience` | PD | 21 | 10 | 21 | 3 | E |
+| 20 | `diplomacyNegotiationModal` | PD | 15 | 4 | 15 | 2 | E |
+| 21 | `diplomacyPanel` | PD | 19 | 3 | 19 | 1,75 | E |
+| 22 | `diplomacyTradeBasket` | PD | 329 | 50 | 329 | 15 | E |
+| 23 | `newGameFlow` | PD | 427 | 76 | 427 | 21 | F |
+| 24 | `entityCards/buildingAdapter` | AD | 6 | 3 | 6 | 1 | D |
+| 25 | `entityCards/improvementAdapter` | AD | 8 | 2 | 8 | 1 | D |
+| 26 | `cityPanel` (bloki K) | K | 441 | 89 | 277 | 20 | G |
+| | **Razem** | | **2709** | | **1945** | **129,25** | |
+
+Zmiany weba spoza `gra/src/ui/**` (tabela niżej) wycenia się w P6 (silnik/kontroler), nie w UI-2: „Ludność: −1” i
+okres odnowy Milicji = producent DTO w Rust; kolejność rekrutacji wg epoki i odroczenie powiadomień = kontroler.
 
 Zmiany weba 2026-11-03/04 spoza `gra/src/ui/**` (logika — NIE port UI; mapowanie na silnik `rust-port/engine` / P6):
 
@@ -125,14 +176,18 @@ Każda partia: kopia bajtowa → wpis w `repin-ui2-manifest.json` + usunięcie z
 web(Chromium) vs port 0 różnic + mutacje każdej gałęzi nowego hunku 100% wykryte; starsze harnessy na nakładce 0 różnic;
 `tsc --noEmit` 0; `npm run check` EXIT 0; `git diff --check` czysty.
 
-| Partia | Zakres (#§1) | Kryterium |
-|---|---|---|
-| UI-2-B | #5 `aiOwnerProgressFrame`, #6 `armyMergePanel`, #7 `armySplitPanel` (kopie bajtowe), #8 `unitReplacePicker`, #9 `siegeMapPanel` (+ `SiegePanelDto.milicjaRegen?`) | kopie sha=manifest; harness merge/split: siatka 3×5, licznik, „▼ jeszcze N”, Enter — DOM web=port + zrzut PNG; milicja: N∈{0,1,2,4,5,12,22} pluralizacja = web |
-| UI-2-C | #10 `hud`, #11 `empireDetailPanel`, #12 `empireDetailTypes`, #13 `armyStackHud`, #14 `unitRecruitCard` | harness HUD na DTO z wartościami ≥1000: tekst `20,9k`, `title` „Dokładnie: …” = web |
-| UI-2-D | #15 `hexContextTooltip`, #16 `preBattle`, #17 `buildModeHud`, #24–25 adaptery kart | `run-cycles` na nakładce 0 różnic po repinie odniesienia |
-| UI-2-E | #18–22 dyplomacja | `run-cycles` (C2) + nowe wektory koszyka |
-| UI-2-F | #23 `newGameFlow` | `run-newgame` na nakładce 0 różnic |
-| UI-2-G | #26 bloki K (25 DRIFT z §3 + K02–K04), kolejka rekrutacji ↑↓✕, kolejność wg epoki | per blok: marker przepięty na `86d510c66` (lub nowszy main), `verify-k0*-copies` EXIT 0 |
+| Partia | Zakres (#§1) | Kryterium | Wycena (§1a: Σh / ΣLP / rundy ≤8 h) |
+|---|---|---|---|
+| UI-2-B | #5 `aiOwnerProgressFrame`, #6 `armyMergePanel`, #7 `armySplitPanel` (kopie bajtowe), #8 `unitReplacePicker`, #9 `siegeMapPanel` (+ `SiegePanelDto.milicjaRegen?`) | kopie sha=manifest; harness merge/split: siatka 3×5, licznik, „▼ jeszcze N”, Enter — DOM web=port + zrzut PNG; milicja: N∈{0,1,2,4,5,12,22} pluralizacja = web | 14 h / 45 LP / 2 rundy (#5 0,75 · #6 4,5 · #7 4 · #8 1,75 · #9 3) |
+| UI-2-C | #10 `hud`, #11 `empireDetailPanel`, #12 `empireDetailTypes`, #13 `armyStackHud`, #14 `unitRecruitCard` | harness HUD na DTO z wartościami ≥1000: tekst `20,9k`, `title` „Dokładnie: …” = web | 30,5 h / 574 LP / 4 rundy (#10 5,75 · #11 11,5 · #12 0,75 · #13 4,5 · #14 8) — zalecany podział na 2 tematy: C1 = #10+#12+#13 (11 h), C2 = #11+#14 (19,5 h) |
+| UI-2-D | #15 `hexContextTooltip`, #16 `preBattle`, #17 `buildModeHud`, #24–25 adaptery kart | `run-cycles` na nakładce 0 różnic po repinie odniesienia | 15,25 h / 194 LP / 2 rundy (#15 7,25 · #16 3,75 · #17 2,25 · #24 1 · #25 1) |
+| UI-2-E | #18–22 dyplomacja | `run-cycles` (C2) + nowe wektory koszyka | 25,5 h / 428 LP / 4 rundy (#18 3,75 · #19 3 · #20 2 · #21 1,75 · #22 15) — zalecany podział: E1 = #18–21 (10,5 h), E2 = #22 (15 h) |
+| UI-2-F | #23 `newGameFlow` | `run-newgame` na nakładce 0 różnic | 21 h / 427 LP / 3 rundy (#23 21) |
+| UI-2-G | #26 bloki K (25 DRIFT z §3 + K02–K04), kolejka rekrutacji ↑↓✕, kolejność wg epoki | per blok: marker przepięty na `86d510c66` (lub nowszy main), `verify-k0*-copies` EXIT 0 | 20 h / 277 LP (±LCS) / 3 rundy (25 bloków DRIFT · 0,5 h + 277/50 + 2 h markery K02–K04) |
+
+Pozostało po UI-2-A: **126,25 h / 1945 LP ≈ 16 rund pracy** (18 przy zaokrąglaniu w górę per partia jak w tabeli) (B–G; wycena = ZAŁOŻENIE Z3, do rekalibracji po każdej partii — w raporcie partii wpisać h zużyte vs wycena). Temat > 2 rund wyceny dzielić na osobne ID, żeby nie zbliżać się do limitu 5 rund.
+
+Uwaga (Evaluator r1, notatka b): po repinie UI-2-A starsze harnessy (`run.mjs`, `run-cycles.mjs`, `run-level2.mjs`, `run-c4.mjs`, …) bez `--pin-dir <nakładka>` dają EXIT=1 (4 różnice ikony `split` w `run-cycles`) — każdą partię weryfikować na nakładce z `tools/repin-ui2-overlay.mjs` (komenda w §5).
 
 ## 5. Komendy (odtworzenie)
 
