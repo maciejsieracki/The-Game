@@ -1,6 +1,7 @@
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (WEB) — HUD, prezentacja liczb
 TEMAT: R-WEB-HUD-RECRUITS-NUMBER-ABBREV-Q1
+COMMIT: 8af4945da (kod+test+raport)
 GOAL: etykieta „Rekruci” w HUD używa wspólnego skracania k/M (formatCompactNumber), jak reszta HUD.
 
 ## Pomiar PRZED
