@@ -25,7 +25,7 @@ import {
 import { naukaHudWordHtml } from './naukaLabel';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
 import { signedPl } from './formatPl';
-import { exactCompactNote, formatCompactNumber, formatCompactSigned } from './formatCompactNumber';
+import { exactCompactNote, formatCompactNumber, formatCompactSigned, formatFullNumber } from './formatCompactNumber';
 import {
   createSidePanelHud,
   type ContextPanelData,
@@ -1278,12 +1278,16 @@ export function renderBarD1B(s: HudState): string {
     }), cfg?.minimapLayers?.isReligionActive?.() ?? false),
   ];
 
-  const rekrLabel = s.rekruciLabel ?? '—';
+  // R-WEB-HUD-RECRUITS-NUMBER-ABBREV-Q1: liczba rekrutów skracana wspólnym formatterem k/M
+  // (jak reszta HUD), pełna wartość w tooltipie; bez liczby → stara etykieta (fallback).
+  const recruitNum = typeof s.rekruci === 'number' && Number.isFinite(s.rekruci) ? s.rekruci : undefined;
+  const rekrLabel = recruitNum !== undefined ? formatCompactNumber(recruitNum) : (s.rekruciLabel ?? '—');
+  const rekrFull = recruitNum !== undefined ? formatFullNumber(recruitNum) : rekrLabel;
   const recruitCount = Number.isSafeInteger(s.rekrutEkw) && (s.rekrutEkw ?? 0) > 0 ? s.rekrutEkw : 0;
   const recruitCostTitle = s.kosztJednostki != null
     ? ` · Koszt jednej jednostki: ${s.kosztJednostki} rekrutów`
     : '';
-  const recruitTitle = `Manpower: ${rekrLabel} · Możesz zwerbować ${recruitCount} pełnych jednostek${recruitCostTitle} · Kliknij po szczegóły.`;
+  const recruitTitle = `Manpower: ${rekrFull} · Możesz zwerbować ${recruitCount} pełnych jednostek${recruitCostTitle} · Kliknij po szczegóły.`;
 
   let html = '<div class="civ-hud-banner-left"><div class="civ-hud-banner-shell"><div class="hud-chip-row">'
     + leftChipsHtml + '</div></div></div>';

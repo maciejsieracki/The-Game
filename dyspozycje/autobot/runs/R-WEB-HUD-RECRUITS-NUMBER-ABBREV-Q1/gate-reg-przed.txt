@@ -1,0 +1,7 @@
+1 hud-moc-warstwa
+1 hud-obywatele-chip
+1 hud-skarbiec
+124 hud-tooltip-body-mounted-panels
+124 saveload-hud-cache-hotseat-live
+124 sidepanel-hud-deadzone
+EXIT=0
