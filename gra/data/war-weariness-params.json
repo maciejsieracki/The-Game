@@ -1,0 +1,32 @@
+{
+  "_opis": "R-WEB-AI-WAR-WEARINESS-PEACE-Q1 (NOWY plik parametrow) - postepujace zmeczenie wojna per para + eskalacja oferty pokoju przegrywajacego. Logika: gra/src/game/war-weariness.ts. Zaden prog nie jest zahardkodowany w kodzie.",
+  "zmeczenie": {
+    "_wzor": "poziom = min(1, turyWojny/pelneTur + wagaStratMiasta*(utratyMiastObuStron) + stagnacja); stagnacja = stagnacjaWaga*clamp((turyBezZmianyMiast - stagnacjaOdTur)/stagnacjaSkalaTur, 0, 1). Zapamietywany szczyt (monotonicznosc).",
+    "pelneTur": 200,
+    "wagaStratMiasta": 0.03,
+    "stagnacjaOdTur": 40,
+    "stagnacjaWaga": 0.15,
+    "stagnacjaSkalaTur": 100,
+    "progChetnosci": 0.5,
+    "progWzajemnyPokoj": 0.8
+  },
+  "przegrywajacy": {
+    "_wzor": "desperacja = clamp(wagaZmeczenia*poziom + wagaSily*max(0,(udzialWyraznie-udzialSily)/udzialWyraznie) + wagaStrat*min(1,utraty/stratyNasycenie), 0, 1); stopien = liczba progow <= desperacja (0..3). Stopien 1: zloto+surowce; 2: + max 1 miasto; 3: + do maxMiastNaPokoj miast.",
+    "udzialWyraznie": 0.45,
+    "wagaZmeczenia": 0.5,
+    "wagaSily": 0.35,
+    "wagaStrat": 0.15,
+    "stratyNasycenie": 3,
+    "progiStopni": [0.3, 0.55, 0.8],
+    "mnozniStopni": [1, 1.5, 2, 2.5],
+    "mnoznikNaOdrzucenie": 0.2,
+    "maxMiastNaPokoj": 2,
+    "minMiastPoOddaniu": 1,
+    "cooldownOfertTur": 3
+  },
+  "czlowiek": {
+    "_opis": "AI przegrywajace z graczem: oferuj_miasto_za_pokoj - prog rw rosnie o rwProgBonusMax*desperacja, min. miast AI spada do minMiastAi (gracz decyduje o przyjeciu).",
+    "rwProgBonusMax": 0.25,
+    "minMiastAi": 2
+  }
+}

@@ -1487,6 +1487,7 @@ import {
   registerAiPeaceRequest, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
+import { runWarWearinessTick, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
 import {
   isPeaceTreatyLocked,
   startPeaceTreatyLock,
@@ -2222,6 +2223,11 @@ async function boot(): Promise<void> {
      * (tickAiAiPeaceRequests). Czyszczony w cleanupRegularWarOnPeace (każdy pokój pary), nowej grze i wczytaniu.
      */
     const aiAiPeaceRequestByPairKey = new Map<string, AiPeaceRequest>();
+    /**
+     * R-WEB-AI-WAR-WEARINESS-PEACE-Q1: stan zmęczenia wojną / eskalacji oferty per para AI↔AI (klucz diploPairKey).
+     * Zapis w save (meta.warWearinessByPairKey); czyszczony przy pokoju pary, nowej grze i wczytaniu.
+     */
+    const warWearinessByPairKey: WarWearinessStore = new Map<string, WarWearinessPairState>();
     /**
      * R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: osobny rejestr od Brązu. Ochrona startowa
      * kończy się po 20 turach gry; dalej cykl działa według tych samych reguł
@@ -10748,6 +10754,7 @@ async function boot(): Promise<void> {
     function cleanupRegularWarOnPeace(proposerId: number, responderId: number): void {
       regularWarCapturedByPairKey.delete(diploPairKey(proposerId, responderId));
       aiAiPeaceRequestByPairKey.delete(diploPairKey(proposerId, responderId));
+      warWearinessByPairKey.delete(diploPairKey(proposerId, responderId));
     }
 
     /** Pokój kończy aktywne oblężenia między tą parą, zanim kolejny tick może je rozstrzygnąć. */
@@ -33175,6 +33182,67 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną AI↔AI (raz na turę po fazie AI). Pary: główne AI w wojnie
+     * (także wojny wymuszone epoki -- po pokoju obowiązują istniejące reguły: finalizePeaceTreatyBetween).
+     * Cena/akceptacja z ISTNIEJĄCEJ wyceny (jak tickAiAiPeaceRequests); logika i progi: war-weariness.ts + war-weariness-params.json.
+     */
+    function tickAiAiWarWeariness(battlePending: boolean): void {
+      const majors = Array.from(aiOwnerCivMap.keys()).filter(isMajorAiCivForForcedPeace).sort((x, y) => x - y);
+      const pairs: Array<{ a: number; b: number }> = [];
+      for (let i = 0; i < majors.length; i++) {
+        for (let j = i + 1; j < majors.length; j++) {
+          const a = majors[i]!; const b = majors[j]!;
+          if (getDiploRelation(a, b).status === 'wojna') pairs.push({ a, b });
+        }
+      }
+      if (pairs.length === 0 && warWearinessByPairKey.size === 0) return;
+      refreshObjectivePowerCache();
+      runWarWearinessTick({
+        store: warWearinessByPairKey,
+        turn,
+        pairs,
+        pairKey: diploPairKey,
+        warInfo: (a, b) => {
+          const wa = diploWarStateFor(a, b);
+          const wb = diploWarStateFor(b, a);
+          return {
+            warStart: turn - wa.turnsAtWar,
+            turnsAtWar: wa.turnsAtWar,
+            lostA: wa.lostCities,
+            lostB: wb.lostCities,
+            turnsSinceCityChange: wa.turnsSinceCityChange,
+          };
+        },
+        shareOf: (x, y) => requesterShare(objectivePowerForOwner(x), objectivePowerForOwner(y)),
+        cityCountOf: o => cities.filter(c => c.ownerId === o).length,
+        price: (winner, loser) => {
+          const basePn = treatyBasePnFromConfig('pokoj');
+          const relTotal = treatyEvalRelationTotal(getDiploRelation(winner, loser));
+          const difficulty = effectiveGameDifficultyForOwner(winner);
+          return {
+            requiredPn: peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
+            balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, basePn),
+            tolerancePn: aiOfferPwSurplusTolerance(difficulty),
+          };
+        },
+        assets: aiPeacePaymentAssets,
+        cityCessionOk: (cityId, loser, winner) => cityCessionPlanFor(cityId, loser, winner).ok,
+        battlePending,
+        pay: (loser, winner, plan) => {
+          const basket: BasketItem[] = plan.items.map(i => ({
+            typ: i.kind,
+            id: i.id,
+            ilosc: i.kind === 'miasto' ? 1 : i.amount,
+            ...(i.kind === 'miasto' ? { cityPn: i.pn } : {}),
+          }));
+          transferBasketItems(loser, winner, basket);
+        },
+        finalize: (loser, winner) => { finalizePeaceTreatyBetween(loser, winner); },
+        log: msg => console.log(`[Dyplomacja] R-WEB-WEARINESS: ${msg}`),
+      });
+    }
+
+    /**
      * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: bezpiecznik dla ZWYKŁYCH (niewymuszonych epoki)
      * wojen AI↔AI — bez niego taka wojna mogła eskalować aż do całkowitego podboju jednej
      * cywilizacji przez drugą (żywy bug właściciela, `R-AI-WOJNY-PODBOJ-DOMINACJA-Q1`).
@@ -34563,6 +34631,7 @@ async function boot(): Promise<void> {
           // przechodzi przez serializeForcedWarState, patrz komentarz przy deklaracji mapy).
           regularWarCapturedByPairKey: Array.from(regularWarCapturedByPairKey.entries()),
           aiAiPeaceRequestByPairKey: Array.from(aiAiPeaceRequestByPairKey.entries()),
+          warWearinessByPairKey: Array.from(warWearinessByPairKey.entries()),
           // r6 (zarzut 3): przy flagi OFF klucz NIE trafia do zapisu (zapis = baza bit w bit).
           ...(isWarRulesMultiwarEnabled()
             ? { warRulesForcedEraDeclared: Array.from(forcedEraWarDeclaredByTag.entries()) }
@@ -39947,6 +40016,12 @@ async function boot(): Promise<void> {
             } catch (eAiAiPeace) {
               console.error('[Dyplomacja] Blad pokoju AI-AI po prosbie:', eAiAiPeace);
             }
+            // R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną + eskalowana oferta przegrywającego (po torze 2T).
+            try {
+              tickAiAiWarWeariness(aiTurnAwaitingBattle);
+            } catch (eAiAiWeary) {
+              console.error('[Dyplomacja] Blad zmeczenia wojna AI-AI:', eAiAiWeary);
+            }
             if (!aiTurnAwaitingBattle) {
               scanAutoSiegesAfterAiTurn();
             }
@@ -41990,6 +42065,7 @@ async function boot(): Promise<void> {
       aiGeneralWarCampaignByOwner.clear();
       barbCamps = [];
       aiAiPeaceRequestByPairKey.clear(); // R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1: prośby o pokój AI↔AI nie przechodzą do nowej gry.
+      warWearinessByPairKey.clear(); // R-WEB-AI-WAR-WEARINESS-PEACE-Q1
       // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: nowa gra bez przeładowania strony nie może
       // dziedziczyć liczników zwykłych wojen AI↔AI z poprzedniej rozgrywki (ownerId reużywane).
       regularWarCapturedByPairKey.clear();
@@ -43426,6 +43502,7 @@ async function boot(): Promise<void> {
       // bezpieczny pusty stan (mechanizm po prostu nieaktywny dla tej gry), nie wyjątek.
       regularWarCapturedByPairKey.clear();
       aiAiPeaceRequestByPairKey.clear();
+      warWearinessByPairKey.clear();
       // R-WEB-WAR-RULES-MULTIWAR-Q1 (R3): brak wpisu (stary zapis) = pusty licznik.
       forcedEraWarDeclaredByTag.clear();
       const savedForcedEraDeclared = saved.meta?.warRulesForcedEraDeclared as
@@ -43443,6 +43520,11 @@ async function boot(): Promise<void> {
       const savedAiAiPeaceRequests = saved.meta?.aiAiPeaceRequestByPairKey as Array<[string, AiPeaceRequest]> | undefined;
       if (savedAiAiPeaceRequests?.length) {
         for (const [key, rq] of savedAiAiPeaceRequests) aiAiPeaceRequestByPairKey.set(key, rq);
+      }
+      // R-WEB-AI-WAR-WEARINESS-PEACE-Q1: brak wpisu (stary zapis) = pusty stan (zmęczenie liczone od nowa z długości wojny).
+      const savedWarWeariness = saved.meta?.warWearinessByPairKey as Array<[string, WarWearinessPairState]> | undefined;
+      if (savedWarWeariness?.length) {
+        for (const [key, ws] of savedWarWeariness) warWearinessByPairKey.set(key, ws);
       }
       // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): odtworzenie tury wejścia w Brąz per-owner —
       // brak wpisu dla danego ownera (stary zapis) = `undefined`, `isEligibleForBronzeForcedWar`
