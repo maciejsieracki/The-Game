@@ -1,3 +1,12 @@
+## ROBOCZA 8984dc33 -- 2026-11-04 -- Stadnina w starych zapisach z koniem pod lasem (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`2d9b6aac8` + STADNINA-KONIE-STARE-ZAPISY `21734d07f`) i commit wdrożenia; stała zgoda właściciela (decyzja domyślna: `zloze==='konie'` = złoże konia).
+- Bundle MD5 `8984dc339111ee9283f5432577b42498`, 70185464 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: wspólny predykat `hexHasHorseDeposit`; Stadnina w starych zapisach (koń pod lasem) może powstać, tooltip i koszt koni to widzą. Bez migracji danych i zmian generatora.
+- Testy: tsc PASS; stadnina-konie-stare-zapisy 29/0; hex-tooltip-stadnina-kopalnia-cyny 29/0.
+- Ograniczenia: Chromium/live niezmierzone; oboz-lowiecki-las-test czerwony na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `56755bef122919a4c947b5c93a938613`, 70185442 bajtów.
+
 ## ROBOCZA 56755bef -- 2026-11-04 -- AI zużywa pełny zasięg ruchu w marszu (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`910083c97` + AI-MOVE-FULL-RANGE `2c1d43359`) i commit wdrożenia; stała zgoda właściciela.
