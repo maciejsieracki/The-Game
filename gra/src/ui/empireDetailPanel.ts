@@ -252,7 +252,7 @@ function wireDefaultPoziomRacjiInputs(
     // Wypełnienie toru musi nadążać za wartością (jak w suwakach Skarbca) — bez tego zielony
     // pasek zostałby na pozycji z renderu. / EN: keep the track fill in sync with the value.
     const pct = maxSteps > minSteps ? ((stepsNow - minSteps) / (maxSteps - minSteps)) * 100 : 0;
-    inp.style.background = sliderFillStyle(pct, '#4e9a3f', '#78c95a');
+    inp.style.background = sliderFillGradient(pct, '#4e9a3f', '#78c95a');
   });
 }
 
@@ -1051,12 +1051,37 @@ function formatResourceUpkeepEmpireLineColored(resources: Record<string, number>
   return `<span style="font-size:11.5px;color:#e07a7a;font-weight:600;line-height:1.35">${lines}</span>`;
 }
 
-/** Tor suwaka `.civ-emp-slider` częściowo wypełniony gradientem do wartości `pct` (%),
- *  reszta toru w kolorze tła — natywny input[type=range] z `-webkit-appearance:none` renderuje
- *  swoje tło wprost jako tor, więc to jedyne, czego trzeba do wizualnego „wypełnienia". */
-function sliderFillStyle(pct: number, colorFrom: string, colorTo: string): string {
-  const p = Math.max(0, Math.min(100, pct));
-  return `background:linear-gradient(90deg,${colorFrom} 0%,${colorTo} ${p}%,#1f2733 ${p}%,#1f2733 100%)`;
+/** Szerokość uchwytu `.civ-emp-slider` w px (CSS `::-webkit-slider-thumb`/`::-moz-range-thumb`).
+ *  R-WEB-TAX-SLIDER-THUMB-ALIGN-Q1: środek uchwytu przemieszcza się po torze od THUMB/2 do
+ *  (szerokość − THUMB/2), więc koniec wypełnienia musi leżeć w tym samym punkcie. */
+const SLIDER_THUMB_PX = 14;
+
+/** Pozycja uchwytu w % pełnego zakresu toru (0–100): (wartość − min) / (max − min). Jedna funkcja
+ *  dla wypełnienia i uchwytu — zakres bierzemy z atrybutów `min`/`max` inputa, nie z „100". */
+function sliderRangePct(value: number, min: number, max: number): number {
+  if (!(max > min)) return 0;
+  return Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+}
+
+/** Pozycja końca wypełnienia = środek uchwytu, jako wyrażenie CSS dla gradientu. */
+function sliderThumbCenterCss(rangePct: number): string {
+  const f = Math.max(0, Math.min(100, rangePct)) / 100;
+  return `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${f})`;
+}
+
+/** Tor suwaka `.civ-emp-slider` częściowo wypełniony gradientem do pozycji uchwytu, reszta toru
+ *  w kolorze tła. `rangePct` = pozycja w % PEŁNEGO zakresu min..max (patrz `sliderRangePct`),
+ *  NIE surowa wartość — suwak Nauka ma max 60, więc 40% to 66,7% toru. */
+function sliderFillGradient(rangePct: number, colorFrom: string, colorTo: string): string {
+  const x = sliderThumbCenterCss(rangePct);
+  return `linear-gradient(90deg,${colorFrom} 0%,${colorTo} ${x},#1f2733 ${x},#1f2733 100%)`;
+}
+
+/** Jak `sliderFillGradient`, ale jako deklaracja do atrybutu `style="..."`. Przy aktualizacji
+ *  w JS przypisuj `sliderFillGradient()` do `el.style.background` (a NIE tę deklarację — ciąg
+ *  „background:…" przypisany do `style.background` jest nieprawidłowy i przeglądarka go ignoruje). */
+function sliderFillStyle(rangePct: number, colorFrom: string, colorTo: string): string {
+  return `background:${sliderFillGradient(rangePct, colorFrom, colorTo)}`;
 }
 
 /**
@@ -1208,7 +1233,7 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
       + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-pct="${row.key}"><b>${pct}%</b></span>`
       + `<span style="font-size:11px;color:#7d8798" data-amt="${row.key}">≈ ${amount >= 0 ? '+' : ''}${amount}/turę</span></div>`
       + `<input type="range" class="civ-emp-slider ${row.cls}" min="0" max="${maxVal}" step="${HANDEL_PCT_STEP}" `
-      + `value="${pct}" style="${sliderFillStyle(pct, row.from, row.to)}" data-handel-key="${row.key}" `
+      + `value="${pct}" style="${sliderFillStyle(sliderRangePct(pct, 0, maxVal), row.from, row.to)}" data-handel-key="${row.key}" `
       + `data-grad-from="${row.from}" data-grad-to="${row.to}" /></div>`;
   }
   h += '<div style="display:flex;align-items:center;gap:8px;padding-top:9px;border-top:1px solid #232b38">'
@@ -1238,7 +1263,7 @@ function wireSkarbiecTaxSplitInputs(
         const k = other.dataset.handelKey as keyof CityPodzialHandlu;
         const pct = current[k];
         other.value = String(pct);
-        other.style.background = sliderFillStyle(pct, other.dataset.gradFrom ?? '#6a4010', other.dataset.gradTo ?? '#d9a441');
+        other.style.background = sliderFillGradient(sliderRangePct(pct, Number(other.min), Number(other.max)), other.dataset.gradFrom ?? '#6a4010', other.dataset.gradTo ?? '#d9a441');
         const pctEl = host.querySelector(`[data-pct="${k}"] b`);
         if (pctEl) pctEl.textContent = `${pct}%`;
         const amtEl = host.querySelector(`[data-amt="${k}"]`);
@@ -1303,8 +1328,8 @@ function split2BarHtml(
  *  procentu podziału: dla suwaka 0–50 jest to `pctUlepszenia * 2`. Dzięki temu granica kolorów
  *  leży dokładnie pod uchwytem, zamiast żyć własnym życiem w innej skali. */
 function laborSliderFillStyle(pctUlepszeniaTrack: number): string {
-  const p = Math.max(0, Math.min(100, pctUlepszeniaTrack));
-  return `linear-gradient(90deg,#3a4657 0%,#8ec5ff ${p}%,#6a4010 ${p}%,#d9a441 100%)`;
+  const x = sliderThumbCenterCss(pctUlepszeniaTrack);
+  return `linear-gradient(90deg,#3a4657 0%,#8ec5ff ${x},#6a4010 ${x},#d9a441 100%)`;
 }
 
 /**

@@ -1,0 +1,8 @@
+[PO] najwieksza roznica = 0.4 px, pomiarow >1px: 0, bledy strony: 0
+PASS: PO: kropka na koncu wypelnienia (<=1 px) dla wszystkich kombinacji/widokow/suwakow
+PASS: PO: brak bledow strony
+[MUTACJA/PRZED] najwieksza roznica = 131.0 px, pomiarow >1px: 85, bledy strony: 0
+PASS: MUTACJA (stara logika) zapala pomiar na czerwono (> 1 px)
+
+3 PASS, 0 FAIL
+EXIT=0
