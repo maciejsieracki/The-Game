@@ -37151,7 +37151,8 @@ async function boot(): Promise<void> {
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
                   // R4-Q2=C: `skipWyrab` przestaje być stałą `true` — decyduje przełącznik
                   // „wolno wycinać las" (państwo albo override miasta), domyślnie WYŁĄCZONY,
-                  // więc bez zmiany ustawień zachowanie jest identyczne jak przed rundą 4.
+                  // więc bez zmiany ustawień zachowanie jest identyczne jak przed rundą 4 — WYJĄTEK: profile „Żywność”/„Zrównoważony”
+                  // (skipWyrabForFocus, zgłoszenie właściciela 2026-11-04) wycinają pod farmy niezależnie od przełącznika.
                   skipWyrab: true,
                   // R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-Q1: Żywność/Zrównoważony wycinają pod farmy niezależnie od przełącznika.
                   getSkipWyrab: c => {

@@ -296,7 +296,7 @@ export function disableOnlyWorkedFilterForOwnerCities(
  * priorytetem ma być wycinanie lasu, rzek i budowanie farm, zależnie od wyboru, czy wybrano żywność, czy zrównoważony”).
  * PRZYCZYNA (zmierzona, `tools/river-forest-clear-measure.cjs`): przełącznik gracza „Wolno wycinać las”
  * (`DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS=false`, cities.ts) przez `getSkipWyrab` usuwał `wyrab` z listy KAŻDEGO profilu,
- * więc przy ustawieniach domyślnych profile „Żywność” i „Zrównoważony” wycinały 0 pól (7/7 pól z lasem przy rzece nietknięte).
+ * więc przy ustawieniach domyślnych profile „Żywność” i „Zrównoważony” wycinały 0 pól (12/12 pól z lasem przy rzece nietknięte; 5 ziaren, 100 tur).
  * ROZSTRZYGNIĘCIE (ZAŁOŻENIE operatora, do potwierdzenia przez właściciela): wycinka pod farmy jest CZĘŚCIĄ profili
  * „Żywność”/„Zrównoważony” (etapy E2/E5; picker i tak ogranicza ją do pól obywateli, terenu pod farmę i nie rusza lasu
  * z tartakiem/obozem) — przełącznik jej nie wyłącza. Przełącznik nadal rządzi wycinką „na drewno” w profilach
@@ -1366,6 +1366,9 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // river forests by `riverForestClearingOnly` and therefore does not enable
     // general forest harvesting. Other profiles still honor the existing toggle.
     // R-WEB-AUTOIMPROVE-STAGES2-Q1 (właściciel 2026-10-31, przycisk „Wolno wycinać las"): GRACZ z przyciskiem
+    // [ZMIANA R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-Q1, zgłoszenie właściciela 2026-11-04: wyjątek dla profili „Żywność”/
+    //  „Zrównoważony” — `skipWyrabForFocus` w main.ts zwraca dla nich false niezależnie od przycisku; poniższe nadal
+    //  obowiązuje dla „Surowce”/„Infrastruktura”.]
     // WYŁĄCZONYM nie wycina NIGDZIE — także przy rzece (krok 0 / E2), E5 i FAZA 2 (dawny wyjątek
     // `riverForestClearingOnly ? false : …` USUNIĘTY). AI cywilizacji i państwa-miasta przycisku nie mają:
     // ich wywołania (`ai.ts`) nie podają `getSkipWyrab`, a `skipWyrab: false` — picker nie czyta żadnej flagi gracza.
