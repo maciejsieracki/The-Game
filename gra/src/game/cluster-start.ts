@@ -192,7 +192,8 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     { q: spawnPlan.playerStartHex.q, r: spawnPlan.playerStartHex.r, isCityState: false },
   ];
 
-  const acceptedNamesByCiv = new Map<string, Set<string>>();
+  // R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1: jeden globalny zbiór (pule cywilizacji się nakładają).
+  const acceptedNamesGlobal = new Set<string>();
 
   for (const slot of spawnPlan.slots) {
     // P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1 runda 2 (Zarzut 1 Evaluatora, POTWIERDZONY
@@ -219,8 +220,7 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     });
     if (collides) continue;
 
-    const usedNames = acceptedNamesByCiv.get(slot.typ) ?? new Set<string>();
-    acceptedNamesByCiv.set(slot.typ, usedNames);
+    const usedNames = acceptedNamesGlobal;
     const acceptedName = input.cityNamesPools
       ? pickNextCityName(input.cityNamesPools, slot.typ, usedNames, slot.nazwaMiasta || 'Miasto')
       : slot.nazwaMiasta;

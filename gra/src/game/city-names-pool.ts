@@ -147,6 +147,35 @@ export function collectUsedCityNamesFromCities(
   return used;
 }
 
+/**
+ * R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1: GLOBALNY zbiór zużytych nazw miast.
+ *
+ * Nazwa raz nadana miastu jest zużyta NA ZAWSZE w obrębie gry — niezależnie od
+ * tego, kto jest dziś właścicielem miasta i jakiej jest cywilizacji. Tablica
+ * `cities` jest księgą rezerwacji: miasto nigdy z niej nie znika (zdobycie,
+ * aneksja, rewolta, cesja i eliminacja zmieniają tylko `ownerId`; zero
+ * `cities.splice`), a nazwa nie ma ścieżki zmiany. Dlatego zbiór wyliczany z
+ * `cities` jest zapisywany razem z nimi w save (stare zapisy działają bez
+ * migracji) i obejmuje także nazwy miast utraconych przez daną cywilizację —
+ * w przeciwieństwie do `collectUsedCityNamesFromCities`, który filtruje po
+ * CURRENT właścicielu i po utracie miasta „zwalniał" jego nazwę.
+ */
+export function collectAllUsedCityNames(
+  cities: ReadonlyArray<{ name: string }>,
+  extraReserved?: Iterable<string>,
+): Set<string> {
+  const used = new Set<string>();
+  for (const c of cities) {
+    if (c.name) used.add(c.name);
+  }
+  if (extraReserved) {
+    for (const n of extraReserved) {
+      if (n) used.add(n);
+    }
+  }
+  return used;
+}
+
 /** Sufiks gdy pula wyczerpana: „Ateny II", „Ateny III"… */
 export function cityNameWithSuffix(base: string, ordinal: number): string {
   if (ordinal <= 1) return base;
@@ -219,7 +248,8 @@ export function suggestPlayerFoundCityName(
   civTypeForOwner: (ownerId: number) => string,
   playerOwnerId = 0,
 ): string {
-  const used = collectUsedCityNamesFromCities(cities, civTypeForOwner, ikonaId);
+  void civTypeForOwner;
+  const used = collectAllUsedCityNames(cities);
   // `playerOwnerId` pozostaje w sygnaturze dla kompatybilności call-site'ów;
   // kolejka jest cywilizacyjna, więc obejmuje także miasta innych ownerów tego
   // samego typu. Nie używamy już owner-local cursora.
@@ -236,7 +266,8 @@ export function pickAiFoundCityName(
   ownerId: number,
 ): string {
   const civId = civTypeForOwner(ownerId);
-  const used = collectUsedCityNamesFromCities(cities, civTypeForOwner, civId);
+  // Globalnie zużyte nazwy (także miasta utracone / cudze), nie tylko żywe tej cywilizacji.
+  const used = collectAllUsedCityNames(cities);
   return pickNextCityName(pools, civId, used);
 }
 

@@ -364,7 +364,7 @@ import {
   playerStartCityName,
   pickAiFoundCityName,
   pickNextCityName,
-  collectUsedCityNamesFromCities,
+  collectAllUsedCityNames,
   suggestPlayerFoundCityName,
 } from './game/civ-names';
 import {
@@ -9390,7 +9390,8 @@ async function boot(): Promise<void> {
       const liveCityName = cities.find(c => c.ownerId === ownerId)?.name;
       if (liveCityName && !isTechnicalOwnerLabel(liveCityName)) return liveCityName;
 
-      const used = collectUsedCityNamesFromCities(cities, civTypeForOwner, civKey);
+      // R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1: globalnie zużyte nazwy (także utracone miasta).
+      const used = collectAllUsedCityNames(cities);
       const ownerIds = new Set<number>([
         ownerId,
         ...aiOwnerCivMap.keys(),
@@ -10032,11 +10033,8 @@ async function boot(): Promise<void> {
         ) {
           ownerId = allocFreeRivalOwnerId();
         }
-        const usedNames = collectUsedCityNamesFromCities(
-          cities,
-          civTypeForOwner,
-          rivalCivId,
-        );
+        // R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1: nazwa zużyta raz jest zużyta na zawsze, globalnie.
+        const usedNames = collectAllUsedCityNames(cities);
         const nazwa = pickNextCityName(
           data.cityNamesPools,
           rivalCivId,
@@ -10240,8 +10238,9 @@ async function boot(): Promise<void> {
       for (const sc of toSpawn) {
         const isCS = simplifiedDiplomacyOwners.has(sc.ownerId) || typCityCopyOwners.has(sc.ownerId);
         const civId = aiOwnerCivMap.get(sc.ownerId) ?? '';
+        // R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1: globalnie zużyte nazwy (nie tylko żywe miasta civ).
         const usedNames = civId
-          ? collectUsedCityNamesFromCities(cities, civTypeForOwner, civId)
+          ? collectAllUsedCityNames(cities)
           : new Set<string>();
         const cityName = civId
           ? pickNextCityName(data.cityNamesPools, civId, usedNames, sc.name || 'Miasto')

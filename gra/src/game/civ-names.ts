@@ -42,6 +42,7 @@ export {
   suggestPlayerFoundCityName,
   pickAiFoundCityName,
   collectUsedCityNamesFromCities,
+  collectAllUsedCityNames,
   cityNameWithSuffix,
 } from './city-names-pool';
 
