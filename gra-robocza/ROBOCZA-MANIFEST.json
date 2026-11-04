@@ -1,110 +1,110 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "8984dc339111ee9283f5432577b42498",
-  "bundleSha256": "aa4abecc61afd56066db8f743c3cdc11946002222297135f0624340bac714f44",
-  "bundleBytes": 70185464,
+  "bundleMd5": "1ad81cfb89f069bdd0954d372a2968a0",
+  "bundleSha256": "4d9f7c18a4d99604b4f0073ca8314ad6ffdedc7be74f7e0bf4110aa66fc8883f",
+  "bundleBytes": 70185473,
   "sourceSnapshot": {
-    "source": "main 2d9b6aac8 + STADNINA-KONIE-STARE-ZAPISY (21734d07f)",
+    "source": "main e2c9459fb + MANUAL-REBALANCE-OWNER-ERA (d2ed1fc7c)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-STADNINA-KONIE-STARE-ZAPISY-Q1: Stadnina (budowa, tooltip, koszt koni, ikona złoża) uznaje heks ze zloze===\"konie\" za złoże konia — stare zapisy z koniem pod lasem; bez migracji i bez zmian generatora."
+    "R-WEB-MANUAL-REBALANCE-OWNER-ERA-Q1: w trybie ręcznym rebalans robotników po zmianie populacji (population-growth-v85.ts) liczy ranking pól według epoki właściciela miasta (wcześniej epoka nie była przekazywana)."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "stadnina-konie-stare-zapisy 29/0 (RED na kodzie sprzed zmiany 7/20); hex-tooltip-stadnina-kopalnia-cyny 29/0"
+    "manual-rebalance-owner-era 5/0 (RED przed 4/1; mutacja czerwona); 65 testów regresji identycznie przed i po"
   ],
   "limits": [
-    "Chromium/live i tooltip runtime dla starego zapisu NIE_ZMIERZONO; podgląd demo main.ts:15621 pominięty; oboz-lowiecki-las-test 72/19 czerwony na bazie"
+    "Przeglądarka NIE_ZMIERZONO (zmiana czysto logiczna); 12 testów czerwonych na bazie bez zmian"
   ],
   "finalControl": {
-    "status": "PASS-WITH-NOTES",
-    "notes": "STADNINA-KONIE-STARE-ZAPISY: Operator → Evaluator PASS-WITH-NOTES → FC PASS-WITH-NOTES."
+    "status": "PASS",
+    "notes": "MANUAL-REBALANCE-OWNER-ERA: Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T14:38:45",
+  "hubGeneratedAt": "2026-11-04T14:46:57",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "8984dc339111ee9283f5432577b42498",
-      "sizeBytes": 70185464
+      "md5": "1ad81cfb89f069bdd0954d372a2968a0",
+      "sizeBytes": 70185473
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "8984dc339111ee9283f5432577b42498",
-      "sizeBytes": 70185464
+      "md5": "1ad81cfb89f069bdd0954d372a2968a0",
+      "sizeBytes": 70185473
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "8984dc339111ee9283f5432577b42498",
-      "sizeBytes": 70185464
+      "md5": "1ad81cfb89f069bdd0954d372a2968a0",
+      "sizeBytes": 70185473
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "8984dc339111ee9283f5432577b42498",
-      "sizeBytes": 70185464
+      "md5": "1ad81cfb89f069bdd0954d372a2968a0",
+      "sizeBytes": 70185473
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "8984dc339111ee9283f5432577b42498",
-      "sizeBytes": 70185464
+      "md5": "1ad81cfb89f069bdd0954d372a2968a0",
+      "sizeBytes": 70185473
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "8984dc339111ee9283f5432577b42498",
-      "sizeBytes": 70185464
+      "md5": "1ad81cfb89f069bdd0954d372a2968a0",
+      "sizeBytes": 70185473
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "8984dc339111ee9283f5432577b42498",
-      "sizeBytes": 70185464
+      "md5": "1ad81cfb89f069bdd0954d372a2968a0",
+      "sizeBytes": 70185473
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "8984dc339111ee9283f5432577b42498",
-      "sizeBytes": 70185464
+      "md5": "1ad81cfb89f069bdd0954d372a2968a0",
+      "sizeBytes": 70185473
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "8984dc339111ee9283f5432577b42498",
-      "sizeBytes": 70185464
+      "md5": "1ad81cfb89f069bdd0954d372a2968a0",
+      "sizeBytes": 70185473
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "8984dc339111ee9283f5432577b42498",
-      "sizeBytes": 70185464
+      "md5": "1ad81cfb89f069bdd0954d372a2968a0",
+      "sizeBytes": 70185473
     }
   ],
-  "md5": "8984dc339111ee9283f5432577b42498",
-  "sizeBytes": 70185464,
+  "md5": "1ad81cfb89f069bdd0954d372a2968a0",
+  "sizeBytes": 70185473,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "56755bef122919a4c947b5c93a938613"
+    "bundleMd5": "8984dc339111ee9283f5432577b42498"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 56755bef122919a4c947b5c93a938613, 70185442 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 8984dc339111ee9283f5432577b42498, 70185464 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1280,8 +1280,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T14:38:43+00:00",
-  "buildStamp": "2026-11-04 14:38",
+  "publishedAt": "2026-11-04T14:46:55+00:00",
+  "buildStamp": "2026-11-04 14:46",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",

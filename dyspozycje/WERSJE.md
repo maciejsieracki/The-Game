@@ -1,3 +1,12 @@
+## ROBOCZA 1ad81cfb -- 2026-11-04 -- tryb ręczny: rebalans robotników z epoką właściciela (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`e2c9459fb` + MANUAL-REBALANCE-OWNER-ERA `d2ed1fc7c`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `1ad81cfb89f069bdd0954d372a2968a0`, 70185473 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: rebalans robotników po zmianie populacji w trybie ręcznym liczy ranking pól według epoki właściciela (jednolinijkowa poprawka w `population-growth-v85.ts`).
+- Testy: tsc PASS; manual-rebalance-owner-era 5/0; regresje 65 plików identycznie przed i po.
+- Ograniczenia: bez przeglądarki (zmiana logiczna).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `8984dc339111ee9283f5432577b42498`, 70185464 bajtów.
+
 ## ROBOCZA 8984dc33 -- 2026-11-04 -- Stadnina w starych zapisach z koniem pod lasem (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`2d9b6aac8` + STADNINA-KONIE-STARE-ZAPISY `21734d07f`) i commit wdrożenia; stała zgoda właściciela (decyzja domyślna: `zloze==='konie'` = złoże konia).
