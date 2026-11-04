@@ -74,6 +74,7 @@ function runSuite(M, label) {
   t(M.shouldLastStandSortie(100, 100, true) === true, 'A1 równa siła atakuje');
   t(M.shouldLastStandSortie(250, 100, true) === true, 'A1 silniejsza atakuje');
   t(M.shouldLastStandSortie(0.8 * 37.3, 37.3, true) === true, 'A1 granica 80% bez błędu zmiennoprzecinkowego (37.3)');
+  t(M.shouldLastStandSortie(4.4399999999999995, 5.55, true) === true, 'A1 szum zmiennoprzecinkowy: 80% z 5.55 (4.4399999999999995*10 < 5.55*8) nadal atakuje');
   // A2 nie ostatnia tura
   t(M.shouldLastStandSortie(500, 100, false) === false, 'A2 nie-ostatnia tura nie atakuje (nawet silniejsza)');
   // A3 zerowe siły
@@ -183,6 +184,7 @@ const MUT = [
   ['m5-bez-pending', 'city.oblegane === true && city.siegeCapitulationPending === true', 'city.oblegane === true'],
   ['m6-ruch', 'if (u.ruchLeft <= 0) return false;', ''],
   ['m7-sentry', 'if (u.sentry === true) return false;', ''],
+  ['m11-bez-EPS', 'besiegedStrength * LAST_STAND_BESIEGER_PARTS + EPS', 'besiegedStrength * LAST_STAND_BESIEGER_PARTS'],
   ['m8-wojna', 'if (besiegerOwnerId === city.ownerId || !deps.isEnemy(city.ownerId, besiegerOwnerId)) {', 'if (false) {'],
   ['m9-cywil', 'deps.isMilitary(u))\n    .sort(byId);\n  // Oblegający', 'true)\n    .sort(byId);\n  // Oblegający'],
 ];
@@ -200,6 +202,22 @@ ok(/barbCmds\.unshift\(\.\.\.lastStandSortieCmdsForOwner\(BARBARIAN_OWNER_ID\)\)
 ok(/function lastStandSortieCmdsForOwner[\s\S]{0,200}if \(isHuman\(ownerId\)\) return out;/.test(main), 'D4 gracz (człowiek) wykluczony z automatu wypadu');
 ok(/estimateUnitCombatStrength\(runtimeUnitToSiegeUnit\(u\)\)/.test(main), 'D5 siła = wspólna funkcja siegeAi (estimateUnitCombatStrength)');
 ok(!/siege-last-stand/.test(fs.readFileSync(path.join(GRA, 'src', 'game', 'ai.ts'), 'utf8')), 'D6 ai.ts nietknięty (Stadnina/auto-improvements poza zakresem)');
+
+// D7-D9 (R1 zarzut 1): kolejność faz i warunki egzekucji komendy attack -- test strukturalny kolejności,
+// bo żywy przebieg tury wymaga przeglądarki.
+{
+  const iAi = main.indexOf('commands = decideAITurn(ownerId, units, cities, map, data, opts);');
+  const iSortie = main.indexOf('commands = [...lastStandSortieCmdsForOwner(ownerId), ...commands];');
+  const iExec = main.indexOf("if (cmd.type === 'attack') {", iSortie);
+  ok(iAi > 0 && iSortie > iAi && iExec > iSortie, 'D7 AI: kolejność decideAITurn -> doklejenie wypadu -> egzekucja komend attack');
+  const execBlock = main.slice(iExec, iExec + 1500);
+  ok(/attacker\.ownerId !== ownerId/.test(execBlock) && /areEnemyOwners\(ownerId, defender\.ownerId\)/.test(execBlock)
+    && !/siegeCapitulationPending|oblegane/.test(execBlock),
+  'D8 egzekucja attack AI: sprawdza właściciela i wojnę, nie odrzuca atakującego z oblężonego miasta');
+  const iBarbDecide = main.indexOf('barbCmds.unshift(...lastStandSortieCmdsForOwner(BARBARIAN_OWNER_ID));');
+  const iBarbExec = main.indexOf("bcmd.type === 'attack'", iBarbDecide);
+  ok(iBarbDecide > 0 && iBarbExec > iBarbDecide, 'D9 barbarzyńcy: doklejenie wypadu przed egzekucją komend attack');
+}
 
 try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (e) { /* ignore */ }
 console.log(`\nWYNIK: ${pass} OK, ${fail} FAIL`);
