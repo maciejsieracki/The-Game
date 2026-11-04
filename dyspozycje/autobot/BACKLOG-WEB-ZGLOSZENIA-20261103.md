@@ -16,3 +16,13 @@ Po komendzie „szarża” (charge) jednostki WRĘCZ atakują jednostki na murze
 
 ## Dopisek 2 do pkt 3 — 2026-11-03: TE SAME ZASADY DLA „ATAKUJ” I „SZARŻY”
 Reguła „bez machin oblężniczych / rozwalonej bramy jednostki wręcz podchodzą na bezpieczny dystans poza ostrzałem i NIE atakują obrońców na murze; ostrzał tylko łucznicy; wyjątek: wieże/machiny po podejściu do murów” obowiązuje JEDNAKOWO dla (a) rozkazu „Atakuj” (wybór ataku na cel), (b) „Szarży” (charge) i (c) „atakuj marszem”, przy ataku na miasto z MUREM lub z PALISADĄ (jedna wspólna bramka w kodzie rozkazów, nie osobne ścieżki; ten sam wynik dla gracza i AI, bitwa ręczna i „Pomiń”/Auto). Test: każda kombinacja rozkaz × (mur | palisada | brak) × (są machiny | brama zniszczona | brak).
+
+## PLAN WYKONANIA (polecenie właściciela 2026-11-04): po zakończeniu WSZYSTKICH trwających prac (UI-2-B…G, Opus) — doprowadzić do końca wszystkie tematy webowe z listy
+Kolejność i grupy (sekwencyjnie w obrębie grupy = te same pliki; grupy równolegle, gdy dysk pozwala; każdy temat: Operator→Evaluator→Obrona→FC, FAIL→ten sam ID, potem merge do main, testy, build, deploy ROBOCZEJ, push, MD5, WERSJE.md, sprzątanie):
+- Grupa 1 (`auto-improvements.ts`, `ai.ts` ulepszenia): R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (twarda zasada „tylko pola z obywatelami” dla żywności, gracz i AI, bez wyjątków) → R-WEB-AUTO-IMPROVE-IRRIGATION-FALLBACK-Q1 (irygacja zamiast farm bez obywateli; do rozpisania dispatchu).
+- Grupa 2 (`ai.ts`, ruch/armie AI): R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1 → R-WEB-AI-MOVE-FULL-RANGE-Q1 → R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1 → R-WEB-ARMY-TO-NEAREST-LEADER-Q1.
+- Grupa 3 (oblężenie/bitwa): R-WEB-SIEGE-TOWER-BREACH-EVERYWHERE-Q1 → R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1 (tarany do bramy, wieże dają wejście na mur, konnica czeka na bramę, szarża/atakuj bez machin poza ostrzałem; kilkadziesiąt testów; do rozpisania dispatchu) → potem REPIN w Rust (battle).
+- Grupa 4 (osobne pliki): R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1.
+- Grupa 5 (`main.ts` aneksja): R-WEB-ANNEX-CITYSTATE-SPOILS-Q1.
+- Drobne: R-WEB-ROSTER-SPACE-NEXT-ACTIVE-UNIT-Q1 (do rozpisania); poprawka epoki w trybie ręcznym (`population-growth-v85.ts:582`); zapisy z koniem pod lasem — DOMYŚLNIE (brak odpowiedzi właściciela): uznać `zloze==='konie'` za złoże konia w Stadninie (nie zmienia map ani zapisów); hot-seat atak z marszu — DOMYŚLNIE: zostaje (marsz dochodzi, atak w następnej turze gracza).
+Wymóg globalny: tematy webowe nie ruszają się, dopóki nie skończą się trwające prace Opus (UI-2-B…G); wolne miejsce na dysku ≥ ~4 GB na workflow.

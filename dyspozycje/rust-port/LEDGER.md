@@ -771,3 +771,5 @@ Nie uruchamiam nowych tematów (UI-2-G, kolejne partie, tematy webowe). Dokańcz
 
 ## 2026-11-04 — ZGODA WŁAŚCICIELA (ABC): „Kasuj esbuild-*.map i puszczaj dalej” — uchyla „tylko dokończ”
 Właściciel: celem jest zużycie limitu na ciężkich workerach Opus przez noc. Skasowano 16 plików `/tmp/esbuild-*.map` (≈1,3 GB; wcześniej błędnie szacowane na 14 GB — reszta /tmp to katalogi `tmp.*` ≈4 GB, ich masowe kasowanie zablokował klasyfikator — nieobchodzone). Uruchomiono UI-2-G (cityPanel + dryf K01–K09). Dysk ≈ 2,7 GB → ostrożnie.
+
+## 2026-11-04 — KOLEJNY TASK (polecenie właściciela): po zakończeniu wszystkiego — doprowadzić do końca wszystkie 8 zapisanych tematów webowych + irygacja, spacja w rosterze, ręczna bitwa oblężnicza, drobne. Plan i grupy: `dyspozycje/autobot/BACKLOG-WEB-ZGLOSZENIA-20261103.md` (sekcja PLAN WYKONANIA). Start dopiero po zakończeniu trwających UI-2-B…G.
