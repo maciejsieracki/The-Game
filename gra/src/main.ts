@@ -509,8 +509,10 @@ import { FORTIFY_OBRONA_PROC_FIELD, type SiegeCity, type SiegeUnit } from './gam
 import {
   decideAISiegeStance,
   EMPTY_SIEGE_AI_STATE,
+  estimateUnitCombatStrength,
   type SiegeAiState,
 } from './game/siegeAi';
+import { planLastStandSortie, type LastStandAttackCmd } from './game/siege-last-stand';
 import {
   advanceSiegeMachineBuild,
   clearSiegeMachines,
@@ -16563,6 +16565,32 @@ async function boot(): Promise<void> {
         });
         console.log('[Oblezenie] Auto AI →', city.name, decision.stance);
       }
+    }
+
+    /**
+     * R-WEB-SIEGE-LAST-STAND-SORTIE-Q1: komendy „ataku ostatniej woli" dla oblężonych miast właściciela
+     * sterowanego automatycznie (AI / barbarzyńcy). Decyzja w czystym game/siege-last-stand.ts; tu tylko
+     * dane silnika. Komendy mają kształt AICmdAttack i idą istniejącą ścieżką ataku (wojna, widoczność,
+     * bitwa z graczem, zwykłe zasady walki). Gracz (ręczny) nigdy nie jest tu obsługiwany.
+     */
+    function lastStandSortieCmdsForOwner(ownerId: number): LastStandAttackCmd[] {
+      const out: LastStandAttackCmd[] = [];
+      if (isHuman(ownerId)) return out;
+      for (const city of cities) {
+        if (city.ownerId !== ownerId || city.oblegane !== true) continue;
+        const plan = planLastStandSortie(city, besiegerOwnerForCity(city), units, {
+          strengthOf: u => estimateUnitCombatStrength(runtimeUnitToSiegeUnit(u)),
+          isMilitary: u => !isCivilianUnit(u),
+          isEnemy: areEnemyOwners,
+          hexDistance,
+        });
+        if (plan.isLastTurn) {
+          console.log('[Oblezenie] Atak ostatniej woli', city.name, plan.sortie ? 'TAK' : 'NIE', plan.reason,
+            'obleganych=' + plan.besiegedStrength.toFixed(1), 'oblegajacych=' + plan.besiegerStrength.toFixed(1));
+        }
+        out.push(...plan.commands);
+      }
+      return out;
     }
 
     function maybeAiAssaultAfterMachines(city: City, siegeTurn: number): void {
@@ -39043,6 +39071,8 @@ async function boot(): Promise<void> {
               aiProdAllowedMemoLive = true;
               try {
                 commands = decideAITurn(ownerId, units, cities, map, data, opts);
+                // R-WEB-SIEGE-LAST-STAND-SORTIE-Q1: wypad obleganej armii w ostatniej turze (przed resztą rozkazów).
+                commands = [...lastStandSortieCmdsForOwner(ownerId), ...commands];
                 if (opts.aiGeneralWarCampaign) {
                   aiGeneralWarCampaignByOwner.set(ownerId, {
                     targetOwnerId: opts.aiGeneralWarCampaign.targetOwnerId,
@@ -40120,6 +40150,8 @@ async function boot(): Promise<void> {
               // R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE): wojna barbarzyncow -> najblizsza stolica.
               warAllInContextFor(BARBARIAN_OWNER_ID, barbCanEngageOwner),
             );
+            // R-WEB-SIEGE-LAST-STAND-SORTIE-Q1: barbarzyńskie miasto w ostatniej turze oblężenia.
+            barbCmds.unshift(...lastStandSortieCmdsForOwner(BARBARIAN_OWNER_ID));
             if (seaBarbs.length > 0) {
               const raidTargets = collectSeaRaidTargets(map);
               barbCmds.push(...decideSeaPeoplesRaids(
