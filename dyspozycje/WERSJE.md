@@ -1,3 +1,12 @@
+## ROBOCZA 57a964b2 -- 2026-11-04 -- handel tylko na znajomość + tooltip bez dubli surowców (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`9c1d28bb2` + TRADE-ROUTE-CONTACT-ONLY `b7a246cc9` + TOOLTIP-RESOURCES-LINE-DEDUP `198ee3d8a`) i commit wdrożenia; decyzja właściciela (ABC A/A/A/A), stała zgoda.
+- Bundle MD5 `57a964b28a96dcb0f9d8e62d8e10448c`, 70200489 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: szlaki handlowe między cywilizacjami wymagają tylko znajomości (kontakt dyplomatyczny) — bez fizycznego połączenia/Portu/granicy; dochód wg krzywej dystansu; trasy wewnętrzne bez zmian; tooltip heksu bez zdublowanych etykiet surowców.
+- Testy: tsc PASS; trade-routes-contact-only 36/0; trade-routes 96/0; trade-routes-income 134/0; tooltip dedup 28/0 + 28/0.
+- Ograniczenia: bonus +1 za trasę morską bez Portu (do decyzji); stare zapisy bez kontaktu; 8 testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `9b2119d6d1f642e2549ec32acccdff32`, 70200365 bajtów.
+
 ## ROBOCZA 9b2119d6 -- 2026-11-04 -- Stadnina w kole fortu widoczna dla automatu (AI i gracz) (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`5f7dc5614` + AI-STADNINA-FORT-TERRITORY-SCAN `be18ff2c1`) i commit wdrożenia; stała zgoda właściciela.

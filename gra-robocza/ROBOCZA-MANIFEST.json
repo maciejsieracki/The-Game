@@ -1,110 +1,112 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "9b2119d6d1f642e2549ec32acccdff32",
-  "bundleSha256": "4691c7efe6fc908d20e187ca0e45ad4835f0072eb2c16823f1d2d643016c6fd1",
-  "bundleBytes": 70200365,
+  "bundleMd5": "57a964b28a96dcb0f9d8e62d8e10448c",
+  "bundleSha256": "c11cc0262fd24ccb84143edabf39010570a80181f39e81166b83ab514bb4ba56",
+  "bundleBytes": 70200489,
   "sourceSnapshot": {
-    "source": "main 5f7dc5614 + AI-STADNINA-FORT-TERRITORY-SCAN (be18ff2c1)",
+    "source": "main 9c1d28bb2 + TRADE-ROUTE-CONTACT-ONLY (b7a246cc9) + TOOLTIP-RESOURCES-LINE-DEDUP (198ee3d8a)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-AI-STADNINA-FORT-TERRITORY-SCAN-Q1: automat ulepszeń (AI i gracz) widzi złoże konia (także zloze===\"konie\" ze starych zapisów) w kole własnego fortu/posterunku — Stadnina dozwolona tylko tam; przyczyna w pickAutoImprovements (auto-improvements.ts), nie w ai.ts. Pomiar na realnych mapach: AI widzi 10 z 45 → 45 z 45 legalnych Stadnin, 0 nielegalnych."
+    "R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: szlak handlowy między miastami dwóch cywilizacji wymaga tylko znajomości (nawiązany kontakt dyplomatyczny) + braku wojny + Umowy Szlaków + slotu; zniesiony wymóg fizycznego połączenia (BFS), Portu i wspólnej granicy dla tras zewnętrznych; dochód wg dotychczasowej krzywej dystansu; trasy wewnętrzne bez zmian; utrata kontaktu/wojna usuwa trasę. Symulacja: dochód z tras 156/124/172 → 416/488/484; wywołania findCityConnection 12222 → 1658.",
+    "R-WEB-TOOLTIP-RESOURCES-LINE-DEDUP-Q1: linia „Surowce / zasoby” w tooltipie heksu bez zdublowanych etykiet („Kon · Koń” → „Koń”, „Ruda miedzi · Ruda” → „Ruda miedzi”, „Drewno · Las (drewno)” → „Drewno”)."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "ai-stadnina-fort-territory 17/0; ai-improvements 56/0; ai-food-only-worked-hexes 81/0; regresje stadnina*/fort* zielone"
+    "trade-routes-contact-only 36/0 (RED na bazie, 3 mutacje); trade-routes 96/0; trade-routes-income 134/0; hex-tooltip-resources-line-dedup 28/0; hex-tooltip-unlock-label-dedup 28/0"
   ],
   "limits": [
-    "Pełna gra AI w przeglądarce NIE_ZMIERZONO (zastąpiona symulacją na generateMap, 3 ziarna); zmiana dotyczy też automatu gracza (tylko Stadnina)"
+    "Bonus +1 za trasę morską (computeSeaTradeBonusIncomeByCity) nie sprawdza Portu — zostawiony bez zmian (decyzja balansu do właściciela)",
+    "Stare zapisy z Umową Szlaków bez zapisanego kontaktu nie dadzą trasy; panel szlaków bez zrzutu Chromium; 8 testów czerwonych na bazie bez zmian (hotseat-etap6d-b/d, trade-ilosc, hud-skarbiec, naval-water-access-gate i in.)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "AI-STADNINA-FORT-TERRITORY-SCAN: Operator → Evaluator PASS-WITH-NOTES → Obrona → FC (4× ODDAL)."
+    "notes": "TRADE-ROUTE-CONTACT-ONLY: Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES; TOOLTIP-RESOURCES-LINE-DEDUP: PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T18:11:38",
+  "hubGeneratedAt": "2026-11-04T18:18:09",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "9b2119d6d1f642e2549ec32acccdff32",
-      "sizeBytes": 70200365
+      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
+      "sizeBytes": 70200489
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "9b2119d6d1f642e2549ec32acccdff32",
-      "sizeBytes": 70200365
+      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
+      "sizeBytes": 70200489
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "9b2119d6d1f642e2549ec32acccdff32",
-      "sizeBytes": 70200365
+      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
+      "sizeBytes": 70200489
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "9b2119d6d1f642e2549ec32acccdff32",
-      "sizeBytes": 70200365
+      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
+      "sizeBytes": 70200489
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "9b2119d6d1f642e2549ec32acccdff32",
-      "sizeBytes": 70200365
+      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
+      "sizeBytes": 70200489
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "9b2119d6d1f642e2549ec32acccdff32",
-      "sizeBytes": 70200365
+      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
+      "sizeBytes": 70200489
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "9b2119d6d1f642e2549ec32acccdff32",
-      "sizeBytes": 70200365
+      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
+      "sizeBytes": 70200489
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "9b2119d6d1f642e2549ec32acccdff32",
-      "sizeBytes": 70200365
+      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
+      "sizeBytes": 70200489
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "9b2119d6d1f642e2549ec32acccdff32",
-      "sizeBytes": 70200365
+      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
+      "sizeBytes": 70200489
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "9b2119d6d1f642e2549ec32acccdff32",
-      "sizeBytes": 70200365
+      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
+      "sizeBytes": 70200489
     }
   ],
-  "md5": "9b2119d6d1f642e2549ec32acccdff32",
-  "sizeBytes": 70200365,
+  "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
+  "sizeBytes": 70200489,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "bcc1c16cd0519704730782f49e8724c7"
+    "bundleMd5": "9b2119d6d1f642e2549ec32acccdff32"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 bcc1c16cd0519704730782f49e8724c7, 70199729 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 9b2119d6d1f642e2549ec32acccdff32, 70200365 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1280,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T18:11:37+00:00",
-  "buildStamp": "2026-11-04 18:11",
+  "publishedAt": "2026-11-04T18:18:07+00:00",
+  "buildStamp": "2026-11-04 18:18",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
