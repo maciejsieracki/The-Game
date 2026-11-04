@@ -22,7 +22,7 @@
 // od R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1 (tools/oboz-lowiecki-wymaga-tartaku-test.cjs)
 // `oboz_lowiecki` wymaga na TYM SAMYM heksie wczesniej zbudowanego `tartak`. Asercje
 // pozytywne tego pliku (las => obóz dostepny) stawialy obóz na heksie BEZ tartaku, wiec
-// pada­ly (19 FAIL na bazie). Teraz KAZDY scenariusz ma tartak na heksie (fixture), dzieki
+// padaly (19 FAIL na bazie). Teraz KAZDY scenariusz ma tartak na heksie (fixture), dzieki
 // czemu asercje negatywne (równina/wzgórze bez lasu) sprawdzaja WYLACZNIE warunek lasu,
 // a nie przypadkowa blokade z braku tartaku. Sam wymóg tartaku pilnuje
 // oboz-lowiecki-wymaga-tartaku-test.cjs.
