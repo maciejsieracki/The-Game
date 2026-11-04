@@ -1,0 +1,69 @@
+PASS .army-hunger-combat-bundle.cjs
+PASS .army-merge-bounce-bundle.cjs
+PASS .army-merge-colocated-bundle.cjs
+PASS .army-merge-dismiss-bundle.cjs
+PASS .army-merge-separate-return-bundle.cjs
+PASS .army-stack-ruch-bundle.cjs
+PASS .budynek-garnizon-node-bundle.cjs
+PASS .fortify-pole-army-bundle.cjs
+PASS .fortify-pole-auto-bundle.cjs
+PASS .garnizon-exit-bundle.cjs
+PASS .merge-decor-no-regress-bundle.cjs
+PASS .war-allin-army-e2e-bundle.cjs
+PASS army-concentration-test.cjs
+PASS army-consolidation-e2e-test.cjs
+PASS army-consolidation-test.cjs
+PASS army-hunger-combat-test.cjs
+PASS army-hunger-icon-unfortify-test.cjs
+FAIL army-leadership-test.cjs (exit 1)
+PASS army-merge-bounce-test.cjs
+PASS army-merge-colocated-test.cjs
+PASS army-merge-dismiss-bounce-test.cjs
+FAIL army-merge-panel-list-visibility-test.cjs (exit 1)
+FAIL army-merge-panel-production-mount-test.cjs (exit 1)
+FAIL army-merge-panel-scroll-real-render-test.cjs (exit 1)
+PASS army-merge-separate-return-mainguard-test.cjs
+PASS army-merge-separate-return-test.cjs
+PASS army-merge-split-direction-icons-test.cjs
+PASS army-merge-stackgroupid-test.cjs
+FAIL army-panel-recruit-rally-general-test.cjs (exit 1)
+PASS army-panel-recruit-remove-test.cjs
+PASS army-recruitment-concentration-test.cjs
+PASS army-split-movement-test.cjs
+FAIL army-split-panel-scroll-grid-test.cjs (exit 1)
+PASS army-split-ruch-icons-test.cjs
+FAIL army-stack-commander-identity-test.cjs (exit 1)
+PASS army-stack-ruch-test.cjs
+PASS autosave-quota-fail-test.cjs
+PASS battle-mode-save-reload-contract-test.cjs
+FAIL budynek-garnizon-test.cjs (exit 1)
+PASS civ-ai-allocation-saveload-order-test.cjs
+PASS diplo-truce-n6-saveload-test.cjs
+FAIL diplo-truce-saveload-live-test.cjs (exit 1)
+PASS elimination-toast-merge-test.cjs
+PASS epoka-merge-recruit-test.cjs
+PASS forced-war-iron-era-enter-turn-save-load-test.cjs
+PASS fort-nodes-save-load-test.cjs
+PASS fortify-pole-test.cjs
+PASS fsa-autosave-test.cjs
+PASS garnizon-exit-test.cjs
+FAIL hotseat-etap6d-podetap-c-live-saveload-test.cjs (exit 1)
+PASS hotseat-etap7-saveload-test.cjs
+PASS merge-decor-no-regress-test.cjs
+FAIL pr141-runtime-save-load-harness.cjs (exit 1)
+PASS pr141-saveload-mp-f05-g11-behavior-test.cjs
+FAIL pre-battle-save-test.cjs (exit 1)
+PASS recruit-rally-default-save-test.cjs
+PASS retreat-garnizon-fortyfikacja-test.cjs
+PASS save-label-test.cjs
+PASS save-load-sort-test.cjs
+FAIL saveload-hud-cache-hotseat-live-test.cjs (exit 2)
+PASS saveload-hud-cache-hotseat-wiring-test.cjs
+FAIL saveload-praca-pool-hotseat-live-test.cjs (exit 2)
+FAIL saveload-praca-pool-live-test.cjs (exit 2)
+PASS scout-explore-deselect-cycle-test.cjs
+FAIL starting-army-first-city-live-test.cjs (exit 1)
+PASS unfortify-all-action-bar-test.cjs
+FAIL unit-info-card-army-interaction-test.cjs (exit 1)
+TOTAL=67 PASS=50
+EXIT=0

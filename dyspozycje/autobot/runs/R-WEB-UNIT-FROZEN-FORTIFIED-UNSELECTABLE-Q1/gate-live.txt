@@ -1,0 +1,12 @@
+[D] zywa (Chromium)
+  OK   D0 jest wolny heks ladu poza miastem
+  OK   D0b heks bez wlasnego miasta
+  OK   D1 scenariusz: 3 jednostki inGarnizon poza miastem
+  OK   D2 REALNY KLIK w zamrozona jednostke ja wybiera
+  OK   D3 po kliku zadna nie jest inGarnizon, ruch > 0
+  OK   D4 licznik samoleczenia >= 3
+  OK   D5 start tury: sieroty naprawione bez klikania
+  OK   D6 zero bledow strony
+
+WYNIK: pass=43 fail=0
+EXIT=0

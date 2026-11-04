@@ -1,0 +1,51 @@
+unit-frozen-fortified-unselectable-test
+[A] jednostkowa
+  OK   A1 REPRO: garnizon-sierota niewybieralny (unitAtRepresentative=null)
+  OK   A1b REPRO: visibleStackOnHex pusty (merge/ruch go nie widza)
+  OK   A2 heal: 1 garnizon-sierota naprawiony
+  OK   A2b po heal: wybieralny kliknieciem
+  OK   A2c po heal: flaga zdjeta, ruch ze snapshotu, snapshot skasowany
+  OK   A3 armia 27: wszystkie widoczne w stosie po heal
+  OK   A3b armia 27: zadna nie jest inGarnizon
+  OK   A3c armia 27: pula ruchu stosu > 0 (nie zamrozona)
+  OK   A4 garnizon we WLASNYM miescie nietkniety
+  OK   A4b fortyfikacja w polu nietknieta (snapshot zostaje)
+  OK   A4c legalne stany: total=0
+  OK   A4d garnizon w CUDZYM miescie = sierota (ownerId miasta != ownerId jednostki)
+  OK   A5 zalegly snapshot skasowany
+  OK   A5b zalegle oblezenie (nieistniejace miasto) zdjete, aktywne zostaje
+  OK   A5c duplikat id policzony
+  OK   A5d bez opcji siege oblezenie nietkniete (klik-heal nie rusza oblezen)
+  OK   A6 stary zapis: 2 niewybieralne przed heal
+  OK   A6b heal naprawia obie
+  OK   A6c idempotencja: drugi przebieg = 0
+  OK   A7 hasOwnCityAt
+[B] mutacje (kazda MUSI wywrocic A)
+  OK   M1 heal nie leczy sierot -> A sie wywraca
+  OK   M2 heal leczy rowniez legalny garnizon -> A sie wywraca
+  OK   M3 hasOwnCityAt ignoruje wlasciciela -> A sie wywraca
+  OK   M4 heal nie zdejmuje oblezen -> A sie wywraca
+  OK   M5 heal nie czysci snapshotu -> A sie wywraca
+  OK   M6 heal kasuje fortyfikacje w polu -> A sie wywraca
+[C] strukturalna main.ts
+  OK   C1 heal przed hit-testem klikniecia mapy
+  OK   C2 heal przy wyborze jednostki (mapa + lista + panel)
+  OK   C3 heal na starcie tury (przed resetem ruchu, z oblezeniem)
+  OK   C4 heal po wczytaniu zapisu
+  OK   C5 merge (panel) nie propaguje garnizonu poza wlasne miasto
+  OK   C6 merge (ruch na heks) garnizonMode wymaga wlasnego miasta
+  OK   C7 evict zdejmuje garnizon
+  OK   C8 cesja miasta zdejmuje garnizon
+  OK   C9 licznik w logu diagnostycznym
+[D] zywa (Chromium)
+  OK   D0 jest wolny heks ladu poza miastem
+  OK   D0b heks bez wlasnego miasta
+  OK   D1 scenariusz: 3 jednostki inGarnizon poza miastem
+  OK   D2 REALNY KLIK w zamrozona jednostke ja wybiera
+  OK   D3 po kliku zadna nie jest inGarnizon, ruch > 0
+  OK   D4 licznik samoleczenia >= 3
+  OK   D5 start tury: sieroty naprawione bez klikania
+  OK   D6 zero bledow strony
+
+WYNIK: pass=43 fail=0
+EXIT=0

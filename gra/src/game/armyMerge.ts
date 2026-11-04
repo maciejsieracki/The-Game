@@ -217,7 +217,13 @@ export function exitGarnizon(u: RuntimeUnit): boolean {
  * jednostką NIE oblegającą, która wchodzi w ten stan z realnym ruchem do stracenia).
  */
 export function enterFieldFortify(u: RuntimeUnit): void {
-  u.fortifyRuchSnapshot = u.ruchLeft;
+  // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1 (runda 2): idempotentne. Ponowne
+  // "Ufortyfikuj" na stosie, w ktorym jedna jednostka JUZ jest ufortyfikowana w polu, nie moze
+  // nadpisac jej snapshotu zerem (ruchLeft==0 po 1. fortyfikacji) -- inaczej zdjecie
+  // fortyfikacji "przywracalo" 0 ruchu i stos zostawal zamrozony.
+  if (u.ufortyfikowanyWPolu !== true || u.fortifyRuchSnapshot === undefined) {
+    u.fortifyRuchSnapshot = u.ruchLeft;
+  }
   u.ufortyfikowanyWPolu = true;
   // C-025: fortyfikacja i auto-eksploracja wykluczają się wzajemnie (jedna to
   // "stój w miejscu", druga "ruszaj się co turę") -- wejście w fortyfikację
@@ -243,6 +249,121 @@ export function exitFieldFortify(u: RuntimeUnit): boolean {
     delete u.fortifyRuchSnapshot;
   }
   return true;
+}
+
+/**
+ * R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1 (zgloszenie wlasciciela 2026-11-03).
+ *
+ * PRZYCZYNA PIERWOTNA: `inGarnizon===true` jest legalny WYLACZNIE na heksie WLASNEGO miasta
+ * (enterGarnizon wolane tylko po `cityAtUnit(u).ownerId===u.ownerId`). Filtry mapy
+ * (`unitAtRepresentative`, `visibleStackOnHex`, `findAdjacentEmptyHexes`) CELOWO pomijaja
+ * garnizon -- na heksie miasta klik otwiera panel miasta. Poza wlasnym miastem taki flag jest
+ * "osierocony": jednostka jest narysowana (computeStackDisplay), ale zaden klik jej nie wybiera,
+ * split/ruch nie widza jej w stosie, a lacznie (merge) rozpropagowywalo flage na cala armie
+ * (main.ts `preferGarnizon`). Osierocenie powstaje, gdy jednostke przesunieto bez
+ * `exitGarnizon`: wypchniecie z heksu miasta po zdobyciu (evictForeignUnitsFromCityHexes),
+ * cesja miasta w traktacie (transferCityByTreaty -> plan.unitMoves), zmiana wlasciciela miasta.
+ *
+ * `hasOwnCityAt` = jedyny predykat "garnizon jest tu legalny"; `healUnitStates` = idempotentne
+ * samoleczenie (start tury / wczytanie zapisu / klik / wybor z listy). Ownerid-agnostyczne
+ * (gracz i AI ta sama logika).
+ */
+export interface HealCityRef {
+  id?: string;
+  q: number;
+  r: number;
+  ownerId: number;
+  oblegane?: boolean;
+}
+
+export interface HealReport {
+  /** inGarnizon na heksie bez wlasnego miasta -> wyprowadzone z garnizonu. */
+  orphanGarrison: number;
+  /** fortifyRuchSnapshot bez zadnej flagi fortyfikacji/garnizonu -> usuniety. */
+  staleSnapshot: number;
+  /** oblegaCityId wskazujace nieistniejace / nieoblegane miasto -> zdjete (opcja siege). */
+  staleSiege: number;
+  /** Powtorzone id jednostki (tylko liczone, nie naprawiane -- ryzyko odwolan). */
+  duplicateIds: number;
+  total: number;
+}
+
+export function hasOwnCityAt(
+  cities: ReadonlyArray<Pick<HealCityRef, 'q' | 'r' | 'ownerId'>>,
+  q: number,
+  r: number,
+  ownerId: number,
+): boolean {
+  return cities.some(c => c.ownerId === ownerId && c.q === q && c.r === r);
+}
+
+/**
+ * R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1 (runda 2): normalizacja stanu fortyfikacji przy
+ * LACZENIU armii (obie sciezki: panel "Polacz" na heksie i ruch na heks sasiada).
+ * Wywolac PRZED assignSharedStackGroupId/syncStackRuchLeft.
+ *
+ * Powod: syncStackRuchLeft ustawia ruchLeft calego stosu = MIN. Jedna ufortyfikowana jednostka
+ * (ruchLeft=0, snapshot=ruch) zerowala wiec pule ruchu CALEJ duzej armii, a zdjecie fortyfikacji
+ * przywracalo ruch tylko jej samej -- reszta zostawala na 0 ("cala armia zamarza po scaleniu").
+ *
+ * Regula: `garnizon && cityHere` -> wszyscy w garnizonie (jak dotad, tylko wlasne miasto);
+ * w przeciwnym razie nikt nie jest w garnizonie ani w fortyfikacji w polu (ruch ze snapshotu).
+ * Jednostki oblegajace (oblegaCityId) zachowuja fortyfikacje w polu (legalne, ruch 0 co ture).
+ * Zwraca liczbe jednostek, ktorym zmieniono stan.
+ */
+export function normalizeMergedFortify(
+  all: RuntimeUnit[],
+  garnizon: boolean,
+  cityHere: boolean,
+): number {
+  let changed = 0;
+  for (const u of all) {
+    if (garnizon && cityHere) {
+      if (u.ufortyfikowanyWPolu === true && exitFieldFortify(u)) changed += 1;
+      if (u.inGarnizon !== true) {
+        enterGarnizon(u);
+        changed += 1;
+      }
+    } else {
+      if (!cityHere && exitGarnizon(u)) changed += 1;
+      if (!u.oblegaCityId && u.ufortyfikowanyWPolu === true && exitFieldFortify(u)) changed += 1;
+    }
+  }
+  return changed;
+}
+
+export function healUnitStates(
+  units: RuntimeUnit[],
+  cities: ReadonlyArray<HealCityRef>,
+  opts?: { siege?: boolean },
+): HealReport {
+  const rep: HealReport = { orphanGarrison: 0, staleSnapshot: 0, staleSiege: 0, duplicateIds: 0, total: 0 };
+  const seen = new Set<string>();
+  for (const u of units) {
+    if (seen.has(u.id)) rep.duplicateIds += 1;
+    else seen.add(u.id);
+    if (u.inGarnizon === true && !hasOwnCityAt(cities, u.q, u.r, u.ownerId)) {
+      exitGarnizon(u);
+      rep.orphanGarrison += 1;
+    }
+    if (
+      u.fortifyRuchSnapshot !== undefined
+      && u.inGarnizon !== true
+      && u.ufortyfikowanyWPolu !== true
+    ) {
+      delete u.fortifyRuchSnapshot;
+      rep.staleSnapshot += 1;
+    }
+    if (opts?.siege === true && u.oblegaCityId) {
+      const target = cities.find(c => c.id === u.oblegaCityId);
+      if (!target || target.oblegane !== true) {
+        delete u.oblegaCityId;
+        rep.staleSiege += 1;
+      }
+    }
+  }
+  rep.total = rep.orphanGarrison + rep.staleSnapshot + rep.staleSiege;
+  return rep;
 }
 
 /**
