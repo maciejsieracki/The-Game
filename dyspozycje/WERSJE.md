@@ -1,3 +1,12 @@
+## ROBOCZA fc48db59 -- 2026-11-04 -- „zamrożone” jednostki i armie: wybór, łączenie, samoleczenie (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`5fa0c1a84` + UNIT-FROZEN-FORTIFIED-UNSELECTABLE `dceaab0fa`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzuty Armia (112,101)), stała zgoda na poprawki.
+- Bundle MD5 `fc48db59e3238e51cfa5056174b06f23`, 70,178,103 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: jednostka z flagą garnizonu poza własnym miastem była rysowana, ale nieklikalna, a łączenie armii przenosiło „zamrożenie” na całość (pula ruchu = MIN → 0). Naprawa: samoleczenie stanu jednostek (klik, wybór, hover, start tury, wczytanie zapisu), łączenie normalizuje fortyfikację, garnizon tylko w własnym mieście.
+- Testy: tsc PASS; frozen-fortified 76/0 (Chromium, mutacje); merge-panel 104/0; merge-return 73/0.
+- Ograniczenia: organicznego odtworzenia i follow-leader nie zmierzono; jeśli zamrożenie wróci — zapis gry tuż po zdarzeniu.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `b05e96749bdfeefae4e9aa909b222ca9`, 70,174,827 bajtów.
+
 ## ROBOCZA b05e9674 -- 2026-11-03 -- Milicja nie zabija mieszkańców; zdobycie miasta −1 obywatel (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`60621493a` + MILITIA-NO-POPULATION-LOSS `6daf342d4`) i commit wdrożenia bundla; pilne zgłoszenie właściciela (zrzut), stała zgoda na poprawki.

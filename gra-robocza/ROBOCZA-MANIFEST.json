@@ -1,112 +1,113 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b05e96749bdfeefae4e9aa909b222ca9",
-  "bundleSha256": "d45b8a2710040ade9cdb0efc41acc8ceeddf7f8aa7cb5a0ad720d90a30d9adf6",
-  "bundleBytes": 70174827,
+  "bundleMd5": "fc48db59e3238e51cfa5056174b06f23",
+  "bundleSha256": "ca93035d80ef7b9676489c0024a9a25c7b608c07d61dd2d16e4cc450097c336a",
+  "bundleBytes": 70178103,
   "sourceSnapshot": {
-    "source": "main 60621493a + MILITIA-NO-POPULATION-LOSS (6daf342d4)",
+    "source": "main 5fa0c1a84 + UNIT-FROZEN-FORTIFIED-UNSELECTABLE (dceaab0fa)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1 (naprawa błędnego założenia M4): straty Milicji w bitwie NIE zmniejszają już ludności miasta (dotąd 10 → 1–2); zniszczenie Milicji skutkuje tylko 5 turami odnowy. Nowa reguła: zdobycie OBCEGO miasta pomniejsza ludność o 1 (min. 1; parametr capture_pop_loss=1 w miasto-params.json; wspólny punkt zdobycia + kapitulacja głodowa; bez −1 przy odzyskaniu własnego/zbuntowanego miasta, cesji, aneksji); wiersz „Ludność: −1” w bilansie zdobycia."
+    "R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: „zamrożona” jednostka/armia — przyczyna: flaga inGarnizon na heksie bez własnego miasta (jednostka rysowana, ale nieklikalna) i łączenie armii nadające garnizon bez sprawdzenia miasta (cała armia znikała z klikalności, pula ruchu → 0; pula stosu = MIN). Naprawa: healUnitStates (zdejmuje garnizon-sierotę, zaległe snapshoty fortify/oblężenia), wywoływane przy kliku mapy, wyborze jednostki, hoverze, starcie tury i wczytaniu zapisu; normalizeMergedFortify w obu ścieżkach łączenia; garnizon tylko na heksie własnego miasta; exitGarnizon przy wyparciu/cesji. Gracz i AI jednakowo."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "city-capture-pop-loss 29/0 (5 mutacji); city-militia-no-population-loss PASS; city-militia-regen-cooldown 53/0; city-militia-no-defenders 110/0"
+    "unit-frozen-fortified-unselectable 76/0 (Chromium D0–D12, 10 mutacji); army-merge-panel-list-visibility 104/0; army-merge-separate-return-mainguard 73/0"
   ],
   "limits": [
-    "Ludności utraconej w istniejących zapisach nie da się odzyskać",
-    "Wiersz „Ludność: −1” nie oglądany wizualnie",
-    "wall-defenders-bonus-range i pomiar w Chromium NIE_ZMIERZONO; budynek-garnizon czerwony także na bazie"
+    "Organiczne odtworzenie sieroty w grze i pomiar 5 ziaren × 100 tur NIE_ZMIERZONO",
+    "Follow-leader (generalQuickFollow, „Idź do wodza”) i treść tooltipu na hoverze NIE_ZMIERZONO",
+    "Testy army/save czerwone na bazie (14–17) bez regresji",
+    "Jeśli zamrożenie wystąpi ponownie — zapis gry tuż po zdarzeniu = najlepszy dowód"
   ],
   "finalControl": {
-    "status": "PASS",
-    "notes": "MILITIA-NO-POPULATION-LOSS (r2): Operator → Evaluator FAIL → Obrona → FC PASS."
+    "status": "PASS-WITH-NOTES",
+    "notes": "UNIT-FROZEN-FORTIFIED-UNSELECTABLE (r2): Operator → Evaluator FAIL (5 zarzutów) → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-03T23:52:05",
+  "hubGeneratedAt": "2026-11-04T00:27:10",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b05e96749bdfeefae4e9aa909b222ca9",
-      "sizeBytes": 70174827
+      "md5": "fc48db59e3238e51cfa5056174b06f23",
+      "sizeBytes": 70178103
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b05e96749bdfeefae4e9aa909b222ca9",
-      "sizeBytes": 70174827
+      "md5": "fc48db59e3238e51cfa5056174b06f23",
+      "sizeBytes": 70178103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "b05e96749bdfeefae4e9aa909b222ca9",
-      "sizeBytes": 70174827
+      "md5": "fc48db59e3238e51cfa5056174b06f23",
+      "sizeBytes": 70178103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "b05e96749bdfeefae4e9aa909b222ca9",
-      "sizeBytes": 70174827
+      "md5": "fc48db59e3238e51cfa5056174b06f23",
+      "sizeBytes": 70178103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "b05e96749bdfeefae4e9aa909b222ca9",
-      "sizeBytes": 70174827
+      "md5": "fc48db59e3238e51cfa5056174b06f23",
+      "sizeBytes": 70178103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "b05e96749bdfeefae4e9aa909b222ca9",
-      "sizeBytes": 70174827
+      "md5": "fc48db59e3238e51cfa5056174b06f23",
+      "sizeBytes": 70178103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "b05e96749bdfeefae4e9aa909b222ca9",
-      "sizeBytes": 70174827
+      "md5": "fc48db59e3238e51cfa5056174b06f23",
+      "sizeBytes": 70178103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "b05e96749bdfeefae4e9aa909b222ca9",
-      "sizeBytes": 70174827
+      "md5": "fc48db59e3238e51cfa5056174b06f23",
+      "sizeBytes": 70178103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "b05e96749bdfeefae4e9aa909b222ca9",
-      "sizeBytes": 70174827
+      "md5": "fc48db59e3238e51cfa5056174b06f23",
+      "sizeBytes": 70178103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "b05e96749bdfeefae4e9aa909b222ca9",
-      "sizeBytes": 70174827
+      "md5": "fc48db59e3238e51cfa5056174b06f23",
+      "sizeBytes": 70178103
     }
   ],
-  "md5": "b05e96749bdfeefae4e9aa909b222ca9",
-  "sizeBytes": 70174827,
+  "md5": "fc48db59e3238e51cfa5056174b06f23",
+  "sizeBytes": 70178103,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "83961b9bca4234b85f0a635e6f49e6de"
+    "bundleMd5": "b05e96749bdfeefae4e9aa909b222ca9"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 83961b9bca4234b85f0a635e6f49e6de, 70173786 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 b05e96749bdfeefae4e9aa909b222ca9, 70174827 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1283,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-03T23:52:05+00:00",
-  "buildStamp": "2026-11-03 23:52",
+  "publishedAt": "2026-11-04T00:27:10+00:00",
+  "buildStamp": "2026-11-04 00:27",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
