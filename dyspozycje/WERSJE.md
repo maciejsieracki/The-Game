@@ -1,3 +1,12 @@
+## ROBOCZA 1e206e6b -- 2026-11-04 -- bonus za trasę morską tylko z Portem (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`c005d7500` + TRADE-SEA-BONUS-REQUIRES-PORT `2ecb33c7e`) i commit wdrożenia; decyzja właściciela (ABC B), stała zgoda.
+- Bundle MD5 `1e206e6b93ead83afb1da71f589010d4`, 70203077 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: bonus +1 za trasę morską ponad pierwszą wymaga Portu w mieście; trasy handlowe (kontakt) i dochód dystansowy bez zmian.
+- Testy: tsc PASS; trade-sea-bonus 30/0; trade-routes 96/0; hud-filter 64/0; contact-only 36/0; naval-gate 40/0.
+- Ograniczenia: bez symulacji ziaren; tooltipy UI niesprawdzone.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `ca2a0d57f78560d5ef4dbfabb03db9e7`, 70203042 bajtów.
+
 ## ROBOCZA ca2a0d57 -- 2026-11-04 -- automat wycina las pod farmy (Żywność i Zrównoważony), także przy rzece (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`6983bbb4d` + RIVER-FOREST-CLEAR `43465cdf7` + WAR-ALLIN-CAPITAL-TEST-DEBT `fc629f392`) i commit wdrożenia; zgłoszenie właściciela (zrzut Ostia), stała zgoda.
