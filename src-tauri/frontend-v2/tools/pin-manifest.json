@@ -2541,12 +2541,6 @@
       "bytes": 2521
     },
     {
-      "path": "src/ui/hudChip6c.ts",
-      "pin": "edb8fb56:gra/src/ui/hudChip6c.ts",
-      "sha256": "2fe6b462a6eaf3006d32a2626cf134892c496715fa19216f8dc635fe6bc203bd",
-      "bytes": 3075
-    },
-    {
       "path": "src/ui/mapToolbarHud.ts",
       "pin": "edb8fb56:gra/src/ui/mapToolbarHud.ts",
       "sha256": "80ac2f8ec0db63b0898960de6be5fa5d950881bd964b2515afff335e90d0ca09",
@@ -2575,12 +2569,6 @@
       "pin": "edb8fb56:gra/src/ui/interHumanDiplomacyHud.ts",
       "sha256": "123438dbe01f59bd00059b09dae3e22b3ff0cec2c930b66100bb1e4b0d08ef52",
       "bytes": 12924
-    },
-    {
-      "path": "src/ui/unitActionBarHtml.ts",
-      "pin": "edb8fb56:gra/src/ui/unitActionBarHtml.ts",
-      "sha256": "7f9bfa0738260c9feb2c3005c9054297ffe128aff733c565c67f8b44611d2af1",
-      "bytes": 10052
     },
     {
       "path": "src/ui/assets/hero/hero-menu.png",
