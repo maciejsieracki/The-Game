@@ -338,9 +338,16 @@ function collectResourceLabels(hex: Hex, era: number, playerCivType?: string | n
   const out: string[] = [];
   const seen = new Set<string>();
 
+  // R-WEB-TOOLTIP-RESOURCES-LINE-DEDUP-Q1: dedup bez wrażliwości na diakrytyki; etykieta
+  // ogólna ('Ruda') jest zbędna, gdy jest już doprecyzowana ('Ruda miedzi'), a 'Las (drewno)'
+  // — gdy 'Drewno' już jest w linii (ta sama informacja dwa razy).
+  const norm = (s: string): string =>
+    s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l');
   const push = (label: string): void => {
-    const k = label.toLowerCase();
+    const k = norm(label);
     if (seen.has(k)) return;
+    if (k === 'las (drewno)' && seen.has('drewno')) return;
+    for (const s of seen) if (s.startsWith(`${k} `)) return;
     seen.add(k);
     out.push(label);
   };
