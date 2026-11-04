@@ -37,5 +37,5 @@ Silnik NIE jest main.ts (nieuruchamialny headless); pelna gra w przegladarce: NI
 ## BLOKADY
 Brak. Znana pre-existing czerwien war-allin-capital-test 1a/6b (identyczna PRZED/PO).
 NASTEPNY KROK: Evaluator (ocena zakresu: warAllInCapital.ts poza allowlista; ocena kroku bocznego), potem Final Control.
-ZMIANY/COMMIT: patrz SHA ponizej (jawny git add, bez push).
+ZMIANY/COMMIT: 3805d1987 (warAllInCapital.ts, ai-move-full-range-test.cjs, dowody runu); jawny git add, bez push. Raport dodany w kolejnym commicie (amend nie dotyczy SHA kodu).
 DEPLOY/PUSH: NIE WYKONANO
