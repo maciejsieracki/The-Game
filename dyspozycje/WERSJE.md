@@ -1,3 +1,12 @@
+## ROBOCZA 3c324fd3 -- 2026-11-04 -- jednostki idą do najbliższego wodza (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`bfd437898` + ARMY-TO-NEAREST-LEADER `2f8064c94`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `3c324fd32f2ab04d451e0206064910e9`, 70193957 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: zbiórka do wodza po najbliższej realnej trasie (AI i gracz, „Idź do wodza”, nowe jednostki); wódz bez trasy pomijany. Pomiar: u nie-najbliższego wodza 54/109 → 0/114.
+- Testy: tsc PASS; army-to-nearest-leader 43/0; ai-march-avoid 99/0; army-concentration 56/0; ai-army-replacement 34/0; ai-move-full-range 20/0.
+- Ograniczenia: ścieżka gracza w main.ts bez przeglądarki; wydajność UI niezmierzona.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `067ed2a946232d7939ad67f353073e96`, 70191875 bajtów.
+
 ## ROBOCZA 067ed2a9 -- 2026-11-04 -- tooltip bez dubli etykiety odblokowania + skrócone Rekruci w HUD (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`f54fb5c18` + TOOLTIP-UNLOCK-LABEL-DEDUP `34e1c8a60` + HUD-RECRUITS-NUMBER-ABBREV `ffd8bd2df`) i commit wdrożenia; stała zgoda właściciela.
