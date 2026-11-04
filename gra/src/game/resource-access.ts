@@ -58,6 +58,7 @@ const ZLOZE_LABEL: Record<string, string> = {
   stal:     'Stal',
   zloto:    'Złoto',
   cyna:     'Ruda cyny',
+  kon:      'Koń',
 };
 
 /** Klucze ASCII z terrain-improvements.json → etykieta panelu (resources.json Surowiec). */
