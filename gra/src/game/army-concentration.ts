@@ -465,3 +465,60 @@ export function planWarReplacementRally(
     moveUnitIds: looseUnits.filter(u => u.q !== rally.q || u.r !== rally.r).map(u => u.id),
   };
 }
+
+// ---------------------------------------------------------------------------
+// R-WEB-ARMY-TO-NEAREST-LEADER-Q1 -- jednostki zbieraja sie u NAJBLIZSZEGO dostepnego wodza.
+//
+// Przyczyna (przed tematem): wybor wodza byl "pierwszy": main.ts planSpawnedUnitFollowGeneral
+// brala units.find(isGeneral) (pierwszy na liscie), kampania AI wybierala wodza sort(id)[0]
+// (main.ts prepareAiGeneralWarCampaign), a zbiorka AI szla do JEDNEGO wodza kampanii niezaleznie
+// od odleglosci (ai.ts appendAiGeneralCampaignOrders). Pozostale sciezki gracza liczyly odleglosc
+// w linii prostej (generals.ts nearestLivingGeneral), ignorujac brak sciezki.
+// Regula: odleglosc = dlugosc realnej sciezki ruchu (null = wodz niedostepny, pomijany);
+// wodz na wyprawie (w marszu na cel) jest celem tylko gdy nie ma zadnego dostepnego zbierajacego;
+// remis -> wieksza armia, potem id.
+// ---------------------------------------------------------------------------
+
+export interface LeaderCandidate {
+  id: string;
+  q: number;
+  r: number;
+  /** Liczba jednostek przy wodzu (remis -> wieksza armia). */
+  armySize?: number;
+  /** Wodz w marszu na cel (wyprawa) -- nie jest punktem zbiorki, gdy jest dostepny zbierajacy. */
+  onExpedition?: boolean;
+}
+
+/** Dlugosc realnej sciezki ruchu (liczba krokow) albo null, gdy cel jest nieosiagalny. */
+export type LeaderPathLength = (
+  from: { q: number; r: number },
+  to: { q: number; r: number },
+) => number | null;
+
+export interface NearestLeaderChoice<T extends LeaderCandidate> {
+  leader: T;
+  distance: number;
+}
+
+export function pickNearestAvailableLeader<T extends LeaderCandidate>(
+  from: { q: number; r: number },
+  leaders: readonly T[],
+  pathLength: LeaderPathLength,
+): NearestLeaderChoice<T> | null {
+  const available: Array<NearestLeaderChoice<T>> = [];
+  for (const leader of leaders) {
+    const distance = from.q === leader.q && from.r === leader.r
+      ? 0
+      : pathLength(from, { q: leader.q, r: leader.r });
+    if (distance === null || !Number.isFinite(distance)) continue;
+    available.push({ leader, distance });
+  }
+  if (available.length === 0) return null;
+  const gathering = available.filter(a => a.leader.onExpedition !== true);
+  const pool = gathering.length > 0 ? gathering : available;
+  pool.sort((a, b) =>
+    a.distance - b.distance
+    || (b.leader.armySize ?? 0) - (a.leader.armySize ?? 0)
+    || a.leader.id.localeCompare(b.leader.id));
+  return pool[0] ?? null;
+}
