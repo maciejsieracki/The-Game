@@ -6,8 +6,11 @@
  * całego main.ts (który ma zależności DOM/WebGL i nie nadaje się do bundlowania w Node).
  *
  * Jawne wyjątki BEZ wspólnego prefiksu: hodowla solo (bydło/owce/lama — stoją na kopcu),
- * kamieniołom (R-KAMIEN-RELIEF) i tartak (R-TARTAK-WZGÓRZE-LAS: tartak na zalesionym
- * wzgórzu zachowuje kopiec oraz nakładkę Las; sektor modelu trafia na powierzchnię stoku).
+ * kamieniołom (R-KAMIEN-RELIEF), tartak (R-TARTAK-WZGÓRZE-LAS: tartak na zalesionym
+ * wzgórzu zachowuje kopiec oraz nakładkę Las; sektor modelu trafia na powierzchnię stoku)
+ * i obóz łowiecki (R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1: obóz wymaga na tym samym heksie
+ * wcześniejszego tartaku, więc warstwy to ['tartak','oboz_lowiecki']; bez wpisu obozu
+ * `preservesHillRelief` (every) zwracało false i render chował kopiec oraz las).
  *
  * PREFIKS "kopalnia" / "kopalnia_*" (decyzja właściciela R-KAMIEN-FUTURE-Q1=C, 2026-08-06,
  * doprecyzowanie decyzji nadrzędnej R-KAMIEN-RELIEF-FOLLOWUP-Q1):
@@ -21,7 +24,7 @@
  */
 
 /** Jawne klucze BEZ prefiksu "kopalnia" — hodowle solo, kamieniołom i tartak. */
-const PRESERVES_HILL_RELIEF_EXPLICIT_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom', 'tartak']);
+const PRESERVES_HILL_RELIEF_EXPLICIT_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom', 'tartak', 'oboz_lowiecki']);
 
 const KOPALNIA_PREFIX = 'kopalnia_';
 /** Legacy uniwersalna "kopalnia" (stare zapisy/migracje, bez sufiksu surowca). */

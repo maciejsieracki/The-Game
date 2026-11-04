@@ -1,0 +1,3 @@
+
+sawmill-hill-relief-test: 8 assertions passed
+EXIT=0
