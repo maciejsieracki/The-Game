@@ -1,3 +1,12 @@
+## ROBOCZA 81e45a20 -- 2026-11-04 -- automat buduje irygację po farmach i trzodzie przy widocznej rzece (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`f3831912a` + AUTOIMPROVE-IRRIGATION-NOT-BUILT `1b0833d54` + OBOZ-LOWIECKI-LAS-TEST-DEBT `6228d8c3a`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `81e45a205be36ed8f8b57a5017ddb567`, 70202943 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: irygacja po farmie/trzodzie na polach obywateli także tam, gdzie rzeka ma tylko znacznik „obecna” (automat gracza i AI); bez zmian filtra „tylko obywatele” i ręcznej budowy. Na mapach bez rzek irygacja/trzoda nadal nie powstają (reguła kanonu).
+- Testy: tsc PASS; irrigation-after-farms 43/0; ai-food-only 81/0; ai-improvements 56/0; auto-improvements 46/0; oboz-lowiecki-las-test 94/0.
+- Ograniczenia: bez przeglądarki; decyzje D1–D3 do właściciela.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `d5345611fe5bc89764f847b3a4029b53`, 70202771 bajtów.
+
 ## ROBOCZA d5345611 -- 2026-11-04 -- skracanie liczb k/M w panelach miasta, rekrutacji i imperium (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`56aa8c68d` + MANPOWER-ABBREV-PANELS `717ab3ec8`) i commit wdrożenia; stała zgoda właściciela.
