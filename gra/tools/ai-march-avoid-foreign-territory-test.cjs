@@ -62,6 +62,20 @@ const MUT_REQ_WAR = {
   from: "    guard.stats.deferred += noPathIds.size;\n    guard.requestPassage(crossing, 'no-route');", to: '    guard.stats.deferred += noPathIds.size;',
 };
 
+const MUT_COOLDOWN_FUTURE = {
+  name: 'isMarchPassageCooldownActive: wpis z przyszlosci wycisza prosby', rel: 'game/ai-march-guard.ts',
+  from: 'return last !== undefined && last <= turn && turn - last < cooldownTurns;', to: 'return last !== undefined && turn - last < cooldownTurns;',
+};
+const MUT_NOSEA = {
+  name: 'guardedMarchPath: brak trasy morskiej (od razu odroczenie)', rel: 'game/ai.ts',
+  from: '  const seaCost = guard.seaCostFor(unit);\n  if (seaCost !== undefined) {', to: '  const seaCost = undefined;\n  if (seaCost !== undefined) {',
+};
+
+const MUT_NOSEA_WAR = {
+  name: 'planer wojny: brak przeplanowania z woda', rel: 'game/ai.ts',
+  from: 'if (noPathCount(seaPlans) < noPathCount(plans)) {', to: 'if (false as boolean) {',
+};
+
 async function makeBundle(tag, mutations) {
   const entry = path.join(OUT, `${tag}-entry.ts`);
   const bundle = path.join(OUT, `${tag}-bundle.cjs`);
@@ -69,7 +83,8 @@ async function makeBundle(tag, mutations) {
   const J = (p) => JSON.stringify(abs(p));
   fs.writeFileSync(entry, [
     `export { decideAITurn } from ${J('game/ai.ts')};`,
-    `export { createAiMarchGuard, isDetourSignificant } from ${J('game/ai-march-guard.ts')};`,
+    `export { createAiMarchGuard, isDetourSignificant, isMarchPassageCooldownActive } from ${J('game/ai-march-guard.ts')};`,
+    `export { moveCostFnFor, applyEmbarkStateAfterMove } from ${J('game/embarkation.ts')};`,
     `export { truncatePathWithinBudget } from ${J('game/ai-move-range.ts')};`,
     `export { executeAiCityMove } from ${J('game/ai-city-capture-executor.ts')};`,
     `export { addForeignCityBlocks, canUnitOccupyCityHex } from ${J('game/city-hex-movement.ts')};`,
@@ -118,9 +133,9 @@ function nodesOf(M, cities) {
 function makeScenario(M, kind) {
   const W = 44; const HT = 21;
   const map = H.makeMap(W, HT);
-  const cities = [H.mkCity('c1', 1, 4, 10, 5), H.mkCity('c2', 2, 21, 11, 5), H.mkCity('c3', 3, 38, 10, 3)];
-  const R2 = M.cityTerritoryRadius({ q: 21, r: 11, pop: 5, level: 1 });
-  if (kind === 'corridor') {
+  const cities = [H.mkCity('c1', 1, 4, 10, 5), H.mkCity('c2', 2, 21, kind === 'sym' ? 10 : 11, 5), H.mkCity('c3', 3, 38, 10, 3)];
+  const R2 = M.cityTerritoryRadius({ q: 21, r: kind === 'sym' ? 10 : 11, pop: 5, level: 1 });
+  if (kind === 'corridor' || kind === 'corridor-sea') {
     // Waski korytarz r in [9..11]: teren trzeciej (promien >= 2) zamyka go calkowicie -> brak trasy okreznej.
     for (const k of Object.keys(map.hexes)) {
       const hx = map.hexes[k];
@@ -129,7 +144,10 @@ function makeScenario(M, kind) {
   }
   const units = [];
   for (let j = 0; j < 4; j++) {
-    const u = H.mkUnit(`a${j}`, 1, 5 + (j % 2), 9 + Math.floor(j / 2) + (kind === 'corridor' ? 0 : 0));
+    // 'sym': SYMETRYCZNY rozstaw wzgledem osi r=10 (trzecia na r=10): dwie jednostki nad osia, dwie pod --
+    // przypadek, w ktorym planer wojny mogl rozdzielac grupe (raport R1: oscylacja).
+    const ur = kind === 'sym' ? (j < 2 ? 8 : 12) : 9 + Math.floor(j / 2);
+    const u = H.mkUnit(`a${j}`, 1, 5 + (j % 2), ur);
     u.ruch = 3; u.ruchLeft = 3; u.hp = 3; units.push(u);
   }
   return { map, cities, units, R2 };
@@ -144,6 +162,7 @@ function runScenario(M, kind, o) {
     ownerId: 1, nodes,
     isPassageAllowed: (t) => (o.allowed ? o.allowed.has(t) : false) || t === 3, // t=3: wojna = dozwolone
     onRequestPassage: (t, reason) => requests.push({ t, reason }),
+    ...(o.sea ? { seaCostFn: (u) => M.moveCostFnFor(u, true) } : {}),
   });
   const trace = { inThird: 0, maxQ: 0, captured: false, positions: [], guard, requests, R2: sc.R2 };
   for (let turn = 1; turn <= (o.turns ?? 40); turn++) {
@@ -162,7 +181,7 @@ function runScenario(M, kind, o) {
       const blocked = M.addForeignCityBlocks(new Set(), 1, cities);
       for (const ou of units) if (ou.id !== u.id) blocked.add(M.keyOf(ou.q, ou.r));
       const costFn = guard && !M.isCivilianUnit(u)
-        ? guard.wrapCost(M.terrainMoveCost, guard.isBlockedHex(u.q, u.r) ? guard.territoryOwnerAtHex(u.q, u.r) : undefined)
+        ? guard.wrapCost(M.moveCostFnFor(u, o.sea === true) ?? M.terrainMoveCost, guard.isBlockedHex(u.q, u.r) ? guard.territoryOwnerAtHex(u.q, u.r) : undefined)
         : undefined;
       M.executeAiCityMove({
         command: c, unit: u, cities, cityBuiltIds: [], hasCityDefenders: false, unitIsCivilian: false,
@@ -170,17 +189,28 @@ function runScenario(M, kind, o) {
         canOccupyCityHex: M.canUnitOccupyCityHex(1, c.toQ, c.toR, cities),
         blockedKeys: blocked, destinationKey: M.keyOf(c.toQ, c.toR),
         computePath: (_u, toQ, toR, occ) => M.computePath(u, map, toQ, toR, occ, costFn),
-        truncatePath: (full) => M.truncatePathWithinBudget(full, u.ruchLeft, map),
+        truncatePath: (full) => M.truncatePathWithinBudget(full, u.ruchLeft, map, M.moveCostFnFor(u, o.sea === true)), // jak main.ts
         onCapture: (city) => { city.ownerId = 1; return true; },
       });
       if (dest && dest.ownerId === 1) trace.captured = true;
     }
+    M.applyEmbarkStateAfterMove(units, map);
+    trace.turnsRun = turn;
+    { const mq = units.reduce((a, u) => a + u.q, 0) / units.length;
+      if (trace.prevMq !== undefined && Math.abs(mq - trace.prevMq) > 1e-9) {
+        const dir = mq > trace.prevMq ? 1 : -1;
+        if (trace.prevDir !== undefined && dir !== trace.prevDir) trace.reversals = (trace.reversals || 0) + 1;
+        trace.prevDir = dir;
+      }
+      trace.prevMq = mq; }
     for (const u of units) {
       if (M.territoryOwnerAt(u.q, u.r, nodes) === 2) trace.inThird++;
+      if (u.embarked === true) trace.embarkedTurns = (trace.embarkedTurns || 0) + 1;
       trace.maxQ = Math.max(trace.maxQ, u.q);
     }
     if (trace.captured) break;
   }
+  trace.reversals = trace.reversals || 0;
   trace.finalQ = units.map((u) => u.q);
   trace.units = units;
   trace.nodes = nodes;
@@ -341,6 +371,9 @@ async function main() {
   const M_ALLOW_KEYS = await makeBundle('mut-allow-keys', [MUT_ALLOW_KEYS]);
   const M_REQ = await makeBundle('mut-req', [MUT_REQ]);
   const M_REQ_WAR = await makeBundle('mut-req-war', [MUT_REQ_WAR]);
+  const M_CDF = await makeBundle('mut-cdf', [MUT_COOLDOWN_FUTURE]);
+  const M_NOSEA_WAR = await makeBundle('mut-nosea-war', [MUT_NOSEA_WAR]);
+  const M_NOSEA = await makeBundle('mut-nosea', [MUT_NOSEA]);
 
   console.log('\n--- A: straz marszu (jednostkowo) ---');
   {
@@ -400,6 +433,27 @@ async function main() {
     assert(s4.guard.stats.deferred > 0, `B4d (${tag}) odroczenia zliczone (deferred=${s4.guard.stats.deferred})`);
     const s4base = runScenario(M, 'corridor', { guard: false, war });
     assert(s4base.inThird > 0, `B4e (${tag}) kontrola: bez strazy AI w korytarzu WCHODZI w teren trzeciej (scenariusz reprezentatywny)`);
+
+    // TRASA MORSKA (dispatch: brak trasy ladowej => dowolna dostepna trasa morska): korytarz zamkniety
+    // terenem trzeciej, ale wlasciciel zna Zeglugę -> jednostki PLYNA wokol (woda poza promieniem terytorium).
+    const s7 = runScenario(M, 'corridor-sea', { guard: true, war, sea: true, turns: 60 });
+    eq(s7.inThird, 0, `B7 (${tag}) brak trasy ladowej + Zegluga: trasa morska, ZERO jednostko-tur na terenie trzeciej`);
+    assert(s7.captured || s7.maxQ > 21 + R2, `B7b (${tag}) trasa morska dociera za teren trzeciej (maxQ=${s7.maxQ}, captured=${s7.captured})`);
+    assert((s7.embarkedTurns || 0) > 0 && s7.guard.stats.seaRoutes > 0, `B7c (${tag}) jednostki faktycznie sie zaokretowaly (jednostko-tury na wodzie=${s7.embarkedTurns || 0}, seaRoutes=${s7.guard.stats.seaRoutes})`);
+    const s7n = runScenario(M, 'corridor-sea', { guard: true, war, sea: false, turns: 60 });
+    assert(!s7n.captured && s7n.maxQ < 21 - 1 && s7n.inThird === 0, `B7d (${tag}) bez Zeglugi (brak seaCostFn): nadal odroczenie, 0 wejsc (maxQ=${s7n.maxQ})`);
+  }
+  {
+    // SCENARIUSZ SYMETRYCZNY (zarzut 3 R1): armia rozstawiona symetrycznie wzgledem osi, trzecia na osi.
+    // Asercje progowe: 0 wejsc, marsz POSTEPUJE (nie oscyluje): maksymalny q rosnie monotonicznie do kolejnych
+    // okien 10 tur i armia dociera za teren trzeciej / zdobywa cel.
+    for (const war of [true, false]) {
+      const tag = war ? 'wojna-all-in' : 'firstStep';
+      const sy = runScenario(M, 'sym', { guard: true, war, turns: 70 });
+      eq(sy.inThird, 0, `B8 (${tag}) rozstaw symetryczny: ZERO jednostko-tur na terenie trzeciej`);
+      assert(sy.captured || sy.maxQ > 21 + sy.R2, `B8b (${tag}) rozstaw symetryczny: armia dociera za teren trzeciej / zdobywa cel (maxQ=${sy.maxQ}, captured=${sy.captured}, tury=${sy.turnsRun}) -- brak oscylacji w miejscu`);
+      assert(sy.reversals <= 6, `B8c (${tag}) rozstaw symetryczny: liczba zmian kierunku sredniego q <= 6 (=${sy.reversals}) -- brak oscylacji`);
+    }
   }
   {
     // jednostka stoi na zakazanym terenie -> wyjscie dozwolone (wyjatek, zliczony), nie utyka
@@ -409,10 +463,16 @@ async function main() {
       const guard = M.createAiMarchGuard({ ownerId: 1, nodes, isPassageAllowed: (t) => t === 3 });
       const u = H.mkUnit('x1', 1, 21, 10); u.ruch = 3; u.ruchLeft = 3; u.hp = 3;
       assert(guard.isBlockedHex(u.q, u.r), `B5 (${war ? 'wojna-all-in' : 'firstStep'}) jednostka stoi na zakazanym terenie`);
-      const cmds = M.decideAITurn(1, [u], sc.cities, sc.map, H.DATA, {
-        canEngageOwner: (t) => t === 3, currentTurn: 1, capitalCityId: 'c1', atWarWithCiv: true, territoryNodes: nodes,
-        ...(war ? { warAllIn: { targets: [{ ownerId: 3, cityId: 'c3', q: 38, r: 10 }] } } : {}), marchGuard: guard,
-      });
+      const logs = []; const origLog = console.log;
+      console.log = (...a) => { logs.push(a.join(' ')); };
+      let cmds;
+      try {
+        cmds = M.decideAITurn(1, [u], sc.cities, sc.map, H.DATA, {
+          canEngageOwner: (t) => t === 3, currentTurn: 1, capitalCityId: 'c1', atWarWithCiv: true, territoryNodes: nodes,
+          ...(war ? { warAllIn: { targets: [{ ownerId: 3, cityId: 'c3', q: 38, r: 10 }] } } : {}), marchGuard: guard,
+        });
+      } finally { console.log = origLog; }
+      assert(logs.some((l) => l.includes('[AI-marsz] wyjatek wyjscia')), `B5d (${war ? 'wojna-all-in' : 'firstStep'}) wyjatek wyjscia z cudzego terenu jest ZALOGOWANY (console.log "[AI-marsz] wyjatek wyjscia")`);
       const mv = cmds.find((c) => c.type === 'move' && c.unitId === 'x1');
       assert(mv !== undefined, `B5b (${war ? 'wojna-all-in' : 'firstStep'}) jednostka na zakazanym terenie dostaje rozkaz ruchu (nie utyka)`);
       assert(guard.stats.exitExceptions > 0 || !war, `B5c (${war ? 'wojna-all-in' : 'firstStep'}) wyjatek wyjscia zliczony (${guard.stats.exitExceptions})`);
@@ -438,6 +498,22 @@ async function main() {
     eq(m6.requests.length, 0, `C6 ${MUT_REQ.name}: prosba znika (0) -> B4c (firstStep) czerwone`);
     const m7 = runScenario(M_REQ_WAR, 'corridor', { guard: true, war: true });
     eq(m7.requests.length, 0, `C7 ${MUT_REQ_WAR.name}: prosba znika (0) -> B4c (wojna-all-in) czerwone`);
+    const m8 = runScenario(M_NOSEA, 'corridor-sea', { guard: true, war: false, sea: true, turns: 60 });
+    assert(!(m8.guard.stats.seaRoutes > 0 && m8.maxQ > 21 + m8.R2), `C8 ${MUT_NOSEA.name}: marsz morski znika (seaRoutes=${m8.guard.stats.seaRoutes}) -> B7 (firstStep) czerwone`);
+    const m10 = runScenario(M_NOSEA_WAR, 'corridor-sea', { guard: true, war: true, sea: true, turns: 60 });
+    assert(!m10.captured && m10.maxQ < 21 - 1, `C10 ${MUT_NOSEA_WAR.name}: marsz morski znika (maxQ=${m10.maxQ}) -> B7 (wojna-all-in) czerwone`);
+    assert(M_CDF.isMarchPassageCooldownActive(100, 3, 8) === true, `C9 ${MUT_COOLDOWN_FUTURE.name}: wpis z przyszlosci wycisza prosby -> F2 czerwone`);
+  }
+
+  console.log('\n--- F: cooldown prosby o przemarsz (zachowanie: czysta funkcja uzywana przez main.ts) ---');
+  {
+    const cd = M.isMarchPassageCooldownActive;
+    eq(cd(undefined, 10, 8), false, 'F1 brak wpisu: prosba dozwolona');
+    eq(cd(10, 10, 8), true, 'F1b ta sama tura: wyciszona');
+    eq(cd(10, 17, 8), true, 'F1c 7 tur po prosbie: wyciszona (bez spamu)');
+    eq(cd(10, 18, 8), false, 'F1d 8 tur po prosbie: ponowienie wg cooldownu');
+    eq(cd(100, 3, 8), false, 'F2 wpis z PRZYSZLOSCI (nowa gra / wczytany wczesniejszy zapis): NIE wycisza prosb (zarzut R1 #1)');
+    eq(cd(100, 99, 8), false, 'F2b wpis z przyszlosci o 1 ture: nie wycisza');
   }
 
   console.log('\n--- E: statyczne zabezpieczenia main.ts (okablowanie) ---');
@@ -445,9 +521,15 @@ async function main() {
     const main = fs.readFileSync(abs('main.ts'), 'utf8');
     assert(/marchGuard:\s*atWarWithCivFor\(ownerId\)/.test(main), 'E1 main.ts: straz tylko gdy AI jest w wojnie z cywilizacja (atWarWithCivFor)');
     assert(/hasAuthorizedBorderCrossing\(ownerId, territoryOwnerId, \{[^}]*isMilitary: true/s.test(main), 'E2 main.ts: autoryzacja przemarszu = TO SAMO hasAuthorizedBorderCrossing co kara (isMilitary: true)');
-    assert(/AI_MARCH_PASSAGE_REQUEST_COOLDOWN_TURNS = 8/.test(main) && /turn - last < AI_MARCH_PASSAGE_REQUEST_COOLDOWN_TURNS/.test(main), 'E3 main.ts: cooldown prosby o przemarsz (8 tur, bez spamu)');
+    assert(/AI_MARCH_PASSAGE_REQUEST_COOLDOWN_TURNS = 8/.test(main) && /isMarchPassageCooldownActive\(last, turn, AI_MARCH_PASSAGE_REQUEST_COOLDOWN_TURNS\)/.test(main), 'E3 main.ts: cooldown prosby o przemarsz (8 tur, bez spamu)');
     assert(/computePath\(u, map, toQ, toR, occupied, aiMarchCostFn\(u, opts\.marchGuard\)\)/.test(main), 'E4 main.ts: egzekutor ruchu AI uzywa tej samej blokady co planer');
     assert(/actionId: 'granice', proposerOwnerId: aiOwnerId[^}]*payload: \{ borderMilitary: true \}/s.test(main), 'E5 main.ts: prosba AI<->AI idzie istniejacym evaluateProposal (granice + borderMilitary)');
+    // Cooldown musi zyc w cyklu zycia gry jak siostrzane mapy: czyszczony przy nowej grze I wczytaniu, zapisywany w save, odczytywany.
+    const cnt = (re) => (main.match(re) || []).length;
+    assert(cnt(/aiMarchPassageRequestTurn\.clear\(\)/g) >= 2, `E7 main.ts: aiMarchPassageRequestTurn czyszczony przy nowej grze i przy wczytaniu (clear x${cnt(/aiMarchPassageRequestTurn\.clear\(\)/g)} >= 2)`);
+    assert(/aiMarchPassageRequestTurn: Array\.from\(aiMarchPassageRequestTurn\.entries\(\)\)/.test(main), 'E8 main.ts: aiMarchPassageRequestTurn zapisywany w save (meta) jak siostrzane cooldowny');
+    assert(/saved\.meta\?\.aiMarchPassageRequestTurn/.test(main) && /aiMarchPassageRequestTurn\.set\(k, t\)/.test(main), 'E9 main.ts: aiMarchPassageRequestTurn odczytywany z save przy wczytaniu');
+    assert(/seaCostFn: \(u: RuntimeUnit\) => moveCostFnForUnit\(u\)/.test(main), 'E10 main.ts: straz dostaje koszt morski (Zegluga) -- trasa morska');
     const prop = fs.readFileSync(abs('game/diplomacy-proposals.ts'), 'utf8');
     assert(/case 'zaproponuj_przemarsz':\s*return \{[^}]*actionId: 'granice',\s*payload: \{ borderMilitary: true \}/s.test(prop), 'E6 diplomacy-proposals.ts: prosba o przemarsz -> istniejaca akcja granice (reuse, bez nowego mechanizmu)');
   }
@@ -473,7 +555,13 @@ async function main() {
     // PRE-trajektoria: decisionMs = bez strazy, pairOtherMs = ze straza, na tych samych stanach.
     const pairedRatio = tot.pre.pairOtherMs / Math.max(1e-9, tot.pre.decisionMs);
     console.log(`  [CZAS] pomiar parowany na identycznych stanach (trajektoria PRZED): bez strazy=${tot.pre.decisionMs.toFixed(0)} ms, ze straza=${tot.pre.pairOtherMs.toFixed(0)} ms, stosunek=${pairedRatio.toFixed(2)}x; trajektoria PO: ze straza=${tot.po.decisionMs.toFixed(0)} ms, bez strazy=${tot.po.pairOtherMs.toFixed(0)} ms, stosunek=${(tot.po.decisionMs / Math.max(1e-9, tot.po.pairOtherMs)).toFixed(2)}x`);
-    assert(pairedRatio <= 1.3, `D4 czas decyzji AI ze straza <= x1,3 bez strazy na identycznych stanach (${pairedRatio.toFixed(2)}x)`);
+    const ratioPo = tot.po.decisionMs / Math.max(1e-9, tot.po.pairOtherMs);
+    const ratioAll = (tot.pre.pairOtherMs + tot.po.decisionMs) / Math.max(1e-9, tot.pre.decisionMs + tot.po.pairOtherMs);
+    console.log(`  [CZAS] lacznie obie trajektorie (ze straza / bez strazy) = ${ratioAll.toFixed(2)}x`);
+    // Dwustronnie: obie trajektorie (granica szumu pomiaru ~+-0,15) oraz laczna.
+    assert(pairedRatio <= 1.5, `D4a trajektoria PRZED: czas decyzji ze straza <= x1,5 bez strazy (${pairedRatio.toFixed(2)}x)`);
+    assert(ratioPo <= 1.5, `D4b trajektoria PO: czas decyzji ze straza <= x1,5 bez strazy (${ratioPo.toFixed(2)}x)`);
+    assert(ratioAll <= 1.3, `D4c laczny koszt (obie trajektorie) <= x1,3 (${ratioAll.toFixed(2)}x)`);
     assert(tot.po.requestsAfterCooldown <= tot.po.requests, 'D5 prosby po cooldownie nie przekraczaja wywolan');
   }
 

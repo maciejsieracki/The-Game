@@ -949,7 +949,7 @@ function guardedMarchPath(
   destR: number,
   occ: Set<string>,
 ): { q: number; r: number }[] {
-  const cacheKey = `${unit.q},${unit.r}>${destQ},${destR}`;
+  const cacheKey = `${unit.q},${unit.r}>${destQ},${destR}${unit.embarked === true ? 'e' : ''}`;
   const cached = guard.pathCache.get(cacheKey);
   if (cached !== undefined) return cached.slice();
   const result = guardedMarchPathUncached(guard, unit, map, destQ, destR, occ);
@@ -973,12 +973,17 @@ function guardedMarchPathUncached(
   }
   // Jeden Dijkstra z kosztem Infinity na zakazanym terenie (koszt ~ jak dotad); trasa wprost liczona
   // dopiero gdy trasa straznika jest podejrzanie dluga (objazd) albo jej brak.
-  let path = computePath(unit, map, destQ, destR, occ, guard.wrapCost(terrainMoveCost));
+  // Jednostka juz zaokretowana (trasa morska z poprzedniej tury) planuje po wodzie -- inaczej utknie na morzu.
+  const baseCost = unit.embarked === true ? (guard.seaCostFor(unit) ?? terrainMoveCost) : terrainMoveCost;
+  let path = computePath(unit, map, destQ, destR, occ, guard.wrapCost(baseCost));
   if (path.length === 0 && guard.isBlockedHex(unit.q, unit.r)) {
     // Wyjatek: stoimy na zakazanym terenie -- pozwol przejsc przez teren startowy (wyjscie).
     path = computePath(unit, map, destQ, destR, occ,
-      guard.wrapCost(terrainMoveCost, guard.territoryOwnerAtHex(unit.q, unit.r)));
-    if (path.length > 0) guard.stats.exitExceptions++;
+      guard.wrapCost(baseCost, guard.territoryOwnerAtHex(unit.q, unit.r)));
+    if (path.length > 0) {
+      guard.stats.exitExceptions++;
+      console.log(`[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel ${guard.ownerId}, jednostka ${unit.id} (${unit.q},${unit.r}) -> (${destQ},${destR})`);
+    }
   }
   if (path.length > 0) {
     guard.stats.routed++;
@@ -997,6 +1002,17 @@ function guardedMarchPathUncached(
   if (direct.length === 0) return [];
   const crossing = firstBlockedOwnerOnPath(guard, direct);
   if (crossing === null) return [];
+  // Brak trasy ladowej omijajacej zakazany teren: trasa morska (transport/zaokretowanie przy Zegludze),
+  // nadal z zakazanym terenem jako przeszkoda (rowniez wod terytorialnych). Brak => odroczenie.
+  const seaCost = guard.seaCostFor(unit);
+  if (seaCost !== undefined) {
+    const seaPath = computePath(unit, map, destQ, destR, occ, guard.wrapCost(seaCost));
+    if (seaPath.length > 0) {
+      guard.stats.seaRoutes++;
+      guard.requestPassage(crossing, 'no-route');
+      return seaPath;
+    }
+  }
   guard.stats.deferred++;
   guard.requestPassage(crossing, 'no-route');
   return [];
@@ -4104,7 +4120,10 @@ function applyWarAllInCapitalToCommands(
   // wskazac pierwsze pole ladu, zeby silnik zdjal stan embarked po desancie.
   const eligible = myUnits.filter(u =>
     !isCivilianUnit(u) && !isScoutUnit(u) && u.ruchLeft > 0
-      && (ctx.allowSea === true || u.embarked !== true) && u.seaRaider !== true);
+      && (ctx.allowSea === true || u.embarked !== true
+        // Trasa morska omijajaca zakazany teren: juz zaokretowana jednostka kontynuuje plyniecie.
+        || (activeMarchGuard !== null && activeMarchGuard.seaCostFor(u) !== undefined))
+      && u.seaRaider !== true);
   if (eligible.length === 0) return;
   const enemyCityHex = new Set(
     cities.filter(c => c.ownerId !== playerId).map(c => keyOf(c.q, c.r)),
@@ -4173,6 +4192,7 @@ function applyWarAllInCapitalToCommands(
       if (marchGuard.isBlockedHex(u.q, u.r)) startOwners.add(marchGuard.territoryOwnerAtHex(u.q, u.r));
     }
     marchGuard.stats.exitExceptions += startOwners.size;
+    if (startOwners.size > 0) console.log(`[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel ${marchGuard.ownerId}, tereny ${Array.from(startOwners).join(',')}`);
     territoryBlocked = marchGuard.blockedHexKeys(startOwners);
     for (const k of territoryBlocked) blocked.add(k);
   }
@@ -4184,13 +4204,26 @@ function applyWarAllInCapitalToCommands(
     enemyStrength: ctx.enemyStrength,
     marchMainGroupWhileRendezvous: ctx.marchMainGroupWhileRendezvous,
   };
-  const nav = { map, blocked, occupied, allowSea: ctx.allowSea === true };
+  const seaInProgress = marchGuard !== null && planned.some(u => u.embarked === true);
+  const nav = { map, blocked, occupied, allowSea: ctx.allowSea === true || seaInProgress };
   // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ON): liczba armii = liczba wojen; kazda armia to
   // zrownowazona czesc wojsk marszu, idaca na stolice JEDNEGO wroga. OFF = jedna wspolna
   // procedura (dotychczasowe zachowanie).
-  const plans = isArmyConsolidationEnabled()
-    ? planWarArmiesByEnemy(planned, ctx, nav, warOpts, data)
-    : [planWarAllInCapital(planned, ctx.targets, nav, warOpts)];
+  const planWith = (n: typeof nav) => isArmyConsolidationEnabled()
+    ? planWarArmiesByEnemy(planned, ctx, n, warOpts, data)
+    : [planWarAllInCapital(planned, ctx.targets, n, warOpts)];
+  let plans = planWith(nav);
+  // R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: brak trasy ladowej omijajacej zakazany teren, a wlasciciel
+  // zna Zeglugę => przeplanuj z woda (trasa morska, nadal z zakazanym terenem jako przeszkoda).
+  if (marchGuard !== null && territoryBlocked !== null && territoryBlocked.size > 0 && !nav.allowSea
+      && plans.some(p => p.noPath.length > 0) && planned.some(u => marchGuard.seaCostFor(u) !== undefined)) {
+    const seaPlans = planWith({ ...nav, allowSea: true });
+    const noPathCount = (ps: typeof plans) => ps.reduce((a, p) => a + p.noPath.length, 0);
+    if (noPathCount(seaPlans) < noPathCount(plans)) {
+      plans = seaPlans;
+      marchGuard.stats.seaRoutes++;
+    }
+  }
   // Jednostki zebrane na tym samym heksie nie mogą dostać od planera różnych kroków:
   // rezerwacja pierwszego kroku oznaczała wcześniej `held` dla reszty stosu. W marszu
   // kampanii wszystkie jednostki stosu podążają tym samym krokiem i legalnie współdzielą

@@ -11,6 +11,7 @@
  * wstrzykiwane przez silnik (main.ts: hasAuthorizedBorderCrossing + diplomacy-proposals).
  */
 import type { Hex } from '../types/hex';
+import type { RuntimeUnit } from '../units/setup';
 import type { TerritoryNode } from '../map/territory';
 import { territoryOwnerAt, cityTerritoryRadius, axialDistance } from '../map/territory';
 
@@ -29,6 +30,8 @@ export interface AiMarchGuardStats {
   exitExceptions: number;
   /** Wywolania requestPassage (przed cooldownem silnika). */
   requests: number;
+  /** Brak trasy ladowej -- wybrana trasa morska (zaokretowanie) omijajaca zakazany teren. */
+  seaRoutes: number;
 }
 
 export interface AiMarchGuard {
@@ -43,6 +46,8 @@ export interface AiMarchGuard {
   /** Opakowuje koszt wejscia: zakazany heks => Infinity. */
   wrapCost(base: (hex: Hex) => number, extraAllowedOwner?: number): (hex: Hex) => number;
   requestPassage(territoryOwnerId: number, reason: MarchGuardRequestReason): void;
+  /** Koszt ruchu z woda przejezdna dla jednostki (Zegluga) albo undefined (jednostka nie moze plynac). */
+  seaCostFor(unit: RuntimeUnit): ((hex: Hex) => number) | undefined;
   /**
    * Klucze "q,r" WSZYSTKICH zakazanych heksow (teren cudzych cywilizacji bez zgody) -- dla
    * planerow z gotowym zbiorem `blocked` (warAllInCapital). `exceptOwners` = wlasciciele terenu,
@@ -70,12 +75,14 @@ export interface CreateAiMarchGuardOpts {
   isPassageAllowed: (territoryOwnerId: number) => boolean;
   /** Silnik: zloz prosbe o przemarsz (cooldown i wiarygodnosc po stronie silnika). */
   onRequestPassage?: (territoryOwnerId: number, reason: MarchGuardRequestReason) => void;
+  /** Silnik: moveCostFnForUnit (woda przejezdna przy Zegludze) -- trasa morska gdy brak ladowej. */
+  seaCostFn?: (unit: RuntimeUnit) => ((hex: Hex) => number) | undefined;
 }
 
 export function createAiMarchGuard(o: CreateAiMarchGuardOpts): AiMarchGuard {
   const ownerCache = new Map<number, number>();
   const allowedCache = new Map<number, boolean>();
-  const stats: AiMarchGuardStats = { detours: 0, routed: 0, deferred: 0, destinationBlocked: 0, exitExceptions: 0, requests: 0 };
+  const stats: AiMarchGuardStats = { detours: 0, routed: 0, deferred: 0, destinationBlocked: 0, exitExceptions: 0, requests: 0, seaRoutes: 0 };
 
   const keyNum = (q: number, r: number): number => (q + 4096) * 8192 + (r + 4096);
 
@@ -116,6 +123,9 @@ export function createAiMarchGuard(o: CreateAiMarchGuardOpts): AiMarchGuard {
     requestPassage(territoryOwnerId, reason) {
       stats.requests++;
       o.onRequestPassage?.(territoryOwnerId, reason);
+    },
+    seaCostFor(unit) {
+      return o.seaCostFn?.(unit);
     },
     nearBlockedTerritory(q1, r1, q2, r2, margin) {
       const n = Math.max(1, axialDistance(q1, r1, q2, r2));
@@ -160,6 +170,14 @@ export function createAiMarchGuard(o: CreateAiMarchGuardOpts): AiMarchGuard {
     },
   };
   return guard;
+}
+
+/**
+ * Cooldown prosby o przemarsz: true = prosba wyciszona. Wpis z PRZYSZLOSCI (`last > turn`: nowa gra /
+ * wczytany wczesniejszy zapis ze stara mapa) NIE wycisza -- inaczej AI milczalaby do `last + cooldown`.
+ */
+export function isMarchPassageCooldownActive(last: number | undefined, turn: number, cooldownTurns: number): boolean {
+  return last !== undefined && last <= turn && turn - last < cooldownTurns;
 }
 
 /** Pierwszy zakazany heks na trasie -> wlasciciel terenu (do prosby o przemarsz) albo null. */

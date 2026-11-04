@@ -282,7 +282,7 @@ import {
   canUnitOccupyCityHex, addForeignCityBlocks,
 } from './game/city-hex-movement';
 import { executeAiCityMove } from './game/ai-city-capture-executor';
-import { createAiMarchGuard } from './game/ai-march-guard';
+import { createAiMarchGuard, isMarchPassageCooldownActive } from './game/ai-march-guard';
 import { truncatePathWithinBudget, buildHexOccupancy, claimHexForMove } from './game/ai-move-range';
 import {
   evaluateFoundCityAffordance,
@@ -13283,7 +13283,8 @@ async function boot(): Promise<void> {
     function requestAiMarchPassage(aiOwnerId: number, territoryOwnerId: number): void {
       const key = `${aiOwnerId}->${territoryOwnerId}`;
       const last = aiMarchPassageRequestTurn.get(key);
-      if (last !== undefined && turn - last < AI_MARCH_PASSAGE_REQUEST_COOLDOWN_TURNS) return;
+      // last > turn = wpis z przyszlosci (stara mapa po wczytaniu): cooldown nieaktualny, nie wycisza prosb.
+      if (isMarchPassageCooldownActive(last, turn, AI_MARCH_PASSAGE_REQUEST_COOLDOWN_TURNS)) return;
       if (isBarbarian(territoryOwnerId)) return;
       aiMarchPassageRequestTurn.set(key, turn);
       const cmd: AIDiplomacyCommand = {
@@ -34286,6 +34287,7 @@ async function boot(): Promise<void> {
           interHumanDiplomacyInbox: interHumanDiplomacyInbox.slice(),
           aiOneShotGiftLastTurn: Array.from(aiOneShotGiftLastTurn.entries()),
           aiTradeAgreementLastProposalTurn: Array.from(aiTradeAgreementLastProposalTurn.entries()),
+          aiMarchPassageRequestTurn: Array.from(aiMarchPassageRequestTurn.entries()),
           aiAiTradeAgreementLastTurn: Array.from(aiAiTradeAgreementLastTurn.entries()),
           aiResourceTradeLastProposalTurn: Array.from(aiResourceTradeLastProposalTurn.entries()),
           aiAudienceLastRequestTurn: Array.from(aiAudienceLastRequestTurn.entries()),
@@ -37826,6 +37828,7 @@ async function boot(): Promise<void> {
                       turn,
                     }),
                   onRequestPassage: (territoryOwnerId: number) => requestAiMarchPassage(ownerId, territoryOwnerId),
+                  seaCostFn: (u: RuntimeUnit) => moveCostFnForUnit(u),
                 })
                 : undefined,
               // R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE): cala armia AI w wojnie -> stolica wroga.
@@ -41706,6 +41709,7 @@ async function boot(): Promise<void> {
       rejectedOfferCooldowns = [];
       aiOneShotGiftLastTurn.clear();
       aiTradeAgreementLastProposalTurn.clear();
+      aiMarchPassageRequestTurn.clear();
       aiAiTradeAgreementLastTurn.clear();
       aiResourceTradeLastProposalTurn.clear();
       aiAudienceLastRequestTurn.clear();
@@ -43692,6 +43696,11 @@ async function boot(): Promise<void> {
       const savedTradeAgreementCooldown = saved.meta?.aiTradeAgreementLastProposalTurn as Array<[number, number]> | undefined;
       if (savedTradeAgreementCooldown?.length) {
         for (const [oid, t] of savedTradeAgreementCooldown) aiTradeAgreementLastProposalTurn.set(oid, t);
+      }
+      aiMarchPassageRequestTurn.clear();
+      const savedMarchPassageCooldown = saved.meta?.aiMarchPassageRequestTurn as Array<[string, number]> | undefined;
+      if (savedMarchPassageCooldown?.length) {
+        for (const [k, t] of savedMarchPassageCooldown) aiMarchPassageRequestTurn.set(k, t);
       }
       aiAiTradeAgreementLastTurn.clear();
       const savedAiAiTradeCooldown = saved.meta?.aiAiTradeAgreementLastTurn as Array<[string, number]> | undefined;
