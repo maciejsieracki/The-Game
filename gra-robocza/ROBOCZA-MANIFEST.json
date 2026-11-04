@@ -1,111 +1,110 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "bcc1c16cd0519704730782f49e8724c7",
-  "bundleSha256": "abce48fd9e1d6ffd79811801f4a6a5588ad4b477bc6cdedecd717603dad8afbd",
-  "bundleBytes": 70199729,
+  "bundleMd5": "9b2119d6d1f642e2549ec32acccdff32",
+  "bundleSha256": "4691c7efe6fc908d20e187ca0e45ad4835f0072eb2c16823f1d2d643016c6fd1",
+  "bundleBytes": 70200365,
   "sourceSnapshot": {
-    "source": "main 95a4b25ab + SIEGE-MANUAL-BATTLE-BEHAVIOR (3c6224b77) + WATER-ACCESS-PORT-VS-MILL (b3d647b26, tylko test)",
+    "source": "main 5f7dc5614 + AI-STADNINA-FORT-TERRITORY-SCAN (be18ff2c1)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1: w bitwie ręcznej na oblężone miasto (mur/palisada) tarany jadą do bramy, wieża staje na wolnej koronie i daje piechocie wejście na mur, łucznicy ostrzeliwują koronę, konnica i rydwany czekają do wyłomu bramy; szarża/„atakuj marszem”/Atakuj/AUTO bez machin kończą się podejściem poza zasięg ostrzału (strefa ostrzału łuczników i wieżyczek); poprawka AUTO: doktryna nie omija logiki machin. Harness żywy: mur 0/11 → PASS.",
-    "R-WEB-WATER-ACCESS-PORT-VS-MILL-Q1: bez zmian w kodzie gry (Port już morze lub rzeka; budynku Młyn brak w danych); dodany test."
+    "R-WEB-AI-STADNINA-FORT-TERRITORY-SCAN-Q1: automat ulepszeń (AI i gracz) widzi złoże konia (także zloze===\"konie\" ze starych zapisów) w kole własnego fortu/posterunku — Stadnina dozwolona tylko tam; przyczyna w pickAutoImprovements (auto-improvements.ts), nie w ai.ts. Pomiar na realnych mapach: AI widzi 10 z 45 → 45 z 45 legalnych Stadnin, 0 nielegalnych."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "siege-manual-battle-behavior 40/0; harness żywy (Chromium) A1,A2,A3,B1,C1,D1,D3,E2 PASS; water-access-port-vs-mill ALL PASS"
+    "ai-stadnina-fort-territory 17/0; ai-improvements 56/0; ai-food-only-worked-hexes 81/0; regresje stadnina*/fort* zielone"
   ],
   "limits": [
-    "Pozostałe scenariusze puli harnessu, miasto z mapy świata, AUTO-batch poza oblężeniem i wieżyczki palisady NIE_ZMIERZONO; AUTO z murem bez machin nie kończy się w 39 rundach (bez zmiany względem bazy); testy przeglądarkowe battle/siege częściowo czerwone na bazie (brak /usr/bin/chromium)"
+    "Pełna gra AI w przeglądarce NIE_ZMIERZONO (zastąpiona symulacją na generateMap, 3 ziarna); zmiana dotyczy też automatu gracza (tylko Stadnina)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "SIEGE-MANUAL-BATTLE: Operator → Evaluator PASS-WITH-NOTES → Obrona r2 → FC PASS-WITH-NOTES (6× ODDAL); WATER-ACCESS: PASS-WITH-NOTES."
+    "notes": "AI-STADNINA-FORT-TERRITORY-SCAN: Operator → Evaluator PASS-WITH-NOTES → Obrona → FC (4× ODDAL)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T18:08:41",
+  "hubGeneratedAt": "2026-11-04T18:11:38",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "bcc1c16cd0519704730782f49e8724c7",
-      "sizeBytes": 70199729
+      "md5": "9b2119d6d1f642e2549ec32acccdff32",
+      "sizeBytes": 70200365
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "bcc1c16cd0519704730782f49e8724c7",
-      "sizeBytes": 70199729
+      "md5": "9b2119d6d1f642e2549ec32acccdff32",
+      "sizeBytes": 70200365
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "bcc1c16cd0519704730782f49e8724c7",
-      "sizeBytes": 70199729
+      "md5": "9b2119d6d1f642e2549ec32acccdff32",
+      "sizeBytes": 70200365
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "bcc1c16cd0519704730782f49e8724c7",
-      "sizeBytes": 70199729
+      "md5": "9b2119d6d1f642e2549ec32acccdff32",
+      "sizeBytes": 70200365
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "bcc1c16cd0519704730782f49e8724c7",
-      "sizeBytes": 70199729
+      "md5": "9b2119d6d1f642e2549ec32acccdff32",
+      "sizeBytes": 70200365
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "bcc1c16cd0519704730782f49e8724c7",
-      "sizeBytes": 70199729
+      "md5": "9b2119d6d1f642e2549ec32acccdff32",
+      "sizeBytes": 70200365
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "bcc1c16cd0519704730782f49e8724c7",
-      "sizeBytes": 70199729
+      "md5": "9b2119d6d1f642e2549ec32acccdff32",
+      "sizeBytes": 70200365
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "bcc1c16cd0519704730782f49e8724c7",
-      "sizeBytes": 70199729
+      "md5": "9b2119d6d1f642e2549ec32acccdff32",
+      "sizeBytes": 70200365
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "bcc1c16cd0519704730782f49e8724c7",
-      "sizeBytes": 70199729
+      "md5": "9b2119d6d1f642e2549ec32acccdff32",
+      "sizeBytes": 70200365
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "bcc1c16cd0519704730782f49e8724c7",
-      "sizeBytes": 70199729
+      "md5": "9b2119d6d1f642e2549ec32acccdff32",
+      "sizeBytes": 70200365
     }
   ],
-  "md5": "bcc1c16cd0519704730782f49e8724c7",
-  "sizeBytes": 70199729,
+  "md5": "9b2119d6d1f642e2549ec32acccdff32",
+  "sizeBytes": 70200365,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "3c324fd32f2ab04d451e0206064910e9"
+    "bundleMd5": "bcc1c16cd0519704730782f49e8724c7"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 3c324fd32f2ab04d451e0206064910e9, 70193957 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 bcc1c16cd0519704730782f49e8724c7, 70199729 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1280,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T18:08:39+00:00",
-  "buildStamp": "2026-11-04 18:08",
+  "publishedAt": "2026-11-04T18:11:37+00:00",
+  "buildStamp": "2026-11-04 18:11",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",

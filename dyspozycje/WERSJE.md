@@ -1,3 +1,12 @@
+## ROBOCZA 9b2119d6 -- 2026-11-04 -- Stadnina w kole fortu widoczna dla automatu (AI i gracz) (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`5f7dc5614` + AI-STADNINA-FORT-TERRITORY-SCAN `be18ff2c1`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `9b2119d6d1f642e2549ec32acccdff32`, 70200365 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: automat ulepszeń uwzględnia złoże konia w kole własnego fortu/posterunku (Stadnina); pomiar: AI widziało 10 z 45 legalnych, po zmianie 45/45, 0 nielegalnych.
+- Testy: tsc PASS; ai-stadnina-fort-territory 17/0; ai-improvements 56/0; ai-food-only-worked-hexes 81/0.
+- Ograniczenia: bez pełnej gry AI w przeglądarce.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `bcc1c16cd0519704730782f49e8724c7`, 70199729 bajtów.
+
 ## ROBOCZA bcc1c16c -- 2026-11-04 -- bitwa ręczna na oblężone miasto: tarany, wieże, konnica, szarża poza ostrzałem (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`95a4b25ab` + SIEGE-MANUAL-BATTLE-BEHAVIOR `3c6224b77` + WATER-ACCESS test `b3d647b26`) i commit wdrożenia; stała zgoda właściciela.
