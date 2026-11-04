@@ -24,7 +24,7 @@ Predykat oblężenia przed zmianą: tylko flaga `City.oblegane` (+ `oblegajacyOw
 ## ZMIANY/COMMIT
 Nowe: `gra/src/game/city-siege-state.ts`, `gra/tools/siege-blockade-no-recruit-reinforce-test.cjs`.
 Zmienione: `gra/src/main.ts` (rejestracja blokady, bramki rekrutacji/kolejek, hak testowy `__siegeBlockTestDebug` tylko z `?civTest=1`), `gra/src/ui/cityPanel.ts`, `gra/src/units/setup.ts`, `gra/tools/recruitment-batch-contract-test.cjs` (harness eval dostał 2 nowe zależności).
-SHA: patrz niżej w sekcji COMMIT (uzupełnione po commicie).
+SHA: 0a9463ea9 (kod, testy, logi, raport; ten wiersz dopisany w commicie następnym).
 
 ## NOTY / ODSTĘPSTWA
 1. `gra/src/units/setup.ts` NIE jest na allowliście, ale jest jedynym wspólnym punktem ruchu (computePath/computeReachable dla gracza, AI i barbarzyńców, ~10 wywołań w main.ts, planned-march, scout, ai, barbarians). Zmiana minimalna: opcjonalny hak `setSiegeEntryBlocker` (null = zachowanie sprzed tematu), 3 bramki. Do oceny Evaluatora; alternatywa to ~10 bramek rozproszonych po plikach spoza allowlisty.
