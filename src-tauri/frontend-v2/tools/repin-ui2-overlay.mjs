@@ -12,7 +12,7 @@
  * EXIT 0 <=> nakładka zbudowana i każdy plik zgodny z manifestem.
  */
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
 const args = process.argv.slice(2);
@@ -46,5 +46,29 @@ for (const f of manifest.files) {
   writeFileSync(dst, buf);
   console.log(`nakładka ${srcPath} (${buf.length} B)`);
 }
-console.log(`repin-ui2-overlay: plików=${manifest.files.length} niezgodnych=${bad} out=${out}`);
+// R-RUSTPORT-REPIN-UI-2-C-Q1 (addytywnie): pliki webu przepięte PORTEM DOM (nie kopią bajtową — nie ma ich w manifeście
+// kopii) wchodzą do odniesienia z `tools/repin-ui2-overlay-ports/*.json` (jeden plik na partię; wpis = ścieżka `gra/…` +
+// sha256 z `origin/main`). Dzięki temu starsze harnessy porównują port z wersją webu, którą ten port odwzorowuje.
+const portsDir = new URL('./repin-ui2-overlay-ports/', import.meta.url);
+let portFiles = 0;
+if (existsSync(portsDir)) {
+  for (const name of readdirSync(portsDir).filter((n) => n.endsWith('.json')).sort()) {
+    const part = JSON.parse(readFileSync(new URL(name, portsDir), 'utf8'));
+    for (const f of part.files) {
+      const buf = readFileSync(join(resolve(webDir), f.src));
+      const sha = createHash('sha256').update(buf).digest('hex');
+      if (sha !== f.sha256) {
+        bad++;
+        console.error(`SHA ${f.src} web=${sha} ${name}=${f.sha256}`);
+        continue;
+      }
+      const dst = join(resolve(out), f.src);
+      mkdirSync(dirname(dst), { recursive: true });
+      writeFileSync(dst, buf);
+      portFiles++;
+      console.log(`nakładka-port ${f.src} (${buf.length} B, ${name})`);
+    }
+  }
+}
+console.log(`repin-ui2-overlay: plików=${manifest.files.length} portów=${portFiles} niezgodnych=${bad} out=${out}`);
 process.exitCode = bad === 0 ? 0 : 1;

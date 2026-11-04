@@ -34,11 +34,11 @@ Hunki = początki zakresów po stronie `origin/main` (`git diff -U0`, `plik:lini
 | 7 | `armySplitPanel.ts` | +185/−86 | +185/−86 | PINBYTE | `:2+3 :31 :35 :38+10 :50+6 :57 :59+20 :80+4 :86+17 :111 :130+3 :151+40 :192+15 :208+4 …` | „Rozdziel armię”: siatka 3×5, scroll, brandbook (`798ec59eb`) | kopia bajtowa (importuje typ z `armyMergePanel` → razem z #6) | `src/ui/armySplitPanel.ts` | UI-2-B |
 | 8 | `unitReplacePicker.ts` | +18/−2 | 0 | MOD | `:27+7 :162 :188+10` | wybór zamiany jednostki | port DOM | `src/ui/unitReplacePicker.ts` | UI-2-B |
 | 9 | `siegeMapPanel.ts` | +22/−3 | +22/−3 | MOD (DTO `SiegePanelDto`) | `:221+4 :271+4 :335+14` | „Milicja odnawia się: za N tur” + usunięte „~” (`4c8f4a2e7`) | port DOM + pole DTO `milicjaRegen` (producent Rust: P6) | `src/ui/siegeMapPanel.ts`, `viewmodel/types.ts` | UI-2-B |
-| 10 | `hud.ts` | +36/−24 | +28/−22 | MOD | `:28 :62 :553+3 :769+9 :784+4 :1093 :1097 :1105 :1111 :1120 :1121 :1134 :1157+2 :1168 …` | użycie `formatCompactNumber`/`exactCompactNote` w pasku zasobów (`62884e25f`) | port DOM (C3) | `src/ui/hud.ts` | UI-2-C (zależy od #1/#3 — gotowe) |
-| 11 | `empireDetailPanel.ts` | +124/−169 | +34/−8 | MOD | `:17 :31 :70 :72+6 :156+4 :357+10 :458 :460+9 :833+2 :1423+45 :2452+8 :2646 :2656 :2770 …` | panel imperium, skracanie liczb | port DOM (C3) | `src/ui/empireDetailPanel.ts` | UI-2-C |
-| 12 | `empireDetailTypes.ts` | +6/−0 | +6/−0 | MOD | `:111+6` | typy panelu imperium | adapter typów | `src/ui/empireDetailTypes.ts` | UI-2-C |
-| 13 | `armyStackHud.ts` | +43/−8 | 0 | MOD | `:29+2 :39+16 :135+5 :146+4 :202 :205+2 :208 :211+2 :306+7 :314+3` | HUD stosu armii | port DOM (import `game/unit-card-stats` → DTO) | `src/ui/armyStackHud.ts` | UI-2-C |
-| 14 | `unitRecruitCard.ts` | +126/−38 | +4/−2 | MOD | `:9+2 :18+12 :31+23 :55+5 :61+5 :67+9 :113+2 :144 :163+26 :202+3 …` | karta rekrutacji, wspólna pula rekrutów (`65b031ac8`) | port DOM | `src/ui/unitRecruitCard.ts` | UI-2-C |
+| 10 | `hud.ts` | +36/−24 | +28/−22 | MOD | `:28 :62 :553+3 :769+9 :784+4 :1093 :1097 :1105 :1111 :1120 :1121 :1134 :1157+2 :1168 …` | użycie `formatCompactNumber`/`exactCompactNote` w pasku zasobów (`62884e25f`) | port DOM (C3) | `src/ui/hud.ts` | **ZROBIONE UI-2-C** (§2c) |
+| 11 | `empireDetailPanel.ts` | +124/−169 | +34/−8 | MOD | `:17 :31 :70 :72+6 :156+4 :357+10 :458 :460+9 :833+2 :1423+45 :2452+8 :2646 :2656 :2770 …` | panel imperium, skracanie liczb | port DOM (C3) | `src/ui/empireDetailPanel.ts` | **ZROBIONE UI-2-C** (§2c) |
+| 12 | `empireDetailTypes.ts` | +6/−0 | +6/−0 | MOD | `:111+6` | typy panelu imperium | adapter typów | `src/ui/empireDetailTypes.ts` | **ZROBIONE UI-2-C** (§2c) |
+| 13 | `armyStackHud.ts` | +43/−8 | 0 | MOD | `:29+2 :39+16 :135+5 :146+4 :202 :205+2 :208 :211+2 :306+7 :314+3` | HUD stosu armii | port DOM (import `game/unit-card-stats` → DTO) | `src/ui/armyStackHud.ts` | **ZROBIONE UI-2-C** (§2c) |
+| 14 | `unitRecruitCard.ts` | +126/−38 | +4/−2 | MOD | `:9+2 :18+12 :31+23 :55+5 :61+5 :67+9 :113+2 :144 :163+26 :202+3 …` | karta rekrutacji, wspólna pula rekrutów (`65b031ac8`) | port DOM | `src/ui/unitRecruitCard.ts` | **ZROBIONE UI-2-C** (§2c) |
 | 15 | `hexContextTooltip.ts` | +57/−51 | +57/−51 | MOD | `:135+7 :160+2 :177 :180+2 :184 :186+4 :194 :253 :260 :270 :282 :293+3 :439 :499+2 …` | tooltip heksu: produkcja ulepszeń przed plonami (`db8fabacc`) | port DOM (C2) | `src/ui/hexContextTooltip.ts` | UI-2-D |
 | 16 | `preBattle.ts` | +38/−7 | 0 | MOD | `:14 :155+4 :254+7 :717 :725+4 :820+7 :852+2 :878+3 …` | ekran przed bitwą | port DOM (C5) | `src/ui/preBattle.ts` | UI-2-D |
 | 17 | `buildModeHud.ts` | +26/−1 | +26/−1 | MOD | `:90+4 :215 :307+7 :612+9 :863+5` | HUD trybu budowy | port DOM | `src/ui/buildModeHud.ts` | UI-2-D |
@@ -81,11 +81,11 @@ nie zawiera tej infrastruktury, bo kolejne partie ją reużywają.
 | 7 | `armySplitPanel` | KB + PNG | 271 | 19 | 0 | 4 | B |
 | 8 | `unitReplacePicker` | PD | 20 | 3 | 20 | 1,75 | B |
 | 9 | `siegeMapPanel` | PD + DTO | 25 | 3 | 25 | 3 | B |
-| 10 | `hud` | PD | 60 | 24 | 60 | 5,75 | C |
-| 11 | `empireDetailPanel` | PD | 293 | 31 | 293 | 11,5 | C |
-| 12 | `empireDetailTypes` | AD | 6 | 1 | 6 | 0,75 | C |
-| 13 | `armyStackHud` | PD + DTO | 51 | 10 | 51 | 4,5 | C |
-| 14 | `unitRecruitCard` | PD | 164 | 25 | 164 | 8 | C |
+| 10 | `hud` | PD | 60 | 24 | 60 | 5,75 | C (zrobione) |
+| 11 | `empireDetailPanel` | PD | 293 | 31 | 293 | 11,5 | C (zrobione) |
+| 12 | `empireDetailTypes` | AD | 6 | 1 | 6 | 0,75 | C (zrobione) |
+| 13 | `armyStackHud` | PD + DTO | 51 | 10 | 51 | 4,5 | C (zrobione) |
+| 14 | `unitRecruitCard` | PD | 164 | 25 | 164 | 8 | C (zrobione) |
 | 15 | `hexContextTooltip` | PD | 108 | 28 | 108 | 7,25 | D |
 | 16 | `preBattle` | PD | 45 | 13 | 45 | 3,75 | D |
 | 17 | `buildModeHud` | PD | 27 | 5 | 27 | 2,25 | D |
@@ -179,7 +179,7 @@ web(Chromium) vs port 0 różnic + mutacje każdej gałęzi nowego hunku 100% wy
 | Partia | Zakres (#§1) | Kryterium | Wycena (§1a: Σh / ΣLP / rundy ≤8 h) |
 |---|---|---|---|
 | UI-2-B | #5 `aiOwnerProgressFrame`, #6 `armyMergePanel`, #7 `armySplitPanel` (kopie bajtowe), #8 `unitReplacePicker`, #9 `siegeMapPanel` (+ `SiegePanelDto.milicjaRegen?`) | kopie sha=manifest; harness merge/split: siatka 3×5, licznik, „▼ jeszcze N”, Enter — DOM web=port + zrzut PNG; milicja: N∈{0,1,2,4,5,12,22} pluralizacja = web | 14 h / 45 LP / 2 rundy (#5 0,75 · #6 4,5 · #7 4 · #8 1,75 · #9 3) |
-| UI-2-C | #10 `hud`, #11 `empireDetailPanel`, #12 `empireDetailTypes`, #13 `armyStackHud`, #14 `unitRecruitCard` | harness HUD na DTO z wartościami ≥1000: tekst `20,9k`, `title` „Dokładnie: …” = web | 30,5 h / 574 LP / 4 rundy (#10 5,75 · #11 11,5 · #12 0,75 · #13 4,5 · #14 8) — zalecany podział na 2 tematy: C1 = #10+#12+#13 (11 h), C2 = #11+#14 (19,5 h) |
+| UI-2-C — **ZROBIONE** (§2c) | #10 `hud`, #11 `empireDetailPanel`, #12 `empireDetailTypes`, #13 `armyStackHud`, #14 `unitRecruitCard` | harness HUD na DTO z wartościami ≥1000: tekst `20,9k`, `title` „Dokładnie: …” = web | 30,5 h / 574 LP / 4 rundy (#10 5,75 · #11 11,5 · #12 0,75 · #13 4,5 · #14 8) — zalecany podział na 2 tematy: C1 = #10+#12+#13 (11 h), C2 = #11+#14 (19,5 h) |
 | UI-2-D | #15 `hexContextTooltip`, #16 `preBattle`, #17 `buildModeHud`, #24–25 adaptery kart | `run-cycles` na nakładce 0 różnic po repinie odniesienia | 15,25 h / 194 LP / 2 rundy (#15 7,25 · #16 3,75 · #17 2,25 · #24 1 · #25 1) |
 | UI-2-E | #18–22 dyplomacja | `run-cycles` (C2) + nowe wektory koszyka | 25,5 h / 428 LP / 4 rundy (#18 3,75 · #19 3 · #20 2 · #21 1,75 · #22 15) — zalecany podział: E1 = #18–21 (10,5 h), E2 = #22 (15 h) |
 | UI-2-F | #23 `newGameFlow` | `run-newgame` na nakładce 0 różnic | 21 h / 427 LP / 3 rundy (#23 21) |
@@ -202,3 +202,59 @@ node tools/repin-ui2-overlay.mjs --pin-dir "$PIN" --web-dir "$WEB" --out "$PINOV
 node tools/dom-harness/run-cycles.mjs --pin-dir "$PINOV"     # (i pozostałe run-*.mjs)
 node tools/dom-harness/measure-repin-ui2-kblocks-drift.mjs --pin-dir "$PIN" --cur-dir "$WEB"
 ```
+
+## 2c. Partia UI-2-C (R-RUSTPORT-REPIN-UI-2-C-Q1, runda 1)
+
+Baza `rust-port/parity-v2` `2198eaf7e`; web `origin/main` = `86d510c66` (`git log 86d510c66..origin/main -- gra/src/ui` = 0
+commitów w chwili pracy). Klasa wszystkich 5 plików = PORT DOM (żaden nie był w `pin-manifest.json` → brak wpisów do
+usunięcia; brak kopii bajtowych → `repin-ui2-manifest.json` bez zmian).
+
+Metoda portu (pomiar, nie ręczne przepisywanie): `diff -u` pin `edb8fb56` → main `86d510c66` każdego pliku nałożony
+`patch` na plik v2 (v2 ≈ pin + adaptacje P5.x). Hunki nałożone automatycznie: hud 16/16, empireDetailTypes 1/1,
+armyStackHud 5/5, empireDetailPanel 14/17, unitRecruitCard 7/9; 5 odrzuconych hunków przeniesione ręcznie
+(importy `game/*` + `item.nazwa` → `item.label` + iloczyn obywateli liczony w v2 przez silnik). Różnica v2 ↔ main po
+porcie (`diff | grep -c '^[<>]'`): hud 3 (most `armyStackHudSuppression`, jak przed), empireDetailTypes 72 (jak przed),
+armyStackHud 5 (jak przed), unitRecruitCard 42 (było 39: +3 linie komentarza/`item.label`), empireDetailPanel 141
+(było 128: +13 = kopia `taxForWorkAmount` i komentarz C-Z2).
+
+ZAŁOŻENIA partii:
+- **C-Z1** `taxForWorkAmount` (main `game/work-tax.ts:8-12`) — kopia 1:1 w `empireDetailPanel.ts` wyłącznie do PODGLĄDU
+  „Zamiana Pracy na podatek”; stawkę (`getOwnerWorkTaxRate`) i samą zamianę (`onConvertOwnerWorkToTax`) daje silnik.
+  Hooki `canConvertOwnerWorkToTax`/`getOwnerWorkTaxRate`/`previewOwnerWorkTaxEffect`/`onConvertOwnerWorkToTax` są w v2
+  opcjonalne i NIEPODPIĘTE przez kontroler (blok nie renderuje się, dopóki producent nie poda `canConvert…` = true) —
+  producent: P6 (`src/controller/**`, poza allowlistą).
+- **C-Z2** Stawka obywateli wg epoki: panel czyta `resources[].citizenRatePerCitizen` (fallback stała katalogu) tylko do
+  stopki; iloczyny `zuzycieObywateliPerTyp`/`zuzycieObywateliPerTurn` liczy silnik (P5.7) — producent musi użyć tej samej
+  stawki epoki (P6). Harness gra „Rust” liczący `floor(ludki × stawka wiersza)`.
+- **C-Z3** Rekrutacja w zakładce Armia: hooki `mountCityRecruitment`/`mountGeneralRecruitment`/
+  `getRecruitFollowGeneralDefault`/`onRecruitFollowGeneralDefaultChange` zastępują `onPurchase` (usunięty w main);
+  kontroler v2 ich nie podpina → sekcja pokazuje „Nie udało się załadować rekrutacji tego miasta.” jak web bez hooka
+  (P6/UI-2-G: lista kart = `cityPanel` K06B).
+- **C-Z4** `ArmyStackCard.commanderTitle` / `armyStackCardIdentity` — producent karty (główna pętla gry) w P6; UI gotowe.
+
+Bramki (z `src-tauri/frontend-v2/`, `npm ci` na czas pracy):
+- `tsc --noEmit` EXIT=0; `npm run check` EXIT=0 (`verify-pin-copies` 433/0; `verify-repin-ui2-copies` 4/0 +
+  `porty_nakładki=6` — NOWE addytywne sprawdzenie `tools/repin-ui2-overlay-ports/*.json` ze źródłem git).
+- `tools/dom-harness/run-repin-ui2c.mjs` (NOWY): web `86d510c66` i port w Chromium 141 headless (pojedynczy wątek
+  rastra — wielowątkowy dawał ±1 w kanale na pasku 2 px w scenie Armia przy identycznym DOM), 10 grup / 752 wektory
+  (pasek HUD 515 stanów z granicami 999/1000/1001, 999 949/999 950, 2^53, nienumeryczny `zywnoscLabel`; tożsamość
+  i roster dowódcy; karta rekrutacji 75 jednostek × 12 wariantów + interakcje; sekcja rekrutacji Armia; 53 przebiegi
+  pełnego panelu imperium z zamianą Pracy, `confirm` tak/nie, stawką epoki 1,5), 8 zrzutów PNG (HUD+roster, wiersze
+  rekrutacji, panel Praca, panel Armia × 1280×720 i 360×640): **różnic=0**, PNG bajtowo równe, `pageerror`+`console.error`=0.
+- Niezależny weryfikator: 2 osobne `git archive 86d510c66` → `webVectorsSha256=d69070ce…a93df0` i plik fixtury
+  `tools/dom-harness/fixtures/repin_ui2c-web-vectors.json` sha256 `adcacfbb…de9d0f` identyczne w obu.
+- `tools/dom-harness/mutate-repin-ui2c.mjs` (NOWY): **45/45 mutacji wykrytych** (hud 12, panel 16, typy 1 przez `tsc`,
+  roster 6, karta 10); wykrycie = EXIT 1 z pełnym przebiegiem harnessu (błąd składni ≠ wykrycie). Uwaga: #1–#35
+  zmierzone przed dodaniem 12. wariantu karty rekrutacji (dodatkowe wektory tylko w grupach `recruit*`).
+- Regresja starszych harnessów na nakładce `pin + UI-2-A + UI-2-C` (`repin-ui2-overlay.mjs` czyta teraz także
+  `repin-ui2-overlay-ports/ui2c.json`: 5 plików `gra/src/ui` + `gra/src/game/work-tax.ts` z main): L0 3861/0, L1A 3618/0,
+  L2 1784/0 (jsdomErrors 354 / consoleErrors 150 jak w A), C4 1649/0 (75), cycles 6401/0, hud **899**/0, newgame 1194/0,
+  cityux 164/0. `hud` 927 → 899 przypadków: eksploracja klika mniej elementów, bo main usunął formularz masowej
+  rekrutacji (select/liczba/przycisk, main `empireDetailPanel.ts:2775-2845`) — przyczyna = ZAŁOŻENIE, liczby zmierzone.
+- GPU / natywne okno Tauri: NIE_ZMIERZONO.
+
+Wycena po partii (rekalibracja Z3): wycena C = 30,5 h / 574 LP / 4 rundy; zużyto **1 rundę Operatora ≈ 2,2 h zegarowe**
+(pierwsza zmiana pliku 05:59 → raport ~08:10), w tym harness/mutacje. Wniosek: dla PD, gdzie v2 ≈ pin (+ adaptacje),
+koszt ≈ `0,5 + 0,05·H + L/200` h (nakładanie łatki pin→main + harness), a nie `1 + 0,15·H + L/50`. Pozostało po A + C
+(B w toku): **95,75 h wg starego wzoru**; wg skalibrowanego wzoru dla pozostałych PD (#8, #9, #15–#23) ≈ 0,5·11 +
+0,05·201 + 1080/200 ≈ **21 h** (bez adapterów #24–#25) + K (UI-2-G, 20 h, wzór K bez zmian) — do potwierdzenia na UI-2-B/D.

@@ -18,7 +18,7 @@
  *   node tools/verify-repin-ui2-copies.mjs --gen <sha> <ścieżka src/…> [...]   (wypisuje manifest na stdout)
  */
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -80,5 +80,31 @@ for (const f of manifest.files) {
     if (Buffer.compare(ref, buf) !== 0) fail(`GIT ${f.path} różni się od ${f.pin}`);
   }
 }
-console.log(`verify-repin-ui2-copies: pin=${manifest.pin} plików=${manifest.files.length} źródło_sprawdzone=${gitChecked} niezgodnych=${bad}`);
+// R-RUSTPORT-REPIN-UI-2-C-Q1 (addytywnie): wpisy `tools/repin-ui2-overlay-ports/*.json` (pliki webu przepięte PORTEM DOM,
+// odniesienie starszych harnessów) — sha256/rozmiar = `git show <pin>:<src>` (albo `--web-dir`); port w `src/` istnieje.
+let portsChecked = 0;
+const portsDir = new URL('./repin-ui2-overlay-ports/', import.meta.url);
+if (existsSync(portsDir)) {
+  for (const name of readdirSync(portsDir).filter((n) => n.endsWith('.json')).sort()) {
+    const part = JSON.parse(readFileSync(new URL(name, portsDir), 'utf8'));
+    for (const f of part.files) {
+      let ref = null;
+      if (webDir) ref = existsSync(join(webDir, f.src)) ? readFileSync(join(webDir, f.src)) : null;
+      else if (!noGit) {
+        try {
+          ref = execFileSync('git', ['show', `${part.pin}:${f.src}`], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024 });
+        } catch {
+          console.error(`PORT NIE_ZMIERZONO ${part.pin}:${f.src} (brak obiektu)`);
+        }
+      }
+      if (ref) {
+        portsChecked++;
+        if (sha256(ref) !== f.sha256 || ref.length !== f.bytes) fail(`PORT ${name} ${f.src} sha/rozmiar ≠ ${part.pin}`);
+      }
+      const portPath = f.src.startsWith('gra/src/ui/') ? join(ROOT, 'src/ui', f.src.slice('gra/src/ui/'.length)) : null;
+      if (portPath && !existsSync(portPath)) fail(`PORT ${name} brak portu ${portPath}`);
+    }
+  }
+}
+console.log(`verify-repin-ui2-copies: pin=${manifest.pin} plików=${manifest.files.length} źródło_sprawdzone=${gitChecked} porty_nakładki=${portsChecked} niezgodnych=${bad}`);
 process.exitCode = bad === 0 ? 0 : 1;
