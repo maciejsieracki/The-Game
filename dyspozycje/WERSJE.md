@@ -1,3 +1,12 @@
+## ROBOCZA 92447184 -- 2026-11-04 -- AI omija obce terytorium w marszu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`96ec14f76` + AI-MARCH-AVOID-FOREIGN-TERRITORY `7cda8542a`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `924471846c25768a31499d8dccd74b1c`, 70191473 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: w wojnie AI omija teren trzeciej cywilizacji bez umowy przemarszu (twarda przeszkoda; trasa morska przy Żegludze; bez trasy odroczenie); prośba o przemarsz przez dyplomację, cooldown 8 tur zapisywany w save; gracz nieograniczony. Pomiar: jednostko-tury na obcym terenie 2336→0, kary Zaufania 492→0, przejęcia miast 14→20.
+- Testy: tsc PASS; ai-march-avoid-foreign-territory 99/0; ai-move-full-range 20/0.
+- Ograniczenia: bez przeglądarki (live/real-render); czas decyzji AI do 1,33x; AI bez trasy stoi w miejscu; kilka testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `1ad81cfb89f069bdd0954d372a2968a0`, 70185473 bajtów.
+
 ## ROBOCZA 1ad81cfb -- 2026-11-04 -- tryb ręczny: rebalans robotników z epoką właściciela (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`e2c9459fb` + MANUAL-REBALANCE-OWNER-ERA `d2ed1fc7c`) i commit wdrożenia; stała zgoda właściciela.
