@@ -1,111 +1,112 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b6f88c94de970b4c63a7ac3fd3354732",
-  "bundleSha256": "d735d6f1a5c60be5945f8cc32ab30f0d2ee6ef1f474f76c97aa70e9b528df4d3",
-  "bundleBytes": 70206378,
+  "bundleMd5": "7db5378a1d78e11025c72601b2b09c2d",
+  "bundleSha256": "ddb597cc1d77da58c705a8b32b96cc57f62b152af4dc9abe920b10fbf95cc227",
+  "bundleBytes": 70208994,
   "sourceSnapshot": {
-    "source": "main c4a541a27 + POPCAP-SPICHLERZ2-12-AKWEDUKT-20 (913b60189)",
+    "source": "main 488d94364 + SIEGE-BADGE-TURNS-TO-SURRENDER (3bba9a56d) + SIEGE-SURRENDER-ENTER-CITY (8b7c8af3b)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1 (decyzja właściciela): limit ludności miasta — bez budynku 5, Spichlerz I 8, Spichlerz II 12 (nowy stopień, klucz spichlerz_ii_prog_ludnosci), Akwedukt 20 (było 12) niezależnie od Spichlerza; cityPopulationCap z odpornym clampem (akwedukt+2), HUD/panel/AI czytają nowe progi (AI_POP_CAP_WITH_GRANARY_II = 12), main.ts: dwa wywołania z flagą Spichlerza II."
+    "R-WEB-SIEGE-BADGE-TURNS-TO-SURRENDER-Q1: plakietka oblężenia zawsze pokazuje „poddanie za N tur” (odmiana PL; „poddanie: —” gdy zapasy nie maleją; tooltip); prognoza zgodna z mechanizmem kapitulacji (ceil(M/Z)+1; zużycie = ludność + garnizon); logika kapitulacji bez zmian.",
+    "R-WEB-SIEGE-SURRENDER-ENTER-CITY-Q1: po poddaniu miasta (kapitulacja głodowa) główna oblegająca armia (największy stos; remis: generał, potem najmniejsze id) wchodzi na heks miasta bez kosztu ruchu i walki; machiny wchodzą, cywile i zaokrętowani nie; obca jednostka blokuje; gracz/AI/barbarzyńcy jednakowo."
   ],
   "verification": [
-    "tsc --noEmit PASS",
-    "popcap-spichlerz2-akwedukt20 46/0 (mutacja czerwona); akwedukt-popcap 7/0; spichlerz-cap-citypanel-wiring 12/0; population-growth-v85 50/0; population-civ-matrix-wiring 122/0; empire-food-b5 34/0"
+    "tsc --noEmit PASS po scaleniu",
+    "siege-surrender-forecast 56/0 (mutacje 8/8, live Chromium 10/10 u Operatora); siege-surrender-enter-city 32/0 (mutacje 9/9); siege-blockade 57/0; siege-last-stand 58/0"
   ],
   "limits": [
-    "Pełny pomiar balansu (3 ziarna × 100 tur) NIE_ZMIERZONO — tylko proxy populationGrowth: Akwedukt + Spichlerz II daje po 100 turach pop 20 zamiast 12; wpływ na żywność/upkeep/produkcję niezmierzony",
-    "growthmult-compound 17/7 jak na bazie; spichlerz-wzrost/-widocznosc/-deficyt-scalenie czerwone na bazie; wikiBundle ma przestarzałe „limit 6”; society-params.json opisuje pop 12 jako cap (tekst)"
+    "Prognoza zakłada stały garnizon (atrycja garnizonu może opóźnić poddanie o 1–2 tury; licznik koryguje się co klatkę)",
+    "Wejście po poddaniu: brak testu Chromium/integracyjnego resolveSiegeSurrender (strukturalnie); 9 testów HUD/oblężenia czerwonych na bazie bez zmian"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "POPCAP: Operator → Evaluator PASS-WITH-NOTES (regresja clampu NaN) → Obrona r2 → FC PASS-WITH-NOTES; main.ts poza allowlistą zaakceptowane przez orkiestratora."
+    "notes": "BADGE: Operator PASS → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES; ENTER-CITY: Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T22:41:51",
+  "hubGeneratedAt": "2026-11-04T22:53:42",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b6f88c94de970b4c63a7ac3fd3354732",
-      "sizeBytes": 70206378
+      "md5": "7db5378a1d78e11025c72601b2b09c2d",
+      "sizeBytes": 70208994
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b6f88c94de970b4c63a7ac3fd3354732",
-      "sizeBytes": 70206378
+      "md5": "7db5378a1d78e11025c72601b2b09c2d",
+      "sizeBytes": 70208994
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "b6f88c94de970b4c63a7ac3fd3354732",
-      "sizeBytes": 70206378
+      "md5": "7db5378a1d78e11025c72601b2b09c2d",
+      "sizeBytes": 70208994
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "b6f88c94de970b4c63a7ac3fd3354732",
-      "sizeBytes": 70206378
+      "md5": "7db5378a1d78e11025c72601b2b09c2d",
+      "sizeBytes": 70208994
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "b6f88c94de970b4c63a7ac3fd3354732",
-      "sizeBytes": 70206378
+      "md5": "7db5378a1d78e11025c72601b2b09c2d",
+      "sizeBytes": 70208994
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "b6f88c94de970b4c63a7ac3fd3354732",
-      "sizeBytes": 70206378
+      "md5": "7db5378a1d78e11025c72601b2b09c2d",
+      "sizeBytes": 70208994
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "b6f88c94de970b4c63a7ac3fd3354732",
-      "sizeBytes": 70206378
+      "md5": "7db5378a1d78e11025c72601b2b09c2d",
+      "sizeBytes": 70208994
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "b6f88c94de970b4c63a7ac3fd3354732",
-      "sizeBytes": 70206378
+      "md5": "7db5378a1d78e11025c72601b2b09c2d",
+      "sizeBytes": 70208994
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "b6f88c94de970b4c63a7ac3fd3354732",
-      "sizeBytes": 70206378
+      "md5": "7db5378a1d78e11025c72601b2b09c2d",
+      "sizeBytes": 70208994
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "b6f88c94de970b4c63a7ac3fd3354732",
-      "sizeBytes": 70206378
+      "md5": "7db5378a1d78e11025c72601b2b09c2d",
+      "sizeBytes": 70208994
     }
   ],
-  "md5": "b6f88c94de970b4c63a7ac3fd3354732",
-  "sizeBytes": 70206378,
+  "md5": "7db5378a1d78e11025c72601b2b09c2d",
+  "sizeBytes": 70208994,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "e1f1f5297522993e129c52c34927ee5e"
+    "bundleMd5": "b6f88c94de970b4c63a7ac3fd3354732"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 e1f1f5297522993e129c52c34927ee5e, 70205406 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 b6f88c94de970b4c63a7ac3fd3354732, 70206378 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T22:41:49+00:00",
-  "buildStamp": "2026-11-04 22:41",
+  "publishedAt": "2026-11-04T22:53:40+00:00",
+  "buildStamp": "2026-11-04 22:53",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",

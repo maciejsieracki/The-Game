@@ -1,3 +1,12 @@
+## ROBOCZA 7db5378a -- 2026-11-04 -- plakietka oblężenia z licznikiem tur do poddania; wejście do poddanego miasta (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`488d94364` + SIEGE-BADGE-TURNS `3bba9a56d` + SIEGE-SURRENDER-ENTER-CITY `8b7c8af3b`) i commit wdrożenia; zgłoszenia właściciela, stała zgoda.
+- Bundle MD5 `7db5378a1d78e11025c72601b2b09c2d`, 70208994 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: „poddanie za N tur” na plakietce oblężenia; po poddaniu miasta główna oblegająca armia wchodzi do miasta.
+- Testy: tsc PASS; forecast 56/0; enter-city 32/0; blockade 57/0; last-stand 58/0.
+- Ograniczenia: prognoza zakłada stały garnizon; wejście po poddaniu bez testu Chromium; kilka testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `b6f88c94de970b4c63a7ac3fd3354732`, 70206378 bajtów.
+
 ## ROBOCZA b6f88c94 -- 2026-11-04 -- limit ludności: Spichlerz II = 12, Akwedukt = 20 (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`c4a541a27` + POPCAP `913b60189`) i commit wdrożenia; decyzja właściciela, stała zgoda.
