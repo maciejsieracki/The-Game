@@ -27174,9 +27174,6 @@ async function boot(): Promise<void> {
       meEra: () => empireEpochForOwner(ME()),
     });
 
-    // R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1 — hak testowy WYLACZNIE dla tools/player-moves-before-ai-turn-test.cjs
-    // (tylko przy ?civTest=1). Ustawia zakolejkowany marsz gracza tak jak `planMarchTo` BEZ natychmiastowego
-    // wykonania segmentu i BEZ `markPlayerMovedUnit` (czyli "marsz z poprzednich tur"); reszta idzie REALNYM endTurn.
     // R-WEB-SIEGE-BADGE-TURNS-TO-SURRENDER-Q1 — hak testowy WYLACZNIE dla tools/siege-surrender-forecast-live-test.cjs
     // (tylko przy ?civTest=1): ustawia stan oblezenia na zywym miescie i odswieza plakietki; zero wplywu bez parametru.
     if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
@@ -27194,6 +27191,9 @@ async function boot(): Promise<void> {
       };
     }
 
+    // R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1 — hak testowy WYLACZNIE dla tools/player-moves-before-ai-turn-test.cjs
+    // (tylko przy ?civTest=1). Ustawia zakolejkowany marsz gracza tak jak `planMarchTo` BEZ natychmiastowego
+    // wykonania segmentu i BEZ `markPlayerMovedUnit` (czyli "marsz z poprzednich tur"); reszta idzie REALNYM endTurn.
     if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
       (window as any).__playerMovesTestDebug = {
         queueMarch: (unitId: string, destQ: number, destR: number): boolean => {
