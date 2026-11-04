@@ -97,5 +97,34 @@ console.log('(kontrola) w kole fortu poza miastem nie powstaje nic poza stadnina
   const far = s.picks.filter(p => p.key !== 'stadnina' && p.q >= 7);
   ok(far.length === 0, `brak innych pickow w kole fortu (jest ${far.length}: ${far.map(p => p.key + '@' + K(p.q, p.r)).join(' ')})`);
 }
+
+// R-WEB-AI-STADNINA-FORT-TERRITORY-SCAN-Q1 (obrona r1): spor terytorialny z WROGIM MIASTEM i rownosc zbiorow gracz vs AI.
+console.log('(spor) wrogie miasto zajmuje czesc kola fortu — zbior AI musi byc rowny zbiorowi legalnych heksow gracza');
+{
+  const mkEnemy = (ex, ey, extraPop) => {
+    const map = mkMap([{ q: 8, r: 0 }, { q: 12, r: 0 }, { q: 10, r: 3 }, { q: 10, r: -3 }]);
+    const tn = nodes('fort').concat([{ q: ex, r: ey, ownerId: 1, cityId: 'e0', pop: extraPop, level: 1 }]);
+    const st = { map, cityNodes: [{ q: 0, r: 0, pop: 1, level: 1 }], territoryNodes: tn, playerOwnerIdNum: PID,
+      playerCivArchetype: 'rzymianie', playerEra: 3, researchedTechs: TECHS, horseStockAvailable: 0, tradeRouteKonUnlocked: false };
+    const legal = createImprovementBuildApi(st).getQualifyingHexes('stadnina').map(h => K(h.q, h.r)).sort();
+    const picks = pickAutoImprovements({
+      cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(), pracaAvailable: 900,
+      unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: true, resourceDeficitKeys: ['kon'],
+      getOnlyWorked: () => true, getWorkedHexKeys: () => new Set([K(0, 0)]), pracaBudgetPercent: 100,
+      getPracaBudgetPercent: () => 100, civArchetype: 'rzymianie', playerEra: 3, foodImprovementStages: true,
+    });
+    const ai = picks.filter(p => p.key === 'stadnina').map(p => K(p.q, p.r)).sort();
+    return { legal, ai };
+  };
+  for (const [ex, ey, pop] of [[14, 0, 8], [10, 6, 8], [12, 2, 3]]) {
+    const r = mkEnemy(ex, ey, pop);
+    console.log(`   wrog (${ex},${ey}) pop ${pop}: gracz legalne [${r.legal.join(' ')}] | AI [${r.ai.join(' ')}]`);
+    const illegalAi = r.ai.filter(k => !r.legal.includes(k));
+    ok(illegalAi.length === 0, `wrog (${ex},${ey}): AI nie bierze heksow nielegalnych dla gracza (${illegalAi.join(' ') || 'brak'})`);
+    const missed = r.legal.filter(k => !r.ai.includes(k) && k !== '8,0');
+    ok(missed.length === 0, `wrog (${ex},${ey}): AI widzi wszystkie legalne heksy kola fortu (pominiete: ${missed.join(' ') || 'brak'})`);
+  }
+}
+
 console.log(`\n${passed} OK, ${failed} FAIL`);
 process.exit(failed ? 1 : 0);
