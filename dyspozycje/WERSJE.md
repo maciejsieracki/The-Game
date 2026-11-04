@@ -1,3 +1,12 @@
+## ROBOCZA 34d2cada -- 2026-11-04 -- po „Koniec tury” najpierw ruchy gracza, potem AI (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`0c85c6b64` + PLAYER-MOVES-BEFORE-AI-TURN `1ff8657fc`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
+- Bundle MD5 `34d2cada6f2b8b9d528e35dac8320247`, 70,179,813 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: kolejność po „Koniec tury”: ruchy gracza (synchronicznie) → AI/państwa-miasta → ekonomia → nowa tura; marsz z atakiem czeka na okno bitwy; hot-seat dokańcza marsz kończącego fotela.
+- Testy: tsc PASS; player-moves 44/0 (live RED 26/18 na bazie); frozen-fortified 76/0; events-defer 40/0.
+- Ograniczenia: hot-seat — atak z marszu nie odpala się przy zmianie fotela; regresje live czerwone identycznie przed i po; ok. 29 testów live niezmierzone.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `fc48db59e3238e51cfa5056174b06f23`, 70,178,103 bajtów.
+
 ## ROBOCZA fc48db59 -- 2026-11-04 -- „zamrożone” jednostki i armie: wybór, łączenie, samoleczenie (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`5fa0c1a84` + UNIT-FROZEN-FORTIFIED-UNSELECTABLE `dceaab0fa`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzuty Armia (112,101)), stała zgoda na poprawki.
