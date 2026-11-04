@@ -1,6 +1,7 @@
 # P5-REPIN-UI-2 — repin UI frontend-v2 do aktualnego weba (Faza U3, część A)
 
 TEMAT: `R-RUSTPORT-REPIN-UI-2-A-Q1` · runda 1 (Operator), runda 2 = wycena §1a/§4 · baza `rust-port/parity-v2` `612ad455e`
+Partia UI-2-B: `R-RUSTPORT-REPIN-UI-2-B-Q1` · runda 1 (Operator) · baza `parity-v2` `2198eaf7e` · §2b, §1a (rekalibracja), §4.
 Plan nadrzędny: `dyspozycje/rust-port/PLAN-AKTUALIZACJI-PORTU-DO-WEBA-20261030.md` §3 „UI”.
 
 ## 0. Punkty odniesienia (zmierzone)
@@ -29,11 +30,11 @@ Hunki = początki zakresów po stronie `origin/main` (`git diff -U0`, `plik:lini
 | 2 | `recruitHudLabel.ts` | +5/−0 | 0 | — → kopia | `:1+5` | etykieta rekrutów „N (pełne)” | kopia bajtowa | `src/ui/recruitHudLabel.ts` | **ZROBIONE UI-2-A** |
 | 3 | `hudChip6c.ts` | +6/−1 | +6/−1 | PINBYTE → main | `:30+3 :56+2 :59` | `exact` → `title`/`aria-label` (`62884e25f`) | kopia bajtowa | `src/ui/hudChip6c.ts` | **ZROBIONE UI-2-A** |
 | 4 | `unitActionBarHtml.ts` | +11/−2 | 0 | PINBYTE → main | `:33+2 :37 :39 :135+8` | ikony split/merge, przycisk `general-follow` | kopia bajtowa | `src/ui/unitActionBarHtml.ts` | **ZROBIONE UI-2-A** |
-| 5 | `aiOwnerProgressFrame.ts` | +16/−0 | 0 | — | `:1+16` | ramka postępu tury AI | kopia bajtowa (main: 0 instrukcji `import`) | nowy `src/ui/aiOwnerProgressFrame.ts` | UI-2-B |
-| 6 | `armyMergePanel.ts` | +156/−55 | +128/−106 | PINBYTE | `:4+4 :12 :39 :45 :50 :54+12 :69 :74 :76+2 :80 :83+41 :125+6 :144 :147+2 …` | „Połączenie armii”: siatka 3×5, licznik „Na polu · Dołącza · Razem”, „▼ jeszcze N jednostek”, Enter/autofokus (`59d326396`) | kopia bajtowa (importy main: `formatPl`, `escapeOverlayStack`, `icons/brandAssets` — bez logiki) | `src/ui/armyMergePanel.ts` | UI-2-B |
-| 7 | `armySplitPanel.ts` | +185/−86 | +185/−86 | PINBYTE | `:2+3 :31 :35 :38+10 :50+6 :57 :59+20 :80+4 :86+17 :111 :130+3 :151+40 :192+15 :208+4 …` | „Rozdziel armię”: siatka 3×5, scroll, brandbook (`798ec59eb`) | kopia bajtowa (importuje typ z `armyMergePanel` → razem z #6) | `src/ui/armySplitPanel.ts` | UI-2-B |
-| 8 | `unitReplacePicker.ts` | +18/−2 | 0 | MOD | `:27+7 :162 :188+10` | wybór zamiany jednostki | port DOM | `src/ui/unitReplacePicker.ts` | UI-2-B |
-| 9 | `siegeMapPanel.ts` | +22/−3 | +22/−3 | MOD (DTO `SiegePanelDto`) | `:221+4 :271+4 :335+14` | „Milicja odnawia się: za N tur” + usunięte „~” (`4c8f4a2e7`) | port DOM + pole DTO `milicjaRegen` (producent Rust: P6) | `src/ui/siegeMapPanel.ts`, `viewmodel/types.ts` | UI-2-B |
+| 5 | `aiOwnerProgressFrame.ts` | +16/−0 | 0 | — | `:1+16` | ramka postępu tury AI | kopia bajtowa (main: 0 instrukcji `import`) | nowy `src/ui/aiOwnerProgressFrame.ts` | **ZROBIONE UI-2-B** |
+| 6 | `armyMergePanel.ts` | +156/−55 | +128/−106 | PINBYTE | `:4+4 :12 :39 :45 :50 :54+12 :69 :74 :76+2 :80 :83+41 :125+6 :144 :147+2 …` | „Połączenie armii”: siatka 3×5, licznik „Na polu · Dołącza · Razem”, „▼ jeszcze N jednostek”, Enter/autofokus (`59d326396`) | kopia bajtowa (importy main: `formatPl`, `escapeOverlayStack`, `icons/brandAssets` — bez logiki) | `src/ui/armyMergePanel.ts` | **ZROBIONE UI-2-B** |
+| 7 | `armySplitPanel.ts` | +185/−86 | +185/−86 | PINBYTE | `:2+3 :31 :35 :38+10 :50+6 :57 :59+20 :80+4 :86+17 :111 :130+3 :151+40 :192+15 :208+4 …` | „Rozdziel armię”: siatka 3×5, scroll, brandbook (`798ec59eb`) | kopia bajtowa (importuje typ z `armyMergePanel` → razem z #6) | `src/ui/armySplitPanel.ts` | **ZROBIONE UI-2-B** |
+| 8 | `unitReplacePicker.ts` | +18/−2 | 0 | MOD | `:27+7 :162 :188+10` | wybór zamiany jednostki, `blockedReason` (`219456bae`) | port DOM | `src/ui/unitReplacePicker.ts` | **ZROBIONE UI-2-B** |
+| 9 | `siegeMapPanel.ts` | +22/−3 | +22/−3 | MOD (DTO `SiegePanelDto`) | `:221+4 :271+4 :335+14` | „Milicja odnawia się: za N tur” + usunięte „~” (`4c8f4a2e7`) | port DOM + pole DTO `milicjaRegen` (producent Rust: P6) | `src/ui/siegeMapPanel.ts`, `viewmodel/types.ts` | **ZROBIONE UI-2-B** |
 | 10 | `hud.ts` | +36/−24 | +28/−22 | MOD | `:28 :62 :553+3 :769+9 :784+4 :1093 :1097 :1105 :1111 :1120 :1121 :1134 :1157+2 :1168 …` | użycie `formatCompactNumber`/`exactCompactNote` w pasku zasobów (`62884e25f`) | port DOM (C3) | `src/ui/hud.ts` | UI-2-C (zależy od #1/#3 — gotowe) |
 | 11 | `empireDetailPanel.ts` | +124/−169 | +34/−8 | MOD | `:17 :31 :70 :72+6 :156+4 :357+10 :458 :460+9 :833+2 :1423+45 :2452+8 :2646 :2656 :2770 …` | panel imperium, skracanie liczb | port DOM (C3) | `src/ui/empireDetailPanel.ts` | UI-2-C |
 | 12 | `empireDetailTypes.ts` | +6/−0 | +6/−0 | MOD | `:111+6` | typy panelu imperium | adapter typów | `src/ui/empireDetailTypes.ts` | UI-2-C |
@@ -76,11 +77,11 @@ nie zawiera tej infrastruktury, bo kolejne partie ją reużywają.
 | 2 | `recruitHudLabel` | KB | 5 | 1 | 0 | 0,5 | A (zrobione) |
 | 3 | `hudChip6c` | KB | 7 | 3 | 0 | 0,75 | A (zrobione) |
 | 4 | `unitActionBarHtml` | KB | 13 | 4 | 0 | 1 | A (zrobione) |
-| 5 | `aiOwnerProgressFrame` | KB | 16 | 1 | 0 | 0,75 | B |
-| 6 | `armyMergePanel` | KB + PNG | 211 | 25 | 0 | 4,5 | B |
-| 7 | `armySplitPanel` | KB + PNG | 271 | 19 | 0 | 4 | B |
-| 8 | `unitReplacePicker` | PD | 20 | 3 | 20 | 1,75 | B |
-| 9 | `siegeMapPanel` | PD + DTO | 25 | 3 | 25 | 3 | B |
+| 5 | `aiOwnerProgressFrame` | KB | 16 | 1 | 0 | 0,75 | B (zrobione) |
+| 6 | `armyMergePanel` | KB + PNG | 211 | 25 | 0 | 4,5 | B (zrobione) |
+| 7 | `armySplitPanel` | KB + PNG | 271 | 19 | 0 | 4 | B (zrobione) |
+| 8 | `unitReplacePicker` | PD | 20 | 3 | 20 | 1,75 | B (zrobione) |
+| 9 | `siegeMapPanel` | PD + DTO | 25 | 3 | 25 | 3 | B (zrobione) |
 | 10 | `hud` | PD | 60 | 24 | 60 | 5,75 | C |
 | 11 | `empireDetailPanel` | PD | 293 | 31 | 293 | 11,5 | C |
 | 12 | `empireDetailTypes` | AD | 6 | 1 | 6 | 0,75 | C |
@@ -99,6 +100,15 @@ nie zawiera tej infrastruktury, bo kolejne partie ją reużywają.
 | 25 | `entityCards/improvementAdapter` | AD | 8 | 2 | 8 | 1 | D |
 | 26 | `cityPanel` (bloki K) | K | 441 | 89 | 277 | 20 | G |
 | | **Razem** | | **2709** | | **1945** | **129,25** | |
+
+**Rekalibracja po UI-2-B (r1 `R-RUSTPORT-REPIN-UI-2-B-Q1`).** Wycena B = 14 h / 45 LP / 2 rundy; zużyto **1 rundę**
+(czas zegarowy sesji Operatora ≈ 2 h, 05:37–07:40 UTC 2026-11-04 — pomiar zegara, nie wysiłku), w tym jednorazowa
+infrastruktura interakcji w przeglądarce (`run-repin-ui2b.mjs`: prawdziwe zdarzenia klawiatury/myszy, 2 okna, zrzuty
+ustalone) i 37 mutacji. LP faktycznie napisane w porcie (`git diff --numstat`): #8 +20/−2 (wycena 20), #9 +7/−1 w panelu + 5 w DTO (wycena 25:
+mniej, bo `militiaEstimator` webu NIE jest portowany — `milicjaEst` już przychodzi z DTO od P5.3). ZAŁOŻENIE Z3 (wzór
+godzin) zostaje bez zmiany współczynników: dwie partie (A, B) zmieściły się w 1 rundzie każda przy wycenie 3 h i 14 h,
+więc wzór jest zachowawczy dla klas KB/PD < 30 LP; nie zmniejszam go, bo partie C–G to głównie PD z dużym L (hud,
+empireDetailPanel, diplomacyTradeBasket, newGameFlow), dla których A/B nie dają kalibracji.
 
 Zmiany weba spoza `gra/src/ui/**` (tabela niżej) wycenia się w P6 (silnik/kontroler), nie w UI-2: „Ludność: −1” i
 okres odnowy Milicji = producent DTO w Rust; kolejność rekrutacji wg epoki i odroczenie powiadomień = kontroler.
@@ -142,6 +152,54 @@ ZAŁOŻENIE Z2: `hud.ts` w v2 jeszcze NIE woła `formatCompactNumber`/`exact` (t
 moduły i kontrakt bez zmiany zachowania istniejących paneli (harnessy L0/L1A/L2/C4/cycles/hud/newgame/cityux: 0 różnic na
 nakładce; liczniki `jsdomErrors` L2=354/C4=75 i `consoleErrors` L2=150 identyczne jak na bazie przed zmianą).
 
+## 2b. Partia UI-2-B (zrobiona w `R-RUSTPORT-REPIN-UI-2-B-Q1` r1)
+
+Web bez nowych zmian UI: `git log 86d510c66..origin/main -- gra/src/ui` = pusto (`origin/main` = `86d510c66` w chwili
+pomiaru, 2026-11-04) — kopie i odniesienia z tego samego SHA co UI-2-A.
+
+| # | Plik | Klasa | Wynik |
+|---|---|---|---|
+| 5 | `src/ui/aiOwnerProgressFrame.ts` (NOWY, 629 B) | kopia bajtowa | manifest `files` |
+| 6 | `src/ui/armyMergePanel.ts` (16 627 B) | kopia bajtowa | manifest `files`; usunięty z `pin-manifest.json` |
+| 7 | `src/ui/armySplitPanel.ts` (13 495 B) | kopia bajtowa | manifest `files`; usunięty z `pin-manifest.json` (433 → 431) |
+| 8 | `src/ui/unitReplacePicker.ts` | port DOM | `UnitReplaceOption.blockedReason?`; `affordable = o.affordable && !o.blockedReason` (web `:162`); tytuł/wiersz przyczyny (web `:188+10`) |
+| 9 | `src/ui/siegeMapPanel.ts`, `src/viewmodel/types.ts` | port DOM + DTO | `SiegePanelDto.milicjaRegen?: number`; „Milicja przy szturmie: N” bez „~”; „Milicja odnawia się: za N turę/tury/tur” (odmiana jak web) |
+
+ZAŁOŻENIE Z4 (UI-2-B): web liczy `milicjaEst` przez podpinany `setSiegePanelMilitiaEstimator` (`3853015fc`), a okres
+odnowy przez `setSiegePanelMilitiaRegenLeft` (`4c8f4a2e7`). W porcie oba są DANYMI DTO od „Rust” (`milicjaEst` od P5.3,
+`milicjaRegen` nowe, opcjonalne: brak = 0 jak web bez podpiętej funkcji); setterów nie portuję (byłaby to logika
+w UI). Producent `milicjaRegen` i nowej reguły „Milicja = 1 mieszkaniec, tylko z Garnizonem” = P6 (silnik).
+ZAŁOŻENIE Z5: `affordable` w DTO pickera zachowuje znaczenie „skarb ≥ dopłata” (kontrakt P5.5); `blockedReason` jest
+osobnym polem, a UI łączy je jak web — Rust nie musi wliczać przyczyny do `affordable`.
+
+Mechanika: `repin-ui2-manifest.json` — `files` 4 → 7 (kopie) oraz NOWE `portDomRefs` (2: wersje weba `unitReplacePicker`/
+`siegeMapPanel`, sha256 źródła); `verify-repin-ui2-copies` sprawdza dodatkowo sha256 `portDomRefs` z gita/`--web-dir`
+i rozłączność z oboma manifestami; `repin-ui2-overlay.mjs` wstawia do odniesienia także `portDomRefs`;
+`run-level1a.mjs` na nakładce podpina estymator Milicji webu TYM SAMYM wzorem, którym „Rust” wypełnia `milicjaEst`
+(na czystym pinie funkcji nie ma — zachowanie bez zmian). Czysty pin po repinie: L1A **70 różnic** (58 `siegeMapPanel`
+= usunięte „~”, 12 `armyMergePanel` = nowy panel), na nakładce 0.
+
+Harness `tools/dom-harness/run-repin-ui2b.mjs` (Chromium 141 headless, web z `git archive` vs port, ta sama przeglądarka):
+192 sceny × 2 okna (1280×720, 360×640) = 1356 kroków: merge N ∈ {0,1,3,14,15,16,20,44,45} (przewijanie 60/dół/0,
+klik „▼ jeszcze N”, Enter na liście, Enter na „Połącz”/„Zostaw osobno”, Escape, klik w tło, Tab/Shift+Tab), split
+N ∈ {1,2,3,15,16,20,45} (strzałki/Home/End/Spacja, przewinięcie + klik pozycji, cel, „Rozdziel”, wszystkie zaznaczone,
+Anuluj, tło, brak celów), picker (7 opcji × 3 skarbce, w tym `blockedReason` pusty/z HTML), siege (`milicjaRegen` ∈
+{brak,0,1,2,3,4,5,11,12,13,14,15,21,22,24,25,102,112,114,122,−3,2,5} × Milicja {0,3,−2} × garnizon {0,40}, klawisze
+1/2/3/Enter/Escape, `updateSiegeMapPanelTurn`) oraz `shouldYieldAiOwnerProgressFrame` (4 602 wejść). Stan kroku =
+`outerHTML` panelu, aktywny element (autofokus), metryki przewijania, prostokąty, dziennik akcji. 14 zrzutów PNG
+(merge/split 20 i 45, merge po „przewiń”, picker, siege, oba okna) — bajtowo równe. 55 asercji pokrycia na wynikach
+webu. Ustalenie stanu: animacje kończone (`getAnimations().finish()`), przewinięcia stałe 3 klatki; zrzut ustalony
+(2 kolejne równe) z `scrollbar-color: transparent` — zmierzone r1: kciuk nakładkowego paska listy (7 px) różnił się między
+przebiegami przy tym samym DOM i `scrollTop` (rysowany poza DOM; reguła `scrollbar-color` paneli jest w kopiach bajtowych).
+Fixtura `tools/dom-harness/fixtures/repin_ui2b-web-vectors.json` (38 948 B: sha256 każdego kroku + zrzutów;
+`webVectorsSha256=7331844c02cc0ec8f3210c331f3ff0b9df5fe9f31e1c9afd85f3175a69d504b9`) — bajtowo ta sama z dwóch osobnych
+`git archive` (sha256 pliku `cf0ed612…1dda4e`). Mutacje `mutate-repin-ui2b.mjs`: 37/37 wykrytych (A3 pierwotna
+`startIndex >= ownerCount → >` okazała się RÓWNOWAŻNA i została zastąpiona).
+
+Uwaga: `run-level1a.mjs` dla `armyMergePanel` ma `DOM_puste=12/12` — web od `ad932ea69` montuje modal w `<html>`
+(nie w `<body>`), a stary harness czyta `body`; zachowanie DOM merge pokrywa `run-repin-ui2b` (asercja „montaż w <html>”).
+GPU/natywne okno Tauri: NIE_ZMIERZONO.
+
 ## 3. Dryf bloków kopii K01–K09 względem `origin/main`
 
 Narzędzia: `measure-k08d-drift.mjs`, `measure-k08e-drift.mjs`, `measure-k09a-drift.mjs` (istniejące) oraz NOWE
@@ -178,14 +236,17 @@ web(Chromium) vs port 0 różnic + mutacje każdej gałęzi nowego hunku 100% wy
 
 | Partia | Zakres (#§1) | Kryterium | Wycena (§1a: Σh / ΣLP / rundy ≤8 h) |
 |---|---|---|---|
-| UI-2-B | #5 `aiOwnerProgressFrame`, #6 `armyMergePanel`, #7 `armySplitPanel` (kopie bajtowe), #8 `unitReplacePicker`, #9 `siegeMapPanel` (+ `SiegePanelDto.milicjaRegen?`) | kopie sha=manifest; harness merge/split: siatka 3×5, licznik, „▼ jeszcze N”, Enter — DOM web=port + zrzut PNG; milicja: N∈{0,1,2,4,5,12,22} pluralizacja = web | 14 h / 45 LP / 2 rundy (#5 0,75 · #6 4,5 · #7 4 · #8 1,75 · #9 3) |
+| UI-2-B | #5 `aiOwnerProgressFrame`, #6 `armyMergePanel`, #7 `armySplitPanel` (kopie bajtowe), #8 `unitReplacePicker`, #9 `siegeMapPanel` (+ `SiegePanelDto.milicjaRegen?`) | kopie sha=manifest; harness merge/split: siatka 3×5, licznik, „▼ jeszcze N”, Enter — DOM web=port + zrzut PNG; milicja: N∈{0,1,2,4,5,12,22} pluralizacja = web | **ZROBIONE** (`R-RUSTPORT-REPIN-UI-2-B-Q1` r1, §2b): wycena 14 h / 45 LP / 2 rundy → zużyta 1 runda, LP 35 |
 | UI-2-C | #10 `hud`, #11 `empireDetailPanel`, #12 `empireDetailTypes`, #13 `armyStackHud`, #14 `unitRecruitCard` | harness HUD na DTO z wartościami ≥1000: tekst `20,9k`, `title` „Dokładnie: …” = web | 30,5 h / 574 LP / 4 rundy (#10 5,75 · #11 11,5 · #12 0,75 · #13 4,5 · #14 8) — zalecany podział na 2 tematy: C1 = #10+#12+#13 (11 h), C2 = #11+#14 (19,5 h) |
 | UI-2-D | #15 `hexContextTooltip`, #16 `preBattle`, #17 `buildModeHud`, #24–25 adaptery kart | `run-cycles` na nakładce 0 różnic po repinie odniesienia | 15,25 h / 194 LP / 2 rundy (#15 7,25 · #16 3,75 · #17 2,25 · #24 1 · #25 1) |
 | UI-2-E | #18–22 dyplomacja | `run-cycles` (C2) + nowe wektory koszyka | 25,5 h / 428 LP / 4 rundy (#18 3,75 · #19 3 · #20 2 · #21 1,75 · #22 15) — zalecany podział: E1 = #18–21 (10,5 h), E2 = #22 (15 h) |
 | UI-2-F | #23 `newGameFlow` | `run-newgame` na nakładce 0 różnic | 21 h / 427 LP / 3 rundy (#23 21) |
 | UI-2-G | #26 bloki K (25 DRIFT z §3 + K02–K04), kolejka rekrutacji ↑↓✕, kolejność wg epoki | per blok: marker przepięty na `86d510c66` (lub nowszy main), `verify-k0*-copies` EXIT 0 | 20 h / 277 LP (±LCS) / 3 rundy (25 bloków DRIFT · 0,5 h + 277/50 + 2 h markery K02–K04) |
 
-Pozostało po UI-2-A: **126,25 h / 1945 LP ≈ 16 rund pracy** (18 przy zaokrąglaniu w górę per partia jak w tabeli) (B–G; wycena = ZAŁOŻENIE Z3, do rekalibracji po każdej partii — w raporcie partii wpisać h zużyte vs wycena). Temat > 2 rund wyceny dzielić na osobne ID, żeby nie zbliżać się do limitu 5 rund.
+Pozostało po UI-2-A: 126,25 h / 1945 LP (B–G). **Pozostało po UI-2-B: 112,25 h / 1900 LP ≈ 14 rund pracy wg Z3**
+(16 przy zaokrąglaniu w górę per partia: C 4 · D 2 · E 4 · F 3 · G 3); kolejka: **UI-2-C** (zalecany podział C1 = #10+#12+#13,
+C2 = #11+#14) → UI-2-D → UI-2-E (E1, E2) → UI-2-F → UI-2-G (wycena = ZAŁOŻENIE Z3, do rekalibracji po każdej partii —
+w raporcie partii wpisać h zużyte vs wycena; B: 14 h wyceny → 1 runda / ≈ 2 h zegara). Temat > 2 rund wyceny dzielić na osobne ID, żeby nie zbliżać się do limitu 5 rund.
 
 Uwaga (Evaluator r1, notatka b): po repinie UI-2-A starsze harnessy (`run.mjs`, `run-cycles.mjs`, `run-level2.mjs`, `run-c4.mjs`, …) bez `--pin-dir <nakładka>` dają EXIT=1 (4 różnice ikony `split` w `run-cycles`) — każdą partię weryfikować na nakładce z `tools/repin-ui2-overlay.mjs` (komenda w §5).
 
@@ -201,4 +262,7 @@ node tools/dom-harness/mutate-repin-ui2a.mjs --web-dir "$WEB"
 node tools/repin-ui2-overlay.mjs --pin-dir "$PIN" --web-dir "$WEB" --out "$PINOV"
 node tools/dom-harness/run-cycles.mjs --pin-dir "$PINOV"     # (i pozostałe run-*.mjs)
 node tools/dom-harness/measure-repin-ui2-kblocks-drift.mjs --pin-dir "$PIN" --cur-dir "$WEB"
+# UI-2-B
+node tools/dom-harness/run-repin-ui2b.mjs --web-dir "$WEB" [--out fixtura.json] [--png-dir "$PNG"]
+node tools/dom-harness/mutate-repin-ui2b.mjs --web-dir "$WEB" --from 0 --to 17   # i dalej 17–27, 27–31, 31–37 (< 10 min/wywołanie)
 ```
