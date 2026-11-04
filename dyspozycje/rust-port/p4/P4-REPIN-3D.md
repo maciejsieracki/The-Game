@@ -645,7 +645,7 @@ README), README cz. 3 (akapit A4). Pliki `.rs` innych testów nietknięte.
   Włócznik/Łucznik, żelazo Wojownik z mieczem i tarczą/Procarz), `collectCityDefRoster` `:299-325` (`category: 'domyslny'`),
   `main.ts:30344` `runtimeToBattleUnit` (`kategoria = u.category`, `nazwa = typeId`, `stats = def` z `Jednostka` = nazwa
   wiersza). Scena: `buildUnitModel('domyslny', kolor, <nazwa wiersza>)` — **brak osobnego modelu/ikony „Milicja”** w
-  `gra/src/battle/**` i `gra/src/render/**` (`grep -i milicj` = tylko komentarz `render/units.ts:399`). `'Jednostka': 'Milicja'`
+  `gra/src/battle/**` i `gra/src/render/**` (`grep -i milicj` @ `86d510c66` = 1 trafienie: komentarz `battle/mapFieldBattle.ts:294` o fallbacku `unitDefFor(Milicja)` w prognozie; `render/units.ts:399` to angielskie „militia” w komentarzu `COLOR_INDIGO`, nie model ani ikona). `'Jednostka': 'Milicja'`
   występuje wyłącznie w `militiaDefRecord` (`:135`, matematyka oblężenia abstrakcyjnego; brak wywołań poza definicją).
   Wniosek: Milicja = DTO `UnitSpawn { category: "domyslny", model_name: <wiersz> }`, zero kodu sceny.
 - **Wieża oblężnicza:** model `render/units.ts:1661` → `buildSiegeTower` `:3694` (Rust: `routing.rs:471` → `B::SiegeTower`);
