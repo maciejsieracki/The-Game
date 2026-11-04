@@ -773,3 +773,6 @@ Nie uruchamiam nowych tematów (UI-2-G, kolejne partie, tematy webowe). Dokańcz
 Właściciel: celem jest zużycie limitu na ciężkich workerach Opus przez noc. Skasowano 16 plików `/tmp/esbuild-*.map` (≈1,3 GB; wcześniej błędnie szacowane na 14 GB — reszta /tmp to katalogi `tmp.*` ≈4 GB, ich masowe kasowanie zablokował klasyfikator — nieobchodzone). Uruchomiono UI-2-G (cityPanel + dryf K01–K09). Dysk ≈ 2,7 GB → ostrożnie.
 
 ## 2026-11-04 — KOLEJNY TASK (polecenie właściciela): po zakończeniu wszystkiego — doprowadzić do końca wszystkie 8 zapisanych tematów webowych + irygacja, spacja w rosterze, ręczna bitwa oblężnicza, drobne. Plan i grupy: `dyspozycje/autobot/BACKLOG-WEB-ZGLOSZENIA-20261103.md` (sekcja PLAN WYKONANIA). Start dopiero po zakończeniu trwających UI-2-B…G.
+
+## 2026-11-04 — kontrola cykliczna 07:11
+Nic do integracji. Trwa 6 workflowów UI (Opus 5.5): B, C, D, E, F, G (ponowione po błędzie procesu: Operator G r1 wziął wiadomość właściciela za zadanie). Dysk ≈ 1,5 GB (wąskie gardło). Plan webowy zapisany (`BACKLOG-WEB-ZGLOSZENIA-20261103.md`): start po zakończeniu UI; nowe zgłoszenie: R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1 (niedobór złota/żywności/surowców czerwoną czcionką).
