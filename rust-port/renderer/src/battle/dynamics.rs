@@ -20,7 +20,8 @@
 //! | `_attackGate` (3D) / `_animateRam` (`:7000-7053`) | [`RamAnim`] |
 //! | `_attackWallTile` (3D) / `_spawnCatapultBoulder` (`:7204-7269`) | [`wall_shot_endpoints`], [`Boulder`] |
 //! | `_breachWallTile` (`:7302-7416`) | [`breach_wall_tile`], [`retreat_from_wall`] |
-//! | `_breachGate` (`:7421-7474`) | [`breach_gate`] |
+//! | `_breachGate` (`:7421-7474`) | [`breach_gate`] (also the palisade gate, REPIN-3D A3) |
+//! | `_breachWallTile` @ `origin/main` (`:7553-7610`, + `_destroyTowerAtRow` `:7563`) | [`breach_wall_tile_fort`] (REPIN-3D A3) |
 //! | `_startRout` (3D, `:8971-8972`), `_updateFacing` / attack facing | [`rout_facing`], [`set_facing`] |
 //! | `_makeGroupNumberTexture`, `_removeGroupFrameMarker`, `_updateGroupFrameMarker`, `_syncAllGroupFrameMarkers`, `_groupDisplayNum` (`:18647-18739`, `:14413-14417`) | [`GroupNumberTexture`], [`GroupMarkers`], [`group_display_num`] |
 //! | `hpBarGroup.lookAt(camera.position)` of the frame loop (`:8522-8524`, `:8546-8548`) | [`billboard`] |
@@ -761,6 +762,36 @@ pub fn breach_wall_tile(
         rubble.push(mesh);
     }
     (rubble, label)
+}
+
+/// `_breachWallTile(wallRow)` of the current web (`origin/main`
+/// `battleScene.ts:7553-7610`, REPIN-3D A3): [`breach_wall_tile`] plus
+/// `this._destroyTowerAtRow(wallRow)` (`:7563`, R4: the tower standing on
+/// the breached tile is broken — [`super::siege_towers::destroy_tower_at_row`]
+/// on `wall.towers`). The tower step creates no node, so running it before
+/// the rubble keeps the web's node order. Works the same for the wall and
+/// the PALISADE: the palisade's `rowWallMeshes[row]` holds the tile's pole
+/// GROUP (`buildPalisade` `:1028`, `wallSegsByLocalX` → Group), which is
+/// hidden as a whole (its children keep `visible = true`, as in three);
+/// the rubble is the same stone heap for both (`:7580-7609`, no `fortKind`
+/// branch). Returns the rubble, the label and the tower log line.
+pub fn breach_wall_tile_fort(
+    scene: &mut Scene,
+    grid: &mut TerrainGrid,
+    wall: Option<&mut PlacedWall>,
+    wall_col: i32,
+    wall_row: i32,
+    wall_clock: f64,
+) -> (Vec<NodeId>, FloatLabel, Option<String>) {
+    let (wall, log) = match wall {
+        Some(w) => {
+            let log = super::siege_towers::destroy_tower_at_row(scene, &mut w.towers, wall_row);
+            (Some(&*w), log)
+        }
+        None => (None, None),
+    };
+    let (rubble, label) = breach_wall_tile(scene, grid, wall, wall_col, wall_row, wall_clock);
+    (rubble, label, log)
 }
 
 /// A defender leaving the breached wall tile (`:7371-7404`): model on

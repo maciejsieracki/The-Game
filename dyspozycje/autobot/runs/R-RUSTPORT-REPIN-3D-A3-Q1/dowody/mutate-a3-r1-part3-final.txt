@@ -1,0 +1,13 @@
+## $ RANGE=20:30 python3 tests/repin3d_fixtures/mutate_a3.py   (after the pickTowerTarget DTO fix)
+KILLED   [20] shot ignores finished (test failed)
+KILLED   [21] shot ignores destroyed (test failed)
+KILLED   [22] shot from y (test failed)
+KILLED   [23] shot from x offset (test failed)
+KILLED   [24] shot to torso (test failed)
+KILLED   [25] shot target col/row (test failed)
+KILLED   [26] shot log text (test failed)
+KILLED   [27] shot blow delay (test failed)
+KILLED   [28] shot t0 (test failed)
+KILLED   [29] shot kind fixed (test failed)
+KILLED 10/10
+EXIT=0

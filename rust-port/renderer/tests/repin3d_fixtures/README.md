@@ -94,3 +94,46 @@ Measured (r1): the full copy (66 MB) and the 167-file copy (6.5 MB), separate `n
 
 `mutate_a2.py` (49 mutants, every control branch of the A2 code; `RANGE=a:b` splits the run):
 `KILLED 49/49` (r1, after the case `len-eps` was added for the loop-bound mutant).
+
+## Batch A3: tower break, tower volley / shot, wall and palisade breach (R-RUSTPORT-REPIN-3D-A3-Q1)
+
+`a3.json` (694 668 B) — produced by `gen_a3.ts` on `origin/main` @ `86d510c66` (`battle/`, `game/siege*.ts`,
+`game/city-towers.ts`, `game/city-fortification.ts` unchanged since `5fa0c1a84`), bundled by `build_a1.mjs`
+UNCHANGED (`node build_a1.mjs gen_a3`), three@0.169.0, esbuild@0.24.0, node v22.22.0. Test: `tests/repin3d_a3.rs`.
+Every case starts from the REAL `_carveWallTiles` + `_placeSiegeWall` (+ `_placeSiegeTowers`) on
+`Object.create(BattleScene.prototype)`; the Rust test replays the same with `carve_wall_tiles` +
+`place_siege_wall_fort` and the DTO the web computed.
+
+| key | web (`origin/main` `battle/battleScene.ts`) | Rust |
+|---|---|---|
+| `breach` (4 × 9 steps) | `_breachWallTile(row)` `:7553-7610` (+ `_destroyTowerAtRow` `:4089-4095` from `:7563`): first tower row twice, plain row, `rLo` / `rHi`, gate row, last tower row, `rHi + 1`, `−1`; fortKind {mur, palisada × 2, none} | `dynamics::breach_wall_tile_fort`, `siege_towers::destroy_tower_at_row` |
+| `gate` (6) | `_breachGate()` `:7672-7718` on the wall and the palisade, one gate tile already open, `siegeGateCol < 0` | `dynamics::breach_gate` (unchanged) |
+| `fire` (13) | `_fireSiegeTowers()` `:4103-4116` → `_fireOneTower` `:4118-4162` → `_tickProjectiles` `:8938-8954`; real shooter rows of eras 1–3 + synthetic rows (sling / javelin / pilum / no name / no type), a tower broken before the volley, a tower whose tile is gone (`wallTileHp`), a tower broken between scheduling and firing, `finished` before / during the volley, no shooter, no tower, no enemy | `siege_towers::fire_siege_towers`, `fire_one_tower`, `tower_projectile_kind`, `dynamics::tick_projectiles` |
+
+Logic replayed as DTO (P6.13): `pickTowerTarget` (computed by the generator with the arguments of `:4124-4128`
+for EVERY scheduled shot, also when the guard stops it — so the Rust guard is tested), `wallTileHp`,
+`towerShooterRow` (`Typ`, `Jednostka`). `_spawnWallLabel`, `_checkRout`, `_updateMoraleBar`, SFX are stubbed.
+
+### Regeneration (outside the repository only; web copy ≤ 10 MB)
+
+```bash
+S=$(mktemp -d)
+mkdir -p $S/ref $S/websrc $S/refscript $S/out
+(cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)
+git archive -o $S/web.tar 86d510c66 gra/src gra/data
+tar -xf $S/web.tar -C $S/websrc -T rust-port/renderer/tests/repin3d_fixtures/a3_web_inputs.txt && rm $S/web.tar
+cp rust-port/renderer/tests/repin3d_fixtures/{gen_a3.ts,build_a1.mjs} $S/refscript/
+cp rust-port/renderer/tests/fixtures/battle3d/{dom_stub.ts,three_shim.ts} $S/refscript/
+ln -s $S/ref/node_modules $S/refscript/node_modules
+(cd $S/refscript && node build_a1.mjs gen_a3 && node gen_a3.mjs $S/out)   # repin3d a3 breach=4 gate=6 fire=13
+sha256sum $S/out/a3.json   # = MANIFEST.sha256
+```
+
+Measured (r1): the full copy (66 MB) and the 166-file copy (6.3 MB), separate `npm install` and `git archive`:
+`a3.json` `452f127e…` and `gen_a3.mjs` `3afa8d31…` (not committed) identical in both.
+
+### Mutations
+
+`mutate_a3.py` (30 mutants, every control branch of the A3 code; `RANGE=a:b` splits the run): `KILLED 30/30`
+(r1, after the generator records the `pickTowerTarget` DTO also for shots the guard stops — the first run left
+`shot ignores finished` / `shot ignores destroyed` alive because a stopped shot had no target in the vectors).
