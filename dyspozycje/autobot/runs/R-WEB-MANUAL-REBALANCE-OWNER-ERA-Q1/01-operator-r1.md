@@ -7,7 +7,7 @@ ZMIANY/COMMIT: `gra/src/game/population-growth-v85.ts` (+ nowy `gra/tools/manual
 PRZED (pomiar):
 - `okolica.ts` juz przyjmowal `ownerEra` (yieldOfMapHex:387, seedReczneFromAuto:412, rebalanceWorkersAfterPopulationChange:460, uzycie :475/:481) -- przyczyna NIE w `terrain-improvements.ts`.
 - `population-growth-v85.ts:582` wolal rebalans BEZ 7. argumentu `ownerEra`; `ownerEra` byl liczony dopiero 4 linie nizej (dla manpower) -- czyli epoka byla dostepna, tylko nie przekazana.
-- RED (prawdziwy applyPostCentralPopulationGrowth, pop 1->2, reczne puste, fokus zrownowazony, zloto/miedz/oboz): epoka 3 wybiera pola 0,1+1,0 (ranking Kamienia) zamiast 1,0 + -1,1 (gate-red-before.txt, EXIT=1).
+- RED (prawdziwy applyPostCentralPopulationGrowth, pop 1->2, reczne puste, fokus zrownowazony, zloto/miedz/oboz): epoka 3 wybiera pola 0,1+1,0 (ranking Kamienia) zamiast 1,0 + -1,1 (gate-red-before.txt: pass=4 fail=1, pada 1 z 5 asercji, Zelazo/epoka 3, EXIT=1; mutacja noera daje ten sam wynik). Sprostowanie r2: wczesniejszy opis "RED 4 z 5" oznaczal 4 PASS i 1 FAIL, nie 4 FAIL.
 
 NAPRAWA: `ownerEra` liczone przed wywolaniem i przekazane jako ostatni argument rebalansu (ta sama mapa `ownerEraByOwner`, co dla manpower). Brak mapy = 1 (bez zmiany zachowania). Brak zmiany balansu poza skutkiem poprawki. Uwaga: epoka wplywa tylko na galezie rankingowe (seed przy pustym `okolicaReczne` oraz spadek populacji); galaz dodawania wolnych pol jest deterministyczna i nie zalezy od plonu.
 
