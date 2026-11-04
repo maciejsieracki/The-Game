@@ -8688,3 +8688,4 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 - 2026-11-04 — DECYZJA WŁAŚCICIELA (balans): limit ludności — Spichlerz I = 8 (bez zmian), **Spichlerz II = 12**, **Akwedukt = 20** (było 12), bez budynku 5 → temat `R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1`.
 - 2026-11-04 — ZGŁOSZENIE: nazwa miasta zużyta raz jest zużyta na zawsze (np. Rzym po utracie nie wraca do puli; kolejne miasta biorą następne nazwy z puli) → temat `R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1`.
 - 2026-11-04 — ZGŁOSZENIE (zrzut 40, Kisz): plakietka „OBLĘŻENIE” zawsze pokazuje, za ile tur miasto się podda → temat `R-WEB-SIEGE-BADGE-TURNS-TO-SURRENDER-Q1`.
+- 2026-11-04 — ZGŁOSZENIE: po poddaniu się obleganego miasta oblegająca jednostka ma wejść do miasta, a nie stać pod nim → temat `R-WEB-SIEGE-SURRENDER-ENTER-CITY-Q1`.
