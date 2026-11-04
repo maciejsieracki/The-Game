@@ -475,6 +475,7 @@ function extendWalk(
   let curDist = g.field.get(firstKey);
   if (!(budget > 1) || firstKey === g.destKey || spent === Infinity || curDist === undefined) return walk;
   let cur = first;
+  const visited = new Set<string>([keyOf(first.q, first.r)]);
   for (;;) {
     let best: { q: number; r: number; dn: number; enter: number } | null = null;
     for (const n of hexNeighborCoords(cur.q, cur.r)) {
@@ -492,8 +493,49 @@ function extendWalk(
         best = { q: n.q, r: n.r, dn, enter };
       }
     }
-    if (best === null) break;
+    if (best === null) {
+      // R-WEB-AI-MOVE-FULL-RANGE-Q1: jedyny heks "scisle blizej" w linii marszu zajety/zarezerwowany
+      // przez towarzysza uciane marsz jednostek z tylu (kolumna 1 pasem). Krok BOCZNY (to samo pole
+      // odleglosci, hexDistance do celu nie rosnie) -- jak w chooseStep -- ale TYLKO gdy po nim
+      // da sie jeszcze zblizyc w budzecie (bez marnowania punktow na ping-pong).
+      const curHd = hexDistance(cur.q, cur.r, g.destQ, g.destR);
+      let side: { q: number; r: number; dn: number; enter: number; hd: number } | null = null;
+      for (const n of hexNeighborCoords(cur.q, cur.r)) {
+        const nk = keyOf(n.q, n.r);
+        if (nk === g.destKey || visited.has(nk)) continue;
+        const dn = g.field.get(nk);
+        if (dn === undefined || dn !== (curDist as number)) continue;
+        const hd = hexDistance(n.q, n.r, g.destQ, g.destR);
+        if (hd > curHd) continue;
+        const hex = nav.map.hexes[nk];
+        if (hex === undefined) continue;
+        const enter = navMoveCost(nav, hex);
+        if (enter === Infinity || spent + enter > budget || !isFreeFor(nav, g, st, nk)) continue;
+        let canProgress = false;
+        for (const n2 of hexNeighborCoords(n.q, n.r)) {
+          const k2 = keyOf(n2.q, n2.r);
+          const d2 = g.field.get(k2);
+          const h2 = nav.map.hexes[k2];
+          if (d2 === undefined || d2 >= dn || h2 === undefined || (k2 === g.destKey && nav.blocked.has(k2))) continue;
+          const e2 = navMoveCost(nav, h2);
+          if (e2 === Infinity || spent + enter + e2 > budget || !isFreeFor(nav, g, st, k2)) continue;
+          canProgress = true;
+          break;
+        }
+        if (!canProgress) continue;
+        if (side === null || hd < side.hd || (hd === side.hd && (n.q < side.q || (n.q === side.q && n.r < side.r)))) {
+          side = { q: n.q, r: n.r, dn, enter, hd };
+        }
+      }
+      if (side === null) break;
+      walk.push({ q: side.q, r: side.r });
+      visited.add(keyOf(side.q, side.r));
+      spent += side.enter;
+      cur = side;
+      continue;
+    }
     walk.push({ q: best.q, r: best.r });
+    visited.add(keyOf(best.q, best.r));
     spent += best.enter;
     curDist = best.dn;
     cur = best;
@@ -787,7 +829,9 @@ export function planWarAllInCapital(
   };
   for (const u of units) st.occupied.add(keyOf(u.q, u.r));
   const emit = (u: WarAllInUnit, g: Goal, walk: ReadonlyArray<{ q: number; r: number }>): void => {
-    for (const h of walk) st.claimed.add(keyOf(h.q, h.r));
+    // R-WEB-AI-MOVE-FULL-RANGE-Q1: rezerwacja TYLKO heksu koncowego (zero dwoch jednostek na jednym
+    // heksie docelowym); heksy posrednie zwalnia egzekutor (jednostka przechodzi, nie staje).
+    st.claimed.add(keyOf(walk[walk.length - 1]!.q, walk[walk.length - 1]!.r));
     st.vacated.add(keyOf(u.q, u.r));
     const end = walk[walk.length - 1]!;
     plan.orders.push({
