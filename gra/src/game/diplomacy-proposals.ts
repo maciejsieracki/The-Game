@@ -1884,6 +1884,8 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
       return cmd.allianceKind === 'defensywny'
         ? 'Proponujemy sojusz obronny — wchodzimy do wojny tylko gdy któryś z nas jest atakowany.'
         : 'Proponujemy sojusz wojskowy — wspólna obrona i wsparcie militarnie.';
+    case 'zaproponuj_przemarsz':
+      return 'Prosimy o zgodę na przemarsz naszych wojsk przez Twoje ziemie — w wojnie z innym państwem chcemy ominąć Twoje granice bez naruszeń.';
     case 'zaproponuj_pakt':
       return cmd.turns != null && cmd.turns <= 0
         ? 'Proponujemy bezterminowy pakt nieagresji — żadna strona nie zaatakuje drugiej.'
@@ -1949,6 +1951,13 @@ export function aiCommandToPendingProposal(
         id: makeDealId('pending-nap', turn, fromOwnerId, toOwnerId),
         actionId: 'nap',
         payload: { turns: cmd.turns ?? 15 },
+      };
+    case 'zaproponuj_przemarsz':
+      return {
+        ...base,
+        id: makeDealId('pending-przemarsz', turn, fromOwnerId, toOwnerId),
+        actionId: 'granice',
+        payload: { borderMilitary: true },
       };
     case 'zaproponuj_pokoj':
       // R-WEB-TRUCE-Q1 r4 (N4): rozejm proponowany przez AI idzie tą samą ścieżką co pokój

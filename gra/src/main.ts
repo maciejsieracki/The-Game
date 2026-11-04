@@ -282,6 +282,7 @@ import {
   canUnitOccupyCityHex, addForeignCityBlocks,
 } from './game/city-hex-movement';
 import { executeAiCityMove } from './game/ai-city-capture-executor';
+import { createAiMarchGuard } from './game/ai-march-guard';
 import { truncatePathWithinBudget, buildHexOccupancy, claimHexForMove } from './game/ai-move-range';
 import {
   evaluateFoundCityAffordance,
@@ -13255,6 +13256,55 @@ async function boot(): Promise<void> {
     }
 
     /** Funkcja kosztu ruchu jednostki: woda przejezdna, gdy może się zaokrętować. */
+    /**
+     * R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: koszt ruchu jednostki wojennej AI z blokada terenu
+     * trzecich cywilizacji bez umowy przemarszu (spojny z planerem w ai.ts). Brak strazy / cywil =
+     * dotychczasowy koszt. Jednostka stojaca na zakazanym terenie moze z niego wyjsc (wyjatek).
+     */
+    function aiMarchCostFn(
+      u: RuntimeUnit,
+      guard: ReturnType<typeof createAiMarchGuard> | undefined,
+    ): ((hex: Hex) => number) | undefined {
+      const base = moveCostFnForUnit(u);
+      if (!guard || isCivilianUnit(u)) return base;
+      const startOwner = guard.isBlockedHex(u.q, u.r) ? guard.territoryOwnerAtHex(u.q, u.r) : undefined;
+      return guard.wrapCost(base ?? terrainMoveCost, startOwner);
+    }
+
+    /** Cooldown prosby AI o przemarsz: klucz "AI->wlasciciel terenu" -> tura ostatniej prosby. */
+    const aiMarchPassageRequestTurn = new Map<string, number>();
+    const AI_MARCH_PASSAGE_REQUEST_COOLDOWN_TURNS = 8;
+
+    /**
+     * R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: AI prosi o umowe przemarszu wojskowego
+     * ('granice' + borderMilitary, ISTNIEJACY mechanizm). Gracz dostaje propozycje przez stol
+     * negocjacyjny; AI<->AI rozstrzyga evaluateProposal. Odmowa/cooldown: teren zostaje zablokowany.
+     */
+    function requestAiMarchPassage(aiOwnerId: number, territoryOwnerId: number): void {
+      const key = `${aiOwnerId}->${territoryOwnerId}`;
+      const last = aiMarchPassageRequestTurn.get(key);
+      if (last !== undefined && turn - last < AI_MARCH_PASSAGE_REQUEST_COOLDOWN_TURNS) return;
+      if (isBarbarian(territoryOwnerId)) return;
+      aiMarchPassageRequestTurn.set(key, turn);
+      const cmd: AIDiplomacyCommand = {
+        type: 'zaproponuj_przemarsz',
+        targetId: String(territoryOwnerId),
+        powod: 'Marsz wojsk w wojnie przez Twoje ziemie',
+      };
+      if (territoryOwnerId === ME()) {
+        enqueueDiplomacyPendingFromCmd(aiOwnerId, cmd);
+        return;
+      }
+      const result = evaluateProposal(
+        { actionId: 'granice', proposerOwnerId: aiOwnerId, responderOwnerId: territoryOwnerId, payload: { borderMilitary: true } },
+        buildProposalEvalContext(aiOwnerId, territoryOwnerId),
+      );
+      if (!result.accepted || !result.deal) return;
+      activeDeals = applyAcceptedProposal(activeDeals, result);
+      syncRelationFromDeals(aiOwnerId, territoryOwnerId);
+      console.log(`[Dyplomacja] AI↔AI przemarsz wojskowy: ${ownerDiploLabel(aiOwnerId)} ↔ ${ownerDiploLabel(territoryOwnerId)}`);
+    }
+
     function moveCostFnForUnit(u: RuntimeUnit): ((hex: Hex) => number) | undefined {
       return moveCostFnFor(u, ownerHasSeafaring(u.ownerId), civBonusyForOwnerId(u.ownerId));
     }
@@ -37759,6 +37809,25 @@ async function boot(): Promise<void> {
                 if (isBarbarian(targetOwnerId)) return true;
                 return getDiploRelation(ownerId, targetOwnerId).status === 'wojna';
               },
+              // R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: AI w wojnie z cywilizacja nie prowadzi
+              // wojsk przez teren TRZECIEJ cywilizacji bez umowy przemarszu (twarda przeszkoda w
+              // trasie); prosba o przemarsz = requestAiMarchPassage (cooldown, istniejaca dyplomacja).
+              marchGuard: atWarWithCivFor(ownerId)
+                ? createAiMarchGuard({
+                  ownerId,
+                  nodes: buildAllTerritoryNodes(),
+                  isPassageAllowed: (territoryOwnerId: number) =>
+                    isBarbarian(territoryOwnerId)
+                    || hasAuthorizedBorderCrossing(ownerId, territoryOwnerId, {
+                      treaties: activeDeals,
+                      isMilitary: true,
+                      relation: getDiploRelation(ownerId, territoryOwnerId),
+                      barbarianCooperationGrace,
+                      turn,
+                    }),
+                  onRequestPassage: (territoryOwnerId: number) => requestAiMarchPassage(ownerId, territoryOwnerId),
+                })
+                : undefined,
               // R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE): cala armia AI w wojnie -> stolica wroga.
               warAllIn: typCityCopyOwners.has(ownerId)
                 ? undefined
@@ -39163,7 +39232,7 @@ async function boot(): Promise<void> {
                     blockedKeys,
                     destinationKey: keyOf(cmd.toQ, cmd.toR),
                     computePath: (_moveUnit, toQ, toR, occupied) =>
-                      computePath(u, map, toQ, toR, occupied, moveCostFnForUnit(u)),
+                      computePath(u, map, toQ, toR, occupied, aiMarchCostFn(u, opts.marchGuard)),
                     // R-WEB-AI-MOVE-RANGE-Q1: zasięg AI = budżet ruchu jak u gracza
                     // (truncatePathToBudget). Budżet czytany PRZED zerowaniem ruchu.
                     truncatePath: (fullPath) => u.ruchLeft > 0

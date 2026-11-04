@@ -31,7 +31,8 @@ import {
   splitIntoWarArmies,
   warArmyCount,
 } from './army-consolidation';
-import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit } from '../units/setup';
+import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit, terrainMoveCost } from '../units/setup';
+import { type AiMarchGuard, firstBlockedOwnerOnPath, isDetourSignificant } from './ai-march-guard';
 import { farthestStepWithinBudget } from './ai-move-range';
 import {
   cityStateMilitaryProductionCap,
@@ -454,6 +455,12 @@ export interface AITurnOpts {
    * Gdy brak — brak filtra (testy lane / stare save).
    */
   canEngageOwner?: (targetOwnerId: number) => boolean;
+  /**
+   * R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: straz marszu (ai-march-guard.ts). Gdy podana,
+   * jednostki wojenne tego AI traktuja teren trzecich cywilizacji bez umowy przemarszu jako
+   * zablokowany w planowaniu trasy. Brak pola = zachowanie sprzed tematu (testy lane / stare save).
+   */
+  marchGuard?: AiMarchGuard;
   /**
    * Aktywna wojna wymuszona epoki. Napastnik dostaje twardy priorytet
    * konsolidacji dostępnej armii i marszu na miasta jednego przeciwnika;
@@ -904,9 +911,95 @@ function firstStep(
   if (allowFriendlyDestination && units.some(u =>
     u.ownerId === unit.ownerId && u.id !== unit.id && u.q === destQ && u.r === destR,
   )) occ.delete(keyOf(destQ, destR));
-  const path = computePath(unit, map, destQ, destR, occ);
+  const guard = activeMarchGuard;
+  const path = guard !== null && !isCivilianUnit(unit)
+    ? guardedMarchPath(guard, unit, map, destQ, destR, occ)
+    : computePath(unit, map, destQ, destR, occ);
   if (path.length === 0) return null;
   return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? null;
+}
+
+/**
+ * R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: straz marszu aktywna na czas jednego
+ * decideAITurn (ustawiana w wrapperze; null = brak straży = zachowanie sprzed tematu).
+ */
+let activeMarchGuard: AiMarchGuard | null = null;
+
+function pathCostOf(path: ReadonlyArray<{ q: number; r: number }>, map: GameMap): number {
+  let sum = 0;
+  for (const h of path) {
+    const hex = map.hexes[keyOf(h.q, h.r)];
+    sum += hex ? terrainMoveCost(hex) : 1;
+  }
+  return sum;
+}
+
+/**
+ * Trasa jednostki wojennej AI z uwzglednieniem terenu TRZECICH cywilizacji bez umowy przemarszu
+ * (twarda przeszkoda). Koszt: jeden Dijkstra jak dotad; drugi tylko gdy trasa wprost przecina
+ * zakazany teren. Brak trasy okreznej / cel na zakazanym terenie => [] (odroczenie) + prosba
+ * o przemarsz. Jednostka stojaca na zakazanym terenie bez wyjscia: wyjatek (trasa bez blokady
+ * wlasnego heksu startowego), zliczony w stats.exitExceptions.
+ */
+function guardedMarchPath(
+  guard: AiMarchGuard,
+  unit: RuntimeUnit,
+  map: GameMap,
+  destQ: number,
+  destR: number,
+  occ: Set<string>,
+): { q: number; r: number }[] {
+  const cacheKey = `${unit.q},${unit.r}>${destQ},${destR}`;
+  const cached = guard.pathCache.get(cacheKey);
+  if (cached !== undefined) return cached.slice();
+  const result = guardedMarchPathUncached(guard, unit, map, destQ, destR, occ);
+  guard.pathCache.set(cacheKey, result);
+  return result.slice();
+}
+
+function guardedMarchPathUncached(
+  guard: AiMarchGuard,
+  unit: RuntimeUnit,
+  map: GameMap,
+  destQ: number,
+  destR: number,
+  occ: Set<string>,
+): { q: number; r: number }[] {
+  // Cel na zakazanym terenie: nie wchodzimy (odroczenie + prosba).
+  if (guard.isBlockedHex(destQ, destR)) {
+    guard.stats.destinationBlocked++;
+    guard.requestPassage(guard.territoryOwnerAtHex(destQ, destR), 'no-route');
+    return [];
+  }
+  // Jeden Dijkstra z kosztem Infinity na zakazanym terenie (koszt ~ jak dotad); trasa wprost liczona
+  // dopiero gdy trasa straznika jest podejrzanie dluga (objazd) albo jej brak.
+  let path = computePath(unit, map, destQ, destR, occ, guard.wrapCost(terrainMoveCost));
+  if (path.length === 0 && guard.isBlockedHex(unit.q, unit.r)) {
+    // Wyjatek: stoimy na zakazanym terenie -- pozwol przejsc przez teren startowy (wyjscie).
+    path = computePath(unit, map, destQ, destR, occ,
+      guard.wrapCost(terrainMoveCost, guard.territoryOwnerAtHex(unit.q, unit.r)));
+    if (path.length > 0) guard.stats.exitExceptions++;
+  }
+  if (path.length > 0) {
+    guard.stats.routed++;
+    const guardedCost = pathCostOf(path, map);
+    if (guardedCost > hexDistance(unit.q, unit.r, destQ, destR) * 1.5 + 3) {
+      const direct = computePath(unit, map, destQ, destR, occ);
+      const crossing = direct.length > 0 ? firstBlockedOwnerOnPath(guard, direct) : null;
+      if (crossing !== null) {
+        guard.stats.detours++;
+        if (isDetourSignificant(pathCostOf(direct, map), guardedCost)) guard.requestPassage(crossing, 'detour');
+      }
+    }
+    return path;
+  }
+  const direct = computePath(unit, map, destQ, destR, occ);
+  if (direct.length === 0) return [];
+  const crossing = firstBlockedOwnerOnPath(guard, direct);
+  if (crossing === null) return [];
+  guard.stats.deferred++;
+  guard.requestPassage(crossing, 'no-route');
+  return [];
 }
 
 // ---------------------------------------------------------------------------
@@ -3189,6 +3282,23 @@ export function decideAITurn(
   data: GameData,
   opts: AITurnOpts = {},
 ): AICommand[] {
+  const prevGuard = activeMarchGuard;
+  activeMarchGuard = opts.marchGuard ?? null;
+  try {
+    return decideAITurnCore(playerId, units, cities, map, data, opts);
+  } finally {
+    activeMarchGuard = prevGuard;
+  }
+}
+
+function decideAITurnCore(
+  playerId: number,
+  units: RuntimeUnit[],
+  cities: AICity[],
+  map: GameMap,
+  data: GameData,
+  opts: AITurnOpts = {},
+): AICommand[] {
   // Difficulty remains a generic AI setting. Civilization production priorities
   // are supplied only through the approved matrix-backed profile in opts.
   const difficultyLevel: 1 | 2 | 3 = opts.poziomTrudnosci ?? 2;
@@ -4052,6 +4162,20 @@ function applyWarAllInCapitalToCommands(
   // Statycznie nietranzytowe: obce miasta (addForeignCityBlocks); jednostki jako `occupied`
   // (ograniczaja tylko wybor kroku, nie trase -- brak krokow wstecz).
   const blocked = new Set(enemyCityHex);
+  // R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: teren trzecich cywilizacji bez umowy przemarszu
+  // = twarda przeszkoda planera wojny (jak obce miasta). Wlasciciele terenu, na ktorym jednostki
+  // juz stoja, sa wyjatkiem (wyjscie z cudzego terenu, zliczone w stats.exitExceptions).
+  const marchGuard = activeMarchGuard;
+  let territoryBlocked: Set<string> | null = null;
+  if (marchGuard !== null) {
+    const startOwners = new Set<number>();
+    for (const u of planned) {
+      if (marchGuard.isBlockedHex(u.q, u.r)) startOwners.add(marchGuard.territoryOwnerAtHex(u.q, u.r));
+    }
+    marchGuard.stats.exitExceptions += startOwners.size;
+    territoryBlocked = marchGuard.blockedHexKeys(startOwners);
+    for (const k of territoryBlocked) blocked.add(k);
+  }
   const occupied = new Set(units.map(u => keyOf(u.q, u.r)));
   // R-WEB-WAR-RULES-MULTIWAR-Q1: W1/W2 tylko gdy wołający przekazał dane (flaga ON w main.ts).
   const warOpts = {
@@ -4071,6 +4195,9 @@ function applyWarAllInCapitalToCommands(
   // rezerwacja pierwszego kroku oznaczała wcześniej `held` dla reszty stosu. W marszu
   // kampanii wszystkie jednostki stosu podążają tym samym krokiem i legalnie współdzielą
   // heks docelowy; main.ts przepuszcza takie komendy przez allowFriendlyStack.
+  if (marchGuard !== null && territoryBlocked !== null && territoryBlocked.size > 0) {
+    requestWarMarchPassage(marchGuard, planned, plans, ctx.targets, map, units);
+  }
   for (const plan of plans) {
     const orderByUnit = new Map(plan.orders.map(order => [order.unitId, order] as const));
     const heldIds = new Set(plan.held);
@@ -4118,6 +4245,49 @@ function applyWarAllInCapitalToCommands(
       commands.push({ type: 'move', unitId, toQ: order.step.q, toR: order.step.r,
         targetCityId: order.targetCityId, allowFriendlyStack: true });
     }
+  }
+}
+
+/**
+ * R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: po zaplanowaniu marszu wojny z zablokowanym terenem
+ * trzecich cywilizacji: (a) jednostki bez trasy (plan.noPath) => odroczenie + prosba o przemarsz
+ * do wlasciciela terenu, ktory lezy na trasie wprost; (b) reprezentant planu z trasa okrezna
+ * znacznie gorsza niz wprost => prosba (trasa okrezna i tak obowiazuje). Koszt: co najwyzej
+ * dwa Dijkstry na wywolanie (jeden reprezentant), nie na jednostke.
+ */
+function requestWarMarchPassage(
+  guard: AiMarchGuard,
+  planned: RuntimeUnit[],
+  plans: ReadonlyArray<{ orders: ReadonlyArray<{ unitId: string }>; noPath: readonly string[] }>,
+  targets: ReadonlyArray<{ q: number; r: number }>,
+  map: GameMap,
+  units: RuntimeUnit[],
+): void {
+  if (targets.length === 0 || planned.length === 0) return;
+  const noPathIds = new Set<string>();
+  for (const pl of plans) for (const id of pl.noPath) noPathIds.add(id);
+  const nearestTarget = (u: RuntimeUnit): { q: number; r: number } =>
+    targets.reduce((b, t) => (hexDistance(u.q, u.r, t.q, t.r) < hexDistance(u.q, u.r, b.q, b.r) ? t : b), targets[0]!);
+  const occ = new Set<string>();
+  for (const x of units) occ.add(keyOf(x.q, x.r));
+  const rep = planned.find(u => noPathIds.has(u.id)) ?? planned[0]!;
+  occ.delete(keyOf(rep.q, rep.r));
+  const goal = nearestTarget(rep);
+  // Tani filtr geometryczny: bez zakazanego terenu w poblizu linii prostej nie ma czego wnioskowac.
+  if (!guard.nearBlockedTerritory(rep.q, rep.r, goal.q, goal.r, 3)) return;
+  const direct = computePath(rep, map, goal.q, goal.r, occ);
+  if (direct.length === 0) return;
+  const crossing = firstBlockedOwnerOnPath(guard, direct);
+  if (crossing === null) return;
+  if (noPathIds.has(rep.id)) {
+    guard.stats.deferred += noPathIds.size;
+    guard.requestPassage(crossing, 'no-route');
+    return;
+  }
+  const detour = computePath(rep, map, goal.q, goal.r, occ, guard.wrapCost(terrainMoveCost));
+  guard.stats.detours++;
+  if (detour.length > 0 && isDetourSignificant(pathCostOf(direct, map), pathCostOf(detour, map))) {
+    guard.requestPassage(crossing, 'detour');
   }
 }
 
@@ -5624,6 +5794,8 @@ export type AIDiplomacyCommand =
       reasonHandlu?: string;
     }
   | { type: 'zaproponuj_pakt'; targetId: string; powod: string; turns?: number }
+  /** R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: prosba AI o umowe przemarszu wojskowego ('granice' + borderMilitary). */
+  | { type: 'zaproponuj_przemarsz'; targetId: string; powod: string }
   | {
       type: 'zaproponuj_audiencje'; targetId: string; powod: string;
       /** Krótki powód dla HUD (np. „chcą handlować”). */
