@@ -86,7 +86,7 @@ import { isBuildingSupersededByUpgrade, newestAvailableSameTypeUnit } from './pr
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
 import type { AiTargetMemoryEntry } from './ai-fog';
 import {
-  planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity,
+  planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity, planWarReplacementRally,
   ARMY_CONCENTRATION_RADIUS, isEligibleForArmyConcentration,
 } from './army-concentration';
 import { allocateGroupsToEnemies, type ArmyGroupRef, type EngageArmyHex, type EnemyStrengthRef } from './war-rules-multiwar';
@@ -3966,7 +3966,7 @@ export function decideAITurn(
   // armia idzie na stolice przeciwnika. Nadpisuje komendy RUCHU jednostek bojowych (zostawia
   // ataki oraz wejscie na heks wrogiego miasta); gracz nigdy tu nie trafia (decideAITurn = AI).
   if (isWarAllInCapitalEnabled() && opts.warAllIn !== undefined && opts.warAllIn.targets.length > 0) {
-    applyWarAllInCapitalToCommands(commands, myUnits, units, cities, playerId, map, opts.warAllIn, data);
+    applyWarAllInCapitalToCommands(commands, myUnits, units, cities, playerId, map, opts.warAllIn, data, true, opts.currentTurn);
   }
 
   commands.push({ type: 'endTurn' });
@@ -3986,6 +3986,8 @@ function applyWarAllInCapitalToCommands(
   map: GameMap,
   ctx: WarAllInContext,
   data: GameData,
+  gateLooseUnits = false,
+  currentTurn?: number,
 ): void {
   // Zaokretowane jednostki zostaja poza zwyklym marszem ladowym. Kampania
   // wodna wodza jest wyjatkiem: jej planner musi kontynuowac ruch na wodzie i
@@ -4009,12 +4011,43 @@ function applyWarAllInCapitalToCommands(
       keep.add(cmd.unitId);
     }
   }
-  const planned = eligible.filter(u => !keep.has(u.id));
+  let planned = eligible.filter(u => !keep.has(u.id));
   if (planned.length === 0) return;
   const plannedIds = new Set(planned.map(u => u.id));
   for (let i = commands.length - 1; i >= 0; i--) {
     const cmd = commands[i]!;
     if (cmd.type === 'move' && plannedIds.has(cmd.unitId)) commands.splice(i, 1);
+  }
+  // R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1 (flaga ARMY_CONSOLIDATION ON): jednostki spoza
+  // skupiska >= ARMY_CONCENTRATION_MIN_UNITS (np. armia zastepcza po stracie glownej) nie
+  // maszeruja na cel pojedynczo -- zbieraja sie w jednym miescie zbiorki; gdy prog zebrany,
+  // skupisko rusza jak kazda armia. Walczace jednostki (`keep`) liczą sie do skupisk, nie sa ruszane.
+  if (gateLooseUnits && isArmyConsolidationEnabled()) {
+    const rallyPlan = planWarReplacementRally(
+      planned,
+      eligible.filter(u => keep.has(u.id)),
+      cities.filter(c => c.ownerId === playerId),
+      ctx.targets,
+      { ownerId: playerId, currentTurn },
+    );
+    if (rallyPlan !== null) {
+      const looseIds = new Set(rallyPlan.looseUnitIds);
+      for (const unit of planned) {
+        if (!looseIds.has(unit.id)) continue;
+        if (unit.q === rallyPlan.rallyCity.q && unit.r === rallyPlan.rallyCity.r) continue;
+        const step = firstStep(unit, map, rallyPlan.rallyCity.q, rallyPlan.rallyCity.r, units, true);
+        if (step === null) {
+          // Brak trasy do miasta zbiorki (inny ladowy obszar, blokada): jednostka NIE zostaje
+          // porzucona -- wraca do dotychczasowego marszu na cel (zachowanie sprzed bramki).
+          looseIds.delete(unit.id);
+          continue;
+        }
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+          allowFriendlyStack: step.q === rallyPlan.rallyCity.q && step.r === rallyPlan.rallyCity.r });
+      }
+      planned = planned.filter(u => !looseIds.has(u.id));
+      if (planned.length === 0) return;
+    }
   }
   // Statycznie nietranzytowe: obce miasta (addForeignCityBlocks); jednostki jako `occupied`
   // (ograniczaja tylko wybor kroku, nie trase -- brak krokow wstecz).
