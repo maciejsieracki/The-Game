@@ -720,3 +720,6 @@ Operator (`c88f96c2c`,`c2f0798e6`,`481eeed26`) → Evaluator PASS-WITH-NOTES (0 
 
 ## 2026-11-04 — kontrola cykliczna 00:11
 Nic do integracji. Trwają: web PLAYER-MOVES, FROZEN-FORTIFIED; Rust REPIN-3D-A2 (Opus 5.5). Wdrożone dziś do ROBOCZEJ: IRON, MERGE-PANEL, MILITIA-REGEN, ERA-SCALING, HORSE, AI-WAR, MILITIA-NO-POPULATION-LOSS. Pierwszeństwo grafiki Rust nad nowymi tematami webowymi — nadrzędne polecenie właściciela z 2026-11-03/04.
+
+## 2026-11-04 — R-RUSTPORT-REPIN-3D-A2-Q1 ZINTEGROWANE + kontrola cykliczna 01:11
+Operator (`026d5b45d`,`787e32a93`) → Evaluator PASS-WITH-NOTES (0 zarzutów) → Final Control PASS (`65e81ae4d`); fast-forward `parity-v2` `776bede11` → `65e81ae4d`. Palisada (`SiegeWallOpts.kind`, `build_palisade`, `fortKind`) i wieżyczki (`siege_towers`: `build_wall_tower`, `place_siege_towers`, `place_siege_wall_fort`) bit w bit z webem `5fa0c1a84`: 36 murów, 20 palisad, 18 wieżyczek, 27 umieszczeń, 0 różnic; mutacje 49/49; renderer 444/0; MSRV 1.87 OK. Z-RP-A2-1 (materiał/rzędy wieżyczek jako DTO do P6.13), Z-RP-A2-2 (konstruktor sceny z `fortKind` → A4). Trwają: A3 (burzenie wieżyczki, pocisk, wyłom palisady) i B (modele/nakładki render/*), Opus 5.5; web: wszystkie rozpoczęte tematy wdrożone (ROBOCZA 34d2cada).
