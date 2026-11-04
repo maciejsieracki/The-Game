@@ -1,29 +1,28 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "ca6a9e08cd9cb52df50e609d876631b7",
-  "bundleSha256": "4f4b9ade1fc4ed4df92ea03e1862f9b3246ea42f7ff0ef9a38f14b473aaa8783",
-  "bundleBytes": 70179670,
+  "bundleMd5": "a92797382bedc9c81e5edbc03c95d643",
+  "bundleSha256": "17164c271b78bcf0dbdbf6d97dfe84e37c92f325ba01d25ed33671be05e11d36",
+  "bundleBytes": 70180853,
   "sourceSnapshot": {
-    "source": "main 9fcb663ed + AI-FOOD-ONLY-WORKED-HEXES (1a83b7f44)",
+    "source": "main b89ecee44 + ANNEX-CITYSTATE-SPOILS (080b58484) + HUNTING-CAMP-HILL-NO-FLATTEN (7c0a587c9)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1: ulepszenia ŻYWNOŚCIOWE (farma, irygacja, trzoda: bydło/owce/lama, obóz łowiecki, łodzie rybackie, tarasy, warzelnia soli) i wycinka lasu powstają WYŁĄCZNIE na heksach z obywatelami — bez wyjątków; gracz (profile Żywność i Zrównoważone) i AI (w tym przebieg „brakujący surowiec”); usunięte wyjątki rzeczne (riverForestPrepHex/riverClearedFarmHex) i wyjątek złożowy dla żywności; po farmie na polach obywateli powstają irygacja i trzoda. Pomiar (5 ziaren × 100 tur): ulepszeń żywności na heksach bez obywatela AI 1120/1761 → 0/645, gracz Żywność 1272/1932 → 0/737, gracz Zrównoważone 1128/1761 → 0/645. Zaktualizowane 3 testy kodujące dawne wyjątki Q2/Q3 (decyzja właściciela)."
+    "R-WEB-ANNEX-CITYSTATE-SPOILS-Q1: aneksja państwa-miasta przejmuje cały majątek (miasta, jednostki, złoto, surowce) i odejmuje cenę aneksji; wspólny rdzeń z eliminacją.",
+    "R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1: obóz łowiecki nie wypłaszcza wzgórza z lasem (jak tartak); wizualnie, bez zmiany terenu bazowego."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "ai-food-only-worked-hexes 81/0 (RED na bazie 52/29; 10 mutacji kluczy FOOD_IMPROVEMENT_KEYS czerwone); auto-improve-q3 48/0; ai-improvements 56/0; regresje autoimprove/auto-improvements/farma/hodowla zielone"
+    "annex-citystate-spoils 79/0 (7 mutacji); hunting-camp-hill-no-flatten 20/0; oboz-lowiecki-las-znika-render 26/1 (jedyny czerwony jak na bazie)"
   ],
   "limits": [
-    "Chromium/live i zapis ROBOCZEJ właściciela NIE_ZMIERZONO; pomiar syntetyczny (wygenerowane mapy)",
-    "Plon żywności nominalnie −17–19% (skutek reguły właściciela; nie zmierzony w silniku tury)",
-    "Czerwone poza zakresem: oboz-lowiecki-las-test (19 FAIL), oboz-lowiecki-ev-r2-mainpath, autoimprove-live-hooks, wyrab-rzeka-obywatel-turns",
-    "Istniejące farmy po przesunięciu obywatela nie są burzone"
+    "Chromium/live i zapis właściciela NIE_ZMIERZONO dla ANNEX; ścieżki AI/wczytania zapisu obozu tylko analiza kodu",
+    "Czerwone na bazie: eliminacja-lup-kwoty 34/4, oboz-lowiecki-las-test 19 FAIL, TERRAIN_ALLOW.lodzie_rybackie"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "AI-FOOD-ONLY-WORKED-HEXES (r2): Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES (7× ODDAL)."
+    "notes": "ANNEX: PASS-WITH-NOTES; HUNTING-CAMP: PASS po obronie R2."
   },
   "startHub": "START.html",
   "hubGeneratedAt": "2026-11-04T11:15:04",
@@ -32,15 +31,15 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
-      "sizeBytes": 70179670
+      "md5": "a92797382bedc9c81e5edbc03c95d643",
+      "sizeBytes": 70180853
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
-      "sizeBytes": 70179670
+      "md5": "a92797382bedc9c81e5edbc03c95d643",
+      "sizeBytes": 70180853
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
@@ -99,15 +98,15 @@
       "sizeBytes": 70179670
     }
   ],
-  "md5": "ca6a9e08cd9cb52df50e609d876631b7",
-  "sizeBytes": 70179670,
+  "md5": "a92797382bedc9c81e5edbc03c95d643",
+  "sizeBytes": 70180853,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "5cbd823a9ac446244f2cf641edd2168d"
+    "bundleMd5": "ca6a9e08cd9cb52df50e609d876631b7"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 5cbd823a9ac446244f2cf641edd2168d, 70180043 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 ca6a9e08cd9cb52df50e609d876631b7, 70179670 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1283,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T11:15:04+00:00",
-  "buildStamp": "2026-11-04 11:15",
+  "publishedAt": "2026-11-04T12:16:53+00:00",
+  "buildStamp": "2026-11-04 12:16",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",

@@ -1,3 +1,12 @@
+## ROBOCZA a9279738 -- 2026-11-04 -- aneksja państwa-miasta przejmuje majątek; obóz łowiecki nie wypłaszcza wzgórza (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`b89ecee44` + ANNEX `080b58484` + HUNTING-CAMP `7c0a587c9`) i commit wdrożenia bundla; stała zgoda właściciela na poprawki.
+- Bundle MD5 `a92797382bedc9c81e5edbc03c95d643`, 70180853 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: aneksja państwa-miasta przejmuje cały majątek zamiast go gubić i odejmuje cenę; obóz łowiecki zachowuje wzgórze i las jak tartak (poprawka wizualna).
+- Testy: tsc PASS; annex-citystate-spoils 79/0; hunting-camp-hill-no-flatten 20/0; oboz-lowiecki-las-znika-render 26/1 (czerwony też na bazie).
+- Ograniczenia: Chromium/live ANNEX niezmierzone; czerwone na bazie: eliminacja-lup-kwoty, oboz-lowiecki-las-test.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `ca6a9e08cd9cb52df50e609d876631b7`, 70179670 bajtów.
+
 ## ROBOCZA ca6a9e08 -- 2026-11-04 -- ulepszenia żywności tylko na polach z obywatelami (gracz i AI) (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`9fcb663ed` + AI-FOOD-ONLY-WORKED-HEXES `1a83b7f44`) i commit wdrożenia bundla; twarda zasada właściciela (2026-11-03/04, zrzuty Ateny), stała zgoda na poprawki.
