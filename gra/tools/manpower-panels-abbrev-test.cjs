@@ -20,8 +20,11 @@ function eq(a, b, m) { ok(a === b, m + ' -> ' + JSON.stringify(a) + (a === b ? '
 // 1) zrodlo: zadne z paneli nie wola formatManpower( (main.ts: tylko etykiety panelowe)
 for (const f of ['src/ui/cityPanel.ts', 'src/ui/unitRecruitCard.ts', 'src/ui/empireDetailPanel.ts']) {
   let src = fs.readFileSync(path.join(GRA, f), 'utf8');
-  if (MUTATE && f.endsWith('unitRecruitCard.ts')) src += '\nconst __m = formatManpower(1);\n';
-  ok(!/\bformatManpower\b/.test(src), f + ': brak formatManpower (tys./mln)');
+  if (MUTATE && f.endsWith('cityPanel.ts')) src += '\nconst __m = formatManpower(1);\n';
+  // unitRecruitCard.ts: formatManpower zostaje WYLACZNIE w manpowerStatusTitle (kontrakt title: testy recruit-card-manpower-real-render / recruitment-panel-compact-row)
+  const allowed = f.endsWith('unitRecruitCard.ts') ? 3 : 0;
+  const uses = (src.match(/\bformatManpower\(/g) || []).length;
+  ok(uses === allowed, f + ': formatManpower( uzyte ' + uses + 'x (dozwolone ' + allowed + ')');
   ok(/formatManpowerCompact/.test(src), f + ': uzywa formatManpowerCompact');
 }
 let main = fs.readFileSync(path.join(GRA, 'src/main.ts'), 'utf8');
@@ -45,11 +48,11 @@ await esbuild.build({ entryPoints: [entry], bundle: true, platform: 'node', form
     b.onResolve({ filter: /(^|\/)muzyka-antyczna$/ }, () => ({ path: stub('recruit-strip-muzyka-stub.ts') }));
   } }] });
 const M = require(path.join(OUT, 'e.cjs'));
-const CASES = [[999, '999', '999'], [1000, '1k', '1 000'], [12345, '12,3k', '12 345'], [1234567, '1,2M', '1 234 567']];
-for (const [n, c, full] of CASES) {
+const CASES = [[999, '999'], [1000, '1k'], [12345, '12,3k'], [1234567, '1,2M']];
+for (const [n, c] of CASES) {
   eq(M.formatManpowerCompact && M.formatManpowerCompact(n), c, 'formatManpowerCompact ' + n);
-  const t = M.manpowerStatusTitle(n, n).replace(/ /g, ' ');
-  ok(t.includes('dostępne ' + full + ' ') && !/tys\.|mln/.test(t), 'tooltip karty: pelna wartosc "' + full + '" (' + t + ')');
+  const t = M.manpowerStatusTitle(n, n);
+  eq(t, 'Rekruci: dostępne ' + M.formatManpower(n) + ' / potrzebne ' + M.formatManpower(n), 'tooltip karty bez zmian (formatManpower) ' + n);
 }
 eq(M.formatManpower(12345), '12.3 tys.', 'formatManpower bez zmian (12345)');
 eq(M.formatManpower(1234567), '1.2 mln', 'formatManpower bez zmian (1234567)');
