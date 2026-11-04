@@ -1,111 +1,112 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "34d2cada6f2b8b9d528e35dac8320247",
-  "bundleSha256": "3a78f412e01e85bd3e063298b0467cb185785a5cdd2f4e559e410df19544e0e7",
-  "bundleBytes": 70179813,
+  "bundleMd5": "5cbd823a9ac446244f2cf641edd2168d",
+  "bundleSha256": "5164ba9d4de2ff8d0dc4a539634e55c32da131394e55c22c8de491842088ed06",
+  "bundleBytes": 70180043,
   "sourceSnapshot": {
-    "source": "main 0c85c6b64 + PLAYER-MOVES-BEFORE-AI-TURN (1ff8657fc)",
+    "source": "main 86d510c66 + SIEGE-TOWER-BREACH-EVERYWHERE (6593d7c3a)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1: po „Koniec tury” najpierw wszystkie możliwe ruchy gracza (zaplanowane marsze wykonywane synchronicznie, bez dopalania animacji w fazie AI; marsz z atakiem czeka na zamknięcie okna bitwy), potem tury AI/państw-miast, potem ekonomia i nowa tura gracza. Hot-seat: marsz kończącego fotela dokańczany przed przełączeniem (dotąd przepadał); atak z marszu nie odpala się przy zmianie fotela. Reguły ruchu, koszty, AI i powiadomienia bez zmian."
+    "R-WEB-SIEGE-TOWER-BREACH-EVERYWHERE-Q1: wieża oblężnicza liczy się jako wyłom także w bitwie taktycznej — atakujący, który wejdzie wieżą na mur/palisadę, może zdobyć miasto bez tarana i katapulty (dotąd tylko Auto/„Pomiń”/szturm); `wallEverBreached` ustawiane przy wspięciu (`attackerWallEntryIsBreach`); bez wieży i bez machin miasto nadal nie pada (R1); po wyłomie melee bije obrońców z muru (R2); wieżyczki strzeleckie, bonusy obrony, Milicja bez zmian. Gracz, AI i barbarzyńcy jedną ścieżką `wallBreached`."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "player-moves-before-ai-turn 44/0 (Chromium L1–L7, 5 mutacji, live RED 26/18 na bazie); unit-frozen-fortified 76/0; events-defer-to-turn-start 40/0"
+    "siege-tower-breach-everywhere 47/0 (Chromium: prawdziwa scena, mur i palisada; mutacje); palisade-battle-wall-rules 52/0"
   ],
   "limits": [
-    "Hot-seat: atak z marszu kończącego fotela nie odpala się przy zmianie fotela (marsz dochodzi do celu) — do decyzji właściciela, domyślnie zostaje",
-    "Regresje live end-turn/hotseat czerwone identycznie PRZED i PO; ok. 29 testów live NIE_ZMIERZONO"
+    "Pełny przebieg tury AI/barbarzyńców z wieżą NIE_ZMIERZONO",
+    "Test sceny: Taran przemianowany na „Wieża oblężnicza” (playtest bez wieży w składzie); kod wspinaczki prawdziwy",
+    "Port Rust battle: REPIN po wdrożeniu (battleScene wspięcie wieżą ustawia wallEverBreached)"
   ],
   "finalControl": {
-    "status": "PASS-WITH-NOTES",
-    "notes": "PLAYER-MOVES-BEFORE-AI-TURN (r1+obrona): Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES."
+    "status": "PASS",
+    "notes": "SIEGE-TOWER-BREACH-EVERYWHERE (r1): Operator → Evaluator PASS-WITH-NOTES → FC PASS."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T01:10:32",
+  "hubGeneratedAt": "2026-11-04T10:49:13",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "34d2cada6f2b8b9d528e35dac8320247",
-      "sizeBytes": 70179813
+      "md5": "5cbd823a9ac446244f2cf641edd2168d",
+      "sizeBytes": 70180043
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "34d2cada6f2b8b9d528e35dac8320247",
-      "sizeBytes": 70179813
+      "md5": "5cbd823a9ac446244f2cf641edd2168d",
+      "sizeBytes": 70180043
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "34d2cada6f2b8b9d528e35dac8320247",
-      "sizeBytes": 70179813
+      "md5": "5cbd823a9ac446244f2cf641edd2168d",
+      "sizeBytes": 70180043
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "34d2cada6f2b8b9d528e35dac8320247",
-      "sizeBytes": 70179813
+      "md5": "5cbd823a9ac446244f2cf641edd2168d",
+      "sizeBytes": 70180043
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "34d2cada6f2b8b9d528e35dac8320247",
-      "sizeBytes": 70179813
+      "md5": "5cbd823a9ac446244f2cf641edd2168d",
+      "sizeBytes": 70180043
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "34d2cada6f2b8b9d528e35dac8320247",
-      "sizeBytes": 70179813
+      "md5": "5cbd823a9ac446244f2cf641edd2168d",
+      "sizeBytes": 70180043
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "34d2cada6f2b8b9d528e35dac8320247",
-      "sizeBytes": 70179813
+      "md5": "5cbd823a9ac446244f2cf641edd2168d",
+      "sizeBytes": 70180043
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "34d2cada6f2b8b9d528e35dac8320247",
-      "sizeBytes": 70179813
+      "md5": "5cbd823a9ac446244f2cf641edd2168d",
+      "sizeBytes": 70180043
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "34d2cada6f2b8b9d528e35dac8320247",
-      "sizeBytes": 70179813
+      "md5": "5cbd823a9ac446244f2cf641edd2168d",
+      "sizeBytes": 70180043
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "34d2cada6f2b8b9d528e35dac8320247",
-      "sizeBytes": 70179813
+      "md5": "5cbd823a9ac446244f2cf641edd2168d",
+      "sizeBytes": 70180043
     }
   ],
-  "md5": "34d2cada6f2b8b9d528e35dac8320247",
-  "sizeBytes": 70179813,
+  "md5": "5cbd823a9ac446244f2cf641edd2168d",
+  "sizeBytes": 70180043,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "fc48db59e3238e51cfa5056174b06f23"
+    "bundleMd5": "34d2cada6f2b8b9d528e35dac8320247"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 fc48db59e3238e51cfa5056174b06f23, 70178103 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 34d2cada6f2b8b9d528e35dac8320247, 70179813 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T01:10:32+00:00",
-  "buildStamp": "2026-11-04 01:10",
+  "publishedAt": "2026-11-04T10:49:13+00:00",
+  "buildStamp": "2026-11-04 10:49",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",

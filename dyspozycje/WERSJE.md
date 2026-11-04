@@ -1,3 +1,12 @@
+## ROBOCZA 5cbd823a -- 2026-11-04 -- wyłom wieżą oblężniczą także w bitwie taktycznej (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`86d510c66` + SIEGE-TOWER-BREACH-EVERYWHERE `6593d7c3a`) i commit wdrożenia bundla; decyzja właściciela (wieża = wyłom wszędzie), stała zgoda na poprawki.
+- Bundle MD5 `5cbd823a9ac446244f2cf641edd2168d`, 70,180,043 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: atakujący, który wejdzie wieżą oblężniczą na mur/palisadę w bitwie taktycznej, daje wyłom i może zdobyć miasto bez tarana i katapulty; bez wieży i machin miasto nie pada; po wyłomie melee bije obrońców z muru.
+- Testy: tsc PASS; siege-tower-breach-everywhere 47/0 (Chromium, mutacje); palisade-battle-wall-rules 52/0.
+- Ograniczenia: pełny przebieg tury AI/barbarzyńców z wieżą niezmierzony; test sceny z przemianowanym Taranem; Rust: REPIN battle po wdrożeniu.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `34d2cada6f2b8b9d528e35dac8320247`, 70,179,813 bajtów.
+
 ## ROBOCZA 34d2cada -- 2026-11-04 -- po „Koniec tury” najpierw ruchy gracza, potem AI (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`0c85c6b64` + PLAYER-MOVES-BEFORE-AI-TURN `1ff8657fc`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
