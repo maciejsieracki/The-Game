@@ -851,7 +851,7 @@ import {
   normalizeImprovementKey,
   isImprovementAllowedForCiv,
 } from './game/terrain-improvements';
-import { isLivestockAllowed, isLamaDepositVisibleForCiv } from './game/livestock-unlock';
+import { isLivestockAllowed, isLamaDepositVisibleForCiv, hexHasHorseDeposit } from './game/livestock-unlock';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { cloneObject3DMaterialsForTransient, disposeTransientObject3D } from './render/transientObjectResources';
@@ -15209,7 +15209,7 @@ async function boot(): Promise<void> {
       // (map/improvement-build.ts) już nie powinna była dopuścić kliku bez pokrycia — ten
       // warunek jest DEFENSYWNY (drugi punkt kontroli tuż przed realną mutacją magazynu),
       // wzorem istniejącego zapasowego komunikatu Pracy tuż wyżej.
-      const stadninaPozaZlozem = req.key === 'stadnina' && hex.nakladka !== Nakladka.ZlozeKonia;
+      const stadninaPozaZlozem = req.key === 'stadnina' && !hexHasHorseDeposit(hex as { nakladka?: Nakladka; zloze?: string });
       if (stadninaPozaZlozem) {
         const horseStockNow = citySurowceSumForOwner(0).kon ?? 0;
         if (horseStockNow < 50) {

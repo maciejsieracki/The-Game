@@ -40,6 +40,7 @@ import {
   labelsForImprovementUnlock,
 } from '../game/resource-access';
 import { isLamaDepositVisibleForCiv } from '../game/livestock-unlock';
+import { hexHasHorseDeposit } from '../game/terrain-improvements';
 import { formatEntityDisplayName } from '../game/display-names';
 import type { DaninaLabel } from '../game/danina-nazwa';
 import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
@@ -466,7 +467,7 @@ function listTerrainPossibleImprovements(
     // (isLivestockUnlockedForPlacement/empireUnlocks) -- that is player/empire state, not a hex
     // property, so it's deliberately SKIPPED here, same as territory/tech are skipped throughout
     // this function (see docstring above).
-    if (key === 'stadnina' && nakladka !== Nakladka.ZlozeKonia) continue;
+    if (key === 'stadnina' && !hexHasHorseDeposit({ nakladka, zloze })) continue;
     if (key === 'farma' && !isFarmBaseTerrain(teren, nakladka)) continue;
     if (key === 'tartak' && nakladka !== Nakladka.Las) continue;
     if (key === 'wyrab' && nakladka !== Nakladka.Las) continue;

@@ -800,7 +800,7 @@ export function depositAllowsPlayerImprovement(
     case 'lama':
       return nakladka === Nakladka.ZlozeLamy;
     case 'stadnina':
-      return hex.nakladka === Nakladka.ZlozeKonia;
+      return hexHasHorseDeposit(hex);
     // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1: obóz przestaje być wyjątkiem rezerwy złoża
     // na złożu zwierzęcym BEZ lasu — wyjątkiem jest wyłącznie las (dowolny teren pod nim).
     case 'oboz_lowiecki':

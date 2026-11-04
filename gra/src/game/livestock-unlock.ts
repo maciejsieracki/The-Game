@@ -5,7 +5,9 @@
  */
 import { Nakladka } from '../types/hex';
 import type { GameMap } from '../types/map';
-import { normalizeImprovementKey } from './terrain-improvements';
+import { normalizeImprovementKey, hexHasHorseDeposit } from './terrain-improvements';
+
+export { hexHasHorseDeposit };
 
 export type LivestockKey = 'bydlo' | 'owce' | 'lama' | 'kon';
 
@@ -65,14 +67,10 @@ export function hexHasLivestockDeposit(
   return hex.zloze?.trim().toLowerCase() === key;
 }
 
-export function hexHasHorseDeposit(hex: { nakladka?: Nakladka }): boolean {
-  return hex.nakladka === Nakladka.ZlozeKonia;
-}
-
 /** Czy ulepszenie pasuje do złoża na heksie (pierwsze pastwisko/stadnina). */
 export function improvementMatchesLivestockDeposit(
   improvementKey: string,
-  hex: { nakladka?: Nakladka },
+  hex: { nakladka?: Nakladka; zloze?: string },
 ): boolean {
   const norm = normalizeImprovementKey(improvementKey) ?? improvementKey;
   if (norm === 'stadnina') return hexHasHorseDeposit(hex);
@@ -161,7 +159,7 @@ export const STADNINA_HORSE_COST = 50;
  */
 export function isLivestockUnlockedForPlacement(
   improvementKey: string,
-  hex: { nakladka?: Nakladka },
+  hex: { nakladka?: Nakladka; zloze?: string },
   tradeRouteKonUnlocked: boolean,
   horseStockAvailable: number,
 ): boolean {

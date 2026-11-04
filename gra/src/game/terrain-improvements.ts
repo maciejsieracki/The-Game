@@ -385,6 +385,16 @@ export function hexHasCoveringTerrainImprovement(
   return improvementKeysForHex(hex).some(k => !ROAD_IMPROVEMENT_KEYS.has(k));
 }
 
+/**
+ * R-WEB-STADNINA-KONIE-STARE-ZAPISY-Q1: JEDYNY predykat złoża konia (budowa, tooltip, koszt, ukrywanie
+ * ikony). Złoże = nakładka `ZlozeKonia` (nowe mapy) LUB `zloze==='konie'` po trim/lowercase (stare
+ * zapisy: koń pod lasem, las zostaje). Bez migracji danych.
+ */
+export function hexHasHorseDeposit(hex: { nakladka?: Nakladka; zloze?: string | null }): boolean {
+  return hex.nakladka === Nakladka.ZlozeKonia
+    || (typeof hex.zloze === 'string' && hex.zloze.trim().toLowerCase() === 'konie');
+}
+
 /** Czy postawione ulepszenie eksploatuje złoże/nakładkę na tym heksie (spójne z improvement-build). */
 export function improvementHidesDepositOnHex(
   improvementKey: string,
@@ -406,7 +416,7 @@ export function improvementHidesDepositOnHex(
     case 'warzelnia_soli':
       return zloze === 'sol';
     case 'stadnina':
-      return nakladka === Nakladka.ZlozeKonia;
+      return hexHasHorseDeposit(hex);
     case 'bydlo':
       return nakladka === Nakladka.ZlozeBydla;
     case 'owce':
