@@ -407,7 +407,9 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     .map(s => s.ownerId);
   // R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1: jeden globalny zbiór zużytych nazw (pule różnych
   // cywilizacji nakładają się, np. Teby/Memfis) — dwa miasta o tej samej nazwie nie powstają.
-  const usedNamesGlobal = new Set<string>();
+  // Stolica gracza zuzywa swoja nazwe jako pierwsza (jak w sciezce rywali wyzej).
+  const playerCapitalName = playerStartCityName(civs, playerTyp, cityNamesPools);
+  const usedNamesGlobal = new Set<string>([playerCapitalName]);
   const rivalIndexByCiv = new Map<string, number>();
   const namedAcceptedSlots = hardAcceptedSlots.map((slot) => {
     const used = usedNamesGlobal;
@@ -425,7 +427,7 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
 
   return {
     playerStartHex: capPos,
-    playerStartCityName: playerStartCityName(civs, playerTyp, cityNamesPools),
+    playerStartCityName: playerCapitalName,
     slots: namedAcceptedSlots,
     foreignTypeClusters: groupForeignTypeClusters(namedAcceptedSlots),
     placement,

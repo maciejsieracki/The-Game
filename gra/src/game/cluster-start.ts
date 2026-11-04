@@ -193,7 +193,7 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
   ];
 
   // R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1: jeden globalny zbiór (pule cywilizacji się nakładają).
-  const acceptedNamesGlobal = new Set<string>();
+  const acceptedNamesGlobal = new Set<string>([spawnPlan.playerStartCityName]);
 
   for (const slot of spawnPlan.slots) {
     // P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1 runda 2 (Zarzut 1 Evaluatora, POTWIERDZONY
