@@ -1,3 +1,12 @@
+## ROBOCZA bcc1c16c -- 2026-11-04 -- bitwa ręczna na oblężone miasto: tarany, wieże, konnica, szarża poza ostrzałem (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`95a4b25ab` + SIEGE-MANUAL-BATTLE-BEHAVIOR `3c6224b77` + WATER-ACCESS test `b3d647b26`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `bcc1c16cd0519704730782f49e8724c7`, 70199729 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: tarany do bramy, wieża daje wejście na mur, łucznicy ostrzeliwują koronę, konnica/rydwany czekają do wyłomu, szarża/atakuj marszem/AUTO bez machin nie wchodzą w zasięg ostrzału. Dostęp do wody: bez zmian w kodzie (Port morze||rzeka; Młyn nie istnieje w danych).
+- Testy: tsc PASS; siege-manual-battle-behavior 40/0; harness żywy PASS (mur 0/11 → PASS); water-access ALL PASS.
+- Ograniczenia: część scenariuszy harnessu, miasto z mapy świata i AUTO-batch niezmierzone; testy przeglądarkowe częściowo czerwone na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `3c324fd32f2ab04d451e0206064910e9`, 70193957 bajtów.
+
 ## ROBOCZA 3c324fd3 -- 2026-11-04 -- jednostki idą do najbliższego wodza (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`bfd437898` + ARMY-TO-NEAREST-LEADER `2f8064c94`) i commit wdrożenia; stała zgoda właściciela.

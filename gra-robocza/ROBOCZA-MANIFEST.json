@@ -1,111 +1,111 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "3c324fd32f2ab04d451e0206064910e9",
-  "bundleSha256": "4f65bfa9326f9064563e2d38cb3e532bd8d278471d2cc4a9aaac4405c0ace8d0",
-  "bundleBytes": 70193957,
+  "bundleMd5": "bcc1c16cd0519704730782f49e8724c7",
+  "bundleSha256": "abce48fd9e1d6ffd79811801f4a6a5588ad4b477bc6cdedecd717603dad8afbd",
+  "bundleBytes": 70199729,
   "sourceSnapshot": {
-    "source": "main bfd437898 + ARMY-TO-NEAREST-LEADER (2f8064c94)",
+    "source": "main 95a4b25ab + SIEGE-MANUAL-BATTLE-BEHAVIOR (3c6224b77) + WATER-ACCESS-PORT-VS-MILL (b3d647b26, tylko test)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-ARMY-TO-NEAREST-LEADER-Q1: jednostki zbierane do wodza idą do najbliższego dostępnego wodza (odległość = długość realnej trasy, wódz bez trasy pomijany, remis: większa armia, potem id) zamiast do „pierwszego”; dotyczy zbiórki AI, nowych jednostek gracza, przycisku „Idź do wodza” i wyboru po zniknięciu wodza. Symulacja: u nie-najbliższego wodza 54/109 → 0/114 jednostek."
+    "R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1: w bitwie ręcznej na oblężone miasto (mur/palisada) tarany jadą do bramy, wieża staje na wolnej koronie i daje piechocie wejście na mur, łucznicy ostrzeliwują koronę, konnica i rydwany czekają do wyłomu bramy; szarża/„atakuj marszem”/Atakuj/AUTO bez machin kończą się podejściem poza zasięg ostrzału (strefa ostrzału łuczników i wieżyczek); poprawka AUTO: doktryna nie omija logiki machin. Harness żywy: mur 0/11 → PASS.",
+    "R-WEB-WATER-ACCESS-PORT-VS-MILL-Q1: bez zmian w kodzie gry (Port już morze lub rzeka; budynku Młyn brak w danych); dodany test."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "army-to-nearest-leader 43/0 (RED na bazie 3/12); ai-march-avoid-foreign 99/0; army-concentration 56/0; ai-army-replacement-concentration 34/0; ai-move-full-range 20/0"
+    "siege-manual-battle-behavior 40/0; harness żywy (Chromium) A1,A2,A3,B1,C1,D1,D3,E2 PASS; water-access-port-vs-mill ALL PASS"
   ],
   "limits": [
-    "main.ts (ścieżka gracza, przycisk „Idź do wodza”) bez testu w przeglądarce — tylko statyka i tsc; wydajność UI gracza niezmierzona",
-    "Ok. 26 testów kampanii/wodza czerwonych na bazie (bez zmian)"
+    "Pozostałe scenariusze puli harnessu, miasto z mapy świata, AUTO-batch poza oblężeniem i wieżyczki palisady NIE_ZMIERZONO; AUTO z murem bez machin nie kończy się w 39 rundach (bez zmiany względem bazy); testy przeglądarkowe battle/siege częściowo czerwone na bazie (brak /usr/bin/chromium)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "ARMY-TO-NEAREST-LEADER: Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES (6× ODDAL)."
+    "notes": "SIEGE-MANUAL-BATTLE: Operator → Evaluator PASS-WITH-NOTES → Obrona r2 → FC PASS-WITH-NOTES (6× ODDAL); WATER-ACCESS: PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T16:27:54",
+  "hubGeneratedAt": "2026-11-04T18:08:41",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "3c324fd32f2ab04d451e0206064910e9",
-      "sizeBytes": 70193957
+      "md5": "bcc1c16cd0519704730782f49e8724c7",
+      "sizeBytes": 70199729
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "3c324fd32f2ab04d451e0206064910e9",
-      "sizeBytes": 70193957
+      "md5": "bcc1c16cd0519704730782f49e8724c7",
+      "sizeBytes": 70199729
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "3c324fd32f2ab04d451e0206064910e9",
-      "sizeBytes": 70193957
+      "md5": "bcc1c16cd0519704730782f49e8724c7",
+      "sizeBytes": 70199729
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "3c324fd32f2ab04d451e0206064910e9",
-      "sizeBytes": 70193957
+      "md5": "bcc1c16cd0519704730782f49e8724c7",
+      "sizeBytes": 70199729
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "3c324fd32f2ab04d451e0206064910e9",
-      "sizeBytes": 70193957
+      "md5": "bcc1c16cd0519704730782f49e8724c7",
+      "sizeBytes": 70199729
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "3c324fd32f2ab04d451e0206064910e9",
-      "sizeBytes": 70193957
+      "md5": "bcc1c16cd0519704730782f49e8724c7",
+      "sizeBytes": 70199729
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "3c324fd32f2ab04d451e0206064910e9",
-      "sizeBytes": 70193957
+      "md5": "bcc1c16cd0519704730782f49e8724c7",
+      "sizeBytes": 70199729
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "3c324fd32f2ab04d451e0206064910e9",
-      "sizeBytes": 70193957
+      "md5": "bcc1c16cd0519704730782f49e8724c7",
+      "sizeBytes": 70199729
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "3c324fd32f2ab04d451e0206064910e9",
-      "sizeBytes": 70193957
+      "md5": "bcc1c16cd0519704730782f49e8724c7",
+      "sizeBytes": 70199729
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "3c324fd32f2ab04d451e0206064910e9",
-      "sizeBytes": 70193957
+      "md5": "bcc1c16cd0519704730782f49e8724c7",
+      "sizeBytes": 70199729
     }
   ],
-  "md5": "3c324fd32f2ab04d451e0206064910e9",
-  "sizeBytes": 70193957,
+  "md5": "bcc1c16cd0519704730782f49e8724c7",
+  "sizeBytes": 70199729,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "067ed2a946232d7939ad67f353073e96"
+    "bundleMd5": "3c324fd32f2ab04d451e0206064910e9"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 067ed2a946232d7939ad67f353073e96, 70191875 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 3c324fd32f2ab04d451e0206064910e9, 70193957 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1281,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T16:27:52+00:00",
-  "buildStamp": "2026-11-04 16:27",
+  "publishedAt": "2026-11-04T18:08:39+00:00",
+  "buildStamp": "2026-11-04 18:08",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
