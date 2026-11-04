@@ -741,3 +741,6 @@ Operator (`8f5aa88d7`,`57c4fa9dc`) → Evaluator PASS-WITH-NOTES (0 zarzutów) �
 
 ## 2026-11-04 — kontrola cykliczna 03:11
 Nic do integracji. Trwają (Opus 5.5): A4 (szyk jednostek, `fortKind` w konstruktorze, Milicja, wieża oblężnicza) i A6 (kontrola cz. 1–2 + lista nowych hunków). `parity-v2` = `2962d0a7b`. Następne: A5 po A4 (dynamics/picking, te same pliki).
+
+## 2026-11-04 — R-RUSTPORT-REPIN-3D-A6-Q1 ZINTEGROWANE (kontrola cz. 1–2)
+Operator (`df4e4ede8`,`2a3d7da09`) → Evaluator PASS-WITH-NOTES (0 zarzutów) → Final Control PASS (`0035f7d40`); fast-forward `parity-v2` `2962d0a7b` → `0035f7d40`. Generatory pinu cz. 1–2 uruchomione bez zmian na webie `86d510c66` w 2 katalogach: `siege_wall.json` (95 przypadków, 11 877 meshy, SHA `bce895d8…`) i `field.json` (25 przypadków, 281 792 węzłów, SHA `39df4eb7…`) — 0 różnic względem fixtur; mur po zmianach palisady nietknięty (diff `siegeWall.ts` addytywny 213/0). README fixtur `battle3d` — pochodzenie zaktualizowane. Dryf weba od `86d510c66` do bieżącego `origin/main`: 0 commitów w `gra/src/battle|render`, `gra/data` → kolejka A7/REPIN-3D-C pusta. Renderer 463/0, fmt/clippy EXIT=0, MSRV OK.
