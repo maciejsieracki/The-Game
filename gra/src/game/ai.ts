@@ -89,7 +89,7 @@ import type { AiTargetMemoryEntry } from './ai-fog';
 import {
   planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity, planWarReplacementRally,
   ARMY_CONCENTRATION_RADIUS, isEligibleForArmyConcentration,
-  pickNearestAvailableLeader, type LeaderCandidate, type LeaderPathLength,
+  pickNearestAvailableLeader, collectLeaderCandidates, type LeaderPathLength,
 } from './army-concentration';
 import { allocateGroupsToEnemies, type ArmyGroupRef, type EngageArmyHex, type EnemyStrengthRef } from './war-rules-multiwar';
 import {
@@ -938,9 +938,14 @@ function marchPathFor(
  * wodz niedostepny). Ta sama trasa co przy faktycznym marszu (firstStep), nie linia prosta.
  */
 function leaderPathLengthFor(unit: RuntimeUnit, map: GameMap, units: RuntimeUnit[]): LeaderPathLength {
+  // Zajetosc liczona RAZ na jednostke (nie na kazdego wodza); marchPathFor zdejmuje z niej heks celu,
+  // wiec przywracamy go po kazdym wywolaniu.
+  const occ = occupiedExcluding(units, unit.id);
   return (_from, to) => {
-    const occ = occupiedExcluding(units, unit.id);
+    const destKey = keyOf(to.q, to.r);
+    const hadDest = occ.has(destKey);
     const path = marchPathFor(unit, map, to.q, to.r, units, occ, true);
+    if (hadDest) occ.add(destKey);
     return path.length === 0 ? null : path.length;
   };
 }
@@ -4603,18 +4608,16 @@ function appendAiGeneralCampaignOrders(
     // R-WEB-ARMY-TO-NEAREST-LEADER-Q1: kazda jednostka zbiera sie u NAJBLIZSZEGO dostepnego wodza
     // (dlugosc realnej trasy), nie u jednego wodza kampanii. Brak dostepnego wodza -> dotychczasowy punkt.
     const blockedIds = campaign.stage === 'recruiting' ? campaign.blockedGeneralIds ?? [] : [];
-    const leaders: Array<LeaderCandidate & { id: string }> = myUnits
-      .filter(unit => unit.isGeneral === true && (unit.hp === undefined || unit.hp > 0)
-        && !blockedIds.includes(unit.id))
-      .map(unit => ({
-        id: unit.id, q: unit.q, r: unit.r,
-        armySize: myUnits.filter(m => m.q === unit.q && m.r === unit.r).length,
-      }));
+    // Ten sam filtr zywych wodzow co gracz (dead/removed/routed/hp) -- collectLeaderCandidates.
+    // onExpedition=false: etapy recruiting/gathering z definicji nie maja wodza w marszu na cel.
+    const leaders = collectLeaderCandidates({ id: '', ownerId: playerId, q: 0, r: 0 }, myUnits, () => false)
+      .filter(l => !blockedIds.includes(l.id));
     for (const unit of myUnits) {
       if (!isEligibleForArmyConcentration(unit, playerId)) continue;
-      const choice = leaders.length > 0
+      // Jeden wodz -> bez wyboru (bez kosztu liczenia trasy), zachowanie jak dotad.
+      const choice = leaders.length > 1
         ? pickNearestAvailableLeader(unit, leaders, leaderPathLengthFor(unit, map, units))
-        : null;
+        : leaders.length === 1 ? { leader: leaders[0]!, distance: 0 } : null;
       const toQ = choice?.leader.q ?? rallyQ;
       const toR = choice?.leader.r ?? rallyR;
       if (unit.q === toQ && unit.r === toR) continue;

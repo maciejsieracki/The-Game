@@ -32,7 +32,7 @@ function build(tag, mutations) {
   fs.writeFileSync(entry, `
 export { decideAITurn } from ${J('game/ai')};
 export { hexDistance, computePath } from ${J('units/setup')};
-${hasPicker ? `export { pickNearestAvailableLeader } from ${J('game/army-concentration')};` : ''}
+${hasPicker ? `export { pickNearestAvailableLeader, pickNearestLeaderUnit, collectLeaderCandidates } from ${J('game/army-concentration')};` : ''}
 `, 'utf8');
   const plugin = {
     name: 'mut',
@@ -130,17 +130,43 @@ function moveOf(cmds, id) { return cmds.find((c) => c.type === 'move' && c.unitI
     check('B1 dwoch wodzow: jednostka idzie do BLIZSZEGO, nie do wodza kampanii',
       mv !== undefined && dist(mv.toQ, mv.toR, 22, 5) < dist(20, 5, 22, 5), JSON.stringify(mv));
   }
+  // B2: wodz za zablokowanym terenem. Wodz KAMPANII jest tym niedostepnym/okreznym (id 'a-x'), wiec baza
+  // (zbiorka tylko do wodza kampanii) MUSI tu zawiesc -- RED przed / GREEN po.
+  // Asercja: ruch lezy na realnej trasie jednostki do osiagalnego, bliskiego po trasie wodza.
+  function onPathTo(MM, mapX, w, mv, q, r) {
+    if (!mv) return false;
+    return MM.computePath(w, mapX, q, r, new Set()).some((p) => p.q === mv.toQ && p.r === mv.toR);
+  }
+  function b2Scenarios(MM, mapFull, mapGap) {
+    const out = {};
+    // B2a: caly mur q=12 -- wodz kampanii 'a-x' (14,5) calkiem niedostepny, 'z-y' (3,5) osiagalny.
+    {
+      const w = unit('w1', 10, 5);
+      const cmds = MM.decideAITurn(1, [unit('a-x', 14, 5, { isGeneral: true }), unit('z-y', 3, 5, { isGeneral: true }), w],
+        cities, mapFull, data, gatherCampaign('a-x', 14, 5));
+      out.b2a = onPathTo(MM, mapFull, w, moveOf(cmds, 'w1'), 3, 5);
+    }
+    // B2b: mur z przejsciem na dole -- 'a-x' blisko w linii prostej (4), ale trasa okrezna (>7);
+    // 'z-y' dalej w linii prostej (7), ale blizej po trasie. Odleglosc w linii prostej zlapie to.
+    {
+      const w = unit('w1', 10, 5);
+      const cmds = MM.decideAITurn(1, [unit('a-x', 14, 5, { isGeneral: true }), unit('z-y', 3, 5, { isGeneral: true }), w],
+        cities, mapGap, data, gatherCampaign('a-x', 14, 5));
+      out.b2b = onPathTo(MM, mapGap, w, moveOf(cmds, 'w1'), 3, 5);
+    }
+    return out;
+  }
+  const mapFull = makeMap(32, 12, [(q) => q === 12]);
+  const mapGap = makeMap(32, 12, [(q, r) => q === 12 && r <= 10]);
   {
-    // B2: blizszy w linii prostej wodz za pasem morza (brak trasy) -> idzie do osiagalnego.
-    const wall = [(q) => q === 12];
-    const mapW = makeMap(32, 12, wall);
-    const gReach = unit('a-reach', 4, 5, { isGeneral: true });
-    const gBeyond = unit('z-beyond', 14, 5, { isGeneral: true }); // za murem q=12
-    const w = unit('w1', 10, 5);
-    const cmds = scenario(mapW, [gReach, gBeyond], [w], 'a-reach', [4, 5]);
-    const mv = moveOf(cmds, 'w1');
-    check('B2 wodz za zablokowanym terenem pomijany (idzie do osiagalnego)',
-      mv !== undefined && dist(mv.toQ, mv.toR, 4, 5) < dist(10, 5, 4, 5), JSON.stringify(mv));
+    const lenX = M.computePath(unit('w1', 10, 5), mapGap, 14, 5, new Set()).length;
+    const lenY = M.computePath(unit('w1', 10, 5), mapGap, 3, 5, new Set()).length;
+    check('B2 zalozenie mapy z przejsciem: trasa do X (' + lenX + ') > trasa do Y (' + lenY + '), a prosta X < prosta Y',
+      lenX > lenY && dist(10, 5, 14, 5) < dist(10, 5, 3, 5));
+    check('B2 zalozenie pelnego muru: brak trasy do X', M.computePath(unit('w1', 10, 5), mapFull, 14, 5, new Set()).length === 0);
+    const r = b2Scenarios(M, mapFull, mapGap);
+    check('B2a wodz kampanii za pelnym murem pomijany: jednostka idzie trasa do osiagalnego', r.b2a);
+    check('B2b wodz blizszy w linii prostej, ale dalszy po trasie: wybor wg trasy', r.b2b);
   }
   {
     // B3: jeden wodz -> bez zmian (cel = wodz kampanii).
@@ -173,16 +199,61 @@ function moveOf(cmds, id) { return cmds.find((c) => c.type === 'move' && c.unitI
       d1 === d2 && mv !== undefined && dist(mv.toQ, mv.toR, 10, 11) < dist(10, 5, 10, 11), JSON.stringify(mv));
   }
 
+  // ---------- F: sciezka gracza (main.ts) -- te same funkcje, ktore wola pickNearestLeaderForUnit ----------
+  // pickNearestLeaderUnit/collectLeaderCandidates: filtr zywych wodzow, wyprawa, brak trasy, ponowny wybor.
+  function fScenarios(MM) {
+    const out = {};
+    const D = MM.hexDistance;
+    const straight = (a, b) => D(a.q, a.r, b.q, b.r);
+    const pick = (u, roster, exp = () => false, pl = straight) => MM.pickNearestLeaderUnit(u, roster, exp, pl)?.id;
+    const g = (id, q, r, x = {}) => unit(id, q, r, { isGeneral: true, ownerId: 0, ...x });
+    const u0 = unit('p1', 0, 0, { ownerId: 0 });
+    out.fNear = pick(u0, [g('far', 9, 0), g('near', 3, 0)]) === 'near';
+    out.fRouted = pick(u0, [g('routed', 1, 0, { routed: true }), g('ok', 6, 0)]) === 'ok';
+    out.fRemoved = pick(u0, [g('removed', 1, 0, { removed: true }), g('ok', 6, 0)]) === 'ok';
+    out.fDead = pick(u0, [g('dead', 1, 0, { dead: true }), g('ok', 6, 0)]) === 'ok';
+    out.fHp0 = pick(u0, [g('hp0', 1, 0, { hp: 0 }), g('ok', 6, 0)]) === 'ok';
+    out.fOtherOwner = pick(u0, [g('foe', 1, 0, { ownerId: 2 }), g('ok', 6, 0)]) === 'ok';
+    out.fOnlyDeadNone = pick(u0, [g('dead', 1, 0, { dead: true })]) === undefined;
+    out.fExpedition = pick(u0, [g('exp', 2, 0), g('gat', 7, 0)], (id) => id === 'exp') === 'gat';
+    out.fUnreachable = pick(u0, [g('blocked', 2, 0), g('ok', 7, 0)], () => false, (f, t) => (t.q === 2 ? null : 5)) === 'ok';
+    // ponowny wybor: wodz znika z rostera -> wybierany jest nastepny najblizszy
+    const roster = [g('a', 2, 0), g('b', 7, 0)];
+    const before = pick(u0, roster);
+    const after = pick(u0, roster.filter((x) => x.id !== 'a'));
+    out.fReselect = before === 'a' && after === 'b';
+    out.fGeneralNoLeader = pick(g('gen', 0, 0), [g('a', 2, 0)]) === undefined;
+    out.fSelfExcluded = pick(u0, [{ ...u0, isGeneral: true }, g('b', 7, 0)]) === 'b';
+    return out;
+  }
+  if (hasPicker && M.pickNearestLeaderUnit) {
+    const f = fScenarios(M);
+    for (const [k, v] of Object.entries(f)) check('F ' + k + ' (pickNearestLeaderUnit)', v);
+  } else {
+    check('F pickNearestLeaderUnit istnieje', false, '(baza bez funkcji)');
+  }
+
   // ---------- C: mutacje ----------
   const mutations = [
     { name: 'picker: pierwszy z listy zamiast najblizszego', rel: 'game/army-concentration.ts',
-      from: '  pool.sort((a, b) =>\n    a.distance - b.distance\n    ||', to: '  pool.sort((a, b) =>\n    0\n    ||' },
+      from: 'if (best === null || distance < best.distance\n      ||', to: 'if (best === null\n      ||' },
     { name: 'picker: null/nieosiagalny traktowany jak dystans 0', rel: 'game/army-concentration.ts',
-      from: 'if (distance === null || !Number.isFinite(distance)) continue;', to: 'if (distance === null) { available.push({ leader, distance: 0 }); continue; }' },
+      from: 'if (distance === null || !Number.isFinite(distance)) continue;', to: 'if (distance === null) { best = { leader, distance: 0 }; continue; }' },
+    { name: 'picker: przycinanie przerywa przy rownej linii prostej (gubi remisy)', rel: 'game/army-concentration.ts',
+      from: 'if (best !== null && straight > best.distance) break;', to: 'if (best !== null && straight >= best.distance) break;' },
     { name: 'ai.ts: zbiorka tylko do wodza kampanii (bez wyboru najblizszego)', rel: 'game/ai.ts',
-      from: 'const choice = leaders.length > 0', to: 'const choice = false && leaders.length > 0' },
+      from: 'const choice = leaders.length > 1', to: 'const choice = false && leaders.length > 1' },
     { name: 'picker: remis nie patrzy na armie', rel: 'game/army-concentration.ts',
-      from: '|| (b.leader.armySize ?? 0) - (a.leader.armySize ?? 0)', to: '' },
+      from: '(leader.armySize ?? 0) > (best.leader.armySize ?? 0)', to: 'false' },
+    { name: 'ai.ts: odleglosc w linii prostej zamiast dlugosci trasy', rel: 'game/ai.ts',
+      from: 'return path.length === 0 ? null : path.length;\n  };',
+      to: 'return Math.max(Math.abs(unit.q - to.q), Math.abs(unit.r - to.r), Math.abs(unit.q + unit.r - to.q - to.r)) + 0 * path.length;\n  };' },
+    { name: 'collectLeaderCandidates: routed wodz dopuszczony', rel: 'game/army-concentration.ts',
+      from: '&& c.dead !== true && c.removed !== true && c.routed !== true', to: '&& c.dead !== true && c.removed !== true' },
+    { name: 'collectLeaderCandidates: removed wodz dopuszczony', rel: 'game/army-concentration.ts',
+      from: '&& c.dead !== true && c.removed !== true && c.routed !== true', to: '&& c.dead !== true && c.routed !== true' },
+    { name: 'collectLeaderCandidates: wyprawa ignorowana', rel: 'game/army-concentration.ts',
+      from: 'onExpedition: isOnExpedition(c.id),', to: 'onExpedition: false,' },
   ];
   if (hasPicker) {
     for (const mut of mutations) {
@@ -194,9 +265,10 @@ function moveOf(cmds, id) { return cmds.find((c) => c.type === 'move' && c.unitI
         const run = (gen, ex, lead, rally, mp = map) => MM.decideAITurn(1, [...gen, ...ex], cities, mp, data, gatherCampaign(lead, rally[0], rally[1]));
         const b1 = moveOf(run([unit('a-far', 4, 5, { isGeneral: true }), unit('z-near', 22, 5, { isGeneral: true })], [unit('w1', 20, 5)], 'a-far', [4, 5]), 'w1');
         const b1ok = b1 !== undefined && D(b1.toQ, b1.toR, 22, 5) < D(20, 5, 22, 5);
-        const mapW = makeMap(32, 12, [(q) => q === 12]);
-        const b2 = moveOf(run([unit('a-reach', 4, 5, { isGeneral: true }), unit('z-beyond', 14, 5, { isGeneral: true })], [unit('w1', 10, 5)], 'a-reach', [4, 5], mapW), 'w1');
-        const b2ok = b2 !== undefined && D(b2.toQ, b2.toR, 4, 5) < D(10, 5, 4, 5);
+        const b2r = b2Scenarios(MM, mapFull, mapGap);
+        const b2ok = b2r.b2a && b2r.b2b;
+        const fr = fScenarios(MM);
+        const fok = Object.values(fr).every(Boolean);
         const b5 = moveOf(run([unit('a-small', 16, 5, { isGeneral: true }), unit('z-big', 10, 11, { isGeneral: true })],
           [unit('g1', 10, 11), unit('g2', 10, 11), unit('g3', 10, 11), unit('w1', 10, 5)], 'a-small', [16, 5]), 'w1');
         const b5ok = b5 !== undefined && D(b5.toQ, b5.toR, 10, 11) < D(10, 5, 10, 11);
@@ -205,7 +277,7 @@ function moveOf(cmds, id) { return cmds.find((c) => c.type === 'move' && c.unitI
         const a2ok = P({ q: 0, r: 0 }, [{ id: 'a', q: 9, r: 0 }, { id: 'b', q: 3, r: 0 }], (f, t) => (t.q === 3 ? null : 9))?.leader.id === 'a';
         const a5ok = P({ q: 0, r: 0 }, [{ id: 'a', q: 3, r: 0, armySize: 1 }, { id: 'b', q: 0, r: 3, armySize: 4 }], straight)?.leader.id === 'b';
         const a1ok = P({ q: 0, r: 0 }, [{ id: 'a', q: 9, r: 0 }, { id: 'b', q: 3, r: 0 }], straight)?.leader.id === 'b';
-        ok = !(b1ok && b2ok && b5ok && a2ok && a5ok && a1ok);
+        ok = !(b1ok && b2ok && b5ok && a2ok && a5ok && a1ok && fok);
       } catch (e) { err = String(e.message || e); }
       check('C mutacja lamie test: ' + mut.name, ok, err);
     }
@@ -214,6 +286,7 @@ function moveOf(cmds, id) { return cmds.find((c) => c.type === 'move' && c.unitI
   // ---------- D: symulacja ----------
   if (!NO_SIM) {
     const rows = [];
+    let simNs = 0n, simCalls = 0;
     for (let seed = 1; seed <= SEEDS; seed++) {
       let rng = seed * 2654435761 >>> 0;
       const rand = () => { rng = (rng * 1664525 + 1013904223) >>> 0; return rng / 4294967296; };
@@ -240,7 +313,9 @@ function moveOf(cmds, id) { return cmds.find((c) => c.type === 'move' && c.unitI
         const opts = gatherCampaign('g-A', units[0].q, units[0].r);
         opts.currentTurn = turn; opts.aiGeneralWarCampaign.turn = turn;
         const leaders = units.filter((x) => x.isGeneral);
+        const t0 = process.hrtime.bigint();
         const cmds = M.decideAITurn(1, units, simCities, simMap, data, opts);
+        simNs += process.hrtime.bigint() - t0; simCalls++;
         for (const c of cmds) {
           if (c.type !== 'move') continue;
           const u = units.find((x) => x.id === c.unitId);
@@ -282,6 +357,26 @@ function moveOf(cmds, id) { return cmds.find((c) => c.type === 'move' && c.unitI
     for (const r of rows) console.log(`SIM seed=${r.seed} turns=${TURNS} ruchow=${r.headings} do_nie_najblizszego=${r.nonNearest} odsetek=${r.share.toFixed(3)}`);
     const tot = rows.reduce((a, r) => ({ h: a.h + r.headings, n: a.n + r.nonNearest }), { h: 0, n: 0 });
     const share = tot.h ? tot.n / tot.h : 0;
+    console.log(`PERF decideAITurn: ${simCalls} wywolan, srednio ${(Number(simNs) / 1e6 / Math.max(1, simCalls)).toFixed(2)} ms/ture (lacznie ${(Number(simNs) / 1e6).toFixed(0)} ms)`);
+    {
+      // PERF stres: 80 jednostek rozproszonych, 4 wodzow, 20 tur zbiorki (najgorszy realny przypadek).
+      const sm = makeMap(40, 14);
+      const gens = [unit('g1', 5, 3, { isGeneral: true }), unit('g2', 30, 3, { isGeneral: true }),
+        unit('g3', 8, 10, { isGeneral: true }), unit('g4', 34, 11, { isGeneral: true })];
+      const stress = [...gens];
+      for (let i = 0; i < 80; i++) stress.push(unit('s' + i, 2 + (i * 7) % 36, 1 + (i * 5) % 12));
+      let ns = 0n;
+      for (let t = 0; t < 20; t++) {
+        for (const x of stress) x.ruchLeft = x.ruch;
+        const o = gatherCampaign('g1', 5, 3); o.currentTurn = t + 1; o.aiGeneralWarCampaign.turn = t + 1;
+        const t0 = process.hrtime.bigint();
+        const cs = M.decideAITurn(1, stress, [{ id: 'cS', ownerId: 1, q: 6, r: 3, name: 'cS', population: 5 },
+          { id: 'en', ownerId: 2, q: 38, r: 1, name: 'en', population: 5 }], sm, data, o);
+        ns += process.hrtime.bigint() - t0;
+        for (const c of cs) if (c.type === 'move') { const x = stress.find((y) => y.id === c.unitId); if (x && !x.isGeneral) { x.q = c.toQ; x.r = c.toR; } }
+      }
+      console.log(`PERF stres (80 jednostek, 4 wodzow, 20 tur): srednio ${(Number(ns) / 1e6 / 20).toFixed(1)} ms/ture`);
+    }
     console.log(`SIM razem ruchow=${tot.h} do_nie_najblizszego=${tot.n} odsetek=${share.toFixed(3)} (${hasPicker ? 'PO' : 'PRZED'})`);
     check('D odsetek jednostek idacych do nie-najblizszego wodza < 5%', share < 0.05, 'odsetek=' + share.toFixed(3));
   }
@@ -292,6 +387,13 @@ function moveOf(cmds, id) { return cmds.find((c) => c.type === 'move' && c.unitI
     !/const general = units\.find\(x => x\.ownerId === u\.ownerId && x\.isGeneral === true\);/.test(mainTs)
     && mainTs.includes('pickNearestLeaderForUnit'));
   check('E2 main.ts: wodz kampanii AI wybierany przez pickNearestAvailableLeader', mainTs.includes('pickNearestAvailableLeader({ q: routeProbe.q'));
+
+  check('E3 main.ts: przycisk "Idz do wodza" przekazuje wybranego wodza do issueGeneralQuickFollow',
+    mainTs.includes('pickNearestLeaderForUnit(u) ?? nearestLivingGeneral(u, units)')
+    && mainTs.includes('issueGeneralQuickFollow(u, commander ? [u, commander] : units'));
+  check('E4 main.ts: syncGeneralMarchTargets nadpisuje cel marszu najblizszym po trasie',
+    /const best = pickNearestLeaderForUnit\(unit\);/.test(mainTs)
+    && mainTs.includes('pickNearestLeaderUnit(u, units, id => plannedMarches.has(id)'));
 
   console.log(`\nWYNIK: ${passed} PASS, ${failed} FAIL`);
   try { fs.rmSync(OUT, { recursive: true, force: true }); } catch (e) { /* ignore */ }

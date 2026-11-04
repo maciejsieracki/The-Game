@@ -505,20 +505,84 @@ export function pickNearestAvailableLeader<T extends LeaderCandidate>(
   leaders: readonly T[],
   pathLength: LeaderPathLength,
 ): NearestLeaderChoice<T> | null {
-  const available: Array<NearestLeaderChoice<T>> = [];
-  for (const leader of leaders) {
-    const distance = from.q === leader.q && from.r === leader.r
-      ? 0
-      : pathLength(from, { q: leader.q, r: leader.r });
+  // Dwie fazy: najpierw wodzowie zbierajacy, wodzowie na wyprawie tylko gdy zaden zbierajacy nie jest dostepny.
+  const gathering = leaders.filter(l => l.onExpedition !== true);
+  const expedition = leaders.filter(l => l.onExpedition === true);
+  const best = bestByPath(from, gathering, pathLength) ?? bestByPath(from, expedition, pathLength);
+  return best;
+}
+
+/**
+ * Liczba krokow trasy >= odleglosc heksowa, wiec wodzow przegladamy rosnaco wg linii prostej i konczymy,
+ * gdy linia prosta kolejnego jest WIEKSZA niz najlepsza znaleziona trasa (remisy sprawdzane do konca).
+ * Dzieki temu kosztowne liczenie trasy dotyczy zwykle 1-2 wodzow, nie wszystkich.
+ */
+function bestByPath<T extends LeaderCandidate>(
+  from: { q: number; r: number },
+  leaders: readonly T[],
+  pathLength: LeaderPathLength,
+): NearestLeaderChoice<T> | null {
+  const ordered = leaders
+    .map(leader => ({ leader, straight: hexDistance(from.q, from.r, leader.q, leader.r) }))
+    .sort((a, b) => a.straight - b.straight);
+  let best: NearestLeaderChoice<T> | null = null;
+  for (const { leader, straight } of ordered) {
+    if (best !== null && straight > best.distance) break;
+    const distance = straight === 0 ? 0 : pathLength(from, { q: leader.q, r: leader.r });
     if (distance === null || !Number.isFinite(distance)) continue;
-    available.push({ leader, distance });
+    if (best === null || distance < best.distance
+      || (distance === best.distance && (
+        (leader.armySize ?? 0) > (best.leader.armySize ?? 0)
+        || ((leader.armySize ?? 0) === (best.leader.armySize ?? 0) && leader.id.localeCompare(best.leader.id) < 0)))) {
+      best = { leader, distance };
+    }
   }
-  if (available.length === 0) return null;
-  const gathering = available.filter(a => a.leader.onExpedition !== true);
-  const pool = gathering.length > 0 ? gathering : available;
-  pool.sort((a, b) =>
-    a.distance - b.distance
-    || (b.leader.armySize ?? 0) - (a.leader.armySize ?? 0)
-    || a.leader.id.localeCompare(b.leader.id));
-  return pool[0] ?? null;
+  return best;
+}
+
+/** Pola jednostki potrzebne do wyboru wodza (zgodne z GeneralFollowCandidate z generals.ts). */
+export interface LeaderRosterUnit {
+  id: string;
+  ownerId: number;
+  q: number;
+  r: number;
+  isGeneral?: boolean;
+  hp?: number;
+  dead?: boolean;
+  removed?: boolean;
+  routed?: boolean;
+}
+
+/**
+ * Kandydaci na wodza dla `unit` (ten sam filtr zywych wodzow co nearestLivingGeneral:
+ * nie dead/removed/routed, hp > 0, ten wlasciciel, nie sama jednostka). Wodz nie szuka wodza.
+ */
+export function collectLeaderCandidates<T extends LeaderRosterUnit>(
+  unit: LeaderRosterUnit,
+  roster: readonly T[],
+  isOnExpedition: (leaderId: string) => boolean,
+): Array<LeaderCandidate & { unit: T }> {
+  if (unit.isGeneral === true || unit.dead === true || unit.removed === true || unit.routed === true) return [];
+  return roster
+    .filter(c => c.id !== unit.id && c.ownerId === unit.ownerId && c.isGeneral === true
+      && c.dead !== true && c.removed !== true && c.routed !== true
+      && (c.hp == null || c.hp > 0))
+    .map(c => ({
+      unit: c, id: c.id, q: c.q, r: c.r,
+      armySize: roster.filter(m => m.ownerId === c.ownerId && m.q === c.q && m.r === c.r
+        && m.dead !== true && m.removed !== true).length,
+      onExpedition: isOnExpedition(c.id),
+    }));
+}
+
+/** Najblizszy dostepny wodz (jednostka z rostera) dla `unit` -- sciezka gracza w main.ts. */
+export function pickNearestLeaderUnit<T extends LeaderRosterUnit>(
+  unit: LeaderRosterUnit,
+  roster: readonly T[],
+  isOnExpedition: (leaderId: string) => boolean,
+  pathLength: LeaderPathLength,
+): T | undefined {
+  const leaders = collectLeaderCandidates(unit, roster, isOnExpedition);
+  if (leaders.length === 0) return undefined;
+  return pickNearestAvailableLeader(unit, leaders, pathLength)?.leader.unit;
 }

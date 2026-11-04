@@ -1309,7 +1309,7 @@ import type { BarbCamp, BarbUnit } from './game/barbarians';
 import { isWarAllInCapitalEnabled, classifyWarTargetRoutes, preferSeaReachableWarTargets,
   type WarAllInContext, type WarCapitalTarget } from './game/warAllInCapital';
 import { isArmyConsolidationEnabled } from './game/army-consolidation';
-import { isEligibleForArmyConcentration, pickNearestAvailableLeader } from './game/army-concentration';
+import { isEligibleForArmyConcentration, pickNearestAvailableLeader, pickNearestLeaderUnit } from './game/army-concentration';
 // R-WEB-WAR-RULES-MULTIWAR-Q1: bramki wojen (R1 tura 40, R2 limit Kamienia; R3 max 1 wojna epoki na epokę globalnie) + W1/W2.
 import {
   WAR_RULES_PARAMS,
@@ -28718,24 +28718,16 @@ async function boot(): Promise<void> {
      */
     function pickNearestLeaderForUnit(u: RuntimeUnit): RuntimeUnit | undefined {
       if (u.isGeneral === true) return undefined;
-      const leaders = units
-        .filter(c => c.id !== u.id && c.ownerId === u.ownerId && c.isGeneral === true
-          && (c.hp == null || c.hp > 0))
-        .map(c => ({
-          unit: c, id: c.id, q: c.q, r: c.r,
-          armySize: units.filter(m => m.ownerId === c.ownerId && m.q === c.q && m.r === c.r).length,
-          onExpedition: plannedMarches.has(c.id),
-        }));
-      if (leaders.length === 0) return undefined;
+      // Filtr zywych wodzow (dead/removed/routed/hp) i wybor: army-concentration.pickNearestLeaderUnit.
+      if (!units.some(c => c.id !== u.id && c.ownerId === u.ownerId && c.isGeneral === true)) return undefined;
       const stack = playerStackAt(u);
       const mover = unitWithPlanningStackRuch(u, stack);
       const occupied = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
       const perTurn = perTurnMoveForUnit(u);
-      const choice = pickNearestAvailableLeader(u, leaders, (_from, to) => {
+      return pickNearestLeaderUnit(u, units, id => plannedMarches.has(id), (_from, to) => {
         const plan = marchPathPlan(mover, to.q, to.r, occupied, perTurn, undefined, undefined, moveCostFnForUnit(u));
         return plan.reachable && plan.fullPath.length > 0 ? plan.fullPath.length : null;
       });
-      return choice?.leader.unit;
     }
 
     /** Keep every queued General-following march aimed at that General's live position. */
