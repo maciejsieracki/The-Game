@@ -8647,3 +8647,5 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 - 2026-11-04 — ZGŁOSZENIE (zrzut „Surowce”): w górnym panelu surowiec w niedoborze ma być czerwoną czcionką zamiast złotej → R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1 (dispatch zapisany; kolejka pętli webowej).
 
 - 2026-11-04 — ZGŁOSZENIE POWTÓRNE (3 zrzuty, Ateny): automat nadal buduje ulepszenia żywności na heksach BEZ obywateli mimo włączonego filtra, i nie buduje irygacji ani trzody (gracz + AI, profile żywność i zrównoważone) → R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 rozszerzony (obejmuje irygację/trzodę i FAIL AUTOIMPROVE-PRIORITY-Q1), priorytet najwyższy.
+
+- 2026-11-04 — OTWARTE (Rust/P6, nie web): niestabilność harnessu L2 (`mainMenu.ts` toast `cm-toast show`) pod obciążeniem; K09C/K09D + hooki kontrolera v2 (zamiana Pracy, montaż rekrutacji w Armii, `commanderTitle`, `citizenRatePerCitizen`, DTO: era gracza, `terrainImprovementWorkCost`, `civBonusy`, `bonusChips`, `milicjaRegen`, ustawienia nowej gry) — wymagają P6 i `src/controller/**`.
