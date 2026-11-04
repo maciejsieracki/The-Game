@@ -1,28 +1,28 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a92797382bedc9c81e5edbc03c95d643",
-  "bundleSha256": "17164c271b78bcf0dbdbf6d97dfe84e37c92f325ba01d25ed33671be05e11d36",
-  "bundleBytes": 70180853,
+  "bundleMd5": "a53cbc622f8ec548ea7bfd0ca38b3561",
+  "bundleSha256": "177dda025e6c991cb4c6057f66c2a056ea6cd59dc3219cec13507ef95aab8c7d",
+  "bundleBytes": 70182590,
   "sourceSnapshot": {
-    "source": "main b89ecee44 + ANNEX-CITYSTATE-SPOILS (080b58484) + HUNTING-CAMP-HILL-NO-FLATTEN (7c0a587c9)",
+    "source": "main 16195968b + AI-ARMY-CONCENTRATION-REPLACEMENT (35321d577)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-ANNEX-CITYSTATE-SPOILS-Q1: aneksja państwa-miasta przejmuje cały majątek (miasta, jednostki, złoto, surowce) i odejmuje cenę aneksji; wspólny rdzeń z eliminacją.",
-    "R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1: obóz łowiecki nie wypłaszcza wzgórza z lasem (jak tartak); wizualnie, bez zmiany terenu bazowego."
+    "R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1: w wojnie jednostka AI spoza skupiska ≥3 jednostek (promień 4) idzie do miasta zbiórki najbliższego celu zamiast pojedynczo na front; limity czekania 6/30 tur; fallback bez trasy."
   ],
   "verification": [
-    "tsc --noEmit PASS po scaleniu",
-    "annex-citystate-spoils 79/0 (7 mutacji); hunting-camp-hill-no-flatten 20/0; oboz-lowiecki-las-znika-render 26/1 (jedyny czerwony jak na bazie)"
+    "tsc --noEmit PASS",
+    "ai-army-replacement-concentration 34/0 (mutacja czerwona); army-concentration 56/0; ai-general-war-campaign 51/0; army-consolidation-e2e 6/0"
   ],
   "limits": [
-    "Chromium/live i zapis właściciela NIE_ZMIERZONO dla ANNEX; ścieżki AI/wczytania zapisu obozu tylko analiza kodu",
-    "Czerwone na bazie: eliminacja-lup-kwoty 34/4, oboz-lowiecki-las-test 19 FAIL, TERRAIN_ALLOW.lodzie_rybackie"
+    "Symulacja z atrapami rekrutacji/walki, bez pełnej gry w przeglądarce; archetypy cywilizacji NIE_ZMIERZONO",
+    "Pangea: udział tur z armiami ponad liczbę wojen +0.078 (merge_radius poza zakresem)",
+    "Czerwone na bazie: war-allin-capital-test 94/4, ai-siege-requires-war-test 47/1"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "ANNEX: PASS-WITH-NOTES; HUNTING-CAMP: PASS po obronie R2."
+    "notes": "AI-ARMY-CONCENTRATION-REPLACEMENT: Operator → Evaluator FAIL → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
   "hubGeneratedAt": "2026-11-04T11:15:04",
@@ -31,15 +31,15 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a92797382bedc9c81e5edbc03c95d643",
-      "sizeBytes": 70180853
+      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
+      "sizeBytes": 70182590
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a92797382bedc9c81e5edbc03c95d643",
-      "sizeBytes": 70180853
+      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
+      "sizeBytes": 70182590
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
@@ -98,15 +98,15 @@
       "sizeBytes": 70179670
     }
   ],
-  "md5": "a92797382bedc9c81e5edbc03c95d643",
-  "sizeBytes": 70180853,
+  "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
+  "sizeBytes": 70182590,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "ca6a9e08cd9cb52df50e609d876631b7"
+    "bundleMd5": "a92797382bedc9c81e5edbc03c95d643"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 ca6a9e08cd9cb52df50e609d876631b7, 70179670 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 a92797382bedc9c81e5edbc03c95d643, 70180853 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T12:16:53+00:00",
-  "buildStamp": "2026-11-04 12:16",
+  "publishedAt": "2026-11-04T12:42:39+00:00",
+  "buildStamp": "2026-11-04 12:42",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",

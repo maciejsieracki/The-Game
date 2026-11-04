@@ -1,3 +1,12 @@
+## ROBOCZA a53cbc62 -- 2026-11-04 -- AI zbiera armię zastępczą w jednym miejscu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`16195968b` + AI-ARMY-CONCENTRATION-REPLACEMENT `35321d577`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `a53cbc622f8ec548ea7bfd0ca38b3561`, 70182590 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: w wojnie jednostki AI spoza skupiska ≥3 (promień 4) idą do miasta zbiórki najbliższego celu, zamiast pojedynczo na front; limity czekania 6/30 tur.
+- Testy: tsc PASS; ai-army-replacement-concentration 34/0; army-concentration 56/0; ai-general-war-campaign 51/0.
+- Ograniczenia: symulacja z atrapami, bez pełnej gry; pangea +0.078 tur z armiami ponad liczbę wojen; czerwone na bazie war-allin-capital 94/4.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `a92797382bedc9c81e5edbc03c95d643`, 70180853 bajtów.
+
 ## ROBOCZA a9279738 -- 2026-11-04 -- aneksja państwa-miasta przejmuje majątek; obóz łowiecki nie wypłaszcza wzgórza (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`b89ecee44` + ANNEX `080b58484` + HUNTING-CAMP `7c0a587c9`) i commit wdrożenia bundla; stała zgoda właściciela na poprawki.
