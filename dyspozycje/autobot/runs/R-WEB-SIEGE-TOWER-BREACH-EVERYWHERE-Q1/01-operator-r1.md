@@ -24,3 +24,5 @@ GOAL: Wieza oblezmicza = wylom wszedzie (takze w bitwie taktycznej): atakujacy w
 ## RUNDY: 1/5
 ## NASTEPNY KROK: Evaluator (weryfikacja niezalezna; ewentualnie dowod UI przegladarkowy w pelnym playtescie szturmu z wieza, NIE_ZMIERZONO tu: pelny przebieg tury AI/barbarzyncow nie byl uruchamiany, tylko sciezka wallBreached sceny + pinezki main.ts).
 ## DEPLOY/PUSH: NIE WYKONANO
+
+COMMIT: dd408d1c185ef0426b5d7df5f1feabfd04f90139 (kod + test + logi + ten raport; baza origin/main 86d510c66, detached worktree)
