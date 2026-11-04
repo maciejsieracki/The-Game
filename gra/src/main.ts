@@ -616,7 +616,7 @@ import {
   diffTradeRoutes,
   findCityConnection,
   tradeRouteIncomeForRoute,
-  citiesHaveTradeConnection,
+  externalTradeContactOk,
   diagnoseMissingTradeRouteForPartner,
   computeTradeRouteResourceFlow,
   loadTradeRouteResourceFlowParams,
@@ -9078,6 +9078,22 @@ async function boot(): Promise<void> {
       if (!s) { s = new Set<number>(); diplomaticContactEstablishedByHuman.set(humanOwnerId, s); }
       return s;
     }
+    /**
+     * R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (decyzja właściciela 2026-11-04): czy cywilizacje
+     * SIĘ ZNAJĄ w sensie handlu — ten sam kontakt dyplomatyczny co stół negocjacji
+     * (`diplomaticContactEstablishedSet`, per-fotel). AI↔AI: zawsze (wzorzec
+     * `contactEstablished: ... : true` w kontekście ticku dyplomacji). Barbarzyńcy: nigdy.
+     * To JEDYNY warunek łączności trasy zewnętrznej (silnik, UI i AI) — zero BFS/Portu/granicy.
+     */
+    function tradeContactBetween(a: number, b: number): boolean {
+      if (isBarbarian(a) || isBarbarian(b)) return false;
+      if (isHuman(a)) {
+        return diplomaticContactEstablishedSet(a).has(b)
+          || (isHuman(b) && diplomaticContactEstablishedSet(b).has(a));
+      }
+      if (isHuman(b)) return diplomaticContactEstablishedSet(b).has(a);
+      return true;
+    }
     function diplomaticallyDiscoveredOwnersSet(humanOwnerId: number = ME()): Set<number> {
       let s = diplomaticallyDiscoveredOwnersByHuman.get(humanOwnerId);
       if (!s) { s = new Set<number>(); diplomaticallyDiscoveredOwnersByHuman.set(humanOwnerId, s); }
@@ -16954,6 +16970,7 @@ async function boot(): Promise<void> {
           buildAllTerritoryNodes(), // R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1: wymóg wspólnej granicy lądowej (pary zewnętrzne — GOAL 5 R-HANDEL-LIMIT-TRAS-PELNY-Q1 pomija ten wymóg dla par wewnętrznych, wewnątrz samej funkcji)
           tradeIncomeParams, // R-HANDEL-LIMIT-TRAS-PELNY-Q1 GOAL 3: priorytet kandydatów wg dochodu malejąco
           ownerHasTradeTech, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 1: bez technologii "Wymiana" -> zero tras (zewnętrznych i wewnętrznych)
+          tradeContactBetween, // R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: trasa zewnętrzna wymaga tylko znajomości
         );
       } catch (eTrade) {
         console.error('[Handel] Blad odswiezania tras:', eTrade);
@@ -17075,11 +17092,13 @@ async function boot(): Promise<void> {
           // R2-4: dla trasy wewnętrznej pomijamy wymóg wspólnej granicy lądowej
           // (territoryNodes=undefined) — tak samo jak refreshTradeRoutes (GOAL 5),
           // inaczej powód byłby fałszywym „brak połączenia".
-          const conn = findCityConnection(
-            from, to, map, route.medium, tradeParams, builtByCity,
-            wewnetrzna ? undefined : buildAllTerritoryNodes(),
-          );
-          if (!conn.connected) reason = 'brak połączenia';
+          // R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: trasa zewnętrzna ginie bez kontaktu, nie bez ścieżki.
+          if (wewnetrzna) {
+            const conn = findCityConnection(from, to, map, route.medium, tradeParams, builtByCity, undefined);
+            if (!conn.connected) reason = 'brak połączenia';
+          } else if (!tradeContactBetween(route.ownerId, route.toOwnerId)) {
+            reason = 'utrata kontaktu';
+          }
         }
 
         const summary = `${fromName} ↔ ${toName} (${civLabel})` + (reason ? ' — ' + reason : '');
@@ -17119,7 +17138,7 @@ async function boot(): Promise<void> {
         if (hasSzlakowTreaty(activeDeals, ME(), oid)) continue; // juz ma traktat szlakow
         const foreignCities = cities.filter(c => c.ownerId === oid);
         if (foreignCities.length === 0) continue;
-        if (citiesHaveTradeConnection([city], foreignCities, map, cityBuilt, DEFAULT_TRADE_ROUTE_PARAMS, buildAllTerritoryNodes())) {
+        if (externalTradeContactOk([city], foreignCities, tradeContactBetween(ME(), oid))) {
           out.push(ownerDiploLabel(oid));
         }
       }
@@ -18217,12 +18236,9 @@ async function boot(): Promise<void> {
             0,
             partnerId,
             tradeCitiesForDiag,
-            map,
-            cityBuilt,
             isAtWarForDiag,
-            tradeParamsForDiag,
+            tradeContactBetween(0, partnerId),
             ownerDiploLabel(partnerId),
-            buildAllTerritoryNodes(),
           ) ?? undefined;
         }
         activeDealsRows.push({
@@ -21547,13 +21563,10 @@ async function boot(): Promise<void> {
           const pairKey = diploPairKey(a, b);
           if (!canAiProposeTradeAgreement(turn, aiAiTradeAgreementLastTurn.get(pairKey))) continue;
 
-          const hasConnection = citiesHaveTradeConnection(
+          const hasConnection = externalTradeContactOk(
             cities.filter(c => c.ownerId === a),
             cities.filter(c => c.ownerId === b),
-            map,
-            cityBuilt,
-            DEFAULT_TRADE_ROUTE_PARAMS,
-            buildAllTerritoryNodes(),
+            tradeContactBetween(a, b),
           );
           if (!hasConnection) continue;
 
@@ -23073,13 +23086,10 @@ async function boot(): Promise<void> {
         respekt: rel.respekt ?? 0,
         hasNap: hasTreaty(activeDeals, ME(), ownerId, RodzajTraktatu.PaktNieagresji),
         hasHandel: hasSzlakowTreaty(activeDeals, ME(), ownerId),
-        hasTradeConnection: citiesHaveTradeConnection(
+        hasTradeConnection: externalTradeContactOk(
           cities.filter(c => isMe(c.ownerId)),
           cities.filter(c => c.ownerId === ownerId),
-          map,
-          cityBuilt,
-          DEFAULT_TRADE_ROUTE_PARAMS,
-          buildAllTerritoryNodes(),
+          tradeContactBetween(ME(), ownerId),
         ),
         // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 2: bramka techniczna dla propozycji
         // Umowy Szlaków (case '5', diplomacy-locks.ts) — MY zawsze gracz (0) w
@@ -38196,13 +38206,10 @@ async function boot(): Promise<void> {
                 setDiploRelation(ME(), ownerId, relTicked as unknown as Relation);
 
                 const respektWzglednyPlr = (potAI + potPlr) > 0 ? potAI / (potAI + potPlr) : 0.5;
-                const hasTradeConnectionToPlayer = citiesHaveTradeConnection(
+                const hasTradeConnectionToPlayer = externalTradeContactOk(
                   cities.filter(c => c.ownerId === ME()),
                   cities.filter(c => c.ownerId === ownerId),
-                  map,
-                  cityBuilt,
-                  DEFAULT_TRADE_ROUTE_PARAMS,
-                  buildAllTerritoryNodes(),
+                  tradeContactBetween(ME(), ownerId),
                 );
                 const aiHandlowosc = resolveArchetypeTrade(
                   aiTyp,

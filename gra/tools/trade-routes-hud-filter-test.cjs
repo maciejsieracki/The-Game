@@ -255,6 +255,7 @@ function reportCtx() {
     buildAllTerritoryNodes: () => undefined,
     diffTradeRoutes: TR.diffTradeRoutes,
     findCityConnection: TR.findCityConnection,
+    tradeContactBetween: () => true, // R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: main.ts:reportTradeRouteEvents pyta o kontakt zamiast o sciezke
     tradeRouteIncomeForRoute: TR.tradeRouteIncomeForRoute,
   };
 }
