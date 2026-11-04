@@ -29,3 +29,5 @@ GOAL: hak `__civTest.setCityLimit(n)` (tylko `?civTest=1`), by testy fortow mogl
 ## RUNDY: 1/5
 ## NASTEPNY KROK: Evaluator
 ## DEPLOY-PUSH: NIE WYKONANO
+
+COMMIT: 1c3ad34950555c30e70c76d577a547073d30fc51 (kod, test, logi, raport); branch worktree-wf_701192ed-675-1
