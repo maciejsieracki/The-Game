@@ -857,7 +857,7 @@ import { buildSettlementModel } from './render/settlementModel';
 import { cloneObject3DMaterialsForTransient, disposeTransientObject3D } from './render/transientObjectResources';
 import { BattleScene } from './battle/battleScene';
 import { isBattleSceneOpen } from './battle/battleSceneOpen';
-import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } from './battle/testBattle';
+import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset, addSiegeMachinesCount } from './battle/testBattle';
 import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
 import { armyLeaderMoraleBonusFrac, armyLeaderTitle } from './game/army-leadership';
@@ -34037,7 +34037,16 @@ async function boot(): Promise<void> {
      */
     function launchBigPresetBattle(preset: PresetName, siege: boolean): void {
       let armies = buildTestArmies((data as any).units, preset);
-      if (siege) armies = ensureSiegeMachinesPreset(armies, (data as any).units);
+      let bareSiege = false;
+      try { bareSiege = new URLSearchParams(window.location.search).get('bare') === '1'; } catch { /* brak location */ }
+      if (siege && !bareSiege) armies = ensureSiegeMachinesPreset(armies, (data as any).units);
+      if (siege) {
+        // Hak testowy: ?rams=N&towers=M -- dodatkowe tarany / wieze oblezne (harness bitwy).
+        try {
+          const qp = new URLSearchParams(window.location.search);
+          armies = addSiegeMachinesCount(armies, (data as any).units, Number(qp.get('rams')) || 0, Number(qp.get('towers')) || 0);
+        } catch { /* brak location */ }
+      }
       if (armies.attacker.length === 0 || armies.defender.length === 0) {
         showHintMessage('Duża bitwa: brak jednostek (sprawdź dane)', 4000);
         return;
