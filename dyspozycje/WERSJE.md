@@ -1,3 +1,12 @@
+## ROBOCZA f55a07c9 -- 2026-11-04 -- zmęczenie wojną + pokój, unikalne nazwy miast, suwaki podatków (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`ac3698a97` + WEARY `6c0df7773` + NAME `41d1b53e3` + TAX `1c5eab9e2`) i commit wdrożenia; zgłoszenia właściciela, stała zgoda.
+- Bundle MD5 `f55a07c9025cd7bf230d8055b236a7a8`, 70216974 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: AI w długiej wojnie dąży do pokoju (zmęczenie ≈200 tur + utraty), przegrywający oferuje coraz lepsze warunki (złoto/surowce → miasta, nigdy stolica); nazwa miasta zużyta raz jest zużyta na zawsze; kropka suwaków podatku na końcu kolorowego wypełnienia.
+- Testy: tsc PASS; weariness-peace 66/0; city-name-unique-forever PASS; start-overlap 15/15; tax-slider 3/0.
+- Ograniczenia: balans zmęczenia wojną do oceny w grze; Firefox suwaków niezmierzony.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `7db5378a1d78e11025c72601b2b09c2d`, 70208994 bajtów.
+
 ## ROBOCZA 7db5378a -- 2026-11-04 -- plakietka oblężenia z licznikiem tur do poddania; wejście do poddanego miasta (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`488d94364` + SIEGE-BADGE-TURNS `3bba9a56d` + SIEGE-SURRENDER-ENTER-CITY `8b7c8af3b`) i commit wdrożenia; zgłoszenia właściciela, stała zgoda.

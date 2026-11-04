@@ -1,112 +1,113 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "7db5378a1d78e11025c72601b2b09c2d",
-  "bundleSha256": "ddb597cc1d77da58c705a8b32b96cc57f62b152af4dc9abe920b10fbf95cc227",
-  "bundleBytes": 70208994,
+  "bundleMd5": "f55a07c9025cd7bf230d8055b236a7a8",
+  "bundleSha256": "f83824a116f44006bf1c7abde3827dd7b20ac3c679d15d7465cfc11cfd826d6d",
+  "bundleBytes": 70216974,
   "sourceSnapshot": {
-    "source": "main 488d94364 + SIEGE-BADGE-TURNS-TO-SURRENDER (3bba9a56d) + SIEGE-SURRENDER-ENTER-CITY (8b7c8af3b)",
+    "source": "main ac3698a97 + WAR-WEARINESS-PEACE (6c0df7773) + CITY-NAME-UNIQUE-FOREVER (41d1b53e3) + TAX-SLIDER-THUMB-ALIGN (1c5eab9e2)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-SIEGE-BADGE-TURNS-TO-SURRENDER-Q1: plakietka oblężenia zawsze pokazuje „poddanie za N tur” (odmiana PL; „poddanie: —” gdy zapasy nie maleją; tooltip); prognoza zgodna z mechanizmem kapitulacji (ceil(M/Z)+1; zużycie = ludność + garnizon); logika kapitulacji bez zmian.",
-    "R-WEB-SIEGE-SURRENDER-ENTER-CITY-Q1: po poddaniu miasta (kapitulacja głodowa) główna oblegająca armia (największy stos; remis: generał, potem najmniejsze id) wchodzi na heks miasta bez kosztu ruchu i walki; machiny wchodzą, cywile i zaokrętowani nie; obca jednostka blokuje; gracz/AI/barbarzyńcy jednakowo."
+    "R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną rośnie z czasem (≈200 tur) i utratami miast; AI chętnie podpisuje pokój; przegrywający eskaluje ofertę (złoto/surowce → miasto → do 2 miast), nigdy stolica/ostatnie miasto.",
+    "R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1: nazwa miasta raz nadana jest zużyta na zawsze (globalnie, także stolice na starcie).",
+    "R-WEB-TAX-SLIDER-THUMB-ALIGN-Q1: suwaki podziału podatku — kropka na końcu kolorowej części."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "siege-surrender-forecast 56/0 (mutacje 8/8, live Chromium 10/10 u Operatora); siege-surrender-enter-city 32/0 (mutacje 9/9); siege-blockade 57/0; siege-last-stand 58/0"
+    "ai-war-weariness-peace 66/0; city-name-unique-forever PASS; city-name-start-overlap 15/15; tax-slider-thumb-align 3/0"
   ],
   "limits": [
-    "Prognoza zakłada stały garnizon (atrycja garnizonu może opóźnić poddanie o 1–2 tury; licznik koryguje się co klatkę)",
-    "Wejście po poddaniu: brak testu Chromium/integracyjnego resolveSiegeSurrender (strukturalnie); 9 testów HUD/oblężenia czerwonych na bazie bez zmian"
+    "Zmęczenie wojną: balans do oceny w grze; Firefox suwaków NIE_ZMIERZONO",
+    "Czerwone testy bazowe bez zmian"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "BADGE: Operator PASS → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES; ENTER-CITY: Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES."
+    "notes": "WEARY, NAME, TAX: Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T22:53:42",
+  "hubGeneratedAt": "2026-11-04T23:18:55",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7db5378a1d78e11025c72601b2b09c2d",
-      "sizeBytes": 70208994
+      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
+      "sizeBytes": 70216974
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7db5378a1d78e11025c72601b2b09c2d",
-      "sizeBytes": 70208994
+      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
+      "sizeBytes": 70216974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "7db5378a1d78e11025c72601b2b09c2d",
-      "sizeBytes": 70208994
+      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
+      "sizeBytes": 70216974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "7db5378a1d78e11025c72601b2b09c2d",
-      "sizeBytes": 70208994
+      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
+      "sizeBytes": 70216974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "7db5378a1d78e11025c72601b2b09c2d",
-      "sizeBytes": 70208994
+      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
+      "sizeBytes": 70216974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "7db5378a1d78e11025c72601b2b09c2d",
-      "sizeBytes": 70208994
+      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
+      "sizeBytes": 70216974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "7db5378a1d78e11025c72601b2b09c2d",
-      "sizeBytes": 70208994
+      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
+      "sizeBytes": 70216974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "7db5378a1d78e11025c72601b2b09c2d",
-      "sizeBytes": 70208994
+      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
+      "sizeBytes": 70216974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "7db5378a1d78e11025c72601b2b09c2d",
-      "sizeBytes": 70208994
+      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
+      "sizeBytes": 70216974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "7db5378a1d78e11025c72601b2b09c2d",
-      "sizeBytes": 70208994
+      "md5": "f55a07c9025cd7bf230d8055b236a7a8",
+      "sizeBytes": 70216974
     }
   ],
-  "md5": "7db5378a1d78e11025c72601b2b09c2d",
-  "sizeBytes": 70208994,
+  "md5": "f55a07c9025cd7bf230d8055b236a7a8",
+  "sizeBytes": 70216974,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
+  "source": "gra/src; main ac3698a97 + merge WEARY/NAME/TAX",
   "immediatePreviousRelease": {
-    "bundleMd5": "b6f88c94de970b4c63a7ac3fd3354732"
+    "bundleMd5": "7db5378a1d78e11025c72601b2b09c2d"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 b6f88c94de970b4c63a7ac3fd3354732, 70206378 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 7db5378a1d78e11025c72601b2b09c2d, 70208994 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1283,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T22:53:40+00:00",
-  "buildStamp": "2026-11-04 22:53",
+  "publishedAt": "2026-11-04T23:18:54+00:00",
+  "buildStamp": "2026-11-04 23:18",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1291,5 +1292,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "R-AI-KAMPANIA-MARSZ-REKRUTACJA-Q1: leader-led AI force advances after five full gathering turns; R-NEWGAME-SETTINGS-LAND-DIPLO-REPOSITION-Q1: land share and diplomacy review settings placement."
+  "releaseScope": "R-WEB-AI-WAR-WEARINESS-PEACE-Q1 R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1 R-WEB-TAX-SLIDER-THUMB-ALIGN-Q1"
 }
