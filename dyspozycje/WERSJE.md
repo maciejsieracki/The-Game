@@ -1,3 +1,12 @@
+## ROBOCZA d5345611 -- 2026-11-04 -- skracanie liczb k/M w panelach miasta, rekrutacji i imperium (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`56aa8c68d` + MANPOWER-ABBREV-PANELS `717ab3ec8`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `d5345611fe5bc89764f847b3a4029b53`, 70202771 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: liczby rekrutów i ludności w panelach miasta, rekrutacji i imperium skracane jak w HUD (1k, 12,3k, 1,2M); tooltip rekrutów bez zmian.
+- Testy: tsc PASS; manpower-panels-abbrev OK; manpower 71/0; recruit-card-manpower-real-render 20/0; recruitment-panel-compact-row 39/0.
+- Ograniczenia: szerokość kolumn w pełnych panelach niezmierzona; komunikat zdarzenia (main.ts:6733) bez zmian.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `4b0d54195e48f4e10adf9efd4c2a941b`, 70202732 bajtów.
+
 ## ROBOCZA 4b0d5419 -- 2026-11-04 -- blokada oblężonego miasta (rekrutacja, posiłki, wejście) (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`8c0fb5766` + SIEGE-BLOCKADE `258a13a7f` + SETCITYLIMIT `e26ed030d` + NAVAL-DEPOSIT-GATE-TEST-DEBT `86d7614cb`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
