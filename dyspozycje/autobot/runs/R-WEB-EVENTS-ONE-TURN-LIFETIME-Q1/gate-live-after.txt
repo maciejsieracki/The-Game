@@ -1,0 +1,16 @@
+-- tura N=1 --
+  OK   tura N: trzy wydarzenia informacyjne widoczne
+-- realny koniec tury --
+  OK   tura awansowala N -> N+1
+  OK   tura N+1: dziennik silnika nie zawiera kart ze starej tury
+  INFO blocking przed/po: [] / ["prod-empty-city0"]
+-- nowe wydarzenia tury N+1 --
+  OK   tura N+1: nowe wydarzenia tej tury sa widoczne
+-- karta decyzyjna: nie wygasa, blokuje koniec tury; info wygasa tylko przy zmianie tury --
+  OK   karta decyzyjna (blocking) z tury N+1 obecna i nie wygasa bez decyzji
+  OK   blokada decyzyjna wstrzymuje koniec tury (tura bez zmian)
+  OK   bez zmiany tury wydarzenia N+1 NIE wygasaja (wygasanie tylko na granicy tury)
+  OK   brak bledow strony
+
+8 OK, 0 FAIL
+EXIT=0

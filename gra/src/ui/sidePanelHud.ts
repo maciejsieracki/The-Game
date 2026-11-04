@@ -57,6 +57,9 @@ export interface SidePanelEvent {
   hex?: { q: number; r: number };
   cityId?: string;
   ownerId?: number;
+  /** R-WEB-EVENTS-ONE-TURN-LIFETIME-Q1: tura gracza, w ktorej wpis powstal (`game/event-lifetime.ts`).
+   * Wpis informacyjny wygasa na granicy tury; brak pola = przeterminowany. */
+  turnCreated?: number;
 }
 
 export type ContextPanelKind = 'hex' | 'unit';

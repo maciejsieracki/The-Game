@@ -1069,6 +1069,7 @@ import {
   DIPLOMACY_MSG_PREFIX,
   type DeferredEotHint,
 } from './game/eot-event-defer';
+import { expireEventsBeforeTurn, stampEventTurn } from './game/event-lifetime';
 import {
   createEventDeferQueue,
   shouldDeferNotice,
@@ -5498,6 +5499,7 @@ async function boot(): Promise<void> {
             title: 'Granice naruszone',
             subtitle: `Twoje granice naruszone — ${namesLabel}: −${kara} pkt Zaufania/turę u każdej naruszającej cywilizacji`,
             kind: 'diplo',
+            turnCreated: turn,
           });
         }
         if (notice.playerTrespassing) {
@@ -5515,6 +5517,7 @@ async function boot(): Promise<void> {
             title: 'Jednostka na cudzym terenie',
             subtitle: `Twoja jednostka na cudzym terenie (${namesLabel}): −${kara} pkt Zaufania/turę u właściciela terenu`,
             kind: 'diplo',
+            turnCreated: turn,
           });
         }
         if (borderMarchEventLog.length > 8) borderMarchEventLog.length = 8;
@@ -9510,6 +9513,7 @@ async function boot(): Promise<void> {
           : 'Wchłonięta dyplomatycznie — kliknij po szczegóły',
         kind: 'diplo',
         negative: true,
+        turnCreated: turn,
       });
       trimWarEventLog();
       refreshD1bHud();
@@ -9620,6 +9624,7 @@ async function boot(): Promise<void> {
         subtitle: cardSubtitle,
         kind: playerCaptured ? 'city' : 'enemy',
         negative: !playerCaptured,
+        turnCreated: turn,
       });
       trimWarEventLog();
       refreshD1bHud();
@@ -9696,6 +9701,7 @@ async function boot(): Promise<void> {
         title,
         subtitle,
         kind: 'enemy',
+        turnCreated: turn,
       });
       trimWarEventLog();
       refreshD1bHud();
@@ -12260,6 +12266,26 @@ async function boot(): Promise<void> {
      * C-OBCE-JEDN-Q3 A — pierwszy widoczny wróg z ★≥2: toast + wpis w WYDARZENIACH.
      * Flaga veteranEnemyEducationShown trwa w save/meta (jednorazowo na grę).
      */
+    /**
+     * R-WEB-EVENTS-ONE-TURN-LIFETIME-Q1 — JEDEN mechanizm wygasania dla wszystkich dziennikow
+     * wydarzen informacyjnych (war/era/tech/eot-hint/elim/capture/veteran, chatki, szlaki, racje,
+     * przemarsz). Karty decyzyjne (`blocking`) nie sa wpisami dziennikow — `collectTurnEvents()`
+     * buduje je z zywego stanu, wiec ten sweep ich nie dotyka. Usuniete karty zwalniaja szczegoly
+     * modali i mapy celow (brak wyciekow, brak martwych skrotow).
+     */
+    function expireInformationalEventsBeforeTurn(currentTurn: number): void {
+      const logs: SidePanelEvent[][] = [
+        warEventLog, villageEventLog, tradeRouteEventLog, rationAutoEventLog, borderMarchEventLog,
+      ];
+      for (const log of logs) {
+        for (const ev of expireEventsBeforeTurn(log, currentTurn)) {
+          for (const owner of warEventDetailOwners) {
+            if (ev.id.startsWith(owner.idPrefix)) owner.details.delete(ev.id);
+          }
+        }
+      }
+    }
+
     function pruneVeteranEnemyEducationJournal(): void {
       const idx = warEventLog.findIndex(e => e.id === VETERAN_ENEMY_EDU_EVENT_ID);
       if (idx >= 0) warEventLog.splice(idx, 1);
@@ -12283,6 +12309,7 @@ async function boot(): Promise<void> {
           title: 'Doświadczeni wojownicy',
           subtitle: veteranFirstEncounterJournalSubtitle(),
           kind: 'info',
+          turnCreated: turn,
         });
         trimWarEventLog();
         refreshD1bHud();
@@ -15882,6 +15909,7 @@ async function boot(): Promise<void> {
           title: eraChangeJournalTitle(player.era),
           subtitle: eraChangeJournalSubtitle(player.era),
           kind: 'science',
+          turnCreated: turn,
         });
         trimWarEventLog();
       }
@@ -17045,7 +17073,7 @@ async function boot(): Promise<void> {
       const cityById = new Map(cities.map(c => [c.id, c] as const));
       const pushOnce = (ev: SidePanelEvent): void => {
         if (tradeRouteEventLog.some(e => e.id === ev.id)) return;
-        tradeRouteEventLog.unshift(ev);
+        tradeRouteEventLog.unshift(stampEventTurn(ev, turn));
       };
 
       const routeSettlementForCity = (routes: readonly TradeRoute[], cityId: string): number => {
@@ -26026,7 +26054,7 @@ async function boot(): Promise<void> {
         warEventLog.length = 0;
         civElimEventDetails.clear();
         cityCaptureEventDetails.clear();
-        for (let i = evs.length - 1; i >= 0; i--) warEventLog.unshift(evs[i]!);
+        for (let i = evs.length - 1; i >= 0; i--) warEventLog.unshift(stampEventTurn(evs[i]!, turn));
         dismissedSidePanelEventIds.clear();
         refreshD1bHud();
         return warEventLog.length;
@@ -29352,6 +29380,7 @@ async function boot(): Promise<void> {
             title: 'Odkryto chatkę',
             subtitle: summary,
             kind: evKind,
+            turnCreated: turn,
           });
           if (villageEventLog.length > 6) villageEventLog.length = 6;
           refreshD1bHud();
@@ -35285,6 +35314,10 @@ async function boot(): Promise<void> {
         borderMarchEventTargets.clear();
         tradeRouteEventPlayerCityIds.clear(); // N2: ten sam reset, ta sama zasada co borderMarchEventTargets
         pruneVeteranEnemyEducationJournal();
+        // R-WEB-EVENTS-ONE-TURN-LIFETIME-Q1: wydarzenie informacyjne zyje jedna ture — wszystko, co
+        // powstalo przed `turn` (nieprzeczytane i nieusuniete), znika i nie wraca. Wpisy tej nowej tury
+        // (np. odroczone z faz AI, dopisywane nizej w sekwencji EOT) maja turnCreated === turn i zostaja.
+        expireInformationalEventsBeforeTurn(turn);
         dismissedSidePanelEventIds.clear();
 
         // M: rotacyjny autozapis co N tur (domyślnie co turę) — 10 ostatnich wstecz.
@@ -36120,6 +36153,7 @@ async function boot(): Promise<void> {
                     subtitle: '\u2212' + done.koszt + ' nauki'
                       + (done.pieniadz ? ' \xb7 Pieni\u0105dz \xd710' : ''),
                     kind: 'science',
+                    turnCreated: turn,
                   });
                   trimWarEventLog();
                 }
@@ -40371,7 +40405,7 @@ async function boot(): Promise<void> {
         wakeSentryUnitsOnEnemyContact();
         if (pendingAutoRationForNextTurn?.adjusted) {
           rationAutoEventLog.unshift(
-            buildAutoRationSidePanelEvent(pendingAutoRationForNextTurn, turn),
+            stampEventTurn(buildAutoRationSidePanelEvent(pendingAutoRationForNextTurn, turn), turn),
           );
           if (rationAutoEventLog.length > 4) rationAutoEventLog.length = 4;
           pendingAutoRationForNextTurn = null;
@@ -40379,7 +40413,7 @@ async function boot(): Promise<void> {
         if (deferredEotHints.length > 0) {
           const hintEvents = deferredHintsToSidePanelEvents(deferredEotHints, turn);
           for (let hi = hintEvents.length - 1; hi >= 0; hi--) {
-            warEventLog.unshift(hintEvents[hi]!);
+            warEventLog.unshift(stampEventTurn(hintEvents[hi]!, turn));
           }
           trimWarEventLog();
           deferredEotHints.length = 0;
