@@ -7,8 +7,8 @@ GOAL: REPIN-3D partia A2 — palisada jako forma muru (`SiegeWallOpts.kind`, `bu
 (`buildWallTower`, `_placeSiegeTowers`, nowy `battle::siege_towers`) z aktualnego weba (`origin/main` @ `5fa0c1a84`)
 do `rust-port/renderer/src/battle/`, bit w bit, z wektorami z uruchomionego weba; `mur` bez zmian.
 
-ZMIANY-COMMIT: gałąź `op/R-RUSTPORT-REPIN-3D-A2-Q1` z bazy `origin/rust-port/parity-v2` @ `776bede11`; commit: patrz
-`git log` gałęzi (SHA podany w raporcie końcowym Operatora; ten plik jest częścią tego commitu).
+ZMIANY-COMMIT: gałąź `op/R-RUSTPORT-REPIN-3D-A2-Q1` z bazy `origin/rust-port/parity-v2` @ `776bede11`; commit kodu/wektorów
+**`026d5b45d`** (+ commit tego raportu z SHA, bezpośrednio po nim).
 Pliki (allowlista): `src/battle/{siege_wall.rs, siege_towers.rs (nowy), units.rs, mod.rs}`,
 `tests/repin3d_a2.rs` (nowy), `tests/repin3d_common/mod.rs` (kanoniczny NaN w `geo_hash` testu + parametry łuku Sumer),
 `tests/repin3d_fixtures/{a2.json, gen_a2.ts, mutate_a2.py, a2_web_inputs.txt, README.md, MANIFEST.sha256}`,
