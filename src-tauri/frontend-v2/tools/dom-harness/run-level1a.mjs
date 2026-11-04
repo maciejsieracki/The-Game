@@ -518,6 +518,13 @@ try {
     const P = pin['ui/' + M];
     const V = v2['ui/' + M];
     const TE = pin['game/turn-economy.ts'];
+    // R-RUSTPORT-REPIN-UI-2-B-Q1: na nakładce `repin-ui2-overlay` odniesieniem jest web `86d510c66`, który liczy Milicję
+    // przez podpinany estymator (`setSiegePanelMilitiaEstimator`, producent w `main.ts`). Podpinamy TEN SAM wzór, który
+    // „Rust” wpisuje niżej do `SiegePanelDto.milicjaEst` — obie strony dostają tę samą liczbę. Na czystym pinie funkcji
+    // nie ma (gałąź pominięta, zachowanie harnessu bez zmian).
+    if (typeof P.setSiegePanelMilitiaEstimator === 'function') {
+      P.setSiegePanelMilitiaEstimator((city) => ((city.garnizon ?? 0) <= 0 ? 0 : Math.max(1, Math.floor((city.population ?? 0) * 0.2))));
+    }
     // „Rust”: SiegePanelDto. `food` = pin getCityFood; pozostałe = wzory pina `siegeMapPanel.ts:218-224`.
     const panel = (ctx) => {
       const city = ctx.city;

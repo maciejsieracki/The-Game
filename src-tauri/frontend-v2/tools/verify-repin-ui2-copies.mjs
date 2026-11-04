@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * verify-repin-ui2-copies.mjs — bramka KOPII BAJTOWYCH partii REPIN UI-2 (R-RUSTPORT-REPIN-UI-2-A-Q1).
+ * verify-repin-ui2-copies.mjs — bramka KOPII BAJTOWYCH partii REPIN UI-2 (R-RUSTPORT-REPIN-UI-2-A-Q1; UI-2-B: +3 kopie
+ * i `portDomRefs` — sha256 źródła weba plików portu DOM używanych przez nakładkę, patrz niżej).
  *
  * Pliki z `tools/repin-ui2-manifest.json` zostały skopiowane BAJT W BAJT z aktualnego weba (`origin/main`,
  * SHA w polu `pin` manifestu), a nie z pinu `edb8fb56` (`pin-manifest.json`). Plik nie może występować
@@ -80,5 +81,35 @@ for (const f of manifest.files) {
     if (Buffer.compare(ref, buf) !== 0) fail(`GIT ${f.path} różni się od ${f.pin}`);
   }
 }
-console.log(`verify-repin-ui2-copies: pin=${manifest.pin} plików=${manifest.files.length} źródło_sprawdzone=${gitChecked} niezgodnych=${bad}`);
+// R-RUSTPORT-REPIN-UI-2-B-Q1: `portDomRefs` = wersje weba plików portu DOM (odniesienie nakładki dla starszych harnessów).
+// Plik portu NIE jest kopią (DTO), więc sprawdzamy: REF sha256/rozmiar źródła weba = wpis, DISJ z pin-manifest.json,
+// rozłączność z `files` oraz istnienie pliku portu.
+const refs = manifest.portDomRefs ?? [];
+const filePaths = new Set(manifest.files.map((f) => f.path));
+let refChecked = 0;
+for (const f of refs) {
+  if (!existsSync(join(ROOT, f.path))) fail(`BRAK portu ${f.path}`);
+  if (pinPaths.has(f.path)) fail(`DISJ ${f.path} (portDomRefs) występuje w pin-manifest.json`);
+  if (filePaths.has(f.path)) fail(`DISJ ${f.path} jednocześnie w files i portDomRefs`);
+  const obj = f.pin.slice(0, f.pin.indexOf(':'));
+  const srcPath = f.pin.slice(f.pin.indexOf(':') + 1);
+  if (obj !== manifest.pin) fail(`PIN ${f.path} (portDomRefs) wpis ${obj} != manifest ${manifest.pin}`);
+  let ref = null;
+  if (webDir) {
+    const p = join(webDir, srcPath);
+    if (!existsSync(p)) fail(`WEB brak ${p}`);
+    else ref = readFileSync(p);
+  } else if (!noGit) {
+    try {
+      ref = execFileSync('git', ['show', f.pin], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024 });
+    } catch {
+      console.error(`GIT NIE_ZMIERZONO ${f.pin} (portDomRefs)`);
+    }
+  }
+  if (ref) {
+    refChecked++;
+    if (sha256(ref) !== f.sha256 || ref.length !== f.bytes) fail(`REF ${f.pin} sha256/rozmiar != wpis portDomRefs`);
+  }
+}
+console.log(`verify-repin-ui2-copies: pin=${manifest.pin} plików=${manifest.files.length} źródło_sprawdzone=${gitChecked} portDomRefs=${refs.length} ref_sprawdzone=${refChecked} niezgodnych=${bad}`);
 process.exitCode = bad === 0 ? 0 : 1;

@@ -219,6 +219,9 @@ function render(): void {
   if (!root || !activeCtx || !activePanel || !actions) return;
   const { city, atakujacy } = activeCtx;
   const { food, garnizon, zuzycie, atrycjaNext, milicjaEst, playerCanStorm } = activePanel;
+  // REPIN UI-2-B (web `86d510c66` `:221+4`, `4c8f4a2e7`): okres odnowy po zniszczeniu Milicji — liczba tur z DTO
+  // (`SiegePanelDto.milicjaRegen`, producent Rust = P6; brak pola = 0 jak web bez podpiętego `militiaRegenLeft`).
+  const milicjaRegen = Math.max(0, activePanel.milicjaRegen ?? 0);
   const sm: SiegeMachinesState | undefined = activePanel.machines;
   const qLabel = sm?.queue?.length
     ? sm.queue.map(k => (k === 'taran' ? 'Taran' : 'Wieża')).join(', ')
@@ -264,7 +267,10 @@ function render(): void {
         '<div>Oblegających: <b>' + besiegerUnitCount + '</b></div>' +
         '<div>Atrycja: <b>−' + atrycjaNext + '</b>/turę</div>' +
         (milicjaEst > 0
-          ? '<div class="full">Milicja przy szturmie: ~<b>' + milicjaEst + '</b></div>'
+          ? '<div class="full">Milicja przy szturmie: <b>' + milicjaEst + '</b></div>'
+          : milicjaRegen > 0
+            ? '<div class="full">Milicja odnawia się: za <b>' + milicjaRegen + '</b> '
+              + (milicjaRegen === 1 ? 'turę' : (milicjaRegen % 10 >= 2 && milicjaRegen % 10 <= 4 && (milicjaRegen % 100 < 12 || milicjaRegen % 100 > 14)) ? 'tury' : 'tur') + '</div>'
           : '') +
       '</div>' +
       (city.siegeCapitulationPending

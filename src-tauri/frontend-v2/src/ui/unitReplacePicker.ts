@@ -29,6 +29,14 @@ export interface UnitReplaceOption {
    * — liczy Rust (jak `affordable` w `unitRecruitCard.ts`, P5.3).
    */
   affordable: boolean;
+  /**
+   * R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): przyczyna niedostępności z powodu braku
+   * zapasu surowca (np. „Brak w magazynie państwa: Drewno”). Ustawiona → pozycja wyszarzona,
+   * nie do wyboru, z tą przyczyną jako tooltip i tekst. Brak = dostępna (dopłata ograniczona
+   * tylko skarbcem, jak dotąd).
+   * REPIN UI-2-B (web `86d510c66` `:27+7`): pole jak w webie; tekst przyczyny podaje Rust (producent: P6).
+   */
+  blockedReason?: string;
 }
 
 export interface UnitReplacePickerOptions {
@@ -157,7 +165,8 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
   }
 
   for (const o of opts.options) {
-    const affordable = o.affordable;
+    // REPIN UI-2-B (web `86d510c66` `:162`: `opts.skarb >= o.surcharge && !o.blockedReason`).
+    const affordable = o.affordable && !o.blockedReason;
     const item = document.createElement('div');
     item.className = 'civ-urp-item' + (affordable ? '' : ' disabled');
     item.setAttribute('role', 'button');
@@ -183,7 +192,16 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
     const cost = document.createElement('div');
     cost.className = 'civ-urp-cost' + (o.surcharge === 0 ? ' free' : affordable ? '' : ' short');
     cost.innerHTML = o.surcharge === 0 ? 'bez dopłaty' : `${o.surcharge} 💰`;
-    if (!affordable) cost.title = `Za mało Pieniądza (${opts.skarb}/${o.surcharge})`;
+    if (o.blockedReason) {
+      cost.title = o.blockedReason;
+      item.title = o.blockedReason;
+      const why = document.createElement('div');
+      why.className = 'civ-urp-stats';
+      why.textContent = o.blockedReason;
+      body.appendChild(why);
+    } else if (!affordable) {
+      cost.title = `Za mało Pieniądza (${opts.skarb}/${o.surcharge})`;
+    }
     item.appendChild(cost);
 
     const pick = (): void => {

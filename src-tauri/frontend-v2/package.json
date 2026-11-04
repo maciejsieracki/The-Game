@@ -25,7 +25,9 @@
     "harness:cityux": "node tools/dom-harness/run-cityux.mjs",
     "harness:cityux:mutate": "node tools/dom-harness/mutate-cityux.mjs",
     "harness:repin-ui2a": "node tools/dom-harness/run-repin-ui2a.mjs",
-    "harness:repin-ui2a:mutate": "node tools/dom-harness/mutate-repin-ui2a.mjs"
+    "harness:repin-ui2a:mutate": "node tools/dom-harness/mutate-repin-ui2a.mjs",
+    "harness:repin-ui2b": "node tools/dom-harness/run-repin-ui2b.mjs",
+    "harness:repin-ui2b:mutate": "node tools/dom-harness/mutate-repin-ui2b.mjs"
   },
   "devDependencies": {
     "esbuild": "0.21.5",
