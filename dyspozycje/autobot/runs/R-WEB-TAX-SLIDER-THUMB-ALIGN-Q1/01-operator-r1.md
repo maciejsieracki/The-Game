@@ -3,7 +3,7 @@ DOMAIN: GAME (WEB)
 TEMAT: R-WEB-TAX-SLIDER-THUMB-ALIGN-Q1
 GOAL: Na suwakach „Domyślny podział podatku" (Skarb/Nauka/Zamożność) kropka stoi na końcu kolorowego wypełnienia, nie na szarej części.
 
-ZMIANY/COMMIT: SHA w sekcji „COMMIT" na dole (commit zawiera ten raport).
+ZMIANY/COMMIT: 7c7a882cb (kod, test, zrzuty, raport; baza origin/main c4a541a27). Kolejny commit tylko dopisuje ten SHA.
 - `gra/src/ui/empireDetailPanel.ts` — jedyna zmiana kodu produkcyjnego.
 - `gra/tools/tax-slider-thumb-align-real-render-test.cjs` — NOWY test (Chromium).
 - `dyspozycje/autobot/runs/R-WEB-TAX-SLIDER-THUMB-ALIGN-Q1/` — raport, zrzuty (30 KB każdy), gate-*.txt.
