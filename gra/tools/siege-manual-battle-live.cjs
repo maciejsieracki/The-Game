@@ -36,7 +36,7 @@ window.__H = {
     if (n.includes('siege tower')) return 'tower';
     if (n.includes('catapult')) return 'cata';
     if (u.mounted) return 'cav';
-    if (u.rangedBase) return 'arch';
+    if (u.primaryRanged) return 'arch';
     return 'inf';
   },
   // Strefa ostrzalu obroncow: [{q,r,range}] -- lucznicy (zasieg x2 na koronie) + wiezyczki muru.
@@ -89,7 +89,7 @@ async function runScenario(browser, sc) {
   await page.evaluate(() => {
     const bs = window.__lastBattleScene; bs._endDeployPhase(); bs.speedMul = 16;
     // Szybki przebieg (bez zmiany logiki): render wylaczony, klatki co ~2 ms; zegar wirtualny liczy speedMul.
-    if (!window.sc_shots) { try { bs.renderer.render = () => {}; } catch (e) { /* brak renderera */ } }
+    try { window.__origRender = bs.renderer.render.bind(bs.renderer); bs.renderer.render = () => {}; } catch (e) { /* brak renderera */ }
     window.requestAnimationFrame = (cb) => setTimeout(() => cb(performance.now()), 2);
   });
   await page.waitForTimeout(300);
@@ -105,6 +105,7 @@ async function runScenario(browser, sc) {
       u.q = c; u.r = r; bs.occByKey.set(c + ',' + r, u);
       const w = bs.constructor.prototype; // brak API -- pozycja 3D ustawiana nizej
     };
+    if (sc.pre) { (new Function('bs', sc.pre))(bs); }
     const out = { gate: [bs.siegeGateCol, bs.siegeGateRow], wallCol, mid, kinds: {} };
     for (const u of bs.atk) out.kinds[H.kind(u)] = (out.kinds[H.kind(u)] || 0) + 1;
     // Rozkazy: kinds -> { type: 'attackMove'|'attack'|'none'|'move', target }
@@ -150,6 +151,7 @@ async function runScenario(browser, sc) {
     fs.mkdirSync(shotsDir, { recursive: true });
     await page.evaluate((cam) => {
       const bs = window.__lastBattleScene;
+      try { bs.renderer.render = window.__origRender; } catch (e) { /* brak renderera */ }
       bs.camTarget.set(cam.x, 0, cam.z);
       const cv = bs.renderer && bs.renderer.domElement;
       if (bs.overlay && cv) for (const el of Array.from(bs.overlay.children)) { if (el === cv || el.contains(cv)) continue; el.style.display = 'none'; }
@@ -157,8 +159,8 @@ async function runScenario(browser, sc) {
       bs.camDistTarget = cam.dist; bs.camDist = cam.dist; bs._applyCamera();
     }, sc.shot);
     await page.waitForTimeout(900);
-    const f = path.join(shotsDir, `${sc.name}.png`);
-    await page.screenshot({ path: f });
+    const f = path.join(shotsDir, `${sc.name}.jpg`);
+    await page.screenshot({ path: f, type: "jpeg", quality: 55 });
     shots.push(f);
   }
   await page.close();
@@ -173,12 +175,12 @@ const SC = [];
 for (const fort of ['mury', 'palisada']) {
   // A1: tarany ida do bramy (rozne rozkazy gracza).
   for (const ord of ['none', 'attackMove', 'attack']) {
-    SC.push({ name: `A1-ram-gate-${fort}-${ord}`, fort, rams: 2, towers: 0, rounds: 14, orders: [[['ram'], ord]],
+    SC.push({ name: `A1-ram-gate-${fort}-${ord}`, fort, rams: 2, towers: 0, rounds: 30, orders: [[['ram'], ord]],
       check: 'ramGate', shot: ord === 'attackMove' ? { x: 38, z: 77, dist: 24 } : undefined });
   }
   // A2: wieza dociera pod mur; piechota wchodzi na mur.
   for (const ord of ['none', 'attackMove']) {
-    SC.push({ name: `A2-tower-climb-${fort}-${ord}`, fort, rams: 0, towers: 2, rounds: 22,
+    SC.push({ name: `A2-tower-climb-${fort}-${ord}`, fort, rams: 0, towers: 2, rounds: 36,
       orders: [[['tower'], ord], [INF, ord]], check: 'towerClimb', shot: ord === 'attackMove' ? { x: 38, z: 77, dist: 24 } : undefined });
   }
   // B1: szarza piechoty bez machin -- poza zasiegiem ostrzalu.
@@ -196,6 +198,9 @@ for (const fort of ['mury', 'palisada']) {
   SC.push({ name: `B3-mixed-ram-army-${fort}`, fort, rams: 2, towers: 0, rounds: 16,
     orders: [[['ram'], 'attackMove'], [INF, 'attackMove'], [CAV, 'attackMove']], check: 'mixedBeforeBreach' });
 }
+// C1: po wylomie bramy (HP bramy obnizone na starcie) wrecz i konnica WCHODZA do miasta -- brak zakleszczenia.
+SC.push({ name: 'C1-after-gate-breach-army-enters-mury', fort: 'mury', rams: 2, towers: 0, rounds: 30,
+  pre: 'bs.gateHp = 30;', orders: [[['ram'], 'attackMove'], [INF, 'attackMove'], [CAV, 'attackMove']], check: 'entersAfterBreach' });
 
 function checkScenario(sc, r) {
   const checks = [];
@@ -213,14 +218,20 @@ function checkScenario(sc, r) {
     add(last.gateHp < 400 || last.gateOpen, `brama uszkodzona (gateHp=${last.gateHp}, open=${last.gateOpen})`);
     // Nie wedruje po bokach muru: zaden taran nie schodzi dalej niz 6 rzedow od bramy w osi pionowej.
     let maxOff = 0;
-    for (const s of snaps) for (const u of rams(s)) maxOff = Math.max(maxOff, Math.abs(u.r - gate[1]) - 0);
+    for (const s of snaps) for (const u of rams(s)) if (u.q >= wallCol - 3) maxOff = Math.max(maxOff, Math.abs(u.r - gate[1]));
     const startOff = Math.max(...rams(snaps[0]).map(u => Math.abs(u.r - gate[1])));
-    add(maxOff <= Math.max(startOff, 3) + 1, `taran nie bladzi po bokach (max |dRzad|=${maxOff}, start=${startOff})`);
+    add(maxOff <= 2, `taran przy murze nie bladzi po bokach (max |dRzad| przy murze=${maxOff}, wymagane <= 2)`);
   } else if (sc.check === 'towerClimb') {
     add(last.towersAtWall.length > 0, `wieza pod murem (towersAtWall=${JSON.stringify(last.towersAtWall)})`);
     const onWall = last.units.filter(u => u.wall && u.k === 'inf').length;
     add(onWall > 0, `piechota weszla na mur (na koronie: ${onWall})`);
     add(last.breached, 'wylom zarejestrowany (wallEverBreached)');
+  } else if (sc.check === 'entersAfterBreach') {
+    add(last.gateOpen, `brama rozbita (gateOpen=${last.gateOpen})`);
+    const inside = (k) => last.units.filter(u => u.k === k && (u.q >= wallCol)).length;
+    const infMin = Math.min(...last.units.filter(u => u.k === 'inf').map(u => u.slack));
+    add(inside('inf') > 0 || infMin <= 0, `piechota po wylomie wchodzi w strefe/za mur (za murem: ${inside('inf')}, min luz=${infMin})`);
+    add(inside('cav') > 0, `konnica weszla przez brame (za murem: ${inside('cav')})`);
   } else if (sc.check === 'staysOutOfFire' || sc.check === 'mixedBeforeBreach') {
     const watch = sc.check === 'staysOutOfFire' ? null : null;
     let violations = 0; let minSlack = Infinity; let hpLost = 0;
@@ -243,6 +254,9 @@ function checkScenario(sc, r) {
     // Podejscie: zblizyl sie do muru (luz maly, ale > 0) -- nie stoi bez ruchu na starcie.
     const moved = melee1.some(u => { const a = melee0.find(x => x.id === u.id); return a && (a.q !== u.q || a.r !== u.r); });
     add(moved, 'wrecz podszedl (ruch wykonany)');
+    // Podejscie "jak najblizej": czesc wrecz konczy w odleglosci <= 6 od granicy zasiegu ostrzalu.
+    const minSl = Math.min(...melee1.map(u => u.slack));
+    add(minSl <= 6, `wrecz podszedl blisko granicy zasiegu (min luz = ${minSl}, wymagane <= 6)`);
     if (sc.check === 'mixedBeforeBreach') {
       const rams = last.units.filter(u => u.k === 'ram');
       add(last.gateHp < 400 || last.gateOpen, `tarany uderzaja w brame (gateHp=${last.gateHp})`);
@@ -258,7 +272,7 @@ function checkScenario(sc, r) {
   });
   const results = [];
   for (const sc of SC) {
-    if (only && !sc.name.includes(only)) continue;
+    if (only && !new RegExp(only).test(sc.name)) continue;
     let res;
     try {
       const r = await runScenario(browser, sc);
@@ -266,6 +280,7 @@ function checkScenario(sc, r) {
       const last = r.snaps[r.snaps.length - 1];
       res = {
         name: sc.name, pass: checks.every(c => c.ok), checks, shots: r.shots,
+        trace: process.env.TRACE ? r.snaps.map(s => ({ round: s.round, gateHp: s.gateHp, towers: s.towersAtWall, u: s.units.filter(u => u.k !== 'arch' && u.k !== 'cata').map(u => u.k + ':' + u.q + ',' + u.r + (u.wall ? 'W' : '') + ':hp' + u.hp) })) : undefined,
         metrics: { rounds: last.round, gateHp: last.gateHp, gateOpen: last.gateOpen, breached: last.breached, towersAtWall: last.towersAtWall,
           units: last.units.filter(u => u.k !== 'arch').map(u => `${u.k}:${u.q},${u.r}${u.wall ? 'W' : ''}:s${u.slack}`).slice(0, 40), errors: r.errors.slice(0, 2) },
       };

@@ -2406,6 +2406,8 @@ export class BattleScene {
   private gateHp: number = 0;
   /** Whether the gate has been breached (HP <= 0). */
   private gateOpen: boolean = false;
+  /** Liczba kafli muru przy starcie (wallTileHp.size) -- mniej = wyburzony kafel = wylom dla konnicy. */
+  private siegeWallTilesInit: number = 0;
   /** Row range of the wall on the battlefield (inclusive). */
   private siegeWallRowLo: number = -1;
   private siegeWallRowHi: number = -1;
@@ -3949,6 +3951,7 @@ export class BattleScene {
       if (r >= gateRowLo && r <= gateRowHi) continue;
       this.wallTileHp.set(r, BattleScene.WALL_TILE_HP);
     }
+    this.siegeWallTilesInit = this.wallTileHp.size;
 
     const idx = (c: number, r: number) => r * BF_COLS + c;
     for (let r = rLo; r <= rHi; r++) {
@@ -6038,49 +6041,10 @@ export class BattleScene {
     // SIEGE v2 -- SIEGE TOWER: rejestracja w towerAtWallRows odbywa sie
     // w bloku isSiegeUnit powyzej; tutaj juz nie powielamy.
 
-    // SIEGE v2 -- CLIMB via SIEGE TOWER: attacking infantry adjacent to a siege
-    // tower that is at the wall base can step onto the wall walkway.
-    if (!ru.onWallWalkway && ru.side === 'atk' && this.siegeWallCol >= 0 &&
-        !isSiegeUnit(ru.bu) && !ru.mounted) {
-      const wallBase = this.siegeWallCol - 1;
-      // Is the unit adjacent to a tower at the wall?
-      let canClimb = false;
-      if (this.towerAtWallRows.size > 0) {
-        for (const [dc, dr] of DIRS4) {
-          const nc = ru.q + dc;
-          const nr = ru.r + dr;
-          if (nc === wallBase && this.towerAtWallRows.has(nr)) {
-            canClimb = true; break;
-          }
-        }
-      }
-      if (canClimb) {
-        // Check that the walkway tile at (wallCol, ru.r) is free.
-        const wallCol = this.siegeWallCol;
-        const wallRow = ru.r; // same row as the unit
-        const wallKey = cellKey(wallCol, wallRow);
-        if (!this.occByKey.has(wallKey)) {
-          // Climb: move onto walkway. Costs all movement.
-          this.occByKey.delete(cellKey(ru.q, ru.r));
-          ru.q = wallCol;
-          ru.r = wallRow;
-          ru.onWallWalkway = true;
-          // R5 (R-WEB-SIEGE-TOWER-BREACH-EVERYWHERE-Q1): wejscie wieza na korone = wylom.
-          if (attackerWallEntryIsBreach(ru.side, ru.onWallWalkway) && !this.wallEverBreached) {
-            this.wallEverBreached = true;
-            this.log.push('=== WYLOM: atakujacy weszli na mur po wiezy oblezniczej -- miasto moze zostac zdobyte ===');
-          }
-          this.occByKey.set(wallKey, ru);
-          const { x, z } = cellToWorld(wallCol, wallRow);
-          const walkY = 2.5; // wall walk height
-          ru.group.position.set(x, walkY, z);
-          ru.hpBarGroup.position.set(x, walkY + HPBAR_Y, z);
-          ru.moveLeft = 0;
-          done();
-          return;
-        }
-      }
-    }
+    // SIEGE v2 -- CLIMB via SIEGE TOWER (R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1: wspolny helper
+    // z trybem RECZNYM) + marsz piechoty pod wieze, gdy ta stoi przy murze.
+    if (this._trySiegeTowerClimb(ru, done)) return;
+    if (this._siegeInfantryToTowerStep(ru, done)) return;
 
     // SIEGE MACHINES: ruch i atak.
     // Taran (battering ram): atakuje TYLKO bramę z dystansu 1.
@@ -6091,15 +6055,8 @@ export class BattleScene {
       const isRam  = this._isRam(ru.bu);
       const isCata = this._isCatapult(ru.bu);
       const isTower = isSiegeTower(ru.bu);
-      if (isRam && !this.gateOpen) {
-        // TARAN: jedzie do bramy i uderza gdy dystans 1
-        const distToGate = manhattan(ru.q, ru.r, this.siegeGateCol, this.siegeGateRow);
-        if (distToGate <= 1) {
-          this._attackGate(ru, done);
-          return;
-        }
-        this._advanceToward(ru, this.siegeGateCol, this.siegeGateRow, done);
-        return;
+      if ((isRam && !this.gateOpen) || isTower) {
+        if (this._siegeRamTowerStep(ru, done)) return;
       }
       if (isCata && this.wallTileHp.size > 0) {
         // KATAPULTA: strzela w NAJBLIŻSZY żywy kafel muru z zasięgu.
@@ -6126,16 +6083,6 @@ export class BattleScene {
           return;
         }
         // Wszystkie kafle muru wyburzone — atakuj piechurów wroga
-      }
-      if (isTower) {
-        // Wieża: jedzie pod mur (siegeWallCol-1); rejestracja w towerAtWallRows obsługiwana wyżej
-        const wallBase = this.siegeWallCol - 1;
-        if (ru.q >= wallBase) {
-          this.towerAtWallRows.add(ru.r);
-          done(); return; // stoi przy murze
-        }
-        this._advanceToward(ru, wallBase, ru.r, done);
-        return;
       }
     }
 
@@ -7835,6 +7782,226 @@ export class BattleScene {
     this._doMove(ru, nc, nr, done);
   }
 
+  // -------------------------------------------------------------------------
+  // R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1 -- oblezenie: tarany -> brama, wieza -> mur,
+  // szarza/atakuj-marszem POZA zasiegiem ostrzalu dopoki nie ma wylomu.
+  // -------------------------------------------------------------------------
+
+  /** Zrodla ostrzalu obroncow: jednostki dystansowe z amunicja (zasieg z korony x2) + wiezyczki muru. */
+  private _siegeShooterThreats(): Array<{ q: number; r: number; range: number }> {
+    const out: Array<{ q: number; r: number; range: number }> = [];
+    for (const d of this.def) {
+      if (d.dead || d.fadingOut || d.removed || d.routed) continue;
+      if (!canShoot(d) || d.rangeBase <= 0) continue;
+      this._applyTerrainRange(d);
+      if (d.range >= 1) out.push({ q: d.q, r: d.r, range: d.range });
+    }
+    for (const t of this.siegeTowers) {
+      if (t.destroyed) continue;
+      out.push({ q: this.siegeWallCol, r: t.row, range: this.towerRange });
+    }
+    return out;
+  }
+
+  private static _threatSlack(threats: ReadonlyArray<{ q: number; r: number; range: number }>, col: number, row: number): number {
+    let m = Infinity;
+    for (const t of threats) m = Math.min(m, Math.abs(col - t.q) + Math.abs(row - t.r) - t.range);
+    return m;
+  }
+
+  /**
+   * Czy jednostka atakujacego jest ZWIAZANA zakazem wejscia w zasieg ostrzalu obroncow:
+   * wrecz/konnica (nie machiny, nie strzelcy z amunicja) dopoki mur/palisada stoi.
+   * Piechota: zwolniona gdy jest wylom (brama/kafel/wieza przy murze). Konnica i rydwany:
+   * wchodza TYLKO przez wylom bramy/muru (sama wieza ich nie zwalnia).
+   */
+  private _siegeApproachRestricted(ru: RuntimeBattleUnit): boolean {
+    if (!(this.siegeWallCol >= 0) || ru.side !== 'atk') return false;
+    if (ru.routed || ru.onWallWalkway || isSiegeUnit(ru.bu)) return false;
+    if (ru.primaryRanged && canShoot(ru) && ru.shootingEnabled !== false) return false; // strzelec (luk/proca) -- nie wrecz
+    if (ru.mounted) {
+      const tileBreached = this.siegeWallTilesInit > 0 && this.wallTileHp.size < this.siegeWallTilesInit;
+      return !(this.gateOpen || tileBreached);
+    }
+    return !(this.wallEverBreached || this.towerAtWallRows.size > 0);
+  }
+
+  /** Krok do (col,row) wprowadza jednostke w zasieg ostrzalu (lub poglebia pobyt w nim). */
+  private _siegeMoveRefused(ru: RuntimeBattleUnit, col: number, row: number): boolean {
+    if (!this._siegeApproachRestricted(ru)) return false;
+    const th = this._siegeShooterThreats();
+    if (th.length === 0) return false;
+    const to = BattleScene._threatSlack(th, col, row);
+    if (to > 0) return false;
+    return to < BattleScene._threatSlack(th, ru.q, ru.r);
+  }
+
+  /** BFS po wolnych, przechodnich kaflach: pierwszy krok do najblizszego kafla spelniajacego `isGoal`. */
+  private _bfsFirstStep(
+    ru: RuntimeBattleUnit,
+    isGoal: (col: number, row: number) => boolean,
+    allowTile?: (col: number, row: number) => boolean,
+    prefRow?: number,
+    maxVisited = 6000,
+  ): string | null {
+    const startKey = cellKey(ru.q, ru.r);
+    const first = new Map<string, string>();
+    const seen = new Set<string>([startKey]);
+    const frontier: Array<[number, number]> = [[ru.q, ru.r]];
+    for (let head = 0; head < frontier.length && head < maxVisited; head++) {
+      const [cc, cr] = frontier[head]!;
+      // prefRow: najpierw kroki zmniejszajace |rzad - prefRow| (trasa na bramie bez wedrowania wzdluz muru).
+      const dirs = prefRow == null ? DIRS4
+        : [...DIRS4].sort((a, b) => Math.abs(cr + a[1] - prefRow) - Math.abs(cr + b[1] - prefRow));
+      for (const [dc, dr] of dirs) {
+        const nc = cc + dc; const nr = cr + dr;
+        if (nc < 0 || nr < 0 || nc >= BF_COLS || nr >= BF_ROWS) continue;
+        const k = cellKey(nc, nr);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        if (this.occByKey.has(k) || !this._passableForUnit(ru, nc, nr)) continue;
+        if (allowTile && !allowTile(nc, nr)) continue;
+        first.set(k, cc === ru.q && cr === ru.r ? k : first.get(cellKey(cc, cr)) ?? k);
+        if (isGoal(nc, nr)) return first.get(k) ?? null;
+        frontier.push([nc, nr]);
+      }
+    }
+    return null;
+  }
+
+  /** Marsz machiny/piechoty do celu BFS-em: kroki dopoki starcza ruchu (jak _advanceStep). */
+  private _siegeWalkTo(
+    ru: RuntimeBattleUnit, isGoal: (col: number, row: number) => boolean, done: () => void,
+    allowTile?: (col: number, row: number) => boolean, prefRow?: number,
+  ): void {
+    if (this.finished || ru.dead || ru.fadingOut || ru.moveLeft <= 0) { done(); return; }
+    if (isGoal(ru.q, ru.r)) { done(); return; }
+    const key = this._bfsFirstStep(ru, isGoal, allowTile, prefRow);
+    if (!key) { done(); return; }
+    const [nc, nr] = key.split(',').map(Number) as [number, number];
+    this._doMove(ru, nc, nr, () => {
+      if (this.finished || ru.dead || isGoal(ru.q, ru.r) || ru.moveLeft <= 0) { done(); return; }
+      this._schedule(STEP_GAP_MS, () => this._siegeWalkTo(ru, isGoal, done, allowTile, prefRow));
+    });
+  }
+
+  /** Tarany i wieze oblezne atakujacego -- wspolna logika dla AUTO i RECZNEGO. true = akcja wykonana. */
+  private _siegeRamTowerStep(ru: RuntimeBattleUnit, done: () => void): boolean {
+    if (!(this.siegeWallCol >= 0) || ru.side !== 'atk' || !isSiegeUnit(ru.bu)) return false;
+    const wallCol = this.siegeWallCol;
+    if (this._isRam(ru.bu) && !this.gateOpen) {
+      const gLo = this.siegeGateRow - 1; const gHi = this.siegeGateRow;
+      const nearGate = Math.abs(ru.q - wallCol) + Math.min(Math.abs(ru.r - gLo), Math.abs(ru.r - gHi)) <= 1;
+      if (nearGate) { this._attackGate(ru, done); return true; }
+      // Tarany jada DO BRAMY (kafel przed brama), nie wzdluz muru: BFS omija wlasne jednostki.
+      const goal = (c: number, r: number) => c === wallCol - 1 && (r === gLo || r === gHi);
+      if (this._bfsFirstStep(ru, goal, undefined, this.siegeGateRow)) {
+        this._siegeWalkTo(ru, goal, done, undefined, this.siegeGateRow);
+        return true;
+      }
+      this._advanceToward(ru, this.siegeGateCol, this.siegeGateRow, done);
+      return true;
+    }
+    if (isSiegeTower(ru.bu)) {
+      const wallBase = wallCol - 1;
+      if (ru.q >= wallBase) { this.towerAtWallRows.add(ru.r); done(); return true; }
+      // Wieza staje pod murem w rzedzie, gdzie korona jest wolna (piechota ma gdzie wejsc).
+      const goal = (c: number, r: number) => c === wallBase && !this.towerAtWallRows.has(r)
+        && this.wallTileHp.has(r) && !this.occByKey.has(cellKey(wallCol, r));
+      const arrive = () => {
+        if (ru.q >= wallBase) this.towerAtWallRows.add(ru.r);
+        done();
+      };
+      if (this._bfsFirstStep(ru, goal)) { this._siegeWalkTo(ru, goal, arrive); return true; }
+      this._advanceToward(ru, wallBase, ru.r, arrive);
+      return true;
+    }
+    return false;
+  }
+
+  /** Piechota przy wiezy oblezniczej wchodzi na korone muru (wspolne dla AUTO i RECZNEGO). */
+  private _trySiegeTowerClimb(ru: RuntimeBattleUnit, done: () => void): boolean {
+    if (ru.onWallWalkway || ru.side !== 'atk' || !(this.siegeWallCol >= 0) || isSiegeUnit(ru.bu) || ru.mounted) return false;
+    if (this.towerAtWallRows.size === 0) return false;
+    const wallBase = this.siegeWallCol - 1;
+    let canClimb = false;
+    for (const [dc, dr] of DIRS4) {
+      if (ru.q + dc === wallBase && this.towerAtWallRows.has(ru.r + dr)) { canClimb = true; break; }
+    }
+    if (!canClimb) return false;
+    const wallCol = this.siegeWallCol;
+    const wallKey = cellKey(wallCol, ru.r);
+    // Korona = zywy kafel muru (nie brama, nie wyburzony), wolna od jednostek.
+    if (!this.wallTileHp.has(ru.r) || this.occByKey.has(wallKey)) return false;
+    this.occByKey.delete(cellKey(ru.q, ru.r));
+    ru.q = wallCol;
+    ru.onWallWalkway = true;
+    if (attackerWallEntryIsBreach(ru.side, ru.onWallWalkway) && !this.wallEverBreached) {
+      this.wallEverBreached = true;
+      this.log.push('=== WYLOM: atakujacy weszli na mur po wiezy oblezniczej -- miasto moze zostac zdobyte ===');
+    }
+    this.occByKey.set(wallKey, ru);
+    const { x, z } = cellToWorld(wallCol, ru.r);
+    const walkY = 2.5; // wall walk height
+    ru.group.position.set(x, walkY, z);
+    ru.hpBarGroup.position.set(x, walkY + HPBAR_Y, z);
+    ru.moveLeft = 0;
+    done();
+    return true;
+  }
+
+  /** Piechota idzie pod wieze oblezna (kafel przy wiezy z wolna korona nad nim). true = obsluzone. */
+  private _siegeInfantryToTowerStep(ru: RuntimeBattleUnit, done: () => void): boolean {
+    if (!(this.siegeWallCol >= 0) || ru.side !== 'atk' || ru.onWallWalkway || ru.mounted || isSiegeUnit(ru.bu)) return false;
+    if (this.towerAtWallRows.size === 0) return false;
+    if (ru.primaryRanged && canShoot(ru) && ru.shootingEnabled !== false) return false;
+    const wallCol = this.siegeWallCol; const wallBase = wallCol - 1;
+    const rows = this.towerAtWallRows;
+    const crownFree = (r: number) => this.wallTileHp.has(r) && !this.occByKey.has(cellKey(wallCol, r));
+    const goal = (c: number, r: number) =>
+      ((c === wallBase - 1 && rows.has(r)) || (c === wallBase && !rows.has(r) && (rows.has(r - 1) || rows.has(r + 1))))
+      && crownFree(r);
+    if (goal(ru.q, ru.r)) { done(); return true; } // przy wiezy -- czeka na wolna korone
+    if (!this._bfsFirstStep(ru, goal)) return false;
+    this._siegeWalkTo(ru, goal, done);
+    return true;
+  }
+
+  /**
+   * Podejscie jednostki wrecz do (tc,tr) bez wejscia w zasieg ostrzalu: najblizszy (Manhattan do celu)
+   * osiagalny kafel o luzie > 0. true = krok wykonany, false = nie ma lepszego kafla (stoi).
+   */
+  private _siegeSafeApproach(ru: RuntimeBattleUnit, tc: number, tr: number, done: () => void): boolean {
+    const th = this._siegeShooterThreats();
+    const safe = (c: number, r: number) => BattleScene._threatSlack(th, c, r) > 0;
+    const startKey = cellKey(ru.q, ru.r);
+    const first = new Map<string, string>();
+    const seen = new Set<string>([startKey]);
+    const frontier: Array<[number, number]> = [[ru.q, ru.r]];
+    let best: string | null = null;
+    let bestD = safe(ru.q, ru.r) ? Math.abs(ru.q - tc) + Math.abs(ru.r - tr) : Infinity;
+    for (let head = 0; head < frontier.length && head < 6000; head++) {
+      const [cc, cr] = frontier[head]!;
+      for (const [dc, dr] of DIRS4) {
+        const nc = cc + dc; const nr = cr + dr;
+        if (nc < 0 || nr < 0 || nc >= BF_COLS || nr >= BF_ROWS) continue;
+        const k = cellKey(nc, nr);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        if (this.occByKey.has(k) || !this._passableForUnit(ru, nc, nr) || !safe(nc, nr)) continue;
+        first.set(k, cc === ru.q && cr === ru.r ? k : first.get(cellKey(cc, cr)) ?? k);
+        const d = Math.abs(nc - tc) + Math.abs(nr - tr);
+        if (d < bestD) { bestD = d; best = k; }
+        frontier.push([nc, nr]);
+      }
+    }
+    if (!best) return false;
+    const goalKey = best;
+    const goal = (c: number, r: number) => cellKey(c, r) === goalKey;
+    this._siegeWalkTo(ru, goal, done, safe);
+    return true;
+  }
+
   /** Attack doctrine advances each infantry rank as a line; Charge keeps its existing free wrap. */
   private _compactAttackAllowsStep(ru: RuntimeBattleUnit, candidateCol: number): boolean {
     if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted || isSiegeUnit(ru.bu)) return true;
@@ -8344,6 +8511,14 @@ export class BattleScene {
   // -------------------------------------------------------------------------
 
   private _doMove(ru: RuntimeBattleUnit, col: number, row: number, done: () => void): void {
+    // R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1 (B): wrecz/konnica przy zamknietym murze/palisadzie
+    // NIE wchodzi w zasieg ostrzalu obroncow (szarza, atakuj-marszem, doktryna -- jeden wspolny
+    // punkt ruchu). Odmowa konczy ruch jednostki w tej turze (brak petli ponawiania kroku).
+    if (this.siegeWallCol >= 0 && this._siegeMoveRefused(ru, col, row)) {
+      ru.moveLeft = 0;
+      done();
+      return;
+    }
     if (this._autoBatchPlanning) {
       const intent = this._autoBatchPlanning.intent;
       const oldKey = cellKey(ru.q, ru.r);
@@ -17730,6 +17905,7 @@ export class BattleScene {
       done();
       return true;
     }
+    if (this._performSiegeManualOrder(ru, ord, done)) return true;
     if (ord.type === 'none') {
       if (this._isUnitDoctrineAuto(ru)) {
         const meta = this._effectiveMetaForUnit(ru);
@@ -17871,6 +18047,53 @@ export class BattleScene {
     }
     done();
     return true;
+  }
+
+  /**
+   * R-WEB-SIEGE-MANUAL-BATTLE-BEHAVIOR-Q1: rozkazy gracza w RECZNEJ bitwie oblezniczej.
+   * Tarany/wieze jada same (do bramy / pod mur), piechota wchodzi po wiezy i od razu bije,
+   * wrecz/konnica przy zamknietym murze podchodzi tylko poza zasieg ostrzalu. true = obsluzone.
+   */
+  private _performSiegeManualOrder(
+    ru: RuntimeBattleUnit, ord: RuntimeBattleUnit['playerOrder'], done: () => void,
+  ): boolean {
+    if (!(this.siegeWallCol >= 0) || ru.side !== 'atk' || ord.type === 'move') return false;
+    if (isSiegeUnit(ru.bu)) {
+      if ((this._isRam(ru.bu) && !this.gateOpen) || isSiegeTower(ru.bu)) return this._siegeRamTowerStep(ru, done);
+      return false;
+    }
+    const doctrineAuto = ord.type === 'none' && this._isUnitDoctrineAuto(ru)
+      && this._effectiveMetaForUnit(ru).doctrine !== 'manual';
+    if (ord.type === 'none' && !doctrineAuto) {
+      // Bezczynny strzelec nadal strzela do celu w zasiegu (zrodlo ognia na mur po wiezach).
+      if (canShoot(ru) && ru.shootingEnabled !== false) {
+        const tgt = this._rangedTargetInRange(ru);
+        if (tgt) { this._doAttack(ru, tgt, done); return true; }
+      }
+      return false;
+    }
+    if (ru.onWallWalkway) {
+      const adj = this._targetInRange(ru);
+      if (adj) this._doAttack(ru, adj, done); else done();
+      return true;
+    }
+    if (this._trySiegeTowerClimb(ru, done)) return true;
+    if (this._siegeInfantryToTowerStep(ru, done)) return true;
+    if ((ord.type === 'attack' || ord.type === 'attackMove') && this._siegeApproachRestricted(ru)) {
+      const adj = this._targetInRange(ru);
+      if (adj) { this._doAttack(ru, adj, done); return true; }
+      let tc = ru.q; let tr = ru.r;
+      if (ord.type === 'attackMove') { tc = ord.col; tr = ord.row; }
+      else {
+        const t = this._enemiesOf(ru).find(u => u.bu.id === ord.targetId && !u.dead && !u.fadingOut);
+        if (!t) { ru.playerOrder = { type: 'none' }; this._refreshQueuedOrderVisuals(); done(); return true; }
+        tc = t.q; tr = t.r;
+      }
+      if (ru.q === tc && ru.r === tr) { ru.playerOrder = { type: 'none' }; this._refreshQueuedOrderVisuals(); done(); return true; }
+      if (!this._siegeSafeApproach(ru, tc, tr, () => { this._refreshQueuedOrderVisuals(); done(); })) done();
+      return true;
+    }
+    return false;
   }
 
   /** Find a first free step around allied blockers for a move order. */
