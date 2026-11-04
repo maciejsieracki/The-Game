@@ -1,0 +1,30 @@
+ai-city-capture-integration-test.cjs EXIT=0 FAIL_LINES=0
+ai-siege-requires-war-test.cjs EXIT=0 FAIL_LINES=0
+barb-city-capture-cluster-test.cjs EXIT=1 FAIL_LINES=0
+     FAIL: 1d: okno zawiera wywołanie canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty) -- CAŁA koniunkcja (włącznie z bramką trudności) idzie przez funkcję z 1c, nie inline |   FAIL: 1d: okno zawiera wywołanie tryAutoCaptureEmptyCityAt(bcmd.toQ, bcmd.toR, [bu]) -- FAKTYCZNE przejęcie, nie tylko sprawdzenie formuły |   FAIL: 1f: tryAutoCaptureEmptyCityAt wołane WEWNĄTRZ `if (barbCanWalkIntoEmptyCity)`, nie bezwarunkowo
+capital-capture-test.cjs EXIT=0 FAIL_LINES=0
+capture-event-retention-test.cjs EXIT=0 FAIL_LINES=0
+capture-render-sync-test.cjs EXIT=0 FAIL_LINES=0
+city-capture-pop-loss-test.cjs EXIT=0 FAIL_LINES=0
+city-militia-no-defenders-test.cjs EXIT=0 FAIL_LINES=0
+city-militia-no-population-loss-test.cjs EXIT=0 FAIL_LINES=0
+city-militia-regen-cooldown-test.cjs EXIT=0 FAIL_LINES=0
+city-siege-wall-rules-test.cjs EXIT=0 FAIL_LINES=0
+garrison-panel-pinning-real-render-test.cjs EXIT=0 FAIL_LINES=0
+law-garrison-test.cjs EXIT=0 FAIL_LINES=0
+map-siege-test.cjs EXIT=0 FAIL_LINES=0
+militia-garrison-contract-test.cjs EXIT=0 FAIL_LINES=0
+militia-garrison-router-siege-test.cjs EXIT=0 FAIL_LINES=0
+oblezenie-remis-endsiege-test.cjs EXIT=0 FAIL_LINES=0
+oblezenie-siege-lifted-po-bitwie-test.cjs EXIT=0 FAIL_LINES=0
+oblezenie-test.cjs EXIT=0 FAIL_LINES=0
+post-capture-law-test.cjs EXIT=0 FAIL_LINES=0
+siege-ai-test.cjs EXIT=0 FAIL_LINES=0
+siege-blockade-no-recruit-reinforce-test.cjs EXIT=0 FAIL_LINES=0
+siege-defenders-test.cjs EXIT=0 FAIL_LINES=0
+siege-last-stand-sortie-test.cjs EXIT=0 FAIL_LINES=0
+siege-manual-battle-behavior-test.cjs EXIT=0 FAIL_LINES=0
+siege-surrender-enter-city-test.cjs EXIT=0 FAIL_LINES=0
+siege-tower-breach-everywhere-test.cjs EXIT=null FAIL_LINES=0
+   PASS: C3 scena: wynik bitwy niesie wallBreached (main.ts uzywa go zamiast autoStormBreach) | PASS: C4 scena: wspiecie wieza wola attackerWallEntryIsBreach i ustawia wallEverBreached | PASS: C5 skip(): "Pomin" z maszyna (takze wieza) w skladzie = wylom (bez zmian)
+EXIT=0

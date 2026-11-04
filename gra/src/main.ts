@@ -156,6 +156,7 @@ import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } fro
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
 import { installCivTestHooks, isCivTestEnabled } from './game/civ-test-hooks';
 import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit } from './units/setup';
+import { enterCityAfterSurrender } from './game/siege-enter-city';
 import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';
 import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
@@ -16354,6 +16355,12 @@ async function boot(): Promise<void> {
         for (let i = units.length - 1; i >= 0; i--) {
           const u = units[i]!;
           if (u.q === city.q && u.r === city.r && u.ownerId === oldOwner) units.splice(i, 1);
+        }
+        // R-WEB-SIEGE-SURRENDER-ENTER-CITY-Q1: oblegająca armia wchodzi do poddanego miasta
+        // (PO zmianie właściciela i usunięciu obrońców, PRZED endMapSiege -- ten kasuje oblegaCityId).
+        const surrenderEntered = enterCityAfterSurrender(units, city, newOwner, { isCivilian: isCivilianUnit });
+        if (surrenderEntered.length > 0 && selectedId !== null && surrenderEntered.some(u => u.id === selectedId)) {
+          unitRenderer.setSelectionHex(city.q, city.r, newOwner);
         }
         syncCityGarnizon(city);
         // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 2/6):
