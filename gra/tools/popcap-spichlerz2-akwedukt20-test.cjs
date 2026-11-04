@@ -37,6 +37,7 @@ for (const diff of ['easy', 'normal', 'hard']) {
 const pn = loadEconParams(raw, 'normal');
 assert(pn.spichlerzIIProgLudnosci === 12 && pn.spichlerzProgLudnosci === 8 && pn.akweduktMaxLudnosci === 20,
   'JSON -> EconParams: 12 / 8 / 20');
+assert(cityPopulationCap(false, true, { akweduktProgLudnosci: 5, spichlerzProgLudnosci: 8 }, 0) === 8, "niekompletny fixture bez akweduktMaxLudnosci: Spichlerz I = 8 (nie NaN)");
 assert(cityPopulationCap(false, true, { akweduktProgLudnosci: 5, spichlerzProgLudnosci: 8, akweduktMaxLudnosci: 20 }, 0, true) === 8,
   'brak klucza II w params -> fallback do spichlerzProgLudnosci');
 

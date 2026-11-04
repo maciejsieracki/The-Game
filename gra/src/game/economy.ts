@@ -1082,7 +1082,10 @@ export function cityPopulationCap(
   const safeDelta = matrixDelta === -1 || matrixDelta === 0 || matrixDelta === 1 || matrixDelta === 2
     ? matrixDelta
     : 0;
-  return Math.min(params.akweduktMaxLudnosci + 2, buildingCap + safeDelta);
+  // Odporny clamp: gdy `akweduktMaxLudnosci` brak/nieskończony (niekompletny fixture) -> bez górnego sufitu
+  // (Math.min z NaN zwracałoby NaN i blokowało wzrost).
+  const ceiling = Number.isFinite(params.akweduktMaxLudnosci) ? params.akweduktMaxLudnosci + 2 : Infinity;
+  return Math.min(ceiling, buildingCap + safeDelta);
 }
 
 /** Resolve the owner civilization's approved additive population-cap delta. */

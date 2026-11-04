@@ -1111,7 +1111,7 @@ interface CityView {
   popCapBezAkweduktu: number;
   /** Twardy cap ludności ze Spichlerzem, ale bez Akweduktu (parametr gry, normal=8). */
   popCapSpichlerz: number;
-  /** Max ludność z Akweduktem (parametr gry, normal=12). */
+  /** Max ludność z Akweduktem (parametr gry, normal=20). */
   popCapZAkweduktem: number;
   /** Aktualny cap dla tego miasta. */
   popCapAktualny: number;

@@ -595,7 +595,7 @@ export function ownShareFromSignal(signal: number | undefined | null): number {
  * bez śmieci zmiennoprzecinkowych.
  *
  * Dlaczego wykładniczo, a nie liniowo (`1 + wsp × excess`): przy ustalonym mnożniku
- * końcowym na capie ludności (12, `econ-params.json → akwedukt_max_ludnosci`) wzrost
+ * końcowym na capie ludności (20, `econ-params.json → akwedukt_max_ludnosci`) wzrost
  * geometryczny jest MINIMAKSEM — daje najmniejszy możliwy NAJWIĘKSZY skok względny progu
  * przy +1 mieszkańcu, bo rozkłada ten sam mnożnik równo na wszystkie kroki, zamiast
  * upychać największy skok w pierwszy krok powyżej populacji odniesienia. Liniowo max skok
