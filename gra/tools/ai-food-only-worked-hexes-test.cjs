@@ -191,6 +191,131 @@ if (!MEASURE) {
     ok(picks.some(p => !worked.has(K(p.q, p.r)) && !(p.q === CQ && p.r === CR)), 'onlyWorked=false: jest pick poza polami obywateli (filtr wylaczony przez gracza respektowany)');
   }
 
+  console.log('(F) KAZDY klucz z listy zywnosciowej osobno: sonda na heksie BEZ obywatela (kontrola: filtr OFF wybiera klucz; filtr ON — nigdy)');
+  {
+    const SEA = ['morze'];
+    const PROBES = [
+      { key: 'farma', civ: 'grecy', setup: () => {} },
+      { key: 'irygacja', civ: 'grecy', setup: () => {}, pre: 'farma' },
+      { key: 'tarasy', civ: 'chinczycy', setup: h => { h.terenBazowy = 'wzgorza'; } },
+      { key: 'bydlo', civ: 'grecy', setup: h => { h.nakladka = 'zloze_bydla'; } },
+      { key: 'owce', civ: 'grecy', setup: h => { h.terenBazowy = 'wzgorza'; } },
+      { key: 'lama', civ: 'inkowie', setup: h => { h.terenBazowy = 'wzgorza'; } },
+      { key: 'oboz_lowiecki', civ: 'grecy', focus: 'zrownowazone', demand: true, setup: h => { h.nakladka = 'las'; }, pre: 'tartak' },
+      { key: 'lodzie_rybackie', civ: 'grecy', setup: h => { h.terenBazowy = SEA[0]; } },
+      { key: 'wyrab', civ: 'grecy', setup: h => { h.nakladka = 'las'; } },
+      { key: 'warzelnia_soli', civ: 'grecy', setup: h => { h.zloze = 'sol'; } },
+    ];
+    for (const P of PROBES) {
+      const run = (onlyWorked, foodPrio) => {
+        const map = makeScenarioMap();
+        const city = { id: 'city0', ownerId: PID, q: CQ, r: CR, name: 'Ateny', population: 1 };
+        const tn = [{ q: CQ, r: CR, ownerId: PID, cityId: 'city0', pop: 1, level: 1 }];
+        const worked = new Set(workedHexCoordsForCity(city, map, tn, undefined, ERA).map(({ q, r }) => K(q, r)));
+        worked.add(K(CQ, CR));
+        // cala ziemia dookola = teren sondy (wszystkie heksy promienia poza polami obywateli sa kandydatami)
+        const placed = new Map();
+        for (let q = CQ - 3; q <= CQ + 3; q++) for (let r = CR - 3; r <= CR + 3; r++) {
+          const hk = K(q, r), h = map.hexes[hk];
+          if (!h || (q === CQ && r === CR) || worked.has(hk)) continue;
+          if (Math.abs(q - CQ) + Math.abs(r - CR) > 4 && Math.abs((q - CQ) + (r - CR)) > 3) continue;
+          h.rzeka = { obecna: false, krawedzie: [] }; h.nakladka = 'brak'; h.zloze = undefined;
+          P.setup(h);
+          if (P.pre === 'tartak') placed.set(hk, ['tartak']);
+          if (P.pre === 'farma') placed.set(hk, ['farma']);
+        }
+        const picks = [];
+        for (let round = 0; round < 25; round++) {
+          const got = pickAutoImprovements({
+            cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: 900,
+            unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: !!P.demand, resourceDeficitKeys: [],
+            getFocus: () => P.focus ?? 'zywnosc', getOnlyWorked: () => onlyWorked, getWorkedHexKeys: () => worked,
+            ...(foodPrio === undefined ? {} : { farmPriorityOnlyWorked: () => foodPrio }),
+            pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: P.civ, playerEra: ERA,
+            foodImprovementStages: () => true, clearingHexKeys: new Set(),
+          });
+          if (!got.length) break;
+          for (const g of got) {
+            picks.push(g);
+            const hk = K(g.q, g.r);
+            if (g.key === 'wyrab') map.hexes[hk].nakladka = 'brak';
+            else placed.set(hk, [...(placed.get(hk) ?? []), g.key]);
+          }
+        }
+        return { picks, worked };
+      };
+      const off = run(false), on = run(true);
+      // przebieg „brakujacy surowiec” (AI: getOnlyWorked=false) z zywnoscia nadal pod filtrem: tylko `FOOD_IMPROVEMENT_KEYS` trzyma
+      // klucz na polach obywateli (kandydaci nie sa wtedy zawezani) — to jedyna sciezka, na ktorej czlonkostwo w zbiorze jest
+      // rozstrzygajace dla kazdego klucza osobno (mutacja usuniecia klucza ze zbioru MUSI byc tu czerwona).
+      const freeCtl = run(false, false), freeOn = run(false, true);
+      const freeCtlOff = freeCtl.picks.filter(p => p.key === P.key && !freeCtl.worked.has(K(p.q, p.r)));
+      const freeBad = freeOn.picks.filter(p => p.key === P.key && !freeOn.worked.has(K(p.q, p.r)));
+      ok(freeCtlOff.length > 0, `${P.key}: kontrola przebiegu niedoboru — bez filtra zywnosci stawia go poza obywatelami (${freeCtlOff.length})`);
+      ok(freeBad.length === 0, `${P.key}: przebieg niedoboru (getOnlyWorked=false) + filtr zywnosci: 0 poza obywatelami (jest ${freeBad.length})`);
+      const ctrl = off.picks.filter(p => p.key === P.key && !off.worked.has(K(p.q, p.r)));
+      const bad = on.picks.filter(p => p.key === P.key && !on.worked.has(K(p.q, p.r)));
+      // AI (decideAITurn -> planCityImprovements) na tej samej sondzie: te same heksy bez obywatela, civType wg sondy
+      {
+        const map = makeScenarioMap();
+        const city = { id: 'city0', ownerId: PID, q: CQ, r: CR, name: 'Ateny', population: 1 };
+        const tn = [{ q: CQ, r: CR, ownerId: PID, cityId: 'city0', pop: 1, level: 1 }];
+        const worked = new Set(workedHexCoordsForCity(city, map, tn, undefined, ERA).map(({ q, r }) => K(q, r)));
+        worked.add(K(CQ, CR));
+        const placed = new Map();
+        for (let q = CQ - 3; q <= CQ + 3; q++) for (let r = CR - 3; r <= CR + 3; r++) {
+          const hk = K(q, r), h = map.hexes[hk];
+          if (!h || (q === CQ && r === CR) || worked.has(hk)) continue;
+          if (Math.abs(q - CQ) + Math.abs(r - CR) > 4 && Math.abs((q - CQ) + (r - CR)) > 3) continue;
+          h.rzeka = { obecna: false, krawedzie: [] }; h.nakladka = 'brak'; h.zloze = undefined;
+          P.setup(h);
+          if (P.pre === 'tartak') placed.set(hk, ['tartak']);
+          if (P.pre === 'farma') placed.set(hk, ['farma']);
+        }
+        const aiBad = [];
+        let aiSame = 0;
+        for (let t = 0; t < 30; t++) {
+          const data = { units: [], buildings: [], terrainYields: { terrain_types: [] }, aiParams: {} };
+          const cmds = decideAITurn(PID, [], [city], map, data, {
+            civType: P.civ, poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: tn,
+            placedImprovements: new Map(placed), improvementTechs: TECHS, pracaAvailable: 900, civEra: ERA, resourceDeficitKeys: [],
+          });
+          for (const c of cmds) {
+            if (c.type !== 'buildImprovement') continue;
+            const hk = K(c.q, c.r);
+            if (c.key === 'wyrab') map.hexes[hk].nakladka = 'brak'; else placed.set(hk, [...(placed.get(hk) ?? []), c.key]);
+            if (c.key === P.key) aiSame++;
+            if (FOOD.has(c.key) && !worked.has(hk)) aiBad.push(`${c.key}@${hk}`);
+          }
+        }
+        ok(aiBad.length === 0, `${P.key}: AI (decideAITurn, civ=${P.civ}) 0 zywnosciowych poza obywatelami w sondzie (jest ${aiBad.length}: ${aiBad.slice(0, 3).join(' ') || 'nic'}; ${P.key} postawiony ${aiSame}x)`);
+      }
+      ok(ctrl.length > 0, `${P.key}: kontrola — z filtrem OFF automat stawia go poza obywatelami (${ctrl.length}) [sonda realna]`);
+      ok(bad.length === 0, `${P.key}: z filtrem ON 0 poza obywatelami (jest ${bad.length}: ${bad.slice(0, 3).map(p => `${p.key}@${p.q},${p.r}`).join(' ') || 'nic'})`);
+    }
+  }
+
+  console.log('(G) farma ZOSTAJE po przesunieciu obywatela: istniejaca farma na heksie, ktory przestal byc pracowany, nie dostaje NOWYCH ulepszen zywnosciowych i nie jest usuwana');
+  for (const mode of ['player-zywnosc', 'player-zrownowazone']) {
+    const map = makeScenarioMap();
+    const city = { id: 'city0', ownerId: PID, q: CQ, r: CR, name: 'Ateny', population: 1 };
+    const tn = [{ q: CQ, r: CR, ownerId: PID, cityId: 'city0', pop: 1, level: 1 }];
+    const worked = new Set(workedHexCoordsForCity(city, map, tn, undefined, ERA).map(({ q, r }) => K(q, r)));
+    worked.add(K(CQ, CR));
+    const stale = [[15, 13], [15, 14], [16, 14]].map(([q, r]) => K(q, r)).filter(hk => !worked.has(hk));
+    const placed = new Map(stale.map(hk => [hk, ['farma']]));
+    const picks = pickAutoImprovements({
+      cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: 900,
+      unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: true, resourceDeficitKeys: [],
+      getFocus: () => (mode === 'player-zywnosc' ? 'zywnosc' : 'zrownowazone'), getOnlyWorked: () => true,
+      getWorkedHexKeys: () => worked, pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'grecy',
+      playerEra: ERA, foodImprovementStages: () => true, clearingHexKeys: new Set(),
+    });
+    const onStale = picks.filter(p => stale.includes(K(p.q, p.r)));
+    ok(stale.length > 0, `${mode}: sa heksy z farma poza polami obywateli (${stale.length})`);
+    ok(onStale.length === 0, `${mode}: zero nowych ulepszen na heksach z "osieroconymi" farmami (jest ${onStale.length}); picker nie ma komendy burzenia`);
+  }
+
   console.log(`\n${passed} OK, ${failed} FAIL`);
   process.exit(failed ? 1 : 0);
 }
@@ -225,7 +350,10 @@ function landSpots(map, n) {
   return out;
 }
 
-const agg = { food: 0, off: 0, causes: {}, byKey: {}, ms: 0, calls: 0, foodYield: 0, irr: 0, stock: 0 };
+const ACTOR = process.env.AFW_ACTOR || 'ai'; // ai | zywnosc | zrownowazone (automat gracza)
+const IMPR = JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'terrain-improvements.json'), 'utf8'));
+const foodBonus = key => Number((IMPR[key] && IMPR[key].bonus && IMPR[key].bonus.zywnosc) || 0);
+const agg = { food: 0, off: 0, causes: {}, byKey: {}, ms: 0, calls: 0, irr: 0, stock: 0, effFood: 0, allFood: 0, offOtherCity: 0 };
 for (const world of worlds) for (const seed of seeds) {
   const map = generateMap(36, 28, seed, world);
   const spots = landSpots(map, 3);
@@ -234,17 +362,28 @@ for (const world of worlds) for (const seed of seeds) {
     const pop = Math.min(8, 2 + Math.floor(t / 7));
     const cities = spots.map((s, i) => ({ id: `c${i}`, ownerId: PID, q: s.q, r: s.r, name: `C${i}`, population: pop }));
     const tn = cities.map(c => ({ q: c.q, r: c.r, ownerId: PID, cityId: c.id, pop, level: 1 }));
-    const data = { units: [], buildings: [], terrainYields: { terrain_types: [] }, aiParams: {} };
-    const t0 = process.hrtime.bigint();
-    const cmds = decideAITurn(PID, [], cities, map, data, {
-      civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: tn,
-      placedImprovements: new Map(placed), improvementTechs: TECHS, pracaAvailable: 400, civEra: ERA, resourceDeficitKeys: [],
-    });
-    agg.ms += Number(process.hrtime.bigint() - t0) / 1e6; agg.calls++;
     const workedByCity = new Map(cities.map(c => [c.id, new Set([K(c.q, c.r), ...workedHexCoordsForCity(c, map, tn, undefined, ERA).map(h => K(h.q, h.r))])]));
     const allWorked = new Set([...workedByCity.values()].flatMap(s => [...s]));
+    let cmds;
+    const t0 = process.hrtime.bigint();
+    if (ACTOR === 'ai') {
+      const data = { units: [], buildings: [], terrainYields: { terrain_types: [] }, aiParams: {} };
+      cmds = decideAITurn(PID, [], cities, map, data, {
+        civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: tn,
+        placedImprovements: new Map(placed), improvementTechs: TECHS, pracaAvailable: 400, civEra: ERA, resourceDeficitKeys: [],
+      }).filter(c => c.type === 'buildImprovement');
+    } else {
+      cmds = pickAutoImprovements({
+        cities, ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: 400,
+        unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: true, resourceDeficitKeys: [],
+        getFocus: () => ACTOR, getOnlyWorked: () => true,
+        getWorkedHexKeys: c => workedByCity.get(c.id) ?? new Set(),
+        pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'grecy', playerEra: ERA,
+        foodImprovementStages: () => true, clearingHexKeys: new Set(),
+      }).map(p => ({ q: p.q, r: p.r, key: p.key, cityId: p.cityId }));
+    }
+    agg.ms += Number(process.hrtime.bigint() - t0) / 1e6; agg.calls++;
     for (const c of cmds) {
-      if (c.type !== 'buildImprovement') continue;
       const hk = K(c.q, c.r);
       if (c.key === 'wyrab') { map.hexes[hk].nakladka = 'brak'; }
       else placed.set(hk, [...(placed.get(hk) ?? []), c.key]);
@@ -253,8 +392,13 @@ for (const world of worlds) for (const seed of seeds) {
       agg.byKey[c.key] = (agg.byKey[c.key] ?? 0) + 1;
       if (c.key === 'irygacja') agg.irr++;
       if (LIVESTOCK.has(c.key)) agg.stock++;
-      if (!allWorked.has(hk)) {
+      // gracz: pick niesie cityId -> pole musi byc polem obywatela TEGO miasta (scisle). AI: komenda bez cityId -> pole dowolnego
+      // miasta AI (miasta moga miec nakladajace sie promienie; decyzja miasta A nie moze wybrac heksu spoza jego pol obywateli,
+      // ale komenda tego nie zdradza — dlatego metryka AI jest luzniejsza; `perCityStrict` mowi ktore z metryk jest ostre).
+      const okNear = c.cityId ? workedByCity.get(c.cityId).has(hk) : allWorked.has(hk);
+      if (!okNear) {
         agg.off++;
+        if (allWorked.has(hk)) agg.offOtherCity++;
         const hx = map.hexes[hk];
         const cause = c.key === 'wyrab' ? 'wyrab-rzeka-lub-las-poza-obywatelem'
           : (hx && (hx.zloze || String(hx.nakladka).startsWith('zloze'))) ? 'zloze-na-heksie'
@@ -264,13 +408,20 @@ for (const world of worlds) for (const seed of seeds) {
       }
     }
   }
-  // lacznie zywnosci z ulepszen na koniec: liczba farm+irygacji+trzody w placed
+  // PLON ZYWNOSCI z ulepszen na koncu gry (nominalny `bonus.zywnosc` z terrain-improvements.json):
+  // effFood = tylko ulepszenia na polach obywateli w ostatniej turze (tylko te realnie daja plon), allFood = wszystkie postawione.
+  {
+    const pop = Math.min(8, 2 + Math.floor((TURNS - 1) / 7));
+    const cities = spots.map((s, i) => ({ id: `c${i}`, ownerId: PID, q: s.q, r: s.r, name: `C${i}`, population: pop }));
+    const tn = cities.map(c => ({ q: c.q, r: c.r, ownerId: PID, cityId: c.id, pop, level: 1 }));
+    const wk = new Set(cities.flatMap(c => [K(c.q, c.r), ...workedHexCoordsForCity(c, map, tn, undefined, ERA).map(h => K(h.q, h.r))]));
+    for (const [hk, keys] of placed) for (const k of keys) { const b = foodBonus(k); agg.allFood += b; if (wk.has(hk)) agg.effFood += b; }
+  }
 }
-let farms = 0;
 const OUT = JSON.stringify({
-  seeds, worlds, TURNS, foodImprovements: agg.food, offWorked: agg.off,
+  actor: ACTOR, perCityStrict: ACTOR !== 'ai', seeds, worlds, TURNS, foodImprovements: agg.food, offWorked: agg.off, offWorkedButOtherCityWorks: agg.offOtherCity,
   offPct: agg.food ? +(100 * agg.off / agg.food).toFixed(2) : 0, causes: agg.causes, byKey: agg.byKey,
-  irrigation: agg.irr, livestock: agg.stock, avgDecideMsPerTurn: +(agg.ms / agg.calls).toFixed(2),
+  irrigation: agg.irr, livestock: agg.stock, effectiveFoodFromImprovements: +agg.effFood.toFixed(1),
+  allFoodFromImprovementsIncludingUnworked: +agg.allFood.toFixed(1), avgPickMsPerTurn: +(agg.ms / agg.calls).toFixed(2),
 }, null, 1);
 if (process.env.AFW_OUT) fs.writeFileSync(process.env.AFW_OUT, OUT + '\nEXIT=0\n'); else console.log(OUT);
-void farms;

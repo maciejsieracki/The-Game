@@ -2,4 +2,4 @@
   [FAIL] player-zywnosc: 0 ulepszen zywnosciowych bez obywatela (jest 4: 3:farma@13,17 3:farma@12,14 3:farma@18,16 4:warzelnia_soli@13,17)
   [FAIL] player-zrownowazone: 0 ulepszen zywnosciowych bez obywatela (jest 3: 3:farma@13,17 3:farma@12,14 3:farma@18,16)
   [FAIL] ai (resource-pass bez filtra): 0 zywnosciowych bez obywatela przy niedoborze soli (jest 4: 0:warzelnia_soli@13,17 3:farma@13,17 3:farma@12,14 3:farma@18,16)
-mutacja M1 EXIT=1
+EXIT=1

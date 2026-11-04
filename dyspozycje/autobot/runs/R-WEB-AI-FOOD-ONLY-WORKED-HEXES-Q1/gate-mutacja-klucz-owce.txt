@@ -1,0 +1,3 @@
+mutacja: usuniecie 'owce' z FOOD_IMPROVEMENT_KEYS (auto-improvements.ts), FAIL=1
+  [FAIL] owce: przebieg niedoboru (getOnlyWorked=false) + filtr zywnosci: 0 poza obywatelami (jest 22)
+EXIT=1
