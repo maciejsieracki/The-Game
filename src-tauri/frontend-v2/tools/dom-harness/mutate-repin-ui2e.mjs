@@ -2,16 +2,29 @@
 /**
  * mutate-repin-ui2e.mjs — kontrola czułości harnessów partii REPIN UI-2-E (`R-RUSTPORT-REPIN-UI-2-E-Q1`): wstrzykuje po
  * jednej mutacji do portu (`src/ui/*`), uruchamia NAJPIERW `run-repin-ui2e.mjs` (Chromium, ~5 s), a gdy ten nie wykryje
- * zmiany — `run-repin-ui2e-cycles.mjs --stop-on-diff --only <moduł>` (jsdom); mutacja WYKRYTA ⇔ któryś harness EXIT=1.
+ * zmiany — `run-repin-ui2e-cycles.mjs --stop-on-diff --only <moduł>` (jsdom).
+ * r2 (Z1) — klasyfikacja ŚCISŁA (każdy wynik spoza 0/1 to nie „wykrycie”):
+ *   WYKRYTA  ⇔ harness EXIT=1 ORAZ jego własny dowód różnicy na stdout (Chromium: linia `run-repin-ui2e: … różnic=N`,
+ *            N ≥ 1; jsdom: `STOP_ON_DIFF pierwsza różnica` albo `run-repin-ui2e-cycles: … różnic=N`, N ≥ 1);
+ *   PRZEŻYŁA ⇔ Chromium EXIT=0 z `różnic=0` i jsdom EXIT=0;
+ *   TIMEOUT  ⇔ harness przekroczył limit czasu (`spawnSync` ETIMEDOUT / sygnał) — osobny status, nie „przeżyła”;
+ *   BŁĄD     ⇔ każdy inny wynik (EXIT 2 = błąd harnessu, EXIT 1 bez dowodu różnicy, inny kod/sygnał).
+ * PRZED serią: przypadek KONTROLNY bez mutacji — Chromium oraz jsdom (`--only` modułów zakresu) muszą dać EXIT 0
+ * z `różnic=0`; inaczej EXIT 2 bez uruchamiania mutacji (`--list` nie uruchamia harnessów).
+ * `--control-stamp-dir <dir>` — zielona kontrola zapisywana jako znacznik kluczowany sha256 TREŚCI wejść (całe `src/` portu,
+ * pliki harnessów, całe `gra/src` + `gra/data` webu); kolejna część serii z identycznymi wejściami użyje znacznika zamiast
+ * powtarzać kontrolę (każda zmiana bajtu wejścia = nowy klucz = kontrola od nowa). Bez opcji kontrola zawsze się wykonuje.
  * Po każdej mutacji plik wraca do oryginału (asercja bajtów). Mutacje obejmują każdą gałąź sterującą nowych hunków
  * webu `86d510c66` w 5 plikach partii (#18–#22).
  *
  * Użycie (z `src-tauri/frontend-v2/`):
  *   node tools/dom-harness/mutate-repin-ui2e.mjs --web-dir <WEB_DIR> [--tmp-dir <dir>] [--from N] [--to M] [--list]
  * `--from/--to` (1-based, włącznie) dzielą przebieg na części mieszczące się w limicie czasu wywołania.
- * EXIT 0 ⇔ każda mutacja z zakresu wykryta; 1 ⇔ ≥1 przeżyła; 2 ⇔ błąd.
+ * EXIT 0 ⇔ kontrola zielona i każda mutacja z zakresu WYKRYTA; 1 ⇔ ≥1 PRZEŻYŁA (bez TIMEOUT/BŁĄD);
+ * 2 ⇔ kontrola nie przeszła albo ≥1 TIMEOUT/BŁĄD (wynik nierozstrzygnięty).
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve, join } from 'node:path';
@@ -28,6 +41,7 @@ const DP = 'src/ui/diplomacyPanel.ts';
 const NM = 'src/ui/diplomacyNegotiationModal.ts';
 const AU = 'src/ui/diplomacyAudience.ts';
 const TB = 'src/ui/diplomacyTradeBasket.ts';
+/** Moduł `run-repin-ui2e-cycles.mjs --only` dla mutacji pliku (LH/DP nie mają własnego modułu jsdom — koszyk je ładuje). */
 const MOD = { [LH]: 'diplomacyTradeBasket.ts', [DP]: 'diplomacyTradeBasket.ts', [NM]: 'diplomacyNegotiationModal.ts', [AU]: 'diplomacyAudience.ts', [TB]: 'diplomacyTradeBasket.ts' };
 /** [nazwa, plik, przed, po] — „przed” musi wystąpić w pliku dokładnie raz. */
 const MUTS = [
@@ -122,8 +136,85 @@ if (!webDir) {
 }
 const from = Number(argOf('--from') ?? 1);
 const to = Number(argOf('--to') ?? MUTS.length);
-let missed = 0;
-let n = 0;
+const tmpArgs = argOf('--tmp-dir') ? ['--tmp-dir', argOf('--tmp-dir')] : [];
+const T_CHROMIUM = 240000;
+const T_JSDOM = 540000;
+/** `--timeout-chromium-ms` / `--timeout-jsdom-ms` — limity dla przebiegów Z MUTACJĄ (kontrola zawsze z domyślnymi); hak do
+ * sprawdzenia, że przekroczenie limitu daje status TIMEOUT, a nie PRZEŻYŁA/WYKRYTA. */
+const TM_CHROMIUM = Number(argOf('--timeout-chromium-ms') ?? T_CHROMIUM);
+const TM_JSDOM = Number(argOf('--timeout-jsdom-ms') ?? T_JSDOM);
+/** Liczba `różnic=N` z linii podsumowania harnessu (`prefix: … różnic=N`) albo null, gdy linii brak. */
+const diffsOf = (out, prefix) => {
+  const line = (out ?? '').split('\n').find((l) => l.startsWith(prefix + ':'));
+  const m = line?.match(/ różnic=(\d+)/);
+  return m ? Number(m[1]) : null;
+};
+const timedOut = (r) => r.error?.code === 'ETIMEDOUT' || (r.status === null && r.signal != null);
+const tail = (r) => ((r.stderr ?? '').trim().split('\n')[0] || (r.stdout ?? '').trim().split('\n').pop() || '').slice(0, 240);
+const runChromium = (t = T_CHROMIUM) => spawnSync(process.execPath, ['tools/dom-harness/run-repin-ui2e.mjs', '--web-dir', webDir, ...tmpArgs], { cwd: ROOT, encoding: 'utf8', timeout: t });
+const runJsdom = (only, t = T_JSDOM) => spawnSync(process.execPath, ['tools/dom-harness/run-repin-ui2e-cycles.mjs', '--web-dir', webDir, '--stop-on-diff', '--only', only, ...tmpArgs], { cwd: ROOT, encoding: 'utf8', timeout: t });
+/** Wynik jednego harnessu: 'diff' | 'clean' | 'timeout' | 'error' (+ opis). */
+function classify(r, kind) {
+  if (timedOut(r)) return { k: 'timeout', how: `${kind} TIMEOUT (signal=${r.signal ?? '-'})` };
+  if (kind === 'chromium') {
+    const d = diffsOf(r.stdout, 'run-repin-ui2e');
+    if (r.status === 1 && d !== null && d > 0) return { k: 'diff', how: `chromium różnic=${d}` };
+    if (r.status === 0 && d === 0) return { k: 'clean', how: 'chromium różnic=0' };
+    return { k: 'error', how: `chromium EXIT=${r.status} różnic=${d} ${tail(r)}` };
+  }
+  const stop = (r.stdout ?? '').split('\n').find((l) => l.includes('STOP_ON_DIFF pierwsza różnica'));
+  const d = diffsOf(r.stdout, 'run-repin-ui2e-cycles');
+  if (r.status === 1 && (stop || (d !== null && d > 0))) return { k: 'diff', how: 'jsdom ' + (stop ? stop.replace(/^.*pierwsza różnica: /, '') : `różnic=${d}`) };
+  if (r.status === 0 && d === 0) return { k: 'clean', how: 'jsdom różnic=0' };
+  return { k: 'error', how: `jsdom EXIT=${r.status} różnic=${d} ${tail(r)}` };
+}
+
+const sel = MUTS.map((m, i) => [i, m]).filter(([i]) => i + 1 >= from && i + 1 <= to);
+// ─── przypadek kontrolny (bez mutacji) ───────────────────────────────────────
+function inputsKey() {
+  const h = createHash('sha256');
+  const walk = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
+      const p = join(dir, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (e.isFile()) h.update(p.slice(dir.length) + '\0').update(readFileSync(p)).update('\0');
+    }
+  };
+  for (const d of [join(ROOT, 'src'), join(resolve(webDir), 'gra/src'), join(resolve(webDir), 'gra/data')]) { h.update('#' + d.split('/').slice(-2).join('/')); walk(d); }
+  for (const f of ['run-repin-ui2e.mjs', 'run-repin-ui2e-cycles.mjs', 'repin-ui2e-scenes.mjs', 'repin-ui2e-rust.mjs', 'build.mjs']) h.update(f).update(readFileSync(join(ROOT, 'tools/dom-harness', f)));
+  return h.digest('hex');
+}
+{
+  const stampDir = argOf('--control-stamp-dir');
+  const key = inputsKey();
+  const stampFile = stampDir ? join(stampDir, `mutate-repin-ui2e-control-${key}.json`) : null;
+  const stamp = stampFile && existsSync(stampFile) ? JSON.parse(readFileSync(stampFile, 'utf8')) : { chromium: null, jsdom: {} };
+  const need = [...new Set(sel.map(([, [, rel]]) => MOD[rel]))];
+  const msgs = [];
+  let ok = true;
+  if (stamp.chromium !== 'clean') {
+    const c1 = classify(runChromium(), 'chromium');
+    msgs.push(c1.how);
+    if (c1.k === 'clean') stamp.chromium = 'clean';
+    else ok = false;
+  } else msgs.push('chromium różnic=0 (znacznik)');
+  const todo = need.filter((m) => stamp.jsdom[m] !== 'clean');
+  if (ok && todo.length) {
+    const c2 = classify(runJsdom(todo.join(',')), 'jsdom');
+    msgs.push(`${c2.how} --only ${todo.join(',')}`);
+    if (c2.k === 'clean') for (const m of todo) stamp.jsdom[m] = 'clean';
+    else ok = false;
+  }
+  const cached = need.filter((m) => !todo.includes(m));
+  if (cached.length) msgs.push(`jsdom różnic=0 (znacznik) ${cached.join(',')}`);
+  console.log(`KONTROLA bez mutacji (wejścia sha256 ${key.slice(0, 16)}): [${msgs.join('] [')}]`);
+  if (!ok) {
+    console.error('mutate-repin-ui2e: KONTROLA NIEZALICZONA — harness bez mutacji nie daje EXIT 0/różnic=0; seria nie uruchomiona');
+    process.exit(2);
+  }
+  if (stampFile) writeFileSync(stampFile, JSON.stringify(stamp) + '\n');
+}
+const counts = { WYKRYTA: 0, 'PRZEŻYŁA': 0, TIMEOUT: 0, 'BŁĄD': 0 };
 /** Przerwanie (SIGTERM/SIGINT, np. limit czasu wywołania) w trakcie mutacji — przywróć plik przed wyjściem. */
 let pending = null;
 for (const sig of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
@@ -133,9 +224,7 @@ for (const sig of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
     process.exit(2);
   });
 }
-for (const [i, [name, rel, before, after]] of MUTS.entries()) {
-  if (i + 1 < from || i + 1 > to) continue;
-  n++;
+for (const [i, [name, rel, before, after]] of sel) {
   const file = join(ROOT, rel);
   const orig = readFileSync(file);
   const txt = orig.toString('utf8');
@@ -146,20 +235,20 @@ for (const [i, [name, rel, before, after]] of MUTS.entries()) {
   }
   pending = { file, orig };
   writeFileSync(file, txt.replace(before, after));
+  let status = 'BŁĄD';
   let how = '';
-  let ok = false;
   try {
-    const tmpArgs = argOf('--tmp-dir') ? ['--tmp-dir', argOf('--tmp-dir')] : [];
-    const r1 = spawnSync(process.execPath, ['tools/dom-harness/run-repin-ui2e.mjs', '--web-dir', webDir, ...tmpArgs], { cwd: ROOT, encoding: 'utf8', timeout: 240000 });
-    if (r1.status === 1) {
-      ok = true;
-      how = 'chromium';
-    } else if (r1.status === 0) {
-      const r2 = spawnSync(process.execPath, ['tools/dom-harness/run-repin-ui2e-cycles.mjs', '--web-dir', webDir, '--stop-on-diff', '--only', MOD[rel]], { cwd: ROOT, encoding: 'utf8', timeout: 540000 });
-      ok = r2.status === 1;
-      how = `jsdom EXIT=${r2.status}` + (ok ? ' ' + ((r2.stdout ?? '').split('\n').find((l) => l.includes('STOP_ON_DIFF')) ?? '').replace(/^.*pierwsza różnica: /, '') : '');
+    const c1 = classify(runChromium(TM_CHROMIUM), 'chromium');
+    if (c1.k === 'diff') {
+      status = 'WYKRYTA';
+      how = c1.how;
+    } else if (c1.k === 'clean') {
+      const c2 = classify(runJsdom(MOD[rel], TM_JSDOM), 'jsdom');
+      status = { diff: 'WYKRYTA', clean: 'PRZEŻYŁA', timeout: 'TIMEOUT', error: 'BŁĄD' }[c2.k];
+      how = `${c1.how}; ${c2.how}`;
     } else {
-      how = `chromium EXIT=${r1.status} ${(r1.stderr ?? '').slice(0, 200)}`;
+      status = c1.k === 'timeout' ? 'TIMEOUT' : 'BŁĄD';
+      how = c1.how;
     }
   } finally {
     writeFileSync(file, orig);
@@ -169,8 +258,8 @@ for (const [i, [name, rel, before, after]] of MUTS.entries()) {
     console.error(`PRZYWRÓCENIE ${rel} nieudane`);
     process.exit(2);
   }
-  if (!ok) missed++;
-  console.log(`${ok ? 'WYKRYTA ' : 'PRZEŻYŁA'} ${i + 1}. ${name} [${how}]`);
+  counts[status]++;
+  console.log(`${status.padEnd(8)} ${i + 1}. ${name} [${how}]`);
 }
-console.log(`mutate-repin-ui2e: zakres=${from}..${Math.min(to, MUTS.length)} mutacji=${n} wykrytych=${n - missed} przeżyło=${missed} (łącznie zdefiniowanych ${MUTS.length})`);
-process.exitCode = missed === 0 ? 0 : 1;
+console.log(`mutate-repin-ui2e: zakres=${from}..${Math.min(to, MUTS.length)} mutacji=${sel.length} wykrytych=${counts.WYKRYTA} przeżyło=${counts['PRZEŻYŁA']} timeout=${counts.TIMEOUT} błąd=${counts['BŁĄD']} (łącznie zdefiniowanych ${MUTS.length})`);
+process.exitCode = counts.TIMEOUT + counts['BŁĄD'] > 0 ? 2 : counts['PRZEŻYŁA'] > 0 ? 1 : 0;

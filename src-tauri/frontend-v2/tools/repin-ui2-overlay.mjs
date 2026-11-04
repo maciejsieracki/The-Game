@@ -61,5 +61,6 @@ for (const f of manifest.overlayPd ?? []) {
   writeFileSync(dst, buf);
   console.log(`nakładka PD ${srcPath} (${buf.length} B)`);
 }
-console.log(`repin-ui2-overlay: plików=${manifest.files.length} PD=${(manifest.overlayPd ?? []).length} niezgodnych=${bad} out=${out}`);
+console.log(`repin-ui2-overlay: PD (R-RUSTPORT-REPIN-UI-2-E-Q1) plików=${(manifest.overlayPd ?? []).length}`);
+console.log(`repin-ui2-overlay: plików=${manifest.files.length} niezgodnych=${bad} out=${out}`);
 process.exitCode = bad === 0 ? 0 : 1;

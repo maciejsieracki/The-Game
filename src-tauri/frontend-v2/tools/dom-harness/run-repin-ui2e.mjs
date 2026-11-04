@@ -2,7 +2,8 @@
 /**
  * run-repin-ui2e.mjs — harness Chromium partii REPIN UI-2-E (`R-RUSTPORT-REPIN-UI-2-E-Q1`, `P5-REPIN-UI-2.md` §1 #18–#22).
  *
- * WEB:  `diploListHud.ts`, `diplomacyPanel.ts`, `diplomacyNegotiationModal.ts`, `diplomacyTradeBasket.ts` z URUCHOMIONEGO
+ * WEB:  `diploListHud.ts`, `diplomacyPanel.ts`, `diplomacyNegotiationModal.ts`, `diplomacyTradeBasket.ts`,
+ *       `diplomacyAudience.ts` (r2, Z2: sceny `audiencja*` — karty bez listy bonusów cywilizacji) z URUCHOMIONEGO
  *       weba (`git archive origin/main gra/src gra/data`, `--web-dir`), pakowane `build.mjs` i wykonane w Chromium 141
  *       (Playwright `/opt/node-tools`), serwowane po HTTP z localhost.
  * PORT: te same moduły `src/ui/**` frontend-v2 (`--src`), z „Rust” = `repin-ui2e-rust.mjs` (StaticCatalogDto + provider
@@ -33,6 +34,15 @@ import { extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { bundle } from './build.mjs';
 
+// Z1 (r2): KAŻDY błąd poza ścieżką porównania (wyjątek/odrzucenie spoza `try`, np. `mkdtempSync` ENOENT) = EXIT 2,
+// nigdy domyślne EXIT 1 Node — EXIT 1 jest zarezerwowane dla „≥ 1 różnica” (czytane przez `mutate-repin-ui2e.mjs`).
+for (const ev of ['uncaughtException', 'unhandledRejection']) {
+  process.on(ev, (e) => {
+    console.error(`BŁĄD harnessu (${ev}):`, e && e.stack ? e.stack : e);
+    process.exit(2);
+  });
+}
+
 const args = process.argv.slice(2);
 const argOf = (k) => {
   const i = args.indexOf(k);
@@ -52,10 +62,10 @@ const OUT = argOf('--out');
 const PNG_DIR = argOf('--png-dir');
 const CHROMIUM = argOf('--chromium') ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const PW_DIR = argOf('--playwright') ?? '/opt/node-tools/node_modules/playwright';
-const TMP = mkdtempSync(join(argOf('--tmp-dir') ?? tmpdir(), 'repin-ui2e-'));
-const UI_MODS = ['diploListHud', 'diplomacyPanel', 'diplomacyNegotiationModal', 'diplomacyTradeBasket'];
+let TMP = null;
+const UI_MODS = ['diploListHud', 'diplomacyPanel', 'diplomacyNegotiationModal', 'diplomacyTradeBasket', 'diplomacyAudience'];
 const VIEWPORTS = [[1280, 720], [360, 640]];
-const SCENES = ['lista', 'panel', 'rozejm', 'rozejm-wyslij', 'rozejm-wojna-zloto', 'handel10-miasto', 'handel10-miasto-nan', 'pokoj-miasto', 'wasal-picker', 'pokoj-bez-miast', 'bezterminowo', 'bezterminowo-pole', 'wymiana-30'];
+const SCENES = ['lista', 'panel', 'rozejm', 'rozejm-wyslij', 'rozejm-wojna-zloto', 'handel10-miasto', 'handel10-miasto-nan', 'pokoj-miasto', 'wasal-picker', 'pokoj-bez-miast', 'bezterminowo', 'bezterminowo-pole', 'wymiana-30', 'audiencja', 'audiencja-wojna'];
 
 for (const m of UI_MODS) for (const dir of [join(SRC, 'ui'), join(WEB_SRC, 'ui')]) {
   if (!existsSync(join(dir, m + '.ts'))) {
@@ -64,13 +74,16 @@ for (const m of UI_MODS) for (const dir of [join(SRC, 'ui'), join(WEB_SRC, 'ui')
   }
 }
 
-// `RESOURCE_KEY_LABEL` (`game/diplomacy-display.ts`) nie jest eksportowany — odczyt literału z pliku webu (jak `run-cycles.mjs`).
-const ddSrc = readFileSync(join(WEB_SRC, 'game/diplomacy-display.ts'), 'utf8');
-const rklStart = ddSrc.indexOf('const RESOURCE_KEY_LABEL');
-const rkl = ddSrc.slice(rklStart, ddSrc.indexOf('};', rklStart));
-const resourceKeyLabels = {};
-for (const mm of rkl.matchAll(/^\s*([a-z_]+):\s*'([^']*)',/gm)) resourceKeyLabels[mm[1]] = mm[2];
-writeFileSync(join(TMP, 'rkl.json'), JSON.stringify(resourceKeyLabels));
+/** `RESOURCE_KEY_LABEL` (`game/diplomacy-display.ts`) nie jest eksportowany — odczyt literału z pliku webu (jak `run-cycles.mjs`). */
+function writeResourceKeyLabels() {
+  const ddSrc = readFileSync(join(WEB_SRC, 'game/diplomacy-display.ts'), 'utf8');
+  const rklStart = ddSrc.indexOf('const RESOURCE_KEY_LABEL');
+  if (rklStart < 0) throw new Error('brak RESOURCE_KEY_LABEL w game/diplomacy-display.ts webu');
+  const rkl = ddSrc.slice(rklStart, ddSrc.indexOf('};', rklStart));
+  const resourceKeyLabels = {};
+  for (const mm of rkl.matchAll(/^\s*([a-z_]+):\s*'([^']*)',/gm)) resourceKeyLabels[mm[1]] = mm[2];
+  writeFileSync(join(TMP, 'rkl.json'), JSON.stringify(resourceKeyLabels));
+}
 
 const J = (p) => JSON.stringify(p);
 const gw = (m) => J(join(WEB_SRC, m));
@@ -82,13 +95,13 @@ function writeEntries() {
     `import techJson from ${J(join(WEB_DATA, 'tech.json'))};`,
     `import * as VCW from ${gw('game/diplomacy-value-catalog')};`,
   ];
-  const expose = (entryFn, setCtx) => [
-    `const api: any = { LH: M0, DP: M1, NM: M2, TB: M3, entryFromRelation: ${entryFn}, setScenarioCtx: ${setCtx}, qtyKeys: Object.keys(VCW.diplomacyHandelSurowceCatalog()) };`,
+  const expose = (entryFn, setCtx, audFn) => [
+    `const api: any = { LH: M0, DP: M1, NM: M2, TB: M3, AU: M4, entryFromRelation: ${entryFn}, setScenarioCtx: ${setCtx}, audState: ${audFn}, qtyKeys: Object.keys(VCW.diplomacyHandelSurowceCatalog()) };`,
     `(globalThis as any).__ui2e = { api, SC, techIds: (techJson as any).technologie.map((t: any) => t.Technologia) };`,
     '',
   ];
   const web = join(TMP, 'entry-web.ts');
-  writeFileSync(web, [...common(join(WEB_SRC, 'ui')), ...expose('(r: any) => M0.diploListEntryFromRelation(r)', '() => {}')].join('\n'));
+  writeFileSync(web, [...common(join(WEB_SRC, 'ui')), ...expose('(r: any) => M0.diploListEntryFromRelation(r)', '() => {}', '(st: any) => st')].join('\n'));
   const inst = join(TMP, 'install-port.ts');
   writeFileSync(inst, [
     `import * as VC from ${gw('game/diplomacy-value-catalog')};`,
@@ -101,12 +114,15 @@ function writeEntries() {
     `import * as WG from ${gw('game/diplomacy-war-gates')};`,
     `import * as AA from ${gw('game/diplomacy-audience-actions')};`,
     `import * as BC from ${gw('game/diplomacy-barbarian-cooperation')};`,
+    `import * as CR from ${gw('game/diplomacy-credibility')};`,
+    `import * as AB from ${gw('ui/diplomacyAcceptanceBalance')};`,
     `import techJson from ${J(join(WEB_DATA, 'tech.json'))};`,
+    `import civsJson from ${J(join(WEB_DATA, 'civs.json'))};`,
     `import rkl from ${J(join(TMP, 'rkl.json'))};`,
     `import { createUi2eRust } from ${J(join(HERE, 'repin-ui2e-rust.mjs'))};`,
     `import { installStaticCatalog } from ${J(join(SRC, 'controller/staticCatalog'))};`,
     `import { installDiplomacyQueries } from ${J(join(SRC, 'controller/diplomacyQueries'))};`,
-    `const R = createUi2eRust({ VC, E, AP, DD, PR, TV, AOB, WG, AA, BC }, { tech: techJson, resourceKeyLabels: rkl });`,
+    `const R = createUi2eRust({ VC, E, AP, DD, PR, TV, AOB, WG, AA, BC, CR, AB }, { tech: techJson, resourceKeyLabels: rkl, civs: civsJson });`,
     `installStaticCatalog(R.catalog as any);`,
     `installDiplomacyQueries(R.provider as any);`,
     `(globalThis as any).__ui2eRust = R;`,
@@ -121,7 +137,8 @@ function writeEntries() {
     // P5.5: Rust podaje `lines` = web `formatDiploCivListLines` z tych samych pól (web `diploListHud.ts:518-527`).
     `const linesFor = (rel: any) => formatDiploCivListLines({ cultureLabel: rel.cultureLabel, epochLabel: rel.epochLabel, theirPopulation: rel.population,`,
     `  theirArmyCount: rel.armyCount, theirRespektTowardPlayer: rel.theirRespekt, ourRespektTowardThem: rel.respekt, zaufanie: rel.zaufanie, relationTierLabel: tierLabel(rel.tier) });`,
-    ...expose('(r: any) => M0.diploListEntryFromRelation({ ...r, lines: linesFor(r) })', '(c: any) => (globalThis as any).__ui2eRust.setScenarioCtx(c)'),
+    // Z2 (r2): stan audiencji web → DTO „Rust” (`audienceState`, P5-0 §6.6); strona webu dostaje stan bez zmian.
+    ...expose('(r: any) => M0.diploListEntryFromRelation({ ...r, lines: linesFor(r) })', '(c: any) => (globalThis as any).__ui2eRust.setScenarioCtx(c)', '(st: any) => (globalThis as any).__ui2eRust.audienceState(st)'),
   ].join('\n'));
   return { web, port };
 }
@@ -173,6 +190,8 @@ let exitCode = 0;
 let browser = null;
 const servers = [];
 try {
+  TMP = mkdtempSync(join(argOf('--tmp-dir') ?? tmpdir(), 'repin-ui2e-'));
+  writeResourceKeyLabels();
   const entries = writeEntries();
   const sides = {};
   for (const side of ['web', 'port']) {
@@ -205,9 +224,12 @@ try {
     }
     res[side].vec = await page.evaluate(EVAL_VEC, enc(INPUT));
     res[side].ua = await page.evaluate(() => navigator.userAgent);
-    for (const [w, h] of VIEWPORTS) {
+    // r2 (Z2): sceny `audiencja*` w OSOBNYM przebiegu po scenach r1 — audiencja wstrzykuje do `<head>` własny `<style>`
+    // (`civ-diplo-aud-css-1e`), który inaczej trafiłby do `outerHTML` scen r1 z drugiego viewportu (fixtura r1 bez zmian).
+    const PASSES = [SCENES.filter((n) => !n.startsWith('audiencja')), SCENES.filter((n) => n.startsWith('audiencja'))];
+    for (const pass of PASSES) for (const [w, h] of VIEWPORTS) {
       await page.setViewportSize({ width: w, height: h });
-      for (const name of SCENES) {
+      for (const name of pass) {
         const log = await page.evaluate(EVAL_SCENE, name);
         await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
         // Znacznik `<script src="./entry-<strona>.js">` różni się nazwą pliku wejścia — usuwany przed porównaniem.
@@ -284,6 +306,6 @@ try {
 } finally {
   if (browser) await browser.close();
   for (const s of servers) s.close();
-  rmSync(TMP, { recursive: true, force: true });
+  if (TMP) rmSync(TMP, { recursive: true, force: true });
 }
 process.exitCode = exitCode;

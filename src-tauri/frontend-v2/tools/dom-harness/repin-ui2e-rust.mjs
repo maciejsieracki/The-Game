@@ -7,18 +7,19 @@
  * (web `diplomacyTradeBasket.ts:195-227`), `constants.miastoAkcjeDozwolone` = `MIASTO_AKCJE_DOZWOLONE`.
  * Moduł jest pakowany do strony PORTU razem z modułami `game/*` webu (strona webu go nie używa).
  *
- * `m` = { VC, E, AP, DD, PR, TV, AOB, WG, AA, BC, TT } — moduły webu: diplomacy-value-catalog, diplomacy-pn-engine,
+ * `m` = { VC, E, AP, DD, PR, TV, AOB, WG, AA, BC, CR, AB } — moduły webu: diplomacy-value-catalog, diplomacy-pn-engine,
  * diplomacy-acceptance-points, diplomacy-display, diplomacy-proposals, diplomacy-trade-validation,
- * diplomacy-ai-offer-balance, diplomacy-war-gates, diplomacy-audience-actions, diplomacy-barbarian-cooperation, tech-tempo.
- * `data` = { tech, resourceKeyLabels } (tech.json webu; etykiety `RESOURCE_KEY_LABEL` odczytane z pliku webu w Node).
+ * diplomacy-ai-offer-balance, diplomacy-war-gates, diplomacy-audience-actions, diplomacy-barbarian-cooperation,
+ * diplomacy-credibility, ui/diplomacyAcceptanceBalance (r2: stan audiencji).
+ * `data` = { tech, resourceKeyLabels, civs } (tech.json webu; etykiety `RESOURCE_KEY_LABEL` odczytane z pliku webu w Node).
  */
 export function createUi2eRust(m, data) {
-  const { VC, E, AP, DD, PR, TV, AOB, WG, AA, BC } = m;
+  const { VC, E, AP, DD, PR, TV, AOB, WG, AA, BC, CR, AB } = m;
   const multiOwn = [];
   for (let i = 0; i <= 30; i++) if (AA.uiActionAllowsMultipleOwnOnTable(String(i))) multiOwn.push(String(i));
   const catalog = {
     contentHash: 'harness-web-ui2e-chromium',
-    buildings: [], units: [], tech: data.tech, terrainImprovements: {}, wonders: [], counters: {}, civs: { cywilizacje: [] },
+    buildings: [], units: [], tech: data.tech, terrainImprovements: {}, wonders: [], counters: {}, civs: data.civs ?? { cywilizacje: [] },
     cityNamesPools: {}, powerParams: {}, uiParams: {}, wiki: { poradnik: [], encyklopedia: [] },
     constants: {
       barbarianCooperationDefaultDurationTurns: BC.BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS,
@@ -140,5 +141,28 @@ export function createUi2eRust(m, data) {
     stripWithdrawnResourceAccessItems: (i) => PR.stripWithdrawnResourceAccessItems(i),
     proposalHasResourceAccess: (p) => PR.proposalHasResourceAccess(p),
   };
-  return { catalog, provider, queryLog, setScenarioCtx: (c) => { scenarioCtx = c; } };
+  // Z2 (r2): DTO stanu audiencji (P5-0 §6.6 `DiplomacyAudienceDto`) z funkcji webu — formuła `run-repin-ui2e-cycles.mjs`
+  // `toV2State` (sekcja 7), dla scen Chromium `audiencja*` (bez pozycji negocjacji na stole).
+  const viewW = (w, rozbicie) => {
+    if (w === undefined) return undefined;
+    const wr = Math.round(Math.max(-100, Math.min(100, w)));
+    const band = CR.wiarygodnoscLabelPl(wr);
+    return { band, tooltip: rozbicie ? DD.wiarygodnoscTooltipDefPl() + ' ' + CR.wiarygodnoscTooltipRozbiciePl(rozbicie, band) : DD.wiarygodnoscTooltipPl() };
+  };
+  const audienceState = (st) => {
+    if (st == null) return st;
+    const atWar = st.formalStatus?.kind === 'wojna';
+    const rows = st.pendingNegotiations ?? [];
+    if (rows.length) throw new Error('audienceState: pozycje negocjacji nieobsługiwane w harnessie Chromium (jsdom: run-repin-ui2e-cycles)');
+    const panel = AB.balancePanelDataFromRows(rows);
+    return {
+      ...st,
+      nastawienie: { scores: DD.effectiveNastawienieScores(st.zaufanie, st.respekt, atWar), label: DD.nastawienieLabelFromScore(st.zaufanie, st.respekt, { atWar }), hint: DD.nastawienieHintPl(atWar) },
+      playerWiarygodnoscView: viewW(st.playerWiarygodnosc, st.playerWiarygodnoscRozbicie),
+      otherWiarygodnoscView: viewW(st.otherWiarygodnosc, st.otherWiarygodnoscRozbicie),
+      negotiationTablePanel: panel == null ? null : { ...panel, relation: relDeal(panel.theirBalance.relCurrent ?? panel.myBalance?.relCurrent ?? 100) },
+      actionableNegotiationCount: AB.filterActionableNegotiationRows(rows).length,
+    };
+  };
+  return { catalog, provider, queryLog, setScenarioCtx: (c) => { scenarioCtx = c; }, audienceState };
 }

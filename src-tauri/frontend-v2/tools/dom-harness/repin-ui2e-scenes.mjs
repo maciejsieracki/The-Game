@@ -6,7 +6,10 @@
  * policzonym przez „Rust” = web `formatDiploCivListLines`, P5.5 `DiploListDto.lines`).
  *
  * `api` = { LH: diploListHud, DP: diplomacyPanel, NM: diplomacyNegotiationModal, TB: diplomacyTradeBasket,
- *           entryFromRelation(rel), setScenarioCtx(ctx) }.
+ *           AU: diplomacyAudience, entryFromRelation(rel), setScenarioCtx(ctx), audState(st) }
+ * (`audState`: web = stan bez zmian; port = DTO „Rust” `repin-ui2e-rust.mjs` `audienceState`, P5-0 §6.6).
+ * r2 (Z2): sceny `audiencja`, `audiencja-wojna` — hunki webu diplomacyAudience `:1381,1431` (usunięte `bonusListHtml`
+ * z kart gracza i rywala; `getCivBonusy` podany w konfiguracji z niepustą listą, web 86d510c66 go już nie czyta).
  * Hunki webu `86d510c66` objęte (plik:linia po stronie main): diploListHud `:39-52,180-181,367-385,512-515,538-544`;
  * diplomacyPanel `:34-35,220-235,266`; diplomacyNegotiationModal `:14-15,25-26,103-112,565`;
  * diplomacyTradeBasket `:5,20,43,71,139-140,158,171-175,206-207,225-243,360-361,531-534,632-633,839-859,874-880,
@@ -68,6 +71,7 @@ export function ctxs(qtyKeys, techIds) {
   const techOpt = (ids) => ids.map((id, i) => ({ id, label: id, suggestedPrice: 20 + i * 5 }));
   const QTY = (keys, max) => keys.map((id, i) => ({ id, label: id, maxQty: max[i] ?? 50 }));
   return {
+    techIds,
     pelny: {
       civName: 'Rzym <x>', relacjaTotal: 140, trustPnGainedThisTurn: 2, difficulty: 'hard', playerSkarbiec: 340.7,
       rivalOptions: [{ ownerId: 2, label: 'Egipt' }], giveTechOptions: techOpt(techIds.slice(0, 3)), receiveTechOptions: techOpt(techIds.slice(3, 5)),
@@ -80,7 +84,38 @@ export function ctxs(qtyKeys, techIds) {
   };
 }
 
-const ACTION = (id, label) => ({ id, label, enabled: true });
+const ACTION = (id, label, o = {}) => ({ id, label, enabled: true, ...o });
+
+/** Stany audiencji (formuła `run-repin-ui2e-cycles.mjs` §7 `STATES`, bez pozycji negocjacji na stole). */
+export function audienceStates(techIds) {
+  const ACTIONS = [
+    ACTION('1', 'Nawiązanie kontaktu'), ACTION('2', 'Pakt o nieagresji', { opis: 'Opis NAP' }), ACTION('3', 'Sojusz', { enabled: false, locked: true, lockNote: 'zablokowana — wymaga Zaufania 91 (masz 34)', tooltip: 'Opis sojuszu <x>' }),
+    ACTION('4', 'Przemarsz'), ACTION('5', 'Traktat handlowy'), ACTION('6', 'Technologia', { active: true }), ACTION('7', 'Namów do wojny', { enabled: false, tooltip: 'Brak wrogów' }),
+    ACTION('8', 'Trybut'), ACTION('9', 'Ultimatum'), ACTION('10', 'Pokój'), ACTION('11', 'Wojna'), ACTION('12', 'Wasalizacja', { enabled: false }), ACTION('13', 'Dar'),
+    ACTION('14', 'Umowa wymiany'), ACTION('15', 'Wchłonięcie', { enabled: false, locked: true }),
+  ];
+  const rozb = { startowa: 20, trwalyZyciorys: -5.25, biezaceUczynki: 3, strumien: 1.5, razem: 18 };
+  return {
+    pelny: () => ({
+      playerTitle: 'Król <x>', playerCivName: 'Grecy', otherTitle: 'Cesarz', otherCivName: 'Rzymianie', zaufanie: 62, respekt: 48, tier: 3, layer: 'full',
+      contactEstablished: true, actions: ACTIONS, relacjaTotal: 110, zaufanieDeltaPerTurn: 1.5, relacjaDeltaPerTurn: -0.25, trustPnGainedThisTurn: 2, progDarRelacja: 30,
+      playerPower: 120, otherPower: 80, powerRatioLabel: '3:2', activeTreaties: [{ id: 'd1', label: 'Pakt nieagresji', sinceTurns: 4, breakPenaltyLabel: '−20 Zaufania' }, { label: 'Umowa handlowa', detail: 'szlaki <x>' }],
+      formalStatus: { label: 'Pakt', kind: 'pakt' }, formalStatusDetail: { sinceTurns: 4, breakPenaltyLabel: '−30 Relacji' }, personalityTags: ['Kupiec', 'Ostrożny <x>'],
+      otherEpochLabel: 'Brąz', otherIkonaId: 'rzymianie', otherWodz: 'Cezar', otherEra: 2, otherKolorHex: '#aa2222', otherCultureLabel: 'Łacińska', cultureCircleSame: false,
+      thresholds: { sojuszZaufanie: 70 }, relationBreakdown: { pozytywne: [{ label: 'Handel', value: 5, perTurn: true }, { label: 'Dar', value: 2.5 }], negatywne: [{ label: 'Wojna <x>', value: -10 }] },
+      playerIkonaId: 'grecy', playerWodz: 'Perykles', playerKolorHex: '#2244aa', playerEra: 2, playerWiarygodnosc: 37.6, playerWiarygodnoscRozbicie: rozb,
+      playerWiarygodnoscBreakdown: { pozytywne: [{ label: 'Dotrzymane umowy', value: 4.25 }], negatywne: [{ label: 'Zerwany pakt', value: -12 }] },
+      otherWiarygodnosc: -45, otherWiarygodnoscRozbicie: { ...rozb, razem: -45 }, playerSkarbiec: 420, playerZlotoPerTura: -3, sojuszPotencjal: { pct: 64, label: 'Średni' },
+      playerGoodsCats: { surowce: ['Drewno', 'Glina <x>'], technologie: techIds.slice(0, 1), inne: [] }, otherGoodsCats: { surowce: [], technologie: [], inne: ['Coś'] },
+      otherRelations: { wars: [{ ownerId: 3, name: 'Persja' }], alliances: [{ ownerId: 0, name: 'Ty', isPlayer: true }], naps: [], deals: [{ ownerId: 4, name: 'Egipt & co' }] },
+    }),
+    wojna: () => ({
+      playerTitle: 'Wódz', playerCivName: 'Egipcjanie', otherTitle: 'Szach', otherCivName: 'Persowie', zaufanie: 70, respekt: 65, tier: 0, layer: 'simplified',
+      contactEstablished: true, actions: ACTIONS.slice(8), formalStatus: { label: 'Wojna', kind: 'wojna' }, otherIsCityState: true, otherIkonaId: 'persowie',
+      playerWiarygodnosc: 0, otherWiarygodnosc: 100, playerSkarbiec: 0,
+    }),
+  };
+}
 
 /**
  * Sceny (nazwa → funkcja renderująca do `document.body`). Każda scena zwraca log akcji (callbacki) — dopisywany do DOM.
@@ -88,7 +123,7 @@ const ACTION = (id, label) => ({ id, label, enabled: true });
  * gdzie `after` (np. „Zaproponuj”) wykonuje się PO zrzucie DOM/PNG — payload trafia do logu.
  */
 export function scenes(api, C) {
-  const { LH, DP, TB } = api;
+  const { LH, DP, TB, AU } = api;
   const log = [];
   const act = (name) => (...a) => { log.push(name + '(' + a.map((x) => (typeof x === 'object' ? JSON.stringify(x) : String(x))).join(',') + ')'); };
   const click = (sel, idx = 0) => {
@@ -111,7 +146,20 @@ export function scenes(api, C) {
   const MIASTO = { typ: 'miasto', id: 'c7', ilosc: 1, cityPn: 412, cityLabel: 'Kartagina <x>' };
   const QTY0 = { typ: 'surowiec_ilosc', id: api.qtyKeys[0], ilosc: 10 };
   const QTY2 = { typ: 'surowiec_ilosc', id: api.qtyKeys[2], ilosc: 15 };
+  const AST = audienceStates(C.techIds ?? []);
+  /** Bonusy podane w konfiguracji (web 86d510c66 usunął `getCivBonusy` — lista NIE może pojawić się na kartach). */
+  const BONUSY = [{ opis: 'Bonus <A> handlu' }, { opis: 'Bonus B & co' }, { opis: 'Bonus C' }];
+  const audience = (stName) => {
+    AU.showDiplomacyAudience({
+      ownerId: 1, otherCivId: 'rzymianie', getState: () => api.audState(AST[stName]()),
+      onAction: act('onAction'), onBack: act('onBack'), getCivBonusy: () => BONUSY,
+    });
+    log.push('open=' + AU.isDiplomacyAudienceOpen());
+    return () => { AU.hideDiplomacyAudience(); };
+  };
   const S = {
+    audiencja: () => audience('pelny'),
+    'audiencja-wojna': () => audience('wojna'),
     lista: () => {
       // Warianty „all” (wojny+sojusze+handel) dla n ∈ {brak, 0, 1, 2, 3, 4, 10} + 2 warianty jednej relacji (granica „+N”: 3 vs 4 nazwy).
       const rv = relationVariants();

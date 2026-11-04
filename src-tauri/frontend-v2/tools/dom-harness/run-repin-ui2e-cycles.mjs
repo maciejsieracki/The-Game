@@ -18,7 +18,7 @@
  *
  * Użycie (z katalogu `src-tauri/frontend-v2/`):
  *   git archive 86d510c66 gra/src gra/data | tar -x -C <WEB_DIR>
- *   node tools/dom-harness/run-repin-ui2e-cycles.mjs --web-dir <WEB_DIR> [--json <plik>] [--only a.ts,b.ts] [--stop-on-diff]
+ *   node tools/dom-harness/run-repin-ui2e-cycles.mjs --web-dir <WEB_DIR> [--json <plik>] [--only a.ts,b.ts] [--stop-on-diff] [--tmp-dir <dir>]
  * EXIT 0 ⇔ 0 różnic (i wszystkie asercje v2 spełnione); 1 ⇔ ≥1 różnica; 2 ⇔ błąd harnessu.
  * W raporcie i kodzie „pin” = strona odniesienia (web), „v2” = port.
  */
@@ -28,6 +28,16 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { JSDOM, VirtualConsole } from 'jsdom';
 import { bundle } from './build.mjs';
+
+// Z1 (r2): wyjątek/odrzucenie spoza `try` (np. `mkdtempSync` ENOENT, błąd importu) = EXIT 2, nigdy domyślne EXIT 1 Node —
+// EXIT 1 jest zarezerwowane dla „≥ 1 różnica” (czytane przez `mutate-repin-ui2e.mjs`). `process.stderr` — `console.error`
+// jest niżej przechwytywany do licznika `consoleErrors`.
+for (const ev of ['uncaughtException', 'unhandledRejection']) {
+  process.on(ev, (e) => {
+    process.stderr.write(`dom-harness-cycles: BŁĄD (${ev}) ${e && e.stack ? e.stack : e}\n`);
+    process.exit(2);
+  });
+}
 
 const args = process.argv.slice(2);
 const argOf = (k) => {
@@ -110,11 +120,14 @@ console.warn = () => {};
 const consoleErrors = [];
 console.error = (...a) => { consoleErrors.push(a.map(String).join(' ').slice(0, 200)); };
 
-const tmp = mkdtempSync(join(tmpdir(), 'repin-ui2e-cyc-'));
-const pinOut = join(tmp, 'pin');
-const v2Out = join(tmp, 'v2');
+let tmp = null;
+let pinOut = '';
+let v2Out = '';
 let exitCode = 0;
 try {
+  tmp = mkdtempSync(join(argOf('--tmp-dir') ?? tmpdir(), 'repin-ui2e-cyc-'));
+  pinOut = join(tmp, 'pin');
+  v2Out = join(tmp, 'v2');
   await bundle([...MODS.map((m) => join(PIN_SRC, 'ui', m)), ...PIN_REF.map((m) => join(PIN_SRC, m))], pinOut);
   await bundle([...V2_CTRL.map((m) => join(V2_ROOT, 'src', m)), ...[...MODS, ...V2_EXTRA].map((m) => join(V2_ROOT, 'src/ui', m))], v2Out);
   void V2_SRC_OVERRIDE;
@@ -1202,6 +1215,6 @@ try {
   console.warn = origWarn;
   console.error = origError;
   console.log = origLog;
-  rmSync(tmp, { recursive: true, force: true });
+  if (tmp) rmSync(tmp, { recursive: true, force: true });
 }
 process.exit(exitCode);

@@ -7,7 +7,6 @@
 // pola DTO stanu audiencji z Rust (P5-0 §6.6 `DiplomacyAudienceDto`); stałe/etykiety → `StaticCatalogDto`.
 import type {
   AcceptanceSideBalanceDto,
-  CivBonusLiteDto as CivBonusLite,
   DiplomacyNastawienieDto,
   FormalDiplomaticKindDto as FormalDiplomaticKind,
   NegotiationDealSidesDto,
