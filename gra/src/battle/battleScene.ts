@@ -108,7 +108,7 @@ import {
   fortificationDefenseBonusForUnit,
   wallCrownShooterRange,
 } from '../game/city-defense';
-import { meleeBlockedByWall, cityFortificationKind } from '../game/city-fortification';
+import { meleeBlockedByWall, cityFortificationKind, attackerWallEntryIsBreach } from '../game/city-fortification';
 import {
   towerMaterialFor,
   towerRows,
@@ -6065,6 +6065,11 @@ export class BattleScene {
           ru.q = wallCol;
           ru.r = wallRow;
           ru.onWallWalkway = true;
+          // R5 (R-WEB-SIEGE-TOWER-BREACH-EVERYWHERE-Q1): wejscie wieza na korone = wylom.
+          if (attackerWallEntryIsBreach(ru.side, ru.onWallWalkway) && !this.wallEverBreached) {
+            this.wallEverBreached = true;
+            this.log.push('=== WYLOM: atakujacy weszli na mur po wiezy oblezniczej -- miasto moze zostac zdobyte ===');
+          }
           this.occByKey.set(wallKey, ru);
           const { x, z } = cellToWorld(wallCol, wallRow);
           const walkY = 2.5; // wall walk height

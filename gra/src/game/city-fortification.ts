@@ -16,6 +16,11 @@
  *  R2 obronca NA MURZE / ZA PALISADA (nienaruszona) jest nieosiagalny dla
  *     jednostek wrecz; atakuja go tylko dystansowe i machiny;
  *  R3 bonus obrony na murze/palisadzie -- city-defense.ts cityWallDefenseBonusPercent.
+ *
+ * R-WEB-SIEGE-TOWER-BREACH-EVERYWHERE-Q1 (decyzja wlasciciela 2026-11-03, ABC-B):
+ *  R5 wieza obleznicza liczy sie jako WYLOM WSZEDZIE (Auto, „Pomin", szturm AI/
+ *     barbarzyncow ORAZ bitwa taktyczna): atakujacy, ktory wszedl wieza na korone
+ *     muru/palisady, otwiera miasto do zdobycia bez taranu/katapulty.
  */
 
 export type CityFortificationKind = 'none' | 'palisada' | 'mur';
@@ -80,4 +85,14 @@ export function meleeBlockedByWall(ctx: MeleeWallContext): boolean {
  */
 export function autoStormBreach(hasSiegeMachine: boolean): boolean {
   return hasSiegeMachine;
+}
+
+/**
+ * R5: wejscie ATAKUJACEGO na korone muru/palisady (wspiecie sie wieza obleznicza
+ * w bitwie taktycznej) = wylom dla celow zdobycia miasta i bicia obroncow z muru
+ * (R1/R2). Obronca na koronie NIE jest wylomem; atakujacy poza korona tez nie.
+ * Spojne z autoStormBreach: w Auto/„Pomin" wieza (jak kazda machina) daje wylom.
+ */
+export function attackerWallEntryIsBreach(side: 'atk' | 'def', onWallWalkway: boolean): boolean {
+  return side === 'atk' && onWallWalkway === true;
 }
