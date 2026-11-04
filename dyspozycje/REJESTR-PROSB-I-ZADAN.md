@@ -8641,3 +8641,5 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 - 2026-11-04 — R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1 zdeployowane (FC PASS-WITH-NOTES `dceaab0fa`): przyczyna = garnizon-sierota (flaga inGarnizon bez własnego miasta) + łączenie armii nadające garnizon bez sprawdzenia miasta; samoleczenie przy kliku/wyborze/hoverze/starcie tury/wczytaniu. NIE_ZMIERZONO: organiczne odtworzenie, follow-leader, tooltip. Jeśli problem wróci — prośba o zapis gry tuż po zamrożeniu.
 
 - 2026-11-04 — R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1 zdeployowane (FC PASS-WITH-NOTES `1ff8657fc`). DO DECYZJI WŁAŚCICIELA (nie blokuje): w hot-seat atak z marszu kończącego fotela NIE odpala się przy zmianie fotela (marsz dochodzi do celu; wcześniej przepadał). Domyślnie zostaje.
+
+- 2026-11-04 — POTWIERDZENIE (zrzut): obóz łowiecki nadal wyrównuje wzgórze i usuwa las (ROBOCZA b05e9674/34d2cada) → R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1 pozostaje otwarty, priorytet wysoki (grupa 4 planu webowego, pierwszy do uruchomienia po zwolnieniu dysku).
