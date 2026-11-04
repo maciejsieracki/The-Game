@@ -92,5 +92,26 @@ for (const [key, sec] of Object.entries(manifest)) {
   }
 }
 console.log(`repin-ui2-overlay: portów overlayPorts*=${portFilesD}`);
+// R-RUSTPORT-REPIN-UI-2-F-Q1 (addytywnie): porty DOM przepięte na web (`tools/repin-ui2*-ported.json`, jeden plik na
+// partię) — w odniesieniu pinu podmieniany plik WEBA (sha256 weba z listy), port zostaje portem.
+let ported = 0;
+const toolsDir = new URL('./', import.meta.url);
+for (const name of readdirSync(toolsDir).filter((n) => /^repin-ui2.*-ported\.json$/.test(n)).sort()) {
+  const list = JSON.parse(readFileSync(new URL(name, toolsDir), 'utf8'));
+  for (const f of list.files) {
+    const buf = readFileSync(join(resolve(webDir), f.web));
+    const sha = createHash('sha256').update(buf).digest('hex');
+    if (sha !== f.sha256 || buf.length !== f.bytes) {
+      bad++;
+      console.error(`SHA ${f.web} web=${sha}/${buf.length} ${name}=${f.sha256}/${f.bytes}`);
+      continue;
+    }
+    const dst = join(resolve(out), f.web);
+    mkdirSync(dirname(dst), { recursive: true });
+    writeFileSync(dst, buf);
+    ported++;
+    console.log(`nakładka (port DOM, ${name}) ${f.web} (${buf.length} B)`);
+  }
+}
 console.log(`repin-ui2-overlay: plików=${manifest.files.length} portów=${portFiles} niezgodnych=${bad} out=${out}`);
 process.exitCode = bad === 0 ? 0 : 1;

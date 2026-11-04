@@ -433,7 +433,15 @@ try {
     legacy2: ['civ-newgame-prefs-v2', JSON.stringify({ v: 3, selEpoch: 'nieznana', settings: {}, advanced: { barbariansEnabled: false, victoryPowerAndDominance: true, wzrostLudnosciPace: 'normalny', ruchSwiataPace: 'normalny' } })],
     uszkodzone: ['civ-new-game-prefs-v1', '{x'],
   };
-  const click = async (sel) => { fire(document.querySelector('.civ-newgame ' + sel), 'click'); await sleep(0); };
+  // R-RUSTPORT-REPIN-UI-2-F-Q1: web `86d510c66` przeniósł start gry z `.sett-actions .start` do paska nawigacji kroku 4
+  // (`.nav .nb.next[data-seat-ready]`, atrybut tylko na kroku 4). Na pinie `.sett-actions .start` istnieje → bez zmiany
+  // zachowania; na nakładce REPIN UI-2-F (port i web `86d510c66`) „start” = przycisk akcji kroku 4.
+  const click = async (sel) => {
+    let el = document.querySelector('.civ-newgame ' + sel);
+    if (!el && sel === '.sett-actions .start') el = document.querySelector('.civ-newgame .nav .nb.next[data-seat-ready]');
+    fire(el, 'click');
+    await sleep(0);
+  };
   // Kroki: 1 intro, 2 epoka, 3 cywilizacja, 4 ustawienia (+ modal / fotel 2), 5 generowanie (`onStart`).
   const STEPS = {
     s1: async () => {},
