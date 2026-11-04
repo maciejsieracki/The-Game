@@ -1243,6 +1243,9 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     playerEra,
     horseStockAvailable,
     tradeRouteKonUnlocked: false,
+    // R-WEB-AUTOIMPROVE-IRRIGATION-NOT-BUILT-Q1: ta sama definicja „przy rzece” co `onRiverHex` (farma/trzoda E1–E3) —
+    // inaczej heks z samym widocznym sąsiadem-rzeką dostawał farmę i trzodę, a irygacji nigdy. Tylko automat; ręczna budowa bez zmian.
+    visibleRiverNeighborCountsForIrrigation: true,
   };
   const qualifies = buildImprovementQualifier(state);
 
