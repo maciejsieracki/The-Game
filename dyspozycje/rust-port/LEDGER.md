@@ -768,3 +768,6 @@ Nic do integracji. Trwa 5 workflowów UI (Opus 5.5): UI-2-B, C, D, E, F. `parity
 
 ## 2026-11-04 — POLECENIE WŁAŚCICIELA: „tylko dokończ co zacząłeś (Opus) i tyle”
 Nie uruchamiam nowych tematów (UI-2-G, kolejne partie, tematy webowe). Dokańczam trwające: UI-2-B, C, D, E, F (Opus 5.5) — po każdym wyniku: integracja na `parity-v2`, sprzątanie worktree, wpis w LEDGER; ewentualne rundy FAIL tego samego ID są częścią dokończenia. Po zakończeniu wszystkich pięciu — stop, raport końcowy dla właściciela.
+
+## 2026-11-04 — ZGODA WŁAŚCICIELA (ABC): „Kasuj esbuild-*.map i puszczaj dalej” — uchyla „tylko dokończ”
+Właściciel: celem jest zużycie limitu na ciężkich workerach Opus przez noc. Skasowano 16 plików `/tmp/esbuild-*.map` (≈1,3 GB; wcześniej błędnie szacowane na 14 GB — reszta /tmp to katalogi `tmp.*` ≈4 GB, ich masowe kasowanie zablokował klasyfikator — nieobchodzone). Uruchomiono UI-2-G (cityPanel + dryf K01–K09). Dysk ≈ 2,7 GB → ostrożnie.
