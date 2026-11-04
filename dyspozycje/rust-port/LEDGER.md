@@ -808,3 +808,6 @@ Operator (`9f552195e`,`631413933`) → Evaluator FAIL (Z1: narzędzie mutacji za
 
 ## 2026-11-04 — kontrola cykliczna 11:12 (po restarcie kontenera)
 Restart kontenera zatrzymał workflowy webowe FOOD-ONLY-WORKED-HEXES i HUNTING-CAMP; wznowione (`resumeFromRunId`: `wf_953e1aae-b65`, `wf_d9442d77-6b3`; worktree i journale przetrwały). Rust: faza UI-2 (A–G) kompletna, `parity-v2` = `b520768b0`. Nic do integracji. Web: ROBOCZA 5cbd823a. Następne: wyniki FOOD/HUNT → deploy; potem grupa 2 (AI: koncentracja → pełny ruch → omijanie terytorium → najbliższy wódz), grupa 5 (aneksja), irygacja, spacja, bitwa ręczna, HUD czerwień.
+
+## 2026-11-04 — web: R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 wdrożone (ROBOCZA ca6a9e08)
+Zmiana w `gra/src/game/auto-improvements.ts` (eksport `FOOD_IMPROVEMENT_KEYS`, `hexAllowsKey` dla żywności wymaga obywatela, usunięte wyjątki rzeczne `riverForestPrepHex`/`riverClearedFarmHex`, `farmPriorityOnlyWorked` czytane). Logika gry (nie render) — port Rust `auto-improvements`/AI (P6, wstrzymane) wymaga REPIN; nie dotyczy grafiki.
