@@ -817,3 +817,5 @@ Zmiana w `gra/src/game/auto-improvements.ts` (eksport `FOOD_IMPROVEMENT_KEYS`, `
 - 2026-11-04 · ROBOCZA `a53cbc62` (AI-ARMY-CONCENTRATION-REPLACEMENT) i `ac12379e` (ROSTER-SPACE + HUD-RESOURCE-DEFICIT-RED) wdrożone. REPIN UI (grafika): `hud.ts` i `hudChip6c.ts` mają kopie bajtowe w Rust (UI-2-A/UI-2-C) — czerwień niedoboru złota/żywności/surowców (`--civ-hud-shortage`, klasa `civ-hud-chip-short`). Logika (AI zbiórka, kolejka Spacji) = P6.
 
 - 2026-11-04 · Kontrola: ROBOCZA 56755bef (MOVE-FULL-RANGE) wdrożona; trwa tylko SIEGE-MANUAL-BATTLE (wf_3e5c8310-f51); nowe tematy wstrzymane na polecenie właściciela do końca bieżących spraw i sprzątania.
+
+- 2026-11-04 · WATER-ACCESS-PORT-VS-MILL: FC PASS-WITH-NOTES (b3d647b26), bez zmian w src — Port już morze||rzeka; budynku Młyn nie ma w danych (maMlyn zawsze false). Osobny temat: definicja Młyna z bramką rzeczną (isRiverAdjacent). Test + dokumenty wejdą do main z najbliższym wdrożeniem.
