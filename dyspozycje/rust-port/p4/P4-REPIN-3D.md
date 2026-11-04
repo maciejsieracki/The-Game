@@ -702,3 +702,61 @@ Ocena wizualna GPU: **NIE_ZMIERZONO** (brak `/dev/dri`; nie blokuje). Zmiana obr
 ## $ sha256sum -c tests/repin3d_fixtures/MANIFEST_B.sha256   32 OK
 ## generator 2 katalogi: b4.json f146e755… = f146e755… = repo; cities 023c3540…/7d292864… = pin; relief_real f9e8588e…
 ```
+
+## 14. Partia A6 — kontrola cz. 1–2 (`siege_wall`, `field`) na `origin/main` + kolejka dryfu (R-RUSTPORT-REPIN-3D-A6-Q1, runda 1)
+
+**Baza:** `rust-port/parity-v2` @ `2962d0a7b` (renderer 463/0, A1–A3, B1–B4). **Web:** `origin/main` @
+`86d510c66` (zmierzone `git ls-remote origin main`, 2026-11-04). Surowe logi:
+`dyspozycje/autobot/runs/R-RUSTPORT-REPIN-3D-A6-Q1/dowody/`.
+
+### 14.1 Pomiar: 0 różnic
+
+NIEZMIENIONE generatory pinu (`tests/fixtures/battle3d/{gen.ts,build.mjs}` cz. 1, `{gen_field.ts,
+build_field.mjs,dom_stub.ts,three_shim.ts}` cz. 2; three@0.169.0, esbuild@0.24.0, node v22.22.0) uruchomione
+na `git archive 86d510c66 gra/src gra/data` w 2 osobnych katalogach `mktemp -d` (osobne `npm install`):
+
+| plik | przypadki | SHA-256 katalog 1 = katalog 2 | repo (`MANIFEST.sha256`) |
+|---|---|---|---|
+| `siege_wall.json` | 95 (11 877 meshy) | `bce895d8…0c2fdbf7` | **identyczny** |
+| `field.json` | ctor 16 + synthetic 9 (281 792 węzłów) | `39df4eb7…3b369929` | **identyczny** |
+
+Zgodne z §2.2: `git diff --numstat edb8fb56 86d510c66 -- gra/src/battle/siegeWall.ts` = `213 0` (wyłącznie
+addytywny; `render/bronzeCity.ts` bez zmian). Bundel `gen.mjs` na `86d510c66` (`71e60111…`) różni się od
+commitowanego (`b60f124d…`, pin) tylko 3 hunkami addytywnymi (`buildPalisade`, `kind ?? "mur"`, gałąź
+`palisada`) — kod A2. `gen_field.mjs` na `86d510c66` = `5415e0c0…` (pin `497e5666…`). Fixtury i `.rs` portu
+**nietknięte** (`src/battle/{siege_wall,field}*.rs` bez zmian — brak różnic do przeniesienia).
+
+### 14.2 Pochodzenie fixtur (bez zmiany wartości)
+
+`tests/fixtures/battle3d/README.md`: cz. 1 i cz. 2 — dopisane „Provenance (re-pin A6)” (pin `edb8fb56` →
+`origin/main` @ `86d510c66`, SHA bundli obu rewizji), przepis regeneracji `git archive 86d510c66`.
+Sekcje cz. 3–5 (`units`, `dynamics`, `picking`) bez zmian — należą do A4/A5. `MANIFEST.sha256`: zmieniony
+tylko wiersz `README.md` (`903ea0b4…` → `72073354…`); `sha256sum -c` 24 OK.
+**Z-RP-A6-1 (ZAŁOŻENIE):** commitowany `gen.mjs` pozostaje bundlem pinu (artefakt odtwarzalności, nie
+wartość); bundel `86d510c66` udokumentowany w README, nie commitowany (jak `gen_field.mjs`).
+
+### 14.3 Dryf weba od ostatniej partii (kolejka A7… / REPIN-3D-C)
+
+`git log --oneline 86d510c66..origin/main -- gra/src/battle gra/src/render gra/data` → **0 commitów**;
+`git diff --stat` tego zakresu → pusty (`origin/main` = `86d510c66`). **Brak nowych hunków sceny**:
+kolejka A7 / REPIN-3D-C **pusta** na dzień pomiaru. Otwarte pozostają wyłącznie wcześniej zaplanowane A4
+(§3, `units.json`) i A5 (`dynamics.json`, `picking.json`). Kolejny pomiar dryfu: od `86d510c66` przy
+następnej partii.
+
+### 14.4 Mutacje, GPU
+
+Mutacje: **NIE-DOTYCZY** — brak nowego kodu (0 linii `.rs`); fixtury bajt w bajt = te same asercje,
+istniejące `mutate.py` / `mutate_field.py` nie były ponownie uruchamiane. Ocena wizualna GPU:
+**NIE_ZMIERZONO** (brak GPU; nie blokuje).
+
+### 14.5 Bramy
+
+```text
+# rustc 1.97.0; CARGO_INCREMENTAL=0, CARGO_PROFILE_DEV_DEBUG=0, CARGO_PROFILE_TEST_DEBUG=0
+## $ cargo fmt --all -- --check                                   EXIT=0
+## $ cargo clippy --locked --all-targets -- -D warnings            EXIT=0
+## $ cargo test --locked --no-fail-fast   passed=463 failed=0 binaries=62   EXIT=0   (baza 2962d0a7b: 463)
+## $ cargo +1.87.0 test --locked --test battle3d_siege_wall --test battle3d_field   3 + 5 passed   EXIT=0
+## $ sha256sum -c tests/fixtures/battle3d/MANIFEST.sha256   24 OK
+## generator 2 katalogi: siege_wall.json bce895d8… = field.json 39df4eb7… = repo
+```

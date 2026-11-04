@@ -13,18 +13,29 @@ web code** of `edb8fb56`:
 No WebGL renderer: `buildSiegeWall` returns a `THREE.Group`; `gen.ts` calls
 `updateMatrixWorld(true)` and dumps it.
 
+**Provenance (re-pin A6, R-RUSTPORT-REPIN-3D-A6-Q1):** `siege_wall.json` is current for
+`origin/main` @ `86d510c66`. The unchanged `gen.ts` + `build.mjs` run on `86d510c66` (two separate
+`mktemp -d` directories) give `siege_wall.json` **byte-identical** to the committed one
+(`bce895d8…` = `MANIFEST.sha256`, 95 cases, 11 877 meshes). The web diff `edb8fb56..86d510c66` of
+`battle/siegeWall.ts` is purely additive (213 lines added, 0 removed: palisade `kind`, ported in A2;
+`kind` empty = `'mur'` path unchanged); `render/bronzeCity.ts` is unchanged. The committed `gen.mjs`
+(`b60f124d…`) stays the bundle of `edb8fb56`; the bundle of `86d510c66` differs only by those
+additive lines (92 diff lines) and is `71e601116b9886e5601990cf2d89908da187562bbb6d5c5066d761d0b3c5fad8` (441 930 B; not committed, not in
+`MANIFEST.sha256`). Evidence: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-3D-A6-Q1/dowody/`.
+
 ## Regeneration (outside the repository only)
 
 ```bash
 S=<scratch dir>
 mkdir -p $S/ref $S/websrc $S/refscript $S/out
 (cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)
-git archive edb8fb56 gra/src gra/data | tar -x -C $S/websrc
+git archive 86d510c66 gra/src gra/data | tar -x -C $S/websrc   # edb8fb56 gives the same JSON
 cp rust-port/renderer/tests/fixtures/battle3d/{gen.ts,build.mjs} $S/refscript/
 ln -s $S/ref/node_modules $S/refscript/node_modules
 node $S/refscript/build.mjs                 # -> $S/refscript/gen.mjs
 node $S/refscript/gen.mjs $S/out            # prints: battle3d siegeWall cases=95 meshes=11877
-sha256sum $S/out/siege_wall.json $S/refscript/gen.mjs   # both = MANIFEST.sha256
+sha256sum $S/out/siege_wall.json $S/refscript/gen.mjs   # JSON = MANIFEST.sha256; gen.mjs = 71e60111… (86d510c66) / MANIFEST (edb8fb56)
+sha256sum -c MANIFEST.sha256                # in this directory: checks the committed files
 ```
 
 Two runs give the same SHA-256 (no random numbers: `hash01` is `Math.sin`-based).
@@ -98,18 +109,26 @@ builders called directly on `Object.create(BattleScene.prototype)` for synthetic
 `497e56661add95c804b6476ede7f7a34441a49bd8d096a760710ec7067d09143` (kept here, not in
 `MANIFEST.sha256`, so that `sha256sum -c MANIFEST.sha256` checks only committed files).
 
+**Provenance (re-pin A6, R-RUSTPORT-REPIN-3D-A6-Q1):** `field.json` is current for `origin/main` @
+`86d510c66`. The unchanged `gen_field.ts` + `build_field.mjs` + `dom_stub.ts` + `three_shim.ts` run on
+`86d510c66` (two separate `mktemp -d` directories) give `field.json` **byte-identical** to the committed
+one (`39df4eb7…369929`, ctor=16 synthetic=9 nodes=281 792). The bundle `gen_field.mjs` of `86d510c66` is
+`5415e0c0a4e8c589affb12035ae33fe2ba310603eb1fc2ff7bdef6c5a1e13a68` (2 818 393 B; the web moved
+`battleScene.ts` and its imports, none on the paths these 25 scenes execute). Evidence:
+`dyspozycje/autobot/runs/R-RUSTPORT-REPIN-3D-A6-Q1/dowody/`.
+
 ## Regeneration (outside the repository only)
 
 ```bash
 S=<scratch dir>
 mkdir -p $S/ref $S/websrc $S/refscript $S/out
 (cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)
-git archive edb8fb56 gra/src gra/data | tar -x -C $S/websrc
+git archive 86d510c66 gra/src gra/data | tar -x -C $S/websrc   # edb8fb56 gives the same JSON
 cp rust-port/renderer/tests/fixtures/battle3d/{gen_field.ts,build_field.mjs,dom_stub.ts,three_shim.ts} $S/refscript/
 ln -s $S/ref/node_modules $S/refscript/node_modules
 node $S/refscript/build_field.mjs           # -> $S/refscript/gen_field.mjs
 node $S/refscript/gen_field.mjs $S/out      # prints: battle3d field ctor=16 synthetic=9 nodes=281792
-sha256sum $S/out/field.json $S/refscript/gen_field.mjs   # field.json = MANIFEST.sha256, gen_field.mjs = 497e5666… (above)
+sha256sum $S/out/field.json $S/refscript/gen_field.mjs   # field.json = MANIFEST.sha256, gen_field.mjs = 5415e0c0… (86d510c66) / 497e5666… (edb8fb56)
 ```
 
 Measured: two runs in two different scratch directories (separate `npm install`, separate

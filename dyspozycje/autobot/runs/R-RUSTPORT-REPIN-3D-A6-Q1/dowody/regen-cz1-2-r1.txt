@@ -1,0 +1,62 @@
+# R-RUSTPORT-REPIN-3D-A6-Q1 r1 — regeneracja cz. 1–2 na origin/main (surowe wyniki)
+# baza: rust-port/parity-v2 @ 2962d0a7bc591b81a1f31a24a886d3e2636348ab
+# web:  origin/main @ 86d510c667268880414d693532ca012c9310589e (git ls-remote origin main, 2026-11-04;
+#       git log -1: 2026-11-04 01:10:35 +0000 "deploy(robocza): 34d2cada ruchy gracza przed turami AI")
+# toolchain: node v22.22.0, npm install --ignore-scripts three@0.169.0 esbuild@0.24.0 (osobno w każdym katalogu)
+# generatory: NIEZMIENIONE kopie gen.ts, build.mjs, gen_field.ts, build_field.mjs, dom_stub.ts, three_shim.ts
+#             z rust-port/renderer/tests/fixtures/battle3d/ (MANIFEST.sha256)
+
+## katalog 1: /tmp/a6q1-s1.4xWGS3 (mktemp -d; git archive 86d510c66 gra/src gra/data)
+$ node refscript/build.mjs && node refscript/gen.mjs out
+battle3d siegeWall cases=95 meshes=11877
+EXIT=0
+$ node refscript/build_field.mjs && node refscript/gen_field.mjs out
+battle3d field ctor=16 synthetic=9 nodes=281792
+EXIT=0
+$ sha256sum out/*.json refscript/gen.mjs refscript/gen_field.mjs
+39df4eb712ed690454989b5ee3c66778924d8a8dcb09f3f9a164c6143b369929  out/field.json
+bce895d837a392948ca7747a6cdb98e16eb6ab8f2ad3ebd0f0ffa6b80c2fdbf7  out/siege_wall.json
+71e601116b9886e5601990cf2d89908da187562bbb6d5c5066d761d0b3c5fad8  refscript/gen.mjs
+5415e0c0a4e8c589affb12035ae33fe2ba310603eb1fc2ff7bdef6c5a1e13a68  refscript/gen_field.mjs
+sizes: field.json 3165207 B, siege_wall.json 7228812 B, gen.mjs 441930 B, gen_field.mjs 2818393 B
+
+## katalog 2: /tmp/a6q1-s2.G6muk1 (mktemp -d; osobny npm install; git archive origin/main gra/src gra/data)
+$ node refscript/build.mjs && node refscript/gen.mjs out
+battle3d siegeWall cases=95 meshes=11877
+EXIT=0
+$ node refscript/build_field.mjs && node refscript/gen_field.mjs out
+battle3d field ctor=16 synthetic=9 nodes=281792
+EXIT=0
+$ sha256sum out/*.json refscript/gen.mjs refscript/gen_field.mjs
+39df4eb712ed690454989b5ee3c66778924d8a8dcb09f3f9a164c6143b369929  out/field.json
+bce895d837a392948ca7747a6cdb98e16eb6ab8f2ad3ebd0f0ffa6b80c2fdbf7  out/siege_wall.json
+71e601116b9886e5601990cf2d89908da187562bbb6d5c5066d761d0b3c5fad8  refscript/gen.mjs
+5415e0c0a4e8c589affb12035ae33fe2ba310603eb1fc2ff7bdef6c5a1e13a68  refscript/gen_field.mjs
+
+## repo (fixtury pinu edb8fb56, MANIFEST.sha256)
+bce895d837a392948ca7747a6cdb98e16eb6ab8f2ad3ebd0f0ffa6b80c2fdbf7  siege_wall.json   = katalog 1 = katalog 2
+39df4eb712ed690454989b5ee3c66778924d8a8dcb09f3f9a164c6143b369929  field.json        = katalog 1 = katalog 2
+b60f124dfa6278127761627702a197d5d337d0ab3f7d8143c668b252c244c637  gen.mjs (bundel pinu edb8fb56; NIE podmieniony)
+497e56661add95c804b6476ede7f7a34441a49bd8d096a760710ec7067d09143  gen_field.mjs pinu (README; niecommitowany)
+
+WYNIK: 0 różnic w siege_wall.json (95 przypadków) i field.json (16 ctor + 9 synthetic, 281 792 węzłów).
+
+## dlaczego bundel gen.mjs się różni (a JSON nie)
+$ diff fixtures/battle3d/gen.mjs refscript/gen.mjs   -> 92 linie różnicy, hunki:
+9246a9247,9334   (dodana funkcja buildPalisade — kod A2)
+9253c9341,9342   (resolveOpts: dodane `kind: opts.kind ?? "mur"` obok `gateWidthTiles`)
+9254a9344        (gałąź `if (resolved.kind === "palisada") return buildPalisade(...)`)
+$ git diff --numstat edb8fb56 86d510c66 -- gra/src/battle/siegeWall.ts gra/src/render/bronzeCity.ts
+213	0	gra/src/battle/siegeWall.ts          (0 usuniętych linii; bronzeCity.ts bez zmian)
+gen_field.mjs różni się, bo battleScene.ts i jego importy zmieniły się od pinu; żadna zmiana nie
+dotyka ścieżek wykonywanych przez gen_field.ts dla 25 scen (wynik bajt w bajt).
+
+## zakres weba od ostatniej partii (86d510c66) do bieżącego origin/main
+$ git log --oneline 86d510c66..origin/main -- gra/src/battle gra/src/render gra/data | wc -l
+0
+$ git diff --stat 86d510c66 origin/main -- gra/src/battle gra/src/render gra/data | wc -l
+0
+(origin/main == 86d510c66 — brak nowych hunków sceny)
+
+## sprzątanie
+rm -rf /tmp/a6q1-s1.4xWGS3 /tmp/a6q1-s2.G6muk1   (jawne ścieżki, po pomiarze)
