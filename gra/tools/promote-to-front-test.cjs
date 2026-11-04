@@ -365,10 +365,21 @@ console.log('-- 15. RUNDA 3, naprawa B2: repro dosłowne z rejestru Evaluatora -
   // Symulacja main.ts: tryDeductUnitSpawnCostsEmpire zwraca ok:false (brak Manpower) --
   // applyProductionCompleted (gałąź `!d.ok`) woła teraz insertAtFront zamiast ręcznego splice.
   const afterManpowerFail = M.insertAtFront(prodAfterAdvance, completed, completed.koszt);
-  eq(M.frontItem(afterManpowerFail).id, 'Wojownik', 'Wojownik wraca na front kolejki (czeka na wolny Manpower w kolejnej turze)');
-  eq(afterManpowerFail.postep, completed.koszt, 'aktywny postęp = koszt Wojownika (w pełni "opłacony", czeka tylko na Manpower) -- kontrakt applyProductionCompleted zachowany');
-  const cudAfterFail = afterManpowerFail.kolejka.find(it => it.id === 'Cud');
-  eq(cudAfterFail.postep, 500, 'B2 NAPRAWIONY: Cud zachowuje zbankowane 500 Pracy mimo że Wojownik wrócił na front -- NIE ginie (przed naprawą: pole nadal 0/undefined, bo prodAfterAdvance.postep był ślepo nadpisywany)');
+  // R-WEB-WAR-ALLIN-CAPITAL-TEST-DEBT-Q1 (kat. A): od P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B (production.ts:1831)
+  // insertAtFront NIE odtwarza JEDNOSTKI w kolejce Pracy (kind !== 'budynek' => kolejka bez zmian; opłacona rekrutacja
+  // ma własne rekrutacja[], a main.ts odkłada ją przez requeueManpower). Kontrakt B2 ("brak Manpower nie gubi
+  // zbankowanych 500 Pracy Cudu") zachowany inaczej: Cud ZOSTAJE frontem z postep=500, Wojownika w kolejce Pracy nie ma.
+  eq(M.frontItem(afterManpowerFail).id, 'Cud', 'brak Manpower: jednostka NIE wraca do kolejki Pracy -- front zostaje przy Cudzie (P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B)');
+  eq(afterManpowerFail.kolejka.some(it => it.id === 'Wojownik'), false, 'Wojownik (jednostka) nie jest odtwarzany w kolejce Pracy');
+  eq(afterManpowerFail.postep, 500, 'B2 (kontrakt): aktywny postęp Cudu = 500 -- brak Manpower go nie nadpisuje');
+  // Wariant BUDYNEK (kind budynek) zachowuje pierwotny kontrakt insertAtFront: wraca na front, a 500 Cudu jest bankowane.
+  let prodB = { kolejka: [item('Cud', 1000), item('Koszary', 10)], postep: 500 };
+  prodB = M.promoteToFront(prodB, 1);
+  const { prod: prodBAfter, completed: completedB } = M.advanceProduction(prodB, 10);
+  const afterB = M.insertAtFront(prodBAfter, completedB, completedB.koszt);
+  eq(M.frontItem(afterB).id, 'Koszary', 'budynek wraca na front (kontrakt insertAtFront dla kind=budynek)');
+  eq(afterB.postep, completedB.koszt, 'aktywny postęp = koszt budynku wracającego na front');
+  eq(afterB.kolejka.find(it => it.id === 'Cud').postep, 500, 'B2 NAPRAWIONY (wariant budynek): Cud zachowuje zbankowane 500 Pracy -- NIE ginie');
 }
 
 console.log('-- 16. RUNDA 4, naprawa B3: repro dosłowne z rejestru Evaluatora -- AI queueJump (cud wymuszony) BANKUJE front zamiast go zerować --');
@@ -579,10 +590,19 @@ console.log('-- 24. STRUKTURA (regex na main.ts): sanitizeProductionQueue woła 
   const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
   const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
+  // R-WEB-WAR-ALLIN-CAPITAL-TEST-DEBT-Q1 (kat. A): od P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B sanitizeProductionQueue
+  // najpierw migruje legacy jednostki (`sanitizeBuildQueue(prod)` -> `migrated`, zwrot Pracy do puli), a DOPIERO
+  // `migrated.prod` przechodzi przez filterQueue. Pin: filterQueue na wyniku migracji (nie na surowym `prod`),
+  // plus kredyt migrated.refundedPraca do puli (24a2).
   const RE_SANITIZE_USES_FILTERQUEUE =
-    /function sanitizeProductionQueue\(ownerId: number, prod: CityProduction\): CityProduction \{[\s\S]{0,400}?filterQueue\(prod, \(item\) => \{/;
+    /function sanitizeProductionQueue\(ownerId: number, prod: CityProduction\): CityProduction \{[\s\S]{0,600}?filterQueue\(migrated\.prod, \(item\) => \{/;
   assert(RE_SANITIZE_USES_FILTERQUEUE.test(mainSrc),
-    '24a: sanitizeProductionQueue woła filterQueue(prod, ...) zamiast ręcznego prod.kolejka.filter(...)');
+    '24a: sanitizeProductionQueue woła filterQueue(migrated.prod, ...) zamiast ręcznego prod.kolejka.filter(...)');
+
+  const RE_REFUND_CREDITS_POOL =
+    /const migrated = sanitizeBuildQueue\(prod\);\s*if \(migrated\.refundedPraca > 0\) \{\s*setOwnerPracaPool\(ownerId, ownerPracaPool\(ownerId\) \+ migrated\.refundedPraca\);/;
+  assert(RE_REFUND_CREDITS_POOL.test(mainSrc),
+    '24a2: sanitizeBuildQueue -> migrated.refundedPraca kredytowane do puli Pracy właściciela (zwrot legacy jednostki nie przepada)');
 
   const RE_CREDITS_POOL =
     /forfeitedPostep > 0\) \{[\s\S]{0,200}?setOwnerPracaPool\(ownerId, ownerPracaPool\(ownerId\) \+ forfeitedPostep\)/;
