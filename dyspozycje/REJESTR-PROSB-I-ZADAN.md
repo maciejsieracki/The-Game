@@ -8653,3 +8653,12 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 - 2026-11-04 — R-WEB-SIEGE-TOWER-BREACH-EVERYWHERE-Q1 zdeployowane (ROBOCZA 5cbd823a, FC `6593d7c3a`): wieża oblężnicza = wyłom także w bitwie taktycznej. NIE_ZMIERZONO: pełny przebieg tury AI/barbarzyńców z wieżą. REPIN Rust (battle: wspięcie wieżą ustawia `wallEverBreached`) po wznowieniu logiki portu.
 
 - 2026-11-04 — R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 zdeployowane (ROBOCZA ca6a9e08, FC `1a83b7f44`): żywność tylko przy obywatelach (gracz+AI), irygacja i trzoda po farmie na polach obywateli; usunięte wyjątki rzeczne i złożowe. Pomiar 5 ziaren × 100 tur: ulepszenia żywności poza obywatelami → 0. Plon nominalnie −17–19% (skutek reguły). NIE_ZMIERZONO: Chromium/live, zapis ROBOCZEJ właściciela. Jeśli na zapisie właściciela dalej widać farmy bez obywateli → prośba o zapis gry. Czerwone poza zakresem: oboz-lowiecki-las-test (19 FAIL).
+
+## 2026-11-04 — ODPOWIEDZI ABC WŁAŚCICIELA (zamknięte pytania)
+- Hot-seat atak z marszu: **A** — marsz dochodzi do celu przy zmianie fotela, atak w następnej turze tego gracza (bez zmian).
+- Zamiana Pracy na podatek: **A** — zostaje udział suwaka (dziś 60%), bez zmiany balansu.
+- Wieże oblężnicze przy murze: **A** — powstają automatycznie z machiny (założenie potwierdzone).
+- Jeziora w generatorze map: **A** — NIE dodawać (generator bez zmian, hashe map i wektory mapgen Rust nietknięte).
+- Dostęp do wody: **porty: morze i rzeka; młyn: tylko rzeka** → temat `R-WEB-WATER-ACCESS-PORT-VS-MILL-Q1`.
+- Awaryjny tartak przy rzece: **A** — NIE dodawać (tartak nadal wymaga lasu).
+- Dopalenia zlecone w pętli webowej (2026-11-04): `R-WEB-AI-STADNINA-FORT-TERRITORY-SCAN-Q1`, `R-WEB-MANPOWER-ABBREV-PANELS-Q1`, `R-WEB-TOOLTIP-RESOURCES-LINE-DEDUP-Q1`, `R-WEB-WATER-ACCESS-PORT-VS-MILL-Q1`, `R-WEB-TEST-HOOK-SETCITYLIMIT-Q1` (fala 1); następnie U-5 (farma po wycince), `R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1`, `R-WEB-TEST-HOOK-DETERMINISM-Q1`. `R-WEB-AI-BONUS-CITY-POLAR-Q1`: brak opisu w rejestrze (pozostałość po R-WEB-AI-POLAR-FALLBACK-Q1) — nie zlecone.
