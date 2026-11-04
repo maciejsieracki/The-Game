@@ -5596,9 +5596,9 @@ export interface RelacjaWejscie {
    */
   hasHandelTreaty?: boolean;
   /**
-   * E6: czy istnieje geometrycznie możliwe połączenie tras handlowych między
-   * miastami obu stron (silnik: game/trade-routes.ts findCityConnection /
-   * citiesHaveTradeConnection). Wymagane === true, by AI zaproponowało Umowę
+   * E6 → R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: czy strony mogą handlować — od 2026-11-04
+   * wystarczy znajomość (kontakt dyplomatyczny; silnik: game/trade-routes.ts
+   * externalTradeContactOk), bez wymogu fizycznego połączenia. Wymagane === true, by AI zaproponowało Umowę
    * Handlową — bez tego pola (undefined) propozycja się NIE pojawia (bezpieczny
    * domyślny brak zachowania dla wywołujących, które go nie dostarczają).
    */

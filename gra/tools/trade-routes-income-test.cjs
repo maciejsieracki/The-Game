@@ -346,7 +346,14 @@ const builtJ2NoPort = new Map([
   ['fJ2', ['targowisko']], // ...brak fizycznego Portu w obu miastach
 ]);
 const routesJ2NoPort = TR.refreshTradeRoutes([pJ2, fJ2], [], mapJ, builtJ2NoPort, NO_WAR, HAS_TREATY);
-eq(routesJ2NoPort.length, 0, 'J2: BRAK trasy -- brak lądu (wyspy) I brak fizycznego Portu, mimo Targowiska (budynku handlowego)');
+// R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (2026-11-04): J2 pinowal wymog fizycznego Portu/lacznosci
+// dla trasy ZEWNETRZNEJ (owner 0 <-> owner 1). Od tego tematu wystarczy znajomosc (domyslne
+// hasContact) -> trasa POWSTAJE ponad woda bez Portu. Wymog zostaje dla trasy WEWNETRZNEJ.
+eq(routesJ2NoPort.length, 1, 'J2: zewnetrzna trasa ponad woda BEZ Portu powstaje (wystarczy znajomosc)');
+eq(routesJ2NoPort[0].medium, 'morze', 'J2: brak ladu -> medium=morze (krzywa dochodu)');
+const fJ2i = city('fJ2i', 0, 21); fJ2i.r = 200; // TEN SAM wlasciciel co pJ2 -> trasa wewnetrzna
+const routesJ2Internal = TR.refreshTradeRoutes([pJ2, fJ2i], [], mapJ, new Map([['pJ2', ['targowisko']], ['fJ2i', ['targowisko']]]), NO_WAR, HAS_TREATY);
+eq(routesJ2Internal.length, 0, 'J2i: trasa WEWNETRZNA ponad woda bez Portu nadal NIE powstaje (reguly wewnetrzne bez zmian)');
 
 // J3: te same miasta, teraz Z fizycznym Portem (zamiast Targowiska) -> polaczenie
 // morskie powstaje; budynekOdblokowany=false, bo 'port' liczy sie tez jako budynek
@@ -372,7 +379,9 @@ const builtJ4OnlyOnePort = new Map([
   ['fJ2', ['targowisko']], // budynek handlowy, ale BRAK fizycznego Portu
 ]);
 const routesJ4 = TR.refreshTradeRoutes([pJ2, fJ2], [], mapJ, builtJ4OnlyOnePort, NO_WAR, HAS_TREATY);
-eq(routesJ4.length, 0, 'J4: fizyczny Port wymagany po OBU stronach dla morza -- jedna strona bez Portu -> brak trasy mimo budynku handlowego istniejacego formalnie u drugiej');
+eq(routesJ4.length, 1, 'J4: R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 -- trasa zewnetrzna nie wymaga Portu po zadnej stronie (dawniej brak trasy)');
+const routesJ4Internal = TR.refreshTradeRoutes([pJ2, fJ2i], [], mapJ, new Map([['pJ2', ['port']], ['fJ2i', ['targowisko']]]), NO_WAR, HAS_TREATY);
+eq(routesJ4Internal.length, 0, 'J4i: trasa WEWNETRZNA nadal wymaga Portu po OBU stronach dla morza');
 
 // ---------------------------------------------------------------------------
 // F. Dochod dystansowy -- PRZEBUDOWA R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 (ECHO Q1 + p.3,

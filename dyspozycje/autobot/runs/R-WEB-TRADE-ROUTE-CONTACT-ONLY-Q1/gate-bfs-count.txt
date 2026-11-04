@@ -1,0 +1,2 @@
+FCC_CALLS findCityConnection (sim 3 ziarna, 5 civ x 3 miasta, refreshTradeRoutes zimny+20 cieplych): PRZED=12222 PO=1658; trasy zewnetrzne PRZED 13/13/13 PO 13/16/15
+EXIT=0

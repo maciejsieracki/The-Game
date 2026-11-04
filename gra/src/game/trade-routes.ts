@@ -996,91 +996,72 @@ function detectBestConnection(
 }
 
 /**
- * E6 (2026-07-23) — czy istnieje geometrycznie MOŻLIWE połączenie tras handlowych
- * (ląd LUB morze, zgodnie z findCityConnection) między KTÓRĄKOLWIEK parą miast z
- * `citiesA` i `citiesB`. Używane przez AI↔gracz/AI↔AI proaktywne propozycje Umowy
- * Handlowej (decideAIDiplomacy) — bramka "połączenie możliwe", NIE "trasa aktywna
- * dziś": ignoruje limit slotów z tradeRouteLimitForCity (budynki handlowe), bo ten
- * limit dotyczy przepustowości istniejących tras, nie tego, czy fizyczne
- * połączenie w ogóle istnieje. Wymóg Portu dla morza pozostaje (wbudowany w
- * findCityConnection).
+ * R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (decyzja właściciela 2026-11-04) — JEDNA funkcja
+ * warunku „czy wolno zestawić trasę zewnętrzną między tymi cywilizacjami" w części
+ * NIEFIZYCZNEJ, współdzielona przez silnik (refreshTradeRoutes), UI (panel miasta,
+ * diagnoza) i AI (propozycje Umowy Szlaków): wystarczy, że cywilizacje SIĘ ZNAJĄ
+ * (kontakt dyplomatyczny — ten sam warunek, który otwiera stół negocjacji) i obie
+ * mają miasta. Fizyczna łączność (przechodnia ścieżka lądowa/morska, Port, wspólna
+ * granica) NIE jest już warunkiem. Dotychczasowe warunki niefizyczne (brak wojny,
+ * aktywna Umowa Szlaków, sloty, tech „Wymiana") sprawdzają wołający / refreshTradeRoutes.
  *
- * Czysta, zwraca na pierwszym trafieniu (short-circuit) — tanie dla typowej
- * liczby miast per cywilizacja.
+ * Zastępuje dawne `citiesHaveTradeConnection` (E6: ląd/morze BFS + Port + granica).
+ * Czysta, O(1), bez dostępu do mapy.
  */
-export function citiesHaveTradeConnection(
+export function externalTradeContactOk(
   citiesA: readonly TradeRouteCityRef[],
   citiesB: readonly TradeRouteCityRef[],
-  map: GameMap,
-  builtByCity: ReadonlyMap<string, readonly string[]>,
-  params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
-  territoryNodes?: readonly TerritoryNode[],
+  hasContact: boolean,
 ): boolean {
-  // GOAL 4: memoizacja per-para-właścicieli lokalna dla TEGO wywołania — citiesA/
-  // citiesB to zwykle wszystkie miasta dwóch konkretnych cywilizacji, więc bez
-  // tego granica liczyłaby się ponownie dla każdej pary miast zamiast raz.
-  const landBorderCache = new Map<string, boolean>();
-  for (const a of citiesA) {
-    for (const b of citiesB) {
-      if (findCityConnection(a, b, map, 'lad', params, builtByCity, territoryNodes, landBorderCache).connected) return true;
-      if (findCityConnection(a, b, map, 'morze', params, builtByCity, territoryNodes, landBorderCache).connected) return true;
-    }
-  }
-  return false;
+  return hasContact && citiesA.length > 0 && citiesB.length > 0;
 }
 
 /**
+ * R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 — medium i dystans trasy ZEWNĘTRZNEJ bez wymogu
+ * fizycznego połączenia. Medium wybiera krzywą dochodu (ląd/morze), NIE warunek
+ * istnienia: 'lad' gdy miasta leżą w jednym komponencie lądowym (kontynent, cache
+ * flood-fill per mapa — O(1) po jednorazowym przeliczeniu, zero BFS), w przeciwnym
+ * razie 'morze' (szlak ponad oceanem/pustkowiem). Dystans = hexDistance miast, bez
+ * zmian względem dawnej `findCityConnection`.
+ */
+export function contactTradeConnection(
+  a: TradeRouteCityRef,
+  b: TradeRouteCityRef,
+  map: GameMap,
+): { medium: TradeRouteMedium; distance: number } {
+  const distance = hexDistance(a.q, a.r, b.q, b.r);
+  // Memo per mapa i para współrzędnych (teren stały między turami, jak komponenty spójności) —
+  // refreshTradeRoutes pyta o każdą parę miast co turę, a tu nie ma już BFS do cache'owania.
+  let memo = __contactMediumCache.get(map);
+  if (!memo) { memo = new Map<string, TradeRouteMedium>(); __contactMediumCache.set(map, memo); }
+  const key = `${a.q},${a.r}|${b.q},${b.r}`;
+  let medium = memo.get(key);
+  if (medium === undefined) {
+    medium = landComponentsMayConnect(map, a, b, distance) ? 'lad' : 'morze';
+    memo.set(key, medium);
+  }
+  return { medium, distance };
+}
+const __contactMediumCache = new WeakMap<GameMap, Map<string, TradeRouteMedium>>();
+
+/**
  * Diagnoza, dlaczego między graczem a partnerem nie ma aktywnej trasy handlowej
- * mimo zawartej Umowy Handlowej (panel imperium → Aktywne umowy handlowe).
- * Zwraca komunikat PL lub null, gdy połączenie geometryczne jest możliwe (wtedy
- * trasa PODJĘŁA już istnieć — patrz T3 niżej — i brak jej w danych to kwestia
- * odświeżenia, nie blokady terytorialnej ani budynkowej).
+ * mimo zawartej Umowy Szlaków (panel imperium → Aktywne umowy handlowe).
+ * Zwraca komunikat PL lub null, gdy nic nie blokuje (wtedy trasa POWINNA istnieć —
+ * brak jej w danych to kwestia odświeżenia lub slotów, nie blokady terytorialnej).
  *
- * T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, 2026-08-24): PRZED T3 ta funkcja filtrowała
- * miasta po `tradeRouteLimitForCity(...) > 0` (budynek handlowy), bo bez niego
- * trasa faktycznie nie mogła istnieć — stąd komunikaty „brak Targowiska/Portu"
- * i „brak wolnego slotu trasy". Od T3 budynek handlowy JUŻ NIE warunkuje
- * istnienia trasy (tylko `TradeRoute.budynekOdblokowany`, konsumowane w T4) —
- * te dwa komunikaty są więc nieaktualne jako powód BRAKU trasy i zostały
- * usunięte; diagnoza sprawdza teraz geometrię/wojnę bezpośrednio na WSZYSTKICH
- * miastach (fizyczny wymóg Portu na morze pozostaje bez zmian, wewnątrz
- * `findCityConnection`/`citiesHaveTradeConnection`).
- *
- * GOAL 5 (R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1, 2026-09-03): dawny branch
- * „za daleko (N heks.)" był oparty na `hexDistance > params.ladMaxDist` — dystans
- * w LINII PROSTEJ jako powód BRAKU trasy lądowej. Od GOAL 1 dystans już NIE
- * blokuje connectivity lądowej (ani morskiej), więc ten branch jest MARTWY: skoro
- * `citiesHaveTradeConnection` niżej zwróciła false, oznacza to, że KAŻDA para
- * miast gracz↔partner jest fizycznie nieosiągalna (BFS) zarówno lądem, jak i
- * morzem — powód nigdy już nie jest „za daleko w linii prostej", tylko realna
- * geografia (różne kontynenty/wyspy bez portu) — dokładnie to, co właściciel
- * wprost zaakceptował jako warunek pozostający bez zmian (GOAL 6 dispatchu).
- * Komunikat morski („wymagany Port") zostaje — TO nadal bywa faktyczną,
- * osobną przyczyną (fizyczna ścieżka wodna istnieje, ale żadne miasto nie ma
- * Portu) — rozróżniona teraz jawnie od czysto geograficznej nieosiągalności.
- *
- * GOAL 5 (R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1, 2026-09-03): nowa gałąź
- * odróżnia "brak wspólnej granicy lądowej" (terytoria fizycznie osiągalne
- * lądem — BFS by się powiódł — ale żadna para miast gracz↔partner nie ma
- * stykających się terytoriów) od "brak fizycznego połączenia" (żadna ścieżka
- * lądowa nie istnieje niezależnie od granic, np. inny kontynent). Wykrywane
- * przez ponowne sprawdzenie `citiesHaveTradeConnection` z `territoryNodes`
- * jawnie `undefined` — to WYŁĄCZA wymóg granicy (patrz `landBorderShared`),
- * więc różnica wyniku między "z territoryNodes" i "bez" izoluje dokładnie ten
- * jeden warunek (medium='morze' jest identyczne w obu przypadkach — granica go
- * nie dotyczy — więc jeśli druga próba się powiedzie, to wyłącznie dzięki
- * lądowi bez wymogu granicy).
+ * R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (2026-11-04): fizyczna łączność (BFS lądowy/
+ * morski, Port, wspólna granica) NIE jest już warunkiem — dawne komunikaty „brak
+ * wspólnej granicy lądowej", „brak Portu", „różne kontynenty/wyspy" usunięte.
+ * Pozostają: wojna, brak miast, brak kontaktu (cywilizacje się nie znają).
  */
 export function diagnoseMissingTradeRouteForPartner(
   playerOwnerId: number,
   partnerOwnerId: number,
   cities: readonly TradeRouteCityRef[],
-  map: GameMap,
-  builtByCity: ReadonlyMap<string, readonly string[]>,
   isAtWar: (ownerA: number, ownerB: number) => boolean,
-  params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
+  hasContact: boolean,
   partnerLabel?: string,
-  territoryNodes?: readonly TerritoryNode[],
 ): string | null {
   if (isAtWar(playerOwnerId, partnerOwnerId)) {
     return 'wojna — szlaki zawieszone';
@@ -1094,31 +1075,11 @@ export function diagnoseMissingTradeRouteForPartner(
     return 'brak miast do handlu';
   }
 
-  if (citiesHaveTradeConnection(playerCities, partnerCities, map, builtByCity, params, territoryNodes)) {
-    return null; // T3: geometria połączona + traktat aktywny + brak wojny => trasa istnieje, nic do zdiagnozowania.
+  if (!externalTradeContactOk(playerCities, partnerCities, hasContact)) {
+    return `brak kontaktu z ${label}`;
   }
 
-  // GOAL 5: fizycznie osiągalne lądem (BFS by się powiódł), ale zadna para
-  // terytoriów sie nie styka -- jedyny brakujacy warunek to wspolna granica.
-  if (
-    territoryNodes !== undefined &&
-    citiesHaveTradeConnection(playerCities, partnerCities, map, builtByCity, params, undefined)
-  ) {
-    return `brak wspólnej granicy lądowej z ${label}`;
-  }
-
-  // GOAL 5 (dziedziczone z R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1): brak
-  // połączenia (lądem ANI morzem, sprawdzone wyżej dla WSZYSTKICH par miast) —
-  // rozróżnij "brak Portu" (fizyczna przyczyna łatwa do naprawienia przez
-  // gracza, budując Port) od czysto geograficznej nieosiągalności (różne
-  // kontynenty/wyspy — nic do zbudowania, to realna geografia mapy).
-  const anyPlayerPort = playerCities.some(c => cityHasPort(c.id, builtByCity));
-  const anyPartnerPort = partnerCities.some(c => cityHasPort(c.id, builtByCity));
-  if (!anyPlayerPort || !anyPartnerPort) {
-    return `brak fizycznego połączenia lądowego z ${label} i brak Portu do szlaku morskiego`;
-  }
-
-  return `brak fizycznego połączenia (lądowego ani morskiego) z ${label} — różne kontynenty/wyspy`;
+  return null; // kontakt + traktat aktywny + brak wojny => trasa istnieje (ograniczają ją już tylko sloty).
 }
 
 /**
@@ -1262,7 +1223,18 @@ export const TRADE_TECH = 'Wymiana';
  *                       WYŁĄCZNIE referencyjne dla connectivity legacy (GOAL 1 w
  *                       poprzednim temacie); realny szczyt krzywej DOCHODU (do
  *                       sortowania priorytetu, ten temat) czyta `incomeParams`.
- * @param territoryNodes R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1: węzły terytorium
+ * @param hasContact    R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (decyzja właściciela 2026-11-04):
+ *                       (ownerA, ownerB) => czy cywilizacje się ZNAJĄ (kontakt
+ *                       dyplomatyczny — ten sam warunek co stół negocjacji). Dla par
+ *                       ZEWNĘTRZNYCH to JEDYNY warunek łączności: zniesione BFS
+ *                       lądowy/morski, wymóg Portu i wspólnej granicy (dalej obowiązują
+ *                       wojna, Umowa Szlaków, tech, sloty). Medium (ląd/morze) wynika z
+ *                       `contactTradeConnection` i wybiera tylko krzywą dochodu. Trasy
+ *                       WEWNĘTRZNE bez zmian (fizyczna łączność). Domyślne `() => true`
+ *                       = wstecznie zgodne dla wołających spoza allowlisty.
+ * @param territoryNodes (R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: dla par zewnętrznych
+ *                       NIEUŻYWANE — wymóg granicy zniesiony; parametr zostaje dla zgodności
+ *                       sygnatury.) Dawniej — R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1: węzły terytorium
  *                       WSZYSTKICH właścicieli (reużycie main.ts:buildAllTerritoryNodes()/
  *                       map/territory.ts:territoryOwnerAt — model terytorium BEZ
  *                       ZMIAN), do wymogu wspólnej granicy lądowej między ownerami
@@ -1310,6 +1282,7 @@ export function refreshTradeRoutes(
   territoryNodes?: readonly TerritoryNode[],
   incomeParams: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
   hasTradeTech: (ownerId: number) => boolean = () => true,
+  hasContact: (ownerA: number, ownerB: number) => boolean = () => true,
 ): TradeRoute[] {
   if (cities.length === 0) return [];
 
@@ -1398,14 +1371,26 @@ export function refreshTradeRoutes(
       if (!hasTradeTreaty(from.ownerId, to.ownerId)) continue; // C-HANDEL-UMOWA=B: brak/zerwana Umowa Szlaków -> trasa znika
       if (!hasTradeTech(from.ownerId) || !hasTradeTech(to.ownerId)) continue; // R-HANDEL-WYMIANA-TECH-GATE-Q1: brak techu po ktorejkolwiek stronie -> trasa zewnetrzna znika
     }
-    const conn = findCityConnection(
-      from, to, map, route.medium, params, builtByCity,
-      wewnetrzna ? undefined : territoryNodes, // GOAL 5: wewnętrzna pomija wymóg granicy
-      landBorderCache,
-      false, // GOAL 6: candidate-generation nie czyta pathHexes -- pomiń rekonstrukcję ścieżki
-    );
-    if (!conn.connected) continue; // dla morza wciąż wymaga fizycznego Portu w obu miastach; dla lądu zewnętrznego dodatkowo wymaga wspólnej granicy
-    stillValid.push({ from, to, medium: route.medium, distance: conn.distance, id: route.id, isExisting: true });
+    if (wewnetrzna) {
+      const conn = findCityConnection(
+        from, to, map, route.medium, params, builtByCity,
+        undefined, // GOAL 5: wewnętrzna pomija wymóg granicy
+        landBorderCache,
+        false, // GOAL 6: candidate-generation nie czyta pathHexes -- pomiń rekonstrukcję ścieżki
+      );
+      if (!conn.connected) continue; // trasa wewnętrzna: bez zmian — fizyczna łączność (dla morza Port)
+      stillValid.push({ from, to, medium: route.medium, distance: conn.distance, id: route.id, isExisting: true });
+    } else {
+      // R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: trasa zewnętrzna utrzymuje się, dopóki cywilizacje
+      // się znają (kontakt) — zero BFS/Portu/granicy. Medium przeliczane z geometrii
+      // (krzywa dochodu); utrata kontaktu usuwa trasę jak dotąd utrata łączności.
+      if (!hasContact(from.ownerId, to.ownerId)) continue;
+      const cc = contactTradeConnection(from, to, map);
+      stillValid.push({
+        from, to, medium: cc.medium, distance: cc.distance,
+        id: tradeRouteId(route.fromCityId, route.toCityId, cc.medium), isExisting: true,
+      });
+    }
   }
   // Runda 2 / zarzut 1: dedup po BEZKIERUNKOWEJ parze miast, nie po id (patrz
   // `tradeRoutePairKey`). `stillValid` dedupujemy TAKŻE wobec siebie — zapis gry
@@ -1437,11 +1422,10 @@ export function refreshTradeRoutes(
       if (!hasTradeTech(ownerA) || !hasTradeTech(ownerB)) continue; // R-HANDEL-WYMIANA-TECH-GATE-Q1: brak techu po ktorejkolwiek stronie -> para wykluczona z candidate-generation
       const citiesA = citiesByOwner.get(ownerA)!;
       const citiesB = citiesByOwner.get(ownerB)!;
+      if (!externalTradeContactOk(citiesA, citiesB, hasContact(ownerA, ownerB))) continue; // R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: wystarczy znajomość
       for (const a of citiesA) {
         for (const b of citiesB) {
-          // GOAL 6: needPath=false -- candidate-generation nie czyta pathHexes.
-          const best = detectBestConnection(a, b, map, params, builtByCity, territoryNodes, landBorderCache, false);
-          if (!best) continue; // dla morza nadal wymaga Portu w obu miastach; dla lądu dodatkowo wymaga wspólnej granicy
+          const best = contactTradeConnection(a, b, map); // bez BFS/Portu/granicy
           const id = tradeRouteId(a.id, b.id, best.medium);
           if (stillValidPairs.has(tradeRoutePairKey(a.id, b.id))) continue; // ta PARA MIAST już policzona jako kontynuacja (dedup bezkierunkowy, patrz `tradeRoutePairKey`)
           fresh.push({ from: a, to: b, medium: best.medium, distance: best.distance, id, isExisting: false });
