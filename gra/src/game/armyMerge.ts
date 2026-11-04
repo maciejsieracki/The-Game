@@ -217,7 +217,13 @@ export function exitGarnizon(u: RuntimeUnit): boolean {
  * jednostką NIE oblegającą, która wchodzi w ten stan z realnym ruchem do stracenia).
  */
 export function enterFieldFortify(u: RuntimeUnit): void {
-  u.fortifyRuchSnapshot = u.ruchLeft;
+  // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1 (runda 2): idempotentne. Ponowne
+  // "Ufortyfikuj" na stosie, w ktorym jedna jednostka JUZ jest ufortyfikowana w polu, nie moze
+  // nadpisac jej snapshotu zerem (ruchLeft==0 po 1. fortyfikacji) -- inaczej zdjecie
+  // fortyfikacji "przywracalo" 0 ruchu i stos zostawal zamrozony.
+  if (u.ufortyfikowanyWPolu !== true || u.fortifyRuchSnapshot === undefined) {
+    u.fortifyRuchSnapshot = u.ruchLeft;
+  }
   u.ufortyfikowanyWPolu = true;
   // C-025: fortyfikacja i auto-eksploracja wykluczają się wzajemnie (jedna to
   // "stój w miejscu", druga "ruszaj się co turę") -- wejście w fortyfikację
@@ -289,6 +295,41 @@ export function hasOwnCityAt(
   ownerId: number,
 ): boolean {
   return cities.some(c => c.ownerId === ownerId && c.q === q && c.r === r);
+}
+
+/**
+ * R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1 (runda 2): normalizacja stanu fortyfikacji przy
+ * LACZENIU armii (obie sciezki: panel "Polacz" na heksie i ruch na heks sasiada).
+ * Wywolac PRZED assignSharedStackGroupId/syncStackRuchLeft.
+ *
+ * Powod: syncStackRuchLeft ustawia ruchLeft calego stosu = MIN. Jedna ufortyfikowana jednostka
+ * (ruchLeft=0, snapshot=ruch) zerowala wiec pule ruchu CALEJ duzej armii, a zdjecie fortyfikacji
+ * przywracalo ruch tylko jej samej -- reszta zostawala na 0 ("cala armia zamarza po scaleniu").
+ *
+ * Regula: `garnizon && cityHere` -> wszyscy w garnizonie (jak dotad, tylko wlasne miasto);
+ * w przeciwnym razie nikt nie jest w garnizonie ani w fortyfikacji w polu (ruch ze snapshotu).
+ * Jednostki oblegajace (oblegaCityId) zachowuja fortyfikacje w polu (legalne, ruch 0 co ture).
+ * Zwraca liczbe jednostek, ktorym zmieniono stan.
+ */
+export function normalizeMergedFortify(
+  all: RuntimeUnit[],
+  garnizon: boolean,
+  cityHere: boolean,
+): number {
+  let changed = 0;
+  for (const u of all) {
+    if (garnizon && cityHere) {
+      if (u.ufortyfikowanyWPolu === true && exitFieldFortify(u)) changed += 1;
+      if (u.inGarnizon !== true) {
+        enterGarnizon(u);
+        changed += 1;
+      }
+    } else {
+      if (!cityHere && exitGarnizon(u)) changed += 1;
+      if (!u.oblegaCityId && u.ufortyfikowanyWPolu === true && exitFieldFortify(u)) changed += 1;
+    }
+  }
+  return changed;
 }
 
 export function healUnitStates(

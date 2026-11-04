@@ -1,0 +1,84 @@
+unit-frozen-fortified-unselectable-test
+[A] jednostkowa
+  OK   A1 REPRO: garnizon-sierota niewybieralny (unitAtRepresentative=null)
+  OK   A1b REPRO: visibleStackOnHex pusty (merge/ruch go nie widza)
+  OK   A2 heal: 1 garnizon-sierota naprawiony
+  OK   A2b po heal: wybieralny kliknieciem
+  OK   A2c po heal: flaga zdjeta, ruch ze snapshotu, snapshot skasowany
+  OK   A3 armia 27: wszystkie widoczne w stosie po heal
+  OK   A3b armia 27: zadna nie jest inGarnizon
+  OK   A3c armia 27: pula ruchu stosu > 0 (nie zamrozona)
+  OK   A4 garnizon we WLASNYM miescie nietkniety
+  OK   A4b fortyfikacja w polu nietknieta (snapshot zostaje)
+  OK   A4c legalne stany: total=0
+  OK   A4d garnizon w CUDZYM miescie = sierota (ownerId miasta != ownerId jednostki)
+  OK   A5 zalegly snapshot skasowany
+  OK   A5b zalegle oblezenie (nieistniejace miasto) zdjete, aktywne zostaje
+  OK   A5c duplikat id policzony
+  OK   A5d bez opcji siege oblezenie nietkniete (klik-heal nie rusza oblezen)
+  OK   A6 stary zapis: 2 niewybieralne przed heal
+  OK   A6b heal naprawia obie
+  OK   A6c idempotencja: drugi przebieg = 0
+  OK   A7 hasOwnCityAt
+  OK   A8 merge sierota+26: nikt nie jest inGarnizon
+  OK   A8b merge sierota+26: klik wybiera armie
+  OK   A8c merge sierota+26: stos widoczny 27 (split/ruch widza wszystkich)
+  OK   A8d merge sierota+26: pula ruchu > 0 (ruszalna)
+  OK   A9 REPRO bez normalizacji: pula=0 nawet po zdjeciu fortyfikacji (zamrozenie)
+  OK   A9b merge pole+26: nikt nie ufortyfikowany w polu
+  OK   A9c merge pole+26: pula ruchu > 0
+  OK   A9d merge pole+26: snapshot skasowany, wybieralna, split widzi 27
+  OK   A10 re-fortify nie nadpisuje snapshotu zerem
+  OK   A10b po zdjeciu fortyfikacji calego stosu kazdy ma ruch > 0
+  OK   A11 merge w WLASNYM miescie: wszyscy w garnizonie, bez fortyfikacji w polu
+  OK   A12 oblegajaca zachowuje fortyfikacje w polu
+  OK   A13 merge zwyklych: 0 zmian
+[B] mutacje (kazda MUSI wywrocic A)
+  OK   M1 heal nie leczy sierot -> A sie wywraca
+  OK   M2 heal leczy rowniez legalny garnizon -> A sie wywraca
+  OK   M3 hasOwnCityAt ignoruje wlasciciela -> A sie wywraca
+  OK   M4 heal nie zdejmuje oblezen -> A sie wywraca
+  OK   M5 heal nie czysci snapshotu -> A sie wywraca
+  OK   M7 merge nie zdejmuje fortyfikacji w polu -> A sie wywraca
+  OK   M8 re-fortify nadpisuje snapshot -> A sie wywraca
+  OK   M9 merge nie zdejmuje garnizonu-sieroty -> A sie wywraca
+  OK   M10 merge zdejmuje tez fortyfikacje oblegajacych -> A sie wywraca
+  OK   M6 heal kasuje fortyfikacje w polu -> A sie wywraca
+[C] strukturalna main.ts
+  OK   C1 heal przed hit-testem klikniecia mapy
+  OK   C2 heal przy wyborze jednostki (mapa + lista + panel)
+  OK   C3 heal na starcie tury (przed resetem ruchu, z oblezeniem)
+  OK   C4 heal po wczytaniu zapisu
+  OK   C5 merge (panel) wola normalizeMergedFortify z warunkiem wlasnego miasta
+  OK   C6 merge (ruch na heks) wola normalizeMergedFortify z garnizonMode + wlasne miasto
+  OK   C10 przycisk fortyfikacji: stan i akcja na poziomie CALEGO stosu
+  OK   C10b handler fortify zdejmuje fortyfikacje dla calego stosu (stack.some)
+  OK   C11 hover leczy (raz na zmiane heksu)
+  OK   C12 hak __frozenTestDebug tylko przy ?civTest=1
+  OK   C7 evict zdejmuje garnizon
+  OK   C8 cesja miasta zdejmuje garnizon
+  OK   C9 licznik w logu diagnostycznym
+[D] zywa (Chromium)
+  OK   D0 jest wolny heks ladu poza miastem
+  OK   D0b heks bez wlasnego miasta
+  OK   D1 scenariusz: 3 jednostki inGarnizon poza miastem
+  OK   D2 REALNY KLIK w zamrozona jednostke ja wybiera
+  OK   D3 po kliku zadna nie jest inGarnizon, ruch > 0
+  OK   D4 licznik samoleczenia >= 3
+  OK   D5 start tury: sieroty naprawione bez klikania
+  OK   D7 scenariusz: 20 zwyklych + 1 sierota inGarnizon (przed scaleniem)
+  OK   D7b po scaleniu: 21 jednostek, NIKT nie jest inGarnizon (blokada nie zarazila armii)
+  OK   D7c po scaleniu: kazda jednostka ma ruch > 0
+  OK   D7d stos = 21 (jedna armia), pula ruchu > 0
+  OK   D7e REALNY KLIK w scalona armie ja wybiera
+  OK   D8 przycisk Ufortyfikuj: caly stos ufortyfikowany w polu
+  OK   D8b przycisk Zdejmij fortyfikacje: nikt nie ufortyfikowany, pula ruchu > 0 (odfortyfikowanie jednym przyciskiem)
+  OK   D9 panel Rozdziel widzi wszystkie 21 jednostek
+  OK   D9b po rozdzieleniu: >=2 na celu, razem 21, nikt nie zamrozony
+  OK   D10 po scaleniu pole+19: 20 jednostek, nikt ufortyfikowany, kazda z ruchem > 0
+  OK   D10b stos 20, pula ruchu > 0, bez fortyfikacji
+  OK   D11 hover leczy osierocona jednostke (licznik rosnie, flaga zdjeta)
+  OK   D12 zero pageerror/console.error (klik, merge, fortyfikacja, split, hover, start tury)
+
+WYNIK: pass=76 fail=0
+EXIT=0

@@ -14,8 +14,14 @@
  *  B. MUTACJE: zmutowane kopie armyMerge.ts MUSZA wywrocic A.
  *  C. STRUKTURALNA main.ts: heal wpiety w klik / wybor / start tury / wczytanie / evict / cesje;
  *     merge nie propaguje garnizonu poza wlasne miasto.
+ *  A-merge (runda 2, ta sama funkcja unitChecks => mutacje je lamia): LACZENIE zamrozonej
+ *     jednostki (garnizon-sierota / fortyfikacja w polu) z duza armia, na PRAWDZIWYCH funkcjach
+ *     normalizeMergedFortify + syncStackRuchLeft + visibleStackOnHex + exit*: armia wybieralna,
+ *     bez blokady, pula ruchu > 0, odfortyfikowanie jednym ruchem calego stosu, split.
  *  D. ZYWA (Chromium, bundle w /dev/shm): realny klik w osierocony garnizon, laczenie przez
- *     panel, licznik samoleczenia. Flaga `--no-live` pomija.
+ *     REALNY panel `Polacz armie` (sierota i fortyfikacja w polu + duza armia), przycisk
+ *     fortyfikacji calego stosu, rozdzielenie, hover, zero pageerror/console.error.
+ *     Flaga `--no-live` pomija.
  *
  * BASELINE=1 -> armyMerge.ts z origin/main (RED przed naprawa).
  * Uruchomienie (z gra/): node tools/unit-frozen-fortified-unselectable-test.cjs [--no-live]
@@ -122,6 +128,73 @@ function unitChecks(M, report) {
 
   // A7: hasOwnCityAt.
   chk('A7 hasOwnCityAt', M.hasOwnCityAt([city], 5, 5, 0) === true && M.hasOwnCityAt([city], 5, 5, 1) === false && M.hasOwnCityAt([city], 6, 5, 0) === false);
+
+  // ---- A-MERGE (runda 2): laczenie zamrozonej jednostki z duza armia, prawdziwe funkcje ----
+  if (typeof M.normalizeMergedFortify !== 'function') { chk('A8 normalizeMergedFortify istnieje', false); return bad + 1; }
+  const doMerge = (all, garn, cityHere) => {
+    M.normalizeMergedFortify(all, garn, cityHere);
+    M.assignSharedStackGroupId(all);
+    M.syncStackRuchLeft(all);
+  };
+  const bigArmy = (q, r, n, extra) => { const a = []; for (let i = 0; i < n; i++) a.push(mk('b' + q + '_' + i, q, r, extra)); return a; };
+
+  // A8: sierota (garnizon poza miastem, ruch 0) + duza armia 26 -> po scaleniu wszyscy wybieralni.
+  {
+    const army = bigArmy(30, 30, 26);
+    const o = mk('orph', 30, 30, { inGarnizon: true, fortifyRuchSnapshot: 2, ruchLeft: 0 });
+    const all = [...army, o];
+    doMerge(all, true /* preferGarnizon z calej armii */, M.hasOwnCityAt([city], 30, 30, 0));
+    chk('A8 merge sierota+26: nikt nie jest inGarnizon', all.every(u => u.inGarnizon !== true));
+    chk('A8b merge sierota+26: klik wybiera armie', M.unitAtRepresentative(30, 30, all, atk) !== null);
+    chk('A8c merge sierota+26: stos widoczny 27 (split/ruch widza wszystkich)', M.visibleStackOnHex(all, 30, 30, 0).length === 27);
+    chk('A8d merge sierota+26: pula ruchu > 0 (ruszalna)', M.stackRuchLeft(all) > 0 && all.every(u => u.ruchLeft === M.stackRuchLeft(all)), M.stackRuchLeft(all));
+  }
+  // A9: fortyfikacja W POLU (ruch 0, snapshot 2) + duza armia (ruch 2) -> armia NIE jest zamrozona.
+  {
+    const army = bigArmy(31, 31, 26);
+    const fz = mk('fld', 31, 31, { ufortyfikowanyWPolu: true, fortifyRuchSnapshot: 2, ruchLeft: 0 });
+    const all = [...army, fz];
+    // REPRO bledu bez normalizacji: sync=MIN -> cala armia 0, a zdjecie fortyfikacji nie pomaga.
+    const raw = JSON.parse(JSON.stringify(all));
+    M.syncStackRuchLeft(raw);
+    for (const u of raw) M.exitFieldFortify(u);
+    chk('A9 REPRO bez normalizacji: pula=0 nawet po zdjeciu fortyfikacji (zamrozenie)', M.stackRuchLeft(raw) === 0, M.stackRuchLeft(raw));
+    doMerge(all, false, false);
+    chk('A9b merge pole+26: nikt nie ufortyfikowany w polu', all.every(u => u.ufortyfikowanyWPolu !== true));
+    chk('A9c merge pole+26: pula ruchu > 0', M.stackRuchLeft(all) > 0 && all.every(u => u.ruchLeft > 0), all.map(u => u.ruchLeft).slice(0, 3));
+    chk('A9d merge pole+26: snapshot skasowany, wybieralna, split widzi 27',
+      all.every(u => u.fortifyRuchSnapshot === undefined) && M.unitAtRepresentative(31, 31, all, atk) !== null
+        && M.visibleStackOnHex(all, 31, 31, 0).length === 27);
+  }
+  // A10: ponowne "Ufortyfikuj" calego stosu z jedna jednostka juz ufortyfikowana -> zdjecie NIE zamraza.
+  {
+    const st = [mk('x1', 32, 32), mk('x2', 32, 32), mk('x3', 32, 32, { ufortyfikowanyWPolu: true, fortifyRuchSnapshot: 2, ruchLeft: 0 })];
+    for (const u of st) M.enterFieldFortify(u);
+    chk('A10 re-fortify nie nadpisuje snapshotu zerem', st[2].fortifyRuchSnapshot === 2, st[2].fortifyRuchSnapshot);
+    for (const u of st) M.exitFieldFortify(u);
+    chk('A10b po zdjeciu fortyfikacji calego stosu kazdy ma ruch > 0',
+      st.every(u => u.ruchLeft > 0 && u.ufortyfikowanyWPolu === false), st.map(u => u.ruchLeft));
+  }
+  // A11: legalny garnizon we WLASNYM miescie przy laczeniu zostaje (wszyscy w garnizonie).
+  {
+    const inC = [mk('c1', 5, 5, { inGarnizon: true, fortifyRuchSnapshot: 2, ruchLeft: 0 }), mk('c2', 5, 5, { inGarnizon: true, fortifyRuchSnapshot: 2, ruchLeft: 0 })];
+    const arr = [mk('c3', 5, 5), mk('c4', 5, 5, { ufortyfikowanyWPolu: true, fortifyRuchSnapshot: 2, ruchLeft: 0 })];
+    const all = [...inC, ...arr];
+    doMerge(all, true, M.hasOwnCityAt([city], 5, 5, 0));
+    chk('A11 merge w WLASNYM miescie: wszyscy w garnizonie, bez fortyfikacji w polu',
+      all.every(u => u.inGarnizon === true && u.ufortyfikowanyWPolu !== true));
+  }
+  // A12: jednostka oblegajaca zachowuje fortyfikacje w polu przy laczeniu (legalny stan).
+  {
+    const sg = mk('sg', 6, 6, { ufortyfikowanyWPolu: true, fortifyRuchSnapshot: 2, ruchLeft: 0, oblegaCityId: 'c9' });
+    M.normalizeMergedFortify([sg, mk('sg2', 6, 6)], false, false);
+    chk('A12 oblegajaca zachowuje fortyfikacje w polu', sg.ufortyfikowanyWPolu === true && sg.fortifyRuchSnapshot === 2);
+  }
+  // A13: merge nie dotyka stanow, gdy nic nie jest zamrozone (idempotencja / brak regresji).
+  {
+    const all = bigArmy(33, 33, 5);
+    chk('A13 merge zwyklych: 0 zmian', M.normalizeMergedFortify(all, false, false) === 0);
+  }
   return bad;
 }
 
@@ -135,10 +208,16 @@ function structural() {
   has('C3 heal na starcie tury (przed resetem ruchu, z oblezeniem)',
     /healInconsistentUnits\('start tury', \{ siege: true[^}]*\}\);\s*\/\/ Restore movement|healInconsistentUnits\('start tury'[\s\S]{0,200}Restore movement for all units/);
   has('C4 heal po wczytaniu zapisu', /healInconsistentUnits\('wczytanie zapisu'/);
-  has('C5 merge (panel) nie propaguje garnizonu poza wlasne miasto',
-    /preferGarnizon = all\.some\(x => x\.inGarnizon === true\)\s*&& hasOwnCityAt\(cities, srcQ, srcR, active\.ownerId\)/);
-  has('C6 merge (ruch na heks) garnizonMode wymaga wlasnego miasta',
-    /garnizonMode = existing\.every\(x => x\.inGarnizon === true\);[\s\S]{0,260}if \(garnizonMode && hasOwnCityAt\(/);
+  has('C5 merge (panel) wola normalizeMergedFortify z warunkiem wlasnego miasta',
+    /const cityHereMerge = hasOwnCityAt\(cities, srcQ, srcR, active\.ownerId\);\s*const preferGarnizon = all\.some\(x => x\.inGarnizon === true\) && cityHereMerge;\s*normalizeMergedFortify\(all, preferGarnizon, cityHereMerge\);/);
+  has('C6 merge (ruch na heks) wola normalizeMergedFortify z garnizonMode + wlasne miasto',
+    /garnizonMode = existing\.every\(x => x\.inGarnizon === true\);[\s\S]{0,500}normalizeMergedFortify\(onHex, garnizonMode && hasOwnCityAt\(/);
+  has('C10 przycisk fortyfikacji: stan i akcja na poziomie CALEGO stosu',
+    /isFieldFortified = stack\.some\(su => su\.ufortyfikowanyWPolu === true\)/);
+  has('C10b handler fortify zdejmuje fortyfikacje dla calego stosu (stack.some)',
+    /if \(playerStackAt\(u\)\.some\(su => su\.ufortyfikowanyWPolu === true\)\) \{\s*const fieldStack = playerStackAt\(u\);\s*for \(const su of fieldStack\) exitFieldFortify\(su\);/);
+  has('C11 hover leczy (raz na zmiane heksu)', /healInconsistentUnits\('hover'\)/);
+  has('C12 hak __frozenTestDebug tylko przy ?civTest=1', /if \(isCivTestEnabled\(window\.location\.search\)\) \(window as any\)\.__frozenTestDebug = \{/);
   has('C7 evict zdejmuje garnizon', /u\.r = dest\.r;[\s\S]{0,300}exitGarnizon\(u\);\s*moved = true;/);
   has('C8 cesja miasta zdejmuje garnizon', /u\.r = mv\.r;\s*exitGarnizon\(u\);/);
   has('C9 licznik w logu diagnostycznym', /diagWarn\(\s*'unit-heal'/);
@@ -163,6 +242,10 @@ async function main() {
     ['M3 hasOwnCityAt ignoruje wlasciciela', 'return cities.some(c => c.ownerId === ownerId && c.q === q && c.r === r);', 'return cities.some(c => c.q === q && c.r === r);'],
     ['M4 heal nie zdejmuje oblezen', "if (opts?.siege === true && u.oblegaCityId) {", 'if (false) {'],
     ['M5 heal nie czysci snapshotu', 'delete u.fortifyRuchSnapshot;\n      rep.staleSnapshot += 1;', 'rep.staleSnapshot += 0;'],
+    ['M7 merge nie zdejmuje fortyfikacji w polu', 'if (!u.oblegaCityId && u.ufortyfikowanyWPolu === true && exitFieldFortify(u)) changed += 1;', 'void 0;'],
+    ['M8 re-fortify nadpisuje snapshot', 'if (u.ufortyfikowanyWPolu !== true || u.fortifyRuchSnapshot === undefined) {\n    u.fortifyRuchSnapshot = u.ruchLeft;\n  }', 'u.fortifyRuchSnapshot = u.ruchLeft;'],
+    ['M9 merge nie zdejmuje garnizonu-sieroty', 'if (!cityHere && exitGarnizon(u)) changed += 1;', 'void 0;'],
+    ['M10 merge zdejmuje tez fortyfikacje oblegajacych', 'if (!u.oblegaCityId && u.ufortyfikowanyWPolu === true && exitFieldFortify(u))', 'if (u.ufortyfikowanyWPolu === true && exitFieldFortify(u))'],
     ['M6 heal kasuje fortyfikacje w polu', 'u.ufortyfikowanyWPolu !== true\n    ) {\n      delete', 'true\n    ) {\n      delete'],
   ];
   for (const [name, from, to] of mutations) {
@@ -187,12 +270,22 @@ async function main() {
 async function liveChecks() {
   console.log('[D] zywa (Chromium)');
   const outDir = '/dev/shm/ufu-live-' + process.pid;
+  // LIVE_RED=1: RED warstwy D -- bundle z WYLACZONA normalizacja laczenia (normalizeMergedFortify=no-op,
+  // enterFieldFortify nieidempotentne); plik zawsze przywracany (try/finally).
+  const origMerge = fs.readFileSync(MERGE_SRC, 'utf8');
+  if (process.env.LIVE_RED === '1') {
+    const red = origMerge.replace('  let changed = 0;\n  for (const u of all) {\n    if (garnizon && cityHere) {', '  let changed = 0;\n  if (all.length >= 0) return 0;\n  for (const u of all) {\n    if (garnizon && cityHere) {');
+    if (red === origMerge) { ok('D0r wzorzec LIVE_RED znaleziony', false); return; }
+    fs.writeFileSync(MERGE_SRC, red, 'utf8');
+  }
   try {
     execSync(`node ./node_modules/vite/bin/vite.js build --outDir ${outDir} --emptyOutDir`, { cwd: GRA, stdio: 'pipe', timeout: 500000 });
   } catch (e) {
+    fs.writeFileSync(MERGE_SRC, origMerge, 'utf8');
     ok('D0 build bundla', false, String(e.message).slice(0, 200));
     return;
   }
+  fs.writeFileSync(MERGE_SRC, origMerge, 'utf8');
   const { chromium } = require(path.join(GRA, 'node_modules', 'playwright'));
   const browser = await chromium.launch({
     executablePath: '/opt/pw-browsers/chromium',
@@ -202,6 +295,7 @@ async function liveChecks() {
   try {
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
+    page.on('console', (m) => { if (m.type() === 'error') errors.push('console.error: ' + m.text()); });
     await page.goto('file://' + outDir + '/index.html?playtest=mapa&civTest=1', { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(
       () => window.__eraTestDebug && window.__frozenTestDebug
@@ -246,7 +340,94 @@ async function liveChecks() {
     }
     const after2 = await page.evaluate(([q, r]) => window.__frozenTestDebug.unitsAt(q, r), [hex2.q, hex2.r]);
     ok('D5 start tury: sieroty naprawione bez klikania', after2.length >= 2 && after2.every(u => !u.inGarnizon), after2);
-    ok('D6 zero bledow strony', errors.length === 0, errors.slice(0, 3));
+
+    // ---- Runda 2: REALNE laczenie przez panel, przycisk fortyfikacji stosu, split, hover ----
+    const D = (fn, arg) => page.evaluate(fn, arg);
+    // Po D5 (koniec tury w pustej piaskownicy) gra pokazuje ekran zwyciestwa (.vsc-*), ktory
+    // przechwytuje wskaznik -- zdejmij go, by dalsze kliki/hover szly w mape (jak u gracza).
+    await D(() => { document.querySelector('.vsc-stage')?.parentElement?.remove(); });
+    const settle = (ms) => page.waitForTimeout(ms || 500);
+    const clickMergeBtn = async () => {
+      await page.waitForSelector('.civ-amp-overlay [data-act="merge"]', { timeout: 8000 });
+      // Klik DOM w przycisk panelu (ta sama obsluga click co mysz).
+      await page.$eval('.civ-amp-overlay [data-act="merge"]', (el) => el.click());
+      await settle(600);
+    };
+    // D7: duza armia (20) + SIEROTA-garnizon (bez heal po drodze) -> REALNY panel "Polacz armie".
+    const h7 = await D(() => window.__frozenTestDebug.freeLandHex());
+    const army7 = await D(([q, r]) => { const d = window.__frozenTestDebug; const ids = d.spawn(q, r, 20, { group: 'gA' }); d.focus(q, r); return ids; }, [h7.q, h7.r]);
+    await settle(700);
+    await D((id) => window.__frozenTestDebug.select(id), army7[0]);
+    const orph7 = await D(([q, r]) => window.__frozenTestDebug.spawn(q, r, 1, { garnizon: true, ruchLeft: 0, group: 'gB' }), [h7.q, h7.r]);
+    const mid7 = await D(([q, r]) => window.__frozenTestDebug.unitsAt(q, r), [h7.q, h7.r]);
+    ok('D7 scenariusz: 20 zwyklych + 1 sierota inGarnizon (przed scaleniem)', mid7.length === 21 && mid7.filter(u => u.inGarnizon).length === 1, mid7.length);
+    await D(() => window.__frozenTestDebug.openMerge());
+    await clickMergeBtn();
+    const aft7 = await D(([q, r]) => window.__frozenTestDebug.unitsAt(q, r), [h7.q, h7.r]);
+    ok('D7b po scaleniu: 21 jednostek, NIKT nie jest inGarnizon (blokada nie zarazila armii)',
+      aft7.length === 21 && aft7.every(u => !u.inGarnizon), aft7.filter(u => u.inGarnizon).length);
+    ok('D7c po scaleniu: kazda jednostka ma ruch > 0', aft7.every(u => u.ruchLeft > 0), aft7.map(u => u.ruchLeft).slice(0, 3));
+    const info7 = await D((id) => window.__frozenTestDebug.stackInfo(id), army7[0]);
+    ok('D7d stos = 21 (jedna armia), pula ruchu > 0', info7 && info7.size === 21 && info7.pool > 0, info7);
+    const pos7 = await D(([q, r]) => window.__frozenTestDebug.screenOf(q, r), [h7.q, h7.r]);
+    await D(() => window.__frozenTestDebug.select('__none__'));
+    await page.mouse.click(pos7.x, pos7.y);
+    await settle(600);
+    const sel7 = await D(() => window.__frozenTestDebug.selectedId());
+    ok('D7e REALNY KLIK w scalona armie ja wybiera', sel7 !== null && (army7.includes(sel7) || orph7.includes(sel7)), sel7);
+    // D8: przycisk fortyfikacji dziala na CALY stos (wlacz / wylacz), po wylaczeniu pula > 0.
+    await D(() => window.__frozenTestDebug.hudAction('fortify'));
+    await settle(400);
+    const f1 = await D((id) => window.__frozenTestDebug.stackInfo(id), army7[0]);
+    ok('D8 przycisk Ufortyfikuj: caly stos ufortyfikowany w polu', f1 && f1.allField === true, f1);
+    await D(() => window.__frozenTestDebug.hudAction('fortify'));
+    await settle(400);
+    const f2 = await D((id) => window.__frozenTestDebug.stackInfo(id), army7[0]);
+    ok('D8b przycisk Zdejmij fortyfikacje: nikt nie ufortyfikowany, pula ruchu > 0 (odfortyfikowanie jednym przyciskiem)',
+      f2 && f2.anyField === false && f2.pool > 0, f2);
+    // D9: REALNE rozdzielenie scalonej armii (panel Rozdziel): 2 jednostki na wolny heks obok.
+    await D(() => window.__frozenTestDebug.openSplit());
+    await page.waitForSelector('.civ-asp-overlay input[data-uid]', { timeout: 8000 });
+    const nInputs = await page.locator('.civ-asp-overlay input[data-uid]').count();
+    ok('D9 panel Rozdziel widzi wszystkie 21 jednostek', nInputs === 21, nInputs);
+    await page.$$eval('.civ-asp-overlay input[data-uid]', (els) => { els[0].click(); els[1].click(); });
+    const destSel = page.locator('.civ-asp-overlay .civ-asp-dest').first();
+    const dq = Number(await destSel.getAttribute('data-dq')); const dr = Number(await destSel.getAttribute('data-dr'));
+    await page.$eval('.civ-asp-overlay .civ-asp-dest', (el) => el.click());
+    await page.$eval('.civ-asp-overlay [data-go]', (el) => el.click());
+    await settle(700);
+    const atDest = await D(([q, r]) => window.__frozenTestDebug.unitsAt(q, r), [dq, dr]);
+    const atSrc = await D(([q, r]) => window.__frozenTestDebug.unitsAt(q, r), [h7.q, h7.r]);
+    ok('D9b po rozdzieleniu: >=2 na celu, razem 21, nikt nie zamrozony',
+      atDest.length >= 2 && atDest.length + atSrc.length === 21 && atDest.concat(atSrc).every(u => !u.inGarnizon), { dest: atDest.length, src: atSrc.length });
+    // D10: fortyfikacja W POLU (1 jednostka, ruch 0) + duza armia (19) -> REALNE scalenie -> armia ruszalna.
+    const h10 = await D(() => window.__frozenTestDebug.freeLandHex());
+    const army10 = await D(([q, r]) => { const d = window.__frozenTestDebug; const ids = d.spawn(q, r, 19, { group: 'gC' }); d.focus(q, r); return ids; }, [h10.q, h10.r]);
+    await settle(600);
+    await D((id) => window.__frozenTestDebug.select(id), army10[0]);
+    await D(([q, r]) => window.__frozenTestDebug.spawn(q, r, 1, { field: true, ruchLeft: 0, group: 'gD' }), [h10.q, h10.r]);
+    await D(() => window.__frozenTestDebug.openMerge());
+    await clickMergeBtn();
+    const aft10 = await D(([q, r]) => window.__frozenTestDebug.unitsAt(q, r), [h10.q, h10.r]);
+    ok('D10 po scaleniu pole+19: 20 jednostek, nikt ufortyfikowany, kazda z ruchem > 0',
+      aft10.length === 20 && aft10.every(u => !u.field && u.ruchLeft > 0), aft10.filter(u => u.field || u.ruchLeft <= 0).length);
+    const info10 = await D((id) => window.__frozenTestDebug.stackInfo(id), army10[0]);
+    ok('D10b stos 20, pula ruchu > 0, bez fortyfikacji', info10 && info10.size === 20 && info10.pool > 0 && !info10.anyField, info10);
+    // D11: HOVER nad osierocona jednostka -- leczy, brak bledow strony/konsoli.
+    const h11 = await D(() => window.__frozenTestDebug.freeLandHex());
+    await D(([q, r]) => { const d = window.__frozenTestDebug; d.spawn(q, r, 2, { garnizon: true, ruchLeft: 0 }); d.focus(q, r); }, [h11.q, h11.r]);
+    await settle(1800);
+    const healBefore = await D(() => window.__frozenTestDebug.healCount());
+    const pos11 = await D(([q, r]) => window.__frozenTestDebug.screenOf(q, r), [h11.q, h11.r]);
+    await page.mouse.move(pos11.x - 40, pos11.y - 40);
+    await page.mouse.move(pos11.x, pos11.y, { steps: 6 });
+    await settle(700);
+    const u11 = await D(([q, r]) => window.__frozenTestDebug.unitsAt(q, r), [h11.q, h11.r]);
+    const healAfter = await D(() => window.__frozenTestDebug.healCount());
+    const topEl = await D(([x, y]) => { const e = document.elementFromPoint(x, y); return e ? e.tagName + '.' + e.className : null; }, [pos11.x, pos11.y]);
+    ok('D11 hover leczy osierocona jednostke (licznik rosnie, flaga zdjeta)', healAfter > healBefore && u11.every(u => !u.inGarnizon), { healBefore, healAfter, topEl, pos11 });
+
+    ok('D12 zero pageerror/console.error (klik, merge, fortyfikacja, split, hover, start tury)', errors.length === 0, errors.slice(0, 3));
   } finally {
     await browser.close();
     fs.rmSync(outDir, { recursive: true, force: true });

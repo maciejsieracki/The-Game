@@ -154,7 +154,7 @@ import { trimSidePanelEventLog } from './game/retained-side-panel-events';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
-import { installCivTestHooks } from './game/civ-test-hooks';
+import { installCivTestHooks, isCivTestEnabled } from './game/civ-test-hooks';
 import { computeStartPlacements, computeReachable, computePath, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit } from './units/setup';
 import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
@@ -537,6 +537,7 @@ import {
   visibleStackOnHex,
   healUnitStates,
   hasOwnCityAt,
+  normalizeMergedFortify,
   coLocatedForMergePrompt,
   stackHudMergeSplitActions,
   adjacentVisibleArmyHexes,
@@ -11768,6 +11769,7 @@ async function boot(): Promise<void> {
      * Licznik trafia do logu diagnostycznego (F10) i `window.__unitHealCount`.
      */
     let unitHealTotal = 0;
+    let lastHealHoverKey = '';
     function healInconsistentUnits(reason: string, opts?: { siege?: boolean; render?: boolean }): number {
       const rep = healUnitStates(units, cities, { siege: opts?.siege === true });
       if (rep.duplicateIds > 0) {
@@ -13372,12 +13374,10 @@ async function boot(): Promise<void> {
           const garnizonMode = existing.every(x => x.inGarnizon === true);
           // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: garnizon dziedziczony tylko na heksie
           // WLASNEGO miasta (inaczej nowoprzybyli stawaliby sie niewybieralni).
-          if (garnizonMode && hasOwnCityAt(cities, rep.q, rep.r, rep.ownerId)) {
-            for (const id of movedUnitIds) {
-              const mu = units.find(x => x.id === id);
-              if (mu && mu.inGarnizon !== true) enterGarnizon(mu);
-            }
-          }
+          // Runda 2: normalizeMergedFortify (armyMerge.ts) -- poza garnizonem miasta merge
+          // ZDEJMUJE tez fortyfikacje w polu (syncStackRuchLeft=MIN zerowal pule calej armii).
+          normalizeMergedFortify(onHex, garnizonMode && hasOwnCityAt(cities, rep.q, rep.r, rep.ownerId),
+            hasOwnCityAt(cities, rep.q, rep.r, rep.ownerId));
           // BB2 (ECHO B): scalenie ujednolica tożsamość stosu — od teraz WSZYSCY
           // na `onHex` (nowoprzybyli + rezydenci, niezależnie od poprzednich
           // stackGroupId/fallbacków) są JEDNĄ armią z jedną, wspólną pulą ruchu.
@@ -13700,9 +13700,9 @@ async function boot(): Promise<void> {
             const all = [...sameHexOthers, ...arrivingUnits];
             // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: garnizon tylko na heksie WLASNEGO
             // miasta; poza nim lacznie NORMALIZUJE (zdejmuje) flage zamiast ja propagowac.
-            const preferGarnizon = all.some(x => x.inGarnizon === true)
-              && hasOwnCityAt(cities, srcQ, srcR, active.ownerId);
-            for (const u of all) u.inGarnizon = preferGarnizon;
+            const cityHereMerge = hasOwnCityAt(cities, srcQ, srcR, active.ownerId);
+            const preferGarnizon = all.some(x => x.inGarnizon === true) && cityHereMerge;
+            normalizeMergedFortify(all, preferGarnizon, cityHereMerge);
             const merged = coLocatedForMergePrompt(units, srcQ, srcR, active.ownerId);
             assignSharedStackGroupId(merged); // BB2: jedna tożsamość po scaleniu.
             syncStackRuchLeft(merged);
@@ -23537,7 +23537,9 @@ async function boot(): Promise<void> {
         // "Odfortyfikuj" kończy ufortyfikowanie bez kosztu ruchu — jednostka
         // zostaje na heksie miasta i wraca do normalnego sterowania.
         const isGarnizoned = active.inGarnizon === true;
-        const isFieldFortified = active.ufortyfikowanyWPolu === true;
+        // Runda 2: stan przycisku = stan CALEGO stosu (jedna ufortyfikowana w polu jednostka
+        // zapala przycisk calej armii; klik zdejmuje ja dla wszystkich -- patrz handler).
+        const isFieldFortified = stack.some(su => su.ufortyfikowanyWPolu === true);
         actions.push({
           id: 'fortify',
           label: isGarnizoned
@@ -23718,7 +23720,7 @@ async function boot(): Promise<void> {
           refreshD1bHud();
           return;
         }
-        if (u.ufortyfikowanyWPolu === true) {
+        if (playerStackAt(u).some(su => su.ufortyfikowanyWPolu === true)) {
           const fieldStack = playerStackAt(u);
           for (const su of fieldStack) exitFieldFortify(su);
           syncUnitsRender();
@@ -24999,8 +25001,10 @@ async function boot(): Promise<void> {
     // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: hak live-testu (wzor __eraTestDebug) --
     // inscenizuje WYLACZNIE dane wejsciowe (jednostki gracza z flagami garnizonu/fortyfikacji
     // na zadanym heksie); klik, wybor, samoleczenie i merge ida REALNYMI sciezkami gry.
-    (window as any).__frozenTestDebug = {
-      spawn: (q: number, r: number, n: number, flags: { garnizon?: boolean; field?: boolean; ruchLeft?: number }): string[] => {
+    // Runda 2: hak powstaje WYLACZNIE przy `?civTest=1` (ta sama bramka co window.__civTest);
+    // w produkcji `window.__frozenTestDebug === undefined`, zero powierzchni.
+    if (isCivTestEnabled(window.location.search)) (window as any).__frozenTestDebug = {
+      spawn: (q: number, r: number, n: number, flags: { garnizon?: boolean; field?: boolean; ruchLeft?: number; group?: string }): string[] => {
         const tpl = units.find(u => u.ownerId === 0 && u.category !== 'osadnik' && u.category !== 'robotnik' && u.category !== 'zwiadowca') ?? units.find(u => u.ownerId === 0);
         if (!tpl) throw new Error('brak szablonu jednostki gracza');
         const ids: string[] = [];
@@ -25009,7 +25013,7 @@ async function boot(): Promise<void> {
           const nu = { ...tpl, id, q, r, ownerId: 0, inGarnizon: flags.garnizon === true,
             ufortyfikowanyWPolu: flags.field === true, ruchLeft: flags.ruchLeft ?? tpl.ruch,
             fortifyRuchSnapshot: flags.garnizon || flags.field ? tpl.ruch : undefined,
-            stackGroupId: undefined, oblegaCityId: undefined, sentry: false } as RuntimeUnit;
+            stackGroupId: flags.group, oblegaCityId: undefined, sentry: false } as RuntimeUnit;
           units.push(nu);
           ids.push(id);
         }
@@ -25031,6 +25035,24 @@ async function boot(): Promise<void> {
         id: u.id, ownerId: u.ownerId, inGarnizon: u.inGarnizon === true, field: u.ufortyfikowanyWPolu === true, ruchLeft: u.ruchLeft,
       })),
       healCount: (): number => unitHealTotal,
+      // Runda 2: wejscia do REALNYCH sciezek (panel Polacz, akcja HUD, rozdzielenie, hover).
+      select: (id: string): void => { selectPlayerUnit(id); },
+      openMerge: (): void => { openMergePanelForSelected(); },
+      hudAction: (actionId: string): void => { handleSelectedUnitHudAction(actionId); },
+      openSplit: (): void => { openSplitPanelForSelected(); },
+      stackInfo: (id: string) => {
+        const u = units.find(x => x.id === id);
+        if (!u) return null;
+        const st = playerStackAt(u);
+        return {
+          size: st.length,
+          pool: stackRuchLeft(st),
+          planningPool: planningStackRuchLeft(st),
+          anyGarnizon: st.some(x => x.inGarnizon === true),
+          anyField: st.some(x => x.ufortyfikowanyWPolu === true),
+          allField: st.every(x => x.ufortyfikowanyWPolu === true),
+        };
+      },
       freeLandHex: (): { q: number; r: number } | null => {
         for (const key of Object.keys(map.hexes)) {
           const h = map.hexes[key]!;
@@ -29369,6 +29391,12 @@ async function boot(): Promise<void> {
       }
 
       const hitEarly = pickMapTarget(e.clientX, e.clientY);
+      // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1 (runda 2): hover tez leczy (raz na zmiane heksu),
+      // zeby tooltip/kursor/podswietlenie nie widzialy osieroconego garnizonu.
+      if (hitEarly) {
+        const hk = hitEarly.q + ',' + hitEarly.r;
+        if (hk !== lastHealHoverKey) { lastHealHoverKey = hk; healInconsistentUnits('hover'); }
+      }
 
       // Kursory jednostek tylko na mapie świata (nie w panelu miasta / mockupie okolicy).
       if (!isWorldMapUnitMode()) {
