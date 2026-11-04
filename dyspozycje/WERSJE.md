@@ -1,3 +1,12 @@
+## ROBOCZA ca6a9e08 -- 2026-11-04 -- ulepszenia żywności tylko na polach z obywatelami (gracz i AI) (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`9fcb663ed` + AI-FOOD-ONLY-WORKED-HEXES `1a83b7f44`) i commit wdrożenia bundla; twarda zasada właściciela (2026-11-03/04, zrzuty Ateny), stała zgoda na poprawki.
+- Bundle MD5 `ca6a9e08cd9cb52df50e609d876631b7`, 70,179,670 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: farma, irygacja, trzoda, obóz łowiecki, łodzie, tarasy, warzelnia soli i wycinka lasu tylko na heksach z obywatelami, bez wyjątków; gracz (Żywność i Zrównoważone) i AI; po farmie na polach obywateli powstają irygacja i trzoda. Pomiar: ulepszeń żywności poza obywatelami AI 1120→0, gracz 1272→0 / 1128→0.
+- Testy: tsc PASS; ai-food-only-worked-hexes 81/0 (RED 52/29, mutacje 10/10); auto-improve-q3 48/0; ai-improvements 56/0.
+- Ograniczenia: Chromium/live i zapis właściciela niezmierzone; plon żywności nominalnie −17–19%; istniejące farmy po przesunięciu obywatela zostają.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `5cbd823a9ac446244f2cf641edd2168d`, 70,180,043 bajtów.
+
 ## ROBOCZA 5cbd823a -- 2026-11-04 -- wyłom wieżą oblężniczą także w bitwie taktycznej (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`86d510c66` + SIEGE-TOWER-BREACH-EVERYWHERE `6593d7c3a`) i commit wdrożenia bundla; decyzja właściciela (wieża = wyłom wszędzie), stała zgoda na poprawki.

@@ -1,112 +1,113 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "5cbd823a9ac446244f2cf641edd2168d",
-  "bundleSha256": "5164ba9d4de2ff8d0dc4a539634e55c32da131394e55c22c8de491842088ed06",
-  "bundleBytes": 70180043,
+  "bundleMd5": "ca6a9e08cd9cb52df50e609d876631b7",
+  "bundleSha256": "4f4b9ade1fc4ed4df92ea03e1862f9b3246ea42f7ff0ef9a38f14b473aaa8783",
+  "bundleBytes": 70179670,
   "sourceSnapshot": {
-    "source": "main 86d510c66 + SIEGE-TOWER-BREACH-EVERYWHERE (6593d7c3a)",
+    "source": "main 9fcb663ed + AI-FOOD-ONLY-WORKED-HEXES (1a83b7f44)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-SIEGE-TOWER-BREACH-EVERYWHERE-Q1: wieża oblężnicza liczy się jako wyłom także w bitwie taktycznej — atakujący, który wejdzie wieżą na mur/palisadę, może zdobyć miasto bez tarana i katapulty (dotąd tylko Auto/„Pomiń”/szturm); `wallEverBreached` ustawiane przy wspięciu (`attackerWallEntryIsBreach`); bez wieży i bez machin miasto nadal nie pada (R1); po wyłomie melee bije obrońców z muru (R2); wieżyczki strzeleckie, bonusy obrony, Milicja bez zmian. Gracz, AI i barbarzyńcy jedną ścieżką `wallBreached`."
+    "R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1: ulepszenia ŻYWNOŚCIOWE (farma, irygacja, trzoda: bydło/owce/lama, obóz łowiecki, łodzie rybackie, tarasy, warzelnia soli) i wycinka lasu powstają WYŁĄCZNIE na heksach z obywatelami — bez wyjątków; gracz (profile Żywność i Zrównoważone) i AI (w tym przebieg „brakujący surowiec”); usunięte wyjątki rzeczne (riverForestPrepHex/riverClearedFarmHex) i wyjątek złożowy dla żywności; po farmie na polach obywateli powstają irygacja i trzoda. Pomiar (5 ziaren × 100 tur): ulepszeń żywności na heksach bez obywatela AI 1120/1761 → 0/645, gracz Żywność 1272/1932 → 0/737, gracz Zrównoważone 1128/1761 → 0/645. Zaktualizowane 3 testy kodujące dawne wyjątki Q2/Q3 (decyzja właściciela)."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "siege-tower-breach-everywhere 47/0 (Chromium: prawdziwa scena, mur i palisada; mutacje); palisade-battle-wall-rules 52/0"
+    "ai-food-only-worked-hexes 81/0 (RED na bazie 52/29; 10 mutacji kluczy FOOD_IMPROVEMENT_KEYS czerwone); auto-improve-q3 48/0; ai-improvements 56/0; regresje autoimprove/auto-improvements/farma/hodowla zielone"
   ],
   "limits": [
-    "Pełny przebieg tury AI/barbarzyńców z wieżą NIE_ZMIERZONO",
-    "Test sceny: Taran przemianowany na „Wieża oblężnicza” (playtest bez wieży w składzie); kod wspinaczki prawdziwy",
-    "Port Rust battle: REPIN po wdrożeniu (battleScene wspięcie wieżą ustawia wallEverBreached)"
+    "Chromium/live i zapis ROBOCZEJ właściciela NIE_ZMIERZONO; pomiar syntetyczny (wygenerowane mapy)",
+    "Plon żywności nominalnie −17–19% (skutek reguły właściciela; nie zmierzony w silniku tury)",
+    "Czerwone poza zakresem: oboz-lowiecki-las-test (19 FAIL), oboz-lowiecki-ev-r2-mainpath, autoimprove-live-hooks, wyrab-rzeka-obywatel-turns",
+    "Istniejące farmy po przesunięciu obywatela nie są burzone"
   ],
   "finalControl": {
-    "status": "PASS",
-    "notes": "SIEGE-TOWER-BREACH-EVERYWHERE (r1): Operator → Evaluator PASS-WITH-NOTES → FC PASS."
+    "status": "PASS-WITH-NOTES",
+    "notes": "AI-FOOD-ONLY-WORKED-HEXES (r2): Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES (7× ODDAL)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T10:49:13",
+  "hubGeneratedAt": "2026-11-04T11:15:04",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "5cbd823a9ac446244f2cf641edd2168d",
-      "sizeBytes": 70180043
+      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
+      "sizeBytes": 70179670
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "5cbd823a9ac446244f2cf641edd2168d",
-      "sizeBytes": 70180043
+      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
+      "sizeBytes": 70179670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "5cbd823a9ac446244f2cf641edd2168d",
-      "sizeBytes": 70180043
+      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
+      "sizeBytes": 70179670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "5cbd823a9ac446244f2cf641edd2168d",
-      "sizeBytes": 70180043
+      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
+      "sizeBytes": 70179670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "5cbd823a9ac446244f2cf641edd2168d",
-      "sizeBytes": 70180043
+      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
+      "sizeBytes": 70179670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "5cbd823a9ac446244f2cf641edd2168d",
-      "sizeBytes": 70180043
+      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
+      "sizeBytes": 70179670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "5cbd823a9ac446244f2cf641edd2168d",
-      "sizeBytes": 70180043
+      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
+      "sizeBytes": 70179670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "5cbd823a9ac446244f2cf641edd2168d",
-      "sizeBytes": 70180043
+      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
+      "sizeBytes": 70179670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "5cbd823a9ac446244f2cf641edd2168d",
-      "sizeBytes": 70180043
+      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
+      "sizeBytes": 70179670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "5cbd823a9ac446244f2cf641edd2168d",
-      "sizeBytes": 70180043
+      "md5": "ca6a9e08cd9cb52df50e609d876631b7",
+      "sizeBytes": 70179670
     }
   ],
-  "md5": "5cbd823a9ac446244f2cf641edd2168d",
-  "sizeBytes": 70180043,
+  "md5": "ca6a9e08cd9cb52df50e609d876631b7",
+  "sizeBytes": 70179670,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "34d2cada6f2b8b9d528e35dac8320247"
+    "bundleMd5": "5cbd823a9ac446244f2cf641edd2168d"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 34d2cada6f2b8b9d528e35dac8320247, 70179813 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 5cbd823a9ac446244f2cf641edd2168d, 70180043 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1283,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T10:49:13+00:00",
-  "buildStamp": "2026-11-04 10:49",
+  "publishedAt": "2026-11-04T11:15:04+00:00",
+  "buildStamp": "2026-11-04 11:15",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
