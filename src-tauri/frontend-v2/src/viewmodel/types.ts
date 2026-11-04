@@ -238,6 +238,13 @@ export interface StaticCatalogDto {
    * katalogu. Brak klucza = pusta lista (web: fallback na pole `tech.json`). ROZSZ. Z4-4.
    */
   techTerrainUnlockLabels: Readonly<Record<string, readonly string[]>>;
+  /**
+   * REPIN UI-2-D (`entityCards/improvementAdapter.ts`, main `86d510c66` `:160-165`): koszt Pracy ulepszenia terenu na
+   * karcie = web `scaleTerrainImprovementWorkCost(koszt_praca, epoka)` (`game/terrain-improvements.ts:108-115`)
+   * policzony w Rust dla każdego klucza `terrain-improvements.json` z polem `koszt_praca`. Opcjonalne (addytywnie):
+   * brak = karta pokazuje surowe `koszt_praca` (ZAŁOŻENIE UI2D-Z3). Producent Rust: NIE_ZMIERZONO (kolejka P6).
+   */
+  terrainImprovementWorkCost?: Readonly<Record<string, number>>;
 }
 
 // ─── §5 / §6.2 Miasto (pola dzielone renderer ↔ UI, D-UI-9) ───────────────────
@@ -1195,6 +1202,10 @@ export interface HexYieldPartDto {
  * (`:247-249`); `implicit` = klucze aktywne nie-postawione (`:557`; na pinie zawsze puste — `built` = te same klucze);
  * `yieldParts`/`yieldFull` = `yieldParts`/`fullTileYield` (`:251-295`); `possible` = `listTerrainPossibleImprovements`
  * (`:440-513`, ≤ 10 pozycji).
+ * REPIN UI-2-D (main `86d510c66`, `R-WEB-IMPROVEMENT-ERA-SCALING-Q1`): web liczy `bonus`/`magazyn`/`yieldParts`/`yieldFull`
+ * i `possible` z epoką gracza `currentEra` (`ownerEra`: `improvementBonusForKey(key, era)`,
+ * `territoryResourceYieldForImprovement(key, zloze, era)`, `tileYield({ …, wlascicielEra: era })`; `possible[].magazyn`
+ * bez złoża) — Rust wypełnia pola wg tej samej epoki; kształt DTO bez zmian (ZAŁOŻENIE UI2D-Z1).
  */
 export interface HexTooltipViewDto {
   terrainBase: string;
@@ -1503,6 +1514,12 @@ export interface BuildingCardStateDto {
   buildCostPace: string;
   difficulty: string;
   ownerId: number;
+  /**
+   * REPIN UI-2-D (main `86d510c66` `entityCards/buildingAdapter.ts:70,279`): bonusy cywilizacji właściciela —
+   * web podaje je do `buildingWorkCost(baseWork, civBonusy, pace, ownerId, difficulty)` (na pinie `undefined`).
+   * Opcjonalne (addytywnie): brak = jak pin.
+   */
+  civBonusy?: readonly CivBonusLiteDto[];
 }
 
 /**
@@ -1521,7 +1538,7 @@ export interface BuildingCardRulesDto {
   cumulativeMnoznik: number;
   /** `buildingStructuralDefenseBonusLine(id)`. */
   structuralDefenseLine: string | null;
-  /** `buildingWorkCost(itemCost('budynek', id, …, 1), undefined, pace, ownerId, difficulty)`. */
+  /** `buildingWorkCost(itemCost('budynek', id, …, 1), undefined, pace, ownerId, difficulty)`; REPIN UI-2-D: drugi argument = `state.civBonusy`. */
   workCost: number;
   /** `buildingStockCost(def)` (kolejność kluczy = web). */
   stockCost: Readonly<Record<string, number>>;

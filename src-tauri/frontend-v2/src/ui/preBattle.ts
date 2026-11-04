@@ -80,6 +80,10 @@ export interface PreBattleSide {
    * źródło (jawne `bonusy*` albo `getCivBonusy(ownerId)`, pin `:598-606`) i filtr bonusów walki (`bonusChipTexts`
    * + `isCombatModifierBonus`, `game/defenseBreakdown.ts:52-64`). Zastępuje `PreBattleInfo.bonusyAtakujacy/Obronca`
    * oraz hak `getCivBonusy` (konfiguracja i opcje).
+   * REPIN UI-2-D (main `86d510c66` `preBattle.ts:725-728`): web liczy chipy `effectiveCombatBonusChipTexts(bonusy,
+   * side.units → civCombatUnitShapeFromCategory(nazwa, kategoria), { side: atk→'attacker'|def→'defender',
+   * terrain: info.teren, isChargeRound: false })` (`game/civ-bonuses.ts`) — wejścia nowej reguły (skład strony, rola,
+   * teren) zna Rust; panel nadal tylko renderuje gotowe teksty (ZAŁOŻENIE UI2D-Z2).
    */
   bonusChips: readonly string[];
   units: PreBattleUnit[];
@@ -153,7 +157,11 @@ export interface PreBattleCallbacks {
 }
 
 export interface PreBattleOptions {
-  defaultAction?: 'auto' | 'manual';  /**
+  defaultAction?: 'auto' | 'manual';
+  /** Resolve immediately without opening the pre-battle choice overlay. */
+  automaticOnly?: boolean;
+  /** Manual battlefield controls require a Wódz/Generał in the player's roster. */
+  manualControlAllowed?: boolean;  /**
    * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: true WYŁĄCZNIE dla automatycznych wywołań
    * (atak AI/barbarzyńców w trakcie end-of-turu) -- NIGDY dla ręcznej akcji gracza (klik
    * atak/szturm). Włącza guard przeciw innym otwartym modalom końca tury (patrz
@@ -244,6 +252,13 @@ export function showPreBattle(
     // main.ts::healStaleEndTurnBlockers() uses it so a request stuck in the queue past the
     // threshold (8s, see main.ts) doesn't disable its branch 1 FOREVER.
     deferredAutoRequests.push({ info, cb, opts, enqueuedAt: Date.now() });
+    return;
+  }
+  // The new-game setting Bitwa automatyczna means automatic resolution, with no
+  // manual-vs-auto prompt. Keep this after the deferred-auto guard so incoming attacks
+  // queued behind another modal are still resolved in FIFO order when they flush.
+  if (opts?.automaticOnly === true) {
+    cb.onAuto();
     return;
   }
   hidePreBattle();
@@ -789,7 +804,13 @@ function metaHtml(info: PreBattleInfo): string {
   return '<div class="pb-meta">' + parts.join('<span>·</span>') + '</div>';
 }
 
-function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManual: boolean, hasSave: boolean): HTMLElement {
+function buildDeployPanel(
+  info: PreBattleInfo,
+  canRetreat: boolean,
+  defaultManual: boolean,
+  hasSave: boolean,
+  manualControlAllowed: boolean,
+): HTMLElement {
   const defenderCanRetreat = info.defenderCanRetreat === true;
   const showRetreat = canRetreat || defenderCanRetreat;
   // P-WYCOFANIE-JEDNORAZOWE-TURA (Maciej 2026-08-13): obrońca już wycofany w tej
@@ -815,6 +836,8 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
     btns.push('<button type="button" class="pb-btn pb-danger" data-act="cancel" disabled>' + PB_SVG.retreat + 'Wycofaj</button>');
   }
   btns.push('<button type="button" class="pb-btn" data-act="auto">' + PB_SVG.auto + 'Auto</button>');
+  // Wybór trybu bitwy należy do pre-battle prompt i zawsze pozostaje dostępny.
+  // manualControlAllowed ogranicza dopiero sterowanie na polu bitwy (BattleScene).
   btns.push('<button type="button" class="pb-btn pb-primary" data-act="deploy">' + deployIcon + esc(deployLabel) + '</button>');
   if (hasSave) {
     btns.push('<button type="button" class="pb-btn" data-act="save">Zapisz</button>');
@@ -839,6 +862,9 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
   const prognoza = info.prognoza
     ? '<div class="pb-note">' + esc(info.prognoza) + '</div>'
     : '';
+  const commanderNote = manualControlAllowed
+    ? ''
+    : '<div class="pb-note">Bez Wodza lub Generała możesz wejść na pole bitwy, ale walka rozegra się automatycznie bez indywidualnego sterowania.</div>';
 
   const panel = document.createElement('div');
   panel.className = 'pb-deploy';
@@ -852,6 +878,7 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
     oddsHtml(info, canRetreat) +
     modPillsHtml(allMods) +
     prognoza +
+    commanderNote +
     '<div class="pb-btns">' + btns.join('') + '</div>' +
     noRetreatBar +
     keys +
@@ -862,6 +889,7 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
 function buildOverlay(info: PreBattleInfo, cb: PreBattleCallbacks, opts?: PreBattleOptions): HTMLDivElement {
   ensureStyles();
   const canRetreat = info.canRetreat !== false;
+  const manualControlAllowed = opts?.manualControlAllowed !== false;
   const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual';
 
   const isYouAtk = isPlayerSide(info.atakujacy, 'atk', canRetreat);
@@ -885,12 +913,15 @@ function buildOverlay(info: PreBattleInfo, cb: PreBattleCallbacks, opts?: PreBat
     rosterHtml(info.atakujacy, 'atk', isYouAtk) +
     rosterHtml(info.obronca, 'def', isYouDef);
 
-  overlay.appendChild(buildDeployPanel(info, canRetreat, defaultManual, !!cb.onSave));
+  overlay.appendChild(buildDeployPanel(info, canRetreat, defaultManual, !!cb.onSave, manualControlAllowed));
 
   const dismiss = (): void => hidePreBattle();
   overlay.querySelector('[data-act="cancel"]')?.addEventListener('click', () => { cb.onCancel(); dismiss(); });
   overlay.querySelector('[data-act="auto"]')?.addEventListener('click', () => { cb.onAuto(); dismiss(); });
-  overlay.querySelector('[data-act="deploy"]')?.addEventListener('click', () => { cb.onBattlefield(); dismiss(); });
+  overlay.querySelector('[data-act="deploy"]')?.addEventListener('click', () => {
+    cb.onBattlefield();
+    dismiss();
+  });
   overlay.querySelector('[data-act="save"]')?.addEventListener('click', () => {
     if (!cb.onSave) return;
     void (async () => {

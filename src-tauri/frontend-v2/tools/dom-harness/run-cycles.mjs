@@ -392,20 +392,24 @@ try {
   const FOREST_BONUS = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
   const bonusToTileYield = (b) => ({ zywnosc: b.zywnosc ?? 0, praca: b.praca ?? 0, handel: (b.handel ?? 0) + (b.pieniadz ?? 0), drewno: b.drewno ?? 0, kamien: b.kamien ?? 0, glina: b.glina ?? 0, ruda: 0, ruda_zelaza: 0 });
   const cityYieldOnly = (y) => ({ zywnosc: y.zywnosc ?? 0, praca: y.praca ?? 0, handel: y.handel ?? 0, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 });
-  const impLine = (key, zloze) => ({
-    key, name: TI.improvementDisplayName(key), bonus: TI.improvementBonusForKey(key),
-    magazyn: TI.territoryResourceYieldForImprovement(key, zloze) ?? null, unlockLabels: RA.labelsForImprovementUnlock(key),
+  // R-RUSTPORT-REPIN-UI-2-D-Q1: gdy odniesienie `ui/hexContextTooltip.ts` to wersja main (nakładka `overlayPortsUI2D`,
+  // `R-WEB-IMPROVEMENT-ERA-SCALING-Q1`), web liczy bonus/magazyn/plony z epoką gracza `currentEra` (`ownerEra`) — „Rust”
+  // harnessu robi to samo (UI2D-Z1). Na czystym pinie (bez `ownerEra` w pliku) zachowanie bez zmian.
+  const ERA_AWARE = /ownerEra/.test(readFileSync(join(PIN_SRC, 'ui/hexContextTooltip.ts'), 'utf8'));
+  const impLine = (key, zloze, ye) => ({
+    key, name: TI.improvementDisplayName(key), bonus: ERA_AWARE ? TI.improvementBonusForKey(key, ye) : TI.improvementBonusForKey(key),
+    magazyn: (ERA_AWARE ? TI.territoryResourceYieldForImprovement(key, zloze, ye) : TI.territoryResourceYieldForImprovement(key, zloze)) ?? null, unlockLabels: RA.labelsForImprovementUnlock(key),
   });
-  const hexView = (hex, { era = 99, civ, map } = {}) => {
+  const hexView = (hex, { era = 99, civ, map } = {}, ye = undefined) => {
     const keys = TI.improvementKeysForHex(hex);
     const zloze = hex.zloze;
-    const fullY = EC.tileYield({ terenBazowy: hex.terenBazowy, nakladka: hex.nakladka ?? 'brak', maRzeke: !!(hex.rzeka && hex.rzeka.obecna), zloze, ulepszeniaKeys: keys });
+    const fullY = EC.tileYield({ terenBazowy: hex.terenBazowy, nakladka: hex.nakladka ?? 'brak', maRzeke: !!(hex.rzeka && hex.rzeka.obecna), zloze, ulepszeniaKeys: keys, ...(ERA_AWARE ? { wlascicielEra: ye } : {}) });
     const parts = [{ label: 'teren bazowy', delta: EC.tileYield({ terenBazowy: hex.terenBazowy, nakladka: 'brak', maRzeke: false }) }];
     if (hex.nakladka === 'las') parts.push({ label: 'las', delta: { ...FOREST_BONUS } });
     if (hex.rzeka?.obecna) parts.push({ label: 'rzeka', delta: { ...RIVER_BONUS } });
     const builtSet = new Set(keys);
     for (const k of keys) {
-      const bonus = cityYieldOnly(bonusToTileYield(TI.improvementBonusForKey(k)));
+      const bonus = cityYieldOnly(bonusToTileYield(ERA_AWARE ? TI.improvementBonusForKey(k, ye) : TI.improvementBonusForKey(k)));
       if (!['zywnosc', 'praca', 'handel'].some((yk) => (bonus[yk] ?? 0) !== 0)) continue;
       parts.push({ label: `${TI.improvementDisplayName(k)} (${builtSet.has(k) ? 'postawione' : 'złoże / hodowla'})`, delta: bonus });
     }
@@ -445,10 +449,10 @@ try {
       if (k === 'kopalnia_cyny' && zloze !== 'cyna') continue;
       if (k === 'droga_brukowana' && !active.has('droga') && hex.ulepszenie !== 'droga') continue;
       if (k === 'irygacja' && !HX.hexHasRiverAccess(hex, map)) continue;
-      possible.push(impLine(k, undefined));
+      possible.push(impLine(k, undefined, ye));
       if (possible.length >= 10) break;
     }
-    return { terrainBase: String(hex.terenBazowy), resourceLabels: out, built: keys.map((k) => impLine(k, zloze)), implicit: keys.filter((k) => !keys.includes(k)).map((k) => impLine(k, zloze)), yieldParts: parts, yieldFull: fullY, possible };
+    return { terrainBase: String(hex.terenBazowy), resourceLabels: out, built: keys.map((k) => impLine(k, zloze, ye)), implicit: keys.filter((k) => !keys.includes(k)).map((k) => impLine(k, zloze, ye)), yieldParts: parts, yieldFull: fullY, possible };
   };
   const combat = (k) => ({
     atakBase: 4, atakEffective: 4 + k, obronaBase: 6, obronaEffective: 6 - k / 2, hpMaxBase: 10, hpMaxEffective: 10 + k, pancerzBase: 1,
@@ -491,7 +495,7 @@ try {
       for (const [ci, city] of (nHex % 5 === 0 ? CITY : [CITY[nHex % 3]]).entries()) for (const worked of (nHex % 4 === 0 ? [false, true] : [nHex % 2 === 0])) {
         const base = { q: hex.coords.q, r: hex.coords.r, esc, hexWorkedForMagazyn: worked, ...city };
         const pinIn = { ...base, hex, currentEra: o.era, playerCivType: o.civ, map: o.map };
-        const v2In = { ...base, view: hexView(hex, o), cityDisplayLabel: city.cityName ? DN.formatEntityDisplayName({ baseName: city.cityName, isCityState: city.cityIsCityState }) : null };
+        const v2In = { ...base, view: hexView(hex, o, o.era), cityDisplayLabel: city.cityName ? DN.formatEntityDisplayName({ baseName: city.cityName, isCityState: city.cityIsCityState }) : null };
         delete v2In.cityIsCityState;
         cmpVal(M, `hex(${name})#${ci}/${worked}`, P.buildHexContextTooltipHtml(pinIn), V.buildHexContextTooltipHtml(v2In));
       }

@@ -46,5 +46,27 @@ for (const f of manifest.files) {
   writeFileSync(dst, buf);
   console.log(`nakładka ${srcPath} (${buf.length} B)`);
 }
+// R-RUSTPORT-REPIN-UI-2-D-Q1 (addytywnie): sekcje `overlayPorts*` manifestu — porty DOM repinowane do main; w odniesieniu
+// podmieniamy plik webu z main (sha256 sprawdzane), bo port nie jest już równoważny pinowi.
+let portFiles = 0;
+for (const [key, sec] of Object.entries(manifest)) {
+  if (!key.startsWith('overlayPorts') || !sec || !Array.isArray(sec.files)) continue;
+  for (const f of sec.files) {
+    portFiles++;
+    const srcPath = f.pin.slice(f.pin.indexOf(':') + 1);
+    const buf = readFileSync(join(resolve(webDir), srcPath));
+    const sha = createHash('sha256').update(buf).digest('hex');
+    if (sha !== f.sha256 || buf.length !== f.bytes) {
+      bad++;
+      console.error(`SHA ${key} ${srcPath} web=${sha}/${buf.length} manifest=${f.sha256}/${f.bytes}`);
+      continue;
+    }
+    const dst = join(resolve(out), srcPath);
+    mkdirSync(dirname(dst), { recursive: true });
+    writeFileSync(dst, buf);
+    console.log(`nakładka ${key} ${srcPath} (${buf.length} B)`);
+  }
+}
+console.log(`repin-ui2-overlay: portów overlayPorts*=${portFiles}`);
 console.log(`repin-ui2-overlay: plików=${manifest.files.length} niezgodnych=${bad} out=${out}`);
 process.exitCode = bad === 0 ? 0 : 1;
