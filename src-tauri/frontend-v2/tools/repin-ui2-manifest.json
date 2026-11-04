@@ -1,7 +1,7 @@
 {
   "pin": "86d510c667268880414d693532ca012c9310589e",
   "source": "git show <pin>:<gra/path> (origin/main w chwili kopiowania)",
-  "topic": "R-RUSTPORT-REPIN-UI-2-A-Q1",
+  "topic": "R-RUSTPORT-REPIN-UI-2-A-Q1 (#1-#4), R-RUSTPORT-REPIN-UI-2-B-Q1 (#5-#7)",
   "files": [
     {
       "path": "src/ui/formatCompactNumber.ts",
@@ -26,6 +26,24 @@
       "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/unitActionBarHtml.ts",
       "sha256": "a9c291e44fc0f423e9ca78a411c8499725fbe86a517b3eb21b0b65e0b34647a5",
       "bytes": 10501
+    },
+    {
+      "path": "src/ui/aiOwnerProgressFrame.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/aiOwnerProgressFrame.ts",
+      "sha256": "87c6941de4324eaca800e6933e7800f8a7f88fc9658068e68dd24da9c1df294d",
+      "bytes": 629
+    },
+    {
+      "path": "src/ui/armyMergePanel.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/armyMergePanel.ts",
+      "sha256": "e550291b13892972fb22595fc018438a4f1b0b3bd4ff0facaca39b10ba30cf1a",
+      "bytes": 16627
+    },
+    {
+      "path": "src/ui/armySplitPanel.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/armySplitPanel.ts",
+      "sha256": "502288abea671ace2a3cbe77e71976da2e19841c3dd163b25008231222865817",
+      "bytes": 13495
     }
   ],
   "overlayPortsUI2D": {
@@ -51,5 +69,22 @@
         "bytes": 17532
       }
     ]
-  }
+  },
+  "portDomRefs": [
+    {
+      "path": "src/ui/unitReplacePicker.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/unitReplacePicker.ts",
+      "sha256": "7f4608d59da64176fb77869b88f0fd3ab6449bee9def0238616c772385fea3cd",
+      "bytes": 8544,
+      "note": "port DOM UI-2-B #8 (pole blockedReason)"
+    },
+    {
+      "path": "src/ui/siegeMapPanel.ts",
+      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/siegeMapPanel.ts",
+      "sha256": "18a2b0ae6e32a5189e0a71283a5d1eea5f0bbd636141fd733f202079bf226f9b",
+      "bytes": 17415,
+      "note": "port DOM UI-2-B #9 (DTO milicjaRegen, bez \"~\")"
+    }
+  ],
+  "portDomRefsNote": "Pliki portu DOM (NIE kopie bajtowe): w drzewie frontend-v2 różnią się od weba (DTO zamiast importów game/*). Wpis = wersja weba, którą nakładka repin-ui2-overlay.mjs wstawia do odniesienia pinu starszych harnessów; verify-repin-ui2-copies sprawdza tylko sha256 źródła weba (nie pliku portu) i rozłączność z pin-manifest.json."
 }

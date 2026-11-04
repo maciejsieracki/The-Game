@@ -285,12 +285,6 @@
       "bytes": 3539
     },
     {
-      "path": "src/ui/armyMergePanel.ts",
-      "pin": "edb8fb56:gra/src/ui/armyMergePanel.ts",
-      "sha256": "370dba4802a76cfd38b0fed4d92cdc116a495379cb8374704a544635ec16b935",
-      "bytes": 9934
-    },
-    {
       "path": "src/ui/armyStackPrompt.ts",
       "pin": "edb8fb56:gra/src/ui/armyStackPrompt.ts",
       "sha256": "7cc2c169b2a265eb7b3ce64c81e3c02fde266bc48f2f1efa4c1576ab1e3aac56",
@@ -2551,12 +2545,6 @@
       "pin": "edb8fb56:gra/src/ui/armyMergePickPanel.ts",
       "sha256": "05bf1ac237d41ffc16a5b1b00c2dc4961d709b2c175adede68253fe899bb4415",
       "bytes": 7556
-    },
-    {
-      "path": "src/ui/armySplitPanel.ts",
-      "pin": "edb8fb56:gra/src/ui/armySplitPanel.ts",
-      "sha256": "59b839aececf306e42eab352212af37ed73f4de7daee903f0642ea8975fc7751",
-      "bytes": 7424
     },
     {
       "path": "src/ui/diplomacyPendingHud.ts",

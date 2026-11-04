@@ -6,6 +6,8 @@
  * Po repinie (R-RUSTPORT-REPIN-UI-2-A-Q1) pliki z `tools/repin-ui2-manifest.json` są kopiami z `origin/main`, więc
  * w odniesieniu pinu zastępujemy WYŁĄCZNIE te pliki ich wersją z weba (sha256 sprawdzane z manifestem). Reszta drzewa
  * pinu bez zmian — każda inna różnica harnessu nadal jest regresją.
+ * R-RUSTPORT-REPIN-UI-2-B-Q1: także `portDomRefs` manifestu (wersje weba plików portu DOM `unitReplacePicker.ts`,
+ * `siegeMapPanel.ts`); `run-level1a.mjs` podpina wtedy estymator Milicji webu tym samym wzorem, co DTO „Rust”.
  *
  * Użycie (z `src-tauri/frontend-v2/`):
  *   node tools/repin-ui2-overlay.mjs --pin-dir <PIN_DIR> --web-dir <WEB_DIR> --out <NOWY_KATALOG>
@@ -32,7 +34,10 @@ if (existsSync(out)) {
 const manifest = JSON.parse(readFileSync(new URL('./repin-ui2-manifest.json', import.meta.url), 'utf8'));
 cpSync(resolve(pinDir), resolve(out), { recursive: true });
 let bad = 0;
-for (const f of manifest.files) {
+// R-RUSTPORT-REPIN-UI-2-B-Q1: oprócz kopii bajtowych (`files`) nakładka wstawia wersje weba plików portu DOM
+// (`portDomRefs`: `unitReplacePicker.ts`, `siegeMapPanel.ts`) — starsze harnessy porównują port z TĄ wersją weba.
+const entries = [...manifest.files, ...(manifest.portDomRefs ?? [])];
+for (const f of entries) {
   const srcPath = f.pin.slice(f.pin.indexOf(':') + 1);
   const buf = readFileSync(join(resolve(webDir), srcPath));
   const sha = createHash('sha256').update(buf).digest('hex');
@@ -113,5 +118,5 @@ for (const name of readdirSync(toolsDir).filter((n) => /^repin-ui2.*-ported\.jso
     console.log(`nakładka (port DOM, ${name}) ${f.web} (${buf.length} B)`);
   }
 }
-console.log(`repin-ui2-overlay: plików=${manifest.files.length} portów=${portFiles} niezgodnych=${bad} out=${out}`);
+console.log(`repin-ui2-overlay: plików=${entries.length} portów=${portFiles} niezgodnych=${bad} out=${out}`);
 process.exitCode = bad === 0 ? 0 : 1;

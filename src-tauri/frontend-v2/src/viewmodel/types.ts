@@ -1606,6 +1606,11 @@ export interface SiegePanelDto {
   zuzycie: number;
   atrycjaNext: number;
   milicjaEst: number;
+  /**
+   * REPIN UI-2-B (web `4c8f4a2e7`, `gra/src/ui/siegeMapPanel.ts:224` `militiaRegenLeft(city)`): liczba tur do odnowy
+   * Milicji po jej całkowitym zniszczeniu (0/brak = brak okresu odnowy). Producent po stronie Rust = P6 (pole opcjonalne).
+   */
+  milicjaRegen?: number;
   /** Bramka komendy szturmu/kolejki machin — UI nie decyduje (P5-0 §6.12). */
   playerCanStorm: boolean;
   machines: SiegeMachinesStateDto;
