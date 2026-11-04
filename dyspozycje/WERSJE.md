@@ -1,3 +1,12 @@
+## ROBOCZA 56755bef -- 2026-11-04 -- AI zużywa pełny zasięg ruchu w marszu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`910083c97` + AI-MOVE-FULL-RANGE `2c1d43359`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `56755bef122919a4c947b5c93a938613`, 70185442 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: planer marszu AI (`warAllInCapital.ts`) rezerwuje tylko heks końcowy i wykonuje krok boczny; grupy AI zużywają pełny zapas ruchu. Dotyczy też barbarzyńców.
+- Testy: tsc PASS; ai-move-full-range 20/0 (RED na bazie); war-allin-capital 94/4 jak na bazie.
+- Ograniczenia: bez pełnej gry; balans barbarzyńców niezmierzony; ok. 5% ruchów nadal z zapasem.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `ac12379e477e12635f330896cb1a2772`, 70184635 bajtów.
+
 ## ROBOCZA ac12379e -- 2026-11-04 -- spacja w rosterze + czerwony HUD przy niedoborze (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`a4eda2b7e` + ROSTER-SPACE `4995b2677` + HUD-RED `25ba4d0ad`) i commit wdrożenia; stała zgoda właściciela.
