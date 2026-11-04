@@ -762,3 +762,6 @@ Operator (`ea5d9e7f7`,`9d08ec941`,`002579fe5`) → Evaluator FAIL (Z1: brak wyce
 
 ## 2026-11-04 — POLECENIE WŁAŚCICIELA: „nie zużyłeś limitu” → równoległe partie UI
 Uruchomione równolegle (Opus 5.5, rozłączne pliki `src/ui/*`): UI-2-B (w toku), UI-2-C (hud, empireDetailPanel/Types, armyStackHud, unitRecruitCard), UI-2-D (hexContextTooltip, preBattle, buildModeHud, adaptery kart), UI-2-E (dyplomacja ×5). Wspólne pliki (manifest/nakładka/pin-manifest/package.json/P5-REPIN-UI-2.md) edytowane addytywnie; scalenie orkiestratora. Kolejno po nich: UI-2-F (`newGameFlow`), UI-2-G (`cityPanel` + dryf K01–K09).
+
+## 2026-11-04 — kontrola cykliczna 06:11
+Nic do integracji. Trwa 5 workflowów UI (Opus 5.5): UI-2-B, C, D, E, F. `parity-v2` = `2198eaf7e`. Dysk ≈ 1,9 GB wolnego (5 worktree ≈ 1,1 GB każdy) — wąskie gardło; UI-2-G czeka na zwolnienie miejsca; po każdym wyniku sprzątanie worktree. Posprzątano scratchpad (≈1,2 GB). Czeka na zgodę właściciela: skasowanie ~14 GB starych `esbuild-*.map` w `/tmp`.
