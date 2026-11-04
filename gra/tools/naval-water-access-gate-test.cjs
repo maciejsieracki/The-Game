@@ -309,8 +309,8 @@ const seaBonusLoopRe = /for\s*\(const\s*\[cityIdSea,\s*bonusSea\]\s*of\s*seaTrad
 ok(seaBonusLoopRe.test(mainTs), 'main.ts wpina bonus morski do tradeIncomeByCity: for ([cityIdSea, bonusSea] of seaTradeBonusIncomeByCity) tradeIncomeByCity.set(...)');
 
 // Pin 2
-const seaBonusCallRe = /computeSeaTradeBonusIncomeByCity\(\s*computeSeaTradeRouteCountByCity\(tradeRoutes\),?\s*\)/;
-ok(seaBonusCallRe.test(mainTs), 'main.ts woła computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(tradeRoutes))');
+const seaBonusCallRe = /computeSeaTradeBonusIncomeByCity\(\s*computeSeaTradeRouteCountByCity\(tradeRoutes\),\s*cityBuilt,?\s*\)/;
+ok(seaBonusCallRe.test(mainTs), 'main.ts woła computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(tradeRoutes), cityBuilt)');
 
 // Pin 3 -- okno ok. 1800 znaków od "function replaceAvailabilityCtxForCity("
 {

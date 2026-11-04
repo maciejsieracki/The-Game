@@ -269,11 +269,11 @@ eq(countWithBroken.get('a'), 2, "l3: trasa morska ze statusem != 'polaczony' NIE
 assert(!countWithBroken.has('e'), "l3: partner niepolaczonej trasy (e) nie dostaje wpisu w mapie");
 
 // l4: count=1 -> bonus NIEOBECNY w mapie wyniku (klucz w ogole nie istnieje)
-const bonusSolo = TR.computeSeaTradeBonusIncomeByCity(new Map([['solo', 1]]));
+const bonusSolo = TR.computeSeaTradeBonusIncomeByCity(new Map([['solo', 1]]), new Map([['solo', ['port']]]));
 assert(!bonusSolo.has('solo'), 'l4: count=1 (tylko pierwsza trasa "juz oplacona") -> brak klucza w mapie bonusu');
 
 // l5: count=3 -> bonus = 2 x PORT_SEA_TRADE_BONUS_PIENIADZ (2 trasy PONAD pierwsza)
-const bonusThree = TR.computeSeaTradeBonusIncomeByCity(new Map([['trzy', 3]]));
+const bonusThree = TR.computeSeaTradeBonusIncomeByCity(new Map([['trzy', 3]]), new Map([['trzy', ['port']]]));
 eq(bonusThree.get('trzy'), 2 * TR.PORT_SEA_TRADE_BONUS_PIENIADZ, 'l5: count=3 -> bonus = 2 x PORT_SEA_TRADE_BONUS_PIENIADZ');
 
 // l6: PORT_SEA_TRADE_BONUS_PIENIADZ przypiete wprost jako stala = 1
