@@ -32,7 +32,7 @@ import {
 } from '../map/improvement-build';
 import { hexKeysWithinRadius } from './okolica';
 import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
-import { isImprovementAllowedForCiv } from './terrain-improvements';
+import { isImprovementAllowedForCiv, hexHasHorseDeposit } from './terrain-improvements';
 import type { UlepszeniaFocus } from './cities';
 import { DEFAULT_ULEPSZENIA_FOCUS } from './cities';
 import { isFreshwaterReservedHex } from '../map/freshwater';
@@ -1444,6 +1444,31 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // `false` (jedyne dwie nie-złożowe nakładki to `Brak` i `Las`), więc `oboz_lowiecki`
     // na lesie NIE dostaje zwolnienia — obóz to ulepszenie przy obywatelach jak każde inne.
     // ---------------------------------------------------------------------
+    // R-WEB-AI-STADNINA-FORT-TERRITORY-SCAN-Q1: ta sama reguła terytorium co budowa gracza (improvement-build.ts):
+    // miasto + forty/posterunki WŁASNEGO właściciela. Złoże konia (`hexHasHorseDeposit`, także stare zapisy
+    // `zloze==='konie'`) w kole własnego fortu/posterunku, poza pierścieniem miasta, trafia do kandydatów
+    // NAJBLIŻSZEGO własnego miasta (remis: mniejsze id). Stadnina nie jest ulepszeniem żywnościowym — filtr
+    // obywateli jej nie dotyczy (jak dla złóż w pierścieniu miasta).
+    const fortHorseExtra = new Set<string>();
+    const inCityRing = new Set(candidateHexes.map(h => `${h.q},${h.r}`));
+    for (const n of territoryNodes) {
+      if (!(n.isFort || n.isOutpost) || n.ownerId !== ownerId) continue;
+      const fr = cityTerritoryRadius(n);
+      for (const k of hexKeysWithinRadius(n.q, n.r, fr, map)) {
+        if (inCityRing.has(k) || fortHorseExtra.has(k)) continue;
+        const hx = map.hexes[k];
+        if (!hx || !hexHasHorseDeposit(hx)) continue;
+        const [qs, rs] = k.split(',');
+        const hq = Number(qs), hr = Number(rs);
+        let best: typeof cities[number] | null = null;
+        let bd = Infinity;
+        for (const c of cities) {
+          const d = axialDistance(hq, hr, c.q, c.r);
+          if (d < bd || (d === bd && best !== null && c.id < best.id)) { bd = d; best = c; }
+        }
+        if (best && best.id === city.id) fortHorseExtra.add(k);
+      }
+    }
     const isDepositHexForKey = (q: number, r: number, key: ImprovementKey): boolean => {
       const hex = map.hexes[`${q},${r}`];
       if (!hex) return false;
@@ -1458,6 +1483,9 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // niedoboru ich nie otwierają. Wyjątek złożowy zostaje dla reszty (kopalnie/kamieniołom/glinianka/stadnina).
     /** Czy na tym heksie wolno postawić TEN klucz, biorąc pod uwagę Zasadę 2. */
     const hexAllowsKey = (q: number, r: number, key: ImprovementKey): boolean => {
+      // R-WEB-AI-STADNINA-FORT-TERRITORY-SCAN-Q1: heksy dodane z koła fortu/posterunku (poza pierścieniem miasta) są
+      // kandydatami WYŁĄCZNIE dla stadniny — zero zmiany balansu pozostałych ulepszeń.
+      if (fortHorseExtra.has(`${q},${r}`)) return key === 'stadnina';
       if (FOOD_IMPROVEMENT_KEYS.has(key)) return !foodWorkedKeys || foodWorkedKeys.has(`${q},${r}`);
       if (!workedKeys) return true;
       if (workedKeys.has(`${q},${r}`)) return true;
@@ -1480,6 +1508,12 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         return !!hex && hexHasDepositReserve(hex);
       });
     }
+
+    for (const k of fortHorseExtra) {
+      const [qs, rs] = k.split(',');
+      candidateHexes.push({ q: Number(qs), r: Number(rs) });
+    }
+    candidateHexes.sort((a, b) => (a.q - b.q) || (a.r - b.r));
 
     // R4 KOREKTA F (właściciel 2026-10-31): zniesiony filtr R3 „centrum miasta wyłączone” — heks centrum jest
     // zwykłym kandydatem (patrz `workedKeys` wyżej); tartak nie powstanie, bo centrum nie ma lasu.
