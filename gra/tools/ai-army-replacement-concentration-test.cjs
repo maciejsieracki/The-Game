@@ -20,6 +20,9 @@ const cp = require('child_process');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
 const GATE_ON = 'if (gateLooseUnits && isArmyConsolidationEnabled()) {';
+// R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1: mutacja "stan przed" wylacza TEZ bramke zbiorki stosu (nowa), bo ona sama
+// tez zmniejsza udzial marszow z rozproszonych skupisk -- bez tego pomiar "przed bramka zastepcza" nie byl by porownywalny.
+const GATE_GATHER = 'if (gateLooseUnits && isArmyConsolidationEnabled() && planned.length >= 2) {';
 const WORK = fs.mkdtempSync(path.join(process.env.ARS_TMP || os.tmpdir(), 'arrc-'));
 
 async function buildBundle(name, mutate) {
@@ -39,9 +42,15 @@ export { hexDistance } from ${JSON.stringify(path.resolve(__dirname, '..', 'src'
     setup(b) {
       b.onLoad({ filter: /game[\\/]ai\.ts$/ }, (args) => {
         let text = fs.readFileSync(args.path, 'utf8');
-        if (mutate) {
+        // mutate === true: obie bramki OFF (stan sprzed obu tematow); 'gather': tylko nowa bramka zbiorki stosu OFF
+        // (= zachowanie czystego main c4a541a27 -- wydzielony wklad poprawki R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1).
+        if (mutate === true) {
           if (text.split(GATE_ON).length !== 2) throw new Error('mutacja: nie znaleziono dokladnie jednej bramki w ai.ts');
           text = text.replace(GATE_ON, 'if (false) {');
+        }
+        if (mutate === true || mutate === 'gather') {
+          if (text.split(GATE_GATHER).length !== 2) throw new Error('mutacja: nie znaleziono dokladnie jednej bramki zbiorki stosu w ai.ts');
+          text = text.replace(GATE_GATHER, 'if (false) {');
         }
         return { contents: text, loader: 'ts' };
       });
@@ -302,7 +311,9 @@ function scenarioReplacementAfterLoss(B) {
   {
     const army = [mk(10, 10), mk(10, 10), mk(10, 10), mk(11, 10)];
     const st = play(B, army, 3);
-    ok(st.launchedTurn === 1 && st.marchBelowThreshold === 0, 'regresja: skupisko 4 jednostek rusza w turze 1 (bramka nie hamuje zebranej armii)');
+    // R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1: 4. jednostka stoi na SASIEDNIM heksie, wiec armia najpierw scala sie
+    // w stos (1 tura), po czym rusza -- dotad ruszala w t1 jako 3-stos + osobna jednostka (chmura jednoosobowych armii).
+    ok(st.launchedTurn !== null && st.launchedTurn <= 2 && st.marchBelowThreshold === 0, 'regresja: skupisko 4 jednostek rusza najpozniej w turze 2 (scalenie w stos <= 1 tura; bramka nie hamuje zebranej armii)');
   }
 
   // ---- Pomiar pelnej symulacji (dziecko procesu): PO vs bramka wylaczona mutacja ----
@@ -315,6 +326,11 @@ function scenarioReplacementAfterLoss(B) {
   };
   const simPost = runSim('post', '');
   const simMut = runSim('mut', 'gate-off');
+  // Wydzielony wklad NOWEJ bramki (R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1): tylko zbiorka stosu OFF = czysty main c4a541a27.
+  const simMain = runSim('main', 'gather-off');
+  console.log(`POMIAR atrybucja: marsz-ponizej-progu obie bramki OFF=${simMut.marchBelowThreshold.share.toFixed(3)}; ` +
+    `tylko zbiorka stosu OFF (= czysty main)=${simMain.marchBelowThreshold.share.toFixed(3)}; PO=${simPost.marchBelowThreshold.share.toFixed(3)}`);
+  ok(simMain.marchBelowThreshold.share >= simPost.marchBelowThreshold.share, 'atrybucja: nowa bramka zbiorki stosu nie pogarsza udzialu marszow ponizej progu wzgledem czystego main');
   console.log(`POMIAR (2 ziarna x 70 tur, flat): marsz-ponizej-progu PO=${simPost.marchBelowThreshold.share.toFixed(3)} (mutacja ${simMut.marchBelowThreshold.share.toFixed(3)}); ` +
     `ms/tura AI PO=${simPost.aiMsPerCall.toFixed(1)} (mutacja ${simMut.aiMsPerCall.toFixed(1)})`);
   ok(simMut.marchBelowThreshold.share > 0.10, 'pomiar: bez bramki >10% marszow jednostek ze skupiska < 3 (stan przed poprawka)');
