@@ -12,6 +12,10 @@
  *   (d2) farma na heksie rzeki BEZ lasu nadal przed wycinka (E1 < E2);
  *   (e) po wycince farma na tym heksie (wycinka -> farma).
  *
+ * R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (decyzja wlasciciela 2026-11-03/04, NADRZEDNA): wyjatek rzeczny (wycinka lasu na rzece
+ * bez obywatela) ZNIESIONY przy onlyWorked ON — „tak ma byc i koniec”. Asercje (a/b), (d4), (e), (e2) dla onlyWorked=true
+ * ODWROCONE (brak wycinki poza polami obywateli); onlyWorked=false bez zmian. Nowy kontrakt: ai-food-only-worked-hexes-test.cjs.
+ *
  * Run z gra/:  node tools/autoclear-river-forest-priority-test.cjs
  * Mutacja:     AUTOCLEAR_SRC_DIR=<kopia gra/src z mutacja> node tools/autoclear-river-forest-priority-test.cjs   (MUSI byc czerwony)
  */
@@ -107,6 +111,10 @@ for (const onlyWorked of [true, false]) {
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
   const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked });
   const rc = firstRiverClear(log);
+  if (onlyWorked) {
+    ok(!rc, `onlyWorked=ON: wycinka na heksie rzeki BEZ obywatela NIE wystepuje (Q1 AI-FOOD, decyzja wlasciciela; jest: ${rc && rc.hk})`);
+    continue;
+  }
   ok(!!rc && rc.t < MAXT, `wycinka na heksie rzeki w turze ${rc && rc.t} (log: ${dl(log.slice(0, 8))})`);
   const offRiver = log.find(e => e.key === 'wyrab' && !isRiver(e.q, e.r) && !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r));
   ok(!offRiver || (rc && rc.t <= offRiver.t), `wycinka rzeczna nie pozniej niz wycinka poza rzeka i poza polami obywateli (rzeczna ${rc && rc.t}, inna ${offRiver && offRiver.t})`);
@@ -149,7 +157,7 @@ console.log('(d4) zakres: profil „Zrownowazone” (K2) — ZAKTUALIZOWANE w R-
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
   const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: true, focus: 'zrownowazone' });
   const rc = firstRiverClear(log);
-  ok(!!rc && rc.t < MAXT, `K2: wycinka na heksie rzeki bez obywatela w turze ${rc && rc.t} (log: ${dl(log.slice(0, 6))})`);
+  ok(!rc, `K2 + onlyWorked ON: wycinka na heksie rzeki bez obywatela NIE wystepuje (Q1 AI-FOOD; jest: ${rc && rc.hk})`);
   const map2 = makeMap({ river: [], forest: FOREST_AROUND });
   const r2 = sim({ map: map2, worked: WORKED_NO_RIVER, onlyWorked: true, focus: 'zrownowazone', turns: 12 });
   ok(!r2.log.some(e => e.key === 'wyrab' && !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r)), 'K2: las bez rzeki poza polami obywateli nadal NIE jest wycinany (filtr zachowany)');
@@ -158,7 +166,8 @@ console.log('(d4) zakres: profil „Zrownowazone” (K2) — ZAKTUALIZOWANE w R-
 console.log("(e) wycinka -> farma, gdy obywatel wejdzie na wyciete pole (zalozenie jawne; bez obywatela patrz e2)");
 {
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
-  const first = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: true, turns: MAXT });
+  // Q1 AI-FOOD: wycinka rzeczna bez obywatela jest mozliwa tylko przy onlyWorked OFF — pierwszy etap na OFF, drugi (farma) na ON.
+  const first = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: false, turns: MAXT });
   const rc = firstRiverClear(first.log);
   ok(!!rc, 'wycinka rzeczna wykonana');
   if (rc) {
@@ -177,6 +186,11 @@ console.log('(e2) REALISTYCZNIE (bez recznego dopisywania do worked): ZAKTUALIZO
     const rc = log.filter(e => e.key === 'wyrab' && isRiver(e.q, e.r));
     const withFarm = rc.filter(c => log.some(e => e.key === 'farma' && e.hk === c.hk));
     console.log(`  [INFO] onlyWorked=${onlyWorked}: wycinek rzecznych ${rc.length}, z farma w 12 turach ${withFarm.length}`);
+    if (onlyWorked) {
+      ok(rc.length === 0 && !log.some(e => e.key === 'farma' && !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r) && !(e.q === CQ && e.r === CR)),
+        `onlyWorked=true: zero wycinek rzecznych i zero farm poza polami obywateli (Q1 AI-FOOD; wycinek ${rc.length})`);
+      continue;
+    }
     ok(rc.length === 3, `onlyWorked=${onlyWorked}: wszystkie 3 heksy rzeczne wycinane (${rc.length})`);
     // Dawny pin ON („0 farm”) kodowal znane ograniczenie Q2; Q3 je zdejmuje, wiec pin zamieniony na wymog pelnego domkniecia wycinka -> farma
     // (ta sama asercja co dla OFF — silniejsza, nie slabsza).

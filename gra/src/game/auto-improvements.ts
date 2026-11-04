@@ -593,6 +593,17 @@ export const IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly Improveme
   kon: ['stadnina'],
 };
 
+/**
+ * R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (decyzja właściciela 2026-11-03/04, NADRZĘDNA): ulepszenia ZWIĄZANE Z ŻYWNOŚCIĄ
+ * (farma, irygacja, tarasy, bydło/owce/lama, obóz łowiecki, łodzie rybackie, warzelnia soli i wycinka pod farmę)
+ * przy włączonym „Tylko pola z obywatelami” NIE powstają na heksie bez obywatela — ŻADNYCH wyjątków (ani rzeka/wyrąb,
+ * ani złoże na heksie, ani przebieg „brakujący surowiec”). Wyjątek złożowy dotyczy wyłącznie kopalń/surowców.
+ * Dotyczy automatu gracza i AI (jedna funkcja — `hexAllowsKey` w pickerze).
+ */
+export const FOOD_IMPROVEMENT_KEYS: ReadonlySet<ImprovementKey> = new Set<ImprovementKey>([
+  'farma', 'irygacja', 'tarasy', 'bydlo', 'owce', 'lama', 'oboz_lowiecki', 'lodzie_rybackie', 'warzelnia_soli', 'wyrab',
+]);
+
 /** Klucze dróg (terrain-improvements.json: `droga`, `droga_brukowana`) — najniższy priorytet K2/K3. */
 export const ROAD_KEYS: readonly ImprovementKey[] = ['droga', 'droga_brukowana'];
 const ROAD_KEY_SET: ReadonlySet<ImprovementKey> = new Set<ImprovementKey>(ROAD_KEYS);
@@ -819,23 +830,7 @@ export function actionableDeficitKeys(deficitKeys?: readonly string[]): string[]
  */
 export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
   const picks = pickAutoImprovementsStaged(opts);
-  // Q3: zapamiętaj heksy, na których automat zaplanował wycinkę — tylko one dostają potem wyjątek „farma bez obywatela” (`riverClearedFarmHex`).
-  for (const p of picks) if (p.key === 'wyrab') markAutoCleared(opts.map, `${p.q},${p.r}`);
   return picks;
-}
-
-/**
- * R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: rejestr heksów, z których AUTOMAT wyciął (zaplanował wycinkę) las.
- * Gra nie zapisuje na heksie, że kiedyś był lasem, a wyjątek „farma na wyciętym heksie rzeki bez obywatela” ma dotyczyć WYŁĄCZNIE
- * tych heksów (nie każdego otwartego pola przy rzece — to łamałoby filtr „Tylko pola z obywatelami” dla reszty ulepszeń i testy E1/E4).
- * Klucz = obiekt mapy (`WeakMap`): nowa gra/wczytanie zapisu = nowa mapa = pusty rejestr. OGRANICZENIE (jawne): po wczytaniu zapisu
- * heksy wycięte PRZED zapisem nie mają wyjątku, dopóki gra nie utrwali znacznika (zmiana w `main.ts` poza zakresem tego tematu).
- */
-const autoClearedByMap = new WeakMap<object, Set<string>>();
-function markAutoCleared(map: GameMap, hexKey: string): void {
-  let set = autoClearedByMap.get(map);
-  if (!set) { set = new Set<string>(); autoClearedByMap.set(map, set); }
-  set.add(hexKey);
 }
 
 function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
@@ -1380,6 +1375,15 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         ? new Set<string>([...getWorkedHexKeys(city), `${city.q},${city.r}`])
         : getWorkedHexKeys(city))
       : null;
+    // R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1: filtr ŻYWNOŚCI jest niezależny od `getOnlyWorked` przebiegu — przebieg „brakujący
+    // surowiec” (AI: surowce wszędzie) ma `getOnlyWorked` = false, ale ulepszenia żywnościowe (np. warzelnia soli) nadal muszą
+    // stać na heksie z obywatelem. Rozstrzyga `farmPriorityOnlyWorked` (ustawiany przez przebieg niedoboru), inaczej `onlyWorked`.
+    const foodOnlyWorked = (opts.farmPriorityOnlyWorked ?? getOnlyWorked)(city);
+    const foodWorkedKeys = foodOnlyWorked && getWorkedHexKeys
+      ? ((focus === 'zywnosc' || focus === 'zrownowazone')
+        ? new Set<string>([...getWorkedHexKeys(city), `${city.q},${city.r}`])
+        : getWorkedHexKeys(city))
+      : null;
 
     // ---------------------------------------------------------------------
     // ZASADA 1 (runda 4) — BUDOWANIE NAPĘDZANE POPYTEM.
@@ -1445,39 +1449,17 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       if (!hex) return false;
       return hexHasDepositReserve(hex) && depositAllowsPlayerImprovement(key, hex);
     };
-    // R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2 (zgłoszenie właściciela 2026-11-03: „mimo Pracy automat nie wycina lasu
-    // wokół rzek pod farmy”). PRZYCZYNA (zmierzona: gra/tools/autoclear-river-forest-priority-test.cjs, PRZED): las przy
-    // rzece zwykle NIE ma obywatela (obywatele stoją na lepszych polach), więc filtr Zasady 2 („tylko pola z obywatelami”)
-    // wycinał ten heks z kandydatów, a E2 (wycinka przy rzece) nigdy nie dostawał celu — automat schodził do trzody,
-    // irygacji i wycinki poza rzeką. WYJĄTEK: w profilach „Żywność” (K1) i „Zrównoważone” (K2; R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1,
-    // decyzja właściciela 2026-11-03 — dawne zawężenie do K1 zdjęte) wycinka lasu na heksie rzeki/przy rzece,
-    // którego bazą jest teren pod farmę (`isFarmBaseTerrain`), jest PRZYGOTOWANIEM POLA pod farmę (wycinka → farma),
-    // więc filtr „tylko pola z obywatelami” jej nie dotyczy. Filtr zostaje dla pozostałych ulepszeń i dla wycinki poza
-    // rzeką. „Wolno wycinać las” OFF nadal blokuje całą wycinkę (`citySkipWyrab`, decyzja U-6 = A).
-    const riverForestPrepHex = (q: number, r: number): boolean => {
-      if (citySkipWyrab || (focus !== 'zywnosc' && focus !== 'zrownowazone')) return false;
-      const hk = `${q},${r}`;
-      const hx = map.hexes[hk];
-      return !!hx && hx.nakladka === Nakladka.Las && onRiverHex(hk) && isFarmBaseTerrain(hx.terenBazowy, Nakladka.Brak);
-    };
-    // R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1 (decyzja właściciela 2026-11-03): po wycince lasu na/przy rzece farma
-    // może powstać na wyciętym heksie BEZ obywatela mimo „Tylko pola z obywatelami” ON — inaczej wycinka (przygotowanie pola, wyżej)
-    // kończyła się pustym heksem, bo obywatel zwykle stoi gdzie indziej. Wyjątek dotyczy WYŁĄCZNIE klucza `farma` na heksie rzeki
-    // BEZ lasu (z bazą pod farmę), z którego AUTOMAT wyciął las (rejestr `autoClearedByMap`), w profilach Żywność i Zrównoważone, gdy
-    // wycinka nie jest wyłączona („Wolno wycinać las” OFF = wyjątek nie działa). Naturalnie otwarte pola przy rzece i pola wycięte ręcznie
-    // wyjątku NIE dostają. Pozostałe ulepszenia (trzoda, irygacja, obóz…) nadal podlegają filtrowi.
-    const riverClearedFarmHex = (q: number, r: number): boolean => {
-      if (citySkipWyrab || (focus !== 'zywnosc' && focus !== 'zrownowazone')) return false;
-      const hk = `${q},${r}`;
-      const hx = map.hexes[hk];
-      return !!hx && hx.nakladka === Nakladka.Brak && autoClearedByMap.get(map)?.has(hk) === true
-        && onRiverHex(hk) && isFarmBaseTerrain(hx.terenBazowy, Nakladka.Brak);
-    };
+    // R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (decyzja właściciela 2026-11-03/04: „Jeżeli gracz ma zaznaczone, że ulepszenie pod
+    // żywność ma być tylko na terenach, gdzie są obywatele, to tak ma być i koniec”): dawne wyjątki rzeczne
+    // (R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2 `riverForestPrepHex` — wycinka lasu na rzece oraz R-WEB-AUTO-IMPROVE-Q3
+    // `riverClearedFarmHex` — farma na wyciętym heksie rzeki) ZNIESIONE: wycinka i farma na heksie bez obywatela były
+    // głównym źródłem ulepszeń „w pustym polu” (pomiar: tools/ai-food-only-worked-hexes-test.cjs, AFW_MEASURE=1).
+    // Ulepszenia żywnościowe (`FOOD_IMPROVEMENT_KEYS`) dostają TYLKO heksy z obywatelami — także złoża na heksie i przebieg
+    // niedoboru ich nie otwierają. Wyjątek złożowy zostaje dla reszty (kopalnie/kamieniołom/glinianka/stadnina).
     /** Czy na tym heksie wolno postawić TEN klucz, biorąc pod uwagę Zasadę 2. */
     const hexAllowsKey = (q: number, r: number, key: ImprovementKey): boolean => {
+      if (FOOD_IMPROVEMENT_KEYS.has(key)) return !foodWorkedKeys || foodWorkedKeys.has(`${q},${r}`);
       if (!workedKeys) return true;
-      if (key === 'wyrab' && riverForestPrepHex(q, r)) return true;
-      if (key === 'farma' && riverClearedFarmHex(q, r)) return true;
       if (workedKeys.has(`${q},${r}`)) return true;
       return isDepositHexForKey(q, r, key);
     };
@@ -1494,7 +1476,6 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     if (workedKeys) {
       candidateHexes = candidateHexes.filter(({ q, r }) => {
         if (workedKeys.has(`${q},${r}`)) return true;
-        if (riverForestPrepHex(q, r) || riverClearedFarmHex(q, r)) return true;
         const hex = map.hexes[`${q},${r}`];
         return !!hex && hexHasDepositReserve(hex);
       });
@@ -2089,8 +2070,8 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       for (const { q, r } of radiusHexes) {
         const hexKey = `${q},${r}`;
         if (surplusReport.filterWaitingKeys.has(hexKey)) continue;
-        if (candidateHexes.some(c => c.q === q && c.r === r)) continue;
         for (const key of hexPhasePriority) {
+          if (hexAllowsKey(q, r, key)) continue; // klucz przechodzi filtr na tym heksie — nie czeka za filtrem
           if (!getImprovementMeta(key)) continue;
           if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
           if (!civGate(key, civArchetype)) continue;
