@@ -4,8 +4,8 @@
  * Jedno źródło prawdy: generator i bramka nie mogą mieć rozjechanych list.
  *
  * Zakres rundy 1 (dispatch K08E, „Partie ≤3 jednostki, commit po każdej"):
- *   partia `magazyn`: `buildGrowthProgressTooltipCard` (pin :1598-1635), `renderMagazyn` (pin :5203-5472),
- *                     `buildRacjeWzrostDetailCard` (pin :5474-5579).
+ *   partia `magazyn`: `buildGrowthProgressTooltipCard` (pin :1652-1689), `renderMagazyn` (pin :5274-5543),
+ *                     `buildRacjeWzrostDetailCard` (pin :5545-5650).
  *
  * Podstawienia LINE_SUBS_K08E: pusta lista (K08E-Z1: ciała kopii bajt w bajt z pinem; reguły gry = delegaty
  * `k08e-deps.ts`, wartości cfg = pola `K05bCfg` (dopiski `k05b-host.ts`)).
@@ -17,8 +17,8 @@ export const BATCH_MAGAZYN = {
   file: 'k08e-magazyn.ts',
   header: `/**
  * K08E-1 (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08E-Q1, runda 1, partia \`magazyn\`): sekcja „Wyżywienie i wzrost"
- * (pin \`edb8fb56\`, \`gra/src/ui/cityPanel.ts\`) — \`renderMagazyn\` (:5203-5472), \`buildRacjeWzrostDetailCard\`
- * (:5474-5579) i \`buildGrowthProgressTooltipCard\` (:1598-1635).
+ * (pin \`edb8fb56\`, \`gra/src/ui/cityPanel.ts\`) — \`renderMagazyn\` (:5274-5543), \`buildRacjeWzrostDetailCard\`
+ * (:5545-5650) i \`buildGrowthProgressTooltipCard\` (:1652-1689).
  *
  * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08e-port.mjs --batch magazyn\` (bloki = pin, \`k08e-subs.mjs\`).
  * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08e-copies.mjs\`.
@@ -49,22 +49,22 @@ import {
   WYZYWIENIE_MAX, WYZYWIENIE_MIN, WYZYWIENIE_STEP,
 } from './k08e-deps';`,
   units: [
-    { name: 'buildGrowthProgressTooltipCard', a: 1598, b: 1635 },
-    { name: 'renderMagazyn', a: 5203, b: 5472 },
-    { name: 'buildRacjeWzrostDetailCard', a: 5474, b: 5579 },
+    { name: 'buildGrowthProgressTooltipCard', a: 1652, b: 1689 },
+    { name: 'renderMagazyn', a: 5274, b: 5543 },
+    { name: 'buildRacjeWzrostDetailCard', a: 5545, b: 5650 },
   ],
 };
 
 /**
- * Partia `karty-a` (runda 1, P5-8 K08E-2): karty górnego paska „Żywność", „Rekruci", „Ludność" (pin :5582-5650, :5652-5682,
- * :5684-5768). Czysto prezentacyjne z reguł delegatów (`k08e-deps.ts`) i kopii K08E; bez podstawień.
+ * Partia `karty-a` (runda 1, P5-8 K08E-2): karty górnego paska „Żywność", „Rekruci", „Ludność" (pin :5653-5721, :5723-5753,
+ * :5755-5839). Czysto prezentacyjne z reguł delegatów (`k08e-deps.ts`) i kopii K08E; bez podstawień.
  */
 export const BATCH_KARTY_A = {
   file: 'k08e-karty-a.ts',
   header: `/**
  * K08E-2a (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08E-Q1, runda 1, partia \`karty-a\`): karty szczegółów górnego paska
- * z pinu \`edb8fb56\` (\`gra/src/ui/cityPanel.ts\`) — \`buildTopBarZywnoscDetailCard\` (:5582-5650),
- * \`buildTopBarRekruciDetailCard\` (:5652-5682), \`buildTopBarLudnoscDetailCard\` (:5684-5768).
+ * z pinu \`edb8fb56\` (\`gra/src/ui/cityPanel.ts\`) — \`buildTopBarZywnoscDetailCard\` (:5653-5721),
+ * \`buildTopBarRekruciDetailCard\` (:5723-5753), \`buildTopBarLudnoscDetailCard\` (:5755-5839).
  *
  * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08e-port.mjs --batch karty-a\` (bloki = pin, \`k08e-subs.mjs\`).
  * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08e-copies.mjs\`.
@@ -82,14 +82,14 @@ import {
   buildRationParams, cityLudnoscAbsolutna, growthGainPerTurnSlots, resolveCityHealth, turnsUntilNextCitizen, WYZYWIENIE_MAX,
 } from './k08e-deps';`,
   units: [
-    { name: 'buildTopBarZywnoscDetailCard', a: 5582, b: 5650 },
-    { name: 'buildTopBarRekruciDetailCard', a: 5652, b: 5682 },
-    { name: 'buildTopBarLudnoscDetailCard', a: 5684, b: 5768 },
+    { name: 'buildTopBarZywnoscDetailCard', a: 5653, b: 5721 },
+    { name: 'buildTopBarRekruciDetailCard', a: 5723, b: 5753 },
+    { name: 'buildTopBarLudnoscDetailCard', a: 5755, b: 5839 },
   ],
 };
 
 /**
- * Partia `karty-b` (runda 1, P5-8 K08E-2b): karty „Nauka", „Kultura" (pin :5904-5947, :5949-5990) i „Porządek" (pin :3427-3549).
+ * Partia `karty-b` (runda 1, P5-8 K08E-2b): karty „Nauka", „Kultura" (pin :5975-6018, :6020-6061) i „Porządek" (pin :3491-3613).
  * `resolveOrderState` (pin :3084) NIE jest kopiowany: reguła porządku przychodzi z silnika (K03-Z3), delegat `resolveOrderState`
  * w `k08e-deps.ts` (K08E-Z8).
  */
@@ -97,8 +97,8 @@ export const BATCH_KARTY_B = {
   file: 'k08e-karty-b.ts',
   header: `/**
  * K08E-2b (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08E-Q1, runda 1, partia \`karty-b\`): karty szczegółów górnego paska
- * z pinu \`edb8fb56\` (\`gra/src/ui/cityPanel.ts\`) — \`buildTopBarNaukaDetailCard\` (:5904-5947),
- * \`buildTopBarKulturaDetailCard\` (:5949-5990), \`buildPorzadekDetailCard\` (:3427-3549).
+ * z pinu \`edb8fb56\` (\`gra/src/ui/cityPanel.ts\`) — \`buildTopBarNaukaDetailCard\` (:5975-6018),
+ * \`buildTopBarKulturaDetailCard\` (:6020-6061), \`buildPorzadekDetailCard\` (:3491-3613).
  *
  * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08e-port.mjs --batch karty-b\` (bloki = pin, \`k08e-subs.mjs\`).
  * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08e-copies.mjs\`.
@@ -117,22 +117,22 @@ import type { OrderStateK08e as OrderState } from './k05b-host';
 import { cityHasBibliotekaLine } from './k08d-deps';
 import { porBandLabel, porPctBand } from './k08e-deps';`,
   units: [
-    { name: 'buildTopBarNaukaDetailCard', a: 5904, b: 5947 },
-    { name: 'buildTopBarKulturaDetailCard', a: 5949, b: 5990 },
-    { name: 'buildPorzadekDetailCard', a: 3427, b: 3549 },
+    { name: 'buildTopBarNaukaDetailCard', a: 5975, b: 6018 },
+    { name: 'buildTopBarKulturaDetailCard', a: 6020, b: 6061 },
+    { name: 'buildPorzadekDetailCard', a: 3491, b: 3613 },
   ],
 };
 
 /**
- * Partia `topbar` (runda 1, P5-8 K08E-3): górny pasek miasta — `capitalBadgeOrButtonHtml` (:10719-10734),
- * `renderCivResourceTopBar` (:10736-10781; `switchCity` = delegat K09), `wireTopBarStatDetails` (:6051-6085).
+ * Partia `topbar` (runda 1, P5-8 K08E-3): górny pasek miasta — `capitalBadgeOrButtonHtml` (:10966-10981),
+ * `renderCivResourceTopBar` (:10983-11028; `switchCity` = delegat K09), `wireTopBarStatDetails` (:6122-6156).
  */
 export const BATCH_TOPBAR = {
   file: 'k08e-topbar.ts',
   header: `/**
  * K08E-3 (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08E-Q1, runda 1, partia \`topbar\`): górny pasek miasta z pinu \`edb8fb56\`
- * (\`gra/src/ui/cityPanel.ts\`) — \`capitalBadgeOrButtonHtml\` (:10719-10734), \`renderCivResourceTopBar\` (:10736-10781),
- * \`wireTopBarStatDetails\` (:6051-6085).
+ * (\`gra/src/ui/cityPanel.ts\`) — \`capitalBadgeOrButtonHtml\` (:10966-10981), \`renderCivResourceTopBar\` (:10983-11028),
+ * \`wireTopBarStatDetails\` (:6122-6156).
  *
  * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08e-port.mjs --batch topbar\` (bloki = pin, \`k08e-subs.mjs\`).
  * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08e-copies.mjs\`.
@@ -153,9 +153,9 @@ import { buildTopBarPracaDetailCard } from './k08c-praca';
 import { buildTopBarZlotoDetailCard } from './k05b-podzial';
 import { buildTopBarReligiaDetailCard } from './k08d-religia';`,
   units: [
-    { name: 'capitalBadgeOrButtonHtml', a: 10719, b: 10734 },
-    { name: 'renderCivResourceTopBar', a: 10736, b: 10781 },
-    { name: 'wireTopBarStatDetails', a: 6051, b: 6085 },
+    { name: 'capitalBadgeOrButtonHtml', a: 10966, b: 10981 },
+    { name: 'renderCivResourceTopBar', a: 10983, b: 11028 },
+    { name: 'wireTopBarStatDetails', a: 6122, b: 6156 },
   ],
 };
 
@@ -180,19 +180,19 @@ export const batchByNameK08e = (name) => {
 export const LINE_SUBS_K08E = [
   // K08E-Z4 (id miasta): pin `city.id: string` (silnik); port `City.id: number` (k05b-host), wpisy `perCityRows.cityId: string`
   // (k01b-dto). Podstawienie `String(city.id)` przy odczycie wiersza karmienia (1:1 znaczeniowo: id miasta jako tekst).
-  { a: 5203, b: 5472, from: 'tick?.perCityRows?.find(r => r.cityId === city.id)', to: 'tick?.perCityRows?.find(r => r.cityId === String(city.id))' },
-  { a: 5203, b: 5472, from: 'resolveCityFedForUi(city.id, foodSplit.total, tick)', to: 'resolveCityFedForUi(String(city.id), foodSplit.total, tick)' },
+  { a: 5274, b: 5543, from: 'tick?.perCityRows?.find(r => r.cityId === city.id)', to: 'tick?.perCityRows?.find(r => r.cityId === String(city.id))' },
+  { a: 5274, b: 5543, from: 'resolveCityFedForUi(city.id, foodSplit.total, tick)', to: 'resolveCityFedForUi(String(city.id), foodSplit.total, tick)' },
   // K08E-Z7 (dane gry): pin `gameData()` zwraca `GameData | null`-like; port (`k05a`) zwraca `undefined` przy braku danych -> `?? null` (1:1 semantycznie: brak danych = null).
-  { a: 5203, b: 5472, from: 'const data = gameData();', to: 'const data = gameData() ?? null;' },
+  { a: 5274, b: 5543, from: 'const data = gameData();', to: 'const data = gameData() ?? null;' },
   // K08E-Z15 (partia karty-a): identyczne podstawienie id miasta jak w magazynie (perCityRows.cityId: string).
-  { a: 5684, b: 5768, from: 'tick?.perCityRows?.find(r => r.cityId === city.id)', to: 'tick?.perCityRows?.find(r => r.cityId === String(city.id))' },
-  { a: 5684, b: 5768, from: 'resolveCityFedForUi(city.id, foodSplit.total, tick)', to: 'resolveCityFedForUi(String(city.id), foodSplit.total, tick)' },
+  { a: 5755, b: 5839, from: 'tick?.perCityRows?.find(r => r.cityId === city.id)', to: 'tick?.perCityRows?.find(r => r.cityId === String(city.id))' },
+  { a: 5755, b: 5839, from: 'resolveCityFedForUi(city.id, foodSplit.total, tick)', to: 'resolveCityFedForUi(String(city.id), foodSplit.total, tick)' },
   // K08E-Z11 (partia karty-b): etykieta pasma porządku z delegatu (pin: tabela `POR_BAND_LABELS` z danych gry).
-  { a: 3427, b: 3549, from: 'POR_BAND_LABELS[band]', to: 'porBandLabel(band)' },
+  { a: 3491, b: 3613, from: 'POR_BAND_LABELS[band]', to: 'porBandLabel(band)' },
   // K08E-Z17 (r2, partia karty-b): pin `gameData()` zwraca typ k05a (`GameData` bez `units`); `readPodzialHandlu` (k05b) przyjmuje typ k05b. Rzutowanie w JEDNYM miejscu (czyta econParams/buildings); NIE_ZMIERZONO, czy host czyta `units`.
-  { a: 3427, b: 3549, from: 'readPodzialHandlu(city, gameData())', to: 'readPodzialHandlu(city, gameData() as GameData | null)' },
-  { a: 5474, b: 5579, from: 'tick?.perCityRows?.find(r => r.cityId === city.id)', to: 'tick?.perCityRows?.find(r => r.cityId === String(city.id))' },
-  { a: 5474, b: 5579, from: 'resolveCityFedForUi(city.id, foodSplit.total, tick)', to: 'resolveCityFedForUi(String(city.id), foodSplit.total, tick)' },
+  { a: 3491, b: 3613, from: 'readPodzialHandlu(city, gameData())', to: 'readPodzialHandlu(city, gameData() as GameData | null)' },
+  { a: 5545, b: 5650, from: 'tick?.perCityRows?.find(r => r.cityId === city.id)', to: 'tick?.perCityRows?.find(r => r.cityId === String(city.id))' },
+  { a: 5545, b: 5650, from: 'resolveCityFedForUi(city.id, foodSplit.total, tick)', to: 'resolveCityFedForUi(String(city.id), foodSplit.total, tick)' },
 ];
 
 /** Zastosowanie podstawień K08E do bloku pinu. */

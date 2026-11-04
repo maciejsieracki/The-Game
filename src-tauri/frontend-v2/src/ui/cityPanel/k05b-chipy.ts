@@ -23,7 +23,7 @@ import {
   techPrereqChain,
 } from './k05b-host';
 import type { AvailabilityContext, BuildingDef, BuildingReqChip, City, GameData } from './k05b-host';
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6821-6828
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6892-6899
 export function buildingLocationRequirementMet(
   lokalizacja: 'stolica' | 'region' | undefined,
   isCapital: boolean | undefined,
@@ -33,7 +33,7 @@ export function buildingLocationRequirementMet(
   return true;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6830-6929
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6901-7000
 /** Warunki budowy z oceną spełnienia (niebieski = OK, czerwony = brak). */
 export function buildingRequirementChips(
   def: BuildingDef,
@@ -135,13 +135,13 @@ export function buildingRequirementChips(
   return chips;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:8537-8540
+// pin 86d510c66 gra/src/ui/cityPanel.ts:8744-8747
 export function missingTechSteps(data: GameData, techName: string, unlocked: ReadonlySet<string>): string[] {
   const chain = techPrereqChain(data, techName);
   return chain.filter(t => !unlocked.has(t));
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6609-6633
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6680-6704
 /**
  * TEMAT #6 / SUROW-CIV-01: chip(y) kosztu surowcowego budynku (koszt_surowce w
  * buildings.json, np. cegła/ceramika) obok kosztów Pracy/Pieniądza — czerwony gdy

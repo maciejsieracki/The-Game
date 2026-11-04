@@ -24,7 +24,13 @@ import { ENTITY_CARD_BUILDING_STYLE_ID } from './k05a-fundament';
 import { appendBuildingRequirementChipSections as appendBuildingRequirementChipSectionsK02, fillIconElement, makeBuildingThumb as makeBuildingThumbK02, techIconHintSpan } from './k02-units';
 import { playerFacingNote } from './k03-model';
 import { buildingAdapter as buildingAdapterDto } from '../entityCards/buildingAdapter';
-import type { BuildingCardCityState } from '../entityCards/buildingAdapter';
+import type { BuildingCardCityState as BuildingCardCityStateD } from '../entityCards/buildingAdapter';
+/**
+ * REPIN-UI-2-G r2 (K05B-Z5, lokalny typ): web 86d510c66 przekazuje `civBonusy` w stanie miasta karty budynku
+ * (`buildBuildingDetailCardViaEntityCard`). Pole w `BuildingCardCityState` dodaje partia UI-2-D (#24 `entityCards/buildingAdapter.ts`);
+ * do tego czasu lokalny typ dopuszcza pole (adapter v2 go jeszcze nie czyta — ZAŁOŻENIE G-Z7).
+ */
+type BuildingCardCityState = BuildingCardCityStateD & { readonly civBonusy?: readonly unknown[] };
 import type { BuildingDefDto } from '../../viewmodel/types';
 import { ENTITY_CARD_CSS, openEntityCard, renderEntityCard } from '../entityCards/renderer';
 import { resolveTechnologyRow, technologyIdFromName } from '../entityCards/registry';
@@ -35,6 +41,7 @@ import {
   buildingStructuralDefenseBonusLine,
   buildingUiDisplayLevel,
   buildingWorkCost,
+  buildingWorkPerTurnForCity,
   cfg,
   cumulativeMnoznikForBuildingId,
   etaTurns,
@@ -70,7 +77,7 @@ function makeBuildingThumb(def: BuildingDef | undefined): HTMLDivElement {
 function buildingAdapter(def: BuildingDef, ctx: { city: BuildingCardCityState }) {
   return buildingAdapterDto(def as unknown as BuildingDefDto, ctx as unknown as Parameters<typeof buildingAdapterDto>[1]);
 }
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6994-7004
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7065-7075
 export function appendBuildingRequirementsBlock(
   parent: HTMLElement,
   def: BuildingDef,
@@ -83,7 +90,7 @@ export function appendBuildingRequirementsBlock(
   return appendBuildingRequirementChipSections(parent, chips);
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7012-7134
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7083-7205
 /** Karta infografiki budynku (Design Poziom B · 2026-07-05). */
 export function buildBuildingInfocard(
   def: BuildingDef,
@@ -185,7 +192,7 @@ export function buildBuildingInfocard(
 
   if (opts?.item && opts.city) {
     const act = el('div', 'bld-infocard-actions');
-    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const e = etaTurns(opts.item.koszt, 0, buildingWorkPerTurnForCity(opts.city, opts.praca ?? 0));
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const cost = el('div', 'bld-infocard-cost');
     cost.innerHTML = `${opts.item.koszt}${workIc}${e !== null ? ' · ~' + e + ' ' + tury(e) : ''}`;
@@ -208,7 +215,7 @@ export function buildBuildingInfocard(
   return card;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7397-7463
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7468-7534
 export function appendTechDetailBlock(parent: HTMLElement, data: GameData, techName: string | null | undefined): void {
   if (!techName || isEmptyDataVal(techName)) {
     const g = appendDetailGridIn(parent);
@@ -277,7 +284,7 @@ export function appendTechDetailBlock(parent: HTMLElement, data: GameData, techN
   }
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7467-7528
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7538-7599
 /** Wstrzykuje `ENTITY_CARD_CSS` (bazowe style `.entity-card*` z `entityCards/renderer.ts`)
  * raz do dokumentu, plus lokalne dopasowanie szerokości karty (434px domyślnie) do
  * hover-docku panelu miasta (`HOVER_DETAIL_DOCK_W`=400px, `hoverDetailDock.ts`) i
@@ -341,7 +348,7 @@ export function ensureEntityCardBuildingStyles(): void {
   document.head.appendChild(style);
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7530-7556
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7601-7629
 /** Buduje kartę budynku przez `buildingAdapter` + wspólny `renderEntityCard`
  * (T5 MIGRACJA-KARTA-BUDYNKU-PANEL-MIASTA), zamiast własnego DOM-buildera — wzorem T3/T4.
  * Sekcje „Technologie"/„Uwagi" dopełnione TU (host), bo zależą od `data: GameData`/
@@ -352,12 +359,14 @@ export function ensureEntityCardBuildingStyles(): void {
 export function buildBuildingDetailCardViaEntityCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
   ensureEntityCardBuildingStyles();
   const displayLevel = buildingUiDisplayLevel(def, city);
+  const ownerId = city?.ownerId ?? 0;
   const cityState: BuildingCardCityState = {
     hasCity: city !== undefined,
     displayLevel,
     buildCostPace: cfg.getBuildingCostPace?.() ?? 'niski',
     difficulty: cfg.getDifficulty?.() ?? 'normal',
-    ownerId: 0, // 1:1 ze świadomym hardcode'em dawnego `buildBuildingDetailCard`
+    ownerId,
+    civBonusy: cfg.getCivBonusy?.(ownerId),
   };
   const built = buildingAdapter(def, { city: cityState });
   const card = renderEntityCard(built) as HTMLDivElement;
@@ -370,7 +379,7 @@ export function buildBuildingDetailCardViaEntityCard(def: BuildingDef, data: Gam
   return card;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7558-7569
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7631-7642
 /** Publiczna sygnatura BEZ ZMIAN. Próbuje ścieżkę entityCards (T5), fallback do starej
  * implementacji (`_legacyBuildBuildingDetailCard`) w razie wyjątku — wzorem T3/T4, dopóki
  * Final Control nie potwierdzi parytetu. */
@@ -384,7 +393,7 @@ export function buildBuildingDetailCard(def: BuildingDef, data: GameData, city?:
   }
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7571-7697
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7644-7770
 /** Stara implementacja (DOM-builder własny) — zachowana pod prywatną nazwą jako fallback
  * (wzorem `_legacyBuildUnitInfoCard`/`_legacyShowTechDiscoveryNotice`). ZERO zmian treści. */
 export function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
@@ -458,9 +467,9 @@ export function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData,
   const gCost = appendDetailGridIn(costBody);
   const pace = cfg.getBuildingCostPace?.() ?? 'niski';
   const difficulty = cfg.getDifficulty?.() ?? 'normal';
-  const ownerId = 0;
+  const ownerId = city?.ownerId ?? 0;
   const baseWork = itemCost('budynek', def.id, { buildings: data.buildings, units: data.units }, 1);
-  const workCost = buildingWorkCost(baseWork, undefined, pace, ownerId, difficulty);
+  const workCost = buildingWorkCost(baseWork, cfg.getCivBonusy?.(ownerId), pace, ownerId, difficulty);
   gridDetailRow(gCost, 'Koszt budowy (jednorazowy)', `${workCost} pkt Pracy ${cityPanelChipIconWrap('res-work', 14)}`);
   if (def.przyrostKosztu) {
     gridDetailRow(
@@ -513,7 +522,7 @@ export function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData,
   return card;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7699-7804
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7772-7879
 /**
  * Karta szczegółów budynku w zakładce Budowa — pełne info (bonusy, koszty,
  * utrzymanie, wymagania, epoka) w panelu bocznym po najechaniu / kliknięciu.
@@ -599,7 +608,7 @@ export function buildBuildingBuildTabDetailCard(
 
   if (opts?.item && city && !opts.locked) {
     const act = el('div', 'bld-detail-actions');
-    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const e = etaTurns(opts.item.koszt, 0, buildingWorkPerTurnForCity(city, opts.praca ?? 0));
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const cost = el('div', 'bld-infocard-cost');
     cost.style.cssText = 'flex:1 1 100%;margin-bottom:0.2em;';
@@ -610,7 +619,9 @@ export function buildBuildingBuildTabDetailCard(
     act.appendChild(btnWrap);
     card.appendChild(act);
   } else if (!opts?.locked && opts?.item) {
-    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const e = city
+      ? etaTurns(opts.item.koszt, 0, buildingWorkPerTurnForCity(city, opts.praca ?? 0))
+      : etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const note = el('div', 'dc-note');
     note.style.fontStyle = 'normal';

@@ -123,34 +123,34 @@ try {
     onCloseCalls.n = 0;
   };
 
-  // --- isCityPanelOpen (pin :11979-11981) ---
+  // --- isCityPanelOpen (pin :12220-12222) ---
   reset();
   fx.open = true;
-  check('isCityPanelOpen.open', 'cityPanel.ts:11980 return isCityUxFrameOpen()', m.isCityPanelOpen(), true);
+  check('isCityPanelOpen.open', 'cityPanel.ts:12221 return isCityUxFrameOpen()', m.isCityPanelOpen(), true);
   fx.open = false;
-  check('isCityPanelOpen.closed', 'cityPanel.ts:11980', m.isCityPanelOpen(), false);
+  check('isCityPanelOpen.closed', 'cityPanel.ts:12221', m.isCityPanelOpen(), false);
 
-  // --- getOpenCityPanelCityId (pin :11984-11986) ---
+  // --- getOpenCityPanelCityId (pin :12225-12227) ---
   reset();
-  check('getOpenCityPanelCityId.null', 'cityPanel.ts:11985 activeCity?.id ?? null', m.getOpenCityPanelCityId(), null);
+  check('getOpenCityPanelCityId.null', 'cityPanel.ts:12226 activeCity?.id ?? null', m.getOpenCityPanelCityId(), null);
   m.setK07aActiveCity(cityA);
-  check('getOpenCityPanelCityId.id', 'cityPanel.ts:11985', m.getOpenCityPanelCityId(), 'c1');
+  check('getOpenCityPanelCityId.id', 'cityPanel.ts:12226', m.getOpenCityPanelCityId(), 'c1');
 
-  // --- refreshCityPanelIfOpen (pin :10337-10346) ---
+  // --- refreshCityPanelIfOpen (pin :10584-10593) ---
   reset();
   fx.open = false;
   m.refreshCityPanelIfOpen();
-  check('refreshCityPanelIfOpen.closed-noop', 'cityPanel.ts:10342 if (!isCityPanelOpen()) return', calls, []);
+  check('refreshCityPanelIfOpen.closed-noop', 'cityPanel.ts:10589 if (!isCityPanelOpen()) return', calls, []);
   fx.open = true;
   m.refreshCityPanelIfOpen();
-  check('refreshCityPanelIfOpen.open-rerender', 'cityPanel.ts:10344-10345 resolveActiveCity; rerender', calls, ['rerender']);
+  check('refreshCityPanelIfOpen.open-rerender', 'cityPanel.ts:10591-10592 resolveActiveCity; rerender', calls, ['rerender']);
   reset();
   let refreshed = 0;
   m.setK07aUxSectionRefresh(() => { refreshed++; });
   m.refreshCityPanelIfOpen();
-  check('refreshCityPanelIfOpen.uxRefresh-wins', 'cityPanel.ts:10339-10341 uxSectionRefresh() i return', [refreshed, calls], [1, []]);
+  check('refreshCityPanelIfOpen.uxRefresh-wins', 'cityPanel.ts:10586-10588 uxSectionRefresh() i return', [refreshed, calls], [1, []]);
 
-  // --- clearCityPanelUxMode (pin :10367-10374) ---
+  // --- clearCityPanelUxMode (pin :10614-10621) ---
   reset();
   m.setK07aActiveCity(cityA);
   m.setK06aActive(cityA, null, () => { onCloseCalls.n++; });
@@ -158,38 +158,38 @@ try {
   m.setK08aActiveCityPanelTab('spichlerz');
   const onCloseBefore = m.getK06aState().activeOnClose;
   m.clearCityPanelUxMode();
-  check('clearCityPanelUxMode.calls', 'cityPanel.ts:10368 clearGarrisonPanel; :10373 disposeHoverDetailDock', calls, ['clearGarrisonPanel', 'disposeHoverDetailDock']);
-  check('clearCityPanelUxMode.uxRefresh', 'cityPanel.ts:10369 uxSectionRefresh = null', m.getK07aUxSectionRefresh(), null);
-  check('clearCityPanelUxMode.tab', 'cityPanel.ts:10370 activeCityPanelTab = budowa', m.getK08aActiveCityPanelTab(), 'budowa');
-  check('clearCityPanelUxMode.activeCity', 'cityPanel.ts:10371 activeCity = null', m.getOpenCityPanelCityId(), null);
-  check('clearCityPanelUxMode.activeMap', 'cityPanel.ts:10372 activeMap = null', m.getK06aState().activeMap, null);
+  check('clearCityPanelUxMode.calls', 'cityPanel.ts:10615 clearGarrisonPanel; :10373 disposeHoverDetailDock', calls, ['clearGarrisonPanel', 'disposeHoverDetailDock']);
+  check('clearCityPanelUxMode.uxRefresh', 'cityPanel.ts:10616 uxSectionRefresh = null', m.getK07aUxSectionRefresh(), null);
+  check('clearCityPanelUxMode.tab', 'cityPanel.ts:10617 activeCityPanelTab = budowa', m.getK08aActiveCityPanelTab(), 'budowa');
+  check('clearCityPanelUxMode.activeCity', 'cityPanel.ts:10618 activeCity = null', m.getOpenCityPanelCityId(), null);
+  check('clearCityPanelUxMode.activeMap', 'cityPanel.ts:10619 activeMap = null', m.getK06aState().activeMap, null);
   check('clearCityPanelUxMode.onCloseKept', 'pin nie zeruje activeOnClose (ta sama referencja)', m.getK06aState().activeOnClose === onCloseBefore, true);
 
-  // --- closeCityView (pin :10694-10698) ---
+  // --- closeCityView (pin :10941-10945) ---
   reset();
   m.setK07aActiveCity(cityA);
   let custom = 0;
   m.closeCityView(() => { custom++; });
-  check('closeCityView.custom', 'cityPanel.ts:10696 if (onClose) onClose()', [custom, onCloseCalls.n], [1, 0]);
-  check('closeCityView.cleared', 'cityPanel.ts:10695 clearCityPanelUxMode()', [m.getOpenCityPanelCityId(), calls], [null, ['clearGarrisonPanel', 'disposeHoverDetailDock']]);
+  check('closeCityView.custom', 'cityPanel.ts:10943 if (onClose) onClose()', [custom, onCloseCalls.n], [1, 0]);
+  check('closeCityView.cleared', 'cityPanel.ts:10942 clearCityPanelUxMode()', [m.getOpenCityPanelCityId(), calls], [null, ['clearGarrisonPanel', 'disposeHoverDetailDock']]);
   reset();
   m.closeCityView();
-  check('closeCityView.default-onClose', 'cityPanel.ts:10697 else activeOnClose()', onCloseCalls.n, 1);
+  check('closeCityView.default-onClose', 'cityPanel.ts:10944 else activeOnClose()', onCloseCalls.n, 1);
 
-  // --- closeCityPanelIfOpen (pin :11971-11976) ---
+  // --- closeCityPanelIfOpen (pin :12212-12217) ---
   reset();
   fx.open = false;
-  check('closeCityPanelIfOpen.closed', 'cityPanel.ts:11972 return false', [m.closeCityPanelIfOpen(), calls, onCloseCalls.n], [false, [], 0]);
+  check('closeCityPanelIfOpen.closed', 'cityPanel.ts:12213 return false', [m.closeCityPanelIfOpen(), calls, onCloseCalls.n], [false, [], 0]);
   fx.open = true;
-  check('closeCityPanelIfOpen.open', 'cityPanel.ts:11973-11975 clearGarrisonPanel; activeOnClose; return true', [m.closeCityPanelIfOpen(), calls, onCloseCalls.n], [true, ['clearGarrisonPanel'], 1]);
+  check('closeCityPanelIfOpen.open', 'cityPanel.ts:12214-12216 clearGarrisonPanel; activeOnClose; return true', [m.closeCityPanelIfOpen(), calls, onCloseCalls.n], [true, ['clearGarrisonPanel'], 1]);
 
-  // --- Stałe i czyste formatery (pin :11540-11593) ---
-  check('CITY_PANEL_ICONS_LEFT.ids', 'cityPanel.ts:11554-11557', m.CITY_PANEL_ICONS_LEFT.map((x) => x.id), ['budowa', 'rekrutacja']);
-  check('CITY_PANEL_ICONS_RIGHT.ids', 'cityPanel.ts:11559-11571', m.CITY_PANEL_ICONS_RIGHT.map((x) => x.id), ['spichlerz', 'handel', 'praca', 'porzadek', 'zdrowie', 'kultura', 'religia']);
-  check('isProductionPanelTab.budowa', 'cityPanel.ts:11574', m.isProductionPanelTab('budowa'), true);
-  check('isProductionPanelTab.spichlerz', 'cityPanel.ts:11574', m.isProductionPanelTab('spichlerz'), false);
-  check('CADUCEUS_SVG.prefix', 'cityPanel.ts:11577-11578', m.CADUCEUS_SVG.startsWith('<svg viewBox="0 0 24 24"'), true);
-  check('cityRailIconHtml.empty-unknown', 'cityPanel.ts:11588-11589 brandIconSvg null -> ""', m.cityRailIconHtml('__brak_ikony__'), '');
+  // --- Stałe i czyste formatery (pin :11781-11834) ---
+  check('CITY_PANEL_ICONS_LEFT.ids', 'cityPanel.ts:11795-11798', m.CITY_PANEL_ICONS_LEFT.map((x) => x.id), ['budowa', 'rekrutacja']);
+  check('CITY_PANEL_ICONS_RIGHT.ids', 'cityPanel.ts:11800-11812', m.CITY_PANEL_ICONS_RIGHT.map((x) => x.id), ['spichlerz', 'handel', 'praca', 'porzadek', 'zdrowie', 'kultura', 'religia']);
+  check('isProductionPanelTab.budowa', 'cityPanel.ts:11815', m.isProductionPanelTab('budowa'), true);
+  check('isProductionPanelTab.spichlerz', 'cityPanel.ts:11815', m.isProductionPanelTab('spichlerz'), false);
+  check('CADUCEUS_SVG.prefix', 'cityPanel.ts:11818-11819', m.CADUCEUS_SVG.startsWith('<svg viewBox="0 0 24 24"'), true);
+  check('cityRailIconHtml.empty-unknown', 'cityPanel.ts:11829-11830 brandIconSvg null -> ""', m.cityRailIconHtml('__brak_ikony__'), '');
 
   // --- Akcesor zakładki K08A-Z3 (pin `let activeCityPanelTab`, :11593) ---
   reset();
@@ -199,14 +199,14 @@ try {
   check('accessor.tab-roundtrip-2', 'K08A-Z3 set/get activeCityPanelTab (ostatnia zakładka)', m.getK08aActiveCityPanelTab(), 'religia');
 
   // --- isProductionPanelTab: gałąź rekrutacji (pin :11574) ---
-  check('isProductionPanelTab.rekrutacja', 'cityPanel.ts:11574 tab === rekrutacja', m.isProductionPanelTab('rekrutacja'), true);
-  check('isProductionPanelTab.religia', 'cityPanel.ts:11574', m.isProductionPanelTab('religia'), false);
+  check('isProductionPanelTab.rekrutacja', 'cityPanel.ts:11815 tab === rekrutacja', m.isProductionPanelTab('rekrutacja'), true);
+  check('isProductionPanelTab.religia', 'cityPanel.ts:11815', m.isProductionPanelTab('religia'), false);
 
-  // --- Ikony i tytuły paneli (pin :11554-11571, wartości dokładne) ---
-  check('CITY_PANEL_ICONS_LEFT.iconIds', 'cityPanel.ts:11554-11557 iconId', m.CITY_PANEL_ICONS_LEFT.map((x) => x.iconId), ['cp-buildings', 'cp-recruit']);
-  check('CITY_PANEL_ICONS_LEFT.titles', 'cityPanel.ts:11554-11557 title', m.CITY_PANEL_ICONS_LEFT.map((x) => x.title), ['Budowa — dostępne i w mieście', 'Jednostki do rekrutacji']);
-  check('CITY_PANEL_ICONS_RIGHT.iconIds', 'cityPanel.ts:11559-11571 iconId', m.CITY_PANEL_ICONS_RIGHT.map((x) => x.iconId), ['cp-granary', 'cp-trade', 'cp-labor', 'cp-order', 'cp-health', 'cp-culture', 'cp-religion']);
-  check('CITY_PANEL_ICONS_RIGHT.titles', 'cityPanel.ts:11559-11571 title', m.CITY_PANEL_ICONS_RIGHT.map((x) => x.title), [
+  // --- Ikony i tytuły paneli (pin :11795-11812, wartości dokładne) ---
+  check('CITY_PANEL_ICONS_LEFT.iconIds', 'cityPanel.ts:11795-11798 iconId', m.CITY_PANEL_ICONS_LEFT.map((x) => x.iconId), ['cp-buildings', 'cp-recruit']);
+  check('CITY_PANEL_ICONS_LEFT.titles', 'cityPanel.ts:11795-11798 title', m.CITY_PANEL_ICONS_LEFT.map((x) => x.title), ['Budowa — dostępne i w mieście', 'Jednostki do rekrutacji']);
+  check('CITY_PANEL_ICONS_RIGHT.iconIds', 'cityPanel.ts:11800-11812 iconId', m.CITY_PANEL_ICONS_RIGHT.map((x) => x.iconId), ['cp-granary', 'cp-trade', 'cp-labor', 'cp-order', 'cp-health', 'cp-culture', 'cp-religion']);
+  check('CITY_PANEL_ICONS_RIGHT.titles', 'cityPanel.ts:11800-11812 title', m.CITY_PANEL_ICONS_RIGHT.map((x) => x.title), [
     'Wyżywienie i wzrost — suwak 0–6',
     'Podział daniny/podatku i zamożność — suwaki Skarb / Nauka / Zamożność',
     'Podział pracy — budynki i pula imperium',
@@ -216,20 +216,20 @@ try {
     'Religia — wiara i szerzenie',
   ]);
 
-  // --- CADUCEUS_SVG: pełny łańcuch (pin :11577-11585) ---
-  check('CADUCEUS_SVG.full', 'cityPanel.ts:11577-11585 łańcuch znaków', m.CADUCEUS_SVG, '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="9.2" x2="12" y2="21.5"/><circle cx="12" cy="7.4" r="1.35" fill="currentColor" stroke="none"/><path d="M12 8.6 C8.2 6.2 5.2 7.1 4 9.2"/><path d="M12 8.6 C15.8 6.2 18.8 7.1 20 9.2"/><path d="M9.6 10.8 C7.2 13.2 7.8 16.8 12 19.2"/><path d="M14.4 10.8 C16.8 13.2 16.2 16.8 12 19.2"/></svg>');
+  // --- CADUCEUS_SVG: pełny łańcuch (pin :11818-11826) ---
+  check('CADUCEUS_SVG.full', 'cityPanel.ts:11818-11826 łańcuch znaków', m.CADUCEUS_SVG, '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="9.2" x2="12" y2="21.5"/><circle cx="12" cy="7.4" r="1.35" fill="currentColor" stroke="none"/><path d="M12 8.6 C8.2 6.2 5.2 7.1 4 9.2"/><path d="M12 8.6 C15.8 6.2 18.8 7.1 20 9.2"/><path d="M9.6 10.8 C7.2 13.2 7.8 16.8 12 19.2"/><path d="M14.4 10.8 C16.8 13.2 16.2 16.8 12 19.2"/></svg>');
 
   // --- cityRailIconHtml: gałąź znanej ikony (pin :11590 podmiana klasy) ---
   const railHtml = m.cityRailIconHtml('cp-trade');
-  check('cityRailIconHtml.known-class', 'cityPanel.ts:11590 svg.replace("<svg ", class=civ-cp-rail-ic)', railHtml.startsWith('<svg class="civ-cp-rail-ic" '), true);
+  check('cityRailIconHtml.known-class', 'cityPanel.ts:11831 svg.replace("<svg ", class=civ-cp-rail-ic)', railHtml.startsWith('<svg class="civ-cp-rail-ic" '), true);
 
   // --- clearCityPanelUxMode: lustra K06A (activeCity, activeMap) czyszczone razem (K08A-Z3) ---
   reset();
   m.setK07aActiveCity(cityA);
   m.setK06aActive(cityA, { __mapa: 'k08a' }, () => {});
   m.clearCityPanelUxMode();
-  check('clearCityPanelUxMode.mirror-map', 'cityPanel.ts:10372 activeMap = null (lustro K06A)', m.getK06aState().activeMap, null);
-  check('clearCityPanelUxMode.mirror-k06a-city', 'cityPanel.ts:10371 activeCity = null (lustro K06A)', m.getK06aState().activeCity, null);
+  check('clearCityPanelUxMode.mirror-map', 'cityPanel.ts:10619 activeMap = null (lustro K06A)', m.getK06aState().activeMap, null);
+  check('clearCityPanelUxMode.mirror-k06a-city', 'cityPanel.ts:10618 activeCity = null (lustro K06A)', m.getK06aState().activeCity, null);
 
   // --- resolveActiveCity w refreshCityPanelIfOpen (pin :10339/:10345; v2 = resolveK07aActiveCity, K08A-Z4) ---
   reset();
@@ -237,11 +237,11 @@ try {
   m.setK07aActiveCity(cityA);
   fx.open = true;
   m.refreshCityPanelIfOpen();
-  check('refreshCityPanelIfOpen.resolve-fresh', 'cityPanel.ts:10345 resolveActiveCity -> odświeżony obiekt z listy miast', m.getK07aActiveCity()?.name, 'Odswiezona');
+  check('refreshCityPanelIfOpen.resolve-fresh', 'cityPanel.ts:10592 resolveActiveCity -> odświeżony obiekt z listy miast', m.getK07aActiveCity()?.name, 'Odswiezona');
   m.setK07aActiveCity(cityA);
   m.setK07aUxSectionRefresh(() => {});
   m.refreshCityPanelIfOpen();
-  check('refreshCityPanelIfOpen.resolve-fresh-ux', 'cityPanel.ts:10340 resolveActiveCity przed uxSectionRefresh', m.getK07aActiveCity()?.name, 'Odswiezona');
+  check('refreshCityPanelIfOpen.resolve-fresh-ux', 'cityPanel.ts:10587 resolveActiveCity przed uxSectionRefresh', m.getK07aActiveCity()?.name, 'Odswiezona');
   // --- resolveActiveCity (pin :10339/:10345: JEDNO activeCity) -> resolveK08aActiveCity (r3, K08A-Z4): lustro K06A ---
   reset();
   m.setK07aDeps({ isMe: () => true, getCapitalCityId: () => null, getCities: () => [{ ...cityA, name: 'Odswiezona' }], canSetCapital: false, chipDeltaStockHtml: () => '' });
@@ -250,11 +250,11 @@ try {
   m.setK06aActive(cityA, { __mapa: 'k08a-r3' }, () => {});
   const onCloseR3 = m.getK06aState().activeOnClose;
   m.refreshCityPanelIfOpen();
-  check('refreshCityPanelIfOpen.k06-mirror-sync', 'cityPanel.ts:10345 jedno activeCity: lustro K06A = świeży obiekt z listy (r3)', m.getK06aState().activeCity?.name, 'Odswiezona');
-  check('refreshCityPanelIfOpen.k06-mirror-same-as-k07', 'cityPanel.ts:10345 jedno activeCity: K06A i K07A to ten sam obiekt (r3)', m.getK06aState().activeCity === m.getK07aActiveCity(), true);
+  check('refreshCityPanelIfOpen.k06-mirror-sync', 'cityPanel.ts:10592 jedno activeCity: lustro K06A = świeży obiekt z listy (r3)', m.getK06aState().activeCity?.name, 'Odswiezona');
+  check('refreshCityPanelIfOpen.k06-mirror-same-as-k07', 'cityPanel.ts:10592 jedno activeCity: K06A i K07A to ten sam obiekt (r3)', m.getK06aState().activeCity === m.getK07aActiveCity(), true);
   check('refreshCityPanelIfOpen.k06-mirror-map-kept', 'K08A-Z4 sync nie rusza activeMap (r3)', m.getK06aState().activeMap?.__mapa, 'k08a-r3');
   check('refreshCityPanelIfOpen.k06-mirror-onclose-kept', 'K08A-Z4 sync nie rusza activeOnClose (r3)', m.getK06aState().activeOnClose === onCloseR3, true);
-  check('refreshCityPanelIfOpen.k06-mirror-rerender', 'cityPanel.ts:10346 rerender po synchronizacji (r3)', calls, ['rerender']);
+  check('refreshCityPanelIfOpen.k06-mirror-rerender', 'cityPanel.ts:10593 rerender po synchronizacji (r3)', calls, ['rerender']);
   // ścieżka UX: synchronizacja lustra K06A PRZED uxSectionRefresh (pin :10340 resolve przed wywołaniem)
   reset();
   m.setK07aActiveCity(cityA);
@@ -262,7 +262,7 @@ try {
   let seenK06 = null;
   m.setK07aUxSectionRefresh(() => { seenK06 = m.getK06aState().activeCity?.name ?? null; });
   m.refreshCityPanelIfOpen();
-  check('refreshCityPanelIfOpen.k06-mirror-before-ux', 'cityPanel.ts:10340 resolve (w tym lustro K06A) przed uxSectionRefresh (r3)', seenK06, 'Odswiezona');
+  check('refreshCityPanelIfOpen.k06-mirror-before-ux', 'cityPanel.ts:10587 resolve (w tym lustro K06A) przed uxSectionRefresh (r3)', seenK06, 'Odswiezona');
   // brak miasta w K07A: lustro K06A zerowane (activeOnClose zostaje)
   reset();
   m.setK07aActiveCity(null);

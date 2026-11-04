@@ -45,16 +45,16 @@ const check = (id, pin, ok) => results.push({ id, pin, ok: ok === true });
 
 /** Zakresy pinu wykonywane verbatim: [nazwa, a, b, kotwica startu]; koniec zawsze linia `}`. */
 const PIN_RANGES = [
-  ['renderBuildingsOwned', 9184, 9255, 'function renderBuildingsOwned('],
-  ['renderBuildingsOwnedRightPanel', 9341, 9357, 'function renderBuildingsOwnedRightPanel('],
-  ['renderPurchasableUnits', 8891, 8977, 'function renderPurchasableUnits('],
+  ['renderBuildingsOwned', 9428, 9499, 'function renderBuildingsOwned('],
+  ['renderBuildingsOwnedRightPanel', 9585, 9601, 'function renderBuildingsOwnedRightPanel('],
+  ['renderPurchasableUnits', 9119, 9216, 'function renderPurchasableUnits('],
 ];
 /** PIN-ANCHOR: literały w liniach pinu (sprawdzane przed wykonaniem). */
 const PIN_ANCHORS = [
-  [9198, "const built = cfg.getBuiltBuildingIds?.(city.id);"],
-  [8898, "const w4 = opts?.w4 === true;"],
-  [8966, "'list-scroll',"],
-  [8961, "'(brak jednostek do kupienia — zbadaj technologie / Koszary)'"],
+  [9442, "const built = cfg.getBuiltBuildingIds?.(city.id);"],
+  [9126, "const w4 = opts?.w4 === true;"],
+  [9205, "'list-scroll',"],
+  [9181, "'(brak jednostek do kupienia — zbadaj technologie / Koszary)'"],
 ];
 
 let exitCode = 0;
@@ -93,10 +93,12 @@ try {
       `import { cfg, getProd, isMeCity, productionCtxForCity, type City, type GameData } from ${P('k05b-host.ts')};`,
       `import { appendOwnedBuildingRow, } from ${P('k06b-kolejki.ts')};`,
       `import { appendUnitRecruitCompactRow } from ${P('k06b-jednostki.ts')};`,
-      `import { appendRecruitMilitaryResourceStrip, getUnitDef, groupBuiltBuildingIds, purchasableUnits, sortByUnitPowerDescending, sumOwnedBuildingsUpkeep, type UnitPowerInput } from ${P('k08b-deps.ts')};`,
+      `import { appendRecruitMilitaryResourceStrip, empireRekruciTotal, getUnitDef, groupBuiltBuildingIds, purchasableUnits, recruitPanelPurchasableUnits, sortByUnitPowerDescending, sumOwnedBuildingsUpkeep, type UnitPowerInput } from ${P('k08b-deps.ts')};`,
+      // REPIN-UI-2-G r2: web 86d510c66 renderPurchasableUnits woła formatCompactNumber/formatFullNumber (kopia UI-2-A) i 2 nowe delegaty.
+      `import { formatCompactNumber, formatFullNumber } from ${JSON.stringify(join(V2_ROOT, 'src/ui/formatCompactNumber.ts'))};`,
       `import { withW4TabCard } from ${P('k08b-rail.ts')};`,
       `import { appendSectionTitleWithDetails } from ${P('k08b-title.ts')};`,
-      '// --- verbatim pin edb8fb56 gra/src/ui/cityPanel.ts (zakresy: 9184-9255, 9341-9357, 8891-8977) ---',
+      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 9428-9499, 9585-9601, 9119-9216) ---',
       ...pinText,
       '// --- koniec verbatim ---',
       'export { renderBuildingsOwned, renderBuildingsOwnedRightPanel, renderPurchasableUnits };',
@@ -109,7 +111,7 @@ try {
     [
       `import ${JSON.stringify(setup)};`,
       `import { installK08cWiring } from ${JSON.stringify(join(V2_ROOT, 'src/controller/k08cWiring.ts'))};`,
-      `import { dep } from ${P('k06b-deps.ts')};`,
+      `import { dep, setK06bDeps } from ${P('k06b-deps.ts')};`,
       `import * as pinMod from ${JSON.stringify(pinExec)};`,
       `import * as ownedMod from ${P('k08b-owned.ts')};`,
       `import * as purchaseMod from ${P('k08b-purchase.ts')};`,
@@ -129,8 +131,13 @@ try {
       '  stockResourceLabel: (k: string) => k,',
       '  rules: NEUTRAL_RULES as any,',
       '} as any);',
-      `export const depNames = ${JSON.stringify(['sumOwnedBuildingsUpkeep', 'groupBuiltBuildingIds', 'appendRecruitMilitaryResourceStrip', 'purchasableUnits', 'sortByUnitPowerDescending', 'getUnitDef'])};`,
-      'export const depsCallable = depNames.map((n) => { try { return typeof dep(n) === "function"; } catch { return false; } });',
+      `export const depNames = ${JSON.stringify(['sumOwnedBuildingsUpkeep', 'groupBuiltBuildingIds', 'appendRecruitMilitaryResourceStrip', 'purchasableUnits', 'sortByUnitPowerDescending', 'getUnitDef', 'recruitPanelPurchasableUnits', 'empireRekruciTotal'])};`,
+      'export const depsCallable = depNames.slice(0, 6).map((n) => { try { return typeof dep(n) === "function"; } catch { return false; } });',
+      '// REPIN-UI-2-G r2: delegaty nowych nazw webu 86d510c66, których installK08cWiring (controller, poza allowlistą UI-2-G) jeszcze nie dostarcza → luka K09C (P5-REPIN-UI-2 §7).',
+      'export const wiringGap = depNames.slice(6).filter((n) => { try { dep(n); return false; } catch { return true; } });',
+      '// Atrapy TESTOWE dla luki (ta sama wartość po obu stronach): lista jednostek pusta, pula rekrutów 71717 (→ "71,7k").',
+      'setK06bDeps({ recruitPanelPurchasableUnits: () => (globalThis as any).__K08C_UNITS ?? [], empireRekruciTotal: () => 71717 });',
+      'export const setDeps = setK06bDeps;',
       'export const pin = pinMod;',
       'export const port = { renderBuildingsOwned: ownedMod.renderBuildingsOwned, renderBuildingsOwnedRightPanel: ownedMod.renderBuildingsOwnedRightPanel, renderPurchasableUnits: purchaseMod.renderPurchasableUnits };',
       '',
@@ -182,6 +189,7 @@ try {
       'appendRecruitMilitaryResourceStrip', 'groupBuiltBuildingIds', 'purchasableUnits', 'sortByUnitPowerDescending', 'sumOwnedBuildingsUpkeep',
     ]));
   check('wiring.depsCallable', 'sześć delegatów K06B (k08b-deps) wywoływalnych po wiringu', mod.depsCallable.every(Boolean));
+  check('wiring.gap', `luka wiringu K09C (nazwy webu bez delegatu w installK08cWiring): ${JSON.stringify(mod.wiringGap)}`, JSON.stringify(mod.wiringGap) === JSON.stringify(['recruitPanelPurchasableUnits', 'empireRekruciTotal']));
 
   const city = { id: 7, ownerId: 0, name: 'A', owner: 0 };
   const data = { buildings: [], units: [] };
@@ -215,6 +223,16 @@ try {
   const emptyBuy = mk();
   mod.pin.renderPurchasableUnits(emptyBuy, city, data);
   check('exec.anchor.purchaseEmpty', 'pusty stan rekrutacji (pin: "brak jednostek do kupienia")', emptyBuy.textContent.includes('brak jednostek do kupienia'));
+  // REPIN-UI-2-G r2: web 86d510c66 — pula rekrutów imperium jedną linią nad listą, skrót R-WEB-HUD-NUMBER-ABBREV-Q1.
+  globalThis.__K08C_UNITS = [{ kind: 'jednostka', id: 'Wojownik', koszt: 10 }];
+  // Scenariusz 1 jednostki: atrapy TESTOWE (te same po obu stronach) zamiast atrap K08C-Z5, które rzucają dla wejścia niepustego.
+  mod.setDeps({ appendRecruitMilitaryResourceStrip: () => undefined, findUnitDef: () => undefined });
+  const buyPin = mk(); const buyPort = mk(); let buyErr = null;
+  try { mod.pin.renderPurchasableUnits(buyPin, city, data); mod.port.renderPurchasableUnits(buyPort, city, data); } catch (e) { buyErr = String(e); }
+  globalThis.__K08C_UNITS = undefined;
+  check('exec.purchase.oneUnit', `pin-exec vs port z 1 jednostką (pula rekrutów): wyjątek=${buyErr}`, buyErr === null && buyPin.innerHTML === buyPort.innerHTML && buyPin.innerHTML.length > 0);
+  const pool = buyPin.querySelector('.unit-recruit-pool');
+  check('exec.anchor.recruitPool', 'pula rekrutów: dataset 71717, <b>71,7k</b>, aria-label pełna wartość', !!pool && pool.dataset.available === '71717' && pool.querySelector('b')?.textContent === '71,7k' && (pool.getAttribute('aria-label') ?? '').includes('71'));
 
   const fails = results.filter((r) => !r.ok);
   for (const r of results) console.log(`${r.ok ? 'OK  ' : 'FAIL'} ${r.id} | ${r.pin}`);

@@ -23,7 +23,7 @@ import {
 
 // ─── Jednostki K08D, partia k08d-wealth.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4775-4822
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4839-4886
 export function renderWealth(mount: HTMLElement, city: City, data: GameData | null, view: CityView | null = null): void {
   mount.innerHTML = '';
   const ws = city.wealthState ?? freshWealthState();
@@ -74,7 +74,7 @@ export function renderWealth(mount: HTMLElement, city: City, data: GameData | nu
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4824-4944
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4888-5009
 export function buildWealthDetailCard(
   city: City,
   ws: { poziom: number; pula: number },
@@ -183,7 +183,8 @@ export function buildWealthDetailCard(
   ]);
 
   appendDetailAlgo(card, 'Skąd bierze się wpływ do puli', [
-    `${daninaLbl} brutto z pól + bonus Targowiska → handelNetto (po korupcji, opcjonalnie ×Waluta).`,
+    `${daninaLbl} brutto z pól i budynków → lokalny podatek netto (po korupcji; ×Mennica, gdy aktywna).`,
+    'Dochód tras z premią Targowiska trafia osobno do skarbca i nie wchodzi do lokalnego podatku ani puli zamożności.',
     `Podział ${daninaLblGen}: %${HANDEL_ZAMOZNOSC_LABEL} × handelNetto → wpływ do puli zamożności.`,
     `Więcej % na Skarb = mniej ${HANDEL_ZAMOZNOSC_LABEL} = wolniejszy W, ale więcej 💰 od razu.`,
     `Więcej % na ${HANDEL_ZAMOZNOSC_LABEL} = szybszy W, ale mniej gotówki — ×Skarb rośnie z opóźnieniem.`,

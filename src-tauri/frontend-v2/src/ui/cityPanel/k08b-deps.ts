@@ -30,3 +30,11 @@ export const sortByUnitPowerDescending = (units: any, key: (u: any) => UnitPower
 
 /** Pin `getUnitDef(data, id)` (data/loader). */
 export const getUnitDef = (...args: any[]): any => dep('getUnitDef')(...args);
+
+// ─── REPIN-UI-2-G r2 (web 86d510c66): nowe nazwy wołane przez przepięty blok renderPurchasableUnits ─────────────
+
+/** Web :8215-8229 `recruitPanelPurchasableUnits(city, data)` (purchasableUnits + showStockGatedUnits + sortRecruitListByEra = reguły gry). */
+export const recruitPanelPurchasableUnits = (...args: any[]): any => dep('recruitPanelPurchasableUnits')(...args);
+
+/** Pin/web `empireRekruciTotal(city)` — pula rekrutów imperium (ten sam delegat co K06B). */
+export const empireRekruciTotal = (...args: any[]): any => dep('empireRekruciTotal')(...args);

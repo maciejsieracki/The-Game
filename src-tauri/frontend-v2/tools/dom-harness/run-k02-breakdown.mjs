@@ -19,6 +19,7 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { JSDOM, VirtualConsole } from 'jsdom';
 import { bundle } from './build.mjs';
+import { pinDirRevLabel } from './repin-ui2g-rev.mjs';
 
 function findJs(dir, name) {
   for (const n of readdirSync(dir)) {
@@ -67,17 +68,22 @@ function findFile(dir, base) {
 const PROBE_NAME = '__k02_breakdown_pin_probe.ts';
 
 const pinLines = readFileSync(PIN_FILE, 'utf8').split('\n');
-if (!/^function el</.test(pinLines[862]) || pinLines[869] !== '}') {
+// REPIN-UI-2-G r2: --pin-dir = pin edb8fb56 albo web 86d510c66; regiony K02 bez dryfu (Myers: linie poza hunkami), przesunięcie stałe
+// per region: el 863-870 → +44, breakdown 4376-4516 → +64. Rewizja z treści pliku (sha1 bloba), nie z argumentu.
+const K02_WEB = pinDirRevLabel(PIN_DIR) === '86d510c66';
+const OEL = K02_WEB ? 44 : 0;
+const OBD = K02_WEB ? 64 : 0;
+if (!/^function el</.test(pinLines[862 + OEL]) || pinLines[869 + OEL] !== '}') {
   console.error('Harness: pin:863–870 nie jest funkcją el — pin inny niż edb8fb56?');
   process.exit(2);
 }
-if (!/^type BreakdownLine = /.test(pinLines[4375]) || !/^}$/.test(pinLines[4515])) {
+if (!/^type BreakdownLine = /.test(pinLines[4375 + OBD]) || !/^}$/.test(pinLines[4515 + OBD])) {
   console.error('Harness: pin:4376–4516 nie zawiera BreakdownLine/bloków breakdown — pin inny niż edb8fb56?');
   process.exit(2);
 }
-const elSrc = pinLines.slice(862, 870).join('\n');
+const elSrc = pinLines.slice(862 + OEL, 870 + OEL).join('\n');
 const bodySrc = pinLines
-  .slice(4375, 4516)
+  .slice(4375 + OBD, 4516 + OBD)
   .join('\n')
   .replace(/^function /gm, 'export function ');
 const probeSrc = [

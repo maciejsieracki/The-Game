@@ -21,6 +21,7 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { JSDOM, VirtualConsole } from 'jsdom';
 import { bundle } from './build.mjs';
+import { pinDirRevLabel } from './repin-ui2g-rev.mjs';
 
 /** Znajduje wygenerowany plik .js po nazwie (układ katalogów zależy od outbase esbuild). */
 function findJs(dir, name) {
@@ -73,13 +74,17 @@ const PROBE_NAME = '__k02_pin_probe.ts';
 
 // ─── wycinek pinu → moduł probe (po stronie pinu, w drzewie tymczasowym) ─────
 const pinLines = readFileSync(PIN_FILE, 'utf8').split('\n');
-const consts = pinLines.slice(1754, 1773).join('\n'); // pin 1755–1773
-const fnSrc = pinLines.slice(1947, 3009).join('\n'); // pin 1948–3009
-if (!/^function ensureStyles\(\): void \{/.test(pinLines[1947])) {
+// REPIN-UI-2-G r2: --pin-dir = pin edb8fb56 albo web 86d510c66; regiony K02 bez dryfu (Myers: linie poza hunkami), przesunięcie stałe
+// per region: stałe 1755-1773 i ensureStyles 1948-3009 → +54. Rewizja z treści pliku (sha1 bloba), nie z argumentu.
+const K02_WEB = pinDirRevLabel(PIN_DIR) === '86d510c66';
+const OST = K02_WEB ? 54 : 0;
+const consts = pinLines.slice(1754 + OST, 1773 + OST).join('\n'); // pin 1755–1773 (web 1809–1827)
+const fnSrc = pinLines.slice(1947 + OST, 3009 + OST).join('\n'); // pin 1948–3009 (web 2002–3063)
+if (!/^function ensureStyles\(\): void \{/.test(pinLines[1947 + OST])) {
   console.error('Harness: linia pin:1948 nie jest nagłówkiem ensureStyles — pin inny niż edb8fb56?');
   process.exit(2);
 }
-if (!/^\}$/.test(pinLines[3008])) {
+if (!/^\}$/.test(pinLines[3008 + OST])) {
   console.error('Harness: linia pin:3009 nie zamyka ensureStyles.');
   process.exit(2);
 }

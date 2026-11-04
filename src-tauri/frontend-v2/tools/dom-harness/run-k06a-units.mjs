@@ -18,6 +18,7 @@ import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pinFileLabel } from './repin-ui2g-rev.mjs'; // REPIN-UI-2-G r2 (Z6): etykieta = rewizja faktycznego --pin-dir
 import * as esbuild from 'esbuild';
 
 const args = process.argv.slice(2);
@@ -60,8 +61,11 @@ const UNIT_NAMES = [
   'ownerCities', 'ownerCitiesForNav', 'cityPanelTitle', 'navigateCityPanel',
 ];
 
-/** Stan modułu pinu (ui/cityPanel.ts:10159-10163; `rootEl` pominięty — DOM). */
-const pinState = pinLines.slice(10158, 10163).join('\n');
+/** Stan modułu pinu (ui/cityPanel.ts:10159-10163 w edb8fb56, 10406-10410 w 86d510c66; `rootEl` pominięty — DOM).
+ * R-RUSTPORT-REPIN-UI-2-G-Q1: początek wyznaczany po treści (`let activeCity`), bo `--pin-dir` może być pinem albo webem. */
+const PIN_STATE_AT = pinLines.findIndex((l) => l.startsWith('let activeCity: City | null = null;'));
+if (PIN_STATE_AT < 0) throw new Error('pin: brak stanu modułu (let activeCity)');
+const pinState = pinLines.slice(PIN_STATE_AT, PIN_STATE_AT + 5).join('\n');
 
 /** Prelude pinu: zależności zewnętrzne czytane z fixture (ten sam fixture co strona portu). */
 const PIN_PRELUDE = `
@@ -296,7 +300,7 @@ try {
     }
   }
 
-  console.log(JSON.stringify({ comparisons, diffs, units: UNIT_NAMES.length, pinFile: 'gra/src/ui/cityPanel.ts (edb8fb56)' }, null, 1));
+  console.log(JSON.stringify({ comparisons, diffs, units: UNIT_NAMES.length, pinFile: pinFileLabel(PIN_DIR) }, null, 1));
   if (report.length) console.log(JSON.stringify(report.slice(0, 20), null, 1));
   exitCode = diffs === 0 ? 0 : 1;
 } catch (err) {

@@ -34,7 +34,7 @@ import {
   MAX_PROCENT_NAUKA,
 } from './k05b-host';
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4638-4653
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4702-4717
 export function renderEkonomiaStrip(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
   mount.appendChild(el('div', 'ptitle', `<span>Plony i ${daninaLabelForCity(city).toLowerCase()}</span>`));
@@ -52,7 +52,7 @@ export function renderEkonomiaStrip(mount: HTMLElement, city: City, view: CityVi
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4654-4734
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4718-4798
 export function appendPodzialHandlu(
   mount: HTMLElement,
   city: City,
@@ -135,7 +135,7 @@ export function appendPodzialHandlu(
 
 /** Bilans pieniędzy tego miasta — przychody i koszty lokalne. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4735-4768
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4799-4832
 export function appendCitySkarbiecBalance(mount: HTMLElement, city: City): void {
   const snap = cfg.getCityMoneySnap?.(city.id);
   if (!snap) return;
@@ -171,7 +171,7 @@ export function appendCitySkarbiecBalance(mount: HTMLElement, city: City): void 
 
 /** @deprecated używane przez testy / kompat — prefer renderEkonomiaStrip */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4769-4774
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4833-4838
 export function renderPodzialHandlu(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
   mount.appendChild(el('div', 'ptitle', '<span>Podział Handlu</span>'));
@@ -179,7 +179,7 @@ export function renderPodzialHandlu(mount: HTMLElement, city: City, view: CityVi
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:5824-5903
+// pin 86d510c66 gra/src/ui/cityPanel.ts:5895-5974
 export function buildTopBarZlotoDetailCard(
   city: City,
   view: CityView,

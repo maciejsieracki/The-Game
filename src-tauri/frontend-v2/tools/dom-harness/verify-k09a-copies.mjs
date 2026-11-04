@@ -32,7 +32,8 @@ const argOf = (k) => {
 };
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FRONT = resolve(HERE, '../..');
-const PIN = 'edb8fb56';
+// R-RUSTPORT-REPIN-UI-2-G-Q1 r2: bloki K09A przepięte na web 86d510c66 (domyślny `git show`); --pin-file = plik tej rewizji.
+const PIN = '86d510c66';
 const PIN_PATH = 'gra/src/ui/cityPanel.ts';
 const pinFile = argOf('--pin-file');
 const portDir = resolve(argOf('--port-dir') ?? join(FRONT, 'src/ui/cityPanel'));
@@ -84,7 +85,7 @@ export function lcsHunks(a, b) {
 const portFiles = readdirSync(portDir).filter(f => /^k09a-.*\.ts$/.test(f)).sort();
 const blocks = [];
 const problems = [];
-const markerRe = /^\/\/ pin edb8fb56 gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)\s*$/;
+const markerRe = /^\/\/ pin (?:edb8fb56|86d510c66) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)\s*$/;
 
 for (const file of portFiles) {
   const lines = readFileSync(join(portDir, file), 'utf8').split('\n');
@@ -164,7 +165,7 @@ for (const e of localExports) {
 if (GEN) {
   const out = [];
   out.push('// Wygenerowano przez: node tools/dom-harness/verify-k09a-copies.mjs --gen  (rewizja ręczna = FAIL bramki TEXT)');
-  out.push('// Hunki = różnice LCS między pinem edb8fb56 (A..B) a blokiem portu; każda zmiana względem pinu jest tu zapisana.');
+  out.push(`// Hunki = różnice LCS między pinem ${PIN} (A..B) a blokiem portu; każda zmiana względem pinu jest tu zapisana.`);
   out.push('export const K09A_HUNKS = ' + JSON.stringify(computed, null, 1) + ';');
   out.push('export const K09A_UNITS = ' + JSON.stringify(K09A_UNITS, null, 1) + ';');
   out.push('export const K09A_LOCAL_EXPORTS = ' + JSON.stringify(K09A_LOCAL_EXPORTS, null, 1) + ';');

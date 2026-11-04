@@ -64,6 +64,9 @@ const tury = (...args: any[]): any => dep('tury')(...args);
 const turnsUntilNextCitizen = (...args: any[]): any => dep('turnsUntilNextCitizen')(...args);
 const etaTurns = (...args: any[]): any => dep('etaTurns')(...args);
 const rushCost = (...args: any[]): any => dep('rushCost')(...args);
+// REPIN-UI-2-G r2 (web 86d510c66): reguły tempa/rush z macierzy cywilizacji (cityPanel.ts:630-653) → dep (silnik).
+const buildingWorkPerTurnForCity = (...args: any[]): any => dep('buildingWorkPerTurnForCity')(...args);
+const rushCostModifierForCity = (...args: any[]): any => dep('rushCostModifierForCity')(...args);
 const productionCtxForCity = (...args: any[]): any => dep('productionCtxForCity')(...args);
 const isMeCity = (...args: any[]): any => dep('isMeCity')(...args);
 const isCityUxFrameOpen = (...args: any[]): any => dep('isCityUxFrameOpen')(...args);
@@ -98,7 +101,7 @@ const buildOkolicaDetailCard = (...args: any[]): any => dep('buildOkolicaDetailC
 const buildKulturaDetailCard = (...args: any[]): any => dep('buildKulturaDetailCard')(...args);
 const buildBuildingBuildTabDetailCard = (...args: any[]): any => dep('buildBuildingBuildTabDetailCard')(...args);
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:3295-3425
+// pin 86d510c66 gra/src/ui/cityPanel.ts:3359-3489
 export function renderSpoleczenstwo(mount: HTMLElement, city: CityK07, data: GameData): void {
   const { state, fromEngine } = resolveOrderState(city, data);
   const badge = fromEngine ? '' : PH();
@@ -232,7 +235,7 @@ export function renderSpoleczenstwo(mount: HTMLElement, city: CityK07, data: Gam
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:3551-3580
+// pin 86d510c66 gra/src/ui/cityPanel.ts:3615-3644
 export function renderZdrowie(mount: HTMLElement, city: CityK07, map: GameMap, data: GameData): void {
   const { total, lines, fromEngine } = resolveCityHealth(city, map, data);
   const pos = lines.filter(l => l.value > 0);
@@ -265,7 +268,7 @@ export function renderZdrowie(mount: HTMLElement, city: CityK07, map: GameMap, d
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:3992-4110
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4056-4174
 export function renderKultura(mount: HTMLElement, city: CityK07, view: CityView | null): void {
   mount.innerHTML = '';
   const cultState = cfg.getCultureState?.(city.id) ?? undefined;
@@ -387,7 +390,7 @@ export function renderKultura(mount: HTMLElement, city: CityK07, view: CityView 
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:8429-8535
+// pin 86d510c66 gra/src/ui/cityPanel.ts:8633-8742
 export function renderProd(mount: HTMLElement, city: CityK07, view: CityView | null): void {
   mount.innerHTML = '';
   const prod = getProd(city.id);
@@ -395,6 +398,9 @@ export function renderProd(mount: HTMLElement, city: CityK07, view: CityView | n
   const data = gameData();
   const pracaSplit = view ? cityPracaSplit(city, view, data) : null;
   const pracaBud = pracaSplit?.doBudynkow ?? 0;
+  const pracaBudForEta = front?.kind === 'budynek'
+    ? buildingWorkPerTurnForCity(city, pracaBud)
+    : pracaBud;
   const player = isMeCity(city.ownerId); // AI cities -> read-only (no build/queue controls)
   const hasBuildQueue = prod.kolejka.length > 1;
   const hasRecruitQueue = (prod.rekrutacja ?? []).length > 0;
@@ -423,7 +429,7 @@ export function renderProd(mount: HTMLElement, city: CityK07, view: CityView | n
 
   if (front) {
     const paused = getProd(city.id).wstrzymana === true;
-    const e = paused ? null : etaTurns(front.koszt, prod.postep, pracaBud);
+    const e = paused ? null : etaTurns(front.koszt, prod.postep, pracaBudForEta);
     const pct = front.koszt > 0 ? Math.round(Math.min(1, prod.postep / front.koszt) * 100) : 100;
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const pauseBadge = paused
@@ -466,7 +472,7 @@ export function renderProd(mount: HTMLElement, city: CityK07, view: CityView | n
     actions.style.cssText = 'margin-top:0.35em;display:flex;gap:0.3em;flex-wrap:wrap;';
     // Wykup (rush-buy) -- only when the engine exposes treasury + a spend hook.
     if (cfg.getTreasury && cfg.onRushBuy) {
-      const koszt = rushCost(prod);
+      const koszt = rushCost(prod, rushCostModifierForCity(city));
       const skarb = cfg.getTreasury(city.ownerId);
       const stac = skarb >= koszt;
       const wykup = el('button', 'btn btn-g');
@@ -497,7 +503,7 @@ export function renderProd(mount: HTMLElement, city: CityK07, view: CityView | n
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:9306-9324
+// pin 86d510c66 gra/src/ui/cityPanel.ts:9550-9568
 export function renderBuildSplitPanel(
   mount: HTMLElement,
   city: CityK07,
@@ -519,7 +525,7 @@ export function renderBuildSplitPanel(
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10018-10152
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10265-10399
 export function renderOkolica(root: HTMLElement, city: CityK07, map: GameMap): void {
   const statsEl = root.querySelector('#cs-okstats') as HTMLElement | null;
   const gridEl = root.querySelector('#cs-okolica') as HTMLElement | null;
@@ -657,7 +663,7 @@ export function renderOkolica(root: HTMLElement, city: CityK07, map: GameMap): v
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10349-10363
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10596-10610
 export interface CityPanelUxMounts {
   top: HTMLElement;
   left: HTMLElement;
@@ -675,7 +681,7 @@ export interface CityPanelUxMounts {
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10812-10843
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11059-11090
 export function renderCityHeaderCompact(mount: HTMLElement, city: CityK07, view: CityView | null): void {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const osobRazem = cityLudnoscAbsolutna(city.population, epoch);

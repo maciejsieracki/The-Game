@@ -11,7 +11,7 @@ for (const f of files) {
   const lines = readFileSync(join(V2, 'src/ui/cityPanel', f), 'utf8').split('\n');
   let inBlock = false;
   lines.forEach((l, i) => {
-    if (l.startsWith('// pin edb8fb56')) inBlock = true;
+    if (/^\/\/ pin (?:edb8fb56|86d510c66) /.test(l)) inBlock = true; // REPIN-UI-2-G r2
     else if (l === '// pin-end') inBlock = false;
     else if (inBlock && !/^\s*(\/\/|\*|\/\*)/.test(l) && /===|!==|&&|\|\| | \+ /.test(l)) sites.push({ f, i, l });
   });

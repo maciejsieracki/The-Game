@@ -1,0 +1,424 @@
+{
+  "topic": "R-RUSTPORT-REPIN-UI-2-G-Q1",
+  "rev": "86d510c66",
+  "revFull": "86d510c667268880414d693532ca012c9310589e",
+  "note": "Pliki bloków K przepięte z pinu edb8fb56 na web 86d510c66 (P5-REPIN-UI-2 §6). Wszystkie markery pliku mają rewizję rev; liczba markerów = markers. Weryfikacja treści bloków: verify-k0*-copies.mjs / run-k01a.mjs partii z --pin-dir <WEB 86d510c66>. r2: wszystkie pliki K z markerami (K01A–K09A) przepięte; contentGates = weryfikatory treści partii uruchamiane przez npm run check (verify-repin-ui2-copies, CONTENT).",
+  "renames": {
+    "frontItemK": "frontItem",
+    "buildImprovementKeyToName": "IMPROVEMENT_KEY_TO_NAME",
+    "resolveK07aActiveCity": "resolveActiveCity",
+    "W3_STAT_RES_KEY_K07": "W3_STAT_RES_KEY",
+    "w3CityChipK07": "w3CityChip",
+    "capitalBadgeOrButtonHtmlK07": "capitalBadgeOrButtonHtml"
+  },
+  "renamesWhy": "zmiany nazw deklaracji w porcie: K01B-Z1 (typy/akcesory *K), K06A-Z6 (IIFE -> funkcja z parametrem); r2: K07A-Z1/Z4 (sufiks K07/K07a w nazwach portu, wybrane.json K07A r3: pole port≠name)",
+  "files": [
+    {
+      "path": "src/ui/cityPanel/k01a-fundament.ts",
+      "partition": "K01A",
+      "markers": 84
+    },
+    {
+      "path": "src/ui/cityPanel/k01b-t.ts",
+      "partition": "K01B",
+      "markers": 27
+    },
+    {
+      "path": "src/ui/cityPanel/k01b-r.ts",
+      "partition": "K01B",
+      "markers": 15
+    },
+    {
+      "path": "src/ui/cityPanel/k01b-f.ts",
+      "partition": "K01B",
+      "markers": 6
+    },
+    {
+      "path": "src/ui/cityPanel/k01b-dom.ts",
+      "partition": "K01B",
+      "markers": 10
+    },
+    {
+      "path": "src/ui/cityPanel/k05a-fundament.ts",
+      "partition": "K05A",
+      "markers": 28
+    },
+    {
+      "path": "src/ui/cityPanel/k06a-fundament.ts",
+      "partition": "K06A",
+      "markers": 16
+    },
+    {
+      "path": "src/ui/cityPanel/k05b-chipy.ts",
+      "partition": "K05B",
+      "markers": 4,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k05b-jednostki.ts",
+      "partition": "K05B",
+      "markers": 3,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k05b-karty.ts",
+      "partition": "K05B",
+      "markers": 8,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k05b-podzial.ts",
+      "partition": "K05B",
+      "markers": 5,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k05b-widgety.ts",
+      "partition": "K05B",
+      "markers": 3,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k06b-garnizon.ts",
+      "partition": "K06B",
+      "markers": 9,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k06b-jednostki.ts",
+      "partition": "K06B",
+      "markers": 7,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k06b-kolejki.ts",
+      "partition": "K06B",
+      "markers": 5,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k07a-fundament.ts",
+      "partition": "K07A",
+      "markers": 8,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k07b-p1.ts",
+      "partition": "K07B",
+      "markers": 8,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k07b-p2.ts",
+      "partition": "K07B",
+      "markers": 15,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08a-fundament.ts",
+      "partition": "K08A",
+      "markers": 15,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08b-owned.ts",
+      "partition": "K08B",
+      "markers": 2,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08b-purchase.ts",
+      "partition": "K08B",
+      "markers": 1,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08b-rail.ts",
+      "partition": "K08B",
+      "markers": 6,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08b-title.ts",
+      "partition": "K08B",
+      "markers": 2,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08c-podzial.ts",
+      "partition": "K08C",
+      "markers": 1,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08c-praca.ts",
+      "partition": "K08C",
+      "markers": 2,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08d-handel.ts",
+      "partition": "K08D",
+      "markers": 3,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08d-religia.ts",
+      "partition": "K08D",
+      "markers": 3,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08d-slider.ts",
+      "partition": "K08D",
+      "markers": 1,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08d-wealth-pasek.ts",
+      "partition": "K08D",
+      "markers": 2,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08d-wealth.ts",
+      "partition": "K08D",
+      "markers": 2,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08e-karty-a.ts",
+      "partition": "K08E",
+      "markers": 3,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08e-karty-b.ts",
+      "partition": "K08E",
+      "markers": 3,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08e-magazyn.ts",
+      "partition": "K08E",
+      "markers": 3,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k08e-topbar.ts",
+      "partition": "K08E",
+      "markers": 3,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k09a-paint.ts",
+      "partition": "K09A",
+      "markers": 3,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k09a-rerender.ts",
+      "partition": "K09A",
+      "markers": 3,
+      "runda": 2
+    },
+    {
+      "path": "src/ui/cityPanel/k09a-tabs.ts",
+      "partition": "K09A",
+      "markers": 3,
+      "runda": 2
+    }
+  ],
+  "pin": "edb8fb56",
+  "pinFull": "edb8fb56115e9dec0a58614dfb23ca6173d60c9a",
+  "contentGates": [
+    {
+      "id": "k01a",
+      "script": "tools/dom-harness/run-k01a.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}",
+        "--sel-pin-dir",
+        "{PIN}"
+      ]
+    },
+    {
+      "id": "k01b",
+      "script": "tools/dom-harness/verify-k01b-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}"
+      ]
+    },
+    {
+      "id": "k05a",
+      "script": "tools/dom-harness/verify-k05a-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}"
+      ]
+    },
+    {
+      "id": "k05b",
+      "script": "tools/dom-harness/verify-k05b-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}"
+      ]
+    },
+    {
+      "id": "k06a",
+      "script": "tools/dom-harness/verify-k06a-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}"
+      ]
+    },
+    {
+      "id": "k06b",
+      "script": "tools/dom-harness/verify-k06b-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}"
+      ]
+    },
+    {
+      "id": "k07a",
+      "script": "tools/dom-harness/verify-k07a-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}"
+      ]
+    },
+    {
+      "id": "k07b",
+      "script": "tools/dom-harness/verify-k07b-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}"
+      ]
+    },
+    {
+      "id": "k08a",
+      "script": "tools/dom-harness/verify-k08a-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}"
+      ]
+    },
+    {
+      "id": "k08b",
+      "script": "tools/dom-harness/verify-k08b-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}"
+      ]
+    },
+    {
+      "id": "k08c",
+      "script": "tools/dom-harness/verify-k08c-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}"
+      ]
+    },
+    {
+      "id": "k08d/handel",
+      "script": "tools/dom-harness/verify-k08d-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}",
+        "--batch",
+        "handel"
+      ]
+    },
+    {
+      "id": "k08d/slider",
+      "script": "tools/dom-harness/verify-k08d-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}",
+        "--batch",
+        "slider"
+      ]
+    },
+    {
+      "id": "k08d/religia",
+      "script": "tools/dom-harness/verify-k08d-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}",
+        "--batch",
+        "religia"
+      ]
+    },
+    {
+      "id": "k08d/wealth-pasek",
+      "script": "tools/dom-harness/verify-k08d-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}",
+        "--batch",
+        "wealth-pasek"
+      ]
+    },
+    {
+      "id": "k08d/wealth",
+      "script": "tools/dom-harness/verify-k08d-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}",
+        "--batch",
+        "wealth"
+      ]
+    },
+    {
+      "id": "k08e/magazyn",
+      "script": "tools/dom-harness/verify-k08e-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}",
+        "--batch",
+        "magazyn"
+      ]
+    },
+    {
+      "id": "k08e/karty-a",
+      "script": "tools/dom-harness/verify-k08e-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}",
+        "--batch",
+        "karty-a"
+      ]
+    },
+    {
+      "id": "k08e/karty-b",
+      "script": "tools/dom-harness/verify-k08e-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}",
+        "--batch",
+        "karty-b"
+      ]
+    },
+    {
+      "id": "k08e/topbar",
+      "script": "tools/dom-harness/verify-k08e-copies.mjs",
+      "args": [
+        "--pin-dir",
+        "{WEB}",
+        "--batch",
+        "topbar"
+      ]
+    },
+    {
+      "id": "k09a",
+      "script": "tools/dom-harness/verify-k09a-copies.mjs",
+      "args": [
+        "--pin-file",
+        "{WEB}/gra/src/ui/cityPanel.ts"
+      ]
+    }
+  ]
+}

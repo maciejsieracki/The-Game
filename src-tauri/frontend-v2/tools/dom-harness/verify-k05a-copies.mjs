@@ -20,6 +20,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { K_REV_RX, revProblem, partitionRev } from './repin-ui2g-rev.mjs';
 
 const args = process.argv.slice(2);
 const argOf = (k) => {
@@ -41,7 +42,7 @@ if (!PIN_DIR || !existsSync(join(PIN_DIR, 'gra/src'))) {
 
 /** Podstawienia udokumentowane (K05A-Z2). Każde: zakres pinu, linia pinu, linia portu. */
 const SUBST = [
-  { pin: 'gra/src/ui/cityPanel.ts', a: 9512, b: 9539, from: '  city: City,', to: '  city: CityHexRef,', why: 'K05A-Z2 DTO pozycji miasta' },
+  { pin: 'gra/src/ui/cityPanel.ts', a: 9756, b: 9783, from: '  city: City,', to: '  city: CityHexRef,', why: 'K05A-Z2 DTO pozycji miasta' },
 ];
 /** Deklaracje portu spoza pinu (K05A-Z1 kopie typów/enum, K05A-Z2 DTO). */
 const LOCAL_NAMES = new Set([
@@ -78,7 +79,8 @@ const pinCache = {};
 const pinLines = (rel) => (pinCache[rel] ??= readFileSync(join(PIN_DIR, rel), 'utf8').split(/\r?\n/));
 
 // 1. Podział na bloki (marker -> treść do następnego markera).
-const MARK = /^\/\/ pin(-adapter)? edb8fb56 (gra\/src\/[^:\s]+):(\d+)-(\d+)\s*$/;
+// R-RUSTPORT-REPIN-UI-2-G-Q1: marker wskazuje pin edb8fb56 albo web 86d510c66 (repin-ui2g-rev.mjs); --pin-dir = katalog tej rewizji.
+const MARK = new RegExp(`^\\/\\/ pin(-adapter)? ${K_REV_RX} (gra\\/src\\/[^:\\s]+):(\\d+)-(\\d+)\\s*$`);
 const blocks = [];
 const outside = []; // [lineNo, text] poza blokami
 let cur = null;
@@ -196,9 +198,11 @@ for (const n of wybrane) {
   if (!hit) findings.cover.push(`jednostka ${n} nie ma bloku z markerem`);
 }
 
+const revErr = revProblem([port.join('\n')]);
+if (revErr) findings.text.push(revErr);
 const ok = Object.values(findings).every((a) => a.length === 0);
 const summary = {
-  pin: 'edb8fb56',
+  pin: partitionRev([port.join('\n')]),
   port: PORT.split('/').slice(-3).join('/'),
   blocks: blocks.length,
   wybraneUnits: wybrane.length,

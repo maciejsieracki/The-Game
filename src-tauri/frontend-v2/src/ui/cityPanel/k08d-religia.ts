@@ -23,7 +23,7 @@ import { religiaSzPunkty, religiaXRelTop, resolveEmpireSnap } from './k08d-deps'
 
 // ─── Jednostki K08D, partia k08d-religia.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:3814-3834
+// pin 86d510c66 gra/src/ui/cityPanel.ts:3878-3898
 export function appendCompositionBlock(
   parent: HTMLElement,
   title: string,
@@ -47,7 +47,7 @@ export function appendCompositionBlock(
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:5992-6039
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6063-6110
 export function buildTopBarReligiaDetailCard(
   city: City,
   view: CityView,
@@ -91,7 +91,7 @@ export function buildTopBarReligiaDetailCard(
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4112-4220
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4176-4284
 export function renderReligia(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
   const relState = cfg.getReligionState?.(city.id) ?? null;

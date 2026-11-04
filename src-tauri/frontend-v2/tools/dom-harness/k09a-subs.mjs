@@ -1,7 +1,8 @@
 // Wygenerowano przez: node tools/dom-harness/verify-k09a-copies.mjs --gen  (rewizja ręczna = FAIL bramki TEXT)
-// Hunki = różnice LCS między pinem edb8fb56 (A..B) a blokiem portu; każda zmiana względem pinu jest tu zapisana.
+// Hunki = różnice LCS między pinem 86d510c66 (A..B) a blokiem portu; każda zmiana względem pinu jest tu zapisana.
+// R-RUSTPORT-REPIN-UI-2-G-Q1 r2: regenerowane po przepięciu na web 86d510c66; jedyna zmiana hunków = linia `pinnedGarrisonCityId !== city.id` w k09a-paint (K09B r2 0a1761d80, id miasta = number; bramka K09A była czerwona na bazie 2198eaf7e).
 export const K09A_HUNKS = {
- "k09a-paint.ts:11756-11853": [
+ "k09a-paint.ts:11997-12094": [
   {
    "pin": [
     "  if (pinnedGarrisonCityId !== null && pinnedGarrisonCityId !== city.id) {"
@@ -9,7 +10,7 @@ export const K09A_HUNKS = {
    "port": [
     "  const st = getK06aState();",
     "  // pin: `pinnedGarrisonCityId` (string) vs `city.id` (number w v2, K08D-Z10): porównanie tożsame z K06B.",
-    "  if (st.pinnedGarrisonCityId !== null && st.pinnedGarrisonCityId !== (city.id as unknown as string)) {"
+    "  if (st.pinnedGarrisonCityId !== null && st.pinnedGarrisonCityId !== city.id) {"
    ]
   },
   {
@@ -118,7 +119,7 @@ export const K09A_HUNKS = {
    ]
   }
  ],
- "k09a-paint.ts:11948-11961": [
+ "k09a-paint.ts:12189-12202": [
   {
    "pin": [
     "  if (rootEl) rootEl.style.display = 'none';",
@@ -159,7 +160,7 @@ export const K09A_HUNKS = {
    ]
   }
  ],
- "k09a-paint.ts:11964-11968": [
+ "k09a-paint.ts:12205-12209": [
   {
    "pin": [
     "  hideCityUxFrame();",
@@ -174,7 +175,7 @@ export const K09A_HUNKS = {
    ]
   }
  ],
- "k09a-rerender.ts:10209-10221": [
+ "k09a-rerender.ts:10456-10468": [
   {
    "pin": [
     "  if (activeCity === null) return;",
@@ -213,7 +214,7 @@ export const K09A_HUNKS = {
    ]
   }
  ],
- "k09a-rerender.ts:11855-11941": [
+ "k09a-rerender.ts:12096-12182": [
   {
    "pin": [
     "  if (uxSectionRefresh) {",
@@ -384,8 +385,8 @@ export const K09A_HUNKS = {
    ]
   }
  ],
- "k09a-rerender.ts:10793-10809": [],
- "k09a-tabs.ts:11595-11603": [
+ "k09a-rerender.ts:11040-11056": [],
+ "k09a-tabs.ts:11836-11844": [
   {
    "pin": [
     "  renderOkolica(mount, city, map);"
@@ -395,7 +396,7 @@ export const K09A_HUNKS = {
    ]
   }
  ],
- "k09a-tabs.ts:11668-11696": [
+ "k09a-tabs.ts:11909-11937": [
   {
    "pin": [
     "      renderBuildSplitPanel(mount, city, data, view);"
@@ -405,7 +406,7 @@ export const K09A_HUNKS = {
    ]
   }
  ],
- "k09a-tabs.ts:11698-11750": [
+ "k09a-tabs.ts:11939-11991": [
   {
    "pin": [
     "        withW4TabCard(mount, 'cs-spoleczenstwo', city, body => renderSpoleczenstwo(body, city, data));"
@@ -443,48 +444,48 @@ export const K09A_HUNKS = {
 export const K09A_UNITS = [
  {
   "name": "switchCity",
-  "a": 10209,
-  "b": 10221
+  "a": 10456,
+  "b": 10468
  },
  {
   "name": "rerender",
-  "a": 11855,
-  "b": 11941
+  "a": 12096,
+  "b": 12182
  },
  {
   "name": "renderCityIconRightRail",
-  "a": 10793,
-  "b": 10809
+  "a": 11040,
+  "b": 11056
  },
  {
   "name": "renderOkolicaPanel",
-  "a": 11595,
-  "b": 11603
+  "a": 11836,
+  "b": 11844
  },
  {
   "name": "renderLeftPanelTab",
-  "a": 11668,
-  "b": 11696
+  "a": 11909,
+  "b": 11937
  },
  {
   "name": "renderRightPanelTab",
-  "a": 11698,
-  "b": 11750
+  "a": 11939,
+  "b": 11991
  },
  {
   "name": "paintCityPanelSections",
-  "a": 11756,
-  "b": 11853
+  "a": 11997,
+  "b": 12094
  },
  {
   "name": "showCityPanel",
-  "a": 11948,
-  "b": 11961
+  "a": 12189,
+  "b": 12202
  },
  {
   "name": "hideCityPanel",
-  "a": 11964,
-  "b": 11968
+  "a": 12205,
+  "b": 12209
  }
 ];
 export const K09A_LOCAL_EXPORTS = [

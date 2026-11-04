@@ -281,7 +281,8 @@ export function appendWealthCompactStripK(
   attachHover(wrap, () => buildWealthCompactTooltipCardK(opts), 220, 'left');
 }
 
-/** Pin :5652-5682 `buildTopBarRekruciDetailCard` (parametr `city` pina nieuzywany — usuniety, K03 API). */
+/** Pin :5652-5682 `buildTopBarRekruciDetailCard` (parametr `city` pina nieuzywany — usuniety, K03 API).
+ * REPIN-UI-2-G r2: tekst algorytmu = web 86d510c66 :5723-5753 (modyfikator regeneracji z macierzy cywilizacji). */
 export function buildTopBarRekruciDetailCardK(mp: {
   manpowerBiezacy: number; manpowerMax: number; regenPerTurn: number; kosztJednostki: number;
   werbMaxPrzyPelnejPuli: number; ludnoscAbsolutna: number; ludki: number; epoka: number;
@@ -308,14 +309,15 @@ export function buildTopBarRekruciDetailCardK(mp: {
 
   appendDetailAlgo(card, 'Skąd bierze się pula', [
     'Max ≈ 10% ludności absolutnej miasta (tabela epok).',
-    'Regen = % max (parametr balansu, patrz "Odnowa" wyżej) × bonus cywilizacji (np. Rzym ×2).',
+    'Regen = % max (parametr balansu, patrz "Odnowa" wyżej) × modyfikator regeneracji z macierzy cywilizacji.',
     'Oblężenie blokuje odnowę do czasu zdjęcia oblężenia.',
   ]);
   return card;
 }
 
-/** Pin :732-792 `bindRecruitQueueDragReorder`. Kolejka przez `getProd`/`setProd` (lokalny cache K03-Z7). */
-export function bindRecruitQueueDragReorderK(sc: HTMLElement, cityId: string, rerender: () => void): void {
+/** Pin :732-792 `bindRecruitQueueDragReorder`. Kolejka przez `getProd`/`setProd` (lokalny cache K03-Z7).
+ * REPIN-UI-2-G r2: web 86d510c66 :775-835 — 3. parametr pinu `onMutated?` (odświeżenie widoku spoza panelu, ff6ac152c) wołany po `rerender()`. */
+export function bindRecruitQueueDragReorderK(sc: HTMLElement, cityId: string, rerender: () => void, onMutated?: () => void): void {
   let dragFromIndex: number | null = null;
 
   const clearDropMarks = (): void => {
@@ -374,10 +376,13 @@ export function bindRecruitQueueDragReorderK(sc: HTMLElement, cityId: string, re
     dragFromIndex = null;
     clearDropMarks();
     rerender();
+    onMutated?.();
   });
 }
 
-/** Pin :10845-11005 `buildHandelDetailCard` — wszystkie bramki i liczby z `HandelDetailInputK` (silnik). */
+/** Pin :10845-11005 `buildHandelDetailCard` — wszystkie bramki i liczby z `HandelDetailInputK` (silnik).
+ * REPIN-UI-2-G r2: teksty formuł/algorytmu = web 86d510c66 :11092-11246 (Targowisko → szlaki osobno, Mennica mnoży lokalny
+ * podatek, Wealth omija szlaki). `mennicaMnoznikTxt` dalej z wejścia silnika (web: płaski `params.mennicaMnoznikPoWalucie` — P6). */
 export function buildHandelDetailCardK(view: CityView | null, input: HandelDetailInputK): HTMLDivElement {
   const { daninaLbl, daninaLblGen, daninaLblAcc, split } = input;
   const { maTargowisko, maBiblioteka, maMennicaBudynek, mennicaAktywna, mennicaSpiZBrakuZlota, mennicaMnoznikTxt, aktywneTrasyCount, premiaTrasHandlowych } = input;
@@ -437,8 +442,8 @@ export function buildHandelDetailCardK(view: CityView | null, input: HandelDetai
   }
 
   appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól`
-    + (maTargowisko ? ' × (1 + bonus Targowiska)' : '')
     + (aktywneTrasyCount > 0 ? ' + premia tras handlowych (z budynkiem)' : ''));
+  if (maTargowisko) appendDetailFormula(card, 'Targowisko: premia procentowa zwiększa dochód ze szlaków; te wpływy trafiają do skarbca osobno, poza podatkiem miejskim.');
   appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (dziś: stały %)`);
   appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (
     mennicaAktywna
@@ -453,15 +458,15 @@ export function buildHandelDetailCardK(view: CityView | null, input: HandelDetai
 
   appendDetailAlgo(card, `Algorytm podziału ${daninaLblGen} (cityYieldPerTurn)`, [
     `Zbierz ${daninaLblAcc} ze wszystkich obrabianych pól + centrum miasta.`,
-    maTargowisko ? 'Targowisko zwiększa handelBrutto o bonus procentowy.' : 'Bez Targowiska — tylko plony z terenu.',
+    maTargowisko ? 'Targowisko zwiększa dochód ze szlaków; przychód ten trafia w całości do skarbca poza podatkiem miejskim.' : 'Bez Targowiska — szlaki nie otrzymują premii Targowiska.',
     aktywneTrasyCount > 0
       ? `Trasy handlowe z budynkiem: +${Math.round(premiaTrasHandlowych)} do handelBrutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
       : 'Bez aktywnych tras handlowych z budynkiem — brak premii do handelBrutto.',
     `Odejmij korupcję (dziś: stały ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
-    'Waluta + Mennica RAZEM (decyzja 2026-07-25) mnożą całe handelNetto — Skarb, Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ' równocześnie. Sam tech Waluty już NIE wystarcza.',
+    `Jeśli bramka Mennica + Waluta + dostęp do Złota jest aktywna, po korupcji mnożnik ${mennicaMnoznikTxt} zwiększa lokalny podatek miejski przed podziałem suwakami; szlaki handlowe są rozliczane osobno i nie podlegają temu mnożnikowi.`,
     `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
     mennicaAktywna
-      ? `Mennica + Waluta razem mnożą całe ${daninaLbl} netto ${mennicaMnoznikTxt} (Skarb, Nauka i ${HANDEL_ZAMOZNOSC_LABEL} rosną razem).`
+      ? `Mennica + Waluta mnożą lokalny podatek ${daninaLbl} ${mennicaMnoznikTxt} przed podziałem suwakami; wpływy ze szlaków pozostają osobne.`
       : mennicaSpiZBrakuZlota
         ? `Mennica zbudowana i Waluta odkryta, ale mnożnik ŚPI: brak Złota w magazynie państwa — wraca sam po uzupełnieniu zapasu.`
         : maMennicaBudynek
@@ -469,7 +474,7 @@ export function buildHandelDetailCardK(view: CityView | null, input: HandelDetai
           : `Bez Mennicy — ${daninaLbl} netto bez mnożnika, niezależnie od tego czy Waluta jest odkryta.`,
     maBiblioteka ? `Biblioteka dodaje % bonusu do Nauki (łącznie z Nauką z ${daninaLblGen}).` : `Nauka = wyłącznie udział z ${daninaLblGen} + budynki.`,
     `${HANDEL_ZAMOZNOSC_LABEL} nie trafia do skarbca — idzie do puli zamożności miasta.`,
-    'Na końcu: mnożnik W mnoży cały pieniądz miasta (Skarb + budynki + Targowisko).',
+    'Wealth mnoży pieniądz z lokalnego podatku po podziale. Dochód ze szlaków trafia osobno do skarbca i omija Wealth.',
   ]);
 
   appendDetailAlgo(card, 'Suwak UI (adjustHandelSplit)', [
@@ -493,8 +498,9 @@ export function buildHandelDetailCardK(view: CityView | null, input: HandelDetai
  * Jednostki pinu swiadomie USUNIETE z architektury v2 (ZALOZENIE K03-Z4, nie portowane):
  * - `configureCityPanel` (pin :612) — hook `cfg` znika; wejscia przychodza jako argument `CityPanelDto`.
  * - `gameData` (pin :626) — ladowanie danych gry po stronie panelu znika; dane (katalogi) z `staticCatalog`/DTO.
+ * REPIN-UI-2-G r2: `line` = web 86d510c66 (:655, :669); pin edb8fb56 w nawiasie opisu.
  */
 export const K03_RETIRED: readonly { pin: string; line: number; powod: string }[] = [
-  { pin: 'configureCityPanel', line: 612, powod: 'K03-Z4: hook cfg znika, wejscia z CityPanelDto' },
-  { pin: 'gameData', line: 626, powod: 'K03-Z4: brak lokalnego ladowania danych gry w panelu' },
+  { pin: 'configureCityPanel', line: 655, powod: 'K03-Z4: hook cfg znika, wejscia z CityPanelDto (pin edb8fb56 :612)' },
+  { pin: 'gameData', line: 669, powod: 'K03-Z4: brak lokalnego ladowania danych gry w panelu (pin edb8fb56 :626)' },
 ];

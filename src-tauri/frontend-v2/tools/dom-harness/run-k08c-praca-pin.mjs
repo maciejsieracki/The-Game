@@ -51,19 +51,20 @@ const check = (id, pin, got, want) => {
 
 /** Zakresy pinu wykonywane verbatim: [nazwa, a, b, kotwica startu, koniec (linia b)]. */
 const PIN_RANGES = [
-  ['buildPracaDetailCard', 4946, 5018, 'function buildPracaDetailCard(', '}'],
-  ['buildTopBarPracaDetailCard', 5770, 5822, 'function buildTopBarPracaDetailCard(', '}'],
+  ['buildPracaDetailCard', 5011, 5083, 'function buildPracaDetailCard(', '}'],
+  ['buildTopBarPracaDetailCard', 5841, 5893, 'function buildTopBarPracaDetailCard(', '}'],
 ];
 /** PIN-ANCHOR: literały, które muszą występować w cytowanych liniach pinu (sprawdza, że wycięto właściwe kody). */
 const PIN_ANCHORS = [
-  [4951, 'const pctCfg = readPodzialPracy(city, data);'],
-  [4952, 'const praca = view ? cityPracaSplit(city, view, data) : null;'],
-  [4958, "head.innerHTML = '<span>Lokalny przyrost Pracy — ściąga</span>';"],
-  [4999, "appendDetailAlgo(card, 'Algorytm (splitPraca + productionProgress)', ["],
-  [5006, "? 'Część pracy (doPuli) + Waluta + Targowisko → dodatkowy pieniądz (osobny strumień).'"],
-  [5007, ": 'Bez Targowiska doPuli nie konwertuje się na pieniądz.',"],
-  [5777, 'const pracaSplit = cityPracaSplit(city, view, data);'],
-  [5816, "appendDetailAlgo(card, 'Gdzie zarządzać', ["],
+  [5016, 'const pctCfg = readPodzialPracy(city, data);'],
+  [5017, 'const praca = view ? cityPracaSplit(city, view, data) : null;'],
+  [5023, "head.innerHTML = '<span>Lokalny przyrost Pracy — ściąga</span>';"],
+  [5064, "appendDetailAlgo(card, 'Algorytm (splitPraca + productionProgress)', ["],
+  // REPIN-UI-2-G r2: web 86d510c66 zmienił teksty algorytmu Targowiska (pin edb8fb56 :5006-5007, R-WEB-LABOR-TO-TAX-CONVERSION-NO-GOLD-Q1).
+  [5071, "? 'Targowisko odblokowuje ręczną konwersję wybranej części puli Pracy imperium na podatek; to nie jest stały dochód miasta.'"],
+  [5072, ": 'Bez Targowiska ręczna konwersja puli Pracy imperium na podatek jest niedostępna.',"],
+  [5848, 'const pracaSplit = cityPracaSplit(city, view, data);'],
+  [5887, "appendDetailAlgo(card, 'Gdzie zarządzać', ["],
 ];
 
 let exitCode = 0;
@@ -92,7 +93,7 @@ try {
       `import { cfg } from ${JSON.stringify(join(V2_ROOT, 'src/ui/cityPanel/k05b-host.ts'))};`,
       `import { PULA_LBL_PELNA, PULA_TIP } from ${JSON.stringify(join(V2_ROOT, 'src/ui/cityPanel/k01b-t.ts'))};`,
       `import { cityPracaSplit, computeView, procentPuliImperiumZBudynkow, readPodzialPracy } from ${JSON.stringify(join(V2_ROOT, 'src/ui/cityPanel/k08c-deps.ts'))};`,
-      '// --- verbatim pin edb8fb56 gra/src/ui/cityPanel.ts (zakresy: 4946-5018, 5770-5822) ---',
+      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 5011-5083, 5841-5893) ---',
       ...pinExecText,
       '// --- koniec verbatim ---',
       'export { buildPracaDetailCard, buildTopBarPracaDetailCard };',
@@ -222,10 +223,10 @@ try {
   // Kotwice treści (wykonane): tekst, który musi być w karcie pinu.
   mod.cfgObj.getBuiltBuildingIds = () => ['targowisko'];
   const tg = mod.pinBuildPracaDetailCard(city, view, data).outerHTML;
-  check('exec.anchor.targowisko', 'algorytm z Targowiskiem (pin: "Część pracy")', tg.includes('Część pracy (doPuli)'), true);
+  check('exec.anchor.targowisko', 'algorytm z Targowiskiem (web: "ręczną konwersję")', tg.includes('Targowisko odblokowuje ręczną konwersję'), true);
   mod.cfgObj.getBuiltBuildingIds = () => [];
   const nt = mod.pinBuildPracaDetailCard(city, view, data).outerHTML;
-  check('exec.anchor.noTargowisko', 'algorytm bez Targowiska (pin: "Bez Targowiska")', nt.includes('Bez Targowiska doPuli'), true);
+  check('exec.anchor.noTargowisko', 'algorytm bez Targowiska (web: "Bez Targowiska ręczna")', nt.includes('Bez Targowiska ręczna konwersja'), true);
   const sc = mod.pinBuildTop(city, view, empire, map, data).outerHTML;
   check('exec.anchor.sumCities', 'suma miast z dwóch grodów (rywal praca 25 → +25)', sc.includes('+25'), true);
   check('exec.anchor.split', 'podział z atrapy silnika: doBudynkow=round(40*0.6)=24', tg.includes('+24'), true);

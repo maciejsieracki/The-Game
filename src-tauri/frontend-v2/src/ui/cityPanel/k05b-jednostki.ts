@@ -27,7 +27,7 @@ import {
   formatResourceUpkeepSummary,
 } from './k05b-host';
 import type { BuildingDef, City, GameData, UnitDef } from './k05b-host';
-// pin edb8fb56 gra/src/ui/cityPanel.ts:8979-9030
+// pin 86d510c66 gra/src/ui/cityPanel.ts:9218-9269
 export function buildUpgradeBonusDetailCard(
   def: BuildingDef,
   data: GameData,
@@ -81,7 +81,7 @@ export function buildUpgradeBonusDetailCard(
   return card;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7895-7974
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7970-8049
 /** Stara implementacja (DOM-builder własny) — zachowana pod prywatną nazwą jako fallback
  * (wzorem `_legacyBuildBuildingDetailCard`/`_legacyBuildUnitInfoCard`). ZERO zmian treści. */
 export function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement {
@@ -163,12 +163,13 @@ export function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivE
   return card;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:8861-8889
+// pin 86d510c66 gra/src/ui/cityPanel.ts:9087-9117
 export function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number | undefined): HTMLDivElement {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const mpSnap = cfg.getManpowerSnapshot?.(city.id);
-  const maxMult = civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
-  const mpCostStd = unitManpowerCost(epoch, maxMult);
+  const multipliers = cfg.getManpowerMultipliers?.(city.ownerId);
+  const maxMult = multipliers?.maxMult ?? civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
+  const mpCostStd = unitManpowerCost(epoch, multipliers?.costMult ?? maxMult);
 
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Rekrutacja — szczegóły</span>'));
@@ -185,6 +186,7 @@ export function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: 
   gridDetailRow(g, 'Skarb imperium', skarb != null ? `${skarb} 💰` : '—');
   if (mpSnap) {
     gridDetailRow(g, 'Rekruci (pula miasta)', `${formatManpower(mpSnap.manpowerBiezacy)} / ${formatManpower(mpSnap.manpowerMax)}`);
+    gridDetailRow(g, 'Odnowa rekrutów (miasto / turę)', `+${formatManpower(mpSnap.regenPerTurn)}`);
     gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpSnap.kosztJednostki)} · epoka ${mpSnap.epoka}`);
   } else {
     gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpCostStd)} · epoka ${epoch}`);

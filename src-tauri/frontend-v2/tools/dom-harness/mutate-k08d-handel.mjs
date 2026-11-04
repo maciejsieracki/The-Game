@@ -40,7 +40,8 @@ const MUTATIONS = [
   ['handel', "if (ids.includes('mennica')) return true;", "if (ids.includes('mennica_x')) return true;", 'ownerHasMennica: inny id budynku'],
   ['handel', "if (route.status !== 'polaczony') continue;", "if (route.status !== 'x') continue;", 'activeTradeRouteCountForCity: status trasy'],
   ['handel', "if (!route.budynekOdblokowany) continue;", 'if (false) continue;', 'activeTradeRouteCountForCity: pomija warunek budynku'],
-  ['handel', 'Bez Targowiska — tylko plony z terenu.', 'Bez Targowiska — inny tekst.', 'buildHandelDetailCard: tekst algorytmu'],
+  // REPIN-UI-2-G r2: teksty/pola webu 86d510c66 (pin edb8fb56: 'Bez Targowiska — tylko plony z terenu.', cfg.getCivKey, cfg.data.civs — usunięte w webie).
+  ['handel', 'Bez Targowiska — szlaki nie otrzymują premii Targowiska.', 'Bez Targowiska — inny tekst.', 'buildHandelDetailCard: tekst algorytmu'],
   ['slider', "label: 'Pieniądz'", "label: 'Pieniadz'", 'renderHandelSlidersPanel: etykieta chipu'],
   ['deps', "=> 'podatek';", "=> 'podatki';", 'daninaLabelAccusative: stała (kotwica pinu)'],
 ];
@@ -51,13 +52,12 @@ const MUTATIONS = [
  * argumentowo-czułymi atrapami). Każda mutacja zmienia JEDNO odczytywane pole/klucz.
  */
 const FIELD_MUTATIONS = [
-  ['handel', 'cfg.getCivKey?.(city.ownerId)', 'cfg.getCivKey?.(city.id)', 'cfg.getCivKey: zły klucz (ownerId -> id miasta)'],
+  ['handel', 'const mennicaMnoznikTxt = params ? `×${params.mennicaMnoznikPoWalucie}`', 'const mennicaMnoznikTxt = params ? `×${params.korupcjaCap}`', 'params.mennicaMnoznikPoWalucie: pole zamienione (web: płaski mnożnik)'],
   ['handel', 'const gateMennica = mennicaGate(city.ownerId);', 'const gateMennica = mennicaGate(city.id);', 'mennicaGate: zły klucz (ownerId -> id miasta), K08D-Z11'],
   ['handel', 'const mennicaAktywna = gateMennica.mennicaAktywna;', 'const mennicaAktywna = gateMennica.mennicaSpiZBrakuZlota;', 'mennicaGate: pole mennicaAktywna zamienione na mennicaSpiZBrakuZlota'],
   ['handel', 'const mennicaSpiZBrakuZlota = gateMennica.mennicaSpiZBrakuZlota;', 'const mennicaSpiZBrakuZlota = gateMennica.mennicaAktywna;', 'mennicaGate: pole mennicaSpiZBrakuZlota zamienione na mennicaAktywna'],
   ['handel', 'const maMennicaBudynek = gateMennica.maMennicaBudynek;', 'const maMennicaBudynek = false;', 'mennicaGate: pole maMennicaBudynek pominięte (stała false)'],
   ['deps', "depK08d('mennicaGate')(ownerId)", "depK08d('mennicaGate')(ownerId + 1)", 'mennicaGate (k08d-deps): przesunięty ownerId w delegacie'],
-  ['handel', 'cfg.data?.civs, cfg.difficulty', 'undefined, cfg.difficulty', 'cfg.data.civs: pole pominięte'],
   ['handel', "buildEconParams(data, cfg.difficulty ?? 'normal')", "buildEconParams(data, 'easy')", 'cfg.difficulty: pole zastąpione stałą'],
   ['handel', 'if (route.fromCityId === city.id || route.toCityId === city.id) n++;', 'if (route.fromCityId === city.id) n++;', 'TradeRouteK05bDto.toCityId: pominięte w liczniku'],
   ['handel', 'computeTradeRouteBuildingBonusByCity(cfg.getTradeRoutes?.() ?? []).get(city.id)', 'computeTradeRouteBuildingBonusByCity(cfg.getTradeRoutes?.() ?? []).get(city.ownerId)', 'premia: zły klucz mapy'],

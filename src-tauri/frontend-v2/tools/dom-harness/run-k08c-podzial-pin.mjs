@@ -3,7 +3,7 @@
  * run-k08c-podzial-pin.mjs — harness WYKONUJĄCY `renderPodzialPracy` pinu `edb8fb56` (partia `podzial` K08C, runda 2)
  * względem portu `src/ui/cityPanel/k08c-podzial.ts`, po wiringu K08C (`controller/k08cWiring.ts`).
  *
- * PIN-EXEC (verbatim): pin `gra/src/ui/cityPanel.ts:5112-5188` `renderPodzialPracy`. Zależności obu wersji identyczne
+ * PIN-EXEC (verbatim): pin `gra/src/ui/cityPanel.ts:5183-5259` `renderPodzialPracy`. Zależności obu wersji identyczne
  * (te same importy portu w tej samej liście co nagłówek partii; `appendPodzialPracyInfo` = port K06B; `buildPracaDetailCard`
  * = port K08C-praca). Różnica testowana = ciało funkcji (wrapper). Scenariusze: brak wywołania zwrotnego, gracz bez/z
  * widokiem, rywal (podgląd), przełącznik „Indywidualne", podział z zapisu/hooka.
@@ -41,17 +41,17 @@ const check = (id, pin, ok) => results.push({ id, pin, ok: ok === true });
 let exitCode = 0;
 try {
   // ─── zakres pinu i kotwice ───────────────────────────────────────────────────────────────────────────────────────
-  const A = 5112;
-  const B = 5188;
+  const A = 5183; // REPIN-UI-2-G r2: web 86d510c66 (pin edb8fb56: 5112)
+  const B = 5259; // REPIN-UI-2-G r2: web 86d510c66 (pin edb8fb56: 5188)
   const okStart = PIN_LINES[A - 1]?.includes('function renderPodzialPracy(') ?? false;
   const okEnd = PIN_LINES[B - 1] === '}';
   check('pin.range.renderPodzialPracy', `cityPanel.ts:${A}-${B}`, okStart && okEnd);
   if (!okStart || !okEnd) throw new Error(`zakres renderPodzialPracy ${A}-${B} nie pasuje do pinu`);
   const pinText = PIN_LINES.slice(A - 1, B);
   const ANCHORS = [
-    [5118, 'if (!cfg.onPodzialPracyChange) return;'],
-    [5163, "inp.setAttribute('aria-label', 'Podział przyrostu Pracy tego miasta: budynki versus ulepszenia (pula imperium)');"],
-    [5187, 'appendPodzialPracyInfo(mount, city, view, data);'],
+    [5189, 'if (!cfg.onPodzialPracyChange) return;'],
+    [5234, "inp.setAttribute('aria-label', 'Podział przyrostu Pracy tego miasta: budynki versus ulepszenia (pula imperium)');"],
+    [5258, 'appendPodzialPracyInfo(mount, city, view, data);'],
   ];
   ANCHORS.forEach(([line, lit], i) => check(`pin.anchor.${i + 1}`, `cityPanel.ts:${line} ${lit}`,
     PIN_LINES[line - 1]?.includes(lit) ?? false));
@@ -78,7 +78,7 @@ try {
     `  MAX_PODZIAL_PRACY_BUDYNKI_PERCENT, MAX_PROCENT_PULI_IMPERIUM, MIN_PODZIAL_PRACY_BUDYNKI_PERCENT,`,
     `  cityPracaSplit, clampPodzialPracyBudynkiPercent, procentPuliImperiumZBudynkow, readPodzialPracy,`,
     `} from ${P('k08c-deps.ts')};`,
-    '// --- verbatim pin edb8fb56 gra/src/ui/cityPanel.ts:5112-5188 ---',
+    '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts:5183-5259 ---',
     ...pinText,
     '// --- koniec verbatim ---',
     'export { renderPodzialPracy };',

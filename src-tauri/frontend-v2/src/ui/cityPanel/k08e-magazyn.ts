@@ -35,7 +35,7 @@ import {
 
 // ─── Jednostki K08E, partia k08e-magazyn.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1598-1635
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1652-1689
 export function buildGrowthProgressTooltipCard(
   population: number,
   view: CityView,
@@ -76,7 +76,7 @@ export function buildGrowthProgressTooltipCard(
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:5203-5472
+// pin 86d510c66 gra/src/ui/cityPanel.ts:5274-5543
 export function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): void {
   mount.innerHTML = '';
   mount.style.display = '';
@@ -349,7 +349,7 @@ export function renderMagazyn(mount: HTMLElement, city: City, view: CityView | n
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:5474-5579
+// pin 86d510c66 gra/src/ui/cityPanel.ts:5545-5650
 export function buildRacjeWzrostDetailCard(
   city: City,
   view: CityView,

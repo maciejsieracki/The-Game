@@ -6,6 +6,9 @@
  * Użycie (z katalogu `src-tauri/frontend-v2/`):
  *   git archive edb8fb56 gra/src gra/data | tar -x -C <PIN_DIR>
  *   node tools/dom-harness/run-k01a.mjs --pin-dir <PIN_DIR> [--v2 <plik>] [--pomiar <pomiar-r2.json>] [--json <plik>]
+ *   R-RUSTPORT-REPIN-UI-2-G-Q1: gdy markery portu wskazują web `86d510c66`, `--pin-dir` = katalog webu (odniesienie A/T/I/D/F),
+ *   a `--sel-pin-dir` = katalog pinu `edb8fb56` (wybór S z pomiaru pinu); zakresy wyboru i typów lokalnych są przenoszone
+ *   pin→web mapą Myersa (`repin-ui2g-rev.mjs` `rangeMapper`).
  *
  * Bramki (EXIT 0 ⇔ A, B, C, D, E, F, S, T, I, V zielone):
  *   A  tekst: każdy blok `// pin edb8fb56 …:A-B` jest równy liniom A..B pinu po usunięciu `export ` z początku linii
@@ -35,7 +38,8 @@ import { createHash } from 'node:crypto';
 import { join, resolve, dirname, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { bundle } from './build.mjs';
-import { selectK01a, loadPomiar, LOCAL_TYPE_COPIES, PIN_ID, K01_BLOCK, parseImports, DOM_TOKENS } from './k01a-select-lib.mjs';
+import { selectK01a, loadPomiar, LOCAL_TYPE_COPIES as LOCAL_TYPE_COPIES_PIN, PIN_ID as PIN_ID_SEL, K01_BLOCK, parseImports, DOM_TOKENS } from './k01a-select-lib.mjs';
+import { K_REV_RX, K_REV_WEB, partitionRev, rangeMapper } from './repin-ui2g-rev.mjs';
 
 const args = process.argv.slice(2);
 const argOf = (k) => {
@@ -43,6 +47,8 @@ const argOf = (k) => {
   return i >= 0 ? args[i + 1] : undefined;
 };
 const PIN_DIR = argOf('--pin-dir');
+/** Katalog pinu `edb8fb56` dla wyboru S (pomiar jest liczony na pinie); domyślnie = `--pin-dir`. */
+const SEL_DIR = argOf('--sel-pin-dir') ?? PIN_DIR;
 const V2_FILE = resolve(argOf('--v2') ?? fileURLToPath(new URL('../../src/ui/cityPanel/k01a-fundament.ts', import.meta.url)));
 const JSON_OUT = argOf('--json');
 const POMIAR = resolve(
@@ -91,12 +97,28 @@ function findFile(dir, base) {
 }
 
 const gates = { A: null, B: null, C: null, S: null, T: null, I: null, V: null, E: null, F: null };
-const report = { pin: PIN_ID, v2: relative(V2_SRC, V2_FILE), gates, details: {} };
 const log = (...a) => console.log(...a);
 
 // ─── A, B: bloki i eksporty ─────────────────────────────────────────────────
-const MARK = new RegExp(`^// pin ${PIN_ID} gra/src/ui/cityPanel\\.ts:(\\d+)-(\\d+)\\s*$`);
+const MARK = new RegExp(`^// pin ${K_REV_RX} gra/src/ui/cityPanel\\.ts:(\\d+)-(\\d+)\\s*$`);
 const v2Lines = readFileSync(V2_FILE, 'utf8').split(/\r?\n/);
+/** Rewizja markerów portu (pin albo web po repinie UI-2-G); odniesienie = `--pin-dir`. */
+const PIN_ID = partitionRev([v2Lines.join('\n')]);
+const REPINNED = PIN_ID === K_REV_WEB;
+if (REPINNED && SEL_DIR === PIN_DIR) {
+  console.error('run-k01a: markery 86d510c66 — wymagane --sel-pin-dir <katalog pinu edb8fb56> (wybór S z pomiaru pinu)');
+  process.exit(2);
+}
+const cpMap = REPINNED
+  ? rangeMapper(readFileSync(join(SEL_DIR, 'gra/src/ui/cityPanel.ts'), 'utf8').split(/\r?\n/), readFileSync(PIN_CP, 'utf8').split(/\r?\n/))
+  : null;
+const LOCAL_TYPE_COPIES = LOCAL_TYPE_COPIES_PIN.map((tc) => {
+  if (!REPINNED) return tc;
+  const m = rangeMapper(readFileSync(join(SEL_DIR, tc.pin), 'utf8').split(/\r?\n/), readFileSync(join(PIN_DIR, tc.pin), 'utf8').split(/\r?\n/));
+  const [a, b] = m.mapRange(tc.a, tc.b);
+  return { ...tc, a, b };
+});
+const report = { pin: PIN_ID, v2: relative(V2_SRC, V2_FILE), gates, details: {} };
 const pinLines = readFileSync(PIN_CP, 'utf8').split(/\r?\n/);
 const header = [];
 const blocks = [];
@@ -172,7 +194,13 @@ report.details.C = { domHits: domHits.slice(0, 10), domHitCount: domHits.length,
 
 // ─── S: wybór jednostek (deterministyczny skrypt) ───────────────────────────
 const pomiar = loadPomiar(POMIAR);
-const sel = selectK01a({ pinDir: PIN_DIR, pomiar });
+const sel = selectK01a({ pinDir: SEL_DIR, pomiar });
+if (sel.pin !== PIN_ID_SEL) throw new Error('k01a-select-lib: nieoczekiwany pin wyboru');
+// Repin UI-2-G: zakresy wyboru (pin) → web; nagłówek (importy) = linie przed obrazem pierwszej linii po nagłówku pinu.
+if (cpMap) {
+  for (const u of sel.selected) [u.a, u.b] = cpMap.mapRange(u.a, u.b);
+  sel.headerLines = (cpMap.mapLine(sel.headerLines + 1) ?? cpMap.mapRange(sel.headerLines + 1, sel.headerLines + 1)[0]) - 1;
+}
 const selRanges = sel.selected.map((u) => `${u.a}-${u.b}`);
 const blkRanges = blocks.map((b) => `${b.a}-${b.b}`);
 const sameSel = selRanges.length === blkRanges.length && selRanges.every((r, i) => r === blkRanges[i]);

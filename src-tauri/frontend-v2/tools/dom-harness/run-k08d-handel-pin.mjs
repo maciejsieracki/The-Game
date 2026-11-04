@@ -49,19 +49,19 @@ const check = (id, pin, got, want) => {
 
 /** Zakresy pinu wykonywane verbatim: [nazwa, a, b, kotwica startu, koniec]. */
 const PIN_RANGES = [
-  ['ownerHasMennica', 1322, 1330, 'function ownerHasMennica(', '}'],
-  ['activeTradeRouteCountForCity', 11045, 11054, 'function activeTradeRouteCountForCity(', '}'],
-  ['buildHandelDetailCard', 10845, 11005, 'function buildHandelDetailCard(', '}'],
-  ['renderHandelSlidersPanel', 11007, 11033, 'function renderHandelSlidersPanel(', '}'],
+  ['ownerHasMennica', 1376, 1384, 'function ownerHasMennica(', '}'],
+  ['activeTradeRouteCountForCity', 11286, 11295, 'function activeTradeRouteCountForCity(', '}'],
+  ['buildHandelDetailCard', 11092, 11246, 'function buildHandelDetailCard(', '}'],
+  ['renderHandelSlidersPanel', 11248, 11274, 'function renderHandelSlidersPanel(', '}'],
 ];
 /** PIN-ANCHOR: literały, które muszą występować w cytowanych liniach pinu. */
 const PIN_ANCHORS = [
-  [1327, "if (ids.includes('mennica')) return true;"],
-  [11049, "if (route.status !== 'polaczony') continue;"],
-  [10861, 'const maMennicaBudynek = ownerHasMennica(city.ownerId);'],
-  [10897, 'const aktywneTrasyCount = activeTradeRouteCountForCity(city);'],
-  [10914, 'dziś to stały procent'],
-  [11010, "appendSectionTitleWithDetails(mount, `<span>Podział ${daninaLabelGenitive(daninaLbl)}</span>`, () => buildHandelDetailCard(city, view, data));"],
+  [1381, "if (ids.includes('mennica')) return true;"],
+  [11290, "if (route.status !== 'polaczony') continue;"],
+  [11108, 'const maMennicaBudynek = ownerHasMennica(city.ownerId);'],
+  [11138, 'const aktywneTrasyCount = activeTradeRouteCountForCity(city);'],
+  [11155, 'dziś to stały procent'],
+  [11251, "appendSectionTitleWithDetails(mount, `<span>Podział ${daninaLabelGenitive(daninaLbl)}</span>`, () => buildHandelDetailCard(city, view, data));"],
 ];
 
 let exitCode = 0;
@@ -94,7 +94,7 @@ try {
       `import { cfg, daninaLabelForCity, daninaLabelGenitive, readPodzialHandlu } from ${P('k05b-host.ts')};`,
       `import { buildEconParams, cityHasBibliotekaLine, computeTradeRouteBuildingBonusByCity, daninaLabelAccusative, mnoznikHandelPieniadzForCivByDifficulty } from ${P('k08d-deps.ts')};`,
       `import { resourceTextClass } from ${JSON.stringify(join(V2_ROOT, 'src/ui/resourceColors.ts'))};`,
-      '// --- verbatim pin edb8fb56 gra/src/ui/cityPanel.ts (zakresy: 1322-1330, 11045-11054, 10845-11005, 11007-11033) ---',
+      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 1376-1384, 11286-11295, 11092-11246, 11248-11274) ---',
       ...pinExecText,
       '// --- koniec verbatim ---',
       'export { ownerHasMennica, activeTradeRouteCountForCity, buildHandelDetailCard, renderHandelSlidersPanel };',
@@ -310,7 +310,8 @@ try {
   mod.cfgObj.getUnlockedTechs = () => ['Waluta'];
   mod.cfgObj.getTradeRoutes = () => [route];
   const act = mod.pin.buildHandelDetailCard(city, view, data).outerHTML;
-  check('exec.anchor.mennicaMnoznik', 'mnożnik Waluty+Mennicy ×3 (fallback 2 z atrapy buildEconParams + 1 z atrapy mnożnika)', act.includes('×3'), true);
+  // REPIN-UI-2-G r2: web 86d510c66 pokazuje PŁASKI params.mennicaMnoznikPoWalucie (usunięty mnożnik cywilizacyjny Pytanie 69) → ×2 z atrapy buildEconParams.
+  check('exec.anchor.mennicaMnoznik', 'mnożnik Waluty+Mennicy ×2 (web: params.mennicaMnoznikPoWalucie z atrapy buildEconParams)', act.includes('×2') && !act.includes('×3'), true);
   check('exec.anchor.premia', 'premia tras +12 (1 z budynkiem)', act.includes('+12 Handlu (1 z budynkiem)'), true);
   mod.cfgObj.getOwnerHasZlotoAccess = () => false;
   const spi = mod.pin.buildHandelDetailCard(city, view, data).outerHTML;

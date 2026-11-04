@@ -15,10 +15,10 @@ import type { BrandIconSize } from '../icons/brandAssets';
 import { scienceOwlIconHtml } from '../icons/scienceOwlIcon';
 import { UI_PARAMS } from '../uiParams';
 
-// kopia typu (ZAŁOŻENIE K01A-Z5) pin edb8fb56 gra/src/game/cities.ts:45-45
+// kopia typu (ZAŁOŻENIE K01A-Z5) pin 86d510c66 gra/src/game/cities.ts:45-45
 export type OkolicaFocus = 'zrownowazone' | 'zywnosc' | 'produkcja' | 'podatki';
 
-// kopia typu (ZAŁOŻENIE K01A-Z5) pin edb8fb56 gra/src/game/cities.ts:60-66
+// kopia typu (ZAŁOŻENIE K01A-Z5) pin 86d510c66 gra/src/game/cities.ts:60-66
 export type BudowaFocus =
   | 'zrownowazone'
   | 'wzrost'
@@ -27,7 +27,7 @@ export type BudowaFocus =
   | 'prawo'
   | 'produkcja';
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:285-291
+// pin 86d510c66 gra/src/ui/cityPanel.ts:290-296
 export interface PodzialHandluSplit {
   procentPieniadz: number;
   procentNauka: number;
@@ -36,14 +36,14 @@ export interface PodzialHandluSplit {
 
 /** Suwak podzialu Pracy (budynki vs pula imperium). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:292-296
+// pin 86d510c66 gra/src/ui/cityPanel.ts:297-301
 export interface PodzialPracySplit {
   procentBudynki: number;
 }
 
 /** A unit garrisoned in the city (supplied by the engine via getUnitsAt). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:297-313
+// pin 86d510c66 gra/src/ui/cityPanel.ts:302-318
 export interface GarrisonUnit {
   /** RuntimeUnit id — potrzebny do akcji „Odfortyfikuj" (onLeaveGarrison). */
   id: string;
@@ -62,15 +62,15 @@ export interface GarrisonUnit {
 
 /** Optional hooks the engine may supply so the view reflects real game state. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:860-862
+// pin 86d510c66 gra/src/ui/cityPanel.ts:904-906
 export const CP_EMOJI_DETECT =
   /[\u{1F300}-\u{1FAFF}\u2600-\u27BF✓⚠★⚔⚖👤👥🍞🌾🔥💀😊⏱📈🛕🎭🏛🛠🛡]/u;
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:871-871
+// pin 86d510c66 gra/src/ui/cityPanel.ts:915-915
 export function signed(n: number): string { return signedPl(n); }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:872-878
+// pin 86d510c66 gra/src/ui/cityPanel.ts:916-922
 export function tury(n: number): string {
   const a = Math.abs(n), m10 = a % 10, m100 = a % 100;
   if (a === 1) return 'tura';
@@ -79,34 +79,35 @@ export function tury(n: number): string {
 }
 /** Etykieta ETA budowy — null → „brak Pracy”. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:879-888
+// pin 86d510c66 gra/src/ui/cityPanel.ts:923-933
 export function formatBuildEtaLabel(turns: number | null, prefix = '~'): string {
   if (turns === null) return 'brak Pracy';
   return `${prefix}${turns} ${tury(turns)}`;
 }
 
 /**
- * Kumulatywny ETA pozycji kolejki (indeks ≥ 1): kiedy budynek będzie gotowy,
- * licząc od bieżącej tury przy stałym dopływie Pracy do budynków.
+ * Kumulatywny ETA pozycji kolejki (indeks ≥ 1): kiedy pozycja będzie gotowa,
+ * licząc od bieżącej tury przy stałym dopływie Pracy. Building speed applies only
+ * to building entries; legacy unit entries retain the base rate.
  * Gdy produkcja wstrzymana — null (nie da się oszacować kolejki).
  */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:918-918
+// pin 86d510c66 gra/src/ui/cityPanel.ts:970-970
 export const SCALES: ReadonlyArray<{ label: string; px: number }> = UI_PARAMS.panel_miasta.font_scale;
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:919-921
+// pin 86d510c66 gra/src/ui/cityPanel.ts:971-973
 export let scalePx = UI_PARAMS.panel_miasta.font_scale_domyslna_px;
 
 /** B: podgląd całej epoki (badania) na dole listy budynków — niezależnie od tech w sandboxie. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:922-926
+// pin 86d510c66 gra/src/ui/cityPanel.ts:974-978
 export let showEraBuildingPreview = false;
 try {
   showEraBuildingPreview = sessionStorage.getItem('civ-bld-era-preview') === '1';
 } catch { /* ignore */ }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:927-939
+// pin 86d510c66 gra/src/ui/cityPanel.ts:979-991
 export function setShowEraBuildingPreview(on: boolean): void {
   showEraBuildingPreview = on;
   try {
@@ -121,7 +122,7 @@ export function setShowEraBuildingPreview(on: boolean): void {
  * dawniej 20/70/10).
  */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:940-946
+// pin 86d510c66 gra/src/ui/cityPanel.ts:992-998
 export const DEFAULT_PODZIAL_HANDLU: PodzialHandluSplit = {
   procentPieniadz: 60,
   procentNauka: 20,
@@ -130,12 +131,12 @@ export const DEFAULT_PODZIAL_HANDLU: PodzialHandluSplit = {
 
 /** Domyslny podzial Pracy (70% budynki). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:947-949
+// pin 86d510c66 gra/src/ui/cityPanel.ts:999-1001
 export const DEFAULT_PODZIAL_PRACY: PodzialPracySplit = { procentBudynki: 70 };
 
 /** Etykieta suwaka handlu karmiącego pulę zamożności (UI — bez „Społ.” / „Wealth”). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:950-955
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1002-1007
 export const HANDEL_ZAMOZNOSC_LABEL = 'Zamożność';
 
 /**
@@ -143,11 +144,11 @@ export const HANDEL_ZAMOZNOSC_LABEL = 'Zamożność';
  * TODO(produkt): pełny model korupcji — od czego zależy, czy gracz może redukować (budynek, tech, porządek).
  */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:956-957
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1008-1009
 export const HANDEL_KORUPCJA_PCT_PLACEHOLDER = 5;
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:958-967
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1010-1019
 export interface HandelChipEstimates {
   brutto: number;
   korupcja: number;
@@ -159,7 +160,7 @@ export interface HandelChipEstimates {
 
 /** Szacunek strumieni handlu do chipów (netto po korupcji, potem split suwaków). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1075-1107
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1127-1159
 export interface EmpireHudSnap {
   /** Pula Pracy imperium (zapas — załóż miasto, ulepszenia / projekty mapy). */
   pracaPool?: number;
@@ -194,7 +195,7 @@ export interface EmpireHudSnap {
 
 /** Bilans pieniędzy jednego miasta — tylko przychody/koszty tego grodu. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1451-1456
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1505-1510
 export function growthBreakdownRow(label: string, value: number, showZero = false): string {
   if (!showZero && value === 0) return '';
   const cls = value > 0 ? 'pos' : value < 0 ? 'neg' : 'muted';
@@ -202,13 +203,13 @@ export function growthBreakdownRow(label: string, value: number, showZero = fals
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1457-1460
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1511-1514
 export function fmtDecPl(n: number, digits = 2): string {
   return n.toFixed(digits).replace('.', ',');
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1461-1469
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1515-1523
 export function pluralTur(n: number): string {
   if (n === 1) return 'turę';
   const mod10 = n % 10;
@@ -219,14 +220,14 @@ export function pluralTur(n: number): string {
 
 /** SPICH-AUTO-Q1: fed z ticku imperium — bez fałszywego „nakarmione” przy deficycie Spichlerza. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1481-1485
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1535-1539
 export function effectiveGrowthPctForUi(wzrostProcent: number, fed: boolean): number {
   return fed ? wzrostProcent : 0;
 }
 
 /** R-ETYKIETA-MIASTA-WZROST-PROCENT — WZROST% miasta dla plakietki na mapie świata. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1678-1684
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1732-1738
 export function fmtResDelta(n: number): { html: string; cls: string } {
   if (n === 0) return { html: '', cls: '' };
   const cls = n > 0 ? 'green' : 'red';
@@ -235,7 +236,7 @@ export function fmtResDelta(n: number): { html: string; cls: string } {
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1685-1693
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1739-1747
 export function resInteractiveAttrs(statId: string, hint: string, rail = false): { cls: string; attrs: string } {
   const railCls = rail ? ' civ-v-res-rail-item' : '';
   return {
@@ -246,21 +247,21 @@ export function resInteractiveAttrs(statId: string, hint: string, rail = false):
 
 /** Kromka chleba — game-icons.net/delapouite/bread-slice (CC BY 3.0) */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1694-1698
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1748-1752
 export const LOAF_SVG =
   '<svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true">' +
   '<path d="M233.2 25.36c-57-.02-109.1.58-119.7 2.23C61.74 35.66 35.44 154.9 80.21 155.9c-20.75 110.9-24.36 222.6-17.9 332.9 105.49 6.7 281.39 13.4 386.89 2.2 3.5-107.7 4.3-217.4-30.8-328.5 53.3-9.6 20.4-131.04-18.8-134.9-11.8-1.16-93.2-2.22-166.4-2.24zM126.6 57.8c1.5-.09 3.2.56 4.7 2.21 6.1 6.68 5.3 23.36 0 24.89-3.4.93-10.8-6.89-12.1-13.01-1.4-6.86 2.7-13.82 7.4-14.09zm201.5 31.11c5.7.25 11.9 12.69 10.3 19.89-1.3 5.3-8.7 8.4-12.1 5.3-5.3-4.9-6.1-22.06 0-24.86.6-.25 1.2-.36 1.8-.33zm83.2 35.99c3.8 0 5 6 1.8 10.7-5.3 7.7-20.9 15.6-22.1 10.1-1.2-5.4 12.8-19.4 19.5-20.7.3-.1.5-.1.8-.1zm-252.5 15.3c.8 0 1.5.1 2.3.4 7.6 2.9 15.2 17.4 9.5 21-5.7 3.5-19.5-6.8-20.7-13.9-.5-3.7 3.8-7.3 8.2-7.5h.7zm76.6 54.8c.5 0 1 .1 1.4.3 6.1 2.8 5.3 20 0 24.9-3.4 3.1-10.8 0-12.1-5.3-1.6-7.2 4.6-19.7 10.3-19.9h.4zm136.9 9.4c.5 0 1 .1 1.5.4 5.2 3.5 4.5 25.2 0 31.4-2.8 3.9-9.1 0-10.1-6.7-1.5-9.2 3.8-24.8 8.6-25.1zm-196.7 51.5c.4 0 .9.1 1.3.3 6.1 2.8 5.3 20 0 24.9-3.4 3.1-10.8 0-12.1-5.3-1.6-7.2 4.6-19.7 10.3-19.9h.5zm227.1 28.9c6.5.1 15.6 12.5 14.8 19.3-.6 4.5-8.3 6.9-12.7 3.7-6.5-4.9-9.8-20.9-3.4-22.8.4-.1.8-.2 1.3-.2zm-103.9 9.9c7.3.1 17.6 9.2 17.7 15.2 0 4.3-8.2 8-13.5 5.8-8-3.3-13.9-17.6-7.1-20.5.9-.4 1.9-.5 2.9-.5zm-166.3 46c2.4-.1 4.4.3 5.5 1.2 4.1 3.6-10.2 13.5-19.4 14.5-6.1.5-11-4-8.1-7.5 3.3-3.9 14.7-8 22-8.2zm149.7 49.2c4.4.3 9.2 14.5 7.9 22.8-1 6-6.6 9.6-9.2 6-4-5.6-4.6-25.2 0-28.4.4-.3.9-.4 1.3-.4zm-173.9 44.3c1.5 0 2.9.4 3.8 1.6 4 5.4-5 20.1-12 21.9-4.43 1.1-9.45-5.2-8.05-10.5 1.77-6.2 10.55-12.9 16.25-13zm316.2 5.6h.6c5.4 0 4.5 16.9-.6 24.9-3.4 5.2-10.8 6.8-12.1 2.3-1.8-6.9 6-26.1 12.1-27.2z"/>' +
   '</svg>';
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1699-1703
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1753-1757
 export function loafIconHtml(extraClass = ''): string {
   const cls = extraClass ? `civ-v-loaf-ic ${extraClass}` : 'civ-v-loaf-ic';
   return `<span class="${cls}">${LOAF_SVG}</span>`;
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1704-1722
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1758-1776
 export function resGlobalLocal(
   icon: string,
   mainVal: string,
@@ -281,7 +282,7 @@ export function resGlobalLocal(
 
 /** Górny pasek: pula pracy + dwa dopiski (budynki / pula imperium). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1744-1754
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1798-1808
 export function resLocalOnly(icon: string, val: string, cls: string, hint: string, statId?: string, rail = false): string {
   const ia = statId ? resInteractiveAttrs(statId, hint, rail) : { cls: rail ? 'civ-v-res-item civ-v-res-rail-item' : 'civ-v-res-item', attrs: '' };
   return `<span class="${ia.cls}"${ia.attrs} title="${hint.replace(/"/g, '&quot;')}">` +
@@ -294,51 +295,51 @@ export function resLocalOnly(icon: string, val: string, cls: string, hint: strin
 // ---------------------------------------------------------------------------
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1755-1757
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1809-1811
 export const STYLE_ID = 'civ-city-screen-css-w3-hudfix';
 
 /** Rozmiar samej ikonki (emoji/SVG) na pasku zakładek — w em względem font-size mountu. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1758-1759
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1812-1813
 export const CITY_PANEL_ICON_GLYPH_EM = 4.5;
 /** Pionowy słupek zakładek — ~50% rozmiaru bazowego. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1760-1761
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1814-1815
 export const CITY_PANEL_ICON_RAIL_VERT_EM = CITY_PANEL_ICON_GLYPH_EM * 0.5;
 /** Ile wierszy list (budynki, jednostki) widocznych bez przewijania — reszta w scrollu. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1762-1763
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1816-1817
 export const LIST_SCROLL_VISIBLE = 3;
 /** Kompaktowy wiersz katalogu budowy (ikona + nazwa + Buduj). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1764-1765
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1818-1819
 export const LIST_ROW_HEIGHT_COMPACT = 2.35;
 /** Kolejka rekrutacji w panelu Produkcja — max widocznych wierszy (reszta scroll). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1766-1767
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1820-1821
 export const RECRUIT_QUEUE_VISIBLE = 5;
 /** Kolejka budowy (pozycje po bieżącym projekcie) — max widocznych wierszy. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1768-1769
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1822-1823
 export const BUILD_QUEUE_VISIBLE = 4;
 /** Wysokość jednego wiersza kolejki rekrutacji/budowy (em). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1770-1771
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1824-1825
 export const QUEUE_ROW_EM = 2.75;
 /** Panel Buduj / Rekrutacja — więcej pozycji na ekranie. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1772-1772
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1826-1826
 export const LIST_SCROLL_VISIBLE_CATALOG = 8;
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1773-1774
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1827-1828
 export const LIST_ROW_HEIGHT_EM = 2.75;
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1775-1776
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1829-1830
 export type CityDrawerTab = 'plony' | 'produkcja' | 'miasto' | 'okolica';
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1777-1783
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1831-1837
 export const CITY_TABS: { id: CityDrawerTab; short: string }[] = [
   { id: 'plony', short: 'Plony' },
   { id: 'produkcja', short: 'Produkcja' },
@@ -347,7 +348,7 @@ export const CITY_TABS: { id: CityDrawerTab; short: string }[] = [
 ];
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1784-1790
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1838-1844
 export const CITY_TAB_BRAND_ICONS: Record<CityDrawerTab, string> = {
   plony: 'cp-granary',
   produkcja: 'cp-labor',
@@ -356,11 +357,11 @@ export const CITY_TAB_BRAND_ICONS: Record<CityDrawerTab, string> = {
 };
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1791-1792
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1845-1846
 export let activeDrawerTab: CityDrawerTab = 'plony';
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1793-1799
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1847-1853
 export function cityPanelBrandIcon(id: string, size: BrandIconSize = 24, cls = 'civ-cs-ic'): string {
   const svg = brandIconSvg(id, size);
   if (!svg) return '';
@@ -369,13 +370,13 @@ export function cityPanelBrandIcon(id: string, size: BrandIconSize = 24, cls = '
 
 /** Ikona chip/pasek w panelu miasta — brand-book 1E (bez emoji). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1800-1803
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1854-1857
 export function cityPanelChipIcon(id: string, size: BrandIconSize = 18): string {
   return cityPanelBrandIcon(id, size, 'civ-cs-chip-ic');
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1804-1809
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1858-1863
 export function cityPanelChipIconWrap(id: string, size: BrandIconSize = 18): string {
   const ic = cityPanelChipIcon(id, size);
   return ic ? `<span class="civ-cs-chip-ic-wrap">${ic}</span>` : '';
@@ -383,7 +384,7 @@ export function cityPanelChipIconWrap(id: string, size: BrandIconSize = 18): str
 
 /** Emoji → brand SVG wraps in detail cards, notes, formulas (C1b). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1810-1839
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1864-1893
 export const CP_INLINE_EMOJI_BRAND: Record<string, string> = {
   '🔨': 'res-work',
   '💰': 'res-treasury',
@@ -415,7 +416,7 @@ export const CP_INLINE_EMOJI_BRAND: Record<string, string> = {
 };
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1840-1850
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1894-1904
 export function cpInlineIcons(text: string): string {
   if (!text || (!CP_EMOJI_DETECT.test(text) && !text.includes('🍞'))) return text;
   let out = text;
@@ -428,7 +429,7 @@ export function cpInlineIcons(text: string): string {
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1856-1862
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1910-1916
 export function statChipBrand(iconId: string, label: string, value: string, cls: string): string {
   const ic = cityPanelChipIconWrap(iconId);
   const head = ic ? `${ic}<span>${label}</span>` : label;
@@ -437,21 +438,21 @@ export function statChipBrand(iconId: string, label: string, value: string, cls:
 
 /** Chipy bilansu plonów (W4 / B-02) — zawsze SVG brand, bez emoji. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1879-1883
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1933-1937
 export function psiRowLabel(iconId: string, text: string, title?: string): string {
   const t = title ? ` title="${title.replace(/"/g, '&quot;')}"` : '';
   return `${cityPanelChipIconWrap(iconId, 16)}<span${t}>${text}</span>`;
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1884-1888
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1938-1942
 export function cityTabIconHtml(tab: CityDrawerTab): string {
   const ic = cityPanelBrandIcon(CITY_TAB_BRAND_ICONS[tab], 24, 'civ-cs-tab-ic');
   return ic ? `<span class="civ-cs-tab-ic-wrap">${ic}</span>` : '';
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1889-1895
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1943-1949
 export const OKOLICA_FOCUS_BRAND: Record<OkolicaFocus, string> = {
   zywnosc: 'field-food',
   produkcja: 'field-production',
@@ -460,7 +461,7 @@ export const OKOLICA_FOCUS_BRAND: Record<OkolicaFocus, string> = {
 };
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1896-1902
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1950-1956
 export const OKOLICA_FOCUS_SHORT: Record<OkolicaFocus, string> = {
   zywnosc: 'Żyw.',
   produkcja: 'Prod.',
@@ -469,7 +470,7 @@ export const OKOLICA_FOCUS_SHORT: Record<OkolicaFocus, string> = {
 };
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1903-1911
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1957-1965
 export const BUDOWA_FOCUS_BRAND: Record<BudowaFocus, string> = {
   wzrost: 'field-food',
   wojsko: 'tb-army',
@@ -480,7 +481,7 @@ export const BUDOWA_FOCUS_BRAND: Record<BudowaFocus, string> = {
 };
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1912-1920
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1966-1974
 export const BUDOWA_FOCUS_SHORT: Record<BudowaFocus, string> = {
   wzrost: 'Wzrost',
   wojsko: 'Wojsko',
@@ -491,7 +492,7 @@ export const BUDOWA_FOCUS_SHORT: Record<BudowaFocus, string> = {
 };
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1921-1929
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1975-1983
 export const BUDOWA_FOCUS_TITLE: Record<BudowaFocus, string> = {
   wzrost: 'Wzrost — żywność i zdrowie',
   wojsko: 'Wojsko — koszary, obrona',
@@ -502,13 +503,13 @@ export const BUDOWA_FOCUS_TITLE: Record<BudowaFocus, string> = {
 };
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1930-1933
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1984-1987
 export function okolicaProfileIconHtml(iconId: string, size: BrandIconSize = 24): string {
   return cityPanelBrandIcon(iconId, size, 'okolica-profile-ic');
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:3015-3033
+// pin 86d510c66 gra/src/ui/cityPanel.ts:3069-3087
 export function PH(): string {
   return '<span class="muted" style="font-size:0.66em;border:1px solid var(--border);border-radius:3px;padding:0 0.3em;">podgląd</span>';
 }
@@ -529,14 +530,14 @@ export function PH(): string {
  * to, co widzi gracz.
  */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:3034-3038
+// pin 86d510c66 gra/src/ui/cityPanel.ts:3088-3092
 export function szPktDisplay(v: number): number {
   return Math.round(v * 10) / 10;
 }
 
 /** Kopia linii rozpiski Szczęścia do WYŚWIETLENIA — wartości przez `szPktDisplay`. */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:3760-3774
+// pin 86d510c66 gra/src/ui/cityPanel.ts:3824-3838
 export function isMapResourceLabel(n: string): boolean {
   return (
     n.includes('byd') || n.includes('glin') || n.includes('ceg') ||
@@ -553,7 +554,7 @@ export function isMapResourceLabel(n: string): boolean {
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:3775-3787
+// pin 86d510c66 gra/src/ui/cityPanel.ts:3839-3851
 export function resourceBrandKey(nazwa: string): string | null {
   const n = nazwa.toLowerCase();
   if (n.includes('byd')) return 'res-cattle';
@@ -568,7 +569,7 @@ export function resourceBrandKey(nazwa: string): string | null {
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:3788-3803
+// pin 86d510c66 gra/src/ui/cityPanel.ts:3852-3867
 export function resourceBrandIconHtml(nazwa: string): string {
   const n = nazwa.toLowerCase();
   // Surowce mapy → dedykowana ikona res-* (resources-map/), reskin z generyków.
@@ -586,13 +587,13 @@ export function resourceBrandIconHtml(nazwa: string): string {
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:3804-3807
+// pin 86d510c66 gra/src/ui/cityPanel.ts:3868-3871
 export function resourceIcon(nazwa: string): string {
   return resourceBrandIconHtml(nazwa);
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4222-4229
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4286-4293
 export function statChip(icon: string, label: string, value: string, cls: string): string {
   const iconPart = icon.startsWith('<')
     ? `<span class="civ-cs-chip-ic-wrap">${icon}</span>`
@@ -602,28 +603,28 @@ export function statChip(icon: string, label: string, value: string, cls: string
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4230-4233
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4294-4297
 export function pctSubheadHtml(brandId: string, text: string): string {
   return `${cityPanelChipIconWrap(brandId, 14)}<span>${text}</span>`;
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4234-4235
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4298-4299
 export type TabIndicatorChip = { icon: string; label: string; value: string; cls?: string; title?: string };
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4352-4356
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4416-4420
 export function shortIndLabel(text: string, max = 13): string {
   const t = text.trim();
   return t.length <= max ? t : `${t.slice(0, max - 1)}…`;
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4376-4377
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4440-4441
 export type BreakdownLine = { label: string; value: number; neg?: boolean };
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6155-6160
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6226-6231
 export const CS_RES_STRIP_ORDER: readonly string[] = [
   'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza', 'ruda_cyny', 'cegla', 'braz', 'zelazo', 'stal',
 ];
@@ -631,12 +632,12 @@ export const CS_RES_STRIP_ORDER: readonly string[] = [
 /** Rdzeń paska budowy — ZAWSZE widoczny, także przy 0 (podstawowe materiały budowlane),
  *  żeby UI surowców był obecny od tury 1 (C-SURUI=A, Maciej 2026-07-24). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6161-6163
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6232-6234
 export const CS_RES_STRIP_CORE: ReadonlySet<string> = new Set(['drewno', 'kamien']);
 
 /** Rozmiar ikon surowców na pasku budowy/rekrutacji (2× względem pierwotnych 16px). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6164-6172
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6235-6243
 export const CS_RES_STRIP_ICON_PX = 32;
 
 /**
@@ -647,7 +648,7 @@ export const CS_RES_STRIP_ICON_PX = 32;
  * jeszcze nie ma). Dzięki temu pasek jest widoczny od startu gry, a nie chowa się przy pustej puli.
  */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6471-6477
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6542-6548
 export function yieldBrandIconHtml(brandId: string, size: BrandIconSize = 14): string {
   if (brandId === 'loaf') return `<span class="civ-cs-inline-loaf">${loafIconHtml('civ-v-loaf-chip')}</span>`;
   if (brandId === 'science-owl') return `<span class="civ-cs-chip-ic-wrap">${scienceOwlIconHtml()}</span>`;
@@ -656,11 +657,11 @@ export function yieldBrandIconHtml(brandId: string, size: BrandIconSize = 14): s
 
 /** Poziom budynku do wyświetlenia w katalogu / karcie (C-PRZYROST=A — jak silnik). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6635-6636
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6706-6707
 export const BUILDING_UPKEEP_ZERO_LABEL = 'utrzymanie zero';
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6776-6788
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6847-6859
 export function formatConverterAmount(v: number): string {
   const r1 = Math.round(v * 10) / 10;
   return Number.isInteger(r1) ? String(r1) : fmtDecPl(r1, 1);
@@ -675,11 +676,11 @@ export function formatConverterAmount(v: number): string {
  * upoważnił pracę autonomiczną bez ABC) — może zostać odwrócona na jego słowo.
  */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6812-6813
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6883-6884
 export type BuildingReqChipKind = 'tech' | 'stock' | 'other';
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6814-6820
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6885-6891
 export interface BuildingReqChip {
   label: string;
   met: boolean;
@@ -688,20 +689,20 @@ export interface BuildingReqChip {
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6965-6969
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7036-7040
 export function buildingReqChipSpan(chip: Pick<BuildingReqChip, 'label' | 'met' | 'iconHtml'>): string {
   const cls = chip.met ? 'bld-req-chip met' : 'bld-req-chip unmet';
   return `<span class="${cls}">${chip.iconHtml ?? ''}${chip.label}</span>`;
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6970-6973
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7041-7044
 export function buildingRequirementChipsHtml(chips: BuildingReqChip[]): string {
   return chips.map(c => buildingReqChipSpan(c)).join('');
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6974-6979
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7045-7050
 export const BUILDING_REQ_SECTION_LABELS: Record<BuildingReqChipKind, string> = {
   tech: 'Wymagane badania',
   stock: 'Wymagane surowce',
@@ -709,18 +710,18 @@ export const BUILDING_REQ_SECTION_LABELS: Record<BuildingReqChipKind, string> = 
 };
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7136-7137
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7207-7208
 export const EPOCH_LABEL: Record<number, string> = { 1: 'Kamień', 2: 'Brąz', 3: 'Żelazo' };
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7138-7142
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7209-7213
 export function epochLabelNum(n: number): string {
   return EPOCH_LABEL[n] ?? `Epoka ${n}`;
 }
 
 /** Świątynia/kolumny — emblemat „Cuda świata” (KANON 1E, ten sam glif co dawny toolbar). */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7143-7153
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7214-7224
 export function isEmptyDataVal(v: unknown): boolean {
   return v == null || v === '' || v === '—' || v === '-';
 }
@@ -733,7 +734,7 @@ export function isEmptyDataVal(v: unknown): boolean {
  * niżej i P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1 runda 2.
  */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7154-7191
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7225-7262
 export function isDevOnlyPlayerText(text: string): boolean {
   const t = text.trim();
   return /^PYTANIE\s+\d+/i.test(t)
@@ -773,7 +774,7 @@ export function isDevOnlyPlayerText(text: string): boolean {
  *    — niezależnie od pozycji dwukropka (a właściwie jego braku) wewnątrz nawiasu.
  */
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7192-7229
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7263-7300
 export function stripInlineDevAnnotations(text: string): string {
   let out = text
     .replace(/^PYTANIE\s+\d+\s*=\s*[ABC]\s*\([^)]*\)\s*:?\s*/i, '')

@@ -92,7 +92,7 @@ export function resolveK08aActiveCity(): CityK07 | null {
 
 // ─── Jednostki K08A (kopie pinu wygenerowane; markery = bramka verify-k08a-copies.mjs) ───────────────────────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10337-10346
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10584-10593
 export function refreshCityPanelIfOpen(): void {
   if (getK07aUxSectionRefresh()) {
     resolveK08aActiveCity();
@@ -105,7 +105,7 @@ export function refreshCityPanelIfOpen(): void {
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10367-10374
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10614-10621
 export function clearCityPanelUxMode(): void {
   requireK08aDeps().clearGarrisonPanel();
   setK07aUxSectionRefresh(null);
@@ -116,7 +116,7 @@ export function clearCityPanelUxMode(): void {
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10694-10698
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10941-10945
 export function closeCityView(onClose?: () => void): void {
   clearCityPanelUxMode();
   if (onClose) onClose();
@@ -124,7 +124,7 @@ export function closeCityView(onClose?: () => void): void {
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11540-11549
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11781-11790
 export type CityPanelIconTab =
   | 'budowa'
   | 'rekrutacja'
@@ -137,22 +137,22 @@ export type CityPanelIconTab =
   | 'religia';
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11551-11551
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11792-11792
 export type CityPanelProductionTab = 'budowa' | 'rekrutacja';
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11552-11552
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11793-11793
 export type CityPanelCityParamTab = Exclude<CityPanelIconTab, CityPanelProductionTab>;
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11554-11557
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11795-11798
 export const CITY_PANEL_ICONS_LEFT: { id: CityPanelProductionTab; iconId: string; title: string }[] = [
   { id: 'budowa', iconId: 'cp-buildings', title: 'Budowa — dostępne i w mieście' },
   { id: 'rekrutacja', iconId: 'cp-recruit', title: 'Jednostki do rekrutacji' },
 ];
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11559-11571
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11800-11812
 export const CITY_PANEL_ICONS_RIGHT: { id: CityPanelCityParamTab; iconId: string; title: string }[] = [
   { id: 'spichlerz', iconId: 'cp-granary', title: 'Wyżywienie i wzrost — suwak 0–6' },
   // Tytuł poniżej to fallback modułowej stałej — DYSPOZYCJA 85 (Maciej 2026-07-26):
@@ -168,13 +168,13 @@ export const CITY_PANEL_ICONS_RIGHT: { id: CityPanelCityParamTab; iconId: string
 ];
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11573-11575
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11814-11816
 export function isProductionPanelTab(tab: CityPanelIconTab): tab is CityPanelProductionTab {
   return tab === 'budowa' || tab === 'rekrutacja';
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11577-11585
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11818-11826
 export const CADUCEUS_SVG =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
   '<line x1="12" y1="9.2" x2="12" y2="21.5"/>' +
@@ -186,7 +186,7 @@ export const CADUCEUS_SVG =
   '</svg>';
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11587-11591
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11828-11832
 export function cityRailIconHtml(iconId: string): string {
   const svg = brandIconSvg(iconId, 24);
   if (!svg) return '';
@@ -194,11 +194,11 @@ export function cityRailIconHtml(iconId: string): string {
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11593-11593
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11834-11834
 let activeCityPanelTab: CityPanelIconTab = 'budowa';
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11971-11976
+// pin 86d510c66 gra/src/ui/cityPanel.ts:12212-12217
 export function closeCityPanelIfOpen(): boolean {
   if (!isCityPanelOpen()) return false;
   requireK08aDeps().clearGarrisonPanel();
@@ -207,13 +207,13 @@ export function closeCityPanelIfOpen(): boolean {
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11979-11981
+// pin 86d510c66 gra/src/ui/cityPanel.ts:12220-12222
 export function isCityPanelOpen(): boolean {
   return requireK08aDeps().isCityUxFrameOpen();
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11984-11986
+// pin 86d510c66 gra/src/ui/cityPanel.ts:12225-12227
 export function getOpenCityPanelCityId(): string | null {
   return getK07aActiveCity()?.id ?? null;
 }

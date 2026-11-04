@@ -73,11 +73,14 @@ const unitIconHtml = (...args: any[]): any => dep('unitIconHtml')(...args);
 const unitResourceUpkeepChipsHtml = (...args: any[]): any => dep('unitResourceUpkeepChipsHtml')(...args);
 const unitStockCost = (...args: any[]): any => dep('unitStockCost')(...args);
 const unitStockCostChipsHtml = (...args: any[]): any => dep('unitStockCostChipsHtml')(...args);
+// REPIN-UI-2-G r2 (web 86d510c66): nowe nazwy wołane przez przepięte bloki — reguły gry/pomocniki spoza K06B → dep (K06B-Z2).
+const buildingWorkPerTurnForCity = (...args: any[]): any => dep('buildingWorkPerTurnForCity')(...args);
+const unitRecruitmentCapacityForCity = (...args: any[]): any => dep('unitRecruitmentCapacityForCity')(...args);
 const cfg: any = valueProxy('cfg');
 
 // ─── Jednostki K06B (kopie pinu) ───────────────────────────────────────────────────────────────────────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:5028-5111
+// pin 86d510c66 gra/src/ui/cityPanel.ts:5093-5182
 export function appendPodzialPracyInfo(
   mount: HTMLElement,
   city: City,
@@ -113,7 +116,13 @@ export function appendPodzialPracyInfo(
   let budSub = '';
   if (front && praca) {
     const paused = prod.wstrzymana === true;
-    const eta = paused ? null : etaTurns(front.koszt, prod.postep, praca.doBudynkow);
+    const eta = paused ? null : etaTurns(
+      front.koszt,
+      prod.postep,
+      front.kind === 'budynek'
+        ? buildingWorkPerTurnForCity(city, praca.doBudynkow)
+        : praca.doBudynkow,
+    );
     budSub =
       `${front.nazwa}: ${prod.postep}/${front.koszt}${cityPanelChipIconWrap('res-work', 14)}` +
       (paused ? ' · wstrzymana' : eta != null ? ` · ~${eta} ${tury(eta)}` : praca.doBudynkow > 0 ? '' : ' · brak pracy');
@@ -150,7 +159,7 @@ export function appendPodzialPracyInfo(
   mount.appendChild(info);
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7806-7860
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7881-7935
 export function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLDivElement {
   const card = el('div', 'detail-card');
   const built = cfg.getBuiltBuildingIds?.(city.id);
@@ -183,7 +192,7 @@ export function buildOwnedBuildingsDetailCard(city: City, data: GameData | null)
   return card;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7861-7884
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7936-7959
 
 /**
  * Karta szczegółów jednostki w panelu miasta/rekrutacji (T6 MIGRACJA-KARTA-JEDNOSTKI-
@@ -230,7 +239,7 @@ export function buildUnitDetailCardViaEntityCard(u: UnitDef, data: GameData): HT
   return card;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7885-7896
+// pin 86d510c66 gra/src/ui/cityPanel.ts:7960-7971
 
 /** Publiczna sygnatura BEZ ZMIAN. Próbuje ścieżkę entityCards (T6), fallback do starej
  * implementacji (`_legacyBuildUnitDetailCard`) w razie wyjątku — wzorem T3/T4/T5. */
@@ -244,7 +253,7 @@ export function buildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement 
   }
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7976-7996
+// pin 86d510c66 gra/src/ui/cityPanel.ts:8051-8071
 export function attachUnitRowThumb(
   row: HTMLElement,
   udef: UnitDef | undefined,
@@ -267,13 +276,14 @@ export function attachUnitRowThumb(
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:8137-8182
+// pin 86d510c66 gra/src/ui/cityPanel.ts:8232-8282
 export function appendUnitRecruitCompactRow(
   scroll: HTMLElement,
   city: City,
   item: ProductionItem,
   data: GameData,
   skarb: number | undefined,
+  opts?: { unitLabel?: string; disabledReason?: string; onRecruit?: (quantity: number) => boolean | void },
 ): void {
   const udef = findUnitDef(data, item.id);
   if (!udef) return;
@@ -288,10 +298,11 @@ export function appendUnitRecruitCompactRow(
   const recruitOk = Object.keys(stockMissing).length === 0;
   const row = buildUnitRecruitCard({
     udef,
+    unitLabel: opts?.unitLabel,
     item,
     data,
     skarb,
-    canPurchase: !!cfg.onPurchaseUnit && canMp && recruitOk,
+    canPurchase: (opts?.onRecruit ? !opts.disabledReason : !!cfg.onPurchaseUnit) && canMp && recruitOk,
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
     mpCostLabel: formatManpower(mpCost),
@@ -305,18 +316,47 @@ export function appendUnitRecruitCompactRow(
         .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
         .join(', ')
       : undefined,
+    disabledReason: opts?.disabledReason,
     manpowerMissingLabel: mpMissing != null && mpMissing > 0
       ? `Brakuje rekrutów: ${formatManpower(mpMissing)}`
       : undefined,
-    onRecruit: (quantity: any) => recruitUnit(city, item, quantity),
+    onRecruit: (quantity: any) => opts?.onRecruit
+      ? opts.onRecruit(quantity)
+      : recruitUnit(city, item, quantity),
   });
   attachHoverDetail(row, () => buildUnitDetailCard(udef, data), 220, 'left');
   scroll.appendChild(row);
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:8210-8299
-export function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean, opts?: { w4?: boolean }): void {
+// pin 86d510c66 gra/src/ui/cityPanel.ts:8386-8499
+/**
+ * R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1: JEDNA logika mutacji kolejki rekrutacji, wspólna dla panelu
+ * miasta i panelu armii (Imperium → Armia). Każda mutacja idzie przez setProd (→ cfg.onChange →
+ * updateHud → odświeżenie panelu armii) i rerender() (panel miasta).
+ * `onMutated` pozwala widokowi spoza panelu miasta odświeżyć się, gdy host nadal jest w DOM.
+ */
+function cancelRecruitmentQueueItem(city: City, index: number, onMutated?: () => void): void {
+  const it = (getProd(city.id).rekrutacja ?? [])[index];
+  if (!it) return;
+  cfg.onCancelRecruitment?.(city.id, it.id, it.koszt);
+  setProd(city.id, dequeueRecruitment(getProd(city.id), index));
+  rerender();
+  onMutated?.();
+}
+
+function moveRecruitmentQueueItemBy(city: City, index: number, dir: -1 | 1, onMutated?: () => void): void {
+  setProd(city.id, moveRecruitQueueItem(getProd(city.id), index, dir));
+  rerender();
+  onMutated?.();
+}
+
+function appendRecruitmentQueue(
+  mount: HTMLElement,
+  city: City,
+  player: boolean,
+  opts?: { w4?: boolean; onMutated?: () => void },
+): void {
   const prod = getProd(city.id);
   const rq = prod.rekrutacja ?? [];
   if (rq.length === 0) return;
@@ -365,41 +405,39 @@ export function appendRecruitmentQueue(mount: HTMLElement, city: City, player: b
       costEl.innerHTML = `${it.koszt} ${cityPanelChipIconWrap('res-treasury', 14)}`;
       costEl.title = `Opłacone ze skarbca: ${it.koszt}`;
       qi.appendChild(costEl);
-      const etaTurns = i + 1;
+      const unitsPerTurn = unitRecruitmentCapacityForCity(city, 1);
+      const recruitmentEtaTurns = unitsPerTurn > 0 ? Math.ceil((i + 1) / unitsPerTurn) : null;
       const etaEl = el('span', 'qitem-eta');
-      etaEl.textContent = etaTurns === 1 ? 'nast. tura' : `~${etaTurns} ${tury(etaTurns)}`;
-      etaEl.title = `Szacunek: ${etaTurns} ${tury(etaTurns)} (1 jednostka na turę)`;
+      etaEl.textContent = recruitmentEtaTurns === null
+        ? 'brak tempa'
+        : recruitmentEtaTurns === 1 ? 'nast. tura' : `~${recruitmentEtaTurns} ${tury(recruitmentEtaTurns)}`;
+      etaEl.title = recruitmentEtaTurns === null
+        ? 'Brak dostępnego limitu rekrutacji na turę'
+        : `Szacunek: ${recruitmentEtaTurns} ${tury(recruitmentEtaTurns)} (limit rekrutacji na turę: ${unitsPerTurn})`;
       qi.appendChild(etaEl);
       if (player) {
         const up = el('button', 'btn btn-sm', '↑');
         up.style.cssText = 'padding:0 0.35em;';
         (up as HTMLButtonElement).disabled = i <= 0;
-        up.addEventListener('click', () => {
-          setProd(city.id, moveRecruitQueueItem(getProd(city.id), i, -1));
-          rerender();
-        });
+        up.setAttribute('aria-label', `Przesuń „${it.nazwa}” wyżej w kolejce rekrutacji`);
+        up.addEventListener('click', () => moveRecruitmentQueueItemBy(city, i, -1, opts?.onMutated));
         const down = el('button', 'btn btn-sm', '↓');
         down.style.cssText = 'padding:0 0.35em;';
         (down as HTMLButtonElement).disabled = i >= rq.length - 1;
-        down.addEventListener('click', () => {
-          setProd(city.id, moveRecruitQueueItem(getProd(city.id), i, 1));
-          rerender();
-        });
+        down.setAttribute('aria-label', `Przesuń „${it.nazwa}” niżej w kolejce rekrutacji`);
+        down.addEventListener('click', () => moveRecruitmentQueueItemBy(city, i, 1, opts?.onMutated));
         const x = el('button', 'btn btn-sm', '✕');
         x.style.cssText = 'padding:0 0.35em;';
         x.title = 'Usuń z kolejki (zwrot opłaty do skarbca)';
-        x.addEventListener('click', () => {
-          cfg.onCancelRecruitment?.(city.id, it.id, it.koszt);
-          setProd(city.id, dequeueRecruitment(getProd(city.id), i));
-          rerender();
-        });
+        x.setAttribute('aria-label', `Usuń „${it.nazwa}” z kolejki rekrutacji (zwrot opłaty)`);
+        x.addEventListener('click', () => cancelRecruitmentQueueItem(city, i, opts?.onMutated));
         qi.appendChild(up);
         qi.appendChild(down);
         qi.appendChild(x);
       }
       sc.appendChild(qi);
     }
-    if (player) bindRecruitQueueDragReorder(sc, city);
+    if (player) bindRecruitQueueDragReorder(sc, city, opts?.onMutated);
     wrap.appendChild(sc);
   }
   mount.appendChild(wrap);

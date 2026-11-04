@@ -47,16 +47,16 @@ const check = (id, pin, got, want) => {
 
 /** PIN-ANCHOR: [linia pinu (1-indeksowana), literał]. Literał musi być w tej linii pinu (sprawdzane na każdym runie). */
 const PIN_ANCHORS = [
-  [9279, 'pokaż szczegóły'], [9281, 'Budynki w mieście ('], [9282, 'gap:0.4em'], [9285, 'ℹ szczegóły'],
-  [9288, 'e.stopPropagation()'], [9289, "'left'"], [9291, "280, 'left'"],
-  [10703, 'Wróć na mapę świata (Esc)'], [10705, 'Wróć na mapę'], [10707, 'Esc — szybkie zamknięcie'],
-  [10785, 'civ-cs civ-ux-panel-scope'], [10787, 'civ-v-icon-rail-mount'], [10788, 'cs-icon-rail-left'],
-  [11060, 'Wróć na mapę świata (Esc)'], [11064, 'Esc — szybkie wyjście'], [11072, 'hidden aria-hidden="true"'], [11075, 'okstats is-collapsed'],
-  [11613, "'civ-v-icon-rail civ-v-icon-rail-vert civ-v-icon-rail-w3'"], [11614, "'civ-v-icon-rail'"],
-  [11616, 'Math.round(scalePx * CITY_PANEL_ICON_RAIL_VERT_EM)'], [11618, "activeCityPanelTab === item.id ? ' on'"],
-  [11622, "activeCityPanelTab === item.id ? 'true' : 'false'"], [11626, "'26px'"], [11630, "'24px'"],
-  [11640, 'activeCityPanelTab !== item.id'], [11641, 'clearGarrisonPanel();'], [11643, 'rerender();'],
-  [11658, "'civ-w4-tab-card civ-w4-tab-card--scroll'"], [11660, 'if (id) card.id = id;'], [11661, "'civ-w4-tab-body civ-w4-tab-body--scroll'"],
+  [9523, 'pokaż szczegóły'], [9525, 'Budynki w mieście ('], [9526, 'gap:0.4em'], [9529, 'ℹ szczegóły'],
+  [9532, 'e.stopPropagation()'], [9533, "'left'"], [9535, "280, 'left'"],
+  [10950, 'Wróć na mapę świata (Esc)'], [10952, 'Wróć na mapę'], [10954, 'Esc — szybkie zamknięcie'],
+  [11032, 'civ-cs civ-ux-panel-scope'], [11034, 'civ-v-icon-rail-mount'], [11035, 'cs-icon-rail-left'],
+  [11301, 'Wróć na mapę świata (Esc)'], [11305, 'Esc — szybkie wyjście'], [11313, 'hidden aria-hidden="true"'], [11316, 'okstats is-collapsed'],
+  [11854, "'civ-v-icon-rail civ-v-icon-rail-vert civ-v-icon-rail-w3'"], [11855, "'civ-v-icon-rail'"],
+  [11857, 'Math.round(scalePx * CITY_PANEL_ICON_RAIL_VERT_EM)'], [11859, "activeCityPanelTab === item.id ? ' on'"],
+  [11863, "activeCityPanelTab === item.id ? 'true' : 'false'"], [11867, "'26px'"], [11871, "'24px'"],
+  [11881, 'activeCityPanelTab !== item.id'], [11882, 'clearGarrisonPanel();'], [11884, 'rerender();'],
+  [11899, "'civ-w4-tab-card civ-w4-tab-card--scroll'"], [11901, 'if (id) card.id = id;'], [11902, "'civ-w4-tab-body civ-w4-tab-body--scroll'"],
 ];
 PIN_ANCHORS.forEach(([line, lit], i) => check(`pin.anchor.${i + 1}`, `cityPanel.ts:${line} "${lit}"`, PIN_LINES[line - 1]?.includes(lit) ?? false, true));
 
@@ -166,139 +166,139 @@ try {
   const q = (root, sel) => root.querySelector(sel);
   const qa = (root, sel) => [...root.querySelectorAll(sel)];
 
-  // ─── renderCityIconRail (pin :11605-11649) ──────────────────────────────────────────────────────────────────────
+  // ─── renderCityIconRail (pin :11846-11890) ──────────────────────────────────────────────────────────────────────
   {
     m.setK08aActiveCityPanelTab('handel');
     let mount = fresh();
     m.renderCityIconRail(mount, items, false, false);
     const rail = q(mount, ':scope > div');
-    check('rail.horiz.class', 'cityPanel.ts:11614 railCls', rail?.className, 'civ-v-icon-rail');
+    check('rail.horiz.class', 'cityPanel.ts:11855 railCls', rail?.className, 'civ-v-icon-rail');
     const btns = qa(mount, 'button');
-    check('rail.horiz.count', 'cityPanel.ts:11620 items.length', btns.length, 2);
-    check('rail.horiz.on', 'cityPanel.ts:11622 activeCityPanelTab === item.id ? " on"', btns.map((b) => b.className), ['civ-v-icon-btn', 'civ-v-icon-btn on']);
-    check('rail.horiz.pressed', 'cityPanel.ts:11625 aria-pressed', btns.map((b) => b.getAttribute('aria-pressed')), ['false', 'true']);
-    check('rail.horiz.label', 'cityPanel.ts:11624 aria-label = title', btns.map((b) => [b.title, b.getAttribute('aria-label')]), [['Budowa', 'Budowa'], ['Handel', 'Handel']]);
-    check('rail.horiz.type', 'cityPanel.ts:11623 type=button', btns.map((b) => b.type), ['button', 'button']);
-    check('rail.horiz.glyph', 'cityPanel.ts:11627 glyph innerHTML = cityRailIconHtml(iconId)', btns.map((b) => q(b, '.civ-v-icon-glyph').innerHTML), [m.cityRailIconHtml('icon-a'), m.cityRailIconHtml('icon-b')]);
-    check('rail.horiz.noStyle', 'cityPanel.ts:11637-11643 brak stylu gdy !vertical i iconPx=0', q(btns[0], '.civ-v-icon-glyph').getAttribute('style'), null);
+    check('rail.horiz.count', 'cityPanel.ts:11861 items.length', btns.length, 2);
+    check('rail.horiz.on', 'cityPanel.ts:11863 activeCityPanelTab === item.id ? " on"', btns.map((b) => b.className), ['civ-v-icon-btn', 'civ-v-icon-btn on']);
+    check('rail.horiz.pressed', 'cityPanel.ts:11866 aria-pressed', btns.map((b) => b.getAttribute('aria-pressed')), ['false', 'true']);
+    check('rail.horiz.label', 'cityPanel.ts:11865 aria-label = title', btns.map((b) => [b.title, b.getAttribute('aria-label')]), [['Budowa', 'Budowa'], ['Handel', 'Handel']]);
+    check('rail.horiz.type', 'cityPanel.ts:11864 type=button', btns.map((b) => b.type), ['button', 'button']);
+    check('rail.horiz.glyph', 'cityPanel.ts:11868 glyph innerHTML = cityRailIconHtml(iconId)', btns.map((b) => q(b, '.civ-v-icon-glyph').innerHTML), [m.cityRailIconHtml('icon-a'), m.cityRailIconHtml('icon-b')]);
+    check('rail.horiz.noStyle', 'cityPanel.ts:11878-11884 brak stylu gdy !vertical i iconPx=0', q(btns[0], '.civ-v-icon-glyph').getAttribute('style'), null);
 
     mount = fresh();
     m.renderCityIconRail(mount, items, true, false);
-    check('rail.vert.class', 'cityPanel.ts:11613 civ-v-icon-rail-vert', q(mount, ':scope > div')?.className, 'civ-v-icon-rail civ-v-icon-rail-vert');
-    check('rail.vert.glyph24', 'cityPanel.ts:11634-11636 vertical 24px', q(mount, '.civ-v-icon-glyph').style.width, '24px');
+    check('rail.vert.class', 'cityPanel.ts:11854 civ-v-icon-rail-vert', q(mount, ':scope > div')?.className, 'civ-v-icon-rail civ-v-icon-rail-vert');
+    check('rail.vert.glyph24', 'cityPanel.ts:11875-11877 vertical 24px', q(mount, '.civ-v-icon-glyph').style.width, '24px');
 
     mount = fresh();
     m.renderCityIconRail(mount, items, true, true);
-    check('rail.w3.class', 'cityPanel.ts:11612 civ-v-icon-rail-w3', q(mount, ':scope > div')?.className, 'civ-v-icon-rail civ-v-icon-rail-vert civ-v-icon-rail-w3');
-    check('rail.w3.glyph26', 'cityPanel.ts:11630-11633 w3 26px', [q(mount, '.civ-v-icon-glyph').style.width, q(mount, '.civ-v-icon-glyph').style.height], ['26px', '26px']);
+    check('rail.w3.class', 'cityPanel.ts:11853 civ-v-icon-rail-w3', q(mount, ':scope > div')?.className, 'civ-v-icon-rail civ-v-icon-rail-vert civ-v-icon-rail-w3');
+    check('rail.w3.glyph26', 'cityPanel.ts:11871-11874 w3 26px', [q(mount, '.civ-v-icon-glyph').style.width, q(mount, '.civ-v-icon-glyph').style.height], ['26px', '26px']);
 
-    // klik na nieaktywną: clearGarrisonPanel, ustawienie zakładki, rerender (pin :11648-11651)
+    // klik na nieaktywną: clearGarrisonPanel, ustawienie zakładki, rerender (pin :11889-11892)
     mount = fresh();
     m.setK08aActiveCityPanelTab('handel');
     m.renderCityIconRail(mount, items, false, false);
     qa(mount, 'button')[0].click();
-    check('rail.click.inactive.calls', 'cityPanel.ts:11645-11647 clearGarrisonPanel; rerender', calls.slice(), ['clearGarrisonPanel', 'rerender']);
-    check('rail.click.inactive.tab', 'cityPanel.ts:11646 activeCityPanelTab = item.id', m.getK08aActiveCityPanelTab(), 'budowa');
+    check('rail.click.inactive.calls', 'cityPanel.ts:11886-11888 clearGarrisonPanel; rerender', calls.slice(), ['clearGarrisonPanel', 'rerender']);
+    check('rail.click.inactive.tab', 'cityPanel.ts:11887 activeCityPanelTab = item.id', m.getK08aActiveCityPanelTab(), 'budowa');
     // klik na drugi element przy aktywnym pierwszym: zakładka = id KLIKNIĘTEGO elementu (pin :11646)
     mount = fresh();
     m.setK08aActiveCityPanelTab('budowa');
     m.renderCityIconRail(mount, items, false, false);
     qa(mount, 'button')[1].click();
-    check('rail.click.second.tab', 'cityPanel.ts:11646 activeCityPanelTab = item.id (drugi)', m.getK08aActiveCityPanelTab(), 'handel');
+    check('rail.click.second.tab', 'cityPanel.ts:11887 activeCityPanelTab = item.id (drugi)', m.getK08aActiveCityPanelTab(), 'handel');
     // klik na aktywną: brak efektów (pin :11644 if (activeCityPanelTab !== item.id))
     mount = fresh();
     m.setK08aActiveCityPanelTab('budowa');
     m.renderCityIconRail(mount, items, false, false);
     qa(mount, 'button')[0].click();
-    check('rail.click.active.noop', 'cityPanel.ts:11644 brak efektów dla aktywnej', calls.slice(), []);
+    check('rail.click.active.noop', 'cityPanel.ts:11885 brak efektów dla aktywnej', calls.slice(), []);
   }
 
-  // ─── renderCityIconLeftRail (pin :10783-10791) ──────────────────────────────────────────────────────────────────
+  // ─── renderCityIconLeftRail (pin :11030-11038) ──────────────────────────────────────────────────────────────────
   {
     const mount = fresh();
     m.renderCityIconLeftRail(mount);
     const scope = q(mount, ':scope > div');
-    check('left.scope', 'cityPanel.ts:10785 class civ-cs civ-ux-panel-scope', scope?.className, 'civ-cs civ-ux-panel-scope');
+    check('left.scope', 'cityPanel.ts:11032 class civ-cs civ-ux-panel-scope', scope?.className, 'civ-cs civ-ux-panel-scope');
     const iconMount = q(mount, '#cs-icon-rail-left');
-    check('left.mount.class', 'cityPanel.ts:10787 civ-v-icon-rail-mount', iconMount?.className, 'civ-v-icon-rail-mount');
+    check('left.mount.class', 'cityPanel.ts:11034 civ-v-icon-rail-mount', iconMount?.className, 'civ-v-icon-rail-mount');
     const rail = q(mount, '#cs-icon-rail-left .civ-v-icon-rail');
-    check('left.rail.class', 'cityPanel.ts:10791 vert+w3', rail?.className, 'civ-v-icon-rail civ-v-icon-rail-vert civ-v-icon-rail-w3');
-    check('left.rail.count', 'cityPanel.ts:10791 CITY_PANEL_ICONS_LEFT', qa(mount, '#cs-icon-rail-left button').length, m.CITY_PANEL_ICONS_LEFT.length);
+    check('left.rail.class', 'cityPanel.ts:11038 vert+w3', rail?.className, 'civ-v-icon-rail civ-v-icon-rail-vert civ-v-icon-rail-w3');
+    check('left.rail.count', 'cityPanel.ts:11038 CITY_PANEL_ICONS_LEFT', qa(mount, '#cs-icon-rail-left button').length, m.CITY_PANEL_ICONS_LEFT.length);
   }
 
-  // ─── renderCityExitFooter (pin :10700-10710) ────────────────────────────────────────────────────────────────────
+  // ─── renderCityExitFooter (pin :10947-10957) ────────────────────────────────────────────────────────────────────
   {
     let mount = fresh();
     let n = 0;
     m.renderCityExitFooter(mount, () => n++);
     const wrap = q(mount, ':scope > div');
-    check('footer.class', 'cityPanel.ts:10701 civ-v-exit-foot', wrap?.className, 'civ-v-exit-foot');
-    check('footer.btn', 'cityPanel.ts:10704 data-city-exit title', [q(mount, '[data-city-exit]')?.title, q(mount, '[data-city-exit]')?.className], ['Wróć na mapę świata (Esc)', 'civ-v-exit-map-btn civ-v-exit-foot-btn']);
-    check('footer.hint', 'cityPanel.ts:10708 hint', q(mount, '.civ-v-exit-foot-hint')?.textContent, 'Esc — szybkie zamknięcie');
-    check('footer.label', 'cityPanel.ts:10707 label', q(mount, '[data-city-exit] > span:last-child')?.textContent, 'Wróć na mapę');
+    check('footer.class', 'cityPanel.ts:10948 civ-v-exit-foot', wrap?.className, 'civ-v-exit-foot');
+    check('footer.btn', 'cityPanel.ts:10951 data-city-exit title', [q(mount, '[data-city-exit]')?.title, q(mount, '[data-city-exit]')?.className], ['Wróć na mapę świata (Esc)', 'civ-v-exit-map-btn civ-v-exit-foot-btn']);
+    check('footer.hint', 'cityPanel.ts:10955 hint', q(mount, '.civ-v-exit-foot-hint')?.textContent, 'Esc — szybkie zamknięcie');
+    check('footer.label', 'cityPanel.ts:10954 label', q(mount, '[data-city-exit] > span:last-child')?.textContent, 'Wróć na mapę');
     q(mount, '[data-city-exit]').click();
-    check('footer.click.calls', 'cityPanel.ts:10709 closeCityView(onClose) -> clearCityPanelUxMode, onClose', [calls.slice(), n], [['clearGarrisonPanel', 'disposeHoverDetailDock'], 1]);
+    check('footer.click.calls', 'cityPanel.ts:10956 closeCityView(onClose) -> clearCityPanelUxMode, onClose', [calls.slice(), n], [['clearGarrisonPanel', 'disposeHoverDetailDock'], 1]);
     check('footer.click.tab', 'K08A closeCityView -> zakładka budowa', m.getK08aActiveCityPanelTab(), 'budowa');
   }
 
-  // ─── renderCivMapChrome (pin :11056-11079) ──────────────────────────────────────────────────────────────────────
+  // ─── renderCivMapChrome (pin :11297-11320) ──────────────────────────────────────────────────────────────────────
   {
     const mount = fresh();
     let n = 0;
     m.renderCivMapChrome(mount, city, () => n++);
-    check('chrome.stack', 'cityPanel.ts:11057 civ-v-map-bottom-stack', !!q(mount, ':scope > .civ-v-map-bottom-stack'), true);
-    check('chrome.btn', 'cityPanel.ts:11060 #civ-v-map-close', q(mount, '#civ-v-map-close')?.title, 'Wróć na mapę świata (Esc)');
-    check('chrome.hint', 'cityPanel.ts:11066 hint', q(mount, '.civ-v-exit-foot-hint')?.textContent, 'Esc — szybkie wyjście');
-    check('chrome.center.ids', 'cityPanel.ts:11068-11071', ['cs-okhead-ux', 'cs-oktoolbar-ux', 'cs-okmode'].map((id) => !!q(mount, '#cs-okolica-center #' + id)), [true, true, true]);
-    check('chrome.aux.hidden', 'cityPanel.ts:11074 hidden aria-hidden', [q(mount, '#cs-okolica-aux')?.hasAttribute('hidden'), q(mount, '#cs-okolica-aux')?.getAttribute('aria-hidden')], [true, 'true']);
-    check('chrome.aux.children', 'cityPanel.ts:11075-11078', ['cs-oksurowce', 'cs-okolica', 'cs-okstats', 'cs-okhint'].map((id) => !!q(mount, '#cs-okolica-aux > #' + id)), [true, true, true, true]);
-    check('chrome.stats.class', 'cityPanel.ts:11077 okstats is-collapsed', q(mount, '#cs-okstats')?.className, 'okstats is-collapsed');
+    check('chrome.stack', 'cityPanel.ts:11298 civ-v-map-bottom-stack', !!q(mount, ':scope > .civ-v-map-bottom-stack'), true);
+    check('chrome.btn', 'cityPanel.ts:11301 #civ-v-map-close', q(mount, '#civ-v-map-close')?.title, 'Wróć na mapę świata (Esc)');
+    check('chrome.hint', 'cityPanel.ts:11307 hint', q(mount, '.civ-v-exit-foot-hint')?.textContent, 'Esc — szybkie wyjście');
+    check('chrome.center.ids', 'cityPanel.ts:11309-11312', ['cs-okhead-ux', 'cs-oktoolbar-ux', 'cs-okmode'].map((id) => !!q(mount, '#cs-okolica-center #' + id)), [true, true, true]);
+    check('chrome.aux.hidden', 'cityPanel.ts:11315 hidden aria-hidden', [q(mount, '#cs-okolica-aux')?.hasAttribute('hidden'), q(mount, '#cs-okolica-aux')?.getAttribute('aria-hidden')], [true, 'true']);
+    check('chrome.aux.children', 'cityPanel.ts:11316-11319', ['cs-oksurowce', 'cs-okolica', 'cs-okstats', 'cs-okhint'].map((id) => !!q(mount, '#cs-okolica-aux > #' + id)), [true, true, true, true]);
+    check('chrome.stats.class', 'cityPanel.ts:11318 okstats is-collapsed', q(mount, '#cs-okstats')?.className, 'okstats is-collapsed');
     q(mount, '#civ-v-map-close').click();
-    check('chrome.click', 'cityPanel.ts:11079 closeCityView(onClose)', [calls.slice(), n], [['clearGarrisonPanel', 'disposeHoverDetailDock'], 1]);
+    check('chrome.click', 'cityPanel.ts:11320 closeCityView(onClose)', [calls.slice(), n], [['clearGarrisonPanel', 'disposeHoverDetailDock'], 1]);
   }
 
-  // ─── withW4TabCard (pin :11651-11667) ───────────────────────────────────────────────────────────────────────────
+  // ─── withW4TabCard (pin :11892-11908) ───────────────────────────────────────────────────────────────────────────
   {
     const parent = fresh();
     let seen = null;
     m.withW4TabCard(parent, 'cs-x', city, (body) => { seen = body; body.dataset.probe = '1'; }, { scrollable: true });
     const card = q(parent, ':scope > div');
-    check('w4.scroll.card', 'cityPanel.ts:11656 civ-w4-tab-card--scroll', card?.className, 'civ-w4-tab-card civ-w4-tab-card--scroll');
-    check('w4.id', 'cityPanel.ts:11657 card.id', card?.id, 'cs-x');
-    check('w4.body', 'cityPanel.ts:11659-11660 body class', seen?.className, 'civ-w4-tab-body civ-w4-tab-body--scroll');
-    check('w4.body.parent', 'cityPanel.ts:11662 card.appendChild(body)', seen?.parentElement === card, true);
+    check('w4.scroll.card', 'cityPanel.ts:11897 civ-w4-tab-card--scroll', card?.className, 'civ-w4-tab-card civ-w4-tab-card--scroll');
+    check('w4.id', 'cityPanel.ts:11898 card.id', card?.id, 'cs-x');
+    check('w4.body', 'cityPanel.ts:11900-11901 body class', seen?.className, 'civ-w4-tab-body civ-w4-tab-body--scroll');
+    check('w4.body.parent', 'cityPanel.ts:11903 card.appendChild(body)', seen?.parentElement === card, true);
     const p2 = fresh();
     m.withW4TabCard(p2, undefined, city, () => {}, undefined);
     const c2 = q(p2, ':scope > div');
-    check('w4.plain.card', 'cityPanel.ts:11656 bez opts', c2?.className, 'civ-w4-tab-card');
-    check('w4.plain.noid', 'cityPanel.ts:11657 brak id gdy undefined', c2?.hasAttribute('id'), false);
-    check('w4.plain.body', 'cityPanel.ts:11659 body bez scroll', q(c2, ':scope > div')?.className, 'civ-w4-tab-body');
+    check('w4.plain.card', 'cityPanel.ts:11897 bez opts', c2?.className, 'civ-w4-tab-card');
+    check('w4.plain.noid', 'cityPanel.ts:11898 brak id gdy undefined', c2?.hasAttribute('id'), false);
+    check('w4.plain.body', 'cityPanel.ts:11900 body bez scroll', q(c2, ':scope > div')?.className, 'civ-w4-tab-body');
   }
 
-  // ─── renderOwnedBuildingsBar (pin :9273-9293) ───────────────────────────────────────────────────────────────────
+  // ─── renderOwnedBuildingsBar (pin :9517-9537) ───────────────────────────────────────────────────────────────────
   {
     host.cfg.getBuiltBuildingIds = undefined;
     let mount = fresh();
     m.renderOwnedBuildingsBar(mount, city, null);
     const bar = q(mount, 'button.bld-owned-bar');
-    check('owned.cfg-undef.label', 'cityPanel.ts:9276 count ?? 0', bar?.getAttribute('aria-label'), 'Budynki w mieście (0) — pokaż szczegóły');
-    check('owned.type', 'cityPanel.ts:9277 type=button', bar?.type, 'button');
-    check('owned.chev', 'cityPanel.ts:9290 chevron', q(bar, '.bld-owned-chevron')?.textContent, 'ℹ szczegóły');
-    check('owned.left.text', 'cityPanel.ts:9284 span text', q(bar, ':scope > span:first-child > span:last-child')?.textContent, 'Budynki w mieście (0)');
-    check('owned.left.style', 'cityPanel.ts:9285 cssText', q(bar, ':scope > span').getAttribute('style'), 'display: inline-flex; align-items: center; gap: 0.4em;');
-    check('owned.single', 'cityPanel.ts:9276-9292 jeden przycisk w mount', qa(mount, 'button').length, 1);
+    check('owned.cfg-undef.label', 'cityPanel.ts:9520 count ?? 0', bar?.getAttribute('aria-label'), 'Budynki w mieście (0) — pokaż szczegóły');
+    check('owned.type', 'cityPanel.ts:9521 type=button', bar?.type, 'button');
+    check('owned.chev', 'cityPanel.ts:9534 chevron', q(bar, '.bld-owned-chevron')?.textContent, 'ℹ szczegóły');
+    check('owned.left.text', 'cityPanel.ts:9528 span text', q(bar, ':scope > span:first-child > span:last-child')?.textContent, 'Budynki w mieście (0)');
+    check('owned.left.style', 'cityPanel.ts:9529 cssText', q(bar, ':scope > span').getAttribute('style'), 'display: inline-flex; align-items: center; gap: 0.4em;');
+    check('owned.single', 'cityPanel.ts:9520-9536 jeden przycisk w mount', qa(mount, 'button').length, 1);
 
     host.cfg.getBuiltBuildingIds = (cid) => (cid === 1 ? ['a', 'b', 'c'] : undefined);
     mount = fresh();
     m.renderOwnedBuildingsBar(mount, city, null);
-    check('owned.count3', 'cityPanel.ts:9276 built.length = 3', q(mount, 'button.bld-owned-bar')?.getAttribute('aria-label'), 'Budynki w mieście (3) — pokaż szczegóły');
+    check('owned.count3', 'cityPanel.ts:9520 built.length = 3', q(mount, 'button.bld-owned-bar')?.getAttribute('aria-label'), 'Budynki w mieście (3) — pokaż szczegóły');
     mount.innerHTML = '<p>stare</p>';
     m.renderOwnedBuildingsBar(mount, city, null);
-    check('owned.clears', 'cityPanel.ts:9274 mount.innerHTML = ""', qa(mount, 'p').length, 0);
+    check('owned.clears', 'cityPanel.ts:9518 mount.innerHTML = ""', qa(mount, 'p').length, 0);
     host.cfg.getBuiltBuildingIds = undefined;
   }
 
-  // ─── renderOwnedBuildingsBar: ścieżka KLIK i HOVER (pin :9287-9291 -> ui/hoverDetailDock) ───────────────────────
+  // ─── renderOwnedBuildingsBar: ścieżka KLIK i HOVER (pin :9531-9535 -> ui/hoverDetailDock) ───────────────────────
   // Wektory używają liczby budynków 0 i data={} (karta: „(brak — zbuduj pierwszy)”), data=null daje „Brak danych gry”.
   // Delegaty K06B: `el` (k01b-dom) i wartość `cfg` (ten sam obiekt co host.cfg) — ścieżka built=[] nie woła innych
   // delegatów K06B. Ścieżka built≠[] (sumowanie utrzymania, grupy budynków) = NIE_ZMIERZONO (K08B §7).
@@ -316,19 +316,19 @@ try {
     m.renderOwnedBuildingsBar(mount, city, {});
     const bar = q(mount, 'button.bld-owned-bar');
     bar.click();
-    check('owned.click.stop', 'cityPanel.ts:9288 e.stopPropagation() (klik nie bąbelkuje do rodzica)', parentClicks, 0);
-    check('owned.click.header', 'cityPanel.ts:9289 karta w docku: nagłówek', dockL.querySelector('.dc-h')?.textContent ?? null, 'Budynki w mieście (0)');
-    check('owned.click.side', 'cityPanel.ts:9289 showHoverDetailNow(..., "left") -> dok lewy, nie prawy', [dockL.querySelector('.detail-card') !== null, dockR.querySelector('.detail-card') !== null], [true, false]);
-    check('owned.click.data', 'cityPanel.ts:9289 buildOwnedBuildingsDetailCard(city, data) dostaje data (nie null)', dockL.querySelector('.dc-note')?.textContent ?? null, '(brak — zbuduj pierwszy)');
+    check('owned.click.stop', 'cityPanel.ts:9532 e.stopPropagation() (klik nie bąbelkuje do rodzica)', parentClicks, 0);
+    check('owned.click.header', 'cityPanel.ts:9533 karta w docku: nagłówek', dockL.querySelector('.dc-h')?.textContent ?? null, 'Budynki w mieście (0)');
+    check('owned.click.side', 'cityPanel.ts:9533 showHoverDetailNow(..., "left") -> dok lewy, nie prawy', [dockL.querySelector('.detail-card') !== null, dockR.querySelector('.detail-card') !== null], [true, false]);
+    check('owned.click.data', 'cityPanel.ts:9533 buildOwnedBuildingsDetailCard(city, data) dostaje data (nie null)', dockL.querySelector('.dc-note')?.textContent ?? null, '(brak — zbuduj pierwszy)');
 
     // hover: attachHoverDetail(bar, …, 280, 'left') — karta dopiero po ~280 ms, strona lewa.
     m.setHoverDetailDocks(null);
     m.setHoverDetailDocks({ left: dockL, right: dockR });
     bar.dispatchEvent(new window.MouseEvent('mouseenter'));
     await new Promise((r) => setTimeout(r, 150));
-    check('owned.hover.early', 'cityPanel.ts:9291 brak karty przed opóźnieniem 280 ms (sprawdzone po 150 ms)', dockL.querySelector('.detail-card') !== null, false);
+    check('owned.hover.early', 'cityPanel.ts:9535 brak karty przed opóźnieniem 280 ms (sprawdzone po 150 ms)', dockL.querySelector('.detail-card') !== null, false);
     await new Promise((r) => setTimeout(r, 400));
-    check('owned.hover.late', 'cityPanel.ts:9291 po 280 ms karta w docku lewym z danymi (data != null)', [dockL.querySelector('.dc-note')?.textContent ?? null, dockR.querySelector('.detail-card') !== null], ['(brak — zbuduj pierwszy)', false]);
+    check('owned.hover.late', 'cityPanel.ts:9535 po 280 ms karta w docku lewym z danymi (data != null)', [dockL.querySelector('.dc-note')?.textContent ?? null, dockR.querySelector('.detail-card') !== null], ['(brak — zbuduj pierwszy)', false]);
     bar.dispatchEvent(new window.MouseEvent('mouseleave'));
     m.setHoverDetailDocks(null);
     host.cfg.getBuiltBuildingIds = undefined;
@@ -340,7 +340,7 @@ try {
     check('scale.accessor', 'K08B-Z3 getK07aScalePx() zwraca wartość z setK07aScalePx (round-trip akcesora)', m.getK07aScalePx(), 20);
     const mount = fresh();
     m.renderCityIconRail(mount, items, true, false);
-    check('scale.vertical.unchanged', 'cityPanel.ts:11634 gałąź vertical (24px) ma pierwszeństwo przed iconPx', q(mount, '.civ-v-icon-glyph').style.width, '24px');
+    check('scale.vertical.unchanged', 'cityPanel.ts:11875 gałąź vertical (24px) ma pierwszeństwo przed iconPx', q(mount, '.civ-v-icon-glyph').style.width, '24px');
     m.setK07aScalePx(10);
   }
 } catch (e) {

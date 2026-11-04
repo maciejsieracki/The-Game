@@ -54,7 +54,7 @@ function writeActiveCityK09a(city: City): void {
 
 // ─── Jednostki K09A-1 (kopie pinu wygenerowane ręcznie; markery = bramka verify-k09a-copies.mjs) ─────────────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10209-10221
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10456-10468
 export function switchCity(dir: -1 | 1): void {
   const cur = readActiveCityK09a();
   if (cur === null) return;
@@ -71,7 +71,7 @@ export function switchCity(dir: -1 | 1): void {
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11855-11941
+// pin 86d510c66 gra/src/ui/cityPanel.ts:12096-12182
 export function rerender(): void {
   const refresh = getK07aUxSectionRefresh();
   if (refresh) {
@@ -166,7 +166,7 @@ export function rerender(): void {
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10793-10809
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11040-11056
 export function renderCityIconRightRail(mount: HTMLElement, city: City): void {
   mount.innerHTML = '';
   const scope = el('div', 'civ-cs civ-ux-panel-scope');

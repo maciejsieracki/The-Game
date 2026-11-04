@@ -52,20 +52,20 @@ const check = (id, pin, got, want) => {
 
 /** Zakresy pinu wykonywane verbatim: [nazwa, a, b, kotwica startu, koniec]. */
 const PIN_RANGES = [
-  ['appendWealthCompactStrip', 4247, 4304, 'function appendWealthCompactStrip(', '}'],
-  ['buildWealthCompactTooltipCard', 4307, 4350, 'function buildWealthCompactTooltipCard(', '}'],
-  ['renderWealth', 4775, 4822, 'function renderWealth(', '}'],
-  ['buildWealthDetailCard', 4824, 4944, 'function buildWealthDetailCard(', '}'],
+  ['appendWealthCompactStrip', 4311, 4368, 'function appendWealthCompactStrip(', '}'],
+  ['buildWealthCompactTooltipCard', 4371, 4414, 'function buildWealthCompactTooltipCard(', '}'],
+  ['renderWealth', 4839, 4886, 'function renderWealth(', '}'],
+  ['buildWealthDetailCard', 4888, 5009, 'function buildWealthDetailCard(', '}'],
 ];
 /** PIN-ANCHOR: literały, które muszą występować w cytowanych liniach pinu. */
 const PIN_ANCHORS = [
-  [4780, '? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, cfg.difficulty ?? \'normal\')'],
-  [4783, "appendSectionTitleWithDetails(mount, '<span>Zamożność</span>', () => {"],
-  [4786, "'Brak danych parametrów zamożności.'"],
-  [4794, 'const cap = wealthCap(epoch, wealthParams);'],
-  [4838, 'const podzial = readPodzialHandlu(city, gameData());'],
-  [4837, 'const rown = wealthRownowaga(ws.poziom, epoch, p);'],
-  [4865, "'Pasek w panelu pokazuje tylko postęp puli do następnego poziomu W — jak spichlerz dla wzrostu ludności. ' +"],
+  [4844, '? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, cfg.difficulty ?? \'normal\')'],
+  [4847, "appendSectionTitleWithDetails(mount, '<span>Zamożność</span>', () => {"],
+  [4850, "'Brak danych parametrów zamożności.'"],
+  [4858, 'const cap = wealthCap(epoch, wealthParams);'],
+  [4902, 'const podzial = readPodzialHandlu(city, gameData());'],
+  [4901, 'const rown = wealthRownowaga(ws.poziom, epoch, p);'],
+  [4929, "'Pasek w panelu pokazuje tylko postęp puli do następnego poziomu W — jak spichlerz dla wzrostu ludności. ' +"],
 ];
 
 let exitCode = 0;
@@ -99,7 +99,7 @@ try {
       '// Stub nazwy pinu `gameData()` (port dostaje dane jako parametr `data`, K08D-Z14): ten sam obiekt co w harnessie.',
       'export const TEST_DATA = { buildings: [], units: [], econParams: { tag: "econ-test" } };',
       'const gameData = (): typeof TEST_DATA => TEST_DATA;',
-      '// --- verbatim pin edb8fb56 gra/src/ui/cityPanel.ts (zakresy: 4247-4304, 4307-4350, 4775-4822, 4824-4944) ---',
+      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 4311-4368, 4371-4414, 4839-4886, 4888-5009) ---',
       ...pinExecText,
       '// --- koniec verbatim ---',
       'export { appendWealthCompactStrip, buildWealthCompactTooltipCard, renderWealth, buildWealthDetailCard };',

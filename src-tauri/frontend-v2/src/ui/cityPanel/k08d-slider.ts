@@ -18,7 +18,7 @@ import { buildHandelDetailCard } from './k08d-handel';
 
 // ─── Jednostki K08D, partia k08d-slider.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11007-11033
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11248-11274
 export function renderHandelSlidersPanel(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
   const daninaLbl = daninaLabelForCity(city);

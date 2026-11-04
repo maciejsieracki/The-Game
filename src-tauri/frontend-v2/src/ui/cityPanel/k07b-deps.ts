@@ -17,6 +17,8 @@ export type K07bDeps = Record<string, unknown>;
 /** Funkcje delegowane przez `dep(…)` (komplet; patrz nagłówek). */
 export const K07B_FN_NAMES = [
   'activeMap', 'appendBuildQueueSection', 'appendCitizenUpkeepBlock', 'appendCompositionBlock', 'appendProductionPicon',
+  // REPIN-UI-2-G r2 (web 86d510c66)
+  'buildingWorkPerTurnForCity', 'rushCostModifierForCity',
   'appendRecruitmentQueue', 'attachInteractiveDetail', 'buildBuildingBuildTabDetailCard', 'buildKulturaDetailCard',
   'buildOkolicaDetailCard', 'buildPorzadekDetailCard', 'buildTopBarKulturaDetailCard', 'buildZdrowieDetailCard',
   'buildableProduction', 'cancelQueueItem', 'cityLudnoscAbsolutna', 'cityPanelChipIconWrap', 'cityPanelTitle',

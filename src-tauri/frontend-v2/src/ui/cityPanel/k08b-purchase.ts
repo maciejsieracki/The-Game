@@ -14,14 +14,14 @@ import { appendTabIndicators, createScrollList } from './k02-units';
 import { buildRecruitTabDetailCard, buildUpgradeBonusDetailCard } from './k05b-jednostki';
 import { cfg, getProd, isMeCity, productionCtxForCity, type City, type GameData } from './k05b-host';
 import { appendUnitRecruitCompactRow } from './k06b-jednostki';
-import {
-  appendRecruitMilitaryResourceStrip, getUnitDef, purchasableUnits, sortByUnitPowerDescending, type UnitPowerInput,
-} from './k08b-deps';
+import { appendRecruitMilitaryResourceStrip, empireRekruciTotal, recruitPanelPurchasableUnits } from './k08b-deps';
+// REPIN-UI-2-G r2: web 86d510c66 (R-WEB-HUD-NUMBER-ABBREV-Q1) — kopia bajtowa UI-2-A (#1), czysta prezentacja (nie reguła gry).
+import { formatCompactNumber, formatFullNumber } from '../formatCompactNumber';
 import { appendSectionTitleWithDetails } from './k08b-title';
 
 // ─── Jednostki K08B, partia k08b-purchase.ts (kopie pinu wygenerowane; markery = bramka verify-k08b-copies.mjs) ─────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:8891-8977
+// pin 86d510c66 gra/src/ui/cityPanel.ts:9119-9216
 export function renderPurchasableUnits(
   mount: HTMLElement,
   city: City,
@@ -40,11 +40,7 @@ export function renderPurchasableUnits(
           c.appendChild(el('div', 'dc-note', 'Brak danych gry'));
           return c;
         }
-        const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-        const units = sortByUnitPowerDescending(
-          purchasableUnits(city, data, techs, productionCtxForCity(city)),
-          unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
-        );
+        const units = recruitPanelPurchasableUnits(city, data);
         return buildRecruitTabDetailCard(city, units.length, cfg.getTreasury?.(city.ownerId));
       },
     );
@@ -59,11 +55,7 @@ export function renderPurchasableUnits(
   // R-REKRUTACJA-PODGLAD-SUROWCOW-Q1: pasek surowców faktycznie uczestniczących
   // w koszcie/utrzymaniu jednostek dostępnych do rekrutacji w tym mieście/epoce
   // (dynamicznie, patrz appendRecruitMilitaryResourceStrip).
-  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-  const units = sortByUnitPowerDescending(
-    purchasableUnits(city, data, techs, productionCtxForCity(city)),
-    unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
-  );
+  const units = recruitPanelPurchasableUnits(city, data);
   appendRecruitMilitaryResourceStrip(mount, city, data, units);
   const skarb = cfg.getTreasury?.(city.ownerId);
   const rqLen = getProd(city.id).rekrutacja?.length ?? 0;
@@ -94,6 +86,25 @@ export function renderPurchasableUnits(
   if (units.length === 0) {
     mount.appendChild(el('div', 'muted', '(brak jednostek do kupienia — zbadaj technologie / Koszary)'));
     return;
+  }
+
+  // R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1: pula rekrutów PAŃSTWA raz, jedną linią nad listą
+  // (wcześniej powtarzana w każdej karcie); wiersz pokazuje już tylko „potrzebne” i „brak N”.
+  const poolAvailable = empireRekruciTotal(city);
+  if (poolAvailable != null && Number.isFinite(poolAvailable)) {
+    const pool = el('div', 'unit-recruit-pool');
+    const poolValue = Math.max(0, Math.floor(poolAvailable));
+    pool.dataset.available = String(poolValue);
+    pool.title = 'Pula rekrutów imperium — wspólna dla wszystkich jednostek; '
+      + 'wiersz jednostki pokazuje, ile potrzebuje i ile brakuje'
+      + ` · Dostępne dokładnie: ${formatFullNumber(poolValue)}`;
+    pool.textContent = 'Rekruci: dostępne ';
+    const b = document.createElement('b');
+    // R-WEB-HUD-NUMBER-ABBREV-Q1: pula rekrutów skrócona do „71,7k" (pełna wartość w title/aria-label).
+    b.textContent = formatCompactNumber(poolValue);
+    pool.setAttribute('aria-label', `Rekruci: dostępne ${formatFullNumber(poolValue)}`);
+    pool.appendChild(b);
+    mount.appendChild(pool);
   }
 
   const scroll = createScrollList(

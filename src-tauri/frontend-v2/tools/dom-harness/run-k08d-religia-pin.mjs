@@ -52,18 +52,18 @@ const check = (id, pin, got, want) => {
 
 /** Zakresy pinu wykonywane verbatim: [nazwa, a, b, kotwica startu, koniec]. */
 const PIN_RANGES = [
-  ['appendCompositionBlock', 3814, 3834, 'function appendCompositionBlock(', '}'],
-  ['buildTopBarReligiaDetailCard', 5992, 6039, 'function buildTopBarReligiaDetailCard(', '}'],
-  ['renderReligia', 4112, 4220, 'function renderReligia(', '}'],
+  ['appendCompositionBlock', 3878, 3898, 'function appendCompositionBlock(', '}'],
+  ['buildTopBarReligiaDetailCard', 6063, 6110, 'function buildTopBarReligiaDetailCard(', '}'],
+  ['renderReligia', 4176, 4284, 'function renderReligia(', '}'],
 ];
 /** PIN-ANCHOR: literały, które muszą występować w cytowanych liniach pinu. */
 const PIN_ANCHORS = [
-  [4141, 'const relSzPkt = relState ? religiaSzPunkty(relState.wplywSzczescie, city.ownerId) : 0;'],
-  [4168, "label: 'Państwo',"],
-  [4208, "'Brak rozpisanych składników religii w tym mieście.',"],
-  [6026, 'const xRelTop = kultReligScaleForEra('],
-  [6005, 'const relParams = data'],
-  [4132, "'Brak danych silnika (hak getReligionState).'"],
+  [4205, 'const relSzPkt = relState ? religiaSzPunkty(relState.wplywSzczescie, city.ownerId) : 0;'],
+  [4232, "label: 'Państwo',"],
+  [4272, "'Brak rozpisanych składników religii w tym mieście.',"],
+  [6097, 'const xRelTop = kultReligScaleForEra('],
+  [6076, 'const relParams = data'],
+  [4196, "'Brak danych silnika (hak getReligionState).'"],
 ];
 
 let exitCode = 0;
@@ -102,7 +102,7 @@ try {
       'const FALLBACK_RELIGION_PARAMS = {};',
       'const kultReligScaleForEra = (era: number, scale: number): number => era * 100 + scale;',
       'const loadSocietyScaleParams = (..._a: unknown[]): number => 7;',
-      '// --- verbatim pin edb8fb56 gra/src/ui/cityPanel.ts (zakresy: 3814-3834, 5992-6039, 4112-4220) ---',
+      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 3878-3898, 6063-6110, 4176-4284) ---',
       ...pinExecText,
       '// --- koniec verbatim ---',
       'export { appendCompositionBlock, buildTopBarReligiaDetailCard, renderReligia };',
