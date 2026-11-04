@@ -1,0 +1,8 @@
+mutacja: usuniecie 'warzelnia_soli' z FOOD_IMPROVEMENT_KEYS (auto-improvements.ts), FAIL=9
+  [FAIL] player-zywnosc: 0 ulepszen zywnosciowych bez obywatela (jest 1: 3:warzelnia_soli@13,17)
+  [FAIL] ai (resource-pass bez filtra): 0 zywnosciowych bez obywatela przy niedoborze soli (jest 1: 0:warzelnia_soli@13,17)
+  [FAIL] player-zywnosc: 0 zywnosciowych bez obywatela przy niedoborze soli (jest 1: 3:warzelnia_soli@13,17)
+  [FAIL] player-zywnosc (resource-pass bez filtra): 0 zywnosciowych bez obywatela przy niedoborze soli (jest 1: 3:warzelnia_soli@13,17)
+  [FAIL] player-zrownowazone: 0 zywnosciowych bez obywatela przy niedoborze soli (jest 1: 0:warzelnia_soli@13,17)
+  [FAIL] player-zrownowazone (resource-pass bez filtra): 0 zywnosciowych bez obywatela przy niedoborze soli (jest 1: 0:warzelnia_soli@13,17)
+EXIT=1

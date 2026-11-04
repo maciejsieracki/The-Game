@@ -6,6 +6,9 @@
  *   (2) farma na wycietym heksie rzeki BEZ obywatela mimo „Tylko pola z obywatelami” ON (K1 i K2); reszta ulepszen nadal za filtrem;
  *   (3) brak limitu `defenseCap = ceil(pop/10)` fortow i posterunkow na miasto/klucz;
  *   (4) staly wskaznik „Budzet niewydany” (czysta funkcja `unspentBudgetWarning` + realny render `createBuildModeHud` w Chromium).
+ * R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (decyzja wlasciciela 2026-11-03/04, NADRZEDNA — „tak ma byc i koniec”): zmiany (1) i (2) przy
+ * „Tylko pola z obywatelami” ON ZNIESIONE (wycinka rzeczna i farma na wycietym heksie bez obywatela). Asercje (1), (2), (2c2) ODWROCONE
+ * (0 wycinek/farm poza polami obywateli); (3) i (4) bez zmian. Nowy kontrakt: ai-food-only-worked-hexes-test.cjs.
  * Prawdziwy `pickAutoImprovements`, bez mockow. Run z gra/:  node tools/auto-improve-q3-test.cjs
  * RED/GREEN:  AUTO_Q3_SRC_DIR=<kopia gra/src sprzed zmian> node tools/auto-improve-q3-test.cjs   (MUSI byc czerwony)
  * Mutacje:    AUTO_Q3_SRC_DIR=<kopia gra/src z mutacja> ...   (MUSI byc czerwony)
@@ -103,7 +106,7 @@ const MAXT = 4;
     const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
     const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: true, focus });
     const rc = log.find(e => e.key === 'wyrab' && isRiver(e.q, e.r));
-    ok(!!rc && rc.t < MAXT, `${focus}: wycinka rzeczna w turze ${rc && rc.t} (log: ${dl(log)})`);
+    ok(!rc, `${focus}: wycinka rzeczna bez obywatela NIE wystepuje przy filtrze ON (Q1 AI-FOOD; jest: ${rc && rc.hk})`);
   }
   console.log('(1b) K2: „Wolno wycinac las” OFF (skipWyrab) nadal blokuje cala wycinke (U-6 = A)');
   {
@@ -126,10 +129,9 @@ const MAXT = 4;
     const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: true, focus, turns: 14 });
     const cleared = log.filter(e => e.key === 'wyrab' && isRiver(e.q, e.r));
     const withFarm = cleared.filter(c => log.some(e => e.key === 'farma' && e.hk === c.hk && e.t > c.t));
-    ok(cleared.length === 3, `${focus}: 3 heksy rzeczne wyciete (${cleared.length}; log: ${dl(log)})`);
-    ok(withFarm.length === cleared.length, `${focus}: kazdy wyciety heks rzeczny dostaje farme bez obywatela (${withFarm.length}/${cleared.length})`);
-    const farmNoCitizen = log.filter(e => e.key === 'farma' && isRiver(e.q, e.r));
-    ok(farmNoCitizen.every(e => !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r)), `${focus}: farmy rzeczne stoja na heksach BEZ obywatela`);
+    ok(cleared.length === 0 && withFarm.length === 0, `${focus}: zero wycinek rzecznych bez obywatela przy filtrze ON (Q1 AI-FOOD; ${cleared.length}; log: ${dl(log)})`);
+    const farmNoCitizen = log.filter(e => e.key === 'farma' && !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r) && e.hk !== K(CQ, CR));
+    ok(farmNoCitizen.length === 0, `${focus}: zero farm poza polami obywateli (${farmNoCitizen.length})`);
   }
   console.log('(2b) wyjatek zawezony: reszta ulepszen nadal za filtrem „Tylko pola z obywatelami”');
   for (const focus of ['zywnosc', 'zrownowazone']) {
@@ -161,7 +163,7 @@ const MAXT = 4;
     const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: true, focus, skipFrom: 2, turns: 12 });
     const cleared = log.filter(e => e.key === 'wyrab' && isRiver(e.q, e.r));
     const late = log.filter(e => e.t >= 2 && e.key === 'farma' && nearRiver(e.q, e.r) && !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r) && e.hk !== K(CQ, CR));
-    ok(cleared.length > 0 && late.length === 0, `${focus}: wyciete przed wylaczeniem ${cleared.length}, farm bez obywatela po wylaczeniu ${late.length} (log: ${dl(log)})`);
+    ok(late.length === 0, `${focus}: (Q1 AI-FOOD: wycinek rzecznych bez obywatela ${cleared.length}) farm bez obywatela po wylaczeniu ${late.length} (log: ${dl(log)})`);
   }
   console.log('(2d) profil „surowce” NIE dostaje wyjatku farmy (zakres: Zywnosc i Zrownowazone)');
   {

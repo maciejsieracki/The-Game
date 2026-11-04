@@ -84,8 +84,10 @@ function pickOnce({ forest, worked }) {
   // bez obywatela ma własną asercję niżej (nowe zachowanie), więc pokrycie nie maleje.
   const wyrabPozaRzeka = picks.some(p => p.key === 'wyrab' && `${p.q},${p.r}` !== RIVER);
   assert(!wyrabPozaRzeka, 'kontrola: wyrab poza rzeką bez tartaku/obozu nie może wystąpić (minimum leśne)');
-  assert(picks.some(p => p.key === 'wyrab' && `${p.q},${p.r}` === RIVER),
-    'Q3: K2 wycina las NA rzece także bez obywatela (filtr „tylko pola z obywatelami” nie dotyczy wycinki rzecznej)');
+  // R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (decyzja właściciela 2026-11-03/04, nadrzędna): wyjątek Q3 ZNIESIONY — przy „Tylko pola z obywatelami”
+  // ON wycinka lasu na rzece BEZ obywatela NIE występuje (asercja odwrócona; wyrab na rzece Z obywatelem pilnuje test 1 wyżej).
+  assert(!picks.some(p => p.key === 'wyrab' && `${p.q},${p.r}` === RIVER),
+    'Q1 AI-FOOD: K2 NIE wycina lasu na rzece bez obywatela (filtr „tylko pola z obywatelami” bez wyjątków)');
 }
 
 console.log(`wyrab-rzeka-d1-test: ${passed} passed, ${failed} failed`);
