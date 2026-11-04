@@ -154,7 +154,6 @@ function runScenario(M, kind, o) {
       ...(o.war === false ? {} : { warAllIn: { targets: [{ ownerId: 3, cityId: 'c3', q: 38, r: 10 }] } }),
       marchGuard: guard,
     });
-    if (process.env.AMF_DEBUG && o.guard !== false) console.log('turn', turn, JSON.stringify(cmds.map((c) => [c.type, c.unitId, c.toQ, c.toR])), JSON.stringify(units.map((u) => [u.q, u.r])), JSON.stringify(guard && guard.stats));
     for (const c of cmds) {
       if (c.type !== 'move') continue;
       const u = units.find((x) => x.id === c.unitId);
