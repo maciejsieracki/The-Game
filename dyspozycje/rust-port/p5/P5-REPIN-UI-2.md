@@ -50,7 +50,7 @@ Hunki = początki zakresów po stronie `origin/main` (`git diff -U0`, `plik:lini
 | 23 | `newGameFlow.ts` | +283/−144 | +144/−95 | MOD | `:80 :176+6 :243+5 :250 :252+4 :258 :558 :565 :670+7 :687+5 :693+4 :700 :810 :854 …` | kreator nowej gry | port DOM (P5.7 r2) | `src/ui/newGameFlow.ts` | UI-2-F |
 | 24 | `entityCards/buildingAdapter.ts` | +3/−3 | 0 | MOD | `:68 :70 :279` | adapter karty budynku | adapter (importy `game/*` → DTO) | `src/ui/entityCards/buildingAdapter.ts` | UI-2-D |
 | 25 | `entityCards/improvementAdapter.ts` | +7/−1 | 0 | MOD | `:27 :160+6` | adapter karty ulepszenia | adapter | `src/ui/entityCards/improvementAdapter.ts` | UI-2-D |
-| 26 | `cityPanel.ts` | +341/−100 | +86/−31 | — (bloki K01–K09 w `src/ui/cityPanel/*.ts`) | `:82 :108+2 :164 :234 :245 :268 :283 :551+10 :567+2 :597+2 :630+24 :775 :834 :929+3 …` | kolejka rekrutacji w panelu (↑↓✕, `ff6ac152c`), kolejność rekrutacji wg epoki (`6f61f1d70`), skracanie liczb (`62884e25f`) | K (bloki kopii z markerami) | `src/ui/cityPanel/k0*.ts` | **UI-2-G r1: K01A/K01B/K05A/K06A przepięte (186/328 markerów, 6/25 DRIFT); reszta r2–r3 (§6)** |
+| 26 | `cityPanel.ts` | +341/−100 | +86/−31 | — (bloki K01–K09 w `src/ui/cityPanel/*.ts`) | `:82 :108+2 :164 :234 :245 :268 :283 :551+10 :567+2 :597+2 :630+24 :775 :834 :929+3 …` | kolejka rekrutacji w panelu (↑↓✕, `ff6ac152c`), kolejność rekrutacji wg epoki (`6f61f1d70`), skracanie liczb (`62884e25f`) | K (bloki kopii z markerami) | `src/ui/cityPanel/k0*.ts` | **UI-2-G r2: K01A–K09A przepięte w całości (322 markery bloków, 25/25 DRIFT; K03 3 adaptacje DTO); K09C/K09D poza allowlistą → §7.4** |
 
 ### 1a. Wycena per plik (runda 2 — odpowiedź na zarzut Z1 Evaluatora r1)
 
@@ -97,7 +97,7 @@ nie zawiera tej infrastruktury, bo kolejne partie ją reużywają.
 | 23 | `newGameFlow` | PD | 427 | 76 | 427 | 21 | F |
 | 24 | `entityCards/buildingAdapter` | AD | 6 | 3 | 6 | 1 | D |
 | 25 | `entityCards/improvementAdapter` | AD | 8 | 2 | 8 | 1 | D |
-| 26 | `cityPanel` (bloki K) | K | 441 | 89 | 277 | 20 | G (r1: 6/25 DRIFT; przeliczenie §6.5) |
+| 26 | `cityPanel` (bloki K) | K | 441 | 89 | 277 | 20 | G (r1: 6/25 DRIFT; r2: 25/25 + K03; §6.5, §7) |
 | | **Razem** | | **2709** | | **1945** | **129,25** | |
 
 Zmiany weba spoza `gra/src/ui/**` (tabela niżej) wycenia się w P6 (silnik/kontroler), nie w UI-2: „Ludność: −1” i
@@ -303,3 +303,122 @@ node tools/dom-harness/mutate-repin-ui2g.mjs --web-dir "$WEB" [--only M1,…]
 node tools/dom-harness/measure-repin-ui2g-k02k04-drift.mjs --pin-dir "$PIN" --cur-dir "$WEB"
 node tools/verify-repin-ui2-copies.mjs [--web-dir "$WEB"]
 ```
+
+## 7. Partia UI-2-G — runda 2, obrona (`R-RUSTPORT-REPIN-UI-2-G-Q1`)
+
+Baza: commit Operatora r1 `d049f45a6` (kod `84d312c0c`). Web `86d510c66` = `origin/main` (bez nowych commitów `gra/src`).
+Zakres r2 = cała reszta GOAL K01–K09 (zarzut Z1) + Z2–Z6 z oceny Evaluatora r1.
+
+### 7.1 Bloki przepięte w r2
+
+- `repin-ui2g-kblocks.mjs --write` dla 30 plików z markerami `edb8fb56`. Wynik: 136 bloków, z czego 117 MOVED, 14 DRIFT
+  nałożonych automatycznie i 5 MANUAL. Teraz 37 plików i **322 markery bloków, wszystkie `86d510c66`**. Zostało tylko
+  6 wzmianek `edb8fb56` w komentarzach nagłówków, które nie są markerami.
+- DRIFT 19/19, razem z r1 **25/25**:
+  - K05B: `buildBuildingInfocard`, `buildBuildingDetailCardViaEntityCard`, `_legacyBuildBuildingDetailCard`,
+    `buildBuildingBuildTabDetailCard` (MANUAL), `buildRecruitTabDetailCard`;
+  - K06B: `appendPodzialPracyInfo`, `appendUnitRecruitCompactRow` (MANUAL), `appendRecruitmentQueue`
+    (z nowymi `cancelRecruitmentQueueItem` i `moveRecruitmentQueueItemBy`, ↑↓✕ `ff6ac152c`), `appendBuildQueueSection`,
+    `renderBuildList` (MANUAL), `appendOwnedBuildingRow`, blok garnizonu 10030-10067 oraz placeholder `renderWorkedPreview`
+    (MANUAL: sam marker, K06B-Z7);
+  - K07B: blok 8633-8742;
+  - K08B: `renderPurchasableUnits` (MANUAL);
+  - K08C: `buildPracaDetailCard`;
+  - K08D: `buildHandelDetailCard`, `buildWealthDetailCard`;
+  - K08E: `buildTopBarRekruciDetailCard`.
+  Bloki MANUAL to bajtowa treść webu plus te same podstawienia portu co w pinie
+  (`export`, `(x: any)`). Przenosi je narzędzie `rb` z kontrolą „podstawienie trafia w web”.
+- K03 (adaptacje DTO bez markerów, wskazane przez `run-k03-units` na webie):
+  - `buildTopBarRekruciDetailCardK`: tekst regeneracji;
+  - `buildHandelDetailCardK`: 6 tekstów formuł i algorytmu webu;
+  - `bindRecruitQueueDragReorderK`: 4. parametr `onMutated?` po `rerender()`;
+  - `K03_RETIRED.line` = 655/669.
+- K02 i K04: bez zmian kodu, bo harnessy na webie są zielone. Czerwony jest tylko `run-k02-styles`, a jego różnica CSS
+  pochodzi z `UNIT_RECRUIT_CARD_CSS` w #14 `unitRecruitCard.ts`, które należy do partii UI-2-C. Dowód: po podmianie
+  tylko tego pliku na wersję pinu harness daje 14/0.
+- Nowe nazwy webu wołane przez przepięte bloki dostają delegaty (reguły gry → silnik, P5.13):
+  - `buildingWorkPerTurnForCity`: K05B `rules` oraz `dep` w K06B i K07B;
+  - `unitRecruitmentCapacityForCity`, `buildingRequirementChips`, `loadSpichlerzDrainParams`: K06B;
+  - `rushCostModifierForCity`: K07B;
+  - `recruitPanelPurchasableUnits`, `empireRekruciTotal`: K08B.
+  Do tego `cfg.getManpowerMultipliers` w `K05bCfg`. `formatCompactNumber` i `formatFullNumber` K08B importuje
+  z kopii UI-2-A. Pole `civBonusy` stanu karty budynku obsługuje lokalny typ K05B (ZAŁOŻENIE G-Z7: pole w
+  `BuildingCardCityState` dodaje UI-2-D #24, bez edycji cudzego pliku).
+
+### 7.2 Bramki weryfikatorów i `npm run check` (Z3, Z4, Z5)
+
+- Weryfikatory k01b, k05a, k05b, k06a, k06b, k07a, k07b, k08a, k08b, k08c, k08d (5 batchy), k08e (4 batche) i k09a:
+  **20/20 EXIT 0 na webie i 20/20 EXIT 1 na pinie** (kontrola negatywna).
+- Zakresy jednostek z zamrożonych logów (`wybrane.json` K07A/K08A, `k06b-ranges.json`) przenosi zamrożona mapa
+  `tools/dom-harness/repin-ui2g-rangemap.json` (133 zakresy). Zakres bez wpisu kończy się FAIL, nie zgadywaniem.
+- Z3: k06b, k07a i k09a były czerwone na bazie `2198eaf7e`. Wszystkie trzy przyczyny pochodzą z partii przed UI-2-G
+  i każda jest wprost przypisana do swojego tematu w `why`/komentarzu:
+  - K06B: `LINE_SUB pinGarrisonPanel(cityId: number)`, K09B r2 `0a1761d80`;
+  - K07A: `LOCAL_NAMES getK07aScalePx`, K08B r1 `82049d69b`;
+  - K09A: `k09a-subs.mjs` wygenerowane `--gen`, jedyna różnica hunków to `pinnedGarrisonCityId !== city.id` (K09B r2);
+  - przy okazji mutant `paint.noGarrisonClear`, który na bazie był INVALID.
+- Z4: wpis K06A `pinnedGarrisonCityId` należy do tej samej klasy co trzy wpisy K09B r2 wyżej.
+  `why: 'K09B-r2 typ id miasta (DTO number)'` przypisuje go do K09B, a nie do UI-2-G. Tolerancja nie rośnie: port nie
+  zmienił się od `0a1761d80`, a nowy wpis tylko opisuje tę zmianę.
+- Z5: `verify-repin-ui2-copies.mjs` (w `npm run check`) ma nowy krok **CONTENT**.
+  - Uruchamia 21 bramek treści z `contentGates` manifestu (`run-k01a` z pinem i 20 weryfikatorów) na
+    `git archive 86d510c66 gra/src gra/data` w katalogu tymczasowym, który potem usuwa.
+  - `--no-git` bez `--web-dir` oznacza jawne „CONTENT POMINIĘTE”.
+  - Kontrola negatywna: 4 mutacje treści bloków K w czterech partiach. `npm run check` dał EXIT 1 z
+    `KBLOK CONTENT` w 4/4 przypadkach, a plik po każdej próbie wrócił bajtowo do oryginału.
+  - `--web-dir <PIN>`: 20/20 bramek CONTENT FAIL.
+
+### 7.3 Harnessy i mutacje na webie (Z2, Z6)
+
+- 37 harnessów `run-k01b…k09b` na webie: **36/37 EXIT 0**. Wyjątkiem jest `run-k02-styles`, którego przyczynę
+  opisuje §7.1 (UI-2-C).
+- Wybrane liczby:
+  - k05a 4936/0, k05b 384/0, k06a 1323/0, k06b 28/0, k07a 5296/0, k07b 335/0;
+  - k08b-rail 87/0, k08c-owned-purchase 24/24, k08d-handel 36/36;
+  - k09a-pin 69/69, k09b-wiring 36/36.
+- Harnessy z liczbami linii zaszytymi w kodzie dostały zakresy webu. K02 i K07A wyznaczają je z rewizji wejścia
+  (sha1 bloba).
+- Kotwice tekstów zmienionych w webie przepisano na tekst webu:
+  - `k08c-praca`: Targowisko i konwersja na podatek;
+  - `k08d-handel`: płaski `×2` zamiast mnożnika cywilizacji.
+- Mutacje na webie:
+  - k05b 93/93 (survivor `jedn-rekrut-costmult` zabity po poprawie fixture `costMult`);
+  - k05b-dto 8/8, k06b, k07a, k07b-units i k07b-copies: survived 0;
+  - k08a i k08b-rail: 22 zabite + 1 równoważna; k08b-title 11/11, k08c-podzial 10/10, k08c-wiring 14/14;
+  - k08d-handel 6/6 + 11/11, k08d-religia 10/10, k08d-wealth 16/16, k08d-wiring 21/21;
+  - k08e 12/12 + 15/15, k09a 42/42 (1 NIE_ZMIERZONO), k09b 28/28.
+- Z2 na ścieżce wywołań panelu:
+  - `renderBuildList` (K06B) przekazuje `brakZasobow` do `formatBuildingCatalogLockHint`, czyli robi to samo
+    wywołanie co web; sprawdzają to TEXT i run-k06b (log argumentów pin = port);
+  - `buildRecruitTabDetailCard` i `recruitManpowerCost` czytają `cfg.getManpowerMultipliers` (harness k05b: wariant
+    z `costMult` ≠ `maxMult`);
+  - pula rekrutów `71,7k` z pełną wartością w `aria-label` jest sprawdzona w `run-k08c-owned-purchase-pin`.
+- Z6: `pinFile` w JSON harnessów k06a, k06b, k07a i k07b liczy `pinFileLabel(PIN_DIR)` z sha1 bloba
+  `cityPanel.ts` (`repin-ui2g-rev.mjs`). Na webie wypisuje `(86d510c66)`, na innej treści `nieznana (blob …)`.
+
+### 7.4 K09C/K09D i delegat produkcyjny (ZAŁOŻENIE G-Z8)
+
+`showCityPanelFromDto` (`controller/cityPanelWiring.ts`) ma 0 wywołań w `src/` (zmierzone `grep`). Ścieżka produkcyjna
+panelu K nie jest jeszcze podpięta, a jej podpięcie to właśnie K09C/K09D. Kontroler (`src/controller/**`) i silnik
+(`src-tauri/src/**`) leżą **poza allowlistą** tego ID, która obejmuje `src/ui/**`, `viewmodel/types.ts` i `tools/**`.
+K09C/K09D nie da się więc zrobić w tym temacie bez rozszerzenia allowlisty. Zostaje jawny delegat do osobnego ID,
+które zalecał już Operator r1.
+
+**Luka wiringu** jest zmierzona w `run-k08c-owned-purchase-pin` (`wiring.gap`) i domknięta atrapami testowymi
+w harnessach. Kontroler i silnik muszą dostarczyć:
+
+| Nazwa | Gdzie | Właściciel |
+|---|---|---|
+| `recruitPanelPurchasableUnits`, `empireRekruciTotal` | `setK06bDeps` (K08B) | K09C (`k08cWiring`) + P6 `purchasableUnits{showStockGatedUnits}`, `sortRecruitListByEra` |
+| `buildingWorkPerTurnForCity`, `unitRecruitmentCapacityForCity`, `rushCostModifierForCity` | K06B/K07B `dep`, K05B `rules` | K09C + P6 (`civMatrixParam`) |
+| `buildingRequirementChips`, `loadSpichlerzDrainParams` | K06B `dep` | K09C (+ P6 parametry Spichlerza) |
+| `cfg.getManpowerMultipliers` (`maxMult`, `costMult`) | K05A/K05B `cfg` | K09C + P6 (macierz Manpower) |
+| `cfg.getEpoch` → `tileYieldLabel(hex, wlascicielEra)` | K06A/K06B | K09C + P6 (reguła plonów ulepszeń wg epoki, `8769854ff`) |
+| `civBonusy` w `BuildingCardCityState` | entity card | UI-2-D #24 |
+
+### 7.5 Wycena
+
+r2 domyka całą resztę zakresu K01–K09: 19 DRIFT, 136 markerów, K03, 3 czerwone bramki z bazy oraz CONTENT w `check`.
+Do zrobienia zostaje K09C/K09D w osobnym ID (wiring kontrolera wg §7.4, ok. 6–8 h, w tym P6). Pomiaru Chromium/PNG
+dla bloków r2 nie zrobiono w tej rundzie. Na webie dowodem są harnessy jsdom pin-exec (36/37) i bramki CONTENT, a
+`run-repin-ui2g` (r1, 9216/0, PNG =) przechodzi bez zmian.
