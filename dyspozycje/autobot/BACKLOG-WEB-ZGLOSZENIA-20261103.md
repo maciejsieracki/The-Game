@@ -26,3 +26,16 @@ Kolejność i grupy (sekwencyjnie w obrębie grupy = te same pliki; grupy równo
 - Grupa 5 (`main.ts` aneksja): R-WEB-ANNEX-CITYSTATE-SPOILS-Q1.
 - Drobne: R-WEB-ROSTER-SPACE-NEXT-ACTIVE-UNIT-Q1 (do rozpisania); poprawka epoki w trybie ręcznym (`population-growth-v85.ts:582`); zapisy z koniem pod lasem — DOMYŚLNIE (brak odpowiedzi właściciela): uznać `zloze==='konie'` za złoże konia w Stadninie (nie zmienia map ani zapisów); hot-seat atak z marszu — DOMYŚLNIE: zostaje (marsz dochodzi, atak w następnej turze gracza).
 Wymóg globalny: tematy webowe nie ruszają się, dopóki nie skończą się trwające prace Opus (UI-2-B…G); wolne miejsce na dysku ≥ ~4 GB na workflow.
+
+## POTWIERDZENIE PLANU (polecenie właściciela 2026-11-04): zrealizować w pętli do końca — lista obowiązkowa
+0. R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (twarda zasada „tylko pola z obywatelami” dla żywności, gracz i AI, bez wyjątków; zrzut z farmami bez obywateli)
+1. R-WEB-SIEGE-TOWER-BREACH-EVERYWHERE-Q1
+2. R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1
+3. R-WEB-AI-MOVE-FULL-RANGE-Q1
+4. R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1
+5. R-WEB-ARMY-TO-NEAREST-LEADER-Q1
+6. R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1
+7. R-WEB-ANNEX-CITYSTATE-SPOILS-Q1
+Dodatkowo (z planu grup): irygacja zamiast farm bez obywateli, spacja w rosterze → następna aktywna jednostka, ręczna bitwa oblężnicza + szarża/atakuj (mur/palisada), poprawka epoki w trybie ręcznym, konie w starych zapisach (domyślnie: uznać `zloze==='konie'`).
+Znalezione przez Operatora w raportach (do weryfikacji i ewentualnych dispatchów): R-WEB-AUTOIMPROVE-PRIORITY-Q1 (ostatni FC r4 = FAIL, nigdy niewdrożone — sprawdzić, czy pokryte przez późniejsze tematy AUTO-IMPROVE), R-WEB-AI-BONUS-CITY-POLAR-Q1, R-WEB-HEX-TOOLTIP-UNLOCK-LABEL-DEDUP-Q1, R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1, R-WEB-TEST-HOOK-DETERMINISM-Q1, R-WEB-TEST-HOOK-HEADLESS-GAME-Q1; pomiar pełnych gier dla AI-WAR (sim-harness poza limitem 590 s).
+Kryterium końca pętli: każdy temat = deploy do ROBOCZEJ + wpis w WERSJE.md + rejestr; niezrealizowane = jawnie uzasadnione.
