@@ -726,3 +726,6 @@ Operator (`026d5b45d`,`787e32a93`) → Evaluator PASS-WITH-NOTES (0 zarzutów) �
 
 ## 2026-11-04 — R-RUSTPORT-REPIN-3D-B-Q1 (B1) ZINTEGROWANE
 Operator (`cb00afecd`,`92670b75f`) → Evaluator PASS-WITH-NOTES (0 zarzutów) → Final Control PASS (`8d74519c2`); fast-forward `parity-v2` `65e81ae4d` → `8d74519c2`. B1: `models::misc::build_highlight` (stałe + filtr, `js_num`), `MINE_ELIGIBLE_TINT_OPACITY` 0,3×1,2, fort/posterunek ×2, `RESOURCE_MODEL_SCALE` 2 → `depositDisplayScale`; wektory z webu `86d510c66` 0 różnic, mutacje 20/20 (+1 równoważny), renderer 448/0, MSRV OK. Z-RP-B-1 ZAAKCEPTOWANE: regeneracja fixtur pinu (`improvements/{models,sigs}.json`, `misc/overlays.json`) poza allowlistą, tylko oczekiwane różnice. Kolejka: B2 (tabliczka statystyk + emblemat), B3 (gwiazda dowódcy, cache odznak), B4 (`cities.ts`). Start B2+B3: `R-RUSTPORT-REPIN-3D-B2-Q1`.
+
+## 2026-11-04 — kontrola cykliczna 02:11
+Nic do integracji. Trwają (Opus 5.5): A3 (burzenie wieżyczki, pocisk, wyłom palisady) i B2+B3 (tabliczka statystyk, emblemat, gwiazda dowódcy). Web bez otwartych prac (ROBOCZA 34d2cada).
