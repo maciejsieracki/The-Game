@@ -1,0 +1,34 @@
+-- (1) predykat reliefu --
+  OK   oboz_lowiecki zachowuje relief (klucz)
+  OK   realne warstwy obozu ['tartak','oboz_lowiecki'] zachowuja relief
+  OK   obóz solo (stary zapis) zachowuje relief
+  OK   kontrola: tartak solo nadal zachowuje relief
+  OK   kontrola: obóz + droga (nie zachowuje) nadal wypłaszcza
+  OK   kontrola: farma/posterunek nadal nie zachowują
+[camp] vite build (po) -> /dev/shm/civ-dist-camp-po-8507-ke8fk0
+[camp] vite build (przed) -> /dev/shm/civ-dist-camp-przed-8507-ke8fk0
+
+== WARIANT PRZED (wpis obozu cofniety w locie) ==
+   {"hillForestCount":224,"visible":[{"q":40,"r":29},{"q":38,"r":30},{"q":48,"r":42},{"q":59,"r":29},{"q":47,"r":43},{"q":48,"r":43}],"sawBefore":3,"sawAfter":3,"sawInfo":{"terrain":"wzgorza","overlay":"las","layers":["tartak"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":0.86,"sectorSurfaceY":0,"hasSurfaceSampler":true,"keeps":true},"campBefore":3,"campHexBefore":{"teren":"wzgorza","nakladka":"las","layers":["tartak"]},"campAfter":1,"campHexAfter":{"teren":"wzgorza","nakladka":"las","layers":["tartak","oboz_lowiecki"]},"campInfo":{"terrain":"wzgorza","overlay":"las","layers":["tartak","oboz_lowiecki"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":null,"sectorSurfaceY":null,"hasSurfaceSampler":false,"keeps":false},"tri":[{"h":{"q":48,"r":42},"before":3,"after":1,"info":{"terrain":"wzgorza","overlay":"las","layers":["tartak","oboz_lowiecki"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":null,"sectorSurfaceY":null,"hasSurfaceSampler":false,"keeps":false}},{"h":{"q":59,"r":29},"before":3,"after":1,"info":{"terrain":"wzgorza","overlay":"las","layers":["tartak","oboz_lowiecki"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":null,"sectorSurfaceY":null,"hasSurfaceSampler":false,"keeps":false}},{"h":{"q":47,"r":43},"before":3,"after":1,"info":{"terrain":"wzgorza","overlay":"las","layers":["tartak","oboz_lowiecki"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":null,"sectorSurfaceY":null,"hasSurfaceSampler":false,"keeps":false}}],"soloBefore":3,"soloAfter":3,"soloInfo":{"terrain":"wzgorza","overlay":"las","layers":["oboz_lowiecki"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":null,"sectorSurfaceY":null,"hasSurfaceSampler":false,"keeps":false},"flatBefore":2,"flatAfter":2,"flatInfo":{"terrain":"rownina","overlay":"las","layers":["tartak","oboz_lowiecki"],"hasMesh":true,"groupY":0.47000000000000003,"topY":0.46,"sectorR":null,"sectorSurfaceY":null,"hasSurfaceSampler":false,"keeps":false}}
+
+== WARIANT PO (kod z repo) ==
+   {"hillForestCount":224,"visible":[{"q":40,"r":29},{"q":38,"r":30},{"q":48,"r":42},{"q":59,"r":29},{"q":47,"r":43},{"q":48,"r":43}],"sawBefore":3,"sawAfter":3,"sawInfo":{"terrain":"wzgorza","overlay":"las","layers":["tartak"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":0.86,"sectorSurfaceY":0,"hasSurfaceSampler":true,"keeps":true},"campBefore":3,"campHexBefore":{"teren":"wzgorza","nakladka":"las","layers":["tartak"]},"campAfter":3,"campHexAfter":{"teren":"wzgorza","nakladka":"las","layers":["tartak","oboz_lowiecki"]},"campInfo":{"terrain":"wzgorza","overlay":"las","layers":["tartak","oboz_lowiecki"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":0.86,"sectorSurfaceY":0,"hasSurfaceSampler":true,"keeps":true},"tri":[{"h":{"q":48,"r":42},"before":3,"after":3,"info":{"terrain":"wzgorza","overlay":"las","layers":["tartak","oboz_lowiecki"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":0.86,"sectorSurfaceY":0,"hasSurfaceSampler":true,"keeps":true}},{"h":{"q":59,"r":29},"before":3,"after":3,"info":{"terrain":"wzgorza","overlay":"las","layers":["tartak","oboz_lowiecki"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":0.86,"sectorSurfaceY":0,"hasSurfaceSampler":true,"keeps":true}},{"h":{"q":47,"r":43},"before":3,"after":3,"info":{"terrain":"wzgorza","overlay":"las","layers":["tartak","oboz_lowiecki"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":0.86,"sectorSurfaceY":0,"hasSurfaceSampler":true,"keeps":true}}],"soloBefore":3,"soloAfter":3,"soloInfo":{"terrain":"wzgorza","overlay":"las","layers":["oboz_lowiecki"],"hasMesh":true,"groupY":0.65,"topY":0.64,"sectorR":0.86,"sectorSurfaceY":0,"hasSurfaceSampler":true,"keeps":true},"flatBefore":2,"flatAfter":2,"flatInfo":{"terrain":"rownina","overlay":"las","layers":["tartak","oboz_lowiecki"],"hasMesh":true,"groupY":0.47000000000000003,"topY":0.46,"sectorR":null,"sectorSurfaceY":null,"hasSurfaceSampler":false,"keeps":false}}
+
+-- (2) render w Chromium --
+  OK   znaleziono >=5 wzgorz z widoczna kepa lasu (PO i PRZED)
+  OK   PO: tartak solo zachowuje las (kontrola)
+  OK   PO: obóz na wzgórzu z lasem - dekor lasu bez zmiany
+  OK   PO: dane nietknięte - teren i nakladka Las przed i po
+  OK   PO: relief zachowany (keeps) + sektor na probce stoku + mesh obozu
+  OK   PO: model obozu na wierzchu heksa, probka stoku skonczona
+  OK   PO: osadzenie obozu identyczne jak tartaku (sectorR i sampler)
+  OK   PO: 3 obozy obok siebie - kazdy zachowuje las i relief
+  OK   PO: obóz solo (stary zapis) zachowuje las i relief
+  OK   PO: plaski heks z lasem - bez zmian (las zostaje)
+  OK   PRZED (mutacja): obóz wypłaszcza - las znika i relief niezachowany (RED)
+  OK   PRZED (mutacja): trzy obozy wypłaszczają
+  OK   PRZED: plaski heks z lasem bez zmian jak PO
+  OK   brak pageerror w obu sesjach
+
+===== 20 PASS / 0 FAIL =====
+EXIT=0
