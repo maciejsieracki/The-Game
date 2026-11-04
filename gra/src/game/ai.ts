@@ -88,6 +88,7 @@ import { unitRecruitUpkeepReserve } from './economy-upkeep';
 import type { AiTargetMemoryEntry } from './ai-fog';
 import {
   planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity, planWarReplacementRally,
+  planFieldStackGather, noteStackGatherTurn,
   ARMY_CONCENTRATION_RADIUS, isEligibleForArmyConcentration,
   pickNearestAvailableLeader, collectLeaderCandidates, type LeaderPathLength,
 } from './army-concentration';
@@ -4209,6 +4210,69 @@ function applyWarAllInCapitalToCommands(
       if (planned.length === 0) return;
     }
   }
+  // R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1 (flaga ARMY_CONSOLIDATION ON, tylko glowne wolanie): skupisko
+  // jednostek na ROZNYCH heksach (promien ARMY_CONCENTRATION_RADIUS od kotwicy) najpierw schodzi sie na
+  // JEDEN heks i scala w stos (allowFriendlyStack -> assignSharedStackGroupId w main.ts); dopiero stos
+  // rusza na cel. Bez tego planer marszu (rezerwacja heksu koncowego) prowadzi kazda jednostke po swoim
+  // heksie przez cala wojne -- chmura jednoosobowych armii. Grupa w kontakcie z wroga armia (promien
+  // zaangazowania) nie zbiera sie (walke prowadzi logika zaangazowania); brak trasy -> normalny marsz.
+  // Przy kilku wojnach zbiorka dziala OSOBNO w kazdej armii wojennej (ten sam podzial co w planie marszu,
+  // policzony raz przed zbiorka) -- inaczej scalalaby armie roznych wojen, ktore plan marszu zaraz rozdziela.
+  const armyGroups: RuntimeUnit[][] | undefined = isArmyConsolidationEnabled()
+    ? partitionWarArmies(planned, ctx, data) : undefined;
+  if (gateLooseUnits && isArmyConsolidationEnabled() && planned.length >= 2) {
+    const engageR = ctx.engageRadius ?? 0;
+    const gatherGroups = [];
+    for (const g of armyGroups ?? [planned]) {
+      const gp = planFieldStackGather(g, {
+        ownerId: playerId,
+        currentTurn,
+        isGroupBlocked: (anchor) => (ctx.enemyArmies ?? []).some(e =>
+          hexDistance(anchor.q, anchor.r, e.q, e.r) <= engageR),
+      });
+      if (gp !== null) gatherGroups.push(...gp.groups);
+    }
+    const gatherPlan = gatherGroups.length > 0 ? { groups: gatherGroups } : null;
+    if (gatherPlan !== null) {
+      const gatheredIds = new Set<string>();
+      const gatheringNow: string[] = [];
+      const byId = new Map(planned.map(u => [u.id, u] as const));
+      for (const group of gatherPlan.groups) {
+        const stepped: string[] = [];
+        // Jednostki startujace z jednego heksu (istniejacy stos) dostaja WSPOLNY krok i
+        // allowFriendlyStack -- inaczej pierwszy krok posredni rozbilby stos (executor blokuje heks
+        // zajety przez towarzysza bez tej flagi).
+        const byStart = new Map<string, RuntimeUnit[]>();
+        for (const id of group.moveUnitIds) {
+          const unit = byId.get(id);
+          if (unit === undefined) continue;
+          const k = keyOf(unit.q, unit.r);
+          let arr = byStart.get(k);
+          if (arr === undefined) byStart.set(k, arr = []);
+          arr.push(unit);
+        }
+        for (const members of byStart.values()) {
+          const step = firstStep(members[0]!, map, group.anchor.q, group.anchor.r, units, true);
+          if (step === null) continue; // brak trasy: zostaje w normalnym marszu
+          const atAnchor = step.q === group.anchor.q && step.r === group.anchor.r;
+          for (const unit of members) {
+            commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+              ...(atAnchor || members.length > 1 ? { allowFriendlyStack: true } : {}) });
+            stepped.push(unit.id);
+          }
+        }
+        if (stepped.length === 0) continue;
+        for (const id of stepped) gatheredIds.add(id);
+        for (const id of group.stayUnitIds) gatheredIds.add(id);
+        gatheringNow.push(...stepped);
+      }
+      if (gatheredIds.size > 0) {
+        noteStackGatherTurn(playerId, gatheringNow, currentTurn);
+        planned = planned.filter(u => !gatheredIds.has(u.id));
+        if (planned.length === 0) return;
+      }
+    }
+  }
   // Statycznie nietranzytowe: obce miasta (addForeignCityBlocks); jednostki jako `occupied`
   // (ograniczaja tylko wybor kroku, nie trase -- brak krokow wstecz).
   const blocked = new Set(enemyCityHex);
@@ -4241,7 +4305,7 @@ function applyWarAllInCapitalToCommands(
   // zrownowazona czesc wojsk marszu, idaca na stolice JEDNEGO wroga. OFF = jedna wspolna
   // procedura (dotychczasowe zachowanie).
   const planWith = (n: typeof nav) => isArmyConsolidationEnabled()
-    ? planWarArmiesByEnemy(planned, ctx, n, warOpts, data)
+    ? planWarArmiesByEnemy(planned, ctx, n, warOpts, data, armyGroups)
     : [planWarAllInCapital(planned, ctx.targets, n, warOpts)];
   let plans = planWith(nav);
   // R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: brak trasy ladowej omijajacej zakazany teren, a wlasciciel
@@ -4369,18 +4433,19 @@ function planWarArmiesByEnemy(
   warOpts: { enemyArmies?: ReadonlyArray<EngageArmyHex>; engageRadius?: number; enemyStrength?: ReadonlyArray<EnemyStrengthRef>;
     marchMainGroupWhileRendezvous?: boolean },
   data: GameData,
+  /** R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1: podzial na armie policzony PRZED zbiorka stosu (stabilny w obrebie tury). */
+  presetGroups?: ReadonlyArray<ReadonlyArray<RuntimeUnit>>,
 ): ReturnType<typeof planWarAllInCapital>[] {
   // Jeden cel na wroga (ctxFor w main.ts), wiec liczba wrogich cywilizacji = liczba wojen.
   const enemyOwners = [...new Set(ctx.targets.map(t => t.ownerId))].sort((a, b) => a - b);
   if (enemyOwners.length === 0) return [];
-  const strengthOf = (u: RuntimeUnit): number => {
-    const def = data.units.find(d => d.Jednostka === u.typeId);
-    const power = def !== undefined ? armyFieldPower(def as unknown as UnitPowerInput) : 0;
-    const maxHp = _unitMaxHealth(u, data);
-    const frac = maxHp > 0 ? Math.max(0, Math.min(1, (u.hp ?? maxHp) / maxHp)) : 1;
-    return (power > 0 ? power : 1) * frac;
-  };
-  const groups = splitIntoWarArmies(units, warArmyCount(enemyOwners), strengthOf);
+  let groups: RuntimeUnit[][];
+  if (presetGroups !== undefined) {
+    const present = new Set(units.map(u => u.id));
+    groups = presetGroups.map(g => g.filter(u => present.has(u.id))).filter(g => g.length > 0);
+  } else {
+    groups = partitionWarArmies(units, ctx, data);
+  }
   const groupRefs: ArmyGroupRef[] = groups.map((g, i) => ({ id: `wojna-${i}`, size: g.length }));
   // W2: przydzial CALYCH armii do wrogow (sila z warOpts.enemyStrength; brak = po rowno).
   const enemies: EnemyStrengthRef[] = enemyOwners.map(o => ({
@@ -4393,6 +4458,20 @@ function planWarArmiesByEnemy(
     const groupTargets = ctx.targets.filter(t => t.ownerId === owner);
     return planWarAllInCapital(group, groupTargets, nav, warOpts);
   });
+}
+
+/** Podzial jednostek marszu na `warArmyCount` armii zrownowazonych silą (jak w planWarArmiesByEnemy). */
+function partitionWarArmies(units: RuntimeUnit[], ctx: WarAllInContext, data: GameData): RuntimeUnit[][] {
+  const enemyOwners = [...new Set(ctx.targets.map(t => t.ownerId))].sort((a, b) => a - b);
+  if (enemyOwners.length === 0) return [];
+  const strengthOf = (u: RuntimeUnit): number => {
+    const def = data.units.find(d => d.Jednostka === u.typeId);
+    const power = def !== undefined ? armyFieldPower(def as unknown as UnitPowerInput) : 0;
+    const maxHp = _unitMaxHealth(u, data);
+    const frac = maxHp > 0 ? Math.max(0, Math.min(1, (u.hp ?? maxHp) / maxHp)) : 1;
+    return (power > 0 ? power : 1) * frac;
+  };
+  return splitIntoWarArmies(units, warArmyCount(enemyOwners), strengthOf);
 }
 
 /** Progi posiłków w klastrze per poziom „Wsparcie miast-państw" (setup nowej gry). */

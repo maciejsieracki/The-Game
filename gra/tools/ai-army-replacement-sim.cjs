@@ -39,12 +39,14 @@ export { hexDistance, hexNeighborCoords } from ${SRC('units/setup.ts')};
 `, 'utf8');
 // ARS_MUTATE=gate-off: wylacza bramke luznych jednostek w ai.ts (pomiar "przed poprawka" na biezacym kodzie).
 const GATE_ON = 'if (gateLooseUnits && isArmyConsolidationEnabled()) {';
+const GATE_GATHER = 'if (gateLooseUnits && isArmyConsolidationEnabled() && planned.length >= 2) {'; // R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1
 const mutatePlugin = {
   name: 'mutate-ai',
   setup(b) {
     b.onLoad({ filter: /game[\\/]ai\.ts$/ }, (args) => {
       let text = fs.readFileSync(args.path, 'utf8');
       if (process.env.ARS_MUTATE === 'gate-off' && text.includes(GATE_ON)) text = text.replace(GATE_ON, 'if (false) {');
+      if (process.env.ARS_MUTATE === 'gate-off' && text.includes(GATE_GATHER)) text = text.replace(GATE_GATHER, 'if (false) {');
       return { contents: text, loader: 'ts' };
     });
   },

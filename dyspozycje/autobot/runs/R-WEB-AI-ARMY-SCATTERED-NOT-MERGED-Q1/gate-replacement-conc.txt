@@ -1,0 +1,3 @@
+POMIAR (2 ziarna x 70 tur, flat): marsz-ponizej-progu PO=0.021 (mutacja 0.132); ms/tura AI PO=16.5 (mutacja 15.9)
+34 passed, 0 failed
+EXIT=0

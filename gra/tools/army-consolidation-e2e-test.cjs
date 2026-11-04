@@ -93,12 +93,24 @@ function atHex(st, q, r, owner = 1) {
   const st = scenarioPeace();
   st.wars = new Set(['1_2', '1_3']);
   const targets = [{ ownerId: 2, cityId: 'c2a', q: 20, r: 5 }, { ownerId: 3, cityId: 'c3a', q: 20, r: 9 }];
-  const cmds = E.decideAITurn(1, st.units, st.cities, st.map, H.DATA, {
-    canEngageOwner: (t) => t === 2 || t === 3, currentTurn: 10, visibleHexes: new Set(),
-    warAllIn: { targets }, capitalCityId: 'c1a', atWarWithCiv: true,
-  });
-  const cities = new Set(cmds.filter(c => c.type === 'move' && c.targetCityId).map(c => c.targetCityId));
-  assert(cities.has('c2a') && cities.has('c3a'), `E6 WOJNA 2 wrogow: armie marsza na obie stolice (${[...cities].join(',')})`);
+  // R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1: rozproszone jednostki najpierw scalaja sie w stosy (kazda armia wojenna
+  // osobno), dopiero potem ruszaja -- marsz na obie stolice sprawdzamy w ciagu kilku tur (wczesniej: w turze 1).
+  const cities = new Set();
+  for (let t = 0; t < 10 && cities.size < 2; t++) {
+    for (const u of st.units) u.ruchLeft = u.ruch;
+    const cmds = E.decideAITurn(1, st.units, st.cities, st.map, H.DATA, {
+      canEngageOwner: (x) => x === 2 || x === 3, currentTurn: 10 + t, visibleHexes: new Set(),
+      warAllIn: { targets }, capitalCityId: 'c1a', atWarWithCiv: true,
+    });
+    for (const c of cmds) {
+      if (c.type !== 'move') continue;
+      if (c.targetCityId) cities.add(c.targetCityId);
+      const u = st.units.find(x => x.id === c.unitId);
+      const occ = st.units.some(o => o.id !== c.unitId && o.q === c.toQ && o.r === c.toR);
+      if (u && (!occ || c.allowFriendlyStack)) { u.q = c.toQ; u.r = c.toR; }
+    }
+  }
+  assert(cities.has('c2a') && cities.has('c3a'), `E6 WOJNA 2 wrogow: armie marsza na obie stolice w ciagu 10 tur (${[...cities].join(',')})`);
   E.setWarAllInCapitalOverride(null);
   E.setArmyConsolidationOverride(null);
 }

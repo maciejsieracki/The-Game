@@ -123,7 +123,7 @@ function wiringChecks() {
   ok(ai.includes('const consolidationPeace = isArmyConsolidationEnabled() && canConcentrateArmy(opts)'), 'wiring: stan pokoju za flaga');
   ok(ai.includes('if (consolidationPeace && !forcedWarAttack) {'), 'wiring: blok pokoju za stanem pokoju');
   ok(ai.includes('const standardConcentration = canConcentrateArmy(opts) && !consolidationPeace'), 'wiring: lokalna koncentracja wylaczona w pokoju (jeden punkt zbiorki)');
-  ok(ai.includes('planWarArmiesByEnemy(planned, ctx, nav, warOpts, data)'), 'wiring: wojna dzielona na armie za flaga');
+  ok(ai.includes('planWarArmiesByEnemy(planned, ctx, n, warOpts, data, armyGroups)'), 'wiring: wojna dzielona na armie za flaga');
   ok(ai.includes('ARMY_CONSOLIDATION_HOME_GROUP_SIZE : 1'), 'wiring: obrona domu z kworum tylko za flaga (OFF -> 1)');
   ok(main.includes("capitalCityId: isArmyConsolidationEnabled() ? capitalCityIdForOwner(ownerId) : undefined"), 'wiring: main.ts podaje stolice tylko za flaga');
   ok(main.includes("atWarWithCiv: isArmyConsolidationEnabled() ? atWarWithCivFor(ownerId) : undefined"), 'wiring: main.ts podaje stan wojny tylko za flaga');

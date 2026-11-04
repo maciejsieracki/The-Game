@@ -9,6 +9,7 @@
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, isCivilianUnit } from '../units/setup';
 import { assignSharedStackGroupId } from './armyMerge';
+import { WAR_ALLIN_MERGE_RADIUS } from './warAllInCapital';
 
 export const ARMY_CONCENTRATION_MIN_UNITS = 3;
 export const ARMY_CONCENTRATION_RADIUS = 4;
@@ -464,6 +465,160 @@ export function planWarReplacementRally(
     looseUnitIds: looseUnits.map(u => u.id),
     moveUnitIds: looseUnits.filter(u => u.q !== rally.q || u.r !== rally.r).map(u => u.id),
   };
+}
+
+// ---------------------------------------------------------------------------
+// R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1 -- skupisko na ROZNYCH heksach to jeszcze nie armia.
+//
+// Przyczyna (zmierzona: tools/ai-army-scattered-merge-test.cjs + live tools/ai-army-live-measure.cjs):
+// bramka zastepcza (wyzej) liczy "armie" jako skupisko >= MIN w promieniu RADIUS, a planer marszu
+// wojny (`planWarAllInCapital`, rezerwacja heksu koncowego: "zero dwoch jednostek na jednym heksie")
+// ustawia kazda jednostke skupiska na OSOBNYM heksie koncowym i nigdy ich nie laczy -- stos powstaje
+// tylko, gdy jednostki STARTUJA z jednego heksu (wspolny krok + allowFriendlyStack). Skupisko
+// rozstawione po heksach (rekrutacja w roznych miastach, rozbicie stosu przy wielu wojnach, kolumna
+// po utracie stosu) maszeruje wiec cala wojne jako chmura jednoosobowych armii (zrzuty 37/38).
+// Regula: zanim skupisko >= 2 jednostek na roznych heksach (promien RADIUS od heksu-kotwicy) ruszy
+// na cel, schodzi sie na JEDEN heks (kotwica = heks z najwieksza liczba jednostek w promieniu) i
+// scala sie (allowFriendlyStack -> assignSharedStackGroupId w main.ts); stos rusza jak dotad.
+// ---------------------------------------------------------------------------
+
+/**
+ * Limit zastoju zbiorki na heksie: jednostka, ktora zbiera sie dluzej niz tyle KOLEJNYCH tur
+ * (np. petla / blokada trasy), przestaje byc zbierana i rusza z marszem (lepko, do przerwy w zbieraniu).
+ */
+export const WAR_STACK_GATHER_MAX_TURNS = 6;
+
+interface GatherEntry { lastTurn: number; turns: number }
+const stackGatherState = new Map<string, GatherEntry>();
+/** Czysci stan limitu zastoju (nowa gra / testy). */
+export function resetStackGatherState(): void { stackGatherState.clear(); }
+
+export interface StackGatherOptions {
+  ownerId: number | string;
+  currentTurn?: number;
+  /** Zbior heksow (klucz "q,r") zakazanych jako kotwica, np. blisko wrogiej armii -- grupa tam nie zbiera sie. */
+  isGroupBlocked?: (anchor: { q: number; r: number }, members: readonly ConcentrationUnit[]) => boolean;
+}
+
+export interface StackGatherGroup {
+  anchor: { q: number; r: number };
+  /** Jednostki, ktore musza dojsc na heks kotwicy. */
+  moveUnitIds: readonly string[];
+  /** Jednostki juz stojace na heksie kotwicy -- czekaja bez ruchu. */
+  stayUnitIds: readonly string[];
+}
+
+export interface StackGatherPlan {
+  groups: readonly StackGatherGroup[];
+}
+
+/**
+ * Dzieli jednostki polowe wlasciciela na grupy-zbiorki (kazda <= RADIUS od swojej kotwicy) i zwraca
+ * te, w ktorych jednostki stoja na >= 2 roznych heksach. Grupa juz stojaca na jednym heksie (stos)
+ * jest pomijana -- rusza jak dotad. Deterministyczne (kolejnosc q, r, id); czyste poza limitem zastoju.
+ */
+export function planFieldStackGather(
+  candidateUnits: readonly ConcentrationUnit[],
+  options: StackGatherOptions,
+): StackGatherPlan | null {
+  const prefix = `${options.ownerId}:`;
+  const turn = options.currentTurn;
+  // Limit zastoju: wpisy bez ciaglosci tur sa kasowane, a jednostki z wyczerpanym limitem pomijane.
+  for (const key of [...stackGatherState.keys()]) {
+    if (!key.startsWith(prefix)) continue;
+    const e = stackGatherState.get(key)!;
+    if (turn !== undefined && e.lastTurn < turn - 1) stackGatherState.delete(key);
+  }
+  // Wyczerpany limit jest lepki (wpis odswiezany co tura), dopoki jednostka nie stanie na heksie z towarzyszem.
+  const exhausted = (u: ConcentrationUnit): boolean => {
+    const key = prefix + u.id;
+    const e = stackGatherState.get(key);
+    if (e === undefined || e.turns < WAR_STACK_GATHER_MAX_TURNS) return false;
+    if (candidateUnits.some(o => o.id !== u.id && o.q === u.q && o.r === u.r)) {
+      stackGatherState.delete(key);
+      return false;
+    }
+    if (turn !== undefined) e.lastTurn = turn;
+    return true;
+  };
+  let remaining = candidateUnits.filter(u => !exhausted(u)).sort(compareUnits);
+  const built: Array<{ anchor: { q: number; r: number }; move: string[]; stay: string[] }> = [];
+  while (remaining.length >= 2) {
+    // Kotwice = rozne heksy zajete przez jednostki (stos 100 jednostek to JEDEN kandydat, nie 100).
+    const buckets = new Map<string, ConcentrationUnit[]>();
+    for (const u of remaining) {
+      const k = `${u.q},${u.r}`;
+      let arr = buckets.get(k);
+      if (arr === undefined) buckets.set(k, arr = []);
+      arr.push(u);
+    }
+    const hexList = [...buckets.values()];
+    let best: { anchor: ConcentrationUnit; members: ConcentrationUnit[]; onHex: number; sum: number } | null = null;
+    for (const anchorBucket of hexList) {
+      const anchor = anchorBucket[0]!;
+      let count = 0;
+      let sum = 0;
+      for (const bkt of hexList) {
+        const d = hexDistance(anchor.q, anchor.r, bkt[0]!.q, bkt[0]!.r);
+        if (d <= ARMY_CONCENTRATION_RADIUS) { count += bkt.length; sum += d * bkt.length; }
+      }
+      const onHex = anchorBucket.length;
+      if (
+        best === null
+        || count > best.members.length
+        || (count === best.members.length && onHex > best.onHex)
+        || (count === best.members.length && onHex === best.onHex && sum < best.sum)
+        || (count === best.members.length && onHex === best.onHex && sum === best.sum && compareUnits(anchor, best.anchor) < 0)
+      ) {
+        // `members` zbudowane leniwie nizej tylko dla zwyciezcy (tu wazna jest sama liczebnosc).
+        best = { anchor, members: new Array<ConcentrationUnit>(count), onHex, sum };
+      }
+    }
+    if (best !== null) {
+      const win = best.anchor;
+      best.members = remaining.filter(u => hexDistance(win.q, win.r, u.q, u.r) <= ARMY_CONCENTRATION_RADIUS);
+    }
+    if (best === null || best.members.length < 2) break;
+    const memberIds = new Set(best.members.map(u => u.id));
+    remaining = remaining.filter(u => !memberIds.has(u.id));
+    const stay = best.members.filter(u => u.q === best!.anchor.q && u.r === best!.anchor.r);
+    const move = best.members.filter(u => u.q !== best!.anchor.q || u.r !== best!.anchor.r);
+    if (options.isGroupBlocked?.({ q: best.anchor.q, r: best.anchor.r }, best.members) === true) continue;
+    built.push({
+      anchor: { q: best.anchor.q, r: best.anchor.r },
+      move: move.map(u => u.id),
+      stay: stay.map(u => u.id),
+    });
+  }
+  // Maruderzy (pojedyncze jednostki bez pary w promieniu RADIUS) dolaczaja do najblizszej grupy/stosu,
+  // jesli sa nie dalej niz WAR_ALLIN_MERGE_RADIUS od jej kotwicy -- inaczej szliby na cel przed
+  // stosem, a potem wracali do miasta zbiorki jako luzni.
+  for (const u of remaining) {
+    let bestG: (typeof built)[number] | null = null;
+    let bestD = Infinity;
+    for (const g of built) {
+      const d = hexDistance(u.q, u.r, g.anchor.q, g.anchor.r);
+      if (d <= WAR_ALLIN_MERGE_RADIUS && d < bestD) { bestD = d; bestG = g; }
+    }
+    if (bestG !== null) bestG.move.push(u.id);
+  }
+  const groups: StackGatherGroup[] = built
+    .filter(g => g.move.length > 0)
+    .map(g => ({ anchor: g.anchor, moveUnitIds: g.move, stayUnitIds: g.stay }));
+  if (groups.length === 0) return null;
+  return { groups };
+}
+
+/** Odnotowuje, ze jednostki faktycznie zbieraly sie w tej turze (limit zastoju liczy kolejne tury). */
+export function noteStackGatherTurn(ownerId: number | string, unitIds: readonly string[], currentTurn?: number): void {
+  const prefix = `${ownerId}:`;
+  for (const id of unitIds) {
+    const key = prefix + id;
+    const e = stackGatherState.get(key);
+    if (e === undefined) { stackGatherState.set(key, { lastTurn: currentTurn ?? 0, turns: 1 }); continue; }
+    if (currentTurn === undefined || e.lastTurn !== currentTurn) e.turns++;
+    e.lastTurn = currentTurn ?? e.lastTurn;
+  }
 }
 
 // ---------------------------------------------------------------------------
