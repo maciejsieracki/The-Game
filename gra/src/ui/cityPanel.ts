@@ -31,6 +31,7 @@
  * Mini-podgląd jednostek: unitMiniPreview.ts (Three.js — buildUnitModel).
  */
 
+import { isCityUnderSiege, CITY_SIEGE_RECRUIT_BLOCK_PL } from '../game/city-siege-state';
 import {
   attachHoverDetail,
   attachInteractiveDetail,
@@ -8248,13 +8249,16 @@ export function appendUnitRecruitCompactRow(
   const stockCost = unitStockCost(udef);
   const stockMissing = missingStockFor(ownerSurowcePoolFor(city), stockCost);
   const recruitOk = Object.keys(stockMissing).length === 0;
+  // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: oblężone miasto -- przycisk nieaktywny z powodem (PL).
+  const siegeBlocked = isCityUnderSiege([city], city);
+  const effectiveDisabledReason = siegeBlocked ? CITY_SIEGE_RECRUIT_BLOCK_PL : opts?.disabledReason;
   const row = buildUnitRecruitCard({
     udef,
     unitLabel: opts?.unitLabel,
     item,
     data,
     skarb,
-    canPurchase: (opts?.onRecruit ? !opts.disabledReason : !!cfg.onPurchaseUnit) && canMp && recruitOk,
+    canPurchase: !siegeBlocked && (opts?.onRecruit ? !opts.disabledReason : !!cfg.onPurchaseUnit) && canMp && recruitOk,
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
     mpCostLabel: formatManpower(mpCost),
@@ -8268,7 +8272,7 @@ export function appendUnitRecruitCompactRow(
         .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
         .join(', ')
       : undefined,
-    disabledReason: opts?.disabledReason,
+    disabledReason: effectiveDisabledReason,
     manpowerMissingLabel: mpMissing != null && mpMissing > 0
       ? `Brakuje rekrutów: ${formatManpower(mpMissing)}`
       : undefined,
@@ -8357,6 +8361,7 @@ function appendRecruitmentQueueForArmy(host: HTMLElement, city: City): void {
 }
 
 function recruitUnit(city: City, item: ProductionItem, quantity = 1): boolean {
+  if (isCityUnderSiege([city], city)) return false; // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1
   const requestedQuantity = Number.isFinite(quantity)
     ? Math.max(1, Math.floor(quantity))
     : 1;
