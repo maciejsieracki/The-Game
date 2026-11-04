@@ -79,7 +79,7 @@ export interface BuildingCardCityState extends BuildingCardStateDto {
   ownerId: number;
   /** REPIN UI-2-D (main `86d510c66` `:70`): web `readonly CivBonusLite[]` (`game/production`) → `CivBonusLiteDto[]`;
    * Rust podaje je do `buildingWorkCost` (`BuildingCardRulesDto.workCost`, main `:279`). */
-  civBonusy?: readonly CivBonusLiteDto[];
+  civBonusy?: readonly unknown[]; // integracja UI-2-D×G: blok K05B (cityPanel/k05b-karty.ts:369) podaje `readonly unknown[]` (`cfg.getCivBonusy`); typ CivBonusLiteDto nieużywany tu poza kontraktem DTO
 }
 
 const EPOCH_LABEL: Record<number, string> = { 1: 'Kamień', 2: 'Brąz', 3: 'Żelazo' };

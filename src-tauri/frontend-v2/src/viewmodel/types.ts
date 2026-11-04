@@ -1519,7 +1519,7 @@ export interface BuildingCardStateDto {
    * web podaje je do `buildingWorkCost(baseWork, civBonusy, pace, ownerId, difficulty)` (na pinie `undefined`).
    * Opcjonalne (addytywnie): brak = jak pin.
    */
-  civBonusy?: readonly CivBonusLiteDto[];
+  civBonusy?: readonly unknown[]; // integracja UI-2-D×G: K05B (cityPanel) podaje `readonly unknown[]` (jak `buildingWorkCost` w k05b-host)
 }
 
 /**
