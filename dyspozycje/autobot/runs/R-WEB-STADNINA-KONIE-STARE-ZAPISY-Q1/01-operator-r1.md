@@ -28,3 +28,5 @@ BLOKADY: brak.
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (uruchomić nowy test + mutację, ocenić pominięcie main.ts:15621 i NIE_ZMIERZONO live).
 DEPLOY/PUSH: NIE WYKONANO
+
+COMMIT: fde1050fa (kod+test+raport; ten wiersz dopisany w kolejnym commicie raportu)
