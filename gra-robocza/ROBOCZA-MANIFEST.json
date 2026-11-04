@@ -1,112 +1,114 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "57a964b28a96dcb0f9d8e62d8e10448c",
-  "bundleSha256": "c11cc0262fd24ccb84143edabf39010570a80181f39e81166b83ab514bb4ba56",
-  "bundleBytes": 70200489,
+  "bundleMd5": "4b0d54195e48f4e10adf9efd4c2a941b",
+  "bundleSha256": "1e99d5a488b78f8c26b32127298b56565f58d853f9c06b55d8ab6f2ed566e239",
+  "bundleBytes": 70202732,
   "sourceSnapshot": {
-    "source": "main 9c1d28bb2 + TRADE-ROUTE-CONTACT-ONLY (b7a246cc9) + TOOLTIP-RESOURCES-LINE-DEDUP (198ee3d8a)",
+    "source": "main 8c0fb5766 + SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE (258a13a7f) + TEST-HOOK-SETCITYLIMIT (e26ed030d) + NAVAL-DEPOSIT-GATE-TEST-DEBT (86d7614cb, tylko testy)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: szlak handlowy między miastami dwóch cywilizacji wymaga tylko znajomości (nawiązany kontakt dyplomatyczny) + braku wojny + Umowy Szlaków + slotu; zniesiony wymóg fizycznego połączenia (BFS), Portu i wspólnej granicy dla tras zewnętrznych; dochód wg dotychczasowej krzywej dystansu; trasy wewnętrzne bez zmian; utrata kontaktu/wojna usuwa trasę. Symulacja: dochód z tras 156/124/172 → 416/488/484; wywołania findCityConnection 12222 → 1658.",
-    "R-WEB-TOOLTIP-RESOURCES-LINE-DEDUP-Q1: linia „Surowce / zasoby” w tooltipie heksu bez zdublowanych etykiet („Kon · Koń” → „Koń”, „Ruda miedzi · Ruda” → „Ruda miedzi”, „Drewno · Las (drewno)” → „Drewno”)."
+    "R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: oblegane miasto nie rekrutuje (panel miasta, Armia, AI, zakup paczki; opłacona kolejka stoi, przycisk nieaktywny z powodem „Miasto jest oblężone”), nie przyjmuje obcych jednostek (własnych, sojuszniczych, neutralnych — bramka w computePath/computeReachable w units/setup.ts; wróg właściciela nadal wchodzi = atak), odwrót po bitwie nie kończy się w obleganym mieście; wyjście z miasta i atak na oblegających bez zmian; gracz, AI i barbarzyńcy.",
+    "R-WEB-TEST-HOOK-SETCITYLIMIT-Q1: hak testowy __civTest.setCityLimit(n) pod ?civTest=1 (bez wpływu na grę bez parametru).",
+    "R-WEB-NAVAL-DEPOSIT-GATE-TEST-DEBT-Q1: tylko aktualizacja przestarzałych asercji testów (bez zmian kodu gry)."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "trade-routes-contact-only 36/0 (RED na bazie, 3 mutacje); trade-routes 96/0; trade-routes-income 134/0; hex-tooltip-resources-line-dedup 28/0; hex-tooltip-unlock-label-dedup 28/0"
+    "siege-blockade-no-recruit-reinforce 57/0 (Chromium, mutacje); test-hook-setcitylimit 29/0; naval-water-access-gate 40/0; deposit-building-gate 49/0; recruitment-batch-contract 17/0"
   ],
   "limits": [
-    "Bonus +1 za trasę morską (computeSeaTradeBonusIncomeByCity) nie sprawdza Portu — zostawiony bez zmian (decyzja balansu do właściciela)",
-    "Stare zapisy z Umową Szlaków bez zapisanego kontaktu nie dadzą trasy; panel szlaków bez zrzutu Chromium; 8 testów czerwonych na bazie bez zmian (hotseat-etap6d-b/d, trade-ilosc, hud-skarbiec, naval-water-access-gate i in.)"
+    "units/setup.ts poza pierwotną allowlistą (wspólny punkt ruchu, hak domyślnie null)",
+    "Żywa pętla tury AI i hot-seat w Chromium NIE_ZMIERZONO; spawnTransferredUnit/spawnDifficultyBonusUnit uznane za nieosiągalne w tym kontekście",
+    "Czerwone na bazie bez zmian: ai-siege-requires-war 47/1, promote-to-front 121/4, pre-battle-retreat-exhausted 27/6"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "TRADE-ROUTE-CONTACT-ONLY: Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES; TOOLTIP-RESOURCES-LINE-DEDUP: PASS-WITH-NOTES."
+    "notes": "SIEGE-BLOCKADE: Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES; SETCITYLIMIT: PASS; NAVAL-DEPOSIT-GATE-TEST-DEBT: PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T18:18:09",
+  "hubGeneratedAt": "2026-11-04T18:56:35",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
-      "sizeBytes": 70200489
+      "md5": "4b0d54195e48f4e10adf9efd4c2a941b",
+      "sizeBytes": 70202732
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
-      "sizeBytes": 70200489
+      "md5": "4b0d54195e48f4e10adf9efd4c2a941b",
+      "sizeBytes": 70202732
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
-      "sizeBytes": 70200489
+      "md5": "4b0d54195e48f4e10adf9efd4c2a941b",
+      "sizeBytes": 70202732
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
-      "sizeBytes": 70200489
+      "md5": "4b0d54195e48f4e10adf9efd4c2a941b",
+      "sizeBytes": 70202732
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
-      "sizeBytes": 70200489
+      "md5": "4b0d54195e48f4e10adf9efd4c2a941b",
+      "sizeBytes": 70202732
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
-      "sizeBytes": 70200489
+      "md5": "4b0d54195e48f4e10adf9efd4c2a941b",
+      "sizeBytes": 70202732
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
-      "sizeBytes": 70200489
+      "md5": "4b0d54195e48f4e10adf9efd4c2a941b",
+      "sizeBytes": 70202732
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
-      "sizeBytes": 70200489
+      "md5": "4b0d54195e48f4e10adf9efd4c2a941b",
+      "sizeBytes": 70202732
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
-      "sizeBytes": 70200489
+      "md5": "4b0d54195e48f4e10adf9efd4c2a941b",
+      "sizeBytes": 70202732
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
-      "sizeBytes": 70200489
+      "md5": "4b0d54195e48f4e10adf9efd4c2a941b",
+      "sizeBytes": 70202732
     }
   ],
-  "md5": "57a964b28a96dcb0f9d8e62d8e10448c",
-  "sizeBytes": 70200489,
+  "md5": "4b0d54195e48f4e10adf9efd4c2a941b",
+  "sizeBytes": 70202732,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "9b2119d6d1f642e2549ec32acccdff32"
+    "bundleMd5": "57a964b28a96dcb0f9d8e62d8e10448c"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 9b2119d6d1f642e2549ec32acccdff32, 70200365 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 57a964b28a96dcb0f9d8e62d8e10448c, 70200489 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1284,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T18:18:07+00:00",
-  "buildStamp": "2026-11-04 18:18",
+  "publishedAt": "2026-11-04T18:56:33+00:00",
+  "buildStamp": "2026-11-04 18:56",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",

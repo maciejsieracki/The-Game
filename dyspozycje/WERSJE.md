@@ -1,3 +1,12 @@
+## ROBOCZA 4b0d5419 -- 2026-11-04 -- blokada oblężonego miasta (rekrutacja, posiłki, wejście) (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`8c0fb5766` + SIEGE-BLOCKADE `258a13a7f` + SETCITYLIMIT `e26ed030d` + NAVAL-DEPOSIT-GATE-TEST-DEBT `86d7614cb`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `4b0d54195e48f4e10adf9efd4c2a941b`, 70202732 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: oblegane miasto nie rekrutuje, nie dostaje posiłków i nie przyjmuje obcych jednostek (gracz, AI, barbarzyńcy); atak na oblegających i wyjście z miasta działają; hak testowy limitu miast; testy bramek portów/złóż zaktualizowane.
+- Testy: tsc PASS; siege-blockade 57/0; setcitylimit 29/0; naval 40/0; deposit 49/0; batch-contract 17/0.
+- Ograniczenia: bez żywej tury AI/hot-seat w Chromium; units/setup.ts poza pierwotną allowlistą; kilka testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `57a964b28a96dcb0f9d8e62d8e10448c`, 70200489 bajtów.
+
 ## ROBOCZA 57a964b2 -- 2026-11-04 -- handel tylko na znajomość + tooltip bez dubli surowców (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`9c1d28bb2` + TRADE-ROUTE-CONTACT-ONLY `b7a246cc9` + TOOLTIP-RESOURCES-LINE-DEDUP `198ee3d8a`) i commit wdrożenia; decyzja właściciela (ABC A/A/A/A), stała zgoda.
