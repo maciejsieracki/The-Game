@@ -23,6 +23,9 @@ export interface Chip6cOpts {
   value: string;
   rate?: string;
   rateWarn?: boolean;
+  /** R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1: niedobór → etykieta/wartość/przyrost czerwoną czcionką
+   *  (klasa `civ-hud-chip-short`, styl w hud.ts) zamiast złotej. Tylko prezentacja. */
+  shortage?: boolean;
   medVariant?: ChipMedVariant;
   valClass?: string;
   act?: string;
@@ -52,7 +55,7 @@ function chipIconHtml(id: IconId, _medVariant: ChipMedVariant, assetOverride?: s
 /** Pojedynczy chip 6C (poziomy wiersz z separatorem po). */
 export function chip6cHtml(opts: Chip6cOpts): string {
   const med = opts.medVariant ?? (opts.iconId === 'res-science' ? 'science' : 'gold');
-  const clickCls = opts.act ? ' civ-hud-chip-click' : '';
+  const clickCls = (opts.act ? ' civ-hud-chip-click' : '') + (opts.shortage ? ' civ-hud-chip-short' : '');
   const titleTxt = (opts.title ?? opts.label) + (opts.exact ? ' · ' + opts.exact : '');
   const ariaAttr = opts.exact ? ` aria-label="${escHtml(opts.label + ': ' + opts.exact)}"` : '';
   const actAttr = opts.act

@@ -20304,6 +20304,7 @@ async function boot(): Promise<void> {
       const resourceAlertCount = storedResourceRows.filter(
         r => r.ratePerTurn < 0 || r.stock >= (r.cap ?? Infinity),
       ).length;
+      const surowceNiedoborLabels = storedResourceRows.filter(r => r.ratePerTurn < 0).map(r => r.label);
       const surowceTotal = storedResourceRows.length;
       const surowceOk = surowceTotal - resourceAlertCount;
       // TEMAT 14 (Maciej 2026-07-24): chip „Handel" w HUD — suma dochodu z aktywnych
@@ -20475,6 +20476,7 @@ async function boot(): Promise<void> {
         nacja: civDisplayNameForOwner(0) ?? undefined,
         surowceSummary: surowceTotal > 0 ? `${surowceOk}/${surowceTotal}` : '—',
         surowceAlert: resourceAlertCount > 0,
+        surowceNiedoborLabels,
         handelIncome,
         handelRouteCount,
         uchwalaSolAktywna: foodProj.uchwalaSolAktywna,
