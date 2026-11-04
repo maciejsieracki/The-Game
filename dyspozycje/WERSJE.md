@@ -1,3 +1,12 @@
+## ROBOCZA ac12379e -- 2026-11-04 -- spacja w rosterze + czerwony HUD przy niedoborze (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`a4eda2b7e` + ROSTER-SPACE `4995b2677` + HUD-RED `25ba4d0ad`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `ac12379e477e12635f330896cb1a2772`, 70184635 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: Spacja przechodzi do następnej aktywnej jednostki (także oblegająca/oblegana); HUD czerwony przy niedoborze złota/żywności/surowców.
+- Testy: tsc PASS; roster-space 43/0; hud-resource-deficit-red 41/0.
+- Ograniczenia: bez żywej gry; próg 5 tur do akceptacji; hot-seat surowce częściowo z fotela 0.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `a53cbc622f8ec548ea7bfd0ca38b3561`, 70182590 bajtów.
+
 ## ROBOCZA a53cbc62 -- 2026-11-04 -- AI zbiera armię zastępczą w jednym miejscu (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`16195968b` + AI-ARMY-CONCENTRATION-REPLACEMENT `35321d577`) i commit wdrożenia; stała zgoda właściciela.

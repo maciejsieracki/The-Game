@@ -1,112 +1,112 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-  "bundleSha256": "177dda025e6c991cb4c6057f66c2a056ea6cd59dc3219cec13507ef95aab8c7d",
-  "bundleBytes": 70182590,
+  "bundleMd5": "ac12379e477e12635f330896cb1a2772",
+  "bundleSha256": "e11efa4ecf1541022df7ddf11098f44cdb26b2918c5f260e226db59b0bc8d956",
+  "bundleBytes": 70184635,
   "sourceSnapshot": {
-    "source": "main 16195968b + AI-ARMY-CONCENTRATION-REPLACEMENT (35321d577)",
+    "source": "main a4eda2b7e + ROSTER-SPACE (4995b2677) + HUD-RESOURCE-DEFICIT-RED (25ba4d0ad)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1: w wojnie jednostka AI spoza skupiska ≥3 jednostek (promień 4) idzie do miasta zbiórki najbliższego celu zamiast pojedynczo na front; limity czekania 6/30 tur; fallback bez trasy."
+    "R-WEB-ROSTER-SPACE-NEXT-ACTIVE-UNIT-Q1: Spacja przechodzi do następnej aktywnej jednostki; oblegająca i oblegana trafiają do kolejki Spacji (bęben i Zwiedzaj bez zmian).",
+    "R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1: w HUD czerwona czcionka przy niedoborze złota, żywności i surowców (próg: zapas starcza na ≤5 tur lub bilans ujemny); tylko prezentacja."
   ],
   "verification": [
-    "tsc --noEmit PASS",
-    "ai-army-replacement-concentration 34/0 (mutacja czerwona); army-concentration 56/0; ai-general-war-campaign 51/0; army-consolidation-e2e 6/0"
+    "tsc --noEmit PASS po scaleniu",
+    "roster-space-next-active-unit 43/0 (Chromium); hud-resource-deficit-red 41/0 (6 mutacji)"
   ],
   "limits": [
-    "Symulacja z atrapami rekrutacji/walki, bez pełnej gry w przeglądarce; archetypy cywilizacji NIE_ZMIERZONO",
-    "Pangea: udział tur z armiami ponad liczbę wojen +0.078 (merge_radius poza zakresem)",
-    "Czerwone na bazie: war-allin-capital-test 94/4, ai-siege-requires-war-test 47/1"
+    "Żywa gra / hot-seat NIE_ZMIERZONO; próg 5 tur wybrany przez Operatora (do akceptacji właściciela); chip Surowce w hot-seacie liczony częściowo z fotela 0",
+    "Czerwone na bazie: end-turn-modal-sequencing 35/5, hud-skarbiec 33/1 i inne"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "AI-ARMY-CONCENTRATION-REPLACEMENT: Operator → Evaluator FAIL → Obrona → FC PASS-WITH-NOTES."
+    "notes": "ROSTER-SPACE: PASS; HUD-RED: PASS-WITH-NOTES (r2)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-04T12:43:13",
+  "hubGeneratedAt": "2026-11-04T13:17:05",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-      "sizeBytes": 70182590
+      "md5": "ac12379e477e12635f330896cb1a2772",
+      "sizeBytes": 70184635
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-      "sizeBytes": 70182590
+      "md5": "ac12379e477e12635f330896cb1a2772",
+      "sizeBytes": 70184635
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-      "sizeBytes": 70182590
+      "md5": "ac12379e477e12635f330896cb1a2772",
+      "sizeBytes": 70184635
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-      "sizeBytes": 70182590
+      "md5": "ac12379e477e12635f330896cb1a2772",
+      "sizeBytes": 70184635
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-      "sizeBytes": 70182590
+      "md5": "ac12379e477e12635f330896cb1a2772",
+      "sizeBytes": 70184635
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-      "sizeBytes": 70182590
+      "md5": "ac12379e477e12635f330896cb1a2772",
+      "sizeBytes": 70184635
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-      "sizeBytes": 70182590
+      "md5": "ac12379e477e12635f330896cb1a2772",
+      "sizeBytes": 70184635
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-      "sizeBytes": 70182590
+      "md5": "ac12379e477e12635f330896cb1a2772",
+      "sizeBytes": 70184635
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-      "sizeBytes": 70182590
+      "md5": "ac12379e477e12635f330896cb1a2772",
+      "sizeBytes": 70184635
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-      "sizeBytes": 70182590
+      "md5": "ac12379e477e12635f330896cb1a2772",
+      "sizeBytes": 70184635
     }
   ],
-  "md5": "a53cbc622f8ec548ea7bfd0ca38b3561",
-  "sizeBytes": 70182590,
+  "md5": "ac12379e477e12635f330896cb1a2772",
+  "sizeBytes": 70184635,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "a92797382bedc9c81e5edbc03c95d643"
+    "bundleMd5": "a53cbc622f8ec548ea7bfd0ca38b3561"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 a92797382bedc9c81e5edbc03c95d643, 70180853 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 a53cbc622f8ec548ea7bfd0ca38b3561, 70182590 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-04T12:42:39+00:00",
-  "buildStamp": "2026-11-04 12:42",
+  "publishedAt": "2026-11-04T13:17:04+00:00",
+  "buildStamp": "2026-11-04 13:17",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
