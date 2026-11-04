@@ -163,6 +163,7 @@ import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, computeVisibleAlongPath, buildUnitSightResolver, computePlayerVisibility, unitsVisibleOnMap } from './game/visibility';
 import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
 import { cyclablePlayerArmyLeadsBase, resolveAdjacentPlayerUnitCycle } from './game/army-cycle';
+import { activeUnitQueue } from './game/next-active-unit';
 import {
   shouldShowPlayerTriumphCityStateUnification,
   // buildTriumphCityStateUnificationMessage / TRIUMPH_CS_HINT_MS: nie używane tu
@@ -6641,7 +6642,9 @@ async function boot(): Promise<void> {
     /** Wszystkie armie gracza (1 wiodąca/heks) z DOSTĘPNYM RUCHEM — kolejność przestrzenna.
      * Używane przez Spację i auto-cykl „bęben” po wyczerpaniu ruchu. */
     function cyclablePlayerArmyLeads(): RuntimeUnit[] {
-      return cyclablePlayerArmyLeadsBase(units, true, stackCanMove, (u) => isMe(u.ownerId));
+      // R-WEB-ROSTER-SPACE-NEXT-ACTIVE-UNIT-Q1: kolejka Spacji/bębna obejmuje też jednostki
+      // oblegające / oblegane (bez ruchu, ale wymagają decyzji) -- game/next-active-unit.ts.
+      return activeUnitQueue(units, { cities, isMe: (u) => isMe(u.ownerId), canMove: stackCanMove });
     }
 
     /** Wszystkie armie gracza (1 wiodąca/heks), NIEZALEŻNIE od dostępnego ruchu — kolejność
