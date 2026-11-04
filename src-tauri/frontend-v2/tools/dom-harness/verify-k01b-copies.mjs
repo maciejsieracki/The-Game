@@ -20,6 +20,7 @@
 import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { K_REV_RX, revProblem, partitionRev } from './repin-ui2g-rev.mjs';
 
 const args = process.argv.slice(2);
 const argOf = (k) => {
@@ -49,33 +50,33 @@ const REN = [
  */
 const ALLOWED = [
   // Z1 — typy: DTO `*K` i wąskie typy warstwy K01B (kształt pola ten sam; nazwa/zakres typu inny).
-  { file: 'k01b-dom.ts', range: 'gra/src/ui/cityPanel.ts:3808-3811', text: 'function renderImperiumZywnosc(mount: HTMLElement, _city: City): void {', why: 'Z1 CityRef' },
-  { file: 'k01b-dom.ts', range: 'gra/src/ui/cityPanel.ts:3808-3811', text: 'function renderImperiumZywnosc(mount: HTMLElement, _city: CityRef): void {', why: 'Z1 CityRef' },
-  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:1444-1449', text: 'function wyzwienieSummaryLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>): string {', why: 'Z1 PoziomRacji=number; params z kontrolera (Z3, buildRationParams poza portem)' },
-  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:1444-1449', text: 'function wyzwienieSummaryLabel(level: number, params: RationParams): string {', why: 'Z1 / Z3' },
-  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:4357-4367', text: 'function orderBandEffectShort(band: ReturnType<typeof porPctBand>): string {', why: 'Z7 pasmo jako wartość DTO' },
-  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:4357-4367', text: 'function orderBandEffectShort(band: OrderBand | string): string {', why: 'Z7' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:994-1000', text: 'type CityWithSliders = City & {', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:994-1000', text: 'podzialHandlu?: PodzialHandluSplit;', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:994-1000', text: 'podziałHandlu?: PodzialHandluSplit;', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:994-1000', text: 'podzialPracy?: PodzialPracySplit;', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:994-1000', text: 'podziałPracy?: PodzialPracySplit;', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:994-1000', text: '};', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:994-1000', text: 'type CityWithSliders = CityWithSliders;', why: 'Z1 alias typu (export type CityWithSliders = CityWithSlidersK)' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1039-1072', text: 'citizenUpkeep: CitizenUpkeepCoverage;', why: 'Z1 CitizenUpkeepCoverageDto (viewmodel/types.ts) jako CitizenUpkeepK' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1039-1072', text: 'citizenUpkeep: CitizenUpkeep;', why: 'Z1' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1335-1337', text: 'function daninaLabelForCity(_city: City): DaninaLabel {', why: 'Z1 CityRefK' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1335-1337', text: 'function daninaLabelForCity(_city: CityRef): DaninaLabel {', why: 'Z1 CityRefK' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:6461-6469', text: "const YIELD_BRAND: { key: keyof BuildingDef['baza']; brandId: string; label: string }[] = [", why: 'Z1 YieldKeyK (klucze jako typ DTO)' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:6461-6469', text: "const YIELD_BRAND: { key: YieldKey; brandId: string; label: string }[] = [", why: 'Z1' },
+  { file: 'k01b-dom.ts', range: 'gra/src/ui/cityPanel.ts:3872-3875', text: 'function renderImperiumZywnosc(mount: HTMLElement, _city: City): void {', why: 'Z1 CityRef' },
+  { file: 'k01b-dom.ts', range: 'gra/src/ui/cityPanel.ts:3872-3875', text: 'function renderImperiumZywnosc(mount: HTMLElement, _city: CityRef): void {', why: 'Z1 CityRef' },
+  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:1498-1503', text: 'function wyzwienieSummaryLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>): string {', why: 'Z1 PoziomRacji=number; params z kontrolera (Z3, buildRationParams poza portem)' },
+  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:1498-1503', text: 'function wyzwienieSummaryLabel(level: number, params: RationParams): string {', why: 'Z1 / Z3' },
+  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:4421-4431', text: 'function orderBandEffectShort(band: ReturnType<typeof porPctBand>): string {', why: 'Z7 pasmo jako wartość DTO' },
+  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:4421-4431', text: 'function orderBandEffectShort(band: OrderBand | string): string {', why: 'Z7' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1046-1052', text: 'type CityWithSliders = City & {', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1046-1052', text: 'podzialHandlu?: PodzialHandluSplit;', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1046-1052', text: 'podziałHandlu?: PodzialHandluSplit;', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1046-1052', text: 'podzialPracy?: PodzialPracySplit;', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1046-1052', text: 'podziałPracy?: PodzialPracySplit;', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1046-1052', text: '};', why: 'Z1 typ w k01b-dto.ts (CityWithSlidersK)' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1046-1052', text: 'type CityWithSliders = CityWithSliders;', why: 'Z1 alias typu (export type CityWithSliders = CityWithSlidersK)' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1091-1124', text: 'citizenUpkeep: CitizenUpkeepCoverage;', why: 'Z1 CitizenUpkeepCoverageDto (viewmodel/types.ts) jako CitizenUpkeepK' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1091-1124', text: 'citizenUpkeep: CitizenUpkeep;', why: 'Z1' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1389-1391', text: 'function daninaLabelForCity(_city: City): DaninaLabel {', why: 'Z1 CityRefK' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1389-1391', text: 'function daninaLabelForCity(_city: CityRef): DaninaLabel {', why: 'Z1 CityRefK' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:6532-6540', text: "const YIELD_BRAND: { key: keyof BuildingDef['baza']; brandId: string; label: string }[] = [", why: 'Z1 YieldKeyK (klucze jako typ DTO)' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:6532-6540', text: "const YIELD_BRAND: { key: YieldKey; brandId: string; label: string }[] = [", why: 'Z1' },
   // Z2 — stała zamiast funkcji pinu (wartość 'Podatek' = danina-nazwa.ts:15; zgodność wartości sprawdza harness F).
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1335-1337', text: 'return daninaLabel();', why: 'Z2 stała Podatek (K01B-Z2)' },
-  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1335-1337', text: "return 'Podatek';", why: 'Z2' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1389-1391', text: 'return daninaLabel();', why: 'Z2 stała Podatek (K01B-Z2)' },
+  { file: 'k01b-t.ts', range: 'gra/src/ui/cityPanel.ts:1389-1391', text: "return 'Podatek';", why: 'Z2' },
   // Z3 — port reguł: cast typu pinowego usunięty (BuildingDefK jest już typem wejścia portu).
-  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:6650-6658', text: 'gold: buildingUpkeep(def as unknown as BuildingRecord, level),', why: 'Z3 cast usunięty (typ DTO)' },
-  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:6650-6658', text: 'gold: buildingUpkeep(def, level),', why: 'Z3' },
+  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:6721-6729', text: 'gold: buildingUpkeep(def as unknown as BuildingRecord, level),', why: 'Z3 cast usunięty (typ DTO)' },
+  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:6721-6729', text: 'gold: buildingUpkeep(def, level),', why: 'Z3' },
   // Z6 — parametr `epoch` (pin: nieużywany) — `void epoch;` tylko dla lintera.
-  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:1563-1595', text: 'void epoch;', why: 'Z6 void epoch (lint)' },
+  { file: 'k01b-r.ts', range: 'gra/src/ui/cityPanel.ts:1617-1649', text: 'void epoch;', why: 'Z6 void epoch (lint)' },
 ];
 
 const norm = (s) => s.replace(/^\s*export\s+/, '').replace(/\s+/g, ' ').trim();
@@ -84,7 +85,8 @@ const normV2 = (s) => {
   for (const [rx, to] of REN) t = t.replace(rx, to);
   return norm(t);
 };
-const MARK = /^\/\/ pin edb8fb56 (gra\/src\/[^\s:]+):(\d+)-(\d+)/;
+// R-RUSTPORT-REPIN-UI-2-G-Q1: marker wskazuje pin edb8fb56 albo web 86d510c66 (repin-ui2g-rev.mjs); --pin-dir = katalog tej rewizji.
+const MARK = new RegExp(`^\\/\\/ pin ${K_REV_RX} (gra\\/src\\/[^\\s:]+):(\\d+)-(\\d+)`);
 const DECL = /^(?:export\s+)?(?:declare\s+)?(?:async\s+)?(?:const|let|var|function|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/;
 
 /** LCS-diff dwóch list tekstów: zwraca {onlyPin, onlyV2} (w kolejności). */
@@ -171,6 +173,8 @@ const allowedSet = new Set(ALLOWED.map((a) => `${a.file}|gra/src/ui/cityPanel.ts
 const disallowed = report.residual.filter((r) => !allowedSet.has(allowedKey(r)));
 const gateCover = notCovered.length === 0 && odr.length === 57;
 const gateText = disallowed.length === 0;
+const revErr = revProblem(files.map((f) => readFileSync(join(V2_DIR, f), 'utf8')));
+if (revErr) unknown.push(revErr);
 const gateMark = unknown.length === 0;
 const ok = gateCover && gateText && gateMark;
 console.log(`verify-k01b-copies: bloki ${blocks.length}, linie pinu (niepuste) ${report.pinLines}, roznice po normalizacji ${report.residual.length} (dozwolone ${report.residual.length - disallowed.length}, niedozwolone ${disallowed.length})`);

@@ -20,36 +20,43 @@ import type {
 import { YIELD_BRAND, frontItemK } from './k01b-t';
 import type { CityView } from './k01b-t';
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:913-915 (import logiki etaTurns -> port)
+// pin 86d510c66 gra/src/ui/cityPanel.ts:965-967 (import logiki etaTurns -> port)
 export function queueItemOwnEta(koszt: number, pracaPerTurn: number): number | null {
   return reguly().etaTurns(koszt, 0, pracaPerTurn);
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:889-911
+// pin 86d510c66 gra/src/ui/cityPanel.ts:934-963
 export function queueItemCumulativeEta(
   prod: CityProductionK,
   queueIndex: number,
   pracaPerTurn: number,
+  buildingPracaPerTurn = pracaPerTurn,
 ): number | null {
   if (!(pracaPerTurn > 0) || queueIndex < 1) return null;
   if (prod.wstrzymana === true) return null;
   const front = frontItemK(prod);
   let sum = 0;
   if (front) {
-    const rem = reguly().etaTurns(front.koszt, prod.postep, pracaPerTurn);
+    const frontPraca = front.kind === 'budynek' ? buildingPracaPerTurn : pracaPerTurn;
+    if (!(frontPraca > 0)) return null;
+    const rem = reguly().etaTurns(front.koszt, prod.postep, frontPraca);
     if (rem === null) return null;
     sum += rem;
   }
   for (let i = 1; i < queueIndex; i++) {
     const it = prod.kolejka[i] as ProductionItemK;
-    sum += Math.max(1, Math.ceil(it.koszt / pracaPerTurn));
+    const itemPraca = it.kind === 'budynek' ? buildingPracaPerTurn : pracaPerTurn;
+    if (!(itemPraca > 0)) return null;
+    sum += Math.max(1, Math.ceil(it.koszt / itemPraca));
   }
   const cur = prod.kolejka[queueIndex] as ProductionItemK;
-  sum += Math.max(1, Math.ceil(cur.koszt / pracaPerTurn));
+  const curPraca = cur.kind === 'budynek' ? buildingPracaPerTurn : pracaPerTurn;
+  if (!(curPraca > 0)) return null;
+  sum += Math.max(1, Math.ceil(cur.koszt / curPraca));
   return sum;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1434-1442
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1488-1496
 export function clampedGrowthBreakdown(view: CityView, maxSafe?: number): GrowthPercentBreakdownK {
   const bd = view.growthBreakdown;
   if (maxSafe === undefined) return bd;
@@ -60,7 +67,7 @@ export function clampedGrowthBreakdown(view: CityView, maxSafe?: number): Growth
   return { ...bd, racje, total };
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1444-1449
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1498-1503
 export function wyzwienieSummaryLabel(level: number, params: RationParamsK): string {
   const cost = reguly().rationFoodCostPerPop(level, params);
   const grow = reguly().rationGrowthPercent(level, params);
@@ -68,7 +75,7 @@ export function wyzwienieSummaryLabel(level: number, params: RationParamsK): str
   return `${cost} 🍞/miesz. · ${growTxt}%`;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1563-1595
+// pin 86d510c66 gra/src/ui/cityPanel.ts:1617-1649
 export function buildGrowthProgressUi(
   population: number,
   view: CityView,
@@ -104,7 +111,7 @@ export function buildGrowthProgressUi(
   return { progressHtml, etaHtml };
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4357-4367 (band = wartość DTO, bez porPctBand)
+// pin 86d510c66 gra/src/ui/cityPanel.ts:4421-4431 (band = wartość DTO, bez porPctBand)
 export function orderBandEffectShort(band: OrderBandK | string): string {
   switch (band) {
     case 'lad': return 'Bonus ×1,10';
@@ -117,7 +124,7 @@ export function orderBandEffectShort(band: OrderBandK | string): string {
   }
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6483-6493
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6554-6564
 /** Przychód budynku na turę — wartość z buildingEffectAtLevel (C-PRZYROST=A). */
 export function formatBuildingYieldDetailValue(baza: number, przyrost: number, level: number): string {
   const effect = reguly().buildingEffectAtLevel(baza, przyrost, level);
@@ -130,7 +137,7 @@ export function formatBuildingYieldDetailValue(baza: number, przyrost: number, l
   return main;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6495-6502
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6566-6573
 /** Skrót przychodu na chipie infokarty budynku — realna wartość na poziomie miasta. */
 export function formatBuildingYieldChipText(baza: number, przyrost: number, label: string, level: number): string {
   const effect = reguly().buildingEffectAtLevel(baza, przyrost, level);
@@ -140,7 +147,7 @@ export function formatBuildingYieldChipText(baza: number, przyrost: number, labe
   return base;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6505-6513
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6576-6584
 export function formatBuildingYieldScaleRow(def: BuildingDefK, baza: number, przyrost: number): string | null {
   if (przyrost === 0 || def.maksPoziom <= 1) return null;
   const parts: string[] = [];
@@ -151,7 +158,7 @@ export function formatBuildingYieldScaleRow(def: BuildingDefK, baza: number, prz
   return parts.join(' · ');
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6515-6554
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6586-6625
 /** Chipy bonusów (max 3) — mockup Poziom B budynków 1E. */
 export function buildingBonusChipsHtml(
   def: BuildingDefK,
@@ -193,7 +200,7 @@ export function buildingBonusChipsHtml(
   return chips.join('');
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6579-6607
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6650-6678
 export function buildingOwnedBonusCompactHtml(
   def: BuildingDefK,
   level: number,
@@ -224,7 +231,7 @@ export function buildingOwnedBonusCompactHtml(
     : chips.join('');
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6637-6648
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6708-6719
 export function formatResourceUpkeepText(
   resources: Record<string, number>,
   compact: boolean,
@@ -238,7 +245,7 @@ export function formatResourceUpkeepText(
     .join(' · ');
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6650-6658
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6721-6729
 export function buildingUpkeepDisplay(
   def: BuildingDefK,
   level: number,
@@ -249,7 +256,7 @@ export function buildingUpkeepDisplay(
   };
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6660-6671
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6731-6742
 export function sumOwnedBuildingsResourceUpkeep(
   built: readonly string[],
   data: GameDataK,
@@ -263,7 +270,7 @@ export function sumOwnedBuildingsResourceUpkeep(
   return out;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6789-6810
+// pin 86d510c66 gra/src/ui/cityPanel.ts:6860-6881
 export function formatConverterProductionRowHtml(
   display: { consumed: Record<string, number>; produced: Record<string, number> },
   compact: boolean,

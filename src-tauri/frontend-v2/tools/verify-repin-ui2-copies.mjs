@@ -80,5 +80,65 @@ for (const f of manifest.files) {
     if (Buffer.compare(ref, buf) !== 0) fail(`GIT ${f.path} różni się od ${f.pin}`);
   }
 }
+// ─── R-RUSTPORT-REPIN-UI-2-G-Q1: bloki K przepięte na web (`tools/repin-ui2g-kblocks-manifest.json`) ─────────────
+// REV    każdy marker bloku w pliku ma rewizję manifestu, liczba markerów = wpis (plik nie miesza pinu i webu);
+// RANGE  (git albo --web-dir) zakres A-B istnieje w pliku źródłowym tej rewizji, a pierwsza deklaracja bloku portu
+//        (bez `export`) jest zadeklarowana w liniach A..B źródła — treść bloków sprawdzają weryfikatory partii.
+let kChecked = 0;
+let kFiles = 0;
+const kManPath = new URL('./repin-ui2g-kblocks-manifest.json', import.meta.url);
+if (existsSync(kManPath)) {
+  const km = JSON.parse(readFileSync(kManPath, 'utf8'));
+  const MARK = /^\/\/ (?:kopia typu \([^)]*\) )?pin(?:-adapter)? (\S+) (gra\/src\/[^:\s]+):(\d+)-(\d+)/;
+  const DECLN = /^(?:export\s+)?(?:declare\s+)?(?:async\s+)?(?:function\s*\*?\s*|const\s+|let\s+|var\s+|interface\s+|type\s+|class\s+|enum\s+)([A-Za-z_$][\w$]*)/;
+  const srcCache = new Map();
+  const srcLines = (rel) => {
+    if (srcCache.has(rel)) return srcCache.get(rel);
+    let txt = null;
+    if (webDir) txt = existsSync(join(webDir, rel)) ? readFileSync(join(webDir, rel), 'utf8') : null;
+    else if (!noGit) {
+      try {
+        txt = execFileSync('git', ['show', `${km.revFull}:${rel}`], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024 }).toString('utf8');
+      } catch {
+        txt = null;
+      }
+    }
+    const v = txt === null ? null : txt.split(/\r?\n/);
+    srcCache.set(rel, v);
+    return v;
+  };
+  for (const f of km.files) {
+    kFiles++;
+    const abs = join(ROOT, f.path);
+    if (!existsSync(abs)) {
+      fail(`KBLOK BRAK ${f.path}`);
+      continue;
+    }
+    const lines = readFileSync(abs, 'utf8').split('\n');
+    const marks = [];
+    lines.forEach((l, i) => {
+      const m = MARK.exec(l);
+      if (m) marks.push({ i, rev: m[1], rel: m[2], a: +m[3], b: +m[4] });
+    });
+    if (marks.length !== f.markers) fail(`KBLOK REV ${f.path}: markerów ${marks.length}, manifest ${f.markers}`);
+    for (const mk of marks) if (mk.rev !== km.rev) fail(`KBLOK REV ${f.path}:${mk.i + 1} rewizja ${mk.rev} != ${km.rev}`);
+    marks.forEach((mk, k) => {
+      const ref = srcLines(mk.rel);
+      if (ref === null) return;
+      kChecked++;
+      if (mk.b > ref.length || mk.a < 1 || mk.a > mk.b) {
+        fail(`KBLOK RANGE ${f.path}:${mk.i + 1} ${mk.rel}:${mk.a}-${mk.b} poza plikiem (${ref.length} linii)`);
+        return;
+      }
+      const end = k + 1 < marks.length ? marks[k + 1].i : lines.length;
+      const portName = lines.slice(mk.i + 1, end).map((l) => DECLN.exec(l)?.[1]).find(Boolean);
+      if (!portName) return;
+      const name = km.renames?.[portName] ?? portName;
+      const rx = new RegExp(`^(?:export\\s+)?(?:declare\\s+)?(?:async\\s+)?(?:function\\s*\\*?\\s*|const\\s+|let\\s+|var\\s+|interface\\s+|type\\s+|class\\s+|enum\\s+)${name.replace(/\$/g, '\\$')}\\b`);
+      if (!ref.slice(mk.a - 1, mk.b).some((l) => rx.test(l))) fail(`KBLOK RANGE ${f.path}:${mk.i + 1} deklaracja ${name} nie leży w ${mk.rel}:${mk.a}-${mk.b} (${km.rev})`);
+    });
+  }
+}
+if (kFiles) console.log(`verify-repin-ui2-copies: kblocks rev=${existsSync(kManPath) ? JSON.parse(readFileSync(kManPath, 'utf8')).rev : '-'} plików=${kFiles} zakresów_sprawdzonych=${kChecked}`);
 console.log(`verify-repin-ui2-copies: pin=${manifest.pin} plików=${manifest.files.length} źródło_sprawdzone=${gitChecked} niezgodnych=${bad}`);
 process.exitCode = bad === 0 ? 0 : 1;

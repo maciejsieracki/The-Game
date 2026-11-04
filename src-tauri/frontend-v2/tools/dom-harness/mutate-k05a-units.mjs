@@ -62,7 +62,8 @@ const MUTANTS = [
   ['loc-region', "if (lokalizacja === 'region') return isCapital === false;", "if (lokalizacja === 'region') return isCapital !== true;"],
   ['recruit-ep-default', 'const ep = cfg.getEpoch?.(city.ownerId) ?? 1;', 'const ep = cfg.getEpoch?.(city.ownerId) ?? 2;'],
   ['recruit-bonusy-dto', 'civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));', 'civManpowerMaxMult(undefined);'],
-  ['recruit-cost-maxmult', 'return unitManpowerCostForType(typeId, ep, maxMult);', 'return unitManpowerCostForType(typeId, ep, 1);'],
+  // R-RUSTPORT-REPIN-UI-2-G-Q1: blok recruitManpowerCost przepięty na web 86d510c66 (4. argument costMult).
+  ['recruit-cost-maxmult', 'return unitManpowerCostForType(typeId, ep, maxMult, multipliers?.costMult ?? maxMult);', 'return unitManpowerCostForType(typeId, ep, 1, multipliers?.costMult ?? maxMult);'],
   ['rekruci-total-snapshot', 'return cfg.getManpowerSnapshot?.(city.id)?.manpowerBiezacy;', 'return cfg.getManpowerSnapshot?.(city.id)?.manpowerBiezacy ?? 0;'],
   ['rekruci-total-dto', 'const empireTotal = cfg.getEmpireRekruciTotal?.(city.ownerId);', 'const empireTotal = cfg.getEmpireRekruciTotal?.(city.id);'],
   ['affordable-default', 'available = empireRekruciTotal(city),', 'available = undefined,'],

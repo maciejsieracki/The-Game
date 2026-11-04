@@ -60,8 +60,11 @@ const UNIT_NAMES = [
   'ownerCities', 'ownerCitiesForNav', 'cityPanelTitle', 'navigateCityPanel',
 ];
 
-/** Stan modułu pinu (ui/cityPanel.ts:10159-10163; `rootEl` pominięty — DOM). */
-const pinState = pinLines.slice(10158, 10163).join('\n');
+/** Stan modułu pinu (ui/cityPanel.ts:10159-10163 w edb8fb56, 10406-10410 w 86d510c66; `rootEl` pominięty — DOM).
+ * R-RUSTPORT-REPIN-UI-2-G-Q1: początek wyznaczany po treści (`let activeCity`), bo `--pin-dir` może być pinem albo webem. */
+const PIN_STATE_AT = pinLines.findIndex((l) => l.startsWith('let activeCity: City | null = null;'));
+if (PIN_STATE_AT < 0) throw new Error('pin: brak stanu modułu (let activeCity)');
+const pinState = pinLines.slice(PIN_STATE_AT, PIN_STATE_AT + 5).join('\n');
 
 /** Prelude pinu: zależności zewnętrzne czytane z fixture (ten sam fixture co strona portu). */
 const PIN_PRELUDE = `

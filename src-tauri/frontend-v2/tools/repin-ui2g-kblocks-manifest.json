@@ -1,0 +1,17 @@
+{
+  "topic": "R-RUSTPORT-REPIN-UI-2-G-Q1",
+  "rev": "86d510c66",
+  "revFull": "86d510c667268880414d693532ca012c9310589e",
+  "note": "Pliki bloków K przepięte z pinu edb8fb56 na web 86d510c66 (P5-REPIN-UI-2 §6). Wszystkie markery pliku mają rewizję rev; liczba markerów = markers. Weryfikacja treści bloków: verify-k0*-copies.mjs / run-k01a.mjs partii z --pin-dir <WEB 86d510c66>.",
+  "renames": { "frontItemK": "frontItem", "buildImprovementKeyToName": "IMPROVEMENT_KEY_TO_NAME" },
+  "renamesWhy": "zmiany nazw deklaracji w porcie: K01B-Z1 (typy/akcesory *K), K06A-Z6 (IIFE -> funkcja z parametrem)",
+  "files": [
+    { "path": "src/ui/cityPanel/k01a-fundament.ts", "partition": "K01A", "markers": 84 },
+    { "path": "src/ui/cityPanel/k01b-t.ts", "partition": "K01B", "markers": 27 },
+    { "path": "src/ui/cityPanel/k01b-r.ts", "partition": "K01B", "markers": 15 },
+    { "path": "src/ui/cityPanel/k01b-f.ts", "partition": "K01B", "markers": 6 },
+    { "path": "src/ui/cityPanel/k01b-dom.ts", "partition": "K01B", "markers": 10 },
+    { "path": "src/ui/cityPanel/k05a-fundament.ts", "partition": "K05A", "markers": 28 },
+    { "path": "src/ui/cityPanel/k06a-fundament.ts", "partition": "K06A", "markers": 16 }
+  ]
+}

@@ -20,6 +20,8 @@ const argOf = (k) => {
   return i >= 0 ? args[i + 1] : undefined;
 };
 const PIN_DIR = argOf('--pin-dir');
+// R-RUSTPORT-REPIN-UI-2-G-Q1: K01A przepięta na web 86d510c66 — --pin-dir <WEB> --sel-pin-dir <PIN edb8fb56> (jak run-k01a).
+const SEL_DIR = argOf('--sel-pin-dir');
 if (!PIN_DIR) {
   console.error('Użycie: node tools/dom-harness/mutate-k01a.mjs --pin-dir <katalog z gra/src i gra/data z edb8fb56>');
   process.exit(2);
@@ -35,14 +37,14 @@ const MUTANTS = [
   ['M3 token DOM w bloku', REL, "export const STYLE_ID = 'civ-city-screen-css-w3-hudfix';", 'export const STYLE_ID = document.title;', ['A', 'C']],
   ['M4 usunięty export', REL, 'export const STYLE_ID =', 'const STYLE_ID =', ['B']],
   ['M5 import z warstwy logiki', REL, '', "import { UNIT_DEFS } from '../../data/loader';\n", ['C']],
-  ['M6 zły zakres linii pinu', REL, 'cityPanel.ts:285-291', 'cityPanel.ts:285-290', ['A']],
+  ['M6 zły zakres linii pinu', REL, 'cityPanel.ts:290-296', 'cityPanel.ts:290-295', ['A']], // repin UI-2-G: pin 285-291 → web 290-296
   ['M7 dryf wartości zależności ui/uiParams (bez zmiany tekstu bloków)', 'ui/uiParams.ts', 'const raw = staticCatalog().uiParams;', 'const raw = JSON.parse(JSON.stringify(staticCatalog().uiParams)); (raw as any).panel_miasta.font_scale_domyslna_px = 999;', ['V']],
-  ['M8 usunięty marker bloku wybranego (zbiór wyboru ≠ plik)', REL, '// pin edb8fb56 gra/src/ui/cityPanel.ts:1889-1895\n', '', ['A', 'S']],
+  ['M8 usunięty marker bloku wybranego (zbiór wyboru ≠ plik)', REL, '// pin 86d510c66 gra/src/ui/cityPanel.ts:1943-1949\n', '', ['A', 'S']],
   ['M9 dryf lokalnej kopii typu względem pinu (ZAŁOŻENIE K01A-Z5)', REL, "export type OkolicaFocus = 'zrownowazone' | 'zywnosc' | 'produkcja' | 'podatki';", "export type OkolicaFocus = 'zrownowazone' | 'zywnosc' | 'produkcja' | 'podatek';", ['T']],
 ];
 
 function runHarness(v2File) {
-  const r = spawnSync(process.execPath, [HARNESS, '--pin-dir', PIN_DIR, '--v2', v2File], { encoding: 'utf8', timeout: 300000 });
+  const r = spawnSync(process.execPath, [HARNESS, '--pin-dir', PIN_DIR, ...(SEL_DIR ? ['--sel-pin-dir', SEL_DIR] : []), '--v2', v2File], { encoding: 'utf8', timeout: 300000 });
   const out = (r.stdout ?? '') + (r.stderr ?? '');
   const wy = /WYNIK: (.*)/.exec(out);
   const failed = wy && wy[1].startsWith('CZERWONE') ? wy[1].replace('CZERWONE: ', '').split(',') : [];
