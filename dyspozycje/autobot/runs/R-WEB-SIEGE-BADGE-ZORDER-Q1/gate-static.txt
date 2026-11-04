@@ -1,0 +1,16 @@
+  OK   stala WORLD_OVERLAY_Z_INDEX istnieje
+  OK   plakietka oblezenia istnieje w main.ts
+  OK   plakietka uzywa WORLD_OVERLAY_Z_INDEX (bez literalu z-index)
+  OK   main.ts importuje WORLD_OVERLAY_Z_INDEX
+  OK   winieta .civ-ux-dim-full: z-index odczytany i > nakladki swiata (298 > 250)
+  OK   panel boczny .civ-side-panel: z-index odczytany i > nakladki swiata (305 > 250)
+  OK   HUD .civ-hud: z-index odczytany i > nakladki swiata (310 > 250)
+  OK   panel kontekstu .civ-context-panel: z-index odczytany i > nakladki swiata (310 > 250)
+  OK   panel jednostki .civ-unit-panel: z-index odczytany i > nakladki swiata (311 > 250)
+  OK   panel budowy .civ-build-panel: z-index odczytany i > nakladki swiata (311 > 250)
+  OK   ramka UX .civ-ux-frame (modale): z-index odczytany i > nakladki swiata (400 > 250)
+  OK   toast #civ-hint-toast > nakladki swiata
+  OK   nakladka swiata > 0 (nad kanwa 3D)
+
+PASS=13 FAIL=0
+EXIT=0

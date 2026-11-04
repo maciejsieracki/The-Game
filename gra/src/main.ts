@@ -508,6 +508,7 @@ import {
   siegeSurrenderBadgeText,
   siegeSurrenderTooltip,
 } from './game/siege-surrender-forecast';
+import { WORLD_OVERLAY_Z_INDEX } from './ui/worldOverlayLayer';
 import {
   showSiegeMapPanel, hideSiegeMapPanel, updateSiegeMapPanelTurn, isSiegeMapPanelOpen,
   getActiveSiegeCityId, setSiegePanelBesiegerCount, setSiegePanelMilitiaEstimator, setSiegePanelMilitiaRegenLeft,
@@ -16137,7 +16138,7 @@ async function boot(): Promise<void> {
         siegeHtmlLabelCityIds.push(city.id);
         siegeHtmlLabelBadgeEls.push(badge);
         el.style.cssText = [
-          'position:fixed', 'z-index:340', 'pointer-events:none', 'transform:translate(-50%,-100%)',
+          'position:fixed', 'z-index:' + WORLD_OVERLAY_Z_INDEX, 'pointer-events:none', 'transform:translate(-50%,-100%)',
           'padding:4px 10px', 'border-radius:8px', 'text-align:center', 'line-height:1.25',
           'font:bold 11px/1.3 Arial,sans-serif', 'color:#ffe8e8',
           'background:rgba(140,20,20,0.88)', 'border:2px solid #ff5252',
