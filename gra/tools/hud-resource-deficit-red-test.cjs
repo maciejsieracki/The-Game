@@ -35,7 +35,11 @@ const BASE = {
 const SCEN = {
   normal: {},
   goldRunway: { bogactwo: 30, bogactwoRate: -10 },          // 3 tury
-  goldZero: { bogactwo: 0, bogactwoRate: 0 },
+  goldZero: { bogactwo: 0, bogactwoRate: 0 },               // start gry / floor(+0,6): NIE alarm
+  goldZeroNeg: { bogactwo: 0, bogactwoRate: -1 },           // zapas 0 i ubywa: alarm
+  goldNegStock: { bogactwo: -5, bogactwoRate: 0 },          // zapas ujemny: alarm
+  foodZero: { zywnoscLabel: '0', zywnoscRate: 0 },          // start gry: NIE alarm
+  foodZeroNeg: { zywnoscLabel: '0', zywnoscRate: -1 },
   goldFarOk: { bogactwo: 500, bogactwoRate: -10 },          // 50 tur
   goldEdge5: { bogactwo: 50, bogactwoRate: -10 },           // dokładnie 5 tur
   goldEdge6: { bogactwo: 60, bogactwoRate: -10 },           // 6 tur
@@ -107,8 +111,8 @@ async function main() {
   const BG = [20, 26, 38]; // najjaśniejszy punkt gradientu paska
 
   for (const [chip, normal, shortList, okList] of [
-    ['Skarbiec', 'normal', ['goldRunway', 'goldZero', 'goldEdge5', 'all'], ['goldFarOk', 'goldEdge6']],
-    ['Spichlerz', 'normal', ['foodRunway', 'foodHunger', 'foodUnfed', 'all'], ['foodFarOk']],
+    ['Skarbiec', 'normal', ['goldRunway', 'goldZeroNeg', 'goldNegStock', 'goldEdge5', 'all'], ['goldZero', 'goldFarOk', 'goldEdge6']],
+    ['Spichlerz', 'normal', ['foodRunway', 'foodZeroNeg', 'foodHunger', 'foodUnfed', 'all'], ['foodZero', 'foodFarOk']],
     ['Surowce', 'normal', ['res1', 'resMany', 'all'], ['resCapOnly']],
   ]) {
     const n = await colors(normal, chip);
@@ -117,7 +121,7 @@ async function main() {
       const c = await colors(sc, chip);
       const txt = chip === 'Surowce' ? c && c.lbl : c && c.val;
       check(`${chip}: ${sc} -> czerwony`, c && c.short && isReddish(txt) && isReddish(c.lbl), c);
-      if (c) check(`${chip}: ${sc} kontrast WCAG AA >= 4.5 (${ratio(rgb(txt), BG).toFixed(2)})`, ratio(rgb(txt), BG) >= 4.5);
+      if (c) check(`${chip}: ${sc} kontrast WCAG AA (margines) >= 5.0 (${ratio(rgb(txt), BG).toFixed(2)})`, ratio(rgb(txt), BG) >= 5.0);
     }
     for (const sc of okList) {
       const c = await colors(sc, chip);

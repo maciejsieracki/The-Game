@@ -752,7 +752,7 @@ html.civ-ui-zoom-active .civ-hud-util-dock{
   s.id = STYLE_ID;
   // R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1: niedobór = czerwona czcionka (--tg-red, rozjaśniona do AA
   // na ciemnym pasku: #c84040 daje ~3.9:1 < 4.5:1). Reguła PO palecie, swoistość (0,4,0) > (0,2,0).
-  const shortCss = '.civ-hud{--civ-hud-shortage:#e05a5a;}\n'
+  const shortCss = '.civ-hud{--civ-hud-shortage:#ee6c6c;}\n'
     + '.civ-hud .civ-hud-chip.civ-hud-chip-short .civ-hud-chip-val,'
     + '.civ-hud .civ-hud-chip.civ-hud-chip-short .civ-hud-chip-lbl,'
     + '.civ-hud .civ-hud-chip.civ-hud-chip-short .civ-hud-chip-rate{color:var(--civ-hud-shortage);}\n';
@@ -1011,12 +1011,14 @@ function religiaChipTitle(s: HudState): string {
 export const HUD_SHORTAGE_RUNWAY_TURNS = 5;
 
 function runwayShort(stock: number, rate: number): boolean {
-  if (rate > 0) return stock < 0;
-  if (stock <= 0) return true;
-  return rate < 0 && stock / -rate <= HUD_SHORTAGE_RUNWAY_TURNS;
+  // Zapas ujemny = zawsze niedobór. Bilans >= 0 (także 0 po floor() z dodatniego ułamka, np. +0,6)
+  // NIE jest niedoborem, nawet przy zapasie 0 (start gry). Zapas 0 + bilans < 0 = niedobór.
+  if (stock < 0) return true;
+  if (rate >= 0) return false;
+  return stock <= 0 || stock / -rate <= HUD_SHORTAGE_RUNWAY_TURNS;
 }
 
-/** Skarbiec: zapas <= 0 albo ujemny bilans netto wyczerpujący zapas w <= N turach. */
+/** Skarbiec: zapas < 0 albo ujemny bilans netto wyczerpujący zapas w <= N turach. */
 export function hudGoldShortage(s: HudState): boolean {
   return runwayShort(s.bogactwo, s.bogactwoRate ?? 0);
 }
