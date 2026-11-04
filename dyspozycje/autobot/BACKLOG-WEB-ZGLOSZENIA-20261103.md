@@ -44,3 +44,5 @@ Kryterium końca pętli: każdy temat = deploy do ROBOCZEJ + wpis w WERSJE.md + 
 
 ## 2026-11-04 (3 zrzuty z ROBOCZEJ): automat nadal buduje farmy bez obywateli, nie buduje irygacji ani trzody — gracz i AI, profile „żywność” i „zrównoważone”
 Zakres włączony do R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (rozszerzony; obejmuje irygację zamiast osobnego tematu i otwarty FAIL R-WEB-AUTOIMPROVE-PRIORITY-Q1). PRIORYTET NAJWYŻSZY — pierwszy temat webowy po zwolnieniu dysku (grupa 1).
+
+## 2026-11-04 — START PĘTLI WEBOWEJ (faza UI-2 zakończona poza E; dysk 8,5 GB): równolegle grupa 1 (R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1), grupa 4 (R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1), grupa 3 (R-WEB-SIEGE-TOWER-BREACH-EVERYWHERE-Q1); następnie grupa 2 (AI), grupa 5 (aneksja), irygacja/spacja/bitwa ręczna/HUD-czerwień (dispatche do rozpisania).
