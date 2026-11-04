@@ -37,9 +37,12 @@ const MUTS = [
   ['H8 hex: Moc pola z DTO zniekształcona', 'src/ui/hexContextTooltip.ts', `const power = u.fieldPower;`, `const power = { ...u.fieldPower, total: u.fieldPower.attack };`, H],
   ['H9 hex: odznaki z DTO ignorowane', 'src/ui/hexContextTooltip.ts', `    badges: u.badges,`, `    badges: { ...u.badges, armorPath: 0 },`, H],
   ['H10 hex: klucz etykiety terenu stały', 'src/ui/hexContextTooltip.ts', `TEREN_LABEL[view.terrainBase as TerenBazowy]`, `TEREN_LABEL['laka' as TerenBazowy]`, H],
-  ['H11 hex: magazyn z ulepszenia pominięty w podsumowaniu', 'src/ui/hexContextTooltip.ts', `    lines.push(\`\${esc(imp.name)}: \${mag} · automatycznie\`);`, `    lines.push(\`\${esc(imp.key)}: \${mag} · automatycznie\`);`, H],
+  // H11 — REPIN UI-2-D (main `86d510c66`): podsumowanie `formatHexMagazynSummary` usunięte w main; produkcja surowca
+  // ulepszenia jest w jego własnym wierszu (`cp-prod-line`), więc mutacja celuje w tę gałąź.
+  ['H11 hex: produkcja surowca ulepszenia pominięta w wierszu (`cp-prod-line`)', 'src/ui/hexContextTooltip.ts', `  if (mag) {`, `  if (mag && false) {`, H],
   ['H12 hex GRANICZNY: Podatek bez `pieniadz` w bonusie', 'src/ui/hexContextTooltip.ts', `handel: (b.handel ?? 0) + (b.pieniadz ?? 0),`, `handel: (b.handel ?? 0),`, H],
   ['H13 kopia: unitVitalsPalette — kolor paska HP', 'src/ui/unitVitalsPalette.ts', `export const VITALS_HP_DARK_CSS = '#1a6020';`, `export const VITALS_HP_DARK_CSS = '#1a6021';`, H],
+  ['H14 hex: blok „Surowce z terenu (przy 👤)” pominięty (REPIN UI-2-D)', 'src/ui/hexContextTooltip.ts', `  if (terrainMagazyn.length > 0) {`, `  if (terrainMagazyn.length > 0 && false) {`, H],
   // C5 — kopie bajtowe.
   ['S1 kopia: sidePanelHud — nagłówek wydarzeń', 'src/ui/sidePanelHud.ts', `: 'Wydarzenia') + '</div>';`, `: 'Zdarzenia') + '</div>';`, 'sidePanelHud.ts'],
   ['S2 kopia: sidePanelEventFilter — filtr „Inne cyw.”', 'src/ui/sidePanelEventFilter.ts', `return events.filter(ev => ev.origin !== 'other-civs');`, `return events.filter(ev => ev.origin === 'other-civs');`, 'sidePanelEventFilter.ts'],

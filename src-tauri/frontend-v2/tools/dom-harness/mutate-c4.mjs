@@ -16,6 +16,8 @@ if (!pinDir || args.indexOf('--pin-dir') < 0) {
   console.error('Użycie: node tools/dom-harness/mutate-c4.mjs --pin-dir <PIN_DIR>');
   process.exit(2);
 }
+// `--only C1,C2` (REPIN UI-2-D r2): podzbiór mutacji wg ID — do uruchamiania w porcjach ograniczonych czasem.
+const onlyIds = args.includes('--only') ? args[args.indexOf('--only') + 1].split(',') : null;
 const ROOT = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 
 const MUTS = [
@@ -60,7 +62,10 @@ const MUTS = [
 ];
 
 let missed = 0;
+let run = 0;
 for (const [name, rel, a, b] of MUTS) {
+  if (onlyIds && !onlyIds.includes(name.split(' ')[0])) continue;
+  run++;
   const p = resolve(ROOT, rel);
   const orig = readFileSync(p, 'utf8');
   const count = orig.split(a).length - 1;
@@ -82,5 +87,5 @@ for (const [name, rel, a, b] of MUTS) {
   }
   if (readFileSync(p, 'utf8') !== orig) throw new Error(`nie przywrócono ${rel}`);
 }
-console.log(`mutate-c4: mutacji=${MUTS.length} niewykrytych=${missed} (pliki przywrócone bajtowo)`);
+console.log(`mutate-c4: mutacji=${run} niewykrytych=${missed} (pliki przywrócone bajtowo)`);
 process.exit(missed === 0 ? 0 : 1);
