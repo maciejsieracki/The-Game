@@ -258,7 +258,8 @@ pub fn prod_icon_cache_key(kind: &str, id: Option<&str>) -> String {
     format!("{kind}:{}", js_trim(or_empty(id)))
 }
 
-/// `UnitOwnerEmblemContext` (`unitOwnerEmblem.ts:90-99`).
+/// `UnitOwnerEmblemContext` (`unitOwnerEmblem.ts:90-107`, web `origin/main`
+/// `86d510c66`, REPIN-3D B2).
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct OwnerEmblemContext {
     /// `civId` (`null` = unknown).
@@ -269,11 +270,30 @@ pub struct OwnerEmblemContext {
     pub is_city_state: bool,
     /// `isBarbarian` (checked before `isCityState`).
     pub is_barbarian: bool,
+    /// `ringHex?: string | null` (`:100-106`): ring colour of a FULL
+    /// civilisation (`#rrggbb`, the hex border colour); `None` = `null` /
+    /// `undefined`. Ignored for city-states and barbarians.
+    pub ring_hex: Option<String>,
 }
 
-/// `emblemKey(ctx)` / exported `ownerEmblemKey` (`unitOwnerEmblem.ts:306-312`,
-/// `:426-428`): `barb`, `cs:<civ>` or `civ:<civ>:<era>` — one texture per
-/// T10 variant.
+/// `normalizeRingHex(raw)` (`unitOwnerEmblem.ts:248-253`): `#rrggbb` (after
+/// JS `trim`, exactly six ASCII hex digits, no shorthand, no alpha) → the same
+/// text lower-cased; anything else (`None`, `""`, malformed) → `None`.
+#[must_use]
+pub fn normalize_ring_hex(raw: Option<&str>) -> Option<String> {
+    // `if (!raw) return null;` — `null`, `undefined` and `''` are falsy.
+    let raw = raw.filter(|r| !r.is_empty())?;
+    let v = js_trim(raw);
+    // `/^#[0-9a-fA-F]{6}$/` (no `m` flag: `$` = end of input only).
+    let b = v.as_bytes();
+    let ok = b.len() == 7 && b[0] == b'#' && b[1..].iter().all(u8::is_ascii_hexdigit);
+    ok.then(|| v.to_ascii_lowercase())
+}
+
+/// `emblemKey(ctx)` / exported `ownerEmblemKey` (`unitOwnerEmblem.ts:330-339`,
+/// `:455-457`): `barb`, `cs:<civ>` or `civ:<civ>:<era>:<ring>` (`<ring>` =
+/// [`normalize_ring_hex`] or `brass`) — one texture per T10 variant and
+/// ring colour.
 #[must_use]
 pub fn owner_emblem_key(ctx: &OwnerEmblemContext) -> String {
     if ctx.is_barbarian {
@@ -288,8 +308,9 @@ pub fn owner_emblem_key(ctx: &OwnerEmblemContext) -> String {
     if ctx.is_city_state {
         return format!("cs:{civ}");
     }
+    let ring = normalize_ring_hex(ctx.ring_hex.as_deref()).unwrap_or_else(|| "brass".to_owned());
     format!(
-        "civ:{civ}:{}",
+        "civ:{civ}:{}:{ring}",
         js_number_to_string(js_round_at_least_one(ctx.era))
     )
 }

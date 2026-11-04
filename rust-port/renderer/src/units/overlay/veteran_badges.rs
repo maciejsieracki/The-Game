@@ -5,6 +5,11 @@
 //!
 //! The star count comes from the caller (`veteranStarCount` of
 //! `game/veteran.ts` in the web; DTO, no game logic).
+//!
+//! REPIN-3D B3 (web `origin/main` @ `86d510c66`, `+33`): the separate, larger
+//! commander star (`applyUnitCommanderStar`, `:270-301`) above the badge row;
+//! whether a token shows it (`vitals ? vitals.hasCommander : unit.isGeneral
+//! === true`, `units.ts:6147`) is decided by the caller (DTO).
 
 use super::upgrade_badges::{
     BADGE_ROW_TILT_RAD, VETERAN_BADGE_RESERVED_Y, VETERAN_STAR_OUTLINE_SCALE, VETERAN_STAR_R,
@@ -28,6 +33,17 @@ pub const VETERAN_BADGE_COLOR: u32 = 0x00ff_d24a;
 pub const VETERAN_BADGE_OUTLINE_COLOR: u32 = 0x0024_1703;
 /// `VETERAN_BADGE_HIT_UD` (`:205`).
 pub const VETERAN_BADGE_HIT_UD: &str = "veteranBadgeHit";
+/// `COMMANDER_STAR_HIT_UD` (`origin/main` `:213`).
+pub const COMMANDER_STAR_HIT_UD: &str = "commanderStarBadgeHit";
+/// `UD_COMMANDER_STAR` (`origin/main` `:212`): token `userData` key and the
+/// name of the commander badge group.
+pub const COMMANDER_STAR_BADGE: &str = "commanderStarBadge";
+/// Scale of the commander star relative to a veteran star (`origin/main`
+/// `:292`, `:296`: `1.6`).
+pub const COMMANDER_STAR_SCALE: f64 = 1.6;
+/// Lift of the commander star above the badge row (`origin/main` `:288`:
+/// `VETERAN_BADGE_RESERVED_Y + 0.25 * HEX_R`).
+pub const COMMANDER_STAR_LIFT: f64 = 0.25 * HEX_R;
 
 /// The star outline (`:155-162`): 10 points, the first one up (90°).
 #[must_use]
@@ -142,6 +158,66 @@ pub fn build_veteran_badge(star_count: u32) -> Option<OverlayTree> {
         t.push(star);
     }
     Some(t)
+}
+
+/// `applyUnitCommanderStar(group, true)` on a token without the badge
+/// (`origin/main` `:275-301`): the `commanderStarBadge` sub-group — outline
+/// star (scale `VETERAN_STAR_OUTLINE_SCALE × 1,6`) behind a gold star (scale
+/// 1,6), both tagged [`COMMANDER_STAR_HIT_UD`], centred above the badge row and
+/// tilted like it. Same shared geometry / materials as the veteran stars.
+#[must_use]
+pub fn build_commander_star() -> OverlayTree {
+    let mut t = OverlayTree::default();
+    let mut root = OverlayNode::group(COMMANDER_STAR_BADGE, None);
+    root.position[1] = VETERAN_BADGE_RESERVED_Y + COMMANDER_STAR_LIFT;
+    root.rotation[0] = -BADGE_ROW_TILT_RAD;
+    let r = t.push(root);
+    let os = VETERAN_STAR_OUTLINE_SCALE * COMMANDER_STAR_SCALE;
+    let mut outline = OverlayNode::mesh(
+        r,
+        GeometryKind::VeteranStar,
+        veteran_star_outline_material(),
+        [0.0, 0.0, STAR_OUTLINE_OFFSET_Z],
+        [os, os, 1.0],
+        0,
+    );
+    outline.commander_star_hit = true;
+    t.push(outline);
+    let mut star = OverlayNode::mesh(
+        r,
+        GeometryKind::VeteranStar,
+        veteran_star_material(),
+        [0.0; 3],
+        [COMMANDER_STAR_SCALE, COMMANDER_STAR_SCALE, 1.0],
+        0,
+    );
+    star.commander_star_hit = true;
+    t.push(star);
+    t
+}
+
+/// What one `applyUnitCommanderStar(group, hasCommander)` call does to a
+/// token (`origin/main` `:275-301`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CommanderStarUpdate {
+    /// Nothing: no badge and none wanted, or the badge is already there
+    /// (`if (old) return` — the SAME object stays, never rebuilt).
+    Keep,
+    /// Add a fresh [`build_commander_star`] sub-group.
+    Add,
+    /// Remove the badge (and its `userData` entry).
+    Remove,
+}
+
+/// The idempotent sync rule of `applyUnitCommanderStar`: `present` = the
+/// token already holds the badge, `has_commander` = the wanted state.
+#[must_use]
+pub const fn commander_star_update(present: bool, has_commander: bool) -> CommanderStarUpdate {
+    match (present, has_commander) {
+        (true, false) => CommanderStarUpdate::Remove,
+        (false, true) => CommanderStarUpdate::Add,
+        _ => CommanderStarUpdate::Keep,
+    }
 }
 
 /// Deprecated `applyUnitVeteranBadgeLevel(group, level)` (`:268-271`):

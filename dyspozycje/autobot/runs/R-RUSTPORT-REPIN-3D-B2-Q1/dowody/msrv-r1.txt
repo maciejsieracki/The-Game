@@ -1,0 +1,93 @@
+   Compiling libm v0.2.16
+   Compiling simd-adler32 v0.3.10
+   Compiling bytemuck v1.25.2
+   Compiling arrayvec v0.7.8
+   Compiling adler2 v2.0.1
+   Compiling crc32fast v1.5.3
+   Compiling log v0.4.34
+   Compiling cfg-if v1.0.5
+   Compiling float-cmp v0.9.0
+   Compiling smallvec v1.16.3
+   Compiling strict-num v0.1.1
+   Compiling miniz_oxide v0.9.1
+   Compiling polycool v0.4.0
+   Compiling arrayref v0.3.9
+   Compiling bitflags v2.13.2
+   Compiling tiny-skia-path v0.12.0
+   Compiling kurbo v0.13.1
+   Compiling flate2 v1.1.10
+   Compiling core_maths v0.1.1
+   Compiling ttf-parser v0.25.1
+   Compiling miniz_oxide v0.8.9
+   Compiling fdeflate v0.3.7
+   Compiling siphasher v1.0.4
+   Compiling memchr v2.8.3
+   Compiling svgtypes v0.16.1
+   Compiling png v0.18.1
+   Compiling roxmltree v0.21.1
+   Compiling simplecss v0.2.2
+   Compiling data-url v0.3.2
+   Compiling imagesize v0.15.0
+   Compiling pico-args v0.5.0
+   Compiling owned_ttf_parser v0.25.1
+   Compiling tiny-skia v0.12.0
+   Compiling rgb v0.8.53
+   Compiling usvg v0.48.1
+   Compiling ab_glyph_rasterizer v0.1.10
+   Compiling unicode-bidi-mirroring v0.4.0
+   Compiling unicode-properties v0.1.4
+   Compiling unicode-script v0.5.8
+   Compiling zune-core v0.5.3
+   Compiling unicode-ccc v0.4.0
+   Compiling rustybuzz v0.20.1
+   Compiling zune-jpeg v0.5.15
+   Compiling resvg v0.48.1
+   Compiling ab_glyph v0.2.32
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_ed52b9a2-3cd-1/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 16.88s
+     Running tests/atlas_keys.rs (target/debug/deps/atlas_keys-98ba36e0753ccc1b)
+
+running 7 tests
+test atlas_json::json_reader_round_trips_escapes ... ok
+test lod_and_scale_match_web ... ok
+test city_map_badge_key_matches_web ... ok
+test legacy_key_matches_web ... ok
+test growth_label_matches_web ... ok
+test lod_purge_matches_web ... ok
+test related_keys_match_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/overlay_web_parity.rs (target/debug/deps/overlay_web_parity-8a7a5308f3b47281)
+
+running 11 tests
+test constants_match_the_web_bit_for_bit ... ok
+test chromium_tree_differences_are_only_last_bit_noise ... ok
+test emblem_keys_match_the_web ... ok
+test badge_labels_match_the_web ... ok
+test inputs_equal_the_rr_t8c_pin_inputs ... ok
+test sha256_matches_standard_vectors ... ok
+test fixtures_match_manifest_sha256 ... ok
+test trees_match_the_web_bit_for_bit ... ok
+test textures_match_golden_hashes ... ok
+test rendering_twice_is_identical ... ok
+test textures_match_chromium ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.91s
+
+     Running tests/repin3d_b2.rs (target/debug/deps/repin3d_b2-ef89c99f929dbc1a)
+
+running 8 tests
+test commander_star_update_edges ... ok
+test emblem_keys_with_ring_hex_match_the_web ... ok
+test normalize_ring_hex_edges ... ok
+test plate_owner_icon_matches_the_web ... ok
+test plate_owner_icon_size_is_the_web_constant ... ok
+test commander_star_matches_the_web_bit_for_bit ... ok
+test ring_colour_reaches_the_pixels ... ok
+test ring_textures_match_chromium ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.92s
+
+EXIT=0

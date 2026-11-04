@@ -1,5 +1,9 @@
-//! `render/unitOwnerEmblem.ts` (pin `edb8fb56`, 516 LOC): the owner
-//! medallion — portrait of the leader (full civilisation), culture sigil
+//! `render/unitOwnerEmblem.ts` (pin `edb8fb56`, 516 LOC; REPIN-3D B2: ring
+//! colour of a full civilisation = `ringHex`, web `origin/main` `86d510c66`,
+//! `+41/−12`, 545 LOC; `:linia` of the B2 items — `ringHex`, `normalizeRingHex`,
+//! `ringColorFor`, `drawDisc`, `drawFallbackGlyph`, `emblemKey`, the ring over
+//! the portrait — are `origin/main` lines, every other one the pin's): the
+//! owner medallion — portrait of the leader (full civilisation), culture sigil
 //! (city-state) or skull (barbarians) on a dark disc with a ring whose
 //! colour carries the variant.
 //!
@@ -11,6 +15,7 @@ use super::{canvas, Anchor, MaterialKind, NodeKind, OverlayMaterial, OverlayNode
 use super::{js_number_string, js_trim, OverlayTree, Side, TextureFilter, TextureRef};
 use crate::core::hexutil::HEX_R;
 use crate::pick::hex::js_round;
+pub use crate::raster::atlas::keys::normalize_ring_hex;
 use crate::raster::image::emoji::{self, TextStyle};
 use crate::raster::image::jpeg::decode_jpeg;
 use crate::raster::image::mip::{draw_bitmap, MippedImage};
@@ -18,8 +23,8 @@ use crate::raster::image::svg::{draw_svg, prepare_svg_for_canvas, SvgImage};
 use crate::raster::{Canvas2dLite, RasterError, RasterImage};
 use crate::terrain::color::Color;
 
-/// `UnitOwnerEmblemContext` (`:91-100`).
-#[derive(Clone, Debug, PartialEq)]
+/// `UnitOwnerEmblemContext` (`:91-107`).
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct OwnerEmblemContext {
     /// `civId` — `ikonaId` of the civilisation, `None` = unknown.
     pub civ_id: Option<String>,
@@ -29,6 +34,11 @@ pub struct OwnerEmblemContext {
     pub is_city_state: bool,
     /// `isBarbarian` (checked before `is_city_state`).
     pub is_barbarian: bool,
+    /// `ringHex?: string | null` (`:100-106`): ring colour of a FULL
+    /// civilisation (`#rrggbb` = the hex border colour, `main.ts` `civRingHexFn`);
+    /// `None` = `null` / `undefined`; malformed → brass. Only the `civ` variant
+    /// uses it ([`ring_color_for`]).
+    pub ring_hex: Option<String>,
 }
 
 /// `UnitOwnerEmblemAssets` (`:121-128`), injected by the composer like
@@ -114,7 +124,21 @@ impl EmblemVariant {
     }
 }
 
-/// `emblemKey(ctx)` / `ownerEmblemKey(ctx)` (`:306-312`, `:426-428`).
+/// `ringColorFor(variant, ringHex)` (`:255-263`): city-states and barbarians
+/// keep the fixed `RING_COLOR`; a full civilisation takes its normalised
+/// `ringHex`, a missing / malformed one falls back to brass.
+#[must_use]
+pub fn ring_color_for(variant: EmblemVariant, ring_hex: Option<&str>) -> String {
+    if variant != EmblemVariant::Civ {
+        return variant.ring_color().to_owned();
+    }
+    normalize_ring_hex(ring_hex).unwrap_or_else(|| EmblemVariant::Civ.ring_color().to_owned())
+}
+
+/// `emblemKey(ctx)` / `ownerEmblemKey(ctx)` (`:330-339`, `:455-457`):
+/// `barb`, `cs:<civ>`, `civ:<civ>:<era>:<ring>` (`<ring>` = normalised
+/// `ringHex` or `brass` — two civilisations of different colours never share
+/// a texture).
 #[must_use]
 pub fn owner_emblem_key(octx: &OwnerEmblemContext) -> String {
     if octx.is_barbarian {
@@ -133,7 +157,8 @@ pub fn owner_emblem_key(octx: &OwnerEmblemContext) -> String {
     let r = js_round(octx.era);
     let r = if r.is_nan() || r == 0.0 { 1.0 } else { r };
     let era = if r.is_nan() || r < 1.0 { 1.0 } else { r };
-    format!("civ:{civ}:{}", js_number_string(era))
+    let ring = normalize_ring_hex(octx.ring_hex.as_deref()).unwrap_or_else(|| "brass".to_owned());
+    format!("civ:{civ}:{}:{ring}", js_number_string(era))
 }
 
 fn arc_full(ctx: &mut Canvas2dLite, c: f64, r: f64) -> Result<(), RasterError> {
@@ -141,29 +166,30 @@ fn arc_full(ctx: &mut Canvas2dLite, c: f64, r: f64) -> Result<(), RasterError> {
     ctx.arc(c, c, r, 0.0, std::f64::consts::PI * 2.0, false)
 }
 
-/// `drawDisc(ctx, variant)` (`:242-254`): dark disc + variant ring.
+/// `drawDisc(ctx, ringColor)` (`:265-278`): dark disc + ring in `ring_color`
+/// ([`ring_color_for`]).
 ///
 /// # Errors
 /// Only for a negative radius (never with these constants).
-pub fn draw_disc(ctx: &mut Canvas2dLite, variant: EmblemVariant) -> Result<(), RasterError> {
+pub fn draw_disc(ctx: &mut Canvas2dLite, ring_color: &str) -> Result<(), RasterError> {
     let c = f64::from(CANVAS_PX) / 2.0;
     ctx.clear_rect(0.0, 0.0, f64::from(CANVAS_PX), f64::from(CANVAS_PX));
     ctx.set_fill_style(DISC_FILL);
     arc_full(ctx, c, DISC_R)?;
     ctx.fill();
-    ctx.set_stroke_style(variant.ring_color());
+    ctx.set_stroke_style(ring_color);
     ctx.set_line_width(DISC_RING_W);
     arc_full(ctx, c, DISC_R)?;
     ctx.stroke();
     Ok(())
 }
 
-/// `drawFallbackGlyph(ctx, variant)` (`:257-264`). The glyph (◆ / ☠) is drawn
+/// `drawFallbackGlyph(ctx, variant, ringColor)` (`:280-288`). The glyph (◆ / ☠) is drawn
 /// through the emoji-aware text path of RR-T8c (DejaVu mono glyph in the
 /// `fillStyle` colour, P4-30 Z-30-3).
-pub fn draw_fallback_glyph(ctx: &mut Canvas2dLite, variant: EmblemVariant) {
+pub fn draw_fallback_glyph(ctx: &mut Canvas2dLite, variant: EmblemVariant, ring_color: &str) {
     let c = f64::from(CANVAS_PX) / 2.0;
-    ctx.set_fill_style(variant.ring_color());
+    ctx.set_fill_style(ring_color);
     ctx.set_font(FALLBACK_FONT);
     ctx.set_text_align("center");
     ctx.set_text_baseline("middle");
@@ -200,10 +226,11 @@ pub fn draw_sigil(ctx: &mut Canvas2dLite, img: &SvgImage) {
     draw_svg(ctx, img, c - side / 2.0, c - side / 2.0, side, side);
 }
 
-/// The ring stroked again over the portrait (`:391-397`).
-fn ring_on_top(ctx: &mut Canvas2dLite) -> Result<(), RasterError> {
+/// The ring stroked again over the portrait (`:419-426`), in the ring colour
+/// of the civilisation (pin: always brass).
+fn ring_on_top(ctx: &mut Canvas2dLite, ring_color: &str) -> Result<(), RasterError> {
     let c = f64::from(CANVAS_PX) / 2.0;
-    ctx.set_stroke_style(EmblemVariant::Civ.ring_color());
+    ctx.set_stroke_style(ring_color);
     ctx.set_line_width(DISC_RING_W);
     arc_full(ctx, c, DISC_R)?;
     ctx.stroke();
@@ -292,14 +319,15 @@ pub fn render_owner_emblem(
     assets: Option<&dyn OwnerEmblemAssets>,
 ) -> Result<OwnerEmblemTexture, RasterError> {
     let variant = EmblemVariant::of(octx);
+    let ring_color = ring_color_for(variant, octx.ring_hex.as_deref());
     let mut ctx = canvas(CANVAS_PX, CANVAS_PX)?;
-    draw_disc(&mut ctx, variant)?;
-    draw_fallback_glyph(&mut ctx, variant);
+    draw_disc(&mut ctx, &ring_color)?;
+    draw_fallback_glyph(&mut ctx, variant, &ring_color);
     let initial = emblem_texture(&ctx);
     let texture = match resolve(octx, assets) {
         Content::None => initial.clone(),
         Content::Sigil(img) => {
-            draw_disc(&mut ctx, variant)?;
+            draw_disc(&mut ctx, &ring_color)?;
             draw_sigil(&mut ctx, &img);
             OverlayTexture {
                 redrawn_after_load: true,
@@ -307,9 +335,9 @@ pub fn render_owner_emblem(
             }
         }
         Content::Portrait(img) => {
-            draw_disc(&mut ctx, variant)?;
+            draw_disc(&mut ctx, &ring_color)?;
             draw_portrait(&mut ctx, &img)?;
-            ring_on_top(&mut ctx)?;
+            ring_on_top(&mut ctx, &ring_color)?;
             OverlayTexture {
                 redrawn_after_load: true,
                 ..emblem_texture(&ctx)
@@ -362,6 +390,7 @@ pub fn legacy_owner_emblem_sprite(octx: Option<&OwnerEmblemContext>) -> Option<O
         render_order: EMBLEM_RENDER_ORDER,
         visible: true,
         veteran_badge_hit: false,
+        commander_star_hit: false,
         kind: NodeKind::Sprite {
             center: [0.5, 0.5],
             material: owner_emblem_sprite_material(&key),
@@ -380,6 +409,7 @@ mod tests {
             era,
             is_city_state: cs,
             is_barbarian: barb,
+            ring_hex: None,
         }
     }
 
@@ -416,19 +446,19 @@ mod tests {
         );
         assert_eq!(
             owner_emblem_key(&ctx(None, 2.5, false, false)),
-            "civ:unknown:3"
+            "civ:unknown:3:brass"
         );
         assert_eq!(
             owner_emblem_key(&ctx(Some("x"), f64::NAN, false, false)),
-            "civ:x:1"
+            "civ:x:1:brass"
         );
         assert_eq!(
             owner_emblem_key(&ctx(Some("x"), -0.5, false, false)),
-            "civ:x:1"
+            "civ:x:1:brass"
         );
         assert_eq!(
             owner_emblem_key(&ctx(Some("x"), f64::INFINITY, false, false)),
-            "civ:x:Infinity"
+            "civ:x:Infinity:brass"
         );
     }
 }

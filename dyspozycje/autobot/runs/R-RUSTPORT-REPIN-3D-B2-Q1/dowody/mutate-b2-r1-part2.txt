@@ -1,0 +1,28 @@
+[4] KILLED   normalize length 8
+[5] KILLED   normalize no # check
+[6] KILLED   normalize no hex check
+[7] KILLED   normalize alnum check
+[8] KILLED   normalize no lowercase
+[9] KILLED   atlas key without ring
+[10] KILLED   atlas key fallback text
+[11] KILLED   emblem key without ring
+[12] KILLED   emblem key raw ring
+[13] KILLED   ring colour for every variant
+[14] KILLED   ring colour fallback city-state
+[15] KILLED   ring colour raw (no normalize)
+[16] KILLED   ring colour ignored (pin)
+[17] KILLED   disc ring brass
+[18] KILLED   fallback glyph brass
+[19] KILLED   ring over portrait brass (pin)
+[20] KILLED   commander lift 0.20
+[21] KILLED   commander scale 1.5
+[22] KILLED   commander outline not scaled
+[23] KILLED   commander outline z 0
+[24] KILLED   commander not tilted
+[25] KILLED   commander star hit missing
+[26] KILLED   commander outline hit missing
+[27] KILLED   commander outline gold material
+[28] KILLED   commander never removed
+[29] KILLED   commander never added
+KILLED 26/26
+EXIT=0

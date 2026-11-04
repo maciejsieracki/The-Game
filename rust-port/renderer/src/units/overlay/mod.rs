@@ -294,6 +294,9 @@ pub struct OverlayNode {
     pub visible: bool,
     /// `userData[VETERAN_BADGE_HIT_UD] === true` (`unitVeteranBadges.ts:205`).
     pub veteran_badge_hit: bool,
+    /// `userData[COMMANDER_STAR_HIT_UD] === true` (`unitVeteranBadges.ts:213` of
+    /// the web `origin/main`, REPIN-3D B3): mesh of the commander star.
+    pub commander_star_hit: bool,
     /// Group / mesh / sprite.
     pub kind: NodeKind,
 }
@@ -309,6 +312,7 @@ impl OverlayNode {
             render_order: 0,
             visible: true,
             veteran_badge_hit: false,
+            commander_star_hit: false,
             kind: NodeKind::Group,
         }
     }
@@ -330,6 +334,7 @@ impl OverlayNode {
             render_order,
             visible: true,
             veteran_badge_hit: false,
+            commander_star_hit: false,
             kind: NodeKind::Mesh { geometry, material },
         }
     }

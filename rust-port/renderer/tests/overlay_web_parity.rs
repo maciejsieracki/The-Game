@@ -113,6 +113,7 @@ fn ctx_of(j: &J) -> OwnerEmblemContext {
         era: f64_of(j.at("era")),
         is_city_state: j.at("isCityState").b(),
         is_barbarian: j.at("isBarbarian").b(),
+        ring_hex: None,
     }
 }
 
@@ -657,6 +658,7 @@ fn emblem_keys_match_the_web() {
             era: f64_of(&a[1]),
             is_city_state: a[2].b(),
             is_barbarian: a[3].b(),
+            ring_hex: None,
         };
         c.eq(
             &format!("{octx:?}"),

@@ -149,6 +149,7 @@ fn related_keys_match_web() {
             era: e.get("era").bits(),
             is_city_state: e.get("isCityState").bool(),
             is_barbarian: e.get("isBarbarian").bool(),
+            ring_hex: None,
         };
         let got = owner_emblem_key(&ctx);
         if got != e.get("key").str() {

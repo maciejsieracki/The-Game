@@ -1,0 +1,32 @@
+chromium-vs-node tree differences: 10 (colour channels 1 ulp: 8, star shape params: 2)
+textures=36 trees=111 keys=416 geos=3 images=load,load,load,load,load,load,load,error,load,load,load,load,load,load,load,load chromium=141.0.7390.37
+b2 keys=168 textures=13 unique=12 plates=3 images=load,load,load,load,load,load,load chromium=141.0.7390.37
+b3 cases=8 geos=1
+badgeKeys 1761 legacy 546 growth 4074 portrait 288 emblem 1216 canvasSizes 1794 purge 300
+--- sha256 (verifier | repo)
+OK   a37e1ae256b27bda001ff938117741600447c4fbf10790862f823a133d5569ce  overlay/overlay.json
+OK   f579a3153c4c7fd47b95cd2642e0a20309effb5618863cab4336d07950dd98f7  overlay/MANIFEST.sha256
+OK   e45004b91de42baabf58fc9ae97c60816280eac01d664f259ca55cbd4e48db9a  atlas/atlas_keys.json
+OK   e8297e7b56ae2455cd960ca890f98055548716e9b62bb931605b013c58333f53  repin3d_fixtures/b2.json
+OK   7472c0bfdaa9a869beb4817fa55b6bf49e4768a5bd107e1837816429d684366d  repin3d_fixtures/b3.json
+OK   b516e932c9561ea688156d643ea26e989ad4a83b697aae99a0d13c672d1ebf7b  b2_ref/e0.initial.rgba
+OK   0ad475855c5ead1549f11034057919822aaf3ab7847a458348ff1a4f1e2559ea  b2_ref/e0.rgba
+OK   c8dd58f951efed2bda936e117343f06e7f5ce9c1b9681805e519eb1192a775ca  b2_ref/e1.initial.rgba
+OK   052f5bbedacc0b40fc4d202ade3db2008027aed42745e265ee12013c8e25c997  b2_ref/e1.rgba
+OK   08dfb2d76acc8f7911a857a7a7281cff6ab5360401d999c3451e1082cc8d9107  b2_ref/e10.rgba
+OK   40acb5697f276ceb9200025c8dd1317f59f15c0a89c09b19321b3adb09344ebd  b2_ref/e11.rgba
+OK   9e1aa8101ee94219b89943a41c0fda671991bf3122ed5a672762f0a4ccd3b401  b2_ref/e2.initial.rgba
+OK   81b6c8142e50f0e4f6e8a3233a9a3b3432c400a3ea0b833b296c9eddb20b653e  b2_ref/e2.rgba
+OK   1af57ec54949e05e2e3561f2b925c6cac945779df39265d6feb34bca378260f8  b2_ref/e3.initial.rgba
+OK   f9582628fe862ed48f04729768b045ca74786eb4595c11211461c422a88a0d94  b2_ref/e3.rgba
+OK   c8dd58f951efed2bda936e117343f06e7f5ce9c1b9681805e519eb1192a775ca  b2_ref/e4.initial.rgba
+OK   6b312ea336fdefad6612304fed581ecedd213be0760b72516ca33a7b94f03f82  b2_ref/e4.rgba
+OK   1af57ec54949e05e2e3561f2b925c6cac945779df39265d6feb34bca378260f8  b2_ref/e5.rgba
+OK   9e1aa8101ee94219b89943a41c0fda671991bf3122ed5a672762f0a4ccd3b401  b2_ref/e6.rgba
+OK   40acb5697f276ceb9200025c8dd1317f59f15c0a89c09b19321b3adb09344ebd  b2_ref/e7.initial.rgba
+OK   2c0ba50f540dfa0486d43806158f6101dbed98c3668dd92ad2ef11c14ee21937  b2_ref/e7.rgba
+OK   9eab041db90508b1f47f66dc55d14541ec347d3ecdba94fe4f84af08b05a7bce  b2_ref/e8.initial.rgba
+OK   3e798d13daff4f1fbacf5f7ddeb695f448c89299291064d305eaa292fda5c6a6  b2_ref/e8.rgba
+OK   dec38b73f9c9f0828f1f71d108bf3e841b374426685a04a45b1dc9b2fafc3502  b2_ref/e9.rgba
+files in repo b2_ref: 19, verifier: 19
+EXIT=0

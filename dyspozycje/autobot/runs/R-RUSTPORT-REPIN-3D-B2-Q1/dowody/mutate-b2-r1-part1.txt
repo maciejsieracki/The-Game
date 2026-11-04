@@ -1,0 +1,6 @@
+[0] KILLED   icon size back to pin 0.20
+[1] KILLED   icon x ignores icon size
+[2] KILLED   normalize without trim
+[3] KILLED   normalize Rust trim
+KILLED 4/4
+EXIT=0

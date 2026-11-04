@@ -376,8 +376,8 @@ w r1 — 20 zabitych, 1 przeżył: „fort factor y only” (usunięte `n.scale.
 
 | partia | zakres | moduły Rust | uwagi |
 |---|---|---|---|
-| **B2** (następna) | `unitStatPlate.ts` `PLATE_OWNER_ICON_SIZE` 0,80 + `unitOwnerEmblem.ts` (warianty dysku `ringColorFor`/`normalizeRingHex`, klucz emblematu, `883afa6da`) | `units::overlay::{stat_plate, emblem}` | zmiana samej stałej zmierzona w r1 i cofnięta: łamie `overlay_web_parity` (5 testów: drzewa + tekstury); fixtury `overlay` wymagają headless Chromium 141 (playwright) — jedna regeneracja razem z emblematem |
-| **B3** | `unitVeteranBadges.ts` `applyUnitCommanderStar` (+33), `units.ts` gwiazda dowódcy + cache odznak stosu (`:6199-6290`), `HIGHLIGHT_OPACITY = MAP_HEX_HIGHLIGHT_BASE_OPACITY` (= 0,35, wartość bez zmian) | `units::overlay`, `units::*` | po B2 (wspólne fixtury `overlay`) |
+| **B2** (zrobione, §10) | `unitStatPlate.ts` `PLATE_OWNER_ICON_SIZE` 0,80 + `unitOwnerEmblem.ts` (warianty dysku `ringColorFor`/`normalizeRingHex`, klucz emblematu, `883afa6da`) | `units::overlay::{stat_plate, emblem}` | zmiana samej stałej zmierzona w r1 i cofnięta: łamie `overlay_web_parity` (5 testów: drzewa + tekstury); fixtury `overlay` wymagają headless Chromium 141 (playwright) — jedna regeneracja razem z emblematem |
+| **B3** (gwiazda dowódcy zrobiona, §10; reszta → §10.5) | `unitVeteranBadges.ts` `applyUnitCommanderStar` (+33), `units.ts` gwiazda dowódcy + cache odznak stosu (`:6199-6290`), `HIGHLIGHT_OPACITY = MAP_HEX_HIGHLIGHT_BASE_OPACITY` (= 0,35, wartość bez zmian) | `units::overlay`, `units::*` | po B2 (wspólne fixtury `overlay`) |
 | **B4** | `cities.ts` (+70/−4: `registerOwnedMeshResources` + `CityRenderer`; wg nagłówków hunków głównie zwalnianie M1 `5d9534e0b`; zmiana obrazu NIE_ZMIERZONO), `bronze/stoneCityRoblox.ts` | `cities::*` | regeneracja `tests/fixtures/cities` na `origin/main` rozstrzygnie SC vs K |
 
 Ocena wizualna GPU: **NIE_ZMIERZONO** (brak `/dev/dri`; nie blokuje). Do oceny wzrokiem: forty/posterunki 2× większe w
@@ -394,4 +394,105 @@ sektorze, złoża 2× większe na mapie świata (koń 4×), podświetlenie kopal
 ## $ python3 tests/repin3d_fixtures/mutate_b1.py (RANGE 0:11 + 11:30)   11/11 + 9/10 (1 równoważny) → 20/20
 ## $ sha256sum -c tests/repin3d_fixtures/MANIFEST_B.sha256   4 OK
 ## generator 2 katalogi: b1.json fa57d2dd… = fa57d2dd… = repo
+```
+
+## 10. Partie B2 + B3 — obwódka medalionu, ikona właściciela 0,80, gwiazda dowódcy (R-RUSTPORT-REPIN-3D-B2-Q1, runda 1)
+
+**Baza:** `rust-port/parity-v2` @ `8d74519c2` (renderer 448/0, B1). **Web:** `origin/main` @ `86d510c66` (zmierzone
+`git rev-parse origin/main`). Pomiar dryfu (`git diff edb8fb56..origin/main`): `unitOwnerEmblem.ts` +41/−12,
+`unitStatPlate.ts` 1 stała + komentarz, `unitVeteranBadges.ts` +36, `units.ts` +72/−46; plików kluczy atlasu
+(`cityMapStatChip.ts`, `zoomLod.ts`, `workerFieldOverlay.ts`, `unitUpgradeBadges.ts`) dryf = 0. A3 (`src/battle/**`) i
+B4 (`src/cities/**`) nietknięte.
+
+### 10.1 Kod
+
+- `raster/atlas/keys.rs`: `OwnerEmblemContext.ring_hex` (`ringHex?: string | null`, `:100-106`), NOWE
+  `normalize_ring_hex` (`:249-253`: JS `trim` → `/^#[0-9a-fA-F]{6}$/` → `toLowerCase`, `''`/`null` → `None`),
+  `owner_emblem_key` → `civ:<civ>:<era>:<ring>` (`<ring>` = znormalizowana barwa albo `brass`, `:330-339`).
+- `units/overlay/emblem.rs`: to samo pole i klucz (re-eksport `normalize_ring_hex` — jedna implementacja), NOWE
+  `ring_color_for` (`:260-263`: tylko wariant `civ` bierze `ringHex`, miasto-państwo/barbarzyńcy stałe `RING_COLOR`,
+  zła barwa → mosiądz), `draw_disc(ctx, ring_color)`, `draw_fallback_glyph(ctx, variant, ring_color)`, pierścień
+  nad portretem w barwie cywilizacji (`:419-426`; pin: zawsze mosiądz). Sygnet `civ` nadal barwiony mosiądzem
+  (`prepareSvgForCanvas(…, RING_COLOR.civ)`, `:434`, bez zmian w webie).
+- `units/overlay/stat_plate.rs`: `PLATE_OWNER_ICON_SIZE` 0,20 → **0,80·HEX_R**; `PLATE_OWNER_X` liczony z niej
+  (−0,401 → −0,701·HEX_R, prawa krawędź ikony przy lewej krawędzi tabliczki).
+- `units/overlay/veteran_badges.rs` (B3): `build_commander_star` (`applyUnitCommanderStar`, `:275-301`: grupa
+  `commanderStarBadge` na `VETERAN_BADGE_RESERVED_Y + 0,25·HEX_R`, odchylenie jak listwa, obrys
+  `VETERAN_STAR_OUTLINE_SCALE × 1,6` na z = `STAR_OUTLINE_OFFSET_Z`, gwiazda 1,6; wspólna geometria i materiały),
+  `commander_star_update` (idempotencja `sync()`: obecna + chciana = ten sam obiekt, brak przebudowy),
+  `COMMANDER_STAR_HIT_UD`; `units/overlay/mod.rs`: `OverlayNode.commander_star_hit`.
+- `Cargo.*` bez zmian.
+
+**ZAŁOŻENIE Z-RP-B2-1 (pliki pinu poza listą — niezbędne):** jak Z-RP-B-1. Zmiana klucza i stałej łamie wektory pinu
+`overlay_web_parity` (5 testów) i `atlas_keys` (`related_keys_match_web`). Zregenerowane WYŁĄCZNIE dane, ich własnymi
+NIEZMIENIONYMI generatorami na `origin/main` (headless Chromium 141 przez `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`
+— domyślne `chromium.launch` znajduje `chromium-1194`; pin odtworzony najpierw bajt w bajt: `MANIFEST.sha256`
+= `7d70d6e1…` z README fixtur): `overlay/overlay.json` + `MANIFEST.sha256` (diff liści = 104 klucze `…:brass`, stała,
+58 bitów skali + 29 pozycji ikony, 22 + 1 klucze w `userData`, 8 kluczy tekstur; `ref/*.rgba`, `input/*` bajt w bajt),
+`overlay/golden.tsv` (`OVERLAY_BLESS=1`; zmienił się tylko tekst klucza, wszystkie hashe FNV identyczne),
+`atlas/atlas_keys.json` (diff = tylko 304 `emblemKeys[].key`; pozostałe 13 sekcji bajt w bajt) + wiersz `SHA256SUMS`.
+W `.rs` pinu (`overlay_web_parity.rs`, `atlas_keys.rs`) WYŁĄCZNIE dopisane `ring_hex: None` w 3 literałach struktury
+(pole jest nowe; bez tego kompilacja testów pada) — żadna asercja nie zmieniona. README fixtur pinu NIE edytowane:
+SHA `atlas_keys.json` w `fixtures/atlas/README.md` (`8d64d5c0…`; nowe `e45004b9…`) i `MANIFEST` w
+`fixtures/overlay/README.md` (`7d70d6e1…`; nowe `f579a315…`) są nieaktualne — do poprawy przy integracji / A6 (jak Z-RP-B-1).
+
+**ZAŁOŻENIE Z-RP-B2-2:** barwę `ringHex` liczy kompozytor (`main.ts:3863-3865` `civRingHexFn` = `'#' +
+civColorFn(id).toString(16).padStart(6,'0')`, `:9240-9242` `null` dla barbarzyńców i miast-państw) — w Rust pole DTO
+wejścia, jak `civ_id`/`era`. Flagę gwiazdy dowódcy (`units.ts:6147` `vitals ? vitals.hasCommander : unit.isGeneral
+=== true`) też podaje wołający (UnitRenderer nie jest zportowany).
+
+### 10.2 Wektory (`tests/repin3d_fixtures/README_B.md`)
+
+`gen_b2.ts`/`gen_b2.mjs` (harness `overlay/gen.mjs`, Chromium 141 + node, wynik node = Chromium wymagany; zasoby =
+bajty `overlay/input/*`, inaczej abort) → `b2.json` + 19 `b2_ref/*.rgba`; `gen_b3.ts` (node) → `b3.json`.
+`cargo test --test repin3d_b2`: 8/8 — klucze 168 × {units, atlas} = web (30 z barwą, 138 → `brass`/`cs:`/`barb`;
+brzegi: `trim` JS vs U+0085/U+FEFF/U+3000, długość 6/7/8 = N−1/N/N+1, pełnoszerokie cyfry, `\0`, wielkie litery),
+stała bit w bit, ikona tabliczki (3 × pozycja/skala bity, klucz), tekstury 12 (+7 stanów `initial`) w progach
+RR-T8 (SSIM 0,9907–0,9939, mean_abs ≤ 1,16, px>16 ≤ 3,24 %, sonda obwódki 4 punkty = 0 różnicy), gwiazda
+dowódcy 10 stanów × poddrzewo bit w bit + 8 sekwencji `sync()` + współistnienie z gwiazdkami weterana.
+
+### 10.3 Mutacje i weryfikator
+
+`tests/repin3d_fixtures/mutate_b2.py` (testy `repin3d_b2` + `overlay_web_parity` + `atlas_keys`): **30/30 zabitych**
+(`dowody/mutate-b2-r1-part{1,2}.txt`): stała i kotwica ikony, każda gałąź `normalize_ring_hex` (trim JS/Rust/brak,
+długość, `#`, hex vs alnum, lowercase), klucz atlasu i medalionu (bez barwy, surowa barwa, tekst fallbacku),
+`ring_color_for` (każdy wariant, fallback, bez normalizacji, pin), dysk/glif/pierścień nad portretem w mosiądzu,
+gwiazda dowódcy (uniesienie, skala, obrys, z, odchylenie, znaczniki trafień, materiał, reguła dodaj/usuń).
+Równoważny (nie na liście): filtr `!r.is_empty()` — `""` po `trim` ma długość 0 ≠ 7 → `None` tak samo.
+Niezależny weryfikator: drugi `mktemp -d` (osobny `npm install`, osobny `git archive origin/main`) → `overlay.json`,
+`MANIFEST.sha256`, `atlas_keys.json`, `b2.json`, `b3.json`, 19 `b2_ref` — wszystkie SHA = repo
+(`dowody/verify-gen-b2-r1.txt`).
+
+### 10.4 Bez zmiany obrazu / poza rendererem (NIE-DOTYCZY w tej partii)
+
+- `units.ts` `HIGHLIGHT_OPACITY = MAP_HEX_HIGHLIGHT_BASE_OPACITY` (0,35 = pin, wartość bez zmian) i
+  `setHighlight(hexes, opacity = HIGHLIGHT_OPACITY)`: dysk podświetlenia UnitRenderera nie ma odpowiednika w Rust
+  (`grep HIGHLIGHT_OPACITY src` = tylko stałe `build_highlight`, B1); stała źródłowa zportowana w B1.
+- `units.ts` cache sprite'ów odznak stosu (`stackBadgeCount`) i ikon cierpienia (`_syncSufferingIconMap`,
+  `sufferingIconPaired`, `_disposeOverlaySprite`): zarządzanie zasobami bez zmiany obrazu (te same sprite'y, pozycje i
+  skale co pin, tylko bez przebudowy co `sync()`); w Rust brak UnitRenderera / stosów → przy porcie kompozytora.
+- `units.ts:1612` — tylko komentarz.
+
+### 10.5 Kolejka po B2/B3
+
+| partia | zakres | uwagi |
+|---|---|---|
+| **B4** | `cities.ts`, `bronze/stoneCityRoblox.ts` (§9.5) | bez zmian planu |
+| **B3-rest** | `HIGHLIGHT_OPACITY`/`setHighlight(opacity)`, cache odznak stosu i ikon cierpienia | przy porcie UnitRenderera (kompozytor `units::*`); zmiana obrazu = 0 |
+
+Ocena wizualna GPU: **NIE_ZMIERZONO** (brak `/dev/dri`; nie blokuje). Do oceny wzrokiem: medalion właściciela 4×
+większy z lewej tabliczki; obwódka w barwie cywilizacji (miasta-państwa i barbarzyńcy bez zmian); większa gwiazda
+dowódcy nad listwą odznak.
+
+### 10.6 Bramy (surowe logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-3D-B2-Q1/dowody/`)
+
+```text
+# rustc 1.97.0; CARGO_INCREMENTAL=0, CARGO_PROFILE_DEV_DEBUG=0, CARGO_PROFILE_TEST_DEBUG=0
+## $ cargo fmt --all -- --check                                   EXIT=0
+## $ cargo clippy --locked --all-targets -- -D warnings            EXIT=0
+## $ cargo test --locked --no-fail-fast   passed=456 failed=0 binaries=60   EXIT=0   (baza 8d74519c2: 448)
+## $ cargo +1.87.0 test --locked --test repin3d_b2 --test overlay_web_parity --test atlas_keys   8 + 11 + 7   EXIT=0
+## $ python3 tests/repin3d_fixtures/mutate_b2.py (RANGE 0:4 + 4:40)   4/4 + 26/26 = 30/30   EXIT=0
+## $ sha256sum -c tests/repin3d_fixtures/MANIFEST_B.sha256   29 OK
+## generator 2 katalogi: b2.json e8297e7b… = e8297e7b… = repo; overlay.json a37e1ae2…; atlas_keys.json e45004b9…
 ```

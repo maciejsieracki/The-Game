@@ -40,8 +40,10 @@ pub const PLATE_BG_H: f64 = 2.0 * PLATE_BAR_H + PLATE_BAR_GAP + 2.0 * PLATE_PAD;
 pub const PLATE_BG_Y: f64 = (PLATE_HP_BAR_Y + PLATE_MOVE_BAR_Y) / 2.0;
 /// `PLATE_BAR_LEFT_X` (`:147`).
 pub const PLATE_BAR_LEFT_X: f64 = -PLATE_BAR_W / 2.0;
-/// `PLATE_OWNER_ICON_SIZE` (`:154`).
-pub const PLATE_OWNER_ICON_SIZE: f64 = 0.20 * HEX_R;
+/// `PLATE_OWNER_ICON_SIZE` (`:154`; REPIN-3D B2, web `origin/main` `86d510c66`:
+/// 0,20 → 0,80·HEX_R, 4× larger; [`PLATE_OWNER_X`] keeps the right edge of the
+/// medallion at the left edge of the plate, the growth goes outwards).
+pub const PLATE_OWNER_ICON_SIZE: f64 = 0.80 * HEX_R;
 /// `PLATE_OWNER_GAP` (`:160`).
 pub const PLATE_OWNER_GAP: f64 = 0.006 * HEX_R;
 /// `PLATE_OWNER_X` (`:162`).
