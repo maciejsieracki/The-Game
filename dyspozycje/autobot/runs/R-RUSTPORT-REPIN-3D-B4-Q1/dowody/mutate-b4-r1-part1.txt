@@ -1,0 +1,7 @@
+[0] KILLED   registry not applied (pin)
+[1] KILLED   mats key missing
+[2] KILLED   perCityGeos key missing
+[3] KILLED   keys swapped order
+[4] KILLED   mats key renamed
+KILLED 5/5
+EXIT=0

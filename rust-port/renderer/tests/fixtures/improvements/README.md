@@ -55,4 +55,16 @@ serializer that keeps `-0`; every other number is the shortest round-trip decima
 | `legacy-export.txt` | the one line appended to the scratch copy for `legacy.json` |
 | `gen.ts` | the generator above |
 
-SHA-256 at creation: see `dyspozycje/rust-port/p4/P4-20-MOD11-IMPROVEMENTS.md` §6.
+SHA-256 at creation (pin `edb8fb56`): see `dyspozycje/rust-port/p4/P4-20-MOD11-IMPROVEMENTS.md` §6.
+**Re-pinned to `origin/main` @ `86d510c66`** (REPIN-3D B1, `cb00afecd`, Z-RP-B-1; the commands
+above with `86d510c66` in place of `edb8fb56`; diff vs the pin: the 32 `res:*` cases of
+`models.json` + `sect-full:mix-mask5`, 7 sector layouts of `sigs.json`). Current SHA-256,
+reproduced on `86d510c66` in REPIN-3D B4:
+
+```text
+d908702a607eb3c9bac9b9e691ccd0e37fac82ebbed402cca4c0c23a7a73b049  data.json
+d84e1c84e237cb6ed5b156887e7772e952669203fde643af5bdd66b891a5b00c  legacy.json
+5766bfcbdf034f7b70681ec9803498c7c66a2cfe5480f4d9aeff8c451e2163ce  models.json
+38d666bd853aefa66ab3ccb3ffee7117aaa60cabc5c75c22a1cb89944d150a40  protokeys.json
+591f9527f819991f26d83feba307bf61f8227592b6432f336bf0dd40614e4c6d  sigs.json
+```

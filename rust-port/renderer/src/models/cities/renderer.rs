@@ -1,4 +1,5 @@
-//! Port of `gra/src/render/cities.ts` (pin `edb8fb56`), CPU part of
+//! Port of `gra/src/render/cities.ts` (pin `edb8fb56`; REPIN-3D B4:
+//! `origin/main` `86d510c66`, see [`register_owned_mesh_resources`]), CPU part of
 //! `CityRenderer`: which settlement model each city gets
 //! (`buildSettlementModelForStyle`, `roblox` branch), placement on its hex
 //! (terrain top + `CITY_LIFT`, uniform scale `CITY_MODEL_SCALE`), model
@@ -10,7 +11,13 @@
 //! rasteriser): the stat chip (`_syncStatChip`, `syncStatChips`,
 //! `pickStatChipCityIdAt`, badge LOD `setBadgeZoomLod`/`getBadgeZoomLod`)
 //! and the revolt sprite (`_syncRevolt`). Not ported: the private, unused
-//! `_ownerIndex` (`cities.ts:924-932`, 0 callers) and GPU `dispose()` calls.
+//! `_ownerIndex` (`cities.ts:924-932`, 0 callers) and GPU `dispose()` calls
+//! (B4: the web now disposes the old model's resources only AFTER the new
+//! model is in the scene, `cities.ts:514-515`, `:540-541`, `:568-569`; in
+//! Rust the replaced [`CityModel`] is dropped — no GPU handle, nothing to
+//! order). `pruneUnusedStatChipTextures` (`cities.ts:593`, `:608-619`) lives
+//! in [`crate::raster::atlas::cache::TextureCache::prune_unused`];
+//! `getMemDebugCounts` (`?memdebug=1`) is diagnostics only.
 
 use std::collections::HashSet;
 
@@ -28,6 +35,7 @@ use crate::models::unit_core::model::ROOT;
 use crate::pick::hex::{axial_to_world, HexCoord, HEX_R};
 use crate::pick::terrain::Terrain;
 use crate::pick::three::{js_max, js_min};
+use crate::scene::{NodeKind, UserValue};
 use crate::terrain::color::Color;
 
 /// `OWNER_COLORS` (`cities.ts:92-101`).
@@ -220,8 +228,10 @@ pub enum SceneObject {
 }
 
 /// `buildSettlementModelForStyle(era, civ, level, ownerCol, wallKind)`
-/// (`cities.ts:229-250`), `roblox` branch: era ≥ 2 → `buildMiastoBraz`
-/// (era 3+ falls back to bronze), otherwise `buildMiastoKamien`.
+/// (`cities.ts:229-250`, `origin/main` `86d510c66`), `roblox` branch:
+/// era ≥ 2 → `buildMiastoBraz` (era 3+ falls back to bronze), otherwise
+/// `buildMiastoKamien`; both results pass through
+/// [`register_owned_mesh_resources`] (B4, `5d9534e0b`).
 #[must_use]
 pub fn build_settlement_model_for_style(
     era: f64,
@@ -231,8 +241,8 @@ pub fn build_settlement_model_for_style(
     wall_kind: CityWallKind,
 ) -> CityModel {
     let with_walls = wall_kind != CityWallKind::None;
-    if era >= 2.0 {
-        return build_miasto_braz(
+    let mut model = if era >= 2.0 {
+        build_miasto_braz(
             civ.web_id(),
             Poziom::Level(level),
             MiastoBrazOpts {
@@ -240,15 +250,50 @@ pub fn build_settlement_model_for_style(
                 palisada: wall_kind == CityWallKind::Palisada,
                 color: owner_col,
             },
-        );
+        )
+    } else {
+        build_miasto_kamien(
+            Poziom::Level(level),
+            MiastoKamienOpts {
+                mur: with_walls,
+                color: owner_col,
+            },
+        )
+    };
+    register_owned_mesh_resources(&mut model);
+    model
+}
+
+/// `registerOwnedMeshResources(group)` (`cities.ts:264-278`, web
+/// `5d9534e0b`, R-WEB-MEMORY-LEAKS-FIX-Q1 M1): `group.traverse` over every
+/// `isMesh` (line loops and sprites are not meshes) collects the materials
+/// (`Set`, insertion = first use; a material array contributes each slot)
+/// into `userData.mats` and the geometries into `userData.perCityGeos`.
+/// No change of the image (geometry / material hashes of
+/// `tests/fixtures/cities` regenerated on `origin/main` are byte-identical).
+///
+/// ZAŁOŻENIE Z-RP-B4-1: a [`crate::scene::Geo`] is a value without object
+/// identity, so `perCityGeos` is modelled by its length
+/// ([`UserValue::Len`], like `perTokenGeos`) = the number of meshes. Measured
+/// on the running web (`tests/repin3d_fixtures/b4.json`, 3 330 settlement
+/// models): every mesh owns its own geometry (`uniqueGeos == meshes`), and
+/// `mats` = the first-use material list in traverse order.
+pub fn register_owned_mesh_resources(model: &mut CityModel) {
+    let mut mats: Vec<usize> = Vec::new();
+    let mut geos = 0usize;
+    for id in model.traverse() {
+        if let NodeKind::Mesh(m) = &model.nodes[id].kind {
+            geos += 1;
+            for &mi in &m.materials {
+                if !mats.contains(&mi) {
+                    mats.push(mi);
+                }
+            }
+        }
     }
-    build_miasto_kamien(
-        Poziom::Level(level),
-        MiastoKamienOpts {
-            mur: with_walls,
-            color: owner_col,
-        },
-    )
+    let ud = &mut model.nodes[ROOT].user_data;
+    ud.set("mats", UserValue::Mats(mats));
+    ud.set("perCityGeos", UserValue::Len(geos));
 }
 
 /// `buildCityModel(ownerCol)` (`cities.ts:148-219`): the legacy fallback

@@ -5,6 +5,7 @@
 **Web docelowy:** `origin/main` @ `c1581619f` (wektory A1); w trakcie pracy `origin/main` przesunął się na
 `60621493a` — `git diff --stat c1581619f..60621493a -- gra/src/battle gra/src/render gra/src/game/siege.ts gra/src/game/siegeDefenders.ts gra/data/units.json` = pusto (zakres bez zmian).
 **Partia B1:** R-RUSTPORT-REPIN-3D-B-Q1 (runda 1/5, Operator) na `parity-v2` @ `65e81ae4d`, web `origin/main` @ `86d510c66` — §9.
+**Partia B4:** R-RUSTPORT-REPIN-3D-B4-Q1 (runda 1/5, Operator) na `parity-v2` @ `0eefb3a00`, web `origin/main` @ `86d510c66` — §11.
 **Partia A2:** R-RUSTPORT-REPIN-3D-A2-Q1 (runda 1/5, Operator) na `parity-v2` @ `776bede11`, web `origin/main` @ `5fa0c1a84` — §8.
 **Partia A3:** R-RUSTPORT-REPIN-3D-A3-Q1 (runda 1/5, Operator) na `parity-v2` @ `65e81ae4d`, web `origin/main` @ `86d510c66` — §9.
 **Plan nadrzędny:** `dyspozycje/rust-port/PLAN-AKTUALIZACJI-PORTU-DO-WEBA-20261030.md` §3, faza U5.
@@ -132,7 +133,7 @@ jako źródło DTO: `cityFortificationKind` (palisada/mur → A2), `towerRows`/`
 | A4 | regeneracja wektorów cz. 3 (`units.json`) na nowym szyku #12 (scena bez zmian, zmienia się tylko DTO) | testy `battle3d_units` | generator cz. 3 na `origin/main`; ryzyko: dryf modeli `render/units.ts` (gwiazda dowódcy) → razem z REPIN-3D-B |
 | A5 | regeneracja cz. 4–5 (`dynamics.json`, `picking.json`) na `origin/main`; usunięcie martwego `Fade` (Z-RP-3) | `dynamics`, `picking` | generator cz. 4–5; zmiana oczekiwana tylko w przypadkach „fade” |
 | A6 | regeneracja cz. 1–2 (`siege_wall.json`, `field.json`) — kontrola, że `mur` bez zmian | — | tylko pomiar (oczekiwane 0 różnic, §2.2) |
-| REPIN-3D-B | §2.3 (`render/*`) | `units`, `cities`, `overlays`, `models` | R-RUSTPORT-REPIN-3D-B-Q1: **B1 WYKONANA** (§9), kolejka B2…B4 (§9.5) |
+| REPIN-3D-B | §2.3 (`render/*`) | `units`, `cities`, `overlays`, `models` | R-RUSTPORT-REPIN-3D-B-Q1: **B1 WYKONANA** (§9), **B2+B3** (§10), **B4 WYKONANA** (§11); B3-rest → port UnitRenderera (§11.5) |
 
 ## 4. Partia A1 — implementacja i weryfikacja
 
@@ -573,7 +574,7 @@ Niezależny weryfikator: drugi `mktemp -d` (osobny `npm install`, osobny `git ar
 
 | partia | zakres | uwagi |
 |---|---|---|
-| **B4** | `cities.ts`, `bronze/stoneCityRoblox.ts` (§9.5) | bez zmian planu |
+| **B4** (zrobione, §11) | `cities.ts`, `bronze/stoneCityRoblox.ts` (§9.5) | `registerOwnedMeshResources` portowane; reszta K / NIE-DOTYCZY |
 | **B3-rest** | `HIGHLIGHT_OPACITY`/`setHighlight(opacity)`, cache odznak stosu i ikon cierpienia | przy porcie UnitRenderera (kompozytor `units::*`); zmiana obrazu = 0 |
 
 Ocena wizualna GPU: **NIE_ZMIERZONO** (brak `/dev/dri`; nie blokuje). Do oceny wzrokiem: medalion właściciela 4×
@@ -605,3 +606,99 @@ dowódcy nad listwą odznak.
 
 A4 (następna): regeneracja wektorów cz. 3 na szyku `initialBattleSlots`, `fortKind` w `BattleUnitsOpts` (Z-RP-A2-2), Milicja
 jako DTO jednostek; potem A5, A6. REPIN-3D-B (równolegle, rozłączne pliki): `render/*`, w tym model wieży oblężniczej.
+
+## 13. Partia B4 (numer zmieniony z 11 przy integracji — kolizja z §11 A3; §12 zarezerwowane dla A4) — rejestr zasobów modelu osady (`cities.ts`), pierścień muru duchów, porządki README fixtur (R-RUSTPORT-REPIN-3D-B4-Q1, runda 1)
+
+**Baza:** `rust-port/parity-v2` @ `0eefb3a00` (renderer 456/0, B1–B3). **Web:** `origin/main` @ `86d510c66`
+(`git rev-parse origin/main`). A3 (`src/battle/**`) nietknięte.
+
+### 11.1 Pomiar dryfu (`git diff edb8fb56..origin/main -- gra/src/render/{cities,bronzeCityRoblox,stoneCityRoblox}.ts`)
+
+`--numstat`: `cities.ts` +70/−4, `bronzeCityRoblox.ts` +2/−1, `stoneCityRoblox.ts` +2/−1; commity
+`5d9534e0b` (M1/M2/`?memdebug`) i `7637ab3ee` (duchy). Hunki (linie `origin/main`):
+
+| hunk | treść | klasa | Rust |
+|---|---|---|---|
+| `cities.ts:238-250` | `buildSettlementModelForStyle`: wynik `buildMiastoBraz`/`buildMiastoKamien` owinięty `registerOwnedMeshResources(...)` | SC (`userData`) | **PORTOWANE** (§11.2) |
+| `cities.ts:252-278` | NOWA `registerOwnedMeshResources`: `traverse` po `isMesh`, `Set` materiałów (tablica → każdy slot) i geometrii → `userData.mats`, `userData.perCityGeos` | SC (`userData`) | **PORTOWANE** |
+| `cities.ts:512-515`, `:540-541`, `:568-569` | zwalnianie starego modelu PO dodaniu nowego (`staleMats`/`staleGeos`, zamiast `_disposeModel` przed) | K (GPU) | NIE-DOTYCZY: w Rust stary `CityModel` jest porzucany (`drop`), brak uchwytów GPU |
+| `cities.ts:593`, `:595-619` | `pruneUnusedStatChipTextures()` na końcu `sync()` | K (pamięć) | już zportowane P4.31: `raster::atlas::cache::TextureCache::prune_unused` (`cache.rs:1-30`, `:110`) |
+| `cities.ts:621-624` | `getMemDebugCounts()` (`?memdebug=1`) | diagnostyka | NIE-DOTYCZY |
+| `bronzeCityRoblox.ts:8,84`, `stoneCityRoblox.ts:10,126` | `hexWallRingCache.set(key, markSharedTransientGeometry(geo))` — flaga `geometry.userData.sharedTransientGeometry` (`transientObjectResources.ts:7-10`) | K (zwalnianie podglądu) | NIE-DOTYCZY: `scene::Geo` jest wartością bez `userData` i bez współdzielonego cache GPU |
+
+### 11.2 Kod
+
+- `models/cities/renderer.rs`: NOWE `register_owned_mesh_resources(&mut CityModel)` (pub, re-eksport w
+  `models/cities/mod.rs`): `traverse()` → każdy `NodeKind::Mesh` (linie i sprite'y pominięte jak `isMesh`),
+  materiały w kolejności pierwszego użycia bez duplikatów (wszystkie sloty tablicy) → `userData.mats`
+  (`UserValue::Mats`), liczba geometrii → `userData.perCityGeos` (`UserValue::Len`); wołane w
+  `build_settlement_model_for_style` dla obu gałęzi (kamień i brąz). Komentarz modułu: dlaczego reszta
+  hunków to K. `Cargo.*` bez zmian.
+- **ZAŁOŻENIE Z-RP-B4-1:** `Geo` nie ma tożsamości obiektu, więc `perCityGeos` = długość (jak
+  `perTokenGeos`, `models/improvements/model.rs:68-81`) = liczba meshy. Zmierzone na uruchomionym webie:
+  3 330/3 330 modeli osady — każda siatka ma własną geometrię (`uniqueGeos == meshes`), `perCityGeos`
+  wskazuje kolejne meshe w porządku `traverse`, `mats` = lista pierwszego użycia (`b4.json`).
+  Legacy `buildCityModel` (`cities.ts:215-216`) ustawia te klucze od pinu — w Rust nadal bez nich
+  (P4.21: ścieżka nieosiągalna, „GPU dispose() not ported”); bez zmiany w B4.
+
+### 11.3 Wektory i „bez zmiany obrazu” (pkt 1–2 dispatchu)
+
+- **Fixtury pinu miast na `origin/main`:** `tests/fixtures/cities/gen.ts` (bez zmian) na `86d510c66` →
+  `models.json` `023c3540…`, `renderer.json` `7d292864…` = **bajt w bajt** pin (2 katalogi). Hash
+  geometrii, materiały, `matrixWorld`, bbox, scena `CityRenderer` (1 048 modeli, w tym 11 cyw. ×
+  `bronzeCityRoblox`/`stoneCityRoblox`) bez zmian → `bronze/stoneCityRoblox.ts` **potwierdzone „bez zmiany
+  obrazu”** (zamyka NIE_ZMIERZONO z §9.4).
+- `tests/repin3d_fixtures/gen_b4.ts` → `b4.json` (`README_B.md`): 3 330 przypadków przez publiczne
+  `CityRenderer.sync` (era {1,2,3,0,7} × cyw. × 15 poziomów z 0, 11, 2,5, 6,49, NaN × mur {none, stone,
+  palisada} × kolor {domyślny, `0x8e24aa`}; 1 665 przebudów, 1 665 ponownych użyć — kolor nie wchodzi do
+  `visualKey`), 6 samych builderów (brak rejestru), 134 duchy (flaga tylko z murami: 67/67).
+  `cargo test --test repin3d_b4`: 3/3 — 21 645 porównań (kolejność kluczy `userData` bez pól renderera,
+  `mats`, `perCityGeos` + pozycje meshy, liczby meshy/materiałów, ponowne użycie = ten sam model),
+  builders, przypadki brzegowe semantyki `Set`/`isMesh` (pusta grupa, linia + sprite pominięte, tablica
+  materiałów `[b,c,a,b]` po `c` → `[c,b,a]`, idempotencja, grupa obrysu → `[]`/0).
+
+### 11.4 Porządki README fixtur pinu (pkt 4) i ZAŁOŻENIE Z-RP-B4-2
+
+README zaktualizowane (pochodzenie `edb8fb56` → `origin/main` @ `86d510c66`, aktualne SHA, polecenie
+`sha256sum -c`): `fixtures/overlay/README.md` (MANIFEST `f579a315…`, `sha256sum -c` 71 OK),
+`fixtures/atlas/README.md` (`atlas_keys.json` `e45004b9…` = `SHA256SUMS`, 5 OK), `fixtures/misc/README.md`
+(`overlays.json` `dc62fa14…`, `relief_real.json` `f9e8588e…`), `fixtures/improvements/README.md` (5 SHA,
+odtworzone na `86d510c66` bajt w bajt), `fixtures/cities/README.md` (2 SHA, jw.). Generatory i ich SHA
+nietknięte (`atlas/gen.sh` nadal ma wpisany pin — README opisuje podstawienie rewizji).
+
+**Z-RP-B4-2 (fixtura pinu regenerowana — niezbędne, jak Z-RP-B-1):** `fixtures/misc/relief_real.json`
+nie był regenerowany w B1 i był nieaktualny względem weba (`f3cfbdcd…`). Własny, NIEZMIENIONY generator
+(`gen_relief.ts` + `build_relief.mjs`) na `86d510c66` → `f9e8588e…` (2 katalogi); diff liści = dokładnie
+69: `styles.mine.tintOpacity` i 68 × `range[].objects[].mat.opacity` stylu `mine`, 0,30 → 0,36 (zmiana B1).
+`misc_web_parity` 11/11 (test czyta styl z fixtury, więc stara fixtura przechodziła — brak pokrycia 0,36
+na reliefie; teraz jest). `.rs` testów nietknięte.
+
+### 11.5 Mutacje, weryfikator, reszta B3 (pkt 3)
+
+`tests/repin3d_fixtures/mutate_b4.py` (testy `repin3d_b4` + `cities_web_parity`): **15/15 zabitych**
+(`dowody/mutate-b4-r1-part{1,2}.txt`): brak rejestru (pin), brak/zamiana/zmiana nazwy klucza, `Len` vs
+`Mats`, brak deduplikacji, odwrócona/posortowana kolejność, tylko pierwszy slot, liczba geometrii +1,
+= liczba materiałów, linie jako meshe, tylko dzieci korzenia, rejestr tylko dla brązu. Kontrola: mutanty
+kompilują się i padają na asercjach (sprawdzone ręcznie dla 2: „tylko pierwszy slot” + „posortowane”).
+Niezależny weryfikator: 2 katalogi `mktemp -d` (osobne `npm install`, osobne archiwum `origin/main`) →
+`b4.json` `f146e755…`, `cities/*.json`, `relief_real.json` — SHA = repo (`dowody/verify-gen-b4-r1.txt`).
+
+Reszta B3 (§10.5: `HIGHLIGHT_OPACITY`/`setHighlight(opacity)`, cache odznak stosu, ikony cierpienia):
+**K, bez zmian w Rust** — wartość 0,35 = pin (stała źródłowa zportowana w B1), cache to zarządzanie
+zasobami bez zmiany obrazu, brak UnitRenderera/stosów w Rust (`grep HIGHLIGHT_OPACITY src` = tylko
+`build_highlight`); przy porcie kompozytora `units::*`.
+
+Ocena wizualna GPU: **NIE_ZMIERZONO** (brak `/dev/dri`; nie blokuje). Zmiana obrazu B4 = 0 (zmierzone).
+
+### 11.6 Bramy (surowe logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-3D-B4-Q1/dowody/`)
+
+```text
+# rustc 1.97.0; CARGO_INCREMENTAL=0, CARGO_PROFILE_DEV_DEBUG=0, CARGO_PROFILE_TEST_DEBUG=0
+## $ cargo fmt --all -- --check                                   EXIT=0
+## $ cargo clippy --locked --all-targets -- -D warnings            EXIT=0
+## $ cargo test --locked --no-fail-fast   passed=459 failed=0 binaries=61   EXIT=0   (baza 0eefb3a00: 456)
+## $ cargo +1.87.0 test --locked --test repin3d_b4 --test cities_web_parity --test misc_web_parity   3 + 5 + 11   EXIT=0
+## $ python3 tests/repin3d_fixtures/mutate_b4.py (RANGE 0:5 + 5:15)   5/5 + 10/10 = 15/15   EXIT=0
+## $ sha256sum -c tests/repin3d_fixtures/MANIFEST_B.sha256   32 OK
+## generator 2 katalogi: b4.json f146e755… = f146e755… = repo; cities 023c3540…/7d292864… = pin; relief_real f9e8588e…
+```

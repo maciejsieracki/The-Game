@@ -1,0 +1,12 @@
+[5] KILLED   perCityGeos as Mats
+[6] KILLED   no dedup of materials
+[7] KILLED   materials in reverse first-use order
+[8] KILLED   materials sorted by creation id
+[9] KILLED   only first material slot
+[10] KILLED   geometry count +1
+[11] KILLED   geometry count = unique materials
+[12] KILLED   line loops counted as meshes
+[13] KILLED   only the root children
+[14] KILLED   registry only for bronze
+KILLED 10/10
+EXIT=0

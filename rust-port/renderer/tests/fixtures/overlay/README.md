@@ -1,9 +1,13 @@
 # MOD-08 unit overlays — reference data (R-RUSTPORT-P4-32-MOD08-UNIT-OVERLAY-Q1)
 
 Reference data for `tests/overlay_web_parity.rs`. Everything was produced by
-**running the web code** of pin `edb8fb56` — nothing is transcribed:
+**running the web code** — nothing is transcribed. Created on pin `edb8fb56`
+(P4.32); **regenerated on `origin/main` @ `86d510c66`** with the unchanged
+`gen.ts` / `gen.mjs` (REPIN-3D B2, `a827fac07`, document
+`dyspozycje/rust-port/p4/P4-REPIN-3D.md` §10, Z-RP-B2-1: owner-medallion ring
+key `…:brass`, `PLATE_OWNER_ICON_SIZE` 0,80):
 
-- `gra/src/**` from `git archive edb8fb56 gra/src gra/data`; the four modules
+- `gra/src/**` from `git archive 86d510c66 gra/src gra/data`; the four modules
   `render/unitOwnerEmblem.ts`, `render/unitStatPlate.ts`,
   `render/unitUpgradeBadges.ts`, `render/unitVeteranBadges.ts` are imported
   **unchanged** by `gen.ts` and called through their real exported entry
@@ -41,7 +45,7 @@ returns an empty sigil (`UnitOwnerEmblemAssets.civSigilSvg`: "może być ''").
 S=<scratch dir>
 mkdir -p $S/ref $S/websrc $S/refscript
 (cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)
-git archive edb8fb56 gra/src gra/data | tar -x -C $S/websrc
+git archive 86d510c66 gra/src gra/data | tar -x -C $S/websrc   # pin era: edb8fb56
 cp rust-port/renderer/tests/fixtures/overlay/{gen.ts,gen.mjs} $S/refscript/
 ln -s $S/ref/node_modules $S/refscript/node_modules
 cd $S/refscript
@@ -54,7 +58,9 @@ NODE_PATH=$S/ref/node_modules:/opt/node22/lib/node_modules PLAYWRIGHT_BROWSERS_P
 `gen.mjs` replaces only the generated files (`input/`, `ref/`, `overlay.json`,
 `versions.txt`, `MANIFEST.sha256`, copies of `gen.*`); `README.md` and the
 Rust `golden.tsv` stay. Deterministic: two runs give the identical
-`MANIFEST.sha256` (sha256 `7d70d6e17065d13b3f9eac6498e34b2e4ff9f69653229f22145a491a2e7f16a8`).
+`MANIFEST.sha256` (sha256 `f579a3153c4c7fd47b95cd2642e0a20309effb5618863cab4336d07950dd98f7`
+on `86d510c66`; pin `edb8fb56`: `7d70d6e17065d13b3f9eac6498e34b2e4ff9f69653229f22145a491a2e7f16a8`).
+Check: `cd tests/fixtures/overlay && sha256sum -c MANIFEST.sha256` (71 × OK).
 After a regeneration re-bless the Rust hashes only after review:
 `OVERLAY_BLESS=1 cargo test --test overlay_web_parity textures_match_golden_hashes`.
 

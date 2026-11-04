@@ -1,0 +1,37 @@
+R-RUSTPORT-REPIN-3D-B4-Q1 r1 — generators run on origin/main @ 86d510c66 (git archive gra/src gra/data),
+three@0.169.0 + esbuild@0.24.0 (separate npm install per directory), node v22.22.0.
+Dir 1 = mktemp -d /tmp/tmp.U59rpSLC5p, dir 2 = /tmp/tmp.9TJeyGeCQQ (independent verifier). Both removed after use.
+gen_b4 esbuild inputs (metafile): 110 files, 4 617 030 B (<= 10 MB).
+
+--- outputs
+cities models=1048 outlines=5 steps=14 legacy=2              (dir 1, dir 2)
+b4 settlement=3330 builders=6 ghosts=134 disposedOnSwap=210514   (dir 1, dir 2)
+misc models=34 sync=8 markerSteps=4 range=252 loops=18 territory=7 trade=3   (dir 1)
+misc relief range=432 reliefHexesDraped=1136 samplers=904 probes=16560        (dir 1, dir 2)
+improvements full=195 sigs=237 legacy=25                                      (dir 1)
+
+--- sha256 (generated | repo)
+OK   023c35407d83d46e7b3fdfc19b9e491e3360f0c3893245d528e238ed45e8bd1c  fixtures/cities/models.json   (dir 1, dir 2; repo file unchanged = pin)
+OK   7d292864c85c36f4fdf5d4844c98db56171b71d11a287eb76ae2b1d2259e69c1  fixtures/cities/renderer.json (dir 1, dir 2; repo file unchanged = pin)
+OK   f146e7553efe7225b0439ae166bc98c0b5e96526370db8bfc2e9808c78455eab  repin3d_fixtures/b4.json      (dir 1, dir 2)
+OK   f9e8588e1f6cf8df7681e37c39aad09f6749cab5f9cc9ed9a7e5cf515646c5cc  fixtures/misc/relief_real.json (dir 1, dir 2; REGENERATED, pin f3cfbdcd…)
+OK   cf17ac9d66604ffd62c21835f990db9b1432315e1ea94947b66372e3c24de8e0  fixtures/misc/models.json     (dir 1)
+OK   dc62fa14df77e261e30633290fbe5376ce6bf53358fe7d97614550ab5bb926bb  fixtures/misc/overlays.json   (dir 1)
+OK   06383e4d19e6abeb34b70be136e63b6260f8009796a35ad7c29c7f9de7e6be81  fixtures/misc/siege.json      (dir 1)
+OK   d908702a607eb3c9bac9b9e691ccd0e37fac82ebbed402cca4c0c23a7a73b049  fixtures/improvements/data.json      (dir 1)
+OK   d84e1c84e237cb6ed5b156887e7772e952669203fde643af5bdd66b891a5b00c  fixtures/improvements/legacy.json    (dir 1)
+OK   5766bfcbdf034f7b70681ec9803498c7c66a2cfe5480f4d9aeff8c451e2163ce  fixtures/improvements/models.json    (dir 1)
+OK   38d666bd853aefa66ab3ccb3ffee7117aaa60cabc5c75c22a1cb89944d150a40  fixtures/improvements/protokeys.json (dir 1)
+OK   591f9527f819991f26d83feba307bf61f8227592b6432f336bf0dd40614e4c6d  fixtures/improvements/sigs.json      (dir 1)
+
+--- relief_real.json pin -> origin/main leaf diff (python json walk): 69 leaves
+  1 x /styles/mine/tintOpacity                 3fd3333333333333 (0.30) -> 3fd70a3d70a3d70a (0.36)
+ 68 x /range/#/objects/#/mat/opacity  (style mine) 3fd3333333333333 -> 3fd70a3d70a3d70a
+
+--- b4.json summary (python)
+settlement 3330: keys model,poziom,rozmiar,mats,perCityGeos,cityId,visualKey,ownerId,q,r = 3330
+  mats == first-use list 3330; perCityGeos unique + sorted 3330; uniqueGeos == meshes 3330; non-mesh drawables 0
+  reused 1665 (colour only, visualKey unchanged) / rebuilt 1665
+builders 6: keys model,poziom,rozmiar (no registry)
+ghosts 134: walls=true -> sharedTransientGeometry on the hex wall ring (67), walls=false -> none (67); group userData keys = []
+EXIT=0

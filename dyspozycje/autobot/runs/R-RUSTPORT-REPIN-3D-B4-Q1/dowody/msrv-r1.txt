@@ -1,0 +1,86 @@
+   Compiling simd-adler32 v0.3.10
+   Compiling libm v0.2.16
+   Compiling crc32fast v1.5.3
+   Compiling adler2 v2.0.1
+   Compiling bytemuck v1.25.2
+   Compiling arrayvec v0.7.8
+   Compiling smallvec v1.16.3
+   Compiling cfg-if v1.0.5
+   Compiling float-cmp v0.9.0
+   Compiling log v0.4.34
+   Compiling strict-num v0.1.1
+   Compiling polycool v0.4.0
+   Compiling miniz_oxide v0.9.1
+   Compiling bitflags v2.13.2
+   Compiling arrayref v0.3.9
+   Compiling tiny-skia-path v0.12.0
+   Compiling flate2 v1.1.10
+   Compiling core_maths v0.1.1
+   Compiling ttf-parser v0.25.1
+   Compiling kurbo v0.13.1
+   Compiling miniz_oxide v0.8.9
+   Compiling fdeflate v0.3.7
+   Compiling memchr v2.8.3
+   Compiling siphasher v1.0.4
+   Compiling svgtypes v0.16.1
+   Compiling roxmltree v0.21.1
+   Compiling png v0.18.1
+   Compiling simplecss v0.2.2
+   Compiling imagesize v0.15.0
+   Compiling pico-args v0.5.0
+   Compiling data-url v0.3.2
+   Compiling owned_ttf_parser v0.25.1
+   Compiling tiny-skia v0.12.0
+   Compiling usvg v0.48.1
+   Compiling rgb v0.8.53
+   Compiling unicode-properties v0.1.4
+   Compiling unicode-script v0.5.8
+   Compiling zune-core v0.5.3
+   Compiling unicode-bidi-mirroring v0.4.0
+   Compiling unicode-ccc v0.4.0
+   Compiling ab_glyph_rasterizer v0.1.10
+   Compiling zune-jpeg v0.5.15
+   Compiling ab_glyph v0.2.32
+   Compiling resvg v0.48.1
+   Compiling rustybuzz v0.20.1
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_f145c986-3b0-1/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 14.00s
+     Running tests/cities_web_parity.rs (target/debug/deps/cities_web_parity-524e76b68b416be0)
+
+running 5 tests
+test city_map_outlines_match_web ... ok
+test legacy_city_model_matches_web ... ok
+test layout_constants_and_types_match_web ... ok
+test city_renderer_matches_web ... ok
+test city_models_match_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.40s
+
+     Running tests/misc_web_parity.rs (target/debug/deps/misc_web_parity-182f8e80a26ee829)
+
+running 11 tests
+test quadratic_bezier_matches_three ... ok
+test models_match_web ... ok
+test siege_marker_matches_web ... ok
+test siege_sync_matches_web ... ok
+test territory_border_matches_web ... ok
+test territory_loops_match_web ... ok
+test to_fixed_on_hex_corners_is_sign_stable ... ok
+test trade_routes_match_web ... ok
+test relief_sampler_matches_web ... ok
+test range_overlay_matches_web ... ok
+test range_overlay_real_relief_matches_web ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.06s
+
+     Running tests/repin3d_b4.rs (target/debug/deps/repin3d_b4-45d8cc6747988146)
+
+running 3 tests
+test registry_edge_cases ... ok
+test builders_alone_carry_no_registry ... ok
+test settlement_models_carry_the_web_resource_registry ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.38s
+
+EXIT=0

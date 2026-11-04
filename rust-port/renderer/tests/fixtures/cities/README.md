@@ -63,3 +63,14 @@ its high word).
 | `gen.ts` | the generator above |
 
 SHA-256 at creation: see `dyspozycje/rust-port/p4/P4-21-MOD09-CITIES.md` §6.
+**Checked against `origin/main` @ `86d510c66`** (REPIN-3D B4, `dyspozycje/rust-port/p4/P4-REPIN-3D.md`
+§11): the commands above with `86d510c66` in place of `edb8fb56` reproduce both files byte for
+byte — the web drift of `cities.ts` (`registerOwnedMeshResources`, `5d9534e0b`) and of
+`bronze/stoneCityRoblox.ts` (`markSharedTransientGeometry`) changes neither geometry, materials,
+scene graph nor the dumped `userData`; the new `userData.mats` / `perCityGeos` keys are covered by
+`tests/repin3d_b4.rs`.
+
+```text
+023c35407d83d46e7b3fdfc19b9e491e3360f0c3893245d528e238ed45e8bd1c  models.json
+7d292864c85c36f4fdf5d4844c98db56171b71d11a287eb76ae2b1d2259e69c1  renderer.json
+```
