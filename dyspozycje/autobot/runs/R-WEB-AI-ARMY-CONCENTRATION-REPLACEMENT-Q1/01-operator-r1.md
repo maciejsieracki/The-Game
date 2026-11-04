@@ -49,4 +49,4 @@ Kontynenty: wojna nigdy nie dochodzi do kontaktu (0 zdarzeń „armia zniszczona
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (przegląd luk 1-2, ewentualnie decyzja o merge skupisk ≥3 poza promieniem 10).
 DEPLOY/PUSH: NIE WYKONANO
-ZMIANY/COMMIT: SHA w sekcji poniżej.
+ZMIANY/COMMIT: d25001cd5 (kod+testy+harness+raport; commit lokalny w worktree, bez push). Ten plik dopisał SHA w commicie następnym.
