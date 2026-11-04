@@ -22,11 +22,15 @@
     "mnoznikNaOdrzucenie": 0.2,
     "maxMiastNaPokoj": 2,
     "minMiastPoOddaniu": 1,
-    "cooldownOfertTur": 3
+    "cooldownOfertTur": 3,
+    "_wyczerpanie": "Wyjscie awaryjne (zarzut 2): gdy szczyt zmeczenia >= progWzajemnyPokoj i odrzucono >= odrzuceniaDoKapitulacji ofert, wygrywajacy (rowniez wyczerpany) przyjmuje to, co przegrywajacy realnie moze zaplacic (nawet czesciowo) - pokoj nie jest blokowany niedoborem majatku.",
+    "odrzuceniaDoKapitulacji": 3
   },
   "czlowiek": {
     "_opis": "AI przegrywajace z graczem: oferuj_miasto_za_pokoj - prog rw rosnie o rwProgBonusMax*desperacja, min. miast AI spada do minMiastAi (gracz decyduje o przyjeciu).",
     "rwProgBonusMax": 0.25,
-    "minMiastAi": 2
+    "minMiastAi": 2,
+    "_rabat": "Zarzut 3: cena pokoju zadana od gracza przez AI maleje z zmeczeniem: czynnik = 1 - rabatCenyPokojuMax*clamp((poziom-progChetnosci)/(1-progChetnosci),0,1).",
+    "rabatCenyPokojuMax": 0.6
   }
 }

@@ -24,6 +24,9 @@ if (!fs.existsSync(path.join(SRC, 'game/war-weariness.ts'))) {
 fs.writeFileSync(ENTRY, [
   `export * as W from ${J('game/war-weariness')};`,
   `export { decideAIDiplomacy } from ${J('game/ai')};`,
+  `export { peaceOfferAiRequestPn, peaceOfferAiOwnBilans, aiOfferPwSurplusTolerance } from ${J('game/diplomacy-ai-offer-balance')};`,
+  `export { treatyBasePnFromConfig, treatyEvalRelationTotal } from ${J('game/diplomacy-proposals')};`,
+  `export { requesterShare } from ${J('game/diplomacy-ai-forced-peace')};`,
 ].join('\n'), 'utf8');
 try {
   esbuild.buildSync({
@@ -158,6 +161,62 @@ function mkDeps(o) {
   eq(run(), run(), 'determinizm ticku');
 }
 
+// 4f. wyjscie awaryjne (zarzut 2): przegrywajacy za biedny, wygrywajacy wyczerpany => po serii odrzucen pokoj mimo niedoboru
+{
+  const store4 = new Map();
+  const o = { warStart: 250, share1: 0.15, lostA: 3, turnsAtWar: 150, store: store4, winnerNeed: 999999, assets: [A('zloto', 'zloto', 50, 50)] };
+  const acts = [];
+  let peaceLog = [];
+  for (const t of [400, 404, 408, 412]) {
+    const { deps, log } = mkDeps({ ...o, turn: t });
+    acts.push(W.runWarWearinessTick(deps)[0].action);
+    peaceLog = peaceLog.concat(log);
+  }
+  eq(acts.slice(0, 3).join(','), 'offer_rejected,offer_rejected,offer_rejected', '4f: pierwsze 3 oferty odrzucone (za malo)');
+  eq(acts[3], 'offer_accepted', '4f: po odrzuceniach i pelnym zmeczeniu pokoj mimo niedoboru majatku (wyjscie awaryjne)');
+  ok(peaceLog.some(x => x.ev === 'peace'), '4f: pokoj sfinalizowany');
+  eq(store4.size, 0, '4f: stan skasowany po pokoju');
+}
+// 4g. wyjscie awaryjne NIE dziala przy niskim zmeczeniu (zero zmian balansu krotkich wojen)
+{
+  const store5 = new Map();
+  const o = { warStart: 380, share1: 0.15, lostA: 1, turnsAtWar: 90, store: store5, winnerNeed: 999999, assets: [A('zloto', 'zloto', 50, 50)] };
+  const acts = [];
+  for (const t of [470, 474, 478, 482, 486]) { const { deps } = mkDeps({ ...o, turn: t, warStart: 380, turnsAtWar: 90 }); acts.push(W.runWarWearinessTick(deps)[0].action); }
+  ok(!acts.includes('offer_accepted'), '4g: zmeczenie < progWzajemnyPokoj => brak kapitulacji bez pokrycia ceny');
+}
+// 4h. realna wycena (peaceOfferAiRequestPn / OwnBilans / tolerancja / baza z konfiguracji) zamiast atrap
+{
+  const basePn = M.treatyBasePnFromConfig('pokoj');
+  ok(basePn > 0, '4h: baza PW pokoju z konfiguracji > 0');
+  const relTotal = M.treatyEvalRelationTotal({ zaufanie: 0, respekt: 0, status: 'wojna' });
+  const req = M.peaceOfferAiRequestPn(0, 0, relTotal, basePn, 'normal');
+  const tol = M.aiOfferPwSurplusTolerance('normal');
+  const real = (o) => {
+    const { deps, log } = mkDeps({ ...o });
+    deps.price = () => ({ requiredPn: req, balanceFor: (c) => M.peaceOfferAiOwnBilans(0, c, relTotal, basePn), tolerancePn: tol });
+    return { r: W.runWarWearinessTick(deps), log };
+  };
+  const rich = [A('zloto', 'zloto', 100000, 100000), A('miasto', 'c1', 1, 400), A('miasto', 'c2', 1, 800)];
+  const x = real({ turn: 400, turnsAtWar: 150, share1: 0.15, lostA: 3, assets: rich });
+  eq(x.r[0].action, 'offer_accepted', '4h: realna wycena - bogaty przegrywajacy kupuje pokoj');
+  const y = real({ turn: 400, turnsAtWar: 150, share1: 0.15, lostA: 3, assets: [A('zloto', 'zloto', 1, 1)] });
+  ok(['offer_rejected', 'offer_accepted'].includes(y.r[0].action), '4h: realna wycena - biedny przegrywajacy sklada oferte (bez wyjatku)');
+}
+// 4i. skala udzialu: rw (ai.ts) i requesterShare (main.ts) to ten sam ulamek own/(own+other) -> ta sama desperacja
+{
+  const rwScale = 300 / (300 + 700);
+  eq(M.requesterShare(300, 700), rwScale, '4i: requesterShare = potAI/(potAI+potPlr) (ta sama skala co respektWzgledny)');
+  eq(W.loserDespair({ level: 0.7, share: M.requesterShare(300, 700), lostCities: 2 }), W.loserDespair({ level: 0.7, share: rwScale, lostCities: 2 }), '4i: desperacja identyczna dla obu zrodel udzialu');
+}
+// 4j. cena pokoju zadana od gracza maleje z zmeczeniem (zarzut 3)
+{
+  eq(W.wearinessPeacePriceFactor(0), 1, '4j: brak zmeczenia => pelna cena');
+  eq(W.wearinessPeacePriceFactor(0.5), 1, '4j: na progu chetnosci => pelna cena');
+  ok(W.wearinessPeacePriceFactor(0.8) < 1 && W.wearinessPeacePriceFactor(0.8) > W.wearinessPeacePriceFactor(1), '4j: rabat rosnie monotonicznie');
+  ok(Math.abs(W.wearinessPeacePriceFactor(1) - (1 - W.WAR_WEARINESS_PARAMS.czlowiek.rabatCenyPokojuMax)) < 1e-9, '4j: przy pelnym zmeczeniu rabat = rabatCenyPokojuMax');
+}
+
 // ---- 5. AI przegrywajace z graczem: eskalacja oferty miasta ----
 function runAI({ rw, turnsAtWar, lost = 0, miastaAI }) {
   const rel = {
@@ -176,11 +235,22 @@ ok(cession(runAI({ rw: 0.12, turnsAtWar: 200, lost: 3, miastaAI: CITIES })) !== 
 ok(cession(runAI({ rw: 0.12, turnsAtWar: 200, lost: 3, miastaAI: CITIES.slice(0, 1) })) === undefined, 'jedno miasto => nigdy nie oddaje');
 
 // ---- 6. straznik okablowania main.ts ----
+const propTs = fs.readFileSync(path.join(SRC, 'game/diplomacy-proposals.ts'), 'utf8');
+ok(/wearinessPeacePriceFactor\(warWearinessLevel\(/.test(propTs), 'diplomacy-proposals: rabat ceny pokoju z zmeczenia podpiety do bramki R5');
+
 const mainTs = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 ok(/runWarWearinessTick\(/.test(mainTs) && /tickAiAiWarWeariness\(aiTurnAwaitingBattle\)/.test(mainTs), 'main.ts: tick zmeczenia wywolany po fazie AI');
 ok(/warWearinessByPairKey: Array\.from\(warWearinessByPairKey\.entries\(\)\)/.test(mainTs), 'main.ts: stan w save');
 ok(/saved\.meta\?\.warWearinessByPairKey/.test(mainTs), 'main.ts: stan z save');
 ok(/warWearinessByPairKey\.delete\(diploPairKey\(proposerId, responderId\)\)/.test(mainTs), 'main.ts: reset przy pokoju');
+
+// 6b. wojny wymuszone epoki (zarzut 6): pokoj z zmeczenia idzie przez finalizePeaceTreatyBetween, ktory ustawia blokade do nastepnej epoki
+{
+  const m = mainTs.match(/function finalizePeaceTreatyBetween\([\s\S]*?\n    \}\n/);
+  ok(m && /forcedEraPeaceUntilNextEraByPairKey\.set\(pairKey/.test(m[0]) && m[0].indexOf('forcedEraPeaceUntilNextEraByPairKey.set') < m[0].indexOf('applyDiploEventTracked'), '6b: finalizePeaceTreatyBetween ustawia blokade epoki PRZED zmiana relacji');
+  const t = mainTs.match(/function tickAiAiWarWeariness[\s\S]*?\n    \}\n/);
+  ok(t && /finalizePeaceTreatyBetween\(loser, winner\)/.test(t[0]), '6b: tick zmeczenia konczy wojne wylacznie przez finalizePeaceTreatyBetween (istniejace reguly wojen wymuszonych)');
+}
 
 console.log(`ai-war-weariness-peace-test: PASS=${pass} FAIL=${fail}`);
 process.exit(fail ? 1 : 0);

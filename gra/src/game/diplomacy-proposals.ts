@@ -27,6 +27,7 @@ import {
 import { RodzajTraktatu } from '../types/diplomacy';
 import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
 import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
+import { warWearinessLevel, wearinessPeacePriceFactor } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -1281,7 +1282,13 @@ export function evaluateProposal(
         if (r5Gate.verdict !== 'ok') {
           return { accepted: false, reason: r5Gate.reason ?? 'AI odrzuca pokój' };
         }
-        basePn = Math.round(basePnCfg * r5Gate.priceMultiplier);
+        // R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną obniża cenę pokoju zadaną od gracza (do rabatCenyPokojuMax).
+        const wearyFactor = wearinessPeacePriceFactor(warWearinessLevel({
+          turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+          lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
+          turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
+        }));
+        basePn = Math.round(basePnCfg * r5Gate.priceMultiplier * wearyFactor);
       }
       const proposerIsPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
       const relTotal = treatyEvalRelationTotal(relation);

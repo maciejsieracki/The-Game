@@ -22,9 +22,9 @@ export interface WarWearinessParams {
   przegrywajacy: {
     udzialWyraznie: number; wagaZmeczenia: number; wagaSily: number; wagaStrat: number; stratyNasycenie: number;
     progiStopni: number[]; mnozniStopni: number[]; mnoznikNaOdrzucenie: number; maxMiastNaPokoj: number;
-    minMiastPoOddaniu: number; cooldownOfertTur: number;
+    minMiastPoOddaniu: number; cooldownOfertTur: number; odrzuceniaDoKapitulacji: number;
   };
-  czlowiek: { rwProgBonusMax: number; minMiastAi: number };
+  czlowiek: { rwProgBonusMax: number; minMiastAi: number; rabatCenyPokojuMax: number };
 }
 
 export const WAR_WEARINESS_PARAMS = paramsRaw as unknown as WarWearinessParams;
@@ -46,6 +46,13 @@ export function warWearinessLevel(inp: WarWearinessInput, P: WarWearinessParams 
   const since = inp.turnsSinceCityChange ?? turns;
   const stagn = Z.stagnacjaWaga * clamp((since - Z.stagnacjaOdTur) / Z.stagnacjaSkalaTur, 0, 1);
   return clamp(turns / Z.pelneTur + Z.wagaStratMiasta * Math.max(0, inp.lostCitiesTotal) + stagn, 0, 1);
+}
+
+/** Czynnik (0..1] ceny pokoju zadanej przez AI od gracza: maleje z zmęczeniem powyżej progu chęci. */
+export function wearinessPeacePriceFactor(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): number {
+  const t = P.zmeczenie.progChetnosci;
+  const x = clamp((level - t) / Math.max(1e-9, 1 - t), 0, 1);
+  return 1 - P.czlowiek.rabatCenyPokojuMax * x;
 }
 
 export function isWarWeary(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): boolean {
@@ -244,10 +251,13 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     }
     st.lastOfferTurn = d.turn;
     // Zwycięzca akceptuje, gdy jego bilans PO zapłacie mieści się w tolerancji (istniejąca wycena wartości dalszej wojny).
-    if (price.balanceFor(plan.coveredPn) >= -price.tolerancePn) {
+    // Wyjście awaryjne: wyczerpany wygrywający po serii odrzuceń bierze, co przegrywający realnie może dać.
+    const exhausted = lvl >= P.zmeczenie.progWzajemnyPokoj
+      && st.rejectedOffers >= P.przegrywajacy.odrzuceniaDoKapitulacji;
+    if (exhausted || price.balanceFor(plan.coveredPn) >= -price.tolerancePn) {
       d.pay(loser, winner, plan);
       d.log?.(
-        `pokój AI${loser}↔AI${winner} za cenę (stopień ${st.stage}, oferta #${st.rejectedOffers + 1}, zmęczenie ${lvl.toFixed(2)}); `
+        `pokój AI${loser}↔AI${winner} za cenę (stopień ${st.stage}${exhausted ? ', wyczerpanie' : ''}, oferta #${st.rejectedOffers + 1}, zmęczenie ${lvl.toFixed(2)}); `
         + `zloto=${plan.histogram.zloto} surowce=${plan.histogram.surowiec_ilosc} miasto=${plan.histogram.miasto} (${plan.coveredPn}/${Math.round(required)} PW)`,
       );
       d.finalize(loser, winner);
