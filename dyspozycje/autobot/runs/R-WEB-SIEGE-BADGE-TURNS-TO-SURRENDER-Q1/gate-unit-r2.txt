@@ -1,0 +1,63 @@
+A. jednostkowa
+  [OK] zapasy 10, zuzycie 5 -> 3 tury (2 do wyzerowania + 1 przejecie)
+  [OK] zapasy 5, zuzycie 5 -> 2
+  [OK] zapasy 1, zuzycie 12 -> 2
+  [OK] zapasy 0 (pending jeszcze nie) -> 2
+  [OK] pending -> 1
+  [OK] pending z zapasami -> 1 (zgodnie z main.ts)
+  [OK] nie oblezone -> null
+  [OK] zuzycie 0 i zapasy>0 -> null (brak bledu)
+  [OK] brak pola magazynu -> traktowane jak 0
+  [OK] NaN zapasow -> bez bledu (0)
+  [OK] ctx.food nadpisuje zapasy (20/4=5 +1)
+  [OK] pelny spichlerz 1000/9 -> 113, bez bledu
+  [OK] zuzycie = ludnosc + garnizon
+  [OK] PL 1
+  [OK] PL 2 tury
+  [OK] PL 3 tury
+  [OK] PL 4 tury
+  [OK] PL 22 tury
+  [OK] PL 23 tury
+  [OK] PL 24 tury
+  [OK] PL 102 tury
+  [OK] PL 5 tur
+  [OK] PL 11 tur
+  [OK] PL 12 tur
+  [OK] PL 13 tur
+  [OK] PL 14 tur
+  [OK] PL 15 tur
+  [OK] PL 20 tur
+  [OK] PL 21 tur
+  [OK] PL 25 tur
+  [OK] PL 100 tur
+  [OK] PL 111 tur
+  [OK] PL null -> myslnik
+  [OK] tooltip wyjasnia liczbe i zuzycie
+  [OK] tooltip null
+B. symulacja ticków vs prognoza
+  [OK] prognoza == symulacja dla 360 scenariuszy (zapasy x ludnosc x garnizon x pending)
+  [OK] liczba/wlasciciel oblegajacych nie wplywa na wynik (zgodnie z turn-economy.ts)
+  [OK] licznik maleje o 1 na ture az do 1 (i konczy na 1 = "w tej turze oblezenia")
+C. strukturalna (straznik dryfu mechanizmu + wpiecie)
+  [OK] turn-economy.ts: zuzycie = ludnosc + garnizon, podloga 0, glod gdy <= 0
+  [OK] main.ts: faza kapitulacji (pending -> przejecie; zapasy<=0 -> pending)
+  [OK] main.ts importuje prognoze
+  [OK] plakietka: element licznika w etykiecie oblezenia
+  [OK] licznik odswiezany w petli etykiet (co klatke, tylko przy zmianie tekstu)
+  [OK] widocznosc: te same zasady co dotychczasowa plakietka (kazde city.oblegane, wlasne i wroga)
+  [OK] modul prognozy nie zapisuje stanu kapitulacji
+D. mutacje
+  [OK] mutacja "bez +1 przejecia" wywraca testy
+  [OK] mutacja "floor zamiast ceil" wywraca testy
+  [OK] mutacja "pending -> 0" wywraca testy
+  [OK] mutacja "zapasy 0 -> 1" wywraca testy
+  [OK] mutacja "bez garnizonu w zuzyciu" wywraca testy
+  [OK] mutacja "odmiana 2-4 -> tur" wywraca testy
+  [OK] mutacja "12-14 jak 2-4" wywraca testy
+  [OK] mutacja "brak null dla zuzycia 0" wywraca testy
+E. zapis/odczyt
+  [OK] prognoza po JSON round-trip identyczna
+  [OK] pending przezywa zapis (cities.ts: siegeCapitulationPending persystowane)
+  [OK] cities.ts: pole siegeCapitulationPending w modelu (zapis)
+RESULT pass=56 fail=0
+EXIT=0
