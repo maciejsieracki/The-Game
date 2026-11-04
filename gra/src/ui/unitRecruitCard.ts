@@ -5,7 +5,7 @@
 
 import type { GameData, UnitDef } from '../data/loader';
 import type { ProductionItem } from '../game/production';
-import { formatManpower } from '../game/manpower';
+import { formatManpower, formatManpowerCompact } from '../game/manpower';
 // R-WEB-HUD-NUMBER-ABBREV-Q1 (runda 2): widoczny zapis na karcie = ten sam „k"/„M" co pula nad listą; title zostaje pełnym opisem.
 import { formatCompactNumber } from './formatCompactNumber';
 import { categoryOf } from '../units/setup';

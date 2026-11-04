@@ -1003,7 +1003,7 @@ import {
 } from './game/diplomacy-resource-trade-pick';
 import { detectOwnerResourceNeeds } from './game/ai-resource-needs';
 import {
-  tryDeductUnitSpawnCostsEmpire, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
+  tryDeductUnitSpawnCostsEmpire, empirePoborTotals, rekrutUnitEquivalents, formatManpower, formatManpowerCompact,
   cityManpowerSnapshot, civManpowerRegenMult, civManpowerMatrixMults,
   cityManpowerMax, unitManpowerCost, unitManpowerCostForType,
   canAffordUnitManpowerEmpire, empireManpowerCurrent, deductManpowerFromEmpire,
@@ -17833,7 +17833,7 @@ async function boot(): Promise<void> {
           cityId: c.id,
           name: c.name,
           ludki: mp.ludki,
-          ludnoscAbsLabel: formatManpower(mp.ludnoscAbsolutna),
+          ludnoscAbsLabel: formatManpowerCompact(mp.ludnoscAbsolutna),
           // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2: wartość surowa obok etykiety — patrz
           // JSDoc EmpireCityPoborRow.ludnoscAbsolutna (empireDetailTypes.ts).
           ludnoscAbsolutna: mp.ludnoscAbsolutna,
@@ -18025,12 +18025,12 @@ async function boot(): Promise<void> {
           respektExample: powOverlay.respektExample,
           absoluteRank: powOverlay.absoluteRank,
           ludnoscLudki: economy.ludnosc,
-          ludnoscAbsLabel: economy.ludnoscAbsLabel ?? formatManpower(pobor.ludnoscAbsolutna),
+          ludnoscAbsLabel: economy.ludnoscAbsLabel ?? formatManpowerCompact(pobor.ludnoscAbsolutna),
           rekruci: pobor.rekruci,
-          rekruciLabel: economy.rekruciLabel ?? formatManpower(pobor.rekruci),
+          rekruciLabel: economy.rekruciLabel ?? formatManpowerCompact(pobor.rekruci),
           rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.costMult),
           rekruciMax,
-          rekruciMaxLabel: formatManpower(rekruciMax),
+          rekruciMaxLabel: formatManpowerCompact(rekruciMax),
           unitsOnMap,
           kosztJednostki: unitManpowerCost(epoka, mpMults.costMult),
         },
@@ -20557,7 +20557,7 @@ async function boot(): Promise<void> {
         religionRate: relAgg.spreadRateTotal,
         stateReligion: stateRel,
         rekruci: pobor.rekruci,
-        rekruciLabel: formatManpower(pobor.rekruci),
+        rekruciLabel: formatManpowerCompact(pobor.rekruci),
         // P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): chip "Armia" (hud.ts) pokazuje
         // pełne jednostki możliwe do zwerbowania z całej puli, nie surowych rekrutów —
         // to samo źródło (unitManpowerCost/rekrutUnitEquivalents, manpower.ts) co panel
@@ -20568,7 +20568,7 @@ async function boot(): Promise<void> {
         // power.rekrutEkw/kosztJednostki).
         rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, ps.era, mpMults.costMult),
         kosztJednostki: unitManpowerCost(ps.era, mpMults.costMult),
-        ludnoscAbsLabel: formatManpower(pobor.ludnoscAbsolutna),
+        ludnoscAbsLabel: formatManpowerCompact(pobor.ludnoscAbsolutna),
         power,
         osiedla: pc.length,
         osiedlaMax: 99,

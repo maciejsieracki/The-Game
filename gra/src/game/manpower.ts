@@ -27,6 +27,7 @@ import { isCivilianUnit } from '../units/setup';
 import epokaTable from '../../data/epoka-ludnosc-manpower.json';
 import miastoParams from '../../data/miasto-params.json';
 import { civMatrixParam } from './civ-matrix';
+import { formatCompactNumber } from '../ui/formatCompactNumber';
 
 export interface EpokaManpowerRow {
   epoka: number;
@@ -901,6 +902,15 @@ export function formatPopulationAbs(n: number): string {
 
 export function formatManpower(n: number): string {
   return formatPopulationAbs(n);
+}
+
+/**
+ * R-WEB-MANPOWER-ABBREV-PANELS-Q1 — prezentacja Manpower/ludności w panelach UI: wspólny
+ * format k/M (`formatCompactNumber`), jak w HUD. Tylko prezentacja; `formatManpower`
+ * („tys./mln") zostaje bez zmian dla testów i logów.
+ */
+export function formatManpowerCompact(n: number): string {
+  return formatCompactNumber(n);
 }
 
 /** Eksport tabeli (testy / narzędzia). */
