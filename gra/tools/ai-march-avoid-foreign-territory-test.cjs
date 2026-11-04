@@ -33,8 +33,9 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const MUT_NOGUARD = {
   name: 'firstStep: pomija straz (zwykly computePath)', rel: 'game/ai.ts',
-  from: 'const path = guard !== null && !isCivilianUnit(unit)\n    ? guardedMarchPath(guard, unit, map, destQ, destR, occ)\n    : computePath(unit, map, destQ, destR, occ);',
-  to: 'const path = computePath(unit, map, destQ, destR, occ);',
+  // R-WEB-ARMY-TO-NEAREST-LEADER-Q1: trasa wydzielona z firstStep do marchPathFor (to samo wyrazenie).
+  from: 'return guard !== null && !isCivilianUnit(unit)\n    ? guardedMarchPath(guard, unit, map, destQ, destR, occ)\n    : computePath(unit, map, destQ, destR, occ);',
+  to: 'return computePath(unit, map, destQ, destR, occ);',
 };
 const MUT_COST = {
   name: 'wrapCost: zakazany heks bez kosztu Infinity', rel: 'game/ai-march-guard.ts',
