@@ -17,6 +17,8 @@
  * Source: literalny UTF-8 dla polskich napisow; symbole przez encje HTML.
  */
 
+// REPIN UI-2-F (`R-RUSTPORT-REPIN-UI-2-F-Q1`): odniesienie = web `86d510c66` (`origin/main` 2026-11-04), nie pin
+// `edb8fb56` — hunki weba przeniesione 1:1 (diff3 port×pin×main), adaptacje P5.7 r2 poniżej bez zmian.
 // P5.7 r2: dane gry → `StaticCatalogDto` (`civs`, `cityNamesPools`), reguły menu/podglądu/macierzy/dostępności epoki →
 // zapytania `controller/newGameQueries.ts` (ZAŁOŻENIE P5.7-Z4), stałe → `StaticCatalogDto.constants`, jakość mapy →
 // kopia 1:1 (ustawienie renderera, P5-0 Z9), typy → DTO. Martwy import `isCivAvailableAtGameEpoch` usunięty.
@@ -129,7 +131,6 @@ export interface CivOption {
   name: string;
   styl?: string;
   superJednostka?: string;
-  bonusy?: string[];
   religia?: string;
   typGlowny?: string;
   /** epokaWejscia — kanon kaskady (D-CYW-EPOKA-WEJSCIA). */
@@ -225,6 +226,12 @@ export interface NewGameParams {
   /** P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1: czy chatki z nagrodami mają być generowane na mapie.
    * / EN: whether village treasure huts should be generated on the map. */
   villageRewardsEnabled: boolean;
+  /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: „Wymagaj rozpatrzenia ofert handlowych przed końcem tury"
+   * (domyślnie ON). / EN: block end turn while an AI trade offer awaits the player. */
+  dealsEndTurnGate?: boolean;
+  /** R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): „Wojna epoki z udziałem gracza” (domyślnie ON).
+   * / EN: whether the player takes part in epoch forced wars (default ON). */
+  playerEpochWarEnabled?: boolean;
 }
 
 /**
@@ -286,17 +293,22 @@ export interface NewGameAdvancedOptions {
   cityLimitBase: number;
 }
 
+/**
+ * Domyślne „Zaawansowane opcje" nowej gry (R-WEB-NEWGAME-DEFAULTS-Q1, Maciej 2026-10-31).
+ * Świeży profil / „przywróć domyślne" = te wartości. Zapisane prefs gracza nie są nadpisywane.
+ * / EN: new-game advanced defaults (owner decision 2026-10-31). Saved player prefs are not overwritten.
+ */
 const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   barbariansLevel: 'normalny',
-  battleAlwaysManual: false,
+  battleAlwaysManual: true,
   victoryMode: 'moc_i_dominacja',
-  buildingCostPace: 'niski',
-  kosztJednostekPace: 'niski',
-  wzrostLudnosciPace: 'wysoki',
-  ruchSwiataPace: 'krotki',
+  buildingCostPace: 'normalny',
+  kosztJednostekPace: 'normalny',
+  wzrostLudnosciPace: 'normalny',
+  ruchSwiataPace: 'normalny',
   landFractionPercent: 30,
   landFractionCustom: false,
-  cityStateDifficultyOverride: null,
+  cityStateDifficultyOverride: 'normal',
   cityLimitBase: 10, // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit base
 };
 
@@ -587,13 +599,6 @@ function civsFromData(data: GameData): CivOption[] {
       const ikonaId = typeof raw['ikonaId'] === 'string' ? raw['ikonaId'] : c.Cywilizacja;
       const religia = typeof raw['Religia'] === 'string' ? raw['Religia'] : undefined;
       const typGlowny = typeof raw['Typ główny'] === 'string' ? raw['Typ główny'] : undefined;
-      const bonusyFromJson = Array.isArray(raw['bonusy'])
-        ? (raw['bonusy'] as Array<{ opis?: string }>)
-            .map(b => (typeof b.opis === 'string' ? b.opis.trim() : ''))
-            .filter(s => s.length > 0)
-        : [];
-      const legacyBonusy = [c['Bonus startowy'], c['Bonusy/minusy (do dopracowania)']]
-        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0);
       const epokiStartowe = parseEpokiStartowe(raw);
       const kolorHex = typeof raw['kolorHex'] === 'string' ? raw['kolorHex'] : undefined;
       return {
@@ -601,7 +606,6 @@ function civsFromData(data: GameData): CivOption[] {
         name: c.Cywilizacja,
         styl: c['Styl / charakter'] ?? undefined,
         superJednostka: c['Jednostka specjalna'] ?? undefined,
-        bonusy: bonusyFromJson.length > 0 ? bonusyFromJson : legacyBonusy,
         religia,
         typGlowny,
         epokaWejscia: parseEpokaWejscia(raw, epokiStartowe),
@@ -706,6 +710,13 @@ const SETTING_GLYPHS: Record<string, string> = {
   map_size: 'Mx',
   world_type: 'Sw',
   city_states_count: 'MP',
+  cityStateDifficulty: 'TM',
+  deals_end_turn_gate: 'Ha',
+  player_epoch_war: 'Wo',
+  barbariansLevel: 'Ba',
+  victory_mode: 'Zw',
+  landFraction: 'Ld',
+  village_rewards_enabled: 'Ch',
   civ_types_count: 'Cy',
   game_speed: 'Tp',
   map_quality: 'Gf',
@@ -716,24 +727,18 @@ const SETTING_GLYPHS: Record<string, string> = {
   relief_density: 'Gw',
 };
 
+/** Klucze mające dedykowaną ikonę SVG (setting-icon-map.json); pozostałe → glif tekstowy. */
+const SETTING_SVG_KEYS = new Set([
+  'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'civ_types_count',
+]);
+
 function settingIcon(key: string): string {
-  const svg = settingIconSvg(key, 20);
-  if (svg) return svg;
+  if (SETTING_SVG_KEYS.has(key)) {
+    const svg = settingIconSvg(key, 20);
+    if (svg) return svg;
+  }
   const g = SETTING_GLYPHS[key] ?? 'Op';
   return '<span class="ng-glyph ng-glyph-sm">' + g + '</span>';
-}
-
-function bonusRowClass(text: string): 'bp' | 'bm' {
-  const t = text.toLowerCase();
-  if (/^[-−]|słab|slab|brak |trudn|wolniej|wysokie koszty|gorsz/.test(t)) return 'bm';
-  return 'bp';
-}
-
-function appendBonusRow(parent: HTMLElement, text: string): void {
-  const row = el('div', 'bonus ' + bonusRowClass(text));
-  row.innerHTML = '<div class="bdot"></div><span></span>';
-  (row.querySelector('span') as HTMLElement).textContent = text;
-  parent.appendChild(row);
 }
 
 interface Setting { key: string; lbl: string; opts: string[]; descs: string[]; idx: number; }
@@ -845,6 +850,7 @@ function resetSettingsFromParams(): void {
 let rootEl: HTMLDivElement | null = null;
 let curStep = 1;
 let selCiv: string | null = null;
+let civProfileCollapsed = true;
 /**
  * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: drugi slot stanu modułu, analogiczny do
  * `selCiv`, dla cywilizacji DRUGIEGO fotela ludzkiego (hot-seat). `null` =
@@ -888,19 +894,19 @@ function ensureStyles(): void {
   document.getElementById('civ-newgame-css')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-newgame{position:fixed;inset:0;z-index:500;overflow:auto;
+.civ-newgame{position:fixed;inset:0;z-index:500;overflow:hidden;
   ${CIV_BRAND_SCOPE_VARS}
   background:var(--bg-deep);color:var(--tx);font-family:var(--civ-font-title);
   display:flex;flex-direction:column;}
 .civ-newgame *{box-sizing:border-box;}
-.civ-newgame .hdr{text-align:center;padding:1.8rem 2rem 1rem;border-bottom:1px solid var(--bd-sub);position:relative;}
+.civ-newgame .hdr{text-align:center;padding:1.8rem 2rem 1rem;border-bottom:1px solid var(--bd-sub);position:relative;flex:0 0 auto;}
 .civ-newgame .hdr-menu-back{position:absolute;left:1.2rem;top:50%;transform:translateY(-50%);
   background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);padding:7px 14px;border-radius:var(--radius);
   cursor:pointer;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;}
 .civ-newgame .hdr-menu-back:hover{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.06);}
 .civ-newgame .hdr .lab{font-size:10px;letter-spacing:.5em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
 .civ-newgame .hdr h1{font-size:34px;font-weight:400;letter-spacing:.18em;color:var(--gold-light);text-shadow:0 0 50px rgba(201,168,76,.28);margin-top:4px;}
-.civ-newgame .stepbar{display:flex;align-items:center;justify-content:center;padding:1rem;background:#12121A;border-bottom:1px solid var(--bd-sub);flex-wrap:wrap;}
+.civ-newgame .stepbar{display:flex;align-items:center;justify-content:center;padding:1rem;background:#12121A;border-bottom:1px solid var(--bd-sub);flex-wrap:wrap;flex:0 0 auto;}
 .civ-newgame .si{display:flex;align-items:center;cursor:pointer;}
 .civ-newgame .si-b{display:flex;align-items:center;gap:8px;padding:5px 14px;border-radius:20px;border:1px solid transparent;}
 .civ-newgame .si-n{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--tx-muted);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--tx-muted);font-family:Arial,sans-serif;}
@@ -910,8 +916,8 @@ function ensureStyles(): void {
 .civ-newgame .si.active .si-l{color:var(--gold);}
 .civ-newgame .si.done .si-n{border-color:var(--gold-dim);color:var(--gold-dim);}
 .civ-newgame .si-c{width:26px;height:1px;background:var(--bd-sub);margin:0 3px;}
-.civ-newgame .flow-body{flex:0 0 auto;max-width:1000px;width:100%;margin:0 auto;padding:0 0 1.25rem;}
-.civ-newgame .content{flex:0 0 auto;padding:1.4rem 2rem 0.25rem;max-width:1000px;width:100%;margin:0 auto;}
+.civ-newgame .flow-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;max-width:1000px;width:100%;margin:0 auto;padding:0 0 env(safe-area-inset-bottom);}
+.civ-newgame .content{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:1.4rem 2rem 1rem;max-width:1000px;width:100%;margin:0 auto;}
 .civ-newgame .sh{text-align:center;margin-bottom:1.6rem;}
 .civ-newgame .sh h2{font-size:24px;font-weight:400;letter-spacing:.1em;color:var(--gold-light);}
 .civ-newgame.hero-flow{background:transparent;}
@@ -964,7 +970,13 @@ function ensureStyles(): void {
 .civ-newgame .big{font-size:42px;letter-spacing:.2em;color:var(--gold-light);}
 .civ-newgame .sub{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
 .civ-newgame .intro p{max-width:540px;font-size:14px;line-height:1.7;color:var(--tx2);font-style:italic;}
-.civ-newgame .civ-layout{display:grid;grid-template-columns:1fr min(360px,34vw);gap:1.5rem;align-items:stretch;}
+.civ-newgame .civ-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,min(360px,34vw));gap:1.5rem;align-items:stretch;}
+.civ-newgame .civ-profile-toggle{grid-column:1/-1;width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border:1px solid var(--bd-mid);border-radius:var(--radius);background:rgba(18,18,26,.88);color:var(--gold-light);font:11px Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;text-align:left;cursor:pointer;}
+.civ-newgame .civ-profile-toggle:hover,.civ-newgame .civ-profile-toggle:focus-visible{border-color:var(--gold);outline-color:var(--gold);}
+.civ-newgame .civ-profile-toggle .chevron{font-size:16px;line-height:1;transition:transform .16s ease;}
+.civ-newgame .civ-layout.civ-profile-collapsed{grid-template-columns:minmax(0,1fr);}
+.civ-newgame .civ-layout.civ-profile-collapsed .detail{display:none;}
+.civ-newgame .civ-layout:not(.civ-profile-collapsed) .civ-profile-toggle .chevron{transform:rotate(180deg);}
 .civ-newgame .civ-grid-panel{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;height:100%;min-height:360px;}
 .civ-newgame .civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;align-content:start;flex:1;}
 .civ-newgame .card{background:var(--bg-card);border:1.5px solid var(--bd-sub);border-radius:var(--radius-lg);padding:14px 8px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .18s;}
@@ -1010,6 +1022,10 @@ function ensureStyles(): void {
 .civ-newgame .civ-matrix-cell-explanation{margin-top:4px;color:var(--tx-muted);font:10px Arial,sans-serif;line-height:1.4;}
 .civ-newgame .civ-matrix-profile-legend{margin-top:7px;color:var(--tx-muted);font:10px Arial,sans-serif;line-height:1.4;}
 .civ-newgame .civ-matrix-profile-error{padding:10px;border:1px solid #9A5040;border-radius:var(--radius);color:#D77C66;font:11px Arial,sans-serif;line-height:1.4;}
+.civ-newgame .civ-matrix-cell>summary{cursor:pointer;list-style:none;}
+.civ-newgame .civ-matrix-cell>summary::-webkit-details-marker{display:none;}
+.civ-newgame .civ-matrix-cell-chevron{color:var(--tx-muted);font:14px Arial,sans-serif;transition:transform .14s ease;}
+.civ-newgame .civ-matrix-cell[open] .civ-matrix-cell-chevron{transform:rotate(180deg);}
 .civ-newgame .bonus{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--tx2);line-height:1.5;}
 .civ-newgame .bdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px;}
 .civ-newgame .bonus.bp .bdot{background:#4A9A68;}
@@ -1083,7 +1099,7 @@ function ensureStyles(): void {
 .civ-newgame .pr{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(201,168,76,.06);font-size:13px;}
 .civ-newgame .pr .k{color:var(--tx2);font-family:Arial,sans-serif;}
 .civ-newgame .pr .v{color:var(--gold);}
-.civ-newgame .nav{margin-top:1rem;padding:1rem 2rem 0;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd-sub);background:transparent;max-width:1000px;width:100%;margin-left:auto;margin-right:auto;}
+.civ-newgame .nav{flex:0 0 auto;position:relative;z-index:3;box-sizing:border-box;margin:0;padding:.75rem 2rem calc(.75rem + env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd-sub);background:rgba(18,18,26,.94);backdrop-filter:blur(8px);max-width:1000px;width:100%;margin-left:auto;margin-right:auto;}
 .civ-newgame .nb{padding:10px 26px;border-radius:var(--radius);font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-family:Arial,sans-serif;cursor:pointer;}
 .civ-newgame .nb.back{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);}
 .civ-newgame .nb.next{background:rgba(201,168,76,.1);border:1.5px solid var(--bd-strong);color:var(--gold-light);}
@@ -1125,6 +1141,20 @@ function ensureStyles(): void {
 .civ-newgame .ai-civ-grid .card{padding:10px 6px;}
 .civ-newgame .card.disabled{opacity:.35;cursor:not-allowed;}
 .civ-newgame .card.disabled:hover{border-color:var(--bd-sub);background:var(--bg-card);transform:none;}
+@media (max-width: 900px){
+  .civ-newgame .content{padding-left:1rem;padding-right:1rem;}
+  .civ-newgame .civ-layout{grid-template-columns:minmax(0,1fr);gap:.75rem;}
+  .civ-newgame .detail{height:auto;min-height:0;}
+  .civ-newgame .civ-grid-panel{height:auto;min-height:0;}
+  .civ-newgame .nav{padding-left:1rem;padding-right:1rem;}
+}
+@media (max-height: 760px){
+  .civ-newgame .hdr{padding:.55rem 1rem .45rem;}
+  .civ-newgame .hdr h1{font-size:24px;}
+  .civ-newgame .stepbar{padding:.4rem .6rem;}
+  .civ-newgame .si-b{padding:3px 8px;}
+  .civ-newgame .nav{padding-top:.45rem;padding-bottom:calc(.45rem + env(safe-area-inset-bottom));}
+}
 .civ-newgame .adv-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.72);display:none;align-items:flex-start;justify-content:flex-end;padding:1rem 2rem 1rem 1rem;overflow-y:auto;}
 .civ-newgame .adv-overlay.open{display:flex;}
 .civ-newgame .adv-modal{background:#12121A;border:1px solid var(--bd-mid);border-radius:var(--radius-lg);max-width:520px;width:100%;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;margin-left:auto;flex-shrink:0;}
@@ -1138,7 +1168,9 @@ function ensureStyles(): void {
 .civ-newgame .adv-lbl{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
 .civ-newgame .adv-modal-foot{flex-shrink:0;padding:.85rem 1.4rem 1.2rem;border-top:1px solid var(--bd-sub);background:#12121A;}
 .civ-newgame .adv-btns{display:flex;justify-content:flex-end;}
-.civ-newgame .adv-close{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);padding:8px 20px;border-radius:var(--radius);cursor:pointer;font-family:Arial,sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;}
+.civ-newgame .adv-close{background:rgba(201,168,76,.1);border:1.5px solid var(--bd-strong);color:var(--gold-light);padding:8px 20px;border-radius:var(--radius);cursor:pointer;font-family:Arial,sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;}
+.civ-newgame .adv-close:hover{background:rgba(201,168,76,.2);border-color:var(--gold);color:#fff;}
+.civ-newgame .adv-close:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -1242,7 +1274,8 @@ function civMatrixCellSearchText(cell: CivMatrixSemanticCell): string {
 }
 
 function appendCivMatrixCell(parent: HTMLElement, cell: CivMatrixSemanticCell): HTMLElement {
-  const row = el('article', 'civ-matrix-cell');
+  const row = document.createElement('details');
+  row.className = 'civ-matrix-cell';
   row.dataset.civMatrixRow = 'true';
   row.dataset.status = cell.consumerStatus;
   row.dataset.label = cell.label;
@@ -1253,52 +1286,61 @@ function appendCivMatrixCell(parent: HTMLElement, cell: CivMatrixSemanticCell): 
     `${cell.paramLabel}: ${cell.label}, ${cell.statusLabelPl}, siła ${cell.intensityLabel}`,
   );
 
-  const head = el('div', 'civ-matrix-cell-head');
+  const summary = document.createElement('summary');
+  summary.className = 'civ-matrix-cell-head';
+  const head = summary;
   head.appendChild(el('div', 'civ-matrix-cell-name', cell.paramLabel));
   const badge = el('span', 'civ-matrix-cell-badge', cell.label);
   badge.dataset.label = cell.label;
   badge.setAttribute('aria-label', `Etykieta: ${cell.label}`);
   head.appendChild(badge);
-  row.appendChild(head);
+  const chevron = el('span', 'civ-matrix-cell-chevron', '⌄');
+  chevron.setAttribute('aria-hidden', 'true');
+  head.appendChild(chevron);
+  row.appendChild(summary);
+
+  const body = el('div', 'civ-matrix-cell-body');
 
   const meta = el('div', 'civ-matrix-cell-meta');
   meta.appendChild(el('span', '', `Wartość: ${cell.formatted}`));
   meta.appendChild(el('span', '', `Mediana Normal: ${cell.baselineFormatted}`));
   meta.appendChild(el('span', '', `Siła: ${cell.intensityLabel} / 10`));
   meta.appendChild(el('span', '', polarityLabelPl(cell.polarity)));
-  row.appendChild(meta);
+  body.appendChild(meta);
 
   const status = el('div', 'civ-matrix-cell-status', cell.statusLabelPl);
   status.dataset.status = cell.consumerStatus;
   status.setAttribute('aria-label', `Status konsumenta: ${cell.statusLabelPl}`);
-  row.appendChild(status);
+  body.appendChild(status);
 
   const explanation = el('div', 'civ-matrix-cell-explanation');
   explanation.textContent = `${cell.statusReasonPl} W panelu pokazano wyłącznie tożsamość Normal.`;
-  row.appendChild(explanation);
+  body.appendChild(explanation);
+  row.appendChild(body);
   parent.appendChild(row);
   return row;
 }
 
 /**
- * Pełny profil 113 pól w kroku wyboru cywilizacji.
+ * Pełny profil parametrów w kroku wyboru cywilizacji; liczba pól pochodzi z danych macierzy.
  *
- * Tylko REAL_GAMEPLAY jest rozwinięte domyślnie. UI_ONLY, UNWIRED i BLOCKED
- * pozostają w jednym natywnym `<details>`, ale wyszukiwarka może go otworzyć;
- * żadna komórka nie jest usuwana ani zapisywana do stanu gry.
+ * Każdy parametr ma własny natywny `<details>` i jest domyślnie zwinięty;
+ * UI_ONLY, UNWIRED i BLOCKED dodatkowo pozostają w grupie „Pozostałe”.
+ * Wyszukiwanie nadal filtruje wszystkie karty, a ich treść można rozwinąć
+ * osobno. Żadna komórka nie jest usuwana ani zapisywana do stanu gry.
  */
 function appendCivMatrixProfile(parent: HTMLElement, civKey: string): void {
   const profile = buildCivMatrixSemanticProfile(civKey);
   const box = el('section', 'civ-matrix-profile');
   box.dataset.civMatrixProfile = profile.civilizationId;
-  box.setAttribute('aria-label', `Pełny profil macierzy Normal: ${profile.civilizationName}`);
+  box.setAttribute('aria-label', `Parametry cywilizacji Normal: ${profile.civilizationName}`);
 
   const head = el('div', 'civ-matrix-profile-head');
-  head.appendChild(el('div', 'civ-matrix-profile-title', 'Profil macierzy — Normal'));
+  head.appendChild(el('div', 'civ-matrix-profile-title', 'Parametry cywilizacji — Normal'));
   head.appendChild(el(
     'div',
     'civ-matrix-profile-note',
-    `113 wskaźników · mediana wszystkich 15 cywilizacji · aktywne domyślnie: ${profile.activeCount}`,
+    `${profile.parameterCount} wskaźników · mediana wszystkich 15 cywilizacji · aktywne domyślnie: ${profile.activeCount}`,
   ));
   box.appendChild(head);
 
@@ -1316,11 +1358,11 @@ function appendCivMatrixProfile(parent: HTMLElement, civKey: string): void {
   search.dataset.civMatrixSearch = 'true';
   search.className = 'civ-matrix-profile-search';
   search.placeholder = 'Szukaj parametru, domeny lub statusu…';
-  search.setAttribute('aria-label', 'Szukaj w pełnym profilu macierzy');
+  search.setAttribute('aria-label', 'Szukaj w parametrach cywilizacji');
   const filter = document.createElement('select');
   filter.dataset.civMatrixFilter = 'true';
   filter.className = 'civ-matrix-profile-filter';
-  filter.setAttribute('aria-label', 'Filtruj profil macierzy');
+  filter.setAttribute('aria-label', 'Filtruj parametry cywilizacji');
   const filterOptions: Array<[string, string]> = [
     ['all', 'Wszystkie'],
     ['active', 'Aktywne'],
@@ -1413,19 +1455,23 @@ function renderCivStep(host: HTMLElement): void {
     grid.appendChild(el('div', 'cn', 'Brak cywilizacji dostępnych w tej epoce (epokaWejscia + kaskada).'));
   }
   const detail = el('div', 'detail');
+  detail.id = 'civ-profile-detail-panel';
   const c = selectedCiv();
   if (!c) {
     const empty = el('div', 'empty');
-    empty.innerHTML = '<div class="arr">&#8592;</div><div>Wybierz cywilizację z siatki,<br>aby zobaczyć bonusy i jednostkę specjalną.</div>';
+    empty.innerHTML = '<div class="arr">&#8592;</div><div>Wybierz cywilizację z siatki,<br>aby zobaczyć jej parametry i jednostkę specjalną.</div>';
     detail.appendChild(empty);
   } else {
     const head = el('div', 'civ-dh');
     head.innerHTML = civMedallionHtml(c.id, true, 'detail', c.kolorHex) + '<div><div class="dn">' + c.name + '</div><div class="civ-dmeta">Cywilizacja</div></div>';
     detail.appendChild(head);
     const ds = el('div', 'civ-ds');
-    ds.appendChild(el('div', 'dlbl', 'Cechy &amp; bonusy'));
-    if (c.styl) appendBonusRow(ds, c.styl);
-    for (const b of (c.bonusy ?? [])) appendBonusRow(ds, b);
+    ds.appendChild(el('div', 'dlbl', 'Parametry cywilizacji'));
+    if (c.styl) {
+      const styl = el('div', 'meta-row');
+      styl.textContent = 'Styl: ' + c.styl;
+      ds.appendChild(styl);
+    }
     if (c.religia) {
       const rel = el('div', 'meta-row');
       rel.textContent = 'Religia: ' + c.religia;
@@ -1446,6 +1492,25 @@ function renderCivStep(host: HTMLElement): void {
   }
   const gridPanel = el('div', 'civ-grid-panel');
   gridPanel.appendChild(grid);
+  const detailToggle = el('button', 'civ-profile-toggle') as HTMLButtonElement;
+  detailToggle.type = 'button';
+  detailToggle.setAttribute('aria-controls', detail.id);
+  const updateDetailToggle = (): void => {
+    detailToggle.setAttribute('aria-expanded', String(!civProfileCollapsed));
+    detailToggle.setAttribute('aria-label', civProfileCollapsed
+      ? 'Pokaż parametry cywilizacji'
+      : 'Ukryj parametry cywilizacji');
+    detailToggle.innerHTML = '<span>' + (civProfileCollapsed
+      ? 'Pokaż parametry cywilizacji'
+      : 'Ukryj parametry cywilizacji') + '</span><span class="chevron" aria-hidden="true">&#8964;</span>';
+    layout.classList.toggle('civ-profile-collapsed', civProfileCollapsed);
+  };
+  updateDetailToggle();
+  detailToggle.addEventListener('click', () => {
+    civProfileCollapsed = !civProfileCollapsed;
+    updateDetailToggle();
+  });
+  layout.appendChild(detailToggle);
   layout.appendChild(gridPanel);
   layout.appendChild(detail);
   host.appendChild(layout);
@@ -1522,13 +1587,32 @@ function renderSeat2Step(host: HTMLElement): void {
     head.innerHTML = civMedallionHtml(c2.id, true, 'detail', c2.kolorHex) + '<div><div class="dn">' + c2.name + '</div><div class="civ-dmeta">Cywilizacja fotela 2</div></div>';
     detail.appendChild(head);
     const ds = el('div', 'civ-ds');
-    ds.appendChild(el('div', 'dlbl', 'Cechy &amp; bonusy'));
-    if (c2.styl) appendBonusRow(ds, c2.styl);
-    for (const b of (c2.bonusy ?? [])) appendBonusRow(ds, b);
+    ds.appendChild(el('div', 'dlbl', 'Parametry cywilizacji'));
+    if (c2.styl) {
+      const styl = el('div', 'meta-row');
+      styl.textContent = 'Styl: ' + c2.styl;
+      ds.appendChild(styl);
+    }
     detail.appendChild(ds);
+    if (c2.superJednostka) {
+      detail.appendChild(el('div', 'su', '<div class="l">\u2694 Jednostka specjalna</div><div class="v">' + c2.superJednostka + '</div>'));
+    }
+    appendCivMatrixProfile(detail, c2.id);
   }
   const gridPanel = el('div', 'civ-grid-panel');
   gridPanel.appendChild(grid);
+  const detailToggle = el('button', 'civ-profile-toggle') as HTMLButtonElement;
+  detailToggle.type = 'button';
+  detailToggle.setAttribute('aria-controls', detail.id);
+  const updateDetailToggle = (): void => {
+    detailToggle.setAttribute('aria-expanded', String(!civProfileCollapsed));
+    detailToggle.setAttribute('aria-label', civProfileCollapsed ? 'Pokaż parametry cywilizacji' : 'Ukryj parametry cywilizacji');
+    detailToggle.innerHTML = '<span>' + (civProfileCollapsed ? 'Pokaż parametry cywilizacji' : 'Ukryj parametry cywilizacji') + '</span><span class="chevron" aria-hidden="true">&#8964;</span>';
+    layout.classList.toggle('civ-profile-collapsed', civProfileCollapsed);
+  };
+  updateDetailToggle();
+  detailToggle.addEventListener('click', () => { civProfileCollapsed = !civProfileCollapsed; updateDetailToggle(); });
+  layout.appendChild(detailToggle);
   layout.appendChild(gridPanel);
   layout.appendChild(detail);
   host.appendChild(layout);
@@ -1548,20 +1632,7 @@ function renderSeat2Step(host: HTMLElement): void {
   distBox.appendChild(distRow);
   host.appendChild(distBox);
 
-  const actions = el('div', 'sett-actions');
-  const back = el('button', 'btn-adv', '&#8592; Wstecz (ustawienia)');
-  back.addEventListener('click', () => { showSeat2Screen = false; render(); });
-  actions.appendChild(back);
-  const start = el('button', 'start', '&#9670; ROZPOCZNIJ GRE &#9670;') as HTMLButtonElement;
-  const canStart = !!selCiv2 && selCiv2 !== selCiv && civsForEpoch(selEpoch).some(c => c.id === selCiv2);
-  start.disabled = !canStart;
-  start.addEventListener('click', () => {
-    if (!canStart) return;
-    curStep = 5;
-    render();
-  });
-  actions.appendChild(start);
-  host.appendChild(actions);
+
 }
 
 function epochTechSummary(epochId: string): string {
@@ -1602,8 +1673,37 @@ function renderEpochStep(host: HTMLElement): void {
 function renderSettingRows(host: HTMLElement, keys: string[]): void {
   const grid = el('div', 'sett-grid');
   for (const key of keys) {
+    // R-WEB-NEWGAME-DEFAULTS-Q1: typ Ziemia = szablon bez suwaka udziału lądu (decyzja właściciela).
+    if (key === 'landFraction' && typSwiataFromMenuLabel(settingValue('world_type') || 'Kontynenty') === 'ziemia') continue;
     const s = SETT.find(x => x.key === key);
-    if (!s) continue;
+    if (!s) {
+      {
+        const setting = mainGridExtraRows().find(x => x.key === key);
+        if (!setting) continue;
+        const row = el('div', 'srow');
+        row.innerHTML = '<div class="srow-hdr"><div class="srow-ic">' + settingIcon(key) + '</div><div class="sl">' + setting.lbl + '</div></div><div class="sctl"></div>';
+        const hdr = row.querySelector('.srow-hdr') as HTMLElement;
+        const infoIcon = makeInfoIcon(setting.hint);
+        hdr.appendChild(infoIcon);
+        const ctl = row.querySelector('.sctl') as HTMLElement;
+        const left = el('button', 'arr', '&#8249;');
+        const sv = el('div', 'sv');
+        const right = el('button', 'arr', '&#8250;');
+        const refreshSv = () => { sv.textContent = setting.opts[setting.getIdx()] ?? ''; };
+        refreshSv();
+        const ch = (d: number) => {
+          const next = (setting.getIdx() + d + setting.opts.length) % setting.opts.length;
+          setting.setIdx(next);
+          refreshSv();
+          markNewGamePrefsDirtyAndSave();
+        };
+        left.addEventListener('click', () => ch(-1));
+        right.addEventListener('click', () => ch(1));
+        ctl.appendChild(left); ctl.appendChild(sv); ctl.appendChild(right);
+        grid.appendChild(row);
+      }
+      continue;
+    }
     const row = el('div', 'srow');
     row.innerHTML = '<div class="srow-hdr"><div class="srow-ic">' + settingIcon(s.key) + '</div><div class="sl">' + s.lbl + '</div></div><div class="sctl"></div>';
     const hdr = row.querySelector('.srow-hdr') as HTMLElement;
@@ -1626,7 +1726,7 @@ function renderSettingRows(host: HTMLElement, keys: string[]): void {
       if (s.key === 'world_type') resetAdvLandOnWorldTypeChange();
       refreshSv();
       markNewGamePrefsDirtyAndSave();
-      if (s.key === 'map_size' || s.key === 'city_states_count' || s.key === 'civ_types_count') {
+      if (s.key === 'map_size' || s.key === 'world_type' || s.key === 'city_states_count' || s.key === 'civ_types_count') {
         render();
       }
     };
@@ -1650,24 +1750,10 @@ function advRowFromSett(key: string, hint: string): AdvSettingRow {
   };
 }
 
-function advancedSettingRows(): AdvSettingRow[] {
+/** Pozycje głównej siatki kroku 4 spoza SETT (ui-params). Kolejność bez znaczenia —
+ * siatkę układa renderSettingRows wg tablicy kluczy. */
+function mainGridExtraRows(): AdvSettingRow[] {
   return [
-    advRowFromSett('map_quality', 'Jakość renderu mapy 3D — niska / średnia / wysoka (GPU).'),
-    advRowFromSett('resources_density', 'Gęstość wszystkich złóż (ruda, bydło, glina…). Reguły terenu bez zmian.'),
-    advRowFromSett(
-      'rivers_density',
-      'Fair play: min. 1 rzeka / komórkę siatki (Mało 10×10 · Normalnie 5×5 · Dużo 5×5). Wyższy tier = gęstsza siatka + ewentualnie dłuższe trasy.',
-    ),
-    advRowFromSett('desert_density', 'Udział pustynnych hexów.'),
-    advRowFromSett(
-      'forest_density',
-      'Fair play: min. 1 las / komórkę siatki (Mało 15 · Normalnie 10 · Dużo 5). Wyższy tier = gęstsza siatka + bonus lasu z szumu (więcej, równomiernie).',
-    ),
-    advRowFromSett(
-      'relief_density',
-      'Fair play: min. 2 góry / komórkę żelaza + 2 wzgórza / komórkę miedzi (Mało 35/21 · Normalnie 25/15 · Dużo 20/12). Wyższy tier = gęstsza siatka + bonus ukształtowania.',
-    ),
-    advRowFromSett('village_rewards_enabled', 'Wioski na mapie dają losowe nagrody: złoto, jednostki, technologia lub relikt. Wyłączenie usywa wszystkie wioski.'),
     {
       key: 'landFraction',
       lbl: 'Udział lądu na mapie',
@@ -1699,14 +1785,14 @@ function advancedSettingRows(): AdvSettingRow[] {
     {
       key: 'cityStateDifficulty',
       lbl: 'Trudność miast-państw',
-      hint: 'Zaufanie startowe, próg sojuszu sióstr i posiłki obronne miast-państw — niezależnie od głównej trudności gry. Domyślnie = główna trudność. Wyłączone = pełne wyłączenie generacji miast-państw, mapa ma tylko cywilizacje.',
+      hint: 'Zaufanie startowe, próg sojuszu sióstr i posiłki obronne miast-państw — niezależnie od głównej trudności gry. Domyślnie: Normalny. Wyłączone = pełne wyłączenie generacji miast-państw, mapa ma tylko cywilizacje.',
       opts: ['Łatwy', 'Normalny', 'Trudny', 'Wyłączone'],
       getIdx: () => {
         if (advOpts.cityStateDifficultyOverride === 'easy') return 0;
         if (advOpts.cityStateDifficultyOverride === 'hard') return 2;
         if (advOpts.cityStateDifficultyOverride === 'off') return 3;
         if (advOpts.cityStateDifficultyOverride === 'normal') return 1;
-        // Brak override -- pokaz biezaca glowna trudnosc (SETT difficulty).
+        // Brak override — pokaz bieżącą główną trudność (SETT difficulty).
         const diffRow = SETT.find(x => x.key === 'difficulty');
         return diffRow ? diffRow.idx : 1;
       },
@@ -1729,56 +1815,11 @@ function advancedSettingRows(): AdvSettingRow[] {
         advOpts.barbariansLevel = i === 0 ? 'latwy' : i === 2 ? 'trudny' : i === 3 ? 'brak' : 'normalny';
       },
     },
-    {
-      key: 'battleAlwaysManual',
-      lbl: 'Bitwy',
-      hint: 'Automatyczne — wynik na mapie. Ręczna — wejście w scenę bitwy.',
-      opts: ['Automatyczne', 'Ręczna'],
-      getIdx: () => (advOpts.battleAlwaysManual ? 1 : 0),
-      setIdx: (i) => { advOpts.battleAlwaysManual = i === 1; },
-    },
-    {
-      key: 'buildingCostPace',
-      lbl: 'Koszty budynków',
-      hint: 'Mnożnik Pracy przy budowie — bazowe koszty z panelu = Niski (×1).',
-      opts: ['Niski', 'Normalny', 'Wysoki'],
-      getIdx: () => {
-        if (advOpts.buildingCostPace === 'normalny') return 1;
-        if (advOpts.buildingCostPace === 'wysoki') return 2;
-        return 0;
-      },
-      setIdx: (i) => {
-        advOpts.buildingCostPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
-      },
-    },
-    {
-      key: 'kosztJednostekPace',
-      lbl: 'Koszty jednostek',
-      hint: 'Mnożnik złota rekrutacji — bazowe koszty z panelu = Niski (×1).',
-      opts: ['Niski', 'Normalny', 'Wysoki'],
-      getIdx: () => {
-        if (advOpts.kosztJednostekPace === 'normalny') return 1;
-        if (advOpts.kosztJednostekPace === 'wysoki') return 2;
-        return 0;
-      },
-      setIdx: (i) => {
-        advOpts.kosztJednostekPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
-      },
-    },
-    {
-      key: 'wzrostLudnosciPace',
-      lbl: 'Wzrost ludności',
-      hint: 'Mnożnik progu 🍞 na +1 mieszkańca — bazowy = Wysoki (×1).',
-      opts: ['Wysoki', 'Normalny', 'Wolny'],
-      getIdx: () => {
-        if (advOpts.wzrostLudnosciPace === 'normalny') return 1;
-        if (advOpts.wzrostLudnosciPace === 'wolny') return 2;
-        return 0;
-      },
-      setIdx: (i) => {
-        advOpts.wzrostLudnosciPace = i === 1 ? 'normalny' : i === 2 ? 'wolny' : 'wysoki';
-      },
-    },
+  ];
+}
+
+function advancedSettingRows(): AdvSettingRow[] {
+  return [
     {
       key: 'ruchSwiataPace',
       lbl: 'Zasięg ruchu',
@@ -1808,6 +1849,75 @@ function advancedSettingRows(): AdvSettingRow[] {
         advOpts.cityLimitBase = limits[i] ?? 10;
       },
     },
+    {
+      key: 'battleAlwaysManual',
+      lbl: 'Bitwy',
+      hint: 'Bitwa automatyczna — wynik bez wchodzenia na pole bitwy. Bitwa ręczna i automatyczna — przed każdą bitwą wybierasz, czy wejść na pole bitwy, czy rozstrzygnąć ją automatycznie.',
+      opts: ['Bitwa automatyczna', 'Bitwa ręczna i automatyczna'],
+      getIdx: () => (advOpts.battleAlwaysManual ? 1 : 0),
+      setIdx: (i) => { advOpts.battleAlwaysManual = i === 1; },
+    },
+    advRowFromSett(
+      'deals_end_turn_gate',
+      'Dopóki wisi oferta handlowa od AI, nie zakończysz tury — przyjmij, zmodyfikuj lub odrzuć. Wyłączone: oferty AI nie blokują końca tury.',
+    ),
+    {
+      key: 'wzrostLudnosciPace',
+      lbl: 'Wzrost ludności',
+      hint: 'Mnożnik progu 🍞 na +1 mieszkańca — bazowy = Wysoki (×1).',
+      opts: ['Wysoki', 'Normalny', 'Wolny'],
+      getIdx: () => {
+        if (advOpts.wzrostLudnosciPace === 'normalny') return 1;
+        if (advOpts.wzrostLudnosciPace === 'wolny') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.wzrostLudnosciPace = i === 1 ? 'normalny' : i === 2 ? 'wolny' : 'wysoki';
+      },
+    },
+    {
+      key: 'buildingCostPace',
+      lbl: 'Koszty budynków',
+      hint: 'Mnożnik Pracy przy budowie — bazowe koszty z panelu = Niski (×1).',
+      opts: ['Niski', 'Normalny', 'Wysoki'],
+      getIdx: () => {
+        if (advOpts.buildingCostPace === 'normalny') return 1;
+        if (advOpts.buildingCostPace === 'wysoki') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.buildingCostPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
+      },
+    },
+    {
+      key: 'kosztJednostekPace',
+      lbl: 'Koszty jednostek',
+      hint: 'Mnożnik złota rekrutacji — bazowe koszty z panelu = Niski (×1).',
+      opts: ['Niski', 'Normalny', 'Wysoki'],
+      getIdx: () => {
+        if (advOpts.kosztJednostekPace === 'normalny') return 1;
+        if (advOpts.kosztJednostekPace === 'wysoki') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.kosztJednostekPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
+      },
+    },
+    advRowFromSett('map_quality', 'Jakość renderu mapy 3D — niska / średnia / wysoka (GPU).'),
+    advRowFromSett('resources_density', 'Gęstość wszystkich złóż (ruda, bydło, glina…). Reguły terenu bez zmian.'),
+    advRowFromSett(
+      'rivers_density',
+      'Fair play: min. 1 rzeka / komórkę siatki (Mało 10×10 · Normalnie 5×5 · Dużo 5×5). Wyższy tier = gęstsza siatka + ewentualnie dłuższe trasy.',
+    ),
+    advRowFromSett('desert_density', 'Udział pustynnych hexów.'),
+    advRowFromSett(
+      'forest_density',
+      'Fair play: min. 1 las / komórkę siatki (Mało 15 · Normalnie 10 · Dużo 5). Wyższy tier = gęstsza siatka + bonus lasu z szumu (więcej, równomiernie).',
+    ),
+    advRowFromSett(
+      'relief_density',
+      'Fair play: min. 2 góry / komórkę żelaza + 2 wzgórza / komórkę miedzi (Mało 35/21 · Normalnie 25/15 · Dużo 20/12). Wyższy tier = gęstsza siatka + bonus ukształtowania.',
+    ),
   ];
 }
 
@@ -1837,6 +1947,8 @@ function showAdvancedModal(): void {
   head.appendChild(el('div', 'adv-sub', 'Parametry rzadko zmieniane — poza główną siatką kroku 4.'));
   modal.appendChild(head);
   const body = el('div', 'adv-modal-body');
+  // Pozycje przeniesione do głównej siatki kroku 4 nie są już w tej liście
+  // (advancedSettingRows zawiera wyłącznie opcje zaawansowane, bez duplikatów).
   const rows = advancedSettingRows();
   for (const row of rows) {
     const box = el('div', 'adv-row');
@@ -1870,7 +1982,9 @@ function showAdvancedModal(): void {
   }
   modal.appendChild(body);
   const foot = el('div', 'adv-modal-foot adv-btns');
-  const close = el('button', 'adv-close', 'Zamknij');
+  // „Zastosuj” = zapis wartości (saveNewGamePrefs w hideAdvancedModal) + zamknięcie okna.
+  const close = el('button', 'adv-close', 'Zastosuj');
+  close.setAttribute('type', 'button');
   close.addEventListener('click', hideAdvancedModal);
   foot.appendChild(close);
   modal.appendChild(foot);
@@ -1956,8 +2070,16 @@ function renderSettStep(host: HTMLElement): void {
   // live DOM after mount — see syncSettLayoutHeight in render()). "Your start" +
   // actions stay BELOW the whole block, always at the same height.
   const layout = el('div', 'sett-layout');
+  // Siatka 2 kolumny, wypełniana rzędami: [lewa1, prawa1, lewa2, prawa2, …].
+  // LEWA: Rozmiar mapy, Typ świata, Udział lądu, Prędkość gry, Poziom trudności, Warunki zwycięstwa.
+  // PRAWA: Liczba cywilizacji, Liczba miast-państw, Trudność miast-państw, Wojna epoki, Barbarzyńcy, Chatki z nagrodami.
   renderSettingRows(layout, [
-    'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'civ_types_count',
+    'map_size', 'civ_types_count',
+    'world_type', 'city_states_count',
+    'landFraction', 'cityStateDifficulty',
+    'game_speed', 'player_epoch_war',
+    'difficulty', 'barbariansLevel',
+    'victory_mode', 'village_rewards_enabled',
   ]);
   renderAiCivPicker(layout);
   host.appendChild(layout);
@@ -1998,12 +2120,6 @@ function renderSettStep(host: HTMLElement): void {
   const advBtn = el('button', 'btn-adv', '&#9881;&nbsp; Zaawansowane opcje');
   advBtn.addEventListener('click', showAdvancedModal);
   actions.appendChild(advBtn);
-  const start = el('button', 'start', '&#9670; ROZPOCZNIJ GRE &#9670;');
-  start.addEventListener('click', () => {
-    if (hotSeatEnabled) { showSeat2Screen = true; render(); }
-    else { curStep = 5; render(); }
-  });
-  actions.appendChild(start);
   host.appendChild(actions);
   host.appendChild(el(
     'div',
@@ -2056,6 +2172,8 @@ function buildParams(): NewGameParams {
         activeTypesCount: Number.isFinite(civTypesCount) ? civTypesCount : undefined,
       })
     : undefined;
+  // Keep per-game reproducibility internally; only the manual menu override
+  // was removed. Persisted saves still carry this generated seed as before.
   const seed = Math.floor(Math.random() * 1_000_000);
   // R-HOTSEAT-ETAP6F-PART2-DATA-Q1: `selCiv2` nie jest dziś zapisywany przez
   // żaden ekran kreatora (zero UI w tym pod-temacie) — w praktyce zawsze
@@ -2101,6 +2219,8 @@ function buildParams(): NewGameParams {
     startPreview,
     selectedAiCivIds: [...selAiCivIds],
     villageRewardsEnabled: settingValue('village_rewards_enabled') !== 'Wyłączone',
+    dealsEndTurnGate: settingValue('deals_end_turn_gate') !== 'Wyłączona',
+    playerEpochWarEnabled: settingValue('player_epoch_war') !== 'Wyłączona',
   };
 }
 
@@ -2142,7 +2262,10 @@ function renderGenStep(host: HTMLElement): void {
     ['Liczba cywilizacji', String(p.civTypesCount) + ' na mapie'],
     ['Predkosc', p.speed],
     ['Surowce', p.worldDensityLabels.resources],
-    ['Ląd / morze', p.landFractionPercent + '% / ' + (100 - p.landFractionPercent) + '%'],
+    // R-WEB-FOLLOWUPS-LAND-AI-Q1 (1): Ziemia = stały szablon kontynentów (bez suwaka) — nie pokazuj sztucznego 20% / 80%.
+    ['Ląd / morze', p.typSwiata === 'ziemia'
+      ? 'szablon kontynentów (bez suwaka)'
+      : p.landFractionPercent + '% / ' + (100 - p.landFractionPercent) + '%'],
     ['Rzeki / pustynie / las / góry', p.worldDensityLabels.rivers + ' · ' + p.worldDensityLabels.desert + ' · ' + p.worldDensityLabels.forest + ' · ' + p.worldDensityLabels.relief],
     ['Jakosc grafiki', p.mapQualityLabel],
   ];
@@ -2196,7 +2319,7 @@ function renderGenStep(host: HTMLElement): void {
         : '10 miast';
     rows.push(
       ['Barbarzyncy', bLabel],
-      ['Bitwy', p.advanced.battleAlwaysManual ? 'Ręczna' : 'Automatyczne'],
+      ['Bitwy', p.advanced.battleAlwaysManual ? 'Bitwa ręczna i automatyczna' : 'Bitwa automatyczna'],
       ['Zwyciestwo', vLabel],
       ['Koszty budynkow', costLabel],
       ['Koszty jednostek', unitCostLabel],
@@ -2335,6 +2458,23 @@ function render(): void {
         render();
       });
       nav.appendChild(next);
+    } else if (curStep === 4) {
+      const action = el('button', 'nb next', showSeat2Screen || !hotSeatEnabled ? 'Rozpocznij grę' : 'Dalej &#8594;') as HTMLButtonElement;
+      const seatReady = !showSeat2Screen || (!!selCiv2 && selCiv2 !== selCiv && civsForEpoch(selEpoch).some(c => c.id === selCiv2));
+      action.dataset.seatReady = String(seatReady);
+      action.disabled = !seatReady;
+      action.addEventListener('click', () => {
+        if (showSeat2Screen) {
+          if (!selCiv2 || selCiv2 === selCiv || !civsForEpoch(selEpoch).some(c => c.id === selCiv2)) return;
+          curStep = 5;
+        } else if (hotSeatEnabled) {
+          showSeat2Screen = true;
+        } else {
+          curStep = 5;
+        }
+        render();
+      });
+      nav.appendChild(action);
     } else {
       nav.appendChild(el('div'));
     }
@@ -2377,6 +2517,7 @@ export function showNewGameFlow(config: NewGameFlowConfig): void {
   prefsDirty = false;
   curStep = 1;
   selCiv = DEFAULT_PLAYER_CIV_ID;
+  civProfileCollapsed = true;
   selCiv2 = null;
   hotSeatEnabled = false;
   humanDistanceMode = 'losowo';

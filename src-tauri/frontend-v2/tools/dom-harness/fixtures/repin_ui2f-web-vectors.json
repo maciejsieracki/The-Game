@@ -1,0 +1,887 @@
+{
+ "topic": "R-RUSTPORT-REPIN-UI-2-F-Q1",
+ "source": "web 86d510c66 gra/src/ui/newGameFlow.ts (Chromium)",
+ "viewports": [
+  [
+   1280,
+   720
+  ],
+  [
+   360,
+   640
+  ]
+ ],
+ "webVectorsSha256": "9f6a4de36829d5d8c662be2805cb8b75b392d791838d2147e3e2f7aaecc573fc",
+ "scenarios": [
+  {
+   "name": "k1-intro",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "b61bc8f1f54354fe54bbdbee856a900e7d5fcdeb207cd1993b49c5cf60388a71",
+    "6c705cfa4990c5c8a5fb1d9b0e4381ffa6c5a57f35255fcd4df83a8e9015a5f5"
+   ],
+   "pngSha256": [
+    "f506a0766b8881d6f79cea3f5b738d655d3c2bf1845c508c10ef9390097f304f",
+    "77b391a50ba1d4aa6a1d6b8723628af252649d926fc9296eadb292bb69f93c66"
+   ],
+   "cover": []
+  },
+  {
+   "name": "k2-epoka",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "91d8cdf2900cbd43031977efb371d4d77f76334c46abec04f37eaa1a2dd4b83b",
+    "08a5d18473249f168b1a51e7ff28882e5f37106a558ef56e10b09c468d5a315f"
+   ],
+   "pngSha256": [
+    "43991e731ca80be92faa2c248e0082434348858b323d3168a18d10141977f65a",
+    "8d12efd1a949cdc857cd53f657b0444cce8fd617ebc80169851f3c27bb644105"
+   ],
+   "cover": []
+  },
+  {
+   "name": "k3-cyw-profil-zwiniety",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "7ec5d701894c8664673e1e19c11667f54fc19521a7fd675c4fcd605ac5a73a6d",
+    "d38959aaeec93a5eee7b0df7c0d2ab12096581a836c4586483c7175b677fa999"
+   ],
+   "pngSha256": [
+    "3bf37cb19f1b4e3284c509ac68abf0ae7476cb16c183bc681130c9826b5bd5b6",
+    "936746581f4e41d0fc33d5501504f2e4afb72b2fbfbde5b8bbb89325465c99f2"
+   ],
+   "cover": [
+    {
+     "exp": ".civ-layout.civ-profile-collapsed 1",
+     "ok": true
+    },
+    {
+     "exp": ".civ-profile-toggle[aria-expanded=\"false\"] 1",
+     "ok": true
+    },
+    {
+     "exp": ".civ-matrix-cell >0",
+     "ok": true
+    },
+    {
+     "exp": "article.civ-matrix-cell =0",
+     "ok": true
+    },
+    {
+     "exp": ".bonus =0",
+     "ok": true
+    },
+    {
+     "exp": "text Parametry cywilizacji",
+     "ok": true
+    },
+    {
+     "exp": "text Styl: ",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k3-cyw-profil-rozwiniety",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "38906aa7fdc0b9012ca1d1e5159643b5dbca648167829d2cf43c0d1267ecde07",
+    "3b366a6f241d38c9de8c8c181cf486a55f6abb8b745f0702e3c36bdcfb8de9c5"
+   ],
+   "pngSha256": [
+    "52e12a2e1d7d70c672df6ea44d07bf687aa284c5db09109a78a20b8688f6059b",
+    "dfb3e7107e339075e860f6e1df65b2c0fbe46de87b202671f4107743656e4fd9"
+   ],
+   "cover": [
+    {
+     "exp": ".civ-layout:not(.civ-profile-collapsed) 1",
+     "ok": true
+    },
+    {
+     "exp": ".civ-profile-toggle[aria-expanded=\"true\"] 1",
+     "ok": true
+    },
+    {
+     "exp": "text Ukryj parametry cywilizacji",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k3-profil-x2",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "7ec5d701894c8664673e1e19c11667f54fc19521a7fd675c4fcd605ac5a73a6d",
+    "c881c3849d8bbfaa3cd02d35e4e7890b2e51a209a04cdd6519f8c68e8f54695f"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": ".civ-layout.civ-profile-collapsed 1",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k3-komorka-details",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "3a0c047aff89d60f76fc4c6b7f6927eb89dec774716561f34d57c1da03260929",
+    "4ee7797d6fb355e693b81308dc8e16816f91314f4dfde3cb42fe608e27c22ced"
+   ],
+   "pngSha256": [
+    "52e12a2e1d7d70c672df6ea44d07bf687aa284c5db09109a78a20b8688f6059b",
+    "dfb3e7107e339075e860f6e1df65b2c0fbe46de87b202671f4107743656e4fd9"
+   ],
+   "cover": [
+    {
+     "exp": "details.civ-matrix-cell[open] 2",
+     "ok": true
+    },
+    {
+     "exp": ".civ-matrix-cell-chevron >0",
+     "ok": true
+    },
+    {
+     "exp": ".civ-matrix-cell-body >0",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k3-inna-cyw",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"egipt\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "cfa8f92e6b3213038c99f6ab672122bf81ddddcf53a47ab078468ac3106557fd",
+    "22611c0b9b053e62afcab38a8888b517cc86d6217de5b74343f6d6e1a3f0b8df"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": "text wskaźników",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k3-filtr-szukaj",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "5d9c7ad5fe18c7a89ec1ff526591665fa76f59dc1e30819e02f74741904c7120",
+    "87c99415428fc816c4ecd9d2bc5357b6f9d733551ed3d248cfe44761ed2b908a"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": "text Widoczne:",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k3-ponowne-otwarcie-resetuje-profil",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "7ec5d701894c8664673e1e19c11667f54fc19521a7fd675c4fcd605ac5a73a6d",
+    "c881c3849d8bbfaa3cd02d35e4e7890b2e51a209a04cdd6519f8c68e8f54695f"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": ".civ-layout.civ-profile-collapsed 1",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-ustawienia",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "5f78808affcf9c4a6a8d8e3c86aa7e474456fd5bdd0ec85320495a3c7adb94b7",
+    "eaa177895f3100670189712b95f5a6e140189ac007c89dab9fe5a7b65529c610"
+   ],
+   "pngSha256": [
+    "f26034826c68acc10edda9b551fdfd1aef1dfb044df9e3adc2459e9eadfed674",
+    "3d50ba5bf23dbd252368f91a084eada5e4a276fe64c83b46495635114b25718a"
+   ],
+   "cover": [
+    {
+     "exp": ".sett-grid .srow 12",
+     "ok": true
+    },
+    {
+     "exp": ".nav .nb.next[data-seat-ready=\"true\"] 1",
+     "ok": true
+    },
+    {
+     "exp": ".sett-actions .start =0",
+     "ok": true
+    },
+    {
+     "exp": ".ng-glyph >0",
+     "ok": true
+    },
+    {
+     "exp": "text Wojna epoki",
+     "ok": true
+    },
+    {
+     "exp": "text Udział lądu",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-zaawansowane",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "9eb860902b0e7405b988f2c955938d557be71b6ddacf7690ed534a4249395dcb",
+    "8009e5459ae629f65e2631294a25e40e3d02b2658f78bfd4783a95e626edf1ff"
+   ],
+   "pngSha256": [
+    "6e2142b3883d0f7a37803304c12c3fe30ca04abc9513a7b9c0d048927eda1772",
+    "87b90b1bc3d9b33de244fb57eb3a17c0351f2640b99cd08e879230ddfce98318"
+   ],
+   "cover": [
+    {
+     "exp": ".adv-overlay.open 1",
+     "ok": true
+    },
+    {
+     "exp": "button.adv-close[type=\"button\"] 1",
+     "ok": true
+    },
+    {
+     "exp": "text Zastosuj",
+     "ok": true
+    },
+    {
+     "exp": "text Wymagaj rozpatrzenia",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-start-domyslne",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Rzym\"],[\"Rywalizujące miasta-państwa\",\"6 · Ostia, Kapua, Pompeje, Tarent…\"],[\"Cywilizacje na mapie\",\"7 (obcych: 6)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"rzymianie\",\"civName\":\"Rzymianie\",\"epoch\":\"Epoka Kamienia\",\"epochId\":\"kamien\",\"difficulty\":\"Normalny\",\"mapSize\":\"Standardowy\",\"rivals\":\"6\",\"speed\":\"Standardowa\",\"worldType\":\"Kontynenty\",\"typSwiata\":\"kontynenty\",\"seed\":424200,\"mapQualityLabel\":\"Średnia\",\"mapQuality\":\"medium\",\"renderQualityLabel\":\"Średnia\",\"mapDetailQualityLabel\":\"Średnia\",\"renderQuality\":\"medium\",\"mapDetailQuality\":\"medium\",\"civTypesCount\":7,\"cityStatesCount\":6,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"medium\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Normalnie\",\"rivers\":\"Normalnie\",\"desert\":\"Normalnie\",\"forest\":\"Normalnie\",\"relief\":\"Normalnie\"},\"landFractionPercent\":30,\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"startPreview\":{\"playerCivId\":\"rzymianie\",\"playerCapitalName\":\"Rzym\",\"sameTypeRivalNames\":[\"Ostia\",\"Kapua\",\"Pompeje\",\"Tarent\",\"Mediolan\",\"Akwileja\"],\"sameTypeRivalCount\":6,\"activeTypesOnMap\":7,\"foreignTypesCount\":6,\"modelLine\":\"Stolica Rzym, 6 rywali miast-państw, 6 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Rzym. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Ostia, Kapua, Pompeje…) — do pokonania. Na mapie także 6 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":true,\"dealsEndTurnGate\":true,\"playerEpochWarEnabled\":true})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "e1becfbb3ad158cd82e02477278ebe8b97c2fb78078f0e4f0b2ab40213c3b454",
+    "15881d664b1a882fde1d9d84a34056548493c8a6914799dc2328012114e3a1bc"
+   ],
+   "pngSha256": [
+    "ab8b700c8975d976e661a3ae416d5a2842f72eae8641161d80af01c8f99dfc0e",
+    "6e47f91baa57a9407d920bbeabc90850f882857e63384e302a8eee84eda14c0b"
+   ],
+   "cover": [
+    {
+     "exp": "log \"battleAlwaysManual\":true",
+     "ok": true
+    },
+    {
+     "exp": "log \"dealsEndTurnGate\":true",
+     "ok": true
+    },
+    {
+     "exp": "log \"playerEpochWarEnabled\":true",
+     "ok": true
+    },
+    {
+     "exp": "log \"buildingCostPace\":\"normalny\"",
+     "ok": true
+    },
+    {
+     "exp": "log \"cityStateDifficultyOverride\":\"normal\"",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-typ-pangea",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Rzym\"],[\"Rywalizujące miasta-państwa\",\"6 · Ostia, Kapua, Pompeje, Tarent…\"],[\"Cywilizacje na mapie\",\"7 (obcych: 6)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"rzymianie\",\"civName\":\"Rzymianie\",\"epoch\":\"Epoka Kamienia\",\"epochId\":\"kamien\",\"difficulty\":\"Normalny\",\"mapSize\":\"Standardowy\",\"rivals\":\"6\",\"speed\":\"Standardowa\",\"worldType\":\"Pangea\",\"typSwiata\":\"pangea\",\"seed\":424200,\"mapQualityLabel\":\"Średnia\",\"mapQuality\":\"medium\",\"renderQualityLabel\":\"Średnia\",\"mapDetailQualityLabel\":\"Średnia\",\"renderQuality\":\"medium\",\"mapDetailQuality\":\"medium\",\"civTypesCount\":7,\"cityStatesCount\":6,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"medium\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Normalnie\",\"rivers\":\"Normalnie\",\"desert\":\"Normalnie\",\"forest\":\"Normalnie\",\"relief\":\"Normalnie\"},\"landFractionPercent\":60,\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":60,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"startPreview\":{\"playerCivId\":\"rzymianie\",\"playerCapitalName\":\"Rzym\",\"sameTypeRivalNames\":[\"Ostia\",\"Kapua\",\"Pompeje\",\"Tarent\",\"Mediolan\",\"Akwileja\"],\"sameTypeRivalCount\":6,\"activeTypesOnMap\":7,\"foreignTypesCount\":6,\"modelLine\":\"Stolica Rzym, 6 rywali miast-państw, 6 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Rzym. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Ostia, Kapua, Pompeje…) — do pokonania. Na mapie także 6 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":true,\"dealsEndTurnGate\":true,\"playerEpochWarEnabled\":true})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":1,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Pangea\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":60,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "c93110d645c4ed82d84324866ac6121cca215fd7d14d739bb393c2371d14a63e",
+    "ad3076f983143ca1d695a9d848e89f2be14454aa1db404fb34d163d4b91e91f5"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": "log \"typSwiata\":\"pangea\"",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-typ-wyspy",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":2,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Wyspy\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":50,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "b906b57141cb291004901307377217e76e266dcf60942103cc0c4802120cdea7",
+    "68119556ce3984d8c18573aed71277c2bb780ecf4e488cf39b45d28ed65e544d"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": "text Udział lądu",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-typ-ziemia",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":3,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Ziemia\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":20,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "70cd218ddcafbd8c2e52019b410debab5f0540d6be2b70d3ba39cf1316214ac9",
+    "d47de0b3b9b3b445c6152a33bcfff54eca269f0517715e708e4f24574680cdd0"
+   ],
+   "pngSha256": [
+    "0e62a54817949e31b96f96ae78d31bce08d471fa5d5eb92a246db9000871da63",
+    "5c042870e3c3dd0defc9e43b39d1e8e69a0fc2d365ebe5329084e059fe9c1893"
+   ],
+   "cover": [
+    {
+     "exp": ".sett-grid .srow 11",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-typ-ziemia-start",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Rzym\"],[\"Rywalizujące miasta-państwa\",\"6 · Ostia, Kapua, Pompeje, Tarent…\"],[\"Cywilizacje na mapie\",\"7 (obcych: 6)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"rzymianie\",\"civName\":\"Rzymianie\",\"epoch\":\"Epoka Kamienia\",\"epochId\":\"kamien\",\"difficulty\":\"Normalny\",\"mapSize\":\"Standardowy\",\"rivals\":\"6\",\"speed\":\"Standardowa\",\"worldType\":\"Ziemia\",\"typSwiata\":\"ziemia\",\"seed\":424200,\"mapQualityLabel\":\"Średnia\",\"mapQuality\":\"medium\",\"renderQualityLabel\":\"Średnia\",\"mapDetailQualityLabel\":\"Średnia\",\"renderQuality\":\"medium\",\"mapDetailQuality\":\"medium\",\"civTypesCount\":7,\"cityStatesCount\":6,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"medium\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Normalnie\",\"rivers\":\"Normalnie\",\"desert\":\"Normalnie\",\"forest\":\"Normalnie\",\"relief\":\"Normalnie\"},\"landFractionPercent\":20,\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":20,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"startPreview\":{\"playerCivId\":\"rzymianie\",\"playerCapitalName\":\"Rzym\",\"sameTypeRivalNames\":[\"Ostia\",\"Kapua\",\"Pompeje\",\"Tarent\",\"Mediolan\",\"Akwileja\"],\"sameTypeRivalCount\":6,\"activeTypesOnMap\":7,\"foreignTypesCount\":6,\"modelLine\":\"Stolica Rzym, 6 rywali miast-państw, 6 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Rzym. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Ostia, Kapua, Pompeje…) — do pokonania. Na mapie także 6 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":true,\"dealsEndTurnGate\":true,\"playerEpochWarEnabled\":true})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":3,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Ziemia\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":20,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "7be3407581cabde1f44daae05af304f0529ab39d43386b9a76dcca8a68a0d64c",
+    "d76c219fd33c4659e7478bbd4e7478c55c263400a4aea8cba9a1e868ac71e4b8"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": "text szablon kontynentów",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-wojna-epoki-off",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Rzym\"],[\"Rywalizujące miasta-państwa\",\"6 · Ostia, Kapua, Pompeje, Tarent…\"],[\"Cywilizacje na mapie\",\"7 (obcych: 6)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"rzymianie\",\"civName\":\"Rzymianie\",\"epoch\":\"Epoka Kamienia\",\"epochId\":\"kamien\",\"difficulty\":\"Normalny\",\"mapSize\":\"Standardowy\",\"rivals\":\"6\",\"speed\":\"Standardowa\",\"worldType\":\"Kontynenty\",\"typSwiata\":\"kontynenty\",\"seed\":424200,\"mapQualityLabel\":\"Średnia\",\"mapQuality\":\"medium\",\"renderQualityLabel\":\"Średnia\",\"mapDetailQualityLabel\":\"Średnia\",\"renderQuality\":\"medium\",\"mapDetailQuality\":\"medium\",\"civTypesCount\":7,\"cityStatesCount\":6,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"medium\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Normalnie\",\"rivers\":\"Normalnie\",\"desert\":\"Normalnie\",\"forest\":\"Normalnie\",\"relief\":\"Normalnie\"},\"landFractionPercent\":30,\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"startPreview\":{\"playerCivId\":\"rzymianie\",\"playerCapitalName\":\"Rzym\",\"sameTypeRivalNames\":[\"Ostia\",\"Kapua\",\"Pompeje\",\"Tarent\",\"Mediolan\",\"Akwileja\"],\"sameTypeRivalCount\":6,\"activeTypesOnMap\":7,\"foreignTypesCount\":6,\"modelLine\":\"Stolica Rzym, 6 rywali miast-państw, 6 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Rzym. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Ostia, Kapua, Pompeje…) — do pokonania. Na mapie także 6 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":true,\"dealsEndTurnGate\":true,\"playerEpochWarEnabled\":false})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":1,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Wyłączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "e1becfbb3ad158cd82e02477278ebe8b97c2fb78078f0e4f0b2ab40213c3b454",
+    "15881d664b1a882fde1d9d84a34056548493c8a6914799dc2328012114e3a1bc"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": "log \"playerEpochWarEnabled\":false",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-oferty-off",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Rzym\"],[\"Rywalizujące miasta-państwa\",\"6 · Ostia, Kapua, Pompeje, Tarent…\"],[\"Cywilizacje na mapie\",\"7 (obcych: 6)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"rzymianie\",\"civName\":\"Rzymianie\",\"epoch\":\"Epoka Kamienia\",\"epochId\":\"kamien\",\"difficulty\":\"Normalny\",\"mapSize\":\"Standardowy\",\"rivals\":\"6\",\"speed\":\"Standardowa\",\"worldType\":\"Kontynenty\",\"typSwiata\":\"kontynenty\",\"seed\":424200,\"mapQualityLabel\":\"Średnia\",\"mapQuality\":\"medium\",\"renderQualityLabel\":\"Średnia\",\"mapDetailQualityLabel\":\"Średnia\",\"renderQuality\":\"medium\",\"mapDetailQuality\":\"medium\",\"civTypesCount\":7,\"cityStatesCount\":6,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"medium\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Normalnie\",\"rivers\":\"Normalnie\",\"desert\":\"Normalnie\",\"forest\":\"Normalnie\",\"relief\":\"Normalnie\"},\"landFractionPercent\":30,\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"startPreview\":{\"playerCivId\":\"rzymianie\",\"playerCapitalName\":\"Rzym\",\"sameTypeRivalNames\":[\"Ostia\",\"Kapua\",\"Pompeje\",\"Tarent\",\"Mediolan\",\"Akwileja\"],\"sameTypeRivalCount\":6,\"activeTypesOnMap\":7,\"foreignTypesCount\":6,\"modelLine\":\"Stolica Rzym, 6 rywali miast-państw, 6 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Rzym. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Ostia, Kapua, Pompeje…) — do pokonania. Na mapie także 6 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":true,\"dealsEndTurnGate\":false,\"playerEpochWarEnabled\":true})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":1,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Wyłączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "e1becfbb3ad158cd82e02477278ebe8b97c2fb78078f0e4f0b2ab40213c3b454",
+    "15881d664b1a882fde1d9d84a34056548493c8a6914799dc2328012114e3a1bc"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": "log \"dealsEndTurnGate\":false",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-bitwy-auto",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Rzym\"],[\"Rywalizujące miasta-państwa\",\"6 · Ostia, Kapua, Pompeje, Tarent…\"],[\"Cywilizacje na mapie\",\"7 (obcych: 6)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"rzymianie\",\"civName\":\"Rzymianie\",\"epoch\":\"Epoka Kamienia\",\"epochId\":\"kamien\",\"difficulty\":\"Normalny\",\"mapSize\":\"Standardowy\",\"rivals\":\"6\",\"speed\":\"Standardowa\",\"worldType\":\"Kontynenty\",\"typSwiata\":\"kontynenty\",\"seed\":424200,\"mapQualityLabel\":\"Średnia\",\"mapQuality\":\"medium\",\"renderQualityLabel\":\"Średnia\",\"mapDetailQualityLabel\":\"Średnia\",\"renderQuality\":\"medium\",\"mapDetailQuality\":\"medium\",\"civTypesCount\":7,\"cityStatesCount\":6,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"medium\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Normalnie\",\"rivers\":\"Normalnie\",\"desert\":\"Normalnie\",\"forest\":\"Normalnie\",\"relief\":\"Normalnie\"},\"landFractionPercent\":30,\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"startPreview\":{\"playerCivId\":\"rzymianie\",\"playerCapitalName\":\"Rzym\",\"sameTypeRivalNames\":[\"Ostia\",\"Kapua\",\"Pompeje\",\"Tarent\",\"Mediolan\",\"Akwileja\"],\"sameTypeRivalCount\":6,\"activeTypesOnMap\":7,\"foreignTypesCount\":6,\"modelLine\":\"Stolica Rzym, 6 rywali miast-państw, 6 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Rzym. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Ostia, Kapua, Pompeje…) — do pokonania. Na mapie także 6 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":true,\"dealsEndTurnGate\":true,\"playerEpochWarEnabled\":true})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "26f49966fc95fbc01cf4f9db3a4c3e9d0fc971f38c16b913950923eee4936f74",
+    "3a674ba53a74fd00ca615409ceecdead96973fa7eba1dbb78bf2792ea7ec6837"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": "log \"battleAlwaysManual\":false",
+     "ok": true
+    },
+    {
+     "exp": "text Bitwa automatyczna",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-zaawansowane-wszystkie",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Rzym\"],[\"Rywalizujące miasta-państwa\",\"6 · Ostia, Kapua, Pompeje, Tarent…\"],[\"Cywilizacje na mapie\",\"7 (obcych: 6)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"rzymianie\",\"civName\":\"Rzymianie\",\"epoch\":\"Epoka Kamienia\",\"epochId\":\"kamien\",\"difficulty\":\"Normalny\",\"mapSize\":\"Standardowy\",\"rivals\":\"6\",\"speed\":\"Standardowa\",\"worldType\":\"Kontynenty\",\"typSwiata\":\"kontynenty\",\"seed\":424200,\"mapQualityLabel\":\"Wysoka\",\"mapQuality\":\"high\",\"renderQualityLabel\":\"Wysoka\",\"mapDetailQualityLabel\":\"Wysoka\",\"renderQuality\":\"high\",\"mapDetailQuality\":\"high\",\"civTypesCount\":7,\"cityStatesCount\":6,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"low\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Dużo\",\"rivers\":\"Mało\",\"desert\":\"Normalnie\",\"forest\":\"Dużo\",\"relief\":\"Dużo\"},\"landFractionPercent\":30,\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"niski\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"wolny\",\"ruchSwiataPace\":\"dlugi\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":20},\"startPreview\":{\"playerCivId\":\"rzymianie\",\"playerCapitalName\":\"Rzym\",\"sameTypeRivalNames\":[\"Ostia\",\"Kapua\",\"Pompeje\",\"Tarent\",\"Mediolan\",\"Akwileja\"],\"sameTypeRivalCount\":6,\"activeTypesOnMap\":7,\"foreignTypesCount\":6,\"modelLine\":\"Stolica Rzym, 6 rywali miast-państw, 6 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Rzym. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Ostia, Kapua, Pompeje…) — do pokonania. Na mapie także 6 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":true,\"dealsEndTurnGate\":true,\"playerEpochWarEnabled\":true})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":2,\"rivers_density\":0,\"desert_density\":1,\"map_quality\":2,\"forest_density\":2,\"relief_density\":2,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Dużo\",\"rivers_density\":\"Mało\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Wysoka\",\"forest_density\":\"Dużo\",\"relief_density\":\"Dużo\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"niski\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"wolny\",\"ruchSwiataPace\":\"dlugi\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":20},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "65d91b8c37a8f9d8bf9f2e564a082cb45be5adc402ee631e576a835b779fd54f",
+    "3fcdead83905e8cb2f34ca0f9774a87ed4385d2397a96c7a620eed6993270cd4"
+   ],
+   "pngSha256": [],
+   "cover": []
+  },
+  {
+   "name": "k4-siatka-dodatkowe",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Rzym\"],[\"Rywalizujące miasta-państwa\",\"6 · Ostia, Kapua, Pompeje, Tarent…\"],[\"Cywilizacje na mapie\",\"7 (obcych: 6)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"rzymianie\",\"civName\":\"Rzymianie\",\"epoch\":\"Epoka Kamienia\",\"epochId\":\"kamien\",\"difficulty\":\"Normalny\",\"mapSize\":\"Standardowy\",\"rivals\":\"6\",\"speed\":\"Standardowa\",\"worldType\":\"Kontynenty\",\"typSwiata\":\"kontynenty\",\"seed\":424200,\"mapQualityLabel\":\"Średnia\",\"mapQuality\":\"medium\",\"renderQualityLabel\":\"Średnia\",\"mapDetailQualityLabel\":\"Średnia\",\"renderQuality\":\"medium\",\"mapDetailQuality\":\"medium\",\"civTypesCount\":7,\"cityStatesCount\":6,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"medium\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Normalnie\",\"rivers\":\"Normalnie\",\"desert\":\"Normalnie\",\"forest\":\"Normalnie\",\"relief\":\"Normalnie\"},\"landFractionPercent\":80,\"advanced\":{\"barbariansLevel\":\"latwy\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":80,\"landFractionCustom\":true,\"cityStateDifficultyOverride\":\"easy\",\"cityLimitBase\":10},\"startPreview\":{\"playerCivId\":\"rzymianie\",\"playerCapitalName\":\"Rzym\",\"sameTypeRivalNames\":[\"Ostia\",\"Kapua\",\"Pompeje\",\"Tarent\",\"Mediolan\",\"Akwileja\"],\"sameTypeRivalCount\":6,\"activeTypesOnMap\":7,\"foreignTypesCount\":6,\"modelLine\":\"Stolica Rzym, 6 rywali miast-państw, 6 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Rzym. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Ostia, Kapua, Pompeje…) — do pokonania. Na mapie także 6 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":false,\"dealsEndTurnGate\":true,\"playerEpochWarEnabled\":true})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":1},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Wyłączone\"},\"advanced\":{\"barbariansLevel\":\"latwy\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":80,\"landFractionCustom\":true,\"cityStateDifficultyOverride\":\"easy\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "beb348f046f0d4fae7b17a49f791741fb3e5423cdb94679c1825d1da5baea0fb",
+    "3a381e68df0e25bf9f60ff2514c63ec35a03d68bddeec6cb319b873a7a9ea6f5"
+   ],
+   "pngSha256": [],
+   "cover": []
+  },
+  {
+   "name": "k4-siatka-cykle",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Rzym\"],[\"Rywalizujące miasta-państwa\",\"7 · Ostia, Kapua, Pompeje, Tarent…\"],[\"Cywilizacje na mapie\",\"5 (obcych: 4)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"rzymianie\",\"civName\":\"Rzymianie\",\"epoch\":\"Epoka Kamienia\",\"epochId\":\"kamien\",\"difficulty\":\"Trudny\",\"mapSize\":\"Duży\",\"rivals\":\"7\",\"speed\":\"Długa\",\"worldType\":\"Ziemia\",\"typSwiata\":\"ziemia\",\"seed\":424200,\"mapQualityLabel\":\"Średnia\",\"mapQuality\":\"medium\",\"renderQualityLabel\":\"Średnia\",\"mapDetailQualityLabel\":\"Średnia\",\"renderQuality\":\"medium\",\"mapDetailQuality\":\"medium\",\"civTypesCount\":5,\"cityStatesCount\":7,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"medium\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Normalnie\",\"rivers\":\"Normalnie\",\"desert\":\"Normalnie\",\"forest\":\"Normalnie\",\"relief\":\"Normalnie\"},\"landFractionPercent\":20,\"advanced\":{\"barbariansLevel\":\"trudny\",\"battleAlwaysManual\":true,\"victoryMode\":\"dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":20,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"hard\",\"cityLimitBase\":10},\"startPreview\":{\"playerCivId\":\"rzymianie\",\"playerCapitalName\":\"Rzym\",\"sameTypeRivalNames\":[\"Ostia\",\"Kapua\",\"Pompeje\",\"Tarent\",\"Mediolan\",\"Akwileja\",\"Rawenna\"],\"sameTypeRivalCount\":7,\"activeTypesOnMap\":5,\"foreignTypesCount\":4,\"modelLine\":\"Stolica Rzym, 7 rywali miast-państw, 4 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Rzym. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Ostia, Kapua, Pompeje…) — do pokonania. Na mapie także 4 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":false,\"dealsEndTurnGate\":true,\"playerEpochWarEnabled\":false})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":2,\"map_size\":3,\"world_type\":3,\"game_speed\":2,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":1,\"civ_types_count\":0,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":1},\"settingLabels\":{\"difficulty\":\"Trudny\",\"map_size\":\"Duży\",\"world_type\":\"Ziemia\",\"game_speed\":\"Długa\",\"city_states_count\":\"7\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Wyłączona\",\"civ_types_count\":\"5\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Wyłączone\"},\"advanced\":{\"barbariansLevel\":\"trudny\",\"battleAlwaysManual\":true,\"victoryMode\":\"dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":20,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"hard\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "e53ac1489420b77fbe3d2642df885f86bbb4e9adafebeaa4742d6641a37fa0c6",
+    "f88b5ebb02adf8fd516ed0829b1c0828f393e0676a7b804476b11db27a1de610"
+   ],
+   "pngSha256": [],
+   "cover": []
+  },
+  {
+   "name": "k4-fotel2",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "12d17e155181d8ae54af257b002b88e45fa5cf36aacfd119c84f7b967a36e737",
+    "d145aff023647baa77d217fbca6ebbd2a9526edc49c32501169f4347adbb91e6"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": "text Dalej",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-fotel2-ekran",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "c5ad04297aa3d0cbc88e453f4ae6f4bac78d63f804782a68cca5e24afae63d63",
+    "828ec72374cb47f5e767748b29ef9ca0da61f3eb5bcf8afcd965f5217f71a536"
+   ],
+   "pngSha256": [
+    "b45bc0729d5f77e1db0a1dfa37489ac51e63d7843fe12f45237a8989a99b6999",
+    "b8d7c18d31d037ae510c76379cae710d0b4fab0cff2f207eb34134a3b0477288"
+   ],
+   "cover": [
+    {
+     "exp": ".nav .nb.next[data-seat-ready=\"true\"] 1",
+     "ok": true
+    },
+    {
+     "exp": "text Rozpocznij grę",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "getCivs1-fotel2-niegotowy",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "213f45a514f51fa5b72cd7d4e4053700e4477dd8c657b270d360ae6f286f05b9",
+    "e87e090c7e12d15eb75e732a5c87f2bad52a91baf5ffdb517a11fbb0d8874e90"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": ".nav .nb.next[disabled] 1",
+     "ok": true
+    },
+    {
+     "exp": ".nav .nb.next[data-seat-ready=\"false\"] 1",
+     "ok": true
+    },
+    {
+     "exp": "text Brak innej cywilizacji",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-fotel2-wybor",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "73e315668d48cc48297993667b5bd9514c57234542ada72534eaea45ef936c0e",
+    "8c0355e147a5608bc2a96616f9cb29d19d66e13789431ff492b3665bcff363e2"
+   ],
+   "pngSha256": [
+    "08b0d8fc92bea53bf5cda7e80753fe0ab08f1a6a0c534e2265897ac8a41046e9",
+    "5bb0e1d9b5dd14b3e7572832d00495bb9d49aa89e128fe5f323682bfbed64f8a"
+   ],
+   "cover": [
+    {
+     "exp": ".nav .nb.next[data-seat-ready=\"true\"] 1",
+     "ok": true
+    },
+    {
+     "exp": ".su 1",
+     "ok": true
+    },
+    {
+     "exp": ".civ-matrix-profile 1",
+     "ok": true
+    },
+    {
+     "exp": "text Cywilizacja fotela 2",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-fotel2-start",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Rzym\"],[\"Rywalizujące miasta-państwa\",\"6 · Ostia, Kapua, Pompeje, Tarent…\"],[\"Cywilizacje na mapie\",\"7 (obcych: 6)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"rzymianie\",\"civName\":\"Rzymianie\",\"civId2\":\"egipt\",\"civName2\":\"Egipt\",\"humanDistanceMode\":\"blisko\",\"epoch\":\"Epoka Kamienia\",\"epochId\":\"kamien\",\"difficulty\":\"Normalny\",\"mapSize\":\"Standardowy\",\"rivals\":\"6\",\"speed\":\"Standardowa\",\"worldType\":\"Kontynenty\",\"typSwiata\":\"kontynenty\",\"seed\":424200,\"mapQualityLabel\":\"Średnia\",\"mapQuality\":\"medium\",\"renderQualityLabel\":\"Średnia\",\"mapDetailQualityLabel\":\"Średnia\",\"renderQuality\":\"medium\",\"mapDetailQuality\":\"medium\",\"civTypesCount\":7,\"cityStatesCount\":6,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"medium\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Normalnie\",\"rivers\":\"Normalnie\",\"desert\":\"Normalnie\",\"forest\":\"Normalnie\",\"relief\":\"Normalnie\"},\"landFractionPercent\":30,\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"startPreview\":{\"playerCivId\":\"rzymianie\",\"playerCapitalName\":\"Rzym\",\"sameTypeRivalNames\":[\"Ostia\",\"Kapua\",\"Pompeje\",\"Tarent\",\"Mediolan\",\"Akwileja\"],\"sameTypeRivalCount\":6,\"activeTypesOnMap\":7,\"foreignTypesCount\":6,\"modelLine\":\"Stolica Rzym, 6 rywali miast-państw, 6 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Rzym. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Ostia, Kapua, Pompeje…) — do pokonania. Na mapie także 6 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":true,\"dealsEndTurnGate\":true,\"playerEpochWarEnabled\":true})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "e1becfbb3ad158cd82e02477278ebe8b97c2fb78078f0e4f0b2ab40213c3b454",
+    "15881d664b1a882fde1d9d84a34056548493c8a6914799dc2328012114e3a1bc"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": "log onStart(",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "k4-fotel2-wstecz",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "12d17e155181d8ae54af257b002b88e45fa5cf36aacfd119c84f7b967a36e737",
+    "d145aff023647baa77d217fbca6ebbd2a9526edc49c32501169f4347adbb91e6"
+   ],
+   "pngSha256": [],
+   "cover": []
+  },
+  {
+   "name": "k4-wstecz-k3",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "7ec5d701894c8664673e1e19c11667f54fc19521a7fd675c4fcd605ac5a73a6d",
+    "c881c3849d8bbfaa3cd02d35e4e7890b2e51a209a04cdd6519f8c68e8f54695f"
+   ],
+   "pngSha256": [],
+   "cover": []
+  },
+  {
+   "name": "prefs-v4-ziemia",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"braz\",\"selCiv\":\"egipt\",\"settings\":{\"difficulty\":2,\"map_size\":4},\"settingLabels\":{\"world_type\":\"Ziemia\",\"deals_end_turn_gate\":\"Wyłączona\",\"player_epoch_war\":\"Wyłączona\",\"village_rewards_enabled\":\"Wyłączone\"},\"advanced\":{\"barbariansLevel\":\"trudny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc\",\"cityStateDifficultyOverride\":null,\"cityLimitBase\":15}}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "58fbec076baafe9c39ae4e79f8afbfbc4259f261fbd92e329e49b250681f3b72",
+    "4a2dfba7d3131d7b5799b4c5119a316d245b09dc10fd7b97cdbc5cdc3560e48a"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": ".sett-grid .srow 11",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "prefs-v4-start",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Memfis\"],[\"Rywalizujące miasta-państwa\",\"8 · Teby, Heliopolis, Abydos, Nekhen…\"],[\"Cywilizacje na mapie\",\"10 (obcych: 9)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"egipt\",\"civName\":\"Egipt\",\"epoch\":\"Epoka Brazu\",\"epochId\":\"braz\",\"difficulty\":\"Trudny\",\"mapSize\":\"Ogromny\",\"rivals\":\"8\",\"speed\":\"Standardowa\",\"worldType\":\"Ziemia\",\"typSwiata\":\"ziemia\",\"seed\":424200,\"mapQualityLabel\":\"Średnia\",\"mapQuality\":\"medium\",\"renderQualityLabel\":\"Średnia\",\"mapDetailQualityLabel\":\"Średnia\",\"renderQuality\":\"medium\",\"mapDetailQuality\":\"medium\",\"civTypesCount\":10,\"cityStatesCount\":8,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"medium\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Normalnie\",\"rivers\":\"Normalnie\",\"desert\":\"Normalnie\",\"forest\":\"Normalnie\",\"relief\":\"Normalnie\"},\"landFractionPercent\":20,\"advanced\":{\"barbariansLevel\":\"trudny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":20,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":15},\"startPreview\":{\"playerCivId\":\"egipt\",\"playerCapitalName\":\"Memfis\",\"sameTypeRivalNames\":[\"Teby\",\"Heliopolis\",\"Abydos\",\"Nekhen\",\"Elefantyna\",\"Sais\",\"Bubastis\",\"Edfu\"],\"sameTypeRivalCount\":8,\"activeTypesOnMap\":10,\"foreignTypesCount\":9,\"modelLine\":\"Stolica Memfis, 8 rywali miast-państw, 9 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Memfis. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Teby, Heliopolis, Abydos…) — do pokonania. Na mapie także 9 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":false,\"dealsEndTurnGate\":false,\"playerEpochWarEnabled\":false})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"braz\",\"selCiv\":\"egipt\",\"settings\":{\"difficulty\":2,\"map_size\":4,\"world_type\":3,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":1,\"player_epoch_war\":1,\"civ_types_count\":0,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":1},\"settingLabels\":{\"difficulty\":\"Trudny\",\"map_size\":\"Ogromny\",\"world_type\":\"Ziemia\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"8\",\"deals_end_turn_gate\":\"Wyłączona\",\"player_epoch_war\":\"Wyłączona\",\"civ_types_count\":\"10\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Wyłączone\"},\"advanced\":{\"barbariansLevel\":\"trudny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":20,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":15},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "150e07bd6fa9608c5112c3bb160b83139cdb77f31fa381c6efc232e9974f5388",
+    "7e8b6c2cdaa16f463fb98e7aeddebb1119242dd2086d92078bc2e4a8e6e2393e"
+   ],
+   "pngSha256": [],
+   "cover": [
+    {
+     "exp": "log \"dealsEndTurnGate\":false",
+     "ok": true
+    },
+    {
+     "exp": "log \"playerEpochWarEnabled\":false",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "getCivs-k3",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "bf7f957d429cdc8b1d621f5a2e3e7bfdabb1051da517533f3be35bb3265782b9",
+    "aabd3744e555acc9bb45edbd5b5dc70acbde0f99d089d15b769bbefa044cc3fb"
+   ],
+   "pngSha256": [],
+   "cover": []
+  },
+  {
+   "name": "getCivs-start",
+   "log": [
+    "summaryRows=[[\"Stolica (start)\",\"Rzym\"],[\"Rywalizujące miasta-państwa\",\"6 · Ostia, Kapua, Pompeje, Tarent…\"],[\"Cywilizacje na mapie\",\"7 (obcych: 6)\"],[\"Model startu\",\"Własny region + rywalizujące miasta-państwa\"]]",
+    "onStart({\"civId\":\"rzymianie\",\"civName\":\"Rzym\",\"epoch\":\"Epoka Kamienia\",\"epochId\":\"kamien\",\"difficulty\":\"Normalny\",\"mapSize\":\"Standardowy\",\"rivals\":\"6\",\"speed\":\"Standardowa\",\"worldType\":\"Kontynenty\",\"typSwiata\":\"kontynenty\",\"seed\":424200,\"mapQualityLabel\":\"Średnia\",\"mapQuality\":\"medium\",\"renderQualityLabel\":\"Średnia\",\"mapDetailQualityLabel\":\"Średnia\",\"renderQuality\":\"medium\",\"mapDetailQuality\":\"medium\",\"civTypesCount\":7,\"cityStatesCount\":6,\"worldDensity\":{\"resources\":\"medium\",\"rivers\":\"medium\",\"desert\":\"medium\",\"forest\":\"medium\",\"relief\":\"medium\"},\"worldDensityLabels\":{\"resources\":\"Normalnie\",\"rivers\":\"Normalnie\",\"desert\":\"Normalnie\",\"forest\":\"Normalnie\",\"relief\":\"Normalnie\"},\"landFractionPercent\":30,\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"startPreview\":{\"playerCivId\":\"rzymianie\",\"playerCapitalName\":\"Rzym\",\"sameTypeRivalNames\":[\"Ostia\",\"Kapua\",\"Pompeje\",\"Tarent\",\"Mediolan\",\"Akwileja\"],\"sameTypeRivalCount\":6,\"activeTypesOnMap\":7,\"foreignTypesCount\":6,\"modelLine\":\"Stolica Rzym, 6 rywali miast-państw, 6 obcych cywilizacji na mapie\",\"modelDetail\":\"Start we własnym regionie: pierwsze miasto = Rzym. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji (Ostia, Kapua, Pompeje…) — do pokonania. Na mapie także 6 obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.\"},\"selectedAiCivIds\":[],\"villageRewardsEnabled\":true,\"dealsEndTurnGate\":true,\"playerEpochWarEnabled\":true})",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "4986e4b05fdf1f0feb432e74b613701c679a17a3ac6d1ea6f2b9f66674a1dc36",
+    "33dd018fe7d5d1fabad8b4eb140ed9505d1aa5faa80b1cf772e92b40b2df4a06"
+   ],
+   "pngSha256": [],
+   "cover": []
+  },
+  {
+   "name": "k3-pusty-profil",
+   "log": [
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]={\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"grecy\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":0,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_count\":2,\"resources_density\":1,\"rivers_density\":1,\"desert_density\":1,\"map_quality\":1,\"forest_density\":1,\"relief_density\":1,\"village_rewards_enabled\":0},\"settingLabels\":{\"difficulty\":\"Normalny\",\"map_size\":\"Standardowy\",\"world_type\":\"Kontynenty\",\"game_speed\":\"Standardowa\",\"city_states_count\":\"6\",\"deals_end_turn_gate\":\"Włączona\",\"player_epoch_war\":\"Włączona\",\"civ_types_count\":\"7\",\"resources_density\":\"Normalnie\",\"rivers_density\":\"Normalnie\",\"desert_density\":\"Normalnie\",\"map_quality\":\"Średnia\",\"forest_density\":\"Normalnie\",\"relief_density\":\"Normalnie\",\"village_rewards_enabled\":\"Włączone\"},\"advanced\":{\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":true,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"normalny\",\"kosztJednostekPace\":\"normalny\",\"wzrostLudnosciPace\":\"normalny\",\"ruchSwiataPace\":\"normalny\",\"landFractionPercent\":30,\"landFractionCustom\":false,\"cityStateDifficultyOverride\":\"normal\",\"cityLimitBase\":10},\"selAiCivIds\":[]}",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "a0a924621216a0fedc6935e4e09f035be6ab2ffdc5edaa43d7f202da5e0e1a13",
+    "cea120ddaedafd97915b95740b97ee9a3df7890a5aa15ab0bdee59a685289624"
+   ],
+   "pngSha256": [
+    "f3c06802890616a636959d0c34db47d9a8bc11ccc7f35a1da8095800a4533154",
+    "095fd96c04277e5a61425a6697e17a61b763b064991e814c77eae05bdb793e2c"
+   ],
+   "cover": [
+    {
+     "exp": "text aby zobaczyć jej parametry i jednostkę specjalną.",
+     "ok": true
+    },
+    {
+     "exp": ".detail .empty 1",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "name": "menu-glowne",
+   "log": [
+    "onCancel()",
+    "open=true"
+   ],
+   "ls": [
+    "ls[civ-new-game-prefs-v1]=null",
+    "ls[civ-newgame-prefs-v2]=null"
+   ],
+   "domSha256": [
+    "b61bc8f1f54354fe54bbdbee856a900e7d5fcdeb207cd1993b49c5cf60388a71",
+    "6c705cfa4990c5c8a5fb1d9b0e4381ffa6c5a57f35255fcd4df83a8e9015a5f5"
+   ],
+   "pngSha256": [],
+   "cover": []
+  }
+ ]
+}

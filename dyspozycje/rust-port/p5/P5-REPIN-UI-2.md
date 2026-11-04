@@ -47,7 +47,7 @@ Hunki = początki zakresów po stronie `origin/main` (`git diff -U0`, `plik:lini
 | 20 | `diplomacyNegotiationModal.ts` | +15/−0 | +13/−0 | MOD | `:14+2 :25+2 :103+10 :565` | negocjacje | port DOM | `src/ui/diplomacyNegotiationModal.ts` | UI-2-E |
 | 21 | `diplomacyPanel.ts` | +19/−0 | +19/−0 | MOD | `:34+2 :220+16 :266` | panel dyplomacji | port DOM | `src/ui/diplomacyPanel.ts` | UI-2-E |
 | 22 | `diplomacyTradeBasket.ts` | +295/−34 | +203/−19 | MOD | `:5 :20 :43 :71 :139+2 :158 :171+5 :206+2 :225+18 :360+2 :531+4 :632+2 :839+21 :874+6 …` | koszyk handlu | port DOM (C2) | `src/ui/diplomacyTradeBasket.ts` | UI-2-E |
-| 23 | `newGameFlow.ts` | +283/−144 | +144/−95 | MOD | `:80 :176+6 :243+5 :250 :252+4 :258 :558 :565 :670+7 :687+5 :693+4 :700 :810 :854 …` | kreator nowej gry | port DOM (P5.7 r2) | `src/ui/newGameFlow.ts` | UI-2-F |
+| 23 | `newGameFlow.ts` | +283/−144 | +144/−95 | MOD | `:80 :176+6 :243+5 :250 :252+4 :258 :558 :565 :670+7 :687+5 :693+4 :700 :810 :854 …` | kreator nowej gry | port DOM (P5.7 r2) | `src/ui/newGameFlow.ts` | **ZROBIONE UI-2-F** (§6) |
 | 24 | `entityCards/buildingAdapter.ts` | +3/−3 | 0 | MOD | `:68 :70 :279` | adapter karty budynku | adapter (importy `game/*` → DTO) | `src/ui/entityCards/buildingAdapter.ts` | UI-2-D |
 | 25 | `entityCards/improvementAdapter.ts` | +7/−1 | 0 | MOD | `:27 :160+6` | adapter karty ulepszenia | adapter | `src/ui/entityCards/improvementAdapter.ts` | UI-2-D |
 | 26 | `cityPanel.ts` | +341/−100 | +86/−31 | — (bloki K01–K09 w `src/ui/cityPanel/*.ts`) | `:82 :108+2 :164 :234 :245 :268 :283 :551+10 :567+2 :597+2 :630+24 :775 :834 :929+3 …` | kolejka rekrutacji w panelu (↑↓✕, `ff6ac152c`), kolejność rekrutacji wg epoki (`6f61f1d70`), skracanie liczb (`62884e25f`) | K (bloki kopii z markerami) | `src/ui/cityPanel/k0*.ts` | §3 + UI-2-G |
@@ -202,3 +202,53 @@ node tools/repin-ui2-overlay.mjs --pin-dir "$PIN" --web-dir "$WEB" --out "$PINOV
 node tools/dom-harness/run-cycles.mjs --pin-dir "$PINOV"     # (i pozostałe run-*.mjs)
 node tools/dom-harness/measure-repin-ui2-kblocks-drift.mjs --pin-dir "$PIN" --cur-dir "$WEB"
 ```
+
+## 6. Partia UI-2-F — `newGameFlow.ts` (R-RUSTPORT-REPIN-UI-2-F-Q1, runda 1)
+
+Baza `rust-port/parity-v2` `2198eaf7e`; web `86d510c66` (= `origin/main` 2026-11-04; `git log 86d510c66..origin/main -- gra/src/ui` = 0).
+Pomiar: `diff -U0 edb8fb56 86d510c66 gra/src/ui/newGameFlow.ts` = 76 hunków, +283/−144 (zgodne z §1 #23).
+
+**Metoda portu (zmierzona):** `diff3 -m port(2198eaf7e) × pin(edb8fb56) × web(86d510c66)` → 1 konflikt
+(`appendCivMatrixCell`: `<summary>` weba + `cell.paramLabel` portu, rozstrzygnięty ręcznie). Wynik vs web = 10 hunków,
+WYŁĄCZNIE adaptacje P5.7 r2 sprzed repinu (importy → `StaticCatalogDto`/`newGameQueries`, kopia jakości mapy,
+`civAvailableAtEpoch`, pola `CivMatrixCellDto`, `summaryRows`) + 2 linie komentarza repinu. Powiązane pliki portu: brak
+zmian — `CivMatrixProfileDto.parameterCount`, `NewGameParams.typSwiata` i zapytania istniały; nowe ustawienia
+(`deals_end_turn_gate`, `player_epoch_war`) przychodzą danymi `StaticCatalogDto.uiParams` (producent Rust = P6; MOCK ma
+pustą listę). Zmiany weba poza UI wpływające na kreator (P6, nie UI-2): `game/civ-matrix-semantic.ts` (+134 linie:
+statusy pól, wyjątek Egiptu `walka_ruch_bitwa_proc`), `gra/data/ui-params.json` (2 nowe ustawienia), `data/loader.ts`
+(typy opcjonalne bonusów).
+
+Hunki weba przeniesione: domyślne „Zaawansowane opcje” (bitwy ręczne, tempa „normalny”, trudność miast-państw `normal`);
+siatka kroku 4 = 12 pozycji w 2 kolumnach (udział lądu, trudność miast-państw, barbarzyńcy, warunki zwycięstwa, chatki,
+wojna epoki w siatce głównej); Ziemia bez suwaka lądu + wiersz „szablon kontynentów (bez suwaka)”; przerysowanie po
+zmianie typu świata; `dealsEndTurnGate`/`playerEpochWarEnabled` w `onStart`; glify ikon spoza `SETTING_SVG_KEYS`;
+przełącznik „Pokaż/Ukryj parametry cywilizacji” (gracz i fotel 2, reset przy otwarciu); komórki macierzy jako
+`<details>`; liczba wskaźników z danych; usunięte bonusy; fotel 2 z jednostką specjalną i profilem; start gry w pasku
+nawigacji (`data-seat-ready`, `disabled`); „Zastosuj”; etykiety bitew; CSS (`overflow`, `.content` przewijane, `.nav`,
+media 900px/760px, `.adv-close`).
+
+**Mechanika:** `tools/repin-ui2f-ported.json` (NOWY, lista portów DOM przepiętych na web: plik weba + sha256
+`dd158388…c4ae`/123949 B) — `repin-ui2-overlay.mjs` (dopisek addytywny) podmienia te pliki weba w odniesieniu pinu
+(`repin-ui2*-ported.json`, jeden plik na partię — bez konfliktu z B–E). `repin-ui2-manifest.json`/`pin-manifest.json`:
+bez zmian (`newGameFlow.ts` nie jest kopią bajtową ani wpisem pinu). `run-newgame.mjs`: 1 zmiana — „start” spada na
+`.nav .nb.next[data-seat-ready]`, gdy brak `.sett-actions .start` (na pinie bez zmiany zachowania).
+
+**Harness** `tools/dom-harness/run-repin-ui2f.mjs`: web i port w Chromium 141 (headless), 35 scenariuszy (kroki 1–5,
+okno zaawansowane, fotel 2, prefs v4 z Ziemią, `getCivs`, pusty profil), porównanie DOM (body + `<style>` + geometria
+przewijania) przy 1280×720 i 360×640, log `onStart`/`summaryRows`/`localStorage`, 24 zrzuty PNG × 2 viewporty (bajty
+równe), COVER na stronie weba, asercja „11/11 zapytań silnika użytych”. Wynik: **różnic=0**, `pageerror`+`console.error`=0.
+Fiksatura `fixtures/repin_ui2f-web-vectors.json` (sha256 `f976fa89…beae`, `webVectorsSha256=9f6a4de3…73fc`) —
+identyczna z 2 osobnych katalogów `git archive 86d510c66`. Mutacje `mutate-repin-ui2f.mjs`: **34/34 + M00** (port sprzed
+repinu, 225 różnic) wykryte; w r1 2 mutacje równoważne (M07 wartość początkowa nadpisywana w `showNewGameFlow`, M29 klucz
+wiersza poza DOM) zastąpione, M33 wymagała nowego scenariusza `k3-pusty-profil`.
+
+**Regresja na nakładce** (pin + 4 kopie UI-2-A + `newGameFlow.ts` weba): `run-newgame` 9 grup `--only-label`
+(1993 przypadków kombinacji + 202 stałych/grupę) różnic=0, jsdomErrors=0; bez nakładki (czysty pin) różnice = oczekiwane
+(184/184 w `dane/brak/s1`). L0 3861/0, L1A 3618/0, C4 1649/0 (jsdomErrors=75 jak baza), L2 1784/0 (jsdomErrors=354,
+consoleErrors=150 jak baza; 1 z 3 przebiegów dał 1 różnicę niereprodukowalną — L2 nie importuje `newGameFlow.ts`;
+obciążenie CPU równoległych worktree), cycles 6401/0, hud 927/0, cityux 164/0. GPU/natywne okno Tauri: NIE_ZMIERZONO.
+
+**Wycena po partii:** wycena §1a = 21 h / 427 LP / 3 rundy; zużyto 1 rundę Operatora — LP faktycznie napisane ręcznie
+≈ 4 (rozstrzygnięcie konfliktu), reszta przeniesiona `diff3`, koszt dominujący = harness/mutacje/regresja. Rekalibracja
+ZAŁOŻENIA Z3 dla PD z małą liczbą adaptacji: `h ≈ 1 + 0,05·H + harness` zamiast `1 + 0,15·H + L/50`. Pozostało po A+F
+(B–E, G w toku/kolejce): **105,25 h** wg dotychczasowego wzoru (126,25 − 21).
