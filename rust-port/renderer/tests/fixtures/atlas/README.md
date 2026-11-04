@@ -4,7 +4,7 @@ Two fixture files, both produced by **running** reference code; nothing is hand-
 
 | File | SHA-256 | Produced by | Used by |
 |---|---|---|---|
-| `atlas_keys.json` (1.6 MB) | `8d64d5c04a782b13e139ae7d2368aa258d7e3ae6dfd2fef405e3f5868a6a905f` | `gen.sh` → `gen.ts` (node v22.22.0, esbuild 0.24.0, three@0.169.0, web pin `edb8fb56`) | `tests/atlas_keys.rs` |
+| `atlas_keys.json` (1.6 MB) | `e45004b91de42baabf58fc9ae97c60816280eac01d664f259ca55cbd4e48db9a` | `gen.sh` → `gen.ts` (node v22.22.0, esbuild 0.24.0, three@0.169.0, web `origin/main` @ `86d510c66`; created on pin `edb8fb56`: `8d64d5c0…`) | `tests/atlas_keys.rs` |
 | `atlas_gl.json` (1.6 MB) | `3ebda643bc36dbb4a952bb5ff7652897a558d5f24cfdbadd51381579e2b4351a` | `gen_gl.mjs` (Playwright 1.56.1, headless Chromium 141.0.7390.37, WebGL2 = ANGLE → Vulkan → SwiftShader) | `tests/atlas_mip.rs` |
 | `gen.ts` | `d65b51c81f334e498f3410126cdf56362da34b55bbe54e0eb38c49a9d8fd2f31` | — | generator of `atlas_keys.json` |
 | `gen.sh` | `592ce20ecfb4263506b83c4df7ccf1d2c7d33aa1a890a3e0755c06a9aea69a46` | — | runner of `gen.ts` |
@@ -18,6 +18,10 @@ Two fixture files, both produced by **running** reference code; nothing is hand-
 
 `gen.sh <scratch dir outside the repo>`: `git archive edb8fb56 gra/src gra/data` into the scratch
 dir, npm `three@0.169.0` + `esbuild@0.24.0`, esbuild bundle of `gen.ts`, node run.
+**Re-pinned** (REPIN-3D B2, `a827fac07`, `dyspozycje/rust-port/p4/P4-REPIN-3D.md` §10, Z-RP-B2-1): the
+current file is the output of the same steps on `origin/main` @ `86d510c66` (the revision of the
+`git archive` line substituted; `gen.sh` and `gen.ts` unchanged, sums above). Diff against the pin
+file: only the 304 `emblemKeys[].key` (`civ:<civ>:<era>:<ring>`); the other 13 sections byte-identical.
 
 Web code linked **unchanged**: `render/cityMapStatChip.ts` (`cityMapBadgeKey` — both overloads,
 `formatCityGrowthPercentLabel`, `disposeCityMapBadgeTexturesForOtherLod`), `render/unitOwnerEmblem.ts`

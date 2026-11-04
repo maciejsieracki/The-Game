@@ -1,7 +1,13 @@
 # MOD-13 "misc" reference data (R-RUSTPORT-P4-22-MOD13-MISC-Q1)
 
 Reference vectors for `tests/misc_web_parity.rs`, produced by **running the
-web code** of `edb8fb56`:
+web code**. Created on pin `edb8fb56` (P4.22 / P4.24); **re-pinned to
+`origin/main` @ `86d510c66`** with the unchanged generators: `overlays.json`
+(REPIN-3D B1, `cb00afecd`, Z-RP-B-1) and `relief_real.json` (REPIN-3D B4,
+Z-RP-B4-2) — the only difference against the pin is the mine-eligible tint
+opacity 0,30 → 0,36 (`rangeOverlay.ts:477`); `models.json`, `siege.json`
+reproduce byte for byte on `86d510c66`. Below, read `86d510c66` for
+`edb8fb56` in the commands:
 
 - `three@0.169.0` from npm (integrity `sha512-Ed906MA3…qUv0w==`, the version
   pinned by `gra/package-lock.json` at `edb8fb56`), `esbuild@0.24.0`,
@@ -45,7 +51,7 @@ Two runs give identical files (SHA-256 below).
 |---|---|---|
 | `models.json` | `cf17ac9d66604ffd62c21835f990db9b1432315e1ea94947b66372e3c24de8e0` | 34 model cases: `wioska`; `oboz` (default + 4 colours); `soldiers` (0/1/4/5); `ram`; `tower`; `camp` (18: 9 face directions, 5 machine lists, 4 colours); `sky` (4: span/lite/centre). Per node: kind, name, parent, `p`/`q`/`s`, `w` (matrixWorld), castShadow, receiveShadow, renderOrder, geometry (type, vtx, tri, FNV hash) and material (type, colour, linear colour, flatShading, transparent, opacity, depthWrite, depthTest, side, polygonOffset, map). Per model: meshes, tris, signature, bbox. |
 | `siege.json` | `06383e4d19e6abeb34b70be136e63b6260f8009796a35ad7c29c7f9de7e6be81` | `sync`: 8 `siegeCampSync` cases (incl. malformed keys for `parseInt`); `markerSteps`: 4 `SiegeMarkerRenderer.sync` (+`pulse`) steps, whole scene graph after each; `canvasLog`: the sprite canvas draw calls. |
-| `overlays.json` | `d590e026deac901f3a1f9ffc8ffbca5fa0f8075b1624e499a7520b7fb0d075a9` | `maps` (3: `mixed` seed 12345, `flat` seed 777, `noseed`), `hexSets` (18: disks of radius 0..4 and 1..3, rings, islands, L, corner, missing hexes, grown clusters 25/40, empty), `styles`; `range` (252 `buildRangeOverlayGroup` cases), `loops` (18 `computeTerritoryBorderLoops`), `territory` (7 `buildTerritoryBorderGroup`), `trade` (3 `buildTradeRoutesOverlayGroup`), `bezier` (24 `QuadraticBezierCurve3.getPoints(28)` probes). Per overlay object: kind, name, renderOrder, frustumCulled, material, geometry (vtx, tri, index count, normals present, FNV hash, bbox, positions when ≤ 900 floats), `instanceMatrix` and `count` for `InstancedMesh`, `userData` of the relief drape. |
+| `overlays.json` | `dc62fa14df77e261e30633290fbe5376ce6bf53358fe7d97614550ab5bb926bb` (pin `edb8fb56`: `d590e026…`; diff = `styles.mine` + 51 `range` cases of style `mine`) | `maps` (3: `mixed` seed 12345, `flat` seed 777, `noseed`), `hexSets` (18: disks of radius 0..4 and 1..3, rings, islands, L, corner, missing hexes, grown clusters 25/40, empty), `styles`; `range` (252 `buildRangeOverlayGroup` cases), `loops` (18 `computeTerritoryBorderLoops`), `territory` (7 `buildTerritoryBorderGroup`), `trade` (3 `buildTradeRoutesOverlayGroup`), `bezier` (24 `QuadraticBezierCurve3.getPoints(28)` probes). Per overlay object: kind, name, renderOrder, frustumCulled, material, geometry (vtx, tri, index count, normals present, FNV hash, bbox, positions when ≤ 900 floats), `instanceMatrix` and `count` for `InstancedMesh`, `userData` of the relief drape. |
 | `gen.ts`, `build.mjs`, `relief_shim.ts` | `a58562c0…`, `42d3c58c…`, `dca1001f…` | the generator, its bundler and the relief shim |
 
 ## Real relief sampler (R-RUSTPORT-P4-24-MISC-RELIEF-WIRE-Q1)
@@ -67,7 +73,7 @@ node gen_relief.mjs ../out   # prints: misc relief range=432 reliefHexesDraped=1
 
 | File | SHA-256 | Content |
 |---|---|---|
-| `relief_real.json` | `f3cfbdcd889dba81b9372823832890cbb78da43acf30ce78dadefdd1c6b9fec8` | `maps` (4, all with `Wzgorza`/`Gory`: `mixed` seed 12345 = layout of `overlays.json`, `noseed`, `hillsNeg` seed −987654, `hillsWrap` seed 6442450944.75 → `seed \| 0` = −2³¹), the 18 `hexSets`, 6 `styles`; `range`: 432 `buildRangeOverlayGroup` cases (mine sheet + banded hug drape over 1136 relief hexes; culture / religion / banded / noY crossing the same hills); `samplers`: 904 `reliefSurfaceSampler(teren,q,r,seed,R)` probes (R ∈ {1, 1.5}, `null` on flat terrain), 16 560 `(x, z) → y` values as binary64 bits. |
+| `relief_real.json` | `f9e8588e1f6cf8df7681e37c39aad09f6749cab5f9cc9ed9a7e5cf515646c5cc` (pin `edb8fb56`: `f3cfbdcd…`; diff = `styles.mine.tintOpacity` + 68 `range[].objects[].mat.opacity` of style `mine`) | `maps` (4, all with `Wzgorza`/`Gory`: `mixed` seed 12345 = layout of `overlays.json`, `noseed`, `hillsNeg` seed −987654, `hillsWrap` seed 6442450944.75 → `seed \| 0` = −2³¹), the 18 `hexSets`, 6 `styles`; `range`: 432 `buildRangeOverlayGroup` cases (mine sheet + banded hug drape over 1136 relief hexes; culture / religion / banded / noY crossing the same hills); `samplers`: 904 `reliefSurfaceSampler(teren,q,r,seed,R)` probes (R ∈ {1, 1.5}, `null` on flat terrain), 16 560 `(x, z) → y` values as binary64 bits. |
 | `gen_relief.ts`, `build_relief.mjs` | `fc44a8e8…`, `991b1b57…` | generator and its shim-free bundler |
 
 Rust side: `tests/misc_web_parity.rs` → `range_overlay_real_relief_matches_web`

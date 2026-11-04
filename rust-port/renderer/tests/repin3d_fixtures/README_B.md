@@ -85,3 +85,28 @@ node gen_b3.mjs ../out          # prints: b3 cases=8 geos=1
 ```
 
 Mutations: `python3 tests/repin3d_fixtures/mutate_b2.py` (30 mutants; `RANGE=a:b` to split).
+
+## Batch B4: settlement-model resource registry (`cities.ts`), ghost hex-ring flag
+
+Topic R-RUSTPORT-REPIN-3D-B4-Q1 (document §11). Web `origin/main` @ `86d510c66`, three@0.169.0,
+esbuild@0.24.0, node v22.22.0; esbuild inputs of `gen_b4.ts` (metafile) 110 files, 4 617 030 B.
+
+| file | content | used by |
+|---|---|---|
+| `b4.json` (2 435 608 B) | `settlement` 3 330: one city through `CityRenderer.sync` (era {1,2,3,0,7} × civ (11 for era ≥ 2, `grecja`/`zulu` below) × 15 levels incl. 0, 11, 2.5, 6.49, NaN × wall kind {none, stone, palisada} × colour {default, `0x8e24aa`}): group `userData` key order, `mats` as indices into the first-use material list, `perCityGeos` as the traverse index of the first mesh of each geometry, mesh / unique counts, reuse flag, GPU disposals of the replaced model; `builders` 6 (`buildMiastoKamien` / `buildMiastoBraz` alone: no registry); `ghosts` 134 (`buildBronzeCityRoblox` / `buildStoneAgeCityRoblox`: `sharedTransientGeometry` on the cached hex wall ring) | `tests/repin3d_b4.rs` |
+
+`registerOwnedMeshResources` is module-private: it is reached only through the public
+`CityRenderer.sync`; no web code is copied. The pin fixtures `tests/fixtures/cities/*.json`
+reproduce byte for byte on `86d510c66` (no change of the image); `tests/fixtures/misc/relief_real.json`
+is REGENERATED on `86d510c66` (diff vs pin: the B1 mine tint opacity only).
+
+```bash
+# same scratch layout as B1
+cp rust-port/renderer/tests/repin3d_fixtures/gen_b4.ts $S/refscript/
+cd $S/refscript
+../ref/node_modules/.bin/esbuild gen_b4.ts --bundle --platform=node --format=esm --outfile=gen_b4.mjs \
+  --log-level=warning --alias:three=../ref/node_modules/three
+node gen_b4.mjs ../out          # prints: b4 settlement=3330 builders=6 ghosts=134 disposedOnSwap=210514
+```
+
+Mutations: `python3 tests/repin3d_fixtures/mutate_b4.py` (15 mutants; `RANGE=a:b` to split).

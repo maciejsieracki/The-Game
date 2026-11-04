@@ -53,8 +53,9 @@ pub use outline::{
     build_city_map_outline, place_city_map_outline, CityMapOutlineKind, OutlineData,
 };
 pub use renderer::{
-    build_legacy_city_model, build_settlement_model_for_style, owner_color, City,
-    CityRenderOptions, CityRenderer, CityWallKind, RenderedCity, RenderedOutline, SceneObject,
+    build_legacy_city_model, build_settlement_model_for_style, owner_color,
+    register_owned_mesh_resources, City, CityRenderOptions, CityRenderer, CityWallKind,
+    RenderedCity, RenderedOutline, SceneObject,
 };
 pub use settlement::build_settlement_model;
 pub use stone_civ::{stone_civ_label, StoneCiv, STONE_CIVS};
