@@ -18,6 +18,14 @@
  * Tryb pomiaru (bez asercji, liczby do raportu):  MEASURE=1 node tools/oboz-lowiecki-las-test.cjs
  */
 
+// AKTUALIZACJA R-WEB-OBOZ-LOWIECKI-LAS-TEST-DEBT-Q1 (klasyfikacja A, przestarzaly pin):
+// od R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1 (tools/oboz-lowiecki-wymaga-tartaku-test.cjs)
+// `oboz_lowiecki` wymaga na TYM SAMYM heksie wczesniej zbudowanego `tartak`. Asercje
+// pozytywne tego pliku (las => obóz dostepny) stawialy obóz na heksie BEZ tartaku, wiec
+// pada­ly (19 FAIL na bazie). Teraz KAZDY scenariusz ma tartak na heksie (fixture), dzieki
+// czemu asercje negatywne (równina/wzgórze bez lasu) sprawdzaja WYLACZNIE warunek lasu,
+// a nie przypadkowa blokade z braku tartaku. Sam wymóg tartaku pilnuje
+// oboz-lowiecki-wymaga-tartaku-test.cjs.
 const fs = require('fs');
 const path = require('path');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
@@ -28,6 +36,7 @@ const BUNDLE = path.resolve(__dirname, '.oboz-lowiecki-las-bundle.cjs');
 
 fs.writeFileSync(ENTRY, `
 export { generateMap } from ${JSON.stringify(SRC + '/map/generator')};
+export { isFreshwaterReservedHex } from ${JSON.stringify(SRC + '/map/freshwater')};
 export {
   buildImprovementQualifier,
   createImprovementBuildApi,
@@ -99,6 +108,18 @@ function stateForWholeMap(map, extra) {
   }, extra || {});
 }
 
+/** Mapa warstw: tartak na kazdym heksie ladu (fixture wymogu obozu). */
+function placedTartakEverywhere(map, extraByKey) {
+  const m = new Map();
+  for (const hk of Object.keys(map.hexes)) {
+    const h = map.hexes[hk];
+    if (!h || h.terenBazowy === TerenBazowy.Morze) continue;
+    m.set(hk, ['tartak']);
+  }
+  for (const [k, v] of Object.entries(extraByKey || {})) m.set(k, v);
+  return m;
+}
+
 // =============================================================================
 // KROK 2 — POMIAR: ile pól kwalifikuje się w trzech wariantach
 // =============================================================================
@@ -145,6 +166,7 @@ function synthMap(cells) {
       zloze: c.zloze,
       wysokosc: 0.5,
       rzeka: { obecna: false },
+      ulepszenia: ['tartak'], // fixture: tartak juz stoi (wymóg obozu), patrz naglowek
     };
   });
   return { hexes, width: cells.length, height: 1, riverPaths: [], starts: [] };
@@ -182,7 +204,7 @@ async function main() {
     { teren: TerenBazowy.Pustynia, nakladka: Nakladka.Las },             // 9: las na pustyni
   ];
   const smap = synthMap(cells);
-  const st = stateForWholeMap(smap);
+  const st = stateForWholeMap(smap, { placedImprovements: placedTartakEverywhere(smap) });
   const qual = M.buildImprovementQualifier(st);
   const api = M.createImprovementBuildApi(st, { activeKey: 'oboz_lowiecki' });
 
@@ -207,11 +229,11 @@ async function main() {
   ok(qual('oboz_lowiecki', 9, 0) === true, 'gracz: las na pustyni -> DOSTĘPNY (las = warunek jedyny)');
 
   // commit gracza — twarda blokada w computeImprovementBuildImpact
-  ok(M.computeImprovementBuildImpact('oboz_lowiecki', smap.hexes['0,0'], []) === null,
+  ok(M.computeImprovementBuildImpact('oboz_lowiecki', smap.hexes['0,0'], ['tartak']) === null,
     'K1 gracz (commit): impact=null na wzgórzu bez lasu ze złożem — blokada także poza panelem');
-  ok(M.computeImprovementBuildImpact('oboz_lowiecki', smap.hexes['1,0'], []) !== null,
+  ok(M.computeImprovementBuildImpact('oboz_lowiecki', smap.hexes['1,0'], ['tartak']) !== null,
     'K2 gracz (commit): impact!=null na lesie na wzgórzu');
-  ok(M.computeImprovementBuildImpact('oboz_lowiecki', smap.hexes['3,0'], []) === null,
+  ok(M.computeImprovementBuildImpact('oboz_lowiecki', smap.hexes['3,0'], ['tartak']) === null,
     'K4 gracz (commit): impact=null na równinie bez lasu');
 
   // depositAllowsPlayerImprovement — wyjątek rezerwy złoża
@@ -229,7 +251,7 @@ async function main() {
       ownerId: 0,
       map: one,
       territoryNodes: [{ q: 0, r: 0, ownerId: 0, cityId: 'c0' }],
-      placedImprovements: new Map(),
+      placedImprovements: new Map([['0,0', ['tartak']]]),
       pracaAvailable: 100000,
       unlockedTechs: new Set(['lowiectwo', 'Łowiectwo']),
       pracaSurplusThreshold: 0,
@@ -306,7 +328,7 @@ async function main() {
     JSON.stringify(migMixed));
 
   const stWith = stateForWholeMap(smap, {
-    placedImprovements: new Map([['0,0', ['oboz_lowiecki']]]),
+    placedImprovements: new Map([['0,0', ['tartak', 'oboz_lowiecki']]]),
   });
   const apiWith = M.createImprovementBuildApi(stWith, { activeKey: 'oboz_lowiecki' });
   ok(apiWith.canBuild('oboz_lowiecki', 0, 0) === false,
@@ -322,10 +344,10 @@ async function main() {
   ];
   for (const [nazwa, nak] of ANIMAL_NAK) {
     const one = synthMap([{ teren: TerenBazowy.Wzgorza, nakladka: nak }]);
-    const q1 = M.buildImprovementQualifier(stateForWholeMap(one));
+    const q1 = M.buildImprovementQualifier(stateForWholeMap(one, { placedImprovements: placedTartakEverywhere(one) }));
     ok(q1('oboz_lowiecki', 0, 0) === false,
       `K1 gracz: wzgorze bez lasu + ${nazwa} -> obóz NIEDOSTĘPNY`);
-    ok(M.computeImprovementBuildImpact('oboz_lowiecki', one.hexes['0,0'], []) === null,
+    ok(M.computeImprovementBuildImpact('oboz_lowiecki', one.hexes['0,0'], ['tartak']) === null,
       `K1 commit: wzgorze bez lasu + ${nazwa} -> impact=null`);
     const html1 = M.buildHexContextTooltipHtml({
       q: 0, r: 0, hex: one.hexes['0,0'], esc: (x) => String(x), currentEra: 99, map: one,
@@ -337,7 +359,7 @@ async function main() {
       cities: [{ id: 'c0', ownerId: 0, q: 0, r: 0, population: 1 }],
       ownerId: 0, map: one,
       territoryNodes: [{ q: 0, r: 0, ownerId: 0, cityId: 'c0' }],
-      placedImprovements: new Map(), pracaAvailable: 100000,
+      placedImprovements: new Map([['0,0', ['tartak']]]), pracaAvailable: 100000,
       unlockedTechs: new Set(['lowiectwo', 'Łowiectwo']),
       pracaSurplusThreshold: 0, pracaBudgetPercent: 100,
       skipWyrab: true, playerEra: 1, priorityOverride: ['oboz_lowiecki'],
@@ -359,14 +381,17 @@ async function main() {
     for (const k of gKeys) { const h = gmap.hexes[k]; if (h && pred(h)) return h; }
     return null;
   };
-  const gState = stateForWholeMap(gmap);
+  // fixture: tartak na kazdym heksie (hex.ulepszenia czyta tooltip, placed czyta qualifier/picker)
+  for (const k of gKeys) { const h = gmap.hexes[k]; if (h && h.terenBazowy !== TerenBazowy.Morze) h.ulepszenia = ['tartak']; }
+  const gPlaced = placedTartakEverywhere(gmap);
+  const gState = stateForWholeMap(gmap, { placedImprovements: gPlaced });
   const gQual = M.buildImprovementQualifier(gState);
   const gPick = (hex) => {
     const picks = M.pickAutoImprovements({
       cities: [{ id: 'c0', ownerId: 0, q: hex.coords.q, r: hex.coords.r, population: 1 }],
       ownerId: 0, map: gmap,
       territoryNodes: [{ q: hex.coords.q, r: hex.coords.r, ownerId: 0, cityId: 'c0' }],
-      placedImprovements: new Map(), pracaAvailable: 100000,
+      placedImprovements: new Map([[`${hex.coords.q},${hex.coords.r}`, ['tartak']]]), pracaAvailable: 100000,
       unlockedTechs: new Set(['lowiectwo', 'Łowiectwo']),
       pracaSurplusThreshold: 0, pracaBudgetPercent: 100,
       skipWyrab: true, playerEra: 1, priorityOverride: ['oboz_lowiecki'],
@@ -382,8 +407,13 @@ async function main() {
     return i >= 0 && html.slice(i).includes('Obóz łowiecki');
   };
   const gCases = [
-    ['LAS NA WZGORZU', h => h.nakladka === Nakladka.Las && h.terenBazowy === TerenBazowy.Wzgorza, true],
-    ['las na rowninie', h => h.nakladka === Nakladka.Las && h.terenBazowy === TerenBazowy.Rownina, true],
+    // Pozytywne przypadki: las POZA rezerwa slodkiej wody. Picker (automat/AI) swiadomie nie
+    // stawia obozu/tartaku na heksie na rzece/jeziorze ani obok nich (decyzja wlasciciela
+    // 2026-11-02 „miejsca przy rzece i na rzece sa przeznaczone na zywnosc",
+    // map/freshwater.ts isFreshwaterReservedHex + auto-improvements.ts foodReservedHex;
+    // D-R5-2). Gracz/tooltip/commit tej rezerwy NIE egzekwuja -- osobna asercja nizej.
+    ['LAS NA WZGORZU', h => h.nakladka === Nakladka.Las && h.terenBazowy === TerenBazowy.Wzgorza && !M.isFreshwaterReservedHex(gmap, h.coords.q, h.coords.r), true],
+    ['las na rowninie', h => h.nakladka === Nakladka.Las && h.terenBazowy === TerenBazowy.Rownina && !M.isFreshwaterReservedHex(gmap, h.coords.q, h.coords.r), true],
     ['ROWNINA bez lasu', h => h.nakladka === Nakladka.Brak && h.terenBazowy === TerenBazowy.Rownina, false],
     ['gole wzgorze', h => h.nakladka === Nakladka.Brak && h.terenBazowy === TerenBazowy.Wzgorza, false],
   ];
@@ -398,10 +428,23 @@ async function main() {
       `mapa 42 ${co} „${nazwa}" AUTOMAT+AI: picker ${oczek ? 'stawia' : 'NIE stawia'} obozu`);
     ok(gTooltip(h) === oczek,
       `mapa 42 ${co} „${nazwa}" TOOLTIP: oboz ${oczek ? 'JEST' : 'NIE ma go'} na liscie`);
-    ok((M.computeImprovementBuildImpact('oboz_lowiecki', h, []) !== null) === oczek,
+    ok((M.computeImprovementBuildImpact('oboz_lowiecki', h, ['tartak']) !== null) === oczek,
       `mapa 42 ${co} „${nazwa}" COMMIT: impact ${oczek ? '!=' : '=='} null`);
   }
 
+
+  // Rezerwa slodkiej wody (decyzja 2026-11-02): las NA RZECE -- picker NIE stawia obozu,
+  // choc sciezka gracza (qualifier) go dopuszcza. Pin zachowania, nie hex wybrany pod wynik.
+  {
+    const hRiv = findG(h => h.nakladka === Nakladka.Las && h.rzeka?.obecna === true);
+    ok(hRiv !== null, 'mapa 42: istnieje heks „las NA RZECE" (warunek istotnosci)');
+    if (hRiv) {
+      ok(gPick(hRiv) === false,
+        'rezerwa wody: AUTOMAT+AI nie stawia obozu na lesie na rzece (zywnosc ma pierwszenstwo)');
+      ok(gQual('oboz_lowiecki', hRiv.coords.q, hRiv.coords.r) === true,
+        'rezerwa wody: GRACZ moze postawic oboz na lesie na rzece (rezerwa dotyczy tylko pickera)');
+    }
+  }
 
   // =========================================================================
   // (8) P7 — WYRĄB LASU SPOD ULEPSZENIA (runda 2; ECHO właściciela 2026-08-27, wariant A)
@@ -499,13 +542,13 @@ async function main() {
     const { mp, key } = mkLasHex(42, predLasWzg);
     ok(!!key, 'P7-A0 warunek istotności: mapa 42 ma LAS NA WZGÓRZU (heks z generateMap)');
     const hex = mp.hexes[key];
-    const stA = stateForWholeMap(mp);
+    const stA = stateForWholeMap(mp, { placedImprovements: placedTartakEverywhere(mp) });
     const qA = M.buildImprovementQualifier(stA);
     ok(qA('oboz_lowiecki', hex.coords.q, hex.coords.r) === true,
       `P7-A1 warunek istotności: obóz JEST tu legalny przed wyrębem ${key}`);
     // Postawienie obozu ścieżką gracza (te same struktury co main.ts applyBuildRequest).
-    const placed = new Map([[key, ['oboz_lowiecki']]]);
-    hex.ulepszenia = ['oboz_lowiecki'];
+    const placed = new Map([[key, ['tartak', 'oboz_lowiecki']]]);
+    hex.ulepszenia = ['tartak', 'oboz_lowiecki'];
     hex.improvementKey = 'oboz_lowiecki';
     ok(qA('wyrab', hex.coords.q, hex.coords.r) === true,
       'P7-A2 warunek istotności: wyrąb JEST dostępny na heksie z obozem (ścieżka realna)');
@@ -527,11 +570,11 @@ async function main() {
     const { mp, key } = mkLasHex(1337, predLas);
     ok(!!key, 'P7-B0 warunek istotności: mapa 1337 ma heks z lasem');
     const hex = mp.hexes[key];
-    const stB = stateForWholeMap(mp);
+    const stB = stateForWholeMap(mp, { placedImprovements: placedTartakEverywhere(mp) });
     ok(M.buildImprovementQualifier(stB)('oboz_lowiecki', hex.coords.q, hex.coords.r) === true,
       'P7-B1 warunek istotności: obóz legalny na tym heksie przed wyrębem AI');
-    const placedAi = new Map([[key, ['oboz_lowiecki']]]);
-    hex.ulepszenia = ['oboz_lowiecki'];
+    const placedAi = new Map([[key, ['tartak', 'oboz_lowiecki']]]);
+    hex.ulepszenia = ['tartak', 'oboz_lowiecki'];
     const wynik = wyrabAI(mp, placedAi, key);
     console.log(`     [AI] po wyrębie ${key}: ${wynik} nakladka=${hex.nakladka} placed=${JSON.stringify(placedAi.get(key) ?? null)}`);
     ok(wynik === 'wyciete' && hex.nakladka === Nakladka.Brak,
