@@ -26788,6 +26788,17 @@ async function boot(): Promise<void> {
           return true;
         },
         hasMarch: (unitId: string): boolean => plannedMarches.has(unitId),
+        /** Marsz-z-atakiem (jak `planMarchTo` na widocznego wroga): cel = heks wroga + `attackUnitId`. */
+        queueMarchAttack: (unitId: string, targetId: string): boolean => {
+          const t = units.find(x => x.id === targetId);
+          if (!t || !units.some(x => x.id === unitId)) return false;
+          plannedMarches.set(unitId, { destQ: t.q, destR: t.r, attackUnitId: targetId });
+          marchAttackTargets.set(unitId, targetId);
+          return true;
+        },
+        hasAttackTarget: (unitId: string): boolean => marchAttackTargets.has(unitId),
+        /** Okno bitwy gracza otwarte lub bitwa czeka w kolejce auto-pre-battle. */
+        battleOpen: (): boolean => isPreBattleOpen() || hasPendingAutoPreBattle(),
         isAnimating: (): boolean => isAnimating,
         refillMove: (unitId: string): void => { const u = units.find(x => x.id === unitId); if (u) u.ruchLeft = u.ruch; },
         unitState: (unitId: string) => { const u = units.find(x => x.id === unitId); return u ? { q: u.q, r: u.r, ruchLeft: u.ruchLeft, ruch: u.ruch } : null; },
@@ -28717,6 +28728,7 @@ async function boot(): Promise<void> {
       promptMergeIfCoLocated(stack.map(s => s.id), fromQ, fromR, result.cost, deductedRuchMarch);
 
       const attackTargetId = marchAttackTargets.get(unitId);
+      phaseMark('PLAYER_MARCH_RESULT', unitId + ' arrived=' + result.arrived + ' stop=' + (result.stopReason ?? '') + ' atk=' + (attackTargetId ?? '') + ' launch=' + launchAttack);
       if (launchAttack && attackTargetId && tryLaunchMarchAttack(u, attackTargetId)) {
         syncGeneralMarchTargets();
         return true;

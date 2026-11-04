@@ -90,18 +90,26 @@ function structuralLayer() {
   const bad = structuralChecks(src);
   ok('S: main.ts spelnia wszystkie asercje strukturalne', bad.length === 0, bad);
 
-  const mutate = (label, fn) => {
+  // Mutacja jest „wykryta" TYLKO gdy wprowadza NOWA porazke o oczekiwanym kodzie, ktorej nie bylo w
+  // zrodle niezmutowanym. Wynik nie zalezy wiec od tego, czy zrodlo i tak ma INNE porazki (np. dawna baza
+  // f568e1ed3 przechodzila stary warunek M2 tylko dlatego, ze padala juz na S1/S4/S5).
+  const baseline = new Set(bad.map((b) => b.slice(0, 2)));
+  const mutate = (label, code, fn) => {
     const m = fn(src);
-    ok('MUTACJA ' + label + ' — wykryta', m !== src && structuralChecks(m).length > 0);
+    const added = structuralChecks(m).map((b) => b.slice(0, 2)).filter((c) => !baseline.has(c));
+    ok('MUTACJA ' + label + ' — wykryta (nowa porazka ' + code + ')', m !== src && added.includes(code), { changed: m !== src, added });
   };
-  mutate('M1 (powrot do enqueueMarchSegments w fazie gracza)', (s) =>
+  mutate('M1 (powrot do enqueueMarchSegments w fazie gracza)', 'S1', (s) =>
     s.replace('      syncGeneralMarchTargets();\n      for (const u of units) {\n        if (u.ownerId !== humanOwnerId || !plannedMarches.has(u.id)) continue;',
       '      syncGeneralMarchTargets();\n      enqueueMarchSegments([]);\n      for (const u of units) {\n        if (u.ownerId !== humanOwnerId || !plannedMarches.has(u.id)) continue;'));
-  mutate('M2 (ruchy gracza PO swiecie)', (s) =>
+  mutate('M2 (ruchy gracza PO swiecie)', 'S3', (s) =>
     s.replace('        runPlannedMarchesAtPlayerEndTurn(humanOwnerId);\n', '').replace('        await runWorldEndTurn(humanOwnerId);',
       '        await runWorldEndTurn(humanOwnerId);\n        runPlannedMarchesAtPlayerEndTurn(humanOwnerId);'));
-  mutate('M3 (brak oczekiwania na bitwe)', (s) => s.replace("phaseMark('PLAYER_BATTLE_WAIT_START')", "phaseMark('X')"));
-  mutate('M4 (hot-seat: brak dokonczenia ruchow fotela)', (s) => s.replace('runPlannedMarchesAtPlayerEndTurn(activeId, {', 'void ({'));
+  mutate('M3 (brak oczekiwania na bitwe)', 'S4', (s) => s.replace("phaseMark('PLAYER_BATTLE_WAIT_START')", "phaseMark('X')"));
+  mutate('M4 (hot-seat: brak dokonczenia ruchow fotela)', 'S5', (s) => s.replace('runPlannedMarchesAtPlayerEndTurn(activeId, {', 'void ({'));
+  mutate('M5 (hot-seat: marsz fotela PO przelaczeniu fotela)', 'S5', (s) =>
+    s.replace('runPlannedMarchesAtPlayerEndTurn(activeId, {', 'void ({').replace('        switchActiveHuman(nextSeat);',
+      '        switchActiveHuman(nextSeat);\n        runPlannedMarchesAtPlayerEndTurn(activeId, {});'));
 }
 
 /* ---------------------------------------------------------------- L. zywa */
@@ -342,6 +350,106 @@ async function scenarioHotSeat(browser, outDir) {
   }
 }
 
+/** Scenariusz wspolny L6/L7: jednostka gracza (fotel 0) z marszem-z-atakiem na widocznego wroga w odleglosci 3. */
+async function setupMarchAttack(page) {
+  return page.evaluate(() => {
+    const d = (a, b, c, e) => (Math.abs(a - c) + Math.abs(b - e) + Math.abs(a + b - c - e)) / 2;
+    const me = window.__civTest.state().cities.find((c) => c.ownerId === 0);
+    const land = (h) => h.teren === 'rownina' || h.teren === 'laka';
+    const around = window.__civTest.around(me.q, me.r, 6).filter(land);
+    const start = around.find((h) => d(me.q, me.r, h.q, h.r) === 1);
+    const foe = start && around.find((h) => d(start.q, start.r, h.q, h.r) === 3);
+    if (!start || !foe) return { fail: true };
+    window.__civTest.setWar(0, 1);
+    const id = window.__civTest.addUnit(0, start.q, start.r, false);
+    const foeId = window.__civTest.addUnit(1, foe.q, foe.r, false);
+    const queued = window.__playerMovesTestDebug.queueMarchAttack(id, foeId);
+    return { id, foeId, queued, start: { q: start.q, r: start.r }, foe: { q: foe.q, r: foe.r } };
+  });
+}
+
+async function scenarioBattleWait(browser, outDir) {
+  console.log('[L6] marsz-z-atakiem otwiera okno bitwy W FAZIE GRACZA; swiat/AI czeka na jego zamkniecie');
+  const { page, errors } = await openGame(browser, outDir);
+  try {
+    const sc = await setupMarchAttack(page);
+    ok('L6a scenariusz marszu-z-atakiem przygotowany', !!(sc && sc.id && sc.foeId && sc.queued), sc);
+    if (!(sc && sc.id && sc.foeId && sc.queued)) return;
+    await page.evaluate(`(${INSTALL_LOG})(${JSON.stringify([sc.id, sc.foeId])})`);
+    await page.evaluate(() => { window.__civTest.endTurn(); });
+    let opened = false;
+    for (let i = 0; i < 60 && !opened; i++) { await sleep(250); opened = await page.evaluate(() => window.__playerMovesTestDebug.battleOpen()); }
+    ok('L6b okno bitwy gracza otwarte przez marsz-z-atakiem (faza ruchow gracza)', opened);
+    // Okno otwarte ~3 s: swiat/AI NIE moze ruszyc (brak WORLD_START), a koniec tury wciaz trwa.
+    await sleep(3000);
+    const midLog = await page.evaluate(() => window.__civPhaseLog.map((e) => e.k));
+    const stillOpen = await page.evaluate(() => window.__playerMovesTestDebug.battleOpen());
+    ok('L6c przy otwartym oknie bitwy: jest PLAYER_BATTLE_WAIT_START, brak WORLD_START/AI_START',
+      stillOpen && midLog.includes('PLAYER_MOVES_END') && midLog.includes('PLAYER_BATTLE_WAIT_START')
+      && !midLog.includes('WORLD_START') && !midLog.includes('AI_START'), { stillOpen, midLog });
+    // Gracz rozstrzyga bitwe (Auto) -- dopiero wtedy rusza swiat.
+    const clicked = await page.evaluate(() => {
+      const b = document.querySelector('[data-act="auto"]');
+      if (b) { b.click(); return true; }
+      return false;
+    });
+    ok('L6d przycisk Auto okna bitwy znaleziony i kliknięty', clicked);
+    await waitEndTurnDone(page);
+    const log = await page.evaluate(() => window.__civPhaseLog);
+    console.log('  log faz: ' + log.map((e) => e.k + (e.d ? '(' + e.d + ')' : '')).join(' | '));
+    const iEnd = idx(log, 'PLAYER_MOVES_END');
+    const iW0 = idx(log, 'PLAYER_BATTLE_WAIT_START');
+    const iW1 = idx(log, 'PLAYER_BATTLE_WAIT_END');
+    const iWorld = idx(log, 'WORLD_START');
+    ok('L6e kolejnosc: ruchy gracza < czekanie na bitwe < koniec czekania < swiat < nowa tura gracza',
+      iEnd >= 0 && iEnd < iW0 && iW0 < iW1 && iW1 < iWorld && iWorld < idx(log, 'PLAYER_TURN_BEGIN'),
+      { iEnd, iW0, iW1, iWorld });
+    // (battleOpen() po PLAYER_TURN_BEGIN nie jest asercja: w fazie swiata wrog sasiadujacy z jednostka moze
+    // sam otworzyc kolejne okno bitwy -- to osobna, poprawna bitwa AI, nie z fazy ruchow gracza.)
+    ok('L6f po rozstrzygnieciu bitwy gracza swiat doszedl do konca i tura gracza sie rozpoczela',
+      idx(log, 'AI_END') > iWorld && idx(log, 'PLAYER_TURN_BEGIN') > idx(log, 'AI_END'));
+    ok('brak bledow strony (L6)', errors.length === 0, errors.slice(0, 3));
+  } finally {
+    await page.close();
+  }
+}
+
+async function scenarioHotSeatMarchAttack(browser, outDir) {
+  console.log('[L7] hot-seat: marsz-z-atakiem konczacego fotela dochodzi do celu, ale NIE odpala ataku (ZALOZENIE)');
+  const { page, errors } = await openGame(browser, outDir);
+  try {
+    await page.evaluate(() => {
+      const c1 = window.__civTest.state().cities.find((c) => c.ownerId === 1);
+      window.__hotSeatTestDebug.seedSecondSeat(1, { reassignCityId: c1.id });
+    });
+    const sc = await setupMarchAttack(page);
+    ok('L7a scenariusz hot-seat z marszem-z-atakiem przygotowany', !!(sc && sc.id && sc.foeId && sc.queued), sc);
+    if (!(sc && sc.id && sc.foeId && sc.queued)) return;
+    await page.evaluate(`(${INSTALL_LOG})(${JSON.stringify([sc.id, sc.foeId])})`);
+    await page.evaluate(() => { window.__civTest.endTurn(); }); // fotel 0 konczy
+    await page.waitForTimeout(2500);
+    const log = await page.evaluate(() => window.__civPhaseLog);
+    const st = await page.evaluate((id) => window.__playerMovesTestDebug.unitState(id), sc.id);
+    const hex = (a, b, c, e) => (Math.abs(a - c) + Math.abs(b - e) + Math.abs(a + b - c - e)) / 2;
+    console.log('  log faz (fotel 0): ' + log.map((e) => e.k + (e.d ? '(' + e.d + ')' : '')).join(' | '));
+    ok('L7b marsz dotarl do pola sasiadujacego z wrogiem (odleglosc 1) -- nie przepadl', st && hex(st.q, st.r, sc.foe.q, sc.foe.r) === 1, { st, foe: sc.foe });
+    ok('L7c ZALOZENIE: ataku z marszu NIE odpalono (zero okna bitwy, brak czekania na bitwe, brak WORLD_START)',
+      !(await page.evaluate(() => window.__playerMovesTestDebug.battleOpen()))
+      && idx(log, 'PLAYER_BATTLE_WAIT_START') < 0 && idx(log, 'WORLD_START') < 0 && idx(log, 'SEAT_MOVES_END') > 0, log.map((e) => e.k));
+    // Dokumentacja ISTNIEJACEGO zachowania hot-seat (main.ts `switchActiveHuman` KROK 2: `plannedMarches.clear()` —
+    // „marsze: zamknij, nie przywracaj"): po zmianie fotela plan marszu konczacego fotela jest zamykany, wiec ten
+    // jedyny segment w `advanceSeat` to jedyna szansa jego wykonania. Atak z marszu zatem nie przetrwa zmiany fotela
+    // niezaleznie od tego tematu (dawniej przepadal tez sam ruch).
+    ok('L7d plan marszu fotela zamkniety przy przelaczeniu fotela (istniejaca regula KROK 2, nie regresja)',
+      await page.evaluate((id) => !window.__playerMovesTestDebug.hasMarch(id), sc.id));
+    const active = await page.evaluate(() => window.__hotSeatTestDebug.snapshotHumanSeatsForTest().activeHumanOwnerId);
+    ok('L7e aktywny jest fotel 1 (okno bitwy nie wyciekło na kolejny fotel)', active === 1, active);
+    ok('brak bledow strony (L7)', errors.length === 0, errors.slice(0, 3));
+  } finally {
+    await page.close();
+  }
+}
+
 async function liveLayer() {
   console.log('[L] zywa (Chromium)');
   let outDir = OUT_ARG;
@@ -357,6 +465,8 @@ async function liveLayer() {
     await scenarioSingleSeat(browser, outDir);
     await scenarioEnemyOnRoute(browser, outDir);
     await scenarioHotSeat(browser, outDir);
+    await scenarioBattleWait(browser, outDir);
+    await scenarioHotSeatMarchAttack(browser, outDir);
   } finally {
     await browser.close();
     if (built) fs.rmSync(outDir, { recursive: true, force: true });
