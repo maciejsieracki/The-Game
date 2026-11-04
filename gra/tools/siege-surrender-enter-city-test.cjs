@@ -132,6 +132,23 @@ const muts = [
 ];
 muts.forEach(([a, b], i) => ok(battery(mutated('m' + i, a, b)) === false, 'mutacja ' + (i + 1) + ' wywraca baterie: ' + a.slice(0, 50)));
 
+console.log('B2. zapis/odczyt (JSON roundtrip) i idempotencja [uwaga po R1]');
+{
+  const u = [U('a', 0, 3, 0), U('b', 0, 3, 0)];
+  real.enterCityAfterSurrender(u, city, 0, deps);
+  const loaded = JSON.parse(JSON.stringify(u));
+  ok(pos(loaded, 'a') === CITY && pos(loaded, 'b') === CITY, 'po zapisie/odczycie JSON jednostki dalej stoja na heksie miasta');
+  ok(JSON.stringify(Object.keys(loaded[0]).sort()) === JSON.stringify(Object.keys(U('a', 0, 3, 0)).sort()), 'brak nowych pol stanu (ten sam zestaw kluczy)');
+  const again = real.enterCityAfterSurrender(loaded, city, 0, deps);
+  ok(again.length === 0 && pos(loaded, 'a') === CITY, 'drugie wywolanie nic nie zmienia (idempotentne)');
+}
+{
+  // Udokumentowane zachowanie (zarzut 2): jednostka INNEGO wlasciciela na heksie miasta (takze sojusznik zdobywcy) blokuje wejscie -- konserwatywnie.
+  const u = [U('a', 0, 3, 0), U('ally', 1, 2, 0, { oblegaCityId: undefined })];
+  real.enterCityAfterSurrender(u, city, 0, deps);
+  ok(pos(u, 'a') === '3,0', 'obca (takze sojusznicza) jednostka na heksie miasta blokuje wejscie -- zachowanie udokumentowane');
+}
+
 console.log('C. strukturalna main.ts');
 const main = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
 const fnStart = main.indexOf('function resolveSiegeSurrender(');
