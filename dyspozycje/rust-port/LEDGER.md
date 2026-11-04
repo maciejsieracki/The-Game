@@ -729,3 +729,6 @@ Operator (`cb00afecd`,`92670b75f`) → Evaluator PASS-WITH-NOTES (0 zarzutów) �
 
 ## 2026-11-04 — kontrola cykliczna 02:11
 Nic do integracji. Trwają (Opus 5.5): A3 (burzenie wieżyczki, pocisk, wyłom palisady) i B2+B3 (tabliczka statystyk, emblemat, gwiazda dowódcy). Web bez otwartych prac (ROBOCZA 34d2cada).
+
+## 2026-11-04 — R-RUSTPORT-REPIN-3D-B2-Q1 (B2+B3 częściowo) ZINTEGROWANE
+Operator (`a827fac07`,`55bdd989c`) → Evaluator PASS-WITH-NOTES (0 zarzutów) → Final Control PASS (`0eefb3a00`); fast-forward `parity-v2` `8d74519c2` → `0eefb3a00`. B2: `PLATE_OWNER_ICON_SIZE` 0,80·HEX_R, `ringHex`/`normalize_ring_hex`, klucz emblematu `civ:<civ>:<era>:<ring>`, `ring_color_for` (dysk, glif, pierścień nad portretem); B3: `build_commander_star`/`commander_star_update` (gwiazda dowódcy). Wektory/ref z Chromium 141 i node (21/21 SHA zgodne w niezależnej regeneracji), SSIM 0,9907–0,9939, mutacje 30/30, renderer 456/0, MSRV OK. Z-RP-B2-1 ZAAKCEPTOWANE (regeneracja fixtur overlay/atlas pinu). Otwarte: README fixtur pinu z nieaktualnymi SHA → B4 pkt 4; reszta B3 (HIGHLIGHT_OPACITY, cache odznak) → B4. Start B4: `R-RUSTPORT-REPIN-3D-B4-Q1`.
