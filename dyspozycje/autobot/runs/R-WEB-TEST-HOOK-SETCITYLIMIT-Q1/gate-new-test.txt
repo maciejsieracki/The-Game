@@ -1,0 +1,28 @@
+A. bez parametru ?civTest=1 hak nie istnieje (produkcja)
+  [OK] search="" -> brak __civTest
+  [OK] search="" -> baza limitu nietknieta (10)
+  [OK] search="?civTest=0" -> brak __civTest
+  [OK] search="?civTest=0" -> baza limitu nietknieta (10)
+  [OK] search="?testhook=1" -> brak __civTest
+  [OK] search="?testhook=1" -> baza limitu nietknieta (10)
+  [OK] search="?civTest=11" -> brak __civTest
+  [OK] search="?civTest=11" -> baza limitu nietknieta (10)
+B. bez wywolania setCityLimit limit liczy sie jak dotad (epoka 3, baza 10 -> limit 20)
+  [OK] hak zainstalowany, setCityLimit jest funkcja
+  [OK] baza 10, limit niewyczerpany, 0 fortow (stan "U-2" sprzed haka)
+C. setCityLimit(1), 1 miasto, epoka 3 (po unlockAllTech) -> limit wyczerpany -> automat buduje fort
+  [OK] baza = 1 - (3-1)*5 = -9 (got -9)
+  [OK] isCityLimitExhausted(1 miasto) === true
+  [OK] fort na gorze na granicy (got ["fort@27,22"])
+  [OK] realny canFoundCity odmawia: "limit miast na tej epoce" (parytet limitu)
+D. epoka 1 i 5: limit dokladnie n; n=2 przy 1 miescie -> NIE wyczerpany
+  [OK] epoka 1, limit 1 -> wyczerpany
+  [OK] epoka 1, limit 2 -> niewyczerpany, 0 fortow
+  [OK] epoka 5, limit 1 -> wyczerpany
+  [OK] epoka 5, limit 2 -> niewyczerpany, 0 fortow
+E. wejscia niepoprawne ignorowane; 0 dozwolone
+  [OK] NaN/-1/Infinity/undefined -> baza bez zmian
+  [OK] n=0 -> limit 0, wyczerpany nawet bez miast
+
+PASS=20 FAIL=0
+EXIT=0
