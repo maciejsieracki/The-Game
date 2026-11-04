@@ -277,6 +277,8 @@ async function runVariant(chromium, variant, html) {
     await place(page, 'tartak', sawH.q, sawH.r); await wait(300);
     out.sawAfter = await decor(page, sawH.q, sawH.r);
     out.sawInfo = await D(page, 'campInfo', [sawH.q, sawH.r]);
+    // Zrzut referencyjny TARTAKU (R2): to samo ujęcie (zbliżenie dist=14) co zrzuty obozu 1/2.
+    await shot(page, sawH.q, sawH.r, 14, path.join(SHOTS, variant + '-0-tartak-referencja-zblizenie-1280x720.png'));
 
     // S2: tartak + obóz (realne warstwy) — jedno wzgórze, zrzuty PRZED/PO
     await place(page, 'tartak', campH.q, campH.r); await wait(300);
