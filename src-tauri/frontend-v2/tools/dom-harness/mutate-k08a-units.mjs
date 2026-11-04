@@ -39,7 +39,7 @@ const src = readFileSync(PORT, 'utf8');
 
 /** Mutacje: [id, grupa, opis, tekst do zastąpienia (dokładnie raz), zamiennik]. */
 const MUTANTS = [
-  // refreshCityPanelIfOpen (pin :10337-10346).
+  // refreshCityPanelIfOpen (pin :10584-10593).
   ['refresh-ux-gate', 'pole', 'gałąź uxSectionRefresh pominięta', 'if (getK07aUxSectionRefresh()) {', 'if (false) {'],
   ['refresh-ux-call', 'pole', 'uxSectionRefresh nie wywołane', '    getK07aUxSectionRefresh()?.();\n    return;', '    return;'],
   ['refresh-ux-return', 'pole', 'brak return po uxRefresh (dodatkowy rerender)', '    getK07aUxSectionRefresh()?.();\n    return;', '    getK07aUxSectionRefresh()?.();'],
@@ -51,7 +51,7 @@ const MUTANTS = [
   ['resolve-k06-nosync', 'pole', 'bez sync lustra K06A (r3 zarzut FC r2 #1)', '    setK06aActive(fresh as unknown as CityK06, k06.activeMap, k06.activeOnClose);', '    void 0;'],
   ['resolve-k06-null-nosync', 'pole', 'brak miasta: lustro K06A nie zerowane (r3)', '    if (k06.activeCity !== null) setK06aActive(null, k06.activeMap, k06.activeOnClose);', '    void 0;'],
   ['resolve-k06-id-any', 'pole', 'sync K06A bez sprawdzenia id (r3)', '  } else if (k06.activeCity !== null && k06.activeCity.id === fresh.id) {', '  } else if (k06.activeCity !== null) {'],
-  // clearCityPanelUxMode (pin :10367-10374).
+  // clearCityPanelUxMode (pin :10614-10621).
   ['clear-garrison', 'pole', 'clearGarrisonPanel pominięte', '  requireK08aDeps().clearGarrisonPanel();\n  setK07aUxSectionRefresh(null);', '  setK07aUxSectionRefresh(null);'],
   ['clear-dispose', 'pole', 'disposeHoverDetailDock pominięte', '  requireK08aDeps().disposeHoverDetailDock();\n}', '}'],
   ['clear-ux-null', 'pole', 'uxSectionRefresh nie zerowane', "  setK07aUxSectionRefresh(null);\n  activeCityPanelTab = 'budowa';", "  activeCityPanelTab = 'budowa';"],
@@ -61,36 +61,36 @@ const MUTANTS = [
   ['mirror-k07-omit', 'pole', 'lustro K07A (activeCity) nie czyszczone', '  setK07aActiveCity(null);\n  setK06aActive', '  setK06aActive'],
   ['mirror-k06-omit', 'pole', 'lustra K06A (activeCity/activeMap) nie czyszczone', '  setK06aActive(null, null, getK06aState().activeOnClose);', '  void 0;'],
   ['mirror-onclose', 'pole', 'activeOnClose zerowany (pin go nie zeruje)', '  setK06aActive(null, null, getK06aState().activeOnClose);', '  setK06aActive(null, null, () => {});'],
-  // closeCityView (pin :10694-10698).
+  // closeCityView (pin :10941-10945).
   ['close-clear', 'pole', 'closeCityView bez clearCityPanelUxMode', '  clearCityPanelUxMode();\n  if (onClose) onClose();', '  if (onClose) onClose();'],
   ['close-custom', 'pole', 'custom onClose pominięte', '  if (onClose) onClose();\n  else', '  if (false) onClose();\n  else'],
   ['close-default', 'pole', 'domyślny onClose pominięty', '  else getK06aState().activeOnClose();', '  else void 0;'],
   ['close-custom-plus-default', 'pole', 'custom onClose wywołuje także domyślny', '  if (onClose) onClose();\n  else getK06aState().activeOnClose();', '  if (onClose) { onClose(); getK06aState().activeOnClose(); }\n  else getK06aState().activeOnClose();'],
-  // closeCityPanelIfOpen (pin :11971-11976).
+  // closeCityPanelIfOpen (pin :12212-12217).
   ['cpi-guard', 'pole', 'guard odwrócony', '  if (!isCityPanelOpen()) return false;', '  if (isCityPanelOpen()) return false;'],
   ['cpi-garrison', 'pole', 'clearGarrisonPanel pominięte w zamykaniu', '  requireK08aDeps().clearGarrisonPanel();\n  getK06aState().activeOnClose();\n  return true;', '  getK06aState().activeOnClose();\n  return true;'],
   ['cpi-onclose', 'pole', 'activeOnClose pominięte', '  getK06aState().activeOnClose();\n  return true;', '  return true;'],
   ['cpi-return', 'pole', 'zwracana wartość false po zamknięciu', '  return true;\n}', '  return false;\n}'],
-  // isCityPanelOpen (pin :11979-11981) i getOpenCityPanelCityId (pin :11984-11986).
+  // isCityPanelOpen (pin :12220-12222) i getOpenCityPanelCityId (pin :12225-12227).
   ['open-negate', 'pole', 'isCityPanelOpen zanegowany', '  return requireK08aDeps().isCityUxFrameOpen();', '  return !requireK08aDeps().isCityUxFrameOpen();'],
   ['open-const', 'pole', 'isCityPanelOpen zawsze true', '  return requireK08aDeps().isCityUxFrameOpen();', '  return true;'],
   ['getid-fallback', 'brzeg', 'brak miasta zwraca pusty string zamiast null', '  return getK07aActiveCity()?.id ?? null;', "  return getK07aActiveCity()?.id ?? '';"],
   ['getid-field', 'pole', 'zwracane pole: nazwa zamiast id', '  return getK07aActiveCity()?.id ?? null;', '  return getK07aActiveCity()?.name ?? null;'],
   ['getid-source', 'pole', 'źródło: lustro K06A zamiast K07A', '  return getK07aActiveCity()?.id ?? null;', '  return getK06aState().activeCity?.id ?? null;'],
-  // Stałe ikon i tytuły (pin :11554-11571).
+  // Stałe ikon i tytuły (pin :11795-11812).
   ['icons-left-iconid', 'pole', 'iconId budowa zamieniony', "iconId: 'cp-buildings'", "iconId: 'cp-recruit'"],
   ['icons-left-title', 'tekst', 'tytuł rekrutacji zmieniony', "title: 'Jednostki do rekrutacji'", "title: 'Jednostki'"],
   ['icons-right-iconid', 'pole', 'iconId handlu zamieniony', "iconId: 'cp-trade'", "iconId: 'cp-labor'"],
   ['icons-right-title', 'tekst', 'tytuł kultury zmieniony', "title: 'Kultura — granice i progi'", "title: 'Kultura — granice'"],
   ['icons-right-id', 'pole', 'id zakładki religia zamienione', "{ id: 'religia', iconId", "{ id: 'religja', iconId"],
-  // isProductionPanelTab (pin :11573-11575).
+  // isProductionPanelTab (pin :11814-11816).
   ['prod-rekrutacja', 'pole', 'rekrutacja nie jest panelem produkcji', "return tab === 'budowa' || tab === 'rekrutacja';", "return tab === 'budowa';"],
   ['prod-budowa', 'pole', 'budowa nie jest panelem produkcji', "return tab === 'budowa' || tab === 'rekrutacja';", "return tab === 'rekrutacja';"],
-  // CADUCEUS_SVG (pin :11577-11585).
+  // CADUCEUS_SVG (pin :11818-11826).
   ['cad-stroke', 'tekst', 'grubość obrysu zmieniona', 'stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden', 'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden'],
   ['cad-path', 'tekst', 'ścieżka lewej gałęzi zmieniona', '<path d="M12 8.6 C8.2 6.2 5.2 7.1 4 9.2"/>', '<path d="M12 8.6 C8.2 6.2 5.2 7.1 4 9.3"/>'],
   ['cad-aria', 'tekst', 'aria-hidden usunięte', 'aria-hidden="true">\' +', '>\' +'],
-  // cityRailIconHtml (pin :11587-11591).
+  // cityRailIconHtml (pin :11828-11832).
   ['rail-empty', 'brzeg', 'brak ikony zwraca placeholder zamiast pustego', "  if (!svg) return '';", "  if (!svg) return '<svg></svg>';"],
   ['rail-class', 'tekst', 'klasa civ-cp-rail-ic pominięta', `return svg.replace('<svg ', '<svg class="civ-cp-rail-ic" ');`, 'return svg;'],
   ['rail-size', 'pole', 'rozmiar ikony 24 → 16', 'brandIconSvg(iconId, 24)', 'brandIconSvg(iconId, 16)'],

@@ -227,7 +227,7 @@ const WYZYWIENIE_MAX = 6;
 
 // ─── Jednostki K07A (kopie pinu wygenerowane; markery = bramka verify-k07a-copies.mjs) ─────────────────────────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10247-10327
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10494-10574
 export function skeleton(city: CityK07, view: CityView | null): string {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const owner = isMeCity(city.ownerId) ? 'Gracz' : 'AI';
@@ -311,7 +311,7 @@ export function skeleton(city: CityK07, view: CityView | null): string {
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10329-10334
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10576-10581
 export function resolveK07aActiveCity(): CityK07 | null {
   if (activeCity === null) return null;
   const fresh = deps?.getCities().find(c => c.id === activeCity!.id);
@@ -320,11 +320,11 @@ export function resolveK07aActiveCity(): CityK07 | null {
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10365-10365
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10612-10612
 let uxSectionRefresh: (() => void) | null = null;
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10384-10391
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10631-10638
 export const W3_STAT_RES_KEY_K07: Record<string, ResourceColorKey | undefined> = {
   praca: 'praca',
   zywnosc: 'zywnosc',
@@ -335,7 +335,7 @@ export const W3_STAT_RES_KEY_K07: Record<string, ResourceColorKey | undefined> =
 };
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10393-10419
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10640-10666
 export function w3CityChipK07(
   icon: string,
   label: string,
@@ -365,7 +365,7 @@ export function w3CityChipK07(
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10432-10579
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10679-10826
 export function buildCityOnlyW3FlankChips(
   city: CityK07,
   view: CityView,
@@ -516,7 +516,7 @@ export function buildCityOnlyW3FlankChips(
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10581-10692
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10828-10939
 export function buildCityResourceStatItems(
   city: CityK07,
   view: CityView | null,
@@ -631,7 +631,7 @@ export function buildCityResourceStatItems(
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:10719-10734
+// pin 86d510c66 gra/src/ui/cityPanel.ts:10966-10981
 export function capitalBadgeOrButtonHtmlK07(city: CityK07): string {
   const capitalId = deps?.getCapitalCityId(city.ownerId) ?? null;
   if (capitalId != null && capitalId === city.id) {

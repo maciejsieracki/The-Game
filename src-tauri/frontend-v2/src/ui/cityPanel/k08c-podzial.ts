@@ -22,7 +22,7 @@ import {
 
 // ─── Jednostki K08C, partia k08c-podzial.ts (kopie pinu wygenerowane; markery = bramka verify-k08c-copies.mjs) ─────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:5112-5188
+// pin 86d510c66 gra/src/ui/cityPanel.ts:5183-5259
 export function renderPodzialPracy(
   mount: HTMLElement,
   city: City,

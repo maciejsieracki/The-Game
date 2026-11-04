@@ -19,6 +19,7 @@ import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pinFileLabel, rangeForPinDir } from './repin-ui2g-rev.mjs'; // REPIN-UI-2-G r2 (Z6): etykieta = rewizja faktycznego --pin-dir
 import * as esbuild from 'esbuild';
 import { JSDOM } from 'jsdom';
 
@@ -47,7 +48,8 @@ const DOM_UNITS = [
   'renderWorkedPreview', 'setGarrisonLabelPinned', 'pinGarrisonPanel', 'clearGarrisonPanel',
 ];
 /** Zakresy linii pinu z pomiaru (odroczone.json, reason DOM). */
-const RANGES = JSON.parse(readFileSync(new URL('./k06b-ranges.json', import.meta.url), 'utf8'));
+// REPIN-UI-2-G r2: zakresy pinu edb8fb56 → rewizja --pin-dir (web 86d510c66 przez repin-ui2g-rangemap.json).
+const RANGES = Object.fromEntries(Object.entries(JSON.parse(readFileSync(new URL('./k06b-ranges.json', import.meta.url), 'utf8'))).map(([n, r]) => [n, rangeForPinDir(PIN_DIR, r.a, r.b)]));
 
 /** Nazwy zależności po stronie pinu (funkcje i wartości) — ten sam zbiór co delegaty portu. */
 const FN_NAMES = JSON.parse(readFileSync(new URL('../../src/ui/cityPanel/k06b-deps.ts', import.meta.url), 'utf8').match(/K06B_FN_NAMES = (\[[^\]]*\])/)[1]);
@@ -394,7 +396,7 @@ try {
     }
   }
 
-  console.log(JSON.stringify({ comparisons, diffs, units: DOM_UNITS.length, pinFile: 'gra/src/ui/cityPanel.ts (edb8fb56)', portDir: 'src/ui/cityPanel' }, null, 1));
+  console.log(JSON.stringify({ comparisons, diffs, units: DOM_UNITS.length, pinFile: pinFileLabel(PIN_DIR), portDir: 'src/ui/cityPanel' }, null, 1));
   if (report.length) {
     // Podsumowanie różnic: pole, błędy po obu stronach, pierwsza rozbieżna pozycja dziennika.
     for (const r of report) {

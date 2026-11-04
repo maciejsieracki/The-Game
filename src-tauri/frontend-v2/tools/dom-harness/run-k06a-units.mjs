@@ -18,6 +18,7 @@ import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pinFileLabel } from './repin-ui2g-rev.mjs'; // REPIN-UI-2-G r2 (Z6): etykieta = rewizja faktycznego --pin-dir
 import * as esbuild from 'esbuild';
 
 const args = process.argv.slice(2);
@@ -299,7 +300,7 @@ try {
     }
   }
 
-  console.log(JSON.stringify({ comparisons, diffs, units: UNIT_NAMES.length, pinFile: 'gra/src/ui/cityPanel.ts (edb8fb56)' }, null, 1));
+  console.log(JSON.stringify({ comparisons, diffs, units: UNIT_NAMES.length, pinFile: pinFileLabel(PIN_DIR) }, null, 1));
   if (report.length) console.log(JSON.stringify(report.slice(0, 20), null, 1));
   exitCode = diffs === 0 ? 0 : 1;
 } catch (err) {

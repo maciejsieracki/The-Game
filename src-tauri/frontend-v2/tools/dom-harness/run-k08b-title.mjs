@@ -43,12 +43,12 @@ const check = (id, pin, got, want) => {
 
 /** PIN-ANCHOR: [linia pinu (1-indeksowana), literał]. */
 const PIN_ANCHORS = [
-  [11513, ".closest('.civ-ux-left')"], [11514, ".closest('.civ-ux-right')"],
-  [11523, "el('div', 'ptitle')"], [11524, "el('span', '')"],
-  [11527, "'okolica-info-link civ-w4-panel-detail gold'"], [11528, "infoLink.type = 'button'"],
-  [11529, "'i szczegóły'"], [11530, "'Pokaż szczegóły sekcji'"],
-  [11531, 'head.appendChild(infoLink)'], [11532, 'mount.appendChild(head)'],
-  [11534, 'delayMs: 220'], [11535, 'sideHint: resolveDetailSideHint(mount)'],
+  [11754, ".closest('.civ-ux-left')"], [11755, ".closest('.civ-ux-right')"],
+  [11764, "el('div', 'ptitle')"], [11765, "el('span', '')"],
+  [11768, "'okolica-info-link civ-w4-panel-detail gold'"], [11769, "infoLink.type = 'button'"],
+  [11770, "'i szczegóły'"], [11771, "'Pokaż szczegóły sekcji'"],
+  [11772, 'head.appendChild(infoLink)'], [11773, 'mount.appendChild(head)'],
+  [11775, 'delayMs: 220'], [11776, 'sideHint: resolveDetailSideHint(mount)'],
 ];
 PIN_ANCHORS.forEach(([line, lit], i) => check(`pin.anchor.${i + 1}`, `cityPanel.ts:${line} "${lit}"`, PIN_LINES[line - 1]?.includes(lit) ?? false, true));
 
@@ -141,9 +141,9 @@ try {
   };
 
   // V1: resolveDetailSideHint (pin 11512-11516)
-  check('side.left', 'cityPanel.ts:11513 .civ-ux-left -> left', resolveDetailSideHint(mkMount('civ-ux-left').mount), 'left');
-  check('side.right', 'cityPanel.ts:11514 .civ-ux-right -> right', resolveDetailSideHint(mkMount('civ-ux-right').mount), 'right');
-  check('side.auto', 'cityPanel.ts:11515 brak klasy -> auto', resolveDetailSideHint(mkMount(null).mount), 'auto');
+  check('side.left', 'cityPanel.ts:11754 .civ-ux-left -> left', resolveDetailSideHint(mkMount('civ-ux-left').mount), 'left');
+  check('side.right', 'cityPanel.ts:11755 .civ-ux-right -> right', resolveDetailSideHint(mkMount('civ-ux-right').mount), 'right');
+  check('side.auto', 'cityPanel.ts:11756 brak klasy -> auto', resolveDetailSideHint(mkMount(null).mount), 'auto');
 
   // V2: struktura DOM appendSectionTitleWithDetails (pin 11523-11532)
   const buildDetail = () => doc.createElement('section');
@@ -151,43 +151,43 @@ try {
   __calls.length = 0;
   appendSectionTitleWithDetails(m1, '<b>Tytuł</b> <i>x</i>', buildDetail);
   const head = m1.lastElementChild;
-  check('dom.head.count', 'cityPanel.ts:11532 mount.appendChild(head) (1 dziecko)', m1.children.length, 1);
-  check('dom.head.tag', 'cityPanel.ts:11523 el("div","ptitle")', head?.tagName, 'DIV');
-  check('dom.head.class', 'cityPanel.ts:11523 klasa "ptitle"', head?.className, 'ptitle');
-  check('dom.title.html', 'cityPanel.ts:11525 left.innerHTML = titleHtml', head?.children[0]?.innerHTML, '<b>Tytuł</b> <i>x</i>');
-  check('dom.title.tag', 'cityPanel.ts:11524 el("span","")', head?.children[0]?.tagName, 'SPAN');
-  check('dom.head.children', 'cityPanel.ts:11531 head: span, button', head?.children.length, 2);
+  check('dom.head.count', 'cityPanel.ts:11773 mount.appendChild(head) (1 dziecko)', m1.children.length, 1);
+  check('dom.head.tag', 'cityPanel.ts:11764 el("div","ptitle")', head?.tagName, 'DIV');
+  check('dom.head.class', 'cityPanel.ts:11764 klasa "ptitle"', head?.className, 'ptitle');
+  check('dom.title.html', 'cityPanel.ts:11766 left.innerHTML = titleHtml', head?.children[0]?.innerHTML, '<b>Tytuł</b> <i>x</i>');
+  check('dom.title.tag', 'cityPanel.ts:11765 el("span","")', head?.children[0]?.tagName, 'SPAN');
+  check('dom.head.children', 'cityPanel.ts:11772 head: span, button', head?.children.length, 2);
   const btn = head?.children[1];
-  check('dom.btn.tag', 'cityPanel.ts:11527 el("button", ...)', btn?.tagName, 'BUTTON');
-  check('dom.btn.class', 'cityPanel.ts:11527 klasy okolica-info-link civ-w4-panel-detail gold', btn?.className, 'okolica-info-link civ-w4-panel-detail gold');
-  check('dom.btn.type', 'cityPanel.ts:11528 infoLink.type = "button"', btn?.getAttribute('type'), 'button');
-  check('dom.btn.text', 'cityPanel.ts:11529 textContent "i szczegóły"', btn?.textContent, 'i szczegóły');
-  check('dom.btn.aria', 'cityPanel.ts:11530 aria-label', btn?.getAttribute('aria-label'), 'Pokaż szczegóły sekcji');
+  check('dom.btn.tag', 'cityPanel.ts:11768 el("button", ...)', btn?.tagName, 'BUTTON');
+  check('dom.btn.class', 'cityPanel.ts:11768 klasy okolica-info-link civ-w4-panel-detail gold', btn?.className, 'okolica-info-link civ-w4-panel-detail gold');
+  check('dom.btn.type', 'cityPanel.ts:11769 infoLink.type = "button"', btn?.getAttribute('type'), 'button');
+  check('dom.btn.text', 'cityPanel.ts:11770 textContent "i szczegóły"', btn?.textContent, 'i szczegóły');
+  check('dom.btn.aria', 'cityPanel.ts:11771 aria-label', btn?.getAttribute('aria-label'), 'Pokaż szczegóły sekcji');
 
   // V3: kontrakt attachInteractiveDetail (pin 11533-11536)
-  check('attach.calls', 'cityPanel.ts:11533 jedno wywołanie attachInteractiveDetail', __calls.length, 1);
+  check('attach.calls', 'cityPanel.ts:11774 jedno wywołanie attachInteractiveDetail', __calls.length, 1);
   const [aEl, aBuild, aOpts] = __calls[0] ?? [];
-  check('attach.target', 'cityPanel.ts:11533 pierwszy argument = infoLink', aEl === btn, true);
-  check('attach.build', 'cityPanel.ts:11533 drugi argument = buildDetail', aBuild === buildDetail, true);
-  check('attach.delay', 'cityPanel.ts:11534 delayMs 220', aOpts?.delayMs, 220);
-  check('attach.side.right', 'cityPanel.ts:11535 sideHint z mount (.civ-ux-right) = right', aOpts?.sideHint, 'right');
+  check('attach.target', 'cityPanel.ts:11774 pierwszy argument = infoLink', aEl === btn, true);
+  check('attach.build', 'cityPanel.ts:11774 drugi argument = buildDetail', aBuild === buildDetail, true);
+  check('attach.delay', 'cityPanel.ts:11775 delayMs 220', aOpts?.delayMs, 220);
+  check('attach.side.right', 'cityPanel.ts:11776 sideHint z mount (.civ-ux-right) = right', aOpts?.sideHint, 'right');
 
   // V4: sideHint left/auto w wywołaniu
   const { mount: m2 } = mkMount('civ-ux-left');
   __calls.length = 0;
   appendSectionTitleWithDetails(m2, 'L', buildDetail);
-  check('attach.side.left', 'cityPanel.ts:11535 sideHint = left', __calls[0]?.[2]?.sideHint, 'left');
+  check('attach.side.left', 'cityPanel.ts:11776 sideHint = left', __calls[0]?.[2]?.sideHint, 'left');
   const { mount: m3 } = mkMount(null);
   __calls.length = 0;
   appendSectionTitleWithDetails(m3, 'A', buildDetail);
-  check('attach.side.auto', 'cityPanel.ts:11535 sideHint = auto', __calls[0]?.[2]?.sideHint, 'auto');
+  check('attach.side.auto', 'cityPanel.ts:11776 sideHint = auto', __calls[0]?.[2]?.sideHint, 'auto');
 
   // V5: tytuł dopisywany na końcu mountu (nie zastępuje istniejących dzieci)
   const { mount: m4 } = mkMount(null);
   m4.appendChild(doc.createElement('p'));
   appendSectionTitleWithDetails(m4, 'T', buildDetail);
   // `?.` : brak dziecka (np. mutant bez appendChild) = FAIL asercji (EXIT 1), nie TypeError harnessu (EXIT 2)
-  check('dom.append.order', 'cityPanel.ts:11532 appendChild na końcu', [m4.children[0]?.tagName, m4.children[1]?.className], ['P', 'ptitle']);
+  check('dom.append.order', 'cityPanel.ts:11773 appendChild na końcu', [m4.children[0]?.tagName, m4.children[1]?.className], ['P', 'ptitle']);
 } catch (e) {
   console.error('run-k08b-title: błąd harnessu:', e);
   exitCode = 2;

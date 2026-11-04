@@ -22,7 +22,7 @@ import {
 
 // ─── Jednostki K08E, partia k08e-karty-a.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:5582-5650
+// pin 86d510c66 gra/src/ui/cityPanel.ts:5653-5721
 export function buildTopBarZywnoscDetailCard(
   city: City,
   view: CityView,
@@ -94,7 +94,7 @@ export function buildTopBarZywnoscDetailCard(
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:5652-5682
+// pin 86d510c66 gra/src/ui/cityPanel.ts:5723-5753
 export function buildTopBarRekruciDetailCard(
   city: City,
   mp: CityManpowerSnapshot,
@@ -121,14 +121,14 @@ export function buildTopBarRekruciDetailCard(
 
   appendDetailAlgo(card, 'Skąd bierze się pula', [
     'Max ≈ 10% ludności absolutnej miasta (tabela epok).',
-    'Regen = % max (parametr balansu, patrz "Odnowa" wyżej) × bonus cywilizacji (np. Rzym ×2).',
+    'Regen = % max (parametr balansu, patrz "Odnowa" wyżej) × modyfikator regeneracji z macierzy cywilizacji.',
     'Oblężenie blokuje odnowę do czasu zdjęcia oblężenia.',
   ]);
   return card;
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:5684-5768
+// pin 86d510c66 gra/src/ui/cityPanel.ts:5755-5839
 export function buildTopBarLudnoscDetailCard(
   city: City,
   view: CityView | null,

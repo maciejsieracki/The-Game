@@ -18,9 +18,10 @@
  *   node tools/verify-repin-ui2-copies.mjs --gen <sha> <ścieżka src/…> [...]   (wypisuje manifest na stdout)
  */
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const args = process.argv.slice(2);
@@ -139,6 +140,50 @@ if (existsSync(kManPath)) {
     });
   }
 }
-if (kFiles) console.log(`verify-repin-ui2-copies: kblocks rev=${existsSync(kManPath) ? JSON.parse(readFileSync(kManPath, 'utf8')).rev : '-'} plików=${kFiles} zakresów_sprawdzonych=${kChecked}`);
+// CONTENT (R-RUSTPORT-REPIN-UI-2-G-Q1 r2, zarzut Z5): treść bloków K = weryfikatory partii z manifestu (`contentGates`)
+//        uruchamiane na źródle rewizji manifestu: `--web-dir` albo `git archive <revFull> gra/src gra/data` do katalogu tymczasowego
+//        (usuwany po bramce). K01A (`run-k01a`) potrzebuje też pinu (`--k-pin-dir` albo `git archive <pinFull>`).
+//        `--no-git` bez `--web-dir` = CONTENT POMINIĘTE (jawny komunikat, jak RANGE). Każdy weryfikator: EXIT 0, inaczej FAIL.
+let kContent = 0;
+let kContentSkipped = 0;
+if (existsSync(kManPath)) {
+  const km = JSON.parse(readFileSync(kManPath, 'utf8'));
+  const gates = km.contentGates ?? [];
+  const tmps = [];
+  const archive = (rev) => {
+    const dir = mkdtempSync(join(tmpdir(), 'repin-ui2g-content-'));
+    tmps.push(dir);
+    const top = execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    const tar = execFileSync('git', ['archive', '--format=tar', rev, 'gra/src', 'gra/data'], { cwd: top, maxBuffer: 512 * 1024 * 1024 });
+    const x = spawnSync('tar', ['-x', '-C', dir], { input: tar });
+    if (x.status !== 0) throw new Error(`tar: ${x.stderr}`);
+    return dir;
+  };
+  try {
+    let web = webDir ?? null;
+    if (!web && !noGit && gates.length) {
+      try { web = archive(km.revFull); } catch (e) { fail(`KBLOK CONTENT git archive ${km.rev}: ${String(e.message ?? e).split('\n')[0]}`); }
+    }
+    let pin = argOf('--k-pin-dir') ?? null;
+    const needPin = gates.some((g) => g.args.some((a) => a.includes('{PIN}')));
+    if (!pin && needPin && !noGit && !webDir) {
+      try { pin = archive(km.pinFull); } catch (e) { fail(`KBLOK CONTENT git archive ${km.pin}: ${String(e.message ?? e).split('\n')[0]}`); }
+    }
+    for (const g of gates) {
+      if (!web || (g.args.some((a) => a.includes('{PIN}')) && !pin)) { kContentSkipped++; continue; }
+      const a = g.args.map((s) => s.replaceAll('{WEB}', web).replaceAll('{PIN}', pin ?? ''));
+      const r = spawnSync(process.execPath, [g.script, ...a], { cwd: ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
+      kContent++;
+      if (r.status !== 0) {
+        const tail = (r.stdout + r.stderr).trim().split('\n').slice(-3).join(' | ');
+        fail(`KBLOK CONTENT ${g.id} EXIT ${r.status}: ${tail.slice(0, 400)}`);
+      }
+    }
+  } finally {
+    for (const d of tmps) rmSync(d, { recursive: true, force: true });
+  }
+  if (kContentSkipped) console.log(`verify-repin-ui2-copies: kblocks CONTENT POMINIĘTE ${kContentSkipped} bramek (brak źródła: --no-git bez --web-dir / --k-pin-dir)`);
+}
+if (kFiles) console.log(`verify-repin-ui2-copies: kblocks rev=${existsSync(kManPath) ? JSON.parse(readFileSync(kManPath, 'utf8')).rev : '-'} plików=${kFiles} zakresów_sprawdzonych=${kChecked} treść_bramek=${kContent}`);
 console.log(`verify-repin-ui2-copies: pin=${manifest.pin} plików=${manifest.files.length} źródło_sprawdzone=${gitChecked} niezgodnych=${bad}`);
 process.exitCode = bad === 0 ? 0 : 1;

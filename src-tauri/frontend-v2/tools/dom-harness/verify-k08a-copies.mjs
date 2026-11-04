@@ -19,6 +19,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { partitionRev as revOfK, revProblem as revProblemK } from './repin-ui2g-rev.mjs';
 import { TOKENS, LINE_SUBS, LOCAL_NAMES } from './k08a-subs.mjs';
 
 const args = process.argv.slice(2);
@@ -55,7 +56,8 @@ const pinCache = {};
 const pinLines = (rel) => (pinCache[rel] ??= readFileSync(join(PIN_DIR, rel), 'utf8').split(/\r?\n/));
 
 // 1. Podział na bloki: marker -> treść do `// pin-end` (lub następnego markera).
-const MARK = /^\/\/ pin edb8fb56 (gra\/src\/[^:\s]+):(\d+)-(\d+)$/;
+// R-RUSTPORT-REPIN-UI-2-G-Q1 r2: marker pin edb8fb56 albo web 86d510c66 (repin-ui2g-rev.mjs); --pin-dir = katalog tej rewizji.
+const MARK = /^\/\/ pin (?:edb8fb56|86d510c66) (gra\/src\/[^:\s]+):(\d+)-(\d+)$/;
 const blocks = [];
 const outside = [];
 let cur = null;
@@ -154,7 +156,17 @@ for (const t of port) {
   const m = /^(?:export\s+)?(?:const|let|function|type|enum|interface)\s+([A-Za-z_$][\w$]*)/.exec(t);
   if (m) declared.add(m[1]);
 }
-const units = JSON.parse(readFileSync(WYBRANE, 'utf8'));
+// R-RUSTPORT-REPIN-UI-2-G-Q1 r2: wybrane.json (zamrożony log runu) niesie zakresy pinu edb8fb56; gdy port ma markery
+// web 86d510c66, zakresy jednostek przenosi zamrożona mapa repin-ui2g-rangemap.json (zakres bez wpisu = FAIL COVER).
+const PORT_REV = revOfK([port.join('\n')]);
+const RANGE_MAP = JSON.parse(readFileSync(join(HERE, 'repin-ui2g-rangemap.json'), 'utf8')).map;
+const units = JSON.parse(readFileSync(WYBRANE, 'utf8')).map((u) => {
+  if (PORT_REV !== '86d510c66') return u;
+  const w = RANGE_MAP[`${u.a}-${u.b}`];
+  if (!w) { findings.cover.push(`jednostka ${u.port ?? u.name}: zakres pinu ${u.a}-${u.b} bez wpisu w repin-ui2g-rangemap.json`); return u; }
+  const [wa, wb] = w.split('-').map(Number);
+  return { ...u, a: wa, b: wb };
+});
 const portNames = units.map((u) => u.port ?? u.name);
 const expectedNames = new Set([...portNames, ...LOCAL_NAMES]);
 for (const n of portNames) if (!declared.has(n)) findings.cover.push(`brak jednostki z wybrane w porcie: ${n}`);
@@ -171,6 +183,7 @@ for (const s of LINE_SUBS) {
   if (!blocks.some((b) => b.a === s.a && b.b === s.b && b.rel !== '<BAD_MARKER>')) findings.text.push(`LINE_SUB bez bloku ${s.a}-${s.b}: ${s.why}`);
 }
 
+{ const e = revProblemK([port.join('\n')]); if (e) findings.text.push(e); }
 const ok = Object.values(findings).every((a) => a.length === 0);
 const summary = {
   pin: 'edb8fb56',

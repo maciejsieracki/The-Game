@@ -27,11 +27,11 @@ export const PIN_TO_PORT_NAMES = [
  * `from` musi wystąpić w pinie w zakresie dokładnie raz; `to` musi wystąpić w porcie w bloku dokładnie raz.
  */
 export const LINE_SUBS = [
-  { a: 10329, b: 10334, from: '  const fresh = cfg.getCities?.().find(c => c.id === activeCity!.id);', to: '  const fresh = deps?.getCities().find(c => c.id === activeCity!.id);', why: 'K07A-Z2 cfg.getCities -> deps' },
-  { a: 10393, b: 10419, from: '    buildChipDeltaStockHtml(civRate, civStock) +', to: '    requireK07aDeps().chipDeltaStockHtml(civRate, civStock) +', why: 'K07A-Z2 buildChipDeltaStockHtml -> requireK07aDeps (brak deps = wyjątek, nie cicha utrata tempa)' },
-  { a: 10719, b: 10734, from: '  const capitalId = cfg.getCapitalCityId?.(city.ownerId) ?? null;', to: '  const capitalId = deps?.getCapitalCityId(city.ownerId) ?? null;', why: 'K07A-Z2 cfg.getCapitalCityId -> deps' },
-  { a: 10719, b: 10734, from: "  if (!isMeCity(city.ownerId) || !cfg.onSetCapital) return '';", to: "  if (!deps || !deps.isMe(city.ownerId) || !deps.canSetCapital) return '';", why: 'K07A-Z2 isMeCity/onSetCapital -> deps' },
-  { a: 10719, b: 10734, from: '  const allCitiesForCapital = cfg.getCities?.() ?? [];', to: '  const allCitiesForCapital = deps?.getCities() ?? [];', why: 'K07A-Z2 cfg.getCities -> deps' },
+  { a: 10576, b: 10581, from: '  const fresh = cfg.getCities?.().find(c => c.id === activeCity!.id);', to: '  const fresh = deps?.getCities().find(c => c.id === activeCity!.id);', why: 'K07A-Z2 cfg.getCities -> deps' },
+  { a: 10640, b: 10666, from: '    buildChipDeltaStockHtml(civRate, civStock) +', to: '    requireK07aDeps().chipDeltaStockHtml(civRate, civStock) +', why: 'K07A-Z2 buildChipDeltaStockHtml -> requireK07aDeps (brak deps = wyjątek, nie cicha utrata tempa)' },
+  { a: 10966, b: 10981, from: '  const capitalId = cfg.getCapitalCityId?.(city.ownerId) ?? null;', to: '  const capitalId = deps?.getCapitalCityId(city.ownerId) ?? null;', why: 'K07A-Z2 cfg.getCapitalCityId -> deps' },
+  { a: 10966, b: 10981, from: "  if (!isMeCity(city.ownerId) || !cfg.onSetCapital) return '';", to: "  if (!deps || !deps.isMe(city.ownerId) || !deps.canSetCapital) return '';", why: 'K07A-Z2 isMeCity/onSetCapital -> deps' },
+  { a: 10966, b: 10981, from: '  const allCitiesForCapital = cfg.getCities?.() ?? [];', to: '  const allCitiesForCapital = deps?.getCities() ?? [];', why: 'K07A-Z2 cfg.getCities -> deps' },
 ];
 
 /**
@@ -56,6 +56,8 @@ export const LOCAL_NAMES = [
   'setK07aUxSectionRefresh', 'getK07aUxSectionRefresh',
   'activeDrawerTab', 'setK07aDrawerTab', 'getK07aDrawerTab',
   'scalePx', 'setK07aScalePx',
+  // K08B-Z3 (K08B r1 82049d69b, przed UI-2-G — bramka K07A była czerwona na bazie 2198eaf7e): akcesor odczytu scalePx dla k08b-rail.ts
+  'getK07aScalePx',
   // K07A-Z4 adaptery zewnętrzne (cfg + ext + wrappery o nazwach pinu)
   'K07aCfg', 'K07aExt', 'cfg', 'ext', 'setK07aExt', 'requireK07aExt',
   'isMeCity', 'ownerCities', 'cityPanelTitle', 'headerOrderBadge', 'drawerTabButtons', 'formatManpower',

@@ -59,7 +59,7 @@ const PORT_FILES = ['k09a-rerender.ts', 'k09a-tabs.ts', 'k09a-paint.ts'].map((f)
 const UNITS = [];
 for (const file of PORT_FILES) {
   const src = readFileSync(file, 'utf8');
-  const re = /\/\/ pin edb8fb56 gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)\n(?:export )?function (\w+)\(/g;
+  const re = /\/\/ pin (?:edb8fb56|86d510c66) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)\n(?:export )?function (\w+)\(/g; // REPIN-UI-2-G r2
   let m;
   while ((m = re.exec(src)) !== null) UNITS.push({ a: Number(m[1]), b: Number(m[2]), name: m[3], file: file.split('/').pop() });
 }
@@ -356,6 +356,8 @@ writeFileSync(
     '// K06B/K07B: delegaty DOM z realnych modułów (hover dock, ramka) — jak w produkcyjnym wiringu K07B (installK07bWiring).',
     k06bSetLine,
     'setK06bDeps({ productionCtxForCity: (c: any) => prodCtxK05b(c), getShowEraBuildingPreview: () => false, setShowEraBuildingPreview: () => undefined, appendCityResourceStockStrip: () => undefined, bindBuildQueueDragReorder: () => undefined, bindRecruitQueueDragReorder: () => undefined, buildableProduction: () => [], buildingLevelForEpoch: () => 0, buildingOwnedLevel: () => 0, buildingProductionItem: () => null, buildingTypeQueued: () => false, cancelQueueItem: () => undefined, dequeueRecruitment: () => undefined, filterRuntimeActiveBuiltIds: (ids: any) => ids, promoteToFront: () => undefined, resolveOwnedBuildingInactiveStatus: () => null, tileYield: () => ({}), clearPinnedDetail: HOVER.clearPinnedDetail, showPinnedDetail: HOVER.showPinnedDetail, attachInteractiveDetail: HOVER.attachInteractiveDetail, attachHoverDetail: HOVER.attachHoverDetail, showHoverDetailNow: HOVER.showHoverDetailNow, isCityUxFrameOpen: CUF.isCityUxFrameOpen, isMeCity: (o: number) => o === 0 } as any);',
+    '// REPIN-UI-2-G r2: nowe nazwy webu 86d510c66 wołane przez przepięte bloki K06B/K07B/K08B — atrapy TESTOWE (bez reguł gry; luka wiringu K09C, P5-REPIN-UI-2 §7).',
+    'setK06bDeps({ recruitPanelPurchasableUnits: () => [], empireRekruciTotal: () => null, buildingRequirementChips: () => [], buildingWorkPerTurnForCity: (_c: any, w: number) => w, unitRecruitmentCapacityForCity: (_c: any, n: number) => n, loadSpichlerzDrainParams: () => ({}) } as any);',
     '// K05A: reguły silnika (wejścia testowe; brak wartości = neutralna funkcja zwracająca pustą tablicę — NIE_ZMIERZONO).',
     '// K06A: cfg (getCities) i delegat axialToWorld (wejście testowe; ta sama postać co w pinie, patrz PIN axialToWorld).',
     'setK06aCfg(FIX.cfg as any);',

@@ -192,6 +192,8 @@ export interface K05bCfg {
   getCultureState?: (cityId: number) => CultureStateK08e | undefined;
   /** K08E-Z14: pin `cfg.getUnitsAt?.(q, r)` — jednostki na heksie miasta (garnizon). */
   getUnitsAt?: (q: number, r: number) => readonly unknown[] | undefined;
+  /** REPIN-UI-2-G r2 (web 86d510c66 `CityPanelConfig` :567-568): mnożniki Manpower z macierzy cywilizacji (K05A: ten sam kontrakt). */
+  getManpowerMultipliers?: (ownerId: number) => { maxMult: number; costMult: number };
 }
 
 /** K08E-Z14: stan kultury miasta (pin `cfg.getCultureState`, pola czytane przez kartę „Kultura" K08E). */
@@ -268,6 +270,8 @@ export interface ManpowerSnapshotK05b {
  * Nazwy i sygnatury jak w pinie; ciał nie kopiujemy (NIE_ZMIERZONO, patrz P5-8-K05B.md §4/§6).
  */
 export interface K05bRules {
+  /** REPIN-UI-2-G r2: web 86d510c66 `buildingWorkPerTurnForCity` (:630-637, `civMatrixParam` + `buildingWorkPerTurn` = reguła gry → silnik). */
+  buildingWorkPerTurnForCity(city: City, baseWorkPerTurn: number): number;
   etaTurns(koszt: number, postep: number, praca: number): number | null;
   formatManpower(n: number): string;
   itemCost(kind: 'budynek' | 'jednostka', id: string, data: { buildings: readonly BuildingDef[]; units: readonly UnitDef[] }, cityLevelOrEpoch: number): number;
@@ -416,6 +420,10 @@ export const MAX_PROCENT_NAUKA = 60;
 
 // ─── K05B-Z8: delegatory reguł i pomocników pinu (nazwy i sygnatury jak w pinie) ──────────────────────────────────────
 
+/** REPIN-UI-2-G r2: web `buildingWorkPerTurnForCity` (cityPanel.ts:630-637) — delegator do silnika (P5.13). */
+export function buildingWorkPerTurnForCity(city: City, baseWorkPerTurn: number): number {
+  return h().rules.buildingWorkPerTurnForCity(city, baseWorkPerTurn);
+}
 export function etaTurns(koszt: number, postep: number, praca: number): number | null {
   return h().rules.etaTurns(koszt, postep, praca);
 }

@@ -20,7 +20,7 @@ import { withW4TabCard } from './k08b-rail';
 
 // ─── Jednostki K08B, partia k08b-owned.ts (kopie pinu wygenerowane; markery = bramka verify-k08b-copies.mjs) ─────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:9184-9255
+// pin 86d510c66 gra/src/ui/cityPanel.ts:9428-9499
 export function renderBuildingsOwned(
   mount: HTMLElement,
   city: City,
@@ -95,7 +95,7 @@ export function renderBuildingsOwned(
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:9341-9357
+// pin 86d510c66 gra/src/ui/cityPanel.ts:9585-9601
 export function renderBuildingsOwnedRightPanel(
   mount: HTMLElement,
   city: City,

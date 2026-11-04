@@ -18,6 +18,8 @@ type CityView = any;
 type EPOCH_NUMBER_TO_NAME = any;
 type GameData = any;
 type ProductionItem = any;
+// REPIN-UI-2-G r2: typ pinu/webu `RawConverterParamsJson` (game/converters) — alias any (K06B-Z5).
+type RawConverterParamsJson = any;
 
 // ─── K06B-Z3: stałe literalne z pinu ───────────────────────────────────────────────────────────────────────────
 const BUILD_QUEUE_VISIBLE = 4;
@@ -75,11 +77,15 @@ const sortProductionItemsByBuildability = (...args: any[]): any => dep('sortProd
 const tury = (...args: any[]): any => dep('tury')(...args);
 const upgradeChainSteps = (...args: any[]): any => dep('upgradeChainSteps')(...args);
 const EPOCH_NUMBER_TO_NAME: any = valueProxy('EPOCH_NUMBER_TO_NAME');
+// REPIN-UI-2-G r2 (web 86d510c66): nowe nazwy wołane przez przepięte bloki — reguły gry/pomocniki spoza K06B → dep (K06B-Z2).
+const buildingRequirementChips = (...args: any[]): any => dep('buildingRequirementChips')(...args);
+const buildingWorkPerTurnForCity = (...args: any[]): any => dep('buildingWorkPerTurnForCity')(...args);
+const loadSpichlerzDrainParams = (...args: any[]): any => dep('loadSpichlerzDrainParams')(...args);
 const cfg: any = valueProxy('cfg');
 
 // ─── Jednostki K06B (kopie pinu) ───────────────────────────────────────────────────────────────────────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7997-8049
+// pin 86d510c66 gra/src/ui/cityPanel.ts:8072-8124
 export function appendBuildableItemRow(
   scroll: HTMLElement,
   city: City,
@@ -134,7 +140,7 @@ export function appendBuildableItemRow(
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:8300-8428
+// pin 86d510c66 gra/src/ui/cityPanel.ts:8500-8632
 
 /** Kolejka budynków (pozycje 2+ w kolejce produkcji). */
 export function appendBuildQueueSection(
@@ -191,8 +197,12 @@ export function appendBuildQueueSection(
       qLabel.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
       qLabel.textContent = it.nazwa;
       qi.appendChild(qLabel);
-      const cumEta = queueItemCumulativeEta(prod, i, pracaBudynki);
-      const ownEta = queueItemOwnEta(it.koszt, pracaBudynki);
+      const buildingPracaBudynki = buildingWorkPerTurnForCity(city, pracaBudynki);
+      const cumEta = queueItemCumulativeEta(prod, i, pracaBudynki, buildingPracaBudynki);
+      const ownEta = queueItemOwnEta(
+        it.koszt,
+        it.kind === 'budynek' ? buildingWorkPerTurnForCity(city, pracaBudynki) : pracaBudynki,
+      );
       const etaEl = el('span', 'qitem-eta');
       if (cumEta !== null) {
         etaEl.textContent = `gotowy za ~${cumEta} ${tury(cumEta)}`;
@@ -267,7 +277,7 @@ export function appendBuildQueueSection(
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:8682-8733
+// pin 86d510c66 gra/src/ui/cityPanel.ts:8892-8943
 export function appendCatalogBuildingRow(
   scroll: HTMLElement,
   entry: BuildingCatalogEntry,
@@ -321,7 +331,9 @@ export function appendCatalogBuildingRow(
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:8734-8860
+// pin 86d510c66 gra/src/ui/cityPanel.ts:8944-9086
+/** Lista „Dostępne do budowy” (R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: eksport pod test regresji
+ *  tools/building-resource-visibility-ui-test.cjs — ten sam kod co w panelu miasta). */
 export function renderBuildList(
   mount: HTMLElement,
   city: City,
@@ -359,13 +371,17 @@ export function renderBuildList(
   const civBonusy = cfg.getCivBonusy?.(city.ownerId) ?? [];
   const prodState = getProd(city.id);
   const prodCtx = productionCtxForCity(city);
+  // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): lista budowy pokazuje budynki możliwe do
+  // wybudowania, których brakuje surowca etykietowego (Glina/Drewno/…) — wyszarzone z chipem
+  // przyczyny. Tylko widok: AI i walidacja używają buildableProduction bez tej flagi.
   const items = sortProductionItemsByBuildability(
-    buildableProduction(city, data, techs, prodCtx),
+    buildableProduction(city, data, techs, { ...prodCtx, showResourceGatedBuildings: true }),
     city,
     data,
     prodCtx,
     techs,
   );
+  const itemIds = new Set(items.map((it: any) => it.id));
 
   const skarb = cfg.getTreasury?.(city.ownerId);
 
@@ -429,18 +445,28 @@ export function renderBuildList(
       appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true });
     }
   }
-  if (previewEntries.length > 0) {
+  // Budynek już widoczny w liście budowy (wyszarzony z przyczyną) nie powtarza się w „Jeszcze
+  // zablokowane” — ten sam wiersz, jedna informacja (tryb pełnego podglądu epoki zostaje bez zmian).
+  const lockedPreview = fullEraPreview
+    ? previewEntries
+    : previewEntries.filter((e: any) => !itemIds.has(e.id));
+  if (lockedPreview.length > 0) {
     const h = el('div', 'muted');
     h.style.cssText = 'font-size:0.72em;margin:0.35em 0 0.2em;padding-top:0.25em;border-top:1px solid var(--border);';
     h.textContent = fullEraPreview
       ? `Podgląd epoki ${eraName} (badania)`
       : `Jeszcze zablokowane (epoka ${eraName})`;
     scroll.appendChild(h);
-    for (const entry of previewEntries) {
+    for (const entry of lockedPreview) {
       const def = findBuildingDef(data, entry.id);
+      const brakZasobow = def
+        ? buildingRequirementChips(def, city, data, prodCtx, techs)
+          .filter((c: any) => c.kind === 'stock' && !c.met)
+          .map((c: any) => c.label)
+        : [];
       const lockHint = fullEraPreview && def
         ? formatBuildingPreviewHint(def, data, techs)
-        : formatBuildingCatalogLockHint(entry, data, techs);
+        : formatBuildingCatalogLockHint(entry, data, techs, brakZasobow);
       appendCatalogBuildingRow(scroll, entry, def, data, city, prodCtx, techs, lockHint, {
         forceLocked: fullEraPreview || entry.status === 'locked',
       });
@@ -450,7 +476,7 @@ export function renderBuildList(
 }
 
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:9033-9183
+// pin 86d510c66 gra/src/ui/cityPanel.ts:9272-9427
 export function appendOwnedBuildingRow(
   target: HTMLElement,
   id: string,
@@ -512,6 +538,11 @@ export function appendOwnedBuildingRow(
       empireStock,
       building: def,
       resolveOwnerZlotoAccess: cfg.getOwnerHasZlotoAccess,
+      // R-WEB-SPICHLERZ-HUD-PARAMS-Q1: parametry zużycia Spichlerza jak w silniku.
+      drainParams: loadSpichlerzDrainParams(
+        data.econParams as unknown as RawConverterParamsJson,
+        cfg.difficulty ?? 'normal',
+      ),
     });
     if (inactiveStatus.inactive) {
       bn.classList.add('bld-owned-name--inactive');

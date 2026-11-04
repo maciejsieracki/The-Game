@@ -45,7 +45,8 @@ const MUTANTS = [
   ['paint.scaleConst', 'pin', PAINT, "const sp = getK07aScalePx() + 'px';", "const sp = '16px';"],
   ['paint.noTopClear', 'pin', PAINT, "mounts.top.innerHTML = '';", ''],
   ['paint.noHoverDocks', 'pin', PAINT, 'requireK09aDeps().setHoverDetailDocks(', '((..._a: unknown[]) => undefined)('],
-  ['paint.noGarrisonClear', 'pin', PAINT, 'if (st.pinnedGarrisonCityId !== null && st.pinnedGarrisonCityId !== (city.id as unknown as string)) {', 'if (false) {'],
+  // K09B r2 (0a1761d80, przed UI-2-G): id miasta = number — literał mutanta zaktualizowany (na bazie 2198eaf7e INVALID).
+  ['paint.noGarrisonClear', 'pin', PAINT, 'if (st.pinnedGarrisonCityId !== null && st.pinnedGarrisonCityId !== city.id) {', 'if (false) {'],
   ['paint.noRightRail', 'pin', PAINT, 'renderCityIconRightRail(mounts.rightIconRail, city);', ''],
   ['paint.noK07Mirror', 'pin', PAINT, 'setK07aUxSectionRefresh(refresh);\n  setK07aActiveCity(city as unknown as CityK07);', 'setK07aUxSectionRefresh(refresh);'],
   // showCityPanel / hideCityPanel

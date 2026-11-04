@@ -95,6 +95,8 @@ const HOST_RULE_NAMES = [
   'isBuildingSupersededByUpgrade', 'cityBuildingPrereqMet', 'buildingUiDisplayLevel', 'productionCtxForCity',
   'ownerSurowcePoolFor', 'getTechDef', 'techPrereqChain', 'naukaCostSuffix', 'unitResourceUpkeep', 'getProd',
   'appendBuildActionButtons',
+  // REPIN-UI-2-G r2: web 86d510c66 `buildingWorkPerTurnForCity` (cityPanel.ts:630-637, reguła macierzy cywilizacji)
+  'buildingWorkPerTurnForCity',
 ];
 
 const probeSrc = [
@@ -190,8 +192,10 @@ function mkFix(v) {
     getDifficulty: () => (v === 1 ? undefined : ['normal', 'trudny', 'latwy', 'normal'][v]),
     getEpoch: () => (v === 1 || v === 2 ? undefined : 2 + v),
     getCivBonusy: () => (v === 0 ? undefined : [{ k: 1 }, { k: 2 }].slice(0, v)),
+    // REPIN-UI-2-G r2: web `cfg.getManpowerMultipliers` (CityPanelConfig :567); v=1 brak (fallback civManpowerMaxMult); v=3 bez migawki → widać costMult.
+    getManpowerMultipliers: (o) => (v === 1 ? undefined : { maxMult: 1.5 + v * 0.25 + o * 0.01, costMult: 0.5 + v * 0.4 }),
     getManpowerSnapshot: (c) =>
-      v === 1
+      v === 1 || v === 3
         ? undefined
         : { manpowerBiezacy: 40 + c, manpowerMax: 120, kosztJednostki: 7 + v, epoka: 2 + v },
   };
@@ -200,6 +204,8 @@ function mkFix(v) {
   const rules = {
     etaTurns: (k, p, pr) => (pr > 0 ? Math.ceil((k - p) / pr) : null),
     formatManpower: (n) => `${n}·M${v}`,
+    // REPIN-UI-2-G r2: tempo pracy budynków ≠ baza (wykrywa pominięcie przeliczenia i zamianę argumentów).
+    buildingWorkPerTurnForCity: (city, base) => base * 2 + 1 + v + (city?.ownerId ?? 0),
     itemCost: (kind, id, data, lvl) => 10 + lvl * 3 + v + id.length + data.buildings.length,
     unitManpowerCost: (epoka, maxMult = 1) => Math.round(epoka * 2 * maxMult) + v,
     civManpowerMaxMult: (b) => 1 + (b ? b.length : 0) * 0.5 + v * 0.1,

@@ -25,25 +25,25 @@ export const PIN_TO_PORT_NAMES = [
  * Zakresy `a..b` = zakres PO `codeEndLine` (jak w `select-k08a.mjs`).
  */
 export const LINE_SUBS = [
-  // refreshCityPanelIfOpen (pin :10337-10346): uxSectionRefresh → accessor K07A; rerender → deps (cięcie K09, P5.8-Z1)
-  { a: 10337, b: 10346, from: '  if (uxSectionRefresh) {', to: '  if (getK07aUxSectionRefresh()) {', why: 'K08A-Z3 uxSectionRefresh (stan K07A) -> getK07aUxSectionRefresh' },
-  { a: 10337, b: 10346, from: '    uxSectionRefresh();', to: '    getK07aUxSectionRefresh()?.();', why: 'K08A-Z3 wywołanie uxSectionRefresh -> accessor K07A' },
-  { a: 10337, b: 10346, from: '  rerender();', to: '  requireK08aDeps().rerender();', why: 'K08A-Z2 rerender (K09) -> deps' },
-  // clearCityPanelUxMode (pin :10367-10374)
-  { a: 10367, b: 10374, from: '  clearGarrisonPanel();', to: '  requireK08aDeps().clearGarrisonPanel();', why: 'K08A-Z2 clearGarrisonPanel (DOM, K06B) -> deps' },
-  { a: 10367, b: 10374, from: '  uxSectionRefresh = null;', to: '  setK07aUxSectionRefresh(null);', why: 'K08A-Z3 uxSectionRefresh = null -> setK07aUxSectionRefresh' },
-  { a: 10367, b: 10374, from: '  activeCity = null;', to: '  clearActiveCityMirrors();', why: 'K08A-Z3 activeCity = null -> lustra K06A/K07A (clearActiveCityMirrors)' },
-  { a: 10367, b: 10374, from: '  activeMap = null;', to: '  // activeMap = null: zerowane razem z activeCity w clearActiveCityMirrors() (K08A-Z3)', why: 'K08A-Z3 activeMap = null -> K06A (clearActiveCityMirrors)' },
-  { a: 10367, b: 10374, from: '  disposeHoverDetailDock();', to: '  requireK08aDeps().disposeHoverDetailDock();', why: 'K08A-Z2 disposeHoverDetailDock (DOM) -> deps' },
-  // closeCityView (pin :10694-10698)
-  { a: 10694, b: 10698, from: '  else activeOnClose();', to: '  else getK06aState().activeOnClose();', why: 'K08A-Z3 activeOnClose (stan K06A) -> getK06aState' },
-  // isCityPanelOpen (pin :11979-11981)
-  { a: 11979, b: 11981, from: '  return isCityUxFrameOpen();', to: '  return requireK08aDeps().isCityUxFrameOpen();', why: 'K08A-Z2 isCityUxFrameOpen (DOM) -> deps' },
-  // closeCityPanelIfOpen (pin :11971-11976)
-  { a: 11971, b: 11976, from: '  clearGarrisonPanel();', to: '  requireK08aDeps().clearGarrisonPanel();', why: 'K08A-Z2 clearGarrisonPanel (DOM, K06B) -> deps' },
-  { a: 11971, b: 11976, from: '  activeOnClose();', to: '  getK06aState().activeOnClose();', why: 'K08A-Z3 activeOnClose (stan K06A) -> getK06aState' },
-  // getOpenCityPanelCityId (pin :11984-11986)
-  { a: 11984, b: 11986, from: '  return activeCity?.id ?? null;', to: '  return getK07aActiveCity()?.id ?? null;', why: 'K08A-Z3 activeCity (lustro K07A) -> getK07aActiveCity' },
+  // refreshCityPanelIfOpen (pin :10584-10593): uxSectionRefresh → accessor K07A; rerender → deps (cięcie K09, P5.8-Z1)
+  { a: 10584, b: 10593, from: '  if (uxSectionRefresh) {', to: '  if (getK07aUxSectionRefresh()) {', why: 'K08A-Z3 uxSectionRefresh (stan K07A) -> getK07aUxSectionRefresh' },
+  { a: 10584, b: 10593, from: '    uxSectionRefresh();', to: '    getK07aUxSectionRefresh()?.();', why: 'K08A-Z3 wywołanie uxSectionRefresh -> accessor K07A' },
+  { a: 10584, b: 10593, from: '  rerender();', to: '  requireK08aDeps().rerender();', why: 'K08A-Z2 rerender (K09) -> deps' },
+  // clearCityPanelUxMode (pin :10614-10621)
+  { a: 10614, b: 10621, from: '  clearGarrisonPanel();', to: '  requireK08aDeps().clearGarrisonPanel();', why: 'K08A-Z2 clearGarrisonPanel (DOM, K06B) -> deps' },
+  { a: 10614, b: 10621, from: '  uxSectionRefresh = null;', to: '  setK07aUxSectionRefresh(null);', why: 'K08A-Z3 uxSectionRefresh = null -> setK07aUxSectionRefresh' },
+  { a: 10614, b: 10621, from: '  activeCity = null;', to: '  clearActiveCityMirrors();', why: 'K08A-Z3 activeCity = null -> lustra K06A/K07A (clearActiveCityMirrors)' },
+  { a: 10614, b: 10621, from: '  activeMap = null;', to: '  // activeMap = null: zerowane razem z activeCity w clearActiveCityMirrors() (K08A-Z3)', why: 'K08A-Z3 activeMap = null -> K06A (clearActiveCityMirrors)' },
+  { a: 10614, b: 10621, from: '  disposeHoverDetailDock();', to: '  requireK08aDeps().disposeHoverDetailDock();', why: 'K08A-Z2 disposeHoverDetailDock (DOM) -> deps' },
+  // closeCityView (pin :10941-10945)
+  { a: 10941, b: 10945, from: '  else activeOnClose();', to: '  else getK06aState().activeOnClose();', why: 'K08A-Z3 activeOnClose (stan K06A) -> getK06aState' },
+  // isCityPanelOpen (pin :12220-12222)
+  { a: 12220, b: 12222, from: '  return isCityUxFrameOpen();', to: '  return requireK08aDeps().isCityUxFrameOpen();', why: 'K08A-Z2 isCityUxFrameOpen (DOM) -> deps' },
+  // closeCityPanelIfOpen (pin :12212-12217)
+  { a: 12212, b: 12217, from: '  clearGarrisonPanel();', to: '  requireK08aDeps().clearGarrisonPanel();', why: 'K08A-Z2 clearGarrisonPanel (DOM, K06B) -> deps' },
+  { a: 12212, b: 12217, from: '  activeOnClose();', to: '  getK06aState().activeOnClose();', why: 'K08A-Z3 activeOnClose (stan K06A) -> getK06aState' },
+  // getOpenCityPanelCityId (pin :12225-12227)
+  { a: 12225, b: 12227, from: '  return activeCity?.id ?? null;', to: '  return getK07aActiveCity()?.id ?? null;', why: 'K08A-Z3 activeCity (lustro K07A) -> getK07aActiveCity' },
 ];
 
 /**

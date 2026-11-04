@@ -50,7 +50,8 @@ for (const s of LINE_SUBS) {
 }
 
 // Bloki w porcie.
-const markerRe = /^\/\/ pin edb8fb56 gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)$/;
+// R-RUSTPORT-REPIN-UI-2-G-Q1 r2: marker pin edb8fb56 albo web 86d510c66 (repin-ui2g-rev.mjs); --pin-dir = katalog tej rewizji.
+const markerRe = /^\/\/ pin (?:edb8fb56|86d510c66) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)$/;
 const blocks = [];
 for (let i = 0; i < port.length; i++) {
   const m = markerRe.exec(port[i]);

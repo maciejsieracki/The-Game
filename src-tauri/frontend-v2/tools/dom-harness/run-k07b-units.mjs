@@ -23,6 +23,7 @@ import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pinFileLabel } from './repin-ui2g-rev.mjs'; // REPIN-UI-2-G r2 (Z6): etykieta = rewizja faktycznego --pin-dir
 import * as esbuild from 'esbuild';
 import { JSDOM } from 'jsdom';
 
@@ -49,7 +50,7 @@ const BLOCKS = [];
 for (const f of ['k07b-p1.ts', 'k07b-p2.ts']) {
   const lines = readFileSync(join(V2_DIR, f), 'utf8').split(/\r?\n/);
   for (let k = 0; k < lines.length; k++) {
-    const m = /^\/\/ pin edb8fb56 gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)$/.exec(lines[k]);
+    const m = /^\/\/ pin (?:edb8fb56|86d510c66) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)$/.exec(lines[k]); // REPIN-UI-2-G r2: pin albo web
     if (!m) continue;
     const decl = lines.slice(k + 1).find((l) => /^export (function|const|interface) /.test(l));
     const name = /^export (?:function|const|interface) (\w+)/.exec(decl ?? '')?.[1];
@@ -616,7 +617,7 @@ try {
     przypadkiZHtml: htmlCases,
     units: UNIT_NAMES.length,
     blocks: BLOCKS.length,
-    pinFile: 'gra/src/ui/cityPanel.ts (edb8fb56)',
+    pinFile: pinFileLabel(PIN_DIR),
     portDir: 'src/ui/cityPanel',
     perUnit: Object.fromEntries([...unitSummary.entries()].map(([k, v]) => [k, `${v.cases} przyp., ${v.diffs} różn.`])),
     notes,

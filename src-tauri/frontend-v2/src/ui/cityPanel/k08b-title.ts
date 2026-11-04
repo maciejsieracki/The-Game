@@ -14,7 +14,7 @@ import { el } from './k01b-dom';
 
 // ─── Jednostki K08B, partia k08b-title.ts (kopie pinu wygenerowane; markery = bramka verify-k08b-copies.mjs) ─────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11512-11516
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11753-11757
 export function resolveDetailSideHint(mount: HTMLElement): 'left' | 'right' | 'auto' {
   if (mount.closest('.civ-ux-left')) return 'left';
   if (mount.closest('.civ-ux-right')) return 'right';
@@ -22,7 +22,7 @@ export function resolveDetailSideHint(mount: HTMLElement): 'left' | 'right' | 'a
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:11518-11537
+// pin 86d510c66 gra/src/ui/cityPanel.ts:11759-11778
 export function appendSectionTitleWithDetails(
   mount: HTMLElement,
   titleHtml: string,

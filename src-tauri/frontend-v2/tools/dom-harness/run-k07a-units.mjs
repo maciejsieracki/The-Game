@@ -19,6 +19,7 @@ import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pinFileLabel } from './repin-ui2g-rev.mjs'; // REPIN-UI-2-G r2 (Z6): etykieta = rewizja faktycznego --pin-dir
 import * as esbuild from 'esbuild';
 
 const args = process.argv.slice(2);
@@ -61,8 +62,10 @@ const UNIT_NAMES = [
   'skeleton', 'buildCityOnlyW3FlankChips', 'buildCityResourceStatItems',
 ];
 /** Stan modułu pinu: `let activeCity` (:10159) i `let uxSectionRefresh` (:10365). */
-const pinStateActive = pinLines.slice(10158, 10159).join('\n');
-const pinStateUx = pinLines.slice(10364, 10365).join('\n');
+// REPIN-UI-2-G r2: linie wyznaczane po treści (pin edb8fb56 :10159/:10365, web 86d510c66 :10406/:10612), bo --pin-dir może być pinem albo webem.
+const lineOf = (txt) => { const i = pinLines.indexOf(txt); if (i < 0 || pinLines.indexOf(txt, i + 1) >= 0) throw new Error('pin: stan modułu nie jest jednoznaczny: ' + txt); return i; };
+const pinStateActive = pinLines[lineOf('let activeCity: City | null = null;')];
+const pinStateUx = pinLines[lineOf('let uxSectionRefresh: (() => void) | null = null;')];
 
 const PIN_PRELUDE = `
 import { resourceScopeClass as __pinRSC } from ${JSON.stringify(PIN_RC)};
@@ -412,7 +415,7 @@ try {
     }
   }
 
-  console.log(JSON.stringify({ comparisons, diffs, perUnit, pinFile: 'gra/src/ui/cityPanel.ts (edb8fb56)' }, null, 1));
+  console.log(JSON.stringify({ comparisons, diffs, perUnit, pinFile: pinFileLabel(PIN_DIR) }, null, 1));
   if (report.length) console.log(JSON.stringify(report.slice(0, 20), null, 1));
   exitCode = diffs === 0 ? 0 : 1;
 } catch (err) {

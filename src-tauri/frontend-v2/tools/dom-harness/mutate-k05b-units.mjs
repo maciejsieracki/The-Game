@@ -84,7 +84,8 @@ const MUTANTS = [
   ['karty-pelna-karta-tryb', 'k05b-karty.ts', "openEntityCard('technology', techSlug, { mode: 'dialog' })", "openEntityCard('technology', techSlug, { mode: 'page' })"],
   ['karty-pelna-karta-id', 'k05b-karty.ts', "vBtn.setAttribute('data-entity-id', techSlug);", "vBtn.setAttribute('data-entity-id', techName);"],
   ['karty-styl-bez-strazy', 'k05b-karty.ts', 'if (document.getElementById(ENTITY_CARD_BUILDING_STYLE_ID)) return;', 'if (false) return;'],
-  ['karty-owner-legacy', 'k05b-karty.ts', 'const ownerId = 0;', 'const ownerId = 1;'],
+  // REPIN-UI-2-G r2: web 86d510c66 — ownerId z miasta (pin edb8fb56: 'const ownerId = 0;'); literał dwuliniowy = jedno wystąpienie (legacy).
+  ['karty-owner-legacy', 'k05b-karty.ts', 'const ownerId = city?.ownerId ?? 0;\n  const baseWork', 'const ownerId = (city?.ownerId ?? 0) + 1;\n  const baseWork'],
   ['karty-upkeep-poziom', 'k05b-karty.ts', 'formatBuildingUpkeepGridValue(buildingUpkeepDisplay(def, 1))', 'formatBuildingUpkeepGridValue(buildingUpkeepDisplay(def, 2))'],
   ['karty-infocard-eta', 'k05b-karty.ts', "cost.innerHTML = `${opts.item.koszt}${workIc}${e !== null ? ' · ~' + e", "cost.innerHTML = `${opts.item.koszt}${workIc}${e !== null ? ' · ~' + (e + 1)"],
   ['karty-kolejka-etykieta', 'k05b-karty.ts', 'Koszt kolejki: ', 'Koszt kolejki :'],
@@ -104,7 +105,9 @@ const MUTANTS = [
   ['host-przyciski-etykieta', 'k05b-host.ts', 'h().rules.appendBuildActionButtons(btnWrap, city, item, skarb, buildLabel, upgrade, opts);', "h().rules.appendBuildActionButtons(btnWrap, city, item, skarb, 'Buduj', upgrade, opts);"],
   // --- k05b-jednostki.ts: partia 3 (karty jednostek, rekrutacja, bonusy ulepszeń)
   ['jedn-rekrut-epoka', 'k05b-jednostki.ts', 'const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;', 'const epoch = cfg.getEpoch?.(city.ownerId) ?? 2;'],
-  ['jedn-rekrut-mnoznik', 'k05b-jednostki.ts', 'const maxMult = civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));', 'const maxMult = civManpowerMaxMult(undefined);'],
+  // REPIN-UI-2-G r2: web — fallback civManpowerMaxMult za cfg.getManpowerMultipliers.
+  ['jedn-rekrut-mnoznik', 'k05b-jednostki.ts', 'const maxMult = multipliers?.maxMult ?? civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));', 'const maxMult = multipliers?.maxMult ?? civManpowerMaxMult(undefined);'],
+  ['jedn-rekrut-costmult', 'k05b-jednostki.ts', 'const mpCostStd = unitManpowerCost(epoch, multipliers?.costMult ?? maxMult);', 'const mpCostStd = unitManpowerCost(epoch, maxMult);'],
   ['jedn-rekrut-kolejka', 'k05b-jednostki.ts', 'const rq = getProd(city.id).rekrutacja?.length ?? 0;', 'const rq = getProd(city.id).rekrutacja?.length ?? 1;'],
   ['jedn-rekrut-skarb-etykieta', 'k05b-jednostki.ts', "'Skarb imperium'", "'Skarb'"],
   ['jedn-rekrut-pula-kolejnosc', 'k05b-jednostki.ts', "`${formatManpower(mpSnap.manpowerBiezacy)} / ${formatManpower(mpSnap.manpowerMax)}`", "`${formatManpower(mpSnap.manpowerMax)} / ${formatManpower(mpSnap.manpowerBiezacy)}`"],

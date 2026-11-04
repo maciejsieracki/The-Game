@@ -51,33 +51,41 @@ if (!PIN_DIR || !existsSync(join(PIN_DIR, 'gra/src'))) {
  */
 const LINE_SUBS = [
   // K06B-Z6: stan panelu przez akcesor K06A (`activeMap`, `pinnedGarrisonCityId`).
-  { a: 9392, b: 9427, from: '  const isPinned = pinnedGarrisonCityId === city.id;', to: '  const isPinned = getK06aState().pinnedGarrisonCityId === city.id;', why: 'K06B-Z6 pinnedGarrisonCityId -> getK06aState()' },
-  { a: 10170, b: 10174, from: '  pinnedGarrisonCityId = cityId;', to: '  setK06aPinnedGarrisonCityId(cityId);', why: 'K06B-Z6 zapis przez akcesor' },
-  { a: 10175, b: 10183, from: '  pinnedGarrisonCityId = null;', to: '  setK06aPinnedGarrisonCityId(null);', why: 'K06B-Z6 zapis przez akcesor' },
-  { a: 5028, b: 5111, from: '  const empire = resolveEmpireSnap(city, activeMap, data);', to: '  const empire = resolveEmpireSnap(city, getK06aState().activeMap, data);', why: 'K06B-Z6 activeMap przez akcesor' },
-  { a: 8734, b: 8860, from: '  const fullEraPreview = showEraBuildingPreview;', to: '  const fullEraPreview = getShowEraBuildingPreview();', why: 'K06B-Z4 showEraBuildingPreview przez delegat' },
-  { a: 8734, b: 8860, from: '  previewChk.checked = showEraBuildingPreview;', to: '  previewChk.checked = getShowEraBuildingPreview();', why: 'K06B-Z4 showEraBuildingPreview przez delegat' },
+  { a: 9636, b: 9671, from: '  const isPinned = pinnedGarrisonCityId === city.id;', to: '  const isPinned = getK06aState().pinnedGarrisonCityId === city.id;', why: 'K06B-Z6 pinnedGarrisonCityId -> getK06aState()' },
+  { a: 10417, b: 10421, from: '  pinnedGarrisonCityId = cityId;', to: '  setK06aPinnedGarrisonCityId(cityId);', why: 'K06B-Z6 zapis przez akcesor' },
+  { a: 10422, b: 10430, from: '  pinnedGarrisonCityId = null;', to: '  setK06aPinnedGarrisonCityId(null);', why: 'K06B-Z6 zapis przez akcesor' },
+  { a: 5093, b: 5182, from: '  const empire = resolveEmpireSnap(city, activeMap, data);', to: '  const empire = resolveEmpireSnap(city, getK06aState().activeMap, data);', why: 'K06B-Z6 activeMap przez akcesor' },
+  { a: 8944, b: 9086, from: '  const fullEraPreview = showEraBuildingPreview;', to: '  const fullEraPreview = getShowEraBuildingPreview();', why: 'K06B-Z4 showEraBuildingPreview przez delegat' },
+  { a: 8944, b: 9086, from: '  previewChk.checked = showEraBuildingPreview;', to: '  previewChk.checked = getShowEraBuildingPreview();', why: 'K06B-Z4 showEraBuildingPreview przez delegat' },
   // K06B-Z3/Z4: stałe tekstowe przez `constStr` (wartości z setK06bDeps).
-  { a: 5028, b: 5111, from: '  const poolTip = `${PULA_TIP} Zapas całej cywilizacji: ${pool} Pracy.`;', to: "  const poolTip = `${constStr('PODZIAL_PRACY_PULA_TIP')} Zapas całej cywilizacji: ${pool} Pracy.`;", why: 'K06B-Z4 PULA_TIP -> constStr' },
-  { a: 5028, b: 5111, from: "    `<span class=\"psi-lbl\">${psiRowLabel('chip-crate', PULA_LBL_PELNA, poolTip)}</span>` +", to: "    `<span class=\"psi-lbl\">${psiRowLabel('chip-crate', constStr('PODZIAL_PRACY_PULA_LBL_PELNA'), poolTip)}</span>` +", why: 'K06B-Z4 PULA_LBL_PELNA -> constStr' },
+  { a: 5093, b: 5182, from: '  const poolTip = `${PULA_TIP} Zapas całej cywilizacji: ${pool} Pracy.`;', to: "  const poolTip = `${constStr('PODZIAL_PRACY_PULA_TIP')} Zapas całej cywilizacji: ${pool} Pracy.`;", why: 'K06B-Z4 PULA_TIP -> constStr' },
+  { a: 5093, b: 5182, from: "    `<span class=\"psi-lbl\">${psiRowLabel('chip-crate', PULA_LBL_PELNA, poolTip)}</span>` +", to: "    `<span class=\"psi-lbl\">${psiRowLabel('chip-crate', constStr('PODZIAL_PRACY_PULA_LBL_PELNA'), poolTip)}</span>` +", why: 'K06B-Z4 PULA_LBL_PELNA -> constStr' },
   // K06B-Z7: placeholdery 3D (slot i miniatura bez mountUnitMiniPreview).
-  { a: 7861, b: 7884, from: "        mountUnitMiniPreview(slot, u, defaultOwnerColor(), 'Render 3D niedostępny w tym środowisku'),", to: '        ((): undefined => { /* 3D odłożone: K06B-Z7 */ return undefined; })(),', why: 'K06B-Z7 slot 3D (P5-8 §6)' },
-  { a: 7976, b: 7996, from: '    mountUnitMiniPreview(thumb, udef, color);', to: '    void color; /* miniatura 3D odłożona: K06B-Z7 */', why: 'K06B-Z7 miniatura 3D (P5-8 §6, tabela: attachUnitRowThumb ODŁOŻONE — 3D)' },
+  { a: 7936, b: 7959, from: "        mountUnitMiniPreview(slot, u, defaultOwnerColor(), 'Render 3D niedostępny w tym środowisku'),", to: '        ((): undefined => { /* 3D odłożone: K06B-Z7 */ return undefined; })(),', why: 'K06B-Z7 slot 3D (P5-8 §6)' },
+  { a: 8051, b: 8071, from: '    mountUnitMiniPreview(thumb, udef, color);', to: '    void color; /* miniatura 3D odłożona: K06B-Z7 */', why: 'K06B-Z7 miniatura 3D (P5-8 §6, tabela: attachUnitRowThumb ODŁOŻONE — 3D)' },
   // K06B-Z1: adnotacje `: any` przy parametrach callbacków bez typu (pin typował z kontekstu).
-  { a: 9428, b: 9494, from: "  close.addEventListener('click', (ev) => {", to: "  close.addEventListener('click', (ev: any) => {", why: 'K06B-Z1 adnotacja any' },
-  { a: 9428, b: 9494, from: '    const hiddenCount = units.filter(u => u.inGarnizon === true).length;', to: '    const hiddenCount = units.filter((u: any) => u.inGarnizon === true).length;', why: 'K06B-Z1 adnotacja any' },
-  { a: 9617, b: 9728, from: '    const sortedImprovements = [...improvementCounts.entries()].sort((a, b) => b[1] - a[1]);', to: '    const sortedImprovements = [...improvementCounts.entries()].sort((a: any, b: any) => b[1] - a[1]);', why: 'K06B-Z1 adnotacja any' },
-  { a: 10175, b: 10183, from: "  document.querySelectorAll<HTMLElement>('.civ-v-garrison-label').forEach(label => {", to: "  document.querySelectorAll<HTMLElement>('.civ-v-garrison-label').forEach((label: any) => {", why: 'K06B-Z1 adnotacja any' },
-  { a: 8137, b: 8182, from: '    onRecruit: (quantity) => recruitUnit(city, item, quantity),', to: '    onRecruit: (quantity: any) => recruitUnit(city, item, quantity),', why: 'K06B-Z1 adnotacja any' },
-  { a: 7997, b: 8049, from: '  actions.querySelectorAll(\'button\').forEach((btn) => {', to: '  actions.querySelectorAll(\'button\').forEach((btn: any) => {', why: 'K06B-Z1 adnotacja any' },
-  { a: 8734, b: 8860, from: '      const def = data.buildings.find(b => b.id === id);', to: '      const def = data.buildings.find((b: any) => b.id === id);', why: 'K06B-Z1 adnotacja any' },
-  { a: 9033, b: 9183, from: '  const def = data.buildings.find(b => b.id === id);', to: '  const def = data.buildings.find((b: any) => b.id === id);', why: 'K06B-Z1 adnotacja any' },
-  { a: 9033, b: 9183, from: '    upgradeChainTitle = upgradeChainSteps(def.id, data.buildings).map(c => c.nazwa).join(\' → \');', to: '    upgradeChainTitle = upgradeChainSteps(def.id, data.buildings).map((c: any) => c.nazwa).join(\' → \');', why: 'K06B-Z1 adnotacja any' },
-  { a: 9033, b: 9183, from: "    row.addEventListener('click', (e) => {", to: "    row.addEventListener('click', (e: any) => {", why: 'K06B-Z1 adnotacja any' },
+  { a: 9672, b: 9738, from: "  close.addEventListener('click', (ev) => {", to: "  close.addEventListener('click', (ev: any) => {", why: 'K06B-Z1 adnotacja any' },
+  { a: 9672, b: 9738, from: '    const hiddenCount = units.filter(u => u.inGarnizon === true).length;', to: '    const hiddenCount = units.filter((u: any) => u.inGarnizon === true).length;', why: 'K06B-Z1 adnotacja any' },
+  { a: 9861, b: 9972, from: '    const sortedImprovements = [...improvementCounts.entries()].sort((a, b) => b[1] - a[1]);', to: '    const sortedImprovements = [...improvementCounts.entries()].sort((a: any, b: any) => b[1] - a[1]);', why: 'K06B-Z1 adnotacja any' },
+  { a: 10422, b: 10430, from: "  document.querySelectorAll<HTMLElement>('.civ-v-garrison-label').forEach(label => {", to: "  document.querySelectorAll<HTMLElement>('.civ-v-garrison-label').forEach((label: any) => {", why: 'K06B-Z1 adnotacja any' },
+  // REPIN-UI-2-G r2: web 86d510c66 zmienił linię (opts?.onRecruit, R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1) — ta sama adnotacja K06B-Z1.
+  { a: 8232, b: 8282, from: '    onRecruit: (quantity) => opts?.onRecruit', to: '    onRecruit: (quantity: any) => opts?.onRecruit', why: 'K06B-Z1 adnotacja any' },
+  // K09B r2 (0a1761d80, przed UI-2-G; bramka K06B była czerwona na bazie 2198eaf7e): id miasta w DTO = number (jak K06A `pinnedGarrisonCityId`).
+  { a: 10417, b: 10421, from: 'function pinGarrisonPanel(cityId: string, label: HTMLElement): void {', to: 'export function pinGarrisonPanel(cityId: number, label: HTMLElement): void {', why: 'K09B-r2 typ id miasta (DTO number)' },
+  { a: 8072, b: 8124, from: '  actions.querySelectorAll(\'button\').forEach((btn) => {', to: '  actions.querySelectorAll(\'button\').forEach((btn: any) => {', why: 'K06B-Z1 adnotacja any' },
+  // REPIN-UI-2-G r2: nowe linie webu 86d510c66 w renderBuildList (R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3) — K06B-Z1 adnotacje any.
+  { a: 8944, b: 9086, from: '  const itemIds = new Set(items.map(it => it.id));', to: '  const itemIds = new Set(items.map((it: any) => it.id));', why: 'K06B-Z1 adnotacja any' },
+  { a: 8944, b: 9086, from: '    : previewEntries.filter(e => !itemIds.has(e.id));', to: '    : previewEntries.filter((e: any) => !itemIds.has(e.id));', why: 'K06B-Z1 adnotacja any' },
+  { a: 8944, b: 9086, from: "          .filter(c => c.kind === 'stock' && !c.met)", to: "          .filter((c: any) => c.kind === 'stock' && !c.met)", why: 'K06B-Z1 adnotacja any' },
+  { a: 8944, b: 9086, from: '          .map(c => c.label)', to: '          .map((c: any) => c.label)', why: 'K06B-Z1 adnotacja any' },
+  { a: 8944, b: 9086, from: '      const def = data.buildings.find(b => b.id === id);', to: '      const def = data.buildings.find((b: any) => b.id === id);', why: 'K06B-Z1 adnotacja any' },
+  { a: 9272, b: 9427, from: '  const def = data.buildings.find(b => b.id === id);', to: '  const def = data.buildings.find((b: any) => b.id === id);', why: 'K06B-Z1 adnotacja any' },
+  { a: 9272, b: 9427, from: '    upgradeChainTitle = upgradeChainSteps(def.id, data.buildings).map(c => c.nazwa).join(\' → \');', to: '    upgradeChainTitle = upgradeChainSteps(def.id, data.buildings).map((c: any) => c.nazwa).join(\' → \');', why: 'K06B-Z1 adnotacja any' },
+  { a: 9272, b: 9427, from: "    row.addEventListener('click', (e) => {", to: "    row.addEventListener('click', (e: any) => {", why: 'K06B-Z1 adnotacja any' },
 ];
 
 /** Blok PLACEHOLDER (K06B-Z7, P5-8 §6): sprawdzany osobno — sygnatura pinu + jedna linia `void …` + `}`. */
-const PLACEHOLDERS = [{ a: 9821, b: 10017, name: 'renderWorkedPreview', why: 'K06B-Z7 MAPA (P5-8 §6)' }];
+const PLACEHOLDERS = [{ a: 10068, b: 10264, name: 'renderWorkedPreview', why: 'K06B-Z7 MAPA (P5-8 §6)' }];
 
 /**
  * Nazwy deklaracji najwyższego poziomu spoza wybrane.json (K06B-Z3/Z5/Z6, struktura modułów):
@@ -92,8 +100,19 @@ const LOCAL_NAMES = new Set([
   'AvailabilityContext', 'BuildingCatalogEntry', 'BuildingDef', 'City', 'CityProduction', 'CityView',
   'EPOCH_NUMBER_TO_NAME', 'GameData', 'ProductionItem', 'EntityCardData', 'GameMap', 'GarrisonUnit', 'Hex',
   'IMPROVEMENT_KEY_TO_NAME', 'Nakladka', 'OkolicaFocus', 'OkolicaTryb', 'UnitDef',
+  // REPIN-UI-2-G r2: alias typu webu 86d510c66 (game/converters) użyty w resolveOwnedBuildingInactiveStatus.drainParams
+  'RawConverterParamsJson',
   // K06B-Z6: akcesory stanu K06B
   'setK06bRootEl', 'getK06bRootEl',
+]);
+
+/**
+ * REPIN-UI-2-G r2: deklaracje najwyższego poziomu NOWE w web 86d510c66 (brak w pinie edb8fb56, więc brak w wybrane.json),
+ * skopiowane bajtowo WEWNĄTRZ bloków z markerem web (TEXT je sprawdza). Poza blokiem = FAIL COVER.
+ */
+const WEB_NEW_UNITS = new Set([
+  // ff6ac152c R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1: wspólna mutacja kolejki rekrutacji (↑↓✕), blok 8386-8499.
+  'cancelRecruitmentQueueItem', 'moveRecruitmentQueueItemBy',
 ]);
 
 /** Delegat/wartość z pliku deps: `const X = (…) => dep('X')(…)`, `const X: any = valueProxy('X')`, `const X = constStr('X')`. */
@@ -108,7 +127,8 @@ const trimTrailingBlank = (arr) => {
   return a;
 };
 
-const MARK = /^\/\/ pin edb8fb56 (gra\/src\/[^:\s]+):(\d+)-(\d+)$/;
+// R-RUSTPORT-REPIN-UI-2-G-Q1 r2: marker pin edb8fb56 albo web 86d510c66 (repin-ui2g-rev.mjs); --pin-dir = katalog tej rewizji.
+const MARK = /^\/\/ pin (?:edb8fb56|86d510c66) (gra\/src\/[^:\s]+):(\d+)-(\d+)$/;
 const findings = { text: [], orphan: [], cover: [], local: [], delegator: [] };
 const comparisons = [];
 const pinCache = {};
@@ -280,7 +300,7 @@ for (const file of files) {
     if (d) delegatorNames.add(d[1]);
   }
 }
-const expectedNames = new Set([...wybrane, ...LOCAL_NAMES, ...delegatorNames]);
+const expectedNames = new Set([...wybrane, ...LOCAL_NAMES, ...delegatorNames, ...WEB_NEW_UNITS]);
 for (const n of wybrane) if (!declared.has(n)) findings.cover.push(`brak jednostki z wybrane.json w porcie: ${n}`);
 for (const n of declared) if (!expectedNames.has(n)) findings.cover.push(`deklaracja spoza wybrane.json, LOCAL_NAMES i delegatów: ${n}`);
 for (const n of LOCAL_NAMES) if (!declared.has(n)) findings.local.push(`brak lokalnej deklaracji ${n}`);
@@ -297,6 +317,10 @@ const allBlocks = files.flatMap((file) => {
   }
   return out;
 });
+for (const n of WEB_NEW_UNITS) {
+  const inBlock = allBlocks.some((b) => b.body.some((x) => new RegExp(`^(export )?function ${n}\\b`).test(x)));
+  if (!inBlock) findings.cover.push(`nowa jednostka webu ${n} nie leży w bloku z markerem`);
+}
 for (const n of wybrane) {
   const re = new RegExp(`^(export )?(const|let|function) ${n}\\b`);
   if (!allBlocks.some((b) => b.body.some((t) => re.test(t)))) findings.cover.push(`jednostka ${n} nie ma bloku z markerem`);
@@ -305,7 +329,7 @@ for (const n of wybrane) {
 for (const s of LINE_SUBS) {
   if (!files.some((f) => {
     const port = readFileSync(join(PORT_DIR, f), 'utf8');
-    return port.includes(`// pin edb8fb56 ${'gra/src/ui/cityPanel.ts'}:${s.a}-${s.b}`);
+    return /^\/\/ pin (?:edb8fb56|86d510c66) /m.test(port) && (port.includes(`// pin edb8fb56 ${'gra/src/ui/cityPanel.ts'}:${s.a}-${s.b}`) || port.includes(`// pin 86d510c66 ${'gra/src/ui/cityPanel.ts'}:${s.a}-${s.b}`));
   })) findings.text.push(`LINE_SUB bez bloku ${s.a}-${s.b}: ${s.why}`);
 }
 

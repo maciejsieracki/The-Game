@@ -22,7 +22,7 @@ import {
 
 // ─── Jednostki K08C, partia k08c-praca.ts (kopie pinu wygenerowane; markery = bramka verify-k08c-copies.mjs) ─────────────
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:4946-5018
+// pin 86d510c66 gra/src/ui/cityPanel.ts:5011-5083
 export function buildPracaDetailCard(
   city: City,
   view: CityView | null,
@@ -83,8 +83,8 @@ export function buildPracaDetailCard(
     'Kolejka pusta: cała Praca miasta (doBudynkow + doPuli) idzie do puli imperium.',
     'Kolejka zajęta: postęp += doBudynkow; gdy postęp ≥ koszt → budynek gotowy; reszta → doPuli.',
     maTargowisko
-      ? 'Część pracy (doPuli) + Waluta + Targowisko → dodatkowy pieniądz (osobny strumień).'
-      : 'Bez Targowiska doPuli nie konwertuje się na pieniądz.',
+      ? 'Targowisko odblokowuje ręczną konwersję wybranej części puli Pracy imperium na podatek; to nie jest stały dochód miasta.'
+      : 'Bez Targowiska ręczna konwersja puli Pracy imperium na podatek jest niedostępna.',
     'Brak pracy = brak postępu budowy i brak wpływu do puli — przypisz 👤 w okolicy.',
   ]);
 
@@ -98,7 +98,7 @@ export function buildPracaDetailCard(
 }
 // pin-end
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:5770-5822
+// pin 86d510c66 gra/src/ui/cityPanel.ts:5841-5893
 export function buildTopBarPracaDetailCard(
   city: City,
   view: CityView,

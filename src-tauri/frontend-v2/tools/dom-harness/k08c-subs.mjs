@@ -4,9 +4,9 @@
  * Jedno źródło prawdy: generator i bramka nie mogą mieć rozjechanych list.
  *
  * Zakres rundy 1 (dispatch K08C, zadanie 3, po rozstrzygnięciach w `dyspozycje/rust-port/p5/P5-8-K08C.md`):
- *   partia `praca`: `buildPracaDetailCard` (pin :4946-5018) i `buildTopBarPracaDetailCard` (pin :5770-5822).
+ *   partia `praca`: `buildPracaDetailCard` (pin :5011-5083) i `buildTopBarPracaDetailCard` (pin :5841-5893).
  * Zdjęte z rundy 1 (blokery nieporotowane, patrz P5-8-K08C.md §3): `renderPodzialPracy` (wymaga `appendPodzialPracyInfo`
- * :5028-5097 → `resolveEmpireSnap`, stan `activeMap`, `psiRowLabel`, `statChipBrand`, `frontItem`, `etaTurns`),
+ * :5093-5168 → `resolveEmpireSnap`, stan `activeMap`, `psiRowLabel`, `statChipBrand`, `frontItem`, `etaTurns`),
  * `renderWealth`, `renderReligia`, `renderHandelSlidersPanel`.
  *
  * Podstawienia LINE_SUBS: brak (K08C-Z4 — ciała kopii są bajt w bajt z pinem; stan pinu i zależności idą przez
@@ -38,14 +38,14 @@ import {
   cityPracaSplit, computeView, procentPuliImperiumZBudynkow, readPodzialPracy,
 } from './k08c-deps';`,
   units: [
-    { name: 'buildPracaDetailCard', a: 4946, b: 5018 },
-    { name: 'buildTopBarPracaDetailCard', a: 5770, b: 5822 },
+    { name: 'buildPracaDetailCard', a: 5011, b: 5083 },
+    { name: 'buildTopBarPracaDetailCard', a: 5841, b: 5893 },
   ],
 };
 
 
-/** Partia `podzial` (runda 2, zarzut „zakres 6 jednostek"): `renderPodzialPracy` (pin :5112-5188). Ciało kopiuje pin; `appendPodzialPracyInfo`
- * (pin :5028-5111) jest już portem K06B (`k06b-jednostki.ts`) — import, nie kopia w tej partii. */
+/** Partia `podzial` (runda 2, zarzut „zakres 6 jednostek"): `renderPodzialPracy` (pin :5183-5259). Ciało kopiuje pin; `appendPodzialPracyInfo`
+ * (pin :5093-5182) jest już portem K06B (`k06b-jednostki.ts`) — import, nie kopia w tej partii. */
 export const BATCH_PODZIAL = {
   file: 'k08c-podzial.ts',
   header: `/**
@@ -69,7 +69,7 @@ import {
   cityPracaSplit, clampPodzialPracyBudynkiPercent, procentPuliImperiumZBudynkow, readPodzialPracy,
 } from './k08c-deps';`,
   units: [
-    { name: 'renderPodzialPracy', a: 5112, b: 5188 },
+    { name: 'renderPodzialPracy', a: 5183, b: 5259 },
   ],
 };
 
