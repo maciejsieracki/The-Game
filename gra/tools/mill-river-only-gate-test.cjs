@@ -55,7 +55,9 @@ ok(WATER_ACCESS_BUILDING_IDS.has('port') && !WATER_ACCESS_BUILDING_IDS.has('mlyn
 
 console.log('(B) availableProduction: młyn wymaga rzeki w zasięgu miasta');
 const bData = require('../data/buildings.json');
-// Syntetyczna definicja młyna (brak w buildings.json): klon Studni bez prerekwizytów i bez awansu.
+// Syntetyczna definicja młyna (brak w buildings.json, zastrzeżenie A1 do decyzji właściciela): klon Studni bez
+// prerekwizytów i bez awansu. Test NIE wykryje błędu wynikającego z prawdziwej definicji (np. inne id/przedrostek);
+// po dodaniu `mlyn` do buildings.json trzeba dopisać asercję na prawdziwym wpisie (patrz (G) — spójność id).
 const studnia = bData.find(b => b.id === 'studnia');
 const mill = { ...studnia, id: 'mlyn', upgradeFrom: undefined, techUnlock: '-' };
 const buildings = [...bData.filter(b => b.id !== 'mlyn'), mill];
@@ -77,6 +79,18 @@ console.log('(D) Stare zapisy z młynem');
 let loadOk = true;
 try { ids(mk({ cityHasRiver: false, builtBuildingIds: ['mlyn'] })); ids(mk({ cityHasRiver: true, builtBuildingIds: ['mlyn'] })); } catch (_) { loadOk = false; }
 ok(loadOk, 'builtBuildingIds zawiera mlyn bez wyjątku (bez rzeki i z rzeką)');
+// Bramka działa tylko na LISTĘ dostępnych pozycji: nie może mutować ctx (ani builtBuildingIds) ani zmieniać
+// wyniku dla innych budynków. Stan zapisu (JSON przed = JSON po) ma pozostać identyczny.
+{
+  const ctxOld = mk({ cityHasRiver: false, builtBuildingIds: ['mlyn', 'studnia'] });
+  const before = JSON.stringify(ctxOld);
+  const outOld = availableProduction(city, { buildings, units: [] }, ['Żegluga'], ctxOld).map(i => i.id);
+  ok(JSON.stringify(ctxOld) === before, 'availableProduction nie mutuje ctx/builtBuildingIds (stary zapis z młynem)');
+  ok(outOld.every(id => typeof id === 'string'), 'lista dostępnych pozycji dla starego zapisu ma poprawne id');
+  const withRiver = ids(mk({ cityHasRiver: true, builtBuildingIds: ['studnia'] })).filter(x => x !== 'mlyn');
+  const noRiver = ids(mk({ cityHasRiver: false, builtBuildingIds: ['studnia'] })).filter(x => x !== 'mlyn');
+  ok(JSON.stringify(withRiver) === JSON.stringify(noRiver), 'bramka rzeki NIE zmienia dostępności innych budynków (tylko młyn)');
+}
 console.log('(E) Pin main.ts');
 const mainTxt = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 ok(/function cityHasRiverAccess\(city: Pick<City, 'q' \| 'r'>\): boolean \{\s*return isHexNearRiver\(map, city\.q, city\.r\);/.test(mainTxt), 'cityHasRiverAccess = isHexNearRiver(map, q, r)');
@@ -87,6 +101,21 @@ ok(/getCityHasRiver: \(cityId: string\) => /.test(mainTxt), 'cfg panelu miasta d
 console.log('(F) Pin UI');
 const panelTxt = fs.readFileSync(path.join(SRC, 'ui', 'cityPanel.ts'), 'utf8');
 ok(/Wymaga rzeki przy mieście/.test(panelTxt) && /RIVER_ONLY_BUILDING_IDS\.has\(def\.id\)/.test(panelTxt), 'blokada UI „Wymaga rzeki przy mieście” dla młyna');
+console.log('(G) Spójność id „mlyn” (bramka vs. efekty i UI)');
+{
+  // Zmiana id młyna w buildings.json po stronie danych wyłączyłaby bramkę po cichu — pilnujemy, że wszystkie
+  // literały 'mlyn' w src są tym samym id co RIVER_ONLY_BUILDING_IDS (efekt młyna czyta builtIds po 'mlyn').
+  const srcFiles = [];
+  const walk = (d) => { for (const f of fs.readdirSync(d, { withFileTypes: true })) {
+    const p = path.join(d, f.name);
+    if (f.isDirectory()) walk(p); else if (/\.ts$/.test(f.name)) srcFiles.push(p);
+  } };
+  walk(SRC);
+  const literalHits = srcFiles.flatMap(f => (fs.readFileSync(f, 'utf8').match(/['"]mlyn['"]/g) || []).map(() => path.basename(f)));
+  ok(literalHits.length >= 4, `literały 'mlyn' w src wykryte (${literalHits.length})`);
+  const turnEco = fs.readFileSync(path.join(SRC, 'game', 'turn-economy.ts'), 'utf8');
+  ok((turnEco.match(/runtimeBuiltIds\.includes\('mlyn'\)/g) || []).length >= 2, 'efekt młyna (turn-economy) czyta runtimeBuiltIds — bramka go nie dotyka');
+}
 try { fs.rmSync(temp, { recursive: true, force: true }); } catch (_) { /* */ }
 console.log(failed === 0 ? 'ALL PASS' : `FAILED=${failed}`);
 process.exit(failed === 0 ? 0 : 1);

@@ -162,7 +162,6 @@ export interface CityProduction {
   rekrutacja?: ProductionItem[];
 }
 
-/** v0.1: ile jednostek moze zakonczyc rekrutacje w jednej turze (na miasto). */
 /**
  * R-WEB-MILL-RIVER-ONLY-GATE-Q1 (decyzja właściciela 2026-11-04, ABC: „Porty: morze LUB rzeka; młyn TYLKO rzeka”):
  * budynki wymagające RZEKI w zasięgu TEGO miasta (nie morza/jeziora) — ta sama definicja „przy rzece” co irygacja
@@ -172,6 +171,7 @@ export interface CityProduction {
  */
 export const RIVER_ONLY_BUILDING_IDS: ReadonlySet<string> = new Set(['mlyn']);
 
+/** v0.1: ile jednostek moze zakonczyc rekrutacje w jednej turze (na miasto). */
 export const RECRUIT_UNITS_PER_TURN = 1;
 
 /**
