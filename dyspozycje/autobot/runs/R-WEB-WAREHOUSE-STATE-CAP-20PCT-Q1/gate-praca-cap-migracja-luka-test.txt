@@ -1,0 +1,9 @@
+A. Zapis nowoczesny (savedDefaults): podział miasta też musi być przycięty
+B. Miasto z ustawioną flagą override: nie wolno go pominąć przy normalizacji
+C. Wartości LEGALNE zostają nietknięte (poprawka nie nadpisuje ustawień gracza)
+D. Domyślne imperium z zapisu też są przycinane
+E. Odczyt efektywny nigdy nie zwraca wartości spoza zakresu
+M. DOWÓD NIETAUTOLOGICZNOŚCI: bundel z WYCIĘTĄ poprawką musi paść na A i B
+
+praca-cap-migracja-luka-test: 11 passed, 0 failed
+EXIT=0

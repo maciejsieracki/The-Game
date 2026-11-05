@@ -1,0 +1,13 @@
+
+-- A. cap = 50000 x (1 + 0,2 x N) x 2^(epoka-1) --
+
+-- B. ownerStorageParamsForEra: capBase + capBonusPerMagazyn x N == cap --
+
+-- C. econ-params.json: magazyn_bonus_surowce_proc_na_budynek (0,2), stary klucz usuniety --
+
+-- D. mutacja: +500 zamiast +20% musi dac wynik ROZNY od pinowanego --
+
+-- E. buildings.json: opis Magazynu wspomina +20% pojemnosci panstwa --
+
+warehouse-state-cap-20pct-test: 56 passed, 0 failed
+EXIT=0
