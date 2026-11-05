@@ -8748,3 +8748,6 @@ Poziom (suwak Wyżywienie) dotyczy WYŁĄCZNIE żywności; surowce zużywane są
 
 ## 2026-11-05 — ZGŁOSZENIE (zrzut: panel „Armia · (92,108)”, 14 jednostek, Grecy): lista jednostek armii
 (1) Wszyscy nazywają się „Wojownik” — nie da się rozpoznać, który to generał/wódz; (2) nie da się zaznaczyć kilku jednostek naraz (np. do „Rozwiąż”/podziału) — ma być wielokrotne zaznaczanie jak w podobnym mechanizmie podziału armii. → temat `R-WEB-UI-ARMY-PANEL-GENERAL-LABEL-MULTISELECT-Q1`.
+
+## 2026-11-05 — ZGŁOSZENIE (zrzut panelu Spichlerz II): „Dlaczego Spichlerz II wymaga warzelni soli? Powinien wymagać tylko ceramiki i soli” + „jakie badanie odkrywa Spichlerz II?”
+Diagnoza: `gra/data/buildings.json` → `spichlerz_ii.techUnlock = "Warzelnia soli"`, ale „Warzelnia soli” NIE jest technologią (to ulepszenie terenu odblokowywane przez „Garncarstwo”, `tech.json`); żadna technologia nie odblokowuje „Spichlerz II” → badanie nie do zdobycia, budynek nigdy niedostępny w UI/produkcji (`production.ts:817/2196`, chip „Wymagane badania” czerwony na stałe). To jedyny wpis buildings.json z techUnlock spoza tech.json. → temat `R-WEB-GRANARY2-TECH-DATA-FIX-Q1`.
