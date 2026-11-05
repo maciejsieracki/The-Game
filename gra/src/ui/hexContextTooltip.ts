@@ -24,6 +24,8 @@ import {
   isImprovementBlockedOnForest,
 } from '../map/improvement-build';
 import type { ImprovementKey } from '../render/improvements';
+// R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1: etykiety terenu z jednego źródła (map/terrain-names.ts).
+import { TEREN_LABEL_PL as TEREN_LABEL } from '../map/terrain-names';
 // R-ZETON-PASKI (Maciej 2026-07-29): kolory pasków Zdrowia i Ruchu były tu
 // wpisane na sztywno w CSS. Wyciągnięte do JEDNEGO źródła prawdy, bo te same
 // barwy niesie teraz tabliczka nad żetonem na mapie (render/unitStatPlate.ts) —
@@ -83,17 +85,6 @@ function yieldIconSvg(key: YieldKey): string {
 function yieldIconHtml(key: YieldKey): string {
   return `<span class="cp-yield-ic">${yieldIconSvg(key)}</span>`;
 }
-
-const TEREN_LABEL: Record<TerenBazowy, string> = {
-  [TerenBazowy.Laka]: 'Łąka',
-  [TerenBazowy.Rownina]: 'Równina',
-  [TerenBazowy.Wzgorza]: 'Wzgórza',
-  [TerenBazowy.Gory]: 'Góry',
-  [TerenBazowy.PlytkieMorze]: 'Płytkie morze',
-  [TerenBazowy.Morze]: 'Morze',
-  [TerenBazowy.Pustynia]: 'Pustynia',
-  [TerenBazowy.Polarny]: 'Polarny',
-};
 
 type CityYieldKey = keyof Pick<TileYield, 'zywnosc' | 'praca' | 'handel'>;
 type MagazynYieldKey = keyof Pick<TileYield, 'drewno' | 'kamien'>;

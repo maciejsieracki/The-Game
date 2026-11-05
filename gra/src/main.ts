@@ -37722,6 +37722,9 @@ async function boot(): Promise<void> {
             const bronzeTriggeredSubjects: ForcedWarPairingSubject[] = [];
             const stoneTriggeredSubjects: ForcedWarPairingSubject[] = [];
             const ironTriggeredSubjects: ForcedWarPairingSubject[] = [];
+            // R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1: liczone RAZ na ture (funkcja jest niezalezna od wlasciciela),
+            // nie per fotel AI w `opts` ponizej (~5 ms/wywolanie przy 12-24 miastach).
+            const aiSiblingExclusionByCity = computeLostToNearerSiblingByCity(cities, map);
             for (const ownerId of aiOwnerList) {
               if (
                 ownerId <= 0
@@ -38239,6 +38242,7 @@ async function boot(): Promise<void> {
               // ktora picker stosuje graczowi natywnie. NIE jest to tegoroczny przyrost
               // puli ani drugi podzial tej samej Pracy.
               improvementBudgetCap: aiImprovementBudgetByOwner.get(ownerId),
+              improvementExcludeHexKeysByCity: aiSiblingExclusionByCity, // R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1 (liczone raz na ture wyzej)
               resourceDeficitKeys: resourceDeficitKeysForOwner(ownerId),
               // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3): picker wypełni ten
               // obiekt W MIEJSCU; odczyt zaraz po `decideAITurn` (patrz

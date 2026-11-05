@@ -111,7 +111,10 @@ function assertRender(res, label) {
       ok(m.shellRight <= m.powerX + 0.5, `${label} ${w}px/${n}: baner (prawy brzeg ${Math.round(m.shellRight)}) konczy sie przed medalionem Mocy (x=${Math.round(m.powerX)})`);
       ok(m.clip.length === 0, `${label} ${w}px/${n}: zaden tekst komorki nie jest przyciety`, m.clip);
       ok(m.sw <= m.vw, `${label} ${w}px/${n}: brak poziomego przewijania`, { sw: m.sw, vw: m.vw });
-      ok(m.minMed >= 12, `${label} ${w}px/${n}: ikony medalionow widoczne (min ${m.minMed}px)`);
+      // R-WEB-HUD-TOPBAR-NO-LABELS-Q1: ≤700 px medalion baneru 9 px (zamiast 12) — kolumny 1fr musza
+      // zmiescic „wartosc + dwa przyrosty" w ~50 px przy 640 px (baner 170 px). Prog 9 px dla ≤700 px.
+      const medMin = 12;
+      ok(m.minMed >= medMin, `${label} ${w}px/${n}: ikony medalionow widoczne (min ${m.minMed}px, prog ${medMin})`);
       // prawy baner (r2): wszystkie 5 chipow w obrebie banera i ekranu, baner nie wchodzi na Moc, nie jest zwezony do paska
       ok(m.rchips.length === 5, `${label} ${w}px/${n}: prawy baner ma 5 chipow`, m.rchips.length);
       ok(m.rbW >= 100, `${label} ${w}px/${n}: prawy baner nie zwezony do paska (szer. ${Math.round(m.rbW)}px >= 100)`);
@@ -160,7 +163,7 @@ async function mutants(chromium) {
   const hudPath = HUD_SRC || path.join(GRA, 'src/ui/hud.ts');
   const hud = fs.readFileSync(hudPath, 'utf8');
   const HM = [
-    ['brak reguly <=700 px (baner nachodzi na Moc przy 640)', (s) => s.replace('@media (max-width:700px){.civ-hud{--hud-cell-w:68px', '@media (max-width:1px){.civ-hud{--hud-cell-w:68px')],
+    ['szerokosc banera siega pod medalion Mocy (R-WEB-HUD-TOPBAR-NO-LABELS-Q1: calc(50vw - 150px) -> calc(50vw - 40px))', (s) => s.replace('.civ-hud .civ-hud-banner-left{width:calc(50vw - 150px);max-width:calc(50vw - 150px);}', '.civ-hud .civ-hud-banner-left{width:calc(50vw - 40px);max-width:calc(50vw - 40px);}')],
     ['medalion Mocy nie zmniejszony <=700 px', (s) => s.replace('.civ-hud .power-center{min-width:150px;', '.civ-hud .power-center{min-width:240px;')],
     ['prawy baner: stare max-width bez min 150 px i bez zawijania (zwezony pasek/chipy poza ekranem)', (s) => s.replace('max-width:max(150px,min(calc(50vw - 352px),780px));}\n.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;', 'max-width:min(calc(50vw - 340px),780px);}\n.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:nowrap;')],
     ['prawy baner: brak ukladu kolumnowego <=1100 px (nachodzi na Moc)', (s) => s.replace('.civ-hud .hud-right-cluster{flex-direction:column-reverse;', '.civ-hud .hud-right-cluster{flex-direction:row;')],

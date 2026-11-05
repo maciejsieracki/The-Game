@@ -407,6 +407,12 @@ export interface AITurnOpts {
    */
   improvementSurplusReport?: AutoImprovementSurplusReport;
   /**
+   * R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1: heksy przegrane na rzecz bliższego miasta tego samego właściciela
+   * (`computeLostToNearerSiblingByCity`, id miasta -> zbiór kluczy) — ten sam wejściowy zbiór co ścieżka gracza i
+   * `workedHexCoordsForCity` silnika; bez niego zbiór pól z obywatelami wg AI rozjeżdża się z realnym.
+   */
+  improvementExcludeHexKeysByCity?: ReadonlyMap<string, ReadonlySet<string>>;
+  /**
    * D-IMPROVEMENTS: epoka TEGO AI (main.ts `empireEpochForOwner(ownerId)`) --
    * wymagane przez qualifier dla hodowli Inków (bydło/owce poza lamą dopiero
    * od epoki 3, patrz livestock-unlock.ts). Domyślnie 1 gdy brak.
@@ -2727,6 +2733,23 @@ const AI_IMPROVEMENT_ZYWNOSCIOWE_KEYS: ReadonlySet<ImprovementKey> = new Set<Imp
 ]);
 
 /**
+ * R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1: klucze `q,r` heksow z obywatelami miasta AI — to samo
+ * `workedHexCoordsForCity` co silnik tury, z wykluczeniem heksow przegranych na rzecz blizszego miasta
+ * tego samego wlasciciela (`excludeByCity`: id miasta -> zbior kluczy, `computeLostToNearerSiblingByCity`).
+ */
+export function aiWorkedHexKeysForCity(
+  city: AICity,
+  map: GameMap,
+  territoryNodes: readonly TerritoryNode[] | undefined,
+  excludeByCity: ReadonlyMap<string, ReadonlySet<string>> | undefined,
+  civEra: number | undefined,
+): ReadonlySet<string> {
+  return new Set<string>(
+    workedHexCoordsForCity(city, map, territoryNodes, excludeByCity?.get(city.id), civEra).map(({ q, r }) => `${q},${r}`),
+  );
+}
+
+/**
  * D-IMPROVEMENTS: planuje maks. JEDNO ulepszenie terenu NA MIASTO na turę dla
  * AI `ownerId` (throttling wydajności -- patrz raport pkt d). Reużywa
  * `buildImprovementQualifier` (map/improvement-build.ts) -- IDENTYCZNA
@@ -2788,17 +2811,15 @@ function planCityImprovements(
   // TEGO miasta, liczone raz na wywołanie i cache'owane po `city.id` (picker pyta o nie
   // raz na miasto, ale `planCityImprovements` bywa wołane dwiema ścieżkami —
   // `decideAITurn` i `decideDefensiveCopyTurn`).
-  // BRAK ODPOWIEDNIKA `lostToSiblingByCity` z main.ts (P-HEKS-SPOR-SASIAD): ścieżka
-  // gracza odejmuje heksy sporne z bliższym miastem-rodzeństwem. Dla AI ten wyjątek nie
-  // jest tu przekazywany — skutek jest wyłącznie w kierunku „AI uzna za swoje o kilka
-  // heksów spornych za dużo", nigdy w kierunku budowy poza obywatelami cudzego miasta.
+  // R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1: zbior pol obywateli wyklucza heksy przegrane na rzecz
+  // blizszego miasta TEGO SAMEGO wlasciciela (`opts.improvementExcludeHexKeysByCity`, main.ts:
+  // `computeLostToNearerSiblingByCity`) — ten sam wejsciowy zbior co sciezka gracza i silnik tury
+  // (`aiWorkedHexKeysForCity`). Bez niego (undefined) zachowanie jak dawniej (testy bez main.ts).
   const workedKeysCache = new Map<string, ReadonlySet<string>>();
   const workedHexKeysForAiCity = (city: AICity): ReadonlySet<string> => {
     const hit = workedKeysCache.get(city.id);
     if (hit) return hit;
-    const set = new Set<string>(
-      workedHexCoordsForCity(city, map, territoryNodes, undefined, opts.civEra).map(({ q, r }) => `${q},${r}`),
-    );
+    const set = aiWorkedHexKeysForCity(city, map, territoryNodes, opts.improvementExcludeHexKeysByCity, opts.civEra);
     workedKeysCache.set(city.id, set);
     return set;
   };

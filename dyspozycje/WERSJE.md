@@ -1,3 +1,21 @@
+## ROBOCZA 00e508b2 -- 2026-11-05 -- FALA 496: baner HUD bez słów brutto/netto, na całą szerokość (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`6efe338c7` + HUD-TOPBAR-NO-LABELS `f0a50fd68`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `00e508b29f6759a3408e85b5315dfc6d`, 70240058 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: baner górny — duża liczba całkowita + dwa przyrosty (brutto, netto) bez słów; tooltip wyjaśnia; baner na całą dostępną szerokość; brak rozjeżdżania przy dużych liczbach (1280–640 px).
+- Testy: tsc PASS; no-labels 94/0; gross-net-rest 752/0; grid-gross-net 192/0.
+- Ograniczenia: Handel/Surowce bez dużej liczby; panel imperium zachowuje etykiety.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `ed464ad13d0a100d123cda16fdb1a9bf`, 70237463 bajtów.
+
+## ROBOCZA ed464ad1 -- 2026-11-05 -- FALA 495: AI — poprawne pola obywateli przy wycince lasu; jedna mapa nazw terenu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`6a4b7419e` + AI-CITIZEN-HEX-SIBLING-EXCLUSION `65c224926` + TERRAIN-ID-NAME-MAP-UNIFY `d577f7eb2`) i commit wdrożenia; stała zgoda właściciela (wdrożenie na prośbę: „chcę już testować”).
+- Bundle MD5 `ed464ad13d0a100d123cda16fdb1a9bf`, 70237463 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: AI nie odrzuca już pól z obywatelem przy wycince lasu (heksy bliższego miasta tego samego właściciela wykluczone jak u gracza); refaktor jednej mapy id↔nazwa terenu.
+- Testy: tsc PASS; ai-citizen-hex 18/0; terrain-names 23/0; ai-food-only 66/0; defend-home 30/0.
+- Ograniczenia: wycinka lasu przy rzece BEZ obywatela (decyzja B, gracz i AI) jeszcze w toku — nie w tej wersji; wczesne chybienia AI (tury 1–7) nieustalone.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `3775188b059301fcbbd72a4453e9c503`, 70235654 bajtów.
+
 ## ROBOCZA 3775188b -- 2026-11-05 -- FALA 494: AI — obrońcy domu tylko jednostki bojowe lądowe (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`037e6be36` + HOME-DEFENDERS `24ab89a1e`) i commit wdrożenia; stała zgoda właściciela.

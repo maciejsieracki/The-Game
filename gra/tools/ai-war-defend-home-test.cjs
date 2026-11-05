@@ -222,9 +222,19 @@ section('T7: determinizm i czas tury');
   const a = scExchange(); S.simulate(a, { engine: E, homeDefense: true, turns: 30 }); h1 = hash(a);
   const b = scExchange(); S.simulate(b, { engine: E, homeDefense: true, turns: 30 }); h2 = hash(b);
   ok(h1 === h2, `dwa przebiegi daja ten sam stan (${h1} == ${h2})`);
-  const off = S.simulate(scDefendWins(), { engine: E, homeDefense: false, turns: 20 });
-  const on = S.simulate(scDefendWins(), { engine: E, homeDefense: true, turns: 20 });
-  ok(on.decisionMs <= off.decisionMs * 1.5 + 50, `czas decyzji AI bez wzrostu (PO ${on.decisionMs.toFixed(1)} ms vs PRZED ${off.decisionMs.toFixed(1)} ms)`);
+  // Stabilizacja (R-WEB-TEST-TIMING-STABILIZE-Q1): min z 5 przebiegow, PRZED/PO przeplatane, a pomiar to
+  // CZAS PROCESORA (process.cpuUsage) calego przebiegu symulacji zamiast czasu scianowego: rownolegle procesy
+  // (obciazenie maszyny) nie zawyzaja wyniku. Prog (x1,5 + 50 ms) bez zmian; realny wzrost kosztu decyzji
+  // podnosi takze minimum (rozklad w tym samym przebiegu, bez zmiany sim).
+  const cpuMs = (c0) => { const d = process.cpuUsage(c0); return (d.user + d.system) / 1000; };
+  const timed = (hd) => { const c0 = process.cpuUsage(); S.simulate(scDefendWins(), { engine: E, homeDefense: hd, turns: 20 }); return cpuMs(c0); };
+  let minOn = Infinity; let minOff = Infinity;
+  for (let i = 0; i < 5; i++) {
+    minOff = Math.min(minOff, timed(false));
+    minOn = Math.min(minOn, timed(true));
+  }
+  console.log(`POMIAR T7 (CPU, min z 5, przeplatane): PRZED=${minOff.toFixed(1)} ms, PO=${minOn.toFixed(1)} ms, prog=${(minOff * 1.5 + 50).toFixed(1)} ms`);
+  ok(minOn <= minOff * 1.5 + 50, `czas decyzji AI bez wzrostu (min z 5: PO ${minOn.toFixed(1)} ms vs PRZED ${minOff.toFixed(1)} ms)`);
 }
 
 // --- T9 ------------------------------------------------------------------------
