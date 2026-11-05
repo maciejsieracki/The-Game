@@ -98,6 +98,8 @@ async function main() {
         && recruitFollow.dest.destQ === recruitFollow.general.q
         && recruitFollow.dest.destR === recruitFollow.general.r,
       { recruitFollow, errors });
+    // Sprzatanie stanu hooka: testowy rekrut (z marszem do wodza) nie moze wplywac na scenariusz batch nizej.
+    await page.evaluate(id => window.__generalRuntime.dropRecruitThroughRuntime(id), 'runtime-recruit-follow-test');
 
     const batchSetup = await page.evaluate(id => window.__generalRuntime.prepareRoutableRecruitmentCities(id, 'Taran', 3), capitalId);
     check('real map has three separated recruitment cities with routable multi-turn paths to the General',
