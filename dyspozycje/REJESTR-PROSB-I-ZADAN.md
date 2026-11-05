@@ -8597,3 +8597,7 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 ## 2026-11-05 — Notatka: niestabilność `hud-topbar-grid-gross-net` sekcja [B] (z R-WEB-TEST-DEBT-HUD-Q3)
 
 W 1 z 2 przebiegów z `--dist` próba „live Spichlerz+ (proba 1)” dała netto −44 vs zmiana magazynu 0 (przed 600, po 600); drugi przebieg i próba 2 zgodne (−44 == −44). Nieustalone, czy race w teście czy rzadka usterka gry. Status: OBSERWACJA (nie naprawiano). Jeśli powtórzy się w grze — osobny temat diagnostyczny.
+
+## 2026-11-05 — NUMERACJA FAL USTALONA (właściciel: „liczymy od realnych fal z repo”) — KOREKTA wcześniejszego wpisu „FALA 1–5”
+
+Wcześniejszy wpis o „FALA 1–5” z tej nocy był błędną, wymyśloną numeracją — **unieważniony**. Obowiązuje numeracja repo: fala = jedno wdrożenie ROBOCZEJ, wpis `## ROBOCZA <md5> - data - FALA N: tytuł` w `dyspozycje/WERSJE.md`. Ostatnia numerowana w repo: **FALA 389** (2026-09-21; w historii 318 różnych numerów 1–387 + 388, 389 w WERSJE.md). Od FALA 389 do dziś było 105 wdrożeń ROBOCZEJ bez numeru (2026-09-21 … 2026-11-05) — **numerowane wstecz chronologicznie: FALA 390–494**. Ostatnia wdrożona: **FALA 494** (ROBOCZA `3775188b`, 2026-11-05). **Następna: FALA 495** (i dalej kolejno, jeden numer na wdrożenie ROBOCZEJ). Tematy w toku (RIVER-FOREST-LIVE-VERIFY, TERRAIN-ID-NAME-MAP-UNIFY, TEST-TIMING-STABILIZE) wejdą do FALA 495+.
