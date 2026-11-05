@@ -44,7 +44,7 @@ const start = mainSource.indexOf('function flushDeferredPlayerUnitReveals(): voi
 const end = mainSource.indexOf('\n    function openSplitPanelForSelected()', start);
 const body = start >= 0 && end > start ? mainSource.slice(start, end) : '';
 // Kontrakt: predykat planujący marsz bramkowany followGeneral === true (opt-in gracza), potem planSpawnedUnitFollowGeneral.
-assert.match(body, /planDeferredGeneralMarchBatch\(\s*ids,\s*id => units\.find\(u => u\.id === id\)\?\.followGeneral === true && planSpawnedUnitFollowGeneral\(id\),\s*enqueueMarchSegments,\s*\)/);
+assert.match(body, /planDeferredGeneralMarchBatch\(\s*ids,\s*id => units\.find\(u => u\.id === id\)\?\.followGeneral === true && planSpawnedUnitFollowGeneral\(id\),\s*deferMarchToEndOfTurn,\s*\)/);
 assert.match(body, /afterPlayerUnitSpawned\(lastId, marchingIds\.includes\(lastId\)\)/);
 pass += 2;
 console.log('PASS live completion handler plans all deferred recruits and reveals only the last one');

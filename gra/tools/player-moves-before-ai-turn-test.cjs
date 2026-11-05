@@ -100,8 +100,8 @@ function structuralLayer() {
     ok('MUTACJA ' + label + ' — wykryta (nowa porazka ' + code + ')', m !== src && added.includes(code), { changed: m !== src, added });
   };
   mutate('M1 (powrot do enqueueMarchSegments w fazie gracza)', 'S1', (s) =>
-    s.replace('      syncGeneralMarchTargets();\n      for (const u of units) {\n        if (u.ownerId !== humanOwnerId || !plannedMarches.has(u.id)) continue;',
-      '      syncGeneralMarchTargets();\n      enqueueMarchSegments([]);\n      for (const u of units) {\n        if (u.ownerId !== humanOwnerId || !plannedMarches.has(u.id)) continue;'));
+    s.replace('      syncGeneralMarchTargets(true);\n      for (const u of units) {\n        if (u.ownerId !== humanOwnerId || !plannedMarches.has(u.id)) continue;',
+      '      syncGeneralMarchTargets(true);\n      enqueueMarchSegments([]);\n      for (const u of units) {\n        if (u.ownerId !== humanOwnerId || !plannedMarches.has(u.id)) continue;'));
   mutate('M2 (ruchy gracza PO swiecie)', 'S3', (s) =>
     s.replace('        runPlannedMarchesAtPlayerEndTurn(humanOwnerId);\n', '').replace('        await runWorldEndTurn(humanOwnerId);',
       '        await runWorldEndTurn(humanOwnerId);\n        runPlannedMarchesAtPlayerEndTurn(humanOwnerId);'));
