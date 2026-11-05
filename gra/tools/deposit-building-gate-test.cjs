@@ -222,9 +222,14 @@ function mapWith(...hexes) {
     !M.buildingRuntimeGateMet({ id: 'stolarnia' }, ['Drewno'], [], {}),
     'runtime: stolarnia śpi bez zapasu drewna mimo activeLabels',
   );
+  // R-WEB-GRANARY2-TECH-DATA-FIX-Q1 (2026-11-05): bramka Spichlerza II = Ceramika + Sól (zasada właściciela).
   ok(
-    M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], { sol: 99 }),
-    'runtime: spichlerz II działa z Solą w magazynie państwa',
+    M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], { sol: 99, ceramika: 99 }),
+    'runtime: spichlerz II działa z Ceramiką i Solą w magazynie państwa',
+  );
+  ok(
+    !M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], { sol: 99 }),
+    'runtime: spichlerz II śpi bez Ceramiki (sama Sól już nie wystarcza)',
   );
   ok(
     !M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], {}),
