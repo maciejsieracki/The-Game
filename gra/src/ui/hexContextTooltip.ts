@@ -883,8 +883,9 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-stack-bar-mov i{background:linear-gradient(90deg,${VITALS_MOVE_DARK_CSS},${VITALS_MOVE_FULL_CSS});}
 .sp-unit-stack-meta{font-size:8px;color:var(--civ-text-muted,#8a8070);margin-top:4px;}
 .sp-unit-stack-card{position:relative;}
-.sp-unit-stack-card.commander .sp-unit-stack-commander-role{font-size:9px!important;padding:1px 3px;border-radius:3px;
-  background:rgba(232,216,138,.16);color:#ffe27a;}
+.sp-unit-stack-card.commander .sp-unit-stack-commander-role{font-size:10px!important;font-weight:900;padding:2px 4px;border-radius:3px;
+  background:rgba(232,216,138,.24);color:#fff3b0;}
+.sp-unit-stack-card.commander .sp-unit-stack-commander-type{font-size:9px!important;color:#f0e8c8!important;}
 .sp-unit-stack-card.picked{border-color:rgba(232,216,138,.9);box-shadow:inset 0 0 0 1px rgba(232,216,138,.35);}
 .sp-unit-pick-bar{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;
   margin:8px 0 0;font-size:10px;color:var(--civ-text-muted,#a09880);}

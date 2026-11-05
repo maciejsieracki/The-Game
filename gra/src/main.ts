@@ -7416,6 +7416,8 @@ async function boot(): Promise<void> {
         else stacks.set(key, [u]);
       }
       const out: ArmyListEntry[] = [];
+      // Wpisy z generałem/wodzem (id reprezentanta) — na początku listy (R-WEB-UI-ARMY-PANEL-GENERAL-LABEL-MULTISELECT-Q1).
+      const commanderLeadIds = new Set<string>();
       for (const group of stacks.values()) {
         const lead = group[0]!;
         const inGarnizon = group.some(u => u.inGarnizon === true);
@@ -7423,11 +7425,17 @@ async function boot(): Promise<void> {
         const sentry = group.some(u => u.sentry === true);
         const autoExplore = group.some(u => u.autoExplore === true);
         const types = [...new Set(group.map(u => u.typeId))];
-        const name = group.length === 1
+        const baseName = group.length === 1
           ? lead.typeId
           : types.length === 1
             ? `${types[0]!} ×${group.length}`
             : formatArmiaLabel(group.length);
+        // Stos z generałem/wodzem: rola w nazwie wpisu (Lista), żeby dowódca był rozpoznawalny.
+        const generalInGroup = group.find(u => u.isGeneral === true);
+        const name = generalInGroup
+          ? `${armyLeaderTitle(empireBuiltIdsForOwner(generalInGroup.ownerId))} — ${baseName}`
+          : baseName;
+        if (generalInGroup) commanderLeadIds.add(lead.id);
         const ruchLeft = planningStackRuchLeft(group);
         const ruchMax = Math.max(...group.map(u => u.ruch));
         // Suma HP stosu: armia = stos, więc pokazujemy łączny stan zdrowia
@@ -7463,7 +7471,9 @@ async function boot(): Promise<void> {
           autoExplore,
         });
       }
-      out.sort((a, b) => a.name.localeCompare(b.name, 'pl'));
+      out.sort((a, b) =>
+        (Number(commanderLeadIds.has(b.id)) - Number(commanderLeadIds.has(a.id)))
+        || a.name.localeCompare(b.name, 'pl'));
       return out;
     }
 

@@ -43,6 +43,13 @@ function staticGuards() {
   pass('static guards: main.ts stack builder, pick actions, multi-disband confirm, split rows');
 }
 
+const CHROMIUM_CANDIDATES = [
+  process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,
+  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  '/opt/pw-browsers/chromium',
+  '/usr/bin/chromium',
+].filter(p => p && fs.existsSync(p));
+
 async function main() {
   staticGuards();
 
@@ -63,6 +70,8 @@ import { armyStackCardLabel, sortArmyStackGeneralsFirst } from ${JSON.stringify(
 import { buildUnitContextTooltipHtml, UNIT_CONTEXT_PANEL_CSS } from ${JSON.stringify(path.join(GRA, 'src/ui/hexContextTooltip.ts'))};
 import { createSidePanelHud } from ${JSON.stringify(path.join(GRA, 'src/ui/sidePanelHud.ts'))};
 import { showArmySplitPanel, hideArmySplitPanel } from ${JSON.stringify(path.join(GRA, 'src/ui/armySplitPanel.ts'))};
+import { showArmyMergePanel } from ${JSON.stringify(path.join(GRA, 'src/ui/armyMergePanel.ts'))};
+import { showArmyMergePickPanel } from ${JSON.stringify(path.join(GRA, 'src/ui/armyMergePickPanel.ts'))};
 const combat = { atakBase: 4, atakEffective: 4, obronaBase: 4, obronaEffective: 4,
   hpMaxBase: 26, hpMaxEffective: 26, pancerzBase: 2, pancerzEffective: 2 };
 const esc = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -96,6 +105,23 @@ window.__mountStack = (picked: string[]) => {
   document.body.append(api.el, api.ctxEl);
   return { api, log, selected: () => selected };
 };
+const mergeRows = () => Array.from({ length: 12 }, (_v, i) => ({
+  id: i === 7 ? 'general-id' : 'warrior-' + i,
+  name: 'Wojownik', icon: '', ruchLeft: 12, ruchMax: 12,
+  commanderTitle: i === 7 ? 'Generał' : undefined,
+}));
+window.__mergePanel = () => showArmyMergePanel({
+  hexLabel: '(1,2)',
+  existing: mergeRows(),
+  arriving: { id: 'arr', name: 'Wojownik', icon: '', ruchLeft: 12, ruchMax: 12 },
+  onMerge: () => {}, onSeparate: () => {},
+});
+window.__mergePickPanel = () => showArmyMergePickPanel({
+  hexLabel: '(1,2)',
+  sourceUnits: mergeRows(),
+  targets: [{ q: 2, r: 2, label: '(2,2)', units: mergeRows().slice(0, 2) }],
+  onMerge: () => {}, onCancel: () => {},
+});
 window.__splitPanel = (onSplit: (ids: string[]) => void) => {
   showArmySplitPanel({
     hexLabel: '(1,2)',
@@ -122,10 +148,18 @@ window.__css = UNIT_CONTEXT_PANEL_CSS;
     logLevel: 'silent',
   });
 
+  // Chromium: domyślna przeglądarka Playwright, potem PLAYWRIGHT_CHROMIUM_EXECUTABLE, potem znane ścieżki w sandboxie.
+  // Brak działającej przeglądarki = błąd (exit 1), nigdy ciche PASS.
   let browser;
   try { browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] }); }
-  catch (_error) {
-    browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium', args: ['--no-sandbox'] });
+  catch (firstError) {
+    let launched = null;
+    for (const executablePath of CHROMIUM_CANDIDATES) {
+      try { launched = await chromium.launch({ headless: true, executablePath, args: ['--no-sandbox'] }); break; }
+      catch (_e) { /* następna ścieżka */ }
+    }
+    if (!launched) throw new Error('Chromium niedostępny (próbowano: ' + CHROMIUM_CANDIDATES.join(', ') + '): ' + firstError.message);
+    browser = launched;
   }
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -216,6 +250,18 @@ window.__css = UNIT_CONTEXT_PANEL_CSS;
     if (!splitStatus.includes('Zaznaczono 2 z 3')) throw new Error('split panel multi-select status mismatch: ' + splitStatus);
     pass('split panel multi-select counts "Zaznaczono 2 z 3"');
     await page.evaluate(() => window.__hideSplit());
+    await page.evaluate(() => { document.body.innerHTML = ''; });
+    // (1d) Panele scalania na czystym DOM (po panelu podziału): generał pierwszy z etykietą roli.
+    await page.evaluate(() => { document.body.innerHTML = ''; window.__mergePanel(); });
+    const mergeNames = await page.locator('.civ-amp-row-name').allInnerTexts();
+    if (mergeNames[0] !== 'Generał — Wojownik') throw new Error('merge panel: general row not first or unlabelled: ' + mergeNames[0]);
+    if (mergeNames.slice(1).some(n => n !== 'Wojownik')) throw new Error('merge panel: non-general rows mislabelled');
+    pass('merge panel (scalanie): first row "Generał — Wojownik", the rest "Wojownik"');
+    await page.evaluate(() => { document.body.innerHTML = ''; window.__mergePickPanel(); });
+    const pickNames = await page.locator('.civ-ampk-u-name').allInnerTexts();
+    if (pickNames[0] !== 'Generał — Wojownik') throw new Error('merge pick panel: general row not first or unlabelled: ' + pickNames[0]);
+    pass('merge pick panel (wybór jednostek do scalenia): general first with role label');
+
 
     console.log(`${passed}/${passed} PASS`);
   } finally {
