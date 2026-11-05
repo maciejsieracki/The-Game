@@ -7,7 +7,7 @@ GOAL: spłata długu testowego kampanii/wodza bez zmiany zachowania gry.
 
 BAZA: origin/main = 45ea4b67a (worktree na tym SHA, detached).
 
-ZMIANY-COMMIT: tylko `gra/tools/**` (7 plików) + `dyspozycje/autobot/runs/R-WEB-TEST-DEBT-CAMPAIGN-Q4/**`. SHA: patrz commit "test(gra): spłata długu testowego kampanii/wodza" (SHA podany w odpowiedzi orkiestratorowi).
+ZMIANY-COMMIT: tylko `gra/tools/**` (7 plików) + `dyspozycje/autobot/runs/R-WEB-TEST-DEBT-CAMPAIGN-Q4/**`. SHA commitu testów: 9a01fff4f7c550290f5e1d7cc9f7717dc8d40b8a ("test(gra): spłata długu testowego kampanii/wodza").
 
 ## Klasyfikacja czerwonych (PRZED = origin/main, 45ea4b67a)
 
