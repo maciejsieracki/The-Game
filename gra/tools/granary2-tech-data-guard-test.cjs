@@ -11,9 +11,9 @@
  * Test ma dwie części:
  *   A) STRAŻNIK DANYCH — każdy niepusty techUnlock (buildings.json) i Tech (units.json) musi istnieć
  *      w tech.json (Technologia). Pada, gdy wpis wskazuje nieistniejącą technologię.
- *   B) ZACHOWANIE — Spichlerz II jest budowalny z: epoką 2, Spichlerzem I w mieście, Garncarstwem,
+ *   B) ZACHOWANIE — Spichlerz II jest budowalny z: epoką 2, Spichlerzem I w mieście, Pismem,
  *      solą w magazynie państwa i ceramiką (garncarnia w imperium lub zapas Ceramiki).
- *      Bez Garncarstwa, bez Soli albo bez Ceramiki — NIE jest budowalny. Bez epoki 2 — NIE jest budowalny.
+ *      Bez Pisma, bez Soli albo bez Ceramiki — NIE jest budowalny. Bez epoki 2 — NIE jest budowalny.
  *
  * Uruchom z gra/:  node tools/granary2-tech-data-guard-test.cjs
  */
@@ -80,8 +80,8 @@ function ok(c, m) {
     `units.json: Tech spoza tech.json: ${badUnits.join(', ') || '(brak)'}`);
 
   const sII = rawBuildings.find(b => b.id === 'spichlerz_ii');
-  ok(sII && sII.techUnlock === 'Garncarstwo',
-    `spichlerz_ii.techUnlock powinien być 'Garncarstwo' (jest: ${sII && sII.techUnlock})`);
+  ok(sII && sII.techUnlock === 'Pismo',
+    `spichlerz_ii.techUnlock powinien być 'Pismo' (jest: ${sII && sII.techUnlock})`);
   ok(sII && sII.epokaWejscia === 2, 'spichlerz_ii.epokaWejscia pozostaje 2');
   ok(sII && sII.koszt_surowce && sII.koszt_surowce.drewno === 40 && sII.koszt_surowce.kamien === 50,
     'koszt budowy Spichlerza II (drewno 40 / kamień 50) bez zmian');
@@ -109,38 +109,38 @@ function baseCtx(o) {
 const buildable = (techs, o) => M.buildableProduction(CITY, DATA, techs, baseCtx(o)).map(i => i.id).includes('spichlerz_ii');
 const entry = (techs, o) => M.eraBuildingCatalog(DATA, techs, baseCtx(o)).find(e => e.id === 'spichlerz_ii');
 
-// Pełny zestaw: Garncarstwo + epoka 2 + Spichlerz I + sól + ceramika (garncarnia w imperium).
+// Pełny zestaw: Pismo + epoka 2 + Spichlerz I + sól + ceramika (garncarnia w imperium).
 const GOOD_CTX = { empireBuiltIds: ['garncarnia'] };
 
-ok(buildable(['Garncarstwo'], GOOD_CTX),
-  'Spichlerz II budowalny: Garncarstwo + epoka 2 + Spichlerz I + sól + ceramika (garncarnia)');
+ok(buildable(['Pismo'], GOOD_CTX),
+  'Spichlerz II budowalny: Pismo + epoka 2 + Spichlerz I + sól + ceramika (garncarnia)');
 
-const ePlain = entry(['Garncarstwo'], GOOD_CTX);
+const ePlain = entry(['Pismo'], GOOD_CTX);
 ok(ePlain && ePlain.status === 'ready',
   `eraBuildingCatalog spichlerz_ii status='ready' przy pełnych warunkach (jest: ${ePlain && ePlain.status}, missingTech=${ePlain && ePlain.missingTech})`);
 
 // Ceramika jako zapas państwa zamiast garncarni.
-ok(buildable(['Garncarstwo'], { empireBuiltIds: [], empireResourceStock: S2_STOCK }),
+ok(buildable(['Pismo'], { empireBuiltIds: [], empireResourceStock: S2_STOCK }),
   'Spichlerz II budowalny z zapasem Ceramiki w magazynie państwa (bez garncarni)');
 
 // Brak Garncarstwa -> niebudowalny, a katalog wskazuje właściwą brakującą technologię.
-ok(!buildable([], GOOD_CTX), 'Spichlerz II niebudowalny bez Garncarstwa');
+ok(!buildable([], GOOD_CTX), 'Spichlerz II niebudowalny bez Pisma');
 const eNoTech = entry([], GOOD_CTX);
-ok(eNoTech && eNoTech.status === 'locked' && eNoTech.missingTech === 'Garncarstwo',
-  `katalog: bez Garncarstwa status='locked', missingTech='Garncarstwo' (jest: ${eNoTech && eNoTech.status}/${eNoTech && eNoTech.missingTech})`);
+ok(eNoTech && eNoTech.status === 'locked' && eNoTech.missingTech === 'Pismo',
+  `katalog: bez Pisma status='locked', missingTech='Pismo' (jest: ${eNoTech && eNoTech.status}/${eNoTech && eNoTech.missingTech})`);
 
 // Epoka 1 -> niebudowalny (epokaWejscia 2 pozostaje bramką epoki).
-ok(!buildable(['Garncarstwo'], { ...GOOD_CTX, epoch: 1 }), 'Spichlerz II niebudowalny w epoce 1');
+ok(!buildable(['Pismo'], { ...GOOD_CTX, epoch: 1 }), 'Spichlerz II niebudowalny w epoce 1');
 
 // Brak Spichlerza I -> niebudowalny (upgradeFrom).
-ok(!buildable(['Garncarstwo'], { ...GOOD_CTX, builtBuildingIds: [] }), 'Spichlerz II niebudowalny bez Spichlerza I');
+ok(!buildable(['Pismo'], { ...GOOD_CTX, builtBuildingIds: [] }), 'Spichlerz II niebudowalny bez Spichlerza I');
 
 // Brak soli w imperium -> niebudowalny.
-ok(!buildable(['Garncarstwo'], { ...GOOD_CTX, empireResourceStock: { ...S2_STOCK, sol: 0 } }),
+ok(!buildable(['Pismo'], { ...GOOD_CTX, empireResourceStock: { ...S2_STOCK, sol: 0 } }),
   'Spichlerz II niebudowalny bez soli (magazyn państwa 0)');
 
 // Brak ceramiki (ani garncarni, ani zapasu) -> niebudowalny. Zasada właściciela: ceramika + sól.
-ok(!buildable(['Garncarstwo'], { empireBuiltIds: [], empireResourceStock: { ...S2_STOCK, ceramika: 0 } }),
+ok(!buildable(['Pismo'], { empireBuiltIds: [], empireResourceStock: { ...S2_STOCK, ceramika: 0 } }),
   'Spichlerz II niebudowalny bez Ceramiki (brak garncarni i zapasu) — zasada właściciela: ceramika + sól');
 
 console.log(`granary2-tech-data-guard-test: PASS ${pass} / FAIL ${fail}`);

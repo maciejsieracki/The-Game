@@ -1068,8 +1068,8 @@ function spichlerzChipTitle(s: HudState): string {
   }
   if (s.uchwalaSolAktywna) {
     const n = s.uchwalaSolSpichlerzIICount ?? 1;
-    title += ` · Uchwała „Solanka zapasowa" (Spichlerz II · Sól): armia poza terytorium 2→1 🍞/turę`
-      + (n > 1 ? ` · ${n}× Spichlerz II` : '');
+    title += ` · Uchwała „Solanka zapasowa" (Spichlerz Królewski · Sól): armia poza terytorium 2→1 🍞/turę`
+      + (n > 1 ? ` · ${n}× Spichlerz Królewski` : '');
   }
   return `${title} · Kliknij po szczegóły.`;
 }
