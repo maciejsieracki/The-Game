@@ -10361,6 +10361,11 @@ async function boot(): Promise<void> {
       // change no band color, and the AI turn rewrites the player relation every turn for
       // trust/respect without touching the status.
       if ((isMe(a) || isMe(b)) && prevStatus !== rel.status) refreshTerritoryBorderOverlay();
+      // R-WEB-AI-NO-SIEGE-WITHOUT-WAR-Q1 (R2): koniec wojny (pokój/rozejm/NAP/sojusz) zdejmuje oblężenia
+      // NATYCHMIAST, a nie dopiero przy następnym ruchu jednostki / końcu tury AI / bitwie. Bez tego plakietka
+      // „OBLĘŻENIE” i blokada rekrutacji wisiały po zawarciu pokoju przez resztę tury gracza (okno widoczne w UI).
+      // Wspólny punkt dla gracza, AI i państw-miast (setDiploRelation = jedyny punkt zmiany statusu pary).
+      if (prevStatus === 'wojna' && rel.status !== 'wojna') validateActiveSieges();
     }
 
     function refreshCityMapOutlines(): void {

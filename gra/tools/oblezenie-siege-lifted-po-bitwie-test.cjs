@@ -123,9 +123,10 @@ function naruszeniaStruktury(src) {
   // Trzy ISTNIEJĄCE miejsca (ruch natychmiastowy, ruch po animacji, koniec tury AI) nie
   // mogą się zgubić przy okazji tej naprawy — plus nowe w applyMapBattleOutcome = 4.
   const wywolania = (src.match(/validateActiveSieges\(\);/g) || []).length;
-  if (wywolania !== 5) {
-    b.push(`validateActiveSieges() wołane ${wywolania}× w main.ts, oczekiwano dokładnie 4 `
-      + '(2× obsługa ruchu + scanAutoSiegesAfterAiTurn + applyMapBattleOutcome + migracja wczytania zapisu)');
+  if (wywolania !== 6) {
+    b.push(`validateActiveSieges() wołane ${wywolania}× w main.ts, oczekiwano dokładnie 6 `
+      + '(2× obsługa ruchu + scanAutoSiegesAfterAiTurn + applyMapBattleOutcome + migracja wczytania zapisu '
+      + '+ setDiploRelation przy końcu wojny [R-WEB-AI-NO-SIEGE-WITHOUT-WAR-Q1 R2] + 1 pozostałe istniejące)');
   }
 
   return b;
