@@ -1,3 +1,9 @@
+## ROBOCZA 1f71e6f2 -- 2026-11-05 -- FALA 506: ostrzejszy render jednostek (testowa)
+
+- md5 pełne: `1f71e6f2690effbf220f9e1987ba1c20` · 70253436 B · poprzednia `ac3843f5`.
+- R-WEB-RENDER-UNIT-BLUR-HORSES-Q1: modele jednostek (konie, rydwan) bywały rozmyte, bo domyślny preset „medium” renderował w 1,5× pikseli ekranu (na HiDPI rozciągane do 2×); teraz 2,0×. Ostrość z bliska przy DPR 2 ×3,6; draw calls bez zmian.
+- FC PASS-WITH-NOTES. Uwaga: przyczyna niepotwierdzona dla sprzętu właściciela; LOD1–3 nadal miększe; koszt GPU niezmierzony (+1,78× pikseli na HiDPI w „medium”). Jeśli zbyt wolno — wrócić do 1,5 + AA.
+
 ## ROBOCZA ac3843f5 -- 2026-11-05 -- FALA 505: wypad obleganej armii w każdej turze (testowa)
 
 - md5 pełne: `ac3843f57ae6c69cdfa1d2e82550036b` · 70253438 B · poprzednia `bec6901f`.
