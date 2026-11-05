@@ -35,6 +35,13 @@ export interface Chip6cOpts {
   exact?: string;
   /** Postęp badań [0..1] — pierścień wokół medalionu Nauki. */
   researchProgress?: number;
+  /** R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: komórka siatki 3+3 — trzy linie (etykieta+wartość /
+   *  „brutto" `rate` / „netto" `net`). Brak `net` → układ klasyczny (prawy baner). */
+  net?: string;
+  /** Znak netto → kolor: 'neg' czerwony (niedobór), 'pos' zielony, 'zero' stonowany. */
+  netTone?: 'pos' | 'neg' | 'zero';
+  /** Etykieta linii netto (domyślnie „netto"); np. „netto Drewno" przy najgorszym deficycie. */
+  netLabel?: string;
 }
 
 /** IconId → id realnego assetu brand-book, gdy różny od klucza chipa (patrz iconRegistry.ts). */
@@ -68,6 +75,23 @@ export function chip6cHtml(opts: Chip6cOpts): string {
     ? `${scienceProgressRingHtml(opts.researchProgress!, 30, 1)}<span class="civ-hud-chip-med-ic">${chipIconHtml(opts.iconId, med, opts.iconAssetId)}</span>`
     : chipIconHtml(opts.iconId, med, opts.iconAssetId);
   const medCls = showRing ? `${med} civ-science-med-ring` : med;
+  if (opts.net !== undefined) {
+    const tone = opts.netTone ?? 'zero';
+    const lblNet = opts.netLabel ?? 'netto';
+    const grossRow = opts.rate !== undefined
+      ? `<span class="civ-hud-chip-row3 civ-hud-chip-gross"><span class="civ-hud-chip-k">brutto</span>`
+        + `<span class="civ-hud-chip-rate${rateCls}">${opts.rate}</span></span>`
+      : '';
+    return `<span class="civ-hud-chip civ-hud-chip-cell${clickCls}"${actAttr}>`
+      + `<span class="civ-hud-chip-med ${medCls}">${medInner}</span>`
+      + `<span class="civ-hud-chip-body">`
+      + `<span class="civ-hud-chip-top"><span class="civ-hud-chip-lbl">${opts.label}</span>`
+      + `<span class="civ-hud-chip-val${valCls}">${opts.value}</span></span>`
+      + grossRow
+      + `<span class="civ-hud-chip-row3 civ-hud-chip-netrow"><span class="civ-hud-chip-k">${lblNet}</span>`
+      + `<span class="civ-hud-chip-net ${tone}">${opts.net}</span></span>`
+      + `</span></span>`;
+  }
   let html = `<span class="civ-hud-chip${clickCls}"${actAttr}>`
     + `<span class="civ-hud-chip-med ${medCls}">${medInner}</span>`
     + `<span class="civ-hud-chip-lbl">${opts.label}</span>`

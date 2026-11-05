@@ -48,7 +48,8 @@ const empireSrc = fs.readFileSync(EMPIRE_PANEL_TS, 'utf8');
 
 const spichlerzFn = extractFunctionBody(
   empireSrc,
-  'function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {',
+  // R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: sygnatura zyskala opcjonalny 2. parametr `economy` (linia „Brutto -> netto").
+  "function renderSpichlerzCentralnySection(food: EmpireFoodSnap, economy?: EmpireDetailSnap['economy']): string {",
   'renderSpichlerzCentralnySection w empireDetailPanel.ts',
 );
 

@@ -57,7 +57,10 @@ console.log('[4] wiring statyczny');
 const hud = fs.readFileSync(path.join(GRA, 'src/ui/hud.ts'), 'utf8');
 const chip = fs.readFileSync(path.join(GRA, 'src/ui/hudChip6c.ts'), 'utf8');
 ok(/from '\.\/formatCompactNumber'/.test(hud), 'hud.ts importuje wspolny formatter');
-ok(/\.\.\.cn\(s\.bogactwo,/.test(hud) && /\.\.\.cn\(s\.praca,/.test(hud) && /\.\.\.cn\(Math\.floor\(s\.nauka\)/.test(hud), 'Skarbiec/Praca/Nauka przez cn()');
+// R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: lewy baner to siatka 3+3 z liniami brutto/netto -- komorki nie uzywaja juz cn()
+// (ktore skladalo value+rate), tylko tych samych wspolnych formatterow wprost; asercja zaktualizowana, intencja ta sama.
+ok(/formatCompactNumber\(s\.bogactwo\)/.test(hud) && /formatCompactNumber\(s\.praca\)/.test(hud) && /formatCompactNumber\(Math\.floor\(s\.nauka\)\)/.test(hud)
+  && /formatCompactSigned\(skarbiecBrutto\)/.test(hud) && /exactCompactNote\(s\.bogactwo, skarbiecBrutto\)/.test(hud), 'Skarbiec/Praca/Nauka przez wspolne formattery k/M (formatCompactNumber/Signed + exactCompactNote)');
 ok(/aria-label/.test(chip) && /opts\.exact/.test(chip), 'hudChip6c: exact -> title + aria-label');
 ok(!/toFixed\(1\)[^\n]*'k'/.test(hud), 'brak lokalnego formatera k w hud.ts');
 const basket = fs.readFileSync(path.join(GRA, 'src/ui/diplomacyTradeBasket.ts'), 'utf8');

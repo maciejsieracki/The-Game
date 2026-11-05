@@ -91,6 +91,10 @@ export interface HudState {
   zlotoRate: number;
   praca: number;
   pracaRate: number;
+  /** R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: PROGNOZA netto Pracy na następny koniec tury (wpływ + nadwyżka
+   *  z ukończonego budynku − utrzymanie ulepszeń), liczona jak tick; `pracaRate` = zrealizowane saldo
+   *  OSTATNIEJ tury. Brak → komórka Praca pokazuje `pracaRate`. */
+  pracaPrognoza?: number;
   /** ZADANIE 1 (Maciej 2026-07-23): Praca/turę odjęta z puli za utrzymanie ulepszeń
    *  surowcowych (civ-wide) w ostatniej turze — do rozbicia w panelu Bilans/ZASOBY IMPERIUM. */
   pracaUpkeep?: number;
@@ -214,6 +218,14 @@ export interface HudState {
   /** R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1: etykiety surowców magazynowanych w niedoborze
    *  (ratePerTurn<0 — ta sama definicja „niedoboru" co alert chipu „Surowce" w main.ts). */
   surowceNiedoborLabels?: string[];
+  /** R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: suma BRUTTO produkcji (+ przychód z umów) wszystkich
+   *  magazynowanych surowców/turę (buildEmpireResourceRows.rateProductionPerTurn + diploIn). */
+  surowceBrutto?: number;
+  /** Suma NETTO surowców/turę = ratePerTurn − zapotrzebowanie (obywatele+budynki+wojsko,
+   *  `usage` z resource-usage-breakdown). Te same rekordy co panel Surowców — bez 2. kalkulacji. */
+  surowceNetto?: number;
+  /** Rozbicie per surowiec (tylko magazynowane) do tooltipu i „najgorszego deficytu". */
+  surowceBilans?: Array<{ label: string; brutto: number; netto: number }>;
   /** TEMAT 14 (Maciej 2026-07-24) — dochód z aktywnych tras handlowych (gracz↔obca cyw.) tej tury. */
   handelIncome?: number;
   /** Liczba aktywnych tras handlowych gracza (do tytułu chipa). */
@@ -627,6 +639,41 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
    na koncu zachowuje tez kolejnosc kaskady wobec .civ-hud .civ-hud-chip-val. */
 .civ-hud .civ-hud-chip-rate{font-size:10px;color:var(--tg-green);}
 .civ-hud .civ-hud-chip-rate.warn{color:var(--tg-orange);}
+/* R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: lewy baner = STAŁA siatka 3+3 (góra Skarbiec·Praca·Spichlerz,
+   dół Handel·Nauka·Surowce). 3 kolumny o stałej szerokości --hud-cell-w, zero zawijania zależnego od
+   liczb; komórka = medalion + 3 linie (etykieta+zapas / brutto / netto). Wąskie okno zmniejsza
+   czcionki i szerokość kolumny (media), NIE zmienia układu. Szerokość dobrana tak, by baner kończył
+   się przed medalionem Mocy (środek ekranu ~ 50vw − 105px). */
+.civ-hud{--hud-cell-w:140px;--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:13px;--hud-cell-sm:9.5px;}
+.civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 8px;}
+.civ-hud .hud-chip-grid{display:grid;grid-template-columns:repeat(3,var(--hud-cell-w));
+  column-gap:10px;row-gap:3px;align-items:center;}
+.civ-hud .civ-hud-chip-cell{display:grid;grid-template-columns:var(--hud-cell-med) minmax(0,1fr);
+  column-gap:5px;align-items:center;width:100%;min-width:0;overflow:hidden;white-space:nowrap;}
+.civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 3px;margin:0;width:100%;}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-med{width:var(--hud-cell-med);height:var(--hud-cell-med);}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:calc(var(--hud-cell-med) * .57);height:calc(var(--hud-cell-med) * .57);}
+.civ-hud .civ-hud-chip-body{display:flex;flex-direction:column;gap:0;min-width:0;line-height:1.05;}
+.civ-hud .civ-hud-chip-top{display:flex;align-items:baseline;gap:4px;min-width:0;min-height:calc(var(--hud-cell-val) * 1.05);}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl{font-size:var(--hud-cell-lbl);flex-shrink:0;}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-val{font-size:var(--hud-cell-val);min-width:0;}
+.civ-hud .civ-hud-chip-row3{display:flex;align-items:baseline;justify-content:space-between;gap:4px;font-size:var(--hud-cell-sm);min-width:0;}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl,.civ-hud .civ-hud-chip-k{color:#968c7c;}
+.civ-hud .civ-hud-chip-k{font-size:var(--hud-cell-sm);flex-shrink:0;}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-rate{font-size:var(--hud-cell-sm);font-weight:600;}
+.civ-hud .civ-hud-chip-net{font-size:var(--hud-cell-sm);font-weight:700;}
+.civ-hud .civ-hud-chip-net.pos{color:var(--tg-green);}
+.civ-hud .civ-hud-chip-net.zero{color:#968c7c;}
+.civ-hud .civ-hud-chip-net.neg{color:var(--civ-hud-shortage,#ee6c6c);}
+@media (max-width:1200px){.civ-hud{--hud-cell-w:108px;--hud-cell-med:24px;--hud-cell-lbl:9px;--hud-cell-val:12px;--hud-cell-sm:9px;}
+  .civ-hud .hud-chip-grid{column-gap:8px;}}
+@media (max-width:900px){.civ-hud{--hud-cell-w:78px;--hud-cell-med:14px;--hud-cell-lbl:8px;--hud-cell-val:10px;--hud-cell-sm:8.5px;}
+  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 6px;}
+  .civ-hud .civ-hud-chip-cell{column-gap:3px;}
+  .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 2px;}
+  .civ-hud .civ-hud-chip-top{gap:3px;}
+  .civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl{flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  .civ-hud .hud-chip-grid{column-gap:4px;}}
 .civ-hud .hud-right{display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;flex-shrink:0;}
 .civ-hud .hud-meta{text-align:right;}
 .civ-hud .b-menu{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
@@ -784,6 +831,21 @@ function cn(value: number | undefined, rate?: number): { value: string; rate?: s
   };
 }
 
+/** R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: ton koloru linii „netto" (ujemne czerwone, dodatnie zielone). */
+function netTone(n: number): 'pos' | 'neg' | 'zero' {
+  const r = Math.round(n);
+  return r < 0 ? 'neg' : r > 0 ? 'pos' : 'zero';
+}
+
+/** Najgorszy (najbardziej ujemny) bilans netto spośród surowców; undefined gdy żaden nie jest < 0. */
+function surowceNajgorszy(s: HudState): { label: string; netto: number } | undefined {
+  let worst: { label: string; netto: number } | undefined;
+  for (const r of s.surowceBilans ?? []) {
+    if (r.netto < 0 && (!worst || r.netto < worst.netto)) worst = { label: r.label, netto: r.netto };
+  }
+  return worst;
+}
+
 /** Pierścień Nauki: postęp bieżącej tech (nie epoki). buildHudState ustawia researchProgress. */
 function resolveResearchProgress(s: HudState): number {
   const p = s.researchProgress ?? s.epokaPostep ?? 0;
@@ -837,7 +899,8 @@ function skarbiecChipTitle(s: HudState): string {
   const utrzymanieJednostek = s.bogactwoUtrzymanieJednostek ?? 0;
   const netto = s.bogactwoRate ?? 0;
   const short = hudGoldShortage(s) ? ' · ⚠ Zaczyna brakować pieniędzy (czerwony)' : '';
-  return `${base}${short}: Podatek i budynki: ${signed(daninaIBudynki)} pkt Pieniądza`
+  return `${base}${short}: BRUTTO (wpływy przed kosztami) ${signed(wplywyBrutto)} → NETTO (po utrzymaniu, zmiana stanu na turę) ${signed(netto)} pkt Pieniądza`
+    + ` · Podatek i budynki: ${signed(daninaIBudynki)} pkt Pieniądza`
     + ` · Handel ze szlaków: ${signed(handel)} pkt Pieniądza`
     + ` · Utrzymanie budynków: ${signed(-utrzymanieBudynkow)} pkt Pieniądza`
     + ` · Utrzymanie jednostek: ${signed(-utrzymanieJednostek)} pkt Pieniądza`
@@ -885,7 +948,12 @@ function pracaChipTitle(s: HudState): string {
   const autoUlepszenia = s.pracaAutoUlepszeniaKoszt ?? 0;
   const cudaNaMapie = s.pracaCudaKoszt ?? 0;
   const wplywBrutto = netto + utrzymanie + autoUlepszenia + cudaNaMapie;
-  return `${base}: Wpływ do puli imperium: ${signed(wplywBrutto)} pkt Pracy`
+  const lead = s.pracaPrognoza !== undefined
+    ? `BRUTTO ${signed(s.pracaPrognoza + utrzymanie)} → NETTO ${signed(s.pracaPrognoza)} pkt Pracy/turę (PROGNOZA następnej tury: wpływ z miast + nadwyżka z ukończonego budynku − utrzymanie ulepszeń; bez auto-ulepszeń i Cudów na mapie, których koszt wychodzi dopiero w ticku)`
+      + ` · Ostatnia tura (zrealizowane): BRUTTO ${signed(wplywBrutto)} → NETTO ${signed(netto)}`
+    : `BRUTTO ${signed(wplywBrutto)} → NETTO ${signed(netto)} pkt Pracy/turę`;
+  return `${base}: ${lead}`
+    + ` · Wpływ do puli imperium: ${signed(wplywBrutto)} pkt Pracy`
     + ` · Utrzymanie ulepszeń surowcowych: ${signed(-utrzymanie)} pkt Pracy`
     + ` · Auto-ulepszenia AI (gracz): ${signed(-autoUlepszenia)} pkt Pracy`
     + ` · Cuda na mapie: ${signed(-cudaNaMapie)} pkt Pracy`
@@ -905,7 +973,7 @@ function naukaChipTitle(s: HudState): string {
   const rate = s.naukaRate ?? 0;
   return `Nauka — badania technologiczne`
     + ` · Duża liczba: ${stock} pkt Nauki (skumulowane do bieżącej technologii)`
-    + ` · Zielone +N: ${signed(rate)} pkt Nauki/turę (brutto = netto, brak dziś drenaży Nauki)`
+    + ` · BRUTTO ${signed(rate)} → NETTO ${signed(rate)} pkt Nauki/turę (brak dziś drenaży Nauki)`
     + ` · Kliknij po szczegóły.`;
 }
 
@@ -917,7 +985,8 @@ function spichlerzChipTitle(s: HudState): string {
   const koszt = s.zywnoscKosztWojska ?? 0;
   let title = `Spichlerz — magazyn centralny żywności`
     + ` · W magazynie: ${s.zywnoscLabel}${maxPart} 🍞`
-    + ` · Przyrost zapasów (prognoza): ${signed(netto)} 🍞/turę`
+    + ` · BRUTTO (nadwyżka miast → centrala): ${signed(wplyw)} 🍞/turę → NETTO (po deficytach miast i armii, zmiana magazynu): ${signed(netto)} 🍞/turę`
+    + ` · Deficyty miast pokryte z magazynu: ${signed(-Math.max(0, wplyw - koszt - netto))} 🍞/turę`
     + ` · Nadwyżka miast → centrala: ${signed(wplyw)} 🍞/turę`
     + ` · Koszt armii: ${signed(-koszt)} 🍞/turę`;
   // P-SPICHLERZ-ZERO-MYLACE: liczba magazynu sama w sobie nie mówi, czy zero jest zdrowe
@@ -1047,6 +1116,18 @@ function surowceChipTitle(s: HudState): string {
   if (hudResourceShortage(s)) {
     title += ` · Niedobór (czerwony): ${s.surowceNiedoborLabels!.join(', ')}`;
   }
+  // R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: BRUTTO = suma produkcji (+ przychód z umów) / turę,
+  // NETTO = po odjęciu zużycia (obywatele, budynki, wojsko) i umów wychodzących; przy deficycie
+  // komórka pokazuje NAJGORSZY surowiec (linia „najgorszy"), nie sumę, która maskuje brak.
+  if (s.surowceBrutto !== undefined || s.surowceNetto !== undefined) {
+    title += ` · BRUTTO ${signed(s.surowceBrutto ?? 0)} → NETTO ${signed(s.surowceNetto ?? 0)} szt./turę (suma surowców)`;
+    const worst = surowceNajgorszy(s);
+    if (worst) title += ` · Najgorszy bilans: ${worst.label} ${signed(worst.netto)}/turę`;
+    const lines = (s.surowceBilans ?? [])
+      .filter(r => r.brutto !== 0 || r.netto !== 0)
+      .map(r => `${r.label}: brutto ${signed(r.brutto)}, netto ${signed(r.netto)}`);
+    if (lines.length > 0) title += ` · ${lines.join('; ')}`;
+  }
   return `${title} · Kliknij po szczegóły.`;
 }
 
@@ -1054,7 +1135,7 @@ function handelChipTitle(s: HudState): string {
   const income = s.handelIncome ?? 0;
   const routes = s.handelRouteCount ?? 0;
   return `Handel — wymiana z obcymi cywilizacjami`
-    + ` · Liczba na chipie: ${signed(income)} pkt Pieniądza/turę (dochód z ${routes} aktywnych tras handlowych)`
+    + ` · BRUTTO: ${signed(income)} pkt Pieniądza/turę (dochód z ${routes} aktywnych tras handlowych) → NETTO: ${signed(income)} (trasy nie mają kosztów; ten dochód jest już wliczony we wpływy Skarbca)`
     + ` · Kliknij po szczegóły.`;
 }
 
@@ -1134,84 +1215,108 @@ function withChipRangeActive(html: string, active: boolean): string {
 // tylko wewnętrznie w tym module, jak dotąd).
 export function renderBarD1B(s: HudState): string {
   const powerIconHtml = powerCenterIconHtml(s);
-  const leftHeadChips: string[] = [
+  // R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: STAŁY układ 3+3 (siatka CSS, 3 kolumny o stałej
+  // szerokości, zero zawijania zależnego od liczb): góra Skarbiec · Praca · Spichlerz,
+  // dół Handel · Nauka · Surowce. Każda komórka: linia 1 = etykieta + zapas, linia 2 =
+  // „brutto" (przychód przed kosztami), linia 3 = „netto" (po wszystkich opłatach = realna
+  // zmiana stanu na następną turę). Wartości z TYCH SAMYCH pól HudState co dotąd/panel.
+  const skarbiecBrutto = s.bogactwoWplywyBrutto ?? s.bogactwoRate ?? 0;
+  const skarbiecNetto = s.bogactwoRate ?? skarbiecBrutto;
+  // Praca: netto = PROGNOZA następnego końca tury (gdy dostępna), brutto = prognoza + utrzymanie ulepszeń
+  // (auto-ulepszenia i Cuda na mapie zależą od puli w ticku i nie wchodzą do prognozy).
+  const pracaNetto = s.pracaPrognoza ?? (s.pracaRate ?? 0);
+  const pracaBrutto = s.pracaPrognoza !== undefined ? s.pracaPrognoza + (s.pracaUpkeep ?? 0) : pracaWplywBrutto(s);
+  const foodBrutto = s.zywnoscWplywMiast ?? s.zywnoscRate ?? 0;
+  const foodNetto = s.zywnoscRate ?? 0;
+  const handelBrutto = s.handelIncome ?? 0;
+  const naukaStawka = s.naukaRate ?? 0;
+  const surBrutto = s.surowceBrutto ?? 0;
+  // Surowce: brutto i netto to TA SAMA wielkosc (suma po surowcach), wiec netto = suma netto; deficyt
+  // pojedynczego surowca sygnalizuje czerwony chip + ⚠ + tooltip („Najgorszy bilans" i lista per surowiec).
+  const surNetto = s.surowceNetto ?? 0;
+  const row1: string[] = [
     chip6cHtml({
       iconId: 'res-treasury',
       label: 'Skarbiec',
-      ...cn(s.bogactwo, s.bogactwoWplywyBrutto ?? s.bogactwoRate ?? 0),
+      value: formatCompactNumber(s.bogactwo),
+      rate: formatCompactSigned(skarbiecBrutto),
+      net: formatCompactSigned(skarbiecNetto),
+      netTone: netTone(skarbiecNetto),
+      exact: exactCompactNote(s.bogactwo, skarbiecBrutto),
       valClass: ` ${resourceTextClass('skarbiec')}`,
       shortage: hudGoldShortage(s),
-      // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: żeton pokazuje WPŁYWY BRUTTO (przed
-      // utrzymaniem budynków/jednostek), nie `bogactwoRate` (netto) — redukcja do
-      // netto zostaje wyłącznie w rozpisce `skarbiecChipTitle()` i w panelu.
       act: 'skarbiec',
       title: skarbiecChipTitle(s),
     }),
-    chip6cSep(),
     chip6cHtml({
       iconId: 'res-work',
       label: 'Praca',
-      ...cn(s.praca, pracaWplywBrutto(s)),
+      value: formatCompactNumber(s.praca),
+      rate: formatCompactSigned(pracaBrutto),
+      net: formatCompactSigned(pracaNetto),
+      netTone: netTone(pracaNetto),
+      exact: exactCompactNote(s.praca, pracaBrutto),
       valClass: ` ${resourceTextClass('praca')}`,
-      // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: żeton pokazuje WPŁYW BRUTTO do puli
-      // imperium (przed utrzymaniem/auto-ulepszeniami/Cudami na mapie), nie
-      // `pracaRate` (netto) — redukcja do netto zostaje wyłącznie w rozpisce
-      // `pracaChipTitle()` i w panelu. Ostrzeżenie (`rateWarn`) nadal patrzy na
-      // netto — to realny sygnał, że pula SIĘ KURCZY, niezależnie od brutto.
-      rateWarn: s.pracaRate < 0,
       act: 'praca',
       title: pracaChipTitle(s),
     }),
-    chip6cSep(),
     chip6cHtml({
       iconId: 'res-food',
       label: 'Spichlerz',
-      ...cn(foodHudValue(s), s.zywnoscRate ?? 0),
+      value: formatCompactNumber(foodHudValue(s)),
+      rate: formatCompactSigned(foodBrutto),
+      net: formatCompactSigned(foodNetto),
+      netTone: netTone(foodNetto),
+      exact: exactCompactNote(foodHudValue(s), foodBrutto),
       valClass: ` ${resourceTextClass('zywnosc')}`,
       // P-SPICHLERZ-ZERO-MYLACE: chip czerwony też przy niedokarmionych miastach, nie
       // tylko przy głodzie wojska/ujemnym tempie — sam kolor ma sygnalizować deficyt.
-      // / EN: chip turns red for unfed cities too, not only army hunger/negative rate —
-      // the color alone should signal a deficit.
-      rateWarn: !!(s.glodWojska || (s.zywnoscRate ?? 0) < 0 || (s.zywnoscMiastNiedokarmionych ?? 0) > 0),
+      // (`hudFoodShortage` obejmuje `zywnoscMiastNiedokarmionych > 0`; dawny `rateWarn` na linii
+      // „brutto" zastąpiła czerwona linia „netto" + klasa shortage całego chipu.)
       shortage: hudFoodShortage(s),
       act: 'spichlerz',
       title: spichlerzChipTitle(s),
     }),
-    chip6cSep(),
+  ];
+  const row2: string[] = [
+    chip6cHtml({
+      iconId: 'res-trade',
+      label: 'Handel',
+      value: '',   // dochód z tras to brutto=netto (brak kosztów tras) — w liniach brutto/netto
+      rate: formatCompactSigned(handelBrutto),
+      net: formatCompactSigned(handelBrutto),
+      netTone: netTone(handelBrutto),
+      exact: exactCompactNote(undefined, handelBrutto),
+      act: 'handel',
+      title: handelChipTitle(s),
+    }),
     chip6cHtml({
       iconId: 'res-science',
       label: 'Nauka',
-      ...cn(Math.floor(s.nauka), s.naukaRate ?? 0),
+      value: formatCompactNumber(Math.floor(s.nauka)),
+      rate: formatCompactSigned(naukaStawka),
+      net: formatCompactSigned(naukaStawka),
+      netTone: netTone(naukaStawka),
+      exact: exactCompactNote(Math.floor(s.nauka), naukaStawka),
       medVariant: 'science',
       valClass: ` ${resourceTextClass('nauka')}`,
       act: 'nauka',
       title: naukaChipTitle(s),
       researchProgress: resolveResearchProgress(s),
     }),
-    chip6cSep(),
+    chip6cHtml({
+      iconId: 'res-resources',
+      label: 'Surowce',
+      value: s.surowceAlert ? '⚠' : '',   // bez liczby (Maciej 2026-07-24); ⚠ = alert magazynu/niedoboru
+      rate: formatCompactSigned(surBrutto),
+      net: formatCompactSigned(surNetto),
+      netTone: netTone(surNetto),
+      shortage: hudResourceShortage(s),
+      act: 'surowce',
+      title: surowceChipTitle(s),
+    }),
   ];
-  // DYSPOZYCJA 85: Handel ZA Surowcami — grupa tail, żeby przy wąskim oknie nie lądował pod Skarbcem.
-  const leftTailChips = chip6cHtml({
-    iconId: 'res-resources',
-    label: 'Surowce',
-    value: '',   // Maciej 2026-07-24: bez liczby na chipie (był „9/9") — sam żeton + klik po magazyn
-    rate: s.surowceAlert ? '⚠' : undefined,
-    rateWarn: !!s.surowceAlert,
-    shortage: hudResourceShortage(s),
-    act: 'surowce',
-    title: surowceChipTitle(s),
-  })
-    + chip6cSep()
-    + chip6cHtml({
-      iconId: 'res-trade',
-      label: 'Handel',
-      value: formatCompactSigned(s.handelIncome ?? 0),
-      exact: exactCompactNote(s.handelIncome ?? 0),
-      act: 'handel',
-      title: handelChipTitle(s),
-    });
-  const leftChipsHtml = leftHeadChips.join('')
-    + `<span class="hud-chip-tail-group">${leftTailChips}</span>`;
+  const leftChipsHtml = '<div class="hud-chip-grid">' + row1.join('') + row2.join('') + '</div>';
   const rightChips: string[] = [
     chip6cHtml({
       iconId: 'tb-army',
@@ -1289,8 +1394,8 @@ export function renderBarD1B(s: HudState): string {
     : '';
   const recruitTitle = `Manpower: ${rekrFull} · Możesz zwerbować ${recruitCount} pełnych jednostek${recruitCostTitle} · Kliknij po szczegóły.`;
 
-  let html = '<div class="civ-hud-banner-left"><div class="civ-hud-banner-shell"><div class="hud-chip-row">'
-    + leftChipsHtml + '</div></div></div>';
+  let html = '<div class="civ-hud-banner-left"><div class="civ-hud-banner-shell">'
+    + leftChipsHtml + '</div></div>';
 
   const eraGateTitle = s.eraGateSummary ? ' title="' + escHtml(s.eraGateSummary) + '"' : '';
   const eraGateCls = s.eraGateSummary ? ' p-epoch-gated' : '';
