@@ -38161,6 +38161,17 @@ async function boot(): Promise<void> {
             // dyrektywa ma jeden wspolny kontrakt: napastnik konsoliduje armie
             // i maszeruje na miasta celu, obronca skupia reakcje na napastniku.
             const forcedWarDirective: (NonNullable<AITurnOpts['forcedWar']> & { pairKey: string }) | undefined = (() => {
+              // R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1: wpis rejestru wojny wymuszonej bez FAKTYCZNEJ wojny pary
+              // (relacja != 'wojna' -- pokoj/rozejm/sojusz/NAP zawarty sciezka bez cleanupu, stary zapis)
+              // dawal napastnikowi marsz na miasta celu bez wypowiedzenia. Wpis nieaktualny jest sprzatany.
+              for (const reg of [bronzeForceWarActiveByPairKey, stoneForceWarActiveByPairKey, ironForceWarActiveByPairKey]) {
+                for (const [staleKey, staleSt] of Array.from(reg.entries())) {
+                  if (staleSt.attackerId !== ownerId && staleSt.targetId !== ownerId) continue;
+                  if (getDiploRelation(staleSt.attackerId, staleSt.targetId).status === 'wojna') continue;
+                  reg.delete(staleKey);
+                  forcedWarWavesByPairKey.delete(staleKey);
+                }
+              }
               const active = [
                 ...Array.from(bronzeForceWarActiveByPairKey.values()).map(st => ({ st, era: 'bronze' as const })),
                 ...Array.from(stoneForceWarActiveByPairKey.values()).map(st => ({ st, era: 'stone' as const })),

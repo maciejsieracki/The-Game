@@ -3683,7 +3683,10 @@ function decideAITurnCore(
   // konkretnej strony, również gdy są poza bieżącym promieniem ekspansji.
   // Pozycje wszystkich miast są już znane silnikowi; mgła nadal blokuje samą
   // próbę przejęcia w executorze, ale nie blokuje marszu do zapamiętanego celu.
-  const forcedWarAttack = opts.forcedWar?.role === 'attacker';
+  // R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1: dyrektywa wojny wymuszonej NIE omija bramki wojny. Marsz/zbiorka na miasta
+  // celu tylko gdy cel jest faktycznie do zaangazowania (relacja 'wojna'); stary wpis rejestru bez wojny = zwykle zachowanie.
+  const forcedWarAttack = opts.forcedWar?.role === 'attacker'
+    && aiCanEngageOwner(opts, opts.forcedWar.targetOwnerId);
   const forcedWarTargetCities = forcedWarAttack && opts.forcedWar !== undefined
     ? cities.filter(c => c.ownerId === opts.forcedWar!.targetOwnerId)
     : [];
@@ -4943,6 +4946,8 @@ function appendAiGeneralCampaignOrders(
 ): boolean {
   const campaign = opts.aiGeneralWarCampaign;
   if (!campaign) return false;
+  // R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1: zbiorka (recruiting/gathering) i marsz (attacking) tylko przy faktycznej wojnie z celem.
+  if (!aiCanEngageOwner(opts, campaign.target.ownerId)) return false;
   const general = campaign.generalUnitId
     ? myUnits.find(unit => unit.id === campaign.generalUnitId && unit.isGeneral === true)
     : undefined;
