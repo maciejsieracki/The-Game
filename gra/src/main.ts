@@ -20531,6 +20531,17 @@ async function boot(): Promise<void> {
         ? storedResourceRows
         : buildEmpireResourceRows(ownerId).filter(r => r.cap != null && !r.placeholder);
       const surowceNiedoborLabels = shortageRows.filter(r => r.ratePerTurn < 0).map(r => r.label);
+      // R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: brutto/netto surowców z TYCH SAMYCH wierszy co panel
+      // Surowców (bez 2. kalkulacji): brutto = produkcja własna + przychód z umów; netto =
+      // ratePerTurn (produkcja − umowy wychodzące + przychodzące) − zapotrzebowanie
+      // (obywatele+budynki+wojsko, `usage`). Tylko podanie danych do HUD.
+      const surowceBilans = shortageRows.map(r => {
+        const brutto = Math.max(0, (r.rateProductionPerTurn ?? r.ratePerTurn) + (r.rateDiploInPerTurn ?? 0));
+        const zuzycie = r.usage ? r.usage.buildings + r.usage.citizens + r.usage.units : 0;
+        return { label: r.label, brutto: Math.round(brutto), netto: Math.round(r.ratePerTurn - zuzycie) };
+      });
+      const surowceBrutto = surowceBilans.reduce((a, r) => a + r.brutto, 0);
+      const surowceNetto = surowceBilans.reduce((a, r) => a + r.netto, 0);
       const surowceTotal = storedResourceRows.length;
       const surowceOk = surowceTotal - resourceAlertCount;
       // TEMAT 14 (Maciej 2026-07-24): chip „Handel" w HUD — suma dochodu z aktywnych
@@ -20703,6 +20714,9 @@ async function boot(): Promise<void> {
         surowceSummary: surowceTotal > 0 ? `${surowceOk}/${surowceTotal}` : '—',
         surowceAlert: resourceAlertCount > 0,
         surowceNiedoborLabels,
+        surowceBrutto,
+        surowceNetto,
+        surowceBilans,
         handelIncome,
         handelRouteCount,
         uchwalaSolAktywna: foodProj.uchwalaSolAktywna,

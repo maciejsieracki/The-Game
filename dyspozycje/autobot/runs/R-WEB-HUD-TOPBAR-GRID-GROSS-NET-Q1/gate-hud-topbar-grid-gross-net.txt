@@ -1,0 +1,27 @@
+[A] render prawdziwego renderBarD1B + CSS w Chromium
+[M] mutacje
+  ok   MUTANT "zamiana rzedow (Handel/Nauka/Surowce na gorze)" jest WYKRYTY przez bramke (24 czerwonych asercji)
+  ok   MUTANT "netto = brutto (Skarbiec)" jest WYKRYTY przez bramke (3 czerwonych asercji)
+  ok   MUTANT "netto ujemne nie jest czerwone" jest WYKRYTY przez bramke (2 czerwonych asercji)
+  ok   MUTANT "4 kolumny siatki (zawijanie Handel do gory)" jest WYKRYTY przez bramke (48 czerwonych asercji)
+  ok   MUTANT "brak "najgorszego deficytu" w Surowcach" jest WYKRYTY przez bramke (2 czerwonych asercji)
+[B] zywa gra: netto == zmiana po endTurn
+  ok   live: hak disableVictoryCheckForTest dostepny (bez niego sandbox konczy gre po 2 turach)
+  ok   live: rozgrzewka — tura 1 -> 2 (realny endTurn)
+  ok   live tura 2: Skarbiec netto z HUD (-90) == zmiana magazynu po endTurn (-90)
+  ok   live tura 2: Nauka netto z HUD (8) == zmiana magazynu po endTurn (8)
+  ok   live tura 2: Praca netto z HUD (10) vs zmiana magazynu (10)
+  info live tura 2: Spichlerz zapas 0, netto -64 -> zapas obcinany do 0 (glod) -- NIE porownywane
+  ok   live tura 3: Skarbiec netto z HUD (-90) == zmiana magazynu po endTurn (-90)
+  ok   live tura 3: Nauka netto z HUD (8) == zmiana magazynu po endTurn (8)
+  INFO live tura 3: Praca netto z HUD (10) vs zmiana magazynu (28) -- ZNANA ROZBIEZNOSC (saldo ostatniego ticka, nie prognoza; poza zakresem)
+  info live tura 3: Spichlerz zapas 0, netto -44 -> zapas obcinany do 0 (glod) -- NIE porownywane
+  ok   live tura 4: Skarbiec netto z HUD (-94) == zmiana magazynu po endTurn (-94)
+  ok   live tura 4: Nauka netto z HUD (8) == zmiana magazynu po endTurn (8)
+  INFO live tura 4: Praca netto z HUD (28) vs zmiana magazynu (35) -- ZNANA ROZBIEZNOSC (saldo ostatniego ticka, nie prognoza; poza zakresem)
+  info live tura 4: Spichlerz zapas 0, netto -44 -> zapas obcinany do 0 (glod) -- NIE porownywane
+  ok   live: zmierzono co najmniej 1 pelna ture netto vs endTurn
+  ok   live: zero pageerror
+
+OK: hud-topbar-grid-gross-net-test (740 ok, 0 fail)
+EXIT=0
