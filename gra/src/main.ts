@@ -761,6 +761,7 @@ import {
   type DiploPlayerSummary,
 } from './ui/diploListHud';
 import { armyStackCardIdentity, type ArmyStackHudState } from './ui/armyStackHud';
+import { sortArmyStackGeneralsFirst } from './ui/armyStackLabel';
 import { formatArmiaLabel, formatJednostkiCount } from './ui/formatPl';
 import type {
   HudState, WarWithPlayer, SidePanelEvent,
@@ -6187,6 +6188,12 @@ async function boot(): Promise<void> {
     let unitSideDetailExpanded = false;
 
     /**
+     * Wielokrotne zaznaczanie jednostek stosu (karty w panelu armii) do zbiorowego „Rozwiąż”.
+     * Klucz = heks + właściciel: zaznaczenie żyje tylko dla stosu, na którym powstało.
+     */
+    let stackPickState: { key: string; ids: Set<string> } = { key: '', ids: new Set<string>() };
+
+    /**
      * Decyzja 81=A (2026-07-25): etykieta Danina/Podatek DLA TEGO KONKRETNEGO
      * HEKSU -- wg WLASCICIELA TERYTORIUM (territoryOwnerAtLive), nie gracza
      * patrzacego. Ten sam wzorzec liczenia jak buildEmpireTradeSnap (ok. linii
@@ -7409,6 +7416,8 @@ async function boot(): Promise<void> {
         else stacks.set(key, [u]);
       }
       const out: ArmyListEntry[] = [];
+      // Wpisy z generałem/wodzem (id reprezentanta) — na początku listy (R-WEB-UI-ARMY-PANEL-GENERAL-LABEL-MULTISELECT-Q1).
+      const commanderLeadIds = new Set<string>();
       for (const group of stacks.values()) {
         const lead = group[0]!;
         const inGarnizon = group.some(u => u.inGarnizon === true);
@@ -7416,11 +7425,17 @@ async function boot(): Promise<void> {
         const sentry = group.some(u => u.sentry === true);
         const autoExplore = group.some(u => u.autoExplore === true);
         const types = [...new Set(group.map(u => u.typeId))];
-        const name = group.length === 1
+        const baseName = group.length === 1
           ? lead.typeId
           : types.length === 1
             ? `${types[0]!} ×${group.length}`
             : formatArmiaLabel(group.length);
+        // Stos z generałem/wodzem: rola w nazwie wpisu (Lista), żeby dowódca był rozpoznawalny.
+        const generalInGroup = group.find(u => u.isGeneral === true);
+        const name = generalInGroup
+          ? `${armyLeaderTitle(empireBuiltIdsForOwner(generalInGroup.ownerId))} — ${baseName}`
+          : baseName;
+        if (generalInGroup) commanderLeadIds.add(lead.id);
         const ruchLeft = planningStackRuchLeft(group);
         const ruchMax = Math.max(...group.map(u => u.ruch));
         // Suma HP stosu: armia = stos, więc pokazujemy łączny stan zdrowia
@@ -7456,7 +7471,9 @@ async function boot(): Promise<void> {
           autoExplore,
         });
       }
-      out.sort((a, b) => a.name.localeCompare(b.name, 'pl'));
+      out.sort((a, b) =>
+        (Number(commanderLeadIds.has(b.id)) - Number(commanderLeadIds.has(a.id)))
+        || a.name.localeCompare(b.name, 'pl'));
       return out;
     }
 
@@ -13558,13 +13575,15 @@ async function boot(): Promise<void> {
       if (canvas.style.cursor !== cursor) canvas.style.cursor = cursor;
     }
 
-    function mergeUnitRow(u: RuntimeUnit): { id: string; name: string; icon: string; ruchLeft: number; ruchMax: number } {
+    function mergeUnitRow(u: RuntimeUnit): { id: string; name: string; icon: string; ruchLeft: number; ruchMax: number; commanderTitle?: 'Wódz' | 'Generał' } {
       const def = lookupUnitDef(u.typeId);
       return {
         id: u.id,
         name: u.typeId,
         icon: unitIconSvg(def, u.typeId),
         ruchLeft: u.ruchLeft,
+        // Rola dowódcy na liście podziału: „Generał — Wojownik" zamiast samego typu.
+        ...(u.isGeneral === true ? { commanderTitle: armyLeaderTitle(empireBuiltIdsForOwner(u.ownerId)) } : {}),
         // RUCH-SWIATA-TEMPO: u.ruch (nie surowy def['Ruch']) — juz przemnozone przy
         // spawnie, inaczej pasek ruchu w prompcie scalania pokazywalby bazowa wartosc
         // gdy pace='normalny'/'dlugi'. / EN: use u.ruch (not raw def['Ruch']) — already
@@ -23823,6 +23842,63 @@ async function boot(): Promise<void> {
       return null;
     }
 
+    function armyPickKey(u: RuntimeUnit): string {
+      return u.q + ',' + u.r + ',' + u.ownerId;
+    }
+
+    /** Zaznaczone do rozwiązania jednostki z bieżącego stosu (pusto, gdy zaznaczenie z innego heksu). */
+    function pickedUnitsOnStack(stack: readonly RuntimeUnit[]): RuntimeUnit[] {
+      if (stack.length === 0) return [];
+      if (stackPickState.key !== armyPickKey(stack[0]!)) return [];
+      return stack.filter(su => stackPickState.ids.has(su.id));
+    }
+
+    function togglePickUnit(active: RuntimeUnit, unitId: string): void {
+      const key = armyPickKey(active);
+      const member = units.find(x => x.id === unitId && armyPickKey(x) === key);
+      if (!member) return;
+      if (stackPickState.key !== key) stackPickState = { key, ids: new Set<string>() };
+      if (stackPickState.ids.has(unitId)) stackPickState.ids.delete(unitId);
+      else stackPickState.ids.add(unitId);
+    }
+
+    /** „Zaznacz wszystko” zaznacza wszystkich OPRÓCZ generała/wodza (ten wymaga świadomego kliknięcia). */
+    function pickAllNonGeneralsOnStack(active: RuntimeUnit, stack: readonly RuntimeUnit[]): void {
+      stackPickState = {
+        key: armyPickKey(active),
+        ids: new Set(stack.filter(su => su.isGeneral !== true).map(su => su.id)),
+      };
+    }
+
+    function clearUnitPicks(): void {
+      stackPickState = { key: '', ids: new Set<string>() };
+    }
+
+    /**
+     * Akcja „Rozwiąż”: bez zaznaczenia — jak dotąd rozwiązuje wybraną jednostkę;
+     * z zaznaczeniem — rozwiązuje cały zaznaczony zbiór po potwierdzeniu „Rozwiązać N jednostek?”.
+     */
+    function disbandSelectedOrPickedUnits(u: RuntimeUnit): void {
+      const picked = pickedUnitsOnStack(playerStackAt(u));
+      if (picked.length === 0) {
+        disbandPlayerUnit(u.id);
+        return;
+      }
+      let msg = 'Rozwiązać ' + formatJednostkiCount(picked.length) + '?';
+      if (picked.some(su => su.isGeneral === true)) {
+        msg += '\nW zaznaczeniu jest generał/wódz — jego rozwiązanie jest nieodwracalne.';
+      }
+      if (!window.confirm(msg)) return;
+      const ids = picked.map(su => su.id);
+      clearUnitPicks();
+      let done = 0;
+      for (const id of ids) {
+        if (disbandPlayerUnit(id)) done++;
+      }
+      showHintMessage('Rozwiązano ' + formatJednostkiCount(done) + ' — rekruty wróciły do puli imperium', 4000);
+      refreshD1bHud();
+    }
+
     function buildArmyStackHudStateInner(): ArmyStackHudState | null {
       if (selectedId === null) return null;
       const active = units.find(x => x.id === selectedId);
@@ -23830,7 +23906,8 @@ async function boot(): Promise<void> {
       const stack = playerStackAt(active);
       if (stack.length > 1) syncStackRuchLeft(stack);
       const stackRuch = stackRuchLeft(stack);
-      const cards = stack.map(u => {
+      const pickedIds = new Set(pickedUnitsOnStack(stack).map(su => su.id));
+      const cards = sortArmyStackGeneralsFirst(stack.map(u => {
         const udef = lookupUnitDef(u.typeId);
         const uCombat = unitCardCombatFor(u, udef);
         const hpMax = uCombat.hpMaxEffective;
@@ -23852,8 +23929,9 @@ async function boot(): Promise<void> {
           ruchLeft: stack.length > 1 ? stackRuch : u.ruchLeft,
           ruchMax: movMax,
           active: u.id === selectedId,
+          picked: pickedIds.has(u.id),
         };
-      });
+      }));
       const def = lookupUnitDef(active.typeId);
       const displayName = String(def?.nazwa ?? def?.Nazwa ?? active.typeId);
       const combat = unitCardCombatFor(active, def);
@@ -24011,7 +24089,13 @@ async function boot(): Promise<void> {
           active: alreadyFollowing,
         });
       }
-      actions.push({ id: 'disband', label: 'ROZWI\u0104\u017d', danger: true });
+      // Z zaznaczeniem \u201eRozwi\u0105\u017c\u201d dzia\u0142a na ca\u0142y zaznaczony zbi\u00f3r \u2014 etykieta m\u00f3wi ile jednostek.
+      const pickedCount = pickedIds.size;
+      actions.push({
+        id: 'disband',
+        label: pickedCount > 0 ? 'ROZWI\u0104\u017b ZAZNACZONE (' + pickedCount + ')' : 'ROZWI\u0104\u017d',
+        danger: true,
+      });
       return {
         hexLabel: siegeCity
           ? '(' + active.q + ',' + active.r + ') \u00b7 Oblega ' + siegeCity.name
@@ -24156,8 +24240,17 @@ async function boot(): Promise<void> {
           showHintMessage(u.typeId + ' ufortyfikowany w polu (ruch zu\u017cyty)', 2500);
         }
         refreshD1bHud();
+      } else if (actionId.startsWith('pick:')) {
+        togglePickUnit(u, actionId.slice('pick:'.length));
+        refreshD1bHud();
+      } else if (actionId === 'pick-all') {
+        pickAllNonGeneralsOnStack(u, stack);
+        refreshD1bHud();
+      } else if (actionId === 'pick-none') {
+        clearUnitPicks();
+        refreshD1bHud();
       } else if (actionId === 'disband') {
-        disbandPlayerUnit(u.id);
+        disbandSelectedOrPickedUnits(u);
       } else if (actionId === 'split') {
         openSplitPanelForSelected();
       } else if (actionId === 'merge') {

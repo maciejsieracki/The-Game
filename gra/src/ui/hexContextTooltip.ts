@@ -63,6 +63,7 @@ import {
 } from './unitCardStatus';
 import type { UnitPanelAction } from './unitPanelHud';
 import { buildUnitActionBarHtml, UNIT_ACTION_BAR_CSS } from './unitActionBarHtml';
+import { armyStackCardLabel, sortArmyStackGeneralsFirst } from './armyStackLabel';
 import {
   brandIconSvg,
   mapResourceIconSvg,
@@ -661,6 +662,8 @@ export interface UnitContextTooltipInput extends UnitSufferingStatusFields {
     ruchLeft: number;
     ruchMax: number;
     active: boolean;
+    /** Zaznaczona do zbiorowego rozwiązania (pole wyboru na karcie). */
+    picked?: boolean;
   }>;
   /** Przyciski akcji (kompakt + rozszerzony, na dole karty). */
   actions?: ReadonlyArray<UnitPanelAction>;
@@ -717,20 +720,45 @@ function buildUnitStackBarHtml(pct: number, kind: 'hp' | 'mov'): string {
   return `<div class="sp-unit-stack-bar sp-unit-stack-bar-${kind}"><i style="width:${width}%"></i></div>`;
 }
 
+/**
+ * Pasek nad kartami stosu: licznik zaznaczenia + „Zaznacz wszystko” (bez generała/wodza)
+ * + „Odznacz”. Przyciski idą przez data-act → onContextAction (jak reszta akcji karty).
+ */
+function buildUnitStackPickBarHtml(cards: NonNullable<UnitContextTooltipInput['stackCards']>): string {
+  const total = cards.length;
+  const picked = cards.filter(c => c.picked === true).length;
+  const count = picked > 0
+    ? `Zaznaczono ${picked} z ${total}`
+    : `Zaznacz do rozwiązania (${total})`;
+  return '<div class="sp-unit-pick-bar">'
+    + `<span class="sp-unit-pick-count" data-pick-count>${count}</span>`
+    + '<span class="sp-unit-pick-btns">'
+    + '<button type="button" class="sp-unit-pick-btn" data-act="pick-all"'
+    + ' title="Zaznacz wszystkie jednostki oprócz generała/wodza">Zaznacz wszystko</button>'
+    + `<button type="button" class="sp-unit-pick-btn" data-act="pick-none"${picked === 0 ? ' disabled' : ''}>Odznacz</button>`
+    + '</span></div>';
+}
+
 function buildUnitStackCardsHtml(
   cards: NonNullable<UnitContextTooltipInput['stackCards']>,
   esc: (raw: string) => string,
 ): string {
   if (cards.length <= 1) return '';
-  let html = '<div class="sp-unit-stack">';
-  for (const c of cards) {
+  // Generałowie/wodzowie zawsze na początku listy — odróżnialni nawet w długim stosie.
+  const ordered = sortArmyStackGeneralsFirst(cards);
+  let html = buildUnitStackPickBarHtml(cards) + '<div class="sp-unit-stack">';
+  for (const c of ordered) {
     const hpPct = c.hpMax > 0 ? (c.hp / c.hpMax) * 100 : 0;
     const movPct = c.ruchMax > 0 ? (c.ruchLeft / c.ruchMax) * 100 : 0;
     const isCommander = c.commanderTitle === 'Wódz' || c.commanderTitle === 'Generał';
-    const cardLabel = isCommander ? `${c.commanderTitle} — ${c.name}` : c.name;
-    html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}${isCommander ? ' commander' : ''}" data-unit="${esc(c.id)}"`
+    const cardLabel = armyStackCardLabel(c);
+    const pickLabel = `Zaznacz do rozwiązania: ${cardLabel}`;
+    html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}${isCommander ? ' commander' : ''}${c.picked ? ' picked' : ''}" data-unit="${esc(c.id)}"`
       + (isCommander ? ` data-commander="true" aria-label="${esc(cardLabel)}" title="${esc(cardLabel)}"` : '')
       + ' role="button" tabindex="0">'
+      + `<span class="sp-unit-pick${c.picked ? ' on' : ''}" data-pick="${esc(c.id)}" role="checkbox"`
+      + ` tabindex="0" aria-checked="${c.picked ? 'true' : 'false'}" aria-label="${esc(pickLabel)}"`
+      + ` title="Zaznacz do rozwiązania"></span>`
       + `<div class="sp-unit-stack-ic">${c.icon || unitIconSvg(undefined)}</div>`
       + (isCommander
         ? `<div class="sp-unit-stack-commander-role">★ ${esc(c.commanderTitle!)}</div><div class="sp-unit-stack-name sp-unit-stack-commander-type">${esc(c.name)}</div>`
@@ -854,6 +882,23 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-stack-bar-hp i{background:linear-gradient(90deg,${VITALS_HP_DARK_CSS},${VITALS_HP_FULL_CSS});}
 .sp-unit-stack-bar-mov i{background:linear-gradient(90deg,${VITALS_MOVE_DARK_CSS},${VITALS_MOVE_FULL_CSS});}
 .sp-unit-stack-meta{font-size:8px;color:var(--civ-text-muted,#8a8070);margin-top:4px;}
+.sp-unit-stack-card{position:relative;}
+.sp-unit-stack-card.commander .sp-unit-stack-commander-role{font-size:10px!important;font-weight:900;padding:2px 4px;border-radius:3px;
+  background:rgba(232,216,138,.24);color:#fff3b0;}
+.sp-unit-stack-card.commander .sp-unit-stack-commander-type{font-size:9px!important;color:#f0e8c8!important;}
+.sp-unit-stack-card.picked{border-color:rgba(232,216,138,.9);box-shadow:inset 0 0 0 1px rgba(232,216,138,.35);}
+.sp-unit-pick-bar{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;
+  margin:8px 0 0;font-size:10px;color:var(--civ-text-muted,#a09880);}
+.sp-unit-pick-count{letter-spacing:.04em;}
+.sp-unit-pick-btns{display:flex;gap:6px;}
+.sp-unit-pick-btn{font:inherit;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:5px;
+  border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);color:var(--civ-gold-primary,#e8d88a);cursor:pointer;}
+.sp-unit-pick-btn:disabled{opacity:.4;cursor:not-allowed;}
+.sp-unit-pick{position:absolute;top:4px;left:4px;width:14px;height:14px;box-sizing:border-box;border-radius:3px;
+  border:1.5px solid rgba(212,175,90,.7);background:rgba(0,0,0,.4);cursor:pointer;}
+.sp-unit-pick.on{background:var(--civ-gold-primary,#e8d88a);border-color:var(--civ-gold-primary,#e8d88a);}
+.sp-unit-pick.on::after{content:'';position:absolute;left:4px;top:0;width:4px;height:8px;
+  border:solid #2e2708;border-width:0 2px 2px 0;transform:rotate(45deg);}
 .uc-unit-head-meta{font-size:10px;color:var(--civ-text-muted,#a09880);margin-top:3px;font-weight:400;}
 ${UNIT_ACTION_BAR_CSS}
 .sp-unit-card-body{display:flex;flex-direction:column;gap:0;}
