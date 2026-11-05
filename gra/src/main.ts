@@ -836,6 +836,8 @@ import {
   // wyszukiwania testowych heksów Z/BEZ obywateli w teście regresyjnym.
   hexHasDepositReserve,
   depositAllowsPlayerImprovement,
+  // R-WEB-MILL-RIVER-ONLY-GATE-Q1: jedna definicja „przy rzece" (ta sama co irygacja) dla bramki młyna.
+  isHexNearRiver,
   type ImprovementBuildImpact,
   type ImprovementBuildRequest,
   type ImprovementBuildCallbacks,
@@ -5387,6 +5389,16 @@ async function boot(): Promise<void> {
       return isCoastalCity(map, city) || cityHasWaterAccess(city, map);
     }
 
+    /**
+     * R-WEB-MILL-RIVER-ONLY-GATE-Q1 (decyzja właściciela 2026-11-04: „młyn TYLKO rzeka"): rzeka w zasięgu miasta —
+     * ta sama definicja „przy rzece" co irygacja (`isHexNearRiver`: rzeka na heksie miasta LUB sąsiada). Morze
+     * i jezioro NIE wystarczają. Wyliczane tu (main.ts zna mapę), przekazywane do `production.ts` jako `cityHasRiver`.
+     * EN: river within reach of the city (same definition as irrigation); sea/lake do not count.
+     */
+    function cityHasRiverAccess(city: Pick<City, 'q' | 'r'>): boolean {
+      return isHexNearRiver(map, city.q, city.r);
+    }
+
     /** UI: "źródło dostępu" dla panelu miasta — undefined gdy brak grantu z trasy. */
     function tradeRouteResourceSourceLabel(ownerId: number, key: TradeRouteResourceKey): string | undefined {
       const grant = firstTradeRouteResourceGrant(tradeRouteResourceGrants, ownerId, key);
@@ -6833,6 +6845,7 @@ async function boot(): Promise<void> {
         // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): bramka Naval dla
         // "Zastąp" w garnizonie — per TO miasto (tak jak koszary/braz-access wyżej).
         cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+        cityHasRiver: cityHasRiverAccess(city),
       });
     }
 
@@ -6863,6 +6876,7 @@ async function boot(): Promise<void> {
         ownerId,
         difficulty: _menuDifficulty,
         cityHasCoastOrRiver: cities.some(c => c.ownerId === ownerId && cityHasCoastOrRiverAccess(c)),
+        cityHasRiver: cities.some(c => c.ownerId === ownerId && cityHasRiverAccess(c)),
       });
     }
 
@@ -7930,6 +7944,11 @@ async function boot(): Promise<void> {
           const c = cities.find(x => x.id === cityId);
           return c ? cityHasCoastOrRiverAccess(c) : false;
         },
+        // R-WEB-MILL-RIVER-ONLY-GATE-Q1: bramka młyna (rzeka w zasięgu miasta).
+        getCityHasRiver: (cityId: string) => {
+          const c = cities.find(x => x.id === cityId);
+          return c ? cityHasRiverAccess(c) : false;
+        },
         getHasKopalniaNaZlozuZelaza: () => hasKopalniaNaZlozuZelazaOrTradeGrant(0, placedImprovementsForOwner(0)),
         // audyt #11: limit 1 żywej Super-jednostka na cywilizację -- nazwy (typeId)
         // jednostek TEGO ownera aktualnie żywych na mapie (respawn po śmierci działa
@@ -8994,6 +9013,7 @@ async function boot(): Promise<void> {
           empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
           empireResourceStock: citySurowceSumForOwner(city.ownerId),
           cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+          cityHasRiver: cityHasRiverAccess(city),
           isCapital: capitalCityIdForOwner(city.ownerId) === city.id,
         },
       });
@@ -16904,6 +16924,7 @@ async function boot(): Promise<void> {
         empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
         empireResourceStock: citySurowceSumForOwner(city.ownerId),
         cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+        cityHasRiver: cityHasRiverAccess(city),
         isCapital: capitalCityIdForOwner(city.ownerId) === city.id,
       };
     }
@@ -36971,6 +36992,7 @@ async function boot(): Promise<void> {
                         empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
                         empireResourceStock: citySurowceSumForOwner(city.ownerId),
                         cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+                        cityHasRiver: cityHasRiverAccess(city),
                         // ADMIN-STOLICA (2026-07-25): parytet — patrz uwaga w tryAutoEnqueueBuild.
                         isCapital: capitalCityIdForOwner(city.ownerId) === city.id,
                       },
@@ -38340,6 +38362,7 @@ async function boot(): Promise<void> {
                     empireBuiltIds: ow.empireBuiltIds,
                     empireResourceStock: citySurowceSumForOwner(ownerId),
                     cityHasCoastOrRiver: cityHasCoastOrRiverAccess(c),
+                    cityHasRiver: cityHasRiverAccess(c),
                     isCapital: capitalCityIdForOwner(ownerId) === c.id,
                   },
                 );
@@ -39815,6 +39838,7 @@ async function boot(): Promise<void> {
                           empireBuiltIds: [...empireBuiltIdsForOwner(ownerId)],
                           empireResourceStock: citySurowceSumForOwner(ownerId),
                           cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+                          cityHasRiver: cityHasRiverAccess(city),
                           // ADMIN-STOLICA (2026-07-25, PARYTET AI): parytet — patrz uwaga w
                           // tryAutoEnqueueBuild; jedno źródło prawdy capitalCityIdForOwner,
                           // identyczne dla ownerId=0 (gracz) i każdej cywilizacji AI.
