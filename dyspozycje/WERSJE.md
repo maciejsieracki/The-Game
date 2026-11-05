@@ -1,3 +1,9 @@
+## ROBOCZA 9caf3c59 -- 2026-11-05 -- FALA 508: marsze tylko na koniec tury gracza (testowa)
+
+- md5 pełne: `9caf3c5955847edea53c605d366e0bf6` · 70253395 B · poprzednia `8408a731`.
+- R-WEB-MARCH-END-OF-TURN-ONLY-Q1: zaplanowane marsze wykonują się tylko w fazie końca tury gracza (przed ekonomią/AI/dyplomacją). Usunięto cztery ścieżki ruchu poza tą fazą (nowe jednostki idące do wodza na starcie tury, dokańczanie kolejki po animacji, dopisywanie podopiecznych wodza w dowolnej chwili). Nowa tura: jednostki tam, gdzie je zostawiono, z pełnym MP. Pierwszy segment rozkazu zleconego w trakcie tury — od razu (decyzja A).
+- FC PASS-WITH-NOTES. Żywy test Chromium 51 OK / 0 FAIL. Nie sprawdzono: ai-test, hashe determinizmu.
+
 ## ROBOCZA 8408a731 -- 2026-11-05 -- FALA 507: Magazyn +20% pojemności surowców państwa (testowa)
 
 - md5 pełne: `8408a731941ca23cbe0d03366da91a99` · 70253091 B · poprzednia `1f71e6f2`.
