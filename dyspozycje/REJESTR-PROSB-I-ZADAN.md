@@ -8740,3 +8740,8 @@ Właściciel (wariant addytywny „B”): mnożnik zużycia przez obywateli **ep
 ## 2026-11-05 — DOPRECYZOWANIE schematu zużycia obywateli (właściciel)
 
 Poziom (suwak Wyżywienie) dotyczy WYŁĄCZNIE żywności; surowce zużywane są zawsze jedną stałą stawką, niezależną od poziomu. Schemat przyjmuje: **żywność = maksymalne zużycie (poziom 6)**, **surowce = normalne zużycie (1 szt./obywatela/turę)**, każde × mnożnik epoki 1 / 1,5 / 2 / 2,5 / 3. Żywność na obywatela/turę (poziom 6, przed Spichlerzem): 12 / 18 / 24 / 30 / 36. Każdy surowiec z listy epoki na obywatela/turę: 1 / 1,5 / 2 / 2,5 / 3.
+
+## 2026-11-05 — decyzje właściciela (odpowiedź 1A / 2: 10 tur / 3: Średniowiecze)
+- Pierwszy wódz AI w Brązie (T23–26, wymóg Koszar): **A — bez zmian**.
+- Zerwanie Traktatu handlowego: **bez kary po 10 turach** od zawarcia (przed 10 turą kary jak dziś: Zaufanie −10, Wiarygodność −4 przy terminowym). Założenie zakresu (do potwierdzenia w grze): dotyczy traktatów terminowych i bezterminowych handlu; inne traktaty bez zmian. Temat: R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1.
+- Młyn: definiowany dopiero w Średniowieczu (nowe epoki odłożone do nowej wersji Rust) — bramka „młyn tylko przy rzece” pozostaje nieaktywna do tego czasu.
