@@ -113,7 +113,7 @@ function assertRender(res, label) {
       ok(m.sw <= m.vw, `${label} ${w}px/${n}: brak poziomego przewijania`, { sw: m.sw, vw: m.vw });
       // R-WEB-HUD-TOPBAR-NO-LABELS-Q1: ≤700 px medalion baneru 9 px (zamiast 12) — kolumny 1fr musza
       // zmiescic „wartosc + dwa przyrosty" w ~50 px przy 640 px (baner 170 px). Prog 9 px dla ≤700 px.
-      const medMin = w <= 700 ? 9 : 12;
+      const medMin = 12;
       ok(m.minMed >= medMin, `${label} ${w}px/${n}: ikony medalionow widoczne (min ${m.minMed}px, prog ${medMin})`);
       // prawy baner (r2): wszystkie 5 chipow w obrebie banera i ekranu, baner nie wchodzi na Moc, nie jest zwezony do paska
       ok(m.rchips.length === 5, `${label} ${w}px/${n}: prawy baner ma 5 chipow`, m.rchips.length);

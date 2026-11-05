@@ -696,15 +696,23 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
   .civ-hud .hud-chip-grid{row-gap:1px;}
   .civ-hud .civ-hud-chip-val{line-height:1.2;height:calc(var(--hud-cell-val) * 1.2);}
   .civ-hud .civ-hud-chip-figs{margin-left:0;line-height:1.3;height:calc(var(--hud-cell-sm) * 1.3);}}
+/* R-WEB-HUD-TOPBAR-NO-LABELS-Q1 r2: 701–900 px (baner ~250–300 px): przyrosty obok siebie, bez
+   separatora i z mniejsza czcionka, zeby „−999,9M −999,9M” miescilo sie w kolumnie. */
+@media (max-width:900px){
+  .civ-hud .hud-chip-grid{column-gap:2px;}
+  .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 0;}
+  .civ-hud .civ-hud-chip-figs{gap:1px;font-size:7px;}
+  .civ-hud .civ-hud-chip-fsep{display:none;}}
 @media (max-width:700px){
-  .civ-hud{--hud-cell-med:9px;--hud-cell-lbl:7px;--hud-cell-val:9px;--hud-cell-sm:7px;}
+  .civ-hud{--hud-cell-med:12px;--hud-cell-lbl:7px;--hud-cell-val:9px;--hud-cell-sm:7px;}
   .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:3px 3px;}
   .civ-hud .civ-hud-chip-cell{column-gap:1px;}
   .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 0;}
   .civ-hud .hud-chip-grid{column-gap:0;}
   .civ-hud .civ-hud-chip-figs{gap:0;}
   .civ-hud .civ-hud-chip-line{gap:1px;}
-  .civ-hud .civ-hud-chip-fsep{display:none;}}
+  .civ-hud .civ-hud-chip-fsep{display:none;}
+  .civ-hud .civ-hud-chip-figs{flex-direction:column;align-items:flex-start;gap:0;height:auto;}}
 /* R-WEB-HUD-GROSS-NET-REST-Q1 r2: prawy baner (Armia/Miasta/Obywatele/Kultura/Religia) mial max-width
    50vw-340px (<=0 przy 640 px) i chipy nowrap => wylewaly sie poza ekran / zwijal sie do ~30 px paska.
    Teraz: zawsze zawijanie, min. 150 px; <=1500 px etykiety ukryte (ikona + liczba + przyrost, pelny opis w tooltipie);

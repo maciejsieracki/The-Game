@@ -41,8 +41,6 @@ export interface Chip6cOpts {
   net?: string;
   /** Znak netto → kolor: 'neg' czerwony (niedobór), 'pos' zielony, 'zero' stonowany. */
   netTone?: 'pos' | 'neg' | 'zero';
-  /** Etykieta linii netto (domyślnie „netto"); np. „netto Drewno" przy najgorszym deficycie. */
-  netLabel?: string;
   /** Ton (kolor) liczby brutto w banerze: 'neg' czerwony, 'pos' zielony, 'zero' stonowany. */
   rateTone?: 'pos' | 'neg' | 'zero';
   /** R-WEB-HUD-TOPBAR-NO-LABELS-Q1: dopisek do tooltipa — która liczba jest brutto, a która netto. */

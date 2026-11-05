@@ -180,7 +180,7 @@ function assertAll(res, label) {
       ok(Object.values(c).every((v) => !v.clip), `${label} ${w}px/${n}: zaden tekst nie jest przyciety`, Object.entries(c).filter(([, v]) => v.clip).map(([k]) => k));
       // R-WEB-HUD-TOPBAR-NO-LABELS-Q1: ≤700 px medalion 9 px (zamiast 12) — kolumny 1fr musza zmiescic
       // „wartosc + dwa przyrosty" w ~50 px (przy 640 px baner ma 170 px). Prog 9 px dla ≤700 px.
-      const medMin = w <= 700 ? 9 : 12;
+      const medMin = 12;
       ok(Object.values(c).every((v) => v.medW >= medMin), `${label} ${w}px/${n}: ikony widoczne (prog ${medMin} px)`, Object.entries(c).map(([k, v]) => [k, v.medW]));
       ok(Object.keys(ref).every((x) => c[x].x === ref[x].x && c[x].y === ref[x].y), `${label} ${w}px/${n}: pozycje identyczne z small`);
       ok(m.sw <= m.vw, `${label} ${w}px/${n}: brak poziomego przewijania`);
@@ -231,10 +231,10 @@ async function mutants(chromium) {
     ['zamiana rzedow (Handel/Nauka/Surowce na gorze)', (s) => s.replace("'<div class=\"hud-chip-grid\">' + row1.join('') + row2.join('')", "'<div class=\"hud-chip-grid\">' + row2.join('') + row1.join('')")],
     ['netto = brutto (Skarbiec)', (s) => s.replace('const skarbiecNetto = s.bogactwoRate ?? skarbiecBrutto;', 'const skarbiecNetto = skarbiecBrutto;')],
     ['netto ujemne nie jest czerwone', (s) => s.replace("return r < 0 ? 'neg' : r > 0 ? 'pos' : 'zero';", "return r > 0 ? 'pos' : 'zero';")],
-    ['4 kolumny siatki (zawijanie Handel do gory)', (s) => s.replace('grid-template-columns:repeat(3,var(--hud-cell-w))', 'grid-template-columns:repeat(4,var(--hud-cell-w))')],
+    ['4 kolumny siatki (zawijanie Handel do gory)', (s) => s.replace('grid-template-columns:repeat(3,minmax(0,1fr))', 'grid-template-columns:repeat(4,minmax(0,1fr))')],
     ['Surowce: netto = najgorszy pojedynczy surowiec (mieszanie wielkosci)', (s) => s.replace("const surNetto = s.surowceNetto ?? 0;", "const surNetto = (s.surowceBilans ?? []).reduce((m, r) => Math.min(m, r.netto), 0);")],
     ['Praca: netto z zrealizowanej tury zamiast prognozy', (s) => s.replace("const pracaNetto = s.pracaPrognoza ?? (s.pracaRate ?? 0);", "const pracaNetto = s.pracaRate ?? 0;")],
-    ['ikony ukryte <=900px', (s) => s.replace("--hud-cell-med:14px;--hud-cell-lbl:8px", "--hud-cell-med:0px;--hud-cell-lbl:8px")],
+    ['ikony ukryte <=900px', (s) => s.replace("--hud-cell-med:12px;--hud-cell-lbl:8px", "--hud-cell-med:0px;--hud-cell-lbl:8px")],
   ];
   for (const [name, fn] of M) {
     const mutSrc = fn(src);
