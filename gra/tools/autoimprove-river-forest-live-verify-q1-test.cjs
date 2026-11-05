@@ -140,4 +140,22 @@ const WORKERS = process.env.WORKERS || 'forest';
     aiRfOwnedFirstLast: [tt[0] && tt[0].aiRfOwned, tt.length && tt[tt.length - 1].aiRfOwned], aiRfWorkedMax: Math.max(0, ...tt.map((x) => x.aiRfWorked)), aiPersistMissedSum: tt.reduce((n, x) => n + x.aiRfPersistMissed, 0),
   }));
   await browser.close();
+  // ASSERT=1: asercje (test, nie tylko pomiar). Kontrakt dla WORKERS=forest + FOCUS=zywnosc: las rzeczny na polu obywatela
+  // jest wycinany w PIERWSZEJ turze (firstCutTurn==1) i nigdy nie jest chybiony. Zrownowazone: dopuszczone opoznienie <= 1 tury
+  // (KROK 1 niedoboru drewna przed wycinka rzeczna — decyzja produktowa wlasciciela, patrz raport).
+  if (process.env.ASSERT === '1') {
+    let fails = 0; const chk = (c, m) => { console.log((c ? '  [OK] ' : '  [FAIL] ') + m); if (!c) fails++; };
+    chk(!out.error, 'brak bledu przebiegu');
+    chk(tt.length >= 20, 'przebieg >= 20 tur (jest ' + tt.length + ')');
+    chk((tt[0] && tt[0].rfWorkedBefore) > 0, 'w turze 1 sa pola z lasem+rzeka+obywatelem (' + (tt[0] && tt[0].rfWorkedBefore) + ')');
+    if (WORKERS === 'forest' && FOCUS === 'zywnosc') {
+      chk(out.firstCutTurn === 1, 'Zywnosc: pierwsza wycinka w turze 1 (jest ' + out.firstCutTurn + ')');
+      chk(tt.reduce((n, x) => n + x.rfMissed, 0) === 0, 'Zywnosc: zero chybien');
+    }
+    if (WORKERS === 'forest' && FOCUS === 'zrownowazone') {
+      chk(out.firstCutTurn != null && out.firstCutTurn <= 2, 'Zrownowazone: pierwsza wycinka najpozniej w turze 2 (jest ' + out.firstCutTurn + ')');
+      chk(tt.filter((x) => x.rfMissed > 0 && x.turnBefore > 1).length === 0, 'Zrownowazone: po turze 1 zero chybien');
+    }
+    process.exitCode = fails ? 1 : 0;
+  }
 })().catch((e) => { console.error(e); process.exit(2); });

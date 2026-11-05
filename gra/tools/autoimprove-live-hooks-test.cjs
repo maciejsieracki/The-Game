@@ -20,7 +20,7 @@ console.log('(A) sondy tekstowe main.ts / civ-test-hooks.ts');
 const mainTs = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 const hooksTs = fs.readFileSync(path.join(SRC, 'game', 'civ-test-hooks.ts'), 'utf8');
 const autoTs = fs.readFileSync(path.join(SRC, 'game', 'auto-improvements.ts'), 'utf8');
-ok(/import \{ installCivTestHooks \} from '\.\/game\/civ-test-hooks'/.test(mainTs), 'main.ts importuje installCivTestHooks');
+ok(/import \{ installCivTestHooks(?:, isCivTestEnabled)? \} from '\.\/game\/civ-test-hooks'/.test(mainTs), 'main.ts importuje installCivTestHooks');
 ok(/installCivTestHooks\(\s*window as unknown as Record<string, unknown>,\s*typeof location !== 'undefined' \? location\.search : ''/.test(mainTs),
   'main.ts WYWOLUJE installCivTestHooks(window, location.search, ...)');
 const callIdx = mainTs.indexOf('installCivTestHooks(window');

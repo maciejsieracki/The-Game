@@ -1,4 +1,0 @@
-autoimprove-irrigation-after-farms-test EXIT=124
-autoimprove-stages-q1-test EXIT=124
-farma-cofnij-nieaktualny-wpis-test EXIT=0
-tartak-wzgorze-las-real-render-test EXIT=124
