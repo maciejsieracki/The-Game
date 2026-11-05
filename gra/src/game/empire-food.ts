@@ -161,7 +161,7 @@ function countMagazynByOwner(
  * (magazyn_centralny_baza_zywnosc / magazyn_centralny_bonus_zywnosc_na_budynek)
  * NIE są objęte tym zadaniem, zostają FLAT bez zmian (poza zakresem
  * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 -- właściciel wskazał wyłącznie magazyn_baza_surowce
- * / magazyn_bonus_surowce_na_budynek / Spichlerz I/II). Domyślne era=1 -> mnożnik
+ * / magazyn_bonus_surowce_proc_na_budynek / Spichlerz I/II). Domyślne era=1 -> mnożnik
  * ×1, zachowanie identyczne jak przed ta zmiana.
  */
 function computeCentralFoodCap(
