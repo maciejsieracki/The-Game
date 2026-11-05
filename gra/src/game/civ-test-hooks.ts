@@ -27,7 +27,6 @@ export interface CivTestPolicyPatch {
   tryb?: 'auto' | 'reczny';
   onlyWorked?: boolean;
   pracaAutoPercent?: number;
-  wolnoWycinacLas?: boolean;
 }
 
 export interface CivTestDeps {
@@ -59,6 +58,13 @@ export interface CivTestDeps {
   setCityLimitBase: (base: number) => void;
   /** Biezaca epoka (imperium) gracza — limit = baza + (epoka-1)*5. */
   meEra: () => number;
+  /**
+   * R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: reczne obsadzenie heksow obywatelami (jak klik w panelu miasta):
+   * `keys` = "q,r" po jednym obywatelu; `null` = powrot do auto. Zwraca liste faktycznie obsadzonych kluczy.
+   */
+  setCityWorkers: (cityId: string, keys: string[] | null) => string[];
+  /** Klucze heksow obrabianych (z obywatelem) przez miasto — REALNA funkcja gry (`workedHexCoordsForCity`). */
+  getCityWorkers: (cityId: string) => string[];
 }
 
 /**
@@ -102,6 +108,10 @@ export interface CivTestApi {
   drainDecisions: () => unknown[];
   /** Koniec tury (automat ulepszen dziala w turze gracza). */
   endTurn: () => void;
+  /** Reczne obsadzenie heksow obywatelami (`null` = auto); zwraca obsadzone klucze "q,r". */
+  setCityWorkers: (cityId: string, keys: string[] | null) => string[];
+  /** Heksy z obywatelem danego miasta ("q,r"). */
+  getCityWorkers: (cityId: string) => string[];
 }
 
 /** Instaluje `window.__civTest` TYLKO gdy `?civTest=1`. Zwraca true, gdy zainstalowano. */
@@ -152,6 +162,8 @@ export function installCivTestHooks(win: Record<string, unknown>, search: string
     debugOff: () => { delete win.__civAutoImproveDebug; },
     drainDecisions: () => buffer.splice(0, buffer.length),
     endTurn: () => deps.endTurn(),
+    setCityWorkers: (cityId, keys) => deps.setCityWorkers(cityId, keys),
+    getCityWorkers: cityId => deps.getCityWorkers(cityId),
   };
   win.__civTest = api;
   return true;

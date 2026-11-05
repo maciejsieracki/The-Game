@@ -1,6 +1,9 @@
 'use strict';
 /**
- * R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (decyzja wlasciciela 2026-11-03/04): przy wlaczonym „Tylko pola z obywatelami”
+ * R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (decyzja wlasciciela 2026-11-04, ABC A + A) ZAKTUALIZOWAL ten kontrakt: przelacznika
+ * „Tylko pola z obywatelami” juz NIE MA — regula jest ZAWSZE wlaczona (gracz kazdy profil + AI); JEDYNY wyjatek to OBOZ LOWIECKI
+ * (stoi tam, gdzie las, nie wymaga obywatela). Dawne kontrole „filtr OFF” zastapione kontrolami „obywatele wszedzie” i wyjatkiem obozu.
+ * Oryginal R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (decyzja wlasciciela 2026-11-03/04): przy wlaczonym „Tylko pola z obywatelami”
  * ulepszenia ZWIAZANE Z ZYWNOSCIA (farma, irygacja, tarasy, bydlo/owce/lama, oboz lowiecki, lodzie rybackie,
  * warzelnia soli, wycinka pod farme) NIE powstaja na heksie bez obywatela — ZADNYCH wyjatkow (rzeka/wyrab Q2/Q3,
  * zloza, przebieg „brakujacy surowiec”). Dotyczy automatu gracza (profile „zywnosc” i „zrownowazone”) ORAZ AI
@@ -40,7 +43,8 @@ function ok(cond, msg) {
 }
 
 /** Ulepszenia zwiazane z zywnoscia (decyzja wlasciciela T1) — niezalezna lista testu. */
-const FOOD = new Set(['farma', 'irygacja', 'tarasy', 'bydlo', 'owce', 'lama', 'oboz_lowiecki', 'lodzie_rybackie', 'warzelnia_soli', 'wyrab']);
+// NO-TOGGLES-Q1: obozu lowieckiego NIE MA w zbiorze (wyjatek wlasciciela 2026-11-04) — stoi tam, gdzie las, bez obywatela.
+const FOOD = new Set(['farma', 'irygacja', 'tarasy', 'bydlo', 'owce', 'lama', 'lodzie_rybackie', 'warzelnia_soli', 'wyrab']);
 const LIVESTOCK = new Set(['bydlo', 'owce', 'lama']);
 const TECHS = new Set([
   'Łowiectwo', 'Rolnictwo', 'Oswojenie zwierząt', 'Obróbka drewna', 'Garncarstwo', 'Murarstwo', 'Brązownictwo',
@@ -106,9 +110,8 @@ function sim({ mode, turns = 40, deficits = [], resourcePassFree = false }) {
       picks = pickAutoImprovements({
         cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed),
         pracaAvailable: 600, unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: true,
-        resourceDeficitKeys: deficits, getFocus: () => focus, getOnlyWorked: () => true,
+        resourceDeficitKeys: deficits, getFocus: () => focus,
         getWorkedHexKeys: () => new Set(workedHexCoordsForCity(city, map, tn, undefined, ERA).map(({ q, r }) => K(q, r))),
-        ...(resourcePassFree ? { getResourcePassOnlyWorked: () => false } : {}),
         pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'grecy', playerEra: ERA,
         foodImprovementStages: () => true, clearingHexKeys: new Set(),
       });
@@ -176,22 +179,23 @@ if (!MEASURE) {
     void placed;
   }
 
-  console.log('(E) filtr WYLACZONY (gracz, onlyWorked=false): zachowanie bez zmian — automat moze budowac poza obywatelami');
+  console.log('(E) BRAK przelacznika: dawny parametr getOnlyWorked=false (przycisk wylaczony) NIE wylacza reguly — zywnosc nadal tylko przy obywatelach');
   {
     const map = makeScenarioMap();
     const city = mkCity(0), tn = mkTN(0);
     const picks = pickAutoImprovements({
       cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(), pracaAvailable: 600,
       unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: true, resourceDeficitKeys: [],
-      getFocus: () => 'zywnosc', getOnlyWorked: () => false, getWorkedHexKeys: () => new Set(),
+      getFocus: () => 'zywnosc', getOnlyWorked: () => false /* martwy parametr: ignorowany */, getWorkedHexKeys: () => workedNow(city, map, tn),
       pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'grecy', playerEra: ERA,
       foodImprovementStages: () => true, clearingHexKeys: new Set(),
     });
     const worked = workedNow(city, map, tn);
-    ok(picks.some(p => !worked.has(K(p.q, p.r)) && !(p.q === CQ && p.r === CR)), 'onlyWorked=false: jest pick poza polami obywateli (filtr wylaczony przez gracza respektowany)');
+    const outside = picks.filter(p => FOOD.has(p.key) && !worked.has(K(p.q, p.r)) && !(p.q === CQ && p.r === CR));
+    ok(picks.length > 0 && outside.length === 0, `getOnlyWorked=false ignorowany: ${picks.length} pickow, 0 zywnosciowych poza obywatelami (jest ${outside.length})`);
   }
 
-  console.log('(F) KAZDY klucz z listy zywnosciowej osobno: sonda na heksie BEZ obywatela (kontrola: filtr OFF wybiera klucz; filtr ON — nigdy)');
+  console.log('(F) KAZDY klucz z listy zywnosciowej osobno: sonda na heksie BEZ obywatela (kontrola: obywatele WSZEDZIE -> klucz budowany; bez obywatela — nigdy; wyjatek: oboz lowiecki)');
   {
     const SEA = ['morze'];
     const PROBES = [
@@ -207,7 +211,7 @@ if (!MEASURE) {
       { key: 'warzelnia_soli', civ: 'grecy', setup: h => { h.zloze = 'sol'; } },
     ];
     for (const P of PROBES) {
-      const run = (onlyWorked, foodPrio) => {
+      const run = (citizensEverywhere) => {
         const map = makeScenarioMap();
         const city = { id: 'city0', ownerId: PID, q: CQ, r: CR, name: 'Ateny', population: 1 };
         const tn = [{ q: CQ, r: CR, ownerId: PID, cityId: 'city0', pop: 1, level: 1 }];
@@ -215,22 +219,25 @@ if (!MEASURE) {
         worked.add(K(CQ, CR));
         // cala ziemia dookola = teren sondy (wszystkie heksy promienia poza polami obywateli sa kandydatami)
         const placed = new Map();
+        const probeHexes = new Set();
         for (let q = CQ - 3; q <= CQ + 3; q++) for (let r = CR - 3; r <= CR + 3; r++) {
           const hk = K(q, r), h = map.hexes[hk];
           if (!h || (q === CQ && r === CR) || worked.has(hk)) continue;
           if (Math.abs(q - CQ) + Math.abs(r - CR) > 4 && Math.abs((q - CQ) + (r - CR)) > 3) continue;
           h.rzeka = { obecna: false, krawedzie: [] }; h.nakladka = 'brak'; h.zloze = undefined;
           P.setup(h);
+          probeHexes.add(hk);
           if (P.pre === 'tartak') placed.set(hk, ['tartak']);
           if (P.pre === 'farma') placed.set(hk, ['farma']);
         }
+        // kontrola: obywatele stoja na KAZDYM heksie sondy (picker musi umiec zbudowac klucz); inaczej tylko naturalne pola obywateli
+        const pickWorked = citizensEverywhere ? new Set([...worked, ...probeHexes]) : worked;
         const picks = [];
         for (let round = 0; round < 25; round++) {
           const got = pickAutoImprovements({
             cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: 900,
             unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: !!P.demand, resourceDeficitKeys: [],
-            getFocus: () => P.focus ?? 'zywnosc', getOnlyWorked: () => onlyWorked, getWorkedHexKeys: () => worked,
-            ...(foodPrio === undefined ? {} : { farmPriorityOnlyWorked: () => foodPrio }),
+            getFocus: () => P.focus ?? 'zywnosc', getWorkedHexKeys: () => pickWorked,
             pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: P.civ, playerEra: ERA,
             foodImprovementStages: () => true, clearingHexKeys: new Set(),
           });
@@ -244,15 +251,7 @@ if (!MEASURE) {
         }
         return { picks, worked };
       };
-      const off = run(false), on = run(true);
-      // przebieg „brakujacy surowiec” (AI: getOnlyWorked=false) z zywnoscia nadal pod filtrem: tylko `FOOD_IMPROVEMENT_KEYS` trzyma
-      // klucz na polach obywateli (kandydaci nie sa wtedy zawezani) — to jedyna sciezka, na ktorej czlonkostwo w zbiorze jest
-      // rozstrzygajace dla kazdego klucza osobno (mutacja usuniecia klucza ze zbioru MUSI byc tu czerwona).
-      const freeCtl = run(false, false), freeOn = run(false, true);
-      const freeCtlOff = freeCtl.picks.filter(p => p.key === P.key && !freeCtl.worked.has(K(p.q, p.r)));
-      const freeBad = freeOn.picks.filter(p => p.key === P.key && !freeOn.worked.has(K(p.q, p.r)));
-      ok(freeCtlOff.length > 0, `${P.key}: kontrola przebiegu niedoboru — bez filtra zywnosci stawia go poza obywatelami (${freeCtlOff.length})`);
-      ok(freeBad.length === 0, `${P.key}: przebieg niedoboru (getOnlyWorked=false) + filtr zywnosci: 0 poza obywatelami (jest ${freeBad.length})`);
+      const off = run(true), on = run(false);
       const ctrl = off.picks.filter(p => p.key === P.key && !off.worked.has(K(p.q, p.r)));
       const bad = on.picks.filter(p => p.key === P.key && !on.worked.has(K(p.q, p.r)));
       // AI (decideAITurn -> planCityImprovements) na tej samej sondzie: te same heksy bez obywatela, civType wg sondy
@@ -273,7 +272,7 @@ if (!MEASURE) {
           if (P.pre === 'farma') placed.set(hk, ['farma']);
         }
         const aiBad = [];
-        let aiSame = 0;
+        let aiSame = 0, aiCampOutside = 0;
         for (let t = 0; t < 30; t++) {
           const data = { units: [], buildings: [], terrainYields: { terrain_types: [] }, aiParams: {} };
           const cmds = decideAITurn(PID, [], [city], map, data, {
@@ -286,12 +285,19 @@ if (!MEASURE) {
             if (c.key === 'wyrab') map.hexes[hk].nakladka = 'brak'; else placed.set(hk, [...(placed.get(hk) ?? []), c.key]);
             if (c.key === P.key) aiSame++;
             if (FOOD.has(c.key) && !worked.has(hk)) aiBad.push(`${c.key}@${hk}`);
+            if (c.key === 'oboz_lowiecki' && !worked.has(hk)) aiCampOutside++;
           }
         }
         ok(aiBad.length === 0, `${P.key}: AI (decideAITurn, civ=${P.civ}) 0 zywnosciowych poza obywatelami w sondzie (jest ${aiBad.length}: ${aiBad.slice(0, 3).join(' ') || 'nic'}; ${P.key} postawiony ${aiSame}x)`);
+        if (P.key === 'oboz_lowiecki') ok(aiCampOutside > 0, `oboz_lowiecki: AI stawia obóz TAKZE poza polami obywateli — wyjatek wlasciciela 2026-11-04 (${aiCampOutside}x)`);
       }
-      ok(ctrl.length > 0, `${P.key}: kontrola — z filtrem OFF automat stawia go poza obywatelami (${ctrl.length}) [sonda realna]`);
-      ok(bad.length === 0, `${P.key}: z filtrem ON 0 poza obywatelami (jest ${bad.length}: ${bad.slice(0, 3).map(p => `${p.key}@${p.q},${p.r}`).join(' ') || 'nic'})`);
+      const ctrlOn = off.picks.filter(p => p.key === P.key);
+      ok(ctrlOn.length > 0, `${P.key}: kontrola — gdy obywatele stoja na heksach sondy, automat buduje klucz (${ctrlOn.length}) [sonda realna]`);
+      if (P.key === 'oboz_lowiecki') {
+        ok(bad.length > 0, `oboz_lowiecki: WYJATEK — gracz stawia obóz takze poza polami obywateli (${bad.length}) [dopisek wlasciciela 2026-11-04]`);
+      } else {
+        ok(bad.length === 0, `${P.key}: bez obywatela 0 poza polami obywateli (jest ${bad.length}: ${bad.slice(0, 3).map(p => `${p.key}@${p.q},${p.r}`).join(' ') || 'nic'})`);
+      }
     }
   }
 
@@ -307,13 +313,61 @@ if (!MEASURE) {
     const picks = pickAutoImprovements({
       cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: 900,
       unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: true, resourceDeficitKeys: [],
-      getFocus: () => (mode === 'player-zywnosc' ? 'zywnosc' : 'zrownowazone'), getOnlyWorked: () => true,
+      getFocus: () => (mode === 'player-zywnosc' ? 'zywnosc' : 'zrownowazone'),
       getWorkedHexKeys: () => worked, pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'grecy',
       playerEra: ERA, foodImprovementStages: () => true, clearingHexKeys: new Set(),
     });
     const onStale = picks.filter(p => stale.includes(K(p.q, p.r)));
     ok(stale.length > 0, `${mode}: sa heksy z farma poza polami obywateli (${stale.length})`);
     ok(onStale.length === 0, `${mode}: zero nowych ulepszen na heksach z "osieroconymi" farmami (jest ${onStale.length}); picker nie ma komendy burzenia`);
+  }
+
+  console.log('(H) r2 SIMPLE-FOOD-RULE: las na WZGORZACH pod obywatelem — AI (decideAITurn) i gracz WYCINAJA (tarasy/owce), nigdy poza polami obywateli; Gory nie');
+  for (const terr of ['wzgorza', 'gory']) {
+    for (const mode of ['ai', 'player-zywnosc']) {
+      const map = makeScenarioMap();
+      for (let q = 0; q < W; q++) for (let r = 0; r < H; r++) {
+        const hx = map.hexes[K(q, r)];
+        if (!(q === CQ && r === CR)) { hx.terenBazowy = terr; hx.nakladka = 'las'; hx.rzeka = { obecna: false, krawedzie: [] }; } // caly lad = las (obywatele MUSZA stac na lesie)
+      }
+      const placed = new Map();
+      const cuts = [], offW = [];
+      const dbg = {}; if (process.env.DBGH) globalThis.__civAutoImproveDebug = e => { if (e.scope === 'las') dbg[e.reason + '|' + e.verdict] = (dbg[e.reason + '|' + e.verdict] || 0) + 1; };
+      for (let t = 0; t < 12; t++) {
+        const city = { id: 'city0', ownerId: PID, q: CQ, r: CR, name: 'Ateny', population: 6 };
+        const tn = [{ q: CQ, r: CR, ownerId: PID, cityId: 'city0', pop: 6, level: 1 }];
+        const worked = new Set(workedHexCoordsForCity(city, map, tn, undefined, ERA).map(({ q, r }) => K(q, r)));
+        let picks;
+        if (mode === 'ai') {
+          const data = { units: [], buildings: [], terrainYields: { terrain_types: [] }, aiParams: {} };
+          picks = decideAITurn(PID, [], [city], map, data, {
+            civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: tn,
+            placedImprovements: new Map(placed), improvementTechs: TECHS, pracaAvailable: 900, civEra: ERA, resourceDeficitKeys: [],
+          }).filter(c => c.type === 'buildImprovement').map(c => ({ q: c.q, r: c.r, key: c.key }));
+        } else {
+          picks = pickAutoImprovements({
+            cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: 900,
+            unlockedTechs: TECHS, pracaSurplusThreshold: 0, demandDriven: true, resourceDeficitKeys: [], getFocus: () => 'zywnosc',
+            getWorkedHexKeys: () => worked, pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'grecy',
+            playerEra: ERA, foodImprovementStages: () => true, clearingHexKeys: new Set(),
+          });
+        }
+        for (const p of picks) {
+          const hk = K(p.q, p.r);
+          if (p.key === 'wyrab') { cuts.push(hk); if (!worked.has(hk)) offW.push(hk); map.hexes[hk].nakladka = 'brak'; continue; }
+          placed.set(hk, [...(placed.get(hk) ?? []), p.key]);
+        }
+      }
+      if (process.env.DBGH) console.log(mode, terr, JSON.stringify(dbg));
+      if (terr === 'wzgorza') {
+        ok(cuts.length > 0, `${mode}: las na Wzgorzach pod obywatelem JEST wycinany (${cuts.length} wycinek)`);
+        ok(offW.length === 0, `${mode}: wycinka na Wzgorzach TYLKO na polach obywateli (poza: ${offW.length})`);
+        const food = [...placed.entries()].filter(([hk, l]) => l.some(k => k === 'owce' || k === 'tarasy') && cuts.includes(hk)).length;
+        ok(food > 0, `${mode}: na wycietych Wzgorzach powstaja owce/tarasy (${food} heksow)`);
+      } else {
+        ok(cuts.length === 0, `${mode}: las na Gorach NIE jest wycinany (${cuts.length})`);
+      }
+    }
   }
 
   console.log(`\n${passed} OK, ${failed} FAIL`);
@@ -376,7 +430,7 @@ for (const world of worlds) for (const seed of seeds) {
       cmds = pickAutoImprovements({
         cities, ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: 400,
         unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: true, resourceDeficitKeys: [],
-        getFocus: () => ACTOR, getOnlyWorked: () => true,
+        getFocus: () => ACTOR,
         getWorkedHexKeys: c => workedByCity.get(c.id) ?? new Set(),
         pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'grecy', playerEra: ERA,
         foodImprovementStages: () => true, clearingHexKeys: new Set(),

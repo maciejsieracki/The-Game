@@ -106,7 +106,8 @@ const firstRiverClear = log => log.find(e => e.key === 'wyrab' && isRiver(e.q, e
 const firstAnyClear = log => log.find(e => e.key === 'wyrab');
 const dl = log => log.map(e => `${e.t}:${e.key}@${e.hk}`).join(' ') || 'nic';
 
-for (const onlyWorked of [true, false]) {
+// R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: tryb onlyWorked=false NIE ISTNIEJE (przelacznik usuniety, regula zywnosci zawsze wlaczona) — tylko ON.
+for (const onlyWorked of [true]) {
   console.log(`(a/b) onlyWorked=${onlyWorked}: las NA rzece bez obywatela — wycinka rzeka+las w <= ${MAXT} turach, PRZED wycinka poza rzeka`);
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
   const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked });
@@ -121,7 +122,8 @@ for (const onlyWorked of [true, false]) {
 }
 
 console.log('(c) „Wolno wycinac las” OFF blokuje cala wycinke, takze rzeczna (U-6 = A)');
-for (const onlyWorked of [true, false]) {
+// R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: tryb onlyWorked=false NIE ISTNIEJE (przelacznik usuniety, regula zywnosci zawsze wlaczona) — tylko ON.
+for (const onlyWorked of [true]) {
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
   const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked, skipWyrab: true });
   ok(!log.some(e => e.key === 'wyrab'), `onlyWorked=${onlyWorked}: brak wycinki przy skipWyrab (log: ${dl(log.slice(0, 6))})`);
@@ -163,24 +165,24 @@ console.log('(d4) zakres: profil „Zrownowazone” (K2) — ZAKTUALIZOWANE w R-
   ok(!r2.log.some(e => e.key === 'wyrab' && !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r)), 'K2: las bez rzeki poza polami obywateli nadal NIE jest wycinany (filtr zachowany)');
 }
 
-console.log("(e) wycinka -> farma, gdy obywatel wejdzie na wyciete pole (zalozenie jawne; bez obywatela patrz e2)");
+console.log("(e) wycinka -> farma: obywatel STOI na lesie przy rzece (nowa regula: wycinka zawsze pod farme, ale tylko na polu obywatela)");
 {
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
-  // Q1 AI-FOOD: wycinka rzeczna bez obywatela jest mozliwa tylko przy onlyWorked OFF — pierwszy etap na OFF, drugi (farma) na ON.
-  const first = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: false, turns: MAXT });
-  const rc = firstRiverClear(first.log);
-  ok(!!rc, 'wycinka rzeczna wykonana');
-  if (rc) {
+  // Obywatele stoja na lesie NA rzece (12,11), (12,10), (13,10) — dokladnie stan z zrzutu wlasciciela (las pod obywatelami).
+  const WORKED_RIVER_FOREST = [...WORKED_NO_RIVER, [12, 11], [12, 10], [13, 10]];
+  const first = sim({ map, worked: WORKED_RIVER_FOREST, onlyWorked: true, turns: 12 });
+  const rcs = first.log.filter(e => e.key === 'wyrab' && isRiver(e.q, e.r));
+  ok(rcs.length === 3 && rcs.every(e => e.t < 8), `wycinka rzeczna na polach obywateli wykonana na wszystkich 3 heksach (${rcs.length}; log: ${dl(first.log.slice(0, 10))})`);
+  for (const rc of rcs) {
     ok(map.hexes[rc.hk].nakladka === 'brak', `heks ${rc.hk} po wycince bez lasu`);
-    // ZALOZENIE (jawne): obywatel wchodzi na wyciete pole (worked += rc). Bez tego patrz (e2).
-    const second = pick({ map, worked: [...WORKED_NO_RIVER, [rc.q, rc.r]], onlyWorked: true, placed: new Map() });
-    ok(second.picks.some(p => p.key === 'farma' && p.q === rc.q && p.r === rc.r), `farma na wycietym ${rc.hk} gdy obywatel wejdzie na pole (wybrano: ${desc(second.picks)})`);
+    ok(first.log.some(e => e.key === 'farma' && e.hk === rc.hk), `farma na wycietym ${rc.hk} (obywatel stoi na polu)`);
   }
 }
 
 console.log('(e2) REALISTYCZNIE (bez recznego dopisywania do worked): ZAKTUALIZOWANE w Q3 — wycinka rzeczna bez obywatela KONCZY SIE FARMA takze przy onlyWorked=ON (decyzja wlasciciela 2026-11-03)');
 {
-  for (const onlyWorked of [true, false]) {
+  // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: tryb onlyWorked=false NIE ISTNIEJE (przelacznik usuniety, regula zywnosci zawsze wlaczona) — tylko ON.
+for (const onlyWorked of [true]) {
     const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
     const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked, turns: 12 });
     const rc = log.filter(e => e.key === 'wyrab' && isRiver(e.q, e.r));
@@ -198,7 +200,8 @@ console.log('(e2) REALISTYCZNIE (bez recznego dopisywania do worked): ZAKTUALIZO
   }
 }
 console.log('(f) log pickera: wybor ma etykiete „E2 wycinka (rzeka+las)” (naRzece) takze przy onlyWorked ON; zmierzony koszt wycinki');
-for (const onlyWorked of [true, false]) {
+// R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: tryb onlyWorked=false NIE ISTNIEJE (przelacznik usuniety, regula zywnosci zawsze wlaczona) — tylko ON.
+for (const onlyWorked of [true]) {
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
   ALLDEC.length = 0;
   sim({ map, worked: WORKED_NO_RIVER, onlyWorked, turns: 4 });
@@ -206,7 +209,8 @@ for (const onlyWorked of [true, false]) {
   ok(chosen.length > 0 && chosen.every(d => d.detail && d.detail.naRzece === true), `onlyWorked=${onlyWorked}: wybrany E2 wycinka (rzeka+las) na heksie rzeki x${chosen.length}; kosztWyrab=${chosen[0] && chosen[0].detail.kosztWyrab}`);
 }
 console.log('(g) koszt zbiorczy w 12 turach (informacyjnie): wycinki ON vs OFF');
-for (const onlyWorked of [true, false]) {
+// R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: tryb onlyWorked=false NIE ISTNIEJE (przelacznik usuniety, regula zywnosci zawsze wlaczona) — tylko ON.
+for (const onlyWorked of [true]) {
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
   const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked, turns: 12 });
   const w = log.filter(e => e.key === 'wyrab'), rv = w.filter(e => isRiver(e.q, e.r));

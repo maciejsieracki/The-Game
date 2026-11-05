@@ -194,8 +194,6 @@ import {
   loadBudowaListaBiblioteka,
   DEFAULT_ULEPSZENIA_TRYB,
   DEFAULT_ULEPSZENIA_FOCUS,
-  DEFAULT_ULEPSZENIA_ONLY_WORKED,
-  DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
   AI_MAJOR_ULEPSZENIA_PRACA_PERCENT,
   MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
   AI_FIXED_PROCENT_BUDYNKI,
@@ -1368,7 +1366,6 @@ import {
   AUTO_ULEPSZENIA_PRACA_RESERVE,
   freshSurplusReport,
   unspentBudgetWarning,
-  disableOnlyWorkedFilterForOwnerCities,
   type UnspentBudgetWarning,
   // R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1: kanoniczny zbiór ulepszeń
   // żywnościowych — CZYTANY (nie kopiowany) przez `syncImprovementDecorForHex`,
@@ -24776,19 +24773,9 @@ async function boot(): Promise<void> {
             const pol = ulepszeniaEmpireForOwner(0);
             return { ...pol };
           },
-          // Q3: stały wskaźnik „Budżet niewydany” + przycisk „Wyłącz filtr” (wyłącza „Tylko pola z obywatelami” dla państwa).
+          // Q3: stały wskaźnik „Budżet niewydany” (żywność tylko przy obywatelach). R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1:
+          // przycisk „Wyłącz filtr” USUNIĘTY razem z przełącznikiem „Tylko pola z obywatelami”.
           getUnspentBudgetWarning: () => playerUnspentBudgetWarning,
-          onUnspentBudgetDisableFilter: () => {
-            const pol = ulepszeniaEmpireForOwner(0);
-            pol.onlyWorked = false;
-            pol.tryb = 'auto';
-            ulepszeniaEmpireByOwner.set(0, pol);
-            // Miasta z własnym ustawieniem (override) mają własny filtr — wyłącz go także tam, inaczej budżet dalej nie jest wydawany.
-            disableOnlyWorkedFilterForOwnerCities(cities, 0);
-            playerUnspentBudgetWarning = null;
-            showHintMessage('Państwo: auto ulepszenia w całym terytorium', 2800);
-            refreshD1bHud();
-          },
           // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: podpiecie warstwy (a)
           // (`CityPodzialPracy.procentBudynki` przez `ownerDefaultPodzialPracy`) USUNIETE —
           // panel trybu budowy byl TRZECIM egzemplarzem tego samego suwaka. Warstwa (a)
@@ -24808,34 +24795,6 @@ async function boot(): Promise<void> {
             ulepszeniaEmpireByOwner.set(0, pol);
             showHintMessage(
               tryb === 'reczny' ? 'Państwo: ręczne ulepszenia terenu' : 'Państwo: auto ulepszenia terenu',
-              2800,
-            );
-            refreshD1bHud();
-          },
-          onUlepszeniaEmpireOnlyWorkedChange: (onlyWorked: boolean) => {
-            const pol = ulepszeniaEmpireForOwner(0);
-            pol.onlyWorked = onlyWorked;
-            pol.tryb = 'auto';
-            ulepszeniaEmpireByOwner.set(0, pol);
-            showHintMessage(
-              onlyWorked
-                ? 'Państwo: auto ulepszenia tylko na polach z 👤'
-                : 'Państwo: auto ulepszenia w całym terytorium',
-              2800,
-            );
-            refreshD1bHud();
-          },
-          // R4-Q2=C (R-AI-WYRAB-PRZY-RZECE-FARMY-Q1, runda 4): przełącznik „wolno wycinać
-          // las" dla automatu GRACZA, zakres PAŃSTWO. Domyślnie wyłączony (§14 — bez zmiany
-          // zachowania, dopóki gracz sam go nie włączy). AI CYWILIZACJI go NIE czyta.
-          onUlepszeniaEmpireWyrabChange: (wolnoWycinacLas: boolean) => {
-            const pol = ulepszeniaEmpireForOwner(0);
-            pol.wolnoWycinacLas = wolnoWycinacLas;
-            ulepszeniaEmpireByOwner.set(0, pol);
-            showHintMessage(
-              wolnoWycinacLas
-                ? 'Państwo: automat MOŻE wycinać las (wyrąb pod farmę przy rzece)'
-                : 'Państwo: automat NIE wycina lasu',
               2800,
             );
             refreshD1bHud();
@@ -24863,8 +24822,6 @@ async function boot(): Promise<void> {
               const pol = ulepszeniaEmpireForOwner(0);
               city.ulepszeniaFocus = city.ulepszeniaFocus ?? pol.focus;
               city.ulepszeniaTryb = city.ulepszeniaTryb ?? pol.tryb;
-              city.ulepszeniaOnlyWorked = city.ulepszeniaOnlyWorked ?? pol.onlyWorked;
-              city.ulepszeniaWolnoWycinacLas = city.ulepszeniaWolnoWycinacLas ?? pol.wolnoWycinacLas;
               city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(
                 city.ulepszeniaPracaPercent ?? pol.pracaAutoPercent,
               );
@@ -24900,36 +24857,6 @@ async function boot(): Promise<void> {
               tryb === 'reczny'
                 ? `${city.name}: ręczne ulepszenia terenu`
                 : `${city.name}: auto ulepszenia terenu`,
-              2800,
-            );
-            refreshD1bHud();
-          },
-          onUlepszeniaCityOnlyWorkedChange: (cityId: string, onlyWorked: boolean) => {
-            const city = cities.find(c => c.id === cityId);
-            if (!city) return;
-            city.ulepszeniaOverride = true;
-            city.ulepszeniaOnlyWorked = onlyWorked;
-            city.ulepszeniaTryb = 'auto';
-            showHintMessage(
-              onlyWorked
-                ? `${city.name}: auto ulepszenia tylko na polach z 👤`
-                : `${city.name}: auto ulepszenia w całym terytorium`,
-              2800,
-            );
-            refreshD1bHud();
-          },
-          // R4-Q2=C: ten sam przełącznik w zakresie MIASTA (włącza override lokalny —
-          // wzorem `onUlepszeniaCityOnlyWorkedChange` wyżej).
-          onUlepszeniaCityWyrabChange: (cityId: string, wolnoWycinacLas: boolean) => {
-            const city = cities.find(c => c.id === cityId);
-            if (!city) return;
-            city.ulepszeniaOverride = true;
-            city.ulepszeniaWolnoWycinacLas = wolnoWycinacLas;
-            city.ulepszeniaTryb = 'auto';
-            showHintMessage(
-              wolnoWycinacLas
-                ? `${city.name}: automat MOŻE wycinać las`
-                : `${city.name}: automat NIE wycina lasu`,
               2800,
             );
             refreshD1bHud();
@@ -27187,6 +27114,25 @@ async function boot(): Promise<void> {
       meOwnerId: () => ME(),
       setCityLimitBase: base => { _menuCityLimitBase = base; }, // R-WEB-TEST-HOOK-SETCITYLIMIT-Q1 (tylko ?civTest=1)
       meEra: () => empireEpochForOwner(ME()),
+      setCityWorkers: (cityId, keys) => {
+        const city = cities.find(c => c.id === cityId);
+        if (!city) return [];
+        if (keys === null) { city.okolicaTryb = 'auto'; return []; }
+        const reczne: Record<string, number> = {};
+        for (const k of keys) reczne[k] = 1;
+        city.okolicaTryb = 'reczny';
+        city.okolicaReczne = reczne;
+        return workedHexCoordsForCity(
+          city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city), empireEpochForOwner(city.ownerId),
+        ).map(({ q, r }) => `${q},${r}`);
+      },
+      getCityWorkers: cityId => {
+        const city = cities.find(c => c.id === cityId);
+        if (!city) return [];
+        return workedHexCoordsForCity(
+          city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city), empireEpochForOwner(city.ownerId),
+        ).map(({ q, r }) => `${q},${r}`);
+      },
     });
 
     // R-WEB-SIEGE-BADGE-TURNS-TO-SURRENDER-Q1 — hak testowy WYLACZNIE dla tools/siege-surrender-forecast-live-test.cjs
@@ -37348,11 +37294,8 @@ async function boot(): Promise<void> {
                   pracaAvailable: playerPracaPool,
                   unlockedTechs: unlockedTechSetForOwner(hOid),
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
-                  // R4-Q2=C: `skipWyrab` przestaje być stałą `true` — decyduje przełącznik
-                  // „wolno wycinać las" (państwo albo override miasta), domyślnie WYŁĄCZONY,
-                  // więc bez zmiany ustawień zachowanie jest identyczne jak przed rundą 4.
-                  skipWyrab: true,
-                  getSkipWyrab: c => !effectiveUlepszeniaForCity(c as City).wolnoWycinacLas,
+                  // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (właściciel 2026-11-04): ani `skipWyrab`, ani przełącznik „wolno
+                  // wycinać las” — automat gracza ZAWSZE może wycinać las pod farmę (tylko na polach z obywatelami, patrz picker).
                   // ZASADA 1: automat gracza na profilu „zrównoważone" buduje domyślnie
                   // samą żywność; niedobór surowca otwiera resztę listy (picker sam pilnuje,
                   // że trzech pozostałych profili to NIE dotyczy).
@@ -37368,7 +37311,6 @@ async function boot(): Promise<void> {
                   cityLimitExhausted: isCityLimitExhausted(cities.filter(c => c.ownerId === hOid), _menuCityLimitBase, empireEpochForOwner(hOid)),
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
-                  getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
                   // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2, F1): silnik NIE podaje juz
                   // `improvementBudgetCap`. Picker liczy pulap sam — `pracaBudgetPercent`
                   // (polityka imperium) x SKUMULOWANA pula na wejsciu (`pracaAvailable`
@@ -37498,7 +37440,7 @@ async function boot(): Promise<void> {
                   // gdy automat NIC nie postawił — inaczej zjadałby toast z listą ulepszeń.
                   // Q3: stały wskaźnik przy suwaku „Z puli imperium na pracę automatyczną” (panel trybu budowy) — NIE toast co turę.
                   playerUnspentBudgetWarning = unspentBudgetWarning(playerSurplusReport, {
-                    onlyWorkedOn: autoImpCities.some(c => effectiveUlepszeniaForCity(c as City).onlyWorked),
+                    onlyWorkedOn: true, // reguła „żywność tylko przy obywatelach” jest zawsze aktywna (bez przełącznika)
                     poolAboveReserve: hOidPracaPool > AUTO_ULEPSZENIA_PRACA_RESERVE,
                   });
                   // Toast nadwyżki zostaje wyłącznie, gdy stały wskaźnik go nie zastępuje (nadwyżka NIE z powodu filtra).
@@ -43916,11 +43858,7 @@ async function boot(): Promise<void> {
           const loadedPolicy: UlepszeniaEmpirePolicy = {
             focus: (pol.focus as UlepszeniaFocus) ?? DEFAULT_ULEPSZENIA_FOCUS,
             tryb: (pol.tryb as UlepszeniaTryb) ?? DEFAULT_ULEPSZENIA_TRYB,
-            // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, Zasada 2): brak pola w zapisie =
-            // nowa wartość domyślna (`true`); jawne `false` ze starego save'a zostaje `false`.
-            onlyWorked: (pol.onlyWorked as boolean) ?? DEFAULT_ULEPSZENIA_ONLY_WORKED,
-            // R4-Q2=C: brak pola = przełącznik wyrębu WYŁĄCZONY.
-            wolnoWycinacLas: (pol.wolnoWycinacLas as boolean) ?? DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
+            // Stare zapisy: pola usuniętych przełączników (filtr obywateli, wycinka lasu) są IGNOROWANE.
             // P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: clampUlepszeniaPracaPercent egzekwuje
             // własny zakres 0–100% (MAX_ULEPSZENIA_PRACA_AUTO_PERCENT) dla tego historycznego
             // pola (b) — stary save (np. legacy perTurn=3 → 100%) nie jest tu ścinany do 50%.
