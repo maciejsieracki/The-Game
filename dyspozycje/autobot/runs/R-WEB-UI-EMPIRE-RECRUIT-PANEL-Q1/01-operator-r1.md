@@ -32,7 +32,7 @@ Każda sztuka → miasto zdolne z najmniejszą liczbą tego typu w kolejce (+ju�
 Brak twardych. Uwagi dla Evaluatora: (1) test live w grze do wykonania (zamówienie 5 wojowników + 4 taranów na 3 miastach, kolejki, koszty); (2) `hud.ts`: przycisk używa klasy `b-wiki` — sprawdzić wygląd i układ pod 640 px; (3) panel nie odświeża się sam po zmianach spoza panelu (tylko po zamówieniu i otwarciu) — ewentualny hak w `updateHud`; (4) propozycja miejsca: górny pasek obok Civpedia/Menu (zrealizowana).
 
 ## RUNDY
-1/5
+1/5 — commit e1b1b6279
 
 ## NASTĘPNY KROK
 Evaluator: test live w realnej grze + brakujące regresje (`*queue*`, `*production*`, `city-panel*`, `ai-test`).
