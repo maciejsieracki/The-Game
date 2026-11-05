@@ -1,0 +1,2 @@
+EXIT=0
+PASS sharpness-ratio LOD0 >= 0.9
