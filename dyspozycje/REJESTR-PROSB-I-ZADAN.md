@@ -8751,3 +8751,6 @@ Poziom (suwak Wyżywienie) dotyczy WYŁĄCZNIE żywności; surowce zużywane są
 
 ## 2026-11-05 — ZGŁOSZENIE (zrzut panelu Spichlerz II): „Dlaczego Spichlerz II wymaga warzelni soli? Powinien wymagać tylko ceramiki i soli” + „jakie badanie odkrywa Spichlerz II?”
 Diagnoza: `gra/data/buildings.json` → `spichlerz_ii.techUnlock = "Warzelnia soli"`, ale „Warzelnia soli” NIE jest technologią (to ulepszenie terenu odblokowywane przez „Garncarstwo”, `tech.json`); żadna technologia nie odblokowuje „Spichlerz II” → badanie nie do zdobycia, budynek nigdy niedostępny w UI/produkcji (`production.ts:817/2196`, chip „Wymagane badania” czerwony na stałe). To jedyny wpis buildings.json z techUnlock spoza tech.json. → temat `R-WEB-GRANARY2-TECH-DATA-FIX-Q1`.
+
+## 2026-11-05 — DECYZJA/ZGŁOSZENIE WŁAŚCICIELA: produkcja cegły ×2 i +50% Cegielni na epokę
+Cegły ciągle brakuje na budowę budynków mimo dużej ilości gliny (cegła zużywana nie tylko przez obywateli, ale i na budowę — w przeciwieństwie do ceramiki). Zasada: podwoić produkcję cegły w miastach; Cegielnia zwiększa produkcję o 50% w każdej epoce (dziś: +10% bazy na epokę, `converters.ts`). Założenia orkiestratora: liniowo o 50% bazy co epokę (jak mnożnik zużycia 1/1,5/2/2,5/3); tylko Cegielnia (Garncarnia bez zmian). → temat `R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1`.
