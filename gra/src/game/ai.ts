@@ -2850,9 +2850,8 @@ function planCityImprovements(
     ...sharedOpts,
     placedImprovements: opts.placedImprovements,
     pracaAvailable,
-    // ZASADA 2 (runda 4): domyślnie WŁĄCZONE dla AI CYWILIZACJI (wyjątek złożowy
-    // egzekwuje sam picker — patrz `hexAllowsKey` w auto-improvements.ts).
-    getOnlyWorked: () => true,
+    // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (właściciel 2026-11-04): reguła „żywność tylko na polach obywateli
+    // (wyjątek: obóz łowiecki)” jest wbudowana w picker (`hexAllowsKey`) i ZAWSZE włączona — AI nie przekazuje już flagi.
     // Rzutowanie na AICity (= City) jest bezpieczne: `myCities` to pełne obiekty miast
     // tego AI; `AutoImprovementCity` jest tylko WĘŻSZYM widokiem tego samego obiektu.
     getWorkedHexKeys: city => workedHexKeysForAiCity(city as AICity),
@@ -2860,8 +2859,7 @@ function planCityImprovements(
     priorityOverride: foodPriority,
     // Keep the same empire-wide sequence as Food automation for the player.
     foodImprovementStages: true,
-    // K3 = K2 (jedna logika w pickerze): brakujący surowiec idzie na przód, surowce wszędzie (ECHO 2026-09-08).
-    getResourcePassOnlyWorked: () => false,
+    // K3 = K2 (jedna logika w pickerze): brakujący surowiec idzie na przód; ulepszenia surowcowe nie podlegają regule obywateli.
   });
   // R-WEB-AUTOIMPROVE-STAGES-Q1 R4 (właściciel 2026-10-31: „Niedobór ma tylko otwierać ulepszenia brakującego
   // surowca, nic więcej” + „Drogi dopiero gdy zaspokojone potrzeby żywności i surowców”): DRUGIE wywołanie

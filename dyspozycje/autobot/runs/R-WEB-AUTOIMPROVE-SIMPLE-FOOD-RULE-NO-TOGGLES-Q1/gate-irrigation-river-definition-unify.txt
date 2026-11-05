@@ -1,0 +1,56 @@
+(A) syntetyczna siatka: kazdy wariant rzeki — kwalifikator (bez flagi) == tooltip == definicja
+  [OK] reczna budowa (kwalifikator): brak rzeki -> false
+  [OK] tooltip (hexHasRiverAccess): brak rzeki -> false
+  [OK] reczna budowa (kwalifikator): rzeka.obecna na samym heksie -> true
+  [OK] tooltip (hexHasRiverAccess): rzeka.obecna na samym heksie -> true
+  [OK] reczna budowa (kwalifikator): sam heks w riverPaths -> true
+  [OK] tooltip (hexHasRiverAccess): sam heks w riverPaths -> true
+  [OK] reczna budowa (kwalifikator): sasiad w riverPaths -> true
+  [OK] tooltip (hexHasRiverAccess): sasiad w riverPaths -> true
+  [OK] reczna budowa (kwalifikator): sasiad z samym rzeka.obecna (bez riverPaths) — przypadek zgloszony -> true
+  [OK] tooltip (hexHasRiverAccess): sasiad z samym rzeka.obecna (bez riverPaths) — przypadek zgloszony -> true
+  [OK] reczna budowa (kwalifikator): sasiad (q+1,r-1) z samym rzeka.obecna -> true
+  [OK] tooltip (hexHasRiverAccess): sasiad (q+1,r-1) z samym rzeka.obecna -> true
+  [OK] reczna budowa (kwalifikator): rzeka 2 heksy dalej (nie sasiad) -> false
+  [OK] tooltip (hexHasRiverAccess): rzeka 2 heksy dalej (nie sasiad) -> false
+  [OK] reczna budowa (kwalifikator): jezioro sasiad — NIE (D1=A) -> false
+  [OK] tooltip (hexHasRiverAccess): jezioro sasiad — NIE (D1=A) -> false
+  [OK] reczna budowa (kwalifikator): morze sasiad — NIE (D1=A) -> false
+  [OK] tooltip (hexHasRiverAccess): morze sasiad — NIE (D1=A) -> false
+(B) mapy generowane: reczna budowa == tooltip == definicja na KAZDYM plaskim heksie
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=16 landSea=114 relief=113 coast=42 riversMain=677 riversFill=211 forest=5 deposits=12 starts=70 total=1261
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=6 landSea=70 relief=76 coast=31 riversMain=53 riversFill=55 forest=3 deposits=8 starts=37 total=340
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=6 landSea=52 relief=69 coast=30 riversMain=94 riversFill=103 forest=3 deposits=8 starts=37 total=402
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=61 relief=62 coast=14 riversMain=100 riversFill=526 forest=7 deposits=7 starts=42 total=824
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=58 relief=68 coast=18 riversMain=92 riversFill=582 forest=3 deposits=7 starts=41 total=873
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=57 relief=58 coast=14 riversMain=155 riversFill=243 forest=2 deposits=5 starts=30 total=569
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=57 relief=59 coast=11 riversMain=66 riversFill=354 forest=2 deposits=5 starts=27 total=583
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=45 relief=53 coast=15 riversMain=95 riversFill=606 forest=3 deposits=5 starts=35 total=859
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=56 relief=55 coast=13 riversMain=149 riversFill=284 forest=3 deposits=5 starts=34 total=601
+  pomiar: plaskich heksow=2445, heksow gdzie STARA reczna definicja odmawia a automat/definicja mowi TAK=179
+  [OK] przebadano wystarczajaco duzo plaskich heksow (2445)
+  [OK] na mapach generowanych STARA regula odmawiala na 179 heksach, gdzie definicja automatu mowi TAK (dowod, ze zmiana ma znaczenie)
+  [OK] tooltip == definicja na wszystkich plaskich heksach (roznic 0 )
+  [OK] kwalifikator irygacji (reczna budowa) == definicja na probce wokol miasta (roznic 0 )
+(C) zrodlo: flaga usunieta, picker i tooltip delegują do jednej funkcji
+  [OK] flaga visibleRiverNeighborCountsForIrrigation nie wystepuje w src
+  [OK] improvement-build.ts eksportuje isHexNearRiver
+  [OK] kwalifikator (isRiverAdjacent) uzywa isHexNearRiver
+  [OK] picker (onRiverHex) uzywa isHexNearRiver
+  [OK] tooltip (hexHasRiverAccess) uzywa isHexNearRiver
+(D) automat: irygacja na polu obywatela z sasiadem-rzeka (samo rzeka.obecna) == reczny kwalifikator
+  [OK] automat stawia irygacje przy widocznej rzece sasiada
+  [OK] reczna budowa na tym samym heksie rowniez kwalifikuje
+  [OK] automat == reczna budowa
+
+30 OK, 0 FAIL
+EXIT=0

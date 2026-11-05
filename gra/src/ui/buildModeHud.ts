@@ -87,10 +87,11 @@ export interface BuildModeHudConfig {
   getUlepszeniaCityId?: () => string | null;
   onUlepszeniaCityIdChange?: (cityId: string) => void;
   getUlepszeniaEmpireState?: () => UlepszeniaEmpirePolicy | null;
-  /** Q3: stały wskaźnik „Budżet niewydany” (filtr „Tylko pola z obywatelami”); `null` = brak ostrzeżenia. */
+  /**
+   * Q3: stały wskaźnik „Budżet niewydany” (żywność powstaje tylko na polach z obywatelami); `null` = brak ostrzeżenia.
+   * R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: bez przycisku „Wyłącz filtr” — reguła nie ma przełącznika.
+   */
   getUnspentBudgetWarning?: () => { waitingHexes: number } | null;
-  /** Q3: przycisk „Wyłącz filtr” przy wskaźniku — wyłącza „Tylko pola z obywatelami” dla państwa. */
-  onUnspentBudgetDisableFilter?: () => void;
   /**
    * R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: pozycje `getEmpirePracaSplit` /
    * `onEmpirePracaSplitChange` USUNIETE. Sterowaly warstwa (a) — polem
@@ -104,9 +105,6 @@ export interface BuildModeHudConfig {
    */
   onUlepszeniaEmpireFocusChange?: (focus: UlepszeniaFocus) => void;
   onUlepszeniaEmpireTrybChange?: (tryb: UlepszeniaTryb) => void;
-  onUlepszeniaEmpireOnlyWorkedChange?: (onlyWorked: boolean) => void;
-  /** R4-Q2=C: „wolno wycinać las" dla automatu GRACZA — zakres PAŃSTWO. */
-  onUlepszeniaEmpireWyrabChange?: (wolnoWycinacLas: boolean) => void;
   /** Historyczny budżet automatu ulepszeń; zakres 0–100%, osobny od nadrzędnego splitu Pracy. */
   onUlepszeniaEmpirePracaPercentChange?: (pracaAutoPercent: UlepszeniaPracaPercent) => void;
   getUlepszeniaCityOverride?: (cityId: string) => boolean;
@@ -115,17 +113,11 @@ export interface BuildModeHudConfig {
   getUlepszeniaEffectiveState?: (cityId: string) => {
     focus: UlepszeniaFocus;
     tryb: UlepszeniaTryb;
-    onlyWorked: boolean;
     pracaAutoPercent: UlepszeniaPracaPercent;
-    /** R4-Q2=C: „wolno wycinać las" — efektywna wartość dla tego miasta. */
-    wolnoWycinacLas: boolean;
     override: boolean;
   } | null;
   onUlepszeniaCityFocusChange?: (cityId: string, focus: UlepszeniaFocus) => void;
   onUlepszeniaCityTrybChange?: (cityId: string, tryb: UlepszeniaTryb) => void;
-  onUlepszeniaCityOnlyWorkedChange?: (cityId: string, onlyWorked: boolean) => void;
-  /** R4-Q2=C: „wolno wycinać las" dla automatu GRACZA — zakres MIASTO. */
-  onUlepszeniaCityWyrabChange?: (cityId: string, wolnoWycinacLas: boolean) => void;
   onUlepszeniaCityPracaPercentChange?: (cityId: string, pracaAutoPercent: UlepszeniaPracaPercent) => void;
 }
 
@@ -567,23 +559,8 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           empireState.tryb,
           'empire',
         );
-        if (empireState.tryb === 'auto') {
-          const onE = empireState.onlyWorked ? ' active' : '';
-          html += '<div class="civ-build-auto-row">';
-          html += `<button type="button" class="civ-build-hbtn${onE}" data-ulepszenia-empire-only-worked`
-            + ` aria-pressed="${empireState.onlyWorked ? 'true' : 'false'}"`
-            + ` title="Buduj tylko na polach z obywatelami (👤); złoża surowców są wyjątkiem">Tylko pola z obywatelami</button>`;
-          html += '</div>';
-          // R4-Q2=C (R-AI-WYRAB-PRZY-RZECE-FARMY-Q1, runda 4): przełącznik wyrębu dla
-          // automatu GRACZA, zakres PAŃSTWO. Domyślnie WYŁĄCZONY.
-          const onW = empireState.wolnoWycinacLas ? ' active' : '';
-          html += '<div class="civ-build-auto-row">';
-          html += `<button type="button" class="civ-build-hbtn${onW}" data-ulepszenia-empire-wyrab`
-            + ` aria-pressed="${empireState.wolnoWycinacLas ? 'true' : 'false'}"`
-            + ` title="Pozwól automatowi wycinać las (wyrąb pod farmę przy rzece). Domyślnie wyłączone.">`
-            + `Wolno wycinać las</button>`;
-          html += '</div>';
-        }
+        // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: przyciski „Tylko pola z obywatelami” i „Wolno wycinać las” USUNIĘTE
+        // (właściciel 2026-11-04) — żywność zawsze tylko przy obywatelach, wycinka pod farmę zawsze dozwolona.
         // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (pkt 2): suwak warstwy (c)
         // (`UlepszeniaEmpirePolicy.pracaAutoPercent`) renderuje sie TAKZE przy
         // `tryb === 'reczny'` — wtedy `disabled`, z wyjasnieniem. Wczesniej byl schowany
@@ -613,9 +590,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           const unspent = trybAuto ? (config.getUnspentBudgetWarning?.() ?? null) : null;
           if (unspent && unspent.waitingHexes > 0) {
             html += '<div class="civ-build-unspent" role="status" data-ulepszenia-unspent>'
-              + `<span><b>Budżet niewydany:</b> włączony filtr „Tylko pola z obywatelami” (${unspent.waitingHexes} pól czeka). `
-              + 'Wyłącz filtr, by go wydać.</span>'
-              + '<button type="button" class="civ-build-hbtn" data-ulepszenia-unspent-disable-filter>Wyłącz filtr</button>'
+              + `<span><b>Budżet niewydany:</b> żywność powstaje tylko na polach z obywatelami (${unspent.waitingHexes} pól czeka na obywatela).</span>`
               + '</div>';
           }
         }
@@ -635,7 +610,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           const effLabel = effState.tryb === 'reczny'
             ? 'Ręczny'
             : `${ULEPSZENIA_FOCUS_LABELS[effState.focus]} · ${effState.pracaAutoPercent}% Pracy`
-              + (effState.onlyWorked ? ' · tylko 👤' : '');
+              ;
           html += `<div class="civ-build-auto-eff">Efekt w mieście: ${effLabel}`
             + (effState.override ? ' (własne)' : ' (państwo)') + '</div>';
         }
@@ -654,19 +629,6 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             effState.tryb,
             'city',
           );
-          if (effState.tryb === 'auto') {
-            const onC = effState.onlyWorked ? ' active' : '';
-            html += '<div class="civ-build-auto-row">';
-            html += `<button type="button" class="civ-build-hbtn${onC}" data-ulepszenia-city-only-worked`
-              + ` aria-pressed="${effState.onlyWorked ? 'true' : 'false'}">Tylko pola z obywatelami</button>`;
-            html += '</div>';
-            // R4-Q2=C: ten sam przełącznik w zakresie MIASTA (override lokalny).
-            const onWC = effState.wolnoWycinacLas ? ' active' : '';
-            html += '<div class="civ-build-auto-row">';
-            html += `<button type="button" class="civ-build-hbtn${onWC}" data-ulepszenia-city-wyrab`
-              + ` aria-pressed="${effState.wolnoWycinacLas ? 'true' : 'false'}">Wolno wycinać las</button>`;
-            html += '</div>';
-          }
           // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (pkt 2): ten sam wzorzec co wyzej,
           // dla lokalnego pola warstwy (c) `City.ulepszeniaPracaPercent`.
           {
@@ -853,26 +815,6 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       render();
     });
 
-    const empireOnlyWorkedBtn = el.querySelector('[data-ulepszenia-empire-only-worked]') as HTMLButtonElement | null;
-    empireOnlyWorkedBtn?.addEventListener('click', () => {
-      const current = config.getUlepszeniaEmpireState?.()?.onlyWorked ?? false;
-      config.onUlepszeniaEmpireOnlyWorkedChange?.(!current);
-      render();
-    });
-
-    el.querySelector('[data-ulepszenia-unspent-disable-filter]')?.addEventListener('click', () => {
-      config.onUnspentBudgetDisableFilter?.();
-      render();
-    });
-
-    // R4-Q2=C: przełącznik wyrębu automatu GRACZA — zakres PAŃSTWO.
-    const empireWyrabBtn = el.querySelector('[data-ulepszenia-empire-wyrab]') as HTMLButtonElement | null;
-    empireWyrabBtn?.addEventListener('click', () => {
-      const current = config.getUlepszeniaEmpireState?.()?.wolnoWycinacLas ?? false;
-      config.onUlepszeniaEmpireWyrabChange?.(!current);
-      render();
-    });
-
     // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: `input` = tylko lokalny podgląd (etykieta + wypełnienie
     // toru) BEZ pełnego render() -- wzorzec `wireSkarbiecTaxSplitInputs` w empireDetailPanel.ts,
     // żeby przebudowa innerHTML w trakcie przeciągania nie przerywała gestu. `change` (puszczenie
@@ -902,27 +844,6 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     el.querySelector('[data-ulepszenia-city-reczny]')?.addEventListener('click', () => {
       const cityId = config.getUlepszeniaCityId?.();
       if (cityId) config.onUlepszeniaCityTrybChange?.(cityId, 'reczny');
-      render();
-    });
-
-    const cityOnlyWorkedBtn = el.querySelector('[data-ulepszenia-city-only-worked]') as HTMLButtonElement | null;
-    cityOnlyWorkedBtn?.addEventListener('click', () => {
-      const cityId = config.getUlepszeniaCityId?.();
-      if (cityId) {
-        const current = config.getUlepszeniaEffectiveState?.(cityId)?.onlyWorked ?? false;
-        config.onUlepszeniaCityOnlyWorkedChange?.(cityId, !current);
-      }
-      render();
-    });
-
-    // R4-Q2=C: przełącznik wyrębu automatu GRACZA — zakres MIASTO.
-    const cityWyrabBtn = el.querySelector('[data-ulepszenia-city-wyrab]') as HTMLButtonElement | null;
-    cityWyrabBtn?.addEventListener('click', () => {
-      const cityId = config.getUlepszeniaCityId?.();
-      if (cityId) {
-        const current = config.getUlepszeniaEffectiveState?.(cityId)?.wolnoWycinacLas ?? false;
-        config.onUlepszeniaCityWyrabChange?.(cityId, !current);
-      }
       render();
     });
 

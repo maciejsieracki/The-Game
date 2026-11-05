@@ -258,8 +258,10 @@ console.log('(c3b) override miasta (getSkipWyrab) i AI: przycisk dotyczy tylko g
     }
     return picks.filter(p => p.key === 'wyrab').length;
   };
-  ok(mkSim(() => true, false) === 0, '[K2] override miasta OFF (getSkipWyrab=true) przy skipWyrab=false: 0 wycinek (przycisk miasta wygrywa)');
-  ok(mkSim(() => false, true) >= 3, '[K2] override miasta ON (getSkipWyrab=false) przy skipWyrab=true: wycinka dziala');
+  // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (wlasciciel 2026-11-04): przycisk „Wolno wycinac las” i `getSkipWyrab` USUNIETE —
+  // dawny parametr jest martwy (ignorowany), wiec override miasta ani niczego nie wylacza, ani nie wlacza. Asercje ODWROCONE.
+  ok(mkSim(() => true, false) >= 3, '[K2] martwy getSkipWyrab=true przy skipWyrab=false: wycinka DZIALA (przelacznik nie istnieje; wycinka zawsze dozwolona)');
+  ok(mkSim(() => false, true) === 0, '[K2] martwy getSkipWyrab=false NIE wlacza wycinki, gdy test-opcja skipWyrab=true (jedyne sterowanie to skipWyrab dla wolajacych testowych)');
   ok(mkSim(undefined, true) === 0, '[K2] skipWyrab=true bez override: 0 wycinek (takze przy rzece)');
   const aiSrc = fs.readFileSync(path.resolve(SRC, 'game/ai.ts'), 'utf8');
   ok(!/wolnoWycinacLas/.test(aiSrc) && !/getSkipWyrab/.test(aiSrc), '[K3] ai.ts nie czyta flagi gracza (`wolnoWycinacLas`/`getSkipWyrab`) — AI przycisku nie ma');

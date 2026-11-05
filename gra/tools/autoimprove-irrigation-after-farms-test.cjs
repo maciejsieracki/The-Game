@@ -51,6 +51,7 @@ const TECHS = new Set([
   'Drogi brukowane', 'Matematyka', 'Pieniądz', 'Hodowla', 'Nawadnianie',
 ]);
 const FOOD = new Set(['farma', 'irygacja', 'tarasy', 'bydlo', 'owce', 'lama', 'oboz_lowiecki', 'lodzie_rybackie', 'warzelnia_soli', 'wyrab']);
+const FOOD_KEYS_FOR_TEST = new Set(['farma', 'irygacja', 'tarasy', 'bydlo', 'owce', 'lama', 'lodzie_rybackie', 'warzelnia_soli', 'wyrab']);
 const LIVESTOCK = new Set(['bydlo', 'owce', 'lama']);
 const FLAT_IRR = new Set(['laka', 'rownina', 'pustynia']);
 const NB = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]];
@@ -106,7 +107,7 @@ function sim({ actor, world, seed, noRivers, turns = 100, budget = 40 }) {
       cmds = pickAutoImprovements({
         cities, ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: pool,
         unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: true, resourceDeficitKeys: [],
-        getFocus: () => actor, getOnlyWorked: () => true, getWorkedHexKeys: c => wbc.get(c.id) ?? new Set(),
+        getFocus: () => actor, getWorkedHexKeys: c => wbc.get(c.id) ?? new Set(),
         pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'grecy', playerEra: ERA,
         foodImprovementStages: () => true, clearingHexKeys: new Set(),
       });
@@ -149,11 +150,13 @@ function sim({ actor, world, seed, noRivers, turns = 100, budget = 40 }) {
     const fin = pickAutoImprovements({
       surplusReport: report, cities, ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: pool + 5000,
       unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: true, resourceDeficitKeys: [],
-      getFocus: () => actor, getOnlyWorked: () => true, getWorkedHexKeys: c => wbcEnd.get(c.id) ?? new Set(),
+      getFocus: () => actor, getWorkedHexKeys: c => wbcEnd.get(c.id) ?? new Set(),
       pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'grecy', playerEra: ERA,
       foodImprovementStages: () => true, clearingHexKeys: new Set(),
     });
-    report.finalPicks = fin.length;
+    // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (wlasciciel 2026-11-04): regula obywateli dotyczy WYLACZNIE ulepszen zywnosciowych;
+    // ulepszenia surowcowe/infrastrukturalne (np. drogi — ostatni priorytet K2) stawia sie gdziekolwiek, wiec liczy sie tylko ZYWNOSC.
+    report.finalPicks = fin.filter(p => FOOD_KEYS_FOR_TEST.has(p.key)).length;
   }
   return { cnt, causes, pool, report };
 }
@@ -207,7 +210,7 @@ for (const actor of ACTORS) {
   ok(a.offWorked === 0, `${actor}: 0 ulepszen zywnosciowych poza polami obywateli (jest ${a.offWorked})`);
   ok(a.pool > 0, `${actor}: pula Pracy niewydana (${a.pool}) — brak legalnego ulepszenia zywnosci przy obywatelach`);
   if (actor !== 'ai') {
-    ok(a.finalPicks === 0 && !a.anyCandidate, `${actor}: picker przy ogromnej puli nie ma kandydata na polach obywateli (pickow ${a.finalPicks})`);
+    ok(a.finalPicks === 0, `${actor}: picker przy ogromnej puli nie ma ZADNEGO ulepszenia zywnosciowego na polach obywateli (zywnosciowych pickow ${a.finalPicks}); reszta (drogi) wg nowej reguly bez filtra obywateli`);
     ok(a.warn === WORLDS.length * SEEDS.length && a.waiting > 0, `${actor}: wskaznik „Budzet niewydany” swieci (${a.warn}/${WORLDS.length * SEEDS.length}, pol czeka ${a.waiting})`);
   }
 }
@@ -238,7 +241,7 @@ console.log('(C) prog budzetu: irygacja 3 x droższa od farmy — przy 33% i rez
   const tryPool = pool => pickAutoImprovements({
     cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: pool,
     unlockedTechs: TECHS, pracaSurplusThreshold: reserve, skipWyrab: true, demandDriven: true, resourceDeficitKeys: [],
-    getFocus: () => 'zywnosc', getOnlyWorked: () => true, getWorkedHexKeys: () => worked,
+    getFocus: () => 'zywnosc', getWorkedHexKeys: () => worked,
     pracaBudgetPercent: pct, getPracaBudgetPercent: () => pct, civArchetype: 'grecy', playerEra: ERA,
     foodImprovementStages: () => true, clearingHexKeys: new Set(),
   }).filter(p => p.key === 'irygacja');
@@ -271,7 +274,7 @@ console.log('(D) PRZYCZYNA: sasiad z samym `rzeka.obecna` (bez wpisu w riverPath
   const common = {
     cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: 900,
     unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: true, demandDriven: true, resourceDeficitKeys: [],
-    getOnlyWorked: () => true, getWorkedHexKeys: () => worked, pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100,
+    getWorkedHexKeys: () => worked, pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100,
     civArchetype: 'grecy', playerEra: ERA, foodImprovementStages: () => true, clearingHexKeys: new Set(),
   };
   for (const focus of ['zywnosc', 'zrownowazone']) {

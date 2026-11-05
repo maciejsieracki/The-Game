@@ -31,7 +31,7 @@ esbuild.buildSync({
   outfile: bundle, loader: { '.ts': 'ts', '.json': 'json' }, absWorkingDir: GRA_ROOT, logLevel: 'error',
   nodePaths: [path.resolve(GRA_ROOT, 'node_modules')],
 });
-const { pickAutoImprovements, unspentBudgetWarning, freshSurplusReport, AUTO_ULEPSZENIA_PRACA_RESERVE, disableOnlyWorkedFilterForOwnerCities } = require(bundle).AIMP;
+const { pickAutoImprovements, unspentBudgetWarning, freshSurplusReport, AUTO_ULEPSZENIA_PRACA_RESERVE } = require(bundle).AIMP;
 const { resolveEffectiveUlepszenia } = require(bundle);
 
 let passed = 0, failed = 0;
@@ -71,12 +71,14 @@ const FOREST_AROUND = [];
 for (let q = 9; q <= 15; q++) for (let r = 9; r <= 15; r++) if (!(q === CQ && r === CR)) FOREST_AROUND.push([q, r]);
 const WORKED_NO_RIVER = [[11, 12], [13, 12], [12, 13]];
 
+// R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: parametr `onlyWorked` jest martwy (przelacznik usuniety; regula zywnosci zawsze wlaczona).
+const FOOD_KEYS = new Set(['farma', 'irygacja', 'tarasy', 'bydlo', 'owce', 'lama', 'lodzie_rybackie', 'warzelnia_soli', 'wyrab']);
 function pick({ map, worked, onlyWorked = true, skipWyrab = false, focus, placed = new Map(), clearing = new Set(), pool = 400, report, deficit = [] }) {
   const workedSet = new Set(worked.map(([q, r]) => K(q, r)));
   return pickAutoImprovements({
     cities: [CITY(focus)], ownerId: 0, map, territoryNodes: TN, placedImprovements: placed, pracaAvailable: pool,
     unlockedTechs: FULL, pracaSurplusThreshold: 0, skipWyrab, demandDriven: true, resourceDeficitKeys: deficit,
-    getFocus: () => focus, getOnlyWorked: () => onlyWorked, getWorkedHexKeys: () => workedSet,
+    getFocus: () => focus, getWorkedHexKeys: () => workedSet,
     pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'rzymianie', playerEra: 3,
     foodImprovementStages: () => true, clearingHexKeys: clearing, ...(report ? { surplusReport: report } : {}),
   });
@@ -139,8 +141,9 @@ const MAXT = 4;
     const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: true, focus, turns: 20 });
     const centre = K(CQ, CR);
     const allowed = new Set([...WORKED_NO_RIVER.map(([q, r]) => K(q, r)), centre]);
-    const other = log.filter(e => !['farma', 'wyrab'].includes(e.key) && !allowed.has(e.hk));
-    ok(other.length === 0, `${focus}: poza farma/wycinka nic bez obywatela (naruszen: ${other.length}; ${dl(other)})`);
+    // Nowa regula (wlasciciel 2026-11-04): za filtrem obywateli zostaja WYLACZNIE ulepszenia zywnosciowe; drogi itp. stawia sie gdziekolwiek.
+    const other = log.filter(e => FOOD_KEYS.has(e.key) && !['farma', 'wyrab'].includes(e.key) && !allowed.has(e.hk));
+    ok(other.length === 0, `${focus}: zywnosc poza farma/wycinka nic bez obywatela (naruszen: ${other.length}; ${dl(other)})`);
     const farmOff = log.filter(e => e.key === 'farma' && !allowed.has(e.hk) && !nearRiver(e.q, e.r));
     ok(farmOff.length === 0, `${focus}: farma bez obywatela TYLKO na heksie na/przy rzece (gdzie indziej: ${farmOff.length})`);
   }
@@ -208,9 +211,11 @@ const MAXT = 4;
     const mapOpen = makeMap({ river: [], forest: [] });
     const workedAll = [[CQ, CR], [11, 12], [13, 12], [12, 13]];
     const placedFarms = new Map(workedAll.map(([q, r]) => [K(q, r), ['farma']]));
-    const run = ({ onlyWorked, pool = 400, deficit = [] }) => {
+    const run = ({ onlyWorked, pool = 400, deficit = [], freeFarmAt = null }) => {
       const report = freshSurplusReport();
-      const picks = pick({ map: mapOpen, worked: workedAll, onlyWorked, focus: 'zrownowazone', placed: new Map(placedFarms), pool, report, deficit });
+      const placedNow = new Map(placedFarms);
+      if (freeFarmAt) placedNow.delete(K(freeFarmAt[0], freeFarmAt[1])); // pole obywatela bez farmy = kandydat zywnosciowy
+      const picks = pick({ map: mapOpen, worked: workedAll, onlyWorked, focus: 'zrownowazone', placed: placedNow, pool, report, deficit });
       return { report, picks };
     };
     const A = run({ onlyWorked: true });
@@ -218,9 +223,10 @@ const MAXT = 4;
     console.log(`  [info] filtr ON: picks=${desc(A.picks)}, anyCandidate=${A.report.anyCandidate}, czeka=${A.report.filterWaitingKeys.size}`);
     ok(!A.report.anyCandidate && !!wA && wA.waitingHexes > 0, `filtr ON, brak kandydatow przy obywatelach: wskaznik jest, X=${wA && wA.waitingHexes} pol czeka`);
     ok(A.report.surplus === true, 'stary raport nadwyzki (surplus) nadal true w tym scenariuszu (kompatybilnosc)');
-    const B = run({ onlyWorked: false });
-    ok(B.picks.length > 0 && unspentBudgetWarning(B.report, { onlyWorkedOn: false, poolAboveReserve: true }) === null, 'filtr OFF: automat wydaje, wskaznika brak');
-    ok(unspentBudgetWarning(B.report, { onlyWorkedOn: true, poolAboveReserve: true }) === null, 'filtr (zglaszany) ON, ale sa kandydaci: wskaznika brak (warunek ustapil)');
+    // Filtr nie ma juz przelacznika: gdy na polu obywatela jest kandydat zywnosciowy, picker wydaje i wskaznika brak.
+    const B = run({ freeFarmAt: [11, 12] });
+    ok(B.picks.some(p => p.key === 'farma') && B.report.anyCandidate, `kandydat zywnosciowy na polu obywatela: automat stawia farme (${desc(B.picks)})`);
+    ok(unspentBudgetWarning(B.report, { onlyWorkedOn: true, poolAboveReserve: true }) === null, 'sa kandydaci przy obywatelach: wskaznika brak (warunek ustapil)');
     ok(unspentBudgetWarning(A.report, { onlyWorkedOn: false, poolAboveReserve: true }) === null, 'wskaznik znika po wylaczeniu filtra (onlyWorkedOn=false)');
     ok(unspentBudgetWarning(A.report, { onlyWorkedOn: true, poolAboveReserve: false }) === null, 'pula <= rezerwa+prog: wskaznika brak');
     const C = run({ onlyWorked: true, deficit: ['kamien'] });
@@ -259,17 +265,15 @@ const MAXT = 4;
         + 'body{background:#0b0f16;color:#eee;}</style></head><body></body></html>');
       await page.addScriptTag({ content: bundleJs });
       await page.addScriptTag({ content: `
-        window.__state = { warn: { waitingHexes: 7 }, onlyWorked: true, disabledClicks: 0 };
+        window.__state = { warn: { waitingHexes: 7 } };
         window.__cfg = () => ({
           listTypes: () => [], getActiveKey: () => null, onSelectType: () => {}, onExit: () => {}, isOpen: () => true,
           listPlayerCities: () => [{ id: 'm1', name: 'Testowo' }], getUlepszeniaCityId: () => 'm1', onUlepszeniaCityIdChange: () => {},
-          getUlepszeniaEmpireState: () => ({ focus: 'zrownowazone', tryb: 'auto', onlyWorked: window.__state.onlyWorked, pracaAutoPercent: 100, wolnoWycinacLas: true }),
-          onUlepszeniaEmpireFocusChange: () => {}, onUlepszeniaEmpireTrybChange: () => {}, onUlepszeniaEmpireOnlyWorkedChange: () => {},
-          onUlepszeniaEmpireWyrabChange: () => {}, onUlepszeniaEmpirePracaPercentChange: () => {},
+          getUlepszeniaEmpireState: () => ({ focus: 'zrownowazone', tryb: 'auto', pracaAutoPercent: 100 }),
+          onUlepszeniaEmpireFocusChange: () => {}, onUlepszeniaEmpireTrybChange: () => {}, onUlepszeniaEmpirePracaPercentChange: () => {},
           getUlepszeniaCityOverride: () => false, onUlepszeniaCityOverrideChange: () => {},
-          getUlepszeniaEffectiveState: () => ({ focus: 'zrownowazone', tryb: 'auto', onlyWorked: true, pracaAutoPercent: 100, wolnoWycinacLas: true, override: false }),
+          getUlepszeniaEffectiveState: () => ({ focus: 'zrownowazone', tryb: 'auto', pracaAutoPercent: 100, override: false }),
           getUnspentBudgetWarning: () => window.__state.warn,
-          onUnspentBudgetDisableFilter: () => { window.__state.disabledClicks++; window.__state.onlyWorked = false; window.__state.warn = null; },
         });
         window.__hud = window.__createBuildModeHud(window.__cfg());
         document.body.appendChild(window.__hud.el);
@@ -293,21 +297,17 @@ const MAXT = 4;
       const on = await probe();
       console.log('  [info] ' + JSON.stringify(on));
       ok(on.present && on.w > 0 && on.h > 0, 'wskaznik jest w DOM i ma niezerowy prostokat');
-      ok(on.text === 'Budżet niewydany: włączony filtr „Tylko pola z obywatelami” (7 pól czeka). Wyłącz filtr, by go wydać.',
+      ok(on.text === 'Budżet niewydany: żywność powstaje tylko na polach z obywatelami (7 pól czeka na obywatela).',
         `tekst wskaznika zgodny z decyzja wlasciciela (jest: "${on.text}")`);
       ok(on.belowSlider, 'wskaznik jest przy suwaku „Z puli imperium na prace automatyczna” (pod nim)');
       ok(on.docScrollW <= 320 && on.elScrollW <= on.elClientW + 1, `mobile 320 px: brak poziomego przewijania (doc ${on.docScrollW}, panel ${on.elScrollW}/${on.elClientW})`);
-      ok(on.btnW > 0 && on.elementAtBtn, 'przycisk „Wyłącz filtr” jest klikalny (elementFromPoint)');
+      ok(on.btnW === 0, 'brak przycisku „Wyłącz filtr” (przelacznik usuniety)');
+      const noToggles = await page.evaluate(() => ({ onlyBtn: !!document.querySelector('[data-ulepszenia-empire-only-worked],[data-ulepszenia-city-only-worked]'), wyrabBtn: !!document.querySelector('[data-ulepszenia-empire-wyrab],[data-ulepszenia-city-wyrab]'), txt: /Tylko pola z obywatelami|Wolno wycinać las/.test(document.body.textContent || '') }));
+      ok(!noToggles.onlyBtn && !noToggles.wyrabBtn && !noToggles.txt, `UI trybu budowy: BRAK przyciskow „Tylko pola z obywatelami” i „Wolno wycinac las” (${JSON.stringify(noToggles)})`);
       await page.screenshot({ path: path.join(SHOT_DIR, 'q3-wskaznik-niewydany-320.png') });
       await page.setViewportSize({ width: 900, height: 900 });
       await page.screenshot({ path: path.join(SHOT_DIR, 'q3-wskaznik-niewydany-900.png') });
       await page.setViewportSize({ width: 320, height: 900 });
-      await page.mouse.click(on.btnCx, on.btnCy);
-      const afterClick = await probe();
-      const st = await page.evaluate(() => window.__state);
-      ok(st.disabledClicks === 1 && st.onlyWorked === false, 'klik „Wyłącz filtr” wywolal callback (filtr wylaczony)');
-      ok(!afterClick.present, 'wskaznik ZNIKA po wylaczeniu filtra (re-render)');
-      await page.screenshot({ path: path.join(SHOT_DIR, 'q3-wskaznik-zniknal-320.png') });
       // stala obecnosc, nie toast: ten sam stan renderowany wielokrotnie = jeden element
       await page.evaluate(() => { window.__state.warn = { waitingHexes: 3 }; window.__hud.update(); window.__hud.update(); window.__hud.update(); });
       const cnt = await page.evaluate(() => document.querySelectorAll('[data-ulepszenia-unspent]').length);
@@ -319,22 +319,6 @@ const MAXT = 4;
       await browser.close();
     }
     console.log('  [info] zrzuty: ' + SHOT_DIR);
-  }
-
-  // ===== (4b) przycisk „Wyłącz filtr” a miasta z override (runda 2, zarzut 1) ======================================
-  console.log('(4b) „Wyłącz filtr” wyłącza filtr także w miastach z własnym ustawieniem (override)');
-  ok(typeof disableOnlyWorkedFilterForOwnerCities === 'function', 'eksport disableOnlyWorkedFilterForOwnerCities istnieje');
-  if (typeof disableOnlyWorkedFilterForOwnerCities === 'function') {
-    const mk = (id, ownerId, override, onlyWorked) => ({ id, ownerId, ulepszeniaOverride: override, ulepszeniaOnlyWorked: onlyWorked });
-    const cs = [mk('a', 0, true, true), mk('b', 0, false, undefined), mk('c', 0, true, false), mk('d', 1, true, true)];
-    const empire = { focus: 'zrownowazone', tryb: 'auto', onlyWorked: false, pracaAutoPercent: 50, wolnoWycinacLas: true };
-    // Przed: stan jak po starym przycisku (państwo OFF) — miasto 'a' nadal ma filtr ON (to wskaźnik liczył).
-    ok(resolveEffectiveUlepszenia(cs[0], empire).onlyWorked === true, 'PRZED: miasto z override ma efektywnie filtr ON mimo wylaczonego filtra panstwa');
-    const n = disableOnlyWorkedFilterForOwnerCities(cs, 0);
-    ok(n === 1, `zmieniono dokladnie 1 miasto gracza z override+ON (${n})`);
-    ok(cs.filter(c => c.ownerId === 0).every(c => !resolveEffectiveUlepszenia(c, empire).onlyWorked), 'PO: zadne miasto gracza nie ma efektywnie filtra ON (wskaznik nie wroci na nastepnym koncu tury)');
-    ok(cs[3].ulepszeniaOnlyWorked === true, 'miasto innego wlasciciela nietkniete');
-    ok(cs[0].ulepszeniaOverride === true, 'override zachowany (zmieniony tylko filtr)');
   }
 
   console.log(`\n${passed} OK, ${failed} FAIL`);

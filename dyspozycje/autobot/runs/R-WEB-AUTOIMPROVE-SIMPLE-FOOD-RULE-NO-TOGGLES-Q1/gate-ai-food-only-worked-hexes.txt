@@ -1,0 +1,72 @@
+(A) 0 ulepszen zywnosciowych poza polami obywateli — scenariusz zrzutu, 40 tur, bez niedoboru
+  [OK] ai: automat cos buduje (38 ulepszen)
+  [OK] ai: 0 ulepszen zywnosciowych bez obywatela (jest 0: nic)
+  [OK] player-zywnosc: automat cos buduje (26 ulepszen)
+  [OK] player-zywnosc: 0 ulepszen zywnosciowych bez obywatela (jest 0: nic)
+  [OK] player-zrownowazone: automat cos buduje (38 ulepszen)
+  [OK] player-zrownowazone: 0 ulepszen zywnosciowych bez obywatela (jest 0: nic)
+(B) niedobor soli (przebieg „brakujacy surowiec”) NIE otwiera filtra dla zywnosci (warzelnia soli)
+  [OK] ai (resource-pass bez filtra): 0 zywnosciowych bez obywatela przy niedoborze soli (jest 0: nic)
+  [OK] player-zywnosc: 0 zywnosciowych bez obywatela przy niedoborze soli (jest 0: nic)
+  [OK] player-zywnosc (resource-pass bez filtra): 0 zywnosciowych bez obywatela przy niedoborze soli (jest 0: nic)
+  [OK] player-zrownowazone: 0 zywnosciowych bez obywatela przy niedoborze soli (jest 0: nic)
+  [OK] player-zrownowazone (resource-pass bez filtra): 0 zywnosciowych bez obywatela przy niedoborze soli (jest 0: nic)
+(C) wyjatek rzeczny (wycinka lasu na rzece / farma po wycince) nie obowiazuje przy wlaczonym filtrze
+  [OK] ai: brak wycinki/farmy rzecznej poza obywatelem (jest 0: nic)
+  [OK] player-zywnosc: brak wycinki/farmy rzecznej poza obywatelem (jest 0: nic)
+  [OK] player-zrownowazone: brak wycinki/farmy rzecznej poza obywatelem (jest 0: nic)
+(D) kompletnosc: po farmie automat buduje DALEJ na polach obywateli (irygacja, trzoda), nie wychodzi poza nie
+  [OK] ai: farma postawiona
+  [OK] ai: irygacja zbudowana na polach obywateli (8)
+  [OK] ai: trzoda zbudowana na polach obywateli (8)
+  [OK] ai: i nadal 0 poza obywatelami po 60 turach
+  [OK] player-zywnosc: farma postawiona
+  [OK] player-zywnosc: irygacja zbudowana na polach obywateli (8)
+  [OK] player-zywnosc: trzoda zbudowana na polach obywateli (8)
+  [OK] player-zywnosc: i nadal 0 poza obywatelami po 60 turach
+  [OK] player-zrownowazone: farma postawiona
+  [OK] player-zrownowazone: irygacja zbudowana na polach obywateli (8)
+  [OK] player-zrownowazone: trzoda zbudowana na polach obywateli (8)
+  [OK] player-zrownowazone: i nadal 0 poza obywatelami po 60 turach
+(E) BRAK przelacznika: dawny parametr getOnlyWorked=false (przycisk wylaczony) NIE wylacza reguly — zywnosc nadal tylko przy obywatelach
+  [OK] getOnlyWorked=false ignorowany: 4 pickow, 0 zywnosciowych poza obywatelami (jest 0)
+(F) KAZDY klucz z listy zywnosciowej osobno: sonda na heksie BEZ obywatela (kontrola: obywatele WSZEDZIE -> klucz budowany; bez obywatela — nigdy; wyjatek: oboz lowiecki)
+  [OK] farma: AI (decideAITurn, civ=grecy) 0 zywnosciowych poza obywatelami w sondzie (jest 0: nic; farma postawiony 2x)
+  [OK] farma: kontrola — gdy obywatele stoja na heksach sondy, automat buduje klucz (43) [sonda realna]
+  [OK] farma: bez obywatela 0 poza polami obywateli (jest 0: nic)
+  [OK] irygacja: AI (decideAITurn, civ=grecy) 0 zywnosciowych poza obywatelami w sondzie (jest 0: nic; irygacja postawiony 2x)
+  [OK] irygacja: kontrola — gdy obywatele stoja na heksach sondy, automat buduje klucz (24) [sonda realna]
+  [OK] irygacja: bez obywatela 0 poza polami obywateli (jest 0: nic)
+  [OK] tarasy: AI (decideAITurn, civ=chinczycy) 0 zywnosciowych poza obywatelami w sondzie (jest 0: nic; tarasy postawiony 0x)
+  [OK] tarasy: kontrola — gdy obywatele stoja na heksach sondy, automat buduje klucz (41) [sonda realna]
+  [OK] tarasy: bez obywatela 0 poza polami obywateli (jest 0: nic)
+  [OK] bydlo: AI (decideAITurn, civ=grecy) 0 zywnosciowych poza obywatelami w sondzie (jest 0: nic; bydlo postawiony 2x)
+  [OK] bydlo: kontrola — gdy obywatele stoja na heksach sondy, automat buduje klucz (24) [sonda realna]
+  [OK] bydlo: bez obywatela 0 poza polami obywateli (jest 0: nic)
+  [OK] owce: AI (decideAITurn, civ=grecy) 0 zywnosciowych poza obywatelami w sondzie (jest 0: nic; owce postawiony 0x)
+  [OK] owce: kontrola — gdy obywatele stoja na heksach sondy, automat buduje klucz (22) [sonda realna]
+  [OK] owce: bez obywatela 0 poza polami obywateli (jest 0: nic)
+  [OK] lama: AI (decideAITurn, civ=inkowie) 0 zywnosciowych poza obywatelami w sondzie (jest 0: nic; lama postawiony 0x)
+  [OK] lama: kontrola — gdy obywatele stoja na heksach sondy, automat buduje klucz (22) [sonda realna]
+  [OK] lama: bez obywatela 0 poza polami obywateli (jest 0: nic)
+  [OK] oboz_lowiecki: AI (decideAITurn, civ=grecy) 0 zywnosciowych poza obywatelami w sondzie (jest 0: nic; oboz_lowiecki postawiony 19x)
+  [OK] oboz_lowiecki: AI stawia obóz TAKZE poza polami obywateli — wyjatek wlasciciela 2026-11-04 (19x)
+  [OK] oboz_lowiecki: kontrola — gdy obywatele stoja na heksach sondy, automat buduje klucz (19) [sonda realna]
+  [OK] oboz_lowiecki: WYJATEK — gracz stawia obóz takze poza polami obywateli (19) [dopisek wlasciciela 2026-11-04]
+  [OK] lodzie_rybackie: AI (decideAITurn, civ=grecy) 0 zywnosciowych poza obywatelami w sondzie (jest 0: nic; lodzie_rybackie postawiony 0x)
+  [OK] lodzie_rybackie: kontrola — gdy obywatele stoja na heksach sondy, automat buduje klucz (41) [sonda realna]
+  [OK] lodzie_rybackie: bez obywatela 0 poza polami obywateli (jest 0: nic)
+  [OK] wyrab: AI (decideAITurn, civ=grecy) 0 zywnosciowych poza obywatelami w sondzie (jest 0: nic; wyrab postawiony 0x)
+  [OK] wyrab: kontrola — gdy obywatele stoja na heksach sondy, automat buduje klucz (41) [sonda realna]
+  [OK] wyrab: bez obywatela 0 poza polami obywateli (jest 0: nic)
+  [OK] warzelnia_soli: AI (decideAITurn, civ=grecy) 0 zywnosciowych poza obywatelami w sondzie (jest 0: nic; warzelnia_soli postawiony 0x)
+  [OK] warzelnia_soli: kontrola — gdy obywatele stoja na heksach sondy, automat buduje klucz (41) [sonda realna]
+  [OK] warzelnia_soli: bez obywatela 0 poza polami obywateli (jest 0: nic)
+(G) farma ZOSTAJE po przesunieciu obywatela: istniejaca farma na heksie, ktory przestal byc pracowany, nie dostaje NOWYCH ulepszen zywnosciowych i nie jest usuwana
+  [OK] player-zywnosc: sa heksy z farma poza polami obywateli (2)
+  [OK] player-zywnosc: zero nowych ulepszen na heksach z "osieroconymi" farmami (jest 0); picker nie ma komendy burzenia
+  [OK] player-zrownowazone: sa heksy z farma poza polami obywateli (2)
+  [OK] player-zrownowazone: zero nowych ulepszen na heksach z "osieroconymi" farmami (jest 0); picker nie ma komendy burzenia
+
+62 OK, 0 FAIL
+EXIT=0

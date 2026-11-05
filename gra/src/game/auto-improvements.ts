@@ -25,7 +25,6 @@ import type { TerritoryNode } from '../map/territory';
 import { axialDistance, cityTerritoryRadius, territoryOwnerAt } from '../map/territory';
 import {
   buildImprovementQualifier,
-  depositAllowsPlayerImprovement,
   hexHasDepositReserve,
   isFarmBaseTerrain,
   type ImprovementBuildState,
@@ -46,7 +45,6 @@ export interface AutoImprovementCity {
   r: number;
   population: number;
   ulepszeniaFocus?: UlepszeniaFocus;
-  ulepszeniaOnlyWorked?: boolean;
 }
 
 export interface AutoImprovementPick {
@@ -274,24 +272,6 @@ export function unspentBudgetWarning(
   return n > 0 ? { waitingHexes: n } : null;
 }
 
-/**
- * Przycisk „Wyłącz filtr” przy wskaźniku „Budżet niewydany”: miasta gracza z własnym ustawieniem (override) mają własny
- * filtr „Tylko pola z obywatelami” i nie dziedziczą wyłączenia z państwa — wyłącz go także tam. Zwraca liczbę zmienionych miast.
- */
-export function disableOnlyWorkedFilterForOwnerCities(
-  cities: ReadonlyArray<{ ownerId: number; ulepszeniaOverride?: boolean; ulepszeniaOnlyWorked?: boolean }>,
-  ownerId: number,
-): number {
-  let n = 0;
-  for (const c of cities) {
-    if (c.ownerId === ownerId && c.ulepszeniaOverride === true && c.ulepszeniaOnlyWorked === true) {
-      c.ulepszeniaOnlyWorked = false;
-      n++;
-    }
-  }
-  return n;
-}
-
 /** Zwraca listę typów ulepszeń wg profilu focus. */
 export function prioritiesForUlepszeniaFocus(
   focus: UlepszeniaFocus,
@@ -335,8 +315,10 @@ export interface PickAutoImprovementsOpts {
   unlockedTechs: ReadonlySet<string>;
   /** Profil per miasto (domyślnie city.ulepszeniaFocus ?? zrownowazone). */
   getFocus?: (city: AutoImprovementCity) => UlepszeniaFocus;
-  /** Filtr heksów — tylko obrabiane (domyślnie city.ulepszeniaOnlyWorked ?? false). */
-  getOnlyWorked?: (city: AutoImprovementCity) => boolean;
+  /**
+   * Heksy z obywatelami miasta (klucze `q,r`) — źródło reguły „żywność tylko przy obywatelach” (`FOOD_IMPROVEMENT_KEYS`).
+   * Reguła jest ZAWSZE aktywna (R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1); dawny `getOnlyWorked` (przycisk) usunięty.
+   */
   getWorkedHexKeys?: (city: AutoImprovementCity) => ReadonlySet<string>;
   /**
    * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (runda 2, naprawa FAIL Evaluatora): stały % (0–100)
@@ -426,14 +408,12 @@ export interface PickAutoImprovementsOpts {
    */
   getPracaBudgetPercent?: (city: AutoImprovementCity) => number;
   pracaSurplusThreshold?: number;
-  skipWyrab?: boolean;
   /**
-   * R4-Q2=C: `skipWyrab` PER MIASTO — nadpisuje wspólne `skipWyrab` dla tego miasta.
-   * Istnieje, bo przełącznik „wolno wycinać las" właściciel chciał mieć w DWÓCH zakresach
-   * (państwo i miasto), a `skipWyrab` jest jeden na całe wywołanie. Gdy nie podane,
-   * obowiązuje `skipWyrab` (czyli dla wołających nieświadomych tej opcji — bez zmian).
+   * Tylko wołający testowi/legacy: wyłącza `wyrab` na liście profilu. Produkcja (gracz i AI) tego NIE ustawia — od
+   * R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (właściciel 2026-11-04) automat ZAWSZE może wycinać las pod farmę
+   * (przełącznik „Wolno wycinać las” i `getSkipWyrab` usunięte).
    */
-  getSkipWyrab?: (city: AutoImprovementCity) => boolean;
+  skipWyrab?: boolean;
   /**
    * ZASADA 1 (runda 4): włącza budowanie napędzane popytem. Domyślnie `false`, żeby
    * wołający nieświadomi tej reguły (narzędzia, testy legacy) zachowali dzisiejsze
@@ -486,16 +466,6 @@ export interface PickAutoImprovementsOpts {
   offRiverClearing?: boolean;
   /** Internal (stages): irrigation only on a hex that already has a farm (owner order: clear→farm→livestock→irrigation). */
   irrigationNeedsFarm?: boolean;
-  /**
-   * K2/K3: filtr `onlyWorked` dla przebiegu „brakujący surowiec” (AI: surowce wszędzie — ECHO 2026-09-08;
-   * gracz: domyślnie jego własne `getOnlyWorked`).
-   */
-  getResourcePassOnlyWorked?: (city: AutoImprovementCity) => boolean;
-  /**
-   * Internal (D-R5-1): `onlyWorked` etapów żywnościowych (farma/wycinka) — przebieg „brakujący surowiec” ma własny
-   * `getOnlyWorked` (AI: surowce wszędzie), ale to, czy farma „przejmie” las, rozstrzyga filtr etapów żywności.
-   */
-  farmPriorityOnlyWorked?: (city: AutoImprovementCity) => boolean;
 }
 
 /**
@@ -595,14 +565,17 @@ export const IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly Improveme
 };
 
 /**
- * R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (decyzja właściciela 2026-11-03/04, NADRZĘDNA): ulepszenia ZWIĄZANE Z ŻYWNOŚCIĄ
- * (farma, irygacja, tarasy, bydło/owce/lama, obóz łowiecki, łodzie rybackie, warzelnia soli i wycinka pod farmę)
- * przy włączonym „Tylko pola z obywatelami” NIE powstają na heksie bez obywatela — ŻADNYCH wyjątków (ani rzeka/wyrąb,
- * ani złoże na heksie, ani przebieg „brakujący surowiec”). Wyjątek złożowy dotyczy wyłącznie kopalń/surowców.
- * Dotyczy automatu gracza i AI (jedna funkcja — `hexAllowsKey` w pickerze).
+ * R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (decyzja właściciela 2026-11-04, ABC A + A; ZASTĘPUJE przełącznik
+ * „Tylko pola z obywatelami” z R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1): ulepszenia ŻYWNOŚCIOWE (farma, irygacja, tarasy,
+ * bydło/owce/lama, łodzie rybackie, warzelnia soli oraz wycinka pod farmę) buduje się ZAWSZE TYLKO na heksie z obywatelem
+ * (albo na heksie centrum miasta, który daje plony bez obywatela) — bez przycisku, bez wyjątków (ani rzeka/wyrąb, ani złoże
+ * na heksie, ani przebieg „brakujący surowiec”). JEDYNY WYJĄTEK (dopisek właściciela 2026-11-04): OBÓZ ŁOWIECKI stoi tam,
+ * gdzie jest las (z reguły razem z tartakiem), więc NIE wymaga obywatela i NIE należy do tego zbioru. Pozostałe (surowcowe)
+ * ulepszenia — kopalnie, kamieniołom, tartak, stadnina, forty, drogi… — stawia się tam, gdzie wolno, BEZ reguły obywateli.
+ * Dotyczy automatu gracza (każdy profil) i AI (jedna funkcja — `hexAllowsKey` w pickerze).
  */
 export const FOOD_IMPROVEMENT_KEYS: ReadonlySet<ImprovementKey> = new Set<ImprovementKey>([
-  'farma', 'irygacja', 'tarasy', 'bydlo', 'owce', 'lama', 'oboz_lowiecki', 'lodzie_rybackie', 'warzelnia_soli', 'wyrab',
+  'farma', 'irygacja', 'tarasy', 'bydlo', 'owce', 'lama', 'lodzie_rybackie', 'warzelnia_soli', 'wyrab',
 ]);
 
 /** Klucze dróg (terrain-improvements.json: `droga`, `droga_brukowana`) — najniższy priorytet K2/K3. */
@@ -882,8 +855,6 @@ function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprove
     deficitPicks = pickAutoImprovementsSinglePass(after(0, {
       cities: deficitCities,
       priorityOverride: deficitKeys,
-      getOnlyWorked: opts.getResourcePassOnlyWorked ?? opts.getOnlyWorked,
-      farmPriorityOnlyWorked: opts.getOnlyWorked ?? (c => c.ulepszeniaOnlyWorked ?? false),
       riverForestClearingOnly: false,
       riverHexesOnly: false,
       offRiverClearing: false,
@@ -980,8 +951,6 @@ function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprove
     deficitPendingMemo = deficitCities.length > 0 && pickAutoImprovementsSinglePass(after(0, {
       cities: deficitCities,
       priorityOverride: deficitKeys,
-      getOnlyWorked: opts.getResourcePassOnlyWorked ?? opts.getOnlyWorked,
-      farmPriorityOnlyWorked: opts.getOnlyWorked ?? (c => c.ulepszeniaOnlyWorked ?? false),
       riverForestClearingOnly: false,
       riverHexesOnly: false,
       offRiverClearing: false,
@@ -1109,13 +1078,11 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     placedImprovements,
     unlockedTechs,
     getFocus = c => c.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
-    getOnlyWorked = c => c.ulepszeniaOnlyWorked ?? false,
     getWorkedHexKeys,
     pracaBudgetPercent = 100,
     getPracaBudgetPercent,
     pracaSurplusThreshold = 0,
     skipWyrab = false,
-    getSkipWyrab,
     demandDriven = false,
     resourceDeficitKeys,
     surplusReport,
@@ -1351,16 +1318,11 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     if (pracaLeft <= reserve) break;
 
     const focus = getFocus(city);
-    // R4-Q2=C: przełącznik „wolno wycinać las" ma dwa zakresy (państwo i miasto), więc
-    // `skipWyrab` musi być rozstrzygany PER MIASTO. Bez `getSkipWyrab` — wartość wspólna.
-    // Food phase 0 is an owner-ordered river preparation step; it is limited to
-    // river forests by `riverForestClearingOnly` and therefore does not enable
-    // general forest harvesting. Other profiles still honor the existing toggle.
-    // R-WEB-AUTOIMPROVE-STAGES2-Q1 (właściciel 2026-10-31, przycisk „Wolno wycinać las"): GRACZ z przyciskiem
-    // WYŁĄCZONYM nie wycina NIGDZIE — także przy rzece (krok 0 / E2), E5 i FAZA 2 (dawny wyjątek
-    // `riverForestClearingOnly ? false : …` USUNIĘTY). AI cywilizacji i państwa-miasta przycisku nie mają:
-    // ich wywołania (`ai.ts`) nie podają `getSkipWyrab`, a `skipWyrab: false` — picker nie czyta żadnej flagi gracza.
-    const citySkipWyrab = getSkipWyrab ? getSkipWyrab(city) : skipWyrab;
+    // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (właściciel 2026-11-04): automat ZAWSZE może wycinać las, ale
+    // WYŁĄCZNIE pod ulepszenia żywnościowe (farma → irygacja) i tylko na polach z obywatelami (`hexAllowsKey`,
+    // `wyrabMaSens`) — dawny przełącznik „Wolno wycinać las” (R4-Q2=C, `getSkipWyrab`) USUNIĘTY. Krok 0 (rzeka) i E5
+    // idą tą samą drogą co wcześniej; zabezpieczenia drewna (`lesneMin`, tartak/obóz na heksie) bez zmian.
+    const citySkipWyrab = skipWyrab;
     // R3, ABC-A=C: K1 (profil „Żywność”) nigdy nie stawia tartaku ani obozu — także przy `priorityOverride` (E6).
     // R4 (właściciel 2026-10-31, K2 gracz „Zrównoważone” i K3 AI — jedna logika): „Niedobór ma tylko otwierać
     // ulepszenia brakującego surowca, nic więcej.” Pod popytem lista = ŻYWNOŚĆ + ulepszenia WYŁĄCZNIE
@@ -1375,24 +1337,14 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         || ULEPSZENIA_FOOD_ONLY_ZROWNOWAZONE.includes(k)
         || deficitOpenKeys.has(k)
         || (roadsPass && ROAD_KEY_SET.has(k)));
-    const onlyWorked = getOnlyWorked(city);
-    // R4 KOREKTA F (właściciel 2026-10-31): heks centrum miasta jest ZWYKŁYM heksem dla automatu (farma, trzoda,
-    // irygacja i inne wg zwykłych reguł). `workedHexCoordsForCity` WYKLUCZA centrum (okolica.ts:276), bo centrum
-    // daje plony bez obywatela (okolica.ts:626 — jest zawsze pracowane), więc dla profili żywnościowych centrum
-    // dopisujemy do zbioru „pracowanych”; profile „surowce”/„infrastruktura” bez zmian.
-    const workedKeys = onlyWorked && getWorkedHexKeys
-      ? ((focus === 'zywnosc' || focus === 'zrownowazone')
-        ? new Set<string>([...getWorkedHexKeys(city), `${city.q},${city.r}`])
-        : getWorkedHexKeys(city))
-      : null;
-    // R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1: filtr ŻYWNOŚCI jest niezależny od `getOnlyWorked` przebiegu — przebieg „brakujący
-    // surowiec” (AI: surowce wszędzie) ma `getOnlyWorked` = false, ale ulepszenia żywnościowe (np. warzelnia soli) nadal muszą
-    // stać na heksie z obywatelem. Rozstrzyga `farmPriorityOnlyWorked` (ustawiany przez przebieg niedoboru), inaczej `onlyWorked`.
-    const foodOnlyWorked = (opts.farmPriorityOnlyWorked ?? getOnlyWorked)(city);
-    const foodWorkedKeys = foodOnlyWorked && getWorkedHexKeys
-      ? ((focus === 'zywnosc' || focus === 'zrownowazone')
-        ? new Set<string>([...getWorkedHexKeys(city), `${city.q},${city.r}`])
-        : getWorkedHexKeys(city))
+    // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (właściciel 2026-11-04, ABC A + A): ulepszenia ŻYWNOŚCIOWE
+    // (`FOOD_IMPROVEMENT_KEYS`) stoją ZAWSZE tylko na heksie z obywatelem — dla gracza (każdy profil) i AI jednakowo, bez
+    // przycisku „Tylko pola z obywatelami”. Heks centrum miasta liczy się jako pracowany (okolica.ts:626 — plony bez obywatela;
+    // `workedHexCoordsForCity` go wyklucza, R4 KOREKTA F). Wyjątek: obóz łowiecki (poza zbiorem). Ulepszenia surowcowe i
+    // reszta (kopalnie, tartak, stadnina, forty, drogi) NIE podlegają regule obywateli. Bez `getWorkedHexKeys` (wołający
+    // testowi bez danych o obywatelach) filtr nie ma z czego skorzystać — heksy nieograniczone, jak dotąd.
+    const foodWorkedKeys: ReadonlySet<string> | null = getWorkedHexKeys
+      ? new Set<string>([...getWorkedHexKeys(city), `${city.q},${city.r}`])
       : null;
 
     // ---------------------------------------------------------------------
@@ -1443,16 +1395,10 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       .sort((a, b) => (a.q - b.q) || (a.r - b.r));
 
     // ---------------------------------------------------------------------
-    // ZASADA 2 (runda 4) — BUDOWA TYLKO PRZY OBYWATELACH, Z WYJĄTKIEM ZŁÓŻ.
-    // ECHO właściciela: „powinno domyślnie budować ulepszenia tam, gdzie są obywatele
-    // […] z wyłączeniem surowców, które mogą znajdować się w różnych miejscach według
-    // potrzeby". Filtr `onlyWorked` istniał wcześniej i wycinał heks bez 👤 CAŁKOWICIE —
-    // razem ze złożem, na którym stoi jedyna kopalnia miedzi w promieniu. Tu heks
-    // złożowy WRACA do puli kandydatów, ale wyłącznie dla ulepszenia, które to konkretne
-    // złoże konsumuje (`depositAllowsPlayerImprovement`) — patrz `hexAllowsKey` niżej.
-    // `hexHasDepositReserve` jest tu właściwym testem „to jest złoże": nakładka Las daje
-    // `false` (jedyne dwie nie-złożowe nakładki to `Brak` i `Las`), więc `oboz_lowiecki`
-    // na lesie NIE dostaje zwolnienia — obóz to ulepszenie przy obywatelach jak każde inne.
+    // ZASADA 2 — [ZMIENIONA w R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1, właściciel 2026-11-04]: filtr „tylko pola z
+    // obywatelami” nie jest już przełącznikiem ani regułą całego automatu. Dotyczy WYŁĄCZNIE ulepszeń żywnościowych
+    // (`FOOD_IMPROVEMENT_KEYS`, patrz `hexAllowsKey` niżej); złoża i reszta ulepszeń surowcowych nie mają filtra, więc heks
+    // bez obywatela nie jest już wycinany z listy kandydatów.
     // ---------------------------------------------------------------------
     // R-WEB-AI-STADNINA-FORT-TERRITORY-SCAN-Q1: ta sama reguła terytorium co budowa gracza (improvement-build.ts):
     // miasto + forty/posterunki WŁASNEGO właściciela. Złoże konia (`hexHasHorseDeposit`, także stare zapisy
@@ -1479,11 +1425,6 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         if (best && best.id === city.id) fortHorseExtra.add(k);
       }
     }
-    const isDepositHexForKey = (q: number, r: number, key: ImprovementKey): boolean => {
-      const hex = map.hexes[`${q},${r}`];
-      if (!hex) return false;
-      return hexHasDepositReserve(hex) && depositAllowsPlayerImprovement(key, hex);
-    };
     // R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (decyzja właściciela 2026-11-03/04: „Jeżeli gracz ma zaznaczone, że ulepszenie pod
     // żywność ma być tylko na terenach, gdzie są obywatele, to tak ma być i koniec”): dawne wyjątki rzeczne
     // (R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2 `riverForestPrepHex` — wycinka lasu na rzece oraz R-WEB-AUTO-IMPROVE-Q3
@@ -1497,9 +1438,8 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       // kandydatami WYŁĄCZNIE dla stadniny — zero zmiany balansu pozostałych ulepszeń.
       if (fortHorseExtra.has(`${q},${r}`)) return key === 'stadnina';
       if (FOOD_IMPROVEMENT_KEYS.has(key)) return !foodWorkedKeys || foodWorkedKeys.has(`${q},${r}`);
-      if (!workedKeys) return true;
-      if (workedKeys.has(`${q},${r}`)) return true;
-      return isDepositHexForKey(q, r, key);
+      // Obóz łowiecki i wszystkie ulepszenia surowcowe/infrastrukturalne: bez reguły obywateli (patrz wyżej).
+      return true;
     };
 
     // Pełny promień miasta PRZED filtrem Zasady 2. Zasada 2 ogranicza, GDZIE wolno
@@ -1511,14 +1451,6 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // zamykał wyrąb na mapie zbudowanej z samego lasu (regres złapany przez
     // `tools/ai-improvements-test.cjs`, test 7).
     const radiusHexes = candidateHexes;
-    if (workedKeys) {
-      candidateHexes = candidateHexes.filter(({ q, r }) => {
-        if (workedKeys.has(`${q},${r}`)) return true;
-        const hex = map.hexes[`${q},${r}`];
-        return !!hex && hexHasDepositReserve(hex);
-      });
-    }
-
     for (const k of fortHorseExtra) {
       const [qs, rs] = k.split(',');
       candidateHexes.push({ q: Number(qs), r: Number(rs) });
@@ -1727,7 +1659,9 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // Łące/Równinie bez lasu (`isFarmBaseTerrain`, improvement-build.ts:387), więc las na Wzgórzach/Górach/innym terenie
     // NIE jest karczowany przez automat żywnościowy (wyrąb tam nie prowadzi do farmy). Profile „surowce”/
     // „infrastruktura” (wyrąb jako zbiór drewna — wybór gracza) bez zmian.
-    const wyrabTylkoPodFarme = demandActive || focus === 'zywnosc';
+    // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: wycinka WYŁĄCZNIE pod ulepszenia żywnościowe — we WSZYSTKICH profilach
+    // (dawniej tylko K1/K2/K3); „NIGDY pod inne ulepszenia” (właściciel 2026-11-04).
+    const wyrabTylkoPodFarme = true;
     const wyrabMaSens = (q: number, r: number): boolean => {
       if (!wyrabTylkoPodFarme) return true;
       const hx = map.hexes[`${q},${r}`];
@@ -1898,7 +1832,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
           etap: passLabel, sonda: passIsProbe,
           focus, demandActive, citySkipWyrab, wyrabWlaczony, wyrabTylkoPodFarme, riverForestClearingOnly, offRiverClearing,
           rzekiDoZagospodarowania, lesneMinSpelnione, wolnoKarczowacPozaRzeka, forestLeftInRadius,
-          prog: WYRAB_MIN_FOREST_IN_RADIUS, pracaLeft, globalSpent, effectiveCityCap, onlyWorked,
+          prog: WYRAB_MIN_FOREST_IN_RADIUS, pracaLeft, globalSpent, effectiveCityCap, foodWorkedFilter: foodWorkedKeys !== null,
           techOk: isImprovementTechUnlocked('wyrab', unlockedTechs), civOk: civGate('wyrab', civArchetype),
           kosztWyrab: wyrabMetaRzeka?.kosztPraca ?? null,
           // Werdykty `las` to REKONSTRUKCJA bramek (nie obserwacja picka): nie licza wydatku budzetu po wczesniejszych heksach.
@@ -1918,7 +1852,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         if (!wyrabWlaczony) { verdict('odrzucony', citySkipWyrab ? 'wycinka wylaczona' : 'wycinka poza priorytetami tego przebiegu (etap bez wyrab)'); continue; }
         if (!isImprovementTechUnlocked('wyrab', unlockedTechs) || !civGate('wyrab', civArchetype)) { verdict('odrzucony', 'brak tech'); continue; }
         if (!wyrabMaSens(q, r)) { verdict('odrzucony', 'kandydat E2 odpada: teren nie jest baza pod farme (wycinka tylko pod farme)'); continue; }
-        if (!hexAllowsKey(q, r, 'wyrab')) { verdict('odrzucony', 'kandydat odpada: heks bez obywatela (onlyWorked)'); continue; }
+        if (!hexAllowsKey(q, r, 'wyrab')) { verdict('odrzucony', 'kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)'); continue; }
         if (placedHere.some(k => k === 'tartak' || k === 'oboz_lowiecki')) { verdict('odrzucony', 'kandydat odpada: tartak/oboz stoi na heksie'); continue; }
         if (!onRiv) {
           if (riverForestClearingOnly) { verdict('odrzucony', 'etap 0: tylko las przy rzece'); continue; }
@@ -2110,7 +2044,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     }
     // Q3 (wskaźnik niewydanego budżetu): gdy nadal brak kandydatów, a filtr „Tylko pola z obywatelami” jest włączony, policz pola promienia,
     // które odpadły WYŁĄCZNIE przez ten filtr (te same bramki co sonda, ale bez `hexAllowsKey`). Nie dodaje picków.
-    if (surplusReport && !surplusReport.anyCandidate && workedKeys) {
+    if (surplusReport && !surplusReport.anyCandidate && foodWorkedKeys) {
       for (const { q, r } of radiusHexes) {
         const hexKey = `${q},${r}`;
         if (surplusReport.filterWaitingKeys.has(hexKey)) continue;
