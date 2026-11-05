@@ -34,8 +34,12 @@ const REF_AI_OFF_BATTLES = 3;
 // R-WEB-WAR-ALLIN-CAPITAL-TEST-DEBT-Q1 (kat. A): 92d124b72 dodal komendom AI `allowFriendlyStack` (ruch koncentracji/zbiorki
 // konczy sie na heksie ze stosem wlasnych jednostek), a harness teraz je honoruje (jak main.ts) -- hashe stanu flagi OFF
 // zmierzone po tej zmianie (poprzednie: d7316c5be9bffe39 / 83f07f345643f6fb / 69d49bd592471e58). barbarians bez zmian.
+// R-WEB-AI-HOME-DEFENDERS-CIVILIAN-FILTER-Q1: glowna sciezka decideAITurn (krok 4b/4b2) nie przydziela
+// juz obrony domu cywilom, jednostkom zaokretowanym, morskim i wodzowi kampanii (homeDefenderPool). Zmiana
+// zamierzona -- dotyka tylko aiVsAi (przebieg AI z cywilami przy barbarzyncach); pozostale hashe bez zmian.
+// Poprzednia wartosc aiVsAi: be060bceec8cef33.
 const REF_OFF = {
-  aiVsAi: 'be060bceec8cef33', aiVsPlayer: '0ec28410234e2ed2', barbarians: 'c07e60985cb8a2ab', noLandPath: '3484217518ceb4ba',
+  aiVsAi: '20a5bc2c7abcba1b', aiVsPlayer: '0ec28410234e2ed2', barbarians: 'c07e60985cb8a2ab', noLandPath: '3484217518ceb4ba',
 };
 // Baza origin/main fcd86933 = PRZED zmiana zasiegu ruchu (tylko wprowadzenie reguly wojny).
 // Na tej bazie sekcja 6 byla juz czerwona (6a, 6b x4, 6c) -- zob. dyspozycje/autobot/runs/R-WEB-AI-MOVE-RANGE-Q1/.
