@@ -32,7 +32,7 @@ const UPKEEP_FILE = path.resolve(GRA, 'src/game/citizen-resource-upkeep.ts');
 const CITYPANEL_FILE = path.resolve(GRA, 'src/ui/cityPanel.ts');
 
 fs.writeFileSync(ENTRY_FILE, `
-export { citizenConsumptionEraMultiplier, formatCitizenConsumptionMult } from '../src/game/citizen-consumption-era';
+export { citizenConsumptionEraMultiplier, formatCitizenConsumptionMult, formatCitizenConsumptionNumber } from '../src/game/citizen-consumption-era';
 export { computeCityRationCost, rationFoodCostPerPop } from '../src/game/population-growth-v85';
 export { computeCityFoodBalanceV85, recomputeCityFoodBalancesInEcon } from '../src/game/turn-economy';
 export { computeCitizenResourceDrain, citizenUpkeepRateForEra } from '../src/game/citizen-resource-upkeep';
@@ -136,11 +136,25 @@ function runChecks(M, cityPanelText, log) {
     M.computeCityFoodBalanceV85(0, 10, { poziomRacji: 4 }, params, undefined, 3).kosztRacji,
     'E3: ten sam koszt niezaleznie od sciezki (gracz/AI/panstwo-miasto)');
 
+  // --- H. odczyt silnika: ta sama ludnosc i TEN SAM poziom, bez Spichlerza (zarzut 1 Evaluatora) ---
+  {
+    const basePerPop = M.computeCityRationCost(1, 3, params, undefined, 1);
+    eq(M.computeCityRationCost(10, 3, params, undefined, 1) / (10 * basePerPop), 1, 'H1: epoka 1 = x1');
+    eq(M.computeCityRationCost(10, 3, params, undefined, 2) / (10 * basePerPop), 1.5, 'H2: epoka 2 = x1,5 (ten sam poziom 3, pop 10)');
+    eq(M.computeCityRationCost(10, 3, params, undefined, 3) / (10 * basePerPop), 2, 'H3: epoka 3 = x2 (ten sam poziom 3, pop 10)');
+  }
+  // --- I. format liczb w UI: przecinek dziesietny, jak mnoznik ---
+  eq(M.formatCitizenConsumptionNumber(4.5), '4,5', 'I1: 4.5 -> "4,5"');
+  eq(M.formatCitizenConsumptionNumber(12), '12', 'I2: 12 -> "12"');
+  eq(M.formatCitizenConsumptionNumber(0.75), '0,75', 'I3: 0.75 -> "0,75"');
+  eq(M.formatCitizenConsumptionNumber(NaN), '0', 'I4: NaN -> "0"');
+
   // --- F/G. zrodlo UI: etykieta racji z mnoznikiem, bez zaszytych liczb -------------------------
   const fn = (cityPanelText.match(/function wyzwienieSummaryLabel[\s\S]*?\n\}/) || [''])[0];
   ok(fn.length > 0, 'F0: znaleziono wyzwienieSummaryLabel');
   ok(/citizenConsumptionEraMultiplier\(ownerEra\)/.test(fn), 'F1: etykieta pobiera mnoznik z citizenConsumptionEraMultiplier(ownerEra)');
   ok(/rationFoodCostPerPop\(level, params\)\s*\*\s*mult\b/.test(fn), 'F2: koszt = rationFoodCostPerPop x mult (bez zaszytej stawki)');
+  ok(/formatCitizenConsumptionNumber\(cost\)/.test(fn), 'F3b: koszt formatowany przecinkiem (formatCitizenConsumptionNumber)');
   ok(/formatCitizenConsumptionMult\(ownerEra\)/.test(fn), 'F3: tekst pokazuje mnoznik epoki z formattera');
   ok(!/\*\s*[0-9]/.test(fn.replace(/\/\/.*$/gm, '')), 'F4: brak mnozenia przez literal w etykiecie');
   return { fails, passes };

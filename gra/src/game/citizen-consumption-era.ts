@@ -32,3 +32,9 @@ export function formatCitizenConsumptionMult(era: number | null | undefined): st
   const m = citizenConsumptionEraMultiplier(era);
   return `×${String(m).replace('.', ',')}`;
 }
+
+/** Liczba do UI z przecinkiem dziesiętnym i bez zbędnych zer (4,5 / 12 / 0,75). */
+export function formatCitizenConsumptionNumber(v: number): string {
+  if (!Number.isFinite(v)) return '0';
+  return String(Math.round(v * 100) / 100).replace('.', ',');
+}

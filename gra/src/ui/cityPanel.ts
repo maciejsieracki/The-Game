@@ -251,7 +251,7 @@ import {
   citizenUpkeepDisplayLines,
   type CitizenUpkeepCoverage,
 } from '../game/citizen-resource-upkeep';
-import { citizenConsumptionEraMultiplier, formatCitizenConsumptionMult } from '../game/citizen-consumption-era';
+import { citizenConsumptionEraMultiplier, formatCitizenConsumptionMult, formatCitizenConsumptionNumber } from '../game/citizen-consumption-era';
 import {
   applyPostCaptureLawOverride,
   isPostCaptureLawActive,
@@ -1520,7 +1520,7 @@ function wyzwienieSummaryLabel(level: PoziomRacji, params: ReturnType<typeof bui
   const grow = rationGrowthPercent(level, params);
   const growTxt = grow > 0 ? `+${grow}` : String(grow);
   const multTxt = mult === 1 ? '' : ` (epoka ${formatCitizenConsumptionMult(ownerEra)})`;
-  return `${cost} 🍞/miesz./turę${multTxt} · ${growTxt}%`;
+  return `${formatCitizenConsumptionNumber(cost)} 🍞/miesz./turę${multTxt} · ${growTxt}%`;
 }
 
 function growthBreakdownRow(label: string, value: number, showZero = false): string {
