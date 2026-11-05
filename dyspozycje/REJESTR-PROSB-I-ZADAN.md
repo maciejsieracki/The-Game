@@ -8790,3 +8790,6 @@ Zrzut: drogi pokrywają całe terytorium wokół miast gęstą siatką trójkąt
 
 ## 2026-11-05 — DECYZJA WŁAŚCICIELA: nowy budynek handlowy „Emporion” (większy odpowiednik Targowiska)
 Nazwa: **Emporion**; wszystkie pozostałe parametry z propozycji orkiestratora zatwierdzone („możesz wprowadzać je do gry”): badanie Handel (Handel odblokowuje teraz Magazyn i Emporion), epoka 2, wymóg Targowiska w tym samym mieście, +5% handlu (kolejne, obok Targowiska) i +1 linia wymiany (slot trasy), wyższy pieniądz bazowy (np. 8) i koszt (≈ 2× Targowisko, np. 50) z utrzymaniem 2. Temat `R-WEB-BUILDING-EMPORION-Q1`.
+
+## 2026-11-05 — DECYZJA WŁAŚCICIELA: Spichlerz II → badanie Pismo + nazwa „Spichlerz Królewski”
+(1) „Powiążmy spichlerz 2 z Pismem, czyli ewidencją zapasów zboża.” → `techUnlock` Spichlerza II: Garncarstwo → **Pismo** (Brąz, poz. 4, koszt 180; Pismo odblokowuje dziś tylko Bibliotekę). (2) „Zmieńmy nazwę Spichlerz 2 na coś bardziej dostojnego, na przykład Spichlerz Królewski.” → nazwa wyświetlana **Spichlerz Królewski** (id `spichlerz_ii` bez zmian). Temat `R-WEB-GRANARY2-PISMO-ROYAL-RENAME-Q1`.
