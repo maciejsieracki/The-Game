@@ -8724,3 +8724,7 @@ Właściciel: „być może kolejne epoki zrobimy w momencie, gdy stworzymy now�
 ## 2026-11-05 — ZGŁOSZENIE (zrzut Egipt): część cywilizacji AI nie zbiera armii pod generałem
 
 Część cywilizacji AI zbiera całą armię pod generałem, a część nie (jedna cywilizacja na mapie zostaje z rozproszonymi jednostkami; niezależnie od nazwy). Oczekiwanie: wszystkie nowe jednostki podążają do najbliższego wodza i łączą się z nim; Brąz — dwóch wodzów (jeden na atak, drugi zbiera 5 tur w mieście); po śmierci wodza nowy w stolicy i nowa zbiórka; Kamień — jeden wódz, nowa armia dąży do niego. → temat `R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1` (dispatch + zrzut `evidence/zrzut-43-egipt-rozproszone-armie.webp`).
+
+## 2026-11-05 — ZGŁOSZENIE (zrzut): Chińczycy oblegają stolicę Egiptu (Memfis) bez wypowiedzenia wojny
+
+Plakietka „OBLĘŻENIE Memfis, poddanie za 2 tury”; w panelu Dyplomacja Chińczycy: Przyjazny, Traktat handlowy, „Wojny: brak”. Podejrzenie właściciela: poprawka (wymóg wojny) zrobiona tylko dla gracza, nie dla innych cywilizacji/państw-miast. → temat `R-WEB-AI-NO-SIEGE-WITHOUT-WAR-Q1`.
