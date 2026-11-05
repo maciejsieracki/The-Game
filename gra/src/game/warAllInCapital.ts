@@ -223,6 +223,12 @@ export interface WarAllInNav {
    * wczesniej w kolejnosci rozkazow (`plan.orders` sa wykonywane w tej kolejnosci).
    */
   occupied?: ReadonlySet<string>;
+  /**
+   * R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: podzbior `occupied` z WLASNYMI jednostkami (bez obcych na
+   * tym heksie): marsz moze przez nie PRZEJSC w ramach budzetu (heks posredni), ale krok koncowy
+   * nigdy nie staje na zajetym heksie. Brak = zachowanie sprzed tematu (objazd).
+   */
+  passThrough?: ReadonlySet<string>;
 }
 
 function navMoveCost(nav: WarAllInNav, hex: NonNullable<GameMap['hexes'][string]>): number {
@@ -451,6 +457,14 @@ function isFreeFor(nav: WarAllInNav, g: Goal, st: StepState, nk: string): boolea
   return true;
 }
 
+/** Heks z wlasna jednostka (nie zarezerwowany, nie obcy blok): wolno przez niego przejsc, nie stanac. */
+function isTransitFor(nav: WarAllInNav, g: Goal, st: StepState, nk: string): boolean {
+  if (nav.passThrough === undefined || !nav.passThrough.has(nk)) return false;
+  if (st.claimed.has(nk)) return false;
+  if (nk !== g.destKey && nav.blocked.has(nk)) return false;
+  return true;
+}
+
 /**
  * R-WEB-AI-MOVE-RANGE-Q1: od pierwszego kroku `first` jednostka idzie dalej po
  * polu odległości (wyłącznie krokami ZBLIŻAJĄCYMI, dn < poprzednie) tak długo, jak
@@ -487,7 +501,7 @@ function extendWalk(
       if (hex === undefined) continue;
       const enter = navMoveCost(nav, hex);
       if (enter === Infinity || spent + enter > budget) continue;
-      if (!isFreeFor(nav, g, st, nk)) continue;
+      if (!isFreeFor(nav, g, st, nk) && !isTransitFor(nav, g, st, nk)) continue;
       if (best === null || dn < best.dn
         || (dn === best.dn && (n.q < best.q || (n.q === best.q && n.r < best.r)))) {
         best = { q: n.q, r: n.r, dn, enter };
@@ -540,6 +554,9 @@ function extendWalk(
     curDist = best.dn;
     cur = best;
   }
+  // Przejscie przez wlasne jednostki dozwolone tylko jako heks POSREDNI: trasa nie moze konczyc sie
+  // na zajetym heksie (zatrzymanie = laczenie, a tego planer nie proponuje). Pierwszy krok jest wolny.
+  while (walk.length > 1 && !isFreeFor(nav, g, st, keyOf(walk[walk.length - 1]!.q, walk[walk.length - 1]!.r))) walk.pop();
   return walk;
 }
 

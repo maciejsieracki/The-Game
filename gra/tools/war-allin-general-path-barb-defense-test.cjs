@@ -276,9 +276,14 @@ withFlags(() => {
       for (const id of Object.keys(repStart)) {
         const c = cmds.get(id);
         const [sq, sr] = repStart[id];
+        // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: rep2 jest drugim obronca domu (kworum 2: najblizszy barbarzyncy po
+        // def1), nie luzna jednostka -- jego krok to trasa ku barbarzyncy; remis rownowaznych tras zalezy od tego,
+        // czy wlasne jednostki blokuja Dijkstre (teraz przechodza), wiec dopuszczamy oba kierunki dozwolone
+        // (miasto zbiorki ALBO barbarzynca), nadal NIE stolica wroga (brak targetCityId).
         assert(c !== undefined && c.type === 'move' && c.targetCityId === undefined
-          && hexDistance(c.toQ, c.toR, MY_CITY.q, MY_CITY.r) < hexDistance(sq, sr, MY_CITY.q, MY_CITY.r),
-        `T7: zastepca ${id} idzie do miasta zbiorki c1, nie na stolice (${JSON.stringify(c)})`);
+          && (hexDistance(c.toQ, c.toR, MY_CITY.q, MY_CITY.r) < hexDistance(sq, sr, MY_CITY.q, MY_CITY.r)
+            || hexDistance(c.toQ, c.toR, threat.q, threat.r) < hexDistance(sq, sr, threat.q, threat.r)),
+        `T7: zastepca ${id} idzie do miasta zbiorki c1 (lub obrona ku barbarzyncy), nie na stolice (${JSON.stringify(c)})`);
       }
     } finally {
       setArmyConsolidationOverride(false);

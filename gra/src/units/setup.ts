@@ -697,6 +697,86 @@ function siegeBlocksEntry(unit: RuntimeUnit, q: number, r: number): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: przechodzenie przez WLASNE jednostki
+// ---------------------------------------------------------------------------
+
+/**
+ * Zajetosc heksow na potrzeby ruchu jednostki wlasciciela X. Sam zbior (Set) zawiera WYLACZNIE heksy
+ * zablokowane = obce jednostki (kazdy inny wlasciciel: wojna, pokoj, panstwa-miasta, barbarzyncy) i
+ * obce miasta -- computePath/computeReachable nie wchodza w nie jako heks posredni. Heksy z WLASNYMI
+ * jednostkami trafiaja do `passThrough`: wolno przez nie przejsc (koszt terenu jak zwykle), ale nie
+ * wolno na nich ZAKONCZYC ruchu inaczej niz celowo (merge). Jedno zrodlo prawdy dla gracza, AI,
+ * barbarzyncow, zwiadu i marszu (parytet).
+ * / EN: movement occupancy for a mover of owner X: the Set itself holds only BLOCKED hexes (foreign
+ * units / foreign cities); hexes with own units are in `passThrough` (enterable en route, not a valid
+ * stopping hex unless the destination is that hex on purpose = merge).
+ */
+export class MoveOccupancy extends Set<string> {
+  readonly passThrough: Set<string> = new Set<string>();
+}
+
+/**
+ * Buduje zajetosc ruchu: obce jednostki -> blokada, wlasne -> przejscie. Heks z choc jedna obca
+ * jednostka jest zablokowany (nawet gdy stoi tam tez wlasna). `excludeIds` = jednostki ruszajacej sie
+ * armii (nie blokuja same siebie).
+ */
+export function buildMoveOccupancy(
+  units: readonly { id: string; ownerId: number; q: number; r: number }[],
+  moverOwnerId: number,
+  excludeIds: Iterable<string> = [],
+): MoveOccupancy {
+  const skip = new Set(excludeIds);
+  const occ = new MoveOccupancy();
+  for (const u of units) {
+    if (skip.has(u.id)) continue;
+    if (u.ownerId !== moverOwnerId) occ.add(keyOf(u.q, u.r));
+  }
+  for (const u of units) {
+    if (skip.has(u.id) || u.ownerId !== moverOwnerId) continue;
+    const k = keyOf(u.q, u.r);
+    if (!occ.has(k)) occ.passThrough.add(k);
+  }
+  return occ;
+}
+
+/** Kopia zajetosci z zachowaniem `passThrough` (zwykle `new Set(occ)` je gubi). */
+export function cloneMoveOccupancy(occ: Set<string>): MoveOccupancy {
+  const copy = new MoveOccupancy();
+  for (const k of occ) copy.add(k);
+  if (occ instanceof MoveOccupancy) for (const k of occ.passThrough) copy.passThrough.add(k);
+  return copy;
+}
+
+/** Heksy, na ktorych ruch NIE moze sie zakonczyc (blokady + heksy z wlasnymi jednostkami). */
+export function endBlockedKeys(occ: Set<string>): Set<string> {
+  const out = new Set<string>(occ);
+  if (occ instanceof MoveOccupancy) for (const k of occ.passThrough) out.add(k);
+  return out;
+}
+
+/** Czy heks jest tylko przejsciem (wlasna jednostka) -- wolno przez niego przejsc, nie wolno stanac. */
+export function isPassThroughHex(occ: Set<string>, q: number, r: number): boolean {
+  return occ instanceof MoveOccupancy && occ.passThrough.has(keyOf(q, r));
+}
+
+/**
+ * Ucina koniec SKROCONEGO segmentu trasy tak, by nie konczyl sie na heksie z wlasna jednostka
+ * (przejscie = bez zatrzymania i bez propozycji polaczenia). Pelna trasa konczaca sie na celu
+ * (`segment.length === fullLength`) zostaje bez zmian: cel na wlasnej jednostce = laczenie.
+ */
+export function trimSegmentEndOffPassThrough<T extends { q: number; r: number }>(
+  segment: T[],
+  fullLength: number,
+  occ: Set<string>,
+): T[] {
+  if (!(occ instanceof MoveOccupancy) || occ.passThrough.size === 0) return segment;
+  if (segment.length >= fullLength) return segment;
+  let end = segment.length;
+  while (end > 0 && occ.passThrough.has(keyOf(segment[end - 1]!.q, segment[end - 1]!.r))) end--;
+  return end === segment.length ? segment : segment.slice(0, end);
+}
+
+// ---------------------------------------------------------------------------
 // computeReachable
 // ---------------------------------------------------------------------------
 
@@ -728,6 +808,9 @@ export function computeReachable(
   costFn: (hex: Hex) => number = terrainMoveCost,
 ): Set<string> {
   const reachable = new Set<string>();
+  const passThroughKeys: ReadonlySet<string> = occupied instanceof MoveOccupancy
+    ? occupied.passThrough
+    : new Set<string>();
 
   // Dijkstra: dist map tracks the lowest accumulated cost to reach each hex.
   // We use a simple array-based min-heap approach via a sorted array for
@@ -821,7 +904,8 @@ export function computeReachable(
         const prevDist = dist.get(nKey);
         if (prevDist === undefined || newCost < prevDist) {
           dist.set(nKey, newCost);
-          reachable.add(nKey);
+          // Wlasna jednostka na heksie: przejscie TAK (heapPush), zatrzymanie NIE (nie jest celem zasiegu).
+          if (!passThroughKeys.has(nKey)) reachable.add(nKey);
           heapPush([newCost, nq, nr]);
         }
       }
@@ -842,7 +926,7 @@ export function computeReachable(
       const movCost = costFn(hex);
 
       // Passable and unoccupied neighbor is always reachable.
-      if (movCost !== Infinity && !occupied.has(nKey) && !siegeBlocksEntry(unit, nq, nr)) {
+      if (movCost !== Infinity && !occupied.has(nKey) && !passThroughKeys.has(nKey) && !siegeBlocksEntry(unit, nq, nr)) {
         reachable.add(nKey);
       }
     }

@@ -47,8 +47,8 @@ const MUT_CLAIM = {
 // Sonda diagnostyczna (tylko histogram przyczyn; nie zmienia wyniku firstStep).
 const MUT_PROBE = {
   name: 'sonda diagnostyczna firstStep', rel: 'game/ai.ts',
-  from: 'return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? null;',
-  to: `const __r = farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? null;
+  from: 'return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, endBlockedKeys(occ)) ?? path[0] ?? null;',
+  to: `const __r = farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, endBlockedKeys(occ)) ?? path[0] ?? null;
   if ((globalThis as any).__mfrProbe) (globalThis as any).__mfrProbe(unit, map, path, occ, __r);
   return __r;`,
 };

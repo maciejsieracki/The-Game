@@ -5,7 +5,7 @@
  */
 
 import { canAiEnterEmptyEnemyCity } from './city-hex-movement';
-import { keyOf } from '../units/setup';
+import { keyOf, cloneMoveOccupancy, endBlockedKeys, type MoveOccupancy } from '../units/setup';
 
 export interface AiCityMoveCommand {
   unitId: string;
@@ -110,10 +110,15 @@ export function executeAiCityMove(
     return { moved: false, captured: false, path: [] };
   }
 
-  const blockedKeys = new Set(opts.blockedKeys);
+  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: kopia zachowuje `passThrough` (heksy z wlasnymi jednostkami
+  // = przejscie bez zatrzymania); sam zbior to obce jednostki/miasta.
+  const blockedKeys = cloneMoveOccupancy(opts.blockedKeys);
   // Occupancy is resolved by the caller. A destination can contain both a
   // friendly stack and an enemy, so the command flag cannot safely clear it.
-  if (canEnterEmptyCity) blockedKeys.delete(opts.destinationKey);
+  if (canEnterEmptyCity) {
+    blockedKeys.delete(opts.destinationKey);
+    blockedKeys.passThrough.delete(opts.destinationKey);
+  }
   let path: readonly AiCityMovePathHex[] = opts.computePath(
     unit,
     command.toQ,
@@ -126,8 +131,9 @@ export function executeAiCityMove(
   if (opts.truncatePath !== undefined) {
     const cut = opts.truncatePath(path);
     if (cut.length < path.length) {
+      const endBlocked = endBlockedKeys(blockedKeys);
       let end = cut.length;
-      while (end > 0 && blockedKeys.has(keyOf(cut[end - 1]!.q, cut[end - 1]!.r))) end--;
+      while (end > 0 && endBlocked.has(keyOf(cut[end - 1]!.q, cut[end - 1]!.r))) end--;
       path = cut.slice(0, end);
       if (path.length === 0) {
         return { moved: false, captured: false, path };

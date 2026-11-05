@@ -25,12 +25,12 @@ const abs = (rel) => path.join(SRC, rel);
 
 const MUT_AI = {
   name: 'AI firstStep -> path[0]', rel: 'game/ai.ts',
-  from: 'return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? null;',
+  from: 'return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, endBlockedKeys(occ)) ?? path[0] ?? null;',
   to: 'return path[0] ?? null;',
 };
 const MUT_BARB = {
   name: 'barbarzynca firstStep -> path[0]', rel: 'game/barbarians.ts',
-  from: 'return farthestStepWithinBudget(path, unit.ruchLeft, map, costFn, occupied) ?? path[0] ?? null;',
+  from: 'return farthestStepWithinBudget(path, unit.ruchLeft, map, costFn, endBlockedKeys(occupied)) ?? path[0] ?? null;',
   to: 'return path[0] ?? null;',
 };
 const MUT_WAR = {
