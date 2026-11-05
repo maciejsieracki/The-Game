@@ -1,3 +1,12 @@
+## ROBOCZA 4c53a03f -- 2026-11-05 -- FALA 497: oblężenie zdejmowane natychmiast po pokoju (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`522271468` + NO-SIEGE-WITHOUT-WAR `368d707d8`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `4c53a03fda77dbb5236946fc01bcfecf`, 70240096 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: `setDiploRelation` woła `validateActiveSieges()` przy przejściu z wojny na inny status — plakietka oblężenia, blokada rekrutacji i kapitulacja nie wiszą po pokoju; testy potwierdzają brak ataków/marszu pod mur/wejścia do miasta bez wojny dla AI i państw-miast.
+- Testy: tsc PASS; no-siege-r2 10/0; siege-requires-war 49/0; lifted-po-bitwie 16/0; war-gates 22/0.
+- Ograniczenia: przyczyna zgłoszenia (Chińczycy–Memfis) niepotwierdzona bez zapisu gry (hipoteza: karta „Wojny:” filtruje mgłą kontakt gracza).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `00e508b29f6759a3408e85b5315dfc6d`, 70240058 bajtów.
+
 ## ROBOCZA 00e508b2 -- 2026-11-05 -- FALA 496: baner HUD bez słów brutto/netto, na całą szerokość (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`6efe338c7` + HUD-TOPBAR-NO-LABELS `f0a50fd68`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.

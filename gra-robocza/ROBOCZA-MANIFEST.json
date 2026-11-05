@@ -1,112 +1,110 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "00e508b29f6759a3408e85b5315dfc6d",
-  "bundleSha256": "aa9d32c2844388be3dc444a3f1ad03b8133207817f051a9d919755c1cdf26d44",
-  "bundleBytes": 70240058,
+  "bundleMd5": "4c53a03fda77dbb5236946fc01bcfecf",
+  "bundleSha256": "c0c830138714be74c4913755a287f56a7c18e9ded4a051c60f868c0b7360a41b",
+  "bundleBytes": 70240096,
   "sourceSnapshot": {
-    "source": "main 6efe338c7 + HUD-TOPBAR-NO-LABELS (f0a50fd68)",
+    "source": "main 522271468 + NO-SIEGE-WITHOUT-WAR (368d707d8)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 496: R-WEB-HUD-TOPBAR-NO-LABELS-Q1 — górny baner bez słów „brutto/netto”: duża liczba całkowita + obok dwa przyrosty (brutto, netto); wyjaśnienie w tooltipie; baner na całą dostępną szerokość (3×1fr), bez rozjeżdżania i nachodzenia przy 9-cyfrowych wartościach (1280/1024/800/640 px)."
+    "FALA 497: R-WEB-AI-NO-SIEGE-WITHOUT-WAR-Q1 — po zawarciu pokoju/rozejmu (zmiana relacji z wojny na inną) oblężenie jest walidowane od razu (plakietka „OBLĘŻENIE”, blokada rekrutacji i kapitulacja nie wiszą do następnego zdarzenia); potwierdzono testami, że AI/państwa-miasta nie atakują, nie maszerują pod mur i nie wchodzą do miasta bez wojny."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "hud-topbar-no-labels 94/0; hud-gross-net-rest 752/0; hud-topbar-grid-gross-net 192/0 (--no-mutants, --dist)"
+    "ai-no-siege-without-war-r2 10/0; ai-siege-requires-war 49/0; oblezenie-siege-lifted-po-bitwie 16/0; diplomacy-war-gates 22/0"
   ],
   "limits": [
-    "Handel i Surowce nie mają dużej liczby całkowitej (brak danych w HUD-state)",
-    "Panel imperium zachowuje etykiety „Wpływy brutto/Netto skarbiec”",
-    "Zapas przy 800 px/skrajne wartości = 0 px (deterministyczny)"
+    "Przyczyna zgłoszenia (Chińczycy i Memfis) niepotwierdzona bez zapisu gry: hipoteza — karta „Wojny:” filtruje wojny mgłą (kontakt gracza); pomiar ≥3 ziarna × 100 tur NIE_ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Operator Haiku r1 FAIL (N5) → r2 → FC PASS-WITH-NOTES."
+    "notes": "Operator Sonnet r1 BLOCK → r2 → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T17:53:49",
+  "hubGeneratedAt": "2026-11-05T19:08:37",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "00e508b29f6759a3408e85b5315dfc6d",
-      "sizeBytes": 70240058
+      "md5": "4c53a03fda77dbb5236946fc01bcfecf",
+      "sizeBytes": 70240096
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "00e508b29f6759a3408e85b5315dfc6d",
-      "sizeBytes": 70240058
+      "md5": "4c53a03fda77dbb5236946fc01bcfecf",
+      "sizeBytes": 70240096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "00e508b29f6759a3408e85b5315dfc6d",
-      "sizeBytes": 70240058
+      "md5": "4c53a03fda77dbb5236946fc01bcfecf",
+      "sizeBytes": 70240096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "00e508b29f6759a3408e85b5315dfc6d",
-      "sizeBytes": 70240058
+      "md5": "4c53a03fda77dbb5236946fc01bcfecf",
+      "sizeBytes": 70240096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "00e508b29f6759a3408e85b5315dfc6d",
-      "sizeBytes": 70240058
+      "md5": "4c53a03fda77dbb5236946fc01bcfecf",
+      "sizeBytes": 70240096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "00e508b29f6759a3408e85b5315dfc6d",
-      "sizeBytes": 70240058
+      "md5": "4c53a03fda77dbb5236946fc01bcfecf",
+      "sizeBytes": 70240096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "00e508b29f6759a3408e85b5315dfc6d",
-      "sizeBytes": 70240058
+      "md5": "4c53a03fda77dbb5236946fc01bcfecf",
+      "sizeBytes": 70240096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "00e508b29f6759a3408e85b5315dfc6d",
-      "sizeBytes": 70240058
+      "md5": "4c53a03fda77dbb5236946fc01bcfecf",
+      "sizeBytes": 70240096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "00e508b29f6759a3408e85b5315dfc6d",
-      "sizeBytes": 70240058
+      "md5": "4c53a03fda77dbb5236946fc01bcfecf",
+      "sizeBytes": 70240096
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "00e508b29f6759a3408e85b5315dfc6d",
-      "sizeBytes": 70240058
+      "md5": "4c53a03fda77dbb5236946fc01bcfecf",
+      "sizeBytes": 70240096
     }
   ],
-  "md5": "00e508b29f6759a3408e85b5315dfc6d",
-  "sizeBytes": 70240058,
+  "md5": "4c53a03fda77dbb5236946fc01bcfecf",
+  "sizeBytes": 70240096,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main 6efe338c7 + merge HUD-TOPBAR-NO-LABELS",
+  "source": "gra/src; main 522271468 + merge NO-SIEGE-WITHOUT-WAR",
   "immediatePreviousRelease": {
-    "bundleMd5": "ed464ad13d0a100d123cda16fdb1a9bf"
+    "bundleMd5": "00e508b29f6759a3408e85b5315dfc6d"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 ed464ad13d0a100d123cda16fdb1a9bf, 70237463 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 00e508b29f6759a3408e85b5315dfc6d, 70240058 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1280,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T17:53:47+00:00",
-  "buildStamp": "2026-11-05 17:53",
+  "publishedAt": "2026-11-05T19:08:34+00:00",
+  "buildStamp": "2026-11-05 19:08",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1291,5 +1289,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "FALA 496: R-WEB-HUD-TOPBAR-NO-LABELS-Q1"
+  "releaseScope": "FALA 497: R-WEB-AI-NO-SIEGE-WITHOUT-WAR-Q1"
 }
