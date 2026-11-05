@@ -68,18 +68,20 @@ function runSuite(M, label) {
   const t = (c, m, d) => { if (!c) r.fails++; if (label === 'REAL') ok(c, m, d); };
 
   // A1 granica 10:8
-  t(M.shouldLastStandSortie(80, 100, true) === true, 'A1 dokładnie 80% (8:10) atakuje');
-  t(M.shouldLastStandSortie(79.9, 100, true) === false, 'A1 79.9% nie atakuje');
-  t(M.shouldLastStandSortie(79, 100, true) === false, 'A1 79% nie atakuje');
-  t(M.shouldLastStandSortie(100, 100, true) === true, 'A1 równa siła atakuje');
-  t(M.shouldLastStandSortie(250, 100, true) === true, 'A1 silniejsza atakuje');
-  t(M.shouldLastStandSortie(0.8 * 37.3, 37.3, true) === true, 'A1 granica 80% bez błędu zmiennoprzecinkowego (37.3)');
-  t(M.shouldLastStandSortie(4.4399999999999995, 5.55, true) === true, 'A1 szum zmiennoprzecinkowy: 80% z 5.55 (4.4399999999999995*10 < 5.55*8) nadal atakuje');
+  t(M.shouldLastStandSortie(80, 100) === true, 'A1 dokładnie 80% (8:10) atakuje');
+  t(M.shouldLastStandSortie(79.9, 100) === false, 'A1 79.9% nie atakuje');
+  t(M.shouldLastStandSortie(79, 100) === false, 'A1 79% nie atakuje');
+  t(M.shouldLastStandSortie(100, 100) === true, 'A1 równa siła atakuje');
+  t(M.shouldLastStandSortie(250, 100) === true, 'A1 silniejsza atakuje');
+  t(M.shouldLastStandSortie(0.8 * 37.3, 37.3) === true, 'A1 granica 80% bez błędu zmiennoprzecinkowego (37.3)');
+  t(M.shouldLastStandSortie(4.4399999999999995, 5.55) === true, 'A1 szum zmiennoprzecinkowy: 80% z 5.55 (4.4399999999999995*10 < 5.55*8) nadal atakuje');
   // A2 nie ostatnia tura
-  t(M.shouldLastStandSortie(500, 100, false) === false, 'A2 nie-ostatnia tura nie atakuje (nawet silniejsza)');
+  // R-WEB-SIEGE-SORTIE-ANY-TURN-Q1: nie ma już bramki „ostatnia tura" -- decyduje wyłącznie próg 10:8.
+  t(M.shouldLastStandSortie(500, 100) === true, 'A2 silniejsza atakuje w dowolnej turze (brak bramki ostatniej tury)');
+  t(M.shouldLastStandSortie(79, 100) === false, 'A2 79% nie atakuje w żadnej turze');
   // A3 zerowe siły
-  t(M.shouldLastStandSortie(0, 100, true) === false, 'A3 brak obrońców => brak wypadu');
-  t(M.shouldLastStandSortie(100, 0, true) === false, 'A3 brak oblegających => brak wypadu');
+  t(M.shouldLastStandSortie(0, 100) === false, 'A3 brak obrońców => brak wypadu');
+  t(M.shouldLastStandSortie(100, 0) === false, 'A3 brak oblegających => brak wypadu');
   // A4 predykat ostatniej tury
   t(M.isLastTurnBeforeCapitulation({ oblegane: true, siegeCapitulationPending: true }) === true, 'A4 oblegane + pending = ostatnia tura');
   t(M.isLastTurnBeforeCapitulation({ oblegane: true }) === false, 'A4 oblegane bez pending != ostatnia tura');
@@ -91,12 +93,19 @@ function runSuite(M, label) {
   t(p80.sortie === true && p80.commands.length === 1 && p80.commands[0].type === 'attack'
     && p80.commands[0].unitId === 'd1' && p80.commands[0].targetUnitId === 'b1', 'B1 10:8 ostatnia tura => 1 komenda attack d1->b1');
   t(scenario(M, 79, 100).sortie === false && scenario(M, 79, 100).commands.length === 0, 'B2 79% => brak komendy, zostaje w oblężeniu');
-  t(scenario(M, 100, 100, { siegeCapitulationPending: false }).commands.length === 0, 'B3 nie-ostatnia tura => brak komendy');
+  // B3 (ANY-TURN): tura 1..N oblężenia (bez siegeCapitulationPending) => wypad przy >= 80%, brak przy < 80%.
+  t(scenario(M, 100, 100, { siegeCapitulationPending: false }).commands.length === 1, 'B3 nie-ostatnia tura, 100:100 => wypad');
+  t(scenario(M, 80, 100, { siegeCapitulationPending: false }).commands.length === 1, 'B3 nie-ostatnia tura, 10:8 => wypad');
+  t(scenario(M, 150, 100, { siegeCapitulationPending: false }).commands.length === 1, 'B3 nie-ostatnia tura, 1,5x => wypad');
+  t(scenario(M, 79, 100, { siegeCapitulationPending: false }).commands.length === 0, 'B3 nie-ostatnia tura, 79% => zostaje');
+  t(scenario(M, 79, 100, { siegeCapitulationPending: false }).isLastTurn === false
+    && scenario(M, 79, 100).isLastTurn === true, 'B3 isLastTurn nadal poprawnie raportowane (log)');
   t(scenario(M, 100, 100, { oblegane: false }).commands.length === 0, 'B4 brak oblężenia => brak wypadu');
   t(scenario(M, 300, 100).sortie === true, 'B5 silniejsza => wypad');
   t(scenario(M, 100, 100, {}, { ruchLeft: 0 }).commands.length === 0, 'B6 jednostka bez ruchu nie wychodzi');
-  t(scenario(M, 100, 100, {}, { sentry: true }).commands.length === 0, 'B7 uśpiona (sentry) nie wychodzi');
-  t(scenario(M, 100, 100, {}, { ufortyfikowanyWPolu: true }).commands.length === 0, 'B8 ufortyfikowana w polu nie wychodzi');
+  t(scenario(M, 100, 100, {}, { sentry: true }).commands.length === 1, 'B7 uśpiona (sentry) wychodzi (main.ts budzi)');
+  t(scenario(M, 100, 100, {}, { ufortyfikowanyWPolu: true }).commands.length === 1, 'B8 ufortyfikowana wychodzi (main.ts zdejmuje fortyfikację)');
+  t(scenario(M, 100, 100, {}, { inGarnizon: true }).commands.length === 1, 'B8b garnizonowa wychodzi (main.ts exitGarnizon)');
   t(scenario(M, 100, 100, {}, { embarked: true }).commands.length === 0, 'B9 zaokrętowana nie wychodzi');
   // B10 cywil nie liczy się do siły i nie jest kotwicą
   {
@@ -117,7 +126,15 @@ function runSuite(M, label) {
       { id: 'b1', ownerId: 7, q: 1, r: 0, ruchLeft: 2, siege: su(100) },
     ];
     const p = M.planLastStandSortie(Object.assign({}, CITY), 7, units, mkDeps(M));
-    t(p.sortie === true && p.commands[0].unitId === 'd2', 'B11 kotwica = pierwsza ruchoma (d2), nieruchoma d1 liczy się do siły ale nie wychodzi');
+    t(p.sortie === true && p.commands[0].unitId === 'd2', 'B11 kotwica = pierwsza ruchoma (d2) przy remisie siły, nieruchoma d1 liczy się do siły ale nie wychodzi');
+    const units3 = [
+      { id: 'a1', ownerId: 5, q: 0, r: 0, ruchLeft: 2, siege: su(30) },
+      { id: 'a2', ownerId: 5, q: 0, r: 0, ruchLeft: 2, siege: su(90) },
+      { id: 'a3', ownerId: 5, q: 0, r: 0, ruchLeft: 0, siege: su(500) },
+      { id: 'b1', ownerId: 7, q: 1, r: 0, ruchLeft: 2, siege: su(100) },
+    ];
+    const p3 = M.planLastStandSortie(Object.assign({}, CITY), 7, units3, mkDeps(M));
+    t(p3.sortie === true && p3.commands[0].unitId === 'a2', 'B11 kotwica = NAJSILNIEJSZA ruchoma (a2), nie najniższe id (a1) ani nieruchoma (a3)', JSON.stringify(p3.commands));
     const p2 = M.planLastStandSortie(Object.assign({}, CITY), 7, units.slice().reverse(), mkDeps(M));
     t(JSON.stringify(p) === JSON.stringify(p2), 'B11 determinizm: kolejność wejścia nie zmienia planu');
   }
@@ -169,8 +186,8 @@ console.log('=== B-tabela. Scenariusze PRZED/PO (wypad: PRZED = 0 zawsze, brak m
   for (const [lab, bd, br] of [['10:5', 50, 100], ['10:8', 80, 100], ['10:9', 90, 100], ['10:12', 120, 100]]) {
     for (const last of [true, false]) {
       const p = scenario(REALM, bd, br, { siegeCapitulationPending: last });
-      const want = last && exp[lab];
-      ok(p.sortie === want, `tabela ${lab} ${last ? 'ostatnia' : 'nie-ostatnia'} tura: PRZED=brak wypadu, PO=${p.sortie ? 'WYPAD' : 'zostaje'}`);
+      const want = exp[lab]; // ANY-TURN: ostatnia/nie-ostatnia bez znaczenia; PRZED (origin/main): wypad tylko w ostatniej
+      ok(p.sortie === want, `tabela ${lab} ${last ? 'ostatnia' : 'nie-ostatnia'} tura: PRZED=${last && exp[lab] ? 'WYPAD' : 'zostaje'}, PO=${p.sortie ? 'WYPAD' : 'zostaje'}`);
     }
   }
 }
@@ -179,11 +196,14 @@ console.log('=== C. MUTACJE ===');
 const MUT = [
   ['m1-prog-80-na-70', 'LAST_STAND_BESIEGED_PARTS = 8', 'LAST_STAND_BESIEGED_PARTS = 7'],
   ['m2-prog-80-na-90', 'LAST_STAND_BESIEGED_PARTS = 8', 'LAST_STAND_BESIEGED_PARTS = 9'],
-  ['m3-ignoruj-ostatnia-ture', 'if (!isLastTurn) return false;', ''],
+  ['m3-przywroc-bramke-ostatniej-tury', "if (city.oblegane !== true) return none('miasto nie jest oblegane');", "if (city.oblegane !== true) return none('miasto nie jest oblegane');\n  if (!isLastTurn) return none('x');"],
+  ['m3b-fortyfikacja-blokuje', 'if (u.oblegaCityId) return false;', 'if (u.oblegaCityId || u.ufortyfikowanyWPolu === true) return false;'],
+  ['m3c-garnizon-blokuje', 'if (u.oblegaCityId) return false;', 'if (u.oblegaCityId || u.inGarnizon === true) return false;'],
+  ['m3d-kotwica-pierwsza-nie-najsilniejsza', 'st > anchorStr + EPS', 'anchorStr < 0'],
   ['m4-ostro-wieksze', 'besiegerStrength * LAST_STAND_BESIEGED_PARTS', 'besiegerStrength * LAST_STAND_BESIEGED_PARTS + 1e-3'],
-  ['m5-bez-pending', 'city.oblegane === true && city.siegeCapitulationPending === true', 'city.oblegane === true'],
+  ['m5-isLastTurn-zawsze-false', 'city.oblegane === true && city.siegeCapitulationPending === true', 'false'],
   ['m6-ruch', 'if (u.ruchLeft <= 0) return false;', ''],
-  ['m7-sentry', 'if (u.sentry === true) return false;', ''],
+  ['m7-sentry-blokuje', 'if (u.oblegaCityId) return false;', 'if (u.oblegaCityId || u.sentry === true) return false;'],
   ['m11-bez-EPS', 'besiegedStrength * LAST_STAND_BESIEGER_PARTS + EPS', 'besiegedStrength * LAST_STAND_BESIEGER_PARTS'],
   ['m8-wojna', 'if (besiegerOwnerId === city.ownerId || !deps.isEnemy(city.ownerId, besiegerOwnerId)) {', 'if (false) {'],
   ['m9-cywil', 'deps.isMilitary(u))\n    .sort(byId);\n  // Oblegający', 'true)\n    .sort(byId);\n  // Oblegający'],
@@ -202,6 +222,15 @@ ok(/barbCmds\.unshift\(\.\.\.lastStandSortieCmdsForOwner\(BARBARIAN_OWNER_ID\)\)
 ok(/function lastStandSortieCmdsForOwner[\s\S]{0,200}if \(isHuman\(ownerId\)\) return out;/.test(main), 'D4 gracz (człowiek) wykluczony z automatu wypadu');
 ok(/estimateUnitCombatStrength\(runtimeUnitToSiegeUnit\(u\)\)/.test(main), 'D5 siła = wspólna funkcja siegeAi (estimateUnitCombatStrength)');
 ok(!/siege-last-stand/.test(fs.readFileSync(path.join(GRA, 'src', 'game', 'ai.ts'), 'utf8')), 'D6 ai.ts nietknięty (Stadnina/auto-improvements poza zakresem)');
+
+// D10 (ANY-TURN): main.ts budzi/zdejmuje fortyfikację+garnizon obrońców TYLKO przy zaplanowanym wypadzie.
+{
+  const i0 = main.indexOf('function lastStandSortieCmdsForOwner');
+  const blk = main.slice(i0, i0 + 3500);
+  ok(/if \(plan\.sortie\) \{[\s\S]*exitGarnizon\(u\)[\s\S]*exitFieldFortify\(u\)[\s\S]*u\.sentry = false[\s\S]*\}\s*out\.push/.test(blk),
+    'D10 lastStandSortieCmdsForOwner: przy plan.sortie exitGarnizon + exitFieldFortify + sentry=false');
+  ok(!/if \(plan\.isLastTurn\) \{\s*console/.test(blk) && /Wypad obleganej armii/.test(blk), 'D11 log wypadu także poza ostatnią turą');
+}
 
 // D7-D9 (R1 zarzut 1): kolejność faz i warunki egzekucji komendy attack -- test strukturalny kolejności,
 // bo żywy przebieg tury wymaga przeglądarki.
