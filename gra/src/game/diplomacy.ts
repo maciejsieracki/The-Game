@@ -842,6 +842,9 @@ export type DiplomaticEvent =
   | 'trybut_oferta_przyjeta'    // 1.8 tribute OFFER accepted: payer avoids attack (+5 Zaufanie)
   | 'wymiana_tech_gratis'       // 1.6 free technology exchange (+5 Zaufanie)
   | 'zerwanie_handlu'          // 1.5 zerwanie umowy handlowej (−10 Zaufanie; szablon §1.5: −15 Relacja/−10 Zaufanie)
+  // R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1: dobrowolne zerwanie umowy handlowej po ≥10 turach
+  // od zawarcia — zdarzenie śledzone (status/ślad), ale BEZ kary Zaufania (dZ=0).
+  | 'zerwanie_handlu_bez_kary'
   // --- Makieta DYPLOMACJA v1.1 domknięcie zaległości (2026-07-23) ---
   | 'zerwanie_traktatu';       // dobrowolne zerwanie traktatu (NAP/sojusz/granice/wasal) przez
                                // stronę — NIE wymuszone wojną (to 'zlamana_obietnica', -40,
@@ -1023,6 +1026,12 @@ export function applyDiplomaticEvent(
       // Szablon podaje: −15 Relacja / −10 Zaufanie; modelujemy −10 Zaufanie
       // (Relacja = Zaufanie + Respekt, więc −10 Z = −10 Relacja bez dotykania R).
       dZ = -10;
+      break;
+
+    case 'zerwanie_handlu_bez_kary':
+      // R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1: umowa handlowa zerwana po ≥10 turach od
+      // zawarcia — brak kary Zaufania (decyzja właściciela 2026-11-05).
+      dZ = 0;
       break;
 
     case 'zerwanie_traktatu':

@@ -1469,6 +1469,7 @@ import {
 import {
   formatDiploPenaltyShort,
   previewVoluntaryTreatyBreakPenalties,
+  voluntaryTreatyBreakPlan,
   previewWarDeclarationPenalties,
   previewAllianceObligationRefusal,
 } from './game/diplomacy-penalty-preview';
@@ -21017,7 +21018,7 @@ async function boot(): Promise<void> {
      */
     function treatyBreakPenaltyLabel(deal: ActiveDeal): string {
       return formatDiploPenaltyShort(
-        previewVoluntaryTreatyBreakPenalties(deal, _diplomacyParams()),
+        previewVoluntaryTreatyBreakPenalties(deal, _diplomacyParams(), turn),
       );
     }
 
@@ -21035,7 +21036,7 @@ async function boot(): Promise<void> {
     function buildBreakTreatyPenaltyPreview(dealId: string) {
       const deal = activeDeals.find(d => d.id === dealId);
       if (!deal) return undefined;
-      return previewVoluntaryTreatyBreakPenalties(deal, _diplomacyParams());
+      return previewVoluntaryTreatyBreakPenalties(deal, _diplomacyParams(), turn);
     }
 
     /**
@@ -21071,12 +21072,16 @@ async function boot(): Promise<void> {
       // → BRAK kary N5 za samo zerwanie (C-WIAR-N5KONF=B), ale otwiera okno karencji
       // N3-rozszerzone (10 tur, TYLKO inicjator zerwania płaci za atak w tym oknie).
       // Traktat CZASOWY → N5 zwykłe (-6 traktat / -4 handel), bez okna N3.
-      if (deal.wygasaTura === null) {
+      // R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1: umowa handlowa zawarta ≥10 tur temu → zerwanie
+      // BEZ kary (ani N3/okno karencji, ani N5, ani −10 Zaufania). Ta sama reguła dla gracza i AI.
+      const breakPlan = voluntaryTreatyBreakPlan(deal, turn);
+      const penaltyFree = breakPlan.penaltyFree;
+      if (breakPlan.openN3Window) {
         setDiploPairMeta(initiatorOwnerId, otherOwnerId0, {
           ...getDiploPairMeta(initiatorOwnerId, otherOwnerId0),
           n3Window: { turn, typ: 'bezterminowe', byOwnerId: initiatorOwnerId, charged: false },
         });
-      } else {
+      } else if (breakPlan.n5Charged) {
         appendWiarygodnoscEvent(
           initiatorOwnerId,
           isTrade ? 'zerwanie_dobrowolne_handel' : 'zerwanie_dobrowolne_traktat',
@@ -21098,7 +21103,9 @@ async function boot(): Promise<void> {
       }
 
       const cur = getDiploRelation(a, b);
-      const ev = isTrade ? 'zerwanie_handlu' as const : 'zerwanie_traktatu' as const;
+      const ev = penaltyFree
+        ? 'zerwanie_handlu_bez_kary' as const
+        : isTrade ? 'zerwanie_handlu' as const : 'zerwanie_traktatu' as const;
       let next = applyDiploEventTracked(a, b, cur, ev);
       if (wasAlliance && next.status === 'sojusz') {
         const stillAllied = activeDeals.some(d => dealInvolvesOwners(d, a, b) && isAllianceDealKind(d.rodzaj));
