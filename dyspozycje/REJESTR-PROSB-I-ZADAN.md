@@ -8787,3 +8787,6 @@ Właściciel: (1) u góry jedno pole rekrutacji wojsk — panel armii dla CAŁEJ
 
 ## 2026-11-05 — ZGŁOSZENIE (zrzut: Egipt, miasta Bubastis/Teby/Memfis/Heliopolis/Abydos/Nekhen/Sais/Elefantyna): cywilizacja buduje „wielokąty” dróg
 Zrzut: drogi pokrywają całe terytorium wokół miast gęstą siatką trójkątów/wielokątów (kilkadziesiąt heksów dróg per miasto, siatka łączy się między miastami), zamiast jednej drogi łączącej miasta. Właściciel: „Co to znowu za wynalazki tworzy z drogami cywilizacja? Przecież miało być łączenie tylko pomiędzy miastami, a nie robienie jakichś wielokątów.” Zasada: drogi budowane wyłącznie jako połączenia MIĘDZY miastami (najkrótsze ścieżki między parami sąsiednich miast własnych/sieć rozpinająca), bez siatki po całym terytorium. → temat `R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1`.
+
+## 2026-11-05 — DECYZJA WŁAŚCICIELA: nowy budynek handlowy „Emporion” (większy odpowiednik Targowiska)
+Nazwa: **Emporion**; wszystkie pozostałe parametry z propozycji orkiestratora zatwierdzone („możesz wprowadzać je do gry”): badanie Handel (Handel odblokowuje teraz Magazyn i Emporion), epoka 2, wymóg Targowiska w tym samym mieście, +5% handlu (kolejne, obok Targowiska) i +1 linia wymiany (slot trasy), wyższy pieniądz bazowy (np. 8) i koszt (≈ 2× Targowisko, np. 50) z utrzymaniem 2. Temat `R-WEB-BUILDING-EMPORION-Q1`.
