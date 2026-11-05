@@ -251,11 +251,17 @@ console.log('F. straznik tekstowy main.ts — konfiguracja wywolania pickera na 
   const i = mainSrc.indexOf('const picks = pickAutoImprovements({');
   const blok = i >= 0 ? mainSrc.slice(i, i + 5000) : '';
   ok(i >= 0, 'main.ts zawiera wywolanie `pickAutoImprovements` auto-ulepszen gracza');
-  ok(/skipWyrab:\s*true/.test(blok), 'main.ts (AI GRACZA): `skipWyrab: true` — gracz nie karczuje automatem');
+  // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (klasa A, asercja przestarzala): `skipWyrab`
+  // usuniety z automatu gracza -- wycinka lasu pod farme jest zawsze dozwolona (obywatel
+  // stoi na polu). Pinujemy ZAMIERZONE zachowanie: BRAK `skipWyrab: true` w wywolaniu.
+  ok(!/skipWyrab:\s*true/.test(blok), 'main.ts (AI GRACZA): brak `skipWyrab: true` — wycinka lasu dozwolona (SIMPLE-FOOD-RULE)');
   ok(/pracaBudgetPercent:\s*playerUlepszeniaPolicy\.pracaAutoPercent/.test(blok),
     'main.ts (AI GRACZA): budzet z polityki gracza (`pracaAutoPercent`), nie 100%');
-  ok(/getFocus:/.test(blok) && /getOnlyWorked:/.test(blok),
-    'main.ts (AI GRACZA): profil (`getFocus`) i filtr obrabianych heksow (`getOnlyWorked`) nadal przekazywane');
+  // Klasa A: przelacznik „tylko pola z obywatelami" (`getOnlyWorked`) usuniety razem z
+  // SIMPLE-FOOD-RULE. Profil (`getFocus`) nadal przekazywany; filtr zywnosci jest teraz
+  // stalym zachowaniem pickera (zywnosc tylko na polach obywateli), wiec pinujemy brak przelacznika.
+  ok(/getFocus:/.test(blok) && !/getOnlyWorked:/.test(blok),
+    'main.ts (AI GRACZA): profil (`getFocus`) przekazywany, a przelacznik `getOnlyWorked` usuniety (SIMPLE-FOOD-RULE)');
   ok(!/maxItemsPerCity/.test(blok),
     'main.ts (AI GRACZA): brak `maxItemsPerCity` — throttle 1/ture jest WYLACZNIE mechanizmem AI cywilizacji');
 }
