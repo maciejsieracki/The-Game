@@ -131,15 +131,19 @@ const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
 // the function body past this regex's old limit (10321 chars), breaking THIS test even though
 // nothing about it functionally regressed -- the limit was an arbitrary safety margin, not a
 // real constraint.
+// R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1 (ASERCJA PRZESTARZALA, klasa A): buildHudState
+// przyjmuje `ownerId` (domyslnie ME()) i liczy graczem `isMe(c.ownerId)` zamiast
+// dosłownego `ownerId === 0`. Zachowanie dla fotela 0 jest identyczne; test pinuje
+// obecna, zamierzona forme (stara forma nadal akceptowana dla zgodnosci).
 const buildHudStateMatch = mainTsSrc.match(
-  /function buildHudState\(\): HudState \{[\s\S]{0,20000}?\n {4}\}/,
+  /function buildHudState\((?:ownerId: number = ME\(\))?\): HudState \{[\s\S]{0,20000}?\n {4}\}/,
 );
 check('main.ts zawiera funkcje buildHudState(): HudState', buildHudStateMatch !== null);
 const buildHudStateBody = buildHudStateMatch ? buildHudStateMatch[0] : '';
 
 check(
-  'buildHudState: `const pc = cities.filter(c => c.ownerId === 0);` (gracz = ownerId 0)',
-  /const pc = cities\.filter\(c => c\.ownerId === 0\);/.test(buildHudStateBody),
+  'buildHudState: `const pc = cities.filter(...)` po graczu (isMe(c.ownerId) == gracz; dawniej ownerId === 0)',
+  /const pc = cities\.filter\(c => (?:isMe\(c\.ownerId\)|c\.ownerId === 0)\);/.test(buildHudStateBody),
 );
 check(
   'buildHudState: `const pop = pc.reduce((s, c) => s + c.population, 0);` (suma populacji)',

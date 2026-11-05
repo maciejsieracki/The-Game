@@ -104,23 +104,26 @@ try {
   // BEZ lasu (5,4) ma PIERWSZENSTWO przed wycinka lasu na rzece (E1 > E2) — wczesniej wycinka byla
   // etapem 0 i wyprzedzala kazda farme. Zmiana oczekiwan zgodna z wiazaca specyfikacja
   // ("Farma na heksach z rzeka, na ktorych NIE MA lasu - pierwszy priorytet, wszedzie, zanim cokolwiek z E2+").
-  const farmFirst = runPicker({ map, cities, worked, placed, getSkipWyrab: () => true });
-  onlyKey(farmFirst, 'farma', 'E1: farm on the river hex without forest comes before river forest clearing');
-  assert.ok(farmFirst.length >= 1, 'no item-count cap: E1 may place every eligible river farm in one call');
-  assert.ok(farmFirst.some(p => p.cityId === 'a' && p.q === 5 && p.r === 4), 'E1 target is the river hex 5,4');
-  check('0. E1 river farm (no forest) precedes river forest clearing; no item-count cap', () => {});
-  place(farmFirst, map, placed);
-
-  // R-WEB-AUTOIMPROVE-STAGES2-Q1 (decyzja wlasciciela 2026-10-31, przycisk „Wolno wycinac las”): przy przycisku
-  // WYLACZONYM (getSkipWyrab=true) automat gracza NIE wycina nigdzie — takze przy rzece (dawny pin: „E2 overrides
-  // the toggle”, 1 wycinka). Przy WLACZONYM wycinka E2 rusza.
-  const clearOff = runPicker({ map, cities, worked, placed, getSkipWyrab: () => true });
-  assert.ok(!clearOff.some(p => p.key === 'wyrab'), 'toggle OFF: zero wycinek, takze przy rzece (E2 nie omija przycisku)');
-  const clear = runPicker({ map, cities, worked, placed, getSkipWyrab: () => false });
-  onlyKey(clear, 'wyrab', 'stage E2 river clearing runs when the woodcut toggle is ON');
-  assert.ok(clear.length >= 1, 'no item-count cap: E2 may clear every eligible river forest in one call');
-  check('0a. E2 river forest clearing is isolated from farms/livestock and has no item-count cap', () => {});
-  place(clear, map, placed);
+  // KLASA A (asercja przestarzala): od R-WEB-AUTOIMPROVE-RIVER-FOREST-FIRST-PRIORITY-Q1 (2026-11-05) KROK 0 to
+  // wycinka lasu PRZY RZECE na polu obywatela, przed E1 (auto-improvements.ts, KROK 0). Pinujemy ZAMIERZONA kolejnosc:
+  // wycinka rzeczna pierwsza, farma E1 nie wyprzedza jej w tej turze; obie lesne heksy rzeki w jednym wywolaniu.
+  const firstCall = runPicker({ map, cities, worked, placed });
+  const riverForestHexKeys = new Set(['4,3', '5,3']);
+  const wyrabIdx = firstCall.map((p, i) => (p.key === 'wyrab' ? i : -1)).filter(i => i >= 0);
+  const farmIdx = firstCall.map((p, i) => (p.key === 'farma' ? i : -1)).filter(i => i >= 0);
+  assert.ok(wyrabIdx.length >= 2, `KROK 0: obie lesne heksy rzeki wycinane w JEDNYM wywolaniu (got ${wyrabIdx.length})`);
+  assert.ok(wyrabIdx.every(i => riverForestHexKeys.has(`${firstCall[i].q},${firstCall[i].r}`)),
+    'KROK 0: wycinka dotyczy wylacznie lasow rzecznych 4,3 / 5,3');
+  assert.ok(farmIdx.length === 0 || farmIdx[0] > wyrabIdx[wyrabIdx.length - 1],
+    'E1 (farma na rzece bez lasu) NIE wyprzedza wycinki rzecznej (KROK 0 przed E1)');
+  assert.ok(firstCall.some(p => p.cityId === 'a' && p.q === 5 && p.r === 4 && p.key === 'farma'),
+    'E1 cel 5,4 (rzeka bez lasu) obslugiwany w tej samej turze, po wycince');
+  check('0. KROK 0 (wycinka lasu rzecznego) przed E1; bez limitu liczby sztuk', () => {});
+  // Przelacznik „Wolno wycinac las” (getSkipWyrab) USUNIETY razem z SIMPLE-FOOD-RULE-NO-TOGGLES-Q1:
+  // wycinka lasu pod farme jest zawsze dozwolona; nie ma juz trybu „zero wycinek" z przelacznika.
+  const clear = firstCall.filter(p => p.key === 'wyrab');
+  check('0a. wycinka rzeczna jest izolowana od farm w tym samym wywolaniu; brak przelacznika (SIMPLE-FOOD-RULE)', () => {});
+  place(firstCall, map, placed);
 
   // E1 > E2: freshly cleared river hexes get their farms BEFORE any further clearing. Bez limitu liczby sztuk
   // (R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1) jedno wywolanie E2 wycina WSZYSTKIE kwalifikujace sie lasy rzeczne
@@ -256,8 +259,11 @@ try {
   // potem E1 stawia obie farmy; trzoda/irygacja dopiero po nich (E1 > E2 > E3 > E4 zachowane).
   // R-WEB-AUTOCLEAR-PRIORITY-LIVE-Q1 r2 (ABC-B): centrum (7,7) i pole (6,7) SASIADUJA z rzeka (7,6) => ich farmy to E1 i wyprzedzaja
   // wycinke E2 (2 farmy), potem wycinka obu lasow rzeki, potem farmy na wyciętych heksach rzeki; trzoda/irygacja po wszystkich farmach.
-  assert.deepEqual(aiTrace.slice(0, 6), ['farma', 'farma', 'wyrab', 'wyrab', 'farma', 'farma'],
-    `decideAITurn (bez limitu AI, ABC-D=B): farmy przy rzece (E1) -> wycinka rzek (E2) -> farmy na wycietych -> trzoda/irygacja (got ${aiTrace.join(',')})`);
+  // KLASA A (asercja przestarzala): od R-WEB-AUTOIMPROVE-RIVER-FOREST-FIRST-PRIORITY-Q1 (2026-11-05) KROK 0 wycina
+  // lasy PRZY RZECE na polach obywateli PRZED farmami E1 (auto-improvements.ts, KROK 0). Pinujemy zamierzona kolejnosc:
+  // wycinka obu lasow rzeki -> farmy (E1) na rzece i na wycietych heksach -> trzoda/irygacja dopiero po nich.
+  assert.deepEqual(aiTrace.slice(0, 6), ['wyrab', 'wyrab', 'farma', 'farma', 'farma', 'farma'],
+    `decideAITurn (bez limitu AI, ABC-D=B, KROK 0 przed E1): wycinka rzek -> farmy (E1) -> trzoda/irygacja (got ${aiTrace.join(',')})`);
   assert.ok(aiTrace.indexOf('bydlo') > 5 && aiTrace.indexOf('irygacja') > 5, 'trzoda/irygacja dopiero po farmach na rzece');
   const lastWyrab = aiTrace.lastIndexOf('wyrab');
   const firstLater = aiTrace.findIndex(k => k === 'bydlo' || k === 'irygacja');

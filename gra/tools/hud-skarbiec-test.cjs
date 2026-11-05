@@ -596,9 +596,20 @@ if (city) {
     // (po opcjonalnej bialej spacji stoi `(` -- nie kolejne znaki nazwy/`_`/etc.).
     const REAL_CALL_INCOME = /(?<![A-Za-z0-9_$])computeTradeRouteIncomeByCity\s*\(/;
     const REAL_CALL_PARAMS = /(?<![A-Za-z0-9_$])loadTradeRouteIncomeParams\s*\(/;
+    // Forma A (sprzed refaktoryzacji): bezposrednie wywolanie computeTradeRouteIncomeByCity
+    //   + loadTradeRouteIncomeParams w miejscu argumentu.
+    // Forma B (main.ts po HUD-SKARBIEC / sea-bonus): zmienna `routeIncomePreview.totalByCity`,
+    //   zbindowana w tym samym ciele funkcji do computeTradeRouteIncomeByCityBreakdown(...)
+    //   zasilanego loadTradeRouteIncomeParams(...), po doliczeniu bonusu morskiego.
+    // Obie formy sa dowodem "liczy sie na zadanie"; `undefined` nie przechodzi zadnej z nich.
+    const REAL_BREAKDOWN_BINDING = /(?<![A-Za-z0-9_$])const\s+routeIncomePreview\s*=\s*computeTradeRouteIncomeByCityBreakdown\s*\(/;
+    const bodyHasRealBreakdown = REAL_BREAKDOWN_BINDING.test(realFnBody)
+      && REAL_CALL_PARAMS.test(realFnBody);
     const pos11IsRealCalc = pos11Clean !== 'undefined'
-      && REAL_CALL_INCOME.test(pos11Clean)
-      && REAL_CALL_PARAMS.test(pos11Clean);
+      && (
+        (REAL_CALL_INCOME.test(pos11Clean) && REAL_CALL_PARAMS.test(pos11Clean))
+        || (/^routeIncomePreview\.totalByCity$/.test(pos11Clean) && bodyHasRealBreakdown)
+      );
     if (expectFixed) {
       assert(`${label}: pozycja 10 (tradeRouteBuildingBonusByCity) NIE jest literalnym undefined`,
         pos10IsRealVar, `pos10=${JSON.stringify(pos10)}`);
