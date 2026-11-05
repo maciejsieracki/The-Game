@@ -1,5 +1,13 @@
 /**
- * R-WEB-SIEGE-LAST-STAND-SORTIE-Q1 -- „atak ostatniej woli" obleganej armii.
+ * R-WEB-SIEGE-SORTIE-ANY-TURN-Q1 (2026-11-05): wypad obleganej armii w KAŻDEJ turze oblężenia, nie
+ * tylko w ostatniej. Reguła: siła obleganych >= 80% siły oblegających (10 : 8) => wychodzi i atakuje;
+ * poniżej => zostaje. „Ostatnia tura przed kapitulacją" to teraz tylko szczególny przypadek tej samej
+ * reguły (plan.isLastTurn służy już wyłącznie do logu). Śpiący (sentry) / ufortyfikowani / garnizonowi
+ * obrońcy NIE blokują wypadu -- main.ts budzi ich i zdejmuje fortyfikację na czas wypadu. Kotwica =
+ * NAJSILNIEJSZA ruchoma jednostka (remis -> najniższe id).
+ *
+ * R-WEB-SIEGE-LAST-STAND-SORTIE-Q1 -- „atak ostatniej woli" obleganej armii (pierwotna wersja,
+ * ograniczona do ostatniej tury).
  *
  * Reguła właściciela (2026-11-04): zanim oblegana armia skapituluje, w OSTATNIEJ turze próbuje
  * zaatakować oblegających -- ale tylko gdy nie jest słabsza o więcej niż 20% (stosunek
@@ -46,15 +54,13 @@ export function isLastTurnBeforeCapitulation(
 }
 
 /**
- * Czysta funkcja decyzji. Wypad TAK <=> ostatnia tura ORAZ obie strony mają siłę > 0 ORAZ
+ * Czysta funkcja decyzji. Wypad TAK <=> (w dowolnej turze oblężenia) obie strony mają siłę > 0 ORAZ
  * siła oblężonych >= 80% siły oblegających (10 : 8; dokładnie 80% atakuje, 79% nie).
  */
 export function shouldLastStandSortie(
   besiegedStrength: number,
   besiegerStrength: number,
-  isLastTurn: boolean,
 ): boolean {
-  if (!isLastTurn) return false;
   if (!(besiegedStrength > 0) || !(besiegerStrength > 0)) return false;
   return besiegedStrength * LAST_STAND_BESIEGER_PARTS + EPS >= besiegerStrength * LAST_STAND_BESIEGED_PARTS;
 }
@@ -100,12 +106,13 @@ export interface LastStandPlan {
   commands: LastStandAttackCmd[];
 }
 
-/** Jednostka może wyjść: ma ruch, nie jest zaokrętowana/uśpiona/ufortyfikowana w polu/oblegająca. */
+/**
+ * Jednostka może wyjść: ma ruch, nie jest zaokrętowana ani oblegająca. Sen (sentry), fortyfikacja
+ * i garnizon NIE blokują -- main.ts budzi/zdejmuje je przy wypadzie (R-WEB-SIEGE-SORTIE-ANY-TURN-Q1).
+ */
 export function canUnitSortie(u: LastStandUnit): boolean {
   if (u.ruchLeft <= 0) return false;
   if (u.embarked === true) return false;
-  if (u.sentry === true) return false;
-  if (u.ufortyfikowanyWPolu === true) return false;
   if (u.oblegaCityId) return false;
   return true;
 }
@@ -134,7 +141,6 @@ export function planLastStandSortie<U extends LastStandUnit>(
   });
 
   if (city.oblegane !== true) return none('miasto nie jest oblegane');
-  if (!isLastTurn) return none('nie ostatnia tura przed kapitulacją -- zostaje w oblężeniu');
   if (besiegerOwnerId === null || besiegerOwnerId === undefined) return none('brak oblegającego');
   if (besiegerOwnerId === city.ownerId || !deps.isEnemy(city.ownerId, besiegerOwnerId)) {
     return none('oblegający nie jest wrogiem');
@@ -157,11 +163,18 @@ export function planLastStandSortie<U extends LastStandUnit>(
 
   if (defenders.length === 0) return none('brak obrońców', bd, br);
   if (besiegers.length === 0) return none('brak oblegających przy murach', bd, br);
-  if (!shouldLastStandSortie(bd, br, isLastTurn)) {
+  if (!shouldLastStandSortie(bd, br)) {
     return none('siła obleganych poniżej 80% oblegających -- zostaje w oblężeniu', bd, br);
   }
 
-  const anchor = defenders.find(canUnitSortie);
+  // Kotwica = najsilniejsza ruchoma jednostka (remis -> najniższe id; defenders już posortowani po id).
+  let anchor: U | undefined;
+  let anchorStr = -1;
+  for (const d of defenders) {
+    if (!canUnitSortie(d)) continue;
+    const st = deps.strengthOf(d);
+    if (st > anchorStr + EPS) { anchor = d; anchorStr = st; }
+  }
   if (!anchor) return none('żadna jednostka nie może się ruszyć -- zostaje', bd, br);
 
   // Cel: oblegający, wokół którego (dystans <= 1) stoi najwięcej oblegających (roster obrońcy
@@ -178,7 +191,7 @@ export function planLastStandSortie<U extends LastStandUnit>(
 
   return {
     cityId: city.id, isLastTurn, besiegedStrength: bd, besiegerStrength: br, sortie: true,
-    reason: 'atak ostatniej woli (siła obleganych >= 80% oblegających)',
+    reason: 'wypad obleganej armii (siła obleganych >= 80% oblegających)',
     commands: [{ type: 'attack', unitId: anchor.id, targetUnitId: target.id }],
   };
 }

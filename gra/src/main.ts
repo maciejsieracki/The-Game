@@ -16740,9 +16740,35 @@ async function boot(): Promise<void> {
           isEnemy: areEnemyOwners,
           hexDistance,
         });
-        if (plan.isLastTurn) {
-          console.log('[Oblezenie] Atak ostatniej woli', city.name, plan.sortie ? 'TAK' : 'NIE', plan.reason,
+        // R-WEB-SIEGE-SORTIE-ANY-TURN-Q1: wypad w KAŻDEJ turze oblężenia (próg 10:8); log także poza ostatnią turą.
+        if (plan.besiegedStrength > 0 && plan.besiegerStrength > 0) {
+          console.log('[Oblezenie] ' + (plan.isLastTurn ? 'Atak ostatniej woli' : 'Wypad obleganej armii'),
+            city.name, plan.sortie ? 'TAK' : 'NIE', plan.reason,
             'obleganych=' + plan.besiegedStrength.toFixed(1), 'oblegajacych=' + plan.besiegerStrength.toFixed(1));
+        }
+        // Zarzut FC: wypad budzi cały garnizon, więc najpierw te same bramki, które egzekucja ataku AI
+        // stosuje (widoczność celu; wojna jest już w planie). Cel niewidoczny -> ani komenda, ani pobudka.
+        if (plan.sortie && ownerId !== BARBARIAN_OWNER_ID) {
+          const tgtId = plan.commands[0]?.targetUnitId;
+          const tgt = tgtId === undefined ? undefined : units.find(x => x.id === tgtId);
+          if (!tgt || !aiTargetVisibleForAction(currentVisibleForOwner(ownerId), fogOn, tgt.q, tgt.r, keyOf)) {
+            console.log('[Oblezenie] Wypad pominiety: cel niewidoczny', city.name);
+            continue;
+          }
+        }
+        if (plan.sortie) {
+          // Śpiący / ufortyfikowani / garnizonowi obrońcy nie blokują wypadu: budzimy ich i zdejmujemy
+          // fortyfikację/garnizon na czas wypadu (ruch zachowany: max(przed, po snapshocie)).
+          let changed = false;
+          for (const u of units) {
+            if (u.ownerId !== city.ownerId || u.q !== city.q || u.r !== city.r || isCivilianUnit(u)) continue;
+            const rl = u.ruchLeft;
+            if (u.inGarnizon === true && exitGarnizon(u)) changed = true;
+            if (u.ufortyfikowanyWPolu === true && exitFieldFortify(u)) changed = true;
+            u.sentry = false;
+            u.ruchLeft = Math.max(u.ruchLeft, rl);
+          }
+          if (changed) syncCityGarnizon(city);
         }
         out.push(...plan.commands);
       }
