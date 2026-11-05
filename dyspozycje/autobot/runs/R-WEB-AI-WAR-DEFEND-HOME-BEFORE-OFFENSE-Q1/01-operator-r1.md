@@ -4,7 +4,7 @@ TEMAT: R-WEB-AI-WAR-DEFEND-HOME-BEFORE-OFFENSE-Q1
 GOAL: AI w wojnie najpierw odbija wlasne utracone miasta (P1) i zwalcza wrogie wojsko na wlasnym terenie (P2), dopiero potem zdobywa cudze (P3); koniec symetrycznej "wymiany miast".
 
 ## ZMIANY / COMMIT
-SHA: patrz `git log` galezi roboczej (commit "R-WEB-AI-WAR-DEFEND-HOME-BEFORE-OFFENSE-Q1 r1"); baza origin/main 98ef746c2. PUSH NIE.
+SHA: 344e5b3fd (kod, testy, logi bramek, raport) na galezi worktree-wf_33f5e89f-ae6-1; baza origin/main 98ef746c2. PUSH NIE.
 - NOWY `gra/src/game/ai-war-home-defense.ts` -- czysty planer P1/P2 (klastry najezdzcow, ocena sily, histereza, pamiec per wlasciciel, flaga + override do testow).
 - `gra/src/game/ai.ts` -- `decideAITurn` po rdzeniu wola `applyHomeWarPriorities` (ostatnie slowo nad rozkazami ruchu: po war-allin i kampanii wodza; PM/defensiveCopy pominiete); `aiUnitCombatStrength` = `siegeAi.estimateUnitCombatStrength` (ta sama ocena co atak ostatniej woli).
 - NOWE testy/narzedzia: `gra/tools/ai-war-defend-home-{test,sim,measure}.cjs`.
