@@ -8712,3 +8712,7 @@ Fala = partia tematów webowych uruchomiona razem i wdrażana na ROBOCZĄ. Bież
 - **FALA 4** (W TOKU) — RIVER-FOREST-LIVE-VERIFY (dowód w realnej turze), AI-HOME-DEFENDERS-CIVILIAN-FILTER, TEST-DEBT-CAMPAIGN-Q4, TEST-DEBT-MISC-Q5, TERRAIN-ID-NAME-MAP-UNIFY.
 - **FALA 5** (ZAPLANOWANA) — TEST-HOOK-DETERMINISM (wymaga integracji `web-wip/HOOKS-fc`), definicja budynku Młyn (epoka klasyczna/średniowiecze — czeka na koszt/efekt), ewent. diagnostyka „Spichlerz+ proba 1” (obserwacja), nowe zgłoszenia właściciela po testach fali 4.
 - Po zakończeniu weba: REPIN Rust (osobno, poza numeracją fal webowych).
+
+## 2026-11-05 — DECYZJA WŁAŚCICIELA (ABC, odp. B): las przy rzece wycinany także BEZ obywatela
+
+Pytanie (po R-WEB-AUTOIMPROVE-RIVER-FOREST-LIVE-VERIFY-Q1): auto-rozdział obywateli prawie nigdy nie stawia ich na lesie przy rzece, więc przy zasadzie „wycinka tylko na polach z obywatelami” taki las nigdy nie jest wycinany (s7/s42: 0 wycinek w 22 turach). Odpowiedź: **B — poluzować zasadę: las przy rzece wycinamy także bez obywatela; farma/irygacja powstaje, gdy obywatel dojdzie.** Zakres (ZAŁOŻENIE do potwierdzenia przez FC): tylko las na Łące/Równinie (gdzie możliwa farma; nie Wzgórza) przy/na rzece (wspólna definicja `isHexNearRiver`), profile Żywność i Zrównoważony oraz AI; ulepszenia żywności (farma, irygacja, trzoda) pozostają tylko na polach obywateli; wyjątek obozu łowieckiego bez zmian. → temat `R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-NO-CITIZEN-Q1`.
