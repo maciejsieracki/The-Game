@@ -1,3 +1,12 @@
+## ROBOCZA 800f0cdd -- 2026-11-05 -- górny baner 3+3 z brutto i netto (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`e4245651f` + HUD-TOPBAR `b7fcfd3ce`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `800f0cdde6afbce8cc21817069fbca72`, 70230211 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: baner Skarbiec·Praca·Spichlerz / Handel·Nauka·Surowce, brutto i netto w każdej komórce, stały układ; netto = zmiana po końcu tury.
+- Testy: tsc PASS; hud-topbar 1221/0 (Chromium); praca-pula-rate-parity 20/0.
+- Ograniczenia: dodatnie netto Spichlerza niezmierzone; przy 640 px nachodzi na medalion Mocy; brak brutto/netto w karcie miasta i tooltipach.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `a2891378fa2a57a553e489fa0d48dfc6`, 70222772 bajtów.
+
 ## ROBOCZA a2891378 -- 2026-11-05 -- bez przycisków żywność/wycinka; wycinka lasu na Wzgórzach (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`fd784af0d` + SIMPLE-FOOD-RULE `b97f9d46a`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
