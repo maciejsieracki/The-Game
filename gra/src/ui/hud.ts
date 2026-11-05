@@ -91,6 +91,10 @@ export interface HudState {
   zlotoRate: number;
   praca: number;
   pracaRate: number;
+  /** R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: PROGNOZA netto Pracy na następny koniec tury (wpływ + nadwyżka
+   *  z ukończonego budynku − utrzymanie ulepszeń), liczona jak tick; `pracaRate` = zrealizowane saldo
+   *  OSTATNIEJ tury. Brak → komórka Praca pokazuje `pracaRate`. */
+  pracaPrognoza?: number;
   /** ZADANIE 1 (Maciej 2026-07-23): Praca/turę odjęta z puli za utrzymanie ulepszeń
    *  surowcowych (civ-wide) w ostatniej turze — do rozbicia w panelu Bilans/ZASOBY IMPERIUM. */
   pracaUpkeep?: number;
@@ -663,12 +667,13 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-chip-net.neg{color:var(--civ-hud-shortage,#ee6c6c);}
 @media (max-width:1200px){.civ-hud{--hud-cell-w:108px;--hud-cell-med:24px;--hud-cell-lbl:9px;--hud-cell-val:12px;--hud-cell-sm:9px;}
   .civ-hud .hud-chip-grid{column-gap:8px;}}
-@media (max-width:900px){.civ-hud{--hud-cell-w:74px;--hud-cell-med:0px;--hud-cell-lbl:8.5px;--hud-cell-val:10.5px;--hud-cell-sm:8.5px;}
-  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:7px;}
+@media (max-width:900px){.civ-hud{--hud-cell-w:78px;--hud-cell-med:14px;--hud-cell-lbl:8px;--hud-cell-val:10px;--hud-cell-sm:8.5px;}
+  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 6px;}
+  .civ-hud .civ-hud-chip-cell{column-gap:3px;}
+  .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 2px;}
+  .civ-hud .civ-hud-chip-top{gap:3px;}
   .civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl{flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
-  .civ-hud .civ-hud-chip-cell{grid-template-columns:minmax(0,1fr);column-gap:0;}
-  .civ-hud .civ-hud-chip-cell .civ-hud-chip-med{display:none;}
-  .civ-hud .hud-chip-grid{column-gap:6px;}}
+  .civ-hud .hud-chip-grid{column-gap:4px;}}
 .civ-hud .hud-right{display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;flex-shrink:0;}
 .civ-hud .hud-meta{text-align:right;}
 .civ-hud .b-menu{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
@@ -943,7 +948,11 @@ function pracaChipTitle(s: HudState): string {
   const autoUlepszenia = s.pracaAutoUlepszeniaKoszt ?? 0;
   const cudaNaMapie = s.pracaCudaKoszt ?? 0;
   const wplywBrutto = netto + utrzymanie + autoUlepszenia + cudaNaMapie;
-  return `${base}: BRUTTO ${signed(wplywBrutto)} → NETTO ${signed(netto)} pkt Pracy/turę`
+  const lead = s.pracaPrognoza !== undefined
+    ? `BRUTTO ${signed(s.pracaPrognoza + utrzymanie)} → NETTO ${signed(s.pracaPrognoza)} pkt Pracy/turę (PROGNOZA następnej tury: wpływ z miast + nadwyżka z ukończonego budynku − utrzymanie ulepszeń; bez auto-ulepszeń i Cudów na mapie, których koszt wychodzi dopiero w ticku)`
+      + ` · Ostatnia tura (zrealizowane): BRUTTO ${signed(wplywBrutto)} → NETTO ${signed(netto)}`
+    : `BRUTTO ${signed(wplywBrutto)} → NETTO ${signed(netto)} pkt Pracy/turę`;
+  return `${base}: ${lead}`
     + ` · Wpływ do puli imperium: ${signed(wplywBrutto)} pkt Pracy`
     + ` · Utrzymanie ulepszeń surowcowych: ${signed(-utrzymanie)} pkt Pracy`
     + ` · Auto-ulepszenia AI (gracz): ${signed(-autoUlepszenia)} pkt Pracy`
@@ -1213,15 +1222,18 @@ export function renderBarD1B(s: HudState): string {
   // zmiana stanu na następną turę). Wartości z TYCH SAMYCH pól HudState co dotąd/panel.
   const skarbiecBrutto = s.bogactwoWplywyBrutto ?? s.bogactwoRate ?? 0;
   const skarbiecNetto = s.bogactwoRate ?? skarbiecBrutto;
-  const pracaBrutto = pracaWplywBrutto(s);
-  const pracaNetto = s.pracaRate ?? 0;
+  // Praca: netto = PROGNOZA następnego końca tury (gdy dostępna), brutto = prognoza + utrzymanie ulepszeń
+  // (auto-ulepszenia i Cuda na mapie zależą od puli w ticku i nie wchodzą do prognozy).
+  const pracaNetto = s.pracaPrognoza ?? (s.pracaRate ?? 0);
+  const pracaBrutto = s.pracaPrognoza !== undefined ? s.pracaPrognoza + (s.pracaUpkeep ?? 0) : pracaWplywBrutto(s);
   const foodBrutto = s.zywnoscWplywMiast ?? s.zywnoscRate ?? 0;
   const foodNetto = s.zywnoscRate ?? 0;
   const handelBrutto = s.handelIncome ?? 0;
   const naukaStawka = s.naukaRate ?? 0;
   const surBrutto = s.surowceBrutto ?? 0;
-  const surWorst = surowceNajgorszy(s);
-  const surNetto = surWorst ? surWorst.netto : (s.surowceNetto ?? 0);
+  // Surowce: brutto i netto to TA SAMA wielkosc (suma po surowcach), wiec netto = suma netto; deficyt
+  // pojedynczego surowca sygnalizuje czerwony chip + ⚠ + tooltip („Najgorszy bilans" i lista per surowiec).
+  const surNetto = s.surowceNetto ?? 0;
   const row1: string[] = [
     chip6cHtml({
       iconId: 'res-treasury',
@@ -1259,6 +1271,8 @@ export function renderBarD1B(s: HudState): string {
       valClass: ` ${resourceTextClass('zywnosc')}`,
       // P-SPICHLERZ-ZERO-MYLACE: chip czerwony też przy niedokarmionych miastach, nie
       // tylko przy głodzie wojska/ujemnym tempie — sam kolor ma sygnalizować deficyt.
+      // (`hudFoodShortage` obejmuje `zywnoscMiastNiedokarmionych > 0`; dawny `rateWarn` na linii
+      // „brutto" zastąpiła czerwona linia „netto" + klasa shortage całego chipu.)
       shortage: hudFoodShortage(s),
       act: 'spichlerz',
       title: spichlerzChipTitle(s),
@@ -1297,7 +1311,6 @@ export function renderBarD1B(s: HudState): string {
       rate: formatCompactSigned(surBrutto),
       net: formatCompactSigned(surNetto),
       netTone: netTone(surNetto),
-      netLabel: surWorst ? 'najgorszy' : 'netto',
       shortage: hudResourceShortage(s),
       act: 'surowce',
       title: surowceChipTitle(s),

@@ -59,7 +59,7 @@ async function bundle(hudTsPath, outJs) {
 
 const BASE = {
   bogactwo: 999, bogactwoRate: -120, bogactwoWplywyBrutto: 480, bogactwoHandel: 82, bogactwoUtrzymanieBudynkow: 400, bogactwoUtrzymanieJednostek: 200,
-  praca: 88, pracaRate: 22, pracaUpkeep: 3, pracaAutoUlepszeniaKoszt: 0, pracaCudaKoszt: 0,
+  praca: 88, pracaRate: 22, pracaPrognoza: 20, pracaUpkeep: 3, pracaAutoUlepszeniaKoszt: 0, pracaCudaKoszt: 0,
   zywnoscLabel: '999', zywnoscRate: 5, zywnoscWplywMiast: 30, zywnoscKosztWojska: 25,
   nauka: 310, naukaRate: 15, kultura: 12, kulturaRate: 1, ludnosc: 12, ludnoscRate: 1,
   osiedla: 3, osiedlaMax: 6, tura: 42, epoka: 'Brąz', power: 100, handelIncome: 82, handelRouteCount: 2,
@@ -74,9 +74,13 @@ const STATES = {
   // bez deficytu surowca: komorka Surowce pokazuje SUME netto
   nodef: { ...BASE, surowceAlert: false, surowceNiedoborLabels: [], surowceBilans: [{ label: 'Drewno', brutto: 80, netto: 50 }, { label: 'Kamień', brutto: 40, netto: 5 }], surowceNetto: 55 },
 };
+  // brak prognozy Pracy -> komorka spada na zrealizowane saldo ostatniej tury (pracaRate)
+const STATES_EXTRA = { fallback: { ...BASE, pracaPrognoza: undefined } };
+Object.assign(STATES, STATES_EXTRA);
 const ORDER_ROW1 = ['Skarbiec', 'Praca', 'Spichlerz'];
 const ORDER_ROW2 = ['Handel', 'Nauka', 'Surowce'];
 const WIDTHS = [1280, 1024, 800];
+const NARROW = [640]; // < 800 px: bez asercji o medalionie Mocy (zob. raport) — tylko zawijanie/przycinanie/ikony
 
 function lum([r, g, b]) {
   const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
@@ -95,6 +99,7 @@ const MEASURE = () => {
     const col = (s) => { const e = c.querySelector(s); return e ? getComputedStyle(e).color : null; };
     cells[t('.civ-hud-chip-lbl')] = {
       x: Math.round(r.x * 10) / 10, y: Math.round(r.y * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10,
+      medW: Math.round((c.querySelector('.civ-hud-chip-med') || { getBoundingClientRect: () => ({ width: 0 }) }).getBoundingClientRect().width * 10) / 10,
       val: t('.civ-hud-chip-val'), brutto: t('.civ-hud-chip-rate'), netto: t('.civ-hud-chip-net'), nettoLabel: (c.querySelector('.civ-hud-chip-netrow .civ-hud-chip-k') || {}).textContent,
       bruttoLabel: (c.querySelector('.civ-hud-chip-gross .civ-hud-chip-k') || {}).textContent,
       nettoCls: (c.querySelector('.civ-hud-chip-net') || {}).className, clip, title: c.getAttribute('title') || '', short: c.classList.contains('civ-hud-chip-short'),
@@ -111,7 +116,7 @@ async function runChecks(chromium, jsPath, tag, opts) {
   const br = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox', '--headless=new'] });
   const res = {};
   try {
-    for (const w of WIDTHS) {
+    for (const w of [...WIDTHS, ...NARROW]) {
       for (const [name, st] of Object.entries(STATES)) {
         const page = await br.newPage({ viewport: { width: w, height: 260 } });
         await page.setContent('<!doctype html><meta charset="utf-8"><body style="margin:0;background:#3a4a3a"><div id="r"></div>');
@@ -155,6 +160,7 @@ function assertAll(res, label) {
       ok(m.shellRight <= m.powerX + 0.5, `${label} ${w}px/${n}: baner (prawy brzeg ${Math.round(m.shellRight)}) konczy sie przed medalionem Mocy (${Math.round(m.powerX)})`);
       ok(m.shellBottom <= 104, `${label} ${w}px/${n}: dol banera (${Math.round(m.shellBottom)}px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)`);
       ok(m.sw <= m.vw, `${label} ${w}px/${n}: brak poziomego przewijania strony`, { sw: m.sw, vw: m.vw });
+      ok(Object.values(c).every((v) => v.medW >= 12), `${label} ${w}px/${n}: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)`, Object.entries(c).map(([k, v]) => [k, v.medW]));
     }
     // A2: pozycje niezalezne od wielkosci liczb
     const ref = k0(w, 'small').cells;
@@ -164,24 +170,40 @@ function assertAll(res, label) {
       ok(same, `${label} ${w}px: pozycje/rozmiary komorek IDENTYCZNE dla small i ${n} (brak przeskakiwania)`, { ref: Object.fromEntries(Object.entries(ref).map(([k, v]) => [k, [v.x, v.y]])), cur: Object.fromEntries(Object.entries(cur).map(([k, v]) => [k, [v.x, v.y]])) });
     }
   }
+  // < 800 px (info o zakresie): zero zawijania/przycinania/nakladania, ikony widoczne, pozycje identyczne dla roznych liczb
+  for (const w of NARROW) {
+    const ref = k0(w, 'small').cells;
+    for (const n of ['small', 'huge']) {
+      const m = k0(w, n); const c = m.cells;
+      ok(JSON.stringify(Object.keys(c)) === JSON.stringify([...ORDER_ROW1, ...ORDER_ROW2]), `${label} ${w}px/${n}: kolejnosc 3+3 zachowana`);
+      ok(ORDER_ROW1.every((x) => Math.abs(c[x].y - c.Skarbiec.y) < 1.5) && ORDER_ROW2.every((x) => Math.abs(c[x].y - c.Handel.y) < 1.5) && c.Handel.y > c.Skarbiec.y + 20, `${label} ${w}px/${n}: 3 w rzedzie gora, 3 dol`);
+      ok(Object.values(c).every((v) => !v.clip), `${label} ${w}px/${n}: zaden tekst nie jest przyciety`, Object.entries(c).filter(([, v]) => v.clip).map(([k]) => k));
+      ok(Object.values(c).every((v) => v.medW >= 12), `${label} ${w}px/${n}: ikony widoczne`, Object.entries(c).map(([k, v]) => [k, v.medW]));
+      ok(Object.keys(ref).every((x) => c[x].x === ref[x].x && c[x].y === ref[x].y), `${label} ${w}px/${n}: pozycje identyczne z small`);
+      ok(m.sw <= m.vw, `${label} ${w}px/${n}: brak poziomego przewijania`);
+      if (n === 'small') console.log(`  info ${w}px: prawy brzeg banera ${Math.round(m.shellRight)} vs medalion Mocy x=${Math.round(m.powerX)} (${m.shellRight <= m.powerX + 0.5 ? 'bez nakladania' : 'NAKLADA SIE na medalion Mocy — poza zakresem wymagan 1280/1024/800 (uklad Mocy jest poza banerem)'})`);
+    }
+  }
   // A4 (tresc) na 1280
   const s = k0(1280, 'small').cells;
   const mm = (x) => x.replace(/−/g, '-');
   ok(s.Skarbiec.brutto === '+480' && mm(s.Skarbiec.netto) === '-120', `${label}: Skarbiec brutto +480 / netto −120`, [s.Skarbiec.brutto, s.Skarbiec.netto]);
-  ok(s.Praca.brutto === '+25' && s.Praca.netto === '+22', `${label}: Praca brutto +25 (22+3 utrzymanie) / netto +22`, [s.Praca.brutto, s.Praca.netto]);
+  ok(s.Praca.brutto === '+23' && s.Praca.netto === '+20', `${label}: Praca = PROGNOZA: netto +20, brutto +23 (prognoza + 3 utrzymanie)`, [s.Praca.brutto, s.Praca.netto]);
+  const fb = k0(1280, 'fallback').cells;
+  ok(fb.Praca.netto === '+22' && fb.Praca.brutto === '+25', `${label}: bez prognozy Praca spada na zrealizowane saldo (netto +22 / brutto +25)`, [fb.Praca.brutto, fb.Praca.netto]);
   ok(s.Spichlerz.brutto === '+30' && s.Spichlerz.netto === '+5', `${label}: Spichlerz brutto +30 / netto +5`, [s.Spichlerz.brutto, s.Spichlerz.netto]);
   ok(s.Handel.brutto === '+82' && s.Handel.netto === '+82', `${label}: Handel brutto +82 / netto +82`, [s.Handel.brutto, s.Handel.netto]);
   ok(s.Nauka.brutto === '+15' && s.Nauka.netto === '+15', `${label}: Nauka brutto +15 / netto +15`, [s.Nauka.brutto, s.Nauka.netto]);
-  ok(s.Surowce.brutto === '+120' && mm(s.Surowce.netto) === '-10' && s.Surowce.nettoLabel === 'najgorszy', `${label}: Surowce brutto +120 / najgorszy deficyt −10`, [s.Surowce.brutto, s.Surowce.netto, s.Surowce.nettoLabel]);
+  ok(s.Surowce.brutto === '+120' && s.Surowce.netto === '+40' && s.Surowce.nettoLabel === 'netto', `${label}: Surowce brutto +120 / netto +40 — OBA to sumy po surowcach (ta sama wielkosc)`, [s.Surowce.brutto, s.Surowce.netto, s.Surowce.nettoLabel]);
   const nd = k0(1280, 'nodef').cells;
   ok(nd.Surowce.netto === '+55' && nd.Surowce.nettoLabel === 'netto', `${label}: Surowce bez deficytu pokazuje sume netto +55`, [nd.Surowce.netto, nd.Surowce.nettoLabel]);
-  ok(Object.values(s).every((v) => v.bruttoLabel === 'brutto' && (v.nettoLabel === 'netto' || v.nettoLabel === 'najgorszy')), `${label}: kazda komorka ma slowne etykiety "brutto" i "netto"`);
+  ok(s.Surowce.short === true && nd.Surowce.short === false, `${label}: deficyt pojedynczego surowca = czerwony chip Surowce (shortage), brak deficytu = nie`, [s.Surowce.short, nd.Surowce.short]);
+  ok(Object.values(s).every((v) => v.bruttoLabel === 'brutto' && v.nettoLabel === 'netto'), `${label}: kazda komorka ma slowne etykiety "brutto" i "netto"`);
   const huge = k0(1280, 'huge').cells;
   ok(huge.Skarbiec.val === '1,2M' && mm(huge.Skarbiec.netto) === '-999,9k' && huge.Skarbiec.brutto === '+1,2M', `${label}: duze liczby skracane k/M (1,2M / −999,9k)`, [huge.Skarbiec.val, huge.Skarbiec.netto, huge.Skarbiec.brutto]);
   // kolory netto
   ok(/neg/.test(s.Skarbiec.nettoCls) && rgbOf(s.Skarbiec.colors.net).join() === '238,108,108', `${label}: netto ujemne = czerwone (#ee6c6c, jak DEFICIT-RED)`, [s.Skarbiec.nettoCls, s.Skarbiec.colors.net]);
   ok(/pos/.test(s.Praca.nettoCls) && rgbOf(s.Praca.colors.net).join() === '80,176,112', `${label}: netto dodatnie = zielone (--tg-green)`, [s.Praca.nettoCls, s.Praca.colors.net]);
-  ok(/neg/.test(s.Surowce.nettoCls), `${label}: Surowce najgorszy deficyt czerwony`);
   ok(s.Skarbiec.short === false || s.Skarbiec.short === true, `${label}: (info) klasa shortage obecna jako dotad`);
   // A5 kontrast
   const bg = [20, 26, 38];
@@ -205,7 +227,9 @@ async function mutants(chromium) {
     ['netto = brutto (Skarbiec)', (s) => s.replace('const skarbiecNetto = s.bogactwoRate ?? skarbiecBrutto;', 'const skarbiecNetto = skarbiecBrutto;')],
     ['netto ujemne nie jest czerwone', (s) => s.replace("return r < 0 ? 'neg' : r > 0 ? 'pos' : 'zero';", "return r > 0 ? 'pos' : 'zero';")],
     ['4 kolumny siatki (zawijanie Handel do gory)', (s) => s.replace('grid-template-columns:repeat(3,var(--hud-cell-w))', 'grid-template-columns:repeat(4,var(--hud-cell-w))')],
-    ['brak "najgorszego deficytu" w Surowcach', (s) => s.replace("const surNetto = surWorst ? surWorst.netto : (s.surowceNetto ?? 0);", 'const surNetto = s.surowceNetto ?? 0;')],
+    ['Surowce: netto = najgorszy pojedynczy surowiec (mieszanie wielkosci)', (s) => s.replace("const surNetto = s.surowceNetto ?? 0;", "const surNetto = (s.surowceBilans ?? []).reduce((m, r) => Math.min(m, r.netto), 0);")],
+    ['Praca: netto z zrealizowanej tury zamiast prognozy', (s) => s.replace("const pracaNetto = s.pracaPrognoza ?? (s.pracaRate ?? 0);", "const pracaNetto = s.pracaRate ?? 0;")],
+    ['ikony ukryte <=900px', (s) => s.replace("--hud-cell-med:14px;--hud-cell-lbl:8px", "--hud-cell-med:0px;--hud-cell-lbl:8px")],
   ];
   for (const [name, fn] of M) {
     const mutSrc = fn(src);
@@ -247,11 +271,23 @@ async function liveEndTurn(chromium) {
         o[t('.civ-hud-chip-lbl')] = { val: t('.civ-hud-chip-val'), netto: t('.civ-hud-chip-net'), title: c.getAttribute('title') || '' };
       });
       return o;
-    }).then((h) => Object.fromEntries(['Skarbiec', 'Praca', 'Nauka', 'Spichlerz'].map((k) => {
-      const v = h[k].val.replace(/\s/g, '').replace('−', '-').replace(',', '.');
-      const stock = exactOf(h[k].title) ?? Number(v);
-      return [k, { stock, netto: Number(h[k].netto.replace('−', '-').replace('+', '')) }];
-    })));
+    }).then(async (h) => {
+      const out = Object.fromEntries(['Skarbiec', 'Praca', 'Nauka', 'Spichlerz'].map((k) => {
+        const v = h[k].val.replace(/\s/g, '').replace('−', '-').replace(',', '.');
+        const stock = exactOf(h[k].title) ?? Number(v);
+        return [k, { stock, netto: Number(h[k].netto.replace('−', '-').replace('+', '')) }];
+      }));
+      // Surowce: netto komorki = SUMA netto po surowcach; rozbicie per surowiec z tooltipu; zapasy per surowiec z silnika
+      const sNet = Number((h['Surowce'].netto || '0').replace('−', '-').replace('+', '').replace(/\s/g, '').replace(',', '.'));
+      const stockMap = await page.evaluate(() => window.__hudGrossNetTestDebug.resourceStock());
+      const norm = (x) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').replace(/Ł/g, 'L').toLowerCase().trim();
+      const entries = [];
+      const re = /([^:;·]+?): brutto ([+\-−]?\d+), netto ([+\-−]?\d+)/g;
+      let m;
+      while ((m = re.exec(h['Surowce'].title)) !== null) entries.push({ key: norm(m[1]), netto: Number(m[3].replace('−', '-').replace('+', '')) });
+      out.Surowce = { stock: Object.values(stockMap).reduce((a, v) => a + v, 0), netto: sNet, stockMap, entries };
+      return out;
+    });
     const turnOf = () => page.evaluate(() => window.__civTest.state().turn);
     // jedna runda czyszczenia kart blokujacych koniec tury (sandbox): "Kolejka pusta" -> zakolejkuj budynek (Praca/produkcja,
     // nie zloto); kazda inna karta decyzyjna (np. dyplomacja) -> zamknij X. Zwraca true, gdy cos zrobiono.
@@ -306,18 +342,73 @@ async function liveEndTurn(chromium) {
         const d = b[k].stock - a[k].stock;
         ok(d === a[k].netto, `live tura ${t + 2}: ${k} netto z HUD (${a[k].netto}) == zmiana magazynu po endTurn (${d})`, { przed: a[k].stock, po: b[k].stock });
       }
-      // Praca: pracaRate (main.ts ownerLastPracaRate) to saldo OSTATNIEGO ticka, nie prognoza — rozjazd gdy koszty
-      // jednorazowe (np. auto-ulepszenia) zmieniaja sie miedzy tickami. ISTNIEJACA logika ekonomii (poza allowlista) —
-      // raportowane jako ZNANA ROZBIEZNOSC, nie asercja tego tematu.
+      // Praca: komorka pokazuje PROGNOZE nastepnego ticka (main.ts _livePracaForecast: wplyw + overflow z ukonczonego
+      // budynku - utrzymanie ulepszen; bez auto-ulepszen/Cudow na mapie) — HARD: == realna zmiana puli po endTurn.
       {
         const d = b.Praca.stock - a.Praca.stock;
-        console.log(`  ${d === a.Praca.netto ? 'ok  ' : 'INFO'} live tura ${t + 2}: Praca netto z HUD (${a.Praca.netto}) vs zmiana magazynu (${d})${d === a.Praca.netto ? '' : ' -- ZNANA ROZBIEZNOSC (saldo ostatniego ticka, nie prognoza; poza zakresem)'}`);
+        ok(d === a.Praca.netto, `live tura ${t + 2}: Praca netto z HUD (${a.Praca.netto}) == zmiana magazynu po endTurn (${d})`, { przed: a.Praca.stock, po: b.Praca.stock });
+      }
+      {
+        // Surowce: per surowiec oczekiwana zmiana = max(netto, -zapas) (zapas nie schodzi ponizej 0 — jak Spichlerz);
+        // suma oczekiwanych zmian == realna zmiana sumy zapasow, a KAZDY surowiec z zapasem >= |netto| (nieobciety) musi
+        // zmienic sie dokladnie o swoje netto z HUD.
+        const A = a.Surowce, B = b.Surowce;
+        let expSum = 0, exact = 0, clamped = [], bad = [];
+        for (const e of A.entries) {
+          const before = A.stockMap[e.key] || 0, after = B.stockMap[e.key] || 0;
+          const exp = Math.max(e.netto, -before);
+          expSum += exp;
+          if (e.netto < 0 && before + e.netto < 0) clamped.push(`${e.key}(zapas ${before}, netto ${e.netto})`);
+          else { if (Math.abs((after - before) - e.netto) > 0.5) bad.push([e.key, before, after, e.netto]); else if (e.netto !== 0) exact++; }
+        }
+        const d = B.stock - A.stock;
+        ok(bad.length === 0 && exact >= 1, `live tura ${t + 2}: Surowce — kazdy nieobciety surowiec zmienil sie o swoje netto z HUD (${exact} dokladnych, np. Glina)`, bad);
+        ok(Math.abs(d - expSum) <= 0.5, `live tura ${t + 2}: Surowce — realna zmiana sumy zapasow (${Math.round(d * 100) / 100}) == suma max(netto, -zapas) z HUD (${expSum}); netto-suma HUD ${A.netto}`, { przed: A.stock, po: B.stock });
+        if (clamped.length) console.log(`  info live tura ${t + 2}: Surowce obciete do 0 (niedobor, zapas 0) -> netto ujemne nie zmniejsza zapasu: ${clamped.join(', ')}`);
       }
       const dz = b.Spichlerz.stock - a.Spichlerz.stock;
       if (a.Spichlerz.stock + a.Spichlerz.netto >= 0) ok(dz === a.Spichlerz.netto, `live tura ${t + 2}: Spichlerz netto (${a.Spichlerz.netto}) == zmiana (${dz})`);
       else console.log(`  info live tura ${t + 2}: Spichlerz zapas ${a.Spichlerz.stock}, netto ${a.Spichlerz.netto} -> zapas obcinany do 0 (glod) -- NIE porownywane`);
     }
     ok(measured > 0, 'live: zmierzono co najmniej 1 pelna ture netto vs endTurn', { measured });
+    // Spichlerz z DODATNIM zapasem (hak ?civTest=1 __hudGrossNetTestDebug.setFoodReserve): netto nie jest obcinane do 0.
+    for (let t = 0; t < 2; t++) {
+      await prepare();
+      const hook = await page.evaluate((v) => { const d = window.__hudGrossNetTestDebug; if (!d) return false; d.setFoodReserve(v); return true; }, 600);
+      ok(hook, 'live: hak __hudGrossNetTestDebug.setFoodReserve dostepny');
+      await wait(1500);
+      const a = await snap();
+      ok(a.Spichlerz.stock === 600, `live Spichlerz+: zapas ustawiony na 600 (HUD: ${a.Spichlerz.stock})`);
+      if (!(await endTurn())) { console.log('  info live Spichlerz+: tura sie nie zakonczyla -- NIE_ZMIERZONO'); break; }
+      const b = await snap();
+      const dz = b.Spichlerz.stock - a.Spichlerz.stock;
+      ok(dz === a.Spichlerz.netto, `live Spichlerz+ (proba ${t + 1}): netto z HUD (${a.Spichlerz.netto}) == zmiana magazynu po endTurn (${dz}) przy zapasie 600`, { przed: a.Spichlerz.stock, po: b.Spichlerz.stock });
+    }
+    // Panel imperium: zakladki Spichlerz/Surowce/Handel/Nauka maja linie „Brutto -> netto" z TYMI SAMYMI liczbami co komorka HUD.
+    await prepare();
+    const hudVals = await page.evaluate(() => {
+      const o = {};
+      document.querySelectorAll('.civ-hud-banner-left .civ-hud-chip-cell').forEach((c) => {
+        const t = (q) => ((c.querySelector(q) || {}).textContent || '').replace(/\s/g, '');
+        o[t('.civ-hud-chip-lbl')] = { b: t('.civ-hud-chip-rate'), n: t('.civ-hud-chip-net') };
+      });
+      return o;
+    });
+    const normTxt = (x) => (x || '').replace(/[\s\u00a0\u202f]/g, '').replace(/\u2212/g, '-');
+    for (const k of ['Spichlerz', 'Surowce', 'Handel', 'Nauka']) {
+      await page.evaluate((lbl) => { const c = [...document.querySelectorAll('.civ-hud-banner-left .civ-hud-chip-cell')].find((x) => (x.querySelector('.civ-hud-chip-lbl') || {}).textContent === lbl); if (c) c.click(); }, k);
+      await wait(1500);
+      const txt = await page.evaluate(() => { const e = document.querySelector('.civ-emp-grossnet'); return e ? e.textContent : null; });
+      const m = txt ? /Brutto([+\-]?[\d,.kM]+)\u2192netto([+\-]?[\d,.kM]+)/.exec(normTxt(txt)) : null;
+      ok(!!m, `panel imperium (${k}): linia "Brutto -> netto" obecna`, txt);
+      if (m) {
+        const hb = normTxt(hudVals[k].b).replace('+', ''), hn = normTxt(hudVals[k].n).replace('+', '');
+        console.log(`  info panel ${k}: panel brutto ${m[1]} netto ${m[2]} | HUD brutto ${hudVals[k].b} netto ${hudVals[k].n}`);
+        ok(m[2].replace('+', '') === hn && m[1].replace('+', '') === hb, `panel imperium (${k}): brutto i netto z panelu == komorka HUD`, [m[1], m[2], hudVals[k].b, hudVals[k].n]);
+      }
+      await page.keyboard.press('Escape');
+      await wait(600);
+    }
     ok(errors.length === 0, 'live: zero pageerror', errors.slice(0, 3));
   } finally { await br.close(); }
 }

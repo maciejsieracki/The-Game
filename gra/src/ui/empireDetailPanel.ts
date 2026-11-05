@@ -1614,6 +1614,19 @@ function renderEmpirePracaBudgetSplitSection(): string {
  * `renderSkarbiecTaxSplitSection`, patrz `econSliderVisibilityForOnlyEconId` i box „ŹRÓDŁO
  * FINANSOWANIA" niżej, który tylko WSKAZUJE suwak, nie duplikuje go).
  */
+/**
+ * R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: wspolna linia „brutto -> netto" w nagłówkach zakładek
+ * (Nauka/Spichlerz/Surowce/Handel) — te same liczby co komórki HUD (HudState), bez 2. kalkulacji.
+ * Netto ujemne = klasa `neg` (czerwone), dodatnie/zero = `pos`.
+ */
+function grossNetSub(brutto: number | undefined, netto: number | undefined, unit: string, note = ''): string {
+  if (brutto === undefined || netto === undefined) return '';
+  const b = Math.round(brutto);
+  const n = Math.round(netto);
+  const cls = n < 0 ? 'neg' : 'pos';
+  return `<div class="civ-emp-hero-sub civ-emp-grossnet">Brutto <b>${signedPl(b)}</b> → netto <b class="${cls}">${signedPl(n)}</b> ${unit} / turę${note}</div>`;
+}
+
 function renderNaukaSection(
   rows: EmpireDetailSnap['cityEcon'],
   economy: EmpireDetailSnap['economy'],
@@ -1630,7 +1643,8 @@ function renderNaukaSection(
 
   let h = '<div class="civ-emp-sect" data-section="nauka">'
     + '<div class="civ-emp-eyebrow">NAUKA IMPERIUM</div>'
-    + `<div class="civ-emp-hero ${heroCls}">${signedPl(rate)} PN / turę</div>`;
+    + `<div class="civ-emp-hero ${heroCls}">${signedPl(rate)} PN / turę</div>`
+    + grossNetSub(rate, rate, 'PN', ' (Nauka nie ma dziś kosztów — brutto = netto)');
 
   if (rows.length === 0) {
     h += `<div class="civ-emp-hero-sub">Bank badań <b>${bank}</b> PN</div>`
@@ -2993,7 +3007,7 @@ function renderSpichlerzHeroSub(
  * PYTANIE-85 — Spichlerz centralny: nagłówek magazynu, podsumowanie tury
  * (kanoniczne etykiety) + tabela miast.
  */
-function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
+function renderSpichlerzCentralnySection(food: EmpireFoodSnap, economy?: EmpireDetailSnap['economy']): string {
   const pct = food.maxCap > 0
     ? Math.max(0, Math.min(100, Math.round((food.zapasy / food.maxCap) * 100)))
     : 0;
@@ -3023,7 +3037,8 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
     + `<div class="civ-emp-hero ${heroCls} civ-emp-sp-hero"><span>${food.zapasy}</span>`
     + (food.maxCap > 0 ? `<span class="cap">/ ${food.maxCap}</span>` : '')
     + `<span class="ic" aria-hidden="true">${brandIconSvg('res-food', 16)}</span></div>`
-    + renderSpichlerzHeroSub(food, pct, alarm, hasDeficit);
+    + renderSpichlerzHeroSub(food, pct, alarm, hasDeficit)
+    + (economy ? grossNetSub(economy.zywnoscWplywMiast ?? economy.zywnoscRate, economy.zywnoscRate, '🍞', ' (brutto = nadwyżka miast → centrala; netto = po deficytach miast i armii)') : '');
   if (food.maxCap > 0) {
     h += `<div class="civ-emp-bar civ-emp-sp-bar"><div class="${barCls}" style="width:${pct}%"></div></div>`;
   }
@@ -3397,7 +3412,7 @@ function pelnyCountWord(n: number): string {
  * / EN: pure reskin to the Power-section pattern — the hero line only aggregates the
  * cards rendered below; no data, numbers or business logic changed.
  */
-function renderSurowceSection(rows: EmpireResourceRow[]): string {
+function renderSurowceSection(rows: EmpireResourceRow[], economy?: EmpireDetailSnap['economy']): string {
   let sur = `<div class="civ-emp-sect sep" data-section="surowce">`;
   if (rows.length === 0) {
     sur += `<div class="civ-emp-eyebrow" style="margin-bottom:10px">MAGAZYN PAŃSTWA</div>`
@@ -3466,6 +3481,9 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
       : `obywatele: <b class="good">pokryte</b>`);
   }
   sur += `<div class="civ-emp-hero-sub civ-emp-res-sub">${subParts.join(' · ')}</div>`;
+  if (economy) {
+    sur += grossNetSub(economy.surowceBrutto, economy.surowceNetto, 'szt.', ' (suma po surowcach; netto po zużyciu obywateli, budynków i wojska)');
+  }
 
   if (stored.length > 0) {
     sur += `<div class="civ-emp-res-grid" style="margin-top:14px">${stored.map(resCardHtml).join('')}</div>`;
@@ -3528,6 +3546,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('cp-trade', 14)}</span>`
     + `<span class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</span></div>`
     + `<div class="civ-emp-hero ${heroCls}">${signedPl(t.totalIncome)} złota / turę</div>`
+    + grossNetSub(t.totalIncome, t.totalIncome, 'złota', ' (trasy nie mają kosztów; dochód jest już wliczony we wpływy Skarbca)')
     + `<div class="civ-emp-hero-sub"><b>${t.routes.length}</b> ${routeCountWord(t.routes.length)} · `
     + `<b>${t.activeDeals.length}</b> ${dealCountWord(t.activeDeals.length)}</div>`;
 
@@ -3992,7 +4011,7 @@ function render(): void {
   const obywatele = renderObywateleSection(ce, cp, e, p, k, snap.religion, snap.resources, snap.happiness);
 
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
-  const spichlerz = renderSpichlerzCentralnySection(snap.food)
+  const spichlerz = renderSpichlerzCentralnySection(snap.food, e)
     .replace('data-section="spichlerz-centralny"', 'data-section="spichlerz"')
     .replace('class="civ-emp-sect"', 'class="civ-emp-sect sep"');
 
@@ -4203,7 +4222,7 @@ function render(): void {
   kult += `<div class="civ-emp-foot">Szczegóły per miasto (źródła, progi) — panel miasta → zakładka Kultura. Przycisk Kultura na toolbarze = zasięg na mapie.</div></div>`;
 
   // — MAGAZYN PAŃSTWA (surowce, mockup „Magazyn surowców" — Maciej 2026-07-24) —
-  const sur = renderSurowceSection(snap.resources);
+  const sur = renderSurowceSection(snap.resources, e);
 
   // — HANDEL (TEMAT 14, Maciej 2026-07-24) — żeton HUD „Handel" obok Skarbca —
   const handel = renderHandelSection(snap.trade);
