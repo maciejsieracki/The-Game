@@ -29,3 +29,5 @@ BLOKADY:
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (kontrola zakresu `auto-improvements.ts`, zawężenie testów, ryzyka 1–2) → Obrona → Final Control; decyzja właściciela w pkt 1–2.
 DEPLOY/PUSH: NIE WYKONANO
+
+SHA: 4f5400bdd (commit zmian + raportu; worktree na detached HEAD od origin/main c9103e161; push NIE).
