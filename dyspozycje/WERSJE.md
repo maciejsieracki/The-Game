@@ -1,3 +1,12 @@
+## ROBOCZA 5ab46e7b -- 2026-11-05 -- AI: obrona własnego terenu i odbijanie miast przed zdobywaniem (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`98ef746c2` + DEFEND-HOME `c2799546d`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `5ab46e7b914d3a8a25b4c19bf5e12c62`, 70227877 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: AI zwalcza wrogie wojsko na swoim terenie i odbija utracone miasta przed zdobywaniem cudzych; koniec wymiany miast.
+- Testy: tsc PASS; defend-home 30/0; ai-war-gate 24/0; army-concentration 56/0.
+- Ograniczenia: progi to założenia (80/60/25/125%); symulacja: zdobycia 33→4 — sprawdzić w grze, czy agresja nie jest zduszona; brak Chromium.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f34ab067cb42f24f3fcd0a25e805c153`, 70220331 bajtów.
+
 ## ROBOCZA f34ab067 -- 2026-11-05 -- zbiórka armii AI w stos, plakietka oblężenia pod panelami (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`01fdd771f` + SCATTERED `5065852a2` + ZORDER `46776364f`) i commit wdrożenia; zgłoszenia właściciela, stała zgoda.
