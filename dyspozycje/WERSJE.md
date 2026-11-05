@@ -1,3 +1,12 @@
+## ROBOCZA a2891378 -- 2026-11-05 -- bez przycisków żywność/wycinka; wycinka lasu na Wzgórzach (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`fd784af0d` + SIMPLE-FOOD-RULE `b97f9d46a`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `a2891378fa2a57a553e489fa0d48dfc6`, 70222772 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: usunięte oba przyciski; żywność tylko przy obywatelach (wyjątek: obóz łowiecki); wycinka pod farmy/irygację w Żywność i Zrównoważone; naprawiony filtr blokujący wycinkę lasu na Wzgórzach.
+- Testy: tsc PASS; simple-food-rule 38/0; ai-food-only 70/0; q3 41/0; river-forest 16/0.
+- Ograniczenia: wycinka na Wzgórzach = założenie (ABC do właściciela); brak testu na zapisie właściciela.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `5ab46e7b914d3a8a25b4c19bf5e12c62`, 70227877 bajtów.
+
 ## ROBOCZA 5ab46e7b -- 2026-11-05 -- AI: obrona własnego terenu i odbijanie miast przed zdobywaniem (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`98ef746c2` + DEFEND-HOME `c2799546d`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.

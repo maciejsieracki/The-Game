@@ -1,112 +1,111 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-  "bundleSha256": "9353dcd0d969a0aa1ab9449f802b7a404ac5219abc0727feee3ab5f97c6249fb",
-  "bundleBytes": 70227877,
+  "bundleMd5": "a2891378fa2a57a553e489fa0d48dfc6",
+  "bundleSha256": "1ffaa0182cf35633706c1c289cd6332ed3d79654d7abf17338bdae3903ce24cc",
+  "bundleBytes": 70222772,
   "sourceSnapshot": {
-    "source": "main 98ef746c2 + AI-WAR-DEFEND-HOME-BEFORE-OFFENSE (c2799546d)",
+    "source": "main fd784af0d + AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES (b97f9d46a)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-AI-WAR-DEFEND-HOME-BEFORE-OFFENSE-Q1: AI w wojnie najpierw zwalcza wrogie wojsko na własnym terenie (atak gdy siła ≥80% najeźdźców) i odbija własne utracone miasta, dopiero potem zdobywa cudze; nowy planer ai-war-home-defense.ts."
+    "R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: usunięte przyciski „Tylko pola z obywatelami” i „Wolno wycinać las”; żywność zawsze tylko przy obywatelach (wyjątek: obóz łowiecki); wycinka lasu zawsze dozwolona pod farmę/irygację (profile Żywność i Zrównoważony); naprawiona przyczyna braku wycinki lasu na Wzgórzach pod obywatelem; stare zapisy ignorują stare pola."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "ai-war-defend-home 30/0; ai-war-gate 24/0; army-concentration 56/0"
+    "simple-food-rule 38/0; ai-food-only-worked-hexes 70/0; auto-improve-q3 41/0; autoclear-river-forest-priority 16/0; Chromium u Operatora (wycinka na Wzgórzach w Żywność/Zrównoważone)"
   ],
   "limits": [
-    "Progi (80%/60%/25%/125%) to założenia bez ABC — do oceny w grze",
-    "Zdobyte miasta w symulacji 33→4 (scenariusz symetryczny); przebieg asymetryczny i Chromium NIE_ZMIERZONO",
-    "ai-home-defense-vs-barbarians 35/3 odziedziczone z bazy"
+    "Wycinka lasu na Wzgórzach pod tarasy/owce to założenie Operatora (odwraca dawną decyzję R5) — czeka na ABC właściciela",
+    "Nie sprawdzono na zapisie właściciela (Sumer/Ateny); wycinka AI w żywej grze NIE_ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Operator → Evaluator PASS-WITH-NOTES → FC PASS-WITH-NOTES (1 runda)."
+    "notes": "Operator r1 → Evaluator FAIL → r2 → FC PASS-WITH-NOTES (2 rundy)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T00:26:37",
+  "hubGeneratedAt": "2026-11-05T02:13:58",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-      "sizeBytes": 70227877
+      "md5": "a2891378fa2a57a553e489fa0d48dfc6",
+      "sizeBytes": 70222772
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-      "sizeBytes": 70227877
+      "md5": "a2891378fa2a57a553e489fa0d48dfc6",
+      "sizeBytes": 70222772
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-      "sizeBytes": 70227877
+      "md5": "a2891378fa2a57a553e489fa0d48dfc6",
+      "sizeBytes": 70222772
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-      "sizeBytes": 70227877
+      "md5": "a2891378fa2a57a553e489fa0d48dfc6",
+      "sizeBytes": 70222772
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-      "sizeBytes": 70227877
+      "md5": "a2891378fa2a57a553e489fa0d48dfc6",
+      "sizeBytes": 70222772
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-      "sizeBytes": 70227877
+      "md5": "a2891378fa2a57a553e489fa0d48dfc6",
+      "sizeBytes": 70222772
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-      "sizeBytes": 70227877
+      "md5": "a2891378fa2a57a553e489fa0d48dfc6",
+      "sizeBytes": 70222772
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-      "sizeBytes": 70227877
+      "md5": "a2891378fa2a57a553e489fa0d48dfc6",
+      "sizeBytes": 70222772
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-      "sizeBytes": 70227877
+      "md5": "a2891378fa2a57a553e489fa0d48dfc6",
+      "sizeBytes": 70222772
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-      "sizeBytes": 70227877
+      "md5": "a2891378fa2a57a553e489fa0d48dfc6",
+      "sizeBytes": 70222772
     }
   ],
-  "md5": "5ab46e7b914d3a8a25b4c19bf5e12c62",
-  "sizeBytes": 70227877,
+  "md5": "a2891378fa2a57a553e489fa0d48dfc6",
+  "sizeBytes": 70222772,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main 98ef746c2 + merge DEFEND-HOME",
+  "source": "gra/src; main fd784af0d + merge SIMPLE-FOOD-RULE",
   "immediatePreviousRelease": {
-    "bundleMd5": "f34ab067cb42f24f3fcd0a25e805c153"
+    "bundleMd5": "5ab46e7b914d3a8a25b4c19bf5e12c62"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 f34ab067cb42f24f3fcd0a25e805c153, 70220331 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 5ab46e7b914d3a8a25b4c19bf5e12c62, 70227877 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1281,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T00:26:35+00:00",
-  "buildStamp": "2026-11-05 00:26",
+  "publishedAt": "2026-11-05T02:13:56+00:00",
+  "buildStamp": "2026-11-05 02:13",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1291,5 +1290,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "R-WEB-AI-WAR-DEFEND-HOME-BEFORE-OFFENSE-Q1"
+  "releaseScope": "R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1"
 }
