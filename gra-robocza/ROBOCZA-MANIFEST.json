@@ -1,112 +1,110 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-  "bundleSha256": "20b446bff552d86a692f6e3ec94711a7532277c0d9eea03c36bddf979b7f2368",
-  "bundleBytes": 70241917,
+  "bundleMd5": "e17f3ec82f5a4e98e4ea277067068232",
+  "bundleSha256": "aea72d4fb07c2c32e63acbdcfc34c5d99129f1406c192381cb478d248f8cc241",
+  "bundleBytes": 70245153,
   "sourceSnapshot": {
-    "source": "main 133bec933 + MOVE-PASS-THROUGH-OWN-UNITS (1f3dc5d7d)",
+    "source": "main 401e9d5dc + ALLGEN (2089bc06a)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 498: R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1 — jednostki przechodzą PRZEZ własne jednostki (ścieżka ich nie omija), obce jednostki/miasta blokują zawsze (wojna i pokój), propozycja połączenia tylko gdy ruch KOŃCZY się na własnej jednostce; wspólna zajętość ruchu dla gracza, AI, barbarzyńców, zwiadu, marszu i planera all-in."
+    "FALA 499: R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1 — każda AI kupuje wodzów wg epoki (roster), nowe jednostki zbierają się pod najbliższym wodzem (odległość po trasie), Brąz: wódz #2 zbiera 5 tur"
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "move-pass-through-own-units 34/0; barb-camp-blacklist 19/0; war-allin-general-path-barb-defense 24/0; planned-march 18/0; ai-no-siege-without-war-r2 10/0"
+    "ai-army-all-civs-general-muster 26/0; ai-general-war-campaign 51/0 (po merge); FC: ai-army-scattered-merge 33/0, army-to-nearest-leader 43/0, army-concentration 56/0"
   ],
   "limits": [
-    "Chromium (scenariusze a–e) i pomiar objazdów AI przed/po NIE_ZMIERZONO — do oceny w grze",
-    "Hashe war-allin-capital-quick zmienione (uzasadnione: AI przechodzi przez własne)",
-    "Zastane czerwone: barb-camp-destruction 2 FAIL, army-stack-commander-identity, egypt-movement-precedence, ai-march-avoid-foreign-territory C7"
+    "Pomiar live 3 ziarna x 100 tur NIE_ZMIERZONO (limit 590 s); pierwszy wódz AI w Brązie późno (T23-26, wymóg Koszar) — do decyzji właściciela A/B/C"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Operator Sonnet → Evaluator FAIL (reszta mutacji w main.ts) → Obrona → FC PASS-WITH-NOTES (2 rundy)."
+    "notes": "Operator Sonnet → Evaluator FAIL → Obrona → FC PASS-WITH-NOTES (2 rundy)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T19:12:25",
+  "hubGeneratedAt": "2026-11-05T19:38:41",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-      "sizeBytes": 70241917
+      "md5": "e17f3ec82f5a4e98e4ea277067068232",
+      "sizeBytes": 70245153
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-      "sizeBytes": 70241917
+      "md5": "e17f3ec82f5a4e98e4ea277067068232",
+      "sizeBytes": 70245153
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-      "sizeBytes": 70241917
+      "md5": "e17f3ec82f5a4e98e4ea277067068232",
+      "sizeBytes": 70245153
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-      "sizeBytes": 70241917
+      "md5": "e17f3ec82f5a4e98e4ea277067068232",
+      "sizeBytes": 70245153
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-      "sizeBytes": 70241917
+      "md5": "e17f3ec82f5a4e98e4ea277067068232",
+      "sizeBytes": 70245153
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-      "sizeBytes": 70241917
+      "md5": "e17f3ec82f5a4e98e4ea277067068232",
+      "sizeBytes": 70245153
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-      "sizeBytes": 70241917
+      "md5": "e17f3ec82f5a4e98e4ea277067068232",
+      "sizeBytes": 70245153
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-      "sizeBytes": 70241917
+      "md5": "e17f3ec82f5a4e98e4ea277067068232",
+      "sizeBytes": 70245153
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-      "sizeBytes": 70241917
+      "md5": "e17f3ec82f5a4e98e4ea277067068232",
+      "sizeBytes": 70245153
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-      "sizeBytes": 70241917
+      "md5": "e17f3ec82f5a4e98e4ea277067068232",
+      "sizeBytes": 70245153
     }
   ],
-  "md5": "2daa6255eb7e0d3c87bcbe93ef5bd33e",
-  "sizeBytes": 70241917,
+  "md5": "e17f3ec82f5a4e98e4ea277067068232",
+  "sizeBytes": 70245153,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main 133bec933 + merge MOVE-PASS-THROUGH",
+  "source": "gra/src; main 401e9d5dc + merge ALLGEN",
   "immediatePreviousRelease": {
-    "bundleMd5": "4c53a03fda77dbb5236946fc01bcfecf"
+    "bundleMd5": "2daa6255eb7e0d3c87bcbe93ef5bd33e"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 4c53a03fda77dbb5236946fc01bcfecf, 70240096 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 2daa6255eb7e0d3c87bcbe93ef5bd33e, 70241917 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1280,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T19:12:22+00:00",
-  "buildStamp": "2026-11-05 19:12",
+  "publishedAt": "2026-11-05T19:38:38+00:00",
+  "buildStamp": "2026-11-05 19:38",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1291,5 +1289,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "FALA 498: R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1"
+  "releaseScope": "FALA 499: R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1"
 }

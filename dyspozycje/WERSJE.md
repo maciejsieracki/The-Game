@@ -1,3 +1,9 @@
+## ROBOCZA e17f3ec8 -- 2026-11-05 -- FALA 499: AI zbiera armię pod najbliższym wodzem (testowa)
+
+- md5 pełne: `e17f3ec82f5a4e98e4ea277067068232` · 70245153 B · poprzednia `2daa6255`.
+- R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: każda cywilizacja AI kupuje wodzów wg epoki, nowe jednostki idą do najbliższego wodza (po trasie); Brąz — wódz #2 zbiera 5 tur; po śmierci wodza nowy w stolicy.
+- FC PASS-WITH-NOTES. Znane: pierwszy wódz AI w Brązie późno (T23–26, wymóg Koszar) — decyzja A/B/C u właściciela; pomiar live 3×100 tur NIE_ZMIERZONO.
+
 ## ROBOCZA 2daa6255 -- 2026-11-05 -- FALA 498: ruch przez własne jednostki (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`133bec933` + MOVE-PASS-THROUGH `1f3dc5d7d`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda (wdrożenie na prośbę: „jak najszybciej”).
