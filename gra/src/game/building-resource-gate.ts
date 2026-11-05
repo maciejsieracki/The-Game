@@ -66,7 +66,8 @@ const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>
   cegielnia: ['Glina'],
   // PYTANIE-84-U-24: Spichlerz I — brak bramki Ceramika przy budowie; drain B6 po postawieniu.
   // spichlerz — celowo brak wpisu (bonusy z drain co turę, patrz sekcja Spichlerz niżej).
-  spichlerz_ii: ['Sól'],
+  // R-WEB-GRANARY2-TECH-DATA-FIX-Q1 (2026-11-05): zasada właściciela — Spichlerz II wymaga ceramiki i soli.
+  spichlerz_ii: ['Ceramika', 'Sól'],
   stolarnia: ['Drewno'],
   kamieniarski: ['Kamień'],
   kuznia: ['Ruda'],

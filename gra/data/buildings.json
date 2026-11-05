@@ -535,16 +535,16 @@
     "przyrostKosztu": 12,
     "utrzymanie": 2,
     "przyrostUtrzymania": 0,
-    "wymagania": "Upgrade ze Spichlerza I + dostęp do Soli w imperium (aktywne źródło — warzelnia na złożu lub wybrzeżu)",
-    "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupełnione o bramkę Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
+    "wymagania": "Upgrade ze Spichlerza I + Epoka 2 + dostęp do Ceramiki w imperium (garncarnia gdziekolwiek ALBO zapas Ceramiki w puli państwa) + dostęp do Soli w imperium (zapas soli w magazynie państwa — warzelnia na złożu lub wybrzeżu)",
+    "uwagi": "B-SPIC: bramki Ceramika + Sól; cap armii 150; techUnlock=Garncarstwo (R-WEB-GRANARY2-TECH-DATA-FIX-Q1, 2026-11-05: wcześniej 'Warzelnia soli' było ulepszeniem terenu, nie technologią — budynek był niebudowalny); bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupełnione o bramkę Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
     "historia": "Rozbudowany spichlerz to naturalny etap rozwoju magazynowania żywności, jaki obserwujemy w miastach, które dorobiły się nadwyżek na tyle dużych, że pojedynczy budynek przestawał wystarczać. Wraz z upowszechnieniem soli jako konserwantu — pozyskiwanej z warzelni nadmorskich lub kopalń takich jak te w Wieliczce — możliwe stało się przechowywanie nie tylko zboża, ale i solonego mięsa oraz ryb przez wiele miesięcy, co znacząco wydłużało okres bezpieczeństwa żywnościowego. Wielkie kompleksy spichrzowe, jak te zachowane do dziś w Gdańsku czy w hanzeatyckiej Lubece, potrafiły magazynować zapasy dla całych miast i regionów, stając się jednocześnie ważnym elementem miejskiej zabudowy i architektury. Sól, ceniona w starożytności niemal jak metal szlachetny, bywała też środkiem płatniczym — od niej pochodzi zresztą łacińskie słowo „salarium”, czyli żołd. Rozwinięte spichlerze solno-zbożowe świadczyły o dojrzałości gospodarczej miasta i jego zdolności do przetrwania długich okresów niepewności.",
     "opis": "Spichlerz II to rozbudowana wersja magazynu żywności, pozwalająca miastu utrzymać jeszcze większą populację i armię.",
     "top3": [
       { "tytul": "Więcej żywności i zadowolenia", "tekst": "Dodaje 3 punkty Żywności i 4 punkty zadowolenia, przewyższając bazowy Spichlerz." },
-      { "tytul": "Wymaga soli", "tekst": "Powstaje przez rozbudowę Spichlerza i wymaga dostępu do Soli w imperium, np. z warzelni na złożu lub wybrzeżu." },
+      { "tytul": "Wymaga ceramiki i soli", "tekst": "Powstaje przez rozbudowę Spichlerza, po zbadaniu Garncarstwa, i wymaga dostępu do Ceramiki oraz Soli w imperium (sól np. z warzelni na złożu lub wybrzeżu)." },
       { "tytul": "Wyższy limit populacji i armii", "tekst": "Podnosi górny pułap wielkości miasta i utrzymywanej armii ponad to, co daje zwykły Spichlerz." }
     ],
-    "techUnlock": "Warzelnia soli",
+    "techUnlock": "Garncarstwo",
     "koszt_surowce": {
       "drewno": 40,
       "kamien": 50
