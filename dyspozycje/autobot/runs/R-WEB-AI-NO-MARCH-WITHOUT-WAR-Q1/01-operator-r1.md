@@ -3,6 +3,7 @@ DOMAIN: GAME
 TEMAT: R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1
 GOAL: AI (cywilizacje i panstwa-miasta) nie wybiera celu ofensywnego, nie zbiera armii pod cel i nie rusza marszem na podmiot X bez faktycznego stanu wojny z X.
 RUNDY: 1/5
+ZMIANY-COMMIT: f038fbd2c (kod + test + raport + logi gate-*.txt)
 
 ## Pomiar PRZED (plik:linia, baza origin/main 95731af6a)
 - Relacja pary to JEDEN wpis `diplomacyRelations` pod nieuporzadkowanym kluczem `a<b ? a_b : b_a` (main.ts getDiploRelation ~9289, setDiploRelation ~10363). Stan "wojna po jednej stronie" w danych NIE istnieje; wypowiedzenie (ownerDeclareWarOn 12015, petla dipCmds ~39100, processDiploCrisisQueue) zapisuje relacje atomowo w jednym `setDiploRelation`. Roznice gracz<->AI / AI<->AI / panstwo-miasto: te same funkcje, ten sam zapis.
