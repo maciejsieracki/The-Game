@@ -65,9 +65,10 @@ function ensureStyles(): void {
 #${ROOT_ID} .erp-row{display:flex;align-items:center;gap:8px;padding:6px 4px;border-top:1px solid #242c3a;}
 #${ROOT_ID} .erp-row:first-child{border-top:none;}
 #${ROOT_ID} .erp-info{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px;}
-#${ROOT_ID} .erp-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#${ROOT_ID} .erp-meta{font-size:11px;color:#9aa4b2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#${ROOT_ID} .erp-meta b{color:#e8d88a;font-weight:700;}
+#${ROOT_ID} .erp-name{font-weight:600;white-space:normal;overflow-wrap:anywhere;}
+#${ROOT_ID} .erp-meta{font-size:11px;color:#9aa4b2;white-space:normal;overflow-wrap:anywhere;line-height:1.3;}
+#${ROOT_ID} .erp-queued{font-size:11px;color:#9aa4b2;white-space:normal;line-height:1.3;}
+#${ROOT_ID} .erp-meta b,#${ROOT_ID} .erp-queued b{color:#e8d88a;font-weight:700;}
 #${ROOT_ID} .erp-row.is-blocked .erp-name{opacity:.55;}
 #${ROOT_ID} .erp-qty{display:inline-flex;align-items:center;gap:2px;flex:none;}
 #${ROOT_ID} button{font:inherit;cursor:pointer;color:#e8e0c8;background:#1a2230;border:1px solid #49566a;border-radius:5px;padding:3px 8px;}
@@ -81,7 +82,9 @@ function ensureStyles(): void {
   document.head.appendChild(st);
 }
 
-function render(root: HTMLElement): void {
+let lastHtml = '';
+
+function render(root: HTMLElement, force = true): void {
   if (!panelCfg) return;
   const rows = panelCfg.getRows();
   const list = rows.map(r => {
@@ -89,22 +92,30 @@ function render(root: HTMLElement): void {
     const blocked = r.capableCities <= 0;
     const meta = blocked
       ? esc(r.blockedReason ?? 'Brak miasta zdolnego do rekrutacji')
-      : `${r.koszt} ¤ · miasta: <b>${r.capableCities}</b>/${r.totalCities} · w kolejkach: <b data-erp-queued>${r.queued}</b>`;
+      : `${r.koszt} ¤ · miasta: <b>${r.capableCities}</b>/${r.totalCities}`;
+    // „Stan zamówienia” w osobnej linii (zawsze widoczny, także przy blokadzie i długich nazwach/kosztach).
+    const queuedLine = `<span class="erp-queued">w kolejkach: <b data-erp-queued>${r.queued}</b></span>`;
     return `<div class="erp-row${blocked ? ' is-blocked' : ''}" data-unit="${esc(r.id)}">`
       + `<div class="erp-info"><span class="erp-name" title="${esc(r.label)}">${esc(r.label)}</span>`
-      + `<span class="erp-meta">${meta}</span></div>`
+      + `<span class="erp-meta">${meta}</span>${queuedLine}</div>`
       + `<div class="erp-qty"><button type="button" data-erp="dec" aria-label="Zmniejsz liczbę ${esc(r.label)}"${q <= 1 ? ' disabled' : ''}>−</button>`
       + `<input type="number" min="1" max="${MAX_QTY}" step="1" value="${q}" data-erp="qty" aria-label="Liczba ${esc(r.label)}">`
       + `<button type="button" data-erp="inc" aria-label="Zwiększ liczbę ${esc(r.label)}"${q >= MAX_QTY ? ' disabled' : ''}>+</button></div>`
       + `<button type="button" class="erp-go" data-erp="go"${blocked ? ' disabled' : ''}>Rekrutuj</button>`
       + `</div>`;
   }).join('');
-  root.innerHTML = `<div class="erp-hd"><span class="erp-title">Rekrutacja — cała cywilizacja</span>`
+  const html = `<div class="erp-hd"><span class="erp-title">Rekrutacja — cała cywilizacja</span>`
     + `<button type="button" data-erp="close" aria-label="Zamknij">Zamknij</button></div>`
     + `<div class="erp-sub">Zamówienie rozkłada się równomiernie na miasta, które mogą produkować dany typ. `
     + `Liczniki są niezależne i nie zerują się po „Rekrutuj”.</div>`
     + `<div class="erp-list">${list || '<div class="erp-meta" style="padding:10px 4px">Brak dostępnych jednostek wojskowych.</div>'}</div>`
     + `<div class="erp-msg" data-erp-msg role="status">${esc(lastMessage)}</div>`;
+  if (!force && html === lastHtml) return; // updateHud woła często — bez zbędnej przebudowy DOM
+  lastHtml = html;
+  const scroll = root.querySelector('.erp-list')?.scrollTop ?? 0;
+  root.innerHTML = html;
+  const list2 = root.querySelector('.erp-list');
+  if (list2 && scroll > 0) list2.scrollTop = scroll;
 }
 
 function onClick(ev: Event): void {
@@ -141,6 +152,14 @@ function onChange(ev: Event): void {
   if (root) render(root);
 }
 
+/** Nowa gra / wczytanie: zamyka panel i czyści stan UI (liczniki, komunikat, domknięcie getRows/onOrder). */
+export function resetEmpireRecruitPanelSession(): void {
+  document.getElementById(ROOT_ID)?.remove();
+  drafts.clear();
+  panelCfg = null;
+  lastMessage = '';
+}
+
 export function isEmpireRecruitPanelOpen(): boolean {
   return document.getElementById(ROOT_ID) !== null;
 }
@@ -154,7 +173,7 @@ export function refreshEmpireRecruitPanel(): void {
   const root = document.getElementById(ROOT_ID);
   if (!root || !panelCfg) return;
   if (root.contains(document.activeElement) && (document.activeElement as HTMLElement).tagName === 'INPUT') return;
-  render(root);
+  render(root, false);
 }
 
 export function toggleEmpireRecruitPanel(cfg: EmpireRecruitPanelCfg): void {

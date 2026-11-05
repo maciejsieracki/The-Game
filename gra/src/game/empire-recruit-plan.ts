@@ -154,12 +154,37 @@ export function executeEmpireRecruitment(args: {
   }
   const cap = args.afford ? Math.min(requested, args.afford.max) : requested;
   if (cap <= 0) return none(`Nie można zrekrutować ${args.typLabel}: ${args.afford?.limiter ?? 'brak zasobów'}.`);
-  const plan = planEmpireRecruitment(args.typLabel, cap, args.miasta);
-  const perCity: RecruitAssignment[] = [];
+  // Jedna runda ponownego planowania: sztuki miast, które silnik odrzucił (np. oblężenie między planem
+  // a zakupem), są rozkładane na pozostałe zdolne miasta (odrzucone wykluczone; kolejka przyjętych
+  // miast uwzględnia już przyjęte sztuki, więc rozkład pozostaje równomierny).
+  // ZAŁOŻENIE: `enqueueRecruitment` (production.ts) nie ma limitu długości kolejki ani garnizonu,
+  // więc `maxNewSlots` nie jest przekazywane z main.ts (planer je wspiera, brak źródła limitu).
+  const perCityMap = new Map<string, number>();
   let accepted = 0;
-  for (const a of plan.assignments) {
-    if (args.purchase(a.cityId, a.count)) { perCity.push(a); accepted += a.count; }
+  let pending = cap;
+  let candidates: RecruitCityInput[] = [...args.miasta];
+  for (let round = 0; round < 2 && pending > 0; round++) {
+    const plan = planEmpireRecruitment(args.typLabel, pending, candidates);
+    if (plan.assignments.length === 0) break;
+    const refused = new Set<string>();
+    for (const a of plan.assignments) {
+      if (args.purchase(a.cityId, a.count)) {
+        perCityMap.set(a.cityId, (perCityMap.get(a.cityId) ?? 0) + a.count);
+        accepted += a.count;
+        pending -= a.count;
+      } else refused.add(a.cityId);
+    }
+    if (refused.size === 0) break;
+    candidates = candidates
+      .filter(c => !refused.has(c.cityId))
+      .map(c => {
+        const got = perCityMap.get(c.cityId) ?? 0;
+        return got > 0 ? { ...c, queuedOfType: c.queuedOfType + got, queueLength: c.queueLength + got } : c;
+      });
   }
+  const perCity: RecruitAssignment[] = [...perCityMap.entries()]
+    .map(([cityId, count]) => ({ cityId, count }))
+    .sort((x, y) => (x.cityId < y.cityId ? -1 : x.cityId > y.cityId ? 1 : 0));
   if (accepted === 0) return none(`Nie przyjęto zamówienia ${args.typLabel} (odmowa silnika).`);
   if (accepted >= requested) {
     return { requested, accepted, perCity, changed: true,

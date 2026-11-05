@@ -702,7 +702,7 @@ import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './rende
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
 import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits } from './ui/cityPanel';
-import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
+import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, resetEmpireRecruitPanelSession, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
 import { executeEmpireRecruitment, maxAffordableEmpireRecruits, type RecruitCityInput } from './game/empire-recruit-plan';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
 import { syncWorkerFieldOverlay, syncWorkerFieldOverlayFog, disposeWorkerFieldOverlayGroup } from './render/workerFieldOverlay';
@@ -4526,6 +4526,9 @@ async function boot(): Promise<void> {
       for (const c of mine) {
         for (const it of recruitPanelPurchasableUnits(c, data)) {
           if (it.kind !== 'jednostka' || it.isGeneral === true || labels.has(it.id)) continue;
+          // Panel dotyczy wojsk: cywile (Typ='Civilian' w units.json, np. Zwiadowca; Osadnik/Robotnik) pomijamy.
+          const def = data.units.find(u => u.Jednostka === it.id);
+          if ((def?.Typ ?? '').toString().trim() === 'Civilian' || isCivilianUnit({ typeId: it.id, category: '' })) continue;
           labels.set(it.id, it.nazwa);
           order.push(it.id);
         }
@@ -9012,6 +9015,7 @@ async function boot(): Promise<void> {
     /** Pełny reset UI / flag przed wczytaniem innej gry (nie czyści mapy — to robi rebuild). */
     function prepareSessionForLoad(): void {
       resetStuckInteractiveState();
+      resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: panel/stan UI nie przeżywa wczytania
       resetEndTurnBlockers('prepareSessionForLoad');
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
@@ -25504,6 +25508,9 @@ async function boot(): Promise<void> {
         refreshD1bHud();
         if (isEmpireDetailPanelOpen()) refreshEmpireDetailPanel();
       }
+      // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: panel zbiorczy odświeża się po każdej zmianie widocznej w HUD
+      // (tura, ręczna rekrutacja/anulowanie w mieście, zakupy); no-op gdy zamknięty.
+      refreshEmpireRecruitPanel();
     }
 
     // Hak testowy (analogiczny wzorzec do __civEmbarkDebug niżej) — wołany WYŁĄCZNIE z
@@ -25551,6 +25558,41 @@ async function boot(): Promise<void> {
         units.push({ ...tpl, id, ownerId, q, r, ruchLeft: tpl.ruch, inGarnizon: false, ufortyfikowanyWPolu: false, oblegaCityId: undefined, sentry: false } as RuntimeUnit);
         return id;
       },
+    };
+    // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: hak live-testu (tylko ?civTest=1). Zamówienie idzie REALNYM wiringiem
+    // (orderEmpireRecruitment -> executeEmpireRecruitment -> purchaseRecruitmentUnit); hak tylko ustawia zasoby i czyta stan.
+    if (isCivTestEnabled(window.location.search)) (window as any).__empireRecruitTestDebug = {
+      rows: () => empireRecruitRows(),
+      order: (unitId: string, qty: number) => orderEmpireRecruitment(unitId, qty),
+      cityInputs: (unitId: string) => empireRecruitCityInputs(unitId),
+      setResources: (gold: number, manpower: number) => {
+        setOwnerTreasury(ME(), gold);
+        for (const c of cities) if (c.ownerId === ME()) c.manpower = manpower;
+        // surowce potrzebne jednostkom (drewno itd.) — stan wejściowy; pobór robi realne purchaseRecruitmentUnit
+        const first = cities.find(c => c.ownerId === ME());
+        if (first) {
+          const stock: Record<string, number> = { ...(first.surowce ?? {}) };
+          for (const u of data.units) for (const k of Object.keys(unitStockCost(u))) stock[k] = 100000;
+          first.surowce = stock;
+        }
+      },
+      gold: () => ownerTreasury(ME()),
+      playerCityIds: () => cities.filter(c => c.ownerId === ME()).map(c => c.id),
+      queue: (cityId: string) => (cityProd.get(cityId)?.rekrutacja ?? []).map(q => q.id),
+      clearQueues: () => { for (const c of cities) if (c.ownerId === ME()) { const p = cityProd.get(c.id); if (p) cityProd.set(c.id, { ...p, rekrutacja: undefined }); } },
+      cloneCityForTest: (cityId: string, n: number) => {
+        const src = cities.find(c => c.id === cityId);
+        if (!src) return [];
+        const ids: string[] = [];
+        for (let i = 0; i < n; i++) {
+          const id = src.id + '_ert' + i;
+          cities.push({ ...src, id, name: src.name + ' T' + i } as typeof src);
+          cityProd.set(id, { kolejka: [], postep: 0 });
+          ids.push(id);
+        }
+        return ids;
+      },
+      toggleViaHud: () => toggleEmpireRecruitFromHud(),
     };
     if (isCivTestEnabled(window.location.search)) (window as any).__frozenTestDebug = {
       spawn: (q: number, r: number, n: number, flags: { garnizon?: boolean; field?: boolean; ruchLeft?: number; group?: string; oblegaCityId?: string }): string[] => {
@@ -42210,6 +42252,7 @@ async function boot(): Promise<void> {
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja z ekranu nowej gry (domyślnie ON).
       playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;
       resetEndTurnBlockers('doStartGame');
+      resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: nowa gra = czysty panel zbiorczy
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;

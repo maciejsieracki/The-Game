@@ -69,5 +69,19 @@ check('execute: brak miasta -> komunikat i zero wywołań',
 o = executeEmpireRecruitment({ typLabel: 'Taran', ilosc: 5, miasta: [city('c1')], afford: { max: 3, limiter: 'za mało złota' }, purchase: () => true });
 check('execute: częściowe 3 z 5 z powodem', o.accepted === 3 && /Przyjęto 3 z 5/.test(o.message) && /złota/.test(o.message), o);
 
+// Redystrybucja po odmowie miasta (zarzut 6): c2 odrzuca -> jego sztuki trafiają do c1/c3, nic nie ginie.
+calls = [];
+o = executeEmpireRecruitment({ typLabel: 'Taran', ilosc: 6, miasta: ['c1', 'c2', 'c3'].map(i => city(i)),
+  purchase: (id, n) => { calls.push([id, n]); return id !== 'c2'; } });
+const got = {}; for (const a of o.perCity) got[a.cityId] = a.count;
+check('redystrybucja: c2 odmawia -> 6 sztuk w c1/c3 (3/3), c2 pominięte',
+  o.accepted === 6 && got.c2 === undefined && got.c1 === 3 && got.c3 === 3 && /Zamówiono 6/.test(o.message), [o, calls]);
+o = executeEmpireRecruitment({ typLabel: 'Taran', ilosc: 5, miasta: ['c1', 'c2'].map(i => city(i)), purchase: () => false });
+check('redystrybucja: wszystkie odmawiają -> 0 przyjętych, bez pętli', o.accepted === 0 && !o.changed, o);
+calls = [];
+o = executeEmpireRecruitment({ typLabel: 'Taran', ilosc: 3, miasta: ['c1', 'c2'].map(i => city(i)),
+  purchase: (id, n) => { calls.push([id, n]); return id === 'c1'; } });
+check('redystrybucja: jedno zdolne miasto przejmuje całość (c1 x3)', o.accepted === 3 && o.perCity.length === 1 && o.perCity[0].cityId === 'c1' && o.perCity[0].count === 3, [o, calls]);
+
 console.log(`\nempire-recruit-plan-test: ${pass} passed, ${fail} failed`);
 process.exit(fail > 0 ? 1 : 0);

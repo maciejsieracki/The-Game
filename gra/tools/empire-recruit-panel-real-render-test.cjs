@@ -58,10 +58,10 @@ function check(name, ok, detail) {
 
 async function main() {
   fs.writeFileSync(ENTRY, [
-    "import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, getEmpireRecruitDraft } from '../src/ui/empireRecruitPanel.ts';",
+    "import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, getEmpireRecruitDraft, resetEmpireRecruitPanelSession } from '../src/ui/empireRecruitPanel.ts';",
     "import { buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS } from '../src/ui/unitRecruitCard.ts';",
     "import { executeEmpireRecruitment, maxAffordableEmpireRecruits } from '../src/game/empire-recruit-plan.ts';",
-    'window.__api = { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, getEmpireRecruitDraft, buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS, executeEmpireRecruitment, maxAffordableEmpireRecruits };',
+    'window.__api = { resetEmpireRecruitPanelSession, toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, getEmpireRecruitDraft, buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS, executeEmpireRecruitment, maxAffordableEmpireRecruits };',
     '',
   ].join('\n'), 'utf8');
   await esbuild.build({
@@ -89,6 +89,7 @@ async function main() {
           { id: 'Taran', label: 'Taran', koszt: 40, only: null },
           { id: 'Wieża oblężnicza', label: 'Wieża oblężnicza', koszt: 60, only: ['c2'] },
           { id: 'Procarz', label: 'Procarz', koszt: 12, only: null },
+          { id: 'Dluga', label: 'Ciężka wieża oblężnicza z bardzo długą nazwą testową', koszt: 123456, only: null },
         ],
       };
       window.__st = st;
@@ -126,7 +127,17 @@ async function main() {
     const qty = async id => Number(await row(id).locator('[data-erp="qty"]').inputValue());
     const setQty = async (id, n) => { await row(id).locator('[data-erp="qty"]').fill(String(n)); await row(id).locator('[data-erp="qty"]').dispatchEvent('change'); };
 
-    check('panel zbiorczy widoczny z 4 typami', await page.locator('#civ-empire-recruit-panel [data-unit]').count() === 4);
+    check('panel zbiorczy widoczny z 5 typami', await page.locator('#civ-empire-recruit-panel [data-unit]').count() === 5);
+    // zarzut 3: „stan zamówienia” widoczny w całości także przy długiej nazwie/koszcie (bez ucinania wielokropkiem)
+    const vis = await page.evaluate(() => {
+      const panel = document.getElementById('civ-empire-recruit-panel').getBoundingClientRect();
+      return [...document.querySelectorAll('#civ-empire-recruit-panel .erp-queued, #civ-empire-recruit-panel .erp-meta')].map(el => {
+        const r = el.getBoundingClientRect();
+        return { clipped: el.scrollWidth > el.clientWidth + 1, inside: r.right <= panel.right + 0.5 && r.left >= panel.left - 0.5 && r.width > 0 };
+      });
+    });
+    check('meta i „w kolejkach” nie są ucinane (scrollWidth<=clientWidth) i mieszczą się w panelu', vis.length === 10 && vis.every(v => !v.clipped && v.inside), vis);
+    check('„w kolejkach” w osobnej linii widoczne dla długiego typu', await row('Dluga').locator('.erp-queued').isVisible());
     await setQty('Wojownik', 5);
     for (let i = 0; i < 3; i++) await row('Taran').locator('[data-erp="inc"]').click();
     check('niezależne liczniki: Wojownik 5, Taran 4', await qty('Wojownik') === 5 && await qty('Taran') === 4);
@@ -155,12 +166,23 @@ async function main() {
     const msg = await page.locator('[data-erp-msg]').innerText();
     check('komunikat potwierdza zamówienie', /Zamówiono 3/.test(msg), msg);
 
+    // zarzut 4: zmiana spoza panelu (np. ręczna rekrutacja w mieście / tura) + refresh -> liczby aktualne
+    await page.evaluate(() => { window.__st.cities[0].q.push('Wojownik', 'Wojownik'); window.__api.refreshEmpireRecruitPanel(); });
+    check('refresh po zmianie spoza panelu: w kolejkach Wojownik 7', (await row('Wojownik').locator('[data-erp-queued]').innerText()) === '7');
+    check('refresh nie rusza liczników', await qty('Wojownik') === 5 && await qty('Taran') === 4);
+    await page.evaluate(() => { window.__api.refreshEmpireRecruitPanel(); });
+    check('refresh bez zmian nie przebudowuje DOM (ten sam węzeł wiersza)', await page.evaluate(() => { const a = document.querySelector('#civ-empire-recruit-panel [data-unit]'); window.__api.refreshEmpireRecruitPanel(); return a === document.querySelector('#civ-empire-recruit-panel [data-unit]'); }));
     await page.screenshot({ path: path.join(SHOT_DIR, 'panel-zbiorczy.png') });
 
     // zamknięcie i ponowne otwarcie: liczniki zapamiętane (sesja UI)
     await page.locator('[data-erp="close"]').click();
     check('panel zamyka się', await page.locator('#civ-empire-recruit-panel').count() === 0);
     check('liczniki przeżywają zamknięcie panelu', await page.evaluate(() => window.__api.getEmpireRecruitDraft('Wojownik') === 5 && window.__api.getEmpireRecruitDraft('Taran') === 4));
+
+    // zarzut 4: nowa gra/wczytanie zamyka panel i czyści liczniki
+    await page.evaluate(() => { window.__api.toggleEmpireRecruitPanel({ getRows: () => [], onOrder: () => ({ message: '', changed: false }) }); });
+    await page.evaluate(() => window.__api.resetEmpireRecruitPanelSession());
+    check('reset sesji: panel zamknięty, liczniki wyczyszczone', await page.evaluate(() => !document.getElementById('civ-empire-recruit-panel') && window.__api.getEmpireRecruitDraft('Wojownik') === 1));
 
     // ---- CZĘŚĆ A: karta rekrutacji w mieście (przebudowa wierszy po „Rekrutuj”) ----
     await page.evaluate(({ unit }) => {
