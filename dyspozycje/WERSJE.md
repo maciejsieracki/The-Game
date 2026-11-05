@@ -1,3 +1,12 @@
+## ROBOCZA 2c6b5101 -- 2026-11-05 -- wycinka lasu przy rzece przed farmami (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1297f51ff` + RIVER-FOREST-FIRST `f166b5eea`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `2c6b510176642bc4ea41f3a8b6a6b530`, 70234299 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: KROK 0 automatu — wycinka lasu przy rzece na polu obywatela jest pierwsza wśród ulepszeń żywności (po kroku niedoboru).
+- Testy: tsc PASS; river-forest-first 10/0; river-forest-priority 17/0; stages-q1 299/0; simple-food 36/0; ai-food-only 66/0.
+- Ograniczenia: NIE potwierdzono w realnej turze main.ts na mapie z lasem przy rzece; niedobór (tartak) nadal przed wycinką.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `a9b54baab545a248c1660100019cf748`, 70234079 bajtów.
+
 ## ROBOCZA a9b54baa -- 2026-11-05 -- AI: wojna na stolicę nie ogałaca obrony przed barbarzyńcami (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`c3d859a40` + WAR-ALLIN-KEEP-BARB `cf2bc8d71`) i commit wdrożenia; stała zgoda właściciela.
