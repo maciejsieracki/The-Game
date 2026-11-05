@@ -8799,3 +8799,6 @@ Właściciel: zwiadowca połączył się z główną armią; przy próbie ataku 
 
 ## 2026-11-05 — DECYZJA WŁAŚCICIELA: oblężenie kończy się głodem garnizonu (poddanie przy utracie >50% HP), nie zerem zapasów miasta
 Dziś: magazyn żywności oblężonego miasta maleje o (ludność + garnizon)/turę bez dochodu; przy 0 → flaga kapitulacji → poddanie w następnej turze (=2 tury przy pustym magazynie); atrycja HP garnizonu (6/8/10% maxHP na turę wg trudności) idzie równolegle od pierwszej tury oblężenia, ale NIE decyduje o końcu. Zasada: Etap 1 — zapasy miasta; Etap 2 — od zera zapasów jednostki garnizonu tracą HP (6/8/10%/turę); **miasto poddaje się, gdy jednostki garnizonu stracą więcej niż 50% HP** („siedemnaście tur byłoby za długo”). Miasto bez garnizonu — poddanie przy zerowych zapasach jak dziś. Temat `R-WEB-SIEGE-STARVATION-SURRENDER-Q1`.
+
+## 2026-11-05 — DECYZJA WŁAŚCICIELA: pakt o nieagresji wymaga dodatkowo Zaufania 30
+Zgłoszenie: gra pokazuje, że pakt o nieagresji dostępny „od ponad 140” Relacji. Wyjaśnienie z kodu: `progNapRelacja` = 110 (Normalny) + delta trudności (Trudny +10) + narzut +20 przy aktywnej „Karze za wspólną granicę” (`NAP_GRANICA_RELACJA_NARZUT`) = 140 (poniżej tego słodzik obniża do 110+delta). Decyzja: „Dodajmy do paktu nieagresji zaufanie, trzydzieści.” → NAP wymaga Relacji ≥ próg ORAZ Zaufania ≥ 30. Temat `R-WEB-DIPLO-NAP-TRUST-30-Q1`.
