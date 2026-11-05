@@ -1,111 +1,111 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "1f71e6f2690effbf220f9e1987ba1c20",
-  "bundleSha256": "74ef1facaafba7da6061e411d6b613a8be70afbb7f3fad1ea906a7895b045878",
-  "bundleBytes": 70253436,
+  "bundleMd5": "8408a731941ca23cbe0d03366da91a99",
+  "bundleSha256": "c442185a1726384d004e5e133745af41475563904e0f5725643cad467b504211",
+  "bundleBytes": 70253091,
   "sourceSnapshot": {
-    "source": "main dbec5c5c0 + BLUR (6f50094bd)",
+    "source": "main 2ee7771bc + WAREH (8887f4ec8)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 506: R-WEB-RENDER-UNIT-BLUR-HORSES-Q1 — ostrzejszy render jednostek (konie/rydwan): domyślny preset jakości „medium” pixelRatioMax 1,5 → 2,0 (na ekranach HiDPI bufor nie jest rozciągany); ostrość LOD0 przy DPR 2 ×3,6; liczba draw calls bez zmian"
+    "FALA 507: R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1 — każdy Magazyn zwiększa pojemność KAŻDEGO surowca magazynu państwa o 20% BAZY (addytywnie: 1 Magazyn ×1,2, 3 ×1,6) zamiast stałego +500; mnożnik epoki bez zmian; pojemność żywności centralnej bez zmian"
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "render-unit-sharpness-guard PASS; FC: pomiar ostrości --assert PASS, camera-zoom-block 4/0, city-badge-zoom-lod 67/0, unit-renderer-overlay-sync 17/0, unit-card-3d-preview-coverage 18/0"
+    "warehouse-state-cap-20pct 56/0 (po scaleniu); FC: magazyn-era-scaling 58/0, surow-civ-storage 64/4 (baza 63/4), mennica-magazyn 34/7, resource-usage-breakdown 98/2 (jak baza)"
   ],
   "limits": [
-    "Przyczyna niepotwierdzona dla sprzętu właściciela (brak zrzutu/DPR); poprawka częściowa — LOD1–3 przy DPR 2 nadal miększe; koszt GPU niezmierzony (SwiftShader)",
-    "Medium zrównał się z high pod względem pixelRatioMax (różnią je AA/cienie/mgła)"
+    "Panel UI pokazuje wartości bezwzględne (nie „20%”); komentarz w main.ts ~3679 ze starymi liczbami; brak pomiaru w przeglądarce",
+    "Magazyn dalej daje +100 do capu żywności centralnej — decyzja właściciela: usunąć (osobny temat MAGAZYN-NO-FOOD-CAP)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Operator Sonnet → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES."
+    "notes": "Operator Haiku → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T23:21:13",
+  "hubGeneratedAt": "2026-11-05T23:33:16",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "1f71e6f2690effbf220f9e1987ba1c20",
-      "sizeBytes": 70253436
+      "md5": "8408a731941ca23cbe0d03366da91a99",
+      "sizeBytes": 70253091
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "1f71e6f2690effbf220f9e1987ba1c20",
-      "sizeBytes": 70253436
+      "md5": "8408a731941ca23cbe0d03366da91a99",
+      "sizeBytes": 70253091
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "1f71e6f2690effbf220f9e1987ba1c20",
-      "sizeBytes": 70253436
+      "md5": "8408a731941ca23cbe0d03366da91a99",
+      "sizeBytes": 70253091
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "1f71e6f2690effbf220f9e1987ba1c20",
-      "sizeBytes": 70253436
+      "md5": "8408a731941ca23cbe0d03366da91a99",
+      "sizeBytes": 70253091
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "1f71e6f2690effbf220f9e1987ba1c20",
-      "sizeBytes": 70253436
+      "md5": "8408a731941ca23cbe0d03366da91a99",
+      "sizeBytes": 70253091
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "1f71e6f2690effbf220f9e1987ba1c20",
-      "sizeBytes": 70253436
+      "md5": "8408a731941ca23cbe0d03366da91a99",
+      "sizeBytes": 70253091
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "1f71e6f2690effbf220f9e1987ba1c20",
-      "sizeBytes": 70253436
+      "md5": "8408a731941ca23cbe0d03366da91a99",
+      "sizeBytes": 70253091
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "1f71e6f2690effbf220f9e1987ba1c20",
-      "sizeBytes": 70253436
+      "md5": "8408a731941ca23cbe0d03366da91a99",
+      "sizeBytes": 70253091
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "1f71e6f2690effbf220f9e1987ba1c20",
-      "sizeBytes": 70253436
+      "md5": "8408a731941ca23cbe0d03366da91a99",
+      "sizeBytes": 70253091
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "1f71e6f2690effbf220f9e1987ba1c20",
-      "sizeBytes": 70253436
+      "md5": "8408a731941ca23cbe0d03366da91a99",
+      "sizeBytes": 70253091
     }
   ],
-  "md5": "1f71e6f2690effbf220f9e1987ba1c20",
-  "sizeBytes": 70253436,
+  "md5": "8408a731941ca23cbe0d03366da91a99",
+  "sizeBytes": 70253091,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main dbec5c5c0 + merge BLUR",
+  "source": "gra/src; main 2ee7771bc + merge WAREH",
   "immediatePreviousRelease": {
-    "bundleMd5": "ac3843f57ae6c69cdfa1d2e82550036b"
+    "bundleMd5": "1f71e6f2690effbf220f9e1987ba1c20"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 ac3843f57ae6c69cdfa1d2e82550036b, 70253438 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 1f71e6f2690effbf220f9e1987ba1c20, 70253436 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1281,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T23:21:07+00:00",
-  "buildStamp": "2026-11-05 23:21",
+  "publishedAt": "2026-11-05T23:33:13+00:00",
+  "buildStamp": "2026-11-05 23:33",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1290,5 +1290,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "FALA 506: RENDER-UNIT-BLUR-HORSES"
+  "releaseScope": "FALA 507: WAREHOUSE-STATE-CAP-20PCT"
 }

@@ -1,3 +1,9 @@
+## ROBOCZA 8408a731 -- 2026-11-05 -- FALA 507: Magazyn +20% pojemności surowców państwa (testowa)
+
+- md5 pełne: `8408a731941ca23cbe0d03366da91a99` · 70253091 B · poprzednia `1f71e6f2`.
+- R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1: każdy Magazyn zwiększa pojemność każdego surowca magazynu państwa o 20% bazy (1 Magazyn ×1,2; 3 ×1,6; razy mnożnik epoki) zamiast +500 (które przy bazie 50 000 dawało ~1%). Żywność centralna bez zmian.
+- FC PASS-WITH-NOTES. Uwaga: UI pokazuje wartości bezwzględne; Magazyn nadal +100 do żywności (osobny temat do usunięcia).
+
 ## ROBOCZA 1f71e6f2 -- 2026-11-05 -- FALA 506: ostrzejszy render jednostek (testowa)
 
 - md5 pełne: `1f71e6f2690effbf220f9e1987ba1c20` · 70253436 B · poprzednia `ac3843f5`.
