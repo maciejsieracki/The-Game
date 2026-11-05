@@ -43,6 +43,10 @@ export interface Chip6cOpts {
   netTone?: 'pos' | 'neg' | 'zero';
   /** Etykieta linii netto (domyślnie „netto"); np. „netto Drewno" przy najgorszym deficycie. */
   netLabel?: string;
+  /** Ton (kolor) liczby brutto w banerze: 'neg' czerwony, 'pos' zielony, 'zero' stonowany. */
+  rateTone?: 'pos' | 'neg' | 'zero';
+  /** R-WEB-HUD-TOPBAR-NO-LABELS-Q1: dopisek do tooltipa — która liczba jest brutto, a która netto. */
+  netHint?: string;
 }
 
 /** IconId → id realnego assetu brand-book, gdy różny od klucza chipa (patrz iconRegistry.ts). */
@@ -64,7 +68,8 @@ function chipIconHtml(id: IconId, _medVariant: ChipMedVariant, assetOverride?: s
 export function chip6cHtml(opts: Chip6cOpts): string {
   const med = opts.medVariant ?? (opts.iconId === 'res-science' ? 'science' : 'gold');
   const clickCls = (opts.act ? ' civ-hud-chip-click' : '') + (opts.shortage ? ' civ-hud-chip-short' : '');
-  const titleTxt = (opts.title ?? opts.label) + (opts.exact ? ' · ' + opts.exact : '');
+  const titleTxt = (opts.title ?? opts.label) + (opts.exact ? ' · ' + opts.exact : '')
+    + (opts.netHint ? ' · ' + opts.netHint : '');
   const ariaAttr = opts.exact ? ` aria-label="${escHtml(opts.label + ': ' + opts.exact)}"` : '';
   const actAttr = opts.act
     ? ` data-act="${opts.act}" role="button" tabindex="0" title="${escHtml(titleTxt)}"${ariaAttr}`
@@ -77,20 +82,21 @@ export function chip6cHtml(opts: Chip6cOpts): string {
     : chipIconHtml(opts.iconId, med, opts.iconAssetId);
   const medCls = showRing ? `${med} civ-science-med-ring` : med;
   if (opts.net !== undefined) {
-    const tone = opts.netTone ?? 'zero';
-    const lblNet = opts.netLabel ?? 'netto';
-    const grossRow = opts.rate !== undefined
-      ? `<span class="civ-hud-chip-row3 civ-hud-chip-gross"><span class="civ-hud-chip-k">brutto</span>`
-        + `<span class="civ-hud-chip-rate${rateCls}">${opts.rate}</span></span>`
-      : '';
+    // R-WEB-HUD-TOPBAR-NO-LABELS-Q1: w banerze BEZ słów „brutto"/„netto". Linia 1 = etykieta;
+    // linia 2 = DUŻA liczba całkowita + OBOK dwie liczby przyrostu: najpierw brutto, potem netto
+    // (same liczby ze znakiem, rozdzielone ukośnikiem). Znaczenie obu liczb jest w tooltipie (netHint).
+    const netT = opts.netTone ?? 'zero';
+    const rateT = opts.rateTone ?? 'zero';
+    const figs = opts.rate !== undefined
+      ? `<span class="civ-hud-chip-figs"><span class="civ-hud-chip-rate ${rateT}${rateCls}">${opts.rate}</span>`
+        + `<span class="civ-hud-chip-fsep" aria-hidden="true">/</span>`
+        + `<span class="civ-hud-chip-net ${netT}">${opts.net}</span></span>`
+      : `<span class="civ-hud-chip-figs"><span class="civ-hud-chip-net ${netT}">${opts.net}</span></span>`;
     return `<span class="civ-hud-chip civ-hud-chip-cell${clickCls}"${actAttr}>`
       + `<span class="civ-hud-chip-med ${medCls}">${medInner}</span>`
       + `<span class="civ-hud-chip-body">`
-      + `<span class="civ-hud-chip-top"><span class="civ-hud-chip-lbl">${opts.label}</span>`
-      + `<span class="civ-hud-chip-val${valCls}">${opts.value}</span></span>`
-      + grossRow
-      + `<span class="civ-hud-chip-row3 civ-hud-chip-netrow"><span class="civ-hud-chip-k">${lblNet}</span>`
-      + `<span class="civ-hud-chip-net ${tone}">${opts.net}</span></span>`
+      + `<span class="civ-hud-chip-top"><span class="civ-hud-chip-lbl">${opts.label}</span></span>`
+      + `<span class="civ-hud-chip-line"><span class="civ-hud-chip-val${valCls}">${opts.value}</span>${figs}</span>`
       + `</span></span>`;
   }
   let html = `<span class="civ-hud-chip${clickCls}"${actAttr}>`
