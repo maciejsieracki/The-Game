@@ -234,7 +234,7 @@ Pełna lista z rekomendacjami: arkusz PYTANIA_DO_WLASCICIELA (14 pozycji). Najwa
 - **Q8 — nowe surowce:** Srebro w v1, reszta w v2. *Rekomendacja: jak wyżej.*
 - **Q9 — konwerter:** liniowo (dziś). *Rekomendacja: TAK.*
 - **Q10 — szczęście max:** 80 / 100 (PROPOZYCJA) po weryfikacji fallbacku.
-- **Q11 — unikalne jednostki cywilizacji:** wszystkie 15 czy wybrane. *Rekomendacja: wybrane (6–8).*
+- **Q11 — unikalne jednostki cywilizacji:** wszystkie 15 czy wybrane. *Rekomendacja: wybrane (6–8). Velites i Kataphraktos są współdzielone przez 3 cywilizacje każdy — traktowane jako warianty, nie unikaty (ZAŁOŻENIE do potwierdzenia).*
 - **Q12 — epoka 6:** poza zakresem tego planu.
 - **Q13 — wiatrak:** budynek (nie ulepszenie terenu).
 - **Q14 — kolejność:** sekwencyjnie E4 → E5.
@@ -253,37 +253,70 @@ Pełna lista z rekomendacjami: arkusz PYTANIA_DO_WLASCICIELA (14 pozycji). Najwa
 
 ---
 
-## I. Załącznik: miejsca zależne od epoki (skrót; pełna lista — arkusz AUDYT_ZALEZNOSCI)
+## I. Załącznik: pełna lista miejsc zależnych od epoki (61 pozycji, z audytu)
 
-| Plik | Linia | Co | Status |
-|---|---|---|---|
-| gra/data/tech.json | — | 32 techy; awansDoEpoki: Brązownictwo=2, Hutnictwo żelaza=3 | FAKT |
-| gra/data/buildings.json | — | epokaWejscia 1–4; Wielka odlewnia i Wielka Kuźnia = 4 | FAKT |
-| gra/data/units.json | — | 75 jednostek (Kamień 11 / Brąz 39 / Żelazo 25) | FAKT |
-| gra/data/epoka-ludnosc-manpower.json | 1–10 | Manpower E1–E5 gotowe | FAKT |
-| gra/data/econ-params.json | ~513–525, ~610–620 | Wealth = epoka×10; magazyn FLAT | FAKT |
-| gra/data/society-params.json | szczescie_max_epoka | Tablica 3 wpisów (easy 20/40/60) | FAKT |
-| gra/data/wonders.json | parkowane_epoka4plus | Cuda E4–E6 | FAKT |
-| gra/data/civs.json | cywilizacje[] | 15 cywilizacji; wodzowie kamien/braz/zelazo/antyk | FAKT |
-| gra/data/power-params.json | ~16–20, ~108–112 | Mnożnik epoki Power odrzucony | FAKT |
-| gra/src/game/civ-entry-epoch.ts | 10–11, 78–86 | GAME_EPOCH_ORDER = 3; clamp | FAKT |
-| gra/src/game/research.ts | 253–285, 323, 370–386 | NUMER_EPOKI = 3; bramki; fallback kosztu | FAKT |
-| gra/src/game/production.ts | 198–215, 343–369, 1041–1067 | EPOCH_BY_NAME; itemCost; gating Koszar | FAKT |
-| gra/src/game/building-stock-cost.ts | 60–81, 412, 417 | Sufit ×4; koszt surowców jednostek | FAKT |
-| gra/src/game/economy-upkeep.ts | 392–395, 454, ~629–655, 794, 1020, 1088 | Magazyn 2^(e−1); upkeep ×sufit | FAKT |
-| gra/src/game/converters.ts | 142–150 | Konwerter +10%/epokę | FAKT |
-| gra/src/game/terrain-improvements.ts | 277–288 | normalizeProductionEra (błąd e≥4) | FAKT |
-| gra/src/game/population-growth-v85.ts | 47–50 | Żywność ×4 plateau | FAKT |
-| gra/src/game/livestock-unlock.ts | 98 | era<3 (Nowy Świat) | FAKT |
-| gra/src/game/era-change-notify.ts | 23–33 | Dopełniacze 1–3 | FAKT |
-| gra/src/game/owner-epoch.ts | 91–93, 106–122 | maxDefinedEra; awans epoki | FAKT |
-| gra/src/game/playerState.ts | 199, 216, 310–323 | epochNumber; awansDoEpoki | FAKT |
-| gra/src/game/forced-war-iron.ts | 17–30 | Wojna wymuszona tylko Żelazo | FAKT |
-| gra/src/game/save.ts | 116 | SAVE_VERSION = 3 | FAKT |
-| gra/src/ui/sciencePicker.ts | 518–525 | EPOCH_ORDER = 3; clamp | FAKT |
-| gra/src/ui/newGameFlow.ts | 520 | START_EPOCH_ORDER = 3 | FAKT |
-| gra/src/audio/muzyka-antyczna.ts | 17, 400, 1407–1409 | Muzyka tylko 1 i 2 | FAKT |
-| gra/src/main.ts | (370 trafień) | Główny plik | NIE_ZMIERZONO |
-| gra/src/ui/techTreeView.ts | (23 trafienia) | Drzewko | NIE_ZMIERZONO |
-| gra/src/map/newGameMapDefaults.ts | (52 trafienia) | Mapa startowa | NIE_ZMIERZONO |
-| counters.json, auto-battle-params.json, terrain-combat.json | — | Kontry, walka | NIE_ZMIERZONO |
+Źródło: arkusz `AUDYT_ZALEZNOSCI` (ten sam zestaw, pełne opisy w arkuszu). Lista służy jako lista kontrolna przy każdej kolejnej epoce: przy każdej pozycji sprawdź, czy wymaga zmiany, i odnotuj decyzję. Stan: FAKT = zmierzone w kodzie/danych; NIE_ZMIERZONO = do pomiaru w kolejnym temacie.
+
+| Nr | Plik | Linia / miejsce | Co zależy od epoki | Stan |
+|---|---|---|---|---|
+| 1 | `gra/data/tech.json` | — | 32 techy; Epoka: Kamień 12 / Brąz 12 / Żelazo 8; awansDoE… | FAKT |
+| 2 | `gra/data/tech.json` | pole Koszt nauki | Koszt bazowy = tempo szybkie x1; tempo x2/x4 w tech-tempo.ts | FAKT |
+| 3 | `gra/data/buildings.json` | pola epokaWejscia, maksPoziom, kosztBudowy, przyrostKosztu, utrzymanie, przyrostUtrzymania, techUnlock | 42 budynki; epokaWejscia 1–4; Wielka odlewnia i Wielka Ku… | FAKT |
+| 4 | `gra/data/units.json` | pole Epoka (string), Pieniądz (koszt), Dostępna w epokach, W zamian za | 75 jednostek; Epoka: Kamień 11 / Brąz 39 / Żelazo 25 | FAKT |
+| 5 | `gra/data/terrain-improvements.json` | _meta.epoka; pola epoka per ulepszenie | Epoka 1=Kamień, 2=Brąz, 3=Żelazo; np. fort (E3), droga_br… | FAKT |
+| 6 | `gra/data/epoka-ludnosc-manpower.json` | epoki[] wiersze 1–10 | Ludność/manpower na ludka: E1 10k/1000, E2 20k/2000, E3 4… | FAKT |
+| 7 | `gra/data/econ-params.json` | ~513–525 wealth_cap_na_epoke; ~610–620 magazyn_baza_surowce / magazyn_bonus_surowce_na_budynek | Wealth cap = epoka×10; magazyn = FLAT (E1), ×2^(e-1) w ko… | FAKT |
+| 8 | `gra/data/society-params.json` | szczescie_max_epoka (easy [20,40,60]); szczescie_skala_kultura_religia (x(e) formuła, komentarz ~linia 248) | Tablice per epoka; wg komentarza JSON „epoki dalsze biorą… | FAKT (komentarz) |
+| 9 | `gra/data/power-params.json` | ~16–20 mnoznikEpoki (wszystkie 1); ~108–112 mnoznik_epoki_aktywny=false | Power NIE mnożona przez epokę (P-B odrzucone) | FAKT |
+| 10 | `gra/data/wonders.json` | parkowane_epoka4plus (nalanda E4, mauzoleum_teodoryka E4, angkor_wat E5, wielki_dzwon E6, kopiec_grobowy E1); cuda[] 19 wpisów | Cuda parkowane pod E4–E6 już istnieją w danych | FAKT |
+| 11 | `gra/data/civs.json` | cywilizacje[] (15); epokaWejscia (kamien/braz/zelazo); wodzowie {kamien,braz,zelazo,antyk} | Wodzowie dla E4/E5 brak; klucz antyk istnieje | FAKT |
+| 12 | `gra/data/e-start-params.json` | typy_cywilizacji_per_epoka: kamien/braz/zelazo (default/min/max) | Limity typów cywilizacji per epoka startu (3 klucze) | FAKT |
+| 13 | `gra/data/combat-params.json` | militia_roster — typy wg EPOKI właściciela (komentarz R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1) | Milicja wybiera jednostki wg epoki | FAKT |
+| 14 | `gra/data/resources.json` | 15 surowców (Żywność…Stal); brak pola epoka | Brak nowych surowców E4/E5 | FAKT |
+| 15 | `gra/data/counters.json, auto-battle-params.json, terrain-combat.json` | — | Kontry i parametry walki — zależne od linii jednostek | NIE_ZMIERZONO |
+| 16 | `gra/data/ai-params.json, civ-ai.json, civ-matrix.json, civ-params.json` | ~ liczne (ai-params: „epoka Brązu” dla obozów nadmorskich; 17× ai_tolerancja_ryzyka) | Parametry AI per cywilizacja i epoka — NIE_ZMIERZONO pełn… | NIE_ZMIERZONO |
+| 17 | `gra/data/ui-params.json` | etykiety kreatora (epoki) | Etykiety epok w kreatorze | NIE_ZMIERZONO |
+| 18 | `gra/data/diplomacy*.json, war-*-params.json, diplomacy-tick-params.json` | ~ liczne trafienia „epok” | Dyplomacja/wojna wymuszona zależna od epoki | NIE_ZMIERZONO |
+| 19 | `gra/src/game/civ-entry-epoch.ts` | 10–11 GAME_EPOCH_ORDER=[kamien,braz,zelazo] + typ GameEpochId; 21–23 gameEpochIndex; 78–81 EPOCH_HUD_LABELS (3); 85–86 clamp do długości tablicy | Stała tablica 3 epok; poza nią clamp do ostatniej | FAKT |
+| 20 | `gra/src/game/research.ts` | 253–257 NUMER_EPOKI (3 wpisy); 261–268 epochNumber (nieznana → null); 272–285 epochGateMet (null → bramka spełniona) | Nowe nazwy epok bez wpisu = techy BEZ bramki epoki (cicho) | FAKT |
+| 21 | `gra/src/game/research.ts` | 323 KOLEJNOSC_EPOK; 370–386 techCost (fallback +8/epokę gdy brak Koszt nauki) | Fallback kosztu i kolejność epok | FAKT |
+| 22 | `gra/src/game/production.ts` | 198–215 EPOCH_BY_NAME (3 pary) + epochNumber (nieznane → 1 = Kamień!) | Jednostka z nową nazwą epoki będzie traktowana jak Kamień… | FAKT |
+| 23 | `gra/src/game/production.ts` | 343–365 itemCost budynku × buildingEraCostMultiplier; 369 jednostka scaleCostByEpoch; 1041–1067 gating rekrutacji (epoka≥2 → wymagane Koszary) | Koszt budowy/jednostek i bramka Koszar | FAKT |
+| 24 | `gra/src/game/building-stock-cost.ts` | 60–67 scaleCostByEpoch; 72–81 epochCostMultiplier + buildingEraCostMultiplier: >=3 → 4 (SUFIT ×4) | Płaski sufit ×4 dla każdej epoki ≥3 — E4/E5 nie rosną | FAKT |
+| 25 | `gra/src/game/building-stock-cost.ts` | ~86–104 buildingStockCost (FALA2 ×2, potem era mult) | koszt_surowce budynku × FALA2 × mnożnik epoki | FAKT |
+| 26 | `gra/src/game/building-stock-cost.ts` | 412, 417 — koszt surowcowy jednostek (scaleCostByEpoch) | Koszt surowców jednostek skalowany epoką | FAKT |
+| 27 | `gra/src/game/economy-upkeep.ts` | 392–395 magazynEraMultiplier = 2^(e−1) (bez limitu); 454 cap = (baza+bonus×n)×mult | Cap magazynu rośnie ×2/epokę: E5 = ×16 | FAKT |
+| 28 | `gra/src/game/economy-upkeep.ts` | ~629–655 buildingUpkeep = floor(floor(...)×2) × buildingEraCostMultiplier (SUFIT ×4) | Utrzymanie budynków — ten sam sufit ×4 | FAKT |
+| 29 | `gra/src/game/economy-upkeep.ts` | 794, 1020, 1088 scaleCostByEpoch (utrzymanie/żywność jednostek) | Utrzymanie jednostek skalowane epoką | FAKT |
+| 30 | `gra/src/game/converters.ts` | 142–150 converterThroughputForEra = base×(1+0.10×(e−1)) liniowo | Przepustowość konwerterów rośnie liniowo | FAKT |
+| 31 | `gra/src/game/terrain-improvements.ts` | 270–288 normalizeProductionEra() zwraca 1|2|3 (era≥4 → 1!) i ×1.5^(e−1) | BŁĄD UTAJONY: po wejściu w E4 produkcja ulepszeń wraca do… | FAKT |
+| 32 | `gra/src/game/population-growth-v85.ts` | 47–50 rationEraFoodCostMultiplier: ≤1→1, 2→2, inaczej 4 (plateau) | Koszt żywności obywateli: E4/E5 = ×4 (bez wzrostu) | FAKT |
+| 33 | `gra/src/game/terrain-improvements.ts` | — | Wykrycie epoki gracza dla ulepszeń (improvement-tech.ts:7… | FAKT |
+| 34 | `gra/src/game/livestock-unlock.ts` | 98 if (isNewWorldCiv && era<3) false | Nowy Świat: bydło/owce od epoki 3 (hardcode liczby) | FAKT |
+| 35 | `gra/src/game/era-gate-ui.ts` | 23–30 eraLabelForNumber (fallback „Epoka N”); 87 maxEra = maxDefinedEra(techRows) (auto) | Etykiety epok; maxEra liczony z danych (dobrze) | FAKT |
+| 36 | `gra/src/game/era-change-notify.ts` | 23–33 ERA_GENITIVE_LABELS {1:Kamienia,2:Brązu,3:Żelaza}; 27–29 fallback „nr N” | Powiadomienie o awansie: E4 pokaże „nr 4” | FAKT |
+| 37 | `gra/src/game/owner-epoch.ts` | 91–93 maxDefinedEra (auto z tech.json); 106–122 computeMainCivEraFromResearch (cap min(10), gate: wszystkie techy epoki + cud wyłączny) | Awans epoki per właściciel — dobrze skalowany danymi; wym… | FAKT |
+| 38 | `gra/src/game/playerState.ts` | 216 epochNumber(TechDef); ~199, 310–323 awansDoEpoki | Zasada: awans przez jawne pole awansDoEpoki | FAKT |
+| 39 | `gra/src/game/forced-war-iron.ts` | 17–30 wojna wymuszona w Żelazie (WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI=25); forced-war-common.ts | Wojna wymuszona tylko dla Żelaza (osobny plik) | FAKT |
+| 40 | `gra/src/game/save.ts` | 116 SAVE_VERSION = 3 | Format zapisu; epoka zapisywana (do potwierdzenia jako li… | FAKT |
+| 41 | `gra/src/ui/sciencePicker.ts` | 518–525 EPOCH_ORDER = [Kamień,Brąz,Żelazo]; clamp Math.min(length−1) | Epoka 4 pokaże etykietę „Żelazo” (BŁĄD UTAJONY) | FAKT |
+| 42 | `gra/src/ui/newGameFlow.ts` | 520 START_EPOCH_ORDER = [kamien,braz,zelazo]; 2411–2413 epochHasCivs / civsForEpoch | Kreator: wybór epoki startowej (3 opcje) | FAKT |
+| 43 | `gra/src/ui/techTreeView.ts` | 23 trafienia (regex epok) | Drzewko technologii: kolumny per epoka | NIE_ZMIERZONO (bez przeglądu) |
+| 44 | `gra/src/ui/sciencePicker.ts, ui/scienceHubSnapshotLogic.ts, ui/techDiscoveryNotice.ts` | trafienia regex (101 / 16 / 6) | Panel nauki i powiadomienia o odkryciu | NIE_ZMIERZONO (bez przeglądu) |
+| 45 | `gra/src/ui/cityPanel.ts, ui/hud.ts, ui/buildModeHud.ts, ui/unitRecruitCard.ts` | 125 / 16 / 6 / 6 trafień | Panel miasta, HUD, rekrutacja — etykiety i kolejność epok | NIE_ZMIERZONO (bez przeglądu) |
+| 46 | `gra/src/ui/leaderPortraits.ts, ui/icons/brandAssets.ts, ui/empireDetailPanel.ts` | 16 / 19 / (empireDetailPanel: trafienia) | Portrety wodzów wg epoki, ikony | NIE_ZMIERZONO (bez przeglądu) |
+| 47 | `gra/src/ui/newGameFlow.ts` | 139 trafień (regex) | Kreator nowej gry: epoka, typy cywilizacji, mapa | NIE_ZMIERZONO (bez przeglądu) |
+| 48 | `gra/src/main.ts` | 370 trafień regex (najwięcej w projekcie) | Główny plik gry — tury, zmiana epoki, toasty, AI | NIE_ZMIERZONO (bez przeglądu) |
+| 49 | `gra/src/game/ai.ts` | 28 trafień; ai-era-unit-promotion.ts (promoteAiUnitForEra: epochNumber dep) | AI awansuje jednostki przy zmianie epoki (przez epochNumber) | FAKT (struktura) |
+| 50 | `gra/src/game/wonder-civ-tech.ts, wonder-availability.ts, wonders-data.ts` | 35 / 14 / 4 trafienia | Dostępność cudów wg epoki i bramki techUnlock | NIE_ZMIERZONO (bez przeglądu) |
+| 51 | `gra/src/game/economy.ts, turn-economy.ts, wealth.ts, society-breakdown.ts, citizen-resource-upkeep.ts` | 12 / 14 / 25 / 49 / 14 trafień | Ekonomia, Wealth (epoka×10), szczęście (x per epoka), upk… | FAKT (wealth) / NIE_ZMIERZONO (reszta) |
+| 52 | `gra/src/game/manpower.ts` | 88 trafień | Manpower/ludność per epoka (wiersze JSON 1–10) | FAKT (dane 1–10) / NIE_ZMIERZONO (kod) |
+| 53 | `gra/src/game/production.ts` | 95 trafień (regex); ~1028–1040 R-EPOKA-KASKADA-JEDNA-Q1 | Kaskada rekrutacji epok (Zwiadowca wyjątek) | FAKT (komentarz) |
+| 54 | `gra/src/battle/battleScene.ts, gra/src/game/combat.ts, render/units.ts` | 4 / (combat.ts) / 6 trafień | Kontry i render jednostek per linia | NIE_ZMIERZONO (bez przeglądu) |
+| 55 | `gra/src/render/kamien-lucznicy-opus5.ts, render/braz-konnica-opus5.ts, render/jednostki-p6-super.ts, render/jednostki-z3-plemiona.ts, render/improvements.ts` | 3 / 3 / 3 / 5 / 24 trafień | Modele 3D i ikony per epoka/linia | FAKT (nazwy plików) / NIE_ZMIERZONO |
+| 56 | `gra/src/audio/muzyka-antyczna.ts` | 17 setEra (1=Kamień, 2=Brąz; era≥3 „na razie”); 400 if era===2; 1407–1409 playlist; 1492 buildDron if era===2 | Muzyka epok: tylko 1 i 2 mają własne ścieżki | FAKT |
+| 57 | `gra/src/map/newGameMapDefaults.ts, map/clusters.ts, map/cluster-spawn.ts, map/improvement-build.ts` | 52 / 22 / 3 / 6 trafień | Generator mapy i zasoby startowe per epoka | NIE_ZMIERZONO (bez przeglądu) |
+| 58 | `gra/src/data/e-start-params-loader.ts, data/loader.ts` | 17 / 6 trafień | Loader parametrów startu i danych | NIE_ZMIERZONO (bez przeglądu) |
+| 59 | `gra/src/game/civ-test-hooks.ts, tools/*.cjs (testy epok)` | 3 trafienia (civ-test-hooks); tools/epoka-merge-recruit-test.cjs | Testy epok wymagają aktualizacji (liczba epok = 3 w założ… | FAKT (istnieje test) |
+| 60 | `gra/src/game/victory.ts` | 3 trafienia (Żelazo w tekście) | Warunki zwycięstwa powiązane z epoką? | NIE_ZMIERZONO |
+| 61 | `rust-port/** (poza zakresem tej rundy — tylko wzmianka)` | — | Port Rust: dane, repin, wektory parytetu | NIE_ZMIERZONO |

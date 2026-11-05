@@ -1,4 +1,3 @@
- 3036 dyspozycje/analizy/PLAN-WDROZENIA-NOWEJ-EPOKI.md
-  239 dyspozycje/analizy/README-analiza.md
- 3275 total
+plan_md_wc_w=4208 (licznik wc zawiera separatory tabel)
+readme_analiza_wc_w=239
 EXIT=0
