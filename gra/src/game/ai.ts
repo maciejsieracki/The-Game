@@ -3200,6 +3200,19 @@ export function isHomeDefenseThreatForCity(enemyQ: number, enemyR: number, city:
 }
 
 /**
+ * R-WEB-AI-HOME-DEFENDERS-CIVILIAN-FILTER-Q1: wspólna pula obrońców domu przed barbarzyńcami.
+ * Obrońcami są wyłącznie jednostki bojowe lądowe: bez cywilów (robotnik, osadnik), bez jednostek
+ * zaokrętowanych (embarked), bez jednostek morskich (seaRaider) i bez wodza kampanii (isGeneral).
+ * Używane przez obie ścieżki przydziału: główną (decideAITurn, krok 4b/4b2) i kampanię wodza
+ * (planCampaignBarbarianHomeDefense) -- jedna reguła, jedna funkcja.
+ */
+export function homeDefenderPool(myUnits: RuntimeUnit[]): RuntimeUnit[] {
+  return myUnits.filter(
+    u => !isCivilianUnit(u) && u.embarked !== true && u.seaRaider !== true && u.isGeneral !== true,
+  );
+}
+
+/**
  * Przydziela obrońców zagrożeniom wykrytym w pobliżu własnego terytorium — algorytm
  * najbliższy-dostępny: zagrożenia posortowane wg pilności (rosnąco odległość do
  * najbliższego własnego miasta — najpierw najbardziej „u progu"), każde dostaje najbliższą
@@ -3699,7 +3712,7 @@ function decideAITurnCore(
   );
   const homeDefenderAssignments = assignHomeDefenders(
     homeThreats,
-    myUnits,
+    homeDefenderPool(myUnits),
     myCities,
     isArmyConsolidationEnabled() && canConcentrateArmy(opts) ? ARMY_CONSOLIDATION_HOME_GROUP_SIZE : 1,
   );
@@ -4836,11 +4849,9 @@ function planCampaignBarbarianHomeDefense(
   if (homeThreats.length === 0) return result;
   // Obroncy domu to wojsko: bez cywilow (robotnik, osadnik), bez jednostek na okrecie i bez wodza
   // kampanii (wodz nie wypada z marszu na stolice, zeby bronic miasta).
-  const defenderPool = myUnits.filter(u =>
-    !isCivilianUnit(u) && u.embarked !== true && u.seaRaider !== true && u.isGeneral !== true);
   const assignments = assignHomeDefenders(
     homeThreats,
-    defenderPool,
+    homeDefenderPool(myUnits),
     myCities,
     isArmyConsolidationEnabled() && canConcentrateArmy(opts) ? ARMY_CONSOLIDATION_HOME_GROUP_SIZE : 1,
   );
