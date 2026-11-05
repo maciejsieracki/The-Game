@@ -18,6 +18,7 @@ export {
   previewVoluntaryTreatyBreakPenalties,
   tradeTreatyBreakPenaltyFree,
   tradeTreatyBreakPenaltyTurnsLeft,
+  voluntaryTreatyBreakPlan,
   TRADE_TREATY_BREAK_PENALTY_FREE_AGE_TURNS,
   formatDiploPenaltyShort,
 } from '../src/game/diplomacy-penalty-preview.ts';
@@ -39,6 +40,7 @@ const {
   previewVoluntaryTreatyBreakPenalties: preview,
   tradeTreatyBreakPenaltyFree: penaltyFree,
   tradeTreatyBreakPenaltyTurnsLeft: turnsLeft,
+  voluntaryTreatyBreakPlan: plan,
   TRADE_TREATY_BREAK_PENALTY_FREE_AGE_TURNS: AGE,
   formatDiploPenaltyShort: shortText,
   applyDiplomaticEvent,
@@ -114,26 +116,52 @@ ok(turnsLeft(pact(9), TURN) === undefined, 'pakt: brak licznika tur kary');
 const pNull = preview(pact(10, null), PARAMS, TURN);
 ok(pNull.wiarygodnoscTotal === 0 && pNull.zaufanieTotal === -15, 'pakt bezterminowy: Z −15 bez zmian (wiek nie zwalnia)');
 
-// --- silnik: zdarzenie zerwania handlu ---
+// --- plan skutków zerwania (wspólny dla gracza i AI; brak parametru właściciela) ---
+const pT10 = plan(trade(10), TURN);
+ok(pT10.penaltyFree && !pT10.openN3Window && !pT10.n5Charged, 'plan terminowy wiek 10: bez N3, bez N5');
+const pB10 = plan(trade(10, null), TURN);
+ok(pB10.penaltyFree && !pB10.openN3Window && !pB10.n5Charged, 'plan bezterminowy wiek 10: bez okna N3, bez N5');
+const pB9 = plan(trade(9, null), TURN);
+ok(!pB9.penaltyFree && pB9.openN3Window && !pB9.n5Charged, 'plan bezterminowy wiek 9: okno N3 jak dziś');
+const pT9 = plan(trade(9), TURN);
+ok(!pT9.penaltyFree && !pT9.openN3Window && pT9.n5Charged, 'plan terminowy wiek 9: N5 jak dziś');
+const pTU = plan(trade(undefined), TURN);
+ok(!pTU.penaltyFree && pTU.n5Charged, 'plan wiek nieznany: N5 jak dziś');
+const pP10 = plan(pact(10), TURN);
+ok(!pP10.penaltyFree && pP10.n5Charged, 'plan pakt wiek 10: N5 bez zmian');
+const pPB10 = plan(pact(10, null), TURN);
+ok(!pPB10.penaltyFree && pPB10.openN3Window && !pPB10.n5Charged, 'plan pakt bezterminowy wiek 10: okno N3 bez zmian');
+
+// --- skutek na relację (efekt zdarzenia wybrany przez wiring): wiek 10 → Z bez zmian ---
 const rel = { status: 'pokoj', zaufanie: 50, respekt: 50 };
-const relTrade = applyDiplomaticEvent(rel, 'zerwanie_handlu', DIPLOMACY_PARAMS, undefined);
-ok(relTrade.zaufanie === 40, 'zdarzenie zerwanie_handlu (wiek < 10): Z −10 bez zmian');
 const relFree = applyDiplomaticEvent(rel, 'zerwanie_handlu_bez_kary', DIPLOMACY_PARAMS, undefined);
 ok(relFree.zaufanie === 50 && relFree.respekt === 50, 'zdarzenie zerwanie_handlu_bez_kary: brak zmiany Z/R');
+const relTrade = applyDiplomaticEvent(rel, 'zerwanie_handlu', DIPLOMACY_PARAMS, undefined);
+ok(relTrade.zaufanie === 40, 'zdarzenie zerwanie_handlu (wiek < 10): Z −10 bez zmian');
 
-// --- parytet gracz/AI: funkcja nie zależy od właściciela; wiring w main.ts ---
+// --- wiring w main.ts: breakTreatyVoluntarily sterowana planem, nie lokalnym warunkiem ---
 const src = fs.readFileSync(path.join(ROOT, 'src', 'main.ts'), 'utf8');
 const fnStart = src.indexOf('function breakTreatyVoluntarily(');
 const fnBody = src.slice(fnStart, src.indexOf('function activeTreatiesForPair(', fnStart));
 ok(fnStart > 0, 'breakTreatyVoluntarily znaleziona w main.ts');
-ok(/const penaltyFree = tradeTreatyBreakPenaltyFree\(deal, turn\)/.test(fnBody),
-  'silnik zerwania liczy penaltyFree z tury bieżącej');
-ok(/if \(penaltyFree\)[\s\S]*else if \(deal\.wygasaTura === null\)/.test(fnBody),
-  'silnik: penaltyFree pomija okno N3 i N5');
+ok(/const breakPlan = voluntaryTreatyBreakPlan\(deal, turn\)/.test(fnBody), 'silnik zerwania liczy plan z tury bieżącej');
+ok(/if \(breakPlan\.openN3Window\)\s*\{[\s\S]*setDiploPairMeta/.test(fnBody), 'silnik: okno N3 tylko gdy plan.openN3Window');
+ok(/else if \(breakPlan\.n5Charged\)\s*\{[\s\S]*appendWiarygodnoscEvent/.test(fnBody), 'silnik: N5 tylko gdy plan.n5Charged');
 ok(fnBody.includes("'zerwanie_handlu_bez_kary' as const"), 'silnik: zdarzenie bez kary dla wieku ≥ 10');
-ok(!/previewVoluntaryTreatyBreakPenalties\([^)]*\)\s*;?\s*$/m.test(src.slice(src.indexOf('function treatyBreakPenaltyLabel'), src.indexOf('function treatyBreakPenaltyLabel') + 300)) ||
-  src.slice(src.indexOf('function treatyBreakPenaltyLabel'), src.indexOf('function treatyBreakPenaltyLabel') + 300).includes('turn)'),
-  'UI: etykieta kary dostaje bieżącą turę');
+
+// --- UI: oba miejsca przekazują bieżącą turę (sprawdzenie wprost, nie tautologia) ---
+function bodyOf(name) {
+  const i = src.indexOf('function ' + name + '(');
+  if (i < 0) return '';
+  const j = src.indexOf('\n    }', i);
+  return src.slice(i, j < 0 ? i + 400 : j);
+}
+const labelBody = bodyOf('treatyBreakPenaltyLabel');
+const previewBody = bodyOf('buildBreakTreatyPenaltyPreview');
+ok(/previewVoluntaryTreatyBreakPenalties\(deal, _diplomacyParams\(\), turn\)/.test(labelBody),
+  'UI: treatyBreakPenaltyLabel przekazuje turn');
+ok(/previewVoluntaryTreatyBreakPenalties\(deal, _diplomacyParams\(\), turn\)/.test(previewBody),
+  'UI: buildBreakTreatyPenaltyPreview przekazuje turn');
 
 console.log(`\ntrade-treaty-free-break-after-10: ${pass} pass, ${fail} fail`);
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }

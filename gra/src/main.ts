@@ -1469,7 +1469,7 @@ import {
 import {
   formatDiploPenaltyShort,
   previewVoluntaryTreatyBreakPenalties,
-  tradeTreatyBreakPenaltyFree,
+  voluntaryTreatyBreakPlan,
   previewWarDeclarationPenalties,
   previewAllianceObligationRefusal,
 } from './game/diplomacy-penalty-preview';
@@ -21074,15 +21074,14 @@ async function boot(): Promise<void> {
       // Traktat CZASOWY → N5 zwykłe (-6 traktat / -4 handel), bez okna N3.
       // R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1: umowa handlowa zawarta ≥10 tur temu → zerwanie
       // BEZ kary (ani N3/okno karencji, ani N5, ani −10 Zaufania). Ta sama reguła dla gracza i AI.
-      const penaltyFree = tradeTreatyBreakPenaltyFree(deal, turn);
-      if (penaltyFree) {
-        // brak kar i brak okna N3
-      } else if (deal.wygasaTura === null) {
+      const breakPlan = voluntaryTreatyBreakPlan(deal, turn);
+      const penaltyFree = breakPlan.penaltyFree;
+      if (breakPlan.openN3Window) {
         setDiploPairMeta(initiatorOwnerId, otherOwnerId0, {
           ...getDiploPairMeta(initiatorOwnerId, otherOwnerId0),
           n3Window: { turn, typ: 'bezterminowe', byOwnerId: initiatorOwnerId, charged: false },
         });
-      } else {
+      } else if (breakPlan.n5Charged) {
         appendWiarygodnoscEvent(
           initiatorOwnerId,
           isTrade ? 'zerwanie_dobrowolne_handel' : 'zerwanie_dobrowolne_traktat',

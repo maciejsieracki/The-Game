@@ -184,6 +184,23 @@ export function tradeTreatyBreakPenaltyTurnsLeft(
   return TRADE_TREATY_BREAK_PENALTY_FREE_AGE_TURNS - age;
 }
 
+/**
+ * Plan skutków DOBROWOLNEGO zerwania traktatu (wspólny dla gracza i AI; bez parametru właściciela).
+ * `openN3Window` — otwiera okno karencji N3 (traktat bezterminowy, kara). `n5Charged` — nalicza N5
+ * (traktat czasowy, kara). Przy `penaltyFree` oba są false: brak okna N3 i brak N5.
+ */
+export function voluntaryTreatyBreakPlan(
+  deal: Pick<ActiveDeal, 'rodzaj' | 'wygasaTura' | 'zawartaTura'>,
+  turn: number | undefined,
+): { penaltyFree: boolean; openN3Window: boolean; n5Charged: boolean } {
+  const penaltyFree = tradeTreatyBreakPenaltyFree(deal, turn);
+  return {
+    penaltyFree,
+    openN3Window: !penaltyFree && deal.wygasaTura === null,
+    n5Charged: !penaltyFree && deal.wygasaTura !== null,
+  };
+}
+
 function turnsPl(n: number): string {
   if (n === 1) return '1 tura';
   if (n >= 2 && n <= 4) return `${n} tury`;
