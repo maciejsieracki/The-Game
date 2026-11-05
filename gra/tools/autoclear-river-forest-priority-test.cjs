@@ -137,11 +137,18 @@ console.log('(d) las bez rzeki + onlyWorked ON: wycinka tylko na polach obywatel
   ok(bad.length === 0, `brak wycinki poza polami obywateli (${bad.length}; log: ${dl(log.slice(0, 8))})`);
 }
 
-console.log('(d2) farma na rzece BEZ lasu przed wycinka (E1 < E2)');
+// R-WEB-AUTOIMPROVE-RIVER-FOREST-FIRST-PRIORITY-Q1 (zgłoszenie właściciela 2026-11-05): wycinka lasu przy rzece na polu
+// obywatela jest PIERWSZYM krokiem tury — ODWRACA dawny kontrakt E1 < E2 (farma na rzece bez lasu przed wycinką).
+// Nowy kontrakt pilnuje: pierwsza budowa = wycinka (przy/na rzece), a farma na rzece bez lasu idzie dopiero potem.
+// Pełny kontrakt: tools/autoimprove-river-forest-first-q1-test.cjs.
+console.log('(d2) wycinka lasu przy rzece PRZED farmą na rzece bez lasu (KROK 0, R-WEB-…-FIRST-PRIORITY-Q1)');
 {
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND.filter(([q, r]) => !(q === 12 && r === 11)) });
   const { picks } = pick({ map, worked: [...WORKED_NO_RIVER, [12, 11]], onlyWorked: true });
-  ok(picks[0] && picks[0].key === 'farma', `pierwsza budowa to farma (jest: ${desc(picks)})`);
+  const iClear = picks.findIndex(p => p.key === 'wyrab');
+  const iFarm = picks.findIndex(p => p.key === 'farma' && p.q === 12 && p.r === 11);
+  ok(picks[0] && picks[0].key === 'wyrab' && iClear === 0, `pierwsza budowa to wycinka (jest: ${desc(picks)})`);
+  ok(iFarm === -1 || iClear < iFarm, `farma na rzece bez lasu (12,11) nie wyprzedza wycinki (indeks ${iFarm})`);
 }
 
 console.log('(d3) las NIE-farmowy (wzgorza) przy rzece nie jest wycinany pod farme (wyrabMaSens zachowane)');
