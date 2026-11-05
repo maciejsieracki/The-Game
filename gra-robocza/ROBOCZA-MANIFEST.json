@@ -1,112 +1,112 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "ed464ad13d0a100d123cda16fdb1a9bf",
-  "bundleSha256": "602b98393537f8808dc222003d2f32e04e8a4a0c31f6d61584ca4c670d6eda33",
-  "bundleBytes": 70237463,
+  "bundleMd5": "00e508b29f6759a3408e85b5315dfc6d",
+  "bundleSha256": "aa9d32c2844388be3dc444a3f1ad03b8133207817f051a9d919755c1cdf26d44",
+  "bundleBytes": 70240058,
   "sourceSnapshot": {
-    "source": "main 6a4b7419e + TERRAIN-ID-NAME-MAP-UNIFY (d577f7eb2) + AI-CITIZEN-HEX-SIBLING-EXCLUSION (65c224926)",
+    "source": "main 6efe338c7 + HUD-TOPBAR-NO-LABELS (f0a50fd68)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 495: R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1 — AI wyklucza heksy przegrane na rzecz bliższego miasta tego samego właściciela przy liczeniu pól z obywatelami dla wycinki lasu/ulepszeń (chybienia AI w 3 ziarnach: 118→4, 97→9, 110→20).",
-    "FALA 495: R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1 — jedna mapa id↔nazwa terenu (refaktor bez zmiany zachowania)."
+    "FALA 496: R-WEB-HUD-TOPBAR-NO-LABELS-Q1 — górny baner bez słów „brutto/netto”: duża liczba całkowita + obok dwa przyrosty (brutto, netto); wyjaśnienie w tooltipie; baner na całą dostępną szerokość (3×1fr), bez rozjeżdżania i nachodzenia przy 9-cyfrowych wartościach (1280/1024/800/640 px)."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "ai-citizen-hex-sibling-exclusion 18/0; terrain-names-equivalence 23/0; ai-food-only-worked-hexes 66/0; ai-war-defend-home 30/0"
+    "hud-topbar-no-labels 94/0; hud-gross-net-rest 752/0; hud-topbar-grid-gross-net 192/0 (--no-mutants, --dist)"
   ],
   "limits": [
-    "Wycinka lasu przy rzece bez obywatela (decyzja B, także AI) — w toku, NIE w tej wersji",
-    "Wczesne chybienia AI (tury 1–7, s42) nieustalone; hash map: 10/12 identyczne (s777 wyspy/ziemia niezmierzone)"
+    "Handel i Surowce nie mają dużej liczby całkowitej (brak danych w HUD-state)",
+    "Panel imperium zachowuje etykiety „Wpływy brutto/Netto skarbiec”",
+    "Zapas przy 800 px/skrajne wartości = 0 px (deterministyczny)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "AI-SIBLING: Operator Sonnet → Evaluator → Obrona → FC; UNIFY: Operator Haiku → Evaluator → Obrona → FC."
+    "notes": "Operator Haiku r1 FAIL (N5) → r2 → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T16:52:00",
+  "hubGeneratedAt": "2026-11-05T17:53:49",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
-      "sizeBytes": 70237463
+      "md5": "00e508b29f6759a3408e85b5315dfc6d",
+      "sizeBytes": 70240058
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
-      "sizeBytes": 70237463
+      "md5": "00e508b29f6759a3408e85b5315dfc6d",
+      "sizeBytes": 70240058
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
-      "sizeBytes": 70237463
+      "md5": "00e508b29f6759a3408e85b5315dfc6d",
+      "sizeBytes": 70240058
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
-      "sizeBytes": 70237463
+      "md5": "00e508b29f6759a3408e85b5315dfc6d",
+      "sizeBytes": 70240058
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
-      "sizeBytes": 70237463
+      "md5": "00e508b29f6759a3408e85b5315dfc6d",
+      "sizeBytes": 70240058
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
-      "sizeBytes": 70237463
+      "md5": "00e508b29f6759a3408e85b5315dfc6d",
+      "sizeBytes": 70240058
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
-      "sizeBytes": 70237463
+      "md5": "00e508b29f6759a3408e85b5315dfc6d",
+      "sizeBytes": 70240058
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
-      "sizeBytes": 70237463
+      "md5": "00e508b29f6759a3408e85b5315dfc6d",
+      "sizeBytes": 70240058
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
-      "sizeBytes": 70237463
+      "md5": "00e508b29f6759a3408e85b5315dfc6d",
+      "sizeBytes": 70240058
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
-      "sizeBytes": 70237463
+      "md5": "00e508b29f6759a3408e85b5315dfc6d",
+      "sizeBytes": 70240058
     }
   ],
-  "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
-  "sizeBytes": 70237463,
+  "md5": "00e508b29f6759a3408e85b5315dfc6d",
+  "sizeBytes": 70240058,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main 6a4b7419e + merge UNIFY/AI-SIBLING",
+  "source": "gra/src; main 6efe338c7 + merge HUD-TOPBAR-NO-LABELS",
   "immediatePreviousRelease": {
-    "bundleMd5": "3775188b059301fcbbd72a4453e9c503"
+    "bundleMd5": "ed464ad13d0a100d123cda16fdb1a9bf"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 3775188b059301fcbbd72a4453e9c503, 70235654 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 ed464ad13d0a100d123cda16fdb1a9bf, 70237463 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1282,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T16:51:59+00:00",
-  "buildStamp": "2026-11-05 16:51",
+  "publishedAt": "2026-11-05T17:53:47+00:00",
+  "buildStamp": "2026-11-05 17:53",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1291,5 +1291,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "FALA 495: R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1 R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1"
+  "releaseScope": "FALA 496: R-WEB-HUD-TOPBAR-NO-LABELS-Q1"
 }
