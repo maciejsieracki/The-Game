@@ -1,111 +1,112 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "3775188b059301fcbbd72a4453e9c503",
-  "bundleSha256": "6614e18e43aaae17df87adb8c2f4c4fc821c5cc76ad32c316e034504811b13aa",
-  "bundleBytes": 70235654,
+  "bundleMd5": "ed464ad13d0a100d123cda16fdb1a9bf",
+  "bundleSha256": "602b98393537f8808dc222003d2f32e04e8a4a0c31f6d61584ca4c670d6eda33",
+  "bundleBytes": 70237463,
   "sourceSnapshot": {
-    "source": "main 037e6be36 + AI-HOME-DEFENDERS-CIVILIAN-FILTER (24ab89a1e)",
+    "source": "main 6a4b7419e + TERRAIN-ID-NAME-MAP-UNIFY (d577f7eb2) + AI-CITIZEN-HEX-SIBLING-EXCLUSION (65c224926)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-AI-HOME-DEFENDERS-CIVILIAN-FILTER-Q1 (fala 4): obrońcami miasta przed barbarzyńcami w głównej ścieżce AI są wyłącznie lądowe jednostki bojowe (bez cywili, zaokrętowanych, okrętów i wodza kampanii); wspólna funkcja homeDefenderPool dla obu ścieżek."
+    "FALA 495: R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1 — AI wyklucza heksy przegrane na rzecz bliższego miasta tego samego właściciela przy liczeniu pól z obywatelami dla wycinki lasu/ulepszeń (chybienia AI w 3 ziarnach: 118→4, 97→9, 110→20).",
+    "FALA 495: R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1 — jedna mapa id↔nazwa terenu (refaktor bez zmiany zachowania)."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "home-defenders-civilian-filter 8/0; general-path 24/0; home-defense-vs-barbarians 46/0; defend-home 30/0; war-allin-capital 98/0"
+    "ai-citizen-hex-sibling-exclusion 18/0; terrain-names-equivalence 23/0; ai-food-only-worked-hexes 66/0; ai-war-defend-home 30/0"
   ],
   "limits": [
-    "Zmienia przebieg AI-vs-AI (hash REF_OFF.aiVsAi zaktualizowany); ai-test 274/20 jak na bazie; brak Chromium",
-    "ai-army-scattered-merge ma asercję czasową (flaky) — dług testowy"
+    "Wycinka lasu przy rzece bez obywatela (decyzja B, także AI) — w toku, NIE w tej wersji",
+    "Wczesne chybienia AI (tury 1–7, s42) nieustalone; hash map: 10/12 identyczne (s777 wyspy/ziemia niezmierzone)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Operator Haiku → Evaluator → Obrona → FC (2 rundy)."
+    "notes": "AI-SIBLING: Operator Sonnet → Evaluator → Obrona → FC; UNIFY: Operator Haiku → Evaluator → Obrona → FC."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T13:13:24",
+  "hubGeneratedAt": "2026-11-05T16:52:00",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "3775188b059301fcbbd72a4453e9c503",
-      "sizeBytes": 70235654
+      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
+      "sizeBytes": 70237463
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "3775188b059301fcbbd72a4453e9c503",
-      "sizeBytes": 70235654
+      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
+      "sizeBytes": 70237463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "3775188b059301fcbbd72a4453e9c503",
-      "sizeBytes": 70235654
+      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
+      "sizeBytes": 70237463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "3775188b059301fcbbd72a4453e9c503",
-      "sizeBytes": 70235654
+      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
+      "sizeBytes": 70237463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "3775188b059301fcbbd72a4453e9c503",
-      "sizeBytes": 70235654
+      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
+      "sizeBytes": 70237463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "3775188b059301fcbbd72a4453e9c503",
-      "sizeBytes": 70235654
+      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
+      "sizeBytes": 70237463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "3775188b059301fcbbd72a4453e9c503",
-      "sizeBytes": 70235654
+      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
+      "sizeBytes": 70237463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "3775188b059301fcbbd72a4453e9c503",
-      "sizeBytes": 70235654
+      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
+      "sizeBytes": 70237463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "3775188b059301fcbbd72a4453e9c503",
-      "sizeBytes": 70235654
+      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
+      "sizeBytes": 70237463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "3775188b059301fcbbd72a4453e9c503",
-      "sizeBytes": 70235654
+      "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
+      "sizeBytes": 70237463
     }
   ],
-  "md5": "3775188b059301fcbbd72a4453e9c503",
-  "sizeBytes": 70235654,
+  "md5": "ed464ad13d0a100d123cda16fdb1a9bf",
+  "sizeBytes": 70237463,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main 037e6be36 + merge HOME-DEFENDERS",
+  "source": "gra/src; main 6a4b7419e + merge UNIFY/AI-SIBLING",
   "immediatePreviousRelease": {
-    "bundleMd5": "f734ced937d9766f4f06bdfa9325f3ad"
+    "bundleMd5": "3775188b059301fcbbd72a4453e9c503"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 f734ced937d9766f4f06bdfa9325f3ad, 70235623 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 3775188b059301fcbbd72a4453e9c503, 70235654 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T13:13:23+00:00",
-  "buildStamp": "2026-11-05 13:13",
+  "publishedAt": "2026-11-05T16:51:59+00:00",
+  "buildStamp": "2026-11-05 16:51",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1290,5 +1291,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "R-WEB-AI-HOME-DEFENDERS-CIVILIAN-FILTER-Q1"
+  "releaseScope": "FALA 495: R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1 R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1"
 }
