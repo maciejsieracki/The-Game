@@ -1,3 +1,9 @@
+## ROBOCZA 8c0e8f81 -- 2026-11-05 -- FALA 502: AI nie maszeruje bez wojny (testowa)
+
+- md5 pełne: `8c0e8f81147ad119ed25be1006b50eb4` · 70248064 B · poprzednia `351808ce`.
+- R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1: AI nie wybiera celu, nie zbiera armii i nie rusza marszem na cywilizację/państwo-miasto bez faktycznej wojny. Przyczyna (odtworzona syntetycznie): dyrektywa wojny wymuszonej (brąz/kamień/żelazo) żyła w rejestrze mimo braku wojny i omijała bramkę; wpisy bez wojny są teraz sprzątane (z odpoczynkiem), a kampania wymaga wojny.
+- FC PASS-WITH-NOTES. NIE_ZMIERZONO: 3×100 tur w grze; dokładna ścieżka z gry właściciela. Jeśli zjawisko wróci — potrzebny zapis gry.
+
 ## ROBOCZA 351808ce -- 2026-11-05 -- FALA 501: zerwanie traktatu handlowego bez kary po 10 turach (testowa)
 
 - md5 pełne: `351808cecd98d318cc36285a8863397a` · 70247670 B · poprzednia `0256ee64`.

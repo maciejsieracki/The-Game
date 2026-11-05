@@ -1,111 +1,111 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "351808cecd98d318cc36285a8863397a",
-  "bundleSha256": "c52bc88138f2fc1528c9593ad54b9ed1714d2336e8997dd6f9e66e5fe8bdc39b",
-  "bundleBytes": 70247670,
+  "bundleMd5": "8c0e8f81147ad119ed25be1006b50eb4",
+  "bundleSha256": "5c46e3d081f80c9fcf42dacade55afa0c59cd22744dfcf01a2590c2d5b5ee1ac",
+  "bundleBytes": 70248064,
   "sourceSnapshot": {
-    "source": "main 10ff7ce38 + TRADEBREAK (67e2d60f0)",
+    "source": "main d257ed6d8 + NOMARCH (40ad137db)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 501: R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1 — zerwanie Traktatu handlowego bez kar (Zaufanie, Wiarygodność N5, okno N3), gdy traktat ma ≥10 tur; wcześniej kary jak dotąd; panel pokazuje „brak kary” lub „kara jeszcze N tur”"
+    "FALA 502: R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1 — AI (cywilizacje i państwa-miasta) nie zbiera armii ani nie maszeruje na cel bez faktycznej wojny; nieaktualne wpisy wojny wymuszonej (po wyjściu z wojny inaczej niż pokojem) są sprzątane razem z falami, więc marsz przerywa się też armiom w drodze"
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "trade-treaty-free-break-after-10 35/0 (mutacje UI i silnika łapane)"
+    "ai-no-march-without-war 11/0; ai-general-war-campaign 51/0; ai-army-all-civs-general-muster 26/0; ai-test 274/20 (baza)"
   ],
   "limits": [
-    "Rendering tekstu „brak kary”/„kara jeszcze N tur” w Chromium NIE_ZMIERZONO — do oceny w grze",
-    "Regresje *treat*/diplomacy*/ai-test: padania PRE-EXISTING (5+5), nie powtarzane przez FC"
+    "Pomiar live 3 ziarna x 100 tur NIE_ZMIERZONO; ścieżka produkcyjna, która zostawiała wpis wojny wymuszonej, nieustalona (luka odtworzona syntetycznie) — do obserwacji w grze",
+    "Dług: 15 testów pada też na czystej bazie"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Operator Haiku → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES."
+    "notes": "Operator Sonnet → Evaluator FAIL → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T20:13:18",
+  "hubGeneratedAt": "2026-11-05T20:23:48",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "351808cecd98d318cc36285a8863397a",
-      "sizeBytes": 70247670
+      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
+      "sizeBytes": 70248064
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "351808cecd98d318cc36285a8863397a",
-      "sizeBytes": 70247670
+      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
+      "sizeBytes": 70248064
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "351808cecd98d318cc36285a8863397a",
-      "sizeBytes": 70247670
+      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
+      "sizeBytes": 70248064
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "351808cecd98d318cc36285a8863397a",
-      "sizeBytes": 70247670
+      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
+      "sizeBytes": 70248064
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "351808cecd98d318cc36285a8863397a",
-      "sizeBytes": 70247670
+      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
+      "sizeBytes": 70248064
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "351808cecd98d318cc36285a8863397a",
-      "sizeBytes": 70247670
+      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
+      "sizeBytes": 70248064
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "351808cecd98d318cc36285a8863397a",
-      "sizeBytes": 70247670
+      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
+      "sizeBytes": 70248064
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "351808cecd98d318cc36285a8863397a",
-      "sizeBytes": 70247670
+      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
+      "sizeBytes": 70248064
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "351808cecd98d318cc36285a8863397a",
-      "sizeBytes": 70247670
+      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
+      "sizeBytes": 70248064
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "351808cecd98d318cc36285a8863397a",
-      "sizeBytes": 70247670
+      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
+      "sizeBytes": 70248064
     }
   ],
-  "md5": "351808cecd98d318cc36285a8863397a",
-  "sizeBytes": 70247670,
+  "md5": "8c0e8f81147ad119ed25be1006b50eb4",
+  "sizeBytes": 70248064,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main 10ff7ce38 + merge TRADEBREAK",
+  "source": "gra/src; main d257ed6d8 + merge NOMARCH",
   "immediatePreviousRelease": {
-    "bundleMd5": "0256ee644598821ea0d181dd37b8a2be"
+    "bundleMd5": "351808cecd98d318cc36285a8863397a"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 0256ee644598821ea0d181dd37b8a2be, 70246781 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 351808cecd98d318cc36285a8863397a, 70247670 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1281,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T20:13:16+00:00",
-  "buildStamp": "2026-11-05 20:13",
+  "publishedAt": "2026-11-05T20:23:46+00:00",
+  "buildStamp": "2026-11-05 20:23",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1290,5 +1290,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "FALA 501: TREATY-TRADE-FREE-BREAK-AFTER-10"
+  "releaseScope": "FALA 502: AI-NO-MARCH-WITHOUT-WAR"
 }
