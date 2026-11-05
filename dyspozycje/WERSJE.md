@@ -1,3 +1,9 @@
+## ROBOCZA ac3843f5 -- 2026-11-05 -- FALA 505: wypad obleganej armii w każdej turze (testowa)
+
+- md5 pełne: `ac3843f57ae6c69cdfa1d2e82550036b` · 70253438 B · poprzednia `bec6901f`.
+- R-WEB-SIEGE-SORTIE-ANY-TURN-Q1: oblegana armia AI/barbarzyńców o sile ≥80% oblegających (10:8) kontratakuje w każdej turze oblężenia (dotąd tylko w ostatniej, przy wyczerpanej żywności); kotwica najsilniejsza; garnizon budzony po sprawdzeniu widoczności celu. Gracz bez zmian (ręczne dowodzenie).
+- FC PASS-WITH-NOTES. NIE_ZMIERZONO: realny Chromium; do decyzji: przycisk „Wypad” dla gracza.
+
 ## ROBOCZA bec6901f -- 2026-11-05 -- FALA 504: panel armii — generał i wielokrotne zaznaczanie (testowa)
 
 - md5 pełne: `bec6901fb45f31083ac0101bbe76604b` · 70252936 B · poprzednia `bfb410ba`.
