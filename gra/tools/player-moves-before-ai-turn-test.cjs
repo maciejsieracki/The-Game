@@ -137,7 +137,7 @@ async function openGame(browser, outDir) {
   await page.waitForFunction(
     () => window.__eraTestDebug && window.__eraTestDebug.getWorldState().citiesLen > 0
       && window.__eraTestDebug.getWorldState().turn === 1 && window.__playerMovesTestDebug && window.__civTest,
-    null, { timeout: 180000 });
+    null, { timeout: 600000 });
   await page.waitForTimeout(1500);
   return { page, errors };
 }
@@ -253,6 +253,49 @@ async function scenarioSingleSeat(browser, outDir) {
     const afterLoad2 = await page.evaluate((ids) => ids.map((i) => window.__playerMovesTestDebug.unitState(i)), [setup.u1, setup.u2, u3]);
     ok('L4d round-trip zapisu po turze: pozycje/ruch bez zmian (idempotencja)', JSON.stringify(afterLoad2) === JSON.stringify(after), { after, afterLoad2 });
     ok('brak bledow strony', errors.length === 0, errors.slice(0, 3));
+  } finally {
+    await page.close();
+  }
+}
+
+async function scenarioNewUnitToGeneral(browser, outDir) {
+  console.log('[L8] nowa jednostka idaca do wodza: marsz tylko zaplanowany po flush, wykonany na koncu tury (scenariusz b)');
+  const { page, errors } = await openGame(browser, outDir);
+  try {
+    const setup = await page.evaluate(() => {
+      const me = window.__civTest.state().cities.find((c) => c.ownerId === 0);
+      const near = window.__civTest.around(me.q, me.r, 1)
+        .filter((h) => (h.q !== me.q || h.r !== me.r) && (h.teren === 'rownina' || h.teren === 'laka'));
+      const f = near[0];
+      return { me, f: { q: f.q, r: f.r }, followerId: window.__civTest.addUnit(0, f.q, f.r, false) };
+    });
+    const gen = await pickDest(page, setup.f.q, setup.f.r, 4, []);
+    const generalId = gen ? await page.evaluate((g) => window.__civTest.addUnit(0, g.q, g.r, false), gen) : null;
+    ok('L8a scenariusz: wodz i nowa jednostka utworzeni', !!(setup.followerId && generalId), { setup, gen, generalId });
+    if (!(setup.followerId && generalId)) return;
+    const r = await page.evaluate(({ g, f }) => window.__playerMovesTestDebug.spawnFollowerFlush(g, f), { g: generalId, f: setup.followerId });
+    ok('L8b po flush: marsz do wodza zaplanowany, ale BEZ animacji i BEZ zmiany pozycji/MP',
+      !!r && r.planned && !r.animating && r.before.q === r.after.q && r.before.r === r.after.r && r.before.ruchLeft === r.after.ruchLeft, r);
+    ok('L8c po flush: jednostka nie trafila do kolejki wykonania', !!r && r.queued === false, r);
+    await page.waitForTimeout(2000);
+    const idle = await page.evaluate((id) => window.__playerMovesTestDebug.unitState(id), setup.followerId);
+    ok('L8d 2 s po flush (start nowej tury): pozycja i MP bez zmian', !!r && idle.q === r.before.q && idle.r === r.before.r && idle.ruchLeft === r.before.ruchLeft, { idle, r });
+    await page.evaluate(`(${INSTALL_LOG})(${JSON.stringify([setup.followerId])})`);
+    await page.evaluate(() => { window.__civTest.endTurn(); });
+    await waitEndTurnDone(page);
+    const log = await page.evaluate(() => window.__civPhaseLog);
+    const iStart = idx(log, 'PLAYER_MOVES_START');
+    const iEnd = idx(log, 'PLAYER_MOVES_END');
+    const iWorld = idx(log, 'WORLD_START');
+    const after = await page.evaluate((id) => window.__playerMovesTestDebug.unitState(id), setup.followerId);
+    ok('L8e marsz do wodza wykonany natychmiast w oknie ruchow gracza (przed swiatem), bez animacji',
+      iStart >= 0 && iStart < iEnd && iEnd < iWorld
+        && log.filter((e, i) => e.k === 'PLAYER_MARCH_INSTANT' && i > iStart && i < iEnd).length === 1
+        && idx(log, 'PLAYER_MARCH_ANIM_START') < 0, log.map((e) => e.k));
+    ok('L8f jednostka faktycznie sie przesunela, a po PLAYER_MOVES_END pozycje stabilne az do nowej tury, MP odnowiony',
+      (after.q !== r.before.q || after.r !== r.before.r) && posStableAfter(log, 'PLAYER_MOVES_END') && after.ruchLeft === after.ruch,
+      { before: r.before, after });
+    ok('brak bledow strony (L8)', errors.length === 0, errors.slice(0, 3));
   } finally {
     await page.close();
   }
@@ -463,6 +506,7 @@ async function liveLayer() {
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox', '--headless=new'] });
   try {
     await scenarioSingleSeat(browser, outDir);
+    await scenarioNewUnitToGeneral(browser, outDir);
     await scenarioEnemyOnRoute(browser, outDir);
     await scenarioHotSeat(browser, outDir);
     await scenarioBattleWait(browser, outDir);

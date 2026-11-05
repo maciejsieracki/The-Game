@@ -27336,6 +27336,28 @@ async function boot(): Promise<void> {
         isAnimating: (): boolean => isAnimating,
         refillMove: (unitId: string): void => { const u = units.find(x => x.id === unitId); if (u) u.ruchLeft = u.ruch; },
         unitState: (unitId: string) => { const u = units.find(x => x.id === unitId); return u ? { q: u.q, r: u.r, ruchLeft: u.ruchLeft, ruch: u.ruch } : null; },
+        /**
+         * R-WEB-MARCH-END-OF-TURN-ONLY-Q1 (scenariusz b): REALNY `flushDeferredPlayerUnitReveals()` dla nowej
+         * jednostki idacej do wodza (`followGeneral`). Zwraca stan zaraz po flush -- test sprawdza, ze marsz jest
+         * tylko ZAPLANOWANY (brak animacji, brak zmiany pozycji), a wykonanie nastapi w koncu tury.
+         */
+        spawnFollowerFlush: (generalId: string, followerId: string) => {
+          const g = units.find(x => x.id === generalId);
+          const f = units.find(x => x.id === followerId);
+          if (!g || !f) return null;
+          g.isGeneral = true;
+          f.followGeneral = true;
+          const before = { q: f.q, r: f.r, ruchLeft: f.ruchLeft };
+          deferredPlayerUnitRevealIds.add(followerId);
+          flushDeferredPlayerUnitReveals();
+          return {
+            before,
+            after: { q: f.q, r: f.r, ruchLeft: f.ruchLeft },
+            animating: isAnimating,
+            planned: plannedMarches.has(followerId),
+            queued: marchExecQueue.includes(followerId),
+          };
+        },
       };
     }
 
