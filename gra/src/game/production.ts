@@ -163,6 +163,15 @@ export interface CityProduction {
 }
 
 /** v0.1: ile jednostek moze zakonczyc rekrutacje w jednej turze (na miasto). */
+/**
+ * R-WEB-MILL-RIVER-ONLY-GATE-Q1 (decyzja właściciela 2026-11-04, ABC: „Porty: morze LUB rzeka; młyn TYLKO rzeka”):
+ * budynki wymagające RZEKI w zasięgu TEGO miasta (nie morza/jeziora) — ta sama definicja „przy rzece” co irygacja
+ * (`isHexNearRiver`), wyliczana w main.ts (`cityHasRiverAccess`) jako `ctx.cityHasRiver`. Młyn nie ma jeszcze
+ * definicji w buildings.json (stan 2026-11-05); bramka działa dla każdej definicji o id `mlyn`.
+ * EN: river-only buildings (mill); gate uses ctx.cityHasRiver (isHexNearRiver, same as irrigation).
+ */
+export const RIVER_ONLY_BUILDING_IDS: ReadonlySet<string> = new Set(['mlyn']);
+
 export const RECRUIT_UNITS_PER_TURN = 1;
 
 /**
@@ -515,6 +524,11 @@ export interface AvailabilityContext {
    * nie osobne pole.
    */
   cityHasCoastOrRiver?: boolean;
+  /**
+   * R-WEB-MILL-RIVER-ONLY-GATE-Q1: rzeka w zasięgu TEGO miasta (`isHexNearRiver`, ta sama definicja co
+   * irygacja) — bramka `RIVER_ONLY_BUILDING_IDS` (młyn). Wyliczana przez main.ts (`cityHasRiverAccess`).
+   */
+  cityHasRiver?: boolean;
   /**
    * ADMIN-STOLICA (decyzja Macieja 2026-07-25): czy TO miasto jest stolicą TEGO
    * właściciela — bramka budynków z `BuildingDef.lokalizacja` ('stolica' = tylko
@@ -978,6 +992,10 @@ export function availableProduction(
     }
     // TEMAT 8 Q2: Port/Port wielki wymagają wybrzeża LUB rzeki w zasięgu TEGO miasta.
     if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
+      continue;
+    }
+    // R-WEB-MILL-RIVER-ONLY-GATE-Q1: młyn wymaga RZEKI w zasięgu miasta (morze/jezioro nie wystarcza).
+    if (RIVER_ONLY_BUILDING_IDS.has(b.id) && ctx.cityHasRiver !== true) {
       continue;
     }
     // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: brak surowca etykietowego nie ukrywa budynku w widoku

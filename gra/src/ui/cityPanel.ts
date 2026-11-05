@@ -114,6 +114,8 @@ import {
   type AvailabilityContext,
   isBuildingSupersededByUpgrade,
 } from '../game/production';
+// R-WEB-MILL-RIVER-ONLY-GATE-Q1: zbiór budynków „tylko rzeka" (młyn) — definicja w production.ts.
+import { RIVER_ONLY_BUILDING_IDS } from '../game/production';
 import {
   CITY_BUILDING_PREREQ,
   cityBuildingPrereqMet,
@@ -500,6 +502,8 @@ export interface CityPanelConfig {
   getEmpireStock?: (ownerId: number) => Record<string, number>;
   /** TEMAT 8 Q2 (2026-07-24): czy TO miasto ma wybrzeże LUB rzekę w zasięgu — bramka Portu. */
   getCityHasCoastOrRiver?: (cityId: string) => boolean;
+  /** R-WEB-MILL-RIVER-ONLY-GATE-Q1: rzeka w zasięgu miasta (bramka młyna). */
+  getCityHasRiver?: (cityId: string) => boolean;
   /**
    * Promień okolicy roboczej (pól obrabianych) wg EKONOMII:
    * cityRangeForPopulation(pop): pop<5 -> 5, pop>=5 -> 10, pop>=10 -> 15.
@@ -6964,6 +6968,15 @@ function buildingRequirementChips(
     });
   }
 
+  // R-WEB-MILL-RIVER-ONLY-GATE-Q1: młyn — blokada z tekstem „wymaga rzeki" (morze/jezioro nie wystarcza).
+  if (RIVER_ONLY_BUILDING_IDS.has(def.id)) {
+    chips.push({
+      label: 'Wymaga rzeki przy mieście',
+      met: ctx.cityHasRiver === true,
+      kind: 'other',
+    });
+  }
+
   if (def.lokalizacja === 'stolica' || def.lokalizacja === 'region') {
     chips.push({
       label: def.lokalizacja === 'stolica' ? 'Tylko stolica' : 'Tylko poza stolicą',
@@ -8857,6 +8870,7 @@ function productionCtxForCity(city: City): AvailabilityContext {
     empireBuiltIds,
     empireResourceStock: cfg.getEmpireStock?.(city.ownerId),
     cityHasCoastOrRiver: cfg.getCityHasCoastOrRiver?.(city.id) ?? false,
+    cityHasRiver: cfg.getCityHasRiver?.(city.id) ?? false,
     // ADMIN-STOLICA (2026-07-25): jedno źródło prawdy o stolicy — capitalCityIdForOwner
     // (main.ts), tu przez cfg.getCapitalCityId (patrz getCapitalCityId doc powyżej —
     // wyznaczona stolica z fallbackiem na najstarsze miasto, NIE heurystyka
