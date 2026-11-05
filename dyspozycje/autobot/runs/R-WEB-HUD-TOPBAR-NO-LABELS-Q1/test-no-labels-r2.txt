@@ -1,0 +1,100 @@
+-- 1280px
+  ok   1280: N1 widoczny tekst banera bez „brutto"/„netto"
+  ok   1280: N2 6 komorek z etykietami
+  ok   1280: N2 kazda komorka ma dwie liczby przyrostu
+  ok   1280: N3 tooltip kazdej komorki opisuje BRUTTO i NETTO
+  ok   1280/small: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   1280/small: N4 wysokosc banera stala
+  ok   1280/small: N5 zero przycinania/przepelnienia w komorkach
+  ok   1280/small: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   1280/big: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   1280/big: N4 wysokosc banera stala
+  ok   1280/big: N5 zero przycinania/przepelnienia w komorkach
+  ok   1280/big: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   1280/huge: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   1280/huge: N4 wysokosc banera stala
+  ok   1280/huge: N5 zero przycinania/przepelnienia w komorkach
+  ok   1280/huge: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   1280/maxw: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   1280/maxw: N4 wysokosc banera stala
+  ok   1280/maxw: N5 zero przycinania/przepelnienia w komorkach
+  ok   1280/maxw: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   1280: N6 baner konczy sie przed medalionem Mocy
+  ok   1280: N6 baner zajmuje dostepna szerokosc (~490 px)
+  ok   1280/huge: N6 szerokosc banera stala przy ogromnych liczbach
+  ok   N7 netto ujemne (Skarbiec huge) = klasa neg
+  ok   N7 netto dodatnie (Praca) = klasa pos
+-- 1024px
+  ok   1024: N1 widoczny tekst banera bez „brutto"/„netto"
+  ok   1024: N2 6 komorek z etykietami
+  ok   1024: N2 kazda komorka ma dwie liczby przyrostu
+  ok   1024: N3 tooltip kazdej komorki opisuje BRUTTO i NETTO
+  ok   1024/small: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   1024/small: N4 wysokosc banera stala
+  ok   1024/small: N5 zero przycinania/przepelnienia w komorkach
+  ok   1024/small: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   1024/big: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   1024/big: N4 wysokosc banera stala
+  ok   1024/big: N5 zero przycinania/przepelnienia w komorkach
+  ok   1024/big: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   1024/huge: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   1024/huge: N4 wysokosc banera stala
+  ok   1024/huge: N5 zero przycinania/przepelnienia w komorkach
+  ok   1024/huge: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   1024/maxw: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   1024/maxw: N4 wysokosc banera stala
+  ok   1024/maxw: N5 zero przycinania/przepelnienia w komorkach
+  ok   1024/maxw: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   1024: N6 baner konczy sie przed medalionem Mocy
+  ok   1024: N6 baner zajmuje dostepna szerokosc (~362 px)
+  ok   1024/huge: N6 szerokosc banera stala przy ogromnych liczbach
+-- 800px
+  ok   800: N1 widoczny tekst banera bez „brutto"/„netto"
+  ok   800: N2 6 komorek z etykietami
+  ok   800: N2 kazda komorka ma dwie liczby przyrostu
+  ok   800: N3 tooltip kazdej komorki opisuje BRUTTO i NETTO
+  ok   800/small: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   800/small: N4 wysokosc banera stala
+  ok   800/small: N5 zero przycinania/przepelnienia w komorkach
+  ok   800/small: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   800/big: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   800/big: N4 wysokosc banera stala
+  ok   800/big: N5 zero przycinania/przepelnienia w komorkach
+  ok   800/big: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   800/huge: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   800/huge: N4 wysokosc banera stala
+  ok   800/huge: N5 zero przycinania/przepelnienia w komorkach
+  ok   800/huge: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   800/maxw: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   800/maxw: N4 wysokosc banera stala
+  ok   800/maxw: N5 zero przycinania/przepelnienia w komorkach
+  ok   800/maxw: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   800: N6 baner konczy sie przed medalionem Mocy
+  ok   800: N6 baner zajmuje dostepna szerokosc (~250 px)
+  ok   800/huge: N6 szerokosc banera stala przy ogromnych liczbach
+-- 640px
+  ok   640: N1 widoczny tekst banera bez „brutto"/„netto"
+  ok   640: N2 6 komorek z etykietami
+  ok   640: N2 kazda komorka ma dwie liczby przyrostu
+  ok   640: N3 tooltip kazdej komorki opisuje BRUTTO i NETTO
+  ok   640/small: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   640/small: N4 wysokosc banera stala
+  ok   640/small: N5 zero przycinania/przepelnienia w komorkach
+  ok   640/small: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   640/big: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   640/big: N4 wysokosc banera stala
+  ok   640/big: N5 zero przycinania/przepelnienia w komorkach
+  ok   640/big: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   640/huge: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   640/huge: N4 wysokosc banera stala
+  ok   640/huge: N5 zero przycinania/przepelnienia w komorkach
+  ok   640/huge: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   640/maxw: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb
+  ok   640/maxw: N4 wysokosc banera stala
+  ok   640/maxw: N5 zero przycinania/przepelnienia w komorkach
+  ok   640/maxw: N5 zawartosc miesci sie w komorce (bez wyjscia poza kolumne)
+  ok   640: N6 baner konczy sie przed medalionem Mocy
+  ok   640: N6 baner zajmuje dostepna szerokosc (~170 px)
+  ok   640/huge: N6 szerokosc banera stala przy ogromnych liczbach
+
+PASS: hud-topbar-no-labels-test (94 ok, 0 fail)

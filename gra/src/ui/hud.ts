@@ -644,10 +644,24 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
    liczb; komórka = medalion + 3 linie (etykieta+zapas / brutto / netto). Wąskie okno zmniejsza
    czcionki i szerokość kolumny (media), NIE zmienia układu. Szerokość dobrana tak, by baner kończył
    się przed medalionem Mocy (środek ekranu ~ 50vw − 105px). */
-.civ-hud{--hud-cell-w:140px;--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:13px;--hud-cell-sm:9.5px;}
+.civ-hud{--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:13px;--hud-cell-sm:9.5px;}
+/* R-WEB-HUD-TOPBAR-NO-LABELS-Q1: baner zajmuje CAŁĄ dostępną szerokość od lewego marginesu do
+   medalionu Mocy (50vw − 120 px − 10 px odstępu). Kolumny 3×1fr (elastyczne, bez stałej szerokości),
+   więc przy większych liczbach nic się nie rozjeżdża — skracanie k/M dzieje się w formatterze. */
+.civ-hud .civ-hud-banner-left{width:calc(50vw - 150px);max-width:calc(50vw - 150px);}
+.civ-hud .civ-hud-banner-left>.civ-hud-banner-shell{width:100%;max-width:100%;box-sizing:border-box;}
 .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 8px;}
-.civ-hud .hud-chip-grid{display:grid;grid-template-columns:repeat(3,var(--hud-cell-w));
+.civ-hud .hud-chip-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;
   column-gap:10px;row-gap:3px;align-items:center;}
+.civ-hud .civ-hud-chip-line{display:flex;align-items:baseline;gap:6px;min-width:0;min-height:calc(var(--hud-cell-val) * 1.15);}
+.civ-hud .civ-hud-chip-figs{display:inline-flex;align-items:baseline;gap:2px;flex-shrink:0;margin-left:auto;font-size:var(--hud-cell-sm);}
+.civ-hud .civ-hud-chip-fsep{color:#968c7c;font-size:var(--hud-cell-sm);}
+.civ-hud .civ-hud-chip-figs .civ-hud-chip-rate.neg{color:var(--civ-hud-shortage,#ee6c6c);}
+.civ-hud .civ-hud-chip-figs .civ-hud-chip-rate.zero{color:#968c7c;}
+.civ-hud .civ-hud-chip-figs .civ-hud-chip-net.neg{color:var(--civ-hud-shortage,#ee6c6c);}
+/* Wąskie okno (≤ 860 px): kolumna ~50–80 px nie mieści „wartość + dwa przyrosty" w jednej linii,
+   więc stała trójwierszowa kolumna: etykieta / wartość / przyrosty (zawsze te same 3 linie — wysokość
+   nie zależy od liczb, bez zawijania). */
 .civ-hud .civ-hud-chip-cell{display:grid;grid-template-columns:var(--hud-cell-med) minmax(0,1fr);
   column-gap:5px;align-items:center;width:100%;min-width:0;overflow:hidden;white-space:nowrap;}
 .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 3px;margin:0;width:100%;}
@@ -667,21 +681,38 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-chip-net.neg{color:var(--civ-hud-shortage,#ee6c6c);}
 @media (max-width:1200px){.civ-hud{--hud-cell-w:108px;--hud-cell-med:24px;--hud-cell-lbl:9px;--hud-cell-val:12px;--hud-cell-sm:9px;}
   .civ-hud .hud-chip-grid{column-gap:8px;}}
-@media (max-width:900px){.civ-hud{--hud-cell-w:78px;--hud-cell-med:14px;--hud-cell-lbl:8px;--hud-cell-val:10px;--hud-cell-sm:8.5px;}
+@media (max-width:900px){.civ-hud{--hud-cell-w:78px;--hud-cell-med:12px;--hud-cell-lbl:8px;--hud-cell-val:10px;--hud-cell-sm:8px;}
   .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 6px;}
   .civ-hud .civ-hud-chip-cell{column-gap:3px;}
   .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 2px;}
   .civ-hud .civ-hud-chip-top{gap:3px;}
   .civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl{flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .civ-hud .hud-chip-grid{column-gap:4px;}}
-/* R-WEB-HUD-GROSS-NET-REST-Q1: ≤700 px baner (3 kolumny) nachodził na medalion Mocy (środek ekranu,
-   min-width 240 px => lewy brzeg x=50vw-120 = 200 px przy 640 px, baner kończył się na ~276 px).
-   Węższe kolumny + zwarty medalion Mocy: baner kończy się przed medalionem także przy 640 px. */
-@media (max-width:700px){.civ-hud{--hud-cell-w:68px;--hud-cell-med:12px;--hud-cell-lbl:7.5px;--hud-cell-val:9.5px;--hud-cell-sm:8px;}
-  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:4px 4px;}
-  .civ-hud .civ-hud-chip-cell{column-gap:2px;}
-  .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 1px;}
-  .civ-hud .hud-chip-grid{column-gap:2px;}}
+/* R-WEB-HUD-TOPBAR-NO-LABELS-Q1: wąskie okna — blok MUSI być po blokach 1200/900 wyżej (kaskada). */
+@media (max-width:1200px){
+  .civ-hud .civ-hud-chip-line{flex-direction:column;align-items:flex-start;gap:0;min-height:0;}
+  .civ-hud .civ-hud-chip-top{min-height:0;line-height:1.05;}
+  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:4px 8px;}
+  .civ-hud .hud-chip-grid{row-gap:1px;}
+  .civ-hud .civ-hud-chip-val{line-height:1.2;height:calc(var(--hud-cell-val) * 1.2);}
+  .civ-hud .civ-hud-chip-figs{margin-left:0;line-height:1.3;height:calc(var(--hud-cell-sm) * 1.3);}}
+/* R-WEB-HUD-TOPBAR-NO-LABELS-Q1 r2: 701–900 px (baner ~250–300 px): przyrosty obok siebie, bez
+   separatora i z mniejsza czcionka, zeby „−999,9M −999,9M” miescilo sie w kolumnie. */
+@media (max-width:900px){
+  .civ-hud .hud-chip-grid{column-gap:2px;}
+  .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 0;}
+  .civ-hud .civ-hud-chip-figs{gap:1px;font-size:7px;}
+  .civ-hud .civ-hud-chip-fsep{display:none;}}
+@media (max-width:700px){
+  .civ-hud{--hud-cell-med:12px;--hud-cell-lbl:7px;--hud-cell-val:9px;--hud-cell-sm:7px;}
+  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:3px 3px;}
+  .civ-hud .civ-hud-chip-cell{column-gap:1px;}
+  .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 0;}
+  .civ-hud .hud-chip-grid{column-gap:0;}
+  .civ-hud .civ-hud-chip-figs{gap:0;}
+  .civ-hud .civ-hud-chip-line{gap:1px;}
+  .civ-hud .civ-hud-chip-fsep{display:none;}
+  .civ-hud .civ-hud-chip-figs{flex-direction:column;align-items:flex-start;gap:0;height:auto;}}
 /* R-WEB-HUD-GROSS-NET-REST-Q1 r2: prawy baner (Armia/Miasta/Obywatele/Kultura/Religia) mial max-width
    50vw-340px (<=0 przy 640 px) i chipy nowrap => wylewaly sie poza ekran / zwijal sie do ~30 px paska.
    Teraz: zawsze zawijanie, min. 150 px; <=1500 px etykiety ukryte (ikona + liczba + przyrost, pelny opis w tooltipie);
@@ -1267,6 +1298,8 @@ export function renderBarD1B(s: HudState): string {
   // Surowce: brutto i netto to TA SAMA wielkosc (suma po surowcach), wiec netto = suma netto; deficyt
   // pojedynczego surowca sygnalizuje czerwony chip + ⚠ + tooltip („Najgorszy bilans" i lista per surowiec).
   const surNetto = s.surowceNetto ?? 0;
+  // R-WEB-HUD-TOPBAR-NO-LABELS-Q1: w banerze tylko liczby (bez słów); wyjaśnienie w tooltipie komórki.
+  const NET_HINT = 'Przyrost: pierwsza liczba = BRUTTO (przychód przed kosztami), druga = NETTO (po wszystkich opłatach = zmiana stanu na turę)';
   const row1: string[] = [
     chip6cHtml({
       iconId: 'res-treasury',
@@ -1275,6 +1308,8 @@ export function renderBarD1B(s: HudState): string {
       rate: formatCompactSigned(skarbiecBrutto),
       net: formatCompactSigned(skarbiecNetto),
       netTone: netTone(skarbiecNetto),
+      rateTone: netTone(skarbiecBrutto),
+      netHint: NET_HINT,
       exact: exactCompactNote(s.bogactwo, skarbiecBrutto),
       valClass: ` ${resourceTextClass('skarbiec')}`,
       shortage: hudGoldShortage(s),
@@ -1288,6 +1323,8 @@ export function renderBarD1B(s: HudState): string {
       rate: formatCompactSigned(pracaBrutto),
       net: formatCompactSigned(pracaNetto),
       netTone: netTone(pracaNetto),
+      rateTone: netTone(pracaBrutto),
+      netHint: NET_HINT,
       exact: exactCompactNote(s.praca, pracaBrutto),
       valClass: ` ${resourceTextClass('praca')}`,
       act: 'praca',
@@ -1300,6 +1337,8 @@ export function renderBarD1B(s: HudState): string {
       rate: formatCompactSigned(foodBrutto),
       net: formatCompactSigned(foodNetto),
       netTone: netTone(foodNetto),
+      rateTone: netTone(foodBrutto),
+      netHint: NET_HINT,
       exact: exactCompactNote(foodHudValue(s), foodBrutto),
       valClass: ` ${resourceTextClass('zywnosc')}`,
       // P-SPICHLERZ-ZERO-MYLACE: chip czerwony też przy niedokarmionych miastach, nie
@@ -1319,6 +1358,8 @@ export function renderBarD1B(s: HudState): string {
       rate: formatCompactSigned(handelBrutto),
       net: formatCompactSigned(handelBrutto),
       netTone: netTone(handelBrutto),
+      rateTone: netTone(handelBrutto),
+      netHint: NET_HINT,
       exact: exactCompactNote(undefined, handelBrutto),
       act: 'handel',
       title: handelChipTitle(s),
@@ -1330,6 +1371,8 @@ export function renderBarD1B(s: HudState): string {
       rate: formatCompactSigned(naukaStawka),
       net: formatCompactSigned(naukaStawka),
       netTone: netTone(naukaStawka),
+      rateTone: netTone(naukaStawka),
+      netHint: NET_HINT,
       exact: exactCompactNote(Math.floor(s.nauka), naukaStawka),
       medVariant: 'science',
       valClass: ` ${resourceTextClass('nauka')}`,
@@ -1344,6 +1387,8 @@ export function renderBarD1B(s: HudState): string {
       rate: formatCompactSigned(surBrutto),
       net: formatCompactSigned(surNetto),
       netTone: netTone(surNetto),
+      rateTone: netTone(surBrutto),
+      netHint: NET_HINT,
       shortage: hudResourceShortage(s),
       act: 'surowce',
       title: surowceChipTitle(s),

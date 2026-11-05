@@ -178,7 +178,10 @@ function assertAll(res, label) {
       ok(JSON.stringify(Object.keys(c)) === JSON.stringify([...ORDER_ROW1, ...ORDER_ROW2]), `${label} ${w}px/${n}: kolejnosc 3+3 zachowana`);
       ok(ORDER_ROW1.every((x) => Math.abs(c[x].y - c.Skarbiec.y) < 1.5) && ORDER_ROW2.every((x) => Math.abs(c[x].y - c.Handel.y) < 1.5) && c.Handel.y > c.Skarbiec.y + 20, `${label} ${w}px/${n}: 3 w rzedzie gora, 3 dol`);
       ok(Object.values(c).every((v) => !v.clip), `${label} ${w}px/${n}: zaden tekst nie jest przyciety`, Object.entries(c).filter(([, v]) => v.clip).map(([k]) => k));
-      ok(Object.values(c).every((v) => v.medW >= 12), `${label} ${w}px/${n}: ikony widoczne`, Object.entries(c).map(([k, v]) => [k, v.medW]));
+      // R-WEB-HUD-TOPBAR-NO-LABELS-Q1: ≤700 px medalion 9 px (zamiast 12) — kolumny 1fr musza zmiescic
+      // „wartosc + dwa przyrosty" w ~50 px (przy 640 px baner ma 170 px). Prog 9 px dla ≤700 px.
+      const medMin = 12;
+      ok(Object.values(c).every((v) => v.medW >= medMin), `${label} ${w}px/${n}: ikony widoczne (prog ${medMin} px)`, Object.entries(c).map(([k, v]) => [k, v.medW]));
       ok(Object.keys(ref).every((x) => c[x].x === ref[x].x && c[x].y === ref[x].y), `${label} ${w}px/${n}: pozycje identyczne z small`);
       ok(m.sw <= m.vw, `${label} ${w}px/${n}: brak poziomego przewijania`);
       if (n === 'small') console.log(`  info ${w}px: prawy brzeg banera ${Math.round(m.shellRight)} vs medalion Mocy x=${Math.round(m.powerX)} (${m.shellRight <= m.powerX + 0.5 ? 'bez nakladania' : 'NAKLADA SIE na medalion Mocy — poza zakresem wymagan 1280/1024/800 (uklad Mocy jest poza banerem)'})`);
@@ -194,11 +197,13 @@ function assertAll(res, label) {
   ok(s.Spichlerz.brutto === '+30' && s.Spichlerz.netto === '+5', `${label}: Spichlerz brutto +30 / netto +5`, [s.Spichlerz.brutto, s.Spichlerz.netto]);
   ok(s.Handel.brutto === '+82' && s.Handel.netto === '+82', `${label}: Handel brutto +82 / netto +82`, [s.Handel.brutto, s.Handel.netto]);
   ok(s.Nauka.brutto === '+15' && s.Nauka.netto === '+15', `${label}: Nauka brutto +15 / netto +15`, [s.Nauka.brutto, s.Nauka.netto]);
-  ok(s.Surowce.brutto === '+120' && s.Surowce.netto === '+40' && s.Surowce.nettoLabel === 'netto', `${label}: Surowce brutto +120 / netto +40 — OBA to sumy po surowcach (ta sama wielkosc)`, [s.Surowce.brutto, s.Surowce.netto, s.Surowce.nettoLabel]);
+  // R-WEB-HUD-TOPBAR-NO-LABELS-Q1: w banerze nie ma slow „brutto"/„netto" (asercje etykiet zastapione
+  // asercjami wartosci; slowa sa w tooltipie — pilnuje tego hud-topbar-no-labels-test.cjs).
+  ok(s.Surowce.brutto === '+120' && s.Surowce.netto === '+40', `${label}: Surowce brutto +120 / netto +40 — OBA to sumy po surowcach (ta sama wielkosc)`, [s.Surowce.brutto, s.Surowce.netto]);
   const nd = k0(1280, 'nodef').cells;
-  ok(nd.Surowce.netto === '+55' && nd.Surowce.nettoLabel === 'netto', `${label}: Surowce bez deficytu pokazuje sume netto +55`, [nd.Surowce.netto, nd.Surowce.nettoLabel]);
+  ok(nd.Surowce.netto === '+55', `${label}: Surowce bez deficytu pokazuje sume netto +55`, [nd.Surowce.netto]);
   ok(s.Surowce.short === true && nd.Surowce.short === false, `${label}: deficyt pojedynczego surowca = czerwony chip Surowce (shortage), brak deficytu = nie`, [s.Surowce.short, nd.Surowce.short]);
-  ok(Object.values(s).every((v) => v.bruttoLabel === 'brutto' && v.nettoLabel === 'netto'), `${label}: kazda komorka ma slowne etykiety "brutto" i "netto"`);
+  ok(Object.values(s).every((v) => v.bruttoLabel === undefined && v.nettoLabel === undefined), `${label}: kazda komorka BEZ slownych etykiet "brutto"/"netto" (R-WEB-HUD-TOPBAR-NO-LABELS-Q1)`);
   const huge = k0(1280, 'huge').cells;
   ok(huge.Skarbiec.val === '1,2M' && mm(huge.Skarbiec.netto) === '-999,9k' && huge.Skarbiec.brutto === '+1,2M', `${label}: duze liczby skracane k/M (1,2M / −999,9k)`, [huge.Skarbiec.val, huge.Skarbiec.netto, huge.Skarbiec.brutto]);
   // kolory netto
@@ -226,10 +231,10 @@ async function mutants(chromium) {
     ['zamiana rzedow (Handel/Nauka/Surowce na gorze)', (s) => s.replace("'<div class=\"hud-chip-grid\">' + row1.join('') + row2.join('')", "'<div class=\"hud-chip-grid\">' + row2.join('') + row1.join('')")],
     ['netto = brutto (Skarbiec)', (s) => s.replace('const skarbiecNetto = s.bogactwoRate ?? skarbiecBrutto;', 'const skarbiecNetto = skarbiecBrutto;')],
     ['netto ujemne nie jest czerwone', (s) => s.replace("return r < 0 ? 'neg' : r > 0 ? 'pos' : 'zero';", "return r > 0 ? 'pos' : 'zero';")],
-    ['4 kolumny siatki (zawijanie Handel do gory)', (s) => s.replace('grid-template-columns:repeat(3,var(--hud-cell-w))', 'grid-template-columns:repeat(4,var(--hud-cell-w))')],
+    ['4 kolumny siatki (zawijanie Handel do gory)', (s) => s.replace('grid-template-columns:repeat(3,minmax(0,1fr))', 'grid-template-columns:repeat(4,minmax(0,1fr))')],
     ['Surowce: netto = najgorszy pojedynczy surowiec (mieszanie wielkosci)', (s) => s.replace("const surNetto = s.surowceNetto ?? 0;", "const surNetto = (s.surowceBilans ?? []).reduce((m, r) => Math.min(m, r.netto), 0);")],
     ['Praca: netto z zrealizowanej tury zamiast prognozy', (s) => s.replace("const pracaNetto = s.pracaPrognoza ?? (s.pracaRate ?? 0);", "const pracaNetto = s.pracaRate ?? 0;")],
-    ['ikony ukryte <=900px', (s) => s.replace("--hud-cell-med:14px;--hud-cell-lbl:8px", "--hud-cell-med:0px;--hud-cell-lbl:8px")],
+    ['ikony ukryte <=900px', (s) => s.replace("--hud-cell-med:12px;--hud-cell-lbl:8px", "--hud-cell-med:0px;--hud-cell-lbl:8px")],
   ];
   for (const [name, fn] of M) {
     const mutSrc = fn(src);
