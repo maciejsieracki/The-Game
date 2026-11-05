@@ -13805,8 +13805,12 @@ async function boot(): Promise<void> {
       const { x, z } = axialToWorld(u.q, u.r, HEX_R);
       const { dist } = camCtrl.getFocusState();
       camCtrl.focusAt(x, z, dist);
-      if (autoMarchingToGeneral && !generalMarchPreplanned) enqueueMarchSegments([newUnitId]);
+      // R-WEB-MARCH-END-OF-TURN-ONLY-Q1: nowa jednostka idaca do wodza ma marsz TYLKO zaplanowany
+      // (`planSpawnedUnitFollowGeneral`); pierwszy segment wykona sie na KONCU tury gracza, nie od razu.
     }
+
+    /** R-WEB-MARCH-END-OF-TURN-ONLY-Q1: celowo no-op -- marsze nowych jednostek rusza dopiero na koncu tury gracza. */
+    function deferMarchToEndOfTurn(_unitIds: string[]): void {}
 
     /** Po fazie AI: pokaż jednostki ukończone w ticku end-turn (produkcja/rekrutacja). */
     function flushDeferredPlayerUnitReveals(): void {
@@ -13818,7 +13822,7 @@ async function boot(): Promise<void> {
       const marchingIds = planDeferredGeneralMarchBatch(
         ids,
         id => units.find(u => u.id === id)?.followGeneral === true && planSpawnedUnitFollowGeneral(id),
-        enqueueMarchSegments,
+        deferMarchToEndOfTurn,
       );
       if (lastId) afterPlayerUnitSpawned(lastId, marchingIds.includes(lastId));
     }
@@ -27451,6 +27455,28 @@ async function boot(): Promise<void> {
         isAnimating: (): boolean => isAnimating,
         refillMove: (unitId: string): void => { const u = units.find(x => x.id === unitId); if (u) u.ruchLeft = u.ruch; },
         unitState: (unitId: string) => { const u = units.find(x => x.id === unitId); return u ? { q: u.q, r: u.r, ruchLeft: u.ruchLeft, ruch: u.ruch } : null; },
+        /**
+         * R-WEB-MARCH-END-OF-TURN-ONLY-Q1 (scenariusz b): REALNY `flushDeferredPlayerUnitReveals()` dla nowej
+         * jednostki idacej do wodza (`followGeneral`). Zwraca stan zaraz po flush -- test sprawdza, ze marsz jest
+         * tylko ZAPLANOWANY (brak animacji, brak zmiany pozycji), a wykonanie nastapi w koncu tury.
+         */
+        spawnFollowerFlush: (generalId: string, followerId: string) => {
+          const g = units.find(x => x.id === generalId);
+          const f = units.find(x => x.id === followerId);
+          if (!g || !f) return null;
+          g.isGeneral = true;
+          f.followGeneral = true;
+          const before = { q: f.q, r: f.r, ruchLeft: f.ruchLeft };
+          deferredPlayerUnitRevealIds.add(followerId);
+          flushDeferredPlayerUnitReveals();
+          return {
+            before,
+            after: { q: f.q, r: f.r, ruchLeft: f.ruchLeft },
+            animating: isAnimating,
+            planned: plannedMarches.has(followerId),
+            queued: marchExecQueue.includes(followerId),
+          };
+        },
       };
     }
 
@@ -29149,7 +29175,7 @@ async function boot(): Promise<void> {
     }
 
     /** Keep every queued General-following march aimed at that General's live position. */
-    function syncGeneralMarchTargets(): void {
+    function syncGeneralMarchTargets(enqueueNewlyPlanned = false): void {
       syncTrackedGeneralFollowMarches(units, plannedMarches, unitId => marchAttackTargets.delete(unitId));
       const newlyPlanned = planEnabledGeneralFollowMarches(
         units,
@@ -29162,6 +29188,9 @@ async function boot(): Promise<void> {
             : planGeneralFollowMarch(unit, point, targetId, false);
         },
       );
+      // R-WEB-MARCH-END-OF-TURN-ONLY-Q1: poza faza konca tury gracza nowo zaplanowani podopieczni
+      // wodza NIE trafiaja do kolejki wykonania (ruszyliby w trakcie tury / na starcie nowej).
+      if (!enqueueNewlyPlanned) return;
       for (const unitId of newlyPlanned) {
         const unit = units.find(candidate => candidate.id === unitId);
         if (unit && planningStackRuchLeft(playerStackAt(unit)) > 0 && !marchExecQueue.includes(unitId)) {
@@ -29404,7 +29433,7 @@ async function boot(): Promise<void> {
       const attackTargetId = marchAttackTargets.get(unitId);
       phaseMark('PLAYER_MARCH_RESULT', unitId + ' arrived=' + result.arrived + ' stop=' + (result.stopReason ?? '') + ' atk=' + (attackTargetId ?? '') + ' launch=' + launchAttack);
       if (launchAttack && attackTargetId && tryLaunchMarchAttack(u, attackTargetId)) {
-        syncGeneralMarchTargets();
+        syncGeneralMarchTargets(true);
         return true;
       }
       finishMarchSegmentHints(
@@ -29416,7 +29445,7 @@ async function boot(): Promise<void> {
       // An instant end-turn segment can move the commander away from followers who
       // shared its hex and therefore had no march entry yet. Reconcile after every
       // segment so opted-in units acquire or retarget their tracked order in this pass.
-      syncGeneralMarchTargets();
+      syncGeneralMarchTargets(true);
       return true;
     }
 
@@ -29433,7 +29462,7 @@ async function boot(): Promise<void> {
       // `processMarchQueue()` -> `executeMarchSegmentForUnit()` = ANIMOWANY ruch PIERWSZEJ jednostki
       // (`startAnimatedMove`), ktorego koniec (odjecie ruchu, mgla, hint) dopalal sie w `renderLoop` juz
       // PO resecie ruchu i w trakcie fazy AI. Teraz kazdy segment idzie przez `applyMarchSegmentInstant`.
-      syncGeneralMarchTargets();
+      syncGeneralMarchTargets(true);
       for (const u of units) {
         if (u.ownerId !== humanOwnerId || !plannedMarches.has(u.id)) continue;
         if (movedByPlayerThisTurn.has(u.id) || opts.skipUnitIds?.has(u.id)) continue;
@@ -29442,7 +29471,7 @@ async function boot(): Promise<void> {
       }
       while (marchExecQueue.length > 0) {
         const id = marchExecQueue.shift()!;
-        if (!plannedMarches.has(id) || opts.skipUnitIds?.has(id)) continue;
+        if (!plannedMarches.has(id) || opts.skipUnitIds?.has(id) || movedByPlayerThisTurn.has(id)) continue;
         if (!applyMarchSegmentInstant(id, humanOwnerId, opts.launchAttacks !== false)) continue;
       }
       syncUnitsRender();
@@ -41359,8 +41388,8 @@ async function boot(): Promise<void> {
 
           // Opt-in units sharing the commander's hex become followers as soon as that
           // commander moves, then use the normal tracked-march queue.
+          // R-WEB-MARCH-END-OF-TURN-ONLY-Q1: koniec animacji NIE odpala kolejnych marszy (tylko koniec tury).
           syncGeneralMarchTargets();
-          processMarchQueue();
 
           validateActiveSieges();
 
@@ -41437,7 +41466,6 @@ async function boot(): Promise<void> {
           }
           updateHud();
           refreshD1bHud();
-          processMarchQueue();
           // C: auto-cykl „bęben" — jednostka gracza wyczerpała ruch (bez marszu
           // wieloturowego w toku) → przejdź do następnej armii, która wciąż ma dostępny ruch
           // (te same semantyki co Spacja — R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA).
