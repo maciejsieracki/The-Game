@@ -1,3 +1,12 @@
+## ROBOCZA a9b54baa -- 2026-11-05 -- AI: wojna na stolicę nie ogałaca obrony przed barbarzyńcami (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`c3d859a40` + WAR-ALLIN-KEEP-BARB `cf2bc8d71`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `a9b54baab545a248c1660100019cf748`, 70234079 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: obrońcy miasta przed barbarzyńcami nie są przejmowani przez marsz na stolicę wroga.
+- Testy: tsc PASS; keep-barb 8/0; defend-home 30/0; home-defense-vs-barbarians 46/0; army-concentration 56/0.
+- Ograniczenia: tylko barbarzyńcy; ścieżka wodza nieobjęta; brak pomiaru pełnej rozgrywki.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `268a991cc962d00429f533580c7a9967`, 70233983 bajtów.
+
 ## ROBOCZA 268a991c -- 2026-11-05 -- brutto/netto w tooltipach, baner do 640 px, bez wycinki lasu na Wzgórzach (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`7d2dccf42` + HUD-REST `6616c22b4` + HILLS-REVERT `97b12333e`) i commit wdrożenia; zgłoszenia/decyzja właściciela, stała zgoda.
