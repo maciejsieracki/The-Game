@@ -1,3 +1,11 @@
+## ROBOCZA f734ced9 -- 2026-11-05 -- fala 3: bramka młyna przy rzece (nieaktywna do definicji młyna) (testowa)
+
+- **STATUS: DEPLOYED** — `origin/main` `ab9abb356` (MILL-RIVER-ONLY-GATE `57baeef47`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `f734ced937d9766f4f06bdfa9325f3ad`, 70235623 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: bramka młyna (rzeka) i Port (morze lub rzeka) w kodzie; w grze bez efektu, dopóki brak definicji młyna.
+- Testy: tsc PASS; mill-river-only-gate ALL PASS.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `1a834f4c5cbd4eaf16a2468636b8d7be`, 70235118 bajtów.
+
 ## ROBOCZA 1a834f4c -- 2026-11-05 -- AI: ścieżka wodza nie przejmuje obrońców przed barbarzyńcami (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`ee269b6ed` + WAR-ALLIN-GENERAL-PATH `f1ca757ef`) i commit wdrożenia; stała zgoda właściciela.
