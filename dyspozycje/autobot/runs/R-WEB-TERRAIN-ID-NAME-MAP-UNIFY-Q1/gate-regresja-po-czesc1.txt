@@ -1,0 +1,1 @@
+EXIT=1 (regresja czesc 1/2 na drzewie PO: 5 niezerowych, patrz 01-operator-r1.md)

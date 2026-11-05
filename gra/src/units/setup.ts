@@ -20,6 +20,7 @@ import type { Hex } from '../types/hex';
 import type { GameData } from '../data/loader';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import { findBestPlayerStartHex } from '../map/startScoring';
+import { TEREN_MOVEMENT_KEY_ALIASES } from '../map/terrain-names';
 import {
   applyRoadMovementModifier,
   ROAD_MOVE_SPEED_MULT as MAPA_ROAD_MULT,
@@ -418,29 +419,8 @@ let _forestExtra: number = 1;
  * źródłowy nadal używa starej nazwy — te trzy klucze to udokumentowany mostek
  * wstecznej kompatybilności, nie przeoczenie (KRYTERIUM KOŃCA 4 dispatchu).
  */
-const TERRAIN_MOVEMENT_KEY_ALIASES: Record<string, TerenBazowy> = {
-  Laka: TerenBazowy.Laka,
-  'Łąka': TerenBazowy.Laka,
-  laka: TerenBazowy.Laka,
-  Rownina: TerenBazowy.Rownina,
-  'Równina': TerenBazowy.Rownina,
-  rownina: TerenBazowy.Rownina,
-  Pustynia: TerenBazowy.Pustynia,
-  pustynia: TerenBazowy.Pustynia,
-  Wybrzeze: TerenBazowy.PlytkieMorze,
-  'Wybrzeże': TerenBazowy.PlytkieMorze,
-  wybrzeze: TerenBazowy.PlytkieMorze,
-  Wzgorza: TerenBazowy.Wzgorza,
-  'Wzgórza': TerenBazowy.Wzgorza,
-  wzgorza: TerenBazowy.Wzgorza,
-  Gory: TerenBazowy.Gory,
-  'Góry': TerenBazowy.Gory,
-  gory: TerenBazowy.Gory,
-  Morze: TerenBazowy.Morze,
-  morze: TerenBazowy.Morze,
-  Polarny: TerenBazowy.Polarny,
-  polarny: TerenBazowy.Polarny,
-};
+// R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1: aliasy z jednego źródła (map/terrain-names.ts).
+const TERRAIN_MOVEMENT_KEY_ALIASES: Record<string, TerenBazowy> = TEREN_MOVEMENT_KEY_ALIASES;
 
 function resolveTerrainMovementKey(raw: string): TerenBazowy | undefined {
   if (raw in _terrainCosts) return raw as TerenBazowy;
