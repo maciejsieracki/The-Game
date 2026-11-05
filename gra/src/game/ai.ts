@@ -4334,7 +4334,8 @@ function applyWarAllInCapitalToCommands(
   if (gateLooseUnits && isArmyConsolidationEnabled()) {
     const rallyPlan = planWarReplacementRally(
       planned,
-      eligible.filter(u => keep.has(u.id)),
+      // Zatrzymany obronca domu nie jest kotwica armii zastepczej (stoi przy zagrozeniu, nie walczy na wojnie).
+      eligible.filter(u => keep.has(u.id) && homeDefenderIds?.has(u.id) !== true),
       cities.filter(c => c.ownerId === playerId),
       ctx.targets,
       { ownerId: playerId, currentTurn },
@@ -4809,6 +4810,58 @@ function planCityStateOffensiveMove(
 }
 
 /**
+ * R-WEB-WAR-ALLIN-GENERAL-PATH-BARB-DEFENSE-Q1: sciezka kampanii wodza (etap attacking) wraca PRZED
+ * krokiem 4b2, wiec obrona domu przed barbarzyncami nie byla tam liczona -- drugie wywolanie
+ * applyWarAllInCapitalToCommands przejmowalo obroncow i wysylalo ich na stolice wroga. Tu: ten sam
+ * przydzial (assignHomeDefenders) i ten sam ruch/atak co w kroku 4b/4b2, wylacznie dla barbarzyncow
+ * (ownerId -1; najezdzcow cywilizacji obsluguje nakladka applyHomeWarPriorities). Zwraca komendy oraz
+ * zbior id obroncow, ktorych war-allin nie przejmuje.
+ */
+function planCampaignBarbarianHomeDefense(
+  playerId: number,
+  myUnits: RuntimeUnit[],
+  units: RuntimeUnit[],
+  cities: AICity[],
+  map: GameMap,
+  data: GameData,
+  opts: AITurnOpts,
+): { commands: AICommand[]; defenderIds: Set<string> } {
+  const result = { commands: [] as AICommand[], defenderIds: new Set<string>() };
+  const myCities = cities.filter(c => c.ownerId === playerId);
+  if (myCities.length === 0) return result;
+  const homeThreats = units.filter(u =>
+    u.ownerId === -1
+    && aiCanEngageOwner(opts, u.ownerId)
+    && myCities.some(city => isHomeDefenseThreatForCity(u.q, u.r, city)));
+  if (homeThreats.length === 0) return result;
+  // Obroncy domu to wojsko: bez cywilow (robotnik, osadnik), bez jednostek na okrecie i bez wodza
+  // kampanii (wodz nie wypada z marszu na stolice, zeby bronic miasta).
+  const defenderPool = myUnits.filter(u =>
+    !isCivilianUnit(u) && u.embarked !== true && u.seaRaider !== true && u.isGeneral !== true);
+  const assignments = assignHomeDefenders(
+    homeThreats,
+    defenderPool,
+    myCities,
+    isArmyConsolidationEnabled() && canConcentrateArmy(opts) ? ARMY_CONSOLIDATION_HOME_GROUP_SIZE : 1,
+  );
+  for (const [unitId, threat] of assignments) {
+    if (threat.ownerId !== -1) continue;
+    const unit = myUnits.find(u => u.id === unitId);
+    if (unit === undefined) continue;
+    if (isWithinAttackRange(unit, threat.q, threat.r, data)) {
+      result.commands.push({ type: 'attack', unitId, targetUnitId: threat.id });
+      result.defenderIds.add(unitId);
+      continue;
+    }
+    const step = firstStep(unit, map, threat.q, threat.r, units);
+    if (step === null) continue;
+    result.commands.push({ type: 'move', unitId, toQ: step.q, toR: step.r });
+    result.defenderIds.add(unitId);
+  }
+  return result;
+}
+
+/**
  * D-START kopia_typu_obronna — bez produkcji ekspansyjnej, bez osadników/foundCity;
  * poza tym pełna produkcja (jak zwykłe miasto AI, via chooseCityProduction), riposta
  * przy zagrożeniu własnego miasta i posiłki wewnątrz klastra ku zagrożonej siostrze
@@ -4864,11 +4917,16 @@ function appendAiGeneralCampaignOrders(
     return true;
   }
   if (campaign.stage === 'attacking' && general) {
+    // R-WEB-WAR-ALLIN-GENERAL-PATH-BARB-DEFENSE-Q1: obroncy domu przed barbarzyncami ida ku zagrozeniu
+    // (jak krok 4b2) i ich komendy zostaja poza marszem kampanii, takze poza ekspansja stosow nizej.
+    const barbDefense = planCampaignBarbarianHomeDefense(playerId, myUnits, units, cities, map, data, opts);
+    commands.push(...barbDefense.commands);
     const campaignCommandStart = commands.length;
     applyWarAllInCapitalToCommands(
       commands, myUnits, units, cities, playerId, map,
       { targets: [campaign.target], allowSea: campaign.seaTravelAllowed === true,
         marchMainGroupWhileRendezvous: true }, data,
+      false, undefined, barbDefense.defenderIds,
     );
     // Campaign members can already be concentrated on one friendly hex after
     // five muster turns. The shared war planner reserves each destination once,
@@ -4887,7 +4945,9 @@ function appendAiGeneralCampaignOrders(
     }
     const expandedStackIds = new Set<string>();
     const stackOrders: Extract<AICommand, { type: 'move' }>[] = [];
-    for (const group of stackGroups.values()) {
+    for (const stack of stackGroups.values()) {
+      // Obroncy domu w stosie nie sa rozwijani do stolicy (maja wlasny ruch ku barbarzyncy).
+      const group = stack.filter(unit => !barbDefense.defenderIds.has(unit.id));
       if (group.length < 2) continue;
       const ids = new Set(group.map(unit => unit.id));
       const route = campaignMoves.find(command => ids.has(command.unitId));
