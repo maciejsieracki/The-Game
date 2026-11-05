@@ -682,6 +682,21 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
   .civ-hud .civ-hud-chip-cell{column-gap:2px;}
   .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 1px;}
   .civ-hud .hud-chip-grid{column-gap:2px;}}
+/* R-WEB-HUD-GROSS-NET-REST-Q1 r2: prawy baner (Armia/Miasta/Obywatele/Kultura/Religia) mial max-width
+   50vw-340px (<=0 przy 640 px) i chipy nowrap => wylewaly sie poza ekran / zwijal sie do ~30 px paska.
+   Teraz: zawsze zawijanie, min. 150 px; <=1500 px etykiety ukryte (ikona + liczba + przyrost, pelny opis w tooltipie);
+   <=1100 px klaster w kolumne (przyciski nad banerem), zeby baner nie wchodzil na medalion Mocy. */
+.civ-hud .civ-hud-banner-right{max-width:max(150px,min(calc(50vw - 352px),780px));}
+.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;row-gap:2px;max-width:100%;}
+@media (max-width:1500px){
+  .civ-hud .civ-hud-banner-right .civ-hud-chip-lbl{display:none;}
+  .civ-hud .civ-hud-banner-right .civ-hud-chip-sep{margin:0 4px;}}
+@media (max-width:1100px){
+  .civ-hud .hud-right-cluster{flex-direction:column-reverse;align-items:flex-end;gap:6px;}
+  .civ-hud .civ-hud-banner-right .civ-hud-chip-sep{display:none;}
+  .civ-hud .civ-hud-banner-right{max-width:max(150px,calc(50vw - 150px));}}
+@media (max-width:700px){
+  .civ-hud .civ-hud-banner-right{max-width:max(150px,calc(50vw - 105px));}}
 .civ-hud .hud-right{display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;flex-shrink:0;}
 .civ-hud .hud-meta{text-align:right;}
 .civ-hud .b-menu{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;

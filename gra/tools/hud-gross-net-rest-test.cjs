@@ -48,7 +48,7 @@ const LOADERS = { '.ts': 'ts', '.json': 'json', '.svg': 'text', '.png': 'dataurl
 async function bundle(hudTsPath, outJs) {
   const entry = path.join(TMP, 'entry-' + path.basename(outJs) + '.ts');
   fs.writeFileSync(entry, `import { renderBarD1B, ensureStyles } from ${JSON.stringify(hudTsPath)};
-(window as any).__r = (s: any) => { ensureStyles(); document.getElementById('r')!.innerHTML = '<div class="civ-hud">' + renderBarD1B(s) + '</div>'; };`);
+(window as any).__r = (s: any) => { ensureStyles(); document.getElementById('r')!.innerHTML = '<div class="civ-hud">' + renderBarD1B(s) + '</div>'; const hr = document.querySelector('.hud-right'); if (hr) hr.innerHTML = '<button type="button" class="b-wiki"><span>Civpedia</span></button><button type="button" class="b-menu"><span>Menu</span></button>'; };`);
   await esbuild.build({ entryPoints: [entry], bundle: true, platform: 'browser', format: 'iife', outfile: outJs, logLevel: 'silent', loader: LOADERS, plugins: [viteCompat] });
 }
 
@@ -75,9 +75,14 @@ const MEASURE = () => {
   const med = cells.map((c) => c.querySelector('.civ-hud-chip-med').getBoundingClientRect().width);
   const sh = document.querySelector('.civ-hud-banner-left .civ-hud-banner-shell').getBoundingClientRect();
   const pc = document.querySelector('.power-center').getBoundingClientRect();
+  const rs = document.querySelector('.civ-hud-banner-right');
+  const rr = rs ? rs.getBoundingClientRect() : { x: 0, right: 0, width: 0, bottom: 0 };
+  const rchips = rs ? [...rs.querySelectorAll('.civ-hud-chip')].map((c) => { const r = c.getBoundingClientRect(); return { x: r.x, right: r.right, w: r.width, h: r.height }; }) : [];
+  const cl = document.querySelector('.hud-right-cluster');
+  const clr = cl ? cl.getBoundingClientRect() : { x: 0, right: 0, bottom: 0 };
   const titles = {};
   document.querySelectorAll('.civ-hud [data-act]').forEach((e) => { titles[e.getAttribute('data-act')] = e.getAttribute('title') || ''; });
-  return { n: cells.length, clip, minMed: Math.min(...med), shellRight: sh.right, shellBottom: sh.bottom, powerX: pc.x, powerRight: pc.right, sw: document.documentElement.scrollWidth, vw: window.innerWidth, titles };
+  return { n: cells.length, clip, minMed: Math.min(...med), shellRight: sh.right, shellBottom: sh.bottom, powerX: pc.x, powerRight: pc.right, rbX: rr.x, rbRight: rr.right, rbW: rr.width, rbBottom: rr.bottom, rchips, rchipClipped: rs ? rs.scrollWidth > rs.clientWidth + 0.5 : false, clX: clr.x, clRight: clr.right, clBottom: clr.bottom, btnX: (document.querySelector('.hud-right') || { getBoundingClientRect: () => ({ x: 0 }) }).getBoundingClientRect().x, btnN: document.querySelectorAll('.hud-right button').length, sw: document.documentElement.scrollWidth, vw: window.innerWidth, titles };
 };
 
 async function runChecks(chromium, jsPath, tag, shot) {
@@ -107,6 +112,12 @@ function assertRender(res, label) {
       ok(m.clip.length === 0, `${label} ${w}px/${n}: zaden tekst komorki nie jest przyciety`, m.clip);
       ok(m.sw <= m.vw, `${label} ${w}px/${n}: brak poziomego przewijania`, { sw: m.sw, vw: m.vw });
       ok(m.minMed >= 12, `${label} ${w}px/${n}: ikony medalionow widoczne (min ${m.minMed}px)`);
+      // prawy baner (r2): wszystkie 5 chipow w obrebie banera i ekranu, baner nie wchodzi na Moc, nie jest zwezony do paska
+      ok(m.rchips.length === 5, `${label} ${w}px/${n}: prawy baner ma 5 chipow`, m.rchips.length);
+      ok(m.rbW >= 100, `${label} ${w}px/${n}: prawy baner nie zwezony do paska (szer. ${Math.round(m.rbW)}px >= 100)`);
+      ok(m.rchips.every((c) => c.right <= m.rbRight + 0.5 && c.right <= m.vw + 0.5 && c.x >= 0), `${label} ${w}px/${n}: chipy prawego banera widoczne w banerze i na ekranie`, m.rchips.map((c) => [Math.round(c.x), Math.round(c.right)]));
+      ok(m.rbX >= m.powerRight - 0.5 || m.rbX >= m.shellRight + 0.5 && m.rbBottom <= 0, `${label} ${w}px/${n}: prawy baner (x=${Math.round(m.rbX)}) nie nachodzi na medalion Mocy (prawy brzeg ${Math.round(m.powerRight)})`);
+      ok(m.btnN === 2 && m.clBottom <= 160, `${label} ${w}px/${n}: klaster z przyciskami Civpedia+Menu (zasymulowane) konczy sie na y=${Math.round(m.clBottom)} <= 160`, m.clBottom);
       ok(m.shellBottom <= 104, `${label} ${w}px/${n}: dol banera (${Math.round(m.shellBottom)}px) nad paskiem narzedzi (104)`);
     }
   }
@@ -151,6 +162,8 @@ async function mutants(chromium) {
   const HM = [
     ['brak reguly <=700 px (baner nachodzi na Moc przy 640)', (s) => s.replace('@media (max-width:700px){.civ-hud{--hud-cell-w:68px', '@media (max-width:1px){.civ-hud{--hud-cell-w:68px')],
     ['medalion Mocy nie zmniejszony <=700 px', (s) => s.replace('.civ-hud .power-center{min-width:150px;', '.civ-hud .power-center{min-width:240px;')],
+    ['prawy baner: stare max-width bez min 150 px i bez zawijania (zwezony pasek/chipy poza ekranem)', (s) => s.replace('max-width:max(150px,min(calc(50vw - 352px),780px));}\n.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;', 'max-width:min(calc(50vw - 340px),780px);}\n.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:nowrap;')],
+    ['prawy baner: brak ukladu kolumnowego <=1100 px (nachodzi na Moc)', (s) => s.replace('.civ-hud .hud-right-cluster{flex-direction:column-reverse;', '.civ-hud .hud-right-cluster{flex-direction:row;')],
     ['Kultura bez BRUTTO -> NETTO', (s) => s.replace("${formatGrossNet(rate, rate, 'pkt Kultury/turę')}", 'Zielone ${signed(rate)}')],
     ['Religia bez BRUTTO -> NETTO', (s) => s.replace("${formatGrossNet(rate, rate, 'wiernych/turę')}", 'Zielone ${signed(rate)}')],
     ['Obywatele bez BRUTTO -> NETTO', (s) => s.replace("${formatGrossNet(rate, rate, 'obyw./turę')} (HUD nie", 'Zielone ${signed(rate)} (HUD nie')],
@@ -196,7 +209,7 @@ async function mutants(chromium) {
   console.log('[A,B] render prawdziwego renderBarD1B + CSS w Chromium (ciemny motyw)');
   const js = path.join(TMP, 'real.js');
   await bundle(HUD_SRC || path.join(GRA, 'src/ui/hud.ts'), js);
-  assertRender(await runChecks(chromium, js, argOf('--tag') || 'po', true), 'real');
+  { const R = await runChecks(chromium, js, argOf('--tag') || 'po', true); if (process.env.DUMP) for (const k of Object.keys(R)) { const m = R[k]; console.log(k, 'power', Math.round(m.powerX), Math.round(m.powerRight), 'rb', Math.round(m.rbX), Math.round(m.rbRight), 'bottom', Math.round(m.rbBottom), 'cl', Math.round(m.clX), JSON.stringify(m.rchips.map((c) => [Math.round(c.x), Math.round(c.w), Math.round(c.h)]))); } assertRender(R, 'real'); }
   if (!HUD_SRC) {
     console.log('[C] formatGrossNet'); await unitFormat();
     console.log('[D] zrodla');
