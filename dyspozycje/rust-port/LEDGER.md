@@ -819,3 +819,5 @@ Zmiana w `gra/src/game/auto-improvements.ts` (eksport `FOOD_IMPROVEMENT_KEYS`, `
 - 2026-11-04 · Kontrola: ROBOCZA 56755bef (MOVE-FULL-RANGE) wdrożona; trwa tylko SIEGE-MANUAL-BATTLE (wf_3e5c8310-f51); nowe tematy wstrzymane na polecenie właściciela do końca bieżących spraw i sprzątania.
 
 - 2026-11-04 · WATER-ACCESS-PORT-VS-MILL: FC PASS-WITH-NOTES (b3d647b26), bez zmian w src — Port już morze||rzeka; budynku Młyn nie ma w danych (maMlyn zawsze false). Osobny temat: definicja Młyna z bramką rzeczną (isRiverAdjacent). Test + dokumenty wejdą do main z najbliższym wdrożeniem.
+
+- 2026-11-05 — NOTA (decyzja właściciela): nowe epoki (Klasyczna, Średniowieczna) mają powstać dopiero przy nowej wersji Rust (żeby nie robić dwa razy). Baza: `dyspozycje/analizy/EPOKI-KLASYCZNA-SREDNIOWIECZE-PROPOZYCJA.xlsx` + `PLAN-WDROZENIA-NOWEJ-EPOKI.md`. Przy projekcie danych/silnika Rust uwzględnić: epoka jako parametr (nie „3 epoki”), brak sufitu ×4 (building-stock-cost/economy-upkeep), poprawny mnożnik ulepszeń dla epoki ≥4 (`normalizeProductionEra`), fallback nieznanej epoki.
