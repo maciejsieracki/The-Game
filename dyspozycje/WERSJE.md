@@ -1,3 +1,9 @@
+## ROBOCZA bfb410ba -- 2026-11-05 -- FALA 503: Spichlerz II da się zbudować (testowa)
+
+- md5 pełne: `bfb410badba810c44dd38a27b6a72d23` · 70248431 B · poprzednia `8c0e8f81`.
+- R-WEB-GRANARY2-TECH-DATA-FIX-Q1: Spichlerz II wymagał nieistniejącej technologii „Warzelnia soli” (to ulepszenie terenu) — był niebudowalny, więc limit ludności 12 był nieosiągalny. Teraz wymaga Garncarstwa, Spichlerza I, epoki 2, Soli i Ceramiki. Strażnik danych łapie techUnlock spoza tech.json.
+- FC PASS-WITH-NOTES. Do decyzji: Ceramika w bramce (Spichlerz I jej nie ma), Garncarstwo vs Pismo/Religia.
+
 ## ROBOCZA 8c0e8f81 -- 2026-11-05 -- FALA 502: AI nie maszeruje bez wojny (testowa)
 
 - md5 pełne: `8c0e8f81147ad119ed25be1006b50eb4` · 70248064 B · poprzednia `351808ce`.

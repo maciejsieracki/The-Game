@@ -1,111 +1,110 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "8c0e8f81147ad119ed25be1006b50eb4",
-  "bundleSha256": "5c46e3d081f80c9fcf42dacade55afa0c59cd22744dfcf01a2590c2d5b5ee1ac",
-  "bundleBytes": 70248064,
+  "bundleMd5": "bfb410badba810c44dd38a27b6a72d23",
+  "bundleSha256": "04b5a2dc13d41a0d2057ad82089fd97ad0cf47def1d73e7e359b03a99edb2fb0",
+  "bundleBytes": 70248431,
   "sourceSnapshot": {
-    "source": "main d257ed6d8 + NOMARCH (40ad137db)",
+    "source": "main 80919e2ae + GRAN2 (4d6616dba)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 502: R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1 — AI (cywilizacje i państwa-miasta) nie zbiera armii ani nie maszeruje na cel bez faktycznej wojny; nieaktualne wpisy wojny wymuszonej (po wyjściu z wojny inaczej niż pokojem) są sprzątane razem z falami, więc marsz przerywa się też armiom w drodze"
+    "FALA 503: R-WEB-GRANARY2-TECH-DATA-FIX-Q1 — Spichlerz II ma realną technologię (Garncarstwo) zamiast nieistniejącej „Warzelnia soli”, więc da się go zbudować (wymaga: Spichlerz I, epoka 2, Garncarstwo, Sól i Ceramika w bramce); strażnik danych pilnuje techUnlock/Tech spoza tech.json; koszty bez zmian"
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "ai-no-march-without-war 11/0; ai-general-war-campaign 51/0; ai-army-all-civs-general-muster 26/0; ai-test 274/20 (baza)"
+    "granary2-tech-data-guard 14/0; deposit-building-gate 50/0; popcap-spichlerz2-akwedukt20 46/0; dowód Chromium (zrzut chipu Garncarstwo czerwony/spełniony)"
   ],
   "limits": [
-    "Pomiar live 3 ziarna x 100 tur NIE_ZMIERZONO; ścieżka produkcyjna, która zostawiała wpis wojny wymuszonej, nieustalona (luka odtworzona syntetycznie) — do obserwacji w grze",
-    "Dług: 15 testów pada też na czystej bazie"
+    "Ceramika w bramce Spichlerza II (Spichlerz I jej nie ma) — decyzja właściciela; badanie Garncarstwo vs Pismo/Religia — do potwierdzenia; stare zapisy ze zbudowanym Spichlerzem II nietknięte"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Operator Sonnet → Evaluator FAIL → Obrona → FC PASS-WITH-NOTES."
+    "notes": "Operator Haiku → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES (2 rundy)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T20:23:48",
+  "hubGeneratedAt": "2026-11-05T22:36:49",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
-      "sizeBytes": 70248064
+      "md5": "bfb410badba810c44dd38a27b6a72d23",
+      "sizeBytes": 70248431
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
-      "sizeBytes": 70248064
+      "md5": "bfb410badba810c44dd38a27b6a72d23",
+      "sizeBytes": 70248431
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
-      "sizeBytes": 70248064
+      "md5": "bfb410badba810c44dd38a27b6a72d23",
+      "sizeBytes": 70248431
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
-      "sizeBytes": 70248064
+      "md5": "bfb410badba810c44dd38a27b6a72d23",
+      "sizeBytes": 70248431
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
-      "sizeBytes": 70248064
+      "md5": "bfb410badba810c44dd38a27b6a72d23",
+      "sizeBytes": 70248431
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
-      "sizeBytes": 70248064
+      "md5": "bfb410badba810c44dd38a27b6a72d23",
+      "sizeBytes": 70248431
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
-      "sizeBytes": 70248064
+      "md5": "bfb410badba810c44dd38a27b6a72d23",
+      "sizeBytes": 70248431
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
-      "sizeBytes": 70248064
+      "md5": "bfb410badba810c44dd38a27b6a72d23",
+      "sizeBytes": 70248431
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
-      "sizeBytes": 70248064
+      "md5": "bfb410badba810c44dd38a27b6a72d23",
+      "sizeBytes": 70248431
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "8c0e8f81147ad119ed25be1006b50eb4",
-      "sizeBytes": 70248064
+      "md5": "bfb410badba810c44dd38a27b6a72d23",
+      "sizeBytes": 70248431
     }
   ],
-  "md5": "8c0e8f81147ad119ed25be1006b50eb4",
-  "sizeBytes": 70248064,
+  "md5": "bfb410badba810c44dd38a27b6a72d23",
+  "sizeBytes": 70248431,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main d257ed6d8 + merge NOMARCH",
+  "source": "gra/src; main 80919e2ae + merge GRAN2",
   "immediatePreviousRelease": {
-    "bundleMd5": "351808cecd98d318cc36285a8863397a"
+    "bundleMd5": "8c0e8f81147ad119ed25be1006b50eb4"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 351808cecd98d318cc36285a8863397a, 70247670 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 8c0e8f81147ad119ed25be1006b50eb4, 70248064 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1280,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T20:23:46+00:00",
-  "buildStamp": "2026-11-05 20:23",
+  "publishedAt": "2026-11-05T22:36:44+00:00",
+  "buildStamp": "2026-11-05 22:36",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1290,5 +1289,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "FALA 502: AI-NO-MARCH-WITHOUT-WAR"
+  "releaseScope": "FALA 503: GRANARY2-TECH-DATA-FIX"
 }
