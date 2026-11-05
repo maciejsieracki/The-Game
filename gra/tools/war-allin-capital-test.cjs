@@ -116,7 +116,9 @@ eq(aiOn.stats.cmdsForForeignUnits, 0, '1e PO: AI nie wydaje komend cudzym jednos
   // Bezczynnosc ograniczona: w 20 turach >= 70% jednostko-tur to ruch (zbiorka trwa kilka tur).
   const st = S.aiVsAi();
   const s20 = H.simulate(st, { engine: E, flag: true, fog: true, turns: 20 });
-  assert(s20.cmdMoves >= 0.7 * 16 * 20, `1k w 20 turach >=70% jednostko-tur to ruch (${s20.cmdMoves}/${16 * 20})`);
+  // R-WEB-AI-WAR-DEFEND-HOME-BEFORE-OFFENSE-Q1: zwalczanie najezdzcy na wlasnym terenie zamienia czesc marszow
+  // w ataki (komenda `attack`, licznik `battles`) -- to nadal aktywnosc, nie bezczynnosc; liczymy ruchy + ataki.
+  assert(s20.cmdMoves + s20.battles >= 0.7 * 16 * 20, `1k w 20 turach >=70% jednostko-tur to ruch lub atak (${s20.cmdMoves}+${s20.battles}/${16 * 20})`);
 }
 
 // ---------------------------------------------------------------------------

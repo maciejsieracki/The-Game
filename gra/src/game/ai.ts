@@ -23,6 +23,8 @@ import {
   type AiGeneralWarCampaign,
 } from './ai-general-war-campaign';
 import { armyFieldPower, type UnitPowerInput } from './unit-power';
+import { estimateUnitCombatStrength } from './siegeAi';
+import { isHomeWarDefenseEnabled, planHomeWar } from './ai-war-home-defense';
 import {
   ARMY_CONSOLIDATION_HOME_GROUP_SIZE,
   assignRallyTargets,
@@ -3339,10 +3341,140 @@ export function decideAITurn(
   const prevGuard = activeMarchGuard;
   activeMarchGuard = opts.marchGuard ?? null;
   try {
-    return decideAITurnCore(playerId, units, cities, map, data, opts);
+    const commands = decideAITurnCore(playerId, units, cities, map, data, opts);
+    // R-WEB-AI-WAR-DEFEND-HOME-BEFORE-OFFENSE-Q1: obrona wlasnego terenu i odbicie utraconych miast
+    // przed zdobywaniem cudzych -- ostatnie slowo nad rozkazami ruchu (po war-allin, kampanii wodza).
+    return opts.defensiveCopy ? commands : applyHomeWarPriorities(commands, playerId, units, cities, map, data, opts);
   } finally {
     activeMarchGuard = prevGuard;
   }
+}
+
+/** Wspolna ocena sily jednostki (ta sama funkcja co atak ostatniej woli: siegeAi.estimateUnitCombatStrength). */
+export function aiUnitCombatStrength(u: RuntimeUnit, data: GameData): number {
+  const def = data.units.find(d => d.Jednostka === u.typeId) as unknown as Record<string, unknown> | undefined;
+  const maxHp = _unitMaxHealth(u, data);
+  const hp = u.hp ?? maxHp;
+  const n = (v: unknown, fb: number): number => {
+    const x = typeof v === 'string' ? parseFloat(v) : (v as number);
+    return typeof x === 'number' && Number.isFinite(x) ? x : fb;
+  };
+  let power = 0;
+  if (def !== undefined) {
+    const atak = n(def['meleeAttack'], 0);
+    power = estimateUnitCombatStrength({
+      typNazwa: u.typeId,
+      rola: String(def['Rola (linia)'] ?? 'Wrecz'),
+      Atak: atak,
+      Obrona: n(def['meleeDefence'], 0),
+      Uderzenie: n(def['chargeBonus'] ?? def['Uderzenie'], 0),
+      Pancerz: n(def['armor'] ?? def['Pancerz'], 0),
+      Przebicie: n(def['piercing'] ?? def['Przebicie'], 0),
+      weaponDamage: n(def['weaponDamage'], atak),
+      Health: hp,
+      progDezercji: null,
+    });
+  }
+  if (power > 0) return power;
+  // Brak statystyk (np. dane testowe): jednostka = 1 * ulamek HP, jak w partitionWarArmies.
+  return maxHp > 0 ? Math.max(0.1, Math.min(1, hp / maxHp)) : 1;
+}
+
+/**
+ * R-WEB-AI-WAR-DEFEND-HOME-BEFORE-OFFENSE-Q1: nakladka priorytetow na gotowe komendy tury AI.
+ * P1 odbicie wlasnych utraconych miast, P2 zwalczenie wrogiej armii na wlasnym terenie (albo obrona
+ * w miescie, gdy za slabi), P3 = dotychczasowe zdobywanie (komendy rdzenia bez zmian dla pozostalych).
+ * Planer: ai-war-home-defense.ts. Mutuje i zwraca `commands`.
+ */
+function applyHomeWarPriorities(
+  commands: AICommand[],
+  playerId: number,
+  units: RuntimeUnit[],
+  cities: AICity[],
+  map: GameMap,
+  data: GameData,
+  opts: AITurnOpts,
+): AICommand[] {
+  if (!isHomeWarDefenseEnabled()) return commands;
+  const myCities = cities.filter(c => c.ownerId === playerId);
+  if (myCities.length === 0) return commands;
+  const BARB = -1;
+  const isField = (u: RuntimeUnit): boolean => !isCivilianUnit(u) && !isScoutUnit(u);
+  const enemyUnits = units.filter(u =>
+    u.ownerId !== playerId && u.ownerId !== BARB && aiCanEngageOwner(opts, u.ownerId) && isField(u));
+  const hasLost = cities.some(c => c.ownerId !== playerId && c.capturedFromOwnerId === playerId);
+  if (enemyUnits.length === 0 && !hasLost) return commands;
+
+  const enemyCityHex = new Set(cities.filter(c => c.ownerId !== playerId).map(c => keyOf(c.q, c.r)));
+  const locked = new Set<string>();
+  for (const cmd of commands) {
+    if (cmd.type === 'attack') locked.add(cmd.unitId);
+    else if (cmd.type === 'move' && enemyCityHex.has(keyOf(cmd.toQ, cmd.toR))) locked.add(cmd.unitId);
+  }
+  const nodes = opts.territoryNodes;
+  const isOwnTerritory = (q: number, r: number): boolean => {
+    if (nodes !== undefined && nodes.length > 0) return territoryOwnerAt(q, r, nodes) === playerId;
+    return myCities.some(c =>
+      hexDistance(q, r, c.q, c.r) <= cityTerritoryRadius({ q: c.q, r: c.r, pop: c.population, level: 1 }));
+  };
+  const plan = planHomeWar({
+    ownerId: playerId,
+    currentTurn: opts.currentTurn,
+    allUnits: units,
+    myUnits: units.filter(u => u.ownerId === playerId),
+    myCities,
+    allCities: cities,
+    enemyUnits,
+    canEngageOwner: o => aiCanEngageOwner(opts, o),
+    lockedUnitIds: locked,
+    isOwnTerritory,
+    strengthOf: u => aiUnitCombatStrength(u, data),
+    isFieldUnit: isField,
+    distance: hexDistance,
+  });
+  if (plan.orders.length === 0) return commands;
+
+  const byId = new Map(units.map(u => [u.id, u] as const));
+  for (const order of plan.orders) {
+    const unit = byId.get(order.unitId);
+    if (unit === undefined) continue;
+    let replacement: AICommand | null = null;
+    let noop = false;
+    if (order.kind === 'attack') {
+      replacement = { type: 'attack', unitId: unit.id, targetUnitId: order.targetUnitId };
+    } else if (order.kind === 'hold') {
+      if (hexDistance(unit.q, unit.r, order.toQ, order.toR) <= 1) noop = true;
+      else {
+        const step = firstStep(unit, map, order.toQ, order.toR, units, true);
+        if (step !== null) {
+          replacement = { type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+            allowFriendlyStack: step.q === order.toQ && step.r === order.toR };
+        }
+      }
+    } else {
+      const adjCity = order.targetCityId !== undefined && hexDistance(unit.q, unit.r, order.toQ, order.toR) === 1;
+      if (adjCity) {
+        replacement = { type: 'move', unitId: unit.id, toQ: order.toQ, toR: order.toR, targetCityId: order.targetCityId };
+      } else {
+        const step = firstStep(unit, map, order.toQ, order.toR, units);
+        if (step !== null) {
+          replacement = { type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+            ...(order.targetCityId !== undefined && step.q === order.toQ && step.r === order.toR
+              ? { targetCityId: order.targetCityId } : {}) };
+        }
+      }
+    }
+    if (replacement === null && !noop) continue; // brak trasy: zostaje komenda rdzenia
+    for (let i = commands.length - 1; i >= 0; i--) {
+      const c = commands[i]!;
+      if (c.type === 'move' && c.unitId === unit.id) commands.splice(i, 1);
+    }
+    if (replacement !== null) {
+      const endIdx = commands.findIndex(c => c.type === 'endTurn');
+      if (endIdx >= 0) commands.splice(endIdx, 0, replacement); else commands.push(replacement);
+    }
+  }
+  return commands;
 }
 
 function decideAITurnCore(
