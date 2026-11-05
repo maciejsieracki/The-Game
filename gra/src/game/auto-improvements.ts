@@ -862,6 +862,26 @@ function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprove
     record(deficitPicks);
   }
   const deficitSpent = sum(deficitPicks);
+  // KROK 0 (R-WEB-AUTOIMPROVE-RIVER-FOREST-FIRST-PRIORITY-Q1, zgłoszenie właściciela 2026-11-05): wycinka lasu
+  // PRZY RZECE na polu obywatela (farma możliwa — `wyrabMaSens`) to PIERWSZY krok etapowy żywności: przed E1–E6
+  // (farma na rzece bez lasu, trzoda, irygacja, poza rzeką). Niedobór (KROK 1) zostaje przed nią — jego
+  // ulepszenie brakującego surowca jest wcześniejszą decyzją właściciela (R4) i kontraktem S3-1 (tartak na
+  // niedobór drewna). Ten sam picker i te same bramki co etap E2 (tech, `hexAllowsKey`, budżet puli).
+  // ZAŁOŻENIE: nie ustawia `earlierStageIsPending` — wycinka nie blokuje niższych etapów budżetem; jeśli budżet
+  // nie wystarcza, wycinka po prostu nie wchodzi w tej turze.
+  // ZAŁOŻENIE (dispatch b, „nie odbiera ostatniego lasu tartakowi”): gdy niedobór już stawia ulepszenie w tej turze
+  // (tartak na lesie), wycinka rzeczna czeka — inaczej tanie wyręby (2.5 Pracy) zajmują leśne heksy, na których
+  // niedobór-tartak miał stanąć w kolejnych turach (kontrakt S3-1, `autoimprove-stages-q1-test.cjs` (s6)).
+  const riverClearPicks: AutoImprovementPick[] = stagedCities.length === 0 || deficitPicks.length > 0 ? [] : pickAutoImprovementsSinglePass(after(deficitSpent, {
+    cities: stagedCities,
+    priorityOverride: ['wyrab'],
+    riverForestClearingOnly: true,
+    riverHexesOnly: false,
+    offRiverClearing: false,
+    irrigationNeedsFarm: true,
+  }));
+  record(riverClearPicks);
+  const riverClearSpent = sum(riverClearPicks);
   // Brak limitu liczby sztuk na miasto (decyzja właściciela 2026-11-03): wszystkie miasta etapowe biorą udział w etapach.
   const foodCities = stagedCities;
 
@@ -869,7 +889,7 @@ function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprove
   let stagedPicks: AutoImprovementPick[] = [];
   let earlierStageIsPending = false;
   for (const stage of foodCities.length === 0 ? [] : FOOD_STAGES) {
-    const stageOpts = after(deficitSpent, {
+    const stageOpts = after(riverClearSpent + deficitSpent, {
       cities: foodCities,
       priorityOverride: stage.keys,
       riverForestClearingOnly: stage.riverForestClearingOnly === true,
@@ -903,7 +923,7 @@ function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprove
     }
   }
   record(stagedPicks);
-  const stageSpent = deficitSpent + sum(stagedPicks);
+  const stageSpent = riverClearSpent + deficitSpent + sum(stagedPicks);
 
   // Preserve ordinary forestry fallback only after no food stage has any eligible
   // target. In particular, never let this fallback cut a non-river forest while a
@@ -942,7 +962,7 @@ function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprove
   const roadCities = opts.demandDriven === true
     ? foodCities.filter(c => (opts.getFocus?.(c) ?? c.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS) === 'zrownowazone')
     : [];
-  const foodAndFallbackDone = stagedPicks.length === 0 && !earlierStageIsPending
+  const foodAndFallbackDone = riverClearPicks.length === 0 && stagedPicks.length === 0 && !earlierStageIsPending
     && fallbackPicks.length === 0 && !fallbackIsPending
     && deficitPicks.length === 0;
   let deficitPendingMemo: boolean | undefined;
@@ -1040,11 +1060,11 @@ function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprove
   }
   const sideSpent = fortSpent + sum(roadPicks);
 
-  if (otherCities.length === 0) return [...deficitPicks, ...stagedPicks, ...fallbackPicks, ...fortPicks, ...roadPicks];
+  if (otherCities.length === 0) return [...deficitPicks, ...riverClearPicks, ...stagedPicks, ...fallbackPicks, ...fortPicks, ...roadPicks];
   // Selected non-food profiles remain active in the same call. Charge their picks
   // against the same empire envelope, after the currently active food phase.
   const normalPicks = pickAutoImprovementsSinglePass(after(sideSpent, { cities: otherCities }));
-  return [...deficitPicks, ...stagedPicks, ...fallbackPicks, ...fortPicks, ...roadPicks, ...normalPicks];
+  return [...deficitPicks, ...riverClearPicks, ...stagedPicks, ...fallbackPicks, ...fortPicks, ...roadPicks, ...normalPicks];
 }
 
 /** Zdarzenie diagnostyczne pickera (R-WEB-AUTOIMPROVE-LIVE-HOOKS-Q1). */
