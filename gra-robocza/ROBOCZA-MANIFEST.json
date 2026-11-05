@@ -1,111 +1,110 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "2c6b510176642bc4ea41f3a8b6a6b530",
-  "bundleSha256": "e8054e7735281a5e70a2f50236c40f4cc230b95b383f9c5d30729538d56dba47",
-  "bundleBytes": 70234299,
+  "bundleMd5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+  "bundleSha256": "12335fe9f8f8dc6a03b3cbb80834ab7701962752e6820cf494c5a3c69a4e1f8a",
+  "bundleBytes": 70235118,
   "sourceSnapshot": {
-    "source": "main 1297f51ff + AUTOIMPROVE-RIVER-FOREST-FIRST-PRIORITY (f166b5eea)",
+    "source": "main ee269b6ed + WAR-ALLIN-GENERAL-PATH-BARB-DEFENSE (f1ca757ef)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-AUTOIMPROVE-RIVER-FOREST-FIRST-PRIORITY-Q1: nowy KROK 0 automatu ulepszeń — wycinka lasu przy rzece na polu obywatela (gdzie możliwa farma) jest pierwsza w obrębie żywności, przed farmami/irygacją (po kroku niedoboru)."
+    "R-WEB-WAR-ALLIN-GENERAL-PATH-BARB-DEFENSE-Q1: w ścieżce kampanii wodza (etap attacking) wojsko broniące miasta przed barbarzyńcami nie jest przejmowane przez marsz na stolicę wroga; pula obrońców bez cywili, okrętów i wodza."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "river-forest-first 10/0; autoclear-river-forest-priority 17/0; autoimprove-stages-q1 299/0; simple-food-rule 36/0; ai-food-only 66/0"
+    "war-allin-general-path-barb-defense 24/0; keep-barb 8/0; defend-home 30/0; general-war-campaign 51/0"
   ],
   "limits": [
-    "NIE zweryfikowano w realnej turze main.ts na mapie z lasem przy rzece (harness bez sterowania ziarnem/lasem) — wymaga potwierdzenia w grze",
-    "Krok niedoboru (tartak) nadal przed wycinką rzeczną — odstępstwo od 'absolutnie pierwsza w turze' do decyzji właściciela"
+    "Tylko barbarzyńcy; główna ścieżka decideAITurn woła assignHomeDefenders bez filtra cywilów/okrętów (osobny temat); brak pomiaru czasu pełnej kampanii i Chromium"
   ],
   "finalControl": {
-    "status": "PASS-WITH-NOTES",
-    "notes": "Operator Haiku r1 bez wyniku → r2 → Evaluator → FC (2 rundy)."
+    "status": "PASS",
+    "notes": "Operator Haiku → Evaluator → Obrona → FC PASS (2 rundy)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T09:27:47",
+  "hubGeneratedAt": "2026-11-05T12:25:54",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2c6b510176642bc4ea41f3a8b6a6b530",
-      "sizeBytes": 70234299
+      "md5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+      "sizeBytes": 70235118
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2c6b510176642bc4ea41f3a8b6a6b530",
-      "sizeBytes": 70234299
+      "md5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+      "sizeBytes": 70235118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "2c6b510176642bc4ea41f3a8b6a6b530",
-      "sizeBytes": 70234299
+      "md5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+      "sizeBytes": 70235118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "2c6b510176642bc4ea41f3a8b6a6b530",
-      "sizeBytes": 70234299
+      "md5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+      "sizeBytes": 70235118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "2c6b510176642bc4ea41f3a8b6a6b530",
-      "sizeBytes": 70234299
+      "md5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+      "sizeBytes": 70235118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "2c6b510176642bc4ea41f3a8b6a6b530",
-      "sizeBytes": 70234299
+      "md5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+      "sizeBytes": 70235118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "2c6b510176642bc4ea41f3a8b6a6b530",
-      "sizeBytes": 70234299
+      "md5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+      "sizeBytes": 70235118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "2c6b510176642bc4ea41f3a8b6a6b530",
-      "sizeBytes": 70234299
+      "md5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+      "sizeBytes": 70235118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "2c6b510176642bc4ea41f3a8b6a6b530",
-      "sizeBytes": 70234299
+      "md5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+      "sizeBytes": 70235118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "2c6b510176642bc4ea41f3a8b6a6b530",
-      "sizeBytes": 70234299
+      "md5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+      "sizeBytes": 70235118
     }
   ],
-  "md5": "2c6b510176642bc4ea41f3a8b6a6b530",
-  "sizeBytes": 70234299,
+  "md5": "1a834f4c5cbd4eaf16a2468636b8d7be",
+  "sizeBytes": 70235118,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main 1297f51ff + merge RIVER-FOREST-FIRST",
+  "source": "gra/src; main ee269b6ed + merge WAR-ALLIN-GENERAL-PATH",
   "immediatePreviousRelease": {
-    "bundleMd5": "a9b54baab545a248c1660100019cf748"
+    "bundleMd5": "2c6b510176642bc4ea41f3a8b6a6b530"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 a9b54baab545a248c1660100019cf748, 70234079 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 2c6b510176642bc4ea41f3a8b6a6b530, 70234299 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1280,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T09:27:46+00:00",
-  "buildStamp": "2026-11-05 09:27",
+  "publishedAt": "2026-11-05T12:25:52+00:00",
+  "buildStamp": "2026-11-05 12:25",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1290,5 +1289,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "R-WEB-AUTOIMPROVE-RIVER-FOREST-FIRST-PRIORITY-Q1"
+  "releaseScope": "R-WEB-WAR-ALLIN-GENERAL-PATH-BARB-DEFENSE-Q1"
 }

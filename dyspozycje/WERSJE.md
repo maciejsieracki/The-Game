@@ -1,3 +1,12 @@
+## ROBOCZA 1a834f4c -- 2026-11-05 -- AI: ścieżka wodza nie przejmuje obrońców przed barbarzyńcami (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`ee269b6ed` + WAR-ALLIN-GENERAL-PATH `f1ca757ef`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `1a834f4c5cbd4eaf16a2468636b8d7be`, 70235118 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: w kampanii wodza obrońcy miasta przed barbarzyńcami zostają; pula obrońców bez cywili/okrętów/wodza.
+- Testy: tsc PASS; general-path 24/0; keep-barb 8/0; defend-home 30/0; general-war-campaign 51/0.
+- Ograniczenia: tylko barbarzyńcy; główna ścieżka bez filtra cywilów (osobny temat); brak Chromium.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `2c6b510176642bc4ea41f3a8b6a6b530`, 70234299 bajtów.
+
 ## ROBOCZA 2c6b5101 -- 2026-11-05 -- wycinka lasu przy rzece przed farmami (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`1297f51ff` + RIVER-FOREST-FIRST `f166b5eea`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
