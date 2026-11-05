@@ -1,3 +1,12 @@
+## ROBOCZA 2daa6255 -- 2026-11-05 -- FALA 498: ruch przez własne jednostki (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`133bec933` + MOVE-PASS-THROUGH `1f3dc5d7d`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda (wdrożenie na prośbę: „jak najszybciej”).
+- Bundle MD5 `2daa6255eb7e0d3c87bcbe93ef5bd33e`, 70241917 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: przejście przez heks z własną jednostką (bez objazdu i bez propozycji połączenia); obce jednostki/miasta blokują zawsze; połączenie tylko gdy ruch kończy się na własnej jednostce; jedna wspólna zajętość ruchu dla gracza, AI, barbarzyńców, zwiadu, marszu, planera all-in.
+- Testy: tsc PASS; move-pass-through 34/0; barb-camp-blacklist 19/0; general-path 24/0; planned-march 18/0; no-siege-r2 10/0.
+- Ograniczenia: brak Chromium i pomiaru objazdów przed/po (do oceny w grze); hashe war-allin zmienione (uzasadnione).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `4c53a03fda77dbb5236946fc01bcfecf`, 70240096 bajtów.
+
 ## ROBOCZA 4c53a03f -- 2026-11-05 -- FALA 497: oblężenie zdejmowane natychmiast po pokoju (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`522271468` + NO-SIEGE-WITHOUT-WAR `368d707d8`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
