@@ -78,13 +78,23 @@ const C = require(bundle);
 // The completion hook sits after the real units.push() and uses the canonical
 // human-seat classifier at the one advanceRecruitmentGated completion site.
 const mainSource = fs.readFileSync(mainSourcePath, 'utf8');
-const completionStart = mainSource.indexOf('const recResult = advanceRecruitmentGated(');
+// R-WEB-TEST-DEBT-AI-Q2: od R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1 wywolanie jest owiniete
+// w `isCityUnderSiege(...) ? {...} : advanceRecruitmentGated(...)`, wiec literal
+// `const recResult = advanceRecruitmentGated(` juz nie istnieje. Kotwica: pierwsze
+// `const recResult = ` po ktorym w oknie 600 znakow wystepuje `advanceRecruitmentGated(`.
+let completionStart = -1;
+for (let at = mainSource.indexOf('const recResult = '); at >= 0;
+  at = mainSource.indexOf('const recResult = ', at + 1)) {
+  if (mainSource.slice(at, at + 600).includes('advanceRecruitmentGated(')) { completionStart = at; break; }
+}
 const completionEnd = completionStart >= 0
   ? mainSource.indexOf('maybeHintArmyFoodOnFirstPlayerUnit', completionStart)
   : -1;
 const completionBlock = completionStart >= 0 && completionEnd > completionStart
   ? mainSource.slice(completionStart, completionEnd)
   : '';
+ok(completionBlock.includes('advanceRecruitmentGated(') && completionBlock.includes('units.push({'),
+  'call-site contract: completion block located (advanceRecruitmentGated ... units.push) -- guards against a silently empty slice');
 ok(mainSource.includes("import { mergeCompletedAiRecruitment } from './game/army-concentration';"),
   'call-site contract: main.ts imports the recruitment completion hook');
 ok(completionBlock.includes('for (const rec of recResult.completed)'),
