@@ -1,111 +1,111 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f734ced937d9766f4f06bdfa9325f3ad",
-  "bundleSha256": "b36282cda1f61be54ccd3ce7958d80970ed72f2243393ca937dda2f452aa4858",
-  "bundleBytes": 70235623,
+  "bundleMd5": "3775188b059301fcbbd72a4453e9c503",
+  "bundleSha256": "6614e18e43aaae17df87adb8c2f4c4fc821c5cc76ad32c316e034504811b13aa",
+  "bundleBytes": 70235654,
   "sourceSnapshot": {
-    "source": "main ab9abb356 (+ MILL-RIVER-ONLY-GATE 57baeef47; testy TEST-DEBT-HUD-Q3)",
+    "source": "main 037e6be36 + AI-HOME-DEFENDERS-CIVILIAN-FILTER (24ab89a1e)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-MILL-RIVER-ONLY-GATE-Q1: bramka „młyn tylko przy rzece” (Port: morze lub rzeka) w kodzie — NIEAKTYWNA w grze, bo budynek Młyn nie ma jeszcze definicji w buildings.json (młyn zapowiedziany na epokę klasyczną/średniowiecze)."
+    "R-WEB-AI-HOME-DEFENDERS-CIVILIAN-FILTER-Q1 (fala 4): obrońcami miasta przed barbarzyńcami w głównej ścieżce AI są wyłącznie lądowe jednostki bojowe (bez cywili, zaokrętowanych, okrętów i wodza kampanii); wspólna funkcja homeDefenderPool dla obu ścieżek."
   ],
   "verification": [
-    "tsc --noEmit PASS",
-    "mill-river-only-gate ALL PASS; war-allin-general-path 24/0; river-forest-first 10/0"
+    "tsc --noEmit PASS po scaleniu",
+    "home-defenders-civilian-filter 8/0; general-path 24/0; home-defense-vs-barbarians 46/0; defend-home 30/0; war-allin-capital 98/0"
   ],
   "limits": [
-    "Zmiana bez widocznego efektu w grze do czasu dodania budynku Młyn",
-    "Testowe zmiany (TEST-DEBT-HUD-Q3, TEST-DEBT-AI-Q2) nie wchodzą do bundla"
+    "Zmienia przebieg AI-vs-AI (hash REF_OFF.aiVsAi zaktualizowany); ai-test 274/20 jak na bazie; brak Chromium",
+    "ai-army-scattered-merge ma asercję czasową (flaky) — dług testowy"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "MILL: Operator Haiku → Evaluator → Obrona → FC (2 rundy)."
+    "notes": "Operator Haiku → Evaluator → Obrona → FC (2 rundy)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T12:54:01",
+  "hubGeneratedAt": "2026-11-05T13:13:24",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f734ced937d9766f4f06bdfa9325f3ad",
-      "sizeBytes": 70235623
+      "md5": "3775188b059301fcbbd72a4453e9c503",
+      "sizeBytes": 70235654
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f734ced937d9766f4f06bdfa9325f3ad",
-      "sizeBytes": 70235623
+      "md5": "3775188b059301fcbbd72a4453e9c503",
+      "sizeBytes": 70235654
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f734ced937d9766f4f06bdfa9325f3ad",
-      "sizeBytes": 70235623
+      "md5": "3775188b059301fcbbd72a4453e9c503",
+      "sizeBytes": 70235654
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f734ced937d9766f4f06bdfa9325f3ad",
-      "sizeBytes": 70235623
+      "md5": "3775188b059301fcbbd72a4453e9c503",
+      "sizeBytes": 70235654
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f734ced937d9766f4f06bdfa9325f3ad",
-      "sizeBytes": 70235623
+      "md5": "3775188b059301fcbbd72a4453e9c503",
+      "sizeBytes": 70235654
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f734ced937d9766f4f06bdfa9325f3ad",
-      "sizeBytes": 70235623
+      "md5": "3775188b059301fcbbd72a4453e9c503",
+      "sizeBytes": 70235654
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f734ced937d9766f4f06bdfa9325f3ad",
-      "sizeBytes": 70235623
+      "md5": "3775188b059301fcbbd72a4453e9c503",
+      "sizeBytes": 70235654
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f734ced937d9766f4f06bdfa9325f3ad",
-      "sizeBytes": 70235623
+      "md5": "3775188b059301fcbbd72a4453e9c503",
+      "sizeBytes": 70235654
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f734ced937d9766f4f06bdfa9325f3ad",
-      "sizeBytes": 70235623
+      "md5": "3775188b059301fcbbd72a4453e9c503",
+      "sizeBytes": 70235654
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f734ced937d9766f4f06bdfa9325f3ad",
-      "sizeBytes": 70235623
+      "md5": "3775188b059301fcbbd72a4453e9c503",
+      "sizeBytes": 70235654
     }
   ],
-  "md5": "f734ced937d9766f4f06bdfa9325f3ad",
-  "sizeBytes": 70235623,
+  "md5": "3775188b059301fcbbd72a4453e9c503",
+  "sizeBytes": 70235654,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main ab9abb356",
+  "source": "gra/src; main 037e6be36 + merge HOME-DEFENDERS",
   "immediatePreviousRelease": {
-    "bundleMd5": "1a834f4c5cbd4eaf16a2468636b8d7be"
+    "bundleMd5": "f734ced937d9766f4f06bdfa9325f3ad"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 1a834f4c5cbd4eaf16a2468636b8d7be, 70235118 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 f734ced937d9766f4f06bdfa9325f3ad, 70235623 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1281,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T12:53:58+00:00",
-  "buildStamp": "2026-11-05 12:53",
+  "publishedAt": "2026-11-05T13:13:23+00:00",
+  "buildStamp": "2026-11-05 13:13",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1290,5 +1290,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "R-WEB-MILL-RIVER-ONLY-GATE-Q1"
+  "releaseScope": "R-WEB-AI-HOME-DEFENDERS-CIVILIAN-FILTER-Q1"
 }

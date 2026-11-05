@@ -1,3 +1,12 @@
+## ROBOCZA 3775188b -- 2026-11-05 -- fala 4: AI — obrońcy domu tylko jednostki bojowe lądowe (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`037e6be36` + HOME-DEFENDERS `24ab89a1e`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `3775188b059301fcbbd72a4453e9c503`, 70235654 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: obrona domu przed barbarzyńcami nie przydziela cywili, zaokrętowanych, okrętów ani wodza.
+- Testy: tsc PASS; civilian-filter 8/0; general-path 24/0; home-defense-vs-barbarians 46/0; defend-home 30/0; war-allin-capital 98/0.
+- Ograniczenia: zmienia przebieg AI-vs-AI; brak Chromium; asercja czasowa w ai-army-scattered-merge bywa niestabilna.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f734ced937d9766f4f06bdfa9325f3ad`, 70235623 bajtów.
+
 ## ROBOCZA f734ced9 -- 2026-11-05 -- fala 3: bramka młyna przy rzece (nieaktywna do definicji młyna) (testowa)
 
 - **STATUS: DEPLOYED** — `origin/main` `ab9abb356` (MILL-RIVER-ONLY-GATE `57baeef47`) i commit wdrożenia; stała zgoda właściciela.
