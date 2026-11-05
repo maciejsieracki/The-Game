@@ -22,3 +22,5 @@ BLOKADY:
 RUNDY: 1/5
 NASTEPNY KROK: Evaluator (sprawdzic: brak przyciskow, regule w pickerze, mutacje, regresje PRZED/PO); decyzja ABC o BLOKADZIE 1; REPIN Rust (buildModeHud, ustawienia ulepszen) po deployu.
 DEPLOY/PUSH: NIE WYKONANO
+
+SHA: kod+testy+dowody = 1c19e0aba (baza origin/main 488d94364); ten plik raportu zawiera poprawke SHA w kolejnym commicie.
