@@ -121,13 +121,15 @@ console.log('(4) wzgórze z lasem przy rzece (farma niemożliwa) NIE jest wycina
   ok(HILL_RIVER.length === 1, 'scenariusz: wzgórze przy rzece');
 }
 
-console.log('(5) las przy rzece NIE na polu obywatela (onlyWorked ON) NIE jest wycinany');
+console.log('(5) NO-CITIZEN-Q1 (wlasciciel ABC odp. B, 2026-11-05): las przy rzece BEZ obywatela jest wycinany, ale DOPIERO NA KONCU (po pickach obywatela, z reszty budzetu)');
 {
   const map = makeMap({ river: RIVER, forest: FOREST });
   const picks = pick({ map, worked: [[11, 12]] });
   console.log('      picks: ' + desc(picks));
-  ok(!picks.some(p => p.key === 'wyrab' && p.q === RIVER_FOREST[0] && p.r === RIVER_FOREST[1]),
-    'heks rzeki z lasem bez obywatela nie dostaje wycinki');
+  const idxNoCit = picks.findIndex(p => p.key === 'wyrab' && p.q === RIVER_FOREST[0] && p.r === RIVER_FOREST[1]);
+  ok(idxNoCit >= 0, 'heks rzeki z lasem bez obywatela dostaje wycinke (NO-CITIZEN-Q1)');
+  ok(idxNoCit === picks.length - 1 || picks.slice(idxNoCit).every(p => p.key === 'wyrab'), 'wycinka bez obywatela idzie na koncu (nie wyprzedza pickow obywatela)');
+  ok(picks[0] && !(picks[0].q === RIVER_FOREST[0] && picks[0].r === RIVER_FOREST[1]), 'wycinka bez obywatela NIE jest pierwszym pickiem');
 }
 
 console.log('(6) sim: wycinka rzeczna w turze 0 (przed jakąkolwiek farmą na rzece)');

@@ -116,7 +116,10 @@ function sim({ actor, world, seed, noRivers, turns = 100, budget = 40 }) {
     for (const c of cmds) {
       const hk = K(c.q, c.r);
       spent += getImprovementMeta(c.key)?.kosztPraca ?? 0;
-      if (FOOD.has(c.key) && !allW.has(hk)) cnt.offWorked++;
+      // R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-NO-CITIZEN-Q1 (wlasciciel ABC odp. B, 2026-11-05): jedyny wyjatek od reguly obywateli —
+      // WYCINKA lasu przy rzece (riverAdj = isHexNearRiver) na Lace/Rowninie; farma/irygacja/trzoda nadal tylko z obywatelem.
+      const riverClearException = c.key === 'wyrab' && riverAdj(c.q, c.r) && /^(laka|rownina)$/i.test(String(map.hexes[hk].terenBazowy));
+      if (FOOD.has(c.key) && !allW.has(hk) && !riverClearException) cnt.offWorked++;
       if (c.key === 'wyrab') { map.hexes[hk].nakladka = 'brak'; continue; }
       const layers = [...(placed.get(hk) ?? []), c.key];
       placed.set(hk, layers);

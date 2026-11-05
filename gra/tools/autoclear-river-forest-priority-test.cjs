@@ -113,7 +113,7 @@ for (const onlyWorked of [true]) {
   const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked });
   const rc = firstRiverClear(log);
   if (onlyWorked) {
-    ok(!rc, `onlyWorked=ON: wycinka na heksie rzeki BEZ obywatela NIE wystepuje (Q1 AI-FOOD, decyzja wlasciciela; jest: ${rc && rc.hk})`);
+    ok(!!rc, `onlyWorked=ON: wycinka na heksie rzeki BEZ obywatela WYSTEPUJE (NO-CITIZEN-Q1, decyzja wlasciciela 2026-11-05; jest: ${rc && rc.hk})`);
     continue;
   }
   ok(!!rc && rc.t < MAXT, `wycinka na heksie rzeki w turze ${rc && rc.t} (log: ${dl(log.slice(0, 8))})`);
@@ -166,7 +166,7 @@ console.log('(d4) zakres: profil „Zrownowazone” (K2) — ZAKTUALIZOWANE w R-
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
   const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: true, focus: 'zrownowazone' });
   const rc = firstRiverClear(log);
-  ok(!rc, `K2 + onlyWorked ON: wycinka na heksie rzeki bez obywatela NIE wystepuje (Q1 AI-FOOD; jest: ${rc && rc.hk})`);
+  ok(!!rc, `K2 + onlyWorked ON: wycinka na heksie rzeki bez obywatela WYSTEPUJE (NO-CITIZEN-Q1; jest: ${rc && rc.hk})`);
   const map2 = makeMap({ river: [], forest: FOREST_AROUND });
   const r2 = sim({ map: map2, worked: WORKED_NO_RIVER, onlyWorked: true, focus: 'zrownowazone', turns: 12 });
   ok(!r2.log.some(e => e.key === 'wyrab' && !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r)), 'K2: las bez rzeki poza polami obywateli nadal NIE jest wycinany (filtr zachowany)');
@@ -196,8 +196,8 @@ for (const onlyWorked of [true]) {
     const withFarm = rc.filter(c => log.some(e => e.key === 'farma' && e.hk === c.hk));
     console.log(`  [INFO] onlyWorked=${onlyWorked}: wycinek rzecznych ${rc.length}, z farma w 12 turach ${withFarm.length}`);
     if (onlyWorked) {
-      ok(rc.length === 0 && !log.some(e => e.key === 'farma' && !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r) && !(e.q === CQ && e.r === CR)),
-        `onlyWorked=true: zero wycinek rzecznych i zero farm poza polami obywateli (Q1 AI-FOOD; wycinek ${rc.length})`);
+      ok(rc.length > 0 && !log.some(e => e.key === 'farma' && !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r) && !(e.q === CQ && e.r === CR)),
+        `onlyWorked=true: wycinki rzeczne bez obywatela SA (NO-CITIZEN-Q1), ale zero farm poza polami obywateli (wycinek ${rc.length})`);
       continue;
     }
     ok(rc.length === 3, `onlyWorked=${onlyWorked}: wszystkie 3 heksy rzeczne wycinane (${rc.length})`);

@@ -63,6 +63,10 @@ function makeMap({ river = [], forest = [], hills = [], mountains = [] } = {}) {
 const CITY = focus => ({ id: 'c0', ownerId: 0, q: CQ, r: CR, name: 'Larsa', population: 4, ulepszeniaFocus: focus });
 const TN = [{ q: CQ, r: CR, ownerId: 0, cityId: 'c0', pop: 4, level: 1 }];
 const RIVER = [[12, 10], [12, 11], [13, 10]];
+// R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-NO-CITIZEN-Q1 (wlasciciel ABC odp. B, 2026-11-05): wycinka lasu PRZY RZECE (wlacznie z sasiadami rzeki — isHexNearRiver) dozwolona takze bez obywatela.
+const NB6 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]];
+const nearRiverHex = (q, r) => RIVER.some(([a, b]) => (a === q && b === r) || NB6.some(([dq, dr]) => a === q + dq && b === r + dr));
+const nearRiverKey = hk => { const [q, r] = hk.split(',').map(Number); return nearRiverHex(q, r); };
 const FOREST_AROUND = [];
 for (let q = 8; q <= 16; q++) for (let r = 8; r <= 16; r++) if (!(q === CQ && r === CR)) FOREST_AROUND.push([q, r]);
 // Obywatele stoja NA LESIE: dwa pola na rzece i dwa poza rzeka (stan ze zrzutu wlasciciela).
@@ -108,7 +112,7 @@ const dl = log => log.slice(0, 10).map(e => `${e.t}:${e.key}@${e.hk}`).join(' ')
     const cuts = log.filter(e => e.key === 'wyrab');
     const wset = new Set(WORKED_FOREST.map(([q, r]) => K(q, r)));
     ok(WORKED_FOREST.every(([q, r]) => cuts.some(e => e.hk === K(q, r))), `${focus}: KAZDY las pod obywatelem wycinany (${cuts.length} wycinek: ${dl(cuts)})`);
-    ok(cuts.every(e => wset.has(e.hk)), `${focus}: wycinka WYLACZNIE na polach obywateli (poza: ${cuts.filter(e => !wset.has(e.hk)).length})`);
+    ok(cuts.every(e => wset.has(e.hk) || nearRiverKey(e.hk)), `${focus}: wycinka na polach obywateli ALBO przy rzece (NO-CITIZEN-Q1); poza tym zero (nielegalnych: ${cuts.filter(e => !wset.has(e.hk) && !nearRiverKey(e.hk)).length})`);
     ok(WORKED_FOREST.every(([q, r]) => (placed.get(K(q, r)) ?? []).includes('farma')), `${focus}: na kazdym wycietym polu obywatela powstaje farma`);
     ok(log.filter(e => FOOD.has(e.key) && e.key !== 'wyrab').every(e => wset.has(e.hk) || (e.q === CQ && e.r === CR)),
       `${focus}: zero ulepszen zywnosciowych poza polami obywateli`);
