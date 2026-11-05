@@ -134,7 +134,7 @@ function catalogEntry(id, techs, ctxOverrides) {
   const belowFala2 = { empireResourceStock: { drewno: needStock('spichlerz').drewno - 1 } };
   const belowFala2Entry = catalogEntry('spichlerz', techs, belowFala2);
   ok(belowFala2Entry && belowFala2Entry.status === 'locked',
-    'Spichlerz eraBuildingCatalog status=\'locked\' z 15 drewna (poniżej progu ×2 FALA2=16, pinuje mnożnik od dołu)');
+    `Spichlerz eraBuildingCatalog status='locked' z ${needStock('spichlerz').drewno - 1} drewna (poniżej progu ×2 FALA2=${needStock('spichlerz').drewno}, pinuje mnożnik od dołu)`);
 }
 
 // ===========================================================================
