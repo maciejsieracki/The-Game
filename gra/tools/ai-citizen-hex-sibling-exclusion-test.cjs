@@ -89,14 +89,14 @@ ok([...noExcl].some(k => lostA.has(k)), 'kontrola: BEZ wykluczenia zbior A zawie
 ok(!same(noExcl, aiA), 'wykluczenie zmienia zbior pol obywateli A');
 
 console.log('== T3: decideAITurn z opts.improvementExcludeHexKeysByCity — wycinka tylko na polach obywateli wg silnika');
-function planWyrab(excl) {
+function planWyrab(excl, cities = CITIES, tn = TN) {
   const m = makeMap();
   const placed = new Map();
   const cuts = [];
   for (let t = 0; t < 6; t++) {
     const data = { units: [], buildings: [], terrainYields: { terrain_types: [] }, aiParams: {} };
-    const cmds = decideAITurn(PID, [], CITIES.map(c => ({ ...c })), m, data, {
-      civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: TN,
+    const cmds = decideAITurn(PID, [], cities.map(c => ({ ...c })), m, data, {
+      civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: tn,
       placedImprovements: new Map(placed), improvementTechs: TECHS, pracaAvailable: 600, civEra: ERA, currentTurn: 30,
       improvementExcludeHexKeysByCity: excl,
     });
@@ -123,6 +123,28 @@ ok(forestRiver.length > 0, `scenariusz ma las+rzeka pod obywatelem wg silnika ($
 ok(forestRiver.every(k => cutsExcl.some(c => c.hk === k)), 'KAZDY las przy rzece pod obywatelem wg silnika zostal wyciety (z wykluczeniem)');
 ok(JSON.stringify(planWyrab(lostByCity)) === JSON.stringify(cutsExcl), 'determinizm: ponowny przebieg z wykluczeniem identyczny');
 ok(Array.isArray(cutsNone), 'bez opcji decideAITurn dziala jak dawniej (brak wyjatku)');
+
+console.log('== T4: wiring opts — scenariusz rozrozniajacy (miasto B male: nie obsadza spornych lasow; A duze)');
+// Bez wykluczenia zbior pol A zawiera sporne heksy, ktorych B nie obsadza -> AI scina las BEZ obywatela.
+// Z wykluczeniem (opts.improvementExcludeHexKeysByCity, to przekazuje main.ts) tnie tylko pod obywatelami wg silnika.
+// Ten blok MUSI zrobic sie czerwony, gdy main.ts/ai.ts przestanie przekazywac/uzywac opcji.
+const A2 = { ...A, population: 8 }, B2 = { ...B, population: 1 };
+const CITIES2 = [A2, B2];
+const TN2 = CITIES2.map(c => ({ q: c.q, r: c.r, ownerId: PID, cityId: c.id, pop: c.population, level: 1 }));
+const lost2 = computeLostToNearerSiblingByCity(CITIES2, map);
+const eng2 = new Set();
+for (const c of CITIES2) for (const h of workedHexCoordsForCity(c, map, TN2, lost2.get(c.id), ERA)) eng2.add(K(h.q, h.r));
+const cuts2Excl = planWyrab(lost2, CITIES2, TN2);
+const cuts2None = planWyrab(undefined, CITIES2, TN2);
+ok(cuts2Excl.length > 0 && cuts2Excl.every(c => eng2.has(c.hk)), `z wykluczeniem: kazda wycinka na polu obywatela wg silnika (${cuts2Excl.length})`);
+ok(cuts2None.some(c => !eng2.has(c.hk)), 'bez wykluczenia: AI tnie las poza polami obywateli wg silnika (to byl blad)');
+ok(JSON.stringify(cuts2Excl) !== JSON.stringify(cuts2None), 'opcja improvementExcludeHexKeysByCity zmienia decyzje AI');
+
+console.log('== T5: wiring main.ts — decideAITurn dostaje wykluczenie liczone przez computeLostToNearerSiblingByCity');
+const mainSrc = fs.readFileSync(path.join(process.env.ACH_SRC_DIR || path.resolve(GRA_ROOT, 'src'), 'main.ts'), 'utf8');
+const passM = mainSrc.match(/improvementExcludeHexKeysByCity:\s*(\w+)\s*,/);
+ok(!!passM, 'main.ts przekazuje improvementExcludeHexKeysByCity do decideAITurn');
+ok(!!passM && new RegExp('const\\s+' + passM[1] + '\\s*=\\s*computeLostToNearerSiblingByCity\\(cities,\\s*map\\)').test(mainSrc), 'przekazywana zmienna pochodzi z computeLostToNearerSiblingByCity(cities, map)');
 
 console.log(`\nWYNIK: ${passed} OK, ${failed} FAIL`);
 process.exit(failed ? 1 : 0);
