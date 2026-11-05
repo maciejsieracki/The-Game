@@ -436,8 +436,9 @@ console.log('(r5-wyrab) [K1/K2/K3] R5: wycinka TYLKO pod farmy (Laka/Rownina), n
     // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 r2 (ZALOZENIE do potwierdzenia w ABC): zmierzona przyczyna „las pod obywatelem
     // nie jest wycinany” = las na Wzgorzach (Chromium ?civTest=1, ziarno 311). Wzgorza + obywatel: wycinka pod tarasy/owce
     // (ulepszenia zywnosciowe wzgorz) — dawna asercja R5 „las na Wzgorzach nietkniety” ODWROCONA (dalej: nigdy poza polami obywateli).
-    ok(HILLF.every(([q, r]) => idx(log, 'wyrab', K(q, r)) >= 0), `[${profil}] R5/r2 las na Wzgorzach pod obywatelem JEST wycinany (tarasy/owce)`);
-    ok(HILLF.every(([q, r]) => idx(log, 'wyrab', K(q, r)) < 0 || [...WORKED_ALL, ...FLATF, ...HILLF].some(([a, b]) => a === q && b === r)), `[${profil}] R5/r2 wycinka na Wzgorzach tylko na polach obywateli`);
+    // R-WEB-AUTOIMPROVE-HILLS-CLEAR-REVERT-Q1 (decyzja wlasciciela ABC 2026-11-05, odp. B „Cofnij”): wyjatek Wzgorz z r2 cofniety — las na Wzgorzach
+    // pod obywatelem NIE jest wycinany pod zywnosc (tarasy/owce); wycinka tylko pod farme. Mutacja (warunek Wzgorz w wyrabMaSens) => FAIL.
+    ok(HILLF.every(([q, r]) => idx(log, 'wyrab', K(q, r)) < 0), `[${profil}] HILLS-REVERT las na Wzgorzach pod obywatelem NIE jest wycinany pod zywnosc`);
   }
   // rzeka + las na Wzgorzach: ani wyrab, ani tartak (K2/K3), a nie blokuje wyrebu poza rzeka.
   for (const profil of ['K2', 'K3']) {
@@ -445,7 +446,8 @@ console.log('(r5-wyrab) [K1/K2/K3] R5: wycinka TYLKO pod farmy (Laka/Rownina), n
     const placed0 = new Map([[K(12, 10), ['farma', 'bydlo', 'irygacja']], [K(13, 10), ['farma', 'bydlo', 'irygacja']]]);
     const { log } = sim({ map, worked: [...WORKED_ALL, [14, 12]], profil, turns: 30, placed0, deficitFn: () => ['drewno'] });
     // r2: heks 12,9 (rzeka + Wzgorza + las) MA obywatela (RIVER jest w `worked`) -> wycinka pod tarasy/owce (E2); tartaku na rzece nadal zero.
-    ok(idx(log, 'wyrab', '12,9') >= 0 && idx(log, 'tartak', '12,9') < 0, `[${profil}] R5/r2 rzeka+las na Wzgorzach pod obywatelem: wyrab TAK, tartak NIE`);
+    // HILLS-CLEAR-REVERT-Q1: 12,9 (rzeka + Wzgorza + las) ma obywatela, ale nie jest baza pod farme -> ani wyrab, ani tartak (na rzece).
+    ok(idx(log, 'wyrab', '12,9') < 0 && idx(log, 'tartak', '12,9') < 0, `[${profil}] HILLS-REVERT rzeka+las na Wzgorzach pod obywatelem: wyrab NIE, tartak NIE`);
     ok(idx(log, 'tartak', '14,12') >= 0, `[${profil}] R5 niedobor drewna: tartak na lesie bez rzeki 14,12 (Wzgorza — farma niemozliwa)`);
   }
 }

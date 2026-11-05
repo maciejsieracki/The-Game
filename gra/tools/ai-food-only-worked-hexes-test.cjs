@@ -322,7 +322,7 @@ if (!MEASURE) {
     ok(onStale.length === 0, `${mode}: zero nowych ulepszen na heksach z "osieroconymi" farmami (jest ${onStale.length}); picker nie ma komendy burzenia`);
   }
 
-  console.log('(H) r2 SIMPLE-FOOD-RULE: las na WZGORZACH pod obywatelem — AI (decideAITurn) i gracz WYCINAJA (tarasy/owce), nigdy poza polami obywateli; Gory nie');
+  console.log('(H) HILLS-CLEAR-REVERT-Q1 (wlasciciel 2026-11-05, odp. B): las na WZGORZACH i GORACH pod obywatelem NIE jest wycinany pod zywnosc — AI (decideAITurn) i gracz; wycinka tylko pod farme (Laka/Rownina)');
   for (const terr of ['wzgorza', 'gory']) {
     for (const mode of ['ai', 'player-zywnosc']) {
       const map = makeScenarioMap();
@@ -359,14 +359,8 @@ if (!MEASURE) {
         }
       }
       if (process.env.DBGH) console.log(mode, terr, JSON.stringify(dbg));
-      if (terr === 'wzgorza') {
-        ok(cuts.length > 0, `${mode}: las na Wzgorzach pod obywatelem JEST wycinany (${cuts.length} wycinek)`);
-        ok(offW.length === 0, `${mode}: wycinka na Wzgorzach TYLKO na polach obywateli (poza: ${offW.length})`);
-        const food = [...placed.entries()].filter(([hk, l]) => l.some(k => k === 'owce' || k === 'tarasy') && cuts.includes(hk)).length;
-        ok(food > 0, `${mode}: na wycietych Wzgorzach powstaja owce/tarasy (${food} heksow)`);
-      } else {
-        ok(cuts.length === 0, `${mode}: las na Gorach NIE jest wycinany (${cuts.length})`);
-      }
+      // Wyjatek Wzgorz z r2 cofniety: zero wycinek zarowno na Wzgorzach, jak i na Gorach (mutacja: `|| terenBazowy === Wzgorza` w wyrabMaSens => FAIL).
+      ok(cuts.length === 0, `${mode}: las na ${terr === 'wzgorza' ? 'Wzgorzach' : 'Gorach'} NIE jest wycinany pod zywnosc (${cuts.length})`);
     }
   }
 

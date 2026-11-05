@@ -6,7 +6,7 @@
  *       z obywatelami — KAZDY profil gracza (Zywnosc, Zrownowazone, Surowce, Infrastruktura) i AI jednakowo; BEZ parametru/przelacznika.
  *   (2) WYJATEK (dopisek wlasciciela): OBOZ LOWIECKI nie wymaga obywatela (stoi tam, gdzie las, razem z tartakiem).
  *   (3) WYCINKA LASU: automat ZAWSZE moze wycinac las, ale WYLACZNIE pod farme (teren pod farme: Laka/Rownina) i tylko na polu obywatela;
- *       NIGDY pod inne ulepszenia (profile Surowce/Infrastruktura nie wycinaja; las na wzgorzach nie jest wycinany pod zywnosc).
+ *       NIGDY pod inne ulepszenia (profile Surowce/Infrastruktura nie wycinaja; las na wzgorzach NIE jest wycinany pod zywnosc — R-WEB-AUTOIMPROVE-HILLS-CLEAR-REVERT-Q1, decyzja wlasciciela 2026-11-05).
  *   (4) Pozostale (surowcowe/infrastrukturalne: kopalnie, kamieniolom, tartak, droga, fort...) bez reguly obywateli.
  *   (5) USTERKA ZE ZRZUTU: obywatel stoi na lesie (rzeka i nie-rzeka), profil Zywnosc/Zrownowazone, 100% puli — las MUSI byc wycinany pod farme.
  *   (6) UI/ustawienia: brak przyciskow i pol; STARY zapis z `ulepszeniaOnlyWorked`/`ulepszeniaWolnoWycinacLas`/`onlyWorked`/`wolnoWycinacLas` czyta sie bez bledu.
@@ -114,24 +114,23 @@ const dl = log => log.slice(0, 10).map(e => `${e.t}:${e.key}@${e.hk}`).join(' ')
       `${focus}: zero ulepszen zywnosciowych poza polami obywateli`);
   }
 
-  console.log('(3) wycinka NIGDY pod inne ulepszenia: profile Surowce i Infrastruktura nie wycinaja; las na wzgorzach pod obywatelem JEST wycinany (tarasy/owce), na gorach nie');
+  console.log('(3) wycinka NIGDY pod inne ulepszenia: profile Surowce i Infrastruktura nie wycinaja; las na wzgorzach i na gorach NIE jest wycinany (wycinka tylko tam, gdzie powstanie farma)');
   for (const focus of ['surowce', 'infrastruktura']) {
     const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
     const { log } = sim({ map, worked: WORKED_FOREST, focus, turns: 10 });
     ok(!log.some(e => e.key === 'wyrab'), `${focus}: zero wycinek (jest ${log.filter(e => e.key === 'wyrab').length})`);
     ok(!log.some(e => e.key === 'farma'), `${focus}: zero farm`);
   }
-  // r2 (zarzut 1 Evaluatora, zmierzona przyczyna w Chromium: obywatele na lesie na Wzgorzach -> 0 wycinek): las na WZGORZACH
-  // pod obywatelem jest pod ulepszenia zywnosciowe wzgorz (tarasy/owce) — wycinany; na GORACH (zadne ulepszenie zywnosciowe) — nie.
+  // R-WEB-AUTOIMPROVE-HILLS-CLEAR-REVERT-Q1 (decyzja wlasciciela ABC 2026-11-05, odp. B „Cofnij”): wyjatek Wzgorz z r2 cofniety. Las na WZGORZACH
+  // pod obywatelem NIE jest wycinany pod zywnosc (tarasy/owce) — wycinka WYLACZNIE tam, gdzie powstanie farma (Laka/Rownina). Gory tez nie.
+  // Mutacja: przywrocenie `|| hx.terenBazowy === TerenBazowy.Wzgorza` w `wyrabMaSens` (auto-improvements.ts) => ten blok MUSI byc czerwony.
   for (const focus of ['zywnosc', 'zrownowazone']) {
     const hillsForest = FOREST_AROUND.filter(([q, r]) => Math.abs(q - CQ) + Math.abs(r - CR) <= 4);
     const map = makeMap({ forest: FOREST_AROUND, hills: hillsForest });
     const { log } = sim({ map, worked: WORKED_FOREST, focus, turns: 10 });
-    const cuts = log.filter(e => e.key === 'wyrab');
-    const wsetH = new Set(WORKED_FOREST.map(([q, r]) => K(q, r)));
     const hillSet = new Set(hillsForest.map(([q, r]) => K(q, r)));
-    ok(cuts.length > 0 && cuts.some(e => hillSet.has(e.hk)), `${focus}: las na wzgorzach pod obywatelem JEST wycinany (jest ${cuts.length})`);
-    ok(cuts.every(e => wsetH.has(e.hk)), `${focus}: wycinka tylko na polach obywateli`);
+    const hillCuts = log.filter(e => e.key === 'wyrab' && hillSet.has(e.hk));
+    ok(hillCuts.length === 0, `${focus}: las na wzgorzach pod obywatelem NIE jest wycinany (jest ${hillCuts.length})`);
     const mapG = makeMap({ forest: FOREST_AROUND, mountains: FOREST_AROUND });
     const rG = sim({ map: mapG, worked: WORKED_FOREST, focus, turns: 10 });
     ok(!rG.log.some(e => e.key === 'wyrab'), `${focus}: las na gorach (zadne ulepszenie zywnosciowe) NIE jest wycinany (jest ${rG.log.filter(e => e.key === 'wyrab').length})`);
