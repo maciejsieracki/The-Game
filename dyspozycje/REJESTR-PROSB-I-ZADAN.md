@@ -8697,3 +8697,7 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 ## 2026-11-05 — Polityka modeli (ABC, odp. A)
 
 Właściciel potwierdził politykę z 2026-10-24: Operator i Obrona = Haiku 5.5, Evaluator i Final Control = Sonnet 5.5 (Opus tylko jednostki/obiekty 3D). Nocne tematy webowe 2026-11-04/05 biegły z Operatorem i Obroną na Sonnet 5.5 (`opModel: claude-sonnet-5-5`) — odstępstwo; trzy tematy w toku (HILLS-CLEAR-REVERT, HUD-GROSS-NET-REST, TEST-DEBT-AI-Q2) kończą na Sonnet, kolejne startują z `opModel: claude-haiku-5-5`.
+
+## 2026-11-05 — Młyn (odp. właściciela na pytanie ABC)
+
+Pytanie: bramka „młyn tylko przy rzece” (R-WEB-MILL-RIVER-ONLY-GATE-Q1, scalona do `main` `ab9abb356`) jest nieaktywna, bo w `gra/data/buildings.json` nie ma budynku `mlyn` (ekonomia ma gotowy mnożnik: `budynek_mlyn_mnoznik_pracy`/`_bonus_pracy`, `maMlyn`). Odpowiedź właściciela: **„młyn będzie w średniowieczu albo epoce klasycznej, zapisz sobie na razie”.** STATUS: ZAPISANE — brak decyzji o dodaniu teraz (epoka do doprecyzowania: klasyczna vs średniowiecze; koszt/efekt do ustalenia). Nie zlecono implementacji. Przy dodaniu: wpis w `buildings.json` + asercja na prawdziwym id w `mill-river-only-gate-test.cjs` (test G).
