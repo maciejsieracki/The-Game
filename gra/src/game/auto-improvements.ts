@@ -1666,14 +1666,10 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       if (!wyrabTylkoPodFarme) return true;
       const hx = map.hexes[`${q},${r}`];
       if (!hx) return false;
-      // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 r2 (zarzut 1 Evaluatora — zmierzona PRZYCZYNA „las pod obywatelem nie jest
-      // wycinany”, Chromium ?civTest=1, ziarno 311, obywatele na lesie na Wzgórzach: 0 wycinek w 20 turach, powód
-      // „teren nie jest baza pod farme”): las na WZGÓRZACH pod obywatelem jest pod ulepszenia żywnościowe wzgórz — tarasy
-      // (`FOOD_IMPROVEMENT_KEYS`, etap E4; kwalifikator wymaga Wzgórz bez lasu) i owce (`isOwceBaseTerrain`: Wzgórza bez
-      // nakładki). Dawny filtr „tylko Łąka/Równina” (= teren farmy) odcinał te pola na stałe. Zasada właściciela („wycinka
-      // WYŁĄCZNIE pod ulepszenia żywnościowe”) zostaje: nadal nigdy pod ulepszenia niezwiązane z żywnością i nigdy na terenie,
-      // z którego żadne ulepszenie żywnościowe nie powstanie (Góry, Tundra, Step itd.). ZAŁOŻENIE do potwierdzenia w ABC.
-      return isFarmBaseTerrain(hx.terenBazowy, Nakladka.Brak) || hx.terenBazowy === TerenBazowy.Wzgorza;
+      // R-WEB-AUTOIMPROVE-HILLS-CLEAR-REVERT-Q1 (decyzja właściciela ABC 2026-11-05, odp. B „Cofnij”): wycinka WYŁĄCZNIE tam, gdzie
+      // po niej powstanie farma (`isFarmBaseTerrain`: Łąka/Równina). Las na Wzgórzach NIE jest wycinany pod żywność (tarasy/owce) —
+      // wyjątek Wzgórz z SIMPLE-FOOD-RULE r2 został cofnięty.
+      return isFarmBaseTerrain(hx.terenBazowy, Nakladka.Brak);
     };
     const riverKrok0Ok = (q: number, r: number): boolean => {
       const hk = `${q},${r}`;
@@ -1859,7 +1855,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         if (scheduledWyrabHexes.has(hk)) { verdict('odrzucony', 'wycinka juz zaplanowana/w toku'); continue; }
         if (!wyrabWlaczony) { verdict('odrzucony', citySkipWyrab ? 'wycinka wylaczona' : 'wycinka poza priorytetami tego przebiegu (etap bez wyrab)'); continue; }
         if (!isImprovementTechUnlocked('wyrab', unlockedTechs) || !civGate('wyrab', civArchetype)) { verdict('odrzucony', 'brak tech'); continue; }
-        if (!wyrabMaSens(q, r)) { verdict('odrzucony', 'kandydat E2 odpada: teren nie jest baza pod ulepszenie zywnosciowe (farma Laka/Rownina; tarasy/owce Wzgorza) — wycinka tylko pod zywnosc'); continue; }
+        if (!wyrabMaSens(q, r)) { verdict('odrzucony', 'kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme'); continue; }
         if (!hexAllowsKey(q, r, 'wyrab')) { verdict('odrzucony', 'kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)'); continue; }
         if (placedHere.some(k => k === 'tartak' || k === 'oboz_lowiecki')) { verdict('odrzucony', 'kandydat odpada: tartak/oboz stoi na heksie'); continue; }
         if (!onRiv) {
