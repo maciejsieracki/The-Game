@@ -286,6 +286,82 @@ withFlags(() => {
   }
 
   // -------------------------------------------------------------------------
+  // T8: obrona domu w kampanii wodza wybiera WOJSKO -- cywil (robotnik), jednostka na okrecie
+  // i sam wodz kampanii, choc bliżej barbarzyncy, nie sa przydzielani jako obrona.
+  // PRZED poprawka planCampaignBarbarianHomeDefense brala pelny myUnits: najblizszy cywil/wodz
+  // dostawal ruch ku barbarzyncy i wypadal z marszu kampanii; obronca def1 zostawal bez rozkazu.
+  // -------------------------------------------------------------------------
+  console.log('\n--- T8: obrona domu w kampanii wybiera wojsko, nie cywila / okret / wodza ---');
+  {
+    const cases = [
+      { name: 'cywil (robotnik) bliżej', extra: [makeUnit('wrk1', 1, 25, 29, { category: 'robotnik', typeId: 'Robotnik' })], nearId: 'wrk1' },
+      { name: 'jednostka na okrecie bliżej', extra: [makeUnit('emb1', 1, 25, 30, { embarked: true })], nearId: 'emb1' },
+      { name: 'wodz kampanii bliżej', extra: [], genAt: [25, 30], nearId: 'gen1' },
+    ];
+    for (const cs of cases) {
+      const map = makeMap(60, 60);
+      const cities = [
+        { id: 'c1', ownerId: 1, q: MY_CITY.q, r: MY_CITY.r, name: 'TestCity', population: 5 },
+        { id: 'ec1', ownerId: ENEMY_CIV, q: ENEMY_CAPITAL.q, r: ENEMY_CAPITAL.r, name: 'Enemy', population: 5 },
+      ];
+      const genQ = cs.genAt ? cs.genAt[0] : 22;
+      const genR = cs.genAt ? cs.genAt[1] : 25;
+      const threat = makeUnit('thr1', BARB, 25, 32);
+      const units = [
+        makeUnit('gen1', 1, genQ, genR, { isGeneral: true }),
+        makeUnit('def1', 1, 25, 27),
+        ...cs.extra,
+        threat,
+      ];
+      const cmds = commandsByUnit(decideAITurn(1, units, cities, map, data, campaignOpts()));
+      const cd = cmds.get('def1');
+      assert(cd !== undefined && cd.type === 'move' && hexDistance(cd.toQ, cd.toR, 25, 32) < hexDistance(25, 27, 25, 32),
+        `T8 (${cs.name}): wojskowy obronca def1 zbliza sie do barbarzyncy (${JSON.stringify(cd)})`);
+      const near = cmds.get(cs.nearId);
+      if (cs.nearId === 'gen1') {
+        assert(near !== undefined && near.type === 'move' && near.targetCityId === 'ec1',
+          `T8 (${cs.name}): wodz nie wypada z marszu na stolice (${JSON.stringify(near)})`);
+      } else if (cs.nearId === 'emb1') {
+        assert(near === undefined || near.type !== 'move' || near.toQ !== undefined,
+          `T8 (${cs.name}): jednostka na okrecie nie jest obroncą (${JSON.stringify(near)})`);
+      } else {
+        assert(near === undefined || near.type !== 'move' || hexDistance(near.toQ, near.toR, 25, 32) >= hexDistance(25, 29, 25, 32),
+          `T8 (${cs.name}): cywil nie jest obroncą domu (${JSON.stringify(near)})`);
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // T9: stos z JEDNYM obroncą domu i JEDNYM zwyklym zolnierzem kampanii. Obronca idzie ku
+  // barbarzyncy; zolnierz (po odfiltrowaniu obroncy stos ma <2 jednostek, ekspansja stosu pominieta)
+  // NADAL dostaje rozkaz marszu na stolice wroga -- nie zostaje bez rozkazu.
+  // -------------------------------------------------------------------------
+  console.log('\n--- T9: stos z obroncą i zolnierzem kampanii -- zolnierz dostaje marsz na stolice ---');
+  {
+    const map = makeMap(60, 60);
+    const cities = [
+      { id: 'c1', ownerId: 1, q: MY_CITY.q, r: MY_CITY.r, name: 'TestCity', population: 5 },
+      { id: 'ec1', ownerId: ENEMY_CIV, q: ENEMY_CAPITAL.q, r: ENEMY_CAPITAL.r, name: 'Enemy', population: 5 },
+    ];
+    const threat = makeUnit('thr1', BARB, 25, 32);
+    const units = [
+      makeUnit('gen1', 1, 22, 25, { isGeneral: true }),
+      makeUnit('def1', 1, 25, 27),
+      makeUnit('mar1', 1, 25, 27),
+      threat,
+    ];
+    const cmds = decideAITurn(1, units, cities, map, data, campaignOpts());
+    const cd = cmds.find(c => c.unitId === 'def1');
+    assert(cd !== undefined && cd.type === 'move' && hexDistance(cd.toQ, cd.toR, 25, 32) < hexDistance(25, 27, 25, 32),
+      `T9: obronca w stosie zbliza sie do barbarzyncy (${JSON.stringify(cd)})`);
+    const mv = cmds.filter(c => c.unitId === 'mar1');
+    assert(mv.length === 1, `T9: zolnierz kampanii dostaje dokladnie jeden rozkaz (${JSON.stringify(mv)})`);
+    const m = mv[0];
+    assert(m !== undefined && m.type === 'move' && hexDistance(m.toQ, m.toR, ENEMY_CAPITAL.q, ENEMY_CAPITAL.r) < hexDistance(25, 27, ENEMY_CAPITAL.q, ENEMY_CAPITAL.r),
+      `T9: zolnierz kampanii idzie w strone stolicy wroga (${JSON.stringify(m)})`);
+  }
+
+  // -------------------------------------------------------------------------
   // T6: determinizm -- dwa identyczne wywolania daja identyczne komendy.
   // -------------------------------------------------------------------------
   console.log('\n--- T6: determinizm ---');
@@ -298,6 +374,18 @@ withFlags(() => {
   }
 });
 
+// Pomiar czasu decyzji (bez asercji): mediana ms na scenariuszu kampanii wodza z barbarzyncą.
+if (process.env.BARB_DEF_PERF === '1') {
+  const times = [];
+  for (let i = 0; i < 60; i++) {
+    const sc = scenario({ threatOwner: BARB, threatDist: 7 });
+    const t0 = process.hrtime.bigint();
+    decideAITurn(1, sc.units, sc.cities, sc.map, data, campaignOpts());
+    times.push(Number(process.hrtime.bigint() - t0) / 1e6);
+  }
+  times.sort((a, b) => a - b);
+  console.log(`PERF campaign-barb median_ms=${times[30].toFixed(3)} p10=${times[6].toFixed(3)} p90=${times[54].toFixed(3)} n=${times.length}`);
+}
 console.log(`\nwar-allin-general-path-barb-defense-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (_) { /* ignore */ }
 try { fs.unlinkSync(BUNDLE_FILE); } catch (_) { /* ignore */ }

@@ -4834,9 +4834,13 @@ function planCampaignBarbarianHomeDefense(
     && aiCanEngageOwner(opts, u.ownerId)
     && myCities.some(city => isHomeDefenseThreatForCity(u.q, u.r, city)));
   if (homeThreats.length === 0) return result;
+  // Obroncy domu to wojsko: bez cywilow (robotnik, osadnik), bez jednostek na okrecie i bez wodza
+  // kampanii (wodz nie wypada z marszu na stolice, zeby bronic miasta).
+  const defenderPool = myUnits.filter(u =>
+    !isCivilianUnit(u) && u.embarked !== true && u.seaRaider !== true && u.isGeneral !== true);
   const assignments = assignHomeDefenders(
     homeThreats,
-    myUnits,
+    defenderPool,
     myCities,
     isArmyConsolidationEnabled() && canConcentrateArmy(opts) ? ARMY_CONSOLIDATION_HOME_GROUP_SIZE : 1,
   );
