@@ -38,7 +38,7 @@
  *
  * Pokrycie:
  *  A. Martwa strefa .civ-side-panel → canvas (przed/po + mutacja).
- *  B. Pasek narzędzi (.sp-toolbar-chip "Inne cyw.") nadal klikalny prawdziwym kliknięciem myszy
+ *  B. Zakładki powiadomień ([data-sp-tab]; dawniej chip "Inne cyw.") nadal klikalne prawdziwym kliknięciem myszy
  *     (regresja funkcjonalności — nie tylko brak zmiany, ale faktyczne działanie).
  *  C. Karta własnej jednostki w lewym doku (.civ-side-ctx-dock .sp-ctx-card) nadal w pełni
  *     klikalna (środek karty + przycisk strzałki cyklowania ▶).
@@ -329,23 +329,29 @@ async function main() {
       }
     }
 
-    console.log('\n-- B. Pasek narzędzi (.sp-toolbar-chip "Inne cyw.") nadal klikalny realnym kliknięciem --');
-    const chip = page.locator('[data-sp-toggle-other-civs]').first();
-    const chipCount = await chip.count();
-    assert('chip "Inne cyw." istnieje w DOM', chipCount > 0);
-    if (chipCount > 0) {
-      const beforeActive = await chip.evaluate(el => el.className.includes('sp-toolbar-chip-active'));
-      assert('chip domyślnie NIE ma klasy active', !beforeActive);
-      const box = await chip.boundingBox();
-      assert('chip ma niezerową geometrię (boundingBox)', !!box);
+    // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: chip „Inne cyw.” zastąpiony trzema zakładkami
+    // (Dyplomacja / Ważne / Inne). Sprawdzamy, że PRAWDZIWY klik myszy na zakładkę działa.
+    console.log('\n-- B. Zakładki powiadomień ([data-sp-tab]) nadal klikalne realnym kliknięciem --');
+    const tabInne = page.locator('[data-sp-tab="inne"]').first();
+    const tabCount = await tabInne.count();
+    assert('zakładka „Inne” istnieje w DOM', tabCount > 0);
+    if (tabCount > 0) {
+      const beforeActive = await tabInne.evaluate(el => el.classList.contains('sp-tab-active'));
+      assert('zakładka „Inne” domyślnie NIE jest aktywna', !beforeActive);
+      const box = await tabInne.boundingBox();
+      assert('zakładka „Inne” ma niezerową geometrię (boundingBox)', !!box);
       if (box) {
         await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
         await wait(200);
-        const afterActive = await chip.evaluate(el => el.className.includes('sp-toolbar-chip-active'));
-        assert('PRAWDZIWY klik myszy na chip przełącza klasę active (funkcjonalność panelu NIE ucierpiała)', afterActive);
-        // Przywróć stan domyślny dla higieny kolejnych scenariuszy.
-        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-        await wait(150);
+        const afterActive = await tabInne.evaluate(el => el.classList.contains('sp-tab-active'));
+        assert('PRAWDZIWY klik myszy na zakładkę „Inne” ją aktywuje (funkcjonalność panelu NIE ucierpiała)', afterActive);
+        // Wróć do zakładki domyślnej dla higieny kolejnych scenariuszy.
+        const wazne = page.locator('[data-sp-tab="wazne"]').first();
+        const wBox = await wazne.boundingBox();
+        if (wBox) {
+          await page.mouse.click(wBox.x + wBox.width / 2, wBox.y + wBox.height / 2);
+          await wait(150);
+        }
       }
     }
 

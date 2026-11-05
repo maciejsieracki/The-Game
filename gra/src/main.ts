@@ -17241,47 +17241,9 @@ async function boot(): Promise<void> {
         tradeRouteEventLog.unshift(stampEventTurn(ev, turn));
       };
 
-      const routeSettlementForCity = (routes: readonly TradeRoute[], cityId: string): number => {
-        const breakdown = computeTradeRouteIncomeByCityBreakdown(
-          routes, incomeParams, wonderTradeRouteBonusForOwner, targowiskoTradeRouteBonusForCity,
-        );
-        const seaBonus = computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(routes), builtByCity);
-        return (breakdown.totalByCity.get(cityId) ?? 0) + (seaBonus.get(cityId) ?? 0);
-      };
-      // Treat new-route events as sequential additions so a second sea route
-      // reports the marginal +1 city bonus as well as its endpoint proceeds.
-      const routesBeforeAdded = [...prevRoutes];
-
-      for (const route of added) {
-        const from = cityById.get(route.fromCityId);
-        const to = cityById.get(route.toCityId);
-        const fromName = from?.name ?? route.fromCityId;
-        const toName = to?.name ?? route.toCityId;
-        // R2-4: etykieta opisuje DRUGĄ stronę względem gracza; dla trasy wewnętrznej
-        // (obie strony to gracz) własna nazwa cywilizacji nic nie mówi — jawny opis.
-        const wewnetrzna = route.ownerId === route.toOwnerId;
-        const civLabel = wewnetrzna ? 'handel wewnętrzny' : ownerDiploLabel(route.ownerId === 0 ? route.toOwnerId : route.ownerId);
-        // The event describes the player's credited proceeds for this route,
-        // including endpoint-specific Wonder and Targowisko bonuses. Reuse the
-        // settlement aggregator so labels cannot drift from turn income.
-        const playerCityId = playerCityIdOf(route);
-        const beforeIncome = routeSettlementForCity(routesBeforeAdded, playerCityId);
-        routesBeforeAdded.push(route);
-        const afterIncome = routeSettlementForCity(routesBeforeAdded, playerCityId);
-        const income = Math.max(0, afterIncome - beforeIncome);
-        const summary = `${fromName} ↔ ${toName} (${civLabel}) \xb7 +${income} złota/turę`;
-        showHintMessage('\u{1F9ED} Nowy szlak handlowy: ' + summary, 4500);
-        // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: zapamiętaj miasto gracza pod tym samym id.
-        tradeRouteEventPlayerCityIds.set('trade-new-' + turn + '-' + route.id, playerCityIdOf(route));
-        pushOnce({
-          id: 'trade-new-' + turn + '-' + route.id,
-          icon: '\u{1F9ED}', // 🧭
-          title: 'Nowy szlak handlowy',
-          subtitle: summary,
-          kind: 'city',
-        });
-      }
-
+      // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: „Nowy szlak handlowy” NIE jest już zdarzeniem
+      // (ani toastem, ani kartą panelu) — zgłoszenie właściciela: szum bez decyzji gracza.
+      // Logika tras (diffTradeRoutes, dochody) nie zmieniona; zrywanie tras nadal raportowane.
       for (const route of removed) {
         const from = cityById.get(route.fromCityId);
         const to = cityById.get(route.toCityId);
@@ -29117,7 +29079,7 @@ async function boot(): Promise<void> {
     ): void {
       if (arrived) {
         plannedMarches.delete(unitId);
-        showHintMessage('Dotarło do celu', 2800);
+        // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: „Dotarło do celu” usunięte (szum).
         return;
       }
       if (stopReason) {
@@ -36129,13 +36091,11 @@ async function boot(): Promise<void> {
               const drewnoCap = ownerResourceCap(
                 cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId),
               );
-              const drewnoCredited = creditOwnerResourceStock(
+              creditOwnerResourceStock(
                 cities, ownerId, 'drewno', drewnoCredit, drewnoCap,
               );
-              showHintMessage(
-                'Wycinka: +' + drewnoCredited + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',
-                2000,
-              );
+              // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: komunikat „Wycinka: +N Drewna” usunięty
+              // (szum bez decyzji gracza). Zbiór drewna (creditOwnerResourceStock) bez zmian.
             }
             if (expired) {
               hexClearingStates.delete(hexKey);
@@ -37586,11 +37546,9 @@ async function boot(): Promise<void> {
                 // (fotel kończący turę); dla pozostałych foteli w tej samej pętli
                 // pomijamy, tak jak cache `_last*`.
                 if (hOid === humanOwnerId) {
-                  if (toastLines.length === 1) {
-                    showHintMessage(`Auto ulepszenie: ${toastLines[0]}`, 3200);
-                  } else if (toastLines.length > 1) {
-                    showHintMessage(`Auto ulepszenia: ${toastLines.length}× (−Praca)`, 3200);
-                  }
+                  // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: toasty „Auto ulepszenie: …” /
+                  // „Auto ulepszenia: N× (−Praca)” usunięte (szum). Lista `toastLines` zostaje
+                  // jako warunek poniższego sygnału o nadwyżce Pracy.
                   // ZASADA 3 dla AI GRACZA: WYŁĄCZNIE sygnał. Automat gracza NIE dotyka
                   // `pracaAutoPercent` ani żadnego innego suwaka — decyzja o przesunięciu
                   // środków na budynki należy do gracza (ECHO właściciela: „gracz sam

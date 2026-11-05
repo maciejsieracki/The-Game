@@ -1,25 +1,17 @@
 /**
  * sidePanelEventFilter.ts
- * R-WYDARZENIA-FILTR-KATEGORII — czysta funkcja filtrowania panelu WYDARZENIA wg chipa
- * 🌍 „Inne cyw." Wydzielona z sidePanelHud.ts, bo TEN plik ma zero importów niebundlowalnych
- * w czystym esbuild (sidePanelHud.ts ciągnie icons/brandAssets.ts, który robi `import X from
- * '*.svg?raw'` + `import.meta.glob(...)` — obsługiwane przez Vite, nie przez goły esbuild bez
- * dodatkowych loaderów/pluginów) — dzięki temu testy warstwy UI (tools/*-test.cjs, wzorzec
- * army-merge-dismiss-bounce-test.cjs) mogą zbundlować i przetestować samą logikę filtra bez
- * stubowania ikon.
+ * R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 — czysty filtr wpisów informacyjnych panelu
+ * WYDARZENIA wg aktywnej zakładki (Dyplomacja / Ważne / Inne). Zastępuje dawny filtr chipa
+ * „🌍 Inne cyw.”. Wydzielony z sidePanelHud.ts, bo ten plik ma zero importów niebundlowalnych
+ * w czystym esbuild (testy UI bundlują samą logikę, bez stubowania ikon).
  */
 import type { SidePanelEvent } from './sidePanelHud';
+import { eventTabOf, type SidePanelTab } from './sidePanelEventTabs';
 
-/**
- * Filtruje listę wpisów panelu WYDARZENIA wg stanu chipa 🌍 „Inne cyw.".
- * `showOtherCivsEvents === false` (domyślne, chip wyłączony) → wpisy z
- * `origin === 'other-civs'` (dziś wyłącznie handel AI↔AI) są ukryte.
- * `showOtherCivsEvents === true` → wszystkie wpisy widoczne, bez zmiany kolejności.
- */
-export function filterSidePanelEvents(
+/** Zwraca wpisy należące do zakładki `tab`, w niezmienionej kolejności. */
+export function filterSidePanelEventsByTab(
   events: readonly SidePanelEvent[],
-  showOtherCivsEvents: boolean,
+  tab: SidePanelTab,
 ): SidePanelEvent[] {
-  if (showOtherCivsEvents) return events.slice();
-  return events.filter(ev => ev.origin !== 'other-civs');
+  return events.filter(ev => eventTabOf(ev) === tab);
 }

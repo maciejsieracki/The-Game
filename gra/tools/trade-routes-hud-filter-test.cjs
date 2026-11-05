@@ -250,6 +250,8 @@ function reportCtx() {
     tradeRouteEventPlayerCityIds: state.anchors,
     showHintMessage: msg => { state.hints.push(msg); },
     refreshD1bHud: () => {},
+    // harness: pushOnce (reportTradeRouteEvents) woła stampEventTurn z main.ts (import z event-lifetime)
+    stampEventTurn: (ev, t) => ({ ...ev, turnCreated: t }),
     ownerDiploLabel: id => 'CYW' + id,
     isMe: ownerId => ownerId === 0,
     buildAllTerritoryNodes: () => undefined,
@@ -385,33 +387,16 @@ console.log('\n-- R2-K4: toasty i dziennik (realne zrodlo reportTradeRouteEvents
     'reportTradeRouteEvents([], __ctx.__routes, __ctx.__cities, __ctx.__map, __ctx.__params, __ctx.__built, () => false, __ctx.__treaty, __ctx.__inc);',
   );
   console.log('  toasty:'); for (const h of ctx.state.hints) console.log('    ' + h);
-  eq(ctx.state.hints.length, PLAYER_ROUTES.length,
-    `R2-K4: licznik wywolan showHintMessage == liczba tras GRACZA (${PLAYER_ROUTES.length}), mimo ${ROUTES.length} nowych tras w swiecie`);
+  // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: „Nowy szlak handlowy” NIE jest juz zdarzeniem --
+  // ani toast, ani wpis dziennika WYDARZENIA, ani kotwica linku. Zerwanie tras (nizej) nadal
+  // jest raportowane.
+  eq(ctx.state.hints.length, 0,
+    `R2-K4 (PRUNE): nowe trasy NIE generuja toastu (0 wywolan showHintMessage), mimo ${ROUTES.length} nowych tras w swiecie`);
+  eq(ctx.state.log.length, 0, 'R2-K4 (PRUNE): nowe trasy NIE trafiaja do dziennika WYDARZENIA');
+  eq(ctx.state.anchors.size, 0, 'R2-K4 (PRUNE): brak kotwic linkow dla nowych tras');
   const foreignNames = CITIES.filter(c => !PLAYER_CITY_IDS.has(c.id)).map(c => c.name);
-  const playerNames  = CITIES.filter(c => PLAYER_CITY_IDS.has(c.id)).map(c => c.name);
-  assert(ctx.state.hints.every(h => playerNames.some(n => h.includes(n))),
-    'R2-K4: KAZDY komunikat dotyczy trasy z miastem gracza');
-  for (const route of PLAYER_ROUTES) {
-    const playerCityId = route.ownerId === 0 ? route.fromCityId : route.toCityId;
-    const expected = TR.computeTradeRouteIncomeByCityBreakdown(
-      [route], incP, WONDER_BONUS,
-      cityId => CITY_BUILT.get(cityId)?.includes('targowisko') ? MARKET_BONUS : 0,
-    ).totalByCity.get(playerCityId) ?? 0;
-    assert(ctx.state.hints.some(h => h.includes('Nowy szlak handlowy') && h.includes(`+${expected} złota/turę`)),
-      `R2-K4: toast reports settlement income for player endpoint of ${route.id} (market/no-market included)`);
-  }
+  void foreignNames;
   CITY_BUILT.set('p2', priorP2Buildings);
-  assert(!ctx.state.hints.some(h => foreignNames.every(n => h.includes(n))),
-    'R2-K4: zaden komunikat nie opisuje trasy miedzy DWOMA miastami obcymi (AI<->AI / wewnetrzny AI)');
-  eq(ctx.state.log.length, Math.min(6, PLAYER_ROUTES.length),
-    'R2-K4: dziennik WYDARZENIA dostaje wpisy wylacznie za trasy gracza');
-  // Kotwica linku musi wskazywac MIASTO GRACZA takze wtedy, gdy gracz jest strona `to`.
-  assert([...ctx.state.anchors.values()].every(cid => PLAYER_CITY_IDS.has(cid)),
-    'R2-K4: kotwica `tradeRouteEventPlayerCityIds` wskazuje ZAWSZE miasto gracza (nie `fromCityId` na slepo)');
-  // Trasa wewnetrzna gracza -> DOKLADNIE JEDEN komunikat.
-  const internalId = INTERNAL_PLAYER_ROUTES[0].id;
-  eq(ctx.state.log.filter(e => e.id.endsWith(internalId)).length, 1,
-    'R2-K4: trasa WEWNETRZNA gracza daje DOKLADNIE JEDEN wpis (nie dwa)');
 }
 {
   // Zerwanie trasy WEWNETRZNEJ gracza: powod NIE moze brzmiec „zerwana Umowa Szlakow"
@@ -470,8 +455,9 @@ console.log('\n-- R2-D: trasa z graczem po stronie `to` (odwrocony kierunek) --'
 
   const rc = reportCtx(); rc.__routes = only;
   runMainRouteSnippet(SRC_REPORT, rc, 'reportTradeRouteEvents([], __ctx.__routes, __ctx.__cities, __ctx.__map, __ctx.__params, __ctx.__built, () => false, __ctx.__treaty, __ctx.__inc);');
-  eq(rc.state.hints.length, 1, 'R2-D: dokladnie 1 komunikat o trasie z graczem po stronie `to`');
-  eq([...rc.state.anchors.values()][0], src.fromCityId, 'R2-D: kotwica linku wskazuje MIASTO GRACZA, nie `fromCityId` trasy');
+  // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: nowa trasa NIE jest zdarzeniem (ani toast, ani kotwica).
+  eq(rc.state.hints.length, 0, 'R2-D (PRUNE): nowa trasa z graczem po stronie `to` NIE generuje komunikatu');
+  eq(rc.state.anchors.size, 0, 'R2-D (PRUNE): brak kotwicy linku dla nowej trasy');
 }
 
 console.log('\n-- ZARZUT 4: `hasActiveRoute` (activeDeals) symetryczny wzgledem kierunku trasy --');
@@ -525,8 +511,10 @@ console.log('\n-- R2-MARITIME: toast for second sea route includes marginal sea 
     return routeReceipts + seaBonus;
   };
   const marginal = endpointReceipt([existingSea, addedSea]) - endpointReceipt([existingSea]);
-  assert(ctx.state.hints.some(h => h.includes(`+${marginal} złota/turę`)),
-    `R2-MARITIME: second sea-route toast includes settlement marginal including +1 extra sea route (expected ${marginal})`);
+  // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: „Nowy szlak handlowy” nie ma toastu -- sprawdzamy
+  // brak komunikatu; marginalny dochod (marginal) zostaje policzony ekonomicznie nizej.
+  assert(ctx.state.hints.length === 0,
+    `R2-MARITIME (PRUNE): drugi szlak morski NIE generuje toastu (got ${ctx.state.hints.length}, marginal ekonomiczny = ${marginal})`);
   assert(marginal >= 1 + 0 && TR.computeSeaTradeBonusIncomeByCity(TR.computeSeaTradeRouteCountByCity([existingSea, addedSea]), CITY_BUILT).get('p1') === 1,
     'R2-MARITIME: p1 z Portem dostaje +1 bonusu morskiego (nietautologiczne)');
   if (p1BuiltBefore) CITY_BUILT.set('p1', p1BuiltBefore);
