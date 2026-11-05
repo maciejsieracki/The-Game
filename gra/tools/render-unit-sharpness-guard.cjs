@@ -23,6 +23,14 @@ if (med.pixelRatioMax < 2) fails.push('medium.pixelRatioMax < 2: ' + med.pixelRa
 if (hi.pixelRatioMax < med.pixelRatioMax) fails.push('high < medium');
 if (lo.pixelRatioMax > med.pixelRatioMax) fails.push('low > medium');
 if (effectivePixelRatio(med.pixelRatioMax, zoomFlags0()) < 2) fails.push('LOD0 na DPR2 < 2');
+// Obrona r1: macierz zachowania (nie tylko stala) — na LOD0 bufor nie moze byc mniejszy niz piksele urzadzenia
+// dla DPR 1, 1.5 i 2 (medium). Mutacja pixelRatioMax 2.0 -> 1.5 czerwieni wiersz DPR=2.
+for (const dpr of [1, 1.5, 2]) {
+  (globalThis as any).window = { devicePixelRatio: dpr };
+  const eff = effectivePixelRatio(med.pixelRatioMax, zoomLodFlags(0, false).pixelRatioMul);
+  if (eff < dpr) fails.push('LOD0 DPR' + dpr + ': eff ' + eff + ' < DPR (bufor rozciagany)');
+}
+(globalThis as any).window = { devicePixelRatio: 2 };
 function zoomFlags0() { return zoomLodFlags(0, false).pixelRatioMul; }
 let prev = 9; for (const l of [0,1,2,3,4] as const) { const m = zoomLodFlags(l, false).pixelRatioMul; if (m > prev) fails.push('LOD mnoznik rosnie na ' + l); prev = m; }
 console.log(fails.length ? 'FAIL ' + fails.join('; ') : 'PASS guard');

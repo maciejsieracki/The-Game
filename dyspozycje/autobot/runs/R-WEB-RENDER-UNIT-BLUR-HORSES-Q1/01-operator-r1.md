@@ -9,7 +9,8 @@ RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (weryfikacja przyczyny i zakresu zmiany presetu, decyzja o skutku ubocznym DPR1 na LOD 2-3)
 DEPLOY/PUSH: NIE WYKONANO
 
-## Przyczyna (plik:linia)
+## Przyczyna (plik:linia) — NAJBARDZIEJ PRAWDOPODOBNA, NIEPOTWIERDZONA dla sprzętu właściciela (sprostowanie obrony r1, zarzut 1)
+Nie sprawdzono, jaką jakość mapy i jaki DPR miał właściciel na zrzucie. Przy jakości `high` (pr 2.0) ta poprawka nic nie zmienia.
 Modele jednostek (`render/units.ts`, `braz-rydwan-konny-opus5.ts`, `kon-nowy-model.ts`) to czysta geometria
 (MeshStandardMaterial, zero tekstur, zero post-processingu/DOF — grep: brak EffectComposer/blur/bokeh).
 Rozmycie nie pochodzi z modelu, tylko z rozdzielczości bufora renderu względem pikseli ekranu:
