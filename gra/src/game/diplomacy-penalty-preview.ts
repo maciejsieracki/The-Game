@@ -144,13 +144,69 @@ export function previewAllianceObligationRefusal(
   return { lines, ...totals(lines) };
 }
 
-/** Podgląd kar za dobrowolne zerwanie traktatu (przycisk „Zerwij"). */
+/**
+ * R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1 — po ilu turach od zawarcia dobrowolne zerwanie
+ * UMOWY HANDLOWEJ jest bez kary (Zaufanie i Wiarygodność; także okno N3/N5). Decyzja właściciela
+ * 2026-11-05. Dotyczy wyłącznie traktatów handlowych (isHandelTreatyKind), terminowych i bezterminowych.
+ */
+export const TRADE_TREATY_BREAK_PENALTY_FREE_AGE_TURNS = 10;
+
+/** Wiek traktatu w turach; undefined gdy nieznany (brak `zawartaTura` w starym zapisie) lub brak tury. */
+export function treatyAgeTurns(
+  deal: Pick<ActiveDeal, 'zawartaTura'>,
+  turn: number | undefined,
+): number | undefined {
+  if (turn === undefined || deal.zawartaTura === undefined || deal.zawartaTura === null) return undefined;
+  return Math.max(0, turn - deal.zawartaTura);
+}
+
+/**
+ * Czy dobrowolne zerwanie tego traktatu w tej turze jest BEZ KARY. Czysta, niezależna od właściciela
+ * (ta sama reguła dla gracza i AI). Wiek nieznany → false (kary jak dziś).
+ */
+export function tradeTreatyBreakPenaltyFree(
+  deal: Pick<ActiveDeal, 'rodzaj' | 'zawartaTura'>,
+  turn: number | undefined,
+): boolean {
+  if (!isHandelTreatyKind(deal.rodzaj)) return false;
+  const age = treatyAgeTurns(deal, turn);
+  return age !== undefined && age >= TRADE_TREATY_BREAK_PENALTY_FREE_AGE_TURNS;
+}
+
+/** Tury pozostałe do końca okresu kary umowy handlowej (1..9); undefined gdy nie dotyczy / wiek nieznany. */
+export function tradeTreatyBreakPenaltyTurnsLeft(
+  deal: Pick<ActiveDeal, 'rodzaj' | 'zawartaTura'>,
+  turn: number | undefined,
+): number | undefined {
+  if (!isHandelTreatyKind(deal.rodzaj)) return undefined;
+  const age = treatyAgeTurns(deal, turn);
+  if (age === undefined || age >= TRADE_TREATY_BREAK_PENALTY_FREE_AGE_TURNS) return undefined;
+  return TRADE_TREATY_BREAK_PENALTY_FREE_AGE_TURNS - age;
+}
+
+function turnsPl(n: number): string {
+  if (n === 1) return '1 tura';
+  if (n >= 2 && n <= 4) return `${n} tury`;
+  return `${n} tur`;
+}
+
+/**
+ * Podgląd kar za dobrowolne zerwanie traktatu (przycisk „Zerwij”).
+ * `turn` (opcjonalnie) — bieżąca tura; bez niej wiek traktatu nieznany → kary jak dotąd.
+ */
 export function previewVoluntaryTreatyBreakPenalties(
-  deal: Pick<ActiveDeal, 'rodzaj' | 'wygasaTura'>,
+  deal: Pick<ActiveDeal, 'rodzaj' | 'wygasaTura' | 'zawartaTura'>,
   params: DiplomacyPenaltyParams,
+  turn?: number,
 ): DiploPenaltyPreview {
   const lines: DiploPenaltyLine[] = [];
   const isTrade = isHandelTreatyKind(deal.rodzaj);
+
+  if (tradeTreatyBreakPenaltyFree(deal, turn)) {
+    pushLine(lines, 'info', 0,
+      `brak kary — umowa handlowa zawarta ${TRADE_TREATY_BREAK_PENALTY_FREE_AGE_TURNS} tur temu lub wcześniej`);
+    return { lines, ...totals(lines) };
+  }
 
   if (deal.wygasaTura === null) {
     pushLine(lines, 'info', 0,
@@ -167,6 +223,11 @@ export function previewVoluntaryTreatyBreakPenalties(
 
   pushLine(lines, 'zaufanie', isTrade ? -10 : -15,
     isTrade ? 'zerwanie umowy handlowej' : 'zerwanie traktatu');
+
+  const left = tradeTreatyBreakPenaltyTurnsLeft(deal, turn);
+  if (left !== undefined) {
+    pushLine(lines, 'info', 0, `kara jeszcze ${turnsPl(left)}`);
+  }
 
   return { lines, ...totals(lines) };
 }
