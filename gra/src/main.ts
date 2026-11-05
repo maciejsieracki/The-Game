@@ -10806,6 +10806,31 @@ async function boot(): Promise<void> {
       );
     }
 
+    /**
+     * R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1 (R2): wpis rejestru wojny wymuszonej (Brąz/Kamień/Żelazo) bez FAKTYCZNEJ
+     * wojny pary (relacja != 'wojna' -- pokój/rozejm/sojusz/NAP zawarty ścieżką bez cleanupu, stary zapis)
+     * dawał napastnikowi marsz na miasta celu bez wypowiedzenia. Sprzątamy go TAK SAMO jak pokój
+     * (wspólne helpery: rejestr + fale + uzbrojenie odpoczynku napastnika), raz na turę, PRZED wyszukiwaniem
+     * celu wojny wymuszonej -- więc napastnik nie szuka nowej wojny bez odpoczynku i nie czeka na własną turę AI.
+     * Pary w stanie 'wojna': no-op.
+     */
+    function sweepStaleForcedWarEntries(): void {
+      const staleStatus = (st: { attackerId: number; targetId: number }): boolean =>
+        getDiploRelation(st.attackerId, st.targetId).status !== 'wojna';
+      for (const st of Array.from(stoneForceWarActiveByPairKey.values())) {
+        if (staleStatus(st)) cleanupStoneForcedWarOnPeace(st.attackerId, st.targetId);
+      }
+      for (const st of Array.from(ironForceWarActiveByPairKey.values())) {
+        if (staleStatus(st)) cleanupIronForcedWarOnPeace(st.attackerId, st.targetId);
+      }
+      for (const [key, st] of Array.from(bronzeForceWarActiveByPairKey.entries())) {
+        if (!staleStatus(st)) continue;
+        bronzeForceWarActiveByPairKey.delete(key);
+        forcedWarWavesByPairKey.delete(key);
+        bronzeForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_WYMUSZONA_ODPOCZYNEK_TUR);
+      }
+    }
+
     /** R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: sprząta licznik zwykłej wojny AI↔AI co pokój tej
      * pary (auto-pokój po progu miast LUB zwykła negocjacja) — bez tego przeciekałby do
      * następnej wojny tej samej pary po cooldownie. */
@@ -37761,6 +37786,7 @@ async function boot(): Promise<void> {
             const ironTriggeredSubjects: ForcedWarPairingSubject[] = [];
             // R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1: liczone RAZ na ture (funkcja jest niezalezna od wlasciciela),
             // nie per fotel AI w `opts` ponizej (~5 ms/wywolanie przy 12-24 miastach).
+            sweepStaleForcedWarEntries();
             const aiSiblingExclusionByCity = computeLostToNearerSiblingByCity(cities, map);
             for (const ownerId of aiOwnerList) {
               if (
