@@ -51,8 +51,15 @@ async function main() {
     'aggregate defeat sends a surviving attacker commander into normal rout');
   assert.match(scene, /commandersToWithdrawAfterArmyBreak\(this\.def/,
     'aggregate defeat sends a surviving defender commander into normal rout');
-  assert.match(scene, /initialBattleLineOrder\(units,[\s\S]*?isArmyCommander/,
-    'commander enters the regular deployment line order');
+  // Stara asercja szukała nieistniejącej już funkcji initialBattleLineOrder. Aktualny kontrakt:
+  // dowódca trafia do TEJ SAMEJ, zwykłej formacji startowej (initialBattleFormation) jako rola 'commander'.
+  assert.match(scene, /commander: bu\.isArmyCommander/,
+    'initial battle role classifier receives the commander flag');
+  assert.match(scene, /initialBattleFormation\(units, initialBattleRoleOf\)/,
+    'commander enters the regular deployment formation (not a separate placement path)');
+  const formationRules = fs.readFileSync(path.join(__dirname, '..', 'src', 'battle', 'formationRules.ts'), 'utf8');
+  assert.match(formationRules, /if \(input\.commander\) return 'commander';/);
+  assert.match(formationRules, /case 'commander': groups\.commanders\.push\(unit\); break;/);
   assert.match(scene, /manualControlAllowed\?: boolean/);
   assert.match(scene, /_toggleManualMode\(\): void \{[\s\S]*?_manualCommanderGate/,
     'manual mode is guarded by participating player commander availability');

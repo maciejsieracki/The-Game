@@ -436,7 +436,8 @@ const inject: Plugin = {
       return code.replace(anchor, '(globalThis as any).__generalBuildParams = () => buildParams();\n' + anchor);
     }
     if (id.endsWith('/src/game/ai.ts')) {
-      const anchor = '    : [planWarAllInCapital(planned, ctx.targets, nav, warOpts)];';
+      // Kotwica po refaktorze planWith(nav) (R-WEB-ARMY-CONSOLIDATION-Q1): diagnostyka po pierwszym planie.
+      const anchor = '  let plans = planWith(nav);';
       if (!code.includes(anchor)) throw new Error('General probe: war planner branch anchor missing');
       return code.replace(anchor, anchor + `\n  (globalThis as any).__lastWarCampaignPlanDiagnostic = {
     playerId, targets: ctx.targets, eligible: eligible.map(unit => ({ id: unit.id, q: unit.q, r: unit.r, ruchLeft: unit.ruchLeft })),

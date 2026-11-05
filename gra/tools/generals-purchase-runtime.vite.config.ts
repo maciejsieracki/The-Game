@@ -157,11 +157,19 @@ const probe = `
           isGeneral: false, category: categoryOf(def.Jednostka, String(def['Rola'] ?? def['Rola (linia)'] ?? ''), def['Super-jednostka'] === 'TAK', def['Typ']),
           q: city.q, r: city.r, ruch: applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki'),
           ruchLeft: 0,
+          // Jak przy prawdziwym narodzinach gracza (main.ts: followGeneral = recruitFollowGeneralDefault, domyslnie true).
+          followGeneral: true,
         } as RuntimeUnit;
         units.push(recruited);
         afterPlayerUnitSpawned(recruited.id);
         const dest = plannedMarches.get(recruited.id);
         return { recruited, general: { id: general.id, q: general.q, r: general.r }, dest: dest ?? null };
+      },
+      dropRecruitThroughRuntime: (unitId: string) => {
+        const index = units.findIndex(u => u.id === unitId);
+        if (index >= 0) units.splice(index, 1);
+        plannedMarches.delete(unitId);
+        return index >= 0;
       },
     };
 `;

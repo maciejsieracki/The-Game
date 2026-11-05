@@ -72,6 +72,14 @@ function sourceChecks() {
       && /return attemptGeneralPurchase\(/.test(mainSource));
 }
 
+// R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: purchaseRecruitmentUnit wola produkcyjny predykat
+// oblężenia. Ładujemy PRAWDZIWĄ funkcję z game/city-siege-state.ts (czysty moduł), nie kopię.
+function loadCitySiegeModule() {
+  const siegeSource = fs.readFileSync(path.resolve(GRA, 'src/game/city-siege-state.ts'), 'utf8');
+  const code = esbuild.transformSync(siegeSource.replace(/^export\s+/gm, ''), { loader: 'ts', target: 'es2020' }).code;
+  return new Function(`${code}\nreturn { isCityUnderSiege, CITY_SIEGE_RECRUIT_BLOCK_PL };`)();
+}
+
 function extractBackend() {
   const purchaseStart = mainSource.indexOf('function purchaseRecruitmentUnit(');
   const purchaseEnd = mainSource.indexOf('\n    /** Anulowanie opłaconej rekrutacji', purchaseStart);
@@ -99,7 +107,7 @@ function extractBackend() {
     'markCityStateDirty', 'cityProd', 'enqueueRecruitment', 'updateHud',
     'refreshCityPanelIfOpen', 'refundManpowerToEmpire', 'creditOwnerResourceStock',
     'bestGeneralUnitForOwner', 'units', 'capitalCityIdForOwner', 'armyLeaderTitle',
-    'empireBuiltIdsForOwner',
+    'empireBuiltIdsForOwner', 'isCityUnderSiege', 'CITY_SIEGE_RECRUIT_BLOCK_PL',
   ];
   // eslint-disable-next-line no-new-func
   return new Function(...names, `${transformed}\nreturn purchaseRecruitmentUnit;`);
@@ -176,6 +184,8 @@ function makeHarness() {
     ownerId => ownerId === 0 ? 'capital' : undefined,
     () => 'Wódz',
     () => [],
+    loadCitySiegeModule().isCityUnderSiege,
+    loadCitySiegeModule().CITY_SIEGE_RECRUIT_BLOCK_PL,
   );
   return {
     city, cities, data, offer, cityProd,
@@ -292,6 +302,13 @@ async function browserCardTransaction(harness) {
     check('actual preflight expands the commander limit by one in the next era',
       secondEraPurchase === true && afterNextEra.queue.length === 1
         && afterNextEra.transactions === 1 && afterNextEra.treasury === 95, afterNextEra);
+    const besieged = makeHarness();
+    besieged.city.oblegane = true;
+    const siegeRejected = besieged.purchase('capital', 'Wojownik', 5, 0, 1, { isGeneral: true });
+    const afterSiege = besieged.snapshot();
+    check('besieged capital rejects a General purchase without any resource or queue change',
+      siegeRejected === false && afterSiege.queue.length === 0 && afterSiege.transactions === 0
+        && afterSiege.treasury === 100, afterSiege);
     console.log(`\ngeneral-capital-recruitment-order-test: ${failures === 0 ? 'PASS' : 'FAIL'} (${failures} failures)`);
     process.exitCode = failures ? 1 : 0;
   } catch (error) {

@@ -200,7 +200,7 @@ async function main() {
     },
   );
 
-  const browser = await chromium.launch({ headless: true, executablePath: '/usr/bin/chromium' });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium' });
   try {
     const page = await browser.newPage();
     await page.exposeFunction('runProductionQuickFollow', runProductionAction);
@@ -232,7 +232,7 @@ async function main() {
   const instantApplySource = mainSource.slice(instantApplyStart, instantApplyEnd);
   check(mainSource.includes("id: 'general-follow'")
     && mainSource.includes("actionId === 'general-follow'")
-    && mainSource.includes('issueGeneralQuickFollow(u, units, leaderTitle')
+    && mainSource.includes('issueGeneralQuickFollow(u, commander ? [u, commander] : units, leaderTitle')
     && mainSource.includes("alreadyFollowing ? 'Idź do wodza: włączone' : 'Idź do wodza'")
     && mainSource.includes('u.followGeneral = true')
     && mainSource.includes('planEnabledGeneralFollowMarches')
