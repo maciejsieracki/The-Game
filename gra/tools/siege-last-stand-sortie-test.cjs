@@ -230,6 +230,11 @@ ok(!/siege-last-stand/.test(fs.readFileSync(path.join(GRA, 'src', 'game', 'ai.ts
   ok(/if \(plan\.sortie\) \{[\s\S]*exitGarnizon\(u\)[\s\S]*exitFieldFortify\(u\)[\s\S]*u\.sentry = false[\s\S]*\}\s*out\.push/.test(blk),
     'D10 lastStandSortieCmdsForOwner: przy plan.sortie exitGarnizon + exitFieldFortify + sentry=false');
   ok(!/if \(plan\.isLastTurn\) \{\s*console/.test(blk) && /Wypad obleganej armii/.test(blk), 'D11 log wypadu także poza ostatnią turą');
+  // D12: pobudka garnizonu poprzedzona bramką widoczności celu (ta sama co egzekucja ataku AI).
+  const iVis = blk.indexOf('aiTargetVisibleForAction');
+  const iWake = blk.indexOf('exitGarnizon(u)');
+  ok(iVis > 0 && iWake > iVis && /continue;/.test(blk.slice(iVis, iWake)),
+    'D12 niewidoczny cel -> brak komendy i brak pobudki garnizonu (bramka przed exitGarnizon)');
 }
 
 // D7-D9 (R1 zarzut 1): kolejność faz i warunki egzekucji komendy attack -- test strukturalny kolejności,

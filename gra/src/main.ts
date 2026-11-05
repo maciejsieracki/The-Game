@@ -16727,6 +16727,16 @@ async function boot(): Promise<void> {
             city.name, plan.sortie ? 'TAK' : 'NIE', plan.reason,
             'obleganych=' + plan.besiegedStrength.toFixed(1), 'oblegajacych=' + plan.besiegerStrength.toFixed(1));
         }
+        // Zarzut FC: wypad budzi cały garnizon, więc najpierw te same bramki, które egzekucja ataku AI
+        // stosuje (widoczność celu; wojna jest już w planie). Cel niewidoczny -> ani komenda, ani pobudka.
+        if (plan.sortie && ownerId !== BARBARIAN_OWNER_ID) {
+          const tgtId = plan.commands[0]?.targetUnitId;
+          const tgt = tgtId === undefined ? undefined : units.find(x => x.id === tgtId);
+          if (!tgt || !aiTargetVisibleForAction(currentVisibleForOwner(ownerId), fogOn, tgt.q, tgt.r, keyOf)) {
+            console.log('[Oblezenie] Wypad pominiety: cel niewidoczny', city.name);
+            continue;
+          }
+        }
         if (plan.sortie) {
           // Śpiący / ufortyfikowani / garnizonowi obrońcy nie blokują wypadu: budzimy ich i zdejmujemy
           // fortyfikację/garnizon na czas wypadu (ruch zachowany: max(przed, po snapshocie)).
