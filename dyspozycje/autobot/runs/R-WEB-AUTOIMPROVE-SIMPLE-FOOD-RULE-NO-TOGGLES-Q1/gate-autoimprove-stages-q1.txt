@@ -155,17 +155,17 @@
   [OK] [K3] R5 ... a wyrab (3) i farmy (10) ida normalnie
 (r5-wyrab) [K1/K2/K3] R5: wycinka TYLKO pod farmy (Laka/Rownina), nigdy las na Wzgorzach; heks z tartakiem nie jest wycinany
   [OK] [K1] R5 las na rowninie pod farme: wyrab -> farma
-  [OK] [K1] R5 las na Wzgorzach NIE jest wycinany (farma tam niemozliwa — wyrab nie na zapas)
-  [OK] [K1] R5 las na Wzgorzach nietkniety
+  [OK] [K1] R5/r2 las na Wzgorzach pod obywatelem JEST wycinany (tarasy/owce)
+  [OK] [K1] R5/r2 wycinka na Wzgorzach tylko na polach obywateli
   [OK] [K2] R5 las na rowninie pod farme: wyrab -> farma
-  [OK] [K2] R5 las na Wzgorzach NIE jest wycinany (farma tam niemozliwa — wyrab nie na zapas)
-  [OK] [K2] R5 las na Wzgorzach nietkniety
+  [OK] [K2] R5/r2 las na Wzgorzach pod obywatelem JEST wycinany (tarasy/owce)
+  [OK] [K2] R5/r2 wycinka na Wzgorzach tylko na polach obywateli
   [OK] [K3] R5 las na rowninie pod farme: wyrab -> farma
-  [OK] [K3] R5 las na Wzgorzach NIE jest wycinany (farma tam niemozliwa — wyrab nie na zapas)
-  [OK] [K3] R5 las na Wzgorzach nietkniety
-  [OK] [K2] R5 rzeka+las na Wzgorzach: zero wyrebu i zero tartaku
+  [OK] [K3] R5/r2 las na Wzgorzach pod obywatelem JEST wycinany (tarasy/owce)
+  [OK] [K3] R5/r2 wycinka na Wzgorzach tylko na polach obywateli
+  [OK] [K2] R5/r2 rzeka+las na Wzgorzach pod obywatelem: wyrab TAK, tartak NIE
   [OK] [K2] R5 niedobor drewna: tartak na lesie bez rzeki 14,12 (Wzgorza — farma niemozliwa)
-  [OK] [K3] R5 rzeka+las na Wzgorzach: zero wyrebu i zero tartaku
+  [OK] [K3] R5/r2 rzeka+las na Wzgorzach pod obywatelem: wyrab TAK, tartak NIE
   [OK] [K3] R5 niedobor drewna: tartak na lesie bez rzeki 14,12 (Wzgorza — farma niemozliwa)
 (r5-drogi) [K2/K3] R5: drogi dopiero gdy NIE MA kandydata dla zywnosci ani dla brakujacego surowca (bez limitu)
   [OK] [K2] R5 po zbudowaniu tartakow na wszystkich lasach drogi startuja (12)
@@ -267,8 +267,8 @@
   [OK] [K2=K3] niedobor drewna, brak zywnosci (tartak -> drogi): identyczna sekwencja (14 rozkazow)
   [OK] [K2=K3] niedobor {zloto,kamien} bez ulepszenia/miejsca: identyczna sekwencja (35 rozkazow)
 (s1) BUDZET SZTYWNO — test globalny: procent 10/33/50/100 x pule x niedobor x K1/K2; suma kosztow WSZYSTKICH pickow w turze <= procent x pula (tolerancja 0)
-  [OK] [K1/K2] 48 scenariuszy x 15 tur: 0 naruszen sufitu procentowego (wydano lacznie 30441)
-  [OK] [K1/K2] test nie jest prozny: wydatek > 0 i powstaly farma/wyrab/bydlo(E3)/irygacja(E4) (bydlo,droga,droga_brukowana,farma,irygacja,oboz_lowiecki,tarasy,tartak,wyrab)
+  [OK] [K1/K2] 48 scenariuszy x 15 tur: 0 naruszen sufitu procentowego (wydano lacznie 34857)
+  [OK] [K1/K2] test nie jest prozny: wydatek > 0 i powstaly farma/wyrab/bydlo(E3)/irygacja(E4) (bydlo,droga,droga_brukowana,farma,irygacja,oboz_lowiecki,owce,tarasy,tartak,wyrab)
   [OK] [K1] 10% x 400 = 40 < irygacja 60: 0 budow w turze (dawny wyjatek E4 usuniety), jest 0
   [OK] [K1] 5% x 400 = 20: wydatek 20 <= 20 (trzoda E3 w limicie %)
   [OK] [K2] 10% x 400 = 40 < irygacja 60: 0 budow w turze (dawny wyjatek E4 usuniety), jest 0
@@ -340,7 +340,7 @@
   [OK] [K1] bez tartaku i obozu (bez zmian)
   [OK] [K2] S3-1(d): bez niedoboru tartak NIE powstaje (0)
   [OK] [K3] S3-1(d): bez niedoboru tartak NIE powstaje (0)
-  [FAIL] definicja dostepu do rzeki = improvement-build.ts isRiverAdjacent (heks na rzece LUB sasiad rzeki)
+  [OK] definicja dostepu do rzeki = improvement-build.ts isHexNearRiver (heks na rzece LUB sasiad rzeki), isRiverAdjacent deleguje
 (s7) S3-2: LIMIT „3 budowle na etap na miasto na ture” ZDJETY (gracz K1/K2, AI K3); ogranicza tylko budzet; parytet K2<->K3; budzet gracza sztywny
   [OK] [K1] S3-2: wiecej niz 3 rozkazy/miasto/ture przy duzej puli (81) — limit etapu zdjety
   [OK] [K2] S3-2: wiecej niz 3 rozkazy/miasto/ture przy duzej puli (81) — limit etapu zdjety
@@ -351,5 +351,5 @@
   [OK] [K3] S3-2: AI nie wydaje wiecej niz 100% puli (260 <= 300)
   [OK] auto-improvements.ts: limit liczby sztuk USUNIETY calkowicie (brak stalej i parametru; R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1)
 
-autoimprove-stages-q1-test: 301 passed, 1 failed
-EXIT=1
+autoimprove-stages-q1-test: 302 passed, 0 failed
+EXIT=0

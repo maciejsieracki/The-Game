@@ -122,8 +122,12 @@ const WORKERS = process.env.WORKERS || 'forest';
         reasons[k] = (reasons[k] || 0) + 1;
       }
       const picked = snap.decisions.filter((d) => d.scope === 'las' && d.verdict === 'wybrany').map((d) => d.hex);
+      // Ostatni powod per heks z obywatelem (diagnostyka: dlaczego las pod obywatelem NIE zostal wyciety) — r2.
+      const wkSet = new Set(snap.workedHexes.map((w) => w[0] + ',' + w[1]));
+      const hexReasons = {};
+      for (const d of snap.decisions) if (d.scope === 'las' && wkSet.has(d.hex)) hexReasons[d.hex] = d.reason + (d.verdict ? '|' + d.verdict : '');
       delete snap.decisions;
-      out.turns.push({ ok: r.ok, end: r.ok ? undefined : r, ms: r.ms, ...snap, reasons, picked });
+      out.turns.push({ ok: r.ok, end: r.ok ? undefined : r, ms: r.ms, ...snap, reasons, picked, hexReasons });
       C.save(fname, out);
       if (!r.ok) break;
     }

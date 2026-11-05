@@ -19,23 +19,23 @@
   [OK] tooltip (hexHasRiverAccess): morze sasiad — NIE (D1=A) -> false
 (B) mapy generowane: reczna budowa == tooltip == definicja na KAZDYM plaskim heksie
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=1 terrain=16 landSea=114 relief=113 coast=42 riversMain=677 riversFill=211 forest=5 deposits=12 starts=70 total=1261
+[civ] mapGen ms | prep=1 terrain=22 landSea=135 relief=105 coast=46 riversMain=751 riversFill=238 forest=5 deposits=15 starts=112 total=1430
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=6 landSea=70 relief=76 coast=31 riversMain=53 riversFill=55 forest=3 deposits=8 starts=37 total=340
+[civ] mapGen ms | prep=0 terrain=15 landSea=121 relief=106 coast=41 riversMain=72 riversFill=78 forest=3 deposits=14 starts=44 total=493
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=6 landSea=52 relief=69 coast=30 riversMain=94 riversFill=103 forest=3 deposits=8 starts=37 total=402
+[civ] mapGen ms | prep=0 terrain=11 landSea=55 relief=79 coast=37 riversMain=122 riversFill=79 forest=3 deposits=8 starts=40 total=435
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=4 landSea=61 relief=62 coast=14 riversMain=100 riversFill=526 forest=7 deposits=7 starts=42 total=824
+[civ] mapGen ms | prep=0 terrain=4 landSea=67 relief=69 coast=14 riversMain=110 riversFill=502 forest=3 deposits=9 starts=43 total=822
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=58 relief=68 coast=18 riversMain=92 riversFill=582 forest=3 deposits=7 starts=41 total=873
+[civ] mapGen ms | prep=0 terrain=3 landSea=56 relief=68 coast=15 riversMain=106 riversFill=598 forest=3 deposits=7 starts=51 total=908
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=4 landSea=57 relief=58 coast=14 riversMain=155 riversFill=243 forest=2 deposits=5 starts=30 total=569
+[civ] mapGen ms | prep=0 terrain=4 landSea=80 relief=80 coast=20 riversMain=163 riversFill=236 forest=3 deposits=4 starts=30 total=622
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=2 landSea=57 relief=59 coast=11 riversMain=66 riversFill=354 forest=2 deposits=5 starts=27 total=583
+[civ] mapGen ms | prep=0 terrain=2 landSea=47 relief=44 coast=10 riversMain=68 riversFill=421 forest=4 deposits=8 starts=44 total=647
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=2 landSea=45 relief=53 coast=15 riversMain=95 riversFill=606 forest=3 deposits=5 starts=35 total=859
+[civ] mapGen ms | prep=0 terrain=3 landSea=70 relief=57 coast=18 riversMain=113 riversFill=691 forest=3 deposits=5 starts=31 total=992
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=56 relief=55 coast=13 riversMain=149 riversFill=284 forest=3 deposits=5 starts=34 total=601
+[civ] mapGen ms | prep=1 terrain=2 landSea=52 relief=51 coast=11 riversMain=125 riversFill=306 forest=3 deposits=6 starts=37 total=593
   pomiar: plaskich heksow=2445, heksow gdzie STARA reczna definicja odmawia a automat/definicja mowi TAK=179
   [OK] przebadano wystarczajaco duzo plaskich heksow (2445)
   [OK] na mapach generowanych STARA regula odmawiala na 179 heksach, gdzie definicja automatu mowi TAK (dowod, ze zmiana ma znaczenie)

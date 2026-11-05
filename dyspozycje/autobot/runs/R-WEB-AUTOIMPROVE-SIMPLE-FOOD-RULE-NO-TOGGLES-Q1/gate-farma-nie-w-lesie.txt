@@ -1,15 +1,15 @@
 
 === POMIAR — kwalifikacja farmy (mapa 36x28 „kontynenty", 5 ziaren) ===
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=3 terrain=11 landSea=93 relief=76 coast=13 riversMain=523 riversFill=789 forest=6 deposits=11 starts=68 total=1592
+[civ] mapGen ms | prep=3 terrain=13 landSea=117 relief=95 coast=14 riversMain=666 riversFill=874 forest=5 deposits=18 starts=126 total=1932
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=7 landSea=80 relief=79 coast=14 riversMain=159 riversFill=652 forest=4 deposits=8 starts=40 total=1043
+[civ] mapGen ms | prep=0 terrain=4 landSea=92 relief=82 coast=13 riversMain=136 riversFill=628 forest=3 deposits=7 starts=31 total=996
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=5 landSea=60 relief=69 coast=13 riversMain=164 riversFill=611 forest=3 deposits=7 starts=36 total=967
+[civ] mapGen ms | prep=0 terrain=4 landSea=59 relief=76 coast=11 riversMain=148 riversFill=583 forest=3 deposits=10 starts=51 total=946
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=61 relief=57 coast=12 riversMain=119 riversFill=583 forest=3 deposits=8 starts=40 total=887
+[civ] mapGen ms | prep=0 terrain=4 landSea=81 relief=60 coast=12 riversMain=128 riversFill=550 forest=3 deposits=7 starts=38 total=884
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=2 terrain=5 landSea=55 relief=66 coast=12 riversMain=156 riversFill=595 forest=3 deposits=7 starts=39 total=940
+[civ] mapGen ms | prep=1 terrain=8 landSea=47 relief=70 coast=21 riversMain=118 riversFill=614 forest=2 deposits=6 starts=39 total=926
 
 seed  | kategoria          | heksow | GRACZ kwalifikuje | COMMIT przepuszcza
 42    | Laka+Las           |     53 |                 0 |                  0
@@ -47,7 +47,7 @@ SUMA po wszystkich ziarnach:
 
 --- reprezentanci kategorii (mapa 42): AI GRACZA / AI CYWILIZACJI / tooltip / galeria ---
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=1 terrain=3 landSea=56 relief=62 coast=14 riversMain=157 riversFill=593 forest=2 deposits=9 starts=59 total=956
+[civ] mapGen ms | prep=0 terrain=3 landSea=70 relief=58 coast=12 riversMain=133 riversFill=613 forest=3 deposits=7 starts=38 total=938
   Laka+Las           (10,6)  gracz=false  picker=false  tooltip=false  galeria=true
   Rownina+Las        (10,5)  gracz=false  picker=false  tooltip=false  galeria=true
   Wzgorza+Las        (10,9)  gracz=false  picker=false  tooltip=false  galeria=false

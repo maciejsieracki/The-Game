@@ -54,7 +54,7 @@
   [OK] wielokrotny render = dokladnie jeden element wskaznika (1)
   [OK] warunek ustapil (null) -> wskaznik znika
   [OK] 0 bledow strony (0: )
-  [info] zrzuty: /tmp/q3-shot-UxJU4l
+  [info] zrzuty: /tmp/q3-shot-K2Xq6y
 
 41 OK, 0 FAIL
 EXIT=0

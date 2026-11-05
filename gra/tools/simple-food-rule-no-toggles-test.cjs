@@ -45,7 +45,7 @@ const FULL = ['Rolnictwo', 'Oswojenie zwierząt', 'Gospodarka wodna', 'Irygacja'
 const W = 24, H = 24, CQ = 12, CR = 12;
 const K = (q, r) => `${q},${r}`;
 const FOOD = new Set(['farma', 'irygacja', 'tarasy', 'bydlo', 'owce', 'lama', 'lodzie_rybackie', 'warzelnia_soli', 'wyrab']);
-function makeMap({ river = [], forest = [], hills = [] } = {}) {
+function makeMap({ river = [], forest = [], hills = [], mountains = [] } = {}) {
   const hexes = {};
   for (let q = 0; q < W; q++) for (let r = 0; r < H; r++) {
     hexes[K(q, r)] = {
@@ -57,6 +57,7 @@ function makeMap({ river = [], forest = [], hills = [] } = {}) {
   for (const [q, r] of river) hexes[K(q, r)].rzeka = { obecna: true, krawedzie: [] };
   for (const [q, r] of forest) hexes[K(q, r)].nakladka = 'las';
   for (const [q, r] of hills) hexes[K(q, r)].terenBazowy = 'wzgorza';
+  for (const [q, r] of mountains) hexes[K(q, r)].terenBazowy = 'gory';
   return { szerokoscQ: W, wysokoscR: H, hexes, seed: 7, riverPaths: river.length ? [river.map(([q, r]) => ({ q, r }))] : [] };
 }
 const CITY = focus => ({ id: 'c0', ownerId: 0, q: CQ, r: CR, name: 'Larsa', population: 4, ulepszeniaFocus: focus });
@@ -113,18 +114,27 @@ const dl = log => log.slice(0, 10).map(e => `${e.t}:${e.key}@${e.hk}`).join(' ')
       `${focus}: zero ulepszen zywnosciowych poza polami obywateli`);
   }
 
-  console.log('(3) wycinka NIGDY pod inne ulepszenia: profile Surowce i Infrastruktura nie wycinaja; las na wzgorzach nie jest wycinany pod zywnosc');
+  console.log('(3) wycinka NIGDY pod inne ulepszenia: profile Surowce i Infrastruktura nie wycinaja; las na wzgorzach pod obywatelem JEST wycinany (tarasy/owce), na gorach nie');
   for (const focus of ['surowce', 'infrastruktura']) {
     const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
     const { log } = sim({ map, worked: WORKED_FOREST, focus, turns: 10 });
     ok(!log.some(e => e.key === 'wyrab'), `${focus}: zero wycinek (jest ${log.filter(e => e.key === 'wyrab').length})`);
     ok(!log.some(e => e.key === 'farma'), `${focus}: zero farm`);
   }
+  // r2 (zarzut 1 Evaluatora, zmierzona przyczyna w Chromium: obywatele na lesie na Wzgorzach -> 0 wycinek): las na WZGORZACH
+  // pod obywatelem jest pod ulepszenia zywnosciowe wzgorz (tarasy/owce) — wycinany; na GORACH (zadne ulepszenie zywnosciowe) — nie.
   for (const focus of ['zywnosc', 'zrownowazone']) {
     const hillsForest = FOREST_AROUND.filter(([q, r]) => Math.abs(q - CQ) + Math.abs(r - CR) <= 4);
     const map = makeMap({ forest: FOREST_AROUND, hills: hillsForest });
     const { log } = sim({ map, worked: WORKED_FOREST, focus, turns: 10 });
-    ok(!log.some(e => e.key === 'wyrab'), `${focus}: las na wzgorzach (nie pod farme) NIE jest wycinany (jest ${log.filter(e => e.key === 'wyrab').length})`);
+    const cuts = log.filter(e => e.key === 'wyrab');
+    const wsetH = new Set(WORKED_FOREST.map(([q, r]) => K(q, r)));
+    const hillSet = new Set(hillsForest.map(([q, r]) => K(q, r)));
+    ok(cuts.length > 0 && cuts.some(e => hillSet.has(e.hk)), `${focus}: las na wzgorzach pod obywatelem JEST wycinany (jest ${cuts.length})`);
+    ok(cuts.every(e => wsetH.has(e.hk)), `${focus}: wycinka tylko na polach obywateli`);
+    const mapG = makeMap({ forest: FOREST_AROUND, mountains: FOREST_AROUND });
+    const rG = sim({ map: mapG, worked: WORKED_FOREST, focus, turns: 10 });
+    ok(!rG.log.some(e => e.key === 'wyrab'), `${focus}: las na gorach (zadne ulepszenie zywnosciowe) NIE jest wycinany (jest ${rG.log.filter(e => e.key === 'wyrab').length})`);
   }
 
   console.log('(1) zywnosc tylko przy obywatelach we WSZYSTKICH profilach; martwy parametr getOnlyWorked=false nic nie zmienia');

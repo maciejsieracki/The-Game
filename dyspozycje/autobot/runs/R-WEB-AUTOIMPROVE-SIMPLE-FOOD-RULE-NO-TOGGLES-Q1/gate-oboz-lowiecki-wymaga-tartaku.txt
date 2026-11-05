@@ -25,7 +25,7 @@
 
 --- Scenariusz A: mapa BEZ wcześniejszych tartaków (świeże miasta) ---
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=3 terrain=12 landSea=94 relief=81 coast=14 riversMain=695 riversFill=817 forest=4 deposits=10 starts=55 total=1786
+[civ] mapGen ms | prep=6 terrain=14 landSea=124 relief=85 coast=18 riversMain=639 riversFill=723 forest=4 deposits=12 starts=72 total=1698
   seed 42: decyzji łącznie=344 tartak=5 oboz_lowiecki=5
     [decyzja] tura 1 hex (3,4) key=oboz_lowiecki hadTartakBefore=true
     [decyzja] tura 1 hex (3,5) key=oboz_lowiecki hadTartakBefore=true
@@ -33,7 +33,7 @@
     [decyzja] tura 1 hex (3,6) key=oboz_lowiecki hadTartakBefore=true
     [decyzja] tura 1 hex (7,4) key=oboz_lowiecki hadTartakBefore=true
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=1 terrain=5 landSea=71 relief=64 coast=13 riversMain=131 riversFill=613 forest=3 deposits=7 starts=37 total=944
+[civ] mapGen ms | prep=0 terrain=5 landSea=119 relief=75 coast=23 riversMain=128 riversFill=638 forest=4 deposits=11 starts=45 total=1049
   seed 1337: decyzji łącznie=316 tartak=7 oboz_lowiecki=7
     [decyzja] tura 1 hex (5,7) key=oboz_lowiecki hadTartakBefore=true
     [decyzja] tura 1 hex (4,19) key=oboz_lowiecki hadTartakBefore=true
@@ -46,7 +46,7 @@
 
 --- Scenariusz B: mapa Z lasami mającymi już zbudowane tartaki ---
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=5 landSea=49 relief=59 coast=12 riversMain=148 riversFill=664 forest=3 deposits=5 starts=36 total=981
+[civ] mapGen ms | prep=1 terrain=4 landSea=67 relief=64 coast=11 riversMain=210 riversFill=821 forest=4 deposits=10 starts=60 total=1253
   seed 42: decyzji łącznie=340 oboz_lowiecki=5
     [decyzja] tura 1 hex (3,4) key=oboz_lowiecki hadTartakBefore=true
     [decyzja] tura 1 hex (3,5) key=oboz_lowiecki hadTartakBefore=true
@@ -54,7 +54,7 @@
     [decyzja] tura 1 hex (3,6) key=oboz_lowiecki hadTartakBefore=true
     [decyzja] tura 1 hex (7,4) key=oboz_lowiecki hadTartakBefore=true
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=1 terrain=8 landSea=81 relief=60 coast=14 riversMain=120 riversFill=655 forest=3 deposits=7 starts=37 total=986
+[civ] mapGen ms | prep=1 terrain=21 landSea=67 relief=61 coast=16 riversMain=124 riversFill=756 forest=3 deposits=16 starts=51 total=1115
   seed 1337: decyzji łącznie=309 oboz_lowiecki=7
     [decyzja] tura 1 hex (4,4) key=oboz_lowiecki hadTartakBefore=true
     [decyzja] tura 1 hex (4,5) key=oboz_lowiecki hadTartakBefore=true

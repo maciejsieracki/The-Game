@@ -1,7 +1,7 @@
 
 === A. LOGIKA na realnej mapie ===
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=2 terrain=14 landSea=141 relief=121 coast=21 riversMain=881 riversFill=746 forest=5 deposits=15 starts=86 total=2033
+[civ] mapGen ms | prep=4 terrain=15 landSea=92 relief=87 coast=14 riversMain=818 riversFill=743 forest=5 deposits=9 starts=53 total=1841
   [OK] A0 mapa ma lasy do testu (n=100)
   [OK] A1 zalozenie miasta na KAZDYM z 40 heksow lasu usuwa Las (zle=0)
   [OK] A2a heks bez lasu: nakladka bez zmian

@@ -67,6 +67,15 @@
   [OK] player-zywnosc: zero nowych ulepszen na heksach z "osieroconymi" farmami (jest 0); picker nie ma komendy burzenia
   [OK] player-zrownowazone: sa heksy z farma poza polami obywateli (2)
   [OK] player-zrownowazone: zero nowych ulepszen na heksach z "osieroconymi" farmami (jest 0); picker nie ma komendy burzenia
+(H) r2 SIMPLE-FOOD-RULE: las na WZGORZACH pod obywatelem — AI (decideAITurn) i gracz WYCINAJA (tarasy/owce), nigdy poza polami obywateli; Gory nie
+  [OK] ai: las na Wzgorzach pod obywatelem JEST wycinany (6 wycinek)
+  [OK] ai: wycinka na Wzgorzach TYLKO na polach obywateli (poza: 0)
+  [OK] ai: na wycietych Wzgorzach powstaja owce/tarasy (5 heksow)
+  [OK] player-zywnosc: las na Wzgorzach pod obywatelem JEST wycinany (6 wycinek)
+  [OK] player-zywnosc: wycinka na Wzgorzach TYLKO na polach obywateli (poza: 0)
+  [OK] player-zywnosc: na wycietych Wzgorzach powstaja owce/tarasy (5 heksow)
+  [OK] ai: las na Gorach NIE jest wycinany (0)
+  [OK] player-zywnosc: las na Gorach NIE jest wycinany (0)
 
-62 OK, 0 FAIL
+70 OK, 0 FAIL
 EXIT=0

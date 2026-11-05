@@ -322,6 +322,54 @@ if (!MEASURE) {
     ok(onStale.length === 0, `${mode}: zero nowych ulepszen na heksach z "osieroconymi" farmami (jest ${onStale.length}); picker nie ma komendy burzenia`);
   }
 
+  console.log('(H) r2 SIMPLE-FOOD-RULE: las na WZGORZACH pod obywatelem — AI (decideAITurn) i gracz WYCINAJA (tarasy/owce), nigdy poza polami obywateli; Gory nie');
+  for (const terr of ['wzgorza', 'gory']) {
+    for (const mode of ['ai', 'player-zywnosc']) {
+      const map = makeScenarioMap();
+      for (let q = 0; q < W; q++) for (let r = 0; r < H; r++) {
+        const hx = map.hexes[K(q, r)];
+        if (!(q === CQ && r === CR)) { hx.terenBazowy = terr; hx.nakladka = 'las'; hx.rzeka = { obecna: false, krawedzie: [] }; } // caly lad = las (obywatele MUSZA stac na lesie)
+      }
+      const placed = new Map();
+      const cuts = [], offW = [];
+      const dbg = {}; if (process.env.DBGH) globalThis.__civAutoImproveDebug = e => { if (e.scope === 'las') dbg[e.reason + '|' + e.verdict] = (dbg[e.reason + '|' + e.verdict] || 0) + 1; };
+      for (let t = 0; t < 12; t++) {
+        const city = { id: 'city0', ownerId: PID, q: CQ, r: CR, name: 'Ateny', population: 6 };
+        const tn = [{ q: CQ, r: CR, ownerId: PID, cityId: 'city0', pop: 6, level: 1 }];
+        const worked = new Set(workedHexCoordsForCity(city, map, tn, undefined, ERA).map(({ q, r }) => K(q, r)));
+        let picks;
+        if (mode === 'ai') {
+          const data = { units: [], buildings: [], terrainYields: { terrain_types: [] }, aiParams: {} };
+          picks = decideAITurn(PID, [], [city], map, data, {
+            civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: tn,
+            placedImprovements: new Map(placed), improvementTechs: TECHS, pracaAvailable: 900, civEra: ERA, resourceDeficitKeys: [],
+          }).filter(c => c.type === 'buildImprovement').map(c => ({ q: c.q, r: c.r, key: c.key }));
+        } else {
+          picks = pickAutoImprovements({
+            cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: 900,
+            unlockedTechs: TECHS, pracaSurplusThreshold: 0, demandDriven: true, resourceDeficitKeys: [], getFocus: () => 'zywnosc',
+            getWorkedHexKeys: () => worked, pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'grecy',
+            playerEra: ERA, foodImprovementStages: () => true, clearingHexKeys: new Set(),
+          });
+        }
+        for (const p of picks) {
+          const hk = K(p.q, p.r);
+          if (p.key === 'wyrab') { cuts.push(hk); if (!worked.has(hk)) offW.push(hk); map.hexes[hk].nakladka = 'brak'; continue; }
+          placed.set(hk, [...(placed.get(hk) ?? []), p.key]);
+        }
+      }
+      if (process.env.DBGH) console.log(mode, terr, JSON.stringify(dbg));
+      if (terr === 'wzgorza') {
+        ok(cuts.length > 0, `${mode}: las na Wzgorzach pod obywatelem JEST wycinany (${cuts.length} wycinek)`);
+        ok(offW.length === 0, `${mode}: wycinka na Wzgorzach TYLKO na polach obywateli (poza: ${offW.length})`);
+        const food = [...placed.entries()].filter(([hk, l]) => l.some(k => k === 'owce' || k === 'tarasy') && cuts.includes(hk)).length;
+        ok(food > 0, `${mode}: na wycietych Wzgorzach powstaja owce/tarasy (${food} heksow)`);
+      } else {
+        ok(cuts.length === 0, `${mode}: las na Gorach NIE jest wycinany (${cuts.length})`);
+      }
+    }
+  }
+
   console.log(`\n${passed} OK, ${failed} FAIL`);
   process.exit(failed ? 1 : 0);
 }

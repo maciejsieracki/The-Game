@@ -48,7 +48,7 @@
 
 --- (4) PRZED/PO na ziarnach: zywy stan gry (trwajaca partia) ---
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=5 terrain=18 landSea=123 relief=118 coast=21 riversMain=1053 riversFill=798 forest=4 deposits=11 starts=54 total=2204
+[civ] mapGen ms | prep=6 terrain=16 landSea=132 relief=83 coast=14 riversMain=729 riversFill=872 forest=8 deposits=10 starts=73 total=1942
   [OK] ziarno 42: PRZED — sa farmy na lesie (warunek istotnosci)
   [OK] ziarno 42: PRZED — sa farmy na otwartym terenie (kontrola)
   [OK] ziarno 42: PO — DOKLADNIE 0 farm na lesie
@@ -58,7 +58,7 @@
   [OK] ziarno 42: rejestr placedImprovements tez czysty
   [OK] ziarno 42: idempotencja na realnej mapie (drugi przebieg = 0)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=5 landSea=73 relief=63 coast=15 riversMain=214 riversFill=510 forest=3 deposits=7 starts=41 total=932
+[civ] mapGen ms | prep=1 terrain=6 landSea=79 relief=93 coast=24 riversMain=234 riversFill=540 forest=3 deposits=6 starts=42 total=1029
   [OK] ziarno 4242: PRZED — sa farmy na lesie (warunek istotnosci)
   [OK] ziarno 4242: PRZED — sa farmy na otwartym terenie (kontrola)
   [OK] ziarno 4242: PO — DOKLADNIE 0 farm na lesie
@@ -68,7 +68,7 @@
   [OK] ziarno 4242: rejestr placedImprovements tez czysty
   [OK] ziarno 4242: idempotencja na realnej mapie (drugi przebieg = 0)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=4 landSea=61 relief=66 coast=11 riversMain=149 riversFill=518 forest=3 deposits=7 starts=52 total=872
+[civ] mapGen ms | prep=0 terrain=11 landSea=75 relief=88 coast=16 riversMain=185 riversFill=551 forest=4 deposits=10 starts=70 total=1011
   [OK] ziarno 777: PRZED — sa farmy na lesie (warunek istotnosci)
   [OK] ziarno 777: PRZED — sa farmy na otwartym terenie (kontrola)
   [OK] ziarno 777: PO — DOKLADNIE 0 farm na lesie
@@ -78,7 +78,7 @@
   [OK] ziarno 777: rejestr placedImprovements tez czysty
   [OK] ziarno 777: idempotencja na realnej mapie (drugi przebieg = 0)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=1 terrain=10 landSea=68 relief=66 coast=16 riversMain=118 riversFill=225 forest=3 deposits=6 starts=33 total=545
+[civ] mapGen ms | prep=1 terrain=10 landSea=85 relief=62 coast=12 riversMain=132 riversFill=297 forest=2 deposits=9 starts=53 total=663
   [OK] ziarno 90210: PRZED — sa farmy na lesie (warunek istotnosci)
   [OK] ziarno 90210: PRZED — sa farmy na otwartym terenie (kontrola)
   [OK] ziarno 90210: PO — DOKLADNIE 0 farm na lesie
@@ -90,7 +90,7 @@
 
 --- (5) PRZED/PO na ziarnach: pelny round-trip zapis -> wczytanie ---
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=1 terrain=3 landSea=55 relief=68 coast=12 riversMain=141 riversFill=542 forest=3 deposits=8 starts=48 total=880
+[civ] mapGen ms | prep=1 terrain=4 landSea=56 relief=58 coast=14 riversMain=131 riversFill=656 forest=2 deposits=7 starts=47 total=976
   [OK] zapis 42: PRZED — stary zapis niesie farmy na lesie
   [OK] zapis 42: mapSnapshot po migracji nadal POPRAWNY KSZTALTOWO (migracja nie psuje zapisu)
   [OK] zapis 42: PO wczytaniu — 0 farm na lesie w odtworzonej mapie
@@ -101,7 +101,7 @@
   [OK] zapis 42: idempotencja migracji ladunku (drugie wywolanie = 0 zmian)
   [OK] zapis 42: reszta zapisu nietknieta (tura/seed)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=65 relief=60 coast=12 riversMain=186 riversFill=571 forest=3 deposits=7 starts=39 total=946
+[civ] mapGen ms | prep=0 terrain=3 landSea=76 relief=60 coast=9 riversMain=160 riversFill=560 forest=4 deposits=6 starts=43 total=922
   [OK] zapis 4242: PRZED — stary zapis niesie farmy na lesie
   [OK] zapis 4242: mapSnapshot po migracji nadal POPRAWNY KSZTALTOWO (migracja nie psuje zapisu)
   [OK] zapis 4242: PO wczytaniu — 0 farm na lesie w odtworzonej mapie
@@ -112,7 +112,7 @@
   [OK] zapis 4242: idempotencja migracji ladunku (drugie wywolanie = 0 zmian)
   [OK] zapis 4242: reszta zapisu nietknieta (tura/seed)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=59 relief=60 coast=12 riversMain=146 riversFill=507 forest=2 deposits=6 starts=35 total=830
+[civ] mapGen ms | prep=0 terrain=3 landSea=64 relief=62 coast=14 riversMain=133 riversFill=507 forest=2 deposits=6 starts=36 total=829
   [OK] zapis 777: PRZED — stary zapis niesie farmy na lesie
   [OK] zapis 777: mapSnapshot po migracji nadal POPRAWNY KSZTALTOWO (migracja nie psuje zapisu)
   [OK] zapis 777: PO wczytaniu — 0 farm na lesie w odtworzonej mapie
@@ -123,7 +123,7 @@
   [OK] zapis 777: idempotencja migracji ladunku (drugie wywolanie = 0 zmian)
   [OK] zapis 777: reszta zapisu nietknieta (tura/seed)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=4 landSea=49 relief=45 coast=10 riversMain=97 riversFill=249 forest=3 deposits=7 starts=35 total=499
+[civ] mapGen ms | prep=0 terrain=3 landSea=59 relief=56 coast=12 riversMain=125 riversFill=257 forest=3 deposits=7 starts=34 total=557
   [OK] zapis 90210: PRZED — stary zapis niesie farmy na lesie
   [OK] zapis 90210: mapSnapshot po migracji nadal POPRAWNY KSZTALTOWO (migracja nie psuje zapisu)
   [OK] zapis 90210: PO wczytaniu — 0 farm na lesie w odtworzonej mapie
@@ -141,25 +141,25 @@
 
 --- (6) NOWA PARTIA: generator nie stawia farm w lesie ---
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=1 terrain=5 landSea=53 relief=60 coast=11 riversMain=128 riversFill=672 forest=3 deposits=5 starts=40 total=977
+[civ] mapGen ms | prep=2 terrain=3 landSea=61 relief=60 coast=12 riversMain=133 riversFill=591 forest=3 deposits=5 starts=50 total=920
   [OK] nowa partia 42: mapa MA lasy (warunek istotnosci pomiaru)
   [OK] nowa partia 42: 0 farm na lesie od razu po generacji (pomiar)
   [OK] nowa partia 42: sprzatanie nie ma czego usuwac (removed=0)
   [OK] nowa partia 42: przejrzano CALA mape (1008 heksow)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=4 landSea=61 relief=58 coast=11 riversMain=155 riversFill=418 forest=2 deposits=5 starts=32 total=747
+[civ] mapGen ms | prep=1 terrain=3 landSea=54 relief=65 coast=10 riversMain=199 riversFill=639 forest=3 deposits=6 starts=39 total=1019
   [OK] nowa partia 4242: mapa MA lasy (warunek istotnosci pomiaru)
   [OK] nowa partia 4242: 0 farm na lesie od razu po generacji (pomiar)
   [OK] nowa partia 4242: sprzatanie nie ma czego usuwac (removed=0)
   [OK] nowa partia 4242: przejrzano CALA mape (1008 heksow)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=4 landSea=55 relief=55 coast=11 riversMain=136 riversFill=488 forest=2 deposits=5 starts=27 total=784
+[civ] mapGen ms | prep=0 terrain=4 landSea=57 relief=59 coast=12 riversMain=131 riversFill=485 forest=3 deposits=6 starts=36 total=792
   [OK] nowa partia 777: mapa MA lasy (warunek istotnosci pomiaru)
   [OK] nowa partia 777: 0 farm na lesie od razu po generacji (pomiar)
   [OK] nowa partia 777: sprzatanie nie ma czego usuwac (removed=0)
   [OK] nowa partia 777: przejrzano CALA mape (1008 heksow)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=2 landSea=47 relief=44 coast=8 riversMain=96 riversFill=202 forest=2 deposits=5 starts=28 total=435
+[civ] mapGen ms | prep=0 terrain=6 landSea=54 relief=57 coast=11 riversMain=126 riversFill=258 forest=3 deposits=6 starts=37 total=557
   [OK] nowa partia 90210: mapa MA lasy (warunek istotnosci pomiaru)
   [OK] nowa partia 90210: 0 farm na lesie od razu po generacji (pomiar)
   [OK] nowa partia 90210: sprzatanie nie ma czego usuwac (removed=0)

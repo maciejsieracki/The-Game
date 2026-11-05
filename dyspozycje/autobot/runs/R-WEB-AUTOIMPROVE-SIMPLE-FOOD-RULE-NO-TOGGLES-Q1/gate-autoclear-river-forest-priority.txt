@@ -7,7 +7,7 @@
 (d2) farma na rzece BEZ lasu przed wycinka (E1 < E2)
   [OK] pierwsza budowa to farma (jest: farma@12,11 farma@12,12)
 (d3) las NIE-farmowy (wzgorza) przy rzece nie jest wycinany pod farme (wyrabMaSens zachowane)
-  [OK] brak wycinki wzgorz przy rzece (log: 0:farma@12,12 1:bydlo@12,12 2:irygacja@12,12)
+  [OK] brak wycinki wzgorz przy rzece (log: 0:farma@12,12 1:wyrab@11,12 2:bydlo@12,12 2:owce@11,12 3:irygacja@12,12 4:wyrab@12,13)
 (d4) zakres: profil „Zrownowazone” (K2) — ZAKTUALIZOWANE w R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1 (decyzja wlasciciela 2026-11-03)
   [OK] K2 + onlyWorked ON: wycinka na heksie rzeki bez obywatela NIE wystepuje (Q1 AI-FOOD; jest: undefined)
   [OK] K2: las bez rzeki poza polami obywateli nadal NIE jest wycinany (filtr zachowany)

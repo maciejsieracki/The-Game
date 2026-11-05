@@ -118,7 +118,9 @@ const REQUIRED_LINES = [
   "if (key === 'tartak' && nakladka !== Nakladka.Las) continue;",
   "if (key === 'wyrab' && nakladka !== Nakladka.Las) continue;",
   "if (key === 'glinianka' && !hexHasClayDeposit(hex)) continue;",
-  "if (key === 'oboz_lowiecki' && nakladka !== Nakladka.Las && !hasAnimalDeposit(nakladka)) continue;",
+  // r2 (R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1): R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1 zawezil oboz do samej nakladki Las
+  // (kod hexContextTooltip.ts:452); asercja zrodlowa byla nieaktualna (czerwona PRZED i PO tematem).
+  "if (key === 'oboz_lowiecki' && nakladka !== Nakladka.Las) continue;",
   "if (key === 'warzelnia_soli' && teren !== TerenBazowy.PlytkieMorze && zloze !== 'sol') continue;",
   "if (key === 'kopalnia_zelaza' && zloze !== 'zelazo') continue;",
   "if (key === 'kopalnia_miedzi'\n      && zloze !== 'miedz' && nakladka !== Nakladka.ZlozeRudy && zloze !== 'ruda') continue;",
