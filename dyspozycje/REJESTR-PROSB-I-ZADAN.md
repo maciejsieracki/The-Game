@@ -8784,3 +8784,6 @@ Właściciel: (1) u góry jedno pole rekrutacji wojsk — panel armii dla CAŁEJ
 
 ## 2026-11-05 — DECYZJA WŁAŚCICIELA: Magazyn nie daje pojemności żywności centralnej (tylko Spichlerze)
 „Usuń żywność, dodatkową pojemność wynikającą z magazynu. Zostawmy tylko to w spichlerzu.” → `magazyn_centralny_bonus_zywnosc_na_budynek` (+100 za Magazyn) usunięte/zerowe; cap żywności centralnej = baza 1000 + wkłady Spichlerzy I/II (×2^(epoka−1)). Temat `R-WEB-MAGAZYN-NO-FOOD-CAP-BONUS-Q1`.
+
+## 2026-11-05 — ZGŁOSZENIE (zrzut: Egipt, miasta Bubastis/Teby/Memfis/Heliopolis/Abydos/Nekhen/Sais/Elefantyna): cywilizacja buduje „wielokąty” dróg
+Zrzut: drogi pokrywają całe terytorium wokół miast gęstą siatką trójkątów/wielokątów (kilkadziesiąt heksów dróg per miasto, siatka łączy się między miastami), zamiast jednej drogi łączącej miasta. Właściciel: „Co to znowu za wynalazki tworzy z drogami cywilizacja? Przecież miało być łączenie tylko pomiędzy miastami, a nie robienie jakichś wielokątów.” Zasada: drogi budowane wyłącznie jako połączenia MIĘDZY miastami (najkrótsze ścieżki między parami sąsiednich miast własnych/sieć rozpinająca), bez siatki po całym terytorium. → temat `R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1`.
