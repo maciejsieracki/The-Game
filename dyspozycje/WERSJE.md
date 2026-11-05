@@ -1,3 +1,9 @@
+## ROBOCZA 351808ce -- 2026-11-05 -- FALA 501: zerwanie traktatu handlowego bez kary po 10 turach (testowa)
+
+- md5 pełne: `351808cecd98d318cc36285a8863397a` · 70247670 B · poprzednia `0256ee64`.
+- R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1: traktat handlowy (3 rodzaje, terminowy i bezterminowy) zawarty ≥10 tur temu można zerwać bez kar (brak −10 Zaufania, N5, okna N3); młodszy — kary jak dotąd; wiek nieznany (stare zapisy) — kary. Panel: „brak kary” / „kara jeszcze N tur”.
+- FC PASS-WITH-NOTES. NIE_ZMIERZONO: rendering tekstu w Chromium.
+
 ## ROBOCZA 0256ee64 -- 2026-11-05 -- FALA 500: wycinka lasu przy rzece bez obywatela + mnożnik zużycia na epokę (testowa)
 
 - md5 pełne: `0256ee644598821ea0d181dd37b8a2be` · 70246781 B · poprzednia `e17f3ec8`.

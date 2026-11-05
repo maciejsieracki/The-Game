@@ -1,111 +1,111 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "0256ee644598821ea0d181dd37b8a2be",
-  "bundleSha256": "b15b64d2752230f38daa683c31c7f578d151dd53bc61dd350cb4b73a6e631520",
-  "bundleBytes": 70246781,
+  "bundleMd5": "351808cecd98d318cc36285a8863397a",
+  "bundleSha256": "c52bc88138f2fc1528c9593ad54b9ed1714d2336e8997dd6f9e66e5fe8bdc39b",
+  "bundleBytes": 70247670,
   "sourceSnapshot": {
-    "source": "main 95731af6a + NOCIT (a366e0090) + CONS (e7cd0b478)",
+    "source": "main 10ff7ce38 + TRADEBREAK (67e2d60f0)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 500: R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-NO-CITIZEN-Q1 — wycinka lasu przy rzece (Łąka/Równina) także bez obywatela (gracz i AI, ostatni krok budżetu; limit gracz 2/AI 1 na miasto, podłoga Pracy 60); R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1 — zużycie obywateli rośnie z epoką: m(e)=1+0,5(e-1) dla racji żywności i każdego surowca osobno"
+    "FALA 501: R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1 — zerwanie Traktatu handlowego bez kar (Zaufanie, Wiarygodność N5, okno N3), gdy traktat ma ≥10 tur; wcześniej kary jak dotąd; panel pokazuje „brak kary” lub „kara jeszcze N tur”"
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "no-citizen unit 17/0; citizen-consumption-era-mult PASS; citizen-upkeep-era-mult 663/0; population-growth-v85-bonus 65/0; empire-food-b5 34/0"
+    "trade-treaty-free-break-after-10 35/0 (mutacje UI i silnika łapane)"
   ],
   "limits": [
-    "Auto-rozdział obsadza wycięte pola rzadko (gracz 3–28%, AI 29–35%) — do decyzji; tartak AI s42 do obserwacji",
-    "Symulacja AI 100 tur x 3 ziarna NIE_ZMIERZONO; wygląd etykiety racji w panelu miasta niewidziany; dług sprzed zmiany: ai-test 274/20, citizen-resource-upkeep-test 107/2, resource-usage-breakdown-test 98/2, empire-panel-miasto-obywatele-content-test 115/1"
+    "Rendering tekstu „brak kary”/„kara jeszcze N tur” w Chromium NIE_ZMIERZONO — do oceny w grze",
+    "Regresje *treat*/diplomacy*/ai-test: padania PRE-EXISTING (5+5), nie powtarzane przez FC"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "NOCIT: Operator Sonnet → Evaluator FAIL → Obrona → FC PASS-WITH-NOTES. CONS: Operator Sonnet → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES."
+    "notes": "Operator Haiku → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T19:54:13",
+  "hubGeneratedAt": "2026-11-05T20:13:18",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "0256ee644598821ea0d181dd37b8a2be",
-      "sizeBytes": 70246781
+      "md5": "351808cecd98d318cc36285a8863397a",
+      "sizeBytes": 70247670
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "0256ee644598821ea0d181dd37b8a2be",
-      "sizeBytes": 70246781
+      "md5": "351808cecd98d318cc36285a8863397a",
+      "sizeBytes": 70247670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "0256ee644598821ea0d181dd37b8a2be",
-      "sizeBytes": 70246781
+      "md5": "351808cecd98d318cc36285a8863397a",
+      "sizeBytes": 70247670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "0256ee644598821ea0d181dd37b8a2be",
-      "sizeBytes": 70246781
+      "md5": "351808cecd98d318cc36285a8863397a",
+      "sizeBytes": 70247670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "0256ee644598821ea0d181dd37b8a2be",
-      "sizeBytes": 70246781
+      "md5": "351808cecd98d318cc36285a8863397a",
+      "sizeBytes": 70247670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "0256ee644598821ea0d181dd37b8a2be",
-      "sizeBytes": 70246781
+      "md5": "351808cecd98d318cc36285a8863397a",
+      "sizeBytes": 70247670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "0256ee644598821ea0d181dd37b8a2be",
-      "sizeBytes": 70246781
+      "md5": "351808cecd98d318cc36285a8863397a",
+      "sizeBytes": 70247670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "0256ee644598821ea0d181dd37b8a2be",
-      "sizeBytes": 70246781
+      "md5": "351808cecd98d318cc36285a8863397a",
+      "sizeBytes": 70247670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "0256ee644598821ea0d181dd37b8a2be",
-      "sizeBytes": 70246781
+      "md5": "351808cecd98d318cc36285a8863397a",
+      "sizeBytes": 70247670
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "0256ee644598821ea0d181dd37b8a2be",
-      "sizeBytes": 70246781
+      "md5": "351808cecd98d318cc36285a8863397a",
+      "sizeBytes": 70247670
     }
   ],
-  "md5": "0256ee644598821ea0d181dd37b8a2be",
-  "sizeBytes": 70246781,
+  "md5": "351808cecd98d318cc36285a8863397a",
+  "sizeBytes": 70247670,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main 95731af6a + merge NOCIT + CONS",
+  "source": "gra/src; main 10ff7ce38 + merge TRADEBREAK",
   "immediatePreviousRelease": {
-    "bundleMd5": "e17f3ec82f5a4e98e4ea277067068232"
+    "bundleMd5": "0256ee644598821ea0d181dd37b8a2be"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 e17f3ec82f5a4e98e4ea277067068232, 70245153 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 0256ee644598821ea0d181dd37b8a2be, 70246781 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1281,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T19:54:11+00:00",
-  "buildStamp": "2026-11-05 19:54",
+  "publishedAt": "2026-11-05T20:13:16+00:00",
+  "buildStamp": "2026-11-05 20:13",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1290,5 +1290,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "FALA 500: NO-CITIZEN river forest clear + CITIZEN-CONSUMPTION-ERA-MULT"
+  "releaseScope": "FALA 501: TREATY-TRADE-FREE-BREAK-AFTER-10"
 }
