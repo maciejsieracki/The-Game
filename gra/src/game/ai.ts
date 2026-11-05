@@ -3612,6 +3612,9 @@ function decideAITurnCore(
 
   // Track which units received at least one action command this turn (for fallback).
   const unitActed = new Set<string>();
+  // R-WEB-WAR-ALLIN-KEEP-BARB-DEFENSE-Q1: obrońcy wydani w kroku 4b2 (ruch ku zagrożeniu obrony domu,
+  // w tym barbarzyńcom) -- war-allin nie przejmuje ich komend (patrz applyWarAllInCapitalToCommands).
+  const homeDefenseMoveIds = new Set<string>();
 
   // Audyt #56: lista wolnych (neutralnych) wiosek liczona LENIWIE i RAZ na to wywołanie
   // decideAITurn (per gracz AI, per turę) zamiast pełnego Object.keys(map.hexes) + skanu
@@ -4072,6 +4075,9 @@ function decideAITurnCore(
       if (step !== null) {
         commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
         unitActed.add(unit.id);
+        // Tylko barbarzyncy (ownerId -1): najezdzcow cywilizacji obsluguje nakladka applyHomeWarPriorities
+        // (DEFEND-HOME, ostatnie slowo nad ruchem) -- jej wynik zostaje bez zmian (test ai-war-defend-home).
+        if (assignedThreat.ownerId === -1) homeDefenseMoveIds.add(unit.id);
         continue;
       }
     }
@@ -4260,7 +4266,7 @@ function decideAITurnCore(
   // armia idzie na stolice przeciwnika. Nadpisuje komendy RUCHU jednostek bojowych (zostawia
   // ataki oraz wejscie na heks wrogiego miasta); gracz nigdy tu nie trafia (decideAITurn = AI).
   if (isWarAllInCapitalEnabled() && opts.warAllIn !== undefined && opts.warAllIn.targets.length > 0) {
-    applyWarAllInCapitalToCommands(commands, myUnits, units, cities, playerId, map, opts.warAllIn, data, true, opts.currentTurn);
+    applyWarAllInCapitalToCommands(commands, myUnits, units, cities, playerId, map, opts.warAllIn, data, true, opts.currentTurn, homeDefenseMoveIds);
   }
 
   commands.push({ type: 'endTurn' });
@@ -4282,6 +4288,7 @@ function applyWarAllInCapitalToCommands(
   data: GameData,
   gateLooseUnits = false,
   currentTurn?: number,
+  homeDefenderIds?: ReadonlySet<string>,
 ): void {
   // Zaokretowane jednostki zostaja poza zwyklym marszem ladowym. Kampania
   // wodna wodza jest wyjatkiem: jej planner musi kontynuowac ruch na wodzie i
@@ -4299,6 +4306,11 @@ function applyWarAllInCapitalToCommands(
   const eligibleIds = new Set(eligible.map(u => u.id));
   // Jednostki ktore juz atakuja lub wchodza na wrogie miasto zachowuja swoj rozkaz.
   const keep = new Set<string>();
+  // R-WEB-WAR-ALLIN-KEEP-BARB-DEFENSE-Q1: obrona przed barbarzyncami w bramce obrony domu ma
+  // pierwszenstwo przed marszem na stolice -- przydzieleni obroncy zachowuja ruch z kroku 4b2.
+  if (homeDefenderIds !== undefined) {
+    for (const id of homeDefenderIds) keep.add(id);
+  }
   for (const cmd of commands) {
     if (cmd.type === 'attack' && eligibleIds.has(cmd.unitId)) {
       const attacker = eligible.find(unit => unit.id === cmd.unitId);
