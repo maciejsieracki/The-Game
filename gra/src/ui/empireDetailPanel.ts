@@ -2692,8 +2692,11 @@ export function renderObywateleSection(
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
       + `<div>CYWILIZACJA</div><div>${sumObyw}</div><div>−${zuzyciePerTyp}</div></div>`;
     h += '</div>';
+    // R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: mnożnik epoki wyprowadzony ze stawki silnika
+    // (stawka = baza × m(epoka)) — brak zaszytych liczb.
+    const eraMultTxt = formatLiczbaPl(citizenRate / CITIZEN_UPKEEP_RATE_PER_CITIZEN, 1);
     h += `<div class="civ-emp-foot">${formatLiczbaPl(citizenRate, 1)} szt. surowca `
-      + 'na obywatela na turę, z magazynu CENTRALNEGO imperium — liczba w kolumnie dotyczy KAŻDEGO '
+      + `na obywatela na turę (mnożnik epoki ×${eraMultTxt}), z magazynu CENTRALNEGO imperium — liczba w kolumnie dotyczy KAŻDEGO `
       + `z ${citizenResCount} surowców wymaganych w tej epoce osobno, nie ich sumy. Wiersz `
       + 'CYWILIZACJA to zużycie całego imperium (silnik liczy je od sumy obywateli, nie miasto po '
       + 'mieście). Rozbicie per surowiec: zakładka Surowce → karta → „Zobacz szczegóły zużycia".</div>';

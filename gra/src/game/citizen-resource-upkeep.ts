@@ -78,9 +78,9 @@
  * TWO FUNCTIONS, TWO DIFFERENT CONTRACTS: `resolveCitizenResourceCoverage()` is a PURE PREVIEW
  * (no side effects, binary "stock > 0 → available" gate, no real per-capita demand, no
  * deduction) — kept as-is for UI preview use elsewhere. `computeCitizenResourceDrain()` is the
- * REAL drain (current rate: per era via `citizenUpkeepRateForEra` — Kamień 1.0 / Brąz 2.0 / Żelazo 3.0 units of resource per citizen per turn; formerly flat 1.0 — reduced to 0.2 on
+ * REAL drain (current rate: per era via `citizenUpkeepRateForEra` — Kamień 1.0 / Brąz 1.5 / Żelazo 2.0 units of resource per citizen per turn; formerly flat 1.0 — reduced to 0.2 on
  * 2026-08-12, RESTORED to 1.0 on 2026-08-13 as part of `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` —
- * `citizenUpkeepRateForEra(era)` (Kamień 1.0 / Brąz 2.0 / Żelazo 3.0), `required = Math.floor(population × stawka_epoki)`,
+ * `citizenUpkeepRateForEra(era)` (Kamień 1.0 / Brąz 1.5 / Żelazo 2.0), `required = Math.floor(population × stawka_epoki)`,
  * `drained = min(required, stock)`, never goes below zero, and returns a `deductions` map for
  * the caller to actually mutate the stockpile. The binary penalty is unchanged (ECHO Q3=A):
  * "available" means demand was FULLY covered, "missing" otherwise — still not scaled by the
@@ -100,16 +100,11 @@
  * (`population-growth-v85.ts`).
  */
 import citizenUpkeepTable from '../../data/citizen-resource-upkeep.json';
+import { citizenConsumptionEraMultiplier } from './citizen-consumption-era';
 
 export interface CitizenUpkeepEraRow {
   epoka: number;
   nazwa: string;
-  /**
-   * Stawka zużycia tej epoki: sztuk KAŻDEGO wymaganego surowca na 1 obywatela na turę
-   * (R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1, decyzja właściciela 2026-10-31: Kamień ×1, Brąz ×2,
-   * Żelazo ×3). Brak / NaN / ujemne → `CITIZEN_UPKEEP_RATE_PER_CITIZEN` (fallback 1,0).
-   */
-  stawkaNaObywatela?: number;
   surowce: string[];
 }
 
@@ -153,9 +148,9 @@ export const CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING = TABLE._kara?.rozwojPctZaBra
  * displayed number always matches the real engine drain.
  */
 export const CITIZEN_UPKEEP_RATE_PER_CITIZEN = 1.0;
-// R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1 (Maciej 2026-10-31): powyższa stała to już TYLKO FALLBACK
-// (brak / NaN / ujemne pole `stawkaNaObywatela` w wierszu epoki). Realna stawka zależy od epoki:
-// `citizenUpkeepRateForEra(era)` — Kamień 1,0 / Brąz 2,0 / Żelazo 3,0.
+// R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1 (Maciej 2026-11-05): powyższa stała to STAWKA BAZOWA
+// (epoka 1). Realna stawka zależy od epoki: `citizenUpkeepRateForEra(era)` = baza × m(era),
+// m(e) = 1 + 0,5 × (e − 1) (`citizen-consumption-era.ts`) — Kamień 1,0 / Brąz 1,5 / Żelazo 2,0.
 
 /**
  * Wiersz tabeli dla danej epoki — ta sama reguła wyboru co lista surowców: `era` < 1 / NaN →
@@ -183,17 +178,16 @@ export function citizenRequiredResourcesForEra(era: number): readonly string[] {
 }
 
 /**
- * Stawka zużycia tej epoki: sztuk KAŻDEGO wymaganego surowca na 1 obywatela na turę
- * (R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: Kamień 1,0 / Brąz 2,0 / Żelazo 3,0 — pole
- * `stawkaNaObywatela` w `data/citizen-resource-upkeep.json`). Brak pola / NaN / wartość
- * ujemna → `CITIZEN_UPKEEP_RATE_PER_CITIZEN` (fallback 1,0). Wybór wiersza jak w
- * `citizenRequiredResourcesForEra` (era 4+ → wiersz najwyższej epoki; < 1 / NaN → epoka 1).
- * / EN: per-era consumption rate (units per resource per citizen per turn); falls back to
- * CITIZEN_UPKEEP_RATE_PER_CITIZEN when the field is missing, NaN or negative.
+ * Stawka zużycia tej epoki: sztuk KAŻDEGO wymaganego surowca na 1 obywatela na turę =
+ * `CITIZEN_UPKEEP_RATE_PER_CITIZEN` (1,0) × `citizenConsumptionEraMultiplier(era)`
+ * (R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1, decyzja właściciela 2026-11-05: m(e) = 1 + 0,5 × (e − 1) →
+ * epoka 1 = 1, 2 = 1,5, 3 = 2, ...). Zastępuje wcześniejsze stawki 1/2/3 z pola
+ * `stawkaNaObywatela` (R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1, usunięte z JSON — jedno źródło prawdy,
+ * bez dwóch sprzecznych wzorów). Lista surowców epoki bez zmian. Era < 1 / NaN → ×1.
+ * / EN: per-era rate = base 1.0 × shared multiplier m(e) = 1 + 0.5 × (e − 1).
  */
 export function citizenUpkeepRateForEra(era: number): number {
-  const v = citizenUpkeepRowForEra(era)?.stawkaNaObywatela;
-  return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : CITIZEN_UPKEEP_RATE_PER_CITIZEN;
+  return CITIZEN_UPKEEP_RATE_PER_CITIZEN * citizenConsumptionEraMultiplier(era);
 }
 
 export interface CitizenUpkeepCoverage {
@@ -282,7 +276,7 @@ export interface CitizenResourceDrainResult extends CitizenUpkeepCoverage {
  * Realny drenaż magazynu centralnego imperium przez obywateli (Maciej 2026-08-11; historia
  * stawki: zmniejszona 2026-08-12 „DECYZJA: STAWKA 1→0,2" punkt 1, PRZYWRÓCONA 2026-08-13
  * `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`): stawka BIEŻĄCA
- * **`citizenUpkeepRateForEra(era)` (per epoka: Kamień 1,0 / Brąz 2,0 / Żelazo 3,0 sztuki surowca na 1 obywatela na turę; fallback 1,0)**, per
+ * **`citizenUpkeepRateForEra(era)` (per epoka: Kamień 1,0 / Brąz 1,5 / Żelazo 2,0 sztuki surowca na 1 obywatela na turę; fallback 1,0)**, per
  * wymagany surowiec danej epoki.
  *
  * `population` MUSI być sumą populacji WSZYSTKICH miast ownera (nie populacją jednego miasta z

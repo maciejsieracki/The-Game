@@ -36550,7 +36550,7 @@ async function boot(): Promise<void> {
             const citizenUpkeepEmpireStock = makeOwnerEmpireStockResolver();
             // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): realny drenaż magazynu,
             // stawka epoki szt. surowca na 1 obywatela na turę (R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1:
-            // citizenUpkeepRateForEra, Kamień ×1 / Brąz ×2 / Żelazo ×3; kanon: citizen-resource-upkeep.ts -- wartość NIE powtórzona tu jako liczba,
+            // citizenUpkeepRateForEra, mnożnik m(e)=1+0,5(e-1) z citizen-consumption-era.ts; kanon: citizen-resource-upkeep.ts -- wartość NIE powtórzona tu jako liczba,
             // żeby komentarz nie starzał się przy kolejnych zmianach stawki). Liczony RAZ per
             // owner per turę (suma populacji WSZYSTKICH miast tego ownera --
             // computeCitizenResourceDrain wymaga tego, inaczej kilka miast tego samego ownera

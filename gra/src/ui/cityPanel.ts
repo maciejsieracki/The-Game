@@ -251,6 +251,7 @@ import {
   citizenUpkeepDisplayLines,
   type CitizenUpkeepCoverage,
 } from '../game/citizen-resource-upkeep';
+import { citizenConsumptionEraMultiplier, formatCitizenConsumptionMult, formatCitizenConsumptionNumber } from '../game/citizen-consumption-era';
 import {
   applyPostCaptureLawOverride,
   isPostCaptureLawActive,
@@ -1101,6 +1102,8 @@ interface CityView {
   /** Produkcja brutto żywności (pola + budynki, przed racjami). */
   zywnoscBrutto: number;
   kosztRacji: number;
+  /** Epoka cywilizacji właściciela miasta — mnożnik zużycia obywateli (R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1). */
+  ownerEra: number;
   bilansLokalny: number;
   poziomRacji: PoziomRacji;
   wzrostProcent: number;
@@ -1352,6 +1355,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       zywnoscNetto: bilansLokalny,
       zywnoscBrutto,
       kosztRacji,
+      ownerEra: cfg.getEpoch?.(city.ownerId) ?? 1,
       bilansLokalny,
       poziomRacji,
       wzrostProcent: growthBreakdown.total,
@@ -1508,11 +1512,15 @@ function clampedGrowthBreakdown(view: CityView, maxSafe?: number): GrowthPercent
   return { ...bd, racje, total };
 }
 
-function wyzwienieSummaryLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>): string {
-  const cost = rationFoodCostPerPop(level, params);
+function wyzwienieSummaryLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>, ownerEra = 1): string {
+  // R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: stawka z mnożnikiem epoki właściciela (jedna funkcja
+  // `citizenConsumptionEraMultiplier`) — bez zaszytych liczb; mnożnik ×1 nie jest dopisywany.
+  const mult = citizenConsumptionEraMultiplier(ownerEra);
+  const cost = rationFoodCostPerPop(level, params) * mult;
   const grow = rationGrowthPercent(level, params);
   const growTxt = grow > 0 ? `+${grow}` : String(grow);
-  return `${cost} 🍞/miesz. · ${growTxt}%`;
+  const multTxt = mult === 1 ? '' : ` (epoka ${formatCitizenConsumptionMult(ownerEra)})`;
+  return `${formatCitizenConsumptionNumber(cost)} 🍞/miesz./turę${multTxt} · ${growTxt}%`;
 }
 
 function growthBreakdownRow(label: string, value: number, showZero = false): string {
@@ -5515,7 +5523,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     );
   }
   const hint = el('div', 'wyzwienie-w4-hint');
-  hint.textContent = wyzwienieSummaryLabel(displayLevel, rationParams);
+  hint.textContent = wyzwienieSummaryLabel(displayLevel, rationParams, view.ownerEra);
   if (maxSafe < WYZYWIENIE_MAX && rationEditable) {
     hint.textContent += ` · Limit Spichlerza: ${formatWyzwienieLabel(maxSafe)}`;
   }
@@ -5597,7 +5605,7 @@ function buildRacjeWzrostDetailCard(
     gridDetailRow(g1, 'Auto-korekta', `ustawione Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} przekracza limit Spichlerza — Bilans liczony przy ${formatWyzwienieLabel(bilansDisplayLevel)}, poziom zostanie obniżony na koniec tury`);
   }
   if (rationParams) {
-    gridDetailRow(g1, 'Wyżywienie', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
+    gridDetailRow(g1, 'Wyżywienie', wyzwienieSummaryLabel(view.poziomRacji, rationParams, view.ownerEra));
   }
 
   appendDetailSection(card, 'WZROST% — składniki');
@@ -5704,7 +5712,7 @@ function buildTopBarZywnoscDetailCard(
     gridDetailRow(g1, 'Auto-korekta', `ustawione Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} przekracza limit Spichlerza — Bilans liczony przy ${formatWyzwienieLabel(bilansDisplayLevel)}, poziom zostanie obniżony na koniec tury`);
   }
   if (rationParams) {
-    gridDetailRow(g1, 'Wyżywienie aktywne', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
+    gridDetailRow(g1, 'Wyżywienie aktywne', wyzwienieSummaryLabel(view.poziomRacji, rationParams, view.ownerEra));
   }
 
   appendDetailSection(card, 'WZROST ludności');

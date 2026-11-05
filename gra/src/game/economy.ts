@@ -1010,6 +1010,9 @@ export function cityYieldPerTurn(
   const zywnoscBrutto = city.civKey
     ? applyCivMatrixParam(zywnoscBruttoRaw, city.civKey, 'eko_zywnosc_proc')
     : zywnoscBruttoRaw;
+  // R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: to MARTWY wzór przedV85 (flat; wynik `.zywnosc` nie zasila bilansu
+  // żywności). Realny koszt racji = `computeCityRationCost` (population-growth-v85.ts) × m(epoka)
+  // z `citizen-consumption-era.ts`. Celowo bez mnożnika epoki, żeby nie powstały dwie ścieżki.
   const zywnoscZuzyta = city.ludnosc * params.zywnoscZuzytkaPopulacja
                        + ctx.wojskoZuzycieZywnosci;
   const zywnoscNetto  = zywnoscBrutto - zywnoscZuzyta;
