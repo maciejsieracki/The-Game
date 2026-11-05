@@ -213,6 +213,8 @@ export const RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY = 2;
  * AI spadał 116→7 / 74→0 (niedobór kamienia pojawia się ok. tury 22, a pula była już wyjedzona).
  */
 export const RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR = 60;
+export const AI_RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY = 1;
+export const AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR = 60;
 
 /** R-AUTO-V2-Q4=B: minimalna rezerwa Pracy państwa po auto-ulepszeniu (placeholder do strojenia). */
 export const AUTO_ULEPSZENIA_PRACA_RESERVE = 30;
@@ -483,6 +485,10 @@ export interface PickAutoImprovementsOpts {
    * obywatela (wyjątek od reguły obywateli, `hexAllowsKey`). Ustawia go WYŁĄCZNIE `pickAutoImprovements`.
    */
   riverClearNoCitizenPass?: boolean;
+  /** Nadpisanie limitu wycinek rzecznych bez obywatela na miasto (domyślnie `RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY`; AI: patrz `AI_RIVER_CLEAR_NO_CITIZEN_*`). */
+  riverClearNoCitizenMaxPerCity?: number;
+  /** Nadpisanie podłogi puli Pracy dla tego kroku (domyślnie `RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR`). */
+  riverClearNoCitizenPoolFloor?: number;
   /** Internal stage E1: only river hexes are candidates (farm on river first, everywhere). */
   riverHexesOnly?: boolean;
   /** Internal stage E5: the river stages E1-E4 are exhausted — off-river clearing is not blocked by river hexes. */
@@ -1096,14 +1102,15 @@ function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprove
   // Warunek braku zagłodzenia: żaden wcześniejszy cel (etap, ścieżka zapasowa, fort, niedobór) nie czeka na Pracę.
   // Limit: `RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY` na miasto/przebieg. Heks po wycince zostaje czysty do czasu obywatela
   // (farma/irygacja/trzoda nadal tylko z obywatelem — `hexAllowsKey`).
+  const noCitizenFloor = opts.riverClearNoCitizenPoolFloor ?? RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR;
   let noCitizenClearPicks: AutoImprovementPick[] = [];
   if (
     stagedCities.length > 0 && !earlierStageIsPending && !fallbackIsPending && !fortIsPending
     && (deficitCities.length === 0 || !deficitIsPendingNow())
   ) {
     noCitizenClearPicks = pickAutoImprovementsSinglePass(after(normalSpent, {
-      pracaAvailable: Math.max(0, opts.pracaAvailable - normalSpent - RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR),
-      improvementBudgetCap: Math.max(0, totalBudget - normalSpent - RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR),
+      pracaAvailable: Math.max(0, opts.pracaAvailable - normalSpent - noCitizenFloor),
+      improvementBudgetCap: Math.max(0, totalBudget - normalSpent - noCitizenFloor),
       cities: stagedCities,
       priorityOverride: ['wyrab'],
       riverForestClearingOnly: true,
@@ -1506,6 +1513,14 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // niedoboru ich nie otwierają. Wyjątek złożowy zostaje dla reszty (kopalnie/kamieniołom/glinianka/stadnina).
     /** Czy na tym heksie wolno postawić TEN klucz, biorąc pod uwagę Zasadę 2. */
     let riverNoCitizenClears = 0; // wycinki rzeczne bez obywatela zaplanowane dla TEGO miasta w tym przebiegu
+    // Jedyna definicja wyjątku rzecznego (używana przez bramkę `hexAllowsKey` ORAZ licznik wycinek): ostatni krok,
+    // profil Żywność/Zrównoważony, heks BEZ obywatela, las przy rzece na bazie pod farmę (Łąka/Równina).
+    const riverNoCitizenMax = opts.riverClearNoCitizenMaxPerCity ?? RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY;
+    const isRiverNoCitizenClearHex = (q: number, r: number): boolean => {
+      if (!riverClearNoCitizenPass || !(focus === 'zywnosc' || focus === 'zrownowazone') || !foodWorkedKeys || foodWorkedKeys.has(`${q},${r}`)) return false;
+      const hx = map.hexes[`${q},${r}`];
+      return !!hx && hx.nakladka === Nakladka.Las && isFarmBaseTerrain(hx.terenBazowy, Nakladka.Brak) && onRiverHex(`${q},${r}`);
+    };
     const hexAllowsKey = (q: number, r: number, key: ImprovementKey): boolean => {
       // R-WEB-AI-STADNINA-FORT-TERRITORY-SCAN-Q1: heksy dodane z koła fortu/posterunku (poza pierścieniem miasta) są
       // kandydatami WYŁĄCZNIE dla stadniny — zero zmiany balansu pozostałych ulepszeń.
@@ -1515,12 +1530,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       // profilach Żywność i Zrównoważony (gracz) oraz AI (domyślnie Zrównoważony). Heks w zasięgu miasta (lista kandydatów).
       // Limit `RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY` na miasto. Pozostałe ulepszenia żywnościowe (farma, irygacja, trzoda…)
       // nadal tylko z obywatelem; po wycince heks zostaje czysty do czasu obywatela.
-      if (key === 'wyrab' && riverClearNoCitizenPass && (focus === 'zywnosc' || focus === 'zrownowazone') && foodWorkedKeys && !foodWorkedKeys.has(`${q},${r}`)) {
-        const hx = map.hexes[`${q},${r}`];
-        if (hx && hx.nakladka === Nakladka.Las && isFarmBaseTerrain(hx.terenBazowy, Nakladka.Brak) && onRiverHex(`${q},${r}`)) {
-          return riverNoCitizenClears < RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY;
-        }
-      }
+      if (key === 'wyrab' && isRiverNoCitizenClearHex(q, r)) return riverNoCitizenClears < riverNoCitizenMax;
       if (FOOD_IMPROVEMENT_KEYS.has(key)) return !foodWorkedKeys || foodWorkedKeys.has(`${q},${r}`);
       // Obóz łowiecki i wszystkie ulepszenia surowcowe/infrastrukturalne: bez reguły obywateli (patrz wyżej).
       return true;
@@ -1993,7 +2003,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
           && qualifies('wyrab', q, r)
         ) {
           picks.push({ ownerId, cityId: city.id, q, r, key: 'wyrab', kosztPraca: wyrabMeta.kosztPraca });
-          if (foodWorkedKeys && !foodWorkedKeys.has(hexKey)) riverNoCitizenClears++;
+          if (isRiverNoCitizenClearHex(q, r)) riverNoCitizenClears++;
           pracaLeft -= wyrabMeta.kosztPraca;
           globalSpent += wyrabMeta.kosztPraca;
           scheduledWyrabHexes.add(hexKey);
@@ -2094,7 +2104,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
               if ((workingPlaced.get(hexKey) ?? []).some(k => k === 'tartak' || k === 'oboz_lowiecki')) continue;
               if (!qualifies(key, q, r)) continue;
               picks.push({ ownerId, cityId: city.id, q, r, key, kosztPraca: meta.kosztPraca });
-              if (foodWorkedKeys && !foodWorkedKeys.has(hexKey)) riverNoCitizenClears++;
+              if (isRiverNoCitizenClearHex(q, r)) riverNoCitizenClears++;
               pracaLeft -= meta.kosztPraca;
               globalSpent += meta.kosztPraca;
               scheduledWyrabHexes.add(hexKey);

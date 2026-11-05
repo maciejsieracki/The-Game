@@ -62,14 +62,14 @@ function makeMap({ river = [], forest = [], hills = [] } = {}) {
 const CITY = { id: 'c0', ownerId: 0, q: CQ, r: CR, name: 'Mykeny', population: 3, ulepszeniaFocus: 'zywnosc' };
 const TN = [{ q: CQ, r: CR, ownerId: 0, cityId: 'c0', pop: 3, level: 1 }];
 
-function pick({ map, worked, focus = 'zywnosc', pracaAvailable = 400, placed = new Map(), clearing = new Set(), demandDriven = true }) {
+function pick({ map, worked, focus = 'zywnosc', pracaAvailable = 400, placed = new Map(), clearing = new Set(), demandDriven = true, extra = {} }) {
   const workedSet = new Set(worked.map(([q, r]) => K(q, r)));
   return pickAutoImprovements({
     cities: [{ ...CITY, ulepszeniaFocus: focus }], ownerId: 0, map, territoryNodes: TN, placedImprovements: placed,
     pracaAvailable, unlockedTechs: new Set(FULL), pracaSurplusThreshold: 0, skipWyrab: false, demandDriven,
     resourceDeficitKeys: [], getFocus: () => focus, getWorkedHexKeys: () => workedSet,
     pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'rzymianie', playerEra: 1,
-    foodImprovementStages: () => true, clearingHexKeys: clearing,
+    foodImprovementStages: () => true, clearingHexKeys: clearing, ...extra,
   });
 }
 const desc = picks => picks.map(p => p.key + '@' + K(p.q, p.r)).join(' ') || 'nic';
@@ -163,6 +163,38 @@ console.log('(8) profil „surowce” nie dostaje wyjatku');
   const picks = pick({ map, worked: CITIZEN_FIELD, focus: 'surowce', demandDriven: false });
   console.log('      picks: ' + desc(picks));
   ok(!picks.some(isNoCitClear), 'surowce: brak wycinki rzecznej bez obywatela');
+}
+
+console.log('(9) nadpisanie limitu (AI: riverClearNoCitizenMaxPerCity) — 1 ogranicza, 0 wylacza');
+{
+  const river = [[12, 9], [12, 10], [12, 11], [13, 10], [14, 10], [10, 10], [10, 11], [10, 9]];
+  const map = makeMap({ river, forest: river });
+  const n1 = pick({ map, worked: CITIZEN_FIELD, pracaAvailable: 2000, extra: { riverClearNoCitizenMaxPerCity: 1 } }).filter(p => p.key === 'wyrab').length;
+  const n0 = pick({ map, worked: CITIZEN_FIELD, pracaAvailable: 2000, extra: { riverClearNoCitizenMaxPerCity: 0 } }).filter(p => p.key === 'wyrab').length;
+  ok(n1 === 1, `limit 1 -> dokladnie 1 wycinka bez obywatela (jest ${n1})`);
+  ok(n0 === 0, `limit 0 -> zero wycinek bez obywatela (jest ${n0})`);
+}
+
+console.log('(10) podloga puli (riverClearNoCitizenPoolFloor): wycinka bierze tylko nadwyzke ponad podloge');
+{
+  const map = makeMap({ river: RIVER, forest: [RIVER_FOREST] });
+  const hi = pick({ map, worked: CITIZEN_FIELD, pracaAvailable: 400, extra: { riverClearNoCitizenPoolFloor: 100000 } });
+  const lo = pick({ map, worked: CITIZEN_FIELD, pracaAvailable: 400, extra: { riverClearNoCitizenPoolFloor: 0 } });
+  ok(!hi.some(isNoCitClear), 'bardzo wysoka podloga -> brak wycinki bez obywatela');
+  ok(lo.some(isNoCitClear), 'podloga 0 -> wycinka bez obywatela jest');
+}
+
+console.log('(11) licznik limitu: wycinki NA polu obywatela (rzeka) nie zuzywaja limitu wycinek bez obywatela');
+{
+  // dwa lasy przy rzece NA polach obywateli + dwa BEZ obywatela; limit 2 => oba bez obywatela musza dostac wycinke
+  const river = [[12, 10], [12, 11], [13, 10], [14, 10]];
+  const map = makeMap({ river, forest: river });
+  const picks = pick({ map, worked: [[12, 11], [13, 10]], pracaAvailable: 2000 });
+  const withCit = picks.filter(p => p.key === 'wyrab' && ((p.q === 12 && p.r === 11) || (p.q === 13 && p.r === 10))).length;
+  const noCit = picks.filter(p => p.key === 'wyrab' && ((p.q === 12 && p.r === 10) || (p.q === 14 && p.r === 10))).length;
+  console.log('      picks: ' + desc(picks));
+  ok(withCit >= 1, `wycinki na polach obywateli sa (${withCit})`);
+  ok(noCit === RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY, `wycinki bez obywatela = limit mimo wycinek z obywatelem (${noCit})`);
 }
 
 console.log(`\n${passed} OK, ${failed} FAIL`);

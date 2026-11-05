@@ -118,7 +118,8 @@ const FOCUS = process.env.FOCUS || 'zywnosc';
     chk(!out.error, 'brak bledu przebiegu');
     chk(out.turns.length >= 20, 'przebieg >= 20 tur (jest ' + out.turns.length + ')');
     chk(out.lasStart && out.lasStart.me > 0, 'sa pola las+rzeka+baza pod farme w terytorium (' + (out.lasStart && out.lasStart.me) + ')');
-    chk(out.firstCutTurn === 1, 'pierwsza wycinka w turze 1 (jest ' + out.firstCutTurn + ')');
+    // Decyzja zapada w turze 1; pole znika (nakladka las -> brak) po turze wycinki, wiec skan widzi je w turze 2 (pomiar Q1 r1/r2).
+    chk(out.firstCutTurn != null && out.firstCutTurn <= 2, 'pierwsza wycinka widoczna najpozniej w turze 2 (jest ' + out.firstCutTurn + ')');
     chk(out.me && out.me.cutNoCit > 0, 'wycieto pola BEZ obywatela (' + (out.me && out.me.cutNoCit) + ')');
     process.exitCode = fails ? 1 : 0;
   }

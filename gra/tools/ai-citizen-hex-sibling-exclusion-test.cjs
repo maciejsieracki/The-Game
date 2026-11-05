@@ -136,7 +136,11 @@ const eng2 = new Set();
 for (const c of CITIES2) for (const h of workedHexCoordsForCity(c, map, TN2, lost2.get(c.id), ERA)) eng2.add(K(h.q, h.r));
 const cuts2Excl = planWyrab(lost2, CITIES2, TN2);
 const cuts2None = planWyrab(undefined, CITIES2, TN2);
-ok(cuts2Excl.length > 0 && cuts2Excl.every(c => eng2.has(c.hk)), `z wykluczeniem: kazda wycinka na polu obywatela wg silnika (${cuts2Excl.length})`);
+// R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-NO-CITIZEN-Q1 (decyzja wlasciciela B, rowniez AI): jedyny wyjatek od „wycinka tylko na polu
+// obywatela” to las PRZY RZECE bez obywatela (limit AI 1/miasto, ostatni krok). Reszta wycinek nadal MUSI lezec na polu obywatela.
+const nonEngine2 = cuts2Excl.filter(c => !eng2.has(c.hk));
+ok(cuts2Excl.length > 0 && nonEngine2.every(c => map.hexes[c.hk].rzeka.obecna), `z wykluczeniem: kazda wycinka na polu obywatela wg silnika albo (wyjatek) przy rzece (${cuts2Excl.length}, w tym bez obywatela przy rzece: ${nonEngine2.length})`);
+ok(nonEngine2.length <= CITIES2.length, `wycinki bez obywatela (wyjatek rzeczny AI) w limicie 1/miasto (${nonEngine2.length} <= ${CITIES2.length})`);
 ok(cuts2None.some(c => !eng2.has(c.hk)), 'bez wykluczenia: AI tnie las poza polami obywateli wg silnika (to byl blad)');
 ok(JSON.stringify(cuts2Excl) !== JSON.stringify(cuts2None), 'opcja improvementExcludeHexKeysByCity zmienia decyzje AI');
 
