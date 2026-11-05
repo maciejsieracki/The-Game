@@ -2,7 +2,7 @@ STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1
 GOAL: zuzycie obywateli rosnie o 50% bazy co epoke, m(e) = 1 + 0,5 (e - 1) (1 / 1,5 / 2 / 2,5 / 3), jedna wspolna funkcja dla zywnosci i surowcow, parytet AI (era WLASCICIELA miasta).
-ZMIANY/COMMIT: SHA w sekcji NASTEPNY KROK / ponizej (commit jawnym `git add`, bez pusha). Baza: origin/main 522271468.
+ZMIANY/COMMIT: kod+testy+evidence 525dca82e (jawny `git add`, bez pusha); commit raportu z SHA - kolejny na galezi worktree-wf_214cb90f-fa0-1. Baza: origin/main 522271468.
 Pliki: NOWY `gra/src/game/citizen-consumption-era.ts` (`citizenConsumptionEraMultiplier`, `formatCitizenConsumptionMult`); `population-growth-v85.ts` (usunieto `rationEraFoodCostMultiplier` 1/2/4, `computeCityRationCost` x m(epoka)); `citizen-resource-upkeep.ts` (`citizenUpkeepRateForEra` = 1,0 x m(era)); `data/citizen-resource-upkeep.json` (usuniete pole `stawkaNaObywatela` 1/2/3, listy surowcow bez zmian, opis); `data/econ-params.json` (tylko opis martwego parametru); `economy.ts` (tylko komentarz); `cityPanel.ts` (etykieta racji z mnoznikiem + `CityView.ownerEra`); `empireDetailPanel.ts` (stopka z mnoznikiem). Testy: NOWY `citizen-consumption-era-mult-test.cjs`, NOWY `citizen-consumption-era-live-measure.cjs` (pomiar, nie bramka); zaktualizowane `citizen-upkeep-era-mult-test.cjs`, `population-growth-v85-bonus-test.cjs`, `empire-food-b5-test.cjs`.
 
 ZMIERZONE PRZED (plik:linia, origin/main):
