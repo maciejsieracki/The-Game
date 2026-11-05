@@ -5,7 +5,9 @@
 
 import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
-import { computePath, pathCost, keyOf, terrainMoveCost, type RuntimeUnit } from '../units/setup';
+import {
+  computePath, pathCost, keyOf, terrainMoveCost, trimSegmentEndOffPassThrough, isPassThroughHex, type RuntimeUnit,
+} from '../units/setup';
 
 /** TEMAT #15 (embarkacja): opcjonalny koszt wejścia na heks (woda przejezdna). */
 export type MarchCostFn = (hex: Hex) => number;
@@ -266,7 +268,11 @@ export function planPathTurns(
   }
 
   const budget = movementBudget ?? perTurn;
-  const segmentPath = truncatePathToBudget(path, budget, map, costFn);
+  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: segment skrocony budzetem nie konczy sie na heksie z wlasna
+  // jednostka (przejscie != laczenie); pelna trasa do celu na wlasnej jednostce = laczenie.
+  const segmentPath = trimSegmentEndOffPassThrough(
+    truncatePathToBudget(path, budget, map, costFn), path.length, occupied,
+  );
   const segmentCost = segmentPath.length > 0 ? pathCost(segmentPath, map, costFn) : 0;
 
   return {
@@ -302,7 +308,9 @@ export function shouldStopAtObstacle(
     && segmentPath[segmentPath.length - 1]!.r === dest.destR;
   if (arrived) return { stop: false };
 
-  const truncated = truncatePathToBudget(path, movementBudget, map, costFn);
+  const truncated = trimSegmentEndOffPassThrough(
+    truncatePathToBudget(path, movementBudget, map, costFn), path.length, occupied,
+  );
   if (truncated.length === 0) {
     return { stop: true, reason: 'no_movement', detail: 'brak punktów ruchu' };
   }
@@ -379,13 +387,16 @@ export function executeMarchStep(
 
   const movePath = plan.segmentPath;
   if (movePath.length === 0) {
+    // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: budzet starcza tylko na heksy z wlasnymi jednostkami
+    // (przejscie bez zatrzymania niemozliwe w tej turze) -- to przeszkoda, nie brak ruchu.
+    const onlyOwnInReach = plan.fullPath.length > 0 && isPassThroughHex(occupied, plan.fullPath[0]!.q, plan.fullPath[0]!.r);
     return {
       ok: false,
       movePath: [],
       cost: 0,
       arrived: false,
-      stopReason: 'no_movement',
-      stopDetail: 'brak punktów ruchu',
+      stopReason: onlyOwnInReach ? 'obstacle' : 'no_movement',
+      stopDetail: onlyOwnInReach ? 'własna jednostka na trasie — brak wolnego heksu w zasięgu' : 'brak punktów ruchu',
     };
   }
 

@@ -33,7 +33,7 @@ import {
   splitIntoWarArmies,
   warArmyCount,
 } from './army-consolidation';
-import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit, terrainMoveCost } from '../units/setup';
+import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit, terrainMoveCost, buildMoveOccupancy, endBlockedKeys, MoveOccupancy } from '../units/setup';
 import { type AiMarchGuard, firstBlockedOwnerOnPath, isDetourSignificant } from './ai-march-guard';
 import { farthestStepWithinBudget } from './ai-move-range';
 import {
@@ -888,14 +888,15 @@ function nearest<T>(
  * Build the occupied set (all units' keys) excluding this unit itself.
  * Used for pathfinding -- we do not block on the unit's own hex.
  */
-function occupiedExcluding(units: RuntimeUnit[], excludeId: string): Set<string> {
-  const occ = new Set<string>();
-  for (const u of units) {
-    if (u.id !== excludeId) {
-      occ.add(keyOf(u.q, u.r));
-    }
+function occupiedExcluding(units: RuntimeUnit[], excludeId: string): MoveOccupancy {
+  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: obce jednostki blokuja, WLASNE (ten sam ownerId) = przejscie.
+  const moverOwner = units.find(u => u.id === excludeId)?.ownerId;
+  if (moverOwner === undefined) {
+    const all = new MoveOccupancy();
+    for (const u of units) if (u.id !== excludeId) all.add(keyOf(u.q, u.r));
+    return all;
   }
-  return occ;
+  return buildMoveOccupancy(units, moverOwner, [excludeId]);
 }
 
 /**
@@ -920,7 +921,8 @@ function firstStep(
   const occ = occupiedExcluding(units, unit.id);
   const path = marchPathFor(unit, map, destQ, destR, units, occ, allowFriendlyDestination);
   if (path.length === 0) return null;
-  return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? null;
+  // Krok nie moze konczyc sie na zablokowanym ani na heksie z wlasna jednostka (przejscie != laczenie).
+  return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, endBlockedKeys(occ)) ?? path[0] ?? null;
 }
 
 /** Trasa marszu jednostki (ta sama co w firstStep: straz terytorium, zajetosc); `occ` jest modyfikowane. */
@@ -935,7 +937,10 @@ function marchPathFor(
 ): { q: number; r: number }[] {
   if (allowFriendlyDestination && units.some(u =>
     u.ownerId === unit.ownerId && u.id !== unit.id && u.q === destQ && u.r === destR,
-  )) occ.delete(keyOf(destQ, destR));
+  )) {
+    occ.delete(keyOf(destQ, destR));
+    if (occ instanceof MoveOccupancy) occ.passThrough.delete(keyOf(destQ, destR));
+  }
   const guard = activeMarchGuard;
   return guard !== null && !isCivilianUnit(unit)
     ? guardedMarchPath(guard, unit, map, destQ, destR, occ)
@@ -4483,7 +4488,11 @@ function applyWarAllInCapitalToCommands(
     marchMainGroupWhileRendezvous: ctx.marchMainGroupWhileRendezvous,
   };
   const seaInProgress = marchGuard !== null && planned.some(u => u.embarked === true);
-  const nav = { map, blocked, occupied, allowSea: ctx.allowSea === true || seaInProgress };
+  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: heksy z WLASNYMI jednostkami (bez obcych) = przejscie w marszu.
+  const passThrough = planned.length > 0 && planned.every(u => u.ownerId === planned[0]!.ownerId)
+    ? buildMoveOccupancy(units, planned[0]!.ownerId, []).passThrough
+    : undefined;
+  const nav = { map, blocked, occupied, passThrough, allowSea: ctx.allowSea === true || seaInProgress };
   // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ON): liczba armii = liczba wojen; kazda armia to
   // zrownowazona czesc wojsk marszu, idaca na stolice JEDNEGO wroga. OFF = jedna wspolna
   // procedura (dotychczasowe zachowanie).
@@ -4579,10 +4588,9 @@ function requestWarMarchPassage(
   for (const pl of plans) for (const id of pl.noPath) noPathIds.add(id);
   const nearestTarget = (u: RuntimeUnit): { q: number; r: number } =>
     targets.reduce((b, t) => (hexDistance(u.q, u.r, t.q, t.r) < hexDistance(u.q, u.r, b.q, b.r) ? t : b), targets[0]!);
-  const occ = new Set<string>();
-  for (const x of units) occ.add(keyOf(x.q, x.r));
   const rep = planned.find(u => noPathIds.has(u.id)) ?? planned[0]!;
-  occ.delete(keyOf(rep.q, rep.r));
+  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: diagnostyka liczy trase tak jak realny ruch (wlasne = przejscie).
+  const occ = buildMoveOccupancy(units, rep.ownerId, [rep.id]);
   const goal = nearestTarget(rep);
   // Tani filtr geometryczny: bez zakazanego terenu w poblizu linii prostej nie ma czego wnioskowac.
   if (!guard.nearBlockedTerritory(rep.q, rep.r, goal.q, goal.r, 3)) return;
@@ -4612,7 +4620,7 @@ function requestWarMarchPassage(
 function planWarArmiesByEnemy(
   units: RuntimeUnit[],
   ctx: WarAllInContext,
-  nav: { map: GameMap; blocked: ReadonlySet<string>; occupied: ReadonlySet<string> },
+  nav: { map: GameMap; blocked: ReadonlySet<string>; occupied: ReadonlySet<string>; passThrough?: ReadonlySet<string> },
   warOpts: { enemyArmies?: ReadonlyArray<EngageArmyHex>; engageRadius?: number; enemyStrength?: ReadonlyArray<EnemyStrengthRef>;
     marchMainGroupWhileRendezvous?: boolean },
   data: GameData,

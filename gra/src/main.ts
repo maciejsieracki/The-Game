@@ -155,7 +155,7 @@ import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
 import { installCivTestHooks, isCivTestEnabled } from './game/civ-test-hooks';
-import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit } from './units/setup';
+import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';
 import { enterCityAfterSurrender } from './game/siege-enter-city';
 import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';
 import type { RuntimeUnit } from './units/setup';
@@ -279,7 +279,7 @@ import {
   serializePendingWorkTax,
 } from './game/work-tax';
 import {
-  canUnitOccupyCityHex, addForeignCityBlocks,
+  canUnitOccupyCityHex, foreignCityHexKeys,
 } from './game/city-hex-movement';
 import { executeAiCityMove } from './game/ai-city-capture-executor';
 import { createAiMarchGuard, isMarchPassageCooldownActive } from './game/ai-march-guard';
@@ -13347,19 +13347,18 @@ async function boot(): Promise<void> {
       return terrainMoveCost(hex) !== Infinity;
     }
 
-    /** Set of occupied hex keys for all units except the given id(s). */
-    function occupiedExcept(...exceptIds: string[]): Set<string> {
-      const skip = new Set(exceptIds);
-      const occ = new Set<string>();
-      for (const u of units) {
-        if (!skip.has(u.id)) occ.add(keyOf(u.q, u.r));
+    /**
+     * Pathfinding: obce jednostki i obce miasta = zablokowane; WLASNE jednostki = przejscie
+     * (R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1; patrz MoveOccupancy w units/setup.ts) -- wolno przez
+     * nie przejsc, a laczenie jest proponowane tylko gdy ruch KONCZY sie na wlasnej jednostce.
+     */
+    function occupiedForMove(moverOwnerId: number, ...exceptIds: string[]): MoveOccupancy {
+      const occ = buildMoveOccupancy(units, moverOwnerId, exceptIds);
+      for (const k of foreignCityHexKeys(moverOwnerId, cities)) {
+        occ.add(k);
+        occ.passThrough.delete(k);
       }
       return occ;
-    }
-
-    /** Pathfinding: obce miasta = zablokowane (tylko garnizon własny). */
-    function occupiedForMove(moverOwnerId: number, ...exceptIds: string[]): Set<string> {
-      return addForeignCityBlocks(occupiedExcept(...exceptIds), moverOwnerId, cities);
     }
 
     // TEMAT #15 — embarkacja: czy właściciel zna Żeglugę (gracz / AI).
@@ -29651,7 +29650,10 @@ async function boot(): Promise<void> {
       let moveDestR = destR;
       let cost = pathCost(path, map, moveCostFn);
       if (cost > stackRuch) {
-        const truncated = truncatePathToBudget(path, stackRuch, map, moveCostFn);
+        // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: skrocony ruch nie staje na wlasnej jednostce (bez laczenia).
+        const truncated = trimSegmentEndOffPassThrough(
+          truncatePathToBudget(path, stackRuch, map, moveCostFn), path.length, occ,
+        );
         if (truncated.length === 0) return false;
         movePath = truncated;
         const last = truncated[truncated.length - 1]!;
@@ -39575,20 +39577,17 @@ async function boot(): Promise<void> {
                     // w niewidoczny atak/przejęcie miasta.
                     continue;
                   }
-                  const blockedKeys = addForeignCityBlocks(
-                    new Set<string>(),
-                    u.ownerId,
-                    cities,
-                  );
-                  for (const ou of units) {
-                    if (ou.id !== u.id) blockedKeys.add(keyOf(ou.q, ou.r));
-                  }
+                  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: obce jednostki/miasta blokuja, wlasne = przejscie.
+                  const blockedKeys = occupiedForMove(u.ownerId, u.id);
                   const friendlyStackDestination = cmd.allowFriendlyStack === true
                     && units.some(ou => ou.id !== u.id && ou.ownerId === ownerId
                       && ou.q === cmd.toQ && ou.r === cmd.toR)
                     && !units.some(ou => ou.ownerId !== ownerId
                       && ou.q === cmd.toQ && ou.r === cmd.toR);
-                  if (friendlyStackDestination) blockedKeys.delete(keyOf(cmd.toQ, cmd.toR));
+                  if (friendlyStackDestination) {
+                    blockedKeys.delete(keyOf(cmd.toQ, cmd.toR));
+                    blockedKeys.passThrough.delete(keyOf(cmd.toQ, cmd.toR));
+                  }
                   const moveResult = executeAiCityMove({
                     command: cmd,
                     unit: u,

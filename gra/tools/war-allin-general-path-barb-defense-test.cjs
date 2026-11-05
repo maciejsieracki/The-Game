@@ -276,9 +276,16 @@ withFlags(() => {
       for (const id of Object.keys(repStart)) {
         const c = cmds.get(id);
         const [sq, sr] = repStart[id];
+        // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1 (pomiar, nie hipoteza): rep2 (21,28) na bazie 522271468 -> (23,28),
+        // po zmianie -> (21,30). Oba kroki zblizaja do miasta zbiorki ORAZ do barbarzyncy w bazie ((23,28): miasto 4->3,
+        // barb 8->6); (21,30) zblizaja tylko do barbarzyncy (barb 8->6, miasto 4->5) -- remis rownowaznych tras
+        // (koszt 6) rozstrzygniety inaczej, bo rep1 (21,27) nie blokuje juz Dijkstry. Istota testu (zastepca NIE
+        // maszeruje na stolice wroga) jest scislejsza: brak targetCityId ORAZ krok nie zbliza do stolicy wroga.
         assert(c !== undefined && c.type === 'move' && c.targetCityId === undefined
-          && hexDistance(c.toQ, c.toR, MY_CITY.q, MY_CITY.r) < hexDistance(sq, sr, MY_CITY.q, MY_CITY.r),
-        `T7: zastepca ${id} idzie do miasta zbiorki c1, nie na stolice (${JSON.stringify(c)})`);
+          && hexDistance(c.toQ, c.toR, ENEMY_CAPITAL.q, ENEMY_CAPITAL.r) >= hexDistance(sq, sr, ENEMY_CAPITAL.q, ENEMY_CAPITAL.r)
+          && (hexDistance(c.toQ, c.toR, MY_CITY.q, MY_CITY.r) < hexDistance(sq, sr, MY_CITY.q, MY_CITY.r)
+            || hexDistance(c.toQ, c.toR, threat.q, threat.r) < hexDistance(sq, sr, threat.q, threat.r)),
+        `T7: zastepca ${id} idzie do miasta zbiorki c1 (lub obrona ku barbarzyncy), nie na stolice (${JSON.stringify(c)})`);
       }
     } finally {
       setArmyConsolidationOverride(false);

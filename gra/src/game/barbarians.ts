@@ -35,7 +35,7 @@ import { addForeignCityBlocks } from './city-hex-movement';
 import { canCaptureCityWithoutBattle, type CityDefRosterOptions } from './siegeDefenders';
 import type { Hex } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost, isCivilianUnit } from '../units/setup';
+import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, endBlockedKeys, MoveOccupancy } from '../units/setup';
 import { farthestStepWithinBudget } from './ai-move-range';
 import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
 
@@ -748,12 +748,15 @@ function nearest<T extends HasQR>(q: number, r: number, items: T[]): T | undefin
 }
 
 /** Set of "q,r" keys occupied by units other than `excludeId` (for pathing). */
-function occupiedExcluding(units: RuntimeUnit[], excludeId: string): Set<string> {
-  const occ = new Set<string>();
-  for (const u of units) {
-    if (u.id !== excludeId) occ.add(keyOf(u.q, u.r));
+function occupiedExcluding(units: RuntimeUnit[], excludeId: string): MoveOccupancy {
+  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: obce jednostki blokuja, WLASNE (ten sam ownerId) = przejscie.
+  const moverOwner = units.find(u => u.id === excludeId)?.ownerId;
+  if (moverOwner === undefined) {
+    const all = new MoveOccupancy();
+    for (const u of units) if (u.id !== excludeId) all.add(keyOf(u.q, u.r));
+    return all;
   }
-  return occ;
+  return buildMoveOccupancy(units, moverOwner, [excludeId]);
 }
 
 /**
@@ -770,7 +773,7 @@ function firstStep(
 ): { q: number; r: number } | null {
   const path = computePath(unit, map, destQ, destR, occupied, costFn);
   if (path.length === 0) return null;
-  return farthestStepWithinBudget(path, unit.ruchLeft, map, costFn, occupied) ?? path[0] ?? null;
+  return farthestStepWithinBudget(path, unit.ruchLeft, map, costFn, endBlockedKeys(occupied)) ?? path[0] ?? null;
 }
 
 /**
@@ -1850,7 +1853,11 @@ export function decideBarbarianMoves(
       blocked.add(keyOf(c.q, c.r));
     }
     const occupied = new Set(allUnits.map(u => keyOf(u.q, u.r)));
-    const plan = planWarAllInCapital(marchers, allInTargets, { map, blocked, occupied });
+    // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: wlasne jednostki (ten sam wlasciciel) = przejscie w marszu.
+    const passThrough = marchers.length > 0 && marchers.every(u => u.ownerId === marchers[0]!.ownerId)
+      ? buildMoveOccupancy(allUnits, marchers[0]!.ownerId, []).passThrough
+      : undefined;
+    const plan = planWarAllInCapital(marchers, allInTargets, { map, blocked, occupied, passThrough });
     // Kolejnosc komend = kolejnosc planu (przod kolumny zwalnia heksy tylnym).
     for (const o of plan.orders) commands.push({ type: 'move', unitId: o.unitId, toQ: o.step.q, toR: o.step.r });
   }
