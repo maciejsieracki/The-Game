@@ -1,110 +1,111 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "bfb410badba810c44dd38a27b6a72d23",
-  "bundleSha256": "04b5a2dc13d41a0d2057ad82089fd97ad0cf47def1d73e7e359b03a99edb2fb0",
-  "bundleBytes": 70248431,
+  "bundleMd5": "bec6901fb45f31083ac0101bbe76604b",
+  "bundleSha256": "8c1613265d7df11e6eaf2423b7f6c8a4a0c32fbd2068456453fc8390200c28d5",
+  "bundleBytes": 70252936,
   "sourceSnapshot": {
-    "source": "main 80919e2ae + GRAN2 (4d6616dba)",
+    "source": "main 9d41e912c + ARMYPANEL (49c9d5b0e)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 503: R-WEB-GRANARY2-TECH-DATA-FIX-Q1 — Spichlerz II ma realną technologię (Garncarstwo) zamiast nieistniejącej „Warzelnia soli”, więc da się go zbudować (wymaga: Spichlerz I, epoka 2, Garncarstwo, Sól i Ceramika w bramce); strażnik danych pilnuje techUnlock/Tech spoza tech.json; koszty bez zmian"
+    "FALA 504: R-WEB-UI-ARMY-PANEL-GENERAL-LABEL-MULTISELECT-Q1 — generał rozpoznawalny („Generał — Wojownik”, pierwszy na liście) w panelu stosu, podziału i scalania; wielokrotne zaznaczanie jednostek (pola wyboru, licznik, Zaznacz wszystko bez generała, Odznacz) i „ROZWIĄŻ ZAZNACZONE (N)” z potwierdzeniem i ostrzeżeniem o generale"
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "granary2-tech-data-guard 14/0; deposit-building-gate 50/0; popcap-spichlerz2-akwedukt20 46/0; dowód Chromium (zrzut chipu Garncarstwo czerwony/spełniony)"
+    "army-panel-general-label-multiselect 11/0 (po scaleniu); FC: live na prawdziwym main.ts 7/7 (zaznacz 3 → ROZWIĄŻ usuwa dokładnie 3), commander-identity 8/8, split-movement 4/4, merge-panel-list-visibility 104/104, ai-test 274/20 (baza)"
   ],
   "limits": [
-    "Ceramika w bramce Spichlerza II (Spichlerz I jej nie ma) — decyzja właściciela; badanie Garncarstwo vs Pismo/Religia — do potwierdzenia; stare zapisy ze zbudowanym Spichlerzem II nietknięte"
+    "Panel „Lista” (armyListHud) dostaje rolę przez nazwę z main.ts; sortowanie Listy bez osobnego testu",
+    "army-split-panel-scroll-grid i unit-info-card-army-interaction pady zastane (nie z tej zmiany)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Operator Haiku → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES (2 rundy)."
+    "notes": "Operator Haiku → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T22:36:49",
+  "hubGeneratedAt": "2026-11-05T22:47:56",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "bfb410badba810c44dd38a27b6a72d23",
-      "sizeBytes": 70248431
+      "md5": "bec6901fb45f31083ac0101bbe76604b",
+      "sizeBytes": 70252936
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "bfb410badba810c44dd38a27b6a72d23",
-      "sizeBytes": 70248431
+      "md5": "bec6901fb45f31083ac0101bbe76604b",
+      "sizeBytes": 70252936
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "bfb410badba810c44dd38a27b6a72d23",
-      "sizeBytes": 70248431
+      "md5": "bec6901fb45f31083ac0101bbe76604b",
+      "sizeBytes": 70252936
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "bfb410badba810c44dd38a27b6a72d23",
-      "sizeBytes": 70248431
+      "md5": "bec6901fb45f31083ac0101bbe76604b",
+      "sizeBytes": 70252936
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "bfb410badba810c44dd38a27b6a72d23",
-      "sizeBytes": 70248431
+      "md5": "bec6901fb45f31083ac0101bbe76604b",
+      "sizeBytes": 70252936
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "bfb410badba810c44dd38a27b6a72d23",
-      "sizeBytes": 70248431
+      "md5": "bec6901fb45f31083ac0101bbe76604b",
+      "sizeBytes": 70252936
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "bfb410badba810c44dd38a27b6a72d23",
-      "sizeBytes": 70248431
+      "md5": "bec6901fb45f31083ac0101bbe76604b",
+      "sizeBytes": 70252936
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "bfb410badba810c44dd38a27b6a72d23",
-      "sizeBytes": 70248431
+      "md5": "bec6901fb45f31083ac0101bbe76604b",
+      "sizeBytes": 70252936
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "bfb410badba810c44dd38a27b6a72d23",
-      "sizeBytes": 70248431
+      "md5": "bec6901fb45f31083ac0101bbe76604b",
+      "sizeBytes": 70252936
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "bfb410badba810c44dd38a27b6a72d23",
-      "sizeBytes": 70248431
+      "md5": "bec6901fb45f31083ac0101bbe76604b",
+      "sizeBytes": 70252936
     }
   ],
-  "md5": "bfb410badba810c44dd38a27b6a72d23",
-  "sizeBytes": 70248431,
+  "md5": "bec6901fb45f31083ac0101bbe76604b",
+  "sizeBytes": 70252936,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main 80919e2ae + merge GRAN2",
+  "source": "gra/src; main 9d41e912c + merge ARMYPANEL",
   "immediatePreviousRelease": {
-    "bundleMd5": "8c0e8f81147ad119ed25be1006b50eb4"
+    "bundleMd5": "bfb410badba810c44dd38a27b6a72d23"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 8c0e8f81147ad119ed25be1006b50eb4, 70248064 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 bfb410badba810c44dd38a27b6a72d23, 70248431 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1280,8 +1281,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T22:36:44+00:00",
-  "buildStamp": "2026-11-05 22:36",
+  "publishedAt": "2026-11-05T22:47:48+00:00",
+  "buildStamp": "2026-11-05 22:47",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1289,5 +1290,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "FALA 503: GRANARY2-TECH-DATA-FIX"
+  "releaseScope": "FALA 504: ARMY-PANEL-GENERAL-LABEL-MULTISELECT"
 }

@@ -1,3 +1,9 @@
+## ROBOCZA bec6901f -- 2026-11-05 -- FALA 504: panel armii — generał i wielokrotne zaznaczanie (testowa)
+
+- md5 pełne: `bec6901fb45f31083ac0101bbe76604b` · 70252936 B · poprzednia `bfb410ba`.
+- R-WEB-UI-ARMY-PANEL-GENERAL-LABEL-MULTISELECT-Q1: generał jako „Generał — Wojownik”, pierwszy na liście (panel stosu, podziału, scalania); zaznaczanie wielu jednostek (pola wyboru, licznik, „Zaznacz wszystko” bez generała, „Odznacz”); „ROZWIĄŻ ZAZNACZONE (N)” z potwierdzeniem i ostrzeżeniem o generale.
+- FC PASS-WITH-NOTES. Uwaga: panel „Lista” (armyListHud) bez osobnego testu sortowania.
+
 ## ROBOCZA bfb410ba -- 2026-11-05 -- FALA 503: Spichlerz II da się zbudować (testowa)
 
 - md5 pełne: `bfb410badba810c44dd38a27b6a72d23` · 70248431 B · poprzednia `8c0e8f81`.
