@@ -8,6 +8,7 @@ import type { IconId } from './icons/iconRegistry';
 import { iconHtml } from './icons/iconRegistry';
 import { scienceOwlIconSized } from './icons/scienceOwlIcon';
 import { scienceProgressRingHtml } from './icons/scienceProgressRing';
+import { signedPl } from './formatPl';
 
 function escHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -105,4 +106,13 @@ export function chip6cHtml(opts: Chip6cOpts): string {
 
 export function chip6cSep(): string {
   return '<span class="civ-hud-chip-sep" aria-hidden="true"></span>';
+}
+
+/**
+ * R-WEB-HUD-GROSS-NET-REST-Q1 — JEDNA wspólna konwencja zapisu „BRUTTO → NETTO" dla tooltipów
+ * HUD (prawy baner) i karty miasta: `BRUTTO +12 → NETTO +9 jednostka/turę`. Tylko prezentacja;
+ * liczby podaje wywołujący z tych samych pól HUD-state co wartości widoczne na chipie.
+ */
+export function formatGrossNet(gross: number, net: number, unit?: string): string {
+  return `BRUTTO ${signedPl(gross)} \u2192 NETTO ${signedPl(net)}${unit ? ' ' + unit : ''}`;
 }

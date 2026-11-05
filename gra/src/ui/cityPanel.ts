@@ -282,6 +282,7 @@ import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 // wiersz WZROST% w chipie „Wyżywienie i wzrost" dogania konwencję plakietki mapy (przecinek).
 import { formatLiczbaPl, signedPl } from './formatPl';
 import { formatCompactNumber, formatFullNumber } from './formatCompactNumber';
+import { formatGrossNet } from './hudChip6c';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -1133,6 +1134,11 @@ export interface EmpireHudSnap {
   /** Civ-wide utrzymanie Pracy za ulepszenia surowcowe terenu (tartak/kamieniołom/
    *  glinianka/kopalnie/warzelnia soli/stadnina), już wliczone (odjęte) w `pracaRate`. */
   pracaUpkeep?: number;
+  /** R-WEB-HUD-GROSS-NET-REST-Q1: koszt auto-ulepszeń / Cudów na mapie (ostatnia tura) — składniki BRUTTO Pracy jak w HUD. */
+  pracaAutoUlepszeniaKoszt?: number;
+  pracaCudaKoszt?: number;
+  /** R-WEB-HUD-GROSS-NET-REST-Q1: nadwyżka żywności miast → centrala (BRUTTO Spichlerza) — jak w HUD. */
+  zywnoscWplywMiast?: number;
   zloto?: number;
   zlotoRate?: number;
   nauka?: number;
@@ -10739,6 +10745,10 @@ function buildCityOnlyW3FlankChips(
     kultura: { big: view.kultura,     small: civ.kultura, stock: empire.kultura ?? 0 },
     religia: { big: cityRel,          small: civ.religia, stock: empire.religionStock ?? 0 },
   };
+  // R-WEB-HUD-GROSS-NET-REST-Q1: BRUTTO Pracy cywilizacji = netto + utrzymanie + auto-ulepszenia + Cuda
+  // (ten sam wzór co `pracaWplywBrutto` w hud.ts); Skarbiec: BRUTTO tylko na poziomie cywilizacji (brutto miasta NIE_ZMIERZONO w tej funkcji).
+  const pracaCivBrutto = (chip.praca.small ?? 0) + (empire.pracaUpkeep ?? 0)
+    + (empire.pracaAutoUlepszeniaKoszt ?? 0) + (empire.pracaCudaKoszt ?? 0);
   const pracaCls = chip.praca.big > 0 ? 'green' : chip.praca.big < 0 ? 'red' : '';
   const foodCls = chip.zywnosc.big > 0 ? 'green' : chip.zywnosc.big < 0 ? 'red' : '';
   const goldCls = chip.zloto.big > 0 ? 'green' : chip.zloto.big < 0 ? 'red' : '';
@@ -10763,6 +10773,8 @@ function buildCityOnlyW3FlankChips(
           ? ` (wpływ do puli ${signed((chip.praca.small ?? 0) + empire.pracaUpkeep)} ` +
             `− utrzymanie ulepszeń surowcowych ${empire.pracaUpkeep} pkt Pracy/turę)`
           : '') +
+        ` · to miasto: ${formatGrossNet(chip.praca.big, chip.praca.big, 'pkt Pracy/turę')} (miasto nie ma własnych drenaży)` +
+        ` · cywilizacja: ${formatGrossNet(pracaCivBrutto, chip.praca.small, 'pkt Pracy/turę')}` +
         ` · zapas cywilizacji ${chip.praca.stock}`,
       chip.praca.small,
       chip.praca.stock,
@@ -10775,7 +10787,11 @@ function buildCityOnlyW3FlankChips(
       'zywnosc',
       `Żywność TEGO miasta: produkcja ${signed(foodSplit.produkcja)} − racje ${foodSplit.racje} = ` +
         `${signed(chip.zywnosc.big)} · WZROST ${wzrostProcentUi}% · cała cywilizacja ` +
-        `${signed(chip.zywnosc.small)} / turę · zapas cywilizacji ${chip.zywnosc.stock}`,
+        `${signed(chip.zywnosc.small)} / turę · zapas cywilizacji ${chip.zywnosc.stock}` +
+        ` · to miasto: ${formatGrossNet(foodSplit.produkcja, chip.zywnosc.big, '🍞/turę')} (produkcja − racje)` +
+        (empire.zywnoscWplywMiast != null
+          ? ` · cywilizacja: ${formatGrossNet(empire.zywnoscWplywMiast, chip.zywnosc.small, '🍞/turę')} (nadwyżka miast → centrala; netto po deficytach i armii)`
+          : ''),
       chip.zywnosc.small,
       chip.zywnosc.stock,
     ),
@@ -10787,7 +10803,10 @@ function buildCityOnlyW3FlankChips(
       'zloto',
       `Netto pieniędzy TEGO miasta ${signed(chip.zloto.big)} → skarbiec · ` +
         `${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)} · ` +
-        `cała cywilizacja ${signed(chip.zloto.small)} / turę · zapas skarbca ${chip.zloto.stock}`,
+        `cała cywilizacja ${signed(chip.zloto.small)} / turę · zapas skarbca ${chip.zloto.stock}` +
+        (empire.bogactwoWplywyBrutto != null
+          ? ` · cywilizacja: ${formatGrossNet(empire.bogactwoWplywyBrutto, empire.bogactwoRate ?? chip.zloto.small, 'pkt Pieniądza/turę')} (netto po utrzymaniu)`
+          : ''),
       chip.zloto.small,
       chip.zloto.stock,
     ),
@@ -10801,7 +10820,9 @@ function buildCityOnlyW3FlankChips(
       naukaCls,
       'nauka',
       `Nauka TEGO miasta ${signed(chip.nauka.big)} / turę · cała cywilizacja ` +
-        `${signed(chip.nauka.small)} / turę · nauka nagromadzona cywilizacji ${chip.nauka.stock}`,
+        `${signed(chip.nauka.small)} / turę · nauka nagromadzona cywilizacji ${chip.nauka.stock}` +
+        ` · to miasto: ${formatGrossNet(chip.nauka.big, chip.nauka.big, 'pkt Nauki/turę')} · cywilizacja: ` +
+        `${formatGrossNet(chip.nauka.small, chip.nauka.small, 'pkt Nauki/turę')} (brak dziś drenaży Nauki)`,
       chip.nauka.small,
       chip.nauka.stock,
     ),
@@ -10812,7 +10833,9 @@ function buildCityOnlyW3FlankChips(
       kultCls,
       'kultura',
       `Kultura TEGO miasta ${signed(chip.kultura.big)} / turę · cała cywilizacja ` +
-        `${signed(chip.kultura.small)} / turę · kultura nagromadzona cywilizacji ${chip.kultura.stock}`,
+        `${signed(chip.kultura.small)} / turę · kultura nagromadzona cywilizacji ${chip.kultura.stock}` +
+        ` · to miasto: ${formatGrossNet(chip.kultura.big, chip.kultura.big, 'pkt Kultury/turę')} · cywilizacja: ` +
+        `${formatGrossNet(chip.kultura.small, chip.kultura.small, 'pkt Kultury/turę')} (brak dziś drenaży Kultury)`,
       chip.kultura.small,
       chip.kultura.stock,
     ),
@@ -10823,7 +10846,9 @@ function buildCityOnlyW3FlankChips(
       relCls,
       'religia',
       `Przyrost wiernych TEGO miasta ${signed(chip.religia.big)} / turę · cała cywilizacja ` +
-        `${signed(chip.religia.small)} / turę · wierni religii państwa ${chip.religia.stock}`,
+        `${signed(chip.religia.small)} / turę · wierni religii państwa ${chip.religia.stock}` +
+        ` · to miasto: ${formatGrossNet(chip.religia.big, chip.religia.big, 'wiernych/turę')} · cywilizacja: ` +
+        `${formatGrossNet(chip.religia.small, chip.religia.small, 'wiernych/turę')} (brak dziś drenaży wiernych)`,
       chip.religia.small,
       chip.religia.stock,
     ),

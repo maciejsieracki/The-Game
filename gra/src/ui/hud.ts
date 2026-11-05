@@ -65,7 +65,7 @@ import { iconHtml, type IconId } from './icons/iconRegistry';
 import { brandIconSvg, civIconSvg } from './icons/brandAssets';
 import { leaderPortraitUrl } from './leaderPortraits';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
-import { chip6cHtml, chip6cSep } from './hudChip6c';
+import { chip6cHtml, chip6cSep, formatGrossNet } from './hudChip6c';
 import { resourceColorClassCss, resourceTextClass } from './resourceColors';
 import { installHudTitleTooltips } from './hudTitleTooltip';
 import { createLeaderBannersHud, type LeaderBannersHudApi } from './leaderBannersHud';
@@ -674,6 +674,29 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
   .civ-hud .civ-hud-chip-top{gap:3px;}
   .civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl{flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .civ-hud .hud-chip-grid{column-gap:4px;}}
+/* R-WEB-HUD-GROSS-NET-REST-Q1: ≤700 px baner (3 kolumny) nachodził na medalion Mocy (środek ekranu,
+   min-width 240 px => lewy brzeg x=50vw-120 = 200 px przy 640 px, baner kończył się na ~276 px).
+   Węższe kolumny + zwarty medalion Mocy: baner kończy się przed medalionem także przy 640 px. */
+@media (max-width:700px){.civ-hud{--hud-cell-w:68px;--hud-cell-med:12px;--hud-cell-lbl:7.5px;--hud-cell-val:9.5px;--hud-cell-sm:8px;}
+  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:4px 4px;}
+  .civ-hud .civ-hud-chip-cell{column-gap:2px;}
+  .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 1px;}
+  .civ-hud .hud-chip-grid{column-gap:2px;}}
+/* R-WEB-HUD-GROSS-NET-REST-Q1 r2: prawy baner (Armia/Miasta/Obywatele/Kultura/Religia) mial max-width
+   50vw-340px (<=0 przy 640 px) i chipy nowrap => wylewaly sie poza ekran / zwijal sie do ~30 px paska.
+   Teraz: zawsze zawijanie, min. 150 px; <=1500 px etykiety ukryte (ikona + liczba + przyrost, pelny opis w tooltipie);
+   <=1100 px klaster w kolumne (przyciski nad banerem), zeby baner nie wchodzil na medalion Mocy. */
+.civ-hud .civ-hud-banner-right{max-width:max(150px,min(calc(50vw - 352px),780px));}
+.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;row-gap:2px;max-width:100%;}
+@media (max-width:1500px){
+  .civ-hud .civ-hud-banner-right .civ-hud-chip-lbl{display:none;}
+  .civ-hud .civ-hud-banner-right .civ-hud-chip-sep{margin:0 4px;}}
+@media (max-width:1100px){
+  .civ-hud .hud-right-cluster{flex-direction:column-reverse;align-items:flex-end;gap:6px;}
+  .civ-hud .civ-hud-banner-right .civ-hud-chip-sep{display:none;}
+  .civ-hud .civ-hud-banner-right{max-width:max(150px,calc(50vw - 150px));}}
+@media (max-width:700px){
+  .civ-hud .civ-hud-banner-right{max-width:max(150px,calc(50vw - 105px));}}
 .civ-hud .hud-right{display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;flex-shrink:0;}
 .civ-hud .hud-meta{text-align:right;}
 .civ-hud .b-menu{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
@@ -776,6 +799,16 @@ html.civ-ui-zoom-active .civ-hud-util-dock{
 .civ-hud .power-center .p-recruit-val{font-size:15px;color:#f4e6a8;font-weight:700;font-family:var(--civ-font-title);}
 .civ-hud .power-center .p-lbl{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#a08030;}
 .civ-hud .power-center .p-sub{display:none;}
+/* R-WEB-HUD-GROSS-NET-REST-Q1: zwarty medalion Mocy ≤700 px (po regułach bazowych — kolejność kaskady). */
+@media (max-width:700px){
+  .civ-hud .power-center{min-width:150px;padding:8px 8px 6px;}
+  .civ-hud .power-center .p-epoch{font-size:10px;margin-bottom:4px;}
+  .civ-hud .power-center .p-row{gap:5px;}
+  .civ-hud .power-center .p-ic{width:30px;height:30px;}
+  .civ-hud .power-center .p-ic svg{width:20px;height:20px;}
+  .civ-hud .power-center .p-ic.p-ic-civ svg{width:20px;height:20px;}
+  .civ-hud .power-center .p-ic.p-ic-leader .p-ic-portrait{width:30px;height:30px;}
+  .civ-hud .power-center .p-val-num{font-size:16px;}}
 .civ-hud.is-city-view .civ-hud-banner-left,
 .civ-hud.is-city-view .civ-hud-banner-right,
 .civ-hud.is-city-view .power-center{display:none!important;}
@@ -1039,7 +1072,7 @@ function miastaChipTitle(s: HudState): string {
   const rate = s.ludnoscRate ?? 0;
   return `Miasta — osiedla imperium`
     + ` · Duża liczba: ${s.osiedla} miast`
-    + ` · Zielone +N: ${signed(rate)} obyw./turę (przyrost ludności łącznie)`
+    + ` · ${formatGrossNet(rate, rate, 'obyw./turę')} (przyrost ludności łącznie)`
     + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
 }
 
@@ -1049,7 +1082,7 @@ function obywateleChipTitle(s: HudState): string {
   const rate = s.ludnoscRate ?? 0;
   return `Obywatele — łączna populacja imperium`
     + ` · Duża liczba: ${s.ludnosc} obywateli (suma populacji wszystkich miast gracza)`
-    + ` · Zielone +N: ${signed(rate)} obyw./turę (przyrost ludności netto)`
+    + ` · ${formatGrossNet(rate, rate, 'obyw./turę')} (HUD nie rozdziela przyrostu i strat ludności — pokazuje saldo)`
     + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
 }
 
@@ -1058,7 +1091,7 @@ function kulturaChipTitle(s: HudState): string {
   const rate = s.kulturaRate ?? 0;
   return `Kultura — wpływ kulturowy imperium`
     + ` · Duża liczba: ${stock} pkt Kultury (zapas imperium)`
-    + ` · Zielone +N: ${signed(rate)} pkt Kultury/turę (przyrost netto)`
+    + ` · ${formatGrossNet(rate, rate, 'pkt Kultury/turę')} (brak dziś drenaży Kultury)`
     + ` · Kliknij po szczegóły.`;
 }
 
@@ -1068,7 +1101,7 @@ function religiaChipTitle(s: HudState): string {
   const rel = s.stateReligion ? ` (${s.stateReligion})` : '';
   return `Religia — wierni religii państwa${rel}`
     + ` · Duża liczba: ${stock} wiernych (łącznie w imperium)`
-    + ` · Zielone +N: ${signed(rate)} wiernych/turę (szerzenie netto)`
+    + ` · ${formatGrossNet(rate, rate, 'wiernych/turę')} (brak dziś drenaży wiernych; szerzenie łącznie)`
     + ` · Kliknij po szczegóły.`;
 }
 

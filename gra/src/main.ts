@@ -1011,7 +1011,7 @@ import {
 } from './game/diplomacy-resource-trade-pick';
 import { detectOwnerResourceNeeds } from './game/ai-resource-needs';
 import {
-  tryDeductUnitSpawnCostsEmpire, empirePoborTotals, rekrutUnitEquivalents, formatManpower, formatManpowerCompact,
+  tryDeductUnitSpawnCostsEmpire, empirePoborTotals, rekrutUnitEquivalents, formatManpowerCompact,
   cityManpowerSnapshot, civManpowerRegenMult, civManpowerMatrixMults,
   cityManpowerMax, unitManpowerCost, unitManpowerCostForType,
   canAffordUnitManpowerEmpire, empireManpowerCurrent, deductManpowerFromEmpire,
@@ -6765,7 +6765,7 @@ async function boot(): Promise<void> {
 
       const cityLabel = cityAtUnit(u)?.name ?? cities.find(c => c.ownerId === 0)?.name ?? 'imperium';
       showHintMessage(
-        u.typeId + ' rozwiązany — +' + formatManpower(mpRefund) + ' rekrutów → pula imperium (' + cityLabel + ')',
+        u.typeId + ' rozwiązany — +' + formatManpowerCompact(mpRefund) + ' rekrutów → pula imperium (' + cityLabel + ')',
         4000,
       );
       refreshD1bHud();
@@ -8058,6 +8058,11 @@ async function boot(): Promise<void> {
             pracaPool: hs.praca,
             pracaRate: hs.pracaRate,
             pracaUpkeep: hs.pracaUpkeep,
+            // R-WEB-HUD-GROSS-NET-REST-Q1: te same pola BRUTTO co w górnym banerze (karta miasta —
+            // tooltipy BRUTTO → NETTO); tylko podanie istniejących wartości HUD-state.
+            pracaAutoUlepszeniaKoszt: hs.pracaAutoUlepszeniaKoszt,
+            pracaCudaKoszt: hs.pracaCudaKoszt,
+            zywnoscWplywMiast: hs.zywnoscWplywMiast,
             zloto: hs.zloto,
             zlotoRate: hs.zlotoRate,
             nauka: hs.nauka,
