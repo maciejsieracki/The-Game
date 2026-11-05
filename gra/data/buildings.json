@@ -541,7 +541,7 @@
     "opis": "Spichlerz II to rozbudowana wersja magazynu żywności, pozwalająca miastu utrzymać jeszcze większą populację i armię.",
     "top3": [
       { "tytul": "Więcej żywności i zadowolenia", "tekst": "Dodaje 3 punkty Żywności i 4 punkty zadowolenia, przewyższając bazowy Spichlerz." },
-      { "tytul": "Wymaga soli", "tekst": "Powstaje przez rozbudowę Spichlerza i wymaga dostępu do Soli w imperium, np. z warzelni na złożu lub wybrzeżu." },
+      { "tytul": "Wymaga ceramiki i soli", "tekst": "Powstaje przez rozbudowę Spichlerza, po zbadaniu Garncarstwa, i wymaga dostępu do Ceramiki oraz Soli w imperium (sól np. z warzelni na złożu lub wybrzeżu)." },
       { "tytul": "Wyższy limit populacji i armii", "tekst": "Podnosi górny pułap wielkości miasta i utrzymywanej armii ponad to, co daje zwykły Spichlerz." }
     ],
     "techUnlock": "Garncarstwo",
