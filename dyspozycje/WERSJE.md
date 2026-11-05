@@ -1,3 +1,10 @@
+## ROBOCZA 0256ee64 -- 2026-11-05 -- FALA 500: wycinka lasu przy rzece bez obywatela + mnożnik zużycia na epokę (testowa)
+
+- md5 pełne: `0256ee644598821ea0d181dd37b8a2be` · 70246781 B · poprzednia `e17f3ec8`.
+- R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-NO-CITIZEN-Q1: las przy rzece wycinany także bez obywatela (gracz i AI); znane: auto-rozdział obsadza wycięte pola rzadko, tartak AI do obserwacji.
+- R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: racja żywności i zużycie każdego surowca ×1/1,5/2/2,5/3 wg epoki właściciela (wcześniej żywność 1/2/4, surowce 1/2/3). Do oceny w grze.
+- FC PASS-WITH-NOTES obu. NIE_ZMIERZONO: symulacja AI 100 tur, wygląd etykiety racji.
+
 ## ROBOCZA e17f3ec8 -- 2026-11-05 -- FALA 499: AI zbiera armię pod najbliższym wodzem (testowa)
 
 - md5 pełne: `e17f3ec82f5a4e98e4ea277067068232` · 70245153 B · poprzednia `2daa6255`.
