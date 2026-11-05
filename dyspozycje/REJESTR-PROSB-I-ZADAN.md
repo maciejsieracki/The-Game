@@ -8769,3 +8769,6 @@ Właściciel: ustaliliśmy, że oblegana armia w garnizonie, nie słabsza o wię
 
 ## 2026-11-05 — ZGŁOSZENIE (zrzut panelu „9 INFORMACYJNE”): powiadomienia — zaśmiecanie, trzy zakładki
 Właściciel: część wydarzeń w ogóle niepotrzebna (nowy szlak handlowy ×3 — komunikat + karta, „Wycinka: +185 Drewna (pozostało 0 tury) (13 wystąpień)”, „Auto ulepszenia: 11× (−Praca)”, „Dotarło do celu”); podział powiadomień na 3 zakładki zamiast chipa „🌍 Inne cyw.”: (1) **Dyplomacja**, (2) **Ważne** (brak surowców, złe rzeczy: armia, magazyn bliski wyczerpania przy oblężeniu „Harappa: magazyn wyczerpany — kapitulacja za 1 turę oblężenia!” itp.), (3) **Inne** (reszta); przycisk „Zamknij wszystkie informacyjne” ma być NAD typem wiadomości (zakładkami). → temat `R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1`.
+
+## 2026-11-05 — DECYZJA WŁAŚCICIELA: opcja włącz/wyłącz automatyzację budowy (domyślnie WYŁĄCZONA)
+Opcja w GŁÓWNYCH ustawieniach gry (nie w zaawansowanych): automatyzacja budowy dotyczy zarówno budynków w miastach, jak i ulepszeń terenu. Wyłączona (DOMYŚLNIE) → automatyczne opcje budowania niedostępne dla gracza, wszystko ręcznie; gracz musi włączyć, jeśli chce automatyzację. → temat `R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1`.
