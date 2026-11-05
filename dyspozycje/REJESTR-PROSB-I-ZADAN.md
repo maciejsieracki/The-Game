@@ -8736,3 +8736,7 @@ Przez WŁASNE jednostki wolno przechodzić (ścieżka nie omija); przez OBCE —
 ## 2026-11-05 — DECYZJA WŁAŚCICIELA (schemat): zużycie żywności i surowców przez obywateli rośnie o 50% BAZY co epokę
 
 Właściciel (wariant addytywny „B”): mnożnik zużycia przez obywateli **epoka 1 = ×1, 2 = ×1,5, 3 = ×2, 4 = ×2,5, 5 = ×3** — dotyczy żywności (racja = poziom Wyżywienia × 2 × mnożnik epoki; domyślnie poziom 4: 8/12/16/20/24, maksimum poziom 6: 12/18/24/30/36; Spichlerz I ×0,75, II ×0,5) i surowców (1 szt./obywatela/turę × mnożnik, `floor` per surowiec; lista surowców narasta: E1 drewno+glina, E2 +kamień+ceramika, E3 +cegła, E4/E5 do ustalenia). Stan kodu (sprawdzony 2026-11-05): stawki NIE zależą dziś od epoki (`rationFoodCostPerPop`, `CITIZEN_UPKEEP_RATE_PER_CITIZEN`). Wdrożenie: do rozstrzygnięcia, czy w web dla epok 1–3 (×1/×1,5/×2) teraz, czy razem z nowymi epokami przy wersji Rust (decyzja o nowych epokach: dopiero Rust). Ryzyko balansu: produkcja z pól i przepustowość konwerterów (+10% bazy/epokę) nie rosną tak szybko jak zużycie.
+
+## 2026-11-05 — DOPRECYZOWANIE schematu zużycia obywateli (właściciel)
+
+Poziom (suwak Wyżywienie) dotyczy WYŁĄCZNIE żywności; surowce zużywane są zawsze jedną stałą stawką, niezależną od poziomu. Schemat przyjmuje: **żywność = maksymalne zużycie (poziom 6)**, **surowce = normalne zużycie (1 szt./obywatela/turę)**, każde × mnożnik epoki 1 / 1,5 / 2 / 2,5 / 3. Żywność na obywatela/turę (poziom 6, przed Spichlerzem): 12 / 18 / 24 / 30 / 36. Każdy surowiec z listy epoki na obywatela/turę: 1 / 1,5 / 2 / 2,5 / 3.
