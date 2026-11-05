@@ -7102,6 +7102,27 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: kazda wielka cywilizacja AI utrzymuje wodzow do limitu
+     * epoki (Kamien 1, Braz 2, ...) takze w POKOJU (dotad wodz powstawal wylacznie w kampanii wojennej, wiec
+     * cywilizacje bez wojny nie mialy wodza i wojsko stalo rozproszone). Utrata wodza => nowy w stolicy w
+     * kolejnej turze. Jeden zakup na ture (ten sam zakup i bramka limitu co kampania i gracz); brak zlota /
+     * oblezona stolica / brak oferty => proba ponowiona w nastepnej turze.
+     */
+    function ensureAiGeneralRoster(ownerId: number): void {
+      if (isBarbarian(ownerId) || isCityStateOwner(ownerId) || eliminatedOwners.has(ownerId)) return;
+      const capitalId = capitalCityIdForOwner(ownerId);
+      const capital = capitalId ? cities.find(city => city.id === capitalId && city.ownerId === ownerId) : undefined;
+      if (!capital) return;
+      const alive = units.filter(unit => unit.ownerId === ownerId && unit.isGeneral === true).length;
+      const queued = cities.filter(city => city.ownerId === ownerId)
+        .reduce((sum, city) => sum + (cityProd.get(city.id)?.rekrutacja ?? []).filter(item => item.isGeneral === true).length, 0);
+      if (!canRecruitGeneral(empireEpochForOwner(ownerId), { alive, queued })) return;
+      const offer = bestGeneralUnitForOwner(ownerId);
+      if (!offer) return;
+      purchaseRecruitmentUnit(capital.id, offer.id, offer.koszt, ownerId, 1, { isGeneral: true });
+    }
+
     /** Choose one stable active civilization-war target and keep the leader cycle current. */
     function prepareAiGeneralWarCampaign(ownerId: number): (AiGeneralWarCampaign & {
       rallyQ: number; rallyR: number;
@@ -38158,6 +38179,7 @@ async function boot(): Promise<void> {
                 wavePlan: undefined,
               };
             })();
+            if (!typCityCopyOwners.has(ownerId)) ensureAiGeneralRoster(ownerId);
             const aiGeneralWarCampaign = prepareAiGeneralWarCampaign(ownerId);
             const opts: AITurnOpts = {
               aiGeneralWarCampaign,
