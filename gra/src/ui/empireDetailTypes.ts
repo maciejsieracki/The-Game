@@ -94,7 +94,7 @@ export interface EmpireResourceRow {
    * wartości 100 na sztywno.
    */
   capBase?: number;
-  /** Bonus capu za KAŻDY Magazyn (econ-params.json magazyn_bonus_surowce_na_budynek). */
+  /** Bonus capu za KAŻDY Magazyn = baza × magazyn_bonus_surowce_proc_na_budynek (0,2 → +20%) × mnożnik epoki. */
   capBonusPerMagazyn?: number;
   /**
    * Opcjonalnie: skąd dostęp pochodzi (Ceramika/Sól/Koń/Złoto — budynek/złoże/szlak).

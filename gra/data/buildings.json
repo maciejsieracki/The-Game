@@ -1127,7 +1127,7 @@
     "wymagania": "",
     "uwagi": "",
     "historia": "Magazyn państwowy to budowla służąca do gromadzenia zapasów surowców, broni i zaopatrzenia niezbędnych do funkcjonowania administracji i wojska w czasach pokoju i kryzysu. Starożytne imperia, od Egiptu po Chiny, budowały rozległe sieci magazynów wzdłuż szlaków handlowych i granic, by zaopatrywać garnizony i urzędników bez konieczności każdorazowego transportu towarów z odległych prowincji. Chińskie magazyny zbożowe funkcjonujące w ramach systemu „ping-cang” pozwalały władzom stabilizować ceny żywności, sprzedając zapasy w latach nieurodzaju i skupując nadwyżki w latach obfitych plonów. Zarządzanie magazynem wymagało sprawnej biurokracji — skrybowie i urzędnicy prowadzili szczegółowe rejestry przychodów i rozchodów, a kradzież z magazynu państwowego karano surowo jako przestępstwo przeciw całej wspólnocie. Sprawnie działające magazyny były jednym z filarów stabilności państwa, pozwalając przetrwać wojny, klęski żywiołowe i długie kampanie wojskowe bez załamania zaopatrzenia.",
-    "opis": "Magazyn gromadzi zapasy i usprawnia gospodarkę miasta, dając dodatkową produkcję i dochód.",
+    "opis": "Magazyn gromadzi zapasy i usprawnia gospodarkę miasta, dając dodatkową produkcję i dochód. Każdy Magazyn w imperium zwiększa pojemność magazynu państwa (surowce) o +20% bazy.",
     "top3": [
       { "tytul": "Wzrost Pracy i dochodu", "tekst": "Dodaje po 1 punkcie Pracy i pieniądza, rosnących o kolejny punkt każdego z nich z każdym poziomem rozbudowy." },
       { "tytul": "Niski koszt utrzymania", "tekst": "Wymaga jedynie 1 punktu utrzymania na pierwszym poziomie, bez dodatkowego wzrostu kosztu przy rozbudowie." },
