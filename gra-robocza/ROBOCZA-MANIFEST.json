@@ -1,111 +1,112 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "800f0cdde6afbce8cc21817069fbca72",
-  "bundleSha256": "2a6f7a26286a11db1079c95236cf7f136993d123c649e6faf4b6110e3f0e45d7",
-  "bundleBytes": 70230211,
+  "bundleMd5": "268a991cc962d00429f533580c7a9967",
+  "bundleSha256": "18ca6cdec2208270a045373b868f0470acad12d9043c18644b4d5fe88dec1b1e",
+  "bundleBytes": 70233983,
   "sourceSnapshot": {
-    "source": "main e4245651f + HUD-TOPBAR-GRID-GROSS-NET (b7fcfd3ce)",
+    "source": "main 7d2dccf42 + HUD-GROSS-NET-REST (6616c22b4) + AUTOIMPROVE-HILLS-CLEAR-REVERT (97b12333e)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: górny baner w stałym układzie 3+3 (Skarbiec·Praca·Spichlerz / Handel·Nauka·Surowce), w każdej komórce brutto i netto, bez przeskakiwania przy dużych liczbach; netto z HUD równe zmianie stanu po końcu tury."
+    "R-WEB-HUD-GROSS-NET-REST-Q1: zapis „BRUTTO → NETTO” w tooltipach karty miasta i HUD (Kultura, Religia, Obywatele, Miasta); prawy baner i lewy baner nie nachodzą na medalion Mocy do 640 px (zawijanie chipów, ukryte etykiety do 1500 px); komunikat rozwiązania jednostki używa skrótu „tys./mln”.",
+    "R-WEB-AUTOIMPROVE-HILLS-CLEAR-REVERT-Q1: decyzja właściciela — las na Wzgórzach NIE jest wycinany pod żywność (wycinka tylko tam, gdzie powstanie farma: Łąka/Równina)."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "hud-topbar-grid-gross-net 1221/0 (Chromium, build poza repo); praca-pula-rate-parity 20/0; hud-number-abbrev OK"
+    "hud-gross-net-rest 756/0; hud-topbar-grid-gross-net 1223/0; simple-food-rule 36/0; ai-food-only 66/0; q3 41/0; river-forest 16/0"
   ],
   "limits": [
-    "Dodatnie netto Spichlerza NIE_ZMIERZONO; prognoza Pracy bez auto-ulepszeń i Cudów; przy 640 px baner nachodzi na medalion Mocy",
-    "spichlerz-deficyt-scalenie 54/4 odziedziczone z bazy"
+    "HUD: BRUTTO=NETTO w Kulturze/Religii/Obywatelach/Miastach (brak osobnych strat w HUD-state); brutto miasta dla Skarbca niezmierzone; kolizja prawego stosu z minimapą/dockiem ≤800 px niezmierzona",
+    "10 testów HUD czerwonych identycznie na bazie"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES (1 runda)."
+    "notes": "HUD-REST: Operator → Evaluator → Obrona → FC; HILLS-REVERT: Operator → Evaluator → FC (1 runda)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-05T03:20:04",
+  "hubGeneratedAt": "2026-11-05T08:06:38",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "800f0cdde6afbce8cc21817069fbca72",
-      "sizeBytes": 70230211
+      "md5": "268a991cc962d00429f533580c7a9967",
+      "sizeBytes": 70233983
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "800f0cdde6afbce8cc21817069fbca72",
-      "sizeBytes": 70230211
+      "md5": "268a991cc962d00429f533580c7a9967",
+      "sizeBytes": 70233983
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "800f0cdde6afbce8cc21817069fbca72",
-      "sizeBytes": 70230211
+      "md5": "268a991cc962d00429f533580c7a9967",
+      "sizeBytes": 70233983
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "800f0cdde6afbce8cc21817069fbca72",
-      "sizeBytes": 70230211
+      "md5": "268a991cc962d00429f533580c7a9967",
+      "sizeBytes": 70233983
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "800f0cdde6afbce8cc21817069fbca72",
-      "sizeBytes": 70230211
+      "md5": "268a991cc962d00429f533580c7a9967",
+      "sizeBytes": 70233983
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "800f0cdde6afbce8cc21817069fbca72",
-      "sizeBytes": 70230211
+      "md5": "268a991cc962d00429f533580c7a9967",
+      "sizeBytes": 70233983
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "800f0cdde6afbce8cc21817069fbca72",
-      "sizeBytes": 70230211
+      "md5": "268a991cc962d00429f533580c7a9967",
+      "sizeBytes": 70233983
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "800f0cdde6afbce8cc21817069fbca72",
-      "sizeBytes": 70230211
+      "md5": "268a991cc962d00429f533580c7a9967",
+      "sizeBytes": 70233983
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "800f0cdde6afbce8cc21817069fbca72",
-      "sizeBytes": 70230211
+      "md5": "268a991cc962d00429f533580c7a9967",
+      "sizeBytes": 70233983
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "800f0cdde6afbce8cc21817069fbca72",
-      "sizeBytes": 70230211
+      "md5": "268a991cc962d00429f533580c7a9967",
+      "sizeBytes": 70233983
     }
   ],
-  "md5": "800f0cdde6afbce8cc21817069fbca72",
-  "sizeBytes": 70230211,
+  "md5": "268a991cc962d00429f533580c7a9967",
+  "sizeBytes": 70233983,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main e4245651f + merge HUD-TOPBAR",
+  "source": "gra/src; main 7d2dccf42 + merge HUD-REST/HILLS-REVERT",
   "immediatePreviousRelease": {
-    "bundleMd5": "a2891378fa2a57a553e489fa0d48dfc6"
+    "bundleMd5": "800f0cdde6afbce8cc21817069fbca72"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 a2891378fa2a57a553e489fa0d48dfc6, 70222772 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 800f0cdde6afbce8cc21817069fbca72, 70230211 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1281,8 +1282,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-05T03:20:02+00:00",
-  "buildStamp": "2026-11-05 03:20",
+  "publishedAt": "2026-11-05T08:06:37+00:00",
+  "buildStamp": "2026-11-05 08:06",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
@@ -1290,5 +1291,5 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1"
+  "releaseScope": "R-WEB-HUD-GROSS-NET-REST-Q1 R-WEB-AUTOIMPROVE-HILLS-CLEAR-REVERT-Q1"
 }

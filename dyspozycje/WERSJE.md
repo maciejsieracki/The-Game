@@ -1,3 +1,12 @@
+## ROBOCZA 268a991c -- 2026-11-05 -- brutto/netto w tooltipach, baner do 640 px, bez wycinki lasu na Wzgórzach (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`7d2dccf42` + HUD-REST `6616c22b4` + HILLS-REVERT `97b12333e`) i commit wdrożenia; zgłoszenia/decyzja właściciela, stała zgoda.
+- Bundle MD5 `268a991cc962d00429f533580c7a9967`, 70233983 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: BRUTTO → NETTO w tooltipach (karta miasta, Kultura/Religia/Obywatele/Miasta); banery HUD nie nachodzą na Moc do 640 px; skrót „tys./mln” w komunikacie; las na Wzgórzach nie jest wycinany pod żywność.
+- Testy: tsc PASS; hud-gross-net-rest 756/0; hud-topbar 1223/0; simple-food-rule 36/0; ai-food-only 66/0.
+- Ograniczenia: Kultura/Religia/Obywatele/Miasta BRUTTO=NETTO; kolizja stosu z minimapą ≤800 px niezmierzona. Wycinka lasu przy rzece jako pierwszy krok tury — osobny temat w toku.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `800f0cdde6afbce8cc21817069fbca72`, 70230211 bajtów.
+
 ## ROBOCZA 800f0cdd -- 2026-11-05 -- górny baner 3+3 z brutto i netto (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`e4245651f` + HUD-TOPBAR `b7fcfd3ce`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
