@@ -1,0 +1,4 @@
+ 3036 dyspozycje/analizy/PLAN-WDROZENIA-NOWEJ-EPOKI.md
+  239 dyspozycje/analizy/README-analiza.md
+ 3275 total
+EXIT=0
