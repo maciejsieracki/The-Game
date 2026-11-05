@@ -8754,3 +8754,6 @@ Diagnoza: `gra/data/buildings.json` → `spichlerz_ii.techUnlock = "Warzelnia so
 
 ## 2026-11-05 — DECYZJA/ZGŁOSZENIE WŁAŚCICIELA: produkcja cegły ×2 i +50% Cegielni na epokę
 Cegły ciągle brakuje na budowę budynków mimo dużej ilości gliny (cegła zużywana nie tylko przez obywateli, ale i na budowę — w przeciwieństwie do ceramiki). Zasada: podwoić produkcję cegły w miastach; Cegielnia zwiększa produkcję o 50% w każdej epoce (dziś: +10% bazy na epokę, `converters.ts`). Założenia orkiestratora: liniowo o 50% bazy co epokę (jak mnożnik zużycia 1/1,5/2/2,5/3); tylko Cegielnia (Garncarnia bez zmian). → temat `R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1`.
+
+## 2026-11-05 — ZGŁOSZENIE: zmęczenie wojną i pokój przegrywającego „nie widać w grze”
+Właściciel: „Wojna, czy naprawdę działa w kodzie? Nie widzę. Cywilizacje biją się do tego stopnia, że jedna musi drugą całkowicie zniszczyć — jakby zmęczenie wojną działało tylko na jedną stronę. Mówiliśmy, że przegrywająca strona będzie szybko dążyć do pokoju, nawet kosztem oddania kilku miast — tego też nie widzę.” Mechanizm (FALA ~49x: `war-weariness.ts`, `war-weariness-params.json`, `tickAiAiWarWeariness` w main.ts ~33358) istnieje i ma testy jednostkowe — brak dowodu w realnej grze. → temat `R-WEB-AI-WAR-WEARINESS-LIVE-AUDIT-Q1` (pomiar w grze + naprawa).
