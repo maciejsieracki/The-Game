@@ -17,6 +17,8 @@ export interface ArmyMergeUnitRow {
   icon?: string;
   ruchLeft?: number;
   ruchMax?: number;
+  /** Rola dowódcy (tylko dla generała/wodza) — wtedy etykieta to „Rola — typ". */
+  commanderTitle?: 'Wódz' | 'Generał';
 }
 
 export interface ArmyMergePanelOpts {
