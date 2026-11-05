@@ -8745,3 +8745,6 @@ Poziom (suwak Wyżywienie) dotyczy WYŁĄCZNIE żywności; surowce zużywane są
 - Pierwszy wódz AI w Brązie (T23–26, wymóg Koszar): **A — bez zmian**.
 - Zerwanie Traktatu handlowego: **bez kary po 10 turach** od zawarcia (przed 10 turą kary jak dziś: Zaufanie −10, Wiarygodność −4 przy terminowym). Założenie zakresu (do potwierdzenia w grze): dotyczy traktatów terminowych i bezterminowych handlu; inne traktaty bez zmian. Temat: R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1.
 - Młyn: definiowany dopiero w Średniowieczu (nowe epoki odłożone do nowej wersji Rust) — bramka „młyn tylko przy rzece” pozostaje nieaktywna do tego czasu.
+
+## 2026-11-05 — ZGŁOSZENIE (zrzut: panel „Armia · (92,108)”, 14 jednostek, Grecy): lista jednostek armii
+(1) Wszyscy nazywają się „Wojownik” — nie da się rozpoznać, który to generał/wódz; (2) nie da się zaznaczyć kilku jednostek naraz (np. do „Rozwiąż”/podziału) — ma być wielokrotne zaznaczanie jak w podobnym mechanizmie podziału armii. → temat `R-WEB-UI-ARMY-PANEL-GENERAL-LABEL-MULTISELECT-Q1`.
