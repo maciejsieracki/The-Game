@@ -8793,3 +8793,6 @@ Nazwa: **Emporion**; wszystkie pozostałe parametry z propozycji orkiestratora z
 
 ## 2026-11-05 — DECYZJA WŁAŚCICIELA: Spichlerz II → badanie Pismo + nazwa „Spichlerz Królewski”
 (1) „Powiążmy spichlerz 2 z Pismem, czyli ewidencją zapasów zboża.” → `techUnlock` Spichlerza II: Garncarstwo → **Pismo** (Brąz, poz. 4, koszt 180; Pismo odblokowuje dziś tylko Bibliotekę). (2) „Zmieńmy nazwę Spichlerz 2 na coś bardziej dostojnego, na przykład Spichlerz Królewski.” → nazwa wyświetlana **Spichlerz Królewski** (id `spichlerz_ii` bez zmian). Temat `R-WEB-GRANARY2-PISMO-ROYAL-RENAME-Q1`.
+
+## 2026-11-05 — ZGŁOSZENIE: zwiadowca w armii blokuje atak miasta (armia zachowuje się jak zwiadowca)
+Właściciel: zwiadowca połączył się z główną armią; przy próbie ataku na miasto system traktuje armię tak, jakby zwiadowca był główną jednostką → atak niemożliwy. Wymagane: (1) zwiadowca w armii jest OSTATNI na liście, a armia zachowuje się jak jej NAJSILNIEJSZA jednostka, nie jak zwiadowca; (2) zwiadowca w armii tylko poszerza zasięg widoczności armii i NIE może uniemożliwiać ataku. → temat `R-WEB-ARMY-SCOUT-NOT-LEADER-Q1`.
