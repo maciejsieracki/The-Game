@@ -4588,10 +4588,9 @@ function requestWarMarchPassage(
   for (const pl of plans) for (const id of pl.noPath) noPathIds.add(id);
   const nearestTarget = (u: RuntimeUnit): { q: number; r: number } =>
     targets.reduce((b, t) => (hexDistance(u.q, u.r, t.q, t.r) < hexDistance(u.q, u.r, b.q, b.r) ? t : b), targets[0]!);
-  const occ = new Set<string>();
-  for (const x of units) occ.add(keyOf(x.q, x.r));
   const rep = planned.find(u => noPathIds.has(u.id)) ?? planned[0]!;
-  occ.delete(keyOf(rep.q, rep.r));
+  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: diagnostyka liczy trase tak jak realny ruch (wlasne = przejscie).
+  const occ = buildMoveOccupancy(units, rep.ownerId, [rep.id]);
   const goal = nearestTarget(rep);
   // Tani filtr geometryczny: bez zakazanego terenu w poblizu linii prostej nie ma czego wnioskowac.
   if (!guard.nearBlockedTerritory(rep.q, rep.r, goal.q, goal.r, 3)) return;

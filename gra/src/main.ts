@@ -29577,7 +29577,7 @@ async function boot(): Promise<void> {
       const result = destroyCampAt(barbCamps, q, r);
       if (result.destroyedCampId === null) return false;
       barbCamps = result.camps;
-      // MUTATION: do not record cleared camp hex
+      clearedBarbCampHexes.add(keyOf(q, r));
       console.log(`[Barbarzyncy] Obóz zniszczony (najechany): ${result.destroyedCampId}`);
       refreshFog();
       return true;
