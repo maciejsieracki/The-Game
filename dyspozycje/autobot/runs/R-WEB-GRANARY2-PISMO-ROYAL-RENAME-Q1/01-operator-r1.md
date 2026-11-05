@@ -2,7 +2,7 @@ STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (WEB)
 TEMAT: R-WEB-GRANARY2-PISMO-ROYAL-RENAME-Q1
 GOAL: Spichlerz II (id spichlerz_ii) dostaje technologię odblokowującą „Pismo” (zamiast Garncarstwo) i nazwę wyświetlaną „Spichlerz Królewski”; id i logika bez zmian.
-ZMIANY/COMMIT: baza origin/main 3aa1b3a2a. Zmienione pliki (allowlista): gra/data/buildings.json (nazwa, techUnlock=Pismo tylko dla spichlerz_ii, wymagania/uwagi/opis/top3; wzmianki w top3/uwagach Spichlerza I przemianowane na nową nazwę), gra/data/tech.json (Pismo: „Odblokowuje budynek” = „Biblioteka; Spichlerz Królewski”), gra/src/ui/empireDetailTypes.ts (uchwała „Solanka zapasowa”: opis, źródło), gra/src/ui/hud.ts (tooltip uchwały), gra/src/data/wikiBundle.json (5 wystąpień nazwy), gra/tools/granary2-tech-data-guard-test.cjs (oczekiwana technologia Pismo, opisy testów). Commit: SHA w sekcji poniżej.
+ZMIANY/COMMIT: baza origin/main 3aa1b3a2a. Zmienione pliki (allowlista): gra/data/buildings.json (nazwa, techUnlock=Pismo tylko dla spichlerz_ii, wymagania/uwagi/opis/top3; wzmianki w top3/uwagach Spichlerza I przemianowane na nową nazwę), gra/data/tech.json (Pismo: „Odblokowuje budynek” = „Biblioteka; Spichlerz Królewski”), gra/src/ui/empireDetailTypes.ts (uchwała „Solanka zapasowa”: opis, źródło), gra/src/ui/hud.ts (tooltip uchwały), gra/src/data/wikiBundle.json (5 wystąpień nazwy), gra/tools/granary2-tech-data-guard-test.cjs (oczekiwana technologia Pismo, opisy testów). Commit: 4188954d6 (zmiany kodu i danych; ten plik raportu w commicie następnym).
 TESTY:
 - granary2-tech-data-guard-test: PASS 14 / FAIL 0 (EXIT=0)
 - tsc --noEmit (po npm ci --ignore-scripts): EXIT=0
