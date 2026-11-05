@@ -31,4 +31,4 @@ Balans walki, determinizm AI i koszt decyzji bez zmian (ta sama pętla po miasta
 ## RUNDY: 1/5
 ## NASTĘPNY KROK: Evaluator (zwłaszcza: pomiar live lub akceptacja NIE_ZMIERZONO; decyzja o przycisku "Wypad" dla gracza).
 ## DEPLOY/PUSH: NIE WYKONANO
-## ZMIANY/COMMIT: patrz SHA w sekcji poniżej.
+## ZMIANY/COMMIT: ff94a0db3 (kod, test, bramki, raport; raport dopisany w kolejnym commicie z SHA)
