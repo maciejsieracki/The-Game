@@ -92,9 +92,9 @@ function play(B, ownUnits, turns, cfg) {
       civType: 'grecy', currentTurn: 30 + t, canEngageOwner: () => true, capitalCityId: CITY_A.id, atWarWithCiv: true,
       warAllIn: { targets, enemyArmies: cfg.enemyArmies ?? [], engageRadius: 6, enemyStrength: enemies.map(e => ({ ownerId: e.ownerId, strength: 0 })) },
     };
-    const t0 = process.hrtime.bigint();
+    const c0 = process.cpuUsage();
     const cmds = B.decideAITurn(1, ownUnits, cities, MAP, data, opts);
-    res.aiMs += Number(process.hrtime.bigint() - t0) / 1e6; res.calls++;
+    res.aiMs += cpuMs(c0); res.calls++;
     for (const cmd of cmds) {
       if (cmd.type !== 'move') continue;
       const u = ownUnits.find(x => x.id === cmd.unitId);
@@ -115,6 +115,8 @@ function play(B, ownUnits, turns, cfg) {
   }
   return res;
 }
+// Czas PROCESORA (user+system) zamiast czasu scianowego: rownolegle procesy nie zawyzaja pomiaru (R-WEB-TEST-TIMING-STABILIZE-Q1).
+const cpuMs = (c0) => { const d = process.cpuUsage(c0); return (d.user + d.system) / 1000; };
 const hash = (r) => crypto.createHash('sha1').update(r.trace.join('|')).digest('hex').slice(0, 12);
 const cloud = (n, q0, r0, step) => { const u = []; const side = Math.ceil(Math.sqrt(n)); for (let i = 0; i < n; i++) u.push(mk(q0 + step * (i % side), r0 + step * Math.floor(i / side))); return u; };
 
@@ -261,7 +263,7 @@ const cloud = (n, q0, r0, step) => { const u = []; const side = Math.ceil(Math.s
     // Sam planer zbiorki (jedyny nowy koszt w stanie ustalonym) mierzony wprost, tez jako min z ${TRIALS} prob.
     const microStack = []; for (let i = 0; i < 100; i++) microStack.push(mk(10, 10));
     const microCloud = cloud(100, 6, 2, 2);
-    const micro1 = (arr) => { const t0 = process.hrtime.bigint(); for (let i = 0; i < 20; i++) B.planFieldStackGather(arr, { ownerId: 97 }); return Number(process.hrtime.bigint() - t0) / 1e6 / 20; };
+    const micro1 = (arr) => { const c0 = process.cpuUsage(); for (let i = 0; i < 20; i++) B.planFieldStackGather(arr, { ownerId: 97 }); return cpuMs(c0) / 20; };
     const mStackS = []; const mCloudS = [];
     for (let i = 0; i < TRIALS; i++) { mStackS.push(micro1(microStack)); mCloudS.push(micro1(microCloud)); }
     const mStack = minOf(mStackS); const mCloud = minOf(mCloudS);
