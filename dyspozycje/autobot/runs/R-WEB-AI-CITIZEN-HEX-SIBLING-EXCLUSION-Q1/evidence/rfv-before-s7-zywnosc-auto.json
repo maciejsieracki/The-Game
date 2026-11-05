@@ -1,0 +1,961 @@
+{
+  "tag": "before-s7-zywnosc-auto",
+  "focus": "zywnosc",
+  "workers": "auto",
+  "seed": 7,
+  "turns": [
+    {
+      "ok": true,
+      "turnBefore": 1,
+      "turnAfter": 2,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9
+      },
+      "missReasons": {},
+      "aiRfOwned": 289,
+      "aiRfWorked": 1,
+      "aiRfPersistMissed": 1,
+      "aiMissReasons": {
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 1
+      },
+      "aiPersistHexes": [
+        "17,12"
+      ],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 2,
+      "turnAfter": 3,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9
+      },
+      "missReasons": {},
+      "aiRfOwned": 289,
+      "aiRfWorked": 1,
+      "aiRfPersistMissed": 1,
+      "aiMissReasons": {
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 1
+      },
+      "aiPersistHexes": [
+        "17,12"
+      ],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 3,
+      "turnAfter": 4,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 9
+      },
+      "missReasons": {},
+      "aiRfOwned": 288,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 4,
+      "turnAfter": 5,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 9,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 288,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 5,
+      "turnAfter": 6,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 288,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 6,
+      "turnAfter": 7,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 287,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 7,
+      "turnAfter": 8,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 287,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 8,
+      "turnAfter": 9,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 287,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 9,
+      "turnAfter": 10,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 287,
+      "aiRfWorked": 1,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 10,
+      "turnAfter": 11,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 285,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 11,
+      "turnAfter": 12,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 285,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 12,
+      "turnAfter": 13,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "missReasons": {},
+      "aiRfOwned": 284,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 13,
+      "turnAfter": 14,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "missReasons": {},
+      "aiRfOwned": 284,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 14,
+      "turnAfter": 15,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "missReasons": {},
+      "aiRfOwned": 282,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 15,
+      "turnAfter": 16,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "missReasons": {},
+      "aiRfOwned": 280,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 16,
+      "turnAfter": 17,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "missReasons": {},
+      "aiRfOwned": 281,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 17,
+      "turnAfter": 18,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "missReasons": {},
+      "aiRfOwned": 278,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 18,
+      "turnAfter": 19,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "missReasons": {},
+      "aiRfOwned": 278,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 19,
+      "turnAfter": 20,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 4,
+        "warzelnia_soli": 4
+      },
+      "missReasons": {},
+      "aiRfOwned": 277,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 20,
+      "turnAfter": 21,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 4,
+        "warzelnia_soli": 4
+      },
+      "missReasons": {},
+      "aiRfOwned": 277,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 21,
+      "turnAfter": 22,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 4,
+        "warzelnia_soli": 4
+      },
+      "missReasons": {},
+      "aiRfOwned": 284,
+      "aiRfWorked": 1,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 20
+    },
+    {
+      "ok": true,
+      "turnBefore": 22,
+      "turnAfter": 23,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 4,
+        "warzelnia_soli": 4
+      },
+      "missReasons": {},
+      "aiRfOwned": 293,
+      "aiRfWorked": 1,
+      "aiRfPersistMissed": 1,
+      "aiMissReasons": {
+        "kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony": 1
+      },
+      "aiPersistHexes": [
+        "54,9"
+      ],
+      "aiCities": 23
+    },
+    {
+      "ok": true,
+      "turnBefore": 23,
+      "turnAfter": 24,
+      "rfOwned": 43,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 5,
+        "warzelnia_soli": 5
+      },
+      "missReasons": {},
+      "aiRfOwned": 304,
+      "aiRfWorked": 3,
+      "aiRfPersistMissed": 1,
+      "aiMissReasons": {
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 1
+      },
+      "aiPersistHexes": [
+        "54,9"
+      ],
+      "aiCities": 27
+    },
+    {
+      "ok": true,
+      "turnBefore": 24,
+      "turnAfter": 25,
+      "rfOwned": 41,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 5,
+        "warzelnia_soli": 5
+      },
+      "missReasons": {},
+      "aiRfOwned": 303,
+      "aiRfWorked": 12,
+      "aiRfPersistMissed": 3,
+      "aiMissReasons": {
+        "kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony": 3
+      },
+      "aiPersistHexes": [
+        "54,9",
+        "60,43",
+        "60,44"
+      ],
+      "aiCities": 31
+    },
+    {
+      "ok": true,
+      "turnBefore": 25,
+      "turnAfter": 26,
+      "rfOwned": 40,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 5,
+        "warzelnia_soli": 5
+      },
+      "missReasons": {},
+      "aiRfOwned": 308,
+      "aiRfWorked": 12,
+      "aiRfPersistMissed": 12,
+      "aiMissReasons": {
+        "kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony": 9,
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 3
+      },
+      "aiPersistHexes": [
+        "11,12",
+        "11,13",
+        "11,14",
+        "12,11",
+        "12,12",
+        "13,11",
+        "13,13",
+        "54,9",
+        "55,8",
+        "60,43",
+        "60,44",
+        "65,37"
+      ],
+      "aiCities": 32
+    },
+    {
+      "ok": true,
+      "turnBefore": 26,
+      "turnAfter": 27,
+      "rfOwned": 38,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 5,
+        "warzelnia_soli": 5
+      },
+      "missReasons": {},
+      "aiRfOwned": 315,
+      "aiRfWorked": 15,
+      "aiRfPersistMissed": 12,
+      "aiMissReasons": {
+        "kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony": 9,
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 3
+      },
+      "aiPersistHexes": [
+        "11,12",
+        "11,13",
+        "11,14",
+        "12,11",
+        "12,12",
+        "13,11",
+        "13,13",
+        "54,9",
+        "55,8",
+        "60,43",
+        "60,44",
+        "65,37"
+      ],
+      "aiCities": 34
+    },
+    {
+      "ok": true,
+      "turnBefore": 27,
+      "turnAfter": 28,
+      "rfOwned": 38,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 5,
+        "warzelnia_soli": 5
+      },
+      "missReasons": {},
+      "aiRfOwned": 316,
+      "aiRfWorked": 15,
+      "aiRfPersistMissed": 15,
+      "aiMissReasons": {
+        "kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony": 10,
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 5
+      },
+      "aiPersistHexes": [
+        "11,12",
+        "11,13",
+        "11,14",
+        "12,11",
+        "12,12",
+        "13,11",
+        "13,13",
+        "54,9",
+        "55,8",
+        "56,11",
+        "57,7",
+        "58,9",
+        "60,43",
+        "60,44",
+        "65,37"
+      ],
+      "aiCities": 35
+    },
+    {
+      "ok": true,
+      "turnBefore": 28,
+      "turnAfter": 29,
+      "rfOwned": 38,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 6,
+        "warzelnia_soli": 6
+      },
+      "missReasons": {},
+      "aiRfOwned": 316,
+      "aiRfWorked": 16,
+      "aiRfPersistMissed": 15,
+      "aiMissReasons": {
+        "kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony": 15
+      },
+      "aiPersistHexes": [
+        "11,12",
+        "11,13",
+        "11,14",
+        "12,11",
+        "12,12",
+        "13,11",
+        "13,13",
+        "54,9",
+        "55,8",
+        "56,11",
+        "57,7",
+        "58,9",
+        "60,43",
+        "60,44",
+        "65,37"
+      ],
+      "aiCities": 36
+    },
+    {
+      "ok": true,
+      "turnBefore": 29,
+      "turnAfter": 30,
+      "rfOwned": 37,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 6,
+        "warzelnia_soli": 6
+      },
+      "missReasons": {},
+      "aiRfOwned": 320,
+      "aiRfWorked": 20,
+      "aiRfPersistMissed": 16,
+      "aiMissReasons": {
+        "kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony": 16
+      },
+      "aiPersistHexes": [
+        "11,12",
+        "11,13",
+        "11,14",
+        "12,11",
+        "12,12",
+        "13,11",
+        "13,13",
+        "54,9",
+        "55,8",
+        "56,11",
+        "57,7",
+        "58,9",
+        "60,8",
+        "60,43",
+        "60,44",
+        "65,37"
+      ],
+      "aiCities": 38
+    },
+    {
+      "ok": true,
+      "turnBefore": 30,
+      "turnAfter": 31,
+      "rfOwned": 37,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 6,
+        "warzelnia_soli": 6
+      },
+      "missReasons": {},
+      "aiRfOwned": 320,
+      "aiRfWorked": 22,
+      "aiRfPersistMissed": 20,
+      "aiMissReasons": {
+        "kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony": 18,
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 2
+      },
+      "aiPersistHexes": [
+        "11,12",
+        "11,13",
+        "11,14",
+        "12,11",
+        "12,12",
+        "13,11",
+        "13,13",
+        "54,9",
+        "55,8",
+        "56,11",
+        "57,7",
+        "58,9",
+        "60,8",
+        "62,13",
+        "60,43",
+        "60,44",
+        "61,42",
+        "65,37",
+        "35,20",
+        "36,31"
+      ],
+      "aiCities": 38
+    }
+  ],
+  "start": {
+    "seedSeen": 7,
+    "mapLog": "[NewGame] Mapa: 76x52 seed=7 typ=kontynenty rywale=4 typy=5",
+    "genMs": 14915
+  },
+  "setup": {
+    "city": {
+      "id": "city0",
+      "ownerId": 0,
+      "q": 18,
+      "r": 37,
+      "pop": 9,
+      "name": "Rzym"
+    },
+    "policy": {
+      "focus": "zywnosc",
+      "tryb": "auto",
+      "pracaAutoPercent": 100,
+      "onlyWorked": true
+    },
+    "workers": [
+      "18,35",
+      "15,40",
+      "16,40",
+      "19,34",
+      "20,34",
+      "14,40",
+      "13,40",
+      "12,40",
+      "12,41"
+    ]
+  },
+  "aiDetail": [
+    {
+      "turn": 1,
+      "hex": "17,12",
+      "workedBy": [],
+      "decisions": []
+    },
+    {
+      "turn": 2,
+      "hex": "17,12",
+      "workedBy": [],
+      "decisions": []
+    },
+    {
+      "turn": 22,
+      "hex": "54,9",
+      "workedBy": [
+        "city12"
+      ],
+      "decisions": [
+        "city10|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city11|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city12|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city10|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony",
+        "city11|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony",
+        "city12|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony"
+      ]
+    },
+    {
+      "turn": 23,
+      "hex": "54,9",
+      "workedBy": [
+        "city12"
+      ],
+      "decisions": [
+        "city11|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city12|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony"
+      ]
+    },
+    {
+      "turn": 24,
+      "hex": "54,9",
+      "workedBy": [
+        "city12"
+      ],
+      "decisions": [
+        "city10|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city11|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city12|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city10|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony",
+        "city11|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony",
+        "city12|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony"
+      ]
+    },
+    {
+      "turn": 24,
+      "hex": "60,43",
+      "workedBy": [
+        "city19"
+      ],
+      "decisions": [
+        "city15|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city17|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city19|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city27|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city31|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city15|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony",
+        "city17|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony",
+        "city19|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony",
+        "city27|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony",
+        "city31|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)|odrzucony"
+      ]
+    }
+  ],
+  "firstCutTurn": null,
+  "pageErrors": []
+}
