@@ -10805,6 +10805,31 @@ async function boot(): Promise<void> {
       );
     }
 
+    /**
+     * R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1 (R2): wpis rejestru wojny wymuszonej (Brąz/Kamień/Żelazo) bez FAKTYCZNEJ
+     * wojny pary (relacja != 'wojna' -- pokój/rozejm/sojusz/NAP zawarty ścieżką bez cleanupu, stary zapis)
+     * dawał napastnikowi marsz na miasta celu bez wypowiedzenia. Sprzątamy go TAK SAMO jak pokój
+     * (wspólne helpery: rejestr + fale + uzbrojenie odpoczynku napastnika), raz na turę, PRZED wyszukiwaniem
+     * celu wojny wymuszonej -- więc napastnik nie szuka nowej wojny bez odpoczynku i nie czeka na własną turę AI.
+     * Pary w stanie 'wojna': no-op.
+     */
+    function sweepStaleForcedWarEntries(): void {
+      const staleStatus = (st: { attackerId: number; targetId: number }): boolean =>
+        getDiploRelation(st.attackerId, st.targetId).status !== 'wojna';
+      for (const st of Array.from(stoneForceWarActiveByPairKey.values())) {
+        if (staleStatus(st)) cleanupStoneForcedWarOnPeace(st.attackerId, st.targetId);
+      }
+      for (const st of Array.from(ironForceWarActiveByPairKey.values())) {
+        if (staleStatus(st)) cleanupIronForcedWarOnPeace(st.attackerId, st.targetId);
+      }
+      for (const [key, st] of Array.from(bronzeForceWarActiveByPairKey.entries())) {
+        if (!staleStatus(st)) continue;
+        bronzeForceWarActiveByPairKey.delete(key);
+        forcedWarWavesByPairKey.delete(key);
+        bronzeForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_WYMUSZONA_ODPOCZYNEK_TUR);
+      }
+    }
+
     /** R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: sprząta licznik zwykłej wojny AI↔AI co pokój tej
      * pary (auto-pokój po progu miast LUB zwykła negocjacja) — bez tego przeciekałby do
      * następnej wojny tej samej pary po cooldownie. */
@@ -37754,6 +37779,7 @@ async function boot(): Promise<void> {
             const ironTriggeredSubjects: ForcedWarPairingSubject[] = [];
             // R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1: liczone RAZ na ture (funkcja jest niezalezna od wlasciciela),
             // nie per fotel AI w `opts` ponizej (~5 ms/wywolanie przy 12-24 miastach).
+            sweepStaleForcedWarEntries();
             const aiSiblingExclusionByCity = computeLostToNearerSiblingByCity(cities, map);
             for (const ownerId of aiOwnerList) {
               if (
@@ -38161,17 +38187,6 @@ async function boot(): Promise<void> {
             // dyrektywa ma jeden wspolny kontrakt: napastnik konsoliduje armie
             // i maszeruje na miasta celu, obronca skupia reakcje na napastniku.
             const forcedWarDirective: (NonNullable<AITurnOpts['forcedWar']> & { pairKey: string }) | undefined = (() => {
-              // R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1: wpis rejestru wojny wymuszonej bez FAKTYCZNEJ wojny pary
-              // (relacja != 'wojna' -- pokoj/rozejm/sojusz/NAP zawarty sciezka bez cleanupu, stary zapis)
-              // dawal napastnikowi marsz na miasta celu bez wypowiedzenia. Wpis nieaktualny jest sprzatany.
-              for (const reg of [bronzeForceWarActiveByPairKey, stoneForceWarActiveByPairKey, ironForceWarActiveByPairKey]) {
-                for (const [staleKey, staleSt] of Array.from(reg.entries())) {
-                  if (staleSt.attackerId !== ownerId && staleSt.targetId !== ownerId) continue;
-                  if (getDiploRelation(staleSt.attackerId, staleSt.targetId).status === 'wojna') continue;
-                  reg.delete(staleKey);
-                  forcedWarWavesByPairKey.delete(staleKey);
-                }
-              }
               const active = [
                 ...Array.from(bronzeForceWarActiveByPairKey.values()).map(st => ({ st, era: 'bronze' as const })),
                 ...Array.from(stoneForceWarActiveByPairKey.values()).map(st => ({ st, era: 'stone' as const })),

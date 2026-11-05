@@ -105,18 +105,36 @@ t('rola obroncy (defender) bez wojny: zero ruchu na jednostki/miasta strony 2', 
   const cmds = run(o => o !== 2, { forcedWar: { ...forced, role: 'defender' } });
   assert.strictEqual(cmds.filter(nearTarget).length, 0);
 });
+// Kampania wodza z OBECNYM wodzem (g1) -- w R1 scenariusz nie mial wodza, wiec bramka kampanii byla nietestowana behawioralnie.
+const runCampaign = (engage, stage) => {
+  const { units, cities } = scenario();
+  units.push({ ...unit('g1', 1, 4, 4), isGeneral: true });
+  return api.decideAITurn(1, units, cities, makeMap(), data, { canEngageOwner: engage, aiGeneralWarCampaign: campaign(stage) });
+};
+const runNoCampaign = (engage) => {
+  const { units, cities } = scenario();
+  units.push({ ...unit('g1', 1, 4, 4), isGeneral: true });
+  return api.decideAITurn(1, units, cities, makeMap(), data, { canEngageOwner: engage });
+};
 for (const stage of ['recruiting', 'gathering', 'attacking']) {
-  t(`kampania wodza (${stage}) bez wojny z celem: zero zbiorki/marszu; w wojnie kampania steruje jednostkami`, () => {
-    const noWar = run(o => o !== 2, { aiGeneralWarCampaign: campaign(stage) });
-    const base = run(o => o !== 2, {});
-    assert.strictEqual(moves(noWar), moves(base), 'bez wojny kampania nie zmienia decyzji (brak zbiorki pod cel)');
-    assert.strictEqual(noWar.filter(nearTarget).length, 0);
+  t(`kampania wodza (${stage}) z wodzem: bez wojny = decyzje jak bez kampanii; w wojnie kampania zmienia decyzje (harness czuly)`, () => {
+    const noWar = runCampaign(o => o !== 2, stage);
+    assert.strictEqual(moves(noWar), moves(runNoCampaign(o => o !== 2)), 'bez wojny kampania nie zmienia decyzji');
+    assert.strictEqual(noWar.filter(nearTarget).length, 0, 'zero marszu pod cel bez wojny');
+    assert.notStrictEqual(moves(runCampaign(() => true, stage)), moves(runNoCampaign(() => true)), 'w wojnie kampania steruje jednostkami');
   });
 }
-t('K+ kampania wodza w wojnie zmienia decyzje wzgledem braku kampanii (harness czuly)', () => {
-  const withWar = run(() => true, { aiGeneralWarCampaign: campaign('gathering') });
-  const noCamp = run(() => true, {});
-  assert.notStrictEqual(moves(withWar), moves(noCamp));
+t('determinizm decyzji AI: dwa wywolania na tym samym stanie daja identyczne rozkazy (wojna / brak wojny / kampania)', () => {
+  for (const [engage, extra] of [[() => true, { forcedWar: forced }], [o => o !== 2, { forcedWar: forced }], [() => true, { aiGeneralWarCampaign: campaign('gathering') }]]) {
+    assert.strictEqual(JSON.stringify(run(engage, extra)), JSON.stringify(run(engage, extra)));
+  }
+});
+t('czas decyzji AI: 300 wywolan decideAITurn (z dyrektywa) < 5 s (sanity; porownanie PRZED/PO w raporcie)', () => {
+  const t0 = process.hrtime.bigint();
+  for (let i = 0; i < 300; i++) run(i % 2 ? () => true : o => o !== 2, { forcedWar: forced });
+  const ms = Number(process.hrtime.bigint() - t0) / 1e6;
+  console.log('   300 wywolan: ' + ms.toFixed(0) + ' ms');
+  assert.ok(ms < 5000);
 });
 t('wojna jest JEDNYM wpisem pary (obustronna z definicji): getDiploRelation/setDiploRelation uzywaja nieuporzadkowanego klucza', () => {
   const src = fs.readFileSync(path.join(root, 'src/main.ts'), 'utf8');
@@ -128,8 +146,12 @@ t('wojna jest JEDNYM wpisem pary (obustronna z definicji): getDiploRelation/setD
 });
 t('strazniki statyczne: main.ts czysci wpis wojny wymuszonej bez wojny; ai.ts bramkuje forcedWar i kampanie', () => {
   const m = fs.readFileSync(path.join(root, 'src/main.ts'), 'utf8');
-  assert.ok(/R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1: wpis rejestru wojny wymuszonej bez FAKTYCZNEJ wojny/.test(m));
-  assert.ok(/getDiploRelation\(staleSt\.attackerId, staleSt\.targetId\)\.status === 'wojna'/.test(m));
+  assert.ok(/function sweepStaleForcedWarEntries\(\)/.test(m));
+  assert.ok(/getDiploRelation\(st\.attackerId, st\.targetId\)\.status !== 'wojna'/.test(m));
+  // sweep PRZED blokiem wyszukiwania celu wojny wymuszonej, uzbraja odpoczynek (Kamien/Zelazo helperami, Braz inline)
+  assert.ok(m.indexOf('sweepStaleForcedWarEntries();') < m.indexOf('bronzeTriggeredSubjects.push('));
+  const sw = m.slice(m.indexOf('function sweepStaleForcedWarEntries'), m.indexOf('function cleanupRegularWarOnPeace'));
+  assert.ok(/cleanupStoneForcedWarOnPeace/.test(sw) && /cleanupIronForcedWarOnPeace/.test(sw) && /bronzeForceWarRestUntilByOwner\.set/.test(sw));
   const a = fs.readFileSync(path.join(root, 'src/game/ai.ts'), 'utf8');
   assert.ok(/forcedWar\?\.role === 'attacker'\s*&& aiCanEngageOwner\(opts, opts\.forcedWar\.targetOwnerId\)/.test(a));
   assert.ok(/if \(!aiCanEngageOwner\(opts, campaign\.target\.ownerId\)\) return false;/.test(a));
