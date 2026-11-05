@@ -20,6 +20,7 @@ import type { RuntimeUnit } from '../units/setup';
 import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
 import {
   recordAiGeneralGatherTurn,
+  recordAiReserveGatherTurn,
   type AiGeneralWarCampaign,
 } from './ai-general-war-campaign';
 import { armyFieldPower, type UnitPowerInput } from './unit-power';
@@ -3953,14 +3954,37 @@ function decideAITurnCore(
         // across several smaller stacks instead of completing the rally.
         const rallyHexes = [{ q: rally.q, r: rally.r }];
         const rallyKey = keyOf(rally.q, rally.r);
-        const rallyCapacity = candidates.length + (occupancy.get(rallyKey) ?? 0);
+        // R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: w pokoju zolnierze zbieraja sie u NAJBLIZSZEGO
+        // zywego wodza wlasnej cywilizacji (dlugosc realnej trasy); sam wodz wraca do stolicy, a zolnierz bez
+        // dostepnego wodza (brak wodza / inna wyspa) zbiera sie w stolicy jak dotad (zachowanie awaryjne).
+        const peaceLeaders = collectLeaderCandidates({ id: '', ownerId: playerId, q: 0, r: 0 }, myUnits, () => false);
+        const musterTroops: Array<{ unit: RuntimeUnit; toQ: number; toR: number }> = [];
+        const rallyCandidates: RuntimeUnit[] = [];
+        for (const u of candidates) {
+          if (u.isGeneral === true || peaceLeaders.length === 0) { rallyCandidates.push(u); continue; }
+          const choice = peaceLeaders.length > 1
+            ? pickNearestAvailableLeader(u, peaceLeaders, leaderPathLengthFor(u, map, units))
+            : { leader: peaceLeaders[0]!, distance: 0 };
+          if (choice === null) rallyCandidates.push(u);
+          else musterTroops.push({ unit: u, toQ: choice.leader.q, toR: choice.leader.r });
+        }
+        for (const m of musterTroops) {
+          if (m.unit.q === m.toQ && m.unit.r === m.toR) { concentrationDeferred.add(m.unit.id); continue; }
+          const step = firstStep(m.unit, map, m.toQ, m.toR, units, true);
+          if (step !== null) {
+            commands.push({ type: 'move', unitId: m.unit.id, toQ: step.q, toR: step.r,
+              allowFriendlyStack: step.q === m.toQ && step.r === m.toR });
+            concentrationDeferred.add(m.unit.id);
+          }
+        }
+        const rallyCapacity = rallyCandidates.length + (occupancy.get(rallyKey) ?? 0);
         const assignments = assignRallyTargets(
-          candidates,
+          rallyCandidates,
           rallyHexes,
           rallyCapacity,
           occupancy,
         );
-        const byId = new Map(candidates.map(u => [u.id, u] as const));
+        const byId = new Map(rallyCandidates.map(u => [u.id, u] as const));
         for (const a of assignments) {
           if (a.atRally) {
             // Keep arrived troops in the assembled army for this turn; otherwise
@@ -4961,12 +4985,57 @@ function appendAiGeneralCampaignOrders(
     // (jak krok 4b2) i ich komendy zostaja poza marszem kampanii, takze poza ekspansja stosow nizej.
     const barbDefense = planCampaignBarbarianHomeDefense(playerId, myUnits, units, cities, map, data, opts);
     commands.push(...barbDefense.commands);
+    // R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: drugi wodz (Braz: limit 2) zostaje w miescie i zbiera
+    // kolejna armie przez AI_GENERAL_WAR_GATHER_TURNS tur, gdy pierwszy ruszyl na atak; potem rusza jako
+    // druga fala (rezerwa przestaje byc zatrzymywana). Jednostka nalezy do rezerwy, gdy NAJBLIZSZY po
+    // realnej trasie (ta sama metryka co w pokoju i zbiorce; remis lub brak trasy -> wodz kampanii) jest
+    // wodz rezerwowy.
+    const reserveGenerals = myUnits.filter(unit => unit.isGeneral === true && unit.id !== general.id
+      && (unit.hp == null || unit.hp > 0)).sort((a, b) => a.id.localeCompare(b.id));
+    const reserveIds = new Set<string>();
+    const keepCampaignFields = {
+      rallyQ: campaign.rallyQ, rallyR: campaign.rallyR, target: campaign.target, turn: campaign.turn,
+      ...(campaign.seaTravelAllowed !== undefined ? { seaTravelAllowed: campaign.seaTravelAllowed } : {}),
+    };
+    if (reserveGenerals.length > 0) {
+      const tracked = recordAiReserveGatherTurn(campaign, reserveGenerals[0]!.id, campaign.turn);
+      if (tracked.campaign !== campaign) opts.aiGeneralWarCampaign = { ...tracked.campaign, ...keepCampaignFields };
+      if (!tracked.released) {
+        for (const g of reserveGenerals) reserveIds.add(g.id);
+        for (const unit of myUnits) {
+          if (unit.isGeneral === true || barbDefense.defenderIds.has(unit.id)) continue;
+          if (!isEligibleForArmyConcentration(unit, playerId)) continue;
+          const pathLen = leaderPathLengthFor(unit, map, units);
+          const dMain = unit.q === general.q && unit.r === general.r ? 0 : pathLen(unit, general) ?? Infinity;
+          let best: RuntimeUnit | null = null;
+          let dBest = Infinity;
+          for (const g of reserveGenerals) {
+            const d = unit.q === g.q && unit.r === g.r ? 0 : pathLen(unit, g) ?? Infinity;
+            if (d < dBest) { best = g; dBest = d; }
+          }
+          if (best === null || dBest >= dMain) continue;
+          reserveIds.add(unit.id);
+          if (dBest === 0) continue;
+          const step = firstStep(unit, map, best.q, best.r, units, true);
+          if (step !== null) commands.push({
+            type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+            allowFriendlyStack: step.q === best.q && step.r === best.r,
+          });
+        }
+      }
+    } else if (campaign.reserveGeneralId !== undefined) {
+      opts.aiGeneralWarCampaign = { ...recordAiReserveGatherTurn(campaign, undefined, campaign.turn).campaign,
+        ...keepCampaignFields };
+    }
+    const marchKeepIds = reserveIds.size > 0
+      ? new Set<string>([...barbDefense.defenderIds, ...reserveIds])
+      : barbDefense.defenderIds;
     const campaignCommandStart = commands.length;
     applyWarAllInCapitalToCommands(
       commands, myUnits, units, cities, playerId, map,
       { targets: [campaign.target], allowSea: campaign.seaTravelAllowed === true,
         marchMainGroupWhileRendezvous: true }, data,
-      false, undefined, barbDefense.defenderIds,
+      false, undefined, marchKeepIds,
     );
     // Campaign members can already be concentrated on one friendly hex after
     // five muster turns. The shared war planner reserves each destination once,
@@ -4987,7 +5056,7 @@ function appendAiGeneralCampaignOrders(
     const stackOrders: Extract<AICommand, { type: 'move' }>[] = [];
     for (const stack of stackGroups.values()) {
       // Obroncy domu w stosie nie sa rozwijani do stolicy (maja wlasny ruch ku barbarzyncy).
-      const group = stack.filter(unit => !barbDefense.defenderIds.has(unit.id));
+      const group = stack.filter(unit => !marchKeepIds.has(unit.id));
       if (group.length < 2) continue;
       const ids = new Set(group.map(unit => unit.id));
       const route = campaignMoves.find(command => ids.has(command.unitId));

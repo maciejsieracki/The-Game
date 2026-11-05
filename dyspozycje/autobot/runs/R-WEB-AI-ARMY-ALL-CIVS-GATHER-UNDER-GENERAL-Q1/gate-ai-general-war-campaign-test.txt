@@ -1,0 +1,54 @@
+PASS: war onset creates a recruiting campaign for one target
+PASS: queued General keeps the campaign in recruiting stage
+PASS: a spawned physical General starts gathering with a fresh five-turn counter
+PASS: gathering explicitly moves a distant eligible unit toward the physical General
+PASS: gathering suppresses ordinary attacks while units muster
+PASS: turn 1: campaign remains a muster and does not issue attacks
+PASS: turn 2: campaign remains a muster and does not issue attacks
+PASS: turn 3: campaign remains a muster and does not issue attacks
+PASS: turn 4: campaign remains a muster and does not issue attacks
+PASS: turn 5: campaign remains a muster and does not issue attacks
+PASS: fifth complete gather turn starts attack stage even while a unit remains unassembled
+PASS: sixth owner turn starts the offensive after five complete gather turns
+PASS: attack-stage target is exactly the selected enemy even with another war city present
+PASS: attack stage issues same-target movement for every stacked eligible unit (4/4)
+PASS: all four units gathered on one hex receive the same attack-march step
+PASS: shared first step explicitly permits friendly stacking in the production executor
+PASS: sixth campaign turn sends every assembled main-stack unit toward the target despite a straggler
+PASS: sixth campaign turn continues to move the separated unit toward the assembled force
+PASS: production war planner reports every disconnected unit in noPath and emits no march orders
+PASS: AI command adapter does not mask noPath with a false movement order
+PASS: leader death restarts recruiting and resets the muster counter
+PASS: a surviving unused General is not reused after leader death
+PASS: a newly spawned replacement leader starts a fresh muster after death
+PASS: peace removes the campaign and therefore cancels its AI-specific orders
+PASS: simultaneous wars choose one deterministic nearest target with owner-id tie break
+PASS: current target stays selected while it remains an active war
+PASS: one connected-component search covers the campaign target set
+PASS: route search rejects the closer enemy capital behind a full-width sea barrier
+PASS: route search accepts the farther enemy capital on the same landmass
+PASS: campaign picks the nearest reachable land target when the closer enemy is noPath
+PASS: save/load preserves stage, target, General identity, and gather turn count
+PASS: save/load preserves an AI campaign targeting human owner 0
+PASS: restore rejects malformed campaign records
+PASS: AI owner turn prepares the campaign and calls the shared General purchase transaction
+PASS: main filters campaign war targets by one land reachability component rooted at the AI capital
+PASS: General offer uses capital production availability, including era, barracks, tech, and stock gates
+PASS: General offer keeps existing capital availability gates for era and barracks
+PASS: campaign state is written to and restored from save metadata
+PASS: without Seafaring the near land capital is reachable and far sea target is not
+PASS: existing embarkation identifies the far capital as sea-reachable only across the barrier
+PASS: sea-only wartime target is preferred over the closer land target
+PASS: existing land target cannot be retained ahead of a feasible sea-only target
+PASS: route classifier reports both land and sea routes to the distant target
+PASS: a distant target with both routes outranks a nearer land-only target
+PASS: without Seafaring the distant sea route loses priority and nearest land target wins
+PASS: weighted classifier identifies the same sea route chosen by the production planner
+PASS: equal-cost route classifier follows the planner coordinate tie-break onto water
+PASS: without Seafaring the equal-cost sea tie is unavailable and the planner uses land
+PASS: production planner marches toward the same selected sea capital
+PASS: without Seafaring production planner reports noPath rather than a false water move
+PASS: main campaign wiring filters unreachable targets and gates sea movement on owner technology
+
+ai-general-war-campaign-test: 51 passed, 0 failed
+EXIT=0

@@ -931,7 +931,7 @@ import {
 } from './game/capital-capture';
 import { cityPopulationCap, loadEconParams, resolvePopulationCapMatrixDelta, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
-import { attemptGeneralPurchase, canRecruitGeneral, generalFollowDestination, generalLimitForEra, nearestLivingGeneral, planDeferredGeneralMarchBatch, stoneGeneralUnitId } from './game/generals';
+import { attemptGeneralPurchase, canRecruitGeneral, shouldAiBuyGeneral, generalFollowDestination, generalLimitForEra, nearestLivingGeneral, planDeferredGeneralMarchBatch, stoneGeneralUnitId } from './game/generals';
 import { promoteAiUnitForEra } from './game/ai-era-unit-promotion';
 import {
   aiGeneralCampaignToSave,
@@ -7100,6 +7100,29 @@ async function boot(): Promise<void> {
         );
         general.ruchLeft = Math.min(general.ruchLeft, general.ruch);
       }
+    }
+
+    /**
+     * R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: kazda wielka cywilizacja AI utrzymuje wodzow do limitu
+     * epoki (Kamien 1, Braz 2, ...) takze w POKOJU (dotad wodz powstawal wylacznie w kampanii wojennej, wiec
+     * cywilizacje bez wojny nie mialy wodza i wojsko stalo rozproszone). Utrata wodza => nowy w stolicy w
+     * kolejnej turze. Jeden zakup na ture (ten sam zakup i bramka limitu co kampania i gracz); brak zlota /
+     * oblezona stolica / brak oferty => proba ponowiona w nastepnej turze.
+     */
+    function ensureAiGeneralRoster(ownerId: number): void {
+      const majorCiv = !(isBarbarian(ownerId) || isCityStateOwner(ownerId) || eliminatedOwners.has(ownerId));
+      if (!majorCiv) return;
+      const capitalId = capitalCityIdForOwner(ownerId);
+      const capital = capitalId ? cities.find(city => city.id === capitalId && city.ownerId === ownerId) : undefined;
+      if (!capital) return;
+      const alive = units.filter(unit => unit.ownerId === ownerId && unit.isGeneral === true).length;
+      const queued = cities.filter(city => city.ownerId === ownerId)
+        .reduce((sum, city) => sum + (cityProd.get(city.id)?.rekrutacja ?? []).filter(item => item.isGeneral === true).length, 0);
+      if (!canRecruitGeneral(empireEpochForOwner(ownerId), { alive, queued })) return;
+      const offer = bestGeneralUnitForOwner(ownerId);
+      if (!shouldAiBuyGeneral({ majorCiv, hasCapital: true, hasOffer: offer !== null,
+        era: empireEpochForOwner(ownerId), alive, queued }) || !offer) return;
+      purchaseRecruitmentUnit(capital.id, offer.id, offer.koszt, ownerId, 1, { isGeneral: true });
     }
 
     /** Choose one stable active civilization-war target and keep the leader cycle current. */
@@ -38165,6 +38188,7 @@ async function boot(): Promise<void> {
                 wavePlan: undefined,
               };
             })();
+            if (!typCityCopyOwners.has(ownerId)) ensureAiGeneralRoster(ownerId);
             const aiGeneralWarCampaign = prepareAiGeneralWarCampaign(ownerId);
             const opts: AITurnOpts = {
               aiGeneralWarCampaign,
@@ -39271,6 +39295,12 @@ async function boot(): Promise<void> {
                     gatherTurnsCompleted: opts.aiGeneralWarCampaign.gatherTurnsCompleted,
                     ...(opts.aiGeneralWarCampaign.lastGatherTurn !== undefined
                       ? { lastGatherTurn: opts.aiGeneralWarCampaign.lastGatherTurn } : {}),
+                    ...(opts.aiGeneralWarCampaign.reserveGeneralId ? {
+                      reserveGeneralId: opts.aiGeneralWarCampaign.reserveGeneralId,
+                      reserveGatherTurns: opts.aiGeneralWarCampaign.reserveGatherTurns ?? 0,
+                      ...(opts.aiGeneralWarCampaign.reserveLastTurn !== undefined
+                        ? { reserveLastTurn: opts.aiGeneralWarCampaign.reserveLastTurn } : {}),
+                    } : {}),
                   });
                 }
               } finally {

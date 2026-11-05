@@ -17,6 +17,23 @@ export function canRecruitGeneral(era: number, count: GeneralRosterCount): boole
   return generalSlotsUsed(count) < generalLimitForEra(era);
 }
 
+/**
+ * R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: czy AI ma w tej turze kupic wodza w stolicy (takze w pokoju).
+ * Tak, gdy wielka cywilizacja ma stolice i oferte wodza, a zywi + zakolejkowani < limit epoki (Kamien 1, Braz 2).
+ * Utrata wodza zwalnia slot, wiec nastepna tura kupuje nowego w stolicy.
+ */
+export function shouldAiBuyGeneral(state: {
+  majorCiv: boolean;
+  hasCapital: boolean;
+  hasOffer: boolean;
+  era: number;
+  alive: number;
+  queued: number;
+}): boolean {
+  if (!state.majorCiv || !state.hasCapital || !state.hasOffer) return false;
+  return canRecruitGeneral(state.era, { alive: state.alive, queued: state.queued });
+}
+
 /** Stone-era leader model: ordinary infantry before the Wheel, ox chariot after it. */
 export function stoneGeneralUnitId(hasWheel: boolean): 'Wojownik' | 'Rydwan (woły)' {
   return hasWheel ? 'Rydwan (woły)' : 'Wojownik';
