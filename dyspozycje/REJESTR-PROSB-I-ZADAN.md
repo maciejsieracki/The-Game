@@ -8772,3 +8772,6 @@ Właściciel: część wydarzeń w ogóle niepotrzebna (nowy szlak handlowy ×3 
 
 ## 2026-11-05 — DECYZJA WŁAŚCICIELA: opcja włącz/wyłącz automatyzację budowy (domyślnie WYŁĄCZONA)
 Opcja w GŁÓWNYCH ustawieniach gry (nie w zaawansowanych): automatyzacja budowy dotyczy zarówno budynków w miastach, jak i ulepszeń terenu. Wyłączona (DOMYŚLNIE) → automatyczne opcje budowania niedostępne dla gracza, wszystko ręcznie; gracz musi włączyć, jeśli chce automatyzację. → temat `R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1`.
+
+## 2026-11-05 — DECYZJA WŁAŚCICIELA: odlewnie — przepustowość 25 → 50 + mnożnik epoki 1/1,5/2/2,5/3
+„Zwiększ naturalną ilość cykli z 25 do 50 dla odlewni brązu. To samo dla odlewni żelaza. I w każdą epokę zwiększaj możliwości zgodnie z mnożnikami. Jeden, jeden i pół i tak dalej.” → bazowa przepustowość 25 → 50 cykli/turę (Odlewnia brązu, Odlewnia żelaza; założenie: także Wielka odlewnia — ta sama rodzina receptur i klucze `budynek_huta_przepustowosc` / `budynek_odlewnia_zelaza_przepustowosc` / `budynek_wielka_odlewnia_przepustowosc`, zgłoś w BLOKADY), mnożnik epoki właściciela m(e)=1+0,5(e−1) = 1/1,5/2/2,5/3 (jak zużycie obywateli i Cegielnia). Temat `R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1`, start PO zakończeniu BRICK (ten sam `converters.ts`).
