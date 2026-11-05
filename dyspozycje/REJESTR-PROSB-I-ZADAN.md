@@ -8728,3 +8728,7 @@ Część cywilizacji AI zbiera całą armię pod generałem, a część nie (jed
 ## 2026-11-05 — ZGŁOSZENIE (zrzut): Chińczycy oblegają stolicę Egiptu (Memfis) bez wypowiedzenia wojny
 
 Plakietka „OBLĘŻENIE Memfis, poddanie za 2 tury”; w panelu Dyplomacja Chińczycy: Przyjazny, Traktat handlowy, „Wojny: brak”. Podejrzenie właściciela: poprawka (wymóg wojny) zrobiona tylko dla gracza, nie dla innych cywilizacji/państw-miast. → temat `R-WEB-AI-NO-SIEGE-WITHOUT-WAR-Q1`.
+
+## 2026-11-05 — ZGŁOSZENIE: jednostki omijają własne jednostki zamiast przechodzić przez nie
+
+Przez WŁASNE jednostki wolno przechodzić (ścieżka nie omija); przez OBCE — nie (wojna lub neutralne). Gdy ruch KOŃCZY się na własnej jednostce — propozycja połączenia; gdy tylko przechodzi — bez propozycji. → temat `R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1`.
