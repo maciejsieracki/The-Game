@@ -8781,3 +8781,6 @@ Opcja w GŁÓWNYCH ustawieniach gry (nie w zaawansowanych): automatyzacja budowy
 
 ## 2026-11-05 — ZGŁOSZENIE/PROŚBA: panel rekrutacji wojsk dla całej cywilizacji + liczniki „Rekrutuj” niezależne
 Właściciel: (1) u góry jedno pole rekrutacji wojsk — panel armii dla CAŁEJ cywilizacji, nie tylko dla miast: zaznaczam ile jakiego typu jednostek potrzebuję (np. wieże oblężnicze 5, taran 4, 10 wojowników i 10 procarzy); każdy typ osobno „Rekrutuj”; ZWIĘKSZANIE/ZMNIEJSZANIE niezależnie; „Rekrutuj” NIE zeruje liczników (dziś po „Rekrutuj” wszystkie liczby wracają do 1). (2) Zamówienie dla całej cywilizacji rozkładane automatycznie równomiernie po miastach, które mogą daną jednostkę produkować, z automatycznym wstawieniem do kolejek produkcji (jedno miasto zdolne → 5 tur po 1; pięć miast → po 1 w każdym). NIE zastępuje obecnego mechanizmu per miasto — tylko usprawnienie dużej rekrutacji. → temat `R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1`.
+
+## 2026-11-05 — DECYZJA WŁAŚCICIELA: Magazyn nie daje pojemności żywności centralnej (tylko Spichlerze)
+„Usuń żywność, dodatkową pojemność wynikającą z magazynu. Zostawmy tylko to w spichlerzu.” → `magazyn_centralny_bonus_zywnosc_na_budynek` (+100 za Magazyn) usunięte/zerowe; cap żywności centralnej = baza 1000 + wkłady Spichlerzy I/II (×2^(epoka−1)). Temat `R-WEB-MAGAZYN-NO-FOOD-CAP-BONUS-Q1`.
