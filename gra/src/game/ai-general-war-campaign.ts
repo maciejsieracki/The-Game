@@ -12,6 +12,11 @@ export interface AiGeneralWarCampaign {
   blockedGeneralIds?: string[];
   gatherTurnsCompleted: number;
   lastGatherTurn?: number;
+  /** R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: wodz rezerwowy (Braz #2) zbierajacy armie w miescie. */
+  reserveGeneralId?: string;
+  /** Pelne tury zbiorki wodza rezerwowego; po AI_GENERAL_WAR_GATHER_TURNS rezerwa rusza jako druga fala. */
+  reserveGatherTurns?: number;
+  reserveLastTurn?: number;
 }
 
 export const AI_GENERAL_WAR_GATHER_TURNS = 5;
@@ -125,6 +130,29 @@ export function recordAiGeneralGatherTurn(
   };
 }
 
+/**
+ * Liczy tury zbiorki wodza rezerwowego (wodz nr 2, gdy wodz nr 1 prowadzi atak). Zwraca zaktualizowana
+ * kampanie i `released` = true, gdy rezerwa miala juz AI_GENERAL_WAR_GATHER_TURNS pelnych tur zbiorki
+ * (rusza na cel jako druga fala). Zmiana wodza rezerwowego zeruje licznik; brak rezerwy czysci pola.
+ */
+export function recordAiReserveGatherTurn(
+  campaign: AiGeneralWarCampaign,
+  reserveId: string | undefined,
+  turn: number,
+): { campaign: AiGeneralWarCampaign; released: boolean } {
+  if (reserveId === undefined) {
+    const { reserveGeneralId: _g, reserveGatherTurns: _t, reserveLastTurn: _l, ...rest } = campaign;
+    return { campaign: rest, released: false };
+  }
+  const prior = campaign.reserveGeneralId === reserveId ? campaign.reserveGatherTurns ?? 0 : 0;
+  const released = prior >= AI_GENERAL_WAR_GATHER_TURNS;
+  if (campaign.reserveGeneralId === reserveId && campaign.reserveLastTurn === turn) return { campaign, released };
+  return {
+    campaign: { ...campaign, reserveGeneralId: reserveId, reserveGatherTurns: prior + 1, reserveLastTurn: turn },
+    released,
+  };
+}
+
 export function aiGeneralCampaignToSave(campaigns: ReadonlyMap<number, AiGeneralWarCampaign>): Array<[number, AiGeneralWarCampaign]> {
   return [...campaigns.entries()].map(([ownerId, campaign]) => [ownerId, {
     targetOwnerId: campaign.targetOwnerId,
@@ -133,6 +161,11 @@ export function aiGeneralCampaignToSave(campaigns: ReadonlyMap<number, AiGeneral
     ...(campaign.blockedGeneralIds ? { blockedGeneralIds: [...campaign.blockedGeneralIds] } : {}),
     gatherTurnsCompleted: campaign.gatherTurnsCompleted,
     ...(campaign.lastGatherTurn !== undefined ? { lastGatherTurn: campaign.lastGatherTurn } : {}),
+    ...(campaign.reserveGeneralId ? {
+      reserveGeneralId: campaign.reserveGeneralId,
+      reserveGatherTurns: campaign.reserveGatherTurns ?? 0,
+      ...(campaign.reserveLastTurn !== undefined ? { reserveLastTurn: campaign.reserveLastTurn } : {}),
+    } : {}),
   }]);
 }
 
@@ -158,6 +191,12 @@ export function restoreAiGeneralCampaigns(value: unknown): Map<number, AiGeneral
       ...(campaign.blockedGeneralIds ? { blockedGeneralIds: [...campaign.blockedGeneralIds] } : {}),
       gatherTurnsCompleted: campaign.gatherTurnsCompleted!,
       ...(Number.isSafeInteger(campaign.lastGatherTurn) ? { lastGatherTurn: campaign.lastGatherTurn } : {}),
+      ...(typeof campaign.reserveGeneralId === 'string' && Number.isSafeInteger(campaign.reserveGatherTurns)
+        && campaign.reserveGatherTurns! >= 0 ? {
+        reserveGeneralId: campaign.reserveGeneralId,
+        reserveGatherTurns: campaign.reserveGatherTurns!,
+        ...(Number.isSafeInteger(campaign.reserveLastTurn) ? { reserveLastTurn: campaign.reserveLastTurn } : {}),
+      } : {}),
     });
   }
   return restored;

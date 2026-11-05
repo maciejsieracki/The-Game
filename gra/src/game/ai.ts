@@ -20,6 +20,7 @@ import type { RuntimeUnit } from '../units/setup';
 import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
 import {
   recordAiGeneralGatherTurn,
+  recordAiReserveGatherTurn,
   type AiGeneralWarCampaign,
 } from './ai-general-war-campaign';
 import { armyFieldPower, type UnitPowerInput } from './unit-power';
@@ -4977,32 +4978,46 @@ function appendAiGeneralCampaignOrders(
     const barbDefense = planCampaignBarbarianHomeDefense(playerId, myUnits, units, cities, map, data, opts);
     commands.push(...barbDefense.commands);
     // R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: drugi wodz (Braz: limit 2) zostaje w miescie i zbiera
-    // kolejna armie, gdy pierwszy ruszyl na atak. Jednostka nalezy do rezerwy, gdy najblizszy (linia prosta,
-    // remis -> wodz kampanii) jest wodz rezerwowy; rezerwa nie dolacza do marszu kampanii.
+    // kolejna armie przez AI_GENERAL_WAR_GATHER_TURNS tur, gdy pierwszy ruszyl na atak; potem rusza jako
+    // druga fala (rezerwa przestaje byc zatrzymywana). Jednostka nalezy do rezerwy, gdy NAJBLIZSZY po
+    // realnej trasie (ta sama metryka co w pokoju i zbiorce; remis lub brak trasy -> wodz kampanii) jest
+    // wodz rezerwowy.
     const reserveGenerals = myUnits.filter(unit => unit.isGeneral === true && unit.id !== general.id
-      && (unit.hp == null || unit.hp > 0));
+      && (unit.hp == null || unit.hp > 0)).sort((a, b) => a.id.localeCompare(b.id));
     const reserveIds = new Set<string>();
+    const keepCampaignFields = {
+      rallyQ: campaign.rallyQ, rallyR: campaign.rallyR, target: campaign.target, turn: campaign.turn,
+      ...(campaign.seaTravelAllowed !== undefined ? { seaTravelAllowed: campaign.seaTravelAllowed } : {}),
+    };
     if (reserveGenerals.length > 0) {
-      for (const g of reserveGenerals) reserveIds.add(g.id);
-      for (const unit of myUnits) {
-        if (unit.isGeneral === true || barbDefense.defenderIds.has(unit.id)) continue;
-        if (!isEligibleForArmyConcentration(unit, playerId)) continue;
-        const dMain = hexDistance(unit.q, unit.r, general.q, general.r);
-        let best = reserveGenerals[0]!;
-        let dBest = hexDistance(unit.q, unit.r, best.q, best.r);
-        for (const g of reserveGenerals) {
-          const d = hexDistance(unit.q, unit.r, g.q, g.r);
-          if (d < dBest) { best = g; dBest = d; }
+      const tracked = recordAiReserveGatherTurn(campaign, reserveGenerals[0]!.id, campaign.turn);
+      if (tracked.campaign !== campaign) opts.aiGeneralWarCampaign = { ...tracked.campaign, ...keepCampaignFields };
+      if (!tracked.released) {
+        for (const g of reserveGenerals) reserveIds.add(g.id);
+        for (const unit of myUnits) {
+          if (unit.isGeneral === true || barbDefense.defenderIds.has(unit.id)) continue;
+          if (!isEligibleForArmyConcentration(unit, playerId)) continue;
+          const pathLen = leaderPathLengthFor(unit, map, units);
+          const dMain = unit.q === general.q && unit.r === general.r ? 0 : pathLen(unit, general) ?? Infinity;
+          let best: RuntimeUnit | null = null;
+          let dBest = Infinity;
+          for (const g of reserveGenerals) {
+            const d = unit.q === g.q && unit.r === g.r ? 0 : pathLen(unit, g) ?? Infinity;
+            if (d < dBest) { best = g; dBest = d; }
+          }
+          if (best === null || dBest >= dMain) continue;
+          reserveIds.add(unit.id);
+          if (dBest === 0) continue;
+          const step = firstStep(unit, map, best.q, best.r, units, true);
+          if (step !== null) commands.push({
+            type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+            allowFriendlyStack: step.q === best.q && step.r === best.r,
+          });
         }
-        if (dBest >= dMain) continue;
-        reserveIds.add(unit.id);
-        if (dBest === 0) continue;
-        const step = firstStep(unit, map, best.q, best.r, units, true);
-        if (step !== null) commands.push({
-          type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
-          allowFriendlyStack: step.q === best.q && step.r === best.r,
-        });
       }
+    } else if (campaign.reserveGeneralId !== undefined) {
+      opts.aiGeneralWarCampaign = { ...recordAiReserveGatherTurn(campaign, undefined, campaign.turn).campaign,
+        ...keepCampaignFields };
     }
     const marchKeepIds = reserveIds.size > 0
       ? new Set<string>([...barbDefense.defenderIds, ...reserveIds])

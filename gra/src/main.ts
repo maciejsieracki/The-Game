@@ -931,7 +931,7 @@ import {
 } from './game/capital-capture';
 import { cityPopulationCap, loadEconParams, resolvePopulationCapMatrixDelta, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
-import { attemptGeneralPurchase, canRecruitGeneral, generalFollowDestination, generalLimitForEra, nearestLivingGeneral, planDeferredGeneralMarchBatch, stoneGeneralUnitId } from './game/generals';
+import { attemptGeneralPurchase, canRecruitGeneral, shouldAiBuyGeneral, generalFollowDestination, generalLimitForEra, nearestLivingGeneral, planDeferredGeneralMarchBatch, stoneGeneralUnitId } from './game/generals';
 import { promoteAiUnitForEra } from './game/ai-era-unit-promotion';
 import {
   aiGeneralCampaignToSave,
@@ -7110,7 +7110,8 @@ async function boot(): Promise<void> {
      * oblezona stolica / brak oferty => proba ponowiona w nastepnej turze.
      */
     function ensureAiGeneralRoster(ownerId: number): void {
-      if (isBarbarian(ownerId) || isCityStateOwner(ownerId) || eliminatedOwners.has(ownerId)) return;
+      const majorCiv = !(isBarbarian(ownerId) || isCityStateOwner(ownerId) || eliminatedOwners.has(ownerId));
+      if (!majorCiv) return;
       const capitalId = capitalCityIdForOwner(ownerId);
       const capital = capitalId ? cities.find(city => city.id === capitalId && city.ownerId === ownerId) : undefined;
       if (!capital) return;
@@ -7119,7 +7120,8 @@ async function boot(): Promise<void> {
         .reduce((sum, city) => sum + (cityProd.get(city.id)?.rekrutacja ?? []).filter(item => item.isGeneral === true).length, 0);
       if (!canRecruitGeneral(empireEpochForOwner(ownerId), { alive, queued })) return;
       const offer = bestGeneralUnitForOwner(ownerId);
-      if (!offer) return;
+      if (!shouldAiBuyGeneral({ majorCiv, hasCapital: true, hasOffer: offer !== null,
+        era: empireEpochForOwner(ownerId), alive, queued }) || !offer) return;
       purchaseRecruitmentUnit(capital.id, offer.id, offer.koszt, ownerId, 1, { isGeneral: true });
     }
 
@@ -39286,6 +39288,12 @@ async function boot(): Promise<void> {
                     gatherTurnsCompleted: opts.aiGeneralWarCampaign.gatherTurnsCompleted,
                     ...(opts.aiGeneralWarCampaign.lastGatherTurn !== undefined
                       ? { lastGatherTurn: opts.aiGeneralWarCampaign.lastGatherTurn } : {}),
+                    ...(opts.aiGeneralWarCampaign.reserveGeneralId ? {
+                      reserveGeneralId: opts.aiGeneralWarCampaign.reserveGeneralId,
+                      reserveGatherTurns: opts.aiGeneralWarCampaign.reserveGatherTurns ?? 0,
+                      ...(opts.aiGeneralWarCampaign.reserveLastTurn !== undefined
+                        ? { reserveLastTurn: opts.aiGeneralWarCampaign.reserveLastTurn } : {}),
+                    } : {}),
                   });
                 }
               } finally {

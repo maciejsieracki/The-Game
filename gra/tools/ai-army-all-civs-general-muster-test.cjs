@@ -19,6 +19,7 @@ const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild')
 
 const MUT_PEACE = 'if (u.isGeneral === true || peaceLeaders.length === 0) { rallyCandidates.push(u); continue; }';
 const MUT_RESERVE = 'if (reserveGenerals.length > 0) {';
+const MUT_ROSTER = 'return canRecruitGeneral(state.era, { alive: state.alive, queued: state.queued });';
 const WORK = fs.mkdtempSync(path.join(process.env.ARS_TMP || os.tmpdir(), 'gmu-'));
 
 async function buildBundle(name, mutation) {
@@ -26,14 +27,15 @@ async function buildBundle(name, mutation) {
   const out = path.join(WORK, `${name}-bundle.cjs`);
   const srcDir = path.resolve(__dirname, '..', 'src', 'game');
   fs.writeFileSync(entry, `export { decideAITurn } from ${JSON.stringify(path.join(srcDir, 'ai.ts'))};
+export { shouldAiBuyGeneral } from ${JSON.stringify(path.join(srcDir, 'generals.ts'))};
 export { hexDistance } from ${JSON.stringify(path.resolve(__dirname, '..', 'src', 'units', 'setup.ts'))};
 `);
   const plugin = {
     name: 'mutate-ai',
     setup(b) {
-      b.onLoad({ filter: /game[\\/]ai\.ts$/ }, (args) => {
+      b.onLoad({ filter: /game[\\/](ai|generals|ai-general-war-campaign)\.ts$/ }, (args) => {
         let text = fs.readFileSync(args.path, 'utf8');
-        if (mutation) {
+        if (mutation && args.path.replace(/\\/g, '/').endsWith('/' + (mutation.file || 'ai.ts'))) {
           if (text.split(mutation.from).length !== 2) throw new Error('mutacja: nie znaleziono dokladnie jednego wystapienia: ' + mutation.from);
           text = text.replace(mutation.from, mutation.to);
         }
@@ -82,6 +84,7 @@ function step(B, own, turn, extra) {
     if (occ && cmd.allowFriendlyStack !== true) continue;
     u.q = cmd.toQ; u.r = cmd.toR;
   }
+  step.lastOpts = opts;
   return cmds;
 }
 const near = (B, a, b) => B.hexDistance(a.q, a.r, b.q, b.r);
@@ -90,6 +93,9 @@ const near = (B, a, b) => B.hexDistance(a.q, a.r, b.q, b.r);
   const B = await buildBundle('good', null);
   const MA = await buildBundle('mutA', { from: MUT_PEACE, to: 'if (true) { rallyCandidates.push(u); continue; }' });
   const MB = await buildBundle('mutB', { from: MUT_RESERVE, to: 'if (false) {' });
+  const MC = await buildBundle('mutC', { from: 'const released = prior >= AI_GENERAL_WAR_GATHER_TURNS;', to: 'const released = false;' , file: 'ai-general-war-campaign.ts' }).catch(() => null);
+  const ME = await buildBundle('mutE', { from: 'const pathLen = leaderPathLengthFor(unit, map, units);', to: 'const pathLen = (x, y) => hexDistance(x.q, x.r, y.q, y.r);' });
+  const MD = await buildBundle('mutD', { file: 'generals.ts', from: MUT_ROSTER, to: 'return false;' });
 
   // P1: pokoj, wodz stoi POZA stolica (np. po wojnie); wojsko rozsiane -- zbiera sie u wodza.
   const p1 = (b) => {
@@ -153,6 +159,71 @@ const near = (B, a, b) => B.hexDistance(a.q, a.r, b.q, b.r);
   ok(r5.armyMoved >= 1, `P5: armia wodza kampanii maszeruje na cel (ruszylo ${r5.armyMoved}/2)`);
   const r5m = p5(MB);
   ok(r5m.newbornAtG2 < 2, `P5 mutacja B: bez rezerwy nowe jednostki ida z kampania, nie zostaja u wodza (${r5m.newbornAtG2}/2)`);
+
+  // P6 (Braz #2, wymaganie wlasciciela): wodz rezerwowy zbiera nowa armie w miescie PRZEZ 5 TUR, potem rusza
+  // jako druga fala. Stan kampanii przenoszony miedzy turami jak w main.ts (opts.aiGeneralWarCampaign).
+  const p6 = (b) => {
+    const g1 = general('G1', 25, 10); const g2 = general('G2', 10, 10);
+    const army = [troop(25, 10), troop(25, 10)];
+    const newborn = [troop(10, 10), troop(12, 10)];
+    const own = [g1, g2, ...army, ...newborn];
+    const target = { ownerId: 2, cityId: ENEMY.id, q: ENEMY.q, r: ENEMY.r };
+    let camp = { targetOwnerId: 2, stage: 'attacking', generalUnitId: 'G1', gatherTurnsCompleted: 5, rallyQ: 25, rallyR: 10, target, turn: 1 };
+    const warAllIn = { targets: [target], enemyArmies: [], engageRadius: 6, enemyStrength: [{ ownerId: 2, strength: 0 }] };
+    const heldAt = [];
+    for (let t = 1; t <= 9; t++) {
+      step(b, own, t, { canEngageOwner: () => true, atWarWithCiv: true, warAllIn, aiGeneralWarCampaign: { ...camp, turn: t } });
+      if (step.lastOpts.aiGeneralWarCampaign) camp = { ...step.lastOpts.aiGeneralWarCampaign };
+      heldAt.push(newborn.filter(u => near(b, u, g2) === 0).length);
+      if (t < 9) { g2.q = 10; g2.r = 10; } // wodz rezerwowy trzyma miasto
+    }
+    return heldAt;
+  };
+  const r6 = p6(B);
+  ok(r6.slice(0, 5).every(n => n === 2), `P6: rezerwa zbiera w miescie przez 5 tur (u wodza #2 po turach: ${r6.join(',')})`);
+  ok(r6[8] < 2, `P6: po 5 turach zbiorki rezerwa rusza jako druga fala (tura 9: ${r6[8]}/2 jeszcze u wodza #2)`);
+  if (MC) { const r6m = p6(MC); ok(r6m.every(n => n === 2), `P6 mutacja C: bez odblokowania rezerwa czeka bez konca (${r6m.join(',')})`); }
+
+  // P7: metryka "najblizszy wodz" = dlugosc realnej trasy (jak w pokoju), nie linia prosta. Mur z morza z przejsciem
+  // daleko: wodz rezerwowy w linii prostej blizej, ale trasa do niego jest dluzsza niz do wodza kampanii.
+  {
+    const map = makeMap(70, 50);
+    for (let r = 0; r < 50; r++) if (r < 40) map.hexes[`14,${r}`].terenBazowy = 'morze';
+    const MAPSAVE = MAP;
+    const g1 = general('G1', 4, 10); const g2 = general('G2', 17, 10);
+    const t = troop(12, 10);
+    const target = { ownerId: 2, cityId: ENEMY.id, q: ENEMY.q, r: ENEMY.r };
+    const camp = { targetOwnerId: 2, stage: 'attacking', generalUnitId: 'G1', gatherTurnsCompleted: 5, rallyQ: 8, rallyR: 10, target, turn: 1 };
+    const own = [g1, g2, t];
+    t.ruchLeft = t.ruch;
+    const cmds = B.decideAITurn(1, own, [CAP, ENEMY], map, data, { civType: 'grecy', currentTurn: 1, canEngageOwner: () => true, capitalCityId: CAP.id, atWarWithCiv: true,
+      warAllIn: { targets: [target], enemyArmies: [], engageRadius: 6, enemyStrength: [{ ownerId: 2, strength: 0 }] }, aiGeneralWarCampaign: camp });
+    const mv = cmds.find(c => c.type === 'move' && c.unitId === t.id);
+    const tE = troop(12, 10); tE.ruchLeft = tE.ruch;
+    const cmdsE = ME.decideAITurn(1, [general('G1', 4, 10), general('G2', 17, 10), tE], [CAP, ENEMY], map, data,
+      { civType: 'grecy', currentTurn: 1, canEngageOwner: () => true, capitalCityId: CAP.id, atWarWithCiv: true,
+        warAllIn: { targets: [target], enemyArmies: [], engageRadius: 6, enemyStrength: [{ ownerId: 2, strength: 0 }] }, aiGeneralWarCampaign: { ...camp } });
+    const mvE = cmdsE.find(c => c.type === 'move' && c.unitId === tE.id);
+    ok(mv !== undefined && mv.targetCityId === 'enemy', 'P7: jednostka za murem maszeruje z wodzem kampanii (trasa do wodza rezerwowego jest dluzsza)');
+    ok(mvE === undefined || mvE.targetCityId !== 'enemy', 'P7 mutacja E: metryka linii prostej LAMIE kontrakt (jednostka zatrzymana jako rezerwa za murem)');
+    void MAPSAVE;
+  }
+
+  // P8: kupno wodza AI w pokoju (ensureAiGeneralRoster -> shouldAiBuyGeneral): limit epoki i odnowa po smierci.
+  {
+    const base = { majorCiv: true, hasCapital: true, hasOffer: true };
+    ok(B.shouldAiBuyGeneral({ ...base, era: 1, alive: 0, queued: 0 }) === true, 'P8: Kamien, brak wodza -> kup');
+    ok(B.shouldAiBuyGeneral({ ...base, era: 1, alive: 1, queued: 0 }) === false, 'P8: Kamien, jest wodz -> nie kupuj (limit 1)');
+    ok(B.shouldAiBuyGeneral({ ...base, era: 1, alive: 0, queued: 1 }) === false, 'P8: Kamien, wodz w kolejce -> nie kupuj');
+    ok(B.shouldAiBuyGeneral({ ...base, era: 2, alive: 1, queued: 0 }) === true, 'P8: Braz, 1 wodz -> kup drugiego');
+    ok(B.shouldAiBuyGeneral({ ...base, era: 2, alive: 1, queued: 1 }) === false, 'P8: Braz, 1 zywy + 1 w kolejce -> nie kupuj');
+    ok(B.shouldAiBuyGeneral({ ...base, era: 2, alive: 2, queued: 0 }) === false, 'P8: Braz, 2 wodzow -> nie kupuj');
+    ok(B.shouldAiBuyGeneral({ ...base, era: 2, alive: 0, queued: 0 }) === true, 'P8: po smierci wszystkich wodzow -> kup nowego (stolica)');
+    ok(B.shouldAiBuyGeneral({ ...base, hasCapital: false, era: 1, alive: 0, queued: 0 }) === false, 'P8: bez stolicy -> nie kupuj');
+    ok(B.shouldAiBuyGeneral({ ...base, hasOffer: false, era: 1, alive: 0, queued: 0 }) === false, 'P8: bez oferty (np. brak Koszar w Brazie) -> nie kupuj');
+    ok(B.shouldAiBuyGeneral({ ...base, majorCiv: false, era: 1, alive: 0, queued: 0 }) === false, 'P8: barbarzyncy / panstwo-miasto -> nie kupuj');
+    ok(MD.shouldAiBuyGeneral({ ...base, era: 1, alive: 0, queued: 0 }) === false, 'P8 mutacja D: wylaczone kupno LAMIE kontrakt');
+  }
 
   console.log(`ai-army-all-civs-general-muster-test: ${passed} PASS, ${failed} FAIL`);
   fs.rmSync(WORK, { recursive: true, force: true });

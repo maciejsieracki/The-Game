@@ -58,7 +58,7 @@ function analyze(ow, units, cities, turn, born) {
   const byHex = new Map(); for (const u of combat) { const k = key(u.q, u.r); byHex.set(k, (byHex.get(k) || 0) + 1); }
   const singlesOutside = [...byHex.entries()].filter(([k, n]) => n === 1 && !cityHex.has(k)).length;
   return {
-    o: ow.o, civ: ow.civ, era: ow.era, limit: ow.era, gens: gens.length, queuedGen: ow.queuedGen, camp: ow.camp, war: ow.war,
+    o: ow.o, civ: ow.civ, era: ow.era, limit: ow.era, gens: gens.length, queuedGen: ow.queuedGen, gold: ow.gold, koszary: ow.koszary, offer: ow.offer, camp: ow.camp, war: ow.war,
     combat: combat.length, near, inCity, far, hist, singlesOutside, cities: myCities.length,
   };
 }
