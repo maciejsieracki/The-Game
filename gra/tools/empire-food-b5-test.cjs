@@ -214,9 +214,10 @@ ok(
 }
 
 // Auto ration equalization recomputes the candidate cost using each tick's owner era.
+// R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: m(e)=1+0,5(e-1) zastąpiło 1/2/4 -> Brąz m=1,5 (30*lvl<=120 => 4), Żelazo m=2 (40*lvl<=120 => 3).
 for (const testCase of [
-  { name: 'Bronze', ownerId: 2, ownerEra: 2, expectedLevel: 3 },
-  { name: 'Iron', ownerId: 3, ownerEra: 3, expectedLevel: 1.5 },
+  { name: 'Bronze', ownerId: 2, ownerEra: 2, expectedLevel: 4 },
+  { name: 'Iron', ownerId: 3, ownerEra: 3, expectedLevel: 3 },
 ]) {
   const city = { id: testCase.name, ownerId: testCase.ownerId, population: 10, poziomRacji: 6 };
   const tick = {

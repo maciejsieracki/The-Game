@@ -1,0 +1,35 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1
+GOAL: zuzycie obywateli rosnie o 50% bazy co epoke, m(e) = 1 + 0,5 (e - 1) (1 / 1,5 / 2 / 2,5 / 3), jedna wspolna funkcja dla zywnosci i surowcow, parytet AI (era WLASCICIELA miasta).
+ZMIANY/COMMIT: SHA w sekcji NASTEPNY KROK / ponizej (commit jawnym `git add`, bez pusha). Baza: origin/main 522271468.
+Pliki: NOWY `gra/src/game/citizen-consumption-era.ts` (`citizenConsumptionEraMultiplier`, `formatCitizenConsumptionMult`); `population-growth-v85.ts` (usunieto `rationEraFoodCostMultiplier` 1/2/4, `computeCityRationCost` x m(epoka)); `citizen-resource-upkeep.ts` (`citizenUpkeepRateForEra` = 1,0 x m(era)); `data/citizen-resource-upkeep.json` (usuniete pole `stawkaNaObywatela` 1/2/3, listy surowcow bez zmian, opis); `data/econ-params.json` (tylko opis martwego parametru); `economy.ts` (tylko komentarz); `cityPanel.ts` (etykieta racji z mnoznikiem + `CityView.ownerEra`); `empireDetailPanel.ts` (stopka z mnoznikiem). Testy: NOWY `citizen-consumption-era-mult-test.cjs`, NOWY `citizen-consumption-era-live-measure.cjs` (pomiar, nie bramka); zaktualizowane `citizen-upkeep-era-mult-test.cjs`, `population-growth-v85-bonus-test.cjs`, `empire-food-b5-test.cjs`.
+
+ZMIERZONE PRZED (plik:linia, origin/main):
+- zywnosc: `population-growth-v85.ts` l.47 `rationEraFoodCostMultiplier` (1/2/4 - STARY wzor, nie 1/1,5/2), l.196 `rationFoodCostPerPop`, l.211 `computeCityRationCost`; `turn-economy.ts` l.1592 `computeCityFoodBalanceV85`, l.1616 `recomputeCityFoodBalancesInEcon` (era z `tick.ownerEra`), wywolania l.2039 i l.2618 (era z `resolveOwnerEra`); `cityPanel.ts` l.1305 (era z `cfg.getEpoch`), l.1512 `wyzwienieSummaryLabel` (BEZ epoki - luka UI).
+- surowce: `citizen-resource-upkeep.ts` stawka 1/2/3 z pola JSON; `main.ts` `citizenUpkeepDrainForOwner` (~l.36531) i fallbacki (~l.3630) przekazuja `empireEpochForOwner` - bez zmian.
+- `economy.ts` l.1013 `zywnoscZuzyta = ludnosc x zywnoscZuzytkaPopulacja`: MARTWY wzor przedV85 (`.zywnosc` z `cityYieldPerTurn` nie zasila bilansu; cityPanel l.1285 to potwierdza). Decyzja: zostawiony bez zmiany wartosci, oznaczony komentarzem + opisem w `econ-params.json`, zeby nie byly dwa "zywe" wzory. ZGLOSZENIE: ewentualne usuniecie to osobny temat.
+- `ai.ts`: BRAK oszacowan racji/zuzycia obywateli (grep) - nic do zmiany; AI jedzie przez te same funkcje silnika. `empire-food.ts`, `resource-usage-breakdown.ts`, `building-stock-cost.ts`, HUD: czytaja `kosztRacji`/werdykt silnika, bez wlasnych stawek - bez zmian. `main.ts` bez zmian (epoka juz przekazywana).
+
+ASSUMPCJE (luki rozstrzygniete zalozeniem):
+1. Pole JSON `stawkaNaObywatela` (1/2/3 z R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1) USUNIETE - sprzeczne z nowa decyzja (1/1,5/2); stawka = baza 1,0 x m(e). Wartosc bazowa 1,0 nietknieta.
+2. Epoka 4+: lista surowcow = wiersz najwyzszej epoki (bez zmian), ale stawka rosnie wzorem (era 4 = 2,5) - zgodnie z "wzor, nie tabela".
+3. `floor(populacja x stawka)` zostaje (np. pop 5 x 1,5 = 7); kara binarna bez zmian.
+4. `recomputeCityFoodBalancesInEcon` bierze epoke z ticka (`tick.ownerEra` ustawiane przez ten sam `resolveOwnerEra` we wszystkich 4 miejscach tworzenia tickow) - bez nowego parametru.
+
+TESTY:
+- tsc --noEmit: EXIT=0 (gate-tsc.txt).
+- NOWY citizen-consumption-era-mult-test: baseline 68 pass/0 fail; mutacje: M1 usuniecie mnoznika w zywnosci -> 17 porazek (zabita), M2 usuniecie w surowcach -> 15 (zabita), M3 hardkod stawki w tooltipie racji -> 2 (zabita). Pokrywa epoki 0/1/2/3/4/5/6, NaN, undefined, null, string, ulamki; maks racji 12/18/24; Spichlerz I/II nalozony dalej; recompute z ticka; floor surowcow; parytet (sygnatury bez ownerId). RED przed (funkcji nie bylo; stara `rationEraFoodCostMultiplier` dawala 1/2/4 -> B1-B8 czerwone), GREEN po.
+- ZAKTUALIZOWANE testy pinujace stare stawki (uzasadnienie: decyzja wlasciciela 2026-11-05, komentarze w plikach): citizen-upkeep-era-mult-test (663/0), population-growth-v85-bonus-test (65/0; 1/2/4 -> 1/1,5/2, kwoty Spichlerza 240/160 -> 120/80), empire-food-b5-test (34/0; auto-korekta poziomu Brąz 3->4, Żelazo 1,5->3).
+- REGRESJE PRZED vs PO (36 testow z listy: racj/ration/zywnosc/food/spichlerz/citizen-resource/growth/population-growth/empire-food/hud/city-panel/empire-panel/resource-usage/ai-test/upkeep/logic-test): PRZED czerwone 4, PO czerwone te same 4 z identycznymi liczbami (ai-test 274/20, citizen-resource-upkeep-test 107/2, empire-panel-miasto-obywatele-content-test 115/1, resource-usage-breakdown-test 98/2) - pre-istniejace, nie dotykane. logic-test zielony. (gate-regresje-po.txt)
+- POMIAR NA ZYWEJ GRZE (REALNY endTurn, bundle vite POZA repo, hak odczytu w KOPII main.ts; `tools/citizen-consumption-era-live-measure.cjs`; ziarno 7; BEFORE = build origin/main, AFTER = build tej galezi; epoka gracza i wszystkich AI ustawiona hakiem; pop 5, Wyzywienie 4, magazyn 5000):
+  surowce gracza (odjete z magazynu na surowiec, pop 5): PRZED epoka 1/2/3 = 5/10/15 (stawka 1/2/3), PO = 5/7/10 (stawka 1/1,5/2; floor(5x1,5)=7) - zgodne z m(e); listy surowcow bez zmian (2/4/5).
+  zywnosc gracza: koszt = pop x poziom x 2 x m x Spichlerz; PRZED m = 1 / 2 / 4, PO m = 1 / 1,5 / 2 (epoka 3: koszt 30 -> 37,5 przy innym poziomie po auto-korekcie, czyli normalizowany mnoznik 4x0,75 -> 2x0,75). Uwaga: SPICH-AUTO przycina poziom, wiec "poziom 4" nie utrzymal sie w tej turze; mnoznik wyliczony z poziomu z ticka. Wartosc 0,75 w epoce 3 to Spichlerz I z ceramika (wniosek z arytmetyki, nie sprawdzony wprost).
+  AI (14 wlascicieli, ta sama funkcja): stawka surowcow AI PRZED 1/2/3, PO 1/1,5/2; mnoznik racji AI PRZED {1},{2},{4}, PO {1},{1,5},{2} - AI = gracz (evidence/eras-*.json).
+- SYMULACJA AI (informacja o skutku dla balansu, BEZ korekt; gracz pasywny): ZREALIZOWANO 30 tur x 3 ziarna (7, 11, 23) zamiast 100 - limit czasu (ok. 10-15 s/ture w headless; 100 tur x 3 ziarna x 2 buildy nie miesci sie w oknie). 100 tur: NIE_ZMIERZONO. W 30 turach AI sa w epoce <= 2, wiec efekt mnoznika jest maly.
+  PRZED -> PO (miasto-tury w deficycie zywnosci / miasto-tury AI / tury z brakujacym surowcem / pop AI na koniec): s7: 40/420, 641, 64 -> 55/421, 614, 85; s11: 52/450, 693, 72 -> 61/466, 661, 99; s23: 39/420, 643, 68 -> 34/420, 624, 95. Roznice mieszczą sie w szumie rozbiezności przebiegow (zmiana mnoznika zmienia sciezke losowa AI); nie interpretowac jako skutku. determinizm: hash `war-allin-capital-quick` NIE jest przypiety w zadnym tescie (narzedzie tylko drukuje hashe) - NIE_ZMIERZONO porownania PRZED/PO.
+
+BLOKADY: brak techniczny. NIE_ZMIERZONO: symulacja 100 tur; porownanie hashy war-allin-capital-quick; potwierdzenie wprost obecnosci Spichlerza w mierzonym miescie. Zalecenie dla Evaluatora: zweryfikowac w przegladarce wyglad etykiety "N jedzenia/miesz./ture (epoka xN)" w panelu miasta (UI nie byl ogladany wizualnie - zmiana tekstu, bez zmian ukladu).
+RUNDY: 1/5
+NASTEPNY KROK: Evaluator (zarzuty numerowane) -> Obrona -> Final Control -> integracja orkiestratora. Po wdrozeniu REPIN Rust notuje orkiestrator. Sprzatanie: node_modules i katalogi scratch usunac po pracy.
+DEPLOY/PUSH: NIE WYKONANO

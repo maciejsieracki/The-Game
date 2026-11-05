@@ -19,6 +19,7 @@ import type { GameMap } from '../types/map';
 import type { TerritoryNode } from '../map/territory';
 import { refreshManpowerAfterPopChange, civManpowerMults, civManpowerMatrixMults } from './manpower';
 import { R_STAWKI_KOSZT_MULT } from './r-stawki-strojenie';
+import { citizenConsumptionEraMultiplier } from './citizen-consumption-era';
 import type { GameDifficulty } from './difficulty-cost';
 
 /** Poziom suwaka Wyżywienie: 0 … 6 co 0,5 (koszt żywności na mieszkańca = ta wartość). */
@@ -42,12 +43,6 @@ export const WYZYWIENIE_MAX = 6;
  * rozjazd staje się realny w grze.
  */
 export const WYZYWIENIE_STEP = 0.5;
-
-/** Citizen food upkeep scales by the owning civilization's era: Stone 1×, Bronze 2×, Iron+ 4×. */
-export function rationEraFoodCostMultiplier(ownerEra = 1): number {
-  if (!Number.isFinite(ownerEra) || ownerEra <= 1) return 1;
-  return ownerEra === 2 ? 2 : 4;
-}
 
 /** Wszystkie dozwolone poziomy Wyżywienia (0, 0.5, …, 6). */
 export const WYZYWIENIE_LEVELS: readonly number[] = Array.from(
@@ -208,6 +203,12 @@ export function formatWyzwienieLabel(level: PoziomRacji): string {
   return Number.isInteger(v) ? String(v) : v.toFixed(1).replace('.', ',');
 }
 
+/**
+ * Koszt racji miasta/turę = populacja × poziom Wyżywienia × R_STAWKI_KOSZT_MULT × m(epoka właściciela)
+ * (R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: m(e) = 1 + 0,5 × (e − 1), `citizen-consumption-era.ts`),
+ * potem Spichlerz (I ×0,75, II ×0,5). `ownerEra` = epoka cywilizacji właściciela (gracz/AI/państwa-miasta
+ * jednakowo).
+ */
 export function computeCityRationCost(
   population: number,
   level: PoziomRacji,
@@ -216,7 +217,7 @@ export function computeCityRationCost(
   ownerEra = 1,
 ): number {
   const base = Math.max(0, population) * rationFoodCostPerPop(level, params)
-    * rationEraFoodCostMultiplier(ownerEra);
+    * citizenConsumptionEraMultiplier(ownerEra);
   const mult = spichlerzState ? spichlerzRationFoodCostMultiplier(spichlerzState) : 1;
   return base * mult;
 }

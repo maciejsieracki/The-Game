@@ -54,7 +54,7 @@
       "normal": 1,
       "hard": 2,
       "jednostka": "żywność/turę/os.",
-      "opis": "Zużycie żywności na 1 punkt populacji na turę."
+      "opis": "MARTWY WZÓR przedV85 (flat ludnosc × tu, tylko `cityYieldPerTurn().zywnosc`, nieużywane w bilansie żywności). Realny koszt racji obywateli = populacja × Wyżywienie × R_STAWKI_KOSZT_MULT × m(epoka właściciela), m(e) = 1 + 0,5 × (e − 1) — `computeCityRationCost` + `citizen-consumption-era.ts` (R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1). Wartości tego parametru NIE zmieniono."
     },
     "zywnosc_jednostka_ruch": {
       "easy": 1,
