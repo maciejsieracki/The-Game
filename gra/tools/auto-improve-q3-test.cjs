@@ -108,7 +108,7 @@ const MAXT = 4;
     const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
     const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: true, focus });
     const rc = log.find(e => e.key === 'wyrab' && isRiver(e.q, e.r));
-    ok(!rc, `${focus}: wycinka rzeczna bez obywatela NIE wystepuje przy filtrze ON (Q1 AI-FOOD; jest: ${rc && rc.hk})`);
+    ok(!!rc, `${focus}: wycinka rzeczna bez obywatela WYSTEPUJE przy filtrze ON (NO-CITIZEN-Q1, decyzja wlasciciela 2026-11-05; jest: ${rc && rc.hk})`);
   }
   console.log('(1b) K2: „Wolno wycinac las” OFF (skipWyrab) nadal blokuje cala wycinke (U-6 = A)');
   {
@@ -131,7 +131,7 @@ const MAXT = 4;
     const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: true, focus, turns: 14 });
     const cleared = log.filter(e => e.key === 'wyrab' && isRiver(e.q, e.r));
     const withFarm = cleared.filter(c => log.some(e => e.key === 'farma' && e.hk === c.hk && e.t > c.t));
-    ok(cleared.length === 0 && withFarm.length === 0, `${focus}: zero wycinek rzecznych bez obywatela przy filtrze ON (Q1 AI-FOOD; ${cleared.length}; log: ${dl(log)})`);
+    ok(cleared.length > 0 && withFarm.length === 0, `${focus}: wycinki rzeczne bez obywatela sa (${cleared.length}), ale farma po nich NIE powstaje bez obywatela (NO-CITIZEN-Q1; z farma: ${withFarm.length}; log: ${dl(log)})`);
     const farmNoCitizen = log.filter(e => e.key === 'farma' && !WORKED_NO_RIVER.some(([q, r]) => q === e.q && r === e.r) && e.hk !== K(CQ, CR));
     ok(farmNoCitizen.length === 0, `${focus}: zero farm poza polami obywateli (${farmNoCitizen.length})`);
   }

@@ -1,0 +1,722 @@
+{
+  "tag": "before-s7-zywnosc",
+  "focus": "zywnosc",
+  "seed": 7,
+  "turns": [
+    {
+      "ok": true,
+      "turn": 1,
+      "ms": 18704,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 0,
+      "lc": {
+        "farma": 9
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 2,
+      "ms": 13785,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 0,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 3,
+      "ms": 14669,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 1,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 9
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 4,
+      "ms": 13361,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 1,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 9,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 5,
+      "ms": 12806,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 1,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 6,
+      "ms": 11777,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 2,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 7,
+      "ms": 12625,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 2,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "lcAi": {
+        "farma": 4
+      }
+    },
+    {
+      "ok": true,
+      "turn": 8,
+      "ms": 14405,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 2,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "lcAi": {
+        "farma": 4,
+        "tartak": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 9,
+      "ms": 15640,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 2,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "lcAi": {
+        "farma": 4,
+        "tartak": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 10,
+      "ms": 13399,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 3,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "lcAi": {
+        "farma": 5,
+        "bydlo": 1,
+        "tartak": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 11,
+      "ms": 14198,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 3,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 2,
+        "warzelnia_soli": 2
+      },
+      "lcAi": {
+        "farma": 6,
+        "tartak": 2,
+        "bydlo": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 12,
+      "ms": 14766,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 4,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "lcAi": {
+        "farma": 7,
+        "tartak": 3,
+        "bydlo": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 13,
+      "ms": 13561,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 4,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "lcAi": {
+        "farma": 10,
+        "tartak": 3,
+        "bydlo": 3
+      }
+    },
+    {
+      "ok": true,
+      "turn": 14,
+      "ms": 14427,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 6,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "lcAi": {
+        "farma": 15,
+        "tartak": 3,
+        "bydlo": 3,
+        "owce": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 15,
+      "ms": 14832,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 8,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "lcAi": {
+        "farma": 20,
+        "tartak": 3,
+        "bydlo": 3,
+        "owce": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 16,
+      "ms": 13715,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 9,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "lcAi": {
+        "farma": 28,
+        "bydlo": 6,
+        "tartak": 3,
+        "owce": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 17,
+      "ms": 15216,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 12,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "lcAi": {
+        "farma": 37,
+        "bydlo": 8,
+        "tarasy": 1,
+        "tartak": 3,
+        "owce": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 18,
+      "ms": 15796,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 13,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 3,
+        "warzelnia_soli": 3
+      },
+      "lcAi": {
+        "farma": 42,
+        "bydlo": 18,
+        "warzelnia_soli": 1,
+        "tarasy": 1,
+        "tartak": 3,
+        "oboz_lowiecki": 1,
+        "owce": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 19,
+      "ms": 15852,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 14,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 4,
+        "warzelnia_soli": 4
+      },
+      "lcAi": {
+        "farma": 44,
+        "bydlo": 19,
+        "warzelnia_soli": 1,
+        "tarasy": 1,
+        "tartak": 3,
+        "oboz_lowiecki": 2,
+        "owce": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 20,
+      "ms": 14539,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 14,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 4,
+        "warzelnia_soli": 4
+      },
+      "lcAi": {
+        "farma": 52,
+        "bydlo": 25,
+        "owce": 2,
+        "warzelnia_soli": 1,
+        "tarasy": 1,
+        "lama": 1,
+        "tartak": 3,
+        "oboz_lowiecki": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 21,
+      "ms": 11467,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 25,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 4,
+        "warzelnia_soli": 4
+      },
+      "lcAi": {
+        "farma": 55,
+        "bydlo": 25,
+        "owce": 2,
+        "warzelnia_soli": 1,
+        "tarasy": 1,
+        "lama": 1,
+        "tartak": 3,
+        "oboz_lowiecki": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 22,
+      "ms": 10446,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 27,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 4,
+        "warzelnia_soli": 4
+      },
+      "lcAi": {
+        "kamieniolom": 37,
+        "farma": 65,
+        "bydlo": 31,
+        "owce": 3,
+        "warzelnia_soli": 1,
+        "tarasy": 1,
+        "lama": 1,
+        "tartak": 6,
+        "oboz_lowiecki": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 23,
+      "ms": 12199,
+      "lasLeftMe": 43,
+      "cutMe": 0,
+      "cutAi": 27,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 5,
+        "warzelnia_soli": 5
+      },
+      "lcAi": {
+        "kamieniolom": 37,
+        "farma": 69,
+        "bydlo": 37,
+        "owce": 4,
+        "warzelnia_soli": 2,
+        "tarasy": 1,
+        "lama": 1,
+        "tartak": 9,
+        "oboz_lowiecki": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 24,
+      "ms": 11199,
+      "lasLeftMe": 41,
+      "cutMe": 0,
+      "cutAi": 27,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 5,
+        "warzelnia_soli": 5
+      },
+      "lcAi": {
+        "kamieniolom": 89,
+        "farma": 69,
+        "bydlo": 41,
+        "owce": 4,
+        "warzelnia_soli": 2,
+        "tarasy": 1,
+        "lama": 1,
+        "tartak": 8,
+        "oboz_lowiecki": 4
+      }
+    },
+    {
+      "ok": true,
+      "turn": 25,
+      "ms": 13019,
+      "lasLeftMe": 41,
+      "cutMe": 0,
+      "cutAi": 27,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 5,
+        "warzelnia_soli": 5
+      },
+      "lcAi": {
+        "kamieniolom": 89,
+        "farma": 71,
+        "bydlo": 41,
+        "owce": 4,
+        "tarasy": 2,
+        "irygacja": 6,
+        "warzelnia_soli": 4,
+        "lama": 1,
+        "tartak": 8,
+        "oboz_lowiecki": 4
+      }
+    },
+    {
+      "ok": true,
+      "turn": 26,
+      "ms": 14524,
+      "lasLeftMe": 39,
+      "cutMe": 0,
+      "cutAi": 28,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 5,
+        "warzelnia_soli": 5
+      },
+      "lcAi": {
+        "kamieniolom": 106,
+        "farma": 72,
+        "bydlo": 44,
+        "irygacja": 11,
+        "owce": 4,
+        "tarasy": 2,
+        "warzelnia_soli": 4,
+        "lama": 1,
+        "tartak": 8,
+        "oboz_lowiecki": 4
+      }
+    },
+    {
+      "ok": true,
+      "turn": 27,
+      "ms": 11287,
+      "lasLeftMe": 38,
+      "cutMe": 0,
+      "cutAi": 28,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 5,
+        "warzelnia_soli": 5
+      },
+      "lcAi": {
+        "kamieniolom": 106,
+        "farma": 75,
+        "bydlo": 44,
+        "irygacja": 16,
+        "owce": 4,
+        "tarasy": 2,
+        "warzelnia_soli": 4,
+        "lama": 1,
+        "tartak": 9,
+        "oboz_lowiecki": 4
+      }
+    },
+    {
+      "ok": true,
+      "turn": 28,
+      "ms": 8290,
+      "lasLeftMe": 38,
+      "cutMe": 0,
+      "cutAi": 29,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 6,
+        "warzelnia_soli": 6
+      },
+      "lcAi": {
+        "kamieniolom": 106,
+        "farma": 75,
+        "bydlo": 48,
+        "irygacja": 18,
+        "owce": 4,
+        "tarasy": 2,
+        "warzelnia_soli": 4,
+        "lama": 1,
+        "tartak": 9,
+        "oboz_lowiecki": 4
+      }
+    },
+    {
+      "ok": true,
+      "turn": 29,
+      "ms": 7983,
+      "lasLeftMe": 38,
+      "cutMe": 0,
+      "cutAi": 31,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 6,
+        "warzelnia_soli": 6
+      },
+      "lcAi": {
+        "kamieniolom": 106,
+        "farma": 76,
+        "bydlo": 49,
+        "irygacja": 22,
+        "owce": 4,
+        "tarasy": 2,
+        "warzelnia_soli": 4,
+        "lama": 1,
+        "tartak": 11,
+        "oboz_lowiecki": 4
+      }
+    },
+    {
+      "ok": true,
+      "turn": 30,
+      "ms": 7673,
+      "lasLeftMe": 38,
+      "cutMe": 0,
+      "cutAi": 31,
+      "lc": {
+        "farma": 9,
+        "bydlo": 9,
+        "irygacja": 10,
+        "lodzie_rybackie": 6,
+        "warzelnia_soli": 6
+      },
+      "lcAi": {
+        "kamieniolom": 106,
+        "kopalnia_cyny": 3,
+        "kopalnia_miedzi": 11,
+        "farma": 79,
+        "bydlo": 50,
+        "irygacja": 22,
+        "owce": 4,
+        "tarasy": 2,
+        "warzelnia_soli": 4,
+        "lama": 1,
+        "tartak": 12,
+        "oboz_lowiecki": 4
+      }
+    }
+  ],
+  "start": {
+    "seedSeen": 7,
+    "mapLog": "[NewGame] Mapa: 76x52 seed=7 typ=kontynenty rywale=4 typy=5",
+    "genMs": 19157
+  },
+  "setup": {
+    "cities": 2,
+    "policy": {
+      "focus": "zywnosc",
+      "tryb": "auto",
+      "pracaAutoPercent": 100,
+      "onlyWorked": true
+    }
+  },
+  "lasStart": {
+    "me": 43,
+    "meWorked": 0,
+    "ai": 289
+  },
+  "me": {
+    "cut": 0,
+    "cutNoCit": 0,
+    "cutWithCit": 0,
+    "assigned": 0,
+    "assignedPct": null,
+    "assignedAfterNoCit": 0,
+    "lagAvg": null,
+    "lagMax": null
+  },
+  "ai": {
+    "cut": 31,
+    "cutNoCit": 29,
+    "cutWithCit": 2,
+    "assigned": 23,
+    "assignedPct": 74.2,
+    "assignedAfterNoCit": 21,
+    "lagAvg": 2.22,
+    "lagMax": 7
+  },
+  "firstCutTurn": null,
+  "firstCutTurnAi": 3,
+  "final": {
+    "lc": {
+      "farma": 9,
+      "bydlo": 9,
+      "irygacja": 10,
+      "lodzie_rybackie": 6,
+      "warzelnia_soli": 6
+    },
+    "lcAi": {
+      "kamieniolom": 106,
+      "kopalnia_cyny": 3,
+      "kopalnia_miedzi": 11,
+      "farma": 79,
+      "bydlo": 50,
+      "irygacja": 22,
+      "owce": 4,
+      "tarasy": 2,
+      "warzelnia_soli": 4,
+      "lama": 1,
+      "tartak": 12,
+      "oboz_lowiecki": 4
+    },
+    "lasLeftMe": 38,
+    "msAvg": 13205
+  },
+  "pageErrors": []
+}

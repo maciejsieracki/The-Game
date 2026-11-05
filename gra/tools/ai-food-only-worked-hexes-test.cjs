@@ -29,13 +29,14 @@ export { pickAutoImprovements } from ${JSON.stringify(SRC + '/game/auto-improvem
 export { decideAITurn } from ${JSON.stringify(SRC + '/game/ai')};
 export { workedHexCoordsForCity } from ${JSON.stringify(SRC + '/game/turn-economy')};
 export { generateMap } from ${JSON.stringify(SRC + '/map/generator')};
+export { isHexNearRiver, isFarmBaseTerrain } from ${JSON.stringify(SRC + '/map/improvement-build')};
 `);
 esbuild.buildSync({
   entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
   outfile: bundle, loader: { '.ts': 'ts', '.json': 'json' }, absWorkingDir: GRA_ROOT, logLevel: 'error',
   nodePaths: [path.resolve(GRA_ROOT, 'node_modules')],
 });
-const { pickAutoImprovements, decideAITurn, workedHexCoordsForCity, generateMap } = require(bundle);
+const { pickAutoImprovements, decideAITurn, workedHexCoordsForCity, generateMap, isHexNearRiver, isFarmBaseTerrain } = require(bundle);
 
 let passed = 0, failed = 0;
 function ok(cond, msg) {
@@ -52,6 +53,16 @@ const TECHS = new Set([
   'Drogi brukowane', 'Matematyka', 'Pieniądz', 'Hodowla', 'Nawadnianie',
 ]);
 const K = (q, r) => `${q},${r}`;
+/**
+ * R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-NO-CITIZEN-Q1 (decyzja wlasciciela ABC odp. B + dopisek, 2026-11-05): JEDYNY wyjatek od
+ * reguly obywateli — WYCINKA lasu przy rzece (isHexNearRiver) na bazie pod farme (Laka/Rownina). Farma/irygacja/trzoda/tarasy/lodzie/
+ * warzelnia nadal TYLKO z obywatelem. Terenu heksu wycinka nie zmienia, wiec test jest odporny na mutacje `nakladka` po picku.
+ */
+const riverClearOk = (map, p) => {
+  if (p.key !== 'wyrab') return false;
+  const hx = map.hexes[K(p.q, p.r)];
+  return !!hx && isFarmBaseTerrain(hx.terenBazowy, 'brak') && isHexNearRiver(map, p.q, p.r);
+};
 
 // ---------------------------------------------------------------------------
 // Scenariusz zblizony do zrzutu: miasto z kilkoma obywatelami, dziesiatki heksow ziemi, rzeka, las na rzece, zloza.
@@ -119,7 +130,7 @@ function sim({ mode, turns = 40, deficits = [], resourcePassFree = false }) {
     for (const p of picks) {
       const hk = K(p.q, p.r);
       const hx = map.hexes[hk];
-      const off = FOOD.has(p.key) && !worked.has(hk);
+      const off = FOOD.has(p.key) && !worked.has(hk) && !riverClearOk(map, p);
       let cause = null;
       if (off) {
         if (p.key === 'wyrab') cause = 'wyrab-rzeka-poza-obywatelem';
@@ -158,12 +169,13 @@ if (!MEASURE) {
     }
   }
 
-  console.log('(C) wyjatek rzeczny (wycinka lasu na rzece / farma po wycince) nie obowiazuje przy wlaczonym filtrze');
+  console.log('(C) wyjatek rzeczny (NO-CITIZEN-Q1): wycinka lasu przy rzece bez obywatela DOZWOLONA (limit na miasto), ale farma po wycince nadal tylko z obywatelem');
   for (const mode of MODES) {
-    // obywatele NIE na rzece: wymus pop=1 (jedno pole poza rzeka) i las na wszystkich heksach rzeki
     const { log } = sim({ mode, turns: 30 });
-    const river = log.filter(e => e.off && (e.cause === 'wyrab-rzeka-poza-obywatelem' || e.cause === 'farma-po-wycince-rzeki'));
-    ok(river.length === 0, `${mode}: brak wycinki/farmy rzecznej poza obywatelem (jest ${river.length}: ${dl(river)})`);
+    const farmAfterCut = log.filter(e => e.off && e.cause === 'farma-po-wycince-rzeki');
+    const riverCuts = log.filter(e => e.key === 'wyrab' && !e.off);
+    ok(farmAfterCut.length === 0, `${mode}: farma po wycince rzeki NIE powstaje bez obywatela (jest ${farmAfterCut.length}: ${dl(farmAfterCut)})`);
+    ok(riverCuts.length > 0, `${mode}: wycinka rzeczna jest wykonywana (${riverCuts.length})`);
   }
 
   console.log('(D) kompletnosc: po farmie automat buduje DALEJ na polach obywateli (irygacja, trzoda), nie wychodzi poza nie');
@@ -191,7 +203,7 @@ if (!MEASURE) {
       foodImprovementStages: () => true, clearingHexKeys: new Set(),
     });
     const worked = workedNow(city, map, tn);
-    const outside = picks.filter(p => FOOD.has(p.key) && !worked.has(K(p.q, p.r)) && !(p.q === CQ && p.r === CR));
+    const outside = picks.filter(p => FOOD.has(p.key) && !worked.has(K(p.q, p.r)) && !(p.q === CQ && p.r === CR) && !riverClearOk(map, p));
     ok(picks.length > 0 && outside.length === 0, `getOnlyWorked=false ignorowany: ${picks.length} pickow, 0 zywnosciowych poza obywatelami (jest ${outside.length})`);
   }
 
@@ -249,11 +261,11 @@ if (!MEASURE) {
             else placed.set(hk, [...(placed.get(hk) ?? []), g.key]);
           }
         }
-        return { picks, worked };
+        return { picks, worked, map };
       };
       const off = run(true), on = run(false);
       const ctrl = off.picks.filter(p => p.key === P.key && !off.worked.has(K(p.q, p.r)));
-      const bad = on.picks.filter(p => p.key === P.key && !on.worked.has(K(p.q, p.r)));
+      const bad = on.picks.filter(p => p.key === P.key && !on.worked.has(K(p.q, p.r)) && !riverClearOk(on.map, p));
       // AI (decideAITurn -> planCityImprovements) na tej samej sondzie: te same heksy bez obywatela, civType wg sondy
       {
         const map = makeScenarioMap();
@@ -284,7 +296,7 @@ if (!MEASURE) {
             const hk = K(c.q, c.r);
             if (c.key === 'wyrab') map.hexes[hk].nakladka = 'brak'; else placed.set(hk, [...(placed.get(hk) ?? []), c.key]);
             if (c.key === P.key) aiSame++;
-            if (FOOD.has(c.key) && !worked.has(hk)) aiBad.push(`${c.key}@${hk}`);
+            if (FOOD.has(c.key) && !worked.has(hk) && !riverClearOk(map, c)) aiBad.push(`${c.key}@${hk}`);
             if (c.key === 'oboz_lowiecki' && !worked.has(hk)) aiCampOutside++;
           }
         }
@@ -317,7 +329,7 @@ if (!MEASURE) {
       getWorkedHexKeys: () => worked, pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'grecy',
       playerEra: ERA, foodImprovementStages: () => true, clearingHexKeys: new Set(),
     });
-    const onStale = picks.filter(p => stale.includes(K(p.q, p.r)));
+    const onStale = picks.filter(p => stale.includes(K(p.q, p.r)) && !riverClearOk(map, p));
     ok(stale.length > 0, `${mode}: sa heksy z farma poza polami obywateli (${stale.length})`);
     ok(onStale.length === 0, `${mode}: zero nowych ulepszen na heksach z "osieroconymi" farmami (jest ${onStale.length}); picker nie ma komendy burzenia`);
   }

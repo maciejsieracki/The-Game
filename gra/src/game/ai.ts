@@ -75,6 +75,8 @@ import {
   AI_IMPROVEMENT_PRIORITY,
   IMPROVEMENT_FOR_DEFICIT,
   actionableDeficitKeys,
+  AI_RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY,
+  AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR,
   isCityLimitExhausted,
   pickAutoImprovements,
   type AutoImprovementSurplusReport,
@@ -2889,6 +2891,10 @@ function planCityImprovements(
     priorityOverride: foodPriority,
     // Keep the same empire-wide sequence as Food automation for the player.
     foodImprovementStages: true,
+    // R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-NO-CITIZEN-Q1 (runda 2): ta sama reguła rzeczna co gracz; AI ma tylko własne,
+    // ostrożniejsze liczby (limit/podłoga puli), bo jego skumulowana pula jest wspólna z ulepszeniami surowcowymi.
+    riverClearNoCitizenMaxPerCity: AI_RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY,
+    riverClearNoCitizenPoolFloor: AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR,
     // K3 = K2 (jedna logika w pickerze): brakujący surowiec idzie na przód; ulepszenia surowcowe nie podlegają regule obywateli.
   });
   // R-WEB-AUTOIMPROVE-STAGES-Q1 R4 (właściciel 2026-10-31: „Niedobór ma tylko otwierać ulepszenia brakującego
