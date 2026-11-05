@@ -8593,3 +8593,7 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 - **Zgłoszenie:** Dla wszystkich ulepszeń zwiększyć jasność kwalifikujących się pól o 20%; po udanej budowie podświetlenie pola ma zniknąć natychmiast, a po odznaczeniu/odświeżeniu ma ponownie pokazywać tylko aktualne pola możliwe do zbudowania. Szczególny przykład: kopalnia na górze.
 - **Powiązane historyczne prace:** `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-Q1` i `R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1` są wcześniejszym, węższym kontekstem renderowania kopalni; nowy ticket obejmuje każdą klasę ulepszeń oraz aktualizację eligibility po budowie.
 - **Pipeline:** Operator → niezależny Evaluator → warunkowa Obrona → Final Control → integracja main → ROBOCZA → push i receipt (graf 1–11 w `dyspozycje/autobot/runs/R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1/00-dispatch.md`).
+
+## 2026-11-05 — Notatka: niestabilność `hud-topbar-grid-gross-net` sekcja [B] (z R-WEB-TEST-DEBT-HUD-Q3)
+
+W 1 z 2 przebiegów z `--dist` próba „live Spichlerz+ (proba 1)” dała netto −44 vs zmiana magazynu 0 (przed 600, po 600); drugi przebieg i próba 2 zgodne (−44 == −44). Nieustalone, czy race w teście czy rzadka usterka gry. Status: OBSERWACJA (nie naprawiano). Jeśli powtórzy się w grze — osobny temat diagnostyczny.
