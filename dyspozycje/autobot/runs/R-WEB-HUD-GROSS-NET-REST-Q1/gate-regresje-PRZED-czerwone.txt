@@ -1,0 +1,10 @@
+dyplo-warunek-niespelniony-czerwony-tooltip-test.cjs EXIT=1
+empire-panel-miasto-obywatele-content-test.cjs EXIT=1
+empire-panel-moc-scroll-preserve-test.cjs EXIT=1
+heks-panel-tooltip-warstwa-test.cjs EXIT=1
+hint-toast-zindex-empire-panel-test.cjs EXIT=TIMEOUT
+hud-moc-warstwa-test.cjs EXIT=1
+hud-obywatele-chip-test.cjs EXIT=1
+hud-skarbiec-test.cjs EXIT=1
+sidepanel-hud-deadzone-test.cjs EXIT=TIMEOUT
+trade-routes-hud-filter-test.cjs EXIT=1
