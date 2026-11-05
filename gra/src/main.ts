@@ -701,7 +701,9 @@ import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
-import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy } from './ui/cityPanel';
+import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits } from './ui/cityPanel';
+import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
+import { executeEmpireRecruitment, maxAffordableEmpireRecruits, type RecruitCityInput } from './game/empire-recruit-plan';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
 import { syncWorkerFieldOverlay, syncWorkerFieldOverlayFog, disposeWorkerFieldOverlayGroup } from './render/workerFieldOverlay';
 import { isPointOverCityPanelUi } from './ui/cityUxFrame';
@@ -4486,6 +4488,98 @@ async function boot(): Promise<void> {
         `[Rekrutacja] ${city.name}: ${count} × ${itemId} opłacone ${totalGold} — kolejka (−${totalManpower} MP)`,
       );
       return true;
+    }
+
+    /**
+     * R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: zbiorcze zamówienie rekrutacji dla całej cywilizacji (tylko fotel gracza).
+     * Dostępność per miasto = ta sama lista co panel miasta (recruitPanelPurchasableUnits) + blokada oblężenia;
+     * wykonanie = ta sama purchaseRecruitmentUnit co ręczne „Rekrutuj” (koszty/bramki/moment poboru bez zmian),
+     * wołana raz na miasto z liczbą sztuk. Zamówienia to zwykłe wpisy kolejek (bez nowego pola save).
+     */
+    function empireRecruitCityInputs(unitId: string): { inputs: RecruitCityInput[]; koszt: number } {
+      const ownerId = ME();
+      let koszt = 0;
+      const inputs: RecruitCityInput[] = [];
+      for (const c of cities) {
+        if (c.ownerId !== ownerId) continue;
+        const queue = cityProd.get(c.id)?.rekrutacja ?? [];
+        const item = recruitPanelPurchasableUnits(c, data).find(it => it.id === unitId && it.kind === 'jednostka');
+        const siege = isCityUnderSiege(cities, c);
+        if (item && koszt === 0) koszt = item.koszt;
+        inputs.push({
+          cityId: c.id,
+          name: c.name,
+          canRecruit: !!item && !siege,
+          blockedReason: siege ? CITY_SIEGE_RECRUIT_BLOCK_PL : (!item ? 'jednostka niedostępna w tym mieście' : undefined),
+          queuedOfType: queue.filter(q => q.id === unitId).length,
+          queueLength: queue.length,
+        });
+      }
+      return { inputs, koszt };
+    }
+
+    function empireRecruitRows(): EmpireRecruitUnitRow[] {
+      const ownerId = ME();
+      const mine = cities.filter(c => c.ownerId === ownerId);
+      const order: string[] = [];
+      const labels = new Map<string, string>();
+      for (const c of mine) {
+        for (const it of recruitPanelPurchasableUnits(c, data)) {
+          if (it.kind !== 'jednostka' || it.isGeneral === true || labels.has(it.id)) continue;
+          labels.set(it.id, it.nazwa);
+          order.push(it.id);
+        }
+      }
+      return order.map(id => {
+        const { inputs, koszt } = empireRecruitCityInputs(id);
+        const capable = inputs.filter(i => i.canRecruit).length;
+        return {
+          id,
+          label: labels.get(id) ?? id,
+          koszt,
+          capableCities: capable,
+          totalCities: mine.length,
+          queued: inputs.reduce((sum, i) => sum + i.queuedOfType, 0),
+          blockedReason: capable > 0 ? undefined : (inputs.find(i => i.blockedReason)?.blockedReason ?? 'Brak miasta zdolnego do rekrutacji'),
+        };
+      });
+    }
+
+    function orderEmpireRecruitment(unitId: string, quantity: number): { message: string; changed: boolean } {
+      const ownerId = ME();
+      const firstCity = cities.find(c => c.ownerId === ownerId);
+      const label = (firstCity ? recruitPanelPurchasableUnits(firstCity, data).find(it => it.id === unitId)?.nazwa : undefined) ?? unitId;
+      const { inputs, koszt } = empireRecruitCityInputs(unitId);
+      const ep = empireEpochForOwner(ownerId);
+      const mpMults = civManpowerMultsForOwner(ownerId);
+      const unitDef = data.units.find(u => u.Jednostka === unitId);
+      const afford = maxAffordableEmpireRecruits({
+        gold: ownerTreasury(ownerId),
+        unitGold: koszt,
+        manpower: empireManpowerCurrent(cities, ownerId, ep, mpMults.maxMult),
+        unitManpower: unitManpowerCostForType(unitId, ep, mpMults.maxMult, mpMults.costMult),
+        stockPool: ownerResourceStockAll(cities, ownerId),
+        unitStock: unitStockCost(unitDef),
+      });
+      const out = executeEmpireRecruitment({
+        typLabel: label,
+        ilosc: quantity,
+        miasta: inputs,
+        afford,
+        purchase: (cityId, count) => purchaseRecruitmentUnit(cityId, unitId, empireRecruitCityKoszt(cityId, unitId, koszt), ownerId, count),
+      });
+      refreshEmpireRecruitPanel();
+      return { message: out.message, changed: out.changed };
+    }
+
+    function empireRecruitCityKoszt(cityId: string, unitId: string, fallback: number): number {
+      const c = cities.find(x => x.id === cityId);
+      const it = c ? recruitPanelPurchasableUnits(c, data).find(x => x.id === unitId) : undefined;
+      return it ? it.koszt : fallback;
+    }
+
+    function toggleEmpireRecruitFromHud(): void {
+      toggleEmpireRecruitPanel({ getRows: empireRecruitRows, onOrder: orderEmpireRecruitment });
     }
 
     /** Anulowanie opłaconej rekrutacji — zwrot złota i Manpower do puli imperium. */
@@ -24841,6 +24935,7 @@ async function boot(): Promise<void> {
         },
         onOpenScience: () => toggleScienceHubFromToolbar(),
         onOpenEmpireDetail: (section) => openEmpireDetailFromHud(section),
+        onOpenEmpireRecruit: () => toggleEmpireRecruitFromHud(),
         onOpenWiki: () => toggleWikiFromToolbar(),
         isWikiActive: () => isWikiHubHudOpen(),
         mapToolbar: {
