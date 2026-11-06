@@ -32,7 +32,7 @@ Wybor jednostki (7 klikow): updateHud 1, refreshFog 1, refreshTerritoryBorderOve
 tsc --noEmit EXIT=0; small-part-lod-test (nowy) 16/0; perf-hud-q2-test 23/0; unit-renderer-overlay-sync 17/0; okolica-test 72/72; territory-border 9/0; hud-skarbiec 34/0; ai-test 274/20 (te same FAIL). Chromium: tylko harness perf (bez testow *-real-render*).
 
 ## ZMIANY/COMMIT
-gra/src/render/smallPartLod.ts (nowy), gra/src/render/units.ts, gra/src/render/cities.ts, gra/src/main.ts; gra/tools/small-part-lod-test.cjs (nowy), gra/tools/perf-late-game-interaction-live-test.cjs (haki diagnostyczne, liczniki); ten katalog. Baza: 9ea18d2ef + merge origin/main (756f1fc8e). SHA commitu: patrz nizej (dopisany po commicie).
+gra/src/render/smallPartLod.ts (nowy), gra/src/render/units.ts, gra/src/render/cities.ts, gra/src/main.ts; gra/tools/small-part-lod-test.cjs (nowy), gra/tools/perf-late-game-interaction-live-test.cjs (haki diagnostyczne, liczniki); ten katalog. Baza: 9ea18d2ef + merge origin/main (756f1fc8e). SHA commitu: 4504dbd240581bd8abac236ace67bff42b98a1eb (galaz claude/perf2-r3, bez push).
 Ryzyko wizualne do oceny Evaluatora: przy max oddaleniu drobne czesci figurek/miast < 3 px znikaja (bez screenshotu w tej rundzie - NIE_ZMIERZONO wizualnie).
 
 BLOKADY: brak (DO DECYZJI: prog 3 px - czy akceptowalny).
