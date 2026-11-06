@@ -44,3 +44,22 @@ export function pickStackLeader<T extends Pick<RuntimeUnit, 'id' | 'category' | 
 export function sortNonCombatLast<T>(items: readonly T[], isNonCombat: (x: T) => boolean): T[] {
   return [...items.filter(x => !isNonCombat(x)), ...items.filter(isNonCombat)];
 }
+
+/**
+ * Kotwica ataku: zaznaczony cywil (zwiadowca) w stosie z jednostką bojową (ten sam heks,
+ * ten sam stackGroupId, nie zaokrętowana) → lider bojowy stosu; w pozostałych przypadkach
+ * jednostka bez zmian. Nie filtruje po ruchu — kontrola ruchu należy do wywołującego.
+ */
+export function combatAnchorFor<T extends Pick<RuntimeUnit, 'id' | 'category' | 'typeId' | 'ownerId' | 'q' | 'r' | 'embarked'>>(
+  unit: T,
+  units: readonly T[],
+  strengthOf: (u: T) => number,
+  sameGroup: (a: T, b: T) => boolean = () => true,
+): T {
+  if (!isNonCombatStackMember(unit)) return unit;
+  const mates = units.filter(
+    u => u.ownerId === unit.ownerId && u.q === unit.q && u.r === unit.r &&
+      !isNonCombatStackMember(u) && u.embarked !== true && sameGroup(unit, u),
+  );
+  return mates.length > 0 ? pickStackLeader(mates, strengthOf) : unit;
+}

@@ -11,7 +11,7 @@ const OUT = path.join(TMP, 'bundle.cjs');
 const SRC = path.resolve(__dirname, '..', 'src');
 fs.writeFileSync(ENTRY, `
 export { resolveEnemyCityClick, armyLeaderForSelection } from ${JSON.stringify(SRC + '/map/map-attack-city')};
-export { pickStackLeader, isNonCombatTypeName } from ${JSON.stringify(SRC + '/game/stack-leader')};
+export { pickStackLeader, isNonCombatTypeName, combatAnchorFor } from ${JSON.stringify(SRC + '/game/stack-leader')};
 export { pickStackRepresentative, unitAtRepresentative, computeStackDisplay } from ${JSON.stringify(SRC + '/game/armyMerge')};
 export { sortArmyStackGeneralsFirst } from ${JSON.stringify(SRC + '/ui/armyStackLabel')};
 export { computePlayerVisibility, buildUnitSightResolver } from ${JSON.stringify(SRC + '/game/visibility')};
@@ -63,6 +63,25 @@ console.log('T4 widoczność = max zasięgów (zwiadowca podnosi)');
 const defs = [{ Jednostka: 'Wojownik', 'Widok pola': 2, Ruch: 3 }, { Jednostka: 'Zwiadowca', 'Widok pola': 5, Ruch: 6 }];
 const sight = M.buildUnitSightResolver(defs, 2);
 assert(sight(w1) === 2 && sight(scoutA) === 5, 'zasięgi per jednostka: wojownik 2, zwiadowca 5');
+
+console.log('T5 kotwica ataku na jednostkę (R2): zwiadowca nie jest kotwicą');
+const anchor = M.combatAnchorFor(scoutA, [scoutA, w1, w2], attackOf);
+assert(anchor.id === 'w1', 'combatAnchorFor(zwiadowca) -> wojownik (' + anchor.id + ')');
+assert(M.combatAnchorFor(w2, [scoutA, w1, w2], attackOf).id === 'w2', 'bojowa kotwica bez zmian');
+assert(M.combatAnchorFor(scoutA, [scoutA], attackOf).id === 'a-scout', 'sam zwiadowca bez zmian');
+const sameG = (a, b) => (a.stackGroupId ?? 'x') === (b.stackGroupId ?? 'x');
+const scoutOther = mk('s9', 'Zwiadowca', { stackGroupId: 'inny' });
+assert(M.combatAnchorFor(scoutOther, [scoutOther, w1], attackOf, sameG).id === 's9', 'inna grupa -> bez zmian');
+const wEmb = mk('we', 'Wojownik', { embarked: true });
+assert(M.combatAnchorFor(scoutA, [scoutA, wEmb], attackOf).id === 'a-scout', 'zaokrętowany nie jest kotwicą');
+
+console.log('T6 lider wg siły ataku, nie HP (R2)');
+const weakHp = mk('b-weak', 'Wojownik', { hp: 5 }), tanky = mk('c-tank', 'Lucznik', { hp: 40 });
+const str = { 'b-weak': 6, 'c-tank': 3 };
+const lead = M.armyLeaderForSelection(scoutA, [scoutA, weakHp, tanky], 0, u => str[u.id] ?? 0);
+assert(lead.id === 'b-weak', 'ranny wojownik o wyższym ataku wygrywa z łucznikiem o wyższym HP (' + lead.id + ')');
+const noMove = mk('nm', 'Wojownik', { ruchLeft: 0 });
+assert(M.resolveEnemyCityClick({ city, selectedUnit: scoutA, units: [scoutA, noMove], playerOwnerId: 0 }).kind === 'hint_civilian', 'bojowi bez ruchu -> hint_civilian (poprawne)');
 
 console.log(`\n${ok} OK, ${fail} FAIL`);
 try { fs.rmSync(TMP, { recursive: true, force: true }); } catch (_) { /* ignore */ }

@@ -35,6 +35,8 @@ export interface ResolveEnemyCityClickInput {
   units: readonly RuntimeUnit[];
   /** Domyślnie 0 = gracz ludzki. */
   playerOwnerId?: number;
+  /** Siła bojowa do wyboru lidera stosu (main: unitAttackScore). */
+  attackScoreOf?: (u: RuntimeUnit) => number;
   /** Bramka mgły dla kliknięcia gracza; brak predykatu zachowuje dotychczasowe API. */
   isCityVisible?: (city: City) => boolean;
   /** Completed building ids; queued production is deliberately not included. */
@@ -43,12 +45,13 @@ export interface ResolveEnemyCityClickInput {
 
 /**
  * Zaznaczony cywil w stosie z jednostką bojową (ten sam heks i stackGroupId) → lider stosu
- * (najsilniejsza bojowa wg HP/id); w pozostałych przypadkach zaznaczenie bez zmian.
+ * (najsilniejsza bojowa wg `strengthOf` — w grze siła ataku; domyślnie HP; remis po id); w pozostałych przypadkach zaznaczenie bez zmian.
  */
 export function armyLeaderForSelection(
   selected: RuntimeUnit | null,
   units: readonly RuntimeUnit[],
   playerOwnerId: number,
+  strengthOf: (u: RuntimeUnit) => number = u => u.hp ?? 0,
 ): RuntimeUnit | null {
   if (!selected || selected.ownerId !== playerOwnerId || !isCivilianUnit(selected)) return selected;
   const gid = stackGroupIdOf(selected);
@@ -57,7 +60,7 @@ export function armyLeaderForSelection(
       stackGroupIdOf(u) === gid && !isCivilianUnit(u) && u.embarked !== true && u.ruchLeft > 0,
   );
   if (mates.length === 0) return selected;
-  return pickStackLeader(mates, u => u.hp ?? 0);
+  return pickStackLeader(mates, strengthOf);
 }
 
 function adjacentPlayerAttackers(
@@ -112,7 +115,7 @@ export function resolveEnemyCityClick(
   } = input;
   // R-WEB-ARMY-SCOUT-NOT-LEADER-Q1: zaznaczony zwiadowca/cywil stojący w armii z jednostką
   // bojową nie blokuje ataku — armia działa jak jej najsilniejsza jednostka bojowa.
-  const selectedUnit = armyLeaderForSelection(input.selectedUnit, units, playerOwnerId);
+  const selectedUnit = armyLeaderForSelection(input.selectedUnit, units, playerOwnerId, input.attackScoreOf);
 
   if (city.ownerId === playerOwnerId) {
     return { kind: 'not_enemy' };

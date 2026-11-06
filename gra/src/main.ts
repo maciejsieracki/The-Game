@@ -471,6 +471,8 @@ import {
 import {
   siegeAllowedBetween, isSiegeStillValid, enemyUnitsAdjacentToCity, autoSiegeCandidateForScan,
 } from './game/diplomacy-siege-war-gate';
+import { combatAnchorFor } from './game/stack-leader';
+import { stackGroupIdOf as stackGroupIdOfAnchor } from './game/armyMerge';
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
 import {
@@ -30346,6 +30348,7 @@ async function boot(): Promise<void> {
             selectedUnit: playerSel,
             units,
             playerOwnerId: ME(),
+            attackScoreOf: unitAttackScore,
             getCompletedBuildingIds: completedBuildingIdsForCity,
             isCityVisible: city =>
               !fogOn || currentVisible().has(keyOf(city.q, city.r)),
@@ -30406,6 +30409,7 @@ async function boot(): Promise<void> {
           selectedUnit: sel ?? null,
           units,
           playerOwnerId: ME(),
+          attackScoreOf: unitAttackScore,
           getCompletedBuildingIds: completedBuildingIdsForCity,
           isCityVisible: city =>
             !fogOn || currentVisible().has(keyOf(city.q, city.r)),
@@ -31146,7 +31150,12 @@ async function boot(): Promise<void> {
       openPlayerMapUnitAttackCore(atkUnit, defUnit);
     }
 
-    function openPlayerMapUnitAttackCore(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
+    function openPlayerMapUnitAttackCore(atkUnitIn: RuntimeUnit, defUnit: RuntimeUnit): void {
+      // R-WEB-ARMY-SCOUT-NOT-LEADER-Q1: zwiadowca/cywil w armii nigdy nie jest kotwicą ataku.
+      const atkUnit = combatAnchorFor(
+        atkUnitIn, units, unitAttackScore,
+        (a, b) => stackGroupIdOfAnchor(a) === stackGroupIdOfAnchor(b),
+      );
       // TEMAT #15: BRAK ataku z wody — jednostka zaokrętowana musi zejść na ląd.
       if (atkUnit.embarked === true) {
         showHintMessage('Jednostka zaokrętowana nie może atakować — zejdź na ląd.', 3800);

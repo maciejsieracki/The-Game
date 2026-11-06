@@ -1,0 +1,8 @@
+scout EXIT=0 19 OK, 0 FAIL
+map-attack-city EXIT=0 --- 13 ok, 0 fail
+map-siege EXIT=0 --- 6 ok, 0 fail
+merge-stackgroupid EXIT=0 army-merge-stackgroupid-test: 11045 pass, 0 fail
+nearest-leader EXIT=0 WYNIK: 43 PASS, 0 FAIL
+commander-identity EXIT=1 }
+concentration EXIT=0 army-concentration-test: 56 passed, 0 failed
+siege-ai EXIT=0 --- 17 ok, 0 fail
