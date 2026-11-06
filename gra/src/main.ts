@@ -2821,13 +2821,15 @@ async function boot(): Promise<void> {
     function isMeSafe(ownerId: number): boolean { return ownerId === meNow(); }
     /** Pigułka miasta: hover rozszerzony (R-DESIGN-PANEL-MIASTA-Q4=B). */
     let statChipHoverCityId: string | null = null;
-    const _cityRenderOpts = (): CityRenderOptions => {
+    const _cityRenderOpts = (visOverride?: Set<string>): CityRenderOptions => {
       // #27 perf: policz widoczność RAZ per wywołanie _cityRenderOpts (nie osobno dla
       // każdego obcego miasta w isVisible) — reużywane przez cache'ujący cityFogVisible.
       // Guard `cityFogVisible &&` celowo PRZED `fogOn`: _cityRenderOpts() jest wołane raz
       // przy starcie (linia ~1091) zanim `fogOn`/`cityFogVisible` (deklarowane niżej w tym
       // samym scope) w ogóle istnieją — short-circuit na cityFogVisible=undefined omija TDZ.
-      const _visCache = (cityFogVisible && fogOn) ? currentVisible() : undefined;
+      // R-WEB-PERF-ENDTURN-RENDER-HUD-Q1: syncUnitsRender() już policzyło currentVisible() dla listy
+      // jednostek — przekazuje ten sam zbiór (stan gry nie zmienia się między tymi dwoma odczytami).
+      const _visCache = (cityFogVisible && fogOn) ? (visOverride ?? currentVisible()) : undefined;
       return {
         getEra:   (ownerId: number) => empireEpochForOwner(ownerId),
         // R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 runda 2 (zarzut Evaluatora #1): był tu
@@ -12564,6 +12566,10 @@ async function boot(): Promise<void> {
      * Re-apply fog and unit visibility after any state change.
      * Must NOT be called while gallery is active (gallery drives its own sync).
      */
+    // R-WEB-PERF-ENDTURN-RENDER-HUD-Q1: w fazie AI (ekran przejścia przykrywa mapę) zbiórka wioski przez AI woła
+    // refreshFog() -> pełne syncUnitsRender() (~50 ms) po KAŻDEJ wiosce. Gdy faza AI ustawi ten hak, refreshFog tylko
+    // oznacza warstwę żetonów jako brudną (flush na granicy klatki/bitwy/końca fazy); poza fazą AI = null = bez zmian.
+    let deferRefreshFogUnitSync: (() => void) | null = null;
     function refreshFog(opts?: { skipVeteranEducation?: boolean }): void {
       if (galleryOn) return;
       markMinimapDirty(); // D11: zmiana mgły/mapy → minimapa do przerysowania (poza tym pomijana)
@@ -12588,7 +12594,10 @@ async function boot(): Promise<void> {
         syncImprovementMeshFog(vis, exploredForRender);
         syncSettlementMeshFog(vis, exploredForRender);
         syncWorkerFieldOverlayFog(workerFieldOverlayGroup, vis, exploredForRender, true);
-        syncUnitsRender(visibleUnitsList(vis));
+        // Odroczenie tylko przy fogOn: flush synchronizuje żetony bez jawnej listy, co przy fogOn daje DOKŁADNIE
+        // visibleUnitsList(currentVisible()) -- ten sam zestaw co tu (przy revealAllLand bez fogOn: zostaje ścieżka natychmiastowa).
+        if (fogOn && deferRefreshFogUnitSync) deferRefreshFogUnitSync();
+        else syncUnitsRender(visibleUnitsList(vis));
         cityRenderer.applyFogVisibility(vis, true, ME());
         wonderRenderer.applyFogVisibility(vis, true);
       } else {
@@ -13529,7 +13538,11 @@ async function boot(): Promise<void> {
       syncAllRuntimeUnitHpState();
       // FoW: bez jawnej listy filtruj wroga — syncUnitsRender() sam z siebie nie może
       // pokazać obcych poza bieżącym zasięgiem (regresja: czerwone pierścienie w czerni).
-      const rawSrc = list ?? (fogOn ? visibleUnitsList(currentVisible()) : units);
+      // R-WEB-PERF-ENDTURN-RENDER-HUD-Q1: widoczność liczona RAZ na wywołanie (zbiór tylko do odczytu) i
+      // współdzielona z _cityRenderOpts() niżej -- wcześniej currentVisible() leciało dwa razy z rzędu.
+      let sharedVis: Set<string> | undefined;
+      if (fogOn) sharedVis = currentVisible();
+      const rawSrc = list ?? (fogOn ? visibleUnitsList(sharedVis!) : units);
       // P-JEDNOSTKA-NIEWIDOCZNA-PO-WYBUDOWANIU-Q1 (opcja A, Maciej 2026-09-03):
       // jednostki w oknie odroczenia (`deferredPlayerUnitRevealIds`) NIE są już
       // filtrowane z `src`. Wcześniej token nie istniał w scenie Three.js w ogóle,
@@ -13640,7 +13653,7 @@ async function boot(): Promise<void> {
         if (fu) unitForestHexKeys.add(keyOf(fu.q, fu.r));
       }
       syncForestForUnits(unitForestHexKeys);
-      cityRenderer.syncStatChips(cities, _cityRenderOpts());
+      cityRenderer.syncStatChips(cities, _cityRenderOpts(sharedVis));
     }
 
     function isHexPassableForUnit(q: number, r: number): boolean {
@@ -38276,12 +38289,28 @@ async function boot(): Promise<void> {
         const aiCityRenderBatch = createDirtyRenderSync(
           () => cityRenderer.sync(cities, _cityRenderOpts()),
         );
-        const flushAiCityRenderBatch = (): void => {
-          if (!aiCityRenderBatch.isDirty()) return;
-          try {
-            aiCityRenderBatch.flush();
-          } catch (errAiCityRender) {
-            console.error('[AI] Błąd synchronizacji modeli miast:', errAiCityRender);
+        // R-WEB-PERF-ENDTURN-RENDER-HUD-Q1: ten sam wzorzec dla żetonów jednostek -- ruch AI z bonusem
+        // odwiedzin miasta wołał pełne syncUnitsRender() (żetony + las + plakietki miast, ~20 ms) PO KAŻDYM
+        // takim ruchu (~37 razy w końcu tury dużej gry). Stan gry (syncAllRuntimeUnitHpState) zostaje
+        // natychmiast; odroczone jest wyłącznie przebudowanie warstwy renderu do granicy UI/bitwy/końca fazy.
+        const aiUnitRenderBatch = createDirtyRenderSync(() => syncUnitsRender());
+        deferRefreshFogUnitSync = () => aiUnitRenderBatch.markDirty();
+        // `withUnits=false` (klatka postępu między właścicielami AI): żetony jednostek NIE są potrzebne do
+        // pokazania postępu, więc ich przebudowa czeka na granicę bitwy / koniec fazy (jeden flush zamiast ~4).
+        const flushAiCityRenderBatch = (withUnits = true): void => {
+          if (aiCityRenderBatch.isDirty()) {
+            try {
+              aiCityRenderBatch.flush();
+            } catch (errAiCityRender) {
+              console.error('[AI] Błąd synchronizacji modeli miast:', errAiCityRender);
+            }
+          }
+          if (withUnits && aiUnitRenderBatch.isDirty()) {
+            try {
+              aiUnitRenderBatch.flush();
+            } catch (errAiUnitRender) {
+              console.error('[AI] Błąd synchronizacji żetonów jednostek:', errAiUnitRender);
+            }
           }
         };
         try {
@@ -38658,7 +38687,7 @@ async function boot(): Promise<void> {
               // first owner, every third owner, and the last one. `startOi` preserves
               // the cadence when an AI phase resumes after a battle.
               if (shouldYieldAiOwnerProgressFrame(oi, ownerLoopList.length, startOi)) {
-                flushAiCityRenderBatch();
+                flushAiCityRenderBatch(false);
                 await yieldTurnTransitionUi();
               }
               const isCommandResume = oi === startOi && !!resumeCommands && resumeCmdIdx > 0;
@@ -40343,7 +40372,9 @@ async function boot(): Promise<void> {
                     // covers both owners with actual military units reaching a hut.
                     checkVillageRewardsAlongPath(path, u.ownerId);
                     if (applyCityVisitBonusesAlongPath([u], path, false)) {
-                      syncUnitsRender();
+                      // Stan HP kanoniczny od razu (jak w syncUnitsRender), render odroczony do granicy fazy.
+                      syncAllRuntimeUnitHpState();
+                      aiUnitRenderBatch.markDirty();
                     }
                     if (sfxUnitsEnabled && (aiVisNow === null || aiVisNow.has(keyOf(last.q, last.r)))) {
                       playMarchAccent(1);
@@ -40837,6 +40868,7 @@ async function boot(): Promise<void> {
         // transition can paint or the player regains control, including errors
         // and resumed AI phases after a battle.
         flushAiCityRenderBatch();
+        deferRefreshFogUnitSync = null;
         // R3 Q-A=A (obrona zarzut 4): wejscie wojska AI-cywilizacji na heks fortu = zdobycie od razu po
         // fazie AI (bezwarunkowo; sweep przy barbarzyncach jest w bloku warunkowym, a koniec tury
         // sprawdzalby dopiero w nastepnej turze).
