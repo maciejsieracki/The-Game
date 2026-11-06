@@ -35,6 +35,10 @@ export interface WarWearinessParams {
     zwyciezcaMusiPrzyjac: number;
     /** LIVE-AUDIT-Q1: symetria — zmęczenie obniża wymagania zwycięzcy o tolerancjaZmeczenia*poziom*cena. */
     tolerancjaZmeczenia: number;
+    /** LIVE-AUDIT-Q1 r2: karencja DOW (tury) po pokoju z zmeczenia/oferty — zamiast domyslnych 10 (cykl wojna->pokoj->ta sama wojna). */
+    karencjaPoPokojuTur: number;
+    /** LIVE-AUDIT-Q1 r2: karencja DOW (tury) po pokoju CHRONIONEGO przegrywajacego (<= ochronaMaxMiast miast / >= ochronaUtratyWojny utrat) — zapobiega serii wojen do eliminacji. */
+    karencjaChronionegoTur: number;
   };
   czlowiek: { rwProgBonusMax: number; minMiastAi: number; rabatCenyPokojuMax: number };
 }
@@ -195,7 +199,8 @@ export interface WearinessTickDeps {
   cityCessionOk: (cityId: string, loser: number, winner: number) => boolean;
   battlePending: boolean;
   pay: (loser: number, winner: number, plan: PeacePaymentPlan) => void;
-  finalize: (loser: number, winner: number) => void;
+  /** `lockTurns` = karencja DOW po tym pokoju (z JSON); silnik przekazuje ja do finalizePeaceTreatyBetween. */
+  finalize: (loser: number, winner: number, lockTurns: number) => void;
   log?: (msg: string) => void;
   params?: WarWearinessParams;
 }
@@ -234,7 +239,7 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
       // Równowaga sił: wzajemne wyczerpanie — pokój bez zapłaty, gdy obie strony dość zmęczone.
       if (lvl >= P.zmeczenie.progWzajemnyPokoj) {
         d.log?.(`pokój z wyczerpania AI${pr.a}↔AI${pr.b} (zmęczenie ${lvl.toFixed(2)}, tury wojny ${w.turnsAtWar})`);
-        d.finalize(loser, winner);
+        d.finalize(loser, winner, P.przegrywajacy.karencjaPoPokojuTur);
         d.store.delete(key);
         out.push({ pairKey: key, action: 'mutual_peace', level: lvl, stage: st.stage });
       } else none();
@@ -283,7 +288,7 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
         `pokój AI${loser}↔AI${winner} za cenę (stopień ${st.stage}${mustAccept ? ', ochrona przegrywającego' : exhausted ? ', wyczerpanie' : ''}, oferta #${st.rejectedOffers + 1}, zmęczenie ${lvl.toFixed(2)}); `
         + `zloto=${plan.histogram.zloto} surowce=${plan.histogram.surowiec_ilosc} miasto=${plan.histogram.miasto} (${plan.coveredPn}/${Math.round(required)} PW)`,
       );
-      d.finalize(loser, winner);
+      d.finalize(loser, winner, protectedLoser ? L.karencjaChronionegoTur : L.karencjaPoPokojuTur);
       d.store.delete(key);
       out.push({ pairKey: key, action: 'offer_accepted', level: lvl, stage: st.stage, plan });
     } else {

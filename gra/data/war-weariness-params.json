@@ -31,7 +31,9 @@
     "ochronaMaxMiast": 3,
     "ochronaUtratyWojny": 3,
     "zwyciezcaMusiPrzyjac": 1,
-    "tolerancjaZmeczenia": 0.5
+    "tolerancjaZmeczenia": 0.5,
+    "karencjaPoPokojuTur": 40,
+    "karencjaChronionegoTur": 100
   },
   "czlowiek": {
     "_opis": "AI przegrywajace z graczem: oferuj_miasto_za_pokoj - prog rw rosnie o rwProgBonusMax*desperacja, min. miast AI spada do minMiastAi (gracz decyduje o przyjeciu).",

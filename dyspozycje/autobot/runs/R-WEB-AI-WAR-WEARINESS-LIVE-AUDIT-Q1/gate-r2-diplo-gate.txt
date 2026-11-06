@@ -1,0 +1,14 @@
+PASS: (0) mutanty faktycznie zmienily zrodlo (M1, M2 po 1 podmianie)
+PASS: A: gracz->AI przed minimalnym czasem wojny = odrzucenie (za wcześnie)
+PASS: B: gracz->AI silniejsze (bez utraty, <10 tur) = odrzucenie „czuje się silniejsze"
+PASS: C: po utracie miasta bramka (b) nie odrzuca
+PASS: D: po 20 turach bramka (b)/(c) nieaktywna
+PASS: E: bez warState brak komunikatu bramki
+PASS: F: propozycja AI (autor = AI) nie podlega bramce
+PASS: G: mnożnik ceny (rw 0.9 => x1.8 siła) podnosi wymagany PW: bilans głębszy niż bez warState
+PASS: M1 (brak bramki): przypadek B przechodzi (bramka usunieta wykrywalna)
+PASS: F2: propozycja AI (autor = AI, respondent = gracz) jest przyjeta (accepted=true)
+PASS: M2 (bramka bez progu 10 tur): przypadek B przechodzi (mutacja progu wykrywalna)
+
+diplo-war-peace-gate-test: 11 pass / 0 fail
+EXIT=0

@@ -23,6 +23,7 @@ if (!fs.existsSync(path.join(SRC, 'game/war-weariness.ts'))) {
 }
 fs.writeFileSync(ENTRY, [
   `export * as W from ${J('game/war-weariness')};`,
+  `export * as L from ${J('game/diplomacy-peace-lock')};`,
   `export { decideAIDiplomacy } from ${J('game/ai')};`,
   `export { peaceOfferAiRequestPn, peaceOfferAiOwnBilans, aiOfferPwSurplusTolerance } from ${J('game/diplomacy-ai-offer-balance')};`,
   `export { treatyBasePnFromConfig, treatyEvalRelationTotal } from ${J('game/diplomacy-proposals')};`,
@@ -98,7 +99,7 @@ function mkDeps(o) {
     cityCessionOk: () => true,
     battlePending: false,
     pay: (l, w, plan) => log.push({ ev: 'pay', l, w, plan }),
-    finalize: (l, w) => log.push({ ev: 'peace', l, w }),
+    finalize: (l, w, lock) => log.push({ ev: 'peace', l, w, lock }),
   };
   return { deps, log };
 }
@@ -250,7 +251,7 @@ ok(/warWearinessByPairKey\.delete\(diploPairKey\(proposerId, responderId\)\)/.te
   const m = mainTs.match(/function finalizePeaceTreatyBetween\([\s\S]*?\n    \}\n/);
   ok(m && /forcedEraPeaceUntilNextEraByPairKey\.set\(pairKey/.test(m[0]) && m[0].indexOf('forcedEraPeaceUntilNextEraByPairKey.set') < m[0].indexOf('applyDiploEventTracked'), '6b: finalizePeaceTreatyBetween ustawia blokade epoki PRZED zmiana relacji');
   const t = mainTs.match(/function tickAiAiWarWeariness[\s\S]*?\n    \}\n/);
-  ok(t && /finalizePeaceTreatyBetween\(loser, winner\)/.test(t[0]), '6b: tick zmeczenia konczy wojne wylacznie przez finalizePeaceTreatyBetween (istniejace reguly wojen wymuszonych)');
+  ok(t && /finalizePeaceTreatyBetween\(loser, winner, lockTurns\)/.test(t[0]), '6b: tick zmeczenia konczy wojne wylacznie przez finalizePeaceTreatyBetween (istniejace reguly wojen wymuszonych)');
 }
 
 // ---- 7. LIVE-AUDIT-Q1: wczesna oferta przegrywajacego, ochrona przed snowballem, symetria (realny runWarWearinessTick) ----
@@ -315,6 +316,47 @@ ok(/warWearinessByPairKey\.delete\(diploPairKey\(proposerId, responderId\)\)/.te
   // 7h. parametry z JSON (zaden prog nie jest zahardkodowany)
   const PP = W.WAR_WEARINESS_PARAMS.przegrywajacy;
   ok(PP.ochronaMaxMiast > 0 && PP.ochronaUtratyWojny > 0 && PP.ofertaOdTurWojny > 0 && PP.tolerancjaZmeczenia > 0, '7h: nowe progi w war-weariness-params.json');
+  // 7i. parametr karencji z JSON + tick przekazuje go do finalize (zarzut 1 r2: bylo domyslne 10 tur => re-wojna po ~10 turach)
+  ok(PP.karencjaPoPokojuTur > M.L.PEACE_TREATY_LOCK_TURNS, `7i: karencjaPoPokojuTur (${PP.karencjaPoPokojuTur}) > domyslne ${M.L.PEACE_TREATY_LOCK_TURNS}`);
+  {
+    const { deps, log } = mkDeps({ turn: 130, turnsAtWar: 30, since: 10, share1: 0.2, lostA: 1, cities: 6, winnerNeed: 300, assets: gold(600) });
+    W.runWarWearinessTick(deps);
+    eq(log.find(x => x.ev === 'peace').lock, PP.karencjaPoPokojuTur, '7i: oferta niechronionego -> finalize z karencja z JSON');
+    const { deps: dp, log: lp } = mkDeps({ turn: 140, turnsAtWar: 40, since: 5, share1: 0.2, lostA: 1, cities: 3, winnerNeed: 999999, assets: cityAssets });
+    W.runWarWearinessTick(dp);
+    eq(lp.find(x => x.ev === 'peace').lock, PP.karencjaChronionegoTur, '7i: pokoj chronionego -> dluzsza karencja (karencjaChronionegoTur)');
+    ok(PP.karencjaChronionegoTur > PP.karencjaPoPokojuTur, '7i: karencja chronionego > zwykla');
+    const { deps: d2, log: l2 } = mkDeps({ turn: 300, turnsAtWar: 200, share1: 0.5 });
+    W.runWarWearinessTick(d2);
+    eq(l2.find(x => x.ev === 'peace').lock, PP.karencjaPoPokojuTur, '7i: pokoj z wyczerpania -> finalize z karencja z JSON');
+  }
+  // 7j. wielowojenny cykl tej samej pary (zarzut 1/5 r2): agresor wypowiada wojne, gdy tylko wolno (realne startPeaceTreatyLock/isPeaceTreatyLocked);
+  //     przegrywajacy traci miasto co 6 tur wojny. Odstep pokoj->re-wojna >= karencja; przy starej karencji 10 tur przegrywajacy traci wiecej miast.
+  {
+    const run = (lockOverride) => {
+      const store = new Map(); let cities = 12; let meta = {}; let atWar = false; let warStart = 0;
+      let lostTotal = 0; let lostInWar = 0; const gaps = []; let lastPeace = null; let wars = 0;
+      for (let t = 1; t <= 300; t++) {
+        if (!atWar && !M.L.isPeaceTreatyLocked(meta, t) && cities > 0) {
+          atWar = true; warStart = t; lostInWar = 0; wars++;
+          if (lastPeace !== null) gaps.push(t - lastPeace);
+        }
+        if (!atWar) continue;
+        const tw = t - warStart;
+        if (tw >= 10 && (tw - 10) % 6 === 0 && cities > 0) { cities--; lostTotal++; lostInWar++; }
+        const { deps } = mkDeps({ turn: t, warStart, turnsAtWar: tw, since: (tw - 10) % 6, share1: 0.12, lostA: lostInWar, cities, winnerNeed: 999999, assets: cityAssets, store });
+        deps.finalize = (l, w, lock) => {  meta = M.L.startPeaceTreatyLock(meta, t, lockOverride ?? lock); atWar = false; lastPeace = t; };
+        W.runWarWearinessTick(deps);
+      }
+      return { gaps, lostTotal, cities, wars };
+    };
+    const real = run(undefined); const old = run(M.L.PEACE_TREATY_LOCK_TURNS);
+    ok(real.gaps.length >= 1 && real.gaps.every(g => g >= PP.karencjaPoPokojuTur), `7j: odstep pokoj->re-wojna >= ${PP.karencjaPoPokojuTur} (chronieni: ${PP.karencjaChronionegoTur}) (gaps ${JSON.stringify(real.gaps)})`);
+    ok(old.gaps.some(g => g < PP.karencjaPoPokojuTur), '7j: kontrola - przy karencji 10 re-wojna wraca szybciej');
+    ok(real.lostTotal < old.lostTotal, `7j: dluzsza karencja => mniej utraconych miast w 300 turach (${real.lostTotal} vs ${old.lostTotal})`);
+    ok(real.cities >= 3, `7j: przegrywajacy zachowuje >= 3 miasta po 300 turach (serial re-wojen nie eliminuje) (${real.cities} miast, wojen ${real.wars})`);
+    console.log(`7j: karencja ${PP.karencjaPoPokojuTur}: wojen ${real.wars}, utracone ${real.lostTotal}, zostalo ${real.cities}; karencja 10: wojen ${old.wars}, utracone ${old.lostTotal}, zostalo ${old.cities}`);
+  }
 }
 
 console.log(`ai-war-weariness-peace-test: PASS=${pass} FAIL=${fail}`);

@@ -1,0 +1,3 @@
+7j: karencja 40: wojen 3, utracone 9, zostalo 3; karencja 10: wojen 6, utracone 12, zostalo 0
+ai-war-weariness-peace-test: PASS=90 FAIL=0
+EXIT=0
