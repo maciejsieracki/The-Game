@@ -8837,3 +8837,6 @@ R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1 — PASS-WITH-NOTES: ramka widoku minimapy
 
 ### FALA 529 (2026-11-06, ROBOCZA 1106078d, main 6e5e7eac4)
 R-WEB-PERF-ENDTURN-AI-PHASE-Q1 — PASS-WITH-NOTES (R3): JS końca tury mediana 5693→4571 ms (1,25×, n=9/9, host współdzielony); cel 2× NIE osiągnięty. Równoważność wartościowa 0 różnic, 4/4 mutacje. Pozostałe ~2 s: render/HUD (syncUnitsRender, renderLoop, syncStatChips) → osobny temat R-WEB-PERF-ENDTURN-RENDER-HUD-Q1 po zakończeniu MEMMATS (render/ zajęty). Raw MD5 zgodny.
+
+### FALA 530 (2026-11-06, ROBOCZA 9c024dcb, main 6a673c838)
+R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1 (wariant A) — PASS-WITH-NOTES: wspólna pula materiałów, obraz 0 px różnicy, unikalne materiały t.50 jednostki 7141→188 / miasta 1747→135, sterta ok. −7…−9 MB (1 przebieg, szum ~3 MB). Wariant B (scalenie statycznych części jednostek) NIE wdrożony → pytanie do właściciela (P-PAMIEC-SCALENIE-CZESCI-JEDNOSTEK-2026-11-06).
