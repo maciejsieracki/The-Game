@@ -1,3 +1,9 @@
+## ROBOCZA cbb335af -- 2026-11-06 -- FALA 509: panel rekrutacji całej cywilizacji + Spichlerz Królewski/Pismo (testowa)
+
+- R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: przycisk „Rekrutacja” w górnym pasku, równy rozkład zamówienia po miastach; liczniki w mieście nie zerują się po „Rekrutuj”.
+- R-WEB-GRANARY2-PISMO-ROYAL-RENAME-Q1: Spichlerz II = „Spichlerz Królewski”, wymaga technologii Pismo.
+- Weryfikacja: tsc PASS; empire-recruit-live 23/23; granary2-tech-guard 14/0. Limity: brak zrzutu pełnego panelu miasta z chipem Pismo.
+
 ## ROBOCZA 9caf3c59 -- 2026-11-05 -- FALA 508: marsze tylko na koniec tury gracza (testowa)
 
 - md5 pełne: `9caf3c5955847edea53c605d366e0bf6` · 70253395 B · poprzednia `8408a731`.
