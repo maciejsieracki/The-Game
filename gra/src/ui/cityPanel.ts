@@ -12257,8 +12257,14 @@ function rerender(): void {
       manager.classList.remove('active');
       manager.setAttribute('title', 'Zarządca automatyczny — ' + AUTO_BUILD_DISABLED_HINT);
       (manager as HTMLButtonElement).style.opacity = '0.4';
+      // Obrona zarzutu 2: kontrolka naprawdę nieaktywna (disabled), nie tylko przyciemniona.
+      (manager as HTMLButtonElement).disabled = true;
+      manager.setAttribute('aria-disabled', 'true');
     }
-    manager.addEventListener('click', () => { cfg.onAutoManage?.(city.id); rerender(); });
+    manager.addEventListener('click', () => {
+      if (cfg.isAutoBuildEnabled && !cfg.isAutoBuildEnabled()) return;
+      cfg.onAutoManage?.(city.id); rerender();
+    });
   }
   const artview = q('cs-artview'); if (artview) artview.addEventListener('click', () => { cfg.onArtView?.(city.id); });
   rootEl.querySelectorAll('.fsbtn').forEach(b => {

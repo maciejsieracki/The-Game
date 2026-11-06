@@ -71,6 +71,9 @@ ok(/onAutoBuildToggle/.test(main) && /getAutoBuildEnabled: isPlayerAutoBuildEnab
 ok(/setAutoBuildEnabled: v =>/.test(main), 'main.ts: hak testowy ?civTest=1 setAutoBuildEnabled');
 const cityPanel = fs.readFileSync(path.join(SRC, 'ui', 'cityPanel.ts'), 'utf8');
 ok(/isAutoBuildEnabled\?: \(\) => boolean/.test(cityPanel) && /data-auto-build-locked/.test(cityPanel) && /AUTO_BUILD_DISABLED_HINT/.test(cityPanel), 'cityPanel.ts: kontrolki auto wyszarzone + podpowiedź');
+ok(/\.disabled = true;\s*\n\s*manager\.setAttribute\('aria-disabled'/.test(cityPanel) || /\(manager as HTMLButtonElement\)\.disabled = true/.test(cityPanel), 'cityPanel.ts: Zarządca ⚙ przy OFF jest disabled (obrona zarzutu 2)');
+ok(/manager\.addEventListener\('click', \(\) => \{\s*if \(cfg\.isAutoBuildEnabled && !cfg\.isAutoBuildEnabled\(\)\) return;/.test(cityPanel), 'cityPanel.ts: klik Zarządcy ⚙ przy OFF nie przełącza trybu (obrona zarzutu 2)');
+ok(/onAutoBuildToggle: \(enabled: boolean\) => \{[\s\S]{0,400}?updateHud\(\)[\s\S]{0,200}?refreshCityPanelIfOpen\(\)/.test(main), 'main.ts: przełącznik w menu odświeża HUD i panel miasta (obrona zarzutu 4)');
 const bmh = fs.readFileSync(path.join(SRC, 'ui', 'buildModeHud.ts'), 'utf8');
 ok(/isAutoBuildEnabled\?: \(\) => boolean/.test(bmh) && /autoBuildOn/.test(bmh) && /AUTO_BUILD_DISABLED_HINT/.test(bmh), 'buildModeHud.ts: blok auto-ulepszeń zastąpiony podpowiedzią');
 const gate = fs.readFileSync(path.join(SRC, 'game', 'auto-build-gate.ts'), 'utf8');

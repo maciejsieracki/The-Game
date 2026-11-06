@@ -24421,7 +24421,12 @@ async function boot(): Promise<void> {
       hasSave: hasAnySaveSlot,
       // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: przełącznik „Automatyzacja budowy” także w trakcie gry (stare zapisy: domyślnie WYŁ.).
       getAutoBuildEnabled: isPlayerAutoBuildEnabled,
-      onAutoBuildToggle: (enabled: boolean) => { autoBuildEnabled = enabled === true; },
+      onAutoBuildToggle: (enabled: boolean) => {
+        autoBuildEnabled = enabled === true;
+        // Obrona zarzutu 4: odśwież otwarte panele (miasto + budowa), żeby stan kontrolek auto był od razu aktualny.
+        try { updateHud(); } catch { /* HUD jeszcze nie gotowy */ }
+        try { refreshCityPanelIfOpen(); } catch { /* panel zamknięty */ }
+      },
       onResume: () => { /* gra już widoczna pod overlayem */ },
       onSave: () => { openSaveGameDialog(); },
       onLoad: () => { void openLoadGameDialog(true); },
