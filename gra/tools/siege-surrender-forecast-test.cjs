@@ -7,6 +7,9 @@
  *     scenariusze zapasy 10/5/1/0, rozne zuzycie (ludnosc, garnizon), pending, spichlerz wypelniony.
  *  C. STRUKTURALNA: wzory w turn-economy.ts / main.ts nadal takie jak zakladane (strażnik dryfu) + wpiecie plakietki.
  *  D. MUTACJE kopii modulu -- kazda musi wywrocic A/B.  E. ZAPIS/ODCZYT (JSON) nie zmienia prognozy.
+ * R-WEB-SIEGE-STARVATION-SURRENDER-Q1: miasto Z garnizonem poddaje sie wg glodu garnizonu (ticki do zera zapasow
+ * + floor(0,5/hpFrac)+1 ticków atrycji); miasto BEZ garnizonu zachowuje sciezke historyczna (flaga + nastepny tick).
+ * Szczegolowy test mechanizmu: tools/siege-starvation-test.cjs.
  * Run z gra/:  node tools/siege-surrender-forecast-test.cjs
  * RED (modul nieobecny): SIEGE_FORECAST_MODULE=/nie/istnieje node tools/siege-surrender-forecast-test.cjs
  */
@@ -34,11 +37,24 @@ const F = bundle('real', REAL);
 /** Odwzorowanie mechanizmu: tick ekonomii + faza kapitulacji; zwraca numer konca tury, w ktorym miasto przejete (albo null po limit). */
 function simulate(c, limit = 500) {
   const city = { ...c };
+  // glod garnizonu (siege-starvation.ts): per jednostka 100 maxHP, strata floor(100*0,08)=8 HP/tick
+  let startRecorded = false, hpSum = 0, nUnits = c.garnizon != null && c.garnizon > 0 ? c.garnizon : 0;
+  const unitHp = Array.from({ length: nUnits }, () => 100);
   for (let t = 1; t <= limit; t++) {
     const garn = city.garnizon != null && city.garnizon > 0 ? city.garnizon : 0;
     const zuzycie = city.population + garn;
     city.magazynZywnosci = Math.max(0, (city.magazynZywnosci ?? 0) - zuzycie); // turn-economy.ts (oblegane)
     const glod = city.magazynZywnosci <= 0;
+    if (nUnits > 0 && !city.siegeCapitulationPending) {
+      if (glod) {
+        if (!startRecorded) { startRecorded = true; continue; } // tick zera zapasow: tylko zapis startu
+        for (let i = 0; i < unitHp.length; i++) unitHp[i] = Math.max(0, unitHp[i] - 8);
+        hpSum = unitHp.reduce((a, b) => a + b, 0);
+        if (hpSum / (nUnits * 100) < 0.5) return t;
+      }
+      continue;
+    }
+    if (city.siegeCapitulationPending) return t;
     if (glod) {                       // main.ts: if (tick.obleganyGlod) handleSiegeCapitulationPhase
       if (city.siegeCapitulationPending) return t; // resolveSiegeSurrender
       city.siegeCapitulationPending = true;
@@ -53,7 +69,8 @@ const mk = (food, pop, garnizon, pending = false) => ({ oblegane: true, populati
 console.log('A. jednostkowa');
 ok(F.turnsUntilSiegeSurrender(mk(10, 5, 0)) === 3, 'zapasy 10, zuzycie 5 -> 3 tury (2 do wyzerowania + 1 przejecie)');
 ok(F.turnsUntilSiegeSurrender(mk(5, 5, 0)) === 2, 'zapasy 5, zuzycie 5 -> 2');
-ok(F.turnsUntilSiegeSurrender(mk(1, 9, 3)) === 2, 'zapasy 1, zuzycie 12 -> 2');
+ok(F.turnsUntilSiegeSurrender(mk(1, 9, 0)) === 2, 'zapasy 1, zuzycie 9, bez garnizonu -> 2 (sciezka historyczna)');
+ok(F.turnsUntilSiegeSurrender(mk(1, 9, 3)) === 8, 'zapasy 1, zuzycie 12, garnizon 3 -> 1 (zapasy) + 7 (glod 8%/tura) = 8');
 ok(F.turnsUntilSiegeSurrender(mk(0, 9, 0)) === 2, 'zapasy 0 (pending jeszcze nie) -> 2');
 ok(F.turnsUntilSiegeSurrender(mk(0, 9, 0, true)) === 1, 'pending -> 1');
 ok(F.turnsUntilSiegeSurrender(mk(999, 9, 0, true)) === 1, 'pending z zapasami -> 1 (zgodnie z main.ts)');
@@ -90,7 +107,7 @@ ok(simBad.length === 0, 'prognoza == symulacja dla ' + simN + ' scenariuszy (zap
 // wielu oblegajacych nie zmienia zuzycia oblezonego miasta (zuzycie = ludnosc + garnizon obroncow)
 ok(F.turnsUntilSiegeSurrender({ ...mk(10, 5, 0), oblegajacyOwnerId: 3 }) === simulate(mk(10, 5, 0)), 'liczba/wlasciciel oblegajacych nie wplywa na wynik (zgodnie z turn-economy.ts)');
 // odliczanie co tura maleje o 1 az do 1
-{ let c = mk(23, 4, 1); let prev = F.turnsUntilSiegeSurrender(c), mono = true, steps = 0;
+{ let c = mk(23, 5, 0); let prev = F.turnsUntilSiegeSurrender(c), mono = true, steps = 0;
   while (prev > 1 && steps < 50) { c = { ...c, magazynZywnosci: Math.max(0, c.magazynZywnosci - 5) }; if (c.magazynZywnosci <= 0) c.siegeCapitulationPending = true; const n = F.turnsUntilSiegeSurrender(c); if (n !== prev - 1) mono = false; prev = n; steps++; }
   ok(mono && prev === 1, 'licznik maleje o 1 na ture az do 1 (i konczy na 1 = "w tej turze oblezenia")'); }
 
@@ -121,8 +138,8 @@ const muts = [
   ['brak null dla zuzycia 0', s => s.replace('if (!(cons > 0)) return null;', '')],
 ];
 for (const [name, fn] of muts) {
-  const mp = path.join(tmp, 'mut.ts'); const m = fn(src);
-  if (m === src) { ok(false, 'mutacja "' + name + '" nie zmienila zrodla'); continue; }
+  const mp = path.join(tmp, 'mut.ts'); const m0 = fn(src); const m = m0.replace("'./siege-starvation'", JSON.stringify(path.join(GRA, 'src', 'game', 'siege-starvation.ts')));
+  if (m0 === src) { ok(false, 'mutacja "' + name + '" nie zmienila zrodla'); continue; }
   fs.writeFileSync(mp, m);
   let killed = false;
   try {

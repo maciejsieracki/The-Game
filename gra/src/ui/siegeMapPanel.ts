@@ -217,7 +217,12 @@ function render(): void {
   const food = getCityFood(city);
   const garnizon = city.garnizon ?? 0;
   const zuzycie = city.population + garnizon;
-  const atrycjaNext = garnizon > 0 ? Math.max(1, Math.floor(garnizon * 0.08)) : 0;
+  // R-WEB-SIEGE-STARVATION-SURRENDER-Q1: atrycja HP garnizonu dziala WYLACZNIE w etapie glodu (zapasy = 0).
+  const hungerStage = food <= 0;
+  const starveFrac = hungerStage && garnizon > 0 && starveFracProvider ? starveFracProvider() : 0;
+  const atrycjaLabel = hungerStage
+    ? (garnizon > 0 && starveFrac > 0 ? '−' + Math.round(starveFrac * 100) + '% HP/turę (głód)' : 'brak garnizonu')
+    : 'brak (zapasy)';
   // Milicja = 1 mieszkaniec = 1 jednostka, tylko z budynkiem Garnizon (estymator z main.ts).
   const milicjaEst = militiaEstimator ? Math.max(0, militiaEstimator(city)) : 0;
   // Okres odnowy po zniszczeniu Milicji (R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1).
@@ -266,7 +271,7 @@ function render(): void {
         '<div>Zapasy: <b>' + food + '</b></div>' +
         '<div>Zużycie/turę: <b>' + zuzycie + '</b></div>' +
         '<div>Oblegających: <b>' + besiegerUnitCount + '</b></div>' +
-        '<div>Atrycja: <b>−' + atrycjaNext + '</b>/turę</div>' +
+        '<div>Atrycja: <b>' + atrycjaLabel + '</b></div>' +
         (milicjaEst > 0
           ? '<div class="full">Milicja przy szturmie: <b>' + milicjaEst + '</b></div>'
           : milicjaRegen > 0
@@ -330,6 +335,13 @@ function render(): void {
 
   root.appendChild(box);
   attachKeyboard(city.id);
+}
+
+let starveFracProvider: (() => number) | null = null;
+
+/** Podpina ulamek maxHP tracony przez garnizon na ture glodu (zalezny od trudnosci; panel go nie zna). */
+export function setSiegePanelStarveFracProvider(fn: (() => number) | null): void {
+  starveFracProvider = fn;
 }
 
 let militiaEstimator: ((city: City) => number) | null = null;

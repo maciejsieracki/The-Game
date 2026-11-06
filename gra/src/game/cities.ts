@@ -865,6 +865,12 @@ export interface City {
   /** C3-Q3=B: zapasy=0 — kapitulacja następnej turze oblężenia / końca tury gracza. */
   siegeCapitulationPending?: boolean;
   /**
+   * R-WEB-SIEGE-STARVATION-SURRENDER-Q1: suma maxHP garnizonu w chwili rozpoczecia glodu (zapasy = 0).
+   * Brak pola = glod jeszcze nie rozpoczety (stary zapis: pierwszy tick glodu zapisuje je z biezacych maxHP).
+   * Kapitulacja gdy sumaHP / to pole < 0,5. Kasowane przy zdjeciu/rozpoczeciu oblezenia.
+   */
+  siegeStarveStartMaxHp?: number;
+  /**
    * R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: tura globalna, OD KTOREJ Milicja miasta znow walczy.
    * Ustawiana (zniszczenie + militia_regen_turns) gdy cala Milicja polegla w bitwie/szturmie.
    * Brak pola (stary zapis) = brak odnowy, Milicja dostepna. Serializowane razem z miastem.

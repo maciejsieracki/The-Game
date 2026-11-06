@@ -508,10 +508,12 @@ import {
   siegeSurrenderBadgeText,
   siegeSurrenderTooltip,
 } from './game/siege-surrender-forecast';
+import { siegeStarvationState } from './game/siege-starvation';
 import { WORLD_OVERLAY_Z_INDEX } from './ui/worldOverlayLayer';
 import {
   showSiegeMapPanel, hideSiegeMapPanel, updateSiegeMapPanelTurn, isSiegeMapPanelOpen,
   getActiveSiegeCityId, setSiegePanelBesiegerCount, setSiegePanelMilitiaEstimator, setSiegePanelMilitiaRegenLeft,
+  setSiegePanelStarveFracProvider,
 } from './ui/siegeMapPanel';
 import { FORTIFY_OBRONA_PROC_FIELD, type SiegeCity, type SiegeUnit } from './game/siege';
 import {
@@ -16316,10 +16318,19 @@ async function boot(): Promise<void> {
     /** Tekst + tooltip licznika poddania (czysta prognoza z siege-surrender-forecast.ts; zero zmian logiki kapitulacji). */
     function siegeSurrenderBadgeFor(city: City): { text: string; title: string } {
       const food = getCityFood(city);
-      const turns = turnsUntilSiegeSurrender(city, { food });
+      // R-WEB-SIEGE-STARVATION-SURRENDER-Q1: prognoza = tury do zera zapasów + tury głodu garnizonu do HP < 50%.
+      const getMaxHp = (typeId: string): number => unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {});
+      const garrison = units
+        .filter(u => u.ownerId === city.ownerId && u.q === city.q && u.r === city.r && u.inGarnizon === true && !isCivilianUnit(u))
+        .map(u => ({ hp: u.hp, hpMax: u.hpMax ?? getMaxHp(u.typeId) }));
+      const turns = turnsUntilSiegeSurrender(city, {
+        food,
+        hpFrac: buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaHpFrac,
+        garrison,
+      });
       return {
         text: siegeSurrenderBadgeText(turns),
-        title: siegeSurrenderTooltip(turns, food, siegeConsumptionPerTurn(city)),
+        title: siegeSurrenderTooltip(turns, food, siegeConsumptionPerTurn(city), food <= 0 && garrison.length > 0),
       };
     }
 
@@ -16648,6 +16659,7 @@ async function boot(): Promise<void> {
         city.oblegane = false;
         delete city.oblegajacyOwnerId;
         city.siegeCapitulationPending = false;
+        delete city.siegeStarveStartMaxHp;
         clearSiegeMachines(city);
         const bId = siegeBesiegerByCity.get(cityId);
         if (bId !== undefined) siegeAiStateByKey.delete(siegeAiKey(bId, cityId));
@@ -16747,6 +16759,7 @@ async function boot(): Promise<void> {
       city.oblegane = true;
       city.oblegajacyOwnerId = ctx.oblegajacyOwnerId;
       city.siegeCapitulationPending = false;
+      delete city.siegeStarveStartMaxHp;
       ensureSiegeMachines(city);
       syncCityGarnizon(city);
       siegeTurnByCity.set(city.id, 1);
@@ -27536,12 +27549,14 @@ async function boot(): Promise<void> {
     // (tylko przy ?civTest=1): ustawia stan oblezenia na zywym miescie i odswieza plakietki; zero wplywu bez parametru.
     if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
       (window as any).__siegeBadgeTestDebug = {
-        setSiege: (cityId: string, food: number, pending: boolean): boolean => {
+        setSiege: (cityId: string, food: number, pending: boolean, starveStartMaxHp?: number): boolean => {
           const c = cities.find(x => x.id === cityId);
           if (!c) return false;
           c.oblegane = true;
           c.magazynZywnosci = food;
           c.siegeCapitulationPending = pending;
+          // zarzut 4: opcjonalny start glodu (sciezka prognozy z garnizonem w Chromium)
+          c.siegeStarveStartMaxHp = starveStartMaxHp != null && starveStartMaxHp > 0 ? starveStartMaxHp : undefined;
           refreshSiegeMarkers();
           return true;
         },
@@ -32614,6 +32629,9 @@ async function boot(): Promise<void> {
       };
     }
 
+    // R-WEB-SIEGE-STARVATION-SURRENDER-Q1 (obrona r1, zarzut 2): ułamek HP/turę głodu dla panelu (zależny od trudności).
+    setSiegePanelStarveFracProvider(() => buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaHpFrac);
+
     /** Oszacowanie Milicji dla panelu oblężenia: tylko z ukończonym budynkiem Garnizon i poza okresem odnowy. */
     setSiegePanelMilitiaEstimator((c: City) =>
       completedBuildingIdsForCity(c.id).includes('garnizon') && militiaRegenTurnsLeft(c, turn) === 0
@@ -33248,6 +33266,7 @@ async function boot(): Promise<void> {
           delete c.oblegajacyOwnerId;
           c.oblegane = false;
           c.siegeCapitulationPending = false;
+          delete c.siegeStarveStartMaxHp;
         }
       }
       for (const [cid, besieger] of Array.from(siegeBesiegerByCity.entries())) {
@@ -36503,15 +36522,29 @@ async function boot(): Promise<void> {
                   && u.r === oblCity.r
                   && u.inGarnizon === true,
               );
-              if (realGarnizonUnits.length > 0) {
-                const garnizonBefore = realGarnizonUnits.length;
+              // R-WEB-SIEGE-STARVATION-SURRENDER-Q1: etap 1 (zapasy) -- garnizon zdrowy; etap 2 (głód) od
+              // ticka PO wyzerowaniu zapasów: atrycja HP, kapitulacja gdy ΣHP/startMaxHP < 50% (siege-starvation.ts).
+              const militaryGarrison = () => realGarnizonUnits.filter(u => !isCivilianUnit(u) && units.includes(u));
+              const starvParams = {
+                food: tick.obleganyGlod ? 0 : (tick.magazynPoTurze ?? getCityFood(oblCity)),
+                getMaxHp: (typeId: string) => unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {}),
+              };
+              const st0 = siegeStarvationState(oblCity, militaryGarrison(), starvParams);
+              let surrenderNow = st0.surrender;
+              if (st0.recordStart) {
+                oblCity.siegeStarveStartMaxHp = st0.startMaxHp ?? undefined;
+                showHintMessage(oblCity.name + ': zapasy wyczerpane — garnizon głoduje!', 5500);
+                syncSiegePanelMeta(oblCity);
+                updateSiegeMapPanelTurn(siegeTurnByCity.get(oblCity.id) ?? 1, oblCity);
+              } else if (st0.applyAttrition && !st0.surrender) {
+                const garnizonBefore = militaryGarrison().length;
                 // Atrycja zdejmuje realne HP garnizonu (nie tylko licznik pochodny) —
                 // jednostki, które w ten sposób umrą, realnie znikają z obrony przy szturmie.
                 const starv = applyArmyStarvationHpLoss(
                   realGarnizonUnits,
                   oblCity.ownerId,
                   glodWojskaHpFracOblezenie,
-                  (typeId) => unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {}),
+                  starvParams.getMaxHp,
                 );
                 if (starv.destroyedIds.length > 0) {
                   for (let i = units.length - 1; i >= 0; i--) {
@@ -36521,14 +36554,15 @@ async function boot(): Promise<void> {
                 syncGarnizonForCity(oblCity);
                 console.log(
                   '[Oblezenie] Tura ' + turn + ' ' + oblCity.name +
-                  ': atrycja garnizonu ' + garnizonBefore + ' -> ' + oblCity.garnizon +
+                  ': głód garnizonu ' + garnizonBefore + ' -> ' + oblCity.garnizon +
                   ' (-' + (garnizonBefore - (oblCity.garnizon ?? 0)) + ')',
                 );
+                surrenderNow = siegeStarvationState(oblCity, militaryGarrison(), starvParams).surrender;
               }
 
-              if (tick.obleganyGlod) {
-                handleSiegeCapitulationPhase(oblCity);
-              } else if (oblCity.siegeCapitulationPending) {
+              if (st0.setLegacyPending) {
+                handleSiegeCapitulationPhase(oblCity); // bez garnizonu: flaga, przejęcie w następnym ticku
+              } else if (surrenderNow) {
                 resolveSiegeSurrender(oblCity.id);
               }
 
