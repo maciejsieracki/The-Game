@@ -48,3 +48,5 @@
          per typ: ruch2=94.0% ruch3=84.8% ruch4=70.0%; per civ: civ1=84.3% civ2=86.6% civ3=82.5%
   [AGG] PO: ruchy=17020, uzycie ruchu=84.8%, grupy(stos>1)=85.4% (n=7802), niewykorzystany zapas mimo wolnej trasy=3257 (19.1% ruchow), czas decyzji=35171 ms
          per typ: ruch2=94.4% ruch3=84.3% ruch4=71.2%; per civ: civ1=84.0% civ2=85.5% civ3=85.4%
+
+EXIT=NIE_ZAPISANO (plik wynikowy pomiaru JSON bez kodu wyjscia; dopisane w obronie R2 bez ponownego uruchomienia, kod nieodtworzony)

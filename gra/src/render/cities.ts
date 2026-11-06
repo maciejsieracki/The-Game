@@ -438,7 +438,7 @@ export class CityRenderer {
   private lodModelsVersion = 0;
   private readonly smallPartLod = new SmallPartLod();
 
-  applySmallPartLod(camDist: number, fovDeg: number, viewportH: number, minPx = 2): void {
+  applySmallPartLod(camDist: number, fovDeg: number, viewportH: number, minPx = 3): void {
     this.smallPartLod.apply(this.models.values(), this.scene, this.lodModelsVersion, camDist, fovDeg, viewportH, minPx);
   }
 

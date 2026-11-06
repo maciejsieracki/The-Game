@@ -21,3 +21,5 @@ computing gzip size...
     at clickHex (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/base/gra/tools/perf-late-game-interaction-r2-live-test.cjs:554:24)
     at async clickBlock (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/base/gra/tools/perf-late-game-interaction-r2-live-test.cjs:628:49)
     at async main (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/base/gra/tools/perf-late-game-interaction-r2-live-test.cjs:712:33)
+
+EXIT=NIE_ZAPISANO (plik wynikowy pomiaru JSON bez kodu wyjscia; dopisane w obronie R2 bez ponownego uruchomienia, kod nieodtworzony)

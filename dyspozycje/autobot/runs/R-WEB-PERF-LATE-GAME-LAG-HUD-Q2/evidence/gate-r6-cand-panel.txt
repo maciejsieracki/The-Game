@@ -17,3 +17,5 @@ computing gzip size...
 [perf] incl open-city-panel [{},{},{},{},{},{},{"buildHudState":71.5,"updateHud":89.9,"refreshD1bHud":89.9,"collectTurnEventsUncached":56.8,"collectTurnEvents":56.8,"refreshTerritoryBorderOverlay":0.3}]
 [perf] click open-city-panel pureJS min/med/max {"n":7,"min":142.5,"med":242,"max":550.4} glNative {"n":7,"min":6.1,"med":1263.5,"max":2452.2} cnt {"buildHudState":5,"collectTurnEvents":7,"border":1} sel ["null","null","null","null","null","null","null"]
 [perf] result written: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cand-panel.json
+
+EXIT=NIE_ZAPISANO (plik wynikowy pomiaru JSON bez kodu wyjscia; dopisane w obronie R2 bez ponownego uruchomienia, kod nieodtworzony)

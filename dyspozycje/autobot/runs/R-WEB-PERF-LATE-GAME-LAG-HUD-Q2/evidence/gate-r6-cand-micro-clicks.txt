@@ -27,3 +27,5 @@ computing gzip size...
     at iter (/home/user/The-Game/.claude/worktrees/wf_86013522-2a8-1/gra/tools/perf-late-game-interaction-r2-live-test.cjs:584:17)
     at async clickBlock (/home/user/The-Game/.claude/worktrees/wf_86013522-2a8-1/gra/tools/perf-late-game-interaction-r2-live-test.cjs:660:19)
     at async main (/home/user/The-Game/.claude/worktrees/wf_86013522-2a8-1/gra/tools/perf-late-game-interaction-r2-live-test.cjs:712:33)
+
+EXIT=NIE_ZAPISANO (plik wynikowy pomiaru JSON bez kodu wyjscia; dopisane w obronie R2 bez ponownego uruchomienia, kod nieodtworzony)

@@ -5765,7 +5765,7 @@ export class UnitRenderer {
   /** Liczba meshy aktualnie schowanych przez LOD (diagnostyka/test). */
   get lodHiddenCount(): number { return this.smallPartLod.hiddenCount; }
 
-  applySmallPartLod(camDist: number, fovDeg: number, viewportH: number, minPx = 2): void {
+  applySmallPartLod(camDist: number, fovDeg: number, viewportH: number, minPx = 3): void {
     this.smallPartLod.apply(this.tokens.values(), this.scene, this.lodTokensVersion, camDist, fovDeg, viewportH, minPx);
   }
 
