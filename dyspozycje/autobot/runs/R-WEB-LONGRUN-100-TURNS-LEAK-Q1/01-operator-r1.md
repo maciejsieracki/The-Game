@@ -3,7 +3,7 @@ DOMAIN: GAME
 TEMAT: R-WEB-LONGRUN-100-TURNS-LEAK-Q1
 GOAL: Zmierzyc w realnej grze 100 tur (Chromium, bundle vite poza repo, ?civTest=1, mgla OFF, gracz tylko konczy tury) czas tury, pamiec i liczność struktur; wskazac, co rosnie nieograniczenie / powoduje spowolnienie po ~t.60-80; naprawic minimalnie, jesli przyczyna jednoznaczna.
 
-ZMIANY/COMMIT: SHA w sekcji ponizej (jeden commit, PUSH NIE).
+ZMIANY/COMMIT: 2b4a8c87a (kod + skrypty + dane + ten raport; ten wpis SHA dodany kolejnym commitem docs). PUSH NIE.
 - gra/src/game/trade-routes.ts: nowa funkcja `memoizeOwnerResourceAccess` (+20 linii, tylko dodatek).
 - gra/src/main.ts: import + 1 linia w `recomputeTradeRouteResourceGrants` (okolice :5236).
 - gra/tools/longrun-100-turns-leak-q1-measure.cjs (NOWY skrypt pomiarowy, --prepare/--run, hak `__leakDump`, liczniki faz AI/dyplomacji, listenery/timery, --cpuprof, --lkstack).
