@@ -1,3 +1,9 @@
+## ROBOCZA 3ba85b7b -- 2026-11-06 -- FALA 514: pakt o nieagresji wymaga Zaufania 30 (testowa)
+
+- R-WEB-DIPLO-NAP-TRUST-30-Q1 — pakt o nieagresji wymaga Relacji ≥ próg ORAZ Zaufania ≥ 30 (stałe na trudnościach) dla gracza, AI i AI↔AI; notka blokady podaje wymagane Zaufanie
+- Weryfikacja: tsc PASS; diplo-nap-trust-30 25/25; diplomacy-locks 88/0; diplomacy/war-gates/treaties/wiarygodnosc/acceptance-points 0 FAIL; Chromium 6/6; ai-test 274/20 = baseline
+- Limity: UI blokady nie zna narzutu za wspólną granicę (110/120 vs silnik 130/140) — osobny temat; UPR automatyczny NAP bez zmian
+
 ## ROBOCZA 5b7c38ed -- 2026-11-06 -- FALA 513: Magazyn nie zwiększa pojemności żywności (testowa)
 
 - R-WEB-MAGAZYN-NO-FOOD-CAP-BONUS-Q1 — Magazyn nie daje bonusu do pojemności żywności centralnej (100→0); pojemność żywności tylko ze Spichlerzy (baza 1000 bez zmian); pojemność surowców Magazynu bez zmian

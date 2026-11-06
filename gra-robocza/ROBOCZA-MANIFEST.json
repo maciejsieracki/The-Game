@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "5b7c38ed6194712584698e9cbff38880",
-  "bundleSha256": "e05b444bba06d7a2799926aae5f9d5bedb41678255cbca12ebf297a5ae541736",
-  "bundleBytes": 70270938,
+  "bundleMd5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
+  "bundleSha256": "f261b28132a842cd4a1a6902cc4ee732536c4d77d1eba33ff831e9a2d2684f0e",
+  "bundleBytes": 70271296,
   "sourceSnapshot": {
-    "source": "main d458f0770 + MAGNOFOOD (8c0c02047)",
+    "source": "main 53733cd34 + NAPTRUST (84dfc733c)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 513: R-WEB-MAGAZYN-NO-FOOD-CAP-BONUS-Q1 — Magazyn nie daje bonusu do pojemności żywności centralnej (100→0); pojemność żywności tylko ze Spichlerzy (baza 1000 bez zmian); pojemność surowców Magazynu bez zmian"
+    "FALA 514: R-WEB-DIPLO-NAP-TRUST-30-Q1 — pakt o nieagresji wymaga Relacji ≥ próg ORAZ Zaufania ≥ 30 (stałe na trudnościach) dla gracza, AI i AI↔AI; notka blokady podaje wymagane Zaufanie"
   ],
   "verification": [
-    "tsc PASS; magazyn-food-cap-bez-magazynu 16/0 (+mutacja 7 FAIL); regresje food/magazyn/spichlerz EXIT=0"
+    "tsc PASS; diplo-nap-trust-30 25/25; diplomacy-locks 88/0; diplomacy/war-gates/treaties/wiarygodnosc/acceptance-points 0 FAIL; Chromium 6/6; ai-test 274/20 = baseline"
   ],
   "limits": [
-    "Opis klucza econ-params i komentarz building-resource-gate nadal wspominają +100 (kosmetyka)"
+    "UI blokady nie zna narzutu za wspólną granicę (110/120 vs silnik 130/140) — osobny temat; UPR automatyczny NAP bez zmian"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-06T01:11:26",
+  "hubGeneratedAt": "2026-11-06T01:20:46",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "5b7c38ed6194712584698e9cbff38880",
-      "sizeBytes": 70270938
+      "md5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
+      "sizeBytes": 70271296
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "5b7c38ed6194712584698e9cbff38880",
-      "sizeBytes": 70270938
+      "md5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
+      "sizeBytes": 70271296
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "5b7c38ed6194712584698e9cbff38880",
-      "sizeBytes": 70270938
+      "md5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
+      "sizeBytes": 70271296
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "5b7c38ed6194712584698e9cbff38880",
-      "sizeBytes": 70270938
+      "md5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
+      "sizeBytes": 70271296
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "5b7c38ed6194712584698e9cbff38880",
-      "sizeBytes": 70270938
+      "md5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
+      "sizeBytes": 70271296
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "5b7c38ed6194712584698e9cbff38880",
-      "sizeBytes": 70270938
+      "md5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
+      "sizeBytes": 70271296
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "5b7c38ed6194712584698e9cbff38880",
-      "sizeBytes": 70270938
+      "md5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
+      "sizeBytes": 70271296
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "5b7c38ed6194712584698e9cbff38880",
-      "sizeBytes": 70270938
+      "md5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
+      "sizeBytes": 70271296
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "5b7c38ed6194712584698e9cbff38880",
-      "sizeBytes": 70270938
+      "md5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
+      "sizeBytes": 70271296
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "5b7c38ed6194712584698e9cbff38880",
-      "sizeBytes": 70270938
+      "md5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
+      "sizeBytes": 70271296
     }
   ],
-  "md5": "5b7c38ed6194712584698e9cbff38880",
+  "md5": "3ba85b7bbe7e6e6b9abc4dcfec3a4235",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
