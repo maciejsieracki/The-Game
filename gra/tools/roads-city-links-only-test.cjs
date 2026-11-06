@@ -203,6 +203,13 @@ function sim({ actor, world, seed }) {
   const citiesPerComp = comps.map(c => c.filter(k => cityKeys.has(k)).length).sort((a, b) => b - a);
   const reachable = planRoadNetwork(cities, map).disconnected; // 0 = wszystkie miasta w jednym komponencie planu (zasieg bez terytorium)
   const topo = topology(roadHexes.filter(k => !cityKeys.has(k)), cities);
+  // Niezalezna od planisty niezmienna: slepy koniec = heks drogi z <=1 sasiadem w grafie (drogi + miasta). Siec MIEDZY miastami
+  // nie ma odnog donikad (kazdy koniec drogi dotyka miasta), wiec deadEnds musi byc 0.
+  let deadEnds = 0;
+  for (const k of roadHexes) {
+    const [q, r] = k.split(',').map(Number);
+    if (NB.filter(([a, b]) => nodes.has(K(q + a, r + b))).length <= 1) deadEnds++;
+  }
   if (process.env.RCL_DEBUG && topo.triangles > 0) {
     console.error('DEBUG cities', JSON.stringify(spots.map(s => K(s.q, s.r))), 'roads', JSON.stringify(roadHexes.sort()));
   }
@@ -216,7 +223,7 @@ function sim({ actor, world, seed }) {
   return {
     actor, world, seed, cities: cities.length, roadHexes: roadHexes.length, perCity: roadByCity,
     onPlanClean: roadHexes.length - offClean, offPlanClean: offClean, offPlanNow: offNow, planSize: planNow.size,
-    componentsCities: citiesPerComp, planDisconnectedPairs: reachable, triangles: topo.triangles, cells: topo.cells, denseHexes,
+    componentsCities: citiesPerComp, planDisconnectedPairs: reachable, triangles: topo.triangles, cells: topo.cells, denseHexes, deadEnds,
     aiMsPerTurn: aiCalls ? +(aiMs / aiCalls).toFixed(3) : null,
   };
 }
@@ -238,12 +245,14 @@ for (const actor of ACTORS) for (const [world, seed] of CASES) {
   const r = sim({ actor, world, seed });
   const tag = `${actor}/${world}/${seed}`;
   ok(r.roadHexes > 0, `${tag}: droga powstaje (${r.roadHexes} heksow) — test nie jest pusty`);
-  ok(r.offPlanClean === 0 || r.offPlanNow === 0, `${tag}: heksy drog poza siecia miedzymiastowa = 0 (poza planem: bez-drog=${r.offPlanClean}, z-drogami=${r.offPlanNow})`);
+  ok(r.offPlanNow === 0, `${tag}: heksy drog poza planem (z uwzglednieniem istniejacych drog) = 0 (${r.offPlanNow})`);
+  ok(r.offPlanClean === 0, `${tag}: heksy drog poza planem na CZYSTEJ mapie = 0 (${r.offPlanClean})`);
+  ok(r.deadEnds === 0, `${tag}: zero slepych koncow drog (niezalezne od planisty): ${r.deadEnds}`);
   // Skrzyzowanie 3 odnog moze dac JEDEN maly trojkat (wezel Y) — tolerancja: <= miast-2; dawna siatka dawala 187-448.
   ok(r.triangles <= r.cities - 2, `${tag}: brak siatki trojkatow — tylko wezly skrzyzowan (${r.triangles} <= ${r.cities - 2})`);
   ok(r.cells <= r.cities - 2 && r.denseHexes <= 2 * (r.cities - 1), `${tag}: brak komorek siatki: heksy z >=4 sasiadami=${r.cells}, z >=3 sasiadami=${r.denseHexes} (limit ${2 * (r.cities - 1)})`);
   ok(r.componentsCities.length === 1 && r.planDisconnectedPairs === 0, `${tag}: wszystkie miasta zasiegalne ladem polaczone jedna siecia (komponenty=${JSON.stringify(r.componentsCities)})`);
-  ok(r.roadHexes <= r.planSize + 2, `${tag}: liczba heksow drog (${r.roadHexes}) <= rozmiar planu (${r.planSize})`);
+  ok(r.roadHexes <= r.planSize, `${tag}: liczba heksow drog (${r.roadHexes}) <= rozmiar planu (${r.planSize})`);
 }
 console.log(`\n${passed} OK, ${failed} FAIL`);
 process.exit(failed ? 1 : 0);
