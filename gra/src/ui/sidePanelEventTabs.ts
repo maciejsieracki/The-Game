@@ -64,9 +64,10 @@ const DIPLO_PHRASE_RE = re([
 
 /** (d) Zagrożenia i straty: magazyn, oblężenie, armia, wróg, bunt, głód… */
 const IMPORTANT_RE = re([
-  'magazyn', 'kapitulac', 'oblez', 'glod', 'zagroz', 'atak', 'zaatak','strat[ayi]', 'stracon', 'utrac', 'utrat',
+  'magazyn (?:centraln|ujemn|pust|wyczerp)', 'kapitulac', 'oblez', 'glod', 'zagroz',
+  'atakuj', 'atakow', 'zaatak', 'atak (?:na|wrog)', 'strat[ayi]', 'stracon', 'utrac', 'utrat',
   'armi[aeiy]', 'wojsk', 'wrog(?![a-z])', 'bunt', 'zbunt', 'zniszcz', 'dezert', 'eliminac',
-  'zdobyt', 'wojn[aey]', 'szturm', 'niewol',
+  'zdobyt\\w* przez wrog', 'wojn[aey]', 'szturm', 'niewol',
 ]);
 
 /** Przypisuje wpis informacyjny do zakładki. Czysta funkcja (bez DOM, bez stanu). */

@@ -82,6 +82,10 @@ const NEGATIVE = [
   ['szlak zerwany (pozostaje, Inne)', { title: 'Szlak handlowy zerwany', subtitle: 'Rzym ↔ Egipt (CYW1) — brak połączenia', kind: 'city', blocking: false }, 'inne'],
   ['miasto-państwo wchłonięte', hint('Miasto-państwo wchłonięte do imperium'), 'inne'],
   ['awans epoki', hint('Nowa epoka: Brąz'), 'inne'],
+  // R2-obrona (zarzut Evaluatora): nazwy wlasne budynkow/technologii/zysk gracza nie sa "zlymi" slowami kluczowymi
+  ['Budowa ukonczona: Magazyn (nazwa budynku)', hint('Budowa ukończona: Magazyn'), 'inne'],
+  ['Technologia odkryta: Atak z flanki (nazwa techu)', hint('Technologia odkryta: Atak z flanki'), 'inne'],
+  ['zysk gracza: fort zdobyty razem z terytorium', hint('Fort zdobyty razem z terytorium (3,4).'), 'inne'],
   ['spichlerz zbudowany', hint('Rzym: Spichlerz zbudowany'), 'inne'],
 ];
 
@@ -131,7 +135,7 @@ const MUTATIONS = [
   ['M3 brak reguly brakow (brak srodkow/pokrycia)', (s) => s.replace("  'brak (?:srodk|pokryci|zasob|wystarcz|surow|zywn|drewn|zlota|zloz|kamien|zelaz|zboz|rekrut|mocy)',\n  'brakuj', 'niedobor', 'deficyt', 'wyczerp', 'nie stac', 'za malo',", "  'zzzzneverzzzz',")],
   ['M4 brak fraz dyplomatycznych (pokoj/rozejm/wojna)', (s) => s.replace("'wypowiada wojn', ", "'zzzz1', ").replace("'pokoj z[: ]', 'pokoj zawarty', 'pokoj nie zawarty', 'rozejm', 'zerwano traktat', 'traktat',", "'zzzz2',")],
   ['M5 kolejnosc: braki przed propozycjami dyplomacji', (s) => s.replace('  if (DIPLO_PROPOSAL_RE.test(text)) return \'dyplomacja\';\n  if (SHORTAGE_RE.test(text)) return \'wazne\';', '  if (SHORTAGE_RE.test(text)) return \'wazne\';\n  if (DIPLO_PROPOSAL_RE.test(text)) return \'dyplomacja\';')],
-  ['M6 brak slow zagrozen (magazyn/oblezenie/armia)', (s) => s.replace("'magazyn', 'kapitulac', 'oblez', 'glod',", "'zzzz3',").replace("'armi[aeiy]', 'wojsk', 'wrog(?![a-z])',", "'zzzz4',")],
+  ['M6 brak slow zagrozen (magazyn/oblezenie/armia)', (s) => s.replace("'magazyn (?:centraln|ujemn|pust|wyczerp)', 'kapitulac', 'oblez', 'glod',", "'zzzz3',").replace("'armi[aeiy]', 'wojsk', 'wrog(?![a-z])',", "'zzzz4',")],
   ['M7 wrog bez ograniczenia (Wrogie weterani -> Wazne)', (s) => s.replace("'wrog(?![a-z])'", "'wrog'")],
   ['M8 brak reguly kind/origin/tytul Dyplomacja', (s) => s.replace("if (ev.kind === 'diplo' || ev.origin === 'other-civs' || ev.title.startsWith('Dyplomacja')) {", 'if (false) {')],
   ['M9 default zawsze Inne', (s) => s.replace("if (counts.wazne > 0) return 'wazne';", "if (counts.wazne > 0) return 'inne';")],
