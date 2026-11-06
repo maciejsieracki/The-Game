@@ -31,3 +31,33 @@ RUNDY: 2/5 (FC po rundzie 2 Obrony)
 SHA DO INTEGRACJI: brak (FAIL). Kod 00b98fde1 jest bezpieczny do integracji jako czesc pozniejszego PASS; kolejnosc wzgledem origin/rust-port/parity-v2: temat jest czysto webowy (gra/src), nie dotyka rust-port; integracja do main, parity-v2 bez zmian, REPIN po zmianach weba.
 NASTEPNY KROK: Operator runda 3 (ten sam ID, ta sama galaz): (a) diagnoza renderInfo.calls 28 881 po wczytaniu zapisu; (b) licznik wolan refreshFog/updateHud/refreshD1bHud na klik + profil CDP ruch/wejscie/panel miasta, min/mediana/max; (c) dobic refreshFog do >= 5x (assignWorkedTiles/previewCityEconomy, buildEmpireResourceRows, refreshMinimap, renderBar) lub odroczyc poza sciezke interakcji; (d) osobny pomiar refreshTerritoryBorderOverlay. Potem Evaluator, FC.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+## FC RUNDA 4/5 (kod Operatora R4: c9480c82c, f30828c02, 733b4d4f6)
+
+STATUS: FAIL
+DOMAIN: GAME (WEB)
+TEMAT: R-WEB-PERF-LATE-GAME-LAG-HUD-Q2
+GOAL: refreshFog/updateHud/granice >=5x lub poza sciezka interakcji; endTurn zmierzony i zredukowany. NIE SPELNIONE.
+
+WERYFIKACJA WLASNA (detached 733b4d4f6, npm ci --ignore-scripts, node_modules usuniete po pracy):
+- tsc --noEmit EXIT=0; small-part-lod 24/0; perf-hud-q2 23/0; perf-sibling-memo 13/0; closure-contract 16/0; territory-border 9/0 (uruchomione przeze mnie).
+- ai-test 274/20 EXIT=1 wg logu gate-r4-ai-test.txt (te same FAIL co baza; nie powtarzalem). Logi *fog*/*visib*/*path*/*move* w evidence/gate-r4-* (river-fog-visibility 31/0, ai-move-range 46/0 itd.); ai-fog-test EXIT=1 jak baza R2.
+- Diff 756f1fc8e..733b4d4f6 poza gra/src (main.ts, render/units.ts, cities.ts, smallPartLod.ts), gra/tools i runs/<ID>: brak. Allowlista OK; gra-robocza/WERSJE.md/rust-port/src-tauri/battle/gra/data nietkniete.
+- Przeglad diffu R3->R4: throttle cienia wycofany (stan sprzed R3; problem cienia po animacji znika); LOD: cache promienia usuniety, podpis korzeni (nVisible+id+scale) w kluczu, restoreHidden zapomina odpiete mesze, wersja rosnie przy usunieciu tokenu/modelu, jednorazowy iterator obsluzony; osobne instancje SmallPartLod, stopAt=scene — spojne.
+
+ROZSTRZYGNIECIE ZARZUTOW:
+1. GOAL niespelniony (refreshFog 3,9-4,4x; buildHudState 16/klik, 105 na 15xrefreshFog) — NAPRAW. Pomiar R4: refreshFog 231,8 ms/call, z czego refreshD1bHud 113,9 ms (polowa) i syncUnitsRender 16 ms — dominujacy, ruszalny koszt JS.
+2. Pominiete (c)(d)(e) i redukcja endTurn — NAPRAW: (c) koalescencja buildHudState (wersja stanu/rAF za flaga) albo pomiarowy dowod duplikatow; (d) refreshD1bHud / empireTerritoryResourceRatesForOwner z kluczem zawartosciowym; (e) zasiew historii i skalowanie z numerem tury (NIE_ZMIERZONO); endTurn: pickResourceTradeRelOffer 2,0 s (mergedResourceRatesForOwner) i runAiPhase 6,2 s zmierzone, nie zredukowane (memo tylko z kluczem zawartosciowym, bez zmiany determinizmu AI). (f) — ODDAL: closure-contract 16/0 + perf-hud-q2 (ograniczenie: test zrodlowy, nie wykonawczy).
+3. Rygor pomiaru — ODDAL: 3 przebiegi x PERF_REPEAT=7, min/mediana/max podane, wniosek 'plynne' cofniety; brak bazy dla wejscia do miasta/panelu oznaczony NIE_ZMIERZONO.
+4. Throttle cienia — ODDAL (wycofany; rafProbe: 0,8-2,2 s/klatke niezaleznie od zaznaczenia = rasteryzacja SwiftShader). Ruch/wybor ~1,5 s/klatke nie do zbicia w JS w tym srodowisku; koszt na realnym GPU NIE_ZMIERZONO.
+5. LOD, 4 punkty — ODDAL (naprawione, test 24/0). Zalozenie 'gra nie przelacza visible dzieci tokenow' niezweryfikowane grepem calosci — uwaga dla R5.
+6. Brak oceny wizualnej LOD — NAPRAW (maly): zrzuty far/near przy progu 3 px (dowod wizualny wymagany, R-PROC-AUTOBOT §9). Redukcja calli na typowym zoomie (dist 40: 3,9-4,7 tys.) NIE_ZMIERZONO, nie wymagana.
+7. Allowlista/bramki — ODDAL (zweryfikowane).
+
+Wniosek: >=1 NAPRAW => FAIL. Brak DO DECYZJI CZLOWIEKA.
+
+RUNDY: 4/5. R5 jest OSTATNIA; bez PASS -> LIMIT-5-EXCEEDED / DECISION_REQUIRED u orkiestratora (ABC: przyjac stan z udokumentowanym brakiem 5x wobec limitu SwiftShader albo kontynuowac).
+SHA DO INTEGRACJI: BRAK (FAIL). Gdy PASS: lancuch claude/perf2-r3 (4504dbd24) -> claude/perf2-r4 (733b4d4f6) + R5; zmiany tylko w gra/ i runs/, bez kolizji z rust-port. origin/rust-port/parity-v2 (b520768b0) nie jest przodkiem tej galezi; kolejnosc dowolna, brak zaleznosci; przed integracja merge origin/main (16 commitow przed).
+NASTEPNY KROK: Operator R5 (ten sam ID): (c)(d)(e), endTurn, zrzuty far/near LOD, >=7 przebiegow z load avg.
+DEPLOY/PUSH: NIE WYKONANO
