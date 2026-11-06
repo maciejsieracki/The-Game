@@ -703,7 +703,7 @@ import {
   type QualityTier,
 } from './map/newGameMapDefaults';
 import { buildStyledResourceOverlay } from './render/styleResources';
-import { collapseToMergedMesh, countMeshesInGroup, disposeMergedDecor } from './render/mergeDecor';
+import { collapseToMergedMesh, countMeshesInGroup, disposeMergedDecor, releaseMergedDecorCpuArraysAfterUpload, mergedDecorCpuArraysReleased } from './render/mergeDecor';
 import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
@@ -3162,6 +3162,25 @@ async function boot(): Promise<void> {
         const bri = fogBrightnessForHex(hexKey, vis, exploredKeys, true);
         applyFogDimToObject3D(group, bri);
       }
+    }
+
+    /** R2 (test-only odczyt): mnożnik mgły materiału grupy = color / fogBaseColor (kanał o największej bazie);
+     *  null = grupa nigdy nie przyciemniana (brak fogBaseColor, czyli pełna jasność). */
+    function improvementMeshDimFactor(root: THREE.Object3D): number | null {
+      let factor: number | null = null;
+      root.traverse((obj) => {
+        if (factor !== null) return;
+        const mesh = obj as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        for (const mat of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+          const base = (mat as THREE.Material | undefined)?.userData?.fogBaseColor as THREE.Color | undefined;
+          const col = (mat as THREE.MeshLambertMaterial | undefined)?.color;
+          if (!base || !col) continue;
+          const ch = base.r >= base.g && base.r >= base.b ? 'r' : base.g >= base.b ? 'g' : 'b';
+          if (base[ch] > 0) { factor = col[ch] / base[ch]; return; }
+        }
+      });
+      return factor;
     }
 
     /** Meshe ulepszeń / hodowli złoże (spawnImprovementMesh) — ta sama mgła co resourceOverlays. */
@@ -14838,6 +14857,32 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1: meshe ulepszeń nie trzymają kopii CPU geometrii
+     * (releaseMergedDecorCpuArraysAfterUpload). Po odzyskaniu utraconego kontekstu WebGL three.js
+     * wgrywa bufory od nowa z `array`, więc przebudowujemy je z `placedImprovements` (tak jak przy
+     * wczytaniu zapisu). / EN: rebuild improvement meshes after a WebGL context restore.
+     */
+    function rebuildImprovementMeshesAfterContextRestore(): void {
+      bulkImprovementRebuild = true;
+      try { for (const hexKey of [...improvementMeshes.keys()]) spawnImprovementMesh(hexKey); }
+      finally { bulkImprovementRebuild = false; }
+      // R2 (Evaluator Z1): nowe grupy mają domyślnie visible=true i pełną jasność — bez tego ulepszenia
+      // na nieodkrytych heksach wychodziły spod mgły do następnego refreshFog. Celowo NIE refreshFog():
+      // ten ma skutki stanu gry (odkrycia dyplomatyczne, kontakty, edukacja weteranów), a utrata
+      // kontekstu GPU nie może ich wywołać. / EN: re-apply fog to rebuilt meshes, render-only.
+      const fogSets = improvementFogViewSets();
+      if (fogSets) syncImprovementMeshFog(fogSets.vis, fogSets.explored);
+    }
+    /** Te same zbiory widoczny/odkryty, z których refreshFog stosuje mgłę do meshy ulepszeń (bez mutacji
+     *  stanu). null = galeria (refreshFog też wtedy nic nie robi). */
+    function improvementFogViewSets(): { vis: Set<string>; explored: Set<string> } | null {
+      if (galleryOn) return null;
+      if (fogOn || revealAllLand) return { vis: currentVisible(), explored: fogExploredForRender() };
+      return { vis: ALL_KEYS, explored: ALL_KEYS };
+    }
+    canvas.addEventListener('webglcontextrestored', rebuildImprovementMeshesAfterContextRestore);
+
+    /**
      * Regula 1/3 (Maciej 2026-08-09): rejestruje nowo postawiony Fort/Posterunek
      * w `fortNodes`. Kontestacja ustalana RAZ, w chwili budowy — hex juz
      * zarezerwowany (w promieniu) przez CUDZY, nie-skontestowany fort/posterunek
@@ -15895,6 +15940,8 @@ async function boot(): Promise<void> {
         const ter = buildTarasy(tv); ter.rotation.y = rotY; g.add(ter);       // schodkowe półki opasujące stok
       }
       collapseToMergedMesh(g); // FPS lewar 1: setki boxów (zwierzęta/budynki) → 1 mesh; vertex colors zachowane
+      // R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1: kopia CPU geometrii zwalniana po uploadzie (≈48 KB/heks; główne źródło wzrostu pamięci).
+      releaseMergedDecorCpuArraysAfterUpload(g);
       const wp = axialToWorld(q, r, HEX_R);
       g.position.set(wp.x, improvementMeshPlacement(q, r, layers), wp.z);
       // (skala 0.5 usunięta — buildImprovementSectored skaluje per sektor do SECTOR_SCALE)
@@ -26237,6 +26284,69 @@ async function boot(): Promise<void> {
         syncHexUlepszenieFields(hexKey, nextLayers);
         registerFortNodeIfNeeded(key, q, r, ownerId);
         spawnImprovementMesh(hexKey);
+      },
+      // R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1 (tools/memory-growth-improvement-cpu-release-test.cjs): odczyt
+      // meshu ulepszenia (bez mutacji) + symulacja utraty/odzyskania kontekstu WebGL (WEBGL_lose_context).
+      improvementMeshInfo: (q: number, r: number) => {
+        const g = improvementMeshes.get(keyOf(q, r));
+        if (!g) return null;
+        const m = g.children[0] as THREE.Mesh | undefined;
+        const geo = m?.geometry as THREE.BufferGeometry | undefined;
+        return {
+          uuid: g.uuid, inScene: g.parent === scene, released: mergedDecorCpuArraysReleased(g),
+          vertexCount: geo?.getAttribute('position')?.count ?? 0,
+          hasBoundingSphere: !!geo?.boundingSphere, sphereRadius: geo?.boundingSphere?.radius ?? 0,
+          // R2 (Evaluator Z1): stan mgły grupy — widoczność + mnożnik jasności materiału (color / fogBaseColor).
+          visible: g.visible, fogDim: improvementMeshDimFactor(g),
+        };
+      },
+      // R2 (Evaluator Z1): rozbieżności stanu mgły WSZYSTKICH meshy ulepszeń względem tego, co ustawiłby
+      // refreshFog dla bieżącego stanu (te same zbiory, bez mutacji). [] = zgodne.
+      improvementFogMismatches: (): Array<{ hexKey: string; wantVisible: boolean; visible: boolean; wantDim: number; dim: number | null }> => {
+        const sets = improvementFogViewSets();
+        if (!sets) return [];
+        const out: Array<{ hexKey: string; wantVisible: boolean; visible: boolean; wantDim: number; dim: number | null }> = [];
+        for (const [hexKey, g] of improvementMeshes) {
+          const wantVisible = sets.vis.has(hexKey) || sets.explored.has(hexKey);
+          const wantDim = wantVisible ? fogBrightnessForHex(hexKey, sets.vis, sets.explored, true) : 0;
+          const dim = improvementMeshDimFactor(g);
+          const dimOk = !wantVisible || (dim !== null ? Math.abs(dim - wantDim) < 1e-3 : wantDim === 1);
+          if (g.visible !== wantVisible || !dimOk) out.push({ hexKey, wantVisible, visible: g.visible, wantDim, dim });
+        }
+        return out;
+      },
+      // R2 (Evaluator Z1): heks lądowy w odległości d od (cq,cr) bez ulepszenia, NIEwidoczny i NIEodkryty.
+      farUnexploredLandHex: (cq: number, cr: number, d: number): { q: number; r: number } | null => {
+        const vis = currentVisible();
+        for (const k of Object.keys(map.hexes)) {
+          const [a, b] = k.split(','); const q = Number(a); const r = Number(b);
+          const h = map.hexes[k]!;
+          if (hexDistance(q, r, cq, cr) !== d || isWaterTerrain(h.terenBazowy) || h.terenBazowy === TerenBazowy.Gory) continue;
+          if (placedImprovements.has(k) || vis.has(k) || explored.has(k) || cities.some(c => c.q === q && c.r === r)) continue;
+          return { q, r };
+        }
+        return null;
+      },
+      // R2: test-only — oznacza heks jako odkryty (bez widoczności) i stosuje mgłę jak w grze.
+      markExploredAndRefreshFog: (q: number, r: number): void => { explored.add(keyOf(q, r)); refreshFog(); },
+      refreshFogNow: (): void => refreshFog(),
+      nearLandHexWithoutImprovement: (cq: number, cr: number, d: number): { q: number; r: number } | null => {
+        for (const k of Object.keys(map.hexes)) {
+          const [a, b] = k.split(','); const q = Number(a); const r = Number(b);
+          const h = map.hexes[k]!;
+          if (hexDistance(q, r, cq, cr) !== d || isWaterTerrain(h.terenBazowy) || h.terenBazowy === TerenBazowy.Gory) continue;
+          if (placedImprovements.has(k) || cities.some(c => c.q === q && c.r === r)) continue;
+          return { q, r };
+        }
+        return null;
+      },
+      glLoseContext: (lose: boolean): boolean => {
+        // Rozszerzenie trzeba złapać PRZED utratą kontekstu (getExtension zwraca wtedy null).
+        const w = window as unknown as { __civLoseCtxExt?: WEBGL_lose_context | null };
+        const ext = w.__civLoseCtxExt ??= renderer.getContext().getExtension('WEBGL_lose_context');
+        if (!ext) return false;
+        if (lose) ext.loseContext(); else ext.restoreContext();
+        return true;
       },
       ownerAt: (q: number, r: number): number | null => territoryOwnerAtLive(q, r),
       // R3: hak testowy zdobycia fortu (Q-A) i kolejnosci (Q-B) — te same REALNE funkcje co gra.
