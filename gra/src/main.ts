@@ -1967,6 +1967,8 @@ async function boot(): Promise<void> {
     // odswiezamy cien animowanej figurki nie czesciej niz co `cost` ms (<= 500 ms): max ~50% czasu w shadow pass.
     let shadowAnimLastAt = 0;
     let shadowAnimMinGapMs = 0;
+    /** R4: klatka animacji pominęła shadow pass (throttle) - po końcu animacji wymuś ostatnie odświeżenie cienia. */
+    let shadowAnimSkipped = false;
     let hoverKey: string | null = null;
 
     function mapQualityTierFromParams(params: NewGameParams): QualityTier {
@@ -41852,7 +41854,14 @@ async function boot(): Promise<void> {
           renderer.shadowMap.needsUpdate = true;
           shadowAnimLastAt = nowSh;
           shadowTimedAt = nowSh;
+          shadowAnimSkipped = false;
+        } else {
+          shadowAnimSkipped = true;
         }
+      } else if (shadowAnimSkipped) {
+        // koniec animacji: cień figurki musi odpowiadać pozycji końcowej (bez opóźnienia do 500 ms)
+        shadowAnimSkipped = false;
+        renderer.shadowMap.needsUpdate = true;
       }
       renderer.render(scene, camera);
       if (shadowTimedAt > 0) {

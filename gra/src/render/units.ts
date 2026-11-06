@@ -6082,6 +6082,7 @@ export class UnitRenderer {
         ) {
           this.scene.remove(obj);
           this._disposeToken(unit.id, obj);
+          this.lodTokensVersion++;
           this.tokens.delete(unit.id);
           this.tokenMaterials.delete(unit.id);
           this.tokenGeos.delete(unit.id);
@@ -6191,6 +6192,7 @@ export class UnitRenderer {
       if (!presentIds.has(id)) {
         this.scene.remove(obj);
         this._disposeToken(id, obj);
+        this.lodTokensVersion++;
         this.tokens.delete(id);
         this.tokenMaterials.delete(id);
         this.tokenGeos.delete(id);

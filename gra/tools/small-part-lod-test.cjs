@@ -101,6 +101,43 @@ try {
   lod.apply(roots, scene, 5, 316, FOV, VH, 3);
   lod.reset();
   check('reset() restores and forgets key', lod.hiddenCount === 0 && t1.small.visible === true);
+
+  // --- R4: poprawnosc (zarzut 5) ---
+  const lod2 = new SmallPartLod();
+  const tA = makeToken(); const tB = makeToken();
+  // (1) zmiana skali figurki (wejscie do miasta) bez zmiany zoomu/version -> przeliczenie
+  tA.g.scale.setScalar(0.01);
+  lod2.apply([tA.g], scene, 1, 40, FOV, VH, 3);   // dist 40: world/px~0.033, cutoff~0.1; big 1.0*0.1=0.1... 
+  const bigHiddenSmall = tA.big.visible === false;
+  tA.g.scale.setScalar(1);
+  lod2.apply([tA.g], scene, 1, 40, FOV, VH, 3);
+  check('scale change of root (enter city) re-evaluates: big mesh visible again', tA.big.visible === true && bigHiddenSmall, 'hiddenAtSmallScale=' + bigHiddenSmall);
+  // (2) korzen odslaniany (mgla/stos) bez zmiany zoomu/version -> LOD stosowany
+  tB.g.visible = false;
+  lod2.apply([tA.g, tB.g], scene, 1, 316, FOV, VH, 3);
+  check('hidden root untouched while hidden', tB.small.visible === true);
+  tB.g.visible = true;
+  lod2.apply([tA.g, tB.g], scene, 1, 316, FOV, VH, 3);
+  check('root revealed later (fog/stack) gets LOD without zoom/version change', tB.small.visible === false);
+  // (3) model usuniety ze sceny: zbior hidden nie trzyma referencji i nie dotyka odpietych meshy
+  scene.remove(tB.g);
+  lod2.apply([tA.g], scene, 2, 316, FOV, VH, 3);
+  check('removed model dropped from hidden set (no leak)', lod2.hiddenCount === 1, 'got ' + lod2.hiddenCount);
+  check('detached mesh not touched on restore', tB.small.visible === false);
+  // --- R4: roots jako jednorazowy iterator (Map.values() jak w units.ts/cities.ts) ---
+  const lod3 = new SmallPartLod();
+  const tM = makeToken(); const tmap = new Map([['a', tM.g]]);
+  lod3.apply(tmap.values(), scene, 1, 316, FOV, VH, 3);
+  check('single-use iterator (Map.values()) is fully processed', tM.small.visible === false && lod3.hiddenCount === 1, 'hidden=' + lod3.hiddenCount);
+  lod3.apply(tmap.values(), scene, 1, 5, FOV, VH, 3);
+  check('single-use iterator: zoom in restores', tM.small.visible === true && lod3.hiddenCount === 0);
+  // scena jako Group podpieta pod inny rodzic (stopAt != korzen drzewa)
+  const outer = new THREE.Scene(); const inner = new THREE.Group(); outer.add(inner);
+  const tI = makeToken(); inner.add(tI.g);
+  const lod4 = new SmallPartLod();
+  lod4.apply([tI.g], inner, 1, 316, FOV, VH, 3);
+  lod4.apply([tI.g], inner, 1, 5, FOV, VH, 3);
+  check('stopAt being a nested group still restores', tI.small.visible === true && lod4.hiddenCount === 0);
 } finally {
   try { fs.unlinkSync(entry); } catch {}
   try { fs.unlinkSync(bundle); } catch {}

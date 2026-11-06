@@ -548,6 +548,7 @@ export class CityRenderer {
         this.scene.remove(grp);
         staleMats = this.modelMaterials.get(city.id) ?? [];
         staleGeos = this.modelGeos.get(city.id) ?? [];
+        this.lodModelsVersion++;
         this.models.delete(city.id);
         this.modelMaterials.delete(city.id);
         this.modelGeos.delete(city.id);
@@ -594,6 +595,7 @@ export class CityRenderer {
         this._removeMapOutline(id);
         this.scene.remove(grp);
         this._disposeModel(id);
+        this.lodModelsVersion++;
         this.models.delete(id);
         this.modelMaterials.delete(id);
         this.modelGeos.delete(id);
