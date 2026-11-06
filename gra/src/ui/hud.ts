@@ -12,6 +12,7 @@
  * LANE: src/ui/*.  Pokazanie + onEndTurn wpina MASTER (main.ts).
  */
 
+import { createStateFrame } from '../game/frame-memo';
 import {
   createMinimapHud,
   setMinimapTurnLabel,
@@ -2101,26 +2102,17 @@ export function showHud(config: HudConfig): void {
  * stanu gry, więc w obrębie jednego synchronicznego `updateHud()` wystarczy JEDNA migawka.
  * Poza `updateHud()` (zdarzenia, timery) każdy odczyt dalej woła `getState()` świeżo.
  */
-let hudStateFrame: HudState | null = null;
-let hudStateFrameActive = false;
-function hudStateSnapshot(): HudState {
-  if (!hudStateFrameActive) return cfg!.getState();
-  if (hudStateFrame === null) hudStateFrame = cfg!.getState();
-  return hudStateFrame;
-}
+const hudFrame = createStateFrame<HudState>(() => cfg!.getState());
+function hudStateSnapshot(): HudState { return hudFrame.snapshot(); }
 
 export function updateHud(): void {
-  const outer = hudStateFrameActive;
-  if (!outer) { hudStateFrameActive = true; hudStateFrame = null; }
-  try {
+  hudFrame.run(() => {
     renderBar();
     refreshMinimap();
     refreshSidePanel();
     refreshD1BModules();
     refreshContextPanel();
-  } finally {
-    if (!outer) { hudStateFrameActive = false; hudStateFrame = null; }
-  }
+  });
 }
 
 /** Ukryj HUD. */

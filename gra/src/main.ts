@@ -732,6 +732,7 @@ import {
 } from './game/battle-summary';
 import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
 import { showHud, updateHud as refreshD1bHudRaw, hideHud, markMinimapDirty } from './ui/hud';
+import { createScopeMemo } from './game/frame-memo';
 import {
   createCityListHud,
   hideCityListHud,
@@ -3325,25 +3326,15 @@ async function boot(): Promise<void> {
      * (zakres). Wewnątrz `withOwnerScopeMemo` stan świata (cities/cityBuilt/placedImprovements/
      * mapa) NIE jest mutowany przez wołaną funkcję czytającą, więc wyniki funkcji wyliczanych
      * per właściciel (a wołanych per miasto → O(miasta²)) są identyczne dla całego zakresu.
-     * Poza zakresem (`ownerScopeMemo === null`) zachowanie jest dokładnie dotychczasowe.
+     * Poza zakresem (poza `ownerScope.run`) zachowanie jest dokładnie dotychczasowe.
      * Zwracane kolekcje są kopiowane, więc żaden wołający nie może zanieczyścić wpisu.
      */
-    let ownerScopeMemo: Map<string, unknown> | null = null;
-    function withOwnerScopeMemo<T>(fn: () => T): T {
-      if (ownerScopeMemo !== null) return fn();
-      ownerScopeMemo = new Map();
-      try { return fn(); } finally { ownerScopeMemo = null; }
-    }
+    const ownerScope = createScopeMemo();
+    function withOwnerScopeMemo<T>(fn: () => T): T { return ownerScope.run(fn); }
 
     /** Union budynków imperium (dowolne miasto ownerId) — bramka badań T-TECH-7. */
     function empireBuiltIdsForOwner(ownerId: number): Set<string> {
-      if (ownerScopeMemo !== null) {
-        const k = 'built:' + ownerId;
-        let hit = ownerScopeMemo.get(k) as Set<string> | undefined;
-        if (hit === undefined) { hit = empireBuiltIdsForOwnerRaw(ownerId); ownerScopeMemo.set(k, hit); }
-        return new Set(hit);
-      }
-      return empireBuiltIdsForOwnerRaw(ownerId);
+      return ownerScope.cached('built:' + ownerId, () => empireBuiltIdsForOwnerRaw(ownerId), v => new Set(v));
     }
     function empireBuiltIdsForOwnerRaw(ownerId: number): Set<string> {
       const ids = new Set<string>();
@@ -3357,13 +3348,7 @@ async function boot(): Promise<void> {
 
     /** Union aktywnych etykiet surowców imperium — bramki epok B-SUROW-BUD. */
     function empireActiveResourceLabelsForOwner(ownerId: number): string[] {
-      if (ownerScopeMemo !== null) {
-        const k = 'labels:' + ownerId;
-        let hit = ownerScopeMemo.get(k) as string[] | undefined;
-        if (hit === undefined) { hit = empireActiveResourceLabelsForOwnerRaw(ownerId); ownerScopeMemo.set(k, hit); }
-        return [...hit];
-      }
-      return empireActiveResourceLabelsForOwnerRaw(ownerId);
+      return ownerScope.cached('labels:' + ownerId, () => empireActiveResourceLabelsForOwnerRaw(ownerId), v => [...v]);
     }
     function empireActiveResourceLabelsForOwnerRaw(ownerId: number): string[] {
       const labels = new Set<string>();
@@ -5286,13 +5271,7 @@ async function boot(): Promise<void> {
      * przez territoryOwnerAt — ta sama logika co isPlayerTerritoryHex/enrichBorderMarchPairsWithMilitary.
      */
     function placedImprovementsForOwner(ownerId: number): Map<string, PlacedLayers> {
-      if (ownerScopeMemo !== null) {
-        const k = 'placed:' + ownerId;
-        let hit = ownerScopeMemo.get(k) as Map<string, PlacedLayers> | undefined;
-        if (hit === undefined) { hit = placedImprovementsForOwnerRaw(ownerId); ownerScopeMemo.set(k, hit); }
-        return new Map(hit);
-      }
-      return placedImprovementsForOwnerRaw(ownerId);
+      return ownerScope.cached('placed:' + ownerId, () => placedImprovementsForOwnerRaw(ownerId), v => new Map(v));
     }
     function placedImprovementsForOwnerRaw(ownerId: number): Map<string, PlacedLayers> {
       const nodes = buildAllTerritoryNodes();
