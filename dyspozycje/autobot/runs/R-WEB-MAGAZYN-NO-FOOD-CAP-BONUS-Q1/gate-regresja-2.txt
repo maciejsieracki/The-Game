@@ -1,0 +1,14 @@
+ai-test.cjs EXIT=1 ::   FAIL: T4S-d: mnoznik=1.5 effAgresja=0.6 >= 0.5 -> wypowiedz_wojne; got: [] |   FAIL: T10b: zaproponuj_handel po odkryciu; got: []
+upkeep-test.cjs EXIT=0 :: upkeep-test: 73 passed, 0 failed
+citizen-resource-upkeep-test.cjs EXIT=1 :: FAIL: main.ts: kotwica "const ordPctRaw = evaluateOrderFromBreakdown(" znaleziona (po stripLineComments) | FAIL: F1 (mutant 1): "citizenResourceHappinessDelta: citizenUpkeep.happinessDelta," obecne w oknie wywołania evaluateOrderFromBreakdown -- jako ŻYWY kod (nie w komentarzu)
+unit-resource-upkeep-test.cjs EXIT=1 :: FAIL: Włócznik unitStockCost -> {braz:10} (stara baza ×5) (got {"braz":50}, want {"braz":10}) | FAIL: 2× Włócznik -> {braz:4} (got {"braz":20}, want {"braz":4})
+population-growth-v85-test.cjs EXIT=0 :: population-growth-v85-test: 50 passed, 0 failed
+okolica-multi-city-overlap-test.cjs EXIT=0 ::  | OKOLICA-MULTI-CITY-OVERLAP OK (55/55)
+city-state-mp-growth-test.cjs EXIT=0 ::  | === city-state-mp-growth-test: 9 passed, 0 failed ===
+autowyzywienie-rowny-wzrost-test.cjs EXIT=0 ::  | autowyzywienie-rowny-wzrost: 60/60
+ai-major-economy-test.cjs EXIT=1 ::  | Node.js v22.22.0
+population-civ-matrix-wiring-test.cjs EXIT=0 :: --- main wiring and no legacy duplicate --- | population Matrix wiring: 122 passed, 0 failed
+siege-starvation-test.cjs EXIT=0 ::   [OK] Trudny: PRZED 5 ticków -> PO 10 | RESULT pass=54 fail=0
+warehouse-state-cap-20pct-test.cjs EXIT=0 ::  | warehouse-state-cap-20pct-test: 56 passed, 0 failed
+surow-civ-storage-test.cjs EXIT=1 :: FAIL: main.ts:~21045 wywołanie w pętli wyrębu PRZEKAZUJE 5. argument (cap) do creditOwnerResourceStock -- bez niego Drewno rośnie bez ograniczenia mimo pełnego magazynu (regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO) | FAIL: main.ts: drewnoCap liczony przez ownerResourceCap(cities, cityBuilt,
+owner-economy-test.cjs EXIT=0 ::  | 20 passed, 0 failed
