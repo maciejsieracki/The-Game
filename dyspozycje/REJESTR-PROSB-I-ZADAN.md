@@ -8820,3 +8820,5 @@ Obowiązuje: Operator = Haiku 5.5; Obrona = ZAWSZE Haiku 5.5; Evaluator i Final 
 ## 2026-11-06 — FALA 522 (318c6ecdb): LONGRUN-100 — przyczyna spowolnienia po t.60–80 = granty surowców tras (memo). Drugi hotspot → R-WEB-PERF-PLACED-IMPROVEMENTS-CACHE-Q1 (Operator Sonnet uzasadniony: profilowanie/inwalidacja cache).
 
 ## 2026-11-06 — ZGŁOSZENIE/POLECENIE: pamięć rośnie liniowo ~3,1 MB/turę (312→625 MB w 100 turach) — rozpoznać przyczynę, zminimalizować. Temat R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1. DECYZJA WŁAŚCICIELA: Operator/Obrona Opus 5.5 (effort medium) — wyjątek od polityki modeli (Haiku) na wyraźne polecenie.
+
+## 2026-11-06 — FALA 524 (ea9c14daf): pamięć — przyczyna wzrostu ustalona (bufory geometrii scalonych meshy ulepszeń), t.100 573→444 MB. Kolejny temat R-WEB-MEMORY-STATIC-FOOTPRINT-Q1 (bundle ASCII −71 MB, modele jednostek/miast −50…60 MB); wszystkie etapy Opus 5.5 (decyzja właściciela).
