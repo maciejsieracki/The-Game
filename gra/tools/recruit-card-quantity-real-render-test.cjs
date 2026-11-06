@@ -252,8 +252,12 @@ async function main() {
         afterBatchAttempt.state?.gold === 70 && afterBatchAttempt.state?.manpower === 70
           && afterBatchAttempt.state?.stock === 97,
         afterBatchAttempt);
-      check('po potwierdzeniu batchu licznik resetuje się do 1',
-        afterBatchAttempt.quantity === 1 && afterBatchAttempt.rowQuantity === '1', afterBatchAttempt);
+      // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1 (część A, prośba właściciela 2026-11-05): licznik NIE zeruje się
+      // po „Rekrutuj” (zmiana kontraktu: wcześniej reset do 1). Gracz sam obniża go do 1 przed kolejnym zakupem.
+      check('po potwierdzeniu batchu licznik zostaje bez zmian (3)',
+        afterBatchAttempt.quantity === 3 && afterBatchAttempt.rowQuantity === '3', afterBatchAttempt);
+      await minus.click();
+      await minus.click();
       await submit.click();
       const afterConfirm = await inspect();
       check('legalne potwierdzenie 1 jednostki wywołuje callback dokładnie raz',

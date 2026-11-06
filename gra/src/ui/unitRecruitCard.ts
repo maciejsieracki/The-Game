@@ -147,6 +147,13 @@ export interface UnitRecruitCardOpts {
    * To wyłącznie sufit kontrolek UI — nie rezerwuje kosztu.
    */
   maxQuantity?: number;
+  /**
+   * R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1 (część A): zapamiętana liczba tego typu (przeżywa przebudowę
+   * panelu po „Rekrutuj”, który odtwarza wszystkie wiersze). Domyślnie 1.
+   */
+  initialQuantity?: number;
+  /** Wywoływane przy każdej zmianie licznika przez gracza (+/−/pole) — do zapamiętania per miasto+typ. */
+  onQuantityChange?: (quantity: number) => void;
   /** Zatwierdza draft liczby; `false` oznacza odrzucenie przez backend. */
   onRecruit: (quantity: number) => boolean | void;
 }
@@ -323,7 +330,11 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   // Submit pozostaje pierwszym przyciskiem w akcji; licznik jest jego sąsiednią kontrolką.
   actions.appendChild(quantityWrap);
 
-  let quantity = 1;
+  // Licznik jest niezależny per typ i NIE resetuje się po „Rekrutuj” (prośba właściciela 2026-11-05).
+  let quantity = Number.isFinite(opts.initialQuantity)
+    ? Math.min(maxQuantity, Math.max(1, Math.round(opts.initialQuantity as number)))
+    : 1;
+  quantityInput.value = String(quantity);
   const syncQuantityControls = (): void => {
     row.dataset.recruitQuantity = String(quantity);
     minus.disabled = !canBuy || quantity <= 1;
@@ -344,6 +355,7 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
       ? Math.min(maxQuantity, Math.max(1, Math.round(next)))
       : 1;
     quantityInput.value = String(quantity);
+    opts.onQuantityChange?.(quantity);
     syncQuantityControls();
   };
   minus.addEventListener('click', (ev) => {
@@ -363,8 +375,7 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   btn.addEventListener('click', (ev) => {
     ev.stopPropagation();
     if (canBuy) {
-      const accepted = onRecruit(quantity);
-      if (accepted !== false) setQuantity(1);
+      onRecruit(quantity); // licznik zostaje bez zmian (nie zerujemy ani tego, ani innych typów)
     }
   });
   syncQuantityControls();
