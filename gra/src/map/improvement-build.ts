@@ -893,11 +893,23 @@ function hexNeighbors(q: number, r: number): Array<{ q: number; r: number }> {
   ];
 }
 
+// R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: zbior heksow rzeki zalezy tylko od map.riverPaths (statyczne po
+// generacji mapy), a byl budowany od zera przy KAZDYM isHexNearRiver bez podanego zbioru (np. raz na
+// miasto przy kazdym odswiezeniu HUD). Pamiec podreczna po obiekcie mapy; klucz kontrolny = referencja
+// tablicy sciezek + liczba sciezek + laczna liczba punktow (zmiana zawartosci uniewaznia wpis).
+// Zwracany Set jest wspolny — wolajacy go tylko czytaja (isHexNearRiver, auto-improvements).
+const _riverHexSetCache = new WeakMap<GameMap, { paths: unknown; n: number; pts: number; set: Set<string> }>();
 export function buildRiverHexSet(map: GameMap): Set<string> {
+  const paths = map.riverPaths;
+  let pts = 0;
+  for (const path of paths) pts += path.length;
+  const hit = _riverHexSetCache.get(map);
+  if (hit && hit.paths === paths && hit.n === paths.length && hit.pts === pts) return hit.set;
   const set = new Set<string>();
-  for (const path of map.riverPaths) {
+  for (const path of paths) {
     for (const p of path) set.add(`${p.q},${p.r}`);
   }
+  _riverHexSetCache.set(map, { paths, n: paths.length, pts, set });
   return set;
 }
 

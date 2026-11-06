@@ -1,0 +1,1114 @@
+{
+  "build": {
+    "reused": "/tmp/claude-0/perfq2-base",
+    "gitHead": "4905bac052e77cbd104b9794b304a87d8f3c9b65"
+  },
+  "scenarios": {
+    "select-unit-click": {
+      "label": "select-unit-click",
+      "wallMs": 12078,
+      "handlerMs": [
+        1397.7,
+        931.4,
+        0.1
+      ],
+      "handlerP50": 931.4,
+      "handlerP95": 1397.7,
+      "handlerMax": 1397.7,
+      "longTasks": [
+        54,
+        91,
+        1410,
+        1536,
+        936,
+        756,
+        2421
+      ],
+      "longTasksOver200": 5,
+      "profile": {
+        "totalMs": 13318.6,
+        "top": [
+          {
+            "fn": "(idle) :0",
+            "selfMs": 4685.8,
+            "pct": 35.2
+          },
+          {
+            "fn": "getProgramInfoLog :0",
+            "selfMs": 2116.5,
+            "pct": 15.9
+          },
+          {
+            "fn": "(program) :0",
+            "selfMs": 1328.8,
+            "pct": 10
+          },
+          {
+            "fn": "hexKeysWithinRadius ?playtest=stress:70121",
+            "selfMs": 801.7,
+            "pct": 6
+          },
+          {
+            "fn": "collectDepositPotential ?playtest=stress:128898",
+            "selfMs": 527,
+            "pct": 4
+          },
+          {
+            "fn": "placedImprovementsForOwner ?playtest=stress:199538",
+            "selfMs": 383.2,
+            "pct": 2.9
+          },
+          {
+            "fn": "empireActiveResourceLabelsForOwner ?playtest=stress:198311",
+            "selfMs": 303.7,
+            "pct": 2.3
+          },
+          {
+            "fn": "isCivSpecialReplacement ?playtest=stress:61501",
+            "selfMs": 220.4,
+            "pct": 1.7
+          },
+          {
+            "fn": "collectActiveAccess ?playtest=stress:128906",
+            "selfMs": 213.6,
+            "pct": 1.6
+          },
+          {
+            "fn": "buildRiverHexSet ?playtest=stress:128289",
+            "selfMs": 179.2,
+            "pct": 1.3
+          },
+          {
+            "fn": "computePath ?playtest=stress:51925",
+            "selfMs": 175.4,
+            "pct": 1.3
+          },
+          {
+            "fn": "okolicaTiles ?playtest=stress:70160",
+            "selfMs": 132,
+            "pct": 1
+          },
+          {
+            "fn": "computeTerritoryResourceYieldByCity ?playtest=stress:106046",
+            "selfMs": 125.4,
+            "pct": 0.9
+          },
+          {
+            "fn": "reachableWithMergeTargets ?playtest=stress:204426",
+            "selfMs": 102,
+            "pct": 0.8
+          },
+          {
+            "fn": "availableProduction ?playtest=stress:61559",
+            "selfMs": 95.4,
+            "pct": 0.7
+          }
+        ],
+        "inclusive": [
+          {
+            "fn": "renderLoop ?playtest=stress:216218",
+            "inclMs": 4876.6
+          },
+          {
+            "fn": "updateHud ?playtest=stress:146296",
+            "inclMs": 3865.7
+          },
+          {
+            "fn": "collectTurnEvents ?playtest=stress:206979",
+            "inclMs": 2884.6
+          },
+          {
+            "fn": "cityHasActionableProduction ?playtest=stress:206814",
+            "inclMs": 2812.1
+          },
+          {
+            "fn": "WebGLRenderer.render ?playtest=stress:17275",
+            "inclMs": 2522
+          },
+          {
+            "fn": "productionAvailabilityCtxForCity ?playtest=stress:206635",
+            "inclMs": 2498.3
+          },
+          {
+            "fn": "(anon) ?playtest=stress:222080",
+            "inclMs": 2264.8
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "inclMs": 2214.7
+          },
+          {
+            "fn": "setProgram ?playtest=stress:17619",
+            "inclMs": 2177.8
+          },
+          {
+            "fn": "WebGLProgram.getUniforms ?playtest=stress:11950",
+            "inclMs": 2121.6
+          },
+          {
+            "fn": "onFirstUse ?playtest=stress:11906",
+            "inclMs": 2121.3
+          },
+          {
+            "fn": "getProgramInfoLog :0",
+            "inclMs": 2116.5
+          },
+          {
+            "fn": "empireActiveResourceLabelsForOwner ?playtest=stress:198311",
+            "inclMs": 1995
+          },
+          {
+            "fn": "render2 ?playtest=stress:130306",
+            "inclMs": 1955.3
+          },
+          {
+            "fn": "refreshSidePanel ?playtest=stress:146141",
+            "inclMs": 1955.3
+          },
+          {
+            "fn": "refreshD1BModules ?playtest=stress:146186",
+            "inclMs": 1526.8
+          },
+          {
+            "fn": "renderObjects ?playtest=stress:17499",
+            "inclMs": 1520.5
+          },
+          {
+            "fn": "renderScene ?playtest=stress:17420",
+            "inclMs": 1520.5
+          },
+          {
+            "fn": "renderObject ?playtest=stress:17512",
+            "inclMs": 1517
+          },
+          {
+            "fn": "selectPlayerUnit ?playtest=stress:200425",
+            "inclMs": 1332.9
+          },
+          {
+            "fn": "collectDepositPotential ?playtest=stress:128898",
+            "inclMs": 1247.7
+          },
+          {
+            "fn": "render2 ?playtest=stress:130606",
+            "inclMs": 1245
+          },
+          {
+            "fn": "refreshContextPanel ?playtest=stress:146196",
+            "inclMs": 963.4
+          },
+          {
+            "fn": "countBlockingEvents ?playtest=stress:205965",
+            "inclMs": 960.2
+          },
+          {
+            "fn": "getBlockingCount ?playtest=stress:211759",
+            "inclMs": 960.2
+          },
+          {
+            "fn": "refreshFog ?playtest=stress:203976",
+            "inclMs": 929.5
+          },
+          {
+            "fn": "planMarchTo ?playtest=stress:212433",
+            "inclMs": 908.6
+          },
+          {
+            "fn": "buildHudState ?playtest=stress:209040",
+            "inclMs": 904.2
+          },
+          {
+            "fn": "hexKeysWithinRadius ?playtest=stress:70121",
+            "inclMs": 801.7
+          },
+          {
+            "fn": "WebGLShadowMap.render ?playtest=stress:13188",
+            "inclMs": 716.3
+          }
+        ]
+      },
+      "extra": [
+        "perfSeed-0",
+        "perfSeed-0",
+        "perfSeed-0"
+      ]
+    },
+    "unit-move-click": {
+      "label": "unit-move-click",
+      "wallMs": 96601,
+      "handlerMs": [
+        0.1,
+        0,
+        0.1,
+        0,
+        0,
+        0
+      ],
+      "handlerP50": 0,
+      "handlerP95": 0.1,
+      "handlerMax": 0.1,
+      "longTasks": [
+        2731,
+        1562,
+        1541,
+        1909,
+        2456,
+        2223,
+        2481,
+        121,
+        2998,
+        3094,
+        3188,
+        158,
+        2861,
+        3022,
+        2417,
+        2713,
+        2670,
+        4200,
+        2896,
+        3165,
+        3079,
+        3168,
+        3199,
+        2788,
+        2621,
+        2486,
+        2049,
+        1770,
+        1515,
+        1510,
+        2020,
+        2999,
+        2810,
+        2939,
+        3097,
+        3047,
+        2940,
+        2424,
+        2489,
+        2493
+      ],
+      "longTasksOver200": 38,
+      "profile": {
+        "totalMs": 99060.7,
+        "top": [
+          {
+            "fn": "uniformMatrix4fv :0",
+            "selfMs": 64180.8,
+            "pct": 64.8
+          },
+          {
+            "fn": "uniformMatrix3fv :0",
+            "selfMs": 15553.6,
+            "pct": 15.7
+          },
+          {
+            "fn": "drawElements :0",
+            "selfMs": 9462,
+            "pct": 9.6
+          },
+          {
+            "fn": "uniform1f :0",
+            "selfMs": 2522.7,
+            "pct": 2.5
+          },
+          {
+            "fn": "bindVertexArray :0",
+            "selfMs": 1470.8,
+            "pct": 1.5
+          },
+          {
+            "fn": "(idle) :0",
+            "selfMs": 1012.3,
+            "pct": 1
+          },
+          {
+            "fn": "(program) :0",
+            "selfMs": 639.9,
+            "pct": 0.6
+          },
+          {
+            "fn": "updateMatrixWorld ?playtest=stress:4696",
+            "selfMs": 334.4,
+            "pct": 0.3
+          },
+          {
+            "fn": "projectObject ?playtest=stress:17362",
+            "selfMs": 331.7,
+            "pct": 0.3
+          },
+          {
+            "fn": "(garbage collector) :0",
+            "selfMs": 300,
+            "pct": 0.3
+          },
+          {
+            "fn": "multiplyMatrices ?playtest=stress:3698",
+            "selfMs": 272,
+            "pct": 0.3
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "selfMs": 265.6,
+            "pct": 0.3
+          },
+          {
+            "fn": "compose ?playtest=stress:4015",
+            "selfMs": 223.7,
+            "pct": 0.2
+          },
+          {
+            "fn": "copyArray ?playtest=stress:10779",
+            "selfMs": 183.6,
+            "pct": 0.2
+          },
+          {
+            "fn": "renderWycie ?playtest=stress:116218",
+            "selfMs": 145.2,
+            "pct": 0.1
+          }
+        ],
+        "inclusive": [
+          {
+            "fn": "renderLoop ?playtest=stress:216218",
+            "inclMs": 96761.9
+          },
+          {
+            "fn": "WebGLRenderer.render ?playtest=stress:17275",
+            "inclMs": 96754.3
+          },
+          {
+            "fn": "renderScene ?playtest=stress:17420",
+            "inclMs": 95264.4
+          },
+          {
+            "fn": "renderObjects ?playtest=stress:17499",
+            "inclMs": 95250.8
+          },
+          {
+            "fn": "renderObject ?playtest=stress:17512",
+            "inclMs": 95139.4
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "inclMs": 94961
+          },
+          {
+            "fn": "setProgram ?playtest=stress:17619",
+            "inclMs": 83526.8
+          },
+          {
+            "fn": "setValue ?playtest=stress:11325",
+            "inclMs": 80027.6
+          },
+          {
+            "fn": "setValueM4 ?playtest=stress:10881",
+            "inclMs": 64395.2
+          },
+          {
+            "fn": "uniformMatrix4fv :0",
+            "inclMs": 64180.8
+          },
+          {
+            "fn": "setValueM3 ?playtest=stress:10867",
+            "inclMs": 15609.2
+          },
+          {
+            "fn": "uniformMatrix3fv :0",
+            "inclMs": 15553.6
+          },
+          {
+            "fn": "render2 ?playtest=stress:10486",
+            "inclMs": 9469.2
+          },
+          {
+            "fn": "drawElements :0",
+            "inclMs": 9462
+          },
+          {
+            "fn": "upload ?playtest=stress:11333",
+            "inclMs": 2813.6
+          },
+          {
+            "fn": "setValueV1f ?playtest=stress:10795",
+            "inclMs": 2531.1
+          },
+          {
+            "fn": "uniform1f :0",
+            "inclMs": 2522.7
+          },
+          {
+            "fn": "setup ?playtest=stress:8949",
+            "inclMs": 1623.7
+          },
+          {
+            "fn": "bindVertexArrayObject ?playtest=stress:8972",
+            "inclMs": 1473.3
+          },
+          {
+            "fn": "bindVertexArray :0",
+            "inclMs": 1470.8
+          },
+          {
+            "fn": "updateMatrixWorld ?playtest=stress:4696",
+            "inclMs": 817.7
+          },
+          {
+            "fn": "projectObject ?playtest=stress:17362",
+            "inclMs": 593.6
+          },
+          {
+            "fn": "ambTick ?playtest=stress:116917",
+            "inclMs": 319.6
+          },
+          {
+            "fn": "ambSchedule ?playtest=stress:116888",
+            "inclMs": 319.4
+          },
+          {
+            "fn": "renderEvent ?playtest=stress:116432",
+            "inclMs": 312
+          },
+          {
+            "fn": "(garbage collector) :0",
+            "inclMs": 300
+          },
+          {
+            "fn": "updateMatrix ?playtest=stress:4692",
+            "inclMs": 295.4
+          },
+          {
+            "fn": "getProgram ?playtest=stress:17530",
+            "inclMs": 277.5
+          },
+          {
+            "fn": "multiplyMatrices ?playtest=stress:3698",
+            "inclMs": 272
+          },
+          {
+            "fn": "compose ?playtest=stress:4015",
+            "inclMs": 223.7
+          }
+        ]
+      },
+      "extra": [
+        {
+          "c": {
+            "ok": true
+          },
+          "from": [
+            42,
+            22
+          ],
+          "after": [
+            42,
+            22
+          ],
+          "planned": false
+        },
+        {
+          "c": {
+            "ok": true
+          },
+          "from": [
+            41,
+            22
+          ],
+          "after": [
+            41,
+            22
+          ],
+          "planned": false
+        },
+        {
+          "c": {
+            "ok": true
+          },
+          "from": [
+            47,
+            21
+          ],
+          "after": [
+            47,
+            21
+          ],
+          "planned": false
+        }
+      ]
+    },
+    "unit-enter-city-click": {
+      "label": "unit-enter-city-click",
+      "wallMs": 104677,
+      "handlerMs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "handlerP50": 0,
+      "handlerP95": 0,
+      "handlerMax": 0,
+      "longTasks": [
+        1931,
+        2754,
+        2298,
+        2269,
+        2055,
+        2008,
+        2113,
+        2096,
+        2015,
+        2507,
+        2223,
+        2612,
+        2233,
+        2651,
+        2384,
+        2403,
+        2203,
+        2303,
+        2016,
+        2023,
+        2001,
+        1606,
+        1284,
+        1348,
+        1382,
+        1868,
+        1942,
+        2698,
+        2955,
+        2586,
+        2545,
+        2733,
+        2413,
+        2092,
+        2138,
+        1992,
+        2741,
+        2808,
+        2401,
+        2917,
+        2367,
+        2529,
+        2923,
+        2593,
+        2807,
+        3070,
+        2724,
+        2744,
+        3005
+      ],
+      "longTasksOver200": 49,
+      "profile": {
+        "totalMs": 107436.9,
+        "top": [
+          {
+            "fn": "uniformMatrix3fv :0",
+            "selfMs": 51716.6,
+            "pct": 48.1
+          },
+          {
+            "fn": "uniformMatrix4fv :0",
+            "selfMs": 46871.9,
+            "pct": 43.6
+          },
+          {
+            "fn": "drawElements :0",
+            "selfMs": 4001.6,
+            "pct": 3.7
+          },
+          {
+            "fn": "(program) :0",
+            "selfMs": 760.9,
+            "pct": 0.7
+          },
+          {
+            "fn": "projectObject ?playtest=stress:17362",
+            "selfMs": 413.7,
+            "pct": 0.4
+          },
+          {
+            "fn": "updateMatrixWorld ?playtest=stress:4696",
+            "selfMs": 412.3,
+            "pct": 0.4
+          },
+          {
+            "fn": "multiplyMatrices ?playtest=stress:3698",
+            "selfMs": 313.5,
+            "pct": 0.3
+          },
+          {
+            "fn": "compose ?playtest=stress:4015",
+            "selfMs": 253,
+            "pct": 0.2
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "selfMs": 244.7,
+            "pct": 0.2
+          },
+          {
+            "fn": "(garbage collector) :0",
+            "selfMs": 222.2,
+            "pct": 0.2
+          },
+          {
+            "fn": "applyMatrix4 ?playtest=stress:3119",
+            "selfMs": 173,
+            "pct": 0.2
+          },
+          {
+            "fn": "copyArray ?playtest=stress:10779",
+            "selfMs": 147.1,
+            "pct": 0.1
+          },
+          {
+            "fn": "bindVertexArray :0",
+            "selfMs": 114.6,
+            "pct": 0.1
+          },
+          {
+            "fn": "setProgram ?playtest=stress:17619",
+            "selfMs": 112.6,
+            "pct": 0.1
+          },
+          {
+            "fn": "getProgramCacheKey ?playtest=stress:12296",
+            "selfMs": 106.8,
+            "pct": 0.1
+          }
+        ],
+        "inclusive": [
+          {
+            "fn": "renderLoop ?playtest=stress:216218",
+            "inclMs": 106344.5
+          },
+          {
+            "fn": "WebGLRenderer.render ?playtest=stress:17275",
+            "inclMs": 106326.2
+          },
+          {
+            "fn": "renderScene ?playtest=stress:17420",
+            "inclMs": 104501.2
+          },
+          {
+            "fn": "renderObjects ?playtest=stress:17499",
+            "inclMs": 104482.7
+          },
+          {
+            "fn": "renderObject ?playtest=stress:17512",
+            "inclMs": 104384.8
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "inclMs": 104210.6
+          },
+          {
+            "fn": "setProgram ?playtest=stress:17619",
+            "inclMs": 99652.1
+          },
+          {
+            "fn": "setValue ?playtest=stress:11325",
+            "inclMs": 98845.6
+          },
+          {
+            "fn": "setValueM3 ?playtest=stress:10867",
+            "inclMs": 51764.5
+          },
+          {
+            "fn": "uniformMatrix3fv :0",
+            "inclMs": 51716.6
+          },
+          {
+            "fn": "setValueM4 ?playtest=stress:10881",
+            "inclMs": 47058.2
+          },
+          {
+            "fn": "uniformMatrix4fv :0",
+            "inclMs": 46871.9
+          },
+          {
+            "fn": "render2 ?playtest=stress:10486",
+            "inclMs": 4006.6
+          },
+          {
+            "fn": "drawElements :0",
+            "inclMs": 4001.6
+          },
+          {
+            "fn": "updateMatrixWorld ?playtest=stress:4696",
+            "inclMs": 995.9
+          },
+          {
+            "fn": "projectObject ?playtest=stress:17362",
+            "inclMs": 756.7
+          },
+          {
+            "fn": "updateMatrix ?playtest=stress:4692",
+            "inclMs": 349.6
+          },
+          {
+            "fn": "multiplyMatrices ?playtest=stress:3698",
+            "inclMs": 313.5
+          },
+          {
+            "fn": "compose ?playtest=stress:4015",
+            "inclMs": 253
+          },
+          {
+            "fn": "setup ?playtest=stress:8949",
+            "inclMs": 238.4
+          },
+          {
+            "fn": "intersectsObject ?playtest=stress:7803",
+            "inclMs": 236.6
+          },
+          {
+            "fn": "upload ?playtest=stress:11333",
+            "inclMs": 232.5
+          },
+          {
+            "fn": "getProgram ?playtest=stress:17530",
+            "inclMs": 231.6
+          },
+          {
+            "fn": "(garbage collector) :0",
+            "inclMs": 222.2
+          },
+          {
+            "fn": "applyMatrix4 ?playtest=stress:3119",
+            "inclMs": 176
+          },
+          {
+            "fn": "copyArray ?playtest=stress:10779",
+            "inclMs": 147.1
+          },
+          {
+            "fn": "bindVertexArrayObject ?playtest=stress:8972",
+            "inclMs": 116.6
+          },
+          {
+            "fn": "getProgramCacheKey ?playtest=stress:12296",
+            "inclMs": 115.2
+          },
+          {
+            "fn": "bindVertexArray :0",
+            "inclMs": 114.6
+          },
+          {
+            "fn": "refreshMaterialUniforms ?playtest=stress:16212",
+            "inclMs": 101.3
+          }
+        ]
+      },
+      "extra": [
+        {
+          "c": {
+            "ok": true
+          },
+          "city": [
+            54,
+            21
+          ],
+          "after": [
+            53,
+            22
+          ],
+          "panelOpen": false
+        },
+        {
+          "c": {
+            "ok": true
+          },
+          "city": [
+            65,
+            21
+          ],
+          "after": [
+            66,
+            21
+          ],
+          "panelOpen": false
+        },
+        {
+          "c": {
+            "ok": true
+          },
+          "city": [
+            65,
+            21
+          ],
+          "after": [
+            65,
+            22
+          ],
+          "panelOpen": false
+        }
+      ]
+    },
+    "open-city-panel-click": {
+      "label": "open-city-panel-click",
+      "wallMs": 47210,
+      "handlerMs": [
+        0,
+        0,
+        0
+      ],
+      "handlerP50": 0,
+      "handlerP95": 0,
+      "handlerMax": 0,
+      "longTasks": [
+        2596,
+        2680,
+        2994,
+        2890,
+        5020,
+        2740,
+        2254,
+        2360,
+        2431,
+        2208,
+        2380,
+        2559,
+        2722,
+        2670,
+        3078,
+        2422,
+        2572,
+        2544
+      ],
+      "longTasksOver200": 18,
+      "profile": {
+        "totalMs": 49465.7,
+        "top": [
+          {
+            "fn": "uniformMatrix4fv :0",
+            "selfMs": 34353.9,
+            "pct": 69.4
+          },
+          {
+            "fn": "(idle) :0",
+            "selfMs": 4729.7,
+            "pct": 9.6
+          },
+          {
+            "fn": "useProgram :0",
+            "selfMs": 2952,
+            "pct": 6
+          },
+          {
+            "fn": "uniformMatrix3fv :0",
+            "selfMs": 2620.7,
+            "pct": 5.3
+          },
+          {
+            "fn": "uniform3f :0",
+            "selfMs": 2464.5,
+            "pct": 5
+          },
+          {
+            "fn": "(program) :0",
+            "selfMs": 583,
+            "pct": 1.2
+          },
+          {
+            "fn": "(garbage collector) :0",
+            "selfMs": 251.7,
+            "pct": 0.5
+          },
+          {
+            "fn": "updateMatrixWorld ?playtest=stress:4696",
+            "selfMs": 159.4,
+            "pct": 0.3
+          },
+          {
+            "fn": "multiplyMatrices ?playtest=stress:3698",
+            "selfMs": 137.8,
+            "pct": 0.3
+          },
+          {
+            "fn": "projectObject ?playtest=stress:17362",
+            "selfMs": 128.8,
+            "pct": 0.3
+          },
+          {
+            "fn": "compose ?playtest=stress:4015",
+            "selfMs": 110.7,
+            "pct": 0.2
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "selfMs": 77.9,
+            "pct": 0.2
+          },
+          {
+            "fn": "renderObject ?playtest=stress:17512",
+            "selfMs": 52.9,
+            "pct": 0.1
+          },
+          {
+            "fn": "applyMatrix4 ?playtest=stress:3119",
+            "selfMs": 51.2,
+            "pct": 0.1
+          },
+          {
+            "fn": "copyArray ?playtest=stress:10779",
+            "selfMs": 48.7,
+            "pct": 0.1
+          }
+        ],
+        "inclusive": [
+          {
+            "fn": "renderLoop ?playtest=stress:216218",
+            "inclMs": 43801.7
+          },
+          {
+            "fn": "WebGLRenderer.render ?playtest=stress:17275",
+            "inclMs": 43799.1
+          },
+          {
+            "fn": "renderScene ?playtest=stress:17420",
+            "inclMs": 43109.1
+          },
+          {
+            "fn": "renderObjects ?playtest=stress:17499",
+            "inclMs": 43103.6
+          },
+          {
+            "fn": "renderObject ?playtest=stress:17512",
+            "inclMs": 43067.3
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "inclMs": 42983
+          },
+          {
+            "fn": "setProgram ?playtest=stress:17619",
+            "inclMs": 42772.8
+          },
+          {
+            "fn": "uniformMatrix4fv :0",
+            "inclMs": 34353.9
+          },
+          {
+            "fn": "setValue ?playtest=stress:11325",
+            "inclMs": 24483.8
+          },
+          {
+            "fn": "setValueM4 ?playtest=stress:10881",
+            "inclMs": 21838.6
+          },
+          {
+            "fn": "upload ?playtest=stress:11333",
+            "inclMs": 15115.7
+          },
+          {
+            "fn": "setValueM4Array ?playtest=stress:11121",
+            "inclMs": 12593.3
+          },
+          {
+            "fn": "useProgram ?playtest=stress:13686",
+            "inclMs": 2952.4
+          },
+          {
+            "fn": "useProgram :0",
+            "inclMs": 2952
+          },
+          {
+            "fn": "setValueM3 ?playtest=stress:10867",
+            "inclMs": 2636.5
+          },
+          {
+            "fn": "uniformMatrix3fv :0",
+            "inclMs": 2620.7
+          },
+          {
+            "fn": "setValueV3f ?playtest=stress:10815",
+            "inclMs": 2477.4
+          },
+          {
+            "fn": "uniform3f :0",
+            "inclMs": 2464.5
+          },
+          {
+            "fn": "updateMatrixWorld ?playtest=stress:4696",
+            "inclMs": 421.7
+          },
+          {
+            "fn": "(garbage collector) :0",
+            "inclMs": 251.7
+          },
+          {
+            "fn": "projectObject ?playtest=stress:17362",
+            "inclMs": 241.8
+          },
+          {
+            "fn": "updateMatrix ?playtest=stress:4692",
+            "inclMs": 151.1
+          },
+          {
+            "fn": "multiplyMatrices ?playtest=stress:3698",
+            "inclMs": 137.8
+          },
+          {
+            "fn": "compose ?playtest=stress:4015",
+            "inclMs": 110.7
+          },
+          {
+            "fn": "ambSchedule ?playtest=stress:116888",
+            "inclMs": 84.1
+          },
+          {
+            "fn": "ambTick ?playtest=stress:116917",
+            "inclMs": 84.1
+          },
+          {
+            "fn": "setup ?playtest=stress:8949",
+            "inclMs": 82.7
+          },
+          {
+            "fn": "getProgram ?playtest=stress:17530",
+            "inclMs": 81.1
+          },
+          {
+            "fn": "renderEvent ?playtest=stress:116432",
+            "inclMs": 78.5
+          },
+          {
+            "fn": "intersectsObject ?playtest=stress:7803",
+            "inclMs": 78.3
+          }
+        ]
+      },
+      "extra": [
+        {
+          "c": {
+            "ok": true
+          },
+          "open": false
+        },
+        {
+          "c": {
+            "ok": true
+          },
+          "open": false
+        },
+        {
+          "c": {
+            "ok": true
+          },
+          "open": false
+        }
+      ]
+    }
+  },
+  "seededUnits": {
+    "seeded": 120,
+    "total": 321
+  },
+  "errors": []
+}

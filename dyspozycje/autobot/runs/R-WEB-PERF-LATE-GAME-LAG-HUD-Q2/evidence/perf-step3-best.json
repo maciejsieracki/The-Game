@@ -1,0 +1,518 @@
+{
+  "build": {
+    "reused": "/tmp/claude-0/perfq2-build",
+    "gitHead": "4905bac052e77cbd104b9794b304a87d8f3c9b65"
+  },
+  "scenarios": {
+    "refreshFog-x15": {
+      "label": "refreshFog-x15",
+      "wallMs": 7615,
+      "handlerMs": [],
+      "handlerP50": null,
+      "handlerP95": null,
+      "handlerMax": null,
+      "longTasks": [
+        163,
+        1395,
+        333,
+        253,
+        1443,
+        1105
+      ],
+      "longTasksOver200": 5,
+      "profile": {
+        "totalMs": 10401.3,
+        "top": [
+          {
+            "fn": "(program) :0",
+            "selfMs": 1458.1,
+            "pct": 14
+          },
+          {
+            "fn": "uniformMatrix3fv :0",
+            "selfMs": 1264.7,
+            "pct": 12.2
+          },
+          {
+            "fn": "isTerritoryHexOwnedBy ?playtest=stress:70056",
+            "selfMs": 802.7,
+            "pct": 7.7
+          },
+          {
+            "fn": "computeTerritoryResourceYieldByCity ?playtest=stress:106069",
+            "selfMs": 796.9,
+            "pct": 7.7
+          },
+          {
+            "fn": "okolicaTiles ?playtest=stress:70175",
+            "selfMs": 724,
+            "pct": 7
+          },
+          {
+            "fn": "collectTerritoryHexKeysByOwner ?playtest=stress:159176",
+            "selfMs": 390.8,
+            "pct": 3.8
+          },
+          {
+            "fn": "assignWorkedTiles ?playtest=stress:70254",
+            "selfMs": 356.3,
+            "pct": 3.4
+          },
+          {
+            "fn": "cityCenterKeysFromTerritoryNodes ?playtest=stress:70154",
+            "selfMs": 334.2,
+            "pct": 3.2
+          },
+          {
+            "fn": "countTerritoryHexes ?playtest=stress:199800",
+            "selfMs": 332.5,
+            "pct": 3.2
+          },
+          {
+            "fn": "ownPlayerVisibleHexes ?playtest=stress:203739",
+            "selfMs": 295.7,
+            "pct": 2.8
+          },
+          {
+            "fn": "countImprovementsForOwner ?playtest=stress:197923",
+            "selfMs": 182.6,
+            "pct": 1.8
+          },
+          {
+            "fn": "placedImprovementsForOwner ?playtest=stress:199576",
+            "selfMs": 173.3,
+            "pct": 1.7
+          },
+          {
+            "fn": "scanCityVicinityTerrain ?playtest=stress:105883",
+            "selfMs": 170.2,
+            "pct": 1.6
+          },
+          {
+            "fn": "yieldOf ?playtest=stress:106025",
+            "selfMs": 163,
+            "pct": 1.6
+          },
+          {
+            "fn": "hexKeysWithinRadius ?playtest=stress:70136",
+            "selfMs": 143.4,
+            "pct": 1.4
+          }
+        ],
+        "inclusive": [
+          {
+            "fn": "(anon) :1",
+            "inclMs": 6828.4
+          },
+          {
+            "fn": "evaluate :297",
+            "inclMs": 6828.4
+          },
+          {
+            "fn": "perfFogParts ?playtest=stress:221387",
+            "inclMs": 6827.9
+          },
+          {
+            "fn": "t ?playtest=stress:221388",
+            "inclMs": 6785
+          },
+          {
+            "fn": "updateHud ?playtest=stress:146332",
+            "inclMs": 5494.9
+          },
+          {
+            "fn": "buildHudState ?playtest=stress:209118",
+            "inclMs": 4585.7
+          },
+          {
+            "fn": "(anon) ?playtest=stress:221396",
+            "inclMs": 4075.2
+          },
+          {
+            "fn": "refreshFog ?playtest=stress:204011",
+            "inclMs": 4074.7
+          },
+          {
+            "fn": "refreshD1BModules ?playtest=stress:146222",
+            "inclMs": 2831.8
+          },
+          {
+            "fn": "cityWorkedTilesForEconomy ?playtest=stress:106018",
+            "inclMs": 2595.6
+          },
+          {
+            "fn": "resolveWorkedTiles ?playtest=stress:70275",
+            "inclMs": 2569
+          },
+          {
+            "fn": "projectPlayerFoodProjection ?playtest=stress:208850",
+            "inclMs": 2397.1
+          },
+          {
+            "fn": "previewCityEconomy ?playtest=stress:106603",
+            "inclMs": 2372.5
+          },
+          {
+            "fn": "assignWorkedTiles ?playtest=stress:70254",
+            "inclMs": 2357.8
+          },
+          {
+            "fn": "(anon) ?playtest=stress:221412",
+            "inclMs": 2304.3
+          },
+          {
+            "fn": "renderLoop ?playtest=stress:216296",
+            "inclMs": 2008
+          },
+          {
+            "fn": "WebGLRenderer.render ?playtest=stress:17275",
+            "inclMs": 2006.9
+          },
+          {
+            "fn": "renderScene ?playtest=stress:17420",
+            "inclMs": 1860.7
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "inclMs": 1767
+          },
+          {
+            "fn": "okolicaTiles ?playtest=stress:70175",
+            "inclMs": 1611.9
+          },
+          {
+            "fn": "computeWorkedMagazynYieldsByCity ?playtest=stress:106121",
+            "inclMs": 1586.6
+          },
+          {
+            "fn": "setProgram ?playtest=stress:17619",
+            "inclMs": 1561.1
+          },
+          {
+            "fn": "render2 ?playtest=stress:130642",
+            "inclMs": 1502.3
+          },
+          {
+            "fn": "buildEmpireResourceRows ?playtest=stress:198503",
+            "inclMs": 1440.2
+          },
+          {
+            "fn": "renderBar ?playtest=stress:145994",
+            "inclMs": 1427.7
+          },
+          {
+            "fn": "simulateResourcePipelineForPreview ?playtest=stress:106280",
+            "inclMs": 1397.5
+          },
+          {
+            "fn": "setValue ?playtest=stress:11325",
+            "inclMs": 1366.7
+          },
+          {
+            "fn": "render2 ?playtest=stress:130817",
+            "inclMs": 1327.6
+          },
+          {
+            "fn": "getResearchProgress ?playtest=stress:146210",
+            "inclMs": 1305
+          },
+          {
+            "fn": "getTurn ?playtest=stress:146184",
+            "inclMs": 1300.9
+          },
+          {
+            "fn": "setValueM3 ?playtest=stress:10867",
+            "inclMs": 1282.3
+          },
+          {
+            "fn": "uniformMatrix3fv :0",
+            "inclMs": 1264.7
+          },
+          {
+            "fn": "empireTerritoryResourceRatesForOwner ?playtest=stress:198421",
+            "inclMs": 1249.5
+          },
+          {
+            "fn": "refreshMinimap ?playtest=stress:146124",
+            "inclMs": 852.4
+          },
+          {
+            "fn": "computeTerritoryResourceYieldByCity ?playtest=stress:106069",
+            "inclMs": 831.5
+          },
+          {
+            "fn": "isTerritoryHexOwnedBy ?playtest=stress:70056",
+            "inclMs": 802.7
+          },
+          {
+            "fn": "objectivePowerForOwnerEffective ?playtest=stress:198046",
+            "inclMs": 721.4
+          },
+          {
+            "fn": "buildObjectivePowerForOwnerEffective ?playtest=stress:198005",
+            "inclMs": 721.1
+          },
+          {
+            "fn": "syncUnitsRender ?playtest=stress:204298",
+            "inclMs": 671
+          },
+          {
+            "fn": "collectTurnEvents ?playtest=stress:207055",
+            "inclMs": 522.5
+          },
+          {
+            "fn": "withOwnerCtxScope ?playtest=stress:206693",
+            "inclMs": 521.8
+          },
+          {
+            "fn": "syncStatChips ?playtest=stress:125290",
+            "inclMs": 513.9
+          },
+          {
+            "fn": "_syncStatChip ?playtest=stress:125544",
+            "inclMs": 509.7
+          },
+          {
+            "fn": "_buildBadgeInput ?playtest=stress:125496",
+            "inclMs": 479.8
+          },
+          {
+            "fn": "getCityGrowth ?playtest=stress:217822",
+            "inclMs": 473
+          },
+          {
+            "fn": "cityGrowthLive ?playtest=stress:148069",
+            "inclMs": 472.4
+          },
+          {
+            "fn": "computeView ?playtest=stress:147856",
+            "inclMs": 471.6
+          },
+          {
+            "fn": "refreshTerritoryBorderOverlay ?playtest=stress:204980",
+            "inclMs": 436.6
+          },
+          {
+            "fn": "collectTerritoryHexKeysByOwner ?playtest=stress:159176",
+            "inclMs": 431.7
+          },
+          {
+            "fn": "refreshSidePanel ?playtest=stress:146177",
+            "inclMs": 382.8
+          },
+          {
+            "fn": "render2 ?playtest=stress:130342",
+            "inclMs": 381.9
+          },
+          {
+            "fn": "effectiveIsWorkable ?playtest=stress:70239",
+            "inclMs": 339.6
+          },
+          {
+            "fn": "cityCenterKeysFromTerritoryNodes ?playtest=stress:70154",
+            "inclMs": 334.2
+          },
+          {
+            "fn": "countTerritoryHexes ?playtest=stress:199800",
+            "inclMs": 332.5
+          },
+          {
+            "fn": "countImprovementsForOwner ?playtest=stress:197923",
+            "inclMs": 327.1
+          },
+          {
+            "fn": "(anon) ?playtest=stress:221409",
+            "inclMs": 320.1
+          },
+          {
+            "fn": "currentVisible ?playtest=stress:203755",
+            "inclMs": 311.2
+          },
+          {
+            "fn": "ownPlayerVisibleHexes ?playtest=stress:203739",
+            "inclMs": 295.7
+          },
+          {
+            "fn": "productionAvailabilityCtxForCity ?playtest=stress:206709",
+            "inclMs": 229.6
+          },
+          {
+            "fn": "update ?playtest=stress:127181",
+            "inclMs": 214.6
+          }
+        ]
+      }
+    }
+  },
+  "seededUnits": {
+    "seeded": 120,
+    "total": 321
+  },
+  "fogParts": {
+    "visSize": 2653,
+    "exploredSize": 2779,
+    "rows": [
+      [
+        "refreshFog(total)",
+        315.22
+      ],
+      [
+        "currentVisible",
+        2.33
+      ],
+      [
+        "fogExploredForRender",
+        0.01
+      ],
+      [
+        "updateDiplomaticDiscovery",
+        0.02
+      ],
+      [
+        "addExplored",
+        0.09
+      ],
+      [
+        "syncCampMeshes",
+        0
+      ],
+      [
+        "syncVillageMeshes",
+        0.06
+      ],
+      [
+        "setFog",
+        0.46
+      ],
+      [
+        "syncResourceOverlayFog",
+        0.48
+      ],
+      [
+        "syncImprovementMeshFog",
+        0.08
+      ],
+      [
+        "syncSettlementMeshFog",
+        0.01
+      ],
+      [
+        "syncWorkerFieldOverlayFog",
+        0.16
+      ],
+      [
+        "visibleUnitsList",
+        0.02
+      ],
+      [
+        "syncUnitsRender",
+        21.09
+      ],
+      [
+        "cityRenderer.applyFogVisibility",
+        0.05
+      ],
+      [
+        "wonderRenderer.applyFogVisibility",
+        0.01
+      ],
+      [
+        "refreshD1bHud",
+        139.47
+      ],
+      [
+        "checkNewDiplomaticContacts",
+        0
+      ],
+      [
+        "checkVeteranEnemyFirstEncounter",
+        0.02
+      ]
+    ]
+  },
+  "renderInfo": {
+    "calls": 28881,
+    "triangles": 872236,
+    "points": 0,
+    "lines": 1056
+  },
+  "best": {
+    "refreshFog(total)": {
+      "min": 248.8,
+      "median": 287.3
+    },
+    "currentVisible": {
+      "min": 2.4,
+      "median": 2.5
+    },
+    "fogExploredForRender": {
+      "min": 0,
+      "median": 0
+    },
+    "updateDiplomaticDiscovery": {
+      "min": 0,
+      "median": 0.1
+    },
+    "addExplored": {
+      "min": 0.1,
+      "median": 0.1
+    },
+    "syncCampMeshes": {
+      "min": 0,
+      "median": 0
+    },
+    "syncVillageMeshes": {
+      "min": 0,
+      "median": 0.1
+    },
+    "setFog": {
+      "min": 0.5,
+      "median": 0.5
+    },
+    "syncResourceOverlayFog": {
+      "min": 0.9,
+      "median": 1
+    },
+    "syncImprovementMeshFog": {
+      "min": 0.1,
+      "median": 0.2
+    },
+    "syncSettlementMeshFog": {
+      "min": 0,
+      "median": 0
+    },
+    "syncWorkerFieldOverlayFog": {
+      "min": 0.1,
+      "median": 0.2
+    },
+    "visibleUnitsList": {
+      "min": 0,
+      "median": 0
+    },
+    "syncUnitsRender": {
+      "min": 17.8,
+      "median": 19.2
+    },
+    "cityRenderer.applyFogVisibility": {
+      "min": 0,
+      "median": 0.1
+    },
+    "wonderRenderer.applyFogVisibility": {
+      "min": 0,
+      "median": 0
+    },
+    "refreshD1bHud": {
+      "min": 136.4,
+      "median": 148.4
+    },
+    "checkNewDiplomaticContacts": {
+      "min": 0,
+      "median": 0
+    },
+    "checkVeteranEnemyFirstEncounter": {
+      "min": 0,
+      "median": 0.1
+    }
+  },
+  "errors": []
+}

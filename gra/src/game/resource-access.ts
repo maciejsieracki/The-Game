@@ -357,7 +357,9 @@ export function getResourceAccessForCity(
   currentEra = 99,
   options: ResourceAccessOptions = {},
 ): string[] {
-  return getCityResourceAccessForCity(
-    city, map, placedImprovements, currentEra, options,
-  ).active;
+  // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: wynik to wylacznie `active` — `potential`
+  // (collectDepositPotential: skan calego dysku widocznosci miasta) byl liczony i
+  // odrzucany; w pomiarze (137 miast) to ok. 65% kosztu empireActiveResourceLabelsForOwner.
+  // `getCityResourceAccessForCity(...).active` == sortLabels(collectActiveAccess(...)) — identyczne.
+  return sortLabels(collectActiveAccess(city, map, placedImprovements, options));
 }

@@ -1102,7 +1102,7 @@ import {
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
-import { getCityResourceAccessForCity } from './game/resource-access';
+import { getCityResourceAccessForCity, getResourceAccessForCity } from './game/resource-access';
 import { cityCultureMixActive, cultureMixBreakdown, isForeignReligionDominant, resolveOwnCultureShare, stolicaEasyBonusActive } from './game/society-inputs';
 import {
   tickCityCultureReligion,
@@ -3336,10 +3336,15 @@ async function boot(): Promise<void> {
       const labels = new Set<string>();
       const builtEmpire = empireBuiltIdsForOwner(ownerId);
       const ownerImprovements = placedImprovementsForOwner(ownerId);
+      // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: odblokowania hodowli imperium i epoka nie zaleza od
+      // miasta — liczone RAZ (wczesniej: raz na kazde miasto ownera, O(miasta x ulepszenia)).
+      // Ta sama wartosc, ktora collectActiveAccess liczylby domyslnie dla kazdego miasta.
+      const empireLivestockUnlocks = computeEmpireLivestockUnlocks(ownerImprovements, map, String(ownerId));
+      const ownerEpoch = empireEpochForOwner(ownerId);
       for (const c of cities) {
         if (c.ownerId !== ownerId) continue;
         const builtIds = cityBuilt.get(c.id) ?? [];
-        const access = getCityResourceAccessForCity(
+        const active = getResourceAccessForCity(
           {
             id: c.id,
             q: c.q,
@@ -3349,10 +3354,10 @@ async function boot(): Promise<void> {
           },
           map,
           ownerImprovements,
-          empireEpochForOwner(ownerId),
-          { builtIds, ownerId: String(ownerId) },
+          ownerEpoch,
+          { builtIds, ownerId: String(ownerId), empireLivestockUnlocks },
         );
-        for (const l of access.active) labels.add(l);
+        for (const l of active) labels.add(l);
       }
       if (builtEmpire.has('cegielnia')) labels.add('Cegła');
       if (builtEmpire.has('garncarnia')) labels.add('Ceramika');
@@ -8042,46 +8047,50 @@ async function boot(): Promise<void> {
       return totalUnitUpkeep(upkeepUnits, unitUpkeepTbl, upkeepParams.jednostkaUtrzymanieStd);
     }
 
+    function cityResourceAccessForCityId(cityId: string, activeOnly: boolean) {
+      const c = cities.find(x => x.id === cityId);
+      if (!c) return { potential: [], active: [] };
+      const builtIds = cityBuilt.get(cityId) ?? [];
+      const oid = c.ownerId;
+      const ownImprovements = ownerScoped('ownImp', oid, () => placedImprovementsForOwner(oid));
+      // Temat #4: Koń "z trasy" dolicza się do odblokowania imperium (jak w
+      // improvement-build.ts) — OR, nigdy substytut własnego odblokowania.
+      // Kopia zbioru: ponizej mutujemy go (`add('kon')`), a baza moze byc wspoldzielona w zakresie ownera.
+      const empireLivestockUnlocks = new Set(ownerScoped('livestock', oid, () => computeEmpireLivestockUnlocks(ownImprovements, map, String(oid))));
+      if (hasTradeRouteResourceAccess(tradeRouteResourceGrants, oid, 'kon')) {
+        empireLivestockUnlocks.add('kon');
+      }
+      const resCity = {
+        id: c.id,
+        q: c.q,
+        r: c.r,
+        population: c.population,
+        kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
+      };
+      const resImprovements = ownerScoped('impTrade', oid, () => placedImprovementsWithTradeGrants(oid, ownImprovements));
+      const resOptions = { builtIds, ownerId: String(oid), empireLivestockUnlocks };
+      // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: `activeOnly` pomija `potential` (skan dysku widocznosci)
+      // dla wolajacych, ktorzy czytaja wylacznie `.active` (kontekst dostepnosci produkcji).
+      const access = activeOnly
+        ? { potential: [] as string[], active: getResourceAccessForCity(resCity, map, resImprovements, empireEpochForOwner(oid), resOptions) }
+        : getCityResourceAccessForCity(resCity, map, resImprovements, empireEpochForOwner(oid), resOptions);
+      // Temat #4 (UI): źródło "szlak handlowy z X" dla etykiet przyznanych przez
+      // trasę — tylko gdy etykieta faktycznie aktywna (grant + dostęp lokalny
+      // spełniony, np. Brąz nadal wymaga własnego Pieca hutniczego w TYM mieście).
+      const tradeSources: Record<string, string> = {};
+      const brazSrc = tradeRouteResourceSourceLabel(oid, 'braz');
+      if (brazSrc && access.active.includes('Brąz')) tradeSources['Brąz'] = brazSrc;
+      const konSrc = tradeRouteResourceSourceLabel(oid, 'kon');
+      if (konSrc && access.active.includes('Koń')) tradeSources['Koń'] = konSrc;
+      // PYTANIE 77=A: Złoto "z trasy" — identyczny wzorzec jak Brąz/Koń wyżej.
+      const zlotoSrc = tradeRouteResourceSourceLabel(oid, 'zloto');
+      if (zlotoSrc && access.active.includes('Złoto')) tradeSources['Złoto'] = zlotoSrc;
+      return Object.keys(tradeSources).length ? { ...access, tradeSources } : access;
+    }
+
     function extraCityPanelConfig() {
       return {
-        getResourceAccess: (cityId: string) => {
-          const c = cities.find(x => x.id === cityId);
-          if (!c) return { potential: [], active: [] };
-          const builtIds = cityBuilt.get(cityId) ?? [];
-          const oid = c.ownerId;
-          const ownImprovements = placedImprovementsForOwner(oid);
-          // Temat #4: Koń "z trasy" dolicza się do odblokowania imperium (jak w
-          // improvement-build.ts) — OR, nigdy substytut własnego odblokowania.
-          const empireLivestockUnlocks = computeEmpireLivestockUnlocks(ownImprovements, map, String(oid));
-          if (hasTradeRouteResourceAccess(tradeRouteResourceGrants, oid, 'kon')) {
-            empireLivestockUnlocks.add('kon');
-          }
-          const access = getCityResourceAccessForCity(
-            {
-              id: c.id,
-              q: c.q,
-              r: c.r,
-              population: c.population,
-              kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
-            },
-            map,
-            placedImprovementsWithTradeGrants(oid, ownImprovements),
-            empireEpochForOwner(oid),
-            { builtIds, ownerId: String(oid), empireLivestockUnlocks },
-          );
-          // Temat #4 (UI): źródło "szlak handlowy z X" dla etykiet przyznanych przez
-          // trasę — tylko gdy etykieta faktycznie aktywna (grant + dostęp lokalny
-          // spełniony, np. Brąz nadal wymaga własnego Pieca hutniczego w TYM mieście).
-          const tradeSources: Record<string, string> = {};
-          const brazSrc = tradeRouteResourceSourceLabel(oid, 'braz');
-          if (brazSrc && access.active.includes('Brąz')) tradeSources['Brąz'] = brazSrc;
-          const konSrc = tradeRouteResourceSourceLabel(oid, 'kon');
-          if (konSrc && access.active.includes('Koń')) tradeSources['Koń'] = konSrc;
-          // PYTANIE 77=A: Złoto "z trasy" — identyczny wzorzec jak Brąz/Koń wyżej.
-          const zlotoSrc = tradeRouteResourceSourceLabel(oid, 'zloto');
-          if (zlotoSrc && access.active.includes('Złoto')) tradeSources['Złoto'] = zlotoSrc;
-          return Object.keys(tradeSources).length ? { ...access, tradeSources } : access;
-        },
+        getResourceAccess: (cityId: string) => cityResourceAccessForCityId(cityId, false),
         getEmpireResourceAccess: (ownerId: number) => empireActiveResourceLabelsForOwner(ownerId),
         getEmpireBuiltIds: (ownerId: number) => [...empireBuiltIdsForOwner(ownerId)],
         getEmpireStock: (ownerId: number) => citySurowceSumForOwner(ownerId),
@@ -14444,9 +14453,35 @@ async function boot(): Promise<void> {
       territoryBorderSavedBeforeCityPanel = null;
     }
 
+    /**
+     * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: ostatnio zbudowany zestaw wejsc granicy (heksy per owner +
+     * kolory tozsamosci/relacji). Geometria obwodki zalezy wylacznie od tych danych i statycznej mapy,
+     * wiec gdy sie nie zmienily (typowy klik/ruch/wejscie do miasta nie zmienia granic), istniejaca
+     * grupa zostaje — zamiast kosztownej przebudowy siatki przy KAZDYM refreshFog.
+     */
+    let _territoryBorderBuilt: { byOwner: Map<number, Set<string>>; colors: Map<number, string> } | null = null;
+    function territoryBorderInputsUnchanged(
+      byOwner: Map<number, Set<string>>,
+      colors: Map<number, string>,
+    ): boolean {
+      const prev = _territoryBorderBuilt;
+      if (!prev || !territoryBorderGroup) return false;
+      if (prev.byOwner.size !== byOwner.size) return false;
+      for (const [owner, keys] of byOwner) {
+        const pk = prev.byOwner.get(owner);
+        if (!pk || pk.size !== keys.size) return false;
+        if (prev.colors.get(owner) !== colors.get(owner)) return false;
+        for (const k of keys) if (!pk.has(k)) return false;
+      }
+      return true;
+    }
+
     function refreshTerritoryBorderOverlay(): void {
-      clearTerritoryBorderOverlay();
-      if (!(territoryBorderVisible || isCityPanelOpen())) return;
+      if (!(territoryBorderVisible || isCityPanelOpen())) {
+        clearTerritoryBorderOverlay();
+        _territoryBorderBuilt = null;
+        return;
+      }
       const nodes = buildAllTerritoryNodes();
       // R-WEB-TURN-SLOWDOWN-Q2 (P1): `currentVisible()` i `fogExploredForRender()` były
       // liczone OD NOWA dla KAŻDEGO heksu cudzego terytorium (filtr wołany per heks) —
@@ -14465,7 +14500,15 @@ async function boot(): Promise<void> {
         if (exploredOnce === null) exploredOnce = fogExploredForRender();
         return visOnce.has(key) || exploredOnce.has(key);
       });
-      if (byOwner.size === 0) return;
+      if (byOwner.size === 0) {
+        clearTerritoryBorderOverlay();
+        _territoryBorderBuilt = null;
+        return;
+      }
+      const borderColors = new Map<number, string>();
+      for (const owner of byOwner.keys()) borderColors.set(owner, civColorFn(owner) + '/' + relationColorFn(owner));
+      if (territoryBorderInputsUnchanged(byOwner, borderColors)) return;
+      clearTerritoryBorderOverlay();
       territoryBorderGroup = buildTerritoryBorderGroup(
         map,
         byOwner,
@@ -14475,6 +14518,7 @@ async function boot(): Promise<void> {
         relationColorFn,
       );
       scene.add(territoryBorderGroup);
+      _territoryBorderBuilt = { byOwner, colors: borderColors };
     }
 
     function toggleTerritoryBorderOnMap(): void {
@@ -17132,37 +17176,63 @@ async function boot(): Promise<void> {
     /** Wpisy WYDARZEŃ ukryte krzyżykiem do końca tury (propozycja dyplomatyczna wraca w następnej, jeśli nadal aktualna). */
     const dismissedSidePanelEventIds = new Set<string>();
 
+    /**
+     * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: zakres (scope) pamieci podrecznej skladnikow kontekstu
+     * dostepnosci, ktore zaleza WYLACZNIE od ownera (nie od miasta). Otwierany tylko wokol petli,
+     * w ktorej stan gry nie jest mutowany (collectTurnEvents: tylko odczyty) — wynik identyczny,
+     * ale zamiast O(miasta gracza x miasta ownera x ulepszenia) liczymy skladnik raz na ownera.
+     * Poza zakresem `ownerScoped` zawsze liczy od nowa (zachowanie jak dotad).
+     */
+    let _ownerCtxScope: Map<string, unknown> | null = null;
+    function withOwnerCtxScope<T>(fn: () => T): T {
+      if (_ownerCtxScope) return fn();
+      _ownerCtxScope = new Map();
+      try { return fn(); } finally { _ownerCtxScope = null; }
+    }
+    function ownerScoped<T>(tag: string, ownerId: number, compute: () => T): T {
+      const sc = _ownerCtxScope;
+      if (!sc) return compute();
+      const k = tag + ':' + ownerId;
+      if (sc.has(k)) return sc.get(k) as T;
+      const v = compute();
+      sc.set(k, v);
+      return v;
+    }
+
     function productionAvailabilityCtxForCity(city: City): AvailabilityContext {
-      const ownImprovements = placedImprovementsForOwner(city.ownerId);
+      const oid = city.ownerId;
+      const ownImprovements = ownerScoped('ownImp', oid, () => placedImprovementsForOwner(oid));
       const prod0 = cityProd.get(city.id) ?? { kolejka: [], postep: 0 };
-      const accessRaw = extraCityPanelConfig().getResourceAccess(city.id);
+      // Tylko `.active` jest czytane — wariant bez `potential` (skan dysku widocznosci miasta).
+      const accessRaw = cityResourceAccessForCityId(city.id, true);
       const activeResourceLabels = Array.isArray(accessRaw)
         ? accessRaw
         : (accessRaw?.active ?? []);
+      const civKey = civKeyForOwnerId(oid);
       return {
-        epoch: empireEpochForOwner(city.ownerId),
+        epoch: empireEpochForOwner(oid),
         builtBuildingIds: cityBuilt.get(city.id) ?? [],
         productionQueue: prod0.kolejka,
         buildingLevel: 1,
-        civBonusy: civBonusyForOwnerId(city.ownerId),
-        civKey: civKeyForOwnerId(city.ownerId),
-        civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-        placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
-        hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
-        aliveUnitTypeNames: new Set(
-          units.filter(x => x.ownerId === city.ownerId).map(x => x.typeId),
-        ),
+        civBonusy: civBonusyForOwnerId(oid),
+        civKey,
+        civUnitNacja: unitNacjaForCivKey(civKey),
+        placedImprovements: ownerScoped('impTrade', oid, () => placedImprovementsWithTradeGrants(oid, ownImprovements)),
+        hasKopalniaNaZlozuZelaza: ownerScoped('kopZel', oid, () => hasKopalniaNaZlozuZelazaOrTradeGrant(oid, ownImprovements)),
+        aliveUnitTypeNames: ownerScoped('alive', oid, () => new Set(
+          units.filter(x => x.ownerId === oid).map(x => x.typeId),
+        )),
         buildingCostPace: player.buildingCostPace ?? 'niski',
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
-        ownerId: city.ownerId,
+        ownerId: oid,
         difficulty: _menuDifficulty,
         activeResourceLabels,
-        empireActiveResourceLabels: empireActiveResourceLabelsForOwner(city.ownerId),
-        empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
-        empireResourceStock: citySurowceSumForOwner(city.ownerId),
+        empireActiveResourceLabels: ownerScoped('empLbl', oid, () => empireActiveResourceLabelsForOwner(oid)),
+        empireBuiltIds: ownerScoped('empBuilt', oid, () => [...empireBuiltIdsForOwner(oid)]),
+        empireResourceStock: ownerScoped('empStock', oid, () => citySurowceSumForOwner(oid)),
         cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
         cityHasRiver: cityHasRiverAccess(city),
-        isCapital: capitalCityIdForOwner(city.ownerId) === city.id,
+        isCapital: capitalCityIdForOwner(oid) === city.id,
       };
     }
 
@@ -17558,46 +17628,49 @@ async function boot(): Promise<void> {
           ...tradeRouteEventLog,
           ...borderMarchEventLog,
         ];
-      for (const city of cities) {
-        if (!isMe(city.ownerId)) continue;
-        const st = cityOrderState.get(city.id);
-        if (st?.revoltWarning && st.revoltGraceRemaining != null && !st.bunt && !st.rebelState) {
-          events.push({
-            id: 'revolt-warn-' + city.id,
-            icon: '\u26a0\ufe0f',
-            title: 'KRYTYCZNE: ' + city.name,
-            subtitle: revoltWarningMessage(city.name, st.revoltGraceRemaining),
-            kind: 'city',
-            blocking: true,
-          });
-        }
-        if (st?.bunt) {
-          events.push({
-            id: 'revolt-' + city.id,
-            icon: '\u{1F525}',
-            title: 'Bunt: ' + city.name,
-            subtitle: 'Migracja mieszkańców',
-            kind: 'city',
-            blocking: true,
-          });
-        }
-        const prod = cityProd.get(city.id);
-        if (prod && prod.kolejka.length > 0) {
-          prodEmptyDismissFp.delete(city.id);
-        } else if (cityHasActionableProduction(city)) {
-          const fp = productionOptionsFingerprint(city);
-          if (prodEmptyDismissFp.get(city.id) !== fp) {
+      // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: petla tylko czyta stan — skladniki kontekstu per owner liczone raz.
+      withOwnerCtxScope(() => {
+        for (const city of cities) {
+          if (!isMe(city.ownerId)) continue;
+          const st = cityOrderState.get(city.id);
+          if (st?.revoltWarning && st.revoltGraceRemaining != null && !st.bunt && !st.rebelState) {
             events.push({
-              id: 'prod-empty-' + city.id,
-              icon: '\u2699\ufe0f',
-              title: 'Produkcja: ' + city.name,
-              subtitle: 'Kolejka pusta — wybierz budynek lub jednostkę',
+              id: 'revolt-warn-' + city.id,
+              icon: '\u26a0\ufe0f',
+              title: 'KRYTYCZNE: ' + city.name,
+              subtitle: revoltWarningMessage(city.name, st.revoltGraceRemaining),
               kind: 'city',
               blocking: true,
             });
           }
+          if (st?.bunt) {
+            events.push({
+              id: 'revolt-' + city.id,
+              icon: '\u{1F525}',
+              title: 'Bunt: ' + city.name,
+              subtitle: 'Migracja mieszkańców',
+              kind: 'city',
+              blocking: true,
+            });
+          }
+          const prod = cityProd.get(city.id);
+          if (prod && prod.kolejka.length > 0) {
+            prodEmptyDismissFp.delete(city.id);
+          } else if (cityHasActionableProduction(city)) {
+            const fp = productionOptionsFingerprint(city);
+            if (prodEmptyDismissFp.get(city.id) !== fp) {
+              events.push({
+                id: 'prod-empty-' + city.id,
+                icon: '\u2699\ufe0f',
+                title: 'Produkcja: ' + city.name,
+                subtitle: 'Kolejka pusta — wybierz budynek lub jednostkę',
+                kind: 'city',
+                blocking: true,
+              });
+            }
+          }
         }
-      }
+      });
       for (const p of pendingDiplomacyInbox) {
         events.push({
           id: p.id,

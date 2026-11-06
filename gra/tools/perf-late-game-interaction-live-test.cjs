@@ -260,6 +260,8 @@ async function build() {
         rows.push(t('checkVeteranEnemyFirstEncounter', () => checkVeteranEnemyFirstEncounter(vis)));
         return { visSize: vis.size, exploredSize: (exp as any).size ?? null, rows };
       },
+      perfSave: async (slot: string) => { const r = await persistSaveToSlot(slot, 'perf-q2'); return { ok: r.ok, cities: cities.length, units: units.length }; },
+      perfLoad: async (slot: string) => { await loadGameFromSlot(slot, false); },
       perfSelected: () => selectedId,
       perfPlayerCityPositions: () => cities.filter(c => isMe(c.ownerId)).map(c => ({ id: c.id, q: c.q, r: c.r })),
       perfUnitsOf: (owner: number) => units.filter(u => u.ownerId === owner).map(u => ({ id: u.id, q: u.q, r: u.r, ruchLeft: u.ruchLeft, civ: isCivilianUnit(u) })),
@@ -341,6 +343,10 @@ async function build() {
 const OUT_JSON = process.env.PERF_OUT || path.join(os.tmpdir(), `late-game-interaction-${id}.json`);
 const REPEAT = Math.max(1, Number(process.env.PERF_REPEAT) || 6);
 const PROFILE = process.env.PERF_PROFILE !== '0';
+const MODE = process.env.PERF_MODE || 'full';
+const PROFILE_DIR = process.env.PERF_PROFILE_DIR || path.join(os.tmpdir(), 'perf-q2-profile');
+const FIXED_PORT = Number(process.env.PERF_PORT) || 47321;
+const SLOT = 'perfq2';
 
 function summarizeProfile(profile, topN = 15) {
   const nodes = new Map(profile.nodes.map(n => [n.id, n]));
@@ -371,7 +377,7 @@ function summarizeProfile(profile, topN = 15) {
   return {
     totalMs: +(total / 1000).toFixed(1),
     top: [...self.entries()].sort((a, b) => b[1] - a[1]).slice(0, topN).map(([k, v]) => ({ fn: k, selfMs: +(v / 1000).toFixed(1), pct: +(100 * v / total).toFixed(1) })),
-    inclusive: [...incl.entries()].filter(([k]) => !skip(k)).sort((a, b) => b[1] - a[1]).slice(0, 40).map(([k, v]) => ({ fn: k, inclMs: +(v / 1000).toFixed(1) })),
+    inclusive: [...incl.entries()].filter(([k]) => !skip(k)).sort((a, b) => b[1] - a[1]).slice(0, Number(process.env.PERF_INCL_N) || 40).map(([k, v]) => ({ fn: k, inclMs: +(v / 1000).toFixed(1) })),
   };
 }
 
@@ -384,17 +390,24 @@ function pct(arr, p) {
 async function main() {
   await build();
   console.log('[perf] build identity:', JSON.stringify(build.identity));
-  const browser = await chromium.launch({ headless: true, executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox', '--headless=new', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  if (process.env.PERF_BUILD_ONLY === '1') return;
+  const launchArgs = ['--no-sandbox', '--headless=new', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
+  // PERF_MODE=save|load: persistent profile (IndexedDB slot) + fixed port, so the ~8 min map generation is paid once (save) and later runs load the snapshot.
+  const persistent = MODE === 'save' || MODE === 'load';
+  let ctx = null;
+  const browser = persistent
+    ? (ctx = await chromium.launchPersistentContext(PROFILE_DIR, { headless: true, executablePath: '/opt/pw-browsers/chromium', args: launchArgs, viewport: { width: 1600, height: 1000 } }))
+    : await chromium.launch({ headless: true, executablePath: '/opt/pw-browsers/chromium', args: launchArgs });
   const server = http.createServer((req, res) => {
     res.setHeader('content-type', 'text/html; charset=utf-8');
     fs.createReadStream(path.join(out, 'index.html')).pipe(res);
   });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  await new Promise(resolve => server.listen(persistent ? FIXED_PORT : 0, '127.0.0.1', resolve));
   const url = `http://127.0.0.1:${server.address().port}/?playtest=stress`;
   const errors = [];
   const result = { build: build.identity, scenarios: {} };
   try {
-    const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+    const page = persistent ? (ctx.pages()[0] ?? await ctx.newPage()) : await browser.newPage({ viewport: { width: 1600, height: 1000 } });
     boundPageEvaluations(page, 120000);
     page.setDefaultTimeout(120000);
     page.on('pageerror', e => errors.push(e.message));
@@ -402,6 +415,17 @@ async function main() {
     progress(page, 'page-load');
     await page.goto(url, { waitUntil: 'load', timeout: 180000 });
     await page.waitForFunction(() => !!window.__aiBuildingsTestDebug && !!window.__turnSlowdownTestDebug, undefined, { timeout: 180000 });
+    let loadedMine = null;
+    if (MODE === 'load') {
+      progress(page, 'load-slot');
+      await page.evaluate(slot => { window.__turnSlowdownTestDebug.perfLoad(slot); }, SLOT);
+      await page.waitForFunction(() => { const c = window.__turnSlowdownTestDebug.perfCounts(); return c.cities >= 137 && c.units >= 300 && !document.querySelector('.civ-map-load-overlay'); }, undefined, { timeout: 400000, polling: 1000 });
+      progress(page, 'loaded');
+      const pcs = await page.evaluate(() => window.__turnSlowdownTestDebug.perfPlayerCityPositions());
+      const mu = (await page.evaluate(() => window.__turnSlowdownTestDebug.perfUnitsOf(0))).filter(u => u.id.startsWith('perfSeed-'));
+      loadedMine = mu.map(u => { let best = pcs[0]; let bd = 1e9; for (const c of pcs) { const d = Math.abs(c.q - u.q) + Math.abs(c.r - u.r); if (d < bd) { bd = d; best = c; } } return { id: u.id, q: u.q, r: u.r, cq: best.q, cr: best.r }; });
+      await wait(3000);
+    } else {
     progress(page, 'new-game-start');
     await page.evaluate(() => window.__aiBuildingsTestDebug.startNewGame({ rivals: '6', cityStates: 0, civTypes: 7, seed: 1412026 }));
     await page.waitForFunction(() => {
@@ -417,6 +441,7 @@ async function main() {
     const seeded = await page.evaluate(() => window.__turnSlowdownTestDebug.seedLargeEmpireForStress({ player: 40, rivals: 6, improvements: 180 }));
     console.log('[perf] scenario:', JSON.stringify(seeded));
     await wait(3000);
+    }
 
     // in-page recorders: synchronous mouseup handler cost (capture->bubble on window) + long tasks
     await page.evaluate(() => {
@@ -447,7 +472,7 @@ async function main() {
       result.scenarios[label] = row;
       console.log('[perf]', label, JSON.stringify({ handlerMs: lat.h, long: lat.long, profTotalMs: prof && prof.totalMs }));
       if (prof) console.log('  top:', prof.top.filter(t => !t.fn.startsWith('(idle)')).slice(0, 12).map(t => `${t.fn} ${t.selfMs}ms`).join(' | '));
-      if (prof) console.log('  incl:', prof.inclusive.slice(0, 40).map(t => `${t.fn} ${t.inclMs}ms`).join(' | '));
+      if (prof) console.log('  incl:', prof.inclusive.slice(0, Number(process.env.PERF_INCL_N) || 40).map(t => `${t.fn} ${t.inclMs}ms`).join(' | '));
       return row;
     }
 
@@ -462,11 +487,18 @@ async function main() {
     const focus = (q, r, d = 40) => page.evaluate(([q, r, d]) => window.__turnSlowdownTestDebug.perfFocus(q, r, d), [q, r, d]);
 
     // seed a late-game-sized unit population (player 3/city = ~120, each major AI 2/city = ~180)
-    const seededUnits = await page.evaluate(() => window.__turnSlowdownTestDebug.perfSeedUnits(3, 2));
+    const seededUnits = loadedMine ? { seeded: loadedMine.length, mine: loadedMine, total: (await page.evaluate(() => window.__turnSlowdownTestDebug.perfCounts())).units } : await page.evaluate(() => window.__turnSlowdownTestDebug.perfSeedUnits(3, 2));
+    if (MODE === 'save') {
+      const sv = await page.evaluate(slot => window.__turnSlowdownTestDebug.perfSave(slot), SLOT);
+      console.log('[perf] saved slot:', JSON.stringify(sv));
+      if (!sv.ok) throw new Error('save failed');
+      return;
+    }
     console.log('[perf] seeded units:', seededUnits.seeded, 'total', seededUnits.total);
     result.seededUnits = { seeded: seededUnits.seeded, total: seededUnits.total };
     await wait(2000);
 
+    if (process.env.PERF_SKIP_FOG !== '1') {
     // A. fog pipeline breakdown (pure JS, per call)
     const fog = await page.evaluate(() => window.__turnSlowdownTestDebug.perfFogParts(8));
     result.fogParts = fog;
@@ -477,16 +509,23 @@ async function main() {
     console.log('[perf] renderInfo:', JSON.stringify(result.renderInfo));
     if (process.env.PERF_ONLY_FOG === '1') {
       // pure-JS scenarios without GL-heavy frames: HUD/fog pipeline only
-      for (let k = 0; k < 3; k++) {
-        const again = await page.evaluate(() => window.__turnSlowdownTestDebug.perfFogParts(5));
-        result['fogParts' + k] = again;
-        console.log('[perf] fog parts rerun', k, JSON.stringify(again.rows.map(r => r.join('=')).join(' ')));
+      // best-of-N / median-of-N (shared CI-like machine: wall time is noisy, minimum approximates uncontended cost)
+      const N = Number(process.env.PERF_BEST_N) || 10;
+      const runs = [];
+      for (let k = 0; k < N; k++) runs.push((await page.evaluate(() => window.__turnSlowdownTestDebug.perfFogParts(1))).rows);
+      const stat = {};
+      for (let i = 0; i < runs[0].length; i++) {
+        const v = runs.map(r => r[i][1]).sort((a, b) => a - b);
+        stat[runs[0][i][0]] = { min: v[0], median: v[Math.floor(v.length / 2)] };
       }
+      result.best = stat;
+      console.log('[perf] BEST-OF-' + N + ' (min/median ms):', JSON.stringify(stat));
       result.errors = errors.slice(0, 10);
       fs.writeFileSync(OUT_JSON, JSON.stringify(result, null, 2));
       console.log('[perf] result written:', OUT_JSON);
       return;
     }
+    if (process.env.PERF_ONLY_EOT !== '1') {
     await profiled('idle-3s', async () => { await wait(3000); });
     result.counts = await page.evaluate(() => window.__turnSlowdownTestDebug.perfCounts());
 
@@ -500,6 +539,8 @@ async function main() {
         await wait(200);
       }
     });
+
+    }
 
     // C. select unit / move / enter city (real canvas clicks)
     const mine = seededUnits.mine;
@@ -568,6 +609,8 @@ async function main() {
       return out2;
     });
 
+    }
+
     // 5. end-turn once (heavy); optional
     if (process.env.PERF_EOT === '1') {
       await profiled('end-turn', async () => {
@@ -580,7 +623,7 @@ async function main() {
     fs.writeFileSync(OUT_JSON, JSON.stringify(result, null, 2));
     console.log('[perf] result written:', OUT_JSON);
   } finally {
-    try { await deadline(browser.close(), 10000, 'browser close'); } catch { browser.process()?.kill('SIGKILL'); }
+    try { await deadline(browser.close(), 10000, 'browser close'); } catch { try { browser.process?.()?.kill('SIGKILL'); } catch {} }
     try { server.close(); } catch {}
     if (!process.env.PERF_BUILD_DIR) fs.rmSync(out, { recursive: true, force: true });
   }

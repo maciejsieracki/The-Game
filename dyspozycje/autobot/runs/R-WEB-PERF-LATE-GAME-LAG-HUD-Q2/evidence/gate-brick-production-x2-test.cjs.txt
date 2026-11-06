@@ -1,0 +1,10 @@
+-- A. dane: baza cykli bez zmian (50), wyjscie x2, wejscia na cykl bez zmian --
+-- B. wzor epoki: mnoznik WYJSCIA 1/1,5/2/2,5/3 tylko Cegielnia, cykle plaskie --
+-- C. runConverter: wejscia zuzyte zgodnie z receptura, bonus epoki dziala takze gdy ogranicza drewno --
+-- D. silnik advanceCityEconomy: gracz era2 i AI era3 (parytet) --
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=4 terrain=57 landSea=330 relief=237 coast=43 riversMain=2593 riversFill=1722 forest=7 deposits=47 starts=203 total=5244
+-- E. wyswietlanie (panel miasta) czyta ta sama funkcje --
+
+brick-production-x2-test: 69 passed, 0 failed
+EXIT=0

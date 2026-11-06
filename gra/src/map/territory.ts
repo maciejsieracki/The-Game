@@ -10,7 +10,7 @@
  * SILNIK importuje bezpośrednio: import { isInTerritory, CityNode } from './map/territory'.
  */
 
-import { cityRangeForPopulation } from '../game/okolica';
+import { cityRangeForPopulation, CITY_RANGE_CAP } from '../game/okolica';
 
 // ============================================================
 // INTERFEJS WĘZŁA MIASTA / POSTERUNKU / FORTU
@@ -130,9 +130,14 @@ export function territoryOwnerAt(
   let bestFortDist = Infinity;
   let bestFortOrder: { turn: number; seq: number } | undefined;
 
+  // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: zaden wezel nie ma promienia wiekszego niz max(cap miasta, fort,
+  // posterunek) — dalekie wezly (wiekszosc z ~137 w pozniej grze) odrzucamy po samej odleglosci,
+  // bez liczenia promienia. Wynik identyczny (dist > radius => dist > bound).
+  const radiusBound = Math.max(CITY_RANGE_CAP, FORT_TERRITORY_RADIUS, OUTPOST_TERRITORY_RADIUS);
   for (const node of nodes) {
-    const radius = cityTerritoryRadius(node);
     const dist = axialDistance(q, r, node.q, node.r);
+    if (dist > radiusBound) continue;
+    const radius = cityTerritoryRadius(node);
     if (dist > radius) continue;
     if (node.isFort || node.isOutpost) {
       // Q-B=B (R3): oba wezly z `order` -> wygrywa wczesniejszy fort; inaczej najblizszy (stary mechanizm).

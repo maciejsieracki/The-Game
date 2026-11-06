@@ -24,6 +24,7 @@ import {
   makeTerritoryWorkableFilter,
   type TerritoryNode,
 } from '../map/territory-work';
+import { axialDistance, FORT_TERRITORY_RADIUS, OUTPOST_TERRITORY_RADIUS } from '../map/territory';
 export {
   buildTerritoryNodesFromCities,
   reconcileWorkedTilesForOwner,
@@ -158,16 +159,26 @@ export function okolicaTiles(
 ): OkolicaTile[] {
   const out: OkolicaTile[] = [];
   const rad = Number.isFinite(radius) && radius > 0 ? Math.floor(radius) : 1;
-  for (const key of hexKeysWithinRadius(centerQ, centerR, rad, map)) {
-    const parts = key.split(',');
-    const q = Number(parts[0]);
-    const rr = Number(parts[1]);
-    if (!Number.isFinite(q) || !Number.isFinite(rr)) continue;
-    if (q === centerQ && rr === centerR) continue;
-    const d = hexDistance(centerQ, centerR, q, rr);
-    if (d > rad) continue;
-    if (isWorkable && !isWorkable(q, rr)) continue;
-    out.push({ q, r: rr, key, dist: d });
+  // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: ta sama enumeracja co hexKeysWithinRadius (ta sama kolejnosc,
+  // te same klucze), ale bez skladania stringow i ich ponownego parsowania (split/Number) na heks.
+  const r0 = Number.isFinite(rad) && rad > 0 ? Math.floor(rad) : 0;
+  if (!Number.isFinite(centerQ) || !Number.isFinite(centerR)) {
+    // Niefinitowe centrum: zachowanie sprzed zmiany (klucze "NaN,.." odrzucane przez parse) — brak tiles.
+    return out;
+  }
+  for (let dq = -r0; dq <= r0; dq++) {
+    const lo = Math.max(-r0, -dq - r0), hi = Math.min(r0, -dq + r0);
+    for (let dr = lo; dr <= hi; dr++) {
+      if (dq === 0 && dr === 0) continue;
+      const q = centerQ + dq;
+      const rr = centerR + dr;
+      const key = `${q},${rr}`;
+      if (!map.hexes[key]) continue;
+      const d = hexDistance(centerQ, centerR, q, rr);
+      if (d > rad) continue;
+      if (isWorkable && !isWorkable(q, rr)) continue;
+      out.push({ q, r: rr, key, dist: d });
+    }
   }
   return out;
 }
@@ -215,6 +226,8 @@ type ScoredOkolicaTile = {
   potential: number;
 };
 
+const KEY_COLLATOR = new Intl.Collator();
+
 function compareScoredOkolicaTiles(a: ScoredOkolicaTile, b: ScoredOkolicaTile, focus?: OkolicaFocus): number {
   if (b.s !== a.s) return b.s - a.s;
   if (focus === 'zywnosc') {
@@ -224,7 +237,9 @@ function compareScoredOkolicaTiles(a: ScoredOkolicaTile, b: ScoredOkolicaTile, f
     if (b.potential !== a.potential) return b.potential - a.potential;
   }
   if (a.t.dist !== b.t.dist) return a.t.dist - b.t.dist;
-  return a.t.key.localeCompare(b.t.key);
+  // Collator domyslnej lokalizacji == String.prototype.localeCompare bez argumentow (identyczny porzadek),
+  // ale bez kosztu tworzenia collatora przy kazdym porownaniu.
+  return KEY_COLLATOR.compare(a.t.key, b.t.key);
 }
 
 function scoreOkolicaTile(
@@ -267,8 +282,34 @@ function assignOptionsForFocus(
   };
 }
 
-function effectiveIsWorkable(opts: AssignOptions): ((q: number, r: number) => boolean) | undefined {
-  const { territoryNodes, ownerId, isWorkable, excludeHexKeys } = opts;
+/**
+ * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: filtr terytorium dla pol w promieniu `radius` od (cq,cr) wystarczy
+ * liczyc po wezlach, ktore moga sie z tym obszarem zetknac: wezel o promieniu <= B moze objac pole
+ * odlegle od centrum o <= radius tylko gdy sam lezy w odleglosci <= radius + B od centrum (nierownosc
+ * trojkata). Kolejnosc wezlow zachowana (remis odleglosci rozstrzyga pierwszy w tablicy), a centra
+ * miast pol w promieniu tez naleza do tego podzbioru — wynik filtra jest IDENTYCZNY, a koszt maleje
+ * z O(wszystkie wezly) do O(wezly w sasiedztwie) na kazde pole.
+ */
+function territoryNodesNearCentre(
+  nodes: readonly TerritoryNode[],
+  cq: number,
+  cr: number,
+  radius: number,
+): readonly TerritoryNode[] {
+  if (nodes.length <= 16) return nodes;
+  const bound = Math.max(1, radius) + Math.max(CITY_RANGE_CAP, FORT_TERRITORY_RADIUS, OUTPOST_TERRITORY_RADIUS);
+  return nodes.filter(n => axialDistance(cq, cr, n.q, n.r) <= bound);
+}
+
+function effectiveIsWorkable(
+  opts: AssignOptions,
+  centre?: { q: number; r: number; radius: number },
+): ((q: number, r: number) => boolean) | undefined {
+  const { ownerId, isWorkable, excludeHexKeys } = opts;
+  const territoryNodes = opts.territoryNodes != null && centre != null && Number.isFinite(centre.radius)
+    && Number.isFinite(centre.q) && Number.isFinite(centre.r)
+    ? territoryNodesNearCentre(opts.territoryNodes, centre.q, centre.r, centre.radius)
+    : opts.territoryNodes;
   let base = isWorkable;
   if (territoryNodes != null && ownerId != null) {
     base = makeTerritoryWorkableFilter(territoryNodes, ownerId, isWorkable);
@@ -300,7 +341,7 @@ export function assignWorkedTiles(
   opts: AssignOptions = {},
 ): OkolicaTile[] {
   const radius = opts.radius ?? cityRangeForPopulation(population);
-  const tiles = okolicaTiles(centerQ, centerR, radius, map, effectiveIsWorkable(opts));
+  const tiles = okolicaTiles(centerQ, centerR, radius, map, effectiveIsWorkable(opts, { q: centerQ, r: centerR, radius }));
   const scored = tiles.map(t => scoreOkolicaTile(t, yieldOf, opts));
   scored.sort((a, b) => compareScoredOkolicaTiles(a, b, opts.focus));
   const n = Math.max(0, Math.min(Math.floor(Number.isFinite(population) ? population : 0), scored.length));
@@ -345,7 +386,7 @@ export function resolveWorkedTiles(
   const radius = opts.radius ?? cityRangeForPopulation(pop);
   const tryb = opts.tryb ?? city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
   const focus = opts.focus ?? city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
-  const workFilter = effectiveIsWorkable(opts);
+  const workFilter = effectiveIsWorkable(opts, { q: city.q, r: city.r, radius });
 
   if (tryb === 'reczny') {
     const reczne = opts.reczne ?? city.okolicaReczne ?? {};

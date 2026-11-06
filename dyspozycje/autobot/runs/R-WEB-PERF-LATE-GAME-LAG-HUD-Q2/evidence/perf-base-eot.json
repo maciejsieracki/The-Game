@@ -1,0 +1,377 @@
+{
+  "build": {
+    "reused": "/tmp/claude-0/perfq2-base",
+    "gitHead": "4905bac052e77cbd104b9794b304a87d8f3c9b65"
+  },
+  "scenarios": {
+    "end-turn": {
+      "label": "end-turn",
+      "wallMs": 34611,
+      "handlerMs": [],
+      "handlerP50": null,
+      "handlerP95": null,
+      "handlerMax": null,
+      "longTasks": [
+        1115,
+        1346,
+        301,
+        1177,
+        1084,
+        990,
+        562,
+        87,
+        1143,
+        71,
+        1153,
+        2830,
+        225,
+        1560,
+        1804,
+        203,
+        2232,
+        233,
+        3318,
+        367,
+        3547,
+        185,
+        340,
+        1740,
+        1038,
+        3504,
+        250,
+        2600,
+        1537,
+        612,
+        1449
+      ],
+      "longTasksOver200": 28,
+      "profile": {
+        "totalMs": 36477.3,
+        "top": [
+          {
+            "fn": "uniformMatrix3fv :0",
+            "selfMs": 6252.3,
+            "pct": 17.1
+          },
+          {
+            "fn": "uniformMatrix4fv :0",
+            "selfMs": 4054.5,
+            "pct": 11.1
+          },
+          {
+            "fn": "hexKeysWithinRadius ?playtest=stress:70121",
+            "selfMs": 2661,
+            "pct": 7.3
+          },
+          {
+            "fn": "(program) :0",
+            "selfMs": 1836,
+            "pct": 5
+          },
+          {
+            "fn": "drawElements :0",
+            "selfMs": 1763.6,
+            "pct": 4.8
+          },
+          {
+            "fn": "collectDepositPotential ?playtest=stress:128898",
+            "selfMs": 1494.8,
+            "pct": 4.1
+          },
+          {
+            "fn": "computeTerritoryResourceYieldByCity ?playtest=stress:106046",
+            "selfMs": 1360.5,
+            "pct": 3.7
+          },
+          {
+            "fn": "axialDistance$1 ?playtest=stress:69977",
+            "selfMs": 1164.3,
+            "pct": 3.2
+          },
+          {
+            "fn": "placedImprovementsForOwner ?playtest=stress:199538",
+            "selfMs": 800.2,
+            "pct": 2.2
+          },
+          {
+            "fn": "okolicaTiles ?playtest=stress:70160",
+            "selfMs": 606,
+            "pct": 1.7
+          },
+          {
+            "fn": "territoryOwnerAt ?playtest=stress:69995",
+            "selfMs": 601.1,
+            "pct": 1.6
+          },
+          {
+            "fn": "buildRiverHexSet ?playtest=stress:128289",
+            "selfMs": 590.8,
+            "pct": 1.6
+          },
+          {
+            "fn": "(garbage collector) :0",
+            "selfMs": 541.6,
+            "pct": 1.5
+          },
+          {
+            "fn": "getCityResourceAccessForCity ?playtest=stress:128936",
+            "selfMs": 492.3,
+            "pct": 1.3
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "selfMs": 434.9,
+            "pct": 1.2
+          }
+        ],
+        "inclusive": [
+          {
+            "fn": "renderLoop ?playtest=stress:216218",
+            "inclMs": 15823
+          },
+          {
+            "fn": "WebGLRenderer.render ?playtest=stress:17275",
+            "inclMs": 15815.5
+          },
+          {
+            "fn": "renderScene ?playtest=stress:17420",
+            "inclMs": 14980.1
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "inclMs": 14453.9
+          },
+          {
+            "fn": "setProgram ?playtest=stress:17619",
+            "inclMs": 11659.4
+          },
+          {
+            "fn": "runAiPhase ?playtest=stress:224174",
+            "inclMs": 10833.1
+          },
+          {
+            "fn": "setValue ?playtest=stress:11325",
+            "inclMs": 10626
+          },
+          {
+            "fn": "renderObjects ?playtest=stress:17499",
+            "inclMs": 9662.2
+          },
+          {
+            "fn": "renderObject ?playtest=stress:17512",
+            "inclMs": 9583.1
+          },
+          {
+            "fn": "updateHud ?playtest=stress:146296",
+            "inclMs": 8951.4
+          },
+          {
+            "fn": "collectTurnEvents ?playtest=stress:206979",
+            "inclMs": 7084.7
+          },
+          {
+            "fn": "runWorldEndTurn ?playtest=stress:222610",
+            "inclMs": 6397.7
+          },
+          {
+            "fn": "setValueM3 ?playtest=stress:10867",
+            "inclMs": 6342.5
+          },
+          {
+            "fn": "productionAvailabilityCtxForCity ?playtest=stress:206635",
+            "inclMs": 6337
+          },
+          {
+            "fn": "uniformMatrix3fv :0",
+            "inclMs": 6252.3
+          },
+          {
+            "fn": "empireActiveResourceLabelsForOwner ?playtest=stress:198311",
+            "inclMs": 5596
+          },
+          {
+            "fn": "refreshFog ?playtest=stress:203976",
+            "inclMs": 5202
+          },
+          {
+            "fn": "render2 ?playtest=stress:130306",
+            "inclMs": 4710.3
+          },
+          {
+            "fn": "refreshSidePanel ?playtest=stress:146141",
+            "inclMs": 4710.3
+          },
+          {
+            "fn": "cityHasActionableProduction ?playtest=stress:206814",
+            "inclMs": 4363.6
+          },
+          {
+            "fn": "setValueM4 ?playtest=stress:10881",
+            "inclMs": 4258.3
+          },
+          {
+            "fn": "uniformMatrix4fv :0",
+            "inclMs": 4054.5
+          },
+          {
+            "fn": "getCityResourceAccessForCity ?playtest=stress:128936",
+            "inclMs": 3624.5
+          },
+          {
+            "fn": "checkVillageRewardsAlongPath ?playtest=stress:212905",
+            "inclMs": 3507.2
+          },
+          {
+            "fn": "checkVillageRewardAt ?playtest=stress:212771",
+            "inclMs": 3506.9
+          },
+          {
+            "fn": "collectDepositPotential ?playtest=stress:128898",
+            "inclMs": 3438.4
+          },
+          {
+            "fn": "refreshD1BModules ?playtest=stress:146186",
+            "inclMs": 3315.4
+          },
+          {
+            "fn": "empireTerritoryResourceRatesForOwner ?playtest=stress:198383",
+            "inclMs": 3145.7
+          },
+          {
+            "fn": "pickResourceTradeRelOffer ?playtest=stress:209632",
+            "inclMs": 3117
+          },
+          {
+            "fn": "render2 ?playtest=stress:130606",
+            "inclMs": 2866.3
+          },
+          {
+            "fn": "mergedResourceRatesForOwner ?playtest=stress:203399",
+            "inclMs": 2774.3
+          },
+          {
+            "fn": "productionOptionsFingerprint ?playtest=stress:206778",
+            "inclMs": 2718.4
+          },
+          {
+            "fn": "hexKeysWithinRadius ?playtest=stress:70121",
+            "inclMs": 2661
+          },
+          {
+            "fn": "resolveWorkedTiles ?playtest=stress:70252",
+            "inclMs": 2465.9
+          },
+          {
+            "fn": "cityWorkedTilesForEconomy ?playtest=stress:105995",
+            "inclMs": 2423.3
+          },
+          {
+            "fn": "countBlockingEvents ?playtest=stress:205965",
+            "inclMs": 2414.2
+          },
+          {
+            "fn": "getBlockingCount ?playtest=stress:211759",
+            "inclMs": 2414.2
+          },
+          {
+            "fn": "assignWorkedTiles ?playtest=stress:70231",
+            "inclMs": 2395.9
+          },
+          {
+            "fn": "refreshContextPanel ?playtest=stress:146196",
+            "inclMs": 2336.1
+          },
+          {
+            "fn": "okolicaTiles ?playtest=stress:70160",
+            "inclMs": 2200.4
+          },
+          {
+            "fn": "territoryOwnerAt ?playtest=stress:69995",
+            "inclMs": 1977.9
+          },
+          {
+            "fn": "recomputeTradeRoutesNow ?playtest=stress:206820",
+            "inclMs": 1953.9
+          },
+          {
+            "fn": "placedImprovementsForOwner ?playtest=stress:199538",
+            "inclMs": 1899.9
+          },
+          {
+            "fn": "render2 ?playtest=stress:10486",
+            "inclMs": 1774.1
+          },
+          {
+            "fn": "drawElements :0",
+            "inclMs": 1763.6
+          },
+          {
+            "fn": "buildHudState ?playtest=stress:209040",
+            "inclMs": 1720.3
+          },
+          {
+            "fn": "computeWorkedMagazynYieldsByCity ?playtest=stress:106095",
+            "inclMs": 1649
+          },
+          {
+            "fn": "updateHud$1 ?playtest=stress:212305",
+            "inclMs": 1555.8
+          },
+          {
+            "fn": "computeTerritoryResourceYieldByCity ?playtest=stress:106046",
+            "inclMs": 1538
+          },
+          {
+            "fn": "syncUnitsRender ?playtest=stress:204263",
+            "inclMs": 1480.1
+          },
+          {
+            "fn": "decideAITurn ?playtest=stress:189375",
+            "inclMs": 1469
+          },
+          {
+            "fn": "decideAITurnCore ?playtest=stress:189498",
+            "inclMs": 1466.3
+          },
+          {
+            "fn": "axialDistance$1 ?playtest=stress:69977",
+            "inclMs": 1164.3
+          },
+          {
+            "fn": "(anon) ?playtest=stress:70224",
+            "inclMs": 1082.4
+          },
+          {
+            "fn": "(anon) ?playtest=stress:216078",
+            "inclMs": 1047.3
+          },
+          {
+            "fn": "_syncStatChip ?playtest=stress:125518",
+            "inclMs": 1039.3
+          },
+          {
+            "fn": "syncStatChips ?playtest=stress:125264",
+            "inclMs": 978.8
+          },
+          {
+            "fn": "clearPlayerUnitSelectionStateOnly ?playtest=stress:200336",
+            "inclMs": 944
+          },
+          {
+            "fn": "previewCityEconomy ?playtest=stress:106577",
+            "inclMs": 938
+          },
+          {
+            "fn": "projectPlayerFoodProjection ?playtest=stress:208772",
+            "inclMs": 916.6
+          }
+        ]
+      }
+    }
+  },
+  "seededUnits": {
+    "seeded": 120,
+    "total": 321
+  },
+  "errors": []
+}

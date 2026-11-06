@@ -750,6 +750,11 @@ export function computeTerritoryResourceYieldByCity(
   for (const hexKey of Object.keys(map.hexes)) {
     const hex = map.hexes[hexKey];
     if (!hex) continue;
+    // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: wiekszosc heksow nie ma ulepszen — szybkie odrzucenie bez alokacji
+    // (improvementKeysForHex zwrocilby [] dokladnie wtedy: brak `ulepszenia` i `ulepszenie` puste/'brak').
+    const rawSingle = (hex as { ulepszenie?: unknown }).ulepszenie;
+    if (!(hex as { ulepszenia?: readonly string[] | null }).ulepszenia?.length
+      && (rawSingle == null || rawSingle === 'brak')) continue;
     const impKeys = improvementKeysForHex(hex);
     if (!impKeys.length) continue;
 

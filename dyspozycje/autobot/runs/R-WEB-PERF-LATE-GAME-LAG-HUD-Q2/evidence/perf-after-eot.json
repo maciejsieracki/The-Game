@@ -1,0 +1,376 @@
+{
+  "build": {
+    "reused": "/tmp/claude-0/perfq2-build",
+    "gitHead": "4905bac052e77cbd104b9794b304a87d8f3c9b65"
+  },
+  "scenarios": {
+    "end-turn": {
+      "label": "end-turn",
+      "wallMs": 31255,
+      "handlerMs": [],
+      "handlerP50": null,
+      "handlerP95": null,
+      "handlerMax": null,
+      "longTasks": [
+        1190,
+        304,
+        1196,
+        1089,
+        333,
+        1082,
+        151,
+        1603,
+        99,
+        1233,
+        1346,
+        673,
+        1539,
+        2333,
+        268,
+        1842,
+        1270,
+        1664,
+        574,
+        2481,
+        294,
+        308,
+        1915,
+        1051,
+        928,
+        530,
+        2193,
+        2366,
+        80,
+        554
+      ],
+      "longTasksOver200": 27,
+      "profile": {
+        "totalMs": 32951.4,
+        "top": [
+          {
+            "fn": "uniformMatrix4fv :0",
+            "selfMs": 7505,
+            "pct": 22.8
+          },
+          {
+            "fn": "uniformMatrix3fv :0",
+            "selfMs": 6554.4,
+            "pct": 19.9
+          },
+          {
+            "fn": "(program) :0",
+            "selfMs": 1712.5,
+            "pct": 5.2
+          },
+          {
+            "fn": "computeTerritoryResourceYieldByCity ?playtest=stress:106075",
+            "selfMs": 1654.6,
+            "pct": 5
+          },
+          {
+            "fn": "(garbage collector) :0",
+            "selfMs": 1069.9,
+            "pct": 3.2
+          },
+          {
+            "fn": "drawElements :0",
+            "selfMs": 768.4,
+            "pct": 2.3
+          },
+          {
+            "fn": "axialDistance$1 ?playtest=stress:69990",
+            "selfMs": 622.2,
+            "pct": 1.9
+          },
+          {
+            "fn": "okolicaTiles ?playtest=stress:70175",
+            "selfMs": 577.8,
+            "pct": 1.8
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "selfMs": 431.1,
+            "pct": 1.3
+          },
+          {
+            "fn": "computeVisibleAt ?playtest=stress:70554",
+            "selfMs": 408,
+            "pct": 1.2
+          },
+          {
+            "fn": "territoryOwnerAt ?playtest=stress:70008",
+            "selfMs": 386.4,
+            "pct": 1.2
+          },
+          {
+            "fn": "uniform1f :0",
+            "selfMs": 344.6,
+            "pct": 1
+          },
+          {
+            "fn": "updateMatrixWorld ?playtest=stress:4696",
+            "selfMs": 326.6,
+            "pct": 1
+          },
+          {
+            "fn": "markUniformsLightsNeedsUpdate ?playtest=stress:17814",
+            "selfMs": 313.3,
+            "pct": 1
+          },
+          {
+            "fn": "getProgram ?playtest=stress:17530",
+            "selfMs": 260.3,
+            "pct": 0.8
+          }
+        ],
+        "inclusive": [
+          {
+            "fn": "renderLoop ?playtest=stress:216302",
+            "inclMs": 19423.2
+          },
+          {
+            "fn": "WebGLRenderer.render ?playtest=stress:17275",
+            "inclMs": 19420
+          },
+          {
+            "fn": "renderScene ?playtest=stress:17420",
+            "inclMs": 18367.8
+          },
+          {
+            "fn": "WebGLRenderer.renderBufferDirect ?playtest=stress:17083",
+            "inclMs": 17813.6
+          },
+          {
+            "fn": "setProgram ?playtest=stress:17619",
+            "inclMs": 16051.3
+          },
+          {
+            "fn": "setValue ?playtest=stress:11325",
+            "inclMs": 14417.4
+          },
+          {
+            "fn": "renderObjects ?playtest=stress:17499",
+            "inclMs": 11797.6
+          },
+          {
+            "fn": "renderObject ?playtest=stress:17512",
+            "inclMs": 11726.1
+          },
+          {
+            "fn": "runAiPhase ?playtest=stress:224260",
+            "inclMs": 7809.6
+          },
+          {
+            "fn": "setValueM4 ?playtest=stress:10881",
+            "inclMs": 7719.1
+          },
+          {
+            "fn": "uniformMatrix4fv :0",
+            "inclMs": 7505
+          },
+          {
+            "fn": "setValueM3 ?playtest=stress:10867",
+            "inclMs": 6658.9
+          },
+          {
+            "fn": "uniformMatrix3fv :0",
+            "inclMs": 6554.4
+          },
+          {
+            "fn": "pickResourceTradeRelOffer ?playtest=stress:209716",
+            "inclMs": 2784.1
+          },
+          {
+            "fn": "empireTerritoryResourceRatesForOwner ?playtest=stress:198427",
+            "inclMs": 2760
+          },
+          {
+            "fn": "mergedResourceRatesForOwner ?playtest=stress:203440",
+            "inclMs": 2471.3
+          },
+          {
+            "fn": "runWorldEndTurn ?playtest=stress:222696",
+            "inclMs": 2460.8
+          },
+          {
+            "fn": "decideAITurn ?playtest=stress:189417",
+            "inclMs": 1813.5
+          },
+          {
+            "fn": "computeTerritoryResourceYieldByCity ?playtest=stress:106075",
+            "inclMs": 1790.4
+          },
+          {
+            "fn": "decideAITurnCore ?playtest=stress:189540",
+            "inclMs": 1694.6
+          },
+          {
+            "fn": "updateHud ?playtest=stress:146338",
+            "inclMs": 1693.4
+          },
+          {
+            "fn": "syncUnitsRender ?playtest=stress:204304",
+            "inclMs": 1525.5
+          },
+          {
+            "fn": "resolveWorkedTiles ?playtest=stress:70281",
+            "inclMs": 1407.3
+          },
+          {
+            "fn": "cityWorkedTilesForEconomy ?playtest=stress:106024",
+            "inclMs": 1389.5
+          },
+          {
+            "fn": "assignWorkedTiles ?playtest=stress:70260",
+            "inclMs": 1371.9
+          },
+          {
+            "fn": "buildHudState ?playtest=stress:209124",
+            "inclMs": 1215.4
+          },
+          {
+            "fn": "(garbage collector) :0",
+            "inclMs": 1069.9
+          },
+          {
+            "fn": "refreshFog ?playtest=stress:204017",
+            "inclMs": 1069.4
+          },
+          {
+            "fn": "_syncStatChip ?playtest=stress:125550",
+            "inclMs": 1053.4
+          },
+          {
+            "fn": "okolicaTiles ?playtest=stress:70175",
+            "inclMs": 1036.6
+          },
+          {
+            "fn": "territoryOwnerAt ?playtest=stress:70008",
+            "inclMs": 1035.9
+          },
+          {
+            "fn": "syncStatChips ?playtest=stress:125296",
+            "inclMs": 1010.9
+          },
+          {
+            "fn": "_buildBadgeInput ?playtest=stress:125502",
+            "inclMs": 931.4
+          },
+          {
+            "fn": "getCityGrowth ?playtest=stress:217828",
+            "inclMs": 906.3
+          },
+          {
+            "fn": "cityGrowthLive ?playtest=stress:148075",
+            "inclMs": 905.7
+          },
+          {
+            "fn": "computeWorkedMagazynYieldsByCity ?playtest=stress:106127",
+            "inclMs": 904.2
+          },
+          {
+            "fn": "computeView ?playtest=stress:147862",
+            "inclMs": 898.5
+          },
+          {
+            "fn": "refreshD1BModules ?playtest=stress:146228",
+            "inclMs": 799.1
+          },
+          {
+            "fn": "render2 ?playtest=stress:10486",
+            "inclMs": 785.4
+          },
+          {
+            "fn": "placedImprovementsForOwner ?playtest=stress:199582",
+            "inclMs": 770.1
+          },
+          {
+            "fn": "drawElements :0",
+            "inclMs": 768.4
+          },
+          {
+            "fn": "checkVillageRewardsAlongPath ?playtest=stress:212989",
+            "inclMs": 712
+          },
+          {
+            "fn": "checkVillageRewardAt ?playtest=stress:212855",
+            "inclMs": 711.7
+          },
+          {
+            "fn": "planCityImprovements ?playtest=stress:189147",
+            "inclMs": 699.6
+          },
+          {
+            "fn": "pickAutoImprovementsStaged ?playtest=stress:187214",
+            "inclMs": 699.1
+          },
+          {
+            "fn": "pickAutoImprovements ?playtest=stress:187210",
+            "inclMs": 699.1
+          },
+          {
+            "fn": "pickAutoImprovementsSinglePass ?playtest=stress:187451",
+            "inclMs": 679.2
+          },
+          {
+            "fn": "firstStep ?playtest=stress:188323",
+            "inclMs": 678.9
+          },
+          {
+            "fn": "recomputeTradeRoutesNow ?playtest=stress:206902",
+            "inclMs": 672.2
+          },
+          {
+            "fn": "previewCityEconomy ?playtest=stress:106609",
+            "inclMs": 644.4
+          },
+          {
+            "fn": "marchPathFor ?playtest=stress:188329",
+            "inclMs": 642.5
+          },
+          {
+            "fn": "projectPlayerFoodProjection ?playtest=stress:208856",
+            "inclMs": 633.1
+          },
+          {
+            "fn": "axialDistance$1 ?playtest=stress:69990",
+            "inclMs": 622.2
+          },
+          {
+            "fn": "computePath ?playtest=stress:51925",
+            "inclMs": 578.4
+          },
+          {
+            "fn": "diplomacyActiveResourceLabelsForOwner ?playtest=stress:198380",
+            "inclMs": 575.3
+          },
+          {
+            "fn": "empireActiveResourceLabelsForOwner ?playtest=stress:198353",
+            "inclMs": 568.9
+          },
+          {
+            "fn": "tradableGoodsIndexForOwner ?playtest=stress:198409",
+            "inclMs": 541.4
+          },
+          {
+            "fn": "currentVisible ?playtest=stress:203761",
+            "inclMs": 528.2
+          },
+          {
+            "fn": "upload ?playtest=stress:11333",
+            "inclMs": 519.9
+          },
+          {
+            "fn": "ownPlayerVisibleHexes ?playtest=stress:203745",
+            "inclMs": 512.1
+          }
+        ]
+      }
+    }
+  },
+  "seededUnits": {
+    "seeded": 120,
+    "total": 321
+  },
+  "errors": []
+}

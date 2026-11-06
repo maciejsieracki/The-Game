@@ -1,0 +1,122 @@
+[A,B] render prawdziwego renderBarD1B + CSS w Chromium (ciemny motyw)
+  ok   real 1280px/small: 6 komorek banera
+  ok   real 1280px/small: baner (prawy brzeg 510) konczy sie przed medalionem Mocy (x=520)
+  ok   real 1280px/small: zaden tekst komorki nie jest przyciety
+  ok   real 1280px/small: brak poziomego przewijania
+  ok   real 1280px/small: ikony medalionow widoczne (min 30px, prog 12)
+  ok   real 1280px/small: prawy baner ma 5 chipow
+  ok   real 1280px/small: prawy baner nie zwezony do paska (szer. 288px >= 100)
+  ok   real 1280px/small: chipy prawego banera widoczne w banerze i na ekranie
+  ok   real 1280px/small: prawy baner (x=768) nie nachodzi na medalion Mocy (prawy brzeg 760)
+  ok   real 1280px/small: klaster z przyciskami Civpedia+Menu (zasymulowane) konczy sie na y=100 <= 160
+  ok   real 1280px/small: dol banera (95px) nad paskiem narzedzi (104)
+  ok   real 1280px/huge: 6 komorek banera
+  ok   real 1280px/huge: baner (prawy brzeg 510) konczy sie przed medalionem Mocy (x=520)
+  ok   real 1280px/huge: zaden tekst komorki nie jest przyciety
+  ok   real 1280px/huge: brak poziomego przewijania
+  ok   real 1280px/huge: ikony medalionow widoczne (min 30px, prog 12)
+  ok   real 1280px/huge: prawy baner ma 5 chipow
+  ok   real 1280px/huge: prawy baner nie zwezony do paska (szer. 288px >= 100)
+  ok   real 1280px/huge: chipy prawego banera widoczne w banerze i na ekranie
+  ok   real 1280px/huge: prawy baner (x=768) nie nachodzi na medalion Mocy (prawy brzeg 760)
+  ok   real 1280px/huge: klaster z przyciskami Civpedia+Menu (zasymulowane) konczy sie na y=100 <= 160
+  ok   real 1280px/huge: dol banera (95px) nad paskiem narzedzi (104)
+  ok   real 1024px/small: 6 komorek banera
+  ok   real 1024px/small: baner (prawy brzeg 382) konczy sie przed medalionem Mocy (x=392)
+  ok   real 1024px/small: zaden tekst komorki nie jest przyciety
+  ok   real 1024px/small: brak poziomego przewijania
+  ok   real 1024px/small: ikony medalionow widoczne (min 24px, prog 12)
+  ok   real 1024px/small: prawy baner ma 5 chipow
+  ok   real 1024px/small: prawy baner nie zwezony do paska (szer. 343px >= 100)
+  ok   real 1024px/small: chipy prawego banera widoczne w banerze i na ekranie
+  ok   real 1024px/small: prawy baner (x=661) nie nachodzi na medalion Mocy (prawy brzeg 632)
+  ok   real 1024px/small: klaster z przyciskami Civpedia+Menu (zasymulowane) konczy sie na y=116 <= 160
+  ok   real 1024px/small: dol banera (102px) nad paskiem narzedzi (104)
+  ok   real 1024px/huge: 6 komorek banera
+  ok   real 1024px/huge: baner (prawy brzeg 382) konczy sie przed medalionem Mocy (x=392)
+  ok   real 1024px/huge: zaden tekst komorki nie jest przyciety
+  ok   real 1024px/huge: brak poziomego przewijania
+  ok   real 1024px/huge: ikony medalionow widoczne (min 24px, prog 12)
+  ok   real 1024px/huge: prawy baner ma 5 chipow
+  ok   real 1024px/huge: prawy baner nie zwezony do paska (szer. 343px >= 100)
+  ok   real 1024px/huge: chipy prawego banera widoczne w banerze i na ekranie
+  ok   real 1024px/huge: prawy baner (x=661) nie nachodzi na medalion Mocy (prawy brzeg 632)
+  ok   real 1024px/huge: klaster z przyciskami Civpedia+Menu (zasymulowane) konczy sie na y=116 <= 160
+  ok   real 1024px/huge: dol banera (102px) nad paskiem narzedzi (104)
+  ok   real 800px/small: 6 komorek banera
+  ok   real 800px/small: baner (prawy brzeg 270) konczy sie przed medalionem Mocy (x=280)
+  ok   real 800px/small: zaden tekst komorki nie jest przyciety
+  ok   real 800px/small: brak poziomego przewijania
+  ok   real 800px/small: ikony medalionow widoczne (min 12px, prog 12)
+  ok   real 800px/small: prawy baner ma 5 chipow
+  ok   real 800px/small: prawy baner nie zwezony do paska (szer. 250px >= 100)
+  ok   real 800px/small: chipy prawego banera widoczne w banerze i na ekranie
+  ok   real 800px/small: prawy baner (x=530) nie nachodzi na medalion Mocy (prawy brzeg 520)
+  ok   real 800px/small: klaster z przyciskami Civpedia+Menu (zasymulowane) konczy sie na y=148 <= 160
+  ok   real 800px/small: dol banera (93px) nad paskiem narzedzi (104)
+  ok   real 800px/huge: 6 komorek banera
+  ok   real 800px/huge: baner (prawy brzeg 270) konczy sie przed medalionem Mocy (x=280)
+  ok   real 800px/huge: zaden tekst komorki nie jest przyciety
+  ok   real 800px/huge: brak poziomego przewijania
+  ok   real 800px/huge: ikony medalionow widoczne (min 12px, prog 12)
+  ok   real 800px/huge: prawy baner ma 5 chipow
+  ok   real 800px/huge: prawy baner nie zwezony do paska (szer. 250px >= 100)
+  ok   real 800px/huge: chipy prawego banera widoczne w banerze i na ekranie
+  ok   real 800px/huge: prawy baner (x=530) nie nachodzi na medalion Mocy (prawy brzeg 520)
+  ok   real 800px/huge: klaster z przyciskami Civpedia+Menu (zasymulowane) konczy sie na y=148 <= 160
+  ok   real 800px/huge: dol banera (93px) nad paskiem narzedzi (104)
+  ok   real 640px/small: 6 komorek banera
+  ok   real 640px/small: baner (prawy brzeg 190) konczy sie przed medalionem Mocy (x=245)
+  ok   real 640px/small: zaden tekst komorki nie jest przyciety
+  ok   real 640px/small: brak poziomego przewijania
+  ok   real 640px/small: ikony medalionow widoczne (min 12px, prog 12)
+  ok   real 640px/small: prawy baner ma 5 chipow
+  ok   real 640px/small: prawy baner nie zwezony do paska (szer. 215px >= 100)
+  ok   real 640px/small: chipy prawego banera widoczne w banerze i na ekranie
+  ok   real 640px/small: prawy baner (x=405) nie nachodzi na medalion Mocy (prawy brzeg 395)
+  ok   real 640px/small: klaster z przyciskami Civpedia+Menu (zasymulowane) konczy sie na y=148 <= 160
+  ok   real 640px/small: dol banera (104px) nad paskiem narzedzi (104)
+  ok   real 640px/huge: 6 komorek banera
+  ok   real 640px/huge: baner (prawy brzeg 190) konczy sie przed medalionem Mocy (x=245)
+  ok   real 640px/huge: zaden tekst komorki nie jest przyciety
+  ok   real 640px/huge: brak poziomego przewijania
+  ok   real 640px/huge: ikony medalionow widoczne (min 12px, prog 12)
+  ok   real 640px/huge: prawy baner ma 5 chipow
+  ok   real 640px/huge: prawy baner nie zwezony do paska (szer. 215px >= 100)
+  ok   real 640px/huge: chipy prawego banera widoczne w banerze i na ekranie
+  ok   real 640px/huge: prawy baner (x=405) nie nachodzi na medalion Mocy (prawy brzeg 395)
+  ok   real 640px/huge: klaster z przyciskami Civpedia+Menu (zasymulowane) konczy sie na y=148 <= 160
+  ok   real 640px/huge: dol banera (104px) nad paskiem narzedzi (104)
+  ok   real: tooltip "kultura" ma zapis BRUTTO -> NETTO (Kultury)
+  ok   real: tooltip "religia" ma zapis BRUTTO -> NETTO (wiernych)
+  ok   real: tooltip "ludnosc" ma zapis BRUTTO -> NETTO (obyw.)
+  ok   real: tooltip "miasta" ma zapis BRUTTO -> NETTO (obyw.)
+[C] formatGrossNet
+  ok   C: hudChip6c eksportuje formatGrossNet
+  ok   C: konwencja "BRUTTO +12 -> NETTO +9 jednostka"
+  ok   C: ujemne netto ze znakiem minus, brak jednostki
+[D] zrodla
+  ok   real D: komunikat rozwiazania jednostki uzywa formatManpowerCompact (skroty k/M jak HUD)
+  ok   real D: brak starego formatManpower("tys./mln") w komunikacie
+  ok   real D: formatGrossNet wyeksportowana z hudChip6c.ts
+  ok   real D: karta miasta uzywa formatGrossNet w tooltipach 6 chipow (wywolan: 11, >= 10)
+  ok   real D: chip "Praca" w karcie miasta ma BRUTTO -> NETTO
+  ok   real D: chip "Żywność" w karcie miasta ma BRUTTO -> NETTO
+  ok   real D: chip "Skarbiec" w karcie miasta ma BRUTTO -> NETTO
+  ok   real D: chip "Nauka" w karcie miasta ma BRUTTO -> NETTO
+  ok   real D: chip "Kultura" w karcie miasta ma BRUTTO -> NETTO
+  ok   real D: chip "Religia" w karcie miasta ma BRUTTO -> NETTO
+[M] mutacje
+  ok   MUTANT "szerokosc banera siega pod medalion Mocy (R-WEB-HUD-TOPBAR-NO-LABELS-Q1: calc(50vw - 150px) -> calc(50vw - 40px))" WYKRYTY (8 czerwonych asercji)
+  ok   MUTANT "medalion Mocy nie zmniejszony <=700 px" WYKRYTY (2 czerwonych asercji)
+  ok   MUTANT "prawy baner: stare max-width bez min 150 px i bez zawijania (zwezony pasek/chipy poza ekranem)" WYKRYTY (8 czerwonych asercji)
+  ok   MUTANT "prawy baner: brak ukladu kolumnowego <=1100 px (nachodzi na Moc)" WYKRYTY (6 czerwonych asercji)
+  ok   MUTANT "Kultura bez BRUTTO -> NETTO" WYKRYTY (1 czerwonych asercji)
+  ok   MUTANT "Religia bez BRUTTO -> NETTO" WYKRYTY (1 czerwonych asercji)
+  ok   MUTANT "Obywatele bez BRUTTO -> NETTO" WYKRYTY (1 czerwonych asercji)
+  ok   MUTANT "main.ts: stary formatManpower w komunikacie" WYKRYTY (2 czerwonych asercji)
+  ok   MUTANT "cityPanel.ts: Kultura bez BRUTTO" WYKRYTY (1 czerwonych asercji)
+  ok   MUTANT "cityPanel.ts: Praca bez BRUTTO" WYKRYTY (7 czerwonych asercji)
+
+OK: hud-gross-net-rest-test (752 ok, 0 fail)
+EXIT=0

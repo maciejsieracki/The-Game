@@ -678,8 +678,16 @@ function empireStockHas(
   return (stock?.[asciiKey] ?? 0) > 0;
 }
 
+// R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: czysta funkcja wolana tysiace razy na przebieg
+// availableProduction (nazwy nacji / jednostek) — pamiec podreczna po wejsciu (ograniczona).
+const _stripDiacriticsCache = new Map<string, string>();
 function stripDiacritics(s: string): string {
-  return s.normalize('NFD').replace(/[\u0300-\u036F]/g, '').toLowerCase();
+  const hit = _stripDiacriticsCache.get(s);
+  if (hit !== undefined) return hit;
+  const out = s.normalize('NFD').replace(/[\u0300-\u036F]/g, '').toLowerCase();
+  if (_stripDiacriticsCache.size >= 2048) _stripDiacriticsCache.clear();
+  _stripDiacriticsCache.set(s, out);
+  return out;
 }
 
 const UNIT_STOCK_GATE_LABEL: Readonly<Record<string, string>> = {
@@ -762,15 +770,23 @@ function isCivSpecialReplacement(unit: UnitDef, civNation: string | undefined): 
     && stripDiacritics(unitNation) === stripDiacritics(civNation);
 }
 
-function civHasReplacementFor(
+/**
+ * Zbior nazw jednostek bazowych, ktore cywilizacja `civNation` ma zastapione swoja jednostka
+ * specjalna ('W zamian za'). Rownowazne wolaniu dawnego civHasReplacementFor(data, nazwa, nacja)
+ * dla kazdej jednostki (O(jednostki) raz zamiast O(jednostki^2) na przebieg availableProduction).
+ */
+function civReplacedBaseUnitNames(
   data: ProductionData,
-  baseUnitName: string,
   civNation: string | undefined,
-): boolean {
-  if (!civNation) return false;
-  return data.units.some(unit =>
-    isCivSpecialReplacement(unit, civNation)
-      && (unit['W zamian za'] ?? '').toString().trim() === baseUnitName);
+): ReadonlySet<string> {
+  const out = new Set<string>();
+  if (!civNation) return out;
+  for (const unit of data.units) {
+    if (isCivSpecialReplacement(unit, civNation)) {
+      out.add((unit['W zamian za'] ?? '').toString().trim());
+    }
+  }
+  return out;
 }
 
 /** Mnoznik: kupno budynku za Pieniadz = koszt Pracy × ten wspolczynnik. */
@@ -1024,6 +1040,7 @@ export function availableProduction(
 
   // --- units -------------------------------------------------------------
   const built = new Set(builtList);
+  const civReplacedBases = civReplacedBaseUnitNames(data, civNation);
   for (const u of data.units) {
     // R-EPOKA-KASKADA-JEDNA-Q1 (Maciej 2026-08-12, ECHO commit 1d9691b0): rekrutacja
     // pokazuje jednostki BIEZACEJ epoki ORAZ dokladnie JEDNEJ epoki nizszej -- NIE pelna
@@ -1049,7 +1066,7 @@ export function availableProduction(
       // National replacements derive from canonical owner nation and the unit
       // data's replacement relation, never from legacy bonus prose.
       if (!isCivSpecialReplacement(u, civNation)) continue;
-    } else if (civHasReplacementFor(data, u.Jednostka, civNation)) {
+    } else if (typeof u.Jednostka === 'string' && civReplacedBases.has(u.Jednostka)) {
       continue;
     }
     const tech = (u.Tech ?? '').toString().trim();
