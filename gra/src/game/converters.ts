@@ -8,7 +8,7 @@
  *   - Zużycie Ceramiki wyłącznie Spichlerz I/II (B6/B8: 5 Ceramiki/turę).
  *   - U-14bA: nadwyżka Ceramiki po drain Spichlerza → auto +Zdrowie (zapas: +Zadowolenie).
  *   - Paliwo USUNIĘTE całkowicie (Mielerz usunięty); konwertery biorą DREWNO 1:1.
- *   Cegielnia  | 2 glina + 1 drewno | 1 cegla    | 10/t + 10% bazy/epokę właściciela (P-KONWERTERY-PRZEPUSTOWOSC-Q1)
+ *   Cegielnia  | 2 glina + 1 drewno | 2 cegly   | 50/t + 50% bazy/epokę właściciela (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1; wcześniej 1 cegła/cykl i +10%/epokę)
  *   Garncarnia | 1 glina + 1 drewno | 1 ceramika | 10/t + 10% bazy/epokę właściciela (P-KONWERTERY-PRZEPUSTOWOSC-Q1)
  *   Odlewnia brązu | 1 ruda + 1 drewno | 1 braz  | 5/t (płaskie, bez skalowania epoką)
  *   Odlewnia żelaza | braz (jak tier1) + żelazo (1 ruda_zelaza + 1 drewno) | 5/t każdy (płaskie)
@@ -79,7 +79,7 @@ export interface ConverterRecipe {
 // to get 5× output, since cycles = min(throughput, input limit, output limit) and the
 // input limit already scales automatically with the ×5'd territorial resource production.
 export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
-  { id: 'cegielnia',              inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 1, throughputParamKey: 'budynek_cegielnia_przepustowosc',        throughputFallback: 50 },
+  { id: 'cegielnia',              inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 2, throughputParamKey: 'budynek_cegielnia_przepustowosc',        throughputFallback: 50 },
   { id: 'garncarnia',             inputs: { glina: 1, drewno: 1 },         output: 'ceramika', outputAmount: 1, throughputParamKey: 'budynek_garncarnia_przepustowosc',     throughputFallback: 50 },
   // 'mielerz' USUNIĘTY (Maciej 2026-07-23): Paliwo usunięte całkowicie; konwertery biorą drewno 1:1.
   { id: 'huta',                    inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
@@ -129,13 +129,33 @@ export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
 /** Receptury objęte skalowaniem +10%/epokę (klucz `id` z DEFAULT_CONVERTER_RECIPES). */
 export const CONVERTER_ERA_SCALING_RECIPE_IDS: ReadonlySet<string> = new Set(['cegielnia', 'garncarnia']);
 
-/** Przyrost przepustowości na epokę (10% BAZY), addytywnie -- patrz komentarz wyżej. */
+/** Przyrost przepustowości na epokę (10% BAZY), addytywnie -- domyślny (Garncarnia), patrz komentarz wyżej. */
 export const CONVERTER_ERA_SCALING_PCT = 0.10;
+
+/**
+ * R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (decyzja właściciela 2026-11-05): „cegielnia
+ * powinna zwiększać swoją produkcję o 50% w każdej epoce" + „dwukrotnie zwiększyć
+ * produkcję cegły". Cegielnia: wyjście ×2 (outputAmount 1→2; baza przepustowości
+ * 50 w econ-params.json BEZ zmian) i +50% BAZY cykli za epokę właściciela, addytywnie: mnożnik 1 / 1,5 / 2 / 2,5 / 3 dla epok 1-5 (parytet z
+ * `citizenConsumptionEraMultiplier`, m(e) = 1 + 0,5 × (e − 1)). Pozostałe receptury
+ * skalowane (Garncarnia) zostają przy domyślnym CONVERTER_ERA_SCALING_PCT = 10%.
+ * Jedna funkcja `converterThroughputForEra` dla gracza i AI.
+ *
+ * "x2 produkcji" realizuje `outputAmount` 1→2 (receptura 2 glina + 1 drewno → 2 cegły),
+ * NIE podwojenie przepustowości: pomiar w realnej grze (brick-live-measure, seed 7,
+ * era 2, 30 tur) pokazał, że Cegielnię ogranicza WEJŚCIE (drewno: 30/30 tur), nie
+ * przepustowość -- samo x2 cykli nie zmieniłoby wyjścia ani o sztukę. Zmiana outputAmount
+ * podwaja cegłę w KAŻDYM reżimie (wejście/przepustowość) i nie zwiększa zużycia gliny/
+ * drewna na turę (te same cykle, te same wejścia na cykl).
+ */
+export const CONVERTER_ERA_SCALING_PCT_BY_RECIPE: Readonly<Record<string, number>> = {
+  cegielnia: 0.50,
+};
 
 /**
  * Przepustowość konwertera po uwzględnieniu epoki WŁAŚCICIELA budynku (per-owner,
  * PARYTET AI -- ta sama funkcja dla gracza i AI, `era` to zwykły parametr liczbowy
- * bez gałęzi po ownerId). Cegielnia/Garncarnia rosną +10% bazy/epokę (addytywnie);
+ * bez gałęzi po ownerId). Cegielnia rośnie +50% bazy/epokę, Garncarnia +10% (addytywnie);
  * reszta receptur (Odlewnie) zwraca `baseThroughput` bez zmian niezależnie od `era`.
  * `era` < 1 lub nieskończone/NaN traktowane jak 1 (brak ujemnego/undefined mnożnika).
  */
@@ -146,7 +166,8 @@ export function converterThroughputForEra(
 ): number {
   if (!CONVERTER_ERA_SCALING_RECIPE_IDS.has(recipeId)) return baseThroughput;
   const e = Number.isFinite(era) && era > 1 ? era : 1;
-  return baseThroughput * (1 + CONVERTER_ERA_SCALING_PCT * (e - 1));
+  const pct = CONVERTER_ERA_SCALING_PCT_BY_RECIPE[recipeId] ?? CONVERTER_ERA_SCALING_PCT;
+  return baseThroughput * (1 + pct * (e - 1));
 }
 
 export type ConverterReason = 'ok' | 'brak-wejscia' | 'pelny-magazyn' | 'zero-przepustowosci';

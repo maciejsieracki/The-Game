@@ -51,6 +51,7 @@ fs.writeFileSync(ENTRY_FILE, `
 export {
   DEFAULT_CONVERTER_RECIPES, loadThroughput, runConverter, runConverters,
   converterThroughputForEra, CONVERTER_ERA_SCALING_RECIPE_IDS, CONVERTER_ERA_SCALING_PCT,
+  CONVERTER_ERA_SCALING_PCT_BY_RECIPE,
 } from '../src/game/converters';
 export { advanceCityEconomy } from '../src/game/turn-economy';
 export { foundCityAt, canFoundCity } from '../src/game/cities';
@@ -96,7 +97,9 @@ function recipe(id) {
 // A. Wartości bazowe (throughputFallback) -- P-KONWERTERY-PRZEPUSTOWOSC-Q1
 // ===========================================================================
 console.log('\n-- A. throughputFallback bazowe (DEFAULT_CONVERTER_RECIPES) --');
-eq(recipe('cegielnia').throughputFallback, 50, 'cegielnia: fallback 50 (bylo 10, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(recipe('cegielnia').throughputFallback, 50, 'cegielnia: fallback 50 (bylo 10, R-EKONOMIA-SUROWCE-SKALA-5X-Q1; R-WEB-BRICK-PRODUCTION-X2: bez zmian)');
+eq(recipe('cegielnia').outputAmount, 2, 'cegielnia: outputAmount 2 (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1, bylo 1)');
+eq(recipe('garncarnia').outputAmount, 1, 'garncarnia: outputAmount 1 (bez zmian)');
 eq(recipe('garncarnia').throughputFallback, 50, 'garncarnia: fallback 50 (bylo 10, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
 eq(recipe('huta').throughputFallback, 25, 'huta: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
 eq(recipe('odlewnia_brazu').throughputFallback, 25, 'odlewnia_brazu: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
@@ -139,13 +142,24 @@ for (const id of ['huta', 'odlewnia_brazu', 'odlewnia_zelaza__braz', 'odlewnia_z
 eq(M.CONVERTER_ERA_SCALING_PCT, 0.10, 'CONVERTER_ERA_SCALING_PCT = 0.10 (10%)');
 
 // C2. Cegielnia/Garncarnia: baza 10, ADDYTYWNIE +10%/epoke -- epoka1=10, epoka2=11, epoka3=12.
-for (const id of ['cegielnia', 'garncarnia']) {
+// R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1: Garncarnia zostaje przy +10%/epoke, Cegielnia ma +50%/epoke (blok nizej).
+for (const id of ['garncarnia']) {
   eq(M.converterThroughputForEra(id, 10, 1), 10, `${id}: era1 -> 10 (baza, bez bonusu)`);
   eq(M.converterThroughputForEra(id, 10, 2), 11, `${id}: era2 -> 11 (+10% bazy)`);
   eq(M.converterThroughputForEra(id, 10, 3), 12, `${id}: era3 -> 12 (+20% bazy)`);
   // Ekstrapolacja poza dzisiejsze 3 epoki gry (Kamien/Braz/Zelazo) -- formula ADDYTYWNA,
   // NIE compound: era4 -> 10 + 10*0.10*3 = 13 (compound dalby 10*1.1^3=13,31 -- rozne).
   eq(M.converterThroughputForEra(id, 10, 4), 13, `${id}: era4 -> 13 (addytywnie, NIE compound=13,31)`);
+}
+// Cegielnia: baza 50 cykli, +50% BAZY/epoke addytywnie -> mnoznik 1/1,5/2/2,5/3 (epoki 1-5).
+{
+  const mults = [1, 1.5, 2, 2.5, 3];
+  for (let e = 1; e <= 5; e++) {
+    eq(M.converterThroughputForEra('cegielnia', 50, e), 50 * mults[e - 1], `cegielnia: era${e} -> ${50 * mults[e - 1]} cykli (x${mults[e - 1]} bazy)`);
+  }
+  eq(M.CONVERTER_ERA_SCALING_PCT_BY_RECIPE.cegielnia, 0.5, 'CONVERTER_ERA_SCALING_PCT_BY_RECIPE.cegielnia = 0.5');
+  eq(M.converterThroughputForEra('cegielnia', 50, 0), 50, 'cegielnia: era0 -> jak era1');
+  eq(M.converterThroughputForEra('cegielnia', 50, NaN), 50, 'cegielnia: NaN -> jak era1');
 }
 
 // C3. Odlewnie: baza 5, PLASKIE -- era nie zmienia wyniku (era1/2/3/10 identyczne).
@@ -163,12 +177,13 @@ eq(M.converterThroughputForEra('cegielnia', 10, NaN), 10, 'cegielnia: era=NaN ->
 
 // C5. Baza NIE rowna 10 (dowod, ze formula liczy naprawde, nie ma zaszytej stalej 10) +
 // interakcja z Math.floor w runConverter (throughput musi byc floorowany przed uzyciem).
-eq(M.converterThroughputForEra('cegielnia', 7, 3), 8.4, 'cegielnia: baza=7, era3 -> 7 + 7*0.10*2 = 8,4 (formula ogolna)');
+eq(M.converterThroughputForEra('garncarnia', 7, 3), 8.4, 'garncarnia: baza=7, era3 -> 7 + 7*0.10*2 = 8,4 (formula ogolna)');
+eq(M.converterThroughputForEra('cegielnia', 7, 3), 14, 'cegielnia: baza=7, era3 -> 7 + 7*0.50*2 = 14');
 {
-  const cegielniaRecipe = recipe('cegielnia');
-  const scaledFractional = M.converterThroughputForEra('cegielnia', 7, 3); // 8.4
-  const r = M.runConverter(cegielniaRecipe, { glina: 100, drewno: 100 }, scaledFractional, 500);
-  eq(r.produced, 8, 'runConverter: throughput 8,4 -> Math.floor -> 8 cegiel (nie 8,4 ani 9)');
+  const garncarniaRecipe = recipe('garncarnia');
+  const scaledFractional = M.converterThroughputForEra('garncarnia', 7, 3); // 8.4
+  const r = M.runConverter(garncarniaRecipe, { glina: 100, drewno: 100 }, scaledFractional, 500);
+  eq(r.produced, 8, 'runConverter: throughput 8,4 -> Math.floor -> 8 ceramiki (nie 8,4 ani 9)');
 }
 
 // ===========================================================================
@@ -187,8 +202,10 @@ console.log('\n-- D. Regresja: dowod, ze scaling realnie zmienia produkcje wzgle
 
   const r1 = M.runConverter(cegielniaRecipe, { glina: 500, drewno: 500 }, era1Throughput, 500);
   const r3 = M.runConverter(cegielniaRecipe, { glina: 500, drewno: 500 }, era3Throughput, 500);
-  eq(r1.produced, 50, 'produkcja realna epoka1: 50 cegiel/ture (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
-  eq(r3.produced, 60, 'produkcja realna epoka3: 60 cegiel/ture (+20% wzgledem epoki1, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 12)');
+  eq(r1.produced, 100, 'produkcja realna epoka1: 100 cegiel/ture = 50 cykli x 2 (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1, bylo 50)');
+  eq(r1.consumed.glina, 100, 'epoka1: zuzycie gliny 100 (50 cykli x 2, BEZ zmiany wzgledem starego)');
+  eq(r1.consumed.drewno, 50, 'epoka1: zuzycie drewna 50 (50 cykli x 1, BEZ zmiany wzgledem starego)');
+  eq(r3.produced, 200, 'produkcja realna epoka3: 200 cegiel/ture = 100 cykli x 2 (+100% bazy cykli wzgledem epoki1; bylo 60)');
 }
 
 // ===========================================================================
@@ -250,9 +267,9 @@ console.log('\n-- E. advanceCityEconomy: PARYTET AI (gracz era1, AI era3), Cegie
     );
     assert(!!econ, 'advanceCityEconomy nie rzuca wyjatku (2 ownerow, era1 vs era3)');
 
-    eq(cPlayer.surowce.cegla, 50, 'gracz (era1): 50 cegiel/ture (baza, bez bonusu epoki, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
+    eq(cPlayer.surowce.cegla, 100, 'gracz (era1): 100 cegiel/ture (50 cykli x 2; R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1, bylo 50)');
     eq(cPlayer.surowce.ceramika, 50, 'gracz (era1): 50 ceramiki/ture (baza, bez bonusu epoki, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
-    eq(cAi.surowce.cegla, 60, 'AI (era3): 60 cegiel/ture (+20% bazy -- MECHANIZM DZIALA DLA AI; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 12)');
+    eq(cAi.surowce.cegla, 200, 'AI (era3): 200 cegiel/ture (100 cykli x 2 -- MECHANIZM DZIALA DLA AI; bylo 60)');
     eq(cAi.surowce.ceramika, 60, 'AI (era3): 60 ceramiki/ture (+20% bazy -- MECHANIZM DZIALA DLA AI; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 12)');
 
     // Odlewnia_brazu: PLASKA dla OBU ownerow mimo roznych epok -- to jest sedno
