@@ -1,0 +1,2 @@
+ai-test.cjs EXIT=1 1s ::   FAIL: T2S-b2: po cooldownie (tura 36) handel wraca; got: [] |   FAIL: T4S-d: mnoznik=1.5 effAgresja=0.6 >= 0.5 -> wypowiedz_wojne; got: [] |   FAIL: T10b: zaproponuj_handel po odkryciu; got: []
+war-allin-capital-quick.cjs EXIT=0 2s ::
