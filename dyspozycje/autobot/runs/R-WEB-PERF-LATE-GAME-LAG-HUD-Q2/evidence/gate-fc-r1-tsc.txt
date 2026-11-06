@@ -1,0 +1,2 @@
+tsc --noEmit na 6debc4522
+EXIT=0
