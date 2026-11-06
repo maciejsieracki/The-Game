@@ -1,24 +1,20 @@
-STATUS: FAIL
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (WEB)
 TEMAT: R-WEB-PERF-LATE-GAME-LAG-HUD-Q2
-GOAL: refreshFog, updateHud/buildHudState i refreshTerritoryBorderOverlay na sciezce kliku zredukowane >=5x (bez zmiany regul i determinizmu AI); endTurn: zmierz i zredukuj.
-ZMIANY/COMMIT: kandydat kodu 6881713c06b0f62439ad6a33467365be4ea53f85 (na bazie Operatora 21cd11793d6d7f5fee219e530f1d167e143cccba, baza 33855a5405fec55c2be90c4ccf05f955787f0eec); HEAD obrony 6debc4522fbc75b0e87f90a68bb2933a75355304. SHA kodu dla R2: 6881713c0 (poprawny, zostaje jako baza R2; NIE integrowac teraz, FAIL). Allowlista OK: gra/src/game/frame-memo.ts (nowy), gra/src/main.ts, gra/src/ui/hud.ts, gra/tools/perf-hud-frame-memo-test.cjs, gra/tools/perf-late-game-interaction-r2-live-test.cjs (nowy), runs/<ID>/**. Zero zmian w WERSJE.md, gra/data, gra-robocza, rust-port, src-tauri.
-TESTY (zweryfikowane samodzielnie na 6debc4522): tsc --noEmit EXIT=0; perf-hud-frame-memo-test 15 PASS/0 FAIL (uruchamia realny kod frame-memo.ts przez esbuild); border-march-scan, city-hex-movement, move-pass-through-own-units, river-fog-visibility EXIT=0. Pomiary obrony (nie powtarzane przeze mnie; spojne z pomiarem Evaluatora 5,3-5,8x dla refreshFog): updateHud 6,4x, refreshFog 4,8x, collectTurnEvents 4,3x, border 2,3x, buildHudState/wywolanie bez zmiany; klik: wybor 6,6x, ruch 6,3x, panel miasta 7,4x (czas updateHud inclusive, n=7).
-
-WERDYKT ZARZUTOW:
-1. updateHud/buildHudState/border bez pomiaru -> ODDAL (pomiar dostarczony). Cel >=5x dla buildHudState/wywolanie (45 ms) i border (2,3x) niespelniony -> NAPRAW (R2).
-2. Tabela przed/po kliku -> ODDAL dla wyboru/ruchu/panelu (n=7 min/med/max). Wejscie do miasta NIE_ZMIERZONO -> NAPRAW (R2).
-3. Skalowanie z tura i endTurn -> NAPRAW: skalowanie tylko na kandydacie (bez bazy); endTurn nie zredukowany (10,0 s JS: computeTerritoryResourceYieldByCity, axialDistance, okolicaTiles).
-4. Test regresyjny regexowy -> ODDAL (logika w frame-memo.ts, test behawioralny 15 PASS).
-5. Nieswieza migawka zagniezdzonego updateHud -> ODDAL (run() uniewaznia migawke; test PASS). Uwaga: turnEventsFrame (main.ts) NIE jest uniewazniany przy zagniezdzonym refreshD1bHud -- ryzyko niskie, domknac w R2 (invalidate albo test).
-6. Memo zdarzen zaklada brak mutacji -> ODDAL (perfEquiv 14 wlascicieli/137 miast + 5 stanow, mismatches=[]; slabosc: 1 zdarzenie w stanie testowym, wzmocnic w R2).
-7. Podpis granic a rzezba terenu -> ODDAL (rangeOverlay.ts czyta z mapy tylko istnienie heksu; test strukturalny pilnuje).
-8. Pozostale waskie gardla (buildHudState, previewCityEconomy, okolicaTiles, collectTurnEvents) -> NAPRAW (R2).
-9. Testy *path*/*move*/*render* -> ODDAL czesciowo (czerwone identyczne z baza). NIE_ZMIERZONO: player-moves-before-ai-turn, river-path-adjacency, hotseat-etap6e-render-noop, oboz-lowiecki-las-znika-render, hud-tooltip-body-mounted-panels -- powtorzyc w R2.
-
-Znalezisko procesowe: harness Q1 klikal przez modal "Audiencja dyplomatyczna" (pomiary Q1/R1 Operatora nieprawidlowe); harness R2 zamyka modal -- stosowac w R2.
-
-BLOKADY: cel >=5x niespelniony dla buildHudState/wywolanie i border; endTurn bez redukcji; wejscie do miasta, baza skalowania i baza endTurn niezmierzone; SwiftShader + load 6-8 zawyza czasy bezwzgledne.
-RUNDY: FC R1 (runda 1/5); nastepna: Operator R2 (baza = kod 6881713c0, merge origin/main jesli czysto).
-NASTEPNY KROK: Operator R2 -> Evaluator -> FC, to samo ID. Priorytet: koszt pojedynczego buildHudState (previewCityEconomy, assignWorkedTiles, okolicaTiles), endTurn (memo computeTerritoryResourceYieldByCity, axialDistance), pomiar wejscia do miasta, skalowanie bazy, inwalidacja turnEventsFrame. Kolejnosc wzgledem origin/rust-port/parity-v2: niezalezne (zmiany tylko w gra/ web); integracja do main po PASS; parity-v2 dostaje REPIN pozniej, nie blokuje i nie jest blokowane.
+GOAL: refreshFog/updateHud/granice/wejscie do miasta zredukowane >=5x bez zmiany regul i determinizmu AI; endTurn zmierzony i zredukowany.
+ZMIANY/COMMIT: kod Operatora 3f6f6ec77, Operator da31331af, Obrona ef9a7af76 (prog LOD 3 px, EXIT w logach, skrocony raport) i 95d7461ac. SHA do integracji: 95d7461ac2aec3eb49369e3e44e886be0dc4e2f6 (plus commit FC z tym plikiem).
+TESTY (wlasne, na 95d7461ac): allowlista czysta (gra/src/{game,map,render,units,main.ts}, gra/tools, runs/<ID>/**; brak gra/data, WERSJE.md, rust-port, src-tauri, gra-robocza); tsc --noEmit EXIT=0; small-part-lod-test 24/0; perf-hud-frame-memo-test 16/0; perf-territory-index-equiv-test 6/0. Diff Obrony w gra/src to wylacznie minPx 2 -> 3 (3 miejsca). Pomiarow Chromium nie powtarzalem (SwiftShader, obciazenie); liczby przed/po z dowodow Operatora.
+ZARZUTY:
+- Z1 (cele 5x: buildHudState 4,7x, endTurn 3,3x, wybor 4,5x): ODDAL jako uwaga; glowny cel spelniony (refreshFog 11,4x, updateHud 13,6x, granice 16,8x, wejscie do miasta 21x/7,9x).
+- Z2 (n<7): ODDAL, uczciwie oznaczone.
+- Z3 (NIE_ZMIERZONO PRZED ruch/panel, profil runAiPhase): ODDAL, uczciwe NIE_ZMIERZONO; kandydat na kolejny temat.
+- Z4 (zrzuty LOD): ODDAL. Prog przywrocony na 3 px zgodnie z dispatchem i dowodem R4 (28 881 -> 5 255 draw calli); ocena wizualna NIE_ZMIERZONO, uwaga do sprawdzenia przy zoomie gry.
+- Z5 (4 testy render/live z timeoutem): ODDAL; timeouty srodowiskowe (SwiftShader), brak bledu; hud-tooltip-body-mounted-panels EXIT=0.
+- Z6 (EXIT w logach, 600 slow): NAPRAWIONE przez Obrone (EXIT=NIE_ZAPISANO bez fabrykacji, raport 475 slow).
+- Z7 (zalozenie niezmiennosci kluczy map.hexes): ODDAL jako uwaga ryzyka, brak dowodu bledu.
+Brak zarzutu wymagajacego NAPRAW -> PASS-WITH-NOTES.
+BLOKADY: brak blokujacych. NIE_ZMIERZONO: zrzuty LOD 3 px, PRZED ruch/panel, endTurn n>=7, profil runAiPhase/pickResourceTradeRelOffer, 4 testy render/live (timeout).
+RUNDY: 2/5 nowej serii (FC)
+KOLEJNOSC INTEGRACJI: origin/rust-port/parity-v2 (b520768b0) nie zawiera tego tematu i jest niezalezny (gra/src web vs rust-port). Zintegrowac 95d7461ac (+ commit FC) z origin/main (ea9c14daf, merge-base sprawdzic przy integracji), bramki: tsc, 3 testy perf, ai-test 274/20; parity-v2 niezaleznie, bez zaleznosci plikowej.
+NASTEPNY KROK: integracja orkiestratora -> READY_FOR_DEPLOY; osobny temat na endTurn i LOD wizualny.
 DEPLOY/PUSH: NIE WYKONANO
