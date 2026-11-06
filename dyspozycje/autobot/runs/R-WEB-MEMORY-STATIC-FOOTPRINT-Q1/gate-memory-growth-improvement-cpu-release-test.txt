@@ -1,0 +1,23 @@
+  OK  bootstrap: miasto gracza
+  OK  heks pod posterunek blisko miasta (widoczny w kadrze)
+  OK  A0: mesh ulepszenia utworzony, w scenie
+  OK  A0: sfera otaczajaca policzona PRZED zwolnieniem tablic
+  OK  A1: po wyrenderowaniu kopia CPU (position/color) zwolniona
+  OK  A1: liczba wierzcholkow zachowana (draw range)
+  OK  F0: znaleziono 2 heksy nieodkryte (pod posterunki pod mgla)
+  OK  F1 przed utrata: heks nieodkryty -- mesh ulepszenia ukryty
+  OK  F1 przed utrata: heks odkryty-niewidoczny -- mesh widoczny i przyciemniony (~0.175)
+  OK  F1 przed utrata: heks widoczny -- pelna jasnosc
+  OK  F1 przed utrata: wszystkie meshe ulepszen zgodne z mgla refreshFog
+  OK  B0: WEBGL_lose_context dostepne
+  OK  B1: po odzyskaniu kontekstu mesh przebudowany (nowy obiekt) i w scenie
+  OK  B1: po ponownym uploadzie kopia CPU znow zwolniona
+  OK  B1: ta sama liczba wierzcholkow
+  OK  B2: zero pageerror/console.error po odzyskaniu kontekstu
+  OK  F2 po odzyskaniu: heks nieodkryty -- mesh ulepszenia ukryty
+  OK  F2 po odzyskaniu: heks odkryty-niewidoczny -- mesh widoczny i przyciemniony (~0.175)
+  OK  F2 po odzyskaniu: heks widoczny -- pelna jasnosc
+  OK  F2 po odzyskaniu: wszystkie meshe ulepszen zgodne z mgla refreshFog
+
+WYNIK: 20 OK, 0 FAIL
+EXIT=0
