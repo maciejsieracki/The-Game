@@ -621,6 +621,8 @@ import {
   tradeRouteBuildingBonusForRoute,
   computeTradeRouteResourceGrants,
   memoizeOwnerResourceAccess,
+  VersionedMap,
+  createOwnerImprovementsCache,
   hasTradeRouteResourceAccess,
   firstTradeRouteResourceGrant,
   TRADE_ROUTE_RESOURCE_KEYS,
@@ -5253,21 +5255,11 @@ async function boot(): Promise<void> {
      * DOWOLNEGO imperium — kopalnia AI odblokowywała Brąz/Żelazo graczowi i odwrotnie. Filtr
      * przez territoryOwnerAt — ta sama logika co isPlayerTerritoryHex/enrichBorderMarchPairsWithMilitary.
      */
-    function placedImprovementsForOwner(ownerId: number): Map<string, PlacedLayers> {
-      const nodes = buildAllTerritoryNodes();
-      const out = new Map<string, PlacedLayers>();
-      for (const [hexKey, layers] of placedImprovements) {
-        const [qStr, rStr] = hexKey.split(',');
-        // R-WEB-TURN-SLOWDOWN-Q2 (P3): `nodes` policzone RAZ wyżej (było policzone i
-        // nieużyte, a `territoryOwnerAtLive` budował tę samą tablicę węzłów wszystkich
-        // miast od nowa dla KAŻDEGO ulepszenia: koszt ulepszenia × miasta + alokacje).
-        // `buildAllTerritoryNodes()` to czyste mapowanie `cities`, które w tej pętli się
-        // nie zmienia — wynik identyczny z `territoryOwnerAtLive(q, r)`.
-        if (territoryOwnerAt(Number(qStr), Number(rStr), nodes) === ownerId) {
-          out.set(hexKey, layers);
-        }
-      }
-      return out;
+    // R-WEB-PERF-PLACED-IMPROVEMENTS-CACHE-Q1: wynik walidowany przy KAZDYM odczycie (licznik mutacji
+    // `placedImprovements` + porownanie wezlow terytorium miast/fortow) -- patrz createOwnerImprovementsCache.
+    const placedImprovementsOwnerCache = createOwnerImprovementsCache<PlacedLayers, TerritoryNode>(territoryOwnerAt);
+    function placedImprovementsForOwner(ownerId: number): ReadonlyMap<string, PlacedLayers> {
+      return placedImprovementsOwnerCache.get(ownerId, placedImprovements, buildAllTerritoryNodes());
     }
 
     // -------------------------------------------------------------------
@@ -5359,8 +5351,8 @@ async function boot(): Promise<void> {
      */
     function placedImprovementsWithBrazTradeGrant(
       ownerId: number,
-      ownImprovements: Map<string, PlacedLayers>,
-    ): Map<string, PlacedLayers> {
+      ownImprovements: ReadonlyMap<string, PlacedLayers>,
+    ): ReadonlyMap<string, PlacedLayers> {
       if (!hasTradeRouteResourceAccess(tradeRouteResourceGrants, ownerId, 'braz')) return ownImprovements;
       const augmented = new Map(ownImprovements);
       augmented.set(TRADE_GRANT_BRAZ_SYNTHETIC_KEY, [KOPALNIA_MIEDZI_KEY]);
@@ -5379,7 +5371,7 @@ async function boot(): Promise<void> {
      */
     function placedImprovementsWithTradeGrants(
       ownerId: number,
-      ownImprovements: Map<string, PlacedLayers>,
+      ownImprovements: ReadonlyMap<string, PlacedLayers>,
     ): ReadonlyMap<string, string | readonly string[]> {
       const withBraz = placedImprovementsWithBrazTradeGrant(ownerId, ownImprovements);
       const hasZlotoGrant = hasTradeRouteResourceAccess(tradeRouteResourceGrants, ownerId, 'zloto');
@@ -5478,7 +5470,7 @@ async function boot(): Promise<void> {
     /** empireHasKopalniaNaZlozuZelaza własne LUB grant "z trasy" na zelazo. */
     function hasKopalniaNaZlozuZelazaOrTradeGrant(
       ownerId: number,
-      ownImprovements: Map<string, PlacedLayers>,
+      ownImprovements: ReadonlyMap<string, PlacedLayers>,
     ): boolean {
       return empireHasKopalniaNaZlozuZelaza(ownImprovements, map)
         || hasTradeRouteResourceAccess(tradeRouteResourceGrants, ownerId, 'zelazo');
@@ -14782,7 +14774,7 @@ async function boot(): Promise<void> {
       ghostChipHex = null;
       ghostChip.style.display = 'none';
     });
-    const placedImprovements = new Map<string, PlacedLayers>();
+    const placedImprovements = new VersionedMap<string, PlacedLayers>();
     /**
      * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09):
      * rejestr WSZYSTKICH postawionych Fortow/Posterunkow (dowolny wlasciciel) z
