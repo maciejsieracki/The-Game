@@ -1,3 +1,9 @@
+## ROBOCZA 1106078d -- 2026-11-06 -- FALA 529: koniec tury: szybszy JS (ścieżki, okolica, dostęp do surowców) (testowa)
+
+- resource-access/main.ts: etykiety aktywnych surowców bez zbędnego potencjału; units/setup.ts: memo blokady oblężenia; okolica.ts: Intl.Collator + memo rodzeństwa pole po polu; memo dysków widoczności; JS końca tury mediana 5693→4571 ms (1,25×, n=9/9, host współdzielony)
+- Weryfikacja: Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; tsc 0; logic 213/213; równoważność wartościowa 0 różnic (collator 23994, assignWorkedTiles 220, sibling 1320, computePath 240), 4/4 mutacje; ai-test 274/20 jak baza
+- Limity: GOAL 2× NIE osiągnięty (1,25×, rozrzut duży); pozostałe ~2 s w render/HUD (syncUnitsRender, renderLoop, syncStatChips) — kandydat na osobny temat
+
 ## ROBOCZA 963a8fb8 -- 2026-11-06 -- FALA 528: minimapa: ramka widoku podąża za kamerą (testowa)
 
 - minimapHud.ts/hud.ts/main.ts: warstwa bazowa minimapy cache'owana, updateViewport przerysowuje tylko zmieniony prostokąt (co klatkę, poza bramką dirty); wcześniej ramka stała w miejscu, bo minimapę odświeżał tylko refreshFog
