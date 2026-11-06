@@ -1,3 +1,9 @@
+## ROBOCZA 5b7c38ed -- 2026-11-06 -- FALA 513: Magazyn nie zwiększa pojemności żywności (testowa)
+
+- R-WEB-MAGAZYN-NO-FOOD-CAP-BONUS-Q1 — Magazyn nie daje bonusu do pojemności żywności centralnej (100→0); pojemność żywności tylko ze Spichlerzy (baza 1000 bez zmian); pojemność surowców Magazynu bez zmian
+- Weryfikacja: tsc PASS; magazyn-food-cap-bez-magazynu 16/0 (+mutacja 7 FAIL); regresje food/magazyn/spichlerz EXIT=0
+- Limity: Opis klucza econ-params i komentarz building-resource-gate nadal wspominają +100 (kosmetyka)
+
 ## ROBOCZA 1c69835a -- 2026-11-06 -- FALA 512: cegła ×2 i Cegielnia +50%/epokę (testowa)
 
 - R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 — Cegielnia daje 2 cegły z cyklu (×2) i mnożnik wyjścia 1/1,5/2/2,5/3 wg epoki właściciela (tylko Cegielnia, gracz i AI); era 2 ≈ 2,7× dotychczasowej produkcji
