@@ -8,8 +8,9 @@ import * as THREE from 'three';
  * buforów wierzchołków (CPU: obiekty BufferGeometry/BufferAttribute + tablice; GPU: osobne bufory).
  * Ta pula zamienia geometrię należącą do modelu na JEDNĄ wspólną instancję o bitowo identycznej treści
  * (atrybuty, indeks, grupy, zakres rysowania), z licznikiem odwołań. Treść jest ta sama co do bitu, więc obraz,
- * raycast (picking) i bryły otaczające są identyczne. Materiały NIE są współdzielone — są mutowane per model
- * (przyciemnienie odroczenia, przebarwienia, mgła).
+ * raycast (picking) i bryły otaczające są identyczne. Materiały współdzieli osobna pula `MaterialContentPool`
+ * (R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: kopia przy zapisie dla przyciemnienia odroczenia, zachowana
+ * kolejność rysowania).
  *
  * Zakres puli (obrona r1, zarzut Z6): pula NIE jest globalna dla modułu — każdy `UnitRenderer`/`CityRenderer`
  * ma WŁASNĄ instancję `GeometryContentPool`. `main.ts` przy nowej grze / wczytaniu / playtestach podmienia

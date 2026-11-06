@@ -26,6 +26,7 @@
 
 import * as THREE from 'three';
 import { GeometryContentPool } from './geometryContentPool';
+import { MaterialContentPool } from './materialContentPool';
 import { clientRectToNdc } from '../input/picker';
 import { HUMAN_OWNER_PRIMARY } from '../game/human-owners';
 import type { GameMap } from '../types/map';
@@ -5783,6 +5784,8 @@ export class UnitRenderer {
   private tokenGeos: Map<string, THREE.BufferGeometry[]> = new Map();
   /** R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: pula wspólnych geometrii TEGO renderera (nie globalna — Z6). */
   private readonly geoPool = new GeometryContentPool();
+  /** R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: pula wspólnych materiałów TEGO renderera (kolejność rysowania bez zmian). */
+  private readonly matPool = new MaterialContentPool();
 
   /** Current highlight group (all discs live inside). */
   private highlightGroup: THREE.Group | null = null;
@@ -6027,7 +6030,12 @@ export class UnitRenderer {
     const obj = this.tokens.get(unitId);
     if (!obj) return;
     if ((obj.userData['deferredDim'] === true) === dim) return;
-    for (const m of this.tokenMaterials.get(unitId) ?? []) {
+    // R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: materiały żetonu bywają wspólne (pula) — kopia przy zapisie,
+    // żeby przyciemnienie nie przeszło na inne jednostki.
+    // Po puli dwa dawne materiały o tym samym stanie to JEDNA instancja (dwa wpisy w tablicy) — każdą
+    // przyciemniamy raz, inaczej druga iteracja nadpisałaby `dimBase` stanem już przyciemnionym.
+    if (dim) this.matPool.unshare(obj, this.tokenMaterials.get(unitId) ?? []);
+    for (const m of new Set(this.tokenMaterials.get(unitId) ?? [])) {
       const mat = m as THREE.Material & { opacity: number };
       if (dim) {
         const base: DeferredDimBase = { transparent: mat.transparent, opacity: mat.opacity };
@@ -6802,7 +6810,10 @@ export class UnitRenderer {
   private _registerToken(id: string, group: THREE.Group): void {
     this.lodTokensVersion++;
     this.tokens.set(id, group);
-    this.tokenMaterials.set(id, (group.userData['mats'] as THREE.Material[]) ?? []);
+    const mats = (group.userData['mats'] as THREE.Material[] | undefined) ?? [];
+    // R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: identyczne materiały żetonów → jedna wspólna instancja.
+    this.matPool.poolOwned(group, mats);
+    this.tokenMaterials.set(id, mats);
     const geos = (group.userData['perTokenGeos'] as THREE.BufferGeometry[] | undefined) ?? [];
     // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: identyczne geometrie żetonów → jedna wspólna instancja (licznik odwołań).
     this.geoPool.poolOwned(group, geos);
@@ -6814,10 +6825,7 @@ export class UnitRenderer {
    * Does NOT call scene.remove() -- caller is responsible for that.
    */
   private _disposeToken(id: string, _obj: THREE.Object3D): void {
-    const mats = this.tokenMaterials.get(id) ?? [];
-    for (const m of mats) {
-      m.dispose();
-    }
+    this.matPool.release(this.tokenMaterials.get(id) ?? []);
     this.geoPool.release(this.tokenGeos.get(id) ?? []);
   }
 }

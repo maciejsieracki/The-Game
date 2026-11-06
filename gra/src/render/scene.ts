@@ -121,6 +121,7 @@ import {
   trimMediumRenderPathAtMain,
 } from '../map/gen-helpers';
 import { refreshInstancedPickBounds } from '../input/picker';
+import { pooledMaterialOpaqueSort } from './materialContentPool';
 
 export type { MapRenderStyle, MapRenderOptions, QualityTier } from './mapRenderStyle';
 export { DEFAULT_MAP_RENDER_OPTIONS, normalizeMapRenderOptions, resolveRenderPreset } from './mapRenderStyle';
@@ -1622,6 +1623,9 @@ export async function buildScene(
   const ownRenderer = renderOptions.sharedRenderer == null;
   const renderer = renderOptions.sharedRenderer
     ?? new THREE.WebGLRenderer({ canvas, antialias: preset.antialias, powerPreference: 'high-performance' });
+  // R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: sortowanie jak painterSortStable, ale z id materiału sprzed
+  // puli wspólnych materiałów (UnitRenderer/CityRenderer) — kolejność rysowania i obraz bez zmian.
+  renderer.setOpaqueSort(pooledMaterialOpaqueSort);
   if (ownRenderer) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, preset.pixelRatioMax));
     // updateStyle=fixedViewport: dla qualitypreview (stały viewport, JS zarządza pikselowym

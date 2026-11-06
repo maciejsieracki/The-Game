@@ -23,6 +23,7 @@
 import { SmallPartLod } from './smallPartLod';
 import * as THREE from 'three';
 import { GeometryContentPool } from './geometryContentPool';
+import { MaterialContentPool } from './materialContentPool';
 import type { City } from '../game/cities';
 import { HUMAN_OWNER_PRIMARY } from '../game/human-owners';
 import { formatCityMapLabel } from '../game/display-names';
@@ -479,6 +480,8 @@ export class CityRenderer {
   private modelGeos: Map<string, THREE.BufferGeometry[]> = new Map();
   /** R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: pula wspólnych geometrii TEGO renderera (nie globalna — Z6). */
   private readonly geoPool = new GeometryContentPool();
+  /** R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: pula wspólnych materiałów TEGO renderera. */
+  private readonly matPool = new MaterialContentPool();
 
   constructor(scene: THREE.Scene, map: GameMap) {
     this.scene   = scene;
@@ -578,7 +581,7 @@ export class CityRenderer {
 
       this._registerModel(city.id, group);
       this.scene.add(group);
-      if (staleMats) for (const m of staleMats) m.dispose();
+      if (staleMats) this.matPool.release(staleMats);
       if (staleGeos) this.geoPool.release(staleGeos);
       this._syncRevolt(city.id, group, options?.getRevolt?.(city.id) ?? false);
       this._syncStatChip(
@@ -1014,7 +1017,10 @@ export class CityRenderer {
   private _registerModel(id: string, group: THREE.Group): void {
     this.lodModelsVersion++;
     this.models.set(id, group);
-    this.modelMaterials.set(id, (group.userData['mats'] as THREE.Material[]) ?? []);
+    const mats = (group.userData['mats'] as THREE.Material[] | undefined) ?? [];
+    // R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: identyczne materiały modeli miast → jedna wspólna instancja.
+    this.matPool.poolOwned(group, mats);
+    this.modelMaterials.set(id, mats);
     const geos = (group.userData['perCityGeos'] as THREE.BufferGeometry[] | undefined) ?? [];
     // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: identyczne geometrie modeli miast → jedna wspólna instancja.
     this.geoPool.poolOwned(group, geos);
@@ -1022,8 +1028,7 @@ export class CityRenderer {
   }
 
   private _disposeModel(id: string): void {
-    const mats = this.modelMaterials.get(id) ?? [];
-    for (const m of mats) m.dispose();
+    this.matPool.release(this.modelMaterials.get(id) ?? []);
     this.geoPool.release(this.modelGeos.get(id) ?? []);
   }
 }
