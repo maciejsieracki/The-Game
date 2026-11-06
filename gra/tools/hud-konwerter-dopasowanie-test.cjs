@@ -55,7 +55,7 @@ esbuild.buildSync({
   absWorkingDir: GRA_ROOT, nodePaths: [path.resolve(GRA_ROOT, 'node_modules')],
 });
 const CONV = require(BUNDLE);
-const { DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra,
+const { DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra,
   converterBuildingIdForRecipe } = CONV;
 
 // ---------------------------------------------------------------------------
@@ -94,7 +94,7 @@ function zbudujFunkcje(src) {
   const js = esbuild.transformSync(txt, { loader: 'ts', target: 'node18' }).code;
   const fabryka = new Function('deps', `
     const { data, _menuDifficulty, cities, cityBuilt, DEFAULT_CONVERTER_RECIPES,
-            loadThroughput, converterThroughputForEra, converterBuildingIdForRecipe,
+            loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra, converterBuildingIdForRecipe,
             empireEpochForOwner } = deps;
     ${js}
     return empireConverterResourceRatesForOwner;
@@ -126,7 +126,7 @@ function wywolajDlaOwnera(fn, ownerId) {
   const dane = zbudujDane();
   const F = fn({
     ...dane,
-    DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra,
+    DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra,
     converterBuildingIdForRecipe,
   });
   return F(ownerId);
@@ -154,7 +154,7 @@ if (fnNaprawiona) {
 
   // BRAK REGRESJI — trojka juz dzialajaca przed naprawa (recipe.id === buildingId).
   const podstawowe = wywolajDlaOwnera(fnNaprawiona, 3);
-  ok(podstawowe.cegla === 50, `Cegielnia: Cegla (produkcja, jednostek/ture, era 1, normal) = 50 (got ${podstawowe.cegla})`);
+  ok(podstawowe.cegla === 100, `Cegielnia: Cegla (produkcja, jednostek/ture, era 1, normal) = 100 (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1, bylo 50) (got ${podstawowe.cegla})`);
   ok(podstawowe.ceramika === 50, `Garncarnia: Ceramika (produkcja, jednostek/ture, era 1, normal) = 50 (got ${podstawowe.ceramika})`);
   ok(podstawowe.braz === 25, `Odlewnia brazu: Braz (produkcja, jednostek/ture, era 1, normal) = 25 (got ${podstawowe.braz})`);
 
@@ -197,7 +197,7 @@ if (fnNaprawiona) {
     // dzialac nawet ze starym kodem -- jesli mutacja jednoczesnie psuje i ja, mutacja jest
     // zle przygotowana (za szeroka), a nie dowodzi punktowo tego jednego bledu.
     const podstawoweStara = wywolajDlaOwnera(fnStara, 3);
-    ok(podstawoweStara.cegla === 50 && podstawoweStara.ceramika === 50 && podstawoweStara.braz === 25,
+    ok(podstawoweStara.cegla === 100 && podstawoweStara.ceramika === 50 && podstawoweStara.braz === 25,
       `(kontrola mutacji) stare dopasowanie NIE psulo trojki juz-dzialajacej (got ${JSON.stringify(podstawoweStara)})`);
   } else {
     fail++; console.error('FAIL: nie udalo sie zbudowac zmutowanej funkcji do testu regresyjnego');

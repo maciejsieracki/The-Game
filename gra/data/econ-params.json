@@ -357,7 +357,7 @@
       "normal": 50,
       "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Glina+Drewno)→Cegła w Cegielni na turę (baza przed skalowaniem epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 3→10, flat na wszystkich trudnościach (cytat właściciela nie różnicował trudności); +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5, produkcja budynkowa surowców fizycznych)."
+      "opis": "Maks konwersja (Glina+Drewno)→Cegła w Cegielni na turę (baza przed skalowaniem epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 3→10, flat na wszystkich trudnościach (cytat właściciela nie różnicował trudności); +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5, produkcja budynkowa surowców fizycznych). R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (Maciej 2026-11-05): wartość BEZ zmian (50 cykli); ×2 cegły przez outputAmount 1→2 w recepturze (converters.ts), cykle Cegielni PŁASKIE (50), a epoka właściciela skaluje WYJŚCIE cegły +50% bazy/epokę (mnożnik 1 / 1,5 / 2 / 2,5 / 3; CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE, converterOutputMultiplierForEra) — działa także gdy produkcję ogranicza drewno."
     },
     "budynek_huta_przepustowosc": {
       "easy": 25,

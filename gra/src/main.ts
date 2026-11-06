@@ -1605,6 +1605,7 @@ import {
   DEFAULT_CONVERTER_RECIPES,
   loadThroughput,
   converterThroughputForEra,
+  converterOutputMultiplierForEra,
   converterBuildingIdForRecipe,
   type RawConverterParamsJson,
 } from './game/converters';
@@ -3548,8 +3549,8 @@ async function boot(): Promise<void> {
      * produkuje" w liczniku (Maciej: netto zbyt kosztowne, brutto OK).
      *
      * P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): przepustowość bazowa
-     * przepuszczona przez `converterThroughputForEra` (Cegielnia/Garncarnia +10%/epokę
-     * WŁAŚCICIELA, Odlewnie płaskie) -- ten sam wzorzec co advanceCityEconomy, żeby
+     * przepuszczona przez `converterThroughputForEra` (Garncarnia +10%/epokę cykli,
+     * Cegielnia ×(1+0,5·(e−1)) WYJŚCIA, Odlewnie płaskie) -- ten sam wzorzec co advanceCityEconomy, żeby
      * licznik HUD nie rozjechał się z realnym silnikiem (klasa błędu HUD-SKARBIEC).
      * `empireEpochForOwner` = ten sam resolver PARYTETU AI używany wszędzie indziej
      * w main.ts (owner 0 -> player.era, AI -> ownerEraByOwner).
@@ -3581,7 +3582,8 @@ async function boot(): Promise<void> {
           if (c.ownerId !== ownerId) continue;
           const builtIds = cityBuilt.get(c.id) ?? [];
           if (!builtIds.includes(converterBuildingIdForRecipe(recipe))) continue;
-          out[recipe.output] = (out[recipe.output] ?? 0) + throughput * recipe.outputAmount;
+          out[recipe.output] = (out[recipe.output] ?? 0)
+            + throughput * recipe.outputAmount * converterOutputMultiplierForEra(recipe.id, era);
         }
       }
       return out;

@@ -182,7 +182,7 @@ console.log('\n-- [1d] converters.ts: mnożenie przez recipe.outputAmount obecne
   ok(fnStart > -1, 'kotwica "export function converterProductionDisplayForBuilding(" w converters.ts znaleziona');
   const fnEnd = fnStart > -1 ? convertersSrcNow.indexOf('\n}', fnStart) : -1;
   const fnBody = fnStart > -1 && fnEnd > fnStart ? convertersSrcNow.slice(fnStart, fnEnd) : '';
-  ok(/produced\[recipe\.output\]\s*=\s*\(produced\[recipe\.output\]\s*\?\?\s*0\)\s*\+\s*recipe\.outputAmount\s*\*\s*throughput;/.test(fnBody),
+  ok(/produced\[recipe\.output\]\s*=\s*\(produced\[recipe\.output\]\s*\?\?\s*0\)\s*\+\s*recipe\.outputAmount\s*\*\s*converterOutputMultiplierForEra\(recipe\.id,\s*era\)\s*\*\s*throughput;/.test(fnBody),
     'M3: ciało converterProductionDisplayForBuilding mnoży produced przez recipe.outputAmount (nie throughput wprost)');
 }
 
@@ -330,7 +330,7 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
   );
   runConvertersMutationAndExpectFail(
     'M3 ignorowanie outputAmount',
-    'produced[recipe.output] = (produced[recipe.output] ?? 0) + recipe.outputAmount * throughput;',
+    'produced[recipe.output] = (produced[recipe.output] ?? 0) + recipe.outputAmount * converterOutputMultiplierForEra(recipe.id, era) * throughput;',
     'produced[recipe.output] = (produced[recipe.output] ?? 0) + throughput;',
   );
   runConvertersMutationAndExpectFail(
