@@ -1,0 +1,60 @@
+
+================ SEKCJA 1: symulacja restoreGameFromSave -- load z nielegalnym wpisem ================
+
+1.1 zapis z nielegalnym wpisem Milet->centrum Aten -- po symulacji load (cities restore + reconcile) wpis znika BEZ konca tury
+PASS: precondition: PO odtworzeniu z zapisu (ensureCitySaveDefaults), wpis Miletu na (8,0) nadal obecny -- migracja go nie rusza
+PASS: PO symulowanym load (naprawa): wpis Miletu na (8,0), centrum cudzego miasta Aten, usuniety NATYCHMIAST przy wczytaniu -- bez czekania na koniec tury
+PASS: bezsporny legalny wpis (1,0) Miletu nietkniety przez sanityzacje load
+
+1.2 kontrola czulosci: BEZ reconcile po odtworzeniu cities (load) wpis Miletu na centrum Aten POZOSTAJE
+PASS: kontrola: bez reconcile-na-load wpis Miletu na (8,0) POZOSTAJE po "wczytaniu" -- dokladnie luka (2) ze zgloszenia Evaluatora N2
+
+1.3 reconcile-na-load czysci WSZYSTKICH wlascicieli w zapisie (nie tylko Miletu)
+PASS: wpis Sparty (trzeci wlasciciel, AI) na centrum Aten tez usuniety przy load -- reconcile-na-load nie ogranicza sie do gracza
+
+================ SEKCJA 2: wiring main.ts -- reconcile faktycznie wpiety w restoreGameFromSave, PO odtworzeniu cities ================
+
+2.1 restoreGameFromSave(...) istnieje i zawiera petle odtwarzajaca cities z saved.cities
+PASS: znaleziono restoreGameFromSave(...) w main.ts
+PASS: restoreGameFromSave zawiera petle "cities.length = 0; for (c of saved.cities) {...cities.push(c);}"
+
+2.2 reconcileAllWorkedTiles(...) wolane WEWNATRZ restoreGameFromSave, PO petli cities.push, PRZED playerEverOwnedCity (kolejnosc = dziala na JUZ odtworzonym stanie)
+FAIL: P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-LOAD: reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map)) wywolane MIEDZY koncem petli cities.push a linia playerEverOwnedCity = cities.some(...) -- czyli PO odtworzeniu miast z zapisu
+
+2.3 dokladnie 3 miejsca w main.ts wolaja reconcileAllWorkedTiles z tym samym wzorcem argumentow (seedCityOwnerDefaults, zalozenie miasta gracza, load) -- zero duplikatow/literowek
+PASS: dokladnie 3 wystapienia wzorca reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map)) w main.ts (got 3)
+
+2.4 mutacja kontrolna -- fizyczne usuniecie call site'u load'u zawala TYLKO 2.2, nie 2.1/2.3 w izolacji (dowod, ze asercja 2.2 faktycznie zalezy od tego call site'u)
+FAIL: punkt mutacji zlokalizowany dokladnie (string do podmiany istnieje raz w pliku)
+PASS: PO usunieciu call site'u load'u: wzorzec 2.2 faktycznie przestaje pasowac (mutacja wykryta) -- asercja nie jest tautologiczna
+
+================ SEKCJA 3: repro behawioralne -- okolicaTryb='reczny' na miescie AI w STARYM zapisie ================
+
+3.1 repro buga: zapis sprzed naprawy 0d50bb81 -- miasto AI (ownerId=3) w trybie recznym, symulacja PETLI restoreGameFromSave BEZ naprawy P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE -> obywatele bezczynni mimo wolnych heksow
+PASS: kontrola czulosci: BEZ naprawy, okolicaTryb miasta AI ze starego zapisu pozostaje 'reczny' po symulowanym load -- ensureCitySaveDefaults nadpisuje pole TYLKO gdy puste, 'reczny' jest truthy (got "reczny", want "reczny")
+PASS: BUG: tryb reczny z 2 wpisami -> tylko 2 kafle obrobione mimo populacji 6 i mnostwa wolnych heksow -- obywatele AI bezczynni, dokladnie objaw ze zgloszenia (populacja 6, obrobione 2, bezczynnych 4) (got 2, want 2)
+
+3.2 PO naprawie: symulacja PETLI restoreGameFromSave Z naprawa (2 linie zreplikowane, dokladnie to, co main.ts teraz robi w petli po saved.cities) -> miasto AI wraca do auto, pelne auto-przypisanie, zero bezczynnych
+PASS: okolicaTryb miasta AI zresetowany na 'auto' przy symulowanym load (got "auto", want "auto")
+PASS: okolicaReczne miasta AI skasowane przy symulowanym load (martwe dane w trybie auto)
+PASS: PO naprawie: 6 kafli obrobionych automatycznie = cala populacja, zero bezczynnych obywateli AI (got 6, want 6)
+
+3.3 przypadek brzegowy KLUCZOWY: miasto GRACZA (ownerId===0) w trybie recznym w zapisie MUSI PRZETRWAC symulowany load BEZ ZMIANY -- filtr ownerId !== 0 chroni dokladnie to
+PASS: REGRESJA GORSZA NIZ BUG, gdyby to failowalo: miasto GRACZA w trybie recznym MUSI przetrwac load niezmienione -- filtr ownerId !== 0 wylacza gracza z resetu (got "reczny", want "reczny")
+PASS: wlasne reczne ustawienia gracza (1,0)/(2,0) nietkniete przez naprawe tego tematu
+PASS: miasto gracza zachowuje swoj wlasny, celowy wybor 2 recznych kafli -- funkcja trybu recznego dalej dziala dla gracza po load (got 2, want 2)
+
+================ SEKCJA 4: wiring main.ts -- reset okolicaTryb dla ownerId !== 0 w petli restoreGameFromSave ================
+
+4.1 blok "if (c.ownerId !== 0) { c.okolicaTryb = DEFAULT_OKOLICA_TRYB; delete c.okolicaReczne; }" istnieje W PETLI restoreGameFromSave, POMIEDZY ensureCitySaveDefaults(c); a cities.push(c);
+PASS: P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE: petla "for (c of saved.cities) {...}" zawiera "if (c.ownerId !== 0) { c.okolicaTryb = DEFAULT_OKOLICA_TRYB; delete c.okolicaReczne; }" POMIEDZY ensureCitySaveDefaults(c) a cities.push(c)
+
+4.2 DEFAULT_OKOLICA_TRYB uzyte w tym bloku jest tym samym, juz zaimportowanym symbolem z './game/cities' (weryfikowanym w okolica-tryb-reset-ownership-change-test.cjs 2.3) -- brak duplikatu/literowki nazwy
+PASS: DEFAULT_OKOLICA_TRYB wymienione w bloku import z './game/cities' w main.ts (reuzywane, nie nowy symbol)
+
+4.3 mutacja kontrolna -- fizyczne usuniecie bloku "if (c.ownerId !== 0) {...}" z petli load'u zawala TYLKO 4.1, dowod ze asercja nie jest tautologiczna
+PASS: punkt mutacji (blok if ownerId!==0 w petli load'u) wystepuje dokladnie raz w main.ts (got 1, want 1)
+PASS: PO usunieciu bloku resetu z petli load'u: wzorzec 4.1 faktycznie przestaje pasowac (mutacja wykryta) -- asercja nie jest tautologiczna
+
+OKOLICA-LOAD-RECONCILE FAIL (21/23 passed, 2 failed)
+EXIT=1

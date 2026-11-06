@@ -1,0 +1,14 @@
+  PASS: scenario has 130 cities
+  PASS: repeat call returns the identical cached instance
+  PASS: memoized result equals fresh result key-for-key
+  PASS: scenario actually has contested hexes (test is not vacuous)
+  PASS: population change that changes radius => recomputed (not stale)
+  PASS: recomputed result equals fresh result
+  PASS: equal inputs (new array, same values) hit the memo
+  PASS: city order change (tiebreak input) => recomputed and equal to fresh
+  PASS: owner change => recomputed
+  info: cold 78.89 ms; 40 warm calls 1.86 ms (un-memoized would be ~3156 ms)
+  PASS: 40 UI-style calls cost < 3x one cold call + 20 ms
+
+RESULT: 10 PASS, 0 FAIL
+EXIT=0

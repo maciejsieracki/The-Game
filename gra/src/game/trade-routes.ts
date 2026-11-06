@@ -1933,6 +1933,96 @@ export function memoizeOwnerResourceAccess(
   };
 }
 
+/**
+ * R-WEB-PERF-PLACED-IMPROVEMENTS-CACHE-Q1: Map z licznikiem mutacji. KAZDY zapis (`set`/`delete`/`clear`) zwieksza
+ * `version` -- to jedyne zrodlo niezmiennika inwalidacji cache'u ulepszen per wlasciciel (kazdy zapis w main.ts
+ * idzie przez te trzy metody, wiec nie ma "cichej" mutacji omijajacej licznik). Zachowuje sie jak zwykla Map.
+ */
+export class VersionedMap<K, V> extends Map<K, V> {
+  version = 0;
+  override set(key: K, value: V): this { this.version++; return super.set(key, value); }
+  override delete(key: K): boolean { this.version++; return super.delete(key); }
+  override clear(): void { this.version++; super.clear(); }
+}
+
+/** Pola wezla terytorium czytane przez `territoryOwnerAt`/`cityTerritoryRadius` (podpis inwalidacji). */
+export interface OwnerCacheTerritoryNode {
+  q: number;
+  r: number;
+  pop: number;
+  isFort?: boolean;
+  isOutpost?: boolean;
+  ownerId: number;
+  order?: { turn: number; seq: number };
+}
+
+function sameTerritoryNodes(a: readonly OwnerCacheTerritoryNode[], b: readonly OwnerCacheTerritoryNode[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i]!, y = b[i]!;
+    if (x.q !== y.q || x.r !== y.r || x.pop !== y.pop || x.ownerId !== y.ownerId
+      || !!x.isFort !== !!y.isFort || !!x.isOutpost !== !!y.isOutpost) return false;
+    const ox = x.order, oy = y.order;
+    if (!!ox !== !!oy) return false;
+    if (ox && oy && (ox.turn !== oy.turn || ox.seq !== oy.seq)) return false;
+  }
+  return true;
+}
+
+/**
+ * R-WEB-PERF-PLACED-IMPROVEMENTS-CACHE-Q1: cache "ulepszenia terenu w terytorium wlasciciela" (dawne
+ * `placedImprovementsForOwner`: skan WSZYSTKICH ulepszen mapy x wszystkie wezly terytorium na KAZDE wywolanie,
+ * a wolane per jednostka/miasto/surowiec -- w t.~95 ok. 14 s z 57 s profilu).
+ * Wynik zalezy WYLACZNIE od (a) zawartosci `source` (licznik `version`) i (b) wezlow terytorium (miasta + forty;
+ * porownywane POLE PO POLU z poprzednim snapshotem -- zmiana wlasciciela/populacji/pozycji/typu wezla = pudlo).
+ * Gdy ktorekolwiek sie zmieni, CALY cache jest wyrzucany, a zwrocone wczesniej mapy pozostaja nietkniete
+ * (nigdy nie mutujemy zwroconej mapy). Zadnego TTL ani stanu miedzyturowego bez walidacji: kazdy odczyt waliduje.
+ */
+export function createOwnerImprovementsCache<L, N extends OwnerCacheTerritoryNode = OwnerCacheTerritoryNode>(
+  ownerAt: (q: number, r: number, nodes: readonly N[]) => number | null,
+) {
+  let src: VersionedMap<string, L> | null = null;
+  let srcVersion = -1;
+  let snapshot: OwnerCacheTerritoryNode[] = [];
+  /** Wlasciciel kazdego heksa (memo `ownerAt`). Zalezy WYLACZNIE od wezlow terytorium, wiec przezywa zapisy do mapy
+   *  ulepszen (zapis dotyka tylko klucza tego heksa, ktory liczymy leniwie); czyszczony tylko przy zmianie wezlow. */
+  let hexOwner = new Map<string, number | null>();
+  let byOwner = new Map<number, ReadonlyMap<string, L>>();
+  const stats = { hits: 0, misses: 0, invalidations: 0 };
+  return {
+    stats,
+    get(ownerId: number, source: VersionedMap<string, L>, nodes: readonly N[]): ReadonlyMap<string, L> {
+      const nodesChanged = !sameTerritoryNodes(snapshot, nodes);
+      const sourceChanged = src !== source || srcVersion !== source.version;
+      if (nodesChanged || sourceChanged) {
+        if (byOwner.size > 0) stats.invalidations++;
+        if (nodesChanged) {
+          snapshot = nodes.map(n => ({ q: n.q, r: n.r, pop: n.pop, isFort: n.isFort, isOutpost: n.isOutpost, ownerId: n.ownerId, order: n.order ? { turn: n.order.turn, seq: n.order.seq } : undefined }));
+          hexOwner = new Map();
+        }
+        src = source;
+        srcVersion = source.version;
+        byOwner = new Map();
+      }
+      const hit = byOwner.get(ownerId);
+      if (hit) { stats.hits++; return hit; }
+      stats.misses++;
+      const out = new Map<string, L>();
+      for (const [hexKey, layers] of source) {
+        let owner = hexOwner.get(hexKey);
+        if (owner === undefined) {
+          const comma = hexKey.indexOf(',');
+          owner = ownerAt(Number(hexKey.slice(0, comma)), Number(hexKey.slice(comma + 1)), nodes) ?? null;
+          hexOwner.set(hexKey, owner);
+        }
+        if (owner === ownerId) out.set(hexKey, layers);
+      }
+      byOwner.set(ownerId, out);
+      return out;
+    },
+  };
+}
+
 /** Czy `ownerId` ma (dowolny) grant "z trasy" na `resourceKey`. */
 export function hasTradeRouteResourceAccess(
   grants: readonly TradeRouteResourceGrant[],

@@ -1,0 +1,68 @@
+
+-- A. PRZED/PO na poziomie normal (raport) --
+PASS: PRZED (Mennica+dostep+Waluta): Pieniadz = floor(20*1.5*0.70) = 21 (got 21, want 21)
+PASS: PRZED: Nauka = floor(20*1.5*0.20) = 6 (got 6, want 6)
+PASS: PRZED: Zamoznosc = floor(20*1.5*0.10) = 3 (got 3, want 3)
+PASS: PO (dostep do zlota utracony): Pieniadz = floor(20*0.70) = 14 (mnoznik z powrotem x1,0) (got 14, want 14)
+PASS: PO: Nauka = floor(20*0.20) = 4 (got 4, want 4)
+PASS: PO: Zamoznosc = floor(20*0.10) = 2 (got 2, want 2)
+PASS: PO < PRZED -- mnoznik realnie znika po utracie dostepu do zlota
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=26 landSea=170 relief=161 coast=22 riversMain=818 riversFill=1319 forest=6 deposits=16 starts=104 total=2648
+
+-- 1. wlasna Kopalnia zlota + Waluta + Mennica w stolicy -> dziala, "Podatek" --
+PASS: 1: empireHasKopalniaZlota -> true (wlasna kopalnia) (got true, want true)
+PASS: 1: sanity -- oba przebiegi zwracaja wpis
+PASS: 1: mnoznik DZIALA -- pieniadzBrutto z dostepem (10) > bez dostepu (7)
+PASS: 1: etykieta = "Podatek" (Waluta+Mennica w stolicy+dostep do zlota) (got "Podatek", want "Podatek")
+
+-- 2. utrata Kopalni zlota -> 1 tura laski, potem spi (mnoznik), etykieta stale "Podatek" (FALA 41), Mennica nadal stoi --
+PASS: 2: empireHasKopalniaZlota -> false (kopalnia utracona) (got false, want false)
+PASS: 2: 1. tura po utracie -- mnoznik DZIALA (laska) (10 > 7)
+PASS: 2: 2. tura bez dostepu -- pieniadzBrutto IDENTYCZNY jak baseline bez mnoznika (x1,0) (got 7, want 7)
+PASS: 2: etykieta zawsze "Podatek" (FALA 41, 2026-07-27) niezaleznie od dostepu do zlota -- mnoznik (wyzej) nadal spi, tylko nazwa juz sie nie zmienia (got "Podatek", want "Podatek")
+PASS: 2: Mennica NADAL figuruje w builtBuildingIds stolicy -- budynek NIE zostal zburzony
+
+-- 3. brak zloza + aktywny szlak -> dziala; po zerwaniu -> spi --
+PASS: 3: (setup) szlak polaczony (got 1, want 1)
+PASS: 3: grant "z trasy" aktywny dla wlasciciela bez zloza (got true, want true)
+PASS: 3: dostep do zlota AKTYWNY dzieki szlakowi (bez wlasnego zloza) (got true, want true)
+PASS: 3: mnoznik DZIALA dzieki szlakowi (10 > 7)
+PASS: 3: etykieta = "Podatek" dzieki szlakowi (got "Podatek", want "Podatek")
+PASS: 3: (setup) wojna zrywa szlak (got 0, want 0)
+PASS: 3: grant "z trasy" cofniety po zerwaniu szlaku (got false, want false)
+PASS: 3: dostep do zlota utracony po zerwaniu szlaku (got false, want false)
+PASS: 3: 1. tura po zerwaniu szlaku -- mnoznik DZIALA (laska) (10 > 7)
+PASS: 3: 2. tura po zerwaniu -- mnoznik SPI (pieniadzBrutto = baseline bez efektu) (got 7, want 7)
+PASS: 3: etykieta zawsze "Podatek" (FALA 41) mimo braku natywnego grantu -- mnoznik (wyzej) nadal spi (got "Podatek", want "Podatek")
+PASS: 3: Mennica NADAL zbudowana w stolicy mimo zerwania szlaku (budynek nietkniety)
+
+-- 4. odzyskanie dostepu (nowy szlak) -> wraca samo, bez odbudowy --
+PASS: 4: (setup) nowy szlak polaczony ponownie (pokoj przywrocony) (got 1, want 1)
+PASS: 4: grant "z trasy" odzyskany (got true, want true)
+PASS: 4: dostep do zlota odzyskany (got true, want true)
+PASS: 4: po odzyskaniu dostepu -- pieniadzBrutto WRACA do wartosci sprzed zerwania, identycznie (bez zadnej odbudowy) (got 10, want 10)
+PASS: 4: etykieta wraca na "Podatek" sama, bez odbudowy budynku (got "Podatek", want "Podatek")
+PASS: 4b: nowa WLASNA kopalnia (bez szlaku) tez przywraca dostep (got true, want true)
+PASS: 4b: nowa wlasna kopalnia daje IDENTYCZNY skutek co odzyskany szlak -- sama sciezka dostepu jest nieistotna (got 10, want 10)
+
+-- 5. parytet AI -- identyczna reguła dla ownerId AI --
+PASS: 5: AI -- empireHasKopalniaZlota -> true (wlasna kopalnia) (got true, want true)
+PASS: 5: parytet -- pieniadzBrutto (dostep aktywny) identyczny dla AI i gracza, to samo miasto (got 10, want 10)
+PASS: 5: parytet -- pieniadzBrutto (dostep utracony) identyczny dla AI i gracza (got 7, want 7)
+PASS: 5: parytet -- AI TEZ traci mnoznik po utracie dostepu do zlota (nie tylko gracz)
+PASS: 5: AI -- etykieta "Podatek" z dostepem (got "Podatek", want "Podatek")
+PASS: 5: AI -- etykieta zawsze "Podatek" (FALA 41) po utracie dostepu (got "Podatek", want "Podatek")
+PASS: 5: isPodatekActive(true,true,true) -- ownerId-agnostic z definicji (got true, want true)
+PASS: 5: isPodatekActive(true,true,false) -- zawsze true od FALA 41 (bramka usunieta), ownerId-agnostic z definicji (got true, want true)
+
+-- 6. dwa miasta tej samej cywilizacji zgodnie raportuja ten sam stan --
+PASS: 6: sanity -- miasto regionalne zwraca wpis w obu przebiegach
+PASS: 6: miasto REGIONALNE (bez wlasnej Mennicy) traci mnoznik razem ze stolica gdy dostep do zlota znika (z dostepem 8 > bez 5)
+PASS: 6: etykieta identyczna dla stolicy i miasta regionalnego (dostep aktywny) (got "Podatek", want "Podatek")
+PASS: 6: etykieta identyczna dla stolicy i miasta regionalnego (dostep utracony) (got "Podatek", want "Podatek")
+PASS: 6: (kontrola) z dostepem = "Podatek" dla obu miast (got "Podatek", want "Podatek")
+PASS: 6: (kontrola) bez dostepu = "Podatek" tez dla obu miast (FALA 41 -- etykieta stala, mnoznik i tak spi) (got "Podatek", want "Podatek")
+
+mennica-uspienie-test: 49 passed, 0 failed
+EXIT=0
