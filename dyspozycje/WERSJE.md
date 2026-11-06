@@ -1,3 +1,9 @@
+## ROBOCZA 1115446e -- 2026-11-06 -- FALA 515: automatyzacja budowy (domyślnie wyłączona) + próg paktu w UI zgodny z silnikiem (testowa)
+
+- (1) R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 — opcja „Automatyzacja budowy” (budynki + ulepszenia terenu) dla gracza w głównych ustawieniach, domyślnie WYŁĄCZONA, także w menu gry, AI bez zmian; (2) R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1 — blokada paktu o nieagresji w UI liczy ten sam efektywny próg Relacji co silnik (narzut +20 za wspólną granicę, +15 flaga agresora)
+- Weryfikacja: tsc PASS; autobuild-toggle 39/0; diplo-nap-border-threshold 14/0; diplo-nap-trust-30 25/25; diplomacy-locks 88/0; newgame-sett-grid-layout 74/0
+- Limity: Inicjatywa AI paktu nadal liczy własny próg bez narzutu granicy (osobny temat); brak zrzutu Chromium z notką 130/140 przy granicy; brak powtórzenia ai-buduje-budynki
+
 ## ROBOCZA 3ba85b7b -- 2026-11-06 -- FALA 514: pakt o nieagresji wymaga Zaufania 30 (testowa)
 
 - R-WEB-DIPLO-NAP-TRUST-30-Q1 — pakt o nieagresji wymaga Relacji ≥ próg ORAZ Zaufania ≥ 30 (stałe na trudnościach) dla gracza, AI i AI↔AI; notka blokady podaje wymagane Zaufanie
