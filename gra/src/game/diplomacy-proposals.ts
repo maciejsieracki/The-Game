@@ -532,6 +532,26 @@ const SWEETENER_EASE_MAX_POINTS = 20;
  */
 export const NAP_GRANICA_RELACJA_NARZUT = SWEETENER_EASE_MAX_POINTS;
 
+/**
+ * R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1: JEDEN efektywny próg Relacji dla Paktu o nieagresji.
+ * Używany przez silnik (evaluateProposal::case 'nap'), blokadę UI (diplomacy-locks.ts case '2')
+ * i notkę/tooltip — UI nie może liczyć progu inaczej niż silnik.
+ * Składowe: `progNapRelacja` (już po skalowaniu trudności), narzut „Kara za wspólną granicę",
+ * delta flagi agresora proponenta (`deltaRelacjiSojusz`), minus słodzik (`napEase`).
+ * Blokada UI nie zna payloadu propozycji, więc woła z `napEase = 0` (słodzik działa dopiero
+ * w ocenie konkretnej oferty — ta sama reguła co wcześniej).
+ */
+export function napRelacjaProgEfektywny(
+  progNapRelacja: number,
+  opts: { karaWspolnaGranica?: boolean; proponentAgresor?: boolean; napEase?: number } = {},
+): number {
+  const narzut = opts.karaWspolnaGranica ? NAP_GRANICA_RELACJA_NARZUT : 0;
+  return Math.max(
+    0,
+    progNapRelacja + narzut - (opts.napEase ?? 0) + deltaRelacjiSojusz(opts.proponentAgresor === true),
+  );
+}
+
 /** Wartość netto słodzika w PN (koszyk giveItems minus receiveItems, floor 0). */
 export function sweetenerNetPn(payload: ProposalPayload, pnOpts?: ResolveProposalPnOptions): number {
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
@@ -1097,6 +1117,14 @@ export function evaluateProposal(
           reason: `Wiarygodność zbyt niska na pakt (wymagana ≥ ${p.wiarygodnoscProgNapMin})`,
         };
       }
+      // R-WEB-DIPLO-NAP-TRUST-30-Q1: pakt wymaga TEŻ Zaufania ≥ progNapZaufanie (stała, bez ±trudność).
+      // Fail-closed: brak wartości w parametrach = odrzut, nie pominięcie bramki.
+      if (!(relation.zaufanie >= p.progNapZaufanie)) {
+        return {
+          accepted: false, pwBalance: -1,
+          reason: `Zaufanie zbyt niskie na pakt (wymagane ≥ ${p.progNapZaufanie}, masz ${relation.zaufanie})`,
+        };
+      }
       // C-DYP-STOL-Q1=B: słodzik (giveItems/receiveItems w payload) obniża próg Relacji.
       const napEase = sweetenerEasePoints(payload, pnOpts);
       // R-DYPLO-PAKT-WETO-EKSPANSJA-Q1: „Ekspansja przy granicy" była TU binarnym wetem
@@ -1113,11 +1141,13 @@ export function evaluateProposal(
       // reszta tej bramki. Narzut = SWEETENER_EASE_MAX_POINTS (sufit słodzika), więc
       // MAKSYMALNY słodzik dokładnie go kasuje — to jest gwarancja, że warunek nigdy nie
       // jest nieosiągalny. Wartość WYPROWADZONA z istniejącej stałej, nie nowy balans.
+      // R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1: próg liczy WSPÓLNY helper (ten sam co blokada UI).
       const napExpansionSurcharge = ctx.karaWspolnaGranica ? NAP_GRANICA_RELACJA_NARZUT : 0;
-      const napThreshold = Math.max(
-        0,
-        p.progNapRelacja + napExpansionSurcharge - napEase + deltaRelacjiSojusz(proponentAgresor),
-      );
+      const napThreshold = napRelacjaProgEfektywny(p.progNapRelacja, {
+        karaWspolnaGranica: ctx.karaWspolnaGranica,
+        proponentAgresor,
+        napEase,
+      });
       if (score < napThreshold) {
         return {
           accepted: false, pwBalance: -1,

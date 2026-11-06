@@ -117,6 +117,8 @@ export const CITY_BUILDING_PREREQ: Readonly<Record<string, string | readonly str
   // ZLOTO (Maciej 2026-07-25, decyzja 54c=A): Mennica wymaga Targowiska W TYM SAMYM MIEŚCIE
   // (obok bramki surowcowej Złota powyżej — DEPOSIT_LINKED_BUILDING_LABELS).
   mennica: 'targowisko',
+  // R-WEB-BUILDING-EMPORION-Q1 (decyzja właściciela 2026-11-05): Emporion wymaga Targowiska w tym samym mieście.
+  emporion: 'targowisko',
   // DECYZJA 54a (Maciej 2026-07-25): Baszta wymaga Murów w tym samym mieście.
   baszta: 'mury',
   // DECYZJA 54b (Maciej 2026-07-25): Akwedukt wymaga Studni w tym samym mieście.

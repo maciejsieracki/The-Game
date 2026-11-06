@@ -204,8 +204,14 @@ export const DIPLOMACY_PARAMS = {
   progPoboczneWojna:     15,
 
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-09-03: 110 @ normal; tylko Rel, bez Zauf) */
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-09-03: 110 @ normal; od 2026-11-05 OBOK Zaufania — progNapZaufanie) */
   progNapRelacja:                  110,
+  /**
+   * R-WEB-DIPLO-NAP-TRUST-30-Q1 (decyzja właściciela 2026-11-05): pakt o nieagresji wymaga
+   * ORAZ Relacji ≥ progNapRelacja ORAZ Zaufania ≥ tego progu. Wartość STAŁA na wszystkich
+   * trudnościach — celowo NIE w DIPLO_ZAUFANIE_THRESHOLD_KEYS (brak ±delta trudności).
+   */
+  progNapZaufanie:                 30,
   /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
   progHandelRelacja:               0,
   /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */

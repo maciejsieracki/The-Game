@@ -906,7 +906,7 @@ export function loadTradeRouteParams(
  * nadal działa: Targowisko/Port/Port wielki zostają.
  */
 export const TRADE_BUILDING_IDS: ReadonlySet<string> = new Set([
-  'targowisko', 'port', 'port_wielki',
+  'targowisko', 'port', 'port_wielki', 'emporion',
 ]);
 
 /** Limit tras handlowych danego miasta = liczba zbudowanych budynków handlowych. */

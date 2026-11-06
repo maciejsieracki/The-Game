@@ -24,6 +24,7 @@ const MAIN_GRID_ORDER = [
   'Prędkość gry', 'Wojna epoki',
   'Poziom trudności', 'Barbarzyńcy',
   'Warunki zwycięstwa', 'Chatki z nagrodami',
+  'Automatyzacja budowy', // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: 13. karta (główne ustawienia, nie zaawansowane)
 ];
 /** Kolejność okna zaawansowanych (13 pozycji, bez duplikatów z siatką). */
 const ADV_ORDER = [
@@ -93,7 +94,7 @@ window.__openWizard();
 
     // 1. Główna siatka: 12 kart w dokładnej kolejności, 2 kolumny wypełniane rzędami.
     const labels = (await page.locator('.civ-newgame .sett-grid .srow .sl').allTextContents()).map(x => x.trim());
-    assert.deepStrictEqual(labels, MAIN_GRID_ORDER, 'main grid shows 12 cards in the agreed left/right order');
+    assert.deepStrictEqual(labels, MAIN_GRID_ORDER, 'main grid shows 13 cards in the agreed left/right order');
     const rects = await page.locator('.civ-newgame .sett-grid .srow').evaluateAll(els => els.map(e => {
       const r = e.getBoundingClientRect(); return { x: r.x, y: r.y };
     }));
@@ -182,7 +183,7 @@ window.__openWizard();
     // więc oczekiwana wartość wynika z etykiety wybranej w teście (true tylko dla „ręczna i automatyczna").
     const expectedBattleAlwaysManual = selectedBattleMode === 'Bitwa ręczna i automatyczna';
     assert.strictEqual(params.advanced.battleAlwaysManual, expectedBattleAlwaysManual, 'selected battle mode reaches game-start params');
-    console.log('newgame-settings-layout-reposition-test: PASS — 12-card grid order, 13-row advanced order, persistence and game-start params verified');
+    console.log('newgame-settings-layout-reposition-test: PASS — 13-card grid order, 13-row advanced order, persistence and game-start params verified');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

@@ -1,3 +1,39 @@
+## ROBOCZA d956f56a -- 2026-11-06 -- FALA 519: górny baner: większe liczby, zwarta grupa (testowa)
+
+- R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1 — główne liczby w żetonach banera większe o 25–33% (17/15/13/12 px), liczba i przyrosty brutto/netto zwarte obok siebie (przerwa 0–4 px) i wyśrodkowane w żetonie; układ 3+3 stały bez przeskoków
+- Weryfikacja: tsc PASS; hud-topbar-bigger-numbers real-render 64/0 (+mutacje); hud-topbar-no-labels 94/0; hud-skarbiec 34/0; hud-resource-deficit-red 41/0
+- Limity: Puste boki żetonu nadal 55–93 px/stronę przy 1920 i do 47 px przy 1366 (baner na całą szerokość, N6); max-width banera kosztem N6 do decyzji właściciela
+
+## ROBOCZA 1ab8f82e -- 2026-11-06 -- FALA 518: powiadomienia: zakładki Dyplomacja/Ważne/Inne, mniej szumu (testowa)
+
+- R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 — panel Wydarzenia ma 3 zakładki (Dyplomacja, Ważne, Inne) zamiast chipa „Inne cyw.”; przycisk „Zamknij wszystkie informacyjne” nad zakładkami; usunięty szum u źródła (auto-ulepszenia, wycinka, nowy szlak handlowy, Dotarło do celu); pomiar 30 tur: 63→2 i 58→3 wpisy informacyjne
+- Weryfikacja: tsc PASS; klasyfikator eventTabOf PASS (9 mutacji); notification-tabs 29/0; events-toolbar 25/0; wyrab-wycinka-nazwa-live 49/0; Chromium real-render wg Operatora
+- Limity: Pomiar tylko 2 ziarna × 30 spokojnych tur (bez wojny); eventTabOf ma kilka fałszywych trafień słów kluczowych (naprawione częściowo)
+
+## ROBOCZA bb025154 -- 2026-11-06 -- FALA 517: odlewnie ×2 cykle i mnożnik epoki (testowa)
+
+- R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 — Odlewnia brązu, Odlewnia żelaza i Wielka odlewnia: przepustowość 25→50 cykli/turę oraz mnożnik epoki właściciela 1/1,5/2/2,5/3 (gracz i AI); receptury i koszty bez zmian; huta płaska
+- Weryfikacja: tsc PASS; foundry-throughput-x2-era-mult 153/0; converter-era-scaling 123/0; brick-production-x2 69/0; citypanel-konwerter-produkcja 83/0; hashe war-allin zgodne
+- Limity: Brak pomiaru w żywej grze; nieaktualne komentarze w turn-economy.ts/main.ts
+
+## ROBOCZA 2c27d321 -- 2026-11-06 -- FALA 516: Emporion + przyspieszenie późnej gry (testowa)
+
+- (1) R-WEB-BUILDING-EMPORION-Q1 — nowy budynek handlowy Emporion (epoka 2, badanie Handel, wymaga Targowiska w mieście, +1 slot tras, 5% handlu per trasa, ikona z odznaką); (2) R-WEB-PERF-LATE-GAME-LAG-T86-Q1 — memo obliczenia konfliktów obywateli między miastami (O(n²)), ruch/wejście do miasta/wybór jednostki ok. 25–30× szybsze przy 137 miastach (refreshFog ok. 3,5×)
+- Weryfikacja: tsc PASS; emporion-building 47/0; emporion-build-list Chromium 13/0; grupy-budynkow 84/0; perf-sibling-memo 13/13; okolica 72/72
+- Limity: PERF: p95<150 ms niezmierzone na realnym GPU i w turze 86; pozostają updateHud/previewCityEconomy i refreshTerritoryBorderOverlay (Q2). Emporion: bonus 5% per trasa (wariant A); koszt w magazynie skalowany 320/240
+
+## ROBOCZA 1115446e -- 2026-11-06 -- FALA 515: automatyzacja budowy (domyślnie wyłączona) + próg paktu w UI zgodny z silnikiem (testowa)
+
+- (1) R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 — opcja „Automatyzacja budowy” (budynki + ulepszenia terenu) dla gracza w głównych ustawieniach, domyślnie WYŁĄCZONA, także w menu gry, AI bez zmian; (2) R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1 — blokada paktu o nieagresji w UI liczy ten sam efektywny próg Relacji co silnik (narzut +20 za wspólną granicę, +15 flaga agresora)
+- Weryfikacja: tsc PASS; autobuild-toggle 39/0; diplo-nap-border-threshold 14/0; diplo-nap-trust-30 25/25; diplomacy-locks 88/0; newgame-sett-grid-layout 74/0
+- Limity: Inicjatywa AI paktu nadal liczy własny próg bez narzutu granicy (osobny temat); brak zrzutu Chromium z notką 130/140 przy granicy; brak powtórzenia ai-buduje-budynki
+
+## ROBOCZA 3ba85b7b -- 2026-11-06 -- FALA 514: pakt o nieagresji wymaga Zaufania 30 (testowa)
+
+- R-WEB-DIPLO-NAP-TRUST-30-Q1 — pakt o nieagresji wymaga Relacji ≥ próg ORAZ Zaufania ≥ 30 (stałe na trudnościach) dla gracza, AI i AI↔AI; notka blokady podaje wymagane Zaufanie
+- Weryfikacja: tsc PASS; diplo-nap-trust-30 25/25; diplomacy-locks 88/0; diplomacy/war-gates/treaties/wiarygodnosc/acceptance-points 0 FAIL; Chromium 6/6; ai-test 274/20 = baseline
+- Limity: UI blokady nie zna narzutu za wspólną granicę (110/120 vs silnik 130/140) — osobny temat; UPR automatyczny NAP bez zmian
+
 ## ROBOCZA 5b7c38ed -- 2026-11-06 -- FALA 513: Magazyn nie zwiększa pojemności żywności (testowa)
 
 - R-WEB-MAGAZYN-NO-FOOD-CAP-BONUS-Q1 — Magazyn nie daje bonusu do pojemności żywności centralnej (100→0); pojemność żywności tylko ze Spichlerzy (baza 1000 bez zmian); pojemność surowców Magazynu bez zmian

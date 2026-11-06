@@ -1352,6 +1352,7 @@ import {
 } from './game/embarkation';
 import { isWaterTerrain } from './units/setup';
 import { autoManageCity, pickAutoBuildItem, isBudowaListaUkonczonaForCity } from './game/auto-manage';
+import { isAutoBuildAllowedForOwner, autoBuildFromSaveMeta, autoBuildFromNewGameParam, AUTO_BUILD_ENABLED_DEFAULT } from './game/auto-build-gate';
 import {
   AI_DIFFICULTY_BONUS_UNIT_TYPE,
   applyDifficultyCombatToUnitDef,
@@ -8100,6 +8101,7 @@ async function boot(): Promise<void> {
         getAliveUnitTypeNames: (ownerId: number) =>
           new Set(units.filter(x => x.ownerId === ownerId).map(x => x.typeId)),
         isAutoManageEnabled: (cityId: string) => autoManageCities.has(cityId),
+        isAutoBuildEnabled: isPlayerAutoBuildEnabled, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1
         getGrowthMult: (cityId: string) => growthMultMap.get(cityId) ?? 1,
         // #17: Bilans plonów w panelu miasta musi mnożyć plony Porządkiem tak samo
         // jak silnik (turn-economy.ts applyOrderYieldMults) — bez tego panel zaniżał
@@ -9140,6 +9142,8 @@ async function boot(): Promise<void> {
     function tryAutoEnqueueBuild(cityId: string) {
       const city = cities.find(c => c.id === cityId);
       if (!city || !isAutoBudowaTryb(city.budowaTryb)) return null;
+      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: gracz bez włączonej automatyzacji budowy — tryb zostaje w danych, nie działa.
+      if (!isAutoBuildAllowedFor(city.ownerId)) return null;
       const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       if (frontItem(prod0) !== null) return null;
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
@@ -9355,6 +9359,22 @@ async function boot(): Promise<void> {
      * / EN: new-game option; ON lets the player take part in epoch forced wars.
      */
     let playerEpochWarEnabled = false;
+    /**
+     * R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (właściciel 2026-11-05): „Automatyzacja budowy" GRACZA
+     * (auto-ulepszenia terenu + auto-budowa budynków w miastach). DOMYŚLNIE WYŁĄCZONA; AI bez zmian.
+     * Zapis: meta.autoBuildEnabled; stary zapis (brak pola) = WYŁĄCZONA. Tryby auto zapisane w mieście
+     * zostają w danych, ale silnik ich nie wykonuje dla gracza, dopóki opcja jest wyłączona.
+     * / EN: player build-automation master switch (default OFF); AI unaffected.
+     */
+    let autoBuildEnabled = AUTO_BUILD_ENABLED_DEFAULT;
+    /** Jedna bramka silnika i UI: czy automatyka budowy może działać dla ownera (AI zawsze tak). */
+    function isAutoBuildAllowedFor(ownerId: number): boolean {
+      return isAutoBuildAllowedForOwner(ownerId, humanSeats.humanOwnerIds, autoBuildEnabled);
+    }
+    /** Czy opcja „Automatyzacja budowy" gracza jest włączona (UI). */
+    function isPlayerAutoBuildEnabled(): boolean {
+      return autoBuildEnabled;
+    }
     /**
      * D-DYPLO-AI-NO-NAG (Maciej 2026-07-29): cooldown po odrzuceniu oferty AI przez gracza
      * (partner + actionId) — save/load meta.rejectedOfferCooldowns.
@@ -17289,7 +17309,7 @@ async function boot(): Promise<void> {
 
     /** Czy w mieście jest coś do wyboru w produkcji (kolejka może być pusta) — tylko realnie dostępne teraz. */
     function cityHasActionableProduction(city: City): boolean {
-      if (isAutoBudowaTryb(city.budowaTryb)) return false;
+      if (isAutoBudowaTryb(city.budowaTryb) && isAutoBuildAllowedFor(city.ownerId)) return false;
       const ctx = productionAvailabilityCtxForCity(city);
       if (cityHasAffordableBuildingEnqueue(city, ctx)) return true;
       if (cityHasAffordableUnitRecruitment(city, ctx)) return true;
@@ -17405,47 +17425,9 @@ async function boot(): Promise<void> {
         tradeRouteEventLog.unshift(stampEventTurn(ev, turn));
       };
 
-      const routeSettlementForCity = (routes: readonly TradeRoute[], cityId: string): number => {
-        const breakdown = computeTradeRouteIncomeByCityBreakdown(
-          routes, incomeParams, wonderTradeRouteBonusForOwner, targowiskoTradeRouteBonusForCity,
-        );
-        const seaBonus = computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(routes), builtByCity);
-        return (breakdown.totalByCity.get(cityId) ?? 0) + (seaBonus.get(cityId) ?? 0);
-      };
-      // Treat new-route events as sequential additions so a second sea route
-      // reports the marginal +1 city bonus as well as its endpoint proceeds.
-      const routesBeforeAdded = [...prevRoutes];
-
-      for (const route of added) {
-        const from = cityById.get(route.fromCityId);
-        const to = cityById.get(route.toCityId);
-        const fromName = from?.name ?? route.fromCityId;
-        const toName = to?.name ?? route.toCityId;
-        // R2-4: etykieta opisuje DRUGĄ stronę względem gracza; dla trasy wewnętrznej
-        // (obie strony to gracz) własna nazwa cywilizacji nic nie mówi — jawny opis.
-        const wewnetrzna = route.ownerId === route.toOwnerId;
-        const civLabel = wewnetrzna ? 'handel wewnętrzny' : ownerDiploLabel(route.ownerId === 0 ? route.toOwnerId : route.ownerId);
-        // The event describes the player's credited proceeds for this route,
-        // including endpoint-specific Wonder and Targowisko bonuses. Reuse the
-        // settlement aggregator so labels cannot drift from turn income.
-        const playerCityId = playerCityIdOf(route);
-        const beforeIncome = routeSettlementForCity(routesBeforeAdded, playerCityId);
-        routesBeforeAdded.push(route);
-        const afterIncome = routeSettlementForCity(routesBeforeAdded, playerCityId);
-        const income = Math.max(0, afterIncome - beforeIncome);
-        const summary = `${fromName} ↔ ${toName} (${civLabel}) \xb7 +${income} złota/turę`;
-        showHintMessage('\u{1F9ED} Nowy szlak handlowy: ' + summary, 4500);
-        // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: zapamiętaj miasto gracza pod tym samym id.
-        tradeRouteEventPlayerCityIds.set('trade-new-' + turn + '-' + route.id, playerCityIdOf(route));
-        pushOnce({
-          id: 'trade-new-' + turn + '-' + route.id,
-          icon: '\u{1F9ED}', // 🧭
-          title: 'Nowy szlak handlowy',
-          subtitle: summary,
-          kind: 'city',
-        });
-      }
-
+      // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: „Nowy szlak handlowy” NIE jest już zdarzeniem
+      // (ani toastem, ani kartą panelu) — zgłoszenie właściciela: szum bez decyzji gracza.
+      // Logika tras (diffTradeRoutes, dochody) nie zmieniona; zrywanie tras nadal raportowane.
       for (const route of removed) {
         const from = cityById.get(route.fromCityId);
         const to = cityById.get(route.toCityId);
@@ -23544,6 +23526,14 @@ async function boot(): Promise<void> {
         buyableTechCount: getBuyableTechFromOwner(ownerId).length,
         knownRivalsCount: getKnownRivalsFor(ownerId).length,
         progNapRelacja: dip.progNapRelacja,
+        progNapZaufanie: dip.progNapZaufanie,
+        // R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1: ten sam predykat co evaluateProposal
+        // (player-proposal ctx, main.ts ~23419), żeby UI i silnik liczyły jeden próg Paktu.
+        karaWspolnaGranica:
+          cities.filter(c => c.ownerId === ME()).length > 2 &&
+          cities.filter(c => c.ownerId === ownerId).length > 2 &&
+          ownersShareLandBorderLive(ME(), ownerId),
+        napAgresorAktywny: czyAgresorAktywny(ME(), turn),
         progHandelRelacja: dip.progHandelRelacja,
         progSojuszRelacja: dip.progSojuszRelacja,
         progSojuszZaufanie: dip.progSojuszZaufanie,
@@ -24637,6 +24627,14 @@ async function boot(): Promise<void> {
 
     configureGamePauseMenu({
       hasSave: hasAnySaveSlot,
+      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: przełącznik „Automatyzacja budowy” także w trakcie gry (stare zapisy: domyślnie WYŁ.).
+      getAutoBuildEnabled: isPlayerAutoBuildEnabled,
+      onAutoBuildToggle: (enabled: boolean) => {
+        autoBuildEnabled = enabled === true;
+        // Obrona zarzutu 4: odśwież otwarte panele (miasto + budowa), żeby stan kontrolek auto był od razu aktualny.
+        try { updateHud(); } catch { /* HUD jeszcze nie gotowy */ }
+        try { refreshCityPanelIfOpen(); } catch { /* panel zamknięty */ }
+      },
       onResume: () => { /* gra już widoczna pod overlayem */ },
       onSave: () => { openSaveGameDialog(); },
       onLoad: () => { void openLoadGameDialog(true); },
@@ -24804,8 +24802,9 @@ async function boot(): Promise<void> {
     }
 
     /** R-WYDARZENIA-FILTR-KATEGORII: „Usuń wszystkie" w toolbarze panelu WYDARZENIA.
-     * Iteruje NIEfiltrowaną collectTurnEvents() (nie to, co chip 🌍 „Inne cyw." akurat
-     * pokazuje w UI) — więc kasuje też wpisy ukryte tym przełącznikiem. To jest ZAMIERZONE
+     * Iteruje NIEfiltrowaną collectTurnEvents() (nie to, co aktywna zakładka Dyplomacja/Ważne/Inne
+     * — dawny chip 🌍 „Inne cyw." — akurat pokazuje w UI) — więc kasuje też wpisy ukryte
+     * (np. handel AI↔AI poza zakładką Dyplomacja). To jest ZAMIERZONE
      * (Maciej/Evaluator): „Usuń wszystkie" ma czyścić WSZYSTKO, nie tylko widoczną resztę. */
     function clearAllSidePanelEvents(): void {
       for (const ev of collectTurnEvents()) {
@@ -25138,6 +25137,7 @@ async function boot(): Promise<void> {
           },
           listPlayerCities: () =>
             cities.filter(c => isMe(c.ownerId)).map(c => ({ id: c.id, name: c.name })),
+          isAutoBuildEnabled: isPlayerAutoBuildEnabled, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1
           getUlepszeniaCityId: () => ensureUlepszeniaHudCityId(),
           onUlepszeniaCityIdChange: (cityId: string) => {
             ulepszeniaHudCityId = cityId;
@@ -26495,6 +26495,12 @@ async function boot(): Promise<void> {
         return c ? { id: c.id, name: c.name } : null;
       },
       linkFor: (id: string): SidePanelEventLink | null => sidePanelEventLinkFor(id),
+      /** Odczyt (bez zmian stanu) pełnej, NIEfiltrowanej listy wpisów panelu — tylko dla pomiaru
+       * `tools/notif-live-measure.cjs` (R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1). */
+      allEvents: (): Array<Record<string, unknown>> => collectTurnEvents().map(e => ({
+        id: e.id, title: e.title, subtitle: e.subtitle, kind: e.kind,
+        blocking: e.blocking === true, origin: e.origin ?? null, turn: turn,
+      })),
       cameraTarget: (): { x: number; z: number; dist: number } => camCtrl.getFocusState(),
       /** Stan „który widok jest otwarty" czytany WŁASNYMI predykatami gry (nie zgadywaniem
        * po klasach CSS) — to one decydują o widoczności panelu w reszcie kodu. */
@@ -27525,6 +27531,7 @@ async function boot(): Promise<void> {
       endTurn: () => { triggerPlayerEndTurn(); },
       meOwnerId: () => ME(),
       setCityLimitBase: base => { _menuCityLimitBase = base; }, // R-WEB-TEST-HOOK-SETCITYLIMIT-Q1 (tylko ?civTest=1)
+      setAutoBuildEnabled: v => { autoBuildEnabled = v === true; }, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (tylko ?civTest=1)
       meEra: () => empireEpochForOwner(ME()),
       setCityWorkers: (cityId, keys) => {
         const city = cities.find(c => c.id === cityId);
@@ -29421,7 +29428,7 @@ async function boot(): Promise<void> {
     ): void {
       if (arrived) {
         plannedMarches.delete(unitId);
-        showHintMessage('Dotarło do celu', 2800);
+        // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: „Dotarło do celu” usunięte (szum).
         return;
       }
       if (stopReason) {
@@ -35045,6 +35052,8 @@ async function boot(): Promise<void> {
           negotiationSeq,
           // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): ustawienie opcji nowej gry trwa w zapisie.
           dealsEndTurnGate: dealsEndTurnGateEnabled,
+          // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: automatyzacja budowy gracza trwa w zapisie.
+          autoBuildEnabled,
           // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): tylko przy fladze ON (OFF = bajty jak baza).
           ...(isWarEpochPlayerFirstEnabled() ? { playerEpochWarEnabled } : {}),
           rejectedOfferCooldowns: pruneExpiredRejectedOffers(rejectedOfferCooldowns, turn),
@@ -36444,13 +36453,11 @@ async function boot(): Promise<void> {
               const drewnoCap = ownerResourceCap(
                 cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId),
               );
-              const drewnoCredited = creditOwnerResourceStock(
+              creditOwnerResourceStock(
                 cities, ownerId, 'drewno', drewnoCredit, drewnoCap,
               );
-              showHintMessage(
-                'Wycinka: +' + drewnoCredited + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',
-                2000,
-              );
+              // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: komunikat „Wycinka: +N Drewna” usunięty
+              // (szum bez decyzji gracza). Zbiór drewna (creditOwnerResourceStock) bez zmian.
             }
             if (expired) {
               hexClearingStates.delete(hexKey);
@@ -36494,6 +36501,8 @@ async function boot(): Promise<void> {
               );
             }
             // Surface population changes briefly so the economy is visible.
+            // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 (r2): pomiar 2 ziarna x 30 tur = 0 wystapien
+            // „Wzrost populacji” w panelu WYDARZENIA (toast chwilowy, nie wpis) — zostaje bez zmian.
             if (econ.growth > 0) {
               showHintMessage('Wzrost populacji w ' + econ.growth + ' miastach', 2500);
             } else if (econ.starved > 0) {
@@ -37391,7 +37400,8 @@ async function boot(): Promise<void> {
                     },
                   );
                   // Apply auto-enqueue suggestion (only when queue is empty)
-                  if (amDecision.enqueue !== null) {
+                  // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: Zarządca ⚙ gracza nie kolejkuje budynków przy wyłączonej opcji.
+                  if (amDecision.enqueue !== null && isAutoBuildAllowedFor(city.ownerId)) {
                     // TEMAT #6 / SUROW-CIV-01: pickAutoBuildItem (wewnatrz autoManageCity)
                     // juz odfiltrowal budynki bez pokrycia w puli PANSTWA — tu tylko pobieramy
                     // koszt (start budowy), rozlozony po miastach ownera.
@@ -37408,7 +37418,7 @@ async function boot(): Promise<void> {
                 } catch (eAM) {
                   console.error(`[AutoManage] Blad dla miasta ${city.name}:`, eAM);
                 }
-              } else if (isAutoBudowaTryb(city.budowaTryb)) {
+              } else if (isAutoBudowaTryb(city.budowaTryb) && isAutoBuildAllowedFor(city.ownerId)) {
                 // Auto-budowa bez globalnego Zarządcy (⚙)
                 const enq = tryAutoEnqueueBuild(cid);
                 if (enq) prod0 = cityProd.get(cid) ?? prod0;
@@ -37480,7 +37490,7 @@ async function boot(): Promise<void> {
                 const applied = applyProductionCompleted(city, cid, completed, prodPo);
                 prodFinal = applied.prod;
                 cityProd.set(cid, prodFinal);
-                if (isAutoBudowaTryb(city.budowaTryb) && frontItem(prodFinal) === null) {
+                if (isAutoBudowaTryb(city.budowaTryb) && isAutoBuildAllowedFor(city.ownerId) && frontItem(prodFinal) === null) {
                   tryAutoEnqueueBuild(cid);
                   prodFinal = cityProd.get(cid) ?? prodFinal;
                 }
@@ -37759,6 +37769,8 @@ async function boot(): Promise<void> {
               for (const hOid of humanSeats.humanOwnerIds) {
                 const autoImpCities = cities.filter(c => {
                   if (c.ownerId !== hOid) return false;
+                  // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: bramka auto-ulepszeń terenu gracza.
+                  if (!isAutoBuildAllowedFor(hOid)) return false;
                   return effectiveUlepszeniaForCity(c).tryb === 'auto';
                 });
                 const hOidPracaPool = ownerPracaPool(hOid);
@@ -37916,11 +37928,9 @@ async function boot(): Promise<void> {
                 // (fotel kończący turę); dla pozostałych foteli w tej samej pętli
                 // pomijamy, tak jak cache `_last*`.
                 if (hOid === humanOwnerId) {
-                  if (toastLines.length === 1) {
-                    showHintMessage(`Auto ulepszenie: ${toastLines[0]}`, 3200);
-                  } else if (toastLines.length > 1) {
-                    showHintMessage(`Auto ulepszenia: ${toastLines.length}× (−Praca)`, 3200);
-                  }
+                  // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: toasty „Auto ulepszenie: …” /
+                  // „Auto ulepszenia: N× (−Praca)” usunięte (szum). Lista `toastLines` zostaje
+                  // jako warunek poniższego sygnału o nadwyżce Pracy.
                   // ZASADA 3 dla AI GRACZA: WYŁĄCZNIE sygnał. Automat gracza NIE dotyka
                   // `pracaAutoPercent` ani żadnego innego suwaka — decyzja o przesunięciu
                   // środków na budynki należy do gracza (ECHO właściciela: „gracz sam
@@ -42348,6 +42358,8 @@ async function boot(): Promise<void> {
     async function doStartGame(params: NewGameParams): Promise<void> {
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): opcja z ekranu nowej gry (domyślnie ON).
       dealsEndTurnGateEnabled = params.dealsEndTurnGate ?? true;
+      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: opcja z ekranu nowej gry (domyślnie WYŁĄCZONA).
+      autoBuildEnabled = autoBuildFromNewGameParam(params.autoBuildEnabled);
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja z ekranu nowej gry (domyślnie ON).
       playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;
       resetEndTurnBlockers('doStartGame');
@@ -44526,6 +44538,8 @@ async function boot(): Promise<void> {
       negotiationSeq = (saved.meta?.negotiationSeq as number | undefined) ?? negotiationTable.length;
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): stary zapis bez pola = opcja WYŁĄCZONA.
       dealsEndTurnGateEnabled = (saved.meta?.dealsEndTurnGate as boolean | undefined) === true;
+      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: stary zapis bez pola = WYŁĄCZONA.
+      autoBuildEnabled = autoBuildFromSaveMeta(saved.meta?.autoBuildEnabled);
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): stary zapis bez pola = WYŁĄCZONA.
       playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) === true;
       rejectedOfferCooldowns = [];

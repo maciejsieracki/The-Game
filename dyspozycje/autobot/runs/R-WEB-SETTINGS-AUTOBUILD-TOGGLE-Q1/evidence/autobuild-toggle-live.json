@@ -1,0 +1,462 @@
+{
+  "turns": 10,
+  "steps": [],
+  "wizardRows": [
+    {
+      "lbl": "Rozmiar mapy",
+      "val": "Standardowy",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Liczba cywilizacji",
+      "val": "7",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Typ świata",
+      "val": "Kontynenty",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Miasta-państwa",
+      "val": "6",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Udział lądu na mapie",
+      "val": "30% lądu / 70% morze",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Trudność miast-państw",
+      "val": "Normalny",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Prędkość gry",
+      "val": "Standardowa",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Wojna epoki",
+      "val": "Włączona",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Poziom trudności",
+      "val": "Normalny",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Barbarzyńcy",
+      "val": "Normalny",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Warunki zwycięstwa",
+      "val": "Moc + dominacja",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Chatki z nagrodami",
+      "val": "Włączone",
+      "inAdvanced": false
+    },
+    {
+      "lbl": "Automatyzacja budowy",
+      "val": "Wyłączona",
+      "inAdvanced": false
+    }
+  ],
+  "wizardAutoBuildRow": {
+    "lbl": "Automatyzacja budowy",
+    "val": "Wyłączona",
+    "inAdvanced": false
+  },
+  "afterFound": {
+    "autoBuildEnabled": false,
+    "prod": {
+      "city0": null
+    },
+    "built": {
+      "city0": []
+    },
+    "budowaTryb": [
+      "zrownowazone"
+    ]
+  },
+  "policy": {
+    "focus": "zrownowazone",
+    "tryb": "auto",
+    "pracaAutoPercent": 100
+  },
+  "imBefore": {
+    "praca": 3000,
+    "layers": 0,
+    "hexesWithLayers": 0
+  },
+  "imAfterOff": {
+    "praca": 3040,
+    "layers": 0,
+    "hexesWithLayers": 0
+  },
+  "offFlag": false,
+  "imAfterOn": {
+    "praca": 1747,
+    "layers": 31,
+    "hexesWithLayers": 13
+  },
+  "onFlag": true,
+  "log": [
+    {
+      "tag": "OFF",
+      "before": 1,
+      "after": 2,
+      "ms": 20278,
+      "ok": true,
+      "im": {
+        "praca": 3004,
+        "layers": 0,
+        "hexesWithLayers": 0
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": false
+    },
+    {
+      "tag": "OFF",
+      "before": 2,
+      "after": 3,
+      "ms": 19505,
+      "ok": true,
+      "im": {
+        "praca": 3008,
+        "layers": 0,
+        "hexesWithLayers": 0
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": false
+    },
+    {
+      "tag": "OFF",
+      "before": 3,
+      "after": 4,
+      "ms": 23647,
+      "ok": true,
+      "im": {
+        "praca": 3012,
+        "layers": 0,
+        "hexesWithLayers": 0
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": false
+    },
+    {
+      "tag": "OFF",
+      "before": 4,
+      "after": 5,
+      "ms": 18806,
+      "ok": true,
+      "im": {
+        "praca": 3016,
+        "layers": 0,
+        "hexesWithLayers": 0
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": false
+    },
+    {
+      "tag": "OFF",
+      "before": 5,
+      "after": 6,
+      "ms": 16465,
+      "ok": true,
+      "im": {
+        "praca": 3020,
+        "layers": 0,
+        "hexesWithLayers": 0
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": false
+    },
+    {
+      "tag": "OFF",
+      "before": 6,
+      "after": 7,
+      "ms": 17010,
+      "ok": true,
+      "im": {
+        "praca": 3024,
+        "layers": 0,
+        "hexesWithLayers": 0
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": false
+    },
+    {
+      "tag": "OFF",
+      "before": 7,
+      "after": 8,
+      "ms": 17033,
+      "ok": true,
+      "im": {
+        "praca": 3028,
+        "layers": 0,
+        "hexesWithLayers": 0
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": false
+    },
+    {
+      "tag": "OFF",
+      "before": 8,
+      "after": 9,
+      "ms": 16639,
+      "ok": true,
+      "im": {
+        "praca": 3032,
+        "layers": 0,
+        "hexesWithLayers": 0
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": false
+    },
+    {
+      "tag": "OFF",
+      "before": 9,
+      "after": 10,
+      "ms": 18163,
+      "ok": true,
+      "im": {
+        "praca": 3036,
+        "layers": 0,
+        "hexesWithLayers": 0
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": false
+    },
+    {
+      "tag": "OFF",
+      "before": 10,
+      "after": 11,
+      "ms": 20880,
+      "ok": true,
+      "im": {
+        "praca": 3040,
+        "layers": 0,
+        "hexesWithLayers": 0
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": false
+    }
+  ],
+  "onLog": [
+    {
+      "tag": "ON",
+      "before": 11,
+      "after": 12,
+      "ms": 23896,
+      "ok": true,
+      "im": {
+        "praca": 2702,
+        "layers": 11,
+        "hexesWithLayers": 9
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [
+            "palac"
+          ],
+          "postep": 3
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": true
+    },
+    {
+      "tag": "ON",
+      "before": 12,
+      "after": 13,
+      "ms": 18259,
+      "ok": true,
+      "im": {
+        "praca": 2648,
+        "layers": 13,
+        "hexesWithLayers": 9
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [
+            "palac"
+          ],
+          "postep": 12
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": true
+    },
+    {
+      "tag": "ON",
+      "before": 13,
+      "after": 14,
+      "ms": 17456,
+      "ok": true,
+      "im": {
+        "praca": 2515,
+        "layers": 15,
+        "hexesWithLayers": 9
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [
+            "palac"
+          ],
+          "postep": 30
+        }
+      },
+      "builtN": [
+        0
+      ],
+      "flag": true
+    },
+    {
+      "tag": "ON",
+      "before": 14,
+      "after": 15,
+      "ms": 24353,
+      "ok": true,
+      "im": {
+        "praca": 2449,
+        "layers": 19,
+        "hexesWithLayers": 9
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [
+            "spichlerz"
+          ],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        1
+      ],
+      "flag": true
+    },
+    {
+      "tag": "ON",
+      "before": 15,
+      "after": 16,
+      "ms": 21568,
+      "ok": true,
+      "im": {
+        "praca": 1747,
+        "layers": 31,
+        "hexesWithLayers": 13
+      },
+      "queue": {
+        "city0": {
+          "kolejka": [
+            "garncarnia"
+          ],
+          "postep": 0
+        }
+      },
+      "builtN": [
+        2
+      ],
+      "flag": true
+    }
+  ],
+  "errors": [],
+  "verdict": {
+    "defaultOff": true,
+    "offNoImprovements": true,
+    "offNoQueue": true,
+    "offNoNewBuildings": true,
+    "onDoesSomething": true
+  }
+}

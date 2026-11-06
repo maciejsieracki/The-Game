@@ -14,6 +14,7 @@ import {
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { openEntityCard } from './entityCards/renderer';
+import { AUTO_BUILD_DISABLED_HINT } from '../game/auto-build-gate';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
 // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: `PODZIAL_PRACY_PULA_LBL*` / `PODZIAL_PRACY_PULA_TIP`
 // (nazwy warstwy (a) — `CityPodzialPracy.procentBudynki`) juz tu NIE sa importowane: ten panel
@@ -84,6 +85,11 @@ export interface BuildModeHudConfig {
   getPracaPool?: () => number;
   /** Auto-ulepszenia terenu — polityka państwa + wyjątek per miasto (R-AUTO-V2-Q3=C). */
   listPlayerCities?: () => { id: string; name: string }[];
+  /**
+   * R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: czy „Automatyzacja budowy” gracza jest włączona w Ustawieniach.
+   * Brak haka = włączona. Wyłączona: blok „Automatyzacja ulepszeń terenu” zastępuje podpowiedź.
+   */
+  isAutoBuildEnabled?: () => boolean;
   getUlepszeniaCityId?: () => string | null;
   onUlepszeniaCityIdChange?: (cityId: string) => void;
   getUlepszeniaEmpireState?: () => UlepszeniaEmpirePolicy | null;
@@ -551,7 +557,15 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       const empireState = config.getUlepszeniaEmpireState?.() ?? null;
       const effState = uCityId ? config.getUlepszeniaEffectiveState?.(uCityId) ?? null : null;
       const cityOverride = uCityId ? (config.getUlepszeniaCityOverride?.(uCityId) ?? false) : false;
-      if (playerCities.length > 0 && empireState) {
+      const autoBuildOn = config.isAutoBuildEnabled ? config.isAutoBuildEnabled() : true;
+      if (playerCities.length > 0 && empireState && !autoBuildOn) {
+        // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: bez automatyzacji budowy — żadnych profili/suwaków auto, tylko podpowiedź.
+        html += '<div class="civ-build-auto" data-auto-build-locked="1">';
+        html += '<div class="lbl">Automatyzacja ulepszeń terenu</div>';
+        html += `<div class="civ-build-city-split-note" data-auto-build-hint>${AUTO_BUILD_DISABLED_HINT}</div>`;
+        html += '</div>';
+      }
+      if (playerCities.length > 0 && empireState && autoBuildOn) {
         html += '<div class="civ-build-auto">';
         html += '<div class="lbl">Automatyzacja ulepszeń terenu</div>';
         html += renderUlepszeniaProfileRow(

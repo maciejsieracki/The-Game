@@ -1,0 +1,137 @@
+-- 1920px
+  ok   1920: B1 font glownej liczby >= 1,25x PRZED (min 1.308)
+  ok   1920/small: B2 zero przycinania w komorkach
+  ok   1920/small: B2 brak poziomego scrolla strony
+  ok   1920/mid: B2 zero przycinania w komorkach
+  ok   1920/mid: B2 brak poziomego scrolla strony
+  ok   1920/huge: B2 zero przycinania w komorkach
+  ok   1920/huge: B2 brak poziomego scrolla strony
+  ok   1920/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1920/mid: B3 wysokosc banera stala
+  ok   1920/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1920/huge: B3 wysokosc banera stala
+  FAIL 1920: B4 cel 2 przerwa miedzy liczba a przyrostami <= 6 px (max 184.6 px) -- [["Skarbiec",167.6,114],["Praca",172.3,119.9],["Spichlerz",167.6,114.1],["Handel",179.8,155],["Nauka",172.3,108.2],["Surowce",184.6,150.3]]
+  ok   1920: B5 kazda komorka ma brutto i netto
+   PRZED font: 13 13 13 13 13 13 | PO font: 17 17 17 17 17 17
+-- 1366px
+  ok   1366: B1 font glownej liczby >= 1,25x PRZED (min 1.308)
+  ok   1366/small: B2 zero przycinania w komorkach
+  ok   1366/small: B2 brak poziomego scrolla strony
+  ok   1366/mid: B2 zero przycinania w komorkach
+  ok   1366/mid: B2 brak poziomego scrolla strony
+  ok   1366/huge: B2 zero przycinania w komorkach
+  ok   1366/huge: B2 brak poziomego scrolla strony
+  ok   1366/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1366/mid: B3 wysokosc banera stala
+  ok   1366/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1366/huge: B3 wysokosc banera stala
+  FAIL 1366: B4 cel 2 przerwa miedzy liczba a przyrostami <= 6 px (max 92.3 px) -- [["Skarbiec",75.3,21.7],["Praca",80,27.5],["Spichlerz",75.3,21.7],["Handel",87.5,62.7],["Nauka",80,15.9],["Surowce",92.3,58]]
+  ok   1366: B5 kazda komorka ma brutto i netto
+   PRZED font: 13 13 13 13 13 13 | PO font: 17 17 17 17 17 17
+-- 1321px
+  ok   1321: B1 font glownej liczby >= 1,25x PRZED (min 1.308)
+  ok   1321/small: B2 zero przycinania w komorkach
+  ok   1321/small: B2 brak poziomego scrolla strony
+  ok   1321/mid: B2 zero przycinania w komorkach
+  ok   1321/mid: B2 brak poziomego scrolla strony
+  ok   1321/huge: B2 zero przycinania w komorkach
+  ok   1321/huge: B2 brak poziomego scrolla strony
+  ok   1321/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1321/mid: B3 wysokosc banera stala
+  ok   1321/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1321/huge: B3 wysokosc banera stala
+  FAIL 1321: B4 cel 2 przerwa miedzy liczba a przyrostami <= 6 px (max 84.8 px) -- [["Skarbiec",67.8,14.2],["Praca",72.5,20],["Spichlerz",67.8,14.2],["Handel",80,55.2],["Nauka",72.5,8.4],["Surowce",84.8,50.5]]
+  ok   1321: B5 kazda komorka ma brutto i netto
+   PRZED font: 13 13 13 13 13 13 | PO font: 17 17 17 17 17 17
+-- 1280px
+  ok   1280: B1 font glownej liczby >= 1,25x PRZED (min 1.308)
+  ok   1280/small: B2 zero przycinania w komorkach
+  ok   1280/small: B2 brak poziomego scrolla strony
+  ok   1280/mid: B2 zero przycinania w komorkach
+  ok   1280/mid: B2 brak poziomego scrolla strony
+  ok   1280/huge: B2 zero przycinania w komorkach
+  ok   1280/huge: B2 brak poziomego scrolla strony
+  ok   1280/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1280/mid: B3 wysokosc banera stala
+  ok   1280/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1280/huge: B3 wysokosc banera stala
+  FAIL 1280: B4 cel 2 przerwa miedzy liczba a przyrostami <= 6 px (max 91.5 px) -- [["Skarbiec",74.5,24.5],["Praca",78.8,29.7],["Spichlerz",74.5,24.5],["Handel",87.3,65],["Nauka",78.8,19.3],["Surowce",91.5,60.8]]
+  ok   1280: B5 kazda komorka ma brutto i netto
+   PRZED font: 13 13 13 13 13 13 | PO font: 17 17 17 17 17 17
+-- 1201px
+  ok   1201: B1 font glownej liczby >= 1,25x PRZED (min 1.308)
+  ok   1201/small: B2 zero przycinania w komorkach
+  ok   1201/small: B2 brak poziomego scrolla strony
+  ok   1201/mid: B2 zero przycinania w komorkach
+  ok   1201/mid: B2 brak poziomego scrolla strony
+  ok   1201/huge: B2 zero przycinania w komorkach
+  ok   1201/huge: B2 brak poziomego scrolla strony
+  ok   1201/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1201/mid: B3 wysokosc banera stala
+  ok   1201/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1201/huge: B3 wysokosc banera stala
+  FAIL 1201: B4 cel 2 przerwa miedzy liczba a przyrostami <= 6 px (max 78.4 px) -- [["Skarbiec",61.3,11.3],["Praca",65.6,16.5],["Spichlerz",61.4,11.3],["Handel",74.1,51.9],["Nauka",65.6,6.1],["Surowce",78.4,47.6]]
+  ok   1201: B5 kazda komorka ma brutto i netto
+   PRZED font: 13 13 13 13 13 13 | PO font: 17 17 17 17 17 17
+-- 1250px
+  ok   1250: B1 font glownej liczby >= 1,25x PRZED (min 1.308)
+  ok   1250/small: B2 zero przycinania w komorkach
+  ok   1250/small: B2 brak poziomego scrolla strony
+  ok   1250/mid: B2 zero przycinania w komorkach
+  ok   1250/mid: B2 brak poziomego scrolla strony
+  ok   1250/huge: B2 zero przycinania w komorkach
+  ok   1250/huge: B2 brak poziomego scrolla strony
+  ok   1250/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1250/mid: B3 wysokosc banera stala
+  ok   1250/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1250/huge: B3 wysokosc banera stala
+  FAIL 1250: B4 cel 2 przerwa miedzy liczba a przyrostami <= 6 px (max 86.5 px) -- [["Skarbiec",69.5,19.5],["Praca",73.8,24.7],["Spichlerz",69.5,19.5],["Handel",82.3,60],["Nauka",73.8,14.3],["Surowce",86.5,55.8]]
+  ok   1250: B5 kazda komorka ma brutto i netto
+   PRZED font: 13 13 13 13 13 13 | PO font: 17 17 17 17 17 17
+-- 1024px
+  ok   1024: B1 font glownej liczby >= 1,25x PRZED (min 1.250)
+  ok   1024/small: B2 zero przycinania w komorkach
+  ok   1024/small: B2 brak poziomego scrolla strony
+  ok   1024/mid: B2 zero przycinania w komorkach
+  ok   1024/mid: B2 brak poziomego scrolla strony
+  ok   1024/huge: B2 zero przycinania w komorkach
+  ok   1024/huge: B2 brak poziomego scrolla strony
+  ok   1024/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1024/mid: B3 wysokosc banera stala
+  ok   1024/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   1024/huge: B3 wysokosc banera stala
+  ok   1024: B4 cel 2 przerwa miedzy liczba a przyrostami <= 6 px (max 0.0 px)
+  ok   1024: B5 kazda komorka ma brutto i netto
+   PRZED font: 12 12 12 12 12 12 | PO font: 15 15 15 15 15 15
+-- 800px
+  ok   800: B1 font glownej liczby >= 1,25x PRZED (min 1.300)
+  ok   800/small: B2 zero przycinania w komorkach
+  ok   800/small: B2 brak poziomego scrolla strony
+  ok   800/mid: B2 zero przycinania w komorkach
+  ok   800/mid: B2 brak poziomego scrolla strony
+  ok   800/huge: B2 zero przycinania w komorkach
+  ok   800/huge: B2 brak poziomego scrolla strony
+  ok   800/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   800/mid: B3 wysokosc banera stala
+  ok   800/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   800/huge: B3 wysokosc banera stala
+  ok   800: B4 cel 2 przerwa miedzy liczba a przyrostami <= 6 px (max 0.0 px)
+  ok   800: B5 kazda komorka ma brutto i netto
+   PRZED font: 10 10 10 10 10 10 | PO font: 13 13 13 13 13 13
+-- 640px
+  ok   640: B1 font glownej liczby >= 1,25x PRZED (min 1.333)
+  ok   640/small: B2 zero przycinania w komorkach
+  ok   640/small: B2 brak poziomego scrolla strony
+  ok   640/mid: B2 zero przycinania w komorkach
+  ok   640/mid: B2 brak poziomego scrolla strony
+  ok   640/huge: B2 zero przycinania w komorkach
+  ok   640/huge: B2 brak poziomego scrolla strony
+  ok   640/mid: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   640/mid: B3 wysokosc banera stala
+  ok   640/huge: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12
+  ok   640/huge: B3 wysokosc banera stala
+  ok   640: B4 cel 2 przerwa miedzy liczba a przyrostami <= 6 px (max 0.0 px)
+  ok   640: B5 kazda komorka ma brutto i netto
+   PRZED font: 9 9 9 9 9 9 | PO font: 12 12 12 12 12 12
+
+FAIL: hud-topbar-bigger-numbers-real-render-test (111 ok, 6 fail)

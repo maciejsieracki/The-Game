@@ -1,0 +1,21 @@
+auto-improve-no-item-cap-test.cjs EXIT=0 ::  | auto-improve-no-item-cap-test: 15 passed, 0 failed
+auto-improve-q3-test.cjs EXIT=0 ::  | 41 OK, 0 FAIL
+auto-improvements-test.cjs EXIT=0 ::  | auto-improvements-test: 46 passed, 0 failed
+auto-manage-test.cjs EXIT=0 ::  | AUTO-MANAGE OK (45/45)
+auto-manage-ulepszenia-fallback-test.cjs EXIT=0 ::  | AUTO-MANAGE-ULEPSZENIA-FALLBACK OK (11/11)
+autoimprove-irrigation-after-farms-test.cjs EXIT=null :: [civ] mapGen ms | prep=0 terrain=7 landSea=116 relief=195 coast=120 riversMain=86 riversFill=107 forest=8 deposits=41 starts=134 total=814 | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor
+autoimprove-live-hooks-test.cjs EXIT=0 ::  | autoimprove-live-hooks-test: 37 passed, 0 failed
+autoimprove-river-forest-clear-no-citizen-q1-unit-test.cjs EXIT=0 ::  | 17 OK, 0 FAIL
+autoimprove-river-forest-first-q1-test.cjs EXIT=0 ::  | 12 OK, 0 FAIL
+autoimprove-stages-q1-test.cjs EXIT=null ::   [OK] [K3] R5 bez niedoboru: tartaki 0 == 0 | (r5-river) [K2/K3] R5: tartak/obóz NIE na heksie rzeka+las (zarezerwowany pod wycinke i farme); tartak tylko na lesie BEZ dostepu do rzeki (S3-1)
+budowa-lista-szablony-test.cjs EXIT=0 ::  | 11 pass, 0 fail
+build-mode-hud-affordability-test.cjs EXIT=0 ::  | [build-mode-hud-affordability-test] 7 pass, 0 fail
+simple-food-rule-no-toggles-test.cjs EXIT=0 ::  | 36 OK, 0 FAIL
+ulepszenia-praca-percent-test.cjs EXIT=0 ::  | ulepszenia-praca-percent-test: 28 passed, 0 failed
+production-overflow-test.cjs EXIT=0 ::  | --- production-overflow-test: 213 OK, 0 FAIL ---
+newgame-defaults-test.cjs EXIT=null ::   name: 'Error' | }
+newgame-sett-grid-layout-test.cjs EXIT=1 ::  FAIL [1366x768] dokładnie 12 kart bezpośrednio w .sett-grid (hipoteza (a): brak owijającego kontenera) |  FAIL [1366x768] pomiar kart niekompletny — reszta asercji geometrii pominięta
+newgame-settings-layout-reposition-test.cjs EXIT=1 ::   diff: 'simple' | }
+newgame-menu-reorder-layout-test.cjs EXIT=1 ::   diff: 'simple' | }
+ai-test.cjs EXIT=1 ::   FAIL: T4S-d: mnoznik=1.5 effAgresja=0.6 >= 0.5 -> wypowiedz_wojne; got: [] |   FAIL: T10b: zaproponuj_handel po odkryciu; got: []
+BATCH_FAILS=7

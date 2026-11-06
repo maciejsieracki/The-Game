@@ -1,0 +1,15 @@
+sidepanel-event-tabs-classify-test (R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 r2)
+  zrodlo: src/ui/sidePanelEventTabs.ts
+  [OK] 55 przypadkow + diakrytyki + default
+  [OK] mutacja wykryta (10 przypadkow czerwonych): M1 bez normalizacji diakrytykow
+  [OK] mutacja wykryta (1 przypadkow czerwonych): M2 brak granicy poczatku wyrazu (armi w farmie)
+  [OK] mutacja wykryta (4 przypadkow czerwonych): M3 brak reguly brakow (brak srodkow/pokrycia)
+  [OK] mutacja wykryta (7 przypadkow czerwonych): M4 brak fraz dyplomatycznych (pokoj/rozejm/wojna)
+  [OK] mutacja wykryta (1 przypadkow czerwonych): M5 kolejnosc: braki przed propozycjami dyplomacji
+  [OK] mutacja wykryta (11 przypadkow czerwonych): M6 brak slow zagrozen (magazyn/oblezenie/armia)
+  [OK] mutacja wykryta (1 przypadkow czerwonych): M7 wrog bez ograniczenia (Wrogie weterani -> Wazne)
+  [OK] mutacja wykryta (2 przypadkow czerwonych): M8 brak reguly kind/origin/tytul Dyplomacja
+  [OK] mutacja wykryta (1 przypadkow czerwonych): M9 default zawsze Inne
+
+PASS
+EXIT=0
