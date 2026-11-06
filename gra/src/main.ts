@@ -703,7 +703,7 @@ import {
   type QualityTier,
 } from './map/newGameMapDefaults';
 import { buildStyledResourceOverlay } from './render/styleResources';
-import { collapseToMergedMesh, countMeshesInGroup, disposeMergedDecor } from './render/mergeDecor';
+import { collapseToMergedMesh, countMeshesInGroup, disposeMergedDecor, releaseMergedDecorCpuArraysAfterUpload, mergedDecorCpuArraysReleased } from './render/mergeDecor';
 import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
@@ -14838,6 +14838,19 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1: meshe ulepszeń nie trzymają kopii CPU geometrii
+     * (releaseMergedDecorCpuArraysAfterUpload). Po odzyskaniu utraconego kontekstu WebGL three.js
+     * wgrywa bufory od nowa z `array`, więc przebudowujemy je z `placedImprovements` (tak jak przy
+     * wczytaniu zapisu). / EN: rebuild improvement meshes after a WebGL context restore.
+     */
+    function rebuildImprovementMeshesAfterContextRestore(): void {
+      bulkImprovementRebuild = true;
+      try { for (const hexKey of [...improvementMeshes.keys()]) spawnImprovementMesh(hexKey); }
+      finally { bulkImprovementRebuild = false; }
+    }
+    canvas.addEventListener('webglcontextrestored', rebuildImprovementMeshesAfterContextRestore);
+
+    /**
      * Regula 1/3 (Maciej 2026-08-09): rejestruje nowo postawiony Fort/Posterunek
      * w `fortNodes`. Kontestacja ustalana RAZ, w chwili budowy — hex juz
      * zarezerwowany (w promieniu) przez CUDZY, nie-skontestowany fort/posterunek
@@ -15895,6 +15908,8 @@ async function boot(): Promise<void> {
         const ter = buildTarasy(tv); ter.rotation.y = rotY; g.add(ter);       // schodkowe półki opasujące stok
       }
       collapseToMergedMesh(g); // FPS lewar 1: setki boxów (zwierzęta/budynki) → 1 mesh; vertex colors zachowane
+      // R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1: kopia CPU geometrii zwalniana po uploadzie (≈48 KB/heks; główne źródło wzrostu pamięci).
+      releaseMergedDecorCpuArraysAfterUpload(g);
       const wp = axialToWorld(q, r, HEX_R);
       g.position.set(wp.x, improvementMeshPlacement(q, r, layers), wp.z);
       // (skala 0.5 usunięta — buildImprovementSectored skaluje per sektor do SECTOR_SCALE)
@@ -26237,6 +26252,37 @@ async function boot(): Promise<void> {
         syncHexUlepszenieFields(hexKey, nextLayers);
         registerFortNodeIfNeeded(key, q, r, ownerId);
         spawnImprovementMesh(hexKey);
+      },
+      // R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1 (tools/memory-growth-improvement-cpu-release-test.cjs): odczyt
+      // meshu ulepszenia (bez mutacji) + symulacja utraty/odzyskania kontekstu WebGL (WEBGL_lose_context).
+      improvementMeshInfo: (q: number, r: number) => {
+        const g = improvementMeshes.get(keyOf(q, r));
+        if (!g) return null;
+        const m = g.children[0] as THREE.Mesh | undefined;
+        const geo = m?.geometry as THREE.BufferGeometry | undefined;
+        return {
+          uuid: g.uuid, inScene: g.parent === scene, released: mergedDecorCpuArraysReleased(g),
+          vertexCount: geo?.getAttribute('position')?.count ?? 0,
+          hasBoundingSphere: !!geo?.boundingSphere, sphereRadius: geo?.boundingSphere?.radius ?? 0,
+        };
+      },
+      nearLandHexWithoutImprovement: (cq: number, cr: number, d: number): { q: number; r: number } | null => {
+        for (const k of Object.keys(map.hexes)) {
+          const [a, b] = k.split(','); const q = Number(a); const r = Number(b);
+          const h = map.hexes[k]!;
+          if (hexDistance(q, r, cq, cr) !== d || isWaterTerrain(h.terenBazowy) || h.terenBazowy === TerenBazowy.Gory) continue;
+          if (placedImprovements.has(k) || cities.some(c => c.q === q && c.r === r)) continue;
+          return { q, r };
+        }
+        return null;
+      },
+      glLoseContext: (lose: boolean): boolean => {
+        // Rozszerzenie trzeba złapać PRZED utratą kontekstu (getExtension zwraca wtedy null).
+        const w = window as unknown as { __civLoseCtxExt?: WEBGL_lose_context | null };
+        const ext = w.__civLoseCtxExt ??= renderer.getContext().getExtension('WEBGL_lose_context');
+        if (!ext) return false;
+        if (lose) ext.loseContext(); else ext.restoreContext();
+        return true;
       },
       ownerAt: (q: number, r: number): number | null => territoryOwnerAtLive(q, r),
       // R3: hak testowy zdobycia fortu (Q-A) i kolejnosci (Q-B) — te same REALNE funkcje co gra.

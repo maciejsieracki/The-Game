@@ -1,0 +1,14 @@
+Bundling unit-power.ts...
+
+  ../../unit-power-bundle-2111-frpqep.cjs  9.6kb
+
+⚡ Done in 8ms
+  FAIL: Hastati M_pole=50 (got 57.5)
+  OK: Katapulta is siege
+  OK: Katapulta armyFieldPower=0 (excluded from army sum)
+  OK: Katapulta M_siege>0 (got 45)
+  FAIL: sumArmyFieldPower 3 units (got 167.5)
+  OK: JSON fieldPower matches runtime for Triari (62)
+
+=== unit-power-test: 4 pass, 2 fail ===
+EXIT=1

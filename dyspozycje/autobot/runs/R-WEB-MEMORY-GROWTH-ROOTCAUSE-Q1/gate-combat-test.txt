@@ -1,0 +1,137 @@
+Bundling combat.ts with esbuild...
+
+  ../../combat-bundle-2084-q90nuj.cjs  116.2kb
+
+⚡ Done in 57ms
+Bundle OK.
+
+TW v3 formulas OK (hit HF=38%, dmg=4, pilum=7).
+
+========================================================================
+COMBAT TEST HARNESS — TW v3 Rome 2 auto-resolve
+========================================================================
+
+------------------------------------------------------------------------
+TEST: 1. Hastati (ATK) vs Falanga (DEF) — Równina
+  Attacker : Hastati (HP 38)
+  Defender : Falanga (HP 40)
+  Terrain  : Płaskie
+  WINNER   : ATTACKER (Hastati)
+  ATK HP left : 10 / 38
+  DEF HP left : 5 / 40
+  Rounds   : 37
+  Routed   : Falanga routed
+  Log (first 6 lines):
+    === Faza dystansowa ===
+    R1[Dyst-ATK] trafienie (25.2<37%) -> 1 obra. Obronca HP: 39
+    R2[Dyst-ATK] trafienie (8.8<37%) -> 1 obra. Obronca HP: 38
+    === Faza zwarczia ===
+    R1[Zwarcie] Szarża zanegowana przez postawe odpierajaca!
+    R3[Zwarcie] ATK chybia (57.7>=37%).
+    ... (72 more lines)
+  PASS
+
+------------------------------------------------------------------------
+TEST: 2. Wojownik z mieczem i tarczą (ATK) vs Włócznik (DEF) — Las
+  Attacker : Wojownik z mieczem i tarczą (HP 28)
+  Defender : Włócznik (HP 32)
+  Terrain  : Las
+  WINNER   : DEFENDER (Włócznik)
+  ATK HP left : 7 / 28
+  DEF HP left : 26 / 32
+  Rounds   : 12
+  Routed   : Wojownik z mieczem i tarczą routed
+  Log (first 6 lines):
+    === Faza zwarczia ===
+    R1[Zwarcie] Szarża zanegowana przez postawe odpierajaca!
+    R1[Zwarcie] ATK trafia (25.2<38%) -> 2 obra. Obronca HP: 30
+    R1[Zwarcie] DEF trafia (8.8<40%) -> 3 obra. Atakujacy HP: 25
+    R2[Zwarcie] ATK chybia (57.7>=38%).
+    R2[Zwarcie] DEF trafia (22.3<40%) -> 3 obra. Atakujacy HP: 22
+    ... (23 more lines)
+  PASS
+
+------------------------------------------------------------------------
+TEST: 3. Gwardia Królewska Sumeru [SUPER] (ATK) vs Hastati (DEF) — Równina
+  Attacker : Gwardia Królewska Sumeru (HP 42)
+  Defender : Hastati (HP 38)
+  Terrain  : Płaskie
+  WINNER   : DEFENDER (Hastati)
+  ATK HP left : 4 / 42
+  DEF HP left : 13 / 38
+  Rounds   : 23
+  Routed   : Gwardia Królewska Sumeru routed
+  Log (first 6 lines):
+    === Faza dystansowa ===
+    R1[Dyst-DEF] trafienie (25.2<39%) -> 1 obra. Atakujacy HP: 41
+    R2[Dyst-DEF] trafienie (8.8<39%) -> 1 obra. Atakujacy HP: 40
+    === Faza zwarczia ===
+    R3[Szarza] ATK chybia (57.7>=51%).
+    R3[Szarza] DEF trafia (22.3<39%) -> 4 obra. Atakujacy HP: 36
+    ... (43 more lines)
+  PASS
+
+------------------------------------------------------------------------
+TEST: 4. Łucznik (ATK) vs Wojownik z mieczem i tarczą (DEF) — Równina (ranged + melee)
+  Attacker : Łucznik (HP 16)
+  Defender : Wojownik z mieczem i tarczą (HP 28)
+  Terrain  : Płaskie
+  WINNER   : DEFENDER (Wojownik z mieczem i tarczą)
+  ATK HP left : 2 / 16
+  DEF HP left : 22 / 28
+  Rounds   : 17
+  Routed   : Łucznik routed
+  Log (first 6 lines):
+    === Faza dystansowa ===
+    R1[Dyst-ATK] trafienie (25.2<37%) -> 1 obra. Obronca HP: 27
+    R2[Dyst-ATK] trafienie (8.8<37%) -> 1 obra. Obronca HP: 26
+    R3[Dyst-ATK] chybienie (57.7>=37%).
+    R4[Dyst-ATK] trafienie (22.3<37%) -> 1 obra. Obronca HP: 25
+    R5[Dyst-ATK] chybienie (37.6>=37%).
+    ... (21 more lines)
+  PASS
+
+------------------------------------------------------------------------
+TEST: 5. Hastati (ATK) vs Falanga (DEF) — Wzgórza (terrain defence bonus)
+  Attacker : Hastati (HP 38)
+  Defender : Falanga (HP 40)
+  Terrain  : Wzgórza
+  WINNER   : ATTACKER (Hastati)
+  ATK HP left : 6 / 38
+  DEF HP left : 5 / 40
+  Rounds   : 41
+  Routed   : Falanga routed
+  Log (first 6 lines):
+    === Faza dystansowa ===
+    R1[Dyst-ATK] trafienie (25.2<32%) -> 1 obra. Obronca HP: 39
+    R2[Dyst-ATK] trafienie (8.8<32%) -> 1 obra. Obronca HP: 38
+    === Faza zwarczia ===
+    R1[Zwarcie] Szarża zanegowana przez postawe odpierajaca!
+    R3[Zwarcie] ATK chybia (57.7>=32%).
+    ... (80 more lines)
+  PASS
+
+------------------------------------------------------------------------
+TEST: 6. Medżaj (Gwardia Faraona) [SUPER+ranged] (ATK) vs Hastati (DEF) — Równina
+  Attacker : Medżaj (Gwardia Faraona) (HP 42)
+  Defender : Hastati (HP 38)
+  Terrain  : Płaskie
+  WINNER   : DEFENDER (Hastati)
+  ATK HP left : 4 / 42
+  DEF HP left : 9 / 38
+  Rounds   : 28
+  Routed   : Medżaj (Gwardia Faraona) routed
+  Log (first 6 lines):
+    === Faza dystansowa ===
+    R1[Dyst-ATK] trafienie (25.2<43%) -> 1 obra. Obronca HP: 37
+    R1[Dyst-DEF] trafienie (8.8<39%) -> 1 obra. Atakujacy HP: 41
+    R2[Dyst-ATK] chybienie (57.7>=43%).
+    R2[Dyst-DEF] trafienie (22.3<39%) -> 1 obra. Atakujacy HP: 40
+    R3[Dyst-ATK] trafienie (37.6<43%) -> 1 obra. Obronca HP: 36
+    ... (51 more lines)
+  PASS
+
+========================================================================
+COMBAT TEST: 6/6 pass
+All sanity checks passed.
+EXIT=0
