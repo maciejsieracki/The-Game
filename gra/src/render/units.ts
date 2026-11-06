@@ -25,6 +25,8 @@
  */
 
 import * as THREE from 'three';
+import { poolOwnedGeometries, releaseOwnedGeometries } from './geometryContentPool';
+import { poolOwnedMaterials, releaseOwnedMaterials, unshareMaterials } from './materialContentPool';
 import { clientRectToNdc } from '../input/picker';
 import { HUMAN_OWNER_PRIMARY } from '../game/human-owners';
 import type { GameMap } from '../types/map';
@@ -6024,6 +6026,9 @@ export class UnitRenderer {
     const obj = this.tokens.get(unitId);
     if (!obj) return;
     if ((obj.userData['deferredDim'] === true) === dim) return;
+    // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: materiały żetonu bywają wspólne (pula) — kopia przy zapisie,
+    // żeby przyciemnienie nie przeszło na inne jednostki.
+    if (dim) unshareMaterials(obj, this.tokenMaterials.get(unitId) ?? []);
     for (const m of this.tokenMaterials.get(unitId) ?? []) {
       const mat = m as THREE.Material & { opacity: number };
       if (dim) {
@@ -6799,8 +6804,14 @@ export class UnitRenderer {
   private _registerToken(id: string, group: THREE.Group): void {
     this.lodTokensVersion++;
     this.tokens.set(id, group);
-    this.tokenMaterials.set(id, (group.userData['mats'] as THREE.Material[]) ?? []);
-    this.tokenGeos.set(id, (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? []);
+    const mats = (group.userData['mats'] as THREE.Material[] | undefined) ?? [];
+    // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: identyczne materiały żetonów → jedna wspólna instancja (licznik odwołań).
+    poolOwnedMaterials(group, mats);
+    this.tokenMaterials.set(id, mats);
+    const geos = (group.userData['perTokenGeos'] as THREE.BufferGeometry[] | undefined) ?? [];
+    // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: identyczne geometrie żetonów → jedna wspólna instancja (licznik odwołań).
+    poolOwnedGeometries(group, geos);
+    this.tokenGeos.set(id, geos);
   }
 
   /**
@@ -6808,13 +6819,7 @@ export class UnitRenderer {
    * Does NOT call scene.remove() -- caller is responsible for that.
    */
   private _disposeToken(id: string, _obj: THREE.Object3D): void {
-    const mats = this.tokenMaterials.get(id) ?? [];
-    for (const m of mats) {
-      m.dispose();
-    }
-    const geos = this.tokenGeos.get(id) ?? [];
-    for (const g of geos) {
-      g.dispose();
-    }
+    releaseOwnedMaterials(this.tokenMaterials.get(id) ?? []);
+    releaseOwnedGeometries(this.tokenGeos.get(id) ?? []);
   }
 }

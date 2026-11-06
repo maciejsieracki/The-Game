@@ -1,0 +1,25 @@
+  OK  P1 identyczna tresc -> ta sama instancja -- {"same":true}
+  OK  P1 inna tresc -> osobna instancja
+  OK  P2 duplikat zwolniony od razu
+  OK  P2 po pierwszym zwolnieniu wspolna zyje
+  OK  P2 po ostatnim zwolnieniu dispose
+  OK  P2 pula pusta -- {"shared":0,"refs":0}
+  OK  P3 userData/nazwa/nieuzyta -> bez zmian -- {"shared":0,"refs":0}
+  OK  P3 zwolnione jak dotad (od razu)
+  OK  P4 modele zbudowane -- {"models":558,"unitNames":75,"buildErr":0}
+  OK  P4 kazdy mesh: tresc geometrii bitowo ta sama -- {"meshes":35520,"mism":0}
+  OK  P4 mniej unikalnych geometrii i bajtow -- {"uniqBefore":6954,"uniqAfter":1705,"kbBefore":6392,"kbAfter":1631}
+  OK  P4 zadna uzywana geometria nie dostala dispose -- {"usedButDisposed":0}
+  OK  P4 brak przedwczesnego dispose wspolnej geometrii -- {"early":0}
+  OK  P4 po zwolnieniu wszystkiego: pula pusta, kazda geometria zwolniona -- {"pool":{"shared":0,"refs":0},"notDisposed":0}
+  OK  P5 kazdy mesh: stan materialu identyczny (toJSON bez uuid) -- {"meshes":35520,"mMism":0}
+  OK  P5 mniej unikalnych materialow -- {"before":8160,"after":456,"pool":{"shared":456,"refs":8160}}
+  OK  P5 zaden uzywany material nie dostal dispose -- {"mUsedDisposed":0}
+  OK  P5 sa modele ze wspolnym materialem
+  OK  P5 unshare: mutacja A nie zmienia B -- {"stillShared":0}
+  OK  P5 po zwolnieniu: pula materialow pusta, kazdy material modelu zwolniony -- {"pool":{"shared":0,"refs":0},"mNotDisposed":0}
+  OK  P6 tekstura/userData -> bez puli; rozny kolor -> osobne -- {"shared":2,"refs":2}
+  OK  P6 pula pusta po zwolnieniu -- {"shared":0,"refs":0}
+
+WYNIK: 22 OK / 0 FAIL
+EXIT=0

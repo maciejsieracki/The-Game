@@ -22,6 +22,8 @@
 
 import { SmallPartLod } from './smallPartLod';
 import * as THREE from 'three';
+import { poolOwnedGeometries, releaseOwnedGeometries } from './geometryContentPool';
+import { poolOwnedMaterials, releaseOwnedMaterials } from './materialContentPool';
 import type { City } from '../game/cities';
 import { HUMAN_OWNER_PRIMARY } from '../game/human-owners';
 import { formatCityMapLabel } from '../game/display-names';
@@ -575,8 +577,8 @@ export class CityRenderer {
 
       this._registerModel(city.id, group);
       this.scene.add(group);
-      if (staleMats) for (const m of staleMats) m.dispose();
-      if (staleGeos) for (const g of staleGeos) g.dispose();
+      if (staleMats) releaseOwnedMaterials(staleMats);
+      if (staleGeos) releaseOwnedGeometries(staleGeos);
       this._syncRevolt(city.id, group, options?.getRevolt?.(city.id) ?? false);
       this._syncStatChip(
         city,
@@ -1011,14 +1013,18 @@ export class CityRenderer {
   private _registerModel(id: string, group: THREE.Group): void {
     this.lodModelsVersion++;
     this.models.set(id, group);
-    this.modelMaterials.set(id, (group.userData['mats'] as THREE.Material[]) ?? []);
-    this.modelGeos.set(id, (group.userData['perCityGeos'] as THREE.BufferGeometry[]) ?? []);
+    const mats = (group.userData['mats'] as THREE.Material[] | undefined) ?? [];
+    // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: identyczne materiały modeli miast → jedna wspólna instancja.
+    poolOwnedMaterials(group, mats);
+    this.modelMaterials.set(id, mats);
+    const geos = (group.userData['perCityGeos'] as THREE.BufferGeometry[] | undefined) ?? [];
+    // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: identyczne geometrie modeli miast → jedna wspólna instancja.
+    poolOwnedGeometries(group, geos);
+    this.modelGeos.set(id, geos);
   }
 
   private _disposeModel(id: string): void {
-    const mats = this.modelMaterials.get(id) ?? [];
-    for (const m of mats) m.dispose();
-    const geos = this.modelGeos.get(id) ?? [];
-    for (const g of geos) g.dispose();
+    releaseOwnedMaterials(this.modelMaterials.get(id) ?? []);
+    releaseOwnedGeometries(this.modelGeos.get(id) ?? []);
   }
 }
