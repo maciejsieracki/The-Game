@@ -23,6 +23,18 @@ export interface WarWearinessParams {
     udzialWyraznie: number; wagaZmeczenia: number; wagaSily: number; wagaStrat: number; stratyNasycenie: number;
     progiStopni: number[]; mnozniStopni: number[]; mnoznikNaOdrzucenie: number; maxMiastNaPokoj: number;
     minMiastPoOddaniu: number; cooldownOfertTur: number; odrzuceniaDoKapitulacji: number;
+    /** LIVE-AUDIT-Q1: najwcześniejsza tura wojny, od której wyraźnie przegrywający składa ofertę (bez czekania na zmęczenie). */
+    ofertaOdTurWojny: number;
+    /** LIVE-AUDIT-Q1: gdy przegrywający nie stracił żadnego miasta — oferta dopiero od tylu tur wojny. */
+    ofertaBezStratOdTur: number;
+    /** LIVE-AUDIT-Q1: ochrona przed snowballem — przegrywający z <= tylu miast jest „chroniony”. */
+    ochronaMaxMiast: number;
+    /** LIVE-AUDIT-Q1: ochrona przed snowballem — przegrywający, który stracił >= tylu miast w tej wojnie, jest „chroniony”. */
+    ochronaUtratyWojny: number;
+    /** LIVE-AUDIT-Q1: 1 = zwycięzca MUSI przyjąć ofertę chronionego przegrywającego (0 = zwykła wycena). */
+    zwyciezcaMusiPrzyjac: number;
+    /** LIVE-AUDIT-Q1: symetria — zmęczenie obniża wymagania zwycięzcy o tolerancjaZmeczenia*poziom*cena. */
+    tolerancjaZmeczenia: number;
   };
   czlowiek: { rwProgBonusMax: number; minMiastAi: number; rabatCenyPokojuMax: number };
 }
@@ -209,15 +221,16 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     const st = stepPairState(d.store, key, w.warStart, level);
     const lvl = st.peak;
     const none = (): void => { out.push({ pairKey: key, action: 'none', level: lvl, stage: st.stage }); };
-    if (!isWarWeary(lvl, P)) { none(); continue; }
-
     const shareA = d.shareOf(pr.a, pr.b);
     const loser = shareA <= 0.5 ? pr.a : pr.b;
     const winner = loser === pr.a ? pr.b : pr.a;
     const loserShare = loser === pr.a ? shareA : 1 - shareA;
     const lostLoser = loser === pr.a ? w.lostA : w.lostB;
+    const L = P.przegrywajacy;
+    const clearlyLosing = loserShare <= L.udzialWyraznie;
 
-    if (loserShare > P.przegrywajacy.udzialWyraznie) {
+    if (!clearlyLosing) {
+      if (!isWarWeary(lvl, P)) { none(); continue; }
       // Równowaga sił: wzajemne wyczerpanie — pokój bez zapłaty, gdy obie strony dość zmęczone.
       if (lvl >= P.zmeczenie.progWzajemnyPokoj) {
         d.log?.(`pokój z wyczerpania AI${pr.a}↔AI${pr.b} (zmęczenie ${lvl.toFixed(2)}, tury wojny ${w.turnsAtWar})`);
@@ -228,15 +241,22 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
       continue;
     }
 
+    // LIVE-AUDIT-Q1: wyraźnie przegrywający NIE czeka na zmęczenie pary (>= progChetnosci = min. ~100 tur wojny):
+    // oferta od ofertaOdTurWojny (po utracie miasta) albo od ofertaBezStratOdTur (bez strat).
+    const ownCities = d.cityCountOf(loser);
+    if (w.turnsAtWar < L.ofertaOdTurWojny) { none(); continue; }
+    if (lostLoser <= 0 && w.turnsAtWar < L.ofertaBezStratOdTur && !isWarWeary(lvl, P)) { none(); continue; }
+    // Ochrona przed snowballem: mało miast albo duże straty => zwycięzca musi przyjąć pokój.
+    const protectedLoser = (ownCities <= L.ochronaMaxMiast && lostLoser >= 1) || lostLoser >= L.ochronaUtratyWojny;
+
     // Wyraźnie przegrywa: eskalowana oferta.
     const despair = loserDespair({ level: lvl, share: loserShare, lostCities: lostLoser }, P);
-    st.stage = Math.max(st.stage, despairStage(despair, P));
+    st.stage = Math.max(st.stage, despairStage(despair, P), protectedLoser ? 1 : 0);
     if (st.stage <= 0) { none(); continue; }
     if (st.lastOfferTurn >= 0 && d.turn - st.lastOfferTurn < P.przegrywajacy.cooldownOfertTur) { none(); continue; }
 
     const price = d.price(winner, loser);
     const required = price.requiredPn * offerMultiplier(st.stage, st.rejectedOffers, P);
-    const ownCities = d.cityCountOf(loser);
     const maxCities = d.battlePending
       ? 0
       : Math.max(0, Math.min(stageCityLimit(st.stage, P), ownCities - P.przegrywajacy.minMiastPoOddaniu));
@@ -254,10 +274,13 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     // Wyjście awaryjne: wyczerpany wygrywający po serii odrzuceń bierze, co przegrywający realnie może dać.
     const exhausted = lvl >= P.zmeczenie.progWzajemnyPokoj
       && st.rejectedOffers >= P.przegrywajacy.odrzuceniaDoKapitulacji;
-    if (exhausted || price.balanceFor(plan.coveredPn) >= -price.tolerancePn) {
+    const mustAccept = protectedLoser && L.zwyciezcaMusiPrzyjac > 0;
+    // Symetria: zmęczenie obniża wymagania zwycięzcy (zmęczona strona bierze mniej).
+    const tol = price.tolerancePn + Math.max(0, L.tolerancjaZmeczenia) * lvl * Math.max(0, required);
+    if (mustAccept || exhausted || price.balanceFor(plan.coveredPn) >= -tol) {
       d.pay(loser, winner, plan);
       d.log?.(
-        `pokój AI${loser}↔AI${winner} za cenę (stopień ${st.stage}${exhausted ? ', wyczerpanie' : ''}, oferta #${st.rejectedOffers + 1}, zmęczenie ${lvl.toFixed(2)}); `
+        `pokój AI${loser}↔AI${winner} za cenę (stopień ${st.stage}${mustAccept ? ', ochrona przegrywającego' : exhausted ? ', wyczerpanie' : ''}, oferta #${st.rejectedOffers + 1}, zmęczenie ${lvl.toFixed(2)}); `
         + `zloto=${plan.histogram.zloto} surowce=${plan.histogram.surowiec_ilosc} miasto=${plan.histogram.miasto} (${plan.coveredPn}/${Math.round(required)} PW)`,
       );
       d.finalize(loser, winner);

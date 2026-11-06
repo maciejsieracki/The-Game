@@ -129,10 +129,11 @@ function mkDeps(o) {
     eq(log.find(x => x.ev === 'peace').l, 1, 'przegrywa AI1');
   } else ok(false, 'wygrywajacy powinien zaakceptowac oferte z miastem');
 }
-// 4c. odrzucenie + cooldown + histereza (zwyciezca chce wiecej niz majatek)
+// 4c. odrzucenie + cooldown + histereza (zwyciezca chce wiecej niz majatek). LIVE-AUDIT-Q1: lostA=2 (<3), bo przy >=3 utratach
+// przegrywajacy jest CHRONIONY i zwyciezca musi przyjac (patrz sekcja 5).
 {
   const store3 = new Map();
-  const o = { warStart: 250, share1: 0.15, lostA: 3, turnsAtWar: 150, store: store3, winnerNeed: 999999, assets: [A('zloto', 'zloto', 50, 50)] };
+  const o = { warStart: 250, share1: 0.15, lostA: 2, turnsAtWar: 150, store: store3, winnerNeed: 999999, assets: [A('zloto', 'zloto', 50, 50)] };
   let { deps } = mkDeps({ ...o, turn: 400 });
   const r1 = W.runWarWearinessTick(deps);
   eq(r1[0].action, 'offer_rejected', 'oferta za mala => odrzucona');
@@ -164,7 +165,7 @@ function mkDeps(o) {
 // 4f. wyjscie awaryjne (zarzut 2): przegrywajacy za biedny, wygrywajacy wyczerpany => po serii odrzucen pokoj mimo niedoboru
 {
   const store4 = new Map();
-  const o = { warStart: 250, share1: 0.15, lostA: 3, turnsAtWar: 150, store: store4, winnerNeed: 999999, assets: [A('zloto', 'zloto', 50, 50)] };
+  const o = { warStart: 250, share1: 0.15, lostA: 2, turnsAtWar: 150, store: store4, winnerNeed: 999999, assets: [A('zloto', 'zloto', 50, 50)] };
   const acts = [];
   let peaceLog = [];
   for (const t of [400, 404, 408, 412]) {
@@ -250,6 +251,70 @@ ok(/warWearinessByPairKey\.delete\(diploPairKey\(proposerId, responderId\)\)/.te
   ok(m && /forcedEraPeaceUntilNextEraByPairKey\.set\(pairKey/.test(m[0]) && m[0].indexOf('forcedEraPeaceUntilNextEraByPairKey.set') < m[0].indexOf('applyDiploEventTracked'), '6b: finalizePeaceTreatyBetween ustawia blokade epoki PRZED zmiana relacji');
   const t = mainTs.match(/function tickAiAiWarWeariness[\s\S]*?\n    \}\n/);
   ok(t && /finalizePeaceTreatyBetween\(loser, winner\)/.test(t[0]), '6b: tick zmeczenia konczy wojne wylacznie przez finalizePeaceTreatyBetween (istniejace reguly wojen wymuszonych)');
+}
+
+// ---- 7. LIVE-AUDIT-Q1: wczesna oferta przegrywajacego, ochrona przed snowballem, symetria (realny runWarWearinessTick) ----
+{
+  const gold = (n) => [A('zloto', 'zloto', n, n)];
+  const cityAssets = [A('zloto', 'zloto', 300, 300), A('miasto', 'c1', 1, 400), A('miasto', 'c2', 1, 500), A('miasto', 'cap', 1, 9999, true)];
+  // 7a. wyraznie przegrywajacy po utracie miasta oferuje pokoj BEZ czekania na zmeczenie pary (30 tur wojny: zmeczenie < progChetnosci)
+  {
+    const { deps } = mkDeps({ turn: 130, turnsAtWar: 30, since: 10, share1: 0.2, lostA: 1, cities: 6, winnerNeed: 300, assets: gold(600) });
+    const r = W.runWarWearinessTick(deps)[0];
+    ok(!W.isWarWeary(r.level), '7a: zmeczenie pary < progChetnosci');
+    ok(r.action === 'offer_accepted' || r.action === 'offer_rejected', '7a: przegrywajacy sklada oferte mimo niskiego zmeczenia (bylo: none)');
+  }
+  // 7b. bardzo krotka wojna / brak strat przed ofertaBezStratOdTur => bez oferty (zero zmian balansu krotkich wojen)
+  {
+    const { deps } = mkDeps({ turn: 105, turnsAtWar: 5, share1: 0.1, lostA: 1, cities: 6, winnerNeed: 300, assets: gold(600) });
+    eq(W.runWarWearinessTick(deps)[0].action, 'none', '7b: < ofertaOdTurWojny => none');
+    const { deps: d2 } = mkDeps({ turn: 120, turnsAtWar: 15, share1: 0.1, lostA: 0, cities: 6, winnerNeed: 300, assets: gold(600) });
+    eq(W.runWarWearinessTick(d2)[0].action, 'none', '7b: brak strat i < ofertaBezStratOdTur => none');
+  }
+  // 7c. ochrona: przegrywajacy z <= ochronaMaxMiast miastami po utracie miasta -> zwyciezca MUSI przyjac (nawet gdy zada ogromna cene), bez oddawania miast
+  {
+    const { deps, log } = mkDeps({ turn: 140, turnsAtWar: 40, since: 5, share1: 0.2, lostA: 1, cities: 3, winnerNeed: 999999, assets: cityAssets });
+    const r = W.runWarWearinessTick(deps)[0];
+    eq(r.action, 'offer_accepted', '7c: chroniony przegrywajacy => pokoj mimo ceny nie do pokrycia');
+    eq(r.plan.histogram.miasto, 0, '7c: z 3 miast (= minMiastPoOddaniu) nie oddaje zadnego');
+    ok(log.some(x => x.ev === 'peace'), '7c: pokoj sfinalizowany');
+  }
+  // 7d. ochrona po >= ochronaUtratyWojny utratach, nawet z duza liczba miast; oddaje co najwyzej tyle, by zostalo >= minMiastPoOddaniu
+  {
+    const { deps } = mkDeps({ turn: 140, turnsAtWar: 60, since: 3, share1: 0.1, lostA: 3, cities: 5, winnerNeed: 999999, assets: cityAssets });
+    const r = W.runWarWearinessTick(deps)[0];
+    eq(r.action, 'offer_accepted', '7d: 3 utraty => zwyciezca musi przyjac');
+    ok(r.plan.histogram.miasto <= 5 - W.WAR_WEARINESS_PARAMS.przegrywajacy.minMiastPoOddaniu, '7d: po oddaniu zostaje >= minMiastPoOddaniu miast');
+  }
+  // 7e. NIE chroniony (6 miast, 1 utrata) i cena nie do pokrycia => zwykla wycena (odrzucenie), brak przymusu
+  {
+    const { deps } = mkDeps({ turn: 130, turnsAtWar: 30, since: 10, share1: 0.2, lostA: 1, cities: 6, winnerNeed: 999999, assets: gold(100) });
+    eq(W.runWarWearinessTick(deps)[0].action, 'offer_rejected', '7e: bez ochrony zwyciezca moze odrzucic');
+  }
+  // 7f. przebieg wojny w czasie (realne ticki): przegrywajacy traci miasto co 6 tur od tury 10 (z 9 miast); wojna konczy sie POKOJEM,
+  //     zanim zostanie zlikwidowany, a przegrywajacy zachowuje >= 5 miast (bez ochrony stare progi nie ruszaly przed ~100. tura wojny).
+  {
+    const store = new Map(); let cities = 9; let peaceAt = null; let lost = 0;
+    for (let tw = 1; tw <= 120 && peaceAt === null; tw++) {
+      if (tw >= 10 && (tw - 10) % 6 === 0 && cities > 0) { cities--; lost++; }
+      const { deps, log } = mkDeps({ turn: 100 + tw, warStart: 100, turnsAtWar: tw, since: (tw - 10) % 6, share1: 0.12, lostA: lost, cities, winnerNeed: 999999, assets: cityAssets, store });
+      W.runWarWearinessTick(deps);
+      if (log.some(x => x.ev === 'peace')) peaceAt = tw;
+    }
+    ok(peaceAt !== null && peaceAt <= 40, `7f: wojna konczy sie pokojem w <= 40 turach (byla: ${peaceAt})`);
+    ok(cities >= 5, `7f: przegrywajacy zachowuje >= 5 miast (ma ${cities}) - brak eliminacji`);
+  }
+  // 7g. symetria: to samo niedoboru ceny zwyciezca akceptuje przy duzym zmeczeniu, a odrzuca przy malym
+  {
+    const o = { share1: 0.3, lostA: 1, cities: 6, winnerNeed: 500, assets: gold(300) };
+    const lo = W.runWarWearinessTick(mkDeps({ ...o, turn: 130, turnsAtWar: 30, since: 5 }).deps)[0];
+    const hi = W.runWarWearinessTick(mkDeps({ ...o, turn: 330, turnsAtWar: 160, since: 5 }).deps)[0];
+    eq(lo.action, 'offer_rejected', '7g: male zmeczenie => niedobor ceny odrzucony');
+    eq(hi.action, 'offer_accepted', '7g: duze zmeczenie => zwyciezca tez bierze mniej (symetria)');
+  }
+  // 7h. parametry z JSON (zaden prog nie jest zahardkodowany)
+  const PP = W.WAR_WEARINESS_PARAMS.przegrywajacy;
+  ok(PP.ochronaMaxMiast > 0 && PP.ochronaUtratyWojny > 0 && PP.ofertaOdTurWojny > 0 && PP.tolerancjaZmeczenia > 0, '7h: nowe progi w war-weariness-params.json');
 }
 
 console.log(`ai-war-weariness-peace-test: PASS=${pass} FAIL=${fail}`);
