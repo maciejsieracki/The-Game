@@ -34,3 +34,5 @@ ZALOZENIA (bez pytan ABC): "Zamknij wszystkie informacyjne" = zakres sprzed zakl
 RUNDY: 2/5 (po FC R1 = FAIL)
 NASTEPNY KROK: Evaluator, potem Final Control; integracja po PASS.
 DEPLOY/PUSH: NIE WYKONANO
+
+COMMIT: kod+testy+raport 8a3f29ba7 (baza 29e662e2e + merge origin/main d3e88b7d9). Push: NIE.
