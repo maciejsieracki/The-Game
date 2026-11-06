@@ -1127,7 +1127,7 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "",
-    "uwagi": "R-WEB-BUILDING-EMPORION-Q1 (decyzja właściciela 2026-11-05): nowy budynek handlu dalekosiężnego, odpowiednik większego Targowiska. Wymaga badania Handel (techUnlock) i Targowiska w tym samym mieście (CITY_BUILDING_PREREQ w building-resource-gate.ts). Efekt handlowy: +1 slot tras handlowych (TRADE_BUILDING_IDS) i kwalifikacja trasy do bonusu 5% handlu (ten sam mechanizm co Targowisko/Port: bonus przypisany per trasa, nie kumuluje się per budynek). Pieniądz baza 8 / przyrost 4 (większy niż Targowisko 5/3). Koszt budowy 50 (+20/poziom, poziom maks 1), utrzymanie 2. Ikona: wspólna z Targowiskiem (bld-targowisko), brak dedykowanego SVG.",
+    "uwagi": "R-WEB-BUILDING-EMPORION-Q1 (decyzja właściciela 2026-11-05): nowy budynek handlu dalekosiężnego, odpowiednik większego Targowiska. Wymaga badania Handel (techUnlock) i Targowiska w tym samym mieście (CITY_BUILDING_PREREQ w building-resource-gate.ts). Efekt handlowy: +1 slot tras handlowych (TRADE_BUILDING_IDS, licznik tradeRouteLimitForCity), co kwalifikuje o jedną trasę więcej do bonusu 5% handlu (flaga budynekOdblokowany, TRADE_ROUTE_BUILDING_BONUS_RATE). Bonus jest per trasa i NIE kumuluje się per budynek: Emporion nie dodaje drugiego 5% na tej samej trasie. Nie dostaje osobnego bonusu per miasto, który ma Targowisko (budynekTargowiskoBonusHandlu, main.ts). Odstępstwo od pierwotnego GOAL (kumulacja z Targowiskiem) zostaje do zatwierdzenia przez właściciela. Pieniądz baza 8 / przyrost 4 (większy niż Targowisko 5/3). Koszt budowy 50 (+20/poziom, poziom maks 1), utrzymanie 2. Ikona: bld-emporion.svg (kopia ikony Targowiska z niebieską odznaką, rozróżnienie w UI).",
     "historia": "Emporion to rozległy ośrodek handlu dalekosiężnego, do którego sprowadzano towary z odległych krain. W greckich miastach-portach, takich jak Naukratis w Egipcie, obcy kupcy mieli wyznaczone dzielnice i składy, a wymiana odbywała się pod nadzorem urzędników. Emporion łączył funkcję składu, kantoru i miejsca spotkań kupców z różnych ludów, a jego działalność pozwalała miastu zdobywać surowce i wyroby niedostępne w okolicy. Dzięki sieci takich ośrodków antyczne miasta budowały bogactwo i kontakty sięgające daleko poza własny horyzont.",
     "opis": "Emporion organizuje dalekosiężną wymianę towarów z obcymi kupcami. Wymaga Targowiska w tym samym mieście i zwiększa liczbę tras handlowych miasta.",
     "top3": [
@@ -1137,7 +1137,7 @@
       },
       {
         "tytul": "+5% handlu",
-        "tekst": "Trasy handlowe miasta z tym budynkiem otrzymują premię 5% do dochodu z handlu, kumulującą się z Targowiskiem."
+        "tekst": "Dzięki Emporionowi o jedną trasę więcej w mieście otrzymuje premię 5% do dochodu z tej trasy. Premia liczona jest za każdą trasę, a nie za każdy budynek."
       },
       {
         "tytul": "Dodatkowa linia handlowa",

@@ -16,6 +16,8 @@
  *   E. Sloty tras: 'emporion' w TRADE_BUILDING_IDS; miasto z Targowiskiem + Emporion
  *      ma 2 sloty linii wymiany (tradeRouteLimitForCity) i 3 sloty istnienia
  *      (tradeRouteExistenceLimitForCity = 1 baza + 2); samo Emporion daje 1 slot.
+ *   G. Trasy: Targowisko+Emporion = 3 trasy istnienia, 2 z bonusem 5% (per trasa, bez podwojnego liczenia).
+ *   H. availableProduction: Emporion dostepny tylko przy Handel + Targowisko w tym samym miescie.
  *   F. Dwa budynki handlowe w jednym mieście nie kasują się nawzajem (liczba slotów
  *      rośnie monotonicznie, bez podwójnego liczenia tego samego id).
  *
@@ -37,7 +39,10 @@ const BUNDLE_FILE = path.resolve(__dirname, '.emporion-building-bundle.cjs');
 fs.writeFileSync(ENTRY_FILE, `
 export {
   TRADE_BUILDING_IDS, tradeRouteLimitForCity, tradeRouteExistenceLimitForCity,
+  refreshTradeRoutes, tradeRouteBuildingBonusForRoute, computeTradeRouteBuildingBonusByCity,
+  tradeRouteIncomeForRoute, DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 } from '../src/game/trade-routes';
+export { availableProduction } from '../src/game/production';
 export { CITY_BUILDING_PREREQ, cityBuildingPrereqMet } from '../src/game/building-resource-gate';
 `, 'utf8');
 
@@ -136,6 +141,69 @@ console.log('\n-- F: monotoniczność slotów --');
   const b = M.tradeRouteLimitForCity('c1', m(['targowisko', 'emporion']));
   const c = M.tradeRouteLimitForCity('c1', m(['targowisko', 'emporion', 'port']));
   ok(a < b && b < c, `sloty rosną z każdym budynkiem handlowym (${a} < ${b} < ${c})`);
+}
+
+// G. Kwalifikacja trasy do bonusu 5% (realny refreshTradeRoutes, nie tylko stałe)
+// Bonus 5% jest PER TRASA (flaga budynekOdblokowany), NIE per budynek: Emporion
+// zwiększa liczbę tras kwalifikowanych do 5% (sloty), ale nie dubluje stawki na tej
+// samej trasie. Opis: gra/src/game/trade-routes.ts (TRADE_ROUTE_BUILDING_BONUS_RATE).
+console.log('\n-- G: trasy handlowe i bonus 5% (refreshTradeRoutes) --');
+{
+  const flatMap = (maxQ) => {
+    const hexes = {};
+    for (let q = 0; q <= maxQ; q++) hexes[`${q},0`] = { terenBazowy: 'rownina' };
+    return { szerokoscQ: maxQ + 1, wysokoscR: 1, hexes, seed: 1, riverPaths: [] };
+  };
+  const city = (id, ownerId, q) => ({ id, ownerId, q, r: 0 });
+  const noWar = () => false;
+  const treaty = () => true;
+  const map = flatMap(40);
+  // Miasto p: 3 partnerów (różni właściciele), każdy z Targowiskiem.
+  const partners = [city('g-a', 1, 4), city('g-b', 2, 8), city('g-c', 3, 12)];
+  const p = city('g-p', 0, 0);
+  const builtOnlyTg = new Map([
+    ['g-p', ['targowisko']], ['g-a', ['targowisko']], ['g-b', ['targowisko']], ['g-c', ['targowisko']],
+  ]);
+  const builtTgEmp = new Map([
+    ['g-p', ['targowisko', 'emporion']], ['g-a', ['targowisko']], ['g-b', ['targowisko']], ['g-c', ['targowisko']],
+  ]);
+  // Blokujemy krawędzie między partnerami, żeby zostały tylko trasy z p.
+  const touching = (routes) => routes.filter(r => r.fromCityId === p.id || r.toCityId === p.id);
+  const warNoPartners = (a, b) => a !== 0 && b !== 0; // blokuje krawedzie partner-partner
+
+  const rTg = touching(M.refreshTradeRoutes([p, ...partners], [], map, builtOnlyTg, warNoPartners, treaty));
+  const rTgEmp = touching(M.refreshTradeRoutes([p, ...partners], [], map, builtTgEmp, warNoPartners, treaty));
+  eq(rTg.length, 2, 'G: samo Targowisko = 2 trasy istnienia (1 baza + 1)');
+  eq(rTgEmp.length, 3, 'G: Targowisko + Emporion = 3 trasy istnienia (1 baza + 2)');
+  eq(rTg.filter(r => r.budynekOdblokowany).length, 1, 'G: samo Targowisko = 1 trasa z bonusem 5%');
+  eq(rTgEmp.filter(r => r.budynekOdblokowany).length, 2, 'G: Targowisko + Emporion = 2 trasy z bonusem 5% (+1 slot)');
+
+  // Bonus per trasa: suma bonusów miasta p = 0.05 × dochód każdej KWALIFIKOWANEJ trasy, raz.
+  const bonusMap = M.computeTradeRouteBuildingBonusByCity(rTgEmp);
+  const expected = rTgEmp
+    .filter(r => r.budynekOdblokowany)
+    .reduce((s, r) => s + 0.05 * M.tradeRouteIncomeForRoute(r, M.DEFAULT_TRADE_ROUTE_INCOME_PARAMS), 0);
+  ok(Math.abs((bonusMap.get('g-p') ?? 0) - expected) < 1e-9,
+    `G: bonus 5% miasta p liczony per trasa, bez podwójnego liczenia (got ${bonusMap.get('g-p')}, want ${expected})`);
+  ok(expected > 0, 'G: bonus 5% dodatni przy dwóch kwalifikowanych trasach');
+}
+
+// H. Dostępność w realnym availableProduction (ta sama bramka co gracz)
+console.log('\n-- H: availableProduction -- Emporion wymaga Handel i Targowiska w mieście --');
+{
+  const prodData = { buildings: buildings.map(b => ({ ...b })), units: [] };
+  const has = (built, techs) => {
+    const items = M.availableProduction(
+      { id: 'h-city' }, prodData, techs,
+      { epoch: 2, builtBuildingIds: built, ownerId: 1, difficulty: 'normal', productionQueue: [] },
+    );
+    return items.some(it => JSON.stringify(it).includes('"emporion"'));
+  };
+  ok(!has([], []), 'H: bez Handel i bez Targowiska -> niedostępny');
+  ok(!has([], ['Handel']), 'H: Handel bez Targowiska w mieście -> niedostępny');
+  ok(!has(['targowisko'], []), 'H: Targowisko bez badania Handel -> niedostępny');
+  ok(has(['targowisko'], ['Handel']), 'H: Targowisko + Handel -> dostępny');
+  ok(!has(['magazyn'], ['Handel']), 'H: Magazyn (bez Targowiska) + Handel -> niedostępny');
 }
 
 console.log(`\n[emporion-building-test] ${passed} passed, ${failed} failed`);
