@@ -28,3 +28,4 @@ BLOKADY / NIE_ZMIERZONO:
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (przegląd inwalidacji - zwłaszcza czy istnieją ścieżki mutujące miasta/forty bez zmiany pól podpisu, np. zmiana tylko `level`, nieużywana przez territoryOwnerAt; ewentualny live pomiar t.95 na maszynie z czasem >30 min).
 DEPLOY/PUSH: NIE WYKONANO
+SHA kodu i raportu (commit): 2fbc5be871f4c054be23e9ea244b4d4cfa9d8a02
