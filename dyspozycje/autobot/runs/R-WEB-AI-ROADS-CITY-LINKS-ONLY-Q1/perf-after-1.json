@@ -1,0 +1,68 @@
+[
+ {
+  "actor": "ai",
+  "world": "kontynenty",
+  "seed": 1,
+  "cities": 5,
+  "roadHexes": 16,
+  "perCity": {
+   "?": 32
+  },
+  "onPlanClean": 16,
+  "offPlanClean": 0,
+  "offPlanNow": 0,
+  "planSize": 16,
+  "componentsCities": [
+   5
+  ],
+  "planDisconnectedPairs": 0,
+  "triangles": 0,
+  "cells": 0,
+  "denseHexes": 2,
+  "aiMsPerTurn": 236.739
+ },
+ {
+  "actor": "ai",
+  "world": "kontynenty",
+  "seed": 2,
+  "cities": 5,
+  "roadHexes": 16,
+  "perCity": {
+   "?": 32
+  },
+  "onPlanClean": 16,
+  "offPlanClean": 0,
+  "offPlanNow": 0,
+  "planSize": 16,
+  "componentsCities": [
+   5
+  ],
+  "planDisconnectedPairs": 0,
+  "triangles": 1,
+  "cells": 1,
+  "denseHexes": 6,
+  "aiMsPerTurn": 252.745
+ },
+ {
+  "actor": "ai",
+  "world": "pangea",
+  "seed": 1,
+  "cities": 5,
+  "roadHexes": 17,
+  "perCity": {
+   "?": 34
+  },
+  "onPlanClean": 17,
+  "offPlanClean": 0,
+  "offPlanNow": 0,
+  "planSize": 17,
+  "componentsCities": [
+   5
+  ],
+  "planDisconnectedPairs": 0,
+  "triangles": 0,
+  "cells": 0,
+  "denseHexes": 0,
+  "aiMsPerTurn": 220.819
+ }
+]

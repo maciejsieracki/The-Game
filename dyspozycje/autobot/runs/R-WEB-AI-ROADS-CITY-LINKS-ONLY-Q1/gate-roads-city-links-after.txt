@@ -1,0 +1,50 @@
+(U) planRoadNetwork — czysta funkcja
+  [OK] MST: 3 miasta w linii = 2 krawedzie, bez krawedzi a-c
+  [OK] heksy planu = tylko miedzy miastami (10, oczekiwane 10)
+  [OK] heksy miast nie sa czescia planu
+  [OK] determinizm: kolejnosc wejscia miast nie zmienia planu
+  [OK] miasto bez sasiada: 0 heksow dr0g
+  [OK] miasto za woda: nie dostaje drogi, reszta sieci bez zmian
+  [OK] isTraversable (zasieg wlasnego terytorium) ogranicza plan do osiagalnych par
+  [OK] trzy miasta w trojkacie: 2 krawedzie (bez cyklu)
+  [OK] plan trojkata bez komorek (trojkaty=0, >=4 sasiadow=0)
+(S) symulacja 100 tur, 5 miast w skupisku
+  [OK] ai/kontynenty/1: droga powstaje (16 heksow) — test nie jest pusty
+  [OK] ai/kontynenty/1: heksy drog poza siecia miedzymiastowa = 0 (poza planem: bez-drog=0, z-drogami=0)
+  [OK] ai/kontynenty/1: brak siatki trojkatow — tylko wezly skrzyzowan (0 <= 3)
+  [OK] ai/kontynenty/1: brak komorek siatki: heksy z >=4 sasiadami=0, z >=3 sasiadami=2 (limit 8)
+  [OK] ai/kontynenty/1: wszystkie miasta zasiegalne ladem polaczone jedna siecia (komponenty=[5])
+  [OK] ai/kontynenty/1: liczba heksow drog (16) <= rozmiar planu (16)
+  [OK] ai/kontynenty/2: droga powstaje (16 heksow) — test nie jest pusty
+  [OK] ai/kontynenty/2: heksy drog poza siecia miedzymiastowa = 0 (poza planem: bez-drog=0, z-drogami=0)
+  [OK] ai/kontynenty/2: brak siatki trojkatow — tylko wezly skrzyzowan (1 <= 3)
+  [OK] ai/kontynenty/2: brak komorek siatki: heksy z >=4 sasiadami=1, z >=3 sasiadami=6 (limit 8)
+  [OK] ai/kontynenty/2: wszystkie miasta zasiegalne ladem polaczone jedna siecia (komponenty=[5])
+  [OK] ai/kontynenty/2: liczba heksow drog (16) <= rozmiar planu (16)
+  [OK] ai/pangea/1: droga powstaje (17 heksow) — test nie jest pusty
+  [OK] ai/pangea/1: heksy drog poza siecia miedzymiastowa = 0 (poza planem: bez-drog=0, z-drogami=0)
+  [OK] ai/pangea/1: brak siatki trojkatow — tylko wezly skrzyzowan (0 <= 3)
+  [OK] ai/pangea/1: brak komorek siatki: heksy z >=4 sasiadami=0, z >=3 sasiadami=0 (limit 8)
+  [OK] ai/pangea/1: wszystkie miasta zasiegalne ladem polaczone jedna siecia (komponenty=[5])
+  [OK] ai/pangea/1: liczba heksow drog (17) <= rozmiar planu (17)
+  [OK] zrownowazone/kontynenty/1: droga powstaje (16 heksow) — test nie jest pusty
+  [OK] zrownowazone/kontynenty/1: heksy drog poza siecia miedzymiastowa = 0 (poza planem: bez-drog=0, z-drogami=0)
+  [OK] zrownowazone/kontynenty/1: brak siatki trojkatow — tylko wezly skrzyzowan (0 <= 3)
+  [OK] zrownowazone/kontynenty/1: brak komorek siatki: heksy z >=4 sasiadami=0, z >=3 sasiadami=2 (limit 8)
+  [OK] zrownowazone/kontynenty/1: wszystkie miasta zasiegalne ladem polaczone jedna siecia (komponenty=[5])
+  [OK] zrownowazone/kontynenty/1: liczba heksow drog (16) <= rozmiar planu (16)
+  [OK] zrownowazone/kontynenty/2: droga powstaje (16 heksow) — test nie jest pusty
+  [OK] zrownowazone/kontynenty/2: heksy drog poza siecia miedzymiastowa = 0 (poza planem: bez-drog=0, z-drogami=0)
+  [OK] zrownowazone/kontynenty/2: brak siatki trojkatow — tylko wezly skrzyzowan (1 <= 3)
+  [OK] zrownowazone/kontynenty/2: brak komorek siatki: heksy z >=4 sasiadami=1, z >=3 sasiadami=6 (limit 8)
+  [OK] zrownowazone/kontynenty/2: wszystkie miasta zasiegalne ladem polaczone jedna siecia (komponenty=[5])
+  [OK] zrownowazone/kontynenty/2: liczba heksow drog (16) <= rozmiar planu (16)
+  [OK] zrownowazone/pangea/1: droga powstaje (17 heksow) — test nie jest pusty
+  [OK] zrownowazone/pangea/1: heksy drog poza siecia miedzymiastowa = 0 (poza planem: bez-drog=0, z-drogami=0)
+  [OK] zrownowazone/pangea/1: brak siatki trojkatow — tylko wezly skrzyzowan (0 <= 3)
+  [OK] zrownowazone/pangea/1: brak komorek siatki: heksy z >=4 sasiadami=0, z >=3 sasiadami=0 (limit 8)
+  [OK] zrownowazone/pangea/1: wszystkie miasta zasiegalne ladem polaczone jedna siecia (komponenty=[5])
+  [OK] zrownowazone/pangea/1: liczba heksow drog (17) <= rozmiar planu (17)
+
+45 OK, 0 FAIL
+EXIT=0

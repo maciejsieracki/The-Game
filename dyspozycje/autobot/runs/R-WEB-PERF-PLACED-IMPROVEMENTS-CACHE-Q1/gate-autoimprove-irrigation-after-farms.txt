@@ -1,0 +1,123 @@
+(A) mapy Z rzekami: irygacja i trzoda budowane na polach obywateli po farmach (Zywnosc, Zrownowazone, AI)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=20 landSea=168 relief=138 coast=15 riversMain=868 riversFill=779 forest=6 deposits=15 starts=86 total=2098
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=110 relief=64 coast=14 riversMain=241 riversFill=675 forest=3 deposits=8 starts=85 total=1205
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=10 landSea=86 relief=65 coast=27 riversMain=192 riversFill=570 forest=5 deposits=9 starts=47 total=1012
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=14 landSea=77 relief=98 coast=44 riversMain=332 riversFill=111 forest=4 deposits=13 starts=46 total=740
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=55 relief=68 coast=45 riversMain=44 riversFill=48 forest=4 deposits=8 starts=37 total=314
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=6 landSea=61 relief=84 coast=46 riversMain=48 riversFill=45 forest=3 deposits=8 starts=41 total=341
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=53 relief=60 coast=11 riversMain=161 riversFill=507 forest=3 deposits=7 starts=39 total=846
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=60 relief=65 coast=12 riversMain=188 riversFill=647 forest=3 deposits=7 starts=40 total=1026
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=3 landSea=53 relief=58 coast=12 riversMain=168 riversFill=549 forest=3 deposits=7 starts=40 total=895
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=60 relief=84 coast=39 riversMain=225 riversFill=103 forest=5 deposits=7 starts=52 total=580
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=54 relief=65 coast=42 riversMain=41 riversFill=50 forest=3 deposits=10 starts=33 total=303
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=57 relief=70 coast=41 riversMain=46 riversFill=43 forest=3 deposits=6 starts=36 total=308
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=55 relief=62 coast=12 riversMain=161 riversFill=520 forest=3 deposits=6 starts=42 total=868
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=59 relief=59 coast=13 riversMain=209 riversFill=640 forest=2 deposits=6 starts=40 total=1032
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=55 relief=59 coast=11 riversMain=161 riversFill=552 forest=3 deposits=6 starts=37 total=887
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=55 relief=86 coast=41 riversMain=236 riversFill=101 forest=3 deposits=7 starts=38 total=573
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=6 landSea=57 relief=74 coast=44 riversMain=47 riversFill=52 forest=3 deposits=7 starts=36 total=327
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=60 relief=72 coast=43 riversMain=46 riversFill=44 forest=3 deposits=6 starts=38 total=316
+  [OK] zywnosc: farmy postawione (75)
+  [OK] zywnosc: irygacja zbudowana (77)
+  [OK] zywnosc: trzoda zbudowana (75)
+  [OK] zywnosc: 0 pol obywatela z farma, plaskich i przy rzece, bez irygacji (jest 0)
+  [OK] zywnosc: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+  [OK] zrownowazone: farmy postawione (75)
+  [OK] zrownowazone: irygacja zbudowana (77)
+  [OK] zrownowazone: trzoda zbudowana (75)
+  [OK] zrownowazone: 0 pol obywatela z farma, plaskich i przy rzece, bez irygacji (jest 0)
+  [OK] zrownowazone: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+  [OK] ai: farmy postawione (75)
+  [OK] ai: irygacja zbudowana (77)
+  [OK] ai: trzoda zbudowana (75)
+  [OK] ai: 0 pol obywatela z farma, plaskich i przy rzece, bez irygacji (jest 0)
+  [OK] ai: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+(B) mapy BEZ rzek: irygacja/trzoda niemozliwe z reguly gry (tylko przy rzece) — nie bug; budzet niewydany jest jawnie sygnalizowany
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=51 relief=75 coast=11 riversMain=159 riversFill=521 forest=3 deposits=6 starts=38 total=867
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=52 relief=54 coast=11 riversMain=176 riversFill=636 forest=3 deposits=7 starts=43 total=985
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=54 relief=58 coast=11 riversMain=168 riversFill=544 forest=2 deposits=6 starts=36 total=882
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=53 relief=83 coast=42 riversMain=240 riversFill=97 forest=3 deposits=7 starts=39 total=568
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=55 relief=69 coast=41 riversMain=43 riversFill=51 forest=3 deposits=6 starts=36 total=309
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=72 relief=69 coast=43 riversMain=45 riversFill=47 forest=4 deposits=9 starts=41 total=336
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=56 relief=63 coast=12 riversMain=198 riversFill=526 forest=3 deposits=6 starts=40 total=907
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=53 relief=54 coast=10 riversMain=179 riversFill=621 forest=2 deposits=6 starts=40 total=970
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=57 relief=61 coast=11 riversMain=163 riversFill=542 forest=2 deposits=18 starts=71 total=929
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=56 relief=81 coast=42 riversMain=242 riversFill=96 forest=4 deposits=7 starts=41 total=573
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=7 landSea=58 relief=74 coast=45 riversMain=48 riversFill=54 forest=3 deposits=7 starts=36 total=331
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=68 relief=76 coast=58 riversMain=67 riversFill=58 forest=5 deposits=10 starts=50 total=397
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=53 relief=62 coast=12 riversMain=160 riversFill=508 forest=3 deposits=6 starts=37 total=842
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=58 relief=58 coast=11 riversMain=196 riversFill=632 forest=2 deposits=6 starts=37 total=1005
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=55 relief=58 coast=11 riversMain=163 riversFill=542 forest=2 deposits=6 starts=36 total=877
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=54 relief=81 coast=40 riversMain=260 riversFill=105 forest=3 deposits=7 starts=39 total=594
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=61 relief=76 coast=46 riversMain=47 riversFill=55 forest=3 deposits=9 starts=39 total=341
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=8 landSea=99 relief=74 coast=44 riversMain=48 riversFill=43 forest=3 deposits=7 starts=36 total=363
+  [OK] zywnosc: farmy nadal powstaja (86)
+  [OK] zywnosc: irygacja 0 / trzoda 0 = 0 (regula: tylko przy rzece)
+  [OK] zywnosc: kazda niezirygowana farma ma powod „brak-rzeki” (86), zalegajacych 0
+  [OK] zywnosc: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+  [OK] zywnosc: pula Pracy niewydana (21347) — brak legalnego ulepszenia zywnosci przy obywatelach
+  [OK] zywnosc: picker przy ogromnej puli nie ma ZADNEGO ulepszenia zywnosciowego na polach obywateli (zywnosciowych pickow 0); reszta (drogi) wg nowej reguly bez filtra obywateli
+  [OK] zywnosc: wskaznik „Budzet niewydany” swieci (6/6, pol czeka 1464)
+  [OK] zrownowazone: farmy nadal powstaja (86)
+  [OK] zrownowazone: irygacja 0 / trzoda 0 = 0 (regula: tylko przy rzece)
+  [OK] zrownowazone: kazda niezirygowana farma ma powod „brak-rzeki” (86), zalegajacych 0
+  [OK] zrownowazone: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+  [OK] zrownowazone: pula Pracy niewydana (14167) — brak legalnego ulepszenia zywnosci przy obywatelach
+  [OK] zrownowazone: picker przy ogromnej puli nie ma ZADNEGO ulepszenia zywnosciowego na polach obywateli (zywnosciowych pickow 0); reszta (drogi) wg nowej reguly bez filtra obywateli
+  [OK] zrownowazone: wskaznik „Budzet niewydany” swieci (6/6, pol czeka 1443)
+  [OK] ai: farmy nadal powstaja (86)
+  [OK] ai: irygacja 0 / trzoda 0 = 0 (regula: tylko przy rzece)
+  [OK] ai: kazda niezirygowana farma ma powod „brak-rzeki” (86), zalegajacych 0
+  [OK] ai: 0 ulepszen zywnosciowych poza polami obywateli (jest 0)
+  [OK] ai: pula Pracy niewydana (14167) — brak legalnego ulepszenia zywnosci przy obywatelach
+(C) prog budzetu: irygacja 3 x droższa od farmy — przy 33% i rezerwie 30 rusza dopiero od puli >= koszt/0.33
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=67 relief=80 coast=38 riversMain=228 riversFill=94 forest=3 deposits=6 starts=35 total=556
+  [OK] scenariusz C: jest pole obywatela plaskie, puste, przy rzece (6,12)
+  [OK] koszt irygacji = 60 (3 x farma 20) [jest 60]
+  [OK] pula 180 (< 182): irygacja NIE powstaje (limit 33% < koszt) — „budzet odkladany”
+  [OK] pula 183 (>= 182): irygacja powstaje
+(D) PRZYCZYNA: sasiad z samym `rzeka.obecna` (bez wpisu w riverPaths) = „przy rzece” dla farmy/trzody (onRiverHex) — irygacja tez
+  [OK] zywnosc: irygacja na polu obywatela z farma+trzoda przy widocznej rzece (sasiad bez wpisu w riverPaths) — picki: irygacja@17,15
+  [OK] zrownowazone: irygacja na polu obywatela z farma+trzoda przy widocznej rzece (sasiad bez wpisu w riverPaths) — picki: irygacja@17,15
+  [OK] reczna budowa (bez flagi): irygacja przy sasiedzie `rzeka.obecna` KWALIFIKUJE (jedna definicja z automatem)
+  [OK] heks bez rzeki w sasiedztwie nadal NIE kwalifikuje
+
+42 OK, 0 FAIL
+EXIT=0
