@@ -1,3 +1,9 @@
+## ROBOCZA 963a8fb8 -- 2026-11-06 -- FALA 528: minimapa: ramka widoku podąża za kamerą (testowa)
+
+- minimapHud.ts/hud.ts/main.ts: warstwa bazowa minimapy cache'owana, updateViewport przerysowuje tylko zmieniony prostokąt (co klatkę, poza bramką dirty); wcześniej ramka stała w miejscu, bo minimapę odświeżał tylko refreshFog
+- Weryfikacja: Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; tsc 0; test jednostkowy 12/12 + mutacja; Chromium live: ramka x 108→18 po kliku, zoom 46×22→51×24 (stary build 0 px)
+- Limity: pomiar perf klatki NIE_ZMIERZONO (koszt O(1)); pre-existing FAIL hud-armia/moc/obywatele
+
 ## ROBOCZA 1a7efcf5 -- 2026-11-06 -- FALA 527: pamięć: dane base64 (audio/obrazy) poza JS, wspólne Blob (testowa)
 
 - vite.config.ts: wtyczka civ-binary-assets-out-of-js — mp3/png/jpg jako elementy application/octet-stream w HTML, dekodowane raz do Blob (wspólne blob: URL); sterta po GC −125 MB (t.1: 213,7→88,3; t.50: 302,4→178,6)
