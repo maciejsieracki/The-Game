@@ -1,3 +1,9 @@
+## ROBOCZA 45168586 -- 2026-11-06 -- FALA 523: pamięć podręczna ulepszeń właściciela (koniec tury) (testowa)
+
+- R-WEB-PERF-PLACED-IMPROVEMENTS-CACHE-Q1 — drugi hotspot końca tury w późnej grze: placedImprovementsForOwner (skan wszystkich ulepszeń mapy dla każdej jednostki/trasy) jest teraz buforowany per właściciel z inwalidacją przy zapisie (VersionedMap) i zmianie miast/fortów; na stanie syntetycznym 12–112× szybciej (zależnie od częstości zapisów), wynik identyczny z wersją bez bufora
+- Weryfikacja: tsc PASS; placed-improvements-cache 15/0 (250 stanów×3 właścicieli, 1440 mutacji, 5 mutantów wykrytych); trade-grant 62/0; zloto-szlak 54/0; mennica-uspienie 49/0; auto-improvements 46/0
+- Limity: Brak pomiaru na żywej grze w t.95 (wymaga >30 min); hashe war-allin-capital-quick niezmierzone; okolica-load/ownership-change reconcile padają tak samo na bazie
+
 ## ROBOCZA d1ce365c -- 2026-11-06 -- FALA 522: przyczyna spowolnienia po turze 60–80: dostęp do surowców tras (testowa)
 
 - R-WEB-LONGRUN-100-TURNS-LEAK-Q1 — 100 tur w Chromium (seed 4242): główna przyczyna spowolnienia = przeliczanie grantów surowców z tras handlowych (computeTradeRouteResourceGrants) skanujące wszystkie ulepszenia mapy 4× na trasę i surowiec (0 s w t.10 → 7,5 s w t.70 → 19,2 s w t.95 przy 57 s profilu); poprawka: memoizacja (właściciel, surowiec) na czas jednego przeliczenia — w profilu t.95 koszt zniknął, JS końca tury 29,7→11,6 s
