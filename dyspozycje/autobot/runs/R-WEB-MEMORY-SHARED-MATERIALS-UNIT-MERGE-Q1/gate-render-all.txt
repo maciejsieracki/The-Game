@@ -53,7 +53,7 @@ recruit-card-quantity-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad ist
 recruit-card-stock-chip-real-render-test.cjs | 0 | - | PASS
 recruitment-panel-height-real-render-test.cjs | 0 | - | PASS
 render-unit-sharpness-guard.cjs | r1 | - | R1: gate-render-unit-sharpness-guard.txt (r1, PASS)
-render-unit-sharpness-measure.cjs | 1 | 0 | NIESTABILNY: powtorka POST: EXIT=0 (pelna tabela pomiaru) | ostatnia linia POST: 
+render-unit-sharpness-measure.cjs | 1 | 0 | NIESTABILNY: powtorka POST: EXIT=0 (pelna tabela pomiaru) | ostatnia linia POST:
 river-render-diag.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: Node.js v22.22.0
 science-hub-unlock-icons-real-render-test.cjs | 0 | - | PASS
 science-picker-tooltip-icons-real-render-test.cjs | 0 | - | PASS
