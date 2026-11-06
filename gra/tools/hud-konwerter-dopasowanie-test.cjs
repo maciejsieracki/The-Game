@@ -142,21 +142,22 @@ if (fnNaprawiona) {
   // Odlewnia zelaza (ownerId=1) — 2 receptury z buildingId != id: braz + zelazo.
   const zelaza = wywolajDlaOwnera(fnNaprawiona, 1);
   ok(Object.keys(zelaza).length > 0, 'Odlewnia zelaza: HUD zwraca NIEPUSTY wynik (nie {})');
-  ok(zelaza.zelazo === 25, `Odlewnia zelaza: Zelazo (produkcja, jednostek/ture, era 1, normal) = 25 (got ${zelaza.zelazo})`);
-  ok(zelaza.braz === 25, `Odlewnia zelaza: Braz (produkcja, jednostek/ture, era 1, normal) = 25 (got ${zelaza.braz})`);
+  // R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (2026-11-05): baza odlewni 25 -> 50 (era1 m=1).
+  ok(zelaza.zelazo === 50, `Odlewnia zelaza: Zelazo (produkcja, jednostek/ture, era 1, normal) = 50 (got ${zelaza.zelazo})`);
+  ok(zelaza.braz === 50, `Odlewnia zelaza: Braz (produkcja, jednostek/ture, era 1, normal) = 50 (got ${zelaza.braz})`);
 
   // Wielka odlewnia (ownerId=2) — 3 receptury z buildingId != id: braz + zelazo + stal.
   const wielka = wywolajDlaOwnera(fnNaprawiona, 2);
   ok(Object.keys(wielka).length > 0, 'Wielka odlewnia: HUD zwraca NIEPUSTY wynik (nie {})');
-  ok(wielka.braz === 25, `Wielka odlewnia: Braz (produkcja, jednostek/ture, era 1, normal) = 25 (got ${wielka.braz})`);
-  ok(wielka.zelazo === 25, `Wielka odlewnia: Zelazo (produkcja, jednostek/ture, era 1, normal) = 25 (got ${wielka.zelazo})`);
-  ok(wielka.stal === 25, `Wielka odlewnia: Stal (produkcja, jednostek/ture, era 1, normal) = 25 (got ${wielka.stal})`);
+  ok(wielka.braz === 50, `Wielka odlewnia: Braz (produkcja, jednostek/ture, era 1, normal) = 50 (got ${wielka.braz})`);
+  ok(wielka.zelazo === 50, `Wielka odlewnia: Zelazo (produkcja, jednostek/ture, era 1, normal) = 50 (got ${wielka.zelazo})`);
+  ok(wielka.stal === 50, `Wielka odlewnia: Stal (produkcja, jednostek/ture, era 1, normal) = 50 (got ${wielka.stal})`);
 
   // BRAK REGRESJI — trojka juz dzialajaca przed naprawa (recipe.id === buildingId).
   const podstawowe = wywolajDlaOwnera(fnNaprawiona, 3);
   ok(podstawowe.cegla === 100, `Cegielnia: Cegla (produkcja, jednostek/ture, era 1, normal) = 100 (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1, bylo 50) (got ${podstawowe.cegla})`);
   ok(podstawowe.ceramika === 50, `Garncarnia: Ceramika (produkcja, jednostek/ture, era 1, normal) = 50 (got ${podstawowe.ceramika})`);
-  ok(podstawowe.braz === 25, `Odlewnia brazu: Braz (produkcja, jednostek/ture, era 1, normal) = 25 (got ${podstawowe.braz})`);
+  ok(podstawowe.braz === 50, `Odlewnia brazu: Braz (produkcja, jednostek/ture, era 1, normal) = 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25) (got ${podstawowe.braz})`);
 
   // Brzeg: wlasciciel bez zadnego konwertera -> pusty obiekt, nie undefined/wyjatek.
   const puste = wywolajDlaOwnera(fnNaprawiona, 4);
@@ -197,7 +198,7 @@ if (fnNaprawiona) {
     // dzialac nawet ze starym kodem -- jesli mutacja jednoczesnie psuje i ja, mutacja jest
     // zle przygotowana (za szeroka), a nie dowodzi punktowo tego jednego bledu.
     const podstawoweStara = wywolajDlaOwnera(fnStara, 3);
-    ok(podstawoweStara.cegla === 100 && podstawoweStara.ceramika === 50 && podstawoweStara.braz === 25,
+    ok(podstawoweStara.cegla === 100 && podstawoweStara.ceramika === 50 && podstawoweStara.braz === 50,
       `(kontrola mutacji) stare dopasowanie NIE psulo trojki juz-dzialajacej (got ${JSON.stringify(podstawoweStara)})`);
   } else {
     fail++; console.error('FAIL: nie udalo sie zbudowac zmutowanej funkcji do testu regresyjnego');

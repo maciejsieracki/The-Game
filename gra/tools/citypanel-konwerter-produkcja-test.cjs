@@ -146,10 +146,11 @@ assertGarncarniaEra(3, 60);
   const r = engine.converterProductionDisplayForBuilding('odlewnia_brazu', econParams, 'normal', 1);
   ok(r !== null, 'Odlewnia brązu era1: wynik nie jest null');
   if (r) {
-    ok(Math.abs(r.consumed.ruda - 25) < EPS, `Odlewnia brązu era1: zużycie Ruda = 25 szt./turę (got ${r.consumed.ruda})`);
-    ok(Math.abs(r.consumed.drewno - 25) < EPS, `Odlewnia brązu era1: zużycie Drewno = 25 szt./turę (got ${r.consumed.drewno})`);
-    ok(Math.abs(r.consumed.ruda_cyny - 2.5) < EPS, `Odlewnia brązu era1: zużycie Ruda cyny = 2,5 szt./turę (got ${r.consumed.ruda_cyny})`);
-    ok(Math.abs(r.produced.braz - 25) < EPS, `Odlewnia brązu era1: produkcja Brąz = 25 szt./turę (got ${r.produced.braz})`);
+    // R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (2026-11-05): baza odlewni 25 -> 50 cykli/ture.
+    ok(Math.abs(r.consumed.ruda - 50) < EPS, `Odlewnia brązu era1: zużycie Ruda = 50 szt./turę (got ${r.consumed.ruda})`);
+    ok(Math.abs(r.consumed.drewno - 50) < EPS, `Odlewnia brązu era1: zużycie Drewno = 50 szt./turę (got ${r.consumed.drewno})`);
+    ok(Math.abs(r.consumed.ruda_cyny - 5) < EPS, `Odlewnia brązu era1: zużycie Ruda cyny = 5 szt./turę (got ${r.consumed.ruda_cyny})`);
+    ok(Math.abs(r.produced.braz - 50) < EPS, `Odlewnia brązu era1: produkcja Brąz = 50 szt./turę (got ${r.produced.braz})`);
     console.log(`   Odlewnia brązu era1 (normal): -${r.consumed.ruda} Ruda/t · -${r.consumed.drewno} Drewno/t · -${r.consumed.ruda_cyny} Ruda cyny/t · +${r.produced.braz} Brąz/t`);
   }
 }
