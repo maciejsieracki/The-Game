@@ -33,6 +33,7 @@ export {
   getEffectiveDiplomacyParams, DIPLOMACY_DIFFICULTY_DELTA,
 } from '../src/game/diplomacy.ts';
 export { resolveDiplomacyActionLock } from '../src/game/diplomacy-locks.ts';
+export { decideAIDiplomacy } from '../src/game/ai.ts';
 `, 'utf8');
 
 async function main() {
@@ -50,7 +51,7 @@ async function main() {
   const {
     evaluateProposal, NAP_GRANICA_RELACJA_NARZUT,
     getEffectiveDiplomacyParams, DIPLOMACY_DIFFICULTY_DELTA,
-    resolveDiplomacyActionLock,
+    resolveDiplomacyActionLock, decideAIDiplomacy,
   } = require(BUNDLE);
 
   let pass = 0;
@@ -106,7 +107,12 @@ async function main() {
   }
   {
     const r = resolveDiplomacyActionLock(lockCtx({ progNapZaufanie: undefined, relTotal: 150, zaufanie: 0 }));
-    ok(r.locked === false, 'B6 wsteczna zgodność: brak progNapZaufanie → bramka Zaufania pominięta');
+    ok(r.locked === true && /Zaufania 30/.test(r.note),
+      `B6 fail-closed: brak progNapZaufanie w kontekście → bramka Zaufania 30 nadal działa (${r.note})`);
+  }
+  {
+    const r = resolveDiplomacyActionLock(lockCtx({ progNapZaufanie: undefined, relTotal: 150, zaufanie: 30 }));
+    ok(r.locked === false, 'B7 brak progNapZaufanie + Zaufanie 30 + Relacja OK → dostępny (domyślne 30)');
   }
 
   // ---- C. bramka silnika (evaluateProposal 'nap') -------------------------
@@ -165,6 +171,26 @@ async function main() {
   ok(minAcceptedRelacja('normal', false) === uiNormal,
     'D2 silnik: Normalny bez granicy = progNapRelacja');
 
+  // ---- C2. zachowanie AI (decideAIDiplomacy, Priorytet 3b) ----------------
+  // Behawioralnie (nie regex): profil pokojowy, rw=0.5 (P1–P4 nieaktywne), progiem jest
+  // progNapRelacja − napScoreEase = 110 − 12 = 98 (jak T9k w ai-test.cjs). Score = zaufanie + respekt.
+  console.log('\nC2. AI nie proponuje paktu przy Zaufaniu < 30 (decideAIDiplomacy)');
+  const aiPeaceful = (z, r) => decideAIDiplomacy({
+    myPlayerId: 'ai-1', agresja: 0.2, agresywnoscRaw: 2, sklonnoscDoPodboju: 2,
+    relacje: [{
+      partnerId: 'peaceful-1', stanWojny: false, respektWzgledny: 0.5, hasNapTreaty: false,
+      relation: { zaufanie: z, respekt: r, status: 'pokoj' },
+    }],
+  }).map(c => c.type);
+  ok(!aiPeaceful(29, 80).includes('zaproponuj_pakt'),
+    `F1 AI: score 109 (>= 98) ale Zaufanie 29 < 30 → BRAK zaproponuj_pakt (got ${JSON.stringify(aiPeaceful(29, 80))})`);
+  ok(aiPeaceful(30, 80).includes('zaproponuj_pakt'),
+    `F2 AI: score 110 i Zaufanie 30 → zaproponuj_pakt OBECNE (got ${JSON.stringify(aiPeaceful(30, 80))})`);
+  ok(aiPeaceful(30, 68).includes('zaproponuj_pakt'),
+    `F3 AI: granica (score 98 = prog efektywny, Zaufanie 30) → zaproponuj_pakt OBECNE`);
+  ok(!aiPeaceful(29, 69).includes('zaproponuj_pakt'),
+    `F4 AI: granica (score 98, Zaufanie 29) → BRAK zaproponuj_pakt`);
+
   // ---- E. wiring (źródła) -------------------------------------------------
   console.log('\nE. wiring źródeł');
   const readSrc = rel => fs.readFileSync(path.resolve(__dirname, '..', rel), 'utf8');
@@ -172,8 +198,8 @@ async function main() {
     'E1 ai.ts Priorytet 3b: propozycja paktu wymaga zaufanie >= dipP.progNapZaufanie');
   ok(/progNapZaufanie:\s*dip\.progNapZaufanie/.test(readSrc('src/main.ts')),
     'E2 main.ts: kontekst blokad przekazuje progNapZaufanie');
-  ok(/relation\.zaufanie\s*<\s*p\.progNapZaufanie/.test(readSrc('src/game/diplomacy-proposals.ts')),
-    'E3 diplomacy-proposals.ts case nap: bramka Zaufania w evaluateProposal');
+  ok(/!\(relation\.zaufanie\s*>=\s*p\.progNapZaufanie\)/.test(readSrc('src/game/diplomacy-proposals.ts')),
+    'E3 diplomacy-proposals.ts case nap: bramka Zaufania w evaluateProposal (fail-closed)');
 
   console.log(`\n${pass}/${pass + fail} passed`);
   process.exit(fail === 0 ? 0 : 1);
