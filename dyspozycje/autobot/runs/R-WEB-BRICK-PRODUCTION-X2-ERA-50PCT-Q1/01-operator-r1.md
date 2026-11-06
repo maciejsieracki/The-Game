@@ -14,7 +14,7 @@ WNIOSEK: samo ×2 przepustowości NIE podwaja wyjścia. Dowód: wariant „baza 
 - Epoka: `CONVERTER_ERA_SCALING_PCT_BY_RECIPE = { cegielnia: 0.5 }` w `converterThroughputForEra` (jedna funkcja, gracz = AI); Garncarnia +10% bez zmian, Odlewnie płaskie. Mnożnik cykli: 1 / 1,5 / 2 / 2,5 / 3 (liniowo od bazy 50: 50/75/100/125/150 cykli → 100/150/200/250/300 cegieł).
 
 ## ZMIANY / COMMIT
-SHA: patrz końcowa linia „COMMIT” (uzupełniona po zacommitowaniu; `git log -1`).
+SHA: e3544ed05 (kod+testy+raport; raport nie zawiera własnego SHA poza tą linią – poprawka w kolejnym commicie).
 - gra/src/game/converters.ts (outputAmount 2, mapa PCT per receptura, komentarze)
 - gra/data/econ-params.json (tylko tekst `opis` cegielni; wartości 50 bez zmian)
 - gra/data/buildings.json (tylko `uwagi` Cegielni)
