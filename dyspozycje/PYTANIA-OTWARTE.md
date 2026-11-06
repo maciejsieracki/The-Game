@@ -32443,5 +32443,5 @@ Orkiestrator podjął poniższe wybory bez pytania (naruszenie dyscypliny ABC ws
 6. **Rozmywanie koni**: temat zamknięty jako duplikat (pixelRatioMax 2.0 już wdrożony); brak potwierdzenia u właściciela — prośba o zgłoszenie, jeśli rozmycie wraca (ekran, zoom).
 7. **Wydajność T86**: zmierzono tylko skalę miast; patrz R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (runda 5/5).
 
-## P-PAMIEC-WSPOLNE-MATERIALY-2026-11-06 · ABC do właściciela · STATUS: **OTWARTE** — nie blokuje
+## P-PAMIEC-WSPOLNE-MATERIALY-2026-11-06 · ABC do właściciela · STATUS: **ODPOWIEDŹ WŁAŚCICIELA 2026-11-06: „rozszerz, jeżeli możesz” → R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1 (najpierw wariant z zachowaniem pikseli, potem dopuszczalne ≤100 px)**
 Z R-WEB-MEMORY-STATIC-FOOTPRINT-Q1 (FALA 526): współdzielenie materiałów modeli daje ok. −10 MB pamięci w t.100, ale zmienia 51 z 1,6 mln pikseli (three.js sortuje rysowanie po id materiału; współpłaszczyznowe ściany rozstrzygają się inaczej). A) odrzucone (wdrożone): obraz identyczny piksel w piksel, −75 MB; B) wdrożyć wspólne materiały: dodatkowe −10 MB, 51 pikseli różnicy w nakładających się ścianach. Rekomendacja orkiestratora: A.
