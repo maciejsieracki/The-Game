@@ -1,0 +1,5 @@
+[perf] build identity: {"reused":"/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cand-build","gitHead":"3f6f6ec77bfff53f6f18080d99a0cb6985b780ba"}
+[perf] micro hist0 {"updateHud":"26.1/29.7/34.5","buildHudState":"9.5/10.5/16.5","collectTurnEvents":"13.3/13.9/14.8","territoryBorder":"4/4.2/4.6","refreshFog":"70.8/80.1/95.3"}
+[perf] micro hist0.5 {"updateHud":"26.1/28.2/50.4","buildHudState":"9/9.3/9.8","collectTurnEvents":"11.6/12.4/14.1","territoryBorder":"3.8/4/4.3","refreshFog":"70.5/89.3/123.8"}
+[perf] micro hist1 {"updateHud":"25.6/28.2/52.6","buildHudState":"9.4/9.7/10.3","collectTurnEvents":"12.2/15.4/23.3","territoryBorder":"5.7/5.8/6.4","refreshFog":"91.8/113.1/137.7"}
+[perf] result written: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cand-scale.json

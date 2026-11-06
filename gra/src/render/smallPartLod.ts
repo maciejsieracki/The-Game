@@ -60,7 +60,7 @@ export class SmallPartLod {
     camDist: number,
     fovDeg: number,
     viewportH: number,
-    minPx = 3,
+    minPx = 2,
   ): void {
     const worldPerPx = (2 * camDist * Math.tan((fovDeg * Math.PI / 180) / 2)) / Math.max(1, viewportH);
     const bucket = minPx <= 0 ? -1e9 : Math.round(Math.log(Math.max(1e-6, worldPerPx)) / Math.log(BUCKET_BASE));

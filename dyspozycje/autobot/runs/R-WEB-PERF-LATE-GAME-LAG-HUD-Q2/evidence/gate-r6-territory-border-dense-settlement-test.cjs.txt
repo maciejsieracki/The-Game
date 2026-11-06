@@ -1,0 +1,18 @@
+  OK scenariusz A (populacje mieszane): wlasciciel dostaje heksy terytorium
+  OK scenariusz A (populacje mieszane): sa krawedzie brzegowe (164)
+  OK scenariusz A (populacje mieszane): traceTerritoryBoundaryLoops zwraca niepuste petle (liczba petli=1)
+  OK scenariusz A (populacje mieszane): petle pokrywaja WSZYSTKIE krawedzie (segmenty=164, krawedzie=164)
+  OK scenariusz A (populacje mieszane): brak wierzcholkow o nieparzystym stopniu (0 znalezionych, degeneracja klucza -0/0)
+  OK scenariusz B (populacja max=15): wlasciciel dostaje heksy terytorium
+  OK scenariusz B (populacja max=15): sa krawedzie brzegowe (258)
+  OK scenariusz B (populacja max=15): traceTerritoryBoundaryLoops zwraca niepuste petle (liczba petli=1)
+  OK scenariusz B (populacja max=15): petle pokrywaja WSZYSTKIE krawedzie (segmenty=258, krawedzie=258)
+  OK scenariusz B (populacja max=15): brak wierzcholkow o nieparzystym stopniu (0 znalezionych, degeneracja klucza -0/0)
+  OK scenariusz C: brak kluczy wierzcholkow "-0.00000,..." po naprawie borderVertexKey (znaleziono 0)
+  OK scenariusz C (klaster na osi zero): sa krawedzie brzegowe (164)
+  OK scenariusz C (klaster na osi zero): traceTerritoryBoundaryLoops zwraca niepuste petle (liczba petli=1)
+  OK scenariusz C (klaster na osi zero): petle pokrywaja WSZYSTKIE krawedzie (segmenty=164, krawedzie=164)
+  OK scenariusz C (klaster na osi zero): brak wierzcholkow o nieparzystym stopniu (0 znalezionych, degeneracja klucza -0/0)
+
+territory-border-dense-settlement-test: 15 pass, 0 fail
+EXIT=0

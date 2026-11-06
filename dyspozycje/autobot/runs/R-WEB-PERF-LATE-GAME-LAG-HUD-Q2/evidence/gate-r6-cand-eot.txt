@@ -1,0 +1,4 @@
+[perf] build identity: {"reused":"/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cand-build","gitHead":"3f6f6ec77bfff53f6f18080d99a0cb6985b780ba"}
+[perf] eot {"wall":15226,"jsMs":5174.7,"nativeMs":514.8,"gcMs":101.5,"glNativeMs":111.6,"cnt":{"buildHudState":7,"collectTurnEvents":21,"border":4,"refreshFog":3}}
+[perf] eot {"wall":21912,"jsMs":5092,"nativeMs":550.4,"gcMs":834.3,"glNativeMs":219,"cnt":{"buildHudState":6,"collectTurnEvents":18,"border":4,"refreshFog":3}}
+[perf] result written: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cand-eot.json
