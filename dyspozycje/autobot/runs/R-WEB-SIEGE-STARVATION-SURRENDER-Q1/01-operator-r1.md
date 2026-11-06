@@ -2,7 +2,7 @@ STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (WEB)
 TEMAT: R-WEB-SIEGE-STARVATION-SURRENDER-Q1
 GOAL: Oblężenie w 2 etapach: zapasy (garnizon zdrowy) -> głód garnizonu (6/8/10% maxHP/turę od zera zapasów) -> poddanie gdy ΣHP/startMaxHP < 0,5 (decyzja właściciela 2026-11-05).
-ZMIANY/COMMIT: baza origin/main 3aa1b3a2a; commit: patrz ostatnia linia (SHA wpisany po commicie, `git log -1` na gałęzi worktree).
+ZMIANY/COMMIT: baza origin/main 3aa1b3a2a; commit 7c23ea90ab61c5c227b0a073815b9784fabbcfd4 (SHA raportu dopisany w kolejnym commicie).
 Pliki: NOWY gra/src/game/siege-starvation.ts (czysta `siegeStarvationState`); gra/src/game/siege-surrender-forecast.ts (nowa prognoza); gra/src/main.ts (import, blok N3, plakietka `siegeSurrenderBadgeFor`, 3x kasowanie pola); gra/src/game/cities.ts (pole `siegeStarveStartMaxHp?`); gra/src/game/siege-last-stand.ts (tylko komentarz); NOWY gra/tools/siege-starvation-test.cjs; zaktualizowany gra/tools/siege-surrender-forecast-test.cjs; logi gate-*.txt. Zero zmian w turn-economy.ts, army-starvation.ts, WERSJE.md, gra-robocza, rust-port, src-tauri, battle.
 
 MECHANIZM (po zmianie):
