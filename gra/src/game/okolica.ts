@@ -783,6 +783,49 @@ export function computeLostToNearerSiblingByCity(
   cities: ReadonlyArray<Pick<City, 'id' | 'q' | 'r' | 'population' | 'ownerId'>>,
   map: GameMap,
 ): ReadonlyMap<string, ReadonlySet<string>> {
+  // R-WEB-PERF-LATE-GAME-LAG-T86-Q1: wynik jest CZYSTA funkcja (kolejnosc miast, polozenie,
+  // promien okolicy, wlasciciel, zbior heksow mapy). UI woła to per miasto gracza przy KAZDYM
+  // `syncUnitsRender`/plakietkach (`getExcludeHexKeys` -> `siblingClaimedHexKeysForCity`),
+  // czyli O(miasta_gracza x wszystkie_miasta x promien^2) na kazdy klik/ruch. Memo po
+  // sygnaturze wejscia usuwa powtorzenia; zwracane zbiory sa tylko do odczytu (ReadonlySet).
+  // / EN: pure function memoized on an input signature; same Map/Set instances are returned
+  // for equal inputs (callers treat them as read-only).
+  const sig = siblingSignature(cities);
+  // Klucz = obiekt `map.hexes` (nie sam `map`): podmiana zbioru heksow na tej samej mapie
+  // uniewaznia memo. Zalozenie (grep: brak zapisow in-place do hexes w src): hexes jest niemutowalne
+  // po utworzeniu; dopisanie klucza in-place NIE jest wykrywane.
+  const memoKey = ((map as { hexes?: object }).hexes ?? map) as object;
+  let perMap = siblingMemoByMap.get(memoKey);
+  if (!perMap) {
+    perMap = new Map();
+    siblingMemoByMap.set(memoKey, perMap);
+  }
+  const hit = perMap.get(sig);
+  if (hit) return hit;
+  const fresh = computeLostToNearerSiblingByCityUncached(cities, map);
+  if (perMap.size >= SIBLING_MEMO_MAX_ENTRIES) perMap.clear();
+  perMap.set(sig, fresh);
+  return fresh;
+}
+
+const SIBLING_MEMO_MAX_ENTRIES = 6;
+const siblingMemoByMap = new WeakMap<object, Map<string, ReadonlyMap<string, ReadonlySet<string>>>>();
+
+/** Sygnatura wejscia: kolejnosc + id/pozycja/promien/wlasciciel kazdego miasta. */
+function siblingSignature(
+  cities: ReadonlyArray<Pick<City, 'id' | 'q' | 'r' | 'population' | 'ownerId'>>,
+): string {
+  const parts: string[] = [];
+  for (const c of cities) {
+    parts.push(`${c.id}|${c.q}|${c.r}|${cityRangeForPopulation(Math.max(0, Math.floor(c.population ?? 0)))}|${c.ownerId}`);
+  }
+  return parts.join(';');
+}
+
+function computeLostToNearerSiblingByCityUncached(
+  cities: ReadonlyArray<Pick<City, 'id' | 'q' | 'r' | 'population' | 'ownerId'>>,
+  map: GameMap,
+): ReadonlyMap<string, ReadonlySet<string>> {
   const out = new Map<string, Set<string>>();
   const cityIndex = new Map<string, number>();
   cities.forEach((c, i) => cityIndex.set(c.id, i));
