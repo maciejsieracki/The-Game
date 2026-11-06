@@ -8802,3 +8802,6 @@ Dziś: magazyn żywności oblężonego miasta maleje o (ludność + garnizon)/tu
 
 ## 2026-11-05 — DECYZJA WŁAŚCICIELA: pakt o nieagresji wymaga dodatkowo Zaufania 30
 Zgłoszenie: gra pokazuje, że pakt o nieagresji dostępny „od ponad 140” Relacji. Wyjaśnienie z kodu: `progNapRelacja` = 110 (Normalny) + delta trudności (Trudny +10) + narzut +20 przy aktywnej „Karze za wspólną granicę” (`NAP_GRANICA_RELACJA_NARZUT`) = 140 (poniżej tego słodzik obniża do 110+delta). Decyzja: „Dodajmy do paktu nieagresji zaufanie, trzydzieści.” → NAP wymaga Relacji ≥ próg ORAZ Zaufania ≥ 30. Temat `R-WEB-DIPLO-NAP-TRUST-30-Q1`.
+
+## 2026-11-06 — ZGŁOSZENIE: wydajność w późnej grze (tura ~86, duża cywilizacja)
+Właściciel: gra praktycznie niegrywalna — ruch jednostek, wejście do miast i inne akcje ekstremalnie wolne. Temat R-WEB-PERF-LATE-GAME-LAG-T86-Q1 (Operator Sonnet — profilowanie). FALA 509 wdrożona (56c164df9, ROBOCZA cbb335af): panel rekrutacji + Spichlerz Królewski/Pismo.
