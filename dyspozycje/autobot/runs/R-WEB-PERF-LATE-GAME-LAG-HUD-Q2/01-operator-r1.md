@@ -48,3 +48,5 @@ Te same wyniki jak przed zmianą (pre-existing, potwierdzone w Q1): ai-fog-test 
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (przegląd inwariantów: zakres ownerScoped nie obejmuje mutacji; memo rzek; podzbiór węzłów terytorium).
 DEPLOY/PUSH: NIE WYKONANO
+
+ZMIANY/COMMIT: kod+raport+dowody 157a9dcfdadea16eaf282eac2aa203b3ddd26642 (baza origin/main 4905bac052e77cbd104b9794b304a87d8f3c9b65); drugi commit dopisuje tylko ten wiersz.
