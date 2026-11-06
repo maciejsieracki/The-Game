@@ -616,6 +616,7 @@ import {
   // T6: per-trasowa wersja tej samej premii 5% — do rozkładu dochodu w panelu imperium.
   tradeRouteBuildingBonusForRoute,
   computeTradeRouteResourceGrants,
+  memoizeOwnerResourceAccess,
   hasTradeRouteResourceAccess,
   firstTradeRouteResourceGrant,
   TRADE_ROUTE_RESOURCE_KEYS,
@@ -5235,7 +5236,8 @@ async function boot(): Promise<void> {
     /** Przelicza tradeRouteResourceGrants NA BIEŻĄCO z aktualnej `tradeRoutes` — wołaj
      *  zaraz po każdym odświeżeniu tradeRoutes (koniec tury / wczytanie zapisu / reset). */
     function recomputeTradeRouteResourceGrants(): void {
-      tradeRouteResourceGrants = computeTradeRouteResourceGrants(tradeRoutes, ownerHasNativeResourceAccess);
+      // R-WEB-LONGRUN-100-TURNS-LEAK-Q1: cache (wlasciciel, surowiec) tylko na czas tego przeliczenia.
+      tradeRouteResourceGrants = computeTradeRouteResourceGrants(tradeRoutes, memoizeOwnerResourceAccess(ownerHasNativeResourceAccess));
     }
 
     /**

@@ -1913,6 +1913,26 @@ export function computeTradeRouteResourceGrants(
   return grants;
 }
 
+/**
+ * R-WEB-LONGRUN-100-TURNS-LEAK-Q1: memoizacja `ownerHasNativeAccess` NA CZAS JEDNEGO przeliczenia grantow.
+ * `computeTradeRouteResourceGrants` pyta o ten sam (wlasciciel, surowiec) 4x na kazda trase x 5 surowcow,
+ * a kazde zapytanie w main.ts skanowalo WSZYSTKIE ulepszenia na mapie x wszystkie wezly terytorium
+ * (`placedImprovementsForOwner`) -- ok. 1/2 czasu tury w t.~95 (profil CPU). Stan gry nie zmienia sie w trakcie
+ * jednego przeliczenia, wiec wynik jest identyczny; cache zyje tylko w zamknieciu zwroconej funkcji
+ * (utworz nowy na kazde przeliczenie -- NIE trzymaj go miedzy turami).
+ */
+export function memoizeOwnerResourceAccess(
+  fn: (ownerId: number, resourceKey: TradeRouteResourceKey) => boolean,
+): (ownerId: number, resourceKey: TradeRouteResourceKey) => boolean {
+  const memo = new Map<string, boolean>();
+  return (ownerId, resourceKey) => {
+    const k = `${ownerId}|${resourceKey}`;
+    let v = memo.get(k);
+    if (v === undefined) { v = fn(ownerId, resourceKey); memo.set(k, v); }
+    return v;
+  };
+}
+
 /** Czy `ownerId` ma (dowolny) grant "z trasy" na `resourceKey`. */
 export function hasTradeRouteResourceAccess(
   grants: readonly TradeRouteResourceGrant[],
