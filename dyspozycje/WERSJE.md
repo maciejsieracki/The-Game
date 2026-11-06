@@ -1,3 +1,9 @@
+## ROBOCZA 1ab8f82e -- 2026-11-06 -- FALA 518: powiadomienia: zakładki Dyplomacja/Ważne/Inne, mniej szumu (testowa)
+
+- R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 — panel Wydarzenia ma 3 zakładki (Dyplomacja, Ważne, Inne) zamiast chipa „Inne cyw.”; przycisk „Zamknij wszystkie informacyjne” nad zakładkami; usunięty szum u źródła (auto-ulepszenia, wycinka, nowy szlak handlowy, Dotarło do celu); pomiar 30 tur: 63→2 i 58→3 wpisy informacyjne
+- Weryfikacja: tsc PASS; klasyfikator eventTabOf PASS (9 mutacji); notification-tabs 29/0; events-toolbar 25/0; wyrab-wycinka-nazwa-live 49/0; Chromium real-render wg Operatora
+- Limity: Pomiar tylko 2 ziarna × 30 spokojnych tur (bez wojny); eventTabOf ma kilka fałszywych trafień słów kluczowych (naprawione częściowo)
+
 ## ROBOCZA bb025154 -- 2026-11-06 -- FALA 517: odlewnie ×2 cykle i mnożnik epoki (testowa)
 
 - R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 — Odlewnia brązu, Odlewnia żelaza i Wielka odlewnia: przepustowość 25→50 cykli/turę oraz mnożnik epoki właściciela 1/1,5/2/2,5/3 (gracz i AI); receptury i koszty bez zmian; huta płaska
