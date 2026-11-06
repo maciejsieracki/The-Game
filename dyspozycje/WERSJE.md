@@ -1,3 +1,9 @@
+## ROBOCZA 7b1663df -- 2026-11-06 -- FALA 511: oblężenie: etap zapasów i głód garnizonu (testowa)
+
+- R-WEB-SIEGE-STARVATION-SURRENDER-Q1 — oblężenie w dwóch etapach: zapasy (garnizon zdrowy), potem głód garnizonu 6/8/10% maxHP na turę; poddanie gdy ΣHP spadnie poniżej 50% stanu z początku głodu; plakietka z nową prognozą
+- Weryfikacja: tsc PASS; siege-starvation 54/0; siege-surrender-forecast 57/0; siege-* 0 FAIL; ai-test 274/20 = baseline
+- Limity: Brak pomiaru PRZED/PO w Chromium; glod-wojska-karencja 10 FAIL sprzed zmiany
+
 ## ROBOCZA 88d4a39c -- 2026-11-06 -- FALA 510: zwiadowca nie jest liderem armii (testowa)
 
 - R-WEB-ARMY-SCOUT-NOT-LEADER-Q1 — zwiadowca w armii nie jest liderem ani kotwicą ataku (miasto i jednostka), armia działa jak najsilniejsza jednostka bojowa, zwiadowca tylko poszerza widoczność

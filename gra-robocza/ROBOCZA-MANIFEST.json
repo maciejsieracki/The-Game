@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "88d4a39c506df7bbe330ba6008d68707",
-  "bundleSha256": "bfa894b975fc76aa293b2d896e7009d0c5670279d81fca25c1905d0a6e5239e4",
-  "bundleBytes": 70266788,
+  "bundleMd5": "7b1663dfde294f158e3dc47dc0df4d75",
+  "bundleSha256": "a869277e4ce7ceeb71936d04214fb85c36267983f7df2ad625df210f59ff90e3",
+  "bundleBytes": 70269720,
   "sourceSnapshot": {
-    "source": "main 56c164df9 + SCOUT (40dab0350)",
+    "source": "main d3e88b7d9 + STARVE (cbe2d4f01)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 510: R-WEB-ARMY-SCOUT-NOT-LEADER-Q1 — zwiadowca w armii nie jest liderem ani kotwicą ataku (miasto i jednostka), armia działa jak najsilniejsza jednostka bojowa, zwiadowca tylko poszerza widoczność"
+    "FALA 511: R-WEB-SIEGE-STARVATION-SURRENDER-Q1 — oblężenie w dwóch etapach: zapasy (garnizon zdrowy), potem głód garnizonu 6/8/10% maxHP na turę; poddanie gdy ΣHP spadnie poniżej 50% stanu z początku głodu; plakietka z nową prognozą"
   ],
   "verification": [
-    "tsc PASS; army-scout-not-leader 19/0; ai-test 274/20 = baseline"
+    "tsc PASS; siege-starvation 54/0; siege-surrender-forecast 57/0; siege-* 0 FAIL; ai-test 274/20 = baseline"
   ],
   "limits": [
-    "Brak zrzutu Chromium panelu armii"
+    "Brak pomiaru PRZED/PO w Chromium; glod-wojska-karencja 10 FAIL sprzed zmiany"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-06T00:25:21",
+  "hubGeneratedAt": "2026-11-06T00:42:29",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "88d4a39c506df7bbe330ba6008d68707",
-      "sizeBytes": 70266788
+      "md5": "7b1663dfde294f158e3dc47dc0df4d75",
+      "sizeBytes": 70269720
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "88d4a39c506df7bbe330ba6008d68707",
-      "sizeBytes": 70266788
+      "md5": "7b1663dfde294f158e3dc47dc0df4d75",
+      "sizeBytes": 70269720
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "88d4a39c506df7bbe330ba6008d68707",
-      "sizeBytes": 70266788
+      "md5": "7b1663dfde294f158e3dc47dc0df4d75",
+      "sizeBytes": 70269720
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "88d4a39c506df7bbe330ba6008d68707",
-      "sizeBytes": 70266788
+      "md5": "7b1663dfde294f158e3dc47dc0df4d75",
+      "sizeBytes": 70269720
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "88d4a39c506df7bbe330ba6008d68707",
-      "sizeBytes": 70266788
+      "md5": "7b1663dfde294f158e3dc47dc0df4d75",
+      "sizeBytes": 70269720
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "88d4a39c506df7bbe330ba6008d68707",
-      "sizeBytes": 70266788
+      "md5": "7b1663dfde294f158e3dc47dc0df4d75",
+      "sizeBytes": 70269720
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "88d4a39c506df7bbe330ba6008d68707",
-      "sizeBytes": 70266788
+      "md5": "7b1663dfde294f158e3dc47dc0df4d75",
+      "sizeBytes": 70269720
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "88d4a39c506df7bbe330ba6008d68707",
-      "sizeBytes": 70266788
+      "md5": "7b1663dfde294f158e3dc47dc0df4d75",
+      "sizeBytes": 70269720
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "88d4a39c506df7bbe330ba6008d68707",
-      "sizeBytes": 70266788
+      "md5": "7b1663dfde294f158e3dc47dc0df4d75",
+      "sizeBytes": 70269720
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "88d4a39c506df7bbe330ba6008d68707",
-      "sizeBytes": 70266788
+      "md5": "7b1663dfde294f158e3dc47dc0df4d75",
+      "sizeBytes": 70269720
     }
   ],
-  "md5": "88d4a39c506df7bbe330ba6008d68707",
+  "md5": "7b1663dfde294f158e3dc47dc0df4d75",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
