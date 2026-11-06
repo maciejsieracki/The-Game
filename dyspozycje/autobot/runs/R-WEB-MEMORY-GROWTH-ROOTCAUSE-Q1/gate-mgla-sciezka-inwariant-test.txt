@@ -4,7 +4,7 @@ KOMENDA: grep -rnE '\.(q|r)[[:space:]]*=[^=>]' gra/src --include=*.ts
 ========================================================================
 
 [1] SKAN NEGATYWNY gra/src -- ZERO niesklasyfikowanych zapisow pozycji jednostki
-  FAIL: [1] kazdy zapis pozycji jednostki w gra/src jest jawnie sklasyfikowany w KLASYFIKACJA (nowe trafienie = nowe miejsce przemieszczenia -> sklasyfikuj albo domknij odkryciem) -- ["src/battle/battleScene.ts:8534 ru.q = col;","src/battle/battleScene.ts:8535 ru.r = row;","src/game/siege-enter-city.ts:88 u.q = city.q;","src/game/siege-enter-city.ts:89 u.r = city.r;","src/main.ts:25998 if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }","src/main.ts:34264 u.q = mv.q;","src/main.ts:34265 u.r = mv.r;"]
+  FAIL: [1] kazdy zapis pozycji jednostki w gra/src jest jawnie sklasyfikowany w KLASYFIKACJA (nowe trafienie = nowe miejsce przemieszczenia -> sklasyfikuj albo domknij odkryciem) -- ["src/battle/battleScene.ts:8534 ru.q = col;","src/battle/battleScene.ts:8535 ru.r = row;","src/game/siege-enter-city.ts:88 u.q = city.q;","src/game/siege-enter-city.ts:89 u.r = city.r;","src/main.ts:25990 if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }","src/main.ts:34256 u.q = mv.q;","src/main.ts:34257 u.r = mv.r;"]
   FAIL: [1] whitelist nie zawiera MARTWYCH wpisow (kod zniknal, uzasadnienie zostalo) -- inaczej bramka po cichu traci pokrycie -- ["src/battle/battleScene.ts ru.r = wallRow; #1"]
   OK: [1] kazdy wpis whitelisty ma niepuste uzasadnienie (zakaz wpisow „zeby przeszlo")
 
@@ -19,7 +19,7 @@ KOMENDA: grep -rnE '\.(q|r)[[:space:]]*=[^=>]' gra/src --include=*.ts
   OK: [1c] whitelist notacji nawiasowej nie zawiera MARTWYCH wpisow
   OK: [1c] kazdy wpis whitelisty nawiasowej ma niepuste uzasadnienie
   OK: [1c] sanity: skaner nawiasowy widzi co najmniej tyle trafien, ile ma whitelist (dzis 6: 4x render/cities.ts + 2x manualBattle.ts) -- asercja wyzej nie jest pusta ani slepa
-  FAIL: [1c] ZERO wywolan `Object.assign(cel, ...)` z celem innym niz `*.style` w gra/src -- `Object.assign(u, { q, r })` zapisuje pozycje jednostki niewidocznie dla wzorca `.q =` -- ["src/main.ts:27713 Object.assign(snap.meta as any, ..."]
+  FAIL: [1c] ZERO wywolan `Object.assign(cel, ...)` z celem innym niz `*.style` w gra/src -- `Object.assign(u, { q, r })` zapisuje pozycje jednostki niewidocznie dla wzorca `.q =` -- ["src/main.ts:27705 Object.assign(snap.meta as any, ..."]
   OK: [1c] ZERO przypisan ZLOZONYCH i inkrementacji na pozycji jednostki (`u.q += dq`, `u.q++`) w gra/src -- `u.q += 5` przesuwa o piec heksow tak samo jak `u.q = q0 + 5`
   OK: [1c] sanity: skaner Object.assign widzi realna liczbe wywolan (>= 200; na bazie 20f9993d: 244) -- asercja wyzej nie jest pusta ani slepa
 

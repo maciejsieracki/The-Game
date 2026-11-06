@@ -1,7 +1,7 @@
 [logic-test] Bundling src/ with esbuild...
-[logic-test] Bundle written to /tmp/civ-mem-q1/gate-post/tools/.logic-bundle.cjs
+[logic-test] Bundle written to /tmp/civ-mem-q1/rb/tools/.logic-bundle.cjs
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=6 terrain=19 landSea=159 relief=110 coast=23 riversMain=905 riversFill=981 forest=4 deposits=19 starts=76 total=2303
+[civ] mapGen ms | prep=3 terrain=15 landSea=157 relief=119 coast=15 riversMain=781 riversFill=956 forest=4 deposits=13 starts=76 total=2138
 PASS  [1] generateMap hexes > 100
 PASS  [2] computeStartPlacements has playerStart
 PASS  [3] computeStartPlacements aiStarts >= 3
@@ -37,7 +37,7 @@ PASS  [32] canFoundCity far from city returns ok=true
 PASS  [33] buildEconParams returns finite progWzrostuWspolczynnik
 PASS  [34] buildEconParams trade-science slider default === 20
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=1 terrain=5 landSea=91 relief=81 coast=16 riversMain=204 riversFill=673 forest=3 deposits=9 starts=59 total=1142
+[civ] mapGen ms | prep=0 terrain=4 landSea=95 relief=73 coast=25 riversMain=276 riversFill=584 forest=3 deposits=9 starts=90 total=1160
 PASS  [35] economy: player start hex resolved
 PASS  [36] economy: foundCity for tick test non-null
 PASS  [37] economy: workedTilesForCity returns 1..7 tiles
@@ -98,48 +98,48 @@ PASS  [91] player-research: getResearchState postepFraction = 0.5
 PASS  [92] player-research: getResearchState turnsLeft correct
 PASS  [93] player-research: getResearchState uses badana as fallback target
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=6 landSea=77 relief=95 coast=19 riversMain=222 riversFill=863 forest=3 deposits=9 starts=58 total=1353
+[civ] mapGen ms | prep=1 terrain=9 landSea=81 relief=89 coast=15 riversMain=216 riversFill=749 forest=3 deposits=8 starts=47 total=1219
 PASS  [94] mapgen: generated map has BOTH land and water
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=1 terrain=6 landSea=62 relief=66 coast=14 riversMain=192 riversFill=759 forest=3 deposits=15 starts=60 total=1177
+[civ] mapGen ms | prep=1 terrain=4 landSea=58 relief=79 coast=20 riversMain=240 riversFill=776 forest=3 deposits=17 starts=60 total=1258
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=3 terrain=4 landSea=61 relief=68 coast=15 riversMain=225 riversFill=767 forest=3 deposits=8 starts=49 total=1202
+[civ] mapGen ms | prep=1 terrain=7 landSea=62 relief=72 coast=15 riversMain=235 riversFill=727 forest=3 deposits=8 starts=44 total=1174
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=4 landSea=97 relief=84 coast=13 riversMain=176 riversFill=603 forest=3 deposits=8 starts=47 total=1035
+[civ] mapGen ms | prep=0 terrain=4 landSea=68 relief=62 coast=13 riversMain=164 riversFill=572 forest=3 deposits=8 starts=43 total=937
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=4 landSea=58 relief=86 coast=21 riversMain=338 riversFill=774 forest=3 deposits=7 starts=42 total=1333
+[civ] mapGen ms | prep=0 terrain=7 landSea=59 relief=65 coast=13 riversMain=270 riversFill=811 forest=4 deposits=9 starts=43 total=1281
 PASS  [95] mapgen: deposits obey terrain rules (ruda Wzgorza/Gory, glina Laka/coast/river, konie Rownina, wegiel Gory)
 PASS  [96] mapgen: at least some deposits are placed across seeds
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=4 landSea=65 relief=83 coast=20 riversMain=222 riversFill=762 forest=3 deposits=7 starts=41 total=1206
+[civ] mapGen ms | prep=1 terrain=4 landSea=67 relief=70 coast=13 riversMain=169 riversFill=767 forest=3 deposits=7 starts=43 total=1144
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=1 terrain=3 landSea=66 relief=81 coast=22 riversMain=193 riversFill=787 forest=7 deposits=6 starts=41 total=1205
+[civ] mapGen ms | prep=1 terrain=3 landSea=58 relief=66 coast=14 riversMain=156 riversFill=737 forest=3 deposits=7 starts=44 total=1088
 PASS  [97] mapgen: deposits identical for the same seed (deterministic)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=63 relief=63 coast=12 riversMain=176 riversFill=566 forest=3 deposits=8 starts=39 total=933
+[civ] mapGen ms | prep=0 terrain=3 landSea=69 relief=72 coast=17 riversMain=175 riversFill=661 forest=5 deposits=12 starts=54 total=1069
 PASS  [98] mapgen: deposits differ for a different seed
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=63 relief=61 coast=12 riversMain=149 riversFill=779 forest=3 deposits=8 starts=41 total=1119
+[civ] mapGen ms | prep=0 terrain=4 landSea=62 relief=68 coast=14 riversMain=147 riversFill=755 forest=3 deposits=7 starts=43 total=1104
 PASS  [99] mapgen: re-running placeDeposits never overwrites forest
 PASS  [100] mapgen: forest+deposit coexistence on the same hex is allowed (decyzja wlasciciela)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=7 landSea=66 relief=66 coast=12 riversMain=164 riversFill=760 forest=3 deposits=7 starts=40 total=1125
+[civ] mapGen ms | prep=0 terrain=3 landSea=63 relief=74 coast=12 riversMain=170 riversFill=855 forest=3 deposits=6 starts=44 total=1230
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=4 landSea=66 relief=63 coast=12 riversMain=193 riversFill=762 forest=3 deposits=7 starts=44 total=1153
+[civ] mapGen ms | prep=0 terrain=3 landSea=60 relief=63 coast=15 riversMain=177 riversFill=726 forest=3 deposits=7 starts=40 total=1094
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=67 relief=85 coast=12 riversMain=183 riversFill=576 forest=3 deposits=7 starts=44 total=980
+[civ] mapGen ms | prep=0 terrain=4 landSea=59 relief=61 coast=12 riversMain=163 riversFill=556 forest=3 deposits=7 starts=39 total=904
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=58 relief=63 coast=12 riversMain=258 riversFill=847 forest=3 deposits=6 starts=44 total=1295
+[civ] mapGen ms | prep=0 terrain=3 landSea=58 relief=67 coast=11 riversMain=253 riversFill=751 forest=3 deposits=7 starts=40 total=1193
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=60 relief=70 coast=12 riversMain=181 riversFill=632 forest=3 deposits=7 starts=40 total=1007
+[civ] mapGen ms | prep=0 terrain=3 landSea=58 relief=65 coast=11 riversMain=174 riversFill=681 forest=3 deposits=7 starts=40 total=1044
 PASS  [101] mapgen: startPositions has >=5 entries, all on land, pairwise distance >= absMinDist (all seeds)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=56 relief=66 coast=12 riversMain=164 riversFill=750 forest=3 deposits=7 starts=49 total=1110
+[civ] mapGen ms | prep=0 terrain=3 landSea=56 relief=63 coast=11 riversMain=162 riversFill=713 forest=3 deposits=7 starts=41 total=1061
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=56 relief=69 coast=13 riversMain=167 riversFill=756 forest=6 deposits=6 starts=47 total=1124
+[civ] mapGen ms | prep=0 terrain=3 landSea=59 relief=82 coast=11 riversMain=162 riversFill=733 forest=3 deposits=6 starts=41 total=1101
 PASS  [102] mapgen: startPositions identical for the same seed (deterministic)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=1 terrain=3 landSea=57 relief=64 coast=11 riversMain=122 riversFill=566 forest=3 deposits=7 starts=40 total=874
+[civ] mapGen ms | prep=0 terrain=3 landSea=58 relief=61 coast=11 riversMain=111 riversFill=484 forest=3 deposits=6 starts=42 total=779
 PASS  [103] mapgen: computeStartPositions helper returns >=5 land starts
 PASS  [104] siege: wall constants retired to 0 in buildings.json mury (flat bonus removed 2026-07-25)
 PASS  [105] siege: exported WALL_BASE_OBRONA/PER_LEVEL match retired (0) data defaults
@@ -241,7 +241,7 @@ PASS  [200] religion: a Swiatynia lets religion reach at least as many neighbour
 PASS  [201] religion: a city with no dominant religion does not spread
 PASS  [202] religion: makeRng (culture-religion) is a deterministic [0,1) generator for a fixed seed
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=0 terrain=3 landSea=66 relief=73 coast=12 riversMain=236 riversFill=649 forest=3 deposits=6 starts=41 total=1090
+[civ] mapGen ms | prep=0 terrain=3 landSea=59 relief=60 coast=11 riversMain=226 riversFill=619 forest=3 deposits=7 starts=39 total=1027
 PASS  [203] cityfix: found a valid founding hex in test map
 PASS  [204] cityfix: canFoundCity passes for first city (no territory restriction)
 PASS  [205] cityfix: foundCityAt returns non-null city

@@ -1,8 +1,8 @@
 Bundling unit-power.ts...
 
-  ../../unit-power-bundle-2111-frpqep.cjs  9.6kb
+  ../../unit-power-bundle-3013-dcoba2.cjs  9.6kb
 
-⚡ Done in 8ms
+⚡ Done in 6ms
   FAIL: Hastati M_pole=50 (got 57.5)
   OK: Katapulta is siege
   OK: Katapulta armyFieldPower=0 (excluded from army sum)

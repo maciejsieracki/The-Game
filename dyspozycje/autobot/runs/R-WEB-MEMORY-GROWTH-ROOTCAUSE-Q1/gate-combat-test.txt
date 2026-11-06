@@ -1,8 +1,8 @@
 Bundling combat.ts with esbuild...
 
-  ../../combat-bundle-2084-q90nuj.cjs  116.2kb
+  ../../combat-bundle-2987-u7xqhw.cjs  116.2kb
 
-⚡ Done in 57ms
+⚡ Done in 47ms
 Bundle OK.
 
 TW v3 formulas OK (hit HF=38%, dmg=4, pilum=7).
