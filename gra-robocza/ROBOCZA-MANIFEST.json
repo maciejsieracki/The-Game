@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "1106078d300aa0c5c75335033d9e7d30",
-  "bundleSha256": "060f706eac18f356a337c8b7b51ce9ffe302004415c38423980401ef713ad202",
-  "bundleBytes": 70658431,
+  "bundleMd5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+  "bundleSha256": "1f64c9b5dca967dbd7f1c5a19928e624264b4f752b4231f73235467e2fdc27e5",
+  "bundleBytes": 70661606,
   "sourceSnapshot": {
-    "source": "R-WEB-PERF-ENDTURN-AI-PHASE-Q1 99272adf8 (merge f8bf06738 na 9191f5465)",
+    "source": "R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1 3452a7f2a (merge na 6e5e7eac4)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 529: resource-access/main.ts: etykiety aktywnych surowców bez zbędnego potencjału; units/setup.ts: memo blokady oblężenia; okolica.ts: Intl.Collator + memo rodzeństwa pole po polu; memo dysków widoczności; JS końca tury mediana 5693→4571 ms (1,25×, n=9/9, host współdzielony)"
+    "FALA 530: render/materialContentPool.ts + units/cities/scene: wspólna pula materiałów per renderer, unshare przed przyciemnieniem, sortowanie jak three.js po id sprzed puli (obraz 0 px różnicy; wcześniej 51 px); unikalne materiały t.50 jednostki 7141→188, miasta 1747→135; sterta ~−6,8…−9 MB"
   ],
   "verification": [
-    "Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; tsc 0; logic 213/213; równoważność wartościowa 0 różnic (collator 23994, assignWorkedTiles 220, sibling 1320, computePath 240), 4/4 mutacje; ai-test 274/20 jak baza"
+    "Opus 5.5 Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; pixel-test 7/0, pełna klatka 0 px, 84/84 narzędzi *render* 0 regresji, tsc 0, logic 213/213"
   ],
   "limits": [
-    "GOAL 2× NIE osiągnięty (1,25×, rozrzut duży); pozostałe ~2 s w render/HUD (syncUnitsRender, renderLoop, syncStatChips) — kandydat na osobny temat"
+    "zysk MB w grze: 1 przebieg (−8,4 t.1, −5,9 t.50, szum ~3 MB); wariant B (scalenie części jednostek) NIE wdrożony — czeka na decyzję właściciela"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-06T20:56:08",
+  "hubGeneratedAt": "2026-11-06T21:41:22",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "1106078d300aa0c5c75335033d9e7d30",
-      "sizeBytes": 70658431
+      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+      "sizeBytes": 70661606
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "1106078d300aa0c5c75335033d9e7d30",
-      "sizeBytes": 70658431
+      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+      "sizeBytes": 70661606
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "1106078d300aa0c5c75335033d9e7d30",
-      "sizeBytes": 70658431
+      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+      "sizeBytes": 70661606
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "1106078d300aa0c5c75335033d9e7d30",
-      "sizeBytes": 70658431
+      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+      "sizeBytes": 70661606
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "1106078d300aa0c5c75335033d9e7d30",
-      "sizeBytes": 70658431
+      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+      "sizeBytes": 70661606
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "1106078d300aa0c5c75335033d9e7d30",
-      "sizeBytes": 70658431
+      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+      "sizeBytes": 70661606
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "1106078d300aa0c5c75335033d9e7d30",
-      "sizeBytes": 70658431
+      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+      "sizeBytes": 70661606
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "1106078d300aa0c5c75335033d9e7d30",
-      "sizeBytes": 70658431
+      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+      "sizeBytes": 70661606
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "1106078d300aa0c5c75335033d9e7d30",
-      "sizeBytes": 70658431
+      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+      "sizeBytes": 70661606
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "1106078d300aa0c5c75335033d9e7d30",
-      "sizeBytes": 70658431
+      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+      "sizeBytes": 70661606
     }
   ],
-  "md5": "1106078d300aa0c5c75335033d9e7d30",
+  "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

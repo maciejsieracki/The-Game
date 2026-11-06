@@ -1,3 +1,9 @@
+## ROBOCZA 9c024dcb -- 2026-11-06 -- FALA 530: pamięć: wspólne materiały modeli jednostek i miast (testowa)
+
+- render/materialContentPool.ts + units/cities/scene: wspólna pula materiałów per renderer, unshare przed przyciemnieniem, sortowanie jak three.js po id sprzed puli (obraz 0 px różnicy; wcześniej 51 px); unikalne materiały t.50 jednostki 7141→188, miasta 1747→135; sterta ~−6,8…−9 MB
+- Weryfikacja: Opus 5.5 Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; pixel-test 7/0, pełna klatka 0 px, 84/84 narzędzi *render* 0 regresji, tsc 0, logic 213/213
+- Limity: zysk MB w grze: 1 przebieg (−8,4 t.1, −5,9 t.50, szum ~3 MB); wariant B (scalenie części jednostek) NIE wdrożony — czeka na decyzję właściciela
+
 ## ROBOCZA 1106078d -- 2026-11-06 -- FALA 529: koniec tury: szybszy JS (ścieżki, okolica, dostęp do surowców) (testowa)
 
 - resource-access/main.ts: etykiety aktywnych surowców bez zbędnego potencjału; units/setup.ts: memo blokady oblężenia; okolica.ts: Intl.Collator + memo rodzeństwa pole po polu; memo dysków widoczności; JS końca tury mediana 5693→4571 ms (1,25×, n=9/9, host współdzielony)
