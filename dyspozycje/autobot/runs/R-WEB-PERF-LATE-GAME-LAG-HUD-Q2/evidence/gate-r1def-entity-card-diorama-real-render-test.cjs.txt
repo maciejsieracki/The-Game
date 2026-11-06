@@ -1,0 +1,77 @@
+PASS: (0) renderEntityCard nadaje nagłówkowi klasę entity-card-diorama
+PASS: (0) ENTITY_CARD_CSS zawiera regułę .entity-card-diorama
+PASS: (0) ENTITY_CARD_CSS zachowuje BAZOWĄ regułę .entity-card-header (baza trybu compact)
+PASS: (0) blok ma kotwicę początkową i końcową dla mutacji (F)
+[entity-card-diorama-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+-- (A/B/C) karta jednostki (non-compact) --
+PASS: fixture: karta jednostki zbudowana z realnych danych
+PASS: (C) medallion.kind === "unit3d" (ta sama zawartość co przed tematem)
+[unit] {"cardW":660,"headerW":658,"headerH":190,"headerDisplay":"block","headerBgImage":"radial-gradient(120% 80% at 50% 22%, rgba(88, 108, 140, 0.35), rgba(0, 0, 0, 0) 70%), linear-gradient(rgb(35, 44, 57) 0%, rgb(22, 29, 39) 55%, rgb(12, 16, 23) 100%)","hasDioramaClass":true,"medW":120,"medH":120,"medCenterOffset":0,"medTop":22,"groundVisible":"yes","titleText":"Wojownik","cardKind":"unit","titleFontSize":"19px","titleLeftInHeader":14,"titleBottomGap":12,"titleInsideHeader":true,"titlePosition":"absolute","titleTextShadow":"rgba(0, 0, 0, 0.9) 0px 2px 6px, rgba(0, 0, 0, 0.8) 0px 0px 2px","subtitleText":"Kamień · Swordsman · Miecznik","hasCanvas":true,"hasFallback":false,"hasSvg":false,"svgW":0,"isCompact":false,"childOrder":["entity-card-header","entity-card-body","entity-card-footer"],"overflowX":{"doc":0,"card":0,"header":0}}
+PASS: (A) nagłówek karty jednostki JEST diaromą (pełna szerokość, ~190px, wyśrodkowany podgląd >=90px, elipsa gruntu, overlay tytułu w lewym dolnym rogu)
+PASS: (A) tło diaromy to ciemny gradient sceny (nie płaskie tło starego nagłówka)
+PASS: (C) podgląd jednostki w diaromie to realnie zamontowany canvas 3D ALBO fallback tekstowy
+PASS: (B) tytuł karty jest niepusty i większy niż w starym nagłówku (19px)
+PASS: kolejność DOM: diorama (nagłówek) jest PIERWSZYM dzieckiem karty, przed historią i body
+PASS: kolejność DOM: entity-card-body występuje PO nagłówku
+
+-- (A/C) karta budynku i cudu (non-compact) --
+PASS: fixture: karta budynku i cudu zbudowane z realnych danych
+PASS: (C) building/wonder: medallion.kind === "icon" (bez zmian)
+[building] {"cardW":660,"headerW":658,"headerH":209,"headerDisplay":"block","headerBgImage":"radial-gradient(120% 80% at 50% 22%, rgba(88, 108, 140, 0.35), rgba(0, 0, 0, 0) 70%), linear-gradient(rgb(35, 44, 57) 0%, rgb(22, 29, 39) 55%, rgb(12, 16, 23) 100%)","hasDioramaClass":true,"medW":120,"medH":120,"medCenterOffset":0,"medTop":6,"groundVisible":"yes","titleText":"Stolarnia","cardKind":"building","titleFontSize":"19px","titleLeftInHeader":0,"titleBottomGap":1,"titleInsideHeader":true,"titlePosition":"relative","titleTextShadow":"rgba(0, 0, 0, 0.9) 0px 2px 6px, rgba(0, 0, 0, 0.8) 0px 0px 2px","subtitleText":"Produkcja","hasCanvas":false,"hasFallback":false,"hasSvg":true,"svgW":118,"isCompact":false,"childOrder":["entity-card-header","entity-card-body","entity-card-footer"],"overflowX":{"doc":0,"card":0,"header":0}}
+PASS: (A) nagłówek karty budynku JEST diaromą
+PASS: (A) nagłówek karty cudu JEST diaromą
+PASS: (C) ikona SVG budynku jest POWIĘKSZONA w diaromie (>=90px, wobec 34px sprzed tematu)
+PASS: (C) ikona SVG cudu jest POWIĘKSZONA w diaromie
+PASS: (E) 1280px: zero poziomego overflow (dokument/karta/nagłówek)
+
+-- (D) karta technologii (non-compact) — diorama 3D --
+PASS: fixture (D): karta technologii zbudowana z realnych danych
+PASS: (D) technology: medallion.kind === "icon" (jak building/wonder, bez zmian)
+[tech] {"cardW":660,"headerW":658,"headerH":190,"headerDisplay":"block","headerBgImage":"radial-gradient(120% 80% at 50% 22%, rgba(88, 108, 140, 0.35), rgba(0, 0, 0, 0) 70%), linear-gradient(rgb(35, 44, 57) 0%, rgb(22, 29, 39) 55%, rgb(12, 16, 23) 100%)","hasDioramaClass":true,"medW":120,"medH":120,"medCenterOffset":0,"medTop":22,"groundVisible":"yes","titleText":"Obróbka drewna","cardKind":null,"titleFontSize":"19px","titleLeftInHeader":14,"titleBottomGap":12,"titleInsideHeader":true,"titlePosition":"absolute","titleTextShadow":"rgba(0, 0, 0, 0.9) 0px 2px 6px, rgba(0, 0, 0, 0.8) 0px 0px 2px","subtitleText":"Epoka Kamień","hasCanvas":false,"hasFallback":false,"hasSvg":true,"svgW":118,"isCompact":false,"childOrder":["entity-card-header","entity-card-body","entity-card-footer"],"overflowX":{"doc":0,"card":0,"header":0}}
+PASS: (D) nagłówek karty technologii JEST diaromą (pełna szerokość, ~190px, wyśrodkowany podgląd >=90px, elipsa gruntu, overlay tytułu)
+PASS: (D) ikona SVG technologii jest POWIĘKSZONA w diaromie (>=90px, wobec 34px sprzed tematu diaromy)
+PASS: (D) karta technologii NIE MA klasy entity-card--compact (nic już jej nie ustawia — mechanizm usunięty)
+
+-- (D2) żywa ścieżka showTechDiscoveryNotice: diorama + przycisk zamknięcia --
+[tdn] {"ok":true,"isDioramaHeader":true,"headerH":226,"btnPosition":"absolute","btnFromRight":10,"btnFromTop":10,"btnInsideHeader":true,"svgW":118,"hitClass":"tdn-entity-close"}
+PASS: fixture (D2): showTechDiscoveryNotice wyrenderował kartę z diaromą i przyciskiem ✕
+PASS: (D2) nagłówek karty technologii w popupie showTechDiscoveryNotice JEST diaromą
+PASS: (D2) ✕ dopięty przez techDiscoveryNotice.ts ląduje w prawym górnym rogu diaromy
+PASS: (D2) elementFromPoint na środku ✕ trafia w SAM przycisk (diorama go nie przykryła)
+PASS: (D2) ikona SVG technologii w popupie ma pełny rozmiar diaromy (>=90px)
+
+-- (E) druga szerokość viewportu: 380px --
+[unit@380] {"cardW":348,"overflowX":{"doc":0,"card":0,"header":0}}
+PASS: (E) 380px: karta zwęża się wg calc(100vw - 32px), NIE zostaje przy 434px
+PASS: (E) 380px: zero poziomego overflow (dokument/karta/nagłówek)
+PASS: (E) 380px: diorama nadal poprawna (pełna szerokość karty, wyśrodkowany podgląd)
+
+-- (F) Mutacja: wycięcie bloku CSS diaromy z arkusza --
+[unit-mutated] {"headerH":62,"display":"flex","medW":34}
+PASS: (F) mutacja: nagłówek karty jednostki PRZESTAJE być diaromą (test realnie testuje)
+PASS: (F) mutacja: nagłówek wraca do starego, płaskiego wiersza (flex, <80px, medalion <=40px)
+PASS: (F) po przywróceniu arkusza diorama wraca (mutacja nie zostawiła strony w złym stanie)
+
+-- (G) żywa ścieżka showUnitInfoCardDialog: diorama + przycisk zamknięcia --
+[live-unitInfoCard] {"headerH":190,"isDioramaHeader":true,"btnPosition":"absolute","btnFromRight":10,"btnFromTop":10,"btnInsideHeader":true,"hitClass":"unit-info-card-close","medW":120}
+PASS: (G) żywy dialog karty jednostki ma nagłówek-dioramę z powiększonym podglądem
+PASS: (G) przycisk ✕ doczepiony przez unitInfoCard.ts ląduje w prawym górnym rogu diaromy
+PASS: (G) elementFromPoint na środku ✕ trafia w SAM przycisk (diorama go nie przykryła)
+
+-- (H) fallback bez WebGL wewnątrz diaromy --
+[fallback] {"sheets":["(anon)","civ-brand-root-css-w3-res","entity-card-css-under-test","civ-tech-discovery-notice-css-v3","civ-tech-discovery-entity-card-css-v1","civ-unit-info-card-entity-css-v1","civ-unit-info-card-css-v1"],"hasUnitInfoCardSheet":true,"cardIsUnit":true,"fontSize":"11px","boxW":120,"boxH":120,"scrollW":118,"scrollH":118,"clientW":118,"clientH":118,"text":"Render 3D niedostępny w tym środowisku"}
+PASS: fixture (H): mierzymy na karcie .entity-card-unit z WSTRZYKNIĘTYM arkuszem unitInfoCard (ścieżka sporna)
+PASS: (H) fallback ma rozmiar czcionki z bloku diaromy (11px), a nie 12px z unitInfoCard.ts ani 44px z rundy 1
+PASS: (H) tekst fallbacku MIEŚCI SIĘ w medalionie diaromy — zero przycięcia (scrollH <= clientH)
+PASS: (H) fallback niesie PEŁNE zdanie z call-site'ów kart encji
+
+-- (I) różnica pikselowa: elipsa gruntu vs display:none --
+[ground-diff] {"w":658,"h":191,"total":125678,"maxDelta":39,"changed":3513}
+PASS: (I) elipsa gruntu realnie zmienia obraz nagłówka — maks. różnica kanału >= 24/255 (runda 1: 8/255)
+PASS: (I) elipsa gruntu pokrywa realną, niezasłoniętą powierzchnię — >= 2000 pikseli różnicy >= 8/255
+PASS: brak błędów konsoli/pageerror w trakcie renderu
+
+[entity-card-diorama-real-render-test] 45 pass, 0 fail
+[entity-card-diorama-real-render-test] zrzuty: /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/dyspozycje/autobot/runs/R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1/dowody
+EXIT=0

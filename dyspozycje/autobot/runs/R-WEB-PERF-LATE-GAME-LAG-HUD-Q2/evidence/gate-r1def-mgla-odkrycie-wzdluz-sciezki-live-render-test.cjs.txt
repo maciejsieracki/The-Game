@@ -1,0 +1,10 @@
+[mgla-sciezka-live-render] wynik z realnej Chromium: {"beforeSize":7,"afterSize":22,"midPathHexInBefore":false,"midPathHexInAfter":true,"beforeSubsetOfAfter":true}
+  OK: zero bledow JS w trakcie renderu
+  OK: ZYWA Chromium: PO (unia sciezki) ma wiecej odkrytych heksow niz PRZED (pozycja koncowa)
+  OK: ZYWA Chromium: heks przy poczatku sciezki (1,1) NIE odkryty w PRZED (bug odtworzony wizualnie)
+  OK: ZYWA Chromium: heks przy poczatku sciezki (1,1) odkryty w PO (naprawa widoczna wizualnie)
+  OK: ZYWA Chromium: regresja -- PRZED jest podzbiorem PO (widocznosc koncowa zachowana)
+[mgla-sciezka-live-render] zrzuty zapisane w /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/dyspozycje/autobot/runs/P-MGLA-ODKRYCIE-WZDLUZ-SCIEZKI-Q1/dowody
+
+5 pass, 0 fail
+EXIT=0

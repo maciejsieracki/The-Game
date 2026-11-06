@@ -1,0 +1,12 @@
+  OK  restoreGameFromSave znaleziona
+  OK  petla po humanSeats.humanOwnerIds zerujaca cache istnieje
+  OK  setOwnerLastPracaRate(oid, 0) w petli
+  OK  setOwnerLastPracaUpkeep(oid, 0) w petli
+  OK  setOwnerLastPracaAutoUlepszeniaKoszt(oid, 0) w petli
+  OK  setOwnerLastPracaCudaKoszt(oid, 0) w petli
+  OK  setOwnerLastKultura(oid, 0) w petli
+  OK  setOwnerLastKulturaRate(oid, 0) w petli
+  OK  _lastPraca (pula) NIE zerowane w petli
+
+saveload-hud-cache-hotseat-wiring-test: 9 pass / 0 fail
+EXIT=0
