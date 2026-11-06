@@ -1866,6 +1866,14 @@ let minimapDirty = true;
 /** D11: minimapa przerysowuje 320k heksów — rób to TYLKO gdy mapa/mgła/terytorium się zmieni
  *  (wołane z refreshFog), nie na każdym odświeżeniu HUD (wejście do miasta/hover/ekonomia). */
 export function markMinimapDirty(): void { minimapDirty = true; }
+/**
+ * R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1: ramka widoku na minimapie podąża za kamerą. Wołane z renderLoop
+ * w każdej klatce; przerysowuje tylko canvas minimapy i tylko gdy prostokąt się zmienił (minimapHud.updateViewport).
+ * Sama kamera NIE ustawia `minimapDirty` (to bramka pełnego przerysowania heksów przy zmianie mgły/mapy).
+ */
+export function updateMinimapViewport(viewport: { x: number; y: number; w: number; h: number } | undefined): void {
+  minimapApi?.updateViewport(viewport);
+}
 function refreshMinimap(): void {
   if (cfg === null) return;
   if (!miniMounted) { mountMinimap(); }

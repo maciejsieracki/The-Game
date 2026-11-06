@@ -734,7 +734,7 @@ import {
   type BattleSummaryWinner,
 } from './game/battle-summary';
 import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
-import { showHud, updateHud as refreshD1bHudRaw, hideHud, markMinimapDirty } from './ui/hud';
+import { showHud, updateHud as refreshD1bHudRaw, hideHud, markMinimapDirty, updateMinimapViewport } from './ui/hud';
 import { createScopeMemo, hudPureScope, scopeObjectId } from './game/frame-memo';
 import {
   createCityListHud,
@@ -42004,6 +42004,11 @@ async function boot(): Promise<void> {
         const view = computeWaterView();
         setAmbienceWaterView(view.frac, view.wariant);
       }
+
+      // R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1: ramka widoku na minimapie podąża za kamerą w każdej klatce
+      // (przesuw, WASD, zoom, skok do miasta/jednostki). Tanie: jedno wyliczenie prostokąta i porównanie
+      // 4 liczb; minimapa przerysowuje się tylko, gdy ramka faktycznie się zmieniła (bez pełnej pętli po mapie).
+      updateMinimapViewport(computeViewport(map, cameraGroundTarget()));
 
       renderer.info.reset();
       // FPS cienie na żądanie: token jednostki (caster) rusza się co klatkę tylko podczas
