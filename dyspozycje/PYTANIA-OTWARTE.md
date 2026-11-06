@@ -32442,3 +32442,6 @@ Orkiestrator podjął poniższe wybory bez pytania (naruszenie dyscypliny ABC ws
 5. **Cegielnia** (FALA 512): ×2 wyjścia i mnożnik wyjścia 1/1,5/2/2,5/3 → era 2 ≈ 2,7× dotychczasowej produkcji (150 zamiast 55 cegieł); krzywa liniowa 1/1,5/2 daje epoka 3 vs 2 = 1,33× (zlecenie mówiło 1,5×).
 6. **Rozmywanie koni**: temat zamknięty jako duplikat (pixelRatioMax 2.0 już wdrożony); brak potwierdzenia u właściciela — prośba o zgłoszenie, jeśli rozmycie wraca (ekran, zoom).
 7. **Wydajność T86**: zmierzono tylko skalę miast; patrz R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (runda 5/5).
+
+## P-PAMIEC-WSPOLNE-MATERIALY-2026-11-06 · ABC do właściciela · STATUS: **OTWARTE** — nie blokuje
+Z R-WEB-MEMORY-STATIC-FOOTPRINT-Q1 (FALA 526): współdzielenie materiałów modeli daje ok. −10 MB pamięci w t.100, ale zmienia 51 z 1,6 mln pikseli (three.js sortuje rysowanie po id materiału; współpłaszczyznowe ściany rozstrzygają się inaczej). A) odrzucone (wdrożone): obraz identyczny piksel w piksel, −75 MB; B) wdrożyć wspólne materiały: dodatkowe −10 MB, 51 pikseli różnicy w nakładających się ścianach. Rekomendacja orkiestratora: A.
