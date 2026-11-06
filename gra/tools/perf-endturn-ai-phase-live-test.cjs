@@ -509,6 +509,7 @@ function stats(a) {
 
 async function main() {
   await build();
+  if (process.env.PERF_BUILD_ONLY === '1') { console.log('[perf] build-only done:', out); process.exit(0); }
   console.log('[perf] build identity:', JSON.stringify(build.identity));
   const browser = await chromium.launch({ headless: true, executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox', '--headless=new', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const server = http.createServer((req, res) => { res.setHeader('content-type', 'text/html; charset=utf-8'); fs.createReadStream(path.join(out, 'index.html')).pipe(res); });

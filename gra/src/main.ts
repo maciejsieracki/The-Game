@@ -155,7 +155,7 @@ import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
 import { installCivTestHooks, isCivTestEnabled } from './game/civ-test-hooks';
-import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';
+import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, siegeScopeMemo, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';
 import { enterCityAfterSurrender } from './game/siege-enter-city';
 import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';
 import type { RuntimeUnit } from './units/setup';
@@ -1106,7 +1106,7 @@ import {
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
-import { getCityResourceAccessForCity } from './game/resource-access';
+import { getCityResourceAccessForCity, getResourceAccessForCity } from './game/resource-access';
 import { cityCultureMixActive, cultureMixBreakdown, isForeignReligionDominant, resolveOwnCultureShare, stolicaEasyBonusActive } from './game/society-inputs';
 import {
   tickCityCultureReligion,
@@ -3397,7 +3397,8 @@ async function boot(): Promise<void> {
       for (const c of cities) {
         if (c.ownerId !== ownerId) continue;
         const builtIds = cityBuilt.get(c.id) ?? [];
-        const access = getCityResourceAccessForCity(
+        // Tylko `.active` — wariant active-only (bez collectDepositPotential, R3 ENDTURN-AI-PHASE-Q1).
+        const active = getResourceAccessForCity(
           {
             id: c.id,
             q: c.q,
@@ -3410,7 +3411,7 @@ async function boot(): Promise<void> {
           empireEpochForOwner(ownerId),
           { builtIds, ownerId: String(ownerId) },
         );
-        for (const l of access.active) labels.add(l);
+        for (const l of active) labels.add(l);
       }
       if (builtEmpire.has('cegielnia')) labels.add('Cegła');
       if (builtEmpire.has('garncarnia')) labels.add('Ceramika');
@@ -12042,21 +12043,41 @@ async function boot(): Promise<void> {
      *  wydzielone z `currentVisible()`, żeby `currentVisibleForOwner()` mogło dołożyć unię z
      *  widocznością gracza bez wzajemnej rekursji currentVisible()<->currentVisibleForOwner()
      *  (R-DYPLO-SOJUSZ-WIDOCZNOSC-CIAGLA-Q1 runda 2). */
+    // R-WEB-PERF-ENDTURN-AI-PHASE-Q1 (R3): dysk widoczności (q,r,sight) to czysta funkcja zbioru heksów mapy —
+    // memo (klucz = obiekt map.hexes, jak siblingMemoByMap w okolica.ts; ograniczone do 3000 wpisów).
+    // Zwraca tablicę kluczy w TEJ SAMEJ kolejności co iteracja Set z computeVisibleAt (kolejność wstawiania do wyniku bez zmian).
+    const visibleDiskMemo = new WeakMap<object, Map<number, string[]>>();
+    function visibleDiskKeys(q: number, r: number, sight: number): Iterable<string> {
+      if (!(Number.isInteger(q) && Number.isInteger(r) && Number.isInteger(sight) && sight >= 0 && sight < 64 && q > -8000 && q < 8000 && r > -8000 && r < 8000)) {
+        return computeVisibleAt(q, r, map, sight);
+      }
+      const memoKey = ((map as { hexes?: object }).hexes ?? map) as object;
+      let m = visibleDiskMemo.get(memoKey);
+      if (!m) { m = new Map(); visibleDiskMemo.set(memoKey, m); }
+      const key = ((q + 8192) * 16384 + (r + 8192)) * 64 + sight;
+      let v = m.get(key);
+      if (v === undefined) {
+        v = [...computeVisibleAt(q, r, map, sight)];
+        if (m.size >= 3000) m.clear();
+        m.set(key, v);
+      }
+      return v;
+    }
     function ownPlayerVisibleHexes(): Set<string> {
       const visible = new Set<string>();
       for (const u of units.filter(u => u.ownerId === ME())) {
         const sight = unitSight(u);
-        for (const k of computeVisibleAt(u.q, u.r, map, sight)) visible.add(k);
+        for (const k of visibleDiskKeys(u.q, u.r, sight)) visible.add(k);
       }
       for (const c of cities.filter(c => c.ownerId === ME())) {
         const kultura = (c as { kultura?: number }).kultura ?? 0;
         const sight = citySightRadius(c.population, kultura);
         if (sight <= 0) continue;
-        for (const k of computeVisibleAt(c.q, c.r, map, sight)) visible.add(k);
+        for (const k of visibleDiskKeys(c.q, c.r, sight)) visible.add(k);
       }
       // R-WEB-FORT-VISION-FOG-Q1: fort/posterunek = źródło wzroku o promieniu terytorium (5 / 3).
       for (const fs of fortSightSources(fortNodes, ME())) {
-        for (const k of computeVisibleAt(fs.q, fs.r, map, fs.radius)) visible.add(k);
+        for (const k of visibleDiskKeys(fs.q, fs.r, fs.radius)) visible.add(k);
       }
       return visible;
     }
@@ -12212,7 +12233,12 @@ async function boot(): Promise<void> {
     // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: jednostki spoza oblężonego miasta (własne /
     // sojusznicze / neutralne) nie mogą wejść na jego heks -- ani celem, ani heksem pośrednim trasy.
     // Wróg właściciela (oblegający / szturm) wchodzi. Jeden punkt dla gracza, AI i barbarzyńców.
-    setSiegeEntryBlocker((unit, q, r) => isSiegeEntryBlocked(cities, unit, q, r, areEnemyOwners));
+    // R3 ENDTURN-AI-PHASE-Q1: w zakresie computePath/computeReachable (stan miast stały) szukamy tylko wśród
+    // obleganych miast (filter zachowuje kolejność => pierwszy trafiony identyczny jak w pełnej liście).
+    setSiegeEntryBlocker((unit, q, r) => {
+      const besieged = siegeScopeMemo(() => cities.filter(c => c.oblegane === true));
+      return isSiegeEntryBlocked(besieged ?? cities, unit, q, r, areEnemyOwners);
+    });
 
     /** Czy gracz (0) jest w stanie wojny z danym właścicielem (barbarzyńcy = zawsze tak). */
     function playerIsAtWarWith(ownerId: number): boolean {
