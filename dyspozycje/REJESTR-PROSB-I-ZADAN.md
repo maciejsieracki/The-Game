@@ -8831,3 +8831,6 @@ Obowiązuje: Operator = Haiku 5.5; Obrona = ZAWSZE Haiku 5.5; Evaluator i Final 
 ### FALA 527 (2026-11-06, ROBOCZA 1a7efcf5, main f0cd6edd3)
 R-WEB-MEMORY-DATA-URI-DUPLICATES-Q1 — PASS (Opus 5.5 wszystkie etapy): dane base64 (mp3/png/jpg) poza JS (elementy octet-stream + wspólne Blob); sterta po GC −125 MB (t.1 213,7→88,3; t.50 302,4→178,6); 0 px różnicy menu/mapa. t.100 NIE_ZMIERZONO. Raw MD5 zgodny.
 Nowe zgłoszenie: R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1 (ramka minimapy nie podąża za kamerą) — w toku. EOTAI R2 FAIL (martwy kod) → R3 w toku.
+
+### FALA 528 (2026-11-06, ROBOCZA 963a8fb8, main 9191f5465)
+R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1 — PASS-WITH-NOTES: ramka widoku minimapy podąża za kamerą (przyczyna: minimapę odświeżał tylko refreshFog). Test 12/12 + mutacja; Chromium: ramka 108→18 px, zoom 46×22→51×24. Perf klatki NIE_ZMIERZONO. Raw MD5 zgodny.
