@@ -97,6 +97,8 @@ const MEASURE = () => {
       x: r.x, y: r.y, w: r.width,
       fontVal: parseFloat(getComputedStyle(val).fontSize),
       gap: fr.left - vr.right,
+      padL: c.querySelector('.civ-hud-chip-med').getBoundingClientRect().left - r.left,
+      padR: r.right - c.querySelector('.civ-hud-chip-body').getBoundingClientRect().right,
       hasRate: !!rate, hasNet: !!net,
       rate: rate ? rate.textContent : null, net: net ? net.textContent : null,
       over,
@@ -113,7 +115,7 @@ async function main() {
   const jsBase = path.join(TMP, 'bundle-base.js');
   const jsNew = path.join(TMP, 'bundle-new.js');
   await bundle(HUD_BASE, jsBase, 'base');
-  await bundle(HUD_NEW, jsNew, 'new', process.env.HUD_EXTRA_CSS || '');
+  await bundle(HUD_NEW, jsNew, 'new', (process.env.HUD_EXTRA_CSS_FILE ? fs.readFileSync(process.env.HUD_EXTRA_CSS_FILE, 'utf8') : (process.env.HUD_EXTRA_CSS || '')));
   const { chromium } = require(path.join(GRA, 'node_modules', 'playwright'));
   const br = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox', '--headless=new'] });
   const res = {};
@@ -158,10 +160,17 @@ async function main() {
       ok(same, `${w}/${st}: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12`, ORDER.map((n) => [m.cells[n].x, m.cells[n].y, m.cells[n].w]));
       ok(Math.abs(m.banner.h - small.banner.h) < 0.5, `${w}/${st}: B3 wysokosc banera stala`, [m.banner.h, small.banner.h]);
     }
-    // B4 cel 2: przerwa <= 6 px
+    // B4 cel 2 (r3): liczba i przyrosty ZWARTO (przerwa <= 6 px) + grupa wycentrowana (symetria lewo/prawo <= 2 px)
     const gaps = ORDER.map((n) => [n, +small.cells[n].gap.toFixed(1), +res['after/' + w + '/huge'].cells[n].gap.toFixed(1)]);
     const worst = Math.max(...Object.keys(STATES).flatMap((st) => ORDER.map((n) => res['after/' + w + '/' + st].cells[n].gap)));
-    ok(worst <= 6, `${w}: B4 cel 2 przerwa miedzy liczba a przyrostami <= 6 px (max ${worst.toFixed(1)} px)`, gaps);
+    ok(worst <= 6, `${w}: B4 przerwa miedzy liczba a przyrostami <= 6 px (max ${worst.toFixed(1)} px)`, gaps);
+    const asym = Math.max(...Object.keys(STATES).flatMap((st) => ORDER.map((n) => { const c = res['after/' + w + '/' + st].cells[n]; return Math.abs(c.padL - c.padR); })));
+    ok(asym <= 2, `${w}: B4 symetria pustej przestrzeni lewo/prawo w zetonie <= 2 px (max ${asym.toFixed(1)} px)`, ORDER.map((n) => [n, +small.cells[n].padL.toFixed(1), +small.cells[n].padR.toFixed(1)]));
+    const huge = res['after/' + w + '/huge'];
+    const minSideHuge = Math.min(...ORDER.map((n) => huge.cells[n].padL));
+    console.log(`   puste boki zetonu (12): ${ORDER.map((n) => small.cells[n].padL.toFixed(0)).join(' ')} | (2,3M): ${ORDER.map((n) => huge.cells[n].padL.toFixed(0)).join(' ')}  [px na strone; symetryczne]`);
+    // przy 1366 i mniej (ogromne liczby wypelniaja najszerszy zeton): puste boki <= 12 px (+3 tolerancji); 1920: baner pelnej szerokosci (N6), tylko raport
+    if (w <= 1366) ok(minSideHuge <= 15, `${w}: B4 puste boki najciasniejszego zetonu (2,3M) <= ~12 px (min ${minSideHuge.toFixed(1)})`);
     // B5 brutto/netto widoczne
     ok(ORDER.every((n) => small.cells[n].hasRate && small.cells[n].hasNet), `${w}: B5 kazda komorka ma brutto i netto`);
     console.log(`   PRZED font: ${ORDER.map((n) => bsmall.cells[n].fontVal).join(' ')} | PO font: ${ORDER.map((n) => small.cells[n].fontVal).join(' ')}`);

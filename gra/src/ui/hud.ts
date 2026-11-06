@@ -655,8 +655,8 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 8px;}
 .civ-hud .hud-chip-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;
   column-gap:10px;row-gap:3px;align-items:center;}
-.civ-hud .civ-hud-chip-line{display:flex;align-items:baseline;gap:6px;min-width:0;min-height:calc(var(--hud-cell-val) * 1.05);}
-.civ-hud .civ-hud-chip-figs{display:inline-flex;align-items:baseline;gap:2px;flex-shrink:0;margin-left:auto;font-size:var(--hud-cell-sm);}
+.civ-hud .civ-hud-chip-line{display:flex;align-items:baseline;gap:4px;min-width:0;min-height:calc(var(--hud-cell-val) * 1.05);}
+.civ-hud .civ-hud-chip-figs{display:inline-flex;align-items:baseline;gap:2px;flex-shrink:0;font-size:var(--hud-cell-sm);}
 .civ-hud .civ-hud-chip-fsep{color:#968c7c;font-size:var(--hud-cell-sm);}
 .civ-hud .civ-hud-chip-figs .civ-hud-chip-rate.neg{color:var(--civ-hud-shortage,#ee6c6c);}
 .civ-hud .civ-hud-chip-figs .civ-hud-chip-rate.zero{color:#968c7c;}
@@ -664,7 +664,9 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 /* Wąskie okno (≤ 860 px): kolumna ~50–80 px nie mieści „wartość + dwa przyrosty" w jednej linii,
    więc stała trójwierszowa kolumna: etykieta / wartość / przyrosty (zawsze te same 3 linie — wysokość
    nie zależy od liczb, bez zawijania). */
-.civ-hud .civ-hud-chip-cell{display:grid;grid-template-columns:var(--hud-cell-med) minmax(0,1fr);
+/* R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1 r3: medalion + liczba + przyrosty ZWARTO (bez margin-left:auto)
+   i wycentrowane w zetonie — puste miejsce rozkłada sie symetrycznie po bokach, nie w srodku. */
+.civ-hud .civ-hud-chip-cell{display:grid;grid-template-columns:var(--hud-cell-med) minmax(0,max-content);justify-content:center;
   column-gap:5px;align-items:center;width:100%;min-width:0;overflow:hidden;white-space:nowrap;}
 .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 3px;margin:0;width:100%;}
 .civ-hud .civ-hud-chip-cell .civ-hud-chip-med{width:var(--hud-cell-med);height:var(--hud-cell-med);}
