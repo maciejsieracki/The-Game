@@ -13,7 +13,8 @@
  *   B. Wartości bazowe w REALNYM econ-params.json (wszystkie trudności, real
  *      data, nie mock) -- ten sam plik, który czyta silnik.
  *   C. converterThroughputForEra (funkcja czysta) -- Cegielnia/Garncarnia
- *      +10% bazy ADDYTYWNIE/epokę; Odlewnie płaskie; brzegi (era<1, era=NaN,
+ *      +10% bazy ADDYTYWNIE/epokę; Odlewnie: cykle x m(e) = 1/1,5/2/2,5/3
+ *      (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1); Huta płaska; brzegi (era<1, era=NaN,
  *      baza niecałkowita + interakcja z Math.floor w runConverter).
  *   D. Regresja: reprodukcja starego bledu (throughput niedoskalowany dla
  *      Cegielni/Garncarni po awansie epoki) na WŁASNYM, minimalnym dowodzie
@@ -21,9 +22,9 @@
  *   E. Integracja PEŁNA (esbuild-bundle-real-source, advanceCityEconomy):
  *      PARYTET AI -- gracz (ownerId=0, era 1) i AI (ownerId=7, era 3) w
  *      JEDNYM wywołaniu advanceCityEconomy, Cegielnia/Garncarnia skalują się
- *      per-owner, Odlewnia_brazu zostaje płaska dla OBU (dowód, że "Odlewnie
- *      NIE skalują się" trzyma się w realnym silniku, nie tylko w izolowanej
- *      funkcji czystej).
+ *      per-owner, Odlewnia_brazu skaluje cykle m(e) PER-OWNER dla OBU
+ *      (gracz era1 = 50, AI era3 = 100; ta sama funkcja, inny owner-era --
+ *      dowód parytetu w realnym silniku, nie tylko w izolowanej funkcji czystej).
  *
  * Save/load: mechanizm NIE dodaje żadnego nowego trwałego pola stanu --
  * przepustowość jest przeliczana co turę z (a) econ-params.json [PT] i (b)
