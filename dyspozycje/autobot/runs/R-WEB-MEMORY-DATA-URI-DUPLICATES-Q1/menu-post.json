@@ -1,0 +1,1101 @@
+{
+ "dist": "/tmp/civ-mem3-post",
+ "htmlBytes": 70656215,
+ "dataEls": 106,
+ "dataChars": 62682148,
+ "mainBundleChars": 7960712,
+ "menuMs": 7272,
+ "heapGC_MB": 25.9,
+ "cdpHeap_MB": {
+  "usedSize": 16.5,
+  "totalSize": 20.2,
+  "embedderHeapUsedSize": 2.5,
+  "backingStorageSize": 9.4
+ },
+ "pss": {
+  "totalMB": 371.6,
+  "byTypeMB": {
+   "browser": 100,
+   "utility": 45,
+   "zygote": 15,
+   "renderer": 136.3,
+   "gpu-process": 75.3
+  }
+ },
+ "strings": {
+  "gt1MB": {
+   "n": 0,
+   "bytes": 0,
+   "MB": 0
+  },
+  "gt100KB": {
+   "n": 3,
+   "bytes": 728056,
+   "MB": 0.7
+  },
+  "base64gt1MB": {
+   "n": 0,
+   "bytes": 0,
+   "MB": 0
+  },
+  "base64gt100KB": {
+   "n": 0,
+   "bytes": 0,
+   "MB": 0
+  },
+  "list": [],
+  "snapshotTotalMB": 25.4
+ },
+ "audio": [
+  {
+   "file": "src/audio/utwory/kamien/Bellows_and_Soil.mp3",
+   "bytes": 634896,
+   "duration": 26.20075,
+   "decoded": {
+    "length": 1155456,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Beneath_the_High_Ridge.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Bone_and_Branch.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Casting_the_Blade.mp3",
+   "bytes": 662482,
+   "duration": 27.350167,
+   "decoded": {
+    "length": 1206144,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Crucible_Of_The_Forge.mp3",
+   "bytes": 644300,
+   "duration": 26.592583,
+   "decoded": {
+    "length": 1172736,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Embers_at_Nightfall.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/First_Light_in_the_Basin.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/First_Light_of_the_Valley.mp3",
+   "bytes": 726429,
+   "duration": 30.014625,
+   "decoded": {
+    "length": 1323648,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Forging_the_Canopy.mp3",
+   "bytes": 651197,
+   "duration": 26.879958,
+   "decoded": {
+    "length": 1185408,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Hammer_and_Stone.mp3",
+   "bytes": 620477,
+   "duration": 25.599958,
+   "decoded": {
+    "length": 1128960,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Harvest_at_the_Riverbank.mp3",
+   "bytes": 689440,
+   "duration": 28.473417,
+   "decoded": {
+    "length": 1255680,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Hearth_and_Bone.mp3",
+   "bytes": 688813,
+   "duration": 28.447292,
+   "decoded": {
+    "length": 1254528,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Last_Campfire_Watch.mp3",
+   "bytes": 638658,
+   "duration": 26.3575,
+   "decoded": {
+    "length": 1162368,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Midday_at_the_Forge.mp3",
+   "bytes": 689440,
+   "duration": 28.473417,
+   "decoded": {
+    "length": 1255680,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Mist_on_the_Water.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Morning_at_the_Gorge.mp3",
+   "bytes": 688813,
+   "duration": 28.447292,
+   "decoded": {
+    "length": 1254528,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Mud_and_Bone.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Ochre_and_Ash.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Packing_the_Earth_Floor.mp3",
+   "bytes": 671886,
+   "duration": 27.742,
+   "decoded": {
+    "length": 1223424,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Stacks_of_Bronze.mp3",
+   "bytes": 685051,
+   "duration": 28.290542,
+   "decoded": {
+    "length": 1247616,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Stone_and_Seed.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/The_Hearth_s_Morning_Work.mp3",
+   "bytes": 664989,
+   "duration": 27.454625,
+   "decoded": {
+    "length": 1210752,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/The_Ninth_Hearth.mp3",
+   "bytes": 691948,
+   "duration": 28.577917,
+   "decoded": {
+    "length": 1260288,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Valley_Awakening.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/kamien/Where_The_Tall_Grass_Bends.mp3",
+   "bytes": 668751,
+   "duration": 27.611375,
+   "decoded": {
+    "length": 1217664,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/A_Kingdom_s_Final_Rite.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Before_the_Bronze_Wall.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Before_the_Forge.mp3",
+   "bytes": 744608,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Beneath_the_Cairn.mp3",
+   "bytes": 737085,
+   "duration": 30.458708,
+   "decoded": {
+    "length": 1343232,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Breath_of_the_Bone_Flute.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Bronze_and_Brine.mp3",
+   "bytes": 743355,
+   "duration": 30.719958,
+   "decoded": {
+    "length": 1354752,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Copper_Weight_of_Noon.mp3",
+   "bytes": 744608,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Fields_of_Copper_Bells.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/First_Light_on_River_Stone.mp3",
+   "bytes": 702606,
+   "duration": 29.022,
+   "decoded": {
+    "length": 1279872,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/First_Light_on_Stone.mp3",
+   "bytes": 744608,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Forge_at_Dusk.mp3",
+   "bytes": 696336,
+   "duration": 28.76075,
+   "decoded": {
+    "length": 1268352,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Rites_of_the_Bronze_Throne.mp3",
+   "bytes": 717652,
+   "duration": 29.648917,
+   "decoded": {
+    "length": 1307520,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Spears_Against_Timber.mp3",
+   "bytes": 744608,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Sunlight_on_Bronze.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/The_Copper_Vanguard.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/The_Merchant_s_Quay.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/The_Silent_Accord.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/The_Smiths_Measure.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Throne_of_Bronze.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Tracking_The_Herd.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Valley_of_First_Light.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/Watching_the_Stone_Gate.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/braz/When_the_River_Took.mp3",
+   "bytes": 744608,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/intro/Ascent_to_Zenith.mp3",
+   "bytes": 728937,
+   "duration": 30.119125,
+   "decoded": {
+    "length": 1328256,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/intro/Dawn_of_the_Architect.mp3",
+   "bytes": 731445,
+   "duration": 30.223625,
+   "decoded": {
+    "length": 1332864,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/intro/Prayer_of_the_Sun_Stone.mp3",
+   "bytes": 713264,
+   "duration": 29.466083,
+   "decoded": {
+    "length": 1299456,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/intro/Seven_Hills_Rising.mp3",
+   "bytes": 732072,
+   "duration": 30.24975,
+   "decoded": {
+    "length": 1334016,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/dyplomacja/Gilded_Porticos.mp3",
+   "bytes": 709502,
+   "duration": 29.309333,
+   "decoded": {
+    "length": 1292544,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/dyplomacja/rzymianie/Imperial_Accord.mp3",
+   "bytes": 686305,
+   "duration": 28.342792,
+   "decoded": {
+    "length": 1249920,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/dyplomacja/rzymianie/Portico_of_the_Consul.mp3",
+   "bytes": 700725,
+   "duration": 28.943625,
+   "decoded": {
+    "length": 1276416,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/prebattle/Song_of_the_Ancient_Hearth.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/bitwa/Before_the_Bronze_Gate.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/zwyciestwo/Where_the_Reed_Bends.mp3",
+   "bytes": 695709,
+   "duration": 28.734625,
+   "decoded": {
+    "length": 1267200,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  },
+  {
+   "file": "src/audio/utwory/porazka/Sun_on_the_Copper_Ridge.mp3",
+   "bytes": 744610,
+   "duration": 30.772167,
+   "decoded": {
+    "length": 1357056,
+    "channels": 2,
+    "sampleRate": 44100
+   }
+  }
+ ],
+ "images": [
+  {
+   "file": "src/assets/portrety/portrait-asyria-braz.jpg",
+   "bytes": 10836,
+   "w": 256,
+   "h": 256,
+   "pixSha": "10133fad0c96da35"
+  },
+  {
+   "file": "src/assets/portrety/portrait-asyria-kamien.jpg",
+   "bytes": 8866,
+   "w": 256,
+   "h": 256,
+   "pixSha": "a6e59203d7eee745"
+  },
+  {
+   "file": "src/assets/portrety/portrait-asyria-zelazo.jpg",
+   "bytes": 9967,
+   "w": 256,
+   "h": 256,
+   "pixSha": "3a402dfbfe59e28e"
+  },
+  {
+   "file": "src/assets/portrety/portrait-babilonia-braz.jpg",
+   "bytes": 11584,
+   "w": 256,
+   "h": 256,
+   "pixSha": "f36f44172e47ee7e"
+  },
+  {
+   "file": "src/assets/portrety/portrait-babilonia-kamien.jpg",
+   "bytes": 8518,
+   "w": 256,
+   "h": 256,
+   "pixSha": "2634b6a81266ae0a"
+  },
+  {
+   "file": "src/assets/portrety/portrait-babilonia-zelazo.jpg",
+   "bytes": 9997,
+   "w": 256,
+   "h": 256,
+   "pixSha": "696a8cf9a4b9847d"
+  },
+  {
+   "file": "src/assets/portrety/portrait-celtowie-braz.jpg",
+   "bytes": 9944,
+   "w": 256,
+   "h": 256,
+   "pixSha": "f8d0a6e0317d610a"
+  },
+  {
+   "file": "src/assets/portrety/portrait-celtowie-kamien.jpg",
+   "bytes": 8577,
+   "w": 256,
+   "h": 256,
+   "pixSha": "d203c3436f1e3668"
+  },
+  {
+   "file": "src/assets/portrety/portrait-celtowie-zelazo.jpg",
+   "bytes": 9839,
+   "w": 256,
+   "h": 256,
+   "pixSha": "f2a41e2ed3d9d264"
+  },
+  {
+   "file": "src/assets/portrety/portrait-chinczycy-braz.jpg",
+   "bytes": 10119,
+   "w": 256,
+   "h": 256,
+   "pixSha": "ed2da88f9e7ee289"
+  },
+  {
+   "file": "src/assets/portrety/portrait-chinczycy-kamien.jpg",
+   "bytes": 7922,
+   "w": 256,
+   "h": 256,
+   "pixSha": "aed233159037d163"
+  },
+  {
+   "file": "src/assets/portrety/portrait-chinczycy-zelazo.jpg",
+   "bytes": 9772,
+   "w": 256,
+   "h": 256,
+   "pixSha": "457e5db4b4d123a0"
+  },
+  {
+   "file": "src/assets/portrety/portrait-egipt-braz.jpg",
+   "bytes": 12337,
+   "w": 256,
+   "h": 256,
+   "pixSha": "9c08ee22fe74237b"
+  },
+  {
+   "file": "src/assets/portrety/portrait-egipt-kamien.jpg",
+   "bytes": 9787,
+   "w": 256,
+   "h": 256,
+   "pixSha": "0dad3e2568d940f3"
+  },
+  {
+   "file": "src/assets/portrety/portrait-egipt-zelazo.jpg",
+   "bytes": 11854,
+   "w": 256,
+   "h": 256,
+   "pixSha": "2a9edc49be726b6c"
+  },
+  {
+   "file": "src/assets/portrety/portrait-fenicjanie-braz.jpg",
+   "bytes": 10578,
+   "w": 256,
+   "h": 256,
+   "pixSha": "fdc55e52ae5cda43"
+  },
+  {
+   "file": "src/assets/portrety/portrait-fenicjanie-kamien.jpg",
+   "bytes": 8126,
+   "w": 256,
+   "h": 256,
+   "pixSha": "88d832dc723e9a56"
+  },
+  {
+   "file": "src/assets/portrety/portrait-fenicjanie-zelazo.jpg",
+   "bytes": 9347,
+   "w": 256,
+   "h": 256,
+   "pixSha": "ac0d17e9d7afa9b9"
+  },
+  {
+   "file": "src/assets/portrety/portrait-germanie-braz.jpg",
+   "bytes": 10407,
+   "w": 256,
+   "h": 256,
+   "pixSha": "f69ddd2c26331f90"
+  },
+  {
+   "file": "src/assets/portrety/portrait-germanie-kamien.jpg",
+   "bytes": 9473,
+   "w": 256,
+   "h": 256,
+   "pixSha": "94a3a7ae26535e04"
+  },
+  {
+   "file": "src/assets/portrety/portrait-germanie-zelazo.jpg",
+   "bytes": 10180,
+   "w": 256,
+   "h": 256,
+   "pixSha": "c3df7a0c394b0cc1"
+  },
+  {
+   "file": "src/assets/portrety/portrait-grecy-braz.jpg",
+   "bytes": 9328,
+   "w": 256,
+   "h": 256,
+   "pixSha": "efb7b28495f6ac45"
+  },
+  {
+   "file": "src/assets/portrety/portrait-grecy-kamien.jpg",
+   "bytes": 9035,
+   "w": 256,
+   "h": 256,
+   "pixSha": "e511c54ce00370f3"
+  },
+  {
+   "file": "src/assets/portrety/portrait-grecy-zelazo.jpg",
+   "bytes": 10714,
+   "w": 256,
+   "h": 256,
+   "pixSha": "0bff53d0604b0487"
+  },
+  {
+   "file": "src/assets/portrety/portrait-harappa-braz.jpg",
+   "bytes": 10737,
+   "w": 256,
+   "h": 256,
+   "pixSha": "48b6402f746e9be7"
+  },
+  {
+   "file": "src/assets/portrety/portrait-harappa-kamien.jpg",
+   "bytes": 9479,
+   "w": 256,
+   "h": 256,
+   "pixSha": "dc2092406a937ad7"
+  },
+  {
+   "file": "src/assets/portrety/portrait-harappa-zelazo.jpg",
+   "bytes": 10194,
+   "w": 256,
+   "h": 256,
+   "pixSha": "5fad21f4e536b36d"
+  },
+  {
+   "file": "src/assets/portrety/portrait-hetyci-braz.jpg",
+   "bytes": 10238,
+   "w": 256,
+   "h": 256,
+   "pixSha": "0b5301dbef9d7145"
+  },
+  {
+   "file": "src/assets/portrety/portrait-hetyci-kamien.jpg",
+   "bytes": 9043,
+   "w": 256,
+   "h": 256,
+   "pixSha": "33dcc163d791ff40"
+  },
+  {
+   "file": "src/assets/portrety/portrait-hetyci-zelazo.jpg",
+   "bytes": 9567,
+   "w": 256,
+   "h": 256,
+   "pixSha": "37bd31bb1a0fd0b1"
+  },
+  {
+   "file": "src/assets/portrety/portrait-inkowie-braz.jpg",
+   "bytes": 11290,
+   "w": 256,
+   "h": 256,
+   "pixSha": "1c84f189b38be8d7"
+  },
+  {
+   "file": "src/assets/portrety/portrait-inkowie-kamien.jpg",
+   "bytes": 8701,
+   "w": 256,
+   "h": 256,
+   "pixSha": "fd3f27adcb43771f"
+  },
+  {
+   "file": "src/assets/portrety/portrait-inkowie-zelazo.jpg",
+   "bytes": 10617,
+   "w": 256,
+   "h": 256,
+   "pixSha": "36b8683e896d4796"
+  },
+  {
+   "file": "src/assets/portrety/portrait-rzymianie-braz.jpg",
+   "bytes": 9274,
+   "w": 256,
+   "h": 256,
+   "pixSha": "510853941e111760"
+  },
+  {
+   "file": "src/assets/portrety/portrait-rzymianie-kamien.jpg",
+   "bytes": 13209,
+   "w": 256,
+   "h": 256,
+   "pixSha": "07e34c080526b40a"
+  },
+  {
+   "file": "src/assets/portrety/portrait-rzymianie-zelazo.jpg",
+   "bytes": 8832,
+   "w": 256,
+   "h": 256,
+   "pixSha": "542ccc9d7235aaa8"
+  },
+  {
+   "file": "src/assets/portrety/portrait-slowianie-braz.jpg",
+   "bytes": 9787,
+   "w": 256,
+   "h": 256,
+   "pixSha": "ec6d6da34e991d9a"
+  },
+  {
+   "file": "src/assets/portrety/portrait-slowianie-kamien.jpg",
+   "bytes": 8442,
+   "w": 256,
+   "h": 256,
+   "pixSha": "0c4e3a20b399345c"
+  },
+  {
+   "file": "src/assets/portrety/portrait-slowianie-zelazo.jpg",
+   "bytes": 8698,
+   "w": 256,
+   "h": 256,
+   "pixSha": "7a6a7e4b7ba5f012"
+  },
+  {
+   "file": "src/assets/portrety/portrait-sumer-braz.jpg",
+   "bytes": 10942,
+   "w": 256,
+   "h": 256,
+   "pixSha": "f16daecd9c490b7d"
+  },
+  {
+   "file": "src/assets/portrety/portrait-sumer-kamien.jpg",
+   "bytes": 9107,
+   "w": 256,
+   "h": 256,
+   "pixSha": "053e61ee9b9831e1"
+  },
+  {
+   "file": "src/assets/portrety/portrait-sumer-zelazo.jpg",
+   "bytes": 10023,
+   "w": 256,
+   "h": 256,
+   "pixSha": "c7971877ab3d1a02"
+  },
+  {
+   "file": "src/assets/portrety/portrait-zulusi-braz.jpg",
+   "bytes": 11414,
+   "w": 256,
+   "h": 256,
+   "pixSha": "ccab1cfa21231c95"
+  },
+  {
+   "file": "src/assets/portrety/portrait-zulusi-kamien.jpg",
+   "bytes": 8929,
+   "w": 256,
+   "h": 256,
+   "pixSha": "2aecbd20f5db9f20"
+  },
+  {
+   "file": "src/assets/portrety/portrait-zulusi-zelazo.jpg",
+   "bytes": 10321,
+   "w": 256,
+   "h": 256,
+   "pixSha": "3994013836fb7ed1"
+  },
+  {
+   "file": "src/ui/assets/hero/hero-menu.png",
+   "bytes": 2175174,
+   "w": 1672,
+   "h": 941,
+   "pixSha": "1ef5a77038c615a2"
+  },
+  {
+   "file": "src/ui/assets/hero/hero-intro.png",
+   "bytes": 2039500,
+   "w": 1672,
+   "h": 941,
+   "pixSha": "de86d593fecb1400"
+  }
+ ],
+ "results": [
+  {
+   "name": "A1 brak literałów data:(audio|png|jpeg);base64 w skryptach wykonywalnych",
+   "ok": true,
+   "detail": {
+    "literalHits": 0,
+    "literalBytes": 0
+   }
+  },
+  {
+   "name": "A2 elementy danych przed bundlem",
+   "ok": true,
+   "detail": {
+    "dataEls": 106,
+    "mainBundleAt": 62695400,
+    "mainBundleChars": 7960712
+   }
+  },
+  {
+   "name": "A3 bajty każdego elementu = plik źródłowy (SHA-256, bez przekodowania)",
+   "ok": true,
+   "detail": {
+    "badDecode": 0,
+    "unknown": [],
+    "dataChars": 62682148
+   }
+  },
+  {
+   "name": "A4 każdy zasób źródłowy (unikalna treść) ma element",
+   "ok": true,
+   "detail": {
+    "srcFiles": 106,
+    "uniqueContents": 106,
+    "elements": 106,
+    "missing": []
+   }
+  },
+  {
+   "name": "A5 MIME elementów zgodny z rozszerzeniem",
+   "ok": true
+  },
+  {
+   "name": "A6 bundel JS wyłącznie ASCII",
+   "ok": true,
+   "detail": {
+    "nonAscii": 0
+   }
+  },
+  {
+   "name": "B1 0 elementów danych w DOM po starcie",
+   "ok": true,
+   "detail": {
+    "dataLeft": 0
+   }
+  },
+  {
+   "name": "B2 obraz menu z blob: wczytany",
+   "ok": true,
+   "detail": {
+    "src": "blob:",
+    "natural": [
+     1672,
+     941
+    ],
+    "complete": true
+   }
+  },
+  {
+   "name": "B3 liczba blob: URL zasobów = liczba elementów danych",
+   "ok": true,
+   "detail": {
+    "blobs": 106,
+    "dataEls": 106,
+    "allBlobs": 106
+   }
+  },
+  {
+   "name": "C1 0 stringów base64 > 1 MB na stercie (po GC, menu)",
+   "ok": true,
+   "detail": {
+    "base64gt1MB": {
+     "n": 0,
+     "bytes": 0,
+     "MB": 0
+    },
+    "gt1MB": {
+     "n": 0,
+     "bytes": 0,
+     "MB": 0
+    },
+    "base64gt100KB": {
+     "n": 0,
+     "bytes": 0,
+     "MB": 0
+    }
+   }
+  },
+  {
+   "name": "B4 bajty każdego blob: = plik źródłowy (SHA-256)",
+   "ok": true,
+   "detail": {
+    "n": 106,
+    "badBytes": []
+   }
+  },
+  {
+   "name": "B5 audio: metadane + decodeAudioData bez błędów",
+   "ok": true,
+   "detail": {
+    "audio": 59,
+    "bad": [],
+    "totalSec": 1750
+   }
+  },
+  {
+   "name": "B6 obrazy: piksele blob: == data: URI (bit w bit)",
+   "ok": true,
+   "detail": {
+    "images": 47,
+    "bad": []
+   }
+  },
+  {
+   "name": "B7 brak błędów konsoli/strony",
+   "ok": true,
+   "detail": []
+  }
+ ],
+ "failed": 0
+}

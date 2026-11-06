@@ -1,0 +1,17 @@
+PASS A1 brak literałów data:(audio|png|jpeg);base64 w skryptach wykonywalnych — {"literalHits":0,"literalBytes":0}
+PASS A2 elementy danych przed bundlem — {"dataEls":106,"mainBundleAt":62695400,"mainBundleChars":7960712}
+PASS A3 bajty każdego elementu = plik źródłowy (SHA-256, bez przekodowania) — {"badDecode":0,"unknown":[],"dataChars":62682148}
+PASS A4 każdy zasób źródłowy (unikalna treść) ma element — {"srcFiles":106,"uniqueContents":106,"elements":106,"missing":[]}
+PASS A5 MIME elementów zgodny z rozszerzeniem
+PASS A6 bundel JS wyłącznie ASCII — {"nonAscii":0}
+PASS B1 0 elementów danych w DOM po starcie — {"dataLeft":0}
+PASS B2 obraz menu z blob: wczytany — {"src":"blob:","natural":[1672,941],"complete":true}
+PASS B3 liczba blob: URL zasobów = liczba elementów danych — {"blobs":106,"dataEls":106,"allBlobs":106}
+PASS C1 0 stringów base64 > 1 MB na stercie (po GC, menu) — {"base64gt1MB":{"n":0,"bytes":0,"MB":0},"gt1MB":{"n":0,"bytes":0,"MB":0},"base64gt100KB":{"n":0,"bytes":0,"MB":0}}
+MEM {"heapGC_MB":25.9,"cdpHeap_MB":{"usedSize":16.5,"totalSize":20.2,"embedderHeapUsedSize":2.5,"backingStorageSize":9.4},"pss":{"totalMB":371.6,"byTypeMB":{"browser":100,"utility":45,"zygote":15,"renderer":136.3,"gpu-process":75.3}},"strings":{"gt1MB":{"n":0,"bytes":0,"MB":0},"base64gt1MB":{"n":0,"bytes":0,"MB":0},"snapshotTotalMB":25.4}}
+PASS B4 bajty każdego blob: = plik źródłowy (SHA-256) — {"n":106,"badBytes":[]}
+PASS B5 audio: metadane + decodeAudioData bez błędów — {"audio":59,"bad":[],"totalSec":1750}
+PASS B6 obrazy: piksele blob: == data: URI (bit w bit) — {"images":47,"bad":[]}
+PASS B7 brak błędów konsoli/strony — []
+memory-datauri-duplicates-test: PASS (14 sprawdzeń)
+EXIT=0
