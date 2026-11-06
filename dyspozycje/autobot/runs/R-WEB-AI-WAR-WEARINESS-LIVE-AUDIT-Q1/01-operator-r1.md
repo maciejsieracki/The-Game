@@ -4,7 +4,7 @@ TEMAT: R-WEB-AI-WAR-WEARINESS-LIVE-AUDIT-Q1
 GOAL: wojny AI↔AI kończą się pokojem (osłabienie przegranego, nie eliminacja), przegrywający szybko oferuje pokój z eskalacją złoto→surowce→miasta, zmęczenie działa na obie strony, brak snowballa jednej AI.
 
 ## ZMIANY/COMMIT
-Baza: origin/main 80919e2ae. Commit: SHA w sekcji "COMMIT" na końcu (uzupełniony po zapisie).
+Baza: origin/main 80919e2ae. Commit implementacji: d6eced336 (raport dopisany kolejnym commitem docs).
 Allowlista: `gra/src/game/war-weariness.ts`, `gra/data/war-weariness-params.json`, `gra/tools/ai-war-weariness-peace-test.cjs` (test, uzasadnienie niżej), NOWE `gra/tools/ai-war-weariness-live-audit-{hook,measure,summarize}.cjs`, dane w runie. Zero zmian w main.ts / ai.ts / diplomacy-*.ts / gra-robocza / WERSJE.md / rust-port / battle.
 
 ## POMIAR (realny endTurn, Chromium, bundle vite poza repo, `?civTest=1`, gracz-obserwator, Standardowy/kontynenty)
