@@ -1,3 +1,9 @@
+## ROBOCZA bb025154 -- 2026-11-06 -- FALA 517: odlewnie ×2 cykle i mnożnik epoki (testowa)
+
+- R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 — Odlewnia brązu, Odlewnia żelaza i Wielka odlewnia: przepustowość 25→50 cykli/turę oraz mnożnik epoki właściciela 1/1,5/2/2,5/3 (gracz i AI); receptury i koszty bez zmian; huta płaska
+- Weryfikacja: tsc PASS; foundry-throughput-x2-era-mult 153/0; converter-era-scaling 123/0; brick-production-x2 69/0; citypanel-konwerter-produkcja 83/0; hashe war-allin zgodne
+- Limity: Brak pomiaru w żywej grze; nieaktualne komentarze w turn-economy.ts/main.ts
+
 ## ROBOCZA 2c27d321 -- 2026-11-06 -- FALA 516: Emporion + przyspieszenie późnej gry (testowa)
 
 - (1) R-WEB-BUILDING-EMPORION-Q1 — nowy budynek handlowy Emporion (epoka 2, badanie Handel, wymaga Targowiska w mieście, +1 slot tras, 5% handlu per trasa, ikona z odznaką); (2) R-WEB-PERF-LATE-GAME-LAG-T86-Q1 — memo obliczenia konfliktów obywateli między miastami (O(n²)), ruch/wejście do miasta/wybór jednostki ok. 25–30× szybsze przy 137 miastach (refreshFog ok. 3,5×)

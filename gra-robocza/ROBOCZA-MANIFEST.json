@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "2c27d321e20588dc4d34587f3c7aef53",
-  "bundleSha256": "0df2e49db5bec18b3559fefd616eeaee9d0bc2d77522423009b7ff2e64f19bba",
-  "bundleBytes": 70283923,
+  "bundleMd5": "bb025154bf1d17befc02aa313ce0d70e",
+  "bundleSha256": "8a3cbe74f45d6e9ec927d599d9e14d264de28b47ca84969123c93490b03266bb",
+  "bundleBytes": 70285008,
   "sourceSnapshot": {
-    "source": "main cd3e88144 + EMPORION (b4af9f4f4) + PERF86 (ea194c1ef)",
+    "source": "main 4905bac05 + FOUNDRY (0a8f21617)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 516: (1) R-WEB-BUILDING-EMPORION-Q1 — nowy budynek handlowy Emporion (epoka 2, badanie Handel, wymaga Targowiska w mieście, +1 slot tras, 5% handlu per trasa, ikona z odznaką); (2) R-WEB-PERF-LATE-GAME-LAG-T86-Q1 — memo obliczenia konfliktów obywateli między miastami (O(n²)), ruch/wejście do miasta/wybór jednostki ok. 25–30× szybsze przy 137 miastach (refreshFog ok. 3,5×)"
+    "FALA 517: R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 — Odlewnia brązu, Odlewnia żelaza i Wielka odlewnia: przepustowość 25→50 cykli/turę oraz mnożnik epoki właściciela 1/1,5/2/2,5/3 (gracz i AI); receptury i koszty bez zmian; huta płaska"
   ],
   "verification": [
-    "tsc PASS; emporion-building 47/0; emporion-build-list Chromium 13/0; grupy-budynkow 84/0; perf-sibling-memo 13/13; okolica 72/72"
+    "tsc PASS; foundry-throughput-x2-era-mult 153/0; converter-era-scaling 123/0; brick-production-x2 69/0; citypanel-konwerter-produkcja 83/0; hashe war-allin zgodne"
   ],
   "limits": [
-    "PERF: p95<150 ms niezmierzone na realnym GPU i w turze 86; pozostają updateHud/previewCityEconomy i refreshTerritoryBorderOverlay (Q2). Emporion: bonus 5% per trasa (wariant A); koszt w magazynie skalowany 320/240"
+    "Brak pomiaru w żywej grze; nieaktualne komentarze w turn-economy.ts/main.ts"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-06T02:04:55",
+  "hubGeneratedAt": "2026-11-06T02:08:43",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2c27d321e20588dc4d34587f3c7aef53",
-      "sizeBytes": 70283923
+      "md5": "bb025154bf1d17befc02aa313ce0d70e",
+      "sizeBytes": 70285008
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2c27d321e20588dc4d34587f3c7aef53",
-      "sizeBytes": 70283923
+      "md5": "bb025154bf1d17befc02aa313ce0d70e",
+      "sizeBytes": 70285008
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "2c27d321e20588dc4d34587f3c7aef53",
-      "sizeBytes": 70283923
+      "md5": "bb025154bf1d17befc02aa313ce0d70e",
+      "sizeBytes": 70285008
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "2c27d321e20588dc4d34587f3c7aef53",
-      "sizeBytes": 70283923
+      "md5": "bb025154bf1d17befc02aa313ce0d70e",
+      "sizeBytes": 70285008
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "2c27d321e20588dc4d34587f3c7aef53",
-      "sizeBytes": 70283923
+      "md5": "bb025154bf1d17befc02aa313ce0d70e",
+      "sizeBytes": 70285008
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "2c27d321e20588dc4d34587f3c7aef53",
-      "sizeBytes": 70283923
+      "md5": "bb025154bf1d17befc02aa313ce0d70e",
+      "sizeBytes": 70285008
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "2c27d321e20588dc4d34587f3c7aef53",
-      "sizeBytes": 70283923
+      "md5": "bb025154bf1d17befc02aa313ce0d70e",
+      "sizeBytes": 70285008
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "2c27d321e20588dc4d34587f3c7aef53",
-      "sizeBytes": 70283923
+      "md5": "bb025154bf1d17befc02aa313ce0d70e",
+      "sizeBytes": 70285008
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "2c27d321e20588dc4d34587f3c7aef53",
-      "sizeBytes": 70283923
+      "md5": "bb025154bf1d17befc02aa313ce0d70e",
+      "sizeBytes": 70285008
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "2c27d321e20588dc4d34587f3c7aef53",
-      "sizeBytes": 70283923
+      "md5": "bb025154bf1d17befc02aa313ce0d70e",
+      "sizeBytes": 70285008
     }
   ],
-  "md5": "2c27d321e20588dc4d34587f3c7aef53",
+  "md5": "bb025154bf1d17befc02aa313ce0d70e",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
