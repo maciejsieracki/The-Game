@@ -3361,6 +3361,15 @@ async function boot(): Promise<void> {
      * Zwracane kolekcje są kopiowane, więc żaden wołający nie może zanieczyścić wpisu.
      */
     const ownerScope = createScopeMemo();
+
+    /**
+     * R-WEB-PERF-ENDTURN-AI-PHASE-Q1: stawki `mergedResourceRatesForOwner` pamiętane WYŁĄCZNIE w oknie
+     * budowy `relacjeDip` jednego AI (od `const relacjeDip` do tuż przed `if (relacjeDip.length > 0)`),
+     * w którym nie wykonuje się żadna komenda zmieniająca miasta/budynki/ulepszenia/mapę (jedynie
+     * tick relacji i odczyty). Poza oknem (null) zachowanie jak dotychczas.
+     */
+    let aiDiploRatesCache: Map<number, Partial<Record<string, number>>> | null = null;
+    let aiDiploTyAll: ReturnType<typeof computeTerritoryResourceYieldByCity> | null = null;
     function withOwnerScopeMemo<T>(fn: () => T): T { return ownerScope.run(fn); }
 
     /** Union budynków imperium (dowolne miasto ownerId) — bramka badań T-TECH-7. */
@@ -3526,8 +3535,12 @@ async function boot(): Promise<void> {
       // R6: w zakresie czystego odczytu liczymy wiersze dla WSZYSTKICH miast raz (jedno przejście po mapie) i bierzemy wiersze miast
       // tego ownera. Równoważne: dla heksu należącego do ownera X najbliższe miasto wybierane jest spośród miast X, a heksy
       // cudze są pomijane, więc wiersz miasta X nie zależy od tego, czy w wywołaniu były też miasta innych właścicieli.
+      // R-WEB-PERF-ENDTURN-AI-PHASE-Q1: w oknie budowy `relacjeDip` (aiDiploRatesCache !== null) wiersze WSZYSTKICH
+      // miast liczone raz na okno (a nie raz na właściciela); stan świata w oknie niezmienny.
       const byCity = hudPureScope.active
-        ? hudPureScope.cached('tyAll', () => computeTerritoryResourceYieldByCity(cities, map, territoryNodes, empireEpochForOwner), v => v)
+        ? (aiDiploRatesCache !== null
+          ? (aiDiploTyAll ??= computeTerritoryResourceYieldByCity(cities, map, territoryNodes, empireEpochForOwner))
+          : hudPureScope.cached('tyAll', () => computeTerritoryResourceYieldByCity(cities, map, territoryNodes, empireEpochForOwner), v => v))
         : computeTerritoryResourceYieldByCity(ownerCities, map, territoryNodes, empireEpochForOwner);
       // R-WEB-TURN-SLOWDOWN-Q2 (P4): obrabiane pola liczone WYŁĄCZNIE dla miast tego
       // ownera — wcześniej dla WSZYSTKICH miast mapy (pętla niżej i tak bierze tylko
@@ -11465,6 +11478,16 @@ async function boot(): Promise<void> {
 
     /** Suma stawek terytorium + konwerterów — do cap handlu multi-turn. */
     function mergedResourceRatesForOwner(ownerId: number): Partial<Record<string, number>> {
+      // R-WEB-PERF-ENDTURN-AI-PHASE-Q1: okno budowy `relacjeDip` AI (stan świata niezmieniany, patrz
+      // aiDiploRatesCache) -- stawki ownera raz na okno zamiast raz na KAŻDE wywołanie pickResourceTradeRelOffer.
+      if (aiDiploRatesCache !== null) {
+        let hit = aiDiploRatesCache.get(ownerId);
+        if (hit === undefined) {
+          hit = hudPureScope.cached('mrr:' + ownerId, () => mergedResourceRatesForOwnerRaw(ownerId), v => ({ ...v }));
+          aiDiploRatesCache.set(ownerId, hit);
+        }
+        return { ...hit };
+      }
       // R6: wewnątrz zakresu czystego odczytu (buildHudState, wybór oferty handlowej AI) stawki właściciela liczone raz.
       return hudPureScope.cached('mrr:' + ownerId, () => mergedResourceRatesForOwnerRaw(ownerId), v => ({ ...v }));
     }
@@ -39083,6 +39106,8 @@ async function boot(): Promise<void> {
               const diffParamsDip = loadDifficultyParams(data, aiDiffLevel);
               const potAI = objectivePowerByOwner.get(ownerId)?.power ?? 0;
               const relacjeDip: DiplomacjaInputs['relacje'] = [];
+              aiDiploRatesCache = new Map();
+              aiDiploTyAll = null;
 
               // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K1): mgła NIE blokuje wojny epoki, także gdy
               // para to gracz. Bez tego wpisu AI→gracz (relacjeDip budowany dopiero po odkryciu,
@@ -39268,6 +39293,8 @@ async function boot(): Promise<void> {
                 });
               }
 
+              aiDiploRatesCache = null;
+              aiDiploTyAll = null;
               if (relacjeDip.length > 0) {
                 const dipLayer = diplomacyLayerForOwner(
                   ownerId,
@@ -39870,6 +39897,8 @@ async function boot(): Promise<void> {
             } finally {
               aiDiploTradeGoodsCache = null;
               aiDiploQtyOptionsCache = null;
+              aiDiploRatesCache = null;
+              aiDiploTyAll = null;
             }
 
             try {
