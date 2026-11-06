@@ -1,0 +1,125 @@
+
+[okolica-test] Running tests...
+
+1. OKOLICA_RADIUS
+  [OK] OKOLICA_RADIUS === 10
+
+2. okolicaTiles(0,0,10,map)
+  [OK] tiles.length > 0
+  [OK] every tile has dist <= 10
+  [OK] center (0,0) excluded
+
+3. assignWorkedTiles best-tile-first
+  [OK] worked.length === 2
+  [OK] best tile q === 3
+  [OK] best tile r === 0
+
+4. clamp to tile count
+  [OK] clamped to available tile count (radius:10)
+
+5. population 0
+  [OK] population 0 -> empty array
+
+6. determinism
+  [OK] two identical calls produce identical results
+
+7. cityRangeForPopulation (min 5, rosnie z pop, cap 15)
+  [OK] pop 0  -> 0
+  [OK] pop 1  -> 5 (min start)
+  [OK] pop 4  -> 5 (min start)
+  [OK] pop 5  -> 5
+  [OK] pop 9  -> 9
+  [OK] pop 10 -> 10
+  [OK] pop 15 -> 15 (cap)
+  [OK] pop 20 -> 15 (capped at max)
+
+8. adjustTileWorker (reczny)
+  [OK] assign worker to 1,0
+  [OK] unassign worker from 1,0
+  [OK] delta +1 on already-occupied hex refuses (no-op), does NOT remove
+
+9. seedReczneFromAuto
+  [OK] seed copies 3 auto tiles for pop 3
+  [OK] unassign from auto-seeded state
+  [OK] 2 tiles remain after unassign one
+
+10. toggleTileWorker empty click from auto assigns chosen tile
+  [OK] auto seeds 1 tile for pop 1
+  [OK] find alternate tile in range
+  [OK] empty click from auto assigns worker on chosen tile (not blocked by auto elsewhere)
+  [OK] full pool + empty click = no assign
+  [OK] toggle off occupied tile
+  [OK] city center rejected
+
+11. reczny empty pool — assign from scratch
+  [OK] assign first worker from empty manual pool
+  [OK] remove last worker leaves empty manual pool
+
+12. rebalanceWorkersAfterPopulationChange (reczny growth)
+  [OK] reczny +1 pop → trzeci 👤 na wolnym polu
+
+13. rebalanceWorkersAfterPopulationChange (auto noop)
+  [OK] auto mode: no manual reczne written
+
+14. foreign territory — no worker assignment
+  [OK] hex (3,0) owned by AI (closer city)
+  [OK] hex (3,0) not player-owned
+  [OK] player city skips foreign hex even if best yield
+  [OK] manual assign on foreign hex rejected
+  [OK] foreign hex reason code
+
+15. focus zywnosc — meadow beats forest on food
+  [OK] one tile assigned
+  [OK] meadow (1,0) wins over forest (2,0)
+  [OK] meadow r === 0
+  [OK] raw food-weighted score favors meadow
+
+16. focus zywnosc — tie food prefers open meadow vs forest
+  [OK] open meadow wins tie on equal current food
+  [OK] meadow has higher food potential than forest
+
+17. focus zrownowazone — forest can win on praca/handel
+  [OK] balanced: forest (2,0) beats meadow on praca when food similar
+
+18. isLandWorkableHex (wspolne zrodlo prawdy overlay/silnik/UI)
+  [OK] domyslny hex siatki (nie Gory/Morze) -> workable
+  [OK] Gory -> NIE workable
+  [OK] Morze -> NIE workable
+  [OK] brak hexu (poza mapa) -> NIE workable
+
+19. toggleTileWorker/adjustTileWorker — nowy wpis na Gorach/Morzu odrzucony
+  [OK] toggle: nowy robotnik na Gorach (1,0) odrzucony, poza_zasiegiem
+  [OK] toggle: nowy robotnik na Morzu (2,0) odrzucony, poza_zasiegiem
+  [OK] adjust delta+1: nowy robotnik na Gorach odrzucony
+
+20. toggleTileWorker/adjustTileWorker — STARY nielegalny wpis DA SIE zdjac (B1)
+  [OK] toggle: zdjecie robotnika ze STAREGO wpisu na Gorach zwraca ok=true (nie zakleszcza)
+  [OK] toggle: klucz Gor usuniety z reczne po zdjeciu
+  [OK] toggle: pozostale 3 wpisy (w tym Morze) nietkniete
+  [OK] toggle: legalne wpisy i wpis na Morzu (jeszcze nie kliknięty) przetrwaly bez zmian
+  [OK] toggle: zdjecie robotnika ze STAREGO wpisu na Morzu zwraca ok=true
+  [OK] toggle: klucz Morza usuniety z reczne po zdjeciu
+  [OK] adjust delta-1: zdjecie robotnika ze STAREGO wpisu na Gorach zwraca ok=true
+  [OK] adjust delta-1: klucz Gor usuniety z reczne po zdjeciu
+  [OK] adjust delta+1 na juz-obsadzonym STARYM wpisie (Morze) odmawia (juz_obsadzone), NIE zdejmuje
+
+21. brak logiki auto-migracji/auto-naprawy przy samym odczycie
+  [OK] okolicaReczne wciaz ten sam obiekt (referencja niezmieniona)
+  [OK] okolicaReczne zawartosc niezmieniona po odczycie (Gory/Morze nadal w danych, bez auto-usuniecia)
+
+22. rebalanceWorkersAfterPopulationChange (reczny spadek) — B3: dokladnie excess znika
+  [OK] B3: dokladnie 1 wpis zniknal (excess=1 z 5 wpisow), nie 3 jak w buggy rundzie 3
+  [OK] B3: WSZYSTKIE 3 legalne, produkcyjne wpisy nietkniete (budzet excess=1 pokryty przez nielegalny wpis)
+  [OK] B3: dokladnie 1 z 2 nielegalnych wpisow zostaje w danych nietkniety (ponad budzet excess=1), zero migracji obu naraz
+
+23. seedReczneFromAuto — filtr terenu bezposrednio (B4, dowod mutacyjny)
+  [OK] seedReczneFromAuto: Gory (1,0) NIE wybrane mimo najwyzszej Pracy w grze (4 pkt)
+  [OK] seedReczneFromAuto: Morze (2,0) NIE wybrane mimo dodatniego score (Zywnosc 2 + Podatek 2)
+  [OK] seedReczneFromAuto: mimo wykluczenia 2 pol znaleziono 6 legalnych zastepczych (siatka ma ich pod dostatkiem)
+
+24. rebalanceWorkersAfterPopulationChange (reczny wzrost) — filtr terenu w galezi dodawania (B4)
+  [OK] B4: brak nowego robotnika -- jedyne "wolne" pola (Gory,Morze) sa nielegalne, filtr blokuje dodanie
+  [OK] B4: nowy robotnik NIE trafil na Gory/Morze mimo ze byly jedynymi "wolnymi" polami w zasiegu
+
+OKOLICA OK (72/72)
+EXIT=0

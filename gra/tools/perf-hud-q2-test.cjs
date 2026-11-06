@@ -10,6 +10,7 @@
  *   2. okolicaTiles / assignWorkedTiles with the near-centre node subset == full-node filter (key-for-key, order).
  *   3. getResourceAccessForCity == getCityResourceAccessForCity(...).active (active-only path).
  *   4. buildRiverHexSet memo: same content as fresh, invalidated when riverPaths content changes.
+ *   5. territoryBorderInputsEqual (border rebuild skip) and createOwnerScope (collectTurnEvents ownerScoped).
  *   6. budget: 600 territory-filtered worked-tile assignments on a 137-city world < generous ceiling.
  *
  * Run from gra/: node tools/perf-hud-q2-test.cjs
@@ -33,6 +34,8 @@ export { territoryOwnerAt, axialDistance, cityTerritoryRadius } from '../src/map
 export { makeTerritoryWorkableFilter } from '../src/map/territory-work';
 export { getResourceAccessForCity, getCityResourceAccessForCity } from '../src/game/resource-access';
 export { buildRiverHexSet } from '../src/map/improvement-build';
+export { territoryBorderInputsEqual } from '../src/map/territory-border-cache';
+export { createOwnerScope } from '../src/game/owner-scope';
 `);
 
 // deterministic PRNG
@@ -124,6 +127,46 @@ try {
   rm.riverPaths = [[{ q: 9, r: 9 }]];
   const s3 = M.buildRiverHexSet(rm);
   check('river set invalidated when riverPaths replaced', s3.size === 1 && s3.has('9,9') && !s3.has('1,1'));
+
+  rm.riverPaths[0][0] = { q: 4, r: 4 }; // in-place point swap, same counts
+  const s4 = M.buildRiverHexSet(rm);
+  check('river set invalidated on in-place point swap (same counts)', s4.has('4,4') && !s4.has('1,1'));
+
+  // 5a. territoryBorderInputsEqual
+  const mk = (o) => new Map(Object.entries(o).map(([k, v]) => [Number(k), new Set(v)]));
+  const col = (o) => new Map(Object.entries(o).map(([k, v]) => [Number(k), v]));
+  const E = M.territoryBorderInputsEqual;
+  const base1 = { byOwner: mk({ 0: ['1,1', '1,2'], 3: ['5,5'] }), colors: col({ 0: 'a/x', 3: 'b/y' }) };
+  check('border: null prev => rebuild', E(null, base1.byOwner, base1.colors) === false);
+  check('border: identical content (new objects) => skip', E(base1, mk({ 3: ['5,5'], 0: ['1,2', '1,1'] }), col({ 0: 'a/x', 3: 'b/y' })) === true);
+  check('border: hex added => rebuild', E(base1, mk({ 0: ['1,1', '1,2', '1,3'], 3: ['5,5'] }), base1.colors) === false);
+  check('border: hex swapped (same size) => rebuild', E(base1, mk({ 0: ['1,1', '9,9'], 3: ['5,5'] }), base1.colors) === false);
+  check('border: colour/relation changed => rebuild', E(base1, base1.byOwner, col({ 0: 'a/x', 3: 'b/z' })) === false);
+  check('border: owner removed => rebuild', E(base1, mk({ 0: ['1,1', '1,2'] }), col({ 0: 'a/x' })) === false);
+  check('border: owner replaced (same count) => rebuild', E(base1, mk({ 0: ['1,1', '1,2'], 4: ['5,5'] }), col({ 0: 'a/x', 4: 'b/y' })) === false);
+
+  // 5b. createOwnerScope (ownerScoped / withOwnerCtxScope)
+  const sc = M.createOwnerScope();
+  let calls = 0;
+  const compute = (v) => () => { calls++; return v; };
+  check('scope: outside scope always recomputes', sc.scoped('t', 1, compute(1)) === 1 && sc.scoped('t', 1, compute(1)) === 1 && calls === 2 && !sc.isOpen());
+  calls = 0;
+  sc.withScope(() => {
+    sc.scoped('t', 1, compute('a')); sc.scoped('t', 1, compute('zzz'));
+    sc.scoped('t', 2, compute('b')); sc.scoped('u', 1, compute('c'));
+    check('scope: once per (tag, owner) inside scope', calls === 3 && sc.scoped('t', 1, compute('x')) === 'a' && sc.scoped('t', 2, compute('x')) === 'b' && sc.scoped('u', 1, compute('x')) === 'c');
+    sc.withScope(() => { check('scope: nested reuses outer cache', sc.scoped('t', 1, compute('n')) === 'a'); });
+    check('scope: still open after nested exit', sc.isOpen() && sc.scoped('t', 2, compute('n')) === 'b');
+  });
+  check('scope: closed after exit and cache dropped', !sc.isOpen() && sc.scoped('t', 1, compute('fresh')) === 'fresh');
+  try { sc.withScope(() => { sc.scoped('t', 1, compute('e')); throw new Error('boom'); }); } catch {}
+  check('scope: closed after exception, no stale value', !sc.isOpen() && sc.scoped('t', 1, compute('after')) === 'after');
+  // consumer-copy contract (cityResourceAccessForCityId copies the shared Set before add('kon'))
+  sc.withScope(() => {
+    const shared = sc.scoped('livestock', 0, () => new Set(['kon_a']));
+    const mine = new Set(shared); mine.add('kon');
+    check('scope: copy-before-mutate leaves shared value intact', !sc.scoped('livestock', 0, () => new Set()).has('kon') && mine.has('kon'));
+  });
 
   // 6. budget: 600 territory-filtered assignments (≈ HUD refresh x several) must stay well under a loose ceiling.
   const t0 = Date.now();

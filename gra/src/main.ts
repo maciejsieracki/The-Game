@@ -731,6 +731,8 @@ import {
   type BattleSummaryWinner,
 } from './game/battle-summary';
 import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
+import { territoryBorderInputsEqual } from './map/territory-border-cache';
+import { createOwnerScope } from './game/owner-scope';
 import { showHud, updateHud as refreshD1bHud, hideHud, markMinimapDirty } from './ui/hud';
 import {
   createCityListHud,
@@ -14464,16 +14466,8 @@ async function boot(): Promise<void> {
       byOwner: Map<number, Set<string>>,
       colors: Map<number, string>,
     ): boolean {
-      const prev = _territoryBorderBuilt;
-      if (!prev || !territoryBorderGroup) return false;
-      if (prev.byOwner.size !== byOwner.size) return false;
-      for (const [owner, keys] of byOwner) {
-        const pk = prev.byOwner.get(owner);
-        if (!pk || pk.size !== keys.size) return false;
-        if (prev.colors.get(owner) !== colors.get(owner)) return false;
-        for (const k of keys) if (!pk.has(k)) return false;
-      }
-      return true;
+      if (!territoryBorderGroup) return false;
+      return territoryBorderInputsEqual(_territoryBorderBuilt, byOwner, colors);
     }
 
     function refreshTerritoryBorderOverlay(): void {
@@ -17183,21 +17177,9 @@ async function boot(): Promise<void> {
      * ale zamiast O(miasta gracza x miasta ownera x ulepszenia) liczymy skladnik raz na ownera.
      * Poza zakresem `ownerScoped` zawsze liczy od nowa (zachowanie jak dotad).
      */
-    let _ownerCtxScope: Map<string, unknown> | null = null;
-    function withOwnerCtxScope<T>(fn: () => T): T {
-      if (_ownerCtxScope) return fn();
-      _ownerCtxScope = new Map();
-      try { return fn(); } finally { _ownerCtxScope = null; }
-    }
-    function ownerScoped<T>(tag: string, ownerId: number, compute: () => T): T {
-      const sc = _ownerCtxScope;
-      if (!sc) return compute();
-      const k = tag + ':' + ownerId;
-      if (sc.has(k)) return sc.get(k) as T;
-      const v = compute();
-      sc.set(k, v);
-      return v;
-    }
+    const _ownerScope = createOwnerScope();
+    const withOwnerCtxScope = _ownerScope.withScope;
+    const ownerScoped = _ownerScope.scoped;
 
     function productionAvailabilityCtxForCity(city: City): AvailabilityContext {
       const oid = city.ownerId;

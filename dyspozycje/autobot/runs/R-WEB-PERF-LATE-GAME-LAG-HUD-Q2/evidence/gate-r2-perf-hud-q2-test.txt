@@ -1,0 +1,26 @@
+  PASS: territoryOwnerAt == reference on 2888 hexes (137 cities + forts/outposts)
+  PASS: assignWorkedTiles(near-centre node subset) == full-node reference on 46 cities
+  PASS: getResourceAccessForCity == getCityResourceAccessForCity().active
+  PASS: river set content
+  PASS: river set memo returns same instance when unchanged
+  PASS: river set invalidated when a path point is added
+  PASS: river set invalidated when riverPaths replaced
+  PASS: river set invalidated on in-place point swap (same counts)
+  PASS: border: null prev => rebuild
+  PASS: border: identical content (new objects) => skip
+  PASS: border: hex added => rebuild
+  PASS: border: hex swapped (same size) => rebuild
+  PASS: border: colour/relation changed => rebuild
+  PASS: border: owner removed => rebuild
+  PASS: border: owner replaced (same count) => rebuild
+  PASS: scope: outside scope always recomputes
+  PASS: scope: once per (tag, owner) inside scope
+  PASS: scope: nested reuses outer cache
+  PASS: scope: still open after nested exit
+  PASS: scope: closed after exit and cache dropped
+  PASS: scope: closed after exception, no stale value
+  PASS: scope: copy-before-mutate leaves shared value intact
+  PASS: 600 territory-filtered assignments < 6000 ms (measured 270 ms, acc=6204)
+
+perf-hud-q2-test: 23 pass, 0 fail
+EXIT=0

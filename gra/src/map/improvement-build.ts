@@ -898,18 +898,25 @@ function hexNeighbors(q: number, r: number): Array<{ q: number; r: number }> {
 // miasto przy kazdym odswiezeniu HUD). Pamiec podreczna po obiekcie mapy; klucz kontrolny = referencja
 // tablicy sciezek + liczba sciezek + laczna liczba punktow (zmiana zawartosci uniewaznia wpis).
 // Zwracany Set jest wspolny — wolajacy go tylko czytaja (isHexNearRiver, auto-improvements).
-const _riverHexSetCache = new WeakMap<GameMap, { paths: unknown; n: number; pts: number; set: Set<string> }>();
-export function buildRiverHexSet(map: GameMap): Set<string> {
+const _riverHexSetCache = new WeakMap<GameMap, { paths: unknown; n: number; pts: number; hash: number; set: ReadonlySet<string> }>();
+export function buildRiverHexSet(map: GameMap): ReadonlySet<string> {
   const paths = map.riverPaths;
+  // Klucz zawartosciowy: liczba sciezek/punktow + skrot wspolrzednych (podmiana punktu w miejscu
+  // bez zmiany liczby tez uniewaznia wpis). Koszt O(punkty), bez alokacji.
   let pts = 0;
-  for (const path of paths) pts += path.length;
+  let hash = 0;
+  for (const path of paths) {
+    pts += path.length;
+    for (const p of path) hash = (Math.imul(hash, 31) + (p.q * 7919 + p.r * 104729 + 1)) | 0;
+    hash = (Math.imul(hash, 31) + 17) | 0;
+  }
   const hit = _riverHexSetCache.get(map);
-  if (hit && hit.paths === paths && hit.n === paths.length && hit.pts === pts) return hit.set;
+  if (hit && hit.paths === paths && hit.n === paths.length && hit.pts === pts && hit.hash === hash) return hit.set;
   const set = new Set<string>();
   for (const path of paths) {
     for (const p of path) set.add(`${p.q},${p.r}`);
   }
-  _riverHexSetCache.set(map, { paths, n: paths.length, pts, set });
+  _riverHexSetCache.set(map, { paths, n: paths.length, pts, hash, set });
   return set;
 }
 
