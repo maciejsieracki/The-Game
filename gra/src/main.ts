@@ -1962,13 +1962,6 @@ async function boot(): Promise<void> {
     }
     let anim: AnimState | null = null;
     let isAnimating = false;
-    // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R3): shadow pass podczas animacji ruchu jest drugim przebiegiem
-    // CALEJ geometrii (przy duzej cywilizacji ~26k meshy). Gdy pelna klatka z shadow pass kosztuje > 30 ms,
-    // odswiezamy cien animowanej figurki nie czesciej niz co `cost` ms (<= 500 ms): max ~50% czasu w shadow pass.
-    let shadowAnimLastAt = 0;
-    let shadowAnimMinGapMs = 0;
-    /** R4: klatka animacji pominęła shadow pass (throttle) - po końcu animacji wymuś ostatnie odświeżenie cienia. */
-    let shadowAnimSkipped = false;
     let hoverKey: string | null = null;
 
     function mapQualityTierFromParams(params: NewGameParams): QualityTier {
@@ -41845,30 +41838,8 @@ async function boot(): Promise<void> {
       renderer.info.reset();
       // FPS cienie na żądanie: token jednostki (caster) rusza się co klatkę tylko podczas
       // animacji ruchu; galeria może obracać modele. Poza tym (pan/idle) shadow pass pomijany.
-      let shadowTimedAt = 0;
-      if (galleryOn) {
-        renderer.shadowMap.needsUpdate = true;
-      } else if (isAnimating) {
-        const nowSh = performance.now();
-        if (nowSh - shadowAnimLastAt >= shadowAnimMinGapMs) {
-          renderer.shadowMap.needsUpdate = true;
-          shadowAnimLastAt = nowSh;
-          shadowTimedAt = nowSh;
-          shadowAnimSkipped = false;
-        } else {
-          shadowAnimSkipped = true;
-        }
-      } else if (shadowAnimSkipped) {
-        // koniec animacji: cień figurki musi odpowiadać pozycji końcowej (bez opóźnienia do 500 ms)
-        shadowAnimSkipped = false;
-        renderer.shadowMap.needsUpdate = true;
-      }
+      if (isAnimating || galleryOn) renderer.shadowMap.needsUpdate = true;
       renderer.render(scene, camera);
-      if (shadowTimedAt > 0) {
-        shadowAnimLastAt = performance.now(); // przerwa liczona od KONCA klatki z shadow pass
-        const shadowFrameMs = shadowAnimLastAt - shadowTimedAt;
-        shadowAnimMinGapMs = shadowFrameMs <= 30 ? 0 : Math.min(500, shadowFrameMs);
-      }
       if (isPerfDebugOverlayVisible()) {
         let meshCount = 0;
         let instancedCount = 0;

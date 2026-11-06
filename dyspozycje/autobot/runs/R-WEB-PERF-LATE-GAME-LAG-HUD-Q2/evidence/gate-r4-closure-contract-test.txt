@@ -1,0 +1,19 @@
+  PASS: exactly one active-only caller (productionAvailabilityCtxForCity)
+  PASS: active-only call is inside productionAvailabilityCtxForCity
+  PASS: active-only result consumed only via .active / array form
+  PASS: activeOnly branch uses getResourceAccessForCity (potential=[])
+  PASS: full branch uses getCityResourceAccessForCity
+  PASS: UI callers pass false (keep potential)
+  PASS: ownerScoped keys found
+  PASS: key 'ownImp' has a single computation body
+  PASS: key 'livestock' has a single computation body
+  PASS: key 'impTrade' has a single computation body
+  PASS: key 'kopZel' has a single computation body
+  PASS: key 'alive' has a single computation body
+  PASS: key 'empLbl' has a single computation body
+  PASS: key 'empBuilt' has a single computation body
+  PASS: key 'empStock' has a single computation body
+  PASS: withOwnerCtxScope is used around read-only loops
+
+closure-contract-test: 16 pass, 0 fail
+EXIT=0

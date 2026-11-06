@@ -640,6 +640,20 @@ async function main() {
       }
       return res;
     });
+    if (process.env.PERF_PROBE === '4') {
+      // R4: odstep rAF (realny koszt klatki) tuz przed i po zaznaczeniu jednostki, ten sam kadr
+      const rafIntervals = ms => page.evaluate(ms => new Promise(res => { const out = []; let last = performance.now(); const t0 = last; const f = t => { out.push(Math.round(t - last)); last = t; if (t - t0 < ms) requestAnimationFrame(f); else res(out); }; requestAnimationFrame(f); }), ms);
+      for (const k of [3, 5]) {
+        const m = mine[k];
+        await focus(m.q, m.r); await wait(2500);
+        const idle = await rafIntervals(6000);
+        await clickHex(m.q, m.r); await wait(500);
+        const sel = await rafIntervals(6000);
+        console.log('[perf] rafProbe unit#' + k + ':', JSON.stringify({ idleFrames: idle, selectedFrames: sel, info: await page.evaluate(() => window.__turnSlowdownTestDebug.renderInfo()) }));
+        await page.evaluate(() => window.__turnSlowdownTestDebug.perfDeselect?.());
+      }
+      return;
+    }
     if (process.env.PERF_PROBE === '3') {
       const m = mine[3];
       await focus(m.q, m.r); await wait(1500);
