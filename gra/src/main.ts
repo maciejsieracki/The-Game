@@ -511,6 +511,7 @@ import { WORLD_OVERLAY_Z_INDEX } from './ui/worldOverlayLayer';
 import {
   showSiegeMapPanel, hideSiegeMapPanel, updateSiegeMapPanelTurn, isSiegeMapPanelOpen,
   getActiveSiegeCityId, setSiegePanelBesiegerCount, setSiegePanelMilitiaEstimator, setSiegePanelMilitiaRegenLeft,
+  setSiegePanelStarveFracProvider,
 } from './ui/siegeMapPanel';
 import { FORTIFY_OBRONA_PROC_FIELD, type SiegeCity, type SiegeUnit } from './game/siege';
 import {
@@ -27409,12 +27410,14 @@ async function boot(): Promise<void> {
     // (tylko przy ?civTest=1): ustawia stan oblezenia na zywym miescie i odswieza plakietki; zero wplywu bez parametru.
     if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
       (window as any).__siegeBadgeTestDebug = {
-        setSiege: (cityId: string, food: number, pending: boolean): boolean => {
+        setSiege: (cityId: string, food: number, pending: boolean, starveStartMaxHp?: number): boolean => {
           const c = cities.find(x => x.id === cityId);
           if (!c) return false;
           c.oblegane = true;
           c.magazynZywnosci = food;
           c.siegeCapitulationPending = pending;
+          // zarzut 4: opcjonalny start glodu (sciezka prognozy z garnizonem w Chromium)
+          if (starveStartMaxHp != null) c.siegeStarveStartMaxHp = starveStartMaxHp; else delete c.siegeStarveStartMaxHp;
           refreshSiegeMarkers();
           return true;
         },
@@ -32479,6 +32482,9 @@ async function boot(): Promise<void> {
         currentTurn: turn,
       };
     }
+
+    // R-WEB-SIEGE-STARVATION-SURRENDER-Q1 (obrona r1, zarzut 2): ułamek HP/turę głodu dla panelu (zależny od trudności).
+    setSiegePanelStarveFracProvider(() => buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaHpFrac);
 
     /** Oszacowanie Milicji dla panelu oblężenia: tylko z ukończonym budynkiem Garnizon i poza okresem odnowy. */
     setSiegePanelMilitiaEstimator((c: City) =>
