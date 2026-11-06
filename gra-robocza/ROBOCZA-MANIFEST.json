@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b138b22970d28ee2730451db7eae22a3",
-  "bundleSha256": "5b1084c47f66cee5e7992a0e9484a9f33bc2befab4371098a3db9710d2c1a441",
-  "bundleBytes": 70294017,
+  "bundleMd5": "d1ce365cab5d40cc62dac905daa49b5f",
+  "bundleSha256": "19a5dcf701a2d66e8704b3e1893d1bfb3f491e333031c838ce24a2d94069ec25",
+  "bundleBytes": 70294147,
   "sourceSnapshot": {
-    "source": "main 33855a540 + ROADS (61aeeac87)",
+    "source": "main cbaaa6058 + LONGRUN (e85c9db1c)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 521: R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1 — automat (AI i auto-ulepszenia gracza) buduje drogi tylko jako połączenia między miastami tej samej cywilizacji (drzewo rozpinające po długości ścieżki), bez wypełniania terytorium siatką; w żywej grze 100 tur: 93→12 heksów dróg, 142→1 trójkąt"
+    "FALA 522: R-WEB-LONGRUN-100-TURNS-LEAK-Q1 — 100 tur w Chromium (seed 4242): główna przyczyna spowolnienia = przeliczanie grantów surowców z tras handlowych (computeTradeRouteResourceGrants) skanujące wszystkie ulepszenia mapy 4× na trasę i surowiec (0 s w t.10 → 7,5 s w t.70 → 19,2 s w t.95 przy 57 s profilu); poprawka: memoizacja (właściciel, surowiec) na czas jednego przeliczenia — w profilu t.95 koszt zniknął, JS końca tury 29,7→11,6 s"
   ],
   "verification": [
-    "tsc PASS; roads-city-links-only 57/0; autoimprove-stages-q1 299/0; auto-improvements 46/0; autobuild-toggle 39/0; ai-test 274/20; hashe war-allin bez zmian"
+    "tsc PASS; memo 6/0 (215 grantów identycznych, 60 wywołań zamiast 1351); trade-grant 62/0; zloto-szlak 54/0; mennica-uspienie 49/0; trade-ilosc 35/5 = baza"
   ],
   "limits": [
-    "Zostaje do 1 trójkąt (węzeł Y); miasta bez lądowego połączenia po własnym terytorium nie są łączone; istniejące nadmiarowe drogi w starych zapisach nie są usuwane"
+    "Drugi hotspot placedImprovementsForOwner (ok. 14 s w t.95, auto-ulepszanie jednostek) nieskorygowany; pomiar 100 tur tylko seed 4242 po poprawce; czasy ścienne PRE/POST niewspółmierne (obciążenie maszyny)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-06T06:01:29",
+  "hubGeneratedAt": "2026-11-06T06:27:28",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b138b22970d28ee2730451db7eae22a3",
-      "sizeBytes": 70294017
+      "md5": "d1ce365cab5d40cc62dac905daa49b5f",
+      "sizeBytes": 70294147
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b138b22970d28ee2730451db7eae22a3",
-      "sizeBytes": 70294017
+      "md5": "d1ce365cab5d40cc62dac905daa49b5f",
+      "sizeBytes": 70294147
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "b138b22970d28ee2730451db7eae22a3",
-      "sizeBytes": 70294017
+      "md5": "d1ce365cab5d40cc62dac905daa49b5f",
+      "sizeBytes": 70294147
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "b138b22970d28ee2730451db7eae22a3",
-      "sizeBytes": 70294017
+      "md5": "d1ce365cab5d40cc62dac905daa49b5f",
+      "sizeBytes": 70294147
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "b138b22970d28ee2730451db7eae22a3",
-      "sizeBytes": 70294017
+      "md5": "d1ce365cab5d40cc62dac905daa49b5f",
+      "sizeBytes": 70294147
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "b138b22970d28ee2730451db7eae22a3",
-      "sizeBytes": 70294017
+      "md5": "d1ce365cab5d40cc62dac905daa49b5f",
+      "sizeBytes": 70294147
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "b138b22970d28ee2730451db7eae22a3",
-      "sizeBytes": 70294017
+      "md5": "d1ce365cab5d40cc62dac905daa49b5f",
+      "sizeBytes": 70294147
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "b138b22970d28ee2730451db7eae22a3",
-      "sizeBytes": 70294017
+      "md5": "d1ce365cab5d40cc62dac905daa49b5f",
+      "sizeBytes": 70294147
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "b138b22970d28ee2730451db7eae22a3",
-      "sizeBytes": 70294017
+      "md5": "d1ce365cab5d40cc62dac905daa49b5f",
+      "sizeBytes": 70294147
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "b138b22970d28ee2730451db7eae22a3",
-      "sizeBytes": 70294017
+      "md5": "d1ce365cab5d40cc62dac905daa49b5f",
+      "sizeBytes": 70294147
     }
   ],
-  "md5": "b138b22970d28ee2730451db7eae22a3",
+  "md5": "d1ce365cab5d40cc62dac905daa49b5f",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

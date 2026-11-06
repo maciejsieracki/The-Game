@@ -1,3 +1,9 @@
+## ROBOCZA d1ce365c -- 2026-11-06 -- FALA 522: przyczyna spowolnienia po turze 60–80: dostęp do surowców tras (testowa)
+
+- R-WEB-LONGRUN-100-TURNS-LEAK-Q1 — 100 tur w Chromium (seed 4242): główna przyczyna spowolnienia = przeliczanie grantów surowców z tras handlowych (computeTradeRouteResourceGrants) skanujące wszystkie ulepszenia mapy 4× na trasę i surowiec (0 s w t.10 → 7,5 s w t.70 → 19,2 s w t.95 przy 57 s profilu); poprawka: memoizacja (właściciel, surowiec) na czas jednego przeliczenia — w profilu t.95 koszt zniknął, JS końca tury 29,7→11,6 s
+- Weryfikacja: tsc PASS; memo 6/0 (215 grantów identycznych, 60 wywołań zamiast 1351); trade-grant 62/0; zloto-szlak 54/0; mennica-uspienie 49/0; trade-ilosc 35/5 = baza
+- Limity: Drugi hotspot placedImprovementsForOwner (ok. 14 s w t.95, auto-ulepszanie jednostek) nieskorygowany; pomiar 100 tur tylko seed 4242 po poprawce; czasy ścienne PRE/POST niewspółmierne (obciążenie maszyny)
+
 ## ROBOCZA b138b229 -- 2026-11-06 -- FALA 521: drogi AI tylko między miastami (testowa)
 
 - R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1 — automat (AI i auto-ulepszenia gracza) buduje drogi tylko jako połączenia między miastami tej samej cywilizacji (drzewo rozpinające po długości ścieżki), bez wypełniania terytorium siatką; w żywej grze 100 tur: 93→12 heksów dróg, 142→1 trójkąt
