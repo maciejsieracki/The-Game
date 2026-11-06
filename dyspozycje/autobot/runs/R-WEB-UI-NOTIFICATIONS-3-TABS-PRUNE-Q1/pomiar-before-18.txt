@@ -1,0 +1,15 @@
+Logi: /tmp/civ-notif-logs/before-18.jsonl
+Tury: 30 | wpisy informacyjne razem: 63 (widoczne wg dawnego chipa OFF: 63) | srednio/ture: 2.10 | max/ture: 4
+
+| # | typ (znormalizowany) | wystapien | tur z wpisem | zakladka (eventTabOf) |
+|---|---|---|---|---|
+| 1 |  / X: #× (−Praca) | 30 | 30 | inne |
+| 2 |  / X: +# Drewna (pozostało # tury) (# wystąpienia) | 27 | 27 | inne |
+| 3 | Automatycznie obniżono racje żywnościowe / X: # → # · Mediolan: # → # | 1 | 1 | wazne |
+| 4 |  / X: A ↔ B (handel wewnętrzny) · +# złota/turę | 1 | 1 | inne |
+| 5 | Nowy szlak handlowy / A ↔ B (handel wewnętrzny) · +# złota/turę | 1 | 1 | inne |
+| 6 | Granice naruszone / Twoje granice naruszone — Kapua · Rzymianie · miasto-państwo: −# pkt Zaufania/turę u każde | 1 | 1 | dyplomacja |
+| 7 |  / ★ Doświadczeni wojownicy — wroga jednostka ma gwiazdki: wygrała bitwy i bije mocniej niż rekrut. Najedź na  | 1 | 1 | inne |
+| 8 | Doświadczeni wojownicy / Wrogie ★/★★/★★★ — premia do walki po wygranych bitwach. Kliknij obcą jednostkę po peł | 1 | 1 | inne |
+
+Podzial na zakladki (wystapienia): {"dyplomacja":1,"wazne":1,"inne":61}
