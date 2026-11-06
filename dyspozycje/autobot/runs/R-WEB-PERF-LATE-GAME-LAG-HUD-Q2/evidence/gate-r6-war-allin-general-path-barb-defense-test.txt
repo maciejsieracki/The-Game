@@ -1,0 +1,21 @@
+
+--- T1: obronca domu (kampania wodza, etap attacking) rusza ku barbarzyncy w bramce ---
+
+--- T2: jednostki marszu kampanii nadal ida na stolice wroga ---
+
+--- T3: barbarzynca poza bramka obrony -- brak przydzialu, obronca idzie na stolice ---
+
+--- T4: obronca w stosie z zolnierzem kampanii zachowuje ruch ku barbarzyncy ---
+
+--- T5: sciezka glowna (bez kampanii) -- zachowanie bez zmian ---
+
+--- T7: obronca domu nie jest kotwica armii zastepczej (planWarReplacementRally) ---
+
+--- T8: obrona domu w kampanii wybiera wojsko, nie cywila / okret / wodza ---
+
+--- T9: stos z obroncą i zolnierzem kampanii -- zolnierz dostaje marsz na stolice ---
+
+--- T6: determinizm ---
+
+war-allin-general-path-barb-defense-test: 24 passed, 0 failed
+EXIT=0

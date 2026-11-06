@@ -1,0 +1,27 @@
+
+-- S1: brak badania Handel i brak Targowiska w mieście --
+PASS: S1: chip „Handel” (wymagane badanie) jest niespełniony
+PASS: S1: chip „W mieście: Targowisko” jest niespełniony
+PASS: S1: sekcje „Wymagane badania” i „Wymagane warunki” są wyrenderowane
+
+-- S2: Handel jest, brak Targowiska w mieście --
+PASS: S2: chip „Handel” spełniony
+PASS: S2: chip „W mieście: Targowisko” niespełniony
+PASS: S2: Emporion nie jest aktywny (brak Targowiska)
+
+-- S3: Handel + Targowisko w mieście + surowce (1000/1000, koszt Emporion w magazynie to 320 drewna i 240 kamienia) --
+PASS: S3: Emporion widoczny na liście „Dostępne do budowy”
+PASS: S3: wiersz Emporion aktywny (can-build-row)
+PASS: S3: przycisk Buduj Emporion aktywny
+PASS: S3: chip „Handel” spełniony
+PASS: S3: chip „W mieście: Targowisko” spełniony
+
+-- S4: Handel + Targowisko, pusty magazyn --
+PASS: S4: Emporion widoczny jako wyszarzony wiersz (cannot-build-row)
+PASS: S4: przycisk Buduj nieaktywny przy braku surowców
+
+Zrzuty: /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/dyspozycje/autobot/runs/R-WEB-BUILDING-EMPORION-Q1/emporion-s1-brak-warunkow.png | /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/dyspozycje/autobot/runs/R-WEB-BUILDING-EMPORION-Q1/emporion-s3-lista-budowy-aktywny.png | /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/dyspozycje/autobot/runs/R-WEB-BUILDING-EMPORION-Q1/emporion-s4-brak-surowcow-wyszarzony.png
+Bledy strony: 0
+
+13 passed, 0 failed
+EXIT=0

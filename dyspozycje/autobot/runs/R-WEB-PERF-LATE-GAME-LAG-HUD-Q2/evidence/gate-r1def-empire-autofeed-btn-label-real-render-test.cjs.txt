@@ -1,0 +1,29 @@
+PASS: (0) etykieta przycisku w źródle to sama nazwa funkcji („Włącz Auto-Żywienie</button>")
+PASS: (0) długiego zdania nie ma już w treści przycisku
+PASS: (0) przycisk ma atrybut title budowany z esc() i &quot;
+PASS: (0) CSS .civ-emp-autofeed-btn dostosowany do krótkiej etykiety (12.5px + min-height)
+[empire-autofeed-btn-label-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: (A) przycisk istnieje w wyrenderowanej sekcji
+PASS: (A) widoczny tekst przycisku to dokładnie „Włącz Auto-Żywienie"
+PASS: (A) na przycisku NIE ma już fragmentu „we wszystkich miastach"
+PASS: (A) na przycisku NIE ma już fragmentu „bez indywidualnego"
+PASS: (A) na przycisku NIE ma już fragmentu „jednorazowa"
+PASS: (B) przycisk ma niepusty atrybut title
+PASS: (B) tooltip zawiera „we wszystkich miastach"
+PASS: (B) tooltip zawiera „bez indywidualnego"
+PASS: (B) tooltip zawiera „jednorazowa"
+PASS: (B) tooltip mówi wprost o Auto-Żywieniu (samodzielny bez etykiety)
+PASS: (C) klik nadal woła onOwnerSetAutoWyzywienieForAll dla ownera 0
+PASS: (C) render sekcji bez błędów strony
+PASS: (D) etykieta mieści się w jednym wierszu (brak przepełnienia w poziomie)
+PASS: (D) etykieta nie zawija się w pionie (scrollHeight ≈ wysokość przycisku)
+PASS: (D) przycisk nie skurczył się po skróceniu tekstu (wysokość ≥ 34px)
+PASS: (D) przycisk trzyma pełną szerokość panelu (jak przed zmianą)
+PASS: (E) mutacja odtwarza stary, długi napis na przycisku
+PASS: (E) mutacja: asercja (A) faktycznie rozróżnia — stary tekst ≠ nowa etykieta
+PASS: (E) mutacja: stary przycisk NIE miał tooltipa (asercja (B) nie jest tautologią)
+PASS: (E) mutacja: stary napis realnie zawijał się do wielu wierszy
+PASS: (E) mutacja: funkcjonalność kliku była i jest ta sama (regres wykluczony)
+
+OK — pass 25, fail 0
+EXIT=0

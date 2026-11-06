@@ -1,0 +1,16 @@
+PASS: fixture: "stolarnia" istnieje w buildings.json
+PASS: fixture: stolarnia.uwagi jest DZIŚ niepuste (realne dane, zero mutacji)
+PASS: fixture: "Procarz" istnieje w units.json
+PASS: fixture: Procarz.Uwagi jest DZIŚ niepuste (realne dane, zero mutacji)
+[citypanel-uwagi-hostcard-removed-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: BUDYNEK (stolarnia, uwagi niepuste): karta REALNIE zbudowana przez cityPanel.ts::buildBuildingDetailCard NIE zawiera słowa "Uwagi" nigdzie w DOM
+PASS: BUDYNEK: treść pola uwagi ("B-SUROW-BUD-03...") NIE pojawia się w wyrenderowanej karcie
+PASS: JEDNOSTKA (Procarz, Uwagi niepuste): karta REALNIE zbudowana przez cityPanel.ts::buildUnitDetailCard NIE zawiera słowa "Uwagi" nigdzie w DOM
+PASS: JEDNOSTKA: treść pola Uwagi NIE pojawia się w wyrenderowanej karcie
+PASS: attachHoverDetail (realny import z hoverDetailDock.ts) zainstalowany bez wyjątku
+PASS: REALNY page.hover() (prawdziwy attachHoverDetail, nie wywołanie bezpośrednie): karta się pojawiła
+PASS: REALNY hover: wyrenderowana karta NIE zawiera słowa "Uwagi"
+PASS: brak błędów konsoli/pageerror podczas całego scenariusza
+
+[citypanel-uwagi-hostcard-removed-real-render-test] 12 pass, 0 fail
+EXIT=0

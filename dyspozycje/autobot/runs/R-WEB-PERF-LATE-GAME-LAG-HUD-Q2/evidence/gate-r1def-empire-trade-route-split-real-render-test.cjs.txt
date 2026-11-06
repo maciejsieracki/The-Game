@@ -1,0 +1,64 @@
+PASS: (0) helper routeBonusSplitHtml() istnieje (rozkład per trasa)
+PASS: (0) helper cityBonusSplitHtml() istnieje (rozkład zagregowany per miasto)
+PASS: (0) CSS .civ-emp-route-split ma oba warianty stanu (.on / .off)
+PASS: (0) podpis tabeli tras NIE opisuje już wzoru sprzed T1 („max(podłoga, bazowy − dystans×…")
+PASS: (0) pusta lista tras NIE żąda już budynku handlowego do POWSTANIA trasy (stan po T3)
+[empire-trade-route-split-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: (setup) tabela „Trasy" wyrenderowana
+PASS: (setup) render bez błędów strony/konsoli
+PASS: (setup) 3 wiersze tras + wiersz SUMA
+PASS: (A) trasa Z budynkiem: wiersz to Roma↔Ur
+PASS: (A) trasa Z budynkiem: widać dochód dystansowy „+40"
+PASS: (A) trasa Z budynkiem: komórka DOCHÓD ma drugą linię rozkładu
+PASS: (A) trasa Z budynkiem: druga linia niesie KWOTĘ składnika 5% („+2")
+PASS: (A) trasa Z budynkiem: wariant „on" (stan naliczony)
+PASS: (A) trasa Z budynkiem: linia rozkładu jest FIZYCZNIE widoczna (display:block, wysokość > 0)
+PASS: (A) trasa Z budynkiem: kolor stanu naliczonego zastosowany przez kaskadę (zielony #78c95a)
+PASS: (B) trasa BEZ budynku: wiersz to Roma↔Tyr (morze)
+PASS: (B) trasa BEZ budynku: dochód dystansowy NADAL widoczny („+80") — od T3 leci bez budynku
+PASS: (B) trasa BEZ budynku: druga linia mówi WPROST, jaki budynek dobudować („brak: Targowisko")
+PASS: (B) trasa BEZ budynku: druga linia nazywa składnik po imieniu („5%")
+PASS: (B) trasa BEZ budynku: NIE pokazuje gołej kwoty „+0" bez wyjaśnienia
+PASS: (B) trasa BEZ budynku: wariant „off" (stan oczekiwania)
+PASS: (B) trasa BEZ budynku: kolor ostrzegawczy zastosowany przez kaskadę (#d9a441)
+PASS: (B) trasa BEZ budynku: tooltip tłumaczy, CO odblokuje premię (Targowisko/Port)
+PASS: (B) trasa BEZ budynku: tooltip mówi, że dochód dystansowy leci JUŻ TERAZ
+PASS: (B) druga trasa bez budynku (Ostia↔Kisz) zachowuje się tak samo
+PASS: (C) SUMA: dochód dystansowy zsumowany („+133" = 40+80+13)
+PASS: (C) SUMA: składnik 5% zsumowany osobno („+2")
+PASS: (C) SUMA: liczba tras czekających na budynek pokazana wprost („2 bez budynku")
+PASS: (C2) podpis wymienia OBA składniki i mówi, że nie sumuje ich w jedną liczbę
+PASS: (C2) podpis mówi wprost, że dochód dystansowy leci bez żadnego budynku (stan po T3)
+PASS: (C3) tabela „Handel — szlaki per miasto" wyrenderowana
+PASS: (C3) Roma (1 trasa z budynkiem + 1 bez): kwota 5% ORAZ liczba tras czekających
+PASS: (C3) Roma: wariant „off" — miasto ma trasę czekającą na budynek
+PASS: (C3) Ostia (wszystkie trasy bez budynku): dokładnie „5% — brak: Targowisko", nie „0 · 5%"
+PASS: (C3) Ostia: dochód dystansowy nadal widoczny obok („+13")
+PASS: (C3) linia rozkładu w zakładce Miasto jest FIZYCZNIE widoczna (wysokość > 0)
+PASS: (C3) wiersz CAŁA CYWILIZACJA sumuje ten sam składnik („+2", „2 bez budynku")
+PASS: (C3) Roma: komórka DOCHÓD nie przepełnia kolumny po zwężeniu SZLAKI (404px)
+PASS: (C3) Ostia: komórka DOCHÓD nie przepełnia kolumny po zwężeniu SZLAKI (404px)
+PASS: (C3) SUMA: komórka DOCHÓD nie przepełnia kolumny po zwężeniu SZLAKI (404px)
+PASS: (C3) zakładka Miasto nie rozpycha panelu w poziomie
+PASS: (D) Z budynkiem: komórka DOCHÓD nie przepełnia swojej kolumny w poziomie
+PASS: (D) BEZ budynku: komórka DOCHÓD nie przepełnia swojej kolumny w poziomie
+PASS: (D) SUMA: komórka DOCHÓD nie przepełnia swojej kolumny w poziomie
+PASS: (D) Z budynkiem: zwężone kolumny (MIASTO/PARTNER/MEDIUM) nie przepełniają się bardziej niż przed T6
+PASS: (D) BEZ budynku: zwężone kolumny (MIASTO/PARTNER/MEDIUM) nie przepełniają się bardziej niż przed T6
+PASS: (D) tabela nie rozpycha panelu w poziomie (404px bez poziomego przewijania)
+PASS: (D) wiersz z rozkładem jest realnie WYŻSZY niż nagłówek — druga linia faktycznie zajmuje miejsce
+PASS: (D) wiersz „brak: Targowisko" mieści tekst bez dodatkowego, trzeciego złamania (wysokość ≤ 64px)
+
+-- (F) mutacja: bundel z komórką DOCHÓD sprzed T6 (jedna linia) --
+PASS: (F) mutacja wyrenderowała się (kotwica NEW_CELL_RE nadal trafia w kod)
+PASS: (F) kontrola: stary render NADAL pokazuje dochód dystansowy „+40"
+PASS: (F) asercja (A) czerwona na starym kodzie: BRAK drugiej linii dla trasy z budynkiem
+PASS: (F) asercja (B) czerwona na starym kodzie: BRAK frazy „brak: Targowisko" dla trasy bez budynku
+PASS: (F) asercja (C) czerwona na starym kodzie: SUMA bez składnika 5%
+PASS: (E1) artefakt vite build niesie klasę rozkładu .civ-emp-route-split
+PASS: (E2) artefakt vite build niesie tekst stanu „brak: Targowisko"
+PASS: (E3) artefakt vite build niesie etykietę składnika „5% budynek"
+PASS: (E4) artefakt vite build NIE niesie już podpisu sprzed T1
+
+empire-trade-route-split-real-render-test: 58 pass, 0 fail
+EXIT=0

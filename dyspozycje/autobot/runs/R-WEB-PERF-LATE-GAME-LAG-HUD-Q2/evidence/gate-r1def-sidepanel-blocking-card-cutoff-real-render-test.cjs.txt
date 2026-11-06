@@ -1,0 +1,21 @@
+[sp-cutoff-test] vite build (C-001: binarka vite, nigdy npm run build)...
+[sp-cutoff-test] build OK.
+
+-- (0) kotwice statyczne: ksztalt seedowanej karty = ksztalt produkcyjny --
+  OK   (0a) collectTurnEvents buduje karte pendingDiplomacyInbox jako blocking kind:diplo z title "Dyplomacja: "+civName i subtitle diploPendingTitle+reason
+  OK   (0b) collectTurnEvents buduje karte negotiationTable jako blocking kind:diplo z subtitle negotiationSummary + runda
+  OK   (0c) fix geometrii jest w regule .sp-blocking.sp-expanded (min-height:min-content + flex-shrink:0)
+  OK   (0d) renderer karty blokujacej ma "✕" (.sp-close z data-dismiss) w naglowku .sp-blk-body, przed .sp-action-bar
+  OK   (0e) zdublowany link "Odloz na pozniej" (data-sp-ignore na karcie diplo) usuniety z RENDERU (wzmianka w komentarzu historycznym dozwolona)
+  OK   (0f) link buntu "Zignoruj — bunt potrwa dalej" NIETKNIETY (nie jest duplikatem ✕)
+  OK   (0g) main.ts: "prod-empty-" ma wlasna galez dismissu (prodEmptyDismissFp) PRZED dismissedSidePanelEventIds
+  OK   (0h) render bramkuje "✕" karty blokujacej przez hasSoftOneTurnDismissEvent i daje mu tabindex/role
+  OK   (0i) listener .sp-close[data-dismiss] obsluguje Enter/Spacje (klawiaturowa sciezka zamkniecia)
+[sp-cutoff-test] domyslny Chromium niedostepny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+-- (A) karta diplo-pend-3-zaproponuj_handel_surowiec-12-0, viewport 1280x700 --
+locator.count: Target page, context or browser has been closed
+    at gotoPlaytestMapa (/home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/sidepanel-blocking-card-cutoff-real-render-test.cjs:199:53)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/sidepanel-blocking-card-cutoff-real-render-test.cjs:331:9) {
+  log: []
+}

@@ -1,0 +1,11 @@
+  FAIL: exactly one active-only caller (productionAvailabilityCtxForCity) -- found 0
+  FAIL: active-only call is inside productionAvailabilityCtxForCity
+  PASS: active-only result consumed only via .active / array form
+  FAIL: activeOnly branch uses getResourceAccessForCity (potential=[])
+  FAIL: full branch uses getCityResourceAccessForCity
+  FAIL: UI callers pass false (keep potential)
+  FAIL: ownerScoped keys found -- keys=0
+  FAIL: withOwnerCtxScope is used around read-only loops
+
+closure-contract-test: 1 pass, 7 fail
+EXIT=1

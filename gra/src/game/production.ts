@@ -678,8 +678,16 @@ function empireStockHas(
   return (stock?.[asciiKey] ?? 0) > 0;
 }
 
+// R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): czysta funkcja string->string wołana dziesiątki tysięcy razy na odświeżenie HUD
+// (isCivSpecialReplacement x jednostki x miasta); pamięć ograniczona (nazwy jednostek/nacji to mały, stały zbiór).
+const stripDiacriticsMemo = new Map<string, string>();
 function stripDiacritics(s: string): string {
-  return s.normalize('NFD').replace(/[\u0300-\u036F]/g, '').toLowerCase();
+  const hit = stripDiacriticsMemo.get(s);
+  if (hit !== undefined) return hit;
+  const v = s.normalize('NFD').replace(/[\u0300-\u036F]/g, '').toLowerCase();
+  if (stripDiacriticsMemo.size >= 2000) stripDiacriticsMemo.clear();
+  stripDiacriticsMemo.set(s, v);
+  return v;
 }
 
 const UNIT_STOCK_GATE_LABEL: Readonly<Record<string, string>> = {

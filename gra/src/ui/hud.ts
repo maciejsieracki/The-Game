@@ -12,6 +12,7 @@
  * LANE: src/ui/*.  Pokazanie + onEndTurn wpina MASTER (main.ts).
  */
 
+import { createStateFrame } from '../game/frame-memo';
 import {
   createMinimapHud,
   setMinimapTurnLabel,
@@ -1702,7 +1703,7 @@ function ensureBarActionsBound(): void {
 
 function renderBar(): void {
   if (barEl === null || cfg === null) return;
-  const s = cfg.getState();
+  const s = hudStateSnapshot();
   if (useD1BLayout()) {
     barEl.innerHTML = renderBarD1B(s);
   } else {
@@ -1872,7 +1873,7 @@ function refreshMinimap(): void {
   minimapDirty = false;
   if (minimapApi !== null) {
     minimapApi.update();
-    if (cfg.getState !== undefined) setMinimapTurnLabel(minimapApi, cfg.getState().tura);
+    if (cfg.getState !== undefined) setMinimapTurnLabel(minimapApi, hudStateSnapshot().tura);
     return;
   }
   if (miniEl === null) return;
@@ -1929,7 +1930,7 @@ function mountBottomBar(): void {
   if (cfg === null || bottomBarApi !== null) return;
   if (!useD1BLayout()) return;
   bottomBarApi = createBottomBarHud({
-    getTurn: () => cfg!.getState().tura,
+    getTurn: () => hudStateSnapshot().tura,
     getYearLabel: cfg.getYearLabel,
     onExecutePending: cfg.onExecutePending,
     onEndTurn: cfg.onEndTurn,
@@ -1950,7 +1951,7 @@ function mountMapToolbar(): void {
     isArmyListActive: base.isArmyListActive,
     isDiploListActive: base.isDiploListActive,
     isScienceHubActive: base.isScienceHubActive,
-    getResearchProgress: () => resolveResearchProgress(cfg!.getState()),
+    getResearchProgress: () => resolveResearchProgress(hudStateSnapshot()),
   });
 }
 
@@ -2094,12 +2095,24 @@ export function showHud(config: HudConfig): void {
 }
 
 /** Odswiez wartosci HUD (po turze / zmianie stanu) — odswieza tez minimape B. */
+/**
+ * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: `getState()` (buildHudState w main.ts) jest drogie w dużej
+ * cywilizacji, a w obrębie jednego `updateHud()` było wołane kilkanaście razy (pasek, minimapa,
+ * dolny pasek, postęp badań...). Podmoduły HUD tylko RENDERUJĄ DOM z tego stanu i nie mutują
+ * stanu gry, więc w obrębie jednego synchronicznego `updateHud()` wystarczy JEDNA migawka.
+ * Poza `updateHud()` (zdarzenia, timery) każdy odczyt dalej woła `getState()` świeżo.
+ */
+const hudFrame = createStateFrame<HudState>(() => cfg!.getState());
+function hudStateSnapshot(): HudState { return hudFrame.snapshot(); }
+
 export function updateHud(): void {
-  renderBar();
-  refreshMinimap();
-  refreshSidePanel();
-  refreshD1BModules();
-  refreshContextPanel();
+  hudFrame.run(() => {
+    renderBar();
+    refreshMinimap();
+    refreshSidePanel();
+    refreshD1BModules();
+    refreshContextPanel();
+  });
 }
 
 /** Ukryj HUD. */

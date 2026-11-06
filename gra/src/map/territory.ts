@@ -159,6 +159,135 @@ export function territoryOwnerAt(
   return bestFortOwner;
 }
 
+// ============================================================
+// R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): indeks właściciela heksu
+// ============================================================
+
+interface HexOwnerCell { co: number | null; cd: number; fo: number | null; fd: number; fOrd: { turn: number; seq: number } | undefined; }
+interface NodesEntry {
+  id: number; n: number;
+  q: Float64Array; r: Float64Array; rad: Float64Array; kind: Uint8Array; owner: Float64Array; ot: Float64Array; os: Float64Array;
+  idx: Map<number, number | null> | null;
+}
+const NODES_ENTRY_MAX = 6;
+const nodesEntries: NodesEntry[] = []; // najnowszy użyty na początku
+let nodesEntrySeq = 0;
+const NO_ORDER = -1e12;
+
+function ownerIndexPack(q: number, r: number): number { return (q + 8192) * 16384 + (r + 8192); }
+
+type NodeLike = CityNode & { ownerId?: number; order?: { turn: number; seq: number } };
+function nodeKind(nd: NodeLike): number { return nd.isFort ? 1 : nd.isOutpost ? 2 : 0; }
+
+/** Wpis rejestru dla ZAWARTOŚCI węzłów (q, r, promień, rodzaj, właściciel, order); porównanie liczbowe, bez alokacji przy trafieniu. */
+function nodesEntryFor(nodes: readonly NodeLike[]): NodesEntry | null {
+  const n = nodes.length;
+  for (let e = 0; e < nodesEntries.length; e++) {
+    const c = nodesEntries[e]!;
+    if (c.n !== n) continue;
+    let same = true;
+    for (let i = 0; i < n; i++) {
+      const nd = nodes[i]!;
+      const o = nd.order;
+      if (c.q[i] !== nd.q || c.r[i] !== nd.r || c.rad[i] !== cityTerritoryRadius(nd) || c.kind[i] !== nodeKind(nd)
+        || c.owner[i] !== (nd.ownerId ?? -1) || c.ot[i] !== (o ? o.turn : NO_ORDER) || c.os[i] !== (o ? o.seq : NO_ORDER)) { same = false; break; }
+    }
+    if (same) {
+      if (e > 0) { nodesEntries.splice(e, 1); nodesEntries.unshift(c); }
+      return c;
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    const nd = nodes[i]!;
+    if (!(nd.q > -8000 && nd.q < 8000 && nd.r > -8000 && nd.r < 8000)) return null;
+  }
+  const c: NodesEntry = {
+    id: ++nodesEntrySeq, n, q: new Float64Array(n), r: new Float64Array(n), rad: new Float64Array(n), kind: new Uint8Array(n),
+    owner: new Float64Array(n), ot: new Float64Array(n), os: new Float64Array(n), idx: null,
+  };
+  for (let i = 0; i < n; i++) {
+    const nd = nodes[i]!;
+    const o = nd.order;
+    c.q[i] = nd.q; c.r[i] = nd.r; c.rad[i] = cityTerritoryRadius(nd); c.kind[i] = nodeKind(nd);
+    c.owner[i] = nd.ownerId ?? -1; c.ot[i] = o ? o.turn : NO_ORDER; c.os[i] = o ? o.seq : NO_ORDER;
+  }
+  nodesEntries.unshift(c);
+  if (nodesEntries.length > NODES_ENTRY_MAX) nodesEntries.pop();
+  return c;
+}
+
+/**
+ * Identyfikator ZAWARTOŚCI zestawu węzłów (równe id <=> te same węzły w tej samej kolejności i z tym samym promieniem/
+ * rodzajem/właścicielem/order). -1 gdy zestaw nie jest obsługiwany. Do kluczy pamięci podręcznych zakresowych.
+ */
+export function territoryNodesContentId(nodes: readonly NodeLike[]): number {
+  const e = nodesEntryFor(nodes);
+  return e ? e.id : -1;
+}
+
+/**
+ * Indeks `heks -> właściciel` dla zestawu węzłów, zbudowany TĄ SAMĄ regułą co `territoryOwnerAt`
+ * (węzły przetwarzane w kolejności tablicy; miasto: ściśle bliższe wygrywa, remis = pierwszy;
+ * fort/posterunek: reguła `order`/dystans jak wyżej; miasta mają pierwszeństwo przed fortami),
+ * tylko odwróconą pętlą (po węźle -> jego dysk) zamiast (po heksie -> wszystkie węzły).
+ * Heks poza wszystkimi dyskami nie ma wpisu (= null). Indeks jest związany z wpisem rejestru zawartości
+ * węzłów, więc zmiana populacji/pozycji/właściciela daje nowy wpis i nowy indeks - nigdy nieaktualny wynik.
+ */
+function territoryOwnerIndex(nodes: readonly TerritoryNode[]): Map<number, number | null> | null {
+  const entry = nodesEntryFor(nodes);
+  if (!entry) return null;
+  if (entry.idx) return entry.idx;
+  const cells = new Map<number, HexOwnerCell>();
+  for (const node of nodes) {
+    const radius = cityTerritoryRadius(node);
+    const isFortLike = !!(node.isFort || node.isOutpost);
+    const o = node.order;
+    for (let dq = -radius; dq <= radius; dq++) {
+      const lo = Math.max(-radius, -dq - radius), hi = Math.min(radius, -dq + radius);
+      for (let dr = lo; dr <= hi; dr++) {
+        const q = node.q + dq, r = node.r + dr;
+        const dist = axialDistance(q, r, node.q, node.r);
+        if (dist > radius) continue;
+        const k = ownerIndexPack(q, r);
+        let c = cells.get(k);
+        if (!c) { c = { co: null, cd: Infinity, fo: null, fd: Infinity, fOrd: undefined }; cells.set(k, c); }
+        if (isFortLike) {
+          let better: boolean;
+          if (c.fo !== null && o && c.fOrd) {
+            better = o.turn !== c.fOrd.turn ? o.turn < c.fOrd.turn : o.seq < c.fOrd.seq;
+          } else {
+            better = dist < c.fd;
+          }
+          if (better) { c.fd = dist; c.fo = node.ownerId; c.fOrd = o; }
+        } else if (dist < c.cd) {
+          c.cd = dist;
+          c.co = node.ownerId;
+        }
+      }
+    }
+  }
+  const idx = new Map<number, number | null>();
+  for (const [k, c] of cells) idx.set(k, c.co !== null ? c.co : c.fo);
+  entry.idx = idx;
+  return idx;
+}
+
+/**
+ * Szybki odpowiednik `(q, r) => territoryOwnerAt(q, r, nodes)` do wielokrotnych zapytań na tym samym zestawie
+ * węzłów (np. filtr pracy okolicy). Dla małych zestawów i współrzędnych poza zakresem deleguje do oryginału.
+ * Wynik jest identyczny z `territoryOwnerAt` (patrz test perf-hud-frame-memo-test / territory-owner-index).
+ */
+export function territoryOwnerLookup(nodes: readonly TerritoryNode[]): (q: number, r: number) => number | null {
+  if (nodes.length < 12) return (q, r) => territoryOwnerAt(q, r, nodes);
+  const idx = territoryOwnerIndex(nodes);
+  if (!idx) return (q, r) => territoryOwnerAt(q, r, nodes);
+  return (q, r) => {
+    if (!(q > -8000 && q < 8000 && r > -8000 && r < 8000)) return territoryOwnerAt(q, r, nodes);
+    const v = idx.get(ownerIndexPack(q, r));
+    return v === undefined ? null : v;
+  };
+}
+
 /**
  * Heks w terytorium danego właściciela — z rozstrzygnięciem overlapu (najbliższe miasto).
  * Samo isInTerritory(playerNodes) zwraca true także na heksach faktycznie należących do AI
