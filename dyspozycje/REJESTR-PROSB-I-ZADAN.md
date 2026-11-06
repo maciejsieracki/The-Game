@@ -8826,3 +8826,8 @@ Obowiązuje: Operator = Haiku 5.5; Obrona = ZAWSZE Haiku 5.5; Evaluator i Final 
 ## 2026-11-06 — FALA 524–526 (ROBOCZA): 524 pamięć/bufory ulepszeń (ea9c14daf) · 525 wydajność późnej gry cz.2 (55e098dc5) · 526 pamięć: bundle ASCII + wspólne geometrie (ca289d8ce). Pamięć po GC t.100 (seed 4242): 573 MB (przed FALĄ 524) → 354 MB (po 526, inna metodyka pomiaru: build produkcyjny). Kolejne tematy: R-WEB-MEMORY-DATA-URI-DUPLICATES-Q1 (dane base64 audio/obrazów trzymane drugi raz ≈ 62 MB), R-WEB-PERF-ENDTURN-AI-PHASE-Q1 (koniec tury: runAiPhase, pickResourceTradeRelOffer). Obie na Opus 5.5? — pamięć tak (decyzja właściciela), endTurn Sonnet (profilowanie, uzasadnione).
 
 ## 2026-11-06 — POLECENIE WŁAŚCICIELA: „rozszerz, jeżeli możesz” (współdzielone materiały modeli, −10 MB, 51 px) → R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1 (Opus 5.5, wszystkie etapy; plus scalanie statycznych części jednostek ≈ −41 MB górna granica). Interpretacja orkiestratora; do potwierdzenia przez właściciela.
+
+
+### FALA 527 (2026-11-06, ROBOCZA 1a7efcf5, main f0cd6edd3)
+R-WEB-MEMORY-DATA-URI-DUPLICATES-Q1 — PASS (Opus 5.5 wszystkie etapy): dane base64 (mp3/png/jpg) poza JS (elementy octet-stream + wspólne Blob); sterta po GC −125 MB (t.1 213,7→88,3; t.50 302,4→178,6); 0 px różnicy menu/mapa. t.100 NIE_ZMIERZONO. Raw MD5 zgodny.
+Nowe zgłoszenie: R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1 (ramka minimapy nie podąża za kamerą) — w toku. EOTAI R2 FAIL (martwy kod) → R3 w toku.
