@@ -143,11 +143,11 @@ async function measure(page) {
 
 /** Asercje "geometria siatki 2×3 + reszta ekranu spójne" — jądro tego testu. */
 function assertGridGeometry(data, tag) {
-  assert(`[${tag}] dokładnie 12 kart bezpośrednio w .sett-grid (hipoteza (a): brak owijającego kontenera)`,
-    data.directChildrenCount === 12 && data.directChildrenClasses.every((c) => c === 'srow'));
+  assert(`[${tag}] dokładnie 13 kart bezpośrednio w .sett-grid (hipoteza (a): brak owijającego kontenera)`,
+    data.directChildrenCount === 13 && data.directChildrenClasses.every((c) => c === 'srow'));
 
   const c = data.cards;
-  if (c.length !== 12) {
+  if (c.length !== 13) {
     assert(`[${tag}] pomiar kart niekompletny — reszta asercji geometrii pominięta`, false);
     return;
   }
@@ -169,11 +169,11 @@ function assertGridGeometry(data, tag) {
   const relHdr = c.map((x) => x.hdrTop - x.row.top);
   const relSctl = c.map((x) => x.sctlTop - x.row.top);
   const relSv = c.map((x) => x.svTop - x.row.top);
-  assert(`[${tag}] offset nagłówka od topu karty identyczny na 12/12 kart (hipoteza (b))`,
+  assert(`[${tag}] offset nagłówka od topu karty identyczny na 13/13 kart (hipoteza (b))`,
     relHdr.every((v) => close(v, relHdr[0])));
-  assert(`[${tag}] offset kontrolek (‹ wartość ›) od topu karty identyczny na 12/12 kart`,
+  assert(`[${tag}] offset kontrolek (‹ wartość ›) od topu karty identyczny na 13/13 kart`,
     relSctl.every((v) => close(v, relSctl[0])));
-  assert(`[${tag}] offset wartości od topu karty identyczny na 12/12 kart`,
+  assert(`[${tag}] offset wartości od topu karty identyczny na 13/13 kart`,
     relSv.every((v) => close(v, relSv[0])));
 
   // Panel "Cywilizacje przeciwnika" wyrównany górą z siatką 2×3 (sett-layout ma align-items:start).

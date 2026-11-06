@@ -286,6 +286,7 @@ import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 import { formatLiczbaPl, signedPl } from './formatPl';
 import { formatCompactNumber, formatFullNumber } from './formatCompactNumber';
 import { formatGrossNet } from './hudChip6c';
+import { AUTO_BUILD_DISABLED_HINT } from '../game/auto-build-gate';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -371,6 +372,13 @@ export interface CityPanelConfig {
   onAutoManage?: (cityId: string) => void;
   /** B1-Q3=A — czy auto-zarządca włączony (podświetlenie ⚙). */
   isAutoManageEnabled?: (cityId: string) => boolean;
+  /**
+   * R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (właściciel 2026-11-05): czy „Automatyzacja budowy” gracza jest
+   * włączona w Ustawieniach. Brak haka = włączona (zachowanie sprzed zmiany). Wyłączona: przyciski
+   * auto budowy (profile typów, Zrównoważone, Lista, Zarządca ⚙) są wyszarzone z podpowiedzią.
+   * / EN: master switch for the player's build automation; absent hook = enabled.
+   */
+  isAutoBuildEnabled?: () => boolean;
   /** Stan kultury miasta -> dynamiczna sekcja Kultura i Religia. */
   getCultureState?: (cityId: string) => {
     kulturaSuma: number;
@@ -8705,8 +8713,28 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
       bToolbar.style.cssText = 'margin:0.06em 0 0.18em;';
       const bProfiles = el('div', 'okolica-toolbar-profiles');
       appendBudowaToolbarProfiles(bProfiles, city, bState.priorytetTypow, bState.tryb, bState.lista);
-      bToolbar.appendChild(bProfiles);
-      if (bState.tryb === 'lista') {
+      const autoBuildOn = cfg.isAutoBuildEnabled ? cfg.isAutoBuildEnabled() : true;
+      if (!autoBuildOn) {
+        // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: wszystkie przyciski AUTO budowy wyszarzone (zostaje „Ręczny”).
+        bProfiles.querySelectorAll('button').forEach(btn => {
+          if (btn.classList.contains('reczny')) return;
+          btn.disabled = true;
+          btn.classList.remove('on');
+          btn.classList.add('auto-build-locked');
+          btn.style.opacity = '0.4';
+          btn.title = AUTO_BUILD_DISABLED_HINT;
+        });
+        bProfiles.querySelectorAll('.budowa-prio-badge').forEach(b => b.remove());
+        bProfiles.setAttribute('data-auto-build-locked', '1');
+        const note = el('div', 'muted', AUTO_BUILD_DISABLED_HINT);
+        note.style.cssText = 'font-size:0.68em;margin-top:0.1em;';
+        note.setAttribute('data-auto-build-hint', '1');
+        bToolbar.appendChild(bProfiles);
+        bToolbar.appendChild(note);
+      } else {
+        bToolbar.appendChild(bProfiles);
+      }
+      if (bState.tryb === 'lista' && autoBuildOn) {
         appendBudowaListaBar(bToolbar, city, bState.lista, bState.biblioteka);
       }
       mount.appendChild(bToolbar);
@@ -12237,7 +12265,19 @@ function rerender(): void {
       manager.classList.remove('active');
       manager.setAttribute('title', 'Zarządca automatyczny — wyłączony');
     }
-    manager.addEventListener('click', () => { cfg.onAutoManage?.(city.id); rerender(); });
+    if (cfg.isAutoBuildEnabled && !cfg.isAutoBuildEnabled()) {
+      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: Zarządca ⚙ nie kolejkuje budynków przy wyłączonej automatyzacji budowy.
+      manager.classList.remove('active');
+      manager.setAttribute('title', 'Zarządca automatyczny — ' + AUTO_BUILD_DISABLED_HINT);
+      (manager as HTMLButtonElement).style.opacity = '0.4';
+      // Obrona zarzutu 2: kontrolka naprawdę nieaktywna (disabled), nie tylko przyciemniona.
+      (manager as HTMLButtonElement).disabled = true;
+      manager.setAttribute('aria-disabled', 'true');
+    }
+    manager.addEventListener('click', () => {
+      if (cfg.isAutoBuildEnabled && !cfg.isAutoBuildEnabled()) return;
+      cfg.onAutoManage?.(city.id); rerender();
+    });
   }
   const artview = q('cs-artview'); if (artview) artview.addEventListener('click', () => { cfg.onArtView?.(city.id); });
   rootEl.querySelectorAll('.fsbtn').forEach(b => {

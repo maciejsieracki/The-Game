@@ -1,0 +1,33 @@
+{
+  "wizardScroll": {
+    "top": 619,
+    "bottom": 709,
+    "vh": 1000,
+    "text": "AuAutomatyzacja budowyⓘ‹Wyłączona›"
+  },
+  "open1": {
+    "name": "Rzym",
+    "opened": true
+  },
+  "offPanel": {
+    "lockedButtons": 7,
+    "allDisabled": true,
+    "hint": "Włącz automatyzację budowy w Ustawieniach",
+    "hasLockedBar": true,
+    "root": ""
+  },
+  "pauseToggle": "clicked",
+  "pause": {
+    "pressed": "false"
+  },
+  "pauseAfter": "true",
+  "open2": {
+    "name": "Rzym",
+    "opened": true
+  },
+  "onPanel": {
+    "lockedButtons": 0,
+    "hint": true
+  },
+  "errors": []
+}

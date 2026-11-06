@@ -56,6 +56,8 @@ export interface CivTestDeps {
   meOwnerId: () => number;
   /** R-WEB-TEST-HOOK-SETCITYLIMIT-Q1: zapisuje bazowy limit miast gry (`_menuCityLimitBase`). */
   setCityLimitBase: (base: number) => void;
+  /** R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: włącza/wyłącza „Automatyzację budowy” gracza (tylko ?civTest=1). */
+  setAutoBuildEnabled: (v: boolean) => void;
   /** Biezaca epoka (imperium) gracza — limit = baza + (epoka-1)*5. */
   meEra: () => number;
   /**
@@ -96,6 +98,8 @@ export interface CivTestApi {
   /** Nadpisuje limit miast GRACZA (w jego biezacej epoce) na `n` (>=0); wywolaj PO unlockAllTech (awans epoki zmienia limit). */
   setCityLimit: (n: number) => void;
   setPraca: (n: number) => void;
+  /** R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: włącz/wyłącz automatyzację budowy gracza. */
+  setAutoBuild: (v: boolean) => void;
   setPolicy: (ownerId: number, patch: CivTestPolicyPatch) => unknown;
   foundCandidates: (limit: number) => Array<{ q: number; r: number }>;
   foundCity: (q: number, r: number) => boolean;
@@ -153,6 +157,7 @@ export function installCivTestHooks(win: Record<string, unknown>, search: string
       deps.setCityLimitBase(cityLimitBaseForTarget(Math.floor(n), deps.meEra()));
     },
     setPraca: n => deps.setPracaPool(n),
+    setAutoBuild: v => deps.setAutoBuildEnabled(v === true),
     setPolicy: (ownerId, patch) => { deps.setUlepszeniaPolicy(ownerId, patch); return deps.getUlepszeniaPolicy(ownerId); },
     foundCandidates: limit => deps.foundCandidates(limit),
     foundCity: (q, r) => deps.foundPlayerCity(q, r),
