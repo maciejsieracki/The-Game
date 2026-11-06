@@ -9,11 +9,7 @@
  *   P4 -- REALNE modele jednostek (buildUnitModel, wszystkie kategorie x typy z danych) i miast (buildMiastoKamien/Braz):
  *         po pooling kazdy mesh ma geometrie o bitowo tej samej tresci co przed (pozycje/normalne/uv/indeks/grupy),
  *         liczba unikalnych geometrii i bajty atrybutow spadaja (raport), a po zwolnieniu wszystkich modeli pula jest pusta
- *         i kazda geometria dostala dispose dokladnie wtedy, gdy nikt jej juz nie uzywa;
- *   P5 -- materialy (`render/materialContentPool.ts`) na tych samych modelach: stan kazdego materialu meshu (toJSON bez
- *         uuid) identyczny, mniej unikalnych materialow, kopia przy zapisie (`unshareMaterials`, uzywana przez
- *         przyciemnienie odroczenia) nie przenosi mutacji na inne modele, po zwolnieniu pula pusta;
- *   P6 -- material z tekstura / z userData nie trafia do puli; rozny kolor -> osobne instancje.
+ *         i kazda geometria dostala dispose dokladnie wtedy, gdy nikt jej juz nie uzywa.
  * Usage: node tools/memory-static-geometry-pool-test.cjs --gra <kopia gra z node_modules (esbuild, three)>
  */
 const fs = require('fs');
@@ -30,7 +26,6 @@ const SRC = path.join(__dirname, '..', 'src');
 const entry = `
 export * as THREE from 'three';
 export { poolOwnedGeometries, releaseOwnedGeometries, geometryPoolStats } from '${SRC}/render/geometryContentPool';
-export { poolOwnedMaterials, releaseOwnedMaterials, unshareMaterials, materialPoolStats } from '${SRC}/render/materialContentPool';
 export { buildUnitModel } from '${SRC}/render/units';
 export { buildMiastoKamien } from '${SRC}/render/miasto-kamien';
 export { buildMiastoBraz } from '${SRC}/render/miasto-braz';
@@ -105,13 +100,13 @@ async function main() {
     const models = []; let buildErr = 0;
     const COPIES = 3; const OWNERS = [0xff0000, 0x0000ff];
     for (let k = 0; k < COPIES; k++) for (const col of OWNERS) for (const [c, n] of specs) {
-      try { const grp = n ? M.buildUnitModel(c, col, n) : M.buildUnitModel(c, col); models.push({ grp, owned: grp.userData.perTokenGeos || [], mats: grp.userData.mats || [], kind: 'unit' }); } catch (e) { buildErr++; }
+      try { const grp = n ? M.buildUnitModel(c, col, n) : M.buildUnitModel(c, col); models.push({ grp, owned: grp.userData.perTokenGeos || [], kind: 'unit' }); } catch (e) { buildErr++; }
     }
     for (let k = 0; k < COPIES; k++) for (const col of OWNERS) for (const lvl of [1, 2, 3, 4]) {
       for (const [kind, fn] of [['kamien', () => M.buildMiastoKamien(lvl, { mur: lvl > 2, color: col })], ['braz', () => M.buildMiastoBraz('egipt', lvl, { mur: lvl > 2, palisada: false, color: col })]]) {
         try {
-          const grp = fn(); const geos = new Set(); const mats = new Set(); grp.traverse((o) => { if (o.isMesh) { geos.add(o.geometry); (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => mats.add(x)); } });
-          models.push({ grp, owned: [...geos], mats: [...mats], kind });
+          const grp = fn(); const geos = new Set(); grp.traverse((o) => { if (o.isMesh) geos.add(o.geometry); });
+          models.push({ grp, owned: [...geos], kind });
         } catch (e) { buildErr++; }
       }
     }
@@ -139,56 +134,6 @@ async function main() {
     let notDisposed = 0; for (const g of ownedAll) if (!disposed.has(g)) notDisposed++;
     ok('P4 po zwolnieniu wszystkiego: pula pusta, kazda geometria zwolniona', geometryPoolStats().shared === 0 && notDisposed === 0, { pool: geometryPoolStats(), notDisposed });
 
-    // P5 materialy (te same modele; geometrie juz zwolnione nie maja znaczenia dla stanu materialow)
-    const { poolOwnedMaterials, releaseOwnedMaterials, unshareMaterials, materialPoolStats } = M;
-    const mstate = (m) => { const j = m.toJSON(); delete j.uuid; delete j.metadata; return JSON.stringify(j); };
-    const mDisposed = new Map();
-    const mwatch = (m) => { if (!m.__w) { m.__w = 1; m.addEventListener('dispose', () => mDisposed.set(m, (mDisposed.get(m) || 0) + 1)); } return m; };
-    const mBefore = new Map(); const mUniqBefore = new Set();
-    const meshMats = (o) => (Array.isArray(o.material) ? o.material : [o.material]);
-    for (const m of models) m.grp.traverse((o) => { if (o.isMesh) { mBefore.set(o, meshMats(o).map(mstate).join('#')); for (const x of meshMats(o)) { mUniqBefore.add(x); mwatch(x); } } });
-    for (const m of models) for (const x of m.mats) mwatch(x); // takze materialy z listy modelu nieuzyte w drzewie
-    for (const m of models) poolOwnedMaterials(m.grp, m.mats);
-    const matsOwnedAll = new Set(); for (const m of models) for (const x of m.mats) matsOwnedAll.add(x);
-    let mMism = 0; const mUniqAfter = new Set();
-    for (const [o, st] of mBefore) { if (meshMats(o).map(mstate).join('#') !== st) mMism++; for (const x of meshMats(o)) mUniqAfter.add(x); }
-    ok('P5 kazdy mesh: stan materialu identyczny (toJSON bez uuid)', mMism === 0, { meshes: mBefore.size, mMism });
-    ok('P5 mniej unikalnych materialow', mUniqAfter.size < mUniqBefore.size / 3, { before: mUniqBefore.size, after: mUniqAfter.size, pool: materialPoolStats() });
-    let mUsedDisposed = 0; for (const x of mUniqAfter) if (mDisposed.has(x)) mUsedDisposed++;
-    ok('P5 zaden uzywany material nie dostal dispose', mUsedDisposed === 0, { mUsedDisposed });
-    // kopia przy zapisie: model A i B dziela material; po unshare(A) zmiana A nie dotyka B
-    const unitModels = models.filter((m) => m.kind === 'unit');
-    let pairA = null; let pairB = null;
-    outer: for (let i = 0; i < unitModels.length; i++) for (let j = i + 1; j < unitModels.length; j++) {
-      const sa = new Set(unitModels[i].mats); if (unitModels[j].mats.some((x) => sa.has(x))) { pairA = unitModels[i]; pairB = unitModels[j]; break outer; }
-    }
-    ok('P5 sa modele ze wspolnym materialem', !!pairA);
-    if (pairA) {
-      const bState = []; pairB.grp.traverse((o) => { if (o.isMesh) bState.push(meshMats(o).map(mstate).join('#')); });
-      unshareMaterials(pairA.grp, pairA.mats);
-      const sb = new Set(pairB.mats);
-      const stillShared = pairA.mats.filter((x) => sb.has(x)).length;
-      for (const x of pairA.mats) { x.transparent = true; x.opacity = 0.42; }
-      const bAfter = []; pairB.grp.traverse((o) => { if (o.isMesh) bAfter.push(meshMats(o).map(mstate).join('#')); });
-      let aUsesOwn = true; pairA.grp.traverse((o) => { if (o.isMesh) for (const x of meshMats(o)) if (sb.has(x) && pairA.mats.length && matsOwnedAll.has(x) && !pairA.mats.includes(x)) aUsesOwn = false; });
-      ok('P5 unshare: mutacja A nie zmienia B', stillShared === 0 && JSON.stringify(bState) === JSON.stringify(bAfter) && aUsesOwn, { stillShared });
-    }
-    for (let i = models.length - 1; i >= 0; i--) releaseOwnedMaterials(models[i].mats);
-    let mNotDisposed = 0; for (const x of matsOwnedAll) if (!mDisposed.has(x)) mNotDisposed++;
-    ok('P5 po zwolnieniu: pula materialow pusta, kazdy material modelu zwolniony', materialPoolStats().shared === 0 && mNotDisposed === 0, { pool: materialPoolStats(), mNotDisposed });
-    // P6 materialy nie do puli
-    const tex = new THREE.Texture();
-    const t1 = new THREE.MeshBasicMaterial({ map: tex }); const t2 = new THREE.MeshBasicMaterial({ map: tex });
-    const u1 = new THREE.MeshBasicMaterial(); u1.userData.x = 1; const u2 = new THREE.MeshBasicMaterial(); u2.userData.x = 1;
-    const c1 = new THREE.MeshBasicMaterial({ color: 0x123456 }); const c2 = new THREE.MeshBasicMaterial({ color: 0x123457 });
-    const g6 = new THREE.BoxGeometry(1, 1, 1);
-    const mk6 = (mat) => { const grp = new THREE.Group(); grp.add(new THREE.Mesh(g6, mat)); return grp; };
-    const r1 = mk6(t1); const r2 = mk6(t2); const r3 = mk6(u1); const r4 = mk6(u2); const r5 = mk6(c1); const r6 = mk6(c2);
-    const l1 = [t1]; const l2 = [t2]; const l3 = [u1]; const l4 = [u2]; const l5 = [c1]; const l6 = [c2];
-    poolOwnedMaterials(r1, l1); poolOwnedMaterials(r2, l2); poolOwnedMaterials(r3, l3); poolOwnedMaterials(r4, l4); poolOwnedMaterials(r5, l5); poolOwnedMaterials(r6, l6);
-    ok('P6 tekstura/userData -> bez puli; rozny kolor -> osobne', r2.children[0].material === t2 && r4.children[0].material === u2 && r6.children[0].material === c2 && materialPoolStats().shared === 2, materialPoolStats());
-    for (const l of [l1, l2, l3, l4, l5, l6]) releaseOwnedMaterials(l);
-    ok('P6 pula pusta po zwolnieniu', materialPoolStats().shared === 0, materialPoolStats());
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }

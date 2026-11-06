@@ -1,0 +1,28 @@
+[unit-deferred-reveal-dim] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: WebGL dostępny w headless Chromium (bez tego dowód wizualny jest nieważny)
+PASS: brak błędów konsoli/pageerror podczas trzech faz renderu
+PASS: FAZA A (PRZED): token odroczonej jednostki NIE ISTNIEJE w scenie (dzisiejszy filtr src)
+PASS: FAZA A (PRZED): jednostka kontrolna jest w scenie i widoczna
+PASS: FAZA B (PO): token odroczonej jednostki ISTNIEJE w scenie, dokładnie jeden (brak podwójnego żetonu)
+PASS: FAZA B (PO): token odroczonej jednostki jest WIDOCZNY (visible === true)
+PASS: FAZA B (PO): WSZYSTKIE własne materiały żetonu mają transparent === true
+PASS: FAZA B (PO): WSZYSTKIE własne materiały żetonu mają opacity < 1
+PASS: FAZA B (PO): przyciemnienie NIE jest bliskie niewidoczności (max opacity >= 0.20)
+PASS: FAZA B (PO): przyciemnienie jest WYRAŹNE względem pełnej widoczności (max opacity <= 0.75)
+PASS: FAZA B (PO): dwa kolejne sync() w tym samym stanie NIE kumulują przyciemnienia (idempotencja)
+PASS: FAZA B (PO, GOAL 5): pierścień właściciela (już półprzezroczysty, 0.42) NIE dostaje PODWÓJNEGO przyciemnienia — próg, nie mnożnik
+PASS: FAZA B (PO, GOAL 5): jednostka spoza okna odroczenia ma NIEZMIENIONE materiały (zero przecieku)
+PASS: FAZA B (PO, GOAL 5): materiały-SINGLETONY odznak (współdzielone przez WSZYSTKIE jednostki na mapie) NIE zostały przyciemnione
+PASS: FAZA C (FLUSH): ten SAM obiekt żetonu co w oknie odroczenia (to samo uuid = brak przebudowy = brak migotania)
+PASS: FAZA C (FLUSH): nadal dokładnie jeden token tej jednostki w scenie
+PASS: FAZA C (FLUSH): materiały żetonu przywrócone 1:1 do stanu jednostki kontrolnej (normalny stan jednostki)
+PASS: FAZA C (FLUSH): przyciemnienie zdjęte — max opacity własnych materiałów wrócił do 1
+PASS: FAZA C (FLUSH): pierścień właściciela wrócił do własnej wartości 0.42 (nie do 1 — bez nadpisania normalnego stanu)
+
+Zrzuty (side-by-side PRZED → PO → PO FLUSH):
+  /tmp/civ-jednostka-niewidoczna-r2-shots-6548-u08dax/01-PRZED-okno-odroczenia-token-filtrowany.png
+  /tmp/civ-jednostka-niewidoczna-r2-shots-6548-u08dax/02-PO-okno-odroczenia-token-przyciemniony.png
+  /tmp/civ-jednostka-niewidoczna-r2-shots-6548-u08dax/03-PO-FLUSH-token-pelna-widocznosc.png
+
+Wynik: 19 pass / 0 fail
+EXIT=0

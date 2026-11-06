@@ -10,8 +10,10 @@
  *   S4 -- rownowaznosc semantyczna calego skryptu: esbuild (parser) wypisuje oba skrypty z charset ascii; jedyne roznice
  *         to literaly regex (esbuild ich nie przepisuje), a po zastosowaniu escapeNonAsciiForJs do wyniku PRZED teksty
  *         sa identyczne bajt w bajt;
- *   S5 -- (--chromium) DOM: pelny textContent strony menu i `?playtest=mapa` identyczny w PRZED i PO (polskie litery
- *         dzialaja tak samo), w tym liczba znakow spoza ASCII.
+ *   S5 -- (--chromium) DOM: pelny textContent strony menu i `?playtest=mapa` (bez <script>/<style>), tekst widoczny
+ *         (innerText) oraz atrybuty title/placeholder/aria-label identyczne w PRZED i PO (polskie litery dzialaja tak
+ *         samo), w tym liczba znakow spoza ASCII;
+ *   S6 -- (--chromium) Cywilopedia otwarta przyciskiem paska, przejscie po pozycjach: tekst artykulow identyczny.
  * Usage: node tools/memory-static-ascii-bundle-test.cjs --a <dist PRZED> --b <dist PO> --gra <kopia gra z node_modules>
  *          [--chromium]
  */
@@ -96,11 +98,28 @@ async function main() {
         await page.waitForFunction(readyFn, undefined, { timeout: 240000 });
         await new Promise((r) => setTimeout(r, 2500));
         const d = await page.evaluate(() => {
-          const t = document.documentElement.textContent || '';
+          // tekst DOM bez <script>/<style> (zrodlo skryptu z definicji rozni sie zapisem \uXXXX)
+          const clone = document.documentElement.cloneNode(true);
+          for (const el of Array.from(clone.querySelectorAll('script,style'))) el.remove();
+          const t = clone.textContent || '';
           const vis = document.body.innerText || '';
           const attrs = []; for (const el of Array.from(document.querySelectorAll('[title],[placeholder],[aria-label]'))) attrs.push((el.getAttribute('title') || '') + '|' + (el.getAttribute('placeholder') || '') + '|' + (el.getAttribute('aria-label') || ''));
           let na = 0; for (let i = 0; i < t.length; i++) if (t.charCodeAt(i) > 127) na++;
           return { text: t.replace(/\s+/g, ' '), vis: vis.replace(/\s+/g, ' '), attrs: attrs.join('\n'), nonAscii: na, title: document.title };
+        });
+        // S6: Cywilopedia -- otworz przyciskiem paska i przejdz po pozycjach (tekst artykulow pochodzi z bundla)
+        d.wiki = await page.evaluate(async () => {
+          const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+          const btn = Array.from(document.querySelectorAll('button')).find((el) => el.offsetParent !== null
+            && /civpedia|cywilopedi|encyklopedi/i.test((el.getAttribute('title') || '') + ' ' + (el.getAttribute('aria-label') || '')));
+          if (!btn) return { opened: false };
+          btn.click(); await sleep(600);
+          const hub = document.querySelector('.civ-wiki-hub');
+          if (!hub) return { opened: false, clicked: true };
+          const parts = [hub.textContent || ''];
+          const items = Array.from(hub.querySelectorAll('.wh-item')).slice(0, 80);
+          for (const it of items) { it.click(); await sleep(40); const c = hub.querySelector('.wh-content'); parts.push(c ? c.textContent || '' : ''); }
+          return { opened: true, items: items.length, text: parts.join('\n').replace(/\s+/g, ' ') };
         });
         await page.close();
         return { ...d, errs };
@@ -115,6 +134,10 @@ async function main() {
           { chars: db.text.length, nonAscii: [da.nonAscii, db.nonAscii], firstDiff: fd, a: fd >= 0 ? da.text.slice(fd - 30, fd + 30) : undefined, b: fd >= 0 ? db.text.slice(fd - 30, fd + 30) : undefined });
         ok(`S5 ${label}: tekst widoczny identyczny i z polskimi literami`, da.vis === db.vis && /[ąćęłńóśźżŁŚŻ]/.test(db.vis), { visChars: db.vis.length, sample: db.vis.slice(0, 80) });
         ok(`S5 ${label}: brak bledow strony w PO (jak w PRZED)`, db.errs.length === da.errs.length, { a: da.errs, b: db.errs });
+        if (label === 'playtest=mapa') {
+          ok('S6 Cywilopedia otwarta i przegladana w obu buildach', da.wiki.opened && db.wiki.opened && db.wiki.items > 10, { a: { opened: da.wiki.opened, items: da.wiki.items }, b: { opened: db.wiki.opened, items: db.wiki.items } });
+          ok('S6 Cywilopedia: tekst artykulow identyczny i z polskimi literami', da.wiki.opened && da.wiki.text === db.wiki.text && /[ąćęłńóśźż]/.test(db.wiki.text || ''), { chars: (db.wiki.text || '').length });
+        }
       }
     } finally { await browser.close(); }
   }
