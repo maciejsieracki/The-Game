@@ -751,6 +751,7 @@ function scoreTech(
   const unlocksEconomy =
     unlocks.includes('tartak') ||
     unlocks.includes('targowisko') ||
+    unlocks.includes('emporion') ||
     unlocks.includes('akwedukt') ||
     unlocks.includes('biblioteka') ||
     unlocks.includes('studnia') ||
