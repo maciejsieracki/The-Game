@@ -1,3 +1,9 @@
+## ROBOCZA b138b229 -- 2026-11-06 -- FALA 521: drogi AI tylko między miastami (testowa)
+
+- R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1 — automat (AI i auto-ulepszenia gracza) buduje drogi tylko jako połączenia między miastami tej samej cywilizacji (drzewo rozpinające po długości ścieżki), bez wypełniania terytorium siatką; w żywej grze 100 tur: 93→12 heksów dróg, 142→1 trójkąt
+- Weryfikacja: tsc PASS; roads-city-links-only 57/0; autoimprove-stages-q1 299/0; auto-improvements 46/0; autobuild-toggle 39/0; ai-test 274/20; hashe war-allin bez zmian
+- Limity: Zostaje do 1 trójkąt (węzeł Y); miasta bez lądowego połączenia po własnym terytorium nie są łączone; istniejące nadmiarowe drogi w starych zapisach nie są usuwane
+
 ## ROBOCZA 49d20c33 -- 2026-11-06 -- FALA 520: wojny AI: szybszy pokój, karencja po pokoju (testowa)
 
 - R-WEB-AI-WAR-WEARINESS-LIVE-AUDIT-Q1 — przegrywająca AI oferuje pokój wcześniej (od 8. tury po utracie miasta, od 25. bez strat) z eskalacją złoto→surowce→miasta; ochrona słabego (≤3 miasta lub ≥3 utraty: zwycięzca musi przyjąć pokój, zostaje ≥3 miasta, nigdy stolica); symetria zmęczenia; karencja po pokoju 40 tur (100 dla chronionego) zamiast 10 — koniec cyklu wojna→pokój→ta sama wojna

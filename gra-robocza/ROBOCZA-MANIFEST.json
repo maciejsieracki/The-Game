@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "49d20c333fb264b6bdddd95b006edcb1",
-  "bundleSha256": "4ea2c43413be88f159bd90981f4d149a789ca5c52d70ae76e8ee1180cf357c19",
-  "bundleBytes": 70288772,
+  "bundleMd5": "b138b22970d28ee2730451db7eae22a3",
+  "bundleSha256": "5b1084c47f66cee5e7992a0e9484a9f33bc2befab4371098a3db9710d2c1a441",
+  "bundleBytes": 70294017,
   "sourceSnapshot": {
-    "source": "main 15c99e09f + WEARY (bcfef4adf)",
+    "source": "main 33855a540 + ROADS (61aeeac87)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 520: R-WEB-AI-WAR-WEARINESS-LIVE-AUDIT-Q1 — przegrywająca AI oferuje pokój wcześniej (od 8. tury po utracie miasta, od 25. bez strat) z eskalacją złoto→surowce→miasta; ochrona słabego (≤3 miasta lub ≥3 utraty: zwycięzca musi przyjąć pokój, zostaje ≥3 miasta, nigdy stolica); symetria zmęczenia; karencja po pokoju 40 tur (100 dla chronionego) zamiast 10 — koniec cyklu wojna→pokój→ta sama wojna"
+    "FALA 521: R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1 — automat (AI i auto-ulepszenia gracza) buduje drogi tylko jako połączenia między miastami tej samej cywilizacji (drzewo rozpinające po długości ścieżki), bez wypełniania terytorium siatką; w żywej grze 100 tur: 93→12 heksów dróg, 142→1 trójkąt"
   ],
   "verification": [
-    "tsc PASS; ai-war-weariness-peace 90/0; diplo-war-peace-sim 22/0; diplomacy-peace-lock 9/0; war-allin-capital-quick hash zgodny; ai-test 274/20"
+    "tsc PASS; roads-city-links-only 57/0; autoimprove-stages-q1 299/0; auto-improvements 46/0; autobuild-toggle 39/0; ai-test 274/20; hashe war-allin bez zmian"
   ],
   "limits": [
-    "Pomiar na żywo tylko 1 ziarno (4242); oferta z miastem nie zaobserwowana w realnej grze; forced-war-bronze/iron-main-guard po 1 FAIL sprzed zmiany"
+    "Zostaje do 1 trójkąt (węzeł Y); miasta bez lądowego połączenia po własnym terytorium nie są łączone; istniejące nadmiarowe drogi w starych zapisach nie są usuwane"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-06T04:54:25",
+  "hubGeneratedAt": "2026-11-06T06:01:29",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "49d20c333fb264b6bdddd95b006edcb1",
-      "sizeBytes": 70288772
+      "md5": "b138b22970d28ee2730451db7eae22a3",
+      "sizeBytes": 70294017
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "49d20c333fb264b6bdddd95b006edcb1",
-      "sizeBytes": 70288772
+      "md5": "b138b22970d28ee2730451db7eae22a3",
+      "sizeBytes": 70294017
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "49d20c333fb264b6bdddd95b006edcb1",
-      "sizeBytes": 70288772
+      "md5": "b138b22970d28ee2730451db7eae22a3",
+      "sizeBytes": 70294017
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "49d20c333fb264b6bdddd95b006edcb1",
-      "sizeBytes": 70288772
+      "md5": "b138b22970d28ee2730451db7eae22a3",
+      "sizeBytes": 70294017
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "49d20c333fb264b6bdddd95b006edcb1",
-      "sizeBytes": 70288772
+      "md5": "b138b22970d28ee2730451db7eae22a3",
+      "sizeBytes": 70294017
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "49d20c333fb264b6bdddd95b006edcb1",
-      "sizeBytes": 70288772
+      "md5": "b138b22970d28ee2730451db7eae22a3",
+      "sizeBytes": 70294017
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "49d20c333fb264b6bdddd95b006edcb1",
-      "sizeBytes": 70288772
+      "md5": "b138b22970d28ee2730451db7eae22a3",
+      "sizeBytes": 70294017
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "49d20c333fb264b6bdddd95b006edcb1",
-      "sizeBytes": 70288772
+      "md5": "b138b22970d28ee2730451db7eae22a3",
+      "sizeBytes": 70294017
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "49d20c333fb264b6bdddd95b006edcb1",
-      "sizeBytes": 70288772
+      "md5": "b138b22970d28ee2730451db7eae22a3",
+      "sizeBytes": 70294017
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "49d20c333fb264b6bdddd95b006edcb1",
-      "sizeBytes": 70288772
+      "md5": "b138b22970d28ee2730451db7eae22a3",
+      "sizeBytes": 70294017
     }
   ],
-  "md5": "49d20c333fb264b6bdddd95b006edcb1",
+  "md5": "b138b22970d28ee2730451db7eae22a3",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
