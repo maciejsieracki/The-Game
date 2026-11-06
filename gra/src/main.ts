@@ -731,7 +731,7 @@ import {
   type BattleSummaryWinner,
 } from './game/battle-summary';
 import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
-import { showHud, updateHud as refreshD1bHud, hideHud, markMinimapDirty } from './ui/hud';
+import { showHud, updateHud as refreshD1bHudRaw, hideHud, markMinimapDirty } from './ui/hud';
 import {
   createCityListHud,
   hideCityListHud,
@@ -3320,8 +3320,32 @@ async function boot(): Promise<void> {
     const lastReligionSpreadByCity = new Map<string, number>();
     let _lastReligionSpreadTotal = 0;
 
+    /**
+     * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: pamięć podręczna JEDNEGO synchronicznego wywołania
+     * (zakres). Wewnątrz `withOwnerScopeMemo` stan świata (cities/cityBuilt/placedImprovements/
+     * mapa) NIE jest mutowany przez wołaną funkcję czytającą, więc wyniki funkcji wyliczanych
+     * per właściciel (a wołanych per miasto → O(miasta²)) są identyczne dla całego zakresu.
+     * Poza zakresem (`ownerScopeMemo === null`) zachowanie jest dokładnie dotychczasowe.
+     * Zwracane kolekcje są kopiowane, więc żaden wołający nie może zanieczyścić wpisu.
+     */
+    let ownerScopeMemo: Map<string, unknown> | null = null;
+    function withOwnerScopeMemo<T>(fn: () => T): T {
+      if (ownerScopeMemo !== null) return fn();
+      ownerScopeMemo = new Map();
+      try { return fn(); } finally { ownerScopeMemo = null; }
+    }
+
     /** Union budynków imperium (dowolne miasto ownerId) — bramka badań T-TECH-7. */
     function empireBuiltIdsForOwner(ownerId: number): Set<string> {
+      if (ownerScopeMemo !== null) {
+        const k = 'built:' + ownerId;
+        let hit = ownerScopeMemo.get(k) as Set<string> | undefined;
+        if (hit === undefined) { hit = empireBuiltIdsForOwnerRaw(ownerId); ownerScopeMemo.set(k, hit); }
+        return new Set(hit);
+      }
+      return empireBuiltIdsForOwnerRaw(ownerId);
+    }
+    function empireBuiltIdsForOwnerRaw(ownerId: number): Set<string> {
       const ids = new Set<string>();
       for (const [cid, blt] of cityBuilt.entries()) {
         const c = cities.find(ct => ct.id === cid && ct.ownerId === ownerId);
@@ -3333,6 +3357,15 @@ async function boot(): Promise<void> {
 
     /** Union aktywnych etykiet surowców imperium — bramki epok B-SUROW-BUD. */
     function empireActiveResourceLabelsForOwner(ownerId: number): string[] {
+      if (ownerScopeMemo !== null) {
+        const k = 'labels:' + ownerId;
+        let hit = ownerScopeMemo.get(k) as string[] | undefined;
+        if (hit === undefined) { hit = empireActiveResourceLabelsForOwnerRaw(ownerId); ownerScopeMemo.set(k, hit); }
+        return [...hit];
+      }
+      return empireActiveResourceLabelsForOwnerRaw(ownerId);
+    }
+    function empireActiveResourceLabelsForOwnerRaw(ownerId: number): string[] {
       const labels = new Set<string>();
       const builtEmpire = empireBuiltIdsForOwner(ownerId);
       const ownerImprovements = placedImprovementsForOwner(ownerId);
@@ -5253,6 +5286,15 @@ async function boot(): Promise<void> {
      * przez territoryOwnerAt — ta sama logika co isPlayerTerritoryHex/enrichBorderMarchPairsWithMilitary.
      */
     function placedImprovementsForOwner(ownerId: number): Map<string, PlacedLayers> {
+      if (ownerScopeMemo !== null) {
+        const k = 'placed:' + ownerId;
+        let hit = ownerScopeMemo.get(k) as Map<string, PlacedLayers> | undefined;
+        if (hit === undefined) { hit = placedImprovementsForOwnerRaw(ownerId); ownerScopeMemo.set(k, hit); }
+        return new Map(hit);
+      }
+      return placedImprovementsForOwnerRaw(ownerId);
+    }
+    function placedImprovementsForOwnerRaw(ownerId: number): Map<string, PlacedLayers> {
       const nodes = buildAllTerritoryNodes();
       const out = new Map<string, PlacedLayers>();
       for (const [hexKey, layers] of placedImprovements) {
@@ -14395,7 +14437,30 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: podpis zawartości ostatnio zbudowanej siatki granic. Siatka
+     * zależy WYŁĄCZNIE od zbiorów heksów per właściciel, kolorów (tożsamość/relacja) i stałych
+     * (kształt: hexKeys + istnienie heksu w mapie), więc przy identycznym podpisie przebudowa
+     * (clear + buildTerritoryBorderGroup, ~20 ms/klik) jest zbędna. Każde inne czyszczenie
+     * (`clearTerritoryBorderOverlay`) unieważnia podpis.
+     */
+    let territoryBorderSig: string | null = null;
+    function territoryBorderSignature(byOwner: Map<number, Set<string>>): string {
+      const parts: string[] = [];
+      for (const [ownerId, keys] of byOwner) {
+        let h1 = 0, h2 = 0;
+        for (const k of keys) {
+          let h = 2166136261;
+          for (let i = 0; i < k.length; i++) { h ^= k.charCodeAt(i); h = Math.imul(h, 16777619); }
+          h1 = (h1 + h) | 0;
+          h2 = (h2 ^ Math.imul(h, 2654435761)) | 0;
+        }
+        parts.push(ownerId + ':' + keys.size + ':' + h1 + ':' + h2 + ':' + civColorFn(ownerId) + ':' + relationColorFn(ownerId));
+      }
+      return parts.join('|');
+    }
     function clearTerritoryBorderOverlay(): void {
+      territoryBorderSig = null;
       if (!territoryBorderGroup) return;
       scene.remove(territoryBorderGroup);
       disposeRangeOverlayGroup(territoryBorderGroup);
@@ -14445,8 +14510,7 @@ async function boot(): Promise<void> {
     }
 
     function refreshTerritoryBorderOverlay(): void {
-      clearTerritoryBorderOverlay();
-      if (!(territoryBorderVisible || isCityPanelOpen())) return;
+      if (!(territoryBorderVisible || isCityPanelOpen())) { clearTerritoryBorderOverlay(); return; }
       const nodes = buildAllTerritoryNodes();
       // R-WEB-TURN-SLOWDOWN-Q2 (P1): `currentVisible()` i `fogExploredForRender()` były
       // liczone OD NOWA dla KAŻDEGO heksu cudzego terytorium (filtr wołany per heks) —
@@ -14465,7 +14529,11 @@ async function boot(): Promise<void> {
         if (exploredOnce === null) exploredOnce = fogExploredForRender();
         return visOnce.has(key) || exploredOnce.has(key);
       });
-      if (byOwner.size === 0) return;
+      if (byOwner.size === 0) { clearTerritoryBorderOverlay(); return; }
+      const sig = territoryBorderSignature(byOwner);
+      if (territoryBorderGroup !== null && sig === territoryBorderSig) return; // ta sama zawartość — siatka bez zmian
+      clearTerritoryBorderOverlay();
+      territoryBorderSig = sig;
       territoryBorderGroup = buildTerritoryBorderGroup(
         map,
         byOwner,
@@ -17509,7 +17577,28 @@ async function boot(): Promise<void> {
       return out;
     }
 
+    /**
+     * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: w obrębie JEDNEGO synchronicznego `refreshD1bHud()` lista
+     * zdarzeń była liczona 3x (panel boczny, licznik blokujących, przycisk końca tury), za każdym
+     * razem O(miasta²). Moduły HUD tylko renderują DOM i nie zmieniają stanu gry, więc w obrębie
+     * ramki wystarczy jedno wyliczenie. Poza ramką (`turnEventsFrame === undefined`) bez zmian.
+     */
+    let turnEventsFrame: SidePanelEvent[] | null | undefined = undefined;
+    function withTurnEventsFrame(fn: () => void): void {
+      if (turnEventsFrame !== undefined) { fn(); return; }
+      turnEventsFrame = null;
+      try { fn(); } finally { turnEventsFrame = undefined; }
+    }
+    /** Każde odświeżenie HUD D1b (dowolny z wielu wywołań w main.ts) idzie przez ramkę zdarzeń. */
+    function refreshD1bHud(): void { withTurnEventsFrame(() => refreshD1bHudRaw()); }
     function collectTurnEvents(): SidePanelEvent[] {
+      if (turnEventsFrame !== undefined) {
+        if (turnEventsFrame === null) turnEventsFrame = withOwnerScopeMemo(collectTurnEventsUncached);
+        return [...turnEventsFrame];
+      }
+      return withOwnerScopeMemo(collectTurnEventsUncached);
+    }
+    function collectTurnEventsUncached(): SidePanelEvent[] {
       const deferLogs = shouldDeferEotEvents(endTurnInProgress);
       const events: SidePanelEvent[] = deferLogs
         ? []
