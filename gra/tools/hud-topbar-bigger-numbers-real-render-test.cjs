@@ -11,7 +11,7 @@
  *   B1 cel 1: font glownej liczby (.civ-hud-chip-val) PO >= 1,25 x PRZED w kazdej komorce
  *   B2 brak przycinania/przepelnienia: scrollWidth <= clientWidth w kazdej komorce; brak poziomego scrolla strony
  *   B3 stały uklad: pozycje x/y/szerokosc komorek i wysokosc banera IDENTYCZNE dla malych i ogromnych liczb
- *   B4 cel 2: przerwa pozioma miedzy glowna liczba a przyrostami (brutto/netto) <= 6 px w kazdej komorce
+ *   B4 cel 2 (r4: asercja puste boki na MAKSIMUM po zetonach; sufity = straznik regresji): przerwa pozioma miedzy glowna liczba a przyrostami (brutto/netto) <= 6 px w kazdej komorce
  *   B5 brutto/netto nadal widoczne w kazdej komorce (dwa elementy przyrostu)
  * Mutacja (cofniecie rozmiaru czcionki = PRZED w PO): HUD_TS=<kopia bazy> MUSI czerwienic B1.
  * Raport: wypisuje tabele przerw (px) i rozmiarow czcionki dla kazdego okna/zestawu.
@@ -95,6 +95,8 @@ const MEASURE = () => {
     const over = [c, ...c.querySelectorAll('*')].filter((e) => e.scrollWidth > e.clientWidth + 0.5 && getComputedStyle(e).display !== 'inline').map((e) => (typeof e.className === 'string' ? e.className : e.tagName));
     out.cells[lbl] = {
       x: r.x, y: r.y, w: r.width,
+      medX: c.querySelector('.civ-hud-chip-med').getBoundingClientRect().left - r.left,
+      valX: vr.left - r.left,
       fontVal: parseFloat(getComputedStyle(val).fontSize),
       gap: fr.left - vr.right,
       padL: c.querySelector('.civ-hud-chip-med').getBoundingClientRect().left - r.left,
@@ -169,8 +171,19 @@ async function main() {
     const huge = res['after/' + w + '/huge'];
     const minSideHuge = Math.min(...ORDER.map((n) => huge.cells[n].padL));
     console.log(`   puste boki zetonu (12): ${ORDER.map((n) => small.cells[n].padL.toFixed(0)).join(' ')} | (2,3M): ${ORDER.map((n) => huge.cells[n].padL.toFixed(0)).join(' ')}  [px na strone; symetryczne]`);
-    // przy 1366 i mniej (ogromne liczby wypelniaja najszerszy zeton): puste boki <= 12 px (+3 tolerancji); 1920: baner pelnej szerokosci (N6), tylko raport
-    if (w <= 1366) ok(minSideHuge <= 15, `${w}: B4 puste boki najciasniejszego zetonu (2,3M) <= ~12 px (min ${minSideHuge.toFixed(1)})`);
+    // B4 puste boki zetonu: ASERCJA NA MAKSIMUM po zetonach (najgorszy zeton), dla zestawu malych (12) i ogromnych (2,3M) liczb.
+    // Cel dispatchu (<= 12 px na strone przy >= 1366 px) NIE jest osiagniety dla krotkich liczb (baner na cala szerokosc, N6) -
+    // sufity ponizej to straznik regresji z zapasem ~10% nad pomiarem R3 (nie dowod celu); cel 12 px raportowany osobno.
+    const CEIL = { 1920: [100, 85], 1366: [52, 36], 1024: [30, 15], 640: [15, 12] };
+    const maxSide = (m) => Math.max(...ORDER.map((n) => m.cells[n].padL));
+    const maxSmall = maxSide(small); const maxHuge = maxSide(huge);
+    if (CEIL[w]) {
+      ok(maxSmall <= CEIL[w][0], `${w}: B4 puste boki NAJGORSZEGO zetonu (12) <= ${CEIL[w][0]} px (max ${maxSmall.toFixed(1)})`);
+      ok(maxHuge <= CEIL[w][1], `${w}: B4 puste boki NAJGORSZEGO zetonu (2,3M) <= ${CEIL[w][1]} px (max ${maxHuge.toFixed(1)})`);
+    }
+    console.log(`   cel dispatchu puste boki <= 12 px: ${maxSmall <= 12 && maxHuge <= 12 ? 'OSIAGNIETY' : 'NIEOSIAGNIETY'} (max 12: ${maxSmall.toFixed(0)} px, max 2,3M: ${maxHuge.toFixed(0)} px)`);
+    // B3b raport: przesuniecie medalionu i liczby w zetonie zaleznie od dlugosci liczby (grupa wycentrowana ma zmienna szerokosc)
+    console.log(`   dryf w zetonie 12 -> 2,3M (px): medalion ${ORDER.map((n) => (huge.cells[n].medX - small.cells[n].medX).toFixed(0)).join(' ')} | liczba ${ORDER.map((n) => (huge.cells[n].valX - small.cells[n].valX).toFixed(0)).join(' ')}`);
     // B5 brutto/netto widoczne
     ok(ORDER.every((n) => small.cells[n].hasRate && small.cells[n].hasNet), `${w}: B5 kazda komorka ma brutto i netto`);
     console.log(`   PRZED font: ${ORDER.map((n) => bsmall.cells[n].fontVal).join(' ')} | PO font: ${ORDER.map((n) => small.cells[n].fontVal).join(' ')}`);
