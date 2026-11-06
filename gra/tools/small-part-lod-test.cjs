@@ -107,7 +107,7 @@ try {
   const tA = makeToken(); const tB = makeToken();
   // (1) zmiana skali figurki (wejscie do miasta) bez zmiany zoomu/version -> przeliczenie
   tA.g.scale.setScalar(0.01);
-  lod2.apply([tA.g], scene, 1, 40, FOV, VH, 3);   // dist 40: world/px~0.033, cutoff~0.1; big 1.0*0.1=0.1... 
+  lod2.apply([tA.g], scene, 1, 40, FOV, VH, 3);   // dist 40: world/px~0.033, cutoff~0.1; big 1.0*0.1=0.1...
   const bigHiddenSmall = tA.big.visible === false;
   tA.g.scale.setScalar(1);
   lod2.apply([tA.g], scene, 1, 40, FOV, VH, 3);
