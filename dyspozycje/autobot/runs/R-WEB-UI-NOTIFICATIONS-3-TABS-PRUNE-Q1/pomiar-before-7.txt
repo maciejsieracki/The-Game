@@ -1,0 +1,19 @@
+Logi: /tmp/civ-notif-logs/before-7.jsonl
+Tury: 30 | wpisy informacyjne razem: 58 (widoczne wg dawnego chipa OFF: 58) | srednio/ture: 1.93 | max/ture: 4
+
+| # | typ (znormalizowany) | wystapien | tur z wpisem | zakladka (eventTabOf) |
+|---|---|---|---|---|
+| 1 |  / X: #× (−Praca) | 22 | 22 | inne |
+| 2 |  / X: +# Drewna (pozostało # tury) (# wystąpienia) | 16 | 16 | inne |
+| 3 |  / X: Trzoda @ (#) | 5 | 5 | inne |
+| 4 | Granice naruszone / Twoje granice naruszone — Ostia · Rzymianie · miasto-państwo: −# pkt Zaufania/turę u każde | 3 | 3 | dyplomacja |
+| 5 |  / X: +# Drewna (pozostało # tury) | 3 | 3 | inne |
+| 6 |  / X: Farma @ (#) | 3 | 3 | inne |
+| 7 | Automatycznie obniżono racje żywnościowe / X: # → # · Mediolan: # → # | 1 | 1 | wazne |
+| 8 |  / X: A ↔ B (handel wewnętrzny) · +# złota/turę | 1 | 1 | inne |
+| 9 | Nowy szlak handlowy / A ↔ B (handel wewnętrzny) · +# złota/turę | 1 | 1 | inne |
+| 10 |  / X: +# Drewna (pozostało # tury) (# wystąpień) | 1 | 1 | inne |
+| 11 | Granice naruszone / Twoje granice naruszone — Kapua · Rzymianie · miasto-państwo, Pompeje · Rzymianie · miasto | 1 | 1 | dyplomacja |
+| 12 | Granice naruszone / Twoje granice naruszone — Ostia · Rzymianie · miasto-państwo, Kapua · Rzymianie · miasto-p | 1 | 1 | dyplomacja |
+
+Podzial na zakladki (wystapienia): {"dyplomacja":5,"wazne":1,"inne":52}

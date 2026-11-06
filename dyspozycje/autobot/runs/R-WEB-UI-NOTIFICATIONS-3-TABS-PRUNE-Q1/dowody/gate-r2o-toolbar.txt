@@ -1,0 +1,30 @@
+sidepanel-events-toolbar-test (R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1; dawniej R-WYDARZENIA-FILTR-KATEGORII N1+N2)
+
+  [OK] deferredHintsToSidePanelEvents oznacza handel AI-AI jako origin:other-civs + tytul "Dyplomacja"
+  [OK] (a) sa trzy zakladki: dyplomacja / wazne / inne
+  [OK] (a) chip "Inne cyw." usuniety z DOM
+  [OK] (a) liczniki zakladek 1/1/1, got 1/1/1
+  [OK] (a) domyslna zakladka = Wazne (jest wpis wojny)
+  [OK] (a) w „Wazne” tylko karta wojny, got war-7-1-0
+  [OK] (a) handel AI-AI NIE jest w DOM domyslnie
+  [OK] (b) klik „Dyplomacja” pokazuje wylacznie handel AI-AI, got eot-hint-7-0
+  [OK] (b) aktywna zakladka przenosi sie na Dyplomacja
+  [OK] (b) klik „Inne” pokazuje wylacznie komunikat produkcji, got prod-empty-city0
+  [OK] (c) przed "Usun wszystkie": 1 karta w aktywnej zakladce „Wazne”
+  [OK] (c) przycisk "Usun wszystkie" istnieje w DOM (onDismissAll podany w configu)
+  [OK] (c) po "Zamknij wszystkie informacyjne": zostaje WYLACZNIE ukryty handel AI-AI, got eot-hint-7-0
+  [OK] (c) po "Zamknij wszystkie informacyjne": 0 kart w DOM aktywnej zakladki
+  [OK] (c2) naglowek w „Wazne” liczy 2 informacyjne (bez ukrytego handlu AI-AI), got "2 informacyjne"
+  [OK] (c2) naglowek w „Dyplomacja” liczy 3 (handel AI-AI widoczny), got "3 informacyjne"
+  [OK] (c2) „Zamknij wszystkie” w Dyplomacji usuwa tez handel AI-AI, got 0
+  [OK] (c2) sam handel AI-AI nie wybiera zakladki Dyplomacja jako domyslnej (aktywna: Inne)
+  [OK] (c2) tylko ukryty handel AI-AI -> brak przycisku „Zamknij wszystkie informacyjne”
+  [OK] brak onDismissAll w configu -> przycisk "Usun wszystkie" nie istnieje w DOM (wsteczna zgodnosc)
+  [OK] zakladki istnieja niezaleznie od onDismissAll
+  [OK] (d) przed dismissem: 2 wpisy widoczne (era- + eot-hint-)
+  [OK] (d) zaraz po dismissie: 0 widocznych (oba usuniete)
+  [OK] (d) oba wpisy USUNIETE TRWALE z warEventLog (nie tylko miekko ukryte)
+  [OK] (d) N1: PO resecie konca tury (wielokrotnym) wpisy NIE wracaja -- 0 widocznych, got 0
+
+sidepanel-events-toolbar-test: 25 pass, 0 fail
+EXIT=0

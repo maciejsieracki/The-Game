@@ -13,7 +13,8 @@
  *   B. Wartości bazowe w REALNYM econ-params.json (wszystkie trudności, real
  *      data, nie mock) -- ten sam plik, który czyta silnik.
  *   C. converterThroughputForEra (funkcja czysta) -- Cegielnia/Garncarnia
- *      +10% bazy ADDYTYWNIE/epokę; Odlewnie płaskie; brzegi (era<1, era=NaN,
+ *      +10% bazy ADDYTYWNIE/epokę; Odlewnie: cykle x m(e) = 1/1,5/2/2,5/3
+ *      (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1); Huta płaska; brzegi (era<1, era=NaN,
  *      baza niecałkowita + interakcja z Math.floor w runConverter).
  *   D. Regresja: reprodukcja starego bledu (throughput niedoskalowany dla
  *      Cegielni/Garncarni po awansie epoki) na WŁASNYM, minimalnym dowodzie
@@ -21,9 +22,9 @@
  *   E. Integracja PEŁNA (esbuild-bundle-real-source, advanceCityEconomy):
  *      PARYTET AI -- gracz (ownerId=0, era 1) i AI (ownerId=7, era 3) w
  *      JEDNYM wywołaniu advanceCityEconomy, Cegielnia/Garncarnia skalują się
- *      per-owner, Odlewnia_brazu zostaje płaska dla OBU (dowód, że "Odlewnie
- *      NIE skalują się" trzyma się w realnym silniku, nie tylko w izolowanej
- *      funkcji czystej).
+ *      per-owner, Odlewnia_brazu skaluje cykle m(e) PER-OWNER dla OBU
+ *      (gracz era1 = 50, AI era3 = 100; ta sama funkcja, inny owner-era --
+ *      dowód parytetu w realnym silniku, nie tylko w izolowanej funkcji czystej).
  *
  * Save/load: mechanizm NIE dodaje żadnego nowego trwałego pola stanu --
  * przepustowość jest przeliczana co turę z (a) econ-params.json [PT] i (b)
@@ -50,7 +51,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.conv-era-bundle.cjs');
 fs.writeFileSync(ENTRY_FILE, `
 export {
   DEFAULT_CONVERTER_RECIPES, loadThroughput, runConverter, runConverters,
-  converterThroughputForEra, CONVERTER_ERA_SCALING_RECIPE_IDS, CONVERTER_ERA_SCALING_PCT,
+  converterThroughputForEra, CONVERTER_ERA_SCALING_RECIPE_IDS, CONVERTER_ERA_SCALING_PCT, CONVERTER_FOUNDRY_ERA_RECIPE_IDS,
   CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE, converterOutputMultiplierForEra, converterThroughputsForEra,
   CONVERTER_OUTPUT_MULT_KEY_SUFFIX,
 } from '../src/game/converters';
@@ -102,13 +103,13 @@ eq(recipe('cegielnia').throughputFallback, 50, 'cegielnia: fallback 50 (bylo 10,
 eq(recipe('cegielnia').outputAmount, 2, 'cegielnia: outputAmount 2 (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1, bylo 1)');
 eq(recipe('garncarnia').outputAmount, 1, 'garncarnia: outputAmount 1 (bez zmian)');
 eq(recipe('garncarnia').throughputFallback, 50, 'garncarnia: fallback 50 (bylo 10, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
-eq(recipe('huta').throughputFallback, 25, 'huta: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
-eq(recipe('odlewnia_brazu').throughputFallback, 25, 'odlewnia_brazu: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
-eq(recipe('odlewnia_zelaza__braz').throughputFallback, 25, 'odlewnia_zelaza__braz: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
-eq(recipe('odlewnia_zelaza__zelazo').throughputFallback, 25, 'odlewnia_zelaza__zelazo: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
-eq(recipe('wielka_odlewnia__braz').throughputFallback, 25, 'wielka_odlewnia__braz: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
-eq(recipe('wielka_odlewnia__zelazo').throughputFallback, 25, 'wielka_odlewnia__zelazo: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
-eq(recipe('wielka_odlewnia__stal').throughputFallback, 25, 'wielka_odlewnia__stal: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(recipe('huta').throughputFallback, 50, 'huta: fallback 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)');
+eq(recipe('odlewnia_brazu').throughputFallback, 50, 'odlewnia_brazu: fallback 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)');
+eq(recipe('odlewnia_zelaza__braz').throughputFallback, 50, 'odlewnia_zelaza__braz: fallback 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)');
+eq(recipe('odlewnia_zelaza__zelazo').throughputFallback, 50, 'odlewnia_zelaza__zelazo: fallback 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)');
+eq(recipe('wielka_odlewnia__braz').throughputFallback, 50, 'wielka_odlewnia__braz: fallback 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)');
+eq(recipe('wielka_odlewnia__zelazo').throughputFallback, 50, 'wielka_odlewnia__zelazo: fallback 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)');
+eq(recipe('wielka_odlewnia__stal').throughputFallback, 50, 'wielka_odlewnia__stal: fallback 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)');
 
 // ===========================================================================
 // B. Wartości bazowe w REALNYM econ-params.json (wszystkie trudności)
@@ -119,12 +120,12 @@ for (const diff of ['easy', 'normal', 'hard']) {
     `econ-params.json budynek_cegielnia_przepustowosc.${diff} = 50 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)`);
   eq(M.loadThroughput(econParamsRaw, 'budynek_garncarnia_przepustowosc', diff, -1), 50,
     `econ-params.json budynek_garncarnia_przepustowosc.${diff} = 50 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)`);
-  eq(M.loadThroughput(econParamsRaw, 'budynek_huta_przepustowosc', diff, -1), 25,
-    `econ-params.json budynek_huta_przepustowosc.${diff} = 25 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 5)`);
-  eq(M.loadThroughput(econParamsRaw, 'budynek_odlewnia_zelaza_przepustowosc', diff, -1), 25,
-    `econ-params.json budynek_odlewnia_zelaza_przepustowosc.${diff} = 25 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 5)`);
-  eq(M.loadThroughput(econParamsRaw, 'budynek_wielka_odlewnia_przepustowosc', diff, -1), 25,
-    `econ-params.json budynek_wielka_odlewnia_przepustowosc.${diff} = 25 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 5)`);
+  eq(M.loadThroughput(econParamsRaw, 'budynek_huta_przepustowosc', diff, -1), 50,
+    `econ-params.json budynek_huta_przepustowosc.${diff} = 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)`);
+  eq(M.loadThroughput(econParamsRaw, 'budynek_odlewnia_zelaza_przepustowosc', diff, -1), 50,
+    `econ-params.json budynek_odlewnia_zelaza_przepustowosc.${diff} = 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)`);
+  eq(M.loadThroughput(econParamsRaw, 'budynek_wielka_odlewnia_przepustowosc', diff, -1), 50,
+    `econ-params.json budynek_wielka_odlewnia_przepustowosc.${diff} = 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)`);
 }
 
 // ===========================================================================
@@ -137,8 +138,12 @@ console.log('\n-- C. converterThroughputForEra: skalowanie Cegielnia/Garncarnia,
 eq(M.CONVERTER_ERA_SCALING_RECIPE_IDS.size, 1, 'CONVERTER_ERA_SCALING_RECIPE_IDS: dokladnie 1 wpis (cykle; Cegielnia skaluje WYJSCIE, BRICK-X2 opcja C)');
 assert(!M.CONVERTER_ERA_SCALING_RECIPE_IDS.has('cegielnia'), 'scaling set: NIE ma cegielni (cykle plaskie; mnoznik na wyjsciu)');
 assert(M.CONVERTER_ERA_SCALING_RECIPE_IDS.has('garncarnia'), 'scaling set: ma garncarnia');
-for (const id of ['huta', 'odlewnia_brazu', 'odlewnia_zelaza__braz', 'odlewnia_zelaza__zelazo', 'wielka_odlewnia__braz', 'wielka_odlewnia__zelazo', 'wielka_odlewnia__stal']) {
-  assert(!M.CONVERTER_ERA_SCALING_RECIPE_IDS.has(id), `scaling set: NIE ma ${id} (Odlewnie plaskie)`);
+for (const id of ['odlewnia_brazu', 'odlewnia_zelaza__braz', 'odlewnia_zelaza__zelazo', 'wielka_odlewnia__braz', 'wielka_odlewnia__zelazo', 'wielka_odlewnia__stal']) {
+  assert(M.CONVERTER_FOUNDRY_ERA_RECIPE_IDS.has(id), `foundry set: ${id} skaluje cykle m(e) (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1)`);
+  assert(!M.CONVERTER_ERA_SCALING_RECIPE_IDS.has(id), `garncarnia-scaling set: NIE ma ${id}`);
+}
+for (const id of ['huta']) {
+  assert(!M.CONVERTER_ERA_SCALING_RECIPE_IDS.has(id), `scaling set: NIE ma ${id} (plaska)`);
 }
 eq(M.CONVERTER_ERA_SCALING_PCT, 0.10, 'CONVERTER_ERA_SCALING_PCT = 0.10 (10%)');
 
@@ -171,12 +176,19 @@ for (const id of ['garncarnia']) {
   eq(M.converterThroughputsForEra(r => r.throughputFallback, 1)['cegielnia' + M.CONVERTER_OUTPUT_MULT_KEY_SUFFIX], undefined, 'era1: brak klucza mnoznika');
 }
 
-// C3. Odlewnie: baza 5, PLASKIE -- era nie zmienia wyniku (era1/2/3/10 identyczne).
-for (const id of ['huta', 'odlewnia_brazu', 'odlewnia_zelaza__braz', 'odlewnia_zelaza__zelazo', 'wielka_odlewnia__braz', 'wielka_odlewnia__zelazo', 'wielka_odlewnia__stal']) {
+// C3. Odlewnie: m(e) = 1/1,5/2/2,5/3 na cykle (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1; baza 5 w tym
+// tescie = tylko wartosc arytmetyczna). Huta: PLASKA.
+for (const id of ['odlewnia_brazu', 'odlewnia_zelaza__braz', 'odlewnia_zelaza__zelazo', 'wielka_odlewnia__braz', 'wielka_odlewnia__zelazo', 'wielka_odlewnia__stal']) {
+  eq(M.converterThroughputForEra(id, 5, 1), 5, `${id}: era1 -> 5 (m=1)`);
+  eq(M.converterThroughputForEra(id, 5, 2), 7.5, `${id}: era2 -> 7,5 (m=1,5)`);
+  eq(M.converterThroughputForEra(id, 5, 3), 10, `${id}: era3 -> 10 (m=2)`);
+  eq(M.converterThroughputForEra(id, 5, 10), 27.5, `${id}: era10 -> 27,5 (m=5,5 liniowo)`);
+}
+for (const id of ['huta']) {
   eq(M.converterThroughputForEra(id, 5, 1), 5, `${id}: era1 -> 5 (plaskie)`);
-  eq(M.converterThroughputForEra(id, 5, 2), 5, `${id}: era2 -> 5 (plaskie, BEZ +10%)`);
-  eq(M.converterThroughputForEra(id, 5, 3), 5, `${id}: era3 -> 5 (plaskie, BEZ +20%)`);
-  eq(M.converterThroughputForEra(id, 5, 10), 5, `${id}: era10 -> 5 (plaskie nawet przy duzej epoce)`);
+  eq(M.converterThroughputForEra(id, 5, 2), 5, `${id}: era2 -> 5 (plaskie)`);
+  eq(M.converterThroughputForEra(id, 5, 3), 5, `${id}: era3 -> 5 (plaskie)`);
+  eq(M.converterThroughputForEra(id, 5, 10), 5, `${id}: era10 -> 5 (plaskie)`);
 }
 
 // C4. Brzegi era<1 / NaN -- traktowane jak era1 (brak ujemnego/undefined mnoznika).
@@ -282,11 +294,10 @@ console.log('\n-- E. advanceCityEconomy: PARYTET AI (gracz era1, AI era3), Cegie
     eq(cAi.surowce.cegla, 200, 'AI (era3): 200 cegiel/ture (50 cykli x 2 x mnoznik wyjscia 2 -- MECHANIZM DZIALA DLA AI; bylo 60)');
     eq(cAi.surowce.ceramika, 60, 'AI (era3): 60 ceramiki/ture (+20% bazy -- MECHANIZM DZIALA DLA AI; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 12)');
 
-    // Odlewnia_brazu: PLASKA dla OBU ownerow mimo roznych epok -- to jest sedno
-    // "Odlewnie NIE skaluja sie" zweryfikowane w REALNYM silniku, nie tylko w
-    // izolowanej funkcji czystej (sekcja C wyzej).
-    eq(cPlayer.surowce.braz, 25, 'gracz (era1): 25 brazu/ture (Odlewnia plaska, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 5)');
-    eq(cAi.surowce.braz, 25, 'AI (era3): 25 brazu/ture (Odlewnia plaska -- BEZ bonusu mimo epoki3; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 5)');
+    // Odlewnia_brazu: R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 -- cykle = 50 x m(epoka wlasciciela):
+    // gracz era1 -> 50, AI era3 -> 100 (PARYTET: ta sama funkcja, inny owner-era). Bylo: plaska 25.
+    eq(cPlayer.surowce.braz, 50, 'gracz (era1): 50 brazu/ture (50 cykli x m=1; R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)');
+    eq(cAi.surowce.braz, 100, 'AI (era3): 100 brazu/ture (50 cykli x m=2; R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25 plaskie)');
   }
 }
 

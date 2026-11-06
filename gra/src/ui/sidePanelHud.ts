@@ -24,7 +24,13 @@ import {
 } from './minimapLayout';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX } from './sidePanelLayout';
 import { isDiploObscuringUnitDock } from './unitCtxDockDiploGate';
-import { filterSidePanelEvents } from './sidePanelEventFilter';
+import { filterSidePanelEventsByTab, relevantInfoEvents, tabCountsOf } from './sidePanelEventFilter';
+import {
+  defaultSidePanelTab,
+  SIDE_PANEL_TAB_LABELS,
+  SIDE_PANEL_TABS,
+  type SidePanelTab,
+} from './sidePanelEventTabs';
 
 export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enemy' | 'info' | 'diplo';
 
@@ -243,16 +249,20 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}
 .civ-side-panel .sp-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:6px;
-  padding:0 4px 2px;margin-bottom:2px;pointer-events:auto;}
-.civ-side-panel .sp-toolbar-chip{font:10px var(--civ-font-ui);letter-spacing:.06em;
+  padding:0 4px;margin-bottom:3px;pointer-events:auto;}
+.civ-side-panel .sp-tabs{display:flex;gap:4px;margin:0 0 4px;pointer-events:auto;}
+.civ-side-panel .sp-tab{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;gap:3px;
+  overflow:hidden;white-space:nowrap;font:10px var(--civ-font-ui);letter-spacing:.02em;
   color:var(--civ-text-muted);background:rgba(20,26,38,.7);border:1px solid rgba(232,216,138,.22);
-  border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
-.civ-side-panel .sp-toolbar-chip:hover{border-color:rgba(232,216,138,.4);}
-.civ-side-panel .sp-toolbar-chip.sp-toolbar-chip-active{color:var(--civ-gold-primary);
+  border-radius:8px;padding:2px 3px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
+.civ-side-panel .sp-tab:hover{border-color:rgba(232,216,138,.4);}
+.civ-side-panel .sp-tab.sp-tab-active{color:var(--civ-gold-primary);
   border-color:var(--civ-gold-primary);background:rgba(232,216,138,.14);}
+.civ-side-panel .sp-tab-label{min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.civ-side-panel .sp-tab-count{flex:0 0 auto;opacity:.75;}
 .civ-side-panel .sp-toolbar-dismiss-all{font:10px var(--civ-font-ui);letter-spacing:.06em;
   color:var(--civ-text-muted);background:transparent;border:1px solid rgba(232,216,138,.22);
-  border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s;}
+  border-radius:999px;padding:1px 9px;cursor:pointer;transition:border-color .15s,color .15s;}
 .civ-side-panel .sp-toolbar-dismiss-all:hover{border-color:var(--tg-red);color:var(--tg-red);}
 /* R-TRZY-KARTY-WDROZENIE-Q1 runda 2, Karta 3 (2026-08-20): blokująca vs informacyjna —
    różnica jest w KSZTAŁCIE i GRUBOŚCI rantu (--tg-border-blocking), nie w kolorystyce.
@@ -398,7 +408,7 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   border-radius:6px;}
 .civ-side-panel .sp-close:hover{color:var(--civ-gold-primary);}
 .civ-side-panel .sp-close:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
-.civ-side-panel .sp-toolbar-chip:focus-visible,.civ-side-panel .sp-toolbar-dismiss-all:focus-visible{
+.civ-side-panel .sp-tab:focus-visible,.civ-side-panel .sp-toolbar-dismiss-all:focus-visible{
   outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
 .civ-side-panel .sp-placeholder{font-size:10px;color:#7a7055;text-align:right;padding:8px 4px;font-style:italic;line-height:1.4;}
 .civ-side-ctx-dock.open .sp-ctx-card{pointer-events:auto;}
@@ -599,9 +609,11 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   ctxScrollEl.className = 'sp-ctx-scroll';
   ctxEl.appendChild(ctxScrollEl);
 
-  // R-WYDARZENIA-FILTR-KATEGORII: stan chipa 🌍 „Inne cyw." — zmienna domknięcia,
-  // przeżywa update()/tury (nie jest resetowana przy każdym render()).
-  let showOtherCivsEvents = false;
+  // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: aktywna zakładka informacyjna (Dyplomacja / Ważne /
+  // Inne). Dopóki gracz sam nie kliknie zakładki, domyślna wynika z zawartości (Ważne gdy są
+  // wpisy). Zmienne domknięcia — przeżywają update()/tury, jak dawny chip.
+  let activeTab: SidePanelTab = 'wazne';
+  let activeTabPicked = false;
 
   // Wspólne dla trzech kart (DYSPOZYCJA-WDROZENIE.md §5): Esc zamyka karty niezobowiązujące.
   // Tylko informacyjne — delegacja na el, żeby działać niezależnie od tego, który element
@@ -711,13 +723,21 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       html += buildContextCardHtml(hexCtx, expanded);
     }
 
-    const visibleEvents = filterSidePanelEvents(events, showOtherCivsEvents);
     // R-TRZY-KARTY-WDROZENIE-Q1 runda 2: kolejka, nie stos — blokujące ZAWSZE przed
     // informacyjnymi, niezależnie od kolejności zgłoszenia (DYSPOZYCJA-WDROZENIE.md
     // §4, założenie 1). Kolejność WEWNĄTRZ każdej z dwóch grup pozostaje bez zmian
-    // (kolejność zwrócona przez getEvents()/filterSidePanelEvents).
-    const blockingEvents = visibleEvents.filter(ev => ev.blocking === true);
-    const infoEvents = visibleEvents.filter(ev => ev.blocking !== true);
+    // (kolejność zwrócona przez getEvents() / filterSidePanelEventsByTab).
+    // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: karty blokujące są zawsze widoczne (niezależnie
+    // od zakładki); zakładki filtrują WYŁĄCZNIE wpisy informacyjne.
+    const blockingEvents = events.filter(ev => ev.blocking === true);
+    const allInfoEvents = events.filter(ev => ev.blocking !== true);
+    // Liczniki na zakładkach = to, co gracz zobaczy po kliknięciu (z handlem AI↔AI w Dyplomacji).
+    const tabCounts = tabCountsOf(allInfoEvents, true);
+    // Zakładka domyślna nie liczy ukrytego handlu AI↔AI — sam nie przełącza panelu na Dyplomację.
+    if (!activeTabPicked) activeTab = defaultSidePanelTab(tabCountsOf(allInfoEvents, false));
+    const infoEvents = filterSidePanelEventsByTab(allInfoEvents, activeTab);
+    // Nagłówek i „Zamknij wszystkie informacyjne”: zakres sprzed zakładek — bez ukrytych AI↔AI.
+    const relevantInfo = relevantInfoEvents(allInfoEvents, activeTab);
     const orderedEvents = [...blockingEvents, ...infoEvents];
 
     if (isPlaceholder) {
@@ -727,23 +747,28 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       if (blockingEvents.length > 0) {
         counterParts.push(blockingEvents.length + ' ' + pluralPl(blockingEvents.length, 'wymaga decyzji', 'wymagają decyzji'));
       }
-      if (infoEvents.length > 0) {
-        counterParts.push(infoEvents.length + ' ' + pluralPl(infoEvents.length, 'informacyjna', 'informacyjne'));
+      if (relevantInfo.length > 0) {
+        counterParts.push(relevantInfo.length + ' ' + pluralPl(relevantInfo.length, 'informacyjna', 'informacyjne'));
       }
       html += '<div class="sp-header">' + (counterParts.length > 0 ? counterParts.join(' · ') : 'Wydarzenia') + '</div>';
     }
 
     if (!isPlaceholder) {
-      html += '<div class="sp-toolbar">'
-        + '<button type="button" class="sp-toolbar-chip'
-        + (showOtherCivsEvents ? ' sp-toolbar-chip-active' : '')
-        + '" data-sp-toggle-other-civs>\u{1F30D} Inne cyw.</button>'
-        // Hurtowe zamknięcie dotyczy TYLKO informacyjnych (§4) — dlatego etykieta i warunek
-        // widoczności patrzą na infoEvents, nie na wszystkie wydarzenia; patrz handler
-        // [data-sp-dismiss-all] niżej, który celowo NIE woła config.onDismissAll.
-        + (config.onEventDismiss !== undefined && infoEvents.length > 0
-          ? '<button type="button" class="sp-toolbar-dismiss-all" data-sp-dismiss-all>Zamknij wszystkie informacyjne</button>'
-          : '')
+      // Hurtowe zamknięcie dotyczy TYLKO informacyjnych (§4), nad zakładkami; patrz handler
+      // [data-sp-dismiss-all] niżej, który celowo NIE woła config.onDismissAll.
+      if (config.onEventDismiss !== undefined && relevantInfo.length > 0) {
+        html += '<div class="sp-toolbar">'
+          + '<button type="button" class="sp-toolbar-dismiss-all" data-sp-dismiss-all>Zamknij wszystkie informacyjne</button>'
+          + '</div>';
+      }
+      html += '<div class="sp-tabs" role="tablist" aria-label="Kategorie wydarzeń">'
+        + SIDE_PANEL_TABS.map(tab => {
+          const on = tab === activeTab;
+          return '<button type="button" role="tab" class="sp-tab' + (on ? ' sp-tab-active' : '')
+            + '" aria-selected="' + (on ? 'true' : 'false') + '" data-sp-tab="' + tab + '">'
+            + '<span class="sp-tab-label">' + SIDE_PANEL_TAB_LABELS[tab] + '</span>'
+            + '<span class="sp-tab-count">' + tabCounts[tab] + '</span></button>';
+        }).join('')
         + '</div>';
     }
 
@@ -882,9 +907,14 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       if (card) bindContextInteractions(el, hexCtx);
     }
 
-    el.querySelector('[data-sp-toggle-other-civs]')?.addEventListener('click', () => {
-      showOtherCivsEvents = !showOtherCivsEvents;
-      render();
+    el.querySelectorAll('[data-sp-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = (btn as HTMLElement).getAttribute('data-sp-tab') as SidePanelTab | null;
+        if (tab === null) return;
+        activeTab = tab;
+        activeTabPicked = true;
+        render();
+      });
     });
 
     el.querySelector('[data-sp-dismiss-all]')?.addEventListener('click', () => {
@@ -892,7 +922,8 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       // per-id przez onEventDismiss (istniejący miękki dismiss), NIE wołamy config.onDismissAll,
       // bo ten dziś czyści też blokujące (main.ts clearAllSidePanelEvents/
       // handleSidePanelEventDismiss iterują collectTurnEvents() bez rozróżnienia blocking).
-      for (const ev of infoEvents) config.onEventDismiss?.(ev.id);
+      // Zakres = relevantInfo (dotychczasowy: bez ukrytych wpisów AI↔AI), nie wszystkie zakładki.
+      for (const ev of relevantInfo) config.onEventDismiss?.(ev.id);
       render();
     });
 
