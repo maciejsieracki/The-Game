@@ -179,6 +179,10 @@ export interface NewGameParams {
   /** R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): „Wojna epoki z udziałem gracza” (domyślnie ON).
    * / EN: whether the player takes part in epoch forced wars (default ON). */
   playerEpochWarEnabled?: boolean;
+  /** R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (właściciel 2026-11-05): „Automatyzacja budowy” gracza
+   * (auto-ulepszenia terenu + auto-budowa budynków). Domyślnie WYŁĄCZONA; AI bez zmian.
+   * / EN: player build automation (default OFF). */
+  autoBuildEnabled?: boolean;
 }
 
 /**
@@ -670,6 +674,7 @@ const SETTING_GLYPHS: Record<string, string> = {
   cityStateDifficulty: 'TM',
   deals_end_turn_gate: 'Ha',
   player_epoch_war: 'Wo',
+  auto_build_enabled: 'Au',
   barbariansLevel: 'Ba',
   victory_mode: 'Zw',
   landFraction: 'Ld',
@@ -2037,6 +2042,7 @@ function renderSettStep(host: HTMLElement): void {
     'game_speed', 'player_epoch_war',
     'difficulty', 'barbariansLevel',
     'victory_mode', 'village_rewards_enabled',
+    'auto_build_enabled',
   ]);
   renderAiCivPicker(layout);
   host.appendChild(layout);
@@ -2178,6 +2184,7 @@ function buildParams(): NewGameParams {
     villageRewardsEnabled: settingValue('village_rewards_enabled') !== 'Wyłączone',
     dealsEndTurnGate: settingValue('deals_end_turn_gate') !== 'Wyłączona',
     playerEpochWarEnabled: settingValue('player_epoch_war') !== 'Wyłączona',
+    autoBuildEnabled: settingValue('auto_build_enabled') === 'Włączona',
   };
 }
 

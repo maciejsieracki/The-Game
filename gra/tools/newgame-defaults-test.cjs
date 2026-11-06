@@ -26,7 +26,7 @@ const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'newgame-defaults-'));
 const PREFS_KEY = 'civ-new-game-prefs-v1';
 const EVIDENCE = path.resolve(GRA, '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-NEWGAME-DEFAULTS-Q1', 'evidence');
 
-// Po scaleniu z R-WEB-NEWGAME-MENU-REORDER-Q1: siatka kroku 4 ma 12 kart (warunki zwycięstwa, trudność miast-państw,
+// Po scaleniu z R-WEB-NEWGAME-MENU-REORDER-Q1: siatka kroku 4 ma 13 kart (12 + „Automatyzacja budowy”, R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1) (warunki zwycięstwa, trudność miast-państw,
 // barbarzyńcy, „Wojna epoki”, chatki z nagrodami przeszły z „Zaawansowanych” do siatki).
 const EXPECTED_GRID = {
   'Rozmiar mapy': 'Standardowy',
@@ -39,6 +39,7 @@ const EXPECTED_GRID = {
   'Barbarzyńcy': 'Normalny',
   'Wojna epoki': 'Włączona',
   'Chatki z nagrodami': 'Włączone',
+  'Automatyzacja budowy': 'Wyłączona', // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (właściciel 2026-11-05): domyślnie WYŁĄCZONA
 };
 
 const EXPECTED_ADV = {

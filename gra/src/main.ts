@@ -1345,6 +1345,7 @@ import {
 } from './game/embarkation';
 import { isWaterTerrain } from './units/setup';
 import { autoManageCity, pickAutoBuildItem, isBudowaListaUkonczonaForCity } from './game/auto-manage';
+import { isAutoBuildAllowedForOwner, autoBuildFromSaveMeta, autoBuildFromNewGameParam, AUTO_BUILD_ENABLED_DEFAULT } from './game/auto-build-gate';
 import {
   AI_DIFFICULTY_BONUS_UNIT_TYPE,
   applyDifficultyCombatToUnitDef,
@@ -7980,6 +7981,7 @@ async function boot(): Promise<void> {
         getAliveUnitTypeNames: (ownerId: number) =>
           new Set(units.filter(x => x.ownerId === ownerId).map(x => x.typeId)),
         isAutoManageEnabled: (cityId: string) => autoManageCities.has(cityId),
+        isAutoBuildEnabled: isPlayerAutoBuildEnabled, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1
         getGrowthMult: (cityId: string) => growthMultMap.get(cityId) ?? 1,
         // #17: Bilans plonów w panelu miasta musi mnożyć plony Porządkiem tak samo
         // jak silnik (turn-economy.ts applyOrderYieldMults) — bez tego panel zaniżał
@@ -9019,6 +9021,8 @@ async function boot(): Promise<void> {
     function tryAutoEnqueueBuild(cityId: string) {
       const city = cities.find(c => c.id === cityId);
       if (!city || !isAutoBudowaTryb(city.budowaTryb)) return null;
+      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: gracz bez włączonej automatyzacji budowy — tryb zostaje w danych, nie działa.
+      if (!isAutoBuildAllowedFor(city.ownerId)) return null;
       const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       if (frontItem(prod0) !== null) return null;
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
@@ -9234,6 +9238,22 @@ async function boot(): Promise<void> {
      * / EN: new-game option; ON lets the player take part in epoch forced wars.
      */
     let playerEpochWarEnabled = false;
+    /**
+     * R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (właściciel 2026-11-05): „Automatyzacja budowy" GRACZA
+     * (auto-ulepszenia terenu + auto-budowa budynków w miastach). DOMYŚLNIE WYŁĄCZONA; AI bez zmian.
+     * Zapis: meta.autoBuildEnabled; stary zapis (brak pola) = WYŁĄCZONA. Tryby auto zapisane w mieście
+     * zostają w danych, ale silnik ich nie wykonuje dla gracza, dopóki opcja jest wyłączona.
+     * / EN: player build-automation master switch (default OFF); AI unaffected.
+     */
+    let autoBuildEnabled = AUTO_BUILD_ENABLED_DEFAULT;
+    /** Jedna bramka silnika i UI: czy automatyka budowy może działać dla ownera (AI zawsze tak). */
+    function isAutoBuildAllowedFor(ownerId: number): boolean {
+      return isAutoBuildAllowedForOwner(ownerId, humanSeats.humanOwnerIds, autoBuildEnabled);
+    }
+    /** Czy opcja „Automatyzacja budowy" gracza jest włączona (UI). */
+    function isPlayerAutoBuildEnabled(): boolean {
+      return autoBuildEnabled;
+    }
     /**
      * D-DYPLO-AI-NO-NAG (Maciej 2026-07-29): cooldown po odrzuceniu oferty AI przez gracza
      * (partner + actionId) — save/load meta.rejectedOfferCooldowns.
@@ -17125,7 +17145,7 @@ async function boot(): Promise<void> {
 
     /** Czy w mieście jest coś do wyboru w produkcji (kolejka może być pusta) — tylko realnie dostępne teraz. */
     function cityHasActionableProduction(city: City): boolean {
-      if (isAutoBudowaTryb(city.budowaTryb)) return false;
+      if (isAutoBudowaTryb(city.budowaTryb) && isAutoBuildAllowedFor(city.ownerId)) return false;
       const ctx = productionAvailabilityCtxForCity(city);
       if (cityHasAffordableBuildingEnqueue(city, ctx)) return true;
       if (cityHasAffordableUnitRecruitment(city, ctx)) return true;
@@ -24399,6 +24419,9 @@ async function boot(): Promise<void> {
 
     configureGamePauseMenu({
       hasSave: hasAnySaveSlot,
+      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: przełącznik „Automatyzacja budowy” także w trakcie gry (stare zapisy: domyślnie WYŁ.).
+      getAutoBuildEnabled: isPlayerAutoBuildEnabled,
+      onAutoBuildToggle: (enabled: boolean) => { autoBuildEnabled = enabled === true; },
       onResume: () => { /* gra już widoczna pod overlayem */ },
       onSave: () => { openSaveGameDialog(); },
       onLoad: () => { void openLoadGameDialog(true); },
@@ -24899,6 +24922,7 @@ async function boot(): Promise<void> {
           },
           listPlayerCities: () =>
             cities.filter(c => isMe(c.ownerId)).map(c => ({ id: c.id, name: c.name })),
+          isAutoBuildEnabled: isPlayerAutoBuildEnabled, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1
           getUlepszeniaCityId: () => ensureUlepszeniaHudCityId(),
           onUlepszeniaCityIdChange: (cityId: string) => {
             ulepszeniaHudCityId = cityId;
@@ -27248,6 +27272,7 @@ async function boot(): Promise<void> {
       endTurn: () => { triggerPlayerEndTurn(); },
       meOwnerId: () => ME(),
       setCityLimitBase: base => { _menuCityLimitBase = base; }, // R-WEB-TEST-HOOK-SETCITYLIMIT-Q1 (tylko ?civTest=1)
+      setAutoBuildEnabled: v => { autoBuildEnabled = v === true; }, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (tylko ?civTest=1)
       meEra: () => empireEpochForOwner(ME()),
       setCityWorkers: (cityId, keys) => {
         const city = cities.find(c => c.id === cityId);
@@ -34730,6 +34755,8 @@ async function boot(): Promise<void> {
           negotiationSeq,
           // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): ustawienie opcji nowej gry trwa w zapisie.
           dealsEndTurnGate: dealsEndTurnGateEnabled,
+          // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: automatyzacja budowy gracza trwa w zapisie.
+          autoBuildEnabled,
           // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): tylko przy fladze ON (OFF = bajty jak baza).
           ...(isWarEpochPlayerFirstEnabled() ? { playerEpochWarEnabled } : {}),
           rejectedOfferCooldowns: pruneExpiredRejectedOffers(rejectedOfferCooldowns, turn),
@@ -37061,7 +37088,8 @@ async function boot(): Promise<void> {
                     },
                   );
                   // Apply auto-enqueue suggestion (only when queue is empty)
-                  if (amDecision.enqueue !== null) {
+                  // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: Zarządca ⚙ gracza nie kolejkuje budynków przy wyłączonej opcji.
+                  if (amDecision.enqueue !== null && isAutoBuildAllowedFor(city.ownerId)) {
                     // TEMAT #6 / SUROW-CIV-01: pickAutoBuildItem (wewnatrz autoManageCity)
                     // juz odfiltrowal budynki bez pokrycia w puli PANSTWA — tu tylko pobieramy
                     // koszt (start budowy), rozlozony po miastach ownera.
@@ -37078,7 +37106,7 @@ async function boot(): Promise<void> {
                 } catch (eAM) {
                   console.error(`[AutoManage] Blad dla miasta ${city.name}:`, eAM);
                 }
-              } else if (isAutoBudowaTryb(city.budowaTryb)) {
+              } else if (isAutoBudowaTryb(city.budowaTryb) && isAutoBuildAllowedFor(city.ownerId)) {
                 // Auto-budowa bez globalnego Zarządcy (⚙)
                 const enq = tryAutoEnqueueBuild(cid);
                 if (enq) prod0 = cityProd.get(cid) ?? prod0;
@@ -37150,7 +37178,7 @@ async function boot(): Promise<void> {
                 const applied = applyProductionCompleted(city, cid, completed, prodPo);
                 prodFinal = applied.prod;
                 cityProd.set(cid, prodFinal);
-                if (isAutoBudowaTryb(city.budowaTryb) && frontItem(prodFinal) === null) {
+                if (isAutoBudowaTryb(city.budowaTryb) && isAutoBuildAllowedFor(city.ownerId) && frontItem(prodFinal) === null) {
                   tryAutoEnqueueBuild(cid);
                   prodFinal = cityProd.get(cid) ?? prodFinal;
                 }
@@ -37429,6 +37457,8 @@ async function boot(): Promise<void> {
               for (const hOid of humanSeats.humanOwnerIds) {
                 const autoImpCities = cities.filter(c => {
                   if (c.ownerId !== hOid) return false;
+                  // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: bramka auto-ulepszeń terenu gracza.
+                  if (!isAutoBuildAllowedFor(hOid)) return false;
                   return effectiveUlepszeniaForCity(c).tryb === 'auto';
                 });
                 const hOidPracaPool = ownerPracaPool(hOid);
@@ -42019,6 +42049,8 @@ async function boot(): Promise<void> {
     async function doStartGame(params: NewGameParams): Promise<void> {
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): opcja z ekranu nowej gry (domyślnie ON).
       dealsEndTurnGateEnabled = params.dealsEndTurnGate ?? true;
+      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: opcja z ekranu nowej gry (domyślnie WYŁĄCZONA).
+      autoBuildEnabled = autoBuildFromNewGameParam(params.autoBuildEnabled);
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja z ekranu nowej gry (domyślnie ON).
       playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;
       resetEndTurnBlockers('doStartGame');
@@ -44196,6 +44228,8 @@ async function boot(): Promise<void> {
       negotiationSeq = (saved.meta?.negotiationSeq as number | undefined) ?? negotiationTable.length;
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): stary zapis bez pola = opcja WYŁĄCZONA.
       dealsEndTurnGateEnabled = (saved.meta?.dealsEndTurnGate as boolean | undefined) === true;
+      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: stary zapis bez pola = WYŁĄCZONA.
+      autoBuildEnabled = autoBuildFromSaveMeta(saved.meta?.autoBuildEnabled);
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): stary zapis bez pola = WYŁĄCZONA.
       playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) === true;
       rejectedOfferCooldowns = [];

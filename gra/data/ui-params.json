@@ -299,6 +299,19 @@
           "Brak wiosek na mapie"
         ],
         "domyslny": 0
+      },
+      {
+        "key": "auto_build_enabled",
+        "label": "Automatyzacja budowy",
+        "opts": [
+          "Włączona",
+          "Wyłączona"
+        ],
+        "descs": [
+          "Auto-budowa budynków w miastach i auto-ulepszenia terenu działają dla Ciebie (AI buduje jak dotąd)",
+          "Budynki i ulepszenia terenu budujesz ręcznie; przyciski „Auto” są niedostępne"
+        ],
+        "domyslny": 1
       }
     ]
   }
