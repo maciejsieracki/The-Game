@@ -1,3 +1,9 @@
+## ROBOCZA 1c69835a -- 2026-11-06 -- FALA 512: cegła ×2 i Cegielnia +50%/epokę (testowa)
+
+- R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 — Cegielnia daje 2 cegły z cyklu (×2) i mnożnik wyjścia 1/1,5/2/2,5/3 wg epoki właściciela (tylko Cegielnia, gracz i AI); era 2 ≈ 2,7× dotychczasowej produkcji
+- Weryfikacja: tsc PASS; brick-production-x2 69/0; converter-era-scaling 117/0; converters 49/0; ai-test 274/20 = baseline
+- Limity: Brak pomiaru w żywej grze; ok. 2,7× w erze 2 do oceny właściciela
+
 ## ROBOCZA 7b1663df -- 2026-11-06 -- FALA 511: oblężenie: etap zapasów i głód garnizonu (testowa)
 
 - R-WEB-SIEGE-STARVATION-SURRENDER-Q1 — oblężenie w dwóch etapach: zapasy (garnizon zdrowy), potem głód garnizonu 6/8/10% maxHP na turę; poddanie gdy ΣHP spadnie poniżej 50% stanu z początku głodu; plakietka z nową prognozą
