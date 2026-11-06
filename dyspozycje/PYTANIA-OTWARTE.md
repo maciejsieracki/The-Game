@@ -32432,3 +32432,13 @@ Wpisać do `R-PROC-AUTOBOT.md` §9 jako granicę: **mechanizmy balansu i wylicze
 identycznie gracza i AI; każde odstępstwo wymaga jawnej, zapisanej decyzji właściciela
 i asercji w bramce, która pilnuje, że odstępstwo jest zamierzone.** Dziś takich odstępstw
 jest co najmniej pięć i żadne nie było zamówione.
+
+## P-DECYZJE-ORKIESTRATORA-2026-11-06 · ABC do właściciela · STATUS: **OTWARTE** — wdrożone prowizorycznie na ROBOCZEJ, właściciel zatwierdza albo zmienia
+Orkiestrator podjął poniższe wybory bez pytania (naruszenie dyscypliny ABC wskazane przez właściciela 2026-11-06); wdrożenie jest prowizoryczne i odwracalne jednym parametrem:
+1. **Emporion — bonus 5% handlu** (FALA 516): A (wdrożone) = per TRASA, Emporion tylko +1 slot tras; B = osobny niezależny +5% za sam budynek (pierwotnie zapisane „kumulujące się”). Tematy: R-WEB-BUILDING-EMPORION-Q1.
+2. **Górny baner — puste boki żetonu** (FALA 519): A (wdrożone) = baner na całą szerokość, grupa liczba+przyrosty wyśrodkowana (puste boki 55–93 px przy 1920 px); B = `max-width` banera (ciaśniejsze żetony, baner nie wypełnia ekranu).
+3. **Zmęczenie wojną — parametry** (FALA 520): `karencjaPoPokojuTur` 20/**40**/60; `karencjaChronionegoTur` 60/**100**/150; `pelneTur` **200**/150/120; `ochronaMaxMiast` 2/**3**/4. Skutek uboczny: 100-turowa karencja chronionego blokuje też jego wypowiedzenie wojny zwycięzcy.
+4. **Pakt o nieagresji — luki**: (a) automatyczny NAP państw-miast UPR bez bramki Zaufania; (b) ręczna akceptacja propozycji AI przez gracza bez progów (C-DYP-Q1=A); (c) inicjatywa AI liczy własny próg bez narzutu granicy (R-WEB-DIPLO-NAP-AI-BORDER-Q1 do rozpisania).
+5. **Cegielnia** (FALA 512): ×2 wyjścia i mnożnik wyjścia 1/1,5/2/2,5/3 → era 2 ≈ 2,7× dotychczasowej produkcji (150 zamiast 55 cegieł); krzywa liniowa 1/1,5/2 daje epoka 3 vs 2 = 1,33× (zlecenie mówiło 1,5×).
+6. **Rozmywanie koni**: temat zamknięty jako duplikat (pixelRatioMax 2.0 już wdrożony); brak potwierdzenia u właściciela — prośba o zgłoszenie, jeśli rozmycie wraca (ekran, zoom).
+7. **Wydajność T86**: zmierzono tylko skalę miast; patrz R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (runda 5/5).
