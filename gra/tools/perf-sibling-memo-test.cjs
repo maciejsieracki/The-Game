@@ -93,6 +93,18 @@ try {
   const flipped = cities.map((c, i) => i === 5 ? { ...c, ownerId: c.ownerId === 0 ? 1 : 0 } : c);
   check('owner change => recomputed', computeLostToNearerSiblingByCity(flipped, mapA) !== memoized);
 
+  // 2b. map.hexes replacement on the SAME map object must invalidate (memo keyed on map.hexes identity).
+  const mapD = mkMap();
+  const beforeHexes = computeLostToNearerSiblingByCity(cities, mapD);
+  const shrunk = {};
+  for (const k of Object.keys(mapD.hexes)) { const p = k.split(','); if ((Number(p[0]) + Number(p[1])) % 3 !== 0) shrunk[k] = mapD.hexes[k]; }
+  mapD.hexes = shrunk;
+  const afterHexes = computeLostToNearerSiblingByCity(cities, mapD);
+  const afterHexesFresh = computeLostToNearerSiblingByCity(cities, { ...mapD, hexes: { ...shrunk } });
+  check('replacing map.hexes on the same map object => recomputed (not stale)', afterHexes !== beforeHexes);
+  check('recomputed after hexes change equals fresh', JSON.stringify(toObj(afterHexes)) === JSON.stringify(toObj(afterHexesFresh)));
+  check('hexes change actually alters the result (not vacuous)', JSON.stringify(toObj(afterHexes)) !== JSON.stringify(toObj(beforeHexes)));
+
   // 3. budget: UI path = one call per player city (40) on a state the memo has not seen yet.
   const mapC = mkMap();
   const t0 = process.hrtime.bigint();

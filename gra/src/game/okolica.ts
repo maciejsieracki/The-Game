@@ -791,10 +791,14 @@ export function computeLostToNearerSiblingByCity(
   // / EN: pure function memoized on an input signature; same Map/Set instances are returned
   // for equal inputs (callers treat them as read-only).
   const sig = siblingSignature(cities);
-  let perMap = siblingMemoByMap.get(map);
+  // Klucz = obiekt `map.hexes` (nie sam `map`): podmiana zbioru heksow na tej samej mapie
+  // uniewaznia memo. Zalozenie (grep: brak zapisow in-place do hexes w src): hexes jest niemutowalne
+  // po utworzeniu; dopisanie klucza in-place NIE jest wykrywane.
+  const memoKey = ((map as { hexes?: object }).hexes ?? map) as object;
+  let perMap = siblingMemoByMap.get(memoKey);
   if (!perMap) {
     perMap = new Map();
-    siblingMemoByMap.set(map, perMap);
+    siblingMemoByMap.set(memoKey, perMap);
   }
   const hit = perMap.get(sig);
   if (hit) return hit;
@@ -805,7 +809,7 @@ export function computeLostToNearerSiblingByCity(
 }
 
 const SIBLING_MEMO_MAX_ENTRIES = 6;
-const siblingMemoByMap = new WeakMap<GameMap, Map<string, ReadonlyMap<string, ReadonlySet<string>>>>();
+const siblingMemoByMap = new WeakMap<object, Map<string, ReadonlyMap<string, ReadonlySet<string>>>>();
 
 /** Sygnatura wejscia: kolejnosc + id/pozycja/promien/wlasciciel kazdego miasta. */
 function siblingSignature(
