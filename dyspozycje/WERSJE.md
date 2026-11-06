@@ -1,3 +1,9 @@
+## ROBOCZA 39b70c14 -- 2026-11-06 -- FALA 524: pamięć: przyczyna wzrostu ustalona, bufory geometrii ulepszeń (testowa)
+
+- R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1 — przyczyna liniowego wzrostu pamięci: bufory geometrii scalonych meshy ulepszeń (86% wzrostu t.60→100: JSArrayBufferData) — trójkąty zapisywane bez indeksów i kopia CPU zostawała obok GPU; poprawka: wierzchołki identyczne bit w bit współdzielone przez indeksy (30,5% dawnych bajtów, trójkąty identyczne), zwolnienie kopii CPU po wysłaniu do GPU z odbudową po utracie kontekstu WebGL (z poprawką mgły po odbudowie); pamięć po GC (seed 4242): t.100 573→444 MB, nachylenie t.60→100 2,05→0,70 MB/turę
+- Weryfikacja: tsc PASS; memory-growth-merge-index 24/0; improvement-cpu-release Chromium 20/0; visual-parity 4/0 (piksel w piksel); logic 213/213; hashe war-allin zgodne; ai-test 274/20 = baza
+- Limity: Pomiar 100 tur nie powtórzony po rebase/R2; tylko 1 seed; mgła OFF w pomiarze; nieskorygowane: bundle tylko-ASCII −71 MB (vite.config.ts), scalenie modeli jednostek −35–45 MB i miast −15–20 MB
+
 ## ROBOCZA 45168586 -- 2026-11-06 -- FALA 523: pamięć podręczna ulepszeń właściciela (koniec tury) (testowa)
 
 - R-WEB-PERF-PLACED-IMPROVEMENTS-CACHE-Q1 — drugi hotspot końca tury w późnej grze: placedImprovementsForOwner (skan wszystkich ulepszeń mapy dla każdej jednostki/trasy) jest teraz buforowany per właściciel z inwalidacją przy zapisie (VersionedMap) i zmianie miast/fortów; na stanie syntetycznym 12–112× szybciej (zależnie od częstości zapisów), wynik identyczny z wersją bez bufora
