@@ -6912,6 +6912,8 @@ export function decideAIDiplomacy(
       && bias.proposeNap
       && !rel.hasNapTreaty
       && score >= dipP.progNapRelacja - bias.napScoreEase + deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined)
+      // R-WEB-DIPLO-NAP-TRUST-30-Q1: AI proponuje pakt dopiero przy Zaufaniu ≥ progNapZaufanie.
+      && rel.relation.zaufanie >= dipP.progNapZaufanie
     ) {
       const napIndefinite = score >= dipP.progSojuszRelacja;
       komendy.push({

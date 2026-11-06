@@ -97,6 +97,12 @@ export interface DiplomacyActionLockContext {
   buyableTechCount: number;
   knownRivalsCount: number;
   progNapRelacja: number;
+  /**
+   * R-WEB-DIPLO-NAP-TRUST-30-Q1: próg Zaufania dla Paktu o nieagresji (wymagany OBOK Relacji).
+   * Opcjonalne: `undefined` = WSTECZNA ZGODNOŚĆ (bramka Zaufania pominięta) dla fikstur
+   * spoza allowlisty tego tematu — main.ts ZAWSZE przekazuje realną wartość z DIPLOMACY_PARAMS.
+   */
+  progNapZaufanie?: number;
   progHandelRelacja: number;
   progSojuszRelacja: number;
   progSojuszZaufanie: number;
@@ -196,7 +202,11 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
     case '2': { // Pakt o nieagresji
       if (ctx.hasNap) return { locked: false, active: true, note: ALREADY_NOTE['2']! };
       if (ctx.atWar) return { locked: true, note: 'zablokowany — trwa wojna' };
-      const gate = relacjaGate(ctx.progNapRelacja, ctx.relTotal);
+      // R-WEB-DIPLO-NAP-TRUST-30-Q1: pakt wymaga Relacji ORAZ Zaufania (dualGate, jak sojusz/granice).
+      const napZaufanie = ctx.progNapZaufanie;
+      const gate = napZaufanie === undefined
+        ? relacjaGate(ctx.progNapRelacja, ctx.relTotal)
+        : dualGate(ctx.relTotal, ctx.zaufanie, ctx.progNapRelacja, napZaufanie);
       if (gate) return gate;
       return { locked: false, note: '' };
     }

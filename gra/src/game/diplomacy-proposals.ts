@@ -1113,6 +1113,13 @@ export function evaluateProposal(
       // reszta tej bramki. Narzut = SWEETENER_EASE_MAX_POINTS (sufit słodzika), więc
       // MAKSYMALNY słodzik dokładnie go kasuje — to jest gwarancja, że warunek nigdy nie
       // jest nieosiągalny. Wartość WYPROWADZONA z istniejącej stałej, nie nowy balans.
+      // R-WEB-DIPLO-NAP-TRUST-30-Q1: pakt wymaga TEŻ Zaufania ≥ progNapZaufanie (stała, bez ±trudność).
+      if (relation.zaufanie < p.progNapZaufanie) {
+        return {
+          accepted: false, pwBalance: -1,
+          reason: `Zaufanie zbyt niskie na pakt (wymagane ≥ ${p.progNapZaufanie}, masz ${relation.zaufanie})`,
+        };
+      }
       const napExpansionSurcharge = ctx.karaWspolnaGranica ? NAP_GRANICA_RELACJA_NARZUT : 0;
       const napThreshold = Math.max(
         0,
