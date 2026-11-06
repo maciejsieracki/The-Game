@@ -1,22 +1,18 @@
 STATUS: FAIL
-DOMAIN: GAME
+DOMAIN: GAME (WEB)
 TEMAT: R-WEB-PERF-ENDTURN-AI-PHASE-Q1
-GOAL: JS konca tury >= 2x nizszy (mediana n>=7), bez zmiany wynikow i determinizmu AI. NIE osiagniety, NIE zmierzony (Operator i Obrona to przyznaja; szacunek ok. -12..-20%).
-ZMIANY/COMMIT: oceniany SHA 0c159269a (obrona; kod = 39f96124c39b032ad24b55970e7a981b822239ee na bazie ca289d8ce = origin/main). Diff do allowlisty: gra/src/main.ts (+30/-1), 2 nowe testy w gra/tools, raport/logi runa. Brak zmian w gra-robocza, WERSJE.md, rust-port, src-tauri, battle, gra/data. git diff --check czysty. FC nie dodaje zmian kodu.
-TESTY: tsc EXIT=0 (gate-tsc.txt), perf-endturn-ai-phase-equiv-test (statyczny) 1/1 EXIT=0. Regresje 274/20, 13/13 nie dotykaja main.ts - nie sa dowodem determinizmu.
-ROZSTRZYGNIECIE ZARZUTOW:
-1 GOAL niespelniony - NAPRAW (runda 2).
-2 Status zawyzony - NAPRAW (poprawny status: DECISION_REQUIRED/BLOCK; korekta przyjeta).
-3 Brak tabeli n>=7 + load avg - NAPRAW (runda 2, stabilny host).
-4 Brak rownowaznosci dynamicznej >=200 stanow i mutacji - NAPRAW (runda 2).
-5 Testy regresji nie dotykaja zmiany - ODDAL (uwaga do pkt 4, nie osobny powod).
-6 Brak logow gate - NAPRAW czesciowo: gate-tsc/equiv sa; brak logic/ai-test/war-allin hash i profili CDP top-15 (runda 2).
-7 Dominujace koszty poza allowlista - DO DECYZJI CZLOWIEKA (poszerzenie allowlisty: resource-access.ts, units/setup.ts computePathImpl, auto-improvements.ts, render/; korekta Obrony: marchPathFor w ai.ts jest w allowliscie).
-8 tyAll wspolny Map w oknie - ODDAL (konsument tylko czyta; domknac testem w rundzie 2).
-9 Allowlista zachowana - ODDAL (pozytyw).
-Wynik: >=1 NAPRAW -> FAIL.
-BLOKADY: decyzja orkiestratora o allowliscie (pkt 7), stabilny host n>=7, sciezka headless/CDP dla rownowaznosci.
-RUNDY: FC 1/5
-NASTEPNY KROK: orkiestrator rozstrzyga allowliste -> Operator runda 2 z tym samym ID.
-INTEGRACJA: NIE integrowac teraz. Gdyby po rundzie 2 integrowano: najpierw do main (baza ca289d8ce), dopiero potem relacja do origin/rust-port/parity-v2 (b520768b0, merge-base z main f4c89d008). Zmiana dotyka tylko gra/ (web), parity-v2 dotyczy rust-port, konflikt plikow nieoczekiwany.
+GOAL: JS konca tury (137 miast / 321 jednostek) >= 2x nizej niz 55e098dc5 - NIE osiagniety, NIE zmierzony.
+ZMIANY/COMMIT: kandydat R2 aa9d5d1cea0941d299d1fc4698821ac7d49609a3 (rodzic 24186ef52). Diff do allowlisty: resource-access.ts, nowy test, runs/** - OK (bez render/, gra/data, WERSJE.md, rust-port). Kolejnosc wzgledem origin/rust-port/parity-v2 (b520768b0): merge-base f4c89d008, merge-tree bez konfliktow; integrowac PO parity-v2, ale dopiero po R3 - obecny SHA nie nadaje sie do integracji.
+WERDYKT ZARZUTOW:
+1. GOAL niezmierzony - NAPRAW (R3, srodowisko z Chromium).
+2. Brak profilu CDP top-15 / tabeli udzialow (warunek d dispatchu) - NAPRAW (R3).
+3. Jedna naprawa, reszta nieruszona; tyAll (FC nr 8) bez testu dynamicznego - NAPRAW (R3, po profilu).
+4. Mikro-benchmark syntetyczny - ODDAL jako zarzut samodzielny (wchodzi w pkt 5).
+5. NOWE (dowod wlasny): getResourceAccessForCity nie ma zadnego wywolania w gra/src (grep: tylko definicja i komentarze). Zmiana R2 to martwa optymalizacja, efekt na koniec tury = 0. Goracy wolajacy: gra/src/main.ts:3391 (empireActiveResourceLabelsForOwnerRaw) uzywa getCityResourceAccessForCity i czyta tylko .active - to wlasciwy cel; main.ts:8119 (panel miasta) czyta .potential, nie ruszac. NAPRAW: przelaczyc main.ts:3391 na wariant tylko-active (main.ts w allowliscie); udzial potwierdzic profilem (wynik cache'owany per owner).
+6. Regresje/hashe war-allin przyjete z logow (pre-existing 11 FAIL, identyczne baza/kandydat) - ODDAL.
+Samodzielnie: diff i grep zweryfikowane; testow nie powtarzano (FC nie zmienia kodu). Wyniki Operatora/Obrony: tsc EXIT=0, equiv 300 przypadkow/0 roznic, 3/3 mutacje.
+DECYZJA PRODUKTOWA: brak.
+BLOKADY: brak Chromium w srodowisku Operatora (INFRA); R3 musi isc tam, gdzie jest przegladarka i zapis duzej gry.
+RUNDY: 2/5
+NASTEPNY KROK: R3 (Operator): main.ts:3391 na active-only, profil CDP top-15 z tabela udzialow, A/B/A/B n>=5, naprawa dominujacych.
 DEPLOY/PUSH: NIE WYKONANO
