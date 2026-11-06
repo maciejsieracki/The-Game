@@ -90,9 +90,21 @@ class MinHeap {
   }
 }
 
+/** Liczba geometrycznie najblizszych sasiadow, z ktorymi liczone sa kandydackie krawedzie MST (reszta polaczen: faza uzupelniajaca). */
+const NEAREST_K = 5;
+
+const axialDist = (aq: number, ar: number, bq: number, br: number): number => {
+  const dq = aq - bq, dr = ar - br;
+  return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+};
+
 /**
  * Plan sieci drogowej (MST po dlugosci sciezki) dla miast JEDNEGO wlasciciela.
  * `cities` = wszystkie miasta tego wlasciciela (nie podzbior po profilu) — inaczej MST rozpadnie sie na kawalki.
+ *
+ * Wydajnosc: kandydackie krawedzie tylko miedzy `NEAREST_K` najblizszymi sasiadami (Dijkstra z wczesnym stopem i limitem
+ * kosztu), potem faza uzupelniajaca laczy rozlaczne skladowe najblizsza para (jedna proba na pare skladowych).
+ * Koszt kroku heksa liczony raz na wywolanie (pamiec).
  */
 export function planRoadNetwork(
   cities: readonly RoadPlanCity[],
@@ -105,46 +117,54 @@ export function planRoadNetwork(
   if (n < 2) return empty;
   const cityAt = new Map<string, number>();
   sorted.forEach((c, i) => cityAt.set(kOf(c.q, c.r), i));
+  const keyOfCity = sorted.map(c => kOf(c.q, c.r));
   const extra = opts.extraRoadKeys;
   const planned = new Set<string>();
 
-  const stepCost = (q: number, r: number, usePlanned: boolean): number => {
-    const key = kOf(q, r);
-    if (cityAt.has(key)) return COST_CITY;
-    const hex = map.hexes[key];
-    if (!hex || !LAND.has(String(hex.terenBazowy))) return -1;
-    if (opts.isTraversable && !opts.isTraversable(q, r)) return -1;
-    if (usePlanned && planned.has(key)) return COST_PLANNED;
-    if (extra?.has(key) || hexHasRoad(hex)) return COST_ROAD;
-    if (hex.terenBazowy === TerenBazowy.Gory) return COST_MOUNTAIN;
-    if (hex.terenBazowy === TerenBazowy.Wzgorza) return COST_HILLS;
-    return COST_BASE;
+  const baseCostMemo = new Map<string, number>();
+  const baseCost = (q: number, r: number, key: string): number => {
+    const hit = baseCostMemo.get(key);
+    if (hit !== undefined) return hit;
+    let v: number;
+    if (cityAt.has(key)) v = COST_CITY;
+    else {
+      const hex = map.hexes[key];
+      if (!hex || !LAND.has(String(hex.terenBazowy))) v = -1;
+      else if (opts.isTraversable && !opts.isTraversable(q, r)) v = -1;
+      else if (extra?.has(key) || hexHasRoad(hex)) v = COST_ROAD;
+      else if (hex.terenBazowy === TerenBazowy.Gory) v = COST_MOUNTAIN;
+      else if (hex.terenBazowy === TerenBazowy.Wzgorza) v = COST_HILLS;
+      else v = COST_BASE;
+    }
+    baseCostMemo.set(key, v);
+    return v;
   };
 
-  /** Dijkstra z miasta `from`; `to` >= 0 konczy wczesniej. Zwraca dist/parent. */
-  const dijkstra = (from: number, to: number, usePlanned: boolean) => {
+  /** Dijkstra z miasta `from`; konczy, gdy wszystkie `targets` (klucze heksow) sa rozliczone; `cap` ucina za drogie sciezki. */
+  const dijkstra = (from: number, targets: ReadonlySet<string> | null, usePlanned: boolean, cap: number) => {
     const dist = new Map<string, number>();
     const parent = new Map<string, string>();
     const done = new Set<string>();
     const src = sorted[from]!;
     const heap = new MinHeap();
-    const sk = kOf(src.q, src.r);
-    dist.set(sk, 0); heap.push(0, src.q, src.r);
-    const targetKey = to >= 0 ? kOf(sorted[to]!.q, sorted[to]!.r) : null;
+    dist.set(keyOfCity[from]!, 0); heap.push(0, src.q, src.r);
+    let left = targets ? targets.size : -1;
     for (;;) {
       const cur = heap.pop();
       if (!cur) break;
       const ck = kOf(cur.q, cur.r);
       if (done.has(ck)) continue;
       done.add(ck);
-      if (targetKey && ck === targetKey) break;
+      if (targets && targets.has(ck) && --left <= 0) break;
       for (const d of DIRS) {
         const nq = cur.q + d[0], nr = cur.r + d[1];
         const nk = kOf(nq, nr);
         if (done.has(nk)) continue;
-        const w = stepCost(nq, nr, usePlanned);
+        let w = baseCost(nq, nr, nk);
         if (w < 0) continue;
+        if (usePlanned && planned.has(nk) && w > COST_PLANNED) w = COST_PLANNED;
         const nd = cur.c + w;
+        if (nd > cap) continue;
         const old = dist.get(nk);
         if (old === undefined || nd < old) {
           dist.set(nk, nd); parent.set(nk, ck); heap.push(nd, nq, nr);
@@ -154,18 +174,31 @@ export function planRoadNetwork(
     return { dist, parent };
   };
 
-  // 1) odleglosci miedzy parami miast (Dijkstra z kazdego miasta).
+  // 1) kandydackie krawedzie: kazde miasto z NEAREST_K geometrycznie najblizszymi (limit kosztu = 3x odleglosc do K-tego).
+  const edgeSeen = new Set<number>();
   const edges: Array<{ i: number; j: number; cost: number }> = [];
+  const pushEdge = (i: number, j: number, cost: number): void => {
+    const a = Math.min(i, j), b = Math.max(i, j);
+    const id = a * n + b;
+    if (edgeSeen.has(id)) return;
+    edgeSeen.add(id); edges.push({ i: a, j: b, cost });
+  };
   for (let i = 0; i < n; i++) {
-    const { dist } = dijkstra(i, -1, false);
-    for (let j = i + 1; j < n; j++) {
-      const d = dist.get(kOf(sorted[j]!.q, sorted[j]!.r));
-      if (d !== undefined) edges.push({ i, j, cost: d });
+    const near: Array<{ j: number; d: number }> = [];
+    for (let j = 0; j < n; j++) if (j !== i) near.push({ j, d: axialDist(sorted[i]!.q, sorted[i]!.r, sorted[j]!.q, sorted[j]!.r) });
+    near.sort((x, y) => (x.d - y.d) || (x.j - y.j));
+    const top = near.slice(0, NEAREST_K);
+    const targets = new Set(top.map(t => keyOfCity[t.j]!));
+    const cap = COST_BASE * 3 * (top[top.length - 1]?.d ?? 1) + COST_MOUNTAIN;
+    const { dist } = dijkstra(i, targets, false, cap);
+    for (const t of top) {
+      const d = dist.get(keyOfCity[t.j]!);
+      if (d !== undefined) pushEdge(i, t.j, d);
     }
   }
   edges.sort((x, y) => (x.cost - y.cost) || (x.i - y.i) || (x.j - y.j));
 
-  // 2) Kruskal (MST / las rozpinajacy dla komponentow rozlacznych).
+  // 2) Kruskal (MST / las rozpinajacy).
   const uf = sorted.map((_, i) => i);
   const find = (x: number): number => { while (uf[x]! !== x) { uf[x] = uf[uf[x]!]!; x = uf[x]!; } return x; };
   const chosen: Array<{ i: number; j: number; cost: number }> = [];
@@ -174,14 +207,38 @@ export function planRoadNetwork(
     if (a === b) continue;
     uf[a] = b; chosen.push(e);
   }
-  const roots = new Set(sorted.map((_, i) => find(i)));
-  const disconnected = roots.size - 1;
+
+  // 2b) uzupelnienie: rozlaczne skladowe lacz najblizsza para miast (jedna proba na pare skladowych; brak sciezki = zostaja rozlaczne).
+  const tried = new Set<string>();
+  for (;;) {
+    const comps = new Map<number, number[]>();
+    for (let i = 0; i < n; i++) { const r = find(i); const arr = comps.get(r); if (arr) arr.push(i); else comps.set(r, [i]); }
+    if (comps.size <= 1) break;
+    let best: { i: number; j: number; d: number; pk: string } | null = null;
+    const roots = [...comps.keys()].sort((a, b) => a - b);
+    for (let x = 0; x < roots.length; x++) for (let y = x + 1; y < roots.length; y++) {
+      const pk = `${roots[x]}|${roots[y]}`;
+      if (tried.has(pk)) continue;
+      for (const i of comps.get(roots[x]!)!) for (const j of comps.get(roots[y]!)!) {
+        const d = axialDist(sorted[i]!.q, sorted[i]!.r, sorted[j]!.q, sorted[j]!.r);
+        if (!best || d < best.d || (d === best.d && (i < best.i || (i === best.i && j < best.j)))) best = { i, j, d, pk };
+      }
+    }
+    if (!best) break;
+    tried.add(best.pk);
+    const { dist } = dijkstra(best.i, new Set([keyOfCity[best.j]!]), false, Infinity);
+    const d = dist.get(keyOfCity[best.j]!);
+    if (d === undefined) continue;
+    const a = find(best.i), b = find(best.j);
+    if (a !== b) { uf[a] = b; chosen.push({ i: Math.min(best.i, best.j), j: Math.max(best.i, best.j), cost: d }); }
+  }
+  const disconnected = new Set(sorted.map((_, i) => find(i))).size - 1;
 
   // 3) sciezki wybranych krawedzi: kolejne wchodza chetnie w juz zaplanowany pien (brak rownoleglych pasow).
   for (const e of chosen) {
-    const { parent } = dijkstra(e.i, e.j, true);
-    let k = kOf(sorted[e.j]!.q, sorted[e.j]!.r);
-    const startKey = kOf(sorted[e.i]!.q, sorted[e.i]!.r);
+    const { parent } = dijkstra(e.i, new Set([keyOfCity[e.j]!]), true, Infinity);
+    let k = keyOfCity[e.j]!;
+    const startKey = keyOfCity[e.i]!;
     while (k !== startKey) {
       if (!cityAt.has(k)) planned.add(k);
       const p = parent.get(k);
@@ -192,22 +249,21 @@ export function planRoadNetwork(
 
   // 4) wygladzenie: heks w trojkacie (3 wzajemnie sasiadujace wezly sieci) jest zbedny, gdy jego sasiedzi pozostaja
   //    polaczeni bez niego — usuwa „zygzaki” dajace drobne wielokaty. Deterministycznie (kolejnosc q, r).
-  const adjacent = (a: string, b: string): boolean => {
-    const [aq = 0, ar = 0] = a.split(',').map(Number); const [bq = 0, br = 0] = b.split(',').map(Number);
-    return DIRS.some(d => aq + d[0] === bq && ar + d[1] === br);
-  };
-  const nbsInNet = (k: string, net: ReadonlySet<string>): string[] => {
+  const net = new Set<string>([...planned, ...keyOfCity]);
+  const nbsInNet = (k: string): string[] => {
     const [q = 0, r = 0] = k.split(',').map(Number);
     return DIRS.map(d => kOf(q + d[0], r + d[1])).filter(x => net.has(x));
   };
-  const cityKeySet = new Set(cityAt.keys());
-  const order = [...planned].sort((a, b) => {
+  const adjacent = (a: string, b: string): boolean => {
+    const [aq = 0, ar = 0] = a.split(',').map(Number); const [bq = 0, br = 0] = b.split(',').map(Number);
+    return axialDist(aq, ar, bq, br) === 1;
+  };
+  const byQR = (a: string, b: string): number => {
     const [aq = 0, ar = 0] = a.split(',').map(Number); const [bq = 0, br = 0] = b.split(',').map(Number);
     return aq - bq || ar - br;
-  });
-  for (const h of order) {
-    const net = new Set<string>([...planned, ...cityKeySet]);
-    const nb = nbsInNet(h, net);
+  };
+  for (const h of [...planned].sort(byQR)) {
+    const nb = nbsInNet(h);
     let inTriangle = false;
     for (let i = 0; i < nb.length && !inTriangle; i++) for (let j = i + 1; j < nb.length; j++) {
       if (adjacent(nb[i]!, nb[j]!)) { inTriangle = true; break; }
@@ -216,16 +272,12 @@ export function planRoadNetwork(
     net.delete(h);
     // sasiedzi h musza zostac w jednej skladowej po usunieciu h
     const seen = new Set<string>([nb[0]!]); const st = [nb[0]!];
-    while (st.length) { const x = st.pop()!; for (const y of nbsInNet(x, net)) if (!seen.has(y)) { seen.add(y); st.push(y); } }
-    if (nb.every(x => seen.has(x))) planned.delete(h);
+    while (st.length) { const x = st.pop()!; for (const y of nbsInNet(x)) if (!seen.has(y)) { seen.add(y); st.push(y); } }
+    if (nb.every(x => seen.has(x))) planned.delete(h); else net.add(h);
   }
 
-  const hexes = [...planned].sort((a, b) => {
-    const [aq = 0, ar = 0] = a.split(",").map(Number); const [bq = 0, br = 0] = b.split(",").map(Number);
-    return aq - bq || ar - br;
-  });
   return {
-    hexes,
+    hexes: [...planned].sort(byQR),
     edges: chosen.map(e => ({ a: sorted[e.i]!.id, b: sorted[e.j]!.id, cost: e.cost })),
     disconnected,
   };

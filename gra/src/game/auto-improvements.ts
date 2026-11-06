@@ -857,6 +857,21 @@ function roadPlanHexes(
 ): ReadonlySet<string> {
   if (memo.plan) return memo.plan;
   const own = memo.cities.filter(c => c.ownerId === ownerId);
+  const roadKeys = new Set<string>();
+  if (placed) {
+    for (const [hk, v] of placed) {
+      const layers = Array.isArray(v) ? v : [v];
+      if (layers.some(l => ROAD_KEY_SET.has(l as ImprovementKey))) roadKeys.add(hk);
+    }
+  }
+  // Cache MIEDZY turami (wydajnosc AI): plan zalezy tylko od miast wlasciciela, wezlow terytorium i liczby juz postawionych drog
+  // (kazda nowa droga odswieza plan). Klucz tani (string), plan na obiekt mapy — nowa mapa/gra = swiezy cache.
+  const sig = `${own.map(c => `${c.id}:${c.q},${c.r},${c.population}`).sort().join(';')}#${territoryNodes
+    .map(n => `${n.q},${n.r},${n.ownerId},${n.pop},${n.isFort ? 'f' : ''}${n.isOutpost ? 'o' : ''}`).join(';')}#${roadKeys.size}`;
+  let perMap = ROAD_PLAN_CACHE.get(map);
+  if (!perMap) { perMap = new Map(); ROAD_PLAN_CACHE.set(map, perMap); }
+  const hit = perMap.get(ownerId);
+  if (hit && hit.sig === sig) { memo.plan = hit.plan; return hit.plan; }
   const reach = new Set<string>();
   for (const c of own) {
     const rad = cityTerritoryRadius({ q: c.q, r: c.r, pop: c.population, level: 1 }) + 1;
@@ -866,20 +881,17 @@ function roadPlanHexes(
       if (territoryOwnerAt(Number(qs), Number(rs), territoryNodes) === ownerId) reach.add(k);
     }
   }
-  const roadKeys = new Set<string>();
-  if (placed) {
-    for (const [hk, v] of placed) {
-      const layers = Array.isArray(v) ? v : [v];
-      if (layers.some(l => ROAD_KEY_SET.has(l as ImprovementKey))) roadKeys.add(hk);
-    }
-  }
   const plan = planRoadNetwork(own, map, {
     isTraversable: (q, r) => reach.has(`${q},${r}`),
     extraRoadKeys: roadKeys,
   });
   memo.plan = new Set(plan.hexes);
+  perMap.set(ownerId, { sig, plan: memo.plan });
   return memo.plan;
 }
+
+/** Cache planow drog: obiekt mapy -> wlasciciel -> {podpis wejscia, plan}. */
+const ROAD_PLAN_CACHE = new WeakMap<GameMap, Map<number, { sig: string; plan: ReadonlySet<string> }>>();
 
 function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
   const stagedCities = opts.cities.filter(city => isFoodStageCity(opts, city));
