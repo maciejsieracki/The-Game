@@ -1,0 +1,2 @@
+diplo-war-peace-main-guard-test: 28 pass / 0 fail
+EXIT=0

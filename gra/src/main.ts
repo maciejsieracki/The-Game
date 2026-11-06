@@ -33728,7 +33728,8 @@ async function boot(): Promise<void> {
           }));
           transferBasketItems(loser, winner, basket);
         },
-        finalize: (loser, winner) => { finalizePeaceTreatyBetween(loser, winner); },
+        // LIVE-AUDIT-Q1 r2: karencja z war-weariness-params.json (domyslne 10 tur dawalo re-wojne po ~10 turach).
+        finalize: (loser, winner, lockTurns) => { finalizePeaceTreatyBetween(loser, winner, lockTurns); },
         log: msg => console.log(`[Dyplomacja] R-WEB-WEARINESS: ${msg}`),
       });
     }
