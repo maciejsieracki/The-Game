@@ -15,12 +15,23 @@
  * Czesc 2 (Chromium, swiftshader): 194 modele (kategorie + wszystkie nazwy z units.json, 2 kolory), klatka PRZED vs PO
  *   (rozne piksele RGBA z 1,6 mln), picking (raycast w srodek modelu -> ten sam model), oraz ta sama para po przesunieciu
  *   korzeni (poza "marsz") i obrocie (poza "atak").
- * Usage (z gra/, wymaga node_modules): node tools/memory-static-unit-merge-prototype.cjs <katalog tymczasowy poza repo>
+ *
+ * Runda 2 (zarzut Z2 Evaluatora): pomiar sterty sekwencyjny w JEDNYM procesie (geo -> mat -> merge) dawal rozne wyniki
+ *   miedzy przebiegami/srodowiskami (geo+mat 51,06 MB u Operatora, 60,25 MB u Evaluatora), bo stan sterty V8 po
+ *   poprzednim trybie (JIT, feedback, fragmentacja, leniwie tworzone singletony) liczy sie do kolejnego. Teraz KAZDY tryb
+ *   mierzony jest w OSOBNYM, swiezym procesie Node (`--heap-child <tryb>`), z przebiegiem rozgrzewkowym tego samego trybu
+ *   w tym procesie, REPS powtorzen z rotowana kolejnoscia trybow; raportowana mediana, min i max. Stary pomiar
+ *   sekwencyjny zostaje w wyniku jako `sequentialInProcess` (do porownania, nie do decyzji).
+ *   Dziecko uruchamiane z `--single-threaded-gc`: bez tej flagi tryb `geo` w swiezym procesie byl BIMODALNY
+ *   (57,82 albo 67,01 MB, ~50/50, rownolegle znakowanie GC), z flaga 6/6 przebiegow = 67,0 MB.
+ * Usage (z gra/, wymaga node_modules): node tools/memory-static-unit-merge-prototype.cjs <katalog tymczasowy poza repo> [REPS=5]
  */
 const fs = require('fs');
 const path = require('path');
 const GRA = path.resolve(__dirname, '..');
-const TMP = process.argv[2];
+const HEAP_CHILD = process.argv[2] === '--heap-child' ? process.argv[3] : null;
+const TMP = HEAP_CHILD ? process.argv[4] : process.argv[2];
+const REPS = HEAP_CHILD ? 1 : Math.max(1, parseInt(process.argv[3] || '5', 10));
 if (!TMP) { console.error('podaj katalog tymczasowy'); process.exit(2); }
 fs.mkdirSync(TMP, { recursive: true });
 const SRC = path.join(GRA, 'src');
@@ -147,9 +158,11 @@ function diff(a, b) {
 const LOADERS = { '.json': 'json', '.png': 'dataurl', '.jpg': 'dataurl', '.mp3': 'dataurl', '.svg': 'dataurl' };
 
 (async () => {
-  fs.writeFileSync(path.join(TMP, 'merge.ts'), MERGE_TS);
+  if (!HEAP_CHILD) {
+    fs.writeFileSync(path.join(TMP, 'merge.ts'), MERGE_TS);
+    await esbuild.build({ stdin: { contents: NODE_ENTRY, resolveDir: TMP, loader: 'ts' }, bundle: true, platform: 'node', format: 'cjs', outfile: path.join(TMP, 'n.cjs'), logLevel: 'error', nodePaths: [path.join(GRA, 'node_modules')], loader: LOADERS });
+  }
   // ---- Czesc 1: Node, sterta
-  await esbuild.build({ stdin: { contents: NODE_ENTRY, resolveDir: TMP, loader: 'ts' }, bundle: true, platform: 'node', format: 'cjs', outfile: path.join(TMP, 'n.cjs'), logLevel: 'error', nodePaths: [path.join(GRA, 'node_modules')], loader: LOADERS });
   const ctx = new Proxy({}, { get: (t, k) => (k in t ? t[k] : (k === 'measureText' ? () => ({ width: 10 }) : (k === 'createLinearGradient' || k === 'createRadialGradient' || k === 'createPattern') ? () => ({ addColorStop() {} }) : (k === 'getImageData' ? (x, y, w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }) : () => {}))), set: (t, k, v) => { t[k] = v; return true; } });
   const mkCanvas = () => ({ width: 64, height: 64, style: {}, getContext: () => ctx, addEventListener() {}, toDataURL: () => '' });
   global.document = { createElement: (tag) => (tag === 'canvas' ? mkCanvas() : { style: {}, appendChild() {}, setAttribute() {} }), createElementNS: () => mkCanvas(), body: { appendChild() {} } };
@@ -157,12 +170,13 @@ const LOADERS = { '.json': 'json', '.png': 'dataurl', '.jpg': 'dataurl', '.mp3':
   global.OffscreenCanvas = function (w, h) { return Object.assign(mkCanvas(), { width: w, height: h }); };
   const M = require(path.join(TMP, 'n.cjs')); const { THREE } = M;
   require('v8').setFlagsFromString('--expose-gc'); const gc = require('vm').runInNewContext('gc');
+  const spaces = () => { const o = {}; for (const x of require('v8').getHeapSpaceStatistics()) o[x.space_name] = x.space_used_size; o.arrayBuffers = process.memoryUsage().arrayBuffers; return o; };
   const heap = () => { gc(); gc(); return process.memoryUsage().heapUsed + process.memoryUsage().arrayBuffers; };
   const N = 475;
   for (const n of units) M.buildUnitModel('melee', 0xff0000, n); // rozgrzewka singletonow
   const measure = (mode) => {
     const GP = new M.GeometryContentPool(); const MP = new M.MaterialContentPool();
-    const h0 = heap(); const toks = [];
+    const h0 = heap(); const sp0 = spaces(); const toks = [];
     for (let i = 0; i < N; i++) {
       const g = M.buildUnitModel('melee', i % 2 ? 0xff0000 : 0x0000ff, units[i % units.length]);
       const ring = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.56, 6), new THREE.MeshBasicMaterial({ color: i % 2 ? 0xffcc00 : 0x00ccff, transparent: true, opacity: 0.6, depthWrite: false }));
@@ -172,14 +186,38 @@ const LOADERS = { '.json': 'json', '.png': 'dataurl', '.jpg': 'dataurl', '.mp3':
       if (mode === 'merge') { const r = M.mergeStaticParts(g); GP.poolOwned(g, r.mergedGeos); }
       toks.push(g);
     }
-    const h1 = heap();
+    const h1 = heap(); const sp1 = spaces();
+    const spaceDeltaMB = {}; for (const k of Object.keys(sp1)) spaceDeltaMB[k] = +((sp1[k] - (sp0[k] || 0)) / 1048576).toFixed(2);
     let obj = 0, mesh = 0; const mats = new Set();
     for (const t of toks) t.traverse((o) => { obj++; if (o.isMesh) { mesh++; mats.add(o.material); } });
-    return { mode, heapMB: +((h1 - h0) / 1048576).toFixed(2), object3dPerToken: +(obj / N).toFixed(1), meshesPerToken: +(mesh / N).toFixed(1), uniqueMaterials: mats.size, keep: toks.length };
+    return { mode, heapMB: +((h1 - h0) / 1048576).toFixed(2), object3dPerToken: +(obj / N).toFixed(1), meshesPerToken: +(mesh / N).toFixed(1), uniqueMaterials: mats.size, keep: toks.length, spaceDeltaMB };
   };
+  if (HEAP_CHILD) {
+    const warm = measure(HEAP_CHILD); const r = measure(HEAP_CHILD); r.warmupHeapMB = warm.heapMB;
+    console.log('CHILD ' + JSON.stringify(r)); return;
+  }
   const rGeo = measure('geo'); const rMat = measure('mat'); const rMerge = measure('merge');
-  console.log('HEAP ' + JSON.stringify({ tokens: N, geoOnly: rGeo, geoPlusMat: rMat, geoMatMerge: rMerge,
-    deltaMaterialsMB: +(rGeo.heapMB - rMat.heapMB).toFixed(2), deltaMergeMB: +(rMat.heapMB - rMerge.heapMB).toFixed(2) }));
+  const sequentialInProcess = { geo: rGeo.heapMB, mat: rMat.heapMB, merge: rMerge.heapMB,
+    deltaMaterialsMB: +(rGeo.heapMB - rMat.heapMB).toFixed(2), deltaMergeMB: +(rMat.heapMB - rMerge.heapMB).toFixed(2) };
+  // izolowany pomiar: swiezy proces na kazdy tryb, REPS powtorzen, rotowana kolejnosc
+  const { execFileSync } = require('child_process');
+  const MODES = ['geo', 'mat', 'merge']; const samples = { geo: [], mat: [], merge: [] }; const detail = {};
+  for (let rep = 0; rep < REPS; rep++) {
+    for (let k = 0; k < 3; k++) {
+      const mode = MODES[(rep + k) % 3];
+      const outTxt = execFileSync(process.execPath, ['--single-threaded-gc', __filename, '--heap-child', mode, TMP], { encoding: 'utf8', maxBuffer: 1 << 24 });
+      const line = outTxt.split('\n').find((l) => l.startsWith('CHILD '));
+      if (!line) throw new Error('brak wyniku dziecka ' + mode);
+      const r = JSON.parse(line.slice(6)); samples[mode].push(r.heapMB); detail[mode] = r;
+    }
+  }
+  const med = (a) => { const b = [...a].sort((x, y) => x - y); const n = b.length; return +((n % 2) ? b[(n - 1) / 2] : (b[n / 2 - 1] + b[n / 2]) / 2).toFixed(2); };
+  const stat = (mode) => ({ medianMB: med(samples[mode]), minMB: Math.min(...samples[mode]), maxMB: Math.max(...samples[mode]), samples: samples[mode],
+    object3dPerToken: detail[mode].object3dPerToken, meshesPerToken: detail[mode].meshesPerToken, uniqueMaterials: detail[mode].uniqueMaterials });
+  const sGeo = stat('geo'), sMat = stat('mat'), sMerge = stat('merge');
+  console.log('HEAP ' + JSON.stringify({ tokens: N, method: 'isolated-process-per-mode+single-threaded-gc', reps: REPS, geoOnly: sGeo, geoPlusMat: sMat, geoMatMerge: sMerge,
+    deltaMaterialsMB: +(sGeo.medianMB - sMat.medianMB).toFixed(2), deltaMergeMB: +(sMat.medianMB - sMerge.medianMB).toFixed(2),
+    deltaMergeVsGeoOnlyMB: +(sGeo.medianMB - sMerge.medianMB).toFixed(2), sequentialInProcess }));
   // ---- Czesc 2: Chromium, piksele + picking
   const res = await esbuild.build({ stdin: { contents: BROWSER_ENTRY, resolveDir: TMP, loader: 'ts' }, bundle: true, format: 'iife', write: false, logLevel: 'error', nodePaths: [path.join(GRA, 'node_modules')], loader: LOADERS });
   fs.writeFileSync(path.join(TMP, 'b.js'), res.outputFiles[0].text);

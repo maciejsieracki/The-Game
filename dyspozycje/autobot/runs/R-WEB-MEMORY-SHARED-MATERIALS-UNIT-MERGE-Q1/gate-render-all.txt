@@ -1,0 +1,106 @@
+# Z3 (r2): WSZYSTKIE 84 narzedzia gra/tools/*render* - POST = a1bc877a5 (kod gra/ = 5e62c5158), BASE = ca289d8ce (pliki gra/src/render/* z ca289d8ce na czas przebiegu, potem przywrocone do HEAD; diff HEAD -- gra/src pusty).
+# Uruchomienie: node tools/<narzedzie> z gra/, bez argumentow, timeout 400 s, jedna przegladarka naraz. Narzedzia z EXIT!=0 na POST powtorzone na BASE.
+# Zrzuty, ktore narzedzia nadpisuja w runs/<inne ID>/dowody i smieci w gra/ (bundle.js, entry.ts, results.json, tools/.empire-recruit-panel-bundle.js, tools/.shots-et-turn-lbl) przywrocone/usuniete po przebiegu.
+# Kolumny: narzedzie | EXIT POST | EXIT BASE (tylko gdy POST!=0) | werdykt
+
+ai-city-render-batch-test.cjs | r1 | - | R1: gate-ai-city-render-batch-test.txt (r1, EXIT=1 jak na origin/main)
+army-merge-panel-scroll-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: }
+barb-karencja-czas-trwania-real-render-test.cjs | 0 | - | PASS
+budmode-ulepszenia-sort-locked-real-render-test.cjs | 0 | - | PASS
+build-mode-lock-tip-position-real-render-test.cjs | 0 | - | PASS
+build-panel-ulepszenia-scroll-real-render-test.cjs | 0 | - | PASS
+building-card-overlap-real-render-test.cjs | 0 | - | PASS
+building-detail-card-hover-layout-real-render-test.cjs | 0 | - | PASS
+capture-render-sync-test.cjs | r1 | - | R1: gate-capture-render-sync-test.txt (r1, 23/0)
+citypanel-uwagi-hostcard-removed-real-render-test.cjs | 0 | - | PASS
+civpedia-cross-link-style-real-render-test.cjs | 0 | - | PASS
+diplomacy-audience-deals-active-first-real-render-test.cjs | 0 | - | PASS
+diplomacy-audience-zoom-cutoff-real-render-test.cjs | 0 | - | PASS
+diplomacy-przemarsz-duplikat-real-render-test.cjs | 0 | - | PASS
+drogi-tooltip-real-render-test.cjs | 0 | - | PASS
+dyplo-karta-decyzji-bilans-skrot-real-render-test.cjs | 0 | - | PASS
+dyplo-przemarsz-checkbox-przycisk-real-render-test.cjs | 0 | - | PASS
+dyplo-traktat-handlowy-wybor-czasu-real-render-test.cjs | 0 | - | PASS
+empire-autofeed-btn-label-real-render-test.cjs | 0 | - | PASS
+empire-recruit-panel-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: }
+empire-trade-route-split-real-render-test.cjs | 0 | - | PASS
+emporion-build-list-real-render-test.cjs | 0 | - | PASS
+entity-card-action-buttons-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: [entity-card-action-buttons-real-render-test] 30 pass, 1 fail
+entity-card-cross-links-button-style-real-render-test.cjs | 0 | - | PASS
+entity-card-diorama-real-render-test.cjs | 0 | - | PASS
+entity-card-single-dialog-real-render-test.cjs | 0 | - | PASS
+entitycard-rozwiniete-scrollbar-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: }
+et-turn-lbl-kontrast-real-render-test.cjs | 0 | - | PASS
+ev4-r4q2-przycisk-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST:     at main (/home/user/The-Game/.claude/worktrees/wf_2b55fc6e-f56-3/gra/tools/ev4-r4q2-przycisk-real-render-test.cjs:180:22)
+garrison-panel-pinning-real-render-test.cjs | 0 | - | PASS
+hotseat-etap6e-render-noop-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: [hotseat-etap6e-render-noop] [PRZED] tura 8 (turn=9, units=17, cities=9, panel=tak): stateHash=a841f9fc6746...
+hud-topbar-bigger-numbers-real-render-test.cjs | 2 | 2 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: Wygeneruj: git show 4905bac05:gra/src/ui/hud.ts > gra/src/ui/hud.__base.ts (plik tymczasowy, nie commituj; usun po tescie).
+karta-technologia-uklad-real-render-test.cjs | 0 | - | PASS
+kopalnia-cyny-render-test.cjs | 0 | - | PASS
+korupcja-tekst-gracz-real-render-test.cjs | 0 | - | PASS
+menu-trudnosc-tooltip-real-render-test.cjs | 0 | - | PASS
+mgla-odkrycie-wzdluz-sciezki-live-render-test.cjs | 0 | - | PASS
+miasta-panstwa-wylaczone-ui-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST:     at main (/home/user/The-Game/.claude/worktrees/wf_2b55fc6e-f56-3/gra/tools/miasta-panstwa-wylaczone-ui-render-test.cjs:168:28)
+oboz-lowiecki-las-znika-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST:  FAIL  TERRAIN_ALLOW.lodzie_rybackie === {Wybrzeze, Morze} (rozlaczne z Wzgorza/Gory) -- "TerenBazowy.PlytkieMorze, TerenBazowy.Morze"
+porzadek-panel-punkty-absolutne-real-render-test.cjs | 0 | - | PASS
+praca-budmode-slider-max-real-render-test.cjs | 0 | - | PASS
+praca-jeden-podzial-real-render-test.cjs | 0 | - | PASS
+praca-panel-budowy-warstwa-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: [praca-panel-budowy-warstwa-real-render-test] 26 pass, 2 fail
+praca-panel-emoji-brand-icons-real-render-test.cjs | 0 | - | PASS
+r-bitwa-etykieta-tozsamosc-strony-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: }
+recruit-card-manpower-real-render-test.cjs | 0 | - | PASS
+recruit-card-quantity-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: }
+recruit-card-stock-chip-real-render-test.cjs | 0 | - | PASS
+recruitment-panel-height-real-render-test.cjs | 0 | - | PASS
+render-unit-sharpness-guard.cjs | r1 | - | R1: gate-render-unit-sharpness-guard.txt (r1, PASS)
+render-unit-sharpness-measure.cjs | 1 | 0 | NIESTABILNY: powtorka POST: EXIT=0 (pelna tabela pomiaru) | ostatnia linia POST: 
+river-render-diag.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: Node.js v22.22.0
+science-hub-unlock-icons-real-render-test.cjs | 0 | - | PASS
+science-picker-tooltip-icons-real-render-test.cjs | 0 | - | PASS
+sidepanel-blocking-card-cutoff-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST:   FAIL (C3) klik w "Otworz ->" otworzyl REALNY panel miasta (predykat gry isCityPanelOpen) -- {"openErr":"locator.click: Timeout 8000ms exceeded."}
+sidepanel-diplo-dismiss-real-render-test.cjs | 1 | 0 | NIESTABILNY: powtorka POST: EXIT=0, 35 pass / 0 fail | ostatnia linia POST:   INFO (B7) obie karty (klikana+kontrolna) wypadly z warEventLog po endTurn -- artefakt przyciecia logu do 8 wpisow, NIE test kryterium; produkcyjne pendingDipl
+sidepanel-event-header-wydarzenie-real-render-test.cjs | 0 | - | PASS
+sidepanel-event-przekierowania-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST:   FAIL (C) trade-lost-12-r9: klik w karte bez miejsca docelowego nie otwiera zadnego widoku -- {"clicked":{"hit":false,"why":"brak karty w DOM"},"views":{"cityP
+siege-surrender-enter-city-test.cjs | 0 | - | PASS
+siege-surrender-forecast-live-test.cjs | 2 | 2 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: brak --dist <katalog>
+siege-surrender-forecast-test.cjs | 0 | - | PASS
+surrender-rekrutacja-build-gate-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: FAIL: surrender usuwa legacy, zwraca Pracę staremu właścicielowi i filtruje kolejkę dla nowego
+szczescie-audyt-e-etykiety-panelu-real-render-test.cjs | 0 | - | PASS
+tartak-wzgorze-las-real-render-test.cjs | 0 | - | PASS
+tax-slider-thumb-align-real-render-test.cjs | 0 | - | PASS
+unit-deferred-reveal-dim-real-render-test.cjs | r1 | - | R1: gate-unit-deferred-reveal-dim-real-render-test.txt (r1, 19/0)
+unit-detail-card-hover-layout-real-render-test.cjs | 0 | - | PASS
+unit-info-card-badges-real-render-test.cjs | 0 | - | PASS
+unit-info-card-viewport-height-real-render-test.cjs | 0 | - | PASS
+unit-renderer-overlay-sync-test.cjs | r1 | - | R1: gate-unit-renderer-overlay-sync-test.txt (r1, 17/0)
+wydarzenia-zbadano-karta-tech-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST:   FAIL (0c) kolejnosc rodzin w getEventLink i w onEventClick jest LUSTRZANA (audyt -> tech-done)
+zelazo-celtowie-miecznik-rydwan-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: zelazo-celtowie-miecznik-rydwan-real-render-test: 81 pass, 1 fail
+zelazo-celtowie-soldurii-gaesatae-real-render-test.cjs | 0 | - | PASS
+zelazo-falanga-real-render-test.cjs | 0 | - | PASS
+zelazo-germanie-real-render-test.cjs | 0 | - | PASS
+zelazo-jezdziec-oszczepami-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: zelazo-jezdziec-oszczepami-real-render-test: 55 pass, 2 fail
+zelazo-katapulta-real-render-test.cjs | 0 | - | PASS
+zelazo-konnica-asyryjska-real-render-test.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: zelazo-konnica-asyryjska-real-render-test: 30 pass, 1 fail
+zelazo-mezopotamia-real-render-test.cjs | 0 | - | PASS
+zelazo-slowianie-zulusi-real-render-test.cjs | 0 | - | PASS
+zelazo-srodziemnomorze-real-render-test.cjs | 0 | - | PASS
+zelazo-super-rzym-grecja-real-render-test.cjs | 0 | - | PASS
+zelazo-zrzuty-25-jednostek-render.cjs | 1 | 1 | TAKI_SAM_JAK_BASE (blad istniejacy przed tematem) | ostatnia linia POST: [zelazo-zrzuty-25] podaj --out <katalog> (POZA repo) albo --no-shots
+zloze-zloto-render-test.cjs | 0 | - | PASS
+
+PODSUMOWANIE {"PASS": 55, "TAKI_SAM_JAK_BASE": 22, "NIESTABILNY_OK_W_POWTORCE": 2, "R1": 5, "REGRES": 0}
+EXIT=0
+
+# UZUPELNIENIA (po tabeli):
+# 1) zelazo-zrzuty-25-jednostek-render.cjs bez argumentow tylko wypisuje "podaj --out albo --no-shots" (EXIT=1 tak samo na BASE).
+#    Uruchomione wlasciwie na POST: `node tools/zelazo-zrzuty-25-jednostek-render.cjs --no-shots` -> "=== WYNIK: 59 pass / 0 fail ===", EXIT=0.
+# 2) Narzedzia, ktore bez argumentow nic nie testuja (EXIT jak BASE, swiadomie NIE uruchomione z argumentami):
+#    - siege-surrender-forecast-live-test.cjs: wymaga --dist (osobny vite build); plakietka oblezenia = DOM/HUD, nie modele jednostek/miast ani sortowanie 3D.
+#    - hud-topbar-bigger-numbers-real-render-test.cjs: wymaga wygenerowania gra/src/ui/hud.__base (zapis w gra/src poza allowlista); HUD = DOM.
+#    - river-render-diag.cjs: diagnostyka rzek (teren), nie test; ten sam blad startu na BASE.
+# 3) Oba FAIL, ale inna ostatnia linia POST vs BASE (UI/DOM, zmienny czas/kolejnosc w tescie, nie modele 3D):
+#    hotseat-etap6e-render-noop (timeout wlasny po roznej liczbie tur), oboz-lowiecki-las-znika (ta sama linia FAIL TERRAIN_ALLOW.lodzie_rybackie),
+#    sidepanel-blocking-card-cutoff (C3 timeout klikniecia vs wczesniejsza sekcja), wydarzenia-zbadano-karta-tech (0c vs A4: logika getEventLink/DOM).
+# 4) render-unit-sharpness-measure: POST powtorka EXIT=0; wartosci ostrosci (sharp) POST == BASE we wszystkich 48 konfiguracjach (np. 210/106.9/66.4/.../2.2),
+#    drawCalls 146 w obu -> model konny renderuje sie identycznie z pula materialow.
+# 5) Najbardziej zwiazane z tematem (modele jednostek): wszystkie zelazo-* na POST = BASE (PASS albo ten sam FAIL z ta sama linia: miecznik-rydwan 81/1, jezdziec 55/2, konnica-asyryjska 30/1).

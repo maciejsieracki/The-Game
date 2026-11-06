@@ -25,10 +25,10 @@ WYNIK (szczegóły: `memory-attribution.md`):
     te same 51 px, a z naszym sortowaniem 0 px.
   - Materiały: jednostki t.50 7 141 → 188, miasta 1 747 → 135.
   - MB po GC w buildzie produkcyjnym: t.1 221,2 → 212,8 (**−8,4**), t.50 308,5 → 302,6 (**−5,9**, 417 → 419 jedn.).
-  - Sterta V8 przy 475 żetonach: −18,2 MB.
+  - Sterta V8 przy 475 żetonach: ~~−18,2 MB~~ **KOREKTA r2: −6,8 MB** (67,01 → 60,19; pomiar izolowany, patrz `02-operator-r2.md`).
 - (B) PROTOTYP, NIE WDROŻONE.
   - Animacji części na mapie nie ma, a picking przez `unitId` korzenia działa po scaleniu.
-  - Zysk: −29,8 MB przy 475 żetonach; meshe 62,6 → 14,8 na żeton; draw calls ×4 mniej.
+  - Zysk: ~~−29,8 MB~~ **KOREKTA r2: −38,8 MB** (60,19 → 21,41) przy 475 żetonach; meshe 62,6 → 14,8 na żeton; draw calls ×4 mniej.
   - Koszt: piksele 52 / 101 / 5 (stanie/marsz/atak) z 1,6 mln, zaokrąglenie CPU kontra GPU. Do tego zmiana
     zachowania `SmallPartLod`.
   - Nie jest bit w bit, a tolerancja z decyzji dotyczy tylko (A), więc zgodnie z dispatchem nie wdrażam.
@@ -37,7 +37,7 @@ TESTY (logi `gate-*.txt`, każdy z `EXIT=`):
 - `memory-static-material-pool-pixel-test`: 7/0 (M1 0 px, M2 0/0, M3 kontrola 51 px, M5 picking, M6 3 038 → 477).
 - `memory-static-model-pool-pixel-test`: 6/0.
 - `memory-static-geometry-pool-test`: 18/0.
-- `memory-static-unit-merge-prototype`: pomiar, EXIT=0.
+- `memory-static-unit-merge-prototype`: pomiar, EXIT=0. **KOREKTA r2:** log z r1 był ze starszej wersji narzędzia; wygenerowany ponownie w r2.
 - `memory-static-ascii-bundle-test`: 16/2. S0 i S4 wymagają builda sprzed wtyczki ASCII, a oba buildy już ją mają,
   więc nie mają tu zastosowania (dopisek w logu). S1 OK.
 - `memory-growth-visual-parity-test` (pełna klatka, prod ca289d8ce vs temat): 4/0, `any=0`.
@@ -60,7 +60,7 @@ TESTY (logi `gate-*.txt`, każdy z `EXIT=`):
 - Powtarzalności pomiaru PRZED-vs-PRZED nie zmierzono (NIE_ZMIERZONO).
 
 BLOKADY: brak dla (A). Dla (B) potrzebna decyzja właściciela: czy dopuścić ≤~100 px i zmianę LOD drobnych części
-za ~30 MB i ~4× mniej draw calls. Orkiestrator może ją zadać jako ABC. Założenie przyjęte w tym raporcie: bez
+za ~39 MB (KOREKTA r2; r1: ~30 MB) i ~4× mniej draw calls. Orkiestrator może ją zadać jako ABC. Założenie przyjęte w tym raporcie: bez
 decyzji (B) nie jest wdrażane.
 
 Higiena:

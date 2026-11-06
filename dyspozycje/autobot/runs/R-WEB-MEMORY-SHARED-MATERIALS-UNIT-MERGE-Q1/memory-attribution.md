@@ -37,7 +37,10 @@ więc po zdjęciu przyciemnienia część żetonu zostawała półprzezroczysta 
 
 Unikalne materiały (sonda): t.1 jednostki 888 → 64, miasta 473 → 34; t.50 jednostki 7 141 → 188, miasta 1 747 → 135.
 `renderer.info` t.50: draw calls 1 192 → 1 191, programy 36 → 37 (bez zmian istotnych).
-Stała sterta V8 w Node (475 żetonów t.100, `memory-static-unit-merge-prototype` część 1): 69,31 → 51,07 MB (**−18,2 MB**).
+Stała sterta V8 w Node (475 żetonów t.100, `memory-static-unit-merge-prototype` część 1, **poprawione w r2**): 67,01 → 60,19 MB (**−6,8 MB**).
+Liczba z r1 (69,31 → 51,07, −18,2 MB) jest WYCOFANA: stara metoda (jeden proces, tryby po kolei, równoległy GC) jest bimodalna
+(mat = 51,06 albo 60,26 MB, skok ~9,2 MB; Evaluator trafił 60,25 → −9,05 MB). r2: każdy tryb w osobnym procesie z `--single-threaded-gc`,
+5 powtórzeń × 2 przebiegi, rozrzut ≤ 0,02 MB dla geo/mat (log `gate-memory-static-unit-merge-prototype.txt`).
 Szum: zysk w grze nie rośnie liniowo z liczbą żetonów (t.1 −8,4, t.30 −1,9). Powtarzalności PRZED-vs-PRZED nie
 zmierzono (NIE_ZMIERZONO). Z jednego przebiegu na stronę różnice mniejsze niż ~3 MB traktuję jako szum.
 
@@ -47,7 +50,7 @@ idzie w górę do `userData.unitId`. Blokadą nie są więc animacje ani picking
 `memory-static-unit-merge-prototype` (meshe o tym samym materiale po puli, wyznacznik > 0, `mergeGeometries`, scalone geometrie w puli):
 | miara | bez scalenia | ze scaleniem |
 |---|---|---|
-| sterta Node, 475 żetonów | 51,07 MB | 21,23 MB (**−29,8 MB**) |
+| sterta Node, 475 żetonów (r2, izolowany pomiar) | 60,19 MB (geo+mat) | 21,41 MB (**−38,8 MB**; −45,6 MB względem samej puli geometrii 67,01) |
 | meshe na żeton | 62,6 | 14,8 |
 | draw calls (170 modeli) | 11 106 | 2 720 |
 | piksele stanie / marsz / atak | 0 | **52 / 101 / 5** z 1,6 mln |
@@ -56,5 +59,6 @@ idzie w górę do `userData.unitId`. Blokadą nie są więc animacje ani picking
 Różnice pikseli wynikają z innego zaokrąglenia wierzchołków przeliczonych na CPU w porównaniu z macierzą modelu na
 GPU oraz z innej kolejności rysowania. Do tego `SmallPartLod` chowa drobne meshe pojedynczo, a po scaleniu drobne
 części zostałyby widoczne przy oddaleniu. Dispatch wymaga zgodności bit w bit, a tolerancja ≤100 px dotyczy tylko
-(A). Dlatego (B) zostaje jako zmierzony prototyp i wymaga decyzji właściciela (zysk ~30 MB i ~4× mniej draw calls
-kosztem do ~100 px oraz zmiany LOD).
+(A). Dlatego (B) zostaje jako zmierzony prototyp i wymaga decyzji właściciela (zysk ~39 MB sterty Node przy 475 żetonach
+ponad (A) i ~4× mniej draw calls, kosztem do ~100 px oraz zmiany LOD). r1 podawało tu −29,8 MB: to łączyło niski
+tryb bimodalnego pomiaru (51,07) z wynikiem scalenia; poprawione w r2.
