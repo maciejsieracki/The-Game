@@ -1,0 +1,7 @@
+[equiv] losowych przypadków(miasto x stan)=300, niepustych active=276, różnic=0
+[era-niezależność active] OK
+[mutacja] ignoruj placedImprovements: różnic=253 -> WYKRYTA (OK)
+[mutacja] odwrocone sortowanie: różnic=252 -> WYKRYTA (OK)
+[mutacja] ignoruj options: różnic=126 -> WYKRYTA (OK)
+PASS
+EXIT=0

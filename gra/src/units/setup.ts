@@ -698,11 +698,24 @@ export function setSiegeEntryBlocker(fn: ((unit: RuntimeUnit, q: number, r: numb
  * przeszukiwała liniowo WSZYSTKIE miasta (EOT 137 miast: ~1 mln wywołań `besiegedCityAtHex`).
  */
 let siegeScopeCache: Map<number, boolean> | null = null;
+/** Pamięć podręczna JEDNEGO zakresu (np. lista obleganych miast) — czyszczona razem z siegeScopeCache. */
+let siegeScopeAux: unknown = undefined;
 
 function withSiegeScope<T>(fn: () => T): T {
   if (siegeScopeCache !== null || siegeEntryBlocker === null) return fn();
   siegeScopeCache = new Map();
-  try { return fn(); } finally { siegeScopeCache = null; }
+  siegeScopeAux = undefined;
+  try { return fn(); } finally { siegeScopeCache = null; siegeScopeAux = undefined; }
+}
+
+/**
+ * R-WEB-PERF-ENDTURN-AI-PHASE-Q1 (R3): wartość liczona raz na zakres computePath/computeReachable
+ * (stan miast jest w nim stały). Poza zakresem zwraca null — wołający liczy wtedy po staremu.
+ */
+export function siegeScopeMemo<T>(build: () => T): T | null {
+  if (siegeScopeCache === null) return null;
+  if (siegeScopeAux === undefined) siegeScopeAux = build();
+  return siegeScopeAux as T;
 }
 
 function siegeBlocksEntry(unit: RuntimeUnit, q: number, r: number): boolean {

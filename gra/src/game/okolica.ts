@@ -285,6 +285,13 @@ type ScoredOkolicaTile = {
   potential: number;
 };
 
+/**
+ * Jeden współdzielony Collator zamiast `String.prototype.localeCompare` na każde porównanie
+ * (R-WEB-PERF-ENDTURN-AI-PHASE-Q1 R3: ~385 ms własnego czasu w koncu tury, 137 miast).
+ * Wynik IDENTYCZNY: `a.localeCompare(b)` ≡ `new Intl.Collator().compare(a, b)` (ECMA-402 §19.1.1).
+ */
+const OKOLICA_KEY_COLLATOR = new Intl.Collator();
+
 function compareScoredOkolicaTiles(a: ScoredOkolicaTile, b: ScoredOkolicaTile, focus?: OkolicaFocus): number {
   if (b.s !== a.s) return b.s - a.s;
   if (focus === 'zywnosc') {
@@ -294,7 +301,7 @@ function compareScoredOkolicaTiles(a: ScoredOkolicaTile, b: ScoredOkolicaTile, f
     if (b.potential !== a.potential) return b.potential - a.potential;
   }
   if (a.t.dist !== b.t.dist) return a.t.dist - b.t.dist;
-  return a.t.key.localeCompare(b.t.key);
+  return OKOLICA_KEY_COLLATOR.compare(a.t.key, b.t.key);
 }
 
 function scoreOkolicaTile(
@@ -860,36 +867,58 @@ export function computeLostToNearerSiblingByCity(
   // sygnaturze wejscia usuwa powtorzenia; zwracane zbiory sa tylko do odczytu (ReadonlySet).
   // / EN: pure function memoized on an input signature; same Map/Set instances are returned
   // for equal inputs (callers treat them as read-only).
-  const sig = siblingSignature(cities);
+  // R-WEB-PERF-ENDTURN-AI-PHASE-Q1 (R3): zamiast budowac napis-sygnature (137 miast x N wywolan = ~205 ms
+  // w koncu tury) porownujemy wejscie POLE PO POLU z zapamietanymi wpisami (ta sama relacja rownosci,
+  // zero alokacji na trafieniu).
   // Klucz = obiekt `map.hexes` (nie sam `map`): podmiana zbioru heksow na tej samej mapie
   // uniewaznia memo. Zalozenie (grep: brak zapisow in-place do hexes w src): hexes jest niemutowalne
   // po utworzeniu; dopisanie klucza in-place NIE jest wykrywane.
   const memoKey = ((map as { hexes?: object }).hexes ?? map) as object;
   let perMap = siblingMemoByMap.get(memoKey);
   if (!perMap) {
-    perMap = new Map();
+    perMap = [];
     siblingMemoByMap.set(memoKey, perMap);
   }
-  const hit = perMap.get(sig);
-  if (hit) return hit;
+  for (const entry of perMap) {
+    if (siblingInputMatches(entry.input, cities)) return entry.value;
+  }
   const fresh = computeLostToNearerSiblingByCityUncached(cities, map);
-  if (perMap.size >= SIBLING_MEMO_MAX_ENTRIES) perMap.clear();
-  perMap.set(sig, fresh);
+  if (perMap.length >= SIBLING_MEMO_MAX_ENTRIES) perMap.length = 0;
+  perMap.push({ input: siblingInput(cities), value: fresh });
   return fresh;
 }
 
 const SIBLING_MEMO_MAX_ENTRIES = 6;
-const siblingMemoByMap = new WeakMap<object, Map<string, ReadonlyMap<string, ReadonlySet<string>>>>();
+type SiblingInputRow = { id: unknown; q: number; r: number; range: number; ownerId: unknown };
+const siblingMemoByMap = new WeakMap<object, Array<{ input: SiblingInputRow[]; value: ReadonlyMap<string, ReadonlySet<string>> }>>();
 
-/** Sygnatura wejscia: kolejnosc + id/pozycja/promien/wlasciciel kazdego miasta. */
-function siblingSignature(
+function siblingRange(c: Pick<City, 'population'>): number {
+  return cityRangeForPopulation(Math.max(0, Math.floor(c.population ?? 0)));
+}
+
+function sameNum(a: number, b: number): boolean {
+  return a === b || (a !== a && b !== b);
+}
+
+function siblingInput(
   cities: ReadonlyArray<Pick<City, 'id' | 'q' | 'r' | 'population' | 'ownerId'>>,
-): string {
-  const parts: string[] = [];
-  for (const c of cities) {
-    parts.push(`${c.id}|${c.q}|${c.r}|${cityRangeForPopulation(Math.max(0, Math.floor(c.population ?? 0)))}|${c.ownerId}`);
+): SiblingInputRow[] {
+  return cities.map(c => ({ id: c.id, q: c.q, r: c.r, range: siblingRange(c), ownerId: c.ownerId }));
+}
+
+/** Wejscie rowne zapamietanemu: kolejnosc + id/pozycja/promien/wlasciciel kazdego miasta. */
+function siblingInputMatches(
+  input: readonly SiblingInputRow[],
+  cities: ReadonlyArray<Pick<City, 'id' | 'q' | 'r' | 'population' | 'ownerId'>>,
+): boolean {
+  if (input.length !== cities.length) return false;
+  for (let i = 0; i < cities.length; i++) {
+    const c = cities[i]!;
+    const row = input[i]!;
+    if (row.id !== c.id || row.ownerId !== c.ownerId || !sameNum(row.q, c.q) || !sameNum(row.r, c.r)) return false;
+    if (row.range !== siblingRange(c)) return false;
   }
-  return parts.join(';');
+  return true;
 }
 
 function computeLostToNearerSiblingByCityUncached(
