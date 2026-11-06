@@ -31,6 +31,7 @@ import {
   isHexNearRiver,
 } from '../map/improvement-build';
 import { hexKeysWithinRadius } from './okolica';
+import { planRoadNetwork } from './road-network-plan';
 import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
 import { isImprovementAllowedForCiv, hexHasHorseDeposit } from './terrain-improvements';
 import type { UlepszeniaFocus } from './cities';
@@ -471,6 +472,12 @@ export interface PickAutoImprovementsOpts {
    */
   roadsPass?: boolean;
   /**
+   * Internal (R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1): pamiec planu sieci drogowej wspolna dla WSZYSTKICH przebiegow jednego
+   * wywolania `pickAutoImprovements` (plan liczony leniwie, raz na wywolanie = raz na ture na wlasciciela). Tworzy ja
+   * wylacznie `pickAutoImprovements`; wolajacy jej nie podaja.
+   */
+  roadPlanMemo?: { cities: readonly AutoImprovementCity[]; plan?: ReadonlySet<string> };
+  /**
    * R-WEB-AUTO-FORT-CLAIM-Q1 (E-FORT): limit miast właściciela jest WYCZERPANY (`canFoundCity` nie pozwoli założyć
    * kolejnego miasta). Gdy `true` (i `demandDriven`, profil „zrównoważone” = K2/K3), po etapach żywności i kroku
    * niedoboru, a PRZED drogami, picker może postawić fort/posterunek na cennym heksie (złoże/góry) na granicy
@@ -832,8 +839,46 @@ export function actionableDeficitKeys(deficitKeys?: readonly string[]): string[]
  *     znika razem z nim (zero histerezy — stan liczony od nowa w każdym wywołaniu).
  */
 export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
-  const picks = pickAutoImprovementsStaged(opts);
+  const picks = pickAutoImprovementsStaged({ ...opts, roadPlanMemo: { cities: opts.cities } });
   return picks;
+}
+
+/**
+ * R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1: heksy dozwolone pod `droga`/`droga_brukowana` = plan sieci MIEDZY miastami wlasciciela
+ * (`planRoadNetwork`: MST po dlugosci sciezki). Sciezki biegna tylko po wlasnym terytorium w zasiegu budowy miast
+ * (promien terytorium + 1, jak lista kandydatow pickera). Liczone leniwie, RAZ na wywolanie (pamiec w `roadPlanMemo`).
+ */
+function roadPlanHexes(
+  memo: NonNullable<PickAutoImprovementsOpts['roadPlanMemo']>,
+  ownerId: number,
+  map: GameMap,
+  territoryNodes: readonly TerritoryNode[],
+  placed: ReadonlyMap<string, readonly string[] | string> | undefined,
+): ReadonlySet<string> {
+  if (memo.plan) return memo.plan;
+  const own = memo.cities.filter(c => c.ownerId === ownerId);
+  const reach = new Set<string>();
+  for (const c of own) {
+    const rad = cityTerritoryRadius({ q: c.q, r: c.r, pop: c.population, level: 1 }) + 1;
+    for (const k of hexKeysWithinRadius(c.q, c.r, rad, map)) {
+      if (reach.has(k)) continue;
+      const [qs, rs] = k.split(',');
+      if (territoryOwnerAt(Number(qs), Number(rs), territoryNodes) === ownerId) reach.add(k);
+    }
+  }
+  const roadKeys = new Set<string>();
+  if (placed) {
+    for (const [hk, v] of placed) {
+      const layers = Array.isArray(v) ? v : [v];
+      if (layers.some(l => ROAD_KEY_SET.has(l as ImprovementKey))) roadKeys.add(hk);
+    }
+  }
+  const plan = planRoadNetwork(own, map, {
+    isTraversable: (q, r) => reach.has(`${q},${r}`),
+    extraRoadKeys: roadKeys,
+  });
+  memo.plan = new Set(plan.hexes);
+  return memo.plan;
 }
 
 function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
@@ -1889,6 +1934,14 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       return found;
     };
     const keyBlockedOnHex = (key: ImprovementKey, hexKey: string): boolean => {
+      // R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1 (zgloszenie wlasciciela 2026-11-05): droga automatu (AI i auto-ulepszenia gracza,
+      // KAZDY profil) tylko na heksie planu sieci MIEDZY miastami (MST po sciezkach) — nigdy „wypelnienie” terytorium siatka.
+      // Reczna budowa gracza nie przechodzi przez ten picker. Koszty i efekt ruchu drog bez zmian.
+      if (ROAD_KEY_SET.has(key)) {
+        const memo = opts.roadPlanMemo ?? { cities };
+        if (!opts.roadPlanMemo) opts.roadPlanMemo = memo;
+        if (!roadPlanHexes(memo, ownerId, map, territoryNodes, workingPlaced).has(hexKey)) return true;
+      }
       if ((key === 'bydlo' || key === 'owce' || key === 'lama') && !onRiverHex(hexKey)) return true;
       if (key === 'irygacja' && irrigationNeedsFarm && !(workingPlaced.get(hexKey) ?? []).includes('farma')) return true;
       // R3, ABC-B=B: w K2/K3 (`demandActive`) tartak tylko przy niedoborze drewna; obóz bez nowego tartaku

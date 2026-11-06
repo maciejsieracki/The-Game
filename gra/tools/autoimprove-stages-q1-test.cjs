@@ -75,6 +75,10 @@ function makeMap({ river = [], forest = [], hills = [] } = {}) {
 const K = (q, r) => `${q},${r}`;
 const CITY = { id: 'c0', ownerId: 0, q: CQ, r: CR, name: 'A', population: 12 };
 const TN = [{ q: CQ, r: CR, ownerId: 0, cityId: 'c0', pop: 12, level: 1 }];
+// R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1: drogi automatu powstaja WYLACZNIE miedzy miastami wlasnej cywilizacji (planRoadNetwork) —
+// miasto bez sasiada nie buduje drog. Testy oczekujace drog dostaja drugie miasto-blizniak (`twin: true`); reszta fikstur bez zmian.
+const CITY2 = { id: 'c1', ownerId: 0, q: CQ + 5, r: CR, name: 'B', population: 12 };
+const TN2 = { q: CQ + 5, r: CR, ownerId: 0, cityId: 'c1', pop: 12, level: 1 };
 
 /**
  * Symulacja tura po turze. profil: 'K1' | 'K2' | 'K3'.
@@ -83,7 +87,7 @@ const TN = [{ q: CQ, r: CR, ownerId: 0, cityId: 'c0', pop: 12, level: 1 }];
 const FOCUS_OF = { K1: 'zywnosc', K2: 'zrownowazone', K3: 'zrownowazone', S: 'surowce', I: 'infrastruktura' };
 function sim({
   map, worked, profil = 'K2', turns = 30, techsByTurn = () => FULL, deficitFn = () => [], pool0 = 5000, income = 60,
-  pct = 100, civ = 'grecy', era = 3, placed0 = new Map(), maxItems, reserve = 30, wolnoWycinac = true,
+  pct = 100, civ = 'grecy', era = 3, placed0 = new Map(), maxItems, reserve = 30, wolnoWycinac = true, twin = false,
 }) {
   const placed = new Map(placed0);
   const workedSet = new Set(worked.map(([q, r]) => K(q, r)));
@@ -97,16 +101,16 @@ function sim({
     const deficit = deficitFn(t, placed, map);
     let picks;
     if (profil === 'K3') {
-      const cmds = decideAITurn(0, [], [{ ...CITY, okolicaTryb: 'reczny', okolicaReczne: Object.fromEntries([...workedSet].map(k => [k, 1])) }], map,
+      const cmds = decideAITurn(0, [], [{ ...CITY, okolicaTryb: 'reczny', okolicaReczne: Object.fromEntries([...workedSet].map(k => [k, 1])) }, ...(twin ? [{ ...CITY2, okolicaTryb: 'reczny', okolicaReczne: {} }] : [])], map,
         { units: [], buildings: [], aiParams: {}, terrainYields: { terrain_types: [] } }, {
-          civType: civ, poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: TN,
+          civType: civ, poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: twin ? [...TN, TN2] : TN,
           placedImprovements: placed, improvementTechs: techs, pracaAvailable: pool, civEra: era,
           resourceDeficitKeys: deficit, improvementBudgetCap: pool,
         }).filter(c => c.type === 'buildImprovement');
       picks = cmds.map(c => ({ q: c.q, r: c.r, key: c.key, kosztPraca: (c.key === 'wyrab' ? 2.5 : c.key === 'irygacja' ? 60 : 20) }));
     } else {
       picks = pickAutoImprovements({
-        cities: [{ ...CITY, ulepszeniaFocus: FOCUS_OF[profil] }], ownerId: 0, map, territoryNodes: TN,
+        cities: [{ ...CITY, ulepszeniaFocus: FOCUS_OF[profil] }, ...(twin ? [{ ...CITY2, ulepszeniaFocus: FOCUS_OF[profil] }] : [])], ownerId: 0, map, territoryNodes: twin ? [...TN, TN2] : TN,
         placedImprovements: placed, pracaAvailable: pool, unlockedTechs: techs,
         pracaSurplusThreshold: reserve, skipWyrab: !wolnoWycinac,
         demandDriven: true, resourceDeficitKeys: deficit,
@@ -123,6 +127,9 @@ function sim({
       spent += p.kosztPraca;
       if (p.key === 'wyrab') { map.hexes[hk].nakladka = 'brak'; continue; }
       placed.set(hk, [...(placed.get(hk) ?? []), p.key]);
+      // R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1: jak syncHexUlepszenieFields w main.ts — kwalifikator drogi czyta sasiednie drogi z danych
+      // heksa; bez tego droga nigdy nie wyrasta poza pierscien miasta (siec miedzymiastowa buduje sie heks po heksie).
+      if (p.key === 'droga' || p.key === 'droga_brukowana') map.hexes[hk].ulepszenia = [...placed.get(hk)];
     }
     turnSpend.push({ t, poolEntry, spent });
     pool += income;
@@ -456,7 +463,7 @@ console.log('(r5-drogi) [K2/K3] R5: drogi dopiero gdy NIE MA kandydata dla zywno
 {
   const FOR = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13], [13, 12]];
   for (const profil of ['K2', 'K3']) {
-    const { log } = sim({ map: makeMap({ forest: FOR, hills: FOR }), worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'] });
+    const { log } = sim({ map: makeMap({ forest: FOR, hills: FOR }), worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'], twin: true });
     const roads = log.filter(e => e.key === 'droga' || e.key === 'droga_brukowana');
     const rest = log.filter(e => !(e.key === 'droga' || e.key === 'droga_brukowana'));
     const lastRest = Math.max(...rest.map(e => e.t));
@@ -670,13 +677,13 @@ console.log('(s) DROGI = najnizszy priorytet K2/K3 (korekta wlasciciela): nigdy 
 for (const profil of ['K2', 'K3']) {
   const FOR = [[14, 12], [11, 13]];
   const map = makeMap({ river: RIVER, forest: FOR });
-  const { log } = sim({ map, worked: [...WORKED_ALL, ...FOR], profil, turns: 40 });
+  const { log } = sim({ map, worked: [...WORKED_ALL, ...FOR], profil, turns: 40, twin: true });
   const lastFood = Math.max(...log.filter(e => FOOD_KEYS.has(e.key)).map(e => e.t));
   const roads = log.filter(e => ROADS.has(e.key));
   ok(roads.length > 0, `[${profil}] (b) wszystko zaspokojone: drogi powstaja (${roads.length} szt.)`);
   ok(roads.every(e => e.t > lastFood), `[${profil}] (a) 0 drog przed wyczerpaniem zywnosci: pierwsza droga t=${roads[0] ? roads[0].t : '-'} > ostatnia zywnosc t=${lastFood}`);
   const m2 = makeMap({ river: RIVER });
-  const c1 = sim({ map: m2, worked: WORKED_ALL, profil, turns: 30, deficitFn: () => ['zloto', 'kamien'] });
+  const c1 = sim({ map: m2, worked: WORKED_ALL, profil, turns: 30, deficitFn: () => ['zloto', 'kamien'], twin: true });
   ok(count(c1.log, 'droga') > 0, `[${profil}] (c) niedobor bez ulepszenia/miejsca ({zloto,kamien} na rownie) NIE blokuje drog w nieskonczonosc (${count(c1.log, 'droga')} droga)`);
 }
 {
@@ -694,7 +701,7 @@ for (const profil of ['K2', 'K3']) {
   ok(bez.log.length === 0, `[K2] kamieniolom czeka na Prace (22 > 20 wolnych): 0 rozkazow, w tym 0 drog (${bez.log.length})`);
   const m3 = makeMap({});
   const brak = sim({ map: m3, worked: [[11, 12], [13, 12]], profil: 'K2', turns: 5, pool0: 50, income: 0,
-    deficitFn: () => ['kamien'], techsByTurn: () => TECH_BEZ_ZYWNOSCI });
+    deficitFn: () => ['kamien'], techsByTurn: () => TECH_BEZ_ZYWNOSCI, twin: true });
   ok(count(brak.log, 'droga') > 0, `[K2] niedobor kamienia, ale brak heksu pod kamieniolom: drogi ruszaja (${count(brak.log, 'droga')})`);
 }
 
