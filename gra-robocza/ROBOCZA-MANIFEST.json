@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "181b3ec19787212b6950309d5c6b81fd",
-  "bundleSha256": "bca55e4cc9cdedbea9304e697463bb4fe4e9300994f9e4b80d475b6bbe565d29",
-  "bundleBytes": 70643145,
+  "bundleMd5": "1a7efcf5571703847db701aefd17ea17",
+  "bundleSha256": "a8692dea84a3c2dc28a58708118c5ec2d02d40e42cbd5c54e43b8596f13d9532",
+  "bundleBytes": 70656674,
   "sourceSnapshot": {
-    "source": "main 55e098dc5 + MEMSTATIC (46b3d710b)",
+    "source": "R-WEB-MEMORY-DATA-URI-DUPLICATES-Q1 599d78936",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 526: R-WEB-MEMORY-STATIC-FOOTPRINT-Q1 — stałe zużycie pamięci: (1) krok budowania zapisujący wynikowy JS wyłącznie w ASCII (znaki spoza ASCII jako \\uXXXX), dzięki czemu przeglądarka trzyma tekst skryptu po 1 bajcie na znak: skrypt 147,9→78,1 MB (−69,8 MB stale od tury 1), plik HTML +0,47%; (2) modele jednostek i miast o identycznej geometrii współdzielą jedną kopię (pula per renderer, liczniki referencji): geometrii miast 9359→191 w turze 100, na GPU 2573→943, obraz identyczny (0 różnych pikseli z 1,6 mln, 194 modele). Pamięć po GC (seed 4242): t.1 285,5→214,0; t.50 375,1→300,0; t.100 428,9→354,0 MB (−75 MB)"
+    "FALA 527: vite.config.ts: wtyczka civ-binary-assets-out-of-js — mp3/png/jpg jako elementy application/octet-stream w HTML, dekodowane raz do Blob (wspólne blob: URL); sterta po GC −125 MB (t.1: 213,7→88,3; t.50: 302,4→178,6)"
   ],
   "verification": [
-    "tsc PASS; logic 213/213; memory-static-geometry-pool 18/0; memory-growth-merge-index 24/0; small-part-lod 24/0; ASCII bundle Chromium 25/0 (tekst menu/mapy i 22 haseł Cywilopedii, 322 773 znaków, identyczny); pixel 194 modeli 6/0; ai-test 274/20; hashe war-allin zgodne; FC: build HEAD 0 znaków spoza ASCII w głównym skrypcie"
+    "Opus 5.5 Operator→Evaluator→Obrona→FC PASS; duplicates 14/14, piksele menu 0/1 024 000, mapa 0 px, muzyka-e2e 13/0, tsc 0, logic 213/213"
   ],
   "limits": [
-    "Cel −100 MB w t.100 niespełniony (−75 MB); wspólne materiały (−10 MB) odrzucone, bo zmieniają 51 pikseli (kolejność rysowania) — decyzja właściciela; nie zrobione: scalenie części modeli jednostek (≈ −41 MB górna granica), dane base64 audio/obrazów trzymane drugi raz (~62 MB, poza allowlistą); porównanie t.100 zakłócone rozjazdem trajektorii gier"
+    "t.100 nie mierzone; zmiana tylko w buildzie; HTML +13,5 KB"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-06T17:43:01",
+  "hubGeneratedAt": "2026-11-06T19:48:41",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "181b3ec19787212b6950309d5c6b81fd",
-      "sizeBytes": 70643145
+      "md5": "1a7efcf5571703847db701aefd17ea17",
+      "sizeBytes": 70656674
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "181b3ec19787212b6950309d5c6b81fd",
-      "sizeBytes": 70643145
+      "md5": "1a7efcf5571703847db701aefd17ea17",
+      "sizeBytes": 70656674
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "181b3ec19787212b6950309d5c6b81fd",
-      "sizeBytes": 70643145
+      "md5": "1a7efcf5571703847db701aefd17ea17",
+      "sizeBytes": 70656674
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "181b3ec19787212b6950309d5c6b81fd",
-      "sizeBytes": 70643145
+      "md5": "1a7efcf5571703847db701aefd17ea17",
+      "sizeBytes": 70656674
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "181b3ec19787212b6950309d5c6b81fd",
-      "sizeBytes": 70643145
+      "md5": "1a7efcf5571703847db701aefd17ea17",
+      "sizeBytes": 70656674
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "181b3ec19787212b6950309d5c6b81fd",
-      "sizeBytes": 70643145
+      "md5": "1a7efcf5571703847db701aefd17ea17",
+      "sizeBytes": 70656674
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "181b3ec19787212b6950309d5c6b81fd",
-      "sizeBytes": 70643145
+      "md5": "1a7efcf5571703847db701aefd17ea17",
+      "sizeBytes": 70656674
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "181b3ec19787212b6950309d5c6b81fd",
-      "sizeBytes": 70643145
+      "md5": "1a7efcf5571703847db701aefd17ea17",
+      "sizeBytes": 70656674
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "181b3ec19787212b6950309d5c6b81fd",
-      "sizeBytes": 70643145
+      "md5": "1a7efcf5571703847db701aefd17ea17",
+      "sizeBytes": 70656674
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "181b3ec19787212b6950309d5c6b81fd",
-      "sizeBytes": 70643145
+      "md5": "1a7efcf5571703847db701aefd17ea17",
+      "sizeBytes": 70656674
     }
   ],
-  "md5": "181b3ec19787212b6950309d5c6b81fd",
+  "md5": "1a7efcf5571703847db701aefd17ea17",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

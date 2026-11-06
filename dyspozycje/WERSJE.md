@@ -1,3 +1,9 @@
+## ROBOCZA 1a7efcf5 -- 2026-11-06 -- FALA 527: pamięć: dane base64 (audio/obrazy) poza JS, wspólne Blob (testowa)
+
+- vite.config.ts: wtyczka civ-binary-assets-out-of-js — mp3/png/jpg jako elementy application/octet-stream w HTML, dekodowane raz do Blob (wspólne blob: URL); sterta po GC −125 MB (t.1: 213,7→88,3; t.50: 302,4→178,6)
+- Weryfikacja: Opus 5.5 Operator→Evaluator→Obrona→FC PASS; duplicates 14/14, piksele menu 0/1 024 000, mapa 0 px, muzyka-e2e 13/0, tsc 0, logic 213/213
+- Limity: t.100 nie mierzone; zmiana tylko w buildzie; HTML +13,5 KB
+
 ## ROBOCZA 181b3ec1 -- 2026-11-06 -- FALA 526: pamięć: bundle w czystym ASCII + wspólne geometrie modeli (testowa)
 
 - R-WEB-MEMORY-STATIC-FOOTPRINT-Q1 — stałe zużycie pamięci: (1) krok budowania zapisujący wynikowy JS wyłącznie w ASCII (znaki spoza ASCII jako \uXXXX), dzięki czemu przeglądarka trzyma tekst skryptu po 1 bajcie na znak: skrypt 147,9→78,1 MB (−69,8 MB stale od tury 1), plik HTML +0,47%; (2) modele jednostek i miast o identycznej geometrii współdzielą jedną kopię (pula per renderer, liczniki referencji): geometrii miast 9359→191 w turze 100, na GPU 2573→943, obraz identyczny (0 różnych pikseli z 1,6 mln, 194 modele). Pamięć po GC (seed 4242): t.1 285,5→214,0; t.50 375,1→300,0; t.100 428,9→354,0 MB (−75 MB)
