@@ -39,6 +39,9 @@ export interface DiplomacyLockResult {
   active?: boolean;
 }
 
+/** Próg Zaufania paktu, gdy kontekst go nie niesie (fikstury). Ta sama wartość co diplomacy.json progNapZaufanie. */
+const NAP_ZAUFANIE_FALLBACK = 30;
+
 /** Kontekst zebrany przez SILNIK dla JEDNEJ akcji (jednego `actionId`). */
 export interface DiplomacyActionLockContext {
   actionId: string;
@@ -97,6 +100,13 @@ export interface DiplomacyActionLockContext {
   buyableTechCount: number;
   knownRivalsCount: number;
   progNapRelacja: number;
+  /**
+   * R-WEB-DIPLO-NAP-TRUST-30-Q1: próg Zaufania dla Paktu o nieagresji (wymagany OBOK Relacji).
+   * Opcjonalne tylko dla fikstur; `undefined` → NAP_ZAUFANIE_FALLBACK (fail-closed: bramka
+   * Zaufania działa zawsze, nigdy nie jest po cichu pomijana). main.ts przekazuje wartość
+   * z DIPLOMACY_PARAMS.
+   */
+  progNapZaufanie?: number;
   progHandelRelacja: number;
   progSojuszRelacja: number;
   progSojuszZaufanie: number;
@@ -196,7 +206,10 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
     case '2': { // Pakt o nieagresji
       if (ctx.hasNap) return { locked: false, active: true, note: ALREADY_NOTE['2']! };
       if (ctx.atWar) return { locked: true, note: 'zablokowany — trwa wojna' };
-      const gate = relacjaGate(ctx.progNapRelacja, ctx.relTotal);
+      // R-WEB-DIPLO-NAP-TRUST-30-Q1: pakt wymaga Relacji ORAZ Zaufania (dualGate, jak sojusz/granice).
+      const gate = dualGate(
+        ctx.relTotal, ctx.zaufanie, ctx.progNapRelacja, ctx.progNapZaufanie ?? NAP_ZAUFANIE_FALLBACK,
+      );
       if (gate) return gate;
       return { locked: false, note: '' };
     }

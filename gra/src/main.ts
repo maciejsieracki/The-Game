@@ -23544,6 +23544,7 @@ async function boot(): Promise<void> {
         buyableTechCount: getBuyableTechFromOwner(ownerId).length,
         knownRivalsCount: getKnownRivalsFor(ownerId).length,
         progNapRelacja: dip.progNapRelacja,
+        progNapZaufanie: dip.progNapZaufanie,
         progHandelRelacja: dip.progHandelRelacja,
         progSojuszRelacja: dip.progSojuszRelacja,
         progSojuszZaufanie: dip.progSojuszZaufanie,

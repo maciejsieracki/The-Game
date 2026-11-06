@@ -1097,6 +1097,14 @@ export function evaluateProposal(
           reason: `Wiarygodność zbyt niska na pakt (wymagana ≥ ${p.wiarygodnoscProgNapMin})`,
         };
       }
+      // R-WEB-DIPLO-NAP-TRUST-30-Q1: pakt wymaga TEŻ Zaufania ≥ progNapZaufanie (stała, bez ±trudność).
+      // Fail-closed: brak wartości w parametrach = odrzut, nie pominięcie bramki.
+      if (!(relation.zaufanie >= p.progNapZaufanie)) {
+        return {
+          accepted: false, pwBalance: -1,
+          reason: `Zaufanie zbyt niskie na pakt (wymagane ≥ ${p.progNapZaufanie}, masz ${relation.zaufanie})`,
+        };
+      }
       // C-DYP-STOL-Q1=B: słodzik (giveItems/receiveItems w payload) obniża próg Relacji.
       const napEase = sweetenerEasePoints(payload, pnOpts);
       // R-DYPLO-PAKT-WETO-EKSPANSJA-Q1: „Ekspansja przy granicy" była TU binarnym wetem

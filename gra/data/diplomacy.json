@@ -44,6 +44,7 @@
     "progPoboczneHandel": 30,
     "progPoboczneWojna": 15,
     "progNapRelacja": 110,
+    "progNapZaufanie": 30,
     "progHandelRelacja": 0,
     "progSojuszPartnerRwMin": 0.4,
     "progSojuszPartnerRwMax": 0.7,
@@ -228,7 +229,7 @@
     },
     {
       "Akcja": "2. Pakt o nieagresji",
-      "Opis": "Obie strony zobowiązują się nie atakować przez N tur. Złamanie: −30 Relacja, −20 Zaufanie, kara reputacyjna u sąsiadów.",
+      "Opis": "Obie strony zobowiązują się nie atakować przez N tur. Wymaga Relacji i Zaufania ≥ 30. Złamanie: −30 Relacja, −20 Zaufanie, kara reputacyjna u sąsiadów.",
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "UPR",
       "Koszt": "Brak kosztu walutowego; wartość polityczna",
