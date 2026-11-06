@@ -646,7 +646,7 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
    liczb; komórka = medalion + 3 linie (etykieta+zapas / brutto / netto). Wąskie okno zmniejsza
    czcionki i szerokość kolumny (media), NIE zmienia układu. Szerokość dobrana tak, by baner kończył
    się przed medalionem Mocy (środek ekranu ~ 50vw − 105px). */
-.civ-hud{--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:17px;--hud-cell-sm:10px;}
+.civ-hud{--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:17px;--hud-cell-sm:9.5px;}
 /* R-WEB-HUD-TOPBAR-NO-LABELS-Q1: baner zajmuje CAŁĄ dostępną szerokość od lewego marginesu do
    medalionu Mocy (50vw − 120 px − 10 px odstępu). Kolumny 3×1fr (elastyczne, bez stałej szerokości),
    więc przy większych liczbach nic się nie rozjeżdża — skracanie k/M dzieje się w formatterze. */
@@ -698,6 +698,17 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
   .civ-hud .hud-chip-grid{row-gap:1px;}
   .civ-hud .civ-hud-chip-val{line-height:1;height:calc(var(--hud-cell-val) * 1);}
   .civ-hud .civ-hud-chip-figs{margin-left:0;line-height:1.2;height:calc(var(--hud-cell-sm) * 1.2);}}
+/* R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1: 1201–1320 px — przy --hud-cell-val 17px komórka ma
+   ~100 px na liczbę i przyrosty obok siebie (przyrosty flex-shrink:0 ściskały liczbę do zera dla dużych
+   wartości). Medalion 30→24 px (jak ≤1200) i węższe odstępy w tym przedziale mieszczą obie w komórce;
+   przyrosty 9,5→8,5 px w TYM przedziale (przy 9 px nadal przycina liczbę „Nauka" przy 1201 px, huge).
+   Wysokość i układ bez zmian (stałe dla małych i dużych liczb). */
+@media (min-width:1201px) and (max-width:1320px){
+  .civ-hud{--hud-cell-med:24px;}
+  .civ-hud .hud-chip-grid{column-gap:6px;}
+  .civ-hud .civ-hud-chip-cell{column-gap:3px;}
+  .civ-hud .civ-hud-chip-figs,.civ-hud .civ-hud-chip-fsep{font-size:8.5px;}
+  .civ-hud .civ-hud-chip-figs .civ-hud-chip-net,.civ-hud .civ-hud-chip-figs .civ-hud-chip-rate{font-size:8.5px;}}
 /* R-WEB-HUD-TOPBAR-NO-LABELS-Q1 r2: 701–900 px (baner ~250–300 px): przyrosty obok siebie, bez
    separatora i z mniejsza czcionka, zeby „−999,9M −999,9M” miescilo sie w kolumnie. */
 @media (max-width:900px){
