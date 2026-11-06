@@ -4,6 +4,8 @@
  * żeby każdy panel mógł go użyć bez ciągnięcia całego armyStackHud.
  */
 
+import { isNonCombatTypeName, sortNonCombatLast } from '../game/stack-leader';
+
 export type ArmyCommanderTitle = 'Wódz' | 'Generał';
 
 /**
@@ -18,11 +20,16 @@ export function armyStackCardLabel(card: { name: string; commanderTitle?: ArmyCo
  * Generałowie/wodzowie na początku listy (stabilnie: reszta zachowuje kolejność).
  * Bez tego dowódca mógł stać w środku długiego stosu i ginąć wśród „Wojowników".
  */
-export function sortArmyStackGeneralsFirst<T extends { commanderTitle?: ArmyCommanderTitle }>(
+export function sortArmyStackGeneralsFirst<T extends { commanderTitle?: ArmyCommanderTitle; name?: string }>(
   cards: readonly T[],
 ): T[] {
-  return [
+  // R-WEB-ARMY-SCOUT-NOT-LEADER-Q1: generałowie pierwsi, zwiadowca/cywile na samym końcu.
+  const ordered = [
     ...cards.filter(c => c.commanderTitle !== undefined),
     ...cards.filter(c => c.commanderTitle === undefined),
   ];
+  return sortNonCombatLast(
+    ordered,
+    c => c.commanderTitle === undefined && c.name !== undefined && isNonCombatTypeName(c.name),
+  );
 }

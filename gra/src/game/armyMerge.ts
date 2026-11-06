@@ -4,6 +4,7 @@
 
 import type { RuntimeUnit } from '../units/setup';
 import { keyOf } from '../units/setup';
+import { pickStackLeader } from './stack-leader';
 import type { UnitPowerInput } from './unit-power';
 import { sumRosterFieldM } from './auto-battle-power';
 import {
@@ -441,17 +442,15 @@ export function allDefendersFortifiedInGarnizon(
   return defenders.length > 0 && defenders.every(u => u.inGarnizon === true);
 }
 
-/** Najmocniejsza jednostka stosu (Atak → id). */
+/**
+ * Najmocniejsza jednostka stosu (Atak → id). R-WEB-ARMY-SCOUT-NOT-LEADER-Q1:
+ * zwiadowca/osadnik/robotnik nigdy nie jest reprezentantem, gdy w stosie jest jednostka bojowa.
+ */
 export function pickStackRepresentative(
   stack: RuntimeUnit[],
   attackOf: (u: RuntimeUnit) => number,
 ): RuntimeUnit {
-  return stack.reduce((best, u) => {
-    const a = attackOf(u);
-    const b = attackOf(best);
-    if (a !== b) return a > b ? u : best;
-    return u.id < best.id ? u : best;
-  });
+  return pickStackLeader(stack, attackOf);
 }
 
 /** Jednostki ufortyfikowane w garnizonie miasta na danym heksie. */
