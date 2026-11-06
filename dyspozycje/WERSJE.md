@@ -1,3 +1,9 @@
+## ROBOCZA 49d20c33 -- 2026-11-06 -- FALA 520: wojny AI: szybszy pokój, karencja po pokoju (testowa)
+
+- R-WEB-AI-WAR-WEARINESS-LIVE-AUDIT-Q1 — przegrywająca AI oferuje pokój wcześniej (od 8. tury po utracie miasta, od 25. bez strat) z eskalacją złoto→surowce→miasta; ochrona słabego (≤3 miasta lub ≥3 utraty: zwycięzca musi przyjąć pokój, zostaje ≥3 miasta, nigdy stolica); symetria zmęczenia; karencja po pokoju 40 tur (100 dla chronionego) zamiast 10 — koniec cyklu wojna→pokój→ta sama wojna
+- Weryfikacja: tsc PASS; ai-war-weariness-peace 90/0; diplo-war-peace-sim 22/0; diplomacy-peace-lock 9/0; war-allin-capital-quick hash zgodny; ai-test 274/20
+- Limity: Pomiar na żywo tylko 1 ziarno (4242); oferta z miastem nie zaobserwowana w realnej grze; forced-war-bronze/iron-main-guard po 1 FAIL sprzed zmiany
+
 ## ROBOCZA d956f56a -- 2026-11-06 -- FALA 519: górny baner: większe liczby, zwarta grupa (testowa)
 
 - R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1 — główne liczby w żetonach banera większe o 25–33% (17/15/13/12 px), liczba i przyrosty brutto/netto zwarte obok siebie (przerwa 0–4 px) i wyśrodkowane w żetonie; układ 3+3 stały bez przeskoków
