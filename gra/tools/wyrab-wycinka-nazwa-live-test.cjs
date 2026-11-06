@@ -590,9 +590,14 @@ async function main() {
     + ' wystapien nazwy ulepszenia "Wyrąb" w stringach -- kazde trafienie musi byc'
     + ' na jawnej liscie uzyc pospolitych',
     trafieniaSrc.length === 0, trafieniaSrc);
-  check('[11] sanity: skan objal wszystkie trzy znane, sklasyfikowane uzycia pospolite'
+  // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 (r2, ODDAL: czerwony na bazie): dwa z trzech znanych
+  // uzyc pospolitych ("automat MOZE wycinac las (wyrab pod farme przy rzece)" w main.ts oraz
+  // "Pozwol automatowi wycinac las (...)" w buildModeHud.ts) zniknely z gra/src razem z przelacznikami
+  // automatu (R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1) — zostalo jedno: improvement-build.ts.
+  // Oczekiwana liczba = 1 (nie tautologia: [11c] nadal dowodzi, ze nowa nazwa ulepszenia jest zglaszana).
+  check('[11] sanity: skan objal jedyne pozostale, sklasyfikowane uzycie pospolite'
     + ' (asercja nie jest pusta ani slepa)',
-    dozwoloneSrc === 3, { dozwoloneSrc, oczekiwane: 3 });
+    dozwoloneSrc === 1, { dozwoloneSrc, oczekiwane: 1 });
 
   // [11b] STRAZNIK POKRYCIA bloku [11] -- ten sam wzorzec co [7] i [8b]. Sam skan
   //       negatywny nie wykryje wlasnej slepoty: zly glob, zla sciezka albo zbyt

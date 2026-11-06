@@ -107,6 +107,7 @@ check(!mainTs.includes("showHintMessage('Dotarło do celu'"), 'main.ts: brak toa
 check(!mainTs.includes("'Wycinka: +' + drewnoCredited"), 'main.ts: brak toastu „Wycinka: +N Drewna”');
 check(!mainTs.includes('Auto ulepszenia: ${toastLines.length}'), 'main.ts: brak toastu „Auto ulepszenia: N×”');
 check(!mainTs.includes('`Auto ulepszenie: ${toastLines[0]}`'), 'main.ts: brak toastu „Auto ulepszenie: …”');
+check(mainTs.includes("showHintMessage('Głód: spadek populacji w '"), 'main.ts: „Głód: spadek populacji” zostaje (Wazne)');
 check(mainTs.includes("'\\u{1F9ED}'") === false || true, 'main.ts: (kontrola) plik czytelny');
 check(mainTs.includes('magazyn wyczerpany') || mainTs.includes('kapitulacja za 1 turę') || mainTs.includes('Kapitulacja za 1 turę'),
   'main.ts / src: komunikat kapitulacji/magazynu nadal istnieje (wymagany przez mechanike)');

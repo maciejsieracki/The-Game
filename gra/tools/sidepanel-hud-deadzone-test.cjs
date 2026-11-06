@@ -332,20 +332,28 @@ async function main() {
     // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: chip „Inne cyw.” zastąpiony trzema zakładkami
     // (Dyplomacja / Ważne / Inne). Sprawdzamy, że PRAWDZIWY klik myszy na zakładkę działa.
     console.log('\n-- B. Zakładki powiadomień ([data-sp-tab]) nadal klikalne realnym kliknięciem --');
-    const tabInne = page.locator('[data-sp-tab="inne"]').first();
-    const tabCount = await tabInne.count();
-    assert('zakładka „Inne” istnieje w DOM', tabCount > 0);
+    // Zakładka domyślna zależy od zawartości (Ważne gdy są wpisy, inaczej Dyplomacja, inaczej Inne),
+    // więc test klika zakładkę, która NIE jest aktywna (Inne, a gdy to ona jest domyślna — Ważne).
+    const activeTabName = await page.evaluate(() => {
+      const a = document.querySelector('[data-sp-tab].sp-tab-active');
+      return a ? a.getAttribute('data-sp-tab') : null;
+    });
+    const targetTab = activeTabName === 'inne' ? 'wazne' : 'inne';
+    const tabTarget = page.locator('[data-sp-tab="' + targetTab + '"]').first();
+    const tabCount = await tabTarget.count();
+    assert('zakładka „' + targetTab + '” istnieje w DOM', tabCount > 0);
     if (tabCount > 0) {
-      const beforeActive = await tabInne.evaluate(el => el.classList.contains('sp-tab-active'));
-      assert('zakładka „Inne” domyślnie NIE jest aktywna', !beforeActive);
-      const box = await tabInne.boundingBox();
-      assert('zakładka „Inne” ma niezerową geometrię (boundingBox)', !!box);
+      const beforeActive = await tabTarget.evaluate(el => el.classList.contains('sp-tab-active'));
+      assert('zakładka „' + targetTab + '” przed kliknięciem NIE jest aktywna', !beforeActive);
+      const box = await tabTarget.boundingBox();
+      assert('zakładka „' + targetTab + '” ma niezerową geometrię (boundingBox)', !!box);
       if (box) {
         await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
         await wait(200);
-        const afterActive = await tabInne.evaluate(el => el.classList.contains('sp-tab-active'));
-        assert('PRAWDZIWY klik myszy na zakładkę „Inne” ją aktywuje (funkcjonalność panelu NIE ucierpiała)', afterActive);
-        // Wróć do zakładki domyślnej dla higieny kolejnych scenariuszy.
+        const afterActive = await tabTarget.evaluate(el => el.classList.contains('sp-tab-active'));
+        assert('PRAWDZIWY klik myszy na zakładkę „' + targetTab + '” ją aktywuje (funkcjonalność panelu NIE ucierpiała)', afterActive);
+        // Higiena kolejnych scenariuszy (F–I wstrzykują karty do zakładki „Ważne”): wróć na „Ważne”
+        // (zakładka z wcześniejszej wersji testu), a nie zostawaj na klikniętej.
         const wazne = page.locator('[data-sp-tab="wazne"]').first();
         const wBox = await wazne.boundingBox();
         if (wBox) {

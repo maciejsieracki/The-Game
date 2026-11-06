@@ -24751,8 +24751,9 @@ async function boot(): Promise<void> {
     }
 
     /** R-WYDARZENIA-FILTR-KATEGORII: „Usuń wszystkie" w toolbarze panelu WYDARZENIA.
-     * Iteruje NIEfiltrowaną collectTurnEvents() (nie to, co chip 🌍 „Inne cyw." akurat
-     * pokazuje w UI) — więc kasuje też wpisy ukryte tym przełącznikiem. To jest ZAMIERZONE
+     * Iteruje NIEfiltrowaną collectTurnEvents() (nie to, co aktywna zakładka Dyplomacja/Ważne/Inne
+     * — dawny chip 🌍 „Inne cyw." — akurat pokazuje w UI) — więc kasuje też wpisy ukryte
+     * (np. handel AI↔AI poza zakładką Dyplomacja). To jest ZAMIERZONE
      * (Maciej/Evaluator): „Usuń wszystkie" ma czyścić WSZYSTKO, nie tylko widoczną resztę. */
     function clearAllSidePanelEvents(): void {
       for (const ev of collectTurnEvents()) {
@@ -26442,6 +26443,12 @@ async function boot(): Promise<void> {
         return c ? { id: c.id, name: c.name } : null;
       },
       linkFor: (id: string): SidePanelEventLink | null => sidePanelEventLinkFor(id),
+      /** Odczyt (bez zmian stanu) pełnej, NIEfiltrowanej listy wpisów panelu — tylko dla pomiaru
+       * `tools/notif-live-measure.cjs` (R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1). */
+      allEvents: (): Array<Record<string, unknown>> => collectTurnEvents().map(e => ({
+        id: e.id, title: e.title, subtitle: e.subtitle, kind: e.kind,
+        blocking: e.blocking === true, origin: e.origin ?? null, turn: turn,
+      })),
       cameraTarget: (): { x: number; z: number; dist: number } => camCtrl.getFocusState(),
       /** Stan „który widok jest otwarty" czytany WŁASNYMI predykatami gry (nie zgadywaniem
        * po klasach CSS) — to one decydują o widoczności panelu w reszcie kodu. */
@@ -36433,6 +36440,8 @@ async function boot(): Promise<void> {
               );
             }
             // Surface population changes briefly so the economy is visible.
+            // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 (r2): pomiar 2 ziarna x 30 tur = 0 wystapien
+            // „Wzrost populacji” w panelu WYDARZENIA (toast chwilowy, nie wpis) — zostaje bez zmian.
             if (econ.growth > 0) {
               showHintMessage('Wzrost populacji w ' + econ.growth + ' miastach', 2500);
             } else if (econ.starved > 0) {

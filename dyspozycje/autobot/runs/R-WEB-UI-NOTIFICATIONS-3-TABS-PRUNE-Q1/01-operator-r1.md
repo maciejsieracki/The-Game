@@ -1,41 +1,36 @@
-STATUS: BLOCK (kod i testy gotowe; brak pomiaru w realnej grze PRZED/PO oraz regresji real-render z buildem vite)
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (WEB)
 TEMAT: R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1
-GOAL: Panel WYDARZENIA: zamiast chipa "Inne cyw." trzy zakładki Dyplomacja / Ważne / Inne; przycisk "Zamknij wszystkie informacyjne" nad zakładkami; usunięcie komunikatów zbędnych (nowy szlak, wycinka, auto-ulepszenia, "Dotarło do celu") u źródła; logika gry bez zmian.
+GOAL: Panel WYDARZENIA: zakladki Dyplomacja / Wazne / Inne zamiast chipa "Inne cyw."; przycisk "Zamknij wszystkie informacyjne" nad zakladkami; usuniecie szumu u zrodla; logika gry bez zmian.
+(Plik zapisany pod sciezka z zadania `01-operator-r1.md`; to jest RUNDA 2/5 po FC R1 = FAIL. Pierwotny raport R1: `01-operator-r1-pierwotny-runda1.md`.)
 
-ZMIANY/COMMIT:
-- Kod: 28ad61e50 (baza: origin/main 80919e2ae, detached).
-- gra/src/ui/sidePanelEventTabs.ts (NOWY): eventTabOf(ev) -> dyplomacja | wazne | inne; defaultSidePanelTab. Kolejność reguł: (1) kind diplo / origin other-civs / tytuł "Dyplomacja" -> dyplomacja; (2) blocking, kind enemy, lub tekst o magazynie/kapitulacji/oblężeniu/braku/głodzie/armii/buncie/stratach -> wazne; (3) reszta -> inne.
-- gra/src/ui/sidePanelEventFilter.ts: filterSidePanelEventsByTab (zastępuje filtr chipa).
-- gra/src/ui/sidePanelHud.ts: stan activeTab (domyślnie wynika z zawartości, dopóki gracz nie kliknie); karty blokujące zawsze na górze, zakładki filtrują tylko informacyjne; licznik zakładek; przycisk "Zamknij wszystkie informacyjne" nad zakładkami; CSS .sp-tabs/.sp-tab; chip usunięty.
-- gra/src/main.ts (tylko emisja): usunięto pętlę "Nowy szlak handlowy" (toast + karta + kotwica), toast "Wycinka: +N Drewna" (zapis drewna z capem zostaje), toasty "Auto ulepszenie(ia)" (sygnał o nadwyżce Pracy zostaje), toast "Dotarło do celu" (delete marszu zostaje). Zerwanie szlaku ("Szlak handlowy zerwany") NIE usunięte -> zakładka Inne.
-- Testy: NOWY gra/tools/sidepanel-notification-tabs-test.cjs (28/28); zaktualizowane z uzasadnieniem: sidepanel-events-toolbar-test (20/20), wycinka-drewno-cap-test (13/13), trade-routes-hud-filter-test (58/58; dodano stampEventTurn do harnessu, bo pushOnce go wołał), wyrab-wycinka-nazwa-live-test [3], sidepanel-hud-deadzone-test sekcja B (klik zakładki zamiast chipa; nieuruchomiony, patrz BLOKADY).
-- Zrzuty harnessu (prawdziwy createSidePanelHud w Chromium, bez zmian w repo): zrzut-zakladka-wazne.png, zrzut-zakladka-inne.png, zrzut-zakladka-dyplomacja.png w tym katalogu (~40 KB każdy). Układ potwierdzony: przycisk nad zakładkami, liczniki 2/2/3, blokująca karta na górze.
+ZMIANY/COMMIT: SHA w sekcji "COMMIT" na dole. Baza: `29e662e2e` (kod R1 `28ad61e50`) + merge `origin/main` d3e88b7d9 (czysty).
+- `gra/src/ui/sidePanelEventTabs.ts`: eventTabOf przepisany: normalizacja (male litery, bez diakrytykow, ł->l), granica POCZATKU wyrazu (`armi` nie pasuje do `farmie`), kolejnosc: kind/origin/tytul Dyplomacja -> blokujace/enemy -> propozycje/audiencje (Dyplomacja) -> braki ("brak srodkow/pokrycia/zasobow", deficyt, wyczerpany) (Wazne) -> frazy dyplomatyczne bez prefiksu (Pokoj zawarty, Rozejm, Zerwano traktat, Pokoj z:, wypowiada wojne/Wypowiedzialles wojne, sojusz, trybut) -> zagrozenia (magazyn, oblezenie, kapitulacja, glod, armia, wrog, bunt, strata, zniszczenie) -> Inne.
+- `gra/src/ui/sidePanelEventFilter.ts`: `isHiddenAiAiEvent`, `relevantInfoEvents`, `tabCountsOf`.
+- `gra/src/ui/sidePanelHud.ts`: (3) "Zamknij wszystkie informacyjne" i licznik naglowka wracaja do dotychczasowego zakresu = bez ukrytego handlu AI<->AI (jak dawny chip OFF); w zakladce Dyplomacja handel AI<->AI jest widoczny i objety; zakladka domyslna nie liczy AI<->AI; CSS zakladek: etykieta z ellipsis + licznik `flex:none` (koniec nachodzenia "Dyplomacja 2"), pasek ciasniejszy (R4 cutoff).
+- `gra/src/game/eot-event-defer.ts`, `gra/src/main.ts` (~24754): tylko komentarze o chipie "Inne cyw.". `main.ts`: dodany odczytowy hak `__sidePanelLinkTestDebug.allEvents` (pomiar). Brak zmian logiki gry w tej rundzie.
+- Testy: NOWY `sidepanel-event-tabs-classify-test.cjs` (52 przypadki z REALNYCH tekstow main.ts + negatywy + 9 mutacji); `sidepanel-events-toolbar-test` (+zakres Zamknij/naglowek), `sidepanel-notification-tabs-test`, `sidepanel-hud-deadzone-test` (klik nieaktywnej zakladki + powrot na Wazne), `sidepanel-event-header-wydarzenie-real-render-test` (karta Dyplomacja mierzona po przelaczeniu zakladki), `wyrab-wycinka-nazwa-live-test` [11] (oczekiwane uzycia 3 -> 1; dwa zniknely z gra/src z przelacznikami automatu, ODDAL zalatwiony).
+- Narzedzia: `gra/tools/notif-live-measure.cjs`, `notif-live-summarize.cjs`, `notif-live-shots.cjs`.
 
-TESTY:
-- tsc --noEmit (gra/): EXIT=0.
-- Zielone: sidepanel-notification-tabs-test, sidepanel-events-toolbar-test, wycinka-drewno-cap-test, trade-routes-hud-filter-test, eot-event-defer-test, eot-diplomacy-header-test, events-one-turn-lifetime-test, important-event-cards-test, important-event-cards-regression-test.
-- Czerwone przed zmianą testu, zielone po aktualizacji: trade-routes (R2-K4/R2-D/R2-MARITIME, nowe trasy nie generują toastu), wyrab-wycinka [3], wycinka [1].
-- Czerwone, NIE związane z tą zmianą: wyrab-wycinka-nazwa-live-test [11] (sanity liczy 3 dozwolone frazy "wyrąb", w HEAD src jest 1; moje zmiany nie dotykają tekstu z "wyrąb"); sidepanel-event-header-wydarzenie-real-render-test (TypeError w assertReport, real-render na buildzie vite).
-- Niewykonane z powodu środowiska (timeout 200 s / Target closed w fallbacku chromium-1194): sidepanel-blocking-card-cutoff-real-render, sidepanel-diplo-dismiss-real-render, sidepanel-hud-deadzone (sekcja B zaktualizowana, nieuruchomiona), eot-*/end-turn-* live. Nie wykonano npm run build/dev.
-- Mutacje: nie wykonano osobnego zestawu; strażnik tekstowy w sidepanel-notification-tabs-test (main.ts nie zawiera usuniętych komunikatów) działa jako bramka regresji.
-- RED/GREEN: testy klasyfikacji napisano po kodzie (nie RED-first).
+TESTY (logi `dowody/gate-*.txt` z linia EXIT=):
+- RED-first: klasyfikator R1 na nowych testach = 28 FAIL (`gate-classify-RED-r1.txt`); nowy = PASS, 9/9 mutacji wykrytych (M1 diakrytyki, M2 granice slow, M3 braki, M4 frazy dyplomacji, M5 kolejnosc, M6 zagrozenia, M7 "wrog", M8 kind/origin, M9 default).
+- tsc --noEmit EXIT=0. toolbar 25/0, tabs 29/0, classify PASS, wyrab-wycinka 49/0, eot-diplomacy-header 19/19, eot-event-defer 43/43, events-defer-to-turn-start 40/0, events-one-turn-lifetime 25/0, important-event-cards (10/0 i regression PASS), elimination-toast-merge 56/0, capture-event-retention PASS, side-panel-event-link 37/0, end-turn-modal-sequencing 41/0, hud-* (13 plikow) zielone.
+- ai-test: 274 pass / 20 fail = IDENTYCZNIE jak baza `origin/main` (`gate-ai-test*.txt`).
+- Real-render (Chromium, vite build POZA repo `/tmp/civ-notif-out-final`): deadzone 43/0; diplo-dismiss 35 OK EXIT=0; header-wydarzenie 23/0 (baza 23/0; R1 byl TypeError); blocking-card-cutoff 46/1: jedyny fail C3 ("Otworz ->" timeout klikniecia) identyczny na bazie (baza 45/2: BB6+C3, flaky timeouty srodowiska); R4 (czerwony przy 1. wersji CSS) zielony po zacisnieciu paska.
+- Czerwone tak samo na bazie (nie ze mnie): era-change-toast-defer, hud-moc-warstwa, load-fail-toast-zindex (12/3). Infra: hint-toast-zindex (timeout), end-turn-input-stability (brak chromium dla playwright), end-turn-gameplay-runtime (wymaga WORLD_GEN_DIST) — NIE_ZMIERZONO.
+
+POMIAR PRZED/PO (realna gra, Chromium, `?civTest=1`, realny endTurn, 30 tur, ziarna 18 i 7, odczyt pelnej listy `collectTurnEvents` po kazdej turze; pliki `pomiar-*.txt`, `dowody/*.jsonl`):
+- PRZED: seed 18: 63 wpisy informacyjne / 30 tur (2,10/ture, max 4); seed 7: 58 (1,93/ture, max 4). Skladniki: "Auto ulepszenia: N× (−Praca)" 30+22 wystapien (kazda tura), "Wycinka: +N Drewna" 27+16+3+1, "Auto ulepszenie: Trzoda/Farma @" 5+3, "Nowy szlak handlowy" (toast+karta) 1+1+1+1, Granice naruszone (diplo) 5, Automatycznie obnizono racje 1+1, edu "Doswiadczeni wojownicy" 2.
+- PO: seed 18: 2 wpisy (0,07/ture); seed 7: 3 (0,10/ture). Zero usunietych typow w panelu; kazdy pozostaly w jednej zakladce: Granice naruszone -> Dyplomacja, obnizone racje -> Wazne.
+- Inne szumiace komunikaty (ocena): "Wzrost populacji w N miastach" = 0 wystapien w panelu (toast chwilowy, nie wpis) -> BEZ zmiany; "Dobra wola", "Lupy", "Miasto-panstwo wchloniete" = 0 wystapien w 60 turach (zdarzenia rzadkie/akcje gracza) -> zostaja, klasyfikacja: Inne. "Granice naruszone" (do 5/30 tur) niesie utrate Zaufania -> zostaje (Dyplomacja). Tylko ziarna 18 i 7, brak wojny/oblezen w tych 30 turach: kategoria Wazne w grze potwierdzona zrzutem z seedem realnych tekstow, nie samoistnie.
+- Zrzuty z ZYWEJ gry: `zrzut-live-zakladka-{wazne,dyplomacja,inne}.png`, geometria `live-shots-geometry.json` (przycisk nad zakladkami, brak nachodzenia licznika, h zakladek 18 px).
 
 BLOKADY:
-1. NIE_ZMIERZONO: pomiar "ZMIERZ PRZED" (2 ziarna x >=30 tur w grze, tabela wg typu/źródła) nie został wykonany. Nie wiem więc, ile komunikatów per tura trafiało do panelu przed zmianą.
-2. NIE_ZMIERZONO: weryfikacja PO w realnej grze (2 ziarna x 30 tur, zero usuniętych komunikatów w panelu) nie wykonana.
-3. Regresje real-render (vite build) nie uruchomione do zielonego wyniku.
-4. Brak osobnych mutacji dla eventTabOf.
+- NIE_ZMIERZONO: end-turn-input-stability, end-turn-gameplay-runtime, hint-toast-zindex (srodowisko, patrz wyzej); sidepanel-event-przekierowania-real-render (fixture "Nowy szlak" zostaje).
+- Brak zmian w gra-robocza, WERSJE.md, rust-port, src-tauri, battle.
 
-DECYZJE ZAŁOŻONE (do potwierdzenia przez orkiestratora, nie pytania ABC):
-- "Zamknij wszystkie informacyjne" zamyka informacyjne We WSZYSTKICH zakładkach (jak dotąd), nie tylko w aktywnej. Etykieta bez zmian.
-- Karty blokujące (decyzje, bunt, produkcja pusta, dyplomacja-decyzja) widoczne zawsze ponad zakładkami; zakładka Dyplomacja nie pokazuje blokujących kart dyplomacji w liście (są na górze).
-- Szlak "zerwany" -> Inne (nie usunięty), bo to informacja o utracie, nie o nowym szlaku; do decyzji właściciela.
-- "Automat ulepszeń: nadwyżka budżetu Pracy…" (tip) zostaje i trafia do Inne.
-- Zakładka domyślna: Ważne gdy są wpisy, inaczej Dyplomacja, inaczej Inne; po kliknięciu gracza wybór zostaje w sesji (nie w save).
-- Fixture "Nowy szlak handlowy" w sidepanel-event-przekierowania-real-render-test zostaje (seed bezpośrednio do renderu, nie przez silnik).
-- eot-event-defer.ts: bez zmian w kodzie (komentarze nadal wspominają chip "Inne cyw.").
+ZALOZENIA (bez pytan ABC): "Zamknij wszystkie informacyjne" = zakres sprzed zakladek: informacyjne bez ukrytego handlu AI<->AI, wiec w zakladce Dyplomacja takze AI<->AI; blokujace nie sa zamykane masowo. Badge zakladki Dyplomacja liczy tez AI<->AI (to, co zobaczysz po kliknieciu), naglowek nie.
 
-NASTĘPNY KROK: (1) pomiar PRZED/PO na dwóch ziarnach w Chromium (nohup, log JSONL poza repo) i tabela źródeł; (2) build vite poza repo (tylko Chromium) i uruchomienie sidepanel-*-real-render-test; (3) Evaluator + Final Control; dopiero potem integracja.
-
+RUNDY: 2/5 (po FC R1 = FAIL)
+NASTEPNY KROK: Evaluator, potem Final Control; integracja po PASS.
 DEPLOY/PUSH: NIE WYKONANO

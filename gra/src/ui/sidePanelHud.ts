@@ -24,10 +24,9 @@ import {
 } from './minimapLayout';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX } from './sidePanelLayout';
 import { isDiploObscuringUnitDock } from './unitCtxDockDiploGate';
-import { filterSidePanelEventsByTab } from './sidePanelEventFilter';
+import { filterSidePanelEventsByTab, relevantInfoEvents, tabCountsOf } from './sidePanelEventFilter';
 import {
   defaultSidePanelTab,
-  eventTabOf,
   SIDE_PANEL_TAB_LABELS,
   SIDE_PANEL_TABS,
   type SidePanelTab,
@@ -250,18 +249,20 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}
 .civ-side-panel .sp-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:6px;
-  padding:0 4px 2px;margin-bottom:2px;pointer-events:auto;}
-.civ-side-panel .sp-tabs{display:flex;gap:4px;margin:0 0 6px;pointer-events:auto;}
-.civ-side-panel .sp-tab{flex:1 1 0;min-width:0;white-space:nowrap;font:10px var(--civ-font-ui);letter-spacing:.04em;
+  padding:0 4px;margin-bottom:3px;pointer-events:auto;}
+.civ-side-panel .sp-tabs{display:flex;gap:4px;margin:0 0 4px;pointer-events:auto;}
+.civ-side-panel .sp-tab{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;gap:3px;
+  overflow:hidden;white-space:nowrap;font:10px var(--civ-font-ui);letter-spacing:.02em;
   color:var(--civ-text-muted);background:rgba(20,26,38,.7);border:1px solid rgba(232,216,138,.22);
-  border-radius:8px;padding:4px 3px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
+  border-radius:8px;padding:2px 3px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
 .civ-side-panel .sp-tab:hover{border-color:rgba(232,216,138,.4);}
 .civ-side-panel .sp-tab.sp-tab-active{color:var(--civ-gold-primary);
   border-color:var(--civ-gold-primary);background:rgba(232,216,138,.14);}
-.civ-side-panel .sp-tab-count{opacity:.75;margin-left:3px;}
+.civ-side-panel .sp-tab-label{min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.civ-side-panel .sp-tab-count{flex:0 0 auto;opacity:.75;}
 .civ-side-panel .sp-toolbar-dismiss-all{font:10px var(--civ-font-ui);letter-spacing:.06em;
   color:var(--civ-text-muted);background:transparent;border:1px solid rgba(232,216,138,.22);
-  border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s;}
+  border-radius:999px;padding:1px 9px;cursor:pointer;transition:border-color .15s,color .15s;}
 .civ-side-panel .sp-toolbar-dismiss-all:hover{border-color:var(--tg-red);color:var(--tg-red);}
 /* R-TRZY-KARTY-WDROZENIE-Q1 runda 2, Karta 3 (2026-08-20): blokująca vs informacyjna —
    różnica jest w KSZTAŁCIE i GRUBOŚCI rantu (--tg-border-blocking), nie w kolorystyce.
@@ -730,10 +731,13 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     // od zakładki); zakładki filtrują WYŁĄCZNIE wpisy informacyjne.
     const blockingEvents = events.filter(ev => ev.blocking === true);
     const allInfoEvents = events.filter(ev => ev.blocking !== true);
-    const tabCounts: Record<SidePanelTab, number> = { dyplomacja: 0, wazne: 0, inne: 0 };
-    for (const ev of allInfoEvents) tabCounts[eventTabOf(ev)] += 1;
-    if (!activeTabPicked) activeTab = defaultSidePanelTab(tabCounts);
+    // Liczniki na zakładkach = to, co gracz zobaczy po kliknięciu (z handlem AI↔AI w Dyplomacji).
+    const tabCounts = tabCountsOf(allInfoEvents, true);
+    // Zakładka domyślna nie liczy ukrytego handlu AI↔AI — sam nie przełącza panelu na Dyplomację.
+    if (!activeTabPicked) activeTab = defaultSidePanelTab(tabCountsOf(allInfoEvents, false));
     const infoEvents = filterSidePanelEventsByTab(allInfoEvents, activeTab);
+    // Nagłówek i „Zamknij wszystkie informacyjne”: zakres sprzed zakładek — bez ukrytych AI↔AI.
+    const relevantInfo = relevantInfoEvents(allInfoEvents, activeTab);
     const orderedEvents = [...blockingEvents, ...infoEvents];
 
     if (isPlaceholder) {
@@ -743,8 +747,8 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       if (blockingEvents.length > 0) {
         counterParts.push(blockingEvents.length + ' ' + pluralPl(blockingEvents.length, 'wymaga decyzji', 'wymagają decyzji'));
       }
-      if (allInfoEvents.length > 0) {
-        counterParts.push(allInfoEvents.length + ' ' + pluralPl(allInfoEvents.length, 'informacyjna', 'informacyjne'));
+      if (relevantInfo.length > 0) {
+        counterParts.push(relevantInfo.length + ' ' + pluralPl(relevantInfo.length, 'informacyjna', 'informacyjne'));
       }
       html += '<div class="sp-header">' + (counterParts.length > 0 ? counterParts.join(' · ') : 'Wydarzenia') + '</div>';
     }
@@ -752,7 +756,7 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     if (!isPlaceholder) {
       // Hurtowe zamknięcie dotyczy TYLKO informacyjnych (§4), nad zakładkami; patrz handler
       // [data-sp-dismiss-all] niżej, który celowo NIE woła config.onDismissAll.
-      if (config.onEventDismiss !== undefined && allInfoEvents.length > 0) {
+      if (config.onEventDismiss !== undefined && relevantInfo.length > 0) {
         html += '<div class="sp-toolbar">'
           + '<button type="button" class="sp-toolbar-dismiss-all" data-sp-dismiss-all>Zamknij wszystkie informacyjne</button>'
           + '</div>';
@@ -762,7 +766,8 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
           const on = tab === activeTab;
           return '<button type="button" role="tab" class="sp-tab' + (on ? ' sp-tab-active' : '')
             + '" aria-selected="' + (on ? 'true' : 'false') + '" data-sp-tab="' + tab + '">'
-            + SIDE_PANEL_TAB_LABELS[tab] + ' <span class="sp-tab-count">' + tabCounts[tab] + '</span></button>';
+            + '<span class="sp-tab-label">' + SIDE_PANEL_TAB_LABELS[tab] + '</span>'
+            + '<span class="sp-tab-count">' + tabCounts[tab] + '</span></button>';
         }).join('')
         + '</div>';
     }
@@ -917,7 +922,8 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       // per-id przez onEventDismiss (istniejący miękki dismiss), NIE wołamy config.onDismissAll,
       // bo ten dziś czyści też blokujące (main.ts clearAllSidePanelEvents/
       // handleSidePanelEventDismiss iterują collectTurnEvents() bez rozróżnienia blocking).
-      for (const ev of allInfoEvents) config.onEventDismiss?.(ev.id);
+      // Zakres = relevantInfo (dotychczasowy: bez ukrytych wpisów AI↔AI), nie wszystkie zakładki.
+      for (const ev of relevantInfo) config.onEventDismiss?.(ev.id);
       render();
     });
 

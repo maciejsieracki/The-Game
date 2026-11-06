@@ -225,16 +225,53 @@ async function main() {
       dismissAllBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
     }
 
+    // R2 (FC R1 FAIL): zakres = dotychczasowy (widoczne informacyjne, BEZ ukrytego handlu AI<->AI).
+    // Wojna (Wazne) i produkcja (Inne) znikaja; handel AI-AI (origin other-civs, zakladka
+    // Dyplomacja nieaktywna) zostaje, tak jak przy dawnym chipie OFF.
     assert(
-      dismissAllBtn != null && events.length === 0 && api.el.querySelectorAll('.sp-event[data-id]').length === 0,
-      '(c) po "Usun wszystkie": 0 wpisow w danych i 0 kart w DOM (wszystkie zakladki)',
+      dismissAllBtn != null && events.length === 1 && events[0].origin === 'other-civs',
+      '(c) po "Zamknij wszystkie informacyjne": zostaje WYLACZNIE ukryty handel AI-AI, got ' + events.map(e => e.id).join(','),
     );
     assert(
-      dismissAllBtn != null && api.el.querySelector('.sp-placeholder') != null,
-      '(c) placeholder "Brak wydarzen w tej turze" widoczny po wyczyszczeniu',
+      dismissAllBtn != null && api.el.querySelectorAll('.sp-event[data-id]').length === 0,
+      '(c) po "Zamknij wszystkie informacyjne": 0 kart w DOM aktywnej zakladki',
     );
 
     api.destroy();
+  }
+
+  // -------------------------------------------------------------------------
+  // SCENARIUSZ (c2) R2: naglowek NIE wlicza ukrytego handlu AI<->AI; w zakladce Dyplomacja
+  // (handel widoczny) naglowek i „Zamknij wszystkie informacyjne” obejmuja go.
+  // -------------------------------------------------------------------------
+  {
+    let events = buildEvents(); // wojna (wazne), produkcja (inne), handel AI-AI (origin other-civs)
+    const api = createSidePanelHud({
+      getEvents: () => events,
+      onEventDismiss: (id) => { events = events.filter(e => e.id !== id); },
+    });
+    document.body.appendChild(api.el);
+    const header = () => api.el.querySelector('.sp-header').textContent;
+    const click = (el) => el.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    assert(/^2 informacyjne$/.test(header()),
+      '(c2) naglowek w „Wazne” liczy 2 informacyjne (bez ukrytego handlu AI-AI), got "' + header() + '"');
+    click(api.el.querySelector('[data-sp-tab="dyplomacja"]'));
+    assert(/^3 informacyjne$/.test(header()),
+      '(c2) naglowek w „Dyplomacja” liczy 3 (handel AI-AI widoczny), got "' + header() + '"');
+    click(api.el.querySelector('[data-sp-dismiss-all]'));
+    assert(events.length === 0, '(c2) „Zamknij wszystkie” w Dyplomacji usuwa tez handel AI-AI, got ' + events.length);
+    api.destroy();
+
+    // Domyslna zakladka nie przeskakuje na Dyplomacje z powodu samego handlu AI-AI.
+    let only = [buildEvents()[2]];
+    const api2 = createSidePanelHud({ getEvents: () => only, onEventDismiss: (id) => { only = only.filter(e => e.id !== id); } });
+    document.body.appendChild(api2.el);
+    assert(api2.el.querySelector('[data-sp-tab="inne"]').classList.contains('sp-tab-active'),
+      '(c2) sam handel AI-AI nie wybiera zakladki Dyplomacja jako domyslnej (aktywna: Inne)');
+    assert(api2.el.querySelector('[data-sp-dismiss-all]') == null,
+      '(c2) tylko ukryty handel AI-AI -> brak przycisku „Zamknij wszystkie informacyjne”');
+    api2.destroy();
   }
 
   // -------------------------------------------------------------------------
