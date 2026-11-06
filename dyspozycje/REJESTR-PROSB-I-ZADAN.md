@@ -8805,3 +8805,6 @@ Zgłoszenie: gra pokazuje, że pakt o nieagresji dostępny „od ponad 140” Re
 
 ## 2026-11-06 — ZGŁOSZENIE: wydajność w późnej grze (tura ~86, duża cywilizacja)
 Właściciel: gra praktycznie niegrywalna — ruch jednostek, wejście do miast i inne akcje ekstremalnie wolne. Temat R-WEB-PERF-LATE-GAME-LAG-T86-Q1 (Operator Sonnet — profilowanie). FALA 509 wdrożona (56c164df9, ROBOCZA cbb335af): panel rekrutacji + Spichlerz Królewski/Pismo.
+
+## 2026-11-06 — USTERKA z FC NAPTRUST: UI blokady paktu nie zna narzutu za wspólną granicę
+UI pokazuje próg 110/120, silnik odrzuca do 130/140. Temat R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1. Otwarte pytania do właściciela (nie blokują): automatyczny NAP państw-miast UPR bez bramki Zaufania; ręczna akceptacja propozycji AI przez gracza bez progów (C-DYP-Q1=A).
