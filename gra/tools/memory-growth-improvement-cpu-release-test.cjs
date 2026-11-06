@@ -7,6 +7,9 @@
  *   B -- utrata + odzyskanie kontekstu WebGL (WEBGL_lose_context): mesh przebudowany (nowy uuid), znow w scenie,
  *        po ponownym uploadzie znow zwolniony; zero pageerror/console.error po odzyskaniu
  *   C -- zrzuty ekranu przed/po (--shot <prefix>) do recznej oceny
+ *   F -- (R2, Evaluator Z1) mgla po odbudowie: posterunek na heksie NIEodkrytym zostaje ukryty, na heksie
+ *        odkrytym-niewidocznym zostaje przyciemniony (FOG_EXPLORED_BRIGHTNESS), widoczny ma pelna jasnosc;
+ *        hak improvementFogMismatches() porownuje WSZYSTKIE meshe ulepszen z tym, co ustawilby refreshFog
  * Usage (z gra/): node tools/memory-growth-improvement-cpu-release-test.cjs --dist <katalog z index.html poza repo> [--shot /tmp/x]
  *   (dist: `node ./node_modules/vite/bin/vite.js build --outDir <poza repo>` -- NIE `npm run build`)
  */
@@ -54,6 +57,31 @@ async function main() {
     const info1 = await T('improvementMeshInfo', hex.q, hex.r);
     ok('A1: po wyrenderowaniu kopia CPU (position/color) zwolniona', !!info1 && info1.released === true, info1);
     ok('A1: liczba wierzcholkow zachowana (draw range)', !!info1 && info1.vertexCount === info0.vertexCount, { info0, info1 });
+    // F0 (R2): dwa posterunki obcego wlasciciela daleko od miasta -- jeden nieodkryty, drugi odkryty bez widocznosci.
+    const fogOwner = st.foreignOwnerId !== null ? st.foreignOwnerId : st.myOwnerId + 1;
+    let hidHex = null; let dimHex = null;
+    for (let d = 8; d <= 16 && !(hidHex && dimHex); d++) {
+      const h = await T('farUnexploredLandHex', st.myCity.q, st.myCity.r, d);
+      if (!h) continue;
+      if (!hidHex) hidHex = h; else if (!dimHex && (h.q !== hidHex.q || h.r !== hidHex.r)) dimHex = h;
+    }
+    ok('F0: znaleziono 2 heksy nieodkryte (pod posterunki pod mgla)', !!hidHex && !!dimHex, { hidHex, dimHex });
+    await T('placeFort', 'posterunek', hidHex.q, hidHex.r, fogOwner);
+    await T('placeFort', 'posterunek', dimHex.q, dimHex.r, fogOwner);
+    await T('markExploredAndRefreshFog', dimHex.q, dimHex.r);
+    await wait(500);
+    const fogCheck = async (tag) => {
+      const hid = await T('improvementMeshInfo', hidHex.q, hidHex.r);
+      const dim = await T('improvementMeshInfo', dimHex.q, dimHex.r);
+      const near = await T('improvementMeshInfo', hex.q, hex.r);
+      ok(tag + ': heks nieodkryty -- mesh ulepszenia ukryty', !!hid && hid.visible === false, hid);
+      ok(tag + ': heks odkryty-niewidoczny -- mesh widoczny i przyciemniony (~0.175)', !!dim && dim.visible === true
+        && dim.fogDim !== null && Math.abs(dim.fogDim - 0.175) < 1e-3, dim);
+      ok(tag + ': heks widoczny -- pelna jasnosc', !!near && near.visible === true && (near.fogDim === null || Math.abs(near.fogDim - 1) < 1e-3), near);
+      const mm = await T('improvementFogMismatches');
+      ok(tag + ': wszystkie meshe ulepszen zgodne z mgla refreshFog', Array.isArray(mm) && mm.length === 0, (mm || []).slice(0, 5));
+    };
+    await fogCheck('F1 przed utrata');
     if (SHOT) await page.screenshot({ path: SHOT + '-A.png' });
     const errBefore = errors.length;
     ok('B0: WEBGL_lose_context dostepne', await T('glLoseContext', true) === true);
@@ -66,6 +94,7 @@ async function main() {
     ok('B1: ta sama liczba wierzcholkow', !!info2 && info2.vertexCount === info0.vertexCount, info2);
     const newErr = errors.slice(errBefore).filter((e) => !/CONTEXT_LOST_WEBGL|context lost/i.test(e));
     ok('B2: zero pageerror/console.error po odzyskaniu kontekstu', newErr.length === 0, newErr.slice(0, 5));
+    await fogCheck('F2 po odzyskaniu');
     if (SHOT) await page.screenshot({ path: SHOT + '-B.png' });
   } finally { await browser.close(); }
   console.log(`\nWYNIK: ${pass} OK, ${fail} FAIL` + (errors.length ? ` (bledy konsoli lacznie: ${errors.length})` : ''));

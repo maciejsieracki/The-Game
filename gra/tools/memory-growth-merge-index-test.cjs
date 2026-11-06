@@ -16,6 +16,11 @@ const path = require('path');
 const GRA = path.resolve(__dirname, '..');
 const esbuild = require(path.join(GRA, 'node_modules', 'esbuild'));
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'civ-merge-index-'));
+// R1 obrona Z5: katalog tymczasowy sprzatany ZAWSZE -- takze po wyjatku (np. brak node_modules/esbuild,
+// blad bundla) i po przerwaniu SIGINT/SIGTERM; wczesniej rmSync byl tylko na koncu sciezki sukcesu.
+const cleanupTmp = () => { try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (_) { /* nic */ } };
+process.on('exit', cleanupTmp);
+for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => process.exit(130));
 const entry = path.join(tmp, 'entry.ts'); const out = path.join(tmp, 'bundle.cjs');
 fs.writeFileSync(entry, `
 export * as THREE from 'three';
@@ -108,6 +113,6 @@ ok('M1: geometria realnych ulepszen < 50% starej', ratio < 0.5, ratio);
   M.releaseMergedDecorCpuArraysAfterUpload(plain);
   ok('M3: grupa NIEzmergowana nietknieta (wspoldzielone geometrie bezpieczne)', plain.children[0].geometry.getAttribute('position').onUploadCallback.toString().indexOf('array = null') < 0);
 }
-fs.rmSync(tmp, { recursive: true, force: true });
+cleanupTmp();
 console.log(`\nWYNIK: ${pass} OK, ${fail} FAIL`);
 process.exit(fail ? 1 : 0);
