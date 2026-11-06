@@ -20,9 +20,9 @@ PASS: FAZA C (FLUSH): przyciemnienie zdjęte — max opacity własnych materiał
 PASS: FAZA C (FLUSH): pierścień właściciela wrócił do własnej wartości 0.42 (nie do 1 — bez nadpisania normalnego stanu)
 
 Zrzuty (side-by-side PRZED → PO → PO FLUSH):
-  /tmp/civ-jednostka-niewidoczna-r2-shots-6548-u08dax/01-PRZED-okno-odroczenia-token-filtrowany.png
-  /tmp/civ-jednostka-niewidoczna-r2-shots-6548-u08dax/02-PO-okno-odroczenia-token-przyciemniony.png
-  /tmp/civ-jednostka-niewidoczna-r2-shots-6548-u08dax/03-PO-FLUSH-token-pelna-widocznosc.png
+  /tmp/civ-jednostka-niewidoczna-r2-shots-11584-v2omvk/01-PRZED-okno-odroczenia-token-filtrowany.png
+  /tmp/civ-jednostka-niewidoczna-r2-shots-11584-v2omvk/02-PO-okno-odroczenia-token-przyciemniony.png
+  /tmp/civ-jednostka-niewidoczna-r2-shots-11584-v2omvk/03-PO-FLUSH-token-pelna-widocznosc.png
 
 Wynik: 19 pass / 0 fail
 EXIT=0

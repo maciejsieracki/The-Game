@@ -24,7 +24,7 @@
 
 [C] end-to-end: generator + renderLandRiversFromPaths (headless)
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=15 terrain=74 landSea=612 relief=635 coast=114 riversMain=9952 riversFill=25872 forest=23 deposits=58 starts=415 total=37769
+[civ] mapGen ms | prep=11 terrain=74 landSea=718 relief=712 coast=106 riversMain=10320 riversFill=26894 forest=23 deposits=55 starts=474 total=39387
   OK mapa testowa ma rzeki nie-main do zbatchowania (40)
   OK rzeki main mają pointHex (47 wpisów)
   OK powstały scalone batche medium/short/tributary (6)

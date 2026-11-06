@@ -12,14 +12,6 @@
   OK  P4 zadna uzywana geometria nie dostala dispose -- {"usedButDisposed":0}
   OK  P4 brak przedwczesnego dispose wspolnej geometrii -- {"early":0}
   OK  P4 po zwolnieniu wszystkiego: pula pusta, kazda geometria zwolniona -- {"pool":{"shared":0,"refs":0},"notDisposed":0}
-  OK  P5 kazdy mesh: stan materialu identyczny (toJSON bez uuid) -- {"meshes":35520,"mMism":0}
-  OK  P5 mniej unikalnych materialow -- {"before":8160,"after":456,"pool":{"shared":456,"refs":8160}}
-  OK  P5 zaden uzywany material nie dostal dispose -- {"mUsedDisposed":0}
-  OK  P5 sa modele ze wspolnym materialem
-  OK  P5 unshare: mutacja A nie zmienia B -- {"stillShared":0}
-  OK  P5 po zwolnieniu: pula materialow pusta, kazdy material modelu zwolniony -- {"pool":{"shared":0,"refs":0},"mNotDisposed":0}
-  OK  P6 tekstura/userData -> bez puli; rozny kolor -> osobne -- {"shared":2,"refs":2}
-  OK  P6 pula pusta po zwolnieniu -- {"shared":0,"refs":0}
 
-WYNIK: 22 OK / 0 FAIL
+WYNIK: 14 OK / 0 FAIL
 EXIT=0

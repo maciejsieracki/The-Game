@@ -1,0 +1,9 @@
+  OK  X0 brak bledow strony, render deterministyczny (A == A) -- {"errs":[],"diffAA":0}
+  OK  X1 klatka przed == po pooling geometrii (0 roznych pikseli) -- {"diffAB":0,"pixels":1600000,"models":194}
+  OK  X2 kontrola czulosci: wspolne materialy zmieniaja klatke (test widzi kolejnosc rysowania) -- {"diffMatShare":51}
+  OK  X3 picking ten sam przed i po -- {"pickSame":true,"hits":184,"models":194}
+  OK  X4 mniej unikalnych geometrii -- {"uniqA":3873,"uniqB":1762,"infoA":{"geometries":3873,"programs":4},"infoB":{"geometries":1762,"programs":4}}
+  OK  X5 zwolnienie bez wyjatku -- true
+
+WYNIK: 6 OK / 0 FAIL
+EXIT=0

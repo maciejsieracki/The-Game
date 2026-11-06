@@ -1,2 +1,2 @@
-tsc --noEmit (node_modules: npm ci --ignore-scripts z package-lock w kopii /tmp/civ-mem2-base/gra, dowiazane na czas bramki)
+tsc --noEmit na HEAD po rebase na origin/main 55e098dc5 (node_modules: npm ci --ignore-scripts z package-lock w kopii /tmp/civ-mem2-base/gra, dowiazane na czas bramki)
 EXIT=0
