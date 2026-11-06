@@ -625,11 +625,11 @@
       "opis": "PYTANIE-85-Q6: baza capu centralnego magazynu żywności imperium (+ Spichlerze lokalne +100/+150, Magazyn +100). Podniesione 500→1000 (Maciej 2026-07-28)."
     },
     "magazyn_centralny_bonus_zywnosc_na_budynek": {
-      "easy": 100,
-      "normal": 100,
-      "hard": 100,
+      "easy": 0,
+      "normal": 0,
+      "hard": 0,
       "jednostka": "🍞 / Magazyn",
-      "opis": "PYTANIE-85: dodatek capu centralnego magazynu żywności za każdy budynek Magazyn w imperium."
+      "opis": "R-WEB-MAGAZYN-NO-FOOD-CAP-BONUS-Q1 (decyzja właściciela 2026-11-05: „Usuń żywność, dodatkową pojemność wynikającą z magazynu. Zostawmy tylko to w spichlerzu.”): Magazyn NIE zwiększa capu żywności centralnej; pojemność żywności daje wyłącznie Spichlerz. Było 100 za każdy Magazyn (PYTANIE-85). Pojemność SUROWCÓW Magazynu to osobny klucz (magazyn_bonus_surowce_proc_na_budynek, WAREH) i nie jest tu zmieniana."
     },
     "magazyn_mnoznik_spichlerz": {
       "easy": 6,
