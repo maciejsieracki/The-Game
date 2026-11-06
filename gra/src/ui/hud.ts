@@ -340,6 +340,8 @@ export interface HudConfig {
   onDiploChip?: (kind: 'sojusz' | 'pakt' | 'wojna') => void;
   /** Panel boczny imperium (klik chipów zasobów). section = np. kultura, econ-praca. */
   onOpenEmpireDetail?: (section?: string) => void;
+  /** R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: przycisk „Rekrutacja” w górnym pasku — panel zamówień dla całej cywilizacji. */
+  onOpenEmpireRecruit?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -1068,8 +1070,8 @@ function spichlerzChipTitle(s: HudState): string {
   }
   if (s.uchwalaSolAktywna) {
     const n = s.uchwalaSolSpichlerzIICount ?? 1;
-    title += ` · Uchwała „Solanka zapasowa" (Spichlerz II · Sól): armia poza terytorium 2→1 🍞/turę`
-      + (n > 1 ? ` · ${n}× Spichlerz II` : '');
+    title += ` · Uchwała „Solanka zapasowa" (Spichlerz Królewski · Sól): armia poza terytorium 2→1 🍞/turę`
+      + (n > 1 ? ` · ${n}× Spichlerz Królewski` : '');
   }
   return `${title} · Kliknij po szczegóły.`;
 }
@@ -1507,6 +1509,10 @@ export function renderBarD1B(s: HudState): string {
       + '<span aria-hidden="true">⛶</span></button>'
     : '';
   const showMapZoomDock = !mapChromeSuppressed;
+  const recruitBtn = (!mapChromeSuppressed && cfg?.onOpenEmpireRecruit)
+    ? '<button type="button" class="b-wiki" data-act="empire-recruit" aria-label="Rekrutacja — cała cywilizacja" '
+      + 'title="Rekrutacja wojsk dla całej cywilizacji — zamówienie rozkładane po miastach"><span>Rekrutacja</span></button>'
+    : '';
   const menuBtn = (!mapChromeSuppressed && cfg?.onOpenMenu)
     ? '<button type="button" class="b-menu" data-act="menu" title="Menu główne">'
       + (menuIc || '') + '<span>Menu</span></button>'
@@ -1515,6 +1521,7 @@ export function renderBarD1B(s: HudState): string {
     + '<div class="civ-hud-banner-shell civ-hud-banner-right"><div class="hud-chip-row">'
     + rightChips.join('') + '</div></div>'
     + '<div class="hud-right">'
+    + recruitBtn
     + wikiBtn
     + menuBtn
     + (showMapZoomDock ? '' : fsBtn)
@@ -1594,6 +1601,7 @@ function handleHudBarAction(act: string): void {
   else if (act === 'science') cfg.onOpenScience?.();
   else if (act === 'diplo') cfg.onOpenDiplomacy?.();
   else if (act === 'wiki') cfg.onOpenWiki?.();
+  else if (act === 'empire-recruit') cfg.onOpenEmpireRecruit?.();
   else if (act === 'menu') cfg.onOpenMenu?.();
   else if (act === 'fullscreen') toggleFullscreen();
   else if (act === 'zoom-in') stepUiZoom(UI_ZOOM_STEP);

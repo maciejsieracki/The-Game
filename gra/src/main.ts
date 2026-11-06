@@ -471,6 +471,8 @@ import {
 import {
   siegeAllowedBetween, isSiegeStillValid, enemyUnitsAdjacentToCity, autoSiegeCandidateForScan,
 } from './game/diplomacy-siege-war-gate';
+import { combatAnchorFor } from './game/stack-leader';
+import { stackGroupIdOf as stackGroupIdOfAnchor } from './game/armyMerge';
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
 import {
@@ -701,7 +703,9 @@ import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
-import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy } from './ui/cityPanel';
+import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits } from './ui/cityPanel';
+import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, resetEmpireRecruitPanelSession, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
+import { executeEmpireRecruitment, maxAffordableEmpireRecruits, type RecruitCityInput } from './game/empire-recruit-plan';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
 import { syncWorkerFieldOverlay, syncWorkerFieldOverlayFog, disposeWorkerFieldOverlayGroup } from './render/workerFieldOverlay';
 import { isPointOverCityPanelUi } from './ui/cityUxFrame';
@@ -761,6 +765,7 @@ import {
   type DiploPlayerSummary,
 } from './ui/diploListHud';
 import { armyStackCardIdentity, type ArmyStackHudState } from './ui/armyStackHud';
+import { sortArmyStackGeneralsFirst } from './ui/armyStackLabel';
 import { formatArmiaLabel, formatJednostkiCount } from './ui/formatPl';
 import type {
   HudState, WarWithPlayer, SidePanelEvent,
@@ -4487,6 +4492,101 @@ async function boot(): Promise<void> {
       return true;
     }
 
+    /**
+     * R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: zbiorcze zamówienie rekrutacji dla całej cywilizacji (tylko fotel gracza).
+     * Dostępność per miasto = ta sama lista co panel miasta (recruitPanelPurchasableUnits) + blokada oblężenia;
+     * wykonanie = ta sama purchaseRecruitmentUnit co ręczne „Rekrutuj” (koszty/bramki/moment poboru bez zmian),
+     * wołana raz na miasto z liczbą sztuk. Zamówienia to zwykłe wpisy kolejek (bez nowego pola save).
+     */
+    function empireRecruitCityInputs(unitId: string): { inputs: RecruitCityInput[]; koszt: number } {
+      const ownerId = ME();
+      let koszt = 0;
+      const inputs: RecruitCityInput[] = [];
+      for (const c of cities) {
+        if (c.ownerId !== ownerId) continue;
+        const queue = cityProd.get(c.id)?.rekrutacja ?? [];
+        const item = recruitPanelPurchasableUnits(c, data).find(it => it.id === unitId && it.kind === 'jednostka');
+        const siege = isCityUnderSiege(cities, c);
+        if (item && koszt === 0) koszt = item.koszt;
+        inputs.push({
+          cityId: c.id,
+          name: c.name,
+          canRecruit: !!item && !siege,
+          blockedReason: siege ? CITY_SIEGE_RECRUIT_BLOCK_PL : (!item ? 'jednostka niedostępna w tym mieście' : undefined),
+          queuedOfType: queue.filter(q => q.id === unitId).length,
+          queueLength: queue.length,
+        });
+      }
+      return { inputs, koszt };
+    }
+
+    function empireRecruitRows(): EmpireRecruitUnitRow[] {
+      const ownerId = ME();
+      const mine = cities.filter(c => c.ownerId === ownerId);
+      const order: string[] = [];
+      const labels = new Map<string, string>();
+      for (const c of mine) {
+        for (const it of recruitPanelPurchasableUnits(c, data)) {
+          if (it.kind !== 'jednostka' || it.isGeneral === true || labels.has(it.id)) continue;
+          // Panel dotyczy wojsk: cywile (Typ='Civilian' w units.json, np. Zwiadowca; Osadnik/Robotnik) pomijamy.
+          const def = data.units.find(u => u.Jednostka === it.id);
+          if ((def?.Typ ?? '').toString().trim() === 'Civilian' || isCivilianUnit({ typeId: it.id, category: '' })) continue;
+          labels.set(it.id, it.nazwa);
+          order.push(it.id);
+        }
+      }
+      return order.map(id => {
+        const { inputs, koszt } = empireRecruitCityInputs(id);
+        const capable = inputs.filter(i => i.canRecruit).length;
+        return {
+          id,
+          label: labels.get(id) ?? id,
+          koszt,
+          capableCities: capable,
+          totalCities: mine.length,
+          queued: inputs.reduce((sum, i) => sum + i.queuedOfType, 0),
+          blockedReason: capable > 0 ? undefined : (inputs.find(i => i.blockedReason)?.blockedReason ?? 'Brak miasta zdolnego do rekrutacji'),
+        };
+      });
+    }
+
+    function orderEmpireRecruitment(unitId: string, quantity: number): { message: string; changed: boolean } {
+      const ownerId = ME();
+      const firstCity = cities.find(c => c.ownerId === ownerId);
+      const label = (firstCity ? recruitPanelPurchasableUnits(firstCity, data).find(it => it.id === unitId)?.nazwa : undefined) ?? unitId;
+      const { inputs, koszt } = empireRecruitCityInputs(unitId);
+      const ep = empireEpochForOwner(ownerId);
+      const mpMults = civManpowerMultsForOwner(ownerId);
+      const unitDef = data.units.find(u => u.Jednostka === unitId);
+      const afford = maxAffordableEmpireRecruits({
+        gold: ownerTreasury(ownerId),
+        unitGold: koszt,
+        manpower: empireManpowerCurrent(cities, ownerId, ep, mpMults.maxMult),
+        unitManpower: unitManpowerCostForType(unitId, ep, mpMults.maxMult, mpMults.costMult),
+        stockPool: ownerResourceStockAll(cities, ownerId),
+        unitStock: unitStockCost(unitDef),
+      });
+      const out = executeEmpireRecruitment({
+        typLabel: label,
+        ilosc: quantity,
+        miasta: inputs,
+        afford,
+        purchase: (cityId, count) => purchaseRecruitmentUnit(cityId, unitId, empireRecruitCityKoszt(cityId, unitId, koszt), ownerId, count),
+      });
+      refreshEmpireRecruitPanel();
+      return { message: out.message, changed: out.changed };
+    }
+
+    function empireRecruitCityKoszt(cityId: string, unitId: string, fallback: number): number {
+      const c = cities.find(x => x.id === cityId);
+      const it = c ? recruitPanelPurchasableUnits(c, data).find(x => x.id === unitId) : undefined;
+      return it ? it.koszt : fallback;
+    }
+
+    function toggleEmpireRecruitFromHud(): void {
+      toggleEmpireRecruitPanel({ getRows: empireRecruitRows, onOrder: orderEmpireRecruitment });
+    }
+
     /** Anulowanie opłaconej rekrutacji — zwrot złota i Manpower do puli imperium. */
     function cancelRecruitmentPurchase(cityId: string, itemId: string, koszt: number, ownerId = 0): void {
       const city = cities.find(ct => ct.id === cityId);
@@ -6187,6 +6287,12 @@ async function boot(): Promise<void> {
     let unitSideDetailExpanded = false;
 
     /**
+     * Wielokrotne zaznaczanie jednostek stosu (karty w panelu armii) do zbiorowego „Rozwiąż”.
+     * Klucz = heks + właściciel: zaznaczenie żyje tylko dla stosu, na którym powstało.
+     */
+    let stackPickState: { key: string; ids: Set<string> } = { key: '', ids: new Set<string>() };
+
+    /**
      * Decyzja 81=A (2026-07-25): etykieta Danina/Podatek DLA TEGO KONKRETNEGO
      * HEKSU -- wg WLASCICIELA TERYTORIUM (territoryOwnerAtLive), nie gracza
      * patrzacego. Ten sam wzorzec liczenia jak buildEmpireTradeSnap (ok. linii
@@ -7409,6 +7515,8 @@ async function boot(): Promise<void> {
         else stacks.set(key, [u]);
       }
       const out: ArmyListEntry[] = [];
+      // Wpisy z generałem/wodzem (id reprezentanta) — na początku listy (R-WEB-UI-ARMY-PANEL-GENERAL-LABEL-MULTISELECT-Q1).
+      const commanderLeadIds = new Set<string>();
       for (const group of stacks.values()) {
         const lead = group[0]!;
         const inGarnizon = group.some(u => u.inGarnizon === true);
@@ -7416,11 +7524,17 @@ async function boot(): Promise<void> {
         const sentry = group.some(u => u.sentry === true);
         const autoExplore = group.some(u => u.autoExplore === true);
         const types = [...new Set(group.map(u => u.typeId))];
-        const name = group.length === 1
+        const baseName = group.length === 1
           ? lead.typeId
           : types.length === 1
             ? `${types[0]!} ×${group.length}`
             : formatArmiaLabel(group.length);
+        // Stos z generałem/wodzem: rola w nazwie wpisu (Lista), żeby dowódca był rozpoznawalny.
+        const generalInGroup = group.find(u => u.isGeneral === true);
+        const name = generalInGroup
+          ? `${armyLeaderTitle(empireBuiltIdsForOwner(generalInGroup.ownerId))} — ${baseName}`
+          : baseName;
+        if (generalInGroup) commanderLeadIds.add(lead.id);
         const ruchLeft = planningStackRuchLeft(group);
         const ruchMax = Math.max(...group.map(u => u.ruch));
         // Suma HP stosu: armia = stos, więc pokazujemy łączny stan zdrowia
@@ -7456,7 +7570,9 @@ async function boot(): Promise<void> {
           autoExplore,
         });
       }
-      out.sort((a, b) => a.name.localeCompare(b.name, 'pl'));
+      out.sort((a, b) =>
+        (Number(commanderLeadIds.has(b.id)) - Number(commanderLeadIds.has(a.id)))
+        || a.name.localeCompare(b.name, 'pl'));
       return out;
     }
 
@@ -8901,6 +9017,7 @@ async function boot(): Promise<void> {
     /** Pełny reset UI / flag przed wczytaniem innej gry (nie czyści mapy — to robi rebuild). */
     function prepareSessionForLoad(): void {
       resetStuckInteractiveState();
+      resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: panel/stan UI nie przeżywa wczytania
       resetEndTurnBlockers('prepareSessionForLoad');
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
@@ -13558,13 +13675,15 @@ async function boot(): Promise<void> {
       if (canvas.style.cursor !== cursor) canvas.style.cursor = cursor;
     }
 
-    function mergeUnitRow(u: RuntimeUnit): { id: string; name: string; icon: string; ruchLeft: number; ruchMax: number } {
+    function mergeUnitRow(u: RuntimeUnit): { id: string; name: string; icon: string; ruchLeft: number; ruchMax: number; commanderTitle?: 'Wódz' | 'Generał' } {
       const def = lookupUnitDef(u.typeId);
       return {
         id: u.id,
         name: u.typeId,
         icon: unitIconSvg(def, u.typeId),
         ruchLeft: u.ruchLeft,
+        // Rola dowódcy na liście podziału: „Generał — Wojownik" zamiast samego typu.
+        ...(u.isGeneral === true ? { commanderTitle: armyLeaderTitle(empireBuiltIdsForOwner(u.ownerId)) } : {}),
         // RUCH-SWIATA-TEMPO: u.ruch (nie surowy def['Ruch']) — juz przemnozone przy
         // spawnie, inaczej pasek ruchu w prompcie scalania pokazywalby bazowa wartosc
         // gdy pace='normalny'/'dlugi'. / EN: use u.ruch (not raw def['Ruch']) — already
@@ -13786,8 +13905,12 @@ async function boot(): Promise<void> {
       const { x, z } = axialToWorld(u.q, u.r, HEX_R);
       const { dist } = camCtrl.getFocusState();
       camCtrl.focusAt(x, z, dist);
-      if (autoMarchingToGeneral && !generalMarchPreplanned) enqueueMarchSegments([newUnitId]);
+      // R-WEB-MARCH-END-OF-TURN-ONLY-Q1: nowa jednostka idaca do wodza ma marsz TYLKO zaplanowany
+      // (`planSpawnedUnitFollowGeneral`); pierwszy segment wykona sie na KONCU tury gracza, nie od razu.
     }
+
+    /** R-WEB-MARCH-END-OF-TURN-ONLY-Q1: celowo no-op -- marsze nowych jednostek rusza dopiero na koncu tury gracza. */
+    function deferMarchToEndOfTurn(_unitIds: string[]): void {}
 
     /** Po fazie AI: pokaż jednostki ukończone w ticku end-turn (produkcja/rekrutacja). */
     function flushDeferredPlayerUnitReveals(): void {
@@ -13799,7 +13922,7 @@ async function boot(): Promise<void> {
       const marchingIds = planDeferredGeneralMarchBatch(
         ids,
         id => units.find(u => u.id === id)?.followGeneral === true && planSpawnedUnitFollowGeneral(id),
-        enqueueMarchSegments,
+        deferMarchToEndOfTurn,
       );
       if (lastId) afterPlayerUnitSpawned(lastId, marchingIds.includes(lastId));
     }
@@ -16721,9 +16844,35 @@ async function boot(): Promise<void> {
           isEnemy: areEnemyOwners,
           hexDistance,
         });
-        if (plan.isLastTurn) {
-          console.log('[Oblezenie] Atak ostatniej woli', city.name, plan.sortie ? 'TAK' : 'NIE', plan.reason,
+        // R-WEB-SIEGE-SORTIE-ANY-TURN-Q1: wypad w KAŻDEJ turze oblężenia (próg 10:8); log także poza ostatnią turą.
+        if (plan.besiegedStrength > 0 && plan.besiegerStrength > 0) {
+          console.log('[Oblezenie] ' + (plan.isLastTurn ? 'Atak ostatniej woli' : 'Wypad obleganej armii'),
+            city.name, plan.sortie ? 'TAK' : 'NIE', plan.reason,
             'obleganych=' + plan.besiegedStrength.toFixed(1), 'oblegajacych=' + plan.besiegerStrength.toFixed(1));
+        }
+        // Zarzut FC: wypad budzi cały garnizon, więc najpierw te same bramki, które egzekucja ataku AI
+        // stosuje (widoczność celu; wojna jest już w planie). Cel niewidoczny -> ani komenda, ani pobudka.
+        if (plan.sortie && ownerId !== BARBARIAN_OWNER_ID) {
+          const tgtId = plan.commands[0]?.targetUnitId;
+          const tgt = tgtId === undefined ? undefined : units.find(x => x.id === tgtId);
+          if (!tgt || !aiTargetVisibleForAction(currentVisibleForOwner(ownerId), fogOn, tgt.q, tgt.r, keyOf)) {
+            console.log('[Oblezenie] Wypad pominiety: cel niewidoczny', city.name);
+            continue;
+          }
+        }
+        if (plan.sortie) {
+          // Śpiący / ufortyfikowani / garnizonowi obrońcy nie blokują wypadu: budzimy ich i zdejmujemy
+          // fortyfikację/garnizon na czas wypadu (ruch zachowany: max(przed, po snapshocie)).
+          let changed = false;
+          for (const u of units) {
+            if (u.ownerId !== city.ownerId || u.q !== city.q || u.r !== city.r || isCivilianUnit(u)) continue;
+            const rl = u.ruchLeft;
+            if (u.inGarnizon === true && exitGarnizon(u)) changed = true;
+            if (u.ufortyfikowanyWPolu === true && exitFieldFortify(u)) changed = true;
+            u.sentry = false;
+            u.ruchLeft = Math.max(u.ruchLeft, rl);
+          }
+          if (changed) syncCityGarnizon(city);
         }
         out.push(...plan.commands);
       }
@@ -23785,6 +23934,63 @@ async function boot(): Promise<void> {
       return null;
     }
 
+    function armyPickKey(u: RuntimeUnit): string {
+      return u.q + ',' + u.r + ',' + u.ownerId;
+    }
+
+    /** Zaznaczone do rozwiązania jednostki z bieżącego stosu (pusto, gdy zaznaczenie z innego heksu). */
+    function pickedUnitsOnStack(stack: readonly RuntimeUnit[]): RuntimeUnit[] {
+      if (stack.length === 0) return [];
+      if (stackPickState.key !== armyPickKey(stack[0]!)) return [];
+      return stack.filter(su => stackPickState.ids.has(su.id));
+    }
+
+    function togglePickUnit(active: RuntimeUnit, unitId: string): void {
+      const key = armyPickKey(active);
+      const member = units.find(x => x.id === unitId && armyPickKey(x) === key);
+      if (!member) return;
+      if (stackPickState.key !== key) stackPickState = { key, ids: new Set<string>() };
+      if (stackPickState.ids.has(unitId)) stackPickState.ids.delete(unitId);
+      else stackPickState.ids.add(unitId);
+    }
+
+    /** „Zaznacz wszystko” zaznacza wszystkich OPRÓCZ generała/wodza (ten wymaga świadomego kliknięcia). */
+    function pickAllNonGeneralsOnStack(active: RuntimeUnit, stack: readonly RuntimeUnit[]): void {
+      stackPickState = {
+        key: armyPickKey(active),
+        ids: new Set(stack.filter(su => su.isGeneral !== true).map(su => su.id)),
+      };
+    }
+
+    function clearUnitPicks(): void {
+      stackPickState = { key: '', ids: new Set<string>() };
+    }
+
+    /**
+     * Akcja „Rozwiąż”: bez zaznaczenia — jak dotąd rozwiązuje wybraną jednostkę;
+     * z zaznaczeniem — rozwiązuje cały zaznaczony zbiór po potwierdzeniu „Rozwiązać N jednostek?”.
+     */
+    function disbandSelectedOrPickedUnits(u: RuntimeUnit): void {
+      const picked = pickedUnitsOnStack(playerStackAt(u));
+      if (picked.length === 0) {
+        disbandPlayerUnit(u.id);
+        return;
+      }
+      let msg = 'Rozwiązać ' + formatJednostkiCount(picked.length) + '?';
+      if (picked.some(su => su.isGeneral === true)) {
+        msg += '\nW zaznaczeniu jest generał/wódz — jego rozwiązanie jest nieodwracalne.';
+      }
+      if (!window.confirm(msg)) return;
+      const ids = picked.map(su => su.id);
+      clearUnitPicks();
+      let done = 0;
+      for (const id of ids) {
+        if (disbandPlayerUnit(id)) done++;
+      }
+      showHintMessage('Rozwiązano ' + formatJednostkiCount(done) + ' — rekruty wróciły do puli imperium', 4000);
+      refreshD1bHud();
+    }
+
     function buildArmyStackHudStateInner(): ArmyStackHudState | null {
       if (selectedId === null) return null;
       const active = units.find(x => x.id === selectedId);
@@ -23792,7 +23998,8 @@ async function boot(): Promise<void> {
       const stack = playerStackAt(active);
       if (stack.length > 1) syncStackRuchLeft(stack);
       const stackRuch = stackRuchLeft(stack);
-      const cards = stack.map(u => {
+      const pickedIds = new Set(pickedUnitsOnStack(stack).map(su => su.id));
+      const cards = sortArmyStackGeneralsFirst(stack.map(u => {
         const udef = lookupUnitDef(u.typeId);
         const uCombat = unitCardCombatFor(u, udef);
         const hpMax = uCombat.hpMaxEffective;
@@ -23814,8 +24021,9 @@ async function boot(): Promise<void> {
           ruchLeft: stack.length > 1 ? stackRuch : u.ruchLeft,
           ruchMax: movMax,
           active: u.id === selectedId,
+          picked: pickedIds.has(u.id),
         };
-      });
+      }));
       const def = lookupUnitDef(active.typeId);
       const displayName = String(def?.nazwa ?? def?.Nazwa ?? active.typeId);
       const combat = unitCardCombatFor(active, def);
@@ -23973,7 +24181,13 @@ async function boot(): Promise<void> {
           active: alreadyFollowing,
         });
       }
-      actions.push({ id: 'disband', label: 'ROZWI\u0104\u017d', danger: true });
+      // Z zaznaczeniem \u201eRozwi\u0105\u017c\u201d dzia\u0142a na ca\u0142y zaznaczony zbi\u00f3r \u2014 etykieta m\u00f3wi ile jednostek.
+      const pickedCount = pickedIds.size;
+      actions.push({
+        id: 'disband',
+        label: pickedCount > 0 ? 'ROZWI\u0104\u017b ZAZNACZONE (' + pickedCount + ')' : 'ROZWI\u0104\u017d',
+        danger: true,
+      });
       return {
         hexLabel: siegeCity
           ? '(' + active.q + ',' + active.r + ') \u00b7 Oblega ' + siegeCity.name
@@ -24118,8 +24332,17 @@ async function boot(): Promise<void> {
           showHintMessage(u.typeId + ' ufortyfikowany w polu (ruch zu\u017cyty)', 2500);
         }
         refreshD1bHud();
+      } else if (actionId.startsWith('pick:')) {
+        togglePickUnit(u, actionId.slice('pick:'.length));
+        refreshD1bHud();
+      } else if (actionId === 'pick-all') {
+        pickAllNonGeneralsOnStack(u, stack);
+        refreshD1bHud();
+      } else if (actionId === 'pick-none') {
+        clearUnitPicks();
+        refreshD1bHud();
       } else if (actionId === 'disband') {
-        disbandPlayerUnit(u.id);
+        disbandSelectedOrPickedUnits(u);
       } else if (actionId === 'split') {
         openSplitPanelForSelected();
       } else if (actionId === 'merge') {
@@ -24710,6 +24933,7 @@ async function boot(): Promise<void> {
         },
         onOpenScience: () => toggleScienceHubFromToolbar(),
         onOpenEmpireDetail: (section) => openEmpireDetailFromHud(section),
+        onOpenEmpireRecruit: () => toggleEmpireRecruitFromHud(),
         onOpenWiki: () => toggleWikiFromToolbar(),
         isWikiActive: () => isWikiHubHudOpen(),
         mapToolbar: {
@@ -25278,6 +25502,9 @@ async function boot(): Promise<void> {
         refreshD1bHud();
         if (isEmpireDetailPanelOpen()) refreshEmpireDetailPanel();
       }
+      // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: panel zbiorczy odświeża się po każdej zmianie widocznej w HUD
+      // (tura, ręczna rekrutacja/anulowanie w mieście, zakupy); no-op gdy zamknięty.
+      refreshEmpireRecruitPanel();
     }
 
     // Hak testowy (analogiczny wzorzec do __civEmbarkDebug niżej) — wołany WYŁĄCZNIE z
@@ -25325,6 +25552,41 @@ async function boot(): Promise<void> {
         units.push({ ...tpl, id, ownerId, q, r, ruchLeft: tpl.ruch, inGarnizon: false, ufortyfikowanyWPolu: false, oblegaCityId: undefined, sentry: false } as RuntimeUnit);
         return id;
       },
+    };
+    // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: hak live-testu (tylko ?civTest=1). Zamówienie idzie REALNYM wiringiem
+    // (orderEmpireRecruitment -> executeEmpireRecruitment -> purchaseRecruitmentUnit); hak tylko ustawia zasoby i czyta stan.
+    if (isCivTestEnabled(window.location.search)) (window as any).__empireRecruitTestDebug = {
+      rows: () => empireRecruitRows(),
+      order: (unitId: string, qty: number) => orderEmpireRecruitment(unitId, qty),
+      cityInputs: (unitId: string) => empireRecruitCityInputs(unitId),
+      setResources: (gold: number, manpower: number) => {
+        setOwnerTreasury(ME(), gold);
+        for (const c of cities) if (c.ownerId === ME()) c.manpower = manpower;
+        // surowce potrzebne jednostkom (drewno itd.) — stan wejściowy; pobór robi realne purchaseRecruitmentUnit
+        const first = cities.find(c => c.ownerId === ME());
+        if (first) {
+          const stock: Record<string, number> = { ...(first.surowce ?? {}) };
+          for (const u of data.units) for (const k of Object.keys(unitStockCost(u))) stock[k] = 100000;
+          first.surowce = stock;
+        }
+      },
+      gold: () => ownerTreasury(ME()),
+      playerCityIds: () => cities.filter(c => c.ownerId === ME()).map(c => c.id),
+      queue: (cityId: string) => (cityProd.get(cityId)?.rekrutacja ?? []).map(q => q.id),
+      clearQueues: () => { for (const c of cities) if (c.ownerId === ME()) { const p = cityProd.get(c.id); if (p) cityProd.set(c.id, { ...p, rekrutacja: undefined }); } },
+      cloneCityForTest: (cityId: string, n: number) => {
+        const src = cities.find(c => c.id === cityId);
+        if (!src) return [];
+        const ids: string[] = [];
+        for (let i = 0; i < n; i++) {
+          const id = src.id + '_ert' + i;
+          cities.push({ ...src, id, name: src.name + ' T' + i } as typeof src);
+          cityProd.set(id, { kolejka: [], postep: 0 });
+          ids.push(id);
+        }
+        return ids;
+      },
+      toggleViaHud: () => toggleEmpireRecruitFromHud(),
     };
     if (isCivTestEnabled(window.location.search)) (window as any).__frozenTestDebug = {
       spawn: (q: number, r: number, n: number, flags: { garnizon?: boolean; field?: boolean; ruchLeft?: number; group?: string; oblegaCityId?: string }): string[] => {
@@ -27294,6 +27556,28 @@ async function boot(): Promise<void> {
         isAnimating: (): boolean => isAnimating,
         refillMove: (unitId: string): void => { const u = units.find(x => x.id === unitId); if (u) u.ruchLeft = u.ruch; },
         unitState: (unitId: string) => { const u = units.find(x => x.id === unitId); return u ? { q: u.q, r: u.r, ruchLeft: u.ruchLeft, ruch: u.ruch } : null; },
+        /**
+         * R-WEB-MARCH-END-OF-TURN-ONLY-Q1 (scenariusz b): REALNY `flushDeferredPlayerUnitReveals()` dla nowej
+         * jednostki idacej do wodza (`followGeneral`). Zwraca stan zaraz po flush -- test sprawdza, ze marsz jest
+         * tylko ZAPLANOWANY (brak animacji, brak zmiany pozycji), a wykonanie nastapi w koncu tury.
+         */
+        spawnFollowerFlush: (generalId: string, followerId: string) => {
+          const g = units.find(x => x.id === generalId);
+          const f = units.find(x => x.id === followerId);
+          if (!g || !f) return null;
+          g.isGeneral = true;
+          f.followGeneral = true;
+          const before = { q: f.q, r: f.r, ruchLeft: f.ruchLeft };
+          deferredPlayerUnitRevealIds.add(followerId);
+          flushDeferredPlayerUnitReveals();
+          return {
+            before,
+            after: { q: f.q, r: f.r, ruchLeft: f.ruchLeft },
+            animating: isAnimating,
+            planned: plannedMarches.has(followerId),
+            queued: marchExecQueue.includes(followerId),
+          };
+        },
       };
     }
 
@@ -28992,7 +29276,7 @@ async function boot(): Promise<void> {
     }
 
     /** Keep every queued General-following march aimed at that General's live position. */
-    function syncGeneralMarchTargets(): void {
+    function syncGeneralMarchTargets(enqueueNewlyPlanned = false): void {
       syncTrackedGeneralFollowMarches(units, plannedMarches, unitId => marchAttackTargets.delete(unitId));
       const newlyPlanned = planEnabledGeneralFollowMarches(
         units,
@@ -29005,6 +29289,9 @@ async function boot(): Promise<void> {
             : planGeneralFollowMarch(unit, point, targetId, false);
         },
       );
+      // R-WEB-MARCH-END-OF-TURN-ONLY-Q1: poza faza konca tury gracza nowo zaplanowani podopieczni
+      // wodza NIE trafiaja do kolejki wykonania (ruszyliby w trakcie tury / na starcie nowej).
+      if (!enqueueNewlyPlanned) return;
       for (const unitId of newlyPlanned) {
         const unit = units.find(candidate => candidate.id === unitId);
         if (unit && planningStackRuchLeft(playerStackAt(unit)) > 0 && !marchExecQueue.includes(unitId)) {
@@ -29247,7 +29534,7 @@ async function boot(): Promise<void> {
       const attackTargetId = marchAttackTargets.get(unitId);
       phaseMark('PLAYER_MARCH_RESULT', unitId + ' arrived=' + result.arrived + ' stop=' + (result.stopReason ?? '') + ' atk=' + (attackTargetId ?? '') + ' launch=' + launchAttack);
       if (launchAttack && attackTargetId && tryLaunchMarchAttack(u, attackTargetId)) {
-        syncGeneralMarchTargets();
+        syncGeneralMarchTargets(true);
         return true;
       }
       finishMarchSegmentHints(
@@ -29259,7 +29546,7 @@ async function boot(): Promise<void> {
       // An instant end-turn segment can move the commander away from followers who
       // shared its hex and therefore had no march entry yet. Reconcile after every
       // segment so opted-in units acquire or retarget their tracked order in this pass.
-      syncGeneralMarchTargets();
+      syncGeneralMarchTargets(true);
       return true;
     }
 
@@ -29276,7 +29563,7 @@ async function boot(): Promise<void> {
       // `processMarchQueue()` -> `executeMarchSegmentForUnit()` = ANIMOWANY ruch PIERWSZEJ jednostki
       // (`startAnimatedMove`), ktorego koniec (odjecie ruchu, mgla, hint) dopalal sie w `renderLoop` juz
       // PO resecie ruchu i w trakcie fazy AI. Teraz kazdy segment idzie przez `applyMarchSegmentInstant`.
-      syncGeneralMarchTargets();
+      syncGeneralMarchTargets(true);
       for (const u of units) {
         if (u.ownerId !== humanOwnerId || !plannedMarches.has(u.id)) continue;
         if (movedByPlayerThisTurn.has(u.id) || opts.skipUnitIds?.has(u.id)) continue;
@@ -29285,7 +29572,7 @@ async function boot(): Promise<void> {
       }
       while (marchExecQueue.length > 0) {
         const id = marchExecQueue.shift()!;
-        if (!plannedMarches.has(id) || opts.skipUnitIds?.has(id)) continue;
+        if (!plannedMarches.has(id) || opts.skipUnitIds?.has(id) || movedByPlayerThisTurn.has(id)) continue;
         if (!applyMarchSegmentInstant(id, humanOwnerId, opts.launchAttacks !== false)) continue;
       }
       syncUnitsRender();
@@ -30160,6 +30447,7 @@ async function boot(): Promise<void> {
             selectedUnit: playerSel,
             units,
             playerOwnerId: ME(),
+            attackScoreOf: unitAttackScore,
             getCompletedBuildingIds: completedBuildingIdsForCity,
             isCityVisible: city =>
               !fogOn || currentVisible().has(keyOf(city.q, city.r)),
@@ -30220,6 +30508,7 @@ async function boot(): Promise<void> {
           selectedUnit: sel ?? null,
           units,
           playerOwnerId: ME(),
+          attackScoreOf: unitAttackScore,
           getCompletedBuildingIds: completedBuildingIdsForCity,
           isCityVisible: city =>
             !fogOn || currentVisible().has(keyOf(city.q, city.r)),
@@ -30960,7 +31249,12 @@ async function boot(): Promise<void> {
       openPlayerMapUnitAttackCore(atkUnit, defUnit);
     }
 
-    function openPlayerMapUnitAttackCore(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
+    function openPlayerMapUnitAttackCore(atkUnitIn: RuntimeUnit, defUnit: RuntimeUnit): void {
+      // R-WEB-ARMY-SCOUT-NOT-LEADER-Q1: zwiadowca/cywil w armii nigdy nie jest kotwicą ataku.
+      const atkUnit = combatAnchorFor(
+        atkUnitIn, units, unitAttackScore,
+        (a, b) => stackGroupIdOfAnchor(a) === stackGroupIdOfAnchor(b),
+      );
       // TEMAT #15: BRAK ataku z wody — jednostka zaokrętowana musi zejść na ląd.
       if (atkUnit.embarked === true) {
         showHintMessage('Jednostka zaokrętowana nie może atakować — zejdź na ląd.', 3800);
@@ -41198,8 +41492,8 @@ async function boot(): Promise<void> {
 
           // Opt-in units sharing the commander's hex become followers as soon as that
           // commander moves, then use the normal tracked-march queue.
+          // R-WEB-MARCH-END-OF-TURN-ONLY-Q1: koniec animacji NIE odpala kolejnych marszy (tylko koniec tury).
           syncGeneralMarchTargets();
-          processMarchQueue();
 
           validateActiveSieges();
 
@@ -41276,7 +41570,6 @@ async function boot(): Promise<void> {
           }
           updateHud();
           refreshD1bHud();
-          processMarchQueue();
           // C: auto-cykl „bęben" — jednostka gracza wyczerpała ruch (bez marszu
           // wieloturowego w toku) → przejdź do następnej armii, która wciąż ma dostępny ruch
           // (te same semantyki co Spacja — R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA).
@@ -41980,6 +42273,7 @@ async function boot(): Promise<void> {
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja z ekranu nowej gry (domyślnie ON).
       playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;
       resetEndTurnBlockers('doStartGame');
+      resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: nowa gra = czysty panel zbiorczy
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;

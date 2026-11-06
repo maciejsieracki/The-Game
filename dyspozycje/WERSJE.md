@@ -1,3 +1,51 @@
+## ROBOCZA 88d4a39c -- 2026-11-06 -- FALA 510: zwiadowca nie jest liderem armii (testowa)
+
+- R-WEB-ARMY-SCOUT-NOT-LEADER-Q1 — zwiadowca w armii nie jest liderem ani kotwicą ataku (miasto i jednostka), armia działa jak najsilniejsza jednostka bojowa, zwiadowca tylko poszerza widoczność
+- Weryfikacja: tsc PASS; army-scout-not-leader 19/0; ai-test 274/20 = baseline
+- Limity: Brak zrzutu Chromium panelu armii
+
+## ROBOCZA cbb335af -- 2026-11-06 -- FALA 509: panel rekrutacji całej cywilizacji + Spichlerz Królewski/Pismo (testowa)
+
+- R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: przycisk „Rekrutacja” w górnym pasku, równy rozkład zamówienia po miastach; liczniki w mieście nie zerują się po „Rekrutuj”.
+- R-WEB-GRANARY2-PISMO-ROYAL-RENAME-Q1: Spichlerz II = „Spichlerz Królewski”, wymaga technologii Pismo.
+- Weryfikacja: tsc PASS; empire-recruit-live 23/23; granary2-tech-guard 14/0. Limity: brak zrzutu pełnego panelu miasta z chipem Pismo.
+
+## ROBOCZA 9caf3c59 -- 2026-11-05 -- FALA 508: marsze tylko na koniec tury gracza (testowa)
+
+- md5 pełne: `9caf3c5955847edea53c605d366e0bf6` · 70253395 B · poprzednia `8408a731`.
+- R-WEB-MARCH-END-OF-TURN-ONLY-Q1: zaplanowane marsze wykonują się tylko w fazie końca tury gracza (przed ekonomią/AI/dyplomacją). Usunięto cztery ścieżki ruchu poza tą fazą (nowe jednostki idące do wodza na starcie tury, dokańczanie kolejki po animacji, dopisywanie podopiecznych wodza w dowolnej chwili). Nowa tura: jednostki tam, gdzie je zostawiono, z pełnym MP. Pierwszy segment rozkazu zleconego w trakcie tury — od razu (decyzja A).
+- FC PASS-WITH-NOTES. Żywy test Chromium 51 OK / 0 FAIL. Nie sprawdzono: ai-test, hashe determinizmu.
+
+## ROBOCZA 8408a731 -- 2026-11-05 -- FALA 507: Magazyn +20% pojemności surowców państwa (testowa)
+
+- md5 pełne: `8408a731941ca23cbe0d03366da91a99` · 70253091 B · poprzednia `1f71e6f2`.
+- R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1: każdy Magazyn zwiększa pojemność każdego surowca magazynu państwa o 20% bazy (1 Magazyn ×1,2; 3 ×1,6; razy mnożnik epoki) zamiast +500 (które przy bazie 50 000 dawało ~1%). Żywność centralna bez zmian.
+- FC PASS-WITH-NOTES. Uwaga: UI pokazuje wartości bezwzględne; Magazyn nadal +100 do żywności (osobny temat do usunięcia).
+
+## ROBOCZA 1f71e6f2 -- 2026-11-05 -- FALA 506: ostrzejszy render jednostek (testowa)
+
+- md5 pełne: `1f71e6f2690effbf220f9e1987ba1c20` · 70253436 B · poprzednia `ac3843f5`.
+- R-WEB-RENDER-UNIT-BLUR-HORSES-Q1: modele jednostek (konie, rydwan) bywały rozmyte, bo domyślny preset „medium” renderował w 1,5× pikseli ekranu (na HiDPI rozciągane do 2×); teraz 2,0×. Ostrość z bliska przy DPR 2 ×3,6; draw calls bez zmian.
+- FC PASS-WITH-NOTES. Uwaga: przyczyna niepotwierdzona dla sprzętu właściciela; LOD1–3 nadal miększe; koszt GPU niezmierzony (+1,78× pikseli na HiDPI w „medium”). Jeśli zbyt wolno — wrócić do 1,5 + AA.
+
+## ROBOCZA ac3843f5 -- 2026-11-05 -- FALA 505: wypad obleganej armii w każdej turze (testowa)
+
+- md5 pełne: `ac3843f57ae6c69cdfa1d2e82550036b` · 70253438 B · poprzednia `bec6901f`.
+- R-WEB-SIEGE-SORTIE-ANY-TURN-Q1: oblegana armia AI/barbarzyńców o sile ≥80% oblegających (10:8) kontratakuje w każdej turze oblężenia (dotąd tylko w ostatniej, przy wyczerpanej żywności); kotwica najsilniejsza; garnizon budzony po sprawdzeniu widoczności celu. Gracz bez zmian (ręczne dowodzenie).
+- FC PASS-WITH-NOTES. NIE_ZMIERZONO: realny Chromium; do decyzji: przycisk „Wypad” dla gracza.
+
+## ROBOCZA bec6901f -- 2026-11-05 -- FALA 504: panel armii — generał i wielokrotne zaznaczanie (testowa)
+
+- md5 pełne: `bec6901fb45f31083ac0101bbe76604b` · 70252936 B · poprzednia `bfb410ba`.
+- R-WEB-UI-ARMY-PANEL-GENERAL-LABEL-MULTISELECT-Q1: generał jako „Generał — Wojownik”, pierwszy na liście (panel stosu, podziału, scalania); zaznaczanie wielu jednostek (pola wyboru, licznik, „Zaznacz wszystko” bez generała, „Odznacz”); „ROZWIĄŻ ZAZNACZONE (N)” z potwierdzeniem i ostrzeżeniem o generale.
+- FC PASS-WITH-NOTES. Uwaga: panel „Lista” (armyListHud) bez osobnego testu sortowania.
+
+## ROBOCZA bfb410ba -- 2026-11-05 -- FALA 503: Spichlerz II da się zbudować (testowa)
+
+- md5 pełne: `bfb410badba810c44dd38a27b6a72d23` · 70248431 B · poprzednia `8c0e8f81`.
+- R-WEB-GRANARY2-TECH-DATA-FIX-Q1: Spichlerz II wymagał nieistniejącej technologii „Warzelnia soli” (to ulepszenie terenu) — był niebudowalny, więc limit ludności 12 był nieosiągalny. Teraz wymaga Garncarstwa, Spichlerza I, epoki 2, Soli i Ceramiki. Strażnik danych łapie techUnlock spoza tech.json.
+- FC PASS-WITH-NOTES. Do decyzji: Ceramika w bramce (Spichlerz I jej nie ma), Garncarstwo vs Pismo/Religia.
+
 ## ROBOCZA 8c0e8f81 -- 2026-11-05 -- FALA 502: AI nie maszeruje bez wojny (testowa)
 
 - md5 pełne: `8c0e8f81147ad119ed25be1006b50eb4` · 70248064 B · poprzednia `351808ce`.

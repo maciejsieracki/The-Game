@@ -323,7 +323,7 @@ Od 2026-07-23 **9 budynków epoki Brązu/Żelaza** mają realny **koszt materia�
 |---------|----------------|
 | Świątynia | 6 ceramiki |
 | Biblioteka | 5 ceramiki |
-| Spichlerz II | 10 cegły |
+| Spichlerz Królewski | 10 cegły |
 | Akwedukt | 12 cegły |
 | Pretorium | 9 cegły |
 | Łaźnia publiczna | 10 cegły |

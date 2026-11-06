@@ -8258,6 +8258,17 @@ export function recruitPanelPurchasableUnits(city: City, data: GameData) {
   );
 }
 
+/**
+ * R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1 (część A): liczniki ilości rekrutacji per miasto+typ jednostki,
+ * niezależne i NIE zerowane po „Rekrutuj” ani po przebudowie panelu (stan UI sesji, poza zapisem gry).
+ */
+const recruitQuantityDrafts = new Map<string, number>();
+const recruitDraftKey = (cityId: string, itemId: string): string => `${cityId}|${itemId}`;
+/** Test: odczyt zapamiętanego licznika (1 = domyślny). */
+export function getRecruitQuantityDraft(cityId: string, itemId: string): number {
+  return recruitQuantityDrafts.get(recruitDraftKey(cityId, itemId)) ?? 1;
+}
+
 /** Render one recruitment card; exported for the real DOM regression gate. */
 export function appendUnitRecruitCompactRow(
   scroll: HTMLElement,
@@ -8305,6 +8316,8 @@ export function appendUnitRecruitCompactRow(
     manpowerMissingLabel: mpMissing != null && mpMissing > 0
       ? `Brakuje rekrutów: ${formatManpowerCompact(mpMissing)}`
       : undefined,
+    initialQuantity: recruitQuantityDrafts.get(recruitDraftKey(city.id, item.id)),
+    onQuantityChange: (q) => { recruitQuantityDrafts.set(recruitDraftKey(city.id, item.id), q); },
     onRecruit: (quantity) => opts?.onRecruit
       ? opts.onRecruit(quantity)
       : recruitUnit(city, item, quantity),

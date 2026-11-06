@@ -655,6 +655,25 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       });
     });
     if (ctx.kind !== 'unit') return;
+    // Pole wyboru na karcie stosu (wielokrotne zaznaczanie): zatrzymuje propagację,
+    // żeby kliknięcie w checkbox NIE przełączało zaznaczenia jednostki (data-unit na karcie).
+    // / EN: stack-card checkbox (multi-select): stops propagation so clicking it does NOT
+    // switch the unit selection (the card carries data-unit).
+    root.querySelectorAll('[data-pick]').forEach(pick => {
+      const togglePick = (ev: Event) => {
+        ev.stopPropagation();
+        const id = (pick as HTMLElement).getAttribute('data-pick');
+        if (id) config.onContextAction?.('pick:' + id);
+      };
+      pick.addEventListener('click', togglePick);
+      pick.addEventListener('keydown', (ev: Event) => {
+        const ke = ev as KeyboardEvent;
+        if (ke.key === 'Enter' || ke.key === ' ') {
+          ke.preventDefault();
+          togglePick(ke);
+        }
+      });
+    });
     root.querySelectorAll('[data-unit]').forEach(chip => {
       const go = () => {
         const id = (chip as HTMLElement).getAttribute('data-unit');

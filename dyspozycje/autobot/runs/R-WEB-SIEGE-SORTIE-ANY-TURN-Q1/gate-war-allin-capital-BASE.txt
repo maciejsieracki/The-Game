@@ -1,0 +1,29 @@
+
+--- 1: AI<->AI, PRZED (flaga OFF) vs PO (flaga ON) ---
+
+--- 2: AI -> GRACZ; gracz bez automatycznych rozkazow; zmiana stolicy ---
+
+--- 3: barbarzyncy -> NAJBLIZSZA stolica ---
+
+--- 4: brak sciezki ladowej (morze) -- bez zawieszenia, jednostki zostaja ---
+
+--- 5: przeciwnik wyeliminowany (brak miast) => dotychczasowe zachowanie ---
+
+--- 6: flaga OFF == baza origin/main (hash stanu po TURNS turach) ---
+  [INFO] aiVsAi: baza pre-zasieg=49f36d28989cf940 OFF=d28c8b7ffce7a3ec (roznica = zamierzona zmiana zasiegu)
+  FAIL: 6b aiVsAi: flaga OFF == referencja 20a5bc2c7abcba1b (got "d28c8b7ffce7a3ec", want "20a5bc2c7abcba1b")
+  [INFO] aiVsPlayer: baza pre-zasieg=22a63c096e698720 OFF=0ec28410234e2ed2 (roznica = zamierzona zmiana zasiegu)
+  [INFO] barbarians: baza pre-zasieg=65542d56510bcef9 OFF=c07e60985cb8a2ab (roznica = zamierzona zmiana zasiegu)
+  [INFO] noLandPath: baza pre-zasieg=176b6b39e9773451 OFF=e565af36b3773765 (roznica = zamierzona zmiana zasiegu)
+  FAIL: 6b noLandPath: flaga OFF == referencja 3484217518ceb4ba (got "e565af36b3773765", want "3484217518ceb4ba")
+
+--- 7: determinizm przy fladze ON (2 przebiegi) ---
+
+--- 8: planWarAllInCapital -- grupowanie / rendezvous ---
+
+--- 10: realne scalanie grup, gesta grupa, brak krokow wstecz i dubli ---
+
+--- 9: okablowanie main.ts (testy statyczne) ---
+
+96 passed, 2 failed
+EXIT=1 (96 passed, 2 failed na bazie 80919e2ae; identycznie po zmianie)
