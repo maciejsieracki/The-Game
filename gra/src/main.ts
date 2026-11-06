@@ -16323,17 +16323,22 @@ async function boot(): Promise<void> {
 
     /** Odśwież HUD D1B (+ panel imperium gdy otwarty). */
 
+    /** Bufor roboczy kierunku kamery — cameraGroundTarget() woła się co klatkę (renderLoop), bez alokacji. */
+    const cameraGroundDirScratch = new THREE.Vector3();
     function cameraGroundTarget(): { targetX: number; targetZ: number; distance: number; fov: number; aspect: number } {
-      const dir = new THREE.Vector3();
+      const dir = cameraGroundDirScratch;
       camera.getWorldDirection(dir);
       const hitT = Math.abs(dir.y) > 1e-6 ? -camera.position.y / dir.y : 40;
       const targetX = camera.position.x + dir.x * hitT;
       const targetZ = camera.position.z + dir.z * hitT;
-      const ground = new THREE.Vector3(targetX, 0, targetZ);
+      // Odległość kamera → punkt na ziemi (targetX, 0, targetZ), liczona bez alokacji Vector3.
+      const dxg = camera.position.x - targetX;
+      const dyg = camera.position.y;
+      const dzg = camera.position.z - targetZ;
       return {
         targetX,
         targetZ,
-        distance: camera.position.distanceTo(ground),
+        distance: Math.sqrt(dxg * dxg + dyg * dyg + dzg * dzg),
         fov: (camera.fov * Math.PI) / 180,
         aspect: camera.aspect,
       };
