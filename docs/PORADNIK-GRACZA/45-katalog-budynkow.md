@@ -13,7 +13,7 @@ Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **prac
 |---------|---------------------|-----------|
 | Świątynia | 6 ceramiki | Garncarnia |
 | Biblioteka | 5 ceramiki | Garncarnia |
-| Spichlerz II *(brak w tabeli głównej — §82.1c)* | 10 cegły | Cegielnia |
+| Spichlerz Królewski *(brak w tabeli głównej — §82.1c)* | 10 cegły | Cegielnia |
 | Akwedukt *(brak w tabeli głównej)* | 12 cegły | Cegielnia |
 | Pretorium | 9 cegły | Cegielnia |
 | Łaźnia publiczna | 10 cegły | Cegielnia |

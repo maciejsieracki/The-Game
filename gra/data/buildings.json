@@ -488,13 +488,13 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "Dostęp do Ceramiki w imperium (wybudowana Garncarnia gdziekolwiek w imperium ALBO zapas Ceramiki w puli państwa)",
-    "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): pole 'wymagania' bylo puste, wiec gdy bramka Ceramika nie byla spelniona, budynek znikal z panelu bez zadnego komunikatu (eraBuildingCatalog nie sprawdzal tej bramki w ogole -- naprawione w production.ts, patrz komentarz R-BUD-SPICHLERZ-ZNIKA tamze). Tekst tu teraz zasila formatBuildingCatalogLockHint w cityPanel.ts.",
+    "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz Królewski. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): pole 'wymagania' bylo puste, wiec gdy bramka Ceramika nie byla spelniona, budynek znikal z panelu bez zadnego komunikatu (eraBuildingCatalog nie sprawdzal tej bramki w ogole -- naprawione w production.ts, patrz komentarz R-BUD-SPICHLERZ-ZNIKA tamze). Tekst tu teraz zasila formatBuildingCatalogLockHint w cityPanel.ts.",
     "historia": "Spichlerz to budowla magazynowa służąca do przechowywania zboża i innych plonów, znana od czasów najwcześniejszych cywilizacji rolniczych Mezopotamii i Egiptu, gdzie nadwyżki żywności trzeba było zabezpieczyć przed gryzoniami, wilgocią i złodziejami. Egipskie spichlerze państwowe, opisywane już w biblijnej historii Józefa, pozwalały władcom gromadzić zapasy zboża na wypadek nieurodzaju i klęsk głodu, co czyniło kontrolę nad zapasami żywności realnym narzędziem władzy politycznej. Budowane zwykle na podwyższeniu, z drewnianą lub kamienną konstrukcją unoszącą podłogę nad ziemią, chroniły ziarno przed wilgocią i szkodnikami znacznie skuteczniej niż przechowywanie w domostwach. W średniowiecznej Europie spichlerze — szczególnie te budowane przez zakony i miasta hanzeatyckie w Gdańsku czy Toruniu — stały się symbolem zamożności i bezpieczeństwa żywnościowego całych regionów. Zdolność do gromadzenia i dystrybucji zapasów żywności była jednym z fundamentów, na których w ogóle mogły powstać duże, osiadłe społeczeństwa.",
     "opis": "Spichlerz gromadzi zapasy żywności i podnosi zadowolenie mieszkańców, pozwalając miastu utrzymać większą populację.",
     "top3": [
       { "tytul": "Żywność i zadowolenie", "tekst": "Dodaje 2 punkty Żywności i aż 4 punkty zadowolenia mieszkańców miasta." },
       { "tytul": "Wymaga ceramiki", "tekst": "Można go wybudować tylko przy dostępie do Ceramiki w imperium — dzięki wybudowanej gdziekolwiek Garncarni albo zapasowi ceramiki w magazynie państwa." },
-      { "tytul": "Podnosi limit populacji", "tekst": "Zwiększa górny pułap wielkości miasta, otwierając drogę do dalszej rozbudowy przez Spichlerz II." }
+      { "tytul": "Podnosi limit populacji", "tekst": "Zwiększa górny pułap wielkości miasta, otwierając drogę do dalszej rozbudowy przez Spichlerz Królewski." }
     ],
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
@@ -504,7 +504,7 @@
   {
     "id": "spichlerz_ii",
     "dajeSzczescie": true,
-    "nazwa": "Spichlerz II",
+    "nazwa": "Spichlerz Królewski",
     "kategoria": "Zywnosc",
     "grupa": "Żywność",
     "epokaWejscia": 2,
@@ -535,16 +535,16 @@
     "przyrostKosztu": 12,
     "utrzymanie": 2,
     "przyrostUtrzymania": 0,
-    "wymagania": "Upgrade ze Spichlerza I + Epoka 2 + dostęp do Ceramiki w imperium (garncarnia gdziekolwiek ALBO zapas Ceramiki w puli państwa) + dostęp do Soli w imperium (zapas soli w magazynie państwa — warzelnia na złożu lub wybrzeżu)",
-    "uwagi": "B-SPIC: bramki Ceramika + Sól; cap armii 150; techUnlock=Garncarstwo (R-WEB-GRANARY2-TECH-DATA-FIX-Q1, 2026-11-05: wcześniej 'Warzelnia soli' było ulepszeniem terenu, nie technologią — budynek był niebudowalny); bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupełnione o bramkę Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
+    "wymagania": "Upgrade ze Spichlerza I + Epoka 2 + zbadane Pismo (ewidencja zapasów zboża) + dostęp do Ceramiki w imperium (garncarnia gdziekolwiek ALBO zapas Ceramiki w puli państwa) + dostęp do Soli w imperium (zapas soli w magazynie państwa — warzelnia na złożu lub wybrzeżu)",
+    "uwagi": "B-SPIC: bramki Ceramika + Sól; cap armii 150; techUnlock=Pismo (ewidencja zapasów zboża; decyzja właściciela 2026-11-05, R-WEB-GRANARY2-PISMO-ROYAL-RENAME-Q1, wcześniej Garncarstwo); R-WEB-GRANARY2-TECH-DATA-FIX-Q1, 2026-11-05: wcześniej 'Warzelnia soli' było ulepszeniem terenu, nie technologią — budynek był niebudowalny; bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupełnione o bramkę Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
     "historia": "Rozbudowany spichlerz to naturalny etap rozwoju magazynowania żywności, jaki obserwujemy w miastach, które dorobiły się nadwyżek na tyle dużych, że pojedynczy budynek przestawał wystarczać. Wraz z upowszechnieniem soli jako konserwantu — pozyskiwanej z warzelni nadmorskich lub kopalń takich jak te w Wieliczce — możliwe stało się przechowywanie nie tylko zboża, ale i solonego mięsa oraz ryb przez wiele miesięcy, co znacząco wydłużało okres bezpieczeństwa żywnościowego. Wielkie kompleksy spichrzowe, jak te zachowane do dziś w Gdańsku czy w hanzeatyckiej Lubece, potrafiły magazynować zapasy dla całych miast i regionów, stając się jednocześnie ważnym elementem miejskiej zabudowy i architektury. Sól, ceniona w starożytności niemal jak metal szlachetny, bywała też środkiem płatniczym — od niej pochodzi zresztą łacińskie słowo „salarium”, czyli żołd. Rozwinięte spichlerze solno-zbożowe świadczyły o dojrzałości gospodarczej miasta i jego zdolności do przetrwania długich okresów niepewności.",
-    "opis": "Spichlerz II to rozbudowana wersja magazynu żywności, pozwalająca miastu utrzymać jeszcze większą populację i armię.",
+    "opis": "Spichlerz Królewski to rozbudowana wersja magazynu żywności, pozwalająca miastu utrzymać jeszcze większą populację i armię.",
     "top3": [
       { "tytul": "Więcej żywności i zadowolenia", "tekst": "Dodaje 3 punkty Żywności i 4 punkty zadowolenia, przewyższając bazowy Spichlerz." },
-      { "tytul": "Wymaga ceramiki i soli", "tekst": "Powstaje przez rozbudowę Spichlerza, po zbadaniu Garncarstwa, i wymaga dostępu do Ceramiki oraz Soli w imperium (sól np. z warzelni na złożu lub wybrzeżu)." },
+      { "tytul": "Wymaga ceramiki i soli", "tekst": "Powstaje przez rozbudowę Spichlerza, po zbadaniu Pisma (ewidencja zapasów zboża), i wymaga dostępu do Ceramiki oraz Soli w imperium (sól np. z warzelni na złożu lub wybrzeżu)." },
       { "tytul": "Wyższy limit populacji i armii", "tekst": "Podnosi górny pułap wielkości miasta i utrzymywanej armii ponad to, co daje zwykły Spichlerz." }
     ],
-    "techUnlock": "Garncarstwo",
+    "techUnlock": "Pismo",
     "koszt_surowce": {
       "drewno": 40,
       "kamien": 50

@@ -25,15 +25,15 @@ export function buildUchwalaSolSpichlerzII(
 ): EmpireUchwalaRow {
   const count = Math.max(0, spichlerzIISolCount ?? 0);
   const countNote = count > 0
-    ? ` Aktywne Spichlerze II płacące Sól: ${count}.`
+    ? ` Aktywne Spichlerze Królewskie płacące Sól: ${count}.`
     : '';
   return {
     id: UCHWALA_SOL_SPICHLERZ_II_ID,
     nazwa: 'Solanka zapasowa',
     opis: aktywna
       ? `Armia poza własnym terytorium zużywa 1 pkt Żywności/turę zamiast 2 (bonus imperium).${countNote}`
-      : 'Nieaktywna — wymaga co najmniej jednego Spichlerza II z dostępem do Soli w magazynie państwa (5 Soli/turę).',
-    zrodlo: 'Spichlerz II · Sól',
+      : 'Nieaktywna — wymaga co najmniej jednego Spichlerza Królewskiego z dostępem do Soli w magazynie państwa (5 Soli/turę).',
+    zrodlo: 'Spichlerz Królewski · Sól',
     aktywna,
   };
 }

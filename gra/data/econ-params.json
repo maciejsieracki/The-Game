@@ -33,14 +33,14 @@
       "normal": 8,
       "hard": 8,
       "jednostka": "ludność",
-      "opis": "Twardy cap populacji ze Spichlerzem I (tylko stopień I, bez Spichlerza II i bez Akweduktu) — środkowy stopień drabinki R-SPICHLERZ-CAP-LUDNOSCI-ETAP (Maciej 2026-08-09, ECHO A: normal=8). Płaski 8/8/8 na wszystkich trudnościach (nie skaluje się z trudnością tak jak akwedukt_prog_ludnosci). Od R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1 (2026-11-04) Spichlerz II ma własny, wyższy cap: spichlerz_ii_prog_ludnosci."
+      "opis": "Twardy cap populacji ze Spichlerzem I (tylko stopień I, bez Spichlerza Królewskiego i bez Akweduktu) — środkowy stopień drabinki R-SPICHLERZ-CAP-LUDNOSCI-ETAP (Maciej 2026-08-09, ECHO A: normal=8). Płaski 8/8/8 na wszystkich trudnościach (nie skaluje się z trudnością tak jak akwedukt_prog_ludnosci). Od R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1 (2026-11-04) Spichlerz Królewski ma własny, wyższy cap: spichlerz_ii_prog_ludnosci."
     },
     "spichlerz_ii_prog_ludnosci": {
       "easy": 12,
       "normal": 12,
       "hard": 12,
       "jednostka": "ludność",
-      "opis": "Twardy cap populacji ze Spichlerzem II, ale BEZ Akweduktu — nowy stopień drabinki (R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1, decyzja właściciela 2026-11-04: Spichlerz II = 12 mieszkańców). Płaski 12/12/12 na wszystkich trudnościach. Drabinka: bez budynku 5 → Spichlerz I 8 → Spichlerz II 12 → Akwedukt 20."
+      "opis": "Twardy cap populacji ze Spichlerzem Królewskim, ale BEZ Akweduktu — nowy stopień drabinki (R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1, decyzja właściciela 2026-11-04: Spichlerz Królewski = 12 mieszkańców). Płaski 12/12/12 na wszystkich trudnościach. Drabinka: bez budynku 5 → Spichlerz I 8 → Spichlerz Królewski 12 → Akwedukt 20."
     },
     "akwedukt_max_ludnosci": {
       "easy": 20,
@@ -399,14 +399,14 @@
       "normal": 25,
       "hard": 25,
       "jednostka": "Sól/turę",
-      "opis": "PYTANIE-84-B7/U-2 (Maciej 2026-07-27): Spichlerz II zużywa Sól ze skarbca × każdy działający Spichlerz II płacący Sól; brak Soli → brak bonusu wojska (imperium-wide). Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz solII) → paySpichlerzDrainForCity (building-resource-gate.ts:418, gałąź sol). R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
+      "opis": "PYTANIE-84-B7/U-2 (Maciej 2026-07-27): Spichlerz Królewski zużywa Sól ze skarbca × każdy działający Spichlerz Królewski płacący Sól; brak Soli → brak bonusu wojska (imperium-wide). Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz solII) → paySpichlerzDrainForCity (building-resource-gate.ts:418, gałąź sol). R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
     },
     "budynek_spichlerz_ii_zuzywa_ceramika": {
       "easy": 25,
       "normal": 25,
       "hard": 25,
       "jednostka": "Ceramika/turę",
-      "opis": "PYTANIE-84-B8 (Maciej 2026-07-27): Spichlerz II zużywa Ceramikę ze skarbca co turę (obok Soli); brak Ceramiki → brak bonusu ludności w mieście. Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz ceramikaII; używany gdy miasto ma Spichlerz II) → paySpichlerzDrainForCity (building-resource-gate.ts:418) oraz turn-economy.ts:1375, :1407, :1548, :2479. R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
+      "opis": "PYTANIE-84-B8 (Maciej 2026-07-27): Spichlerz Królewski zużywa Ceramikę ze skarbca co turę (obok Soli); brak Ceramiki → brak bonusu ludności w mieście. Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz ceramikaII; używany gdy miasto ma Spichlerz Królewski) → paySpichlerzDrainForCity (building-resource-gate.ts:418) oraz turn-economy.ts:1375, :1407, :1548, :2479. R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
     },
     "utrzymanie_budynek": {
       "easy": 1,
