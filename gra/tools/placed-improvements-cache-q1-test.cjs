@@ -9,6 +9,8 @@
  *  (3) trafienia: wielokrotne odczyty tego samego stanu = 1 skan na wlasciciela (hits rosna, misses nie);
  *  (4) MUTACJE: wylaczenie inwalidacji po wersji / po wezlach terytorium LAMIE test (test nie jest pusty);
  *  (5) kontrakt zrodlowy main.ts: placedImprovements to VersionedMap, placedImprovementsForOwner idzie przez cache.
+ *      UZUPELNIENIE, nie dowod zachowania: sprawdza tekst zrodla; dowodem zachowania sa (1)-(4).
+ *  (4b) mutant "memo-heksow-nie-czyszczony" lamie inwalidacje po zmianie wezlow (wykrywany przez (2)).
  * Run z gra/:  node tools/placed-improvements-cache-q1-test.cjs
  */
 const fs = require('node:fs');
@@ -146,8 +148,9 @@ function runSuite(mod, label, expectPass) {
 
   // (4) mutacje: test MUSI wykryc zepsucie inwalidacji
   const mutants = [
-    ['bez-wersji', (s) => s.replace('srcVersion !== source.version || ', '')],
-    ['bez-wezlow', (s) => s.replace('|| !sameTerritoryNodes(snapshot, nodes)', '')],
+    ['bez-wersji', (s) => s.replace('|| srcVersion !== source.version;', ';')],
+    ['bez-wezlow', (s) => s.replace('const nodesChanged = !sameTerritoryNodes(snapshot, nodes);', 'const nodesChanged = false;')],
+    ['memo-heksow-nie-czyszczony', (s) => s.replace('hexOwner = new Map();', '')],
     ['bez-wlasciciela-wezla', (s) => s.replace('x.pop !== y.pop || x.ownerId !== y.ownerId', 'x.pop !== y.pop')],
     ['bez-pop', (s) => s.replace('x.pop !== y.pop || x.ownerId', 'x.ownerId')],
     ['licznik-nie-rosnie-w-set', (s) => s.replace('override set(key: K, value: V): this { this.version++; ', 'override set(key: K, value: V): this { ')],

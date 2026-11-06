@@ -1984,16 +1984,24 @@ export function createOwnerImprovementsCache<L, N extends OwnerCacheTerritoryNod
   let src: VersionedMap<string, L> | null = null;
   let srcVersion = -1;
   let snapshot: OwnerCacheTerritoryNode[] = [];
+  /** Wlasciciel kazdego heksa (memo `ownerAt`). Zalezy WYLACZNIE od wezlow terytorium, wiec przezywa zapisy do mapy
+   *  ulepszen (zapis dotyka tylko klucza tego heksa, ktory liczymy leniwie); czyszczony tylko przy zmianie wezlow. */
+  let hexOwner = new Map<string, number | null>();
   let byOwner = new Map<number, ReadonlyMap<string, L>>();
   const stats = { hits: 0, misses: 0, invalidations: 0 };
   return {
     stats,
     get(ownerId: number, source: VersionedMap<string, L>, nodes: readonly N[]): ReadonlyMap<string, L> {
-      if (src !== source || srcVersion !== source.version || !sameTerritoryNodes(snapshot, nodes)) {
+      const nodesChanged = !sameTerritoryNodes(snapshot, nodes);
+      const sourceChanged = src !== source || srcVersion !== source.version;
+      if (nodesChanged || sourceChanged) {
         if (byOwner.size > 0) stats.invalidations++;
+        if (nodesChanged) {
+          snapshot = nodes.map(n => ({ q: n.q, r: n.r, pop: n.pop, isFort: n.isFort, isOutpost: n.isOutpost, ownerId: n.ownerId, order: n.order ? { turn: n.order.turn, seq: n.order.seq } : undefined }));
+          hexOwner = new Map();
+        }
         src = source;
         srcVersion = source.version;
-        snapshot = nodes.map(n => ({ q: n.q, r: n.r, pop: n.pop, isFort: n.isFort, isOutpost: n.isOutpost, ownerId: n.ownerId, order: n.order ? { turn: n.order.turn, seq: n.order.seq } : undefined }));
         byOwner = new Map();
       }
       const hit = byOwner.get(ownerId);
@@ -2001,8 +2009,13 @@ export function createOwnerImprovementsCache<L, N extends OwnerCacheTerritoryNod
       stats.misses++;
       const out = new Map<string, L>();
       for (const [hexKey, layers] of source) {
-        const comma = hexKey.indexOf(',');
-        if (ownerAt(Number(hexKey.slice(0, comma)), Number(hexKey.slice(comma + 1)), nodes) === ownerId) out.set(hexKey, layers);
+        let owner = hexOwner.get(hexKey);
+        if (owner === undefined) {
+          const comma = hexKey.indexOf(',');
+          owner = ownerAt(Number(hexKey.slice(0, comma)), Number(hexKey.slice(comma + 1)), nodes) ?? null;
+          hexOwner.set(hexKey, owner);
+        }
+        if (owner === ownerId) out.set(hexKey, layers);
       }
       byOwner.set(ownerId, out);
       return out;
