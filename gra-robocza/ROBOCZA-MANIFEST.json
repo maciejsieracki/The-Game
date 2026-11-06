@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "1115446eaa306284791fafb7a50af44f",
-  "bundleSha256": "9569c1d6cf0ce0dd28476465fbe2297add11003fe89577addcf1dcbd181715e9",
-  "bundleBytes": 70274734,
+  "bundleMd5": "2c27d321e20588dc4d34587f3c7aef53",
+  "bundleSha256": "0df2e49db5bec18b3559fefd616eeaee9d0bc2d77522423009b7ff2e64f19bba",
+  "bundleBytes": 70283923,
   "sourceSnapshot": {
-    "source": "main b9d8fa546 + AUTOBLD (2a6d6ef81) + NAPUI (9498b19fe)",
+    "source": "main cd3e88144 + EMPORION (b4af9f4f4) + PERF86 (ea194c1ef)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 515: (1) R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 — opcja „Automatyzacja budowy” (budynki + ulepszenia terenu) dla gracza w głównych ustawieniach, domyślnie WYŁĄCZONA, także w menu gry, AI bez zmian; (2) R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1 — blokada paktu o nieagresji w UI liczy ten sam efektywny próg Relacji co silnik (narzut +20 za wspólną granicę, +15 flaga agresora)"
+    "FALA 516: (1) R-WEB-BUILDING-EMPORION-Q1 — nowy budynek handlowy Emporion (epoka 2, badanie Handel, wymaga Targowiska w mieście, +1 slot tras, 5% handlu per trasa, ikona z odznaką); (2) R-WEB-PERF-LATE-GAME-LAG-T86-Q1 — memo obliczenia konfliktów obywateli między miastami (O(n²)), ruch/wejście do miasta/wybór jednostki ok. 25–30× szybsze przy 137 miastach (refreshFog ok. 3,5×)"
   ],
   "verification": [
-    "tsc PASS; autobuild-toggle 39/0; diplo-nap-border-threshold 14/0; diplo-nap-trust-30 25/25; diplomacy-locks 88/0; newgame-sett-grid-layout 74/0"
+    "tsc PASS; emporion-building 47/0; emporion-build-list Chromium 13/0; grupy-budynkow 84/0; perf-sibling-memo 13/13; okolica 72/72"
   ],
   "limits": [
-    "Inicjatywa AI paktu nadal liczy własny próg bez narzutu granicy (osobny temat); brak zrzutu Chromium z notką 130/140 przy granicy; brak powtórzenia ai-buduje-budynki"
+    "PERF: p95<150 ms niezmierzone na realnym GPU i w turze 86; pozostają updateHud/previewCityEconomy i refreshTerritoryBorderOverlay (Q2). Emporion: bonus 5% per trasa (wariant A); koszt w magazynie skalowany 320/240"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-06T01:51:09",
+  "hubGeneratedAt": "2026-11-06T02:04:55",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "1115446eaa306284791fafb7a50af44f",
-      "sizeBytes": 70274734
+      "md5": "2c27d321e20588dc4d34587f3c7aef53",
+      "sizeBytes": 70283923
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "1115446eaa306284791fafb7a50af44f",
-      "sizeBytes": 70274734
+      "md5": "2c27d321e20588dc4d34587f3c7aef53",
+      "sizeBytes": 70283923
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "1115446eaa306284791fafb7a50af44f",
-      "sizeBytes": 70274734
+      "md5": "2c27d321e20588dc4d34587f3c7aef53",
+      "sizeBytes": 70283923
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "1115446eaa306284791fafb7a50af44f",
-      "sizeBytes": 70274734
+      "md5": "2c27d321e20588dc4d34587f3c7aef53",
+      "sizeBytes": 70283923
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "1115446eaa306284791fafb7a50af44f",
-      "sizeBytes": 70274734
+      "md5": "2c27d321e20588dc4d34587f3c7aef53",
+      "sizeBytes": 70283923
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "1115446eaa306284791fafb7a50af44f",
-      "sizeBytes": 70274734
+      "md5": "2c27d321e20588dc4d34587f3c7aef53",
+      "sizeBytes": 70283923
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "1115446eaa306284791fafb7a50af44f",
-      "sizeBytes": 70274734
+      "md5": "2c27d321e20588dc4d34587f3c7aef53",
+      "sizeBytes": 70283923
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "1115446eaa306284791fafb7a50af44f",
-      "sizeBytes": 70274734
+      "md5": "2c27d321e20588dc4d34587f3c7aef53",
+      "sizeBytes": 70283923
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "1115446eaa306284791fafb7a50af44f",
-      "sizeBytes": 70274734
+      "md5": "2c27d321e20588dc4d34587f3c7aef53",
+      "sizeBytes": 70283923
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "1115446eaa306284791fafb7a50af44f",
-      "sizeBytes": 70274734
+      "md5": "2c27d321e20588dc4d34587f3c7aef53",
+      "sizeBytes": 70283923
     }
   ],
-  "md5": "1115446eaa306284791fafb7a50af44f",
+  "md5": "2c27d321e20588dc4d34587f3c7aef53",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

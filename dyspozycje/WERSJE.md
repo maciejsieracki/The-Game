@@ -1,3 +1,9 @@
+## ROBOCZA 2c27d321 -- 2026-11-06 -- FALA 516: Emporion + przyspieszenie późnej gry (testowa)
+
+- (1) R-WEB-BUILDING-EMPORION-Q1 — nowy budynek handlowy Emporion (epoka 2, badanie Handel, wymaga Targowiska w mieście, +1 slot tras, 5% handlu per trasa, ikona z odznaką); (2) R-WEB-PERF-LATE-GAME-LAG-T86-Q1 — memo obliczenia konfliktów obywateli między miastami (O(n²)), ruch/wejście do miasta/wybór jednostki ok. 25–30× szybsze przy 137 miastach (refreshFog ok. 3,5×)
+- Weryfikacja: tsc PASS; emporion-building 47/0; emporion-build-list Chromium 13/0; grupy-budynkow 84/0; perf-sibling-memo 13/13; okolica 72/72
+- Limity: PERF: p95<150 ms niezmierzone na realnym GPU i w turze 86; pozostają updateHud/previewCityEconomy i refreshTerritoryBorderOverlay (Q2). Emporion: bonus 5% per trasa (wariant A); koszt w magazynie skalowany 320/240
+
 ## ROBOCZA 1115446e -- 2026-11-06 -- FALA 515: automatyzacja budowy (domyślnie wyłączona) + próg paktu w UI zgodny z silnikiem (testowa)
 
 - (1) R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 — opcja „Automatyzacja budowy” (budynki + ulepszenia terenu) dla gracza w głównych ustawieniach, domyślnie WYŁĄCZONA, także w menu gry, AI bez zmian; (2) R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1 — blokada paktu o nieagresji w UI liczy ten sam efektywny próg Relacji co silnik (narzut +20 za wspólną granicę, +15 flaga agresora)
