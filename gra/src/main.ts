@@ -1962,6 +1962,11 @@ async function boot(): Promise<void> {
     }
     let anim: AnimState | null = null;
     let isAnimating = false;
+    // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R3): shadow pass podczas animacji ruchu jest drugim przebiegiem
+    // CALEJ geometrii (przy duzej cywilizacji ~26k meshy). Gdy pelna klatka z shadow pass kosztuje > 30 ms,
+    // odswiezamy cien animowanej figurki nie czesciej niz co `cost` ms (<= 500 ms): max ~50% czasu w shadow pass.
+    let shadowAnimLastAt = 0;
+    let shadowAnimMinGapMs = 0;
     let hoverKey: string | null = null;
 
     function mapQualityTierFromParams(params: NewGameParams): QualityTier {
@@ -41806,6 +41811,9 @@ async function boot(): Promise<void> {
         const { dist } = camCtrl.getFocusState();
         const { minDist, maxDist } = camCtrl.getDistLimits();
         setZoomLod(dist, minDist, maxDist);
+        // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 R3: LOD drobnych czesci figurek przy oddaleniu (no-op przy braku zmiany kubelka)
+        unitRenderer.applySmallPartLod(dist, camera.fov, canvas.clientHeight);
+        cityRenderer.applySmallPartLod(dist, camera.fov, canvas.clientHeight);
         // BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — plakietka miasta ma stałą wysokość w świecie
         // (worldH 0,52 j.św.), więc przy zbliżeniu kamery jej tekstura jest rozciągana i
         // rozmywa się. `setBadgeZoomLod` to samo porównanie poziomu — `true` wraca WYŁĄCZNIE
@@ -41835,8 +41843,23 @@ async function boot(): Promise<void> {
       renderer.info.reset();
       // FPS cienie na żądanie: token jednostki (caster) rusza się co klatkę tylko podczas
       // animacji ruchu; galeria może obracać modele. Poza tym (pan/idle) shadow pass pomijany.
-      if (isAnimating || galleryOn) renderer.shadowMap.needsUpdate = true;
+      let shadowTimedAt = 0;
+      if (galleryOn) {
+        renderer.shadowMap.needsUpdate = true;
+      } else if (isAnimating) {
+        const nowSh = performance.now();
+        if (nowSh - shadowAnimLastAt >= shadowAnimMinGapMs) {
+          renderer.shadowMap.needsUpdate = true;
+          shadowAnimLastAt = nowSh;
+          shadowTimedAt = nowSh;
+        }
+      }
       renderer.render(scene, camera);
+      if (shadowTimedAt > 0) {
+        shadowAnimLastAt = performance.now(); // przerwa liczona od KONCA klatki z shadow pass
+        const shadowFrameMs = shadowAnimLastAt - shadowTimedAt;
+        shadowAnimMinGapMs = shadowFrameMs <= 30 ? 0 : Math.min(500, shadowFrameMs);
+      }
       if (isPerfDebugOverlayVisible()) {
         let meshCount = 0;
         let instancedCount = 0;

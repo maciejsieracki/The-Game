@@ -1,0 +1,19 @@
+  PASS: near zoom hides nothing
+  PASS: far zoom hides tiny mesh
+  PASS: far zoom keeps large mesh (1.0 world ~ 3.8px)
+  PASS: stat plate subtree untouched
+  PASS: renderOrder != 0 mesh untouched
+  PASS: InstancedMesh untouched
+  PASS: nested scale respected (tiny geometry in x100 parent stays)
+  PASS: hiddenCount counts only LOD-hidden meshes
+  PASS: same bucket + version is a no-op (no per-frame work)
+  PASS: sub-bucket zoom change is a no-op
+  PASS: version bump re-evaluates (new token small part hidden)
+  PASS: hidden root is skipped
+  PASS: zoom in restores all hidden meshes
+  PASS: re-hidden at far zoom
+  PASS: minPx <= 0 disables LOD and restores
+  PASS: reset() restores and forgets key
+
+small-part-lod-test: 16 pass, 0 fail
+EXIT=0

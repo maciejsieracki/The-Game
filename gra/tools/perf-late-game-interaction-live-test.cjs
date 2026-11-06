@@ -138,6 +138,17 @@ async function build() {
     transform(code, id) {
       if (!id.endsWith('/src/main.ts')) return null;
       let output = code;
+      // call counters (diagnostics only; the harness bundle is temporary): window.__perfCnt[name]
+      for (const [sig, nm] of [
+        ['    function refreshFog(opts?: { skipVeteranEducation?: boolean }): void {', 'refreshFog'],
+        ['    function syncUnitsRender(list?: RuntimeUnit[]): void {', 'syncUnitsRender'],
+        ['    function refreshTerritoryBorderOverlay(): void {', 'refreshTerritoryBorderOverlay'],
+        ['    function buildHudState(ownerId: number = ME()): HudState {', 'buildHudState'],
+        ['    function updateHud(): void {', 'updateHud'],
+      ]) {
+        if (!output.includes(sig)) throw new Error('counter anchor missing: ' + nm);
+        output = output.replace(sig, sig + " ((window as any).__perfCnt ??= {})['" + nm + "'] = (((window as any).__perfCnt)['" + nm + "'] || 0) + 1;");
+      }
       // Only this existing test hook's game setup is widened; normal app code is unchanged.
       const aiHook = output.indexOf('(window as any).__aiBuildingsTestDebug = {');
       if (aiHook < 0) throw new Error('ai buildings test hook not found');
@@ -260,6 +271,63 @@ async function build() {
         rows.push(t('checkVeteranEnemyFirstEncounter', () => checkVeteranEnemyFirstEncounter(vis)));
         return { visSize: vis.size, exploredSize: (exp as any).size ?? null, rows };
       },
+      perfSceneBreakdown: () => {
+        scene.updateMatrixWorld(true);
+        camera.updateMatrixWorld(true);
+        const fr = new THREE.Frustum();
+        fr.setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+        const groups: Record<string, { objs: number; inFrustum: number; calls: number; instances: number; tris: number }> = {};
+        let total = 0, vis = 0, hidden = 0;
+        const sphere = new THREE.Sphere();
+        scene.traverse((o: any) => {
+          if (!(o.isMesh || o.isLine || o.isPoints)) return;
+          let v = true; for (let a = o; a; a = a.parent) if (!a.visible) { v = false; break; }
+          if (!v) { hidden++; return; }
+          total++;
+          let top: any = o; const chain: string[] = [];
+          for (let a = o.parent; a && a !== scene; a = a.parent) { top = a; chain.push(a.name || a.type); }
+          const key = (top === o ? '(root)' : (chain[chain.length - 1] + (chain.length > 1 ? '/' + chain[chain.length - 2] : ''))) + '|' + (o.isInstancedMesh ? 'inst' : o.isMesh ? 'mesh' : o.type);
+          const g = (groups[key] ??= { objs: 0, inFrustum: 0, calls: 0, instances: 0, tris: 0 });
+          g.objs++;
+          let inF = true;
+          if (o.frustumCulled !== false && o.geometry) {
+            if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+            if (o.geometry.boundingSphere) { sphere.copy(o.geometry.boundingSphere).applyMatrix4(o.matrixWorld); inF = fr.intersectsSphere(sphere); }
+          }
+          if (inF) { g.inFrustum++; vis++; g.calls += (Array.isArray(o.material) ? o.material.length : 1); if (o.isInstancedMesh) g.instances += o.count; const idx = o.geometry?.index; g.tris += Math.round(((idx ? idx.count : o.geometry?.attributes?.position?.count ?? 0) / 3) * (o.isInstancedMesh ? o.count : 1)); }
+        });
+        const rows = Object.entries(groups).sort((a, b) => b[1].calls - a[1].calls).slice(0, 25).map(([k, g]) => ({ k, ...g }));
+        return { total, visible: vis, hiddenSkipped: hidden, cameraDist: camCtrl.getFocusState().dist, rows };
+      },
+      perfSceneTopGroups: () => {
+        const sig: Record<string, { n: number; meshes: number; ex: string }> = {};
+        for (const c of scene.children as any[]) {
+          if (!c.visible) continue;
+          let m = 0; c.traverse((o: any) => { if (o.isMesh || o.isLine || o.isPoints) m++; });
+          const ud = Object.keys(c.userData || {}).slice(0, 6).join(',');
+          const k = c.type + '|' + (c.name || '-') + '|ud:' + ud + '|ch:' + c.children.length;
+          const g = (sig[k] ??= { n: 0, meshes: 0, ex: '' });
+          g.n++; g.meshes += m;
+          if (!g.ex) g.ex = JSON.stringify(c.userData || {}).slice(0, 160) + ' pos=' + c.position.x.toFixed(0) + ',' + c.position.z.toFixed(0);
+        }
+        return Object.entries(sig).sort((a, b) => b[1].meshes - a[1].meshes).slice(0, 20).map(([k, g]) => ({ k, ...g }));
+      },
+      perfRenderProbe: () => {
+        const run = (shadow: boolean) => {
+          renderer.info.reset();
+          renderer.shadowMap.needsUpdate = shadow;
+          const t = performance.now();
+          renderer.render(scene, camera);
+          renderer.getContext().finish();
+          return { ms: +(performance.now() - t).toFixed(1), calls: renderer.info.render.calls, tris: renderer.info.render.triangles };
+        };
+        run(false);
+        const noShadow = [run(false), run(false), run(false)];
+        const withShadow = [run(true), run(true), run(true)];
+        return { shadowsEnabled: renderer.shadowMap.enabled, dist: camCtrl.getFocusState().dist, noShadow, withShadow };
+      },
+      perfInfoLogStart: () => { (window as any).__perfInfoLog = []; (window as any).__perfInfoTimer = setInterval(() => { (window as any).__perfInfoLog.push({ t: Math.round(performance.now()), calls: renderer.info.render.calls, dist: +camCtrl.getFocusState().dist.toFixed(1), anim: isAnimating }); }, 150); },
+      perfInfoLogStop: () => { clearInterval((window as any).__perfInfoTimer); return (window as any).__perfInfoLog; },
       perfSave: async (slot: string) => { const r = await persistSaveToSlot(slot, 'perf-q2'); return { ok: r.ok, cities: cities.length, units: units.length }; },
       perfLoad: async (slot: string) => { await loadGameFromSlot(slot, false); },
       perfSelected: () => selectedId,
@@ -459,7 +527,7 @@ async function main() {
     const TD = 'window.__turnSlowdownTestDebug';
 
     async function profiled(label, fn) {
-      await page.evaluate(() => { window.__perfHandler = []; window.__perfLong = []; });
+      await page.evaluate(() => { window.__perfHandler = []; window.__perfLong = []; window.__perfCnt = {}; });
       if (PROFILE) await cdp.send('Profiler.start');
       const t = Date.now();
       const extra = await fn();
@@ -467,9 +535,11 @@ async function main() {
       const wall = Date.now() - t;
       let prof = null;
       if (PROFILE) prof = summarizeProfile((await cdp.send('Profiler.stop')).profile);
-      const lat = await page.evaluate(() => ({ h: window.__perfHandler.slice(), long: window.__perfLong.slice() }));
+      const lat = await page.evaluate(() => ({ h: window.__perfHandler.slice(), long: window.__perfLong.slice(), cnt: { ...(window.__perfCnt || {}) } }));
       const row = { label, wallMs: wall, handlerMs: lat.h, handlerP50: pct(lat.h, .5), handlerP95: pct(lat.h, .95), handlerMax: lat.h.length ? Math.max(...lat.h) : null, longTasks: lat.long, longTasksOver200: lat.long.filter(x => x > 200).length, profile: prof, extra };
+      row.callCounts = lat.cnt;
       result.scenarios[label] = row;
+      console.log('[perf] callCounts', label, JSON.stringify(lat.cnt));
       console.log('[perf]', label, JSON.stringify({ handlerMs: lat.h, long: lat.long, profTotalMs: prof && prof.totalMs }));
       if (prof) console.log('  top:', prof.top.filter(t => !t.fn.startsWith('(idle)')).slice(0, 12).map(t => `${t.fn} ${t.selfMs}ms`).join(' | '));
       if (prof) console.log('  incl:', prof.inclusive.slice(0, Number(process.env.PERF_INCL_N) || 40).map(t => `${t.fn} ${t.inclMs}ms`).join(' | '));
@@ -507,6 +577,11 @@ async function main() {
 
     result.renderInfo = await page.evaluate(() => window.__turnSlowdownTestDebug.renderInfo());
     console.log('[perf] renderInfo:', JSON.stringify(result.renderInfo));
+    result.sceneBreakdown = await page.evaluate(() => window.__turnSlowdownTestDebug.perfSceneBreakdown());
+    console.log('[perf] sceneBreakdown:', JSON.stringify(result.sceneBreakdown));
+    result.sceneTop = await page.evaluate(() => window.__turnSlowdownTestDebug.perfSceneTopGroups());
+    console.log('[perf] sceneTop:', JSON.stringify(result.sceneTop));
+    if (process.env.PERF_ONLY_SCENE === '1') { fs.writeFileSync(OUT_JSON, JSON.stringify(result, null, 2)); return; }
     if (process.env.PERF_ONLY_FOG === '1') {
       // pure-JS scenarios without GL-heavy frames: HUD/fog pipeline only
       // best-of-N / median-of-N (shared CI-like machine: wall time is noisy, minimum approximates uncontended cost)
@@ -542,6 +617,14 @@ async function main() {
 
     }
 
+    if (process.env.PERF_PROBE === '1') {
+      const u = seededUnits.mine[0];
+      for (const d of [40, 120]) {
+        await focus(u.q, u.r, d); await wait(1500);
+        console.log('[perf] renderProbe d=' + d + ':', JSON.stringify(await page.evaluate(() => window.__turnSlowdownTestDebug.perfRenderProbe())));
+      }
+      return;
+    }
     // C. select unit / move / enter city (real canvas clicks)
     const mine = seededUnits.mine;
     const u0 = mine[0];
@@ -557,6 +640,15 @@ async function main() {
       }
       return res;
     });
+    if (process.env.PERF_PROBE === '3') {
+      const m = mine[3];
+      await focus(m.q, m.r); await wait(1500);
+      console.log('[perf] before-select:', JSON.stringify(await page.evaluate(() => ({ r: window.__turnSlowdownTestDebug.renderInfo(), b: window.__turnSlowdownTestDebug.perfSceneBreakdown() }))));
+      await clickHex(m.q, m.r); await wait(15000);
+      console.log('[perf] after-select:', JSON.stringify(await page.evaluate(() => ({ r: window.__turnSlowdownTestDebug.renderInfo(), b: window.__turnSlowdownTestDebug.perfSceneBreakdown(), top: window.__turnSlowdownTestDebug.perfSceneTopGroups() }))));
+      return;
+    }
+    if (process.env.PERF_PROBE === '2') { await page.evaluate(() => window.__turnSlowdownTestDebug.perfInfoLogStart()); }
     await profiled('unit-move-click', async () => {
       const res = [];
       for (let i = 0; i < REPEAT; i++) {
@@ -573,6 +665,7 @@ async function main() {
       }
       return res;
     });
+    if (process.env.PERF_PROBE === '2') { const lg = await page.evaluate(() => window.__turnSlowdownTestDebug.perfInfoLogStop()); console.log('[perf] infoLog:', JSON.stringify(lg.slice(-400))); return; }
     await profiled('unit-enter-city-click', async () => {
       const res = [];
       for (let i = 0; i < REPEAT; i++) {

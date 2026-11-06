@@ -20,6 +20,7 @@
  *   4 = orange, 5 = purple, 6 = teal, 7 = pink
  */
 
+import { SmallPartLod } from './smallPartLod';
 import * as THREE from 'three';
 import type { City } from '../game/cities';
 import { HUMAN_OWNER_PRIMARY } from '../game/human-owners';
@@ -432,6 +433,14 @@ export class CityRenderer {
 
   /** Active city models keyed by city.id. */
   private models: Map<string, THREE.Group> = new Map();
+
+  /** R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R3): LOD drobnych części modeli miast (smallPartLod.ts). */
+  private lodModelsVersion = 0;
+  private readonly smallPartLod = new SmallPartLod();
+
+  applySmallPartLod(camDist: number, fovDeg: number, viewportH: number, minPx = 3): void {
+    this.smallPartLod.apply(this.models.values(), this.scene, this.lodModelsVersion, camDist, fovDeg, viewportH, minPx);
+  }
 
   /** B2-Q5: sprite 🔥 per city.id */
   private revoltSprites: Map<string, THREE.Sprite> = new Map();
@@ -998,6 +1007,7 @@ export class CityRenderer {
   }
 
   private _registerModel(id: string, group: THREE.Group): void {
+    this.lodModelsVersion++;
     this.models.set(id, group);
     this.modelMaterials.set(id, (group.userData['mats'] as THREE.Material[]) ?? []);
     this.modelGeos.set(id, (group.userData['perCityGeos'] as THREE.BufferGeometry[]) ?? []);
