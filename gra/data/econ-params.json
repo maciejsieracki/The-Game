@@ -360,25 +360,25 @@
       "opis": "Maks konwersja (Glina+Drewno)→Cegła w Cegielni na turę (baza przed skalowaniem epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 3→10, flat na wszystkich trudnościach (cytat właściciela nie różnicował trudności); +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5, produkcja budynkowa surowców fizycznych). R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (Maciej 2026-11-05): wartość BEZ zmian (50 cykli); ×2 cegły przez outputAmount 1→2 w recepturze (converters.ts), cykle Cegielni PŁASKIE (50), a epoka właściciela skaluje WYJŚCIE cegły +50% bazy/epokę (mnożnik 1 / 1,5 / 2 / 2,5 / 3; CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE, converterOutputMultiplierForEra) — działa także gdy produkcję ogranicza drewno."
     },
     "budynek_huta_przepustowosc": {
-      "easy": 25,
-      "normal": 25,
-      "hard": 25,
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Ruda+Drewno)→Brąz w Odlewni brązu (i tier wyższy łańcucha odlewni) na turę. Płaskie (BEZ skalowania epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5)."
+      "opis": "Maks konwersja (Ruda+Drewno)→Brąz w Odlewni brązu (i tier wyższy łańcucha odlewni) na turę. Cykle × m(e) epoki WŁAŚCICIELA (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1: 1/1,5/2/2,5/3; converters.ts CONVERTER_FOUNDRY_ERA_RECIPE_IDS). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): 25→50 (×2) cykli/turę; mnożnik epoki właściciela na cykle; Wielka odlewnia w tej samej rodzinie (założenie)."
     },
     "budynek_odlewnia_zelaza_przepustowosc": {
-      "easy": 25,
-      "normal": 25,
-      "hard": 25,
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Ruda żelaza+Drewno)→Żelazo w Odlewni żelaza / Wielka odlewnia na turę. Płaskie (BEZ skalowania epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5)."
+      "opis": "Maks konwersja (Ruda żelaza+Drewno)→Żelazo w Odlewni żelaza / Wielka odlewnia na turę. Cykle × m(e) epoki WŁAŚCICIELA (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1: 1/1,5/2/2,5/3; converters.ts CONVERTER_FOUNDRY_ERA_RECIPE_IDS). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): 25→50 (×2) cykli/turę; mnożnik epoki właściciela na cykle; Wielka odlewnia w tej samej rodzinie (założenie)."
     },
     "budynek_wielka_odlewnia_przepustowosc": {
-      "easy": 25,
-      "normal": 25,
-      "hard": 25,
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Żelazo+Drewno)→Stal w Wielka odlewnia na turę (Maciej 2026-07-27: przeniesione z Wielka Kuźnia). Płaskie (BEZ skalowania epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5)."
+      "opis": "Maks konwersja (Żelazo+Drewno)→Stal w Wielka odlewnia na turę (Maciej 2026-07-27: przeniesione z Wielka Kuźnia). Cykle × m(e) epoki WŁAŚCICIELA (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1: 1/1,5/2/2,5/3; converters.ts CONVERTER_FOUNDRY_ERA_RECIPE_IDS). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): 25→50 (×2) cykli/turę; mnożnik epoki właściciela na cykle; Wielka odlewnia w tej samej rodzinie (założenie)."
     },
     "budynek_garncarnia_przepustowosc": {
       "easy": 50,
