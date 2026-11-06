@@ -1,0 +1,11 @@
+[equiv collator-vs-localeCompare] par=23994, różnic=0 -> OK
+[equiv A assignWorkedTiles] przypadków=220, różnic=0 -> OK
+[equiv B computeLostToNearerSibling (memo)] przypadków=1320, różnic=0 -> OK
+[equiv C computePath/computeReachable (siege memo)] przypadków=240, różnic=0 -> OK
+[mutacja A: odwrócony tie-break po kluczu] różnic=191 -> WYKRYTA (OK)
+[mutacja B: memo ignoruje ownerId] różnic=440 -> WYKRYTA (OK)
+[mutacja B: memo ignoruje promień (populację)] różnic=163 -> WYKRYTA (OK)
+[mutacja C: lista obleganych pusta (zły zakres)] różnic=229 -> WYKRYTA (OK)
+[siegeScopeMemo poza zakresem] OK (null)
+PASS
+EXIT=0

@@ -1,0 +1,9 @@
+EQ states=400 diffs=0 (oczekiwane 0)
+MUT nosight diffs=66 (musi > 0)
+MUT collide diffs=26 (musi > 0)
+MEM sight=3 wpisow=3000 kluczy=69029 sredniaNaWpis=23.0 przyrostHeapMB=0.81 gc=true
+MEM sight=6 wpisow=3000 kluczy=235879 sredniaNaWpis=78.6 przyrostHeapMB=2.09 gc=true
+MEM sight=10 wpisow=3000 kluczy=608519 sredniaNaWpis=202.8 przyrostHeapMB=4.93 gc=true
+MEM sight=20 wpisow=3000 kluczy=2466254 sredniaNaWpis=822.1 przyrostHeapMB=19.12 gc=true
+RESULT PASS
+EXIT=0

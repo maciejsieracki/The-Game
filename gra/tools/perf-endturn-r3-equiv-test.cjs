@@ -1,7 +1,8 @@
 'use strict';
 /**
  * perf-endturn-r3-equiv-test.cjs — R-WEB-PERF-ENDTURN-AI-PHASE-Q1 (R3).
- * Równoważność WARTOŚCIOWA (prawdziwe funkcje przez esbuild; wersja BAZOWA = `git show HEAD:<plik>`,
+ * Równoważność WARTOŚCIOWA (prawdziwe funkcje przez esbuild; wersja BAZOWA = `git show <BASE_REF>:<plik>`,
+ * domyślnie BASE_REF=eeb668b72 (baza R3); NIE HEAD — po commicie kandydata HEAD == kandydat i test byłby pusty;
  * kandydat = drzewo robocze) dla zmian R3:
  *   (A) okolica.ts: Intl.Collator zamiast localeCompare w assignWorkedTiles (>= 200 losowych stanów, z remisami score);
  *   (B) okolica.ts: computeLostToNearerSiblingByCity — memo porównywane pole po polu zamiast napisu-sygnatury
@@ -22,7 +23,7 @@ async function bundle({ base = false, mutate = {} } = {}) {
   const plugin = { name: 'ovr', setup(b) {
     b.onLoad({ filter: /(game[\\/](okolica|city-siege-state)|units[\\/]setup)\.ts$/ }, args => {
       const rel = path.relative(path.resolve(root, '..'), args.path).split(path.sep).join('/');
-      let src = base ? execFileSync('git', ['show', 'HEAD:' + rel], { cwd: root, encoding: 'utf8', maxBuffer: 1 << 26 }) : fs.readFileSync(args.path, 'utf8');
+      let src = base ? execFileSync('git', ['show', (process.env.BASE_REF || 'eeb668b72') + ':' + rel], { cwd: root, encoding: 'utf8', maxBuffer: 1 << 26 }) : fs.readFileSync(args.path, 'utf8');
       for (const [file, f] of Object.entries(mutate)) {
         if (args.path.endsWith(file)) { const m = f(src); if (m === src) throw new Error('mutacja nie zadziałała: ' + file); src = m; }
       }

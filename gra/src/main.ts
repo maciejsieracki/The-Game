@@ -12048,7 +12048,7 @@ async function boot(): Promise<void> {
     // Zwraca tablicę kluczy w TEJ SAMEJ kolejności co iteracja Set z computeVisibleAt (kolejność wstawiania do wyniku bez zmian).
     const visibleDiskMemo = new WeakMap<object, Map<number, string[]>>();
     function visibleDiskKeys(q: number, r: number, sight: number): Iterable<string> {
-      if (!(Number.isInteger(q) && Number.isInteger(r) && Number.isInteger(sight) && sight >= 0 && sight < 64 && q > -8000 && q < 8000 && r > -8000 && r < 8000)) {
+      if (!(Number.isInteger(q) && Number.isInteger(r) && Number.isInteger(sight) && sight >= 0 && sight < 24 && q > -8000 && q < 8000 && r > -8000 && r < 8000)) {
         return computeVisibleAt(q, r, map, sight);
       }
       const memoKey = ((map as { hexes?: object }).hexes ?? map) as object;
