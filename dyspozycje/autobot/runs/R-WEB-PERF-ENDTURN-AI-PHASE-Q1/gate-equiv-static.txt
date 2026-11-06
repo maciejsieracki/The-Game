@@ -1,0 +1,3 @@
+PASS: W2: okno aiDiploRatesCache/aiDiploTyAll -- otwarcie, zamkniecia, uzycie
+OK 1 testow
+EXIT=0
