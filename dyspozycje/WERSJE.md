@@ -1,3 +1,9 @@
+## ROBOCZA 88d4a39c -- 2026-11-06 -- FALA 510: zwiadowca nie jest liderem armii (testowa)
+
+- R-WEB-ARMY-SCOUT-NOT-LEADER-Q1 — zwiadowca w armii nie jest liderem ani kotwicą ataku (miasto i jednostka), armia działa jak najsilniejsza jednostka bojowa, zwiadowca tylko poszerza widoczność
+- Weryfikacja: tsc PASS; army-scout-not-leader 19/0; ai-test 274/20 = baseline
+- Limity: Brak zrzutu Chromium panelu armii
+
 ## ROBOCZA cbb335af -- 2026-11-06 -- FALA 509: panel rekrutacji całej cywilizacji + Spichlerz Królewski/Pismo (testowa)
 
 - R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: przycisk „Rekrutacja” w górnym pasku, równy rozkład zamówienia po miastach; liczniki w mieście nie zerują się po „Rekrutuj”.
