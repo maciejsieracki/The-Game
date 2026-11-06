@@ -1,3 +1,9 @@
+## ROBOCZA d956f56a -- 2026-11-06 -- FALA 519: górny baner: większe liczby, zwarta grupa (testowa)
+
+- R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1 — główne liczby w żetonach banera większe o 25–33% (17/15/13/12 px), liczba i przyrosty brutto/netto zwarte obok siebie (przerwa 0–4 px) i wyśrodkowane w żetonie; układ 3+3 stały bez przeskoków
+- Weryfikacja: tsc PASS; hud-topbar-bigger-numbers real-render 64/0 (+mutacje); hud-topbar-no-labels 94/0; hud-skarbiec 34/0; hud-resource-deficit-red 41/0
+- Limity: Puste boki żetonu nadal 55–93 px/stronę przy 1920 i do 47 px przy 1366 (baner na całą szerokość, N6); max-width banera kosztem N6 do decyzji właściciela
+
 ## ROBOCZA 1ab8f82e -- 2026-11-06 -- FALA 518: powiadomienia: zakładki Dyplomacja/Ważne/Inne, mniej szumu (testowa)
 
 - R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 — panel Wydarzenia ma 3 zakładki (Dyplomacja, Ważne, Inne) zamiast chipa „Inne cyw.”; przycisk „Zamknij wszystkie informacyjne” nad zakładkami; usunięty szum u źródła (auto-ulepszenia, wycinka, nowy szlak handlowy, Dotarło do celu); pomiar 30 tur: 63→2 i 58→3 wpisy informacyjne

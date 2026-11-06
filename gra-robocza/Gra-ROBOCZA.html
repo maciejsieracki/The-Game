@@ -8452,7 +8452,7 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
    liczb; komórka = medalion + 3 linie (etykieta+zapas / brutto / netto). Wąskie okno zmniejsza
    czcionki i szerokość kolumny (media), NIE zmienia układu. Szerokość dobrana tak, by baner kończył
    się przed medalionem Mocy (środek ekranu ~ 50vw − 105px). */
-.civ-hud{--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:13px;--hud-cell-sm:9.5px;}
+.civ-hud{--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:17px;--hud-cell-sm:9.5px;}
 /* R-WEB-HUD-TOPBAR-NO-LABELS-Q1: baner zajmuje CAŁĄ dostępną szerokość od lewego marginesu do
    medalionu Mocy (50vw − 120 px − 10 px odstępu). Kolumny 3×1fr (elastyczne, bez stałej szerokości),
    więc przy większych liczbach nic się nie rozjeżdża — skracanie k/M dzieje się w formatterze. */
@@ -8461,8 +8461,8 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 8px;}
 .civ-hud .hud-chip-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;
   column-gap:10px;row-gap:3px;align-items:center;}
-.civ-hud .civ-hud-chip-line{display:flex;align-items:baseline;gap:6px;min-width:0;min-height:calc(var(--hud-cell-val) * 1.15);}
-.civ-hud .civ-hud-chip-figs{display:inline-flex;align-items:baseline;gap:2px;flex-shrink:0;margin-left:auto;font-size:var(--hud-cell-sm);}
+.civ-hud .civ-hud-chip-line{display:flex;align-items:baseline;gap:4px;min-width:0;min-height:calc(var(--hud-cell-val) * 1.05);}
+.civ-hud .civ-hud-chip-figs{display:inline-flex;align-items:baseline;gap:2px;flex-shrink:0;font-size:var(--hud-cell-sm);}
 .civ-hud .civ-hud-chip-fsep{color:#968c7c;font-size:var(--hud-cell-sm);}
 .civ-hud .civ-hud-chip-figs .civ-hud-chip-rate.neg{color:var(--civ-hud-shortage,#ee6c6c);}
 .civ-hud .civ-hud-chip-figs .civ-hud-chip-rate.zero{color:#968c7c;}
@@ -8470,13 +8470,15 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 /* Wąskie okno (≤ 860 px): kolumna ~50–80 px nie mieści „wartość + dwa przyrosty" w jednej linii,
    więc stała trójwierszowa kolumna: etykieta / wartość / przyrosty (zawsze te same 3 linie — wysokość
    nie zależy od liczb, bez zawijania). */
-.civ-hud .civ-hud-chip-cell{display:grid;grid-template-columns:var(--hud-cell-med) minmax(0,1fr);
+/* R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1 r3: medalion + liczba + przyrosty ZWARTO (bez margin-left:auto)
+   i wycentrowane w zetonie — puste miejsce rozkłada sie symetrycznie po bokach, nie w srodku. */
+.civ-hud .civ-hud-chip-cell{display:grid;grid-template-columns:var(--hud-cell-med) minmax(0,max-content);justify-content:center;
   column-gap:5px;align-items:center;width:100%;min-width:0;overflow:hidden;white-space:nowrap;}
 .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 3px;margin:0;width:100%;}
 .civ-hud .civ-hud-chip-cell .civ-hud-chip-med{width:var(--hud-cell-med);height:var(--hud-cell-med);}
 .civ-hud .civ-hud-chip-cell .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:calc(var(--hud-cell-med) * .57);height:calc(var(--hud-cell-med) * .57);}
 .civ-hud .civ-hud-chip-body{display:flex;flex-direction:column;gap:0;min-width:0;line-height:1.05;}
-.civ-hud .civ-hud-chip-top{display:flex;align-items:baseline;gap:4px;min-width:0;min-height:calc(var(--hud-cell-val) * 1.05);}
+.civ-hud .civ-hud-chip-top{display:flex;align-items:baseline;gap:4px;min-width:0;min-height:calc(var(--hud-cell-lbl) * 1.05);}
 .civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl{font-size:var(--hud-cell-lbl);flex-shrink:0;}
 .civ-hud .civ-hud-chip-cell .civ-hud-chip-val{font-size:var(--hud-cell-val);min-width:0;}
 .civ-hud .civ-hud-chip-row3{display:flex;align-items:baseline;justify-content:space-between;gap:4px;font-size:var(--hud-cell-sm);min-width:0;}
@@ -8487,9 +8489,9 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-chip-net.pos{color:var(--tg-green);}
 .civ-hud .civ-hud-chip-net.zero{color:#968c7c;}
 .civ-hud .civ-hud-chip-net.neg{color:var(--civ-hud-shortage,#ee6c6c);}
-@media (max-width:1200px){.civ-hud{--hud-cell-w:108px;--hud-cell-med:24px;--hud-cell-lbl:9px;--hud-cell-val:12px;--hud-cell-sm:9px;}
+@media (max-width:1200px){.civ-hud{--hud-cell-w:108px;--hud-cell-med:24px;--hud-cell-lbl:9px;--hud-cell-val:15px;--hud-cell-sm:9px;}
   .civ-hud .hud-chip-grid{column-gap:8px;}}
-@media (max-width:900px){.civ-hud{--hud-cell-w:78px;--hud-cell-med:12px;--hud-cell-lbl:8px;--hud-cell-val:10px;--hud-cell-sm:8px;}
+@media (max-width:900px){.civ-hud{--hud-cell-w:78px;--hud-cell-med:12px;--hud-cell-lbl:8px;--hud-cell-val:13px;--hud-cell-sm:8px;}
   .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 6px;}
   .civ-hud .civ-hud-chip-cell{column-gap:3px;}
   .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 2px;}
@@ -8502,8 +8504,19 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
   .civ-hud .civ-hud-chip-top{min-height:0;line-height:1.05;}
   .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:4px 8px;}
   .civ-hud .hud-chip-grid{row-gap:1px;}
-  .civ-hud .civ-hud-chip-val{line-height:1.2;height:calc(var(--hud-cell-val) * 1.2);}
-  .civ-hud .civ-hud-chip-figs{margin-left:0;line-height:1.3;height:calc(var(--hud-cell-sm) * 1.3);}}
+  .civ-hud .civ-hud-chip-val{line-height:1;height:calc(var(--hud-cell-val) * 1);}
+  .civ-hud .civ-hud-chip-figs{margin-left:0;line-height:1.2;height:calc(var(--hud-cell-sm) * 1.2);}}
+/* R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1: 1201–1320 px — przy --hud-cell-val 17px komórka ma
+   ~100 px na liczbę i przyrosty obok siebie (przyrosty flex-shrink:0 ściskały liczbę do zera dla dużych
+   wartości). Medalion 30→24 px (jak ≤1200) i węższe odstępy w tym przedziale mieszczą obie w komórce;
+   przyrosty 9,5→8,5 px w TYM przedziale (przy 9 px nadal przycina liczbę „Nauka" przy 1201 px, huge).
+   Wysokość i układ bez zmian (stałe dla małych i dużych liczb). */
+@media (min-width:1201px) and (max-width:1320px){
+  .civ-hud{--hud-cell-med:24px;}
+  .civ-hud .hud-chip-grid{column-gap:6px;}
+  .civ-hud .civ-hud-chip-cell{column-gap:3px;}
+  .civ-hud .civ-hud-chip-figs,.civ-hud .civ-hud-chip-fsep{font-size:8.5px;}
+  .civ-hud .civ-hud-chip-figs .civ-hud-chip-net,.civ-hud .civ-hud-chip-figs .civ-hud-chip-rate{font-size:8.5px;}}
 /* R-WEB-HUD-TOPBAR-NO-LABELS-Q1 r2: 701–900 px (baner ~250–300 px): przyrosty obok siebie, bez
    separatora i z mniejsza czcionka, zeby „−999,9M −999,9M” miescilo sie w kolumnie. */
 @media (max-width:900px){
@@ -8512,7 +8525,7 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
   .civ-hud .civ-hud-chip-figs{gap:1px;font-size:7px;}
   .civ-hud .civ-hud-chip-fsep{display:none;}}
 @media (max-width:700px){
-  .civ-hud{--hud-cell-med:12px;--hud-cell-lbl:7px;--hud-cell-val:9px;--hud-cell-sm:7px;}
+  .civ-hud{--hud-cell-med:12px;--hud-cell-lbl:7px;--hud-cell-val:12px;--hud-cell-sm:7px;}
   .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:3px 3px;}
   .civ-hud .civ-hud-chip-cell{column-gap:1px;}
   .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 0;}
@@ -31589,7 +31602,7 @@ W zaznaczeniu jest generał/wódz — jego rozwiązanie jest nieodwracalne.`),!w
   <body>
     <div id="app"></div>
   <!-- CIV-BUILD-STAMP -->
-<div id="civ-build-stamp" title="md5=66fdbf92a83fe50433a7dc4e03132bef" hidden style="position:fixed;bottom:32px;left:6px;z-index:2147483647;display:none;font:11px/1.3 ui-monospace,Consolas,monospace;background:rgba(0,0,0,.78);color:#d4af37;padding:3px 8px;border-radius:4px;border:1px solid rgba(212,175,55,.35);pointer-events:none;letter-spacing:.02em">ROBOCZA &#183; 66fdbf92 &#183; 2026-11-06 03:08</div>
+<div id="civ-build-stamp" title="md5=d85e2a4d22062b78e7b3946a55fa001d" hidden style="position:fixed;bottom:32px;left:6px;z-index:2147483647;display:none;font:11px/1.3 ui-monospace,Consolas,monospace;background:rgba(0,0,0,.78);color:#d4af37;padding:3px 8px;border-radius:4px;border:1px solid rgba(212,175,55,.35);pointer-events:none;letter-spacing:.02em">ROBOCZA &#183; d85e2a4d &#183; 2026-11-06 04:23</div>
 <!-- /CIV-BUILD-STAMP -->
 </body>
 </html>
