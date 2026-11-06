@@ -1,0 +1,3 @@
+HEAP {"tokens":475,"geoOnly":{"mode":"geo","heapMB":69.31,"object3dPerToken":64.5,"meshesPerToken":62.6,"uniqueMaterials":7095,"keep":475},"geoPlusMat":{"mode":"mat","heapMB":51.06,"object3dPerToken":64.5,"meshesPerToken":62.6,"uniqueMaterials":406,"keep":475},"geoMatMerge":{"mode":"merge","heapMB":59.19,"object3dPerToken":63.7,"meshesPerToken":61.8,"uniqueMaterials":406,"keep":475},"deltaMaterialsMB":18.25,"deltaMergeMB":-8.13}
+PIXELS {"models":170,"meshesBefore":10936,"meshesAfter":10824,"drawCalls":[11106,10994],"diffIdle":0,"diffMarch":0,"diffAttack":0,"pixels":1600000,"pickSameIdle":true,"pickSameMarch":true,"pickHits":170,"errs":[]}
+EXIT=0
