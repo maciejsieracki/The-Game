@@ -11,9 +11,16 @@ import * as THREE from 'three';
  * raycast (picking) i bryły otaczające są identyczne. Materiały NIE są współdzielone — są mutowane per model
  * (przyciemnienie odroczenia, przebarwienia, mgła).
  *
- * Kontrakt: `poolOwnedGeometries(root, owned)` zamienia W MIEJSCU elementy tablicy `owned` (ta sama tablica
+ * Zakres puli (obrona r1, zarzut Z6): pula NIE jest globalna dla modułu — każdy `UnitRenderer`/`CityRenderer`
+ * ma WŁASNĄ instancję `GeometryContentPool`. `main.ts` przy nowej grze / wczytaniu / playtestach podmienia
+ * renderery bez wołania `dispose()` na starych; gdy stary renderer staje się nieosiągalny, jego pula (Mapa
+ * kluczy treści z kanonicznymi geometriami) staje się nieosiągalna razem z nim — dokładnie jak przed zmianą,
+ * kiedy geometrie żetonów żyły wyłącznie w drzewie i mapach starego renderera. Globalna Mapa przypinałaby je
+ * (i ich tablice CPU) na cały czas życia strony.
+ *
+ * Kontrakt: `pool.poolOwned(root, owned)` zamienia W MIEJSCU elementy tablicy `owned` (ta sama tablica
  * siedzi w `userData['perTokenGeos']`/`['perCityGeos']` i w mapach rendererów; późniejsze `push` do niej
- * nadal działają) i podmienia `mesh.geometry` w drzewie `root`. Zwolnienie: `releaseOwnedGeometries(owned)`
+ * nadal działają) i podmienia `mesh.geometry` w drzewie `root`. Zwolnienie: `pool.release(owned)`
  * zamiast `g.dispose()` — wspólna geometria jest zwalniana dopiero po ostatnim odwołaniu, niewspólna od razu.
  * Geometrii, której drzewo nie używa (albo która ma `userData`, atrybuty morph lub nazwę), pula nie dotyka.
  */
@@ -23,9 +30,6 @@ interface PoolEntry {
   refs: number;
   key: string;
 }
-
-const pool = new Map<string, PoolEntry[]>();
-const entryOf = new WeakMap<THREE.BufferGeometry, PoolEntry>();
 
 type AnyArray = ArrayLike<number> & { buffer: ArrayBufferLike; byteOffset: number; byteLength: number; constructor: unknown };
 
@@ -93,76 +97,87 @@ function sameContent(a: THREE.BufferGeometry, b: THREE.BufferGeometry): boolean 
   return true;
 }
 
-/** Wspólna instancja dla `geo` (+1 odwołanie) albo null, gdy `geo` nie nadaje się do puli. */
-function acquire(geo: THREE.BufferGeometry): THREE.BufferGeometry | null {
-  const own = entryOf.get(geo);
-  if (own) { own.refs++; return own.geo; }
-  const key = contentKey(geo);
-  if (key === null) return null;
-  const list = pool.get(key);
-  if (list) {
-    for (const e of list) {
-      if (sameContent(e.geo, geo)) { e.refs++; return e.geo; }
-    }
-  }
-  const entry: PoolEntry = { geo, refs: 1, key };
-  entryOf.set(geo, entry);
-  if (list) list.push(entry); else pool.set(key, [entry]);
-  return geo;
-}
+export class GeometryContentPool {
+  private readonly pool = new Map<string, PoolEntry[]>();
+  private readonly entryOf = new WeakMap<THREE.BufferGeometry, PoolEntry>();
 
-/**
- * Podmienia geometrie modelu `root` należące do `owned` na wspólne instancje z puli (w miejscu, w tablicy
- * `owned` i w `mesh.geometry`). Duplikaty (nigdy jeszcze niewysłane do GPU) są zwalniane od razu.
- */
-export function poolOwnedGeometries(root: THREE.Object3D, owned: THREE.BufferGeometry[]): void {
-  if (owned.length === 0) return;
-  const users = new Map<THREE.BufferGeometry, Array<THREE.Mesh>>();
-  root.traverse((o) => {
-    const m = o as THREE.Mesh;
-    const g = m.geometry as THREE.BufferGeometry | undefined;
-    if (!g || !(m as { isMesh?: boolean }).isMesh) return;
-    let arr = users.get(g);
-    if (!arr) { arr = []; users.set(g, arr); }
-    arr.push(m);
-  });
-  const canonOf = new Map<THREE.BufferGeometry, THREE.BufferGeometry>();
-  for (let i = 0; i < owned.length; i++) {
-    const g = owned[i] as THREE.BufferGeometry;
-    // Geometria spoza drzewa (np. dopisana do tablicy, ale nieużyta) — zostaje własnością modelu.
-    if (!users.has(g) && !entryOf.has(g)) continue;
-    const c = acquire(g);
-    if (c === null) continue;
-    owned[i] = c;
-    if (c !== g) canonOf.set(g, c);
-  }
-  for (const [g, c] of canonOf) {
-    for (const m of users.get(g) ?? []) m.geometry = c;
-    if (!entryOf.has(g)) g.dispose();
-  }
-}
-
-/** Zwalnia geometrie modelu: wspólne — po ostatnim odwołaniu, pozostałe — od razu (jak dotąd `dispose()`). */
-export function releaseOwnedGeometries(owned: Iterable<THREE.BufferGeometry>): void {
-  for (const g of owned) {
-    const e = entryOf.get(g);
-    if (!e) { g.dispose(); continue; }
-    if (--e.refs > 0) continue;
-    const list = pool.get(e.key);
+  /** Wspólna instancja dla `geo` (+1 odwołanie) albo null, gdy `geo` nie nadaje się do puli. */
+  private acquire(geo: THREE.BufferGeometry): THREE.BufferGeometry | null {
+    const pool = this.pool;
+    const entryOf = this.entryOf;
+    const own = entryOf.get(geo);
+    if (own) { own.refs++; return own.geo; }
+    const key = contentKey(geo);
+    if (key === null) return null;
+    const list = pool.get(key);
     if (list) {
-      const i = list.indexOf(e);
-      if (i >= 0) list.splice(i, 1);
-      if (list.length === 0) pool.delete(e.key);
+      for (const e of list) {
+        if (sameContent(e.geo, geo)) { e.refs++; return e.geo; }
+      }
     }
-    entryOf.delete(g);
-    g.dispose();
+    const entry: PoolEntry = { geo, refs: 1, key };
+    entryOf.set(geo, entry);
+    if (list) list.push(entry); else pool.set(key, [entry]);
+    return geo;
   }
-}
 
-/** Diagnostyka/testy: liczba wspólnych geometrii i suma odwołań. */
-export function geometryPoolStats(): { shared: number; refs: number } {
-  let shared = 0;
-  let refs = 0;
-  for (const list of pool.values()) for (const e of list) { shared++; refs += e.refs; }
-  return { shared, refs };
+  /**
+   * Podmienia geometrie modelu `root` należące do `owned` na wspólne instancje z puli (w miejscu, w tablicy
+   * `owned` i w `mesh.geometry`). Duplikaty (nigdy jeszcze niewysłane do GPU) są zwalniane od razu.
+   */
+  poolOwned(root: THREE.Object3D, owned: THREE.BufferGeometry[]): void {
+    if (owned.length === 0) return;
+    const entryOf = this.entryOf;
+    const users = new Map<THREE.BufferGeometry, Array<THREE.Mesh>>();
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      const g = m.geometry as THREE.BufferGeometry | undefined;
+      if (!g || !(m as { isMesh?: boolean }).isMesh) return;
+      let arr = users.get(g);
+      if (!arr) { arr = []; users.set(g, arr); }
+      arr.push(m);
+    });
+    const canonOf = new Map<THREE.BufferGeometry, THREE.BufferGeometry>();
+    for (let i = 0; i < owned.length; i++) {
+      const g = owned[i] as THREE.BufferGeometry;
+      // Geometria spoza drzewa (np. dopisana do tablicy, ale nieużyta) — zostaje własnością modelu.
+      if (!users.has(g) && !entryOf.has(g)) continue;
+      const c = this.acquire(g);
+      if (c === null) continue;
+      owned[i] = c;
+      if (c !== g) canonOf.set(g, c);
+    }
+    for (const [g, c] of canonOf) {
+      for (const m of users.get(g) ?? []) m.geometry = c;
+      if (!entryOf.has(g)) g.dispose();
+    }
+  }
+
+  /** Zwalnia geometrie modelu: wspólne — po ostatnim odwołaniu, pozostałe — od razu (jak dotąd `dispose()`). */
+  release(owned: Iterable<THREE.BufferGeometry>): void {
+    const pool = this.pool;
+    const entryOf = this.entryOf;
+    for (const g of owned) {
+      const e = entryOf.get(g);
+      if (!e) { g.dispose(); continue; }
+      if (--e.refs > 0) continue;
+      const list = pool.get(e.key);
+      if (list) {
+        const i = list.indexOf(e);
+        if (i >= 0) list.splice(i, 1);
+        if (list.length === 0) pool.delete(e.key);
+      }
+      entryOf.delete(g);
+      g.dispose();
+    }
+  }
+
+  /** Diagnostyka/testy: liczba wspólnych geometrii i suma odwołań. */
+  stats(): { shared: number; refs: number } {
+    const pool = this.pool;
+    let shared = 0;
+    let refs = 0;
+    for (const list of pool.values()) for (const e of list) { shared++; refs += e.refs; }
+    return { shared, refs };
+  }
 }

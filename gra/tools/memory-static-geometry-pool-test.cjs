@@ -10,6 +10,10 @@
  *         po pooling kazdy mesh ma geometrie o bitowo tej samej tresci co przed (pozycje/normalne/uv/indeks/grupy),
  *         liczba unikalnych geometrii i bajty atrybutow spadaja (raport), a po zwolnieniu wszystkich modeli pula jest pusta
  *         i kazda geometria dostala dispose dokladnie wtedy, gdy nikt jej juz nie uzywa.
+ *   P5 -- (obrona r1, zarzut Z6) pula NIE jest globalna: osobne instancje nie wspoldziela geometrii; UnitRenderer i
+ *         CityRenderer maja wlasna instancje (pole `geoPool`), modul nie trzyma zadnej Mapy na poziomie modulu;
+ *         renderer porzucony BEZ dispose() (jak w main.ts przy nowej grze / wczytaniu) -> po GC jego pula i kanoniczne
+ *         geometrie (z tablicami CPU) sa zwalniane (WeakRef.deref() === undefined), bez wzgledu na niezwolnione liczniki.
  * Usage: node tools/memory-static-geometry-pool-test.cjs --gra <kopia gra z node_modules (esbuild, three)>
  */
 const fs = require('fs');
@@ -25,7 +29,7 @@ const ok = (label, cond, detail) => { if (cond) { pass++; console.log('  OK  ' +
 const SRC = path.join(__dirname, '..', 'src');
 const entry = `
 export * as THREE from 'three';
-export { poolOwnedGeometries, releaseOwnedGeometries, geometryPoolStats } from '${SRC}/render/geometryContentPool';
+export { GeometryContentPool } from '${SRC}/render/geometryContentPool';
 export { buildUnitModel } from '${SRC}/render/units';
 export { buildMiastoKamien } from '${SRC}/render/miasto-kamien';
 export { buildMiastoBraz } from '${SRC}/render/miasto-braz';
@@ -53,7 +57,11 @@ async function main() {
     });
     installDomStubs();
     const M = require(out);
-    const { THREE, poolOwnedGeometries, releaseOwnedGeometries, geometryPoolStats } = M;
+    const { THREE, GeometryContentPool } = M;
+    const POOL = new GeometryContentPool();
+    const poolOwnedGeometries = (r, o) => POOL.poolOwned(r, o);
+    const releaseOwnedGeometries = (o) => POOL.release(o);
+    const geometryPoolStats = () => POOL.stats();
     const disposed = new Map();
     const watch = (g) => { if (!g.__w) { g.__w = 1; g.addEventListener('dispose', () => disposed.set(g, (disposed.get(g) || 0) + 1)); } return g; };
 
@@ -133,6 +141,37 @@ async function main() {
     // nie byly przez niego zwalniane -- liczymy tylko geometrie nalezace do modeli.
     let notDisposed = 0; for (const g of ownedAll) if (!disposed.has(g)) notDisposed++;
     ok('P4 po zwolnieniu wszystkiego: pula pusta, kazda geometria zwolniona', geometryPoolStats().shared === 0 && notDisposed === 0, { pool: geometryPoolStats(), notDisposed });
+
+    // P5 -- zakres puli (Z6)
+    {
+      const PA = new GeometryContentPool(); const PB = new GeometryContentPool();
+      const ha = new THREE.BoxGeometry(2, 2, 2); const hb = new THREE.BoxGeometry(2, 2, 2);
+      const oa5 = [ha]; const ob5 = [hb];
+      PA.poolOwned(mk(ha), oa5); PB.poolOwned(mk(hb), ob5);
+      ok('P5 osobne instancje puli nie wspoldziela geometrii', oa5[0] === ha && ob5[0] === hb && PA.stats().shared === 1 && PB.stats().shared === 1, { a: PA.stats(), b: PB.stats() });
+      PA.release(oa5); PB.release(ob5);
+      const poolSrc = fs.readFileSync(path.join(SRC, 'render', 'geometryContentPool.ts'), 'utf8');
+      const topLevelState = poolSrc.split('\n').filter((l) => /^(export\s+)?(const|let|var)\s+\w+\s*=\s*new\s+(Weak)?Map\b/.test(l));
+      ok('P5 geometryContentPool.ts bez Map/WeakMap na poziomie modulu', topLevelState.length === 0, topLevelState);
+      const fieldRe = /private readonly geoPool = new GeometryContentPool\(\);/;
+      const uSrc = fs.readFileSync(path.join(SRC, 'render', 'units.ts'), 'utf8');
+      const cSrc = fs.readFileSync(path.join(SRC, 'render', 'cities.ts'), 'utf8');
+      ok('P5 UnitRenderer i CityRenderer: wlasna pula na instancje', fieldRe.test(uSrc) && fieldRe.test(cSrc) && /this\.geoPool\.poolOwned\(/.test(uSrc) && /this\.geoPool\.poolOwned\(/.test(cSrc));
+      // Porzucenie renderera bez dispose(): symulacja = pula + modele z niezwolnionymi licznikami, wszystkie referencje
+      // zgubione. Przed poprawka (Mapa modulowa) kanoniczna geometria zostawala osiagalna z modulu na zawsze.
+      require('v8').setFlagsFromString('--expose-gc');
+      const gc = require('vm').runInNewContext('gc');
+      let wrGeo = null; let wrPool = null; let wrArr = null;
+      (() => {
+        let P = new GeometryContentPool(); const live = [];
+        for (let k = 0; k < 50; k++) { const g = new THREE.CylinderGeometry(1, 1, 3, 16 + (k % 3)); const grp = mk(g); const own = [g]; P.poolOwned(grp, own); live.push(grp); }
+        const canon = live[0].children[0].geometry;
+        wrGeo = new WeakRef(canon); wrPool = new WeakRef(P); wrArr = new WeakRef(canon.attributes.position.array);
+        P = null;
+      })();
+      for (let k = 0; k < 6 && (wrGeo.deref() || wrPool.deref() || wrArr.deref()); k++) { await new Promise((r) => setTimeout(r, 20)); gc(); }
+      ok('P5 porzucony renderer (bez dispose) -> pula, geometria i tablica CPU zebrane przez GC', !wrGeo.deref() && !wrPool.deref() && !wrArr.deref(), { geo: !!wrGeo.deref(), pool: !!wrPool.deref(), arr: !!wrArr.deref() });
+    }
 
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });

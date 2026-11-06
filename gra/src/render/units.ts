@@ -25,7 +25,7 @@
  */
 
 import * as THREE from 'three';
-import { poolOwnedGeometries, releaseOwnedGeometries } from './geometryContentPool';
+import { GeometryContentPool } from './geometryContentPool';
 import { clientRectToNdc } from '../input/picker';
 import { HUMAN_OWNER_PRIMARY } from '../game/human-owners';
 import type { GameMap } from '../types/map';
@@ -5781,6 +5781,8 @@ export class UnitRenderer {
 
   /** Per-token unique geometries (stored for disposal -- not shared singletons). */
   private tokenGeos: Map<string, THREE.BufferGeometry[]> = new Map();
+  /** R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: pula wspólnych geometrii TEGO renderera (nie globalna — Z6). */
+  private readonly geoPool = new GeometryContentPool();
 
   /** Current highlight group (all discs live inside). */
   private highlightGroup: THREE.Group | null = null;
@@ -6803,7 +6805,7 @@ export class UnitRenderer {
     this.tokenMaterials.set(id, (group.userData['mats'] as THREE.Material[]) ?? []);
     const geos = (group.userData['perTokenGeos'] as THREE.BufferGeometry[] | undefined) ?? [];
     // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: identyczne geometrie żetonów → jedna wspólna instancja (licznik odwołań).
-    poolOwnedGeometries(group, geos);
+    this.geoPool.poolOwned(group, geos);
     this.tokenGeos.set(id, geos);
   }
 
@@ -6816,6 +6818,6 @@ export class UnitRenderer {
     for (const m of mats) {
       m.dispose();
     }
-    releaseOwnedGeometries(this.tokenGeos.get(id) ?? []);
+    this.geoPool.release(this.tokenGeos.get(id) ?? []);
   }
 }

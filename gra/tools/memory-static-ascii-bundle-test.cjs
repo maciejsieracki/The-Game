@@ -3,7 +3,12 @@
  * memory-static-ascii-bundle-test.cjs -- R-WEB-MEMORY-STATIC-FOOTPRINT-Q1 (A): bundle JS zapisany wylacznie w ASCII.
  *
  * Porownuje dwa buildy vite (poza repo): --a PRZED (bez wtyczki ascii-only-js), --b PO (z wtyczka).
- *   S1 -- glowny skrypt (i kazdy inny <script>) w PO ma wylacznie znaki ASCII (zrodlo trzymane jako 1-bajtowy string);
+ *   S1 -- glowny skrypt (bundle = najdluzszy <script>) w PO ma wylacznie znaki ASCII (zrodlo trzymane jako 1-bajtowy
+ *         string). UWAGA (obrona r1, zarzut Z5): to dotyczy WYLACZNIE bundla. Male skrypty inline z `gra/index.html`
+ *         (BOOT ERROR CATCHER, ok. 1,2 tys. znakow, 2 znaki U+2014) nie przechodza przez wtyczke ascii-only-js
+ *         (ta przetwarza chunk JS) i zostaja w UTF-16 -- koszt rzedu 2,5 KB, pomijalny;
+ *   S1b -- pozostale <script> poza bundlem: raport liczby znakow spoza ASCII + granica, ze lacznie sa pomijalne
+ *         (< 8192 znakow, czyli < 16 KB jako UTF-16), zeby duzy skrypt inline z polskimi literami nie przeszedl po cichu;
  *   S2 -- wzrost rozmiaru index.html <= 5% (ucieczki \uXXXX zamiast 2-4 bajtow UTF-8);
  *   S3 -- escapeNonAsciiForJs (z vite.config.ts) na przypadkach brzegowych: literal tekstowy, szablon, regex z flaga u
  *         i bez, klasa znakow, ucieczka tozsamosciowa `\ł`, znaki spoza BMP, identyfikator -- wartosc po eval identyczna;
@@ -42,6 +47,9 @@ async function main() {
   const mainB = sB.reduce((x, y) => (y.length > x.length ? y : x), '');
   ok('S0 PRZED ma znaki spoza ASCII w glownym skrypcie (inaczej test nic nie mierzy)', nonAscii(mainA) > 1000, { nonAscii: nonAscii(mainA), chars: mainA.length });
   ok('S1 PO: glowny skrypt tylko ASCII', nonAscii(mainB) === 0, { nonAscii: nonAscii(mainB), chars: mainB.length });
+  const restB = sB.filter((x) => x !== mainB);
+  const restNon = restB.map((x) => nonAscii(x)); const restChars = restB.reduce((n, x) => n + x.length, 0);
+  ok('S1b PO: pozostale <script> poza bundlem pomijalne (nie objete wtyczka; raport)', restChars < 8192, { scripts: restB.length, chars: restChars, nonAsciiPerScript: restNon });
   const bytesA = Buffer.byteLength(htmlA); const bytesB = Buffer.byteLength(htmlB);
   const grow = (bytesB - bytesA) / bytesA;
   ok('S2 wzrost index.html <= 5%', grow <= 0.05, { bytesA, bytesB, growPct: Math.round(grow * 10000) / 100 });

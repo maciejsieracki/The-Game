@@ -5,7 +5,7 @@
  * Prawdziwy Chromium + WebGL (swiftshader), prawdziwe buildery modeli (`buildUnitModel` dla wszystkich kategorii
  * i nazw z gra/data/units.json, `buildMiastoKamien`/`buildMiastoBraz`) i pierscienie wlasciciela jak w grze.
  * Ta sama scena i ten sam renderer:
- *   X1 -- klatka A (modele jak dotad: wlasne geometrie) == klatka B (po poolOwnedGeometries, czyli dokladnie to, co
+ *   X1 -- klatka A (modele jak dotad: wlasne geometrie) == klatka B (po GeometryContentPool.poolOwned, czyli dokladnie to, co
  *         robia UnitRenderer._registerToken / CityRenderer._registerModel): 0 roznych pikseli (readPixels, RGBA),
  *         przy domyslnym sortowaniu sceny three.js (sortObjects = true);
  *   X2 -- kontrola czulosci: wspoldzielenie MATERIALOW (wariant odrzucony, patrz raport) zmienia klatke -- three sortuje
@@ -13,7 +13,7 @@
  *         wspolplaszczyznowych scian. Test musi to wykryc (diff > 0), inaczej X1 niczego nie dowodzi;
  *   X3 -- picking: raycast w srodek kazdego modelu trafia ten sam model przed i po pooling;
  *   X4 -- mniej unikalnych geometrii (renderer.info.memory.geometries po renderze);
- *   X5 -- zwolnienie (releaseOwnedGeometries) bez wyjatku.
+ *   X5 -- zwolnienie (GeometryContentPool.release) bez wyjatku.
  * Usage (z gra/, wymaga node_modules): node tools/memory-static-model-pool-pixel-test.cjs [--shots <katalog>]
  */
 const fs = require('fs');
@@ -36,7 +36,8 @@ import * as THREE from 'three';
 import { buildUnitModel } from '${SRC}/render/units';
 import { buildMiastoKamien } from '${SRC}/render/miasto-kamien';
 import { buildMiastoBraz } from '${SRC}/render/miasto-braz';
-import { poolOwnedGeometries, releaseOwnedGeometries } from '${SRC}/render/geometryContentPool';
+import { GeometryContentPool } from '${SRC}/render/geometryContentPool';
+const POOL = new GeometryContentPool();
 const UNITS: string[] = ${JSON.stringify(units)};
 const CATS = ['melee', 'ranged', 'cavalry', 'siege', 'settler', 'worker', 'scout', 'naval', 'super', 'general'];
 const W = 1600, H = 1000;
@@ -96,7 +97,7 @@ const W = 1600, H = 1000;
   out.infoA = { geometries: renderer.info.memory.geometries, programs: (renderer.info.programs || []).length };
   const uniq = () => { const s = new Set(); scene.traverse((o: any) => { if (o.isMesh) s.add(o.geometry); }); return s.size; };
   out.uniqA = uniq();
-  for (const m of models) poolOwnedGeometries(m.grp, m.geos);
+  for (const m of models) POOL.poolOwned(m.grp, m.geos);
   const pxB = grab(); const pickB = pick();
   out.uniqB = uniq();
   out.infoB = { geometries: renderer.info.memory.geometries, programs: (renderer.info.programs || []).length };
@@ -110,7 +111,7 @@ const W = 1600, H = 1000;
     const c = canon.get(k); if (c) o.material = c; else canon.set(k, o.material);
   });
   out.diffMatShare = cnt(pxB, grab());
-  try { for (const m of models) releaseOwnedGeometries(m.geos); out.releaseOk = true; } catch (e) { out.releaseOk = String(e); }
+  try { for (const m of models) POOL.release(m.geos); out.releaseOk = true; } catch (e) { out.releaseOk = String(e); }
   out.pngA = renderer.domElement.toDataURL('image/png').length;
   return out;
 };
