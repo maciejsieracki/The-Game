@@ -23545,6 +23545,13 @@ async function boot(): Promise<void> {
         knownRivalsCount: getKnownRivalsFor(ownerId).length,
         progNapRelacja: dip.progNapRelacja,
         progNapZaufanie: dip.progNapZaufanie,
+        // R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1: ten sam predykat co evaluateProposal
+        // (player-proposal ctx, main.ts ~23419), żeby UI i silnik liczyły jeden próg Paktu.
+        karaWspolnaGranica:
+          cities.filter(c => c.ownerId === ME()).length > 2 &&
+          cities.filter(c => c.ownerId === ownerId).length > 2 &&
+          ownersShareLandBorderLive(ME(), ownerId),
+        napAgresorAktywny: czyAgresorAktywny(ME(), turn),
         progHandelRelacja: dip.progHandelRelacja,
         progSojuszRelacja: dip.progSojuszRelacja,
         progSojuszZaufanie: dip.progSojuszZaufanie,
