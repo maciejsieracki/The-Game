@@ -27417,7 +27417,7 @@ async function boot(): Promise<void> {
           c.magazynZywnosci = food;
           c.siegeCapitulationPending = pending;
           // zarzut 4: opcjonalny start glodu (sciezka prognozy z garnizonem w Chromium)
-          if (starveStartMaxHp != null) c.siegeStarveStartMaxHp = starveStartMaxHp; else delete c.siegeStarveStartMaxHp;
+          c.siegeStarveStartMaxHp = starveStartMaxHp != null && starveStartMaxHp > 0 ? starveStartMaxHp : undefined;
           refreshSiegeMarkers();
           return true;
         },
