@@ -158,7 +158,8 @@ import {
   type TileYield as OkolicaTileYield,
 } from './okolica';
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
-import { territoryOwnerAt, type TerritoryNode } from '../map/territory';
+import { territoryOwnerAt, territoryNodesContentId, type TerritoryNode } from '../map/territory';
+import { hudPureScope, scopeObjectId } from './frame-memo';
 import type { ReligionState } from './culture-religion';
 import type { OrderYieldMults } from './order';
 import {
@@ -613,6 +614,27 @@ export function cityWorkedTilesForEconomy(
   city: City,
   map: GameMap,
   territoryNodes?: readonly TerritoryNode[],
+  excludeHexKeys?: ReadonlySet<string>,
+  ownerEra?: number,
+): WorkedTile[] {
+  // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): wewnątrz zakresu czystego odczytu HUD (buildHudState) wynik jest liczony raz na
+  // (miasto, parametry okolicy, mapa, zawartość węzłów, zbiór wykluczeń, epoka). Poza zakresem - bez zmian.
+  if (hudPureScope.active) {
+    const nid = territoryNodes ? territoryNodesContentId(territoryNodes) : -2;
+    if (nid !== -1) {
+      const key = 'cwt:' + scopeObjectId(city) + ':' + scopeObjectId(map.hexes) + ':' + nid + ':' + scopeObjectId(excludeHexKeys)
+        + ':' + (ownerEra ?? 'u') + ':' + city.q + ',' + city.r + ',' + city.population + ',' + (city.okolicaFocus ?? '') + ',' + (city.okolicaTryb ?? '')
+        + (city.okolicaTryb === 'reczny' ? ',' + JSON.stringify(city.okolicaReczne ?? {}) : '');
+      return hudPureScope.cached(key, () => cityWorkedTilesForEconomyRaw(city, map, territoryNodes, excludeHexKeys, ownerEra), v => v.slice());
+    }
+  }
+  return cityWorkedTilesForEconomyRaw(city, map, territoryNodes, excludeHexKeys, ownerEra);
+}
+
+function cityWorkedTilesForEconomyRaw(
+  city: City,
+  map: GameMap,
+  territoryNodes?: readonly TerritoryNode[],
   /**
    * P-HEKS-SPOR-SASIAD (Maciej 2026-08-13): heksy w promieniu TEGO miasta przegrane na rzecz
    * bliższego miasta TEGO SAMEGO właściciela — wynik
@@ -657,7 +679,7 @@ export function cityWorkedTilesForEconomy(
     radius,
     territoryNodes,
     ownerId: city.ownerId,
-    isWorkable: (q, r) => isLandWorkableHex(map, q, r),
+    isWorkable: (q, r, key) => isLandWorkableHex(map, q, r, key),
     excludeHexKeys,
   });
 
@@ -694,7 +716,7 @@ export function workedHexCoordsForCity(
     radius,
     territoryNodes,
     ownerId: city.ownerId,
-    isWorkable: (q, r) => isLandWorkableHex(map, q, r),
+    isWorkable: (q, r, key) => isLandWorkableHex(map, q, r, key),
     excludeHexKeys,
   });
   return assigned.map(t => ({ q: t.q, r: t.r }));
@@ -707,6 +729,23 @@ export function workedHexCoordsForCity(
 
 /** Suma surowcow logistycznych/ture per miasto (klucz = City.id). */
 export type TerritoryResourceYieldByCity = ReadonlyMap<string, Partial<Record<TerritoryResourceKey, number>>>;
+
+/**
+ * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): lista obiektów heksów w kolejności `Object.keys(map.hexes)` (= kolejność wstawienia,
+ * ta sama co w poprzedniej pętli), pamiętana per obiekt `map.hexes`. Zbiór kluczy i obiekty heksów są po wygenerowaniu/
+ * wczytaniu mapy stałe (jedyne zapisy `hexes[key] =` to generator.ts i mapSnapshot.ts); mutowane są POLA heksów (ulepszenia),
+ * które pętla czyta na żywo przez referencję. Nowa mapa/wczytany zapis = nowy obiekt `hexes` = nowa lista.
+ */
+const hexListCache = new WeakMap<object, Array<GameMap['hexes'][string]>>();
+function hexListOf(map: GameMap): Array<GameMap['hexes'][string]> {
+  let list = hexListCache.get(map.hexes);
+  if (!list) {
+    list = [];
+    for (const k of Object.keys(map.hexes)) { const h = map.hexes[k]; if (h) list.push(h); }
+    hexListCache.set(map.hexes, list);
+  }
+  return list;
+}
 
 /**
  * Nalicza surowce logistyczne (drewno/kamien/glina/ruda/ruda_zelaza) z KAŻDEGO
@@ -747,9 +786,7 @@ export function computeTerritoryResourceYieldByCity(
     return best;
   }
 
-  for (const hexKey of Object.keys(map.hexes)) {
-    const hex = map.hexes[hexKey];
-    if (!hex) continue;
+  for (const hex of hexListOf(map)) {
     const impKeys = improvementKeysForHex(hex);
     if (!impKeys.length) continue;
 

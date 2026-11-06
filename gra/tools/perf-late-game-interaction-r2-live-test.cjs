@@ -271,15 +271,51 @@ async function build() {
       perfPlanned: (id: string) => plannedMarches.has(id),
       perfAnimating: () => isAnimating,
       perfCounts: () => ({ units: units.length, cities: cities.length, planned: plannedMarches.size }),
-      perfHudParts: (reps: number) => {
+      perfHudParts: (reps: number, only?: string) => {
         const one = (fn: () => unknown) => { const o: number[] = []; for (let i = 0; i < reps; i++) { const a = performance.now(); fn(); o.push(+(performance.now() - a).toFixed(2)); } return o; };
-        return {
-          updateHud: one(() => refreshD1bHud()),
-          buildHudState: one(() => buildHudState()),
-          collectTurnEvents: one(() => collectTurnEvents()),
-          territoryBorder: one(() => refreshTerritoryBorderOverlay()),
-          refreshFog: one(() => refreshFog()),
+        const all: Record<string, () => number[]> = {
+          updateHud: () => one(() => refreshD1bHud()),
+          buildHudState: () => one(() => buildHudState()),
+          collectTurnEvents: () => one(() => collectTurnEvents()),
+          territoryBorder: () => one(() => refreshTerritoryBorderOverlay()),
+          refreshFog: () => one(() => refreshFog()),
         };
+        const out: Record<string, number[]> = {};
+        for (const k of Object.keys(all)) if (!only || only === k) out[k] = all[k]!();
+        return out;
+      },
+      perfHudScopeEquiv: () => {
+        // R6: buildHudState (z zakresem czystego odczytu) vs buildHudStateRaw (bez zakresu) na zywym stanie - JSON identyczny
+        const norm = (v: unknown) => JSON.stringify(v, (_k, x) => (typeof x === 'function' ? '[fn]' : x instanceof Map ? [...x.entries()] : x instanceof Set ? [...x] : x));
+        const out: any = { runs: [] as boolean[] };
+        for (let i = 0; i < 3; i++) { const a = norm(buildHudState()); const b = norm(buildHudStateRaw()); out.runs.push(a === b); out.len = a.length; }
+        out.equal = out.runs.every(Boolean);
+        return out;
+      },
+      perfCountEquiv: () => {
+        // R6: nowe countTerritoryHexes/countImprovementsForNodes (unia dyskow) vs DAWNA implementacja (dyski r+1 + isInTerritory), per wlasciciel
+        const owners = Array.from(new Set(cities.map(c => c.ownerId)));
+        const mism: string[] = []; const rows: any[] = [];
+        for (const o of owners) {
+          const nodes = statsTerritoryNodesForOwner(o);
+          const seenA = new Set<string>(); let nA = 0;
+          for (const node of nodes) {
+            for (const key of hexKeysWithinRadius(node.q, node.r, cityTerritoryRadius(node) + 1, map)) {
+              if (seenA.has(key) || !map.hexes[key]) continue;
+              const [qs, rs] = key.split(',');
+              if (!isInTerritory(Number(qs), Number(rs), nodes)) continue;
+              seenA.add(key); nA += improvementKeysForHex(map.hexes[key]!).length;
+            }
+          }
+          const tB = countTerritoryHexes(nodes); const iB = countImprovementsForNodes(nodes);
+          rows.push([o, nodes.length, seenA.size, tB, nA, iB]);
+          if (seenA.size !== tB || nA !== iB) mism.push('owner' + o);
+        }
+        // R6: stawki terytorium/miksu per wlasciciel: z zakresem czystego odczytu (jedno przejscie dla wszystkich miast) vs bez zakresu
+        const outScope = owners.map(o => JSON.stringify([empireTerritoryResourceRatesForOwner(o), mergedResourceRatesForOwnerRaw(o)]));
+        const inScope = hudPureScope.run(() => owners.map(o => JSON.stringify([empireTerritoryResourceRatesForOwner(o), mergedResourceRatesForOwner(o)])));
+        owners.forEach((o, i) => { if (outScope[i] !== inScope[i]) mism.push('rates-owner' + o); });
+        return { mismatches: mism, rows, ratesSample: outScope.slice(0, 3) };
       },
       perfCnt: () => ({ ...((window as any).__cnt || {}) }),
       perfCntReset: () => { (window as any).__cnt = {}; },
@@ -297,7 +333,6 @@ async function build() {
         const owners = Array.from(new Set(cities.map(c => c.ownerId)));
         const ser = (v: any) => JSON.stringify(v instanceof Map ? [...v.entries()].map(e => JSON.stringify(e)).sort() : v instanceof Set ? [...v].sort() : Array.isArray(v) ? [...v].sort() : v);
         const pairs: Array<[string, (o: number) => any, (o: number) => any]> = [
-          ['placed', placedImprovementsForOwner, placedImprovementsForOwnerRaw],
           ['built', empireBuiltIdsForOwner, empireBuiltIdsForOwnerRaw],
           ['labels', empireActiveResourceLabelsForOwner, empireActiveResourceLabelsForOwnerRaw],
         ];
@@ -451,8 +486,20 @@ function classify(profile) {
   }
   const selfBy = {};
   for (let i = 0; i < profile.samples.length; i++) { const cf = nodes.get(profile.samples[i]).callFrame; const key = (cf.functionName || '(anon)') + ':' + cf.lineNumber; selfBy[key] = (selfBy[key] || 0) + (dt[i] || 0) / 1000; }
+  if (process.env.PERF_DEEP === '1') {
+    const inclAll = {};
+    for (let i = 0; i < profile.samples.length; i++) {
+      const seen = new Set();
+      for (let nid = profile.samples[i]; nid !== undefined; nid = parent.get(nid)) {
+        const cf = nodes.get(nid).callFrame; const k = (cf.functionName || '(anon)') + ':' + cf.lineNumber;
+        if (!seen.has(k)) { seen.add(k); inclAll[k] = (inclAll[k] || 0) + (dt[i] || 0) / 1000; }
+      }
+    }
+    const top = (o, n) => Object.entries(o).sort((x, y) => y[1] - x[1]).slice(0, n).map(([k, v]) => k + ' ' + v.toFixed(0));
+    incl.__deepIncl = top(inclAll, 60); incl.__deepSelf = top(selfBy, 40);
+  }
   incl.__top = Object.entries(selfBy).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, v]) => k + '=' + v.toFixed(0));
-  for (const k of Object.keys(incl)) if (k !== '__top') incl[k] = +incl[k].toFixed(1);
+  for (const k of Object.keys(incl)) if (!k.startsWith('__')) incl[k] = +incl[k].toFixed(1);
   return { jsMs: +acc.js.toFixed(1), nativeMs: +acc.program.toFixed(1), gcMs: +acc.gc.toFixed(1), glNativeMs: +acc.gl.toFixed(1), incl };
 }
 function stats(a) {
@@ -628,12 +675,40 @@ async function main() {
       result.diag = { m, p, el, selAfter, units: await page.evaluate(() => window.__turnSlowdownTestDebug.perfUnitsOf(0).slice(0, 2)) };
       console.log('[perf] diag', JSON.stringify(result.diag));
     }
+    if (SECTIONS.has('countequiv')) {
+      result.countEquiv = await page.evaluate(() => window.__turnSlowdownTestDebug.perfCountEquiv());
+      console.log('[perf] countEquiv', JSON.stringify(result.countEquiv));
+    }
+    if (SECTIONS.has('scopeequiv')) {
+      result.scopeEquiv = await page.evaluate(() => window.__turnSlowdownTestDebug.perfHudScopeEquiv());
+      console.log('[perf] scopeEquiv', JSON.stringify(result.scopeEquiv));
+    }
     if (SECTIONS.has('equiv')) {
       try { result.equiv = await page.evaluate(() => window.__turnSlowdownTestDebug.perfEquiv()); } catch (e) { result.equiv = { error: String(e).slice(0, 200) }; }
       result.hudFresh = await page.evaluate(() => window.__turnSlowdownTestDebug.perfHudFresh());
       console.log('[perf] equiv', JSON.stringify(result.equiv), 'hudFresh', JSON.stringify(result.hudFresh));
     }
     if (SECTIONS.has('micro')) await microBlock('t1');
+    if (SECTIONS.has('prof')) {
+      const part = process.env.PERF_PROF || 'buildHudState';
+      await cdp.send('Profiler.start');
+      await page.evaluate(([p, n]) => window.__turnSlowdownTestDebug.perfHudParts(n, p), [part, Number(process.env.PERF_PROF_N) || 15]);
+      const prof = (await cdp.send('Profiler.stop')).profile;
+      const nodes = new Map(prof.nodes.map(n => [n.id, n])); const parent = new Map();
+      for (const n of prof.nodes) for (const c of n.children || []) parent.set(c, n.id);
+      const incl = {}; const self = {};
+      for (let i = 0; i < prof.samples.length; i++) {
+        const d = (prof.timeDeltas[i] || 0) / 1000; const seen = new Set();
+        const cf0 = nodes.get(prof.samples[i]).callFrame; const k0 = cf0.functionName + ':' + cf0.lineNumber; self[k0] = (self[k0] || 0) + d;
+        for (let nid = prof.samples[i]; nid !== undefined; nid = parent.get(nid)) {
+          const cf = nodes.get(nid).callFrame; const k = cf.functionName + ':' + cf.lineNumber;
+          if (!seen.has(k)) { seen.add(k); incl[k] = (incl[k] || 0) + d; }
+        }
+      }
+      const top = o => Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, 40).map(([k, v]) => k + ' ' + v.toFixed(0));
+      result.prof = { part, incl: top(incl), self: top(self) };
+      console.log('[perf] PROF', part, 'INCL', JSON.stringify(result.prof.incl)); console.log('[perf] PROF', part, 'SELF', JSON.stringify(result.prof.self));
+    }
     if (SECTIONS.has('clicks')) await clickBlock();
     if (SECTIONS.has('scale')) {
       const levels = [[0, 0], [0.5, 5000], [1.0, 20000]];
@@ -658,7 +733,7 @@ async function main() {
           await page.evaluate(() => window.__eraTestDebug.endTurn());
           await page.waitForFunction(prev => window.__eraTestDebug.getWorldState().turn > prev && !window.__eraTestDebug.isEndTurnInProgress(), before, { timeout: 400000, polling: 250 });
         });
-        result.eot.push(r); console.log('[perf] eot', JSON.stringify(r));
+        result.eot.push(r); console.log('[perf] eot', JSON.stringify({ wall: r.wall, jsMs: r.jsMs, nativeMs: r.nativeMs, gcMs: r.gcMs, glNativeMs: r.glNativeMs, cnt: r.cnt })); if (r.incl.__deepIncl) { console.log('[perf] EOTINCL', JSON.stringify(r.incl.__deepIncl)); console.log('[perf] EOTSELF', JSON.stringify(r.incl.__deepSelf)); }
       }
     }
     result.loadavgEnd = os.loadavg().map(x => +x.toFixed(2));

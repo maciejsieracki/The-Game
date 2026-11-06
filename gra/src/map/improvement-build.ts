@@ -4,6 +4,7 @@
  * callbacki do wpiecia przez MASTER (tryb Budowa jak „Załóż miasto").
  */
 
+import { getRiverPathHexSet } from './freshwater';
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka, Ulepszenie } from '../types/hex';
 import type { ImprovementKey } from '../render/improvements';
@@ -913,7 +914,8 @@ export function isHexNearRiver(
   map: GameMap,
   q: number,
   r: number,
-  riverHexSet: ReadonlySet<string> = buildRiverHexSet(map),
+  // R6: domyślnie zbiór rzek z pamięci per referencja `riverPaths` (freshwater.ts, ta sama zawartość co buildRiverHexSet)
+  riverHexSet: ReadonlySet<string> = getRiverPathHexSet(map),
 ): boolean {
   if (map.hexes[`${q},${r}`]?.rzeka?.obecna) return true;
   if (riverHexSet.has(`${q},${r}`)) return true;

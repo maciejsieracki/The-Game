@@ -65,3 +65,21 @@ export function createStateFrame<S>(getState: () => S): StateFrame<S> {
     invalidate(): void { has = false; frame = undefined; },
   };
 }
+
+/**
+ * Zakres "czystego odczytu" dla HUD: aktywny wyłącznie wewnątrz `buildHudState()` (main.ts), czyli podczas jednego synchronicznego,
+ * NIEMUTUJĄCEGO stanu gry przebiegu (podgląd ekonomii miast gracza + wiersze zasobów). Wewnątrz zakresu wyniki funkcji czystych
+ * względem (miasto, mapa, węzły terytorium, epoka) są liczone raz (np. `cityWorkedTilesForEconomy`, wołane kilka razy na miasto
+ * z `previewCityEconomy` / `computeWorkedMagazynYieldsByCity` / wierszy zasobów). Poza zakresem zawsze liczy od nowa.
+ */
+export const hudPureScope: ScopeMemo = createScopeMemo();
+
+const objectIds = new WeakMap<object, number>();
+let objectIdSeq = 0;
+/** Stabilny numer tożsamości obiektu (do kluczy pamięci zakresowej). */
+export function scopeObjectId(o: object | null | undefined): number {
+  if (!o) return 0;
+  let id = objectIds.get(o);
+  if (id === undefined) { id = ++objectIdSeq; objectIds.set(o, id); }
+  return id;
+}

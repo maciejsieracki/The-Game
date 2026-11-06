@@ -61,6 +61,7 @@ import type { UnitOwnerEmblemResolver } from './unitOwnerEmblem';
 // Duży, samodzielny medalion właściciela ZNIKNĄŁ — wszedł do tabliczki.
 // Zasoby to singletony modułu; NIC nie trafia do userData['mats'].
 import { applyUnitStatPlate } from './unitStatPlate';
+import { SmallPartLod } from './smallPartLod';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
@@ -5757,6 +5758,17 @@ function attachEmbarkBoat(group: THREE.Group): void {
 export class UnitRenderer {
   private scene: THREE.Scene;
 
+  /** R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R3): LOD drobnych części figurek (patrz smallPartLod.ts). */
+  private lodTokensVersion = 0;
+  private readonly smallPartLod = new SmallPartLod();
+
+  /** Liczba meshy aktualnie schowanych przez LOD (diagnostyka/test). */
+  get lodHiddenCount(): number { return this.smallPartLod.hiddenCount; }
+
+  applySmallPartLod(camDist: number, fovDeg: number, viewportH: number, minPx = 3): void {
+    this.smallPartLod.apply(this.tokens.values(), this.scene, this.lodTokensVersion, camDist, fovDeg, viewportH, minPx);
+  }
+
   /** Fast hex lookup by "q,r" key. */
   private hexGrid: Map<string, Hex>;
 
@@ -6070,6 +6082,7 @@ export class UnitRenderer {
         ) {
           this.scene.remove(obj);
           this._disposeToken(unit.id, obj);
+          this.lodTokensVersion++;
           this.tokens.delete(unit.id);
           this.tokenMaterials.delete(unit.id);
           this.tokenGeos.delete(unit.id);
@@ -6179,6 +6192,7 @@ export class UnitRenderer {
       if (!presentIds.has(id)) {
         this.scene.remove(obj);
         this._disposeToken(id, obj);
+        this.lodTokensVersion++;
         this.tokens.delete(id);
         this.tokenMaterials.delete(id);
         this.tokenGeos.delete(id);
@@ -6783,6 +6797,7 @@ export class UnitRenderer {
    * Reads group.userData['mats'] and group.userData['perTokenGeos'] set by buildUnitModel.
    */
   private _registerToken(id: string, group: THREE.Group): void {
+    this.lodTokensVersion++;
     this.tokens.set(id, group);
     this.tokenMaterials.set(id, (group.userData['mats'] as THREE.Material[]) ?? []);
     this.tokenGeos.set(id, (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? []);

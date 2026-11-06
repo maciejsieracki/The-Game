@@ -64,8 +64,20 @@ export function citySightRadius(population: number, kulturaSkumulowana = 0): num
  * Zwraca klucze istniejących heksów w dysku hex wokół (cq,cr); równoważne filtrowi hexDistance<=rad.
  */
 export function hexKeysWithinRadius(cq: number, cr: number, rad: number, map: GameMap): string[] {
-  const out: string[] = [];
   const r = Number.isFinite(rad) && rad > 0 ? Math.floor(rad) : 0;
+  const ck = geomCacheKey(cq, cr, r);
+  if (ck < 0) return hexKeysWithinRadiusRaw(cq, cr, r, map);
+  const cache = geomCacheFor(keysCache, map);
+  let hit = cache.get(ck);
+  if (hit === undefined) {
+    hit = Object.freeze(hexKeysWithinRadiusRaw(cq, cr, r, map)) as string[];
+    cache.set(ck, hit);
+  }
+  return hit;
+}
+
+function hexKeysWithinRadiusRaw(cq: number, cr: number, r: number, map: GameMap): string[] {
+  const out: string[] = [];
   for (let dq = -r; dq <= r; dq++) {
     const lo = Math.max(-r, -dq - r), hi = Math.min(r, -dq + r);
     for (let dr = lo; dr <= hi; dr++) {
@@ -76,6 +88,29 @@ export function hexKeysWithinRadius(cq: number, cr: number, rad: number, map: Ga
   return out;
 }
 
+/**
+ * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): zbiór kluczy heksów mapy jest po wygenerowaniu/wczytaniu NIEZMIENNY
+ * (jedyne zapisy `hexes[key] =` to generator.ts i mapSnapshot.ts, przed oddaniem mapy grze), a wynik
+ * hexKeysWithinRadius/okolicaTiles zależy wyłącznie od niego i od (cq,cr,rad). Pamięć podręczna jest
+ * więc kluczowana tożsamością obiektu `map.hexes` (nowa mapa/wczytany zapis = nowy obiekt = pusta pamięć),
+ * a wpis zawiera wyłącznie dane geometryczne (nie teren/ulepszenia, które się zmieniają). Zwracana tablica
+ * kluczy jest zamrożona (próba mutacji rzuca w trybie ścisłym zamiast psuć wpis).
+ */
+const keysCache = new WeakMap<object, Map<number, string[]>>();
+const tilesCache = new WeakMap<object, Map<number, OkolicaTile[]>>();
+const GEOM_CACHE_MAX = 60000;
+
+function geomCacheKey(cq: number, cr: number, r: number): number {
+  if (!Number.isInteger(cq) || !Number.isInteger(cr) || r >= 64 || cq < -4096 || cq >= 4096 || cr < -4096 || cr >= 4096) return -1;
+  return ((cq + 4096) * 8192 + (cr + 4096)) * 64 + r;
+}
+
+function geomCacheFor<V>(wm: WeakMap<object, Map<number, V>>, map: GameMap): Map<number, V> {
+  let c = wm.get(map.hexes);
+  if (c === undefined) { c = new Map(); wm.set(map.hexes, c); }
+  else if (c.size > GEOM_CACHE_MAX) c.clear();
+  return c;
+}
 
 /**
  * Predykat terenu: pole nadaje się do obsadzenia robotnikiem (nie Morze, nie Gory).
@@ -86,8 +121,9 @@ export function hexKeysWithinRadius(cq: number, cr: number, rad: number, map: Ga
  * `rebalanceWorkersAfterPopulationChange`, `toggleTileWorker`, `adjustTileWorker`).
  * Brak heksu (poza mapą) -> nieobsadzalne.
  */
-export function isLandWorkableHex(map: GameMap, q: number, r: number): boolean {
-  const hex = map.hexes[`${q},${r}`];
+export function isLandWorkableHex(map: GameMap, q: number, r: number, key?: string): boolean {
+  // `key` (opcjonalny, "q,r") oszczędza budowanie klucza, gdy wołający już go ma (okolicaTiles); wynik ten sam.
+  const hex = map.hexes[key ?? `${q},${r}`];
   if (!hex) return false;
   const t = hex.terenBazowy;
   return t !== TerenBazowy.Morze && t !== TerenBazowy.Gory;
@@ -111,13 +147,32 @@ function cityCenterKeysFromTerritoryNodes(
   territoryNodes: readonly TerritoryNode[] | undefined,
 ): ReadonlySet<string> | undefined {
   if (!territoryNodes || territoryNodes.length === 0) return undefined;
-  const out = new Set<string>();
-  for (const n of territoryNodes) {
-    if (n.isOutpost || n.isFort) continue;
-    out.add(`${n.q},${n.r}`);
+  // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): zestaw centrów zależy tylko od (q, r, czy-miasto) węzłów -> jednowpisowa pamięć
+  // porównywana ELEMENT PO ELEMENCIE (bez alokacji); zwracany Set jest tylko do odczytu u wszystkich wołających (`.has`).
+  const nodes = territoryNodes;
+  const n = nodes.length;
+  const c = centersCache;
+  if (c !== null && c.n === n) {
+    let same = true;
+    for (let i = 0; i < n; i++) {
+      const nd = nodes[i]!;
+      if (c.qs[i] !== nd.q || c.rs[i] !== nd.r || c.city[i] !== (nd.isOutpost || nd.isFort ? 0 : 1)) { same = false; break; }
+    }
+    if (same) return c.set;
   }
-  return out.size > 0 ? out : undefined;
+  const out = new Set<string>();
+  const qs = new Float64Array(n), rs = new Float64Array(n), city = new Uint8Array(n);
+  for (let i = 0; i < n; i++) {
+    const nd = nodes[i]!;
+    qs[i] = nd.q; rs[i] = nd.r; city[i] = nd.isOutpost || nd.isFort ? 0 : 1;
+    if (nd.isOutpost || nd.isFort) continue;
+    out.add(`${nd.q},${nd.r}`);
+  }
+  const set = out.size > 0 ? out : undefined;
+  centersCache = { n, qs, rs, city, set };
+  return set;
 }
+let centersCache: { n: number; qs: Float64Array; rs: Float64Array; city: Uint8Array; set: ReadonlySet<string> | undefined } | null = null;
 
 /**
  * Filtr terenu (Morze/Gory) połączony z opcjonalną własnością terytorium miasta,
@@ -130,20 +185,23 @@ function terrainAndTerritoryFilter(
   territoryNodes: readonly TerritoryNode[] | undefined,
   ownerId: number,
   excludeHexKeys?: ReadonlySet<string>,
-): (q: number, r: number) => boolean {
-  const terrainOnly = (q: number, r: number) => isLandWorkableHex(map, q, r);
+): HexFilter {
+  const terrainOnly = (q: number, r: number, key?: string) => isLandWorkableHex(map, q, r, key);
   const withTerritory = territoryNodes
     ? makeTerritoryWorkableFilter(territoryNodes, ownerId, terrainOnly)
     : terrainOnly;
   const centers = cityCenterKeysFromTerritoryNodes(territoryNodes);
   if (!centers && !excludeHexKeys) return withTerritory;
-  return (q, r) => {
-    const key = `${q},${r}`;
+  return (q, r, k) => {
+    const key = k ?? `${q},${r}`;
     if (centers && centers.has(key)) return false;
     if (excludeHexKeys && excludeHexKeys.has(key)) return false;
-    return withTerritory(q, r);
+    return withTerritory(q, r, key);
   };
 }
+
+/** Filtr heksu; trzeci argument (klucz "q,r") jest opcjonalną optymalizacją — wołający bez klucza działają jak dawniej. */
+export type HexFilter = (q: number, r: number, key?: string) => boolean;
 
 export interface TileYield { zywnosc?: number; praca?: number; handel?: number; }
 export interface OkolicaTile { q: number; r: number; key: string; dist: number; }
@@ -154,10 +212,23 @@ export function okolicaTiles(
   centerR: number,
   radius: number,
   map: GameMap,
-  isWorkable?: (q: number, r: number) => boolean,
+  isWorkable?: HexFilter,
 ): OkolicaTile[] {
-  const out: OkolicaTile[] = [];
   const rad = Number.isFinite(radius) && radius > 0 ? Math.floor(radius) : 1;
+  const ck = geomCacheKey(centerQ, centerR, rad);
+  let base: OkolicaTile[] | undefined;
+  const cache = ck < 0 ? undefined : geomCacheFor(tilesCache, map);
+  if (cache) base = cache.get(ck);
+  if (base === undefined) {
+    base = okolicaTilesUnfiltered(centerQ, centerR, rad, map);
+    if (cache) cache.set(ck, base);
+  }
+  // Zwracamy ZAWSZE świeżą tablicę (wołający może ją sortować/mutować); obiekty pól są współdzielone i niemutowane.
+  return isWorkable ? base.filter(t => isWorkable(t.q, t.r, t.key)) : base.slice();
+}
+
+function okolicaTilesUnfiltered(centerQ: number, centerR: number, rad: number, map: GameMap): OkolicaTile[] {
+  const out: OkolicaTile[] = [];
   for (const key of hexKeysWithinRadius(centerQ, centerR, rad, map)) {
     const parts = key.split(',');
     const q = Number(parts[0]);
@@ -166,7 +237,6 @@ export function okolicaTiles(
     if (q === centerQ && rr === centerR) continue;
     const d = hexDistance(centerQ, centerR, q, rr);
     if (d > rad) continue;
-    if (isWorkable && !isWorkable(q, rr)) continue;
     out.push({ q, r: rr, key, dist: d });
   }
   return out;
@@ -191,7 +261,7 @@ export function tileAssignScore(
 
 export interface AssignOptions {
   radius?: number;
-  isWorkable?: (q: number, r: number) => boolean;
+  isWorkable?: HexFilter;
   wagi?: { zywnosc?: number; praca?: number; handel?: number };
   focus?: OkolicaFocus;
   /** Bonus potencjału żywności (fokus żywność) — dodawany do score przed sortowaniem. */
@@ -267,7 +337,7 @@ function assignOptionsForFocus(
   };
 }
 
-function effectiveIsWorkable(opts: AssignOptions): ((q: number, r: number) => boolean) | undefined {
+function effectiveIsWorkable(opts: AssignOptions): HexFilter | undefined {
   const { territoryNodes, ownerId, isWorkable, excludeHexKeys } = opts;
   let base = isWorkable;
   if (territoryNodes != null && ownerId != null) {
@@ -278,11 +348,11 @@ function effectiveIsWorkable(opts: AssignOptions): ((q: number, r: number) => bo
   // P-HEKS-SPOR-SASIAD: excludeHexKeys (spór o zwykły heks) dokłada się do tego samego hooka.
   const centers = cityCenterKeysFromTerritoryNodes(territoryNodes);
   if (!centers && !excludeHexKeys) return base;
-  return (q, r) => {
-    const key = `${q},${r}`;
+  return (q, r, k) => {
+    const key = k ?? `${q},${r}`;
     if (centers && centers.has(key)) return false;
     if (excludeHexKeys && excludeHexKeys.has(key)) return false;
-    return base ? base(q, r) : true;
+    return base ? base(q, r, key) : true;
   };
 }
 
@@ -327,7 +397,7 @@ export interface ResolveWorkedTilesOpts {
   tryb?: OkolicaTryb;
   reczne?: Record<string, number>;
   radius?: number;
-  isWorkable?: (q: number, r: number) => boolean;
+  isWorkable?: HexFilter;
   territoryNodes?: readonly TerritoryNode[];
   ownerId?: number;
   /** P-HEKS-SPOR-SASIAD: patrz `AssignOptions.excludeHexKeys` — ten sam kontrakt. */
@@ -707,7 +777,7 @@ export function collectWorkedHexKeysForOwner(
   map: GameMap,
   ownerId: number,
   opts: {
-    isWorkable?: (q: number, r: number) => boolean;
+    isWorkable?: HexFilter;
     territoryNodes?: readonly TerritoryNode[];
     /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: epoka właściciela (ranking pól jak w silniku). */
     eraForOwner?: (ownerId: number) => number;
@@ -735,7 +805,7 @@ export function collectWorkedHexOwnerMap(
   cities: Array<Pick<City, 'id' | 'q' | 'r' | 'population' | 'okolicaFocus' | 'okolicaTryb' | 'okolicaReczne' | 'ownerId'>>,
   map: GameMap,
   opts: {
-    isWorkable?: (q: number, r: number) => boolean;
+    isWorkable?: HexFilter;
     territoryNodes?: readonly TerritoryNode[];
     /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: epoka właściciela (ranking pól jak w silniku). */
     eraForOwner?: (ownerId: number) => number;

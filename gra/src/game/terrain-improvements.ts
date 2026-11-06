@@ -362,6 +362,12 @@ export function improvementKeysForHex(
     nakladka?: Nakladka;
   },
 ): string[] {
+  if (!hex.ulepszenia?.length) {
+    // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): szybkie wyjście dla heksu bez ulepszeń (większość mapy; skany po całej mapie).
+    // Równoważne ścieżce poniżej: null/undefined/''/'brak' -> normalizeImprovementKey zwraca undefined -> [].
+    const u = hex.ulepszenie;
+    if (u === undefined || u === null || u === '' || u === 'brak') return [];
+  }
   if (hex.ulepszenia?.length) {
     const keys = hex.ulepszenia
       .map(k => normalizeImprovementKey(String(k)))

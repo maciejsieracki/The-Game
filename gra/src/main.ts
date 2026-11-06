@@ -589,7 +589,7 @@ import {
   resolveMapUnitCursor,
   CURSOR_MAP_DEFAULT,
 } from './ui/mapUnitCursor';
-import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius } from './map/territory';
+import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius, territoryNodesContentId } from './map/territory';
 import { isTerritoryHexOwnedBy, isReczneKeyLegal, cityCenterKeys } from './map/territory-work';
 import type { CityNode, TerritoryNode } from './map/territory';
 import type { GameMap } from './types/map';
@@ -735,7 +735,7 @@ import {
 } from './game/battle-summary';
 import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
 import { showHud, updateHud as refreshD1bHudRaw, hideHud, markMinimapDirty } from './ui/hud';
-import { createScopeMemo } from './game/frame-memo';
+import { createScopeMemo, hudPureScope, scopeObjectId } from './game/frame-memo';
 import {
   createCityListHud,
   hideCityListHud,
@@ -2528,16 +2528,25 @@ async function boot(): Promise<void> {
     function countImprovementsForOwner(ownerId: number): number {
       const nodes = statsTerritoryNodesForOwner(ownerId);
       if (nodes.length === 0) return 0;
-      // D9: lokalna enumeracja (jak countTerritoryHexes) zamiast skanu całej mapy — wynik 1:1.
+      // R6: wewnątrz zakresu czystego odczytu HUD (buildHudState) wynik zależy tylko od zawartości węzłów i stanu ulepszeń
+      // heksów, który w zakresie jest stały - liczony raz na zawartość węzłów.
+      if (hudPureScope.active) {
+        const nid = territoryNodesContentId(nodes);
+        if (nid !== -1) return hudPureScope.cached('cio:' + scopeObjectId(map.hexes) + ':' + nid, () => countImprovementsForNodes(nodes), v => v);
+      }
+      return countImprovementsForNodes(nodes);
+    }
+    function countImprovementsForNodes(nodes: CityNode[]): number {
+      // Hex należy do terytorium <=> leży w promieniu `cityTerritoryRadius` któregoś węzła, więc suma po UNII dysków tych promieni
+      // (istniejące heksy, bez duplikatów) jest równa dawnej pętli z dyskami promienia+1 i filtrem isInTerritory - bez
+      // rozbierania klucza i bez pętli po węzłach dla każdego heksu.
       const seen = new Set<string>();
       let n = 0;
       for (const node of nodes) {
-        for (const key of hexKeysWithinRadius(node.q, node.r, cityTerritoryRadius(node) + 1, map)) {
+        for (const key of hexKeysWithinRadius(node.q, node.r, cityTerritoryRadius(node), map)) {
           if (seen.has(key)) continue;
           const hex = map.hexes[key];
           if (!hex) continue;
-          const [qs, rs] = key.split(',');
-          if (!isInTerritory(Number(qs), Number(rs), nodes)) continue;
           seen.add(key);
           n += improvementKeysForHex(hex).length;
         }
@@ -3337,7 +3346,7 @@ async function boot(): Promise<void> {
 
     /** Union budynków imperium (dowolne miasto ownerId) — bramka badań T-TECH-7. */
     function empireBuiltIdsForOwner(ownerId: number): Set<string> {
-      return ownerScope.cached('built:' + ownerId, () => empireBuiltIdsForOwnerRaw(ownerId), v => new Set(v));
+      return (hudPureScope.active ? hudPureScope : ownerScope).cached('built:' + ownerId, () => empireBuiltIdsForOwnerRaw(ownerId), v => new Set(v));
     }
     function empireBuiltIdsForOwnerRaw(ownerId: number): Set<string> {
       const ids = new Set<string>();
@@ -3351,7 +3360,7 @@ async function boot(): Promise<void> {
 
     /** Union aktywnych etykiet surowców imperium — bramki epok B-SUROW-BUD. */
     function empireActiveResourceLabelsForOwner(ownerId: number): string[] {
-      return ownerScope.cached('labels:' + ownerId, () => empireActiveResourceLabelsForOwnerRaw(ownerId), v => [...v]);
+      return (hudPureScope.active ? hudPureScope : ownerScope).cached('labels:' + ownerId, () => empireActiveResourceLabelsForOwnerRaw(ownerId), v => [...v]);
     }
     function empireActiveResourceLabelsForOwnerRaw(ownerId: number): string[] {
       const labels = new Set<string>();
@@ -3495,9 +3504,12 @@ async function boot(): Promise<void> {
     function empireTerritoryResourceRatesForOwner(ownerId: number): Partial<Record<string, number>> {
       const territoryNodes = buildAllTerritoryNodes();
       const ownerCities = cities.filter(c => c.ownerId === ownerId);
-      const byCity = computeTerritoryResourceYieldByCity(
-        ownerCities, map, territoryNodes, empireEpochForOwner,
-      );
+      // R6: w zakresie czystego odczytu liczymy wiersze dla WSZYSTKICH miast raz (jedno przejście po mapie) i bierzemy wiersze miast
+      // tego ownera. Równoważne: dla heksu należącego do ownera X najbliższe miasto wybierane jest spośród miast X, a heksy
+      // cudze są pomijane, więc wiersz miasta X nie zależy od tego, czy w wywołaniu były też miasta innych właścicieli.
+      const byCity = hudPureScope.active
+        ? hudPureScope.cached('tyAll', () => computeTerritoryResourceYieldByCity(cities, map, territoryNodes, empireEpochForOwner), v => v)
+        : computeTerritoryResourceYieldByCity(ownerCities, map, territoryNodes, empireEpochForOwner);
       // R-WEB-TURN-SLOWDOWN-Q2 (P4): obrabiane pola liczone WYŁĄCZNIE dla miast tego
       // ownera — wcześniej dla WSZYSTKICH miast mapy (pętla niżej i tak bierze tylko
       // miasta `ownerId`), co rosło z liczbą miast AI i obciążało każde `updateHud`
@@ -5688,17 +5700,34 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): wynik zależy WYŁĄCZNIE od zestawu heksów mapy (niezmienny po
+     * wygenerowaniu/wczytaniu) i od pól węzłów, z których liczy się promień/pokrycie (q, r, isFort, isOutpost,
+     * pop) — klucz zawartościowy z tych pól, więc zmiana populacji/pozycji/fortu daje inny klucz (brak
+     * nieaktualnych wpisów). Identyczny wynik jak liczenie od nowa (test: perf-hud-frame-memo-test).
+     */
+    const territoryHexCountMemo = new Map<string, number>();
+    let territoryHexCountMemoHexes: object | null = null;
     function countTerritoryHexes(nodes: CityNode[]): number {
       if (nodes.length === 0) return 0;
-      // D9: enumeruj heksy LOKALNIE (dyski wokół miast, promień = cityTerritoryRadius +1 margines)
-      // zamiast skanu CAŁEJ mapy. Ten sam predykat isInTerritory + dedup + tylko istniejące heksy
-      // → wynik IDENTYCZNY jak skan 320k, ale O(miasta × promień²).
+      if (territoryHexCountMemoHexes !== map.hexes) { territoryHexCountMemo.clear(); territoryHexCountMemoHexes = map.hexes; }
+      let key = '';
+      for (const n of nodes) key += n.q + ',' + n.r + ',' + cityTerritoryRadius(n) + (n.isFort ? 'f' : n.isOutpost ? 'o' : 'c') + ';';
+      const hit = territoryHexCountMemo.get(key);
+      if (hit !== undefined) return hit;
+      const v = countTerritoryHexesRaw(nodes);
+      if (territoryHexCountMemo.size >= 256) territoryHexCountMemo.clear();
+      territoryHexCountMemo.set(key, v);
+      return v;
+    }
+    function countTerritoryHexesRaw(nodes: CityNode[]): number {
+      // Unia dysków promienia `cityTerritoryRadius` (istniejące heksy) = zbiór heksów, dla których isInTerritory jest prawdą
+      // (dawna pętla enumerowała dyski promienia+1 i odfiltrowywała isInTerritory) - wynik identyczny, bez rozbierania kluczy.
       const seen = new Set<string>();
       for (const node of nodes) {
-        for (const key of hexKeysWithinRadius(node.q, node.r, cityTerritoryRadius(node) + 1, map)) {
-          if (seen.has(key) || !map.hexes[key]) continue;
-          const [qs, rs] = key.split(',');
-          if (isInTerritory(Number(qs), Number(rs), nodes)) seen.add(key);
+        for (const key of hexKeysWithinRadius(node.q, node.r, cityTerritoryRadius(node), map)) {
+          if (!map.hexes[key]) continue;
+          seen.add(key);
         }
       }
       return seen.size;
@@ -11417,6 +11446,10 @@ async function boot(): Promise<void> {
 
     /** Suma stawek terytorium + konwerterów — do cap handlu multi-turn. */
     function mergedResourceRatesForOwner(ownerId: number): Partial<Record<string, number>> {
+      // R6: wewnątrz zakresu czystego odczytu (buildHudState, wybór oferty handlowej AI) stawki właściciela liczone raz.
+      return hudPureScope.cached('mrr:' + ownerId, () => mergedResourceRatesForOwnerRaw(ownerId), v => ({ ...v }));
+    }
+    function mergedResourceRatesForOwnerRaw(ownerId: number): Partial<Record<string, number>> {
       const territory = empireTerritoryResourceRatesForOwner(ownerId);
       const converter = empireConverterResourceRatesForOwner(ownerId);
       const out: Record<string, number> = {};
@@ -17555,7 +17588,13 @@ async function boot(): Promise<void> {
      */
     let turnEventsFrame: SidePanelEvent[] | null | undefined = undefined;
     function withTurnEventsFrame(fn: () => void): void {
-      if (turnEventsFrame !== undefined) { fn(); return; }
+      if (turnEventsFrame !== undefined) {
+        // zagnieżdżone odświeżenie HUD (np. po mutacji stanu w trakcie ramki): unieważnij PRZED i PO, żeby ani ono, ani
+        // dalsza część zewnętrznej ramki nie dostały listy policzonej przed mutacją (R6, uwaga FC 5).
+        turnEventsFrame = null;
+        try { fn(); } finally { turnEventsFrame = null; }
+        return;
+      }
       turnEventsFrame = null;
       try { fn(); } finally { turnEventsFrame = undefined; }
     }
@@ -20781,7 +20820,15 @@ async function boot(): Promise<void> {
     // zahardkodowana na `isMe()`/`0` -- to jest ISTNIEJĄCY, osobny dług poza allowlistą
     // tego tematu (analogicznie do `refreshLiveEmpireRatesUnsafe()` hardkodowanej na
     // ownerId 0, patrz komentarz przy `switchActiveHuman()`), nie regresja wprowadzona tu.
+    /**
+     * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): `buildHudState` jest odczytem (podgląd ekonomii + wiersze zasobów), nie mutuje stanu
+     * gry, więc wewnątrz niego wyniki funkcji czystych (np. `cityWorkedTilesForEconomy`, liczone kilka razy na miasto) są
+     * liczone raz w `hudPureScope`. Zakres jest tylko na czas tego synchronicznego wywołania.
+     */
     function buildHudState(ownerId: number = ME()): HudState {
+      return hudPureScope.run(() => buildHudStateRaw(ownerId));
+    }
+    function buildHudStateRaw(ownerId: number = ME()): HudState {
       // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: `buildHudState(ownerId)` przyjmuje `ownerId`
       // jako PARAMETR (już istniejący hak testowy `hudPracaSnapshotForTest` woła go dla
       // DOWOLNEGO fotela, nie tylko aktywnego) -- ale WSZYSTKIE odczyty skarbca/nauki/
@@ -21712,7 +21759,15 @@ async function boot(): Promise<void> {
       return { ok: true, reasons };
     }
 
+    /** R6: wybór oferty to czysty odczyt (zwraca opis oferty) - stawki/okolica liczone raz w zakresie czystego odczytu. */
     function pickResourceTradeRelOffer(
+      proposerOwnerId: number,
+      partnerOwnerId: number,
+      proposerHandlowosc?: number,
+    ): ReturnType<typeof pickResourceTradeRelOfferRaw> {
+      return hudPureScope.run(() => pickResourceTradeRelOfferRaw(proposerOwnerId, partnerOwnerId, proposerHandlowosc));
+    }
+    function pickResourceTradeRelOfferRaw(
       proposerOwnerId: number,
       partnerOwnerId: number,
       proposerHandlowosc?: number,
@@ -41811,6 +41866,9 @@ async function boot(): Promise<void> {
         const { dist } = camCtrl.getFocusState();
         const { minDist, maxDist } = camCtrl.getDistLimits();
         setZoomLod(dist, minDist, maxDist);
+        // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: LOD drobnych części figurek/miast przy oddaleniu (no-op przy braku zmiany kubełka)
+        unitRenderer.applySmallPartLod(dist, camera.fov, canvas.clientHeight);
+        cityRenderer.applySmallPartLod(dist, camera.fov, canvas.clientHeight);
         // BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — plakietka miasta ma stałą wysokość w świecie
         // (worldH 0,52 j.św.), więc przy zbliżeniu kamery jej tekstura jest rozciągana i
         // rozmywa się. `setBadgeZoomLod` to samo porównanie poziomu — `true` wraca WYŁĄCZNIE

@@ -107,14 +107,20 @@ t('hud.ts: getState() wołane tylko przez StateFrame; updateHud = hudFrame.run',
 });
 t('main.ts: memo właściciela przez createScopeMemo; zwracane kolekcje kopiowane', () => {
   assert.match(main, /const ownerScope = createScopeMemo\(\)/);
-  assert.match(main, /ownerScope\.cached\('built:'[^\n]*new Set\(v\)/);
-  assert.match(main, /ownerScope\.cached\('labels:'[^\n]*\[\.\.\.v\]/);
-  assert.match(main, /ownerScope\.cached\('placed:'[^\n]*new Map\(v\)/);
+  // R6: w zakresie czystego odczytu (hudPureScope) wpisy idą do wspólnego zakresu; poza nim do ownerScope. `placed:` przejęła pamięć z main (FALA 523).
+  assert.match(main, /import \{[^}]*hudPureScope[^}]*\} from '\.\/game\/frame-memo'/);
+  assert.match(main, /\.cached\('built:'[^\n]*new Set\(v\)/);
+  assert.match(main, /\.cached\('labels:'[^\n]*\[\.\.\.v\]/);
 });
 t('main.ts: odświeżenie HUD D1b idzie przez ramkę zdarzeń; zdarzenia kopiowane', () => {
   assert.match(main, /updateHud as refreshD1bHudRaw/);
   assert.match(main, /function refreshD1bHud\(\): void \{ withTurnEventsFrame\(\(\) => refreshD1bHudRaw\(\)\); \}/);
   assert.match(main, /return \[\.\.\.turnEventsFrame\]/);
+});
+t('main.ts: zagnieżdżone withTurnEventsFrame unieważnia ramkę zdarzeń przed i po (R6 uwaga FC 5)', () => {
+  const i = main.indexOf('function withTurnEventsFrame');
+  const body = main.slice(i, main.indexOf('function refreshD1bHud', i));
+  assert.match(body, /if \(turnEventsFrame !== undefined\) \{[\s\S]*turnEventsFrame = null;\s*try \{ fn\(\); \} finally \{ turnEventsFrame = null; \}\s*return;/);
 });
 t('main.ts: siatka granic przebudowywana tylko przy zmianie podpisu zawartości', () => {
   assert.match(main, /sig === territoryBorderSig\) return/);

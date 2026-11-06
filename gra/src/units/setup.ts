@@ -692,8 +692,29 @@ export function setSiegeEntryBlocker(fn: ((unit: RuntimeUnit, q: number, r: numb
   siegeEntryBlocker = fn;
 }
 
+/**
+ * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): w obrębie JEDNEGO wywołania computeReachable/computePath (stan miast i jednostka
+ * są stałe, to funkcje czyste) wynik blokady dla (właściciel, q, r) jest liczony raz - dawniej każda ekspansja Dijkstry
+ * przeszukiwała liniowo WSZYSTKIE miasta (EOT 137 miast: ~1 mln wywołań `besiegedCityAtHex`).
+ */
+let siegeScopeCache: Map<number, boolean> | null = null;
+
+function withSiegeScope<T>(fn: () => T): T {
+  if (siegeScopeCache !== null || siegeEntryBlocker === null) return fn();
+  siegeScopeCache = new Map();
+  try { return fn(); } finally { siegeScopeCache = null; }
+}
+
 function siegeBlocksEntry(unit: RuntimeUnit, q: number, r: number): boolean {
-  return siegeEntryBlocker !== null && siegeEntryBlocker(unit, q, r);
+  if (siegeEntryBlocker === null) return false;
+  const cache = siegeScopeCache;
+  if (cache === null || !(unit.ownerId >= 0 && unit.ownerId < 256 && q > -8000 && q < 8000 && r > -8000 && r < 8000)) {
+    return siegeEntryBlocker(unit, q, r);
+  }
+  const key = ((q + 8192) * 16384 + (r + 8192)) * 256 + unit.ownerId;
+  let v = cache.get(key);
+  if (v === undefined) { v = siegeEntryBlocker(unit, q, r); cache.set(key, v); }
+  return v;
 }
 
 // ---------------------------------------------------------------------------
@@ -806,6 +827,15 @@ export function computeReachable(
   map: GameMap,
   occupied: Set<string>,
   costFn: (hex: Hex) => number = terrainMoveCost,
+): Set<string> {
+  return withSiegeScope(() => computeReachableImpl(unit, map, occupied, costFn));
+}
+
+function computeReachableImpl(
+  unit: RuntimeUnit,
+  map: GameMap,
+  occupied: Set<string>,
+  costFn: (hex: Hex) => number,
 ): Set<string> {
   const reachable = new Set<string>();
   const passThroughKeys: ReadonlySet<string> = occupied instanceof MoveOccupancy
@@ -978,6 +1008,17 @@ export function computePath(
   destR: number,
   occupied: Set<string>,
   costFn: (hex: Hex) => number = terrainMoveCost,
+): { q: number; r: number }[] {
+  return withSiegeScope(() => computePathImpl(unit, map, destQ, destR, occupied, costFn));
+}
+
+function computePathImpl(
+  unit: RuntimeUnit,
+  map: GameMap,
+  destQ: number,
+  destR: number,
+  occupied: Set<string>,
+  costFn: (hex: Hex) => number,
 ): { q: number; r: number }[] {
   const startKey = keyOf(unit.q, unit.r);
   const destKey  = keyOf(destQ, destR);
