@@ -8834,3 +8834,6 @@ Nowe zgłoszenie: R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1 (ramka minimapy nie pod�
 
 ### FALA 528 (2026-11-06, ROBOCZA 963a8fb8, main 9191f5465)
 R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1 — PASS-WITH-NOTES: ramka widoku minimapy podąża za kamerą (przyczyna: minimapę odświeżał tylko refreshFog). Test 12/12 + mutacja; Chromium: ramka 108→18 px, zoom 46×22→51×24. Perf klatki NIE_ZMIERZONO. Raw MD5 zgodny.
+
+### FALA 529 (2026-11-06, ROBOCZA 1106078d, main 6e5e7eac4)
+R-WEB-PERF-ENDTURN-AI-PHASE-Q1 — PASS-WITH-NOTES (R3): JS końca tury mediana 5693→4571 ms (1,25×, n=9/9, host współdzielony); cel 2× NIE osiągnięty. Równoważność wartościowa 0 różnic, 4/4 mutacje. Pozostałe ~2 s: render/HUD (syncUnitsRender, renderLoop, syncStatChips) → osobny temat R-WEB-PERF-ENDTURN-RENDER-HUD-Q1 po zakończeniu MEMMATS (render/ zajęty). Raw MD5 zgodny.
