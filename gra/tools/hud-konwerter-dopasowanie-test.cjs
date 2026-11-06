@@ -55,7 +55,7 @@ esbuild.buildSync({
   absWorkingDir: GRA_ROOT, nodePaths: [path.resolve(GRA_ROOT, 'node_modules')],
 });
 const CONV = require(BUNDLE);
-const { DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra,
+const { DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra,
   converterBuildingIdForRecipe } = CONV;
 
 // ---------------------------------------------------------------------------
@@ -94,7 +94,7 @@ function zbudujFunkcje(src) {
   const js = esbuild.transformSync(txt, { loader: 'ts', target: 'node18' }).code;
   const fabryka = new Function('deps', `
     const { data, _menuDifficulty, cities, cityBuilt, DEFAULT_CONVERTER_RECIPES,
-            loadThroughput, converterThroughputForEra, converterBuildingIdForRecipe,
+            loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra, converterBuildingIdForRecipe,
             empireEpochForOwner } = deps;
     ${js}
     return empireConverterResourceRatesForOwner;
@@ -126,7 +126,7 @@ function wywolajDlaOwnera(fn, ownerId) {
   const dane = zbudujDane();
   const F = fn({
     ...dane,
-    DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra,
+    DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra,
     converterBuildingIdForRecipe,
   });
   return F(ownerId);

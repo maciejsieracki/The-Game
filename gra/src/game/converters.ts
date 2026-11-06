@@ -127,36 +127,46 @@ export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
 // ---------------------------------------------------------------------------
 
 /** Receptury objęte skalowaniem +10%/epokę (klucz `id` z DEFAULT_CONVERTER_RECIPES). */
-export const CONVERTER_ERA_SCALING_RECIPE_IDS: ReadonlySet<string> = new Set(['cegielnia', 'garncarnia']);
+export const CONVERTER_ERA_SCALING_RECIPE_IDS: ReadonlySet<string> = new Set(['garncarnia']);
 
 /** Przyrost przepustowości na epokę (10% BAZY), addytywnie -- domyślny (Garncarnia), patrz komentarz wyżej. */
 export const CONVERTER_ERA_SCALING_PCT = 0.10;
 
 /**
- * R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (decyzja właściciela 2026-11-05): „cegielnia
- * powinna zwiększać swoją produkcję o 50% w każdej epoce" + „dwukrotnie zwiększyć
- * produkcję cegły". Cegielnia: wyjście ×2 (outputAmount 1→2; baza przepustowości
- * 50 w econ-params.json BEZ zmian) i +50% BAZY cykli za epokę właściciela, addytywnie: mnożnik 1 / 1,5 / 2 / 2,5 / 3 dla epok 1-5 (parytet z
- * `citizenConsumptionEraMultiplier`, m(e) = 1 + 0,5 × (e − 1)). Pozostałe receptury
- * skalowane (Garncarnia) zostają przy domyślnym CONVERTER_ERA_SCALING_PCT = 10%.
- * Jedna funkcja `converterThroughputForEra` dla gracza i AI.
+ * R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (decyzja właściciela 2026-11-05 + zgoda
+ * „mnożniki te, co przy surowcach"): „dwukrotnie zwiększyć produkcję cegły" + „cegielnia
+ * powinna zwiększać swoją produkcję o 50% w każdej epoce".
  *
- * "x2 produkcji" realizuje `outputAmount` 1→2 (receptura 2 glina + 1 drewno → 2 cegły),
- * NIE podwojenie przepustowości: pomiar w realnej grze (brick-live-measure, seed 7,
- * era 2, 30 tur) pokazał, że Cegielnię ogranicza WEJŚCIE (drewno: 30/30 tur), nie
- * przepustowość -- samo x2 cykli nie zmieniłoby wyjścia ani o sztukę. Zmiana outputAmount
- * podwaja cegłę w KAŻDYM reżimie (wejście/przepustowość) i nie zwiększa zużycia gliny/
- * drewna na turę (te same cykle, te same wejścia na cykl).
+ * (a) ×2: `outputAmount` Cegielni 1→2 (2 glina + 1 drewno → 2 cegły), baza przepustowości
+ *     50 cykli/turę BEZ zmian.
+ * (b) +50% BAZY za epokę właściciela jako MNOŻNIK WYJŚCIA (nie cykli): m(e) = 1 + 0,5 × (e − 1)
+ *     = 1 / 1,5 / 2 / 2,5 / 3 -- ta sama krzywa co `citizenConsumptionEraMultiplier`
+ *     (mnożniki surowców FALA 500). Pomiar w grze pokazał, że Cegielnię ogranicza WEJŚCIE
+ *     (drewno 30/30 tur), więc mnożnik na cyklach byłby martwy; mnożnik na wyjściu działa
+ *     w każdym reżimie i NIE zwiększa zużycia gliny/drewna (cykle i wejścia/cykl bez zmian).
+ *     Cykle Cegielni są od tej pory PŁASKIE (poza CONVERTER_ERA_SCALING_RECIPE_IDS).
+ * Jedna funkcja `converterOutputMultiplierForEra` dla gracza i AI.
  */
-export const CONVERTER_ERA_SCALING_PCT_BY_RECIPE: Readonly<Record<string, number>> = {
+export const CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE: Readonly<Record<string, number>> = {
   cegielnia: 0.50,
 };
+
+/** Sufiks klucza w mapie `throughputs` przekazującego mnożnik wyjścia do `runConverters`. */
+export const CONVERTER_OUTPUT_MULT_KEY_SUFFIX = '#outMult';
+
+/** Mnożnik WYJŚCIA receptury za epokę właściciela (1 dla receptur bez skalowania wyjścia). */
+export function converterOutputMultiplierForEra(recipeId: string, era: number): number {
+  const pct = CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE[recipeId];
+  if (pct === undefined) return 1;
+  const e = Number.isFinite(era) && era > 1 ? Math.floor(era) : 1;
+  return 1 + pct * (e - 1);
+}
 
 /**
  * Przepustowość konwertera po uwzględnieniu epoki WŁAŚCICIELA budynku (per-owner,
  * PARYTET AI -- ta sama funkcja dla gracza i AI, `era` to zwykły parametr liczbowy
- * bez gałęzi po ownerId). Cegielnia rośnie +50% bazy/epokę, Garncarnia +10% (addytywnie);
- * reszta receptur (Odlewnie) zwraca `baseThroughput` bez zmian niezależnie od `era`.
+ * bez gałęzi po ownerId). Garncarnia +10% bazy/epokę (addytywnie); Cegielnia i Odlewnie
+ * płaskie (Cegielnia skaluje WYJŚCIE: `converterOutputMultiplierForEra`).
  * `era` < 1 lub nieskończone/NaN traktowane jak 1 (brak ujemnego/undefined mnożnika).
  */
 export function converterThroughputForEra(
@@ -166,8 +176,24 @@ export function converterThroughputForEra(
 ): number {
   if (!CONVERTER_ERA_SCALING_RECIPE_IDS.has(recipeId)) return baseThroughput;
   const e = Number.isFinite(era) && era > 1 ? era : 1;
-  const pct = CONVERTER_ERA_SCALING_PCT_BY_RECIPE[recipeId] ?? CONVERTER_ERA_SCALING_PCT;
-  return baseThroughput * (1 + pct * (e - 1));
+  return baseThroughput * (1 + CONVERTER_ERA_SCALING_PCT * (e - 1));
+}
+
+/**
+ * Mapa dla `runConverters`: przepustowości per receptura + mnożniki wyjścia pod kluczem
+ * `<id>#outMult` (tylko receptury ze skalowaniem wyjścia). Jedno miejsce dla gracza i AI.
+ */
+export function converterThroughputsForEra(
+  baseOf: (recipe: ConverterRecipe) => number,
+  era: number,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const recipe of DEFAULT_CONVERTER_RECIPES) {
+    out[recipe.id] = converterThroughputForEra(recipe.id, baseOf(recipe), era);
+    const m = converterOutputMultiplierForEra(recipe.id, era);
+    if (m !== 1) out[recipe.id + CONVERTER_OUTPUT_MULT_KEY_SUFFIX] = m;
+  }
+  return out;
 }
 
 export type ConverterReason = 'ok' | 'brak-wejscia' | 'pelny-magazyn' | 'zero-przepustowosci';
@@ -185,6 +211,7 @@ export function runConverter(
   stores: Record<string, number>,
   throughput: number,
   outputCapacity: number,
+  outputMultiplier = 1,
 ): ConvertResult {
   const have = (k: string): number => {
     const v = stores[k];
@@ -201,8 +228,10 @@ export function runConverter(
   }
   if (!Number.isFinite(limitWejscia)) limitWejscia = 0;
 
+  const outMult = Number.isFinite(outputMultiplier) && outputMultiplier > 0 ? outputMultiplier : 1;
+  const outPerCykl = recipe.outputAmount * outMult;
   const wolne = Math.max(0, outputCapacity - have(recipe.output));
-  const limitWyjscia = recipe.outputAmount > 0 ? Math.floor(wolne / recipe.outputAmount) : 0;
+  const limitWyjscia = outPerCykl > 0 ? Math.floor(wolne / outPerCykl) : 0;
 
   const cykle = Math.max(0, Math.min(tput, limitWejscia, limitWyjscia));
 
@@ -214,7 +243,7 @@ export function runConverter(
       nowe[k] = have(k) - used;
       consumed[k] = used;
     }
-    nowe[recipe.output] = have(recipe.output) + recipe.outputAmount * cykle;
+    nowe[recipe.output] = have(recipe.output) + outPerCykl * cykle;
   }
 
   let reason: ConverterReason = 'ok';
@@ -225,7 +254,7 @@ export function runConverter(
     else                         reason = 'brak-wejscia';
   }
 
-  return { produced: cykle * recipe.outputAmount, cykle, consumed, stores: nowe, reason };
+  return { produced: cykle * outPerCykl, cykle, consumed, stores: nowe, reason };
 }
 
 export interface RunConvertersResult {
@@ -280,7 +309,7 @@ export function converterProductionDisplayForBuilding(
       consumed[key] = (consumed[key] ?? 0) + perCykl * throughput;
     }
     if (recipe.outputAmount > 0) {
-      produced[recipe.output] = (produced[recipe.output] ?? 0) + recipe.outputAmount * throughput;
+      produced[recipe.output] = (produced[recipe.output] ?? 0) + recipe.outputAmount * converterOutputMultiplierForEra(recipe.id, era) * throughput;
     }
   }
   return { consumed, produced };
@@ -372,7 +401,8 @@ export function runConverters(
     const tput = Object.prototype.hasOwnProperty.call(throughputs, tputKey)
       ? (throughputs[tputKey] ?? recipe.throughputFallback)
       : recipe.throughputFallback;
-    const res = runConverter(recipe, cur, tput, capacityOf(recipe.output));
+    const outMult = throughputs[recipe.id + CONVERTER_OUTPUT_MULT_KEY_SUFFIX] ?? 1;
+    const res = runConverter(recipe, cur, tput, capacityOf(recipe.output), outMult);
     cur = res.stores;
     perBuilding[recipe.id] = res;
   }

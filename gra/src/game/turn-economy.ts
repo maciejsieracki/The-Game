@@ -102,7 +102,7 @@ import {
   loadThroughput,
   DEFAULT_CONVERTER_RECIPES,
   converterBuildingIdForRecipe,
-  converterThroughputForEra,
+  converterThroughputsForEra,
   computeGarncarniaSurplusBonus,
   type RawConverterParamsJson,
 } from './converters';
@@ -1422,12 +1422,10 @@ function simulateResourcePipelineForPreview(
     eraForOwner(ownerId),
   );
   const throughputsForOwner = (ownerId: number): Record<string, number> => {
-    const out: Record<string, number> = {};
-    for (const recipe of DEFAULT_CONVERTER_RECIPES) {
-      const base = loadThroughput(raw, recipe.throughputParamKey, difficulty, recipe.throughputFallback);
-      out[recipe.id] = converterThroughputForEra(recipe.id, base, eraForOwner(ownerId));
-    }
-    return out;
+    return converterThroughputsForEra(
+      recipe => loadThroughput(raw, recipe.throughputParamKey, difficulty, recipe.throughputFallback),
+      eraForOwner(ownerId),
+    );
   };
 
   // Keep preview's pre-converter inflow identical to tickEmpireResourcePipeline:
@@ -1695,7 +1693,7 @@ function tickEmpireResourcePipeline(
   kamieniarskiBonusKamieniaCiv: number,
   /**
    * P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): funkcja, nie stała mapa --
-   * Cegielnia/Garncarnia skalują się +10% bazy/epokę WŁAŚCICIELA konwertera (owner
+   * Garncarnia skaluje cykle +10% bazy/epokę, Cegielnia WYJŚCIE ×(1+0,5·(e−1)) (epoka WŁAŚCICIELA konwertera (owner
    * to zwykły parametr, PARYTET AI: identyczna funkcja dla ownerId=0 i AI). Wołana
    * raz na ownera w pętli Faza 2 niżej.
    */
@@ -2336,8 +2334,8 @@ export function advanceCityEconomy(
       rawForConverters, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
     );
   }
-  // P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): Cegielnia/Garncarnia +10%
-  // przepustowości bazowej ADDYTYWNIE za każdą epokę CYWILIZACJI WŁAŚCICIELA (nie
+  // P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): Garncarnia +10% przepustowości
+  // (Cegielnia: od BRICK-X2 mnożnik WYJŚCIA 1+0,5·(e−1), klucze '<id>#outMult') bazowej ADDYTYWNIE za każdą epokę CYWILIZACJI WŁAŚCICIELA (nie
   // globalną epokę gry) -- `resolveOwnerEra` to ten sam resolver PARYTETU AI już
   // używany dla buildingLevelForEpoch/upkeep (main.ts: empireEpochForOwner), zero
   // nowej gałęzi po ownerId; owner 0 bez resolvera spada na `playerEra` (parametr
@@ -2347,12 +2345,10 @@ export function advanceCityEconomy(
     const era = resolveOwnerEra
       ? resolveOwnerEra(ownerId)
       : (ownerId === 0 ? playerEra : 1);
-    const out: Record<string, number> = {};
-    for (const recipe of DEFAULT_CONVERTER_RECIPES) {
-      const base = converterThroughputs[recipe.id] ?? recipe.throughputFallback;
-      out[recipe.id] = converterThroughputForEra(recipe.id, base, era);
-    }
-    return out;
+    return converterThroughputsForEra(
+      recipe => converterThroughputs[recipe.id] ?? recipe.throughputFallback,
+      era,
+    );
   };
 
   // Zadanie 2 (2026-07-23): Stolarnia / Warsztat kamieniarski -- bonus CIV-WIDE do
