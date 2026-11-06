@@ -19,6 +19,11 @@
  *    (flaga ustawiana w main.ts handleSiegeCapitulationPhase gdy zapasy = 0; następny tick
  *    ekonomii wywołuje resolveSiegeSurrender). Tick ekonomii biegnie PRZED fazą AI/barbarzyńców
  *    w tym samym przejściu tury, więc faza, w której flaga jest już true, jest ostatnią turą.
+ *    R-WEB-SIEGE-STARVATION-SURRENDER-Q1: flaga `siegeCapitulationPending` oznacza teraz TYLKO ścieżkę
+ *    miasta BEZ garnizonu (zapasy 0 -> następny tick przejmuje). Miasto Z garnizonem poddaje się
+ *    w ticku, w którym ΣHP/startoweMaxHP < 50% (siege-starvation.ts) -- bez flagi; „tura kapitulacji"
+ *    to wtedy tura głodu, której nie da się przewidzieć w tym predykacie. `isLastTurn` służy WYŁĄCZNIE
+ *    logowi (FALA 505: wypad w KAŻDEJ turze oblężenia), więc zachowanie nie zależy od tej różnicy.
  *  - Siła = ta sama funkcja co siegeAi (estimateUnitCombatStrength: Atak, Obrona, Pancerz,
  *    weaponDamage, Uderzenie, skala HP). Wypad walczy w polu -- mury i wirtualna Milicja NIE
  *    wchodzą do siły obleganych (nie wychodzą z miasta).
