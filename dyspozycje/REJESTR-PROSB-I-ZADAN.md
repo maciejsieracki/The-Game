@@ -8808,3 +8808,5 @@ Właściciel: gra praktycznie niegrywalna — ruch jednostek, wejście do miast 
 
 ## 2026-11-06 — USTERKA z FC NAPTRUST: UI blokady paktu nie zna narzutu za wspólną granicę
 UI pokazuje próg 110/120, silnik odrzuca do 130/140. Temat R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1. Otwarte pytania do właściciela (nie blokują): automatyczny NAP państw-miast UPR bez bramki Zaufania; ręczna akceptacja propozycji AI przez gracza bez progów (C-DYP-Q1=A).
+
+## 2026-11-06 — ZGŁOSZENIE (zrzut banera, powtórzone): liczby większe, bez pustych przestrzeni → R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1. WDROŻONE dziś: FALA 509–516 (rekrutacja, Spichlerz Królewski, zwiadowca, głód oblężenia, cegła ×2, Magazyn bez żywności, NAP Zaufanie 30, automatyzacja budowy OFF, próg NAP w UI, Emporion, PERF-memo). Decyzja otwarta: Emporion bonus 5%: per trasa (wdrożone) vs osobny per budynek.
