@@ -280,12 +280,12 @@ for (const [lab, h, pr] of [
   const r = saturate(oid, 'normal', h, pr, lab);
   SAT.push(r);
   for (const tr of r.trace) {
-    rows.push(['F_nasycenie', 'tura ' + tr.t, lab, tr.army, '', '', 'skarbiec=' + tr.treasury + ' MPpula=' + tr.mp + ' dochod=' + tr.income + ' utrzymanie=' + tr.upkeep + ' ogranicza=' + tr.binding + ' pop=' + tr.pop]);
+    rows.push(['F_nasycenie_MODEL', 'tura ' + tr.t, lab, tr.army, '', '', 'MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=' + tr.treasury + ' MPpula=' + tr.mp + ' dochod=' + tr.income + ' utrzymanie=' + tr.upkeep + ' ogranicza=' + tr.binding + ' pop=' + tr.pop]);
   }
-  rows.push(['F_nasycenie', 'zakupy lacznie / zginelo z deficytu', lab, r.purchases, r.died, '', 'koszt Wojownika=' + r.cost + ' zl, ' + r.mpCost + ' MP; armia koncowa=' + r.units]);
+  rows.push(['F_nasycenie_MODEL', 'zakupy lacznie / zginelo z deficytu', lab, r.purchases, r.died, '', 'MODEL, nie kod AI, nie dowod; koszt Wojownika=' + r.cost + ' zl, ' + r.mpCost + ' MP; armia koncowa=' + r.units]);
 }
-add('F_nasycenie', 'armia po ' + SAT_TURNS + ' turach (8 miast pop8)', 'gracz vs AI parytet suwakow', SAT[0].units, SAT[1].units);
-add('F_nasycenie', 'armia po ' + SAT_TURNS + ' turach (8 miast pop8)', 'gracz vs AI domyslne silnika', SAT[0].units, SAT[2].units, 'AI ma 63% mniej Pieniadza z handlu, wiecej Nauki i Pracy do puli');
+add('F_nasycenie_MODEL', 'armia po ' + SAT_TURNS + ' turach (8 miast pop8)', 'gracz vs AI parytet suwakow', SAT[0].units, SAT[1].units, 'MODEL wlasnej petli narzedzia (zakup najtanszej jednostki gdy stac); NIE kod AI, NIE dowod parytetu; wniosku o AI z tego wiersza NIE wyciagac');
+add('F_nasycenie_MODEL', 'armia po ' + SAT_TURNS + ' turach (8 miast pop8)', 'gracz vs AI domyslne silnika', SAT[0].units, SAT[2].units, 'MODEL: 0 dla AI wynika z zalozen modelu (80 budynkow, 8 miast pop8, brak tras handlowych); ROZJEZD z gra zmierzony w r3 (AI 15-33 jednostek bojowych w T40): model NIEROZSTRZYGAJACY, patrz REPORT.md sekcja 6');
 
 // ---------- zapis ----------
 const csv = rows.map((r) => r.map((c) => {

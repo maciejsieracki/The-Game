@@ -1,0 +1,17 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=28 landSea=265 relief=234 coast=39 riversMain=2655 riversFill=2666 forest=7 deposits=27 starts=218 total=6142
+OK
+A_koszty_budynkow | koszt Pracy+surowce budynku, owner0 vs owner1 (wszystkie trudnosci) | 2970 | 1980
+A_koszty_budynkow | JAK WYZEJ, ale tylko poziom trudnosci NORMAL | 990 | 0
+A_koszty_budynkow | ROZNICA MIEDZY CYWILIZACJAMI (normal, owner0): pary (budynek,poziom) o roznym koszcie Pracy | 66 | 66
+A_availableProduction | pelna lista produkcji (budynki+jednostki) owner0 vs owner1: id i koszt, civ x epoka 1-4 x tempo x stolica/region | 360 | 0
+C_koszty_jednostek | koszt zlota/MP/surowce jednostki owner0 vs owner1 (wszystkie trudnosci) | 3375 | 1980
+C_koszty_jednostek | jak wyzej, tylko NORMAL | 1125 | 0
+C_utrzymanie_jednostek | utrzymanie zlota+surowcow jednostki (tick ekonomii) owner0 vs owner1, Normal | 1125 | 0
+C_koszty_jednostek | ROZNICA MIEDZY CYWILIZACJAMI (normal, owner0): jednostki o roznym koszcie zlota | 75 | 66
+B_koszty_ulepszen_terenu | koszt Pracy ulepszenia terenu (scaleTerrainImprovementWorkCost; funkcja BEZ parametru ownerId/trudnosci/civ) | 1320 | 0
+D_przychody | strumienie miasta (Praca, Pieniadz, Nauka, Zywnosc, Kultura, Luksus, doPuli ...) + utrzymanie: dwa identyczne miasta owner0 vs owner1 przez advanceCityEconomy | 1980 | 0
+D_przychody_miedzy_civ | BAZA(0 budynkow), epoka 2, owner0: Pieniadz/tura per civ (najwyzszy vs najnizszy) | 15 | n/d
+D_przychody_miedzy_civ | WSZYSTKIE budynki epoki, epoka 2, owner0: Pieniadz/tura per civ (najwyzszy vs najnizszy) | 15 | n/d
+E_civ_parametry | parametry ekonomii/kosztow/MP z civ-matrix.json per cywilizacja (te same wartosci dla gracza i AI wybierajacego te civ) | 15 | n/d
+EXIT=0

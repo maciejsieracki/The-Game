@@ -1,0 +1,27 @@
+R-WEB-AI-VS-PLAYER-ECONOMY-AUDIT-Q1 -- komendy reprodukcji (runda 3). Zero zmian w gra/src i gra/data; bundle i build POZA repo.
+
+0) Zaleznosci poza repo (nie w gra/):
+   mkdir -p $S/nm && cp gra/package.json gra/package-lock.json $S/nm/ && (cd $S/nm && npm ci --ignore-scripts --no-audit --no-fund)
+
+1) Macierz parytetu A-D (gracz 0 vs AI 1 x 15 civ x epoki) -- ok. 25 s:
+   cd gra && node tools/ai-vs-player-parity-matrix.cjs --out ../dyspozycje/autobot/runs/R-WEB-AI-VS-PLAYER-ECONOMY-AUDIT-Q1 \
+        --esbuild $S/nm/node_modules/esbuild --nodepaths $S/nm/node_modules
+   -> results-koszty-budynkow.csv, results-koszty-ulepszen.csv, results-koszty-jednostek.csv, results-przychody.csv,
+      results-civ-parametry.csv, results-parity-summary.csv, coverage.json
+
+2) Pomiar bazowy gracz vs AI (R1/R2; wiersze F_nasycenie_MODEL = model wlasnej petli narzedzia, NIE kod AI):
+   cd gra && node tools/ai-vs-player-economy-audit.cjs --out ../dyspozycje/autobot/runs/R-WEB-AI-VS-PLAYER-ECONOMY-AUDIT-Q1 \
+        --esbuild $S/nm/node_modules/esbuild --nodepaths $S/nm/node_modules      -> results.csv (112 wierszy)
+
+3) Zywa gra (pelny bundle, headless Chromium /opt/pw-browsers/chromium) -- na KOPII gra/ poza repo:
+   cp -r gra $S/game && cp -r $S/nm/node_modules $S/game/node_modules
+   node gra/tools/ai-city-live-measure.cjs --prepare $S/game
+   node gra/tools/ai-army-all-civs-live-hook.cjs $S/game
+   node gra/tools/ai-econ-live-hook.cjs $S/game
+   (cd $S/game && node ./node_modules/vite/bin/vite.js build --outDir $S/dist --emptyOutDir)      # ok. 40-60 s, poza repo
+   node gra/tools/ai-econ-live-measure.cjs --pw $S/nm --dist $S/dist --out $S/live --label r3p --seed 4242 \
+        --turns 100 --size Maly --cs 0 --civs 4 --budget-ms 535000
+   # Wynik R3: ok. 160 s generowania + ok. 9 s/ture => budzet 535 s daje T1-T40 (NIE 100); zapis: live-r3p-kontynenty-4242.json.gz,
+   # results-live-econ.csv (co 5 tur). Zadnych procesow w tle.
+
+4) Sprzatanie po pomiarze: usunac $S/game, $S/dist, $S/nm/node_modules, $S/live (jawne sciezki, bez wildcardow).

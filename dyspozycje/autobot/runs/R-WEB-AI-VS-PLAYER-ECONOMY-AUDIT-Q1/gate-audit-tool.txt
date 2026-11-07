@@ -1,4 +1,4 @@
 [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-[civ] mapGen ms | prep=17 terrain=54 landSea=863 relief=437 coast=71 riversMain=4648 riversFill=4080 forest=7 deposits=22 starts=693 total=10891
-OK wierszy=112 -> /home/user/The-Game/.claude/worktrees/wf_e2b0dbb7-e2c-3/dyspozycje/autobot/runs/R-WEB-AI-VS-PLAYER-ECONOMY-AUDIT-Q1/results.csv
+[civ] mapGen ms | prep=9 terrain=37 landSea=302 relief=269 coast=22 riversMain=3516 riversFill=3173 forest=7 deposits=20 starts=225 total=7581
+OK wierszy=112 -> /home/user/The-Game/.claude/worktrees/wf_ffd6ef4b-973-1/dyspozycje/autobot/runs/R-WEB-AI-VS-PLAYER-ECONOMY-AUDIT-Q1/results.csv
 EXIT=0

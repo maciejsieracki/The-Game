@@ -1,0 +1,16 @@
+civ,klucz_macierzy,meta_mnoznik_waluta,eko_praca_proc,eko_pieniadz_proc,eko_pieniadz_port_proc,eko_zywnosc_proc,eko_nauka_proc,eko_handel_brutto_proc,eko_korupcja_proc,prod_koszt_budynku_proc,prod_koszt_jednostki_proc,walka_koszt_rekrutacji_proc,prod_szybkosc_budynku_proc,prod_szybkosc_jednostki_proc,lud_wzrost_proc,lud_limit_populacji,mp_regen_proc,mp_max_proc,mp_koszt_jednostki_proc,wealth_cap_proc,wealth_mnoznik_proc
+grecy,grecy,2.3,0.02,0.15,0.15,0,0,0.15,0,0,0,0,0,0,0,1,-0.15,0,0,0,0
+rzymianie,rzymianie,2,0,0,0,0,0,0,0,0.2,0,0,0,0,0,2,0.35,0,0,0,0
+chinczycy,chinczycy,2.4,0.03,0,0,0,0,0,0,0,0,0,0,0,0.05,2,0,0,0,0,0
+inkowie,inkowie,1.9,-0.03,0,0,0,0.15,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+zulusi,zulusi,1.8,-0.03,0,0,0,0,0,0,0,0.1,0.1,0,0,-0.05,-1,0,0,0,0,0
+egipt,egipt,2.1,0.01,0,0,0,0,0,0,0,0,0,0,0,0.05,2,0,0,0,0,0
+sumer,sumer,2.2,0.01,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+celtowie,celtowie,1.9,-0.02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+germanie,germanie,1.7,-0.02,0,0,0,0,0,0,0,0,0,0,0,-0.05,0,0,0,0,0,0
+harappa,harappa,2.4,0.04,0.15,0,0,0,0.15,0,0,0,0,0,0,0,2,0,0,0,0,0
+hetyci,hetyci,2,0,0,-0.05,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+slowianie,slowianie,1.8,0,0,0,0,-0.05,0,0,0,0,0,0,0,0.03,0,0.1,0,0,0,0
+babilonia,babilonia,2.3,0,0.1,0,0,0.15,0.1,0,0,0,0,0,0,0,1,0,0,0,0,0
+asyria,asyria,1.7,-0.02,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+fenicjanie,fenicjanie,2.6,0.05,0.35,0.25,0,0,0.35,0,0,0,0,0,0,0,1,0,0,0,0,0

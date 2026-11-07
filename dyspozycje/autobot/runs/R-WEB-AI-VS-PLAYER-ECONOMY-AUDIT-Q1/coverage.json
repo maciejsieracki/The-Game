@@ -1,0 +1,47 @@
+{
+  "civs": 15,
+  "civsNierozwiazane": [],
+  "sekcje": {
+    "A": {
+      "budynkow": 43,
+      "civ": 15,
+      "owner": 2,
+      "trudnosci": 3,
+      "wierszy": 5940,
+      "kombinacjeDoPorownania": 2970,
+      "przyklady": [
+        "stolarnia lv1 easy grecy: 20 vs 40",
+        "stolarnia lv1 easy rzymianie: 16 vs 32",
+        "stolarnia lv1 easy chinczycy: 20 vs 40",
+        "stolarnia lv1 easy inkowie: 20 vs 40",
+        "stolarnia lv1 easy zulusi: 20 vs 40"
+      ]
+    },
+    "Aprime": {
+      "kombinacje": 360
+    },
+    "C": {
+      "jednostek": 75,
+      "civ": 15,
+      "owner": 2,
+      "trudnosci": 3,
+      "wierszy": 6750,
+      "tickiUtrzymania": 2250
+    },
+    "B": {
+      "ulepszen": 22,
+      "civ": 15,
+      "era": 4,
+      "owner": 2,
+      "wierszy": 2640
+    },
+    "D": {
+      "scenariuszy": 45,
+      "epok": 4,
+      "civ": 15,
+      "owner": 2,
+      "tickow": 3960,
+      "wierszy": 3960
+    }
+  }
+}

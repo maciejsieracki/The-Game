@@ -70,44 +70,44 @@ E_bonusy_AI,Nauka +/tura,hard,0,2,n/d,main.ts difficultyScienceBonusForOwner
 E_bonusy_AI,mnoznik walki,hard,1,1.05,5,
 E_bonusy_AI,jednostki startowe,hard,0,2,n/d,
 E_bonusy_AI,Pieniadz (Danina/Zamoznosc) - bonus trudnosci,wszystkie,0,0,0,brak pola bonusPieniadz w DifficultyParams (ai.ts:580-590)
-F_nasycenie,tura 10,gracz(0) suwaki 20/60/20 Praca70,11,,,skarbiec=-591 MPpula=123344 dochod=336 utrzymanie=380 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 20,gracz(0) suwaki 20/60/20 Praca70,0,,,skarbiec=-733 MPpula=128000 dochod=370 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 30,gracz(0) suwaki 20/60/20 Praca70,0,,,skarbiec=-327 MPpula=128000 dochod=379 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 40,gracz(0) suwaki 20/60/20 Praca70,19,,,skarbiec=4 MPpula=97616 dochod=413 utrzymanie=412 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 50,gracz(0) suwaki 20/60/20 Praca70,21,,,skarbiec=0 MPpula=115376 dochod=417 utrzymanie=416 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 60,gracz(0) suwaki 20/60/20 Praca70,27,,,skarbiec=-1 MPpula=121664 dochod=443 utrzymanie=444 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 70,gracz(0) suwaki 20/60/20 Praca70,32,,,skarbiec=0 MPpula=121264 dochod=461 utrzymanie=460 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 80,gracz(0) suwaki 20/60/20 Praca70,32,,,skarbiec=2 MPpula=128000 dochod=465 utrzymanie=464 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 90,gracz(0) suwaki 20/60/20 Praca70,24,,,skarbiec=4 MPpula=105904 dochod=465 utrzymanie=388 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 100,gracz(0) suwaki 20/60/20 Praca70,38,,,skarbiec=2 MPpula=99664 dochod=488 utrzymanie=488 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 110,gracz(0) suwaki 20/60/20 Praca70,40,,,skarbiec=0 MPpula=117424 dochod=494 utrzymanie=492 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 120,gracz(0) suwaki 20/60/20 Praca70,43,,,skarbiec=1 MPpula=126816 dochod=508 utrzymanie=508 ogranicza=ZLOTO pop=64
-F_nasycenie,zakupy lacznie / zginelo z deficytu,gracz(0) suwaki 20/60/20 Praca70,74,31,,"koszt Wojownika=5 zl, 2000 MP; armia koncowa=43"
-F_nasycenie,tura 10,AI(1) te same suwaki (parytet),11,,,skarbiec=-591 MPpula=123344 dochod=336 utrzymanie=380 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 20,AI(1) te same suwaki (parytet),0,,,skarbiec=-733 MPpula=128000 dochod=370 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 30,AI(1) te same suwaki (parytet),0,,,skarbiec=-327 MPpula=128000 dochod=379 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 40,AI(1) te same suwaki (parytet),19,,,skarbiec=4 MPpula=97616 dochod=413 utrzymanie=412 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 50,AI(1) te same suwaki (parytet),21,,,skarbiec=0 MPpula=115376 dochod=417 utrzymanie=416 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 60,AI(1) te same suwaki (parytet),27,,,skarbiec=-1 MPpula=121664 dochod=443 utrzymanie=444 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 70,AI(1) te same suwaki (parytet),32,,,skarbiec=0 MPpula=121264 dochod=461 utrzymanie=460 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 80,AI(1) te same suwaki (parytet),32,,,skarbiec=2 MPpula=128000 dochod=465 utrzymanie=464 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 90,AI(1) te same suwaki (parytet),24,,,skarbiec=4 MPpula=105904 dochod=465 utrzymanie=388 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 100,AI(1) te same suwaki (parytet),38,,,skarbiec=2 MPpula=99664 dochod=488 utrzymanie=488 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 110,AI(1) te same suwaki (parytet),40,,,skarbiec=0 MPpula=117424 dochod=494 utrzymanie=492 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 120,AI(1) te same suwaki (parytet),43,,,skarbiec=1 MPpula=126816 dochod=508 utrzymanie=508 ogranicza=ZLOTO pop=64
-F_nasycenie,zakupy lacznie / zginelo z deficytu,AI(1) te same suwaki (parytet),74,31,,"koszt Wojownika=5 zl, 2000 MP; armia koncowa=43"
-F_nasycenie,tura 10,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-2188 MPpula=128000 dochod=121 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 20,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-4220 MPpula=128000 dochod=142 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 30,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-6043 MPpula=128000 dochod=162 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 40,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-7731 MPpula=128000 dochod=174 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 50,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-9279 MPpula=128000 dochod=188 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 60,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-10704 MPpula=128000 dochod=202 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 70,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-12018 MPpula=128000 dochod=206 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 80,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-13228 MPpula=128000 dochod=218 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 90,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-14352 MPpula=128000 dochod=230 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 100,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-15395 MPpula=128000 dochod=233 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 110,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-16329 MPpula=128000 dochod=244 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,tura 120,AI(1) domyslne silnika 60/20/20 Praca50,0,,,skarbiec=-17205 MPpula=128000 dochod=253 utrzymanie=336 ogranicza=ZLOTO pop=64
-F_nasycenie,zakupy lacznie / zginelo z deficytu,AI(1) domyslne silnika 60/20/20 Praca50,0,0,,"koszt Wojownika=5 zl, 2000 MP; armia koncowa=0"
-F_nasycenie,armia po 120 turach (8 miast pop8),gracz vs AI parytet suwakow,43,43,0,
-F_nasycenie,armia po 120 turach (8 miast pop8),gracz vs AI domyslne silnika,43,0,-100,"AI ma 63% mniej Pieniadza z handlu, wiecej Nauki i Pracy do puli"
+F_nasycenie_MODEL,tura 10,gracz(0) suwaki 20/60/20 Praca70,11,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-591 MPpula=123344 dochod=336 utrzymanie=380 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 20,gracz(0) suwaki 20/60/20 Praca70,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-733 MPpula=128000 dochod=370 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 30,gracz(0) suwaki 20/60/20 Praca70,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-327 MPpula=128000 dochod=379 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 40,gracz(0) suwaki 20/60/20 Praca70,19,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=4 MPpula=97616 dochod=413 utrzymanie=412 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 50,gracz(0) suwaki 20/60/20 Praca70,21,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=0 MPpula=115376 dochod=417 utrzymanie=416 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 60,gracz(0) suwaki 20/60/20 Praca70,27,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-1 MPpula=121664 dochod=443 utrzymanie=444 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 70,gracz(0) suwaki 20/60/20 Praca70,32,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=0 MPpula=121264 dochod=461 utrzymanie=460 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 80,gracz(0) suwaki 20/60/20 Praca70,32,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=2 MPpula=128000 dochod=465 utrzymanie=464 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 90,gracz(0) suwaki 20/60/20 Praca70,24,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=4 MPpula=105904 dochod=465 utrzymanie=388 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 100,gracz(0) suwaki 20/60/20 Praca70,38,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=2 MPpula=99664 dochod=488 utrzymanie=488 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 110,gracz(0) suwaki 20/60/20 Praca70,40,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=0 MPpula=117424 dochod=494 utrzymanie=492 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 120,gracz(0) suwaki 20/60/20 Praca70,43,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=1 MPpula=126816 dochod=508 utrzymanie=508 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,zakupy lacznie / zginelo z deficytu,gracz(0) suwaki 20/60/20 Praca70,74,31,,"MODEL, nie kod AI, nie dowod; koszt Wojownika=5 zl, 2000 MP; armia koncowa=43"
+F_nasycenie_MODEL,tura 10,AI(1) te same suwaki (parytet),11,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-591 MPpula=123344 dochod=336 utrzymanie=380 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 20,AI(1) te same suwaki (parytet),0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-733 MPpula=128000 dochod=370 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 30,AI(1) te same suwaki (parytet),0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-327 MPpula=128000 dochod=379 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 40,AI(1) te same suwaki (parytet),19,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=4 MPpula=97616 dochod=413 utrzymanie=412 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 50,AI(1) te same suwaki (parytet),21,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=0 MPpula=115376 dochod=417 utrzymanie=416 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 60,AI(1) te same suwaki (parytet),27,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-1 MPpula=121664 dochod=443 utrzymanie=444 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 70,AI(1) te same suwaki (parytet),32,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=0 MPpula=121264 dochod=461 utrzymanie=460 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 80,AI(1) te same suwaki (parytet),32,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=2 MPpula=128000 dochod=465 utrzymanie=464 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 90,AI(1) te same suwaki (parytet),24,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=4 MPpula=105904 dochod=465 utrzymanie=388 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 100,AI(1) te same suwaki (parytet),38,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=2 MPpula=99664 dochod=488 utrzymanie=488 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 110,AI(1) te same suwaki (parytet),40,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=0 MPpula=117424 dochod=494 utrzymanie=492 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 120,AI(1) te same suwaki (parytet),43,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=1 MPpula=126816 dochod=508 utrzymanie=508 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,zakupy lacznie / zginelo z deficytu,AI(1) te same suwaki (parytet),74,31,,"MODEL, nie kod AI, nie dowod; koszt Wojownika=5 zl, 2000 MP; armia koncowa=43"
+F_nasycenie_MODEL,tura 10,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-2188 MPpula=128000 dochod=121 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 20,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-4220 MPpula=128000 dochod=142 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 30,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-6043 MPpula=128000 dochod=162 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 40,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-7731 MPpula=128000 dochod=174 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 50,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-9279 MPpula=128000 dochod=188 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 60,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-10704 MPpula=128000 dochod=202 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 70,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-12018 MPpula=128000 dochod=206 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 80,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-13228 MPpula=128000 dochod=218 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 90,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-14352 MPpula=128000 dochod=230 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 100,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-15395 MPpula=128000 dochod=233 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 110,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-16329 MPpula=128000 dochod=244 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,tura 120,AI(1) domyslne silnika 60/20/20 Praca50,0,,,"MODEL wlasnej petli zakupowej narzedzia (NIE decideAITurn/shouldAIPurchaseUnit, NIE dowod parytetu AI); skarbiec=-17205 MPpula=128000 dochod=253 utrzymanie=336 ogranicza=ZLOTO pop=64"
+F_nasycenie_MODEL,zakupy lacznie / zginelo z deficytu,AI(1) domyslne silnika 60/20/20 Praca50,0,0,,"MODEL, nie kod AI, nie dowod; koszt Wojownika=5 zl, 2000 MP; armia koncowa=0"
+F_nasycenie_MODEL,armia po 120 turach (8 miast pop8),gracz vs AI parytet suwakow,43,43,0,"MODEL wlasnej petli narzedzia (zakup najtanszej jednostki gdy stac); NIE kod AI, NIE dowod parytetu; wniosku o AI z tego wiersza NIE wyciagac"
+F_nasycenie_MODEL,armia po 120 turach (8 miast pop8),gracz vs AI domyslne silnika,43,0,-100,"MODEL: 0 dla AI wynika z zalozen modelu (80 budynkow, 8 miast pop8, brak tras handlowych); ROZJEZD z gra zmierzony w r3 (AI 15-33 jednostek bojowych w T40): model NIEROZSTRZYGAJACY, patrz REPORT.md sekcja 6"
