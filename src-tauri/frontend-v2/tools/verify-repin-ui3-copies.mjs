@@ -124,6 +124,62 @@ for (const a of man.adapters) {
   const rest = [...port.slice(0, start), a.removedImport, ...port.slice(end + 1)].join('\n');
   if (rest !== webTxt) fail(`ADAPTER ${a.path}: poza blokami adaptera plik ≠ web ${man.pin}:${a.src}`);
 }
+// R-RUSTPORT-REPIN-WEB-UI-3-D-Q1 (addytywnie, sekcja `ui3d`): PORT-D — plik portu = web `<pin>:<src>` po zastosowaniu
+// jawnych edycji `edits[]` (każde `web` dokładnie raz w bieżącym tekście, w kolejności) bajt w bajt; bloki
+// `// pin-adapter <rev> <źródło>:A-B` w porcie = źródło A..B bez `export ` (liczba = `markers`); SHA/DUP/DISJ jak wyżej;
+// `overlayDeps` sekcji = sha256 źródła weba.
+let pdChecked = 0;
+let pdBlocks = 0;
+let pdDeps = 0;
+for (const f of man.ui3d?.portDom ?? []) {
+  if (seen.has(f.path)) fail(`DUP ${f.path}`);
+  seen.add(f.path);
+  if (taken.has(f.path)) fail(`DISJ ${f.path} także w: ${taken.get(f.path).join(', ')}`);
+  const abs = join(ROOT, f.path);
+  if (!existsSync(abs)) {
+    fail(`BRAK ${f.path}`);
+    continue;
+  }
+  const buf = readFileSync(abs);
+  if (sha256(buf) !== f.sha256 || buf.length !== f.bytes) fail(`SHA ${f.path} oczekiwano ${f.sha256}/${f.bytes} jest ${sha256(buf)}/${buf.length}`);
+  const portTxt = buf.toString('utf8');
+  const lines = portTxt.split('\n');
+  let mk = 0;
+  lines.forEach((l, i) => {
+    const m = MARK.exec(l);
+    if (!m) return;
+    mk++;
+    if (!man.pin.startsWith(m[1])) fail(`PORT-D ${f.path}:${i + 1} rewizja ${m[1]} ≠ ${man.pin}`);
+    const src = webSrc(m[2]);
+    if (!src) return;
+    pdBlocks++;
+    const want = src.toString('utf8').split('\n').slice(+m[3] - 1, +m[4]).map((x) => x.replace(/^export /, ''));
+    if (want.join('\n') !== lines.slice(i + 1, i + 1 + want.length).join('\n')) fail(`PORT-D ${f.path}:${i + 1} blok ≠ ${m[2]}:${m[3]}-${m[4]}`);
+  });
+  if (mk !== f.markers) fail(`PORT-D ${f.path}: markerów ${mk} (manifest ${f.markers})`);
+  const web = webSrc(f.src);
+  if (!web) continue;
+  pdChecked++;
+  if (sha256(web) !== f.webSha256 || web.length !== f.webBytes) fail(`PORT-D ${f.path}: źródło weba ${sha256(web)}/${web.length} ≠ manifest ${f.webSha256}/${f.webBytes}`);
+  let txt = web.toString('utf8');
+  for (const [k, e] of f.edits.entries()) {
+    const n = txt.split(e.web).length - 1;
+    if (n !== 1) {
+      fail(`PORT-D ${f.path}: edycja #${k} występuje ${n}× w webie (wymagane 1)`);
+      continue;
+    }
+    txt = txt.replace(e.web, () => e.port);
+  }
+  if (txt !== portTxt) fail(`PORT-D ${f.path}: web ${man.pin.slice(0, 9)}:${f.src} + ${f.edits.length} edycji ≠ port`);
+}
+for (const d of man.ui3d?.overlayDeps ?? []) {
+  const ref = webSrc(d.src);
+  if (ref) {
+    pdDeps++;
+    if (sha256(ref) !== d.sha256 || ref.length !== d.bytes) fail(`DEPS(ui3d) ${d.src} ${sha256(ref)}/${ref.length} ≠ manifest`);
+  }
+}
+if (man.ui3d) console.log(`verify-repin-ui3-copies: ui3d portów=${man.ui3d.portDom.length} źródło_sprawdzone=${pdChecked} bloków=${pdBlocks} deps=${pdDeps}`);
 // DEPS: zależności weba wstawiane tylko do odniesienia nakładki (`overlayDeps`) — sha256 = źródło; NIE w `src/` portu.
 let deps = 0;
 for (const d of man.overlayDeps ?? []) {

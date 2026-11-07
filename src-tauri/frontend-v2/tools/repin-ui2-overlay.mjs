@@ -161,6 +161,23 @@ if (existsSync(ui3Url)) {
       console.log(`nakładka UI-3 ${f.src} (${buf.length} B)`);
     }
     console.log(`repin-ui2-overlay: UI-3 (R-RUSTPORT-REPIN-WEB-UI-3-Q1) plików=${ui3.files.length + ui3.adapters.length}`);
+    // R-RUSTPORT-REPIN-WEB-UI-3-D-Q1 (addytywnie): porty DOM partii D (`ui3d.portDom`) + ich zależności weba (`ui3d.overlayDeps`)
+    // — w odniesieniu wersja weba `9b019a7d8` (sha256 z manifestu).
+    const d3 = [...(ui3.ui3d?.portDom ?? []).map((p) => ({ src: p.src, sha256: p.webSha256, bytes: p.webBytes })), ...(ui3.ui3d?.overlayDeps ?? [])];
+    for (const f of d3) {
+      const buf = readFileSync(join(resolve(web3), f.src));
+      const sha = createHash('sha256').update(buf).digest('hex');
+      if (sha !== f.sha256 || buf.length !== f.bytes) {
+        bad++;
+        console.error(`SHA UI-3-D ${f.src} web=${sha}/${buf.length} manifest=${f.sha256}/${f.bytes}`);
+        continue;
+      }
+      const dst = join(resolve(out), f.src);
+      mkdirSync(dirname(dst), { recursive: true });
+      writeFileSync(dst, buf);
+      console.log(`nakładka UI-3-D ${f.src} (${buf.length} B)`);
+    }
+    console.log(`repin-ui2-overlay: UI-3-D (R-RUSTPORT-REPIN-WEB-UI-3-D-Q1) plików=${d3.length}`);
   }
 }
 console.log(`repin-ui2-overlay: plików=${entries.length} portów=${portFiles} niezgodnych=${bad} out=${out}`);
