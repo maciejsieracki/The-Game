@@ -1263,7 +1263,7 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand, MiastoWycenaWejscie } from './game/ai';
 import {
@@ -9593,6 +9593,11 @@ async function boot(): Promise<void> {
     let rejectedOfferCooldowns: RejectedOfferCooldown[] = [];
     /** v1.1: skarbiec AI do ticka trybutu (T1A). */
     const aiSkarbiecByOwner = new Map<number, number>();
+    /** R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1: przychód BRUTTO złota AI z ostatniego ticku
+     *  (aiEcon.pieniadz z bloku bankowania AI) -- baza prognozy dochodu netto w
+     *  aiPurchaseReserveInputs. Brak wpisu (tura 1, po wczytaniu zapisu) = reguła rezerwy
+     *  nieaktywna, dawna bramka (cena + Manpower). Nie zapisywana w save. */
+    const aiGoldIncomeByOwner = new Map<number, number>();
     const aiTargetMemoryByOwner: AiTargetMemoryByOwner = new Map();
     /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
      *  (rush) TEGO ownera W TEJ turze -- zerowany na wejściu w sekcję ownera w runAiPhase
@@ -10283,6 +10288,7 @@ async function boot(): Promise<void> {
       negotiationSeq = 0;
       rejectedOfferCooldowns = [];
       aiSkarbiecByOwner.clear();
+      aiGoldIncomeByOwner.clear();
       aiPracaPoolByOwner.clear();
       aiNaukaPoolByOwner.clear();
       aiBadanaByOwner.clear();
@@ -33203,6 +33209,40 @@ async function boot(): Promise<void> {
     // playerState.ts; AI ownerId>0 = mapy *ByOwner poniżej). Patrz capital-capture.ts.
     // -----------------------------------------------------------------------
 
+    /**
+     * R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1: dane reguły rezerwy utrzymania dla zakupu
+     * jednostki przez AI. Netto = przychód brutto z OSTATNIEGO ticku (aiGoldIncomeByOwner)
+     * minus utrzymanie z previewOwnerUpkeep (te same prymitywy `upkeepBalance` co tick
+     * i HUD: skarbiec += pieniadz - utrzymanieRazem). Utrzymanie nowej jednostki = różnica
+     * previewOwnerUpkeep z i bez niej. Zwraca {} (dawna bramka) gdy brak przychodu z ticku.
+     */
+    function aiPurchaseReserveInputs(ownerId: number, unitTypeId: string): {
+      reserve?: ReturnType<typeof loadAiPurchaseReserveParams>;
+      netIncomePerTurn?: number;
+      upkeepPerTurn?: number;
+      unitUpkeepPerTurn?: number;
+    } {
+      const income = aiGoldIncomeByOwner.get(ownerId);
+      if (income === undefined) return {};
+      const toEcon = (list: ReadonlyArray<{ typeId: string }>): EconUnit[] => list.map(u => ({
+        ownerId, typeId: u.typeId, camping: false, onOwnTerritory: true,
+      }));
+      const own = units.filter(u => u.ownerId === ownerId);
+      const preview = (list: EconUnit[]) => previewOwnerUpkeep(
+        ownerId, cities, data, effectiveGameDifficultyForOwner(ownerId), cityBuilt, list,
+        empireEpochForOwner(ownerId), aiResearchDone.get(ownerId) ?? new Set<string>(),
+        empireEpochForOwner, unlockedTechSetForOwner,
+      );
+      const before = preview(toEcon(own));
+      const after = preview(toEcon([...own, { typeId: unitTypeId }]));
+      return {
+        reserve: loadAiPurchaseReserveParams(data, aiDiffLevelForOwner(ownerId)),
+        netIncomePerTurn: income - before.utrzymanieRazem,
+        upkeepPerTurn: before.utrzymanieRazem,
+        unitUpkeepPerTurn: Math.max(0, after.utrzymanieRazem - before.utrzymanieRazem),
+      };
+    }
+
     function ownerTreasury(ownerId: number): number {
       return isHuman(ownerId) ? playerStateByHuman.get(ownerId)!.skarbiec : (aiSkarbiecByOwner.get(ownerId) ?? 0);
     }
@@ -37211,6 +37251,7 @@ async function boot(): Promise<void> {
             }
             for (const oid of aiOwnerIds) {
               const aiEcon = sumEconomyForOwner(econ, oid);
+              aiGoldIncomeByOwner.set(oid, aiEcon.pieniadz);
               let aiSkarb = (aiSkarbiecByOwner.get(oid) ?? 0) + aiEcon.pieniadz;
               const aiBalance = econ.upkeepByOwner.get(oid);
               if (aiBalance && aiBalance.utrzymanieRazem > 0) {
@@ -40987,6 +41028,7 @@ async function boot(): Promise<void> {
                         UNIT_POPULATION_COST, civManpowerMultsForOwner(ownerId).maxMult, candId,
                         civManpowerMultsForOwner(ownerId).costMult,
                       ),
+                      ...aiPurchaseReserveInputs(ownerId, candId),
                     });
                     if (wantsPurchase && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
                       console.log(`[AI ${ownerId}] Zakup jednostki za Skarbiec: ${candId}`);
@@ -43115,6 +43157,7 @@ async function boot(): Promise<void> {
       negotiationSeq = 0;
       rejectedOfferCooldowns = [];
       aiSkarbiecByOwner.clear();
+      aiGoldIncomeByOwner.clear();
       aiPracaPoolByOwner.clear();
       aiNaukaPoolByOwner.clear();
       aiBadanaByOwner.clear();
@@ -45152,6 +45195,7 @@ async function boot(): Promise<void> {
       // (w przeciwienstwie do symetrycznej aiPracaPoolByOwner) -- skarbiec AI
       // zerowal sie po kazdym wczytaniu zapisu.
       aiSkarbiecByOwner.clear();
+      aiGoldIncomeByOwner.clear();
       const savedAiSkarbiec = saved.meta?.aiSkarbiecByOwner as Array<[number, number]> | undefined;
       if (savedAiSkarbiec?.length) {
         for (const [oid, v] of savedAiSkarbiec) aiSkarbiecByOwner.set(oid, v);
