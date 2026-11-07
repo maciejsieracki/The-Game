@@ -15,6 +15,7 @@ Testy (allowlista):
 - `gra/tools/battle-undeployed-units-test.cjs`: CAP 120 -> 500, rozmiary skladow wzgledem CAP (A=CAP+180, D=CAP+80), oczekiwania przeliczone; nic nie oslabione (35/35).
 - `gra/tools/battle-large-mixed-doctrine-matrix-test.cjs`: tylko komentarz (120 -> 500).
 - Dowody bramek w tym katalogu: gate-cap-500-test.txt, gate-tsc.txt, gate-undeployed-test.txt.
+Commit R1: a06ed65117e991c13f2040378b200e9c983d1686 (baza fcaa10300), galaz worktree-wf_8d6c992a-330-1.
 Zero zmian w gra-robocza/**, WERSJE.md, rust-port/**, main.ts. Build/dev nie uruchamiane; `gra/node_modules` zainstalowany do testow (npm ci) i NIE dodany do commita.
 
 ## TESTY (wyniki dokladne)
