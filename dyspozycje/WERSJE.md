@@ -1,3 +1,9 @@
+## ROBOCZA 0bc3db08 -- 2026-11-06 -- FALA 544: AI: rezerwa utrzymania przy zakupie jednostek (Normal 10 tur) (testowa)
+
+- AI nie kupuje jednostek, gdy po zakupie dochód netto złota spadłby poniżej progu lub skarbiec nie pokrywałby ceny + N tur utrzymania; progi w ai-params.json: rezerwa_tur Easy 3 / Normal 10 (decyzja właściciela) / Hard 2, min dochód netto 0/0/-2; reguła wpięta w main.ts (aiPurchaseReserveInputs, przychód z ticku ekonomii); usunięte martwe klucze ai_rush_jednostka_*
+- Weryfikacja: ai-purchase-maintenance-reserve 44/0 (pada przy Normal=3), logic-test 213/213, tsc 0, ai-test jak baza; pomiar Chromium seed 4242 do T100: wojsko AI 59 (N=10) vs 172 (N=3), miasta 60 vs 52, wojny 79=79, bez degeneracji; FC PASS-WITH-NOTES
+- Limity: pomiar jeden seed/jedna mapa, barbarzyńcy niezbadani; Easy/Hard tylko test decyzji; AI nr 10 znika po T40 (przyczyna nierozstrzygnięta); AI gromadzi złoto (skarbiec ok 17 tys. w T100)
+
 ## ROBOCZA 35e9ec5a -- 2026-11-06 -- FALA 543: cud: rebelianci/barbarzyńcy go nie posiadają, założenie miasta przenosi cud (testowa)
 
 - cud nie przechodzi na frakcje niecywilizacyjne (rebelianci -99, barbarzyńcy -1): zostaje przy ostatniej cywilizacji, po odbiciu przechodzi na odbijającą cywilizację; założenie miasta (finalizeCityFounding) na terytorium z cudem przenosi cud; bonusy ekskluzywne działają u zdobywcy (po ownerId)

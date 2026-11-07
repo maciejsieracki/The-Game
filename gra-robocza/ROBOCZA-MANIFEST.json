@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
-  "bundleSha256": "bfd163cc0dedbc8df4bbea4c688c7f6885a385a9b27c49b0c429fca00419a5a1",
-  "bundleBytes": 85672347,
+  "bundleMd5": "0bc3db088e4dca20612ae8bb42470e95",
+  "bundleSha256": "2ac01789168937868fe049f225a3007be152f989be051075accd01774156de47",
+  "bundleBytes": 85675308,
   "sourceSnapshot": {
-    "source": "WONDERFU FC f25d0e353 na origin/main",
+    "source": "AIN10 FC 99c1fef31 (zawiera AIRESERVE 529c66cf7) na origin/main",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 543: cud nie przechodzi na frakcje niecywilizacyjne (rebelianci -99, barbarzyńcy -1): zostaje przy ostatniej cywilizacji, po odbiciu przechodzi na odbijającą cywilizację; założenie miasta (finalizeCityFounding) na terytorium z cudem przenosi cud; bonusy ekskluzywne działają u zdobywcy (po ownerId)"
+    "FALA 544: AI nie kupuje jednostek, gdy po zakupie dochód netto złota spadłby poniżej progu lub skarbiec nie pokrywałby ceny + N tur utrzymania; progi w ai-params.json: rezerwa_tur Easy 3 / Normal 10 (decyzja właściciela) / Hard 2, min dochód netto 0/0/-2; reguła wpięta w main.ts (aiPurchaseReserveInputs, przychód z ticku ekonomii); usunięte martwe klucze ai_rush_jednostka_*"
   ],
   "verification": [
-    "wonder-transfer-on-conquest 43/0 (mutacje łamią), logic-test 213/213, tsc 0, ai-test jak baza; FC PASS-WITH-NOTES"
+    "ai-purchase-maintenance-reserve 44/0 (pada przy Normal=3), logic-test 213/213, tsc 0, ai-test jak baza; pomiar Chromium seed 4242 do T100: wojsko AI 59 (N=10) vs 172 (N=3), miasta 60 vs 52, wojny 79=79, bez degeneracji; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "założenie miasta pokryte logiką i kontrolą strukturalną (nie uruchomienie finalizeCityFounding); niespójne zapisy (cud ≠ właściciel terytorium) nadal pomijane; brak weryfikacji w przeglądarce"
+    "pomiar jeden seed/jedna mapa, barbarzyńcy niezbadani; Easy/Hard tylko test decyzji; AI nr 10 znika po T40 (przyczyna nierozstrzygnięta); AI gromadzi złoto (skarbiec ok 17 tys. w T100)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-07T22:07:02",
+  "hubGeneratedAt": "2026-11-07T22:19:15",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
-      "sizeBytes": 85672347
+      "md5": "0bc3db088e4dca20612ae8bb42470e95",
+      "sizeBytes": 85675308
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
-      "sizeBytes": 85672347
+      "md5": "0bc3db088e4dca20612ae8bb42470e95",
+      "sizeBytes": 85675308
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
-      "sizeBytes": 85672347
+      "md5": "0bc3db088e4dca20612ae8bb42470e95",
+      "sizeBytes": 85675308
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
-      "sizeBytes": 85672347
+      "md5": "0bc3db088e4dca20612ae8bb42470e95",
+      "sizeBytes": 85675308
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
-      "sizeBytes": 85672347
+      "md5": "0bc3db088e4dca20612ae8bb42470e95",
+      "sizeBytes": 85675308
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
-      "sizeBytes": 85672347
+      "md5": "0bc3db088e4dca20612ae8bb42470e95",
+      "sizeBytes": 85675308
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
-      "sizeBytes": 85672347
+      "md5": "0bc3db088e4dca20612ae8bb42470e95",
+      "sizeBytes": 85675308
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
-      "sizeBytes": 85672347
+      "md5": "0bc3db088e4dca20612ae8bb42470e95",
+      "sizeBytes": 85675308
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
-      "sizeBytes": 85672347
+      "md5": "0bc3db088e4dca20612ae8bb42470e95",
+      "sizeBytes": 85675308
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
-      "sizeBytes": 85672347
+      "md5": "0bc3db088e4dca20612ae8bb42470e95",
+      "sizeBytes": 85675308
     }
   ],
-  "md5": "35e9ec5ac2e8dc93d5b4459dbc66429f",
+  "md5": "0bc3db088e4dca20612ae8bb42470e95",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
