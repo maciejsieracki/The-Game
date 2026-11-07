@@ -879,6 +879,16 @@ import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { cloneObject3DMaterialsForTransient, disposeTransientObject3D } from './render/transientObjectResources';
 import { BattleScene, BATTLE_MAX_PER_SIDE } from './battle/battleScene';
+import {
+  canJoinStackAt,
+  hexHasRoomFor,
+  ownUnitCountAt,
+  planOversizedStackSplits,
+  stackFreeSlots,
+  stackLimitBlockMessage,
+  stackLimitSplitNotice,
+  trimPathToStackRoom,
+} from './game/army-stack-limit';
 import { isBattleSceneOpen } from './battle/battleSceneOpen';
 import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset, addSiegeMachinesCount } from './battle/testBattle';
 import type { PresetName } from './battle/testBattle';
@@ -4189,6 +4199,48 @@ async function boot(): Promise<void> {
       refreshFog();
     }
 
+    /** R-WEB-ARMY-STACK-LIMIT-Q1: limit jednostek w jednej armii = limit bitwy na strone (jedno zrodlo prawdy). */
+    function armyStackLimit(): number {
+      return BATTLE_MAX_PER_SIDE;
+    }
+
+    /**
+     * R-WEB-ARMY-STACK-LIMIT-Q1: MIGRACJA zapisu + siatka bezpieczenstwa na start tury.
+     * Stos wlasnych jednostek wiekszy niz limit bitwy jest dzielony deterministycznie: nadwyzka idzie na
+     * najblizsze wolne heksy (sasiedzi, dalej coraz szersze pierscienie; wlasne miasta tez sa dozwolone),
+     * bez usuwania jednostek. Zwraca liczbe przeniesionych jednostek.
+     */
+    function enforceArmyStackLimit(reason: string): number {
+      const limit = armyStackLimit();
+      const plan = planOversizedStackSplits(units, limit, {
+        canPlaceAt: (ownerId, q, r) => mapHexPassableForUnit(q, r) && canUnitOccupyCityHex(ownerId, q, r, cities),
+      });
+      if (plan.moves.length === 0 && plan.unplaced.length === 0) return 0;
+      const byDest = new Map<string, RuntimeUnit[]>();
+      let humanMoved = 0;
+      for (const mv of plan.moves) {
+        const u = units.find(x => x.id === mv.unitId);
+        if (!u) continue;
+        u.q = mv.toQ; u.r = mv.toR; // R-WEB-ARMY-STACK-LIMIT-Q1: migracja nadwyzki stosu (relokacja, nie marsz)
+        exitGarnizon(u);
+        exitFieldFortify(u);
+        const k = u.ownerId + '|' + mv.toQ + ',' + mv.toR;
+        const g = byDest.get(k);
+        if (g) g.push(u); else byDest.set(k, [u]);
+        if (isMe(u.ownerId)) humanMoved++;
+      }
+      // Kazdy nowy stos dostaje wlasna tozsamosc (inaczej dzielilby pule ruchu ze stosem zrodlowym).
+      for (const g of byDest.values()) assignSharedStackGroupId(g);
+      console.log(`[StackLimit] ${reason}: przeniesiono ${plan.moves.length} jedn. ponad limit ${limit}` +
+        (plan.unplaced.length > 0 ? `, bez miejsca: ${plan.unplaced.length}` : ''));
+      if (plan.moves.length > 0) {
+        syncUnitsRender();
+        refreshFog();
+        if (humanMoved > 0) showHintMessage(stackLimitSplitNotice(humanMoved, limit), 5000);
+      }
+      return plan.moves.length;
+    }
+
     function applyProductionCompleted(
       city: City,
       cityId: string,
@@ -4234,6 +4286,16 @@ async function boot(): Promise<void> {
       // -- pozycja wraca na front kolejki (jak przy braku Manpower) i czeka na przełamanie oblężenia.
       if (isCityUnderSiege(cities, city)) {
         console.log(`[Produkcja] Tura ${turn} ${city.name}: miasto oblężone — odłożono ${completed.id}`);
+        return {
+          prod: insertAtFront(prodAfterAdvance, completed, completed.koszt),
+          requeueManpower: true,
+        };
+      }
+      // R-WEB-ARMY-STACK-LIMIT-Q1: pelny stos w miescie (limit bitwy) -- jednostka nie rodzi sie,
+      // pozycja wraca na front kolejki (jak przy braku Manpower) i czeka na wolne miejsce.
+      if (!hexHasRoomFor(units, city.ownerId, city.q, city.r, armyStackLimit())) {
+        console.log(`[Produkcja] Tura ${turn} ${city.name}: stos pelny (limit armii) — odlozono ${completed.id}`);
+        if (isMe(city.ownerId)) showHintMessage(stackLimitBlockMessage(armyStackLimit()), 3500);
         return {
           prod: insertAtFront(prodAfterAdvance, completed, completed.koszt),
           requeueManpower: true,
@@ -4351,6 +4413,15 @@ async function boot(): Promise<void> {
       if (isCityUnderSiege(cities, city)) {
         if (ownerId === 0) showHintMessage(CITY_SIEGE_RECRUIT_BLOCK_PL, 2800);
         return false;
+      }
+      // R-WEB-ARMY-STACK-LIMIT-Q1: nie mozna zbudowac armii wiekszej niz limit -- jednostki w miescie
+      // + juz opłacone w kolejce rekrutacji tego miasta + nowa partia nie moga przekroczyc limitu stosu.
+      {
+        const queuedHere = (cityProd.get(cityId)?.rekrutacja ?? []).length;
+        if (!hexHasRoomFor(units, ownerId, city.q, city.r, armyStackLimit(), queuedHere + requestedQuantity)) {
+          if (isMe(ownerId)) showHintMessage(stackLimitBlockMessage(armyStackLimit()), 3500);
+          return false;
+        }
       }
       // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): siatka bezpieczeństwa —
       // itemId dociera tu zwykle już przefiltrowany przez purchasableUnits()/availableProduction
@@ -4484,6 +4555,11 @@ async function boot(): Promise<void> {
       if (!city || city.ownerId !== ownerId) return false;
       if (isCityUnderSiege(cities, city)) {
         if (ownerId === 0) showHintMessage(CITY_SIEGE_RECRUIT_BLOCK_PL, 2800);
+        return false;
+      }
+      // R-WEB-ARMY-STACK-LIMIT-Q1: partia nie moze przekroczyc limitu stosu miasta (jak w purchaseRecruitmentUnit).
+      if (!hexHasRoomFor(units, ownerId, city.q, city.r, armyStackLimit(), (cityProd.get(cityId)?.rekrutacja ?? []).length + count)) {
+        if (isMe(ownerId)) showHintMessage(stackLimitBlockMessage(armyStackLimit()), 3500);
         return false;
       }
 
@@ -10390,6 +10466,11 @@ async function boot(): Promise<void> {
 
     /** P-AI-MOC-BONUS=A: dodatkowe jednostki startowe major AI (stolica klastra). */
     function spawnDifficultyBonusUnit(ownerId: number, typeId: string, q: number, r: number): void {
+      // R-WEB-ARMY-STACK-LIMIT-Q1: start nie przepelnia stosu na heksie (limit bitwy).
+      if (!hexHasRoomFor(units, ownerId, q, r, armyStackLimit())) {
+        console.log(`[StackLimit] start: pelny stos (${q},${r}) -- pominieto jednostke ${typeId} (owner ${ownerId})`);
+        return;
+      }
       const def = lookupUnitDef(typeId);
       // RUCH-SWIATA-TEMPO: patrz komentarz przy pierwszym spawnie (main.ts, produkcja jednostki).
       const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
@@ -13822,6 +13903,8 @@ async function boot(): Promise<void> {
         if (k === keyOf(unit.q, unit.r)) continue;
         if (seenStacks.has(k)) continue;
         seenStacks.add(k);
+        // R-WEB-ARMY-STACK-LIMIT-Q1: stos, do ktorego nie zmiesci sie caly ruszajacy sie oddzial, nie jest celem scalenia.
+        if (!canJoinStackAt(units, stack, u.q, u.r, armyStackLimit())) continue;
 
         const path = computePath(mover, map, u.q, u.r, occ, costFn);
         if (path.length === 0) continue;
@@ -14097,13 +14180,16 @@ async function boot(): Promise<void> {
       const activeGroupId = stackGroupIdOf(active);
       const stack = visibleStackOnHex(units, active.q, active.r, active.ownerId, activeGroupId);
       if (stack.length < 2) return;
+      // R-WEB-ARMY-STACK-LIMIT-Q1: sasiedni heks z pelnym stosem (np. wlasne miasto z garnizonem
+      // na limicie) nie jest celem rozdzielenia -- garnizon nie liczy sie jako "wolny" heks.
       const dests = findSplitDestHexes(
         units,
         active.q,
         active.r,
         isHexPassableForUnit,
         cityAtUnit(active) !== undefined,
-      );
+      ).filter(d => (d.q === active.q && d.r === active.r)
+        || stackFreeSlots(units, active.ownerId, d.q, d.r, armyStackLimit()) > 0);
       if (dests.length === 0) {
         showHintMessage('Brak wolnego heksu na rozdzielenie.', 3500);
         return;
@@ -14122,6 +14208,12 @@ async function boot(): Promise<void> {
           const splitArrivals = ids
             .map(id => units.find(x => x.id === id))
             .filter((su): su is RuntimeUnit => su != null);
+          // R-WEB-ARMY-STACK-LIMIT-Q1: rozdzielenie nie moze przepelnic stosu na heksie docelowym
+          // (siatka: ruchy z panelu rozdzielenia ida tym samym limitem co marsz).
+          if (ownUnitCountAt(units, active.ownerId, destQ, destR, new Set(ids)) + splitArrivals.length > armyStackLimit()) {
+            showHintMessage(stackLimitBlockMessage(armyStackLimit()), 3800);
+            return;
+          }
           // BB2: jednostki odchodzące dostają WSPÓLNY, ŚWIEŻY stackGroupId, RÓŻNY
           // od tych, które zostają. Konieczne zwłaszcza gdy destQ/destR === srcQ/srcR
           // (opcja „W mieście (ten heks)" z findSplitDestHexes/allowSameHex) — bez
@@ -16800,7 +16892,8 @@ async function boot(): Promise<void> {
         }
         // R-WEB-SIEGE-SURRENDER-ENTER-CITY-Q1: oblegająca armia wchodzi do poddanego miasta
         // (PO zmianie właściciela i usunięciu obrońców, PRZED endMapSiege -- ten kasuje oblegaCityId).
-        const surrenderEntered = enterCityAfterSurrender(units, city, newOwner, { isCivilian: isCivilianUnit });
+        // R-WEB-ARMY-STACK-LIMIT-Q1: wejscie po poddaniu nie przepelnia stosu miasta (limit bitwy).
+        const surrenderEntered = enterCityAfterSurrender(units, city, newOwner, { isCivilian: isCivilianUnit, stackLimit: armyStackLimit() });
         if (surrenderEntered.length > 0 && selectedId !== null && surrenderEntered.some(u => u.id === selectedId)) {
           unitRenderer.setSelectionHex(city.q, city.r, newOwner);
         }
@@ -29584,6 +29677,11 @@ async function boot(): Promise<void> {
         );
         return false;
       }
+      // R-WEB-ARMY-STACK-LIMIT-Q1: cel marszu nie moze przekroczyc limitu armii (limit bitwy).
+      if (!attackTarget && !canJoinStackAt(units, stack, destQ, destR, armyStackLimit())) {
+        showHintMessage(stackLimitBlockMessage(armyStackLimit()), 3800);
+        return false;
+      }
 
       markPlayerMovedUnit(u.id);
       plannedMarches.set(u.id, marchDest);
@@ -29786,6 +29884,18 @@ async function boot(): Promise<void> {
         showHintMessage('Marsz przerwany: ' + (result.stopDetail ?? 'brak ruchu'), 3500);
         return false;
       }
+      // R-WEB-ARMY-STACK-LIMIT-Q1: stos na celu urosl od czasu planowania -- przytnij trase / przerwij marsz.
+      const roomPath = trimPathToStackRoom(units, stack, result.movePath, armyStackLimit());
+      if (roomPath.length === 0) {
+        plannedMarches.delete(unitId);
+        showHintMessage('Marsz przerwany: ' + stackLimitBlockMessage(armyStackLimit()), 3800);
+        return false;
+      }
+      if (roomPath.length !== result.movePath.length) {
+        result.movePath = roomPath;
+        result.cost = pathCost(roomPath, map, moveCostFnForUnit(u));
+        result.arrived = false;
+      }
 
       const last = result.movePath[result.movePath.length - 1]!;
       phaseMark('PLAYER_MARCH_ANIM_START', unitId + '->' + last.q + ',' + last.r);
@@ -29858,6 +29968,18 @@ async function boot(): Promise<void> {
       );
 
       if (!result.ok || result.movePath.length === 0) return false;
+      // R-WEB-ARMY-STACK-LIMIT-Q1: stos na celu urosl od czasu planowania -- przytnij trase / przerwij marsz.
+      const roomPathInstant = trimPathToStackRoom(units, stack, result.movePath, armyStackLimit());
+      if (roomPathInstant.length === 0) {
+        plannedMarches.delete(unitId);
+        showHintMessage('Marsz przerwany: ' + stackLimitBlockMessage(armyStackLimit()), 3800);
+        return false;
+      }
+      if (roomPathInstant.length !== result.movePath.length) {
+        result.movePath = roomPathInstant;
+        result.cost = pathCost(roomPathInstant, map, moveCostFnForUnit(u));
+        result.arrived = false;
+      }
 
       const fromQ = u.q;
       const fromR = u.r;
@@ -30083,6 +30205,7 @@ async function boot(): Promise<void> {
             cities,
             isPassable: isHexPassableForUnit,
             exploredHexes: explored,
+            stackLimit: armyStackLimit(), // R-WEB-ARMY-STACK-LIMIT-Q1
           })
         : undefined;
       const excludeUnit = shouldExcludeUnitReward({
@@ -30334,6 +30457,11 @@ async function boot(): Promise<void> {
         moveDestQ = last.q;
         moveDestR = last.r;
         cost = pathCost(truncated, map, moveCostFn);
+      }
+      // R-WEB-ARMY-STACK-LIMIT-Q1: ruch bezposredni nie moze zakonczyc sie na stosie, do ktorego caly oddzial sie nie zmiesci.
+      if (!canJoinStackAt(units, stack, moveDestQ, moveDestR, armyStackLimit())) {
+        showHintMessage(stackLimitBlockMessage(armyStackLimit()), 3800);
+        return false;
       }
 
       // R-SCOUT-ZWIEDZAJ-HIGHLIGHT: ręczny ruch (jak marsz) wyłącza auto-zwiedzanie.
@@ -36182,6 +36310,7 @@ async function boot(): Promise<void> {
           if (st.bunt) st.bunt = undefined;
         }
         evictForeignUnitsFromCityHexes();
+        enforceArmyStackLimit('start tury'); // R-WEB-ARMY-STACK-LIMIT-Q1: siatka bezpieczenstwa
         sweepFortCaptures(); // R3 Q-A=A: jednostki stojace na wrogim forcie (koniec tury)
         // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: samoleczenie PRZED resetem ruchu
         // (garnizon-sierota, zalegle oblezenie zerujace ruch co ture).
@@ -37823,13 +37952,16 @@ async function boot(): Promise<void> {
               }
 
               const recMpMults = civManpowerMultsForOwner(city.ownerId);
-              const recMaxPerTurn = unitRecruitmentCapacityPerTurn(
+              // R-WEB-ARMY-STACK-LIMIT-Q1: rekrutacja nie wypuszcza wiecej jednostek niz zostalo wolnych miejsc
+              // w stosie miasta (limit bitwy) -- reszta kolejki czeka, oplacone zostaje.
+              const recStackFree = stackFreeSlots(units, city.ownerId, city.q, city.r, armyStackLimit());
+              const recMaxPerTurn = Math.min(unitRecruitmentCapacityPerTurn(
                 1,
                 civMatrixParamForOwner(city.ownerId, 'prod_szybkosc_jednostki_proc'),
-              );
+              ), recStackFree);
               // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: kolejka rekrutacji stoi, gdy miasto oblężone
               // (nic nie schodzi z kolejki, opłacone zostaje do końca oblężenia).
-              const recResult = isCityUnderSiege(cities, city)
+              const recResult = (isCityUnderSiege(cities, city) || recStackFree <= 0)
                 ? { prod: prodFinal, completed: [] as ProductionItem[], population: city.population, manpower: city.manpower }
                 : advanceRecruitmentGated(
                   prodFinal, city, empireEpochForOwner(city.ownerId), recMaxPerTurn, true,
@@ -40391,9 +40523,17 @@ async function boot(): Promise<void> {
                       computePath(u, map, toQ, toR, occupied, aiMarchCostFn(u, opts.marchGuard)),
                     // R-WEB-AI-MOVE-RANGE-Q1: zasięg AI = budżet ruchu jak u gracza
                     // (truncatePathToBudget). Budżet czytany PRZED zerowaniem ruchu.
-                    truncatePath: (fullPath) => u.ruchLeft > 0
-                      ? truncatePathWithinBudget(fullPath, u.ruchLeft, map, moveCostFnForUnit(u))
-                      : fullPath,
+                    // R-WEB-ARMY-STACK-LIMIT-Q1: trasa AI nie moze konczyc sie na stosie, do ktorego jednostka
+                    // sie nie zmiesci (limit bitwy) -- przycinamy; pusta trasa = AI nie wykonuje takiego ruchu
+                    // (zostaje i szuka innego heksu w kolejnej decyzji).
+                    truncatePath: (fullPath) => trimPathToStackRoom(
+                      units,
+                      [u],
+                      u.ruchLeft > 0
+                        ? truncatePathWithinBudget(fullPath, u.ruchLeft, map, moveCostFnForUnit(u))
+                        : fullPath,
+                      armyStackLimit(),
+                    ),
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
                     onMoved: () => applyEmbarkStateAfterMove([u], map),
                     onCapture: (city) => tryAutoCaptureEmptyCityAt(
@@ -44836,6 +44976,8 @@ async function boot(): Promise<void> {
         const demoted = units.find(u => u.id === id);
         if (demoted) demoted.isGeneral = false;
       }
+      // R-WEB-ARMY-STACK-LIMIT-Q1: stary zapis ze stosem wiekszym niz limit bitwy -- podzial na sasiednie heksy.
+      enforceArmyStackLimit('wczytanie zapisu');
       _lastPieniadzRate = 0;
       _lastPracaRate = 0;
       _lastPracaUpkeep = 0;
