@@ -68,17 +68,13 @@ function formatObywateleLabel(count: number): string {
   if (n === 1) return '1 obywatel';
   return `${n} obywateli`;
 }
-/** Kopia 1:1 `formatManpower` → `formatPopulationAbs` (pin `game/manpower.ts:858-872`). */
-function formatManpower(n: number): string {
-  if (n >= 1_000_000) {
-    const m = n / 1_000_000;
-    return (m >= 10 ? Math.round(m) : Math.round(m * 10) / 10) + ' mln';
-  }
-  if (n >= 1_000) {
-    const t = n / 1_000;
-    return (t >= 100 ? Math.round(t) : Math.round(t * 10) / 10) + ' tys.';
-  }
-  return String(n);
+/**
+ * REPIN UI-3-C (web `9b019a7d8` `:13`, R-WEB-MANPOWER-ABBREV-PANELS-Q1): web zamienił w tym pliku `formatManpower`
+ * („tys./mln”) na `formatManpowerCompact` (`game/manpower.ts:912-914` = `formatCompactNumber(n)`, moduł UI obecny
+ * w v2 bajtowo = web `9b019a7d8`). Kopia 1:1 delegacji; dawna lokalna kopia `formatManpower` nie ma już wywołań.
+ */
+function formatManpowerCompact(n: number): string {
+  return formatCompactNumber(n);
 }
 /** Kopia 1:1 `formatWyzwienieLabel` + `clampPoziomRacji` (pin `game/population-growth-v85.ts:165-168,200-203`). */
 function formatWyzwienieLabel(level: PoziomRacji): string {
@@ -302,7 +298,7 @@ function wireDefaultPoziomRacjiInputs(
     // Wypełnienie toru musi nadążać za wartością (jak w suwakach Skarbca) — bez tego zielony
     // pasek zostałby na pozycji z renderu. / EN: keep the track fill in sync with the value.
     const pct = maxSteps > minSteps ? ((stepsNow - minSteps) / (maxSteps - minSteps)) * 100 : 0;
-    inp.style.background = sliderFillStyle(pct, '#4e9a3f', '#78c95a');
+    inp.style.background = sliderFillGradient(pct, '#4e9a3f', '#78c95a');
   });
 }
 
@@ -1101,12 +1097,37 @@ function formatResourceUpkeepEmpireLineColored(resources: Record<string, number>
   return `<span style="font-size:11.5px;color:#e07a7a;font-weight:600;line-height:1.35">${lines}</span>`;
 }
 
-/** Tor suwaka `.civ-emp-slider` częściowo wypełniony gradientem do wartości `pct` (%),
- *  reszta toru w kolorze tła — natywny input[type=range] z `-webkit-appearance:none` renderuje
- *  swoje tło wprost jako tor, więc to jedyne, czego trzeba do wizualnego „wypełnienia". */
-function sliderFillStyle(pct: number, colorFrom: string, colorTo: string): string {
-  const p = Math.max(0, Math.min(100, pct));
-  return `background:linear-gradient(90deg,${colorFrom} 0%,${colorTo} ${p}%,#1f2733 ${p}%,#1f2733 100%)`;
+/** Szerokość uchwytu `.civ-emp-slider` w px (CSS `::-webkit-slider-thumb`/`::-moz-range-thumb`).
+ *  R-WEB-TAX-SLIDER-THUMB-ALIGN-Q1: środek uchwytu przemieszcza się po torze od THUMB/2 do
+ *  (szerokość − THUMB/2), więc koniec wypełnienia musi leżeć w tym samym punkcie. */
+const SLIDER_THUMB_PX = 14;
+
+/** Pozycja uchwytu w % pełnego zakresu toru (0–100): (wartość − min) / (max − min). Jedna funkcja
+ *  dla wypełnienia i uchwytu — zakres bierzemy z atrybutów `min`/`max` inputa, nie z „100". */
+function sliderRangePct(value: number, min: number, max: number): number {
+  if (!(max > min)) return 0;
+  return Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+}
+
+/** Pozycja końca wypełnienia = środek uchwytu, jako wyrażenie CSS dla gradientu. */
+function sliderThumbCenterCss(rangePct: number): string {
+  const f = Math.max(0, Math.min(100, rangePct)) / 100;
+  return `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${f})`;
+}
+
+/** Tor suwaka `.civ-emp-slider` częściowo wypełniony gradientem do pozycji uchwytu, reszta toru
+ *  w kolorze tła. `rangePct` = pozycja w % PEŁNEGO zakresu min..max (patrz `sliderRangePct`),
+ *  NIE surowa wartość — suwak Nauka ma max 60, więc 40% to 66,7% toru. */
+function sliderFillGradient(rangePct: number, colorFrom: string, colorTo: string): string {
+  const x = sliderThumbCenterCss(rangePct);
+  return `linear-gradient(90deg,${colorFrom} 0%,${colorTo} ${x},#1f2733 ${x},#1f2733 100%)`;
+}
+
+/** Jak `sliderFillGradient`, ale jako deklaracja do atrybutu `style="..."`. Przy aktualizacji
+ *  w JS przypisuj `sliderFillGradient()` do `el.style.background` (a NIE tę deklarację — ciąg
+ *  „background:…" przypisany do `style.background` jest nieprawidłowy i przeglądarka go ignoruje). */
+function sliderFillStyle(rangePct: number, colorFrom: string, colorTo: string): string {
+  return `background:${sliderFillGradient(rangePct, colorFrom, colorTo)}`;
 }
 
 /**
@@ -1258,7 +1279,7 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
       + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-pct="${row.key}"><b>${pct}%</b></span>`
       + `<span style="font-size:11px;color:#7d8798" data-amt="${row.key}">≈ ${amount >= 0 ? '+' : ''}${amount}/turę</span></div>`
       + `<input type="range" class="civ-emp-slider ${row.cls}" min="0" max="${maxVal}" step="${HANDEL_PCT_STEP}" `
-      + `value="${pct}" style="${sliderFillStyle(pct, row.from, row.to)}" data-handel-key="${row.key}" `
+      + `value="${pct}" style="${sliderFillStyle(sliderRangePct(pct, 0, maxVal), row.from, row.to)}" data-handel-key="${row.key}" `
       + `data-grad-from="${row.from}" data-grad-to="${row.to}" /></div>`;
   }
   h += '<div style="display:flex;align-items:center;gap:8px;padding-top:9px;border-top:1px solid #232b38">'
@@ -1288,7 +1309,7 @@ function wireSkarbiecTaxSplitInputs(
         const k = other.dataset.handelKey as keyof CityPodzialHandlu;
         const pct = current[k];
         other.value = String(pct);
-        other.style.background = sliderFillStyle(pct, other.dataset.gradFrom ?? '#6a4010', other.dataset.gradTo ?? '#d9a441');
+        other.style.background = sliderFillGradient(sliderRangePct(pct, Number(other.min), Number(other.max)), other.dataset.gradFrom ?? '#6a4010', other.dataset.gradTo ?? '#d9a441');
         const pctEl = host.querySelector(`[data-pct="${k}"] b`);
         if (pctEl) pctEl.textContent = `${pct}%`;
         const amtEl = host.querySelector(`[data-amt="${k}"]`);
@@ -1353,8 +1374,8 @@ function split2BarHtml(
  *  procentu podziału: dla suwaka 0–50 jest to `pctUlepszenia * 2`. Dzięki temu granica kolorów
  *  leży dokładnie pod uchwytem, zamiast żyć własnym życiem w innej skali. */
 function laborSliderFillStyle(pctUlepszeniaTrack: number): string {
-  const p = Math.max(0, Math.min(100, pctUlepszeniaTrack));
-  return `linear-gradient(90deg,#3a4657 0%,#8ec5ff ${p}%,#6a4010 ${p}%,#d9a441 100%)`;
+  const x = sliderThumbCenterCss(pctUlepszeniaTrack);
+  return `linear-gradient(90deg,#3a4657 0%,#8ec5ff ${x},#6a4010 ${x},#d9a441 100%)`;
 }
 
 /**
@@ -1639,6 +1660,19 @@ function renderEmpirePracaBudgetSplitSection(): string {
  * `renderSkarbiecTaxSplitSection`, patrz `econSliderVisibilityForOnlyEconId` i box „ŹRÓDŁO
  * FINANSOWANIA" niżej, który tylko WSKAZUJE suwak, nie duplikuje go).
  */
+/**
+ * R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: wspolna linia „brutto -> netto" w nagłówkach zakładek
+ * (Nauka/Spichlerz/Surowce/Handel) — te same liczby co komórki HUD (HudState), bez 2. kalkulacji.
+ * Netto ujemne = klasa `neg` (czerwone), dodatnie/zero = `pos`.
+ */
+function grossNetSub(brutto: number | undefined, netto: number | undefined, unit: string, note = ''): string {
+  if (brutto === undefined || netto === undefined) return '';
+  const b = Math.round(brutto);
+  const n = Math.round(netto);
+  const cls = n < 0 ? 'neg' : 'pos';
+  return `<div class="civ-emp-hero-sub civ-emp-grossnet">Brutto <b>${signedPl(b)}</b> → netto <b class="${cls}">${signedPl(n)}</b> ${unit} / turę${note}</div>`;
+}
+
 function renderNaukaSection(
   rows: EmpireDetailSnap['cityEcon'],
   economy: EmpireDetailSnap['economy'],
@@ -1655,7 +1689,8 @@ function renderNaukaSection(
 
   let h = '<div class="civ-emp-sect" data-section="nauka">'
     + '<div class="civ-emp-eyebrow">NAUKA IMPERIUM</div>'
-    + `<div class="civ-emp-hero ${heroCls}">${signedPl(rate)} PN / turę</div>`;
+    + `<div class="civ-emp-hero ${heroCls}">${signedPl(rate)} PN / turę</div>`
+    + grossNetSub(rate, rate, 'PN', ' (Nauka nie ma dziś kosztów — brutto = netto)');
 
   if (rows.length === 0) {
     h += `<div class="civ-emp-hero-sub">Bank badań <b>${bank}</b> PN</div>`
@@ -1760,7 +1795,7 @@ function renderReligiaSection(religion: EmpireDetailSnap['religion']): string {
     + '<span class="civ-emp-relig-sub">religia państwowa · własna</span></span></div>';
 
   h += '<div class="civ-emp-two">'
-    + `<div class="civ-emp-box"><div class="k">WYZNAWCY</div><div class="v">${formatManpower(religion.totalAdherents)} `
+    + `<div class="civ-emp-box"><div class="k">WYZNAWCY</div><div class="v">${formatManpowerCompact(religion.totalAdherents)} `
     + `<span style="font-size:11px;color:#78c95a;font-weight:600">${religion.ownSharePct}%</span></div></div>`
     + `<div class="civ-emp-box"><div class="k">WIARA / TURĘ</div><div class="v">${signedTxt(religion.faithRatePerTurn)}</div></div>`
     + '</div>';
@@ -1787,7 +1822,7 @@ function renderReligiaSection(religion: EmpireDetailSnap['religion']): string {
     const relCell = c.religionLabel === '—'
       ? '<span style="color:#6f7889">—</span>'
       : `<span style="color:${c.isOwn ? '#d9a441' : '#9aa4b2'}">${esc(c.religionLabel)}</span>`;
-    h += miniRow([esc(c.name), relCell, formatManpower(c.adherents)], grid);
+    h += miniRow([esc(c.name), relCell, formatManpowerCompact(c.adherents)], grid);
   }
   h += '</div>';
 
@@ -1935,7 +1970,7 @@ export function cityMiastaMiniDetail(
     switch (colId) {
       case 'miasto': return 'SUMA / ŚREDNIA';
       case 'obyw': return String(summary.obywTotal);
-      case 'ludnosc': return esc(formatManpower(summary.ludnoscAbsolutnaTotal));
+      case 'ludnosc': return esc(formatManpowerCompact(summary.ludnoscAbsolutnaTotal));
       case 'wzrost': return summary.wzrostProcentAvg != null ? `${summary.wzrostProcentAvg}%` : '—';
       case 'praca': return signedTxt(summary.pracaTotal);
       case 'pieniadz': return signedTxt(summary.pieniadzTotal);
@@ -2362,7 +2397,7 @@ export function renderMiastoSection(
     }
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
       + `<div>CAŁA CYWILIZACJA</div><div>${sObyw}</div>`
-      + `<div>${esc(formatManpower(sAbs))}</div></div>`;
+      + `<div>${esc(formatManpowerCompact(sAbs))}</div></div>`;
     h += '</div>';
     h += '<div class="civ-emp-foot">Tempo wzrostu i obrabiane pola — panel miasta.</div>';
   }
@@ -2505,7 +2540,7 @@ export function renderObywateleSection(
   const zadow = e.zadowolenie ?? (happiness.hasData ? happiness.totalNetto : null);
   const przyrost = Math.round(e.ludnoscRate ?? 0);
 
-  h += `<div class="civ-emp-hero">${esc(formatObywateleLabel(sumObyw))} · ${esc(formatManpower(sumAbs))} ludzi</div>`;
+  h += `<div class="civ-emp-hero">${esc(formatObywateleLabel(sumObyw))} · ${esc(formatManpowerCompact(sumAbs))} ludzi</div>`;
   h += '<div class="civ-emp-hero-sub">'
     + (zadow != null ? `Zadowolenie <b>${signedIntTxt(zadow)} Sz</b> · ` : '')
     + `przyrost <b>${signedIntTxt(przyrost)}</b> obyw./turę · `
@@ -2549,7 +2584,7 @@ export function renderObywateleSection(
     + `<span style="display:block;font-size:13px;font-weight:700;color:#d9a441">${esc(religion.stateReligionLabel)}</span>`
     + '<span style="display:block;font-size:11px;color:#7d8798;margin-top:2px">religia państwowa · własna</span></span>'
     + '<span style="flex:none;text-align:right">'
-    + `<span style="display:block;font-size:13px;font-weight:700;color:#e8ebf0">${esc(formatManpower(religion.totalAdherents))}</span>`
+    + `<span style="display:block;font-size:13px;font-weight:700;color:#e8ebf0">${esc(formatManpowerCompact(religion.totalAdherents))}</span>`
     + `<span style="display:block;font-size:10.5px;color:#7d8798">wyznawców · ${religion.ownSharePct}%</span></span></div>`;
   if (religion.foreignSharePct > 0) {
     h += `<div style="font-size:11px;color:#9aa4b2;margin-top:6px">Obca religia: `
@@ -2689,8 +2724,11 @@ export function renderObywateleSection(
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
       + `<div>CYWILIZACJA</div><div>${sumObyw}</div><div>−${zuzyciePerTyp}</div></div>`;
     h += '</div>';
+    // R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: mnożnik epoki wyprowadzony ze stawki silnika
+    // (stawka = baza × m(epoka)) — brak zaszytych liczb.
+    const eraMultTxt = formatLiczbaPl(citizenRate / CITIZEN_UPKEEP_RATE_PER_CITIZEN, 1);
     h += `<div class="civ-emp-foot">${formatLiczbaPl(citizenRate, 1)} szt. surowca `
-      + 'na obywatela na turę, z magazynu CENTRALNEGO imperium — liczba w kolumnie dotyczy KAŻDEGO '
+      + `na obywatela na turę (mnożnik epoki ×${eraMultTxt}), z magazynu CENTRALNEGO imperium — liczba w kolumnie dotyczy KAŻDEGO `
       + `z ${citizenResCount} surowców wymaganych w tej epoce osobno, nie ich sumy. Wiersz `
       + 'CYWILIZACJA to zużycie całego imperium (silnik liczy je od sumy obywateli, nie miasto po '
       + 'mieście). Rozbicie per surowiec: zakładka Surowce → karta → „Zobacz szczegóły zużycia".</div>';
@@ -3004,7 +3042,7 @@ function renderSpichlerzHeroSub(
  * PYTANIE-85 — Spichlerz centralny: nagłówek magazynu, podsumowanie tury
  * (kanoniczne etykiety) + tabela miast.
  */
-function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
+function renderSpichlerzCentralnySection(food: EmpireFoodSnap, economy?: EmpireDetailSnap['economy']): string {
   const pct = food.maxCap > 0
     ? Math.max(0, Math.min(100, Math.round((food.zapasy / food.maxCap) * 100)))
     : 0;
@@ -3034,7 +3072,8 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
     + `<div class="civ-emp-hero ${heroCls} civ-emp-sp-hero"><span>${food.zapasy}</span>`
     + (food.maxCap > 0 ? `<span class="cap">/ ${food.maxCap}</span>` : '')
     + `<span class="ic" aria-hidden="true">${brandIconSvg('res-food', 16)}</span></div>`
-    + renderSpichlerzHeroSub(food, pct, alarm, hasDeficit);
+    + renderSpichlerzHeroSub(food, pct, alarm, hasDeficit)
+    + (economy ? grossNetSub(economy.zywnoscWplywMiast ?? economy.zywnoscRate, economy.zywnoscRate, '🍞', ' (brutto = nadwyżka miast → centrala; netto = po deficytach miast i armii)') : '');
   if (food.maxCap > 0) {
     h += `<div class="civ-emp-bar civ-emp-sp-bar"><div class="${barCls}" style="width:${pct}%"></div></div>`;
   }
@@ -3408,7 +3447,14 @@ function pelnyCountWord(n: number): string {
  * / EN: pure reskin to the Power-section pattern — the hero line only aggregates the
  * cards rendered below; no data, numbers or business logic changed.
  */
-function renderSurowceSection(rows: EmpireResourceRow[]): string {
+/**
+ * REPIN UI-3-C (ZAŁOŻENIE U3C-Z3): web `9b019a7d8` czyta `economy.surowceBrutto/surowceNetto` (`HudState`, `hud.ts:220-227`
+ * w webie). W v2 `HudState` przepina partia UI-3-D (`hud.ts`, rozłączny plik) — do tego czasu pola dopisane lokalnie
+ * jako opcjonalne (brak = `grossNetSub` nic nie rysuje, jak w webie); po UI-3-D przecięcie jest tożsame z `HudState`.
+ */
+type EconomyGrossNetUi3c = EmpireDetailSnap['economy'] & { surowceBrutto?: number; surowceNetto?: number };
+
+function renderSurowceSection(rows: EmpireResourceRow[], economy?: EconomyGrossNetUi3c): string {
   let sur = `<div class="civ-emp-sect sep" data-section="surowce">`;
   if (rows.length === 0) {
     sur += `<div class="civ-emp-eyebrow" style="margin-bottom:10px">MAGAZYN PAŃSTWA</div>`
@@ -3475,6 +3521,9 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
       : `obywatele: <b class="good">pokryte</b>`);
   }
   sur += `<div class="civ-emp-hero-sub civ-emp-res-sub">${subParts.join(' · ')}</div>`;
+  if (economy) {
+    sur += grossNetSub(economy.surowceBrutto, economy.surowceNetto, 'szt.', ' (suma po surowcach; netto po zużyciu obywateli, budynków i wojska)');
+  }
 
   if (stored.length > 0) {
     sur += `<div class="civ-emp-res-grid" style="margin-top:14px">${stored.map(resCardHtml).join('')}</div>`;
@@ -3537,6 +3586,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('cp-trade', 14)}</span>`
     + `<span class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</span></div>`
     + `<div class="civ-emp-hero ${heroCls}">${signedPl(t.totalIncome)} złota / turę</div>`
+    + grossNetSub(t.totalIncome, t.totalIncome, 'złota', ' (trasy nie mają kosztów; dochód jest już wliczony we wpływy Skarbca)')
     + `<div class="civ-emp-hero-sub"><b>${t.routes.length}</b> ${routeCountWord(t.routes.length)} · `
     + `<b>${t.activeDeals.length}</b> ${dealCountWord(t.activeDeals.length)}</div>`;
 
@@ -3994,7 +4044,7 @@ function render(): void {
   const obywatele = renderObywateleSection(ce, cp, e, p, k, snap.religion, snap.resources, snap.happiness);
 
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
-  const spichlerz = renderSpichlerzCentralnySection(snap.food)
+  const spichlerz = renderSpichlerzCentralnySection(snap.food, e)
     .replace('data-section="spichlerz-centralny"', 'data-section="spichlerz"')
     .replace('class="civ-emp-sect"', 'class="civ-emp-sect sep"');
 
@@ -4205,7 +4255,7 @@ function render(): void {
   kult += `<div class="civ-emp-foot">Szczegóły per miasto (źródła, progi) — panel miasta → zakładka Kultura. Przycisk Kultura na toolbarze = zasięg na mapie.</div></div>`;
 
   // — MAGAZYN PAŃSTWA (surowce, mockup „Magazyn surowców" — Maciej 2026-07-24) —
-  const sur = renderSurowceSection(snap.resources);
+  const sur = renderSurowceSection(snap.resources, e);
 
   // — HANDEL (TEMAT 14, Maciej 2026-07-24) — żeton HUD „Handel" obok Skarbca —
   const handel = renderHandelSection(snap.trade);

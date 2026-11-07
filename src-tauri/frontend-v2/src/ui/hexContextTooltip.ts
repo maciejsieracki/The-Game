@@ -44,6 +44,7 @@ import {
 } from './unitCardStatus';
 import type { UnitPanelAction } from './unitPanelHud';
 import { buildUnitActionBarHtml, UNIT_ACTION_BAR_CSS } from './unitActionBarHtml';
+import { armyStackCardLabel, sortArmyStackGeneralsFirst } from './armyStackLabel';
 import {
   brandIconSvg,
   mapResourceIconSvg,
@@ -68,6 +69,9 @@ function yieldIconHtml(key: YieldKey): string {
 }
 
 /** P5.6: wartości enumu `TerenBazowy` (`types/hex.ts:12-24`) — wyłącznie klucze etykiet (prezentacja). */
+// REPIN UI-3-C (web `9b019a7d8` `:27-28`, R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1): web importuje `TEREN_LABEL_PL` z
+// `map/terrain-names` (moduł `map/*` — zakaz `check-no-logic-imports`); `labelPl` tej tabeli = 8 etykiet poniżej
+// (sprawdzone 1:1 w `run-repin-ui3c`), więc lokalna tabela zostaje.
 const TerenBazowy = {
   Laka: 'laka',
   Rownina: 'rownina',
@@ -166,6 +170,23 @@ function formatTerrainMagazynWorkedNotes(view: HexTooltipViewDto): string[] {
   return notes;
 }
 
+/**
+ * R-WEB-HEX-TOOLTIP-UNLOCK-LABEL-DEDUP-Q1: etykieta odblokowania (`labelsForImprovementUnlock`)
+ * nie powtarza surowca już podanego w wierszu produkcji ("+113 Drewno/t"). Zostają tylko
+ * etykiety niosące dodatkową informację (inny surowiec niż w produkcji). Czysta prezentacja.
+ * REPIN UI-3-C (web `9b019a7d8` `:166-178`, ZAŁOŻENIE U3C-Z1): web woła `labelsForImprovementUnlock(key)` i
+ * `territoryResourceYieldForImprovement(key, zloze, ownerEra)` — w v2 oba wyniki są już w DTO wiersza
+ * (`HexImprovementLineDto.unlockLabels` / `.magazyn`, P5.6); filtr (prezentacja) bez zmian.
+ */
+function unlockLabelsBeyondProduction(imp: HexImprovementLineDto): string[] {
+  const unlocks = imp.unlockLabels;
+  if (!unlocks.length) return unlocks;
+  const row = imp.magazyn;
+  if (!row || !(row.amount > 0)) return unlocks;
+  const prod = TERRITORY_RESOURCE_LABEL[row.resourceKey].trim().toLowerCase();
+  return unlocks.filter(u => u.trim().toLowerCase() !== prod);
+}
+
 function formatImprovementDesc(
   imp: HexImprovementLineDto,
   esc: (raw: string) => string,
@@ -174,7 +195,7 @@ function formatImprovementDesc(
   const name = esc(imp.name);
   const bonus = formatCityBonusParts(imp.bonus);
   const mag = formatTerritoryMagazynPart(imp.magazyn);
-  const unlocks = imp.unlockLabels;
+  const unlocks = unlockLabelsBeyondProduction(imp);
   let s = `<b>${name}</b>`;
   if (tag) s += ` (${esc(tag)})`;
   if (mag) {
@@ -269,6 +290,33 @@ function formatCityYieldBreakdownHtml(view: HexTooltipViewDto): string {
   return lines.join('');
 }
 
+/**
+ * REPIN UI-3-C (web `9b019a7d8` `:330-346`, ZAŁOŻENIE U3C-Z2): web deduplikuje etykiety surowców w
+ * `collectResourceLabels` (P5.6 → Rust, `HexTooltipViewDto.resourceLabels`). Tu ten sam filtr (linie `:334-346`
+ * bajtowo) stosowany do listy z Rust, w tej samej kolejności: lista po starym filtrze (małe litery) daje ten sam
+ * wynik co surowa lista, a filtr jest idempotentny — wynik nie zależy od tego, czy Rust już stosuje nową regułę.
+ */
+function dedupResourceLabels(labels: readonly string[]): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+
+  // R-WEB-TOOLTIP-RESOURCES-LINE-DEDUP-Q1: dedup bez wrażliwości na diakrytyki; etykieta
+  // ogólna ('Ruda') jest zbędna, gdy jest już doprecyzowana ('Ruda miedzi'), a 'Las (drewno)'
+  // — gdy 'Drewno' już jest w linii (ta sama informacja dwa razy).
+  const norm = (s: string): string =>
+    s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l');
+  const push = (label: string): void => {
+    const k = norm(label);
+    if (seen.has(k)) return;
+    if (k === 'las (drewno)' && seen.has('drewno')) return;
+    for (const s of seen) if (s.startsWith(`${k} `)) return;
+    seen.add(k);
+    out.push(label);
+  };
+  for (const label of labels) push(label);
+  return out;
+}
+
 // P5.6: `collectResourceLabels` (pin `:327-358`: widoczność złoża lamy wg cywilizacji, etykieta złoża i ukrytego złoża
 // wg epoki, etykiety odblokowań ulepszeń, las, rzeka) → `HexTooltipViewDto.resourceLabels` (Rust).
 // P5.6: `hexHasRiverAccess` + `listTerrainPossibleImprovements` (pin `:360-513`: bramki terenu/lasu/złoża/cywilizacji,
@@ -277,7 +325,7 @@ function formatCityYieldBreakdownHtml(view: HexTooltipViewDto): string {
 function formatPossibleImprovementLine(p: HexImprovementLineDto): string {
     const bonus = formatCityBonusParts(p.bonus);
     const mag = formatTerritoryMagazynPart(p.magazyn);
-    const unlocks = p.unlockLabels;
+    const unlocks = unlockLabelsBeyondProduction(p);
     let line = `<b>${p.name}</b> → ${mag ? `${mag} · ` : ''}plony miasta: ${bonus}`;
     if (unlocks.length) line += ` · odblok. ${unlocks.join(', ')}`;
     return line;
@@ -317,7 +365,7 @@ export interface HexContextTooltipInput {
 export function buildHexContextTooltipHtml(input: HexContextTooltipInput): string {
   const { q, r, view, esc, cityName } = input;
   const teren = TEREN_LABEL[view.terrainBase as TerenBazowy] ?? esc(String(view.terrainBase));
-  const resources = view.resourceLabels;
+  const resources = dedupResourceLabels(view.resourceLabels);
   const built = view.built;
   const implicitKeys = view.implicit;
   const possible = view.possible.map(formatPossibleImprovementLine);
@@ -471,6 +519,8 @@ export interface UnitContextTooltipInput extends UnitSufferingStatusFields {
     ruchLeft: number;
     ruchMax: number;
     active: boolean;
+    /** Zaznaczona do zbiorowego rozwiązania (pole wyboru na karcie). */
+    picked?: boolean;
   }>;
   /** Przyciski akcji (kompakt + rozszerzony, na dole karty). */
   actions?: ReadonlyArray<UnitPanelAction>;
@@ -528,20 +578,45 @@ function buildUnitStackBarHtml(pct: number, kind: 'hp' | 'mov'): string {
   return `<div class="sp-unit-stack-bar sp-unit-stack-bar-${kind}"><i style="width:${width}%"></i></div>`;
 }
 
+/**
+ * Pasek nad kartami stosu: licznik zaznaczenia + „Zaznacz wszystko” (bez generała/wodza)
+ * + „Odznacz”. Przyciski idą przez data-act → onContextAction (jak reszta akcji karty).
+ */
+function buildUnitStackPickBarHtml(cards: NonNullable<UnitContextTooltipInput['stackCards']>): string {
+  const total = cards.length;
+  const picked = cards.filter(c => c.picked === true).length;
+  const count = picked > 0
+    ? `Zaznaczono ${picked} z ${total}`
+    : `Zaznacz do rozwiązania (${total})`;
+  return '<div class="sp-unit-pick-bar">'
+    + `<span class="sp-unit-pick-count" data-pick-count>${count}</span>`
+    + '<span class="sp-unit-pick-btns">'
+    + '<button type="button" class="sp-unit-pick-btn" data-act="pick-all"'
+    + ' title="Zaznacz wszystkie jednostki oprócz generała/wodza">Zaznacz wszystko</button>'
+    + `<button type="button" class="sp-unit-pick-btn" data-act="pick-none"${picked === 0 ? ' disabled' : ''}>Odznacz</button>`
+    + '</span></div>';
+}
+
 function buildUnitStackCardsHtml(
   cards: NonNullable<UnitContextTooltipInput['stackCards']>,
   esc: (raw: string) => string,
 ): string {
   if (cards.length <= 1) return '';
-  let html = '<div class="sp-unit-stack">';
-  for (const c of cards) {
+  // Generałowie/wodzowie zawsze na początku listy — odróżnialni nawet w długim stosie.
+  const ordered = sortArmyStackGeneralsFirst(cards);
+  let html = buildUnitStackPickBarHtml(cards) + '<div class="sp-unit-stack">';
+  for (const c of ordered) {
     const hpPct = c.hpMax > 0 ? (c.hp / c.hpMax) * 100 : 0;
     const movPct = c.ruchMax > 0 ? (c.ruchLeft / c.ruchMax) * 100 : 0;
     const isCommander = c.commanderTitle === 'Wódz' || c.commanderTitle === 'Generał';
-    const cardLabel = isCommander ? `${c.commanderTitle} — ${c.name}` : c.name;
-    html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}${isCommander ? ' commander' : ''}" data-unit="${esc(c.id)}"`
+    const cardLabel = armyStackCardLabel(c);
+    const pickLabel = `Zaznacz do rozwiązania: ${cardLabel}`;
+    html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}${isCommander ? ' commander' : ''}${c.picked ? ' picked' : ''}" data-unit="${esc(c.id)}"`
       + (isCommander ? ` data-commander="true" aria-label="${esc(cardLabel)}" title="${esc(cardLabel)}"` : '')
       + ' role="button" tabindex="0">'
+      + `<span class="sp-unit-pick${c.picked ? ' on' : ''}" data-pick="${esc(c.id)}" role="checkbox"`
+      + ` tabindex="0" aria-checked="${c.picked ? 'true' : 'false'}" aria-label="${esc(pickLabel)}"`
+      + ` title="Zaznacz do rozwiązania"></span>`
       + `<div class="sp-unit-stack-ic">${c.icon || unitIconSvg(undefined)}</div>`
       + (isCommander
         ? `<div class="sp-unit-stack-commander-role">★ ${esc(c.commanderTitle!)}</div><div class="sp-unit-stack-name sp-unit-stack-commander-type">${esc(c.name)}</div>`
@@ -657,6 +732,23 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-stack-bar-hp i{background:linear-gradient(90deg,${VITALS_HP_DARK_CSS},${VITALS_HP_FULL_CSS});}
 .sp-unit-stack-bar-mov i{background:linear-gradient(90deg,${VITALS_MOVE_DARK_CSS},${VITALS_MOVE_FULL_CSS});}
 .sp-unit-stack-meta{font-size:8px;color:var(--civ-text-muted,#8a8070);margin-top:4px;}
+.sp-unit-stack-card{position:relative;}
+.sp-unit-stack-card.commander .sp-unit-stack-commander-role{font-size:10px!important;font-weight:900;padding:2px 4px;border-radius:3px;
+  background:rgba(232,216,138,.24);color:#fff3b0;}
+.sp-unit-stack-card.commander .sp-unit-stack-commander-type{font-size:9px!important;color:#f0e8c8!important;}
+.sp-unit-stack-card.picked{border-color:rgba(232,216,138,.9);box-shadow:inset 0 0 0 1px rgba(232,216,138,.35);}
+.sp-unit-pick-bar{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;
+  margin:8px 0 0;font-size:10px;color:var(--civ-text-muted,#a09880);}
+.sp-unit-pick-count{letter-spacing:.04em;}
+.sp-unit-pick-btns{display:flex;gap:6px;}
+.sp-unit-pick-btn{font:inherit;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:5px;
+  border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);color:var(--civ-gold-primary,#e8d88a);cursor:pointer;}
+.sp-unit-pick-btn:disabled{opacity:.4;cursor:not-allowed;}
+.sp-unit-pick{position:absolute;top:4px;left:4px;width:14px;height:14px;box-sizing:border-box;border-radius:3px;
+  border:1.5px solid rgba(212,175,90,.7);background:rgba(0,0,0,.4);cursor:pointer;}
+.sp-unit-pick.on{background:var(--civ-gold-primary,#e8d88a);border-color:var(--civ-gold-primary,#e8d88a);}
+.sp-unit-pick.on::after{content:'';position:absolute;left:4px;top:0;width:4px;height:8px;
+  border:solid #2e2708;border-width:0 2px 2px 0;transform:rotate(45deg);}
 .uc-unit-head-meta{font-size:10px;color:var(--civ-text-muted,#a09880);margin-top:3px;font-weight:400;}
 ${UNIT_ACTION_BAR_CSS}
 .sp-unit-card-body{display:flex;flex-direction:column;gap:0;}

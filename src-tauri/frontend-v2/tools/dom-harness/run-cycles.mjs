@@ -499,7 +499,9 @@ try {
     for (const civ of [null, 'inkowie', 'rzymianie', 'astekowie']) for (const o of ['zloze_lamy', 'zloze_konia', 'zloze_bydla']) {
       hexCases.push([`civ:${civ}/${o}`, { coords: { q: 2, r: 2 }, terenBazowy: 'gory', nakladka: o }, { civ }]);
     }
-    const riverMap = { riverPaths: [[{ q: 5, r: 4 }, { q: 6, r: 4 }]] };
+    // R-RUSTPORT-REPIN-WEB-UI-3-C-Q1: `hexes: {}` — odniesienie `ui/hexContextTooltip.ts` 9b019a7d8 (nakładka `portDomUI3C`) woła
+    // `isHexNearRiver(map, …)`, które czyta `map.hexes[…]` (pełny `GameMap`); pin czyta tylko `riverPaths` (bez zmian zachowania).
+    const riverMap = { riverPaths: [[{ q: 5, r: 4 }, { q: 6, r: 4 }]], hexes: {} };
     for (const [name, hex] of [['sąsiad-rzeki', { coords: { q: 4, r: 4 }, terenBazowy: 'laka', nakladka: 'brak' }], ['na-ścieżce', { coords: { q: 5, r: 4 }, terenBazowy: 'rownina', nakladka: 'brak' }], ['daleko', { coords: { q: 0, r: 0 }, terenBazowy: 'laka', nakladka: 'brak' }]]) {
       hexCases.push([`mapa:${name}`, hex, { map: riverMap }]);
     }

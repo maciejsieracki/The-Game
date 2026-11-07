@@ -96,5 +96,72 @@
       "sha256": "a0318e729a8367761c7bfa6c07c807f19e4d1c149cec631e8fdc55b300f97569",
       "bytes": 2830
     }
-  ]
+  ],
+  "portDomUI3C": {
+    "topic": "R-RUSTPORT-REPIN-WEB-UI-3-C-Q1 (partia UI-3-C, runda 1)",
+    "note": "PORT DOM (klasa PD, NIE kopie bajtowe): plik w drzewie = port v2 (DTO/katalog zamiast importów game/*, map/*), odwzorowujący web 9b019a7d8. sha256/bytes = plik portu (bramka SHA), webSha256/webBytes = źródło weba (bramka GIT). Wpis wstawia wersję weba do odniesienia nakładki starszych harnessów (repin-ui2-overlay.mjs --web3-dir) razem z `overlayDeps` (zależności weba 9b019a7d8 tych plików nieobecne/inne w pinie edb8fb56 i webie 86d510c66). Wpisy usunięte z repin-ui2-manifest.json overlayPortsUI2D (hexContextTooltip, buildModeHud) i repin-ui2-overlay-ports/ui2c.json (empireDetailPanel) — P5-REPIN-UI-2.md §11.6.",
+    "files": [
+      {
+        "path": "src/ui/empireDetailPanel.ts",
+        "src": "gra/src/ui/empireDetailPanel.ts",
+        "webSha256": "e99cd3256c0c975262de0fe20d861edad1a6e16e9724909ebadd01b150fe7aa9",
+        "webBytes": 275368,
+        "sha256": "79c7e4b981afd29ff08d7324aefd6d3b4c621be835531e30b96deb06c9eae9df",
+        "bytes": 278129
+      },
+      {
+        "path": "src/ui/hexContextTooltip.ts",
+        "src": "gra/src/ui/hexContextTooltip.ts",
+        "webSha256": "7d484174ba7eccdb3784c01092bd71a8b6c559c9704523c4ed3fa04e4e0989ee",
+        "webBytes": 47674,
+        "sha256": "97d6ed90367a4c2d194e161a94a26da0d561f8e71dcd460ecb28631a7f370706",
+        "bytes": 40081
+      },
+      {
+        "path": "src/ui/buildModeHud.ts",
+        "src": "gra/src/ui/buildModeHud.ts",
+        "webSha256": "80abf00fb6781a2567871f1666520ffd1d22fdf30e009d48f9806f3e5e6324f4",
+        "webBytes": 50321,
+        "sha256": "ae99dbde131e9c65d7c09491c6722a28ca2197f48bbf553db7ba9fabcb8221f7",
+        "bytes": 51483
+      }
+    ],
+    "overlayDeps": [
+      {
+        "src": "gra/src/game/auto-build-gate.ts",
+        "sha256": "344b66bcddab482616ef71f68b9b77eea42ec43baeef9e6a35887d7f77ab12c9",
+        "bytes": 1999
+      },
+      {
+        "src": "gra/src/map/terrain-names.ts",
+        "sha256": "ab7583c36b957e90ad3d425eaf9e92a03476e14aa37e996e71581d5dc1c80c12",
+        "bytes": 3758
+      },
+      {
+        "src": "gra/src/game/manpower.ts",
+        "sha256": "e07ba05a1e46559a7e6bb40c739f83f487503063fff216ba3796dc9545b0b126",
+        "bytes": 31144
+      },
+      {
+        "src": "gra/src/game/terrain-improvements.ts",
+        "sha256": "ce231fb95584ccc699227d7af11fbffdc22239ed3c1dc2d086b965083177711b",
+        "bytes": 25076
+      },
+      {
+        "src": "gra/src/map/improvement-build.ts",
+        "sha256": "a524d171b046e14ef1714cb07fdcc0852a8866f10478d4d932d0d566f160c3b4",
+        "bytes": 77222
+      },
+      {
+        "src": "gra/src/map/freshwater.ts",
+        "sha256": "4d45b61bcd107ad801cba498dc0aac4db3795b8f94f209492f52d18b362159a7",
+        "bytes": 7617
+      },
+      {
+        "src": "gra/src/game/fort-territory.ts",
+        "sha256": "aeb0c7deea47147eaaebf42ec1a7372e91c5d21b190fa62c256b66ad41aef2ea",
+        "bytes": 18077
+      }
+    ]
+  }
 }
