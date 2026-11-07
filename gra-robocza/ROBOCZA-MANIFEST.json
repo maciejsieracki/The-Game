@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "8d8812cb760b55830a3b1e71707bbb67",
-  "bundleSha256": "bc1987951a3e9b1dd5595e92e7eff3a94777408ae77a33830b5cf09aff7e64af",
-  "bundleBytes": 85666186,
+  "bundleMd5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
+  "bundleSha256": "40a73f56898bf513b2e0853a90b4bc74621f9ffca91e99f95d70eae71a57fffa",
+  "bundleBytes": 85670525,
   "sourceSnapshot": {
-    "source": "CIVMUSIC FC 7057a0d5d na origin/main",
+    "source": "STACKLIM FC 009bdc0dc na origin/main",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 539: manifest gra/data/civ-music.json (klucz = ikonaId), przywitanie raz + pętla negocjacji z crossfade, powrót muzyki tła po zamknięciu; Inkowie 2 utwory na zmianę bez przywitania; Sumerowie samo przywitanie; pozostałe civ bez zmian; 13 mp3 (negocjacje 64 kbps, przywitania 96 kbps, razem ok 10,7 MiB); bundle +15 MB (70,7 -> 85,7 MB)"
+    "FALA 540: stos jednostek jednego właściciela na heksie (także w mieście) nie może przekroczyć BATTLE_MAX_PER_SIDE=500: bramki narodzin z produkcji i kolejki, zakupu, ruchu gracza i AI, podziału armii, wejścia po poddaniu, nagrody z chatki, bonusu AI; migracja zapisów i siatka na starcie tury (nadwyżka na najbliższe wolne heksy, nic nie jest usuwane)"
   ],
   "verification": [
-    "civ-music-test 27/0, civ-music-live-test (Chromium) 20/0, logic-test 213/213, tsc 0; test pada na pustym manifeście; FC PASS-WITH-NOTES"
+    "army-stack-limit 51/0, battle-cap-500, army-merge, generals-limit, logic-test 213/213, tsc 0, ai-test jak baza; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "odsłuch pętli i jakość 64 kbps NIE_ZMIERZONO (do oceny właściciela); stare utwory Rzymian zostają jako zapas (ok 1,4 MB); rozmiar pliku ok 86 MB, limit GitHub 100 MB"
+    "pętla 60 tur prawdziwego silnika AI i weryfikacja wizualna NIE_ZMIERZONO; mgla-sciezka-inwariant 3 fail jak baza (dług klasyfikacji); AI nie szuka aktywnie innego heksu przy pełnym stosie; limit liczy też cywili i garnizon"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-07T20:38:42",
+  "hubGeneratedAt": "2026-11-07T21:16:11",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "8d8812cb760b55830a3b1e71707bbb67",
-      "sizeBytes": 85666186
+      "md5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
+      "sizeBytes": 85670525
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "8d8812cb760b55830a3b1e71707bbb67",
-      "sizeBytes": 85666186
+      "md5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
+      "sizeBytes": 85670525
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "8d8812cb760b55830a3b1e71707bbb67",
-      "sizeBytes": 85666186
+      "md5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
+      "sizeBytes": 85670525
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "8d8812cb760b55830a3b1e71707bbb67",
-      "sizeBytes": 85666186
+      "md5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
+      "sizeBytes": 85670525
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "8d8812cb760b55830a3b1e71707bbb67",
-      "sizeBytes": 85666186
+      "md5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
+      "sizeBytes": 85670525
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "8d8812cb760b55830a3b1e71707bbb67",
-      "sizeBytes": 85666186
+      "md5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
+      "sizeBytes": 85670525
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "8d8812cb760b55830a3b1e71707bbb67",
-      "sizeBytes": 85666186
+      "md5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
+      "sizeBytes": 85670525
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "8d8812cb760b55830a3b1e71707bbb67",
-      "sizeBytes": 85666186
+      "md5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
+      "sizeBytes": 85670525
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "8d8812cb760b55830a3b1e71707bbb67",
-      "sizeBytes": 85666186
+      "md5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
+      "sizeBytes": 85670525
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "8d8812cb760b55830a3b1e71707bbb67",
-      "sizeBytes": 85666186
+      "md5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
+      "sizeBytes": 85670525
     }
   ],
-  "md5": "8d8812cb760b55830a3b1e71707bbb67",
+  "md5": "1a04d5ec5ffa92b012b1fb2e6b26ef01",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

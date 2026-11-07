@@ -1,3 +1,9 @@
+## ROBOCZA 1a04d5ec -- 2026-11-06 -- FALA 540: limit armii: żadna armia nie przekracza limitu bitwy (500) (testowa)
+
+- stos jednostek jednego właściciela na heksie (także w mieście) nie może przekroczyć BATTLE_MAX_PER_SIDE=500: bramki narodzin z produkcji i kolejki, zakupu, ruchu gracza i AI, podziału armii, wejścia po poddaniu, nagrody z chatki, bonusu AI; migracja zapisów i siatka na starcie tury (nadwyżka na najbliższe wolne heksy, nic nie jest usuwane)
+- Weryfikacja: army-stack-limit 51/0, battle-cap-500, army-merge, generals-limit, logic-test 213/213, tsc 0, ai-test jak baza; FC PASS-WITH-NOTES
+- Limity: pętla 60 tur prawdziwego silnika AI i weryfikacja wizualna NIE_ZMIERZONO; mgla-sciezka-inwariant 3 fail jak baza (dług klasyfikacji); AI nie szuka aktywnie innego heksu przy pełnym stosie; limit liczy też cywili i garnizon
+
 ## ROBOCZA 8d8812cb -- 2026-11-06 -- FALA 539: muzyka cywilizacji w dyplomacji (Grecy, Rzymianie, Chińczycy, Zulusi, Egipt, Sumerowie, Inkowie) (testowa)
 
 - manifest gra/data/civ-music.json (klucz = ikonaId), przywitanie raz + pętla negocjacji z crossfade, powrót muzyki tła po zamknięciu; Inkowie 2 utwory na zmianę bez przywitania; Sumerowie samo przywitanie; pozostałe civ bez zmian; 13 mp3 (negocjacje 64 kbps, przywitania 96 kbps, razem ok 10,7 MiB); bundle +15 MB (70,7 -> 85,7 MB)
