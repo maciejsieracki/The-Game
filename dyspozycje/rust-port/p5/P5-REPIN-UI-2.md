@@ -752,7 +752,8 @@ Klasa KB = plik v2 był bajtowo równy webowi `86d510c66`, a wersja `9b019a7d8` 
   uruchamiać z katalogiem `WEB86U3` = `repin-ui2-overlay.mjs --pin-dir $WEB86 --web-dir $WEB86 --web3-dir $WEB3` (web 86d + pliki
   UI-3): `run-repin-ui2c` na czystym `$WEB86` daje 2 różnice PIX (scena HUD montuje panel boczny 86d z chipem „Inne cyw.”, port — zakładki).
 - `run-cycles.mjs`, `run-repin-ui2e-cycles.mjs`: blok `sidePanelEventFilter` porównuje NOWE API (zakładki), gdy obie strony je mają;
-  przy mieszanych rewizjach jawny komunikat POMINIĘTE. `mutate-cycles.mjs` S2 celuje w nowy filtr zakładki (S1, S2 wykryte).
+  przy mieszanych rewizjach (r2, Evaluator r1 Z3) — RÓŻNICA `API filtra` liczona do `różnic` (EXIT=1), nie pominięcie.
+  `mutate-cycles.mjs` S2 celuje w nowy filtr zakładki (S1, S2 wykryte).
 
 ### 11.3 Testy r1 (Chromium 141 headless `/opt/pw-browsers/chromium-1194`, Playwright `/opt/node-tools`)
 
@@ -783,3 +784,19 @@ node tools/dom-harness/mutate-repin-ui3a.mjs --web-dir "$WEB3" --from 0 --to 26 
 node tools/repin-ui2-overlay.mjs --pin-dir "$PIN" --web-dir "$WEB86" --web3-dir "$WEB3" --out "$PINOV"
 node tools/repin-ui2-overlay.mjs --pin-dir "$WEB86" --web-dir "$WEB86" --web3-dir "$WEB3" --out "$WEB86U3"
 ```
+
+### 11.5 Runda 2 — obrona (Evaluator r1: FAIL, Z1–Z4)
+
+- Z1/Z2 PRZYJĘTE: GOAL = 24 pliki; zrobione 13 (partia A). Status r1 `PASS-WITH-NOTES` był błędny — GOAL niepełny = `FAIL`,
+  temat wraca z tym samym ID; partie B–E (11 plików, §11.1) w kolejnych rundach albo — decyzja orkiestratora — osobne ID.
+- Z3 PRZYJĘTE: `run-cycles.mjs` — gałąź POMINIĘTE zastąpiona przypadkiem `API filtra (rozbieżne rewizje…)` liczonym do `różnic`.
+  Dowód: czysty pin `edb8fb56` (bez nakładki) `--only sidePanelEventFilter.ts` → `różnic=1`, EXIT=1 (pin: `filterSidePanelEvents`,
+  v2: `filterSidePanelEventsByTab,…`); nakładka `--web3-dir` → 44/0, EXIT=0. `run-repin-ui2e-cycles.mjs`: moduł nie jest tam
+  pakowany (domyślne `--only` = 3 moduły dyplomacji), blok był martwy, a `--only sidePanelEventFilter.ts` dawał `modułów=0`, EXIT=0;
+  teraz blok wchodzi do raportu → EXIT=1 (jawnie: moduł poza zakresem tego harnessu). Domyślny przebieg bez zmian (9335/0).
+- Z4 PRZYJĘTE: regresja na kodzie końcowym (`src/` = `e2879257f`, w tym `worldOverlayLayer.ts`; narzędzia z poprawką Z3):
+  L0 3861/0, L1A 3618/0, L2 1784/0 (354/150), C4 1649/0 (75), hud 909/0, cityux 164/0, newgame 2195/0 (wcześniej NIE_ZMIERZONO;
+  `newGameFlow` → `icons/brandAssets` → `building-icon-map.json` zależy od pliku UI-3), `run-cycles` 6442 przypadków / 1623 różnic
+  (te same moduły: `diplomacyTradeBasket` 1592 + `diplomacyAudience` 31, E-Z3; sidePanel* 0); UI-2-A 2292/0, B 1356/0, C 752/0,
+  D 797/0, E 183/0, E-cycles 9335/0, F 35 scen/0, G 9216/0 (WEB86U3); UI-3-A 33×2 scen, 360 kroków, PIX 0, 56/56; `mutate-cycles
+  --only S1,S2` 2/2.

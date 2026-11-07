@@ -400,8 +400,11 @@ try {
         for (const ai of [false, true]) cmpVal(M, `counts(${evs.length},${ai})`, P.tabCountsOf(evs, ai), V.tabCountsOf(evs, ai));
       }
     } else {
-      // Odniesienie i port z różnych rewizji API (np. web 86d510c66 vs port po REPIN UI-3) — pokrywa run-repin-ui3a.mjs.
-      console.log(`${M}: POMINIĘTE — odniesienie i port mają różne API filtra (REPIN UI-3: porównanie w run-repin-ui3a.mjs)`);
+      // R-RUSTPORT-REPIN-WEB-UI-3-Q1 r2 (Evaluator r1 Z3): rozbieżne API filtra (odniesienie i port z różnych rewizji, np.
+      // odniesienie bez `--web3-dir`) = RÓŻNICA, nie pominięcie — przypadek liczony do `różnic`, więc EXIT=1.
+      const apiOf = (m) => ['filterSidePanelEvents', 'filterSidePanelEventsByTab', 'relevantInfoEvents', 'isHiddenAiAiEvent', 'tabCountsOf']
+        .filter((k) => typeof m[k] === 'function').join(',') || '(brak)';
+      record(M, 'API filtra (rozbieżne rewizje odniesienia i portu)', 'pin:' + apiOf(P), 'v2:' + apiOf(V));
     }
   }
 
@@ -1198,7 +1201,9 @@ try {
   }
 
   // ─── raport ────────────────────────────────────────────────────────────────
-  const rows = MODS.filter(want).map((m) => R(m));
+  // R-RUSTPORT-REPIN-WEB-UI-3-Q1 r2 (Evaluator r1 Z3): blok `sidePanelEventFilter.ts` (spoza MODS partii E) liczony
+  // w raporcie, żeby rozbieżne API filtra odniesienia i portu dawało różnicę i EXIT=1, a nie przechodziło niezauważone.
+  const rows = [...MODS, ...(results.has('sidePanelEventFilter.ts') ? ['sidePanelEventFilter.ts'] : [])].filter(want).map((m) => R(m));
   let totalCases = 0;
   let totalDiffs = 0;
   for (const r of rows) {
