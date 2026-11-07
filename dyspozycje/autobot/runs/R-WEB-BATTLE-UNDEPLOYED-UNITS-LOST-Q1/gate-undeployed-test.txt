@@ -1,0 +1,2 @@
+battle-undeployed-units-test: PASS=35 FAIL=0
+EXIT=0

@@ -79,7 +79,7 @@ export interface MapFieldBattleLaunchDeps {
   fortifyScaledDefFor: (u: RuntimeUnit) => UnitPowerInput & Record<string, unknown>;
   terrainCombatData: readonly TerrainEntry[];
   battleData: { terrainData?: unknown[]; counters?: unknown[]; units?: unknown[] };
-  showHint: (msg: string, ms?: number) => void;
+  showHint: (msg: string, ms?: number, aboveBattle?: boolean) => void;
   showPreBattle: (
     info: PreBattleInfo,
     cb: PreBattleCallbacks,
@@ -520,7 +520,7 @@ export function launchFieldBattleFromMap(
           atkRosterRef.length, defRosterRef.length, deps.battleMaxPerSide,
           atkLead.ownerId === 0 ? 'atk' : defLead.ownerId === 0 ? 'def' : null,
         );
-        if (note) deps.showHint(note, 5000);
+        if (note) deps.showHint(note, 5000, true);
       }
       setMood('bitwa');
       const bs = deps.createBattleScene({
