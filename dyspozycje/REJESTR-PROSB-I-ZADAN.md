@@ -8843,3 +8843,6 @@ R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1 (wariant A) — PASS-WITH-NOTES: wsp
 
 ### FALA 531 (2026-11-07, ROBOCZA f460a713, main 02fbe7dcf)
 R-WEB-PERF-ENDTURN-RENDER-HUD-Q1 — PASS-WITH-NOTES (R4, kod 3c00d9edb): odroczone przebudowy żetonów jednostek w fazie AI (flush po fazie/bitwie/błędzie/wznowieniu), widoczne żetony odświeżane w klatce postępu. Unia syncUnitsRender+renderLoop+syncStatChips −18,9% (3 końce tury; 1. koniec tury wyraźnie więcej). Decyzja orkiestratora (ECHO): kryterium zawężone do zmierzonego. NIE_ZMIERZONO: live bitwa→wznowienie, zrzut w połowie fazy AI. Dług: ai-city-render-batch-test pada na bazie (linia 70). Osobny kandydat: renderLoop (matrixAutoUpdate statycznych podgrup, ok. −73% updateMatrixWorld).
+
+### FALA 532 (2026-11-07, ROBOCZA 40dff84a, main 9b019a7d8)
+R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1 (wariant B, decyzja właściciela 2026-11-07) — PASS (Opus 5.5 wszystkie etapy): scalenie statycznych części żetonów jednostek. t.50: sterta po GC −27,8 MB (−16%), meshe 35 903→9 644, draw calls 1 192→863, renderLoop −30%, syncUnitsRender −42%; 475 żetonów −37,7 MB. Obraz 6/1/2 px (stanie/marsz/atak). NIE_ZMIERZONO: obraz w t.50; budowa żetonów od zera +27–46%. Raw MD5 zgodny.
