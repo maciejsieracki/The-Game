@@ -1,0 +1,6 @@
+/* WARIANT A — JEDNA LINIA (6 żetonów). Żeton: ikona po lewej (na wysokość 3 linii tekstu);
+   po prawej: mała etykieta / DUŻA liczba (--n) / „+brutto / +netto” (--p = 70% --n).
+   Gdy 6 żetonów się nie mieści => skrypt dodaje klasę .proto-fallback na .civ-hud (2 rzędy po 3, ten sam żeton). */
+.civ-hud .civ-hud-banner-left .hud-chip-grid{grid-template-columns:repeat(6,max-content);justify-content:space-between;column-gap:6px;row-gap:4px;}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-line{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-height:0;height:auto;}
+.civ-hud.proto-fallback .civ-hud-banner-left .hud-chip-grid{grid-template-columns:repeat(3,minmax(0,1fr));justify-content:stretch;}

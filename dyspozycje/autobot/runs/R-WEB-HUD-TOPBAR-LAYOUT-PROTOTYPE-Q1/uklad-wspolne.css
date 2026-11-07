@@ -1,0 +1,26 @@
+/* R-WEB-HUD-TOPBAR-LAYOUT-PROTOTYPE-Q1 — WSPÓLNE zmienne prototypów (wstrzykiwane w runtime, NIE w gra/).
+   --n = czcionka liczby sumarycznej, --p = czcionka plusów = DOKŁADNIE 70% --n.
+   Dziś w grze: liczba 17 px, plusy 9,5 px (56%). Tu: 22 px / 15,4 px na dużych oknach, schodzi razem z oknem. */
+.civ-hud{--n:22px;--p:calc(var(--n) * .7);--l:10px;--ic:30px;}
+@media (max-width:1200px){.civ-hud{--n:18px;--l:9px;--ic:26px;}}
+@media (max-width:900px){.civ-hud{--n:15px;--l:8px;--ic:20px;}}
+@media (max-width:700px){.civ-hud{--n:12px;--l:7px;--ic:16px;}}
+/* wspólny rdzeń żetonu: ikona | tekst; wszystkie reguły o wyższej specyficzności niż CSS gry */
+.civ-hud .civ-hud-banner-left .civ-hud-chip-cell{display:grid;grid-template-columns:var(--ic) max-content;column-gap:6px;
+  justify-content:center;align-items:center;overflow:hidden;white-space:nowrap;padding:1px 3px;}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-cell .civ-hud-chip-med{width:var(--ic);height:var(--ic);}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-cell .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:calc(var(--ic) * .57);height:calc(var(--ic) * .57);}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-body{display:flex;flex-direction:column;gap:0;min-width:0;line-height:1.05;}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-top{min-height:0;}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-cell .civ-hud-chip-lbl{font-size:var(--l);flex-shrink:1;}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-cell .civ-hud-chip-val{font-size:var(--n);line-height:1.05;height:auto;}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-figs{display:inline-flex;flex-direction:row;align-items:baseline;gap:3px;
+  height:auto;margin-left:0;line-height:1.1;font-size:var(--p);flex-shrink:0;}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-figs .civ-hud-chip-rate,
+.civ-hud .civ-hud-banner-left .civ-hud-chip-figs .civ-hud-chip-net,
+.civ-hud .civ-hud-banner-left .civ-hud-chip-figs .civ-hud-chip-fsep{font-size:var(--p);}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-figs .civ-hud-chip-fsep{display:inline;}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-figs .civ-hud-chip-rate{color:var(--tg-green);}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-figs .civ-hud-chip-net.pos{color:var(--tg-green);}
+.civ-hud .civ-hud-banner-left .civ-hud-chip-figs .civ-hud-chip-net.neg{color:#ee6c6c;}
+.civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 8px;}

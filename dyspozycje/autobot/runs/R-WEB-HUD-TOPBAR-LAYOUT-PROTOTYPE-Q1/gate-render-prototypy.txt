@@ -1,0 +1,2 @@
+render-prototypy.mjs: 48 zrzutow + 4 kolaze + pomiary.csv + pomiary-skan-szerokosci.csv
+EXIT=0
