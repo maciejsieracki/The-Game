@@ -1,0 +1,21 @@
+{
+  "temat": "R-RUSTPORT-REPIN-WEB-RENDER-3-Q1",
+  "opis": "Zakres REPIN renderu 3D-3: web 86d510c66 -> 9b019a7d8 (FALA 509-532), gra/src/render. Klasyfikacja: dyspozycje/rust-port/p5/P5-REPIN-WEB-RENDER-3.md. Weryfikator: tools/verify-repin-render3-scope.mjs.",
+  "webBase": "86d510c66",
+  "webTarget": "9b019a7d89090c7491a4c2ad75278a7a60d42a90",
+  "files": [
+    { "path": "gra/src/render/cities.ts", "base": "f2d4dd7452218c033f428d39ee8b9a2cdd95788f", "target": "62ac0171da627534bc5a215a3f42b7d33f9f6324", "klasa": "K+SC(LOD)", "rust": "rust-port/renderer/src/models/cities/renderer.rs" },
+    { "path": "gra/src/render/geometryContentPool.ts", "base": null, "target": "62e91a8f26a82065ad4af1e8aebaeb2c5c25d861", "klasa": "K", "rust": null },
+    { "path": "gra/src/render/mapRenderStyle.ts", "base": "2d3f0576767348bec72ace45a6143836b4e46e4c", "target": "90b7887f155b9ef1c31011ec9c7864e4e9e27b6b", "klasa": "SC", "rust": "rust-port/renderer/src/core/map_style.rs" },
+    { "path": "gra/src/render/materialContentPool.ts", "base": null, "target": "9b404300b3ef7938966b8447a12d015212800fd2", "klasa": "K", "rust": null },
+    { "path": "gra/src/render/mergeDecor.ts", "base": "5ab6399dea76504ba7e82dd1e5ecb4d52587ae01", "target": "3add439c03e9c60e0a8c31813463ceb215a4314a", "klasa": "K(bufory)", "rust": "rust-port/renderer/src/core/merge_decor.rs" },
+    { "path": "gra/src/render/scene.ts", "base": "906a4dbb0ad0c7263702ebeb2e8818c287e0d85c", "target": "7dafe738cf34acdc1df4faec4f0ed693af1906ff", "klasa": "K", "rust": null },
+    { "path": "gra/src/render/smallPartLod.ts", "base": null, "target": "b9beb625d3329659c6f5d08a5df99456c513ae15", "klasa": "SC(LOD)", "rust": "kompozytor units::*/cities::* (brak w Rust)" },
+    { "path": "gra/src/render/unitStaticMerge.ts", "base": null, "target": "02d7e3764110576bc72ef0160a48500f108238e8", "klasa": "K", "rust": null },
+    { "path": "gra/src/render/units.ts", "base": "22e0a6317f77817c0d4106573a393682e818e041", "target": "9fca903c627aff151ad7a80ae829f218c0c2f9b1", "klasa": "K+SC(LOD)", "rust": "UnitRenderer (brak w Rust)" }
+  ],
+  "rustAnchors": [
+    { "path": "rust-port/renderer/src/core/map_style.rs", "contains": "QualityTier::Medium => ResolvedRenderPreset {", "then": "pixel_ratio_max: 1.5,", "znaczenie": "luka parytetu L1: web medium pixelRatioMax=2.0" },
+    { "path": "rust-port/renderer/src/core/merge_decor.rs", "contains": "ONE non-indexed mesh", "then": null, "znaczenie": "luka parytetu L2: web scala do bufora indeksowanego" }
+  ]
+}
