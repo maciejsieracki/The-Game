@@ -49,7 +49,7 @@ const hard = loadAiPurchaseReserveParams(data, 3);
 
 console.log('\n-- A. Progi z ai-params.json --');
 eq(typeof normal.rezerwaTur, 'number', 'Normal rezerwaTur liczba');
-eq(normal.rezerwaTur, 3, 'Normal: 3 tury rezerwy');
+eq(normal.rezerwaTur, 10, 'Normal: 10 tur rezerwy (R-WEB-AI-PURCHASE-RESERVE-N10-Q1)');
 eq(normal.minDochodNetto, 0, 'Normal: min dochod netto 0');
 eq(easy.rezerwaTur, 3, 'Easy: 3 tury rezerwy');
 eq(easy.minDochodNetto, 0, 'Easy: min dochod netto 0');
@@ -62,10 +62,10 @@ const mk = (over, reserve) => ({
   reserve, netIncomePerTurn: 5, upkeepPerTurn: 10, unitUpkeepPerTurn: 1, ...over,
 });
 
-console.log('\n-- B. Skarbiec duzy/maly (Normal: N=3, po zakupie wymagane 3*(10+1)=33) --');
+console.log('\n-- B. Skarbiec duzy/maly (Normal: N=10, po zakupie wymagane 10*(10+1)=110) --');
 eq(shouldAIPurchaseUnit(mk({ treasury: 500 }, normal)), true, 'duzy skarbiec + dochod dodatni -> kupuje');
-eq(shouldAIPurchaseUnit(mk({ treasury: 50 + 33 }, normal)), true, 'brzeg: cena + 3 tury utrzymania -> kupuje');
-eq(shouldAIPurchaseUnit(mk({ treasury: 50 + 32 }, normal)), false, 'o 1 mniej niz cena + 3 tury -> nie kupuje');
+eq(shouldAIPurchaseUnit(mk({ treasury: 50 + 110 }, normal)), true, 'brzeg: cena + 10 tur utrzymania -> kupuje');
+eq(shouldAIPurchaseUnit(mk({ treasury: 50 + 109 }, normal)), false, 'o 1 mniej niz cena + 10 tur -> nie kupuje');
 eq(shouldAIPurchaseUnit(mk({ treasury: 50 }, normal)), false, 'stac tylko na cene (bez rezerwy) -> nie kupuje');
 eq(shouldAIPurchaseUnit(mk({ treasury: 49 }, normal)), false, 'mniej niz cena -> nie kupuje');
 
@@ -84,7 +84,8 @@ eq(shouldAIPurchaseUnit(mk({ netIncomePerTurn: 0 }, easy)), false, 'Easy nie tol
 eq(shouldAIPurchaseUnit(mk({ netIncomePerTurn: -2 }, hard)), false, 'Hard: netto po zakupie -3 < -2 -> nie kupuje');
 // Skarbiec: Hard N=2 -> po zakupie 2*11=22; Normal N=3 -> 33.
 eq(shouldAIPurchaseUnit(mk({ treasury: 50 + 22 }, hard)), true, 'Hard: cena + 2 tury -> kupuje');
-eq(shouldAIPurchaseUnit(mk({ treasury: 50 + 22 }, normal)), false, 'Normal: ta sama kwota < cena + 3 tury -> nie kupuje');
+eq(shouldAIPurchaseUnit(mk({ treasury: 50 + 22 }, normal)), false, 'Normal: ta sama kwota < cena + 10 tur -> nie kupuje');
+eq(shouldAIPurchaseUnit(mk({ treasury: 50 + 33 }, normal)), false, 'Normal: cena + 3 tury (dawna wartosc) -> nie kupuje');
 
 console.log('\n-- E. Bramki dawne zachowane --');
 eq(shouldAIPurchaseUnit(mk({ hasManpower: false }, normal)), false, 'brak Manpower -> nie kupuje');
@@ -117,8 +118,8 @@ console.log('\n-- G. Kontrakt zrodlowy: main.ts faktycznie przekazuje dane do re
   // Zachowanie na stanie: wejscia jak z aiPurchaseReserveInputs (Normal, przychod 10, utrzymanie 8, jednostka +1).
   const normal = loadAiPurchaseReserveParams(data, 2);
   const inp = { reserve: normal, netIncomePerTurn: 10 - 8, upkeepPerTurn: 8, unitUpkeepPerTurn: 1, hasManpower: true, goldCost: 50 };
-  eq(shouldAIPurchaseUnit({ ...inp, treasury: 50 + 27 }), true, 'stan: skarbiec = cena + 3*(8+1) -> kupuje');
-  eq(shouldAIPurchaseUnit({ ...inp, treasury: 50 + 26 }), false, 'stan: skarbiec o 1 za maly -> nie kupuje');
+  eq(shouldAIPurchaseUnit({ ...inp, treasury: 50 + 90 }), true, 'stan: skarbiec = cena + 10*(8+1) -> kupuje');
+  eq(shouldAIPurchaseUnit({ ...inp, treasury: 50 + 89 }), false, 'stan: skarbiec o 1 za maly -> nie kupuje');
   eq(shouldAIPurchaseUnit({ ...inp, treasury: 500, netIncomePerTurn: 0 }), false, 'stan: netto po zakupie < 0 -> nie kupuje mimo duzego skarbca');
 }
 
