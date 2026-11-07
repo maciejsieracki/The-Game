@@ -1,3 +1,9 @@
+## ROBOCZA 40dff84a -- 2026-11-06 -- FALA 532: pamięć: scalenie statycznych części modeli jednostek (wariant B) (testowa)
+
+- render/unitStaticMerge.ts + units.ts + smallPartLod.ts: statyczne części żetonu scalone w jeden mesh na materiał; t.50 sterta po GC 171,7→143,9 MB (−27,8 MB, −16%), meshe żetonów 35 903→9 644, draw calls 1 192→863, renderLoop 29,2→20,4 ms/klatkę, syncUnitsRender 186,6→108,0 ms; stanowisko 475 żetonów −37,7 MB; picking 170/170; różnica obrazu stanie/marsz/atak 6/1/2 px (dopuszczone przez właściciela ≤~120 px)
+- Weryfikacja: Opus 5.5 Operator→Evaluator→Obrona→FC PASS; memory-unit-static-merge-test 9/0, tsc 0, logic 213/213, small-part-lod 24/0, overlay-sync 17/0, capture-render-sync 23/0, deferred-dim 19/0, city-badge 67/0, 5/5 mutacji, render-all 0 regresji, zrzuty K1–K5 przejrzane
+- Limity: obraz w t.50 NIE_ZMIERZONO (liczba jednostek różna między przebiegami); budowa żetonów od zera +27–46% (~0,2 s jednorazowo); renderLoop mierzony na swiftshader (względnie)
+
 ## ROBOCZA f460a713 -- 2026-11-06 -- FALA 531: koniec tury: mniej przebudów żetonów jednostek i HUD (faza AI) (testowa)
 
 - main.ts: ruch AI z odwiedzinami miasta nie woła pełnego syncUnitsRender po każdym ruchu (aiUnitRenderBatch, flush po fazie AI/bitwie/błędzie, także po wznowieniu fazy), widoczne żetony odświeżane w klatce postępu; currentVisible liczone raz; unia syncUnitsRender+renderLoop+syncStatChips −18,9% (3 końce tury, 5 par naprzemiennie; 1. koniec tury znacznie więcej)

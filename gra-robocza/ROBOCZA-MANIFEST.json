@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f460a713a8eb57e5d310a32582d34b07",
-  "bundleSha256": "1de498d981e0e2a5199930bc92f8fef239597a03f40963ff0a489c27d9b705e9",
-  "bundleBytes": 70662118,
+  "bundleMd5": "40dff84ad9e18f3857556b8680fa2562",
+  "bundleSha256": "44edc57cf41f5f02891a0a79cd66a3dc62c24b1e6ff409dfbea61ac4cbbd6570",
+  "bundleBytes": 70668400,
   "sourceSnapshot": {
-    "source": "R-WEB-PERF-ENDTURN-RENDER-HUD-Q1 3c00d9edb (merge 38487de49 na 6a673c838)",
+    "source": "R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1 8c569db42 (merge na 02fbe7dcf)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 531: main.ts: ruch AI z odwiedzinami miasta nie woła pełnego syncUnitsRender po każdym ruchu (aiUnitRenderBatch, flush po fazie AI/bitwie/błędzie, także po wznowieniu fazy), widoczne żetony odświeżane w klatce postępu; currentVisible liczone raz; unia syncUnitsRender+renderLoop+syncStatChips −18,9% (3 końce tury, 5 par naprzemiennie; 1. koniec tury znacznie więcej)"
+    "FALA 532: render/unitStaticMerge.ts + units.ts + smallPartLod.ts: statyczne części żetonu scalone w jeden mesh na materiał; t.50 sterta po GC 171,7→143,9 MB (−27,8 MB, −16%), meshe żetonów 35 903→9 644, draw calls 1 192→863, renderLoop 29,2→20,4 ms/klatkę, syncUnitsRender 186,6→108,0 ms; stanowisko 475 żetonów −37,7 MB; picking 170/170; różnica obrazu stanie/marsz/atak 6/1/2 px (dopuszczone przez właściciela ≤~120 px)"
   ],
   "verification": [
-    "Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; tsc 0; logic 213/213; resume-flush i deferral OK; overlay-sync 17/0; capture-render-sync 23/0; city-badge-zoom-lod 67/0; pool testy 18/0 i 7/0; digest sceny 0 niezgodnych"
+    "Opus 5.5 Operator→Evaluator→Obrona→FC PASS; memory-unit-static-merge-test 9/0, tsc 0, logic 213/213, small-part-lod 24/0, overlay-sync 17/0, capture-render-sync 23/0, deferred-dim 19/0, city-badge 67/0, 5/5 mutacji, render-all 0 regresji, zrzuty K1–K5 przejrzane"
   ],
   "limits": [
-    "cel −35,7% zawężony ECHO do zmierzonych −18,9%; brak testu live bitwa→wznowienie i zrzutu w połowie fazy AI (NIE_ZMIERZONO); ai-city-render-batch-test pada identycznie na bazie (dług)"
+    "obraz w t.50 NIE_ZMIERZONO (liczba jednostek różna między przebiegami); budowa żetonów od zera +27–46% (~0,2 s jednorazowo); renderLoop mierzony na swiftshader (względnie)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-07T06:30:18",
+  "hubGeneratedAt": "2026-11-07T08:12:13",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f460a713a8eb57e5d310a32582d34b07",
-      "sizeBytes": 70662118
+      "md5": "40dff84ad9e18f3857556b8680fa2562",
+      "sizeBytes": 70668400
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f460a713a8eb57e5d310a32582d34b07",
-      "sizeBytes": 70662118
+      "md5": "40dff84ad9e18f3857556b8680fa2562",
+      "sizeBytes": 70668400
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f460a713a8eb57e5d310a32582d34b07",
-      "sizeBytes": 70662118
+      "md5": "40dff84ad9e18f3857556b8680fa2562",
+      "sizeBytes": 70668400
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f460a713a8eb57e5d310a32582d34b07",
-      "sizeBytes": 70662118
+      "md5": "40dff84ad9e18f3857556b8680fa2562",
+      "sizeBytes": 70668400
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f460a713a8eb57e5d310a32582d34b07",
-      "sizeBytes": 70662118
+      "md5": "40dff84ad9e18f3857556b8680fa2562",
+      "sizeBytes": 70668400
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f460a713a8eb57e5d310a32582d34b07",
-      "sizeBytes": 70662118
+      "md5": "40dff84ad9e18f3857556b8680fa2562",
+      "sizeBytes": 70668400
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f460a713a8eb57e5d310a32582d34b07",
-      "sizeBytes": 70662118
+      "md5": "40dff84ad9e18f3857556b8680fa2562",
+      "sizeBytes": 70668400
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f460a713a8eb57e5d310a32582d34b07",
-      "sizeBytes": 70662118
+      "md5": "40dff84ad9e18f3857556b8680fa2562",
+      "sizeBytes": 70668400
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f460a713a8eb57e5d310a32582d34b07",
-      "sizeBytes": 70662118
+      "md5": "40dff84ad9e18f3857556b8680fa2562",
+      "sizeBytes": 70668400
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f460a713a8eb57e5d310a32582d34b07",
-      "sizeBytes": 70662118
+      "md5": "40dff84ad9e18f3857556b8680fa2562",
+      "sizeBytes": 70668400
     }
   ],
-  "md5": "f460a713a8eb57e5d310a32582d34b07",
+  "md5": "40dff84ad9e18f3857556b8680fa2562",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
