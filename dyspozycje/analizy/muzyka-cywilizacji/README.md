@@ -16,3 +16,5 @@ Nazewnictwo: `<civId>/<civId>_przywitanie.mp3` (powitanie), `<civId>/<civId>_neg
 | Zulusi | zulusi_negocjacje.mp3 | The Patient Indaba | 2:33 | 3,7 MB |
 | Egipt | egipt_przywitanie.mp3 | Offering To The Throne | 0:40 | 1,0 MB |
 | Egipt | egipt_negocjacje.mp3 | The King's Audience | 2:29 | 3,6 MB |
+| Sumerowie | sumerowie_przywitanie.mp3 | The Ziggurat Gates | 0:39 | 0,9 MB |
+| Sumerowie | (brak negocjacji) | — drugi wrzucony plik był identyczny z negocjacjami Egiptu (The King's Audience, ten sam MD5), nie zapisany | — | — |
