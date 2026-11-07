@@ -26,7 +26,9 @@ async function load() {
     stdin: {
       contents: `import * as L from './src/game/army-stack-limit.ts';
 import { BATTLE_MAX_PER_SIDE } from './src/battle/battleScene.ts';
-module.exports = { ...L, BATTLE_MAX_PER_SIDE };`,
+import * as S from './src/game/siege-enter-city.ts';
+import * as V from './src/game/villageRewards.ts';
+module.exports = { ...L, BATTLE_MAX_PER_SIDE, planSurrenderEntry: S.planSurrenderEntry, enterCityAfterSurrender: S.enterCityAfterSurrender, findVillageRewardSpawnHex: V.findVillageRewardSpawnHex };`,
       resolveDir: ROOT, sourcefile: 'army-stack-limit-entry.ts',
     },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020',
@@ -231,6 +233,37 @@ function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 10139
     });
   }
 
+  // ---------------- [G] wejscie po poddaniu miasta respektuje limit (R-WEB-ARMY-STACK-LIMIT-Q1 poprawka zarzutu 1) ----------------
+  {
+    const deps = { isCivilian: () => false, stackLimit: LIMIT };
+    const city = { id: 'c1', q: 3, r: 0 };
+    const mkU = (id, ownerId, q, r) => ({ id, ownerId, q, r, oblegaCityId: 'c1' });
+    // miasto pelne (LIMIT wlasnych jednostek na heksie) -> grupa 2 jednostek nie wchodzi
+    const full = [...Array.from({ length: LIMIT }, (_, i) => ({ id: 'g' + i, ownerId: 0, q: 3, r: 0 })),
+      mkU('a', 0, 2, 0), mkU('b', 0, 2, 0)];
+    ok(L.planSurrenderEntry(full, city, 0, deps).length === 0, 'G1 pelne miasto: grupa nie wchodzi ponad limit');
+    // miasto z miejscem na 2 -> grupa wchodzi, stos = LIMIT
+    const room2 = [...Array.from({ length: LIMIT - 2 }, (_, i) => ({ id: 'g' + i, ownerId: 0, q: 3, r: 0 })),
+      mkU('a', 0, 2, 0), mkU('b', 0, 2, 0)];
+    const entered = L.enterCityAfterSurrender(room2, city, 0, deps);
+    ok(entered.length === 2 && maxStack(room2) === LIMIT, 'G2 grupa miesci sie dokladnie do limitu');
+    // bez pola stackLimit zachowanie sprzed zmiany (bez limitu)
+    const legacy = L.planSurrenderEntry(full, city, 0, { isCivilian: () => false });
+    ok(legacy.length === 2, 'G3 bez stackLimit: zachowanie bez limitu (kompatybilnosc)');
+  }
+
+  // ---------------- [H] nagroda chatki nie stawia jednostki na pelnym stosie (poprawka zarzutu 1) ----------------
+  {
+    // garnizon (inGarnizon) na heksie (1,0) omija test `occupied` -- bez limitu finder go wybiera
+    const garrison = Array.from({ length: LIMIT }, (_, i) => ({ id: 'gz' + i, ownerId: 0, q: 1, r: 0, inGarnizon: true }));
+    // jedyny przechodni heks to (1,0) -- inne sasiedztwo zablokowane
+    const input = { hutQ: 0, hutR: 0, ownerId: 0, units: garrison, cities: [], isPassable: (q, r) => q === 1 && r === 0 };
+    const without = L.findVillageRewardSpawnHex(input);
+    ok(without && without.q === 1 && without.r === 0, 'H1 (kontrola bledu) bez limitu finder wybiera heks z pelnym garnizonem');
+    const withLim = L.findVillageRewardSpawnHex({ ...input, stackLimit: LIMIT });
+    ok(withLim === undefined, 'H2 z limitem: pelny heks odrzucony, brak kandydata (' + JSON.stringify(withLim) + ')');
+  }
+
   // ---------------- [F] okablowanie main.ts ----------------
   {
     const count = (re) => (mainSrc.match(re) || []).length;
@@ -246,6 +279,11 @@ function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 10139
     ok(/truncatePath: \(fullPath\) => trimPathToStackRoom\(\s*units,\s*\[u\],/.test(mainSrc), 'F8 trasa ruchu AI jest przycinana do miejsca w stosie (pelny stos = brak ruchu)');
     ok(/enforceArmyStackLimit\('wczytanie zapisu'\)/.test(mainSrc), 'F9 migracja przy wczytaniu zapisu');
     ok(/enforceArmyStackLimit\('start tury'\)/.test(mainSrc), 'F10 siatka bezpieczenstwa na starcie tury');
+    ok(/ownUnitCountAt\(units, active\.ownerId, destQ, destR, new Set\(ids\)\) \+ splitArrivals\.length > armyStackLimit\(\)/.test(mainSrc), 'F12 rozdzielenie armii (onSplit) nie przepelnia stosu docelowego');
+    ok(/\.filter\(d => \(d\.q === active\.q && d\.r === active\.r\)\s*\|\| stackFreeSlots\(units, active\.ownerId, d\.q, d\.r, armyStackLimit\(\)\) > 0\)/.test(mainSrc), 'F13 panel rozdzielenia nie oferuje pelnych sasiednich heksow');
+    ok(/stackLimit: armyStackLimit\(\) \}\)/.test(mainSrc), 'F14 wejscie po poddaniu dostaje limit stosu');
+    ok(/exploredHexes: explored,\s*stackLimit: armyStackLimit\(\)/.test(mainSrc), 'F16 nagroda chatki dostaje limit stosu');
+    ok(/function spawnDifficultyBonusUnit[\s\S]{0,200}hexHasRoomFor\(units, ownerId, q, r, armyStackLimit\(\)\)/.test(mainSrc), 'F15 startowe jednostki bonusowe respektuja limit');
     ok(/battleReserveNotice/.test(mainSrc) || /battleReserveNotice/.test(fs.readFileSync(path.join(ROOT, 'src/game/post-battle-map.ts'), 'utf8')), 'F11 komunikat rezerwy (battleReserveNotice) zachowany');
   }
 

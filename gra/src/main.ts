@@ -10466,6 +10466,11 @@ async function boot(): Promise<void> {
 
     /** P-AI-MOC-BONUS=A: dodatkowe jednostki startowe major AI (stolica klastra). */
     function spawnDifficultyBonusUnit(ownerId: number, typeId: string, q: number, r: number): void {
+      // R-WEB-ARMY-STACK-LIMIT-Q1: start nie przepelnia stosu na heksie (limit bitwy).
+      if (!hexHasRoomFor(units, ownerId, q, r, armyStackLimit())) {
+        console.log(`[StackLimit] start: pelny stos (${q},${r}) -- pominieto jednostke ${typeId} (owner ${ownerId})`);
+        return;
+      }
       const def = lookupUnitDef(typeId);
       // RUCH-SWIATA-TEMPO: patrz komentarz przy pierwszym spawnie (main.ts, produkcja jednostki).
       const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
@@ -14175,13 +14180,16 @@ async function boot(): Promise<void> {
       const activeGroupId = stackGroupIdOf(active);
       const stack = visibleStackOnHex(units, active.q, active.r, active.ownerId, activeGroupId);
       if (stack.length < 2) return;
+      // R-WEB-ARMY-STACK-LIMIT-Q1: sasiedni heks z pelnym stosem (np. wlasne miasto z garnizonem
+      // na limicie) nie jest celem rozdzielenia -- garnizon nie liczy sie jako "wolny" heks.
       const dests = findSplitDestHexes(
         units,
         active.q,
         active.r,
         isHexPassableForUnit,
         cityAtUnit(active) !== undefined,
-      );
+      ).filter(d => (d.q === active.q && d.r === active.r)
+        || stackFreeSlots(units, active.ownerId, d.q, d.r, armyStackLimit()) > 0);
       if (dests.length === 0) {
         showHintMessage('Brak wolnego heksu na rozdzielenie.', 3500);
         return;
@@ -14200,6 +14208,12 @@ async function boot(): Promise<void> {
           const splitArrivals = ids
             .map(id => units.find(x => x.id === id))
             .filter((su): su is RuntimeUnit => su != null);
+          // R-WEB-ARMY-STACK-LIMIT-Q1: rozdzielenie nie moze przepelnic stosu na heksie docelowym
+          // (siatka: ruchy z panelu rozdzielenia ida tym samym limitem co marsz).
+          if (ownUnitCountAt(units, active.ownerId, destQ, destR, new Set(ids)) + splitArrivals.length > armyStackLimit()) {
+            showHintMessage(stackLimitBlockMessage(armyStackLimit()), 3800);
+            return;
+          }
           // BB2: jednostki odchodzące dostają WSPÓLNY, ŚWIEŻY stackGroupId, RÓŻNY
           // od tych, które zostają. Konieczne zwłaszcza gdy destQ/destR === srcQ/srcR
           // (opcja „W mieście (ten heks)" z findSplitDestHexes/allowSameHex) — bez
@@ -16878,7 +16892,8 @@ async function boot(): Promise<void> {
         }
         // R-WEB-SIEGE-SURRENDER-ENTER-CITY-Q1: oblegająca armia wchodzi do poddanego miasta
         // (PO zmianie właściciela i usunięciu obrońców, PRZED endMapSiege -- ten kasuje oblegaCityId).
-        const surrenderEntered = enterCityAfterSurrender(units, city, newOwner, { isCivilian: isCivilianUnit });
+        // R-WEB-ARMY-STACK-LIMIT-Q1: wejscie po poddaniu nie przepelnia stosu miasta (limit bitwy).
+        const surrenderEntered = enterCityAfterSurrender(units, city, newOwner, { isCivilian: isCivilianUnit, stackLimit: armyStackLimit() });
         if (surrenderEntered.length > 0 && selectedId !== null && surrenderEntered.some(u => u.id === selectedId)) {
           unitRenderer.setSelectionHex(city.q, city.r, newOwner);
         }
@@ -30186,6 +30201,7 @@ async function boot(): Promise<void> {
             cities,
             isPassable: isHexPassableForUnit,
             exploredHexes: explored,
+            stackLimit: armyStackLimit(), // R-WEB-ARMY-STACK-LIMIT-Q1
           })
         : undefined;
       const excludeUnit = shouldExcludeUnitReward({

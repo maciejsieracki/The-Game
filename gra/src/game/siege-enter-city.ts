@@ -39,6 +39,12 @@ export interface SiegeEnterCity {
 
 export interface SiegeEnterDeps {
   isCivilian: (u: SiegeEnterUnit) => boolean;
+  /**
+   * R-WEB-ARMY-STACK-LIMIT-Q1: limit jednostek w jednej armii (heks miasta). Wejscie grupy, ktora
+   * nie miesci sie w stosie miasta (wlasne jednostki juz na heksie + grupa > limit), jest pomijane.
+   * Brak pola = bez limitu (zachowanie sprzed zmiany).
+   */
+  stackLimit?: number;
 }
 
 /** Plan (bez mutacji): id jednostek wchodzących do miasta; [] = nikt. */
@@ -61,9 +67,14 @@ export function planSurrenderEntry(
     const g = groups.get(key);
     if (g) g.push(u); else groups.set(key, [u]);
   }
+  // R-WEB-ARMY-STACK-LIMIT-Q1: miejsce w stosie miasta (wlasne jednostki juz tam stojace).
+  const room = deps.stackLimit === undefined
+    ? Infinity
+    : deps.stackLimit - units.filter(u => u.ownerId === newOwnerId && u.q === city.q && u.r === city.r).length;
   let best: SiegeEnterUnit[] | null = null;
   const minId = (g: SiegeEnterUnit[]): string => g.map(x => x.id).sort()[0]!;
   for (const g of groups.values()) {
+    if (g.length > room) continue;
     if (!best) { best = g; continue; }
     if (g.length !== best.length) { if (g.length > best.length) best = g; continue; }
     const gGen = g.some(x => x.isGeneral === true);
