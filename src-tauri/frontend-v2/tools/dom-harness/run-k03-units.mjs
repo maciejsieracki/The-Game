@@ -113,6 +113,12 @@ const probeSrc = [
   ...PIN_FNS.map(extractFn),
   extractFnFrom(manLines, 'formatPopulationAbs'),
   extractFnFrom(manLines, 'formatManpower'),
+  // R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: web 9b019a7d8 karty wołają formatManpowerCompact (game/manpower) → formatCompactNumber (ui);
+  // obie z --pin-dir (rewizje bez formatManpowerCompact: brak linii, karta pinu woła formatManpower jak wcześniej).
+  ...(manLines.some((l) => l.startsWith('export function formatManpowerCompact(')) ? [
+    `import { formatCompactNumber } from ${JSON.stringify(join(PIN_DIR, 'gra/src/ui/formatCompactNumber.ts'))};`,
+    extractFnFrom(manLines, 'formatManpowerCompact'),
+  ] : []),
   '',
 ].join('\n');
 

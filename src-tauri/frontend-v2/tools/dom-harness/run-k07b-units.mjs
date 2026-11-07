@@ -373,7 +373,7 @@ const rawPlugin = {
 const brandStub = {
   name: 'brand-stub',
   setup(b) {
-    b.onResolve({ filter: /icons\/brandAssets$/ }, (a) => ({ path: a.path, namespace: 'bstub' }));
+    b.onResolve({ filter: /(^|\/)brandAssets$/ }, (a) => ({ path: a.path, namespace: 'bstub' })); // UI-3-E: także './brandAssets' (icons/iconRegistry)
     b.onLoad({ filter: /.*/, namespace: 'bstub' }, () => ({
       contents: [
         `export function brandIconSvg(id, size) { return '<svg data-brand="' + id + '" data-size="' + size + '"></svg>'; }`,

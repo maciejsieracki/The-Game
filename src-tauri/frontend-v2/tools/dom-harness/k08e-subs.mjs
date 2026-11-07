@@ -44,6 +44,8 @@ import {
   type EmpireFoodStateK08e as EmpireFoodState, type EmpireFoodTickK08e as EmpireFoodTick,
 } from './k05b-host';
 import { formatWyzwienieLabelK as formatWyzwienieLabel } from './k04c-model';
+// REPIN UI-3-E: web \`formatManpowerCompact\` (game/manpower.ts:912-914) — kopia w adapterze k-ui3e-web.
+import { formatManpowerCompact } from './k-ui3e-web';
 import {
   buildRationParams, cityLudnoscAbsolutna, growthGainPerTurnSlots, rationGrowthPercent, turnsUntilNextCitizen,
   WYZYWIENIE_MAX, WYZYWIENIE_MIN, WYZYWIENIE_STEP,
@@ -77,6 +79,8 @@ import { clampedGrowthBreakdown, wyzwienieSummaryLabel } from './k01b-r';
 import { cityFoodSplit } from './k03-model';
 import { cfg, formatManpower, type City, type GameData, type ManpowerSnapshotK05b as CityManpowerSnapshot } from './k05b-host';
 import type { GameMap } from './k05a-fundament';
+// REPIN UI-3-E: web \`formatManpowerCompact\` (game/manpower.ts:912-914) — kopia w adapterze k-ui3e-web.
+import { formatManpowerCompact } from './k-ui3e-web';
 import { formatWyzwienieLabelK as formatWyzwienieLabel } from './k04c-model';
 import {
   buildRationParams, cityLudnoscAbsolutna, growthGainPerTurnSlots, resolveCityHealth, turnsUntilNextCitizen, WYZYWIENIE_MAX,

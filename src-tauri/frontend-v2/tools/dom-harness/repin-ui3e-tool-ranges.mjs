@@ -22,11 +22,12 @@ const argOf = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : 
 const W86 = argOf('--web86-dir'), W3 = argOf('--web3-dir');
 const FILES = (argOf('--files') ?? '').split(',').filter(Boolean);
 const WRITE = args.includes('--write');
+const SINGLE = args.includes('--single');
 if (!W86 || !W3 || !FILES.length) { console.error('Użycie: --web86-dir <WEB86> --web3-dir <WEB3> --files a,b [--write]'); process.exit(2); }
 const REL = 'gra/src/ui/cityPanel.ts';
 const A = readFileSync(join(W86, REL), 'utf8').split(/\r?\n/);
 const B = readFileSync(join(W3, REL), 'utf8').split(/\r?\n/);
-const { mapRange } = rangeMapper(A, B);
+const { mapRange, mapLine } = rangeMapper(A, B);
 export const MANUAL_86_TO_3 = { '1498-1503': '1523-1532', '6901-7000': '6930-7038', '8232-8282': '8281-8336', '12096-12182': '12191-12289' };
 const map = (a, b) => {
   const k = `${a}-${b}`;
@@ -53,11 +54,24 @@ for (const f of FILES) {
     return `"a": ${a2},${ws}"b": ${b2}`;
   });
   // `['nazwa', N, M]` (tablice jednostek weryfikatorów) oraz `x.a === N && x.b === M`.
-  s = s.replace(/(['"][\w$]+['"],\s*)(\d+), (\d+)\]/g, (m, pre, x, y) => {
+  // `--single`: kotwice jednej linii `[N, '…']` i `cityPanel.ts:N ` (bez zakresu) — linia w hunku = bez zmiany + ostrzeżenie.
+  if (SINGLE) {
+    const one = (m, pre, x, post) => {
+      const L = +x;
+      if (L < 1 || L > A.length) return m;
+      const L2 = mapLine(L);
+      if (L2 === null) { console.log(`  UWAGA ${f}: linia ${L} w hunku 86d→9b0 — bez zmiany`); return m; }
+      n++;
+      return `${pre}${L2}${post}`;
+    };
+    s = s.replace(/(\[)(\d{3,5})(, ['"])/g, one);
+    s = s.replace(/(cityPanel\.ts:)(\d{3,5})([^\d-])/g, one);
+  }
+  s = s.replace(/(['"][\w$]+['"],\s*)(\d+), (\d+)(?=[,\]])/g, (m, pre, x, y) => {
     const a = +x, b = +y;
     if (!ok(a, b)) return m;
     const [a2, b2] = map(a, b); n++;
-    return `${pre}${a2}, ${b2}]`;
+    return `${pre}${a2}, ${b2}`;
   });
   s = s.replace(/\.a === (\d+) && (\w+)\.b === (\d+)/g, (m, x, v, y) => {
     const a = +x, b = +y;

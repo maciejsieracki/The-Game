@@ -221,7 +221,21 @@ const PIN_FN_DECLS = [...new Set([...FN_NAMES, ...PIN_ONLY_FNS, 'formatCityMapLa
   .filter((n) => !['getShowEraBuildingPreview', 'setShowEraBuildingPreview', 'constStr', 'cfg', 'TEREN_COL', 'TEREN_LETTER', 'IMPROVEMENT_KEY_TO_NAME', 'EPOCH_NUMBER_TO_NAME', 'Nakladka', 'TerenBazowy', 'UI_PARAMS'].includes(n))
   .map((n) => `const ${n} = (...a) => globalThis.__K06B_FIX.fns[${JSON.stringify(n)}](...a);`)
   .join('\n');
+// R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: web 9b019a7d8 appendUnitRecruitCompactRow woła isCityUnderSiege / CITY_SIEGE_RECRUIT_BLOCK_PL
+// (game/city-siege-state) i formatManpowerCompact (game/manpower) — po stronie pinu z adaptera k-ui3e-web.ts (bloki = web bajtowo,
+// bramka verify-repin-ui3-copies KE-BLOK), czyli ten sam kod webu co po stronie portu.
+// UI-3-E: liczniki rekrutacji webu 9b019a7d8 (`recruitQuantityDrafts`/`recruitDraftKey`, R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1)
+// — tekst webu z --pin-dir (od deklaracji mapy do końca `getRecruitQuantityDraft`), gdy rewizja go ma.
+const DRAFTS_SRC = (() => {
+  const a = pinLines.findIndex((l) => l.startsWith('const recruitQuantityDrafts = new Map'));
+  if (a < 0) return '';
+  let b = pinLines.findIndex((l, i) => i > a && l.startsWith('export function getRecruitQuantityDraft('));
+  while (b > 0 && pinLines[b] !== '}') b++;
+  return pinLines.slice(a, b + 1).join('\n').replace(/^export function getRecruitQuantityDraft/m, 'function getRecruitQuantityDraft');
+})();
 const pinPrelude = `
+import { isCityUnderSiege, CITY_SIEGE_RECRUIT_BLOCK_PL, formatManpowerCompact } from ${JSON.stringify(join(V2_DIR, 'k-ui3e-web.ts'))};
+${DRAFTS_SRC}
 const __F = globalThis.__K06B_FIX;
 let pinnedGarrisonCityId = __F.state.pinned;
 let activeMap = __F.state.activeMap;

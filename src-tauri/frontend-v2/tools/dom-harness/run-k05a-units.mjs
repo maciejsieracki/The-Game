@@ -16,7 +16,7 @@
  *   --v2 podmienia plik portu (używane przez mutate-k05a-units.mjs).
  * EXIT 0 <=> 0 różnic; 1 <=> >=1 różnica; 2 <=> błąd harnessu.
  */
-import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -68,7 +68,18 @@ const PIN_NAMES = [
 ];
 const pinEnum = pinHexLines.slice(11, 24).join('\n'); // types/hex.ts:12-24 (TerenBazowy)
 /** K05A-Z4: wejścia reguł pinu = ten sam fixture co po stronie portu (`globalThis.__K05A_FIX`, ustawiany per wariant). */
+// R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: web 9b019a7d8 recruitUnit woła `isCityUnderSiege([city], city)` (game/city-siege-state).
+// Po stronie pinu = TEKST funkcji webu z --pin-dir (bez adnotacji typów: ten sam predykat `oblegane === true`), gdy plik istnieje.
+const SIEGE_SRC = (() => {
+  const f = join(resolve(PIN_DIR), 'gra/src/game/city-siege-state.ts');
+  if (!existsSync(f)) return '';
+  const L = readFileSync(f, 'utf8').split('\n');
+  const a = L.findIndex((l) => l.startsWith('export function isCityUnderSiege('));
+  let b = a; while (b < L.length && L[b] !== '}') b++;
+  return L.slice(a, b + 1).join('\n').replace(/^export /, '');
+})();
 const PIN_RULE_STUBS = `
+${SIEGE_SRC}
 const cfg = new Proxy({}, { get: (_t, k) => globalThis.__K05A_FIX.cfg[k] });
 const civManpowerMaxMult = (b) => globalThis.__K05A_FIX.rules.civManpowerMaxMult(b);
 const unitManpowerCostForType = (t, e, m) => globalThis.__K05A_FIX.rules.unitManpowerCostForType(t, e, m);
@@ -304,7 +315,8 @@ try {
   for (const lok of ['stolica', 'region', undefined, 'x'])
     for (const cap of [true, false, undefined])
       cmp(`buildingLocationRequirementMet(${lok};${cap})`, () => P.buildingLocationRequirementMet(lok, cap), () => V.buildingLocationRequirementMet(lok, cap));
-  const cities3 = [{ id: 1, ownerId: 0 }, { id: 2, ownerId: 2 }, { id: 3, ownerId: 3 }, { id: 4, ownerId: 5 }];
+  // UI-3-E: miasto oblężone (web 9b019a7d8: recruitUnit → false, bez zakupu) i jawnie nieoblężone.
+  const cities3 = [{ id: 1, ownerId: 0 }, { id: 2, ownerId: 2 }, { id: 3, ownerId: 3 }, { id: 4, ownerId: 5 }, { id: 5, ownerId: 0, oblegane: true }, { id: 6, ownerId: 0, oblegane: false }];
   const items3 = [{ id: 'a', koszt: 0, kind: 'unit' }, { id: 'b', koszt: 7, kind: 'unit' }];
   const units3 = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'zz' }];
   const stocks3 = [{}, { drewno: 3 }, { kamien: 0, zloto: 2 }, { drewno: 1, kamien: 9 }, { ruda: 1 }];

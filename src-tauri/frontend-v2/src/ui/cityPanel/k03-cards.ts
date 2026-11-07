@@ -10,6 +10,8 @@ import { cpInlineIcons, cityPanelChipIconWrap, tury, fmtDecPl, resourceBrandIcon
 import { estimateHandelChips } from './k01b-f';
 import { reorderRecruitQueueItem, type CityView } from './k01b-t';
 import { getProd, setProd } from './k03-model';
+// REPIN UI-3-E: web 9b019a7d8 karty Wzrost / Rekruci formatują przez formatManpowerCompact (R-WEB-MANPOWER-ABBREV-PANELS-Q1).
+import { formatManpowerCompact } from './k-ui3e-web';
 
 /** Pin :10845 — wejscia karty handlu (wszystkie bramki/liczby z silnika, K03-Z10). */
 export interface HandelDetailInputK {
@@ -75,13 +77,13 @@ export function buildGrowthProgressTooltipCardK(
   gridDetailRow(
     g,
     'Skala absolutna',
-    `≈ ${formatManpowerK(fracPeople)} / ${formatManpowerK(osobNaObywatela)} os.`,
+    `≈ ${formatManpowerCompact(fracPeople)} / ${formatManpowerCompact(osobNaObywatela)} os.`,
   );
   if (gainSlots > 0) {
     gridDetailRow(
       g,
       'Tempo',
-      `+${fmtDecPl(gainSlots)} obywatela/t (≈ +${formatManpowerK(gainPeople)}/t)`,
+      `+${fmtDecPl(gainSlots)} obywatela/t (≈ +${formatManpowerCompact(gainPeople)}/t)`,
     );
   }
   const note = el('div', 'dc-note');
@@ -299,12 +301,12 @@ export function buildTopBarRekruciDetailCardK(mp: {
 
   appendDetailSection(card, 'Stan puli');
   const g = appendDetailGrid(card);
-  gridDetailRow(g, 'Bieżąca pula', formatManpowerK(mp.manpowerBiezacy));
-  gridDetailRow(g, 'Maksimum', formatManpowerK(mp.manpowerMax));
-  gridDetailRow(g, 'Odnowa', `+${formatManpowerK(mp.regenPerTurn)}`);
-  gridDetailRow(g, 'Koszt 1 jednostki', formatManpowerK(mp.kosztJednostki));
+  gridDetailRow(g, 'Bieżąca pula', formatManpowerCompact(mp.manpowerBiezacy));
+  gridDetailRow(g, 'Maksimum', formatManpowerCompact(mp.manpowerMax));
+  gridDetailRow(g, 'Odnowa', `+${formatManpowerCompact(mp.regenPerTurn)}`);
+  gridDetailRow(g, 'Koszt 1 jednostki', formatManpowerCompact(mp.kosztJednostki));
   gridDetailRow(g, 'Werb przy pełnej puli', String(mp.werbMaxPrzyPelnejPuli));
-  gridDetailRow(g, 'Ludność abs.', formatManpowerK(mp.ludnoscAbsolutna));
+  gridDetailRow(g, 'Ludność abs.', formatManpowerCompact(mp.ludnoscAbsolutna));
   gridDetailRow(g, 'Obywatele', `${mp.ludki} · epoka ${mp.epoka}`);
 
   appendDetailAlgo(card, 'Skąd bierze się pula', [
@@ -499,8 +501,9 @@ export function buildHandelDetailCardK(view: CityView | null, input: HandelDetai
  * - `configureCityPanel` (pin :612) — hook `cfg` znika; wejscia przychodza jako argument `CityPanelDto`.
  * - `gameData` (pin :626) — ladowanie danych gry po stronie panelu znika; dane (katalogi) z `staticCatalog`/DTO.
  * REPIN-UI-2-G r2: `line` = web 86d510c66 (:655, :669); pin edb8fb56 w nawiasie opisu.
+ * REPIN UI-3-E: `line` = web 9b019a7d8 (:670, :684).
  */
 export const K03_RETIRED: readonly { pin: string; line: number; powod: string }[] = [
-  { pin: 'configureCityPanel', line: 655, powod: 'K03-Z4: hook cfg znika, wejscia z CityPanelDto (pin edb8fb56 :612)' },
-  { pin: 'gameData', line: 669, powod: 'K03-Z4: brak lokalnego ladowania danych gry w panelu (pin edb8fb56 :626)' },
+  { pin: 'configureCityPanel', line: 670, powod: 'K03-Z4: hook cfg znika, wejscia z CityPanelDto (pin edb8fb56 :612)' },
+  { pin: 'gameData', line: 684, powod: 'K03-Z4: brak lokalnego ladowania danych gry w panelu (pin edb8fb56 :626)' },
 ];

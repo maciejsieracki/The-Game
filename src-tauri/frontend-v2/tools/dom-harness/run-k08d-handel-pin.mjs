@@ -4,10 +4,10 @@
  * R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1, runda 1).
  *
  * PIN-EXEC: cztery funkcje pinu `edb8fb56` (`gra/src/ui/cityPanel.ts`) przepisane BEZ ZMIAN TEKSTU z linii pinu:
- *   1322-1330   `ownerHasMennica`
- *   11045-11054 `activeTradeRouteCountForCity`
- *   10845-11005 `buildHandelDetailCard`
- *   11007-11033 `renderHandelSlidersPanel`
+ *   1345-1353   `ownerHasMennica`
+ *   11140-11149 `activeTradeRouteCountForCity`
+ *   10940-11100 `buildHandelDetailCard`
+ *   11102-11128 `renderHandelSlidersPanel`
  * PORT: `src/ui/cityPanel/k08d-handel.ts` + `k08d-slider.ts` (te same treści po bramce `verify-k08d-copies.mjs`).
  *
  * Zależności obu wersji są IDENTYCZNE (ten sam moduł): helpery DOM z portu K01/K03/K02/K05B, `cfg` z `k05b-host`,
@@ -49,19 +49,19 @@ const check = (id, pin, got, want) => {
 
 /** Zakresy pinu wykonywane verbatim: [nazwa, a, b, kotwica startu, koniec]. */
 const PIN_RANGES = [
-  ['ownerHasMennica', 1376, 1384, 'function ownerHasMennica(', '}'],
-  ['activeTradeRouteCountForCity', 11286, 11295, 'function activeTradeRouteCountForCity(', '}'],
-  ['buildHandelDetailCard', 11092, 11246, 'function buildHandelDetailCard(', '}'],
-  ['renderHandelSlidersPanel', 11248, 11274, 'function renderHandelSlidersPanel(', '}'],
+  ['ownerHasMennica', 1401, 1409, 'function ownerHasMennica(', '}'],
+  ['activeTradeRouteCountForCity', 11381, 11390, 'function activeTradeRouteCountForCity(', '}'],
+  ['buildHandelDetailCard', 11187, 11341, 'function buildHandelDetailCard(', '}'],
+  ['renderHandelSlidersPanel', 11343, 11369, 'function renderHandelSlidersPanel(', '}'],
 ];
 /** PIN-ANCHOR: literały, które muszą występować w cytowanych liniach pinu. */
 const PIN_ANCHORS = [
-  [1381, "if (ids.includes('mennica')) return true;"],
-  [11290, "if (route.status !== 'polaczony') continue;"],
-  [11108, 'const maMennicaBudynek = ownerHasMennica(city.ownerId);'],
-  [11138, 'const aktywneTrasyCount = activeTradeRouteCountForCity(city);'],
-  [11155, 'dziś to stały procent'],
-  [11251, "appendSectionTitleWithDetails(mount, `<span>Podział ${daninaLabelGenitive(daninaLbl)}</span>`, () => buildHandelDetailCard(city, view, data));"],
+  [1406, "if (ids.includes('mennica')) return true;"],
+  [11385, "if (route.status !== 'polaczony') continue;"],
+  [11203, 'const maMennicaBudynek = ownerHasMennica(city.ownerId);'],
+  [11233, 'const aktywneTrasyCount = activeTradeRouteCountForCity(city);'],
+  [11250, 'dziś to stały procent'],
+  [11346, "appendSectionTitleWithDetails(mount, `<span>Podział ${daninaLabelGenitive(daninaLbl)}</span>`, () => buildHandelDetailCard(city, view, data));"],
 ];
 
 let exitCode = 0;
@@ -94,7 +94,7 @@ try {
       `import { cfg, daninaLabelForCity, daninaLabelGenitive, readPodzialHandlu } from ${P('k05b-host.ts')};`,
       `import { buildEconParams, cityHasBibliotekaLine, computeTradeRouteBuildingBonusByCity, daninaLabelAccusative, mnoznikHandelPieniadzForCivByDifficulty } from ${P('k08d-deps.ts')};`,
       `import { resourceTextClass } from ${JSON.stringify(join(V2_ROOT, 'src/ui/resourceColors.ts'))};`,
-      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 1376-1384, 11286-11295, 11092-11246, 11248-11274) ---',
+      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 1401-1409, 11381-11390, 11187-11341, 11343-11369) ---',
       ...pinExecText,
       '// --- koniec verbatim ---',
       'export { ownerHasMennica, activeTradeRouteCountForCity, buildHandelDetailCard, renderHandelSlidersPanel };',
@@ -138,7 +138,7 @@ try {
       '  rules: {} as any,',
       '} as any);',
       'export const k08d = installK08dWiring({',
-      '  // K08D-Z11 (atrapa TESTOWA, wzór = koniunkcje pinu buildHandelDetailCard 10861-10874; nie reguła produkcyjna, P5.13).',
+      '  // K08D-Z11 (atrapa TESTOWA, wzór = koniunkcje pinu buildHandelDetailCard 10956-10969; nie reguła produkcyjna, P5.13).',
       '  mennicaGate: (ownerId: number) => {',
       '    const cities: any[] = cfgObj.getCities?.() ?? [];',
       "    const maB = cities.some((c: any) => c.ownerId === ownerId && (cfgObj.getBuiltBuildingIds?.(c.id) ?? []).includes('mennica'));",
@@ -294,7 +294,7 @@ try {
     /export function daninaLabelAccusative[\s\S]{0,80}return 'podatek';/.test(pinDanina), true);
   check('deps.accusative.value', 'daninaLabelAccusative() === pin \'podatek\'', mod.depsMod.daninaLabelAccusative(), 'podatek');
 
-  // Helper: liczba tras z budynkiem (pin 11045-11054) — niezależnie od ścieżki DOM.
+  // Helper: liczba tras z budynkiem (pin 11140-11149) — niezależnie od ścieżki DOM.
   mod.cfgObj.getTradeRoutes = () => [route, { ...route, budynekOdblokowany: false }, { ...route, status: 'zerwany' }];
   check('exec.helper.routes.pin', 'activeTradeRouteCountForCity: 1 trasa z budynkiem', mod.pin.activeTradeRouteCountForCity(city), 1);
   check('exec.helper.routes.port', 'port = pin', mod.port.activeTradeRouteCountForCity(city), 1);

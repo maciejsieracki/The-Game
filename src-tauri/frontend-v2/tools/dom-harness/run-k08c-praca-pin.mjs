@@ -4,8 +4,8 @@
  * runda 1, zadanie 2 dispatchu — harness dla punktów wejścia zakresu).
  *
  * PIN-EXEC: dwie funkcje pinu `edb8fb56` (`gra/src/ui/cityPanel.ts`) przepisane BEZ ZMIAN TEKSTU z linii pinu:
- *   4946-5018  `buildPracaDetailCard`
- *   5770-5822  `buildTopBarPracaDetailCard`
+ *   4975-5047  `buildPracaDetailCard`
+ *   5799-5851  `buildTopBarPracaDetailCard`
  * (jedyna operacja: wycięcie linii zakresu; zakresy i kotwice startu/końca sprawdzane przed wykonaniem).
  * PORT: `src/ui/cityPanel/k08c-praca.ts` (ta sama treść po bramce `verify-k08c-copies.mjs`).
  *
@@ -51,20 +51,20 @@ const check = (id, pin, got, want) => {
 
 /** Zakresy pinu wykonywane verbatim: [nazwa, a, b, kotwica startu, koniec (linia b)]. */
 const PIN_RANGES = [
-  ['buildPracaDetailCard', 5011, 5083, 'function buildPracaDetailCard(', '}'],
-  ['buildTopBarPracaDetailCard', 5841, 5893, 'function buildTopBarPracaDetailCard(', '}'],
+  ['buildPracaDetailCard', 5040, 5112, 'function buildPracaDetailCard(', '}'],
+  ['buildTopBarPracaDetailCard', 5870, 5922, 'function buildTopBarPracaDetailCard(', '}'],
 ];
 /** PIN-ANCHOR: literały, które muszą występować w cytowanych liniach pinu (sprawdza, że wycięto właściwe kody). */
 const PIN_ANCHORS = [
-  [5016, 'const pctCfg = readPodzialPracy(city, data);'],
-  [5017, 'const praca = view ? cityPracaSplit(city, view, data) : null;'],
-  [5023, "head.innerHTML = '<span>Lokalny przyrost Pracy — ściąga</span>';"],
-  [5064, "appendDetailAlgo(card, 'Algorytm (splitPraca + productionProgress)', ["],
-  // REPIN-UI-2-G r2: web 86d510c66 zmienił teksty algorytmu Targowiska (pin edb8fb56 :5006-5007, R-WEB-LABOR-TO-TAX-CONVERSION-NO-GOLD-Q1).
-  [5071, "? 'Targowisko odblokowuje ręczną konwersję wybranej części puli Pracy imperium na podatek; to nie jest stały dochód miasta.'"],
-  [5072, ": 'Bez Targowiska ręczna konwersja puli Pracy imperium na podatek jest niedostępna.',"],
-  [5848, 'const pracaSplit = cityPracaSplit(city, view, data);'],
-  [5887, "appendDetailAlgo(card, 'Gdzie zarządzać', ["],
+  [5045, 'const pctCfg = readPodzialPracy(city, data);'],
+  [5046, 'const praca = view ? cityPracaSplit(city, view, data) : null;'],
+  [5052, "head.innerHTML = '<span>Lokalny przyrost Pracy — ściąga</span>';"],
+  [5093, "appendDetailAlgo(card, 'Algorytm (splitPraca + productionProgress)', ["],
+  // REPIN-UI-2-G r2: web 86d510c66 zmienił teksty algorytmu Targowiska (pin edb8fb56 :5035-5036, R-WEB-LABOR-TO-TAX-CONVERSION-NO-GOLD-Q1).
+  [5100, "? 'Targowisko odblokowuje ręczną konwersję wybranej części puli Pracy imperium na podatek; to nie jest stały dochód miasta.'"],
+  [5101, ": 'Bez Targowiska ręczna konwersja puli Pracy imperium na podatek jest niedostępna.',"],
+  [5877, 'const pracaSplit = cityPracaSplit(city, view, data);'],
+  [5916, "appendDetailAlgo(card, 'Gdzie zarządzać', ["],
 ];
 
 let exitCode = 0;
@@ -93,7 +93,7 @@ try {
       `import { cfg } from ${JSON.stringify(join(V2_ROOT, 'src/ui/cityPanel/k05b-host.ts'))};`,
       `import { PULA_LBL_PELNA, PULA_TIP } from ${JSON.stringify(join(V2_ROOT, 'src/ui/cityPanel/k01b-t.ts'))};`,
       `import { cityPracaSplit, computeView, procentPuliImperiumZBudynkow, readPodzialPracy } from ${JSON.stringify(join(V2_ROOT, 'src/ui/cityPanel/k08c-deps.ts'))};`,
-      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 5011-5083, 5841-5893) ---',
+      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 5040-5112, 5870-5922) ---',
       ...pinExecText,
       '// --- koniec verbatim ---',
       'export { buildPracaDetailCard, buildTopBarPracaDetailCard };',

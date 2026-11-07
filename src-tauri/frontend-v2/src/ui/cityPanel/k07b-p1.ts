@@ -49,7 +49,7 @@ const cfg = valueProxy('cfg') as CfgK07b;
 type CityHealthK07b = { total: number; lines: { label: string; value: number; [k: string]: any }[]; fromEngine: boolean };
 // REPIN UI-3-E: web 9b019a7d8 renderProd woła `bProfiles.querySelectorAll('button').forEach(btn => …)` — wynik `el`
 // typowany jak w webie (`HTMLElement`, cityPanel.ts el), inaczej parametry callbacków byłyby niejawnie `any` (tsc).
-const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, html?: string): HTMLElementTagNameMap[K] => dep('el')(tag, cls, html);
+const el = ((...args: any[]): any => dep('el')(...args)) as <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, html?: string) => HTMLElementTagNameMap[K];
 const gameData = (...args: any[]): any => dep('gameData')(...args);
 /** K07B-Z4 (r3): pin `activeMap` to zmienna modułu (`let activeMap`, :10118) — wartość, nie funkcja. Port: wywołanie delegatu
  *  `activeMapK07()` w miejscu wartości (jedyne użycie: renderKultura). Wcześniej port przekazywał FUNKCJĘ zamiast mapy (błąd r2). */

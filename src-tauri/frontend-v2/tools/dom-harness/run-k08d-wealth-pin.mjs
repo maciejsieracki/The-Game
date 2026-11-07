@@ -4,10 +4,10 @@
  * R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1, runda 4, NAPRAW 3a).
  *
  * PIN-EXEC: cztery funkcje pinu `edb8fb56` (`gra/src/ui/cityPanel.ts`) przepisane BEZ ZMIAN TEKSTU z linii pinu:
- *   4247-4304  `appendWealthCompactStrip`
- *   4307-4350  `buildWealthCompactTooltipCard`
- *   4775-4823  `renderWealth`
- *   4824-4944  `buildWealthDetailCard`
+ *   4276-4333  `appendWealthCompactStrip`
+ *   4336-4379  `buildWealthCompactTooltipCard`
+ *   4804-4852  `renderWealth`
+ *   4853-4973  `buildWealthDetailCard`
  * PORT: `src/ui/cityPanel/k08d-wealth.ts` i `k08d-wealth-pasek.ts` (te same treści po bramce `verify-k08d-copies.mjs`).
  *
  * Zależności wspólne (ten sam moduł dla pin-exec i portu): helpery DOM z portu K01/K02/K03/K08B, `cfg`/`freshWealthState`/
@@ -52,20 +52,20 @@ const check = (id, pin, got, want) => {
 
 /** Zakresy pinu wykonywane verbatim: [nazwa, a, b, kotwica startu, koniec]. */
 const PIN_RANGES = [
-  ['appendWealthCompactStrip', 4311, 4368, 'function appendWealthCompactStrip(', '}'],
-  ['buildWealthCompactTooltipCard', 4371, 4414, 'function buildWealthCompactTooltipCard(', '}'],
-  ['renderWealth', 4839, 4886, 'function renderWealth(', '}'],
-  ['buildWealthDetailCard', 4888, 5009, 'function buildWealthDetailCard(', '}'],
+  ['appendWealthCompactStrip', 4340, 4397, 'function appendWealthCompactStrip(', '}'],
+  ['buildWealthCompactTooltipCard', 4400, 4443, 'function buildWealthCompactTooltipCard(', '}'],
+  ['renderWealth', 4868, 4915, 'function renderWealth(', '}'],
+  ['buildWealthDetailCard', 4917, 5038, 'function buildWealthDetailCard(', '}'],
 ];
 /** PIN-ANCHOR: literały, które muszą występować w cytowanych liniach pinu. */
 const PIN_ANCHORS = [
-  [4844, '? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, cfg.difficulty ?? \'normal\')'],
-  [4847, "appendSectionTitleWithDetails(mount, '<span>Zamożność</span>', () => {"],
-  [4850, "'Brak danych parametrów zamożności.'"],
-  [4858, 'const cap = wealthCap(epoch, wealthParams);'],
-  [4902, 'const podzial = readPodzialHandlu(city, gameData());'],
-  [4901, 'const rown = wealthRownowaga(ws.poziom, epoch, p);'],
-  [4929, "'Pasek w panelu pokazuje tylko postęp puli do następnego poziomu W — jak spichlerz dla wzrostu ludności. ' +"],
+  [4873, '? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, cfg.difficulty ?? \'normal\')'],
+  [4876, "appendSectionTitleWithDetails(mount, '<span>Zamożność</span>', () => {"],
+  [4879, "'Brak danych parametrów zamożności.'"],
+  [4887, 'const cap = wealthCap(epoch, wealthParams);'],
+  [4931, 'const podzial = readPodzialHandlu(city, gameData());'],
+  [4930, 'const rown = wealthRownowaga(ws.poziom, epoch, p);'],
+  [4958, "'Pasek w panelu pokazuje tylko postęp puli do następnego poziomu W — jak spichlerz dla wzrostu ludności. ' +"],
 ];
 
 let exitCode = 0;
@@ -99,7 +99,7 @@ try {
       '// Stub nazwy pinu `gameData()` (port dostaje dane jako parametr `data`, K08D-Z14): ten sam obiekt co w harnessie.',
       'export const TEST_DATA = { buildings: [], units: [], econParams: { tag: "econ-test" } };',
       'const gameData = (): typeof TEST_DATA => TEST_DATA;',
-      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 4311-4368, 4371-4414, 4839-4886, 4888-5009) ---',
+      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 4340-4397, 4400-4443, 4868-4915, 4917-5038) ---',
       ...pinExecText,
       '// --- koniec verbatim ---',
       'export { appendWealthCompactStrip, buildWealthCompactTooltipCard, renderWealth, buildWealthDetailCard };',

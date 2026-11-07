@@ -75,6 +75,10 @@ import { estimateHandelChips, resPracaSplitBar } from ${JSON.stringify(join(V2_S
 import { clampedGrowthBreakdown } from ${JSON.stringify(join(V2_SRC, 'ui/cityPanel/k01b-r.ts'))};
 import { cityFoodSplit } from ${JSON.stringify(join(V2_SRC, 'ui/cityPanel/k03-model.ts'))};
 import { scienceOwlIconHtml } from ${JSON.stringify(join(V2_SRC, 'ui/icons/scienceOwlIcon.ts'))};
+// R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: web 9b019a7d8 — formatGrossNet (ui/hudChip6c, kopia bajtowa UI-3-A) i formatManpowerCompact
+// (game/manpower, adapter k-ui3e-web = web bajtowo) — te same moduły co po stronie portu.
+import { formatGrossNet } from ${JSON.stringify(join(V2_SRC, 'ui/hudChip6c.ts'))};
+import { formatManpowerCompact } from ${JSON.stringify(join(V2_SRC, 'ui/cityPanel/k-ui3e-web.ts'))};
 const resourceScopeClass = __pinRSC;
 const cfg = new Proxy({}, { get: (_t, k) => globalThis.__K07_FIX.cfg[k] });
 const buildChipDeltaStockHtml = (r, s) => globalThis.__K07_FIX.chipDeltaStockHtml(r, s);
@@ -203,7 +207,7 @@ const rawPlugin = {
 const brandStub = {
   name: 'brand-stub',
   setup(b) {
-    b.onResolve({ filter: /icons\/brandAssets$/ }, (a) => ({ path: a.path, namespace: 'bstub' }));
+    b.onResolve({ filter: /(^|\/)brandAssets$/ }, (a) => ({ path: a.path, namespace: 'bstub' })); // UI-3-E: także './brandAssets' (icons/iconRegistry)
     b.onLoad({ filter: /.*/, namespace: 'bstub' }, () => ({
       contents: [
         `export function brandIconSvg(id, size) { return '<svg data-brand="' + id + '" data-size="' + size + '"></svg>'; }`,

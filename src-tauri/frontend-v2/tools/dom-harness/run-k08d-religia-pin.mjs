@@ -4,9 +4,9 @@
  * R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1, runda 3, NAPRAW 3c).
  *
  * PIN-EXEC: trzy funkcje pinu `edb8fb56` (`gra/src/ui/cityPanel.ts`) przepisane BEZ ZMIAN TEKSTU z linii pinu:
- *   3814-3834  `appendCompositionBlock`
- *   5992-6039  `buildTopBarReligiaDetailCard`
- *   4112-4220  `renderReligia`
+ *   3843-3863  `appendCompositionBlock`
+ *   6021-6068  `buildTopBarReligiaDetailCard`
+ *   4141-4249  `renderReligia`
  * PORT: `src/ui/cityPanel/k08d-religia.ts` (te same treści po bramce `verify-k08d-copies.mjs --batch religia`).
  *
  * Zależności wspólne (ten sam moduł dla pin-exec i portu): helpery DOM z portu K01/K02/K03/K08B, `cfg` z `k05b-host`,
@@ -52,18 +52,18 @@ const check = (id, pin, got, want) => {
 
 /** Zakresy pinu wykonywane verbatim: [nazwa, a, b, kotwica startu, koniec]. */
 const PIN_RANGES = [
-  ['appendCompositionBlock', 3878, 3898, 'function appendCompositionBlock(', '}'],
-  ['buildTopBarReligiaDetailCard', 6063, 6110, 'function buildTopBarReligiaDetailCard(', '}'],
-  ['renderReligia', 4176, 4284, 'function renderReligia(', '}'],
+  ['appendCompositionBlock', 3907, 3927, 'function appendCompositionBlock(', '}'],
+  ['buildTopBarReligiaDetailCard', 6092, 6139, 'function buildTopBarReligiaDetailCard(', '}'],
+  ['renderReligia', 4205, 4313, 'function renderReligia(', '}'],
 ];
 /** PIN-ANCHOR: literały, które muszą występować w cytowanych liniach pinu. */
 const PIN_ANCHORS = [
-  [4205, 'const relSzPkt = relState ? religiaSzPunkty(relState.wplywSzczescie, city.ownerId) : 0;'],
-  [4232, "label: 'Państwo',"],
-  [4272, "'Brak rozpisanych składników religii w tym mieście.',"],
-  [6097, 'const xRelTop = kultReligScaleForEra('],
-  [6076, 'const relParams = data'],
-  [4196, "'Brak danych silnika (hak getReligionState).'"],
+  [4234, 'const relSzPkt = relState ? religiaSzPunkty(relState.wplywSzczescie, city.ownerId) : 0;'],
+  [4261, "label: 'Państwo',"],
+  [4301, "'Brak rozpisanych składników religii w tym mieście.',"],
+  [6126, 'const xRelTop = kultReligScaleForEra('],
+  [6105, 'const relParams = data'],
+  [4225, "'Brak danych silnika (hak getReligionState).'"],
 ];
 
 let exitCode = 0;
@@ -102,7 +102,7 @@ try {
       'const FALLBACK_RELIGION_PARAMS = {};',
       'const kultReligScaleForEra = (era: number, scale: number): number => era * 100 + scale;',
       'const loadSocietyScaleParams = (..._a: unknown[]): number => 7;',
-      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 3878-3898, 6063-6110, 4176-4284) ---',
+      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 3907-3927, 6092-6139, 4205-4313) ---',
       ...pinExecText,
       '// --- koniec verbatim ---',
       'export { appendCompositionBlock, buildTopBarReligiaDetailCard, renderReligia };',

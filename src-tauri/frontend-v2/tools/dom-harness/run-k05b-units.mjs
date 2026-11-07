@@ -134,12 +134,16 @@ const probeSrc = [
   ...HOST_RULE_NAMES.map((n) => `const ${n} = (...a) => F.rules.${n}(...a);`),
   `const CITY_BUILDING_PREREQ = new Proxy({}, { get: (_t, k) => (typeof k === 'string' ? F.rules.cityBuildingPrereqOf(k) : undefined) });`,
   `const WATER_ACCESS_BUILDING_IDS = { has: (id) => F.rules.isWaterAccessBuilding(id) };`,
+  // R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: web 9b019a7d8 RIVER_ONLY_BUILDING_IDS (game/production) i formatManpowerCompact (game/manpower)
+  // z adaptera k-ui3e-web.ts (bloki = web bajtowo, KE-BLOK) — ten sam moduł co po stronie portu.
+  `import { RIVER_ONLY_BUILDING_IDS, formatManpowerCompact } from ${JSON.stringify(join(CITY, 'k-ui3e-web.ts'))};`,
   // Atrapa renderera (K05B harness): ta sama dla obu stron; wywołania openEntityCard idą do fixture.
   `const appendBuildingRequirementChipSections = (p, c) => appendBuildingRequirementChipSectionsK02(p, c, buildingRequirementChipsHtml);`,
   `const makeBuildingThumb = (def) => makeBuildingThumbK02(buildingIconHtml(def));`,
   `const buildingAdapter = (def, ctx) => buildingAdapterDto(def, ctx);`,
-  extractCityConst('HANDEL_PCT_STEP', 578),
-  extractCityConst('MAX_PROCENT_NAUKA', 581),
+  // R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: web 9b019a7d8 — game/cities.ts 578→552, 581→555.
+  extractCityConst('HANDEL_PCT_STEP', 552),
+  extractCityConst('MAX_PROCENT_NAUKA', 555),
   ...PIN_UNITS.map((n) => extractTop(n)),
   '',
 ].join('\n');

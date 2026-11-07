@@ -5,9 +5,9 @@
  *
  * Różnica względem `run-k08b-title.mjs`: tam oczekiwania są spisane z pinu; tutaj pin jest WYKONYWANY.
  *  - PIN-EXEC: trzy funkcje pinu `edb8fb56` (`gra/src/ui/cityPanel.ts`) przepisane BEZ ZMIAN TEKSTU z linii pinu:
- *      863-870   `el`                          (lokalny helper pinu, używany przez blok 7)
- *      11512-11516 `resolveDetailSideHint`
- *      11518-11537 `appendSectionTitleWithDetails`
+ *      878-885   `el`                          (lokalny helper pinu, używany przez blok 7)
+ *      11607-11611 `resolveDetailSideHint`
+ *      11613-11632 `appendSectionTitleWithDetails`
  *    (jedyna operacja: wycięcie linii zakresu z pinu; zakresy są sprawdzane kotwicami startu/końca).
  *  - PORT: `src/ui/cityPanel/k08b-title.ts` (`resolveDetailSideHint`, `appendSectionTitleWithDetails`); `el` = port K01B.
  *  - Zależności (wiring): `attachInteractiveDetail` z `ui/hoverDetailDock` = REJESTRATOR (ta sama granica UI co w
@@ -51,17 +51,17 @@ const check = (id, pin, got, want) => {
 
 /** Zakresy pinu wykonywane verbatim: [nazwa, a, b, kotwica startu, kotwica końca (linia b)]. */
 const PIN_RANGES = [
-  ['el', 907, 914, 'function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, html?: string)', '}'],
-  ['resolveDetailSideHint', 11753, 11757, 'function resolveDetailSideHint(mount: HTMLElement)', '}'],
-  ['appendSectionTitleWithDetails', 11759, 11778, 'function appendSectionTitleWithDetails(', '}'],
+  ['el', 922, 929, 'function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, html?: string)', '}'],
+  ['resolveDetailSideHint', 11848, 11852, 'function resolveDetailSideHint(mount: HTMLElement)', '}'],
+  ['appendSectionTitleWithDetails', 11854, 11873, 'function appendSectionTitleWithDetails(', '}'],
 ];
 /** PIN-ANCHOR: literały, które muszą występować w wykonywanym kodzie pinu (linie zakresów). */
 const PIN_ANCHORS = [
-  [11754, ".closest('.civ-ux-left')"], [11755, ".closest('.civ-ux-right')"],
-  [11764, "el('div', 'ptitle')"], [11768, "'okolica-info-link civ-w4-panel-detail gold'"],
-  [11770, "'i szczegóły'"], [11771, "'Pokaż szczegóły sekcji'"],
-  [11773, 'mount.appendChild(head)'], [11775, 'delayMs: 220'], [11776, 'sideHint: resolveDetailSideHint(mount)'],
-  [908, 'document.createElement(tag)'], [910, 'if (html !== undefined) {'],
+  [11849, ".closest('.civ-ux-left')"], [11850, ".closest('.civ-ux-right')"],
+  [11859, "el('div', 'ptitle')"], [11863, "'okolica-info-link civ-w4-panel-detail gold'"],
+  [11865, "'i szczegóły'"], [11866, "'Pokaż szczegóły sekcji'"],
+  [11868, 'mount.appendChild(head)'], [11870, 'delayMs: 220'], [11871, 'sideHint: resolveDetailSideHint(mount)'],
+  [923, 'document.createElement(tag)'], [925, 'if (html !== undefined) {'],
 ];
 
 let exitCode = 0;
@@ -92,7 +92,7 @@ try {
     [
       "import { attachInteractiveDetail } from '../hoverDetailDock';",
       `import { CP_EMOJI_DETECT, cpInlineIcons } from ${k01a};`,
-      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 907-914, 11753-11757, 11759-11778) ---',
+      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 922-929, 11848-11852, 11854-11873) ---',
       ...pinExecText,
       '// --- koniec verbatim ---',
       'export { appendSectionTitleWithDetails, resolveDetailSideHint };',
@@ -255,9 +255,9 @@ try {
     check(`diff.${path}`, `pin-exec.${path}`, fq.get(path), fp.get(path));
   }
   check('expect.side.nestedLeftInRight', 'closest: .civ-ux-left wewnątrz .civ-ux-right => left (pin: left pierwszy)', pinSnap.side.nestedLeftInRight, 'left');
-  check('diff.case.right.sideHint', 'cityPanel.ts:11776 sideHint z mount w .civ-ux-right = right', pinSnap.cases['right-html'].calls[0]?.opts?.sideHint, 'right');
-  check('diff.case.right.build', 'cityPanel.ts:11774 build zwraca węzeł buildDetail', pinSnap.cases['right-html'].calls[0]?.buildReturnsDetail, true);
-  check('diff.case.auto.head', 'cityPanel.ts:11773 head dopisany na końcu (pre=2 => 3 dzieci)', pinSnap.cases['auto-pre2'].children, 3);
+  check('diff.case.right.sideHint', 'cityPanel.ts:11871 sideHint z mount w .civ-ux-right = right', pinSnap.cases['right-html'].calls[0]?.opts?.sideHint, 'right');
+  check('diff.case.right.build', 'cityPanel.ts:11869 build zwraca węzeł buildDetail', pinSnap.cases['right-html'].calls[0]?.buildReturnsDetail, true);
+  check('diff.case.auto.head', 'cityPanel.ts:11868 head dopisany na końcu (pre=2 => 3 dzieci)', pinSnap.cases['auto-pre2'].children, 3);
 } catch (e) {
   console.error('run-k08b-title-pin: błąd harnessu:', e);
   exitCode = 2;

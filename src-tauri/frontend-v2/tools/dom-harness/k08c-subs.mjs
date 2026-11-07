@@ -54,7 +54,7 @@ export const BATCH_PODZIAL = {
  *
  * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08c-port.mjs --batch podzial\` (bloki = pin, \`k08c-subs.mjs\`).
  * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08c-copies.mjs\`.
- * Stałe i pomocnicze z \`k08c-deps.ts\` (granice 50..100 z pinu \`game/cities.ts:469-470\`).
+ * Stałe i pomocnicze z \`k08c-deps.ts\` (granice 50..100 z pinu \`game/cities.ts:430-431\` (web 9b019a7d8)).
  */`,
   imports: `import { cityPanelChipIconWrap, cpInlineIcons } from './k01a-fundament';
 import { el } from './k01b-dom';

@@ -53,9 +53,10 @@ let exitCode = 0;
 try {
   const units = JSON.parse(readFileSync(join(resolve(PIN_DIR), 'gra/data/units.json'), 'utf8'));
   const pinCitiesLines = readFileSync(join(resolve(PIN_DIR), 'gra/src/game/cities.ts'), 'utf8').split(/\r?\n/);
-  const boundsOk = pinCitiesLines[455] === 'export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;'
-    && pinCitiesLines[456] === 'export const MAX_PODZIAL_PRACY_BUDYNKI_PERCENT = 100;';
-  check('pin.bounds.cities', 'pin game/cities.ts:456-457 = MIN 50 / MAX 100 (cytowane w K08C-Z5)', boundsOk);
+  // R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: web 9b019a7d8 — game/cities.ts 456-457 → 430-431 (zmierzone grep).
+  const boundsOk = pinCitiesLines[429] === 'export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;'
+    && pinCitiesLines[430] === 'export const MAX_PODZIAL_PRACY_BUDYNKI_PERCENT = 100;';
+  check('pin.bounds.cities', 'pin game/cities.ts:430-431 = MIN 50 / MAX 100 (cytowane w K08C-Z5)', boundsOk);
 
   // ─── bundle ─────────────────────────────────────────────────────────────────────────────────────────────────────
   const dataFile = join(TMP, 'units.json');

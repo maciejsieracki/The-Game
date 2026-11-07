@@ -4,9 +4,9 @@
  * (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08C-Q1, runda 1, zadanie 2 dispatchu: "harness pin-exec dla owned i purchase").
  *
  * PIN-EXEC (verbatim, bez zmiany tekstu; wycięcie linii zakresu, kotwice start/koniec sprawdzane przed wykonaniem):
- *   9184-9255  `renderBuildingsOwned`            (partia owned)
- *   9341-9357  `renderBuildingsOwnedRightPanel`  (partia owned)
- *   8891-8977  `renderPurchasableUnits`          (partia purchase)
+ *   9260-9331  `renderBuildingsOwned`            (partia owned)
+ *   9417-9433  `renderBuildingsOwnedRightPanel`  (partia owned)
+ *   8967-9053  `renderPurchasableUnits`          (partia purchase)
  * PORT: `src/ui/cityPanel/k08b-owned.ts`, `src/ui/cityPanel/k08b-purchase.ts`.
  * Zależności obu wersji identyczne: importy portu (ta sama lista co w nagłówkach partii), delegaty `k08b-deps.ts` przez
  * `dep()` z `k06b-deps.ts`, wiring `installK08cWiring` (`controller/k08cWiring.ts`). Hosty TEST: silnik = atrapy
@@ -45,16 +45,16 @@ const check = (id, pin, ok) => results.push({ id, pin, ok: ok === true });
 
 /** Zakresy pinu wykonywane verbatim: [nazwa, a, b, kotwica startu]; koniec zawsze linia `}`. */
 const PIN_RANGES = [
-  ['renderBuildingsOwned', 9428, 9499, 'function renderBuildingsOwned('],
-  ['renderBuildingsOwnedRightPanel', 9585, 9601, 'function renderBuildingsOwnedRightPanel('],
-  ['renderPurchasableUnits', 9119, 9216, 'function renderPurchasableUnits('],
+  ['renderBuildingsOwned', 9504, 9575, 'function renderBuildingsOwned('],
+  ['renderBuildingsOwnedRightPanel', 9661, 9677, 'function renderBuildingsOwnedRightPanel('],
+  ['renderPurchasableUnits', 9195, 9292, 'function renderPurchasableUnits('],
 ];
 /** PIN-ANCHOR: literały w liniach pinu (sprawdzane przed wykonaniem). */
 const PIN_ANCHORS = [
-  [9442, "const built = cfg.getBuiltBuildingIds?.(city.id);"],
-  [9126, "const w4 = opts?.w4 === true;"],
-  [9205, "'list-scroll',"],
-  [9181, "'(brak jednostek do kupienia — zbadaj technologie / Koszary)'"],
+  [9518, "const built = cfg.getBuiltBuildingIds?.(city.id);"],
+  [9202, "const w4 = opts?.w4 === true;"],
+  [9281, "'list-scroll',"],
+  [9257, "'(brak jednostek do kupienia — zbadaj technologie / Koszary)'"],
 ];
 
 let exitCode = 0;
@@ -98,7 +98,7 @@ try {
       `import { formatCompactNumber, formatFullNumber } from ${JSON.stringify(join(V2_ROOT, 'src/ui/formatCompactNumber.ts'))};`,
       `import { withW4TabCard } from ${P('k08b-rail.ts')};`,
       `import { appendSectionTitleWithDetails } from ${P('k08b-title.ts')};`,
-      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 9428-9499, 9585-9601, 9119-9216) ---',
+      '// --- verbatim pin 86d510c66 gra/src/ui/cityPanel.ts (zakresy: 9504-9575, 9661-9677, 9195-9292) ---',
       ...pinText,
       '// --- koniec verbatim ---',
       'export { renderBuildingsOwned, renderBuildingsOwnedRightPanel, renderPurchasableUnits };',
