@@ -1,0 +1,61 @@
+== M1: medium pixel_ratio_max 2.0 -> 1.5
+test hex_shape_matches_web ... ok
+test fog_dim_matches_web ... ok
+test bronze_city_types_match_web ... ok
+test hexutil_matches_web ... ok
+test vitals_match_web ... ok
+test merge_decor_matches_web ... ok
+test zoom_lod_matches_web ... ok
+test index_identical_vertices_matches_web ... ok
+test map_style_matches_web ... FAILED
+preset[27].prm: got 1.5e0 (0x3ff8000000000000) want 2e0 (0x4000000000000000)
+preset[28].prm: got 1.5e0 (0x3ff8000000000000) want 2e0 (0x4000000000000000)
+preset[29].prm: got 1.5e0 (0x3ff8000000000000) want 2e0 (0x4000000000000000)
+preset[30].prm: got 1.5e0 (0x3ff8000000000000) want 2e0 (0x4000000000000000)
+preset[31].prm: got 1.5e0 (0x3ff8000000000000) want 2e0 (0x4000000000000000)
+EXIT=101
+== M2: build_merged_mesh without index_identical_vertices (non-indexed soup)
+test hex_shape_matches_web ... ok
+test fog_dim_matches_web ... ok
+test bronze_city_types_match_web ... ok
+test map_style_matches_web ... ok
+test hexutil_matches_web ... ok
+test vitals_match_web ... ok
+test zoom_lod_matches_web ... ok
+test index_identical_vertices_matches_web ... ok
+test merge_decor_matches_web ... FAILED
+mergeDecor: 3016 values compared bit for bit, 2403 mismatches
+mergeDecor: 2403 mismatches:
+test result: FAILED. 8 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+EXIT=101
+== M3: value equality (f32 ==) instead of bit equality in the probe
+test hex_shape_matches_web ... ok
+test bronze_city_types_match_web ... ok
+test fog_dim_matches_web ... ok
+test hexutil_matches_web ... ok
+test map_style_matches_web ... ok
+test vitals_match_web ... ok
+test merge_decor_matches_web ... ok
+test zoom_lod_matches_web ... ok
+test index_identical_vertices_matches_web ... FAILED
+ivx.negZero.same: got false want true
+ivx.negZero.positions.len: got 6 want 12
+ivx.negZero.positions[3]: got 0e0 want -0e0
+ivx.negZero.colors.len: got 6 want 12
+ivx.negZero.colors[3]: got -0e0 want 1e0
+EXIT=101
+== M4: index_width threshold 65535 -> 65536
+test hex_shape_matches_web ... ok
+test bronze_city_types_match_web ... ok
+test fog_dim_matches_web ... ok
+test merge_decor_matches_web ... ok
+test vitals_match_web ... ok
+test zoom_lod_matches_web ... ok
+test map_style_matches_web ... ok
+test hexutil_matches_web ... ok
+test index_identical_vertices_matches_web ... FAILED
+big[65536+1].indexType: got Some("Uint16Array") want Some("Uint32Array")
+test result: FAILED. 8 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+EXIT=101
+== restored
+identical

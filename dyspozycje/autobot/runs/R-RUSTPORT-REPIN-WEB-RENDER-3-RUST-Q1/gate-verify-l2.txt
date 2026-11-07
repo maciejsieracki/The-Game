@@ -1,0 +1,13 @@
+house: soup 312 -> unique 66 vertices, vertex bytes 7488 -> 1584 (+ index 624 B)
+forest: soup 459 -> unique 316 vertices, vertex bytes 11016 -> 7584 (+ index 918 B)
+shared: soup 120 -> unique 34 vertices, vertex bytes 2880 -> 816 (+ index 240 B)
+meshRoot: soup 66 -> unique 16 vertices, vertex bytes 1584 -> 384 (+ index 132 B)
+singleVcArrayLast: soup 60 -> unique 12 vertices, vertex bytes 1440 -> 288 (+ index 120 B)
+single: soup 36 -> unique 8 vertices, vertex bytes 864 -> 192 (+ index 72 B)
+verify_l2_geometry: OK (6 merged cases)
+EXIT=0
+== self-test: old:=new (indexed buffer posing as soup) MUST FAIL
+FAIL single: expanded positions != old soup
+FAIL single: expanded colours != old soup
+verify_l2_geometry: FAIL (6 merged cases)
+EXIT(expected 1)=1

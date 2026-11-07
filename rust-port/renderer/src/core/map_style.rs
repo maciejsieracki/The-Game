@@ -269,7 +269,10 @@ pub fn resolve_render_preset(options: &MapRenderOptions, hex_count: usize) -> Re
         QualityTier::Medium => ResolvedRenderPreset {
             roblox_lite,
             antialias: false,
-            pixel_ratio_max: 1.5,
+            // web 9b019a7d8 (`eb32c5496` R-WEB-RENDER-UNIT-BLUR-HORSES-Q1): was 1.5; on DPR 2
+            // the 1.5x buffer stretched to 2x device pixels blurred close-up units. No effect on
+            // DPR <= 1.5 (`min(DPR, max)`).
+            pixel_ratio_max: 2.0,
             shadows_enabled: false,
             shadow_map_size: 1024,
             fog_far_mul: 0.9,

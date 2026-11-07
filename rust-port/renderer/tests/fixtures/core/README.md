@@ -3,8 +3,9 @@
 Reference vectors for `tests/core_web_parity.rs`, produced by **running web code**:
 
 - `three@0.169.0` from npm (integrity `sha512-Ed906MA3…qUv0w==`, identical to the pin
-  in `gra/package-lock.json` at `edb8fb56`), `esbuild@0.24.0`, node v22.22.0;
-- web modules from `git archive edb8fb56 gra/src gra/data`, **imported unchanged**:
+  in `gra/package-lock.json` at `edb8fb56` and at `9b019a7d8`), `esbuild@0.24.0`, node v22.22.0;
+- web modules from `git archive 9b019a7d8 gra/src gra/data` (repin
+  R-RUSTPORT-REPIN-WEB-RENDER-3-RUST-Q1; originally `edb8fb56`), **imported unchanged**:
   `render/hexutil.ts`, `render/hexShape.ts`, `render/fogDim.ts`, `render/zoomLod.ts`,
   `render/mergeDecor.ts`, `render/unitVitalsPalette.ts`, `render/mapRenderStyle.ts`,
   `render/bronzeCity.ts`, `render/teren-gory-wzgorza.ts` (`GORA_APEX_Y`,
@@ -42,7 +43,7 @@ S=<scratch dir>
 mkdir -p $S/ref $S/websrc $S/refscript $S/out
 (cd $S/ref && printf '{"name":"ref","private":true}\n' > package.json \
   && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)
-git archive --format=tar -o $S/websrc.tar edb8fb56 gra/src gra/data && tar -xf $S/websrc.tar -C $S/websrc
+git archive --format=tar -o $S/websrc.tar 9b019a7d8 gra/src gra/data && tar -xf $S/websrc.tar -C $S/websrc
 cp rust-port/renderer/tests/fixtures/core/gen.ts $S/refscript/core_gen.ts
 cd $S/refscript
 NODE_PATH=$S/ref/node_modules $S/ref/node_modules/.bin/esbuild core_gen.ts --bundle \
@@ -60,13 +61,31 @@ node core_gen.mjs $S/out/core
 | `hexshape.json` | 25 `hexRingPointsXZ` (6 radii × 4 `y` + default `y`), 16 `appendPointyTopHex` (4 radii × reverse × `Shape`/`Path`, `getPoints()`), 1 shape with a reversed hole (`extractPoints`) |
 | `fogdim.json` | 14 `fogBrightnessForHex`; 5 scenes × 11 `applyFogDimToObject3D` calls (1, 0.175, 0, 0.5, −1, 1, 0.175, 2, 0.333, NaN, 1): colours of every material after every call (Lambert/Standard/Basic/Phong dimmed; Physical/Toon/Normal/Sprite not) |
 | `zoomlod.json` | 96 `normalizedZoomT`, 17 `resolveZoomLodLevel`, 10 `zoomLodFlags`, 60 `effectivePixelRatio` (no `window` + 5 `devicePixelRatio`), 14 `cityBadgeLodLevelForDist`, 8 `cityBadgeLodTextureScale`, 192 `zoomLodForCamera` |
-| `mergedecor.json` | 12 scenes (nested groups, 4 Euler orders, non-uniform scale, vertex-colour geometry, material arrays, empty material array, `MeshNormalMaterial`, non-indexed geometry, sprite, mesh as root, empty / flagged / single vertex-colour / groups-only / empty-geometry groups; single mesh with a material ARRAY where only `[1]` has `vertexColors` (`singleVcArrayLast`, not merged → collapsed) and only `[0]` has it (`singleVcArrayFirst`, already merged), pinning `mat[0]` of `mergeDecor.ts:25`): `isAlreadyMergedDecor`, `countMeshesInGroup`, `collapseToMergedMesh` (full Float32 `position` and `color` buffers, material, flags), second collapse, fog on the result, `disposeMergedDecor` counts |
+| `mergedecor.json` | 12 scenes (nested groups, 4 Euler orders, non-uniform scale, vertex-colour geometry, material arrays, empty material array, `MeshNormalMaterial`, non-indexed geometry, sprite, mesh as root, empty / flagged / single vertex-colour / groups-only / empty-geometry groups; single mesh with a material ARRAY where only `[1]` has `vertexColors` (`singleVcArrayLast`, not merged → collapsed) and only `[0]` has it (`singleVcArrayFirst`, already merged), pinning `mat[0]` of `mergeDecor.ts:25`): `isAlreadyMergedDecor`, `countMeshesInGroup`, `collapseToMergedMesh` (full Float32 `position` and `color` buffers, `index` + its element type, material, flags), second collapse, fog on the result, `disposeMergedDecor` counts |
 | `vitals.json` | all 11 exports of `unitVitalsPalette.ts` |
 | `mapstyle.json` | constants, `DEFAULT_MAP_RENDER_OPTIONS`, `TERRAIN_SURFACE_Y`, `ROBLOX_TERRAIN_VIS`, 72 `terrainVisualForStyle`, 104 `terrainSurfaceTopY`, 4 `coastWaterCapTopY`, 3 `terrainHeightAudit` (with the Polish messages), 24 `styleTerrainColor`, 3 `styleScenePalette`, 6 `riverSurfaceLiftY`, 10 `normalizeMapRenderOptions`, 243 `resolveRenderPreset`, 5 `isSceneBuildFastPath`, 22 `isDenseLandmassMap`/`isRiverRenderFast`/`isSceneBuildAggressive`, 600 `hash2D`/`decorVariant5`/`forestTreeCountForHex`/`jungleForestTreeCountForHex`, 11 `styleHillBumpSurfaceY`, 200 `styleMountainPeakSurfaceY`, 128 `galleryDecorSurfaceY`, 8 `elevatedTerrainEdgeSurfaceY`, `GORA_APEX_Y`, `WZGORZE_SZCZYT_Y` |
 | `bronze.json` | `BRONZE_CIVS`; 35 `ikonaIdToBronzeCiv` (all 23 table keys incl. aliases, unknown ids, case, whitespace, and 5 `Object.prototype` names = documented JS quirk); 4 152 `rnd` (integers −5..300 × 7 salts, random integers / fractions, 2³¹, 2³², 2⁵³, −2⁴⁰, 10²⁰, NaN, ∞) |
 | `gen.ts` | the generator |
 
-SHA-256 at creation (also in `dyspozycje/rust-port/p4/P4-12-MOD01-CORE.md`):
+### Repin to web `9b019a7d8` (R-RUSTPORT-REPIN-WEB-RENDER-3-RUST-Q1)
+
+Between `edb8fb56` and `9b019a7d8` only three of the imported modules changed:
+`mapRenderStyle.ts` (medium `pixelRatioMax` 1.5 → 2.0, `eb32c5496`), `mergeDecor.ts`
+(`indexIdenticalVertices`: the merged mesh is indexed) and `game/visibility.ts`
+(`extraSightSources`, not read by the generator). With the **unchanged** `gen.ts` the old
+archive still reproduces all 8 files byte for byte and the new one changes only
+`mapstyle.json` and `mergedecor.json` (the other 6 hashes stay as below). `gen.ts` was then
+extended (merged `index` + `indexType`, and the direct `indexIdenticalVertices` vectors
+`ivx` / `big` in `mergedecor.json`); the 6 untouched files are still byte-identical.
+
+```text
+fe0e303e657f064f1e5dc99e47906905998e2c9a23c102111ee782f4dcac2913  mapstyle.json
+1825ccb33c484786c528d26e05b6c2f43c878abdd21127b56e2b9cda0647e55e  mergedecor.json
+8c8d82eaf532ba9cc25da72f4976f23bee6c266b161a44e9c1ecd08994ee7ba7  gen.ts
+```
+
+SHA-256 at creation (also in `dyspozycje/rust-port/p4/P4-12-MOD01-CORE.md`; `mapstyle.json`,
+`mergedecor.json` and `gen.ts` superseded by the repin above):
 
 ```text
 0bead79eb2001c0fd80ec9e00d3e232d14855ef9afa5a9cfc2f24aeca54344fd  bronze.json

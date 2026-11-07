@@ -22,8 +22,8 @@ use civ_renderer::core::hex_shape::{append_pointy_top_hex, hex_ring_points_xz};
 use civ_renderer::core::hexutil::{axial_to_world_f, map_center, sqrt3, world_to_axial, HEX_R};
 use civ_renderer::core::map_style as ms;
 use civ_renderer::core::merge_decor::{
-    collapse_to_merged_mesh, count_meshes_in_group, dispose_merged_decor, is_already_merged_decor,
-    MERGED_DECOR_FLAG,
+    collapse_to_merged_mesh, count_meshes_in_group, dispose_merged_decor, index_identical_vertices,
+    index_width, is_already_merged_decor, MERGED_DECOR_FLAG,
 };
 // P4.27: one scene type (`civ_renderer::scene::Scene`, arena) — forced type adjustment.
 use civ_renderer::core::scene::{Geometry, Material, MaterialKind, NodeKind, Scene, ROOT};
@@ -881,6 +881,29 @@ fn merge_decor_matches_web() {
                 geometry.mesh.indices.is_some(),
                 m.get("indexed").bool(),
             );
+            // R-RUSTPORT-REPIN-WEB-RENDER-3-RUST-Q1 (L2): the index buffer of
+            // `indexIdenticalVertices`, element by element, and its element type.
+            let unique = geometry.mesh.positions.len() / 3;
+            match (&geometry.mesh.indices, m.get("index")) {
+                (Some(gi), wi) if !wi.is_null() => {
+                    let wi: Vec<u32> = wi.arr().iter().map(Json::u32).collect();
+                    c.eq(&format!("{name}.index"), gi, &wi);
+                    c.eq(
+                        &format!("{name}.indexType"),
+                        index_width(unique).web_name(),
+                        m.get("indexType").str(),
+                    );
+                    // Vertex-buffer reduction: soup vertices (= index length) vs unique.
+                    c.eq(&format!("{name}.shrinks"), unique < gi.len(), true);
+                    println!(
+                        "mergeDecor {name}: {} soup vertices -> {unique} unique ({:.2}x smaller vertex buffer)",
+                        gi.len(),
+                        f64::from(u32::try_from(gi.len()).unwrap())
+                            / f64::from(u32::try_from(unique).unwrap())
+                    );
+                }
+                (gi, wi) => c.eq(&format!("{name}.index"), gi.is_none(), wi.is_null()),
+            }
             let wp = m.get("position").arr();
             c.eq(
                 &format!("{name}.position.len"),
@@ -965,6 +988,137 @@ fn merge_decor_matches_web() {
         );
     }
     c.finish("mergeDecor");
+}
+
+fn f32s(a: &Json) -> Vec<f32> {
+    #[allow(clippy::cast_possible_truncation)]
+    a.arr().iter().map(|v| v.num() as f32).collect()
+}
+
+fn check_f32s(c: &mut Check, what: &str, got: &[f32], want: &Json) {
+    let w = want.arr();
+    c.eq(&format!("{what}.len"), got.len(), w.len());
+    for (k, (gv, wv)) in got.iter().zip(w).enumerate() {
+        c.f32(&format!("{what}[{k}]"), *gv, wv.num());
+    }
+}
+
+/// `indexIdenticalVertices` called directly (web `9b019a7d8`,
+/// `mergeDecor.ts:52-92`): edge inputs (empty, length mismatch, all unique,
+/// `-0` vs `0`, `NaN`, colour-only difference, a 2001-vertex pool soup) in
+/// full, and formula inputs pinning the `Uint16Array`/`Uint32Array` switch
+/// at 65535/65536 unique vertices.
+#[test]
+fn index_identical_vertices_matches_web() {
+    let j = load("mergedecor.json");
+    let mut c = Check::default();
+    for v in j.get("ivx").arr() {
+        let name = v.get("name").str();
+        let (pin, cin) = (f32s(v.get("inP")), f32s(v.get("inC")));
+        let o = index_identical_vertices(pin.clone(), cin.clone());
+        let same = o.index.is_none() && o.positions == pin && o.colors == cin;
+        c.eq(&format!("ivx.{name}.same"), same, v.get("same").bool());
+        check_f32s(
+            &mut c,
+            &format!("ivx.{name}.positions"),
+            &o.positions,
+            v.get("positions"),
+        );
+        check_f32s(
+            &mut c,
+            &format!("ivx.{name}.colors"),
+            &o.colors,
+            v.get("colors"),
+        );
+        let wi = v.get("index");
+        match &o.index {
+            Some(gi) if !wi.is_null() => {
+                let wi: Vec<u32> = wi.arr().iter().map(Json::u32).collect();
+                c.eq(&format!("ivx.{name}.index"), gi, &wi);
+                c.eq(
+                    &format!("ivx.{name}.indexType"),
+                    index_width(o.positions.len() / 3).web_name(),
+                    v.get("indexType").str(),
+                );
+            }
+            gi => c.eq(&format!("ivx.{name}.index"), gi.is_none(), wi.is_null()),
+        }
+    }
+    for b in j.get("big").arr() {
+        let unique = usize::try_from(b.get("unique").i64()).unwrap();
+        let dups = usize::try_from(b.get("dups").i64()).unwrap();
+        let what = format!("big[{unique}+{dups}]");
+        let n0 = unique + dups;
+        let mut p = Vec::with_capacity(n0 * 3);
+        let mut col = Vec::with_capacity(n0 * 3);
+        for i in 0..n0 {
+            let v = if i < unique {
+                i
+            } else {
+                ((i - unique) * 31) % unique
+            };
+            let vf = f64::from(u32::try_from(v).unwrap());
+            #[allow(clippy::cast_possible_truncation)]
+            {
+                p.extend([vf as f32, (vf / 4.0) as f32, (-vf) as f32]);
+                col.extend([
+                    (f64::from(u32::try_from(v % 7).unwrap()) / 8.0) as f32,
+                    (f64::from(u32::try_from(v % 5).unwrap()) / 8.0) as f32,
+                    (f64::from(u32::try_from(v % 3).unwrap()) / 8.0) as f32,
+                ]);
+            }
+        }
+        let o = index_identical_vertices(p.clone(), col.clone());
+        c.eq(
+            &format!("{what}.same"),
+            o.index.is_none() && o.positions == p && o.colors == col,
+            b.get("same").bool(),
+        );
+        c.eq(
+            &format!("{what}.outVertices"),
+            i64::try_from(o.positions.len() / 3).unwrap(),
+            b.get("outVertices").i64(),
+        );
+        let gi = o.index.clone().unwrap_or_default();
+        c.eq(
+            &format!("{what}.indexType"),
+            o.index
+                .as_ref()
+                .map(|_| index_width(o.positions.len() / 3).web_name()),
+            b.opt("indexType").filter(|t| !t.is_null()).map(Json::str),
+        );
+        c.eq(
+            &format!("{what}.indexLen"),
+            i64::try_from(gi.len()).unwrap(),
+            b.get("indexLen").i64(),
+        );
+        c.eq(
+            &format!("{what}.indexSum"),
+            gi.iter().map(|&x| i64::from(x)).sum::<i64>(),
+            b.get("indexSum").i64(),
+        );
+        if let Some(tail) = b.opt("indexTail").filter(|t| !t.is_null()) {
+            let wt: Vec<u32> = tail.arr().iter().map(Json::u32).collect();
+            c.eq(
+                &format!("{what}.indexTail"),
+                &gi[gi.len() - wt.len()..],
+                &wt[..],
+            );
+        }
+        check_f32s(
+            &mut c,
+            &format!("{what}.posTail"),
+            &o.positions[o.positions.len() - 12..],
+            b.get("posTail"),
+        );
+        check_f32s(
+            &mut c,
+            &format!("{what}.colTail"),
+            &o.colors[o.colors.len() - 12..],
+            b.get("colTail"),
+        );
+    }
+    c.finish("indexIdenticalVertices");
 }
 
 #[test]

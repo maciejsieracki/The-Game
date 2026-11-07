@@ -70,3 +70,22 @@ Kopie bajtowe: **0** (żaden plik nie jest UI/DOM — wszystkie zależą od `thr
 L1 (stała + wektor presetów z uruchomionego webu `9b019a7d8`), L2 (`index_identical_vertices` + wektory
 `merge_decor` na nowym webie, mutacje: tolerancja ≠ bit w bit, kolejność trójkątów, próg Uint16/Uint32),
 L3 do kolejki portu kompozytora jednostek. Po zamknięciu L1/L2 weryfikator C3 zgłosi FAIL → aktualizacja manifestu.
+
+## 5. Wyniki tematu następczego R-RUSTPORT-REPIN-WEB-RENDER-3-RUST-Q1 (Operator r1)
+
+- **L1 ZAMKNIĘTA:** `core/map_style.rs` medium `pixel_ratio_max` 1,5 → **2,0**. Wektor presetów
+  (`tests/fixtures/core/mapstyle.json`) zregenerowany z uruchomionego webu `9b019a7d8` (three@0.169.0,
+  generator `gen.ts`), test `map_style_matches_web` (`tests/core_web_parity.rs:~1340`) bez zmian kodu.
+- **L2 ZAMKNIĘTA:** `core/merge_decor.rs` — `index_identical_vertices` (1:1 z `mergeDecor.ts:52-92`: klucz =
+  6×`f32::to_bits`, hash `Math.imul`, sondowanie liniowe, kolejność pierwszego wystąpienia), `index_width`
+  (Uint16 ≤ 65535 < Uint32), `build_merged_mesh` zwraca mesh indeksowany. Wektory: `mergedecor.json`
+  (12 scen: `index` + `indexType`; 9 wektorów bezpośrednich `ivx`; 4 formułowe `big` z progiem 65535/65536).
+  Pomiar bufora wierzchołków (6 scen scalonych): 1,45× – 5,0× mniej wierzchołków (np. `house` 312 → 66).
+  Niezależny weryfikator `runs/R-RUSTPORT-REPIN-WEB-RENDER-3-RUST-Q1/verify_l2_geometry.py`: rozwinięcie
+  indeksu = stara zupa `edb8fb56` bit w bit (geometria identyczna). Zwolnienie kopii CPU: NIE-DOTYCZY (potwierdzone
+  — crate nie trzyma drugiej kopii CPU per upload).
+- **L3** bez zmian (odroczona do portu kompozytora jednostek). L1/L2 nie dotykają `units::*`,
+  `models/cities/**` ani pul — brak kolizji z planem L3 (LOD działa na meshach części, niezależnie od indeksu
+  scalonego dekoru).
+- Weryfikator zakresu C3 (`verify-repin-render3-scope.mjs`) daje teraz oczekiwany FAIL (2 kotwice luk zamknięte) —
+  aktualizacja manifestu `repin-render3-scope.json` poza allowlistą tego tematu (decyzja orkiestratora).

@@ -1,0 +1,4 @@
+FAIL C3: rust-port/renderer/src/core/map_style.rs: po kotwicy brak "pixel_ratio_max: 1.5," (luka zamknięta? zaktualizuj plan)
+FAIL C3: rust-port/renderer/src/core/merge_decor.rs: brak kotwicy "ONE non-indexed mesh"
+verify-repin-render3-scope: FAIL (2)
+EXIT=1
