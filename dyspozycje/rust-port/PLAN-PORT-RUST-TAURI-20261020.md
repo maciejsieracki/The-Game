@@ -23,9 +23,9 @@
 **Źródła tej sekcji (bez uruchamiania `cargo test`):** `LEDGER.md` (cały), `GOAL-RUST-PORT-20261020.md`, `PLAN-AKTUALIZACJI-PORTU-DO-WEBA-20261030.md`, `dyspozycje/REJESTR-PROSB-I-ZADAN.md` (FALA 509–543), `git ls-tree -r origin/rust-port/parity-v2`. Liczby oznaczone „wg LEDGER" pochodzą z ostatniego wpisu rejestru, nie z nowego uruchomienia testów.
 
 **Punkty odniesienia (zmierzone 2026-11-07):**
-- `origin/rust-port/parity-v2` = `783c6b766` (FC REPIN-WEB-UI-3-INTEGRACJA, fast-forward z `8bc2efcf8`). Drzewo: `rust-port/engine` 852 pliki (92 moduły `src/domain/*.rs` + 40 w podkatalogach `mapgen/okolica/auto_improvements/resource_access/society_breakdown`, 307 plików testów `tests/*.rs`), `rust-port/renderer` 906, `rust-port/assets` 429, `src-tauri/frontend-v2` 796, `src-tauri/frontend` 2 (stary slice).
+- `origin/rust-port/parity-v2` = `783c6b766` (FC REPIN-WEB-UI-3-INTEGRACJA, fast-forward z `8bc2efcf8`). Drzewo: `rust-port/engine` 852 pliki (92 moduły `src/domain/*.rs` + 56 plików w podkatalogach `src/domain/mapgen` (38, w tym `rivers_a`/`rivers_b`), `okolica` (6), `auto_improvements` (7), `resource_access` (3), `society_breakdown` (2) — wszystkie pod `rust-port/engine/src/domain/`, 307 plików testów `tests/*.rs`), `rust-port/renderer` 906, `rust-port/assets` 429, `src-tauri/frontend-v2` 796, `src-tauri/frontend` 2 (stary slice).
 - Testy wg LEDGER: silnik **2122 passed / 0 failed** (ostatni pełny przebieg: merge `e1c040160`, 2026-11-03, DYPLOMACJA-PROFIL-WOJNY-POKOJU); renderer **466/0** (RENDER-3-RUST, FC `707696397`); frontend-v2: harnessy UI-3 A–E 0 różnic (INTEGRACJA, 2026-11-07). Od 2026-11-03 nie dodano kodu silnika — porty UI/3D nie ruszają `rust-port/engine`.
-- Web `origin/main` = `bd5386c8b` (ROBOCZA `35e9ec5a`, FALA 543). Piny portu są **rozjechane**: UI/3D = web `9b019a7d8` (FALA ≤532, bez FALA 534–543); logika silnika = mieszanka pinów `4bbef081d` (auto-ulepszenia, ekonomia, wojna), `23dd158e9` (słodka woda, dyplomacja-profil), `dc8a3adc` (starsze moduły); mapgen = `86d510c66`/`91dc998a`. Pomiar: `git diff 4bbef081d origin/main -- gra/src gra/data` = **167 plików, +16 468 / −2 296**, w tym **91 plików w `gra/src/game` + `gra/data`** (lista w §0b).
+- Web `origin/main` = `bd5386c8b` (etykieta deployu ROBOCZA `35e9ec5a` z message commita `bd5386c8b`, FALA 543 — to NIE jest obiekt gita; `git cat-file -t 35e9ec5a` zwraca błąd). Piny portu są **rozjechane**: UI/3D = web `9b019a7d8` (FALA ≤532, bez FALA 534–543); logika silnika = mieszanka pinów `4bbef081d` (auto-ulepszenia, ekonomia, wojna), `23dd158e9` (słodka woda, dyplomacja-profil), `dc8a3adc` (starsze moduły); mapgen = `86d510c66`/`91dc998a`. Pomiar: `git diff 4bbef081d origin/main -- gra/src gra/data` = **167 plików, +16 468 / −2 296**, w tym **91 plików w `gra/src/game` + `gra/data`** (lista w §0b).
 - Wstrzymania (LEDGER): 2026-11-03 wstrzymanie logiki Rust na rzecz poprawek webu, uchylone tylko dla grafiki/UI; 2026-11-07 „dalszy REPIN po zmianach weba dopiero po końcu kolejki webowej" — kolejka webowa na 2026-11-07: AIRESERVE/AIN10, AI-PLAYER-PARITY-FIXES, FULLREG w toku/oczekujące. **Polecenie właściciela z 2026-11-07 („zacznij pracę nad kilkoma zadaniami kolejnymi z Taurus") uchyla to wstrzymanie dla tematów z §0c.** (ZAŁOŻENIE orkiestratora do potwierdzenia; web nadal rośnie, więc każdy temat portu zaczyna od własnego pomiaru dryfu do `origin/main` w chwili startu.)
 
 ### 0a.1 Fazy P0–P11
@@ -66,9 +66,9 @@
 | P6.19 zwycięstwo/porażka | **NIEROZPOCZĘTE** | |
 | P6.20–P6.22 save/load/replay | **CZĘŚĆ** | `save_load.rs` (+`meta.battleModeSettingVersion`), `replay.rs`; brak pól i migracji z §0b |
 | P6.23–P6.24 testy + niezależny Evaluator | **W TOKU** | wektory z uruchomionego weba przy każdym temacie; Evaluator całego gameplayu — po P6 |
-| M00–M14 mapgen | **PRAWIE ZROBIONE** | M00–M07B4, M09, M11, M12, M14, M06A1–A9, M06B1/B2 PASS; brak wpisu w LEDGER dla M08, M10, M13, M15, M17, M18 (wg `P6-25-MAPA-GAP`; NIE_ZMIERZONO, czy są potrzebne), REPIN `relocate_forest_horses` (konie, web 2026-11-03), Pangea `topUpPangeaLandFraction` fazy 2–3 |
+| M00–M14 mapgen | **PRAWIE ZROBIONE** | M00–M07B4, M09, M11, M12, M14, M06A1–A9, M06B1/B2 PASS; wpisy LEDGER istnieją dla M15 (PASS-WITH-NOTES), M16 (PASS), M17 (PASS-WITH-NOTES), M10 (PASS) — wpis 2026-10-23, „ZINTEGROWANE", parity-v2 `95b91471`; brak wpisu w LEDGER dla M08, M13, M18 (NIE_ZMIERZONO, czy są potrzebne; wg `P6-25-MAPA-GAP`), REPIN `relocate_forest_horses` (konie, web 2026-11-03), Pangea `topUpPangeaLandFraction` fazy 2–3 |
 
-**Bilans:** zintegrowane i zielone: P0–P3, większość P4–P5, mapgen, ekonomia miast, ~40% dyplomacji/AI/walki. Największe luki P6: AI + wojny wymuszone, oblężenie, dyplomacja (8/10 tematów), hot-seat, zwycięstwo, save/migracje. P7–P11 = zero kodu.
+**Bilans:** zintegrowane i zielone: P0–P3, większość P4–P5, mapgen (M00–M14 z wyjątkami M08/M13/M18 bez wpisu; M15–M17 zintegrowane), ekonomia miast; dyplomacja 2 z 10 tematów podziału; AI/wojny i walka — częściowo (liczby tematów w tabeli wyżej; procenty NIE są miarą, patrz uwaga pod tabelą). Największe luki P6: AI + wojny wymuszone, oblężenie, dyplomacja (8/10 tematów), hot-seat, zwycięstwo, save/migracje. P7–P11 = zero kodu.
 
 ## 0b. Różnice WEB→RUST wymagające REPIN logiki (materiał do P6)
 
@@ -387,13 +387,13 @@ Platformy docelowe, build release, kontrola assetów w paczce, czysta instalacja
 | P0–P3 | zamknięte | 0 |
 | P4 | CPU/model zamknięte; GPU czeka na maszynę właściciela, L3 po kompozytorze jednostek | 1–2 tyg. (RR-T1 poza kontrolą orkiestratora) |
 | P5 | zamknięte do webu `9b019a7d8` | 1–2 tyg. (REPIN-UI-4 + K09C/K09D po DTO z P6) |
-| P6 | ≈40–45% (mapgen, ekonomia miast ✔; dyplomacja 2/10, AI/wojny ≈35%, walka/oblężenie ≈40%) | **10–16 tyg.** (kolejka §0c ≈ 4–6 tyg. dla pozycji 1–8; potem dyplomacja 3–10, handel, kultura, państwa-miasta, zwycięstwo, hot-seat, zapis) |
+| P6 | CZĘŚĆ — mapgen, ekonomia miast ✔; dyplomacja 2/10 tematów podziału; AI/wojny i walka częściowo (procent postępu NIE zmierzony — szacunek bez metody usunięty) | **10–16 tyg.** (kolejka §0c ≈ 4–6 tyg. dla pozycji 1–8; potem dyplomacja 3–10, handel, kultura, państwa-miasta, zwycięstwo, hot-seat, zapis) |
 | P7 | nierozpoczęte | 3–6 tyg. (częściowo równolegle z końcówką P6) |
 | P8 | nierozpoczęte | 5–9 tyg. |
 | P9 | nierozpoczęte | 1–2 tyg. |
 | P10 | nierozpoczęte | 2–6 tyg. |
 | P11 | nierozpoczęte, za zgodą | 1–2 tyg. |
-| **Razem pozostało** | | **≈ 5–8 miesięcy** (poprzednio 9–13 mies. od zera; spadek wynika ze zrobionych P0–P5, ale P6 jest wolniejsze od założenia z powodu limitu dysku i ruchomego weba) |
+| **Razem pozostało** | | **suma szeregowa 24–45 tyg. ≈ 5,5–10,5 miesiąca** (P4 1–2 + P5 1–2 + P6 10–16 + P7 3–6 + P8 5–9 + P9 1–2 + P10 2–6 + P11 1–2). Dolna granica zakłada nakładanie P7/P8 z końcówką P6 (nieskwantyfikowane — ZAŁOŻENIE do korekty po `REPIN-DELTA-5`). Poprzednio 9–13 mies. od zera; spadek wynika ze zrobionych P0–P5, ale P6 jest wolniejsze od założenia z powodu limitu dysku i ruchomego weba |
 
 To są szacunki kalendarzowe przy kontrolowanej równoległości (kilka tematów naraz w rozłącznych worktree), nie przy jednym wątku pracy. Po P0/P1 wrócę z dokładniejszą estymacją opartą o rzeczywistą liczbę modułów/scenariuszy, nie o ten przedział.
 
