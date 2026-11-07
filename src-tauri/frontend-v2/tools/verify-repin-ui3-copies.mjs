@@ -207,6 +207,89 @@ for (const [key, sec] of Object.entries(man)) {
   }
 }
 if (pd) console.log(`verify-repin-ui3-copies: portDom plików=${pd} źródło_sprawdzone=${pdWeb}`);
+// ── R-RUSTPORT-REPIN-WEB-UI-3-B-Q1 (addytywnie, partia UI-3-B): porty DOM (`portDomUI3B`) ───────────────────────────────
+// Plik portu NIE jest kopią weba (DTO zamiast `game/*`). Bramki:
+//   SHA   sha256/rozmiar pliku portu = wpis (`sha256`/`bytes`);
+//   DISJ  ścieżka poza innymi manifestami (jak kopie) i poza `files`/`adapters` UI-3;
+//   WEB   (git albo `--web-dir`) sha256 źródła weba `9b019a7d8` = `webSha256` (to wstawia nakładka `repin-ui2-overlay.mjs`);
+//   DELTA (git; `--web-dir` dla weba + git dla bazy) zmiana portu względem jego bazy (`portBase`) = zmiana weba `web86 → pin`
+//         jako różnica multizbiorów linii (znak: + dodana, − usunięta), z wyjątkiem jawnie wymienionych linii
+//         `onlyWeb` (zmiany weba świadomie nieprzeniesione / przeniesione inaczej) i `onlyPort` (adaptacja portu).
+const lineDelta = (a, b) => {
+  const d = new Map();
+  for (const l of a.split('\n')) d.set(l, (d.get(l) ?? 0) - 1);
+  for (const l of b.split('\n')) d.set(l, (d.get(l) ?? 0) + 1);
+  for (const [k, v] of d) if (v === 0) d.delete(k);
+  return d;
+};
+const fmtDelta = (d) => [...d].map(([l, n]) => (n > 0 ? '+' : '−') + Math.abs(n) + ' ' + JSON.stringify(l));
+const gitBlob = (rev, rel) => {
+  if (noGit) return null;
+  try {
+    return execFileSync('git', ['show', `${rev}:${rel}`], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024 });
+  } catch {
+    console.error(`GIT NIE_ZMIERZONO ${rev}:${rel}`);
+    return null;
+  }
+};
+let pdB = 0;
+let pdWebB = 0;
+let pdDelta = 0;
+const ui3Paths = new Set([...man.files, ...man.adapters].map((f) => f.path));
+for (const f of man.portDomUI3B ?? []) {
+  pdB++;
+  if (seen.has(f.path)) fail(`DUP ${f.path} (portDomUI3B)`);
+  seen.add(f.path);
+  if (taken.has(f.path)) fail(`DISJ ${f.path} (portDomUI3B) także w: ${taken.get(f.path).join(', ')}`);
+  if (ui3Paths.has(f.path)) fail(`DISJ ${f.path} (portDomUI3B) także w files/adapters UI-3`);
+  const abs = join(ROOT, f.path);
+  if (!existsSync(abs)) {
+    fail(`BRAK ${f.path} (portDomUI3B)`);
+    continue;
+  }
+  const buf = readFileSync(abs);
+  if (sha256(buf) !== f.sha256 || buf.length !== f.bytes) fail(`SHA ${f.path} (portDomUI3B) oczekiwano ${f.sha256}/${f.bytes} jest ${sha256(buf)}/${buf.length}`);
+  const web = webSrc(f.src);
+  if (!web) continue;
+  pdWebB++;
+  if (sha256(web) !== f.webSha256 || web.length !== f.webBytes) fail(`WEB ${f.src} (portDomUI3B) ${sha256(web)}/${web.length} ≠ manifest ${f.webSha256}/${f.webBytes}`);
+  const web86 = gitBlob(f.web86, f.src);
+  const base = gitBlob(f.portBase, 'src-tauri/frontend-v2/' + f.path);
+  if (!web86 || !base) continue;
+  pdDelta++;
+  if (sha256(web86) !== f.web86Sha256) fail(`DELTA ${f.path}: web ${f.web86.slice(0, 9)} sha256 ${sha256(web86)} ≠ manifest`);
+  if (sha256(base) !== f.portBaseSha256) fail(`DELTA ${f.path}: baza portu ${f.portBase.slice(0, 9)} sha256 ${sha256(base)} ≠ manifest`);
+  const dWeb = lineDelta(web86.toString('utf8'), web.toString('utf8'));
+  const dPort = lineDelta(base.toString('utf8'), buf.toString('utf8'));
+  // Wyjątki: `onlyWeb`/`onlyPort` = lista ["+"|"−", linia]; każda musi rzeczywiście wystąpić (inaczej wpis martwy = błąd).
+  const take1 = (d, [sign, line], who) => {
+    const n = d.get(line) ?? 0;
+    const want = sign === '+' ? 1 : -1;
+    if (Math.sign(n) !== want) {
+      fail(`DELTA ${f.path}: wyjątek ${who} ${sign}${JSON.stringify(line)} nie występuje w zmianie`);
+      return;
+    }
+    if (n - want === 0) d.delete(line);
+    else d.set(line, n - want);
+  };
+  for (const e of f.onlyWeb ?? []) take1(dWeb, e, 'onlyWeb');
+  for (const e of f.onlyPort ?? []) take1(dPort, e, 'onlyPort');
+  const a = fmtDelta(dWeb).sort();
+  const b = fmtDelta(dPort).sort();
+  if (a.join('\n') !== b.join('\n')) {
+    const onlyA = a.filter((x) => !b.includes(x));
+    const onlyB = b.filter((x) => !a.includes(x));
+    fail(`DELTA ${f.path}: zmiana portu ≠ zmiana weba ${f.web86.slice(0, 9)}→${man.pin.slice(0, 9)}\n  tylko web: ${onlyA.join('\n             ')}\n  tylko port: ${onlyB.join('\n             ')}`);
+  }
+}
+if (man.portDomUI3B) console.log(`verify-repin-ui3-copies: portDomUI3B plików=${pdB} web_sprawdzone=${pdWebB} delta_sprawdzone=${pdDelta}`);
+// Q1 r2 (zarzut Evaluatora N3): bez `--no-git` każdy plik portDomUI3B MUSI przejść WEB i DELTA — brak obiektu git
+// (np. płytki klon) to błąd bramki, nie cichy EXIT 0. `--no-git` = jawny NIE_ZMIERZONO.
+if (man.portDomUI3B && !noGit) {
+  if (pdWebB < pdB) fail(`WEB portDomUI3B sprawdzone ${pdWebB}/${pdB} (brak źródła weba — git fetch origin main albo --web-dir)`);
+  if (pdDelta < pdB) fail(`DELTA portDomUI3B sprawdzone ${pdDelta}/${pdB} (brak historii git — git fetch / pełny klon)`);
+}
+if (man.portDomUI3B && noGit && pdDelta < pdB) console.log(`verify-repin-ui3-copies: portDomUI3B DELTA NIE_ZMIERZONO ${pdB - pdDelta}/${pdB} (--no-git)`);
 if (!webDir && noGit) console.log('verify-repin-ui3-copies: GIT/ADAPTER NIE_ZMIERZONO (--no-git bez --web-dir)');
 console.log(`verify-repin-ui3-copies: pin=${man.pin.slice(0, 9)} kopii=${copies} źródło_sprawdzone=${gitChecked} adapterów=${man.adapters.length} adapter_sprawdzone=${adChecked} bloków=${blocks} deps=${deps} niezgodnych=${bad}`);
 process.exitCode = bad === 0 ? 0 : 1;

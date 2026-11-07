@@ -47,7 +47,9 @@
     "harness:repin-ui3e:mutate": "node tools/dom-harness/mutate-repin-ui3e.mjs",
     "harness:repin-ui3e:verify": "node tools/dom-harness/verify-repin-ui3e-fixture.mjs",
     "harness:repin-ui3c": "node tools/dom-harness/run-repin-ui3c.mjs",
-    "harness:repin-ui3c:mutate": "node tools/dom-harness/mutate-repin-ui3c.mjs"
+    "harness:repin-ui3c:mutate": "node tools/dom-harness/mutate-repin-ui3c.mjs",
+    "harness:repin-ui3b": "node tools/dom-harness/run-repin-ui3b.mjs",
+    "harness:repin-ui3b:mutate": "node tools/dom-harness/mutate-repin-ui3b.mjs"
   },
   "devDependencies": {
     "esbuild": "0.21.5",

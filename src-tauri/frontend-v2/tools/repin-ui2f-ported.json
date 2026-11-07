@@ -2,13 +2,6 @@
   "topic": "R-RUSTPORT-REPIN-UI-2-F-Q1",
   "web": "86d510c667268880414d693532ca012c9310589e",
   "note": "Pliki PORTU DOM (nie kopie bajtowe): port w src/ odwzorowuje wskazaną wersję weba (harness run-repin-ui2f.mjs). repin-ui2-overlay.mjs podmienia w odniesieniu pinu edb8fb56 plik weba na tę wersję (sha256 weba), żeby starsze harnessy (run-newgame.mjs) porównywały port z webem, do którego go przepięto.",
-  "files": [
-    {
-      "web": "gra/src/ui/newGameFlow.ts",
-      "port": "src/ui/newGameFlow.ts",
-      "class": "port DOM (P5.7 r2)",
-      "sha256": "dd158388a047fd573919bfe17c08feee06e762008c1320da40fd039c7cf7c4ae",
-      "bytes": 123949
-    }
-  ]
+  "files": [],
+  "movedToUI3B": "R-RUSTPORT-REPIN-WEB-UI-3-B-Q1: gra/src/ui/newGameFlow.ts -> tools/repin-ui3-manifest.json portDomUI3B (web 9b019a7d8)"
 }

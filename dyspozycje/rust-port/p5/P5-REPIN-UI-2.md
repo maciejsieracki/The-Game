@@ -917,4 +917,42 @@ asercji 14/14, pageerror+console.error 0, różnic 0. Fixtura `fixtures/repin_ui
 node tools/repin-ui2-overlay.mjs --pin-dir "$WEB86" --web-dir "$WEB86" --web3-dir "$WEB3" --out "$WEB86U3"
 node tools/dom-harness/run-repin-ui3c.mjs --web-dir "$WEB86U3" [--out fixtura.json] [--png-dir "$PNG"]
 node tools/dom-harness/mutate-repin-ui3c.mjs --web-dir "$WEB86U3" --from 0 --to 13   # 13–26, 26–39
+### 11.7 Partia UI-3-B (`R-RUSTPORT-REPIN-WEB-UI-3-B-Q1`, r1) — porty DOM `armyStackHud`, `siegeMapPanel`, `unitRecruitCard`, `newGameFlow`, `empireDetailTypes`
+
+Baza `rust-port/parity-v2` `dde5e9034`. Wszystkie 5 plików = klasa **PD** (§11.1 podawał `empireDetailTypes` jako AD — plik portu jest
+portem DTO, więc PD). Zmiana weba `86d510c66 → 9b019a7d8` przeniesiona do portu hunk po hunku:
+
+| Plik | Zmiana weba | W porcie |
+|---|---|---|
+| `armyStackHud` | `commanderTitle?: ArmyCommanderTitle` (import typu z `./armyStackLabel`), pole `picked?` | 1:1 (adapter UI-3-A dostarcza typ) |
+| `siegeMapPanel` | atrycja tylko w etapie głodu (`food <= 0`): „brak (zapasy)” / „brak garnizonu” / „−N% HP/turę (głód)”; provider `setSiegePanelStarveFracProvider` | etykieta 1:1; ułamek z **`SiegePanelDto.starveFrac?`** (NOWE pole, `viewmodel/types.ts` addytywnie; brak = 0 = web bez providera) — ZAŁOŻENIE **U3B-Z2** (wzór UI-2-B `milicjaRegen`); `atrycjaNext` w DTO zostaje, nieczytane |
+| `unitRecruitCard` | `initialQuantity`, `onQuantityChange`, licznik bez resetu po „Rekrutuj”; import `formatManpowerCompact` | 1:1 poza importem: `game/*` zakazane, `formatManpowerCompact` w pliku nieużywany (martwy import) — ZAŁOŻENIE **U3B-Z3** |
+| `newGameFlow` | ustawienie `auto_build_enabled` (glif `Au`, główna siatka), `NewGameParams.autoBuildEnabled` | 1:1; wiersz pojawia się, gdy `StaticCatalogDto.uiParams.nowa_gra.ustawienia` ma klucz (`rust-port/engine/data/ui-params.json` go nie ma — synchronizacja danych = P6, poza allowlistą) — ZAŁOŻENIE **U3B-Z4** |
+| `empireDetailTypes` | teksty „Spichlerz Królewski”, komentarz `capBonusPerMagazyn` | 1:1 |
+
+Mechanika (addytywnie): `repin-ui3-manifest.json` sekcja `portDomUI3B` (sha256 portu, sha256 weba `9b019a7d8`, `web86`, `portBase`,
+wyjątki `onlyWeb`/`onlyPort`); `verify-repin-ui3-copies.mjs` blok UI-3-B: SHA, DISJ, WEB, **DELTA** (zmiana portu względem
+`portBase` = zmiana weba `86d→9b0` jako multizbiór linii; wyjątki jawne i muszą występować); `repin-ui2-overlay.mjs --web3-dir`
+wstawia wersje weba `9b019a7d8` tych 5 plików. ZAŁOŻENIE **U3B-Z1**: wpisy przeniesione — `repin-ui2-overlay-ports/ui2c.json` −3
+(`empireDetailTypes`, `armyStackHud`, `unitRecruitCard`; `hud`/`empireDetailPanel`/`work-tax` zostają dla C/D),
+`repin-ui2-manifest.json` `portDomRefs` −1 (`siegeMapPanel`), `repin-ui2f-ported.json` `files` −1 (`newGameFlow`).
+Hooki kontrolera (provider głodu → DTO, zapamiętanie liczby rekrutów per miasto+typ, `autoBuildEnabled` do silnika) = P6.
+
+Testy r1 (kod końcowy): `tsc` 0, `npm run check` 0; `run-repin-ui3b` (Chromium 141, 1280×720 + 360×640): 173 sceny, 1049 kroków,
+18 PNG web = port bajtowo, pokrycie 55/55, błędów strony 0, różnic 0; fixtura `fixtures/repin_ui3b-web-vectors.json`
+(`webVectorsSha256=08e0c960…`), drugi niezależny `git archive origin/main` → fixtura bajtowo identyczna. `mutate-repin-ui3b` 27/27
+(22 harness + 5 bramka DELTA). Regresja (nakładka pin+UI-2+UI-3+UI-3-B / WEB86U3): L0 3861/0, L1A 3618/0, L2 1784/0 (354/150),
+C4 1649/0 (75), hud 909/0, cityux 164/0, newgame 0 różnic (8 przebiegów `--only-label`; pełny przebieg > 9,5 min — limit wywołania),
+`run-cycles` 6442/1623 (E-Z3, te same moduły), UI-2-A 2292/0, B 1356/0, C 752/0, D 797/0, E 183/0, E-cycles 9335/0, F 35/0,
+G 9216/0, UI-3-A 33×2/0.
+
+Obrona r2 (zarzuty Evaluatora N1–N3): sceny `ng-k4-ustawienia` i `ng-k4-autobuild-wl` mają dodatkowy zrzut `~row` (wiersz
+„Automatyzacja budowy” przewinięty do środka widoku, po zebraniu wektorów — wektory DOM bez zmian, `webVectorsSha256=08e0c960…`)
+oraz kontrolę `PIX-ROW` (zrzuty `~row` przed/po przełączeniu muszą się różnić); razem 22 PNG. Mutacja N2 (wiersz poza siatką)
+daje teraz `PIX_różnych=4`. `verify-repin-ui3-copies` bez `--no-git` zgłasza błąd, gdy WEB/DELTA sprawdzone < plików
+(płytki klon); z `--no-git` wypisuje jawne `DELTA NIE_ZMIERZONO`. Pole `note` w `ui2c.json` zaktualizowane (U3B-Z1).
+
+```bash
+node tools/dom-harness/run-repin-ui3b.mjs --web-dir "$WEB3" [--out fixtura.json] [--png-dir "$PNG"] [--kinds siege,recruit,stack,edt,ng]
+node tools/dom-harness/mutate-repin-ui3b.mjs --web-dir "$WEB3" --from 0 --to 8   # 8–11, 11–14, 14–15, 15–27 (< 10 min/wywołanie)
 ```

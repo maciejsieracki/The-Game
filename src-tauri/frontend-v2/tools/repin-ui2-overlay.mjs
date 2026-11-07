@@ -181,6 +181,22 @@ if (existsSync(ui3Url)) {
       }
       console.log(`repin-ui2-overlay: UI-3 ${key} plików=${sec.files.length} deps=${(sec.overlayDeps ?? []).length}`);
     }
+    // R-RUSTPORT-REPIN-WEB-UI-3-B-Q1 (addytywnie): porty DOM partii UI-3-B (`portDomUI3B`) — w odniesieniu wersja weba
+    // `9b019a7d8` (sha256 `webSha256`), port zostaje portem.
+    for (const f of ui3.portDomUI3B ?? []) {
+      const buf = readFileSync(join(resolve(web3), f.src));
+      const sha = createHash('sha256').update(buf).digest('hex');
+      if (sha !== f.webSha256 || buf.length !== f.webBytes) {
+        bad++;
+        console.error(`SHA UI-3-B ${f.src} web=${sha}/${buf.length} manifest=${f.webSha256}/${f.webBytes}`);
+        continue;
+      }
+      const dst = join(resolve(out), f.src);
+      mkdirSync(dirname(dst), { recursive: true });
+      writeFileSync(dst, buf);
+      console.log(`nakładka UI-3-B (port DOM) ${f.src} (${buf.length} B)`);
+    }
+    console.log(`repin-ui2-overlay: UI-3-B (R-RUSTPORT-REPIN-WEB-UI-3-B-Q1) plików=${(ui3.portDomUI3B ?? []).length}`);
   }
 }
 console.log(`repin-ui2-overlay: plików=${entries.length} portów=${portFiles} niezgodnych=${bad} out=${out}`);

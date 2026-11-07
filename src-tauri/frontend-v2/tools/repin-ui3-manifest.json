@@ -174,5 +174,150 @@
         "bytes": 18077
       }
     ]
-  }
+  },
+  "portDomUI3BNote": "R-RUSTPORT-REPIN-WEB-UI-3-B-Q1 (partia UI-3-B, addytywnie): pliki PORTU DOM przepięte na web pin (zmiana web86→pin przeniesiona do portu). Bramka verify-repin-ui3-copies: SHA portu, DISJ, WEB (sha256 źródła), DELTA (zmiana portu względem portBase = zmiana weba web86→pin jako multizbiór linii, wyjątki onlyWeb/onlyPort jawnie). Nakładka repin-ui2-overlay.mjs --web3-dir wstawia wersję weba pin. Patrz P5-REPIN-UI-2.md §11.6.",
+  "portDomUI3B": [
+    {
+      "path": "src/ui/armyStackHud.ts",
+      "src": "gra/src/ui/armyStackHud.ts",
+      "class": "PD",
+      "sha256": "785191ad0792cbb0161b8d76c88ff3e80be703740e190c9c38c075a4d01a8373",
+      "bytes": 20436,
+      "webSha256": "5458dfbb14c5ae71cc6603fa99065c02db8f23ba39f882da10dfbd831d76b840",
+      "webBytes": 20218,
+      "web86": "86d510c667268880414d693532ca012c9310589e",
+      "web86Sha256": "2f82439dc00f6422e2d573486e441a22cd4fc1aaf62f19b16f2862abc088faed",
+      "portBase": "dde5e90348c6d85d5530888bac4f68c939689c6c",
+      "portBaseSha256": "63abc4807d4d80da8cdffa872e9f4ebe4ca4004d8bc0badc6c0f3d255d0b8752",
+      "note": "port DOM UI-2-C (DTO UnitCardCombatDisplay/badges); UI-3-B: typ ArmyCommanderTitle z ./armyStackLabel (adapter UI-3-A) + pole picked"
+    },
+    {
+      "path": "src/ui/siegeMapPanel.ts",
+      "src": "gra/src/ui/siegeMapPanel.ts",
+      "class": "PD",
+      "sha256": "35c02dce0f38cbefff2a6247b881b056309d25c40e29ea97a0fee57888f2f3a1",
+      "bytes": 17550,
+      "webSha256": "23503b503d794901c3f9f883b3285b838a72c5f0b5f7031af6c78870c801a4e2",
+      "webBytes": 18019,
+      "web86": "86d510c667268880414d693532ca012c9310589e",
+      "web86Sha256": "18a2b0ae6e32a5189e0a71283a5d1eea5f0bbd636141fd733f202079bf226f9b",
+      "portBase": "dde5e90348c6d85d5530888bac4f68c939689c6c",
+      "portBaseSha256": "81995b94a0b1dbeeee479394f991e0fdf7fafccf8b8fb1380188c4dc3b555fe9",
+      "note": "port DOM UI-2-B (SiegePanelDto); UI-3-B: etykieta atrycji tylko w etapie głodu; ułamek z DTO starveFrac zamiast providera setSiegePanelStarveFracProvider (ZAŁOŻENIE U3B-Z2)",
+      "onlyWeb": [
+        [
+          "+",
+          "  const starveFrac = hungerStage && garnizon > 0 && starveFracProvider ? starveFracProvider() : 0;"
+        ],
+        [
+          "+",
+          "let starveFracProvider: (() => number) | null = null;"
+        ],
+        [
+          "+",
+          "/** Podpina ulamek maxHP tracony przez garnizon na ture glodu (zalezny od trudnosci; panel go nie zna). */"
+        ],
+        [
+          "+",
+          "export function setSiegePanelStarveFracProvider(fn: (() => number) | null): void {"
+        ],
+        [
+          "+",
+          "  starveFracProvider = fn;"
+        ],
+        [
+          "+",
+          "}"
+        ],
+        [
+          "+",
+          ""
+        ],
+        [
+          "+",
+          ""
+        ],
+        [
+          "−",
+          "  const atrycjaNext = garnizon > 0 ? Math.max(1, Math.floor(garnizon * 0.08)) : 0;"
+        ]
+      ],
+      "onlyPort": [
+        [
+          "+",
+          "  // REPIN UI-3-B (web `9b019a7d8` `:220-225`): ulamek maxHP na ture glodu z DTO (`SiegePanelDto.starveFrac`, producent Rust = P6;"
+        ],
+        [
+          "+",
+          "  // brak pola = 0 jak web bez podpietego `setSiegePanelStarveFracProvider`). `SiegePanelDto.atrycjaNext` (formula sprzed FALI) nieczytane."
+        ],
+        [
+          "+",
+          "  const starveFrac = hungerStage && garnizon > 0 ? (activePanel.starveFrac ?? 0) : 0;"
+        ],
+        [
+          "+",
+          "  const { food, garnizon, zuzycie, milicjaEst, playerCanStorm } = activePanel;"
+        ],
+        [
+          "−",
+          "  const { food, garnizon, zuzycie, atrycjaNext, milicjaEst, playerCanStorm } = activePanel;"
+        ]
+      ],
+      "onlyNote": "provider setSiegePanelStarveFracProvider -> pole DTO starveFrac (wzór UI-2-B milicjaRegen); atrycjaNext (stara formuła) nieczytane (U3B-Z2)"
+    },
+    {
+      "path": "src/ui/unitRecruitCard.ts",
+      "src": "gra/src/ui/unitRecruitCard.ts",
+      "class": "PD",
+      "sha256": "072f04ba31776f30ccc754cda2c92a03f6f3444506dede8bcc198f98a5cc7e61",
+      "bytes": 20876,
+      "webSha256": "5199324e9e68b4a53c9daa4cd35470bf1ec71df414b3aa3c6b221229a30631ea",
+      "webBytes": 20097,
+      "web86": "86d510c667268880414d693532ca012c9310589e",
+      "web86Sha256": "e41421c9d7c0ec9cbfec9c1e85a7a194a4472ef406e270d5737a3fac5bc6884d",
+      "portBase": "dde5e90348c6d85d5530888bac4f68c939689c6c",
+      "portBaseSha256": "bb690884faf8f18d062a606ad52ecf182d8243b4942ae753d4118165399f2185",
+      "note": "port DOM P5.3/UI-2-C; UI-3-B: initialQuantity/onQuantityChange, licznik bez resetu po Rekrutuj; martwy import formatManpowerCompact z game/manpower nieprzeniesiony (ZAŁOŻENIE U3B-Z3)",
+      "onlyWeb": [
+        [
+          "+",
+          "import { formatManpower, formatManpowerCompact } from '../game/manpower';"
+        ],
+        [
+          "−",
+          "import { formatManpower } from '../game/manpower';"
+        ]
+      ],
+      "onlyNote": "import game/* zakazany w porcie (formatManpower = lokalna kopia P5.3-Z6); dodany w webie formatManpowerCompact nieużywany w pliku (martwy import, U3B-Z3)"
+    },
+    {
+      "path": "src/ui/newGameFlow.ts",
+      "src": "gra/src/ui/newGameFlow.ts",
+      "class": "PD",
+      "sha256": "28f8d2f5fdc163a8f1d8566dcec95ce990693592ed1665099d3d4bd3d1e6f1d2",
+      "bytes": 127618,
+      "webSha256": "0ecaba855a19197d0b42ba60c0c1b5002ed0da35e8137c2e0a0aca910e67054c",
+      "webBytes": 124356,
+      "web86": "86d510c667268880414d693532ca012c9310589e",
+      "web86Sha256": "dd158388a047fd573919bfe17c08feee06e762008c1320da40fd039c7cf7c4ae",
+      "portBase": "dde5e90348c6d85d5530888bac4f68c939689c6c",
+      "portBaseSha256": "98441768e3fc000c6951078596288e157682b8931b2464665246667da28db74c",
+      "note": "port DOM P5.7 r2/UI-2-F; UI-3-B: ustawienie auto_build_enabled + NewGameParams.autoBuildEnabled (wiersz z StaticCatalogDto.uiParams; dane Rust = P6, ZAŁOŻENIE U3B-Z4)"
+    },
+    {
+      "path": "src/ui/empireDetailTypes.ts",
+      "src": "gra/src/ui/empireDetailTypes.ts",
+      "class": "PD",
+      "sha256": "6b453ca4f8b2003e132a532d4e11aec9bf040a7811b3948e6bd472f234db863c",
+      "bytes": 36704,
+      "webSha256": "3e2b1e9363b8dd12ee8912e340439eb60279466683bc250b22a77eb5294186de",
+      "webBytes": 36541,
+      "web86": "86d510c667268880414d693532ca012c9310589e",
+      "web86Sha256": "6dd58ace4864c3b59031ee865c6b947e75a440854c3560a2b8ce1885644fb5d9",
+      "portBase": "dde5e90348c6d85d5530888bac4f68c939689c6c",
+      "portBaseSha256": "7149a3535560d2ad6b835dec8b690fef50840e9ea46cb11a6a8e57541d5ac3ca",
+      "note": "port DOM P5.7 (typy DTO); UI-3-B: teksty Spichlerz Królewski + komentarz capBonusPerMagazyn"
+    }
+  ]
 }
