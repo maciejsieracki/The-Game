@@ -693,5 +693,35 @@
     "wartosc": 2,
     "sekcja": "§6 Dyplomacja",
     "opis": "R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (decyzja właściciela 2026-11-03): liczba tur od prośby AI o pokój (przegrywająca AI ↔ wygrywająca AI), po której pokój wchodzi w życie automatycznie (z maksymalną możliwą płatnością przegranego). Dotyczy WYŁĄCZNIE par AI↔AI zwykłych wojen; gracz i wojny wymuszone epok bez zmian. Czytane w gra/src/game/diplomacy-ai-forced-peace.ts."
+  },
+  "kupno_jednostki_rezerwa_tur_poziom1": {
+    "wartosc": 3,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Prosty: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
+  },
+  "kupno_jednostki_rezerwa_tur_poziom2": {
+    "wartosc": 3,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Normalny: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
+  },
+  "kupno_jednostki_rezerwa_tur_poziom3": {
+    "wartosc": 2,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Trudny: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
+  },
+  "kupno_jednostki_min_dochod_netto_poziom1": {
+    "wartosc": 0,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Prosty: Minimalny dochód netto Złota/turę (przychód − utrzymanie wojska i budynków) PO zakupie; poniżej AI nie kupuje jednostki. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
+  },
+  "kupno_jednostki_min_dochod_netto_poziom2": {
+    "wartosc": 0,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Normalny: Minimalny dochód netto Złota/turę (przychód − utrzymanie wojska i budynków) PO zakupie; poniżej AI nie kupuje jednostki. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
+  },
+  "kupno_jednostki_min_dochod_netto_poziom3": {
+    "wartosc": -2,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Trudny: Minimalny dochód netto Złota/turę (przychód − utrzymanie wojska i budynków) PO zakupie; poniżej AI nie kupuje jednostki. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
   }
 }
