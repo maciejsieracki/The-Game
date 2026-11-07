@@ -833,3 +833,6 @@ REPIN (web): FALA 527 — vite.config.ts (dane binarne poza JS) dotyczy tylko bu
 
 ## 2026-11-07 — Rust REPIN WEB po FALA 509–532 (web zakończony, dysk 11 GB, 0 aktywnych tematów Rust)
 Uruchomiono równolegle (Opus 5.5 medium, wszystkie etapy): R-RUSTPORT-REPIN-WEB-UI-3-Q1 (gra/src/ui, 23 pliki) i R-RUSTPORT-REPIN-WEB-RENDER-3-Q1 (gra/src/render, 9 plików: pule geometrii/materiałów, scalenie części jednostek, LOD). Baza web: origin/main 9b019a7d8. Priorytet: nowy temat webowy wstrzymuje kolejne rundy Rust.
+
+## 2026-11-07 — R-RUSTPORT-REPIN-WEB-RENDER-3-RUST-Q1 ZINTEGROWANE
+Operator (`460705906`,`4b654add5`) → Evaluator PASS-WITH-NOTES (0 zarzutów) → Final Control PASS (`707696397`); fast-forward `parity-v2` `8de507700` → `707696397`. L1: `pixel_ratio_max` medium 2.0; L2: `merge_decor` indeksowany (port `indexIdenticalVertices`, bit-w-bit, redukcja wierzchołków 1,45–5×); fixtury core regenerowane z webu `9b019a7d8`; cargo test renderer 466/0, fmt/clippy 0, 4 mutacje + M5/M6 wykryte, niezależny weryfikator OK. Otwarte: manifest C3 `repin-render3-scope.json` do aktualizacji (kotwice L1/L2 zamknięte — C3 celowo czerwony); indeks Uint16/Uint32 niepodpięty do uploadu wgpu (przy porcie uploadu); L3 (UnitRenderer, smallPartLod, unitStaticMerge, pule) po porcie kompozytora jednostek.
