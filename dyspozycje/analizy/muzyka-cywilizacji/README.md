@@ -24,7 +24,8 @@ asyria, fenicjanie): bez zmian (dotychczasowy utwór dyplomacji).
 
 ## Gdzie to jest w kodzie
 
-- Pliki gry (przekodowane, mp3 ~64 kbps negocjacje / 96 kbps przywitania, razem ~11,0 MiB):
+- Pliki gry (przekodowane, mp3 ~64 kbps negocjacje / 96 kbps przywitania, cisza na początku i końcu
+  ucięta poniżej −50 dB, razem ~10,7 MiB = 11 241 168 B):
   `gra/src/audio/utwory/dyplomacja/_civ/<civId>/<plik>.mp3`
 - Manifest: `gra/data/civ-music.json` — `civId → { greeting?: "plik.mp3", negotiation?: ["plik.mp3", …] }`
 - Wybór utworów (czysta funkcja): `gra/src/audio/civMusic.ts` (`resolveCivDiplomacyTracks`)
@@ -35,7 +36,8 @@ asyria, fenicjanie): bez zmian (dotychczasowy utwór dyplomacji).
 
 ## Jak dodać kolejną cywilizację (plik + wpis, bez zmian w kodzie)
 
-1. Przekoduj utwory: `ffmpeg -i wejscie.mp3 -vn -map_metadata -1 -c:a libmp3lame -b:a 64k -joint_stereo 1 wyjscie.mp3`
+1. Przekoduj utwory i utnij ciszę na początku/końcu (inaczej pętla ma przerwę ~1,5–2,7 s):
+   `ffmpeg -i wejscie.mp3 -vn -map_metadata -1 -af "silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05,areverse" -c:a libmp3lame -b:a 64k -joint_stereo 1 wyjscie.mp3`
    (negocjacje 64 kbps, przywitanie 96 kbps; budżet łączny wszystkich utworów ≤ ~12 MiB — sprawdza `civ-music-test.cjs`).
 2. Wrzuć do `gra/src/audio/utwory/dyplomacja/_civ/<civId>/` (civId = `ikonaId` z `civs.json`),
    nazwy np. `<civId>_przywitanie.mp3`, `<civId>_negocjacje.mp3`.

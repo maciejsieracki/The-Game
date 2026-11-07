@@ -37,9 +37,9 @@ const AI = 1;
 
 // czasy trwania (s) z ffprobe po przekodowaniu
 const DUR = {
-  grecyHello: 43.55, grecyNeg: 140.83,
-  inkNeg1: 149.13, inkNeg2: 145.08,
-  sumerHello: 38.56,
+  grecyHello: 40.75, grecyNeg: 139.34,
+  inkNeg1: 147.93, inkNeg2: 143.28,
+  sumerHello: 38.32,
   fallback: 29.31,
 };
 const near = (a, b) => Math.abs(a - b) < 0.6;
