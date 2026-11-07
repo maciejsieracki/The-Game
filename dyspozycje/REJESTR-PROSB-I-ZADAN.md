@@ -8846,3 +8846,6 @@ R-WEB-PERF-ENDTURN-RENDER-HUD-Q1 — PASS-WITH-NOTES (R4, kod 3c00d9edb): odrocz
 
 ### FALA 532 (2026-11-07, ROBOCZA 40dff84a, main 9b019a7d8)
 R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1 (wariant B, decyzja właściciela 2026-11-07) — PASS (Opus 5.5 wszystkie etapy): scalenie statycznych części żetonów jednostek. t.50: sterta po GC −27,8 MB (−16%), meshe 35 903→9 644, draw calls 1 192→863, renderLoop −30%, syncUnitsRender −42%; 475 żetonów −37,7 MB. Obraz 6/1/2 px (stanie/marsz/atak). NIE_ZMIERZONO: obraz w t.50; budowa żetonów od zera +27–46%. Raw MD5 zgodny.
+
+### FALA 533 (2026-11-07, ROBOCZA 09e75c36, main a66a8480c)
+R-WEB-GENERALS-OVER-LIMIT-Q1 — PASS-WITH-NOTES: nadmiar wodzów ponad limit epoki (zgłoszenie właściciela: 3 w jednej armii w brązie). PRZYCZYNA: pozycja `isGeneral` w kolejce rekrutacji przechodziła z miastem przy zmianie właściciela (podbój/cesja/aneksja/odbicie), a oba miejsca narodzin jednostki z kolejki (main.ts ~4284, ~37830) kopiowały flagę bez sprawdzania limitu. POPRAWKA: bramka narodzin + migracja wczytania (zostają najstarsi, młodsi tracą flagę wodza, jednostki zostają). Test niezmiennika 23/23 (baza pada), tsc 0, logic 213/213. NIE_ZMIERZONO: testy live w Chromium (INFRA), efekt na zapisie właściciela. Raw MD5 zgodny.
