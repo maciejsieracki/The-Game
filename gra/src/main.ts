@@ -878,7 +878,7 @@ import { isLivestockAllowed, isLamaDepositVisibleForCiv, hexHasHorseDeposit } fr
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { cloneObject3DMaterialsForTransient, disposeTransientObject3D } from './render/transientObjectResources';
-import { BattleScene } from './battle/battleScene';
+import { BattleScene, BATTLE_MAX_PER_SIDE } from './battle/battleScene';
 import { isBattleSceneOpen } from './battle/battleSceneOpen';
 import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset, addSiegeMachinesCount } from './battle/testBattle';
 import type { PresetName } from './battle/testBattle';
@@ -921,6 +921,7 @@ import {
   applyPostBattleMap,
   applyDefenderPreBattleRetreat,
   snapshotRosterPositions,
+  battleReserveNotice,
   findCityOnHex,
   applyCityCaptureAfterBattle,
   type MapBattleWinner,
@@ -31769,6 +31770,13 @@ async function boot(): Promise<void> {
           hidePreBattle();
           const atkLead = atkRosterRef[0]!;
           const defLead = defRosterRef[0]!;
+          {
+            const reserveNote = battleReserveNotice(
+              atkRosterRef.length, defRosterRef.length, BATTLE_MAX_PER_SIDE,
+              atkRosterRef[0]?.ownerId === 0 ? 'atk' : defRosterRef[0]?.ownerId === 0 ? 'def' : null,
+            );
+            if (reserveNote) showHintMessage(reserveNote, 5000);
+          }
           const atkBus = rosterToBattleUnits(atkRosterRef, 0xffd54a);
           const defBus = rosterToBattleUnits(defRosterRef, 0xc84040);
           setMood('bitwa');
@@ -31816,6 +31824,8 @@ async function boot(): Promise<void> {
                 battleQ: battleHex.q,
                 battleR: battleHex.r,
                 atkStart: atkStartSnap,
+                // R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: tylko wystawieni; rezerwa nietknieta.
+                battleEventLog: res.eventLog,
               },
               mapBattleSummaryMeta('manual'),
               () => {
@@ -32491,6 +32501,13 @@ async function boot(): Promise<void> {
         onAuto: () => { hidePreBattle(); doMapAutoResolveIncoming(); },
         onBattlefield: () => {
           hidePreBattle();
+          {
+            const reserveNote = battleReserveNotice(
+              atkRosterRef.length, defRosterRef.length, BATTLE_MAX_PER_SIDE,
+              atkRosterRef[0]?.ownerId === 0 ? 'atk' : defRosterRef[0]?.ownerId === 0 ? 'def' : null,
+            );
+            if (reserveNote) showHintMessage(reserveNote, 5000);
+          }
           const atkBus = rosterToBattleUnits(atkRosterRef, 0xc84040);
           const defBus = rosterToBattleUnits(defRosterRef, 0xffd54a);
           setMood('bitwa');
@@ -34611,6 +34628,7 @@ async function boot(): Promise<void> {
       hidePreBattle,
       applyMapBattleOutcomeWithSummary,
       clearBattleUiState: clearMapBattleUiState,
+      battleMaxPerSide: BATTLE_MAX_PER_SIDE,
       createBattleScene: (opts: BattleOpts) => new BattleScene(opts),
       armyHungerBattleOpts,
       goldDeficitBattleOpts,
