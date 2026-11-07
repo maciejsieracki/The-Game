@@ -32448,3 +32448,14 @@ Z R-WEB-MEMORY-STATIC-FOOTPRINT-Q1 (FALA 526): współdzielenie materiałów mod
 
 ## P-PAMIEC-SCALENIE-CZESCI-JEDNOSTEK-2026-11-06 · STATUS: **ODPOWIEDZIANE 2026-11-07 (właściciel: wdrożyć) → R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1** · WDROŻONE: FALA 532
 Scalenie statycznych części jednostek (prototyp, niewdrożony): sterta ok. −39 MB, draw calls 11 106 → 2 720 (475 żetonów), ale do 52/101/5 px z 1,6 mln różnicy (stanie/marsz/atak) i zmiana chowania drobnych części przy oddaleniu (SmallPartLod). Pytanie: wdrożyć (A: tak, tolerancja ≤ ~100 px) czy zostawić obraz identyczny piksel w piksel (B: nie)? Rekomendacja orkiestratora: A (zysk pamięci i klatek duży, różnica niewidoczna).
+
+## P-DECYZJE-ORKIESTRATORA-2026-11-06 — ODPOWIEDŹ WŁAŚCICIELA 2026-11-07 · STATUS: **ZAMKNIĘTE (zatwierdzone: wszystkie pozycje, bez zmian w grze)**
+Właściciel zatwierdził pozycje 1–5 (Emporion per trasa +1 slot; zmęczenie wojną karencja 40/100, pełne 200, ochrona 3 miasta; Cegielnia ×2 i mnożnik 1/1,5/2/2,5/3; stan banera z FALA 519 zastąpiony układem A w FALA 534). Pozycje 6–7: bez zmian.
+
+## ABC 2026-11-07 (sesja orkiestratora) · STATUS: **ZAMKNIĘTE — odpowiedzi właściciela zapisane**
+1. Rezerwa spoza limitu przy zdobyciu miasta: pytanie niezasadne — armia nie może przekroczyć limitu bitwy (500), wszystkie jednostki walczą → R-WEB-ARMY-STACK-LIMIT-Q1.
+2. Inkowie: oba utwory = negocjacje, bez powitania. Muzyka wdrażana teraz → R-WEB-DIPLO-CIV-MUSIC-Q1.
+3. Limit armii AI = wariant C (rezerwa utrzymania w zakupie) → R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1.
+4. Cud przechodzi na zdobywcę (wariant B); cuda nie mają stanu budowy → R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1.
+5. Asymetrie AI/gracz: naprawić wszystkie → R-WEB-AI-PLAYER-PARITY-FIXES-Q1.
+6. Panele boczne przesuwają się pod lewy baner → R-WEB-HUD-PANELS-BELOW-BANNER-Q1.
