@@ -80,7 +80,7 @@ check(
 
 check(
   'main.ts: diploInp przekazuje bronzeForceWarTargetId do DiplomacjaInputs',
-  /clusterForceWarTargetId,\s*\n\s*bronzeForceWarTargetId,\s*\n\s*\};/.test(mainSrc),
+  /clusterForceWarTargetId,\s*\n\s*bronzeForceWarTargetId,\s*\n/.test(mainSrc),
 );
 
 check(

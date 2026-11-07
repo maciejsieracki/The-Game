@@ -74,7 +74,7 @@ try {
   // R-WEB-ERA-WAR-COUNTER-Q1: globalny limit wojen epoki ZNIESIONY (null); zastąpiony licznikiem per cywilizacja.
   eq(M.WAR_RULES_PARAMS.maxEraForcedWarsPerEra, null, 'R3j parametr JSON maxEraForcedWarsPerEra = null (R-WEB-ERA-WAR-COUNTER-Q1, globalny limit zniesiony)');
   eq(M.WAR_RULES_PARAMS.maxEraForcedWarsPerCivPerEra, 1, 'R-WEB-ERA-WAR-COUNTER-Q1 parametr maxEraForcedWarsPerCivPerEra = 1');
-  eq(JSON.stringify(M.WAR_RULES_PARAMS.enabledForcedWarEras), '["stone"]', 'R-WEB-ERA-WAR-COUNTER-Q1 enabledForcedWarEras = ["stone"]');
+  eq(JSON.stringify(M.WAR_RULES_PARAMS.enabledForcedWarEras), '["stone","bronze","iron"]', 'R-WEB-ERA-ENABLE Q1 enabledForcedWarEras = [stone,bronze,iron]');
   eq(M.evaluateInterCivWarGate({ turn: 50, attackerEra: 1, attackerWarCount: 1, targetIsPlayer: true, targetEra: 1, targetWarCount: 0 }), 'stone_limit_attacker_r2', 'R2 nadal blokuje AI w Kamieniu z 1 wojną (także wobec gracza)');
   eq(M.evaluateInterCivWarGate({ turn: 50, attackerEra: 2, attackerWarCount: 5, targetIsPlayer: false, targetEra: 2, targetWarCount: 5 }), 'ok', 'R2 od Brązu bez limitu');
 

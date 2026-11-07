@@ -90,14 +90,14 @@ const GUARDS = {
     s => /playerEpochWarEnabled: settingValue\('player_epoch_war'\) !== 'Wyłączona',/.test(s.newgame),
   ],
   newGameRow: [
-    'newGameFlow.ts: slot player_epoch_war zastąpiony udziałem lądu w głównej siatce',
+    'newGameFlow.ts: siatka główna = udział lądu (lewa) + wojna epoki (prawa, wg układu właściciela R-WEB-NEWGAME-MENU-REORDER-Q1), bez deals_end_turn_gate',
     s => {
       const start = s.newgame.indexOf('function renderSettStep(');
       const end = s.newgame.indexOf('\nfunction ', start + 1);
       const step = start >= 0 ? s.newgame.slice(start, end < 0 ? undefined : end) : '';
       const renderList = step.slice(step.indexOf('renderSettingRows(layout,'), step.indexOf('renderAiCivPicker(layout)'));
       return renderList.includes("'landFraction'")
-        && !renderList.includes("'player_epoch_war'")
+        && renderList.includes("'player_epoch_war'")
         && !renderList.includes("'deals_end_turn_gate'");
     },
   ],
@@ -139,8 +139,8 @@ const MUTATIONS = [
   ['nowa gra domyslnie OFF', 'main', 'playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;', 'playerEpochWarEnabled = params.playerEpochWarEnabled ?? false;', 'startDefaultOn'],
   ['stary zapis = ON', 'main', 'playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) === true;', 'playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) !== false;', 'loadOldSaveOff'],
   ['parametr nowej gry usuniety', 'newgame', "playerEpochWarEnabled: settingValue('player_epoch_war') !== 'Wyłączona',", '', 'newGameParam'],
-  ['udział lądu w głównej siatce usunięty', 'newgame', "    'landFraction',\n", '', 'newGameRow'],
-  ['slot lądu ponownie zajęty przez przełącznik wojny epoki', 'newgame', "    'landFraction',\n", "    'player_epoch_war',\n", 'newGameRow'],
+  ['udział lądu w głównej siatce usunięty', 'newgame', "'landFraction', 'cityStateDifficulty',", "'cityStateDifficulty',", 'newGameRow'],
+  ['slot lądu ponownie zajęty przez przełącznik wojny epoki', 'newgame', "'landFraction', 'cityStateDifficulty',", "'player_epoch_war', 'cityStateDifficulty',", 'newGameRow'],
   ['gracz nie-pierwszy w common', 'common', 'if (playerFirst && playerFirstPartnerId !== null && playerFirstPartner !== null)', 'if (false)', 'playerFirstInCommon'],
 ];
 
