@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "0bcceb23014792bdc595205515466001",
-  "bundleSha256": "53754f2e3690c1cab6fa800009683987a0b7e706cf97694ba9097e98dff16622",
-  "bundleBytes": 70672399,
+  "bundleMd5": "b3bc8539affad9817fc706513c99ae8c",
+  "bundleSha256": "8cce198c2bd2a52914e9ec856dfdb348dbc81f8727937896c04241069be53162",
+  "bundleBytes": 70672426,
   "sourceSnapshot": {
-    "source": "ERAWAR3 FC 5e75df1bf na origin/main",
+    "source": "HUDPAN FC 7127e1672 na origin/main",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 536: enabledForcedWarEras = [stone, bronze, iron] (wcześniej tylko Kamień przez commit 1db3e99b4); próg 25 tur i licznik 1 wojna epoki na cywilizację i epokę bez zmian; testy bez SKIP; nowy era-war-all-eras-test (3 epoki)"
+    "FALA 537: SIDE_PANEL_TOP = var(--civ-hud-toolbar-top,104px): panele Miasta/Wojsko, Dyplomacja, Badania (picker), Civpedia startują pod dolną krawędzią lewego banera (dynamicznie z fitHudTopbar), w trybie 1-liniowym przesunięcie 0; wysokość paneli maleje o przesunięcie"
   ],
   "verification": [
-    "era-war-all-eras 10/0, war-rules-multiwar 57/0, war-era-counter 82/0, guardy iron/bronze/epoch-first 35/22/34 0 fail, logic-test 213/213, tsc 0; FC PASS-WITH-NOTES"
+    "hud-panels-below-banner 119/0 (mutacja 93/26), hud-topbar-layout-a 144/0, logic-test 213/213, tsc 0; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "testy live w przeglądarce (wybuch wojny Brązu/Żelaza w realnej grze) NIE_ZMIERZONO w workflow (limit czasu narzędzia); weryfikacja po wdrożeniu"
+    "niezweryfikowane w pełnej grze (main.ts); panel wydarzeń po prawej, minimapLayout i modale poza zakresem"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-07T18:23:34",
+  "hubGeneratedAt": "2026-11-07T19:30:26",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "0bcceb23014792bdc595205515466001",
-      "sizeBytes": 70672399
+      "md5": "b3bc8539affad9817fc706513c99ae8c",
+      "sizeBytes": 70672426
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "0bcceb23014792bdc595205515466001",
-      "sizeBytes": 70672399
+      "md5": "b3bc8539affad9817fc706513c99ae8c",
+      "sizeBytes": 70672426
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "0bcceb23014792bdc595205515466001",
-      "sizeBytes": 70672399
+      "md5": "b3bc8539affad9817fc706513c99ae8c",
+      "sizeBytes": 70672426
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "0bcceb23014792bdc595205515466001",
-      "sizeBytes": 70672399
+      "md5": "b3bc8539affad9817fc706513c99ae8c",
+      "sizeBytes": 70672426
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "0bcceb23014792bdc595205515466001",
-      "sizeBytes": 70672399
+      "md5": "b3bc8539affad9817fc706513c99ae8c",
+      "sizeBytes": 70672426
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "0bcceb23014792bdc595205515466001",
-      "sizeBytes": 70672399
+      "md5": "b3bc8539affad9817fc706513c99ae8c",
+      "sizeBytes": 70672426
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "0bcceb23014792bdc595205515466001",
-      "sizeBytes": 70672399
+      "md5": "b3bc8539affad9817fc706513c99ae8c",
+      "sizeBytes": 70672426
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "0bcceb23014792bdc595205515466001",
-      "sizeBytes": 70672399
+      "md5": "b3bc8539affad9817fc706513c99ae8c",
+      "sizeBytes": 70672426
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "0bcceb23014792bdc595205515466001",
-      "sizeBytes": 70672399
+      "md5": "b3bc8539affad9817fc706513c99ae8c",
+      "sizeBytes": 70672426
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "0bcceb23014792bdc595205515466001",
-      "sizeBytes": 70672399
+      "md5": "b3bc8539affad9817fc706513c99ae8c",
+      "sizeBytes": 70672426
     }
   ],
-  "md5": "0bcceb23014792bdc595205515466001",
+  "md5": "b3bc8539affad9817fc706513c99ae8c",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

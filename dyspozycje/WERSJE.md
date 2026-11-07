@@ -1,3 +1,9 @@
+## ROBOCZA b3bc8539 -- 2026-11-06 -- FALA 537: panele boczne startują pod lewym banerem HUD (testowa)
+
+- SIDE_PANEL_TOP = var(--civ-hud-toolbar-top,104px): panele Miasta/Wojsko, Dyplomacja, Badania (picker), Civpedia startują pod dolną krawędzią lewego banera (dynamicznie z fitHudTopbar), w trybie 1-liniowym przesunięcie 0; wysokość paneli maleje o przesunięcie
+- Weryfikacja: hud-panels-below-banner 119/0 (mutacja 93/26), hud-topbar-layout-a 144/0, logic-test 213/213, tsc 0; FC PASS-WITH-NOTES
+- Limity: niezweryfikowane w pełnej grze (main.ts); panel wydarzeń po prawej, minimapLayout i modale poza zakresem
+
 ## ROBOCZA 0bcceb23 -- 2026-11-06 -- FALA 536: wojny epoki także w Brązie i Żelazie (testowa)
 
 - enabledForcedWarEras = [stone, bronze, iron] (wcześniej tylko Kamień przez commit 1db3e99b4); próg 25 tur i licznik 1 wojna epoki na cywilizację i epokę bez zmian; testy bez SKIP; nowy era-war-all-eras-test (3 epoki)
