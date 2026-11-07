@@ -209,6 +209,13 @@ for (const f of man.portDomUI3B ?? []) {
   }
 }
 if (man.portDomUI3B) console.log(`verify-repin-ui3-copies: portDomUI3B plików=${pdB} web_sprawdzone=${pdWeb} delta_sprawdzone=${pdDelta}`);
+// Q1 r2 (zarzut Evaluatora N3): bez `--no-git` każdy plik portDomUI3B MUSI przejść WEB i DELTA — brak obiektu git
+// (np. płytki klon) to błąd bramki, nie cichy EXIT 0. `--no-git` = jawny NIE_ZMIERZONO.
+if (man.portDomUI3B && !noGit) {
+  if (pdWeb < pdB) fail(`WEB portDomUI3B sprawdzone ${pdWeb}/${pdB} (brak źródła weba — git fetch origin main albo --web-dir)`);
+  if (pdDelta < pdB) fail(`DELTA portDomUI3B sprawdzone ${pdDelta}/${pdB} (brak historii git — git fetch / pełny klon)`);
+}
+if (man.portDomUI3B && noGit && pdDelta < pdB) console.log(`verify-repin-ui3-copies: portDomUI3B DELTA NIE_ZMIERZONO ${pdB - pdDelta}/${pdB} (--no-git)`);
 if (!webDir && noGit) console.log('verify-repin-ui3-copies: GIT/ADAPTER NIE_ZMIERZONO (--no-git bez --web-dir)');
 console.log(`verify-repin-ui3-copies: pin=${man.pin.slice(0, 9)} kopii=${copies} źródło_sprawdzone=${gitChecked} adapterów=${man.adapters.length} adapter_sprawdzone=${adChecked} bloków=${blocks} deps=${deps} niezgodnych=${bad}`);
 process.exitCode = bad === 0 ? 0 : 1;

@@ -1,7 +1,7 @@
 {
   "topic": "R-RUSTPORT-REPIN-UI-2-C-Q1",
   "pin": "86d510c667268880414d693532ca012c9310589e",
-  "note": "Pliki webu przepięte PORTEM DOM w partii UI-2-C (src/ui/{hud,empireDetailPanel,empireDetailTypes,armyStackHud,unitRecruitCard}.ts) + nowa zależność webu game/work-tax.ts (import main empireDetailPanel.ts:17, brak w pinie edb8fb56). Do odniesienia starszych harnessów (repin-ui2-overlay.mjs).",
+  "note": "Pliki webu przepięte PORTEM DOM w partii UI-2-C (src/ui/{hud,empireDetailPanel}.ts) + nowa zależność webu game/work-tax.ts (import main empireDetailPanel.ts:17, brak w pinie edb8fb56). Do odniesienia starszych harnessów (repin-ui2-overlay.mjs). empireDetailTypes/armyStackHud/unitRecruitCard (też UI-2-C) przeniesione do repin-ui3-manifest.json portDomUI3B (R-RUSTPORT-REPIN-WEB-UI-3-B-Q1, U3B-Z1).",
   "files": [
     { "src": "gra/src/ui/hud.ts", "sha256": "74495b7b111ff8efea740927191fde75ada629fa296345e162fcdb9334e1e1f0", "bytes": 90402 },
     { "src": "gra/src/ui/empireDetailPanel.ts", "sha256": "798c7a14d571c3334f02c76a6829476dd47f6bf2df950428d93b67dcaee91b5c", "bytes": 272126 },

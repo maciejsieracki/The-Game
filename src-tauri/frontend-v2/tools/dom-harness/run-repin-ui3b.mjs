@@ -394,9 +394,9 @@ const DATA = { STACKS };
 /* ── Scenariusze kreatora (interpreter jak `run-repin-ui2f.mjs`) ───────────────────────────────────────── */
 const S4 = [['show'], ['click', '.cta-hero'], ['nav'], ['nav']];
 const NG_SCEN = [
-  { name: 'ng-k4-ustawienia', ops: S4, shot: true, expect: [['.sett-grid .srow', 13], ['text', 'Automatyzacja budowy'], ['glyph', 'Au']] },
+  { name: 'ng-k4-ustawienia', ops: S4, shot: true, scrollTo: 'Automatyzacja budowy', expect: [['.sett-grid .srow', 13], ['text', 'Automatyzacja budowy'], ['glyph', 'Au']] },
   { name: 'ng-k4-start-domyslne', ops: [...S4, ['nav']], expect: [['log', '"autoBuildEnabled":false']] },
-  { name: 'ng-k4-autobuild-wl', ops: [...S4, ['row', 'Automatyzacja budowy', 1, 1]], shot: true, expect: [['text', 'Włączona']] },
+  { name: 'ng-k4-autobuild-wl', ops: [...S4, ['row', 'Automatyzacja budowy', 1, 1]], shot: true, scrollTo: 'Automatyzacja budowy', expect: [['text', 'Włączona']] },
   { name: 'ng-k4-autobuild-wl-start', ops: [...S4, ['row', 'Automatyzacja budowy', 1, 1], ['nav']], expect: [['log', '"autoBuildEnabled":true']] },
   { name: 'ng-k4-autobuild-2x-start', ops: [...S4, ['row', 'Automatyzacja budowy', 0, 2], ['nav']], expect: [['log', '"autoBuildEnabled":false']] },
   { name: 'ng-k4-autobuild-lewo-start', ops: [...S4, ['row', 'Automatyzacja budowy', 0, 1], ['nav']], expect: [['log', '"autoBuildEnabled":true']] },
@@ -574,6 +574,20 @@ async function runNewGame(browser, side, dir, errs, shots) {
         states.push(JSON.stringify({ ...d, counts }));
         if (sc.shot) shots.push({ side, key: `${sc.name}@${vp.width}x${vp.height}`, png: await page.screenshot({ animations: 'disabled', caret: 'hide', style: SHOT_STYLE }) });
       }
+      // Q1 r2 (zarzut Evaluatora N1): wiersz „Automatyzacja budowy” leży poniżej widocznej części okna —
+      // osobny zrzut `~row` po przewinięciu wiersza do środka widoku, PO zebraniu wektorów (wektory DOM bez zmian);
+      // brak wiersza = zrzut bez przewinięcia (wtedy różni się od webu, w którym wiersz jest).
+      if (sc.shot && sc.scrollTo) {
+        for (const vp of VIEWPORTS) {
+          await page.setViewportSize(vp);
+          await page.evaluate(async (lbl) => {
+            const row = [...document.querySelectorAll('.civ-newgame .sett-grid .srow')].find((r) => (r.querySelector('.sl')?.textContent ?? '').trim() === lbl);
+            if (row) row.scrollIntoView({ block: 'center', inline: 'nearest' });
+            await new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+          }, sc.scrollTo);
+          shots.push({ side, key: `${sc.name}~row@${vp.width}x${vp.height}`, png: await page.screenshot({ animations: 'disabled', caret: 'hide', style: SHOT_STYLE }) });
+        }
+      }
       vec[sc.name] = states;
       await page.close();
     }
@@ -699,6 +713,17 @@ try {
     }
   }
   diffs += pixDiff;
+  // Q1 r2 (N1): zrzut `~row` przed i po przełączeniu „Automatyzacja budowy” MUSI się różnić (inaczej PNG nie widzi wiersza).
+  if (KINDS.has('ng')) {
+    for (const vp of VIEWPORTS) {
+      const vk = `${vp.width}x${vp.height}`;
+      const a = webShots.find((s) => s.key === `ng-k4-ustawienia~row@${vk}`);
+      const b = webShots.find((s) => s.key === `ng-k4-autobuild-wl~row@${vk}`);
+      const same = !a || !b || Buffer.compare(a.png, b.png) === 0;
+      console.log(`PIX-ROW ${vk} ustawienia~row vs autobuild-wl~row: ${same ? 'IDENTYCZNE (BŁĄD — zrzut nie obejmuje wiersza)' : 'różne (wiersz widoczny na zrzucie)'}`);
+      if (same) diffs++;
+    }
+  }
   const checks = coverage(web);
   const coverFail = checks.filter(([, ok]) => !ok);
   for (const [n] of coverFail) console.log(`COVER-FAIL ${n}`);

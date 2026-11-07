@@ -830,6 +830,12 @@ C4 1649/0 (75), hud 909/0, cityux 164/0, newgame 0 różnic (8 przebiegów `--on
 `run-cycles` 6442/1623 (E-Z3, te same moduły), UI-2-A 2292/0, B 1356/0, C 752/0, D 797/0, E 183/0, E-cycles 9335/0, F 35/0,
 G 9216/0, UI-3-A 33×2/0.
 
+Obrona r2 (zarzuty Evaluatora N1–N3): sceny `ng-k4-ustawienia` i `ng-k4-autobuild-wl` mają dodatkowy zrzut `~row` (wiersz
+„Automatyzacja budowy” przewinięty do środka widoku, po zebraniu wektorów — wektory DOM bez zmian, `webVectorsSha256=08e0c960…`)
+oraz kontrolę `PIX-ROW` (zrzuty `~row` przed/po przełączeniu muszą się różnić); razem 22 PNG. Mutacja N2 (wiersz poza siatką)
+daje teraz `PIX_różnych=4`. `verify-repin-ui3-copies` bez `--no-git` zgłasza błąd, gdy WEB/DELTA sprawdzone < plików
+(płytki klon); z `--no-git` wypisuje jawne `DELTA NIE_ZMIERZONO`. Pole `note` w `ui2c.json` zaktualizowane (U3B-Z1).
+
 ```bash
 node tools/dom-harness/run-repin-ui3b.mjs --web-dir "$WEB3" [--out fixtura.json] [--png-dir "$PNG"] [--kinds siege,recruit,stack,edt,ng]
 node tools/dom-harness/mutate-repin-ui3b.mjs --web-dir "$WEB3" --from 0 --to 8   # 8–11, 11–14, 14–15, 15–27 (< 10 min/wywołanie)
