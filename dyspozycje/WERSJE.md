@@ -1,3 +1,9 @@
+## ROBOCZA 0bcceb23 -- 2026-11-06 -- FALA 536: wojny epoki także w Brązie i Żelazie (testowa)
+
+- enabledForcedWarEras = [stone, bronze, iron] (wcześniej tylko Kamień przez commit 1db3e99b4); próg 25 tur i licznik 1 wojna epoki na cywilizację i epokę bez zmian; testy bez SKIP; nowy era-war-all-eras-test (3 epoki)
+- Weryfikacja: era-war-all-eras 10/0, war-rules-multiwar 57/0, war-era-counter 82/0, guardy iron/bronze/epoch-first 35/22/34 0 fail, logic-test 213/213, tsc 0; FC PASS-WITH-NOTES
+- Limity: testy live w przeglądarce (wybuch wojny Brązu/Żelaza w realnej grze) NIE_ZMIERZONO w workflow (limit czasu narzędzia); weryfikacja po wdrożeniu
+
 ## ROBOCZA 2ba866b0 -- 2026-11-06 -- FALA 535: bitwa: jednostki spoza limitu 120 nie znikają po bitwie (testowa)
 
 - wynik bitwy ręcznej przekazuje pełny log zdarzeń (main.ts, mapFieldBattle.ts), więc niewystawione jednostki (rezerwa) zostają nietknięte; weterani tylko dla walczących; komunikat przed bitwą o jednostkach w rezerwie; limit 120 bez zmian
