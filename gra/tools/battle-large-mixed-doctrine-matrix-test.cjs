@@ -48,7 +48,7 @@ async function loadBattleScene() {
 
 // The base matrix is the agreed 42-per-side gameplay case. Scale 2 is a
 // crowded static-occupancy stress fixture (84 per side), kept below the
-// production MAX_PER_SIDE=120 cap; avoid synthetic rosters beyond that.
+// production MAX_PER_SIDE=500 cap (R-WEB-BATTLE-CAP-500-Q1; 500v500 is covered by tools/battle-cap-500-test.cjs).
 const rosterScale = Math.max(1, Math.min(2, Number.parseInt(process.env.BTF_ROSTER_SCALE || '1', 10) || 1));
 const roles = [
   ...Array.from({ length: 14 * rosterScale }, () => 'infantry'),

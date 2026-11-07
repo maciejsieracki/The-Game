@@ -1,7 +1,7 @@
 'use strict';
 /**
  * R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1
- * Niezmiennik: jednostki spoza limitu pola bitwy (MAX_PER_SIDE=120) NIE znikaja po bitwie.
+ * Niezmiennik: jednostki spoza limitu pola bitwy (MAX_PER_SIDE=500 (R-WEB-BATTLE-CAP-500-Q1; wczesniej 120)) NIE znikaja po bitwie.
  * node gra/tools/battle-undeployed-units-test.cjs
  */
 const esbuild = require('esbuild');
@@ -26,7 +26,9 @@ function assert(c, m) {
   else { fail++; console.error('FAIL:', m); }
 }
 
-const CAP = 120;
+const CAP = 500; // = MAX_PER_SIDE (battleScene.ts); rozmiary skladow liczone wzgledem CAP
+const A = CAP + 180; // 'duzy' sklad ponad limit
+const D = CAP + 80;  // 'mniejszy' sklad ponad limit
 const isPassableHex = () => true;
 
 function mk(prefix, owner, n, q, r) {
@@ -67,45 +69,45 @@ function runManual({ nAtk, nDef, atkSurvive, defSurvive, winner, useDeployedLog,
   };
 }
 
-// 1) Bitwa reczna: gracz atakuje 300 vs 200, 100 z 120 wystawionych przezywa, wygrywa.
+// 1) Bitwa reczna: gracz atakuje A vs D (680 vs 580), 100 z CAP wystawionych przezywa, wygrywa.
 {
-  const r = runManual({ nAtk: 300, nDef: 200, atkSurvive: 100, defSurvive: 0, winner: 'atakujacy', useDeployedLog: true });
-  assert(r.own.length === 300 - 20, `reczna atak: 300-20=280 (jest ${r.own.length})`);
-  assert(r.enemy.length === 200 - 120, `reczna atak: wrog traci tylko wystawionych (zostaje ${r.enemy.length}, oczek. 80)`);
-  assert(r.atk.slice(120).every(u => r.units.includes(u) && u.hp === 100), 'niewystawieni atakujacy: te same ID i pelne HP');
-  assert(r.def.slice(120).every(u => r.units.includes(u) && u.hp === 100), 'niewystawieni obroncy: nietknieci');
+  const r = runManual({ nAtk: A, nDef: D, atkSurvive: 100, defSurvive: 0, winner: 'atakujacy', useDeployedLog: true });
+  assert(r.own.length === A - (CAP - 100), `reczna atak: A-(CAP-100) (jest ${r.own.length})`);
+  assert(r.enemy.length === D - CAP, `reczna atak: wrog traci tylko wystawionych (zostaje ${r.enemy.length}, oczek. ${D - CAP})`);
+  assert(r.atk.slice(CAP).every(u => r.units.includes(u) && u.hp === 100), 'niewystawieni atakujacy: te same ID i pelne HP');
+  assert(r.def.slice(CAP).every(u => r.units.includes(u) && u.hp === 100), 'niewystawieni obroncy: nietknieci');
 }
-// 2) Obrona miasta: obronca (300) wygrywa z atakujacym (200); rezerwa obu stron nietknieta.
+// 2) Obrona miasta: obronca (A) wygrywa z atakujacym (D); rezerwa obu stron nietknieta.
 // (Przy WYGRANEJ atakujacego istniejaca regula wipeDefenderOnCityCenter usuwa cala zaloge miasta
 // -- rowniez ocalalych -- to zasada zdobycia miasta, nie ta usterka; patrz raport.)
 {
-  const r = runManual({ nAtk: 200, nDef: 300, atkSurvive: 0, defSurvive: 50, winner: 'obronca', useDeployedLog: true, cityDefense: true });
-  assert(r.enemy.length === 300 - 70, `obrona miasta: obronca 300-70=230 (jest ${r.enemy.length})`);
-  assert(r.own.length === 200 - 120 && r.atk.slice(120).every(u => r.units.includes(u)), 'obrona miasta: atakujacy traci tylko 120 wystawionych');
-  assert(r.def.slice(120).every(u => r.units.includes(u) && u.hp === 100), 'obrona miasta: rezerwa obroncy zachowana (ten sam ID, pelne HP)');
+  const r = runManual({ nAtk: D, nDef: A, atkSurvive: 0, defSurvive: 50, winner: 'obronca', useDeployedLog: true, cityDefense: true });
+  assert(r.enemy.length === A - (CAP - 50), `obrona miasta: obronca A-(CAP-50) (jest ${r.enemy.length})`);
+  assert(r.own.length === D - CAP && r.atk.slice(CAP).every(u => r.units.includes(u)), 'obrona miasta: atakujacy traci tylko wystawionych (CAP)');
+  assert(r.def.slice(CAP).every(u => r.units.includes(u) && u.hp === 100), 'obrona miasta: rezerwa obroncy zachowana (ten sam ID, pelne HP)');
 }
 // 3) Przegrana atakujacego: odwrot na heks startowy, rezerwa nie ginie
 {
-  const r = runManual({ nAtk: 300, nDef: 200, atkSurvive: 10, defSurvive: 90, winner: 'obronca', useDeployedLog: true });
-  assert(r.own.length === 300 - 110, `przegrana: 300-110=190 (jest ${r.own.length})`);
-  assert(r.atk.slice(120).every(u => r.units.includes(u) && u.q === 10 && u.r === 10), 'przegrana: rezerwa zostaje na hexie startowym');
+  const r = runManual({ nAtk: A, nDef: D, atkSurvive: 10, defSurvive: 90, winner: 'obronca', useDeployedLog: true });
+  assert(r.own.length === A - (CAP - 10), `przegrana: A-(CAP-10) (jest ${r.own.length})`);
+  assert(r.atk.slice(CAP).every(u => r.units.includes(u) && u.q === 10 && u.r === 10), 'przegrana: rezerwa zostaje na hexie startowym');
 }
 // 4) Remis
 {
-  const r = runManual({ nAtk: 300, nDef: 200, atkSurvive: 60, defSurvive: 60, winner: 'remis', useDeployedLog: true });
-  assert(r.own.length === 300 - 60 && r.enemy.length === 200 - 60, 'remis: tylko straty wystawionych');
+  const r = runManual({ nAtk: A, nDef: D, atkSurvive: 60, defSurvive: 60, winner: 'remis', useDeployedLog: true });
+  assert(r.own.length === A - (CAP - 60) && r.enemy.length === D - (CAP - 60), 'remis: tylko straty wystawionych');
 }
 // 5) Dokumentacja mechanizmu bledu: pelny log (stara sciezka) kasuje rezerwe
 {
-  const r = runManual({ nAtk: 300, nDef: 200, atkSurvive: 100, defSurvive: 0, winner: 'atakujacy', useDeployedLog: false });
+  const r = runManual({ nAtk: A, nDef: D, atkSurvive: 100, defSurvive: 0, winner: 'atakujacy', useDeployedLog: false });
   assert(r.own.length === 100, `mechanizm bledu: pelny log kasuje rezerwe (zostalo ${r.own.length} == 100)`);
 }
-// 6) Bitwa automatyczna (bez limitu 120, pelny sklad w logu): straty procentowe
-// dotykaja calego skladu, takze jednostek o indeksie >=120. Brak wystawiania w auto.
+// 6) Bitwa automatyczna (bez limitu, pelny sklad w logu): straty procentowe
+// dotykaja calego skladu, takze jednostek o indeksie >= CAP. Brak wystawiania w auto.
 {
   const mkAuto = () => {
-    const atk = mk('a', 0, 300, 10, 10);
-    const def = mk('d', 1, 200, 11, 10);
+    const atk = mk('a', 0, A, 10, 10);
+    const def = mk('d', 1, D, 11, 10);
     return { atk, def, units: [...atk, ...def] };
   };
   const runAuto = (env, lossAtkPct, lossDefPct) => {
@@ -123,36 +125,36 @@ function runManual({ nAtk, nDef, atkSurvive, defSurvive, winner, useDeployedLog,
   // 6a) 0% strat -> nikt nie ginie i nikt nie traci HP
   const e0 = mkAuto();
   runAuto(e0, 0, 0);
-  assert(e0.units.filter(u => u.ownerId === 0).length === 300, 'auto 0%: 300 zostaje');
+  assert(e0.units.filter(u => u.ownerId === 0).length === A, 'auto 0%: caly sklad zostaje');
   assert(e0.units.every(u => u.hp === 100), 'auto 0%: pelne HP');
-  // 6b) 60% strat atakujacego -> straty realne i rozlozone na caly sklad (>=120)
+  // 6b) 60% strat atakujacego -> straty realne i rozlozone na caly sklad (>= CAP)
   const e1 = mkAuto();
   const before = e1.atk.map(u => u.hp);
   runAuto(e1, 0.6, 0); // lossAtkPct to ulamek (0..1), jak w auto-battle-power.ts
   const aliveOwn = e1.units.filter(u => u.ownerId === 0);
-  const dead = 300 - aliveOwn.length;
+  const dead = A - aliveOwn.length;
   const hpLoss = e1.atk.reduce((a, u, i) => a + (before[i] - (u.hp ?? 0)), 0);
   assert(dead > 0 || hpLoss > 0, `auto 60%: sa realne straty (dead=${dead}, hpLoss=${hpLoss})`);
-  assert(dead < 300, `auto 60%: nie wszyscy gina (dead=${dead})`);
-  assert(aliveOwn.length === 300 - dead, 'auto 60%: suma = 300 - straty');
-  const hitBeyondCap = e1.atk.slice(120).some((u, i) => {
-    const idx = 120 + i;
+  assert(dead < A, `auto 60%: nie wszyscy gina (dead=${dead})`);
+  assert(aliveOwn.length === A - dead, 'auto 60%: suma = sklad - straty');
+  const hitBeyondCap = e1.atk.slice(CAP).some((u, i) => {
+    const idx = CAP + i;
     return !e1.units.includes(u) || u.hp < before[idx];
   });
-  assert(hitBeyondCap, 'auto 60%: straty dotykaja jednostek spoza limitu 120 (pelny sklad, bez ciecia)');
+  assert(hitBeyondCap, 'auto 60%: straty dotykaja jednostek spoza limitu (CAP) (pelny sklad, bez ciecia)');
   assert(e1.def.every(u => e1.units.includes(u) && u.hp === 100), 'auto 60%: obrona nietknieta gdy lossDefPct=0');
 }
 // 7) Weterani: rezerwa nie dostaje wygranej
 {
-  const r = runManual({ nAtk: 300, nDef: 200, atkSurvive: 100, defSurvive: 0, winner: 'atakujacy', useDeployedLog: true });
+  const r = runManual({ nAtk: A, nDef: D, atkSurvive: 100, defSurvive: 0, winner: 'atakujacy', useDeployedLog: true });
   assert(r.atk.slice(0, 100).every(u => u.battlesSurvived === 1), 'weterani: walczacy +1');
-  assert(r.atk.slice(120).every(u => (u.battlesSurvived ?? 0) === 0), 'weterani: rezerwa bez +1');
+  assert(r.atk.slice(CAP).every(u => (u.battlesSurvived ?? 0) === 0), 'weterani: rezerwa bez +1');
 }
 // 8) Komunikat o rezerwie
-assert(battleReserveNotice(300, 200, 120, 'atk') === '180 jednostek w rezerwie (nie wejdą do bitwy)', 'komunikat gracz-atakujacy');
-assert(battleReserveNotice(100, 200, 120, 'def') === '80 jednostek w rezerwie (nie wejdą do bitwy)', 'komunikat gracz-obronca');
-assert(battleReserveNotice(100, 100, 120, 'atk') === '', 'brak komunikatu bez rezerwy');
-assert(battleReserveNotice(300, 100, 120, 'def') === '', 'brak komunikatu gdy rezerwa tylko u wroga');
+assert(battleReserveNotice(A, D, CAP, 'atk') === '180 jednostek w rezerwie (nie wejdą do bitwy)', 'komunikat gracz-atakujacy');
+assert(battleReserveNotice(100, D, CAP, 'def') === '80 jednostek w rezerwie (nie wejdą do bitwy)', 'komunikat gracz-obronca');
+assert(battleReserveNotice(100, 100, CAP, 'atk') === '', 'brak komunikatu bez rezerwy');
+assert(battleReserveNotice(A, 100, CAP, 'def') === '', 'brak komunikatu gdy rezerwa tylko u wroga');
 
 // 9) Kontrakt zrodlowy: kazda sciezka RECZNA przekazuje res.eventLog do mapy
 const src = (f) => fs.readFileSync(path.join(__dirname, '..', 'src', f), 'utf8');
