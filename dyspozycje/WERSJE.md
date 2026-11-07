@@ -1,3 +1,9 @@
+## ROBOCZA c7479096 -- 2026-11-06 -- FALA 542: wojny epoki Brąz/Żelazo: weryfikacja na żywo + stare zapisy (testowa)
+
+- testy live w Chromium: wojna epoki wybucha w Brązie i Żelazie po 1 turze od progu (wpis w dzienniku i karta Wydarzeń); hooki testowe ustawiają playerEpochWarEnabled; wczytanie zapisu bez pola playerEpochWarEnabled = true (gracz nie wypada z puli wojen epoki), jawny false zostaje
+- Weryfikacja: forced-war-player-target 12/0, no-contact 14/0, iron 13/0 (Chromium), war-epoch-player-first-main-guard 35/0, guardy iron/bronze/stone 35/22/15, tsc 0; FC PASS-WITH-NOTES
+- Limity: dowód dla Żelaza inscenizowany (hook ustawia epokę 3), naturalny awans do epoki 3 niepokryty; ironForceWarActiveByPairKey nie asertowane (prywatne)
+
 ## ROBOCZA 4a51cf05 -- 2026-11-06 -- FALA 541: cud świata przechodzi na zdobywcę z bonusami (testowa)
 
 - cud należy do cywilizacji kontrolującej terytorium jego hexa; zmiana właściciela miasta/hexa (podbój, odbicie, kapitulacja głodowa, cesja, aneksja miasta-państwa, rewolta, zdobycie fortu) przenosi cud i jego bonusy; komunikaty Zdobyto/Utracono cud; moduł wonder-transfer.ts
