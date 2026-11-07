@@ -323,6 +323,10 @@ import {
   type WonderTradeRouteMedium,
 } from './game/wonders-data';
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
+import {
+  snapshotWonderTerritoryOwners, planWonderTransfers, applyWonderTransfers,
+  type WonderTerritorySnapshot,
+} from './game/wonder-transfer';
 import type { ProductionItem } from './game/production';
 import {
   resolveArchetypeAggression,
@@ -4113,6 +4117,52 @@ async function boot(): Promise<void> {
      */
     function wonderIdsOwnedBy(ownerId: number): string[] {
       return placedWorldWonders.filter(pw => pw.ownerId === ownerId).map(pw => pw.wonderId);
+    }
+
+
+    /**
+     * R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1 (wariant B, decyzja właściciela 2026-11-07): ukończony cud
+     * przechodzi na cywilizację kontrolującą terytorium jego hexa po KAŻDEJ zmianie właściciela miasta
+     * (podbój, kapitulacja głodowa, cesja, aneksja miasta-państwa, rewolta). Reguła i opis: game/wonder-transfer.ts.
+     * Wołać: `const w = beginWonderTransferWatch();` PRZED zmianą właściciela, `settleWonderTransfer(w);` PO niej.
+     */
+    function beginWonderTransferWatch(): WonderTerritorySnapshot | null {
+      if (placedWorldWonders.length === 0) return null;
+      const nodes = buildAllTerritoryNodes();
+      return snapshotWonderTerritoryOwners(placedWorldWonders, (q, r) => territoryOwnerAt(q, r, nodes));
+    }
+
+    function settleWonderTransfer(before: WonderTerritorySnapshot | null): number {
+      if (!before || placedWorldWonders.length === 0) return 0;
+      const nodes = buildAllTerritoryNodes();
+      const after = snapshotWonderTerritoryOwners(placedWorldWonders, (q, r) => territoryOwnerAt(q, r, nodes));
+      const plan = planWonderTransfers(placedWorldWonders, before, after);
+      if (plan.length === 0) return 0;
+      const n = applyWonderTransfers(placedWorldWonders, plan);
+      for (const t of plan) {
+        const label = getWonderById(t.wonderId)?.nazwa ?? t.wonderId;
+        console.log(`[Cuda] Tura ${turn}: ${label} @ ${t.q},${t.r} przechodzi ${t.fromOwnerId}→${t.toOwnerId} (zdobycie terytorium)`);
+        if (isMe(t.toOwnerId)) {
+          showWonderCompletedNoticeDeferred({
+            variant: 'mine',
+            nazwa: `Zdobyto cud: ${label}`,
+            locationLabel: `Tura ${turn} · ${t.q},${t.r}`,
+            bodyHtml: `Przejęliśmy cud wraz z jego bonusami.`,
+            onShowOnMap: () => focusCameraOnWonder(t.wonderId),
+          });
+        } else if (isMe(t.fromOwnerId)) {
+          showWonderCompletedNoticeDeferred({
+            variant: 'rival',
+            nazwa: `Utracono cud: ${label}`,
+            locationLabel: `Tura ${turn} · ${t.q},${t.r}`,
+            bodyHtml: `Cud wraz z bonusami przeszedł w ręce zdobywcy.`,
+          });
+        }
+      }
+      syncWonderRender();
+      refreshWondersPickerIfOpen();
+      markCityStateDirty();
+      return n;
     }
 
     /** Suma bonusy.miasto cudów właściciela (× każde jego miasto), z bramką absolut. */
@@ -15226,6 +15276,7 @@ async function boot(): Promise<void> {
      */
     function sweepFortCaptures(): number {
       if (fortNodes.length === 0) return 0;
+      const wonderWatchFort = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1: zdobycie fortu zmienia terytorium hexa
       const evs = applyFortCaptureByOccupation(
         fortNodes,
         units.map(u => ({ ownerId: u.ownerId, q: u.q, r: u.r, military: !isCivilianUnit(u) })),
@@ -15233,6 +15284,7 @@ async function boot(): Promise<void> {
         isBarbarian,
       );
       if (evs.length === 0) return 0;
+      settleWonderTransfer(wonderWatchFort); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
       if (territoryBorderVisible) refreshTerritoryBorderOverlay();
       for (const ev of evs) {
         const nm = ev.type === 'fort' ? 'Fort' : 'Posterunek';
@@ -16786,12 +16838,14 @@ async function boot(): Promise<void> {
           && city.rebelProtectionTurnsRemaining > 0;
         const rebelPrevOwnerSnapshot = city.rebelPreviousOwnerId;
         // R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1: kapitulacja głodowa = zdobycie obcego miasta (-1 obywatel).
+        const wonderWatchSurrender = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
         const surrenderPopBefore = city.population;
         applyCapturePopulationLoss(city, newOwner, oldOwner, rebelPrevOwnerSnapshot);
         const surrenderPopLoss = Math.max(0, surrenderPopBefore - city.population);
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, newOwner);
         city.ownerId = newOwner;
+        settleWonderTransfer(wonderWatchSurrender); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
         // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 (ECHO = wariant A): kapitulacja
         // głodowa to DRUGA ścieżka przejęcia miasta — oznaczenie miasta-państwa gasi się
         // tak samo jak przy podboju bojowym, inaczej flaga wędruje do zdobywcy.
@@ -33511,6 +33565,7 @@ async function boot(): Promise<void> {
       const csLabel = civLabelForOwner(csOwnerId);
       const cityCount = csCities.length;
 
+      const wonderWatchAnnex = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
       for (const city of csCities) {
         city.ownerId = annexerId;
         // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1: to samo gaszenie oznaczenia co na
@@ -33524,6 +33579,7 @@ async function boot(): Promise<void> {
         // no-op dla AI.
         applyLiveSafeRationForCity(city.id);
       }
+      settleWonderTransfer(wonderWatchAnnex);
       cityRenderer.sync(cities, _cityRenderOpts());
       syncUnitsRender();
       refreshFog();
@@ -34264,6 +34320,7 @@ async function boot(): Promise<void> {
         && city.rebelProtectionTurnsRemaining > 0;
       const rebelPrevOwnerSnapshot = city.rebelPreviousOwnerId;
       const popBeforeCapture = city.population;
+      const wonderWatchCapture = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
       const lead = applyCityCaptureAfterBattle(
         city,
         atkRoster,
@@ -34292,6 +34349,7 @@ async function boot(): Promise<void> {
           },
         },
       );
+      settleWonderTransfer(wonderWatchCapture);
       triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, atkOwner);
       // R-WEB-PEACE-RULES-R8R9-Q1 R9: brak auto-końca wojen wymuszonych po zdobyciu miast.
       maybeResolveRegularWarOnCityCapture(oldOwner, atkOwner);
@@ -34680,7 +34738,9 @@ async function boot(): Promise<void> {
         }
         cityProd.set(city.id, sanitizeProductionQueue(toOwnerId, migrated.prod));
       }
+      const wonderWatchCession = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
       city.ownerId = toOwnerId;
+      settleWonderTransfer(wonderWatchCession);
       seedCityOwnerDefaults(city);
       applyLiveSafeRationForCity(city.id);
       if (clearCityStateFlagOnCapture(city)) markCityStateDirty();
@@ -37716,9 +37776,11 @@ async function boot(): Promise<void> {
                 // "tylko człowiek" -- drugi fotel człowieka dostaje TĘ SAMĄ mechanikę buntu,
                 // AI nadal jej nie ma (brak regresu, brak nowej funkcjonalności dla AI).
                 if (graceUpd.shouldTriggerRebellion && isHuman(city.ownerId) && !city.rebelState) {
+                  const wonderWatchRebel = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
                   markCityRebellionStarted(city);
                   city.rebelState = true;
                   city.ownerId = REBEL_FACTION_OWNER_ID;
+                  settleWonderTransfer(wonderWatchRebel);
                   // B2 (Evaluator RUNDA 1: FAIL): przejście do rebeliantów musi zresetować
                   // override i zsynchronizować pola z globalnym defaultem frakcji rebeliantów.
                   seedCityOwnerDefaults(city);
