@@ -2,6 +2,7 @@
 
 **Data:** 2026-10-20
 **Autor:** orkiestrator tej sesji (Sonnet 5.5)
+**Aktualizacja stanu:** 2026-11-07 (sekcje 0a–0c, §5, §6) — `R-RUSTPORT-PLAN-UPDATE-2026-11-07-Q1`.
 **Status:** ZATWIERDZONY DO WYKONANIA (decyzje §0.1–§0.3 przyjęte jako robocze domyślne rekomendacje orkiestratora — właściciel może je w każdej chwili nadpisać)
 **Źródło:** zbudowany od nowa na bazie planu `PLAN-RUST-PORT-ORCHESTRACJA-20260920.md` (poprzedni system OpenClaw) — struktura faz P0–P11 zachowana jako sprawdzona, warstwa infrastruktury OpenClaw (plugin Controller, Flow, Workboard, A/B routing) odrzucona; **uniwersalne zasady procesu z `autobot-controller`** (ślad dowodowy per faza, zakaz fałszywej niezależności ról, integracja tylko po PASS) **przyjęte i wplecione w §2/§2a** — to są zasady przeniesione pierwotnie z AutoBota tego repo, nie coś obcego.
 
@@ -16,6 +17,95 @@
 3. **Model routingu (zatwierdzone przez właściciela 2026-10-20, skorygowane 2026-10-20):** Orkiestrator = Sonnet 5.5 (ta sesja) — **wyłącznie orkiestruje, nie wykonuje żadnej pracy merytorycznej sam ani przez narzędzie `Agent`/subagent**. Operator i Evaluator = Haiku 5.5, effort medium. Final Control = Sonnet 5.5, effort medium. **Wszystkie trzy role — Operator, Evaluator, Final Control — dispatchowane WYŁĄCZNIE jako wywołania `agent()` wewnątrz skryptów narzędzia Workflow, nigdy przez narzędzie `Agent` (subagent) ani przeze mnie bezpośrednio.** Moja rola: pisać/uruchamiać skrypty Workflow, czytać ich wynik, decydować o kolejnej rundzie, prowadzić licznik rund i ledger, oraz wykonywać integrację (scoped diff, commit, push) już zatwierdzonego wyniku — integracja nie jest "pracą" delegowaną, to czynność orkiestratora z kanonu tego repo (Operator/Evaluator/Final Control nie integrują, nie pushują). **Uwaga:** niższa siła modelu na Operatorze/Evaluatorze oznacza realistycznie więcej rund naprawczych niż przy Sonnet 5.5 — uwzględnione w szacunku czasu (§6).
 
 ---
+
+## 0a. STAN NA 2026-11-07 (aktualizacja planu, temat `R-RUSTPORT-PLAN-UPDATE-2026-11-07-Q1`)
+
+**Źródła tej sekcji (bez uruchamiania `cargo test`):** `LEDGER.md` (cały), `GOAL-RUST-PORT-20261020.md`, `PLAN-AKTUALIZACJI-PORTU-DO-WEBA-20261030.md`, `dyspozycje/REJESTR-PROSB-I-ZADAN.md` (FALA 509–543), `git ls-tree -r origin/rust-port/parity-v2`. Liczby oznaczone „wg LEDGER" pochodzą z ostatniego wpisu rejestru, nie z nowego uruchomienia testów.
+
+**Punkty odniesienia (zmierzone 2026-11-07):**
+- `origin/rust-port/parity-v2` = `783c6b766` (FC REPIN-WEB-UI-3-INTEGRACJA, fast-forward z `8bc2efcf8`). Drzewo: `rust-port/engine` 852 pliki (92 moduły `src/domain/*.rs` + 40 w podkatalogach `mapgen/okolica/auto_improvements/resource_access/society_breakdown`, 307 plików testów `tests/*.rs`), `rust-port/renderer` 906, `rust-port/assets` 429, `src-tauri/frontend-v2` 796, `src-tauri/frontend` 2 (stary slice).
+- Testy wg LEDGER: silnik **2122 passed / 0 failed** (ostatni pełny przebieg: merge `e1c040160`, 2026-11-03, DYPLOMACJA-PROFIL-WOJNY-POKOJU); renderer **466/0** (RENDER-3-RUST, FC `707696397`); frontend-v2: harnessy UI-3 A–E 0 różnic (INTEGRACJA, 2026-11-07). Od 2026-11-03 nie dodano kodu silnika — porty UI/3D nie ruszają `rust-port/engine`.
+- Web `origin/main` = `bd5386c8b` (ROBOCZA `35e9ec5a`, FALA 543). Piny portu są **rozjechane**: UI/3D = web `9b019a7d8` (FALA ≤532, bez FALA 534–543); logika silnika = mieszanka pinów `4bbef081d` (auto-ulepszenia, ekonomia, wojna), `23dd158e9` (słodka woda, dyplomacja-profil), `dc8a3adc` (starsze moduły); mapgen = `86d510c66`/`91dc998a`. Pomiar: `git diff 4bbef081d origin/main -- gra/src gra/data` = **167 plików, +16 468 / −2 296**, w tym **91 plików w `gra/src/game` + `gra/data`** (lista w §0b).
+- Wstrzymania (LEDGER): 2026-11-03 wstrzymanie logiki Rust na rzecz poprawek webu, uchylone tylko dla grafiki/UI; 2026-11-07 „dalszy REPIN po zmianach weba dopiero po końcu kolejki webowej" — kolejka webowa na 2026-11-07: AIRESERVE/AIN10, AI-PLAYER-PARITY-FIXES, FULLREG w toku/oczekujące. **Polecenie właściciela z 2026-11-07 („zacznij pracę nad kilkoma zadaniami kolejnymi z Taurus") uchyla to wstrzymanie dla tematów z §0c.** (ZAŁOŻENIE orkiestratora do potwierdzenia; web nadal rośnie, więc każdy temat portu zaczyna od własnego pomiaru dryfu do `origin/main` w chwili startu.)
+
+### 0a.1 Fazy P0–P11
+
+| Faza | Status | Dowód / adnotacja |
+|---|---|---|
+| P0 kalibracja | **ZROBIONE** | PASS 2026-10-20 (`R-RUSTPORT-P0-KALIBRACJA-Q1`), pin `edb8fb56`, gałąź `rust-port/parity-v2` |
+| P1 audyt + reference pack | **ZROBIONE** (z uwagami) | P1.1–P1.18 PASS; synteza `P1-GATE-SYNTHESIS-2` PASS (41 wierszy); klasyfikacja `gra/src` 300 plików: REUSE 0 / ADAPT 14 / REPLACE 10 / UNKNOWN 276; długi: P1.16b LIMIT-5 rozbite na 16c–16f |
+| P2 kontrakt domeny + adapter | **ZROBIONE** | P2.1–P2.13; bramka P2 otwarta formalnie po rundzie 3 fan-out (DECISION_REQUIRED→PASS) |
+| P3 dane/assety | **ZROBIONE z uwagami** | 30 plików danych, loader/walidator, CI zielone (P3-16 `17454b33`); werdykt bramki P3 = FAIL (pomiar) zamknięty decyzją administracyjną (P3-13R) |
+| P4 model świata + renderer | **ZROBIONE (CPU/model), W TOKU (GPU)** | MOD01–14 + P4.36 Q1–Q5 (bitwa 3D) PASS; REPIN-3D A1–A6, B1–B4 PASS; REPIN-WEB-RENDER-3-RUST `707696397` (L1/L2). **Otwarte:** L3 (UnitRenderer, smallPartLod, unitStaticMerge, pule) po porcie kompozytora jednostek; RR-T1 (GPU) wymaga maszyny właściciela; indeks Uint16/32 niepodpięty do uploadu wgpu |
+| P5 frontend/UI 1:1 | **ZROBIONE do webu `9b019a7d8`** | P5.1–P5.8 (shell, L0/L1A/L2/C4, cityPanel K01–K09B), REPIN-UI-2 A–G, REPIN-UI-3 A–E + INTEGRACJA (`783c6b766`). **Otwarte:** K09C/K09D i hooki kontrolera v2 (czekają na DTO/producenta z P6); UI po `9b019a7d8` (FALA 534 układ banera A, FALA 537 panele pod banerem, komunikat o rezerwie przed bitwą) → REPIN-UI-4 |
+| P6 gameplay core | **W TOKU (~mniej niż połowa)** | patrz tabela 0a.2; silnik ma 92 moduły domeny, ale produkcyjnej pętli tury (P7) brak: kilka modułów „osiągalnych tylko z testów" |
+| P7 integracja Rust↔Tauri↔frontend | **NIEROZPOCZĘTE** | kontroler v2 nie podpina nowych hooków (toggle automatyzacji budowy, panel rekrutacji imperium, zakładki zdarzeń, DTO Milicji/głodu) |
+| P8 parity pass | **NIEROZPOCZĘTE** | wymaga P6/P7; bramka seedów web vs Rust nie istnieje |
+| P9 kontrola + integracja | **NIEROZPOCZĘTE** | |
+| P10 wydajność | **NIEROZPOCZĘTE** | tylko znalezisko z P1.8 (Standardowy 90–212 s w webie) |
+| P11 packaging | **NIEROZPOCZĘTE** | wymaga osobnej zgody |
+
+### 0a.2 Zadania P6.x / Mxx (stan zintegrowany na `parity-v2`)
+
+| Zadanie | Status | Co jest / czego brak (wg LEDGER) |
+|---|---|---|
+| P6.1 stan początkowy | **ZROBIONE** (1/1B/1C/1D/1E; REPIN-LOGIKA-CIV) | hot-seat BRAK (P1.18) — osobny temat; nazwy miast: web FALA „nazwa miasta zużyta na zawsze" do REPIN |
+| P6.2 walidacja komend | **CZĘŚĆ** | P6.23-KOMENDY-TEREN (69 eksportów `order.ts`); brak pełnej transakcyjności |
+| P6.3 teren/przechodniość | **ZROBIONE** | Desert/Tundra fix (P1), `terrain.rs`, wektory M04 |
+| P6.4–P6.5 jednostki | **CZĘŚĆ** | P6.4 ruch, P6.5A/B życie; `unit_health`, `unit_epoch`, `formation_rules`, `generals`, `general_quick_follow`, `battle::orders` zintegrowane; wektory P6.5B (`tests/p6_5b_vectors`) obecne w drzewie; brak produkcyjnego lifecycle'u i wpięcia |
+| P6.6–P6.8 miasta/ekonomia | **PRAWIE ZROBIONE (logika), NIEWPIĘTE** | 6A/6B zakładanie, 7A/7B wzrost, 8A–8H2, 8J, ADVANCE-CITY-ECONOMY Q1–Q6, ECON-TICK (EMPIREFOOD, POST, ORDER-LANE, HEAL, STATE-SOURCES), REPIN-EKONOMIA A–E, REPIN-DELTA-4. **Brak:** 8I2, poprawka natywnego dostępu do żelaza (web 2026-11-03), cały dryf FALA 500–543 (§0b); pętla miast bez produkcyjnego wywołującego |
+| P6.8I auto-ulepszenia | **ZROBIONE na pinie `4bbef081d`**, wymaga REPIN | `auto_improvements*` (2227 scenariuszy, mutanty 366); web zmienił zasady 5 razy po pinie |
+| P6.9–P6.10 tura gracza/świata | **CZĘŚĆ** | `turn_economy_*` (≈20 modułów), `ai_turn`; brak: odroczenie zdarzeń na koniec tury, marsze tylko na koniec tury, życie zdarzeń 1 tura |
+| P6.11–P6.12 AI + wojny wymuszone | **CZĘŚĆ (≈35%)** | `ai_turn`, `ai_move_range`, `ai_general_war_campaign`, `army_consolidation`, `war_all_in_capital*` (3 moduły), `war_rules_multiwar`, `alliance_war_obligation`, `ai_era_unit_promotion`. **NIEPORTOWANE:** `forced-war-*` (common/stone/bronze/iron), `ai-war-home-defense`, `ai-war-target-select`, `ai-march-guard`, `army-concentration`, `ai-difficulty-bonus`, `ai-city-capture-executor` — **najwyższe ryzyko planu (§5)** |
+| P6.13 walka | **CZĘŚĆ** | `combat.rs`, `battle_mode`, `battle::orders`, renderer bitwy 3D (P4.36) gotowy; **brak:** oblężenie (głód/kapitulacja/wypad/wejście do miasta), limit bitwy 500 i limit stosu, łup/zajęcie |
+| P6.14 dyplomacja | **CZĘŚĆ (2 z 10 tematów podziału)** | `diplomacy.rs` 4078 LOC, `diplomacy_truce`, `diplomacy_aggressor`, `diplomacy_war_peace_profile`, `diplomacy_war_gates`, `diplomacy_tick_war_brake`. Kolejka z `DYPLOMACJA-PODZIAL-AUDYT.md`: 1 TRUCE-AGRESOR ✔, 2 PROFIL-WOJNY-POKOJU ✔, **3 MULTIWAR-ERA-BRAMKI, 4 WOJNY-WYMUSZONE, 5 POKOJ-ROZEJM-CESJA, 6 WIARYGODNOSC-RELACJE, 7 BILANS-OFERTY-PLATNOSCI, 8 PANSTWA-MIASTA, 9 NEGOCJACJE-BLOKADY, 10 AI-DECYZJE-SOJUSZE — NIEROZPOCZĘTE** |
+| P6.15 handel | **CZĘŚĆ** | `trade.rs`, `trade_flow_apply`; web zmienił bramki (kontakt zamiast połączenia, bezkarne zerwanie po 10 turach, premia morska wymaga portu) |
+| P6.16 kultura/religia | **CZĘŚĆ** | `order_effects_culture`; odświeżenie `culture-religion.ts` (+43/−21) nieprzeportowane |
+| P6.17 cuda + tech | **CZĘŚĆ** | `wonder_placement`, `territory` (M14); brak transferu cudu przy podboju (web FALA 541/543) i drzewka tech jako system |
+| P6.18 państwa-miasta + barbarzyńcy | **CZĘŚĆ** | `barbarians.rs`; kod państw-miast MARTWY w produkcji (P1.14b); aneksja ze zdobyczami (web) nieprzeportowana |
+| P6.19 zwycięstwo/porażka | **NIEROZPOCZĘTE** | |
+| P6.20–P6.22 save/load/replay | **CZĘŚĆ** | `save_load.rs` (+`meta.battleModeSettingVersion`), `replay.rs`; brak pól i migracji z §0b |
+| P6.23–P6.24 testy + niezależny Evaluator | **W TOKU** | wektory z uruchomionego weba przy każdym temacie; Evaluator całego gameplayu — po P6 |
+| M00–M14 mapgen | **PRAWIE ZROBIONE** | M00–M07B4, M09, M11, M12, M14, M06A1–A9, M06B1/B2 PASS; brak wpisu w LEDGER dla M08, M10, M13, M15, M17, M18 (wg `P6-25-MAPA-GAP`; NIE_ZMIERZONO, czy są potrzebne), REPIN `relocate_forest_horses` (konie, web 2026-11-03), Pangea `topUpPangeaLandFraction` fazy 2–3 |
+
+**Bilans:** zintegrowane i zielone: P0–P3, większość P4–P5, mapgen, ekonomia miast, ~40% dyplomacji/AI/walki. Największe luki P6: AI + wojny wymuszone, oblężenie, dyplomacja (8/10 tematów), hot-seat, zwycięstwo, save/migracje. P7–P11 = zero kodu.
+
+## 0b. Różnice WEB→RUST wymagające REPIN logiki (materiał do P6)
+
+Zakres: zmiany webu po pinach logiki Rust (`4bbef081d`/`23dd158e9`), FALA 495–543 oraz zgłoszenia z LEDGER 2026-11-03…07. **Dokładne hunki (plik:linia) zmierzy temat `R-RUSTPORT-REPIN-DELTA-5-Q1` (§0c, poz. 1)** — poniższe grupowanie wynika z rejestru i listy 91 zmienionych plików (`git diff --name-only 4bbef081d origin/main -- gra/src/game gra/data`), nie z odczytu hunków; wszystko poza pozycjami z FALA/LEDGER = NIE_ZMIERZONO.
+
+| Moduł Rust (zadanie) | Zmiany webu do przeniesienia (FALA / temat) | Pliki webu |
+|---|---|---|
+| **P6.8 ekonomia/produkcja** | mnożnik zużycia obywateli m(e)=1+0,5(e−1) dla racji i surowców (FALA 500, `R-WEB-CITIZEN-CONSUMPTION-ERA-MULT`); cegła ×2 + Cegielnia +50% bazy/epokę (512); odlewnie 25→50 cykli + m(e) (517); Magazyn: +20% bazy pojemności państwa, bez żywności (513 + `WAREHOUSE-STATE-CAP-20PCT`); Spichlerz Królewski/Pismo, Spichlerz II tech (509, 503); limit ludności Spichlerz II=12, Akwedukt=20; Młyn tylko przy rzece (bramka), natywny dostęp do żelaza (`ownerHasNativeZelazoAccess`, błąd 1:1 w Rust); dostęp do wody = słodka woda lądowa; Emporion (516); cap bonusu Magazynu | `production.ts`, `converters.ts`, `economy*.ts`, `turn-economy.ts`, `citizen-*.ts`+json, `building-resource-gate.ts`, `zelazo-access.ts`, `resource-access.ts`, `buildings.json`, `econ-params.json`, `resources.json`, `empire-food.ts`, `manpower.ts`, `population-growth-*.ts` |
+| **P6.8I auto-ulepszenia** | żywność tylko na polach obywateli (FOOD-ONLY-WORKED-HEXES, SIMPLE-FOOD-RULE); irygacja nie budowana po farmach/trzodzie; wycinka lasu przy rzece (limit gracz 2/AI 1, podłoga Pracy 60, pierwszy krok tury; FALA 500); HILLS-CLEAR-REVERT; obóz łowiecki zachowuje relief wzgórza; AUTOBUILD domyślnie OFF (515, `meta.autoBuildEnabled`); drogi AI MST tylko między miastami (521) | `auto-improvements.ts`, `auto-build-gate.ts`, `road-network-plan.ts`, `relief-preserving-improvements.ts`, `terrain-improvements.ts` |
+| **P6.9–10 tura** | zdarzenia żyją jedną turę; odroczenie zdarzeń na koniec tury; marsze zaplanowane tylko na koniec tury gracza (MARCH-END-OF-TURN-ONLY); następna aktywna jednostka, kolejność listy rekrutacji; widoczność fortów (`fortSightSources`, 2026-11-02) | `event-*.ts`, `eot-event-defer.ts`, `planned-march.ts`, `next-active-unit.ts`, `recruit-list-order.ts`, `visibility.ts` |
+| **P6.11–12 AI i armia** | AI-ARMY-CONCENTRATION-REPLACEMENT, ALL-CIVS-GATHER-UNDER-GENERAL, SCATTERED-NOT-MERGED, MOVE-FULL-RANGE, MARCH-AVOID-FOREIGN, AI-NO-SIEGE/NO-MARCH-WITHOUT-WAR (FALA 497–502), DEFEND-HOME-BEFORE-OFFENSE, HOME-DEFENDERS-CIVILIAN-FILTER, WAR-ALLIN-KEEP-BARB-DEFENSE, zwiadowca nie lider (510), `empire-recruit-plan`, więcej wodzów niż limit (FALA 533, bramka narodzin + migracja), limit stosu armii 500 (540), AI-RESERVE/AIN10 (w toku w webie) | `ai*.ts` (8 plików), `army-concentration.ts`, `army-stack-limit.ts`, `armyMerge.ts`, `stack-leader.ts`, `generals.ts`, `empire-recruit-plan.ts`, `warAllInCapital.ts` |
+| **P6.12 wojny wymuszone / zmęczenie wojną** | wojny epoki Brąz/Żelazo znów włączone (536), brak pola `playerEpochWarEnabled` w zapisie = true (542), zmęczenie wojną + karencja po pokoju 40/100 (520), przegrywający oferuje miasta za pokój (WEARY), kampania wodza | `war-weariness.ts`+json, `war-rules-params.json`, `forced-war-*` (nieportowane) |
+| **P6.13 walka/oblężenie** | głód garnizonu 6/8/10% maxHP/turę, poddanie gdy ΣHP<50% (511); wypad ostatniej woli ≥80% (SIEGE-LAST-STAND), wypad w dowolnej turze (505); blokada rekrutacji/posiłków/wejścia w obleganym mieście; po poddaniu jednostka wchodzi do miasta; plakietka „tur do poddania"; wieża oblężnicza = wyłom (2026-11-04); limit bitwy 120→500 (538); jednostki spoza limitu nie giną po bitwie (535); atak ręczny oblężniczy | `siege*.ts` (7 plików), `city-fortification.ts`, `city-defense.ts`, `city-towers.ts`, `post-battle-map.ts`, `combat-params.json`, `battle/*` |
+| **P6.14–15 dyplomacja/handel** | NAP wymaga Zaufania ≥30 + narzut granicy +20/flaga agresora +15 (514/515); handel wymaga tylko znajomości (CONTACT-ONLY); bezkarne zerwanie umowy handlowej po 10 turach (501); premia morska handlu tylko z portem; wymuszony pokój AI, blokada wojny przy oblężeniu | `diplomacy*.ts` (7 plików), `trade-routes.ts`, `diplomacy.json` |
+| **P6.17–18 cuda/aneksja/barbarzyńcy** | cud przechodzi na kontrolującego hex z bonusami (541), nie na rebeliantów/barbarzyńców, założenie miasta przenosi cud (543); ANNEX-CITYSTATE-SPOILS; nazwa miasta zużyta na zawsze; `cluster-start` | `wonder-transfer.ts`, `capital-capture.ts`, `barbarians.ts`, `cities.ts`, `city-names-pool.ts`, `civ-names.ts`, `cluster-start.ts` |
+| **P6.20–22 zapis** | migracje: nadmiar wodzów, siatka stosu >limit na starcie tury, `playerEpochWarEnabled`, `autoBuildEnabled`, niespójny właściciel cudu (web: NIE wykonana) | `save*.ts`, `civ-test-hooks.ts` |
+| **Mapgen (M-)** | `relocate_forest_horses` (konie, 2026-11-03); Pangea fazy 2–3; wpływ `map-gen-params.json` | `map/*`, `map-gen-params.json` |
+| **UI/3D (poza P6)** | UI po `9b019a7d8`: układ banera A (534), panele pod banerem (537), powiadomienia 3 zakładki (518), baner większe liczby (519), komunikat o rezerwie bitwy (535), muzyka cywilizacji w dyplomacji (539, `civ-music.json`, +15 MB); 3D: obóz łowiecki — relief, unitStaticMerge/pule materiałów (L3 RENDER-3) | `ui/*`, `render/*`, `audio/*` |
+
+Zmiany webu **bez wpływu na logikę Rust** (wydajność/pamięć/minimapa: FALA 510, 522, 524–532, 531, 528) — nie wymagają REPIN logiki; jedynie L3 renderera (zob. P4).
+
+## 0c. Rekomendowana kolejka następnych zadań (stan 2026-11-07)
+
+Zasady doboru: rozłączne pliki (równoległość §2b: do 6 tematów, ale **maks. 2 jednocześnie z `cargo`/worktree kodu Rust** — dysk ≈ 8 GB, ≈1 GB na worktree; tematy czysto dokumentacyjne nie liczą się do limitu); polityka modeli: Operator/Obrona Haiku 5.5, Evaluator/FC Sonnet 5.5, Operator Sonnet 5.5 tylko dla tematów trudnych (z uzasadnieniem), **Opus wyłącznie pamięć/grafika — w tej kolejce brak**; 1:1 z webem, odstępstwo = ZAŁOŻENIE do akceptacji właściciela; każdy temat zaczyna od pinu `origin/main` w chwili startu (wektory z uruchomionego weba, nie z pamięci).
+
+| # | ID tematu | GOAL (skrót) | Allowlista | Zależności | Ryzyko | Model | Rundy |
+|---|---|---|---|---|---|---|---|
+| 1 | `R-RUSTPORT-REPIN-DELTA-5-Q1` | Pomiar dryfu logiki: hunki behawioralne (plik:linia) `4bbef081d`/`23dd158e9` → `origin/main`, przypisanie do tematów 2–8 i do modułów Rust, lista wektorów/`meta.pin` do regeneracji. Tylko dokumentacja. | `dyspozycje/rust-port/p6/REPIN-DELTA-5.md`, katalog runu | brak | niskie | Operator Sonnet (czytanie 91 plików/diffu — uzasadnione trudnością), Evaluator/FC Sonnet | 2–3 |
+| 2 | `R-RUSTPORT-REPIN-EKONOMIA-F-FALA500-Q1` | Port zmian ekonomii/produkcji FALA 500–517 (§0b P6.8): m(e) zużycia obywateli, cegła ×2/Cegielnia, odlewnie, Magazyn, Spichlerz Królewski/II, limity ludności, Młyn, natywny dostęp do żelaza. Wektory z weba. | `rust-port/engine/src/domain/{turn_economy_resources,turn_economy_empirefood,turn_economy_upkeep,resource_production,resource_access/**,building_costs,city_growth,economy_city_*}.rs`, `rust-port/engine/data/**` (addytywnie), `rust-port/engine/tests/p6_repin_ekon_f_*`, `dyspozycje/rust-port/p6/P6-REPIN-EKONOMIA-F.md` | częściowo #1 (hunki); może ruszyć równolegle z #1 | średnie (dużo liczb, bit-w-bit) | Haiku/Sonnet | 3–5 |
+| 3 | `R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1` | Port zasad auto-ulepszeń po pinie `4bbef081d`: żywność tylko na polach obywateli, irygacja po farmach, wycinka lasu przy rzece (limity, podłoga Pracy 60, pierwszy krok), HILLS-REVERT, relief obozu łowieckiego, AUTOBUILD OFF, drogi MST. | `rust-port/engine/src/domain/auto_improvements*.rs` + `auto_improvements/**`, `improvements.rs`, `rust-port/engine/tests/p6_repin_autoimpr_*`, dok. `P6-REPIN-AUTOIMPROVE.md` | rozłączne z #2 (inne pliki) | średnie | Haiku/Sonnet | 3–4 |
+| 4 | `R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-ERA-BRAMKI-Q1` | Temat 3 podziału dyplomacji: bramki wojen epoki Kamień/Brąz/Żelazo (`enabledForcedWarEras`), `playerEpochWarEnabled`, NAP Zaufanie ≥30 z narzutami, `war-weariness` + karencja, zależność od `war_rules_multiwar.rs`. | `rust-port/engine/src/domain/{diplomacy_war_gates,war_rules_multiwar,alliance_war_obligation,diplomacy_tick_war_brake}.rs` + nowe `diplomacy_multiwar*.rs`, `domain/mod.rs`, `engine/data/**`, `tests/p6_dyplo_multiwar_*`, dok. `P6-DYPLOMACJA-MULTIWAR.md` | wynik #1 zalecany; po DYPLOMACJA-PROFIL ✔ | średnie | Haiku/Sonnet | 3–5 |
+| 5 | `R-RUSTPORT-P6-DYPLOMACJA-WOJNY-WYMUSZONE-Q1` | Temat 4 podziału: `forced-war-common/stone/bronze/iron` — fale wymuszonych wojen, persystencja `meta.forcedWarWavesByPairKey` (luka z audytu OpenClaw). | nowe `domain/forced_war*.rs`, `domain/mod.rs`, `data/**`, `save_load.rs` (addytywnie), testy `p6_forced_war_*` | **po #4** (wspólne bramki) | **wysokie** (§5 ryzyko 1) | Operator Sonnet (algorytm stanowy), reszta Sonnet | 4–5 (możliwy podział na A/B) |
+| 6 | `R-RUSTPORT-P6-AI-ARMIA-ZBIORKA-MARSZ-Q1` | Port AI armii: `army-concentration`, `ai-march-guard`, `ai-war-home-defense`, `ai-war-target-select`, zwiadowca nie lider, bramki „bez marszu/oblężenia bez wojny", limit stosu 500. | nowe `domain/ai_army*.rs`, `ai_turn.rs` (wpięcie, addytywnie), `army_consolidation.rs`, `tests/p6_ai_armia_*` | po #5 (`forced_war_*`) i #1 | **wysokie** | Operator Sonnet, reszta Sonnet | 4–5 |
+| 7 | `R-RUSTPORT-REPIN-OBLEZENIE-ZDOBYCZE-Q1` | Port oblężenia i zdobyczy: głód garnizonu, poddanie, wypad, blokada rekrutacji, wejście do miasta, limit bitwy 500, transfer cudu, aneksja miasta-państwa. | nowe `domain/siege*.rs`, `combat.rs`, `wonder_placement.rs`, `fort_territory.rs`, `tests/p6_oblezenie_*` | rozłączne z #2–#4 (inne pliki); #1 | średnie-wysokie | Haiku/Sonnet | 4–6 |
+| 8 | `R-RUSTPORT-P6-ZAPIS-MIGRACJE-FALA509-Q1` | Pola i migracje zapisu: `autoBuildEnabled`, `playerEpochWarEnabled`, nadmiar wodzów, siatka stosu, właściciel cudu, `forcedWarWavesByPairKey`. | `save_load.rs`, `session.rs`, `tests/p6_zapis_*` | po #5, #7 | średnie | Haiku/Sonnet | 2–3 |
+
+**Plan fal (limit dysku: 2 worktree kodu):** fala 1 = #1 (dok.) + #2 + #3; fala 2 = #4 + #7 (gdy zwolnią się sloty); fala 3 = #5; fala 4 = #6 i #8. Dispatche gotowe dla pozycji 1–4: `dyspozycje/autobot/runs/<ID>/00-dispatch.md`. Pozycje 5–8 tylko w tabeli (dispatch po PASS zależności).
 
 ## 1. Zasady nadrzędne
 
@@ -263,6 +353,15 @@ Platformy docelowe, build release, kontrola assetów w paczce, czysta instalacja
 4. **Save/load wsteczna kompatybilność** — web ma już wieloletnią historię formatu zapisu; Rust musi to odtworzyć, nie zaprojektować od zera.
 5. **179 plików `gra/src/game` vs. ~24 moduły istniejącego Rust** — rzeczywisty zakres portu jest wielokrotnie większy niż to, co dziś istnieje w Ruście, niezależnie od tego, ile "R01–R24" brzmi kompletnie w nazwach commitów.
 
+**Aktualizacja 2026-11-07 (stan faktyczny):**
+
+6. **Ruchomy cel weba — dryf po pinach.** Od pinu logiki `4bbef081d` web zmienił 91 plików `gra/src/game`+`gra/data` (+16 468/−2 296 w całym `gra/src`+`data`), a FALA 534–543 dochodzą dalej (kolejka webowa nie jest pusta: AIRESERVE/AIN10, AI-PLAYER-PARITY-FIXES, FULLREG). Piny portu są rozjechane (UI/3D `9b019a7d8`, logika `4bbef081d`/`23dd158e9`, mapgen `86d510c66`). Mitygacja: temat `REPIN-DELTA-5` jako pomiar bazowy, każdy temat portu liczy dryf do `origin/main` na starcie, finalny „jeden ruch pinu" (U4) dopiero po zamknięciu kolejki webowej.
+7. **Brak produkcyjnej pętli tury.** Silnik ma ≈20 modułów `turn_economy_*`, ale kilka jest „osiągalnych tylko z testów" (np. `run_city_economy_resource_phase`, hak `OkolicaPopulationHook`, brak wywołującego `pick_auto_improvements`). Ryzyko: P7 odkryje, że moduły 1:1 z wektorami nie składają się w grę. Mitygacja: wcześniejszy, wąski temat wpięcia (po #6/#7 kolejki §0c) zamiast czekania do P7.
+8. **Dług dyplomacji: 8 z 10 tematów podziału nieruszone** (≈17 400 LOC webu) + AI `forced-war-*`; połączone ze zmianami webu (NAP, wojny epoki, zmęczenie wojną) tworzy największy blok P6.
+9. **Dysk i równoległość.** Realny limit to 2 worktree kodu Rust (≈1 GB każdy, wolne ≈8 GB); incydenty ENOSPC 2026-11-04. Wydłuża P6 względem założenia „do 6 równoległych".
+10. **Konflikty merge we wspólnych plikach** (`package.json`, manifesty UI, `domain/mod.rs`, `P5-REPIN-UI-2.md`) — każdy równoległy temat to ręczna integracja; reguła: scalenie addytywne + `npm run check`/`cargo` po każdym merge.
+11. **Nowe epoki (Klasyczna, Średniowieczna)** mają powstać dopiero przy „nowej wersji Rust" (decyzja 2026-11-05): dane/silnik muszą traktować epokę jako parametr (bez sufitu ×4) — ryzyko przeróbek, jeśli P6.8 zostanie zamknięte przed uwzględnieniem tego.
+
 ## 6. Szacunek czasu (zaktualizowany pod Haiku-operatorów)
 
 | Faza | Szacunek przy Sonnet-operatorach | Szacunek przy Haiku 5.5 medium (więcej rund) |
@@ -280,6 +379,21 @@ Platformy docelowe, build release, kontrola assetów w paczce, czysta instalacja
 | P10 | 2–6 tyg. | 2–6 tyg. |
 | P11 | 1–2 tyg. | 1–2 tyg. |
 | **Razem** | **~6–8 miesięcy** | **~9–13 miesięcy** |
+
+**Aktualizacja 2026-11-07 (realny stan po ≈2,5 tyg. od startu 2026-10-20; szacunki = ZAŁOŻENIE orkiestratora, do korekty po `REPIN-DELTA-5`):**
+
+| Faza | Stan | Pozostało (przy 2 slotach kodu Rust, Haiku/Sonnet) |
+|---|---|---|
+| P0–P3 | zamknięte | 0 |
+| P4 | CPU/model zamknięte; GPU czeka na maszynę właściciela, L3 po kompozytorze jednostek | 1–2 tyg. (RR-T1 poza kontrolą orkiestratora) |
+| P5 | zamknięte do webu `9b019a7d8` | 1–2 tyg. (REPIN-UI-4 + K09C/K09D po DTO z P6) |
+| P6 | ≈40–45% (mapgen, ekonomia miast ✔; dyplomacja 2/10, AI/wojny ≈35%, walka/oblężenie ≈40%) | **10–16 tyg.** (kolejka §0c ≈ 4–6 tyg. dla pozycji 1–8; potem dyplomacja 3–10, handel, kultura, państwa-miasta, zwycięstwo, hot-seat, zapis) |
+| P7 | nierozpoczęte | 3–6 tyg. (częściowo równolegle z końcówką P6) |
+| P8 | nierozpoczęte | 5–9 tyg. |
+| P9 | nierozpoczęte | 1–2 tyg. |
+| P10 | nierozpoczęte | 2–6 tyg. |
+| P11 | nierozpoczęte, za zgodą | 1–2 tyg. |
+| **Razem pozostało** | | **≈ 5–8 miesięcy** (poprzednio 9–13 mies. od zera; spadek wynika ze zrobionych P0–P5, ale P6 jest wolniejsze od założenia z powodu limitu dysku i ruchomego weba) |
 
 To są szacunki kalendarzowe przy kontrolowanej równoległości (kilka tematów naraz w rozłącznych worktree), nie przy jednym wątku pracy. Po P0/P1 wrócę z dokładniejszą estymacją opartą o rzeczywistą liczbę modułów/scenariuszy, nie o ten przedział.
 
