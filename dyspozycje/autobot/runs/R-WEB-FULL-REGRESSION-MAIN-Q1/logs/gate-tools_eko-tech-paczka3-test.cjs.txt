@@ -1,0 +1,13 @@
+  PASS: brak kopalni miedzi w imperium
+  PASS: kopalnia miedzi w imperium
+  PASS: miasto ma piec
+  PASS: AND: kopalnia miedzi bez pieca = brak brązu
+  PASS: odlewnia_brazu nazwa Odlewnia brązu
+  FAIL: AND: kopalnia miedzi + piec = brąz
+  PASS: Odlewnia brązu ukryta bez Kopalni miedzi
+  FAIL: Odlewnia brązu dostępna po Kopalni miedzi
+
+eko-tech-paczka3: 6 pass, 2 fail
+
+EXIT=1
+TIME=0.4

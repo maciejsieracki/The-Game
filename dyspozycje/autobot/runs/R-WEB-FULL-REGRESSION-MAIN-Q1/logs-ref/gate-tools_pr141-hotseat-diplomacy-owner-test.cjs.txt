@@ -1,0 +1,14 @@
+PASS canonical resolver maps primary, both human seats, and AI owner
+PASS unknown owner stays neutral and never borrows the primary key
+PASS shared presentation helper routes all known owners canonically and retains only unknown display placeholders
+FAIL actual shared diplomacy tick context resolves the nonzero human seat culture and religion: diploBrakeBonusFlags is not defined
+PASS actual AI diplomacy gates use validated active-owner identities
+PASS actual AI-to-AI partner type uses its own validated owner key
+FAIL actual relation breakdown resolves owner-specific type and culture in both argument orders: diploBrakeBonusFlags is not defined
+FAIL actual relation breakdown compares the secondary human type, not primary Rome: diploBrakeBonusFlags is not defined
+FAIL actual relation breakdown keeps the different-culture penalty for known owners in both directions: diploBrakeBonusFlags is not defined
+FAIL actual relation breakdown treats unknown civ as neutral, not same-type primary fallback: diploBrakeBonusFlags is not defined
+TOTAL 5/10
+
+EXIT=1
+TIME=2.2

@@ -1,0 +1,17 @@
+=== Pangea landFraction (standardowy) ===
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=2 terrain=1438 landSea=10592 relief=13585 coast=11319 riversMain=58 riversFill=531 forest=379 deposits=1362 starts=4311 total=43577
+  seed 42 target 20% (resolved 20%): actual 20.0% land=4032 bbox 80x74 fill=0.681 annular=0
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=884 landSea=7905 relief=10522 coast=4975 riversMain=7 riversFill=1203 forest=584 deposits=386 starts=2811 total=29278
+  seed 42 target 50% (resolved 50%): actual 50.0% land=10080 bbox 120x113 fill=0.743 annular=0
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=516 landSea=9923 relief=13232 coast=5777 riversMain=14 riversFill=743 forest=1576 deposits=870 starts=2455 total=35106
+  seed 42 target 80% (resolved 80%): actual 81.5% land=16421 bbox 164x116 fill=0.863 annular=0
+  → seed 42 AC: ratio80/20=4.07 (≥1.6 OK) fracΔ=61.5pp (≥12 OK) actual80=81.5% (≥45 OK) annular=0 (≤120 OK) 50≠80 OK bboxArea×3.21 → PASS
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=775 landSea=8302 relief=10201 coast=5655 riversMain=7 riversFill=105 forest=88 deposits=194 starts=1858 total=27186
+  seed 123 target 20% (resolved 20%): actual 20.0% land=4032 bbox 78x75 fill=0.689 annular=0
+
+EXIT=124
+TIME=150.1

@@ -1,0 +1,60 @@
+era-cud-main-ts-integracja-test
+
+PASS: Blok 1: import computeMainCivEraFromResearch z owner-epoch.ts
+PASS: Blok 2: syncOwnerEraFromResearch rozgałęzia się dla main-civ (!isBarbarian && !isCityStateOwner) i woła computeMainCivEraFromResearch z civTypeForOwner(ownerId) + completedWorldWonders
+PASS: Blok 2: reconcilePlayerEraFromResearch() liczy z player.zbadane + civTypeForOwner(0) + completedWorldWonders, ustawia player.era
+PASS: Blok 2: syncOwnerEraFromResearch zapisuje PRZELICZONY wynik (ownerEraByOwner.set(ownerId, next)), nie odrzuca go
+PASS: Blok 2: reconcilePlayerEraFromResearch() czyta startEra z gameStartEra(), nie na sztywno
+PASS: Blok 3a: chatka (village hut) woła reconcilePlayerEraFromResearch po researchStep
+PASS: Blok 3a: chatka odświeża nakładki złóż/setEra gdy eraAdvanced (nie tylko gdy step.completed ma awansEpoki) — naprawa braku odświeżenia przy awansie z cudu
+PASS: Blok 3b: grantTechToOwnerWithSideEffects woła reconcilePlayerEraFromResearch (nie Math.max)
+PASS: Impact C-026: call-site #1 (koszyk transferBasketItems::case tech) nienaruszony
+PASS: Impact C-026: call-site #2 (akcja 6 executeTechTradeDeal::grantTech) nienaruszony
+FAIL: Blok 3c: koniec tury (auto-research) woła reconcilePlayerEraFromResearch po researchStep
+PASS: Blok 4a: ukończenie cudu (completeWonderOnHex) przelicza erę natychmiast
+PASS: Blok 4b: ukończenie cudu bez wolnego heksa (fallback) przelicza erę natychmiast
+PASS: sanity: ciało grantTechToOwnerWithSideEffects wyodrębnione do analizy
+PASS: grantTechToOwnerWithSideEffects: stary Math.max(player.era, awansTarget) NIE występuje już w ciele funkcji
+
+14 passed, 1 failed
+
+-- weryfikacja mutacyjna --
+
+MUT-PASS (złapana): M1: usunięcie reconcilePlayerEraFromResearch() z grantTechToOwnerWithSideEffects (11/12)
+MUT-PASS (złapana): M2: przywrócenie Math.max(player.era, awansTarget) zamiast reconcile w grantTechToOwnerWithSideEffects (11/12)
+MUT-PASS (złapana): M3: usunięcie reconcile z chatki (village hut) (11/12)
+MUT-FAIL (NIE złapana): M4: usunięcie reconcile z końca tury (auto-research)
+MUT-PASS (złapana): M5: reconcile w completeWonderOnHex przeniesiony do gałęzi AI zamiast gracza (11/12)
+MUT-PASS (złapana): M6: syncOwnerEraFromResearch zawsze woła computeOwnerEraFromResearch (usunięta gałąź main-civ) (11/12)
+MUT-PASS (złapana): M12: syncOwnerEraFromResearch zapisuje prev zamiast next (wynik AI wyrzucony do kosza) (11/12)
+MUT-PASS (złapana): M13: reconcilePlayerEraFromResearch startEra zaszyta na sztywno (1) zamiast gameStartEra() (11/12)
+MUT-PASS (złapana): M8: usunięcie wywołania grantTechToOwnerWithSideEffects z koszyka (case tech) (11/12)
+MUT-PASS (złapana): M9: usunięcie wywołania grantTechToOwnerWithSideEffects z akcji 6 (11/12)
+MUT-PASS (złapana): M10: usunięcie reconcile z fallbacku completeWonderBuilt (brak wolnego heksa) (11/12)
+MUT-PASS (złapana): M11: import computeMainCivEraFromResearch usunięty z main.ts (11/12)
+MUT-PASS (złapana): M14: reconcilePlayerEraFromResearch civTypeForOwner(0) zaszyty na sztywno jako 'grecy' (E3) (11/12)
+MUT-PASS (złapana): M15: reconcilePlayerEraFromResearch dostaje [] zamiast completedWorldWonders (E4) (11/12)
+MUT-PASS (złapana): M16: syncOwnerEraFromResearch AI dostaje civTypeForOwner(0) (gracza) zamiast civTypeForOwner(ownerId) (E5) (11/12)
+
+15/16 mutacji złapanych, 1 NIEZŁAPANYCH
+
+-- sondy kruchości (muszą zostać PASS) --
+
+PROBE-OK: P1: rename techId->techIdArg w grantTechToOwnerWithSideEffects (razem z użyciami)
+PROBE-OK: P2: dodatkowy komentarz przed reconcilePlayerEraFromResearch() w bloku 3b
+PROBE-OK: P3: cudzysłów zamiast apostrofu w niepowiązanym miejscu pliku (case "zloto")
+PROBE-OK: P4: reformat wieloliniowy grantTechToOwnerWithSideEffects (dodatkowe puste linie)
+PROBE-OK: P5: usunięcie/zmiana treści komentarza R-EPOKA-CUD (PL->EN, CLAUDE.md §9)
+PROBE-OK: P6: niepowiązany kod dodany między blokami (nowa funkcja no-op)
+PROBE-OK: P7: dodatkowy whitespace/tabulacja wokół reconcilePlayerEraFromResearch (3c)
+PROBE-OK: P8: rename zmiennej prevPlayerEra->prevEraX w bloku 4a (razem z użyciami)
+PROBE-OK: P9: dodanie console.log debug niepowiązanego z logiką tuż przed 3a hookiem
+PROBE-OK: P10: zamiana kolejności pól w sygnaturze grantTechToOwnerWithSideEffects zwrotu (kosmetyka typu)
+PROBE-OK: P11: dodanie pustej linii między completedWorldWonders.push a syncWonderRender (4a)
+
+11/11 sond kruchości bezpiecznych, 0 fałszywie czerwonych
+
+=== WYNIK: FAIL ===
+
+EXIT=1
+TIME=0.4

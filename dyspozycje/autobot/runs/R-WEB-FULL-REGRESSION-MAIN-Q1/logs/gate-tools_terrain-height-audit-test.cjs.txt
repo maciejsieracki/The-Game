@@ -1,0 +1,22 @@
+
+--- Wysokości render (Roblox) ---
+Morze (tafla):     0.180
+Wybrzeże:          0.220
+Nakładka wody 3D:  0.224
+laka       top=0.460  nad morzem=+0.280
+rownina    top=0.460  nad morzem=+0.280
+pustynia   top=0.460  nad morzem=+0.280
+polarny    top=0.460  nad morzem=+0.280
+wzgorza    top=0.640  nad morzem=+0.460
+gory       top=0.780  nad morzem=+0.600
+Min. luka ląd–morze: 0.280 (wymagane ≥ 0.28)
+PASS: render: brak naruszeń wysokości (0)
+PASS: płaski ląd: jednolite topY (rozrzut 0.0000)
+PASS: rzeka nad laka (top 0.460 < river 0.540)
+PASS: rzeka nad rownina (top 0.460 < river 0.540)
+PASS: rzeka nad pustynia (top 0.460 < river 0.540)
+PASS: rzeka nad polarny (top 0.460 < river 0.540)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=150.3

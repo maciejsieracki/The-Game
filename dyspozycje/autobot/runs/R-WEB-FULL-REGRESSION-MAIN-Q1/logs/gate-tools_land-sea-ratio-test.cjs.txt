@@ -1,0 +1,9 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=16 terrain=108 landSea=1020 relief=853 coast=180 riversMain=24566 riversFill=27603 forest=34 deposits=129 starts=732 total=55241
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=144 landSea=1090 relief=1162 coast=507 riversMain=3417 riversFill=1272 forest=50 deposits=133 starts=506 total=8280
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=6 terrain=35 landSea=460 relief=600 coast=111 riversMain=23862 riversFill=112918 forest=46 deposits=158 starts=720 total=138916
+
+EXIT=124
+TIME=300.2

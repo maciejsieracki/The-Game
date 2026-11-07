@@ -1,0 +1,22 @@
+
+  .....<REF-TMP>/tmp/run/unit-power-sort-31336-gbu9x2.cjs  9.6kb
+
+⚡ Done in 6ms
+  OK: fixture order before refresh
+  OK: equal powers preserve source order
+  OK: zero-power ties preserve source order
+  OK: sort returns a new array
+  OK: source roster array is not mutated
+  OK: fixture order after a roster refresh
+  OK: fixture order after save/load round-trip
+  OK: production-item roster resolves definitions before sorting
+  OK: real units.json fixture is ordered by computed field power
+  OK: real units.json source roster remains unchanged
+  OK: replacement picker sorts its roster at the display boundary
+  OK: empire recruitment snapshot sorts its roster at the display boundary
+  FAIL: city panel detail and recruitment lists both sort at the display boundary
+
+=== unit-power-sort-test: 12 pass, 1 fail ===
+
+EXIT=1
+TIME=0.2

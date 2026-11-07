@@ -1,0 +1,27 @@
+
+-- (a) eliminateOwner() czyści aiSurplusRedirectedOwners + aiSliderStateByOwner --
+  [OK] A0: main.ts: kotwica "function eliminateOwner(...)" znaleziona
+  [OK] A1: fragment sprzątający leży WEWNĄTRZ eliminateOwner (po kotwicy funkcji)
+  [OK] A2: fragment sprzątający ma sensowną długość (>500 znaków) -- kotwice nie zdegenerowały się
+  [OK] A3: fragment zawiera aiSurplusRedirectedOwners.delete(ownerId)
+  [OK] A4: fragment zawiera aiSliderStateByOwner.delete(ownerId)
+<anonymous_script>:53
+for (const [key, st] of Array.from(regularWarCapturedByPairKey.entries())) {
+                                   ^
+
+ReferenceError: regularWarCapturedByPairKey is not defined
+    at eval (eval at <anonymous> (<WT>/gra/tools/ai-dlug-porzadki-q1-test.cjs:98:16), <anonymous>:53:36)
+    at Object.<anonymous> (<WT>/gra/tools/ai-dlug-porzadki-q1-test.cjs:106:5)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49
+
+Node.js v22.22.0
+
+EXIT=1
+TIME=0.2

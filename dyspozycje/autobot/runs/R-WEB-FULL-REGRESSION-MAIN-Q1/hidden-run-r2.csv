@@ -1,0 +1,10 @@
+name,group,exit,status,time_s,pass_marks,fail_marks,lastfail
+tools/.ai-test-diplo-tmp.cjs,hidden,1,RED,0.5,0,21,  FAIL: T9h: partner A -> oferuj_trybut_za_pokoj (got undefined) |   FAIL: T9h: partner C -> wypowiedz_wojne (got undefined) |   FAIL: T9j: co najmniej jedna komenda
+tools/.diag-playtest-bundle.cjs,hidden,0,GREEN,0.1,0,0,
+tools/.krok2-typecheck-bundle.cjs,hidden,0,GREEN,0.0,0,0,
+tools/.logic-test-13b.cjs,hidden,1,RED,2.8,2,2,FAIL  [2] placeStartingUnits returns >= 4 units — units.length=0 | FAIL  [3] at least one player (ownerId===0) unit — playerUnits.length=0
+tools/.palisada-check-bundle.cjs,hidden,0,GREEN,0.0,0,0,
+tools/.quick-river-test.cjs,hidden,0,GREEN,0.0,0,0,
+tools/.smoke-deliver.cjs,hidden,1,RED,0.8,0,0,
+tools/.smoke-rerender.cjs,hidden,1,RED,0.7,0,0,
+tools/.test-diag-bundle.cjs,hidden,0,GREEN,0.0,0,0,

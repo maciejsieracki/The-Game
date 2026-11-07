@@ -1,0 +1,4 @@
+podaj --a <dist> --b <dist>
+
+EXIT=2
+TIME=0.4

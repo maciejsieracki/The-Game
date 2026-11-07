@@ -1,0 +1,76 @@
+========================================================================
+P-MOC-BALANS-WAGI/scroll -- scrollTop RUNDA 1 (re-render tego samego widoku) +
+RUNDA 2 (nowy blok / swieze otwarcie resetuje scroll do gory)
+========================================================================
+
+A1. render(): kolejnosc zapamietaj -> podmien -> [skok | reset (RUNDA 2) | przywroc] (source-text)
+  PASS: znaleziono "function render(): void {"
+  PASS: znaleziono koniec render() (kotwica nastepnej deklaracji "let backdrop")
+  PASS: render() zawiera "const prevScrollTop = bodyEl.scrollTop;"
+  PASS: render() zawiera "bodyEl.innerHTML = body;"
+  PASS: prevScrollTop zapamietany PRZED podmiana innerHTML (nie po -- inaczej zapamietalibysmy juz wyzerowana wartosc)
+  PASS: render() zawiera przywrocenie "bodyEl.scrollTop = prevScrollTop;" (RUNDA 1, galaz koncowa)
+  PASS: przywrocenie nastepuje PO podmianie innerHTML
+  PASS: render() ma "if (scrollTarget) {"
+  PASS: przywrocenie scrollTop lezy WYLACZNIE w koncowej galezi "} else {" -- nie bezwarunkowo, nie w "else if"
+  PASS: galaz "if (scrollTarget)" nadal woła requestAnimationFrame(...scrollToSection...) -- celowy skok do sekcji NIENARUSZONY (RUNDA 1)
+  PASS: render() ma odrebna galaz "} else if (resetScrollOnNextRender) {" (RUNDA 2)
+  PASS: galaz "else if (resetScrollOnNextRender)" lezy MIEDZY "if (scrollTarget)" a koncowym przywroceniem prevScrollTop (kolejnosc: skok -> reset -> przywroc)
+  PASS: galaz "else if (resetScrollOnNextRender)" ustawia scrollTop=0 i zeruje flage (kolejnosc: zeruj -> ustaw 0)
+
+A2. showEmpireDetailPanel(): flaga resetScrollOnNextRender ustawiana na podstawie STAREGO open/activeSection, PRZED ich nadpisaniem (source-text)
+  PASS: modul deklaruje "let resetScrollOnNextRender = false;"
+  PASS: znaleziono "export function showEmpireDetailPanel(section?: string): void {"
+  PASS: znaleziono koniec showEmpireDetailPanel() (kotwica "export function hideEmpireDetailPanel")
+  PASS: showEmpireDetailPanel() zawiera warunek "if (!open || newSection !== activeSection)" ktory ustawia "resetScrollOnNextRender = true;"
+  PASS: kolejnosc w showEmpireDetailPanel(): warunek (czyta STARE activeSection/open) -> activeSection=newSection -> open=true
+
+B. Dowod wykonywalny -- wycięty fragment render() uruchomiony na fake bodyEl (S1/S4 z rundy 1 + S2/S3 nowe w rundzie 2)
+  PASS: kotwica konca wycinka znaleziona (koncowa galaz "} else { bodyEl.scrollTop = prevScrollTop; }")
+  PASS: wycinek nie jest pusty (jest co uruchomic)
+  PASS: wycinek zawiera obie galezie -- RUNDA 1 (prevScrollTop) i RUNDA 2 (resetScrollOnNextRender)
+E. Kontrakt srodowiska wycinka -- auto-zaslepki funkcji modulowych wolanych w render()
+   auto-zaslepki wykryte w wycinku: mountMassRecruitmentControls, wireMiastaColFilter, wireMiastoResFilter, wireMiastoScopeButtons
+  FAIL: E1: wycinek nie odwoluje sie do zadnego identyfikatora spoza {globalne JS, lokalne wycinka, jawne parametry, funkcje modulowe panelu} -- ["snap"]
+  PASS: E2: zadna auto-zaslepka nie przykrywa nazwy nosnej dowodu (bodyEl/prevScrollTop/scrollTarget/pendingScrollSection/resetScrollOnNextRender/...)
+  PASS: E3: auto-zaslepiona funkcja modulowa "mountMassRecruitmentControls()" NIE dotyka scrollTop (wiec no-op zaslepka nie ukrywa interakcji z naprawa scrolla)
+  PASS: E3: auto-zaslepiona funkcja modulowa "wireMiastaColFilter()" NIE dotyka scrollTop (wiec no-op zaslepka nie ukrywa interakcji z naprawa scrolla)
+  PASS: E3: auto-zaslepiona funkcja modulowa "wireMiastoResFilter()" NIE dotyka scrollTop (wiec no-op zaslepka nie ukrywa interakcji z naprawa scrolla)
+  PASS: E3: auto-zaslepiona funkcja modulowa "wireMiastoScopeButtons()" NIE dotyka scrollTop (wiec no-op zaslepka nie ukrywa interakcji z naprawa scrolla)
+
+  PASS: wycinek jest syntaktycznie poprawnym JS po wycieciu (new Function nie rzuca)
+  FAIL: S1: wykonanie nie rzucilo wyjatku (np. ReferenceError gdy naprawa/anchor brakuje) -- "snap is not defined"
+  PASS: S1: tresc faktycznie podmieniona (innerHTML = nowy body)
+  FAIL: S1 (RDZEN DOWODU RUNDY 1): scrollTop=842 PRZED przelaczeniem == scrollTop PO przelaczeniu (zachowany, nie wyzerowany) -- {"scrollTop":0}
+  PASS: S1: brak celowego skoku -> requestAnimationFrame NIE wywolane
+  FAIL: S1: wireMocViewButtons() wywolane (przyciski podpiete na nowo po podmianie DOM) -- 0
+  FAIL: S2: wykonanie nie rzucilo wyjatku (np. ReferenceError gdy naprawa/anchor brakuje) -- "snap is not defined"
+  PASS: S2: tresc faktycznie podmieniona (innerHTML = nowy body)
+  PASS: S2: block!=="all" -> brak celowego skoku -> requestAnimationFrame NIE wywolane
+  PASS: S2 (RDZEN DOWODU RUNDY 2): scrollTop PO renderze == 0, NIE 600 -- nowy blok pokazany OD GORY, nie ze starym scrollem z INNEGO bloku
+  FAIL: S3: wykonanie nie rzucilo wyjatku (np. ReferenceError gdy naprawa/anchor brakuje) -- "snap is not defined"
+  PASS: S3: tresc faktycznie podmieniona (innerHTML = nowy body)
+  PASS: S3: pendingScrollSection=null -> brak celowego skoku -> requestAnimationFrame NIE wywolane
+  PASS: S3 (RDZEN DOWODU RUNDY 2): scrollTop PO renderze == 0, NIE 900 -- swieze otwarcie pokazuje panel OD GORY, nie ze starym scrollem sprzed zamkniecia
+  FAIL: S4: wykonanie nie rzucilo wyjatku (np. ReferenceError gdy naprawa/anchor brakuje) -- "snap is not defined"
+  FAIL: S4: celowy skok -> requestAnimationFrame WYWOLANE (scrollToSection zaplanowane) -- 0
+  PASS: S4: stara pozycja (842) NIE jest synchronicznie przywracana -- galaz if(scrollTarget) wygrywa nad else-if/else, o docelowa pozycje zadba scrollToSection
+
+C. Weryfikacja negatywna RUNDY 1 -- mutacja usuwajaca przywracanie prevScrollTop, lapana przez S1
+  PASS: mutacja RUNDY 1 faktycznie zmienila wycinek (kotwica zamiany istnieje)
+  PASS: zmutowany (RUNDA 1) wycinek jest syntaktycznie poprawny (regresja nie psuje samej skladni)
+  FAIL: MUTANT RUNDA 1: wykonanie nie rzucilo wyjatku (np. ReferenceError gdy naprawa/anchor brakuje) -- "snap is not defined"
+  PASS: MUTANT RUNDY 1 (bez przywracania) lapany CZERWONO przez S1: scrollTop PO przelaczeniu == 0, NIE 842
+
+D. Weryfikacja negatywna RUNDY 2 -- mutacja usuwajaca galaz resetScrollOnNextRender, lapana przez S2/S3
+  PASS: granice galezi "else if (resetScrollOnNextRender)" znalezione w wycinku (do usuniecia mutacja D)
+  PASS: mutacja RUNDY 2 faktycznie zmienila wycinek (galaz usunieta)
+  PASS: zmutowany (RUNDA 2) wycinek jest syntaktycznie poprawny (regresja nie psuje samej skladni)
+  FAIL: MUTANT RUNDA 2 (parametry S2): wykonanie nie rzucilo wyjatku (np. ReferenceError gdy naprawa/anchor brakuje) -- "snap is not defined"
+  FAIL: MUTANT RUNDY 2 (galaz resetScrollOnNextRender usunieta) lapany CZERWONO przez S2: scrollTop PO przelaczeniu == 600 (blad rundy 1 odtworzony), NIE 0 -- {"scrollTop":0,"mutantBuilt":true}
+
+========================================================================
+FAILED: 42 passed, 11 failed
+
+EXIT=1
+TIME=0.0

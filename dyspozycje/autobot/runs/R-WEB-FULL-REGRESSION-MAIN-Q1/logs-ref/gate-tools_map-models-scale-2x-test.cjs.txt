@@ -1,0 +1,4 @@
+PASS: main.ts: compactDepositAtEdge + DEPOSIT_* identyczne z baza (zmiana skali nie dotyka main.ts)
+
+EXIT=124
+TIME=300.1

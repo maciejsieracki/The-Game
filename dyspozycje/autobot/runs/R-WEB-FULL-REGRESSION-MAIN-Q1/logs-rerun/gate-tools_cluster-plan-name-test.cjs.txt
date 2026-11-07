@@ -1,0 +1,19 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=6 terrain=37 landSea=547 relief=424 coast=69 riversMain=4739 riversFill=6012 forest=10 deposits=50 starts=328 total=12222
+[clusters] capital-sep: 12 niewykonalne dla 5 civ na 50x50, obnizono do 5
+[clusters] allocateTypyToMasses: 2 obcych typów bez miejsca po capach (n=4, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 2 obcych typów bez miejsca po capach (n=4, largest=108, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 5 civ na 50x50, obnizono do 5
+[clusters] allocateTypyToMasses: 2 obcych typów bez miejsca po capach (n=4, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 2 obcych typów bez miejsca po capach (n=4, largest=108, threshold=90)
+FAIL: rzymianie: seed 202 has a rejected slot
+FAIL: rzymianie: regression reproducer differs before post-filter allocation
+FAIL: inkowie: seed 202 has a rejected slot
+FAIL: inkowie: regression reproducer differs before post-filter allocation
+PASS: rzymianie: accepted slots consume common[0..] after collision filtering
+PASS: inkowie: accepted slots consume common[0..] after collision filtering
+
+2 passed, 4 failed
+
+EXIT=1
+TIME=13.0

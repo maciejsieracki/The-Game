@@ -1,0 +1,16 @@
+  PASS: miedz poza potencjałem panelu (tylko Koń/Sól/Złoto)
+  PASS: miedz NIE active bez kopalni
+  PASS: getResourceAccessForCity = tylko active
+  PASS: tartak → active Drewno
+  PASS: Drewno nie w potencjale gdy active
+  PASS: Model B bydlo NIE jest surowcem → brak active
+  PASS: bydlo nie w potencjale gdy active
+  PASS: miedz poza potencjałem panelu bez popalni
+  PASS: brak Brązu bez popalni mimo Pieca
+  PASS: kopalnia_miedzi → active Ruda
+
+eko-tech-paczka5: 10 pass, 1 fail
+  FAIL: Kopalnia miedzi + Piec → active Brąz
+
+EXIT=1
+TIME=0.8

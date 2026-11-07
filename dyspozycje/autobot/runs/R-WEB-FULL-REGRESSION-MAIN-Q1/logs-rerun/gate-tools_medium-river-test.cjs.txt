@@ -1,0 +1,35 @@
+PASS: spacing constant = 4 hex
+PASS: min net len >= 6 (7)
+PASS: unit: branch wrap wykryty
+PASS: unit: trim branch → a→c
+PASS: unit: po trim brak branch wrap
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=172 landSea=2249 relief=2363 coast=2103 riversMain=25412 riversFill=4184 forest=491 deposits=552 starts=1924 total=39449
+PASS: Pangea mini seed 42: 11 średnich (>0)
+PASS: Pangea mini seed 42: 0 medium krotszych niz min net 5 (0)
+PASS: Pangea mini seed 42: 0 oxbow stubow net<5 (0)
+PASS: Pangea mini seed 42: 0 join hex-wrap przy ujsciu (0)
+PASS: Pangea mini seed 42: 0 branch hex-wrap przy odgalezieniu (0)
+PASS: Pangea mini seed 42: 0 medium bez 3+ hex suchego ladu (0)
+PASS: Pangea mini seed 42: 0 medium niewidocznych po render path (0)
+PASS: Pangea mini seed 42: wszystkie medium startują na main (0 nie)
+PASS: Pangea mini seed 42: 0 medium orphan bez sieci/morza (0)
+PASS: Pangea mini seed 42: 0 medium łamie okno skrętu (0)
+PASS: Pangea mini seed 42: 0 medium samotnych do oceanu (0)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=8 terrain=58 landSea=841 relief=760 coast=237 riversMain=4745 riversFill=16550 forest=24 deposits=40 starts=243 total=23505
+PASS: Kontynenty mini seed 7: 18 średnich (>0)
+PASS: Kontynenty mini seed 7: 0 medium krotszych niz min net 4 (0)
+PASS: Kontynenty mini seed 7: 0 oxbow stubow net<4 (0)
+PASS: Kontynenty mini seed 7: 0 join hex-wrap przy ujsciu (0)
+PASS: Kontynenty mini seed 7: 0 branch hex-wrap przy odgalezieniu (0)
+PASS: Kontynenty mini seed 7: 0 medium bez 3+ hex suchego ladu (0)
+PASS: Kontynenty mini seed 7: 0 medium niewidocznych po render path (0)
+PASS: Kontynenty mini seed 7: wszystkie medium startują na main (0 nie)
+PASS: Kontynenty mini seed 7: 0 medium orphan bez sieci/morza (0)
+PASS: Kontynenty mini seed 7: 0 medium łamie okno skrętu (0)
+PASS: Kontynenty mini seed 7: 0 medium samotnych do oceanu (0)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=200.3

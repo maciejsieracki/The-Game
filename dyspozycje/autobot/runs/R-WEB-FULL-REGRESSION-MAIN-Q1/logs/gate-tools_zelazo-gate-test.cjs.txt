@@ -1,0 +1,47 @@
+
+[zelazo-gate-test] Running tests...
+
+1. empireHasKopalniaNaZlozuZelaza
+  [OK] brak placedImprovements -> false
+  [OK] Kopalnia żelaza na hexie ze zlozem zelaza -> true
+  [OK] Legacy kopalnia na hexie ze zlozem zelaza -> true (migracja save)
+  [OK] Kopalnia na hexie ze zlozem MIEDZI (nie zelaza) -> false
+  [OK] Kopalnia żelaza na hexie BEZ zloza -> false
+  [OK] INNE ulepszenie (droga) na hexie ze zlozem zelaza (bez Kopalni) -> false
+  [OK] Kopalnia jako jedna z kilku warstw na hexie -> true
+  [OK] brak mapy (null) -> false (bezpiecznik)
+
+2. cityHasOdlewniaZelaza
+  [OK] miasto bez budynkow -> false
+  [OK] sama Odlewnia brazu (bez zelaza) -> false
+  [OK] Odlewnia zelaza wybudowana -> true
+
+3. hasZelazoAccess (AND-gate)
+  [OK] zelazo w magazynie, brak Odlewni -> false
+  [OK] Odlewnia=true, brak zelaza w magazynie -> false
+  [OK] zelazo w magazynie + Odlewnia -> true
+  [OK] brak stocku -> false (fail-closed)
+
+4. availableProduction: miasto BEZ zlozа/kopalni LUB BEZ Odlewni -> jednostki zelazne NIEDOSTEPNE
+  [OK] Legionista NIE dostepny: Odlewnia jest, ale brak kopalni na zlozu zelaza
+  [OK] Legionista NIE dostepny: kopalnia jest, ale brak Odlewni zelaza w miescie
+  [OK] Legionista NIE dostepny gdy ctx.hasKopalniaNaZlozuZelaza w ogole nie podano (fail-closed)
+
+5. availableProduction: miasto Z kopalnia na zlozu ORAZ z Odlewnia -> jednostki zelazne DOSTEPNE
+  [FAIL] Legionista JEST dostepny: kopalnia na zlozu + Odlewnia zelaza -- ids=[]
+
+6. Jednostka Zelaza BEZ Surowiec="zelazo" (np. pusty Surowiec) -- gate jej NIE dotyczy
+  [FAIL] Procarz (Surowiec pusty) dostepny mimo braku kopalni/Odlewni -- bramka zelaza go nie dotyczy -- ids=[]
+
+7. purchasableUnits respektuje ten sam gate
+  [OK] purchasableUnits: brak kopalni -> Legionista niedostepny
+  [FAIL] purchasableUnits: kopalnia+Odlewnia -> Legionista dostepny
+
+8. availableReplacementsFor ("Zastap") respektuje ten sam gate
+  [OK] Zastap: Legionista NIE jest opcja zamiany bez dostepu do zelaza
+  [FAIL] Zastap: Legionista JEST opcja zamiany z pelnym dostepem do zelaza -- ids=[]
+
+[zelazo-gate-test] NIEUDANE: 4/24
+
+EXIT=1
+TIME=0.6

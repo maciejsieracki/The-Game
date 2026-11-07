@@ -1,0 +1,2 @@
+17:42 dysk spadl <3GB (inne procesy); wiersze NIE_ZMIERZONO usuniete i wznowione
+19:16 fast timeout obnizony 300->150s dla reszty (obciazenie hosta load~18)

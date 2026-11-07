@@ -1,0 +1,11 @@
+  PASS: wpis armii przechowuje typ reprezentanta stosu
+  PASS: panel armii deklaruje callback otwarcia karty
+  PASS: osobny przycisk wpisu armii wywołuje callback karty
+  PASS: main podłącza dialog karty
+  PASS: wiring wyszukuje prawdziwą definicję jednostki
+
+unit-info-card-wiring-test: 5 pass, 1 fail
+  FAIL: wiring rozpoznaje właściwą jednostkę runtime
+
+EXIT=1
+TIME=0.1

@@ -1,0 +1,22 @@
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=34 terrain=272 landSea=6573 relief=9314 coast=1220 riversMain=13 riversFill=222 forest=397 deposits=1202 starts=3148 total=22396
+[clusters] capital-sep: 25 niewykonalne dla 8 civ na 168x120, obnizono do 23
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=73 terrain=624 landSea=5130 relief=8611 coast=1531 riversMain=16 riversFill=304 forest=143 deposits=296 starts=2877 total=19605
+[clusters] capital-sep: 25 niewykonalne dla 8 civ na 168x120, obnizono do 23
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=88 terrain=542 landSea=7558 relief=8829 coast=1505 riversMain=29 riversFill=423 forest=417 deposits=626 starts=3340 total=23359
+[clusters] capital-sep: 25 niewykonalne dla 8 civ na 168x120, obnizono do 23
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=24 terrain=790 landSea=4625 relief=7094 coast=1298 riversMain=21 riversFill=285 forest=337 deposits=361 starts=2921 total=17757
+[clusters] capital-sep: 25 niewykonalne dla 8 civ na 168x120, obnizono do 23
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=18 terrain=208 landSea=5499 relief=7818 coast=1239 riversMain=13 riversFill=256 forest=376 deposits=185 starts=5359 total=20971
+[clusters] capital-sep: 25 niewykonalne dla 8 civ na 168x120, obnizono do 23
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=1 terrain=1098 landSea=7707 relief=10587 coast=5055 riversMain=7 riversFill=736 forest=370 deposits=379 starts=3321 total=29262
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=303 landSea=6481 relief=12415 coast=3729 riversMain=19 riversFill=794 forest=392 deposits=462 starts=3351 total=27945
+
+EXIT=124
+TIME=200.2

@@ -1,0 +1,18 @@
+[large-empire] source identity before build: {"mainTsSha256":"07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b","productionTsSha256":"1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123","buildInputTreeSha256":"4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9","harnessSha256":"f1cf16d240b77e64afe188cdaac7ba765150d79b98945aa881f582f4e4fdd78f"}
+vite v5.4.21 building for production...
+transforming...
+✓ 960 modules transformed.
+rendering chunks...
+[plugin vite:singlefile]
+
+[plugin vite:singlefile] Inlining: index-Co2a_9uq.js
+[plugin vite:singlefile]
+
+computing gzip size...
+../../../../../../..<REF-TMP>/w2/tmp/run/large-empire-stress-29559-ns3bz2/index.html  75,770.07 kB │ gzip: 49,501.91 kB
+✓ built in 30.29s
+[large-empire] source identity after build: {"mainTsSha256":"07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b","productionTsSha256":"1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123","buildInputTreeSha256":"4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9","harnessSha256":"f1cf16d240b77e64afe188cdaac7ba765150d79b98945aa881f582f4e4fdd78f"}
+[perf] build identity: {"gitHead":"ffccd8e21336b67c232104728e5abd7d22df81c5","indexHtmlBytes":75770078,"indexHtmlSha256":"e5ed32d817e1ec19855ad414dc02d921648c9162ad5f5ee8a3250b8a2ca8f185","sourceBeforeBuild":{"mainTsSha256":"07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b","productionTsSha256":"1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123","buildInputTreeSha256":"4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9","harnessSha256":"f1cf16d240b77e64afe188cdaac7ba765150d79b98945aa881f582f4e4fdd78f"},"sourceAfterBuild":{"mainTsSha256":"07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b","productionTsSha256":"1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123","buildInputTreeSha256":"4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9","harnessSha256":"f1cf16d240b77e64afe188cdaac7ba765150d79b98945aa881f582f4e4fdd78f"}}
+
+EXIT=124
+TIME=300.2

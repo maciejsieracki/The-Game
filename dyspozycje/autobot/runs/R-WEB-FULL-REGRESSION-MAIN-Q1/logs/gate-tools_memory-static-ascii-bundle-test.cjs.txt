@@ -1,0 +1,4 @@
+podaj --a <dist> --b <dist> --gra <kopia gra z node_modules>
+
+EXIT=2
+TIME=0.3

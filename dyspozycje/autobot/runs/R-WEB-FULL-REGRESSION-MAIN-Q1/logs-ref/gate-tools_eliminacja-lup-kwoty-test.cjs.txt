@@ -1,0 +1,50 @@
+0. main.ts nie ma gotowego formattera waluty (grep-owalny dowód)
+  OK: 0a: main.ts (Chatka barbarzyńska) skleja plain '+' + amount + ' złota' -- ten sam wzorzec [<- 0a]
+  OK: 0b: main.ts (log badania techu) skleja plain '\u2212' + koszt + ' nauki' -- ten sam wzorzec [<- 0b]
+  OK: 0c: brak funkcji formatGold/formatZloto/formatCurrency/formatKwota w main.ts [<- 0c]
+1. Wyciąganie z main.ts: BLOK CZYSTY + miejsce wywołania gałęzi eliminacji
+  OK: 1a: znaleziono BLOK CZYSTY main.ts po markerach POCZATEK/KONIEC [<- 1a]
+  OK: 1b: znaleziono miejsce wywołania eliminacji (eliminationRows..eliminatedDetails) [<- 1b]
+  OK: 1c: BLOK CZYSTY niesie oba budowniczych raportu (rows + jedna linia) [<- 1c]
+  OK: 1d: kwota złota bierze się z Math.floor(outcome.skarbiecPrzejety) [<- 1d]
+  OK: 1e: kwota nauki bierze się z Math.floor(outcome.naukaPrzejeta) [<- 1e]
+  OK: 1f: gałąź barbarzyńska nadal sterowana barbCaptor (przez barbarzyncaZdobywca) [<- 1f]
+2. Egzekucja kodu wyciętego z main.ts -- konkretne kwoty w wierszach raportu
+  OK: 2a: skarbiec=1234 -> pozycja „Złoto ze skarbca" niesie DOKŁADNĄ kwotę [<- 2a] (got "+1234", want "+1234")
+  OK: 2a-2: nauka=0 -> pozycji o nauce w ogóle NIE MA (zero pomijane, nie „bez wzmianki o nauce" w zdaniu) [<- 2a]
+  OK: 2a-kontrola: "1234" (skarbiecPrzejety) jest literalnie w wygenerowanym tekście [<- 2a-kontrola]
+  OK: 2b: skarbiec=0 -> pozycja o skarbcu POMINIĘTA, nie wypisana z zerem [<- 2b]
+  OK: 2b-2: pusty łup -> jedna świadoma pozycja „Łup: brak", komunikat NIE milczy [<- 2b] (got "brak", want "brak")
+  OK: 2b-kontrola: słowo „brak" jest w wygenerowanym tekście (następca „pusty") [<- 2b-kontrola]
+  OK: 2c: skarbiec=500 -> dokładna kwota złota w pozycji [<- 2c] (got "+500", want "+500")
+  OK: 2c-2: nauka=88 -> dokładna kwota nauki w OSOBNEJ pozycji (koniec „Nauka: +88 nauki", defekt E2) [<- 2c] (got "+88", want "+88")
+  OK: 2c-kontrola: "88" (naukaPrzejeta) jest literalnie w wygenerowanym tekście [<- 2c-kontrola]
+  OK: 2c-kontrola2: "500" (skarbiecPrzejety) jest literalnie w wygenerowanym tekście [<- 2c-kontrola]
+  OK: 2d: 250.7 -> +250, podłoga wykonana przez kod main.ts (spójnie z HUD) [<- 2d] (got "+250", want "+250")
+  OK: 2d-2: 12.9 -> +12, bez ułamków w tekście dla gracza [<- 2d] (got "+12", want "+12")
+  OK: 2e: barbCaptor=true -> łup przepadł, barbarzyńcy nie dziedziczą (sens zachowany) [<- 2e] (got "przepadł — barbarzyńcy nie dziedziczą zdobyczy", want "przepadł — barbarzyńcy nie dziedziczą zdobyczy")
+  OK: 2e-2: barbCaptor=true -> ŻADNEJ pozycji łupu mimo skarbca 999 i nauki 40 [<- 2e]
+3. Zero regresji: technologie i Moc nadal z konkretną liczbą, bez skrótów dev
+  OK: 3a: techSkopiowane.length=3 -> pozycja „Technologie +3" (następca „3 tech(y) przejęte") [<- 3a] (got "+3", want "+3")
+  OK: 3b: powerGain=777 -> pozycja Mocy z dokładną liczbą (następca „Zdobycze Power: +777.") [<- 3a] (got "+777", want "+777")
+  OK: 3c: w tekście dla gracza NIE MA już „tech(y)" ani „Power" (defekty E3/E4) [<- 3a, kierunek odwrotny]
+4. Żywy dowód -- realna eliminacja w capital-capture.ts -> raport finalny
+  OK: 4a-praca-PRZED: pula pracy PRZED zdarzeniem -- zdobywca(0)=0, ofiara(3)=90
+  OK: 4a: realna eliminacja -> outcome niepusty [<- 4a]
+  OK: 4b: eliminacja=true (ostatnie miasto AI) [<- 4b] (got true, want true)
+  OK: 4c: outcome.skarbiecPrzejety = 1500 (realny wynik silnika) [<- 4c] (got 1500, want 1500)
+  OK: 4d: outcome.naukaPrzejeta = 63 (realny wynik silnika) [<- 4d] (got 63, want 63)
+  OK: 4d-praca: outcome.pracaPoolPrzejeta = 90 (realny wynik silnika) (got 90, want 90)
+  OK: 4d-praca-PO: pula pracy PO zdarzeniu -- zdobywca(0)=90 (0+90, DODANA), ofiara(3)=0 (wyzerowana)
+  (egzekucja miejsca wywołania rzuciła: EMPIRE_STOCK_RESOURCE_KEYS is not defined)
+  >>> WYGENEROWANY RAPORT (żywy dowód): null
+  FAIL: 4e: pełny raport z REALNEGO outcome silnika (1500 złota, 63 nauki, 2 techy, 420 Mocy, 90 puli pracy PRZEJĘTEJ od P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1) [<- 4e] (got null, want "Ludność: +4 · Budynki: +3 · Złoto ze skarbca: +1500 · Punkty nauki: +63 · Technologie: +2 · Moc: +420 · Pula pracy: +90 — przejęta od wyeliminowanej cywilizacji")
+  FAIL: 4f: kwota złota z silnika trafia do WŁASNEJ pozycji raportu [<- 4e] (got null, want "+1500")
+  FAIL: 4g: kwota nauki z silnika trafia do WŁASNEJ pozycji raportu [<- 4e] (got null, want "+63")
+  FAIL: 4h: liczba skopiowanych technologii z silnika (2) w raporcie [<- 4e] (got null, want "+2")
+  OK: 4i: etykieta Mocy pochodzi z REALNEGO mocLabel() i jest polska („Moc", nie „Power") (got "Moc", want "Moc")
+
+34 passed, 4 failed
+
+EXIT=1
+TIME=0.4

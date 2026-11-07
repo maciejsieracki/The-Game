@@ -1,0 +1,17 @@
+
+-- unitResourceUpkeep: pojedyncze jednostki --
+FAIL: Wojownik -> {drewno:2} (got {"drewno":3}, want {"drewno":2})
+FAIL: Włócznik -> {braz:2} (got {"braz":10}, want {"braz":2})
+FAIL: Włócznik unitStockCost -> {braz:10} (stara baza ×5) (got {"braz":50}, want {"braz":10})
+FAIL: 2× Włócznik -> {braz:4} (got {"braz":20}, want {"braz":4})
+
+-- unitStockCost: rekrutacja Włócznik (×5) --
+
+-- totalUnitResourceUpkeep: suma po jednostkach --
+
+-- edge cases --
+
+unit-resource-upkeep-test: 3 passed, 4 failed
+
+EXIT=1
+TIME=0.3

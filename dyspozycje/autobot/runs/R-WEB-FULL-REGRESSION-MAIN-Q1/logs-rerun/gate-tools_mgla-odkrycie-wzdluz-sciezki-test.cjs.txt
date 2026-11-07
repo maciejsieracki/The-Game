@@ -1,0 +1,38 @@
+========================================================================
+P-MGLA-ODKRYCIE-WZDLUZ-SCIEZKI-Q1 -- Zwiadowca ruch=6 sight=1
+sciezka: [{"q":1,"r":0},{"q":2,"r":0},{"q":3,"r":0},{"q":4,"r":0},{"q":5,"r":0},{"q":6,"r":0}]
+========================================================================
+
+SEKCJA A -- computeVisibleAlongPath: PRZED (tylko koniec) vs PO (cala sciezka)
+  OK: PRZED: widocznosc z pozycji koncowej niepusta (sanity)
+  OK: PO: unia z calej sciezki daje WIECEJ heksow niz sama pozycja koncowa (bug faktycznie naprawiony)
+  OK: PRZED: heks przy poczatku sciezki (1,1) NIE byl odkrywany (odtworzony bug)
+  OK: PO: heks przy poczatku sciezki (1,1) JEST odkrywany po naprawie
+  OK: PO: computeVisibleAlongPath == recznie zbudowana unia widocznosci z kazdego heksu sciezki z osobna
+
+SEKCJA B -- regresja: widocznosc z pozycji koncowej pozostaje PODZBIOREM (nic nie ginie)
+  OK: KAZDY heks widoczny z pozycji koncowej (PRZED) jest tez w wyniku PO -- zero regresji na widocznosci koncowej
+
+SEKCJA C -- stos wielojednostkowy, rozny sight per jednostka (main.ts: petla `for (const su of stack)`)
+  OK: Stos: unia z NAJWIEKSZEGO sight w stosie jest calkowicie pokryta przez zbior po zlaczeniu per-jednostke
+  OK: Stos: `explored` faktycznie urosl po dolozeniu widocznosci sciezki obu jednostek
+
+SEKCJA A2 -- brzegi: sciezka pusta -> zbior pusty (main.ts gatuje `pathHexes.length > 0` przed wywolaniem)
+  OK: sciezka pusta daje pusty Set
+
+SEKCJA A3 -- computeVisible/computeVisibleAt (istniejace eksporty) NIETKNIETE: te same wyniki co przed tematem
+  OK: computeVisible([jednostka na koncu], sight) == computeVisibleAt(koniec, sight) -- funkcja bazowa dziala jak dawniej
+
+SEKCJA D (static) -- wpiecie main.ts: obecnosc, kolejnosc, refreshFog() bez nowego parametru
+  OK: static: `computeVisibleAlongPath` zaimportowane z ./game/visibility w main.ts
+  OK: static: blok "if (pathHexes.length > 0)" (koniec animacji) znaleziony, z checkVillageRewardsAlongPath(pathHexes) po nim
+  OK: static: koniec animacji -- addExplored(explored, computeVisibleAlongPath(pathHexes, ...)) wystepuje PRZED checkVillageRewardsAlongPath (a wiec przed jakimkolwiek refreshFog() w tej galezi)
+  OK: static: blok "if (result.movePath.length > 0)" (applyMarchSegmentInstant) znaleziony, z checkVillageRewardsAlongPath(result.movePath) po nim
+  OK: static: applyMarchSegmentInstant -- addExplored(explored, computeVisibleAlongPath(result.movePath, ...)) wystepuje PRZED checkVillageRewardsAlongPath
+  OK: static: refreshFog() zachowal DOKLADNIE ta sama sygnature (bez nowego parametru extraVisible) -- zamierzone, patrz raport
+  FAIL: static: currentVisible() nadal liczy WYLACZNIE z biezacej pozycji jednostek (u.q, u.r) -- nietkniete (inline lub przez ownPlayerVisibleHexes())
+
+16 pass, 1 fail
+
+EXIT=1
+TIME=0.5

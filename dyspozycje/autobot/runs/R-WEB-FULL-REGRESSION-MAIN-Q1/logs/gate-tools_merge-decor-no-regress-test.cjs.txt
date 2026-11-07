@@ -1,0 +1,48 @@
+  OK: pre-merge: 2 meshy
+  OK: po merge: 1 dziecko
+  OK: isAlreadyMergedDecor po collapse
+  OK: drugi collapse: nadal 1 dziecko
+  OK: drugi collapse: geometria bez zmian (skip)
+  OK: flaga MERGED_DECOR na grupie
+  OK: dispose: merged geometry zwolniona dokladnie 1x
+  OK: dispose: merged material zwolniony dokladnie 1x
+  OK: dispose: wspoldzielona geometria/material singletona NIE zwolnione
+  OK: dispose: token jednostki nadal ma atrybuty
+  OK: dispose: grupa bez flagi MERGED_DECOR = NO-OP
+  OK: dispose: heurystyka isAlreadyMergedDecor NIE ustawia flagi grupy
+  OK: dispose: grupa z heurystyki (bez flagi) = NO-OP
+  OK: dispose: obca grupa bez flagi NIE zwalnia przepietego merged mesh (straznik grupy)
+  OK: dispose: dziecko dodane PO collapse NIE zostalo zwolnione
+  OK: dispose: model konia ma >=7 mesh (idzie sciezka collapse)
+  OK: dispose: realny kon — ZADNA wspoldzielona geoNH* nie zostala zwolniona
+  OK: dispose: drugie zloze koni zachowalo komplet atrybutow pozycji
+  OK: dispose pool: 5 grup ciezkich dalo 10 zasobow GPU do zwolnienia
+  OK: dispose pool: KAZDY zasob grupy ciezkiej zwolniony dokladnie 1x
+  OK: dispose pool: grupy lekkie (bez collapse) nietkniete
+  OK: scene.ts: disposeMergedDecor zaimportowany z ./mergeDecor
+  OK: scene.ts: znaleziono cialo function dispose()
+  OK: scene.ts: wyciete cialo to faktycznie dispose() (zawiera renderer.dispose + drenaz sceneTeardown)
+  OK: scene.ts: ocean + ramka swiata zarejestrowane w sceneTeardown (inaczej wypadaja z dispose)
+  OK: scene.ts dispose(): petla `for (const { group } of styledOverlays) disposeMergedDecor(group)`
+  OK: scene.ts dispose(): petla leci po pelnej tablicy (bez filter/slice/if/continue/break w ciele)
+  OK: scene.ts: dokladnie 1 call site collapseToMergedMesh (jest 1) — inaczej istnieje pool poza styledOverlays
+  OK: scene.ts: jedyny collapse dziala na wpisie styledOverlays (zrodlo poola = ta sama tablica co w dispose)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=779 landSea=11486 relief=11511 coast=4114 riversMain=93969 riversFill=11553 forest=365 deposits=1191 starts=5568 total=140538
+  OK: countSceneOverlayCandidates zwraca total
+  OK: heavy+light = total
+  overlay roblox/pangea/standard: {"total":121,"jungleForest":0,"minecraftForest":0,"minecraftMountain":0,"minecraftHill":0,"minecraftBeach":0,"dune":83,"oasis":38,"estHeavyMerge":38,"estLightSkip":83}
+merge-decor-no-regress-test: BLAD HARNESSU TypeError: renderer.setOpaqueSort is not a function
+    at Object.buildScene (<WT>/gra/tools/.merge-decor-no-regress-bundle.cjs:49147:12)
+    at <WT>/gra/tools/merge-decor-no-regress-test.cjs:426:25
+    at Object.<anonymous> (<WT>/gra/tools/merge-decor-no-regress-test.cjs:551:3)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+
+EXIT=1
+TIME=143.6

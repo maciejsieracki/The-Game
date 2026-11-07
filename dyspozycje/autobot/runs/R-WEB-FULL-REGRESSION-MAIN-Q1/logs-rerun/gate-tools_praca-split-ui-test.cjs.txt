@@ -1,0 +1,30 @@
+PASS: sygnał nazwy strumienia na samej górze sekcji (hero)
+PASS: etykieta strumienia po lewej stronie suwaka (błękit, procent na żywo)
+PASS: etykieta "Budynki" po prawej stronie suwaka (złoto, wyliczany remainder)
+PASS: dwa boksy .civ-emp-two zastąpione jednym suwakiem pełnej szerokości
+PASS: suwak pełnej szerokości z dwukolorowym torem laborSliderFillStyle()
+PASS: laborSliderFillStyle NIE jest już martwym kodem (render początkowy + odświeżenie na żywo)
+PASS: klikalny znacznik MIN na krańcu suwaka
+PASS: klikalny znacznik MAX na krańcu suwaka
+PASS: jeden renderowany nadrzędny input
+PASS: jeden listener input dla nadrzędnego suwaka
+PASS: brak usuniętego lokalnego renderu/wiringu
+FAIL: MIN/MAX przechodzą przez TEN SAM handler co drag (input.value + dispatch "input"), bez drugiej ścieżki zapisu
+PASS: wartość suwaka ma zakres 0–50
+PASS: Budynki wyliczane jako 100% minus Ulepszenia (kod, nie duplikowany tekst stopki)
+PASS: baner-duplikat (split2BarHtml + etykiety Budynki/Pula imperium) usunięty z PRACA IMPERIUM
+PASS: lokalny suwak miasta zaczyna się od 50% budynków
+PASS: lokalny suwak miasta kończy się na 100% budynków
+PASS: sygnał nazwy strumienia na samej górze panelu miasta
+PASS: dwie kolumny Budynki/Ulepszenia w panelu miasta (Wątek F)
+PASS: nazwa "Pula Pracy" usunięta z suwaka miasta (zastąpiona "Ulepszenia", Wątek F)
+PASS: chip nazwy strumienia w panelu miasta używa skrzynki chip-crate (nie młotka tb-build)
+PASS: wiersz info „Ulepszenia" w panelu miasta używa skrzynki chip-crate (nie młotka tb-build)
+PASS: wszystkie ikony przy etykiecie „Ulepszenia" to chip-crate (znaleziono: chip-crate, chip-crate, chip-crate, chip-crate)
+PASS: młotek tb-build nie jest już użyty przy „Ulepszenia" w cityPanel.ts
+PASS: skrzynka 📦 w mapie reskinu wskazuje na TĘ SAMĄ ikonę chip-crate co chipy „Ulepszenia"
+
+[praca-split-ui-test] 24 pass, 1 fail
+
+EXIT=1
+TIME=0.2

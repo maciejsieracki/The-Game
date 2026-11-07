@@ -1,0 +1,9 @@
+FAIL: (0a) mutacja A faktycznie usunęła 29 dodanych pól pwBalance (7 accept + 22 reject) w 6 case'ach evaluateProposal — kontrola nietautologiczna dla Testów 1/2 aktywna — 30
+PASS: (0b) mutacja B faktycznie wyłączyła regułę GOAL 3 w balancePanelDataFromRows — kontrola nietautologiczna dla Testu 3 aktywna
+PASS: (0c) mutacja D faktycznie popsuła pwBalance zaakceptowanej wasalizacji (0 -> -999) — wymuszony scenariusz "AI historycznie mogłoby zaproponować ujemny bilans" dla Testu 4
+PASS: (0d) mutacja D+C (na bundlu mutDC) faktycznie popsuła pwBalance ORAZ przywróciła starą wersję tryPayload w generateCounterOffer (bez sprawdzenia pwBalance<0) — kontrola nietautologiczna dla Testu 4 aktywna
+
+PRZERWANE: co najmniej jedna mutacja nie zadziałała — kod się przesunął, testy niżej byłyby tautologiczne.
+
+EXIT=1
+TIME=1.7

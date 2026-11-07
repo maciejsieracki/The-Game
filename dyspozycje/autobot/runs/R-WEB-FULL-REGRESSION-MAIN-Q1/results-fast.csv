@@ -1,0 +1,834 @@
+name,group,exit,status,time_s,pass,fail,lastfail
+tools/_tmp-battle-roster-test.cjs,fast,0,GREEN,0.5,7,0,
+tools/_tmp-siege-test.cjs,fast,0,GREEN,0.4,11,0,
+tools/adjust-handel-split-suma-test.cjs,fast,0,GREEN,0.4,46,0,
+tools/administracja-stolica-test.cjs,fast,1,RED,0.4,52,1," [FAIL] Sąd w stolicy: ready, brak blokady lokalizacji | [administracja-stolica-test] 52 OK, 1 FAIL"
+tools/ai-army-all-civs-general-muster-test.cjs,fast,0,GREEN,4.3,26,0,
+tools/ai-army-replacement-concentration-test.cjs,fast,0,GREEN,39.1,35,0,
+tools/ai-army-scattered-merge-test.cjs,fast,1,RED,24.8,32,1,"FAIL: czas tury AI w fazie zbierania chmury (przejsciowej) <= 3x + 10 ms | 32 passed, 1 failed"
+tools/ai-avoid-polar-pick-test.cjs,fast,0,GREEN,0.6,16,0,
+tools/ai-avoid-polar-plan-test.cjs,fast,0,GREEN,42.4,,,
+tools/ai-avoid-polar-player-parity-test.cjs,fast,124,TIMEOUT,300.0,,,"[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen) | [civ] mapGen ms | prep=0 terrain=331 landSea=3321 relief=4736 coast=3037 riversMain=15 riversFill=365 forest=195 deposits=221 starts=1557 total=13779"
+tools/ai-avoid-polar-sim-test.cjs,fast,0,GREEN,160.8,,,
+tools/ai-balans-step2-test.cjs,fast,0,GREEN,0.6,9,0,
+tools/ai-balans-step3-test.cjs,fast,1,RED,0.6,7,1,"FAIL: T1d: L3 prog_koszt_x bez zmian = 70 (got 80, want 70) | === ai-balans-step3-test: 7 passed, 1 failed ==="
+tools/ai-balans-step4-test.cjs,fast,0,GREEN,0.6,10,0,
+tools/ai-balans-step5-test.cjs,fast,0,GREEN,0.5,18,0,
+tools/ai-citizen-hex-sibling-exclusion-test.cjs,fast,0,GREEN,2.1,19,0,
+tools/ai-city-capture-integration-test.cjs,fast,0,GREEN,0.4,,,
+tools/ai-city-recovery-test.cjs,fast,0,GREEN,1.4,7,0,
+tools/ai-city-render-batch-test.cjs,fast,1,RED,0.6,,,"AssertionError [ERR_ASSERTION]: dirty city models flush after AI completion/errors before barbarian UI paint"
+tools/ai-city-yield-test.cjs,fast,0,GREEN,0.5,42,0,
+tools/ai-colonization-pop-test.cjs,fast,0,GREEN,0.6,13,0,
+tools/ai-cs-absorption-test.cjs,fast,0,GREEN,0.3,33,0,
+tools/ai-cud-priorytet-b3-test.cjs,fast,0,GREEN,0.7,45,0,
+tools/ai-difficulty-bonus-test.cjs,fast,0,GREEN,0.6,97,0,
+tools/ai-dlug-porzadki-q1-test.cjs,fast,1,RED,0.2,,,"ReferenceError: regularWarCapturedByPairKey is not defined"
+tools/ai-early-city-founding-pace-test.cjs,fast,0,GREEN,2.9,2,0,
+tools/ai-early-no-major-war-test.cjs,fast,0,GREEN,0.6,14,0,
+tools/ai-era-unit-promotion-test.cjs,fast,0,GREEN,0.4,12,0,
+tools/ai-fog-test.cjs,fast,1,RED,0.6,,," throw new AssertionError(obj); | AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+tools/ai-food-improvement-priority-stages-test.cjs,fast,0,GREEN,2.1,13,0,
+tools/ai-food-only-worked-hexes-test.cjs,fast,0,GREEN,16.7,69,0,
+tools/ai-founding-territory-test.cjs,fast,0,GREEN,0.8,29,0,
+tools/ai-general-war-campaign-test.cjs,fast,0,GREEN,0.7,51,0,
+tools/ai-granary-prog-populacji-spojnosc-test.cjs,fast,0,GREEN,0.3,12,0,
+tools/ai-home-defense-civilian-filter-test.cjs,fast,0,GREEN,0.7,8,0,
+tools/ai-home-defense-vs-barbarians-test.cjs,fast,0,GREEN,0.9,46,0,
+tools/ai-improvements-test.cjs,fast,0,GREEN,1.1,56,0,
+tools/ai-jednostki-tylko-zakup-test.cjs,fast,1,RED,2.1,43,1," FAIL: D11: main.ts ma DOKLADNIE JEDEN punkt zuzycia Pracy — nowy, niebroniony by tu uciekl | ai-jednostki-tylko-zakup-test: 43 passed, 1 failed"
+tools/ai-major-absorb-test.cjs,fast,0,GREEN,0.1,35,0,
+tools/ai-major-economy-test.cjs,fast,1,RED,0.5,60,-20,"TypeError: computeMajorArchetypeMilitaryFraction is not a function"
+tools/ai-march-avoid-foreign-territory-test.cjs,fast,1,RED,32.8,98,1," [FAIL] C7 requestWarMarchPassage: brak prosby o przemarsz (no-route): prosba znika (0) -> B4c (wojna-all-in) czerwone (got 1, want 0) | ai-march-avoid-foreign-territory: 98 passed, 1 failed"
+tools/ai-moc-diag-test.cjs,fast,0,GREEN,0.4,22,0,
+tools/ai-move-full-range-test.cjs,fast,0,GREEN,176.6,20,0,
+tools/ai-move-range-collision-test.cjs,fast,0,GREEN,0.3,12,0,
+tools/ai-move-range-test.cjs,fast,0,GREEN,12.8,46,0,
+tools/ai-mp-military-cap-test.cjs,fast,0,GREEN,1.3,18,0,
+tools/ai-mp-rekrutacja-build-gate-test.cjs,fast,0,GREEN,0.9,21,0,
+tools/ai-nauka-podzial-tura1-seed-test.cjs,fast,0,GREEN,4.9,8,0,
+tools/ai-no-march-without-war-q1-test.cjs,fast,0,GREEN,1.5,,,
+tools/ai-no-siege-without-war-r2-test.cjs,fast,0,GREEN,1.1,,,
+tools/ai-ofensywa-wojna-epoki-test.cjs,fast,0,GREEN,1.0,7,0,
+tools/ai-owner-progress-frame-test.cjs,fast,0,GREEN,0.4,,,
+tools/ai-polar-fallback-test.cjs,fast,0,GREEN,0.8,8,0,
+tools/ai-praca-budynki-ulepszenia-owner-policy-test.cjs,fast,0,GREEN,0.5,33,0,
+tools/ai-praca-podzial-tura1-seed-test.cjs,fast,0,GREEN,5.2,9,0,
+tools/ai-praca-split-parity-test.cjs,fast,1,RED,1.3,23,4," FAIL: wariant kanoniczny nadal planuje 1 ulepszenie (got 2, want 1) | FAIL: mutacja do capu 25 nie przechodzi jako pełny budżet 50 (got 1, want 0) | ai-praca-split-parity-test: 23 passed, 4 failed"
+tools/ai-prod-fallback-test.cjs,fast,0,GREEN,1.2,17,0,
+tools/ai-prod-gate-difficulty-test.cjs,fast,0,GREEN,0.4,8,0,
+tools/ai-production-priority-test.cjs,fast,0,GREEN,0.9,9,0,
+tools/ai-produkcja-pokrycie-katalogu-test.cjs,fast,0,GREEN,0.9,6,0,
+tools/ai-recruit-upkeep-gate-test.cjs,fast,0,GREEN,0.4,23,0,
+tools/ai-rekrutacja-parytet-test.cjs,fast,0,GREEN,0.8,7,0,
+tools/ai-resource-needs-test.cjs,fast,0,GREEN,0.9,6,0,
+tools/ai-siege-requires-war-test.cjs,fast,0,GREEN,0.9,49,0,
+tools/ai-slider-test.cjs,fast,0,GREEN,0.8,46,0,
+tools/ai-stadnina-fort-territory-test.cjs,fast,0,GREEN,1.7,17,0,
+tools/ai-test.cjs,fast,1,RED,1.2,274,20," FAIL: T4S-d: mnoznik=1.5 effAgresja=0.6 >= 0.5 -> wypowiedz_wojne; got: [] | FAIL: T10b: zaproponuj_handel po odkryciu; got: [] | ai-test: 274 passed, 20 failed"
+tools/ai-threat-mode-test.cjs,fast,0,GREEN,1.0,12,0,
+tools/ai-ulepszenia-malo-budowane-test.cjs,fast,0,GREEN,62.4,13,0,
+tools/ai-unit-rush-test.cjs,fast,0,GREEN,1.1,7,0,
+tools/ai-war-defend-home-test.cjs,fast,0,GREEN,10.6,30,0,
+tools/ai-war-gate-test.cjs,fast,0,GREEN,1.1,24,0,
+tools/ai-war-nearest-city-peace-2t-test.cjs,fast,0,GREEN,1.4,40,0,
+tools/ai-war-weariness-peace-test.cjs,fast,0,GREEN,1.0,90,0,
+tools/ai-zdobycie-miasta-adiacencja-test.cjs,fast,1,RED,1.6,,," [FAIL] K6b: MUT-2 („naprawa na papierze' — ruch przechodzi, callback przejęcia wycięty) — 2 czerwone asercje K2 (captured + ownerId) — got 4, want 2 | if (mutated === source) throw new Error(`[${label}] kotwica mutacji nie znaleziona`); | Error: [nounblock] kotwica mutacji nie znaleziona"
+tools/ai2-heks-po-heksie-test.cjs,fast,0,GREEN,6.5,38,0,
+tools/ai4-popyt-obywatele-test.cjs,fast,1,RED,9.1,38,17," [FAIL] Q2m: wyrab automatu GRACZA idzie ta sama sciezka pickera co AI CYWILIZACJI (skipWyrab=false; farm w miescie cA: 0) | [FAIL] Q2n: main.ts (AI GRACZA) podaje `getSkipWyrab` z przelacznika, nie stala | ai4-popyt-obywatele-test: 38 passed, 17 failed"
+tools/akwedukt-popcap-test.cjs,fast,0,GREEN,0.7,7,0,
+tools/alliance-war-obligation-test.cjs,fast,0,GREEN,1.1,14,0,
+tools/annex-citystate-spoils-test.cjs,fast,0,GREEN,0.8,79,0,
+tools/army-concentration-test.cjs,fast,0,GREEN,1.4,56,0,
+tools/army-consolidation-e2e-test.cjs,fast,0,GREEN,2.0,6,0,
+tools/army-consolidation-test.cjs,fast,0,GREEN,2.6,32,0,
+tools/army-hunger-combat-test.cjs,fast,0,GREEN,1.1,13,0,
+tools/army-hunger-icon-unfortify-test.cjs,fast,0,GREEN,0.3,4,0,
+tools/army-leadership-test.cjs,fast,0,GREEN,0.4,,,
+tools/army-merge-bounce-test.cjs,fast,0,GREEN,1.0,4,0,
+tools/army-merge-colocated-test.cjs,fast,0,GREEN,0.8,4,0,
+tools/army-merge-dismiss-bounce-test.cjs,fast,0,GREEN,2.4,16,0,
+tools/army-merge-separate-return-mainguard-test.cjs,fast,0,GREEN,0.6,73,0,
+tools/army-merge-separate-return-test.cjs,fast,0,GREEN,0.7,16,0,
+tools/army-merge-split-direction-icons-test.cjs,fast,0,GREEN,0.4,,,
+tools/army-merge-stackgroupid-test.cjs,fast,0,GREEN,0.6,11045,0,
+tools/army-panel-recruit-rally-general-test.cjs,fast,0,GREEN,0.4,,,
+tools/army-recruitment-concentration-test.cjs,fast,0,GREEN,0.9,30,0,
+tools/army-scout-not-leader-test.cjs,fast,0,GREEN,1.4,19,0,
+tools/army-split-movement-test.cjs,fast,0,GREEN,0.4,4,0,
+tools/army-split-ruch-icons-test.cjs,fast,0,GREEN,0.2,7,0,
+tools/army-stack-ruch-test.cjs,fast,0,GREEN,0.6,5,0,
+tools/army-to-nearest-leader-test.cjs,fast,0,GREEN,9.0,43,0,
+tools/atak-adiacencja-wymagana-test.cjs,fast,0,GREEN,0.6,57,0,
+tools/auto-battle-active-roster-event-test.cjs,fast,0,GREEN,0.6,6,0,
+tools/auto-battle-loss-audit-test.cjs,fast,0,GREEN,0.9,52,0,
+tools/auto-battle-power-test.cjs,fast,0,GREEN,0.3,14,0,
+tools/auto-battle-przewaga-monotonicznosc-test.cjs,fast,0,GREEN,0.2,43,0,
+tools/auto-battle-py-vs-ts-parytet-test.cjs,fast,0,GREEN,0.8,150,0,
+tools/auto-battle-simultaneous-test.cjs,fast,1,RED,1.8,,,"auto-battle-simultaneous-test: harness error: TypeError: Cannot read properties of undefined (reading 'delete')"
+tools/auto-fort-claim-test.cjs,fast,1,RED,4.4,61,2," [FAIL] bez limitu (brak fortow) droga JEST budowana (kontrola fixtury; got []) | [FAIL] fort stoi, brak innych kandydatow -> drogi ruszaja (najnizszy priorytet) | auto-fort-claim-test: 61 passed, 2 failed"
+tools/auto-fort-diag-test.cjs,fast,0,GREEN,2.1,18,0,
+tools/auto-improve-no-item-cap-test.cjs,fast,0,GREEN,3.4,15,0,
+tools/auto-improvements-test.cjs,fast,0,GREEN,0.9,46,0,
+tools/auto-manage-test.cjs,fast,0,GREEN,0.7,45,0,
+tools/auto-manage-ulepszenia-fallback-test.cjs,fast,0,GREEN,0.6,11,0,
+tools/auto-wyzywienie-bilans-clamp-test.cjs,fast,0,GREEN,0.0,22,0,
+tools/auto-wyzywienie-flow-balance-test.cjs,fast,0,GREEN,0.5,17,0,
+tools/auto-wyzywienie-kosztarmii-kryterium-test.cjs,fast,0,GREEN,0.4,18,0,
+tools/auto-wyzywienie-live-recalc-test.cjs,fast,0,GREEN,0.5,60,0,
+tools/auto-wyzywienie-population-growth-live-recalc-test.cjs,fast,0,GREEN,0.8,42,0,
+tools/autobuild-toggle-test.cjs,fast,0,GREEN,0.2,39,0,
+tools/autoclear-priority-q1-test.cjs,fast,0,GREEN,4.3,60,0,
+tools/autoclear-river-forest-priority-test.cjs,fast,0,GREEN,3.2,17,0,
+tools/autoimprove-irrigation-after-farms-test.cjs,fast,124,TIMEOUT,300.0,,,"[civ] mapGen ms | prep=1 terrain=5 landSea=102 relief=131 coast=22 riversMain=356 riversFill=1030 forest=9 deposits=14 starts=75 total=1743 | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/autoimprove-live-hooks-test.cjs,fast,0,GREEN,1.8,37,0,
+tools/autoimprove-river-forest-clear-no-citizen-q1-test.cjs,fast,1,RED,0.1,,,"if (!BUNDLE) throw new Error('Ustaw ROBOCZA_HTML=<sciezka do kopii Gra-ROBOCZA.html>'); | Error: Ustaw ROBOCZA_HTML=<sciezka do kopii Gra-ROBOCZA.html>"
+tools/autoimprove-river-forest-clear-no-citizen-q1-unit-test.cjs,fast,0,GREEN,0.9,17,0,
+tools/autoimprove-river-forest-first-q1-test.cjs,fast,0,GREEN,0.9,12,0,
+tools/autoimprove-river-forest-live-verify-q1-test.cjs,fast,1,RED,0.1,,,"if (!BUNDLE) throw new Error('Ustaw ROBOCZA_HTML=<sciezka do kopii Gra-ROBOCZA.html>'); | Error: Ustaw ROBOCZA_HTML=<sciezka do kopii Gra-ROBOCZA.html>"
+tools/autoimprove-stages-q1-test.cjs,fast,124,TIMEOUT,300.0,10,23," [OK] [K2] S3-1: tartak NA lesie rownina pod farme bez dostepu do rzeki (3/3) — D-R5-1 usunieta | [OK] [K2] S3-1: tartak na lesie na Wzgorzach bez dostepu do rzeki 2/2"
+tools/autosave-quota-fail-test.cjs,fast,0,GREEN,0.7,22,0,
+tools/autowyzywienie-rowny-wzrost-test.cjs,fast,0,GREEN,2.5,279,721,
+tools/barb-camp-blacklist-test.cjs,fast,0,GREEN,2.1,19,0,
+tools/barb-camp-destruction-test.cjs,fast,1,RED,16.9,83,2," FAIL: static 4c: checkBarbCampDestructionAlongPath is called on the player move-completion path | FAIL: static 4-list: [applyMarchSegmentInstant -- ruch gracza krok-po-kroku (marsz)] -- wywołanie 'checkBarbCampDestructionAlongPath(result.movePath)' obecne w main.ts blisko markera 'function applyMarchSegmentInstant(' | barb-camp-destruction-test: 83 passed, 2 failed"
+tools/barb-city-behavior-test.cjs,fast,0,GREEN,37.7,178,0,
+tools/barb-city-capture-cluster-test.cjs,fast,0,GREEN,0.9,97,0,
+tools/barb-city-owner-contract-test.cjs,fast,0,GREEN,0.7,3,0,
+tools/barbarian-cooperation-grace-maints-wiring-test.cjs,fast,0,GREEN,1.1,29,0,
+tools/barbarian-cooperation-grace-test.cjs,fast,0,GREEN,0.7,30,0,
+tools/barbarians-test.cjs,fast,0,GREEN,0.6,213,0,
+tools/barbarzyncy-krazenie-test.cjs,fast,0,GREEN,33.0,249,0,
+tools/barbarzyncy-podwojny-atak-prebattle-test.cjs,fast,0,GREEN,2.5,18,0,
+tools/battle-attack-move-order-test.cjs,fast,0,GREEN,1.7,,,
+tools/battle-dead-unit-disappearance-test.cjs,fast,0,GREEN,1.8,,,
+tools/battle-flank-close-formation-test.cjs,fast,0,GREEN,1.9,,,
+tools/battle-formation-rules-test.cjs,fast,0,GREEN,1.2,,,
+tools/battle-hp-display-test.cjs,fast,0,GREEN,0.0,7,0,
+tools/battle-initial-placement-runtime-test.cjs,fast,0,GREEN,2.5,4,0,
+tools/battle-large-mixed-doctrine-matrix-test.cjs,fast,0,GREEN,32.3,30,-30,
+tools/battle-loot-test.cjs,fast,1,RED,0.7,8,4,"FAIL: 2x Włócznik braz — expected 4 got 100 | FAIL: 50% braz — expected 1 got 25 | battle-loot-test: 8 pass, 4 fail"
+tools/battle-manual-choice-contract-test.cjs,fast,0,GREEN,0.1,12,0,
+tools/battle-manual-orders-routing-test.cjs,fast,0,GREEN,2.3,,,
+tools/battle-melee-attack-doctrine-test.cjs,fast,0,GREEN,2.6,,,
+tools/battle-mode-save-reload-contract-test.cjs,fast,0,GREEN,0.2,,,
+tools/battle-ranged-mounted-doctrine-test.cjs,fast,0,GREEN,1.8,10,0,
+tools/battle-roster-test.cjs,fast,0,GREEN,0.7,7,0,
+tools/battle-standoff-two-warriors-test.cjs,fast,0,GREEN,2.5,,,
+tools/battle-summary-test.cjs,fast,0,GREEN,0.2,,,
+tools/bitwa-auto-atak-wielojednostkowy-evaluation-test.cjs,fast,0,GREEN,3.2,12,0,
+tools/bitwa-auto-doktryna-playerorder-zrodlo-test.cjs,fast,0,GREEN,0.1,6,0,
+tools/bitwa-mapa-kamera-blokada-test.cjs,fast,0,GREEN,0.8,25,0,
+tools/bitwa-podsumowanie-dispose-test.cjs,fast,0,GREEN,2.5,16,0,
+tools/boot-error-catcher-console-error-test.cjs,fast,0,GREEN,1.7,8,0,
+tools/border-march-scan-test.cjs,fast,0,GREEN,0.5,15,0,
+tools/border-march-wygasanie-test.cjs,fast,1,RED,0.1,22,4,"FAIL: onEventDismiss('border-march-...') czyta z borderMarchEventLog | FAIL: onEventDismiss('border-march-...') usuwa z borderMarchEventLog | border-march-wygasanie-test: 22 pass, 4 fail"
+tools/bottom-bar-hud-wykonaj-overlap-test.cjs,fast,0,GREEN,1.4,33,0,
+tools/bramki-tmpdir-unikalnosc-test.cjs,fast,1,RED,1.5,2,1," FAIL zadna bramka w tools/ nie pisze do STALEJ nazwy pod os.tmpdir() -- 115 trafien | [bramki-tmpdir-unikalnosc-test] PASS=2 FAIL=1"
+tools/brick-production-x2-test.cjs,fast,0,GREEN,9.3,69,0,
+tools/budowa-lista-szablony-test.cjs,fast,0,GREEN,0.6,11,0,
+tools/budynek-civ-bonus-u17-test.cjs,fast,1,RED,0.6,3,3,"FAIL: 1 Warsztat: kamien ×1.10 (floor) (got 60, want 55) | FAIL: Warsztat kamieniarski: kamien ×1.10 (analog Stolarni) (got 60, want 55) | 3 passed, 3 failed"
+tools/budynki-koszt-pracy-50-test.cjs,fast,1,RED,0.4,138,40,"FAIL: laznia_publiczna poziom 1: itemCost z kosztBudowy/przyrostKosztu | FAIL: akademia_wojskowa poziom 1: itemCost z kosztBudowy/przyrostKosztu | budynki-koszt-pracy-50-test: 138 pass, 40 fail; 43 budynków / 66 poziomów"
+tools/build-mode-hud-affordability-test.cjs,fast,0,GREEN,6.2,7,0,
+tools/building-cost-tempo-test.cjs,fast,0,GREEN,0.3,,,
+tools/building-detail-card-entitycard-migration-test.cjs,fast,1,RED,5.0,54,1,"FAIL: buildBuildingDetailCardViaEntityCard dopełnia sekcję Uwagi (playerFacingNote) | [building-detail-card-entitycard-migration-test] 54 pass, 1 fail"
+tools/building-epoch-cost-implementation-test.cjs,fast,0,GREEN,0.4,20,0,
+tools/building-happiness-test.cjs,fast,0,GREEN,0.6,14,0,
+tools/building-queue-refund-test.cjs,fast,0,GREEN,0.4,5,0,
+tools/building-resource-visibility-test.cjs,fast,0,GREEN,0.6,15,0,
+tools/building-stock-visibility-test.cjs,fast,0,GREEN,0.4,7,0,
+tools/building-tech-gate-test.cjs,fast,0,GREEN,0.2,91,0,
+tools/camera-zoom-block-test.cjs,fast,0,GREEN,0.3,4,0,
+tools/capital-capture-test.cjs,fast,0,GREEN,0.5,107,0,
+tools/capital-sep-pangea-test.cjs,fast,124,TIMEOUT,300.2,,,"PASS N=25 obcy≥27 caps=8 | [Duża Pangea 240×168] seed=4242 … [civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)"
+tools/capital-sep-unit-test.cjs,fast,0,GREEN,0.8,44,0,
+tools/capital-spacing-prop-test.cjs,fast,0,GREEN,124.5,5,0,
+tools/capture-event-retention-test.cjs,fast,0,GREEN,0.8,,,
+tools/capture-render-sync-test.cjs,fast,0,GREEN,0.8,23,0,
+tools/chlopek-pole-warstwy-test.cjs,fast,0,GREEN,1.3,23,0,
+tools/cities-buildings-production-owner-contract-test.cjs,fast,0,GREEN,1.5,53,0,
+tools/citizen-consumption-era-mult-test.cjs,fast,0,GREEN,3.0,76,0,
+tools/citizen-resource-upkeep-test.cjs,fast,1,RED,1.1,107,2,"FAIL: main.ts: kotwica 'const ordPctRaw = evaluateOrderFromBreakdown(' znaleziona (po stripLineComments) | FAIL: F1 (mutant 1): 'citizenResourceHappinessDelta: citizenUpkeep.happinessDelta,' obecne w oknie wywołania evaluateOrderFromBreakdown -- jako ŻYWY kod (nie w komentarzu) | citizen-resource-upkeep-test: 107 passed, 2 failed"
+tools/citizen-upkeep-era-mult-test.cjs,fast,0,GREEN,0.7,663,0,
+tools/city-badge-growth-percent-test.cjs,fast,0,GREEN,1.3,38,0,
+tools/city-badge-zoom-lod-test.cjs,fast,0,GREEN,1.0,67,0,
+tools/city-capture-pop-loss-test.cjs,fast,0,GREEN,4.3,29,0,
+tools/city-clears-forest-test.cjs,fast,0,GREEN,9.9,18,0,
+tools/city-defense-terrain-gate-test.cjs,fast,0,GREEN,0.8,34,0,
+tools/city-growth-percent-rounding-parity-test.cjs,fast,0,GREEN,1.6,16,0,
+tools/city-hex-movement-test.cjs,fast,0,GREEN,0.7,,,
+tools/city-limit-conquered-test.cjs,fast,0,GREEN,0.9,24,0,
+tools/city-map-badge-test.cjs,fast,0,GREEN,1.2,62,0,
+tools/city-militia-no-defenders-test.cjs,fast,0,GREEN,4.1,110,0,
+tools/city-militia-no-population-loss-test.cjs,fast,0,GREEN,2.2,20,0,
+tools/city-militia-regen-cooldown-test.cjs,fast,0,GREEN,2.1,53,0,
+tools/city-name-start-overlap-test.cjs,fast,124,TIMEOUT,300.2,,,"fenicjanie/seed 11: obcych miast 43, dup spawn=0 start=0 | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/city-name-unique-forever-test.cjs,fast,0,GREEN,0.8,,,
+tools/city-names-pool-test.cjs,fast,0,GREEN,0.6,123,0,
+tools/city-names-pools-test.cjs,fast,0,GREEN,0.4,9,0,
+tools/city-orderstate-restore-clear-test.cjs,fast,0,GREEN,0.1,9,0,
+tools/city-panel-growth-percent-separator-test.cjs,fast,0,GREEN,1.3,29,0,
+tools/city-siege-wall-rules-test.cjs,fast,0,GREEN,2.2,50,0,
+tools/city-state-alliance-test.cjs,fast,0,GREEN,2.3,74,0,
+tools/city-state-cluster-diff-test.cjs,fast,0,GREEN,2.4,31,0,
+tools/city-state-mp-growth-test.cjs,fast,0,GREEN,0.9,9,0,
+tools/city-state-offensive-normal-easy-test.cjs,fast,1,RED,2.3,20,7," FAIL: JEDYNE zmienione linie KODU (nie komentarza) w main.ts to usunięcie warunku trudności `&& _menuCityStateDifficultyVsPlayer === 'hard'` i przeniesienie przecinka na linię isOwnerPlayerSameCivType(ownerId) -- zero innych linii kodu dotkniętych -- [] | FAIL: major AI: rozproszony roster nadal wchodzi w koncentrację (ai-b, ai-c poruszają się, ai-a nie) -- zero regresji GOAL 2 -- {'moveIds':['ai"
+tools/city-state-offensive-perf-test.cjs,fast,0,GREEN,23.4,3,0,
+tools/city-state-prod-audit-test.cjs,fast,0,GREEN,1.6,17,0,
+tools/city-state-start-units-test.cjs,fast,0,GREEN,2.1,16,0,
+tools/city-wall-towers-test.cjs,fast,0,GREEN,1.5,59,0,
+tools/citypanel-konwerter-produkcja-test.cjs,fast,0,GREEN,5.2,83,0,
+tools/citypanel-uwagi-abc-filter-test.cjs,fast,0,GREEN,0.2,44,0,
+tools/civ-ai-allocation-saveload-order-test.cjs,fast,0,GREEN,0.2,5,0,
+tools/civ-ai-allocation-test.cjs,fast,0,GREEN,1.2,11,0,
+tools/civ-bonusy-test.cjs,fast,0,GREEN,0.7,56,0,
+tools/civ-configurator-opponent-test.cjs,fast,0,GREEN,18.6,41,0,
+tools/civ-entry-epoch-test.cjs,fast,0,GREEN,0.5,11,0,
+tools/civ-matrix-ai-diplomacy-wiring-test.cjs,fast,1,RED,1.1,42,1,"RESULT: 42 passed, 1 failed | FAIL: main AI path reads the matrix profile per owner and difficulty"
+tools/civ-matrix-difficulty-test.cjs,fast,0,GREEN,1.5,16,0,
+tools/civ-matrix-greece-test.cjs,fast,1,RED,2.3,,,"FAIL: Roman gameplay aggression resolver uses ai_agresywnosc, not dip_agresja_archetyp (got 0.75, want 0.8) | FAIL: duplicate Roman aggression fields are distinguishable (0.75 vs 0.8) | PASS 327; FAIL 2"
+tools/civ-matrix-meta-roster-wiring-test.cjs,fast,1,RED,0.7,62,1,"FAIL: real economy result differs by matrix currency multiplier (15 > 15) | civ-matrix-meta-roster-wiring-test: 62 passed, 1 failed"
+tools/civ-matrix-semantic-labels-test.cjs,fast,0,GREEN,0.9,,,
+tools/civ-names-test.cjs,fast,0,GREEN,0.5,109,0,
+tools/civ-roster-test.cjs,fast,0,GREEN,0.6,115,0,
+tools/civ-visual-test.cjs,fast,0,GREEN,0.7,56,0,
+tools/civpedia-gra-id-mostek-test.cjs,fast,0,GREEN,1.2,,,
+tools/civpedia-technologie-rys-historyczny-test.cjs,fast,0,GREEN,0.8,324,0,
+tools/climate-band-test.cjs,fast,124,TIMEOUT,300.1,,,"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/cluster-plan-name-test.cjs,fast,1,RED,23.7,2,4,"FAIL: inkowie: seed 202 has a rejected slot | FAIL: inkowie: regression reproducer differs before post-filter allocation | 2 passed, 4 failed"
+tools/cluster-spread-test.cjs,fast,0,GREEN,201.3,5,0,
+tools/cluster-start-recovery2-test.cjs,fast,0,GREEN,15.6,29,0,
+tools/cluster-start-test.cjs,fast,124,TIMEOUT,300.2,5,0,"PASS: 16-hex wyspa: playerStartHex przechodzi bramkę masy gracza | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/combat-test.cjs,fast,0,GREEN,0.5,6,0,
+tools/commander-star-emblem-test.cjs,fast,0,GREEN,1.0,12,0,
+tools/commander-unit-label-test.cjs,fast,0,GREEN,0.1,5,0,
+tools/conquest-stability-test.cjs,fast,1,RED,0.8,28,1," FAIL: unstable happiness penalty (got 0, want -2) | conquest-stability-test: 28 passed, 1 failed"
+tools/converter-era-scaling-test.cjs,fast,0,GREEN,12.3,123,0,
+tools/converters-test.cjs,fast,0,GREEN,0.6,49,0,
+tools/counter-migration-test.cjs,fast,0,GREEN,0.8,15,0,
+tools/cs-military-cap-wiring-test.cjs,fast,0,GREEN,2.0,13,0,
+tools/cs-wave-attack-radius-test.cjs,fast,0,GREEN,1.4,22,0,
+tools/cuda-handel-test.cjs,fast,0,GREEN,0.9,26,0,
+tools/culture-religion-test.cjs,fast,1,RED,0.5,63,2," FAIL: B9: missing mnoznikHandelPieniadz -> multiplier = 1 (fallback) (got 2.3, want ~1) | FAIL: B9: civBaseMultiplier = null when field absent (got 2.3, want null) | culture-religion-test: 63 passed, 2 failed"
+tools/currency-test.cjs,fast,0,GREEN,0.6,37,0,
+tools/cyna-surowiec-test.cjs,fast,124,TIMEOUT,300.1,,,"-- C. FAIR_PLAY_DEPOSIT_IDS + pokrycie siatki -- | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/danina-podatek-nazwa-test.cjs,fast,0,GREEN,0.4,15,0,
+tools/danina-podatek-tooltip-ui-test.cjs,fast,0,GREEN,0.7,12,0,
+tools/defeat-last-city-test.cjs,fast,0,GREEN,0.2,14,0,
+tools/defense-breakdown-test.cjs,fast,1,RED,0.7,,,"TypeError: Cannot read properties of undefined (reading 'find')"
+tools/deposit-building-gate-test.cjs,fast,0,GREEN,0.9,50,0,
+tools/deposit-coast-test.cjs,fast,124,TIMEOUT,300.0,,,"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/difficulty-bonus-city-name-test.cjs,fast,0,GREEN,0.7,7,0,
+tools/difficulty-cost-test.cjs,fast,0,GREEN,0.6,,,
+tools/diplo-aggressor-marker-mutation-test.cjs,fast,0,GREEN,3.6,8,0,
+tools/diplo-aggressor-marker-unit-test.cjs,fast,0,GREEN,0.2,21,0,
+tools/diplo-aggressor-mutation-test.cjs,fast,0,GREEN,25.9,71,2,
+tools/diplo-aggressor-unit-test.cjs,fast,0,GREEN,0.9,73,0,
+tools/diplo-aggressor-wiring-test.cjs,fast,1,RED,0.1,14,1,"FAIL diplomacy-proposals.ts: prog sojuszu, paktu i stance proponenta | diplo-aggressor-wiring-test: 14 PASS, 1 FAIL"
+tools/diplo-nap-border-threshold-test.cjs,fast,0,GREEN,0.9,14,0,
+tools/diplo-nap-trust-30-test.cjs,fast,0,GREEN,0.9,25,0,
+tools/diplo-tick-war-brake-mutation-test.cjs,fast,0,GREEN,0.7,17,0,
+tools/diplo-tick-war-brake-test.cjs,fast,0,GREEN,0.3,51,0,
+tools/diplo-tick-war-brake-unit-test.cjs,fast,0,GREEN,0.4,69,0,
+tools/diplo-truce-n6-saveload-test.cjs,fast,0,GREEN,0.3,8,0,
+tools/diplo-truce-r1-test.cjs,fast,0,GREEN,2.0,30,0,
+tools/diplo-truce-r4-ai-test.cjs,fast,0,GREEN,2.9,24,0,
+tools/diplo-war-peace-d7-test.cjs,fast,0,GREEN,0.2,8,0,
+tools/diplo-war-peace-gate-test.cjs,fast,0,GREEN,1.5,11,0,
+tools/diplo-war-peace-main-guard-test.cjs,fast,0,GREEN,0.2,28,0,
+tools/diplo-war-peace-profile-unit-test.cjs,fast,0,GREEN,0.6,198,0,
+tools/diplo-war-peace-sim-test.cjs,fast,0,GREEN,4.3,22,0,
+tools/diplomacy-acceptance-points-test.cjs,fast,0,GREEN,0.9,304,0,
+tools/diplomacy-ai-balance-test.cjs,fast,0,GREEN,0.8,36,0,
+tools/diplomacy-ai-offer-balance-test.cjs,fast,0,GREEN,1.2,29,0,
+tools/diplomacy-audience-actions-test.cjs,fast,0,GREEN,1.2,20,0,
+tools/diplomacy-audience-close-flush-test.cjs,fast,1,RED,4.6,49,2,"FAIL: [A4] main.ts ma DOKLADNIE 3 gole wywolania hideDiplomacyAudience() poza importem (wrapper + onBack + hak testowy __audienceRelTestDebug.closeAudience) -- got 5. Nowe miejsce zamkniecia audiencji MUSI isc przez closeDiplomacyAudienceAndFlush(). | FAIL: [A4f] kazde gole wywolanie hideDiplomacyAudience() jest w jednym z trzech NAZWANYCH miejsc -- rozpoznano 3 z 5. Nierozpoznane miejsce MUSI isc"
+tools/diplomacy-barbarian-cooperation-test.cjs,fast,0,GREEN,0.9,10,0,
+tools/diplomacy-basket-duplicate-test.cjs,fast,0,GREEN,0.9,21,0,
+tools/diplomacy-basket-duplicate-ui-test.cjs,fast,0,GREEN,7.8,31,0,
+tools/diplomacy-basket-edit-test.cjs,fast,0,GREEN,1.0,25,0,
+tools/diplomacy-basket-transfer-test.cjs,fast,0,GREEN,1.2,24,0,
+tools/diplomacy-bilans-unifikacja-test.cjs,fast,0,GREEN,2.5,355,-95,
+tools/diplomacy-border-march-test.cjs,fast,0,GREEN,1.7,43,0,
+tools/diplomacy-city-cession-r3-test.cjs,fast,0,GREEN,1.7,73,0,
+tools/diplomacy-city-cession-test.cjs,fast,0,GREEN,1.7,79,0,
+tools/diplomacy-counter-offer-role-symmetry-test.cjs,fast,0,GREEN,0.8,,,
+tools/diplomacy-currency-trade-test.cjs,fast,0,GREEN,0.6,5,0,
+tools/diplomacy-cyclic-trade-duration-ui-test.cjs,fast,0,GREEN,5.1,12,0,
+tools/diplomacy-deposit-trade-test.cjs,fast,0,GREEN,1.3,9,0,
+tools/diplomacy-display-test.cjs,fast,0,GREEN,1.2,35,0,
+tools/diplomacy-economy-test.cjs,fast,0,GREEN,0.4,21,0,
+tools/diplomacy-fairness-gate-package-q2-test.cjs,fast,0,GREEN,0.6,24,0,
+tools/diplomacy-goods-kat-test.cjs,fast,0,GREEN,0.8,,,
+tools/diplomacy-incoming-own-gate-recon-test.cjs,fast,0,GREEN,1.0,,,
+tools/diplomacy-infografiki-tooltipy-test.cjs,fast,0,GREEN,1.8,12,0,
+tools/diplomacy-layers-test.cjs,fast,0,GREEN,1.0,22,0,
+tools/diplomacy-lista-podglad-przed-wizyta-test.cjs,fast,1,RED,2.9,52,1," FAIL: 6e) predykat widoczności = id===0 || (isActiveDiploOwner(id) && kontakt) — dokładnie specyfikacja Evaluatora | diplomacy-lista-podglad-przed-wizyta-test: 52 pass, 1 fail"
+tools/diplomacy-live-balance-preview-test.cjs,fast,0,GREEN,1.2,8,0,
+tools/diplomacy-locks-test.cjs,fast,0,GREEN,0.9,88,0,
+tools/diplomacy-negotiation-table-test.cjs,fast,1,RED,0.8,57,1," FAIL: runda 1: AI składa kontrofertę (słodzik)"
+tools/diplomacy-own-proposal-edit-test.cjs,fast,0,GREEN,0.4,33,0,
+tools/diplomacy-package-ai-counter-actionable-test.cjs,fast,1,RED,0.1,,,"ReferenceError: isMe is not defined"
+tools/diplomacy-peace-lock-test.cjs,fast,0,GREEN,0.8,9,0,
+tools/diplomacy-penalty-preview-test.cjs,fast,0,GREEN,0.3,9,0,
+tools/diplomacy-proposal-test.cjs,fast,1,RED,4.5,186,2," FAIL: RUNDA 4: pokój bez koszyka podczas wojny @ niska Rel — PRZYJĘTY (pwBalance nigdy nie blokuje 'pokoj', decyzja właściciela); pwBalance nadal poprawnie ujemny (informacyjnie) | FAIL: RUNDA 4: pokój bez koszyka @ wojna, Relacja przedwojenna neutralna: PRZYJĘTY mimo WAR_RELATION_SCORE_CAP (dawniej wymagał dopłaty — blokada usunięta tą rundą)"
+tools/diplomacy-rejection-cooldown-test.cjs,fast,0,GREEN,0.7,14,0,
+tools/diplomacy-relacje-ai-ai-audiencja-test.cjs,fast,0,GREEN,1.1,20,0,
+tools/diplomacy-resource-cyclic-trade-test.cjs,fast,0,GREEN,1.7,53,0,
+tools/diplomacy-resource-trade-pick-test.cjs,fast,0,GREEN,0.7,13,0,
+tools/diplomacy-resource-values-x5-regression-test.cjs,fast,0,GREEN,0.8,76,0,
+tools/diplomacy-sensible-deals-main-guard-test.cjs,fast,0,GREEN,0.4,22,0,
+tools/diplomacy-sensible-deals-test.cjs,fast,0,GREEN,1.0,63,0,
+tools/diplomacy-stol-pw-sum-test.cjs,fast,0,GREEN,0.9,168,0,
+tools/diplomacy-tech-chip-filter-and-multi-deal-test.cjs,fast,0,GREEN,6.3,66,0,
+tools/diplomacy-tech-trade-e2e-test.cjs,fast,0,GREEN,1.4,28,0,
+tools/diplomacy-tech-trade-execute-test.cjs,fast,0,GREEN,0.8,52,0,
+tools/diplomacy-tech-trade-test.cjs,fast,0,GREEN,3.7,30,0,
+tools/diplomacy-test.cjs,fast,0,GREEN,1.8,148,0,
+tools/diplomacy-trade-flex-test.cjs,fast,0,GREEN,0.9,8,0,
+tools/diplomacy-treaties-test.cjs,fast,0,GREEN,0.7,17,0,
+tools/diplomacy-treaty-sweetener-edit-test.cjs,fast,0,GREEN,4.5,20,0,
+tools/diplomacy-unit-transfer-test.cjs,fast,0,GREEN,1.2,13,0,
+tools/diplomacy-value-catalog-test.cjs,fast,0,GREEN,1.3,82,0,
+tools/diplomacy-war-gates-test.cjs,fast,0,GREEN,1.8,22,0,
+tools/display-names-test.cjs,fast,0,GREEN,0.5,27,0,
+tools/drewno-gate-test.cjs,fast,1,RED,1.2,1,19,"2. availableProduction: brak pola empireResourceStock w ogole (domyslne {}) -> fail-closed | [OK] Wojownik NIE dostepny gdy ctx.empireResourceStock w ogole nie podano (fail-closed) | [FAIL] Wojownik: nadal Surowiec=Drewno ×10 (bez zmian -- kontrola) -- ma={'Surowiec':'Drewno','ilosc':13}"
+tools/droga-6-ramion-geom-test.cjs,fast,0,GREEN,1.6,61,0,
+tools/dyplo-bilans-gate-n-e1-reprodukcja-runda2-test.cjs,fast,1,RED,2.3,1,1,"FAIL: (0a) mutacja A faktycznie usunęła 29 dodanych pól pwBalance (7 accept + 22 reject) w 6 case'ach evaluateProposal — kontrola nietautologiczna dla Testów 1/2 aktywna — 30"
+tools/dyplo-bilans-gate-n-e1-reprodukcja-runda3-test.cjs,fast,1,RED,1.5,22,5,"FAIL: (3b-koszyk 400 PW (goldOnce), zła relacja) RUNDA 4: accepted=TRUE dla gracza-proponenta 'pokoj', niezależnie od znaku pwBalance (kryterium końca #4 dispatchu rundy 4, kierunek gracz->AI) — {'accepted':false,'pwBalance':-50,'reason':'Brakuje 50 PW do uczciwej oferty pokoju @ Relacji (baza 500 PW) — dopłać, by wysłać'} | FAIL: (3c) kontrola nietautologiczna: przynajmniej jeden z powyższych sce"
+tools/dyplo-handel-oferta-ai-blokowana-test.cjs,fast,0,GREEN,0.8,20,0,
+tools/dyplo-kara-granica-realna-test.cjs,fast,0,GREEN,1.4,10,0,
+tools/dyplo-karta-decyzji-bilans-skrot-test.cjs,fast,0,GREEN,0.6,13,0,
+tools/dyplo-karta-duplikat-komunikat-test.cjs,fast,0,GREEN,0.5,15,0,
+tools/dyplo-pakt-ekspansja-granica-test.cjs,fast,0,GREEN,0.6,26,0,
+tools/dyplo-pokoj-kierunek-runda1-test.cjs,fast,0,GREEN,1.9,18,0,
+tools/dyplo-rel-current-etykieta-test.cjs,fast,0,GREEN,1.4,5,0,
+tools/earth-template-test.cjs,fast,124,TIMEOUT,300.1,,,"FAIL: ziemia: 0 heksów lądu poza szablonem (found 1668) | FAIL: ziemia: Antarktyda w szablonie nad buforem południowym (found 0 heksów przy r=85)"
+tools/egypt-movement-precedence-test.cjs,fast,1,RED,0.3,,,"AssertionError [ERR_ASSERTION]: other civilizations retain general and dedicated shallow-sea bonuses: 0.8130081300813008 != 0.6756756756756757"
+tools/eko-tech-paczka1-test.cjs,fast,1,RED,0.3,5,6," FAIL: Stolarnia in production after Obróbka drewna | FAIL: setPlayerResearchTarget OK z Cegielnia | eko-tech-paczka1: 5 pass, 6 fail"
+tools/eko-tech-paczka2-test.cjs,fast,1,RED,0.8,6,3," FAIL: ABC-14 depositAllows: ZlozeRudy | FAIL: ABC-14 qualifies: równina odrzucona | eko-tech-paczka2: 6 pass, 3 fail"
+tools/eko-tech-paczka3-test.cjs,fast,1,RED,0.4,6,2," FAIL: AND: kopalnia miedzi + piec = brąz | FAIL: Odlewnia brązu dostępna po Kopalni miedzi | eko-tech-paczka3: 6 pass, 2 fail"
+tools/eko-tech-paczka4-test.cjs,fast,1,RED,0.7,8,2," FAIL: ABC-17 świątynia upgradeFrom kręgi | FAIL: unlock po bydlo na zlozu | eko-tech-paczka4: 8 pass, 2 fail"
+tools/eko-tech-paczka5-test.cjs,fast,1,RED,0.8,10,1,"eko-tech-paczka5: 10 pass, 1 fail | FAIL: Kopalnia miedzi + Piec → active Brąz"
+tools/ekonomia-5x-inwariant-test.cjs,fast,1,RED,0.1,,,"FAIL: PRZYPIĘTE: terrain-yields Równina.Kamień === 5 (x5, bylo 1) (got 2, want 5) | FAIL: PRZYPIĘTE: terrain-yields Rzeka.Glina === 10 (x5, bylo 2) (got 5, want 10) | FAIL: PRZYPIĘTE: terrain-improvements wyrab.wycinka.praca_per_tura === 25 (x5, bylo 5) (got 50, want 25)"
+tools/eliminacja-lup-kwoty-test.cjs,fast,1,RED,0.2,34,4," FAIL: 4g: kwota nauki z silnika trafia do WŁASNEJ pozycji raportu [<- 4e] (got null, want '+63') | FAIL: 4h: liczba skopiowanych technologii z silnika (2) w raporcie [<- 4e] (got null, want '+2') | 34 passed, 4 failed"
+tools/elimination-full-spoils-test.cjs,fast,0,GREEN,0.3,114,0,
+tools/elimination-toast-merge-test.cjs,fast,0,GREEN,0.1,56,0,
+tools/empire-armia-produkcja-test.cjs,fast,1,RED,1.8,44,7,"FAIL: B9: unitName czyta front.nazwa (nazwa jednostki na czele kolejki, nie coś innego) | FAIL: B9b (N1): pole wstrzymana w pushowanym wierszu czyta flagę wyliczoną z prod.wstrzymana, nie jest zakodowane na sztywno | empire-armia-produkcja-test: 44 passed, 7 failed"
+tools/empire-city-defaults-test.cjs,fast,0,GREEN,0.4,53,0,
+tools/empire-diplo-resource-flow-test.cjs,fast,0,GREEN,0.2,7,0,
+tools/empire-food-b5-test.cjs,fast,0,GREEN,0.7,34,0,
+tools/empire-miasta-table-test.cjs,fast,0,GREEN,1.5,96,0,
+tools/empire-nauka-panel-coverage-test.cjs,fast,0,GREEN,0.1,15,0,
+tools/empire-panel-drobiazgi-runda2-test.cjs,fast,0,GREEN,0.1,33,0,
+tools/empire-panel-econ-slider-visibility-test.cjs,fast,0,GREEN,0.5,65,0,
+tools/empire-panel-miasto-obywatele-content-test.cjs,fast,1,RED,2.1,82,1,"D3: 90 passed so far, 1 failed so far | D4: 115 passed so far, 1 failed so far | 115 passed, 1 failed"
+tools/empire-panel-moc-scroll-preserve-test.cjs,fast,1,RED,0.0,42,11," FAIL: MUTANT RUNDA 2 (parametry S2): wykonanie nie rzucilo wyjatku (np. ReferenceError gdy naprawa/anchor brakuje) -- 'snap is not defined' | FAIL: MUTANT RUNDY 2 (galaz resetScrollOnNextRender usunieta) lapany CZERWONO przez S2: scrollTop PO przelaczeniu == 600 (blad rundy 1 odtworzony), NIE 0 -- {'scrollTop':0,'mutantBuilt':true} | FAILED: 42 passed, 11 failed"
+tools/empire-panel-sliders-always-visible-test.cjs,fast,0,GREEN,0.0,8,0,
+tools/empire-panel-split-test.cjs,fast,0,GREEN,0.2,25,0,
+tools/empire-praca-panel-coverage-test.cjs,fast,0,GREEN,0.1,15,0,
+tools/empire-recruit-plan-test.cjs,fast,0,GREEN,0.3,17,0,
+tools/empire-religia-panel-coverage-test.cjs,fast,0,GREEN,0.1,15,0,
+tools/empire-skarbiec-bilans-test.cjs,fast,0,GREEN,5.8,11,0,
+tools/empire-skarbiec-panel-coverage-test.cjs,fast,0,GREEN,0.1,12,0,
+tools/emporion-building-test.cjs,fast,0,GREEN,0.7,47,0,
+tools/end-details-hp-test.cjs,fast,0,GREEN,0.1,100,0,
+tools/end-turn-modal-sequencing-test.cjs,fast,0,GREEN,2.1,41,0,
+tools/endturn-battle-deadlock-exec-test.cjs,fast,0,GREEN,2.8,49,0,
+tools/endturn-battle-deadlock-test.cjs,fast,0,GREEN,2.3,38,0,
+tools/entity-card-contract-test.cjs,fast,0,GREEN,2.1,75,0,
+tools/entitycard-civpedia-klik-test.cjs,fast,0,GREEN,2.9,71,0,
+tools/eot-diplomacy-header-test.cjs,fast,0,GREEN,0.2,19,0,
+tools/eot-event-defer-test.cjs,fast,0,GREEN,0.2,43,0,
+tools/epoka-merge-recruit-test.cjs,fast,0,GREEN,0.4,13,0,
+tools/era-change-notify-test.cjs,fast,0,GREEN,0.2,8,0,
+tools/era-change-toast-defer-test.cjs,fast,1,RED,0.3,3,4,"MUT-FAIL (NIE złapana): M7: flushPendingEraChangeToast() przeniesione z finally triggerPlayerEndTurn do healStaleEndTurnBlockers (scenariusz Evaluatora) | MUT-FAIL (NIE złapana): M8: resetEndTurnBlockers nie zeruje pendingEraChangeToastForNextTurn (regresja N2) | === WYNIK: FAIL ==="
+tools/era-cud-main-ts-integracja-test.cjs,fast,1,RED,0.4,14,1,"14 passed, 1 failed | MUT-FAIL (NIE złapana): M4: usunięcie reconcile z końca tury (auto-research) | === WYNIK: FAIL ==="
+tools/era-cud-warunek-awansu-test.cjs,fast,0,GREEN,0.3,38,0,
+tools/era-gate-ui-test.cjs,fast,0,GREEN,0.2,51,0,
+tools/era-improvement-cost-upkeep-test.cjs,fast,0,GREEN,0.4,52,0,
+tools/era-recruit-panel-refresh-test.cjs,fast,1,RED,0.3,,,"ReferenceError: trimWarEventLog is not defined"
+tools/escape-fullscreen-priority-test.cjs,fast,0,GREEN,0.2,10,0,
+tools/escape-overlay-real-panels-test.cjs,fast,0,GREEN,2.3,49,0,
+tools/escape-overlay-stack-test.cjs,fast,0,GREEN,0.2,84,0,
+tools/events-one-turn-lifetime-test.cjs,fast,0,GREEN,0.2,25,0,
+tools/fair-play-grid-test.cjs,fast,124,TIMEOUT,300.3,,,"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/fair-play-tier-grid-test.cjs,fast,1,RED,0.6,9,3,"FAIL: low: góry 35 | FAIL: medium: góry 25 | FAIL: high: góry 20"
+tools/farma-lesie-usun-istniejace-test.cjs,fast,0,GREEN,33.2,143,0,
+tools/farma-nie-w-lesie-test.cjs,fast,0,GREEN,22.0,138,0,
+tools/first-player-city-test.cjs,fast,0,GREEN,0.8,16,0,
+tools/flaga-mp-nie-gasnie-test.cjs,fast,0,GREEN,0.4,32,0,
+tools/followups-land-ai-test.cjs,fast,0,GREEN,1.4,9,0,
+tools/food-hodowla-test.cjs,fast,0,GREEN,1.2,24,0,
+tools/forced-war-bronze-main-guard-test.cjs,fast,1,RED,0.3,21,1," FAIL: main.ts: diploInp przekazuje bronzeForceWarTargetId do DiplomacjaInputs | WYNIK: 21 PASS, 1 FAIL"
+tools/forced-war-bronze-new-game-reset-test.cjs,fast,1,RED,0.2,,,"ReferenceError: forcedEraPeaceUntilNextEraByPairKey is not defined"
+tools/forced-war-bronze-test.cjs,fast,0,GREEN,2.2,48,0,
+tools/forced-war-iron-era-enter-turn-save-load-test.cjs,fast,0,GREEN,0.5,20,0,
+tools/forced-war-iron-main-guard-test.cjs,fast,1,RED,0.3,34,1,"FAIL: guard napastnika (wspólna pętla pre-pass) wyklucza gracza, kopie typu, barbarzyńców, wyeliminowanych i miasta-państwa PRZED zebraniem wasPending Żelaza | WYNIK: 34 PASS, 1 FAIL"
+tools/forced-war-iron-test.cjs,fast,0,GREEN,1.8,54,0,
+tools/forced-war-player-pre-contact-gate-test.cjs,fast,0,GREEN,1.3,45,0,
+tools/forced-war-reguly-multi-turn-simulation-test.cjs,fast,0,GREEN,1.2,48,0,
+tools/forced-war-relation-gate-test.cjs,fast,0,GREEN,0.9,14,0,
+tools/forced-war-stone-main-guard-test.cjs,fast,0,GREEN,0.3,15,0,
+tools/forced-war-stone-test.cjs,fast,0,GREEN,2.2,31,0,
+tools/forced-war-trojstronna-main-guard-test.cjs,fast,0,GREEN,0.3,14,0,
+tools/forced-war-trojstronna-test.cjs,fast,0,GREEN,1.9,23,0,
+tools/forced-war-waves-test.cjs,fast,0,GREEN,2.4,17,0,
+tools/format-pl-signed-minus-glif-test.cjs,fast,0,GREEN,0.6,13,0,
+tools/fort-nodes-save-load-test.cjs,fast,0,GREEN,0.5,18,0,
+tools/fort-outpost-hard-territory-test.cjs,fast,1,RED,1.6,79,1," FAIL: I5: sweep bezposrednio po fazie AI cywilizacji (nie tylko w bloku barbarzyncow) | === fort-outpost-hard-territory-test: 79 passed, 1 failed ==="
+tools/fort-outpost-placement-rules-test.cjs,fast,0,GREEN,1.7,40,0,
+tools/fort-strazniaca-zasieg-zakladania-test.cjs,fast,0,GREEN,2.5,85,0,
+tools/fort-vision-test.cjs,fast,0,GREEN,1.3,15,0,
+tools/fortify-pole-test.cjs,fast,0,GREEN,1.3,41,0,
+tools/found-from-village-test.cjs,fast,0,GREEN,0.9,24,0,
+tools/foundry-throughput-x2-era-mult-test.cjs,fast,0,GREEN,0.7,153,0,
+tools/freshwater-access-test.cjs,fast,0,GREEN,14.6,37,0,
+tools/fsa-autosave-test.cjs,fast,0,GREEN,0.5,55,0,
+tools/garnizon-exit-test.cjs,fast,0,GREEN,0.6,26,0,
+tools/general-eligible-unit-roster-test.cjs,fast,0,GREEN,0.8,,,
+tools/glod-wojska-karencja-test.cjs,fast,1,RED,0.9,29,10,"FAIL: maszerująca poza własnym terytorium (regresja, camping=false): nadal 2,0 żywności/turę | FAIL: stos w garnizonie: 2 ufortyfikowane (0,5+0,5) + 1 maszerująca (1) = 2,0 żywności/turę | glod-wojska-karencja-test: 29 pass, 10 fail"
+tools/gold-deficit-test.cjs,fast,0,GREEN,0.7,55,0,
+tools/granary2-tech-data-guard-test.cjs,fast,0,GREEN,1.0,,,
+tools/granice-relacja-dyplomatyczna-test.cjs,fast,1,RED,0.8,49,3,"FAIL: main.ts: relationColorFn czyta getDiploRelation(0, ownerId).status | FAIL: main.ts: odświeżenie tylko dla par z graczem (AI↔AI nie zmienia koloru żadnej obwódki) | 49 passed, 3 failed"
+tools/granice-styk-nakladanie-test.cjs,fast,0,GREEN,2.7,57,0,
+tools/growthmult-compound-test.cjs,fast,0,GREEN,0.8,24,0,
+tools/grupa-b-lane-test.cjs,fast,1,RED,0.8,43,6,"FAIL: wyrab clearing start cost 5P | FAIL: clearing tick 25 (B2, bylo 5), expired po 1 turze | grupa-b-lane-test: 43 pass, 6 fail"
+tools/grupy-budynkow-test.cjs,fast,0,GREEN,0.7,84,0,
+tools/handel-wymiana-tech-gate-test.cjs,fast,0,GREEN,1.1,35,0,
+tools/happiness-breakdown-test.cjs,fast,0,GREEN,0.6,38,0,
+tools/heal-stale-blockers-pending-battle-test.cjs,fast,1,RED,4.1,19,4,"FAIL: [A4b] gałąź 3 (osierocony overlay bez endTurnInProgress) formuła niezmieniona -- bez hasPendingAutoPreBattle | FAIL: [A4c] gałąź 4 (stuckMs>8000 force-clear) formuła niezmieniona -- bez hasPendingAutoPreBattle | heal-stale-blockers-pending-battle-test: 19 pass, 4 fail"
+tools/heks-panel-tooltip-warstwa-test.cjs,fast,0,GREEN,0.7,22,0,
+tools/heks-plony-warstwy-test.cjs,fast,0,GREEN,0.6,24,0,
+tools/heks-plony-zloze-forward-test.cjs,fast,0,GREEN,0.9,5,0,
+tools/heks-plony-zloze-parytet-ui-test.cjs,fast,0,GREEN,0.8,19,0,
+tools/hex-plony-magazyn-test.cjs,fast,1,RED,1.0,10,4,"FAIL: magazyn: heks przy rzece → 15 glin/t (5 baza + 10 rzeka) (got 7, want 15) | FAIL: centrum Równina + 👤 Łąka: drewno 5+0=5, kamien 2+0=2, glina 0+5=5 | FAIL: magazyn: plony z obrabianego sąsiada — Glina addytywnie (got 2, want 5)"
+tools/hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs,fast,0,GREEN,2.7,67,0,
+tools/hex-tooltip-stadnina-kopalnia-cyny-test.cjs,fast,0,GREEN,2.1,29,0,
+tools/hodowla-las-test.cjs,fast,0,GREEN,12.0,113,0,
+tools/horse-resource-terrain-test.cjs,fast,124,TIMEOUT,300.2,,," [OK] A4: mutacja „zezwól na las' łamie sekcję (A) (test nie jest tautologią) | --- (B) prawdziwy generator, Standardowy ---"
+tools/hotseat-etap1-ownerid-test.cjs,fast,0,GREEN,0.8,14,0,
+tools/hotseat-etap3-akcesory-test.cjs,fast,0,GREEN,0.6,64,0,
+tools/hotseat-etap6c-economy-noop-test.cjs,fast,0,GREEN,0.8,70,0,
+tools/hotseat-etap6d-diplomacy-engine-test.cjs,fast,0,GREEN,0.1,,,
+tools/hotseat-etap6d-podetap-a-test.cjs,fast,0,GREEN,0.1,,,
+tools/hotseat-etap6d-podetap-b-exec-test.cjs,fast,1,RED,0.4,,,"ReferenceError: isDiploSensibleDealsEnabled is not defined"
+tools/hotseat-etap6d-podetap-c-migracja-test.cjs,fast,0,GREEN,0.2,,,
+tools/hotseat-etap6d-podetap-d-exec-test.cjs,fast,1,RED,0.3,,," FAIL: PRAWDZIWY ME(): recordWarDeclarationEvent(csOwnerId, ME()=7), otrzymano [] | [Dyplomacja] Blad wojny klaster PM→gracz AI101: ReferenceError: interCivWarBlockedForAi is not defined | ReferenceError: diploWarStateFor is not defined"
+tools/hotseat-etap6d-podetap-e-exec-test.cjs,fast,1,RED,0.4,,,"ReferenceError: turnEventsFrame is not defined"
+tools/hotseat-etap6d-podetap-e-source-test.cjs,fast,1,RED,0.2,61,16," FAIL: actionableNegotiationIdsForPair: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji) | FAIL: findIncomingNegotiationForAction: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji) | hotseat-etap6d-podetap-e-source-test: 61 PASS, 16 FAIL"
+tools/hotseat-etap6f-part2-data-test.cjs,fast,0,GREEN,66.9,24,0,
+tools/hotseat-etap6f-start-migracja-test.cjs,fast,0,GREEN,0.0,,,
+tools/hotseat-etap7-saveload-test.cjs,fast,0,GREEN,0.3,59,0,
+tools/hotseat-human-owners-test.cjs,fast,0,GREEN,0.5,29,0,
+tools/hud-armia-chip-jednostki-test.cjs,fast,1,RED,0.7,58,2," FAIL: buildHudState zwraca rekrutEkw z epoki ps.era i mnożnika mpMults.costMult | FAIL: buildHudState zwraca kosztJednostki z epoki ps.era i mnożnika mpMults.costMult | FAILED: 58 passed, 2 failed"
+tools/hud-konwerter-dopasowanie-test.cjs,fast,0,GREEN,0.3,20,0,
+tools/hud-miasto-stan-cywilizacji-test.cjs,fast,0,GREEN,0.3,20,0,
+tools/hud-miasto-stock-tempo-test.cjs,fast,0,GREEN,1.7,71,0,
+tools/hud-moc-warstwa-test.cjs,fast,1,RED,0.3,21,7," FAIL: buildPlayerDiploRelations: theirRespekt czyta computeRespekt z OBOMA argumentami Effective | FAIL: (nominalna) #3 bajtowo nietknięta -- wzorzec nie znaleziony -- ktoś zmienił/przesunął ten call-site: ' sumArmyMForOwner(ownerId),\n ' | WYNIK: 21 PASS, 7 FAIL"
+tools/hud-obywatele-chip-test.cjs,fast,1,RED,0.2,17,3," FAIL: buildHudState: `const pop = pc.reduce((s, c) => s + c.population, 0);` (suma populacji) | FAIL: buildHudState: `ludnosc: pop,` w zwracanym obiekcie -- pole HudState.ludnosc = ta sama suma | FAILED: 17 passed, 3 failed"
+tools/hud-skarbiec-test.cjs,fast,0,GREEN,4.5,34,0,
+tools/idb-b1b2b3-test.cjs,fast,1,RED,1.6,19,1," FAIL: (setup) mimo braku IDB, stary zapis z legacy localStorage nadal widoczny na liście (got 0) | === idb-b1b2b3-test: 19 pass, 1 fail ==="
+tools/idb-menu-continue-boot-refresh-test.cjs,fast,1,RED,2.0,31,1," FAIL: hasAnySaveSlot(): `void refreshHasAnySaveSlotCache();` gołe (bez .then) -- stale-while-revalidate na KAŻDYM odczycie | === idb-menu-continue-boot-refresh-test: 31 pass, 1 fail ==="
+tools/idb-storage-migration-test.cjs,fast,0,GREEN,0.3,25,0,
+tools/impi-recruitment-discount-test.cjs,fast,0,GREEN,0.9,705,0,
+tools/important-event-cards-regression-test.cjs,fast,0,GREEN,0.6,,,
+tools/important-event-cards-test.cjs,fast,0,GREEN,0.2,10,0,
+tools/improvement-adapter-resource-note-test.cjs,fast,0,GREEN,0.6,75,0,
+tools/improvement-build-highlight-lifecycle-test.cjs,fast,0,GREEN,1.1,39,0,
+tools/improvement-era-scaling-test.cjs,fast,0,GREEN,0.6,144,0,
+tools/improvement-territory-gate-test.cjs,fast,0,GREEN,0.6,6,0,
+tools/iron-native-access-fix-test.cjs,fast,0,GREEN,0.3,17,0,
+tools/irrigation-river-definition-unify-test.cjs,fast,0,GREEN,13.5,30,0,
+tools/kamieniolom-kamien-epoka-test.cjs,fast,0,GREEN,0.5,37,0,
+tools/kolor-surowce-spojnosc-test.cjs,fast,0,GREEN,0.2,34,0,
+tools/koniec-tury-f1-f4-runda3-test.cjs,fast,0,GREEN,1.8,39,0,
+tools/koniec-tury-g1-g2-runda4-test.cjs,fast,0,GREEN,1.5,41,0,
+tools/kopalnia-cyny-render-test.cjs,fast,0,GREEN,0.6,23,0,
+tools/kopalnia-podswietlenie-heksow-test.cjs,fast,0,GREEN,0.6,76,0,
+tools/korupcja-test.cjs,fast,0,GREEN,0.4,18,0,
+tools/koszary-gate-test.cjs,fast,0,GREEN,0.4,26,0,
+tools/koszty-surowcowe-test.cjs,fast,1,RED,0.4,127,3," FAIL: Stela/Pomnik: kamien 6 (wyjatek) | FAIL: Kamienne kregi: kamien 8 (wyjatek) | koszty-surowcowe-test: 127 pass, 3 fail"
+tools/labor-to-tax-conversion-gold-test.cjs,fast,0,GREEN,0.3,58,0,
+tools/land-sea-ratio-test.cjs,fast,124,TIMEOUT,300.2,,,"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all) | [civ] mapGen ms | prep=6 terrain=35 landSea=460 relief=600 coast=111 riversMain=23862 riversFill=112918 forest=46 deposits=158 starts=720 total=138916"
+tools/law-garrison-test.cjs,fast,0,GREEN,0.3,3,0,
+tools/load-fail-toast-zindex-test.cjs,fast,1,RED,0.1,12,3," OK: diagError(...) nadal jest wołane w gałęzi (mechanizm diagnostyczny F10 nie zniknął) | OK: diagError(...) zostaje PRZED openStartupMainMenu()/showHintMessage() (pozycja niezmieniona przez tę naprawę -- tylko kolejność menu/toast się odwróciła) | 12 passed, 3 failed"
+tools/load-game-blockers-exec-test.cjs,fast,1,RED,1.5,,,"FAIL wyjatek: ReferenceError: resetEmpireRecruitPanelSession is not defined"
+tools/load-game-regression-test.cjs,fast,0,GREEN,0.4,34,0,
+tools/logic-test.cjs,fast,0,GREEN,31.1,213,0,
+tools/longrun-100-turns-leak-q1-memo-unit-test.cjs,fast,0,GREEN,0.5,6,0,
+tools/magazyn-era-scaling-test.cjs,fast,0,GREEN,6.3,58,0,
+tools/magazyn-food-cap-bez-magazynu-test.cjs,fast,0,GREEN,0.5,16,0,
+tools/manpower-matrix-sensitivity-test.cjs,fast,0,GREEN,1.0,225,0,
+tools/manpower-test.cjs,fast,0,GREEN,0.3,71,0,
+tools/manual-rebalance-owner-era-test.cjs,fast,0,GREEN,0.4,5,0,
+tools/map-attack-city-test.cjs,fast,0,GREEN,0.7,13,0,
+tools/map-coast-buffer-test.cjs,fast,124,TIMEOUT,300.1,,,"FAIL: ziemia seed=2026: morze w środku lądu (21,13, 19,14, 20,14) | FAIL: generujSwiat malenki: ląd w buforze (81) | FAIL: generujSwiat maly: ląd w buforze (28)"
+tools/map-continents-rivers-test.cjs,fast,124,TIMEOUT,300.2,,,"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/map-deposits-era-test.cjs,fast,0,GREEN,91.6,16,0,
+tools/map-field-battle-test.cjs,fast,0,GREEN,0.6,24,0,
+tools/map-gen-regression-test.cjs,fast,124,TIMEOUT,300.4,,," mała (108×74): 110.05s | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/map-improvement-qualify-test.cjs,fast,0,GREEN,2.2,133,0,
+tools/map-quality-forest-parity-test.cjs,fast,124,TIMEOUT,300.1,,,"[civ] mapGen ms | prep=14 terrain=89 landSea=1807 relief=1857 coast=201 riversMain=13154 riversFill=66550 forest=83 deposits=166 starts=737 total=84657 | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/map-road-movement-test.cjs,fast,0,GREEN,1.0,26,0,
+tools/map-scale-menu-test.cjs,fast,0,GREEN,0.5,97,0,
+tools/map-siege-test.cjs,fast,0,GREEN,0.9,6,0,
+tools/map-snapshot-load-test.cjs,fast,124,TIMEOUT,300.1,,," (generateMap na 168x120 trwa ~110-120s, deterministyczny generator terenu/rzek -- proszę czekać) | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/mapa-etykieta-stolicy-test.cjs,fast,1,RED,1.2,46,1," [FAIL] (E6) miasta-państwa klastra nadal z suffixu wspólnej listy (bez indeksu 0) | [mapa-etykieta-stolicy-test] 46 passed, 1 failed"
+tools/march-attack-queue-persist-test.cjs,fast,0,GREEN,1.1,57,0,
+tools/march-end-of-turn-only-test.cjs,fast,0,GREEN,0.6,,,
+tools/medium-river-test.cjs,fast,124,TIMEOUT,150.2,,,"PASS: Kontynenty mini seed 7: 0 medium samotnych do oceanu (0) | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/memory-growth-merge-index-test.cjs,fast,0,GREEN,2.0,24,0,
+tools/memory-static-geometry-pool-test.cjs,fast,2,RED,0.2,,,"podaj --gra <kopia gra z node_modules>"
+tools/mennica-magazyn-test.cjs,fast,1,RED,5.4,34,7,"mennica-magazyn-test: 34 passed, 7 failed | FAIL: Garncarnia: ceramika > 0 przy glina+drewno (got undefined) | FAIL: odlewnia_brazu bez rudy NIE blokuje Cegielni ani Garncarni"
+tools/mennica-uspienie-test.cjs,fast,0,GREEN,14.7,49,0,
+tools/menu-game-music-transition-test.cjs,fast,0,GREEN,0.2,7,0,
+tools/menu-music-delay-test.cjs,fast,0,GREEN,0.2,9,0,
+tools/merge-decor-no-regress-test.cjs,fast,1,RED,143.6,,,"merge-decor-no-regress-test: BLAD HARNESSU TypeError: renderer.setOpaqueSort is not a function"
+tools/mgla-odkrycie-wzdluz-sciezki-test.cjs,fast,1,RED,1.7,16,1," FAIL: static: currentVisible() nadal liczy WYLACZNIE z biezacej pozycji jednostek (u.q, u.r) -- nietkniete (inline lub przez ownPlayerVisibleHexes()) | 16 pass, 1 fail"
+tools/mgla-sciezka-inwariant-test.cjs,fast,1,RED,8.0,39,3," FAIL: [1] whitelist nie zawiera MARTWYCH wpisow (kod zniknal, uzasadnienie zostalo) -- inaczej bramka po cichu traci pokrycie -- ['src/battle/battleScene.ts ru.r = wallRow; #1'] | FAIL: [1c] ZERO wywolan `Object.assign(cel, ...)` z celem innym niz `*.style` w gra/src -- `Object.assign(u, { q, r })` zapisuje pozycje jednostki niewidocznie dla wzorca `.q =` -- ['src/main.ts:27958 Object.assign(snap"
+tools/mgla-sciezka-rzeka-test.cjs,fast,0,GREEN,2.3,14,0,
+tools/mgla-teleport-koniec-tury-test.cjs,fast,0,GREEN,1.8,16,0,
+tools/miasta-panstwa-wylaczone-test.cjs,fast,1,RED,0.2,,,"FAIL: brak PRE-tree (origin/main) w scratchpadzie — uruchom najpierw git archive."
+tools/miasta-zbyt-blisko-test.cjs,fast,124,TIMEOUT,150.1,,,"[civ] mapGen ms | prep=1 terrain=463 landSea=1783 relief=2088 coast=765 riversMain=4012 riversFill=414 forest=108 deposits=100 starts=810 total=10543 | [civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)"
+tools/miasto-zdobycie-raport-test.cjs,fast,0,GREEN,0.4,117,0,
+tools/militia-garrison-contract-test.cjs,fast,0,GREEN,0.9,17,0,
+tools/militia-garrison-router-siege-test.cjs,fast,0,GREEN,0.5,8,0,
+tools/mill-river-only-gate-test.cjs,fast,0,GREEN,1.1,6,0,
+tools/minimap-viewport-rect-follow-test.cjs,fast,0,GREEN,0.3,,,
+tools/moc-ranking-rozjazd-test.cjs,fast,1,RED,0.8,13,6," FAIL: buildEmpireDetailSnap: obj liczy buildObjectivePowerForOwnerEffective(0) (NIE nominalna) -- spojnosc wewnatrz jednego ekranu z powOverlay.ranking | FAIL: (b) AI callsite #3 bajtowo nietkniety (sumArmyMForOwner NOMINALNA, nie Effective) -- wzorzec nie znaleziony -- ktos zmienil/przesunal ten call-site | WYNIK: 13 PASS, 6 FAIL"
+tools/move-pass-through-own-units-test.cjs,fast,0,GREEN,3.8,34,0,
+tools/mp-spawn-ration-test.cjs,fast,0,GREEN,3.2,16,0,
+tools/mur-paradoks-test.cjs,fast,1,RED,1.0,28,1," [FAIL] Kontrola fixture: M bazowe Konnicy (bez zadnego bonusu) == 49 (98) | === mur-paradoks-test: 28 pass, 1 fail ==="
+tools/muzyka-braz-era-playlist-test.cjs,fast,0,GREEN,0.3,32,0,
+tools/naval-water-access-gate-test.cjs,fast,0,GREEN,2.2,40,0,
+tools/nazwy-miast-rozlaczne-pule-test.cjs,fast,0,GREEN,0.1,9,0,
+tools/oblezenie-remis-endsiege-test.cjs,fast,0,GREEN,2.0,271,0,
+tools/oblezenie-siege-lifted-po-bitwie-test.cjs,fast,0,GREEN,1.0,16,0,
+tools/oblezenie-test.cjs,fast,0,GREEN,2.2,27,0,
+tools/oboz-lowiecki-las-test.cjs,fast,0,GREEN,45.1,94,0,
+tools/oboz-lowiecki-wymaga-tartaku-test.cjs,fast,0,GREEN,31.8,16,0,
+tools/okolica-isworkable-silnik-test.cjs,fast,0,GREEN,1.2,15,0,
+tools/okolica-load-reconcile-test.cjs,fast,1,RED,1.6,23,2,"FAIL: punkt mutacji zlokalizowany dokladnie (string do podmiany istnieje raz w pliku) | PASS: REGRESJA GORSZA NIZ BUG, gdyby to failowalo: miasto GRACZA w trybie recznym MUSI przetrwac load niezmienione -- filtr ownerId !== 0 wylacza gracza z resetu (got 'reczny', want 'reczny') | OKOLICA-LOAD-RECONCILE FAIL (21/23 passed, 2 failed)"
+tools/okolica-multi-city-overlap-test.cjs,fast,0,GREEN,1.9,55,0,
+tools/okolica-ownership-change-reconcile-test.cjs,fast,1,RED,1.6,15,3,"FAIL: (b) wchloniecie dyplomatyczne (annexCityStateToOwner): city.ownerId = annexerId -> seedCityOwnerDefaults(city) w petli po csCities | FAIL: post-battle-map.ts::applyCityCaptureAfterBattle: city.ownerId = atkOwner USTAWIONE przed wywolaniem onOwnerChanged (wiec reconcile widzi juz NOWEGO wlasciciela) | OKOLICA-OWNERSHIP-CHANGE-RECONCILE FAIL (12/15 passed, 3 failed)"
+tools/okolica-test.cjs,fast,0,GREEN,1.3,72,0,
+tools/okolica-tryb-reset-ownership-change-test.cjs,fast,0,GREEN,1.2,18,0,
+tools/owned-building-detail-side-test.cjs,fast,0,GREEN,0.5,17,0,
+tools/owned-building-inactive-test.cjs,fast,0,GREEN,0.4,4,0,
+tools/owner-economy-test.cjs,fast,0,GREEN,19.0,20,0,
+tools/owner-epoch-test.cjs,fast,0,GREEN,0.9,13,0,
+tools/p-wojna-wymuszona-trzy-naprawy-test.cjs,fast,0,GREEN,1.1,13,0,
+tools/palisade-battle-wall-rules-test.cjs,fast,0,GREEN,1.1,52,0,
+tools/pangea-land-determinism-test.cjs,fast,124,TIMEOUT,150.2,,,"[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen) | [civ] mapGen ms | prep=12 terrain=210 landSea=4629 relief=8961 coast=1230 riversMain=8 riversFill=697 forest=997 deposits=982 starts=2391 total=20115"
+tools/pangea-land-fraction-test.cjs,fast,124,TIMEOUT,150.1,80,-60,"[civ] mapGen ms | prep=0 terrain=775 landSea=8302 relief=10201 coast=5655 riversMain=7 riversFill=105 forest=88 deposits=194 starts=1858 total=27186 | seed 123 target 20% (resolved 20%): actual 20.0% land=4032 bbox 78x75 fill=0.689 annular=0"
+tools/pangea-land-shape-test.cjs,fast,124,TIMEOUT,150.1,,," 5 seedów PASS: PASS (0 fail)"
+tools/pangea-river-interior-test.cjs,fast,124,TIMEOUT,150.2,,,"=== Pangea interior rzeki (FALA 199, Standard) === | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/pending-improvements-test.cjs,fast,0,GREEN,1.0,8,0,
+tools/perf-endturn-ai-phase-equiv-test.cjs,fast,0,GREEN,0.2,,,
+tools/perf-endturn-r3-equiv-test.cjs,fast,0,GREEN,18.6,,,
+tools/perf-endturn-r3-visdisk-test.cjs,fast,0,GREEN,4.6,,,
+tools/perf-endturn-render-deferral-regression-test.cjs,fast,0,GREEN,0.4,,,
+tools/perf-endturn-render-resume-flush-test.cjs,fast,0,GREEN,1.3,,,
+tools/perf-endturn-resource-access-equiv-test.cjs,fast,0,GREEN,5.6,,,
+tools/perf-hud-frame-memo-test.cjs,fast,0,GREEN,0.9,16,0,
+tools/perf-sibling-memo-test.cjs,fast,0,GREEN,3.0,13,0,
+tools/perf-territory-index-equiv-test.cjs,fast,0,GREEN,2.6,6,0,
+tools/picker-test.cjs,fast,0,GREEN,1.7,140,0,
+tools/placed-improvements-cache-q1-test.cjs,fast,0,GREEN,11.5,15,0,
+tools/planned-march-test.cjs,fast,0,GREEN,1.5,18,0,
+tools/plony-budynkow-test.cjs,fast,0,GREEN,4.7,68,0,
+tools/podboj-kolejka-budynek-niemozliwy-test.cjs,fast,0,GREEN,1.0,79,0,
+tools/popcap-spichlerz2-akwedukt20-test.cjs,fast,0,GREEN,1.2,46,0,
+tools/population-civ-matrix-wiring-test.cjs,fast,0,GREEN,0.9,122,0,
+tools/population-growth-tempo-test.cjs,fast,0,GREEN,0.7,,,
+tools/population-growth-v85-bonus-test.cjs,fast,0,GREEN,1.2,65,0,
+tools/population-growth-v85-test.cjs,fast,0,GREEN,0.8,50,0,
+tools/porzadek-panel-czytelnosc-test.cjs,fast,0,GREEN,1.2,93,0,
+tools/post-battle-map-test.cjs,fast,0,GREEN,1.3,32,0,
+tools/post-capture-law-test.cjs,fast,0,GREEN,1.1,25,0,
+tools/postep-pamiec-usuniecie-test.cjs,fast,0,GREEN,1.2,38,0,
+tools/power-objective-test.cjs,fast,0,GREEN,0.3,29,0,
+tools/power-options-test.cjs,fast,0,GREEN,0.9,5,0,
+tools/power-ranking-test.cjs,fast,0,GREEN,0.6,10,0,
+tools/power-ranking-view-test.cjs,fast,0,GREEN,0.4,29,0,
+tools/pr141-ai-production-behavior-test.cjs,fast,0,GREEN,2.5,23,0,
+tools/pr141-ai-strategy-behavior-test.cjs,fast,0,GREEN,2.5,19,0,
+tools/pr141-combat-defense-behavior-test.cjs,fast,0,GREEN,1.5,100,-20,
+tools/pr141-combat-defense-owner-route-test.cjs,fast,1,RED,1.9,,,"ReferenceError: _menuCivIdByOwner is not defined"
+tools/pr141-combat-offense-behavior-test.cjs,fast,0,GREEN,0.9,75,0,
+tools/pr141-current-evidence-ledger-test.cjs,fast,1,RED,0.7,20261018,-20261018," if(manifest.files[rel]!==hash)throw Error(`manifest source hash mismatch: ${rel}`); | Error: manifest source hash mismatch: dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/00-dispatch.md"
+tools/pr141-current-evidence-ledger-v3-test.cjs,fast,1,RED,2.1,,,"function assert(ok, message) { if (!ok) throw new Error(message); } | Error: current per-cell status differs from semantic API prod_szybkosc_jednostki_proc/grecy"
+tools/pr141-current-evidence-ledger-v4-test.cjs,fast,1,RED,0.4,,,"Error: ENOENT: no such file or directory, open '<WT>/dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-DECISION-CLOSEOUT-20261018/evidence/matrix-93x15-current-evidence-ledger-v4.json'"
+tools/pr141-dip-activation-test.cjs,fast,1,RED,39.8,,," throw new AssertionError(obj); | AssertionError [ERR_ASSERTION]: missing/non-major row preserves caller fallback"
+tools/pr141-evidence-ledger-behavior-test.cjs,fast,1,RED,0.1,,,"Error: ENOENT: no such file or directory, open '/workspace/pr141-review/current-consumers.json'"
+tools/pr141-f04-building-speed-activation-test.cjs,fast,1,RED,6.6,,,"ReferenceError: prod is not defined"
+tools/pr141-f04-cost-activation-defense-test.cjs,fast,0,GREEN,9.2,64,0,
+tools/pr141-f04-cost-activation-test.cjs,fast,0,GREEN,1.2,20,0,
+tools/pr141-f04-rush-activation-test.cjs,fast,0,GREEN,7.4,72,0,
+tools/pr141-f04-society-activation-test.cjs,fast,0,GREEN,1.4,34,0,
+tools/pr141-f04-society-remaining-activation-test.cjs,fast,0,GREEN,2.7,192,0,
+tools/pr141-f04-unit-speed-activation-test.cjs,fast,0,GREEN,6.1,,,
+tools/pr141-f04-work-activation-test.cjs,fast,0,GREEN,2.7,,,
+tools/pr141-f04-yields-activation-test.cjs,fast,1,RED,1.7,,,"AssertionError [ERR_ASSERTION]: grecy/eko_pieniadz_proc: actual city-yield consumer applies exact source value once"
+tools/pr141-g1-combat-activation-test.cjs,fast,0,GREEN,1.4,,,
+tools/pr141-hotseat-diplomacy-owner-test.cjs,fast,1,RED,7.4,5,5,"FAIL actual relation breakdown compares the secondary human type, not primary Rome: diploBrakeBonusFlags is not defined | FAIL actual relation breakdown keeps the different-culture penalty for known owners in both directions: diploBrakeBonusFlags is not defined | FAIL actual relation breakdown treats unknown civ as neutral, not same-type primary fallback: diploBrakeBonusFlags is not defined"
+tools/pr141-hotseat-production-owner-routing-test.cjs,fast,1,RED,5.6,,,"ReferenceError: isCityUnderSiege is not defined"
+tools/pr141-matrix-only-ai-test.cjs,fast,0,GREEN,2.6,40,0,
+tools/pr141-matrix-only-combat-test.cjs,fast,0,GREEN,1.7,36,0,
+tools/pr141-matrix-only-data-wiki-test.cjs,fast,0,GREEN,0.7,,,
+tools/pr141-matrix-only-economy-test.cjs,fast,1,RED,2.2,,,"AssertionError [ERR_ASSERTION]: grecy: gross trade uses only matrix, not poison civ multiplier"
+tools/pr141-matrix-only-owner-ui-test.cjs,fast,0,GREEN,0.5,,,
+tools/pr141-matrix-only-production-test.cjs,fast,0,GREEN,1.2,96,0,
+tools/pr141-population-behavior-test.cjs,fast,0,GREEN,0.9,24,0,
+tools/pr141-population-main-happiness-hookup-test.cjs,fast,0,GREEN,7.1,7,0,
+tools/pr141-saveload-mp-f05-g11-behavior-test.cjs,fast,0,GREEN,1.5,,,
+tools/pr141-semantic-consumer-consistency-test.cjs,fast,0,GREEN,4.5,52,0,
+tools/praca-auto-ulepszenia-koszt-split-test.cjs,fast,0,GREEN,0.1,20,0,
+tools/praca-cap-migracja-luka-test.cjs,fast,0,GREEN,3.2,11,0,
+tools/praca-global-default-live-test.cjs,fast,0,GREEN,10.3,7,0,
+tools/praca-jeden-podzial-kontrakt-test.cjs,fast,1,RED,7.3,,," [FAIL] kontrola negatywna: przy budżecie z PRZYROSTU (runda 1) ten sam wpływ 24/turę daje 0 Pracy na ulepszenia (got 1460, want 0) | [FAIL] kontrola negatywna: przy budżecie z PRZYROSTU (runda 1) ten sam wpływ 36/turę daje 0 Pracy na ulepszenia (got 1520, want 0)"
+tools/praca-limit-50-test.cjs,fast,0,GREEN,1.7,34,0,
+tools/praca-miasto-limit-50-cap-test.cjs,fast,0,GREEN,1.7,50,0,
+tools/praca-miasto-limit-50-test.cjs,fast,0,GREEN,2.4,33,0,
+tools/praca-na-pieniadz-test.cjs,fast,0,GREEN,1.5,6,0,
+tools/praca-podzial-staly-50-50-test.cjs,fast,0,GREEN,1.9,6,0,
+tools/praca-pula-rate-parity-test.cjs,fast,0,GREEN,1.5,12,0,
+tools/praca-split-ui-test.cjs,fast,1,RED,0.4,24,1,"FAIL: MIN/MAX przechodzą przez TEN SAM handler co drag (input.value + dispatch 'input'), bez drugiej ścieżki zapisu | [praca-split-ui-test] 24 pass, 1 fail"
+tools/prawo-palac-tier-test.cjs,fast,0,GREEN,1.8,30,0,
+tools/prawo-przebudowa-skali-test.cjs,fast,0,GREEN,13.2,152,0,
+tools/prawo-siatka-v2-test.cjs,fast,0,GREEN,0.8,55,0,
+tools/pre-battle-defender-retreat-test.cjs,fast,0,GREEN,4.9,,,
+tools/pre-battle-retreat-exhausted-test.cjs,fast,1,RED,5.7,27,6,"FAIL: [A4] onCancel: warunek wykonania applyDefenderPreBattleRetreat zawiera !retreatExhaustedThisTurn (obrona w głąb — nie tylko widoczność przycisku w UI) | FAIL: [A5] 'for (const u of defRosterRef) u.retreatedThisTurn = true;' obecne i wykonywane PO applyDefenderPreBattleRetreat(...) (jednostki faktycznie się przesunęły, zanim je oznaczymy) | pre-battle-retreat-exhausted-test: 27 pass, 6 fail"
+tools/pre-battle-save-test.cjs,fast,1,RED,5.8,,,"src/ui/icons/scienceOwlIcon.ts:6:25: ERROR: No loader is configured for '.svg' files: src/ui/icons/brand/tier1/res-science-24.svg?raw | at failureErrorWithLog (<WT>/gra/node_modules/esbuild/lib/main.js:1752:15) | errors: ["
+tools/prereq-budynkow-test.cjs,fast,1,RED,1.0,58,1," FAIL: CITY_BUILDING_PREREQ ma dokładnie 9 wpisów (ma: 10) | prereq-budynkow-test: 58 pass, 1 fail"
+tools/production-overflow-test.cjs,fast,0,GREEN,1.9,213,0,
+tools/promote-to-front-test.cjs,fast,0,GREEN,1.5,129,0,
+tools/pytanie-84-stock-keys-test.cjs,fast,0,GREEN,1.6,14,0,
+tools/r-bitwa-etykieta-tozsamosc-strony-zrodlo-test.cjs,fast,0,GREEN,0.4,,,
+tools/r-bitwa-kolory-gracz-przeciwnik-q1-test.cjs,fast,0,GREEN,0.3,,,
+tools/r-bitwa-portret-gracza-miasto-panstwo-otwarte-test.cjs,fast,0,GREEN,0.7,8,0,
+tools/r-manpower-hp-max-effective-currentbase-q1-test.cjs,fast,0,GREEN,1.3,15,0,
+tools/r-manpower-uzupelnienie-hp-niezapisuje-q1-test.cjs,fast,0,GREEN,1.1,17,0,
+tools/r-stawki-fala2-test.cjs,fast,0,GREEN,1.4,11,0,
+tools/r-wzrost-szczescie-dubel-wealth-ceramika-test.cjs,fast,0,GREEN,17.4,59,0,
+tools/rally-point-automarch-test.cjs,fast,0,GREEN,0.9,30,0,
+tools/recruit-list-visibility-test.cjs,fast,0,GREEN,1.0,9,0,
+tools/recruit-rally-default-save-test.cjs,fast,0,GREEN,1.3,,,
+tools/recruit-rally-default-ui-test.cjs,fast,0,GREEN,6.8,,,
+tools/recruitment-batch-contract-test.cjs,fast,0,GREEN,1.0,17,0,
+tools/recruitment-cost-50-wood-test.cjs,fast,0,GREEN,2.0,190,0,
+tools/recruitment-no-upkeep-gate-test.cjs,fast,0,GREEN,0.9,37,0,
+tools/rekrutacja-koszty-polowa-all-test.cjs,fast,1,RED,1.4,01,74," throw new AssertionError(obj); | AssertionError [ERR_ASSERTION]: Procarz: runtime recruitment resource cost"
+tools/rekrutacja-skarbiec-only-test.cjs,fast,1,RED,1.5,12,1,"FAIL: zakup gracza/AI/MP odrzuca brak środków Skarbca | rekrutacja-skarbiec-only-test: 12 passed, 1 failed"
+tools/relief-grid-coverage-test.cjs,fast,124,TIMEOUT,150.1,,,"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/relief-preserving-mine-prefix-test.cjs,fast,0,GREEN,0.2,24,0,
+tools/religia-konwersja-po-podboju-test.cjs,fast,0,GREEN,0.5,12,0,
+tools/render-unit-sharpness-guard.cjs,fast,0,GREEN,0.6,,,
+tools/reproducible-build-contract-test.cjs,fast,0,GREEN,0.1,6,0,
+tools/research-test.cjs,fast,0,GREEN,0.8,33,0,
+tools/resource-usage-breakdown-test.cjs,fast,1,RED,0.5,98,2,"FAIL: D3: gracz -- buildingResourceUpkeepByOwner.set(0, ...) czyta WPROST econ.resourceUpkeepBuildingsByOwner.get(0), zero przeliczenia | FAIL: D4: gracz -- unitResourceUpkeepByOwner.set(0, ...) czyta WPROST econ.resourceUpkeepUnitsByOwner.get(0) | resource-usage-breakdown-test: 98 passed, 2 failed"
+tools/resources-map-icon-map-test.cjs,fast,0,GREEN,0.1,52,0,
+tools/retreat-garnizon-fortyfikacja-test.cjs,fast,0,GREEN,0.5,27,0,
+tools/river-confluence-edge-test.cjs,fast,0,GREEN,80.5,2,0,
+tools/river-density-test.cjs,fast,124,TIMEOUT,150.1,,,"configured maxRivers: 171 | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/river-fog-visibility-test.cjs,fast,0,GREEN,87.6,31,0,
+tools/river-grid-coverage-test.cjs,fast,124,TIMEOUT,150.3,,,"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/river-loop-test.cjs,fast,124,TIMEOUT,150.3,,,"PASS: sanitize skraca pętlę (3 hex) | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/river-map-scale-test.cjs,fast,124,TIMEOUT,150.2,,,"PASS: Maleński: główne > 0 (35) | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/river-path-adjacency-test.cjs,fast,124,TIMEOUT,150.0,,,"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all) | [civ] mapGen ms | prep=4 terrain=21 landSea=547 relief=798 coast=151 riversMain=11764 riversFill=28047 forest=21 deposits=64 starts=266 total=41683"
+tools/river-sea-buffer-test.cjs,fast,124,TIMEOUT,150.1,,,"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/river-terrain-move-test.cjs,fast,0,GREEN,0.7,,,
+tools/river-turn-window-test.cjs,fast,0,GREEN,45.2,10,0,
+tools/river-yield-both-sides-test.cjs,fast,124,TIMEOUT,150.1,,,"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/road-connectivity-test.cjs,fast,0,GREEN,0.4,99,0,
+tools/road-hook-mainguard-test.cjs,fast,0,GREEN,0.3,19,0,
+tools/roads-city-links-only-test.cjs,fast,0,GREEN,95.2,57,0,
+tools/rozmiar-label-test.cjs,fast,0,GREEN,0.3,13,0,
+tools/ruch-swiata-tempo-test.cjs,fast,1,RED,0.3,,," FAIL: main.ts: load -> player.ruchSwiataPace = saved.gracz.ruchSwiataPace ?? newGameParams.advanced?.ruchSwiataPace ?? 'krotki' (stary zapis bez pola = zero zmiany zachowania) | FAIL: main.ts: serializacja zapisu gry (gracz: {...}) zawiera ruchSwiataPace: player.ruchSwiataPace | [ruch-swiata-tempo-test] FAIL"
+tools/rydwan-bierny-atak-test.cjs,fast,0,GREEN,0.6,6,0,
+tools/rydwan-konnica-x2-test.cjs,fast,1,RED,0.0,,,"FAIL: 2 niezgodnosci"
+tools/save-label-test.cjs,fast,0,GREEN,0.2,,,
+tools/save-load-sort-test.cjs,fast,0,GREEN,0.2,4,0,
+tools/saveload-hud-cache-hotseat-wiring-test.cjs,fast,0,GREEN,0.0,9,0,
+tools/sawmill-hill-relief-test.cjs,fast,0,GREEN,0.2,,,
+tools/sawmill-quarry-50-economy-test.cjs,fast,0,GREEN,0.4,7,0,
+tools/science-hub-test.cjs,fast,0,GREEN,0.2,7,0,
+tools/scout-auto-explore-test.cjs,fast,0,GREEN,1.0,25,0,
+tools/scout-explore-deselect-cycle-test.cjs,fast,0,GREEN,0.5,34,0,
+tools/shared-city-name-queue-test.cjs,fast,0,GREEN,0.3,10,0,
+tools/side-list-hud-panel-coverage-test.cjs,fast,0,GREEN,2.6,8,12,
+tools/side-panel-event-link-test.cjs,fast,0,GREEN,0.4,37,0,
+tools/side-panel-unit-cycle-arrows-test.cjs,fast,0,GREEN,2.1,20,0,
+tools/sidepanel-event-tabs-classify-test.cjs,fast,0,GREEN,0.3,,,
+tools/sidepanel-events-toolbar-test.cjs,fast,0,GREEN,2.0,25,0,
+tools/sidepanel-notification-tabs-test.cjs,fast,0,GREEN,0.2,29,0,
+tools/siege-ai-test.cjs,fast,0,GREEN,0.3,17,0,
+tools/siege-badge-zorder-test.cjs,fast,0,GREEN,0.1,13,0,
+tools/siege-defenders-test.cjs,fast,0,GREEN,0.4,12,0,
+tools/siege-last-stand-sortie-test.cjs,fast,0,GREEN,2.5,71,0,
+tools/siege-manual-battle-behavior-test.cjs,fast,0,GREEN,0.3,40,0,
+tools/siege-starvation-test.cjs,fast,0,GREEN,0.5,54,0,
+tools/siege-surrender-enter-city-test.cjs,fast,0,GREEN,0.3,32,0,
+tools/siege-surrender-forecast-test.cjs,fast,0,GREEN,0.5,57,0,
+tools/simple-food-rule-no-toggles-test.cjs,fast,0,GREEN,1.9,36,0,
+tools/small-part-lod-test.cjs,fast,0,GREEN,0.4,24,0,
+tools/society-breakdown-test.cjs,fast,0,GREEN,0.4,56,0,
+tools/spichlerz-cap-citypanel-wiring-test.cjs,fast,0,GREEN,0.1,12,0,
+tools/spichlerz-deficyt-scalenie-test.cjs,fast,1,RED,0.1,55,3,"FAIL: buildHudState zwraca pole zywnoscMiastNiedokarmionych w HudState | FAIL: zywnoscMiastNiedokarmionych: gdy tick DOSTĘPNY liczy dokładnie jak dotychczas (nakarmione===false z ticku, zero zmiany zachowania); gdy tick PUSTY/undefined — żywy fallback z foodProj.unfedCityCount (nie fałszywe 0) | spichlerz-deficyt-scalenie-test: 55 pass, 3 fail"
+tools/spichlerz-drain-keys-test.cjs,fast,0,GREEN,0.3,44,0,
+tools/spichlerz-drain-pipeline-test.cjs,fast,0,GREEN,0.6,21,0,
+tools/spichlerz-hud-params-parity-test.cjs,fast,0,GREEN,0.9,66,0,
+tools/spichlerz-panel-food-parity-test.cjs,fast,0,GREEN,0.6,11,0,
+tools/spichlerz-widocznosc-test.cjs,fast,0,GREEN,0.5,45,0,
+tools/spichlerz-wzrost-test.cjs,fast,0,GREEN,0.6,14,0,
+tools/split-output-test.cjs,fast,0,GREEN,0.3,46,0,
+tools/stadnina-hex-candidates-test.cjs,fast,0,GREEN,1.3,15,0,
+tools/stadnina-kon-koszt-test.cjs,fast,0,GREEN,0.8,17,0,
+tools/stadnina-konie-stare-zapisy-test.cjs,fast,0,GREEN,1.2,29,0,
+tools/stadnina-las-test.cjs,fast,0,GREEN,0.8,28,0,
+tools/start-preview-test.cjs,fast,0,GREEN,0.5,6,0,
+tools/stolarnia-r5-d2-test.cjs,fast,0,GREEN,0.6,9,0,
+tools/stranded-land-test.cjs,fast,124,TIMEOUT,150.1,,,"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/structure-defense-bonus-test.cjs,fast,0,GREEN,0.9,8,0,
+tools/surow-civ-storage-test.cjs,fast,1,RED,16.7,64,4,"FAIL: main.ts: znaleziono wywołanie creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit...) w pętli wyrębu | FAIL: main.ts:~21045 wywołanie w pętli wyrębu PRZEKAZUJE 5. argument (cap) do creditOwnerResourceStock -- bez niego Drewno rośnie bez ograniczenia mimo pełnego magazynu (regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO) | FAIL: main.ts: drewnoCap liczony przez ownerResource"
+tools/surowce-dostep-test.cjs,fast,0,GREEN,0.2,13,0,
+tools/surowce-katalog-kolejnosc-test.cjs,fast,0,GREEN,0.3,62,0,
+tools/surrender-rekrutacja-build-gate-test.cjs,fast,1,RED,0.7,10,1,"FAIL: surrender usuwa legacy, zwraca Pracę staremu właścicielowi i filtruje kolejkę dla nowego | surrender-rekrutacja-build-gate-test: 10 passed, 1 failed"
+tools/szczescie-audyt-c-prawo-osiedla-test.cjs,fast,0,GREEN,42.1,15,0,
+tools/szczescie-audyt-d-progi-bunt-test.cjs,fast,0,GREEN,52.2,18,0,
+tools/szczescie-przebudowa-skali-test.cjs,fast,1,RED,3.9,515,4," [FAIL] 2b: epoka 2 — komplet to 23 budynki (nie 26) -- got 25, want 23 | [FAIL] 2b: epoka 3 — komplet to 31 budynkow (nie 39) -- got 33, want 31 | [szczescie-przebudowa-skali-test] 515 OK, 4 FAIL"
+tools/szczescie-skala-normalizacja-test.cjs,fast,0,GREEN,2.7,148,0,
+tools/szczescie-zamoznosc-test.cjs,fast,0,GREEN,1.2,88,0,
+tools/tarasy-cywilizacje-test.cjs,fast,1,RED,3.1,14,3," FAIL: AI Chinczycy: dokladnie 1 buildImprovement (got 2, want 1) | FAIL: AI Inkowie: dokladnie 1 buildImprovement (got 2, want 1) | TARASY-CYWILIZACJE-TEST: 14 passed, 3 failed"
+tools/tartak-glinianka-rate-Q1-test.cjs,fast,0,GREEN,2.3,,,
+tools/tartak-oboz-wyscig-race-test.cjs,fast,0,GREEN,0.9,13,0,
+tools/tech-discovery-card-click-test.cjs,fast,0,GREEN,6.2,13,0,
+tools/tech-tempo-test.cjs,fast,0,GREEN,0.2,,,
+tools/tech-tree-test.cjs,fast,0,GREEN,0.5,19,0,
+tools/tech-unlock-units-test.cjs,fast,0,GREEN,1.0,129,0,
+tools/technology-discovery-card-visual-test.cjs,fast,0,GREEN,0.1,48,0,
+tools/teren-walki-etapy-test.cjs,fast,0,GREEN,0.7,33,0,
+tools/terrain-base-resource-yields-test.cjs,fast,0,GREEN,1.3,10,0,
+tools/terrain-height-audit-test.cjs,fast,124,TIMEOUT,150.3,,,"PASS: rzeka nad polarny (top 0.460 < river 0.540) | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/terrain-hill-movement-test.cjs,fast,0,GREEN,1.6,10,0,
+tools/terrain-names-equivalence-test.cjs,fast,0,GREEN,1.3,23,0,
+tools/territory-border-dense-settlement-test.cjs,fast,0,GREEN,2.1,15,0,
+tools/territory-border-test.cjs,fast,0,GREEN,0.9,9,0,
+tools/test-hook-setcitylimit-live-test.cjs,fast,1,RED,0.1,,,"if (!BUNDLE) throw new Error('Ustaw ROBOCZA_HTML=<sciezka do kopii Gra-ROBOCZA.html>'); | Error: Ustaw ROBOCZA_HTML=<sciezka do kopii Gra-ROBOCZA.html>"
+tools/test-hook-setcitylimit-test.cjs,fast,0,GREEN,3.0,29,0,
+tools/trade-grant-test.cjs,fast,0,GREEN,1.6,62,0,
+tools/trade-ilosc-test.cjs,fast,1,RED,2.4,35,5," FAIL: E: kon NIE jest w TRADE_ROUTE_STOCK_FLOW_KEYS (brak magazynu ilosciowego) (got true, want false) | FAIL: E: dokladnie trzy klucze przeplywu ilosciowego (braz/zelazo/cegla) (got 6, want 3) | trade-ilosc-test: 35 passed, 5 failed"
+tools/trade-routes-contact-only-test.cjs,fast,0,GREEN,4.4,36,0,
+tools/trade-routes-hud-filter-test.cjs,fast,0,GREEN,2.5,58,0,
+tools/trade-routes-income-test.cjs,fast,0,GREEN,2.7,134,0,
+tools/trade-routes-limit-test.cjs,fast,1,RED,9.6,75,1," FAIL: K9: (twarda gorna granica bezpieczenstwa, NIE cel wydajnosciowy) cold=5402.42ms < 5000ms | trade-routes-limit-test: 75 passed, 1 failed"
+tools/trade-routes-ownership-income-test.cjs,fast,0,GREEN,1.9,18,0,
+tools/trade-routes-test.cjs,fast,0,GREEN,1.0,96,0,
+tools/trade-sea-bonus-requires-port-test.cjs,fast,0,GREEN,4.9,30,0,
+tools/trade-treaty-free-break-after-10-test.cjs,fast,0,GREEN,1.0,35,0,
+tools/triumph-city-state-notice-test.cjs,fast,0,GREEN,4.3,22,0,
+tools/triumph-city-state-test.cjs,fast,0,GREEN,3.0,13,0,
+tools/ulepszenia-praca-percent-test.cjs,fast,0,GREEN,1.3,28,0,
+tools/unfortify-all-action-bar-test.cjs,fast,0,GREEN,0.9,16,0,
+tools/unit-action-bar-completeness-test.cjs,fast,0,GREEN,0.3,31,0,
+tools/unit-building-bonuses-test.cjs,fast,0,GREEN,0.7,82,0,
+tools/unit-context-card-test.cjs,fast,0,GREEN,1.4,29,0,
+tools/unit-cost-tempo-test.cjs,fast,0,GREEN,0.4,,,
+tools/unit-detail-card-entitycard-migration-test.cjs,fast,1,RED,8.6,38,2,"FAIL: buildUnitDetailCardViaEntityCard woła renderEntityCard(built) | FAIL: buildUnitDetailCardViaEntityCard dopełnia sekcję Uwagi (u.Uwagi, jak dla budynków w T5) | [unit-detail-card-entitycard-migration-test] 38 pass, 2 fail"
+tools/unit-epoch-cost-test.cjs,fast,0,GREEN,2.4,57,0,
+tools/unit-info-card-army-interaction-test.cjs,fast,1,RED,0.7,6,1," FAIL: status runtime jest pobierany z właściwej jednostki | unit-info-card-army-interaction-test: 6 pass, 1 fail"
+tools/unit-info-card-contract-test.cjs,fast,0,GREEN,0.5,23,0,
+tools/unit-info-card-entitycard-migration-test.cjs,fast,0,GREEN,6.0,26,0,
+tools/unit-info-card-wiring-test.cjs,fast,1,RED,0.1,5,1," FAIL: wiring rozpoznaje właściwą jednostkę runtime | unit-info-card-wiring-test: 5 pass, 1 fail"
+tools/unit-owner-emblem-ring-civ-color-test.cjs,fast,0,GREEN,1.8,15,0,
+tools/unit-power-sort-test.cjs,fast,1,RED,0.3,12,1,"=== unit-power-sort-test: 12 pass, 1 fail === | FAIL: city panel detail and recruitment lists both sort at the display boundary"
+tools/unit-power-test.cjs,fast,1,RED,0.9,4,2," FAIL: Hastati M_pole=50 (got 57.5) | FAIL: sumArmyFieldPower 3 units (got 167.5) | === unit-power-test: 4 pass, 2 fail ==="
+tools/unit-recruit-nazwa-test.cjs,fast,1,RED,2.0,16,1," [FAIL] Evocati obecny w galezi B (pole 'Zastąp specjalnie') -- [] | [unit-recruit-nazwa-test] 16 passed, 1 failed."
+tools/unit-renderer-overlay-sync-test.cjs,fast,0,GREEN,2.9,17,0,
+tools/unit-replace-test.cjs,fast,1,RED,0.7,3,12," [FAIL] zawiera Evocati (Rzym, Typ=Swordsman, odblokowany w Zelazie) -- ids=['Wojownik'] | [FAIL] Evocati obecny mimo innego Typ (pole 'Zastąp specjalnie') -- ids=[] | [FAIL] ctx z buildReplaceAvailabilityCtx (empireResourceStock={zelazo:5}) odblokowuje Evocati -- ids=[]"
+tools/unit-resource-upkeep-test.cjs,fast,1,RED,2.2,3,4,"FAIL: Włócznik -> {braz:2} (got {'braz':10}, want {'braz':2}) | FAIL: Włócznik unitStockCost -> {braz:10} (stara baza ×5) (got {'braz':50}, want {'braz':10}) | FAIL: 2× Włócznik -> {braz:4} (got {'braz':20}, want {'braz':4})"
+tools/unit-stock-cost-test.cjs,fast,0,GREEN,0.7,58,0,
+tools/upgrade-budynki-test.cjs,fast,0,GREEN,1.8,49,0,
+tools/upkeep-test.cjs,fast,0,GREEN,0.7,73,0,
+tools/victory-screen-test.cjs,fast,0,GREEN,0.8,11,0,
+tools/victory-test.cjs,fast,0,GREEN,1.0,12,0,
+tools/villages-test.cjs,fast,0,GREEN,1.2,94,0,
+tools/walka-jeden-kontratak-test.cjs,fast,0,GREEN,1.5,24,0,
+tools/walka-morale-przewaga-mocy-test.cjs,fast,0,GREEN,1.1,123,0,
+tools/waluta-mennica-test.cjs,fast,0,GREEN,18.5,61,0,
+tools/war-allin-capital-test.cjs,fast,1,RED,27.3,96,2," FAIL: 6b aiVsAi: flaga OFF == referencja 20a5bc2c7abcba1b (got 'd28c8b7ffce7a3ec', want '20a5bc2c7abcba1b') | FAIL: 6b noLandPath: flaga OFF == referencja 3484217518ceb4ba (got 'e565af36b3773765', want '3484217518ceb4ba') | 96 passed, 2 failed"
+tools/war-allin-general-path-barb-defense-test.cjs,fast,0,GREEN,3.6,24,0,
+tools/war-allin-keep-barb-defense-test.cjs,fast,0,GREEN,2.5,8,0,
+tools/war-epoch-player-first-main-guard-test.cjs,fast,1,RED,0.6,31,3,"FAIL [mutacja nieaplikowana]: udział lądu w głównej siatce usunięty | FAIL [mutacja nieaplikowana]: slot lądu ponownie zajęty przez przełącznik wojny epoki | war-epoch-player-first-main-guard-test: 31 pass / 3 fail"
+tools/war-epoch-player-first-test.cjs,fast,0,GREEN,0.8,33,0,
+tools/war-era-counter-test.cjs,fast,0,GREEN,1.0,37,0,
+tools/war-happiness-parity-test.cjs,fast,0,GREEN,1.7,21,0,
+tools/war-rules-multiwar-main-guard-test.cjs,fast,0,GREEN,1.0,21,0,
+tools/war-rules-multiwar-test.cjs,fast,0,GREEN,1.3,57,0,
+tools/warehouse-state-cap-20pct-test.cjs,fast,0,GREEN,1.3,56,0,
+tools/water-access-port-vs-mill-test.cjs,fast,0,GREEN,1.0,,,
+tools/wealth-test.cjs,fast,0,GREEN,0.6,36,0,
+tools/web-memory-leaks-test.cjs,fast,1,RED,2.5,52,3,"FAIL: WSZYSTKIE geometrie starego modelu zwolnione (dispose) (got=6 want=20) | FAIL: WSZYSTKIE materialy starego modelu zwolnione (dispose) (got=0 want=18) | 52 passed, 3 failed"
+tools/web-turn-slowdown-test.cjs,fast,1,RED,0.2,,," FAIL sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P3 nodes -- 0 | FAIL sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P4 worked-owner -- 0"
+tools/weterani-test.cjs,fast,1,RED,3.7,78,1," FAIL: PRZED (nominalna, C-MOC-Q1=A): stackFieldPowerM(Konnica gwiazdki=3, defOf=nominalny) == 49 -- 98 | WYNIK: 78 PASS, 1 FAIL"
+tools/wiarygodnosc-test.cjs,fast,0,GREEN,2.9,270,0,
+tools/wire-ekonomia-test.cjs,fast,0,GREEN,1.1,37,0,
+tools/wojna-wymuszona-parowanie-test.cjs,fast,0,GREEN,0.5,47,0,
+tools/wojna-wymuszona-prog-tury-gracz-test.cjs,fast,1,RED,0.7,6,3,"FAIL: warunek zawiera próg turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY | FAIL: warunek zachowuje istniejące kryterium totalActiveForcedWarsByOwner(0) === 0 | PASSED: 6, FAILED: 3"
+tools/wonder-availability-test.cjs,fast,0,GREEN,0.4,7,0,
+tools/wonder-civ-tech-test.cjs,fast,0,GREEN,1.2,6,0,
+tools/wonder-early-return-highlight-test.cjs,fast,0,GREEN,0.2,8,0,
+tools/wonder-map-build-test.cjs,fast,0,GREEN,1.0,6,0,
+tools/wonder-yields-test.cjs,fast,0,GREEN,19.5,11,0,
+tools/work-tax-conversion-test.cjs,fast,0,GREEN,0.3,,,
+tools/world-density-test.cjs,fast,124,TIMEOUT,150.1,,,"[civ] mapGen ms | prep=5 terrain=51 landSea=694 relief=688 coast=129 riversMain=5554 riversFill=30366 forest=45 deposits=94 starts=532 total=38158 | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+tools/wycinka-drewno-cap-test.cjs,fast,0,GREEN,0.3,13,0,
+tools/wyrab-rzeka-d1-test.cjs,fast,0,GREEN,0.9,3,0,
+tools/wyrab-rzeka-krok0-test.cjs,fast,0,GREEN,1.0,3,0,
+tools/wyrab-rzeka-r2-test.cjs,fast,0,GREEN,1.1,10,0,
+tools/zelazo-gate-test.cjs,fast,1,RED,0.6,4,20," [FAIL] Procarz (Surowiec pusty) dostepny mimo braku kopalni/Odlewni -- bramka zelaza go nie dotyczy -- ids=[] | [FAIL] purchasableUnits: kopalnia+Odlewnia -> Legionista dostepny | [FAIL] Zastap: Legionista JEST opcja zamiany z pelnym dostepem do zelaza -- ids=[]"
+tools/zloto-szlak-test.cjs,fast,0,GREEN,1.4,54,0,
+tools/zloto-test.cjs,fast,1,RED,61.1,38,7," FAIL: Parytet AI: Mennica dostępna dla obu przy identycznym stanie (złoto+Targowisko+Waluta) | FAIL: Parytet AI: bez dostępu do złota, Mennica budowalna identycznie dla gracza i AI (kanon magazyn) | zloto-test: 38 pass, 7 fail"
+tools/zloze-zloto-render-test.cjs,fast,0,GREEN,1.3,7,0,
+recruit-hud-label-test.cjs,fast,1,RED,0.6,,," throw new AssertionError(obj); | AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+smoke_test.cjs,fast,1,RED,2.4,,,"Error: ENOENT: no such file or directory, open '<WT>/gra/dist/index.html'"

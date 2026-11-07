@@ -1,0 +1,12 @@
+[r9-live] vite build do katalogu tymczasowego: <REF-TMP>/w2/tmp/run/civ-r9-live-10758
+[r9-live] epoka bronze
+  OK  [bronze] para (napastnik, obrońca z ≥2 miastami) istnieje w realnej mapie
+  OK  [bronze] wojna wymuszona aktywna, relacja 'wojna' (stan wejściowy)
+  OK  [bronze] po realnym endTurn (startTurn cofnięty o 30 tur) wojna NADAL trwa
+  OK  [bronze] 2 miasta przejęte realnym applyCityCaptureToMap (obrońca nie zeliminowany: miasta > 0)
+  OK  [bronze] po zdobyciu 2 miast wojna wymuszona NADAL trwa (bez auto-pokoju)
+  OK  [bronze] pokój kończy wojnę wymuszoną (wpis rejestru usunięty, relacja != 'wojna')
+  OK  [bronze] cleanup po pokoju: odpoczynek napastnika uzbrojony (restUntil > tura)
+
+EXIT=124
+TIME=360.1

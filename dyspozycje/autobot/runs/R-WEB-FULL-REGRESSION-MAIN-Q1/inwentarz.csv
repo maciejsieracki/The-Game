@@ -1,0 +1,1151 @@
+plik,katalog,status,klasa,uwaga
+._tmp-river-render-diag-bundle.cjs,tools,wykluczony,-,"plik-smiec AppleDouble (ukryty, poza glob), nie test"
+.ai-test-diplo-tmp.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+.diag-playtest-bundle.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+.krok2-typecheck-bundle.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+.logic-test-13b.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+.palisada-check-bundle.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+.quick-river-test.cjs,tools,wykluczony,-,"ukryty skompilowany artefakt esbuild (poza glob operatora); uruchomiony w R2: EXIT 0, 0 s, bez wyjscia, zero asercji PASS/FAIL - nie liczony jako test"
+.smoke-deliver.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+.smoke-rerender.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+.test-diag-bundle.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+_tmp-battle-roster-test.cjs,tools,wlaczony,E,
+_tmp-siege-test.cjs,tools,wlaczony,E,
+_verify_deliverable.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+adjust-handel-split-suma-test.cjs,tools,wlaczony,E,
+administracja-stolica-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ai-army-all-civs-general-muster-test.cjs,tools,wlaczony,E,
+ai-army-all-civs-live-hook.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+ai-army-all-civs-live-measure.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+ai-army-live-hook.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+ai-army-live-measure.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+ai-army-replacement-concentration-test.cjs,tools,wlaczony,E,
+ai-army-scattered-merge-test.cjs,tools,wlaczony,A,"czerwony na main, zielony na ref; bisect: pierwszy czerwony: FALA 520 (33855a540); ostatni zielony: FALA 519 (15c99e09f)"
+ai-avoid-polar-pick-test.cjs,tools,wlaczony,E,
+ai-avoid-polar-plan-test.cjs,tools,wlaczony,E,
+ai-avoid-polar-player-parity-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+ai-avoid-polar-sim-test.cjs,tools,wlaczony,E,
+ai-balans-step2-test.cjs,tools,wlaczony,E,
+ai-balans-step3-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ai-balans-step4-test.cjs,tools,wlaczony,E,
+ai-balans-step5-test.cjs,tools,wlaczony,E,
+ai-buduje-budynki-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+ai-citizen-hex-sibling-exclusion-test.cjs,tools,wlaczony,E,
+ai-city-capture-integration-test.cjs,tools,wlaczony,E,
+ai-city-live-measure.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+ai-city-live-summarize.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+ai-city-recovery-test.cjs,tools,wlaczony,E,
+ai-city-render-batch-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ai-city-yield-test.cjs,tools,wlaczony,E,
+ai-colonization-pop-test.cjs,tools,wlaczony,E,
+ai-cs-absorption-test.cjs,tools,wlaczony,E,
+ai-cud-priorytet-b3-test.cjs,tools,wlaczony,E,
+ai-difficulty-bonus-test.cjs,tools,wlaczony,E,
+ai-dlug-porzadki-q1-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ai-early-city-founding-pace-test.cjs,tools,wlaczony,E,
+ai-early-no-major-war-test.cjs,tools,wlaczony,E,
+ai-era-unit-promotion-test.cjs,tools,wlaczony,E,
+ai-fog-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ai-food-improvement-priority-stages-test.cjs,tools,wlaczony,E,
+ai-food-only-worked-hexes-test.cjs,tools,wlaczony,E,
+ai-founding-territory-test.cjs,tools,wlaczony,E,
+ai-general-war-campaign-live-test.cjs,tools,wlaczony,E,
+ai-general-war-campaign-test.cjs,tools,wlaczony,E,
+ai-granary-prog-populacji-spojnosc-test.cjs,tools,wlaczony,E,
+ai-home-defense-civilian-filter-test.cjs,tools,wlaczony,E,
+ai-home-defense-vs-barbarians-test.cjs,tools,wlaczony,E,
+ai-improvements-test.cjs,tools,wlaczony,E,
+ai-jednostki-tylko-zakup-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ai-major-absorb-test.cjs,tools,wlaczony,E,
+ai-major-economy-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ai-march-avoid-foreign-territory-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ai-moc-diag-test.cjs,tools,wlaczony,E,
+ai-move-full-range-test.cjs,tools,wlaczony,E,
+ai-move-range-collision-test.cjs,tools,wlaczony,E,
+ai-move-range-test.cjs,tools,wlaczony,E,
+ai-mp-military-cap-test.cjs,tools,wlaczony,E,
+ai-mp-rekrutacja-build-gate-test.cjs,tools,wlaczony,E,
+ai-nauka-podzial-tura1-seed-test.cjs,tools,wlaczony,E,
+ai-no-march-without-war-q1-test.cjs,tools,wlaczony,E,
+ai-no-siege-without-war-r2-test.cjs,tools,wlaczony,E,
+ai-ofensywa-wojna-epoki-test.cjs,tools,wlaczony,E,
+ai-owner-progress-frame-test.cjs,tools,wlaczony,E,
+ai-polar-fallback-test.cjs,tools,wlaczony,E,
+ai-praca-budynki-ulepszenia-owner-policy-test.cjs,tools,wlaczony,E,
+ai-praca-podzial-tura1-seed-test.cjs,tools,wlaczony,E,
+ai-praca-split-parity-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ai-prod-fallback-test.cjs,tools,wlaczony,E,
+ai-prod-gate-difficulty-test.cjs,tools,wlaczony,E,
+ai-production-priority-test.cjs,tools,wlaczony,E,
+ai-produkcja-pokrycie-katalogu-test.cjs,tools,wlaczony,E,
+ai-recruit-upkeep-gate-test.cjs,tools,wlaczony,E,
+ai-rekrutacja-parytet-test.cjs,tools,wlaczony,E,
+ai-resource-needs-test.cjs,tools,wlaczony,E,
+ai-siege-requires-war-test.cjs,tools,wlaczony,E,
+ai-slider-test.cjs,tools,wlaczony,E,
+ai-stadnina-fort-territory-test.cjs,tools,wlaczony,E,
+ai-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ai-threat-mode-test.cjs,tools,wlaczony,E,
+ai-ulepszenia-malo-budowane-test.cjs,tools,wlaczony,E,
+ai-unit-rush-test.cjs,tools,wlaczony,E,
+ai-war-defend-home-test.cjs,tools,wlaczony,E,
+ai-war-gate-test.cjs,tools,wlaczony,E,
+ai-war-nearest-city-peace-2t-test.cjs,tools,wlaczony,E,
+ai-war-weariness-live-audit-hook.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+ai-war-weariness-live-audit-measure.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+ai-war-weariness-live-audit-summarize.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+ai-war-weariness-peace-test.cjs,tools,wlaczony,E,
+ai-wojny-zwykle-cap-dwa-miasta-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+ai-zdobycie-miasta-adiacencja-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ai2-heks-po-heksie-test.cjs,tools,wlaczony,E,
+ai4-popyt-obywatele-test.cjs,tools,wlaczony,B,czerwony tak samo na ref (fail main=17 ref=18)
+akwedukt-popcap-test.cjs,tools,wlaczony,E,
+alliance-war-obligation-test.cjs,tools,wlaczony,E,
+ambience-natura-tylko-zwierzeta-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+annex-citystate-spoils-test.cjs,tools,wlaczony,E,
+army-concentration-test.cjs,tools,wlaczony,E,
+army-consolidation-e2e-test.cjs,tools,wlaczony,E,
+army-consolidation-test.cjs,tools,wlaczony,E,
+army-hunger-combat-test.cjs,tools,wlaczony,E,
+army-hunger-icon-unfortify-test.cjs,tools,wlaczony,E,
+army-leadership-test.cjs,tools,wlaczony,E,
+army-merge-bounce-test.cjs,tools,wlaczony,E,
+army-merge-colocated-test.cjs,tools,wlaczony,E,
+army-merge-dismiss-bounce-test.cjs,tools,wlaczony,E,
+army-merge-panel-list-visibility-test.cjs,tools,wlaczony,E,
+army-merge-panel-production-mount-test.cjs,tools,wlaczony,E,
+army-merge-panel-scroll-real-render-test.cjs,tools,wlaczony,E,
+army-merge-separate-return-mainguard-test.cjs,tools,wlaczony,E,
+army-merge-separate-return-test.cjs,tools,wlaczony,E,
+army-merge-split-direction-icons-test.cjs,tools,wlaczony,E,
+army-merge-stackgroupid-test.cjs,tools,wlaczony,E,
+army-panel-general-label-multiselect-live-test.cjs,tools,wlaczony,E,
+army-panel-general-label-multiselect-test.cjs,tools,wlaczony,E,
+army-panel-recruit-rally-general-test.cjs,tools,wlaczony,E,
+army-panel-recruit-remove-test.cjs,tools,wlaczony,E,
+army-recruitment-concentration-test.cjs,tools,wlaczony,E,
+army-scout-not-leader-test.cjs,tools,wlaczony,E,
+army-split-movement-test.cjs,tools,wlaczony,E,
+army-split-panel-scroll-grid-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+army-split-ruch-icons-test.cjs,tools,wlaczony,E,
+army-stack-commander-identity-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+army-stack-ruch-test.cjs,tools,wlaczony,E,
+army-to-nearest-leader-test.cjs,tools,wlaczony,E,
+atak-adiacencja-wymagana-test.cjs,tools,wlaczony,E,
+auto-battle-active-roster-event-test.cjs,tools,wlaczony,E,
+auto-battle-loss-audit-test.cjs,tools,wlaczony,E,
+auto-battle-power-test.cjs,tools,wlaczony,E,
+auto-battle-przewaga-monotonicznosc-test.cjs,tools,wlaczony,E,
+auto-battle-py-vs-ts-parytet-test.cjs,tools,wlaczony,E,
+auto-battle-simultaneous-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+auto-fort-claim-test.cjs,tools,wlaczony,B,czerwony tak samo na ref (fail main=2 ref=1)
+auto-fort-diag-test.cjs,tools,wlaczony,E,
+auto-improve-no-item-cap-test.cjs,tools,wlaczony,E,
+auto-improve-q3-test.cjs,tools,wlaczony,E,
+auto-improvements-test.cjs,tools,wlaczony,E,
+auto-manage-test.cjs,tools,wlaczony,E,
+auto-manage-ulepszenia-fallback-test.cjs,tools,wlaczony,E,
+auto-wyzywienie-bilans-clamp-test.cjs,tools,wlaczony,E,
+auto-wyzywienie-flow-balance-test.cjs,tools,wlaczony,E,
+auto-wyzywienie-kosztarmii-kryterium-test.cjs,tools,wlaczony,E,
+auto-wyzywienie-live-recalc-test.cjs,tools,wlaczony,E,
+auto-wyzywienie-population-growth-live-recalc-test.cjs,tools,wlaczony,E,
+autobuild-toggle-test.cjs,tools,wlaczony,E,
+autoclear-priority-live-test.cjs,tools,wlaczony,D,"TIMEOUT na main, RED na ref"
+autoclear-priority-q1-test.cjs,tools,wlaczony,E,
+autoclear-river-forest-priority-test.cjs,tools,wlaczony,E,
+autoimprove-irrigation-after-farms-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+autoimprove-live-hooks-test.cjs,tools,wlaczony,E,
+autoimprove-river-forest-clear-no-citizen-q1-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+autoimprove-river-forest-clear-no-citizen-q1-unit-test.cjs,tools,wlaczony,E,
+autoimprove-river-forest-first-q1-test.cjs,tools,wlaczony,E,
+autoimprove-river-forest-live-verify-q1-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+autoimprove-stages-q1-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+autosave-quota-fail-test.cjs,tools,wlaczony,E,
+autowyzywienie-rowny-wzrost-test.cjs,tools,wlaczony,E,
+autowyzywienie-stan-przycisku-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+barb-camp-blacklist-test.cjs,tools,wlaczony,E,
+barb-camp-destruction-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+barb-city-behavior-test.cjs,tools,wlaczony,E,
+barb-city-capture-cluster-test.cjs,tools,wlaczony,E,
+barb-city-owner-contract-test.cjs,tools,wlaczony,E,
+barb-karencja-czas-trwania-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+barbarian-cooperation-grace-maints-wiring-test.cjs,tools,wlaczony,E,
+barbarian-cooperation-grace-test.cjs,tools,wlaczony,E,
+barbarians-test.cjs,tools,wlaczony,E,
+barbarzyncy-krazenie-test.cjs,tools,wlaczony,E,
+barbarzyncy-podwojny-atak-prebattle-test.cjs,tools,wlaczony,E,
+battle-attack-move-order-test.cjs,tools,wlaczony,E,
+battle-attack-move-pointer-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-dead-unit-disappearance-test.cjs,tools,wlaczony,E,
+battle-doctrine-live-r3-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-doctrine-live-r4-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-flank-close-formation-test.cjs,tools,wlaczony,E,
+battle-formation-rules-test.cjs,tools,wlaczony,E,
+battle-hp-display-test.cjs,tools,wlaczony,E,
+battle-initial-placement-runtime-test.cjs,tools,wlaczony,E,
+battle-large-mixed-doctrine-matrix-test.cjs,tools,wlaczony,E,
+battle-large-return-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-loot-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+battle-manual-choice-contract-test.cjs,tools,wlaczony,E,
+battle-manual-control-multicycle-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-manual-full-roster-pointer-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-manual-melee-browser-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-manual-melee-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-manual-orders-live-open-tile-deterministic-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-manual-orders-routing-test.cjs,tools,wlaczony,E,
+battle-manual-queued-order-lifecycle-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-melee-attack-doctrine-test.cjs,tools,wlaczony,E,
+battle-mode-choice-labels-test.cjs,tools,wlaczony,E,
+battle-mode-save-reload-contract-test.cjs,tools,wlaczony,E,
+battle-natural-chariot-r5-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-natural-near-range-r6-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-ranged-approach-regression-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+battle-ranged-mounted-doctrine-test.cjs,tools,wlaczony,E,
+battle-roster-test.cjs,tools,wlaczony,E,
+battle-standoff-two-warriors-test.cjs,tools,wlaczony,E,
+battle-summary-test.cjs,tools,wlaczony,E,
+bitwa-auto-atak-wielojednostkowy-evaluation-test.cjs,tools,wlaczony,E,
+bitwa-auto-doktryna-playerorder-zrodlo-test.cjs,tools,wlaczony,E,
+bitwa-mapa-kamera-blokada-test.cjs,tools,wlaczony,E,
+bitwa-obroncy-mur-kolumny-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+bitwa-podsumowanie-dispose-test.cjs,tools,wlaczony,E,
+boot-error-catcher-console-error-test.cjs,tools,wlaczony,E,
+border-march-scan-test.cjs,tools,wlaczony,E,
+border-march-wygasanie-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+bottom-bar-hud-wykonaj-overlap-test.cjs,tools,wlaczony,E,
+bramki-tmpdir-unikalnosc-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+brick-production-x2-test.cjs,tools,wlaczony,E,
+budmode-ulepszenia-sort-locked-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+budowa-lista-szablony-test.cjs,tools,wlaczony,E,
+budynek-civ-bonus-u17-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+budynek-garnizon-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+budynki-koszt-pracy-50-test.cjs,tools,wlaczony,B,czerwony tak samo na ref (fail main=40 ref=39)
+build-mode-hud-affordability-test.cjs,tools,wlaczony,E,
+build-mode-lock-tip-position-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+build-panel-ulepszenia-scroll-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+build-request-obywatele-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+building-card-overlap-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+building-cost-tempo-test.cjs,tools,wlaczony,E,
+building-detail-card-entitycard-migration-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+building-detail-card-hover-layout-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+building-epoch-cost-implementation-test.cjs,tools,wlaczony,E,
+building-happiness-test.cjs,tools,wlaczony,E,
+building-queue-detail-card-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+building-queue-refund-test.cjs,tools,wlaczony,E,
+building-resource-visibility-test.cjs,tools,wlaczony,E,
+building-resource-visibility-ui-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+building-stock-visibility-test.cjs,tools,wlaczony,E,
+building-tech-gate-test.cjs,tools,wlaczony,E,
+camera-zoom-block-test.cjs,tools,wlaczony,E,
+capital-capture-test.cjs,tools,wlaczony,E,
+capital-sep-pangea-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+capital-sep-unit-test.cjs,tools,wlaczony,E,
+capital-spacing-prop-test.cjs,tools,wlaczony,E,
+capture-event-retention-test.cjs,tools,wlaczony,E,
+capture-render-sync-test.cjs,tools,wlaczony,E,
+chlopek-pole-warstwy-test.cjs,tools,wlaczony,E,
+cities-buildings-production-owner-contract-test.cjs,tools,wlaczony,E,
+citizen-consumption-era-live-measure.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+citizen-consumption-era-mult-test.cjs,tools,wlaczony,E,
+citizen-resource-upkeep-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+citizen-upkeep-era-mult-test.cjs,tools,wlaczony,E,
+city-badge-growth-percent-test.cjs,tools,wlaczony,E,
+city-badge-zoom-lod-test.cjs,tools,wlaczony,E,
+city-capture-pop-loss-test.cjs,tools,wlaczony,E,
+city-clears-forest-live-test.cjs,tools,wlaczony,E,
+city-clears-forest-test.cjs,tools,wlaczony,E,
+city-defense-terrain-gate-test.cjs,tools,wlaczony,E,
+city-growth-percent-rounding-parity-test.cjs,tools,wlaczony,E,
+city-hex-movement-test.cjs,tools,wlaczony,E,
+city-limit-conquered-test.cjs,tools,wlaczony,E,
+city-map-badge-test.cjs,tools,wlaczony,E,
+city-militia-no-defenders-test.cjs,tools,wlaczony,E,
+city-militia-no-population-loss-test.cjs,tools,wlaczony,E,
+city-militia-regen-cooldown-test.cjs,tools,wlaczony,E,
+city-name-start-overlap-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+city-name-unique-forever-test.cjs,tools,wlaczony,E,
+city-names-pool-test.cjs,tools,wlaczony,E,
+city-names-pools-test.cjs,tools,wlaczony,E,
+city-orderstate-restore-clear-test.cjs,tools,wlaczony,E,
+city-panel-growth-percent-separator-test.cjs,tools,wlaczony,E,
+city-siege-wall-rules-test.cjs,tools,wlaczony,E,
+city-state-alliance-test.cjs,tools,wlaczony,E,
+city-state-cluster-diff-test.cjs,tools,wlaczony,E,
+city-state-mp-growth-test.cjs,tools,wlaczony,E,
+city-state-offensive-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+city-state-offensive-normal-easy-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+city-state-offensive-perf-test.cjs,tools,wlaczony,E,
+city-state-prod-audit-test.cjs,tools,wlaczony,E,
+city-state-start-units-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+city-state-start-units-test.cjs,tools,wlaczony,E,
+city-wall-towers-test.cjs,tools,wlaczony,E,
+citypanel-konwerter-produkcja-test.cjs,tools,wlaczony,E,
+citypanel-uwagi-abc-filter-test.cjs,tools,wlaczony,E,
+citypanel-uwagi-hostcard-removed-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+civ-ai-allocation-saveload-order-test.cjs,tools,wlaczony,E,
+civ-ai-allocation-test.cjs,tools,wlaczony,E,
+civ-bonusy-test.cjs,tools,wlaczony,E,
+civ-configurator-opponent-test.cjs,tools,wlaczony,E,
+civ-entry-epoch-test.cjs,tools,wlaczony,E,
+civ-matrix-ai-diplomacy-wiring-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+civ-matrix-difficulty-test.cjs,tools,wlaczony,E,
+civ-matrix-greece-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+civ-matrix-meta-roster-wiring-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+civ-matrix-semantic-labels-test.cjs,tools,wlaczony,E,
+civ-names-test.cjs,tools,wlaczony,E,
+civ-roster-test.cjs,tools,wlaczony,E,
+civ-visual-test.cjs,tools,wlaczony,E,
+civpedia-budynki-historia-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+civpedia-caly-wiersz-przyciskiem-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+civpedia-cross-link-style-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+civpedia-cuda-historia-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+civpedia-gra-id-mostek-test.cjs,tools,wlaczony,E,
+civpedia-historia-infra-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+civpedia-jednostki-j1-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+civpedia-jednostki-j2-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+civpedia-karty-nazwa-przyciskiem-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+civpedia-karty-spojnosc-q1-c-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+civpedia-technologie-rys-historyczny-test.cjs,tools,wlaczony,E,
+civpedia-ulepszenia-historia-batch-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+civpedia-wikihubhud-rys-historyczny-duplikacja-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+clearing-deficit-live-measure.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+climate-band-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+cluster-plan-name-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+cluster-spread-test.cjs,tools,wlaczony,E,
+cluster-start-recovery2-test.cjs,tools,wlaczony,E,
+cluster-start-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+combat-test.cjs,tools,wlaczony,E,
+commander-star-emblem-test.cjs,tools,wlaczony,E,
+commander-unit-label-test.cjs,tools,wlaczony,E,
+conquest-stability-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+converter-era-scaling-test.cjs,tools,wlaczony,E,
+converters-test.cjs,tools,wlaczony,E,
+counter-migration-test.cjs,tools,wlaczony,E,
+cs-military-cap-wiring-test.cjs,tools,wlaczony,E,
+cs-wave-attack-radius-test.cjs,tools,wlaczony,E,
+cuda-handel-test.cjs,tools,wlaczony,E,
+culture-religion-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+currency-test.cjs,tools,wlaczony,E,
+cyna-surowiec-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+danina-podatek-nazwa-test.cjs,tools,wlaczony,E,
+danina-podatek-tooltip-ui-test.cjs,tools,wlaczony,E,
+defeat-last-city-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,brak przebiegu na referencji
+defeat-last-city-test.cjs,tools,wlaczony,E,
+defense-breakdown-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+deposit-building-gate-test.cjs,tools,wlaczony,E,
+deposit-coast-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+diag-teleport-live-sim.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+difficulty-bonus-city-name-test.cjs,tools,wlaczony,E,
+difficulty-cost-test.cjs,tools,wlaczony,E,
+diplo-aggressor-marker-live-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+diplo-aggressor-marker-mutation-test.cjs,tools,wlaczony,E,
+diplo-aggressor-marker-unit-test.cjs,tools,wlaczony,E,
+diplo-aggressor-mutation-test.cjs,tools,wlaczony,E,
+diplo-aggressor-ui-live-test.cjs,tools,wlaczony,E,
+diplo-aggressor-unit-test.cjs,tools,wlaczony,E,
+diplo-aggressor-wiring-test.cjs,tools,wlaczony,A,"czerwony na main, zielony na ref; bisect: pierwszy czerwony: FALA 515 (cd3e88144); ostatni zielony: FALA 514 (b9d8fa546)"
+diplo-nap-border-threshold-test.cjs,tools,wlaczony,E,
+diplo-nap-trust-30-live-test.cjs,tools,wlaczony,E,
+diplo-nap-trust-30-test.cjs,tools,wlaczony,E,
+diplo-tick-war-brake-mutation-test.cjs,tools,wlaczony,E,
+diplo-tick-war-brake-test.cjs,tools,wlaczony,E,
+diplo-tick-war-brake-unit-test.cjs,tools,wlaczony,E,
+diplo-truce-ai-table-live-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+diplo-truce-live-test.cjs,tools,wlaczony,C,"zielony przy 3. uruchomieniu (bisect, main) — niestabilny"
+diplo-truce-n6-saveload-test.cjs,tools,wlaczony,E,
+diplo-truce-r1-test.cjs,tools,wlaczony,E,
+diplo-truce-r4-ai-test.cjs,tools,wlaczony,E,
+diplo-truce-saveload-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,brak przebiegu na referencji
+diplo-war-peace-d7-test.cjs,tools,wlaczony,E,
+diplo-war-peace-gate-test.cjs,tools,wlaczony,E,
+diplo-war-peace-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,brak przebiegu na referencji
+diplo-war-peace-main-guard-test.cjs,tools,wlaczony,E,
+diplo-war-peace-profile-unit-test.cjs,tools,wlaczony,E,
+diplo-war-peace-sim-test.cjs,tools,wlaczony,E,
+diplomacy-acceptance-points-test.cjs,tools,wlaczony,E,
+diplomacy-ai-balance-test.cjs,tools,wlaczony,E,
+diplomacy-ai-offer-balance-test.cjs,tools,wlaczony,E,
+diplomacy-audience-actions-test.cjs,tools,wlaczony,E,
+diplomacy-audience-close-flush-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+diplomacy-audience-deals-active-first-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+diplomacy-audience-zoom-cutoff-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+diplomacy-barbarian-cooperation-test.cjs,tools,wlaczony,E,
+diplomacy-basket-duplicate-test.cjs,tools,wlaczony,E,
+diplomacy-basket-duplicate-ui-test.cjs,tools,wlaczony,E,
+diplomacy-basket-edit-test.cjs,tools,wlaczony,E,
+diplomacy-basket-transfer-test.cjs,tools,wlaczony,E,
+diplomacy-bilans-unifikacja-test.cjs,tools,wlaczony,E,
+diplomacy-border-march-test.cjs,tools,wlaczony,E,
+diplomacy-city-cession-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,brak przebiegu na referencji
+diplomacy-city-cession-r3-test.cjs,tools,wlaczony,E,
+diplomacy-city-cession-test.cjs,tools,wlaczony,E,
+diplomacy-city-picker-ui-test.cjs,tools,wlaczony,E,
+diplomacy-counter-offer-role-symmetry-test.cjs,tools,wlaczony,E,
+diplomacy-currency-trade-test.cjs,tools,wlaczony,E,
+diplomacy-cyclic-trade-duration-ui-test.cjs,tools,wlaczony,E,
+diplomacy-deposit-trade-test.cjs,tools,wlaczony,E,
+diplomacy-direct-negotiation-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+diplomacy-display-test.cjs,tools,wlaczony,E,
+diplomacy-economy-test.cjs,tools,wlaczony,E,
+diplomacy-fairness-gate-package-q2-test.cjs,tools,wlaczony,E,
+diplomacy-goods-kat-test.cjs,tools,wlaczony,E,
+diplomacy-incoming-own-gate-recon-test.cjs,tools,wlaczony,E,
+diplomacy-infografiki-tooltipy-test.cjs,tools,wlaczony,E,
+diplomacy-layers-test.cjs,tools,wlaczony,E,
+diplomacy-lista-podglad-przed-wizyta-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+diplomacy-live-balance-preview-test.cjs,tools,wlaczony,E,
+diplomacy-locks-test.cjs,tools,wlaczony,E,
+diplomacy-negotiation-table-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+diplomacy-own-proposal-edit-test.cjs,tools,wlaczony,E,
+diplomacy-package-ai-counter-actionable-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+diplomacy-peace-lock-test.cjs,tools,wlaczony,E,
+diplomacy-penalty-preview-test.cjs,tools,wlaczony,E,
+diplomacy-proposal-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+diplomacy-przemarsz-duplikat-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+diplomacy-rejection-cooldown-test.cjs,tools,wlaczony,E,
+diplomacy-relacje-ai-ai-audiencja-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+diplomacy-relacje-ai-ai-audiencja-test.cjs,tools,wlaczony,E,
+diplomacy-resource-cyclic-trade-test.cjs,tools,wlaczony,E,
+diplomacy-resource-trade-pick-test.cjs,tools,wlaczony,E,
+diplomacy-resource-values-x5-regression-test.cjs,tools,wlaczony,E,
+diplomacy-sensible-deals-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+diplomacy-sensible-deals-main-guard-test.cjs,tools,wlaczony,E,
+diplomacy-sensible-deals-test.cjs,tools,wlaczony,E,
+diplomacy-stol-pw-sum-test.cjs,tools,wlaczony,E,
+diplomacy-tech-chip-filter-and-multi-deal-test.cjs,tools,wlaczony,E,
+diplomacy-tech-trade-e2e-test.cjs,tools,wlaczony,E,
+diplomacy-tech-trade-execute-test.cjs,tools,wlaczony,E,
+diplomacy-tech-trade-test.cjs,tools,wlaczony,E,
+diplomacy-test.cjs,tools,wlaczony,E,
+diplomacy-trade-flex-test.cjs,tools,wlaczony,E,
+diplomacy-treaties-test.cjs,tools,wlaczony,E,
+diplomacy-treaty-sweetener-edit-test.cjs,tools,wlaczony,E,
+diplomacy-unit-transfer-test.cjs,tools,wlaczony,E,
+diplomacy-value-catalog-test.cjs,tools,wlaczony,E,
+diplomacy-war-gates-test.cjs,tools,wlaczony,E,
+display-names-test.cjs,tools,wlaczony,E,
+drewno-gate-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+droga-6-ramion-geom-test.cjs,tools,wlaczony,E,
+drogi-tooltip-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+dyplo-bilans-gate-n-e1-reprodukcja-runda2-test.cjs,tools,wlaczony,B,czerwony tak samo na ref (fail main=1 ref=4)
+dyplo-bilans-gate-n-e1-reprodukcja-runda3-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+dyplo-bilans-gate-n-e1-reprodukcja-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+dyplo-handel-oferta-ai-blokowana-test.cjs,tools,wlaczony,E,
+dyplo-kara-granica-realna-test.cjs,tools,wlaczony,E,
+dyplo-karta-decyzji-bilans-skrot-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+dyplo-karta-decyzji-bilans-skrot-test.cjs,tools,wlaczony,E,
+dyplo-karta-duplikat-komunikat-test.cjs,tools,wlaczony,E,
+dyplo-mapa-odkrycie-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+dyplo-pakt-ekspansja-granica-test.cjs,tools,wlaczony,E,
+dyplo-pokoj-kierunek-runda1-test.cjs,tools,wlaczony,E,
+dyplo-przemarsz-checkbox-przycisk-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+dyplo-rel-current-etykieta-test.cjs,tools,wlaczony,E,
+dyplo-sojusz-widocznosc-ciagla-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+dyplo-traktat-handlowy-wybor-czasu-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+dyplo-warunek-niespelniony-czerwony-tooltip-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+earth-template-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+egypt-movement-precedence-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+eko-tech-paczka1-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+eko-tech-paczka2-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+eko-tech-paczka3-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+eko-tech-paczka4-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+eko-tech-paczka5-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+ekonomia-5x-inwariant-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+eliminacja-lup-kwoty-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+elimination-full-spoils-test.cjs,tools,wlaczony,E,
+elimination-toast-merge-test.cjs,tools,wlaczony,E,
+empire-armia-produkcja-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+empire-autofeed-btn-label-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+empire-city-defaults-test.cjs,tools,wlaczony,E,
+empire-diplo-resource-flow-test.cjs,tools,wlaczony,E,
+empire-food-b5-test.cjs,tools,wlaczony,E,
+empire-mass-recruitment-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+empire-miasta-table-test.cjs,tools,wlaczony,E,
+empire-nauka-panel-coverage-test.cjs,tools,wlaczony,E,
+empire-panel-drobiazgi-runda2-test.cjs,tools,wlaczony,E,
+empire-panel-econ-slider-visibility-test.cjs,tools,wlaczony,E,
+empire-panel-miasto-obywatele-content-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+empire-panel-moc-scroll-preserve-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+empire-panel-sliders-always-visible-test.cjs,tools,wlaczony,E,
+empire-panel-split-test.cjs,tools,wlaczony,E,
+empire-praca-panel-coverage-test.cjs,tools,wlaczony,E,
+empire-recruit-live-test.cjs,tools,wlaczony,D,"R2 (obrona): TIMEOUT 360 s; test nowy bez bazy na referencji (kolumna ref = artefakt braku pliku w 3aa1b3a2a), wiec nie "
+empire-recruit-panel-real-render-test.cjs,tools,wlaczony,E,
+empire-recruit-plan-test.cjs,tools,wlaczony,E,
+empire-religia-panel-coverage-test.cjs,tools,wlaczony,E,
+empire-skarbiec-bilans-test.cjs,tools,wlaczony,E,
+empire-skarbiec-panel-coverage-test.cjs,tools,wlaczony,E,
+empire-trade-route-split-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+emporion-build-list-real-render-test.cjs,tools,wlaczony,E,
+emporion-building-test.cjs,tools,wlaczony,E,
+end-details-hp-test.cjs,tools,wlaczony,E,
+end-turn-gameplay-runtime-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+end-turn-input-stability-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+end-turn-modal-sequencing-test.cjs,tools,wlaczony,E,
+endturn-battle-deadlock-exec-test.cjs,tools,wlaczony,E,
+endturn-battle-deadlock-test.cjs,tools,wlaczony,E,
+entity-card-action-buttons-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+entity-card-contract-test.cjs,tools,wlaczony,E,
+entity-card-cross-links-button-style-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+entity-card-cross-links-nested-overlay-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+entity-card-diorama-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+entity-card-historia-section-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+entity-card-single-dialog-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+entity-card-wonder-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+entitycard-civpedia-klik-test.cjs,tools,wlaczony,E,
+entitycard-rozwiniete-scrollbar-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+entitycard-sufit-dwoch-kart-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+eot-diplomacy-header-test.cjs,tools,wlaczony,E,
+eot-event-defer-test.cjs,tools,wlaczony,E,
+epoka-merge-recruit-test.cjs,tools,wlaczony,E,
+era-change-notify-test.cjs,tools,wlaczony,E,
+era-change-toast-defer-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+era-change-toast-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+era-cud-main-ts-integracja-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+era-cud-warunek-awansu-test.cjs,tools,wlaczony,E,
+era-gate-ui-test.cjs,tools,wlaczony,E,
+era-improvement-cost-upkeep-test.cjs,tools,wlaczony,E,
+era-recruit-panel-refresh-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+escape-fullscreen-priority-test.cjs,tools,wlaczony,E,
+escape-overlay-real-panels-test.cjs,tools,wlaczony,E,
+escape-overlay-stack-test.cjs,tools,wlaczony,E,
+et-turn-lbl-kontrast-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+ev4-kryteria-check.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+ev4-r4q2-przycisk-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+events-defer-to-turn-start-test.cjs,tools,wlaczony,E,
+events-one-turn-lifetime-live-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+events-one-turn-lifetime-test.cjs,tools,wlaczony,E,
+fair-play-grid-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+fair-play-tier-grid-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+farma-cofnij-nieaktualny-wpis-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+farma-lesie-usun-istniejace-test.cjs,tools,wlaczony,E,
+farma-nie-w-lesie-test.cjs,tools,wlaczony,E,
+first-player-city-test.cjs,tools,wlaczony,E,
+flaga-mp-nie-gasnie-test.cjs,tools,wlaczony,E,
+followups-land-ai-test.cjs,tools,wlaczony,E,
+food-hodowla-test.cjs,tools,wlaczony,E,
+forced-war-bronze-main-guard-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+forced-war-bronze-new-game-reset-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+forced-war-bronze-test.cjs,tools,wlaczony,E,
+forced-war-iron-era-enter-turn-save-load-test.cjs,tools,wlaczony,E,
+forced-war-iron-main-guard-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+forced-war-iron-player-target-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+forced-war-iron-test.cjs,tools,wlaczony,E,
+forced-war-player-no-contact-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+forced-war-player-pre-contact-gate-test.cjs,tools,wlaczony,E,
+forced-war-player-target-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+forced-war-r9-no-auto-end-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,brak przebiegu na referencji
+forced-war-reguly-multi-turn-simulation-test.cjs,tools,wlaczony,E,
+forced-war-relation-gate-test.cjs,tools,wlaczony,E,
+forced-war-stone-main-guard-test.cjs,tools,wlaczony,E,
+forced-war-stone-test.cjs,tools,wlaczony,E,
+forced-war-trojstronna-domino-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+forced-war-trojstronna-main-guard-test.cjs,tools,wlaczony,E,
+forced-war-trojstronna-test.cjs,tools,wlaczony,E,
+forced-war-waves-test.cjs,tools,wlaczony,E,
+format-pl-signed-minus-glif-test.cjs,tools,wlaczony,E,
+fort-nodes-save-load-test.cjs,tools,wlaczony,E,
+fort-outpost-hard-territory-test.cjs,tools,wlaczony,A,"czerwony na main, zielony na ref; bisect: pierwszy czerwony: FALA 531 (02fbe7dcf); ostatni zielony: FALA 530 (6a673c838)"
+fort-outpost-placement-rules-test.cjs,tools,wlaczony,E,
+fort-outpost-territory-live-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+fort-strazniaca-zasieg-zakladania-test.cjs,tools,wlaczony,E,
+fort-vision-live.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+fort-vision-test.cjs,tools,wlaczony,E,
+fortify-pole-test.cjs,tools,wlaczony,E,
+found-from-village-test.cjs,tools,wlaczony,E,
+foundry-throughput-x2-era-mult-test.cjs,tools,wlaczony,E,
+freshwater-access-test.cjs,tools,wlaczony,E,
+fsa-autosave-test.cjs,tools,wlaczony,E,
+garnizon-exit-test.cjs,tools,wlaczony,E,
+garrison-panel-pinning-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+general-capital-recruitment-order-test.cjs,tools,wlaczony,E,
+general-eligible-unit-roster-test.cjs,tools,wlaczony,E,
+general-quick-follow-action-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+generals-purchase-runtime-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+glod-wojska-karencja-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+gold-deficit-test.cjs,tools,wlaczony,E,
+granary2-tech-data-guard-test.cjs,tools,wlaczony,E,
+granice-relacja-dyplomatyczna-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+granice-styk-nakladanie-test.cjs,tools,wlaczony,E,
+growthmult-compound-test.cjs,tools,wlaczony,E,
+grupa-b-lane-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+grupy-budynkow-test.cjs,tools,wlaczony,E,
+handel-wymiana-tech-gate-test.cjs,tools,wlaczony,E,
+happiness-breakdown-test.cjs,tools,wlaczony,E,
+heal-stale-blockers-pending-battle-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+heks-panel-tooltip-warstwa-test.cjs,tools,wlaczony,E,
+heks-plony-warstwy-test.cjs,tools,wlaczony,E,
+heks-plony-zloze-forward-test.cjs,tools,wlaczony,E,
+heks-plony-zloze-parytet-ui-test.cjs,tools,wlaczony,E,
+hex-plony-magazyn-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+hex-tooltip-improvement-production-text-test.cjs,tools,wlaczony,E,
+hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs,tools,wlaczony,E,
+hex-tooltip-resources-line-dedup-test.cjs,tools,wlaczony,E,
+hex-tooltip-stadnina-kopalnia-cyny-test.cjs,tools,wlaczony,E,
+hex-tooltip-unlock-label-dedup-test.cjs,tools,wlaczony,E,
+hint-toast-zindex-empire-panel-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hodowla-las-test.cjs,tools,wlaczony,E,
+horse-resource-terrain-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+hotseat-drugi-fotel-tura-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-dyplo-kontakt-per-fotel-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap1-ownerid-test.cjs,tools,wlaczony,E,
+hotseat-etap3-akcesory-test.cjs,tools,wlaczony,E,
+hotseat-etap4-noop-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap5-no-leak-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap6a-input-noop-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap6b-ui-noop-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap6c-economy-noop-test.cjs,tools,wlaczony,E,
+hotseat-etap6c-lastpraca-per-fotel-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap6d-diplomacy-engine-test.cjs,tools,wlaczony,E,
+hotseat-etap6d-podetap-a-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap6d-podetap-a-test.cjs,tools,wlaczony,E,
+hotseat-etap6d-podetap-b-exec-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+hotseat-etap6d-podetap-b-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap6d-podetap-c-live-saveload-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap6d-podetap-c-migracja-test.cjs,tools,wlaczony,E,
+hotseat-etap6d-podetap-d-exec-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+hotseat-etap6d-podetap-e-exec-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+hotseat-etap6d-podetap-e-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap6d-podetap-e-source-test.cjs,tools,wlaczony,B,czerwony tak samo na ref (fail main=16 ref=15)
+hotseat-etap6e-render-noop-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap6f-part2-data-test.cjs,tools,wlaczony,E,
+hotseat-etap6f-part2-ui-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap6f-start-migracja-test.cjs,tools,wlaczony,E,
+hotseat-etap7-saveload-test.cjs,tools,wlaczony,E,
+hotseat-etap8-dyplomacja-dane-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-etap8-dyplomacja-ui-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hotseat-human-owners-test.cjs,tools,wlaczony,E,
+hotseat-ustawienia-kopiowane-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hud-armia-chip-jednostki-test.cjs,tools,wlaczony,A,"czerwony na main, zielony na ref; bisect: pierwszy czerwony: FALA 525 (55e098dc5); ostatni zielony: FALA 524 (ea9c14daf)"
+hud-gross-net-rest-test.cjs,tools,wlaczony,E,
+hud-konwerter-dopasowanie-test.cjs,tools,wlaczony,E,
+hud-miasto-stan-cywilizacji-test.cjs,tools,wlaczony,E,
+hud-miasto-stock-tempo-test.cjs,tools,wlaczony,E,
+hud-moc-warstwa-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+hud-number-abbrev-test.cjs,tools,wlaczony,E,
+hud-obywatele-chip-test.cjs,tools,wlaczony,A,"czerwony na main, zielony na ref; bisect: pierwszy czerwony: FALA 525 (55e098dc5); ostatni zielony: FALA 524 (ea9c14daf)"
+hud-recruits-abbrev-test.cjs,tools,wlaczony,E,
+hud-resource-deficit-red-test.cjs,tools,wlaczony,E,
+hud-skarbiec-test.cjs,tools,wlaczony,E,
+hud-tooltip-body-mounted-panels-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hud-topbar-bigger-numbers-real-render-test.cjs,tools,wlaczony,WYKL-ARGS,"R2 (obrona): EXIT 2 (wymagany argument/bundle/baza przygotowana poza repo) - harness, nie bramka bez argumentow; wyklucz"
+hud-topbar-grid-gross-net-test.cjs,tools,wlaczony,E,
+hud-topbar-no-labels-test.cjs,tools,wlaczony,E,
+hud-zetony-ekonomia-brutto-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+hunting-camp-hill-no-flatten-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+idb-b1b2b3-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+idb-menu-continue-boot-refresh-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+idb-storage-migration-test.cjs,tools,wlaczony,E,
+impi-recruitment-discount-test.cjs,tools,wlaczony,E,
+important-event-cards-regression-test.cjs,tools,wlaczony,E,
+important-event-cards-test.cjs,tools,wlaczony,E,
+improvement-adapter-resource-note-test.cjs,tools,wlaczony,E,
+improvement-build-highlight-lifecycle-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+improvement-build-highlight-lifecycle-test.cjs,tools,wlaczony,E,
+improvement-card-callsites-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+improvement-card-uklad-sekcji-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+improvement-era-scaling-test.cjs,tools,wlaczony,E,
+improvement-territory-gate-test.cjs,tools,wlaczony,E,
+interaction-latency-vs-citycount-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+iron-native-access-fix-test.cjs,tools,wlaczony,E,
+irrigation-river-definition-unify-test.cjs,tools,wlaczony,E,
+kamieniolom-kamien-epoka-test.cjs,tools,wlaczony,E,
+karta-technologia-uklad-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+kolor-surowce-spojnosc-test.cjs,tools,wlaczony,E,
+koniec-tury-f1-f4-runda3-test.cjs,tools,wlaczony,E,
+koniec-tury-g1-g2-runda4-test.cjs,tools,wlaczony,E,
+kopalnia-cyny-render-test.cjs,tools,wlaczony,E,
+kopalnia-podswietlenie-heksow-test.cjs,tools,wlaczony,E,
+korupcja-tekst-gracz-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+korupcja-test.cjs,tools,wlaczony,E,
+koszary-gate-test.cjs,tools,wlaczony,E,
+koszty-surowcowe-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+labor-to-tax-conversion-gold-test.cjs,tools,wlaczony,E,
+land-sea-ratio-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+law-garrison-test.cjs,tools,wlaczony,E,
+live-verify-autobuild-toggle-ui.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+live-verify-autobuild-toggle.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+live-verify-autoimprove-abc-report.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+live-verify-autoimprove-abc.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+live-verify-autoimprove-common.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+live-verify-autoimprove-fort-fill-probe.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+live-verify-autoimprove-fort-limit-probe.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+live-verify-autoimprove-fort.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+live-verify-autoimprove-nohooks.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+live-verify-autoimprove-probe.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+live-verify-autoimprove-scan.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+live-verify-simple-food-rule.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+load-fail-toast-zindex-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+load-game-blockers-exec-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+load-game-regression-e2e-r5.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+load-game-regression-e2e.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+load-game-regression-test.cjs,tools,wlaczony,E,
+logic-test.cjs,tools,wlaczony,E,
+longrun-100-turns-leak-q1-memo-unit-test.cjs,tools,wlaczony,E,
+magazyn-era-scaling-test.cjs,tools,wlaczony,E,
+magazyn-food-cap-bez-magazynu-test.cjs,tools,wlaczony,E,
+manpower-matrix-sensitivity-test.cjs,tools,wlaczony,E,
+manpower-panels-abbrev-test.cjs,tools,wlaczony,E,
+manpower-test.cjs,tools,wlaczony,E,
+manual-rebalance-owner-era-test.cjs,tools,wlaczony,E,
+map-attack-city-test.cjs,tools,wlaczony,E,
+map-coast-buffer-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+map-continents-rivers-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+map-deposits-era-test.cjs,tools,wlaczony,E,
+map-field-battle-test.cjs,tools,wlaczony,E,
+map-gen-regression-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+map-improvement-qualify-test.cjs,tools,wlaczony,E,
+map-models-scale-2x-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+map-quality-forest-parity-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+map-road-movement-test.cjs,tools,wlaczony,E,
+map-scale-menu-test.cjs,tools,wlaczony,E,
+map-siege-test.cjs,tools,wlaczony,E,
+map-snapshot-load-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+mapa-etykieta-stolicy-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+march-attack-queue-persist-test.cjs,tools,wlaczony,E,
+march-end-of-turn-only-test.cjs,tools,wlaczony,E,
+medium-river-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+memory-datauri-duplicates-test.cjs,tools,wlaczony,WYKL-ARGS,"R2 (obrona): EXIT 2 (wymagany argument/bundle/baza przygotowana poza repo) - harness, nie bramka bez argumentow; wyklucz"
+memory-datauri-menu-pixel-test.cjs,tools,wlaczony,WYKL-ARGS,"R2 (obrona): EXIT 2 (wymagany argument/bundle/baza przygotowana poza repo) - harness, nie bramka bez argumentow; wyklucz"
+memory-growth-improvement-cpu-release-test.cjs,tools,wlaczony,WYKL-ARGS,"R2 (obrona): EXIT 2 (wymagany argument/bundle/baza przygotowana poza repo) - harness, nie bramka bez argumentow; wyklucz"
+memory-growth-merge-index-test.cjs,tools,wlaczony,E,
+memory-growth-visual-parity-test.cjs,tools,wlaczony,WYKL-ARGS,"R2 (obrona): EXIT 2 (wymagany argument/bundle/baza przygotowana poza repo) - harness, nie bramka bez argumentow; wyklucz"
+memory-static-ascii-bundle-test.cjs,tools,wlaczony,WYKL-ARGS,"R2 (obrona): EXIT 2 (wymagany argument/bundle/baza przygotowana poza repo) - harness, nie bramka bez argumentow; wyklucz"
+memory-static-geometry-pool-test.cjs,tools,wlaczony,WYKL-ARGS,"R2 (obrona): EXIT 2 (wymagany argument/bundle/baza przygotowana poza repo) - harness, nie bramka bez argumentow; wyklucz"
+memory-static-material-pool-pixel-test.cjs,tools,wlaczony,E,
+memory-static-model-pool-pixel-test.cjs,tools,wlaczony,E,
+memory-unit-static-merge-test.cjs,tools,wlaczony,E,
+mennica-magazyn-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+mennica-uspienie-test.cjs,tools,wlaczony,E,
+menu-game-music-transition-test.cjs,tools,wlaczony,E,
+menu-music-delay-test.cjs,tools,wlaczony,E,
+menu-trudnosc-tooltip-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+merge-decor-no-regress-test.cjs,tools,wlaczony,A,"czerwony na main, zielony na ref; bisect: pierwszy czerwony: FALA 530 (6a673c838); ostatni zielony: FALA 529 (6e5e7eac4)"
+mgla-odkrycie-wzdluz-sciezki-live-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+mgla-odkrycie-wzdluz-sciezki-test.cjs,tools,wlaczony,A,"czerwony na main, zielony na ref; bisect: pierwszy czerwony: FALA 529 (6e5e7eac4); ostatni zielony: FALA 528 (9191f5465)"
+mgla-sciezka-inwariant-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+mgla-sciezka-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+mgla-sciezka-rzeka-test.cjs,tools,wlaczony,E,
+mgla-teleport-koniec-tury-test.cjs,tools,wlaczony,E,
+miasta-panstwa-wylaczone-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+miasta-panstwa-wylaczone-ui-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+miasta-zbyt-blisko-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+miasto-zdobycie-raport-test.cjs,tools,wlaczony,E,
+militia-garrison-contract-test.cjs,tools,wlaczony,E,
+militia-garrison-router-siege-test.cjs,tools,wlaczony,E,
+mill-river-only-gate-test.cjs,tools,wlaczony,E,
+minimap-viewport-rect-follow-live-test.cjs,tools,wlaczony,WYKL-ARGS,"R2 (obrona): EXIT 2 (wymagany argument/bundle/baza przygotowana poza repo) - harness, nie bramka bez argumentow; wyklucz"
+minimap-viewport-rect-follow-test.cjs,tools,wlaczony,E,
+minimapa-ikona-robotnik-kolor-live-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+minimapa-pasek-narzedzi-reorganizacja-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+moc-ranking-rozjazd-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+move-pass-through-own-units-test.cjs,tools,wlaczony,E,
+mp-spawn-ration-test.cjs,tools,wlaczony,E,
+mur-paradoks-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+muzyka-braz-era-playlist-test.cjs,tools,wlaczony,E,
+muzyka-era-live-e2e-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+naval-water-access-gate-test.cjs,tools,wlaczony,E,
+nazwy-miast-rozlaczne-pule-test.cjs,tools,wlaczony,E,
+newgame-adv-apply-btn-test.cjs,tools,wlaczony,E,
+newgame-adv-tooltip-test.cjs,tools,wlaczony,E,
+newgame-bottom-navigation-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+newgame-defaults-test.cjs,tools,wlaczony,E,
+newgame-menu-reorder-layout-test.cjs,tools,wlaczony,E,
+newgame-sett-grid-layout-test.cjs,tools,wlaczony,E,
+newgame-settings-layout-reposition-test.cjs,tools,wlaczony,E,
+notif-live-measure.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+notif-live-shots.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+notif-live-summarize.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+oblezenie-remis-endsiege-test.cjs,tools,wlaczony,E,
+oblezenie-siege-lifted-po-bitwie-test.cjs,tools,wlaczony,E,
+oblezenie-test.cjs,tools,wlaczony,E,
+oboz-lowiecki-las-test.cjs,tools,wlaczony,E,
+oboz-lowiecki-las-znika-render-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+oboz-lowiecki-wymaga-tartaku-test.cjs,tools,wlaczony,E,
+okolica-isworkable-silnik-test.cjs,tools,wlaczony,E,
+okolica-load-reconcile-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+okolica-multi-city-overlap-test.cjs,tools,wlaczony,E,
+okolica-ownership-change-reconcile-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+okolica-test.cjs,tools,wlaczony,E,
+okolica-tryb-reset-ownership-change-test.cjs,tools,wlaczony,E,
+owned-building-detail-side-test.cjs,tools,wlaczony,E,
+owned-building-inactive-test.cjs,tools,wlaczony,E,
+owner-economy-test.cjs,tools,wlaczony,E,
+owner-epoch-test.cjs,tools,wlaczony,E,
+p-wojna-wymuszona-trzy-naprawy-test.cjs,tools,wlaczony,E,
+palisade-battle-wall-rules-test.cjs,tools,wlaczony,E,
+palisade-map-city-live.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+palisade-towers-live.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+panel-kolejka-pasek-postepu-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+pangea-land-determinism-test.cjs,tools,wlaczony,C,"czerwony w 1. przebiegu, zielony w 2."
+pangea-land-fraction-test.cjs,tools,wlaczony,C,"czerwony w 1. przebiegu, zielony w 2."
+pangea-land-shape-test.cjs,tools,wlaczony,C,"czerwony w 1. przebiegu, zielony w 2."
+pangea-river-interior-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+pending-improvements-test.cjs,tools,wlaczony,E,
+perf-endturn-ai-phase-equiv-test.cjs,tools,wlaczony,E,
+perf-endturn-ai-phase-live-test.cjs,tools,wlaczony,D,"R2 (obrona): TIMEOUT 360 s; test nowy bez bazy na referencji (kolumna ref = artefakt braku pliku w 3aa1b3a2a), wiec nie "
+perf-endturn-r3-equiv-test.cjs,tools,wlaczony,E,
+perf-endturn-r3-visdisk-test.cjs,tools,wlaczony,E,
+perf-endturn-render-ab-aggregate.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+perf-endturn-render-deferral-regression-test.cjs,tools,wlaczony,E,
+perf-endturn-render-hud-live-test.cjs,tools,wlaczony,D,"R2 (obrona): TIMEOUT 360 s; test nowy bez bazy na referencji (kolumna ref = artefakt braku pliku w 3aa1b3a2a), wiec nie "
+perf-endturn-render-profile-analyze.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+perf-endturn-render-progress-live-test.cjs,tools,wlaczony,D,"R2 (obrona): TIMEOUT 360 s; test nowy bez bazy na referencji (kolumna ref = artefakt braku pliku w 3aa1b3a2a), wiec nie "
+perf-endturn-render-resume-flush-test.cjs,tools,wlaczony,E,
+perf-endturn-resource-access-equiv-test.cjs,tools,wlaczony,E,
+perf-hud-frame-memo-test.cjs,tools,wlaczony,E,
+perf-large-empire-stress-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+perf-late-game-interaction-live-test.cjs,tools,wlaczony,D,"R2 (obrona): TIMEOUT 360 s; test nowy bez bazy na referencji (kolumna ref = artefakt braku pliku w 3aa1b3a2a), wiec nie "
+perf-late-game-interaction-r2-live-test.cjs,tools,wlaczony,D,"R2 (obrona): TIMEOUT 360 s; test nowy bez bazy na referencji (kolumna ref = artefakt braku pliku w 3aa1b3a2a), wiec nie "
+perf-long-session-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+perf-sibling-memo-test.cjs,tools,wlaczony,E,
+perf-territory-index-equiv-test.cjs,tools,wlaczony,E,
+picker-test.cjs,tools,wlaczony,E,
+placed-improvements-cache-q1-test.cjs,tools,wlaczony,E,
+planned-march-test.cjs,tools,wlaczony,E,
+player-moves-before-ai-turn-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+playtest-layout-check.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+plony-budynkow-test.cjs,tools,wlaczony,E,
+podboj-kolejka-budynek-niemozliwy-test.cjs,tools,wlaczony,E,
+pole-bitwy-balance-check.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+popcap-spichlerz2-akwedukt20-test.cjs,tools,wlaczony,E,
+population-civ-matrix-wiring-test.cjs,tools,wlaczony,E,
+population-growth-tempo-test.cjs,tools,wlaczony,E,
+population-growth-v85-bonus-test.cjs,tools,wlaczony,E,
+population-growth-v85-test.cjs,tools,wlaczony,E,
+porzadek-panel-czytelnosc-test.cjs,tools,wlaczony,E,
+porzadek-panel-punkty-absolutne-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+post-battle-map-test.cjs,tools,wlaczony,E,
+post-capture-law-test.cjs,tools,wlaczony,E,
+postep-pamiec-usuniecie-test.cjs,tools,wlaczony,E,
+power-objective-test.cjs,tools,wlaczony,E,
+power-options-test.cjs,tools,wlaczony,E,
+power-ranking-test.cjs,tools,wlaczony,E,
+power-ranking-view-test.cjs,tools,wlaczony,E,
+pr141-ai-production-behavior-test.cjs,tools,wlaczony,E,
+pr141-ai-strategy-behavior-test.cjs,tools,wlaczony,E,
+pr141-combat-defense-behavior-test.cjs,tools,wlaczony,E,
+pr141-combat-defense-owner-route-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+pr141-combat-offense-behavior-test.cjs,tools,wlaczony,E,
+pr141-current-evidence-ledger-test.cjs,tools,wlaczony,B,czerwony tak samo na ref (fail main=-20261018 ref=)
+pr141-current-evidence-ledger-v3-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+pr141-current-evidence-ledger-v4-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+pr141-dip-activation-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+pr141-evidence-ledger-behavior-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+pr141-f04-building-speed-activation-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+pr141-f04-cost-activation-defense-test.cjs,tools,wlaczony,E,
+pr141-f04-cost-activation-test.cjs,tools,wlaczony,E,
+pr141-f04-rush-activation-test.cjs,tools,wlaczony,E,
+pr141-f04-society-activation-test.cjs,tools,wlaczony,E,
+pr141-f04-society-remaining-activation-test.cjs,tools,wlaczony,E,
+pr141-f04-unit-speed-activation-test.cjs,tools,wlaczony,E,
+pr141-f04-work-activation-test.cjs,tools,wlaczony,E,
+pr141-f04-yields-activation-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+pr141-g1-combat-activation-test.cjs,tools,wlaczony,E,
+pr141-hotseat-diplomacy-owner-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+pr141-hotseat-production-owner-routing-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+pr141-matrix-only-ai-test.cjs,tools,wlaczony,E,
+pr141-matrix-only-combat-test.cjs,tools,wlaczony,E,
+pr141-matrix-only-data-wiki-test.cjs,tools,wlaczony,E,
+pr141-matrix-only-economy-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+pr141-matrix-only-owner-ui-test.cjs,tools,wlaczony,E,
+pr141-matrix-only-production-test.cjs,tools,wlaczony,E,
+pr141-population-behavior-test.cjs,tools,wlaczony,E,
+pr141-population-main-happiness-hookup-test.cjs,tools,wlaczony,E,
+pr141-runtime-ordinary-scope-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+pr141-saveload-mp-f05-g11-behavior-test.cjs,tools,wlaczony,E,
+pr141-semantic-consumer-consistency-test.cjs,tools,wlaczony,E,
+praca-auto-ulepszenia-koszt-split-test.cjs,tools,wlaczony,E,
+praca-budmode-slider-max-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+praca-cap-migracja-luka-test.cjs,tools,wlaczony,E,
+praca-global-default-live-test.cjs,tools,wlaczony,E,
+praca-jeden-podzial-kontrakt-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+praca-jeden-podzial-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+praca-limit-50-test.cjs,tools,wlaczony,E,
+praca-miasto-limit-50-cap-test.cjs,tools,wlaczony,E,
+praca-miasto-limit-50-test.cjs,tools,wlaczony,E,
+praca-na-pieniadz-test.cjs,tools,wlaczony,E,
+praca-panel-budowy-warstwa-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+praca-panel-emoji-brand-icons-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+praca-podzial-staly-50-50-test.cjs,tools,wlaczony,E,
+praca-pula-rate-parity-test.cjs,tools,wlaczony,E,
+praca-split-ui-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+prawo-palac-tier-test.cjs,tools,wlaczony,E,
+prawo-przebudowa-skali-test.cjs,tools,wlaczony,E,
+prawo-siatka-v2-test.cjs,tools,wlaczony,E,
+pre-battle-defender-retreat-test.cjs,tools,wlaczony,E,
+pre-battle-retreat-exhausted-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+pre-battle-save-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+prereq-budynkow-test.cjs,tools,wlaczony,A,"czerwony na main, zielony na ref; bisect: pierwszy czerwony: FALA 516 (4905bac05); ostatni zielony: FALA 515 (cd3e88144)"
+production-overflow-test.cjs,tools,wlaczony,E,
+promote-to-front-test.cjs,tools,wlaczony,E,
+pytanie-84-stock-keys-test.cjs,tools,wlaczony,E,
+r-bitwa-etykieta-tozsamosc-strony-live-atak-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+r-bitwa-etykieta-tozsamosc-strony-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+r-bitwa-etykieta-tozsamosc-strony-zrodlo-test.cjs,tools,wlaczony,E,
+r-bitwa-kolory-gracz-przeciwnik-q1-test.cjs,tools,wlaczony,E,
+r-bitwa-portret-gracza-miasto-panstwo-otwarte-test.cjs,tools,wlaczony,E,
+r-manpower-hp-max-effective-currentbase-q1-test.cjs,tools,wlaczony,E,
+r-manpower-uzupelnienie-hp-niezapisuje-q1-test.cjs,tools,wlaczony,E,
+r-stawki-fala2-test.cjs,tools,wlaczony,E,
+r-wzrost-szczescie-dubel-wealth-ceramika-test.cjs,tools,wlaczony,E,
+rally-point-automarch-test.cjs,tools,wlaczony,E,
+rebel-city-notification-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+rebel-protection-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+recruit-card-manpower-real-render-test.cjs,tools,wlaczony,E,
+recruit-card-quantity-real-render-test.cjs,tools,wlaczony,E,
+recruit-card-stock-chip-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+recruit-list-order-by-era-test.cjs,tools,wlaczony,E,
+recruit-list-visibility-test.cjs,tools,wlaczony,E,
+recruit-list-visibility-ui-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+recruit-rally-default-save-test.cjs,tools,wlaczony,E,
+recruit-rally-default-ui-test.cjs,tools,wlaczony,E,
+recruit-resource-strip-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+recruitment-batch-contract-test.cjs,tools,wlaczony,E,
+recruitment-cost-50-wood-test.cjs,tools,wlaczony,E,
+recruitment-no-upkeep-gate-test.cjs,tools,wlaczony,E,
+recruitment-panel-compact-row-test.cjs,tools,wlaczony,E,
+recruitment-panel-height-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+rekrutacja-koszty-polowa-all-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+rekrutacja-skarbiec-only-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+relief-grid-coverage-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+relief-preserving-mine-prefix-test.cjs,tools,wlaczony,E,
+religia-konwersja-po-podboju-test.cjs,tools,wlaczony,E,
+render-unit-sharpness-guard.cjs,tools,wlaczony,E,
+render-unit-sharpness-measure.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+reproducible-build-contract-test.cjs,tools,wlaczony,E,
+research-test.cjs,tools,wlaczony,E,
+resource-usage-breakdown-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+resources-map-icon-map-test.cjs,tools,wlaczony,E,
+retreat-garnizon-fortyfikacja-test.cjs,tools,wlaczony,E,
+river-confluence-edge-test.cjs,tools,wlaczony,E,
+river-density-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+river-fog-visibility-test.cjs,tools,wlaczony,E,
+river-grid-coverage-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+river-loop-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+river-map-scale-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+river-path-adjacency-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+river-render-diag.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+river-sea-buffer-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+river-terrain-move-test.cjs,tools,wlaczony,E,
+river-turn-window-test.cjs,tools,wlaczony,E,
+river-yield-both-sides-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+road-connectivity-test.cjs,tools,wlaczony,E,
+road-hook-mainguard-test.cjs,tools,wlaczony,E,
+roads-city-links-only-test.cjs,tools,wlaczony,E,
+roster-space-next-active-unit-test.cjs,tools,wlaczony,C,"R2 (obrona): reklasyfikacja A? -> C: run1 TIMEOUT pod obciazeniem; izolowany rerun na main (load ~1,4) = GREEN 43 OK / 0"
+rozmiar-label-test.cjs,tools,wlaczony,E,
+ruch-swiata-tempo-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+rydwan-bierny-atak-test.cjs,tools,wlaczony,E,
+rydwan-konnica-x2-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+save-label-test.cjs,tools,wlaczony,E,
+save-load-sort-test.cjs,tools,wlaczony,E,
+saveload-hud-cache-hotseat-live-test.cjs,tools,wlaczony,E,
+saveload-hud-cache-hotseat-wiring-test.cjs,tools,wlaczony,E,
+saveload-praca-pool-hotseat-live-test.cjs,tools,wlaczony,E,
+saveload-praca-pool-live-test.cjs,tools,wlaczony,E,
+sawmill-hill-relief-test.cjs,tools,wlaczony,E,
+sawmill-quarry-50-economy-test.cjs,tools,wlaczony,E,
+science-hub-test.cjs,tools,wlaczony,E,
+science-hub-unlock-icons-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+science-picker-tooltip-icons-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+scout-auto-explore-test.cjs,tools,wlaczony,E,
+scout-explore-deselect-cycle-test.cjs,tools,wlaczony,E,
+scout-start-units-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+shared-city-name-queue-test.cjs,tools,wlaczony,E,
+side-list-hud-panel-coverage-test.cjs,tools,wlaczony,E,
+side-panel-event-link-test.cjs,tools,wlaczony,E,
+side-panel-unit-cycle-arrows-test.cjs,tools,wlaczony,E,
+sidepanel-blocking-card-cutoff-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+sidepanel-diplo-dismiss-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+sidepanel-event-header-wydarzenie-real-render-test.cjs,tools,wlaczony,E,
+sidepanel-event-przekierowania-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+sidepanel-event-tabs-classify-test.cjs,tools,wlaczony,E,
+sidepanel-events-toolbar-test.cjs,tools,wlaczony,E,
+sidepanel-hud-deadzone-test.cjs,tools,wlaczony,A,"R2 (obrona): reklasyfikacja A? -> A: run1 RED (EXIT 1, 13 FAIL), rerun-main-b RED (EXIT 1, 12 FAIL), ref GREEN x2 (ref, "
+sidepanel-notification-tabs-test.cjs,tools,wlaczony,E,
+siege-ai-test.cjs,tools,wlaczony,E,
+siege-badge-zorder-live-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+siege-badge-zorder-test.cjs,tools,wlaczony,E,
+siege-blockade-no-recruit-reinforce-test.cjs,tools,wlaczony,A,"R2 (obrona): reklasyfikacja A? -> A: run1 RED (1 FAIL C5), rerun-main-b RED (1 FAIL C5), ref GREEN x2 (ref, ref-b); kryt"
+siege-defenders-test.cjs,tools,wlaczony,E,
+siege-last-stand-sortie-test.cjs,tools,wlaczony,E,
+siege-manual-battle-behavior-test.cjs,tools,wlaczony,E,
+siege-manual-battle-live.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+siege-starvation-test.cjs,tools,wlaczony,E,
+siege-surrender-enter-city-test.cjs,tools,wlaczony,E,
+siege-surrender-forecast-live-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+siege-surrender-forecast-test.cjs,tools,wlaczony,E,
+siege-tower-breach-everywhere-test.cjs,tools,wlaczony,E,
+simple-food-rule-no-toggles-test.cjs,tools,wlaczony,E,
+small-part-lod-test.cjs,tools,wlaczony,E,
+society-breakdown-test.cjs,tools,wlaczony,E,
+spichlerz-cap-citypanel-wiring-test.cjs,tools,wlaczony,E,
+spichlerz-deficyt-scalenie-test.cjs,tools,wlaczony,A,"czerwony na main, zielony na ref; bisect: pierwszy czerwony: FALA 525 (55e098dc5); ostatni zielony: FALA 524 (ea9c14daf)"
+spichlerz-drain-keys-test.cjs,tools,wlaczony,E,
+spichlerz-drain-pipeline-test.cjs,tools,wlaczony,E,
+spichlerz-hud-params-parity-test.cjs,tools,wlaczony,E,
+spichlerz-panel-food-parity-test.cjs,tools,wlaczony,E,
+spichlerz-widocznosc-test.cjs,tools,wlaczony,E,
+spichlerz-wzrost-test.cjs,tools,wlaczony,E,
+split-output-test.cjs,tools,wlaczony,E,
+stadnina-hex-candidates-test.cjs,tools,wlaczony,E,
+stadnina-kon-koszt-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+stadnina-kon-koszt-test.cjs,tools,wlaczony,E,
+stadnina-konie-stare-zapisy-test.cjs,tools,wlaczony,E,
+stadnina-las-test.cjs,tools,wlaczony,E,
+start-map-seed-removal-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+start-preview-test.cjs,tools,wlaczony,E,
+starting-army-first-city-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+stolarnia-r5-d2-test.cjs,tools,wlaczony,E,
+stranded-land-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+structure-defense-bonus-test.cjs,tools,wlaczony,E,
+surow-civ-storage-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+surowce-dostep-test.cjs,tools,wlaczony,E,
+surowce-katalog-kolejnosc-test.cjs,tools,wlaczony,E,
+surrender-rekrutacja-build-gate-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+szczescie-audyt-c-prawo-osiedla-test.cjs,tools,wlaczony,E,
+szczescie-audyt-d-progi-bunt-test.cjs,tools,wlaczony,E,
+szczescie-audyt-e-etykiety-panelu-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+szczescie-przebudowa-skali-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+szczescie-skala-normalizacja-test.cjs,tools,wlaczony,E,
+szczescie-zamoznosc-test.cjs,tools,wlaczony,E,
+tarasy-cywilizacje-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+tartak-glinianka-rate-Q1-test.cjs,tools,wlaczony,E,
+tartak-oboz-wyscig-race-test.cjs,tools,wlaczony,E,
+tartak-wzgorze-las-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+tax-slider-thumb-align-real-render-test.cjs,tools,wlaczony,E,
+tech-discovery-badge-diorama-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+tech-discovery-card-click-test.cjs,tools,wlaczony,E,
+tech-discovery-card-real-click-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+tech-tempo-test.cjs,tools,wlaczony,E,
+tech-tree-test.cjs,tools,wlaczony,E,
+tech-unlock-units-test.cjs,tools,wlaczony,E,
+technology-discovery-card-visual-test.cjs,tools,wlaczony,E,
+teren-walki-etapy-test.cjs,tools,wlaczony,E,
+terrain-base-resource-yields-test.cjs,tools,wlaczony,E,
+terrain-height-audit-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+terrain-hill-movement-test.cjs,tools,wlaczony,E,
+terrain-names-equivalence-test.cjs,tools,wlaczony,E,
+territory-border-dense-settlement-test.cjs,tools,wlaczony,E,
+territory-border-test.cjs,tools,wlaczony,E,
+test-hook-setcitylimit-live-bundle.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+test-hook-setcitylimit-live-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+test-hook-setcitylimit-test.cjs,tools,wlaczony,E,
+trade-grant-test.cjs,tools,wlaczony,E,
+trade-ilosc-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+trade-routes-contact-only-test.cjs,tools,wlaczony,E,
+trade-routes-hud-filter-test.cjs,tools,wlaczony,E,
+trade-routes-income-test.cjs,tools,wlaczony,E,
+trade-routes-limit-test.cjs,tools,wlaczony,C,"czerwony w 1. przebiegu, zielony w 2."
+trade-routes-ownership-income-test.cjs,tools,wlaczony,E,
+trade-routes-test.cjs,tools,wlaczony,E,
+trade-sea-bonus-requires-port-test.cjs,tools,wlaczony,E,
+trade-treaty-free-break-after-10-test.cjs,tools,wlaczony,E,
+triumph-city-state-notice-test.cjs,tools,wlaczony,E,
+triumph-city-state-test.cjs,tools,wlaczony,E,
+tw-rome-test-legion-falanga.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+ulepszenia-praca-percent-test.cjs,tools,wlaczony,E,
+unfortify-all-action-bar-test.cjs,tools,wlaczony,E,
+unit-action-bar-completeness-test.cjs,tools,wlaczony,E,
+unit-building-bonuses-test.cjs,tools,wlaczony,E,
+unit-card-3d-preview-coverage-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+unit-context-card-test.cjs,tools,wlaczony,E,
+unit-cost-tempo-test.cjs,tools,wlaczony,E,
+unit-deferred-reveal-dim-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+unit-detail-card-entitycard-migration-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+unit-detail-card-hover-layout-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+unit-epoch-cost-test.cjs,tools,wlaczony,E,
+unit-frozen-fortified-unselectable-test.cjs,tools,wlaczony,E,
+unit-info-card-army-interaction-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+unit-info-card-badges-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+unit-info-card-contract-test.cjs,tools,wlaczony,E,
+unit-info-card-entitycard-migration-test.cjs,tools,wlaczony,E,
+unit-info-card-viewport-height-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+unit-info-card-wiring-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+unit-owner-emblem-ring-civ-color-test.cjs,tools,wlaczony,E,
+unit-power-sort-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+unit-power-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+unit-recruit-nazwa-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+unit-renderer-overlay-sync-test.cjs,tools,wlaczony,E,
+unit-replace-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+unit-resource-upkeep-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+unit-stock-cost-test.cjs,tools,wlaczony,E,
+upgrade-budynki-test.cjs,tools,wlaczony,E,
+upkeep-test.cjs,tools,wlaczony,E,
+victory-screen-test.cjs,tools,wlaczony,E,
+victory-test.cjs,tools,wlaczony,E,
+villages-test.cjs,tools,wlaczony,E,
+walka-jeden-kontratak-test.cjs,tools,wlaczony,E,
+walka-morale-przewaga-mocy-test.cjs,tools,wlaczony,E,
+wall-defenders-bonus-range-test.cjs,tools,wlaczony,E,
+waluta-mennica-test.cjs,tools,wlaczony,E,
+war-allin-capital-regress.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+war-allin-capital-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+war-allin-general-path-barb-defense-test.cjs,tools,wlaczony,E,
+war-allin-keep-barb-defense-test.cjs,tools,wlaczony,E,
+war-epoch-player-first-main-guard-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+war-epoch-player-first-test.cjs,tools,wlaczony,E,
+war-era-counter-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+war-era-counter-test.cjs,tools,wlaczony,E,
+war-happiness-parity-test.cjs,tools,wlaczony,E,
+war-rules-multiwar-live-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+war-rules-multiwar-main-guard-test.cjs,tools,wlaczony,E,
+war-rules-multiwar-test.cjs,tools,wlaczony,E,
+warehouse-state-cap-20pct-test.cjs,tools,wlaczony,E,
+water-access-port-vs-mill-test.cjs,tools,wlaczony,E,
+wealth-test.cjs,tools,wlaczony,E,
+web-memory-leaks-test.cjs,tools,wlaczony,A,"czerwony na main, zielony na ref; bisect: pierwszy czerwony: FALA 526 (ca289d8ce); ostatni zielony: FALA 525 (55e098dc5)"
+web-turn-slowdown-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+weterani-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+wiarygodnosc-test.cjs,tools,wlaczony,E,
+wire-ekonomia-test.cjs,tools,wlaczony,E,
+wojna-wymuszona-parowanie-test.cjs,tools,wlaczony,E,
+wojna-wymuszona-prog-tury-gracz-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+wonder-availability-test.cjs,tools,wlaczony,E,
+wonder-civ-tech-test.cjs,tools,wlaczony,E,
+wonder-early-return-highlight-test.cjs,tools,wlaczony,E,
+wonder-map-build-test.cjs,tools,wlaczony,E,
+wonder-yields-test.cjs,tools,wlaczony,E,
+work-tax-conversion-test.cjs,tools,wlaczony,E,
+world-density-test.cjs,tools,wlaczony,D,TIMEOUT na main i ref (srodowisko/obciazenie)
+wpiecie-dispatch-check.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+wycinka-drewno-cap-test.cjs,tools,wlaczony,E,
+wydarzenia-eliminacja-podboj-karta-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+wydarzenia-zbadano-karta-tech-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+wyrab-rzeka-d1-test.cjs,tools,wlaczony,E,
+wyrab-rzeka-krok0-test.cjs,tools,wlaczony,E,
+wyrab-rzeka-r2-test.cjs,tools,wlaczony,E,
+wyrab-wycinka-nazwa-live-test.cjs,tools,wlaczony,E,
+zelazo-celtowie-miecznik-rydwan-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+zelazo-celtowie-soldurii-gaesatae-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+zelazo-falanga-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+zelazo-gate-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+zelazo-germanie-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+zelazo-jezdziec-oszczepami-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+zelazo-katapulta-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+zelazo-konnica-asyryjska-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+zelazo-mezopotamia-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+zelazo-slowianie-zulusi-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+zelazo-srodziemnomorze-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+zelazo-super-rzym-grecja-real-render-test.cjs,tools,wlaczony,NIE_ZMIERZONO,nie uruchomiono (budzet czasu / obciazenie hosta)
+zelazo-zrzuty-25-jednostek-render.cjs,tools,wykluczony,-,nazwa bez sufiksu -test/-guard i nie-bramka wg nazwy (pomiar/diagnostyka/narzedzie/harness z argumentami); nie uruchomiony
+zloto-szlak-test.cjs,tools,wlaczony,E,
+zloto-test.cjs,tools,wlaczony,B,czerwony tak samo na ref
+zloze-zloto-render-test.cjs,tools,wlaczony,E,
+recruit-hud-label-test.cjs,gra,wlaczony,B,czerwony tak samo na ref
+smoke_test.cjs,gra,wlaczony,B,czerwony tak samo na ref
+grupa-selftest.ps1,tools,wykluczony,-,"PowerShell, nie test Node"
+ai-general-war-campaign-live.vite.config.ts,tools,wykluczony,-,"konfiguracja vite, nie test"
+army-panel-general-label-multiselect-live.vite.config.ts,tools,wykluczony,-,"konfiguracja vite, nie test"
+ev-zelazo-pomiar.vite.config.ts,tools,wykluczony,-,"konfiguracja vite, nie test"
+flaga-mp-diag.vite.config.ts,tools,wykluczony,-,"konfiguracja vite, nie test"
+flaga-mp-ev.vite.config.ts,tools,wykluczony,-,"konfiguracja vite, nie test"
+flaga-mp-op.vite.config.ts,tools,wykluczony,-,"konfiguracja vite, nie test"
+generals-purchase-runtime.vite.config.ts,tools,wykluczony,-,"konfiguracja vite, nie test"
+wojny-kamien-audyt.vite.config.ts,tools,wykluczony,-,"konfiguracja vite, nie test"
+wojny-kamien-ev.vite.config.ts,tools,wykluczony,-,"konfiguracja vite, nie test"
+wojny-kamien-fc.vite.config.ts,tools,wykluczony,-,"konfiguracja vite, nie test"
+wojny-zelazo-audyt.vite.config.ts,tools,wykluczony,-,"konfiguracja vite, nie test"

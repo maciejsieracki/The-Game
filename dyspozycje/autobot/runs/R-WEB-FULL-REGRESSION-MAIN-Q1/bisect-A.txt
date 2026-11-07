@@ -1,0 +1,13 @@
+tools/ai-army-scattered-merge-test.cjs	pierwszy czerwony: FALA 520 (33855a540); ostatni zielony: FALA 519 (15c99e09f)	main=R
+tools/diplo-aggressor-wiring-test.cjs	pierwszy czerwony: FALA 515 (cd3e88144); ostatni zielony: FALA 514 (b9d8fa546)	main=R
+tools/fort-outpost-hard-territory-test.cjs	pierwszy czerwony: FALA 531 (02fbe7dcf); ostatni zielony: FALA 530 (6a673c838)	main=R
+tools/hud-armia-chip-jednostki-test.cjs	pierwszy czerwony: FALA 525 (55e098dc5); ostatni zielony: FALA 524 (ea9c14daf)	main=R
+tools/hud-obywatele-chip-test.cjs	pierwszy czerwony: FALA 525 (55e098dc5); ostatni zielony: FALA 524 (ea9c14daf)	main=R
+tools/merge-decor-no-regress-test.cjs	pierwszy czerwony: FALA 530 (6a673c838); ostatni zielony: FALA 529 (6e5e7eac4)	main=R
+tools/mgla-odkrycie-wzdluz-sciezki-test.cjs	pierwszy czerwony: FALA 529 (6e5e7eac4); ostatni zielony: FALA 528 (9191f5465)	main=R
+tools/prereq-budynkow-test.cjs	pierwszy czerwony: FALA 516 (4905bac05); ostatni zielony: FALA 515 (cd3e88144)	main=R
+tools/sidepanel-hud-deadzone-test.cjs	pierwszy czerwony: FALA 509 (56c164df9); ostatni zielony: ref 3aa1b3a2a	main=T
+tools/siege-blockade-no-recruit-reinforce-test.cjs	pierwszy czerwony: FALA 509 (56c164df9); ostatni zielony: ref 3aa1b3a2a	main=T
+tools/spichlerz-deficyt-scalenie-test.cjs	pierwszy czerwony: FALA 525 (55e098dc5); ostatni zielony: FALA 524 (ea9c14daf)	main=R
+tools/web-memory-leaks-test.cjs	pierwszy czerwony: FALA 526 (ca289d8ce); ostatni zielony: FALA 525 (55e098dc5)	main=R
+tools/diplo-truce-live-test.cjs	NIE_REPRODUKUJE_NA_9b019a7d8

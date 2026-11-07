@@ -1,0 +1,21 @@
+-- A. empireDetailTypes.ts --
+-- B. main.ts buildEmpireDetailSnap() grounding --
+FAIL: R2-2: side.myCityId pochodzi z prawdziwego wyboru strony gracza (fromCityId gdy ownerId===0, inaczej toCityId), nie z halucynowanej wartości
+-- C. empireDetailPanel.ts render + wiring --
+
+-- D1. aggregateHappinessSources() (esbuild, REALNE wykonanie) --
+D1: 82 passed so far, 1 failed so far
+
+-- D2. cityWallDefenseBonusPercent() (esbuild, REALNE wykonanie) --
+D2: 87 passed so far, 1 failed so far
+
+-- D3. unitsOnCityHexForLaw() (esbuild, REALNE wykonanie) --
+D3: 90 passed so far, 1 failed so far
+
+-- D4. renderMiastoSection() (esbuild+jsdom, REALNE wykonanie) --
+D4: 115 passed so far, 1 failed so far
+
+115 passed, 1 failed
+
+EXIT=1
+TIME=2.1

@@ -1,0 +1,4 @@
+city {"id":"city0","q":29,"r":49,"population":1} policy [[0,{"focus":"zrownowazone","tryb":"auto","pracaAutoPercent":33}],[1,{"focus":"zrownowazone","tryb":"reczny","pracaAutoPercent":100}],[2,{"focus":"zrownowazone","tryb":"reczny","pracaAutoPercent":100}],[3,{"focus":"zrownowazone","tryb":"reczny","pracaAutoPercent":100}],[4,{"focus":"zrownowazone","tryb":"reczny","pracaAutoPercent":100}],[5,{"focus":"zrownowazone","tryb":"reczny","pracaAutoPercent":100}]]
+
+EXIT=124
+TIME=360.2

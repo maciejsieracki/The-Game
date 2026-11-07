@@ -1,0 +1,32 @@
+PASS chooses nearest living commander owned by the same civilization
+PASS commander does not receive a self-follow target
+PASS no commander is returned when the owner has none
+PASS dead units cannot start a commander-follow order
+PASS follow order stores commander identity and current destination for live tracking
+PASS production tracked planner calls the real pathfinder and stores a reachable leader march
+PASS tracked march follows the commander position and remains pathfindable
+PASS arrival on the moving commander hex completes and clears the tracked march
+PASS a follower can start a fresh tracked march after its prior order completes
+PASS zero-HP commander loss removes the tracked march and stale attack-target entry
+PASS same-hex unit can remain opted in while its commander has not moved
+PASS same-hex opt-in starts a tracked march after the commander moves
+PASS same-hex opt-in continues tracking the commander after activation
+PASS instant end-turn leader segment gives a colocated opt-in follower one tracked march
+PASS subsequent instant end-turn segment retargets the same follower order without duplication
+PASS follow action label tracks the live Wódz/Generał title and active state
+PASS unit action renderer exposes the clickable, accessible follow action
+PASS Chromium click executes production follow logic, stores live target, queues movement, and reports current title
+PASS unreachable route reports failure without queuing a replacement march
+AssertionError [ERR_ASSERTION]: production HUD handler delegates to the executed follow service and live title resolver
+    at check (<WT>/gra/tools/general-quick-follow-action-test.cjs:30:12)
+    at main (<WT>/gra/tools/general-quick-follow-action-test.cjs:233:3) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+EXIT=1
+TIME=6.1

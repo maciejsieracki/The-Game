@@ -1,0 +1,30 @@
+[saveload] stan po starcie strony: {"citiesLen":2,"unitsLen":4,"turn":1}
+[saveload:save] świat gotowy (105.5s)
+[saveload:save] akceptacja rozejmu: {"accepted":true,"reason":"Rozejm zawarty"}
+[saveload:save] przed zapisem: tura 2, para {"status":"pokoj","truceUntilTurn":6,"peaceUntilTurn":null,"turn":2}
+  OK  save: zapis do slotu i kopia legacy zapisane, rozejm aktywny
+[saveload:save] scenariusz po wygenerowaniu swiata: 22.1s (strażnik 60s)
+  OK  save: scenariusz po swiecie <= 60s
+  OK  save: zero pageerror
+[saveload:save] wynik: 3 pass / 0 fail (127.6s)
+[saveload] FAZA save: exit=0 czas=128.1s (<=limit)
+[saveload] stan po starcie strony: {"citiesLen":2,"unitsLen":4,"turn":1}
+[saveload:load] NOWA sesja przeglądarki, świat gotowy (80.1s)
+[saveload:load] po wczytaniu: tura 2, para {"status":"pokoj","truceUntilTurn":6,"peaceUntilTurn":null,"turn":2}
+  OK  wczytanie: tura zgodna z zapisem
+  OK  wczytanie: status pary i truceUntilTurn zgodne (rozejm trwa)
+  OK  wczytanie: flaga agresora (aggressorFlagUntilByOwner) zgodna
+  OK  wczytanie: casus belli (casusBelliUntilByPair) zgodne
+  OK  wczytanie: licznik wojen epoki (per owner, epoka) zgodny
+  OK  wczytanie: meta pary (diplomacyPairMeta) zgodna, bez duplikatów kluczy
+  OK  wczytanie: zdarzenia Wiarygodności zgodne (brak utraty/duplikacji)
+[saveload:load] scenariusz po wygenerowaniu swiata: 16.8s (strażnik 60s)
+  OK  load: scenariusz po swiecie <= 60s
+  OK  load: zero pageerror
+[saveload:load] wynik: 9 pass / 0 fail (96.9s)
+[saveload] FAZA load: exit=0 czas=97.1s (<=limit)
+[saveload] stan po starcie strony: {"citiesLen":2,"unitsLen":4,"turn":1}
+[saveload:expire] NOWA sesja przeglądarki, świat gotowy (89.5s)
+
+EXIT=124
+TIME=360.1

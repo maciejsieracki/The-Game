@@ -1,0 +1,13 @@
+[city-cession-live] vite build do katalogu tymczasowego: <REF-TMP>/w2/tmp/run/civ-city-cession-live-7341
+      świat (właściciel → miasta, stolica): {"0":{"cities":["city0"],"cap":"city0"},"1":{"cities":["city_enemy_1"],"cap":null},"2":{"cities":[],"cap":null},"3":{"cities":[],"cap":null},"4":{"cities":[],"cap":null},"5":{"cities":[],"cap":null},"6":{"cities":[],"cap":null},"7":{"cities":[],"cap":null},"8":{"cities":[],"cap":null}}
+      setup właściciel 1: {"0":{"cities":["city0"],"cap":"city0"},"1":{"cities":["city_enemy_1","city2","city3"],"cap":"city_enemy_1"},"2":{"cities":[],"cap":null},"3":{"cities":[],"cap":null},"4":{"cities":[],"cap":null},"5":{"cities":[],"cap":null},"6":{"cities":[],"cap":null},"7":{"cities":[],"cap":null},"8":{"cities":[],"cap":null}}
+  OK  T1: świat ma niestołeczne miasto AI
+      T1 wynik: {"res":{"converted":true,"accepted":true,"reason":"Pokój zawarty"},"after":{"owner":0,"status":"pokoj","playerCities":["city0","city2"],"aiCount":2},"aiCountBefore":3,"pn":720}
+  OK  T1: komenda AI skonwertowana i zaakceptowana
+  OK  T1: własność miasta przeszła AI → gracz
+  OK  T1: miasto na liście miast gracza
+  OK  T1: AI straciło dokładnie jedno miasto
+  OK  T1: status pary po pokoju = pokoj
+
+EXIT=124
+TIME=360.1

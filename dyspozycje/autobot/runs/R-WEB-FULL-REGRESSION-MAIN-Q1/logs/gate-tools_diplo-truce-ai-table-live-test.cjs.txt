@@ -1,0 +1,37 @@
+[ai-table] świat gotowy po 113.9s (tryb rozejm); start przeglądarki 35.3s
+[ai-table] setup: moc {"player":2847,"ai":1275} tury wojny {"turnsAtWar":5,"lostCities":0} rw AI 0.309315866084425
+[ai-table] tura 2: wpisy stołu 1 [{"actionId":"rozejm","proposerOwnerId":1,"responderOwnerId":0,"rodzaj":null,"turns":10}]
+[ai-table] tury 1 -> 2 | stan pary {"status":"wojna","truceUntilTurn":null,"peaceUntilTurn":null,"turn":2}
+[ai-table] decyzje AI (console): [Dyplomacja] AI1 zaproponuj_pokoj: slabszy w wojnie (respektWzgledny=0.31 <= prog=0.48000000000000004; sygnaly=a; tury wojny=6): proponujemy rozejm
+[ai-table] wpisy AI na stole (unikalne): [{"actionId":"rozejm","proposerOwnerId":1,"responderOwnerId":0,"rodzaj":null,"turns":10,"tura":2}]
+locator.click: Timeout 8000ms exceeded.
+Call log:
+  - waiting for locator('[data-negot-act="accept-package"]').first()
+    - locator resolved to <button class="acc" type="button" data-negot-act="accept-package">Przyjmij</button>
+  - attempting click action
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - performing click action
+    - click action done
+    - waiting for scheduled navigations to finish
+
+    at main (<WT>/gra/tools/diplo-truce-ai-table-live-test.cjs:183:91) {
+  log: [
+    `  - waiting for locator('[data-negot-act="accept-package"]').first()`,
+    '    - locator resolved to <button class="acc" type="button" data-negot-act="accept-package">Przyjmij</button>',
+    '  - attempting click action',
+    '    - waiting for element to be visible, enabled and stable',
+    '    - element is visible, enabled and stable',
+    '    - scrolling into view if needed',
+    '    - done scrolling',
+    '    - performing click action',
+    '    - click action done',
+    '    - waiting for scheduled navigations to finish'
+  ],
+  name: 'TimeoutError'
+}
+
+EXIT=1
+TIME=167.5

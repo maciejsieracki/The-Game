@@ -1,0 +1,36 @@
+miasta-zbyt-blisko-test
+MIN_CITY_DISTANCE=4 MIN_CITY_DISTANCE_START_CITY_STATE=3
+
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=146 landSea=2119 relief=1844 coast=707 riversMain=18218 riversFill=406 forest=314 deposits=889 starts=1848 total=26492
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=171 landSea=2161 relief=2239 coast=711 riversMain=7161 riversFill=575 forest=76 deposits=187 starts=625 total=13909
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=82 landSea=1202 relief=1754 coast=705 riversMain=4585 riversFill=278 forest=63 deposits=164 starts=906 total=9740
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=117 landSea=1254 relief=1604 coast=1002 riversMain=6916 riversFill=286 forest=63 deposits=161 starts=682 total=12085
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=260 landSea=1088 relief=1603 coast=678 riversMain=3876 riversFill=379 forest=84 deposits=235 starts=911 total=9113
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=70 landSea=1606 relief=2472 coast=694 riversMain=5874 riversFill=515 forest=76 deposits=134 starts=763 total=12202
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=133 landSea=2120 relief=2446 coast=1415 riversMain=5356 riversFill=535 forest=65 deposits=106 starts=602 total=12778
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=85 landSea=1214 relief=1472 coast=763 riversMain=6468 riversFill=362 forest=66 deposits=88 starts=554 total=11072
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=192 landSea=961 relief=1572 coast=581 riversMain=4377 riversFill=576 forest=98 deposits=125 starts=755 total=9238
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=155 landSea=1378 relief=2841 coast=850 riversMain=4797 riversFill=319 forest=86 deposits=184 starts=674 total=11284
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=172 landSea=1103 relief=1841 coast=727 riversMain=6702 riversFill=277 forest=64 deposits=170 starts=893 total=11952
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=97 landSea=1003 relief=1429 coast=855 riversMain=7229 riversFill=481 forest=66 deposits=102 starts=492 total=11755
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=106 landSea=928 relief=1805 coast=692 riversMain=6025 riversFill=1206 forest=50 deposits=107 starts=765 total=11684
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=91 landSea=987 relief=1529 coast=503 riversMain=4300 riversFill=389 forest=64 deposits=179 starts=674 total=8716
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=75 landSea=1219 relief=2253 coast=946 riversMain=6488 riversFill=417 forest=53 deposits=94 starts=681 total=12227
+
+EXIT=124
+TIME=200.0
