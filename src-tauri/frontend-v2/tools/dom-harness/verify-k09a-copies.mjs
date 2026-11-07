@@ -33,7 +33,8 @@ const argOf = (k) => {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FRONT = resolve(HERE, '../..');
 // R-RUSTPORT-REPIN-UI-2-G-Q1 r2: bloki K09A przepięte na web 86d510c66 (domyślny `git show`); --pin-file = plik tej rewizji.
-const PIN = '86d510c66';
+// R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: bloki K09A przepięte na web 9b019a7d8 (FALA 509–532).
+const PIN = '9b019a7d8';
 const PIN_PATH = 'gra/src/ui/cityPanel.ts';
 const pinFile = argOf('--pin-file');
 const portDir = resolve(argOf('--port-dir') ?? join(FRONT, 'src/ui/cityPanel'));
@@ -85,7 +86,7 @@ export function lcsHunks(a, b) {
 const portFiles = readdirSync(portDir).filter(f => /^k09a-.*\.ts$/.test(f)).sort();
 const blocks = [];
 const problems = [];
-const markerRe = /^\/\/ pin (?:edb8fb56|86d510c66) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)\s*$/;
+const markerRe = /^\/\/ pin (?:edb8fb56|86d510c66|9b019a7d8) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)\s*$/;
 
 for (const file of portFiles) {
   const lines = readFileSync(join(portDir, file), 'utf8').split('\n');

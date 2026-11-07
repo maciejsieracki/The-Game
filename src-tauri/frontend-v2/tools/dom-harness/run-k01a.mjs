@@ -39,7 +39,7 @@ import { join, resolve, dirname, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { bundle } from './build.mjs';
 import { selectK01a, loadPomiar, LOCAL_TYPE_COPIES as LOCAL_TYPE_COPIES_PIN, PIN_ID as PIN_ID_SEL, K01_BLOCK, parseImports, DOM_TOKENS } from './k01a-select-lib.mjs';
-import { K_REV_RX, K_REV_WEB, partitionRev, rangeMapper } from './repin-ui2g-rev.mjs';
+import { K_REV_RX, K_REV_WEB, K_REV_WEB3, partitionRev, rangeMapper } from './repin-ui2g-rev.mjs';
 
 const args = process.argv.slice(2);
 const argOf = (k) => {
@@ -104,7 +104,8 @@ const MARK = new RegExp(`^// pin ${K_REV_RX} gra/src/ui/cityPanel\\.ts:(\\d+)-(\
 const v2Lines = readFileSync(V2_FILE, 'utf8').split(/\r?\n/);
 /** Rewizja markerów portu (pin albo web po repinie UI-2-G); odniesienie = `--pin-dir`. */
 const PIN_ID = partitionRev([v2Lines.join('\n')]);
-const REPINNED = PIN_ID === K_REV_WEB;
+// R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: także web 9b019a7d8 (K_REV_WEB3) — wybór S z pinu edb8fb56 przeniesiony mapą Myersa.
+const REPINNED = PIN_ID === K_REV_WEB || PIN_ID === K_REV_WEB3;
 if (REPINNED && SEL_DIR === PIN_DIR) {
   console.error('run-k01a: markery 86d510c66 — wymagane --sel-pin-dir <katalog pinu edb8fb56> (wybór S z pomiaru pinu)');
   process.exit(2);

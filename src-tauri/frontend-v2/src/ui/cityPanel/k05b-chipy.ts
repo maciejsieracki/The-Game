@@ -23,7 +23,9 @@ import {
   techPrereqChain,
 } from './k05b-host';
 import type { AvailabilityContext, BuildingDef, BuildingReqChip, City, GameData } from './k05b-host';
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6892-6899
+// REPIN UI-3-E: web `RIVER_ONLY_BUILDING_IDS` (game/production.ts:172) — kopia w adapterze k-ui3e-web.
+import { RIVER_ONLY_BUILDING_IDS } from './k-ui3e-web';
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6921-6928
 export function buildingLocationRequirementMet(
   lokalizacja: 'stolica' | 'region' | undefined,
   isCapital: boolean | undefined,
@@ -33,7 +35,7 @@ export function buildingLocationRequirementMet(
   return true;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6901-7000
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6930-7038
 /** Warunki budowy z oceną spełnienia (niebieski = OK, czerwony = brak). */
 export function buildingRequirementChips(
   def: BuildingDef,
@@ -91,6 +93,15 @@ export function buildingRequirementChips(
     });
   }
 
+  // R-WEB-MILL-RIVER-ONLY-GATE-Q1: młyn — blokada z tekstem „wymaga rzeki" (morze/jezioro nie wystarcza).
+  if (RIVER_ONLY_BUILDING_IDS.has(def.id)) {
+    chips.push({
+      label: 'Wymaga rzeki przy mieście',
+      met: ctx.cityHasRiver === true,
+      kind: 'other',
+    });
+  }
+
   if (def.lokalizacja === 'stolica' || def.lokalizacja === 'region') {
     chips.push({
       label: def.lokalizacja === 'stolica' ? 'Tylko stolica' : 'Tylko poza stolicą',
@@ -135,13 +146,13 @@ export function buildingRequirementChips(
   return chips;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8744-8747
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8819-8822
 export function missingTechSteps(data: GameData, techName: string, unlocked: ReadonlySet<string>): string[] {
   const chain = techPrereqChain(data, techName);
   return chain.filter(t => !unlocked.has(t));
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6680-6704
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6709-6733
 /**
  * TEMAT #6 / SUROW-CIV-01: chip(y) kosztu surowcowego budynku (koszt_surowce w
  * buildings.json, np. cegła/ceramika) obok kosztów Pracy/Pieniądza — czerwony gdy

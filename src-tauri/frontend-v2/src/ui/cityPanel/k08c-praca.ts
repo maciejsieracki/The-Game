@@ -22,7 +22,7 @@ import {
 
 // ─── Jednostki K08C, partia k08c-praca.ts (kopie pinu wygenerowane; markery = bramka verify-k08c-copies.mjs) ─────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:5011-5083
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:5040-5112
 export function buildPracaDetailCard(
   city: City,
   view: CityView | null,
@@ -98,7 +98,7 @@ export function buildPracaDetailCard(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:5841-5893
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:5870-5922
 export function buildTopBarPracaDetailCard(
   city: City,
   view: CityView,

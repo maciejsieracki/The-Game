@@ -11,8 +11,10 @@ import { createHash } from 'node:crypto';
 
 export const K_REV_PIN = 'edb8fb56';
 export const K_REV_WEB = '86d510c66';
+/** R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: web `9b019a7d8` (FALA 509–532) — rewizja bloków K po repinie UI-3-E. */
+export const K_REV_WEB3 = '9b019a7d8';
 /** Fragment wyrażenia regularnego: dozwolone rewizje markera. */
-export const K_REV_RX = '(?:edb8fb56|86d510c66)';
+export const K_REV_RX = '(?:edb8fb56|86d510c66|9b019a7d8)';
 
 /**
  * R-RUSTPORT-REPIN-UI-2-G-Q1 r2 (zarzut Z6): etykieta rewizji FAKTYCZNEGO wejścia harnessu — z treści
@@ -22,6 +24,7 @@ export const K_REV_RX = '(?:edb8fb56|86d510c66)';
 export const K_CITYPANEL_BLOBS = {
   '0eacab6a20d2d05c3f21eab8a05abadf200a6484': K_REV_PIN,
   '1d78ffe6721d57c0537c4f404de7b6953344ccc1': K_REV_WEB,
+  'bd320bed02e83d33bc330e288317bc4f7c2de131': K_REV_WEB3, // UI-3-E: `git rev-parse 9b019a7d8:gra/src/ui/cityPanel.ts`
 };
 export function pinDirRevLabel(pinDir, rel = 'gra/src/ui/cityPanel.ts') {
   const buf = readFileSync(join(pinDir, rel));
@@ -33,9 +36,18 @@ export function pinDirRevLabel(pinDir, rel = 'gra/src/ui/cityPanel.ts') {
  * `--pin-dir`. Dla webu 86d510c66 przez zamrożoną mapę `repin-ui2g-rangemap.json` (zakres bez wpisu = wyjątek, nie zgadywanie).
  */
 let RANGE_MAP_CACHE = null;
+let RANGE_MAP3_CACHE = null;
 export function rangeForPinDir(pinDir, a, b) {
   const rev = pinDirRevLabel(pinDir);
   if (rev === K_REV_PIN) return { a, b };
+  if (rev === K_REV_WEB3) {
+    // UI-3-E: zamrożona mapa edb8fb56 → 9b019a7d8 (gen-repin-ui3e-rangemap.mjs); brak wpisu = wyjątek.
+    RANGE_MAP3_CACHE ??= JSON.parse(readFileSync(new URL('./repin-ui3e-rangemap.json', import.meta.url), 'utf8')).map;
+    const w3 = RANGE_MAP3_CACHE[`${a}-${b}`];
+    if (!w3) throw new Error(`repin-ui3e-rangemap.json: brak zakresu pinu ${a}-${b}`);
+    const [wa3, wb3] = w3.split('-').map(Number);
+    return { a: wa3, b: wb3 };
+  }
   if (rev !== K_REV_WEB) throw new Error(`--pin-dir: nieznana rewizja cityPanel.ts (${rev})`);
   RANGE_MAP_CACHE ??= JSON.parse(readFileSync(new URL('./repin-ui2g-rangemap.json', import.meta.url), 'utf8')).map;
   const w = RANGE_MAP_CACHE[`${a}-${b}`];
@@ -63,7 +75,7 @@ export function markerRevs(texts) {
 /** Błąd (string) gdy partia miesza rewizje lub używa nieznanej; null gdy OK. */
 export function revProblem(texts) {
   const revs = [...markerRevs(texts)];
-  const bad = revs.filter((r) => r !== K_REV_PIN && r !== K_REV_WEB);
+  const bad = revs.filter((r) => r !== K_REV_PIN && r !== K_REV_WEB && r !== K_REV_WEB3);
   if (bad.length) return `nieznana rewizja markera: ${bad.join(',')}`;
   if (revs.length > 1) return `partia miesza rewizje markerów: ${revs.join(',')} (wymagana jedna)`;
   return null;

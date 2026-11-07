@@ -57,7 +57,7 @@ const pinLines = (rel) => (pinCache[rel] ??= readFileSync(join(PIN_DIR, rel), 'u
 
 // 1. Podział na bloki: marker -> treść do `// pin-end` (lub następnego markera).
 // R-RUSTPORT-REPIN-UI-2-G-Q1 r2: marker pin edb8fb56 albo web 86d510c66 (repin-ui2g-rev.mjs); --pin-dir = katalog tej rewizji.
-const MARK = /^\/\/ pin (?:edb8fb56|86d510c66) (gra\/src\/[^:\s]+):(\d+)-(\d+)$/;
+const MARK = /^\/\/ pin (?:edb8fb56|86d510c66|9b019a7d8) (gra\/src\/[^:\s]+):(\d+)-(\d+)$/;
 const blocks = [];
 const outside = [];
 let cur = null;
@@ -159,11 +159,13 @@ for (const t of port) {
 // R-RUSTPORT-REPIN-UI-2-G-Q1 r2: wybrane.json (zamrożony log runu) niesie zakresy pinu edb8fb56; gdy port ma markery
 // web 86d510c66, zakresy jednostek przenosi zamrożona mapa repin-ui2g-rangemap.json (zakres bez wpisu = FAIL COVER).
 const PORT_REV = revOfK([port.join('\n')]);
-const RANGE_MAP = JSON.parse(readFileSync(join(HERE, 'repin-ui2g-rangemap.json'), 'utf8')).map;
+// R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: markery web 9b019a7d8 → zamrożona mapa repin-ui3e-rangemap.json (edb8fb56 → 9b019a7d8).
+const RANGE_MAP_FILE = PORT_REV === '9b019a7d8' ? 'repin-ui3e-rangemap.json' : 'repin-ui2g-rangemap.json';
+const RANGE_MAP = JSON.parse(readFileSync(join(HERE, RANGE_MAP_FILE), 'utf8')).map;
 const units = JSON.parse(readFileSync(WYBRANE, 'utf8')).map((u) => {
-  if (PORT_REV !== '86d510c66') return u;
+  if (PORT_REV !== '86d510c66' && PORT_REV !== '9b019a7d8') return u;
   const w = RANGE_MAP[`${u.a}-${u.b}`];
-  if (!w) { findings.cover.push(`jednostka ${u.port ?? u.name}: zakres pinu ${u.a}-${u.b} bez wpisu w repin-ui2g-rangemap.json`); return u; }
+  if (!w) { findings.cover.push(`jednostka ${u.port ?? u.name}: zakres pinu ${u.a}-${u.b} bez wpisu w ${RANGE_MAP_FILE}`); return u; }
   const [wa, wb] = w.split('-').map(Number);
   return { ...u, a: wa, b: wb };
 });

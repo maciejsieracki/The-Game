@@ -25,6 +25,8 @@ import {
   appendBudowaListaBar, appendBudowaToolbarProfiles, appendOkolicaToolbarProfiles, appendPanel,
   appendSectionTitleWithDetails, renderTopStatsBar, resolveDetailSideHint,
 } from './k07b-p2';
+// REPIN UI-3-E: web `AUTO_BUILD_DISABLED_HINT` (game/auto-build-gate.ts:48) i `formatManpowerCompact` — adapter k-ui3e-web.
+import { AUTO_BUILD_DISABLED_HINT, formatManpowerCompact } from './k-ui3e-web';
 
 // ─── K07B-Z5: typy pinu (alias any; zgodność z viewmodel/types.ts — NIE_ZMIERZONO) ───────────────────────────────
 type CityK07 = any;
@@ -45,7 +47,9 @@ const cfg = valueProxy('cfg') as CfgK07b;
 
 // ─── K07B-Z5: kształt wyniku pinu `resolveCityHealth` (pin `cityPanel.ts:3281`) — pola czytane przez partię 1 ─────────
 type CityHealthK07b = { total: number; lines: { label: string; value: number; [k: string]: any }[]; fromEngine: boolean };
-const el = (...args: any[]): any => dep('el')(...args);
+// REPIN UI-3-E: web 9b019a7d8 renderProd woła `bProfiles.querySelectorAll('button').forEach(btn => …)` — wynik `el`
+// typowany jak w webie (`HTMLElement`, cityPanel.ts el), inaczej parametry callbacków byłyby niejawnie `any` (tsc).
+const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, html?: string): HTMLElementTagNameMap[K] => dep('el')(tag, cls, html);
 const gameData = (...args: any[]): any => dep('gameData')(...args);
 /** K07B-Z4 (r3): pin `activeMap` to zmienna modułu (`let activeMap`, :10118) — wartość, nie funkcja. Port: wywołanie delegatu
  *  `activeMapK07()` w miejscu wartości (jedyne użycie: renderKultura). Wcześniej port przekazywał FUNKCJĘ zamiast mapy (błąd r2). */
@@ -101,7 +105,7 @@ const buildOkolicaDetailCard = (...args: any[]): any => dep('buildOkolicaDetailC
 const buildKulturaDetailCard = (...args: any[]): any => dep('buildKulturaDetailCard')(...args);
 const buildBuildingBuildTabDetailCard = (...args: any[]): any => dep('buildBuildingBuildTabDetailCard')(...args);
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:3359-3489
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:3388-3518
 export function renderSpoleczenstwo(mount: HTMLElement, city: CityK07, data: GameData): void {
   const { state, fromEngine } = resolveOrderState(city, data);
   const badge = fromEngine ? '' : PH();
@@ -235,7 +239,7 @@ export function renderSpoleczenstwo(mount: HTMLElement, city: CityK07, data: Gam
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:3615-3644
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:3644-3673
 export function renderZdrowie(mount: HTMLElement, city: CityK07, map: GameMap, data: GameData): void {
   const { total, lines, fromEngine } = resolveCityHealth(city, map, data);
   const pos = lines.filter(l => l.value > 0);
@@ -268,7 +272,7 @@ export function renderZdrowie(mount: HTMLElement, city: CityK07, map: GameMap, d
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:4056-4174
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:4085-4203
 export function renderKultura(mount: HTMLElement, city: CityK07, view: CityView | null): void {
   mount.innerHTML = '';
   const cultState = cfg.getCultureState?.(city.id) ?? undefined;
@@ -390,7 +394,7 @@ export function renderKultura(mount: HTMLElement, city: CityK07, view: CityView 
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8633-8742
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8688-8817
 export function renderProd(mount: HTMLElement, city: CityK07, view: CityView | null): void {
   mount.innerHTML = '';
   const prod = getProd(city.id);
@@ -419,8 +423,28 @@ export function renderProd(mount: HTMLElement, city: CityK07, view: CityView | n
       bToolbar.style.cssText = 'margin:0.06em 0 0.18em;';
       const bProfiles = el('div', 'okolica-toolbar-profiles');
       appendBudowaToolbarProfiles(bProfiles, city, bState.priorytetTypow, bState.tryb, bState.lista);
-      bToolbar.appendChild(bProfiles);
-      if (bState.tryb === 'lista') {
+      const autoBuildOn = cfg.isAutoBuildEnabled ? cfg.isAutoBuildEnabled() : true;
+      if (!autoBuildOn) {
+        // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: wszystkie przyciski AUTO budowy wyszarzone (zostaje „Ręczny”).
+        bProfiles.querySelectorAll('button').forEach(btn => {
+          if (btn.classList.contains('reczny')) return;
+          btn.disabled = true;
+          btn.classList.remove('on');
+          btn.classList.add('auto-build-locked');
+          btn.style.opacity = '0.4';
+          btn.title = AUTO_BUILD_DISABLED_HINT;
+        });
+        bProfiles.querySelectorAll('.budowa-prio-badge').forEach(b => b.remove());
+        bProfiles.setAttribute('data-auto-build-locked', '1');
+        const note = el('div', 'muted', AUTO_BUILD_DISABLED_HINT);
+        note.style.cssText = 'font-size:0.68em;margin-top:0.1em;';
+        note.setAttribute('data-auto-build-hint', '1');
+        bToolbar.appendChild(bProfiles);
+        bToolbar.appendChild(note);
+      } else {
+        bToolbar.appendChild(bProfiles);
+      }
+      if (bState.tryb === 'lista' && autoBuildOn) {
         appendBudowaListaBar(bToolbar, city, bState.lista, bState.biblioteka);
       }
       mount.appendChild(bToolbar);
@@ -503,7 +527,7 @@ export function renderProd(mount: HTMLElement, city: CityK07, view: CityView | n
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9550-9568
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9626-9644
 export function renderBuildSplitPanel(
   mount: HTMLElement,
   city: CityK07,
@@ -525,7 +549,7 @@ export function renderBuildSplitPanel(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10265-10399
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10341-10475
 export function renderOkolica(root: HTMLElement, city: CityK07, map: GameMap): void {
   const statsEl = root.querySelector('#cs-okstats') as HTMLElement | null;
   const gridEl = root.querySelector('#cs-okolica') as HTMLElement | null;
@@ -663,7 +687,7 @@ export function renderOkolica(root: HTMLElement, city: CityK07, map: GameMap): v
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10596-10610
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10672-10686
 export interface CityPanelUxMounts {
   top: HTMLElement;
   left: HTMLElement;
@@ -681,13 +705,13 @@ export interface CityPanelUxMounts {
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11059-11090
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11154-11185
 export function renderCityHeaderCompact(mount: HTMLElement, city: CityK07, view: CityView | null): void {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
   mount.innerHTML =
     `<div class="civ-v-city-name">${city.name}</div>` +
-    `<div class="civ-v-city-pop">${city.population} obywateli · ≈ ${formatManpower(osobRazem)} · epoka ${epoch}</div>`;
+    `<div class="civ-v-city-pop">${city.population} obywateli · ≈ ${formatManpowerCompact(osobRazem)} · epoka ${epoch}</div>`;
   if (!view) {
     mount.appendChild(el('div', 'muted', 'Brak danych ekonomii'));
     return;

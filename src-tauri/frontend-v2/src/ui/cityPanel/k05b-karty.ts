@@ -77,7 +77,7 @@ function makeBuildingThumb(def: BuildingDef | undefined): HTMLDivElement {
 function buildingAdapter(def: BuildingDef, ctx: { city: BuildingCardCityState }) {
   return buildingAdapterDto(def as unknown as BuildingDefDto, ctx as unknown as Parameters<typeof buildingAdapterDto>[1]);
 }
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7065-7075
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7103-7113
 export function appendBuildingRequirementsBlock(
   parent: HTMLElement,
   def: BuildingDef,
@@ -90,7 +90,7 @@ export function appendBuildingRequirementsBlock(
   return appendBuildingRequirementChipSections(parent, chips);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7083-7205
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7121-7243
 /** Karta infografiki budynku (Design Poziom B · 2026-07-05). */
 export function buildBuildingInfocard(
   def: BuildingDef,
@@ -215,7 +215,7 @@ export function buildBuildingInfocard(
   return card;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7468-7534
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7506-7572
 export function appendTechDetailBlock(parent: HTMLElement, data: GameData, techName: string | null | undefined): void {
   if (!techName || isEmptyDataVal(techName)) {
     const g = appendDetailGridIn(parent);
@@ -284,7 +284,7 @@ export function appendTechDetailBlock(parent: HTMLElement, data: GameData, techN
   }
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7538-7599
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7576-7637
 /** Wstrzykuje `ENTITY_CARD_CSS` (bazowe style `.entity-card*` z `entityCards/renderer.ts`)
  * raz do dokumentu, plus lokalne dopasowanie szerokości karty (434px domyślnie) do
  * hover-docku panelu miasta (`HOVER_DETAIL_DOCK_W`=400px, `hoverDetailDock.ts`) i
@@ -348,7 +348,7 @@ export function ensureEntityCardBuildingStyles(): void {
   document.head.appendChild(style);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7601-7629
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7639-7667
 /** Buduje kartę budynku przez `buildingAdapter` + wspólny `renderEntityCard`
  * (T5 MIGRACJA-KARTA-BUDYNKU-PANEL-MIASTA), zamiast własnego DOM-buildera — wzorem T3/T4.
  * Sekcje „Technologie"/„Uwagi" dopełnione TU (host), bo zależą od `data: GameData`/
@@ -379,7 +379,7 @@ export function buildBuildingDetailCardViaEntityCard(def: BuildingDef, data: Gam
   return card;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7631-7642
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7669-7680
 /** Publiczna sygnatura BEZ ZMIAN. Próbuje ścieżkę entityCards (T5), fallback do starej
  * implementacji (`_legacyBuildBuildingDetailCard`) w razie wyjątku — wzorem T3/T4, dopóki
  * Final Control nie potwierdzi parytetu. */
@@ -393,7 +393,7 @@ export function buildBuildingDetailCard(def: BuildingDef, data: GameData, city?:
   }
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7644-7770
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7682-7808
 /** Stara implementacja (DOM-builder własny) — zachowana pod prywatną nazwą jako fallback
  * (wzorem `_legacyBuildUnitInfoCard`/`_legacyShowTechDiscoveryNotice`). ZERO zmian treści. */
 export function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
@@ -522,7 +522,7 @@ export function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData,
   return card;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7772-7879
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7810-7917
 /**
  * Karta szczegółów budynku w zakładce Budowa — pełne info (bonusy, koszty,
  * utrzymanie, wymagania, epoka) w panelu bocznym po najechaniu / kliknięciu.

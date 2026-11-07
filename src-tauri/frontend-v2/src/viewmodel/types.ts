@@ -369,6 +369,8 @@ export interface DaninaLabelForms {
 
 export interface CityPanelDto {
   city: CityRefDto;
+  /** REPIN UI-3-E (R-RUSTPORT-REPIN-WEB-UI-3-E-Q1): epoka cywilizacji właściciela (web `cfg.getEpoch(ownerId) ?? 1`, CityView.ownerEra — mnożnik zużycia obywateli). Brak = 1. */
+  ownerEra?: number;
   navOrder: CityId[];
   yields: { praca: number; pieniadz: number; nauka: number; kultura: number; zywnoscBrutto: number };
   food: {

@@ -85,7 +85,7 @@ const cfg: any = valueProxy('cfg');
 
 // ─── Jednostki K06B (kopie pinu) ───────────────────────────────────────────────────────────────────────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8072-8124
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8110-8162
 export function appendBuildableItemRow(
   scroll: HTMLElement,
   city: City,
@@ -140,7 +140,7 @@ export function appendBuildableItemRow(
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8500-8632
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8555-8687
 
 /** Kolejka budynków (pozycje 2+ w kolejce produkcji). */
 export function appendBuildQueueSection(
@@ -277,7 +277,7 @@ export function appendBuildQueueSection(
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8892-8943
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8968-9019
 export function appendCatalogBuildingRow(
   scroll: HTMLElement,
   entry: BuildingCatalogEntry,
@@ -331,7 +331,7 @@ export function appendCatalogBuildingRow(
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8944-9086
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9020-9162
 /** Lista „Dostępne do budowy” (R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: eksport pod test regresji
  *  tools/building-resource-visibility-ui-test.cjs — ten sam kod co w panelu miasta). */
 export function renderBuildList(
@@ -476,7 +476,7 @@ export function renderBuildList(
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9272-9427
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9348-9503
 export function appendOwnedBuildingRow(
   target: HTMLElement,
   id: string,

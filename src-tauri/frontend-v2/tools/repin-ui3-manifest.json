@@ -96,5 +96,16 @@
       "sha256": "a0318e729a8367761c7bfa6c07c807f19e4d1c149cec631e8fdc55b300f97569",
       "bytes": 2830
     }
-  ]
+  ],
+  "kblocksE": {
+    "topic": "R-RUSTPORT-REPIN-WEB-UI-3-E-Q1 (partia UI-3-E, runda 1)",
+    "note": "cityPanel bloki K: markery 37 plików src/ui/cityPanel/k0*.ts przepięte z 86d510c66 na 9b019a7d8 — bramka REV/RANGE/CONTENT w verify-repin-ui2-copies.mjs (manifest repin-ui2g-kblocks-manifest.json, rev 9b019a7d8). Tu: adapter czystych deklaracji game/* wołanych przez przepięte bloki (bloki = źródło A..B bajtowo, z export; poza blokami tylko nagłówek).",
+    "kblocksManifest": "tools/repin-ui2g-kblocks-manifest.json",
+    "adapter": {
+      "path": "src/ui/cityPanel/k-ui3e-web.ts",
+      "markers": 7,
+      "sha256": "f2bd8036a43320c2fda422448b604b54a56d3e12d59d6a20eed00b03b8f44080",
+      "bytes": 3409
+    }
+  }
 }

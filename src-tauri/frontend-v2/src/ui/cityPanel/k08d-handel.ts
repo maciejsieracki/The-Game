@@ -22,7 +22,7 @@ import {
 
 // ─── Jednostki K08D, partia k08d-handel.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1376-1384
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1401-1409
 export function ownerHasMennica(ownerId: number): boolean {
   const cities = cfg.getCities?.() ?? [];
   for (const c of cities) {
@@ -34,7 +34,7 @@ export function ownerHasMennica(ownerId: number): boolean {
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11286-11295
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11381-11390
 export function activeTradeRouteCountForCity(city: City): number {
   const all = cfg.getTradeRoutes?.() ?? [];
   let n = 0;
@@ -47,7 +47,7 @@ export function activeTradeRouteCountForCity(city: City): number {
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11092-11246
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11187-11341
 export function buildHandelDetailCard(
   city: City,
   view: CityView | null,

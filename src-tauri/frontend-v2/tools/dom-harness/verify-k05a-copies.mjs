@@ -42,7 +42,7 @@ if (!PIN_DIR || !existsSync(join(PIN_DIR, 'gra/src'))) {
 
 /** Podstawienia udokumentowane (K05A-Z2). Każde: zakres pinu, linia pinu, linia portu. */
 const SUBST = [
-  { pin: 'gra/src/ui/cityPanel.ts', a: 9756, b: 9783, from: '  city: City,', to: '  city: CityHexRef,', why: 'K05A-Z2 DTO pozycji miasta' },
+  { pin: 'gra/src/ui/cityPanel.ts', a: 9832, b: 9859, from: '  city: City,', to: '  city: CityHexRef,', why: 'K05A-Z2 DTO pozycji miasta' },
 ];
 /** Deklaracje portu spoza pinu (K05A-Z1 kopie typów/enum, K05A-Z2 DTO). */
 const LOCAL_NAMES = new Set([

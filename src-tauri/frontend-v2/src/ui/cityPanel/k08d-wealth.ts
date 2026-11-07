@@ -23,7 +23,7 @@ import {
 
 // ─── Jednostki K08D, partia k08d-wealth.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:4839-4886
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:4868-4915
 export function renderWealth(mount: HTMLElement, city: City, data: GameData | null, view: CityView | null = null): void {
   mount.innerHTML = '';
   const ws = city.wealthState ?? freshWealthState();
@@ -74,7 +74,7 @@ export function renderWealth(mount: HTMLElement, city: City, data: GameData | nu
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:4888-5009
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:4917-5038
 export function buildWealthDetailCard(
   city: City,
   ws: { poziom: number; pula: number },

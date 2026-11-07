@@ -1,7 +1,7 @@
 {
   "topic": "R-RUSTPORT-REPIN-UI-2-G-Q1",
-  "rev": "86d510c66",
-  "revFull": "86d510c667268880414d693532ca012c9310589e",
+  "rev": "9b019a7d8",
+  "revFull": "9b019a7d89090c7491a4c2ad75278a7a60d42a90",
   "note": "Pliki bloków K przepięte z pinu edb8fb56 na web 86d510c66 (P5-REPIN-UI-2 §6). Wszystkie markery pliku mają rewizję rev; liczba markerów = markers. Weryfikacja treści bloków: verify-k0*-copies.mjs / run-k01a.mjs partii z --pin-dir <WEB 86d510c66>. r2: wszystkie pliki K z markerami (K01A–K09A) przepięte; contentGates = weryfikatory treści partii uruchamiane przez npm run check (verify-repin-ui2-copies, CONTENT).",
   "renames": {
     "frontItemK": "frontItem",
@@ -87,7 +87,7 @@
     {
       "path": "src/ui/cityPanel/k06b-jednostki.ts",
       "partition": "K06B",
-      "markers": 7,
+      "markers": 8,
       "runda": 2
     },
     {
@@ -420,5 +420,8 @@
         "{WEB}/gra/src/ui/cityPanel.ts"
       ]
     }
-  ]
+  ],
+  "revPrev": "86d510c66",
+  "revPrevFull": "86d510c667268880414d693532ca012c9310589e",
+  "repinUi3e": "R-RUSTPORT-REPIN-WEB-UI-3-E-Q1 r1: wszystkie markery bloków K przepięte z 86d510c66 na web 9b019a7d8 (FALA 509–532; repin-ui3e-kblocks.mjs, 302 MOVED + 15 DRIFT + 5 MANUAL + 1 nowy blok K06B recruitQuantityDrafts). Bramki CONTENT uruchamiane na git archive revFull. P5-REPIN-UI-2 §12."
 }

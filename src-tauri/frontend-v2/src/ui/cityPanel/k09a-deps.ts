@@ -22,6 +22,8 @@ export interface K09aHooks {
   onRename?: (cityId: number, name: string) => void;
   isAutoManageEnabled?: (cityId: number) => boolean;
   onAutoManage?: (cityId: number) => void;
+  /** REPIN UI-3-E: web `cfg.isAutoBuildEnabled` (R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1); brak haka = włączona. */
+  isAutoBuildEnabled?: () => boolean;
   onArtView?: (cityId: number) => void;
   onOpenMapForOkolica?: (cityId: number) => void;
 }

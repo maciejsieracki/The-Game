@@ -14,31 +14,31 @@
 export const BATCH_RAIL = {
   file: 'k08b-rail.ts',
   units: [
-    { name: 'renderOwnedBuildingsBar', a: 9517, b: 9549 },
-    { name: 'renderCityExitFooter', a: 10947, b: 10965 },
-    { name: 'renderCityIconLeftRail', a: 11030, b: 11039 },
-    { name: 'renderCivMapChrome', a: 11297, b: 11321 },
-    { name: 'renderCityIconRail', a: 11846, b: 11891 },
-    { name: 'withW4TabCard', a: 11892, b: 11908 },
+    { name: 'renderOwnedBuildingsBar', a: 9593, b: 9625 },
+    { name: 'renderCityExitFooter', a: 11042, b: 11060 },
+    { name: 'renderCityIconLeftRail', a: 11125, b: 11134 },
+    { name: 'renderCivMapChrome', a: 11392, b: 11416 },
+    { name: 'renderCityIconRail', a: 11941, b: 11986 },
+    { name: 'withW4TabCard', a: 11987, b: 12003 },
   ],
 };
 
 /**
- * Partia `title` (runda 2, P5-8 K08B-Z6): helper `resolveDetailSideHint` (pin :11753-11757, bez DOM, wymagany przez
- * `appendSectionTitleWithDetails`) + jednostka DOM `appendSectionTitleWithDetails` (pin :11759-11778, blok 7 w
+ * Partia `title` (runda 2, P5-8 K08B-Z6): helper `resolveDetailSideHint` (pin :11848-11852, bez DOM, wymagany przez
+ * `appendSectionTitleWithDetails`) + jednostka DOM `appendSectionTitleWithDetails` (pin :11854-11873, blok 7 w
  * `P5-8-K08B.md` §3). Wywołanie `attachInteractiveDetail` z `ui/hoverDetailDock` (warstwa UI, jak w `k01b-dom.ts`).
  */
 export const BATCH_TITLE = {
   file: 'k08b-title.ts',
   units: [
-    { name: 'resolveDetailSideHint', a: 11753, b: 11757 },
-    { name: 'appendSectionTitleWithDetails', a: 11759, b: 11778 },
+    { name: 'resolveDetailSideHint', a: 11848, b: 11852 },
+    { name: 'appendSectionTitleWithDetails', a: 11854, b: 11873 },
   ],
 };
 
 /**
- * Partia `owned` (runda 3, K08B-Z5 domknięte): `renderBuildingsOwned` (pin :9428-9499) i jego prawa karta
- * `renderBuildingsOwnedRightPanel` (pin :9585-9601). Zależności: porty K01A/K01B/K02/K05B/K06B; dwie funkcje pinu
+ * Partia `owned` (runda 3, K08B-Z5 domknięte): `renderBuildingsOwned` (pin :9504-9575) i jego prawa karta
+ * `renderBuildingsOwnedRightPanel` (pin :9661-9677). Zależności: porty K01A/K01B/K02/K05B/K06B; dwie funkcje pinu
  * bez portu (`sumOwnedBuildingsUpkeep`, `groupBuiltBuildingIds`) przez delegaty `k08b-deps.ts` (K08B-Z7).
  */
 export const BATCH_OWNED = {
@@ -62,13 +62,13 @@ import { appendOwnedBuildingRow } from './k06b-kolejki';
 import { groupBuiltBuildingIds, sumOwnedBuildingsUpkeep } from './k08b-deps';
 import { withW4TabCard } from './k08b-rail';`,
   units: [
-    { name: 'renderBuildingsOwned', a: 9428, b: 9499 },
-    { name: 'renderBuildingsOwnedRightPanel', a: 9585, b: 9601 },
+    { name: 'renderBuildingsOwned', a: 9504, b: 9575 },
+    { name: 'renderBuildingsOwnedRightPanel', a: 9661, b: 9677 },
   ],
 };
 
 /**
- * Partia `purchase` (runda 3, K08B-Z7): `renderPurchasableUnits` (pin :9119-9216, zakładka Rekrutacja). Zależności
+ * Partia `purchase` (runda 3, K08B-Z7): `renderPurchasableUnits` (pin :9195-9292, zakładka Rekrutacja). Zależności
  * z gry (`purchasableUnits`, `sortByUnitPowerDescending`, `getUnitDef`, pasek surowców rekrutacji) — delegaty `k08b-deps.ts`.
  */
 export const BATCH_PURCHASE = {
@@ -93,7 +93,7 @@ import {
 } from './k08b-deps';
 import { appendSectionTitleWithDetails } from './k08b-title';`,
   units: [
-    { name: 'renderPurchasableUnits', a: 9119, b: 9216 },
+    { name: 'renderPurchasableUnits', a: 9195, b: 9292 },
   ],
 };
 
@@ -112,14 +112,14 @@ export const batchByName = (name) => {
  * (`clearGarrisonPanel`, `rerender`) przechodzą przez akcesory K08A/K07A i `requireK08aDeps()` — tak jak K08A-Z2/Z3.
  */
 export const LINE_SUBS = [
-  // renderCityIconRail (pin :11846-11891)
-  { a: 11846, b: 11891, from: 'Math.round(scalePx * ', to: 'Math.round(getK07aScalePx() * ', why: 'K08B-Z3 scalePx (stan K07A) -> getK07aScalePx' },
-  { a: 11846, b: 11891, from: "activeCityPanelTab === item.id ? ' on'", to: "getK08aActiveCityPanelTab() === item.id ? ' on'", why: 'K08B-Z3 activeCityPanelTab (K08A) -> akcesor' },
-  { a: 11846, b: 11891, from: "activeCityPanelTab === item.id ? 'true'", to: "getK08aActiveCityPanelTab() === item.id ? 'true'", why: 'K08B-Z3 activeCityPanelTab (aria-pressed) -> akcesor' },
-  { a: 11846, b: 11891, from: 'if (activeCityPanelTab !== item.id) {', to: 'if (getK08aActiveCityPanelTab() !== item.id) {', why: 'K08B-Z3 activeCityPanelTab (klik) -> akcesor' },
-  { a: 11846, b: 11891, from: 'clearGarrisonPanel();', to: 'requireK08aDeps().clearGarrisonPanel();', why: 'K08B-Z2 clearGarrisonPanel (DOM, K06B) -> deps K08A' },
-  { a: 11846, b: 11891, from: 'activeCityPanelTab = item.id;', to: 'setK08aActiveCityPanelTab(item.id);', why: 'K08B-Z3 przypisanie activeCityPanelTab -> setter K08A' },
-  { a: 11846, b: 11891, from: 'rerender();', to: 'requireK08aDeps().rerender();', why: 'K08B-Z2 rerender (K09) -> deps K08A' },
+  // renderCityIconRail (pin :11941-11986)
+  { a: 11941, b: 11986, from: 'Math.round(scalePx * ', to: 'Math.round(getK07aScalePx() * ', why: 'K08B-Z3 scalePx (stan K07A) -> getK07aScalePx' },
+  { a: 11941, b: 11986, from: "activeCityPanelTab === item.id ? ' on'", to: "getK08aActiveCityPanelTab() === item.id ? ' on'", why: 'K08B-Z3 activeCityPanelTab (K08A) -> akcesor' },
+  { a: 11941, b: 11986, from: "activeCityPanelTab === item.id ? 'true'", to: "getK08aActiveCityPanelTab() === item.id ? 'true'", why: 'K08B-Z3 activeCityPanelTab (aria-pressed) -> akcesor' },
+  { a: 11941, b: 11986, from: 'if (activeCityPanelTab !== item.id) {', to: 'if (getK08aActiveCityPanelTab() !== item.id) {', why: 'K08B-Z3 activeCityPanelTab (klik) -> akcesor' },
+  { a: 11941, b: 11986, from: 'clearGarrisonPanel();', to: 'requireK08aDeps().clearGarrisonPanel();', why: 'K08B-Z2 clearGarrisonPanel (DOM, K06B) -> deps K08A' },
+  { a: 11941, b: 11986, from: 'activeCityPanelTab = item.id;', to: 'setK08aActiveCityPanelTab(item.id);', why: 'K08B-Z3 przypisanie activeCityPanelTab -> setter K08A' },
+  { a: 11941, b: 11986, from: 'rerender();', to: 'requireK08aDeps().rerender();', why: 'K08B-Z2 rerender (K09) -> deps K08A' },
 ];
 
 /**

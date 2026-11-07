@@ -52,6 +52,8 @@ export function cityViewFromDto(dto: CityPanelDto): CityView {
     zywnoscNetto: dto.food.bilansLokalny,
     zywnoscBrutto: dto.yields.zywnoscBrutto,
     kosztRacji: dto.food.kosztRacji,
+    // REPIN UI-3-E: web 9b019a7d8 `ownerEra: cfg.getEpoch?.(city.ownerId) ?? 1` (cityPanel.ts:1366).
+    ownerEra: dto.ownerEra ?? 1,
     bilansLokalny: dto.food.bilansLokalny,
     poziomRacji: dto.food.poziomRacji,
     wzrostProcent: dto.growth.pctPerTurn,

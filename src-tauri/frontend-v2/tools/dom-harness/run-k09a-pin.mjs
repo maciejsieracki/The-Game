@@ -59,7 +59,7 @@ const PORT_FILES = ['k09a-rerender.ts', 'k09a-tabs.ts', 'k09a-paint.ts'].map((f)
 const UNITS = [];
 for (const file of PORT_FILES) {
   const src = readFileSync(file, 'utf8');
-  const re = /\/\/ pin (?:edb8fb56|86d510c66) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)\n(?:export )?function (\w+)\(/g; // REPIN-UI-2-G r2
+  const re = /\/\/ pin (?:edb8fb56|86d510c66|9b019a7d8) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)\n(?:export )?function (\w+)\(/g; // REPIN-UI-2-G r2
   let m;
   while ((m = re.exec(src)) !== null) UNITS.push({ a: Number(m[1]), b: Number(m[2]), name: m[3], file: file.split('/').pop() });
 }

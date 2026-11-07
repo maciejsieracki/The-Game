@@ -9,6 +9,8 @@
  * Cięcie cyklu `hideCityPanel` → `requireK09aDeps().hideCityPanel` (K09A-Z2). Haki `cfg` → `getK09aHooks()` (K09A-Z3).
  */
 import { el } from './k01b-dom';
+// REPIN UI-3-E: web `AUTO_BUILD_DISABLED_HINT` (game/auto-build-gate.ts:48) — adapter k-ui3e-web.
+import { AUTO_BUILD_DISABLED_HINT } from './k-ui3e-web';
 import { CITY_PANEL_ICONS_RIGHT, resolveK08aActiveCity } from './k08a-fundament';
 import { renderCityIconRail } from './k08b-rail';
 import { renderWealth } from './k08d-wealth';
@@ -54,7 +56,7 @@ function writeActiveCityK09a(city: City): void {
 
 // ─── Jednostki K09A-1 (kopie pinu wygenerowane ręcznie; markery = bramka verify-k09a-copies.mjs) ─────────────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10456-10468
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10532-10544
 export function switchCity(dir: -1 | 1): void {
   const cur = readActiveCityK09a();
   if (cur === null) return;
@@ -71,7 +73,7 @@ export function switchCity(dir: -1 | 1): void {
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:12096-12182
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:12191-12289
 export function rerender(): void {
   const refresh = getK07aUxSectionRefresh();
   if (refresh) {
@@ -154,7 +156,19 @@ export function rerender(): void {
       manager.classList.remove('active');
       manager.setAttribute('title', 'Zarządca automatyczny — wyłączony');
     }
-    manager.addEventListener('click', () => { getK09aHooks().onAutoManage?.(city.id); rerender(); });
+    if (getK09aHooks().isAutoBuildEnabled?.() === false) {
+      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: Zarządca ⚙ nie kolejkuje budynków przy wyłączonej automatyzacji budowy.
+      manager.classList.remove('active');
+      manager.setAttribute('title', 'Zarządca automatyczny — ' + AUTO_BUILD_DISABLED_HINT);
+      (manager as HTMLButtonElement).style.opacity = '0.4';
+      // Obrona zarzutu 2: kontrolka naprawdę nieaktywna (disabled), nie tylko przyciemniona.
+      (manager as HTMLButtonElement).disabled = true;
+      manager.setAttribute('aria-disabled', 'true');
+    }
+    manager.addEventListener('click', () => {
+      if (getK09aHooks().isAutoBuildEnabled?.() === false) return;
+      getK09aHooks().onAutoManage?.(city.id); rerender();
+    });
   }
   const artview = q('cs-artview'); if (artview) artview.addEventListener('click', () => { getK09aHooks().onArtView?.(city.id); });
   root.querySelectorAll('.fsbtn').forEach(b => {
@@ -166,7 +180,7 @@ export function rerender(): void {
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11040-11056
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11135-11151
 export function renderCityIconRightRail(mount: HTMLElement, city: City): void {
   mount.innerHTML = '';
   const scope = el('div', 'civ-cs civ-ux-panel-scope');

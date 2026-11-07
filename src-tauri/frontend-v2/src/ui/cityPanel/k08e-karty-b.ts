@@ -23,7 +23,7 @@ import { porBandLabel, porPctBand } from './k08e-deps';
 
 // ─── Jednostki K08E, partia k08e-karty-b.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:5975-6018
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6004-6047
 export function buildTopBarNaukaDetailCard(
   city: City,
   view: CityView,
@@ -70,7 +70,7 @@ export function buildTopBarNaukaDetailCard(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6020-6061
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6049-6090
 export function buildTopBarKulturaDetailCard(
   city: City,
   view: CityView,
@@ -115,7 +115,7 @@ export function buildTopBarKulturaDetailCard(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:3491-3613
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:3520-3642
 export function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement {
   const por = state.porPct ?? 0;
   const sz = state.szPct ?? 0;

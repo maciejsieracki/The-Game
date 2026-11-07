@@ -20,7 +20,7 @@ import { resourceTextClass } from '../resourceColors';
 import { PULA_LBL_PELNA, type CityView } from './k01b-t';
 import { formatResourceUpkeepText } from './k01b-r';
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1020-1045
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1035-1060
 export function estimateHandelChips(view: CityView | null, split: PodzialHandluSplit): HandelChipEstimates {
   const zero = { brutto: 0, korupcja: 0, netto: 0, skarb: 0, nauka: 0, zam: 0 };
   if (!view) return zero;
@@ -47,7 +47,7 @@ export function estimateHandelChips(view: CityView | null, split: PodzialHandluS
   };
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1777-1796
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1806-1825
 export function resPracaSplitBar(
   mainVal: string,
   doBudynkow: number,
@@ -69,7 +69,7 @@ export function resPracaSplitBar(
     `</span></span>`;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1917-1931
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1946-1960
 export function plonyChipRowHtml(view: CityView): string {
   // P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1: tożsamość surowca z palety; klasa stanu tylko
   // dla Żywności (deficyt). „Pieniądz" miał tu 'blue' — Skarbiec pokazywał się jako
@@ -86,7 +86,7 @@ export function plonyChipRowHtml(view: CityView): string {
   );
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6744-6755
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6773-6784
 export function formatBuildingUpkeepGridValue(display: { gold: number; resources: Record<string, number> }): string {
   if (display.gold === 0 && Object.keys(display.resources).length === 0) {
     return BUILDING_UPKEEP_ZERO_LABEL;
@@ -100,7 +100,7 @@ export function formatBuildingUpkeepGridValue(display: { gold: number; resources
   return parts.join(' + ');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6757-6773
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6786-6802
 export function formatBuildingUpkeepRowHtml(
   display: { gold: number; resources: Record<string, number> },
   compact: boolean,
@@ -119,7 +119,7 @@ export function formatBuildingUpkeepRowHtml(
   return parts.join(compact ? ' ' : ' · ');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6775-6789
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6804-6818
 export function formatBuildingUpkeepTotalHtml(
   totalGold: number,
   totalResources: Record<string, number>,

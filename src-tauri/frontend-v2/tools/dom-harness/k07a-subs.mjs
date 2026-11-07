@@ -27,11 +27,11 @@ export const PIN_TO_PORT_NAMES = [
  * `from` musi wystąpić w pinie w zakresie dokładnie raz; `to` musi wystąpić w porcie w bloku dokładnie raz.
  */
 export const LINE_SUBS = [
-  { a: 10576, b: 10581, from: '  const fresh = cfg.getCities?.().find(c => c.id === activeCity!.id);', to: '  const fresh = deps?.getCities().find(c => c.id === activeCity!.id);', why: 'K07A-Z2 cfg.getCities -> deps' },
-  { a: 10640, b: 10666, from: '    buildChipDeltaStockHtml(civRate, civStock) +', to: '    requireK07aDeps().chipDeltaStockHtml(civRate, civStock) +', why: 'K07A-Z2 buildChipDeltaStockHtml -> requireK07aDeps (brak deps = wyjątek, nie cicha utrata tempa)' },
-  { a: 10966, b: 10981, from: '  const capitalId = cfg.getCapitalCityId?.(city.ownerId) ?? null;', to: '  const capitalId = deps?.getCapitalCityId(city.ownerId) ?? null;', why: 'K07A-Z2 cfg.getCapitalCityId -> deps' },
-  { a: 10966, b: 10981, from: "  if (!isMeCity(city.ownerId) || !cfg.onSetCapital) return '';", to: "  if (!deps || !deps.isMe(city.ownerId) || !deps.canSetCapital) return '';", why: 'K07A-Z2 isMeCity/onSetCapital -> deps' },
-  { a: 10966, b: 10981, from: '  const allCitiesForCapital = cfg.getCities?.() ?? [];', to: '  const allCitiesForCapital = deps?.getCities() ?? [];', why: 'K07A-Z2 cfg.getCities -> deps' },
+  { a: 10652, b: 10657, from: '  const fresh = cfg.getCities?.().find(c => c.id === activeCity!.id);', to: '  const fresh = deps?.getCities().find(c => c.id === activeCity!.id);', why: 'K07A-Z2 cfg.getCities -> deps' },
+  { a: 10716, b: 10742, from: '    buildChipDeltaStockHtml(civRate, civStock) +', to: '    requireK07aDeps().chipDeltaStockHtml(civRate, civStock) +', why: 'K07A-Z2 buildChipDeltaStockHtml -> requireK07aDeps (brak deps = wyjątek, nie cicha utrata tempa)' },
+  { a: 11061, b: 11076, from: '  const capitalId = cfg.getCapitalCityId?.(city.ownerId) ?? null;', to: '  const capitalId = deps?.getCapitalCityId(city.ownerId) ?? null;', why: 'K07A-Z2 cfg.getCapitalCityId -> deps' },
+  { a: 11061, b: 11076, from: "  if (!isMeCity(city.ownerId) || !cfg.onSetCapital) return '';", to: "  if (!deps || !deps.isMe(city.ownerId) || !deps.canSetCapital) return '';", why: 'K07A-Z2 isMeCity/onSetCapital -> deps' },
+  { a: 11061, b: 11076, from: '  const allCitiesForCapital = cfg.getCities?.() ?? [];', to: '  const allCitiesForCapital = deps?.getCities() ?? [];', why: 'K07A-Z2 cfg.getCities -> deps' },
 ];
 
 /**

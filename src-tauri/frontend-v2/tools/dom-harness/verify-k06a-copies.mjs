@@ -57,20 +57,20 @@ const TOKENS = [
  */
 const LINE_SUBS = [
   // K06A-Z4: delegator `tileYield`/`improvementKeysForHex` z K05A (typ HexLike) i stała `NAKLADKA_BRAK` (K06A-Z5).
-  { a: 10009, b: 10028, from: '  const ulepszeniaKeys = improvementKeysForHex(hex);', to: '  const ulepszeniaKeys = improvementKeysForHex(hex as HexLike);', why: 'K06A-Z4 typ HexLike z K05A' },
-  { a: 10009, b: 10028, from: '    nakladka: hex.nakladka ?? Nakladka.Brak,', to: '    nakladka: hex.nakladka ?? NAKLADKA_BRAK,', why: 'K06A-Z5 stała Nakladka.Brak -> NAKLADKA_BRAK' },
+  { a: 10085, b: 10104, from: '  const ulepszeniaKeys = improvementKeysForHex(hex);', to: '  const ulepszeniaKeys = improvementKeysForHex(hex as HexLike);', why: 'K06A-Z4 typ HexLike z K05A' },
+  { a: 10085, b: 10104, from: '    nakladka: hex.nakladka ?? Nakladka.Brak,', to: '    nakladka: hex.nakladka ?? NAKLADKA_BRAK,', why: 'K06A-Z5 stała Nakladka.Brak -> NAKLADKA_BRAK' },
   // K06A-Z5: typ parametru y -> TileYieldK06 (kształt pól identyczny: zywnosc/praca/handel).
-  { a: 10001, b: 10007, from: 'function formatTileYieldShort(y: { zywnosc: number; praca: number; handel: number }): string {', to: 'export function formatTileYieldShort(y: TileYieldK06): string {', why: 'K06A-Z5 typ TileYieldK06' },
+  { a: 10077, b: 10083, from: 'function formatTileYieldShort(y: { zywnosc: number; praca: number; handel: number }): string {', to: 'export function formatTileYieldShort(y: TileYieldK06): string {', why: 'K06A-Z5 typ TileYieldK06' },
   // K06A-Z6: IIFE na danych JSON -> funkcja z parametrem `rows` (dane wstrzykiwane).
-  { a: 9800, b: 9813, from: 'const IMPROVEMENT_KEY_TO_NAME: Record<string, string> = (() => {', to: 'export function buildImprovementKeyToName(rows: Record<string, { nazwa?: string }>): Record<string, string> {', why: 'K06A-Z6 IIFE -> funkcja' },
-  { a: 9800, b: 9813, from: '  for (const [key, row] of Object.entries(terrainImprovementsData as Record<string, { nazwa?: string }>)) {', to: '  for (const [key, row] of Object.entries(rows)) {', why: 'K06A-Z6 dane wstrzykiwane' },
-  { a: 9800, b: 9813, from: '})();', to: '}', why: 'K06A-Z6 koniec IIFE -> koniec funkcji' },
+  { a: 9876, b: 9889, from: 'const IMPROVEMENT_KEY_TO_NAME: Record<string, string> = (() => {', to: 'export function buildImprovementKeyToName(rows: Record<string, { nazwa?: string }>): Record<string, string> {', why: 'K06A-Z6 IIFE -> funkcja' },
+  { a: 9876, b: 9889, from: '  for (const [key, row] of Object.entries(terrainImprovementsData as Record<string, { nazwa?: string }>)) {', to: '  for (const [key, row] of Object.entries(rows)) {', why: 'K06A-Z6 dane wstrzykiwane' },
+  { a: 9876, b: 9889, from: '})();', to: '}', why: 'K06A-Z6 koniec IIFE -> koniec funkcji' },
   // K06A-Z4: delegatory CITY_TABS / activeDrawerTab / cityTabIconHtml -> dep().
-  { a: 10486, b: 10492, from: '  return CITY_TABS.map(t => {', to: '  return dep().cityTabs().map(t => {', why: 'K06A-Z4 CITY_TABS -> dep().cityTabs()' },
+  { a: 10562, b: 10568, from: '  return CITY_TABS.map(t => {', to: '  return dep().cityTabs().map(t => {', why: 'K06A-Z4 CITY_TABS -> dep().cityTabs()' },
   // K09B r2 (0a1761d80, przed UI-2-G; bramka K06A była czerwona na bazie 2198eaf7e): id miasta w DTO = number.
-  { a: 10409, b: 10410, from: 'let pinnedGarrisonCityId: string | null = null;', to: 'let pinnedGarrisonCityId: number | null = null;', why: 'K09B-r2 typ id miasta (DTO number)' },
-  { a: 10486, b: 10492, from: '    const on = activeDrawerTab === t.id;', to: '    const on = dep().activeDrawerTab() === t.id;', why: 'K06A-Z4 activeDrawerTab -> dep()' },
-  { a: 10486, b: 10492, from: '      + `<span class="civ-cs-tab-inner">${cityTabIconHtml(t.id)}<span class="civ-cs-tab-lbl">${t.short}</span></span></button>`;', to: '      + `<span class="civ-cs-tab-inner">${dep().cityTabIconHtml(t.id)}<span class="civ-cs-tab-lbl">${t.short}</span></span></button>`;', why: 'K06A-Z4 cityTabIconHtml -> dep()' },
+  { a: 10485, b: 10486, from: 'let pinnedGarrisonCityId: string | null = null;', to: 'let pinnedGarrisonCityId: number | null = null;', why: 'K09B-r2 typ id miasta (DTO number)' },
+  { a: 10562, b: 10568, from: '    const on = activeDrawerTab === t.id;', to: '    const on = dep().activeDrawerTab() === t.id;', why: 'K06A-Z4 activeDrawerTab -> dep()' },
+  { a: 10562, b: 10568, from: '      + `<span class="civ-cs-tab-inner">${cityTabIconHtml(t.id)}<span class="civ-cs-tab-lbl">${t.short}</span></span></button>`;', to: '      + `<span class="civ-cs-tab-inner">${dep().cityTabIconHtml(t.id)}<span class="civ-cs-tab-lbl">${t.short}</span></span></button>`;', why: 'K06A-Z4 cityTabIconHtml -> dep()' },
 ];
 
 /** Nazwy deklaracji spoza wybrane.json: lokalne typy/delegatory/wejścia DTO (K06A-Z4/Z5/Z6/Z7) i jednostka K06A-Z6. */

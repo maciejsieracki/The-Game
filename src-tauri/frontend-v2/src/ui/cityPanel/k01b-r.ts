@@ -19,13 +19,15 @@ import type {
 } from './k01b-dto';
 import { YIELD_BRAND, frontItemK } from './k01b-t';
 import type { CityView } from './k01b-t';
+// REPIN UI-3-E: web game/citizen-consumption-era (mnożnik epoki zużycia obywateli) — kopia w adapterze k-ui3e-web.
+import { citizenConsumptionEraMultiplier, formatCitizenConsumptionMult, formatCitizenConsumptionNumber } from './k-ui3e-web';
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:965-967 (import logiki etaTurns -> port)
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:980-982 (import logiki etaTurns -> port)
 export function queueItemOwnEta(koszt: number, pracaPerTurn: number): number | null {
   return reguly().etaTurns(koszt, 0, pracaPerTurn);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:934-963
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:949-978
 export function queueItemCumulativeEta(
   prod: CityProductionK,
   queueIndex: number,
@@ -56,7 +58,7 @@ export function queueItemCumulativeEta(
   return sum;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1488-1496
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1513-1521
 export function clampedGrowthBreakdown(view: CityView, maxSafe?: number): GrowthPercentBreakdownK {
   const bd = view.growthBreakdown;
   if (maxSafe === undefined) return bd;
@@ -67,15 +69,19 @@ export function clampedGrowthBreakdown(view: CityView, maxSafe?: number): Growth
   return { ...bd, racje, total };
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1498-1503
-export function wyzwienieSummaryLabel(level: number, params: RationParamsK): string {
-  const cost = reguly().rationFoodCostPerPop(level, params);
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1523-1532
+export function wyzwienieSummaryLabel(level: number, params: RationParamsK, ownerEra = 1): string {
+  // R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: stawka z mnożnikiem epoki właściciela (jedna funkcja
+  // `citizenConsumptionEraMultiplier`) — bez zaszytych liczb; mnożnik ×1 nie jest dopisywany.
+  const mult = citizenConsumptionEraMultiplier(ownerEra);
+  const cost = reguly().rationFoodCostPerPop(level, params) * mult;
   const grow = reguly().rationGrowthPercent(level, params);
   const growTxt = grow > 0 ? `+${grow}` : String(grow);
-  return `${cost} 🍞/miesz. · ${growTxt}%`;
+  const multTxt = mult === 1 ? '' : ` (epoka ${formatCitizenConsumptionMult(ownerEra)})`;
+  return `${formatCitizenConsumptionNumber(cost)} 🍞/miesz./turę${multTxt} · ${growTxt}%`;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1617-1649
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1646-1678
 export function buildGrowthProgressUi(
   population: number,
   view: CityView,
@@ -111,7 +117,7 @@ export function buildGrowthProgressUi(
   return { progressHtml, etaHtml };
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:4421-4431 (band = wartość DTO, bez porPctBand)
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:4450-4460 (band = wartość DTO, bez porPctBand)
 export function orderBandEffectShort(band: OrderBandK | string): string {
   switch (band) {
     case 'lad': return 'Bonus ×1,10';
@@ -124,7 +130,7 @@ export function orderBandEffectShort(band: OrderBandK | string): string {
   }
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6554-6564
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6583-6593
 /** Przychód budynku na turę — wartość z buildingEffectAtLevel (C-PRZYROST=A). */
 export function formatBuildingYieldDetailValue(baza: number, przyrost: number, level: number): string {
   const effect = reguly().buildingEffectAtLevel(baza, przyrost, level);
@@ -137,7 +143,7 @@ export function formatBuildingYieldDetailValue(baza: number, przyrost: number, l
   return main;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6566-6573
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6595-6602
 /** Skrót przychodu na chipie infokarty budynku — realna wartość na poziomie miasta. */
 export function formatBuildingYieldChipText(baza: number, przyrost: number, label: string, level: number): string {
   const effect = reguly().buildingEffectAtLevel(baza, przyrost, level);
@@ -147,7 +153,7 @@ export function formatBuildingYieldChipText(baza: number, przyrost: number, labe
   return base;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6576-6584
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6605-6613
 export function formatBuildingYieldScaleRow(def: BuildingDefK, baza: number, przyrost: number): string | null {
   if (przyrost === 0 || def.maksPoziom <= 1) return null;
   const parts: string[] = [];
@@ -158,7 +164,7 @@ export function formatBuildingYieldScaleRow(def: BuildingDefK, baza: number, prz
   return parts.join(' · ');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6586-6625
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6615-6654
 /** Chipy bonusów (max 3) — mockup Poziom B budynków 1E. */
 export function buildingBonusChipsHtml(
   def: BuildingDefK,
@@ -200,7 +206,7 @@ export function buildingBonusChipsHtml(
   return chips.join('');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6650-6678
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6679-6707
 export function buildingOwnedBonusCompactHtml(
   def: BuildingDefK,
   level: number,
@@ -231,7 +237,7 @@ export function buildingOwnedBonusCompactHtml(
     : chips.join('');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6708-6719
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6737-6748
 export function formatResourceUpkeepText(
   resources: Record<string, number>,
   compact: boolean,
@@ -245,7 +251,7 @@ export function formatResourceUpkeepText(
     .join(' · ');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6721-6729
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6750-6758
 export function buildingUpkeepDisplay(
   def: BuildingDefK,
   level: number,
@@ -256,7 +262,7 @@ export function buildingUpkeepDisplay(
   };
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6731-6742
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6760-6771
 export function sumOwnedBuildingsResourceUpkeep(
   built: readonly string[],
   data: GameDataK,
@@ -270,7 +276,7 @@ export function sumOwnedBuildingsResourceUpkeep(
   return out;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6860-6881
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6889-6910
 export function formatConverterProductionRowHtml(
   display: { consumed: Record<string, number>; produced: Record<string, number> },
   compact: boolean,

@@ -147,13 +147,13 @@ const HEX_R = 1.0;
 
 // ─── K06A-Z7: stan modułu (pin: ui/cityPanel.ts:10158-10163) ─────────────────────────────────────────────────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10406-10406
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10482-10482
 let activeCity: CityK06 | null = null;
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10407-10407
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10483-10483
 let activeMap: GameMap | null = null;
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10408-10408
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10484-10484
 let activeOnClose: () => void = () => {};
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10409-10410
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10485-10486
 /** City id whose garrison detail is explicitly selected by click/keyboard. */
 let pinnedGarrisonCityId: number | null = null;
 // pin-end
@@ -187,7 +187,7 @@ export function getK06aActiveCity(): CityK06 | null {
 
 // ─── Jednostki K06A (kopie pinu) ─────────────────────────────────────────────────────────────────────────────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9973-9980
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10049-10056
 export function okolicaHexPoints(cx: number, cy: number, size: number): string {
   const pts: string[] = [];
   for (let i = 0; i < 6; i++) {
@@ -197,7 +197,7 @@ export function okolicaHexPoints(cx: number, cy: number, size: number): string {
   return pts.join(' ');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9982-9994
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10058-10070
 export function okolicaTileHasWorkerAt(
   city: CityK06,
   q: number,
@@ -212,13 +212,13 @@ export function okolicaTileHasWorkerAt(
   return workedSet ? workedSet.has(key) : (distFromCity ?? 1) <= 1;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9996-9999
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10072-10075
 export function fireOkolicaTileToggle(city: CityK06, q: number, r: number): void {
   if (!cfg.onOkolicaTileAdjust) return;
   cfg.onOkolicaTileAdjust(city.id, q, r, 0);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10001-10007
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10077-10083
 export function formatTileYieldShort(y: TileYieldK06): string {
   const parts: string[] = [];
   if (y.zywnosc !== 0) parts.push(`${y.zywnosc > 0 ? '+' : ''}${y.zywnosc} ${cityPanelChipIconWrap('chip-grain', 12)}`);
@@ -227,7 +227,7 @@ export function formatTileYieldShort(y: TileYieldK06): string {
   return parts.length ? parts.join(' ') : '0';
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9800-9813
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9876-9889
 /** Mapa `ImprovementKey` (klucz obiektu w `terrain-improvements.json`) → nazwa gracza
  * (`row.nazwa`) — T7b (KARTA-ULEPSZENIA-TERENU), call-site 3/3, sekcja „Ulepszenia
  * w zasięgu". Ten sam wzorzec odwrotny co `IMPROVEMENT_NAME_TO_KEY` w
@@ -243,7 +243,7 @@ export function buildImprovementKeyToName(rows: Record<string, { nazwa?: string 
   return map;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10009-10028
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10085-10104
 /**
  * P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA (2026-08-09): musi czytać WSZYSTKIE warstwy
  * ulepszeń (`hex.ulepszenia`) przez `improvementKeysForHex`, tak jak silnik
@@ -265,7 +265,7 @@ export function tileYieldLabel(hex: HexK06, ownerEra?: number): string {
   return formatTileYieldShort(y);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10475-10484
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10551-10560
 export function headerOrderBadge(city: CityK06): string {
   const st = cfg.getOrderState?.(city.id);
   if (!st || st.szPct == null) {
@@ -277,7 +277,7 @@ export function headerOrderBadge(city: CityK06): string {
   return `<div class="mbadge"><span class="muted">Porządek:</span> <b class="${cls}">${por.toFixed(0)}%</b>${warn}</div>`;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10486-10492
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10562-10568
 export function drawerTabButtons(): string {
   return dep().cityTabs().map(t => {
     const on = dep().activeDrawerTab() === t.id;
@@ -286,7 +286,7 @@ export function drawerTabButtons(): string {
   }).join('');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10430-10436
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10506-10512
 /** Cities of the active city's owner (for prev/next navigation). */
 export function ownerCities(city: CityK06): CityK06[] {
   const all = cfg.getCities?.();
@@ -295,7 +295,7 @@ export function ownerCities(city: CityK06): CityK06[] {
   return list.length > 0 ? list : [city];
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10438-10449
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10514-10525
 /** Kolejność nawigacji między miastami — od lewej do prawej na mapie (świat X, potem Z). */
 export function ownerCitiesForNav(city: CityK06): CityK06[] {
   const list = ownerCities(city);
@@ -309,13 +309,13 @@ export function ownerCitiesForNav(city: CityK06): CityK06[] {
   });
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10451-10454
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10527-10530
 /** Tytuł miasta w panelu — dopisek miasto-państwo dla obcych klastrowych (Maciej 2026-07-07). */
 export function cityPanelTitle(city: CityK06): string {
   return formatCityMapLabel(city);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10470-10473
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10546-10549
 /** Nawigacja ← → — eksport dla skrótów klawiszowych w cityUxFrame. */
 export function navigateCityPanel(dir: -1 | 1): void {
   switchCity(dir);

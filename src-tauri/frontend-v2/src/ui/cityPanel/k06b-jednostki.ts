@@ -9,6 +9,9 @@
 import { getK06aState } from './k06a-fundament';
 import { constStr, dep, valueProxy } from './k06b-deps';
 import { appendOwnedBuildingRow } from './k06b-kolejki';
+// REPIN UI-3-E (U3E-Z1/Z3): web game/city-siege-state i game/manpower (`formatManpowerCompact`) — adapter k-ui3e-web.
+import { CITY_SIEGE_RECRUIT_BLOCK_PL, formatManpowerCompact } from './k-ui3e-web';
+import { isCityUnderSiegeK as isCityUnderSiege } from './k-ui3e-host';
 
 // ─── K06B-Z5: typy pinu (alias any; zgodność z viewmodel/types.ts NIE_ZMIERZONO) ─────────────────────────────
 type City = any;
@@ -80,7 +83,7 @@ const cfg: any = valueProxy('cfg');
 
 // ─── Jednostki K06B (kopie pinu) ───────────────────────────────────────────────────────────────────────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:5093-5182
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:5122-5211
 export function appendPodzialPracyInfo(
   mount: HTMLElement,
   city: City,
@@ -159,7 +162,7 @@ export function appendPodzialPracyInfo(
   mount.appendChild(info);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7881-7935
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7919-7973
 export function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLDivElement {
   const card = el('div', 'detail-card');
   const built = cfg.getBuiltBuildingIds?.(city.id);
@@ -192,7 +195,7 @@ export function buildOwnedBuildingsDetailCard(city: City, data: GameData | null)
   return card;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7936-7959
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7974-7997
 
 /**
  * Karta szczegółów jednostki w panelu miasta/rekrutacji (T6 MIGRACJA-KARTA-JEDNOSTKI-
@@ -239,7 +242,7 @@ export function buildUnitDetailCardViaEntityCard(u: UnitDef, data: GameData): HT
   return card;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7960-7971
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7998-8009
 
 /** Publiczna sygnatura BEZ ZMIAN. Próbuje ścieżkę entityCards (T6), fallback do starej
  * implementacji (`_legacyBuildUnitDetailCard`) w razie wyjątku — wzorem T3/T4/T5. */
@@ -253,7 +256,7 @@ export function buildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement 
   }
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8051-8071
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8089-8109
 export function attachUnitRowThumb(
   row: HTMLElement,
   udef: UnitDef | undefined,
@@ -276,7 +279,19 @@ export function attachUnitRowThumb(
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8232-8282
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8269-8279
+/**
+ * R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1 (część A): liczniki ilości rekrutacji per miasto+typ jednostki,
+ * niezależne i NIE zerowane po „Rekrutuj” ani po przebudowie panelu (stan UI sesji, poza zapisem gry).
+ */
+const recruitQuantityDrafts = new Map<string, number>();
+const recruitDraftKey = (cityId: string, itemId: string): string => `${cityId}|${itemId}`;
+/** Test: odczyt zapamiętanego licznika (1 = domyślny). */
+export function getRecruitQuantityDraft(cityId: string, itemId: string): number {
+  return recruitQuantityDrafts.get(recruitDraftKey(cityId, itemId)) ?? 1;
+}
+
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8281-8336
 export function appendUnitRecruitCompactRow(
   scroll: HTMLElement,
   city: City,
@@ -296,16 +311,19 @@ export function appendUnitRecruitCompactRow(
   const stockCost = unitStockCost(udef);
   const stockMissing = missingStockFor(ownerSurowcePoolFor(city), stockCost);
   const recruitOk = Object.keys(stockMissing).length === 0;
+  // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: oblężone miasto -- przycisk nieaktywny z powodem (PL).
+  const siegeBlocked = isCityUnderSiege([city], city);
+  const effectiveDisabledReason = siegeBlocked ? CITY_SIEGE_RECRUIT_BLOCK_PL : opts?.disabledReason;
   const row = buildUnitRecruitCard({
     udef,
     unitLabel: opts?.unitLabel,
     item,
     data,
     skarb,
-    canPurchase: (opts?.onRecruit ? !opts.disabledReason : !!cfg.onPurchaseUnit) && canMp && recruitOk,
+    canPurchase: !siegeBlocked && (opts?.onRecruit ? !opts.disabledReason : !!cfg.onPurchaseUnit) && canMp && recruitOk,
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
-    mpCostLabel: formatManpower(mpCost),
+    mpCostLabel: formatManpowerCompact(mpCost),
     maxQuantity: maxAffordableRecruitQuantity(city, item, mpCost, skarb, stockCost),
     manpowerAvailable: mpAvailable,
     manpowerRequired: mpCost,
@@ -316,10 +334,12 @@ export function appendUnitRecruitCompactRow(
         .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
         .join(', ')
       : undefined,
-    disabledReason: opts?.disabledReason,
+    disabledReason: effectiveDisabledReason,
     manpowerMissingLabel: mpMissing != null && mpMissing > 0
-      ? `Brakuje rekrutów: ${formatManpower(mpMissing)}`
+      ? `Brakuje rekrutów: ${formatManpowerCompact(mpMissing)}`
       : undefined,
+    initialQuantity: recruitQuantityDrafts.get(recruitDraftKey(city.id, item.id)),
+    onQuantityChange: (q: any) => { recruitQuantityDrafts.set(recruitDraftKey(city.id, item.id), q); },
     onRecruit: (quantity: any) => opts?.onRecruit
       ? opts.onRecruit(quantity)
       : recruitUnit(city, item, quantity),
@@ -329,7 +349,7 @@ export function appendUnitRecruitCompactRow(
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8386-8499
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8441-8554
 /**
  * R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1: JEDNA logika mutacji kolejki rekrutacji, wspólna dla panelu
  * miasta i panelu armii (Imperium → Armia). Każda mutacja idzie przez setProd (→ cfg.onChange →

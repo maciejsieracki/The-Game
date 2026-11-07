@@ -50,7 +50,7 @@ const BLOCKS = [];
 for (const f of ['k07b-p1.ts', 'k07b-p2.ts']) {
   const lines = readFileSync(join(V2_DIR, f), 'utf8').split(/\r?\n/);
   for (let k = 0; k < lines.length; k++) {
-    const m = /^\/\/ pin (?:edb8fb56|86d510c66) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)$/.exec(lines[k]); // REPIN-UI-2-G r2: pin albo web
+    const m = /^\/\/ pin (?:edb8fb56|86d510c66|9b019a7d8) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)$/.exec(lines[k]); // REPIN-UI-2-G r2: pin albo web
     if (!m) continue;
     const decl = lines.slice(k + 1).find((l) => /^export (function|const|interface) /.test(l));
     const name = /^export (?:function|const|interface) (\w+)/.exec(decl ?? '')?.[1];

@@ -25,7 +25,7 @@ import {
 
 // ─── Jednostki K08B, partia rail (kopie pinu wygenerowane; markery = bramka verify-k08b-copies.mjs) ─────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9517-9537
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9593-9613
 export function renderOwnedBuildingsBar(mount: HTMLElement, city: City, data: GameData | null): void {
   mount.innerHTML = '';
   const built = cfg.getBuiltBuildingIds?.(city.id);
@@ -49,7 +49,7 @@ export function renderOwnedBuildingsBar(mount: HTMLElement, city: City, data: Ga
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10947-10957
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11042-11052
 export function renderCityExitFooter(mount: HTMLElement, onClose?: () => void): void {
   const wrap = el('div', 'civ-v-exit-foot');
   wrap.innerHTML =
@@ -63,7 +63,7 @@ export function renderCityExitFooter(mount: HTMLElement, onClose?: () => void): 
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11030-11038
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11125-11133
 export function renderCityIconLeftRail(mount: HTMLElement): void {
   mount.innerHTML = '';
   const scope = el('div', 'civ-cs civ-ux-panel-scope');
@@ -75,7 +75,7 @@ export function renderCityIconLeftRail(mount: HTMLElement): void {
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11297-11320
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11392-11415
 export function renderCivMapChrome(mount: HTMLElement, city: City, onClose?: () => void): void {
   mount.innerHTML =
     `<div class="civ-v-map-bottom-stack">` +
@@ -102,7 +102,7 @@ export function renderCivMapChrome(mount: HTMLElement, city: City, onClose?: () 
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11846-11890
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11941-11985
 export function renderCityIconRail(
   mount: HTMLElement,
   items: ReadonlyArray<{ id: CityPanelIconTab; iconId: string; title: string }>,
@@ -150,7 +150,7 @@ export function renderCityIconRail(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11892-11907
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11987-12002
 export function withW4TabCard(
   parent: HTMLElement,
   id: string | undefined,

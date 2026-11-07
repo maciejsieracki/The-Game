@@ -33,7 +33,7 @@ import { requireK09aDeps } from './k09a-deps';
 
 // ─── Jednostki K09A-3 (kopie pinu wygenerowane ręcznie; markery = bramka verify-k09a-copies.mjs) ─────────────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11997-12094
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:12092-12189
 export function paintCityPanelSections(
   mounts: CityPanelUxMounts,
   city: City,
@@ -137,7 +137,7 @@ export function paintCityPanelSections(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:12189-12202
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:12296-12309
 export function showCityPanel(city: City, map: GameMap, onClose: () => void): void {
   const root = getK06bRootEl();
   if (root) root.style.display = 'none';
@@ -155,7 +155,7 @@ export function showCityPanel(city: City, map: GameMap, onClose: () => void): vo
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:12205-12209
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:12312-12316
 export function hideCityPanel(): void {
   requireK09aDeps().hideCityUxFrame();
   requireK09aDeps().setMapHudChromeSuppressed(false);

@@ -30,13 +30,13 @@ import {
   PODZIAL_PRACY_PULA_TIP,
 } from './k01b-dto';
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:668-668 (stan modulu; K01B-Z4: pozostaje `let` modulu)
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:683-683 (stan modulu; K01B-Z4: pozostaje `let` modulu)
 export let cachedData: GameDataK | null = null;
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:676-676
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:691-691
 export const localProd = new Map<string, CityProductionK>();
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:688-709
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:703-724
 export function moveQueueItem(prod: CityProductionK, index: number, dir: -1 | 1): CityProductionK {
   const j = index + dir;
   if (index < 1 || j < 1 || j >= prod.kolejka.length) {
@@ -59,7 +59,7 @@ export function moveQueueItem(prod: CityProductionK, index: number, dir: -1 | 1)
   };
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:710-717
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:725-732
 export function copyCityProduction(prod: CityProductionK): CityProductionK {
   return {
     kolejka: [...prod.kolejka],
@@ -69,7 +69,7 @@ export function copyCityProduction(prod: CityProductionK): CityProductionK {
   };
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:719-736
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:734-751
 /** Przesuń pozycję kolejki rekrutacji w górę/dół. */
 export function moveRecruitQueueItem(prod: CityProductionK, index: number, dir: -1 | 1): CityProductionK {
   const rq = prod.rekrutacja ?? [];
@@ -89,7 +89,7 @@ export function moveRecruitQueueItem(prod: CityProductionK, index: number, dir: 
   };
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:738-755
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:753-770
 /** Przenieś pozycję kolejki rekrutacji na inny indeks. */
 export function reorderRecruitQueueItem(prod: CityProductionK, fromIndex: number, toIndex: number): CityProductionK {
   const rq = prod.rekrutacja ?? [];
@@ -109,7 +109,7 @@ export function reorderRecruitQueueItem(prod: CityProductionK, fromIndex: number
   };
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:757-774
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:772-789
 /** Przenieś pozycję kolejki (indeks ≥ 1) na inny indeks w tej samej kolejce. */
 export function reorderQueueItem(prod: CityProductionK, fromIndex: number, toIndex: number): CityProductionK {
   const len = prod.kolejka.length;
@@ -128,10 +128,10 @@ export function reorderQueueItem(prod: CityProductionK, fromIndex: number, toInd
   };
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1046-1052
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1061-1067
 export type CityWithSliders = CityWithSlidersK;
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1091-1124 (pola z DTO; PoziomRacji/GrowthPercentBreakdown/
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1106-1141 (pola z DTO; PoziomRacji/GrowthPercentBreakdown/
 // CitizenUpkeepCoverage jako typy DTO — K01B-Z1)
 export interface CityView {
   praca: number; pieniadz: number; nauka: number; kultura: number;
@@ -140,6 +140,8 @@ export interface CityView {
   /** Produkcja brutto żywności (pola + budynki, przed racjami). */
   zywnoscBrutto: number;
   kosztRacji: number;
+  /** Epoka cywilizacji właściciela miasta — mnożnik zużycia obywateli (R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1). */
+  ownerEra: number;
   bilansLokalny: number;
   poziomRacji: PoziomRacjiK;
   wzrostProcent: number;
@@ -155,7 +157,7 @@ export interface CityView {
   popCapBezAkweduktu: number;
   /** Twardy cap ludności ze Spichlerzem, ale bez Akweduktu (parametr gry, normal=8). */
   popCapSpichlerz: number;
-  /** Max ludność z Akweduktem (parametr gry, normal=12). */
+  /** Max ludność z Akweduktem (parametr gry, normal=20). */
   popCapZAkweduktem: number;
   /** Aktualny cap dla tego miasta. */
   popCapAktualny: number;
@@ -168,7 +170,7 @@ export interface CityView {
   citizenUpkeep: CitizenUpkeepK;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1159-1177 (pola; wealthMnoznik jest polem DTO, nie importem)
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1181-1199 (pola; wealthMnoznik jest polem DTO, nie importem)
 /** Bilans pieniędzy jednego miasta — tylko przychody/koszty tego grodu. */
 export interface CityMoneySnap {
   /** Wpływ do skarbca imperium z tego miasta / turę. */
@@ -189,16 +191,16 @@ export interface CityMoneySnap {
   nauka: number;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1389-1391 (DANINA = stała 'Podatek', danina-nazwa.ts:15)
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1414-1416 (DANINA = stała 'Podatek', danina-nazwa.ts:15)
 export function daninaLabelForCity(_city: CityRefK): DaninaLabelK {
   return 'Podatek';
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1402-1402
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1427-1427
 export const PULA_LBL = PODZIAL_PRACY_PULA_LBL;
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1403-1403
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1428-1428
 export const PULA_LBL_PELNA = PODZIAL_PRACY_PULA_LBL_PELNA;
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1404-1414
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1429-1439
 export const PULA_TIP = PODZIAL_PRACY_PULA_TIP;
 /**
  * R-PRACA-JEDEN-PODZIAL-Q1 — ROOT CAUSE osmiu nawrotow tego tematu byl TUTAJ:
@@ -210,7 +212,7 @@ export const PULA_TIP = PODZIAL_PRACY_PULA_TIP;
  * czegokolwiek, co nie jest wprost budzetem ulepszen terenu.
  */
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1524-1533
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1553-1562
 export function resolveCityFedForUi(
   cityId: string,
   foodSplitTotal: number,
@@ -222,12 +224,12 @@ export function resolveCityFedForUi(
   return foodSplitTotal >= 0;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:3093-3095
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:3122-3124
 export function szLinesDoWyswietlenia(lines: SocietyLineK[] | undefined): SocietyLineK[] | undefined {
   return lines?.map(l => ({ ...l, value: szPktDisplay(l.value) }));
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:3682-3707 (zbior etykiet = stala DTO; raw.tradeSources
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:3711-3736 (zbior etykiet = stala DTO; raw.tradeSources
 // nie jest czytany — DYSPOZYCJA 85, zgodnie z pinem)
 export function normalizeResourceAccess(
   raw: string[] | { potential: string[]; active: string[]; tradeSources?: Record<string, string> } | undefined,
@@ -256,27 +258,27 @@ export function normalizeResourceAccess(
   // pole (getResourceAccess) -- po prostu nie jest tu już konsumowane.
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6439-6442
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6468-6471
 export function findBuildingDef(data: GameDataK, id: string): BuildingDefK | undefined {
   return data.buildings.find(b => b.id === id);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6443-6446
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6472-6475
 export function findUnitDef(data: GameDataK, id: string): UnitDefK | undefined {
   return data.units.find(u => u.Jednostka === id);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6447-6450
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6476-6479
 export function customBuildingIconClass(_def: BuildingDefK | undefined): string | null {
   return null;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6451-6454
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6480-6483
 export function buildingIconHtml(def: BuildingDefK | undefined, buildingId?: string): string {
   return buildingIconSvg(def, buildingId ?? def?.id);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6455-6461
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6484-6490
 export function unitIconHtml(u: UnitDefK | undefined, id?: string): string {
   const key = id ?? u?.Jednostka;
   const svg = unitInfographicSvg(u, key, 22);
@@ -284,7 +286,7 @@ export function unitIconHtml(u: UnitDefK | undefined, id?: string): string {
   return unitIconSvg(u, key);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6462-6468
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6491-6497
 export function unitMedallionHtml(u: UnitDefK | undefined, id?: string, size = 22): string {
   const key = id ?? u?.Jednostka;
   const medallion = unitInfographicMedallionHtml(u, key, size);
@@ -293,7 +295,7 @@ export function unitMedallionHtml(u: UnitDefK | undefined, id?: string, size = 2
   return svg ? `<span class="unit-infographic-medallion" aria-hidden="true">${svg}</span>` : '';
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6470-6479
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6499-6508
 export function productionItemIconHtml(data: GameDataK | null, item: ProductionItemK): string {
   if (!data) {
     return item.kind === 'budynek'
@@ -305,7 +307,7 @@ export function productionItemIconHtml(data: GameDataK | null, item: ProductionI
     : unitIconHtml(findUnitDef(data, item.id), item.id);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6532-6540
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6561-6569
 export const YIELD_BRAND: { key: YieldKeyK; brandId: string; label: string }[] = [
   { key: 'praca', brandId: 'res-work', label: 'Praca' },
   { key: 'pieniadz', brandId: 'res-treasury', label: 'Pieniądz' },
@@ -316,14 +318,14 @@ export const YIELD_BRAND: { key: YieldKeyK; brandId: string; label: string }[] =
   { key: 'obrona', brandId: 'chip-garrison', label: 'Obrona' },
 ];
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7077-7081
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7115-7119
 export function parentBuildingName(data: GameDataK, upgradeFromId: string | undefined): string | null {
   const id = upgradeFromId?.trim();
   if (!id) return null;
   return findBuildingDef(data, id)?.nazwa ?? id;
 }
 
-// pin 86d510c66 gra/src/game/production.ts:1253-1255 (`frontItem`: odczyt pozycji 0 — struktura, nie reguła)
+// pin 9b019a7d8 gra/src/game/production.ts:1279-1281 (`frontItem`: odczyt pozycji 0 — struktura, nie reguła)
 export function frontItemK(prod: CityProductionK): ProductionItemK | null {
   return prod.kolejka.length > 0 ? (prod.kolejka[0] as ProductionItemK) : null;
 }

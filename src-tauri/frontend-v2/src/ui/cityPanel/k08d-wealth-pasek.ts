@@ -14,7 +14,7 @@ import { attachHoverDetail } from '../hoverDetailDock';
 
 // ─── Jednostki K08D, partia k08d-wealth-pasek.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:4311-4368
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:4340-4397
 export function appendWealthCompactStrip(
   mount: HTMLElement,
   opts: {
@@ -75,7 +75,7 @@ export function appendWealthCompactStrip(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:4371-4414
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:4400-4443
 export function buildWealthCompactTooltipCard(opts: {
   poziom: number;
   atCap: boolean;

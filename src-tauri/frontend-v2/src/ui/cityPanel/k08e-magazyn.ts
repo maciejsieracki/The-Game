@@ -28,6 +28,8 @@ import {
   type EmpireFoodStateK08e as EmpireFoodState, type EmpireFoodTickK08e as EmpireFoodTick,
 } from './k05b-host';
 import { formatWyzwienieLabelK as formatWyzwienieLabel } from './k04c-model';
+// REPIN UI-3-E: web `formatManpowerCompact` (game/manpower.ts:912-914) — kopia w adapterze k-ui3e-web.
+import { formatManpowerCompact } from './k-ui3e-web';
 import {
   buildRationParams, cityLudnoscAbsolutna, growthGainPerTurnSlots, rationGrowthPercent, turnsUntilNextCitizen,
   WYZYWIENIE_MAX, WYZYWIENIE_MIN, WYZYWIENIE_STEP,
@@ -35,7 +37,7 @@ import {
 
 // ─── Jednostki K08E, partia k08e-magazyn.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1652-1689
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1681-1718
 export function buildGrowthProgressTooltipCard(
   population: number,
   view: CityView,
@@ -58,13 +60,13 @@ export function buildGrowthProgressTooltipCard(
   gridDetailRow(
     g,
     'Skala absolutna',
-    `≈ ${formatManpower(fracPeople)} / ${formatManpower(osobNaObywatela)} os.`,
+    `≈ ${formatManpowerCompact(fracPeople)} / ${formatManpowerCompact(osobNaObywatela)} os.`,
   );
   if (gainSlots > 0) {
     gridDetailRow(
       g,
       'Tempo',
-      `+${fmtDecPl(gainSlots)} obywatela/t (≈ +${formatManpower(gainPeople)}/t)`,
+      `+${fmtDecPl(gainSlots)} obywatela/t (≈ +${formatManpowerCompact(gainPeople)}/t)`,
     );
   }
   const note = el('div', 'dc-note');
@@ -76,7 +78,7 @@ export function buildGrowthProgressTooltipCard(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:5274-5543
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:5303-5572
 export function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): void {
   mount.innerHTML = '';
   mount.style.display = '';
@@ -117,8 +119,8 @@ export function renderMagazyn(mount: HTMLElement, city: City, view: CityView | n
   const popHero = el('div', 'food-pop-hero');
   popHero.innerHTML =
     `<div class="pop-slots">${cityPanelChipIcon('res-population', 14)} Ludność ${city.population}</div>` +
-    `<div class="pop-abs">≈ ${formatManpower(osobRazem)} osób` +
-    ` (1 obywatel = ${formatManpower(osobNaObywatela)})</div>`;
+    `<div class="pop-abs">≈ ${formatManpowerCompact(osobRazem)} osób` +
+    ` (1 obywatel = ${formatManpowerCompact(osobNaObywatela)})</div>`;
   mount.appendChild(popHero);
 
   const chips: TabIndicatorChip[] = [
@@ -308,7 +310,7 @@ export function renderMagazyn(mount: HTMLElement, city: City, view: CityView | n
     );
   }
   const hint = el('div', 'wyzwienie-w4-hint');
-  hint.textContent = wyzwienieSummaryLabel(displayLevel, rationParams);
+  hint.textContent = wyzwienieSummaryLabel(displayLevel, rationParams, view.ownerEra);
   if (maxSafe < WYZYWIENIE_MAX && rationEditable) {
     hint.textContent += ` · Limit Spichlerza: ${formatWyzwienieLabel(maxSafe)}`;
   }
@@ -349,7 +351,7 @@ export function renderMagazyn(mount: HTMLElement, city: City, view: CityView | n
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:5545-5650
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:5574-5679
 export function buildRacjeWzrostDetailCard(
   city: City,
   view: CityView,
@@ -380,8 +382,8 @@ export function buildRacjeWzrostDetailCard(
   const g0 = appendDetailGrid(card);
   const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
   gridDetailRow(g0, 'Obywatele (sloty)', String(city.population));
-  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpower(osobRazem)} osób`);
-  gridDetailRow(g0, 'Skala epoki', `1 obywatel = ${formatManpower(cityLudnoscAbsolutna(1, epoch))}`);
+  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpowerCompact(osobRazem)} osób`);
+  gridDetailRow(g0, 'Skala epoki', `1 obywatel = ${formatManpowerCompact(cityLudnoscAbsolutna(1, epoch))}`);
 
   appendDetailSection(card, 'Bilans lokalny (to miasto)');
   const g1 = appendDetailGrid(card);
@@ -392,7 +394,7 @@ export function buildRacjeWzrostDetailCard(
     gridDetailRow(g1, 'Auto-korekta', `ustawione Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} przekracza limit Spichlerza — Bilans liczony przy ${formatWyzwienieLabel(bilansDisplayLevel)}, poziom zostanie obniżony na koniec tury`);
   }
   if (rationParams) {
-    gridDetailRow(g1, 'Wyżywienie', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
+    gridDetailRow(g1, 'Wyżywienie', wyzwienieSummaryLabel(view.poziomRacji, rationParams, view.ownerEra));
   }
 
   appendDetailSection(card, 'WZROST% — składniki');

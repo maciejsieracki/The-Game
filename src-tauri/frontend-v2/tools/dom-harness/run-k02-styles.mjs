@@ -76,8 +76,10 @@ const PROBE_NAME = '__k02_pin_probe.ts';
 const pinLines = readFileSync(PIN_FILE, 'utf8').split('\n');
 // REPIN-UI-2-G r2: --pin-dir = pin edb8fb56 albo web 86d510c66; regiony K02 bez dryfu (Myers: linie poza hunkami), przesunięcie stałe
 // per region: stałe 1755-1773 i ensureStyles 1948-3009 → +54. Rewizja z treści pliku (sha1 bloba), nie z argumentu.
-const K02_WEB = pinDirRevLabel(PIN_DIR) === '86d510c66';
-const OST = K02_WEB ? 54 : 0;
+const K02_REV = pinDirRevLabel(PIN_DIR);
+const K02_WEB = K02_REV === '86d510c66' || K02_REV === '9b019a7d8';
+// UI-3-E (R-RUSTPORT-REPIN-WEB-UI-3-E-Q1): web 9b019a7d8 — stałe 1838-1856, ensureStyles 2031-3092 → +83 (zmierzone grep).
+const OST = K02_REV === '9b019a7d8' ? 83 : K02_WEB ? 54 : 0;
 const consts = pinLines.slice(1754 + OST, 1773 + OST).join('\n'); // pin 1755–1773 (web 1809–1827)
 const fnSrc = pinLines.slice(1947 + OST, 3009 + OST).join('\n'); // pin 1948–3009 (web 2002–3063)
 if (!/^function ensureStyles\(\): void \{/.test(pinLines[1947 + OST])) {

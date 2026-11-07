@@ -37,42 +37,42 @@ const PIN_CITIES = join(resolve(PIN_DIR), 'gra/src/game/cities.ts');
 /** Partie K05B: 19 jednostek DOM (pomiar r2 + selektor `--k05b`), zakresy linii pinu. Partia = runda porcie. */
 export const BATCHES = {
   1: [
-    ['renderEkonomiaStrip', 4702, 4717],
-    ['appendPodzialHandlu', 4718, 4798],
-    ['appendCitySkarbiecBalance', 4799, 4832],
-    ['renderPodzialHandlu', 4833, 4838],
-    ['buildTopBarZlotoDetailCard', 5895, 5974],
-    ['renderSplitPane', 9501, 9516],
-    ['appendGarrisonUnitChip', 9603, 9635],
-    ['improvementRangeRow', 9848, 9860],
+    ['renderEkonomiaStrip', 4731, 4746],
+    ['appendPodzialHandlu', 4747, 4827],
+    ['appendCitySkarbiecBalance', 4828, 4861],
+    ['renderPodzialHandlu', 4862, 4867],
+    ['buildTopBarZlotoDetailCard', 5924, 6003],
+    ['renderSplitPane', 9577, 9592],
+    ['appendGarrisonUnitChip', 9679, 9711],
+    ['improvementRangeRow', 9924, 9936],
   ],
   2: [
-    ['appendBuildingRequirementsBlock', 7065, 7075],
-    ['buildBuildingInfocard', 7083, 7205],
-    ['appendTechDetailBlock', 7468, 7534],
-    ['ensureEntityCardBuildingStyles', 7538, 7599],
-    ['buildBuildingDetailCardViaEntityCard', 7601, 7629],
-    ['buildBuildingDetailCard', 7631, 7642],
-    ['_legacyBuildBuildingDetailCard', 7644, 7770],
-    ['buildBuildingBuildTabDetailCard', 7772, 7879],
+    ['appendBuildingRequirementsBlock', 7103, 7113],
+    ['buildBuildingInfocard', 7121, 7243],
+    ['appendTechDetailBlock', 7506, 7572],
+    ['ensureEntityCardBuildingStyles', 7576, 7637],
+    ['buildBuildingDetailCardViaEntityCard', 7639, 7667],
+    ['buildBuildingDetailCard', 7669, 7680],
+    ['_legacyBuildBuildingDetailCard', 7682, 7808],
+    ['buildBuildingBuildTabDetailCard', 7810, 7917],
   ],
   3: [
-    ['_legacyBuildUnitDetailCard', 7970, 8049],
-    ['buildRecruitTabDetailCard', 9087, 9117],
-    ['buildUpgradeBonusDetailCard', 9218, 9269],
+    ['_legacyBuildUnitDetailCard', 8008, 8087],
+    ['buildRecruitTabDetailCard', 9163, 9193],
+    ['buildUpgradeBonusDetailCard', 9294, 9345],
   ],
 };
 
 /** Bloki wsparcia (poza 19 jednostkami DOM): wymagania budynku (ZADANIE 2) i sprawdzenie stacji stock; TEXT dla każdego. */
 export const SUPPORT = [
-  ['buildingLocationRequirementMet', 6892, 6899],
-  ['buildingRequirementChips', 6901, 7000],
-  ['missingTechSteps', 8744, 8747],
-  ['buildingStockCostChipsHtml', 6680, 6704],
+  ['buildingLocationRequirementMet', 6921, 6928],
+  ['buildingRequirementChips', 6930, 7038],
+  ['missingTechSteps', 8819, 8822],
+  ['buildingStockCostChipsHtml', 6709, 6733],
 ];
 
 // R-RUSTPORT-REPIN-UI-2-G-Q1 r2: marker pin edb8fb56 albo web 86d510c66 (repin-ui2g-rev.mjs); --pin-dir = katalog tej rewizji.
-const MARK = /^\/\/ pin (?:edb8fb56|86d510c66) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)$/;
+const MARK = /^\/\/ pin (?:edb8fb56|86d510c66|9b019a7d8) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)$/;
 
 /** Parsuje pliki k05b-*.ts na bloki: { a, b, lines, file, markerLine }. */
 export function parseBlocks(text, file) {
@@ -183,7 +183,8 @@ if (!ONLY_BATCH) {
 // CONST: K05B-Z2 — wartości stałych w k05b-host.ts = wartości pinu game/cities.ts.
 const hostText = readFileSync(join(CITY, 'k05b-host.ts'), 'utf8');
 const citiesLines = readFileSync(PIN_CITIES, 'utf8').split('\n');
-for (const [name, line] of [['HANDEL_PCT_STEP', 578], ['MAX_PROCENT_NAUKA', 581]]) {
+// R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: web 9b019a7d8 — game/cities.ts 578→552, 581→555 (zmierzone grep).
+for (const [name, line] of [['HANDEL_PCT_STEP', 552], ['MAX_PROCENT_NAUKA', 555]]) {
   const pinM = citiesLines[line - 1].match(new RegExp(`^export const ${name} = (\\d+);`));
   const portM = hostText.match(new RegExp(`^export const ${name} = (\\d+);`, 'm'));
   report(!!pinM && !!portM && pinM[1] === portM[1], `CONST ${name}: pin game/cities.ts:${line}=${pinM?.[1]} port=${portM?.[1]}`);
@@ -191,8 +192,8 @@ for (const [name, line] of [['HANDEL_PCT_STEP', 578], ['MAX_PROCENT_NAUKA', 581]
 
 // NEG: testy negatywne bramki TEXT (na pierwszej jednostce partii 1).
 {
-  // appendPodzialHandlu (4718-4798): zawiera `>` w treści i komentarze `//` między liniami.
-  const blk = allBlocks.find((x) => x.a === 4718 && x.b === 4798);
+  // appendPodzialHandlu (4747-4827): zawiera `>` w treści i komentarze `//` między liniami.
+  const blk = allBlocks.find((x) => x.a === 4747 && x.b === 4827);
   if (!blk) {
     report(false, 'NEG: brak bloku appendPodzialHandlu');
   } else {

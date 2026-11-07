@@ -30,6 +30,9 @@ import type { CityView } from './k01b-t';
 import { cityFoodSplit } from './k03-model';
 import type { GameData, GameMap } from './k05a-fundament';
 import { scienceOwlIconHtml } from '../icons/scienceOwlIcon';
+// REPIN UI-3-E: web `formatGrossNet` (ui/hudChip6c — kopia bajtowa UI-3-A) i `formatManpowerCompact` (adapter k-ui3e-web).
+import { formatGrossNet } from '../hudChip6c';
+import { formatManpowerCompact } from './k-ui3e-web';
 
 // ─── K07A-Z1: lokalne typy (pola pinu używane przez jednostki K07A) ──────────────────────────────────────────────
 
@@ -227,7 +230,7 @@ const WYZYWIENIE_MAX = 6;
 
 // ─── Jednostki K07A (kopie pinu wygenerowane; markery = bramka verify-k07a-copies.mjs) ─────────────────────────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10494-10574
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10570-10650
 export function skeleton(city: CityK07, view: CityView | null): string {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const owner = isMeCity(city.ownerId) ? 'Gracz' : 'AI';
@@ -311,7 +314,7 @@ export function skeleton(city: CityK07, view: CityView | null): string {
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10576-10581
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10652-10657
 export function resolveK07aActiveCity(): CityK07 | null {
   if (activeCity === null) return null;
   const fresh = deps?.getCities().find(c => c.id === activeCity!.id);
@@ -320,11 +323,11 @@ export function resolveK07aActiveCity(): CityK07 | null {
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10612-10612
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10688-10688
 let uxSectionRefresh: (() => void) | null = null;
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10631-10638
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10707-10714
 export const W3_STAT_RES_KEY_K07: Record<string, ResourceColorKey | undefined> = {
   praca: 'praca',
   zywnosc: 'zywnosc',
@@ -335,7 +338,7 @@ export const W3_STAT_RES_KEY_K07: Record<string, ResourceColorKey | undefined> =
 };
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10640-10666
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10716-10742
 export function w3CityChipK07(
   icon: string,
   label: string,
@@ -365,7 +368,7 @@ export function w3CityChipK07(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10679-10826
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10755-10921
 export function buildCityOnlyW3FlankChips(
   city: CityK07,
   view: CityView,
@@ -422,6 +425,10 @@ export function buildCityOnlyW3FlankChips(
     kultura: { big: view.kultura,     small: civ.kultura, stock: empire.kultura ?? 0 },
     religia: { big: cityRel,          small: civ.religia, stock: empire.religionStock ?? 0 },
   };
+  // R-WEB-HUD-GROSS-NET-REST-Q1: BRUTTO Pracy cywilizacji = netto + utrzymanie + auto-ulepszenia + Cuda
+  // (ten sam wzór co `pracaWplywBrutto` w hud.ts); Skarbiec: BRUTTO tylko na poziomie cywilizacji (brutto miasta NIE_ZMIERZONO w tej funkcji).
+  const pracaCivBrutto = (chip.praca.small ?? 0) + (empire.pracaUpkeep ?? 0)
+    + (empire.pracaAutoUlepszeniaKoszt ?? 0) + (empire.pracaCudaKoszt ?? 0);
   const pracaCls = chip.praca.big > 0 ? 'green' : chip.praca.big < 0 ? 'red' : '';
   const foodCls = chip.zywnosc.big > 0 ? 'green' : chip.zywnosc.big < 0 ? 'red' : '';
   const goldCls = chip.zloto.big > 0 ? 'green' : chip.zloto.big < 0 ? 'red' : '';
@@ -446,6 +453,8 @@ export function buildCityOnlyW3FlankChips(
           ? ` (wpływ do puli ${signed((chip.praca.small ?? 0) + empire.pracaUpkeep)} ` +
             `− utrzymanie ulepszeń surowcowych ${empire.pracaUpkeep} pkt Pracy/turę)`
           : '') +
+        ` · to miasto: ${formatGrossNet(chip.praca.big, chip.praca.big, 'pkt Pracy/turę')} (miasto nie ma własnych drenaży)` +
+        ` · cywilizacja: ${formatGrossNet(pracaCivBrutto, chip.praca.small, 'pkt Pracy/turę')}` +
         ` · zapas cywilizacji ${chip.praca.stock}`,
       chip.praca.small,
       chip.praca.stock,
@@ -458,7 +467,11 @@ export function buildCityOnlyW3FlankChips(
       'zywnosc',
       `Żywność TEGO miasta: produkcja ${signed(foodSplit.produkcja)} − racje ${foodSplit.racje} = ` +
         `${signed(chip.zywnosc.big)} · WZROST ${wzrostProcentUi}% · cała cywilizacja ` +
-        `${signed(chip.zywnosc.small)} / turę · zapas cywilizacji ${chip.zywnosc.stock}`,
+        `${signed(chip.zywnosc.small)} / turę · zapas cywilizacji ${chip.zywnosc.stock}` +
+        ` · to miasto: ${formatGrossNet(foodSplit.produkcja, chip.zywnosc.big, '🍞/turę')} (produkcja − racje)` +
+        (empire.zywnoscWplywMiast != null
+          ? ` · cywilizacja: ${formatGrossNet(empire.zywnoscWplywMiast, chip.zywnosc.small, '🍞/turę')} (nadwyżka miast → centrala; netto po deficytach i armii)`
+          : ''),
       chip.zywnosc.small,
       chip.zywnosc.stock,
     ),
@@ -470,7 +483,10 @@ export function buildCityOnlyW3FlankChips(
       'zloto',
       `Netto pieniędzy TEGO miasta ${signed(chip.zloto.big)} → skarbiec · ` +
         `${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)} · ` +
-        `cała cywilizacja ${signed(chip.zloto.small)} / turę · zapas skarbca ${chip.zloto.stock}`,
+        `cała cywilizacja ${signed(chip.zloto.small)} / turę · zapas skarbca ${chip.zloto.stock}` +
+        (empire.bogactwoWplywyBrutto != null
+          ? ` · cywilizacja: ${formatGrossNet(empire.bogactwoWplywyBrutto, empire.bogactwoRate ?? chip.zloto.small, 'pkt Pieniądza/turę')} (netto po utrzymaniu)`
+          : ''),
       chip.zloto.small,
       chip.zloto.stock,
     ),
@@ -484,7 +500,9 @@ export function buildCityOnlyW3FlankChips(
       naukaCls,
       'nauka',
       `Nauka TEGO miasta ${signed(chip.nauka.big)} / turę · cała cywilizacja ` +
-        `${signed(chip.nauka.small)} / turę · nauka nagromadzona cywilizacji ${chip.nauka.stock}`,
+        `${signed(chip.nauka.small)} / turę · nauka nagromadzona cywilizacji ${chip.nauka.stock}` +
+        ` · to miasto: ${formatGrossNet(chip.nauka.big, chip.nauka.big, 'pkt Nauki/turę')} · cywilizacja: ` +
+        `${formatGrossNet(chip.nauka.small, chip.nauka.small, 'pkt Nauki/turę')} (brak dziś drenaży Nauki)`,
       chip.nauka.small,
       chip.nauka.stock,
     ),
@@ -495,7 +513,9 @@ export function buildCityOnlyW3FlankChips(
       kultCls,
       'kultura',
       `Kultura TEGO miasta ${signed(chip.kultura.big)} / turę · cała cywilizacja ` +
-        `${signed(chip.kultura.small)} / turę · kultura nagromadzona cywilizacji ${chip.kultura.stock}`,
+        `${signed(chip.kultura.small)} / turę · kultura nagromadzona cywilizacji ${chip.kultura.stock}` +
+        ` · to miasto: ${formatGrossNet(chip.kultura.big, chip.kultura.big, 'pkt Kultury/turę')} · cywilizacja: ` +
+        `${formatGrossNet(chip.kultura.small, chip.kultura.small, 'pkt Kultury/turę')} (brak dziś drenaży Kultury)`,
       chip.kultura.small,
       chip.kultura.stock,
     ),
@@ -506,7 +526,9 @@ export function buildCityOnlyW3FlankChips(
       relCls,
       'religia',
       `Przyrost wiernych TEGO miasta ${signed(chip.religia.big)} / turę · cała cywilizacja ` +
-        `${signed(chip.religia.small)} / turę · wierni religii państwa ${chip.religia.stock}`,
+        `${signed(chip.religia.small)} / turę · wierni religii państwa ${chip.religia.stock}` +
+        ` · to miasto: ${formatGrossNet(chip.religia.big, chip.religia.big, 'wiernych/turę')} · cywilizacja: ` +
+        `${formatGrossNet(chip.religia.small, chip.religia.small, 'wiernych/turę')} (brak dziś drenaży wiernych)`,
       chip.religia.small,
       chip.religia.stock,
     ),
@@ -516,7 +538,7 @@ export function buildCityOnlyW3FlankChips(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10828-10939
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10923-11034
 export function buildCityResourceStatItems(
   city: CityK07,
   view: CityView | null,
@@ -542,9 +564,9 @@ export function buildCityResourceStatItems(
     items += `<span class="civ-v-res-sep"></span>`;
     items += resLocalOnly(
       cityPanelChipIcon('tb-army', 20),
-      `${formatManpower(mpSnap.manpowerBiezacy)}/${formatManpower(mpSnap.manpowerMax)}`,
+      `${formatManpowerCompact(mpSnap.manpowerBiezacy)}/${formatManpowerCompact(mpSnap.manpowerMax)}`,
       'gold',
-      `Rekruci (Manpower) · +${formatManpower(mpSnap.regenPerTurn)} · kliknij po szczegóły`,
+      `Rekruci (Manpower) · +${formatManpowerCompact(mpSnap.regenPerTurn)} · kliknij po szczegóły`,
       'rekruci',
     );
   }
@@ -631,7 +653,7 @@ export function buildCityResourceStatItems(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10966-10981
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11061-11076
 export function capitalBadgeOrButtonHtmlK07(city: CityK07): string {
   const capitalId = deps?.getCapitalCityId(city.ownerId) ?? null;
   if (capitalId != null && capitalId === city.id) {

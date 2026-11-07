@@ -70,9 +70,11 @@ const PROBE_NAME = '__k02_breakdown_pin_probe.ts';
 const pinLines = readFileSync(PIN_FILE, 'utf8').split('\n');
 // REPIN-UI-2-G r2: --pin-dir = pin edb8fb56 albo web 86d510c66; regiony K02 bez dryfu (Myers: linie poza hunkami), przesunięcie stałe
 // per region: el 863-870 → +44, breakdown 4376-4516 → +64. Rewizja z treści pliku (sha1 bloba), nie z argumentu.
-const K02_WEB = pinDirRevLabel(PIN_DIR) === '86d510c66';
-const OEL = K02_WEB ? 44 : 0;
-const OBD = K02_WEB ? 64 : 0;
+const K02_REV = pinDirRevLabel(PIN_DIR);
+const K02_WEB = K02_REV === '86d510c66' || K02_REV === '9b019a7d8';
+// UI-3-E (R-RUSTPORT-REPIN-WEB-UI-3-E-Q1): web 9b019a7d8 — el 922-929 → +59, breakdown 4469-4609 → +93 (zmierzone grep).
+const OEL = K02_REV === '9b019a7d8' ? 59 : K02_WEB ? 44 : 0;
+const OBD = K02_REV === '9b019a7d8' ? 93 : K02_WEB ? 64 : 0;
 if (!/^function el</.test(pinLines[862 + OEL]) || pinLines[869 + OEL] !== '}') {
   console.error('Harness: pin:863–870 nie jest funkcją el — pin inny niż edb8fb56?');
   process.exit(2);

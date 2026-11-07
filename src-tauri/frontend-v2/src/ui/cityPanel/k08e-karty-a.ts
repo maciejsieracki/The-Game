@@ -15,6 +15,8 @@ import { clampedGrowthBreakdown, wyzwienieSummaryLabel } from './k01b-r';
 import { cityFoodSplit } from './k03-model';
 import { cfg, formatManpower, type City, type GameData, type ManpowerSnapshotK05b as CityManpowerSnapshot } from './k05b-host';
 import type { GameMap } from './k05a-fundament';
+// REPIN UI-3-E: web `formatManpowerCompact` (game/manpower.ts:912-914) — kopia w adapterze k-ui3e-web.
+import { formatManpowerCompact } from './k-ui3e-web';
 import { formatWyzwienieLabelK as formatWyzwienieLabel } from './k04c-model';
 import {
   buildRationParams, cityLudnoscAbsolutna, growthGainPerTurnSlots, resolveCityHealth, turnsUntilNextCitizen, WYZYWIENIE_MAX,
@@ -22,7 +24,7 @@ import {
 
 // ─── Jednostki K08E, partia k08e-karty-a.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:5653-5721
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:5682-5750
 export function buildTopBarZywnoscDetailCard(
   city: City,
   view: CityView,
@@ -64,7 +66,7 @@ export function buildTopBarZywnoscDetailCard(
     gridDetailRow(g1, 'Auto-korekta', `ustawione Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} przekracza limit Spichlerza — Bilans liczony przy ${formatWyzwienieLabel(bilansDisplayLevel)}, poziom zostanie obniżony na koniec tury`);
   }
   if (rationParams) {
-    gridDetailRow(g1, 'Wyżywienie aktywne', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
+    gridDetailRow(g1, 'Wyżywienie aktywne', wyzwienieSummaryLabel(view.poziomRacji, rationParams, view.ownerEra));
   }
 
   appendDetailSection(card, 'WZROST ludności');
@@ -94,7 +96,7 @@ export function buildTopBarZywnoscDetailCard(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:5723-5753
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:5752-5782
 export function buildTopBarRekruciDetailCard(
   city: City,
   mp: CityManpowerSnapshot,
@@ -111,12 +113,12 @@ export function buildTopBarRekruciDetailCard(
 
   appendDetailSection(card, 'Stan puli');
   const g = appendDetailGrid(card);
-  gridDetailRow(g, 'Bieżąca pula', formatManpower(mp.manpowerBiezacy));
-  gridDetailRow(g, 'Maksimum', formatManpower(mp.manpowerMax));
-  gridDetailRow(g, 'Odnowa', `+${formatManpower(mp.regenPerTurn)}`);
-  gridDetailRow(g, 'Koszt 1 jednostki', formatManpower(mp.kosztJednostki));
+  gridDetailRow(g, 'Bieżąca pula', formatManpowerCompact(mp.manpowerBiezacy));
+  gridDetailRow(g, 'Maksimum', formatManpowerCompact(mp.manpowerMax));
+  gridDetailRow(g, 'Odnowa', `+${formatManpowerCompact(mp.regenPerTurn)}`);
+  gridDetailRow(g, 'Koszt 1 jednostki', formatManpowerCompact(mp.kosztJednostki));
   gridDetailRow(g, 'Werb przy pełnej puli', String(mp.werbMaxPrzyPelnejPuli));
-  gridDetailRow(g, 'Ludność abs.', formatManpower(mp.ludnoscAbsolutna));
+  gridDetailRow(g, 'Ludność abs.', formatManpowerCompact(mp.ludnoscAbsolutna));
   gridDetailRow(g, 'Obywatele', `${mp.ludki} · epoka ${mp.epoka}`);
 
   appendDetailAlgo(card, 'Skąd bierze się pula', [
@@ -128,7 +130,7 @@ export function buildTopBarRekruciDetailCard(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:5755-5839
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:5784-5868
 export function buildTopBarLudnoscDetailCard(
   city: City,
   view: CityView | null,
@@ -161,7 +163,7 @@ export function buildTopBarLudnoscDetailCard(
   appendDetailSection(card, 'Co widzisz na pasku');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Duża liczba 👥', `${city.population} — obywatele (sloty) tego miasta`);
-  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpower(osobRazem)} osób`);
+  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpowerCompact(osobRazem)} osób`);
   gridDetailRow(g0, 'Epoka', String(epoch));
   gridDetailRow(g0, 'WZROST%', bd ? `${bd.total}%` : '—');
 

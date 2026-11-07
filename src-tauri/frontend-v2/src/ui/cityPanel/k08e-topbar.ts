@@ -25,7 +25,7 @@ import { buildTopBarReligiaDetailCard } from './k08d-religia';
 
 // ─── Jednostki K08E, partia k08e-topbar.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10966-10981
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11061-11076
 export function capitalBadgeOrButtonHtml(city: City): string {
   const capitalId = cfg.getCapitalCityId?.(city.ownerId) ?? null;
   if (capitalId != null && capitalId === city.id) {
@@ -44,7 +44,7 @@ export function capitalBadgeOrButtonHtml(city: City): string {
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10983-11028
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11078-11123
 export function renderCivResourceTopBar(
   mount: HTMLElement,
   city: City,
@@ -93,7 +93,7 @@ export function renderCivResourceTopBar(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6122-6156
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6151-6185
 export function wireTopBarStatDetails(
   mount: HTMLElement,
   city: City,

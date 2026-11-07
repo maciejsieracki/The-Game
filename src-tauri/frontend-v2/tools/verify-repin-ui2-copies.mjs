@@ -48,6 +48,10 @@ const pinManifest = JSON.parse(readFileSync(new URL('./pin-manifest.json', impor
 const pinPaths = new Set(pinManifest.files.map((f) => f.path));
 const noGit = args.includes('--no-git');
 const webDir = argOf('--web-dir');
+// R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: bloki K (`repin-ui2g-kblocks-manifest.json`) mają rewizję 9b019a7d8, a wpisy UI-2
+// (`repin-ui2-manifest.json`) — 86d510c66. `--k-web-dir` = źródło rewizji bloków K (RANGE + CONTENT); bez niego
+// `--web-dir` jest użyty dla bloków K tylko, gdy ma tę samą rewizję co manifest K (sha1 bloba cityPanel.ts), inaczej git.
+const kWebDirArg = argOf('--k-web-dir');
 let bad = 0;
 let gitChecked = 0;
 const fail = (msg) => {
@@ -175,16 +179,29 @@ for (const f of refs) {
 //        (bez `export`) jest zadeklarowana w liniach A..B źródła — treść bloków sprawdzają weryfikatory partii.
 let kChecked = 0;
 let kFiles = 0;
+let kWebDir = null;
+/** UI-3-E: katalog źródła bloków K — `--k-web-dir`, albo `--web-dir` o tej samej rewizji cityPanel.ts co manifest K. */
+function resolveKWebDir(km) {
+  if (kWebDirArg) return kWebDirArg;
+  if (!webDir) return null;
+  const cp = join(webDir, 'gra/src/ui/cityPanel.ts');
+  if (!existsSync(cp)) return null;
+  const buf = readFileSync(cp);
+  const blob = createHash('sha1').update(`blob ${buf.length}\0`).update(buf).digest('hex');
+  const BLOBS = { '1d78ffe6721d57c0537c4f404de7b6953344ccc1': '86d510c66', 'bd320bed02e83d33bc330e288317bc4f7c2de131': '9b019a7d8' };
+  return BLOBS[blob] === km.rev ? webDir : null;
+}
 const kManPath = new URL('./repin-ui2g-kblocks-manifest.json', import.meta.url);
 if (existsSync(kManPath)) {
   const km = JSON.parse(readFileSync(kManPath, 'utf8'));
+  kWebDir = resolveKWebDir(km);
   const MARK = /^\/\/ (?:kopia typu \([^)]*\) )?pin(?:-adapter)? (\S+) (gra\/src\/[^:\s]+):(\d+)-(\d+)/;
   const DECLN = /^(?:export\s+)?(?:declare\s+)?(?:async\s+)?(?:function\s*\*?\s*|const\s+|let\s+|var\s+|interface\s+|type\s+|class\s+|enum\s+)([A-Za-z_$][\w$]*)/;
   const srcCache = new Map();
   const srcLines = (rel) => {
     if (srcCache.has(rel)) return srcCache.get(rel);
     let txt = null;
-    if (webDir) txt = existsSync(join(webDir, rel)) ? readFileSync(join(webDir, rel), 'utf8') : null;
+    if (kWebDir) txt = existsSync(join(kWebDir, rel)) ? readFileSync(join(kWebDir, rel), 'utf8') : null;
     else if (!noGit) {
       try {
         txt = execFileSync('git', ['show', `${km.revFull}:${rel}`], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024 }).toString('utf8');
@@ -248,13 +265,13 @@ if (existsSync(kManPath)) {
     return dir;
   };
   try {
-    let web = webDir ?? null;
+    let web = resolveKWebDir(km);
     if (!web && !noGit && gates.length) {
       try { web = archive(km.revFull); } catch (e) { fail(`KBLOK CONTENT git archive ${km.rev}: ${String(e.message ?? e).split('\n')[0]}`); }
     }
     let pin = argOf('--k-pin-dir') ?? null;
     const needPin = gates.some((g) => g.args.some((a) => a.includes('{PIN}')));
-    if (!pin && needPin && !noGit && !webDir) {
+    if (!pin && needPin && !noGit && !kWebDirArg) {
       try { pin = archive(km.pinFull); } catch (e) { fail(`KBLOK CONTENT git archive ${km.pin}: ${String(e.message ?? e).split('\n')[0]}`); }
     }
     for (const g of gates) {

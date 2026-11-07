@@ -13,7 +13,7 @@ import {
 } from './k01a-fundament';
 import type { CityRefK } from './k01b-dto';
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:907-914
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:922-929
 export function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, html?: string): HTMLElementTagNameMap[K] {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
@@ -23,13 +23,13 @@ export function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, 
   return n;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1905-1909
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1934-1938
 export function setNoteHtml(note: HTMLElement, html: string): void {
   note.style.fontStyle = 'normal';
   note.innerHTML = cpInlineIcons(html);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1988-1995
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:2017-2024
 export function setOkolicaProfileButtonContent(btn: HTMLButtonElement, iconId: string, label: string): void {
   btn.classList.add('okolica-profile-btn');
   const ic = okolicaProfileIconHtml(iconId, 24);
@@ -38,20 +38,20 @@ export function setOkolicaProfileButtonContent(btn: HTMLButtonElement, iconId: s
     : label;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1996-2001
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:2025-2030
 export function setOkolicaProfileButtonIconOnly(btn: HTMLButtonElement, iconId: string, size: BrandIconSize = 20): void {
   btn.classList.add('okolica-profile-btn', 'okolica-profile-btn-ic-only');
   const ic = okolicaProfileIconHtml(iconId, size);
   btn.innerHTML = ic ? `<span class="okolica-profile-glyph">${ic}</span>` : '?';
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:3872-3875
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:3901-3904
 export function renderImperiumZywnosc(mount: HTMLElement, _city: CityRefK): void {
   mount.innerHTML = '';
   mount.style.display = 'none';
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6112-6120
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6141-6149
 export function attachTopBarStat(
   mount: HTMLElement,
   statId: string,
@@ -62,7 +62,7 @@ export function attachTopBarStat(
   if (node) attachInteractiveDetail(node, build, { delayMs: 220, sideHint });
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6359-6365
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6388-6394
 export function applyBuildButtonVisualState(btn: HTMLButtonElement, canAct: boolean, title: string): void {
   btn.disabled = !canAct;
   btn.title = title;
@@ -70,14 +70,14 @@ export function applyBuildButtonVisualState(btn: HTMLButtonElement, canAct: bool
   btn.classList.add(canAct ? 'can-build' : 'cannot-build');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7413-7418
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7451-7456
 export function appendDetailSection(card: HTMLElement, title: string): void {
   const s = el('div', 'dc-section');
   s.innerHTML = cpInlineIcons(title);
   card.appendChild(s);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7443-7451
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7481-7489
 export function gridDetailRow(grid: HTMLElement, label: string, val: string | null | undefined): void {
   if (!val || isEmptyDataVal(val)) return;
   const lEl = el('span', 'dc-l');
@@ -88,7 +88,7 @@ export function gridDetailRow(grid: HTMLElement, label: string, val: string | nu
   grid.appendChild(vEl);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7453-7460
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7491-7498
 export function appendDetailAlgo(card: HTMLElement, title: string, steps: string[]): void {
   appendDetailSection(card, title);
   for (let i = 0; i < steps.length; i++) {

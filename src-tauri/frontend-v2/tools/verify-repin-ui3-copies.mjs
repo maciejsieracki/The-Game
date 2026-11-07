@@ -133,6 +133,48 @@ for (const d of man.overlayDeps ?? []) {
     if (sha256(ref) !== d.sha256 || ref.length !== d.bytes) fail(`DEPS ${d.src} ${sha256(ref)}/${ref.length} ≠ manifest`);
   }
 }
+// ─── R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: `kblocksE.adapter` — czyste deklaracje game/* dla przepiętych bloków K cityPanel ───
+// KE-SHA    sha256/rozmiar pliku = manifest; KE-DISJ ścieżka poza innymi manifestami;
+// KE-BLOK   (git albo --web-dir) każdy blok `// pin-adapter <pin> <źródło>:A-B` = linie A..B źródła BAJTOWO (z `export`),
+//           rewizja markera = pin manifestu, liczba markerów = manifest;
+// KE-POZA   poza nagłówkiem (linie przed 1. markerem) i blokami plik ma wyłącznie puste linie (żadnej treści portu).
+let keBlocks = 0;
+const ke = man.kblocksE?.adapter;
+if (ke) {
+  if (taken.has(ke.path) || seen.has(ke.path)) fail(`KE-DISJ ${ke.path} także w: ${(taken.get(ke.path) ?? ['repin-ui3.files/adapters']).join(', ')}`);
+  const abs = join(ROOT, ke.path);
+  if (!existsSync(abs)) fail(`KE BRAK ${ke.path}`);
+  else {
+    const buf = readFileSync(abs);
+    if (sha256(buf) !== ke.sha256 || buf.length !== ke.bytes) fail(`KE-SHA ${ke.path} oczekiwano ${ke.sha256}/${ke.bytes} jest ${sha256(buf)}/${buf.length}`);
+    const port = buf.toString('utf8').split('\n');
+    const marks = [];
+    port.forEach((l, i) => {
+      const m = MARK.exec(l);
+      if (m) marks.push({ i, rev: m[1], rel: m[2], a: +m[3], b: +m[4] });
+    });
+    if (marks.length !== ke.markers) fail(`KE ${ke.path}: markerów ${marks.length} (manifest ${ke.markers})`);
+    const covered = new Set();
+    for (let k = 0; k < marks.length; k++) covered.add(marks[k].i);
+    for (const mk of marks) {
+      if (!man.pin.startsWith(mk.rev)) fail(`KE ${ke.path}:${mk.i + 1} rewizja ${mk.rev} ≠ ${man.pin}`);
+      const src = webSrc(mk.rel);
+      const len = mk.b - mk.a + 1;
+      for (let j = 1; j <= len; j++) covered.add(mk.i + j);
+      if (!src) continue;
+      const want = src.toString('utf8').split('\n').slice(mk.a - 1, mk.b);
+      const got = port.slice(mk.i + 1, mk.i + 1 + len);
+      keBlocks++;
+      if (want.join('\n') !== got.join('\n')) fail(`KE-BLOK ${ke.path}:${mk.i + 1} blok ≠ ${mk.rel}:${mk.a}-${mk.b}`);
+    }
+    const first = marks.length ? marks[0].i : port.length;
+    port.forEach((l, i) => {
+      if (i < first || covered.has(i)) return;
+      if (l.trim() !== '') fail(`KE-POZA ${ke.path}:${i + 1} treść poza blokami: ${l.slice(0, 80)}`);
+    });
+  }
+  console.log(`verify-repin-ui3-copies: kblocksE adapter=${ke.path} markerów=${ke.markers} bloków_sprawdzonych=${keBlocks}`);
+}
 if (!webDir && noGit) console.log('verify-repin-ui3-copies: GIT/ADAPTER NIE_ZMIERZONO (--no-git bez --web-dir)');
 console.log(`verify-repin-ui3-copies: pin=${man.pin.slice(0, 9)} kopii=${copies} źródło_sprawdzone=${gitChecked} adapterów=${man.adapters.length} adapter_sprawdzone=${adChecked} bloków=${blocks} deps=${deps} niezgodnych=${bad}`);
 process.exitCode = bad === 0 ? 0 : 1;

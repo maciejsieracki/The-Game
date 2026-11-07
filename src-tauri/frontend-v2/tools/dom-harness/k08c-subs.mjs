@@ -4,9 +4,9 @@
  * Jedno źródło prawdy: generator i bramka nie mogą mieć rozjechanych list.
  *
  * Zakres rundy 1 (dispatch K08C, zadanie 3, po rozstrzygnięciach w `dyspozycje/rust-port/p5/P5-8-K08C.md`):
- *   partia `praca`: `buildPracaDetailCard` (pin :5011-5083) i `buildTopBarPracaDetailCard` (pin :5841-5893).
+ *   partia `praca`: `buildPracaDetailCard` (pin :5040-5112) i `buildTopBarPracaDetailCard` (pin :5870-5922).
  * Zdjęte z rundy 1 (blokery nieporotowane, patrz P5-8-K08C.md §3): `renderPodzialPracy` (wymaga `appendPodzialPracyInfo`
- * :5093-5168 → `resolveEmpireSnap`, stan `activeMap`, `psiRowLabel`, `statChipBrand`, `frontItem`, `etaTurns`),
+ * :5122-5197 → `resolveEmpireSnap`, stan `activeMap`, `psiRowLabel`, `statChipBrand`, `frontItem`, `etaTurns`),
  * `renderWealth`, `renderReligia`, `renderHandelSlidersPanel`.
  *
  * Podstawienia LINE_SUBS: brak (K08C-Z4 — ciała kopii są bajt w bajt z pinem; stan pinu i zależności idą przez
@@ -38,14 +38,14 @@ import {
   cityPracaSplit, computeView, procentPuliImperiumZBudynkow, readPodzialPracy,
 } from './k08c-deps';`,
   units: [
-    { name: 'buildPracaDetailCard', a: 5011, b: 5083 },
-    { name: 'buildTopBarPracaDetailCard', a: 5841, b: 5893 },
+    { name: 'buildPracaDetailCard', a: 5040, b: 5112 },
+    { name: 'buildTopBarPracaDetailCard', a: 5870, b: 5922 },
   ],
 };
 
 
-/** Partia `podzial` (runda 2, zarzut „zakres 6 jednostek"): `renderPodzialPracy` (pin :5183-5259). Ciało kopiuje pin; `appendPodzialPracyInfo`
- * (pin :5093-5182) jest już portem K06B (`k06b-jednostki.ts`) — import, nie kopia w tej partii. */
+/** Partia `podzial` (runda 2, zarzut „zakres 6 jednostek"): `renderPodzialPracy` (pin :5212-5288). Ciało kopiuje pin; `appendPodzialPracyInfo`
+ * (pin :5122-5211) jest już portem K06B (`k06b-jednostki.ts`) — import, nie kopia w tej partii. */
 export const BATCH_PODZIAL = {
   file: 'k08c-podzial.ts',
   header: `/**
@@ -54,7 +54,7 @@ export const BATCH_PODZIAL = {
  *
  * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08c-port.mjs --batch podzial\` (bloki = pin, \`k08c-subs.mjs\`).
  * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08c-copies.mjs\`.
- * Stałe i pomocnicze z \`k08c-deps.ts\` (granice 50..100 z pinu \`game/cities.ts:456-457\`).
+ * Stałe i pomocnicze z \`k08c-deps.ts\` (granice 50..100 z pinu \`game/cities.ts:469-470\`).
  */`,
   imports: `import { cityPanelChipIconWrap, cpInlineIcons } from './k01a-fundament';
 import { el } from './k01b-dom';
@@ -69,7 +69,7 @@ import {
   cityPracaSplit, clampPodzialPracyBudynkiPercent, procentPuliImperiumZBudynkow, readPodzialPracy,
 } from './k08c-deps';`,
   units: [
-    { name: 'renderPodzialPracy', a: 5183, b: 5259 },
+    { name: 'renderPodzialPracy', a: 5212, b: 5288 },
   ],
 };
 

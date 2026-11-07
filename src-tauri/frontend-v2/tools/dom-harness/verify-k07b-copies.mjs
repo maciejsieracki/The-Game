@@ -34,7 +34,7 @@ let orphan = 0;
 for (const f of readdirSync(DIR).filter((n) => /^k07b-.*\.ts$/.test(n)).sort()) {
   const lines = readFileSync(join(DIR, f), 'utf8').split(/\r?\n/);
   for (let k = 0; k < lines.length; k++) {
-    const m = /^\/\/ pin (?:edb8fb56|86d510c66) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)$/.exec(lines[k]); // REPIN-UI-2-G r2: pin albo web
+    const m = /^\/\/ pin (?:edb8fb56|86d510c66|9b019a7d8) gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)$/.exec(lines[k]); // REPIN-UI-2-G r2: pin albo web
     if (!m) continue;
     blocks++;
     const a = Number(m[1]);

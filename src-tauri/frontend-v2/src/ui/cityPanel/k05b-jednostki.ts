@@ -27,7 +27,9 @@ import {
   formatResourceUpkeepSummary,
 } from './k05b-host';
 import type { BuildingDef, City, GameData, UnitDef } from './k05b-host';
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9218-9269
+// REPIN UI-3-E: web `formatManpowerCompact` (game/manpower.ts:912-914) — kopia w adapterze k-ui3e-web.
+import { formatManpowerCompact } from './k-ui3e-web';
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9294-9345
 export function buildUpgradeBonusDetailCard(
   def: BuildingDef,
   data: GameData,
@@ -81,7 +83,7 @@ export function buildUpgradeBonusDetailCard(
   return card;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7970-8049
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8008-8087
 /** Stara implementacja (DOM-builder własny) — zachowana pod prywatną nazwą jako fallback
  * (wzorem `_legacyBuildBuildingDetailCard`/`_legacyBuildUnitInfoCard`). ZERO zmian treści. */
 export function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement {
@@ -163,7 +165,7 @@ export function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivE
   return card;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9087-9117
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9163-9193
 export function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number | undefined): HTMLDivElement {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const mpSnap = cfg.getManpowerSnapshot?.(city.id);
@@ -185,11 +187,11 @@ export function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: 
   gridDetailRow(g, 'Dostępne jednostki', String(unitCount));
   gridDetailRow(g, 'Skarb imperium', skarb != null ? `${skarb} 💰` : '—');
   if (mpSnap) {
-    gridDetailRow(g, 'Rekruci (pula miasta)', `${formatManpower(mpSnap.manpowerBiezacy)} / ${formatManpower(mpSnap.manpowerMax)}`);
-    gridDetailRow(g, 'Odnowa rekrutów (miasto / turę)', `+${formatManpower(mpSnap.regenPerTurn)}`);
-    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpSnap.kosztJednostki)} · epoka ${mpSnap.epoka}`);
+    gridDetailRow(g, 'Rekruci (pula miasta)', `${formatManpowerCompact(mpSnap.manpowerBiezacy)} / ${formatManpowerCompact(mpSnap.manpowerMax)}`);
+    gridDetailRow(g, 'Odnowa rekrutów (miasto / turę)', `+${formatManpowerCompact(mpSnap.regenPerTurn)}`);
+    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpowerCompact(mpSnap.kosztJednostki)} · epoka ${mpSnap.epoka}`);
   } else {
-    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpCostStd)} · epoka ${epoch}`);
+    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpowerCompact(mpCostStd)} · epoka ${epoch}`);
   }
   const rq = getProd(city.id).rekrutacja?.length ?? 0;
   gridDetailRow(g, 'W kolejce', String(rq));

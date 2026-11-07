@@ -47,7 +47,7 @@ const Nakladka: any = valueProxy('Nakladka');
 const cfg: any = valueProxy('cfg');
 
 // ─── K06B-Z6: stan rootEl (pin: ui/cityPanel.ts:10158) ─────────────────────────────────────────────────────────
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10405-10405
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10481-10481
 let rootEl: HTMLDivElement | null = null;
 // pin-end
 export function setK06bRootEl(next: HTMLDivElement | null): void {
@@ -59,7 +59,7 @@ export function getK06bRootEl(): HTMLDivElement | null {
 
 // ─── Jednostki K06B (kopie pinu) ───────────────────────────────────────────────────────────────────────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9636-9671
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9712-9747
 export function renderTopBarGarrison(mount: HTMLElement, city: City): void {
   mount.innerHTML = '';
   const units = cfg.getUnitsAt?.(city.q, city.r);
@@ -97,7 +97,7 @@ export function renderTopBarGarrison(mount: HTMLElement, city: City): void {
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9672-9738
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9748-9814
 export function buildGarnizonDetailCard(
   units: GarrisonUnit[] | null,
   count: number,
@@ -161,7 +161,7 @@ export function buildGarnizonDetailCard(
   return card;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9861-9972
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9937-10048
 export function buildOkolicaDetailCard(
   city: City,
   opts: {
@@ -275,7 +275,7 @@ export function buildOkolicaDetailCard(
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10030-10067
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10106-10143
 export function appendOkolicaYieldLabel(
   svg: SVGSVGElement,
   c: { cx: number; cy: number; hex: Hex | null; isCity: boolean },
@@ -309,7 +309,7 @@ export function appendOkolicaYieldLabel(
   svg.appendChild(ytxt);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10068-10264
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10144-10340
 
 /**
  * Kompaktowy podgląd pól obrabianych wokół miasta (ograniczone okno DISPLAY_R).
@@ -320,21 +320,21 @@ export function renderWorkedPreview(gridEl: HTMLElement, city: City, map: GameMa
   void gridEl; void city; void map; void worked; void reczne; void tryb; void illegalReczneKeys; // K06B-Z7: placeholder MAPA (P5-8 §6)
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10412-10416
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10488-10492
 export function setGarrisonLabelPinned(label: HTMLElement, pinned: boolean): void {
   label.classList.toggle('is-pinned', pinned);
   label.setAttribute('aria-pressed', pinned ? 'true' : 'false');
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10417-10421
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10493-10497
 export function pinGarrisonPanel(cityId: number, label: HTMLElement): void {
   setK06aPinnedGarrisonCityId(cityId);
   setGarrisonLabelPinned(label, true);
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:10422-10430
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:10498-10506
 export function clearGarrisonPanel(): void {
   setK06aPinnedGarrisonCityId(null);
   clearPinnedDetail();

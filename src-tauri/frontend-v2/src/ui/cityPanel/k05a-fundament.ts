@@ -11,6 +11,8 @@
 
 import { UI_PARAMS } from '../uiParams';
 import type { CityPanelK05ADto } from '../../viewmodel/types';
+// REPIN UI-3-E (U3E-Z3): web `isCityUnderSiege` (game/city-siege-state) — kopia w k-ui3e-web, adapter id miasta.
+import { isCityUnderSiegeK as isCityUnderSiege } from './k-ui3e-host';
 
 /** ZAŁOŻENIE K05A-Z2: pozycja miasta z DTO (jedyne pola `City` używane przez okolicaPreviewRadius). */
 export type CityHexRef = { readonly q: number; readonly r: number };
@@ -28,6 +30,7 @@ export interface City {
   readonly ownerId: number;
   readonly q: number;
   readonly r: number;
+  readonly oblegane?: boolean; // REPIN UI-3-E: web `City.oblegane` (R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1), flaga z DTO
 }
 
 /** K05A-Z5: lokalna kopia typu `UnitDef` (pin: data/loader.ts) — tylko `id`. */
@@ -196,6 +199,7 @@ export interface AvailabilityContext {
   empireBuiltIds: readonly string[] | undefined;
   empireResourceStock: Readonly<Record<string, number>> | undefined;
   cityHasCoastOrRiver: boolean;
+  cityHasRiver?: boolean; // REPIN UI-3-E: web game/production.ts:531 (bramka młyna, R-WEB-MILL-RIVER-ONLY-GATE-Q1)
   isCapital: boolean;
 }
 
@@ -230,6 +234,7 @@ export interface K05aCfgExt {
   getKosztJednostekPace?: () => string | undefined;
   getEmpireStock?: (ownerId: number) => Readonly<Record<string, number>> | undefined;
   getCityHasCoastOrRiver?: (cityId: number) => boolean | undefined;
+  getCityHasRiver?: (cityId: number) => boolean | undefined; // REPIN UI-3-E: web cfg.getCityHasRiver (DTO/silnik, P6)
   getCapitalCityId?: (ownerId: number) => number | null | undefined;
   getProd?: (cityId: number) => { readonly kolejka: readonly ProductionItem[] } | undefined;
 }
@@ -360,7 +365,7 @@ export function rerender(): void {
   cfg.rerender?.();
 }
 
-// pin 86d510c66 gra/src/types/hex.ts:12-24
+// pin 9b019a7d8 gra/src/types/hex.ts:12-24
 export enum TerenBazowy {
   Laka     = 'laka',
   Rownina  = 'rownina',
@@ -375,13 +380,13 @@ export enum TerenBazowy {
   Polarny  = 'polarny',
 }
 
-// pin 86d510c66 gra/src/game/cities.ts:48-48
+// pin 9b019a7d8 gra/src/game/cities.ts:48-48
 export type OkolicaTryb = 'auto' | 'reczny';
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7536-7536
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7574-7574
 export const ENTITY_CARD_BUILDING_STYLE_ID = 'civ-city-panel-entity-card-css-v1';
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9739-9744
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9815-9820
 export const TEREN_COL: Record<TerenBazowy, string> = {
   [TerenBazowy.Morze]: '#0d2236', [TerenBazowy.PlytkieMorze]: '#14506a',
   [TerenBazowy.Laka]: '#243a24', [TerenBazowy.Rownina]: '#3f3815',
@@ -389,7 +394,7 @@ export const TEREN_COL: Record<TerenBazowy, string> = {
   [TerenBazowy.Polarny]: '#d8e4f0',
 };
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9745-9750
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9821-9826
 export const TEREN_LETTER: Record<TerenBazowy, string> = {
   [TerenBazowy.Morze]: '~', [TerenBazowy.PlytkieMorze]: '~',
   [TerenBazowy.Laka]: 'Ł', [TerenBazowy.Rownina]: 'R',
@@ -397,13 +402,13 @@ export const TEREN_LETTER: Record<TerenBazowy, string> = {
   [TerenBazowy.Polarny]: '❄',
 };
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9751-9754
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9827-9830
 export function hexDist(q1: number, r1: number, q2: number, r2: number): number {
   const dq = q2 - q1, dr = r2 - r1;
   return (Math.abs(dq) + Math.abs(dq + dr) + Math.abs(dr)) / 2;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9756-9783
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9832-9859
 /** Kompaktowy podgląd (ui-params) rozszerzany o heksy z faktycznym 👤 / auto-przydziałem. */
 export function okolicaPreviewRadius(
   city: CityHexRef,
@@ -433,14 +438,14 @@ export function okolicaPreviewRadius(
   return displayR;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9785-9789
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9861-9865
 export function rangeName(R: number): string {
   if (R <= 5) return 'małe miasto';
   if (R <= 10) return 'średnie miasto';
   return 'duże miasto';
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9790-9795
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9866-9871
 /** Liczba heksów dodanych przez `rings` pierścieni kultury poza promieniem R. */
 export function ringsTiles(R: number, rings: number): number {
   let n = 0;
@@ -448,12 +453,12 @@ export function ringsTiles(R: number, rings: number): number {
   return n;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9796-9798
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9872-9874
 export function okStat(key: string, val: string, sub: string): string {
   return `<div class="okstat"><span class="ks">${key}</span><b>${val}</b> <span class="muted">${sub}</span></div>`;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6892-6899
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6921-6928
 export function buildingLocationRequirementMet(
   lokalizacja: 'stolica' | 'region' | undefined,
   isCapital: boolean | undefined,
@@ -463,7 +468,7 @@ export function buildingLocationRequirementMet(
   return true;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8125-8130
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8163-8168
 export function recruitManpowerCost(city: City, typeId: string): number {
   const ep = cfg.getEpoch?.(city.ownerId) ?? 1;
   const multipliers = cfg.getManpowerMultipliers?.(city.ownerId);
@@ -471,7 +476,7 @@ export function recruitManpowerCost(city: City, typeId: string): number {
   return unitManpowerCostForType(typeId, ep, maxMult, multipliers?.costMult ?? maxMult);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8132-8137
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8170-8175
 /** Bieżąca pula rekrutów używana przez bramkę zakupu (fallback: pula miasta). */
 export function empireRekruciTotal(city: City): number | undefined {
   const empireTotal = cfg.getEmpireRekruciTotal?.(city.ownerId);
@@ -479,7 +484,7 @@ export function empireRekruciTotal(city: City): number | undefined {
   return cfg.getManpowerSnapshot?.(city.id)?.manpowerBiezacy;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8139-8147
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8177-8185
 /** Czy imperium ma wystarczającą pulę rekrutów na werb (fallback: pula miasta). */
 export function empireRekruciAffordable(
   city: City,
@@ -490,7 +495,7 @@ export function empireRekruciAffordable(
   return available == null || available >= mpCost;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8149-8176
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8187-8214
 /**
  * Sufit licznika na karcie z bieżącego snapshotu zasobów.
  * To tylko informacyjny max dla draftu UI — nie rezerwuje i nie zmienia kolejki.
@@ -520,7 +525,7 @@ export function maxAffordableRecruitQuantity(
   return constrained ? Math.max(1, max) : undefined;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8178-8202
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8216-8240
 /**
  * JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): chip(y) kosztu surowcowego jednostki
  * (units.json Surowiec/Surowiec (ilość)) na karcie rekrutacji — czerwony gdy pula
@@ -547,7 +552,7 @@ export function unitStockCostChipsHtml(u: UnitDef, city: City): string {
   return chips.join('');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8204-8212
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8242-8250
 /** Chip(y) utrzymania surowcowego jednostki (units.json Utrzymanie surowiec). */
 export function unitResourceUpkeepChipsHtml(u: UnitDef): string {
   const upkeep = unitResourceUpkeep(u);
@@ -558,12 +563,12 @@ export function unitResourceUpkeepChipsHtml(u: UnitDef): string {
     .join('');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8744-8747
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8819-8822
 export function missingTechSteps(data: GameData, techName: string, unlocked: ReadonlySet<string>): string[] {
   const chain = techPrereqChain(data, techName);
   return chain.filter(t => !unlocked.has(t));
 }
-// pin-adapter 86d510c66 gra/src/ui/cityPanel.ts:6901-7000
+// pin-adapter 9b019a7d8 gra/src/ui/cityPanel.ts:6930-7038
 /** K05A-Z4 (adapter): warunki budowy z oceną spełnienia — wynik silnika z DTO (`panelInputs.k05a`), nie logika UI.
  *  Pin (ui/cityPanel.ts) składał chipy z reguł gry; ta sama sygnatura i te same etykiety/klasy po stronie silnika. */
 export function buildingRequirementChips(
@@ -575,7 +580,7 @@ export function buildingRequirementChips(
 ): BuildingReqChip[] {
   return regulExt().buildingRequirementChips(def, city, data, ctx, unlockedTechs);
 }
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7002-7012
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7040-7050
 /** Czy gracz może TERAZ kliknąć Buduj — wszystkie chipy wymagań spełnione (tech, magazyn…). */
 export function buildingCanBuildNow(
   def: BuildingDef,
@@ -588,7 +593,7 @@ export function buildingCanBuildNow(
   return chips.length === 0 || chips.every(c => c.met);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:7014-7034
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:7052-7072
 /**
  * Sortuje pulę budynków: najpierw te, które można wybudować teraz, potem zablokowane
  * (np. brak surowców w magazynie). W obrębie tieru zachowuje kolejność wejściową
@@ -611,7 +616,7 @@ export function sortProductionItemsByBuildability(
   return [...buildable, ...blocked];
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:6797-6837
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:6826-6866
 /**
  * P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE (Maciej 2026-08-14, runda 2 po
  * werdykcie FAIL Evaluatora — N1/N3): strona PRODUKCYJNA budynku-konwertera
@@ -654,7 +659,7 @@ export function buildingConverterProductionDisplay(
   return converterProductionDisplayForBuilding(def.id, rawParams, difficulty, era);
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8821-8853
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8896-8929
 export function productionCtxForCity(city: City): AvailabilityContext {
   const raw = cfg.getResourceAccess?.(city.id);
   const activeResourceLabels = Array.isArray(raw)
@@ -681,6 +686,7 @@ export function productionCtxForCity(city: City): AvailabilityContext {
     empireBuiltIds,
     empireResourceStock: cfg.getEmpireStock?.(city.ownerId),
     cityHasCoastOrRiver: cfg.getCityHasCoastOrRiver?.(city.id) ?? false,
+    cityHasRiver: cfg.getCityHasRiver?.(city.id) ?? false,
     // ADMIN-STOLICA (2026-07-25): jedno źródło prawdy o stolicy — capitalCityIdForOwner
     // (main.ts), tu przez cfg.getCapitalCityId (patrz getCapitalCityId doc powyżej —
     // wyznaczona stolica z fallbackiem na najstarsze miasto, NIE heurystyka
@@ -689,7 +695,7 @@ export function productionCtxForCity(city: City): AvailabilityContext {
   };
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8749-8786
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8824-8861
 export function formatBuildingCatalogLockHint(
   entry: BuildingCatalogEntry,
   data: GameData,
@@ -729,7 +735,7 @@ export function formatBuildingCatalogLockHint(
   return parts.length > 0 ? `🔒 ${techIc}${parts.join(' · ')}` : '🔒 Niedostępny';
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8788-8819
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8863-8894
 /** Podpowiedź badań do podglądu epoki (toggle B) — łańcuch tech nawet gdy gracz już ma odblokowane. */
 export function formatBuildingPreviewHint(
   def: BuildingDef,
@@ -763,7 +769,7 @@ export function formatBuildingPreviewHint(
   return parts.join(' · ');
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8855-8889
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8931-8965
 export function collectEraPreviewEntries(
   data: GameData,
   techs: readonly string[],
@@ -799,8 +805,9 @@ export function collectEraPreviewEntries(
     return e.status === 'locked';
   });
 }
-// pin 86d510c66 gra/src/ui/cityPanel.ts:8359-8384
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:8413-8439
 export function recruitUnit(city: City, item: ProductionItem, quantity = 1): boolean {
+  if (isCityUnderSiege([city], city)) return false; // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1
   const requestedQuantity = Number.isFinite(quantity)
     ? Math.max(1, Math.floor(quantity))
     : 1;
@@ -827,7 +834,7 @@ export function recruitUnit(city: City, item: ProductionItem, quantity = 1): boo
   return true;
 }
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9815-9843
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9891-9919
 /**
  * Zbiera unikalne typy ulepszeń terenu (i liczbę heksów każdego typu) w zasięgu
  * roboczym miasta (`Rwork`) — T7b, call-site 3/3. Recon (T7a) potwierdził: dziś w

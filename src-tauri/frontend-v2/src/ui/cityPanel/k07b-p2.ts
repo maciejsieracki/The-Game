@@ -100,7 +100,7 @@ const buildOkolicaDetailCard = (...args: any[]): any => dep('buildOkolicaDetailC
 const buildKulturaDetailCard = (...args: any[]): any => dep('buildKulturaDetailCard')(...args);
 const buildBuildingBuildTabDetailCard = (...args: any[]): any => dep('buildBuildingBuildTabDetailCard')(...args);
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1943-1948
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1972-1977
 export const OKOLICA_FOCUS_BRAND: Record<OkolicaFocus, string> = {
   zywnosc: 'field-food',
   produkcja: 'field-production',
@@ -109,7 +109,7 @@ export const OKOLICA_FOCUS_BRAND: Record<OkolicaFocus, string> = {
 };
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1950-1955
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1979-1984
 export const OKOLICA_FOCUS_SHORT: Record<OkolicaFocus, string> = {
   zywnosc: 'Żyw.',
   produkcja: 'Prod.',
@@ -118,7 +118,7 @@ export const OKOLICA_FOCUS_SHORT: Record<OkolicaFocus, string> = {
 };
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1957-1964
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1986-1993
 export const BUDOWA_FOCUS_BRAND: Record<BudowaFocus, string> = {
   wzrost: 'field-food',
   wojsko: 'tb-army',
@@ -129,7 +129,7 @@ export const BUDOWA_FOCUS_BRAND: Record<BudowaFocus, string> = {
 };
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1966-1973
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:1995-2002
 export const BUDOWA_FOCUS_SHORT: Record<BudowaFocus, string> = {
   wzrost: 'Wzrost',
   wojsko: 'Wojsko',
@@ -140,7 +140,7 @@ export const BUDOWA_FOCUS_SHORT: Record<BudowaFocus, string> = {
 };
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1975-1982
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:2004-2011
 export const BUDOWA_FOCUS_TITLE: Record<BudowaFocus, string> = {
   wzrost: 'Wzrost — żywność i zdrowie',
   wojsko: 'Wojsko — koszary, obrona',
@@ -151,13 +151,13 @@ export const BUDOWA_FOCUS_TITLE: Record<BudowaFocus, string> = {
 };
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1984-1986
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:2013-2015
 export function okolicaProfileIconHtml(iconId: string, size: BrandIconSize = 24): string {
   return cityPanelBrandIcon(iconId, size, 'okolica-profile-ic');
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1988-1994
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:2017-2023
 export function setOkolicaProfileButtonContent(btn: HTMLButtonElement, iconId: string, label: string): void {
   btn.classList.add('okolica-profile-btn');
   const ic = okolicaProfileIconHtml(iconId, 24);
@@ -167,7 +167,7 @@ export function setOkolicaProfileButtonContent(btn: HTMLButtonElement, iconId: s
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:1996-2000
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:2025-2029
 export function setOkolicaProfileButtonIconOnly(btn: HTMLButtonElement, iconId: string, size: BrandIconSize = 20): void {
   btn.classList.add('okolica-profile-btn', 'okolica-profile-btn-ic-only');
   const ic = okolicaProfileIconHtml(iconId, size);
@@ -175,7 +175,7 @@ export function setOkolicaProfileButtonIconOnly(btn: HTMLButtonElement, iconId: 
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11322-11362
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11417-11457
 export function appendOkolicaToolbarProfiles(
   wrap: HTMLElement,
   city: CityK07,
@@ -219,7 +219,7 @@ export function appendOkolicaToolbarProfiles(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11364-11477
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11459-11572
 export function appendBudowaToolbarProfiles(
   wrap: HTMLElement,
   city: CityK07,
@@ -336,7 +336,7 @@ export function appendBudowaToolbarProfiles(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11479-11714
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11574-11809
 export function appendBudowaListaBar(
   parent: HTMLElement,
   city: CityK07,
@@ -575,7 +575,7 @@ export function appendBudowaListaBar(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11716-11744
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11811-11839
 export function renderTopStatsBar(mount: HTMLElement, city: CityK07, view: CityView | null): void {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const skarb = cfg.getTreasury?.(city.ownerId);
@@ -607,7 +607,7 @@ export function renderTopStatsBar(mount: HTMLElement, city: CityK07, view: CityV
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11746-11751
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11841-11846
 export function appendPanel(parent: HTMLElement, id?: string): HTMLElement {
   const p = el('div', 'panel panel-tight');
   if (id) p.id = id;
@@ -616,7 +616,7 @@ export function appendPanel(parent: HTMLElement, id?: string): HTMLElement {
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11753-11757
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11848-11852
 export function resolveDetailSideHint(mount: HTMLElement): 'left' | 'right' | 'auto' {
   if (mount.closest('.civ-ux-left')) return 'left';
   if (mount.closest('.civ-ux-right')) return 'right';
@@ -624,7 +624,7 @@ export function resolveDetailSideHint(mount: HTMLElement): 'left' | 'right' | 'a
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11759-11778
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11854-11873
 export function appendSectionTitleWithDetails(
   mount: HTMLElement,
   titleHtml: string,

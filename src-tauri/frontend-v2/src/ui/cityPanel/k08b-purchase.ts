@@ -21,7 +21,7 @@ import { appendSectionTitleWithDetails } from './k08b-title';
 
 // ─── Jednostki K08B, partia k08b-purchase.ts (kopie pinu wygenerowane; markery = bramka verify-k08b-copies.mjs) ─────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9119-9216
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9195-9292
 export function renderPurchasableUnits(
   mount: HTMLElement,
   city: City,

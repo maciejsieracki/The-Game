@@ -23,7 +23,7 @@ import { cfg, type City, type GameData } from './k05b-host';
 
 // ─── Jednostki K09A-2 (kopie pinu wygenerowane ręcznie; markery = bramka verify-k09a-copies.mjs) ─────────────────────
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11836-11844
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:11931-11939
 export function renderOkolicaPanel(mount: HTMLElement, city: City, map: GameMap): void {
   mount.innerHTML =
     `<div id="cs-okmode" class="okolica-mode-hint"></div>` +
@@ -35,7 +35,7 @@ export function renderOkolicaPanel(mount: HTMLElement, city: City, map: GameMap)
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11909-11937
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:12004-12032
 export function renderLeftPanelTab(
   mount: HTMLElement,
   tab: CityPanelProductionTab,
@@ -67,7 +67,7 @@ export function renderLeftPanelTab(
 }
 // pin-end
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:11939-11991
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:12034-12086
 export function renderRightPanelTab(
   mount: HTMLElement,
   tab: CityPanelCityParamTab,

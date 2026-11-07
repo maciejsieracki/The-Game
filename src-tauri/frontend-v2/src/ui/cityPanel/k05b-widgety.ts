@@ -10,7 +10,7 @@ import type { GarrisonUnit } from './k01a-fundament';
 import { openEntityCard } from '../entityCards/renderer';
 import { cfg } from './k05b-host';
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9501-9516
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9577-9592
 export function renderSplitPane(
   mount: HTMLElement,
   topRender: (row: HTMLElement) => void,
@@ -28,7 +28,7 @@ export function renderSplitPane(
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9603-9635
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9679-9711
 export function appendGarrisonUnitChip(parent: HTMLElement, u: GarrisonUnit): void {
   const hp = u.health ?? 100;
   const max = u.maxHealth ?? 100;
@@ -63,7 +63,7 @@ export function appendGarrisonUnitChip(parent: HTMLElement, u: GarrisonUnit): vo
 }
 
 
-// pin 86d510c66 gra/src/ui/cityPanel.ts:9848-9860
+// pin 9b019a7d8 gra/src/ui/cityPanel.ts:9924-9936
 export function improvementRangeRow(grid: HTMLElement, key: string, nazwa: string, count: number): void {
   const lEl = el('span', 'dc-l');
   lEl.textContent = nazwa;
