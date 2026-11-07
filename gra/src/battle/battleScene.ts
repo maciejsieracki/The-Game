@@ -705,11 +705,12 @@ const ORDER_COLOR_ATTACK = 0xe04040;
 const ORDER_MOVE_OPACITY = 0.30;
 const ORDER_ATTACK_OPACITY = 0.45;
 
-// Up to this many units deploy per side. maciej_playtest (POLE-BITWY) fields 110
-// per side (60 infantry + 30 archers + 20 cavalry). Headroom 120 so nothing
-// is sliced before deployment.
-const MAX_PER_SIDE = 120;
-/** R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: limit pola bitwy do komunikatu o rezerwie (wartosc bez zmian). */
+// Up to this many units deploy per side. R-WEB-BATTLE-CAP-500-Q1 (decyzja
+// wlasciciela 2026-11-07): limit podniesiony ze 120 do 500. JEDNO zrodlo prawdy
+// -- rozstawienie, czyszczenie pasm (MAX_RANKS / deployClearRanksFor), komunikat
+// o rezerwie (BATTLE_MAX_PER_SIDE) i slice(0, MAX_PER_SIDE) czytaja te stala.
+const MAX_PER_SIDE = 500;
+/** R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: limit pola bitwy do komunikatu o rezerwie (jedno zrodlo: MAX_PER_SIDE). */
 export const BATTLE_MAX_PER_SIDE = MAX_PER_SIDE;
 
 // How many figures stand shoulder-to-shoulder in ONE rank (a straight line).
@@ -5248,6 +5249,11 @@ export class BattleScene {
           : PLAY_ROW1;
         for (let extra = 0; extra < 10; extra++) {
           for (let rr = rowLo; rr <= rowHi; rr++) {
+            // R-WEB-BATTLE-CAP-500-Q1: gorna granica wyniku pola w wierszu rr (100 + 40 premii Plains,
+            // odleglosc kolumn >= 0). Pole z granica <= bestScore nie moze wygrac (porownanie ostre
+            // `sc > bestScore`), wiec pominiecie go nie zmienia wyniku -- a przy 500 vs 500 tnie
+            // ~2200 wywolan tileScore na jednostke do kilkudziesieciu.
+            if (140 - Math.abs(rr - idealRow[idx]!) * 3 <= bestScore) continue;
             for (const cc of [
               clampCol(idealCol[idx]! + extra * rankStep),
               clampCol(idealCol[idx]! - extra * rankStep),
@@ -8016,8 +8022,6 @@ export class BattleScene {
   private _compactAttackAllowsStep(ru: RuntimeBattleUnit, candidateCol: number): boolean {
     if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted || isSiegeUnit(ru.bu)) return true;
     const rank = Math.max(0, Math.floor(ru.formationRank ?? 0));
-    const allies = (ru.side === 'atk' ? this.atk : this.def)
-      .filter(u => !u.dead && !u.fadingOut && !u.removed && !u.routed && !u.mounted && !isSiegeUnit(u.bu));
     const progress = (u: RuntimeBattleUnit): number => ru.side === 'atk' ? u.q : -u.q;
     const currentProgress = progress(ru);
     const nextProgress = ru.side === 'atk' ? candidateCol : -candidateCol;
@@ -8026,8 +8030,14 @@ export class BattleScene {
     // tiles while repeatedly replanning around its own line.
     if (nextProgress < currentProgress) return false;
     if (nextProgress === currentProgress) return true;
+    // R-WEB-BATTLE-CAP-500-Q1: te same warunki co dawny filtr `allies` + filtr rangi, ale w jednym
+    // przejsciu i z tanim testem rangi PRZED isSiegeUnit (normName) -- przy 500 jednostkach na strone
+    // to wolane dla kazdego kroku kazdej jednostki. Wynik (zbior `previous`) identyczny.
     const previous = rank > 0
-      ? allies.filter(u => Math.max(0, Math.floor(u.formationRank ?? 0)) === rank - 1)
+      ? (ru.side === 'atk' ? this.atk : this.def).filter(u =>
+          !u.dead && !u.fadingOut && !u.removed && !u.routed && !u.mounted
+          && Math.max(0, Math.floor(u.formationRank ?? 0)) === rank - 1
+          && !isSiegeUnit(u.bu))
       : [];
     const nearestPreviousRowGap = previous.length > 0
       ? Math.min(...previous.map(u => Math.abs(u.r - ru.r)))
@@ -8317,6 +8327,41 @@ export class BattleScene {
   }
 
   /**
+   * R-WEB-BATTLE-CAP-500-Q1: ta sama odpowiedz co _canAttackFrom(ru, col, row), ale z
+   * jednorazowym przygotowaniem (lista wrogow, filtr muru, indeks pol) -- BFS w
+   * _firstStepAlongPathToAttack wola test dla kazdego odwiedzonego pola, a przy 500 vs 500
+   * (1000 jednostek) pelna petla po wrogach + alokacja _enemiesOf na KAZDE pole dawala
+   * O(pola x wrogowie) na jednostke. Wynik identyczny (dd w [1, reach] do dowolnego
+   * wroga nieblokowanego murem).
+   */
+  private _makeCanAttackFromTest(ru: RuntimeBattleUnit): (col: number, row: number) => boolean {
+    const reach = canShoot(ru) ? ru.range : 1;
+    const enemies = this._enemiesOf(ru).filter(e => !this._meleeBlockedByWall(ru, e));
+    if (enemies.length === 0) return () => false;
+    if (reach <= 4) {
+      const cells = new Set<string>();
+      for (const e of enemies) cells.add(cellKey(e.q, e.r));
+      return (col: number, row: number): boolean => {
+        for (let dc = -reach; dc <= reach; dc++) {
+          const rem = reach - Math.abs(dc);
+          for (let dr = -rem; dr <= rem; dr++) {
+            if (dc === 0 && dr === 0) continue;
+            if (cells.has(cellKey(col + dc, row + dr))) return true;
+          }
+        }
+        return false;
+      };
+    }
+    return (col: number, row: number): boolean => {
+      for (const e of enemies) {
+        const dd = manhattan(col, row, e.q, e.r);
+        if (dd >= 1 && dd <= reach) return true;
+      }
+      return false;
+    };
+  }
+
+  /**
    * True if, standing on (col, row), `ru` could legally strike this SPECIFIC
    * `target` (melee adjacency or within ranged reach) -- unlike _canAttackFrom
    * (any enemy), used by the C-FLANK directed-attack maneuver which must
@@ -8406,9 +8451,9 @@ export class BattleScene {
     target?: RuntimeBattleUnit,
   ): string | null {
     const startKey = cellKey(ru.q, ru.r);
-    const isGoal = (q: number, r: number): boolean => target
-      ? this._canStrikeTargetFrom(ru, q, r, target)
-      : this._canAttackFrom(ru, q, r);
+    const isGoal = target
+      ? (q: number, r: number): boolean => this._canStrikeTargetFrom(ru, q, r, target)
+      : this._makeCanAttackFromTest(ru);
 
     // Already standing on an attack position -> handled by the caller, but be safe.
     if (isGoal(ru.q, ru.r)) return null;
