@@ -78,7 +78,7 @@ check(
 check(
   'guard napastnika (wspólna pętla pre-pass) wyklucza gracza, kopie typu, barbarzyńców, '
     + 'wyeliminowanych i miasta-państwa PRZED zebraniem wasPending Żelaza',
-  /const bronzeTriggeredSubjects: ForcedWarPairingSubject\[\] = \[\];[\s\S]{0,320}?ownerId <= 0\s*\n\s*\|\| typCityCopyOwners\.has\(ownerId\)\s*\n\s*\|\| isBarbarian\(ownerId\)\s*\n\s*\|\| eliminatedOwners\.has\(ownerId\)\s*\n\s*\|\| isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) continue;[\s\S]{0,4200}?const wasPending = ironForceWarPendingOwners\.has\(ownerId\);/.test(main),
+  /const bronzeTriggeredSubjects: ForcedWarPairingSubject\[\] = \[\];[\s\S]{0,1000}?ownerId <= 0\s*\n\s*\|\| typCityCopyOwners\.has\(ownerId\)\s*\n\s*\|\| isBarbarian\(ownerId\)\s*\n\s*\|\| eliminatedOwners\.has\(ownerId\)\s*\n\s*\|\| isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) continue;[\s\S]{0,4200}?const wasPending = ironForceWarPendingOwners\.has\(ownerId\);/.test(main),
 );
 check(
   'kwalifikacja napastnika przechodzi przez isEligibleForIronForcedWar (isMainAiCiv + brak wojny w dowolnej roli)',

@@ -45,10 +45,10 @@ try {
   console.log('--- P: parametry (war-rules-params.json) ---');
   eq(M.WAR_RULES_PARAMS.maxEraForcedWarsPerEra, null, 'P1 globalny limit wojen epoki zniesiony (null)');
   eq(M.WAR_RULES_PARAMS.maxEraForcedWarsPerCivPerEra, 1, 'P2 limit per cywilizacja w epoce = 1');
-  eq(M.WAR_RULES_PARAMS.enabledForcedWarEras, ['stone'], 'P3 włączone wojny epoki = tylko Kamień');
+  eq(M.WAR_RULES_PARAMS.enabledForcedWarEras, ['stone', 'bronze', 'iron'], 'P3 włączone wojny epoki = Kamień, Brąz, Żelazo');
   assert(M.isForcedEraWarEnabled('stone') === true, 'P4 Kamień włączony');
-  assert(M.isForcedEraWarEnabled('bronze') === false, 'P5 Brąz wyłączony flagą');
-  assert(M.isForcedEraWarEnabled('iron') === false, 'P6 Żelazo wyłączone flagą');
+  assert(M.isForcedEraWarEnabled('bronze') === true, 'P5 Brąz włączony');
+  assert(M.isForcedEraWarEnabled('iron') === true, 'P6 Żelazo włączone');
 
   // ---------------------------------------------------------------- C: licznik per (cywilizacja, epoka)
   console.log('--- C: licznik per (cywilizacja, epoka) ---');
@@ -205,8 +205,8 @@ try {
       attackerId: 3, attackerEpoch: 1, targetId: 0, targetEpoch: 1 };
     eq(M.evaluateEraForcedWarGate(base), 'ok', 'G1 Kamień, świeży licznik -> ok');
     eq(M.evaluateEraForcedWarGate({ ...base, tag: null }), 'ok', 'G2 zwykła wojna (tag null) -> ok');
-    eq(M.evaluateEraForcedWarGate({ ...base, tag: 'bronze' }), 'era-disabled', 'G3 Brąz wyłączony flagą -> era-disabled');
-    eq(M.evaluateEraForcedWarGate({ ...base, tag: 'iron', multiwarEnabled: false }), 'era-disabled', 'G4 Żelazo wyłączone -> era-disabled także przy multiwar OFF (jak baza)');
+    eq(M.evaluateEraForcedWarGate({ ...base, tag: 'bronze' }), 'ok', 'G3 Brąz włączony flagą -> ok (R-WEB-ERA-ENABLE-Q1)');
+    eq(M.evaluateEraForcedWarGate({ ...base, tag: 'iron', multiwarEnabled: false }), 'ok', 'G4 Żelazo włączone -> ok także przy multiwar OFF');
     eq(M.evaluateEraForcedWarGate({ ...base, multiwarEnabled: false, counts: new Map([['3:1', 1]]) }), 'ok', 'G5 multiwar OFF: licznik nie blokuje (zachowanie bazowe)');
     eq(M.evaluateEraForcedWarGate({ ...base, declaredByTag: new Map([['stone', 5]]) }), 'ok', 'G6 limit globalny zniesiony (null): licznik globalny nie blokuje');
     eq(M.evaluateEraForcedWarGate({ ...base, counts: new Map([['3:1', 1]]) }), 'civ-cap-attacker', 'G7 napastnik z zużytym licznikiem -> civ-cap-attacker');

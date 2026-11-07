@@ -89,7 +89,15 @@ const PARAM_NAMES = [
   'bronzeForceWarActiveByPairKey',
   'bronzeEraEnterTurnByOwner',
   'ironEraEnterTurnByOwner',
+  'forcedEraPeaceUntilNextEraByPairKey',
 ];
+// R-WEB-ERA-WAR-BRONZE-IRON-REENABLE-Q1: lista rejestrów rośnie z każdą funkcją (np. wave-map);
+// dopełniamy ją o WSZYSTKIE rejestry czyszczone w bloku "nowa gra" (`X.clear();`), żeby test nie
+// wymagał ręcznej synchronizacji przy każdym nowym rejestrze.
+PARAM_NAMES.splice(0, PARAM_NAMES.length, ...new Set([
+  ...PARAM_NAMES,
+  ...[...originalSlice.matchAll(/(\w+)\.clear\(\);/g)].map(m => m[1]),
+]));
 
 function seededRegistries() {
   const reg = {};
