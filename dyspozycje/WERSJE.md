@@ -1,3 +1,9 @@
+## ROBOCZA 2853fdee -- 2026-11-06 -- FALA 538: limit bitwy 120→500 na stronę (testowa)
+
+- MAX_PER_SIDE=500 (jedno źródło prawdy), przyspieszenie logiki tury i rozstawienia 500v500 (BFS celu, _placeUnits, _compactAttackAllowsStep), głębokość czyszczenia terenu liczona z rozmiaru większej armii (bitwy do 120 mają dawny teren); komunikat rezerwy działa z nowym limitem
+- Weryfikacja: battle-cap-500 59/0, battle-undeployed 35/0, teren-walki-etapy 33/0, logic-test 213/213, tsc 0, ai-test jak baza; logika tury 500v500 śr. ok 1,6-1,9 s, p95 ok 5,6 s, max do 11,8 s (bez renderu); FC PASS-WITH-NOTES
+- Limity: FPS i czas klatki w Chromium przy 1000 figurach NIE_ZMIERZONO; planowanie AUTO synchroniczne, możliwe zawieszenie kilku sekund; zaproponowany osobny temat (rozłożenie w czasie / LOD)
+
 ## ROBOCZA b3bc8539 -- 2026-11-06 -- FALA 537: panele boczne startują pod lewym banerem HUD (testowa)
 
 - SIDE_PANEL_TOP = var(--civ-hud-toolbar-top,104px): panele Miasta/Wojsko, Dyplomacja, Badania (picker), Civpedia startują pod dolną krawędzią lewego banera (dynamicznie z fitHudTopbar), w trybie 1-liniowym przesunięcie 0; wysokość paneli maleje o przesunięcie
