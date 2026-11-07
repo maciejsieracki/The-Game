@@ -18,6 +18,39 @@ export function canRecruitGeneral(era: number, count: GeneralRosterCount): boole
 }
 
 /**
+ * R-WEB-GENERALS-OVER-LIMIT-Q1: bramka NARODZIN wodza. Zakup jest bramkowany (`canRecruitGeneral`), ale
+ * pozycja z kolejki rekrutacji moze zmienic wlasciciela razem z miastem (zdobycie, kapitulacja, cesja,
+ * aneksja, odbicie zbuntowanego miasta) albo pochodzic ze starego zapisu -- wtedy slot zarezerwowany przez
+ * poprzedniego wlasciciela nie istnieje. Jedyny punkt, przez ktory kazdy wodz trafia na mape, to narodziny
+ * jednostki: wodz rodzi sie jako wodz TYLKO gdy zyjacych wodzow wlasciciela jest mniej niz limit epoki;
+ * w przeciwnym razie rodzi sie jako zwykla jednostka tego samego typu (nic nie ginie, zakup nie przepada).
+ */
+export function canSpawnQueuedGeneral(era: number, aliveGenerals: number): boolean {
+  return Math.max(0, Math.floor(aliveGenerals)) < generalLimitForEra(era);
+}
+
+/**
+ * R-WEB-GENERALS-OVER-LIMIT-Q1: migracja nadmiaru z zapisu. Zwraca id jednostek, ktore traca flage wodza
+ * (zostaja zwyklymi jednostkami tego samego typu, nikt nie jest usuwany). ZASADA WYBORU: dla kazdego
+ * wlasciciela zostaja NAJSTARSI wodzowie -- kolejnosc w tablicy `roster` = kolejnosc narodzin (push) --
+ * do limitu jego epoki; kazdy kolejny (mlodszy) wodz ponad limit zostaje zwykla jednostka.
+ */
+export function planGeneralLimitDemotions(
+  roster: readonly { id: string; ownerId: number; isGeneral?: boolean }[],
+  eraForOwner: (ownerId: number) => number,
+): string[] {
+  const keptByOwner = new Map<number, number>();
+  const demote: string[] = [];
+  for (const unit of roster) {
+    if (unit.isGeneral !== true) continue;
+    const kept = keptByOwner.get(unit.ownerId) ?? 0;
+    if (kept < generalLimitForEra(eraForOwner(unit.ownerId))) keptByOwner.set(unit.ownerId, kept + 1);
+    else demote.push(unit.id);
+  }
+  return demote;
+}
+
+/**
  * R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: czy AI ma w tej turze kupic wodza w stolicy (takze w pokoju).
  * Tak, gdy wielka cywilizacja ma stolice i oferte wodza, a zywi + zakolejkowani < limit epoki (Kamien 1, Braz 2).
  * Utrata wodza zwalnia slot, wiec nastepna tura kupuje nowego w stolicy.

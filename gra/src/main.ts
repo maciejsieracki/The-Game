@@ -942,7 +942,7 @@ import {
 } from './game/capital-capture';
 import { cityPopulationCap, loadEconParams, resolvePopulationCapMatrixDelta, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
-import { attemptGeneralPurchase, canRecruitGeneral, shouldAiBuyGeneral, generalFollowDestination, generalLimitForEra, nearestLivingGeneral, planDeferredGeneralMarchBatch, stoneGeneralUnitId } from './game/generals';
+import { attemptGeneralPurchase, canRecruitGeneral, canSpawnQueuedGeneral, planGeneralLimitDemotions, shouldAiBuyGeneral, generalFollowDestination, generalLimitForEra, nearestLivingGeneral, planDeferredGeneralMarchBatch, stoneGeneralUnitId } from './game/generals';
 import { promoteAiUnitForEra } from './game/ai-era-unit-promotion';
 import {
   aiGeneralCampaignToSave,
@@ -4281,7 +4281,7 @@ async function boot(): Promise<void> {
         id: newUnitId,
         ownerId: city.ownerId,
         typeId: completed.id,
-        isGeneral: completed.isGeneral === true,
+        isGeneral: completed.isGeneral === true && generalMaySpawnForOwner(city.ownerId),
         ...(city.ownerId === 0 ? { followGeneral: recruitFollowGeneralDefault } : {}),
         category: categoryOf(completed.id, role, isSuper, def['Typ']),
         q: city.q,
@@ -7230,6 +7230,12 @@ async function boot(): Promise<void> {
         return definition?.Typ === 'Mount' && !/rydwan|chariot/i.test(item.id);
       });
       return ordered(cavalryCandidates)[0] ?? null;
+    }
+
+    /** R-WEB-GENERALS-OVER-LIMIT-Q1: czy wodz z kolejki moze sie urodzic jako wodz (zyjacy < limit epoki wlasciciela). */
+    function generalMaySpawnForOwner(ownerId: number): boolean {
+      const alive = units.filter(u => u.ownerId === ownerId && u.isGeneral === true).length;
+      return canSpawnQueuedGeneral(empireEpochForOwner(ownerId), alive);
     }
 
     function generalRecruitmentOfferForCity(cityId: string): {
@@ -37821,7 +37827,7 @@ async function boot(): Promise<void> {
                   id: newUnitId,
                   ownerId: city.ownerId,
                   typeId: rec.id,
-                  isGeneral: rec.isGeneral === true,
+                  isGeneral: rec.isGeneral === true && generalMaySpawnForOwner(city.ownerId),
                   ...(city.ownerId === 0 ? { followGeneral: recruitFollowGeneralDefault } : {}),
                   category: categoryOf(rec.id, role, isSuper, def['Typ']),
                   q: city.q,
@@ -44797,6 +44803,12 @@ async function boot(): Promise<void> {
         for (const [cid, prod] of cityProd.entries()) {
           setCityProduction(cid, prod);
         }
+      }
+      // R-WEB-GENERALS-OVER-LIMIT-Q1: stary zapis z nadmiarem wodzow -- najmlodsi ponad limit epoki
+      // wlasciciela traca flage wodza (zostaja zwyklymi jednostkami, nic nie ginie).
+      for (const id of planGeneralLimitDemotions(units, empireEpochForOwner)) {
+        const demoted = units.find(u => u.id === id);
+        if (demoted) demoted.isGeneral = false;
       }
       _lastPieniadzRate = 0;
       _lastPracaRate = 0;
