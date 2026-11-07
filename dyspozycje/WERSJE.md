@@ -1,3 +1,9 @@
+## ROBOCZA 8d8812cb -- 2026-11-06 -- FALA 539: muzyka cywilizacji w dyplomacji (Grecy, Rzymianie, Chińczycy, Zulusi, Egipt, Sumerowie, Inkowie) (testowa)
+
+- manifest gra/data/civ-music.json (klucz = ikonaId), przywitanie raz + pętla negocjacji z crossfade, powrót muzyki tła po zamknięciu; Inkowie 2 utwory na zmianę bez przywitania; Sumerowie samo przywitanie; pozostałe civ bez zmian; 13 mp3 (negocjacje 64 kbps, przywitania 96 kbps, razem ok 10,7 MiB); bundle +15 MB (70,7 -> 85,7 MB)
+- Weryfikacja: civ-music-test 27/0, civ-music-live-test (Chromium) 20/0, logic-test 213/213, tsc 0; test pada na pustym manifeście; FC PASS-WITH-NOTES
+- Limity: odsłuch pętli i jakość 64 kbps NIE_ZMIERZONO (do oceny właściciela); stare utwory Rzymian zostają jako zapas (ok 1,4 MB); rozmiar pliku ok 86 MB, limit GitHub 100 MB
+
 ## ROBOCZA 2853fdee -- 2026-11-06 -- FALA 538: limit bitwy 120→500 na stronę (testowa)
 
 - MAX_PER_SIDE=500 (jedno źródło prawdy), przyspieszenie logiki tury i rozstawienia 500v500 (BFS celu, _placeUnits, _compactAttackAllowsStep), głębokość czyszczenia terenu liczona z rozmiaru większej armii (bitwy do 120 mają dawny teren); komunikat rezerwy działa z nowym limitem

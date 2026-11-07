@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "2853fdee9b614f4de0166a7742c8decf",
-  "bundleSha256": "d716af9794926cd3f3027f6989a1aa8220fd635a9d88e1fd85bc0282d0878e02",
-  "bundleBytes": 70673010,
+  "bundleMd5": "8d8812cb760b55830a3b1e71707bbb67",
+  "bundleSha256": "bc1987951a3e9b1dd5595e92e7eff3a94777408ae77a33830b5cf09aff7e64af",
+  "bundleBytes": 85666186,
   "sourceSnapshot": {
-    "source": "CAP500 FC 36ed6e6da na origin/main",
+    "source": "CIVMUSIC FC 7057a0d5d na origin/main",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 538: MAX_PER_SIDE=500 (jedno źródło prawdy), przyspieszenie logiki tury i rozstawienia 500v500 (BFS celu, _placeUnits, _compactAttackAllowsStep), głębokość czyszczenia terenu liczona z rozmiaru większej armii (bitwy do 120 mają dawny teren); komunikat rezerwy działa z nowym limitem"
+    "FALA 539: manifest gra/data/civ-music.json (klucz = ikonaId), przywitanie raz + pętla negocjacji z crossfade, powrót muzyki tła po zamknięciu; Inkowie 2 utwory na zmianę bez przywitania; Sumerowie samo przywitanie; pozostałe civ bez zmian; 13 mp3 (negocjacje 64 kbps, przywitania 96 kbps, razem ok 10,7 MiB); bundle +15 MB (70,7 -> 85,7 MB)"
   ],
   "verification": [
-    "battle-cap-500 59/0, battle-undeployed 35/0, teren-walki-etapy 33/0, logic-test 213/213, tsc 0, ai-test jak baza; logika tury 500v500 śr. ok 1,6-1,9 s, p95 ok 5,6 s, max do 11,8 s (bez renderu); FC PASS-WITH-NOTES"
+    "civ-music-test 27/0, civ-music-live-test (Chromium) 20/0, logic-test 213/213, tsc 0; test pada na pustym manifeście; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "FPS i czas klatki w Chromium przy 1000 figurach NIE_ZMIERZONO; planowanie AUTO synchroniczne, możliwe zawieszenie kilku sekund; zaproponowany osobny temat (rozłożenie w czasie / LOD)"
+    "odsłuch pętli i jakość 64 kbps NIE_ZMIERZONO (do oceny właściciela); stare utwory Rzymian zostają jako zapas (ok 1,4 MB); rozmiar pliku ok 86 MB, limit GitHub 100 MB"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-07T20:10:08",
+  "hubGeneratedAt": "2026-11-07T20:38:42",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2853fdee9b614f4de0166a7742c8decf",
-      "sizeBytes": 70673010
+      "md5": "8d8812cb760b55830a3b1e71707bbb67",
+      "sizeBytes": 85666186
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2853fdee9b614f4de0166a7742c8decf",
-      "sizeBytes": 70673010
+      "md5": "8d8812cb760b55830a3b1e71707bbb67",
+      "sizeBytes": 85666186
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "2853fdee9b614f4de0166a7742c8decf",
-      "sizeBytes": 70673010
+      "md5": "8d8812cb760b55830a3b1e71707bbb67",
+      "sizeBytes": 85666186
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "2853fdee9b614f4de0166a7742c8decf",
-      "sizeBytes": 70673010
+      "md5": "8d8812cb760b55830a3b1e71707bbb67",
+      "sizeBytes": 85666186
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "2853fdee9b614f4de0166a7742c8decf",
-      "sizeBytes": 70673010
+      "md5": "8d8812cb760b55830a3b1e71707bbb67",
+      "sizeBytes": 85666186
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "2853fdee9b614f4de0166a7742c8decf",
-      "sizeBytes": 70673010
+      "md5": "8d8812cb760b55830a3b1e71707bbb67",
+      "sizeBytes": 85666186
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "2853fdee9b614f4de0166a7742c8decf",
-      "sizeBytes": 70673010
+      "md5": "8d8812cb760b55830a3b1e71707bbb67",
+      "sizeBytes": 85666186
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "2853fdee9b614f4de0166a7742c8decf",
-      "sizeBytes": 70673010
+      "md5": "8d8812cb760b55830a3b1e71707bbb67",
+      "sizeBytes": 85666186
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "2853fdee9b614f4de0166a7742c8decf",
-      "sizeBytes": 70673010
+      "md5": "8d8812cb760b55830a3b1e71707bbb67",
+      "sizeBytes": 85666186
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "2853fdee9b614f4de0166a7742c8decf",
-      "sizeBytes": 70673010
+      "md5": "8d8812cb760b55830a3b1e71707bbb67",
+      "sizeBytes": 85666186
     }
   ],
-  "md5": "2853fdee9b614f4de0166a7742c8decf",
+  "md5": "8d8812cb760b55830a3b1e71707bbb67",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
