@@ -14,8 +14,10 @@
     { "path": "gra/src/render/unitStaticMerge.ts", "base": null, "target": "02d7e3764110576bc72ef0160a48500f108238e8", "klasa": "K", "rust": null },
     { "path": "gra/src/render/units.ts", "base": "22e0a6317f77817c0d4106573a393682e818e041", "target": "9fca903c627aff151ad7a80ae829f218c0c2f9b1", "klasa": "K+SC(LOD)", "rust": "UnitRenderer (brak w Rust)" }
   ],
+  "rustAnchorsNote": "R-RUSTPORT-REPIN-WEB-UI-3-INTEGRACJA-Q1: L1 i L2 ZAMKNIETE przez R-RUSTPORT-REPIN-WEB-RENDER-3-RUST-Q1 (kod 460705906, FC 707696397). Kotwica ZAMKNIETA: musi byc obecny stan po zamknieciu (contains/then) i NIEOBECNY stan luki (notThen po kotwicy, notContains w pliku) — regres = FAIL. Kotwica ODLOZONA (L3): wzorce absentPatterns nie moga wystapic w absentDir — pojawienie sie portu = FAIL (zaktualizuj plan/manifest). P5-REPIN-WEB-RENDER-3.md §5-§6.",
   "rustAnchors": [
-    { "path": "rust-port/renderer/src/core/map_style.rs", "contains": "QualityTier::Medium => ResolvedRenderPreset {", "then": "pixel_ratio_max: 1.5,", "znaczenie": "luka parytetu L1: web medium pixelRatioMax=2.0" },
-    { "path": "rust-port/renderer/src/core/merge_decor.rs", "contains": "ONE non-indexed mesh", "then": null, "znaczenie": "luka parytetu L2: web scala do bufora indeksowanego" }
+    { "id": "L1", "status": "ZAMKNIETA", "path": "rust-port/renderer/src/core/map_style.rs", "contains": "QualityTier::Medium => ResolvedRenderPreset {", "then": "pixel_ratio_max: 2.0,", "notThen": "pixel_ratio_max: 1.5,", "znaczenie": "luka L1 zamknieta: medium pixel_ratio_max 2.0 = web pixelRatioMax 2.0 (eb32c5496)" },
+    { "id": "L2", "status": "ZAMKNIETA", "path": "rust-port/renderer/src/core/merge_decor.rs", "contains": "let ix = index_identical_vertices(positions, colors);", "then": "indices: ix.index,", "notContains": "ONE non-indexed mesh", "znaczenie": "luka L2 zamknieta: build_merged_mesh scala do bufora indeksowanego (mergeDecor.ts:52-92)" },
+    { "id": "L3", "status": "ODLOZONA", "absentDir": "rust-port/renderer/src", "absentPatterns": ["small_part_lod", "smallPartLod", "apply_small_part_lod"], "znaczenie": "luka L3 odlozona do portu kompozytora jednostek (smallPartLod.ts, brak UnitRenderer w Rust)" }
   ]
 }

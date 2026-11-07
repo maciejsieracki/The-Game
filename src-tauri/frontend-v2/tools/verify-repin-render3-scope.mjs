@@ -10,6 +10,10 @@
 //       Gdy ref webu niedostępny lokalnie -> SKIP (jawnie), nie PASS.
 //   C3  kotwice luk w rust-port/renderer (L1 pixel_ratio_max medium 1.5, L2 non-indexed merge)
 //       nadal obecne — jeżeli luka zostanie zamknięta w Rust, weryfikator to zgłosi (aktualizacja planu).
+//       R-RUSTPORT-REPIN-WEB-UI-3-INTEGRACJA-Q1: kotwice mają `status`: ZAMKNIETA (L1, L2 — zamknięte w
+//       R-RUSTPORT-REPIN-WEB-RENDER-3-RUST-Q1 `460705906`; stan po zamknięciu obecny, stan luki nieobecny —
+//       regres = FAIL), ODLOZONA (L3 — wzorce portu smallPartLod nieobecne w rust-port/renderer/src; pojawienie
+//       się = FAIL, zaktualizuj plan), brak statusu = OTWARTA (dawna semantyka).
 //
 // Użycie: node tools/verify-repin-render3-scope.mjs [--self-test]
 // --self-test: mutacje manifestu/kotwic w pamięci; każda MUSI dać FAIL (wynik: zabite/razem).
@@ -66,15 +70,43 @@ export function verify(m, env) {
       errs.push(`C2: diff --name-only != manifest (${changed.length} vs ${listed.length})`);
     }
   }
-  // C3
+  // C3 — R-RUSTPORT-REPIN-WEB-UI-3-INTEGRACJA-Q1: kotwice ze statusem (ZAMKNIETA / ODLOZONA; brak statusu = OTWARTA jak dawniej)
+  const ids = new Set();
   for (const a of m.rustAnchors) {
+    const tag = a.id ? `${a.id} ` : '';
+    if (a.id) {
+      if (ids.has(a.id)) errs.push(`C3: ${tag}duplikat id kotwicy`);
+      ids.add(a.id);
+    }
+    const status = a.status ?? 'OTWARTA';
+    if (status === 'ODLOZONA') {
+      if (!a.absentDir || !Array.isArray(a.absentPatterns) || !a.absentPatterns.length) {
+        errs.push(`C3: ${tag}ODLOZONA bez absentDir/absentPatterns`);
+        continue;
+      }
+      const files = env.list(a.absentDir);
+      if (files == null) { errs.push(`C3: ${tag}brak katalogu ${a.absentDir}`); continue; }
+      for (const f of files) {
+        const src = env.read(f) ?? '';
+        for (const p of a.absentPatterns) {
+          if (src.includes(p)) errs.push(`C3: ${tag}ODLOZONA, ale ${f} zawiera "${p}" (luka podjęta? zaktualizuj plan/manifest)`);
+        }
+      }
+      continue;
+    }
+    if (status !== 'OTWARTA' && status !== 'ZAMKNIETA') { errs.push(`C3: ${tag}nieznany status ${status}`); continue; }
     const src = env.read(a.path);
-    if (src == null) { errs.push(`C3: brak ${a.path}`); continue; }
+    if (src == null) { errs.push(`C3: ${tag}brak ${a.path}`); continue; }
     const i = src.indexOf(a.contains);
-    if (i < 0) { errs.push(`C3: ${a.path}: brak kotwicy "${a.contains}"`); continue; }
-    if (a.then) {
-      const tail = src.slice(i, i + 400);
-      if (!tail.includes(a.then)) errs.push(`C3: ${a.path}: po kotwicy brak "${a.then}" (luka zamknięta? zaktualizuj plan)`);
+    if (i < 0) { errs.push(`C3: ${tag}${a.path}: brak kotwicy "${a.contains}"`); continue; }
+    const tail = src.slice(i, i + 400);
+    if (a.then && !tail.includes(a.then)) {
+      errs.push(`C3: ${tag}${a.path}: po kotwicy brak "${a.then}" (${status === 'ZAMKNIETA' ? 'regres zamkniętej luki?' : 'luka zamknięta? zaktualizuj plan'})`);
+    }
+    if (status === 'ZAMKNIETA') {
+      if (!a.then && !a.notThen && !a.notContains) errs.push(`C3: ${tag}ZAMKNIETA bez warunku stanu (then/notThen/notContains)`);
+      if (a.notThen && tail.includes(a.notThen)) errs.push(`C3: ${tag}${a.path}: po kotwicy nadal "${a.notThen}" (luka otwarta — regres)`);
+      if (a.notContains && src.includes(a.notContains)) errs.push(`C3: ${tag}${a.path}: nadal zawiera "${a.notContains}" (luka otwarta — regres)`);
     }
   }
   return { errs, skips };
@@ -99,7 +131,32 @@ function realEnv() {
     },
     changed: (a, b) => (git(['diff', '--name-only', a, b, '--', 'gra/src/render']) ?? '').split('\n').filter(Boolean),
     read: (p) => { const f = join(repo, p); return existsSync(f) ? readFileSync(f, 'utf8') : null; },
+    list: (d) => {
+      const dir = join(repo, d);
+      if (!existsSync(dir)) return null;
+      const out = [];
+      const rec = (x) => {
+        for (const n of readdirSync(x)) {
+          const p = join(x, n);
+          if (statSync(p).isDirectory()) rec(p);
+          else if (n.endsWith('.rs')) out.push(p.slice(repo.length + 1));
+        }
+      };
+      rec(dir);
+      return out.sort();
+    },
   };
+}
+
+/** Env z podmienionym (w pamięci) plikiem rust-port/renderer/src/<rel>: `from` -> `to` (from musi wystąpić). */
+function readPatch(env, rel, from, to, after = '') {
+  const target = `rust-port/renderer/src/${rel}`;
+  const orig = env.read(target);
+  const a = orig == null ? -1 : orig.indexOf(after);
+  const i = a < 0 ? -1 : orig.indexOf(from, a);
+  if (i < 0) throw new Error(`self-test: brak "${from}" (po "${after}") w ${target}`);
+  const patched = orig.slice(0, i) + to + orig.slice(i + from.length);
+  return { ...env, read: (p) => (p === target ? patched : env.read(p)) };
 }
 
 function selfTest(env) {
@@ -110,9 +167,18 @@ function selfTest(env) {
     ['nowy plik oznaczony jako istniejący w bazie', (m) => { m.files[1].base = m.files[1].target; return [m, env]; }],
     ['plik usunięty z manifestu', (m) => { m.files.pop(); return [m, env]; }],
     ['plik obcy dodany do manifestu', (m) => { m.files.push({ path: 'gra/src/render/fogDim.ts', base: null, target: null }); return [m, env]; }],
-    ['kotwica L1 inna wartość', (m) => { m.rustAnchors[0].then = 'pixel_ratio_max: 2.0,'; return [m, env]; }],
+    ['kotwica L1 inna wartość', (m) => { m.rustAnchors[0].then = 'pixel_ratio_max: 1.75,'; return [m, env]; }],
     ['kotwica L2 nieistniejąca', (m) => { m.rustAnchors[1].contains = 'ONE indexed mesh'; return [m, env]; }],
     ['plik kotwicy nieistniejący', (m) => { m.rustAnchors[0].path = 'rust-port/renderer/src/core/brak.rs'; return [m, env]; }],
+    // R-RUSTPORT-REPIN-WEB-UI-3-INTEGRACJA-Q1: regres zamkniętych luk L1/L2 (kod Rust wraca do stanu luki) i podjęcie L3
+    ['regres L1: medium 1.5 w Rust', (m) => [m, readPatch(env, 'core/map_style.rs', 'pixel_ratio_max: 2.0,', 'pixel_ratio_max: 1.5,', 'QualityTier::Medium => ResolvedRenderPreset {')]],
+    ['regres L2: build_merged_mesh nieindeksowany', (m) => [m, readPatch(env, 'core/merge_decor.rs', 'let ix = index_identical_vertices(positions, colors);', 'let ix = (positions, colors);')]],
+    ['regres L2: komentarz ONE non-indexed mesh wrócił', (m) => [m, readPatch(env, 'core/merge_decor.rs', 'pub fn build_merged_mesh', '/// ONE non-indexed mesh\npub fn build_merged_mesh')]],
+    ['L3 podjęta w Rust (small_part_lod)', (m) => [m, readPatch(env, 'core/merge_decor.rs', 'pub fn build_merged_mesh', 'pub fn apply_small_part_lod() {}\npub fn build_merged_mesh')]],
+    ['L1 oznaczona jako OTWARTA (stary stan)', (m) => { delete m.rustAnchors[0].status; m.rustAnchors[0].then = 'pixel_ratio_max: 1.5,'; return [m, env]; }],
+    ['ZAMKNIETA bez warunku stanu', (m) => { delete m.rustAnchors[1].then; delete m.rustAnchors[1].notContains; return [m, env]; }],
+    ['L3 bez wzorców', (m) => { m.rustAnchors[2].absentPatterns = []; return [m, env]; }],
+    ['nieznany status', (m) => { m.rustAnchors[2].status = 'ZAMKNIETA?'; return [m, env]; }],
     ['render dir w frontend-v2', (m) => [m, { ...env, hasRenderDir: true }]],
     ['import three w src', (m) => [m, { ...env, threeImports: ['x.ts'] }]],
     ['zależność three', (m) => [m, { ...env, threeDep: true }]],

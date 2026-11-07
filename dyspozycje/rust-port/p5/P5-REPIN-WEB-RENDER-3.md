@@ -89,3 +89,14 @@ L3 do kolejki portu kompozytora jednostek. Po zamknięciu L1/L2 weryfikator C3 z
   scalonego dekoru).
 - Weryfikator zakresu C3 (`verify-repin-render3-scope.mjs`) daje teraz oczekiwany FAIL (2 kotwice luk zamknięte) —
   aktualizacja manifestu `repin-render3-scope.json` poza allowlistą tego tematu (decyzja orkiestratora).
+
+## 6. Aktualizacja manifestu C3 (`R-RUSTPORT-REPIN-WEB-UI-3-INTEGRACJA-Q1`, Operator r1)
+
+- `src-tauri/frontend-v2/tools/repin-render3-scope.json`: kotwice mają `id` + `status`. **L1 ZAMKNIETA**
+  (`map_style.rs`: po `QualityTier::Medium => ResolvedRenderPreset {` musi być `pixel_ratio_max: 2.0,`, nie może `1.5,`),
+  **L2 ZAMKNIETA** (`merge_decor.rs`: `let ix = index_identical_vertices(positions, colors);` → `indices: ix.index,`;
+  plik nie może zawierać `ONE non-indexed mesh`), **L3 ODLOZONA** (w `rust-port/renderer/src/**/*.rs` brak
+  `small_part_lod`/`smallPartLod`/`apply_small_part_lod`; pojawienie się = FAIL → aktualizacja planu przy porcie kompozytora).
+- `verify-repin-render3-scope.mjs`: C3 obsługuje statusy (brak statusu = OTWARTA, dawna semantyka); `--self-test` 12 → 20
+  mutacji (regres L1 w Rust, regres L2 ×2, podjęcie L3, L1 cofnięta do OTWARTA, ZAMKNIETA bez warunku, L3 bez wzorców,
+  nieznany status) — 20/20 zabitych; przebieg bazowy OK (9 plików webu, 3 kotwice).
