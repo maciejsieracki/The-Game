@@ -36,6 +36,7 @@ export { computeStartPlacements } from '../src/units/setup';
 export { foundCity, cityName, DEFAULT_PODZIAL_HANDLU, AI_FIXED_PROCENT_NAUKA, normalizePodzialHandlu } from '../src/game/cities';
 export { freshOwnerDefaultPodzialHandlu } from '../src/game/empire-handel-split';
 export { loadGameData } from '../src/data/loader';
+export { DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ } from '../src/game/cities';
 export { previewCityEconomy, advanceCityEconomy } from '../src/game/turn-economy';
 export { applyOneShotGoldTransfer } from '../src/game/diplomacy-economy';
 export { unitProductionItem } from '../src/game/production';
@@ -171,9 +172,18 @@ ok(/ownerDefaultPodzialHandlu\.get\(ownerId\)\?\.procentNauka/.test(MAIN),
 console.log('\n-- 1b. pomiar dochodu AI T1-T10 (advanceCityEconomy, stare vs nowy seed) --');
 {
   const { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, computeStartPlacements, foundCity, cityName, loadGameData,
-    advanceCityEconomy } = B;
+    advanceCityEconomy, decideAIEconomySliders, loadAiSliderParams, normalizePodzialHandlu,
+    DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ } = B;
   const data = loadGameData();
-  function run(seedTurn1, steadyState) {
+  const sliderParams = loadAiSliderParams(data.econParams, 'normal');
+  // Pętla suwaków AI odtworzona 1:1 z main.ts (blok decideAIEconomySliders, ok. 39046-39152), dla
+  // major AI BEZ profilu pilotażowego (profil ma tylko 'grecy' -> tam split = profil od T1, pętla pominięta):
+  //  - sliderSt startuje z ownerDefaultPodzialHandlu ownera (seed), procentBudynki = DEFAULT_PODZIAL_PRACY;
+  //  - korekta: nextNauka = decyzja AI; nextPieniadz = clamp(pieniadz_ZAPISANY_seedu - (nauka_nowa - nauka_stara));
+  //    nextLuksus = 100 - nauka - pieniądz; zapis ownerDefaultPodzialHandlu = normalizePodzialHandlu(...).
+  //  Wejścia zapasów/skarbca/utrzymania wpływają tylko na procentRozwoj, nie na podział handlu -> neutralne (0).
+  //  Ekonomia tury t liczy się PRZED blokiem suwaków tej tury (tura 1 zużywa seed, jak w grze).
+  function run(seedSplit) {
     const map = generateMap(DEFAULT_WIDTH, DEFAULT_HEIGHT, 9191);
     const start = computeStartPlacements(map, data);
     const a = start.aiStarts[0];
@@ -181,35 +191,55 @@ console.log('\n-- 1b. pomiar dochodu AI T1-T10 (advanceCityEconomy, stare vs now
     const city = foundCity(settler, [], map, cityName(1));
     city.podzialHandluOverride = false; delete city.podzialHandlu;
     const cities = [city]; const built = new Map();
+    let own = seedSplit;
+    let st = { procentRozwoj: DEFAULT_PROCENT_ROZWOJ, procentBudynki: DEFAULT_PODZIAL_PRACY.procentBudynki,
+      procentNauka: own.procentNauka, lastChangeTurn: null };
     const rows = [];
     for (let t = 1; t <= 10; t++) {
-      const split = t === 1 ? seedTurn1 : steadyState;
       const econ = advanceCityEconomy(
         cities, map, data, 'normal', [], new Map(), built, 1, new Set(), new Map(), new Map(),
         undefined, undefined, 'wysoki', undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-        new Map([[1, split]]), undefined, new Map(),
+        new Map([[1, { ...own }]]), undefined, new Map(),
       );
       const tk = econ.perCity.find(x => x.cityId === city.id);
-      rows.push({ t, pieniadz: tk.pieniadz, nauka: tk.nauka, luksus: tk.luksus ?? tk.zamoznosc ?? 0 });
+      rows.push({ t, split: { ...own }, pieniadz: tk.pieniadz, nauka: tk.nauka, luksus: tk.luksus ?? tk.zamoznosc ?? 0 });
+      const dec = decideAIEconomySliders({
+        zapasyPanstwa: 0, atWar: false, turn: t, lastSliderChangeTurn: st.lastChangeTurn,
+        current: { procentRozwoj: st.procentRozwoj, procentBudynki: st.procentBudynki, procentNauka: st.procentNauka },
+        isMajorAi: true, isEarlyGame: t <= 30, treasuryGold: 0, upkeepGoldCost: 0,
+      }, sliderParams);
+      if (dec.changed) {
+        const nextNauka = dec.procentNauka;
+        const nextPieniadz = Math.max(0, Math.min(100, own.procentPieniadz - (nextNauka - st.procentNauka)));
+        const nextLuksus = Math.max(0, 100 - nextNauka - nextPieniadz);
+        own = normalizePodzialHandlu({ procentNauka: nextNauka, procentPieniadz: nextPieniadz, procentLuksus: nextLuksus });
+        st = { procentRozwoj: dec.procentRozwoj, procentBudynki: dec.procentBudynki, procentNauka: nextNauka, lastChangeTurn: t };
+      }
     }
     return rows;
   }
-  const steady = { procentNauka: 60, procentPieniadz: 20, procentLuksus: 20 }; // stan po 1. korekcie (stare i nowe)
-  const before = run(oldSeed, steady);
-  const after = run(typeof aiSeedPodzialHandlu === 'function' ? aiSeedPodzialHandlu() : oldSeed, steady);
+  const beforeSeed = normalizePodzialHandlu(oldSeed); // stary seed: suma 140% -> po normalizacji w silniku
+  const before = run(oldSeed);
+  const after = run(typeof aiSeedPodzialHandlu === 'function' ? aiSeedPodzialHandlu() : oldSeed);
   const sum = (rows, k, n) => rows.slice(0, n).reduce((s, r) => s + r[k], 0);
-  console.log('   tura | Skarb przed/po | Nauka przed/po | Zamożność przed/po');
+  const fmt = sp => `${sp.procentNauka}/${sp.procentPieniadz}/${sp.procentLuksus}`;
+  console.log('   tura | podział N/S/Z przed | przed: Skarb/Nauka/Zam. | podział N/S/Z po | po: Skarb/Nauka/Zam.');
   for (let i = 0; i < 10; i++) {
     const b = before[i], a = after[i];
-    console.log(`   T${String(b.t).padStart(2)}  | ${b.pieniadz.toFixed(2)} / ${a.pieniadz.toFixed(2)} | ${b.nauka.toFixed(2)} / ${a.nauka.toFixed(2)} | ${b.luksus.toFixed(2)} / ${a.luksus.toFixed(2)}`);
+    console.log(`   T${String(b.t).padStart(2)}  | ${fmt(b.split)} | ${b.pieniadz.toFixed(2)} / ${b.nauka.toFixed(2)} / ${b.luksus.toFixed(2)} | ${fmt(a.split)} | ${a.pieniadz.toFixed(2)} / ${a.nauka.toFixed(2)} / ${a.luksus.toFixed(2)}`);
   }
-  console.log(`   SUMA T1-T10: Skarb ${sum(before, 'pieniadz', 10).toFixed(2)} -> ${sum(after, 'pieniadz', 10).toFixed(2)}; Nauka ${sum(before, 'nauka', 10).toFixed(2)} -> ${sum(after, 'nauka', 10).toFixed(2)}`);
+  console.log(`   SUMA T1-T10: Skarb ${sum(before, 'pieniadz', 10).toFixed(2)} -> ${sum(after, 'pieniadz', 10).toFixed(2)}; Nauka ${sum(before, 'nauka', 10).toFixed(2)} -> ${sum(after, 'nauka', 10).toFixed(2)}; Zamożność ${sum(before, 'luksus', 10).toFixed(2)} -> ${sum(after, 'luksus', 10).toFixed(2)}`);
+  console.log(`   seed przed (po normalizacji silnika) = ${fmt(beforeSeed)}; seed po = ${fmt(typeof aiSeedPodzialHandlu === 'function' ? aiSeedPodzialHandlu() : oldSeed)}`);
   if (typeof aiSeedPodzialHandlu === 'function') {
     ok(before[0].pieniadz !== after[0].pieniadz || before[0].nauka !== after[0].nauka,
       'pomiar: tura 1 AI różni się po poprawce (seed 140% -> 100%)');
-    let same = true;
-    for (let i = 1; i < 10; i++) if (Math.abs(before[i].pieniadz - after[i].pieniadz) > 1e-9) same = false;
-    ok(same, 'T2-T10: dochód Skarbu identyczny przed/po (zmiana dotyczy tylko tury 1)');
+    // Stan docelowy po poprawce dla major AI bez profilu: 60/20/20 od T2 (ta sama pętla co w grze).
+    ok(after.slice(1).every(r => r.split.procentNauka === 60 && r.split.procentPieniadz === 20 && r.split.procentLuksus === 20),
+      'po poprawce: T2-T10 podział AI = 60/20/20 (pętla suwaków, bez profilu civ)');
+    // Ten sam pomiar dla bazy: T2+ NIE jest identyczny -- zapisujemy to jawnie (nie zakładamy "bez zmian").
+    let sameFrom2 = true;
+    for (let i = 1; i < 10; i++) if (Math.abs(before[i].pieniadz - after[i].pieniadz) > 1e-9) sameFrom2 = false;
+    console.log(`   T2-T10 Skarb identyczny przed/po: ${sameFrom2 ? 'TAK' : 'NIE'} (odnotowane, nie asercja)`);
   }
 }
 
@@ -274,6 +304,33 @@ console.log('\n-- 3. miasta-państwa: trudność w zakupie == trudność w produ
   const viaOwner = unitProductionItem(unitId, data, undefined, 'niski', 7, effEasyGame);
   console.log(`   ${unitId}: koszt miasta-państwa przy globalnej Easy = ${viaGlobal && viaGlobal.koszt}, przy trudności właściciela (hard) = ${viaOwner && viaOwner.koszt}`);
   ok(viaGlobal && viaOwner && viaGlobal.koszt !== viaOwner.koszt, 'fixture: globalna i właścicielska trudność dają RÓŻNY koszt (stąd asymetria)');
+
+  // BEHAWIORALNIE (stan decyzji zakupu): dla każdej kombinacji trudności gry x miasta-państwa,
+  // cena, którą zakup dostaje z trudnością właściciela (ta sama wartość co w purchaseRecruitmentUnit),
+  // musi równać się cenie produkcji miasta-państwa (trudność miasta-państwa), a gracz (owner 0) dalej
+  // płaci trudnością gry. Pełne wywołanie closure purchaseRecruitmentUnit nie jest importowalne bez DOM.
+  {
+    const mism = [];
+    const buyDiffersFromGlobal = [];
+    for (const game of ['easy', 'normal', 'hard']) for (const cs of ['easy', 'normal', 'hard']) {
+      const effCs = effectiveGameDifficultyForOwnerPure(7, game, cs, csOwners);
+      const effPl = effectiveGameDifficultyForOwnerPure(0, game, cs, csOwners);
+      const buy = unitProductionItem(unitId, data, undefined, 'niski', 7, effCs);
+      const prod = unitProductionItem(unitId, data, undefined, 'niski', 7, cs);
+      const plBuy = unitProductionItem(unitId, data, undefined, 'niski', 0, effPl);
+      const plRef = unitProductionItem(unitId, data, undefined, 'niski', 0, game);
+      if (effCs !== cs || effPl !== game || !buy || !prod || buy.koszt !== prod.koszt || plBuy.koszt !== plRef.koszt) {
+        mism.push(`${game}/${cs}`);
+      }
+      if (game !== cs && buy && viaGlobal && buy.koszt !== unitProductionItem(unitId, data, undefined, 'niski', 7, game).koszt) {
+        buyDiffersFromGlobal.push(`${game}/${cs}`);
+      }
+    }
+    eq(mism.length, 0, 'zakup miasta-państwa == produkcja miasta-państwa dla 9 kombinacji (gracz nietknięty)');
+    if (mism.length) console.log('   niezgodne: ' + mism.join(', '));
+    ok(buyDiffersFromGlobal.length > 0, 'zakup miasta-państwa: przy różnych trudnościach cena ZMIENIA się względem globalnej (poprawka działa)',
+      `kombinacje: ${buyDiffersFromGlobal.join(', ') || 'brak'}`);
+  }
 
   const purchase = functionSource(MAIN, 'function purchaseRecruitmentUnit(');
   ok(!!purchase, 'znaleziono purchaseRecruitmentUnit w main.ts');
