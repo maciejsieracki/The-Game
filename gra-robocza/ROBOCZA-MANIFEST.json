@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "9c024dcb55b7eeaa29ee460e16b8fc57",
-  "bundleSha256": "1f64c9b5dca967dbd7f1c5a19928e624264b4f752b4231f73235467e2fdc27e5",
-  "bundleBytes": 70661606,
+  "bundleMd5": "f460a713a8eb57e5d310a32582d34b07",
+  "bundleSha256": "1de498d981e0e2a5199930bc92f8fef239597a03f40963ff0a489c27d9b705e9",
+  "bundleBytes": 70662118,
   "sourceSnapshot": {
-    "source": "R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1 3452a7f2a (merge na 6e5e7eac4)",
+    "source": "R-WEB-PERF-ENDTURN-RENDER-HUD-Q1 3c00d9edb (merge 38487de49 na 6a673c838)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 530: render/materialContentPool.ts + units/cities/scene: wspólna pula materiałów per renderer, unshare przed przyciemnieniem, sortowanie jak three.js po id sprzed puli (obraz 0 px różnicy; wcześniej 51 px); unikalne materiały t.50 jednostki 7141→188, miasta 1747→135; sterta ~−6,8…−9 MB"
+    "FALA 531: main.ts: ruch AI z odwiedzinami miasta nie woła pełnego syncUnitsRender po każdym ruchu (aiUnitRenderBatch, flush po fazie AI/bitwie/błędzie, także po wznowieniu fazy), widoczne żetony odświeżane w klatce postępu; currentVisible liczone raz; unia syncUnitsRender+renderLoop+syncStatChips −18,9% (3 końce tury, 5 par naprzemiennie; 1. koniec tury znacznie więcej)"
   ],
   "verification": [
-    "Opus 5.5 Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; pixel-test 7/0, pełna klatka 0 px, 84/84 narzędzi *render* 0 regresji, tsc 0, logic 213/213"
+    "Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; tsc 0; logic 213/213; resume-flush i deferral OK; overlay-sync 17/0; capture-render-sync 23/0; city-badge-zoom-lod 67/0; pool testy 18/0 i 7/0; digest sceny 0 niezgodnych"
   ],
   "limits": [
-    "zysk MB w grze: 1 przebieg (−8,4 t.1, −5,9 t.50, szum ~3 MB); wariant B (scalenie części jednostek) NIE wdrożony — czeka na decyzję właściciela"
+    "cel −35,7% zawężony ECHO do zmierzonych −18,9%; brak testu live bitwa→wznowienie i zrzutu w połowie fazy AI (NIE_ZMIERZONO); ai-city-render-batch-test pada identycznie na bazie (dług)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-06T21:41:22",
+  "hubGeneratedAt": "2026-11-07T06:30:18",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
-      "sizeBytes": 70661606
+      "md5": "f460a713a8eb57e5d310a32582d34b07",
+      "sizeBytes": 70662118
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
-      "sizeBytes": 70661606
+      "md5": "f460a713a8eb57e5d310a32582d34b07",
+      "sizeBytes": 70662118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
-      "sizeBytes": 70661606
+      "md5": "f460a713a8eb57e5d310a32582d34b07",
+      "sizeBytes": 70662118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
-      "sizeBytes": 70661606
+      "md5": "f460a713a8eb57e5d310a32582d34b07",
+      "sizeBytes": 70662118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
-      "sizeBytes": 70661606
+      "md5": "f460a713a8eb57e5d310a32582d34b07",
+      "sizeBytes": 70662118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
-      "sizeBytes": 70661606
+      "md5": "f460a713a8eb57e5d310a32582d34b07",
+      "sizeBytes": 70662118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
-      "sizeBytes": 70661606
+      "md5": "f460a713a8eb57e5d310a32582d34b07",
+      "sizeBytes": 70662118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
-      "sizeBytes": 70661606
+      "md5": "f460a713a8eb57e5d310a32582d34b07",
+      "sizeBytes": 70662118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
-      "sizeBytes": 70661606
+      "md5": "f460a713a8eb57e5d310a32582d34b07",
+      "sizeBytes": 70662118
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
-      "sizeBytes": 70661606
+      "md5": "f460a713a8eb57e5d310a32582d34b07",
+      "sizeBytes": 70662118
     }
   ],
-  "md5": "9c024dcb55b7eeaa29ee460e16b8fc57",
+  "md5": "f460a713a8eb57e5d310a32582d34b07",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

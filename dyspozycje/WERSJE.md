@@ -1,3 +1,9 @@
+## ROBOCZA f460a713 -- 2026-11-06 -- FALA 531: koniec tury: mniej przebudów żetonów jednostek i HUD (faza AI) (testowa)
+
+- main.ts: ruch AI z odwiedzinami miasta nie woła pełnego syncUnitsRender po każdym ruchu (aiUnitRenderBatch, flush po fazie AI/bitwie/błędzie, także po wznowieniu fazy), widoczne żetony odświeżane w klatce postępu; currentVisible liczone raz; unia syncUnitsRender+renderLoop+syncStatChips −18,9% (3 końce tury, 5 par naprzemiennie; 1. koniec tury znacznie więcej)
+- Weryfikacja: Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; tsc 0; logic 213/213; resume-flush i deferral OK; overlay-sync 17/0; capture-render-sync 23/0; city-badge-zoom-lod 67/0; pool testy 18/0 i 7/0; digest sceny 0 niezgodnych
+- Limity: cel −35,7% zawężony ECHO do zmierzonych −18,9%; brak testu live bitwa→wznowienie i zrzutu w połowie fazy AI (NIE_ZMIERZONO); ai-city-render-batch-test pada identycznie na bazie (dług)
+
 ## ROBOCZA 9c024dcb -- 2026-11-06 -- FALA 530: pamięć: wspólne materiały modeli jednostek i miast (testowa)
 
 - render/materialContentPool.ts + units/cities/scene: wspólna pula materiałów per renderer, unshare przed przyciemnieniem, sortowanie jak three.js po id sprzed puli (obraz 0 px różnicy; wcześniej 51 px); unikalne materiały t.50 jednostki 7141→188, miasta 1747→135; sterta ~−6,8…−9 MB
