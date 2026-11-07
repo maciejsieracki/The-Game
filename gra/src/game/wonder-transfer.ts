@@ -11,7 +11,20 @@
  * Dzięki temu NIE ma masowego przepisywania zapisów z niespójną własnością (cud na hexie obcego
  * terytorium, ale z innym ownerId): taki cud zostaje nietknięty, dopóki nie dojdzie do zdarzenia
  * dotyczącego jego rzeczywistego właściciela. Czysta logika, bez zależności od main.ts.
+ *
+ * R-WEB-WONDER-TRANSFER-FOLLOWUP-Q1 (decyzja właściciela 2026-11-07):
+ *  - REBELIANCI (-99) I BARBARZYŃCY (-1), tj. każdy właściciel ujemny (sentinel nie-cywilizacyjny),
+ *    NIE POSIADAJĄ CUDÓW: gdy terytorium hexa cudu przejmie taka frakcja, cud zostaje przy ostatnim
+ *    właścicielu-cywilizacji. Gdy potem terytorium przejmie cywilizacja (odbicie), cud przechodzi do
+ *    NIEJ (odbijającego), nawet jeśli to nie dawny właściciel — stąd drugi warunek spójności niżej.
+ *  - ZAŁOŻENIE: miasta-państwa mają ownerId >= 0 i są traktowane jak dotąd (poza zakresem).
+ *  - Założenie miasta przenosi cud tą samą ścieżką migawek (main.ts: finalizeCityFounding).
  */
+
+/** Cywilizacja (gracz/AI/miasto-państwo) = ownerId >= 0; sentinele frakcji (-1 barbarzyńcy, -99 rebelianci) < 0. */
+export function isCivilizationOwnerId(ownerId: number): boolean {
+  return ownerId >= 0;
+}
 
 export interface TransferableWonder {
   wonderId: string;
@@ -51,7 +64,13 @@ export function planWonderTransfers(
     const b = before.get(w.wonderId);
     const a = after.get(w.wonderId);
     if (b === undefined || a === undefined || a === null) continue;
-    if (b !== w.ownerId) continue; // niespójny stan -> nie zgadujemy
+    if (!isCivilizationOwnerId(a)) continue; // rebelianci/barbarzyńcy nie posiadają cudów -> zostaje
+    if (a === w.ownerId) continue;
+    // spójny stan: PRZED == właściciel cudu; albo cud „zamrożony" przy cywilizacji, a hex był u frakcji
+    // nie-cywilizacyjnej (odbicie przez cywilizację). Inny niespójny stan -> nie zgadujemy.
+    const consistent = b === w.ownerId
+      || (b !== null && !isCivilizationOwnerId(b) && isCivilizationOwnerId(w.ownerId));
+    if (!consistent) continue;
     if (a === b) continue;
     plan.push({ wonderId: w.wonderId, q: w.q, r: w.r, fromOwnerId: w.ownerId, toOwnerId: a });
   }
