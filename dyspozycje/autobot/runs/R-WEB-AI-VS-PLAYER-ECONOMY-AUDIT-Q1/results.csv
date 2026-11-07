@@ -20,6 +20,9 @@ A_przychody,doPuli/tura (srednia),normal | domyslne silnika: gracz 20/60/20+Prac
 A_przychody,pieniadz tura 1 (seed AI 60/60/20=140%),normal,43,43,0,
 A_przychody,pieniadz tura 2 (seed AI 60/60/20=140%),normal,43,43,0,
 A_przychody,nauka tura 1 (seed AI 60/60/20=140%),normal,19,36,89.47,
+A_przychody,doPuli Pracy/tura (z bonusem Pracy AI x1.10),"normal | nalozony bonus trudnosci AI (derywacja z A1, przyblizenie liniowe)",12,13.2,10,"AI: A1.doPuli * 1.10 (main.ts:37724); roznica = efekt bonusu Pracy"
+A_przychody,nauka/tura (z bonusem Nauki AI +1),"normal | nalozony bonus trudnosci AI (derywacja z A1, przyblizenie liniowe)",19,20,5.26,AI: A1.nauka + 1 (main.ts:36986)
+A_przychody,pieniadz/tura (bonus trudnosci AI NIE dotyczy Pieniadza),"normal | nalozony bonus trudnosci AI (derywacja z A1, przyblizenie liniowe)",49.48,49.48,0,"brak pola bonusPieniadz (ai.ts:580-590); roznica 0%"
 A_przychody,pieniadz/tura (srednia),"hard | suwaki identyczne (20/60/20, Praca 70), pop8, 20 Wojownikow, 25 tur",43,43,0,
 A_przychody,nauka/tura (srednia),"hard | suwaki identyczne (20/60/20, Praca 70), pop8, 20 Wojownikow, 25 tur",18,18,0,
 A_przychody,praca/tura (srednia),"hard | suwaki identyczne (20/60/20, Praca 70), pop8, 20 Wojownikow, 25 tur",40,40,0,

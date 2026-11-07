@@ -142,6 +142,24 @@ for (const diff of ['easy', 'normal', 'hard']) {
     add('A_przychody', 'pieniadz tura 1 (seed AI 60/60/20=140%)', 'normal', +P.per[0].pieniadz.toFixed(3), +A3.per[0].pieniadz.toFixed(3));
     add('A_przychody', 'pieniadz tura 2 (seed AI 60/60/20=140%)', 'normal', +P.per[1].pieniadz.toFixed(3), +A3.per[1].pieniadz.toFixed(3));
     add('A_przychody', 'nauka tura 1 (seed AI 60/60/20=140%)', 'normal', +P.per[0].nauka.toFixed(3), +A3.per[0].nauka.toFixed(3));
+    // 4) NAŁOŻONY bonus trudności major AI na Normalnym (poprawka po zarzucie Evaluatora R1):
+    //    main.ts:37724 mnoży doBudynkow i doPuli przez difficultyProductionMultForOwner = 1 + bonusProdukcja (0.10),
+    //    main.ts:36986 dodaje difficultyScienceBonusForOwner = bonusNauka (+1/turę). Oba poza advanceCityEconomy.
+    //    Wartości: data/ai-params.json trudnosc_poziom2_bonus_produkcja=0.1, trudnosc_poziom2_bonus_nauka=1.
+    //    Uwaga: mnożenie liniowe to przybliżenie (pracaImperialPoolGain może być nieliniowy).
+    const PROD_MULT_AI_NORMAL = 1 + 0.1;
+    const NAUKA_BONUS_AI_NORMAL = 1;
+    const kBon = 'normal | nalozony bonus trudnosci AI (derywacja z A1, przyblizenie liniowe)';
+    const pPula = sum(P.per, 'doPuli') / TURNS;
+    const aPula = (sum(A1.per, 'doPuli') / TURNS) * PROD_MULT_AI_NORMAL;
+    add('A_przychody', 'doPuli Pracy/tura (z bonusem Pracy AI x1.10)', kBon, +pPula.toFixed(3), +aPula.toFixed(3),
+      'AI: A1.doPuli * 1.10 (main.ts:37724); roznica = efekt bonusu Pracy');
+    const pNauka = sum(P.per, 'nauka') / TURNS;
+    const aNauka = sum(A1.per, 'nauka') / TURNS + NAUKA_BONUS_AI_NORMAL;
+    add('A_przychody', 'nauka/tura (z bonusem Nauki AI +1)', kBon, +pNauka.toFixed(3), +aNauka.toFixed(3),
+      'AI: A1.nauka + 1 (main.ts:36986)');
+    add('A_przychody', 'pieniadz/tura (bonus trudnosci AI NIE dotyczy Pieniadza)', kBon, +(sum(P.per, 'pieniadz') / TURNS).toFixed(3),
+      +(sum(A1.per, 'pieniadz') / TURNS).toFixed(3), 'brak pola bonusPieniadz (ai.ts:580-590); roznica 0%');
   }
 }
 
