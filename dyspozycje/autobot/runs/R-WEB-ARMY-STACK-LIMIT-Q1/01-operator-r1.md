@@ -2,7 +2,7 @@ STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-ARMY-STACK-LIMIT-Q1
 GOAL: Jedna armia (wszystkie własne jednostki jednego właściciela na jednym heksie, także w mieście) nie może mieć więcej jednostek niż limit bitwy na stronę (`BATTLE_MAX_PER_SIDE` = 500, jedno źródło prawdy w `battleScene.ts`).
-ZMIANY/COMMIT: SHA — patrz `git log` brancha worktree (commit "R-WEB-ARMY-STACK-LIMIT-Q1: Operator r1"); pliki:
+ZMIANY/COMMIT: 421010fa1 (kod + test + raport; ten wpis SHA dopisany kolejnym commitem raportu); pliki:
 - NOWY `gra/src/game/army-stack-limit.ts` (czysty moduł; limit zawsze parametrem, zero kopii liczby)
 - `gra/src/main.ts` (bramki + migracja; import + `armyStackLimit()` = `BATTLE_MAX_PER_SIDE`)
 - NOWY `gra/tools/army-stack-limit-test.cjs` (41 asercji)
