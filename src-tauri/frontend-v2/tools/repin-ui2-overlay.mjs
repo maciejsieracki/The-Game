@@ -11,6 +11,8 @@
  *
  * Użycie (z `src-tauri/frontend-v2/`):
  *   node tools/repin-ui2-overlay.mjs --pin-dir <PIN_DIR> --web-dir <WEB_DIR> --out <NOWY_KATALOG>
+ *        --web3-dir <WEB3_DIR>   (R-RUSTPORT-REPIN-WEB-UI-3-Q1: `git archive 9b019a7d8 gra/src gra/data`; wymagany, gdy
+ *                                 istnieje `tools/repin-ui3-manifest.json`)
  * EXIT 0 <=> nakładka zbudowana i każdy plik zgodny z manifestem.
  */
 import { createHash } from 'node:crypto';
@@ -134,5 +136,32 @@ for (const f of manifest.overlayPd ?? []) {
   console.log(`nakładka PD ${srcPath} (${buf.length} B)`);
 }
 console.log(`repin-ui2-overlay: PD (R-RUSTPORT-REPIN-UI-2-E-Q1) plików=${(manifest.overlayPd ?? []).length}`);
+// R-RUSTPORT-REPIN-WEB-UI-3-Q1 (addytywnie): kopie i adaptery przepięte na web `9b019a7d8` (`tools/repin-ui3-manifest.json`)
+// — w odniesieniu wersja weba z TEJ rewizji (`--web3-dir` = `git archive <pin UI-3> gra/src gra/data`). Bez `--web3-dir`
+// przy istniejącym manifeście UI-3 = błąd (odniesienie byłoby nieaktualne dla tych plików, różnice byłyby fałszywe).
+const ui3Url = new URL('./repin-ui3-manifest.json', import.meta.url);
+if (existsSync(ui3Url)) {
+  const ui3 = JSON.parse(readFileSync(ui3Url, 'utf8'));
+  const web3 = argOf('--web3-dir');
+  if (!web3) {
+    bad++;
+    console.error(`repin-ui2-overlay: brak --web3-dir (wymagany: tools/repin-ui3-manifest.json, pin ${ui3.pin.slice(0, 9)})`);
+  } else {
+    for (const f of [...ui3.files, ...ui3.adapters.map((a) => ({ src: a.src, sha256: a.webSha256, bytes: a.webBytes })), ...(ui3.overlayDeps ?? [])]) {
+      const buf = readFileSync(join(resolve(web3), f.src));
+      const sha = createHash('sha256').update(buf).digest('hex');
+      if (sha !== f.sha256 || buf.length !== f.bytes) {
+        bad++;
+        console.error(`SHA UI-3 ${f.src} web=${sha}/${buf.length} manifest=${f.sha256}/${f.bytes}`);
+        continue;
+      }
+      const dst = join(resolve(out), f.src);
+      mkdirSync(dirname(dst), { recursive: true });
+      writeFileSync(dst, buf);
+      console.log(`nakładka UI-3 ${f.src} (${buf.length} B)`);
+    }
+    console.log(`repin-ui2-overlay: UI-3 (R-RUSTPORT-REPIN-WEB-UI-3-Q1) plików=${ui3.files.length + ui3.adapters.length}`);
+  }
+}
 console.log(`repin-ui2-overlay: plików=${entries.length} portów=${portFiles} niezgodnych=${bad} out=${out}`);
 process.exitCode = bad === 0 ? 0 : 1;

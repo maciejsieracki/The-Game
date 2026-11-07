@@ -383,8 +383,25 @@ try {
   if (want('sidePanelEventFilter.ts')) {
     const M = 'sidePanelEventFilter.ts';
     const [P, V] = mods(M);
-    for (const evs of [[], EVENTS, EVENTS.filter((e) => e.origin), EVENTS.slice(0, 3)]) for (const show of [false, true]) {
-      cmpVal(M, `filter(${evs.length},${show})`, P.filterSidePanelEvents(evs, show), V.filterSidePanelEvents(evs, show));
+    const sets = [[], EVENTS, EVENTS.filter((e) => e.origin), EVENTS.slice(0, 3)];
+    if (typeof P.filterSidePanelEvents === 'function' && typeof V.filterSidePanelEvents === 'function') {
+      for (const evs of sets) for (const show of [false, true]) {
+        cmpVal(M, `filter(${evs.length},${show})`, P.filterSidePanelEvents(evs, show), V.filterSidePanelEvents(evs, show));
+      }
+    } else if (typeof P.filterSidePanelEventsByTab === 'function' && typeof V.filterSidePanelEventsByTab === 'function') {
+      // R-RUSTPORT-REPIN-WEB-UI-3-Q1: web `9b019a7d8` zastąpił chip „Inne cyw.” zakładkami (Dyplomacja/Ważne/Inne) —
+      // odniesienie nakładki (`--web3-dir`) i port mają nowe API; porównujemy je na tych samych zestawach wpisów.
+      for (const evs of sets) {
+        for (const tab of ['dyplomacja', 'wazne', 'inne']) {
+          cmpVal(M, `byTab(${evs.length},${tab})`, P.filterSidePanelEventsByTab(evs, tab), V.filterSidePanelEventsByTab(evs, tab));
+          cmpVal(M, `relevant(${evs.length},${tab})`, P.relevantInfoEvents(evs, tab), V.relevantInfoEvents(evs, tab));
+          cmpVal(M, `hidden(${evs.length},${tab})`, evs.map((e) => P.isHiddenAiAiEvent(e, tab)), evs.map((e) => V.isHiddenAiAiEvent(e, tab)));
+        }
+        for (const ai of [false, true]) cmpVal(M, `counts(${evs.length},${ai})`, P.tabCountsOf(evs, ai), V.tabCountsOf(evs, ai));
+      }
+    } else {
+      // Odniesienie i port z różnych rewizji API (np. web 86d510c66 vs port po REPIN UI-3) — pokrywa run-repin-ui3a.mjs.
+      console.log(`${M}: POMINIĘTE — odniesienie i port mają różne API filtra (REPIN UI-3: porównanie w run-repin-ui3a.mjs)`);
     }
   }
 

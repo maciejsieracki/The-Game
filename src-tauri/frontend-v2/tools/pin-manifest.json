@@ -423,12 +423,6 @@
       "bytes": 550
     },
     {
-      "path": "src/ui/icons/brand/building-icon-map.json",
-      "pin": "edb8fb56:gra/src/ui/icons/brand/building-icon-map.json",
-      "sha256": "4a7a6c326e6b7e494fe803c6ebc50486c754f53f2bf47fa5cb0041631e4efeb0",
-      "bytes": 1577
-    },
-    {
       "path": "src/ui/icons/brand/buildings/bld-admin.svg",
       "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-admin.svg",
       "sha256": "20f99fbd1f463b19144d6aaa0c19b5e4c84c6bd06c2107210d09f6467a2fdcce",
@@ -2499,12 +2493,6 @@
       "bytes": 10714
     },
     {
-      "path": "src/ui/gamePauseMenu.ts",
-      "pin": "edb8fb56:gra/src/ui/gamePauseMenu.ts",
-      "sha256": "7e6b13de9e67957f9696bc63d0ab55b23f9d3f02de0fdf4703749ae9f419392d",
-      "bytes": 17727
-    },
-    {
       "path": "src/ui/hotSeatHandoff.ts",
       "pin": "edb8fb56:gra/src/ui/hotSeatHandoff.ts",
       "sha256": "e14cf16a5bcd1068024ab72b281b4bf7f6666132bb10bf6eb049bcb8a578a92f",
@@ -2541,12 +2529,6 @@
       "bytes": 8795
     },
     {
-      "path": "src/ui/armyMergePickPanel.ts",
-      "pin": "edb8fb56:gra/src/ui/armyMergePickPanel.ts",
-      "sha256": "05bf1ac237d41ffc16a5b1b00c2dc4961d709b2c175adede68253fe899bb4415",
-      "bytes": 7556
-    },
-    {
       "path": "src/ui/diplomacyPendingHud.ts",
       "pin": "edb8fb56:gra/src/ui/diplomacyPendingHud.ts",
       "sha256": "56aa1f85274ac2b6b4cde5a3da5a83014bf51db76bdf6dc7886d41e61cef2c81",
@@ -2569,18 +2551,6 @@
       "pin": "edb8fb56:gra/src/ui/assets/hero/hero-intro.png",
       "sha256": "10f35cb1155e66d06da7348ada50ece8e48abe2d8af8552483e77d56bf25ece4",
       "bytes": 2039500
-    },
-    {
-      "path": "src/ui/sidePanelHud.ts",
-      "pin": "edb8fb56:gra/src/ui/sidePanelHud.ts",
-      "sha256": "64e6b3b1341e377fd4a552245540fed23c75b9bcdd346bab958c5e585f3e0388",
-      "bytes": 60647
-    },
-    {
-      "path": "src/ui/sidePanelEventFilter.ts",
-      "pin": "edb8fb56:gra/src/ui/sidePanelEventFilter.ts",
-      "sha256": "d504e3f3d018fbe1e17bd0a5d998a9d65d9320955f1aa5d4bf72743c3aac31df",
-      "bytes": 1258
     },
     {
       "path": "src/ui/unitVitalsPalette.ts",

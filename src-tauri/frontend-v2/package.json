@@ -6,7 +6,7 @@
   "description": "Frontend Tauri (UI-Q1=A): kopia paneli gra/src/ui/** + Vite + kontroler MOCK; P5.2: panele poziomu 0 przeniesione na DTO (harness DOM: tools/dom-harness, jsdom); P5.3: poziom 1 bez cyklu (17 modułów, harness run-level1a.mjs); P5.4: cykl C4 (10 modułów, harness run-c4.mjs); P5.5: poziom 2 (26 modułów, harness run-level2.mjs); P5.6: cykle C2/C5 + hexContextTooltip + preBattle (7 modułów, harness run-cycles.mjs); P5.7 r1: cykl C3 (hud + panel imperium) + sceneTimingReport (4 moduły, harness run-hud-empire.mjs); P5.7 r2: newGameFlow (harness run-newgame.mjs); P5.7 r3: cityUxFrame + most cityPanelUxBridge (harness run-cityux.mjs).",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "check": "node tools/check-no-logic-imports.mjs --self-test && node tools/check-no-logic-imports.mjs src index.html vite.config.ts && node tools/verify-pin-copies.mjs && node tools/verify-repin-ui2-copies.mjs",
+    "check": "node tools/check-no-logic-imports.mjs --self-test && node tools/check-no-logic-imports.mjs src index.html vite.config.ts && node tools/verify-pin-copies.mjs && node tools/verify-repin-ui2-copies.mjs && node tools/verify-repin-ui3-copies.mjs",
     "build": "vite build",
     "harness": "node tools/dom-harness/run.mjs",
     "harness:mutate": "node tools/dom-harness/mutate.mjs",
@@ -38,7 +38,9 @@
     "harness:repin-ui2g:mutate": "node tools/dom-harness/mutate-repin-ui2g.mjs",
     "harness:repin-ui2e": "node tools/dom-harness/run-repin-ui2e.mjs",
     "harness:repin-ui2e:cycles": "node tools/dom-harness/run-repin-ui2e-cycles.mjs",
-    "harness:repin-ui2e:mutate": "node tools/dom-harness/mutate-repin-ui2e.mjs"
+    "harness:repin-ui2e:mutate": "node tools/dom-harness/mutate-repin-ui2e.mjs",
+    "harness:repin-ui3a": "node tools/dom-harness/run-repin-ui3a.mjs",
+    "harness:repin-ui3a:mutate": "node tools/dom-harness/mutate-repin-ui3a.mjs"
   },
   "devDependencies": {
     "esbuild": "0.21.5",

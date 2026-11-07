@@ -7,6 +7,7 @@
 import type { ArmyMergeUnitRow } from './armyMergePanel';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { unitIconSvg } from './icons/brandAssets';
+import { armyStackCardLabel, sortArmyStackGeneralsFirst } from './armyStackLabel';
 
 export interface SplitDestOption {
   q: number;
@@ -65,6 +66,8 @@ function ensureStyles(): void {
   border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);cursor:pointer;}
 .civ-asp-u:hover{border-color:rgba(232,216,138,0.4);}
 .civ-asp-u.on{border-color:var(--gold);background:rgba(232,216,138,0.12);}
+.civ-asp-u.cmd{border-color:rgba(232,216,138,0.55);}
+.civ-asp-u.cmd .civ-asp-u-name{color:#ffe27a;font-weight:800;}
 .civ-asp-u:has(input:focus-visible){outline:2px solid var(--ring);outline-offset:1px;}
 .civ-asp-u input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none;}
 .civ-asp-cb{flex:0 0 18px;width:18px;height:18px;border-radius:4px;border:1.5px solid var(--gold-dim);
@@ -152,13 +155,16 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
   box.setAttribute('aria-modal', 'true');
   box.setAttribute('aria-label', 'Rozdziel armię');
 
+  // Generał/wódz na początku listy i z etykietą roli (wcześniej tylko typ, np. „Wojownik").
   let uHtml = '';
-  for (const u of opts.units) {
-    uHtml += '<label class="civ-asp-u" title="' + esc(u.name) + '">'
-      + '<input type="checkbox" data-uid="' + esc(u.id) + '" aria-label="' + esc(u.name) + '">'
+  for (const u of sortArmyStackGeneralsFirst(opts.units)) {
+    const label = armyStackCardLabel({ name: u.name, commanderTitle: u.commanderTitle });
+    const cmdCls = u.commanderTitle ? ' cmd' : '';
+    uHtml += '<label class="civ-asp-u' + cmdCls + '" title="' + esc(label) + '">'
+      + '<input type="checkbox" data-uid="' + esc(u.id) + '" aria-label="' + esc(label) + '">'
       + '<span class="civ-asp-cb">' + CHECK_SVG + '</span>'
       + '<span class="civ-asp-u-ic" aria-hidden="true">' + (u.icon || unitIconSvg(undefined)) + '</span>'
-      + '<span class="civ-asp-u-name">' + esc(u.name) + '</span></label>';
+      + '<span class="civ-asp-u-name">' + esc(label) + '</span></label>';
   }
   let dHtml = '';
   for (const d of opts.destHexes) {

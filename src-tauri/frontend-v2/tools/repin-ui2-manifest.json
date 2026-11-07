@@ -16,12 +16,6 @@
       "bytes": 321
     },
     {
-      "path": "src/ui/hudChip6c.ts",
-      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/hudChip6c.ts",
-      "sha256": "3082394016c040dc83d07dc510386bece13f95c22a3de81ffa6fc92d63753979",
-      "bytes": 3473
-    },
-    {
       "path": "src/ui/unitActionBarHtml.ts",
       "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/unitActionBarHtml.ts",
       "sha256": "a9c291e44fc0f423e9ca78a411c8499725fbe86a517b3eb21b0b65e0b34647a5",
@@ -32,18 +26,6 @@
       "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/aiOwnerProgressFrame.ts",
       "sha256": "87c6941de4324eaca800e6933e7800f8a7f88fc9658068e68dd24da9c1df294d",
       "bytes": 629
-    },
-    {
-      "path": "src/ui/armyMergePanel.ts",
-      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/armyMergePanel.ts",
-      "sha256": "e550291b13892972fb22595fc018438a4f1b0b3bd4ff0facaca39b10ba30cf1a",
-      "bytes": 16627
-    },
-    {
-      "path": "src/ui/armySplitPanel.ts",
-      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/armySplitPanel.ts",
-      "sha256": "502288abea671ace2a3cbe77e71976da2e19841c3dd163b25008231222865817",
-      "bytes": 13495
     }
   ],
   "overlayPortsUI2D": {
