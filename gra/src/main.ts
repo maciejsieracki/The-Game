@@ -4126,9 +4126,11 @@ async function boot(): Promise<void> {
      * (podbój, kapitulacja głodowa, cesja, aneksja miasta-państwa, rewolta). Reguła i opis: game/wonder-transfer.ts.
      * Wołać: `const w = beginWonderTransferWatch();` PRZED zmianą właściciela, `settleWonderTransfer(w);` PO niej.
      */
-    function beginWonderTransferWatch(): WonderTerritorySnapshot | null {
+    function beginWonderTransferWatch(excludeNewCity?: City): WonderTerritorySnapshot | null {
       if (placedWorldWonders.length === 0) return null;
-      const nodes = buildAllTerritoryNodes();
+      const nodes = excludeNewCity
+        ? buildAllTerritoryNodes().filter(n => !(n.q === excludeNewCity.q && n.r === excludeNewCity.r && n.ownerId === excludeNewCity.ownerId && !n.isFort && !n.isOutpost))
+        : buildAllTerritoryNodes();
       return snapshotWonderTerritoryOwners(placedWorldWonders, (q, r) => territoryOwnerAt(q, r, nodes));
     }
 
@@ -15300,6 +15302,14 @@ async function boot(): Promise<void> {
 
     /** F-CITY-HEX: wyczyść hex + ukryj dekoracje terenu pod miastem. */
     function finalizeCityFounding(c: City, q: number, r: number): void {
+      // R-WEB-WONDER-TRANSFER-FOLLOWUP-Q1: założenie miasta przejmujące terytorium hexa z cudem przenosi cud
+      // na zakładającego. Migawka PRZED liczona BEZ nowego miasta (jest już w `cities` w chwili wywołania).
+      const wonderWatchFounding = beginWonderTransferWatch(c);
+      finalizeCityFoundingCore(c, q, r);
+      settleWonderTransfer(wonderWatchFounding);
+    }
+
+    function finalizeCityFoundingCore(c: City, q: number, r: number): void {
       const hk = keyOf(q, r);
       // Macierz B (Maciej 2026-07-09): część ulepszeń/złóż ZOSTAJE na obrzeżu heksa miasta.
       // Wyjątek GÓRY: kasuje wszystkie ulepszenia. Filtr warstw przed czyszczeniem hexa.

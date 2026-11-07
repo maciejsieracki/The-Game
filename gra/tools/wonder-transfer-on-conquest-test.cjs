@@ -126,10 +126,74 @@ console.log('wonder-transfer-on-conquest-test\n');
   );
   changeOwner(w, 'P1', 2);
   assert(w.wonders[0].ownerId === 2 && city(w, 0).pieniadz === 0 && city(w, 2).pieniadz === 3, 'AI zdobywa miasto gracza: cud + bonusy przechodzą na AI');
-  changeOwner(w, 'P1', -99);
-  assert(w.wonders[0].ownerId === -99, 'rewolta: cud idzie z miastem do frakcji rebeliantów');
+  // ZMIANA R-WEB-WONDER-TRANSFER-FOLLOWUP-Q1 (decyzja właściciela 2026-11-07): rebelianci nie posiadają cudów.
+  // Dawna asercja zakładała ownerId cudu === -99 po rewolcie; nowe oczekiwanie: cud ZOSTAJE u ostatniego
+  // właściciela-cywilizacji (2), a po odbiciu przez cywilizację (0) przechodzi do odbijającego.
+  const planRebel = changeOwner(w, 'P1', -99);
+  assert(planRebel.length === 0 && w.wonders[0].ownerId === 2, 'rewolta: cud NIE przechodzi do rebeliantów, zostaje przy ostatnim właścicielu-cywilizacji');
+  assert(city(w, 2).pieniadz === 3, 'rewolta: bonusy cudu działają dalej u ostatniego właściciela');
   changeOwner(w, 'P1', 0);
-  assert(w.wonders[0].ownerId === 0, 'odbicie od rebeliantów: cud wraca');
+  assert(w.wonders[0].ownerId === 0, 'odbicie od rebeliantów przez cywilizację: cud przechodzi do odbijającego (nie dawnego właściciela)');
+}
+
+// 4b. Barbarzyńcy (-1): cud zostaje; odbicie przez inną cywilizację niż dawny właściciel
+{
+  const w = mkWorld(
+    [{ id: 'P1', q: 0, r: 0, pop: 3, ownerId: 0 }, { id: 'A1', q: 20, r: 0, pop: 3, ownerId: 2 }],
+    [{ wonderId: 'piramidy', q: 1, r: 0, ownerId: 0 }],
+  );
+  changeOwner(w, 'P1', -1);
+  assert(w.wonders[0].ownerId === 0, 'barbarzyńcy zdobywają miasto: cud zostaje przy graczu');
+  const plan = changeOwner(w, 'P1', 2);
+  assert(plan.length === 1 && plan[0].fromOwnerId === 0 && plan[0].toOwnerId === 2 && w.wonders[0].ownerId === 2,
+    'odbicie przez inną cywilizację (2): cud przechodzi do odbijającego');
+  // rebelianci -> barbarzyńcy -> odbicie: nadal bez posiadania przez frakcje
+  changeOwner(w, 'P1', -99);
+  changeOwner(w, 'P1', -1);
+  assert(w.wonders[0].ownerId === 2, 'rebelianci i barbarzyńcy kolejno: cud nadal przy cywilizacji');
+  // spójność: niespójny zapis (7) nie jest przepisywany także przy odbiciu
+  const w2 = mkWorld(
+    [{ id: 'P1', q: 0, r: 0, pop: 3, ownerId: -99 }],
+    [{ wonderId: 'piramidy', q: 1, r: 0, ownerId: 7 }],
+  );
+  changeOwner(w2, 'P1', 0);
+  assert(w2.wonders[0].ownerId === 0, 'cud zamrożony przy cywilizacji (7) i hex u rebeliantów: odbicie przez 0 przenosi do 0');
+  // stary zapis z cudem już u frakcji (-99): leczy się przy odbiciu przez cywilizację
+  const w3 = mkWorld(
+    [{ id: 'P1', q: 0, r: 0, pop: 3, ownerId: -99 }],
+    [{ wonderId: 'piramidy', q: 1, r: 0, ownerId: -99 }],
+  );
+  changeOwner(w3, 'P1', 5);
+  assert(w3.wonders[0].ownerId === 5, 'legacy: cud zapisany u -99 przechodzi na cywilizację odbijającą');
+}
+
+// 4c. Założenie miasta przejmuje terytorium hexa z cudem: cud przechodzi na zakładającego (jak zdobycie fortu)
+{
+  // fort wroga (2) r=5 pokrywa hex cudu; zakładane miasto (0) jest bliżej -> miasto ma pierwszeństwo przed fortem
+  const w = mkWorld(
+    [{ id: 'X1', q: 60, r: 0, pop: 1, ownerId: 5 }],
+    [{ wonderId: 'piramidy', q: 2, r: 0, ownerId: 2 }],
+    [{ q: 4, r: 0, ownerId: 2, type: 'fort' }],
+  );
+  assert(ownerAtFn(w)(2, 0) === 2, 'founding: przed założeniem hex cudu w terytorium fortu wroga');
+  // jak w main.ts: migawka PRZED bez nowego miasta, miasto dodane, migawka PO
+  const before = M.snapshotWonderTerritoryOwners(w.wonders, ownerAtFn(w));
+  w.cities.push({ id: 'N1', q: 1, r: 0, pop: 1, ownerId: 0 });
+  const after = M.snapshotWonderTerritoryOwners(w.wonders, ownerAtFn(w));
+  const plan = M.planWonderTransfers(w.wonders, before, after);
+  M.applyWonderTransfers(w.wonders, plan);
+  assert(plan.length === 1 && w.wonders[0].ownerId === 0, 'założenie miasta na terytorium z cudem: cud przechodzi na zakładającego');
+  assert(city(w, 0).pieniadz === 3 && city(w, 2).pieniadz === 0, 'założenie miasta: bonusy cudu u zakładającego w pełni (bonusy ekskluzywne u zdobywcy)');
+  // miasto poza zasięgiem cudu nie rusza go
+  const w2 = mkWorld(
+    [{ id: 'X1', q: 60, r: 0, pop: 1, ownerId: 5 }],
+    [{ wonderId: 'piramidy', q: 2, r: 0, ownerId: 2 }],
+    [{ q: 4, r: 0, ownerId: 2, type: 'fort' }],
+  );
+  const b2 = M.snapshotWonderTerritoryOwners(w2.wonders, ownerAtFn(w2));
+  w2.cities.push({ id: 'N2', q: 30, r: 0, pop: 1, ownerId: 0 });
+  const p2 = M.planWonderTransfers(w2.wonders, b2, M.snapshotWonderTerritoryOwners(w2.wonders, ownerAtFn(w2)));
+  assert(p2.length === 0, 'założenie miasta daleko od cudu: bez przeniesienia');
 }
 
 // 5. Ochrona migracji: niespójny zapis (ownerId != właściciel terytorium) NIE jest przepisywany
@@ -209,6 +273,8 @@ between(/const wonderWatchFort = beginWonderTransferWatch\(\);[\s\S]{0,400}?if \
   const pbHits = pb.split('\n').filter(l => /\bcity\.ownerId\s*=(?!=)/.test(l));
   assert(pbHits.length === 1, `post-battle-map.ts: jedno przypisanie city.ownerId (podbój, wołane w migawce main.ts), znaleziono ${pbHits.length}`);
 }
+between(/function finalizeCityFounding\(c: City, q: number, r: number\): void \{[\s\S]{0,500}?const wonderWatchFounding = beginWonderTransferWatch\(c\);\s*finalizeCityFoundingCore\(c, q, r\);\s*settleWonderTransfer\(wonderWatchFounding\);/,
+  'main.ts: założenie miasta (finalizeCityFounding) owinięte migawkami, migawka PRZED bez nowego miasta');
 between(/const wonderWatchCapture = beginWonderTransferWatch\(\);[^\n]*\n\s*const lead = applyCityCaptureAfterBattle\([\s\S]{0,4000}?\);\s*settleWonderTransfer\(wonderWatchCapture\);/,
   'main.ts: podbój bojowy (applyCityCaptureToMap) owinięty migawkami');
 
