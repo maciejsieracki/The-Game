@@ -41,8 +41,8 @@ import {
   cityStateMilitaryProductionCap,
   type DifficultyLevel,
 } from './city-state-difficulty';
-import type { City }       from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA }    from './cities';
+import type { City, CityPodzialHandlu } from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA, DEFAULT_PODZIAL_HANDLU }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -7253,6 +7253,34 @@ type RawAiRushRow = Record<string, number | string | undefined>;
 // imperium (AI nie mikrozarządza suwakami per miasto, tak samo jak gracz
 // zwykle ustawia je raz dla całego państwa).
 // ---------------------------------------------------------------------------
+
+/**
+ * R-WEB-AI-PLAYER-PARITY-FIXES-Q1 (poprawka 1): STARTOWY (seed) podział Daniny/Podatku
+ * Skarb/Nauka/Zamożność dla ownera AI -- ZAWSZE o sumie 100%.
+ *
+ * Dawny seed `{ ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA }` dawał
+ * 60/60/20 = 140% (Nauka 60 z polityki AI, Skarb 60 i Zamożność 20 z domyślnego podziału
+ * GRACZA 20/60/20). `normalizePodzialHandlu` ratowało sumę po cichu, ucinając Zamożność do 0
+ * i Naukę do 40: w turze 1 AI liczyło 40/60/0 (Nauka/Skarb/Zamożność), a od tury 2 --
+ * po pierwszej korekcie `decideAIEconomySliders` w main.ts -- 60/20/20. Tura 1 AI była więc
+ * wyjątkiem od własnej polityki, a 140% było wewnętrznie sprzeczne.
+ *
+ * Wybór: zachowujemy pomysł AI (Nauka = AI_FIXED_PROCENT_NAUKA) i domyślną Zamożność
+ * gracza (20% = próg utrzymania poziomu Zamożności), a Skarb jest resztą do 100% (=20%).
+ * To DOKŁADNIE ten podział, do którego AI i tak dochodzi po pierwszej korekcie suwaków
+ * (nextPieniadz = 60 - (60 - 20) = 20, nextLuksus = 100 - 60 - 20 = 20), więc tura 1
+ * jest spójna z turą 2+. Reguły sumowania (jedno `normalizePodzialHandlu`) są wspólne
+ * z graczem; gracz dalej startuje na 20/60/20.
+ */
+export function aiSeedPodzialHandlu(): CityPodzialHandlu {
+  const procentNauka = Math.min(AI_FIXED_PROCENT_NAUKA, 100);
+  const procentLuksus = Math.min(DEFAULT_PODZIAL_HANDLU.procentLuksus, 100 - procentNauka);
+  return {
+    procentNauka,
+    procentLuksus,
+    procentPieniadz: 100 - procentNauka - procentLuksus,
+  };
+}
 
 /** Bieżące/docelowe ustawienia trzech suwaków ekonomii AI (wszystkie 0-100 pkt %). */
 export interface AiSliderSettings {

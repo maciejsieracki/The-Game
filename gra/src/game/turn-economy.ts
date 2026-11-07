@@ -256,6 +256,23 @@ function ownersWithMennica(
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
+/**
+ * R-WEB-AI-PLAYER-PARITY-FIXES-Q1 (poprawka 4): JEDYNE miejsce zastępczej epoki właściciela
+ * (dawniej 12 rozproszonych literałów `ownerId === 0 ? playerEra : 1`).
+ *
+ * Używane WYŁĄCZNIE, gdy wołający NIE poda `resolveOwnerEra`. W grze (main.ts) KAŻDE wywołanie
+ * advanceCityEconomy/previewCityEconomy podaje `empireEpochForOwner`, więc ta gałąź jest tam
+ * martwa (pilnuje tego tools/ai-player-parity-fixes-test.cjs). Zostaje świadomie, bo żyje w
+ * harnessach `gra/tools/*-test.cjs`, które liczą ekonomię pojedynczego miasta bez resolvera
+ * (np. ai-nauka-podzial-tura1-seed-test) -- usunięcie wymagałoby zmiany sygnatur i ok. 20
+ * testów poza allowlistą. UWAGA: to NIE jest bezpieczna reguła dla gry -- dla ownera != 0
+ * zwraca epokę 1 (także dla drugiego człowieka w hot-seat), więc nowy kod w main.ts ma zawsze
+ * przekazywać resolver, nigdy polegać na tym fallbacku.
+ */
+function legacyEraForOwner(ownerId: number, playerEra: number): number {
+  return ownerId === 0 ? playerEra : 1;
+}
+
 // ---------------------------------------------------------------------------
 // EconParams builder
 // ---------------------------------------------------------------------------
@@ -1452,7 +1469,7 @@ function simulateResourcePipelineForPreview(
   }
   const eraForOwner = (ownerId: number): number => resolveOwnerEra
     ? resolveOwnerEra(ownerId)
-    : (ownerId === 0 ? playerEra : 1);
+    : legacyEraForOwner(ownerId, playerEra);
   const capForOwner = (ownerId: number): number => ownerResourceCapacityPerType(
     magazynCountByOwner.get(ownerId) ?? 0,
     storageParams,
@@ -1474,7 +1491,7 @@ function simulateResourcePipelineForPreview(
     cities,
     map,
     territoryNodes,
-    resolveOwnerEra ?? ((ownerId: number) => ownerId === 0 ? playerEra : 1),
+    resolveOwnerEra ?? ((ownerId: number) => legacyEraForOwner(ownerId, playerEra)),
   );
   const workedMagazynByCity = computeWorkedMagazynYieldsByCity(
     cities, map, territoryNodes, lostToSiblingByCity, eraForOwner,
@@ -1967,7 +1984,7 @@ export function previewCityEconomy(
 
     const worked = cityWorkedTilesForEconomy(
       city, map, territoryNodes, lostToSiblingByCity.get(city.id),
-      resolveOwnerEra ? resolveOwnerEra(city.ownerId) : (city.ownerId === 0 ? playerEra : 1),
+      resolveOwnerEra ? resolveOwnerEra(city.ownerId) : legacyEraForOwner(city.ownerId, playerEra),
     );
     const builtIds = builtByCity.get(city.id) ?? [];
     const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
@@ -2005,7 +2022,7 @@ export function previewCityEconomy(
 
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
-      : (city.ownerId === 0 ? playerEra : 1);
+      : legacyEraForOwner(city.ownerId, playerEra);
     const ownerTech = resolveOwnerTech
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
@@ -2262,7 +2279,7 @@ export function previewOwnerUpkeep(
     if (builtIds.length === 0) continue;
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
-      : (city.ownerId === 0 ? playerEra : 1);
+      : legacyEraForOwner(city.ownerId, playerEra);
     const ownerTech = resolveOwnerTech
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
@@ -2345,7 +2362,7 @@ export function advanceCityEconomy(
     cities,
     map,
     territoryNodes,
-    resolveOwnerEra ?? ((ownerId: number) => ownerId === 0 ? playerEra : 1),
+    resolveOwnerEra ?? ((ownerId: number) => legacyEraForOwner(ownerId, playerEra)),
   );
 
   // R-KOSZTY-EPOKOWE-ULEPSZENIA-Q1: upkeep Pracy civ-wide za trwałe ulepszenia terenu
@@ -2381,7 +2398,7 @@ export function advanceCityEconomy(
   const converterThroughputsForOwner = (ownerId: number): Record<string, number> => {
     const era = resolveOwnerEra
       ? resolveOwnerEra(ownerId)
-      : (ownerId === 0 ? playerEra : 1);
+      : legacyEraForOwner(ownerId, playerEra);
     return converterThroughputsForEra(
       recipe => converterThroughputs[recipe.id] ?? recipe.throughputFallback,
       era,
@@ -2443,7 +2460,7 @@ export function advanceCityEconomy(
     if (cached !== undefined) return cached;
     const era = resolveOwnerEra
       ? resolveOwnerEra(ownerId)
-      : (ownerId === 0 ? playerEra : 1);
+      : legacyEraForOwner(ownerId, playerEra);
     const cap = ownerResourceCapacityPerType(magazynCountByOwner.get(ownerId) ?? 0, ownerStorageParams, era);
     ownerResCapByOwner.set(ownerId, cap);
     return cap;
@@ -2507,7 +2524,7 @@ export function advanceCityEconomy(
   // PYTANIE-84 R2: wpływ mapy → konwertery → drain Spichlerza PRZED plonami miast.
   const workedMagazynByCity = computeWorkedMagazynYieldsByCity(
     cities, map, territoryNodes, lostToSiblingByCity,
-    resolveOwnerEra ?? ((ownerId: number) => ownerId === 0 ? playerEra : 1),
+    resolveOwnerEra ?? ((ownerId: number) => legacyEraForOwner(ownerId, playerEra)),
   );
   // R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params wg trudności (jedno źródło prawdy).
   const spichlerzDrainParams = loadSpichlerzDrainParams(
@@ -2540,7 +2557,7 @@ export function advanceCityEconomy(
 
     const worked    = cityWorkedTilesForEconomy(
       city, map, territoryNodes, lostToSiblingByCity.get(city.id),
-      resolveOwnerEra ? resolveOwnerEra(city.ownerId) : (city.ownerId === 0 ? playerEra : 1),
+      resolveOwnerEra ? resolveOwnerEra(city.ownerId) : legacyEraForOwner(city.ownerId, playerEra),
     );
     const builtIds  = builtByCity.get(city.id) ?? [];
     const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
@@ -2581,7 +2598,7 @@ export function advanceCityEconomy(
 
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
-      : (city.ownerId === 0 ? playerEra : 1);
+      : legacyEraForOwner(city.ownerId, playerEra);
     const ownerTech = resolveOwnerTech
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
@@ -2881,7 +2898,7 @@ export function advanceCityEconomy(
     if (builtIds.length === 0) continue;
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
-      : (city.ownerId === 0 ? playerEra : 1);
+      : legacyEraForOwner(city.ownerId, playerEra);
     const ownerTech = resolveOwnerTech
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
