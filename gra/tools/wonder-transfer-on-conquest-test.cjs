@@ -22,6 +22,7 @@ fs.writeFileSync(entry, `
 export { snapshotWonderTerritoryOwners, planWonderTransfers, applyWonderTransfers } from '../src/game/wonder-transfer';
 export { territoryOwnerAt } from '../src/map/territory';
 export { sumWonderCityYieldsForOwner, sumWonderTradeRouteBonusForOwner } from '../src/game/wonders-data';
+export { fortTerritoryNodes } from '../src/game/fort-territory';
 `, 'utf8');
 esbuild.buildSync({
   entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
@@ -37,11 +38,15 @@ function assert(c, msg) {
 }
 
 // --- symulator: miasta + cuda; zmiana właściciela miasta owinięta migawkami jak w main.ts ---
-function mkWorld(cities, wonders) {
-  return { cities: cities.map(c => ({ ...c })), wonders: wonders.map(w => ({ ...w })) };
+function mkWorld(cities, wonders, forts) {
+  return {
+    cities: cities.map(c => ({ ...c })), wonders: wonders.map(w => ({ ...w })),
+    forts: (forts || []).map(f => ({ contestedUseless: false, builtAtTurn: 1, seq: 1, ...f })),
+  };
 }
 function nodes(w) {
-  return w.cities.map(c => ({ q: c.q, r: c.r, pop: c.pop, level: 1, ownerId: c.ownerId }));
+  const cityN = w.cities.map(c => ({ q: c.q, r: c.r, pop: c.pop, level: 1, ownerId: c.ownerId }));
+  return (w.forts && w.forts.length) ? cityN.concat(M.fortTerritoryNodes(w.forts)) : cityN;
 }
 function ownerAtFn(w) { const n = nodes(w); return (q, r) => M.territoryOwnerAt(q, r, n); }
 function changeOwner(w, cityId, newOwner) {
@@ -53,6 +58,14 @@ function changeOwner(w, cityId, newOwner) {
   return plan;
 }
 const owned = (w, o) => w.wonders.filter(x => x.ownerId === o).map(x => x.wonderId);
+function changeFortOwner(w, fortQ, fortR, newOwner) {
+  const before = M.snapshotWonderTerritoryOwners(w.wonders, ownerAtFn(w));
+  w.forts.find(f => f.q === fortQ && f.r === fortR).ownerId = newOwner;
+  const after = M.snapshotWonderTerritoryOwners(w.wonders, ownerAtFn(w));
+  const plan = M.planWonderTransfers(w.wonders, before, after);
+  M.applyWonderTransfers(w.wonders, plan);
+  return plan;
+}
 const city = (w, o) => M.sumWonderCityYieldsForOwner(owned(w, o), 1);
 
 console.log('wonder-transfer-on-conquest-test\n');
@@ -148,6 +161,21 @@ console.log('wonder-transfer-on-conquest-test\n');
   assert(M.applyWonderTransfers(w.wonders, planA) === 1 && M.applyWonderTransfers(w.wonders, planA) === 0, 'applyWonderTransfers idempotentne');
 }
 
+// 7. Zdobycie fortu przez wejście wojska (sweepFortCaptures): hex cudu w terytorium fortu, bez miasta
+{
+  const w = mkWorld(
+    [{ id: 'X1', q: 40, r: 0, pop: 1, ownerId: 5 }],
+    [{ wonderId: 'piramidy', q: 2, r: 0, ownerId: 2 }],
+    [{ q: 4, r: 0, ownerId: 2, type: 'fort' }],
+  );
+  const before = M.snapshotWonderTerritoryOwners(w.wonders, ownerAtFn(w));
+  assert(before.get('piramidy') === 2, 'fort: hex cudu w terytorium fortu właściciela 2 (bez miasta w zasięgu)');
+  const plan = changeFortOwner(w, 4, 0, 0);
+  assert(plan.length === 1 && w.wonders[0].ownerId === 0 && owned(w, 2).length === 0,
+    'zdobycie fortu (sweep): cud przechodzi na zdobywcę terytorium');
+  assert(city(w, 0).pieniadz === 3 && city(w, 2).pieniadz === 0, 'zdobycie fortu: bonusy przeliczone (zdobywca +, poprzedni 0)');
+}
+
 // ---------------- Blok B: main.ts ----------------
 const src = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
 function between(re, label) {
@@ -167,6 +195,20 @@ between(/const wonderWatchCession = beginWonderTransferWatch\(\);[^\n]*\n\s*city
   'main.ts: cesja w pokoju owinięta migawkami');
 between(/const wonderWatchRebel = beginWonderTransferWatch\(\);[^\n]*\n\s*markCityRebellionStarted\(city\);[\s\S]{0,200}?city\.ownerId = REBEL_FACTION_OWNER_ID;\s*settleWonderTransfer\(wonderWatchRebel\);/,
   'main.ts: rewolta owinięta migawkami');
+between(/const wonderWatchFort = beginWonderTransferWatch\(\);[\s\S]{0,400}?if \(evs\.length === 0\) return 0;\s*settleWonderTransfer\(wonderWatchFort\);/,
+  'main.ts: zdobycie fortu (sweepFortCaptures) owinięte migawkami');
+// Inwentarz przypisań właściciela miasta w main.ts (bez komentarzy). Nowe przypisanie = nowa ścieżka
+// do przejrzenia: podnieś oczekiwaną liczbę dopiero po dopisaniu migawek albo jawnym uzasadnieniu.
+// Zdarzenia (owinięte): 16847 kapitulacja, 33570 aneksja, 34742 cesja, 37782 rewolta.
+// Nie-zdarzenia: 27240 wczytanie rebelii, 27399 i 28192 hooki testowe.
+{
+  const lines = src.split('\n').filter(l => !/^\s*(\/\/|\*|\/\*)/.test(l));
+  const hits = lines.filter(l => /\b(city|c)\.ownerId\s*=(?!=)/.test(l));
+  assert(hits.length === 7, `main.ts: inwentarz przypisań city.ownerId = 7 (znaleziono ${hits.length}); nowa ścieżka wymaga migawek`);
+  const pb = fs.readFileSync(path.join(GRA, 'src', 'game', 'post-battle-map.ts'), 'utf8');
+  const pbHits = pb.split('\n').filter(l => /\bcity\.ownerId\s*=(?!=)/.test(l));
+  assert(pbHits.length === 1, `post-battle-map.ts: jedno przypisanie city.ownerId (podbój, wołane w migawce main.ts), znaleziono ${pbHits.length}`);
+}
 between(/const wonderWatchCapture = beginWonderTransferWatch\(\);[^\n]*\n\s*const lead = applyCityCaptureAfterBattle\([\s\S]{0,4000}?\);\s*settleWonderTransfer\(wonderWatchCapture\);/,
   'main.ts: podbój bojowy (applyCityCaptureToMap) owinięty migawkami');
 

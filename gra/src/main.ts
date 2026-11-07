@@ -15276,6 +15276,7 @@ async function boot(): Promise<void> {
      */
     function sweepFortCaptures(): number {
       if (fortNodes.length === 0) return 0;
+      const wonderWatchFort = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1: zdobycie fortu zmienia terytorium hexa
       const evs = applyFortCaptureByOccupation(
         fortNodes,
         units.map(u => ({ ownerId: u.ownerId, q: u.q, r: u.r, military: !isCivilianUnit(u) })),
@@ -15283,6 +15284,7 @@ async function boot(): Promise<void> {
         isBarbarian,
       );
       if (evs.length === 0) return 0;
+      settleWonderTransfer(wonderWatchFort); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
       if (territoryBorderVisible) refreshTerritoryBorderOverlay();
       for (const ev of evs) {
         const nm = ev.type === 'fort' ? 'Fort' : 'Posterunek';
