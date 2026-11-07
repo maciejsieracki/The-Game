@@ -8861,3 +8861,6 @@ R-WEB-ERA-WAR-BRONZE-IRON-REENABLE-Q1 — PASS-WITH-NOTES: `enabledForcedWarEras
 
 ### FALA 537 (2026-11-07, ROBOCZA b3bc8539, main 23ecb1709)
 R-WEB-HUD-PANELS-BELOW-BANNER-Q1 — PASS-WITH-NOTES: panele boczne (Miasta/Wojsko, Dyplomacja, Badania+picker, Civpedia) startują pod dolną krawędzią lewego banera (SIDE_PANEL_TOP = var(--civ-hud-toolbar-top,104px)). hud-panels-below-banner 119/0 (mutacja 93/26). Poza zakresem: panel wydarzeń po prawej, minimapLayout, modale.
+
+### FALA 538 (2026-11-07, ROBOCZA 2853fdee, main 0e1de593d)
+R-WEB-BATTLE-CAP-500-Q1 — PASS-WITH-NOTES (runda 2): limit bitwy 120→500 na stronę (`MAX_PER_SIDE` jedno źródło prawdy). FC r1 FAIL: regresja terenu (głębokość czyszczenia kolumn zależała od stałej limitu) naprawiona — głębokość z rozmiaru większej armii, bitwy ≤120 mają dawny teren. Przyspieszenie logiki 500v500 (z ok. 81 s do ok. 7 s pierwszej tury). Testy: battle-cap-500 59/0, battle-undeployed 35/0, teren-walki-etapy 33/0, logic 213/213. NIE_ZMIERZONO: FPS w Chromium, planowanie AUTO synchroniczne (możliwe zawieszenie kilku sekund) → kandydat na osobny temat (rozłożenie w czasie/LOD). Dalej: R-WEB-ARMY-STACK-LIMIT-Q1 (uruchomiony).
