@@ -230,6 +230,32 @@ async function build() {
         return { total, children: out };
       },
       perfForceFullSync: () => { syncUnitsRender(); cityRenderer.sync(cities, _cityRenderOpts()); },
+      perfSceneByClass: () => {
+        // R2: agregacja korzeni sceny po nazwie/typie: liczba, obiekty, autoUpdate, czas ch.updateMatrixWorld(true) (ms, suma).
+        const agg: Record<string, any> = {};
+        for (const ch of scene.children as any[]) {
+          const key = (ch.name || ch.type) + (ch.isInstancedMesh ? '/inst' : '') + '|' + Object.keys(ch.userData || {}).sort().join(',') + '|c' + Math.min(ch.children.length, 50);
+          const a = (agg[key] ??= { roots: 0, n: 0, auto: 0, ms: 0 });
+          let n = 0, au = 0; ch.traverse((o: any) => { n++; if (o.matrixAutoUpdate) au++; });
+          const t0 = performance.now(); ch.updateMatrixWorld(true); const t1 = performance.now();
+          a.roots++; a.n += n; a.auto += au; a.ms += t1 - t0;
+        }
+        for (const v of Object.values(agg)) v.ms = +v.ms.toFixed(2);
+        return Object.entries(agg).sort((x: any, y: any) => y[1].n - x[1].n).slice(0, 25);
+      },
+      perfMatrixBench: () => {
+        // R2: ile kosztuje scene.updateMatrixWorld (stan domyslny / zamrozone dzieci korzeni / dodatkowo zamrozony korzen sceny). Zamraza NA STALE -- wolac ostatnie.
+        const bench = (n: number) => { const t0 = performance.now(); for (let i = 0; i < n; i++) scene.updateMatrixWorld(); return +((performance.now() - t0) / n).toFixed(2); };
+        const out: Record<string, number> = {};
+        out.default = bench(20);
+        for (const ch of scene.children as any[]) ch.traverse((o: any) => { if (o !== ch && o.matrixAutoUpdate) { o.updateMatrix(); o.matrixAutoUpdate = false; } });
+        out.descendantsFrozen = bench(20);
+        for (const ch of scene.children as any[]) if (ch.matrixAutoUpdate) { ch.updateMatrix(); ch.matrixAutoUpdate = false; }
+        out.rootsFrozenToo = bench(20);
+        const sa = scene.matrixAutoUpdate; scene.updateMatrix(); scene.matrixAutoUpdate = false; scene.matrixWorldNeedsUpdate = false;
+        out.sceneFrozenToo = bench(20); void sa;
+        return out;
+      },
       perfSceneStats: () => {
         const top: Record<string, any> = {}; let total = 0, visible = 0, autoUpd = 0, meshes = 0, inst = 0;
         scene.children.forEach((ch: any, i: number) => {
@@ -766,6 +792,8 @@ async function main() {
     }
     if (SECTIONS.has('eot')) {
       result.scene = await page.evaluate(() => window.__turnSlowdownTestDebug.perfSceneStats()); console.log('[perf] scene', JSON.stringify(result.scene));
+      if (process.env.PERF_MATRIX_BENCH === '1') { result.matrixBench = await page.evaluate(() => window.__turnSlowdownTestDebug.perfMatrixBench()); console.log('[perf] MATRIXBENCH', JSON.stringify(result.matrixBench)); }
+      if (process.env.PERF_SCENE_CLASS === '1') { result.sceneClass = await page.evaluate(() => window.__turnSlowdownTestDebug.perfSceneByClass()); console.log('[perf] SCENECLASS', JSON.stringify(result.sceneClass)); }
       result.eot = [];
       for (let k = 0; k < EOT_N; k++) {
         const r = await iter(async () => {

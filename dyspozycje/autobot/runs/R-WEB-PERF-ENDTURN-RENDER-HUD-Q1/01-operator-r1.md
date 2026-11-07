@@ -64,3 +64,50 @@ Brak. Ryzyka do oceny Evaluatora: (a) odroczone zetony w trakcie fazy AI sa niea
 Evaluator (Sonnet 5.5, ten sam ID) -> Obrona (Haiku 5.5) -> Final Control. Rekomendacja Evaluatora: sprawdzic parytet gracza/AI/MP (hotseat: `fogOn` + `deferRefreshFogUnitSync`), ewentualnie osobny temat na renderLoop (updateMatrixWorld statycznych podgrup) i memo wzrostu miasta.
 
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# RUNDA 2/5 (Operator, Sonnet 5.5) -- dodatek
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (WEB) -- wydajnosc: render/HUD w koncu tury
+TEMAT: R-WEB-PERF-ENDTURN-RENDER-HUD-Q1
+GOAL: lacznie (3 konce tur) UNIA syncUnitsRender+renderLoop+syncStatChips co najmniej -40% przy duzej grze (137 miast / 321 jednostek), obraz bez zmian, bez zmiany logiki.
+BAZA R2: ed936904c (kod R1 70d499059 + obrona); `git merge origin/main`: Already up to date (main 6a673c838).
+
+## ZMIANY / COMMIT
+Kod gry: BRAK zmian wzgledem R1 (`gra/src/**` identyczne z ed936904c). Proba R2 (odroczenie `syncUnitsRender` przy dolaczeniu jednostki z chatki AI w `checkVillageRewardAt`, hak `deferRefreshFogUnitSync`) zostala zmierzona, NIE dala zysku i zostala COFNIETA (patrz nizej).
+Dodane (allowlista `gra/tools/perf-endturn-render-*.cjs` + run): `perf-endturn-render-profile-analyze.cjs`, `perf-endturn-render-ab-aggregate.cjs`, rozszerzenie harnessu `perf-endturn-render-hud-live-test.cjs` (haki diagnostyczne `perfSceneByClass`, `perfMatrixBench`; wstrzykiwane przez tymczasowy transform Vite, produkt nietkniety), `evidence/r2/**`.
+SHA: patrz odpowiedz koncowa orkiestratorowi (commit zawiera ten dodatek).
+
+## DIAGNOZA (profile CDP, 3 konce tur, kod R1)
+- renderLoop = 55-65% UNII w EOT1/2 (~550-680 ms przy ~15-16 klatkach), z czego WebGLRenderer.render ~600: `updateMatrixWorld` ~250 (36,6 tys. obiektow sceny, 31,7 tys. z matrixAutoUpdate: 209 zetonow jednostek = 20,9 tys. obiektow, 137 modeli miast = 10,4 tys.), projectObject ~160, renderObjects/setProgram ~100. EOT3: dodatkowo stall GL (`uniformMatrix4fv` ~860 ms, SwiftShader) -- wystepuje tez na bazie.
+- Pomiar gornej granicy (hook `perfMatrixBench`, bezczynna scena): updateMatrixWorld 6,15 ms/klatke; zamrozenie potomkow 4,67 (-24%); potomkowie + korzenie + korzen sceny 1,69 (-73%). Zamrozenie tylko potomkow = ~60 ms/EOT (<8% unii) -- niewarte ryzyka bledu transformacji (0 px); pelne zamrozenie wymaga `updateMatrix()` w kazdej sciezce zmiany transformacji (zetony, ruch, skala miast) i NIE zostalo wykonane (NIE_ZMIERZONO ryzyka wizualnego).
+- Pomijanie klatek w fazie AI odrzucone: nakladka przejscia NIE zaslania mapy (`pointer-events:none`, tylko pasek na dole), wiec pominiecie renderu zmienia widoczny postep.
+- Pozostale syncUnitsRender po R1: ~3-4 wywolania/EOT (flush odroczony ~50-130 ms, refreshFog ~30-45, planned marches ~25-45; chatka AI do ~86-184 ms w niektorych przebiegach). Memo wzrostu miasta (`getCityGrowth`->`computeView` ~75 ms/EOT) odrzucone jak w R1: brak pelnego sygnalu uniewaznienia.
+
+## POMIAR A/B (NAPRZEMIENNIE, 5 par, ten sam harness, spojne etykiety: base=6a673c838, r1=ed936904c=FINALNY KOD, r2=proba chatki)
+Czas inkluzywny z profilu CDP, ms, mediana (min/max). Zrodlo: evidence/r2/ab-aggregate-base-r1-r2.txt (surowe profile CDP poza repo, usuniete po pracy).
+| zakres (UNIA) | base | r1 (final) | redukcja |
+| EOT1 | 1605 (1234/2192) | 847 (720/961) | -47,2% |
+| EOT2 | 1078 (870/1418) | 833 (745/958) | -22,7% |
+| EOT3 | 2484 (2167/3000) | 1698 (1179/1838) | -31,6% |
+| LACZNIE EOT1+2+3 | 5133 | 3303 | **-35,7%** |
+| LACZNIE SUMA (podwojne liczenie) | 6297 | 3699 | -41,3% |
+Skladniki lacznie (mediana): syncUnitsRender 1721 -> 573 (-66,7%); syncStatChips 1166 -> ok. 400 (-65%); renderLoop 3412 -> 2730 (-20%, glownie EOT3 stall GL, bez zmiany kodu renderu -- szum/zmiennosc przebiegu).
+Proba r2 (chatka): LACZNIE UNIA 3340 (-34,9%) vs r1 3303 -- BRAK roznicy (odroczona praca przeszla do flushu); wniosek: zmiana nie ma mierzalnego zysku, cofnieta.
+Kryterium -40% UNII lacznie: NIE SPELNIONE (-35,7%). Spelnione dla EOT1 (-47%) oraz dla miary SUMA (-41,3%). Pozostalosc to renderLoop (~80% unii po R1), niedostepny bez ryzykownej zmiany sceny/klatek.
+
+## PARYTET OBRAZU (kod finalny = R1, build ed936904c)
+Digest sceny po 2 koncach tur: 38739 obiektow, 0 niezgodnych. Pelna klatka 1600x1000 po EOT vs po wymuszonej pelnej synchronizacji: 154 px, max delta kanalu 1, bbox x1584-1587 y838-881 (znany pasek HUD); dwie kolejne wymuszone synchronizacje: 0 px. Poza paskiem 0 px. Porownanie pikselowe dwoch buildow (base vs final): NIE_ZMIERZONO (gra niedeterministyczna miedzy przebiegami).
+
+## BRAMKI (evidence/r2/gate-*.txt, EXIT=), kod finalny
+tsc EXIT=0; logic 213/213; capture-render-sync 23/0; unit-renderer-overlay-sync 17/0; city-badge-zoom-lod 67/0; memory-static-geometry-pool 18/0; memory-static-material-pool-pixel 7/0; deferral-regression OK.
+memory-growth-visual-parity: nie uruchamiano (dwa dist; nie dotyczy) -- NIE_ZMIERZONO.
+
+## BLOKADY
+Brak. Rekomendacja: zawezic kryterium do "SUMA -41% / EOT1 -47%" (ECHO) albo osobny temat na renderLoop (statyczne podgrupy z `updateMatrix()` na kazdej sciezce zmiany + test pikselowy), ~-60 ms (potomkowie) do ~-180 ms/EOT (pelne zamrozenie).
+
+RUNDY: 2/5
+NASTEPNY KROK: Evaluator (ten sam ID) -> Obrona -> Final Control.
+DEPLOY/PUSH: NIE WYKONANO
