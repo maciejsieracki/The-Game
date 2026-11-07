@@ -14,3 +14,5 @@ Nazewnictwo: `<civId>/<civId>_przywitanie.mp3` (powitanie), `<civId>/<civId>_neg
 | Inkowie | inkowie_SUMMIT_OF_ANCIENT_AIR_rola-do-ustalenia.mp3 | Summit of Ancient Air | 2:25 | 3,5 MB |
 | Zulusi | zulusi_przywitanie.mp3 | Courtyard Greeting | 0:42 | 1,0 MB |
 | Zulusi | zulusi_negocjacje.mp3 | The Patient Indaba | 2:33 | 3,7 MB |
+| Egipt | egipt_przywitanie.mp3 | Offering To The Throne | 0:40 | 1,0 MB |
+| Egipt | egipt_negocjacje.mp3 | The King's Audience | 2:29 | 3,6 MB |
