@@ -45,7 +45,8 @@ const MUTS = [
   ['H14 hex: blok „Surowce z terenu (przy 👤)” pominięty (REPIN UI-2-D)', 'src/ui/hexContextTooltip.ts', `  if (terrainMagazyn.length > 0) {`, `  if (terrainMagazyn.length > 0 && false) {`, H],
   // C5 — kopie bajtowe.
   ['S1 kopia: sidePanelHud — nagłówek wydarzeń', 'src/ui/sidePanelHud.ts', `: 'Wydarzenia') + '</div>';`, `: 'Zdarzenia') + '</div>';`, 'sidePanelHud.ts'],
-  ['S2 kopia: sidePanelEventFilter — filtr „Inne cyw.”', 'src/ui/sidePanelEventFilter.ts', `return events.filter(ev => ev.origin !== 'other-civs');`, `return events.filter(ev => ev.origin === 'other-civs');`, 'sidePanelEventFilter.ts'],
+  // S2 — REPIN UI-3 (web `9b019a7d8`): filtr „Inne cyw.” zastąpiony filtrem zakładek; mutacja celuje w nowy filtr.
+  ['S2 kopia: sidePanelEventFilter — filtr zakładki', 'src/ui/sidePanelEventFilter.ts', `return events.filter(ev => eventTabOf(ev) === tab);`, `return events.filter(ev => eventTabOf(ev) !== tab);`, 'sidePanelEventFilter.ts'],
   // preBattle.ts
   ['B1 preBattle: chipy bonusów z DTO bez pierwszego', 'src/ui/preBattle.ts', `const chipTexts = side.bonusChips;`, `const chipTexts = side.bonusChips.slice(1);`, B],
   ['B2 preBattle: ikona jednostki konnej (PB_SVG z kopii)', 'src/ui/preBattle.ts', `if (kind === 'mounted') return PB_SVG.unitMounted;`, `if (kind === 'mounted') return PB_SVG.unitMelee;`, B],

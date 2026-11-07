@@ -695,3 +695,108 @@ którego `diplomacyTradeBasket.ts` wymaga `game/diplomacy-value-catalog` z main 
 GPU / natywne okno Tauri: NIE_ZMIERZONO. Wycena (ZAŁOŻENIE Z3): UI-2-E 25,5 h / 428 LP wyceniane na 4 rundy — zużyta 1 runda
 (łącznie z jednorazową infrastrukturą harnessu dyplomacji); pozostało po A+E: 126,25 − 25,5 = **100,75 h** (B, C, D, F, G).
 Rekalibracja: klasa PD z czystym `diff3` (bez konfliktów w 3/5 plików) kosztuje istotnie mniej niż `L/50` — do weryfikacji na UI-2-C/F.
+
+## 11. REPIN UI-3 — web `86d510c66 → 9b019a7d8` (FALA 509–532), `R-RUSTPORT-REPIN-WEB-UI-3-Q1`
+
+Baza `rust-port/parity-v2` `b520768b0`; web `origin/main` = `9b019a7d89090c7491a4c2ad75278a7a60d42a90` (2026-11-07).
+Pomiar: `git diff --numstat 86d510c66 9b019a7d8 -- gra/src/ui` = 24 pliki, +1389/−408, 66 commitów dotykających `gra/src/ui`.
+H = `git diff -U0 … | grep -c '^@@'`; v2 = stan pliku na bazie (`BYTE86` = bajtowo równy web `86d510c66`, `MOD` = port, `—` = brak).
+
+### 11.1 Pomiar i klasyfikacja (24 pliki)
+
+| Plik | +/− | H | v2 | Klasa | Status |
+|---|---|---|---|---|---|
+| `armyMergePanel` | +9/−3 | 7 | BYTE86 | KB | **UI-3-A r1** |
+| `armyMergePickPanel` | +7/−4 | 5 | BYTE86 | KB | **UI-3-A r1** |
+| `armySplitPanel` | +10/−4 | 5 | BYTE86 | KB | **UI-3-A r1** |
+| `armyStackLabel` (NOWY) | +35/−0 | 1 | — | AD (import `game/stack-leader`) | **UI-3-A r1** |
+| `gamePauseMenu` | +20/−0 | 4 | BYTE86 | KB | **UI-3-A r1** |
+| `hudChip6c` | +43/−2 | 6 | BYTE86 | KB | **UI-3-A r1** |
+| `sidePanelEventTabs` (NOWY) | +98/−0 | 1 | — | KB | **UI-3-A r1** |
+| `sidePanelEventFilter` | +41/−15 | 6 | BYTE86 | KB | **UI-3-A r1** |
+| `sidePanelHud` | +84/−31 | 15 | BYTE86 | KB | **UI-3-A r1** |
+| `empireRecruitPanel` (NOWY) | +192/−0 | 1 | — | KB (0 importów) | **UI-3-A r1** |
+| `worldOverlayLayer` (NOWY) | +8/−0 | 1 | — | KB (0 importów) | **UI-3-A r1** |
+| `icons/brand/building-icon-map.json` + `bld-emporion.svg` (NOWY) | +1 / +1 | 1 / 1 | PIN / — | KB | **UI-3-A r1** |
+| `armyStackHud` | +5/−1 | 3 | MOD | PD | UI-3-B (r2) |
+| `siegeMapPanel` | +14/−2 | 3 | MOD | PD + DTO | UI-3-B (r2) |
+| `unitRecruitCard` | +15/−4 | 5 | MOD | PD | UI-3-B (r2) |
+| `newGameFlow` | +7/−0 | 4 | MOD | PD | UI-3-B (r2) |
+| `empireDetailTypes` | +4/−4 | 3 | MOD | AD | UI-3-B (r2) |
+| `empireDetailPanel` | +72/−25 | 23 | MOD | PD | UI-3-C (r3) |
+| `hexContextTooltip` | +85/−75 | 20 | MOD | PD (używa `armyStackLabel`) | UI-3-C (r3) |
+| `buildModeHud` | +23/−88 | 15 | MOD | PD (`game/auto-build-gate`) | UI-3-C (r3) |
+| `minimapHud` | +114/−36 | 14 | MOD | PD (`updateViewport`, `game/visibility`) | UI-3-D (r3–r4) |
+| `hud` | +350/−70 | 50 | MOD | PD (baner 3+3 brutto/netto) | UI-3-D (r4) |
+| `cityPanel` | +151/−44 | 52 | bloki K | K | UI-3-E (r4–r5) |
+
+Klasa KB = plik v2 był bajtowo równy webowi `86d510c66`, a wersja `9b019a7d8` importuje wyłącznie moduły UI obecne w v2
+(sprawdzone: `formatPl.signedPl`, `escapeOverlayStack`, `icons/*` bez zmian `86d→9b0`). Wycena reszty wg rekalibracji §2c
+(`0,5 + 0,05·H + L/200` h + harness): B ≈ 4 h, C ≈ 6 h, D ≈ 8 h, E (K) ≈ 10 h — ZAŁOŻENIE **U3-Z4**, do potwierdzenia w r2.
+
+### 11.2 Mechanika (addytywnie względem UI-2)
+
+- `tools/repin-ui3-manifest.json` (NOWY): `pin` = `9b019a7d8`, `files` (12 kopii bajtowych), `adapters` (1), `overlayDeps`
+  (`gra/src/game/stack-leader.ts` — tylko do odniesienia nakładki; pin `edb8fb56` go nie ma).
+- `tools/verify-repin-ui3-copies.mjs` (NOWY, w `npm run check`): SHA, DISJ (z `pin-manifest`, wszystkimi sekcjami
+  `repin-ui2-manifest`, `repin-ui2-overlay-ports/*`, `repin-ui2*-ported`), GIT (kopia = `git show 9b019a7d8:…`), ADAPTER
+  (plik bez bloków `// pin-adapter 9b019a7d8 <źródło>:A-B` = web bez usuniętego importu; każdy blok = źródło A..B bez `export `), DEPS.
+- ZAŁOŻENIE **U3-Z1**: wpisy przeniesione — z `pin-manifest.json` usunięte 5 (`gamePauseMenu`, `armyMergePickPanel`,
+  `sidePanelHud`, `sidePanelEventFilter`, `building-icon-map.json`; 431 → 426), z `repin-ui2-manifest.json` `files` usunięte 3
+  (`armyMergePanel`, `armySplitPanel`, `hudChip6c`; 7 → 4). Inaczej dwie bramki wymagałyby dwóch różnych treści jednego pliku.
+- ZAŁOŻENIE **U3-Z2** (adapter `armyStackLabel`): web importuje `isNonCombatTypeName`/`sortNonCombatLast` z `game/stack-leader`
+  (+ `CIVILIAN_TYPE_IDS` z `units/setup`) — czyste funkcje bez stanu, skopiowane bajtowo jako deklaracje lokalne. Gdy kontroler v2
+  zacznie przekazywać flagę „niebojowa” w DTO, adapter można zastąpić polem DTO (P6). Pozostała treść = web bajt w bajt.
+- `tools/repin-ui2-overlay.mjs`: NOWY argument `--web3-dir` (wymagany, gdy istnieje manifest UI-3) — w odniesieniu pinu wersje
+  `9b019a7d8` plików UI-3 (+ `overlayDeps`). ZAŁOŻENIE **U3-Z3**: harnessy UI-2 z `--web-dir` (`run-repin-ui2a…g`) po UI-3
+  uruchamiać z katalogiem `WEB86U3` = `repin-ui2-overlay.mjs --pin-dir $WEB86 --web-dir $WEB86 --web3-dir $WEB3` (web 86d + pliki
+  UI-3): `run-repin-ui2c` na czystym `$WEB86` daje 2 różnice PIX (scena HUD montuje panel boczny 86d z chipem „Inne cyw.”, port — zakładki).
+- `run-cycles.mjs`, `run-repin-ui2e-cycles.mjs`: blok `sidePanelEventFilter` porównuje NOWE API (zakładki), gdy obie strony je mają;
+  przy mieszanych rewizjach (r2, Evaluator r1 Z3) — RÓŻNICA `API filtra` liczona do `różnic` (EXIT=1), nie pominięcie.
+  `mutate-cycles.mjs` S2 celuje w nowy filtr zakładki (S1, S2 wykryte).
+
+### 11.3 Testy r1 (Chromium 141 headless `/opt/pw-browsers/chromium-1194`, Playwright `/opt/node-tools`)
+
+- `run-repin-ui3a.mjs`: 33 sceny × 2 okna (1280×720, 360×640), 360 kroków (prawdziwe kliknięcia/klawisze, `fill`), wektory
+  funkcji (`armyStackLabel`, `chip6cHtml` 192 warianty + `formatGrossNet`, `eventTabOf` na 70+ wpisach, filtry, ikony, z-index);
+  24 PNG web = port bajtowo; różnic=0, pageerror+console.error=0, asercji pokrycia 56/56. Fixtura
+  `fixtures/repin_ui3a-web-vectors.json`; niezależny weryfikator: drugi, osobny `git archive origin/main` → fixtura bajtowo identyczna.
+- `mutate-repin-ui3a.mjs`: 52/52 wykrytych (#30 i #32 przeżyły w pierwszym przebiegu → dodano wektory: licznik `wazne=1`
+  i słowo z `armiy`; #27–#37 i #50–#51 zmierzone ponownie po zmianie korpusu). `verify-repin-ui3-copies`: 8/8 sztucznych naruszeń wykrytych.
+- Regresja (baza `b520768b0` + nakładka pin+UI-2 vs temat + nakładka pin+UI-2+UI-3): L0 3861/0 = 3861/0, L1A 3618/0 =,
+  L2 1784/0 (354/150) =, C4 1649/0 (75) =, hud 899/0 → 909/0 (+10 przypadków: przyciski zakładek panelu), cityux 164/0 =,
+  `run-cycles` 1623 różnic = 1623 (te same moduły: `diplomacyTradeBasket` 1592 + `diplomacyAudience` 31 — ZAŁOŻENIE E-Z3; sidePanel* 0),
+  UI-2-A 2292/0, UI-2-B 1356/0, UI-2-C 752/0 (WEB86U3), UI-2-D 797/0, UI-2-E 183/0, UI-2-E-cycles 9335/0, UI-2-G 9216/0.
+  `run-newgame`/UI-2-F: NIE_ZMIERZONO (`newGameFlow` i jego zależności bez zmian w UI-3-A). Regresję uruchomiono przed
+  dodaniem `worldOverlayLayer.ts` (plik nieimportowany przez żaden moduł v2).
+- Zmierzone zachowanie weba (identyczne w porcie): klik „Rekrutuj” zaraz po edycji pola liczby nie składa zamówienia (blur →
+  `change` → render podmienia przycisk przed `click`). Do zgłoszenia dla weba — poza zakresem portu.
+- Hooki nowych paneli (`onAutoBuildToggle`, `toggleEmpireRecruitPanel`, zakładki) gotowe w UI; kontroler v2 ich nie podpina — P6
+  (`src/controller/**` poza allowlistą). GPU / natywne okno Tauri: NIE_ZMIERZONO.
+
+### 11.4 Komendy
+
+```bash
+git archive 9b019a7d89090c7491a4c2ad75278a7a60d42a90 gra/src gra/data | tar -x -C "$WEB3"
+node tools/verify-repin-ui3-copies.mjs [--web-dir "$WEB3"]
+node tools/dom-harness/run-repin-ui3a.mjs --web-dir "$WEB3" [--out fixtura.json] [--png-dir "$PNG"]
+node tools/dom-harness/mutate-repin-ui3a.mjs --web-dir "$WEB3" --from 0 --to 26   # i 26–52 (< 10 min/wywołanie)
+node tools/repin-ui2-overlay.mjs --pin-dir "$PIN" --web-dir "$WEB86" --web3-dir "$WEB3" --out "$PINOV"
+node tools/repin-ui2-overlay.mjs --pin-dir "$WEB86" --web-dir "$WEB86" --web3-dir "$WEB3" --out "$WEB86U3"
+```
+
+### 11.5 Runda 2 — obrona (Evaluator r1: FAIL, Z1–Z4)
+
+- Z1/Z2 PRZYJĘTE: GOAL = 24 pliki; zrobione 13 (partia A). Status r1 `PASS-WITH-NOTES` był błędny — GOAL niepełny = `FAIL`,
+  temat wraca z tym samym ID; partie B–E (11 plików, §11.1) w kolejnych rundach albo — decyzja orkiestratora — osobne ID.
+- Z3 PRZYJĘTE: `run-cycles.mjs` — gałąź POMINIĘTE zastąpiona przypadkiem `API filtra (rozbieżne rewizje…)` liczonym do `różnic`.
+  Dowód: czysty pin `edb8fb56` (bez nakładki) `--only sidePanelEventFilter.ts` → `różnic=1`, EXIT=1 (pin: `filterSidePanelEvents`,
+  v2: `filterSidePanelEventsByTab,…`); nakładka `--web3-dir` → 44/0, EXIT=0. `run-repin-ui2e-cycles.mjs`: moduł nie jest tam
+  pakowany (domyślne `--only` = 3 moduły dyplomacji), blok był martwy, a `--only sidePanelEventFilter.ts` dawał `modułów=0`, EXIT=0;
+  teraz blok wchodzi do raportu → EXIT=1 (jawnie: moduł poza zakresem tego harnessu). Domyślny przebieg bez zmian (9335/0).
+- Z4 PRZYJĘTE: regresja na kodzie końcowym (`src/` = `e2879257f`, w tym `worldOverlayLayer.ts`; narzędzia z poprawką Z3):
+  L0 3861/0, L1A 3618/0, L2 1784/0 (354/150), C4 1649/0 (75), hud 909/0, cityux 164/0, newgame 2195/0 (wcześniej NIE_ZMIERZONO;
+  `newGameFlow` → `icons/brandAssets` → `building-icon-map.json` zależy od pliku UI-3), `run-cycles` 6442 przypadków / 1623 różnic
+  (te same moduły: `diplomacyTradeBasket` 1592 + `diplomacyAudience` 31, E-Z3; sidePanel* 0); UI-2-A 2292/0, B 1356/0, C 752/0,
+  D 797/0, E 183/0, E-cycles 9335/0, F 35 scen/0, G 9216/0 (WEB86U3); UI-3-A 33×2 scen, 360 kroków, PIX 0, 56/56; `mutate-cycles
+  --only S1,S2` 2/2.

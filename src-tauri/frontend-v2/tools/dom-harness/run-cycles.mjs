@@ -374,8 +374,28 @@ try {
   if (want('sidePanelEventFilter.ts')) {
     const M = 'sidePanelEventFilter.ts';
     const [P, V] = mods(M);
-    for (const evs of [[], EVENTS, EVENTS.filter((e) => e.origin), EVENTS.slice(0, 3)]) for (const show of [false, true]) {
-      cmpVal(M, `filter(${evs.length},${show})`, P.filterSidePanelEvents(evs, show), V.filterSidePanelEvents(evs, show));
+    const sets = [[], EVENTS, EVENTS.filter((e) => e.origin), EVENTS.slice(0, 3)];
+    if (typeof P.filterSidePanelEvents === 'function' && typeof V.filterSidePanelEvents === 'function') {
+      for (const evs of sets) for (const show of [false, true]) {
+        cmpVal(M, `filter(${evs.length},${show})`, P.filterSidePanelEvents(evs, show), V.filterSidePanelEvents(evs, show));
+      }
+    } else if (typeof P.filterSidePanelEventsByTab === 'function' && typeof V.filterSidePanelEventsByTab === 'function') {
+      // R-RUSTPORT-REPIN-WEB-UI-3-Q1: web `9b019a7d8` zastąpił chip „Inne cyw.” zakładkami (Dyplomacja/Ważne/Inne) —
+      // odniesienie nakładki (`--web3-dir`) i port mają nowe API; porównujemy je na tych samych zestawach wpisów.
+      for (const evs of sets) {
+        for (const tab of ['dyplomacja', 'wazne', 'inne']) {
+          cmpVal(M, `byTab(${evs.length},${tab})`, P.filterSidePanelEventsByTab(evs, tab), V.filterSidePanelEventsByTab(evs, tab));
+          cmpVal(M, `relevant(${evs.length},${tab})`, P.relevantInfoEvents(evs, tab), V.relevantInfoEvents(evs, tab));
+          cmpVal(M, `hidden(${evs.length},${tab})`, evs.map((e) => P.isHiddenAiAiEvent(e, tab)), evs.map((e) => V.isHiddenAiAiEvent(e, tab)));
+        }
+        for (const ai of [false, true]) cmpVal(M, `counts(${evs.length},${ai})`, P.tabCountsOf(evs, ai), V.tabCountsOf(evs, ai));
+      }
+    } else {
+      // R-RUSTPORT-REPIN-WEB-UI-3-Q1 r2 (Evaluator r1 Z3): rozbieżne API filtra (odniesienie i port z różnych rewizji, np.
+      // odniesienie bez `--web3-dir`) = RÓŻNICA, nie pominięcie — przypadek liczony do `różnic`, więc EXIT=1.
+      const apiOf = (m) => ['filterSidePanelEvents', 'filterSidePanelEventsByTab', 'relevantInfoEvents', 'isHiddenAiAiEvent', 'tabCountsOf']
+        .filter((k) => typeof m[k] === 'function').join(',') || '(brak)';
+      record(M, 'API filtra (rozbieżne rewizje odniesienia i portu)', 'pin:' + apiOf(P), 'v2:' + apiOf(V));
     }
   }
 

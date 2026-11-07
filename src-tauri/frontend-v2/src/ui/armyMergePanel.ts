@@ -10,6 +10,7 @@
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { unitIconSvg } from './icons/brandAssets';
 import { formatArmiaLabel, formatJednostkiCount, formatLiczbaPl } from './formatPl';
+import { armyStackCardLabel, sortArmyStackGeneralsFirst } from './armyStackLabel';
 
 export interface ArmyMergeUnitRow {
   id: string;
@@ -17,6 +18,8 @@ export interface ArmyMergeUnitRow {
   icon?: string;
   ruchLeft?: number;
   ruchMax?: number;
+  /** Rola dowódcy (tylko dla generała/wodza) — wtedy etykieta to „Rola — typ". */
+  commanderTitle?: 'Wódz' | 'Generał';
 }
 
 export interface ArmyMergePanelOpts {
@@ -111,6 +114,7 @@ function ensureStyles(): void {
 .civ-amp-row-name{font-size:12px;font-weight:700;color:#f0e8b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .civ-amp-row-mv{font-size:10px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .civ-amp-row.new{border-color:rgba(80,176,112,0.35);background:rgba(80,176,112,0.08);}
+.civ-amp-row.cmd .civ-amp-row-name{color:#ffe27a;font-weight:800;}
 .civ-amp-mid{display:flex;align-items:center;justify-content:center;gap:6px;height:26px;}
 .civ-amp-arrow{font-size:16px;color:var(--gold-dim);line-height:1;}
 .civ-amp-mid-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
@@ -143,11 +147,13 @@ function unitRowHtml(u: ArmyMergeUnitRow, isNew: boolean): string {
   const mv = u.ruchMax !== undefined && u.ruchLeft !== undefined
     ? formatLiczbaPl(u.ruchLeft, 2) + '/' + formatLiczbaPl(u.ruchMax, 2) + ' ruch'
     : '';
+  // Generał/wódz: etykieta „Generał — Wojownik” (rola + typ), jak na karcie stosu.
+  const label = armyStackCardLabel(u);
   return (
-    '<div class="civ-amp-row' + (isNew ? ' new' : '') + '" role="listitem">' +
+    '<div class="civ-amp-row' + (isNew ? ' new' : '') + (u.commanderTitle ? ' cmd' : '') + '" role="listitem">' +
       '<div class="civ-amp-row-ic" aria-hidden="true">' + (u.icon || unitIconSvg(undefined)) + '</div>' +
       '<div class="civ-amp-row-meta">' +
-        '<div class="civ-amp-row-name">' + esc(u.name) + '</div>' +
+        '<div class="civ-amp-row-name">' + esc(label) + '</div>' +
         (mv ? '<div class="civ-amp-row-mv">' + esc(mv) + '</div>' : '') +
       '</div>' +
     '</div>'
@@ -241,7 +247,7 @@ export function showArmyMergePanel(opts: ArmyMergePanelOpts): void {
         (fieldN > 0
           ? '<div class="civ-amp-wrap">' +
               '<div class="civ-amp-units" role="list" tabindex="0" aria-label="Jednostki na polu: ' + fieldN + '">' +
-                opts.existing.map(u => unitRowHtml(u, false)).join('') +
+                sortArmyStackGeneralsFirst(opts.existing).map(u => unitRowHtml(u, false)).join('') +
               '</div>' +
             '</div>' +
             '<button type="button" class="civ-amp-more" tabindex="-1" aria-hidden="true"></button>'

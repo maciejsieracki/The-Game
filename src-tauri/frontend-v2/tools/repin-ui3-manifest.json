@@ -1,0 +1,100 @@
+{
+  "pin": "9b019a7d89090c7491a4c2ad75278a7a60d42a90",
+  "topic": "R-RUSTPORT-REPIN-WEB-UI-3-Q1 (partia UI-3-A, runda 1)",
+  "source": "git show <pin>:<src> (origin/main 9b019a7d8 = FALA 532 w chwili repinu)",
+  "note": "Kopie bajtowe (files) i adaptery (adapters) przepięte z weba 86d510c66/edb8fb56 na 9b019a7d8. Wpisy usunięte z pin-manifest.json (5) i repin-ui2-manifest.json files (3) — patrz P5-REPIN-UI-2.md §11. Bramka: tools/verify-repin-ui3-copies.mjs; odniesienie starszych harnessów: tools/repin-ui2-overlay.mjs --web3-dir.",
+  "files": [
+    {
+      "path": "src/ui/armyMergePanel.ts",
+      "src": "gra/src/ui/armyMergePanel.ts",
+      "sha256": "ca4975b450dfd903cc871c88bacf551e3249e3057613b03aa6a7531d549409e0",
+      "bytes": 17103
+    },
+    {
+      "path": "src/ui/armyMergePickPanel.ts",
+      "src": "gra/src/ui/armyMergePickPanel.ts",
+      "sha256": "6e1dc3b1a9475f9afd8d64de68bda03b152f2babb9cd0e056ed26593578fd435",
+      "bytes": 7868
+    },
+    {
+      "path": "src/ui/armySplitPanel.ts",
+      "src": "gra/src/ui/armySplitPanel.ts",
+      "sha256": "f9abed64e8bea560ace6eeec668bfc7eb231c2c6786434700e9c4543a1638c32",
+      "bytes": 13974
+    },
+    {
+      "path": "src/ui/gamePauseMenu.ts",
+      "src": "gra/src/ui/gamePauseMenu.ts",
+      "sha256": "93709f50dc679f301ac9347f056f5ac7193fc77b1b5005c013d0a07de3479302",
+      "bytes": 19089
+    },
+    {
+      "path": "src/ui/hudChip6c.ts",
+      "src": "gra/src/ui/hudChip6c.ts",
+      "sha256": "696869709ea3f064dd6e09e4edc9350942c21de944fe35b3eebd9fff3c7fdbdd",
+      "bytes": 6177
+    },
+    {
+      "path": "src/ui/sidePanelEventFilter.ts",
+      "src": "gra/src/ui/sidePanelEventFilter.ts",
+      "sha256": "39cdf14c3bcb6953dca20e316af78d894ff385b6ddd5a52336bc3176ec500e6d",
+      "bytes": 2231
+    },
+    {
+      "path": "src/ui/sidePanelEventTabs.ts",
+      "src": "gra/src/ui/sidePanelEventTabs.ts",
+      "sha256": "2a9c27ef8903a3b617724cac6d9661e04db89b05eb48ce67663d66870d812c9d",
+      "bytes": 4787
+    },
+    {
+      "path": "src/ui/sidePanelHud.ts",
+      "src": "gra/src/ui/sidePanelHud.ts",
+      "sha256": "8b0a87e34b28574acb2e777ca93d0f4f49cee1698e4848338d55fc92f603d4f8",
+      "bytes": 63618
+    },
+    {
+      "path": "src/ui/empireRecruitPanel.ts",
+      "src": "gra/src/ui/empireRecruitPanel.ts",
+      "sha256": "72935fd09783c011a2c3e00713010bbff7a08bc61d010fadbb3f4846cbd8e0f6",
+      "bytes": 9519
+    },
+    {
+      "path": "src/ui/icons/brand/building-icon-map.json",
+      "src": "gra/src/ui/icons/brand/building-icon-map.json",
+      "sha256": "bf97fdbf076dacfe83d926e062f82956361d2b2dc0666e00e87fc25f82f07991",
+      "bytes": 1609
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-emporion.svg",
+      "src": "gra/src/ui/icons/brand/buildings/bld-emporion.svg",
+      "sha256": "4b54ddaf2d81ac94536716da294b758fac3b31d9aed6f8702faea42bcd7259d0",
+      "bytes": 578
+    },
+    {
+      "path": "src/ui/worldOverlayLayer.ts",
+      "src": "gra/src/ui/worldOverlayLayer.ts",
+      "sha256": "c410ba37714d4ed2564fb39d275b85686e42ea3715d5aa4bbbae88dca4e80fdb",
+      "bytes": 526
+    }
+  ],
+  "adapters": [
+    {
+      "path": "src/ui/armyStackLabel.ts",
+      "src": "gra/src/ui/armyStackLabel.ts",
+      "removedImport": "import { isNonCombatTypeName, sortNonCombatLast } from '../game/stack-leader';",
+      "markers": 3,
+      "webSha256": "abd5a75edaa16d605976c12a89697f6cc9c4569e3baaacf0e24a2a293ae44008",
+      "webBytes": 1451,
+      "sha256": "2cfad5a526dab800920518d60d7179a435d70b59cfb303543352766a4a63811b",
+      "bytes": 2392
+    }
+  ],
+  "overlayDepsNote": "Zależności weba (logika) wstawiane TYLKO do odniesienia nakładki starszych harnessów (pin edb8fb56 ich nie ma); w porcie zastąpione adapterem.",
+  "overlayDeps": [
+    {
+      "src": "gra/src/game/stack-leader.ts",
+      "sha256": "a0318e729a8367761c7bfa6c07c807f19e4d1c149cec631e8fdc55b300f97569",
+      "bytes": 2830
+    }
+  ]
+}
