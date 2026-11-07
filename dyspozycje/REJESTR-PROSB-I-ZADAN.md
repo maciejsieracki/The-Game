@@ -8882,3 +8882,6 @@ R-WEB-WONDER-TRANSFER-FOLLOWUP-Q1 — PASS-WITH-NOTES: cud nie przechodzi na reb
 
 ### FALA 544 (2026-11-07, ROBOCZA — patrz WERSJE.md, main — patrz WERSJE.md)
 R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 + R-WEB-AI-PURCHASE-RESERVE-N10-Q1 — PASS-WITH-NOTES: AI kupuje jednostki tylko gdy skarbiec po zakupie pokryje N tur utrzymania i dochód netto ≥ próg (ai-params.json, per poziom: Easy 3 / Normal 10 [decyzja właściciela] / Hard 2). Pomiar Chromium (seed 4242, Mały, do T100): wojsko AI 59 (N=10) vs 172 (N=3) vs 210 (baza); miasta 60/52; wojny 79=79; bez degeneracji w sensie dispatchu. NIE_ZMIERZONO: inne seedy/mapy, barbarzyńcy, Easy/Hard na żywo. Dług: AI gromadzi złoto; AI nr 10 znika po T40. Dalej: R-WEB-AI-PLAYER-PARITY-FIXES-Q1.
+
+### FALA 545 (2026-11-07 — patrz WERSJE.md)
+R-WEB-AI-PLAYER-PARITY-FIXES-Q1 — PASS-WITH-NOTES (decyzja właściciela: naprawić wszystkie asymetrie z audytu): seed suwaków AI 60/20/20 (suma 100%; T1–T10: Skarb 70→20, Nauka 40→70, Zamożność 0→20), jedna reguła skarbca w dyplomacji (podłoga 0 kasowała tylko dług odbiorcy AI), trudność właściciela przy zakupie/zastępowaniu jednostek miast-państw, scalony fallback ownerId===0. Test 44/0. Nowy temat do rozpisania: R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1 (utrzymanie miast-państw w ticku na globalnym `_menuDifficulty`, main.ts ok. 36710).
