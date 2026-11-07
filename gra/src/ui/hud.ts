@@ -57,6 +57,7 @@ import {
   HUD_RIGHT_RAIL_ROW_GAP_PX,
   HUD_TOP_PX,
   HUD_ZOOM_EDGE_PX,
+  TOOLBAR_TOP_PX,
 } from './hudLayout';
 import { showPowerOverlay, hidePowerOverlay, type PowerOverlayData } from './powerOverlayHud';
 import { mocLabel } from './power-labels';
@@ -583,7 +584,7 @@ html.civ-ui-zoom-active{overflow:hidden;width:100%;height:100%;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left{left:${HUD_ZOOM_EDGE_PX}px;max-width:min(calc(100vw - 240px),820px);}
 html.civ-ui-zoom-active .civ-hud .hud-right-cluster{right:${HUD_ZOOM_EDGE_PX}px;max-width:min(calc(100vw - 120px),960px);}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-shell{padding:7px 10px;}
-html.civ-ui-zoom-active .civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
+html.civ-ui-zoom-active .civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:nowrap;max-width:100%;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
 /* Etykiety PL (Skarbiec, Armia…) zostają widoczne także przy zoom UI — kanon mockup 6C. */
 html.civ-ui-zoom-active .civ-hud .civ-hud-chip-lbl{font-size:10px;}
@@ -642,108 +643,118 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
    na koncu zachowuje tez kolejnosc kaskady wobec .civ-hud .civ-hud-chip-val. */
 .civ-hud .civ-hud-chip-rate{font-size:10px;color:var(--tg-green);}
 .civ-hud .civ-hud-chip-rate.warn{color:var(--tg-orange);}
-/* R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: lewy baner = STAŁA siatka 3+3 (góra Skarbiec·Praca·Spichlerz,
-   dół Handel·Nauka·Surowce). 3 kolumny o stałej szerokości --hud-cell-w, zero zawijania zależnego od
-   liczb; komórka = medalion + 3 linie (etykieta+zapas / brutto / netto). Wąskie okno zmniejsza
-   czcionki i szerokość kolumny (media), NIE zmienia układu. Szerokość dobrana tak, by baner kończył
-   się przed medalionem Mocy (środek ekranu ~ 50vw − 105px). */
-.civ-hud{--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:17px;--hud-cell-sm:9.5px;}
-/* R-WEB-HUD-TOPBAR-NO-LABELS-Q1: baner zajmuje CAŁĄ dostępną szerokość od lewego marginesu do
-   medalionu Mocy (50vw − 120 px − 10 px odstępu). Kolumny 3×1fr (elastyczne, bez stałej szerokości),
-   więc przy większych liczbach nic się nie rozjeżdża — skracanie k/M dzieje się w formatterze. */
+/* R-WEB-HUD-TOPBAR-LAYOUT-A-Q1 (decyzja wlasciciela 2026-11-07: uklad A + prawy baner w jednej linii).
+   LEWY BANER = 6 zetonow (Skarbiec·Praca·Spichlerz·Handel·Nauka·Surowce). Zeton ma dwa pietra:
+   ikona po lewej na cala wysokosc; po prawej mala etykieta / DUZA liczba sumaryczna (--hud-cell-val) /
+   „+brutto / +netto" = 70% liczby sumarycznej (--hud-cell-sm). Tryb wybiera fitHudTopbar() (JS, po renderze):
+   wszystkie 6 w JEDNEJ linii (6 rownych kolumn => pozycje zetonow STALE przy zmianie liczb), a gdy
+   najszerszy zeton sie nie miesci — klasa .hud-left-fallback = 2 rzedy po 3 (ten sam zeton, bez uciec).
+   Baner zajmuje cala szerokosc od lewego marginesu do medalionu Mocy (50vw − 150 px). */
+.civ-hud{--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:22px;}
+.civ-hud .civ-hud-banner-left{--hud-k:1;}
+.civ-hud .hud-left-compact{--hud-k:.82;}
+.civ-hud .hud-left-compact.hud-left-tiny{--hud-k:.66;}
 .civ-hud .civ-hud-banner-left{width:calc(50vw - 150px);max-width:calc(50vw - 150px);}
 .civ-hud .civ-hud-banner-left>.civ-hud-banner-shell{width:100%;max-width:100%;box-sizing:border-box;}
 .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 8px;}
-.civ-hud .hud-chip-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;
-  column-gap:10px;row-gap:3px;align-items:center;}
-.civ-hud .civ-hud-chip-line{display:flex;align-items:baseline;gap:4px;min-width:0;min-height:calc(var(--hud-cell-val) * 1.05);}
-.civ-hud .civ-hud-chip-figs{display:inline-flex;align-items:baseline;gap:2px;flex-shrink:0;font-size:var(--hud-cell-sm);}
-.civ-hud .civ-hud-chip-fsep{color:#968c7c;font-size:var(--hud-cell-sm);}
+.civ-hud .hud-chip-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));width:100%;
+  column-gap:6px;row-gap:4px;align-items:center;}
+.civ-hud .hud-left-fallback .hud-chip-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+.civ-hud .civ-hud-chip-line{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;min-height:0;height:auto;}
+.civ-hud .civ-hud-chip-figs{display:inline-flex;flex-direction:row;align-items:baseline;gap:3px;flex-shrink:0;
+  margin-left:0;height:auto;line-height:1.1;font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));}
+.civ-hud .civ-hud-chip-fsep{color:#968c7c;font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));}
 .civ-hud .civ-hud-chip-figs .civ-hud-chip-rate.neg{color:var(--civ-hud-shortage,#ee6c6c);}
 .civ-hud .civ-hud-chip-figs .civ-hud-chip-rate.zero{color:#968c7c;}
 .civ-hud .civ-hud-chip-figs .civ-hud-chip-net.neg{color:var(--civ-hud-shortage,#ee6c6c);}
-/* Wąskie okno (≤ 860 px): kolumna ~50–80 px nie mieści „wartość + dwa przyrosty" w jednej linii,
-   więc stała trójwierszowa kolumna: etykieta / wartość / przyrosty (zawsze te same 3 linie — wysokość
-   nie zależy od liczb, bez zawijania). */
-/* R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1 r3: medalion + liczba + przyrosty ZWARTO (bez margin-left:auto)
-   i wycentrowane w zetonie — puste miejsce rozkłada sie symetrycznie po bokach, nie w srodku. */
-.civ-hud .civ-hud-chip-cell{display:grid;grid-template-columns:var(--hud-cell-med) minmax(0,max-content);justify-content:center;
-  column-gap:5px;align-items:center;width:100%;min-width:0;overflow:hidden;white-space:nowrap;}
+.civ-hud .civ-hud-chip-cell{display:grid;grid-template-columns:calc(var(--hud-cell-med) * var(--hud-k,1)) max-content;justify-content:center;
+  column-gap:6px;align-items:center;width:100%;min-width:0;overflow:hidden;white-space:nowrap;}
 .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 3px;margin:0;width:100%;}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-med{width:var(--hud-cell-med);height:var(--hud-cell-med);}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:calc(var(--hud-cell-med) * .57);height:calc(var(--hud-cell-med) * .57);}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-med{width:calc(var(--hud-cell-med) * var(--hud-k,1));height:calc(var(--hud-cell-med) * var(--hud-k,1));}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:calc(calc(var(--hud-cell-med) * var(--hud-k,1)) * .57);height:calc(calc(var(--hud-cell-med) * var(--hud-k,1)) * .57);}
 .civ-hud .civ-hud-chip-body{display:flex;flex-direction:column;gap:0;min-width:0;line-height:1.05;}
-.civ-hud .civ-hud-chip-top{display:flex;align-items:baseline;gap:4px;min-width:0;min-height:calc(var(--hud-cell-lbl) * 1.05);}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl{font-size:var(--hud-cell-lbl);flex-shrink:0;}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-val{font-size:var(--hud-cell-val);min-width:0;}
-.civ-hud .civ-hud-chip-row3{display:flex;align-items:baseline;justify-content:space-between;gap:4px;font-size:var(--hud-cell-sm);min-width:0;}
+.civ-hud .civ-hud-chip-top{display:flex;align-items:baseline;gap:4px;min-width:0;min-height:0;line-height:1.05;}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl{font-size:calc(var(--hud-cell-lbl) * var(--hud-k,1));flex-shrink:1;min-width:0;}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-val{font-size:calc(var(--hud-cell-val) * var(--hud-k,1));min-width:0;line-height:1.05;height:auto;}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-val:empty{display:block;min-height:calc(calc(var(--hud-cell-val) * var(--hud-k,1)) * 1.05);}
 .civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl,.civ-hud .civ-hud-chip-k{color:#968c7c;}
-.civ-hud .civ-hud-chip-k{font-size:var(--hud-cell-sm);flex-shrink:0;}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-rate{font-size:var(--hud-cell-sm);font-weight:600;}
-.civ-hud .civ-hud-chip-net{font-size:var(--hud-cell-sm);font-weight:700;}
+.civ-hud .civ-hud-chip-k{font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));flex-shrink:0;}
+.civ-hud .civ-hud-chip-cell .civ-hud-chip-rate{font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));font-weight:600;}
+.civ-hud .civ-hud-chip-net{font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));font-weight:700;}
 .civ-hud .civ-hud-chip-net.pos{color:var(--tg-green);}
 .civ-hud .civ-hud-chip-net.zero{color:#968c7c;}
 .civ-hud .civ-hud-chip-net.neg{color:var(--civ-hud-shortage,#ee6c6c);}
-@media (max-width:1200px){.civ-hud{--hud-cell-w:108px;--hud-cell-med:24px;--hud-cell-lbl:9px;--hud-cell-val:15px;--hud-cell-sm:9px;}
-  .civ-hud .hud-chip-grid{column-gap:8px;}}
-@media (max-width:900px){.civ-hud{--hud-cell-w:78px;--hud-cell-med:12px;--hud-cell-lbl:8px;--hud-cell-val:13px;--hud-cell-sm:8px;}
-  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 6px;}
-  .civ-hud .civ-hud-chip-cell{column-gap:3px;}
-  .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 2px;}
-  .civ-hud .civ-hud-chip-top{gap:3px;}
-  .civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl{flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
-  .civ-hud .hud-chip-grid{column-gap:4px;}}
-/* R-WEB-HUD-TOPBAR-NO-LABELS-Q1: wąskie okna — blok MUSI być po blokach 1200/900 wyżej (kaskada). */
-@media (max-width:1200px){
-  .civ-hud .civ-hud-chip-line{flex-direction:column;align-items:flex-start;gap:0;min-height:0;}
-  .civ-hud .civ-hud-chip-top{min-height:0;line-height:1.05;}
-  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:4px 8px;}
-  .civ-hud .hud-chip-grid{row-gap:1px;}
-  .civ-hud .civ-hud-chip-val{line-height:1;height:calc(var(--hud-cell-val) * 1);}
-  .civ-hud .civ-hud-chip-figs{margin-left:0;line-height:1.2;height:calc(var(--hud-cell-sm) * 1.2);}}
-/* R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1: 1201–1320 px — przy --hud-cell-val 17px komórka ma
-   ~100 px na liczbę i przyrosty obok siebie (przyrosty flex-shrink:0 ściskały liczbę do zera dla dużych
-   wartości). Medalion 30→24 px (jak ≤1200) i węższe odstępy w tym przedziale mieszczą obie w komórce;
-   przyrosty 9,5→8,5 px w TYM przedziale (przy 9 px nadal przycina liczbę „Nauka" przy 1201 px, huge).
-   Wysokość i układ bez zmian (stałe dla małych i dużych liczb). */
-@media (min-width:1201px) and (max-width:1320px){
-  .civ-hud{--hud-cell-med:24px;}
-  .civ-hud .hud-chip-grid{column-gap:6px;}
-  .civ-hud .civ-hud-chip-cell{column-gap:3px;}
-  .civ-hud .civ-hud-chip-figs,.civ-hud .civ-hud-chip-fsep{font-size:8.5px;}
-  .civ-hud .civ-hud-chip-figs .civ-hud-chip-net,.civ-hud .civ-hud-chip-figs .civ-hud-chip-rate{font-size:8.5px;}}
-/* R-WEB-HUD-TOPBAR-NO-LABELS-Q1 r2: 701–900 px (baner ~250–300 px): przyrosty obok siebie, bez
-   separatora i z mniejsza czcionka, zeby „−999,9M −999,9M” miescilo sie w kolumnie. */
-@media (max-width:900px){
+/* Rozmiary schodza z oknem (liczba, etykieta, ikona); plusy zawsze = 70% liczby (--hud-cell-sm). */
+@media (max-width:1200px){.civ-hud{--hud-cell-med:24px;--hud-cell-lbl:9px;--hud-cell-val:17px;}
+  .civ-hud .hud-chip-grid{column-gap:4px;}
+  .civ-hud .civ-hud-chip-cell{column-gap:4px;}
+  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:4px 8px;}}
+@media (max-width:1100px){.civ-hud{--hud-cell-med:20px;--hud-cell-lbl:9px;--hud-cell-val:15px;}}
+@media (max-width:900px){.civ-hud{--hud-cell-med:18px;--hud-cell-lbl:8px;--hud-cell-val:14px;}
+  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:4px 5px;}
   .civ-hud .hud-chip-grid{column-gap:2px;}
+  .civ-hud .civ-hud-chip-cell{column-gap:3px;}
   .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 0;}
-  .civ-hud .civ-hud-chip-figs{gap:1px;font-size:7px;}
-  .civ-hud .civ-hud-chip-fsep{display:none;}}
-@media (max-width:700px){
-  .civ-hud{--hud-cell-med:12px;--hud-cell-lbl:7px;--hud-cell-val:12px;--hud-cell-sm:7px;}
+  .civ-hud .civ-hud-chip-top{gap:3px;}
+  .civ-hud .civ-hud-chip-fsep{display:none;}
+  .civ-hud .civ-hud-chip-figs{flex-direction:column;align-items:flex-start;gap:0;}}
+@media (max-width:700px){.civ-hud{--hud-cell-med:14px;--hud-cell-lbl:7px;--hud-cell-val:12px;}
   .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:3px 3px;}
-  .civ-hud .civ-hud-chip-cell{column-gap:1px;}
-  .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 0;}
-  .civ-hud .hud-chip-grid{column-gap:0;}
+  .civ-hud .civ-hud-chip-cell{column-gap:2px;}
   .civ-hud .civ-hud-chip-figs{gap:0;}
-  .civ-hud .civ-hud-chip-line{gap:1px;}
   .civ-hud .civ-hud-chip-fsep{display:none;}
   .civ-hud .civ-hud-chip-figs{flex-direction:column;align-items:flex-start;gap:0;height:auto;}}
-/* R-WEB-HUD-GROSS-NET-REST-Q1 r2: prawy baner (Armia/Miasta/Obywatele/Kultura/Religia) mial max-width
-   50vw-340px (<=0 przy 640 px) i chipy nowrap => wylewaly sie poza ekran / zwijal sie do ~30 px paska.
-   Teraz: zawsze zawijanie, min. 150 px; <=1500 px etykiety ukryte (ikona + liczba + przyrost, pelny opis w tooltipie);
-   <=1100 px klaster w kolumne (przyciski nad banerem), zeby baner nie wchodzil na medalion Mocy. */
-.civ-hud .civ-hud-banner-right{max-width:max(150px,min(calc(50vw - 352px),780px));}
-.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;row-gap:2px;max-width:100%;}
+/* Wysoki lewy baner (fallback 2x3 ma ~95–140 px) nie moze wchodzic na pasek narzedzi mapy: fitHudTopbar()
+   ustawia --civ-hud-toolbar-top = dol banera + 8 px, gdy baner siega glebiej niz domyslne TOOLBAR_TOP_PX. */
+html .civ-map-toolbar{top:var(--civ-hud-toolbar-top,${TOOLBAR_TOP_PX}px);}
+/* PRAWY BANER (Armia·Miasta·Obywatele·Kultura·Religia): WSZYSTKIE chipy w JEDNEJ linii (nowrap, bez zawijania
+   ikony do 2. wiersza). Klaster prawy (przyciski Rekrutacja/Civpedia/Menu) jest kolumna: przyciski u gory,
+   baner POD nimi, wyrownany do prawej — baner nie wchodzi na medalion Mocy (max-width = 50vw − 148 px) ani na
+   lewy baner. Rzad obok przyciskow tylko na bardzo szerokich oknach (>2600 px). Gdy chipy nie mieszcza sie
+   w banerze, fitHudTopbar() zaweza je stopniami: .hud-r-tight (mniejsze czcionki/ikony) → .hud-r-stack
+   (liczba nad przyrostem) → .hud-r-min (bez przyrostu; pelny opis w tooltipie). Etykiety schodza <= 1500 px. */
+.civ-hud .civ-hud-banner-right{max-width:max(150px,min(calc(50vw - 148px),900px));}
+.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:nowrap;row-gap:0;max-width:100%;min-width:0;}
+.civ-hud .hud-right-cluster{flex-direction:column-reverse;align-items:flex-end;gap:6px;}
+.civ-hud .civ-hud-banner-right.civ-hud-banner-shell{padding:4px 8px;}
+.civ-hud .civ-hud-banner-right .civ-hud-chip-med{width:24px;height:24px;}
+.civ-hud .civ-hud-banner-right .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:14px;height:14px;}
+.civ-hud .civ-hud-banner-right .civ-hud-chip-sep{height:20px;margin:0 6px;}
+@media (min-width:2601px){
+  .civ-hud .hud-right-cluster{flex-direction:row;align-items:center;}
+  .civ-hud .civ-hud-banner-right{max-width:max(150px,min(calc(50vw - 521px),780px));}
+  .civ-hud .civ-hud-banner-right .civ-hud-chip-med{width:30px;height:30px;}
+  .civ-hud .civ-hud-banner-right .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:17px;height:17px;}}
 @media (max-width:1500px){
   .civ-hud .civ-hud-banner-right .civ-hud-chip-lbl{display:none;}
   .civ-hud .civ-hud-banner-right .civ-hud-chip-sep{margin:0 4px;}}
 @media (max-width:1100px){
-  .civ-hud .hud-right-cluster{flex-direction:column-reverse;align-items:flex-end;gap:6px;}
   .civ-hud .civ-hud-banner-right .civ-hud-chip-sep{display:none;}
-  .civ-hud .civ-hud-banner-right{max-width:max(150px,calc(50vw - 150px));}}
+  .civ-hud .civ-hud-banner-right .hud-chip-row{gap:8px;}}
 @media (max-width:700px){
   .civ-hud .civ-hud-banner-right{max-width:max(150px,calc(50vw - 105px));}}
+.civ-hud .civ-hud-banner-right.civ-hud-banner-shell.hud-r-tight{padding:3px 6px;}
+.civ-hud .hud-r-tight .civ-hud-chip{gap:3px;}
+.civ-hud .hud-r-tight .civ-hud-chip-med{width:20px;height:20px;}
+.civ-hud .hud-r-tight .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:12px;height:12px;}
+.civ-hud .hud-r-tight .civ-hud-chip-val{font-size:13px;}
+.civ-hud .hud-r-tight .civ-hud-chip-rate{font-size:9px;}
+.civ-hud .hud-r-tight .civ-hud-chip-sep{display:none;}
+.civ-hud .hud-r-tight .hud-chip-row{gap:6px;}
+.civ-hud .hud-r-stack .civ-hud-chip{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:3px;row-gap:0;align-items:center;}
+.civ-hud .hud-r-stack .civ-hud-chip-med{grid-row:1 / span 2;grid-column:1;}
+.civ-hud .hud-r-stack .civ-hud-chip-val{grid-column:2;grid-row:1;line-height:1.05;font-size:12px;}
+.civ-hud .hud-r-stack .civ-hud-chip-rate{grid-column:2;grid-row:2;line-height:1.05;font-size:9px;}
+.civ-hud .hud-r-stack .hud-chip-row{gap:5px;}
+.civ-hud .hud-r-min .civ-hud-chip-rate{display:none;}
+.civ-hud .hud-r-min .civ-hud-chip{display:inline-flex;}
+.civ-hud .hud-r-min .civ-hud-chip-med{width:16px;height:16px;}
+.civ-hud .hud-r-min .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:10px;height:10px;}
+.civ-hud .hud-r-min .civ-hud-chip-val{font-size:11px;}
+.civ-hud .hud-r-min .hud-chip-row{gap:4px;}
+/* Ostatnia deska ratunku (okno 640 px, najwieksze liczby): przewijanie poziome zamiast zawijania ikony. */
+@media (max-width:700px){
+  .civ-hud .civ-hud-banner-right .hud-chip-row{overflow-x:auto;scrollbar-width:none;}}
 .civ-hud .hud-right{display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;flex-shrink:0;}
 .civ-hud .hud-meta{text-align:right;}
 .civ-hud .b-menu{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
@@ -1701,11 +1712,85 @@ function ensureBarActionsBound(): void {
   utilDockEl!.addEventListener('keydown', onActivate);
 }
 
+/**
+ * R-WEB-HUD-TOPBAR-LAYOUT-A-Q1: dobór trybu banerów po renderze (zależy od treści i szerokości okna, więc
+ * nie da się go zapisać samym CSS). LEWY: 6 żetonów w jednej linii, a gdy najszerszy żeton się nie mieści
+ * — klasa `.hud-left-fallback` (2 rzędy po 3). PRAWY: wszystkie chipy w jednej linii; gdy nie mieszczą się
+ * w banerze — stopnie `.hud-r-tight` → `.hud-r-stack` → `.hud-r-min` (patrz CSS). Wołane synchronicznie
+ * zaraz po `innerHTML` (bez malowania pośredniego) i przy zmianie rozmiaru okna.
+ */
+const HUD_RIGHT_TIERS = ['hud-r-tight', 'hud-r-stack', 'hud-r-min'] as const;
+export function fitHudTopbar(root: ParentNode | null = barEl): void {
+  if (root === null) return;
+  const left = root.querySelector<HTMLElement>('.civ-hud-banner-left');
+  const grid = left?.querySelector<HTMLElement>('.hud-chip-grid') ?? null;
+  // Medalion Mocy rośnie z liczbą rekrutów (szerszy niż bazowe 240 px) — banery nie mogą na niego wejść.
+  const power = root.querySelector<HTMLElement>('.power-center');
+  const powerRect = power !== null && power.getClientRects().length > 0 ? power.getBoundingClientRect() : null;
+  if (left !== null && grid !== null) {
+    left.classList.remove('hud-left-fallback', 'hud-left-compact', 'hud-left-tiny');
+    left.style.width = '';
+    left.style.maxWidth = '';
+    if (powerRect !== null) {
+      const room = powerRect.left - 10 - left.getBoundingClientRect().left;
+      if (room > 0 && room < left.getBoundingClientRect().width) {
+        left.style.width = room + 'px';
+        left.style.maxWidth = room + 'px';
+      }
+    }
+    const cells = Array.from(grid.querySelectorAll<HTMLElement>('.civ-hud-chip-cell'));
+    const leftOverflows = (): boolean => grid.scrollWidth > grid.clientWidth + 0.5
+      || cells.some((c) => c.scrollWidth > c.clientWidth + 0.5);
+    if (leftOverflows()) {
+      left.classList.add('hud-left-fallback');
+      // Ostatnia deska ratunku przy ekstremalnych liczbach: pomniejszenie czcionek/ikon (kolumny zostaja rowne).
+      for (const cls of ['hud-left-compact', 'hud-left-tiny']) {
+        if (!leftOverflows()) break;
+        left.classList.add(cls);
+      }
+    }
+  }
+  if (left !== null && typeof document !== 'undefined') {
+    const shellRect = left.querySelector<HTMLElement>('.civ-hud-banner-shell')?.getBoundingClientRect();
+    const need = shellRect !== undefined && shellRect.height > 0 ? Math.ceil(shellRect.bottom + 8) : 0;
+    const docStyle = document.documentElement.style;
+    if (need > TOOLBAR_TOP_PX) docStyle.setProperty('--civ-hud-toolbar-top', need + 'px');
+    else docStyle.removeProperty('--civ-hud-toolbar-top');
+  }
+  const right = root.querySelector<HTMLElement>('.civ-hud-banner-right');
+  if (right !== null) {
+    right.classList.remove(...HUD_RIGHT_TIERS);
+    right.style.maxWidth = '';
+    const cluster = right.closest<HTMLElement>('.hud-right-cluster');
+    if (powerRect !== null && cluster !== null && getComputedStyle(cluster).flexDirection.startsWith('column')) {
+      const room = cluster.getBoundingClientRect().right - (powerRect.right + 8);
+      if (room > 0 && room < right.getBoundingClientRect().width) right.style.maxWidth = room + 'px';
+    }
+    const row = right.querySelector<HTMLElement>('.hud-chip-row') ?? right;
+    // +4,5 px: ostatni chip klikalny ma margin-right −4 px (pole hover) — to nie jest ucięcie.
+    const rightOverflows = (): boolean => right.scrollWidth > right.clientWidth + 0.5
+      || row.scrollWidth > row.clientWidth + 4.5;
+    for (const tier of HUD_RIGHT_TIERS) {
+      if (!rightOverflows()) break;
+      right.classList.add(tier);
+    }
+  }
+}
+
+let hudFitResizeBound = false;
+function ensureHudFitOnResize(): void {
+  if (hudFitResizeBound || typeof window === 'undefined') return;
+  hudFitResizeBound = true;
+  window.addEventListener('resize', () => { if (hudSessionActive) fitHudTopbar(); });
+}
+
 function renderBar(): void {
   if (barEl === null || cfg === null) return;
   const s = hudStateSnapshot();
   if (useD1BLayout()) {
     barEl.innerHTML = renderBarD1B(s);
+    fitHudTopbar(barEl);
+    ensureHudFitOnResize();
   } else {
     barEl.innerHTML = renderBarLegacy(s);
     renderUtilDock(false, '');

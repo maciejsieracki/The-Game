@@ -49,8 +49,9 @@ const viteCompat = {
 
 async function bundle(hudTsPath, outJs) {
   const entry = path.join(TMP, 'entry-' + path.basename(outJs) + '.ts');
-  fs.writeFileSync(entry, `import { renderBarD1B, ensureStyles } from ${JSON.stringify(hudTsPath)};
-(window as any).__r = (s: any) => { ensureStyles(); document.getElementById('r')!.innerHTML = '<div class="civ-hud">' + renderBarD1B(s) + '</div>'; };`);
+  fs.writeFileSync(entry, `import * as __H from ${JSON.stringify(hudTsPath)};
+const renderBarD1B: any = (__H as any).renderBarD1B, ensureStyles: any = (__H as any).ensureStyles, __fit: any = (__H as any).fitHudTopbar;
+(window as any).__r = (s: any) => { ensureStyles(); document.getElementById('r')!.innerHTML = '<div class="civ-hud">' + renderBarD1B(s) + '</div>'; if (__fit) __fit(document.getElementById('r')!); };`);
   await esbuild.build({
     entryPoints: [entry], bundle: true, platform: 'browser', format: 'iife', outfile: outJs, logLevel: 'silent',
     loader: { '.ts': 'ts', '.json': 'json', '.svg': 'text', '.png': 'dataurl', '.mp3': 'empty', '.css': 'text' }, plugins: [viteCompat],
@@ -109,7 +110,7 @@ const MEASURE = () => {
   const sh = document.querySelector('.civ-hud-banner-left .civ-hud-banner-shell').getBoundingClientRect();
   const pc = document.querySelector('.power-center').getBoundingClientRect();
   const bgImg = getComputedStyle(document.querySelector('.civ-hud-banner-left .civ-hud-banner-shell')).backgroundImage;
-  return { cells, shellBottom: sh.bottom, shellRight: sh.right, powerX: pc.x, sw: document.documentElement.scrollWidth, vw: window.innerWidth, bgImg };
+  return { tbTop: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--civ-hud-toolbar-top')) || 104, cells, shellBottom: sh.bottom, shellRight: sh.right, powerX: pc.x, sw: document.documentElement.scrollWidth, vw: window.innerWidth, bgImg };
 };
 
 async function runChecks(chromium, jsPath, tag, opts) {
@@ -158,7 +159,7 @@ function assertAll(res, label) {
       }
       ok(!overlap, `${label} ${w}px/${n}: komorki nie nakladaja sie`);
       ok(m.shellRight <= m.powerX + 0.5, `${label} ${w}px/${n}: baner (prawy brzeg ${Math.round(m.shellRight)}) konczy sie przed medalionem Mocy (${Math.round(m.powerX)})`);
-      ok(m.shellBottom <= 104, `${label} ${w}px/${n}: dol banera (${Math.round(m.shellBottom)}px) nie wchodzi w pasek narzedzi mapy (TOOLBAR_TOP_PX=104)`);
+      ok(m.shellBottom <= m.tbTop + 0.5, `${label} ${w}px/${n}: dol banera (${Math.round(m.shellBottom)}px) nie wchodzi w pasek narzedzi mapy (przesuniety do ${Math.round(m.tbTop)}px gdy baner wyzszy niz TOOLBAR_TOP_PX=104)`);
       ok(m.sw <= m.vw, `${label} ${w}px/${n}: brak poziomego przewijania strony`, { sw: m.sw, vw: m.vw });
       ok(Object.values(c).every((v) => v.medW >= 12), `${label} ${w}px/${n}: medaliony ikon widoczne w kazdej komorce (szerokosc >= 14px; kolejnosc ICON zachowana)`, Object.entries(c).map(([k, v]) => [k, v.medW]));
     }
@@ -231,10 +232,10 @@ async function mutants(chromium) {
     ['zamiana rzedow (Handel/Nauka/Surowce na gorze)', (s) => s.replace("'<div class=\"hud-chip-grid\">' + row1.join('') + row2.join('')", "'<div class=\"hud-chip-grid\">' + row2.join('') + row1.join('')")],
     ['netto = brutto (Skarbiec)', (s) => s.replace('const skarbiecNetto = s.bogactwoRate ?? skarbiecBrutto;', 'const skarbiecNetto = skarbiecBrutto;')],
     ['netto ujemne nie jest czerwone', (s) => s.replace("return r < 0 ? 'neg' : r > 0 ? 'pos' : 'zero';", "return r > 0 ? 'pos' : 'zero';")],
-    ['4 kolumny siatki (zawijanie Handel do gory)', (s) => s.replace('grid-template-columns:repeat(3,minmax(0,1fr))', 'grid-template-columns:repeat(4,minmax(0,1fr))')],
+    ['4 kolumny siatki (zawijanie Handel do gory)', (s) => s.replace('.civ-hud .hud-left-fallback .hud-chip-grid{grid-template-columns:repeat(3,minmax(0,1fr));}', '.civ-hud .hud-left-fallback .hud-chip-grid{grid-template-columns:repeat(4,minmax(0,1fr));}')],
     ['Surowce: netto = najgorszy pojedynczy surowiec (mieszanie wielkosci)', (s) => s.replace("const surNetto = s.surowceNetto ?? 0;", "const surNetto = (s.surowceBilans ?? []).reduce((m, r) => Math.min(m, r.netto), 0);")],
     ['Praca: netto z zrealizowanej tury zamiast prognozy', (s) => s.replace("const pracaNetto = s.pracaPrognoza ?? (s.pracaRate ?? 0);", "const pracaNetto = s.pracaRate ?? 0;")],
-    ['ikony ukryte <=900px', (s) => s.replace("--hud-cell-med:12px;--hud-cell-lbl:8px", "--hud-cell-med:0px;--hud-cell-lbl:8px")],
+    ['ikony ukryte <=900px', (s) => s.replace("--hud-cell-med:18px;--hud-cell-lbl:8px", "--hud-cell-med:0px;--hud-cell-lbl:8px")],
   ];
   for (const [name, fn] of M) {
     const mutSrc = fn(src);

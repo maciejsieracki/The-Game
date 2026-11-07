@@ -50,9 +50,10 @@ const viteCompat = {
 
 async function bundle(hudPath, outJs, tag, extraCss) {
   const entry = path.join(TMP, `entry-${tag}.ts`);
-  fs.writeFileSync(entry, `import { renderBarD1B, ensureStyles } from ${JSON.stringify(hudPath)};
+  fs.writeFileSync(entry, `import * as __H from ${JSON.stringify(hudPath)};
+const renderBarD1B: any = (__H as any).renderBarD1B, ensureStyles: any = (__H as any).ensureStyles, __fit: any = (__H as any).fitHudTopbar;
 const EXTRA = ${JSON.stringify(extraCss || '')};
-(window as any).__r = (s: any) => { ensureStyles(); if (EXTRA) { const st = document.createElement('style'); st.textContent = EXTRA; document.head.appendChild(st); } document.getElementById('r')!.innerHTML = '<div class="civ-hud">' + renderBarD1B(s) + '</div>'; };`);
+(window as any).__r = (s: any) => { ensureStyles(); if (EXTRA) { const st = document.createElement('style'); st.textContent = EXTRA; document.head.appendChild(st); } document.getElementById('r')!.innerHTML = '<div class="civ-hud">' + renderBarD1B(s) + '</div>'; if (__fit) __fit(document.getElementById('r')!); };`);
   await esbuild.build({
     entryPoints: [entry], bundle: true, platform: 'browser', format: 'iife', outfile: outJs, logLevel: 'silent',
     loader: { '.ts': 'ts', '.json': 'json', '.svg': 'text', '.png': 'dataurl', '.mp3': 'empty', '.css': 'text' }, plugins: [viteCompat],
@@ -80,7 +81,7 @@ const ORDER = ['Skarbiec', 'Praca', 'Spichlerz', 'Handel', 'Nauka', 'Surowce'];
 const WIDTHS = process.env.HUD_WIDTHS ? process.env.HUD_WIDTHS.split(',').map(Number) : [1920, 1366, 1024, 640];
 
 const MEASURE = () => {
-  const out = { cells: {}, banner: null, docSW: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth };
+  const out = { mode: (document.querySelector('.civ-hud-banner-left') || { className: '' }).className, cells: {}, banner: null, docSW: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth };
   const sb = document.querySelector('.civ-hud-banner-left .civ-hud-banner-shell').getBoundingClientRect();
   out.banner = { x: sb.x, y: sb.y, w: sb.width, h: sb.height, right: sb.right };
   document.querySelectorAll('.civ-hud-banner-left .civ-hud-chip-cell').forEach((c) => {
@@ -158,6 +159,9 @@ async function main() {
     // B3 stały uklad
     for (const st of ['mid', 'huge']) {
       const m = res['after/' + w + '/' + st];
+      // R-WEB-HUD-TOPBAR-LAYOUT-A-Q1: uklad A ma dwa tryby (1 linia / fallback 2x3) wybierane z tresci; B3 dotyczy
+      // zmiany wartosci W RAMACH TEGO SAMEGO TRYBU (zmiana trybu przy ogromnych liczbach jest zamierzona).
+      if (m.mode !== small.mode) { console.log(`   B3 ${w}/${st}: zmiana trybu (${small.mode.replace('civ-hud-banner-left', '').trim() || '1 linia'} -> ${m.mode.replace('civ-hud-banner-left', '').trim() || '1 linia'}) - pominiete`); continue; }
       const same = ORDER.every((n) => Math.abs(m.cells[n].x - small.cells[n].x) < 0.5 && Math.abs(m.cells[n].y - small.cells[n].y) < 0.5 && Math.abs(m.cells[n].w - small.cells[n].w) < 0.5);
       ok(same, `${w}/${st}: B3 pozycje i szerokosci komorek IDENTYCZNE jak dla 12`, ORDER.map((n) => [m.cells[n].x, m.cells[n].y, m.cells[n].w]));
       ok(Math.abs(m.banner.h - small.banner.h) < 0.5, `${w}/${st}: B3 wysokosc banera stala`, [m.banner.h, small.banner.h]);

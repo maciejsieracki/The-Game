@@ -47,8 +47,9 @@ const LOADERS = { '.ts': 'ts', '.json': 'json', '.svg': 'text', '.png': 'dataurl
 
 async function bundle(hudTsPath, outJs) {
   const entry = path.join(TMP, 'entry-' + path.basename(outJs) + '.ts');
-  fs.writeFileSync(entry, `import { renderBarD1B, ensureStyles } from ${JSON.stringify(hudTsPath)};
-(window as any).__r = (s: any) => { ensureStyles(); document.getElementById('r')!.innerHTML = '<div class="civ-hud">' + renderBarD1B(s) + '</div>'; const hr = document.querySelector('.hud-right'); if (hr) hr.innerHTML = '<button type="button" class="b-wiki"><span>Civpedia</span></button><button type="button" class="b-menu"><span>Menu</span></button>'; };`);
+  fs.writeFileSync(entry, `import * as __H from ${JSON.stringify(hudTsPath)};
+const renderBarD1B: any = (__H as any).renderBarD1B, ensureStyles: any = (__H as any).ensureStyles, __fit: any = (__H as any).fitHudTopbar;
+(window as any).__r = (s: any) => { ensureStyles(); document.getElementById('r')!.innerHTML = '<div class="civ-hud">' + renderBarD1B(s) + '</div>'; if (__fit) __fit(document.getElementById('r')!); const hr = document.querySelector('.hud-right'); if (hr) hr.innerHTML = '<button type="button" class="b-wiki"><span>Civpedia</span></button><button type="button" class="b-menu"><span>Menu</span></button>'; };`);
   await esbuild.build({ entryPoints: [entry], bundle: true, platform: 'browser', format: 'iife', outfile: outJs, logLevel: 'silent', loader: LOADERS, plugins: [viteCompat] });
 }
 
@@ -82,7 +83,7 @@ const MEASURE = () => {
   const clr = cl ? cl.getBoundingClientRect() : { x: 0, right: 0, bottom: 0 };
   const titles = {};
   document.querySelectorAll('.civ-hud [data-act]').forEach((e) => { titles[e.getAttribute('data-act')] = e.getAttribute('title') || ''; });
-  return { n: cells.length, clip, minMed: Math.min(...med), shellRight: sh.right, shellBottom: sh.bottom, powerX: pc.x, powerRight: pc.right, rbX: rr.x, rbRight: rr.right, rbW: rr.width, rbBottom: rr.bottom, rchips, rchipClipped: rs ? rs.scrollWidth > rs.clientWidth + 0.5 : false, clX: clr.x, clRight: clr.right, clBottom: clr.bottom, btnX: (document.querySelector('.hud-right') || { getBoundingClientRect: () => ({ x: 0 }) }).getBoundingClientRect().x, btnN: document.querySelectorAll('.hud-right button').length, sw: document.documentElement.scrollWidth, vw: window.innerWidth, titles };
+  return { tbTop: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--civ-hud-toolbar-top')) || 104, n: cells.length, clip, minMed: Math.min(...med), shellRight: sh.right, shellBottom: sh.bottom, powerX: pc.x, powerRight: pc.right, rbX: rr.x, rbRight: rr.right, rbW: rr.width, rbBottom: rr.bottom, rchips, rchipClipped: rs ? rs.scrollWidth > rs.clientWidth + 0.5 : false, clX: clr.x, clRight: clr.right, clBottom: clr.bottom, btnX: (document.querySelector('.hud-right') || { getBoundingClientRect: () => ({ x: 0 }) }).getBoundingClientRect().x, btnN: document.querySelectorAll('.hud-right button').length, sw: document.documentElement.scrollWidth, vw: window.innerWidth, titles };
 };
 
 async function runChecks(chromium, jsPath, tag, shot) {
@@ -121,7 +122,8 @@ function assertRender(res, label) {
       ok(m.rchips.every((c) => c.right <= m.rbRight + 0.5 && c.right <= m.vw + 0.5 && c.x >= 0), `${label} ${w}px/${n}: chipy prawego banera widoczne w banerze i na ekranie`, m.rchips.map((c) => [Math.round(c.x), Math.round(c.right)]));
       ok(m.rbX >= m.powerRight - 0.5 || m.rbX >= m.shellRight + 0.5 && m.rbBottom <= 0, `${label} ${w}px/${n}: prawy baner (x=${Math.round(m.rbX)}) nie nachodzi na medalion Mocy (prawy brzeg ${Math.round(m.powerRight)})`);
       ok(m.btnN === 2 && m.clBottom <= 160, `${label} ${w}px/${n}: klaster z przyciskami Civpedia+Menu (zasymulowane) konczy sie na y=${Math.round(m.clBottom)} <= 160`, m.clBottom);
-      ok(m.shellBottom <= 104, `${label} ${w}px/${n}: dol banera (${Math.round(m.shellBottom)}px) nad paskiem narzedzi (104)`);
+      ok(m.shellBottom <= m.tbTop + 0.5, `${label} ${w}px/${n}: dol banera (${Math.round(m.shellBottom)}px) nad paskiem narzedzi (przesuniety do ${Math.round(m.tbTop)}px gdy baner wyzszy niz domyslne 104)`);
+      ok(m.rbBottom <= 104 + 0.5, `${label} ${w}px/${n}: dol prawego banera (${Math.round(m.rbBottom)}px) nie wchodzi w panel boczny (104)`);
     }
   }
   const t = res['1280/small'].titles;
@@ -163,10 +165,10 @@ async function mutants(chromium) {
   const hudPath = HUD_SRC || path.join(GRA, 'src/ui/hud.ts');
   const hud = fs.readFileSync(hudPath, 'utf8');
   const HM = [
-    ['szerokosc banera siega pod medalion Mocy (R-WEB-HUD-TOPBAR-NO-LABELS-Q1: calc(50vw - 150px) -> calc(50vw - 40px))', (s) => s.replace('.civ-hud .civ-hud-banner-left{width:calc(50vw - 150px);max-width:calc(50vw - 150px);}', '.civ-hud .civ-hud-banner-left{width:calc(50vw - 40px);max-width:calc(50vw - 40px);}')],
-    ['medalion Mocy nie zmniejszony <=700 px', (s) => s.replace('.civ-hud .power-center{min-width:150px;', '.civ-hud .power-center{min-width:240px;')],
-    ['prawy baner: stare max-width bez min 150 px i bez zawijania (zwezony pasek/chipy poza ekranem)', (s) => s.replace('max-width:max(150px,min(calc(50vw - 352px),780px));}\n.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;', 'max-width:min(calc(50vw - 340px),780px);}\n.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:nowrap;')],
-    ['prawy baner: brak ukladu kolumnowego <=1100 px (nachodzi na Moc)', (s) => s.replace('.civ-hud .hud-right-cluster{flex-direction:column-reverse;', '.civ-hud .hud-right-cluster{flex-direction:row;')],
+    ['szerokosc banera siega pod medalion Mocy (R-WEB-HUD-TOPBAR-NO-LABELS-Q1: calc(50vw - 150px) -> calc(50vw - 40px))', (s) => s.replace('.civ-hud .civ-hud-banner-left{width:calc(50vw - 150px);max-width:calc(50vw - 150px);}', '.civ-hud .civ-hud-banner-left{width:calc(50vw - 40px);max-width:calc(50vw - 40px);}').replace('power.getClientRects().length > 0 ? power.getBoundingClientRect() : null', 'null')],
+    ['medalion Mocy nie zmniejszony <=700 px', (s) => s.replace('.civ-hud .power-center{min-width:150px;', '.civ-hud .power-center{min-width:240px;').replace('power.getClientRects().length > 0 ? power.getBoundingClientRect() : null', 'null')],
+    ['prawy baner: stare max-width bez min 150 px i bez zawijania (zwezony pasek/chipy poza ekranem)', (s) => s.replace('.civ-hud .civ-hud-banner-right{max-width:max(150px,min(calc(50vw - 148px),900px));}\n.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:nowrap;', '.civ-hud .civ-hud-banner-right{max-width:min(calc(50vw - 340px),780px);}\n.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;')],
+    ['prawy baner: klaster w jednym rzedzie z przyciskami (nachodzi na Moc)', (s) => s.replace('.civ-hud .hud-right-cluster{flex-direction:column-reverse;align-items:flex-end;gap:6px;}', '.civ-hud .hud-right-cluster{flex-direction:row;align-items:center;gap:6px;}')],
     ['Kultura bez BRUTTO -> NETTO', (s) => s.replace("${formatGrossNet(rate, rate, 'pkt Kultury/turę')}", 'Zielone ${signed(rate)}')],
     ['Religia bez BRUTTO -> NETTO', (s) => s.replace("${formatGrossNet(rate, rate, 'wiernych/turę')}", 'Zielone ${signed(rate)}')],
     ['Obywatele bez BRUTTO -> NETTO', (s) => s.replace("${formatGrossNet(rate, rate, 'obyw./turę')} (HUD nie", 'Zielone ${signed(rate)} (HUD nie')],
