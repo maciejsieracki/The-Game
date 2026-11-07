@@ -111,3 +111,25 @@ Brak. Rekomendacja: zawezic kryterium do "SUMA -41% / EOT1 -47%" (ECHO) albo oso
 RUNDY: 2/5
 NASTEPNY KROK: Evaluator (ten sam ID) -> Obrona -> Final Control.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+# RUNDA 3/5 — OPERATOR (naprawa pkt 6 FC R2)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (WEB), wydajnosc render/HUD w koncu tury
+TEMAT: R-WEB-PERF-ENDTURN-RENDER-HUD-Q1
+GOAL: R3 = flush zetonow po wznowieniu fazy AI po bitwie + ocena klatki posredniej. Kryterium unii (-35,7%) zaakceptowane w ECHO.
+ZMIANY/COMMIT: baza fd781ddf4. Zmieniono: gra/src/main.ts, nowy gra/tools/perf-endturn-render-resume-flush-test.cjs, evidence/r3/**, ten raport. SHA commitu: `git log -1` na tej galezi (SHA nie moze byc w tresci wlasnego commitu; podany w odpowiedzi koncowej).
+ 1. Helper `runAiPhaseThenFlush(run, flush, onError)` (try/catch/finally): flush po KAZDYM wyjsciu (koniec, kolejna bitwa, blad). Callback wznowienia po bitwie uzywa go zamiast golego `void runAiPhase()`.
+ 2. Klatka posrednia: klatka postepu miedzy wlascicielami AI jest paintowana przy widocznej mapie, wiec odroczenie zetonow zmienialoby widoczny postep. Dodano `aiUnitVisiblePending` (ustawiane gdy odwiedziny miasta dotycza jednostki widocznej dla gracza: hex koncowy w widocznych przy fogOn, bez mgly zawsze); klatka postepu robi `flushAiCityRenderBatch(aiUnitVisiblePending)`. Odwiedziny jednostek niewidocznych i hak refreshFog czekaja do granicy bitwy/konca fazy. Flush zeruje flage.
+ 3. Hak `deferRefreshFogUnitSync` zerowany w jednym miejscu po catch eAILoop (koniec, wyjatek i wyjscie na bitwe przez break ownerLoop); wznowiona faza korzysta z tego samego domkniecia, a helper flushuje w finally.
+TESTY (evidence/r3/gate-*.txt, z EXIT=):
+ - tsc EXIT=0 (powtorzone); logic 213/213 EXIT=0; unit-renderer-overlay-sync 17/0; capture-render-sync 23/0; city-badge-zoom-lod 67/0; memory-static-geometry-pool 18/0; memory-static-material-pool-pixel 7/0; deferral-regression OK (powtorzone) — wszystkie EXIT=0.
+ - NOWY perf-endturn-render-resume-flush-test.cjs (test ZACHOWANIA): wyciaga prawdziwy helper z main.ts (znaczniki RESUME-FLUSH), uruchamia na modelu fazy AI z prawdziwym createDirtyRenderSync; 3 scenariusze (wznowienie konczy sie / kolejna bitwa / blad) x {kod, mutacja bez flush}: stan sceny zetonow == stan pelnej synchronizacji; mutacja lamie test. Plus asercje okablowania. EXIT=0 (powtorzone).
+ - ai-city-render-batch-test.cjs: FAIL (linia 70, offset -700 szukania catch eAILoop) ALE identycznie na bazie fd781ddf4 (sprawdzone) — dlug istniejacy przed R3, poza gate'ami dispatchu.
+ - A/B naprzemienny 5 par, R2 vs R3 (evidence/r3/ab-aggregate-r2-r3.txt, mediany ms): unia EOT1 852->924, EOT2 893->916, EOT3 2035->2479, laczny EOT1+2+3 3816->4393 (+15%). Szacunek vs baza: R2 -35,7% (5133->3303), R3 ok. -26% — NIE_ZMIERZONO bezposrednio (brak rownoleglego A/B baza vs R3).
+ - Pixel-parity pelnej klatki w R3 oraz zrzut w polowie fazy AI: NIE_ZMIERZONO (ostatni pomiar R2: evidence/r2/pixel-parity-final.txt). Klatka posrednia uzasadniona logicznie (widoczne zetony flushowane w klatce postepu).
+BLOKADY: (a) koszt poprawnosci klatki posredniej: unia ok. -35,7% -> ok. -26%; decyzja orkiestratora (akceptacja albo weższy warunek flushu, np. tylko gdy mapa niezasloniete); (b) ai-city-render-batch-test pada na bazie; (c) `git stash drop` odrzucony przez klasyfikator — zostal wpis stash `civ-r3-tmp` (zbedna kopia main.ts) do usuniecia przez orkiestratora; /tmp/civ-eot-w nie ruszano.
+RUNDY: 3/5
+NASTEPNY KROK: Evaluator R3, potem Final Control.
+DEPLOY-PUSH: NIE WYKONANO

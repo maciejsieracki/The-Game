@@ -38295,8 +38295,12 @@ async function boot(): Promise<void> {
         // natychmiast; odroczone jest wyłącznie przebudowanie warstwy renderu do granicy UI/bitwy/końca fazy.
         const aiUnitRenderBatch = createDirtyRenderSync(() => syncUnitsRender());
         deferRefreshFogUnitSync = () => aiUnitRenderBatch.markDirty();
-        // `withUnits=false` (klatka postępu między właścicielami AI): żetony jednostek NIE są potrzebne do
-        // pokazania postępu, więc ich przebudowa czeka na granicę bitwy / koniec fazy (jeden flush zamiast ~4).
+        // R3: klatka postępu między właścicielami AI jest PAINTOWANA przy widocznej mapie (nakładka jej nie
+        // zasłania). Odwiedziny miasta przez jednostkę, której token JEST widoczny dla gracza (hex końcowy w
+        // `currentVisible()` przy fogOn; bez mgły zawsze), muszą więc zostać odzwierciedlone w tej klatce --
+        // `aiUnitVisiblePending` wymusza flush żetonów. Odwiedziny jednostek niewidocznych (token i tak ukryty
+        // przez mgłę) oraz zmiany z haka refreshFog czekają na granicę bitwy / koniec fazy (zysk R1).
+        let aiUnitVisiblePending = false;
         const flushAiCityRenderBatch = (withUnits = true): void => {
           if (aiCityRenderBatch.isDirty()) {
             try {
@@ -38306,6 +38310,7 @@ async function boot(): Promise<void> {
             }
           }
           if (withUnits && aiUnitRenderBatch.isDirty()) {
+            aiUnitVisiblePending = false;
             try {
               aiUnitRenderBatch.flush();
             } catch (errAiUnitRender) {
@@ -38313,6 +38318,24 @@ async function boot(): Promise<void> {
             }
           }
         };
+        // R3 (flush po wznowieniu): wznowiona po bitwie faza AI nie ma epilogu (flush po catch eAILoop), więc
+        // flush po KAŻDYM wyjściu z niej (koniec, kolejna bitwa, błąd) -- inaczej żetony po odwiedzinach miast
+        // zostają nieaktualne do następnego niezwiązanego syncUnitsRender. Test: perf-endturn-render-resume-flush-test.cjs.
+        // RESUME-FLUSH-BEGIN
+        const runAiPhaseThenFlush = async (
+          run: () => Promise<void>,
+          flush: () => void,
+          onError: (err: unknown) => void,
+        ): Promise<void> => {
+          try {
+            await run();
+          } catch (err) {
+            onError(err);
+          } finally {
+            flush();
+          }
+        };
+        // RESUME-FLUSH-END
         try {
           const runAiPhase = async (): Promise<void> => {
             aiTurnAwaitingBattle = false;
@@ -38687,7 +38710,8 @@ async function boot(): Promise<void> {
               // first owner, every third owner, and the last one. `startOi` preserves
               // the cadence when an AI phase resumes after a battle.
               if (shouldYieldAiOwnerProgressFrame(oi, ownerLoopList.length, startOi)) {
-                flushAiCityRenderBatch(false);
+                // R3: tylko gdy widoczny token czeka na odświeżenie (patrz aiUnitVisiblePending).
+                flushAiCityRenderBatch(aiUnitVisiblePending);
                 await yieldTurnTransitionUi();
               }
               const isCommandResume = oi === startOi && !!resumeCommands && resumeCmdIdx > 0;
@@ -40375,6 +40399,7 @@ async function boot(): Promise<void> {
                       // Stan HP kanoniczny od razu (jak w syncUnitsRender), render odroczony do granicy fazy.
                       syncAllRuntimeUnitHpState();
                       aiUnitRenderBatch.markDirty();
+                      if (aiVisNow === null || aiVisNow.has(keyOf(last.q, last.r))) aiUnitVisiblePending = true;
                     }
                     if (sfxUnitsEnabled && (aiVisNow === null || aiVisNow.has(keyOf(last.q, last.r)))) {
                       playMarchAccent(1);
@@ -40473,7 +40498,15 @@ async function boot(): Promise<void> {
                       teren,
                       structBonusAI,
                       'Atak AI — ' + ownerDiploLabel(ownerId),
-                      () => { void runAiPhase(); },
+                      // R3: wznowiona faza AI nie ma epilogu (flush po catch eAILoop) -- flush po KAŻDYM wyjściu
+                      // (koniec, kolejna bitwa, błąd), inaczej żetony po odwiedzinach miast zostają nieaktualne.
+                      () => {
+                        void runAiPhaseThenFlush(
+                          runAiPhase,
+                          flushAiCityRenderBatch,
+                          (errAiResume) => console.error('[AI] Blad wznowionej fazy AI:', errAiResume),
+                        );
+                      },
                       worldTerrainFromHex(hexObj),
                     );
                     break ownerLoop;
