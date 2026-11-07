@@ -319,5 +319,65 @@
       "portBaseSha256": "7149a3535560d2ad6b835dec8b690fef50840e9ea46cb11a6a8e57541d5ac3ca",
       "note": "port DOM P5.7 (typy DTO); UI-3-B: teksty Spichlerz Królewski + komentarz capBonusPerMagazyn"
     }
-  ]
+  ],
+  "ui3d": {
+    "topic": "R-RUSTPORT-REPIN-WEB-UI-3-D-Q1 (partia UI-3-D, runda 1)",
+    "note": "PORT DOM (klasa PD): plik = web 9b019a7d8 + jawne edycje (edits[].web → edits[].port, każda dokładnie raz, w kolejności); bloki // pin-adapter w porcie = źródło weba A..B bez export. Wpis hud.ts usunięty z repin-ui2-overlay-ports/ui2c.json (DISJ, ZAŁOŻENIE U3D-Z1). overlayDeps: zależności weba tylko do odniesienia nakładki (pin edb8fb56 ich nie ma).",
+    "portDom": [
+      {
+        "path": "src/ui/minimapHud.ts",
+        "src": "gra/src/ui/minimapHud.ts",
+        "webSha256": "2ffaa7ac26d29f329cc0b97a790168c77ed5616ccf8023d10365c84aa086cc86",
+        "webBytes": 20118,
+        "sha256": "60fca0caebfd2632ed70a492c9a0c094cbc8cd36fb0371f21cc78b29b91b9fad",
+        "bytes": 20141,
+        "markers": 0,
+        "edits": [
+          {
+            "why": "import logiki `game/visibility` (zakaz check-no-logic-imports) → stała z katalogu „Rust” (jak przed repinem, P5.2)",
+            "web": "import { FOG_EXPLORED_BRIGHTNESS } from '../game/visibility';",
+            "port": "import { staticCatalog } from '../controller/staticCatalog';"
+          },
+          {
+            "why": "jasność mgły `explored` z `StaticCatalogDto.constants.fogExploredBrightness` (jak przed repinem)",
+            "web": "    if (hex.fog === 'explored') ctx.globalAlpha = FOG_EXPLORED_BRIGHTNESS;",
+            "port": "    if (hex.fog === 'explored') ctx.globalAlpha = staticCatalog().constants.fogExploredBrightness;"
+          }
+        ]
+      },
+      {
+        "path": "src/ui/hud.ts",
+        "src": "gra/src/ui/hud.ts",
+        "webSha256": "116cfe7bd384170f047dbcf2f016d092feb56dc251bec5efb48f7143300194ce",
+        "webBytes": 110049,
+        "sha256": "998638d2080d975655be588f0e7811c8174d7c7fd75c475ca5c542fe493b8ff8",
+        "bytes": 111890,
+        "markers": 1,
+        "edits": [
+          {
+            "why": "import logiki `game/frame-memo` → lokalna kopia `StateFrame`/`createStateFrame` (blok pin-adapter)",
+            "web": "import { createStateFrame } from '../game/frame-memo';",
+            "port": "// REPIN UI-3-D (R-RUSTPORT-REPIN-WEB-UI-3-D-Q1): ADAPTER — web `9b019a7d8` importuje `createStateFrame` z `../game/frame-memo`\n// (katalog logiki, zakaz `check-no-logic-imports`). Czysty pomocnik bez stanu gry/DOM skopiowany bajtowo jako deklaracja\n// lokalna (marker: źródło:linie); weryfikuje `tools/verify-repin-ui3-copies.mjs` (sekcja `ui3d`, PORT-D).\n// pin-adapter 9b019a7d8 gra/src/game/frame-memo.ts:37-67\n/**\n * Migawka stanu na czas jednego synchronicznego `run(fn)` (np. `updateHud()`): pierwszy odczyt w\n * zakresie woła `getState()`, kolejne zwracają tę samą migawkę. Poza zakresem każdy odczyt jest\n * świeży. Zagnieżdżone `run` UNIEWAŻNIA migawkę przy wejściu (nowe odświeżenie = nowy odczyt),\n * więc stan zmutowany przed zagnieżdżonym odświeżeniem nigdy nie jest renderowany ze starej migawki.\n */\ninterface StateFrame<S> {\n  snapshot(): S;\n  run(fn: () => void): void;\n  /** Ręczne unieważnienie (np. po zmutowaniu stanu w trakcie zakresu). */\n  invalidate(): void;\n}\n\nfunction createStateFrame<S>(getState: () => S): StateFrame<S> {\n  let active = false;\n  let has = false;\n  let frame: S | undefined;\n  return {\n    snapshot(): S {\n      if (!active) return getState();\n      if (!has) { frame = getState(); has = true; }\n      return frame as S;\n    },\n    run(fn: () => void): void {\n      const outer = active;\n      active = true; has = false; frame = undefined; // także zagnieżdżone: świeży odczyt\n      try { fn(); } finally { if (!outer) { active = false; has = false; frame = undefined; } }\n    },\n    invalidate(): void { has = false; frame = undefined; },\n  };\n}"
+          },
+          {
+            "why": "P5.7 (ZAŁOŻENIE P5.6-Z3): most `preBattle.ts` → `hud.ts` (import rejestracji) — jak przed repinem",
+            "web": "import './buildStampToggle';\n",
+            "port": "import './buildStampToggle';\n// P5.7 (ZAŁOŻENIE P5.6-Z3): most `preBattle.ts` → `hud.ts` — rejestracja implementacji niżej (`setArmyStackHudSuppressed`).\nimport { registerArmyStackHudSuppression } from './armyStackHudSuppression';\n"
+          },
+          {
+            "why": "P5.7: rejestracja `setArmyStackHudSuppressed` w moście — jak przed repinem",
+            "web": "export function setArmyStackHudSuppressed(suppressed: boolean): void {\n  if (armyStackSuppressed === suppressed) return;\n  armyStackSuppressed = suppressed;\n  if (armyStackApi === null) return;\n  if (suppressed) {\n    armyStackApi.el.style.display = 'none';\n  } else {\n    armyStackApi.el.style.display = '';\n    armyStackApi.update();\n  }\n}\n",
+            "port": "export function setArmyStackHudSuppressed(suppressed: boolean): void {\n  if (armyStackSuppressed === suppressed) return;\n  armyStackSuppressed = suppressed;\n  if (armyStackApi === null) return;\n  if (suppressed) {\n    armyStackApi.el.style.display = 'none';\n  } else {\n    armyStackApi.el.style.display = '';\n    armyStackApi.update();\n  }\n}\nregisterArmyStackHudSuppression(setArmyStackHudSuppressed);\n"
+          }
+        ]
+      }
+    ],
+    "overlayDeps": [
+      {
+        "src": "gra/src/game/frame-memo.ts",
+        "sha256": "99e7a53ab49d056f7c0d6e0a1ab1211757c9e798352c56a64e54dc9555f28a15",
+        "bytes": 3613
+      }
+    ]
+  }
 }

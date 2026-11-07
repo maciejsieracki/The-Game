@@ -49,7 +49,10 @@
     "harness:repin-ui3c": "node tools/dom-harness/run-repin-ui3c.mjs",
     "harness:repin-ui3c:mutate": "node tools/dom-harness/mutate-repin-ui3c.mjs",
     "harness:repin-ui3b": "node tools/dom-harness/run-repin-ui3b.mjs",
-    "harness:repin-ui3b:mutate": "node tools/dom-harness/mutate-repin-ui3b.mjs"
+    "harness:repin-ui3b:mutate": "node tools/dom-harness/mutate-repin-ui3b.mjs",
+    "harness:repin-ui3d": "node tools/dom-harness/run-repin-ui3d.mjs",
+    "harness:repin-ui3d:mutate": "node tools/dom-harness/mutate-repin-ui3d.mjs",
+    "verify:repin-ui3d:self-test": "node tools/selftest-verify-repin-ui3d.mjs"
   },
   "devDependencies": {
     "esbuild": "0.21.5",
