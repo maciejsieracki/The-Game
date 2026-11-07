@@ -1,3 +1,9 @@
+## ROBOCZA 2ba866b0 -- 2026-11-06 -- FALA 535: bitwa: jednostki spoza limitu 120 nie znikają po bitwie (testowa)
+
+- wynik bitwy ręcznej przekazuje pełny log zdarzeń (main.ts, mapFieldBattle.ts), więc niewystawione jednostki (rezerwa) zostają nietknięte; weterani tylko dla walczących; komunikat przed bitwą o jednostkach w rezerwie; limit 120 bez zmian
+- Weryfikacja: battle-undeployed-units 35/0, post-battle-map 32/0, auto-battle 52/0, map-field-battle 24/0, logic-test 213/213, tsc 0; FC PASS-WITH-NOTES
+- Limity: komunikat rezerwy niezweryfikowany wzrokowo w Chromium; zdobycie miasta nadal usuwa całą załogę z centrum (decyzja właściciela); utraconych wcześniej jednostek nie da się odzyskać
+
 ## ROBOCZA ada2690c -- 2026-11-06 -- FALA 534: pasek HUD: układ A lewego banera, prawy baner w jednej linii (testowa)
 
 - lewy baner: żeton w dwóch piętrach, plusy 70% liczby sumarycznej, dopasowanie do szerokości (fitHudTopbar); prawy baner: wszystkie chipy w jednej linii, pod przyciskami, wyrównany do prawej; pasek narzędzi przesuwa się pod wysoki baner
