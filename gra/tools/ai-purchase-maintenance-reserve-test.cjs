@@ -38,6 +38,7 @@ const aiParams = JSON.parse(fs.readFileSync(path.resolve(GRA, 'data', 'ai-params
 const data = { aiParams };
 
 let passed = 0, failed = 0;
+function ok(c, msg) { eq(!!c, true, msg); }
 function eq(a, b, msg) {
   if (a === b) passed++; else { failed++; console.error(`FAIL: ${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
 }
@@ -93,6 +94,33 @@ console.log('\n-- F. Zgodnosc wsteczna: brak pol rezerwy = dawna bramka (cena + 
 eq(shouldAIPurchaseUnit({ treasury: 50, goldCost: 50, hasManpower: true }), true, 'bez rezerwy: treasury == cena -> kupuje');
 eq(shouldAIPurchaseUnit({ treasury: 50, goldCost: 50, hasManpower: true, reserve: normal }), true, 'reserve bez danych dochodu -> dawna bramka');
 eq(shouldAIPurchaseUnit({ treasury: 49, goldCost: 50, hasManpower: true }), false, 'bez rezerwy: za malo zlota -> nie kupuje');
+
+console.log('\n-- G. Kontrakt zrodlowy: main.ts faktycznie przekazuje dane do reguly (pada na bazie fcaa10300) --');
+{
+  const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
+  const callIdx = mainSrc.indexOf('const wantsPurchase = shouldAIPurchaseUnit({');
+  ok(callIdx > 0, 'main.ts: istnieje call site shouldAIPurchaseUnit');
+  const callBlock = callIdx > 0 ? mainSrc.slice(callIdx, callIdx + 900) : '';
+  ok(/\.\.\.aiPurchaseReserveInputs\(ownerId, candId\)/.test(callBlock), 'call site spreaduje aiPurchaseReserveInputs(ownerId, candId)');
+  const fnIdx = mainSrc.indexOf('function aiPurchaseReserveInputs(');
+  ok(fnIdx > 0, 'main.ts: zdefiniowano aiPurchaseReserveInputs');
+  const fnBlock = fnIdx > 0 ? mainSrc.slice(fnIdx, fnIdx + 2200) : '';
+  for (const f of ['reserve:', 'netIncomePerTurn:', 'upkeepPerTurn:', 'unitUpkeepPerTurn:']) {
+    ok(fnBlock.includes(f), `aiPurchaseReserveInputs zwraca pole ${f.replace(':', '')}`);
+  }
+  ok(/loadAiPurchaseReserveParams\(data, aiDiffLevelForOwner\(ownerId\)\)/.test(fnBlock), 'progi per poziom trudnosci ownera (aiDiffLevelForOwner)');
+  ok(/previewOwnerUpkeep\(/.test(fnBlock), 'utrzymanie z previewOwnerUpkeep (te same prymitywy co tick/HUD)');
+  ok(/aiGoldIncomeByOwner\.set\(oid, aiEcon\.pieniadz\)/.test(mainSrc), 'przychod brutto AI zapisywany w bloku bankowania ticku');
+  ok(/import \{[^}]*loadAiPurchaseReserveParams[^}]*\} from '\.\/game\/ai'/.test(mainSrc), 'main.ts importuje loadAiPurchaseReserveParams');
+  const econ = fs.readFileSync(path.resolve(GRA, 'data', 'econ-params.json'), 'utf8');
+  ok(!/ai_rush_jednostka_(rezerwa_zlota|max_na_ture)/.test(econ), 'martwe klucze ai_rush_jednostka_* usuniete z econ-params.json');
+  // Zachowanie na stanie: wejscia jak z aiPurchaseReserveInputs (Normal, przychod 10, utrzymanie 8, jednostka +1).
+  const normal = loadAiPurchaseReserveParams(data, 2);
+  const inp = { reserve: normal, netIncomePerTurn: 10 - 8, upkeepPerTurn: 8, unitUpkeepPerTurn: 1, hasManpower: true, goldCost: 50 };
+  eq(shouldAIPurchaseUnit({ ...inp, treasury: 50 + 27 }), true, 'stan: skarbiec = cena + 3*(8+1) -> kupuje');
+  eq(shouldAIPurchaseUnit({ ...inp, treasury: 50 + 26 }), false, 'stan: skarbiec o 1 za maly -> nie kupuje');
+  eq(shouldAIPurchaseUnit({ ...inp, treasury: 500, netIncomePerTurn: 0 }), false, 'stan: netto po zakupie < 0 -> nie kupuje mimo duzego skarbca');
+}
 
 console.log(`\nai-purchase-maintenance-reserve-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (_e) { /* noop */ }
