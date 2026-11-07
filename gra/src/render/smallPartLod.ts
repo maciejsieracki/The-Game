@@ -6,8 +6,14 @@
  * tylko mesze o średnicy rzutu poniżej progu i przywracamy je przy zbliżeniu. Przeliczenie
  * następuje wyłącznie przy zmianie kubełka odległości kamery albo zestawu modeli ("version"),
  * nigdy co klatkę. Nie zmienia stanu gry; raycast (picking) ignoruje `visible`.
+ *
+ * R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: mesh scalony z wielu części (`unitStaticMerge.ts`) ma części ułożone
+ * malejąco wg średnicy; LOD rysuje wtedy tylko prefiks części o rzucie >= progu (`setMergedPartsDrawn`),
+ * a gdy żadna nie przechodzi — chowa cały mesh. Ta sama średnica części co dla osobnego meshu → ten sam
+ * zestaw chowanych części co przed scaleniem.
  */
 import * as THREE from 'three';
+import { getMergedPartLod, setMergedPartsDrawn } from './unitStaticMerge';
 
 /** Kubełki ~12% szerokości piksela w świecie (nie przeliczamy przy każdej klatce zoomu). */
 const BUCKET_BASE = 1.12;
@@ -17,10 +23,15 @@ export class SmallPartLod {
   /** Promień sfery brzegowej geometrii (bez skali przodków - ta bywa zmieniana w grze). */
   private geoRadiusCache = new WeakMap<THREE.BufferGeometry, number>();
   private hidden = new Set<THREE.Mesh>();
+  /** Scalone mesze rysujące tylko prefiks części. */
+  private trimmed = new Set<THREE.Mesh>();
+  private hiddenParts = 0;
   private readonly rootBuf: THREE.Object3D[] = [];
 
   /** Liczba meshy aktualnie schowanych przez LOD (diagnostyka/test). */
   get hiddenCount(): number { return this.hidden.size; }
+  /** Liczba CZĘŚCI modeli schowanych przez LOD (mesh zwykły = 1, scalony = liczba schowanych części). */
+  get hiddenPartCount(): number { return this.hiddenParts; }
 
   /** Przywraca schowane mesze podpięte jeszcze do `stopAt`; odpięte (usunięte modele) tylko zapomina. */
   private restoreHidden(stopAt: THREE.Object3D | null): void {
@@ -31,12 +42,18 @@ export class SmallPartLod {
       if (attached) m.visible = true;
     }
     this.hidden.clear();
+    for (const m of this.trimmed) setMergedPartsDrawn(m, Infinity);
+    this.trimmed.clear();
+    this.hiddenParts = 0;
   }
 
   /** Przywraca wszystkie schowane mesze i zapomina klucz (np. po dispose sceny). */
   reset(): void {
     for (const m of this.hidden) m.visible = true;
     this.hidden.clear();
+    for (const m of this.trimmed) setMergedPartsDrawn(m, Infinity);
+    this.trimmed.clear();
+    this.hiddenParts = 0;
     this.appliedKey = '';
   }
 
@@ -87,6 +104,19 @@ export class SmallPartLod {
       const m = o as THREE.Mesh;
       if (!m.isMesh) { for (const c of o.children) walk(c); return; }
       if ((m as unknown as THREE.InstancedMesh).isInstancedMesh || !m.visible || m.renderOrder !== 0) return;
+      const parts = getMergedPartLod(m);
+      if (parts) {
+        let sc = 1;
+        for (let a: THREE.Object3D | null = m; a && a !== stopAt; a = a.parent) {
+          sc *= Math.max(Math.abs(a.scale.x), Math.abs(a.scale.y), Math.abs(a.scale.z));
+        }
+        const d = parts.diam;
+        let keep = 0;
+        while (keep < d.length && (d[keep] as number) * sc >= cutoff) keep++;
+        if (keep === 0) { m.visible = false; this.hidden.add(m); this.hiddenParts += d.length; }
+        else if (keep < d.length) { setMergedPartsDrawn(m, keep); this.trimmed.add(m); this.hiddenParts += d.length - keep; }
+        return;
+      }
       const g = m.geometry;
       let gr = this.geoRadiusCache.get(g);
       if (gr === undefined) {
@@ -98,7 +128,7 @@ export class SmallPartLod {
       for (let a: THREE.Object3D | null = m; a && a !== stopAt; a = a.parent) {
         sc *= Math.max(Math.abs(a.scale.x), Math.abs(a.scale.y), Math.abs(a.scale.z));
       }
-      if (gr * sc * 2 < cutoff) { m.visible = false; this.hidden.add(m); }
+      if (gr * sc * 2 < cutoff) { m.visible = false; this.hidden.add(m); this.hiddenParts++; }
       for (const c of m.children) walk(c);
     };
     for (const root of vis) walk(root);

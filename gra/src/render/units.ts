@@ -64,6 +64,7 @@ import type { UnitOwnerEmblemResolver } from './unitOwnerEmblem';
 // Zasoby to singletony modułu; NIC nie trafia do userData['mats'].
 import { applyUnitStatPlate } from './unitStatPlate';
 import { SmallPartLod } from './smallPartLod';
+import { mergeUnitStaticParts } from './unitStaticMerge';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
@@ -5758,6 +5759,12 @@ function attachEmbarkBoat(group: THREE.Group): void {
 }
 
 export class UnitRenderer {
+  /**
+   * R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: scalanie statycznych części żetonu przy rejestracji (patrz
+   * unitStaticMerge.ts). Przełącznik wyłącznie dla testów/pomiarów porównawczych (A/B w jednym bundlu).
+   */
+  static staticMerge = true;
+
   private scene: THREE.Scene;
 
   /** R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R3): LOD drobnych części figurek (patrz smallPartLod.ts). */
@@ -5786,6 +5793,11 @@ export class UnitRenderer {
   private readonly geoPool = new GeometryContentPool();
   /** R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: pula wspólnych materiałów TEGO renderera (kolejność rysowania bez zmian). */
   private readonly matPool = new MaterialContentPool();
+  /**
+   * R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: żetony zarejestrowane bez scalenia (utworzone w oknie przyciemnienia) →
+   * obiekty modelu z chwili rejestracji; po zdjęciu przyciemnienia scalane są tylko one (nakładki zostają).
+   */
+  private readonly unmergedParts = new Map<string, Set<THREE.Object3D>>();
 
   /** Current highlight group (all discs live inside). */
   private highlightGroup: THREE.Group | null = null;
@@ -6080,6 +6092,11 @@ export class UnitRenderer {
       const ringStance = this.ringStanceForOwner(unit.ownerId);
       // TEMAT #15: jednostka zaokrętowana — token z łódką (przebudowa przy zmianie).
       const embarked = unit.embarked === true;
+      // R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: żeton tworzony jako przyciemniony (okno odroczenia) zostaje NIESCALONY —
+      // półprzezroczyste części muszą sortować się osobno jak dotąd (w jednym meshu zasłaniałyby się inaczej). Po
+      // zdjęciu przyciemnienia jest scalany W MIEJSCU (ten sam obiekt żetonu, bez przebudowy — `_mergeDeferredToken`).
+      const dimmed = dimmedUnitIds?.has(unit.id) === true;
+      const wantMerge = UnitRenderer.staticMerge && !dimmed;
 
       if (this.tokens.has(unit.id)) {
         const obj = this.tokens.get(unit.id)!;
@@ -6095,6 +6112,7 @@ export class UnitRenderer {
           this._disposeToken(unit.id, obj);
           this.lodTokensVersion++;
           this.tokens.delete(unit.id);
+          this.unmergedParts.delete(unit.id);
           this.tokenMaterials.delete(unit.id);
           this.tokenGeos.delete(unit.id);
 
@@ -6109,7 +6127,7 @@ export class UnitRenderer {
           group.userData['embarked'] = embarked;
 
           this._attachOwnerRing(group, unit.ownerId);
-          this._registerToken(unit.id, group);
+          this._registerToken(unit.id, group, wantMerge);
           this.scene.add(group);
         } else {
           obj.position.set(x, yBase, z);
@@ -6128,7 +6146,7 @@ export class UnitRenderer {
         group.userData['embarked'] = embarked;
 
         this._attachOwnerRing(group, unit.ownerId);
-        this._registerToken(unit.id, group);
+        this._registerToken(unit.id, group, wantMerge);
         this.scene.add(group);
       }
 
@@ -6137,7 +6155,8 @@ export class UnitRenderer {
       // ownerId; zbiór wypełnia silnik), zaraz po utworzeniu/aktualizacji żetonu,
       // żeby świeżo przebudowany model dostał stan przezroczystości w tej samej
       // klatce, w której powstał (inaczej mignąłby raz pełną widocznością).
-      this._applyDeferredDim(unit.id, dimmedUnitIds?.has(unit.id) === true);
+      this._applyDeferredDim(unit.id, dimmed);
+      if (!dimmed) this._mergeDeferredToken(unit.id);
 
       // TABLICZKA JEDNOSTKI nad figurką (R-ZETON-PASKI, Maciej 2026-07-29):
       //
@@ -6205,6 +6224,7 @@ export class UnitRenderer {
         this._disposeToken(id, obj);
         this.lodTokensVersion++;
         this.tokens.delete(id);
+        this.unmergedParts.delete(id);
         this.tokenMaterials.delete(id);
         this.tokenGeos.delete(id);
       }
@@ -6700,6 +6720,7 @@ export class UnitRenderer {
     this.tokens.clear();
     this.tokenMaterials.clear();
     this.tokenGeos.clear();
+    this.unmergedParts.clear();
 
     // Dispose shared singleton geometries
     geoAvLeg?.dispose();    geoAvLeg    = null;
@@ -6807,7 +6828,7 @@ export class UnitRenderer {
    * Register token in tracking maps.
    * Reads group.userData['mats'] and group.userData['perTokenGeos'] set by buildUnitModel.
    */
-  private _registerToken(id: string, group: THREE.Group): void {
+  private _registerToken(id: string, group: THREE.Group, merge = UnitRenderer.staticMerge): void {
     this.lodTokensVersion++;
     this.tokens.set(id, group);
     const mats = (group.userData['mats'] as THREE.Material[] | undefined) ?? [];
@@ -6815,9 +6836,43 @@ export class UnitRenderer {
     this.matPool.poolOwned(group, mats);
     this.tokenMaterials.set(id, mats);
     const geos = (group.userData['perTokenGeos'] as THREE.BufferGeometry[] | undefined) ?? [];
+    group.userData['perTokenGeos'] = geos;
+    // R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: statyczne części o wspólnym materiale → jeden mesh (po puli materiałów,
+    // przed pulą geometrii: scalone geometrie identycznych typów żetonów dzielą jedną instancję).
+    if (merge) mergeUnitStaticParts(group, geos);
+    else if (UnitRenderer.staticMerge) {
+      const parts = new Set<THREE.Object3D>();
+      group.traverse((o) => { if (o !== group) parts.add(o); });
+      this.unmergedParts.set(id, parts);
+    }
+    group.userData['staticMerged'] = merge;
     // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: identyczne geometrie żetonów → jedna wspólna instancja (licznik odwołań).
     this.geoPool.poolOwned(group, geos);
     this.tokenGeos.set(id, geos);
+  }
+
+  /**
+   * R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: scalenie W MIEJSCU żetonu zarejestrowanego bez scalenia (okno przyciemnienia
+   * już zdjęte, materiały wróciły do stanu bazowego). Ten sam obiekt żetonu (brak przebudowy, brak migotania);
+   * scalane wyłącznie obiekty modelu z chwili rejestracji. Geometrie części wracają do puli (`release`, licznik
+   * odwołań), scalone trafiają do puli i do `tokenGeos`. No-op dla żetonów już scalonych.
+   */
+  private _mergeDeferredToken(id: string): void {
+    const parts = this.unmergedParts.get(id);
+    if (!parts) return;
+    const obj = this.tokens.get(id);
+    this.unmergedParts.delete(id);
+    if (!obj || !UnitRenderer.staticMerge) return;
+    // części schowane przez LOD (visible=false) nie byłyby scalone — przywróć je; LOD przeliczy się (version++)
+    this.smallPartLod.reset();
+    const geos = this.tokenGeos.get(id) ?? [];
+    const r = mergeUnitStaticParts(obj, geos, { only: parts, release: (gs) => this.geoPool.release(gs), appendMerged: false });
+    const fresh = r.merged.slice();
+    this.geoPool.poolOwned(obj, fresh);
+    for (const g of fresh) geos.push(g);
+    this.tokenGeos.set(id, geos);
+    obj.userData['staticMerged'] = true;
+    this.lodTokensVersion++;
   }
 
   /**
