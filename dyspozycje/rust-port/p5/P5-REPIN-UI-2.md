@@ -833,3 +833,23 @@ Niedeterminizm zrzutu (hover po kliknięciach poprzedniej sceny) usunięty: kurs
 node tools/dom-harness/run-repin-ui3d.mjs --web-dir "$WEB3" [--out fixtura.json] [--png-dir "$PNG"]
 node tools/dom-harness/mutate-repin-ui3d.mjs --web-dir "$WEB3" --from 0 --to 11   # i 11–22, 22–32 (< 10 min/wywołanie)
 ```
+
+#### 11.6.1 Runda 1 — obrona (Evaluator r1: PASS-WITH-NOTES, Z1–Z3)
+
+- Z1 PRZYJĘTE: `mutate-repin-ui2c.mjs` dostał tryby `wycofana` (H5, H6, H11 — wzorzec MUSI wystąpić 0×; gdy kod wróci → EXIT 2)
+  i `przeniesiona` (H4, H12 — wzorzec 1×, ale zmierzone: na kodzie 9b0 harness ui2c ich nie rozróżnia, EXIT=0/różnic=0).
+  H4/H12 przeniesione do `mutate-repin-ui3d.mjs` jako H23/H24; H23 wymagała nowego wektora `SHORT_CASES`
+  (`zywnoscLabel` nienumeryczne + `zywnoscWplywMiast: 1250` → nota „Dokładnie:” rozróżnia `undefined` od 0) → fixtura ui3d
+  ma nowy sha256 (PNG bez zmian). `--dry-run`: kontrola samych wzorców (aktywne 1×, wycofane 0×) bez przeglądarki.
+- Z2 PRZYJĘTE: `tools/selftest-verify-repin-ui3d.mjs --web-dir "$WEB3"` — przypadek KONTROLNY (EXIT 0) + 10 sztucznych naruszeń
+  (N1 blok adaptera, N2 bajt poza adapterem, N3 rewizja markera, N4 liczba markerów, N5 edycja 0× w webie, N6 webSha256,
+  N7 DISJ `ui2c.json`, N8 DUP, N9 DEPS(ui3d), N10 SHA/rozmiar); każde wymaga EXIT 1 i komunikatu właściwej reguły.
+  Repo nie jest modyfikowane (osobne kopie w `--tmp-dir`).
+- Z3 (informacyjny): konflikty z `parity-v2` zostają orkiestratorowi (dispatch); stan zmierzony w raporcie obrony.
+
+```bash
+node tools/selftest-verify-repin-ui3d.mjs --web-dir "$WEB3" [--tmp-dir <dir>]
+node tools/dom-harness/mutate-repin-ui2c.mjs --web-dir "$WEB86U3" --dry-run        # wzorce, bez przeglądarki
+node tools/dom-harness/mutate-repin-ui2c.mjs --web-dir "$WEB86U3" --from 1 --to 22  # i 23–31, 32–40, 41–45
+node tools/dom-harness/mutate-repin-ui3d.mjs --web-dir "$WEB3" --from 32 --to 34    # H23/H24
+```
