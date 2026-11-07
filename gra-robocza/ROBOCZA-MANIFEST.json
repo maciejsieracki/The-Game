@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "40dff84ad9e18f3857556b8680fa2562",
-  "bundleSha256": "44edc57cf41f5f02891a0a79cd66a3dc62c24b1e6ff409dfbea61ac4cbbd6570",
-  "bundleBytes": 70668400,
+  "bundleMd5": "09e75c366e574a59cebe72b6e94d05ce",
+  "bundleSha256": "48e818e760014f465d002c6e8e74ce0c98dde18d34d57eaa041012530387e432",
+  "bundleBytes": 70668849,
   "sourceSnapshot": {
-    "source": "R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1 8c569db42 (merge na 02fbe7dcf)",
+    "source": "R-WEB-GENERALS-OVER-LIMIT-Q1 59ecf4e5e (merge na 9b019a7d8)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 532: render/unitStaticMerge.ts + units.ts + smallPartLod.ts: statyczne części żetonu scalone w jeden mesh na materiał; t.50 sterta po GC 171,7→143,9 MB (−27,8 MB, −16%), meshe żetonów 35 903→9 644, draw calls 1 192→863, renderLoop 29,2→20,4 ms/klatkę, syncUnitsRender 186,6→108,0 ms; stanowisko 475 żetonów −37,7 MB; picking 170/170; różnica obrazu stanie/marsz/atak 6/1/2 px (dopuszczone przez właściciela ≤~120 px)"
+    "FALA 533: generals.ts/main.ts: bramka narodzin wodza z kolejki (canSpawnQueuedGeneral, generalMaySpawnForOwner w 2 miejscach), pozycja isGeneral przechodząca z miastem przy podboju/cesji/aneksji/odbiciu nie daje dodatkowego wodza; migracja wczytania: nadmiarowi (młodsi) wodzowie tracą flagę wodza, jednostki zostają"
   ],
   "verification": [
-    "Opus 5.5 Operator→Evaluator→Obrona→FC PASS; memory-unit-static-merge-test 9/0, tsc 0, logic 213/213, small-part-lod 24/0, overlay-sync 17/0, capture-render-sync 23/0, deferred-dim 19/0, city-badge 67/0, 5/5 mutacji, render-all 0 regresji, zrzuty K1–K5 przejrzane"
+    "Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; generals-limit-invariant-test 23/23 (baza pada), tsc 0, logic 213/213, ai-test 274/20 jak baza, 6 testów generałów/armii/rekrutacji EXIT=0"
   ],
   "limits": [
-    "obraz w t.50 NIE_ZMIERZONO (liczba jednostek różna między przebiegami); budowa żetonów od zera +27–46% (~0,2 s jednorazowo); renderLoop mierzony na swiftshader (względnie)"
+    "test modelowy (nie live w Chromium); testy przeglądarkowe empire-recruit/army-panel NIE_ZMIERZONO (INFRA); wódz przejęty z kolejką miasta powstaje jako zwykła jednostka"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-07T08:12:13",
+  "hubGeneratedAt": "2026-11-07T17:21:40",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "40dff84ad9e18f3857556b8680fa2562",
-      "sizeBytes": 70668400
+      "md5": "09e75c366e574a59cebe72b6e94d05ce",
+      "sizeBytes": 70668849
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "40dff84ad9e18f3857556b8680fa2562",
-      "sizeBytes": 70668400
+      "md5": "09e75c366e574a59cebe72b6e94d05ce",
+      "sizeBytes": 70668849
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "40dff84ad9e18f3857556b8680fa2562",
-      "sizeBytes": 70668400
+      "md5": "09e75c366e574a59cebe72b6e94d05ce",
+      "sizeBytes": 70668849
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "40dff84ad9e18f3857556b8680fa2562",
-      "sizeBytes": 70668400
+      "md5": "09e75c366e574a59cebe72b6e94d05ce",
+      "sizeBytes": 70668849
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "40dff84ad9e18f3857556b8680fa2562",
-      "sizeBytes": 70668400
+      "md5": "09e75c366e574a59cebe72b6e94d05ce",
+      "sizeBytes": 70668849
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "40dff84ad9e18f3857556b8680fa2562",
-      "sizeBytes": 70668400
+      "md5": "09e75c366e574a59cebe72b6e94d05ce",
+      "sizeBytes": 70668849
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "40dff84ad9e18f3857556b8680fa2562",
-      "sizeBytes": 70668400
+      "md5": "09e75c366e574a59cebe72b6e94d05ce",
+      "sizeBytes": 70668849
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "40dff84ad9e18f3857556b8680fa2562",
-      "sizeBytes": 70668400
+      "md5": "09e75c366e574a59cebe72b6e94d05ce",
+      "sizeBytes": 70668849
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "40dff84ad9e18f3857556b8680fa2562",
-      "sizeBytes": 70668400
+      "md5": "09e75c366e574a59cebe72b6e94d05ce",
+      "sizeBytes": 70668849
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "40dff84ad9e18f3857556b8680fa2562",
-      "sizeBytes": 70668400
+      "md5": "09e75c366e574a59cebe72b6e94d05ce",
+      "sizeBytes": 70668849
     }
   ],
-  "md5": "40dff84ad9e18f3857556b8680fa2562",
+  "md5": "09e75c366e574a59cebe72b6e94d05ce",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

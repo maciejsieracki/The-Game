@@ -1,3 +1,9 @@
+## ROBOCZA 09e75c36 -- 2026-11-06 -- FALA 533: wodzowie: limit epoki nie do przekroczenia (kolejka rekrutacji przy zdobyciu miasta) + migracja zapisów (testowa)
+
+- generals.ts/main.ts: bramka narodzin wodza z kolejki (canSpawnQueuedGeneral, generalMaySpawnForOwner w 2 miejscach), pozycja isGeneral przechodząca z miastem przy podboju/cesji/aneksji/odbiciu nie daje dodatkowego wodza; migracja wczytania: nadmiarowi (młodsi) wodzowie tracą flagę wodza, jednostki zostają
+- Weryfikacja: Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; generals-limit-invariant-test 23/23 (baza pada), tsc 0, logic 213/213, ai-test 274/20 jak baza, 6 testów generałów/armii/rekrutacji EXIT=0
+- Limity: test modelowy (nie live w Chromium); testy przeglądarkowe empire-recruit/army-panel NIE_ZMIERZONO (INFRA); wódz przejęty z kolejką miasta powstaje jako zwykła jednostka
+
 ## ROBOCZA 40dff84a -- 2026-11-06 -- FALA 532: pamięć: scalenie statycznych części modeli jednostek (wariant B) (testowa)
 
 - render/unitStaticMerge.ts + units.ts + smallPartLod.ts: statyczne części żetonu scalone w jeden mesh na materiał; t.50 sterta po GC 171,7→143,9 MB (−27,8 MB, −16%), meshe żetonów 35 903→9 644, draw calls 1 192→863, renderLoop 29,2→20,4 ms/klatkę, syncUnitsRender 186,6→108,0 ms; stanowisko 475 żetonów −37,7 MB; picking 170/170; różnica obrazu stanie/marsz/atak 6/1/2 px (dopuszczone przez właściciela ≤~120 px)
