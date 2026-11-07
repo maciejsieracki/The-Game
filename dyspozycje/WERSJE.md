@@ -1,3 +1,9 @@
+## ROBOCZA aa82dabe -- 2026-11-06 -- FALA 545: AI vs gracz: parytet suwaków, dyplomacji i miast-państw (testowa)
+
+- seed suwaków AI w T1 = 60/20/20 (suma 100%, wcześniej 60/60/20 normalizowane do 40/60/0); dyplomacja: jedna reguła skarbca dla gracza i AI (bez podłogi 0 tylko dla AI); miasta-państwa: zakup i zastępowanie jednostek na trudności właściciela jak produkcja; fallback ownerId===0 scalony w legacyEraForOwner
+- Weryfikacja: ai-player-parity-fixes 44/0 (12 asercji pada na bazie), logic-test 213/213, tsc 0, ai-test jak baza; FC PASS-WITH-NOTES
+- Limity: pomiar T2-T10 lustrem pętli suwaków, nie live; poprawka miast-państw tylko asercje statyczne + macierz funkcji; utrzymanie miast-państw w ticku nadal na globalnej trudności (osobny temat R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1)
+
 ## ROBOCZA 0bc3db08 -- 2026-11-06 -- FALA 544: AI: rezerwa utrzymania przy zakupie jednostek (Normal 10 tur) (testowa)
 
 - AI nie kupuje jednostek, gdy po zakupie dochód netto złota spadłby poniżej progu lub skarbiec nie pokrywałby ceny + N tur utrzymania; progi w ai-params.json: rezerwa_tur Easy 3 / Normal 10 (decyzja właściciela) / Hard 2, min dochód netto 0/0/-2; reguła wpięta w main.ts (aiPurchaseReserveInputs, przychód z ticku ekonomii); usunięte martwe klucze ai_rush_jednostka_*
