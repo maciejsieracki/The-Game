@@ -42,7 +42,10 @@
     "verify:repin-render3": "node tools/verify-repin-render3-scope.mjs",
     "verify:repin-render3:mutate": "node tools/verify-repin-render3-scope.mjs --self-test",
     "harness:repin-ui3a": "node tools/dom-harness/run-repin-ui3a.mjs",
-    "harness:repin-ui3a:mutate": "node tools/dom-harness/mutate-repin-ui3a.mjs"
+    "harness:repin-ui3a:mutate": "node tools/dom-harness/mutate-repin-ui3a.mjs",
+    "harness:repin-ui3e": "node tools/dom-harness/run-repin-ui3e.mjs",
+    "harness:repin-ui3e:mutate": "node tools/dom-harness/mutate-repin-ui3e.mjs",
+    "harness:repin-ui3e:verify": "node tools/dom-harness/verify-repin-ui3e-fixture.mjs"
   },
   "devDependencies": {
     "esbuild": "0.21.5",

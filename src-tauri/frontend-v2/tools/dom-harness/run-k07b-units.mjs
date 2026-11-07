@@ -192,6 +192,8 @@ function makeFixture(variant) {
     onOkolicaRestoreAuto: (...a) => { log.push(['cfg.onOkolicaRestoreAuto', a.map((x) => canon(x))]); },
     onOkolicaTileAdjust: (...a) => { log.push(['cfg.onOkolicaTileAdjust', a.map((x) => canon(x))]); },
     onRushBuy: (...a) => { log.push(['cfg.onRushBuy', a.map((x) => canon(x))]); },
+    // R-RUSTPORT-REPIN-WEB-UI-3-E-Q1: web 9b019a7d8 `cfg.isAutoBuildEnabled` (R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1); brak = hak nieobecny.
+    ...(variant.autoBuild !== undefined ? { isAutoBuildEnabled: () => { log.push(['cfg.isAutoBuildEnabled', []]); return variant.autoBuild; } } : {}),
   };
   const values = {
     cfg: cfgMethods,
@@ -251,6 +253,10 @@ function buildCases() {
 
   add('renderProd', 'pusta-kolejka', () => [mount(), CITY, VIEW], {});
   add('renderProd', 'z-kolejka', () => [mount(), CITY, null], { prod: { kolejka: [{ kind: 'building', id: 'farma', koszt: 10, postep: 4 }], rekrutacja: [] }, buildable: [{ kind: 'building', id: 'farma', koszt: 10 }] });
+  // UI-3-E (web 9b019a7d8): przełącznik „Automatyzacja budowy” — wyłączony (profile wyszarzone, nota, bez paska Listy), włączony, brak haka.
+  for (const tryb of ['lista', 'profil', 'reczny']) for (const autoBuild of [false, true, undefined]) {
+    add('renderProd', `autobuild-${tryb}-${autoBuild}`, () => [mount(), CITY, VIEW], { autoBuild, budowa: { tryb, priorytetTypow: ['wzrost'], lista: ['farma'], biblioteka: [], overrideLocal: false } });
+  }
 
   add('renderBuildSplitPanel', 'z-danymi', () => [mount(), CITY, DATA, VIEW], {});
   add('renderBuildSplitPanel', 'bez-danych', () => [mount(), CITY, null, null], { data: null });

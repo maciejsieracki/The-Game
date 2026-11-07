@@ -800,3 +800,77 @@ node tools/repin-ui2-overlay.mjs --pin-dir "$WEB86" --web-dir "$WEB86" --web3-di
   (te same moduły: `diplomacyTradeBasket` 1592 + `diplomacyAudience` 31, E-Z3; sidePanel* 0); UI-2-A 2292/0, B 1356/0, C 752/0,
   D 797/0, E 183/0, E-cycles 9335/0, F 35 scen/0, G 9216/0 (WEB86U3); UI-3-A 33×2 scen, 360 kroków, PIX 0, 56/56; `mutate-cycles
   --only S1,S2` 2/2.
+
+## UI-3-E. Partia UI-3-E — bloki K `cityPanel` (`R-RUSTPORT-REPIN-WEB-UI-3-E-Q1`)
+
+Sekcja tej partii bez numeru, żeby nie kolidować z równoległymi partiami UI-3-B/C/D. Numer nada orkiestrator przy scalaniu.
+
+### UI-3-E.1 Zakres (r1, commity `b02f96ca5`, `6726e5abb`)
+
+- Markery bloków K w 37 plikach `src/ui/cityPanel/k0*.ts` przepięte z web `86d510c66` na `9b019a7d8` (FALA 509–532):
+  302 MOVED, 15 DRIFT, 5 MANUAL, +1 blok `recruitQuantityDrafts`. `tools/repin-ui2g-kblocks-manifest.json` ma rev `9b019a7d8`
+  (bramka REV/RANGE/CONTENT w `verify-repin-ui2-copies.mjs`).
+- Adapter `src/ui/cityPanel/k-ui3e-web.ts` zawiera czyste deklaracje `game/*`: `formatManpowerCompact`, mnożnik epoki zużycia
+  obywateli, `isCityUnderSiege` oraz stałe `AUTO_BUILD_DISABLED_HINT`, `CITY_SIEGE_RECRUIT_BLOCK_PL`, `RIVER_ONLY_BUILDING_IDS`.
+  Importy `game/*` w porcie są niedozwolone, więc wzorem jest `armyStackLabel`. Blok `kblocksE` w `tools/repin-ui3-manifest.json`
+  ma 7 markerów i sprawdza go `verify-repin-ui3-copies.mjs`. Host `k-ui3e-host.ts` obsługuje id miasta z DTO jako number.
+  W `viewmodel/types.ts` jest tylko opcjonalne `ownerEra?: number`. ZAŁOŻENIE E3-Z1: brak pola w DTO daje 1, jak web
+  `cfg.getEpoch?.(…) ?? 1`.
+- Hooki kontrolera (`isAutoBuildEnabled`, epoka właściciela w DTO) są gotowe w UI. Podpięcie w kontrolerze v2 należy do P6
+  i jest poza zakresem.
+
+### UI-3-E.2 Harness partii, mutacje, weryfikator (r2)
+
+- `tools/dom-harness/run-repin-ui3e.mjs` bierze CAŁY `gra/src/ui/cityPanel.ts` z `git archive 9b019a7d8` (deklaracje z `export`,
+  treść bez zmian) razem z silnikiem webu. Pakuje go `build.mjs` i wykonuje w Chromium 141 (`/opt/pw-browsers/chromium-1194`)
+  obok modułów portu w tej samej stronie. Wynik: 10 jednostek, 507 wektorów (K01B `wyzwienieSummaryLabel` z `ownerEra`,
+  K05B chip „Wymaga rzeki przy mieście”, adapter), 7 sond HUNK, DOM web = port, PNG 1280×720 i 360×640 bajtowo równe,
+  `pageerror`+`console.error` = 0. Fixtura: `fixtures/repin_ui3e-web-vectors.json` (`webVectorsSha256 8790e8d0…`).
+- Bloki K nie mają nowego harnessu. Pokrywa je jsdom pin-exec, wszystkie z `--pin-dir` = archiwum `9b019a7d8`:
+  - `run-k05a-units`, `verify-k06b-copies`, `run-k07a-units`, `run-k08e-pin`, `run-k03-units`;
+  - `run-k07b-units`: +9 przypadków przełącznika „Automatyzacja budowy” × tryb lista/profil/ręczny;
+  - `run-k09a-pin`: +4 przypadki Zarządcy ⚙ przy wyłączonej i włączonej automatyzacji. Stan `disabled` jest zapisywany PRZED
+    zdjęciem atrybutu;
+  - `run-k03`: +2 asercje `ownerEra`.
+- `tools/dom-harness/mutate-repin-ui3e.mjs` ma 17 mutacji, po jednej na przepięty hunk. Przed serią biegnie przypadek kontrolny
+  bez mutacji, a po każdej mutacji plik wraca bajtowo (sprawdza to sha256). r1: 15/17, bo M11 i M16 przeżyły. Po poprawce
+  wektorów w `run-k09a-pin` i `run-k03`: 17/17.
+- `tools/dom-harness/verify-repin-ui3e-fixture.mjs` to niezależny weryfikator na DRUGIM `git archive`. Sprawdza spójność fixtury
+  (F1), obecność hunków w źródle webu (F2) i to, że ponowny przebieg harnessu daje fixturę bajtowo, w tym sha256 PNG (F3).
+  Test negatywny: po zmianie 1 wartości fixtury są 2 FAIL i EXIT 1.
+
+### UI-3-E.3 Regresja na kodzie końcowym (r2)
+
+Konfiguracja: `PINOV` = pin `edb8fb56` + nakładka, `WEB86U3` = `86d510c66` + UI-3. Nakładki zbudowano od nowa narzędziami
+tematu (`niezgodnych=0`).
+
+| Harness | Wynik |
+| --- | --- |
+| L0 | 3861/0 |
+| L1A | 3618/0 |
+| L2 | 1784/0 (jsdom 354 / console 150, bez zmian) |
+| C4 | 1649/0 (75) |
+| hud | 909/0 |
+| cityux | 164/0 |
+| `run-cycles` | 6442 / 1623 różnic (`diplomacyTradeBasket` 1592 + `diplomacyAudience` 31 = E-Z3; reszta 0) |
+| UI-2-A | 2292/0 |
+| UI-2-B | 1356/0 (PIX 0, 55/55) |
+| UI-2-C | 752/0 |
+| UI-2-D | 797/0 |
+| UI-2-E | 183/0 |
+| UI-2-E-cycles | 9335/0 |
+| UI-2-F | 35 scen/0 |
+| UI-2-G | 9216/0 |
+| UI-3-A | 33×2 scen, 360 kroków, PIX 0, 56/56 |
+
+`run-newgame` (spoza listy dispatchu) przekroczył limit 560 s przy obciążeniu 4 równoległych partii (load ≈ 5,6) i jest
+NIE_ZMIERZONO. Partia nie zmienia `newGameFlow` ani jego zależności.
+
+### UI-3-E.4 Komendy
+
+```bash
+git archive 9b019a7d89090c7491a4c2ad75278a7a60d42a90 gra/src gra/data | tar -x -C "$WEB3"    # i drugi raz do "$WEB3B"
+node tools/dom-harness/run-repin-ui3e.mjs --web-dir "$WEB3" [--out fixtura.json] [--png-dir "$PNG"] [--tmp-dir "$T"]
+node tools/dom-harness/mutate-repin-ui3e.mjs --web-dir "$WEB3" [--only M1,M2] [--tmp-dir "$T"]   # ok. 4 min
+node tools/dom-harness/verify-repin-ui3e-fixture.mjs --web-dir "$WEB3B" [--tmp-dir "$T"]
+```

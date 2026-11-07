@@ -526,6 +526,10 @@ try {
   add('rerender', 'rerender.scale20', {}, baseState({ scale: 20 }), (E, c) => { E.rerender(); return c.root.outerHTML; });
   add('rerender', 'rerender.praca', { onPodzialPracyChange: () => undefined }, baseState(), (E, c) => { E.rerender(); return c.root.outerHTML; });
   add('rerender', 'rerender.manager', { isAutoManageEnabled: () => true, onAutoManage: () => FIX_LOG('auto') }, baseState(), (E, c) => { E.rerender(); const m = c.root.querySelector('#cs-manager'); if (m) m.click(); return c.root.outerHTML; });
+  // UI-3-E (web 9b019a7d8): Zarządca ⚙ przy wyłączonej / włączonej automatyzacji budowy (disabled + aria + brak onAutoManage po kliknięciu).
+  for (const ab of [false, true]) for (const on of [true, false]) {
+    add('rerender', `rerender.manager.autobuild-${ab}-${on}`, { isAutoManageEnabled: () => on, onAutoManage: () => FIX_LOG('auto'), isAutoBuildEnabled: () => ab }, baseState(), (E, c) => { E.rerender(); const m = c.root.querySelector('#cs-manager'); const przed = m ? `${m.outerHTML}|disabled=${m.disabled}` : 'brak'; if (m) { m.removeAttribute('disabled'); m.click(); } return przed + '||' + c.root.outerHTML; });
+  }
   add('rerender', 'rerender.close', {}, baseState(), (E, c) => { E.rerender(); const b = c.root.querySelector('#cs-close'); if (b) b.click(); return c.root.outerHTML; });
   add('rerender', 'rerender.mapbtn.hook', { onOpenMapForOkolica: (id) => FIX_LOG(['map', id]) }, baseState(), (E, c) => { E.rerender(); const b = c.root.querySelector('#cs-mapbtn'); if (b) b.click(); return c.root.outerHTML; });
   add('rerender', 'rerender.mapbtn.noHook', {}, baseState(), (E, c) => { E.rerender(); const b = c.root.querySelector('#cs-mapbtn'); if (b) b.click(); return c.root.outerHTML; });

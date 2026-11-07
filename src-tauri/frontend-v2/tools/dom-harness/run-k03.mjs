@@ -103,6 +103,9 @@ try {
     dto.growth.pctPerTurn = 5;
     check('R2 mutacja growth.pctPerTurn wykryta (view)', model.cityViewFromDto(dto).wzrostProcent === 5);
     check('R2 mutacja growth.pctPerTurn wykryta (live)', model.cityGrowthLiveFromDto(dto).procentNaTure === 5);
+    // R-RUSTPORT-REPIN-WEB-UI-3-E-Q1 r2 (M16): web 9b019a7d8 `ownerEra: cfg.getEpoch?.(city.ownerId) ?? 1` → `dto.ownerEra ?? 1`.
+    check('R2 ownerEra domyślnie 1 (brak dto.ownerEra)', model.cityViewFromDto(mkDto()).ownerEra === 1);
+    check('R2 ownerEra = dto.ownerEra (3)', model.cityViewFromDto({ ...mkDto(), ownerEra: 3 }).ownerEra === 3);
   }
 
   // R3 — podzial handlu
