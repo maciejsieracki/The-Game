@@ -17,7 +17,8 @@ use civ_engine::domain::building_costs::p6_7b::{
 use civ_engine::domain::terrain::city_founding::p6_6b::cities::City;
 use civ_engine::domain::turn_economy_resources::{
     apply_stolarnia_drewno_map_inflow, compute_garncarnia_surplus_zadowolenie_by_owner,
-    converter_throughput_for_era, run_city_economy_resource_phase, run_converter,
+    converter_output_multiplier_for_era, converter_throughput_for_era,
+    run_city_economy_resource_phase, run_converter_with_output_multiplier,
     tick_empire_resource_pipeline, ConverterReason, EmpireResourceTickInput, ResourceTickResolvers,
     TerritoryResourceYield, WorkedMagazynYield, DEFAULT_CONVERTER_RECIPES,
 };
@@ -89,7 +90,13 @@ fn run_converter_matches_running_web() {
     for (i, c) in cases.iter().enumerate() {
         let r = recipe(c["recipe"].as_str().unwrap());
         let stores = rec_of(&c["stores"]);
-        let got = run_converter(r, &stores, num(&c["tput"]), num(&c["outCap"]));
+        let got = run_converter_with_output_multiplier(
+            r,
+            &stores,
+            num(&c["tput"]),
+            num(&c["outCap"]),
+            num(&c["outMult"]),
+        );
         let want = &c["out"];
         let reason = match got.reason {
             ConverterReason::Ok => "ok",
@@ -121,6 +128,10 @@ fn throughput_for_era_and_stolarnia_inflow_match_web() {
             num(&c["era"]),
         );
         same(&format!("era #{i}"), &enc(got), &c["out"]);
+    }
+    for (i, c) in arr(&d, "outMultCases").iter().enumerate() {
+        let got = converter_output_multiplier_for_era(c["id"].as_str().unwrap(), num(&c["era"]));
+        same(&format!("outMult #{i}"), &enc(got), &c["out"]);
     }
     for (i, c) in arr(&d, "inflowCases").iter().enumerate() {
         let got =
@@ -511,16 +522,31 @@ fn converter_throughputs_for_era_match_web_vectors() {
         "garncarnia",
         "huta",
         "odlewnia_brazu",
+        "odlewnia_zelaza__braz",
+        "odlewnia_zelaza__zelazo",
+        "wielka_odlewnia__braz",
+        "wielka_odlewnia__zelazo",
         "wielka_odlewnia__stal",
     ];
     let mut scaled_checked = 0;
+    let mut out_mult_checked = 0;
     for era_case in cases
         .iter()
         .filter(|c| c["id"] == "cegielnia" && num(&c["base"]) == 50.0)
     {
         let era = num(&era_case["era"]);
         let got = converter_throughputs_for_era(&raw, "normalny", era);
-        assert_eq!(got.len(), DEFAULT_CONVERTER_RECIPES.len());
+        let has_out_mult = got.contains_key("cegielnia#outMult");
+        // Web `converterThroughputsForEra`: klucz `<id>#outMult` tylko gdy mnoznik != 1 (tu: cegielnia).
+        assert_eq!(
+            got.len(),
+            DEFAULT_CONVERTER_RECIPES.len() + usize::from(has_out_mult)
+        );
+        assert_eq!(
+            has_out_mult,
+            era.is_finite() && era >= 2.0,
+            "outMult @{era}"
+        );
         for r in DEFAULT_CONVERTER_RECIPES.iter() {
             let lookup = if covered.contains(&r.id) {
                 r.id
@@ -538,13 +564,26 @@ fn converter_throughputs_for_era_match_web_vectors() {
                 &enc(got[r.id]),
                 &want["out"],
             );
-            if (r.id == "cegielnia" || r.id == "garncarnia") && era > 1.0 && era.is_finite() {
+            // Od REPIN-EKONOMIA-F: tylko Garncarnia skaluje cykle +10%; Cegielnia/Huta plaskie;
+            // odlewnie x m(e).
+            if r.id == "garncarnia" && era > 1.0 && era.is_finite() {
                 assert!(got[r.id] > 50.0, "skalowanie epoka {} {}", r.id, era);
                 scaled_checked += 1;
             }
+            if r.id == "cegielnia" || r.id == "huta" {
+                assert_eq!(got[r.id], 50.0, "plaska {} @{}", r.id, era);
+            }
+            if r.id == "odlewnia_brazu" && era.is_finite() && era >= 2.0 {
+                assert_eq!(got[r.id], 50.0 * (1.0 + 0.5 * (era.floor() - 1.0)));
+                out_mult_checked += 1;
+            }
+        }
+        if has_out_mult {
+            assert_eq!(got["cegielnia#outMult"], 1.0 + 0.5 * (era.floor() - 1.0));
         }
     }
-    assert_eq!(scaled_checked, 6, "era 2,3,4.5 x 2 receptury");
+    assert_eq!(scaled_checked, 9, "era >1 skonczone x garncarnia");
+    assert_eq!(out_mult_checked, 7, "era >= 2 skonczone x odlewnia_brazu");
     // brak wpisu w raw -> fallback receptury (nie 50)
     let fb = converter_throughputs_for_era(&json!({}), "normalny", 1.0);
     for r in DEFAULT_CONVERTER_RECIPES.iter() {

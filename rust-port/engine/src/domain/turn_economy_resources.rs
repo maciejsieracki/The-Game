@@ -30,6 +30,7 @@ use crate::domain::building_costs::p6_7b::{
     StockRecord,
 };
 use crate::domain::civ_matrix::js_compat::{js_max, js_min};
+use crate::domain::resource_production::citizen_consumption_era_multiplier;
 
 // ---------------------------------------------------------------------------------------------
 // converters.ts
@@ -54,7 +55,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         building_id: None,
         inputs: &[("glina", 2.0), ("drewno", 1.0)],
         output: "cegla",
-        output_amount: 1.0,
+        output_amount: 2.0,
         throughput_param_key: "budynek_cegielnia_przepustowosc",
         throughput_fallback: 50.0,
     },
@@ -74,7 +75,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output: "braz",
         output_amount: 1.0,
         throughput_param_key: "budynek_huta_przepustowosc",
-        throughput_fallback: 25.0,
+        throughput_fallback: 50.0,
     },
     ConverterRecipe {
         id: "odlewnia_brazu",
@@ -83,7 +84,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output: "braz",
         output_amount: 1.0,
         throughput_param_key: "budynek_huta_przepustowosc",
-        throughput_fallback: 25.0,
+        throughput_fallback: 50.0,
     },
     ConverterRecipe {
         id: "odlewnia_zelaza__braz",
@@ -92,7 +93,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output: "braz",
         output_amount: 1.0,
         throughput_param_key: "budynek_huta_przepustowosc",
-        throughput_fallback: 25.0,
+        throughput_fallback: 50.0,
     },
     ConverterRecipe {
         id: "odlewnia_zelaza__zelazo",
@@ -101,7 +102,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output: "zelazo",
         output_amount: 1.0,
         throughput_param_key: "budynek_odlewnia_zelaza_przepustowosc",
-        throughput_fallback: 25.0,
+        throughput_fallback: 50.0,
     },
     ConverterRecipe {
         id: "wielka_odlewnia__braz",
@@ -110,7 +111,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output: "braz",
         output_amount: 1.0,
         throughput_param_key: "budynek_huta_przepustowosc",
-        throughput_fallback: 25.0,
+        throughput_fallback: 50.0,
     },
     ConverterRecipe {
         id: "wielka_odlewnia__zelazo",
@@ -119,7 +120,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output: "zelazo",
         output_amount: 1.0,
         throughput_param_key: "budynek_odlewnia_zelaza_przepustowosc",
-        throughput_fallback: 25.0,
+        throughput_fallback: 50.0,
     },
     ConverterRecipe {
         id: "wielka_odlewnia__stal",
@@ -128,7 +129,7 @@ pub const DEFAULT_CONVERTER_RECIPES: [ConverterRecipe; 9] = [
         output: "stal",
         output_amount: 1.0,
         throughput_param_key: "budynek_wielka_odlewnia_przepustowosc",
-        throughput_fallback: 25.0,
+        throughput_fallback: 50.0,
     },
 ];
 
@@ -145,10 +146,47 @@ pub fn converter_building_id_for_recipe(recipe: &ConverterRecipe) -> &'static st
     recipe.building_id.unwrap_or(recipe.id)
 }
 
-/// Web `converterThroughputForEra` (`converters.ts:142-150`): tylko `cegielnia`/`garncarnia` rosna
-/// +10% bazy na epoke (addytywnie); `era` nieskonczona/NaN/<=1 = 1.
+/// Web `CONVERTER_FOUNDRY_ERA_RECIPE_IDS` (`converters.ts:147`): odlewnie skaluja cykle mnoznikiem
+/// m(e) (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1). `huta` NIE nalezy do zbioru (plaska).
+pub const CONVERTER_FOUNDRY_ERA_RECIPE_IDS: [&str; 6] = [
+    "odlewnia_brazu",
+    "odlewnia_zelaza__braz",
+    "odlewnia_zelaza__zelazo",
+    "wielka_odlewnia__braz",
+    "wielka_odlewnia__zelazo",
+    "wielka_odlewnia__stal",
+];
+
+/// Web `CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE` (`converters.ts:171`): tylko `cegielnia` = 0,50.
+pub const CONVERTER_OUTPUT_ERA_PCT_CEGIELNIA: f64 = 0.50;
+
+/// Web `CONVERTER_OUTPUT_MULT_KEY_SUFFIX` (`converters.ts:176`).
+pub const CONVERTER_OUTPUT_MULT_KEY_SUFFIX: &str = "#outMult";
+
+/// Web `converterOutputMultiplierForEra` (`converters.ts:179-184`): mnoznik WYJSCIA receptury;
+/// `1 + pct*(floor(e)-1)` dla `e` skonczonego i > 1, w przeciwnym razie `e`=1; receptury bez
+/// skalowania wyjscia = 1.
+pub fn converter_output_multiplier_for_era(recipe_id: &str, era: f64) -> f64 {
+    if recipe_id != "cegielnia" {
+        return 1.0;
+    }
+    let e = if era.is_finite() && era > 1.0 {
+        era.floor()
+    } else {
+        1.0
+    };
+    1.0 + CONVERTER_OUTPUT_ERA_PCT_CEGIELNIA * (e - 1.0)
+}
+
+/// Web `converterThroughputForEra` (`converters.ts:194-205`): odlewnie x m(e)
+/// (`citizenConsumptionEraMultiplier`); `garncarnia` +10% bazy na epoke (addytywnie); `cegielnia`
+/// i `huta` plaskie (Cegielnia skaluje WYJSCIE, patrz `converter_output_multiplier_for_era`);
+/// `era` nieskonczona/NaN/<=1 = 1.
 pub fn converter_throughput_for_era(recipe_id: &str, base_throughput: f64, era: f64) -> f64 {
-    if recipe_id != "cegielnia" && recipe_id != "garncarnia" {
+    if CONVERTER_FOUNDRY_ERA_RECIPE_IDS.contains(&recipe_id) {
+        return base_throughput * citizen_consumption_era_multiplier(era);
+    }
+    if recipe_id != "garncarnia" {
         return base_throughput;
     }
     let e = if era.is_finite() && era > 1.0 {
@@ -185,13 +223,32 @@ fn have(stores: &StockRecord, key: &str) -> f64 {
     }
 }
 
-/// Web `runConverter` (`converters.ts:162-208`).
+/// Web `runConverter` z domyslnym `outputMultiplier = 1` (`converters.ts:234-283`).
 pub fn run_converter(
     recipe: &ConverterRecipe,
     stores: &StockRecord,
     throughput: f64,
     output_capacity: f64,
 ) -> ConvertResult {
+    run_converter_with_output_multiplier(recipe, stores, throughput, output_capacity, 1.0)
+}
+
+/// Web `runConverter(recipe, stores, throughput, outputCapacity, outputMultiplier)`
+/// (`converters.ts:234-283`): mnoznik wyjscia `outMult` (nieskonczony/NaN/<= 0 = 1) skaluje wyjscie
+/// na cykl (`outPerCykl = outputAmount * outMult`), limit wyjscia, przyrost magazynu i `produced`.
+pub fn run_converter_with_output_multiplier(
+    recipe: &ConverterRecipe,
+    stores: &StockRecord,
+    throughput: f64,
+    output_capacity: f64,
+    output_multiplier: f64,
+) -> ConvertResult {
+    let out_mult = if output_multiplier.is_finite() && output_multiplier > 0.0 {
+        output_multiplier
+    } else {
+        1.0
+    };
+    let out_per_cykl = recipe.output_amount * out_mult;
     let tput = if throughput.is_finite() && throughput > 0.0 {
         throughput.floor()
     } else {
@@ -210,8 +267,8 @@ pub fn run_converter(
     }
 
     let wolne = js_max(0.0, output_capacity - have(stores, recipe.output));
-    let limit_wyjscia = if recipe.output_amount > 0.0 {
-        (wolne / recipe.output_amount).floor()
+    let limit_wyjscia = if out_per_cykl > 0.0 {
+        (wolne / out_per_cykl).floor()
     } else {
         0.0
     };
@@ -228,7 +285,7 @@ pub fn run_converter(
         }
         nowe.insert(
             recipe.output.to_owned(),
-            have(stores, recipe.output) + recipe.output_amount * cykle,
+            have(stores, recipe.output) + out_per_cykl * cykle,
         );
     }
 
@@ -247,7 +304,7 @@ pub fn run_converter(
     };
 
     ConvertResult {
-        produced: cykle * recipe.output_amount,
+        produced: cykle * out_per_cykl,
         cykle,
         consumed,
         stores: nowe,
@@ -269,7 +326,22 @@ pub fn run_converters(
             .get(recipe.id)
             .copied()
             .unwrap_or(recipe.throughput_fallback);
-        cur = run_converter(recipe, &cur, tput, capacity_of(recipe.output)).stores;
+        // Web `:throughputs[recipe.id + CONVERTER_OUTPUT_MULT_KEY_SUFFIX] ?? 1`.
+        let out_mult = throughputs
+            .get(&format!(
+                "{}{}",
+                recipe.id, CONVERTER_OUTPUT_MULT_KEY_SUFFIX
+            ))
+            .copied()
+            .unwrap_or(1.0);
+        cur = run_converter_with_output_multiplier(
+            recipe,
+            &cur,
+            tput,
+            capacity_of(recipe.output),
+            out_mult,
+        )
+        .stores;
     }
     cur
 }
@@ -293,6 +365,14 @@ pub fn converter_throughputs_for_era(
             recipe.id.to_owned(),
             converter_throughput_for_era(recipe.id, base, era),
         );
+        // Web `converterThroughputsForEra`: mnoznik wyjscia pod kluczem `<id>#outMult` tylko gdy != 1.
+        let m = converter_output_multiplier_for_era(recipe.id, era);
+        if m != 1.0 {
+            out.insert(
+                format!("{}{}", recipe.id, CONVERTER_OUTPUT_MULT_KEY_SUFFIX),
+                m,
+            );
+        }
     }
     out
 }
