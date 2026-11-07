@@ -4,7 +4,6 @@
   "note": "Pliki webu przepięte PORTEM DOM w partii UI-2-C (src/ui/{hud,empireDetailPanel,empireDetailTypes,armyStackHud,unitRecruitCard}.ts) + nowa zależność webu game/work-tax.ts (import main empireDetailPanel.ts:17, brak w pinie edb8fb56). Do odniesienia starszych harnessów (repin-ui2-overlay.mjs).",
   "files": [
     { "src": "gra/src/ui/hud.ts", "sha256": "74495b7b111ff8efea740927191fde75ada629fa296345e162fcdb9334e1e1f0", "bytes": 90402 },
-    { "src": "gra/src/ui/empireDetailPanel.ts", "sha256": "798c7a14d571c3334f02c76a6829476dd47f6bf2df950428d93b67dcaee91b5c", "bytes": 272126 },
     { "src": "gra/src/ui/empireDetailTypes.ts", "sha256": "6dd58ace4864c3b59031ee865c6b947e75a440854c3560a2b8ce1885644fb5d9", "bytes": 36484 },
     { "src": "gra/src/ui/armyStackHud.ts", "sha256": "2f82439dc00f6422e2d573486e441a22cd4fc1aaf62f19b16f2862abc088faed", "bytes": 20050 },
     { "src": "gra/src/ui/unitRecruitCard.ts", "sha256": "e41421c9d7c0ec9cbfec9c1e85a7a194a4472ef406e270d5737a3fac5bc6884d", "bytes": 19354 },

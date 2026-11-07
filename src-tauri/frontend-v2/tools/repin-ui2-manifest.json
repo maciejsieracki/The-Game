@@ -33,18 +33,6 @@
     "note": "Porty DOM/adaptery (NIE kopie bajtowe): repin-ui2-overlay.mjs podmienia w odniesieniu pinu plik webu z origin/main (sha256 = wpis), zeby starsze harnessy porownywaly port z aktualnym webem. preBattle.ts i entityCards/improvementAdapter.ts poza nakladka (importuja reguly game/* nieobecne na pinie albo wymagaja pola DTO) - pokrywa je run-repin-ui2D.mjs.",
     "files": [
       {
-        "path": "src/ui/hexContextTooltip.ts",
-        "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/hexContextTooltip.ts",
-        "sha256": "5dee06e9609616c9c466c39a49ec3bb907daef05b6c5e922d1baa8d559933c44",
-        "bytes": 46038
-      },
-      {
-        "path": "src/ui/buildModeHud.ts",
-        "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/buildModeHud.ts",
-        "sha256": "38290d6a118321d304e416dc8277f853150c67abd8231314ffb95ce7a8fbeca2",
-        "bytes": 53849
-      },
-      {
         "path": "src/ui/entityCards/buildingAdapter.ts",
         "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/entityCards/buildingAdapter.ts",
         "sha256": "d6051da7288efbdd579d55794303ead094eb4642e296feff1ffa60e8f21ee964",

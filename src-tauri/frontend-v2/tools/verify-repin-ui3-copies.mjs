@@ -175,6 +175,38 @@ if (ke) {
   }
   console.log(`verify-repin-ui3-copies: kblocksE adapter=${ke.path} markerów=${ke.markers} bloków_sprawdzonych=${keBlocks}`);
 }
+// PORTDOM (R-RUSTPORT-REPIN-WEB-UI-3-C-Q1, addytywnie): sekcje `portDom*` — porty DOM (NIE kopie): SHA/rozmiar pliku portu
+// = `sha256`/`bytes`; DUP/DISJ jak wyżej (także między sekcjami); źródło weba (git albo `--web-dir`) = `webSha256`/`webBytes`;
+// `overlayDeps` sekcji = źródło weba. Port ≠ web jest dozwolony (treść portu sprawdza harness partii, np. `run-repin-ui3c`).
+let pd = 0;
+let pdWeb = 0;
+for (const [key, sec] of Object.entries(man)) {
+  if (!key.startsWith('portDom') || !sec || !Array.isArray(sec.files)) continue;
+  for (const f of sec.files) {
+    pd++;
+    if (seen.has(f.path)) fail(`DUP ${key} ${f.path}`);
+    seen.add(f.path);
+    if (taken.has(f.path)) fail(`DISJ ${key} ${f.path} także w: ${taken.get(f.path).join(', ')}`);
+    const abs = join(ROOT, f.path);
+    if (!existsSync(abs)) {
+      fail(`BRAK ${key} ${f.path}`);
+      continue;
+    }
+    const buf = readFileSync(abs);
+    if (sha256(buf) !== f.sha256 || buf.length !== f.bytes) fail(`SHA ${key} ${f.path} oczekiwano ${f.sha256}/${f.bytes} jest ${sha256(buf)}/${buf.length}`);
+    const ref = webSrc(f.src);
+    if (!ref) continue;
+    pdWeb++;
+    if (sha256(ref) !== f.webSha256 || ref.length !== f.webBytes) fail(`PORTDOM ${key} ${f.src}: źródło weba ${sha256(ref)}/${ref.length} ≠ manifest ${f.webSha256}/${f.webBytes}`);
+  }
+  for (const d of sec.overlayDeps ?? []) {
+    const ref = webSrc(d.src);
+    if (!ref) continue;
+    deps++;
+    if (sha256(ref) !== d.sha256 || ref.length !== d.bytes) fail(`DEPS ${key} ${d.src} ${sha256(ref)}/${ref.length} ≠ manifest`);
+  }
+}
+if (pd) console.log(`verify-repin-ui3-copies: portDom plików=${pd} źródło_sprawdzone=${pdWeb}`);
 if (!webDir && noGit) console.log('verify-repin-ui3-copies: GIT/ADAPTER NIE_ZMIERZONO (--no-git bez --web-dir)');
 console.log(`verify-repin-ui3-copies: pin=${man.pin.slice(0, 9)} kopii=${copies} źródło_sprawdzone=${gitChecked} adapterów=${man.adapters.length} adapter_sprawdzone=${adChecked} bloków=${blocks} deps=${deps} niezgodnych=${bad}`);
 process.exitCode = bad === 0 ? 0 : 1;

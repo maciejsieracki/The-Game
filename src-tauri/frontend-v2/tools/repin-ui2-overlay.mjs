@@ -161,6 +161,26 @@ if (existsSync(ui3Url)) {
       console.log(`nakładka UI-3 ${f.src} (${buf.length} B)`);
     }
     console.log(`repin-ui2-overlay: UI-3 (R-RUSTPORT-REPIN-WEB-UI-3-Q1) plików=${ui3.files.length + ui3.adapters.length}`);
+    // R-RUSTPORT-REPIN-WEB-UI-3-C-Q1 (addytywnie): sekcje `portDom*` (porty DOM przepięte na web UI-3) — w odniesieniu
+    // wersja weba (`webSha256`) + zależności weba tej rewizji (`overlayDeps` sekcji).
+    for (const [key, sec] of Object.entries(ui3)) {
+      if (!key.startsWith('portDom') || !sec || !Array.isArray(sec.files)) continue;
+      const list = [...sec.files.map((f) => ({ src: f.src, sha256: f.webSha256, bytes: f.webBytes })), ...(sec.overlayDeps ?? [])];
+      for (const f of list) {
+        const buf = readFileSync(join(resolve(web3), f.src));
+        const sha = createHash('sha256').update(buf).digest('hex');
+        if (sha !== f.sha256 || buf.length !== f.bytes) {
+          bad++;
+          console.error(`SHA UI-3 ${key} ${f.src} web=${sha}/${buf.length} manifest=${f.sha256}/${f.bytes}`);
+          continue;
+        }
+        const dst = join(resolve(out), f.src);
+        mkdirSync(dirname(dst), { recursive: true });
+        writeFileSync(dst, buf);
+        console.log(`nakładka UI-3 ${key} ${f.src} (${buf.length} B)`);
+      }
+      console.log(`repin-ui2-overlay: UI-3 ${key} plików=${sec.files.length} deps=${(sec.overlayDeps ?? []).length}`);
+    }
   }
 }
 console.log(`repin-ui2-overlay: plików=${entries.length} portów=${portFiles} niezgodnych=${bad} out=${out}`);

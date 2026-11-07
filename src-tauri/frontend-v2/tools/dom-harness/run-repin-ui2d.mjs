@@ -659,7 +659,12 @@ try {
     results.push({ key, n: w.length, distinct, diffs: d, coverOk, first });
   }
   const allWeb = Object.values(web.out).flat().map((x) => (typeof x === 'string' ? x : JSON.stringify(x))).join('\n');
-  const missing = MARKERS.filter((m) => !allWeb.includes(m));
+  // R-RUSTPORT-REPIN-WEB-UI-3-C-Q1: po repinie `buildModeHud.ts` na web 9b019a7d8 (odniesienie `WEB86U3`) przycisk „Wyłącz filtr”
+  // usunięto (R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1) — znacznik jego callbacku NIE_DOTYCZY, gdy web go nie ma (jawnie w logu).
+  const bmWebSrc = readFileSync(join(WEB_SRC, 'ui/buildModeHud.ts'), 'utf8');
+  const notApplicable = bmWebSrc.includes('data-ulepszenia-unspent-disable-filter') ? [] : ['LOG:onUnspentBudgetDisableFilter'];
+  if (notApplicable.length) console.log(`MARKERS NIE_DOTYCZY (web bez „Wyłącz filtr”, UI-3-C): ${notApplicable.join(' | ')}`);
+  const missing = MARKERS.filter((m) => !notApplicable.includes(m) && !allWeb.includes(m));
   const hexWeb = web.out.hex.join('\n');
   const stillThere = GONE.filter((g) => hexWeb.includes(g));
   diffs += missing.length + stillThere.length;

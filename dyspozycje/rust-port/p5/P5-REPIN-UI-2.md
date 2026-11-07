@@ -873,4 +873,48 @@ git archive 9b019a7d89090c7491a4c2ad75278a7a60d42a90 gra/src gra/data | tar -x -
 node tools/dom-harness/run-repin-ui3e.mjs --web-dir "$WEB3" [--out fixtura.json] [--png-dir "$PNG"] [--tmp-dir "$T"]
 node tools/dom-harness/mutate-repin-ui3e.mjs --web-dir "$WEB3" [--only M1,M2] [--tmp-dir "$T"]   # ok. 4 min
 node tools/dom-harness/verify-repin-ui3e-fixture.mjs --web-dir "$WEB3B" [--tmp-dir "$T"]
+### 11.6 Partia UI-3-C — `R-RUSTPORT-REPIN-WEB-UI-3-C-Q1` (runda 1): `empireDetailPanel`, `hexContextTooltip`, `buildModeHud`
+
+Baza `rust-port/parity-v2` `dde5e9034`; web `9b019a7d8`. Klasa: **PD** (port DOM; importy `game/*`, `map/*` w porcie niedozwolone).
+Metoda: `diff3 -m port(dde5e9034) web86d510c66 web9b019a7d8` (konflikty: 1 / 5 / 1 — wyłącznie bloki importów i logiki już
+przeniesionej do DTO; rozstrzygnięte na korzyść portu), potem dopięcie hunków. Kontrola: zbiór linii odchyłek
+`port↔web` przed i po repinie różni się wyłącznie o opisane niżej adaptacje.
+
+| Plik | +/− web | Port (sha256 / B) | Web 9b (sha256 / B) | Hunki przeniesione |
+|---|---|---|---|---|
+| `empireDetailPanel` | +72/−25 | `79c7e4b981af…` / 278129 | `e99cd3256c0c…` / 275368 | suwaki do środka uchwytu (`sliderRangePct`/`sliderThumbCenterCss`/`sliderFillGradient`, poprawka `style.background`), `grossNetSub` (Nauka/Spichlerz/Surowce/Handel), `formatManpowerCompact`, mnożnik epoki w stopce |
+| `hexContextTooltip` | +85/−75 | `97d6ed90367a…` / 40081 | `7d484174ba7e…` / 47674 | pasek „Zaznacz do rozwiązania” + `picked`, `sortArmyStackGeneralsFirst`/`armyStackCardLabel`, CSS; filtr odblokowań; deduplikacja surowców |
+| `buildModeHud` | +23/−88 | `ae99dbde131e…` / 51483 | `80abf00fb678…` / 50321 | hak `isAutoBuildEnabled` + podpowiedź; usunięte przełączniki „Tylko pola z obywatelami”/„Wolno wycinać las”/„Wyłącz filtr”; tekst „Budżet niewydany”; etykieta efektu |
+
+ZAŁOŻENIA:
+- **U3C-Z1** `unlockLabelsBeyondProduction(imp)` działa na DTO wiersza (`HexImprovementLineDto.unlockLabels`/`.magazyn` — te same
+  wartości, które web liczy `labelsForImprovementUnlock`/`territoryResourceYieldForImprovement`); filtr bez zmian.
+- **U3C-Z2** deduplikację linii surowców (web: wewnątrz `collectResourceLabels` → w v2 Rust, `resourceLabels`) port stosuje do listy z
+  Rust (linie web `:334-346` bajtowo). Filtr jest idempotentny i na liście po starym filtrze daje wynik filtra na liście surowej —
+  harness porównuje port z webem dla OBU wariantów „Rust” + 10 list syntetycznych (ł/l, diakrytyki, prefiks, „Las (drewno)”).
+- **U3C-Z3** `economy.surowceBrutto/surowceNetto` (`HudState` web 9b) — `hud.ts` przepina partia UI-3-D; do tego czasu typ lokalny
+  `EconomyGrossNetUi3c` (pola opcjonalne; brak = brak wiersza, jak w webie). Po UI-3-D — tożsamy z `HudState`.
+- **U3C-Z4** `AUTO_BUILD_DISABLED_HINT` (`game/auto-build-gate.ts:48`) i `TEREN_LABEL` (= `TEREN_LABEL_PL` z `map/terrain-names.ts`)
+  — kopie lokalne; harness sprawdza równość z webem. Hak `isAutoBuildEnabled` gotowy w UI, kontroler v2 go nie podpina (P6).
+- **U3C-Z5** reguły „Rust” (nie UI): możliwe ulepszenia wg `hexHasHorseDeposit` (złoże `konie`) i `isHexNearRiver`, „żywność tylko
+  przy obywatelach” — po stronie `rust-port/**` (poza allowlistą); harness gra „Rust” regułą 9b. Odniesienie partii: `WEB86U3`
+  (web 86d + pliki UI-3); na pełnym `git archive 9b019a7d8` 4 różnice w `emp` pochodzą WYŁĄCZNIE z `empireDetailTypes.ts`
+  (partia UI-3-B; zmierzone: z `empireDetailTypes` 86d → 0).
+- **U3C-Z6** wpisy przeniesione: `repin-ui2-manifest.json` `overlayPortsUI2D` −2 (`hexContextTooltip`, `buildModeHud`),
+  `repin-ui2-overlay-ports/ui2c.json` −1 (`empireDetailPanel`). Nowa sekcja `repin-ui3-manifest.json` `portDomUI3C` (`files` + własne
+  `overlayDeps`: `auto-build-gate`, `terrain-names`, `manpower`, `terrain-improvements`, `improvement-build`, `freshwater`,
+  `fort-territory` z 9b — kaskada zmierzona bundlem pinu); `repin-ui2-overlay.mjs` i `verify-repin-ui3-copies.mjs` czytają `portDom*`
+  (PORTDOM: SHA portu, sha źródła weba, DISJ, DEPS). `run-cycles.mjs`: `riverMap.hexes = {}` (web 9b `isHexNearRiver` czyta
+  `map.hexes`); `run-repin-ui2d.mjs`: znacznik „Wyłącz filtr” = NIE_DOTYCZY, gdy web go nie ma.
+
+Testy r1 (Chromium 141 headless, Playwright `/opt/node-tools`): `run-repin-ui3c.mjs --web-dir $WEB86U3` — 696 przypadków (hex 282 ×2
+warianty, unit 16, bm 72, emp 43), 12 PNG (1280×720, 360×640; każda scena na świeżej stronie) web = port, MARKERS 19/19, GONE 0,
+asercji 14/14, pageerror+console.error 0, różnic 0. Fixtura `fixtures/repin_ui3c-web-vectors.json`; niezależny weryfikator: drugi
+`git archive` (`origin/main`=`9b019a7d8`, `86d510c66`) → nowa nakładka → fixtura bajtowo identyczna. `mutate-repin-ui3c.mjs` 39/39
+(2 przeżyły w 1. przebiegu: `ł→l` i „brak haka” — dodano listy syntetyczne i wartownik `__none__`, zmierzone ponownie).
+
+```bash
+node tools/repin-ui2-overlay.mjs --pin-dir "$WEB86" --web-dir "$WEB86" --web3-dir "$WEB3" --out "$WEB86U3"
+node tools/dom-harness/run-repin-ui3c.mjs --web-dir "$WEB86U3" [--out fixtura.json] [--png-dir "$PNG"]
+node tools/dom-harness/mutate-repin-ui3c.mjs --web-dir "$WEB86U3" --from 0 --to 13   # 13–26, 26–39
 ```
