@@ -133,25 +133,67 @@ grp1.traverse((o) => {
   }
 });
 assert(geos.size > 0 && mats.size > 0, `model ma wlasne zasoby (geos=${geos.size}, mats=${mats.size})`);
-eq((grp1.userData.perCityGeos || []).length, geos.size, 'userData.perCityGeos zarejestrowane dla modelu (galaz roblox)');
-eq((grp1.userData.mats || []).length, mats.size, 'userData.mats zarejestrowane dla modelu');
-let geoDisp = 0, matDisp = 0;
-geos.forEach((g) => g.addEventListener('dispose', () => geoDisp++));
-mats.forEach((m) => m.addEventListener('dispose', () => matDisp++));
+// FALA 526/R-WEB-MEMORY-STATIC-FOOTPRINT-Q1 + SHARED-MATERIALS: geometrie i materialy modeli miast sa w puli
+// z licznikiem odwolan (CityRenderer.geoPool/matPool). Regula: zasob WSPOLNY nie jest dispose'owany przy
+// zdjeciu jednej instancji, tylko po OSTATNIM odwolaniu; niewspolny - od razu. Kontrakt anty-wyciekowy:
+// (a) rejestr userData pokrywa zasoby modelu (tablice moga zawierac duplikaty kanonicznych geometrii),
+// (b) po przebudowie kazdy zasob starego modelu jest albo zwolniony, albo nadal uzywany przez nowy model,
+// (c) po zdjeciu miasta zwolnione sa WSZYSTKIE zasoby (pula pusta), (d) wielokrotne cykle nie kumuluja zasobow.
+const regGeos = new Set(grp1.userData.perCityGeos || []);
+const regMats = new Set(grp1.userData.mats || []);
+assert([...geos].every((g) => regGeos.has(g)), 'userData.perCityGeos rejestruje KAZDA geometrie modelu (galaz roblox)');
+assert([...mats].every((m) => regMats.has(m)), 'userData.mats rejestruje KAZDY material modelu');
+const geoDisposed = new Set(), matDisposed = new Set();
+geos.forEach((g) => g.addEventListener('dispose', () => geoDisposed.add(g)));
+mats.forEach((m) => m.addEventListener('dispose', () => matDisposed.add(m)));
 let rebuilt = false;
 for (const pop of [6, 12, 20, 30, 45, 60, 80]) {
   c[0].population = pop; cr2.sync(c, opts);
   if (findGroup() !== grp1) { rebuilt = true; break; }
 }
 assert(rebuilt, 'wzrost populacji spowodowal przebudowe modelu (nowa grupa w scenie)');
-eq(geoDisp, geos.size, 'WSZYSTKIE geometrie starego modelu zwolnione (dispose)');
-eq(matDisp, mats.size, 'WSZYSTKIE materialy starego modelu zwolnione (dispose)');
-eq(scene2.children.includes(grp1), false, 'stary model zdjety ze sceny');
 const grp2 = findGroup();
+const geos2 = new Set(), mats2 = new Set();
+grp2.traverse((o) => {
+  if (o.isMesh) {
+    geos2.add(o.geometry);
+    (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => mats2.add(m));
+  }
+});
+assert([...geos].every((g) => geoDisposed.has(g) || geos2.has(g)), 'po przebudowie: kazda geometria starego modelu zwolniona ALBO wspolna z nowym modelem (brak osieroconych)');
+assert([...mats].every((m) => matDisposed.has(m) || mats2.has(m)), 'po przebudowie: kazdy material starego modelu zwolniony ALBO wspolny z nowym modelem (brak osieroconych)');
+assert([...geos].every((g) => !(geos2.has(g) && geoDisposed.has(g))), 'wspolna geometria NIE zostala zwolniona, gdy nowy model jeszcze jej uzywa');
+eq(scene2.children.includes(grp1), false, 'stary model zdjety ze sceny');
 let newDisposed = false;
 grp2.traverse((o) => { if (o.isMesh) o.geometry.addEventListener('dispose', () => { newDisposed = true; }); });
 cr2.sync(c, opts);
 eq(newDisposed, false, 'nowy model NIE jest zwalniany przy kolejnym sync bez zmiany klucza');
+// (c) zdjecie miasta: zwolnione WSZYSTKIE zasoby obu modeli, pula pusta.
+geos2.forEach((g) => g.addEventListener('dispose', () => geoDisposed.add(g)));
+mats2.forEach((m) => m.addEventListener('dispose', () => matDisposed.add(m)));
+cr2.sync([], opts);
+assert([...geos, ...geos2].every((g) => geoDisposed.has(g)), 'po zdjeciu miasta: WSZYSTKIE geometrie obu modeli zwolnione (dispose)');
+assert([...mats, ...mats2].every((m) => matDisposed.has(m)), 'po zdjeciu miasta: WSZYSTKIE materialy obu modeli zwolnione (dispose)');
+eq(cr2.geoPool.stats().shared, 0, 'po zdjeciu miasta: pula geometrii pusta');
+eq(cr2.geoPool.stats().refs, 0, 'po zdjeciu miasta: zero odwolan do geometrii w puli');
+// (d) cykle: 12 miast x 4 cykle (wzrost + zdjecie) -- liczba zywych (niezwolnionych) zasobow po cyklu = 0, w trakcie stala.
+const seenG = new Set(), seenM = new Set(), dG = new Set(), dM = new Set();
+const track = () => scene2.children.filter((o) => o.type === 'Group').forEach((gr) => gr.traverse((o) => {
+  if (!o.isMesh) return;
+  if (!seenG.has(o.geometry)) { seenG.add(o.geometry); const g0 = o.geometry; g0.addEventListener('dispose', () => dG.add(g0)); }
+  (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => { if (!seenM.has(m)) { seenM.add(m); m.addEventListener('dispose', () => dM.add(m)); } });
+}));
+const liveG = () => [...seenG].filter((g) => !dG.has(g)).length;
+const midLive = [];
+for (let cyc = 0; cyc < 4; cyc++) {
+  const many = Array.from({ length: 12 }, (_, i) => ({ id: 'k' + i, ownerId: i % 4, q: i * 3, r: 0, name: 'K' + i, population: 2 }));
+  for (const pop of [2, 6, 12, 20, 30, 45]) { many.forEach((x) => { x.population = pop; }); cr2.sync(many, opts); track(); }
+  midLive.push(liveG());
+  cr2.sync([], opts);
+  eq(liveG(), 0, `cykl ${cyc}: po zdjeciu wszystkich miast zero zywych geometrii (brak wycieku)`);
+  eq([...seenM].filter((m) => !dM.has(m)).length, 0, `cykl ${cyc}: po zdjeciu wszystkich miast zero zywych materialow (brak wycieku)`);
+}
+assert(midLive.every((v) => v === midLive[0]), `liczba zywych geometrii w trakcie cyklu stala miedzy cyklami (${midLive.join(',')})`);
 
 // --- [4] M3 ---------------------------------------------------------------------------
 console.log('\n[4] M3 straznica statyczna battleScene.ts (NIE jest dowodem runtime)');
