@@ -8873,3 +8873,9 @@ R-WEB-ARMY-STACK-LIMIT-Q1 — PASS-WITH-NOTES (decyzja właściciela: armia nie 
 
 ### FALA 541 (2026-11-07, ROBOCZA 4a51cf05, main 7bb0695aa)
 R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1 — PASS-WITH-NOTES (wariant B właściciela): cud świata należy do cywilizacji kontrolującej terytorium jego hexa; zmiana właściciela (podbój, odbicie, kapitulacja głodowa, cesja, aneksja miasta-państwa, rewolta, zdobycie fortu) przenosi cud z bonusami; komunikaty „Zdobyto/Utracono cud". Test 32/0. Decyzje ABC właściciela po wdrożeniu: cud NIE przechodzi na rebeliantów/barbarzyńców (zostaje u ostatniej cywilizacji), założenie miasta przenosi cud, bonusy ekskluzywne działają u zdobywcy → R-WEB-WONDER-TRANSFER-FOLLOWUP-Q1 (w toku). Otwarte: migracja niespójnych zapisów (cud ≠ właściciel terytorium) — nie wykonana.
+
+### FALA 542 (2026-11-07, ROBOCZA c7479096, main 82fb8a0f0)
+R-WEB-ERA-WAR-LIVE-VERIFY-Q1 — PASS-WITH-NOTES (runda 2): testy live w Chromium potwierdzają wybuch wojny epoki w Brązie (12/0, bez kontaktu 14/0) i Żelazie (13/0) po 1 turze od progu, wpis w dzienniku + karta Wydarzeń. Przyczyna czerwonych testów: hooki testowe bez `playerEpochWarEnabled` (dług testowy, nie błąd gry). Poprawka wczytania zapisu: brak pola `playerEpochWarEnabled` = true (wcześniej gracz po wczytaniu starego zapisu wypadał z puli wojen epoki). Dowód Żelaza inscenizowany (hook ustawia epokę 3).
+
+### FALA 543 (2026-11-07, ROBOCZA po finalize, main — patrz WERSJE.md)
+R-WEB-WONDER-TRANSFER-FOLLOWUP-Q1 — PASS-WITH-NOTES: cud nie przechodzi na rebeliantów/barbarzyńców (zostaje u ostatniej cywilizacji, odbicie przenosi na odbijającego), założenie miasta przenosi cud, bonusy ekskluzywne u zdobywcy. Test 43/0. Otwarte: niespójne zapisy (cud ≠ właściciel terytorium) pomijane; finalizeCityFounding pokryte strukturalnie.
