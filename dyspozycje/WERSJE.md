@@ -1,3 +1,9 @@
+## ROBOCZA 35e9ec5a -- 2026-11-06 -- FALA 543: cud: rebelianci/barbarzyńcy go nie posiadają, założenie miasta przenosi cud (testowa)
+
+- cud nie przechodzi na frakcje niecywilizacyjne (rebelianci -99, barbarzyńcy -1): zostaje przy ostatniej cywilizacji, po odbiciu przechodzi na odbijającą cywilizację; założenie miasta (finalizeCityFounding) na terytorium z cudem przenosi cud; bonusy ekskluzywne działają u zdobywcy (po ownerId)
+- Weryfikacja: wonder-transfer-on-conquest 43/0 (mutacje łamią), logic-test 213/213, tsc 0, ai-test jak baza; FC PASS-WITH-NOTES
+- Limity: założenie miasta pokryte logiką i kontrolą strukturalną (nie uruchomienie finalizeCityFounding); niespójne zapisy (cud ≠ właściciel terytorium) nadal pomijane; brak weryfikacji w przeglądarce
+
 ## ROBOCZA c7479096 -- 2026-11-06 -- FALA 542: wojny epoki Brąz/Żelazo: weryfikacja na żywo + stare zapisy (testowa)
 
 - testy live w Chromium: wojna epoki wybucha w Brązie i Żelazie po 1 turze od progu (wpis w dzienniku i karta Wydarzeń); hooki testowe ustawiają playerEpochWarEnabled; wczytanie zapisu bez pola playerEpochWarEnabled = true (gracz nie wypada z puli wojen epoki), jawny false zostaje
