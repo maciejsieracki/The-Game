@@ -80,7 +80,15 @@ const mkCopy = (name) => {
   cpSync(join(ROOT, 'tools/repin-ui2-overlay-ports'), join(dir, 'tools/repin-ui2-overlay-ports'), { recursive: true });
   return dir;
 };
-const runVerify = (dir) => spawnSync(process.execPath, [join(dir, 'tools/verify-repin-ui3-copies.mjs'), '--web-dir', resolve(webDir)], { cwd: dir, encoding: 'utf8', timeout: 120000 });
+// R-RUSTPORT-REPIN-WEB-UI-3-INTEGRACJA-Q1: po scaleniu z UI-3-B weryfikator wymaga historii git (bramka WEB/DELTA
+// portDomUI3B: brak historii = błąd, obrona UI-3-B N3). Kopia robocza nie jest repozytorium — `git show <rev>:<ścieżka>`
+// czyta obiekty prawdziwego repo przez GIT_DIR (tylko odczyt; drzewo robocze = kopia z wstrzykniętym naruszeniem).
+const GIT_DIR = spawnSync('git', ['rev-parse', '--absolute-git-dir'], { cwd: ROOT, encoding: 'utf8' }).stdout?.trim();
+if (!GIT_DIR) {
+  console.error('selftest-verify-repin-ui3d: brak repozytorium git dla ROOT (wymagane przez bramkę WEB/DELTA UI-3-B)');
+  process.exit(2);
+}
+const runVerify = (dir) => spawnSync(process.execPath, [join(dir, 'tools/verify-repin-ui3-copies.mjs'), '--web-dir', resolve(webDir)], { cwd: dir, encoding: 'utf8', timeout: 120000, env: { ...process.env, GIT_DIR } });
 
 let code = 0;
 try {
