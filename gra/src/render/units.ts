@@ -64,6 +64,7 @@ import type { UnitOwnerEmblemResolver } from './unitOwnerEmblem';
 // Zasoby to singletony modułu; NIC nie trafia do userData['mats'].
 import { applyUnitStatPlate } from './unitStatPlate';
 import { SmallPartLod } from './smallPartLod';
+import { mergeUnitStaticParts } from './unitStaticMerge';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
@@ -5758,6 +5759,12 @@ function attachEmbarkBoat(group: THREE.Group): void {
 }
 
 export class UnitRenderer {
+  /**
+   * R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: scalanie statycznych części żetonu przy rejestracji (patrz
+   * unitStaticMerge.ts). Przełącznik wyłącznie dla testów/pomiarów porównawczych (A/B w jednym bundlu).
+   */
+  static staticMerge = true;
+
   private scene: THREE.Scene;
 
   /** R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R3): LOD drobnych części figurek (patrz smallPartLod.ts). */
@@ -6080,6 +6087,11 @@ export class UnitRenderer {
       const ringStance = this.ringStanceForOwner(unit.ownerId);
       // TEMAT #15: jednostka zaokrętowana — token z łódką (przebudowa przy zmianie).
       const embarked = unit.embarked === true;
+      // R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: żeton przyciemniony (okno odroczenia) zostaje NIESCALONY — półprzezroczyste
+      // części muszą sortować się osobno jak dotąd (w jednym meshu zasłaniałyby się wzajemnie inaczej). Po zdjęciu
+      // przyciemnienia żeton jest przebudowywany już ze scaleniem (jedna przebudowa na jednostkę).
+      const dimmed = dimmedUnitIds?.has(unit.id) === true;
+      const wantMerge = UnitRenderer.staticMerge && !dimmed;
 
       if (this.tokens.has(unit.id)) {
         const obj = this.tokens.get(unit.id)!;
@@ -6089,7 +6101,8 @@ export class UnitRenderer {
           obj.userData['typeId'] !== typeId ||
           obj.userData['ringStance'] !== ringStance ||
           obj.userData['ringOwnerId'] !== unit.ownerId ||
-          (obj.userData['embarked'] === true) !== embarked
+          (obj.userData['embarked'] === true) !== embarked ||
+          (obj.userData['staticMerged'] === true) !== wantMerge
         ) {
           this.scene.remove(obj);
           this._disposeToken(unit.id, obj);
@@ -6109,7 +6122,7 @@ export class UnitRenderer {
           group.userData['embarked'] = embarked;
 
           this._attachOwnerRing(group, unit.ownerId);
-          this._registerToken(unit.id, group);
+          this._registerToken(unit.id, group, wantMerge);
           this.scene.add(group);
         } else {
           obj.position.set(x, yBase, z);
@@ -6128,7 +6141,7 @@ export class UnitRenderer {
         group.userData['embarked'] = embarked;
 
         this._attachOwnerRing(group, unit.ownerId);
-        this._registerToken(unit.id, group);
+        this._registerToken(unit.id, group, wantMerge);
         this.scene.add(group);
       }
 
@@ -6137,7 +6150,7 @@ export class UnitRenderer {
       // ownerId; zbiór wypełnia silnik), zaraz po utworzeniu/aktualizacji żetonu,
       // żeby świeżo przebudowany model dostał stan przezroczystości w tej samej
       // klatce, w której powstał (inaczej mignąłby raz pełną widocznością).
-      this._applyDeferredDim(unit.id, dimmedUnitIds?.has(unit.id) === true);
+      this._applyDeferredDim(unit.id, dimmed);
 
       // TABLICZKA JEDNOSTKI nad figurką (R-ZETON-PASKI, Maciej 2026-07-29):
       //
@@ -6807,7 +6820,7 @@ export class UnitRenderer {
    * Register token in tracking maps.
    * Reads group.userData['mats'] and group.userData['perTokenGeos'] set by buildUnitModel.
    */
-  private _registerToken(id: string, group: THREE.Group): void {
+  private _registerToken(id: string, group: THREE.Group, merge = UnitRenderer.staticMerge): void {
     this.lodTokensVersion++;
     this.tokens.set(id, group);
     const mats = (group.userData['mats'] as THREE.Material[] | undefined) ?? [];
@@ -6815,6 +6828,11 @@ export class UnitRenderer {
     this.matPool.poolOwned(group, mats);
     this.tokenMaterials.set(id, mats);
     const geos = (group.userData['perTokenGeos'] as THREE.BufferGeometry[] | undefined) ?? [];
+    group.userData['perTokenGeos'] = geos;
+    // R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: statyczne części o wspólnym materiale → jeden mesh (po puli materiałów,
+    // przed pulą geometrii: scalone geometrie identycznych typów żetonów dzielą jedną instancję).
+    if (merge) mergeUnitStaticParts(group, geos);
+    group.userData['staticMerged'] = merge;
     // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: identyczne geometrie żetonów → jedna wspólna instancja (licznik odwołań).
     this.geoPool.poolOwned(group, geos);
     this.tokenGeos.set(id, geos);
