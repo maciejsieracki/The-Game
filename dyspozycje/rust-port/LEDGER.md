@@ -830,3 +830,6 @@ Zmiana w `gra/src/game/auto-improvements.ts` (eksport `FOOD_IMPROVEMENT_KEYS`, `
 Cegielnia outputAmount 2 + mnożnik wyjścia 1/1,5/2/2,5/3; odlewnie 50 cykli + m(e); Magazyn food-cap bonus 0; Spichlerz Królewski (spichlerz_ii) techUnlock Pismo; NAP wymaga Zaufania ≥30 (+ efektywny próg Relacji z narzutem granicy +20 i flagą agresora +15); siege starvation (siege-starvation.ts, siegeStarveStartMaxHp, 6/8/10% maxHP, poddanie ΣHP<50%); AUTOBUILD wyłączony domyślnie (meta.autoBuildEnabled); Emporion (budynek handlowy); zmęczenie wojną: parametry + karencja po pokoju 40/100; drogi AI MST tylko między miastami (road-network-plan.ts); stack-leader (zwiadowca nie lider); empire-recruit-plan; memo okolica sibling + LOD drobnych części (w toku).
 
 REPIN (web): FALA 527 — vite.config.ts (dane binarne poza JS) dotyczy tylko builda webowego; Rust bez zmian.
+
+## 2026-11-07 — Rust REPIN WEB po FALA 509–532 (web zakończony, dysk 11 GB, 0 aktywnych tematów Rust)
+Uruchomiono równolegle (Opus 5.5 medium, wszystkie etapy): R-RUSTPORT-REPIN-WEB-UI-3-Q1 (gra/src/ui, 23 pliki) i R-RUSTPORT-REPIN-WEB-RENDER-3-Q1 (gra/src/render, 9 plików: pule geometrii/materiałów, scalenie części jednostek, LOD). Baza web: origin/main 9b019a7d8. Priorytet: nowy temat webowy wstrzymuje kolejne rundy Rust.
