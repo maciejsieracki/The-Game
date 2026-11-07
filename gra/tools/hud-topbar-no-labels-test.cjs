@@ -45,8 +45,9 @@ const viteCompat = {
 async function bundle(outJs) {
   const hudTs = path.join(GRA, 'src/ui/hud.ts');
   const entry = path.join(TMP, 'entry.ts');
-  fs.writeFileSync(entry, `import { renderBarD1B, ensureStyles } from ${JSON.stringify(hudTs)};
-(window as any).__r = (s: any) => { ensureStyles(); document.getElementById('r')!.innerHTML = '<div class="civ-hud">' + renderBarD1B(s) + '</div>'; };`);
+  fs.writeFileSync(entry, `import * as __H from ${JSON.stringify(hudTs)};
+const renderBarD1B: any = (__H as any).renderBarD1B, ensureStyles: any = (__H as any).ensureStyles, __fit: any = (__H as any).fitHudTopbar;
+(window as any).__r = (s: any) => { ensureStyles(); document.getElementById('r')!.innerHTML = '<div class="civ-hud">' + renderBarD1B(s) + '</div>'; if (__fit) __fit(document.getElementById('r')!); };`);
   await esbuild.build({
     entryPoints: [entry], bundle: true, platform: 'browser', format: 'iife', outfile: outJs, logLevel: 'silent',
     loader: { '.ts': 'ts', '.json': 'json', '.svg': 'text', '.png': 'dataurl', '.mp3': 'empty', '.css': 'text' }, plugins: [viteCompat],
@@ -74,7 +75,7 @@ const ORDER = ['Skarbiec', 'Praca', 'Spichlerz', 'Handel', 'Nauka', 'Surowce'];
 const WIDTHS = [1280, 1024, 800, 640];
 
 const MEASURE = () => {
-  const out = { cells: {}, banner: null, power: null, texts: '' };
+  const out = { cells: {}, banner: null, power: null, texts: '', tier: (document.querySelector('.civ-hud-banner-left') || { className: '' }).className };
   const shell = document.querySelector('.civ-hud-banner-left .civ-hud-banner-shell');
   const sb = shell.getBoundingClientRect();
   out.banner = { x: sb.x, y: sb.y, w: sb.width, h: sb.height, right: sb.right };
@@ -131,9 +132,12 @@ async function main() {
     ok(ORDER.every((n) => small.cells[n] && /brutto/i.test(small.cells[n].title) && /netto/i.test(small.cells[n].title)), `${w}: N3 tooltip kazdej komorki opisuje BRUTTO i NETTO`);
     for (const st of ["small", "big", "huge", "maxw"]) {
       const m = res[w + '/' + st];
-      const sameLayout = ORDER.every((n) => m.cells[n] && small.cells[n] && m.cells[n].x === small.cells[n].x && m.cells[n].y === small.cells[n].y && m.cells[n].w === small.cells[n].w);
+      // R-WEB-HUD-TOPBAR-LAYOUT-A-Q1: w TYM SAMYM trybie (te same klasy hud-left-*) pozycje x/y/szerokosci identyczne;
+      // przy zmianie trybu (ekstremalne liczby -> pomniejszenie czcionek) wymagane sa te same kolumny (x, szerokosc).
+      const sameTier = m.tier === small.tier;
+      const sameLayout = ORDER.every((n) => m.cells[n] && small.cells[n] && m.cells[n].x === small.cells[n].x && (!sameTier || m.cells[n].y === small.cells[n].y) && m.cells[n].w === small.cells[n].w);
       ok(sameLayout, `${w}/${st}: N4 pozycje i szerokosci komorek IDENTYCZNE jak dla malych liczb`, ORDER.map((n) => m.cells[n] && [m.cells[n].x, m.cells[n].y, m.cells[n].w]));
-      ok(Math.abs(m.banner.h - small.banner.h) < 0.5, `${w}/${st}: N4 wysokosc banera stala`, [m.banner.h, small.banner.h]);
+      ok(!sameTier || Math.abs(m.banner.h - small.banner.h) < 0.5, `${w}/${st}: N4 wysokosc banera stala (w tym samym trybie)`, [m.banner.h, small.banner.h, m.tier, small.tier]);
       const clipped = ORDER.filter((n) => m.cells[n] && m.cells[n].over.length > 0);
       ok(clipped.length === 0, `${w}/${st}: N5 zero przycinania/przepelnienia w komorkach`, clipped.map((n) => [n, m.cells[n].over]));
       const overlap = ORDER.filter((n) => m.cells[n] && m.cells[n].right > m.cells[n].x + m.cells[n].w + 0.5);
