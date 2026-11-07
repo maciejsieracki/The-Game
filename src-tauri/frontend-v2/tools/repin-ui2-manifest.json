@@ -59,13 +59,6 @@
       "sha256": "7f4608d59da64176fb77869b88f0fd3ab6449bee9def0238616c772385fea3cd",
       "bytes": 8544,
       "note": "port DOM UI-2-B #8 (pole blockedReason)"
-    },
-    {
-      "path": "src/ui/siegeMapPanel.ts",
-      "pin": "86d510c667268880414d693532ca012c9310589e:gra/src/ui/siegeMapPanel.ts",
-      "sha256": "18a2b0ae6e32a5189e0a71283a5d1eea5f0bbd636141fd733f202079bf226f9b",
-      "bytes": 17415,
-      "note": "port DOM UI-2-B #9 (DTO milicjaRegen, bez \"~\")"
     }
   ],
   "portDomRefsNote": "Pliki portu DOM (NIE kopie bajtowe): w drzewie frontend-v2 różnią się od weba (DTO zamiast importów game/*). Wpis = wersja weba, którą nakładka repin-ui2-overlay.mjs wstawia do odniesienia pinu starszych harnessów; verify-repin-ui2-copies sprawdza tylko sha256 źródła weba (nie pliku portu) i rozłączność z pin-manifest.json.",

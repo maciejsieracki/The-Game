@@ -23,17 +23,21 @@ import {
 import { formatJednostkiCount } from './formatPl';
 import { unitIconSvg } from './icons/brandAssets';
 
+import type { ArmyCommanderTitle } from './armyStackLabel';
+
 export interface ArmyStackCard {
   id: string;
   name: string;
   /** Leader role shown in the map roster; `name` remains its real unit type. */
-  commanderTitle?: 'Wódz' | 'Generał';
+  commanderTitle?: ArmyCommanderTitle;
   icon: string;
   hp: number;
   hpMax: number;
   ruchLeft: number;
   ruchMax: number;
   active: boolean;
+  /** Zaznaczona do zbiorowego rozwiązania (wielokrotne zaznaczanie w panelu armii). */
+  picked?: boolean;
 }
 
 /**

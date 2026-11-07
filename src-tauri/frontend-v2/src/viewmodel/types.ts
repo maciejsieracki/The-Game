@@ -1631,6 +1631,12 @@ export interface SiegePanelDto {
    * Milicji po jej całkowitym zniszczeniu (0/brak = brak okresu odnowy). Producent po stronie Rust = P6 (pole opcjonalne).
    */
   milicjaRegen?: number;
+  /**
+   * REPIN UI-3-B (web `9b019a7d8`, `gra/src/ui/siegeMapPanel.ts:222` `starveFracProvider()`, R-WEB-SIEGE-STARVATION-SURRENDER-Q1):
+   * ułamek maxHP tracony przez garnizon na turę głodu (zależny od trudności). Czytany tylko w etapie głodu (`food <= 0`)
+   * przy `garnizon > 0`. Producent po stronie Rust = P6 (pole opcjonalne; brak = 0 = web bez podpiętego providera).
+   */
+  starveFrac?: number;
   /** Bramka komendy szturmu/kolejki machin — UI nie decyduje (P5-0 §6.12). */
   playerCanStorm: boolean;
   machines: SiegeMachinesStateDto;

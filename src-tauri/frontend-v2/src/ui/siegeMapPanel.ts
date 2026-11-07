@@ -218,7 +218,15 @@ function attachKeyboard(cityId: string): void {
 function render(): void {
   if (!root || !activeCtx || !activePanel || !actions) return;
   const { city, atakujacy } = activeCtx;
-  const { food, garnizon, zuzycie, atrycjaNext, milicjaEst, playerCanStorm } = activePanel;
+  const { food, garnizon, zuzycie, milicjaEst, playerCanStorm } = activePanel;
+  // R-WEB-SIEGE-STARVATION-SURRENDER-Q1: atrycja HP garnizonu dziala WYLACZNIE w etapie glodu (zapasy = 0).
+  // REPIN UI-3-B (web `9b019a7d8` `:220-225`): ulamek maxHP na ture glodu z DTO (`SiegePanelDto.starveFrac`, producent Rust = P6;
+  // brak pola = 0 jak web bez podpietego `setSiegePanelStarveFracProvider`). `SiegePanelDto.atrycjaNext` (formula sprzed FALI) nieczytane.
+  const hungerStage = food <= 0;
+  const starveFrac = hungerStage && garnizon > 0 ? (activePanel.starveFrac ?? 0) : 0;
+  const atrycjaLabel = hungerStage
+    ? (garnizon > 0 && starveFrac > 0 ? '−' + Math.round(starveFrac * 100) + '% HP/turę (głód)' : 'brak garnizonu')
+    : 'brak (zapasy)';
   // REPIN UI-2-B (web `86d510c66` `:221+4`, `4c8f4a2e7`): okres odnowy po zniszczeniu Milicji — liczba tur z DTO
   // (`SiegePanelDto.milicjaRegen`, producent Rust = P6; brak pola = 0 jak web bez podpiętego `militiaRegenLeft`).
   const milicjaRegen = Math.max(0, activePanel.milicjaRegen ?? 0);
@@ -265,7 +273,7 @@ function render(): void {
         '<div>Zapasy: <b>' + food + '</b></div>' +
         '<div>Zużycie/turę: <b>' + zuzycie + '</b></div>' +
         '<div>Oblegających: <b>' + besiegerUnitCount + '</b></div>' +
-        '<div>Atrycja: <b>−' + atrycjaNext + '</b>/turę</div>' +
+        '<div>Atrycja: <b>' + atrycjaLabel + '</b></div>' +
         (milicjaEst > 0
           ? '<div class="full">Milicja przy szturmie: <b>' + milicjaEst + '</b></div>'
           : milicjaRegen > 0
