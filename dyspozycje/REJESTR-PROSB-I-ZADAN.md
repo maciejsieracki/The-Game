@@ -8855,3 +8855,9 @@ R-WEB-HUD-TOPBAR-LAYOUT-A-Q1 — PASS-WITH-NOTES (decyzja właściciela: układ 
 
 ### FALA 535 (2026-11-07, ROBOCZA 2ba866b0, main ca96af987)
 R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1 — PASS-WITH-NOTES: jednostki spoza limitu pola bitwy (120/stronę) znikały po bitwie ręcznej (main.ts ~31814 i mapFieldBattle.ts nie przekazywały `battleEventLog`, więc `applyManualSurvivors` kasował niewystawione). Naprawa: przekazanie logu, weterani tylko dla walczących, komunikat o rezerwie przed bitwą; limit 120 bez zmian. Testy: battle-undeployed-units 35/0, logic-test 213/213, tsc 0. Do decyzji właściciela: `wipeDefenderOnCityCenter` usuwa całą załogę (też rezerwę) przy zdobyciu miasta. Utraconych jednostek nie da się odzyskać z zapisów. Zlecone dalej: R-WEB-BATTLE-CAP-500-Q1, R-WEB-ERA-WAR-BRONZE-IRON-REENABLE-Q1, R-WEB-DIPLO-CIV-MUSIC-Q1 (czeka na resztę utworów).
+
+### FALA 536 (2026-11-07, ROBOCZA 0bcceb23, main fcaa10300)
+R-WEB-ERA-WAR-BRONZE-IRON-REENABLE-Q1 — PASS-WITH-NOTES: `enabledForcedWarEras` znów `["stone","bronze","iron"]` (wyłączone w 1db3e99b4 bez decyzji właściciela). Testy modułowe zielone (era-war-all-eras 10/0 itd.). NIE_ZMIERZONO: wybuch wojny Brąz/Żelazo w realnej grze → R-WEB-ERA-WAR-LIVE-VERIFY-Q1 (w toku).
+
+### FALA 537 (2026-11-07, ROBOCZA b3bc8539, main 23ecb1709)
+R-WEB-HUD-PANELS-BELOW-BANNER-Q1 — PASS-WITH-NOTES: panele boczne (Miasta/Wojsko, Dyplomacja, Badania+picker, Civpedia) startują pod dolną krawędzią lewego banera (SIDE_PANEL_TOP = var(--civ-hud-toolbar-top,104px)). hud-panels-below-banner 119/0 (mutacja 93/26). Poza zakresem: panel wydarzeń po prawej, minimapLayout, modale.
