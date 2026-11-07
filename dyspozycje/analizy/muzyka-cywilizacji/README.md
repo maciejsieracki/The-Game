@@ -6,3 +6,5 @@ Nazewnictwo: `<civId>/<civId>_przywitanie.mp3` (powitanie), `<civId>/<civId>_neg
 |---|---|---|---|---|
 | Grecy | greeks_przywitanie.mp3 | Gesture at the Threshold | 0:43 | 1,0 MB |
 | Grecy | greeks_negocjacje.mp3 | Before the Treaty | 2:20 | 3,4 MB |
+| Rzymianie | rzymianie_przywitanie.mp3 | The Consul's Welcome | 0:59 | 1,4 MB |
+| Rzymianie | rzymianie_negocjacje.mp3 | A Measure of Authority | 2:30 | 3,6 MB |
