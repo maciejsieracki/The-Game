@@ -1,3 +1,9 @@
+## ROBOCZA 4a51cf05 -- 2026-11-06 -- FALA 541: cud świata przechodzi na zdobywcę z bonusami (testowa)
+
+- cud należy do cywilizacji kontrolującej terytorium jego hexa; zmiana właściciela miasta/hexa (podbój, odbicie, kapitulacja głodowa, cesja, aneksja miasta-państwa, rewolta, zdobycie fortu) przenosi cud i jego bonusy; komunikaty Zdobyto/Utracono cud; moduł wonder-transfer.ts
+- Weryfikacja: wonder-transfer-on-conquest 32/0 (mutacje łamią), logic-test 213/213, tsc 0, ai-test jak baza; FC PASS-WITH-NOTES
+- Limity: obecnie cud trafia też do rebeliantów i barbarzyńców oraz nie przechodzi przy założeniu miasta — decyzje właściciela (cud zostaje u ostatniej cywilizacji; założenie miasta przenosi) w R-WEB-WONDER-TRANSFER-FOLLOWUP-Q1; migracja niespójnych zapisów nie wykonana; weryfikacja w przeglądarce NIE_ZMIERZONO
+
 ## ROBOCZA 1a04d5ec -- 2026-11-06 -- FALA 540: limit armii: żadna armia nie przekracza limitu bitwy (500) (testowa)
 
 - stos jednostek jednego właściciela na heksie (także w mieście) nie może przekroczyć BATTLE_MAX_PER_SIDE=500: bramki narodzin z produkcji i kolejki, zakupu, ruchu gracza i AI, podziału armii, wejścia po poddaniu, nagrody z chatki, bonusu AI; migracja zapisów i siatka na starcie tury (nadwyżka na najbliższe wolne heksy, nic nie jest usuwane)
