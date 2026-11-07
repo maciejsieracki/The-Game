@@ -7,6 +7,14 @@
  * Użycie (z `src-tauri/frontend-v2/`):
  *   node tools/dom-harness/mutate-repin-ui2c.mjs --web-dir <WEB_DIR> [--tmp-dir <dir>] [--from N] [--to M]
  *   → EXIT 0 ⇔ każda mutacja z zakresu wykryta.
+ *   --dry-run: tylko kontrola wzorców (aktywne 1×, wycofane 0×), bez harnessu; EXIT 0 ⇔ wszystkie zgodne.
+ *
+ * Tryb 'wycofana' (R-RUSTPORT-REPIN-WEB-UI-3-D-Q1, ZAŁOŻENIE U3D-Z3 / Evaluator r1 Z1): web `9b019a7d8` usunął kod, w który
+ * celowały H5/H6/H11 (Handel/Skarbiec w `cn()`, zastąpione banerem 3+3). Mutacje te są pomijane (nie liczą się do
+ * „uruchomionych”), a mutator wymaga, by ich wzorzec występował 0× — gdyby kod wrócił, EXIT 2 każe je przywrócić.
+ * Zastępstwo: `mutate-repin-ui3d.mjs` H10/H11/H19–H21 (baner 3+3, Skarbiec brutto/netto, sygnalizacja niedoborów).
+ * Tryb 'przeniesiona' (obrona r1): H4, H12 — wzorzec 1×, lecz harness ui2c na kodzie 9b0 ich nie wykrywa; przeniesione
+ * do `mutate-repin-ui3d.mjs` H23/H24 (wykryte). Po tej zmianie pełny przebieg 1–45 na WEB86U3: EXIT 0.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -29,21 +37,24 @@ const E = 'src/ui/empireDetailPanel.ts';
 const T = 'src/ui/empireDetailTypes.ts';
 const A = 'src/ui/armyStackHud.ts';
 const U = 'src/ui/unitRecruitCard.ts';
-/** [nazwa, plik, przed, po, tryb?] — „przed" musi wystąpić w pliku dokładnie raz; tryb 'tsc' = oczekiwany błąd typów. */
+/** [nazwa, plik, przed, po, tryb?] — „przed" musi wystąpić w pliku dokładnie raz; tryb 'tsc' = oczekiwany błąd typów;
+ *  tryb 'wycofana' = mutacja nieaktualna (wzorzec musi wystąpić 0×), pomijana; tryb 'przeniesiona' = wzorzec nadal 1×,
+ *  ale na kodzie web 9b0 harness ui2c go nie rozróżnia (zmierzone: EXIT=0, różnic=0) — mutacja przeniesiona do
+ *  `mutate-repin-ui3d.mjs` (H23 = H4, H24 = H12), gdzie jest wykrywana; tu pomijana (nie liczy się do „uruchomionych”). */
 const MUTS = [
   // hud.ts
   ['H1 cn(): bez noty exact', H, 'exact: exactCompactNote(value, rate),', "exact: '',"],
   ['H2 cn(): rate pełny signedPl', H, 'rate: formatCompactSigned(rate)', 'rate: signedPl(rate)'],
   ['H3 cn(): value pełny', H, 'value: formatCompactNumber(value),', 'value: String(value),'],
-  ['H4 foodHudValue: nienumeryczny → 0', H, 'return Number.isFinite(n) ? n : undefined;', 'return Number.isFinite(n) ? n : 0;'],
-  ['H5 Handel: value pełny signedPl', H, 'value: formatCompactSigned(s.handelIncome ?? 0),', 'value: signedPl(s.handelIncome ?? 0),'],
-  ['H6 Handel: bez exact', H, 'exact: exactCompactNote(s.handelIncome ?? 0),', ''],
+  ['H4 foodHudValue: nienumeryczny → 0', H, 'return Number.isFinite(n) ? n : undefined;', 'return Number.isFinite(n) ? n : 0;', 'przeniesiona'],
+  ['H5 Handel: value pełny signedPl', H, 'value: formatCompactSigned(s.handelIncome ?? 0),', 'value: signedPl(s.handelIncome ?? 0),', 'wycofana'],
+  ['H6 Handel: bez exact', H, 'exact: exactCompactNote(s.handelIncome ?? 0),', '', 'wycofana'],
   ['H7 rekruci: bez isSafeInteger', H, 'Number.isSafeInteger(s.rekrutEkw) && (s.rekrutEkw ?? 0) > 0', '(s.rekrutEkw ?? 0) > 0'],
   ['H8 rekruci: koszt != null → truthy', H, 'const recruitCostTitle = s.kosztJednostki != null', 'const recruitCostTitle = s.kosztJednostki'],
   ['H9 rekruci: etykieta bez recruitHudLabel', H, '${recruitHudLabel(rekrLabel, s.rekrutEkw)}', '${rekrLabel}'],
   ['H10 Armia: rate z ludnoscRate', H, '...cn(s.armyUnitsOnMap ?? 0, s.rekrutEkw ?? 0),', '...cn(s.armyUnitsOnMap ?? 0, s.ludnoscRate ?? 0),'],
-  ['H11 Skarbiec: rate netto', H, '...cn(s.bogactwo, s.bogactwoWplywyBrutto ?? s.bogactwoRate ?? 0),', '...cn(s.bogactwo, s.bogactwoRate ?? 0),'],
-  ['H12 tytuł rekrutów bez escHtml', H, 'title="${escHtml(recruitTitle)}"', 'title="${recruitTitle}"'],
+  ['H11 Skarbiec: rate netto', H, '...cn(s.bogactwo, s.bogactwoWplywyBrutto ?? s.bogactwoRate ?? 0),', '...cn(s.bogactwo, s.bogactwoRate ?? 0),', 'wycofana'],
+  ['H12 tytuł rekrutów bez escHtml', H, 'title="${escHtml(recruitTitle)}"', 'title="${recruitTitle}"', 'przeniesiona'],
   // empireDetailPanel.ts
   ['E1 formatRawCount: próg >=1000 → >1000', E, 'if (Math.abs(r) >= 1000) return formatCompactNumber(r);', 'if (Math.abs(r) > 1000) return formatCompactNumber(r);'],
   ['E2 taxForWorkAmount: +1', E, 'return Math.floor(safeWork * safeRate);', 'return Math.floor(safeWork * safeRate) + 1;'],
@@ -85,18 +96,42 @@ const MUTS = [
 ];
 const from = Number(argOf('--from') ?? 1);
 const to = Number(argOf('--to') ?? MUTS.length);
+const dryRun = args.includes('--dry-run');
 let missed = 0;
 let ran = 0;
+let retired = 0;
 for (const [idx, [name, rel, before, after, mode]] of MUTS.entries()) {
   if (idx + 1 < from || idx + 1 > to) continue;
-  ran++;
   const file = join(ROOT, rel);
   const orig = readFileSync(file);
   const txt = orig.toString('utf8');
   const count = txt.split(before).length - 1;
+  if (mode === 'wycofana') {
+    if (count !== 0) {
+      console.error(`MUTACJA ${name}: oznaczona jako wycofana, a wzorzec występuje ${count}× w ${rel} (wymagane 0) — przywróć ją`);
+      process.exit(2);
+    }
+    retired++;
+    console.log(`WYCOFANA #${idx + 1} ${name} (wzorzec 0× — kod usunięty przez web 9b019a7d8, U3D-Z3; zastępstwo w mutate-repin-ui3d.mjs)`);
+    continue;
+  }
+  if (mode === 'przeniesiona') {
+    if (count !== 1) {
+      console.error(`MUTACJA ${name}: przeniesiona, a wzorzec występuje ${count}× w ${rel} (wymagane 1)`);
+      process.exit(2);
+    }
+    retired++;
+    console.log(`PRZENIESIONA #${idx + 1} ${name} (harness ui2c nie rozróżnia jej na kodzie web 9b019a7d8; wykrywana w mutate-repin-ui3d.mjs H23/H24)`);
+    continue;
+  }
+  ran++;
   if (count !== 1) {
     console.error(`MUTACJA ${name}: wzorzec występuje ${count}× w ${rel} (wymagane 1)`);
     process.exit(2);
+  }
+  if (dryRun) {
+    console.log(`WZORZEC OK #${idx + 1} ${name}`);
+    continue;
   }
   writeFileSync(file, txt.replace(before, after));
   let r;
@@ -124,5 +159,5 @@ for (const [idx, [name, rel, before, after, mode]] of MUTS.entries()) {
   const where = out.split('\n').filter((l) => / różnice=[1-9]| RÓŻNY/.test(l)).map((l) => l.trim().split(/\s+/)[0] + (l.includes('PIX') ? ':' + l.trim().split(/\s+/)[1] : '')).join(',');
   console.log(`${ok ? 'WYKRYTA ' : 'PRZEŻYŁA'} #${idx + 1} ${name} (EXIT=${r.status}) ${line.replace(/ webVectorsSha256=.*/, '')}${where ? ' [' + where + ']' : ''}`);
 }
-console.log(`mutate-repin-ui2c: zakres=${from}-${to} mutacji=${ran} wykrytych=${ran - missed} przeżyło=${missed} (łącznie zdefiniowanych ${MUTS.length})`);
+console.log(`mutate-repin-ui2c: zakres=${from}-${to} mutacji=${ran}${dryRun ? ' (dry-run: tylko wzorce)' : ''} wykrytych=${dryRun ? 'n/d' : ran - missed} przeżyło=${missed} wycofanych/przeniesionych=${retired} (łącznie zdefiniowanych ${MUTS.length})`);
 process.exitCode = missed === 0 ? 0 : 1;

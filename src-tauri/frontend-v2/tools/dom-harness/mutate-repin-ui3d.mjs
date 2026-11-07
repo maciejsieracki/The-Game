@@ -58,6 +58,11 @@ const MUTS = [
   ['H20 Skarbiec: tytuł bez ostrzeżenia', HU, 'vec', "const short = hudGoldShortage(s) ? ' · ⚠ Zaczyna brakować pieniędzy (czerwony)' : '';", "const short = '';"],
   ['H21 Handel: netto ≠ brutto', HU, 'vec', '      net: formatCompactSigned(handelBrutto),', '      net: formatCompactSigned(-handelBrutto),'],
   ['H22 przycisk Rekrutacja zawsze', HU, 'hud', 'const recruitBtn = (!mapChromeSuppressed && cfg?.onOpenEmpireRecruit)', 'const recruitBtn = (!mapChromeSuppressed)'],
+  // Obrona r1 (Evaluator r1 Z1): przeniesione z `mutate-repin-ui2c.mjs` H4/H12 — na kodzie 9b0 harness ui2c ich nie rozróżnia
+  // (w 9b0 `Number(undefined)`/`0` dają ten sam wynik w jego wektorach, a tytuł rekrutów bierze `rekrFull` z liczby `rekruci`);
+  // tu rozróżniają je `SHORT_CASES` (`zywnoscLabel: 'abc'…`) i wariant `short` (`rekruci: NaN`, `rekruciLabel: 'brak <b>'`).
+  ['H23 foodHudValue: nienumeryczny → 0 (z ui2c H4)', HU, 'vec', 'return Number.isFinite(n) ? n : undefined;', 'return Number.isFinite(n) ? n : 0;'],
+  ['H24 tytuł rekrutów bez escHtml (z ui2c H12)', HU, 'vec', 'title="${escHtml(recruitTitle)}"', 'title="${recruitTitle}"'],
 ];
 if (args.includes('--list')) {
   MUTS.forEach((m, i) => console.log(`#${i} ${m[0]} (${m[1]}, ${m[2]})`));

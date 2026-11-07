@@ -176,6 +176,9 @@ const HUD_VARIANTS = {
 const SHORT_CASES = [];
 for (const b of [-5, 0, 1, 10, 25, 26, 1000]) for (const r of [-6, -5, -1, -0.4, 0, 0.6, 3]) SHORT_CASES.push({ bogactwo: b, bogactwoRate: r, zywnoscLabel: String(b), zywnoscRate: r });
 for (const z of ['abc', '', ' 7 ', 'NaN', '-1']) SHORT_CASES.push({ zywnoscLabel: z, zywnoscRate: -1 });
+// Obrona r1 (Evaluator r1 Z1, ui2c H4 → ui3d H23): nienumeryczny Spichlerz przy skróconym brutto (≥ 1000) — nota „Dokładnie:”
+// rozróżnia `foodHudValue` = undefined (bez liczby zapasu) od 0.
+for (const z of ['abc', 'NaN']) SHORT_CASES.push({ zywnoscLabel: z, zywnoscRate: -1, zywnoscWplywMiast: 1250 });
 SHORT_CASES.push({ glodWojska: true }, { zywnoscKarencjaZaTur: 1 }, { zywnoscMiastNiedokarmionych: 1 }, { surowceNiedoborLabels: [] }, { surowceNiedoborLabels: ['X'] });
 /** Ramka z `mapData().viewport` — po `update()` ta sama ramka = brak przerysowania. */
 const VPD = { x: 0.1, y: 0.1, w: 0.25, h: 0.3 };
