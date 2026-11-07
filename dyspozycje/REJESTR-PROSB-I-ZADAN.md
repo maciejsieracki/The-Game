@@ -8840,3 +8840,6 @@ R-WEB-PERF-ENDTURN-AI-PHASE-Q1 — PASS-WITH-NOTES (R3): JS końca tury mediana 
 
 ### FALA 530 (2026-11-06, ROBOCZA 9c024dcb, main 6a673c838)
 R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1 (wariant A) — PASS-WITH-NOTES: wspólna pula materiałów, obraz 0 px różnicy, unikalne materiały t.50 jednostki 7141→188 / miasta 1747→135, sterta ok. −7…−9 MB (1 przebieg, szum ~3 MB). Wariant B (scalenie statycznych części jednostek) NIE wdrożony → pytanie do właściciela (P-PAMIEC-SCALENIE-CZESCI-JEDNOSTEK-2026-11-06).
+
+### FALA 531 (2026-11-07, ROBOCZA f460a713, main 02fbe7dcf)
+R-WEB-PERF-ENDTURN-RENDER-HUD-Q1 — PASS-WITH-NOTES (R4, kod 3c00d9edb): odroczone przebudowy żetonów jednostek w fazie AI (flush po fazie/bitwie/błędzie/wznowieniu), widoczne żetony odświeżane w klatce postępu. Unia syncUnitsRender+renderLoop+syncStatChips −18,9% (3 końce tury; 1. koniec tury wyraźnie więcej). Decyzja orkiestratora (ECHO): kryterium zawężone do zmierzonego. NIE_ZMIERZONO: live bitwa→wznowienie, zrzut w połowie fazy AI. Dług: ai-city-render-batch-test pada na bazie (linia 70). Osobny kandydat: renderLoop (matrixAutoUpdate statycznych podgrup, ok. −73% updateMatrixWorld).
