@@ -82,8 +82,16 @@ const GUARDS = {
     s => /playerEpochWarEnabled = params\.playerEpochWarEnabled \?\? true;/.test(s.main),
   ],
   loadOldSaveOff: [
-    'main.ts: odczyt — stary zapis (brak pola) = WYLACZONA',
-    s => /playerEpochWarEnabled = \(saved\.meta\?\.playerEpochWarEnabled as boolean \| undefined\) === true;/.test(s.main),
+    'main.ts: odczyt — stary zapis (brak pola) = domyslna nowej gry (true), jawny boolean zachowany; wykonanie realnej linii',
+    s => {
+      const m = /playerEpochWarEnabled = (typeof saved\.meta\?\.playerEpochWarEnabled === 'boolean' \? \(saved\.meta\.playerEpochWarEnabled as boolean\) : true);/.exec(s.main);
+      if (!m) return false;
+      // Wykonanie prawdziwej prawicy przypisania (bez adnotacji TS) dla trzech ksztaltow meta.
+      const expr = m[1].replace(' as boolean', '');
+      const run = (meta) => new Function('saved', 'return ' + expr + ';')({ meta });
+      return run({}) === true && run(undefined) === true && run({ playerEpochWarEnabled: false }) === false
+        && run({ playerEpochWarEnabled: true }) === true;
+    },
   ],
   newGameParam: [
     'newGameFlow.ts: parametr playerEpochWarEnabled z ustawienia player_epoch_war',
@@ -137,7 +145,8 @@ const MUTATIONS = [
   ['odkrycie przy wypowiedzeniu usuniete (mutacja FC r1)', 'main', 'if (isHuman(ownerId) && !isHuman(targetId)) diplomaticallyDiscoveredOwnersSet().add(targetId);', '', 'discoveryOnDeclare'],
   ['zapis opcji bez flagi', 'main', '...(isWarEpochPlayerFirstEnabled() ? { playerEpochWarEnabled } : {}),', '...{ playerEpochWarEnabled },', 'saveMetaFlagged'],
   ['nowa gra domyslnie OFF', 'main', 'playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;', 'playerEpochWarEnabled = params.playerEpochWarEnabled ?? false;', 'startDefaultOn'],
-  ['stary zapis = ON', 'main', 'playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) === true;', 'playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) !== false;', 'loadOldSaveOff'],
+  ['stary zapis = OFF (dawne zachowanie)', 'main', "typeof saved.meta?.playerEpochWarEnabled === 'boolean' ? (saved.meta.playerEpochWarEnabled as boolean) : true;", "typeof saved.meta?.playerEpochWarEnabled === 'boolean' ? (saved.meta.playerEpochWarEnabled as boolean) : false;", 'loadOldSaveOff'],
+  ['jawny false z zapisu ignorowany (zawsze true)', 'main', "typeof saved.meta?.playerEpochWarEnabled === 'boolean' ? (saved.meta.playerEpochWarEnabled as boolean) : true;", "typeof saved.meta?.playerEpochWarEnabled === 'boolean' ? true : true;", 'loadOldSaveOff'],
   ['parametr nowej gry usuniety', 'newgame', "playerEpochWarEnabled: settingValue('player_epoch_war') !== 'Wyłączona',", '', 'newGameParam'],
   ['udział lądu w głównej siatce usunięty', 'newgame', "'landFraction', 'cityStateDifficulty',", "'cityStateDifficulty',", 'newGameRow'],
   ['slot lądu ponownie zajęty przez przełącznik wojny epoki', 'newgame', "'landFraction', 'cityStateDifficulty',", "'player_epoch_war', 'cityStateDifficulty',", 'newGameRow'],
