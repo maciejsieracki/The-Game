@@ -26855,6 +26855,10 @@ async function boot(): Promise<void> {
       getMood: (): string => getMood(),
       setEra: (era: number): void => setEra(era),
       startMusic: (mood?: 'mapa' | 'bitwa'): void => startMusic(mood),
+      /** R-WEB-DIPLO-CIV-MUSIC-Q1 (tylko test live): civId rozmówcy AI + jego podmiana. */
+      stopMusic: (): void => stopMusic(),
+      civKeyOfOwner: (ownerId: number): string => civKeyForOwner(ownerId),
+      setOwnerCivForTest: (ownerId: number, civ: string): void => { _menuCivIdByOwner.set(ownerId, civ); },
     };
 
     // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__musicEraTestDebug`
