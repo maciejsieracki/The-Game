@@ -1,0 +1,157 @@
+{
+  "build": {
+    "reused": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r4/dist-cand-hud",
+    "gitHead": "fc3c631acee22d75c99fc0b1b07dfe67f2b0ea12"
+  },
+  "sections": [
+    "progress"
+  ],
+  "loadavgStart": [
+    4.14,
+    5.37,
+    6.38
+  ],
+  "seeded": {
+    "counts": {
+      "0": 40,
+      "1": 15,
+      "2": 1,
+      "3": 15,
+      "4": 1,
+      "5": 15,
+      "6": 1,
+      "7": 15,
+      "8": 1,
+      "9": 15,
+      "10": 1,
+      "11": 15,
+      "12": 1,
+      "13": 1
+    },
+    "majorAiOwners": [
+      1,
+      3,
+      5,
+      7,
+      9,
+      11
+    ],
+    "cities": 137,
+    "improvements": 180,
+    "buildingsPerCity": [
+      "stolarnia",
+      "spichlerz",
+      "targowisko",
+      "koszary",
+      "biblioteka"
+    ]
+  },
+  "seededUnits": {
+    "seeded": 300,
+    "total": 321
+  },
+  "renderInfo": {
+    "calls": 570,
+    "triangles": 1391524,
+    "points": 0,
+    "lines": 24
+  },
+  "progress": [
+    {
+      "eot": 1,
+      "samples": 90,
+      "samplesWithStaleScene": 2,
+      "staleSamples": [
+        {
+          "t": 5361,
+          "phase": "Tura przeciwników…",
+          "nMismatch": 689,
+          "mismatched": [
+            "Group#2273",
+            "Group#2274",
+            "Group#2275",
+            "Group#2276",
+            "Group#2277",
+            "Group#2278"
+          ]
+        },
+        {
+          "t": 13512,
+          "phase": "Ruchy i decyzje…",
+          "nMismatch": 358,
+          "mismatched": [
+            "Group#2685",
+            "Group#2686",
+            "Group#2687",
+            "territory-border-overlay#2688",
+            "Group#2689",
+            "Group#2690"
+          ]
+        }
+      ]
+    },
+    {
+      "eot": 2,
+      "samples": 88,
+      "samplesWithStaleScene": 4,
+      "staleSamples": [
+        {
+          "t": 2078,
+          "phase": "Dyplomacja i traktaty…",
+          "nMismatch": 92,
+          "mismatched": [
+            "Group#2683",
+            "Group#2684",
+            "Group#2685",
+            "Group#2690",
+            "Group#2691",
+            "Group#2692"
+          ]
+        },
+        {
+          "t": 6355,
+          "phase": "Tura przeciwników…",
+          "nMismatch": 533,
+          "mismatched": [
+            "Group#2486",
+            "Group#2488",
+            "Group#2490",
+            "Group#2492",
+            "Group#2494",
+            "Group#2496"
+          ]
+        },
+        {
+          "t": 9221,
+          "phase": "Ruchy i decyzje…",
+          "nMismatch": 28,
+          "mismatched": [
+            "Group#2793",
+            "Group#2794",
+            "Group#2795",
+            "Group#2796",
+            "Group#2797",
+            "Group#2798"
+          ]
+        },
+        {
+          "t": 13852,
+          "phase": "Ruchy i decyzje…",
+          "nMismatch": 3,
+          "mismatched": [
+            "Group#2648",
+            "Group#2655",
+            "Group#2656"
+          ]
+        }
+      ]
+    }
+  ],
+  "progressSampleCount": 178,
+  "loadavgEnd": [
+    8.11,
+    7.68,
+    7.12
+  ],
+  "errors": []
+}

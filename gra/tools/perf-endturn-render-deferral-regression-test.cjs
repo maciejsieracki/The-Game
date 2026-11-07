@@ -26,8 +26,13 @@ assert.equal((fogBody.match(/if \(fogOn && deferRefreshFogUnitSync\) deferRefres
 assert.equal((fogBody.match(/syncUnitsRender\(/g) || []).length, 2,
   'refreshFog keeps two immediate syncUnitsRender calls: fogOn-without-hook fallback and the no-fog branch');
 
-const setAt = source.indexOf('deferRefreshFogUnitSync = () => aiUnitRenderBatch.markDirty();');
+const setAt = source.indexOf('deferRefreshFogUnitSync = () => {');
 assert(setAt > 0, 'AI phase must install the deferral hook');
+// R4: hak odracza żetony I ustawia flagę widoczności (klatka postępu flushuje żetony, gdy zmiana dotyczy widocznego żetonu).
+const hookBody = source.slice(setAt, source.indexOf('};', setAt) + 2);
+assert(/aiUnitRenderBatch\.markDirty\(\);/.test(hookBody) && /aiUnitVisiblePending = true;/.test(hookBody),
+  'deferral hook must mark the unit batch dirty and set aiUnitVisiblePending');
+assert(source.indexOf('let aiUnitVisiblePending = false;') < setAt, 'aiUnitVisiblePending must be declared before the hook');
 assert.equal(count(/deferRefreshFogUnitSync = \(\) =>/g), 1, 'hook may be installed in exactly one place');
 assert(setAt > source.indexOf('const aiUnitRenderBatch = createDirtyRenderSync('), 'batch must exist before the hook is installed');
 

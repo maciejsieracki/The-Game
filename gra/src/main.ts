@@ -12566,9 +12566,11 @@ async function boot(): Promise<void> {
      * Re-apply fog and unit visibility after any state change.
      * Must NOT be called while gallery is active (gallery drives its own sync).
      */
-    // R-WEB-PERF-ENDTURN-RENDER-HUD-Q1: w fazie AI (ekran przejścia przykrywa mapę) zbiórka wioski przez AI woła
+    // R-WEB-PERF-ENDTURN-RENDER-HUD-Q1: w fazie AI zbiórka wioski przez AI woła
     // refreshFog() -> pełne syncUnitsRender() (~50 ms) po KAŻDEJ wiosce. Gdy faza AI ustawi ten hak, refreshFog tylko
-    // oznacza warstwę żetonów jako brudną (flush na granicy klatki/bitwy/końca fazy); poza fazą AI = null = bez zmian.
+    // oznacza warstwę żetonów jako brudną (flush na granicy bitwy/końca fazy oraz w klatce postępu, gdy hak ustawił
+    // aiUnitVisiblePending, R4); poza fazą AI = null = bez zmian. (R4: wcześniejszy opis „ekran przejścia przykrywa
+    // mapę” był nieprawdziwy -- nakładka przejścia jest przezroczysta w górnej części, patrz turnTransitionOverlay.ts.)
     let deferRefreshFogUnitSync: (() => void) | null = null;
     function refreshFog(opts?: { skipVeteranEducation?: boolean }): void {
       if (galleryOn) return;
@@ -38294,13 +38296,19 @@ async function boot(): Promise<void> {
         // takim ruchu (~37 razy w końcu tury dużej gry). Stan gry (syncAllRuntimeUnitHpState) zostaje
         // natychmiast; odroczone jest wyłącznie przebudowanie warstwy renderu do granicy UI/bitwy/końca fazy.
         const aiUnitRenderBatch = createDirtyRenderSync(() => syncUnitsRender());
-        deferRefreshFogUnitSync = () => aiUnitRenderBatch.markDirty();
         // R3: klatka postępu między właścicielami AI jest PAINTOWANA przy widocznej mapie (nakładka jej nie
-        // zasłania). Odwiedziny miasta przez jednostkę, której token JEST widoczny dla gracza (hex końcowy w
+        // zasłania: `.civ-turn-transition` ma pointer-events:none, a tło jest przezroczyste do 55% wysokości).
+        // Odwiedziny miasta przez jednostkę, której token JEST widoczny dla gracza (hex końcowy w
         // `currentVisible()` przy fogOn; bez mgły zawsze), muszą więc zostać odzwierciedlone w tej klatce --
         // `aiUnitVisiblePending` wymusza flush żetonów. Odwiedziny jednostek niewidocznych (token i tak ukryty
-        // przez mgłę) oraz zmiany z haka refreshFog czekają na granicę bitwy / koniec fazy (zysk R1).
+        // przez mgłę) czekają na granicę bitwy / koniec fazy (zysk R1).
+        // R4: zmiany z haka refreshFog (wioska, obóz, przejęcie miasta, skutki bitwy w fazie AI) też mogą zmienić
+        // widoczny żeton, więc hak ustawia flagę -- klatka postępu wtedy flushuje żetony (najwyżej raz na klatkę).
         let aiUnitVisiblePending = false;
+        deferRefreshFogUnitSync = () => {
+          aiUnitRenderBatch.markDirty();
+          aiUnitVisiblePending = true;
+        };
         const flushAiCityRenderBatch = (withUnits = true): void => {
           if (aiCityRenderBatch.isDirty()) {
             try {
