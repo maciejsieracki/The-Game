@@ -248,7 +248,13 @@ async function main() {
     // UI") pozostaje w pełni wymagane, tylko przez WŁAŚCIWY, aktualny nośnik.
     const toastFinal = await page.evaluate(() => window.__eraTestDebug.getToast());
     assert('toast istnieje w DOM', !!toastFinal, toastFinal);
-    const warLog = await page.evaluate(() => window.__eraTestDebug.getWarEventLogHead());
+    // R-WEB-ERA-WAR-LIVE-VERIFY-Q1: `getWarEventLogHead()` obcina do 3 wpisów, a w turze DOW
+    // kartę `kind:"enemy"` mogą zepchnąć poza okno 3 wpisy `eot-hint-*` (Głód wojska, Wojna epoki,
+    // Wróg atakuje). Czytamy pełny log (max 8) -- asercja bez zmian, tylko szersze okno odczytu.
+    const warLog = await page.evaluate(() => (window.__rebelNotifyTestDebug
+      && typeof window.__rebelNotifyTestDebug.getWarEventLog === 'function')
+      ? window.__rebelNotifyTestDebug.getWarEventLog()
+      : window.__eraTestDebug.getWarEventLogHead());
     assert('warEventLog ma co najmniej 1 wpis po DOW', Array.isArray(warLog) && warLog.length > 0, warLog);
     const warCard = Array.isArray(warLog)
       ? warLog.find((e) => e && e.kind === 'enemy' && /wojn/i.test(String(e.title || '')))

@@ -244,7 +244,13 @@ async function main() {
     // UI") pozostaje w pełni wymagane, tylko przez WŁAŚCIWY, aktualny nośnik.
     const toastFinal = await page.evaluate(() => window.__eraTestDebug.getToast());
     assert('toast istnieje w DOM', !!toastFinal, toastFinal);
-    const warLog = await page.evaluate(() => window.__eraTestDebug.getWarEventLogHead());
+    // R-WEB-ERA-WAR-LIVE-VERIFY-Q1: `getWarEventLogHead()` obcina do 3 wpisów, a w turze DOW kartę
+    // mogą zepchnąć poza okno 3 wpisy `eot-hint-*` (Głód wojska, Wojna epoki, Wróg atakuje). Czytamy
+    // pełny log (max 8) -- asercje bez zmian, tylko szersze okno odczytu.
+    const warLog = await page.evaluate(() => (window.__rebelNotifyTestDebug
+      && typeof window.__rebelNotifyTestDebug.getWarEventLog === 'function')
+      ? window.__rebelNotifyTestDebug.getWarEventLog()
+      : window.__eraTestDebug.getWarEventLogHead());
     assert('warEventLog ma co najmniej 1 wpis po DOW', Array.isArray(warLog) && warLog.length > 0, warLog);
     const warCard = Array.isArray(warLog)
       ? warLog.find((e) => e && e.kind === 'enemy' && /wojn/i.test(String(e.title || '')))
@@ -253,6 +259,18 @@ async function main() {
       'warEventLog zawiera dedykowaną kartę "kind: enemy" z tytułem o wypowiedzeniu wojny (trwały dowód widoczności w UI)',
       !!warCard,
       { warCard, warLog },
+    );
+
+    // R-WEB-ERA-WAR-LIVE-VERIFY-Q1 (FC zarzut 2): dowód, że wybuchła wojna epoki ŻELAZA (a nie zaległa
+    // flaga Brązu): tag powodu w tytule wpisu/karty = „Wojna epoki (Żelazo)", i NIE „(Brąz)"/„(Kamień)".
+    const ironWarEntries = Array.isArray(warLog)
+      ? warLog.filter((e) => e && /Wojna epoki \(/.test(String(e.title || '') + ' ' + String(e.subtitle || '')))
+      : [];
+    const eraTagsSeen = ironWarEntries.map((e) => (/Wojna epoki \(([^)]+)\)/.exec(String(e.title || '') + ' ' + String(e.subtitle || '')) || [])[1]);
+    assert(
+      'powód wojny epoki w dzienniku = "Żelazo" (tag epoki, nie Brąz/Kamień)',
+      eraTagsSeen.length > 0 && eraTagsSeen.every((t) => t === 'Żelazo'),
+      { eraTagsSeen, warLog },
     );
 
     console.log('\n-- F. Konsola czysta --');

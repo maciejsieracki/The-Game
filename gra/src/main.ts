@@ -26167,6 +26167,9 @@ async function boot(): Promise<void> {
         );
         if (!attacker) throw new Error('forceBronzeForcedWarOnPlayer: brak eligible AI ownera w tym świecie');
         const attackerId = attacker.ownerId;
+        // R-WEB-ERA-WAR-LIVE-VERIFY-Q1: jak w forceStoneForcedWarOnPlayer -- sandbox ?playtest=mapa nie przechodzi przez
+        // doStartGame (domyslnie ON), wiec bez tego gracz wypada z puli wojen epoki.
+        playerEpochWarEnabled = true;
         for (const oid of allPowerOwnerIds()) {
           if (oid === attackerId || isBarbarian(oid)) continue;
           const rel = getDiploRelation(attackerId, oid);
@@ -26269,6 +26272,9 @@ async function boot(): Promise<void> {
         );
         if (!attacker) throw new Error('forceBronzeForcedWarOnPlayerNoContact: brak eligible AI ownera w tym świecie');
         const attackerId = attacker.ownerId;
+        // R-WEB-ERA-WAR-LIVE-VERIFY-Q1: jak w forceStoneForcedWarOnPlayer -- sandbox ?playtest=mapa nie przechodzi przez
+        // doStartGame (domyslnie ON), wiec bez tego gracz wypada z puli wojen epoki.
+        playerEpochWarEnabled = true;
         for (const oid of allPowerOwnerIds()) {
           if (oid === attackerId || isBarbarian(oid)) continue;
           const rel = getDiploRelation(attackerId, oid);
@@ -26351,11 +26357,27 @@ async function boot(): Promise<void> {
         );
         if (!attacker) throw new Error('forceIronForcedWarOnPlayer: brak eligible AI ownera w tym świecie');
         const attackerId = attacker.ownerId;
+        // R-WEB-ERA-WAR-LIVE-VERIFY-Q1: jak w forceStoneForcedWarOnPlayer -- sandbox ?playtest=mapa nie przechodzi przez
+        // doStartGame (domyslnie ON), wiec bez tego gracz wypada z puli wojen epoki.
+        playerEpochWarEnabled = true;
         for (const oid of allPowerOwnerIds()) {
           if (oid === attackerId || isBarbarian(oid)) continue;
           const rel = getDiploRelation(attackerId, oid);
           if (rel.status === 'wojna') setDiploRelation(attackerId, oid, { ...rel, status: 'neutralni' });
         }
+        // R-WEB-ERA-WAR-LIVE-VERIFY-Q1 (FC zarzut 2): w pulach parowania Brąz stoi PRZED Żelazem
+        // (`bronzeTriggeredSubjects, stoneTriggeredSubjects, ironTriggeredSubjects`), a napastnik z naturalnej
+        // rozgrywki do tury 39 ma jeszcze pending/cykl Brązu -> wybuchała wojna „Brąz", nie „Żelazo".
+        // Hak ma inscenizować WYŁĄCZNIE Żelazo: zerujemy stan Brązu i Kamienia napastnika.
+        // Samo czyszczenie pending nie wystarcza: napastnik jest naprawdę w epoce 1/2, więc w trakcie tury
+        // `syncOwnerEraFromResearch` (prev 1 -> next 2) ponownie dodaje pending Brązu. Ustawiamy go więc w
+        // epoce Żelaza (start=era=3, jak realny owner po awansie do Żelaza) -- bez ponownego wejścia w Brąz.
+        ownerStartEraByOwner.set(attackerId, 3);
+        ownerEraByOwner.set(attackerId, 3);
+        bronzeForceWarPendingOwners.delete(attackerId);
+        bronzeForceWarCycleOwners.delete(attackerId);
+        stoneForceWarPendingOwners.delete(attackerId);
+        stoneForceWarCycleOwners.delete(attackerId);
         if (isForcedEraWarEnabled('iron')) ironForceWarPendingOwners.add(attackerId); // R-WEB-ERA-WAR-COUNTER-Q1 (flaga epok)
         ironForceWarCycleOwners.delete(attackerId);
         for (const [key, st] of [...ironForceWarActiveByPairKey.entries()]) {
@@ -45148,8 +45170,9 @@ async function boot(): Promise<void> {
       dealsEndTurnGateEnabled = (saved.meta?.dealsEndTurnGate as boolean | undefined) === true;
       // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: stary zapis bez pola = WYŁĄCZONA.
       autoBuildEnabled = autoBuildFromSaveMeta(saved.meta?.autoBuildEnabled);
-      // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): stary zapis bez pola = WYŁĄCZONA.
-      playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) === true;
+      // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2) + R-WEB-ERA-WAR-LIVE-VERIFY-Q1: stary zapis BEZ pola = domyslna
+      // wartosc nowej gry (true, jak `params.playerEpochWarEnabled ?? true`); jawny boolean z zapisu zostaje bez zmian.
+      playerEpochWarEnabled = typeof saved.meta?.playerEpochWarEnabled === 'boolean' ? (saved.meta.playerEpochWarEnabled as boolean) : true;
       rejectedOfferCooldowns = [];
       const savedRejectCooldowns = saved.meta?.rejectedOfferCooldowns as RejectedOfferCooldown[] | undefined;
       if (savedRejectCooldowns?.length) {
