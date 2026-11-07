@@ -1,3 +1,9 @@
+## ROBOCZA ada2690c -- 2026-11-06 -- FALA 534: pasek HUD: układ A lewego banera, prawy baner w jednej linii (testowa)
+
+- lewy baner: żeton w dwóch piętrach, plusy 70% liczby sumarycznej, dopasowanie do szerokości (fitHudTopbar); prawy baner: wszystkie chipy w jednej linii, pod przyciskami, wyrównany do prawej; pasek narzędzi przesuwa się pod wysoki baner
+- Weryfikacja: hud-topbar-layout-a 144/0, tsc, logic-test 213/213, zrzuty 1920/1366/1024; FC PASS-WITH-NOTES
+- Limity: przy 640 px prawy baner może się przewijać poziomo; lewy baner w trybie 2×3 (do 139 px) może być częściowo zasłonięty przez otwarty panel boczny
+
 ## ROBOCZA 09e75c36 -- 2026-11-06 -- FALA 533: wodzowie: limit epoki nie do przekroczenia (kolejka rekrutacji przy zdobyciu miasta) + migracja zapisów (testowa)
 
 - generals.ts/main.ts: bramka narodzin wodza z kolejki (canSpawnQueuedGeneral, generalMaySpawnForOwner w 2 miejscach), pozycja isGeneral przechodząca z miastem przy podboju/cesji/aneksji/odbiciu nie daje dodatkowego wodza; migracja wczytania: nadmiarowi (młodsi) wodzowie tracą flagę wodza, jednostki zostają
