@@ -89,3 +89,36 @@ Są poza allowlistą (allowlista dopuszcza tylko NOWE `tests/p6_repin_ekon_f_*`)
 - `TERRAIN_NAME_TO_ENUM` / `TEREN_DANE_LABEL_TO_ENUM` (R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1) — poza zakresem.
 - Pozostałe hunki `turn-economy.ts` niedotyczące pozycji 1–5 — do rozbicia w rundzie 2 po mapie funkcji.
 - Usunięcie pola `stawkaNaObywatela` z `rust-port/engine/data/citizen-resource-upkeep.json` i `src/data/economy_society.rs:765` — dane są „addytywne” wg allowlisty; decyzja w partii 1 (zostawić pole nieużywane jako martwe, czy usunąć — wymaga zgody zakresu).
+
+## 7. Runda 2 — stan po zarzutach (zapis Operatora, runda 2/5)
+
+### 7.1 Partia 1 — zrobiona addytywnie (ZAŁOŻENIE: nie przepinamy wywołań)
+
+- Dodano `citizen_consumption_era_multiplier(era)` i `CITIZEN_CONSUMPTION_ERA_STEP = 0.5` w `rust-port/engine/src/domain/resource_production.rs` (web: `gra/src/game/citizen-consumption-era.ts`, `citizenConsumptionEraMultiplier`, pin web `16c0509f6`). Semantyka: `!isFinite || e < 1` → 1; w innym razie `1 + 0,5 × (floor(e) − 1)`.
+- Nowy plik testów `rust-port/engine/tests/p6_repin_ekon_f_m_era.rs` (8 testów): tabela 1/1,5/2/2,5/3, progi N−0,001 / N / N+0,001 dla N = 1..8, ułamki (floor), < 1 i ujemne, NaN/±Inf, liniowość dla dużych epok, monotoniczność.
+- Mutacje (obie wykryte, 2 testy FAILED każda, kod przywrócony): (a) usunięcie `floor` → `fractional_eras_floor_down`, `threshold_n_minus_one_n_plus_one` FAILED; (b) guard `< 1.0` → `< 0.0` → `below_one_is_neutral`, `threshold_n_minus_one_n_plus_one` FAILED.
+- Istniejące wywołania (`ration_era_food_cost_multiplier`, `citizen_upkeep_rate_for_era`) NIE zmienione — celowo, bo 4 testy pinu poza allowlistą (§5) pinują stare wartości.
+
+### 7.2 Partie 2–5 — NIE zrobione w tej rundzie, powód (dowód)
+
+Dostęp do partii 2–5 NIE jest wolny od testów pinu poza allowlistą (sprawdzone `grep` w `rust-port/engine/tests`):
+
+- Partia 2 (cegielnia/konwertery): `DEFAULT_CONVERTER_RECIPES` / `converter_throughput_for_era` pinowane w `tests/p6_turn_econ_res_pipeline.rs` (asercja `output_amount` vs wektor `p6_turn_econ_res_vectors/pipeline.json`), `tests/p6_repin_d2_*` i wektorach `p6_repin_d2_*_vectors`.
+- Partia 3 (Spichlerz II / Magazyn / limity): `tests/p6_repin_ekonomia_e_spichlerz.rs`, `tests/p6_7b_spichlerz.rs`, `tests/p6_repin_b_ration_era.rs`, `tests/p6_7a_growth.rs`, `tests/p6_8d_citizen_upkeep.rs`.
+- Partia 4 (żelazo, Młyn): `tests/` z dostępem natywnym (grep `zelazo` trafia w wiele plików); Młyn-rzeka w `production.ts:166–172` (`RIVER_ONLY_BUILDING_IDS`).
+- Partia 5 (woda lądowa): `tests/p6_repin4_vectors.rs` (`freshwater`).
+
+Wniosek: zmiana tych partii zmienia wartości pinowane w testach spoza allowlisty; każda partia wymaga decyzji o allowliście (§5) albo zrobienia addytywnie z nowymi symbolami i bez przepinania wywołań (wtedy to martwy kod bez wpięcia — NIE PORT 1:1).
+
+### 7.3 Uzupełnienie tabeli symboli (zarzut 4)
+
+| Web | Rust | Stan |
+|---|---|---|
+| `RIVER_ONLY_BUILDING_IDS = {'mlyn'}` (`production.ts:172`), bramka `cityHasRiverAccess` (`main.ts`) | brak odpowiednika w Rust zweryfikowanego w tej rundzie | NIE ZMIERZONO — hunk web zmierzony, Rust nie |
+| `spichlerz_ii: ['Ceramika','Sól']` (`building-resource-gate.ts:70`) | `buildings.json` / `tech.json` | SPRZECZNOŚĆ z dispatchem (dispatch: tech Pismo). Web kod = Ceramika+Sól. ZAŁOŻENIE: 1:1 z webem kodem; decyzja orkiestratora |
+| `spichlerz_ii_prog_ludnosci` (`econ-params.json:38`), `budynek_spichlerz_ii_zuzywa_sol/ceramika` (`econ-params.json:397,404`) | `econ-params.json` Rust | NIE ZMIERZONO w tej rundzie |
+| Woda lądowa (pozycja 5) | `freshwater.rs` | NIE ZMIERZONO — brak rozpoznanego hunka web |
+
+### 7.4 Plan rundy 3 (ten sam ID)
+
+Wymagana decyzja orkiestratora o allowliście dla 4 plików pinu (§5) LUB zgoda na addytywny port z osobnymi symbolami. Po decyzji: partia 2 (konwertery) z wektorami z `git archive origin/main gra/src gra/data` w katalogu tymczasowym poza repo.

@@ -273,6 +273,22 @@ pub fn citizen_upkeep_rate_for_era(table: &CitizenResourceUpkeep, era: f64) -> f
     }
 }
 
+/// Przyrost mnoznika zuzycia obywateli na epoke (web `CITIZEN_CONSUMPTION_ERA_STEP`, 50% bazy).
+pub const CITIZEN_CONSUMPTION_ERA_STEP: f64 = 0.5;
+
+/// Jedno zrodlo prawdy mnoznika zuzycia obywateli (web `citizenConsumptionEraMultiplier`,
+/// `gra/src/game/citizen-consumption-era.ts`, R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1):
+/// m(e) = 1 + 0,5 x (floor(e) - 1). NaN / +-Inf / e < 1 -> 1. Epoki ulamkowe w dol.
+/// Partia 1 REPIN-EKONOMIA-F: symbol dodany addytywnie; wolajacy (`ration_era_food_cost_multiplier`,
+/// `citizen_upkeep_rate_for_era`) NIE sa przepiete tu, bo stare testy pinu poza allowlista
+/// pinuja poprzednie wartosci (patrz P6-REPIN-EKONOMIA-F.md §5).
+pub fn citizen_consumption_era_multiplier(era: f64) -> f64 {
+    if !era.is_finite() || era < 1.0 {
+        return 1.0;
+    }
+    1.0 + CITIZEN_CONSUMPTION_ERA_STEP * (era.floor() - 1.0)
+}
+
 /// Dodatni, skonczony stan magazynu; wszystko inne (brak, NaN, <= 0) to 0.
 fn positive_stock(stock: Option<&BTreeMap<String, f64>>, key: &str) -> f64 {
     match stock.and_then(|m| m.get(key)) {
