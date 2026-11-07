@@ -9,9 +9,15 @@ Jesteś kompozytorem i reżyserem dźwięku gier strategicznych (typ Civilizatio
 1) PRZYWITANIE (powitanie wodza gracza, audiencja): krótki motyw 30–45 s, który od pierwszych sekund wyraźnie ogłasza charakter cywilizacji. Ma brzmieć powitalnie, z godnością, bez agresji.
 2) NEGOCJACJE (rozmowa, handel, układy, pakt): pętla 2–3 min, spokojniejsza i bardziej stonowana niż powitanie, z poczuciem namysłu i napięcia dyplomatycznego, ale bez dramatycznych szczytów. Musi się dać zapętlić bez słyszalnego szwu i nie męczyć przy wielokrotnym słuchaniu.
 
+KLUCZOWE OGRANICZENIE EPOKI (obowiązuje bezwzględnie): cała muzyka ma brzmieć jak muzyka z epoki BRĄZU, ŻELAZA albo ANTYKU (ok. 3000 p.n.e. – V w. n.e.), czyli jak rekonstrukcja muzyki archeologicznej i starożytnej, a NIE jak współczesny utwór:
+- zakazane: nowoczesny zestaw perkusyjny, bas elektryczny, gitara (akustyczna i elektryczna), fortepian, syntezatory i pady, smyczki orkiestry symfonicznej w stylu filmowym, „epicka” muzyka filmowa i growy trailer, elektronika, pop, rock, jazz, muzyka klasyczna z XVIII–XIX w., harmonia funkcyjna z kadencjami dur-moll i akordami współczesnymi;
+- wymagane: tryby i skale starożytne (np. dorycki, frygijski, pentatonika, tetrachordy, skale bliskowschodnie, tryby anatolijskie), monofonia lub heterofonia z burdonem (drone) zamiast współczesnej harmonii, instrumenty, które istniały w tej epoce (liry, harfy, aulos, flety trzcinowe i kościane, rogi, bębny ramkowe i skórzane, sistrum, dzwonki i cymbały z brązu), ludzki, nierówny, „żywy” rytm bez kwantyzacji i bez nagrań studyjnych o współczesnym brzmieniu;
+- dla generatora muzyki dodawaj tagi: `ancient`, `archaeological reconstruction`, `Bronze Age` lub `Iron Age` lub `Antiquity`, `modal`, `drone`, `acoustic`, `field recording feel`, a w polu wykluczeń: `modern, cinematic, orchestral hollywood, electronic, synthesizer, electric guitar, piano, pop, rock, drum kit, chord progression, EDM`;
+- jeśli istnieje historyczny wzorzec (np. Hymn Hurycki nr 6, Epitafium Seikilosa, pieśni mezopotamskie, egipskie pieśni z harfą, rzymskie sygnały cornu), wskaż go jako inspirację stylistyczną, ale nie kopiuj melodii.
+
 Wymagania wspólne:
 - tylko muzyka instrumentalna; dopuszczalne bezsłowne wokalizy (aa, oo), BEZ tekstu śpiewanego;
-- brzmienie historyczne, akustyczne instrumenty epoki (bez syntezatorów, bez gitary elektrycznej, bez współczesnej perkusji); orkiestracja oszczędna, miejsce na ciszę;
+- brzmienie historyczne zgodnie z KLUCZOWYM OGRANICZENIEM EPOKI powyżej; orkiestracja oszczędna, miejsce na ciszę;
 - każda cywilizacja ma brzmieć WYRAŹNIE inaczej: inna skala/tryb, inne instrumenty, inny puls; unikaj klisz „epickiej orkiestry Hollywood”;
 - głośność i gęstość mają pozwalać na rozmowę w grze (muzyka tła, nie solowy popis); bez gwałtownych skoków głośności;
 - format docelowy: plik mp3 w jakości ok. 192 kbps, ok. 3–5 MB na utwór (jedna cywilizacja ≈ 1–2 utwory).
@@ -43,7 +49,7 @@ Cywilizacje, ich charakter w grze i kierunek muzyczny (zachowaj ten kierunek, mo
 
 Na końcu dodaj:
 - tabelę zbiorczą (civ, tryb/skala, BPM, 3 kluczowe instrumenty), aby sprawdzić, że żadne dwie cywilizacje nie brzmią podobnie;
-- listę kontrolną jakości (pętla bez szwu, brak anachronizmów, poziom głośności, brak tekstu śpiewanego);
+- listę kontrolną jakości (pętla bez szwu, brak anachronizmów i nowoczesnych elementów, poziom głośności, brak tekstu śpiewanego);
 - propozycję kolejności generowania (od cywilizacji najłatwiejszych do najtrudniejszych do uchwycenia).
 ```
 
