@@ -878,7 +878,7 @@ import { isLivestockAllowed, isLamaDepositVisibleForCiv, hexHasHorseDeposit } fr
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { cloneObject3DMaterialsForTransient, disposeTransientObject3D } from './render/transientObjectResources';
-import { BattleScene } from './battle/battleScene';
+import { BattleScene, BATTLE_MAX_PER_SIDE } from './battle/battleScene';
 import { isBattleSceneOpen } from './battle/battleSceneOpen';
 import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset, addSiegeMachinesCount } from './battle/testBattle';
 import type { PresetName } from './battle/testBattle';
@@ -921,6 +921,7 @@ import {
   applyPostBattleMap,
   applyDefenderPreBattleRetreat,
   snapshotRosterPositions,
+  battleReserveNotice,
   findCityOnHex,
   applyCityCaptureAfterBattle,
   type MapBattleWinner,
@@ -16267,6 +16268,9 @@ async function boot(): Promise<void> {
       msg: string,
       durationMs: number = 3000,
       ctx?: { hex?: { q: number; r: number }; cityId?: string; ownerId?: number },
+      // R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: komunikat tuz przed bitwa musi byc ponad
+      // pelnoekranowa scena bitwy (.overlay z-index 9999), inaczej jest niewidoczny.
+      aboveBattle: boolean = false,
     ): void {
       if (shouldDeferEotEvents(endTurnInProgress)) {
         deferredEotHints.push({ msg, durationMs, ...ctx });
@@ -16300,7 +16304,7 @@ async function boot(): Promise<void> {
       // backdrop (.civ-emp-backdrop z-index 449) is always active -- the default
       // 320 renders underneath it, dimming the toast ~35%. 600 (same value as the
       // main-menu branch -- the two panels cannot be open at once) clears it.
-      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : ((isMainMenuOpen() || isEmpireDetailPanelOpen()) ? '600' : '320');
+      hintToast.style.zIndex = aboveBattle ? '10030' : (isPreBattleOpen() ? '9950' : ((isMainMenuOpen() || isEmpireDetailPanelOpen()) ? '600' : '320'));
       hintOverrideTimer = setTimeout(() => {
         hintToast.style.display = 'none';
         hintOverrideTimer = null;
@@ -31769,6 +31773,13 @@ async function boot(): Promise<void> {
           hidePreBattle();
           const atkLead = atkRosterRef[0]!;
           const defLead = defRosterRef[0]!;
+          {
+            const reserveNote = battleReserveNotice(
+              atkRosterRef.length, defRosterRef.length, BATTLE_MAX_PER_SIDE,
+              atkRosterRef[0]?.ownerId === 0 ? 'atk' : defRosterRef[0]?.ownerId === 0 ? 'def' : null,
+            );
+            if (reserveNote) showHintMessage(reserveNote, 5000, undefined, true);
+          }
           const atkBus = rosterToBattleUnits(atkRosterRef, 0xffd54a);
           const defBus = rosterToBattleUnits(defRosterRef, 0xc84040);
           setMood('bitwa');
@@ -31816,6 +31827,8 @@ async function boot(): Promise<void> {
                 battleQ: battleHex.q,
                 battleR: battleHex.r,
                 atkStart: atkStartSnap,
+                // R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: tylko wystawieni; rezerwa nietknieta.
+                battleEventLog: res.eventLog,
               },
               mapBattleSummaryMeta('manual'),
               () => {
@@ -32491,6 +32504,13 @@ async function boot(): Promise<void> {
         onAuto: () => { hidePreBattle(); doMapAutoResolveIncoming(); },
         onBattlefield: () => {
           hidePreBattle();
+          {
+            const reserveNote = battleReserveNotice(
+              atkRosterRef.length, defRosterRef.length, BATTLE_MAX_PER_SIDE,
+              atkRosterRef[0]?.ownerId === 0 ? 'atk' : defRosterRef[0]?.ownerId === 0 ? 'def' : null,
+            );
+            if (reserveNote) showHintMessage(reserveNote, 5000, undefined, true);
+          }
           const atkBus = rosterToBattleUnits(atkRosterRef, 0xc84040);
           const defBus = rosterToBattleUnits(defRosterRef, 0xffd54a);
           setMood('bitwa');
@@ -34606,11 +34626,12 @@ async function boot(): Promise<void> {
       fortifyScaledDefFor: combatPowerScaledDefFor,
       terrainCombatData: terrainCombatData as unknown as readonly TerrainEntry[],
       battleData: data,
-      showHint: showHintMessage,
+      showHint: (msg: string, ms?: number, aboveBattle?: boolean) => showHintMessage(msg, ms, undefined, aboveBattle),
       showPreBattle,
       hidePreBattle,
       applyMapBattleOutcomeWithSummary,
       clearBattleUiState: clearMapBattleUiState,
+      battleMaxPerSide: BATTLE_MAX_PER_SIDE,
       createBattleScene: (opts: BattleOpts) => new BattleScene(opts),
       armyHungerBattleOpts,
       goldDeficitBattleOpts,

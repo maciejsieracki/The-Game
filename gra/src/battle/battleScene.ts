@@ -581,7 +581,11 @@ export interface BattleResult {
   winner: 'atakujacy' | 'obronca' | 'remis';
   survivors: BattleUnit[];
   log: string[];
-  /** Every unit present in the radius-1 roster at battle resolution time. */
+  /**
+   * Units actually DEPLOYED on the battlefield (capped at MAX_PER_SIDE per side).
+   * Reserve units beyond the cap are absent here, so the map must leave them untouched
+   * (R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1).
+   */
   eventLog: BattleEventLog;
   /**
    * R-WEB-PALISADE-BATTLE-WALL-RULES-Q1 (R1): w oblezeniu -- czy zniszczono brame
@@ -705,6 +709,8 @@ const ORDER_ATTACK_OPACITY = 0.45;
 // per side (60 infantry + 30 archers + 20 cavalry). Headroom 120 so nothing
 // is sliced before deployment.
 const MAX_PER_SIDE = 120;
+/** R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: limit pola bitwy do komunikatu o rezerwie (wartosc bez zmian). */
+export const BATTLE_MAX_PER_SIDE = MAX_PER_SIDE;
 
 // How many figures stand shoulder-to-shoulder in ONE rank (a straight line).
 // 60 units => 3 even ranks of 20. Keep <= BF_ROWS minus a small margin so a

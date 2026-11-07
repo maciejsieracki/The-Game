@@ -56,6 +56,28 @@ export interface PostBattleMapInput {
   holdPositionAfterWin?: boolean;
 }
 
+/**
+ * R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: komunikat przed bitwa ręczną o jednostkach
+ * w rezerwie (ponad limit pola bitwy -- nie wejda do walki, wracaja nietkniete).
+ * Czysta funkcja tekstowa; zwraca '' gdy nikt nie jest w rezerwie.
+ */
+export function battleReserveNotice(
+  atkCount: number,
+  defCount: number,
+  maxPerSide: number,
+  playerSide: 'atk' | 'def' | null,
+): string {
+  const parts: string[] = [];
+  const atkRes = Math.max(0, atkCount - maxPerSide);
+  const defRes = Math.max(0, defCount - maxPerSide);
+  if (playerSide === 'atk' && atkRes > 0) parts.push(atkRes + ' jednostek w rezerwie (nie wejd\u0105 do bitwy)');
+  else if (playerSide === 'def' && defRes > 0) parts.push(defRes + ' jednostek w rezerwie (nie wejd\u0105 do bitwy)');
+  else if (playerSide === null && (atkRes > 0 || defRes > 0)) {
+    parts.push('W rezerwie (nie wejd\u0105 do bitwy): ' + atkRes + ' / ' + defRes);
+  }
+  return parts.join('');
+}
+
 export interface PostBattleMapResult {
   removedIds: string[];
 }
@@ -390,8 +412,14 @@ function registerVeteranProgressAfterBattle(input: PostBattleMapInput): void {
   if (input.winner === 'remis') return;
 
   const winningRoster = input.winner === 'atakujacy' ? input.atkRoster : input.defRoster;
+  // R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: jednostki w rezerwie (poza limitem pola
+  // bitwy) nie walczyly -- nie dostaja wygranej (log zdarzen = kto realnie wystapil).
+  const logged = loggedIdsForSide(input, input.winner === 'atakujacy' ? 'attacker' : 'defender');
   const ids = new Set<string | number>();
-  for (const ref of winningRoster) ids.add(ref.id);
+  for (const ref of winningRoster) {
+    if (logged && !logged.has(String(ref.id))) continue;
+    ids.add(ref.id);
+  }
 
   for (const id of ids) {
     const u = liveUnit(input.units, id);
