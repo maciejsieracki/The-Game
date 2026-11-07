@@ -1,0 +1,40 @@
+teren-walki-etapy-test (C-TEREN-Q1)
+ETAP 1 -- Gory = +75% Obrona broniacego
+  [OK] preset Gory ma isMountain=true (expected true, got true)
+  [OK] preset Wzgorza ma isMountain=false (expected false, got false)
+  [OK] plansza Gory wygenerowala kafle wzniesien (Hills)
+  [OK] KAZDY kafel Hills na planszy Gory raportuje nazwe bojowa Gory (expected 532, got 532)
+  [OK] plansza Wzgorza wygenerowala kafle wzniesien (Hills)
+  [OK] KAZDY kafel Hills na planszy Wzgorza raportuje nazwe bojowa Wzgorza (nie Gory) (expected 286, got 286)
+  [OK] Obrona broniacego na Gory: x1.75 (+75%) (expected 1.75, got 1.75)
+  [OK] Obrona broniacego na Wzgorza: x1.5 (+50%), rozne od Gory (expected 1.5, got 1.5)
+ETAP 2 -- Delta Zasieg (dystansowi)
+  [OK] Zasieg dystansowego: -1 pole (Las, zaslona) (expected -1, got -1)
+  [OK] Zasieg dystansowego: +1 pole (Wzgorza, elewacja) (expected 1, got 1)
+  [OK] Zasieg dystansowego: +1 pole (Gory, elewacja) (expected 1, got 1)
+  [OK] Zasieg dystansowego: +-0 (Plaskie) (expected 0, got 0)
+  [OK] Zasieg dystansowego: +-0 (Pustynia) (expected 0, got 0)
+ETAP 3 -- przejezdnosc/koszt konnicy i rydwanow
+  [OK] mnoznik kosztu ruchu konnicy: x2 (Las) (expected 2, got 2)
+  [OK] mnoznik kosztu ruchu konnicy: NIEDOSTEPNE (Gory) (expected Infinity, got Infinity)
+  [OK] mnoznik kosztu ruchu konnicy: brak kary jawnej (Wzgorza -- tylko "spowolnione", bez liczby/blokady) (expected 1, got 1)
+  [OK] mnoznik kosztu ruchu konnicy: x1 (Plaskie) (expected 1, got 1)
+  [OK] plansza Gory ma przynajmniej 1 kafel Lasu do testu
+  [OK] plansza Gory ma przynajmniej 1 kafel Gor (Hills) do testu
+  [OK] koszt wejscia piechoty w Las: 2 (bazowy) (expected 2, got 2)
+  [OK] koszt wejscia konnicy w Las: 4 (bazowy 2 x mnoznik x2) (expected 4, got 4)
+  [OK] kafel Hills na planszy Gory nazywa sie Gory (spojnosc z ETAP 1) (expected Gory, got Gory)
+  [OK] piechota MOZE wejsc w Gory (koszt skonczony)
+  [OK] konnica/rydwan NIE MOZE wejsc w Gory (koszt Infinity, NIEDOSTEPNE) (expected Infinity, got Infinity)
+  [OK] plansza Wzgorza ma przynajmniej 1 kafel Hills do testu
+  [OK] konnica MOZE wejsc na Wzgorza (nie Gory) -- tylko Gory jest NIEDOSTEPNE
+ETAP 4 -- tooltip TEREN (C-TEREN-IMPL-3=B)
+  [OK] Gory piechota: obrona +75% w tooltipie
+  [OK] Gory piechota: koszt ruchu 2 pkt
+  [OK] Gory konnica: NIEDOSTEPNE w tooltipie
+  [OK] Las: obrona vs dystans
+  [OK] Las lucznik: -1 hex zasieg
+  [OK] Brod: tekst kary w tooltipie
+  [OK] kolor tooltipu: czerwony gdy kara (brod) (expected #e08a8a, got #e08a8a)
+
+--- 33 ok, 0 fail ---

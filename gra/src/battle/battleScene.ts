@@ -707,8 +707,9 @@ const ORDER_ATTACK_OPACITY = 0.45;
 
 // Up to this many units deploy per side. R-WEB-BATTLE-CAP-500-Q1 (decyzja
 // wlasciciela 2026-11-07): limit podniesiony ze 120 do 500. JEDNO zrodlo prawdy
-// -- rozstawienie, czyszczenie pasm (MAX_RANKS / deployClearRanksFor), komunikat
+// -- rozstawienie, komunikat
 // o rezerwie (BATTLE_MAX_PER_SIDE) i slice(0, MAX_PER_SIDE) czytaja te stala.
+// Glebokosc czyszczenia pasm terenu NIE czyta tej stalej (patrz battleClearSideCap).
 const MAX_PER_SIDE = 500;
 /** R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: limit pola bitwy do komunikatu o rezerwie (jedno zrodlo: MAX_PER_SIDE). */
 export const BATTLE_MAX_PER_SIDE = MAX_PER_SIDE;
@@ -718,9 +719,21 @@ export const BATTLE_MAX_PER_SIDE = MAX_PER_SIDE;
 // full rank fits centred on the field.
 const RANK_WIDTH = 20;
 
-// How many ranks deep one full side can be (ceil(MAX_PER_SIDE / RANK_WIDTH)).
-// Drives the rank-clearing band width and the rear-rank column budget.
-const MAX_RANKS = Math.ceil(MAX_PER_SIDE / RANK_WIDTH); // 4 for 64 / 20
+// Side cap the terrain clearing depth was sized for BEFORE R-WEB-BATTLE-CAP-500-Q1
+// (the old MAX_PER_SIDE). Battles with <= this many units per side keep the
+// exact same clearing depth as before the limit was raised (bit-for-bit terrain).
+const CLEAR_DEPTH_BASE_CAP = 120;
+
+/**
+ * Side cap that sizes the deployment-rank clearing depth for one battle:
+ * max(CLEAR_DEPTH_BASE_CAP, the larger army), never above MAX_PER_SIDE. Depth
+ * therefore grows only for battles that really field more than 120 units per
+ * side; it does NOT scale with the MAX_PER_SIDE constant, so a 40 vs 40 battle
+ * clears exactly the same columns as before the cap was raised.
+ */
+export function battleClearSideCap(attackerCount: number, defenderCount: number): number {
+  return Math.min(MAX_PER_SIDE, Math.max(CLEAR_DEPTH_BASE_CAP, attackerCount, defenderCount));
+}
 
 // Outer columns kept as clean plains by the terrain generator. Small value so
 // the rivers / forest / hills generate across nearly the whole field; the rank
@@ -750,8 +763,8 @@ const DEF_COL_STEP  = 1;            // defender rear ranks step RIGHT (toward +X
  *
  * LEGACY (presetActive=false, i.e. no worldTerrain / no ?bt= override): the
  * exact pre-existing formula, UNTOUCHED -- verified bit-for-bit against the
- * pre-2026-07-22 generator (3 seeds). Sized generously (MAX_RANKS+12) so even
- * a fully-mounted MAX_PER_SIDE army (mounted deploy the deepest, see
+ * pre-2026-07-22 generator (3 seeds). Sized generously (ranks(sideCap)+12) so even
+ * a fully-mounted army of sideCap units (mounted deploy the deepest, see
  * arrangeFlankCavalry/_placeUnits) always lands on clean ground.
  *
  * PRESET-ACTIVE: owner correction 2026-07-22 #3 ("odblokuj teren poza
@@ -759,7 +772,7 @@ const DEF_COL_STEP  = 1;            // defender rear ranks step RIGHT (toward +X
  * to Plains on EVERY row, leaving only three narrow 4-column bands for the
  * generator's terrain to ever be visible in, which is what forced hills/river
  * into straight rectangular-looking bars. Preset battles use a tighter depth
- * (still comfortably deeper than MAX_RANKS=6 and the real per-side rank
+ * (still comfortably deeper than ranks(sideCap)=6 for 120 and the real per-side rank
  * count) that keeps the actual deployment columns clean while giving the
  * meandering river/hill generation roughly DOUBLE the surviving interior
  * width to occupy. The BFS connectivity guard in _carveBattleBox (unchanged)
@@ -769,10 +782,16 @@ const DEF_COL_STEP  = 1;            // defender rear ranks step RIGHT (toward +X
  * impassable) -- so shrinking this is a rendering/variety change only, not a
  * gameplay-safety one.
  */
-function deployClearRanksFor(presetActive: boolean): number {
+function deployClearRanksFor(presetActive: boolean, sideCap: number): number {
+  const maxRanks = Math.ceil(sideCap / RANK_WIDTH);
   return presetActive
-    ? Math.max(MAX_RANKS + 4, Math.ceil(MAX_PER_SIDE / 12) + 3)
-    : Math.max(MAX_RANKS + 12, Math.ceil(MAX_PER_SIDE / 12) + 8);
+    ? Math.max(maxRanks + 4, Math.ceil(sideCap / 12) + 3)
+    : Math.max(maxRanks + 12, Math.ceil(sideCap / 12) + 8);
+}
+
+/** Clearing depth (rank columns) for one battle; sideCap from battleClearSideCap(). */
+export function battleClearRanks(presetActive: boolean, sideCap: number): number {
+  return deployClearRanksFor(presetActive, sideCap);
 }
 
 /**
@@ -792,8 +811,8 @@ function deployClearRanksFor(presetActive: boolean): number {
  * Set<number> (duplicated formula, verified to match exactly) so this stays
  * a pure, side-effect-free query callable before generation runs.
  */
-function battleSafeCols(presetActive: boolean): Array<[number, number]> {
-  const deployClearRanks = deployClearRanksFor(presetActive);
+function battleSafeCols(presetActive: boolean, sideCap: number): Array<[number, number]> {
+  const deployClearRanks = deployClearRanksFor(presetActive, sideCap);
   const atkRankEnd = ATK_FRONT_COL + (deployClearRanks - 1) * ATK_COL_STEP;
   const defRankEnd = DEF_FRONT_COL + (deployClearRanks - 1) * DEF_COL_STEP;
   const atkLo = Math.min(ATK_FRONT_COL, atkRankEnd);
@@ -2730,6 +2749,9 @@ export class BattleScene {
     // the legacy carve (and therefore the legacy terrain) bit-for-bit
     // unchanged (owner correction 2026-07-22 #3).
     const presetActive = worldTerrain != null;
+    // Clearing depth follows the real army size (>120 only for big battles), not
+    // the MAX_PER_SIDE constant, so small battles keep their pre-cap terrain.
+    const clearSideCap = battleClearSideCap(opts.attacker.length, opts.defender.length);
 
     // Deterministic procedural terrain for the big square field. Seeded from the
     // battle terrain name so the same matchup terrain reproduces every run.
@@ -2743,13 +2765,13 @@ export class BattleScene {
       // Always passed: only consulted by generator branches gated on preset
       // flags (edgeRocks), false on DEFAULT_PRESET, so this is a no-op for
       // every legacy/no-worldTerrain call (verified bit-for-bit, see report).
-      safeCols:     battleSafeCols(presetActive),
+      safeCols:     battleSafeCols(presetActive, clearSideCap),
     });
     // Flatten the deploy ranks + the clash corridor to clean plains so the two
     // even lines stand on flat, even ground and reach melee fast; terrain stays
     // everywhere else (flanks AND, for preset battles, most of the no-man's-land
     // too -- see deployClearRanksFor) as a backdrop.
-    this._carveBattleBox(presetActive);
+    this._carveBattleBox(presetActive, clearSideCap);
     this._fencePlayableZone();
 
     // SIEGE MODE: carve wall tiles into terrainMap before the scene is built.
@@ -3820,7 +3842,7 @@ export class BattleScene {
   //      defender band is reachable over passable tiles; if some pathological
   //      terrain still blocks it, punch fords straight across the centre row.
   // -------------------------------------------------------------------------
-  private _carveBattleBox(presetActive: boolean): void {
+  private _carveBattleBox(presetActive: boolean, sideCap: number): void {
     const tm = this.terrainMap;
     const tiles = tm.tiles;
     if (!tiles) return;
@@ -3832,12 +3854,12 @@ export class BattleScene {
     const rLo = PLAY_ROW0;
     const rHi = PLAY_ROW1;
 
-    // --- 1) Kolumny formacji + tyl konnicy (glebsze niz MAX_RANKS piechoty).
+    // --- 1) Kolumny formacji + tyl konnicy (glebsze niz rzedy piechoty).
     // presetActive=false (legacy): DOKLADNIE ta sama formula co przed
     // korekta -- bit-for-bit. presetActive=true: plytszy carve (patrz
     // deployClearRanksFor) tak, by srodek pola ("ziemia niczyja") zostal
     // wolny na meandrujacy teren (owner correction 2026-07-22 #3). ---
-    const DEPLOY_CLEAR_RANKS = deployClearRanksFor(presetActive);
+    const DEPLOY_CLEAR_RANKS = deployClearRanksFor(presetActive, sideCap);
     const rankCols = new Set<number>();
     for (let k = 0; k < DEPLOY_CLEAR_RANKS; k++) {
       const ac = ATK_FRONT_COL + k * ATK_COL_STEP;

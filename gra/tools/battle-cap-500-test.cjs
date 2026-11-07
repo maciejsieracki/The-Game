@@ -17,9 +17,9 @@ const ROOT = path.resolve(__dirname, '..');
 async function loadModules() {
   const result = await esbuild.build({
     stdin: {
-      contents: `import { BattleScene, BATTLE_MAX_PER_SIDE } from './src/battle/battleScene.ts';
+      contents: `import { BattleScene, BATTLE_MAX_PER_SIDE, battleClearSideCap, battleClearRanks } from './src/battle/battleScene.ts';
 import { battleReserveNotice } from './src/game/post-battle-map.ts';
-module.exports = { BattleScene, BATTLE_MAX_PER_SIDE, battleReserveNotice };`,
+module.exports = { BattleScene, BATTLE_MAX_PER_SIDE, battleReserveNotice, battleClearSideCap, battleClearRanks };`,
       resolveDir: ROOT, sourcefile: 'battle-cap-500-entry.ts',
     },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020',
@@ -143,13 +143,24 @@ function setupSim(scene) {
 }
 
 async function main() {
-  const { BattleScene, BATTLE_MAX_PER_SIDE, battleReserveNotice } = await loadModules();
+  const { BattleScene, BATTLE_MAX_PER_SIDE, battleReserveNotice, battleClearSideCap, battleClearRanks } = await loadModules();
 
   // 1) jedno zrodlo prawdy
   ok(BATTLE_MAX_PER_SIDE === 500, `BATTLE_MAX_PER_SIDE === 500 (jest ${BATTLE_MAX_PER_SIDE})`);
   const src = fs.readFileSync(path.join(ROOT, 'src/battle/battleScene.ts'), 'utf8');
   ok(/^const MAX_PER_SIDE = 500;/m.test(src), 'jedna stala MAX_PER_SIDE = 500 w battleScene.ts');
   ok(!/\.slice\(0,\s*120\)/.test(src), 'brak literalnego slice(0, 120)');
+
+  // 1b) glebokosc czyszczenia pasm terenu NIE rosnie ze stala limitu: male bitwy (<=120/strone)
+  // maja dokladnie stara glebokosc (18 legacy / 13 preset), a 500 rosnie tylko dla duzych armii.
+  ok(battleClearSideCap(40, 40) === 120, 'clearSideCap 40v40 = 120 (bez zmian wzgledem przed podniesieniem limitu)');
+  ok(battleClearSideCap(120, 100) === 120, 'clearSideCap 120v100 = 120');
+  ok(battleClearSideCap(300, 10) === 300, 'clearSideCap 300v10 = 300 (wieksza armia)');
+  ok(battleClearSideCap(600, 450) === 500, 'clearSideCap 600v450 = 500 (ograniczone limitem)');
+  ok(battleClearRanks(false, 120) === 18 && battleClearRanks(true, 120) === 13, 'czyszczenie 120: legacy 18, preset 13 (jak przed zmiana)');
+  ok(battleClearRanks(false, battleClearSideCap(40, 40)) === 18, 'czyszczenie 40v40 legacy = 18 kolumn (nie 50)');
+  ok(battleClearRanks(true, battleClearSideCap(40, 40)) === 13, 'czyszczenie 40v40 preset = 13 kolumn (nie 45)');
+  ok(battleClearRanks(false, 500) === 50 && battleClearRanks(true, 500) === 45, 'czyszczenie 500: legacy 50, preset 45 (rosnie tylko przy 500)');
 
   // 2) rozstawienie 500 vs 500 na czystej planszy i z przeszkodami (10% zablokowanych pol)
   const results = {};
