@@ -1,23 +1,28 @@
-STATUS: FAIL
-DOMAIN: GAME (WEB), wydajnosc render/HUD w koncu tury
+# FINAL CONTROL R4 (po obronie R4) -- R-WEB-PERF-ENDTURN-RENDER-HUD-Q1
+
+STATUS: PASS-WITH-NOTES (kod i bramki) + DECISION_REQUIRED (tylko kryterium liczbowe ECHO, decyzja orkiestratora)
+DOMAIN: GAME (WEB)
 TEMAT: R-WEB-PERF-ENDTURN-RENDER-HUD-Q1
-GOAL: unia syncUnitsRender+renderLoop+syncStatChips >= -40% lacznie (3 konce tur, 137 miast / 321 jednostek), obraz bez zmian, logika bez zmian.
-ZMIANY/COMMIT: oceniany kod 46f3c49ca2e7fe03fe29c15f3a5a430408781d0f (kod gry = R1 ed936904c); obrona 3d9802f99 (tylko 03-obrona-r2.md). Final Control: ten plik, bez zmian kodu.
-TESTY: NIE odtworzono na zywo (brak gra/node_modules i duzej gry w tym worktree; NIE_ZMIERZONO). Zweryfikowano dowody w repo: evidence/r2/gate-*.txt wszystkie EXIT=0 (tsc, logic, capture-render-sync, unit-renderer-overlay-sync, city-badge-zoom-lod, geometry-pool, material-pool-pixel, deferral-regression). A/B z ab-aggregate-base-r1-r2.txt: unia 5133->3303 = -35,7% (EOT1 -47,2%, EOT2 -22,7%, EOT3 -31,6%). Diff gra/ vs baza 6a673c838 = tylko main.ts + gra/tools/perf-endturn-render-*.cjs (w allowlisccie); WERSJE.md, gra/data, rust-port nietkniete.
-BLOKADY: patrz werdykty.
+GOAL: wydajnosc render/HUD konca tury bez zmiany obrazu i logiki.
+ZMIANY/COMMIT: kod do integracji 3c00d9edbb35b9d515f0057d0d6aa439a4900539 (parent fc3c631acee22d75c99fc0b1b07dfe67f2b0ea12). Baza main 6a673c838. Commit raportu FC: parent 3c00d9edb (SHA w odpowiedzi).
 
-WERDYKTY ZARZUTOW
-1. Kryterium -40% unii niespelnione (-35,7%): DO DECYZJI CZLOWIEKA (przyjac -35,7% w ECHO albo zlecic dalszy temat). Nie zmieniac miary na SUMA po fakcie. R2 dopuszcza PASS-WITH-NOTES, wiec samo to nie jest FAIL.
-2. Memo growth / zamrozenie transformacji niewykonane: ODDAL (dispatch R2 dopuszczal PWN po uczciwym opisie, Operator wycenil, nie ukryl). Rekomendacja: osobny temat render (matrixAutoUpdate=false statycznych podgrup + test pikselowy).
-3. Allowlista: ODDAL, brak naruszen (potwierdzone git diff --name-only).
-4. HUD x1587: ODDAL. pixel-parity-base.txt (build bazy 6a673c838) pokazuje ten sam bbox [1584,838,1587,881], diff 137; szum istnieje na bazie, wyjatek opisu to x1584-1587.
-5. Klatki posrednie fazy AI (zetony odroczone przez flushAiCityRenderBatch(false) i deferRefreshFogUnitSync): ODDAL jako ryzyko z warunkiem; NIE_ZMIERZONO (brak harnessu). Wymog dla Operatora R3: zmierzyc/uzasadnic klatke posrednia w fazie AI (zrzut w polowie fazy: zetony widocznych jednostek bez zmian vs baza) albo jawnie zapisac roznice jako wiadoma.
-6. Hak i wznowienie po bitwie: NAPRAW (potwierdzone czytaniem kodu). Hak jest zerowany poprawnie (main.ts ~40871 po catch eAILoop; bitwa idzie przez break ownerLoop -> flush -> null), wiec zarzut o wycieku haka odpada. ALE wznowienie `() => { void runAiPhase(); }` (main.ts ~40445) uzywa tego samego domkniecia: odwiedziny miast w wznowionej fazie wolaja aiUnitRenderBatch.markDirty() (~40372), klatki postepu flushuja z withUnits=false (~38690), a jedyny flush koncowy (`flushAiCityRenderBatch()` ~40839) wykonuje sie tylko po pierwszym `await runAiPhase()`. Skutek: po wznowionej fazie AI zetony jednostek zostaja nieaktualne do nastepnego syncUnitsRender (regresja wzgledem bazy, gdzie sync byl natychmiastowy). Poprawka: po wznowieniu wolac flush (np. `void runAiPhase().finally(() => flushAiCityRenderBatch())`), dodac test (statyczny test okablowania jest slaby, nie pokrywa wznowienia; dodac asercje na flush w callbacku wznowienia, najlepiej test zachowania).
-7. Brak ponownego A/B: ODDAL (dowody spojne wewnetrznie; mediana n=5 niska moc, szczegolnie EOT3 ze stallem GL SwiftShader obecnym tez na bazie).
-8. Deklaracja sprzatania: ODDAL (poza zakresem dowodow; nie zweryfikowano).
+## Rozstrzygniecie zarzutow (FC R3)
+1. Brak A/B baza vs R3 -- ODDAL (wykonane: 5 par naprzemiennie, evidence/r4/ab-base-vs-*.txt). fc3c631 -30,0%, R4 -18,9% unii EOT1+2+3. Kryterium -35,7% nie spelnione zadnym wariantem -> DO DECYZJI CZLOWIEKA (orkiestrator: zmiana ECHO albo R5 z wezsza regula flushu = opcja C). Nie usterka kodu.
+2. Test zachowania na modelu zamiast sceny -- ODDAL z dlugiem. Sam zweryfikowalem: jedyna sciezka wznowienia to callback launchIncomingMapFieldBattle -> runAiPhaseThenFlush (try/catch/finally, flush po kazdym wyjsciu); hak zerowany po catch eAILoop (main.ts ~40912); test resume-flush wyciaga prawdziwy helper i sprawdza okablowanie, mutacja lamie helper. Brak zywego scenariusza bitwa->wznowienie (harness bez wstrzykiwania bitwy) -- NIE ZMIERZONO na zywo; dlug do rejestru, nie blokuje (kod prosty, przeglad czysty).
+3. Klatka posrednia -- ODDAL (moot). Dowod CSS (pointer-events:none, tlo przezroczyste do 55%); R4 nie opiera juz poprawnosci na tym zalozeniu: zmiany z haka refreshFog i odwiedziny widocznych zetonow flushuja w klatce postepu. Zrzutu w polowie fazy nie wykonano (NIE ZMIERZONO). Pelna klatka po EOT: 0 niezgodnych dzieci sceny, 125 px max d1 w znanym pasku HUD x1584-1587 (szum 83 px miedzy dwiema synchronizacjami).
+4. Luka refreshFog -- ODDAL (naprawione w 3c00d9edb: hak ustawia aiUnitVisiblePending; diff przejrzany, test statyczny zaktualizowany). Koszt: -30,0% -> -18,9%.
+5. Bramki nieodtworzone -- ODDAL; odtworzone przeze mnie po npm ci na 3c00d9edb: tsc EXIT=0; logic 213/213; resume-flush EXIT=0; deferral-regression EXIT=0; unit-renderer-overlay-sync 17/0; capture-render-sync 23/0; city-badge-zoom-lod 67/0; memory-static-geometry-pool 18/0; memory-static-material-pool-pixel 7/0.
+6. ai-city-render-batch-test pada (linia 70) -- ODDAL jako dlug przedistniejacy (wg obrony identycznie na bazie 6a673c838; u mnie test takze konczy sie bledem). Do rejestru dlugow testowych.
+7. Allowlista -- OK: diff vs 6a673c838 to wylacznie gra/src/main.ts, gra/tools/perf-endturn-render-*.cjs, dyspozycje/autobot/runs/R-WEB-PERF-ENDTURN-RENDER-HUD-Q1/**. git diff --check czysty. Zero zmian w gra/data, rust-port, WERSJE.md.
 
-Wynik: 1 x NAPRAW (pkt 6) => FAIL. Brak innych blokad.
-RUNDY: 2/5 zuzyte; nastepna runda 3/5 (Operator, to samo ID, potem Evaluator i Final Control).
-NASTEPNY KROK: Operator R3: (a) flush po wznowieniu fazy AI + test; (b) pomiar klatki posredniej fazy AI (pkt 5); (c) powtorzyc bramki tsc/logic/unit-renderer-overlay-sync/capture-render-sync; (d) opcjonalnie, jesli orkiestrator zdecyduje w ECHO, proba zamrozenia transformacji (pkt 1/2).
-SHA DO INTEGRACJI: brak (FAIL). Po PASS integrowac R3 SHA na origin/main (= 6a673c838, kod gra/ nakłada sie czysto: tylko main.ts + tools). Kolejnosc wzgledem origin/rust-port/parity-v2 (b520768b0): najpierw main, parity-v2 pozniej przez REPIN/merge main; parity-v2 ma wlasna, rozbiezna linie gra/, wiec nie integrowac tego commita bezposrednio na parity-v2.
+Brak pozycji NAPRAW -> brak FAIL. Jedna pozycja DO DECYZJI (kryterium).
+
+## Rekomendacja integracji
+Integrowac 3c00d9edb (opcja A: bez znanej luki, -18,9% unii, -23,3% suma). fc3c631 (opcja B) ma znana luke refreshFog -- odradzam. Opcja C (R5, wezszy flush) opcjonalna, niezmierzona.
+Warunek: orkiestrator zapisuje w ECHO zmiane kryterium (z -35,7% na zmierzone -18,9%) albo zleca R5.
+Kolejnosc wzgledem origin/rust-port/parity-v2: rozlaczne (parity-v2 nie zmienia zadnego pliku gra/ od merge-base f4c89d008), brak konfliktu. Najpierw merge origin/main (main = 6a673c838 = merge-base, bez nowych zmian), web do main; parity-v2 niezalezny, dowolna kolejnosc; REPIN Rust po webie.
+Porzadki: stash civ-r3-tmp i /tmp/civ-eot-w do usuniecia przez orkiestratora.
+
+RUNDY: 4/5
+NASTEPNY KROK: decyzja orkiestratora (ECHO kryterium) -> integracja 3c00d9edb -> READY_FOR_DEPLOY.
 DEPLOY/PUSH: NIE WYKONANO
