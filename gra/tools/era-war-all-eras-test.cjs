@@ -8,6 +8,10 @@
  * domyślnej fladze `enabledForcedWarEras` z data/war-rules-params.json, oraz że ten sam
  * test PADA, gdy flaga wraca do `["stone"]` (test jest niezmiennikiem, nie zaślepką).
  *
+ * UWAGA (ograniczenie dowodu): test dowodzi warunków wybuchu na poziomie modułów, NIE samego
+ * wybuchu w grze. Wojny wymuszone w realnej grze (wyzwalacz w main.ts, pending po wejściu w epokę,
+ * wybór celu gracza, wypowiedzenie + UI) wymagają testów live w Chromium (forced-war-*-live-test.cjs).
+ *
  * Zakres (ważne): symulacja HEADLESS na PRAWDZIWYCH czystych modułach (esbuild, zero
  * reimplementacji formuł): dla każdej epoki w każdej z kolejnych tur 40..60 okablowanie
  * z main.ts: (1) bramka uruchomienia (eligibility: próg 25 tur od wejścia w epokę dla

@@ -26039,7 +26039,8 @@ async function boot(): Promise<void> {
         return { attackerId };
       },
       // R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 1): lustro `forceBronzeForcedWarOnPlayer` dla
-      // KAMIENIA (jedyna epoka z włączoną flagą `enabledForcedWarEras`) -- wyzwalacz live testu
+      // KAMIENIA (epoka z włączoną flagą `enabledForcedWarEras`; od R-WEB-ERA-WAR-BRONZE-IRON-REENABLE-Q1
+      // flaga zawiera Kamień, Brąz i Żelazo) -- wyzwalacz live testu
       // forced-war-era-counter-live-test.cjs. Ten sam kształt co Brąz: pending + czyszczenie
       // wojen attackera + odkrycie + przesunięcie miasta referencyjnego na pozycję gracza.
       forceStoneForcedWarOnPlayer: (): { attackerId: number } => {
