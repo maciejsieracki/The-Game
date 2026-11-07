@@ -197,7 +197,6 @@ import {
   AI_MAJOR_ULEPSZENIA_PRACA_PERCENT,
   MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
   AI_FIXED_PROCENT_BUDYNKI,
-  AI_FIXED_PROCENT_NAUKA,
   clampUlepszeniaPracaPercent,
   clampPodzialPracyBudynkiPercent,
   podzialPracyZProcentuPuli,
@@ -1263,7 +1262,7 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, aiSeedPodzialHandlu, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand, MiastoWycenaWejscie } from './game/ai';
 import {
@@ -4504,7 +4503,10 @@ async function boot(): Promise<void> {
         civBonusyForOwnerId(ownerId),
         player.kosztJednostekPace ?? 'niski',
         ownerId,
-        _menuDifficulty,
+        // R-WEB-AI-PLAYER-PARITY-FIXES-Q1 (poprawka 3): trudność WŁAŚCICIELA, nie globalna --
+        // miasto-państwo ma własną (_menuCityStateDifficulty), tak jak w kolejce produkcji AI
+        // (resolveItem/availableProduction) i w unitCost zastępowania. Dla gracza = _menuDifficulty.
+        effectiveGameDifficultyForOwner(ownerId),
       );
       if (!item) return false;
       // JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): jednostka konsumuje Surowiec/Surowiec (ilość)
@@ -5971,7 +5973,7 @@ async function boot(): Promise<void> {
             ai.ownerId,
             ai.ownerId === 0
               ? freshOwnerDefaultPodzialHandlu()
-              : { ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA },
+              : aiSeedPodzialHandlu(),
           );
         }
       }
@@ -6112,7 +6114,7 @@ async function boot(): Promise<void> {
           c.ownerId,
           isHuman(c.ownerId)
             ? freshOwnerDefaultPodzialHandlu()
-            : { ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA },
+            : aiSeedPodzialHandlu(),
         );
       }
       if (!ownerDefaultPoziomRacji.has(c.ownerId)) {
@@ -7158,7 +7160,7 @@ async function boot(): Promise<void> {
         aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === city.ownerId).map(x => x.typeId)),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: city.ownerId,
-        difficulty: _menuDifficulty,
+        difficulty: effectiveGameDifficultyForOwner(city.ownerId),
         // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): bramka Naval dla
         // "Zastąp" w garnizonie — per TO miasto (tak jak koszary/braz-access wyżej).
         cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
@@ -7191,7 +7193,7 @@ async function boot(): Promise<void> {
         aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === ownerId).map(x => x.typeId)),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId,
-        difficulty: _menuDifficulty,
+        difficulty: effectiveGameDifficultyForOwner(ownerId),
         cityHasCoastOrRiver: cities.some(c => c.ownerId === ownerId && cityHasCoastOrRiverAccess(c)),
         cityHasRiver: cities.some(c => c.ownerId === ownerId && cityHasRiverAccess(c)),
       });
@@ -10698,7 +10700,7 @@ async function boot(): Promise<void> {
               sc.ownerId,
               sc.ownerId === 0
                 ? freshOwnerDefaultPodzialHandlu()
-                : { ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA },
+                : aiSeedPodzialHandlu(),
             );
           }
           seedCityOwnerDefaults(c);
@@ -21521,15 +21523,20 @@ async function boot(): Promise<void> {
         // przejęcie stolicy; dla `HUMAN_OWNER_PRIMARY` zwraca dokładnie `player.skarbiec`.
         getPieniadze: (ownerId: number) => ownerTreasury(ownerId),
         add: (ownerId: number, delta: number) => {
-          // `setOwnerTreasury()` floors to 0 (Etap 3, symetria z łupem/przejęciem stolicy) —
-          // oryginalny kod PRZED tą naprawą floorował WYŁĄCZNIE gałąź AI
-          // (`aiSkarbiecByOwner.set(ownerId, Math.max(0, ...))`), gałąź gracza nie floorowała
-          // (`player.skarbiec += delta` wprost). Zachowujemy ten sam brak floora dla ludzi,
-          // żeby naprawa dotyczyła WYŁĄCZNIE resolucji ownerId, nie semantyki floorowania.
+          // R-WEB-AI-PLAYER-PARITY-FIXES-Q1 (poprawka 2): JEDNA reguła dla gracza i AI --
+          // bez podłogi 0. Dawniej gałąź AI robiła `Math.max(0, saldo + delta)`, a gracza nie.
+          // To NIE było zabezpieczenie przed bankructwem: każdy przelew w
+          // diplomacy-economy.ts (applyOneShotGoldTransfer, tick trybutu) NAJPIERW sprawdza
+          // `getPieniadze(płatnik) >= kwota` i odmawia/zrywa umowę, więc płatnik (gracz i AI)
+          // nigdy nie odda więcej złota niż ma. Podłoga działała wyłącznie na ODBIORCĘ AI
+          // z ujemnym saldem (deficyt Złota, R-DEFICYT-ZLOTA-KARA-Q1): każdy dar/trybut
+          // kasował mu dług (-30 + 10 = 0), czego gracz nie dostawał (-30 + 10 = -20).
+          // Dług AI musi trwać tak samo jak dług gracza -- spójnie z bankowaniem tury,
+          // które celowo NIE podłogowuje (patrz komentarz przy aiSkarbiecByOwner.set niżej).
           if (isHuman(ownerId)) {
             playerStateByHuman.get(ownerId)!.skarbiec += delta;
           } else {
-            aiSkarbiecByOwner.set(ownerId, Math.max(0, (aiSkarbiecByOwner.get(ownerId) ?? 0) + delta));
+            aiSkarbiecByOwner.set(ownerId, (aiSkarbiecByOwner.get(ownerId) ?? 0) + delta);
           }
         },
       };
@@ -26488,7 +26495,7 @@ async function boot(): Promise<void> {
             targetId,
             targetId === 0
               ? freshOwnerDefaultPodzialHandlu()
-              : { ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA },
+              : aiSeedPodzialHandlu(),
           );
         }
         reconcileAllOwnerErasFromResearch();
@@ -39039,7 +39046,11 @@ async function boot(): Promise<void> {
                 const sliderSt = aiSliderStateByOwner.get(ownerId) ?? {
                   procentRozwoj:  DEFAULT_PROCENT_ROZWOJ,
                   procentBudynki: DEFAULT_PODZIAL_PRACY.procentBudynki,
-                  procentNauka:   DEFAULT_PODZIAL_HANDLU.procentNauka,
+                  // R-WEB-AI-PLAYER-PARITY-FIXES-Q1: baza korekty = FAKTYCZNY seed ownera (60/20/20
+                  // AI), nie default gracza (20): inaczej pierwsza korekta liczyłaby
+                  // nextPieniadz = 20 - (60 - 20) -> 0 i przerzuciła różnicę na Zamożność.
+                  procentNauka:   ownerDefaultPodzialHandlu.get(ownerId)?.procentNauka
+                    ?? DEFAULT_PODZIAL_HANDLU.procentNauka,
                   lastChangeTurn: null,
                 };
                 const allocationProfile = aiAllocationProfileForOwner(ownerId);
