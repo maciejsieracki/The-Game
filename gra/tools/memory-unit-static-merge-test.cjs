@@ -13,9 +13,10 @@
  *         rozne piksele RGBA A vs B <= LIMIT (domyslnie 120 z 1,6 mln, decyzja wlasciciela ~100);
  *   S4 -- picking (`pickUnitIdAt` w srodek kazdego zetonu): ten sam wynik A i B w staniu i marszu, >= 95% trafien;
  *   S3b -- to samo w zblizeniu (5 zetonow na cala klatke) + stan przyciemniony;
- *   S5 -- przyciemnienie odroczenia (co 3. zeton): przyciemnione B maja wszystkie materialy przezroczyste, inne
- *         zetony nietkniete; po zdjeciu klatka B == klatka B przed przyciemnieniem (0 px, "kolor wraca");
- *         A vs B w stanie przyciemnionym <= LIMIT (zeton przyciemniony jest celowo NIESCALONY);
+ *   S5 -- przyciemnienie odroczenia (co 3. zeton, tworzony W oknie odroczenia jak w grze): przyciemnione B maja
+ *         wszystkie materialy przezroczyste, inne zetony nietkniete; A vs B przyciemnione <= LIMIT (zeton przyciemniony
+ *         jest celowo NIESCALONY); po zdjeciu ("kolor wraca"): ten sam obiekt zetonu (uuid, bez przebudowy), scalony
+ *         w miejscu (liczba meshy == baza B), klatka vs baza <= LIMIT, picking jak w bazie;
  *   S6 -- LOD drobnych czesci: dla kazdego oddalenia liczba schowanych CZESCI w B == A (ten sam zestaw progow),
  *         przy duzym oddaleniu cos schowane; klatka z LOD A vs B <= LIMIT; picking w stanie LOD == bez LOD;
  *         powrot do zblizenia => klatka B == klatka B bazowa (0 px);
@@ -102,7 +103,13 @@ function makeHex(q: number, r: number): any {
   place(0, 0);
   // przyciemnienie odroczenia
   const dimSet = new Set(list.filter((_, i) => i % 3 === 0).map((u) => u.id));
+  // jak w grze: jednostka powstaje W oknie odroczenia (zeton tworzony jako przyciemniony), potem okno sie zamyka
+  const dimList = list.filter((u) => dimSet.has(u.id));
+  ur.sync(list.filter((u) => !dimSet.has(u.id)) as any, display);
   ur.sync(list as any, display, dimSet);
+  const countMeshes = () => { let n = 0; for (const t of tokens.values()) t.traverse((o: any) => { if (o.isMesh) n++; }); return n; };
+  out.meshesDim = countMeshes();
+  const uuidDim = dimList.map((u) => tokens.get(u.id)!.uuid);
   out.dim = grab(); out.zoomDim = grabZ();
   let dimOk = true, othersOk = true;
   for (const u of list) tokens.get(u.id)!.traverse((o: any) => {
@@ -115,6 +122,9 @@ function makeHex(q: number, r: number): any {
   out.dimOk = dimOk; out.othersOk = othersOk;
   ur.sync(list as any, display, new Set());
   out.undim = grab();
+  out.meshesUndim = countMeshes();
+  out.sameUuid = dimList.every((u, i) => tokens.get(u.id)!.uuid === uuidDim[i]);
+  out.pickUndim = pick();
   // LOD drobnych czesci
   const lod: any[] = [];
   for (const dist of [8, 20, 40, 70, 110, 160]) {
@@ -187,9 +197,11 @@ const sameArr = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const dz = { idle: diff(A.zoomIdle, B.zoomIdle), march: diff(A.zoomMarch, B.zoomMarch), attack: diff(A.zoomAttack, B.zoomAttack), dim: diff(A.zoomDim, B.zoomDim) };
     ok('S3b zblizenie (5 zetonow na cala klatke) stanie/marsz/atak/przyciemnienie A vs B <= ' + LIMIT + ' px', Object.values(dz).every((v) => v <= LIMIT), dz);
     const dDim = diff(A.dim, B.dim);
-    ok('S5 przyciemnienie: B przyciemnione, inne nietkniete, po zdjeciu == baza (0 px), A vs B przyciemnione <= ' + LIMIT,
-      B.dimOk && B.othersOk && diff(B.undim, B.idle) === 0 && diff(A.undim, A.idle) === 0 && dDim <= LIMIT,
-      { dimOk: B.dimOk, othersOk: B.othersOk, undimVsIdleB: diff(B.undim, B.idle), dimAvsB: dDim });
+    ok('S5 przyciemnienie: B przyciemnione, inne nietkniete, A vs B przyciemnione <= ' + LIMIT + '; po zdjeciu: ten sam obiekt zetonu (bez przebudowy), scalony w miejscu (meshe == baza B), klatka B vs baza B <= ' + LIMIT + ', A == baza A (0 px), picking == baza',
+      B.dimOk && B.othersOk && dDim <= LIMIT && B.sameUuid && A.sameUuid && B.meshesUndim === B.meshes && B.meshesDim > B.meshes
+        && diff(B.undim, B.idle) <= LIMIT && diff(A.undim, A.idle) === 0 && sameArr(B.pickUndim, B.pickIdle),
+      { dimOk: B.dimOk, othersOk: B.othersOk, dimAvsB: dDim, sameUuid: B.sameUuid, meshes: { base: B.meshes, dim: B.meshesDim, undim: B.meshesUndim },
+        undimVsIdleB: diff(B.undim, B.idle), undimVsIdleA: diff(A.undim, A.idle), pickSame: sameArr(B.pickUndim, B.pickIdle) });
     const lodSame = A.lod.every((x, i) => x.parts === B.lod[i].parts);
     const dLod = diff(A.lodFrame, B.lodFrame);
     ok('S6 LOD: schowane czesci B == A dla kazdego oddalenia, cos schowane, klatka LOD A vs B <= ' + LIMIT + ', picking w LOD == bez LOD, powrot == baza',

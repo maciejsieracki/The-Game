@@ -182,13 +182,31 @@ export interface UnitStaticMergeResult {
   merged: THREE.BufferGeometry[];
 }
 
+export interface UnitStaticMergeOptions {
+  /**
+   * Scalanie żetonu już zarejestrowanego (po oknie przyciemnienia): tylko obiekty z tego zbioru (stan modelu
+   * z chwili rejestracji) mogą być scalane albo usuwane jako puste grupy — nakładki dołożone później
+   * (odznaki, gwiazdki, tabliczka) zostają nietknięte.
+   */
+  only?: ReadonlySet<THREE.Object3D>;
+  /** Zwolnienie geometrii własnych, których nie używa już żaden mesh (domyślnie `dispose`; dla puli: `release`). */
+  release?: (geos: THREE.BufferGeometry[]) => void;
+  /** false: scalone geometrie NIE są dopisywane do `ownedGeos` (wołający sam je rejestruje). Domyślnie true. */
+  appendMerged?: boolean;
+}
+
 /**
  * Scala statyczne części żetonu `root` (W MIEJSCU). `ownedGeos` = `userData['perTokenGeos']` żetonu:
  * geometrie własne, których po scaleniu nie używa już żaden mesh drzewa, są z niej usuwane i zwalniane
  * (nigdy nie trafiły do GPU), a scalone geometrie są do niej dopisywane (zwalnia je `GeometryContentPool`).
  * Wołać PO `MaterialContentPool.poolOwned` (klucz kubełka = wspólny materiał), PRZED `GeometryContentPool.poolOwned`.
  */
-export function mergeUnitStaticParts(root: THREE.Object3D, ownedGeos: THREE.BufferGeometry[]): UnitStaticMergeResult {
+export function mergeUnitStaticParts(
+  root: THREE.Object3D,
+  ownedGeos: THREE.BufferGeometry[],
+  opts: UnitStaticMergeOptions = {},
+): UnitStaticMergeResult {
+  const only = opts.only;
   root.updateMatrixWorld(true);
   const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
   const buckets = new Map<string, Part[]>();
@@ -205,7 +223,7 @@ export function mergeUnitStaticParts(root: THREE.Object3D, ownedGeos: THREE.Buff
     const m = o as THREE.Mesh;
     if (m.isMesh) {
       meshesBefore++;
-      if (!blk && !isRoot) tryAdd(m, sc);
+      if (!blk && !isRoot && (!only || only.has(m))) tryAdd(m, sc);
     }
     for (const c of o.children) visit(c, sc, blk);
   };
@@ -276,7 +294,8 @@ export function mergeUnitStaticParts(root: THREE.Object3D, ownedGeos: THREE.Buff
     const prune = (o: THREE.Object3D): void => {
       for (const c of [...o.children]) {
         prune(c);
-        if (c.children.length === 0 && (c.type === 'Group' || c.type === 'Object3D') && Object.keys(c.userData).length === 0) o.remove(c);
+        if (c.children.length === 0 && (c.type === 'Group' || c.type === 'Object3D') && Object.keys(c.userData).length === 0
+          && (!only || only.has(c))) o.remove(c);
       }
     };
     prune(root);
@@ -286,15 +305,17 @@ export function mergeUnitStaticParts(root: THREE.Object3D, ownedGeos: THREE.Buff
     root.traverse((o) => { const mm = o as THREE.Mesh; if (mm.isMesh && mm.geometry) used.add(mm.geometry as THREE.BufferGeometry); });
     const gone = new Set<THREE.BufferGeometry>();
     for (const g of mergedAway) if (!used.has(g)) gone.add(g);
+    // każde wystąpienie w tablicy to jedno odwołanie (pula liczy je osobno)
+    const dropped: THREE.BufferGeometry[] = [];
     let w = 0;
     for (let i = 0; i < ownedGeos.length; i++) {
       const g = ownedGeos[i]!;
-      if (!gone.has(g)) ownedGeos[w++] = g;
+      if (gone.has(g)) dropped.push(g); else ownedGeos[w++] = g;
     }
     ownedGeos.length = w;
-    const ownedSet = new Set(ownedGeos);
-    for (const g of gone) if (!ownedSet.has(g) && wasOwned.has(g)) g.dispose();
-    for (const g of merged) ownedGeos.push(g);
+    if (opts.release) opts.release(dropped);
+    else for (const g of new Set(dropped)) if (wasOwned.has(g)) g.dispose();
+    if (opts.appendMerged !== false) for (const g of merged) ownedGeos.push(g);
   }
 
   return { meshesBefore, meshesAfter: meshesBefore - removed + merged.length, merged };
