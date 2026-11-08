@@ -72,4 +72,4 @@ Legenda kolumny „zrobione / przeniesione do MULTIWAR-2”:
   - `PC12` (`if rem >= 0.0` w gałęzi `else` planu) — EKWIWALENT: w gałęzi `else` jest `res_total < rem`, więc `rem - res_total > 0` zawsze.
   - `PC17` (`if base.full` bez `|| max_cities <= 0.0`) — EKWIWALENT: pętla `while n < max_cities` nie wykonuje się dla `max_cities <= 0` (także NaN), a wynik odtwarza `base` pole po polu.
   - `PC07` (`res_total > rem` zamiast `>=`) — ZABITY (r6) wektorem `resTiny` w `peace.json` (surowce pn 1, 1, 1e-17; wynik web: `[a,b]`, bez `c`, bo gałąź `>=` przerywa przy `rem <= 0`; mutant dodaje `c`). Wcześniejsze twierdzenie „ekwiwalent dla wszystkich f64” było BŁĘDNE (obalone wektorem).
-- Wynik (r6): 102/105 zabitych (97,1%); 3 ocalałe to ekwiwalenty (`MW01`, `PC12`, `PC17`); po ich wykluczeniu 102/102 nieekwiwalentnych.
+- Wynik (r6; PC07 zmierzony ponownie, reszta z r5): 102/105 zabitych (97,1%); 3 ocalałe to ekwiwalenty (`MW01`, `PC12`, `PC17`); po ich wykluczeniu 102/102 nieekwiwalentnych.
