@@ -1,0 +1,310 @@
+[
+ {
+  "fn": "isInterCivWarOpenAtTurn",
+  "in": {
+   "turn": "39"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isInterCivWarOpenAtTurn",
+  "in": {
+   "turn": "40"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isInterCivWarOpenAtTurn",
+  "in": {
+   "turn": "41"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "concurrentWarLimitForEra",
+  "in": {
+   "era": "1"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "concurrentWarLimitForEra",
+  "in": {
+   "era": "2"
+  },
+  "out": "null"
+ },
+ {
+  "fn": "concurrentWarLimitForEra",
+  "in": {
+   "era": "3"
+  },
+  "out": "null"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": 1,
+   "attackerWarCount": 0,
+   "targetIsPlayer": false,
+   "targetEra": 1,
+   "targetWarCount": 0
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": 1,
+   "attackerWarCount": 0,
+   "targetIsPlayer": false,
+   "targetEra": 1,
+   "targetWarCount": 0
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": 1,
+   "attackerWarCount": 1,
+   "targetIsPlayer": false,
+   "targetEra": 2,
+   "targetWarCount": 0
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": 2,
+   "attackerWarCount": 9,
+   "targetIsPlayer": false,
+   "targetEra": 1,
+   "targetWarCount": 0
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": 2,
+   "attackerWarCount": 0,
+   "targetIsPlayer": false,
+   "targetEra": 1,
+   "targetWarCount": 1
+  },
+  "out": "stone_limit_target_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": 2,
+   "attackerWarCount": 0,
+   "targetIsPlayer": true,
+   "targetEra": 1,
+   "targetWarCount": 5
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": 1,
+   "attackerWarCount": 0,
+   "targetIsPlayer": true,
+   "targetEra": 1,
+   "targetWarCount": 5
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": 1,
+   "attackerWarCount": 0,
+   "targetIsPlayer": false,
+   "targetEra": 1,
+   "targetWarCount": 0
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": 1,
+   "attackerWarCount": 0,
+   "targetIsPlayer": false,
+   "targetEra": 1,
+   "targetWarCount": 2
+  },
+  "out": "stone_limit_target_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": 1,
+   "attackerWarCount": 0,
+   "targetIsPlayer": false,
+   "targetEra": 1,
+   "targetWarCount": 2
+  },
+  "out": "stone_limit_target_r2"
+ },
+ {
+  "fn": "pickPlayerReferenceCity",
+  "in": {
+   "cities": [
+    {
+     "id": "c1",
+     "ownerId": 0
+    },
+    {
+     "id": "c2",
+     "ownerId": 0
+    },
+    {
+     "id": "c3",
+     "ownerId": 1
+    },
+    {
+     "id": "c4",
+     "ownerId": 0
+    }
+   ],
+   "capitalCityId": "c2"
+  },
+  "out": "c2"
+ },
+ {
+  "fn": "pickPlayerReferenceCity",
+  "in": {
+   "cities": [
+    {
+     "id": "c1",
+     "ownerId": 0
+    },
+    {
+     "id": "c2",
+     "ownerId": 0
+    },
+    {
+     "id": "c3",
+     "ownerId": 1
+    },
+    {
+     "id": "c4",
+     "ownerId": 0
+    }
+   ],
+   "capitalCityId": "c3"
+  },
+  "out": "c1"
+ },
+ {
+  "fn": "pickPlayerReferenceCity",
+  "in": {
+   "cities": [
+    {
+     "id": "c1",
+     "ownerId": 0
+    },
+    {
+     "id": "c2",
+     "ownerId": 0
+    },
+    {
+     "id": "c3",
+     "ownerId": 1
+    },
+    {
+     "id": "c4",
+     "ownerId": 0
+    }
+   ],
+   "capitalCityId": "c9"
+  },
+  "out": "c1"
+ },
+ {
+  "fn": "pickPlayerReferenceCity",
+  "in": {
+   "cities": [
+    {
+     "id": "c1",
+     "ownerId": 0
+    },
+    {
+     "id": "c2",
+     "ownerId": 0
+    },
+    {
+     "id": "c3",
+     "ownerId": 1
+    },
+    {
+     "id": "c4",
+     "ownerId": 0
+    }
+   ],
+   "capitalCityId": null
+  },
+  "out": "c1"
+ },
+ {
+  "fn": "pickPlayerReferenceCity",
+  "in": {
+   "cities": [
+    {
+     "id": "c1",
+     "ownerId": 0
+    },
+    {
+     "id": "c2",
+     "ownerId": 0
+    },
+    {
+     "id": "c3",
+     "ownerId": 1
+    },
+    {
+     "id": "c4",
+     "ownerId": 0
+    }
+   ],
+   "capitalCityId": "undefined"
+  },
+  "out": "c1"
+ },
+ {
+  "fn": "pickPlayerReferenceCity",
+  "in": {
+   "cities": [
+    {
+     "id": "x",
+     "ownerId": 1
+    }
+   ],
+   "capitalCityId": "x"
+  },
+  "out": null
+ },
+ {
+  "fn": "pickPlayerReferenceCity",
+  "in": {
+   "cities": [],
+   "capitalCityId": "c1"
+  },
+  "out": null
+ }
+]

@@ -281,7 +281,40 @@ for (const sq of stepSeqs) {
   stepCases.push({ init: sq.init.map(([k, v]) => ({ key: k, warStart: S(v.warStart), peak: S(v.peak), stage: S(v.stage), rejectedOffers: S(v.rejectedOffers), lastOfferTurn: S(v.lastOfferTurn) })), steps });
 }
 
+// ---------- 4. Bramka wojny miedzy cywilizacjami R1/R2 (war-rules-multiwar.ts:82-130) + pickPlayerReferenceCity (:292) ----------
+const interCivCases = [];
+for (const turn of [39, 40, 41]) {
+  interCivCases.push({ fn: 'isInterCivWarOpenAtTurn', in: { turn: S(turn) }, out: S(RM.isInterCivWarOpenAtTurn(turn, RM_DEFAULT)) });
+}
+for (const era of [1, 2, 3]) {
+  interCivCases.push({ fn: 'concurrentWarLimitForEra', in: { era: S(era) }, out: S(RM.concurrentWarLimitForEra(era, RM_DEFAULT)) });
+}
+const gateInputs = [
+  { turn: 39, attackerEra: 1, attackerWarCount: 0, targetIsPlayer: false, targetEra: 1, targetWarCount: 0 },
+  { turn: 40, attackerEra: 1, attackerWarCount: 0, targetIsPlayer: false, targetEra: 1, targetWarCount: 0 },
+  { turn: 40, attackerEra: 1, attackerWarCount: 1, targetIsPlayer: false, targetEra: 2, targetWarCount: 0 },
+  { turn: 40, attackerEra: 2, attackerWarCount: 9, targetIsPlayer: false, targetEra: 1, targetWarCount: 0 },
+  { turn: 40, attackerEra: 2, attackerWarCount: 0, targetIsPlayer: false, targetEra: 1, targetWarCount: 1 },
+  { turn: 40, attackerEra: 2, attackerWarCount: 0, targetIsPlayer: true, targetEra: 1, targetWarCount: 5 },
+  { turn: 40, attackerEra: 1, attackerWarCount: 0, targetIsPlayer: true, targetEra: 1, targetWarCount: 5 },
+  { turn: 40, attackerEra: 1, attackerWarCount: 0, targetIsPlayer: false, targetEra: 1, targetWarCount: 0 },
+  { turn: 41, attackerEra: 1, attackerWarCount: 0, targetIsPlayer: false, targetEra: 1, targetWarCount: 2 },
+  { turn: 40, attackerEra: 1, attackerWarCount: 0, targetIsPlayer: false, targetEra: 1, targetWarCount: 2 },
+];
+for (const g of gateInputs) {
+  interCivCases.push({ fn: 'evaluateInterCivWarGate', in: { ...g, turn: S(g.turn) }, out: RM.evaluateInterCivWarGate(g, RM_DEFAULT) });
+}
+const cityRows = [
+  { id: 'c1', ownerId: 0 }, { id: 'c2', ownerId: 0 }, { id: 'c3', ownerId: 1 }, { id: 'c4', ownerId: 0 },
+];
+for (const capital of ['c2', 'c3', 'c9', null, undefined]) {
+  interCivCases.push({ fn: 'pickPlayerReferenceCity', in: { cities: cityRows, capitalCityId: capital === undefined ? 'undefined' : capital }, out: RM.pickPlayerReferenceCity(cityRows, capital, 0)?.id ?? null });
+}
+interCivCases.push({ fn: 'pickPlayerReferenceCity', in: { cities: [{ id: 'x', ownerId: 1 }], capitalCityId: 'x' }, out: RM.pickPlayerReferenceCity([{ id: 'x', ownerId: 1 }], 'x', 0)?.id ?? null });
+interCivCases.push({ fn: 'pickPlayerReferenceCity', in: { cities: [], capitalCityId: 'c1' }, out: RM.pickPlayerReferenceCity([], 'c1', 0)?.id ?? null });
+
 fs.mkdirSync(OUT, { recursive: true });
+fs.writeFileSync(path.join(OUT, 'intercivgate.json'), JSON.stringify(interCivCases, null, 1) + '\n');
 fs.writeFileSync(path.join(OUT, 'weariness.json'), JSON.stringify(wwCases, null, 1) + '\n');
 fs.writeFileSync(path.join(OUT, 'era.json'), JSON.stringify(eraCases, null, 1) + '\n');
 fs.writeFileSync(path.join(OUT, 'nap.json'), JSON.stringify(napCases, null, 1) + '\n');
