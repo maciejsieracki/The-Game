@@ -1,3 +1,9 @@
+## ROBOCZA c6d64ae5 -- 2026-11-06 -- FALA 555: SIEGEDUR: obroncy oblezonego miasta liczeni po wszystkich zywych jednostkach wojskowych na heksie miasta (nie tylko ufortyfikowanych) — oblezenie znow trwa kilka-kilkanascie tur (testowa)
+
+- gra/src/game/siege-starvation.ts (siegeDefenderUnits), gra/src/main.ts (blok N3 glodu i prognoza plakietki siegeSurrenderBadgeFor); progi 6/8/10% i <50% bez zmian
+- Weryfikacja: FC PASS-WITH-NOTES 71d4c8b90 (kod be505e7c2); siege-starvation-duration 27/0, siege-starvation 54/0, forecast 57/0, defenders 12/0, army-hunger-combat 13/0, empire-food-b5 34/0, ai-test 289/0, logic 213/213, tsc 0, vite OK; scenariusz: poddanie z tury 3 na 8-11 wg trudnosci, plakietka zgodna z faktem
+- Limity: Diagnoza statyczna (bez bisectu i bez zapisu stanu Rakhigarhi/Ganweriwala/Kalibangan — nie potwierdzono, ze obroncy byli nieufortyfikowani); zuzycie zapasow etapu 1 nadal liczy tylko inGarnizon (DECISION do wlasciciela); brak weryfikacji w przegladarce
+
 ## ROBOCZA 722269e7 -- 2026-11-06 -- FALA 554: CAVFLANK: konnica i rydwany na skrzydlach przy starcie bitwy (na wysokosci najszerszego szeregu, nie przed nim) (testowa)
 
 - gra/src/battle/formationRules.ts (initialBattleSlots): glebokosc slotu konnicy liczona od najszerszego szeregu nie-konnego zamiast rank 0; start i reset deploy; tryb 'rear' i reczne ustawienie bez zmian
