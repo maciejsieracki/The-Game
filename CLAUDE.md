@@ -43,6 +43,32 @@ któregokolwiek → zgłoszenie zgubione. Ta komenda żyje TAKŻE w
 bo `playbook.md` i `README.md` wymagają świadomego `Read` i po kompaktowaniu
 długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playbook.md` → C-031.
 
+## STAŁE ZASADY ORKIESTRATORA (właściciel przypomina je co sesję — czytaj PRZED każdą decyzją)
+
+1. **Cała praca merytoryczna przez Workflow** (Operator → Evaluator → Obrona → Final Control, max 5 rund,
+   FAIL wraca do TEGO SAMEGO ID). Orkiestrator tylko: pisze dispatch, uruchamia Workflow, czyta wyniki,
+   integruje po Final Control, deployuje na ROBOCZĄ, robi `git push`, rejestry i sprzątanie dysku.
+   NIGDY nie poprawiam kodu gry ręcznie, nie rozwiązuję konfliktów w kodzie ręcznie, nie „robię szybko sam".
+2. **Model Operatora = HAIKU 5.5 domyślnie** (zwykłe tematy: poprawki, testy, dokumentacja, REPIN z gotową
+   tabelą, parametry). SONNET na Operatorze tylko z pisemnym UZASADNIENIEM w dispatchu (temat obiektywnie
+   trudny: synteza dużego diffu, wiele ścieżek, balans AI, kod Rust > 1 partii) albo po 2 nieudanych rundach
+   Haiku. OPUS 5.5 (wszystkie etapy) wyłącznie dla tematów pamięci/GPU/grafiki Rust. Obrona = Haiku;
+   Evaluator i Final Control = Sonnet. `opModel` w args Workflow ustawiaj ŚWIADOMIE — nie kopiuj
+   „claude-sonnet-5-5" z poprzedniego wywołania z rozpędu.
+3. **Decyzje produktowe i liczbowe progi → pytanie ABC do właściciela** (AskUserQuestion, po polsku, opcje
+   z rekomendacją). Nie wybieram progów/balansu sam. Błędy webowe wykryte w testach naprawiam jako osobny
+   temat R-WEB-* bez pytania (stała zgoda z 2026-11-01).
+4. **Deploy wyłącznie na ROBOCZĄ** (nigdy KANON/FINALNA), po Final Control: merge FC do main, build poza repo,
+   `finalize.sh`, push, odczyt GitHub Raw + MD5, wpis w `dyspozycje/REJESTR-PROSB-I-ZADAN.md` i `WERSJE.md`.
+   Log buildu `/tmp/vbuild.log` sprawdzaj pod kątem BIEŻĄCEGO merge'a (stary log daje fałszywe BUILD_DONE).
+5. **Dysk jest wąskim gardłem**: sprzątaj worktree zakończonych tematów (po zapisaniu `refs/keep/<ID>-fc` i
+   push gałęzi `*-wip/*`), nie startuj nowego tematu z kodem Rust przy < 8 GB wolnego, web przy < 4 GB.
+6. **Dispatch zapisany i wypchnięty PRZED uruchomieniem Workflow**; kolejne rundy jako dopisek w
+   `00-dispatch.md` z BAZĄ (SHA/gałąź FC). Raport końcowy: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/
+   BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH.
+7. **Komunikacja z właścicielem po polsku**, krótko, uczciwie: NIE_ZMIERZONO tam, gdzie nie zmierzono;
+   żadnych zapewnień bez dowodu (SHA, liczby, MD5).
+
 ## Bariery krytyczne
 
 - Każdy temat ma pełne ID, `GOAL`, kryteria końca, allowlistę i izolowany worktree.
