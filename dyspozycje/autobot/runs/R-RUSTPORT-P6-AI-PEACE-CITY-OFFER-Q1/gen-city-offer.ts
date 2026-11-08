@@ -1,4 +1,7 @@
-import * as AI from '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/web/gra/src/game/ai.ts';
+// R-RUSTPORT-P6-AI-PEACE-CITY-OFFER-Q1 r2: generator wektorow z URUCHOMIONEGO weba.
+// Nie uruchamiac bezposrednio: patrz gen-city-offer.sh (bundle esbuild, WEB_ROOT = katalog z gra/src i gra/data).
+import * as AI from '@web/game/ai';
+import * as PROF from '@web/game/diplomacy-war-peace-profile';
 
 function mulberry32(a: number) {
   return function () {
@@ -11,7 +14,26 @@ function mulberry32(a: number) {
 const rnd = mulberry32(20261108);
 const pick = <T,>(arr: T[]): T => arr[Math.floor(rnd() * arr.length)];
 
-const out: any = { pure: { rwProg: [], waga: [], pickOddania: [], pickZadania: [] }, decide: [] };
+const out: any = {
+  pure: { rwProg: [], waga: [], pickOddania: [], pickZadania: [], profil: [] },
+  decide: [],
+};
+
+// 0. resolveWarPeaceProfile per cywilizacja (pelny profil) — brak klucza / nieznany / 15 cywilizacji.
+const civKeys: (string | null)[] = [
+  null, 'gracz-nieznany', 'grecy', 'rzymianie', 'chinczycy', 'inkowie', 'zulusi', 'egipt', 'sumer',
+  'celtowie', 'germanie', 'harappa', 'hetyci', 'slowianie', 'babilonia', 'asyria', 'fenicjanie',
+];
+// Liczby jako napisy (String(x)): serde_json bez feature float_roundtrip potrafi roznic sie o 1 ULP
+// od JS; str::parse::<f64>() w tescie jest dokladny.
+const asStr = (p: any) => {
+  const o: any = {};
+  for (const k of Object.keys(p)) o[k] = typeof p[k] === 'number' ? String(p[k]) : p[k];
+  return o;
+};
+for (const k of civKeys) {
+  out.pure.profil.push({ civ: k, profile: asStr(PROF.resolveWarPeaceProfile(k as any)) });
+}
 
 // 1. aiMiastoPrzekazRwProg
 for (const agr of [undefined, 0, 1, 3, 4, 5, 6, 7, 9, 10, 2.5]) {
@@ -52,12 +74,12 @@ for (const pns of [[499, 500, 501], [500], [499], [1200, 500, 700], [500, 500], 
   out.pure.pickZadania.push({ miasta: list, out: r ? r.cityId : null });
 }
 
-// 5. decideAIDiplomacy block oracle
+// 5. decideAIDiplomacy block oracle (N1a/N1b). r2: + myTypCywilizacji, stanWojny, partnerId.
 function mkRel(o: any) {
   return {
-    partnerId: '0',
+    partnerId: o.partnerId,
     respektWzgledny: o.rw,
-    stanWojny: true,
+    stanWojny: o.stanWojny,
     relation: { zaufanie: 0, respekt: 0 },
     turnsAtWar: o.turnsAtWar,
     lostCitiesInWar: o.lost,
@@ -74,13 +96,20 @@ const cityOut = (cmds: any[]) => {
   return { kind: 'zada', cityId: c.cityId, cityPn: c.cityPn, cityWeight: null, powod: c.powod };
 };
 const rwGrid = [0.0, 0.05, 0.1, 0.15, 0.16, 0.2, 0.25, 0.3, 0.4, 0.45, 0.5, 0.6, 0.65, 0.69, 0.7, 0.71, 0.8, 0.95, 1.0];
-const turnsGrid = [0, 1, 7, 8, 9, 19, 20, 21, 40, 100, 199, 200, 201];
+// r2: gęsto 0..9 — progi min_tur_wojny per cywilizacja (2..8) muszą być przecinane przez wektory bloku.
+const turnsGrid = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 19, 20, 21, 40, 100, 199, 200, 201];
 const lostGrid = [0, 1, 2, 3, 4];
 const zdobyteGrid = [0, 1, 2];
 const tscGrid = [undefined, 0, 10, 29, 30, 60, 130];
 const agrGrid = [undefined, 0, 4, 5, 6, 9, 10];
 const ekspGrid = [undefined, 1, 3, 5, 9];
 const cityPnGrid = [100, 300, 400, 480, 499, 500, 501, 520, 800, 1500];
+// r2: typy cywilizacji (wiersze macierzy + brak wiersza). undefined = brak pola myTypCywilizacji.
+const civGrid: (string | undefined)[] = [
+  undefined, 'zulusi', 'chinczycy', 'grecy', 'egipt', 'rzymianie', 'inkowie', 'fenicjanie', 'harappa', 'nieznana-cywilizacja',
+];
+// r2: partnerId '0' = gracz (warunek N1a/N1b); inne = AI, negatywna bramka.
+const partnerGrid = ['0', '0', '0', '0', '0', '0', '0', '0', '1', 'ai2'];
 function randCities(n: number, prefix: string) {
   const arr: any[] = [];
   for (let i = 0; i < n; i++) arr.push({ cityId: prefix + i, cityPn: pick(cityPnGrid), zakazane: rnd() < 0.15 });
@@ -91,6 +120,9 @@ for (let k = 0; k < 2600; k++) {
   const rw = k < rwGrid.length * 3 ? rwGrid[k % rwGrid.length] : pick(rwGrid.concat(rwExtra)) + (rnd() < 0.3 ? 0.01 : 0);
   const o: any = {
     rw,
+    civ: pick(civGrid) ?? null,
+    stanWojny: rnd() < 0.85,
+    partnerId: pick(partnerGrid),
     turnsAtWar: pick(turnsGrid),
     lost: pick(lostGrid),
     zdobyte: pick(zdobyteGrid),
@@ -108,6 +140,7 @@ for (let k = 0; k < 2600; k++) {
     agresywnoscRaw: o.agr,
     ekspansywnosc: o.eks,
     isMinorCivSelf: o.minorSelf,
+    myTypCywilizacji: o.civ ?? undefined,
     miastaAI: o.miastaAI,
     currentTurn: 50,
     sklonnoscDoPodboju: 2,

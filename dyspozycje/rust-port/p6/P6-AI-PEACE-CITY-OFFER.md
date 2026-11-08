@@ -32,9 +32,11 @@ Podpięcie do tury: NIE (zgodnie z dispatchem).
 
 ## 2. Wektory (oracle = uruchomiony web)
 
-Generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-AI-PEACE-CITY-OFFER-Q1/gen-city-offer.ts` (esbuild bundle + Node 22,
-`--external:three` bo moduł renderu importuje three.js, którego nie ma w ścieżce oracle). Wynik:
-`rust-port/engine/tests/p6_ai_peace_city_offer_data/vectors.json` (1,09 MB).
+Generator (r2, parametryczny): `dyspozycje/autobot/runs/R-RUSTPORT-P6-AI-PEACE-CITY-OFFER-Q1/gen-city-offer.sh` uruchamia
+`gen-city-offer.ts` przez bundle esbuild 0.24.x i Node 22. Ścieżka web jest parametrem `WEB_ROOT` (katalog z `gra/src`
+i `gra/data`, np. wynik `git archive origin/main gra/src gra/data`), nie stałą ścieżką sesji. Biblioteka `three`
+(moduł renderu, nie blok AI) jest stubem z nazwami zebranymi z `THREE.<Nazwa>` w `WEB_ROOT`. Wynik:
+`rust-port/engine/tests/p6_ai_peace_city_offer_data/vectors.json` (1,19 MB).
 
 | Zbiór | Liczba | Co pokrywa |
 |---|---|---|
@@ -42,13 +44,21 @@ Generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-AI-PEACE-CITY-OFFER-Q1/gen-cit
 | `waga` | 11 | ekspansywność undefined, 0…10, 2.5 |
 | `pickOddania` | 300 | ekspansywność {undef,0,3,5,10} × cena {domyślna,400,625,750,1250} × minMiast {undef,2,3} × długość listy 1–4; granice `cityPn` = ⌈cena/waga⌉ −2/−1/0/+1 (N−1/N/N+1), zakazane |
 | `pickZadania` | 6 | granica 499/500/501, zakazane, pusta lista |
-| `decide` | 2600 | blok N1a/N1b przez `decideAIDiplomacy` (jedna relacja, stan wojny, partnerId '0'); rw z siatki 0…1 (w tym 0.15±0.01, 0.7), tury wojny 0…201 (granice 7/8/19/20/21/199/200/201), straty 0–4, zdobyte 0–2, `turnsSinceCityChange` 0…130, agresywność, ekspansywność, miasta AI i gracza 0–4, flagi minor |
+| `profil` (r2) | 17 | `resolveWarPeaceProfile` dla braku klucza, nieznanego klucza i 15 cywilizacji; pola liczbowe jako napisy `String(x)` (dokładny `str::parse`) |
+| `decide` | 2600 | blok N1a/N1b przez `decideAIDiplomacy`; rw z siatki 0…1 (w tym 0.15±0.01, 0.7); tury wojny 0…9 gęsto oraz 19/20/21/40/100/199/200/201; straty 0–4, zdobyte 0–2, `turnsSinceCityChange` 0…130, agresywność, ekspansywność, miasta AI i gracza 0–4, flagi minor. r2: `myTypCywilizacji` ∈ {brak, zulusi, chinczycy, grecy, egipt, rzymianie, inkowie, fenicjanie, harappa, nieznana}; `stanWojny` = false w ~15% przypadków; `partnerId` = '0' w 80%, inne ('1', 'ai2') w pozostałych |
 
-Wynik oracle (`decide`): oferuj 235, zada 307, brak komendy bloku (priorytet 1–6 lub pusto) 2058. Błędy wykonania: 0.
+Wynik oracle (`decide`, r2): oferuj 140, zada 169, brak komendy bloku 2291, błędy wykonania 0. Przypadki z `stanWojny=false` (378) lub `partnerId != '0'` (494) dają w webie brak komendy miasta; test sprawdza to po stronie Rusta.
 
 ## 3. Wynik zgodności
 
-- `tests/p6_ai_peace_city_offer.rs`: 5/5 pass (w tym: liczniki przypadków oferuj ≥100, zada ≥100, brak ≥100, aby test nie był pusty).
+- `tests/p6_ai_peace_city_offer.rs`: 6/6 pass (r2; r1 miało 5). Liczniki nie pozwalają na pusty test: oferuj ≥100, zada ≥100, brak ≥100, bez wojny ≥100, partner ≠ gracz ≥100, z `myTypCywilizacji` ≥1000, profilów ≥17, różnych `minTurWojny` ≥4.
+- Test `profil_wojny_per_cywilizacja_zgodny_z_webem` (r2, odpowiedź na notatkę Evaluatora 1): porównuje wprost z webem 15 pól profilu per cywilizacja (w tym `minTurWojny`, `progPokojSlabosc`), niezależnie od bloku `decide`.
+- Mutanty (r2, wykonane ręcznie, src przywracane `git checkout`):
+  - `resolve_war_peace_profile(ctx.my_typ_cywilizacji, …)` zastąpione `None`: FAIL `blok_oferuj_zada_zgodny_z_decide_ai_diplomacy` (wykryte dopiero po zagęszczeniu siatki tur wojny; przed tym mutant przechodził).
+  - usunięta bramka `partner_id == "0"`: FAIL bloku.
+  - usunięta bramka `stan_wojny` z `common_gate`: PASS. Mutant równoważny: `peace_time_ok` wymaga `turns_at_war_rel >= min_tur_wojny` a `turns_at_war_rel = 0` przy braku wojny, a `min_tur_wojny >= 2` dla każdej cywilizacji i bazy, więc bramka jest zbędna. Nie jest to luka testu.
+- Porównanie: `rwProg` i `waga` dokładnie (`==`), wybór miasta po `cityId`, bloki po rodzaju, `cityId`, `cityPn`, `cityWeight`, pełnym tekście `powod`, profil pole po polu.
+- Ekstra (r1, bez zmian): `js_to_fixed2` = `{:.2}` w Ruście; JS `toFixed` różni się tylko przy remisie dokładnym (np. 0.125). Wektory nie zawierają takiego rw (siatka bez wartości 1/8·k nieparzystego), więc to nie zmienia wyniku testu.
 - Porównanie: `rwProg` i `waga` dokładnie (`==`), wybór miasta po `cityId`, bloki po rodzaju, `cityId`, `cityPn`, `cityWeight`, pełnym tekście `powod`.
 - Ekstra: `js_to_fixed2` = `{:.2}` w Ruście; JS `toFixed` różni się tylko przy remisie dokładnym (np. 0.125). Wektory nie zawierają takiego rw (siatka bez wartości 1/8·k nieparzystego), więc to nie zmienia wyniku testu.
 
@@ -61,9 +71,9 @@ Brak odstępstw w logice. Założenia techniczne:
 
 ## 5. Bramki
 
-- `cargo fmt` (rustfmt --check) na nowych plikach: OK.
-- `cargo clippy --all-targets -- -D warnings` (cały pakiet civ-engine, wszystkie 318 targetów): OK, 0 ostrzeżeń.
-- `cargo test --lib`: 22 passed, 0 failed.
+- r2: `rustfmt --check` na `tests/p6_ai_peace_city_offer.rs`: OK. `cargo clippy --lib --test p6_ai_peace_city_offer -- -D warnings`: OK. `cargo test --test p6_ai_peace_city_offer`: 6/6 pass.
+- r2 NIE_ZMIERZONO: `src/` nie zmieniono w r2 (zmiany tylko w teście, wektorach, generatorze i dokumencie), więc pełny `cargo test` i `clippy --all-targets` z r1 nie były powtarzane w r2.
+- r1 (dla kontekstu, wynik z tamtego commita): `cargo clippy --all-targets -- -D warnings` OK; `cargo test --lib` 22 passed. Pełny `cargo test` wszystkich binarek nie był wykonywany (NIE_ZMIERZONO).
 - `cargo test` (binarki diplomacy/AI, 13 targetów: ai_turn, combat_ai_multipliers, diplomacy, p6_dyplo_multiwar2_peace_ai, p6_dyplo_multiwar2_peace_helpers, p6_dyplo_multiwar_peace, p6_repin_ai_founded_by, p6_repin_ai_home, p6_repin_ai_nearest_plan, p6_repin_ai_war_vectors, p6_repin_ai_zakup_rezerwa, p6_repin_wojna_b_ai_general, p6_ai_peace_city_offer): 0 failed, 0 nowych `#[ignore]`.
 - NIE_ZMIERZONO: pełny `cargo test` dla wszystkich 318 binarek (linkowanie każdej w debug przekroczyłoby wolne miejsce na dysku ~6 GB przy limicie 1,5 GB); wszystkie binarki są typowo sprawdzane przez clippy `--all-targets`, a zmiana dodaje wyłącznie nowy moduł i jedną linię w `domain/mod.rs`.
 
