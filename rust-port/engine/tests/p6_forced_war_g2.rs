@@ -6,7 +6,12 @@
 
 use std::collections::{HashMap, HashSet};
 
-use civ_engine::domain::war_forced_common::count_active_forced_wars_for_owner;
+use civ_engine::domain::war_forced_bronze::*;
+use civ_engine::domain::war_forced_common::{
+    count_active_forced_wars_for_owner, ForcedWarNeighborCandidate,
+    FORCED_WAR_EPOCH_RELATION_BLOCK_THRESHOLD,
+};
+use civ_engine::domain::war_forced_iron::*;
 use civ_engine::domain::war_forced_pairing::*;
 use serde_json::{json, Map, Value};
 
@@ -287,4 +292,178 @@ fn g2_common_state_roundtrip_matches_web() {
         );
     }
     assert!(checked >= 10, "za malo wektorow roundtrip: {checked}");
+}
+
+fn web_constant(name: &str) -> f64 {
+    match name {
+        "FORCED_WAR_EPOCH_RELATION_BLOCK_THRESHOLD" => FORCED_WAR_EPOCH_RELATION_BLOCK_THRESHOLD,
+        "WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE" => {
+            WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE as f64
+        }
+        "WOJNA_WYMUSZONA_ODPOCZYNEK_TUR" => WOJNA_WYMUSZONA_ODPOCZYNEK_TUR,
+        "WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR" => {
+            WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR
+        }
+        "WOJNA_WYMUSZONA_START_TURY_OD_EPOKI" => WOJNA_WYMUSZONA_START_TURY_OD_EPOKI,
+        "WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR" => WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
+        "EPOKA_ZELAZO_NUMER" => EPOKA_ZELAZO_NUMER as f64,
+        "WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE" => {
+            WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE as f64
+        }
+        "WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR" => {
+            WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR
+        }
+        "WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR" => WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
+        "WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR" => {
+            WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR
+        }
+        "WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI" => WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI,
+        other => panic!("nieznana stala {other}"),
+    }
+}
+
+fn opt_num(v: &Value) -> Option<f64> {
+    if v.is_null() {
+        None
+    } else {
+        Some(num(v))
+    }
+}
+
+fn eligibility_input(v: &Value) -> (bool, bool, Option<f64>, Option<f64>) {
+    (
+        v["isMainAiCiv"].as_bool().expect("bool"),
+        v["isAlreadyAtWarAnyRole"].as_bool().expect("bool"),
+        v.get("currentTurn").and_then(opt_num),
+        v.get("eraEnterTurn").and_then(opt_num),
+    )
+}
+
+fn cands(v: &Value) -> Vec<ForcedWarNeighborCandidate> {
+    v.as_array()
+        .expect("kandydaci")
+        .iter()
+        .map(|c| ForcedWarNeighborCandidate {
+            owner_id: int(&c["ownerId"]),
+            q: int(&c["q"]) as i32,
+            r: int(&c["r"]) as i32,
+        })
+        .collect()
+}
+
+fn target_input(
+    v: &Value,
+) -> (
+    Vec<ForcedWarNeighborCandidate>,
+    Option<(i32, i32)>,
+    HashSet<i64>,
+) {
+    let reference = if v["ref"].is_null() {
+        None
+    } else {
+        Some((int(&v["ref"]["q"]) as i32, int(&v["ref"]["r"]) as i32))
+    };
+    let blocked: HashSet<i64> = v["blocked"]
+        .as_array()
+        .expect("blocked")
+        .iter()
+        .map(int)
+        .collect();
+    (cands(&v["candidates"]), reference, blocked)
+}
+
+/// Wynik wyboru celu w formacie webowym (`null` gdy brak kandydata).
+fn target_out(v: Option<i64>) -> Value {
+    v.map_or(Value::Null, |id| json!(id))
+}
+
+#[test]
+fn g2_bronze_iron_vectors_match_web() {
+    let cases: Vec<Value> = serde_json::from_str(G2).expect("cases.json");
+    let mut seen: HashMap<&str, usize> = HashMap::new();
+    for (idx, c) in cases.iter().enumerate() {
+        let fn_name = c["fn"].as_str().expect("fn");
+        let inp = &c["in"];
+        let got: Value = match fn_name {
+            "assignForcedWarPairings" | "commonStateRoundtrip" => continue,
+            "bronzeStateRoundtrip" | "ironStateRoundtrip" => {
+                let partial = saved_partial(&inp["saved"]);
+                let restored = if fn_name == "bronzeStateRoundtrip" {
+                    restore_bronze_forced_war_state(partial.as_ref())
+                } else {
+                    restore_iron_forced_war_state(partial.as_ref())
+                };
+                let ser = if fn_name == "bronzeStateRoundtrip" {
+                    serialize_bronze_forced_war_state(&restored)
+                } else {
+                    serialize_iron_forced_war_state(&restored)
+                };
+                state_json(&ser)
+            }
+            "isEligibleForBronzeForcedWar" | "isEligibleForIronForcedWar" => {
+                let (main, war, cur, enter) = eligibility_input(inp);
+                let e = BronzeForcedWarEligibilityInput {
+                    is_main_ai_civ: main,
+                    is_already_at_war_any_role: war,
+                    current_turn: cur,
+                    era_enter_turn: enter,
+                };
+                if fn_name == "isEligibleForBronzeForcedWar" {
+                    json!(is_eligible_for_bronze_forced_war(&e))
+                } else {
+                    let ie = IronForcedWarEligibilityInput {
+                        is_main_ai_civ: main,
+                        is_already_at_war_any_role: war,
+                        current_turn: cur,
+                        era_enter_turn: enter,
+                    };
+                    json!(is_eligible_for_iron_forced_war(&ie))
+                }
+            }
+            "pickBronzeForcedWarTargetId" | "pickIronForcedWarTargetId" => {
+                let (cs, reference, blocked) = target_input(inp);
+                let hex = |aq: i32, ar: i32, bq: i32, br: i32| hd(aq, ar, bq, br);
+                let id = if fn_name == "pickBronzeForcedWarTargetId" {
+                    pick_bronze_forced_war_target_id(&cs, reference, hex, &blocked)
+                } else {
+                    pick_iron_forced_war_target_id(&cs, reference, hex, &blocked)
+                };
+                target_out(id)
+            }
+            "isRestingFromBronzeForcedWar" => json!(is_resting_from_bronze_forced_war(
+                num(&inp["cur"]),
+                inp.get("rest").and_then(opt_num)
+            )),
+            "isRestingFromIronForcedWar" => json!(is_resting_from_iron_forced_war(
+                num(&inp["cur"]),
+                inp.get("rest").and_then(opt_num)
+            )),
+            "isIronEraEntry" => json!(is_iron_era_entry(int(&inp["prev"]), int(&inp["next"]))),
+            "constant" => json!(web_constant(inp["name"].as_str().expect("name"))),
+            other => panic!("nieznana funkcja {other}"),
+        };
+        *seen.entry(fn_name).or_insert(0) += 1;
+        assert!(
+            json_eq(&got, &c["out"]),
+            "roznica #{idx} {fn_name}: got={got} want={}",
+            c["out"]
+        );
+    }
+    for name in [
+        "isEligibleForBronzeForcedWar",
+        "isEligibleForIronForcedWar",
+        "pickBronzeForcedWarTargetId",
+        "pickIronForcedWarTargetId",
+        "bronzeStateRoundtrip",
+        "ironStateRoundtrip",
+        "isRestingFromBronzeForcedWar",
+        "isRestingFromIronForcedWar",
+        "isIronEraEntry",
+        "constant",
+    ] {
+        assert!(
+            seen.get(name).copied().unwrap_or(0) >= 1,
+            "brak wektorow: {name}"
+        );
+    }
 }
