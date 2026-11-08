@@ -20,6 +20,8 @@ Jeden kandydat — brak pojedynków.
 
 1. **a** — Obserwatorium (Biblioteka poz. 6) — dziś niedostępne — wygrane: 0, suma: 19
 
+Reguła E1: żaden kandydat jej nie spełnia — Top1 zostaje wynikiem turnieju z zastrzeżeniem (Q7).
+
 ## 4. Wynik TOP 5
 
 - Top1 (GŁÓWNA KORZYŚĆ): Obserwatorium (Biblioteka poz. 6) — dziś niedostępne

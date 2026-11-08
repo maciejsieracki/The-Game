@@ -57,6 +57,38 @@ def duel(x, y):
             return win, los, f"remis {wx}:{wy}, rozstrzyga {name} ({win['sc'][i]} vs {los['sc'][i]})"
     return x, y, f"remis {wx}:{wy} we wszystkich kryteriach rozstrzygających — wygrywa kandydat wyżej na liście"
 
+# ---------------- Obrona r1 (zarzut Z3): reguły oceny i dopuszczenia do Top1 ----------------
+# R-K1: droga badań (obj 'T:next') sama nic nie odblokowuje — mechanikę ocenia karta NASTĘPNEGO
+#       odkrycia (bez podwójnego liczenia) → NOWA MECHANIKA = 0; korzyść przychodzi dopiero po
+#       kolejnym pełnym badaniu, a skala ODCZUWALNOŚCI (§1.2) mówi wprost: 1 = „po łańcuchu warunków
+#       (inna technologia…)” → ODCZUWALNOŚĆ = min(O, 1).
+def apply_rules(c):
+    if c['obj'] == 'T:next':
+        s = list(c['sc']); s[1] = 0; s[4] = min(s[4], 1)
+        d = dict(c); d['sc'] = tuple(s); d['rule'] = 'R-K1'
+        return d
+    return c
+
+# E1: Top1 = GŁÓWNA KORZYŚĆ = to, co odkrycie daje KAŻDEMU graczowi bez kolejnego badania i bez
+#     wyścigu z innymi państwami. Nie mogą nią być: droga badań, cud (maxNaSwiecie=1: wyścig albo cud
+#     narodowy jednej cywilizacji), obiekt tylko dla części cywilizacji, efekt martwy (SKALA 0).
+#     Pozycje Top2–Top5 zostają w kolejności turnieju.
+def top1_eligible(c):
+    t = c['txt']
+    if c['obj'] == 'T:next' or (c['obj'] or '').startswith('W:'):
+        return False
+    if t.startswith('Cud') or c['sc'][0] == 0:
+        return False
+    if c['obj'] == 'U:zelazo_nar' or 'narodow' in t or '(Chiny' in t or '(Inkowie)' in t:
+        return False
+    return True
+
+def order_top(rank):
+    el = [c for c in rank if top1_eligible(c)]
+    if not el:
+        return rank, False
+    return [el[0]] + [c for c in rank if c is not el[0]], True
+
 def tournament(cands):
     wins = {c['id']: 0 for c in cands}
     duels = []
@@ -128,11 +160,12 @@ NIE = 'NIE_USTALONO — brak kolejnego realnego efektu w danych/kodzie (patrz Uw
 long_txt = []
 for t in tech_rows:
     name = t['Technologia']
-    cands = TECHS[name]
+    cands = [apply_rules(x) for x in TECHS[name]]
     for cnd in cands:
         check_ev(cnd['ev'])
         if len(cnd['txt']) > 72: long_txt.append((name, cnd['txt'], len(cnd['txt'])))
-    rank, wins, duels = tournament(cands)
+    rank_t, wins, duels = tournament(cands)
+    rank, e1_ok = order_top(rank_t)
     ranks_all[name] = rank
     cur = current_card(t)
     for line in cur['cmz']:
@@ -150,7 +183,8 @@ for t in tech_rows:
             k = cnd['obj']
             if k not in best or (wsum(cnd['sc']), cnd['sc'][0]) > (wsum(best[k]['sc']), best[k]['sc'][0]):
                 best[k] = cnd
-    cmz_items = sorted(best.values(), key=lambda c: (-wsum(c['sc']), -c['sc'][0]))
+    # E1 także dla kolejności zdań: najpierw czynności z korzyścią od ręki dla każdej cywilizacji.
+    cmz_items = sorted(best.values(), key=lambda c: (not top1_eligible(c), -wsum(c['sc']), -c['sc'][0]))
     cmz = [f"{ACT[c['obj']]}, aby {c['cel']}." for c in cmz_items[:4]]
     if not cmz:
         cmz = ['NIE_USTALONO — odkrycie nie daje dziś żadnej czynności o realnej korzyści (patrz Uwagi)']
@@ -162,14 +196,16 @@ for t in tech_rows:
         Obecnie_na_karcie=cur['summary'],
         Realne_efekty_z_dowodem=' | '.join(f"{c['txt']} [{ev_expand(c['ev'])}]" for c in cands),
         Kandydaci=' | '.join(f"{c['id']}) {c['txt']}" for c in cands),
-        Wynik_turnieju=' > '.join(f"{c['id']}({wins[c['id']]}W/{wsum(c['sc'])}pkt)" for c in rank),
+        Wynik_turnieju=' > '.join(f"{c['id']}({wins[c['id']]}W/{wsum(c['sc'])}pkt)" for c in rank_t)
+                       + ('' if rank[0] is rank_t[0] else f" · Top1 wg reguły E1: {rank[0]['id']}")
+                       + ('' if e1_ok else ' · E1: brak kandydata spełniającego E1'),
         Top1_GLOWNA=top[0], Top2=top[1], Top3=top[2], Top4=top[3], Top5=top[4],
         Dowod_plik_linia=' || '.join(f"Top{i+1}: {ev_expand(c['ev'])}" for i, c in enumerate(rank[:5])),
         Pewnosc=pew,
         Co_mozesz_zrobic_OBECNIE=' | '.join(cur['cmz']) if cur['cmz'] else '(sekcja pusta — niewyrenderowana)',
         Co_mozesz_zrobic_PROPOZYCJA=' | '.join(cmz),
         Pewnosc_CMZ=pew_cmz,
-        Uwagi=NOTES.get(name, ''),
+        Uwagi=(NOTES.get(name, '') + ('' if e1_ok else ' E1 (Obrona r1): żaden kandydat nie daje korzyści od ręki każdej cywilizacji — Top1 zostaje wynikiem turnieju z tym zastrzeżeniem (Q7).')).strip(),
     ))
     # plik turnieju
     L = [f"# Turniej: {name}", '',
@@ -178,7 +214,7 @@ for t in tech_rows:
          '| ID | Kandydat (sformułowanie dla gracza) | S | N | B | Z | O | C | Suma ważona | Dowód |',
          '|---|---|---|---|---|---|---|---|---|---|']
     for c in cands:
-        L.append(f"| {c['id']} | {c['txt']} | " + ' | '.join(str(v) for v in c['sc']) + f" | {wsum(c['sc'])} | {ev_expand(c['ev'])}{' (pewność ŚREDNIA)' if c['sr'] else ''} |")
+        L.append(f"| {c['id']} | {c['txt']} | " + ' | '.join(str(v) for v in c['sc']) + f" | {wsum(c['sc'])} | {ev_expand(c['ev'])}{' (pewność ŚREDNIA)' if c['sr'] else ''}{' (reguła R-K1: N=0, O≤1)' if c.get('rule') == 'R-K1' else ''} |")
     if len(cands) < 8:
         L += ['', f"Liczba kandydatów: {len(cands)} (< 8). Dowód kompletności: wszystkie efekty odkrycia z tech.json (wiersz odkrycia), buildings.json (techUnlock), units.json (Tech), terrain-improvements.json (tech), wonders.json (techUnlock), tech.json (Wymaga (prereq)) oraz bramki w kodzie (trade-routes.ts:1093, embarkation.ts:25, production.ts:1071-1076) zostały przejrzane — innych efektów brak."]
     L += ['', 'S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZYTELNOŚĆ; wagi 3/3/2/2/2/1 (maks. 65).', '',
@@ -188,8 +224,12 @@ for t in tech_rows:
     for a, b, w, why in duels:
         L.append(f"- {a} vs {b} → **{w}** — {why}.")
     L += ['', '## 3. Ranking', '']
-    for i, c in enumerate(rank):
+    for i, c in enumerate(rank_t):
         L.append(f"{i+1}. **{c['id']}** — {c['txt']} — wygrane: {wins[c['id']]}, suma: {wsum(c['sc'])}")
+    if rank[0] is not rank_t[0]:
+        L += ['', f"Reguła E1 (Top1 = korzyść od ręki dla każdej cywilizacji, bez kolejnego badania i bez wyścigu): {rank_t[0]['id']} nie spełnia E1 → Top1 = **{rank[0]['id']}** (najwyżej w rankingu spośród spełniających E1); pozostałe miejsca w kolejności turnieju."]
+    if not e1_ok:
+        L += ['', 'Reguła E1: żaden kandydat jej nie spełnia — Top1 zostaje wynikiem turnieju z zastrzeżeniem (Q7).']
     L += ['', '## 4. Wynik TOP 5', '']
     for i, x in enumerate(top):
         L.append(f"- Top{i+1}{' (GŁÓWNA KORZYŚĆ)' if i == 0 else ''}: {x}")
@@ -214,7 +254,7 @@ cols = ['Odkrycie', 'Epoka', 'Poziom', 'Obecnie_na_karcie', 'Realne_efekty_z_dow
         'Top1_GLOWNA', 'Top2', 'Top3', 'Top4', 'Top5', 'Dowod_plik_linia', 'Pewnosc',
         'Co_mozesz_zrobic_OBECNIE', 'Co_mozesz_zrobic_PROPOZYCJA', 'Pewnosc_CMZ', 'Uwagi']
 with open(os.path.join(OUT, 'odkrycia-top5.csv'), 'w', encoding='utf-8-sig', newline='') as f:
-    wr = csv.DictWriter(f, fieldnames=cols, delimiter=';', quoting=csv.QUOTE_ALL)
+    wr = csv.DictWriter(f, fieldnames=cols, delimiter=';', quoting=csv.QUOTE_ALL, lineterminator='\n')
     wr.writeheader()
     for r in rows: wr.writerow(r)
 

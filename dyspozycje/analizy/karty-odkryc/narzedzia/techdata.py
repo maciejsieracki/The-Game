@@ -82,6 +82,7 @@ ACT = {
     'B:laznia': 'Zbuduj Łaźnię publiczną (obok Studni)',
     'U:zelazo_nar': 'Rekrutuj jednostki narodowe',
     'B:akademia_wojskowa': 'Zbuduj Akademię wojskową (obok Koszar)',
+    'U:wodz': 'Rekrutuj Wodza w stolicy',
     'T:next': 'Wybierz kolejne badanie',
 }
 
@@ -176,12 +177,14 @@ TECHS['Koło'] = [
     c('b', 'I:droga', 'Droga: +2 handlu na polu', 'dodać +2 handlu na każdym polu drogi', 'TI:288', 2, 1, 3, 3, 4, 5),
     c('c', 'U:rydwan_woly', 'Rydwan (woły): Atak 12, 400 HP, bez Koszar', 'wystawić silną jednostkę uderzeniową już w epoce Kamienia', 'U:521;PR:1071-1076', 4, 4, 4, 1, 4, 4),
     c('d', 'T:next', 'Z Brązownictwem otwiera Jeździectwo (Konnica)', 'dojść do Konnicy', 'T:224', 3, 3, 4, 4, 1, 3),
+    # Obrona r1 (zarzut Z4 Evaluatora): pominięty kandydat — model wodza epoki Kamienia po Kole.
+    c('e', 'U:wodz', 'Wódz epoki Kamienia to Rydwan (woły): 400 HP zamiast 60', 'mieć wodza na Rydwanie (woły) z 400 HP zamiast Wojownika z 60 HP', 'GN:71-73;MN:7304-7305;U:19;U:537', 3, 3, 4, 3, 3, 4),
 ]
 
 TECHS['Brązownictwo'] = [
     c('a', None, 'Awans do epoki Brązu: nowe budynki i wyższe ich poziomy', None, 'T:178;PS:310-323;PR:252-262;PR:966', 5, 5, 5, 5, 4, 3),
     c('b', None, 'Limit wodzów rośnie z 1 do 2', None, 'GN:2-4', 4, 3, 5, 5, 4, 5),
-    c('c', 'B:odlewnia_brazu', 'Odlewnia brązu: wytwarza brąz (ruda + drewno + cyna)', 'wytwarzać brąz — bez niego brak wojska epoki Brązu', 'CV:97;B:156;PR:1092', 4, 5, 5, 5, 2, 3),
+    c('c', 'B:odlewnia_brazu', 'Odlewnia brązu: wytwarza brąz (ruda + drewno + cyna)', 'wytwarzać brąz — bez niego i bez Koszar brak wojska epoki Brązu', 'CV:97;B:156;PR:1092', 4, 5, 5, 5, 2, 3),
     c('d', 'I:kopalnia_miedzi', 'Kopalnia miedzi: +20 rudy na turę, +5 handlu', 'wydobywać 20 rudy miedzi na turę (do brązu)', 'TI:322;TI:331', 3, 4, 5, 5, 3, 4),
     c('e', 'I:kopalnia_cyny', 'Kopalnia cyny: +20 rudy cyny na turę', 'wydobywać cynę do brązu', 'TI:358;TI:367;CV:97', 2, 3, 5, 5, 3, 4),
     c('f', 'B:kuznia', 'Kuźnia brązu: +15% Pancerza jednostek w mieście', 'dać jednostkom +15% Pancerza', 'B:108;UB:15-22;UB:170', 4, 4, 4, 3, 3, 5),
@@ -224,7 +227,7 @@ TECHS['Jeździectwo'] = [
 ]
 
 TECHS['Wojskowość'] = [
-    c('a', 'B:koszary', 'Koszary: rekrutacja wojska epoki Brązu i Żelaza', 'rekrutować jednostki epoki Brązu i Żelaza (np. Włócznik, Konnica)', 'PR:1071-1076;B:1047', 5, 5, 5, 3, 4, 5),
+    c('a', 'B:koszary', 'Koszary: rekrutacja wojska epoki Brązu i Żelaza', 'rekrutować jednostki epoki Brązu i Żelaza (np. Włócznik; Konnica wraz z Jeździectwem)', 'PR:1071-1076;B:1047', 5, 5, 5, 3, 4, 5),
     c('b', 'B:koszary', 'Koszary: +20% parametrów bojowych jednostek', 'wzmocnić jednostki o +20% parametrów bojowych', 'B:1047;UB:23-33;UB:178', 4, 4, 4, 3, 3, 5),
     c('c', 'B:koszary', 'Koszary: +2 Pracy', None, 'B:1047', 1, 1, 1, 2, 4, 5),
     c('d', 'I:fort', 'Fort: +100% Obrony obozujących i strefa 5 pól', 'lepiej bronić granic (+100% Obrony, strefa 5 pól)', 'TI:270', 4, 4, 4, 3, 3, 4, True),

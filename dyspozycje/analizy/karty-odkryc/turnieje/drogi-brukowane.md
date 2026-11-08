@@ -8,7 +8,7 @@ Epoka: Żelazo · Poziom: 8 · Koszt nauki: 680 · tech.json — wiersz odkrycia
 |---|---|---|---|---|---|---|---|---|---|
 | a | Droga brukowana: ruch 5× szybszy (Droga: 3×) | 4 | 2 | 5 | 4 | 3 | 5 | 47 | gra/data/terrain-improvements.json:303; gra/src/map/road-movement.ts:29 |
 | b | Droga brukowana: +3 handlu na polu (Droga: +2) | 2 | 1 | 4 | 3 | 3 | 5 | 34 | gra/data/terrain-improvements.json:303 |
-| c | Z Hutnictwem otwiera Obróbkę żelaza | 3 | 3 | 5 | 4 | 1 | 3 | 41 | gra/data/tech.json:435 |
+| c | Z Hutnictwem otwiera Obróbkę żelaza | 3 | 0 | 5 | 4 | 1 | 3 | 32 | gra/data/tech.json:435 (reguła R-K1: N=0, O≤1) |
 
 Liczba kandydatów: 3 (< 8). Dowód kompletności: wszystkie efekty odkrycia z tech.json (wiersz odkrycia), buildings.json (techUnlock), units.json (Tech), terrain-improvements.json (tech), wonders.json (techUnlock), tech.json (Wymaga (prereq)) oraz bramki w kodzie (trade-routes.ts:1093, embarkation.ts:25, production.ts:1071-1076) zostały przejrzane — innych efektów brak.
 
@@ -17,27 +17,27 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 ## 2. Pojedynki (każdy z każdym)
 
 - a vs b → **a** — przewaga w kryterium SKALA (4 vs 2), suma ważona 47:34.
-- a vs c → **a** — przewaga w kryterium ODCZUWALNOŚĆ (3 vs 1), suma ważona 47:41.
-- b vs c → **c** — przewaga w kryterium NOWA MECHANIKA (3 vs 1), suma ważona 41:34.
+- a vs c → **a** — przewaga w kryterium NOWA MECHANIKA (2 vs 0), suma ważona 47:32.
+- b vs c → **b** — przewaga w kryterium ODCZUWALNOŚĆ (3 vs 1), suma ważona 34:32.
 
 ## 3. Ranking
 
 1. **a** — Droga brukowana: ruch 5× szybszy (Droga: 3×) — wygrane: 2, suma: 47
-2. **c** — Z Hutnictwem otwiera Obróbkę żelaza — wygrane: 1, suma: 41
-3. **b** — Droga brukowana: +3 handlu na polu (Droga: +2) — wygrane: 0, suma: 34
+2. **b** — Droga brukowana: +3 handlu na polu (Droga: +2) — wygrane: 1, suma: 34
+3. **c** — Z Hutnictwem otwiera Obróbkę żelaza — wygrane: 0, suma: 32
 
 ## 4. Wynik TOP 5
 
 - Top1 (GŁÓWNA KORZYŚĆ): Droga brukowana: ruch 5× szybszy (Droga: 3×)
-- Top2: Z Hutnictwem otwiera Obróbkę żelaza
-- Top3: Droga brukowana: +3 handlu na polu (Droga: +2)
+- Top2: Droga brukowana: +3 handlu na polu (Droga: +2)
+- Top3: Z Hutnictwem otwiera Obróbkę żelaza
 - Top4: NIE_USTALONO — brak kolejnego realnego efektu w danych/kodzie (patrz Uwagi)
 - Top5: NIE_USTALONO — brak kolejnego realnego efektu w danych/kodzie (patrz Uwagi)
 
 ## 5. „Co możesz teraz zrobić" — wybór korzyści „w celu…" (mini-turniej per obiekt)
 
 - Przebuduj Drogi na Drogi brukowane: kandydaci a(47) → wybrany **a** (najwyższa suma ważona).
-- Wybierz kolejne badanie: kandydaci c(41) → wybrany **c** (najwyższa suma ważona).
+- Wybierz kolejne badanie: kandydaci c(32) → wybrany **c** (najwyższa suma ważona).
 
 Obecnie na karcie:
 

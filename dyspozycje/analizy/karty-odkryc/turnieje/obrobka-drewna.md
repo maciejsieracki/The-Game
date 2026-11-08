@@ -12,7 +12,7 @@ Epoka: Kamień · Poziom: 1 · Koszt nauki: 5 · tech.json — wiersz odkrycia p
 | d | Każda Stolarnia: +10% drewna w całym państwie | 3 | 3 | 4 | 5 | 3 | 4 | 46 | gra/data/econ-params.json:285; gra/src/game/turn-economy.ts:1536 |
 | e | Taran: pierwsza machina oblężnicza (2800 HP) | 3 | 4 | 3 | 1 | 4 | 3 | 40 | gra/data/units.json:3330 |
 | f | Posterunek (z Murarstwem): +50% Obrony, strefa 3 pól | 2 | 4 | 3 | 3 | 2 | 3 | 37 | gra/data/terrain-improvements.json:394; gra/src/game/improvement-tech.ts:46-47 |
-| g | Otwiera drogę do Żeglugi i Brązownictwa | 2 | 2 | 3 | 5 | 2 | 4 | 36 | gra/data/tech.json:181; gra/data/tech.json:166 |
+| g | Otwiera drogę do Żeglugi i Brązownictwa | 2 | 0 | 3 | 5 | 1 | 4 | 28 | gra/data/tech.json:181; gra/data/tech.json:166 (reguła R-K1: N=0, O≤1) |
 
 Liczba kandydatów: 7 (< 8). Dowód kompletności: wszystkie efekty odkrycia z tech.json (wiersz odkrycia), buildings.json (techUnlock), units.json (Tech), terrain-improvements.json (tech), wonders.json (techUnlock), tech.json (Wymaga (prereq)) oraz bramki w kodzie (trade-routes.ts:1093, embarkation.ts:25, production.ts:1071-1076) zostały przejrzane — innych efektów brak.
 
@@ -25,22 +25,22 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 - a vs d → **a** — przewaga w kryterium ODCZUWALNOŚĆ (5 vs 3), suma ważona 59:46.
 - a vs e → **a** — przewaga w kryterium ZASIĘG (5 vs 1), suma ważona 59:40.
 - a vs f → **a** — przewaga w kryterium ODCZUWALNOŚĆ (5 vs 2), suma ważona 59:37.
-- a vs g → **a** — przewaga w kryterium ODCZUWALNOŚĆ (5 vs 2), suma ważona 59:36.
+- a vs g → **a** — przewaga w kryterium NOWA MECHANIKA (4 vs 0), suma ważona 59:28.
 - b vs c → **b** — przewaga w kryterium NOWA MECHANIKA (4 vs 1), suma ważona 47:30.
 - b vs d → **b** — przewaga w kryterium NOWA MECHANIKA (4 vs 3), suma ważona 47:46.
 - b vs e → **b** — przewaga w kryterium SKALA (4 vs 3), suma ważona 47:40.
 - b vs f → **b** — przewaga w kryterium SKALA (4 vs 2), suma ważona 47:37.
-- b vs g → **b** — przewaga w kryterium NOWA MECHANIKA (4 vs 2), suma ważona 47:36.
+- b vs g → **b** — przewaga w kryterium NOWA MECHANIKA (4 vs 0), suma ważona 47:28.
 - c vs d → **d** — przewaga w kryterium ZASIĘG (5 vs 2), suma ważona 46:30.
 - c vs e → **e** — przewaga w kryterium NOWA MECHANIKA (4 vs 1), suma ważona 40:30.
 - c vs f → **f** — przewaga w kryterium NOWA MECHANIKA (4 vs 1), suma ważona 37:30.
-- c vs g → **g** — przewaga w kryterium ZASIĘG (5 vs 2), suma ważona 36:30.
+- c vs g → **c** — przewaga w kryterium ODCZUWALNOŚĆ (4 vs 1), suma ważona 30:28.
 - d vs e → **d** — przewaga w kryterium ZASIĘG (5 vs 1), suma ważona 46:40.
 - d vs f → **d** — przewaga w kryterium ZASIĘG (5 vs 3), suma ważona 46:37.
-- d vs g → **d** — przewaga w kryterium NOWA MECHANIKA (3 vs 2), suma ważona 46:36.
+- d vs g → **d** — przewaga w kryterium NOWA MECHANIKA (3 vs 0), suma ważona 46:28.
 - e vs f → **e** — przewaga w kryterium ODCZUWALNOŚĆ (4 vs 2), suma ważona 40:37.
-- e vs g → **e** — przewaga w kryterium NOWA MECHANIKA (4 vs 2), suma ważona 40:36.
-- f vs g → **f** — przewaga w kryterium NOWA MECHANIKA (4 vs 2), suma ważona 37:36.
+- e vs g → **e** — przewaga w kryterium NOWA MECHANIKA (4 vs 0), suma ważona 40:28.
+- f vs g → **f** — przewaga w kryterium NOWA MECHANIKA (4 vs 0), suma ważona 37:28.
 
 ## 3. Ranking
 
@@ -49,8 +49,8 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 3. **d** — Każda Stolarnia: +10% drewna w całym państwie — wygrane: 4, suma: 46
 4. **e** — Taran: pierwsza machina oblężnicza (2800 HP) — wygrane: 3, suma: 40
 5. **f** — Posterunek (z Murarstwem): +50% Obrony, strefa 3 pól — wygrane: 2, suma: 37
-6. **g** — Otwiera drogę do Żeglugi i Brązownictwa — wygrane: 1, suma: 36
-7. **c** — Stolarnia: +5 Pracy w mieście (+3 na poziom, maks. 3) — wygrane: 0, suma: 30
+6. **c** — Stolarnia: +5 Pracy w mieście (+3 na poziom, maks. 3) — wygrane: 1, suma: 30
+7. **g** — Otwiera drogę do Żeglugi i Brązownictwa — wygrane: 0, suma: 28
 
 ## 4. Wynik TOP 5
 
@@ -67,7 +67,7 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 - Zbuduj Stolarnię: kandydaci c(30), d(46) → wybrany **d** (najwyższa suma ważona).
 - Zrekrutuj Taran: kandydaci e(40) → wybrany **e** (najwyższa suma ważona).
 - Postaw Posterunek na skraju granic (wymaga też Murarstwa/Obróbki drewna): kandydaci f(37) → wybrany **f** (najwyższa suma ważona).
-- Wybierz kolejne badanie: kandydaci g(36) → wybrany **g** (najwyższa suma ważona).
+- Wybierz kolejne badanie: kandydaci g(28) → wybrany **g** (najwyższa suma ważona).
 
 Obecnie na karcie:
 

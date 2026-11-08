@@ -9,7 +9,7 @@ Epoka: Żelazo · Poziom: 7 · Koszt nauki: 560 · tech.json — wiersz odkrycia
 | a | Katapulta: ostrzał z 6 pól, 1000 HP | 3 | 3 | 4 | 1 | 2 | 3 | 35 | gra/data/units.json:3482 |
 | b | Warsztat oblężniczy: +10% parametrów jednostek | 3 | 3 | 4 | 3 | 2 | 5 | 41 | gra/data/buildings.json:1596; gra/src/game/unit-building-bonuses.ts:23-33; gra/src/game/unit-building-bonuses.ts:178 |
 | c | Warsztat oblężniczy: +4 Pracy, +2 pieniądza | 2 | 1 | 2 | 2 | 3 | 5 | 28 | gra/data/buildings.json:1596 |
-| d | Z Obróbką żelaza otwiera Sztukę wojenną | 3 | 3 | 5 | 4 | 1 | 3 | 41 | gra/data/tech.json:449 |
+| d | Z Obróbką żelaza otwiera Sztukę wojenną | 3 | 0 | 5 | 4 | 1 | 3 | 32 | gra/data/tech.json:449 (reguła R-K1: N=0, O≤1) |
 
 Liczba kandydatów: 4 (< 8). Dowód kompletności: wszystkie efekty odkrycia z tech.json (wiersz odkrycia), buildings.json (techUnlock), units.json (Tech), terrain-improvements.json (tech), wonders.json (techUnlock), tech.json (Wymaga (prereq)) oraz bramki w kodzie (trade-routes.ts:1093, embarkation.ts:25, production.ts:1071-1076) zostały przejrzane — innych efektów brak.
 
@@ -19,23 +19,23 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 
 - a vs b → **b** — przewaga w kryterium ZASIĘG (3 vs 1), suma ważona 41:35.
 - a vs c → **a** — przewaga w kryterium NOWA MECHANIKA (3 vs 1), suma ważona 35:28.
-- a vs d → **d** — przewaga w kryterium ZASIĘG (4 vs 1), suma ważona 41:35.
+- a vs d → **a** — przewaga w kryterium NOWA MECHANIKA (3 vs 0), suma ważona 35:32.
 - b vs c → **b** — przewaga w kryterium NOWA MECHANIKA (3 vs 1), suma ważona 41:28.
-- b vs d → **d** — remis 41:41, rozstrzyga ZASIĘG (4 vs 3).
-- c vs d → **d** — przewaga w kryterium BRAK ZASTĘPNIKA (5 vs 2), suma ważona 41:28.
+- b vs d → **b** — przewaga w kryterium NOWA MECHANIKA (3 vs 0), suma ważona 41:32.
+- c vs d → **d** — przewaga w kryterium BRAK ZASTĘPNIKA (5 vs 2), suma ważona 32:28.
 
 ## 3. Ranking
 
-1. **d** — Z Obróbką żelaza otwiera Sztukę wojenną — wygrane: 3, suma: 41
-2. **b** — Warsztat oblężniczy: +10% parametrów jednostek — wygrane: 2, suma: 41
-3. **a** — Katapulta: ostrzał z 6 pól, 1000 HP — wygrane: 1, suma: 35
+1. **b** — Warsztat oblężniczy: +10% parametrów jednostek — wygrane: 3, suma: 41
+2. **a** — Katapulta: ostrzał z 6 pól, 1000 HP — wygrane: 2, suma: 35
+3. **d** — Z Obróbką żelaza otwiera Sztukę wojenną — wygrane: 1, suma: 32
 4. **c** — Warsztat oblężniczy: +4 Pracy, +2 pieniądza — wygrane: 0, suma: 28
 
 ## 4. Wynik TOP 5
 
-- Top1 (GŁÓWNA KORZYŚĆ): Z Obróbką żelaza otwiera Sztukę wojenną
-- Top2: Warsztat oblężniczy: +10% parametrów jednostek
-- Top3: Katapulta: ostrzał z 6 pól, 1000 HP
+- Top1 (GŁÓWNA KORZYŚĆ): Warsztat oblężniczy: +10% parametrów jednostek
+- Top2: Katapulta: ostrzał z 6 pól, 1000 HP
+- Top3: Z Obróbką żelaza otwiera Sztukę wojenną
 - Top4: Warsztat oblężniczy: +4 Pracy, +2 pieniądza
 - Top5: NIE_USTALONO — brak kolejnego realnego efektu w danych/kodzie (patrz Uwagi)
 
@@ -43,7 +43,7 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 
 - Rekrutuj Katapulty: kandydaci a(35) → wybrany **a** (najwyższa suma ważona).
 - Zbuduj Warsztat oblężniczy (obok Koszar): kandydaci b(41) → wybrany **b** (najwyższa suma ważona).
-- Wybierz kolejne badanie: kandydaci d(41) → wybrany **d** (najwyższa suma ważona).
+- Wybierz kolejne badanie: kandydaci d(32) → wybrany **d** (najwyższa suma ważona).
 
 Obecnie na karcie:
 
@@ -54,8 +54,8 @@ Obecnie na karcie:
 Propozycja:
 
 - Zbuduj Warsztat oblężniczy (obok Koszar), aby wzmocnić jednostki o kolejne +10% (razem do +50%).
-- Wybierz kolejne badanie, aby dojść do Akademii wojskowej.
 - Rekrutuj Katapulty, aby burzyć mury z dystansu 6 pól.
+- Wybierz kolejne badanie, aby dojść do Akademii wojskowej.
 
 ## 6. Uwagi
 
