@@ -927,3 +927,7 @@ Port ERAIGN/ERADELAY (web 5dd53e60f): `is_era_forced_war_ignoring_r1`, `is_war_t
 ## 2026-11-08 18:1x — przegląd cykliczny
 - Aktywne: web TECHIMPL (wdrożenie kart odkryć, Opus), BLDCARDS (analiza kart budynków, Opus). Rust: brak aktywnych tematów (nowe wstrzymane: trwają tematy webowe, dysk 7,6 GB < 8 GB). Dziś wdrożone na ROBOCZA: FALA 551–558. Na parity-v2 (d6414fcf1): REKON, AIZAKUP, ZAPISERA, MULTIWAR-2 B+C, RESPROD.
 - Kolejka Rust (czeka na wolne zasoby): MULTIWAR-3 (D/E/F), FORCED-WAR-MODULES (G), REPIN priorytetów obrony AI (FALA 551) + wyboru celu (553) + wojen epoki gracza (558) + oblężenia (555) + osobnego cooldownu miasta (557), podpięcie zakupu AI do tury, OBLEZENIE P3–P5, D-R5-2.
+
+## 2026-11-08 19:1x — przegląd cykliczny
+- Aktywne: web CORRUPT (Pałac II/III −30% korupcji, Trybunał −30%; Sonnet r1). Rust: brak aktywnych, nowe wstrzymane do końca tematów webowych (priorytet weba; dysk 8,8 GB ≥ 8 GB ale trwa temat webowy). Wdrożone dziś na ROBOCZA: FALA 551–559 (ostatnia: karty odkryć TOP 5).
+- Kolejka web: wdrożenie kart budynków (po CORRUPT), jednostki/ulepszenia/CIVPEDIA (analiza + wdrożenie), R-WEB-TECH-CARDS-ECON-SECTION-BASE-Q1, niestabilne testy kart, dedup pending propozycji miasto/pokój. Kolejka Rust: MULTIWAR-3, FORCED-WAR-MODULES, REPIN-y (AI priorytety 551, cel 553, oblężenie 555, cooldown 557, wojny epoki gracza 558, karty?), podpięcie zakupu AI, OBLEZENIE P3–P5.
