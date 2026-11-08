@@ -1223,19 +1223,24 @@ export function corruptionRate(
 }
 
 /** Building ids that reduce corruption when present IN THIS CITY (D4, Maciej 2026-07-25). */
-const KORUPCJA_REDUKCJA_BUDYNKI = ['sad', 'pretorium', 'palac'] as const;
+const KORUPCJA_REDUKCJA_BUDYNKI = ['sad', 'pretorium', 'palac', 'palac_ii', 'palac_iii', 'trybunal'] as const;
+// R-WEB-CORRUPTION-REDUCTION-PALACE-TIERS-TRIBUNAL-Q1 (decyzja wlasciciela 2026-11-08):
+// Palac II/III (ulepszenia Palacu -- usuwaja poprzednika z builtIds, wiec w miescie stoi
+// zawsze DOKLADNIE jeden tier) daja te sama redukcje -30% co Palac I; Trybunal rowniez -30%
+// (jak Pretorium). Mechanizm bez zmian: addytywnie + sufit KORUPCJA_REDUKCJA_SUFIT.
 /** Reduction per building, as a fraction of the base corruption rate (30 punktow procentowych). */
 const KORUPCJA_REDUKCJA_NA_BUDYNEK = 0.30;
 /**
  * Naturalny sufit sumy redukcji to 0.60 (Sad + Palac w stolicy, albo Sad + Pretorium
  * w regionie -- Palac ma lokalizacja:"stolica", Pretorium lokalizacja:"region", wiec
- * zaden budynek nie moze wystapic w obu miejscach naraz). Mimo to jawny Math.min
- * ponizej zabezpiecza przed przyszla zmiana danych (D4, Maciej 2026-07-25).
+ * zaden budynek nie moze wystapic w obu miejscach naraz). Od decyzji 2026-11-08 (Palac II/III,
+ * Trybunal) sufit JEST realnie osiagalny (np. Sad + Trybunal + Pretorium = 0.90 -> 0.60).
+ * Jawny Math.min ponizej zabezpiecza przed przyszla zmiana danych (D4, Maciej 2026-07-25).
  */
 const KORUPCJA_REDUKCJA_SUFIT = 0.60;
 
 /**
- * Decyzja 59 + Pałac (D4, Maciej 2026-07-25): Sąd, Pretorium i Pałac redukują korupcję,
+ * Decyzja 59 + Pałac (D4, Maciej 2026-07-25): Sąd, Pretorium, Pałac (I/II/III) i Trybunał redukują korupcję,
  * każdy o 30 punktów procentowych, ADDYTYWNIE, TYLKO w mieście w ktorym stoja (nie
  * globalnie w imperium). Redukcja dziala jako mnoznik na strataBazowa z corruptionRate():
  *   strataPoRedukcji = strataBazowa * (1 - sumaRedukcji).
