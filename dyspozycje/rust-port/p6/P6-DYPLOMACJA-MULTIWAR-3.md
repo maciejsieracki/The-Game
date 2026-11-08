@@ -81,7 +81,8 @@ Każda mutacja: jedna zmiana w źródle, uruchomienie testu, przywrócenie z kop
 - `cargo clippy --lib --test p6_dyplomacja_multiwar3_{d,e,f,g} -- -D warnings`: OK.
 - `cargo test --lib`: 22/22 OK.
 - `cargo test --test <każda z 311 binarek tests/*.rs>` (po jednej, binarka usuwana po przebiegu z powodu dysku): 311/311 binarek `test result: ok`, w tym `p6_8i_pick` 5/5 (debug, 385 s, przekroczył limit 300 s pętli, uruchomiony osobno z dłuższym limitem).
-- `clippy --all-targets -D warnings` i `cargo test --doc`: NIE_ZMIERZONO (nie uruchomiono w tej rundzie; pętla per-binarka objęła wszystkie `tests/*.rs`, ale nie `--all-targets` jako jedno wywołanie ani `benches/`).
+- `cargo clippy --all-targets -- -D warnings` (lib, testy, bench): OK (rc 0).
+- `cargo test --doc`: OK (0 testów doc).
 
 ## NIE zrobione w rundzie 2
 
