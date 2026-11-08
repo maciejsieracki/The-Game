@@ -8970,3 +8970,9 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 
 ## 2026-11-08 — zgłoszenie: oblężenie trwa tylko 2 tury mimo garnizonu (regres)
 - Właściciel (zrzut: plakietka „OBŁĘŻENIE Rakhigarhi — poddanie za 2 tury”): kiedyś były 2 tury zapasów, potem garnizon tracił HP przez kilka–kilkanaście tur aż ΣHP < 50%; teraz poddanie po ~2 turach. Temat: R-WEB-SIEGE-STARVATION-DURATION-REGRESS-Q1 (Sonnet, bisect). Podejrzani: FALA 552 CSFOOD (blok N3 + prognoza wg trudności właściciela), mnożnik R_STAWKI_FALA1_FALA2_MULT x4 (glod-wojska-karencja-test 29/10), późniejsze zmiany oblężenia. Nie przesądzam przyczyny.
+
+## FALA 554 — CAVFLANK (2026-11-08)
+- Temat: R-WEB-BATTLE-DEPLOY-CAVALRY-FLANKS-AT-START-Q1 (zgłoszenie właściciela: konnica/rydwany na froncie na starcie bitwy). FC PASS-WITH-NOTES, kod a3546ffcc (+obrona 9bbac60e7), FC c9e836c0e (wip: web-wip/CAVFLANK). Main 3994c8bf5, ROBOCZA MD5 722269e7d9254d0d0716c79d3311c00c (zgodny z GitHub Raw).
+- Przyczyna: `initialBattleSlots` (formationRules.ts) dawał konnicy rank 0 (kolumna frontu) niezależnie od najszerszego szeregu; przy wąskiej piechocie z przodu i szerokim szeregu łuczników konnica lądowała przed łucznikami. Naprawa: rank = szereg najszerszego pasa nie-konnego + głębokość skrzydła; start i reset deploy; 'rear' i ręczne bez zmian. Plik poza allowlistą (formationRules.ts) zatwierdzony świadomie (źródło błędu).
+- Testy: nowy 536 asercji (pada bez poprawki), flank-close-formation 994, battle-formation-rules, initial-placement-runtime (mutacja 4/4), ranged-mounted-doctrine 10/10, matrix 36/0 red, ai-test 289/0, logic 213/213, tsc 0. NIE_ZMIERZONO: weryfikacja wizualna w przeglądarce, C-FLANK/teren.
+- DO WŁAŚCICIELA (ABC): gdy piechota jest najszerszym szeregiem, konnica stoi na końcach linii czołowej (klasyczne skrzydło). Czy wystarczy, czy ma być zawsze o szereg za frontem?
