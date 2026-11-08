@@ -37,7 +37,9 @@ function ok(c, m) { if (c) { pass++; console.log('  PASS:', m); } else { fail++;
   const kregi = buildings.find(b => b.id === 'kamienne_kregi');
   const sw = buildings.find(b => b.id === 'swiatynia');
   ok(kregi && kregi.techUnlock === 'Mistycyzm', 'ABC-16 kręgi = budynek Mistycyzm');
-  ok(sw && sw.upgradeFrom === 'kamienne_kregi', 'ABC-17 świątynia upgradeFrom kręgi');
+  // Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): Świątynia nie jest już łańcuchem upgradeFrom;
+  // wymaga Kamiennych kręgów w tym samym mieście (building-resource-gate.ts CITY_BUILDING_PREREQ).
+  ok(sw && !sw.upgradeFrom, 'ABC-17 świątynia NIE upgradeFrom (wymóg kręgów w mieście, a167fc0b1)');
 }
 
 // ABC-18 stadnina JSON
@@ -52,7 +54,10 @@ ok(terrain.stadnina && terrain.stadnina.tech === 'Jeździectwo', 'ABC-18 stadnin
     },
   };
   ok(!M.computeEmpireLivestockUnlocks(new Map(), map, '0').has('bydlo'), 'brak unlock bez pastwiska');
-  ok(M.computeEmpireLivestockUnlocks(new Map([['0,0', 'bydlo']]), map, '0').has('bydlo'), 'unlock po bydlo na zlozu');
+  // Klasa A: Model B — hodowla bydła na złożu NIE odblokowuje surowca (livestock-unlock.ts:
+  // jedynym odblokowaniem jest stadnina na złożu konia -> 'kon'). Asercja odwrócona, sens zachowany.
+  ok(!M.computeEmpireLivestockUnlocks(new Map([['0,0', 'bydlo']]), map, '0').has('bydlo'), 'Model B: bydło na złożu NIE odblokowuje');
+  ok(M.computeEmpireLivestockUnlocks(new Map([['1,0', 'stadnina']]), map, '0').has('kon'), 'stadnina na złożu konia -> unlock kon');
   ok(!M.computeEmpireLivestockUnlocks(new Map(), map, '0').has('kon'), 'brak konia bez stadniny');
   ok(M.computeEmpireLivestockUnlocks(new Map([['1,0', 'stadnina']]), map, '0').has('kon'), 'kon po stadninie');
 }

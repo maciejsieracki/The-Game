@@ -456,7 +456,9 @@ console.log('\n--- T2c: loadDifficultyParams empty aiParams → fallbacks ---');
   
   const p1 = loadDifficultyParams(emptyData, 1);
   eq(p1.bonusProdukcja, 0,    'empty params: poziom1 bonusProdukcja fallback = 0');
-  eq(p1.bonusWalka,     0,    'empty params: poziom1 bonusWalka fallback = 0');
+  // Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): fallback Lv1 = -0.05 (ai.ts loadDifficultyParams,
+  // zgodny z data/ai-params.json trudnosc_poziom1_bonus_walka.wartosc = -0.05, §7 Lv1 kara -5%).
+  eq(p1.bonusWalka,     -0.05, 'empty params: poziom1 bonusWalka fallback = -0.05 (Lv1 kara -5%)');
   
   const p2 = loadDifficultyParams(emptyData, 2);
   eq(p2.bonusProdukcja,    0.1,  'empty params: poziom2 bonusProdukcja fallback = 0.1');

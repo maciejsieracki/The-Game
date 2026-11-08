@@ -75,9 +75,9 @@ function mkHex(q, r, teren, nakladka = NK.Brak, zloze) {
   const hexPlain = mkHex(2, 0, TB.Rownina);
   const hexOreOverlay = mkHex(3, 0, TB.Wzgorza, NK.ZlozeRudy);
 
-  ok(M.depositAllowsPlayerImprovement('popalnia_brazu', hexRuda), 'ABC-14 depositAllows: zloze ruda');
-  ok(M.depositAllowsPlayerImprovement('popalnia_brazu', hexOreOverlay), 'ABC-14 depositAllows: ZlozeRudy');
-  ok(!M.depositAllowsPlayerImprovement('popalnia_brazu', hexPlain), 'ABC-14 depositAllows: równina NIE');
+  ok(M.depositAllowsPlayerImprovement('kopalnia_miedzi', hexRuda), 'ABC-14 depositAllows: zloze ruda');
+  ok(M.depositAllowsPlayerImprovement('kopalnia_miedzi', hexOreOverlay), 'ABC-14 depositAllows: ZlozeRudy');
+  ok(!M.depositAllowsPlayerImprovement('kopalnia_miedzi', hexPlain), 'ABC-14 depositAllows: równina NIE');
 
   const map = {
     hexes: {
@@ -94,9 +94,9 @@ function mkHex(q, r, teren, nakladka = NK.Brak, zloze) {
     cityNodes: [{ q: 0, r: 0, pop: 10, level: 1 }],
   });
 
-  ok(qualifies('popalnia_brazu', 1, 0), 'ABC-14 qualifies: heks z rudą');
-  ok(!qualifies('popalnia_brazu', 2, 0), 'ABC-14 qualifies: równina odrzucona');
-  ok(qualifies('popalnia_brazu', 3, 0), 'ABC-14 qualifies: Wzgórza + ZlozeRudy');
+  ok(qualifies('kopalnia_miedzi', 1, 0), 'ABC-14 qualifies: heks z rudą');
+  ok(!qualifies('kopalnia_miedzi', 2, 0), 'ABC-14 qualifies: równina odrzucona');
+  ok(qualifies('kopalnia_miedzi', 3, 0), 'ABC-14 qualifies: Wzgórza + ZlozeRudy');
 }
 
 console.log(`\neko-tech-paczka2: ${pass} pass, ${fail} fail`);
