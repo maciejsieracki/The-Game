@@ -158,6 +158,26 @@ eq(upkeepHard.zywnoscJednostkaRuch, 2, 'G3 ruch hard = 2');
 near(upkeepHard.zywnoscJednostkaOboz, 0.62, 'G4 oboz hard = 0,62');
 near(upkeepNormal.zywnoscJednostkaOboz, 0.5, 'G5 oboz normal = 0,5');
 
+// ---------------- H. podpięcie w main.ts (skan źródła, r2) ----------------
+// Testy A-G nie uruchamiają boot(); H pilnuje, że miejsca w main.ts, które liczą ułamek
+// atrycji głodu albo żywność armii, biorą trudność WŁAŚCICIELA, a nie _menuDifficulty.
+console.log('--- H: podpięcie w main.ts (skan źródła) ---');
+const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
+const turnSrc = fs.readFileSync(path.resolve(GRA, 'src', 'game', 'turn-economy.ts'), 'utf8');
+const menuHpRe = /buildEmpireFoodParams\(\s*data\.econParams,\s*_menuDifficulty\s*\)\.glodWojskaHpFrac/g;
+eq((mainSrc.match(menuHpRe) || []).length, 0, 'H1 main.ts: brak odczytu glodWojskaHpFrac z _menuDifficulty');
+ok(/setArmyFoodUpkeepResolver\(\(oid: number\)/.test(mainSrc), 'H2 main.ts: resolver żywności armii ustawiany w boot()');
+ok(/glodWojskaHpFracOblezenie = buildEmpireFoodParams\(\s*data\.econParams,\s*effectiveGameDifficultyForOwner\(oblCity\.ownerId\)/.test(mainSrc),
+  'H3 main.ts: tura oblężenia (N3) liczy ułamek wg właściciela oblężonego miasta');
+ok(/hpFrac: buildEmpireFoodParams\(data\.econParams, effectiveGameDifficultyForOwner\(city\.ownerId\)\)/.test(mainSrc),
+  'H4 main.ts: prognoza poddania (siegeSurrenderBadgeFor) wg właściciela miasta');
+ok(/const efParams = buildEmpireFoodParams\(data\.econParams, effectiveGameDifficultyForOwner\(u\.ownerId\)\);/.test(mainSrc),
+  'H5 main.ts: karta jednostki (unitSufferingFields) wg właściciela jednostki');
+ok(/getActiveSiegeCityId\(\);[\s\S]{0,200}effectiveGameDifficultyForOwner\(activeCity\.ownerId\)/.test(mainSrc),
+  'H6 main.ts: provider panelu oblężenia wg właściciela aktywnego miasta');
+ok(/const upkeepForOwner = _armyFoodUpkeepResolver \? _armyFoodUpkeepResolver\(ownerId\) : upkeep;/.test(turnSrc),
+  'H7 turn-economy.ts: militaryFoodConsumptionWithSpichlerz używa resolvera właściciela');
+
 console.log(`\nWynik: ${passed} PASS / ${failed} FAIL`);
 if (failed > 0) process.exit(1);
 console.log('citystate-army-food-difficulty-test: OK');

@@ -6615,7 +6615,8 @@ async function boot(): Promise<void> {
      */
     function unitSufferingFields(u: RuntimeUnit) {
       const cywil = isCivilianUnit(u);
-      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      // R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1 (r2): karta jednostki pokazuje ułamek wg trudności WŁAŚCICIELA.
+      const efParams = buildEmpireFoodParams(data.econParams, effectiveGameDifficultyForOwner(u.ownerId));
       const gdParams = buildGoldDeficitParams(data.econParams, _menuDifficulty);
       const glod = !cywil && isArmyHungry(u.ownerId);
       const zloto = !cywil && isGoldDeficit(u.ownerId);
@@ -16728,7 +16729,8 @@ async function boot(): Promise<void> {
         .map(u => ({ hp: u.hp, hpMax: u.hpMax ?? getMaxHp(u.typeId) }));
       const turns = turnsUntilSiegeSurrender(city, {
         food,
-        hpFrac: buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaHpFrac,
+        // R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1 (r2): prognoza wg trudności WŁAŚCICIELA miasta.
+        hpFrac: buildEmpireFoodParams(data.econParams, effectiveGameDifficultyForOwner(city.ownerId)).glodWojskaHpFrac,
         garrison,
       });
       return {
@@ -33212,7 +33214,14 @@ async function boot(): Promise<void> {
     }
 
     // R-WEB-SIEGE-STARVATION-SURRENDER-Q1 (obrona r1, zarzut 2): ułamek HP/turę głodu dla panelu (zależny od trudności).
-    setSiegePanelStarveFracProvider(() => buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaHpFrac);
+    // R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1 (r2): ułamek dla panelu = trudność WŁAŚCICIELA aktywnie
+    // oblężonego miasta (brak aktywnego miasta -> trudność menu, bez wpływu na wynik).
+    setSiegePanelStarveFracProvider(() => {
+      const activeId = getActiveSiegeCityId();
+      const activeCity = activeId ? cities.find(c => c.id === activeId) : undefined;
+      const lvl = activeCity ? effectiveGameDifficultyForOwner(activeCity.ownerId) : _menuDifficulty;
+      return buildEmpireFoodParams(data.econParams, lvl).glodWojskaHpFrac;
+    });
 
     /** Oszacowanie Milicji dla panelu oblężenia: tylko z ukończonym budynkiem Garnizon i poza okresem odnowy. */
     setSiegePanelMilitiaEstimator((c: City) =>
@@ -37156,12 +37165,16 @@ async function boot(): Promise<void> {
           try {
             // NAPRAWA PARYTETU TRUDNOŚCI (Maciej 2026-07-26): dawniej literał 0.08 tutaj
             // rozjeżdżał się z glod_wojska_hp_frac na łatwym/trudnym (6%/10%) — podpięty
-            // parametr, liczony RAZ dla całej tury (nie per miasto oblężone).
-            const glodWojskaHpFracOblezenie = buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaHpFrac;
+            // parametr. R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1 (r2): ułamek liczony per miasto
+            // oblężone wg trudności WŁAŚCICIELA garnizonu (miasto-państwo -> cityStateDifficulty).
             for (const tick of econ.perCity) {
               if (!tick.oblegany) continue;
               const oblCity = cities.find(c => c.id === tick.cityId);
               if (!oblCity) continue;
+              const glodWojskaHpFracOblezenie = buildEmpireFoodParams(
+                data.econParams,
+                effectiveGameDifficultyForOwner(oblCity.ownerId),
+              ).glodWojskaHpFrac;
 
               const realGarnizonUnits = units.filter(
                 u => u.ownerId === oblCity.ownerId
