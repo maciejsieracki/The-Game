@@ -1,0 +1,674 @@
+{
+ "pin": "origin/main 679ab078a",
+ "generator": "gen.mjs (uruchamia gra/src/game/ai.ts shouldAIPurchaseUnit + loadAiPurchaseReserveParams)",
+ "params": {
+  "1": {
+   "rezerwaTur": 10,
+   "minDochodNetto": 0
+  },
+  "2": {
+   "rezerwaTur": 3,
+   "minDochodNetto": 0
+  },
+  "3": {
+   "rezerwaTur": 0,
+   "minDochodNetto": -2
+  }
+ },
+ "cases": [
+  {
+   "id": "L1-rezerwa-N-1",
+   "level": 1,
+   "input": {
+    "treasury": 109,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L1-rezerwa-N",
+   "level": 1,
+   "input": {
+    "treasury": 110,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L1-rezerwa-N+1",
+   "level": 1,
+   "input": {
+    "treasury": 111,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L1-netto-N-1",
+   "level": 1,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L1-netto-N",
+   "level": 1,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 2,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L1-netto-N+1",
+   "level": 1,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 3,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L1-brak-manpower",
+   "level": 1,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": false,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L1-skarbiec-ponizej-ceny",
+   "level": 1,
+   "input": {
+    "treasury": 39,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L1-bez-rezerwy-legacy",
+   "level": 1,
+   "input": {
+    "treasury": 40,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": null,
+    "netIncomePerTurn": null,
+    "upkeepPerTurn": null,
+    "unitUpkeepPerTurn": null
+   },
+   "expected": true
+  },
+  {
+   "id": "L1-bez-netto-legacy",
+   "level": 1,
+   "input": {
+    "treasury": 40,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": null,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L1-ujemne-clamp",
+   "level": 1,
+   "input": {
+    "treasury": 40,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 0,
+    "upkeepPerTurn": -5,
+    "unitUpkeepPerTurn": -3
+   },
+   "expected": true
+  },
+  {
+   "id": "L1-ulamek",
+   "level": 1,
+   "input": {
+    "treasury": 123.5,
+    "goldCost": 40.25,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 3.5,
+    "upkeepPerTurn": 6.25,
+    "unitUpkeepPerTurn": 1.5
+   },
+   "expected": true
+  },
+  {
+   "id": "L1-zerowa-cena",
+   "level": 1,
+   "input": {
+    "treasury": 0,
+    "goldCost": 0,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 0,
+    "upkeepPerTurn": 0,
+    "unitUpkeepPerTurn": 0
+   },
+   "expected": true
+  },
+  {
+   "id": "L2-rezerwa-N-1",
+   "level": 2,
+   "input": {
+    "treasury": 60,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L2-rezerwa-N",
+   "level": 2,
+   "input": {
+    "treasury": 61,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L2-rezerwa-N+1",
+   "level": 2,
+   "input": {
+    "treasury": 62,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L2-netto-N-1",
+   "level": 2,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L2-netto-N",
+   "level": 2,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 2,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L2-netto-N+1",
+   "level": 2,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 3,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L2-brak-manpower",
+   "level": 2,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": false,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L2-skarbiec-ponizej-ceny",
+   "level": 2,
+   "input": {
+    "treasury": 39,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L2-bez-rezerwy-legacy",
+   "level": 2,
+   "input": {
+    "treasury": 40,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": null,
+    "netIncomePerTurn": null,
+    "upkeepPerTurn": null,
+    "unitUpkeepPerTurn": null
+   },
+   "expected": true
+  },
+  {
+   "id": "L2-bez-netto-legacy",
+   "level": 2,
+   "input": {
+    "treasury": 40,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": null,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L2-ujemne-clamp",
+   "level": 2,
+   "input": {
+    "treasury": 40,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 0,
+    "upkeepPerTurn": -5,
+    "unitUpkeepPerTurn": -3
+   },
+   "expected": true
+  },
+  {
+   "id": "L2-ulamek",
+   "level": 2,
+   "input": {
+    "treasury": 123.5,
+    "goldCost": 40.25,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 3.5,
+    "upkeepPerTurn": 6.25,
+    "unitUpkeepPerTurn": 1.5
+   },
+   "expected": true
+  },
+  {
+   "id": "L2-zerowa-cena",
+   "level": 2,
+   "input": {
+    "treasury": 0,
+    "goldCost": 0,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 0,
+    "upkeepPerTurn": 0,
+    "unitUpkeepPerTurn": 0
+   },
+   "expected": true
+  },
+  {
+   "id": "L3-rezerwa-N-1",
+   "level": 3,
+   "input": {
+    "treasury": 39,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L3-rezerwa-N",
+   "level": 3,
+   "input": {
+    "treasury": 40,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L3-rezerwa-N+1",
+   "level": 3,
+   "input": {
+    "treasury": 41,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L3-netto-N-1",
+   "level": 3,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": -1,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L3-netto-N",
+   "level": 3,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 0,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L3-netto-N+1",
+   "level": 3,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 1,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L3-brak-manpower",
+   "level": 3,
+   "input": {
+    "treasury": 100000,
+    "goldCost": 40,
+    "hasManpower": false,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L3-skarbiec-ponizej-ceny",
+   "level": 3,
+   "input": {
+    "treasury": 39,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "L3-bez-rezerwy-legacy",
+   "level": 3,
+   "input": {
+    "treasury": 40,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": null,
+    "netIncomePerTurn": null,
+    "upkeepPerTurn": null,
+    "unitUpkeepPerTurn": null
+   },
+   "expected": true
+  },
+  {
+   "id": "L3-bez-netto-legacy",
+   "level": 3,
+   "input": {
+    "treasury": 40,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": null,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "L3-ujemne-clamp",
+   "level": 3,
+   "input": {
+    "treasury": 40,
+    "goldCost": 40,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 0,
+    "upkeepPerTurn": -5,
+    "unitUpkeepPerTurn": -3
+   },
+   "expected": true
+  },
+  {
+   "id": "L3-ulamek",
+   "level": 3,
+   "input": {
+    "treasury": 123.5,
+    "goldCost": 40.25,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 3.5,
+    "upkeepPerTurn": 6.25,
+    "unitUpkeepPerTurn": 1.5
+   },
+   "expected": true
+  },
+  {
+   "id": "L3-zerowa-cena",
+   "level": 3,
+   "input": {
+    "treasury": 0,
+    "goldCost": 0,
+    "hasManpower": true,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 0,
+    "upkeepPerTurn": 0,
+    "unitUpkeepPerTurn": 0
+   },
+   "expected": true
+  }
+ ]
+}

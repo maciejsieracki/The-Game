@@ -528,6 +528,21 @@ pub struct AiParams {
     pub ludy_morza_rajd_okres_normalny: AiParamsTrudnoscPoziom1BonusProdukcja,
     #[serde(rename = "ludy_morza_rajd_okres_trudny")]
     pub ludy_morza_rajd_okres_trudny: AiParamsTrudnoscPoziom1BonusProdukcja,
+    /// R-RUSTPORT-REPIN-AI-ZAKUP-REZERWA-Q1 (web ai-params.json @679ab078a, R-WEB-AI-PURCHASE-RESERVE-3-10-0-Q1):
+    /// rezerwa utrzymania zakupu jednostki przez AI per poziom trudnosci (Latwy/Normalny/Trudny).
+    #[serde(rename = "kupno_jednostki_rezerwa_tur_poziom1")]
+    pub kupno_jednostki_rezerwa_tur_poziom1: AiParamsTrudnoscPoziom1BonusProdukcja,
+    #[serde(rename = "kupno_jednostki_rezerwa_tur_poziom2")]
+    pub kupno_jednostki_rezerwa_tur_poziom2: AiParamsTrudnoscPoziom1BonusProdukcja,
+    #[serde(rename = "kupno_jednostki_rezerwa_tur_poziom3")]
+    pub kupno_jednostki_rezerwa_tur_poziom3: AiParamsTrudnoscPoziom1BonusProdukcja,
+    /// Minimalny dochod netto zlota/ture PO zakupie, per poziom trudnosci (web: PLACEHOLDER do zatwierdzenia).
+    #[serde(rename = "kupno_jednostki_min_dochod_netto_poziom1")]
+    pub kupno_jednostki_min_dochod_netto_poziom1: AiParamsTrudnoscPoziom1BonusProdukcja,
+    #[serde(rename = "kupno_jednostki_min_dochod_netto_poziom2")]
+    pub kupno_jednostki_min_dochod_netto_poziom2: AiParamsTrudnoscPoziom1BonusProdukcja,
+    #[serde(rename = "kupno_jednostki_min_dochod_netto_poziom3")]
+    pub kupno_jednostki_min_dochod_netto_poziom3: AiParamsTrudnoscPoziom1BonusProdukcja,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

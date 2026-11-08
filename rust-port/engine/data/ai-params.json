@@ -688,5 +688,35 @@
     "wartosc": 1,
     "sekcja": "§9 Ludy Morza",
     "opis": "TEMAT #15 (placeholder do strojenia): fala rajdów co N tur na poziomie Trudnym (często — co turę)."
+  },
+  "kupno_jednostki_rezerwa_tur_poziom1": {
+    "wartosc": 10,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 / R-WEB-AI-PURCHASE-RESERVE-3-10-0-Q1 (decyzja właściciela 2026-11-08), poziom Prosty (ŁATWY): Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). Wartość 10 = decyzja właściciela 2026-11-08 (dotąd 3)."
+  },
+  "kupno_jednostki_rezerwa_tur_poziom2": {
+    "wartosc": 3,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 / R-WEB-AI-PURCHASE-RESERVE-3-10-0-Q1 (decyzja właściciela 2026-11-08), poziom Normalny: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). Wartość 3 = decyzja właściciela 2026-11-08 (dotąd 10)."
+  },
+  "kupno_jednostki_rezerwa_tur_poziom3": {
+    "wartosc": 0,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 / R-WEB-AI-PURCHASE-RESERVE-3-10-0-Q1 (decyzja właściciela 2026-11-08), poziom Trudny: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). 0 = tylko skarbiec >= cena i netto >= próg (bez rezerwy utrzymania). Wartość 0 = decyzja właściciela 2026-11-08 (dotąd 2)."
+  },
+  "kupno_jednostki_min_dochod_netto_poziom1": {
+    "wartosc": 0,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Prosty: Minimalny dochód netto Złota/turę (przychód − utrzymanie wojska i budynków) PO zakupie; poniżej AI nie kupuje jednostki. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
+  },
+  "kupno_jednostki_min_dochod_netto_poziom2": {
+    "wartosc": 0,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Normalny: Minimalny dochód netto Złota/turę (przychód − utrzymanie wojska i budynków) PO zakupie; poniżej AI nie kupuje jednostki. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
+  },
+  "kupno_jednostki_min_dochod_netto_poziom3": {
+    "wartosc": -2,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Trudny: Minimalny dochód netto Złota/turę (przychód − utrzymanie wojska i budynków) PO zakupie; poniżej AI nie kupuje jednostki. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
   }
 }
