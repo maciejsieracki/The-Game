@@ -65,6 +65,13 @@ pub fn is_era_forced_war_ignoring_r1(tag: Option<ForcedEraTag>) -> bool {
     matches!(tag, Some(ForcedEraTag::Bronze) | Some(ForcedEraTag::Iron))
 }
 
+/// Web `isWarMarchOpenForPair` (R-WEB-WAR-MARCH-BEFORE-40-Q1): kontekst wojenny / marsz AI pary
+/// otwarty = tura >= R1 albo aktywna wojna epoki Brazu/Zelaza tej pary (`active_pair_era_tag`).
+/// Web `undefined`/`null` tagu = `None`.
+pub fn is_war_march_open_for_pair(turn: f64, active_pair_era_tag: Option<ForcedEraTag>) -> bool {
+    is_inter_civ_war_open_at_turn(turn) || is_era_forced_war_ignoring_r1(active_pair_era_tag)
+}
+
 /// Web `isWarTreatyBlocked` (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1): wojna epoki blokuje
 /// WYLACZNIE aktywny sojusz; zwykle wypowiedzenie blokuje NAP albo blokada pokoju.
 pub fn is_war_treaty_blocked(
