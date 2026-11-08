@@ -141,3 +141,43 @@ Trzy rodziny (git grep, baza 0b37cf183):
 - Kod Rust: bez zmian względem 9612c0b8e (B1). Wektory: bez zmian.
 - Dokumentacja i narzędzia: ten rozdział, `runs/.../tools/`, `runs/.../logs/`.
 - Następna runda (5/5, OSTATNIA): (a) decyzja orkiestratora: allowlista + 3 pliki wołające R1/R2; (b) naprawa powtarzalności generatora (D-R4-3); (c) B2 razem z C (`wlasciciel_era`) w jednym temacie; (d) D dopiero po zielonych bramkach. Jeśli r5 nie zamknie B2, temat kończy się LIMIT-5-EXCEEDED z listą D-R4-1..3 jako długi do osobnych tematów.
+
+## 9. Runda 5 (Operator r5, Sonnet 5.5; baza b84d952d4) — B2 + C + D domkniete
+
+### 9.1 Przyczyna "niepowtarzalnego generatora" (r4) i pin wektorow
+Pin `331ef699b` w wektorach to SYNTETYCZNY commit "hybrid origin/main minus out-of-scope files" (tworzony przez
+`R-RUSTPORT-REPIN-EKONOMIA-F-FALA500-Q1/mk-hybrid-web-ref.sh`: origin/main z `terrain-improvements.ts`, `trade-routes.ts`,
+`buildings.json` cofnietymi do 4bbef081d), a regeneracja szla przez `regen-vectors-ekonf.sh` z DWOMA lataniami generatora
+(`computeSeaTradeBonusIncomeByCity` bez 2. argumentu przy cofnietym trade-routes; 5. argument `builtIds.includes('spichlerz_ii')`
+w `resolvePopulationCapMatrixDelta`). Generatory r4 nie mialy drugiego latania, stad "popCap ef-0 city3 rust=21 web=13".
+Dowod: kontrola `PINREF=331ef699b regen.sh q2a` odtwarza `q2a.json` BAJT-W-BAJT (cmp IDENTICAL).
+
+### 9.2 B2 — regeneracja z uruchomionego weba (ZALOZENIE Z-R5-1)
+`hybrid2` = `331ef699b` + JEDEN plik `gra/src/game/terrain-improvements.ts` z origin/main 247f1ef2a (commit lokalny `f873221ee`,
+drzewo `1ec5ddd3b60807e9b8f43d2100d4265aaeb22759`; odtworzenie: `tools/mk-hybrid2-r5.sh`; hash commita zalezy od czasu, drzewo nie).
+Czyli JEDYNA zmiana wzgledem poprzednio przyjetych wektorow to regula ulepszen z origin/main (skalowanie surowcow 9 kluczy x1,5/epoke +
+plony Zyw/Pra/Han/Pieniadz +1/epoke przez `wlascicielEra`). `trade-routes.ts`/`buildings.json` zostaja na 4bbef081d (dlug D-R4-1: handel morski
+wymagajacy Portu, popCap — osobne tematy; pieniadz ef-1 city23 18 vs 17 z r4 jest TYM dlugiem, nie tematem repinu ekonomii).
+Regenerowane (`tools/regen-vectors-hybrid2-r5.sh`): q2a, q4, q4b (+q4c), q5, q6, empirefood. Unit tables q5 bez zmian.
+`p6_23_vectors/improvements.json`: przeliczone z weba WYLACZNIE pola `out` dwoch sekcji (`resourceProductionAmountForEra` 72/1320,
+`territoryResourceYieldForImprovement` 28/1372 zmienionych) — `tools/regen-p623-era-sections-r5.mjs`.
+
+### 9.3 C — epoka wlasciciela (1:1 z `economy.ts:468` / `turn-economy.ts:589-707`)
+`WorkedTileImpInput::wlasciciel_era: Option<f64>`; `tile_yield_full` -> `apply_improvement_bonuses_era`. Przekazanie epoki:
+`turn_economy_loop` (`owner_era_for`), `compute_worked_magazyn_yields_by_city(.., resolve_owner_era: Option<&dyn Fn(i64)->f64>)`
+(ranking pol `resolve_worked_tiles` + plony; preview i advance podaja resolver, klasa `direct` testu q2a = None jak `computeWorkedMagazynYieldsByCity(cities,map,nodes)` w generatorze),
+`hex_tile_yield(.., owner_era)`. Test: `tests/p6_repin_ekonomii_era.rs` — 1760 kafelkow z weba (teren x nakladka x rzeka x 11 zestawow
+ulepszen x 8 epok, bit-w-bit) + N-1/N/N+1 (epoka 1/2/3; 0, 1.5, 2.5, 4, -1, NaN = baza).
+
+### 9.4 D — jedna wersja
+`improvements.rs`: usunieta migawka R2 (`resource_production_amount_for_era`/`territory_resource_yield_for_improvement` skalujace tylko tartak/kamieniolom);
+dawne `*_all_producers` nosza teraz kanoniczne nazwy (sufiks usuniety). Wolajacy: `turn_economy_territory.rs`, testy `p6_repin_autoimpr_terrain.rs`
+(porownanie z "legacy" usuniete), `p6_23_improvements.rs` i `p6_adv_q2a_pipeline.rs` (te same nazwy, nowa semantyka + wektory z weba).
+DLUG D-R5-1 (nie usunieto): rodzina `resource_production.rs` (u32/u8, `resolve_resource_production`, `stack_resource_production`) to stara migawka
+poza produkcja tury; zywi ja tylko `tests/resource_production.rs`, `tests/parity_suite.rs`, `benches/engine_modules.rs` (poza allowlista, asercje np. glina 50 w epoce 3).
+Oznaczone w naglowku modulu. Zywe w tym module: `citizen_*`, `compute_citizen_resource_drain`.
+
+### 9.5 Bramki (świeże, kod = ostatni commit r5)
+fmt --check OK; clippy --all-targets -D warnings OK; lib 22 passed; doc 0; cargo test per binarka: 298 binarek (po 30 w shardach) 2226 passed, 0 failed,
+1 ignored (istniejacy `p6_order_lane.rs:1530`, nie nowy); `p6_8i_pick` osobno: 5 passed w 366 s (dev). Baseline pre-B1 pelnej sumy: NIE_ZMIERZONO
+(wynik r3: 5 binarek zielonych pre-B1 ze starymi wektorami). 0 nowych `#[ignore]`.
