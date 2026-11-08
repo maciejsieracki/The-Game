@@ -53,6 +53,7 @@ import { buildingIconSvg, unitIconSvg, improvementIconSvg } from './icons/brandA
 import type { ImprovementKey } from '../render/improvements';
 import { buildEntityCardData, renderEntityCard, ENTITY_CARD_CSS, openEntityCard } from './entityCards/renderer';
 import { technologyIdFromName } from './entityCards/registry';
+import { techCardContentOf, cmzSentence } from './entityCards/technologyAdapter';
 import type { EntityCardData, EntityCardAction } from './entityCards/types';
 
 type TechRow = {
@@ -201,13 +202,20 @@ function actionItemRow(kind: 'ok' | 'warn' | 'muted', label: string, text: strin
   return `<div class="tdn-action">${badge(kind, label)}<span class="tdn-action-text">${esc(text)}</span></div>`;
 }
 
-/** „Co możesz teraz zrobić" — szablony wypełnione realnymi nazwami, nie ręczna narracja per-tech (patrz nagłówek pliku, pkt 2). */
+/** „Co możesz teraz zrobić" — R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1: spójnie z `technologyAdapter.ts`
+ * (ta sama treść CZYNNOŚĆ → KORZYŚĆ z `data/tech-cards-top5.json`, bez wiersza „Nie oznacza”).
+ * Szablony wypełnione realnymi nazwami zostają WYŁĄCZNIE jako fallback dla odkrycia bez wpisu. */
 function buildActionItems(args: {
+  techName: string;
   buildingNames: string[];
   improvementNames: string[];
   resourceUnlocked: string | null;
   nextTechCount: number;
 }): string {
+  const content = techCardContentOf(args.techName);
+  if (content) {
+    return content.cmz.map(item => actionItemRow('ok', 'Możesz teraz', cmzSentence(item))).join('');
+  }
   const rows: string[] = [];
   if (args.resourceUnlocked) {
     rows.push(actionItemRow('ok', 'Możesz teraz', `Sprawdź dostęp do surowca: ${args.resourceUnlocked}.`));
@@ -221,8 +229,6 @@ function buildActionItems(args: {
   if (args.nextTechCount > 0) {
     rows.push(actionItemRow('ok', 'Możesz teraz', 'Wybierz dalszy kierunek badań, jeśli pozostałe wymagania są spełnione.'));
   }
-  if (rows.length === 0) return '';
-  rows.push(actionItemRow('muted', 'Nie oznacza', 'Odkrycie nie buduje automatycznie budynków ani ulepszeń i nie dodaje zapasu surowców.'));
   return rows.join('');
 }
 
@@ -360,7 +366,16 @@ function buildBody(tech: TechRow): { html: string } {
 
   // "Co możesz teraz zrobić" — PIERWSZA sekcja, nad Budynkami: priorytet „co mogę zrobić teraz"
   // przed „co zostało odblokowane" (DYSPOZYCJA-WDROZENIE.md §2, odstępstwo świadome i zaakceptowane).
+  // R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1: „Top 5 korzyści” także w ścieżce zapasowej (spójność
+  // z `technologyAdapter.ts`; ta ścieżka działa tylko, gdy entityCards rzuci wyjątek).
+  const top5Items = techCardContentOf(tech.Technologia)?.top5 ?? [];
+  const top5Section = top5Items.length === 0 ? '' : accordionSection({
+    key: 'top5', title: 'Top 5 korzyści', count: top5Items.length, openDefault: true,
+    bodyHtml: top5Items.map(item => unlockItemRow({ icon: null, title: item.tytul, meta: item.zdanie })).join(''),
+  });
+
   const actionsHtml = buildActionItems({
+    techName: tech.Technologia,
     buildingNames: buildings.map(b => b.nazwa ?? b.id),
     improvementNames,
     resourceUnlocked,
@@ -448,7 +463,7 @@ function buildBody(tech: TechRow): { html: string } {
     + `<div class="tdn-req-body">${requirements.map(r => `<span class="tdn-req-pill">${esc(r)} <b>✓</b></span>`).join('')}</div>`
     + `</div>`;
 
-  const sections = [actionsSection, buildingsSection, unitsSection, improvementsSection, nextTechsSection, econSection]
+  const sections = [top5Section, actionsSection, buildingsSection, unitsSection, improvementsSection, nextTechsSection, econSection]
     .filter(Boolean).join('');
 
   if (sections === '' && reqSection === '') {
