@@ -115,15 +115,15 @@ check(
   /const playerCity = pickPlayerReferenceCity\(cities, capitalCityIdForOwner\(0\), 0\);\s*\n\s*if \(\s*\n\s*playerCity\s*\n\s*&& turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY\s*\n\s*&& totalActiveForcedWarsByOwner\(0\) === 0\s*\n\s*\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
 );
 check(
-  'isForcedWarPairBlocked (NAP, blokada pokoju, sojusz) -- ten sam symetryczny predykat dla '
+  'isForcedWarPairBlocked = isWarTreatyBlocked(eraWar:true) -- blokuje tylko sojusz (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1), ten sam predykat dla '
     + 'WSZYSTKICH trzech epok, zastępuje dawne ironBlockedOwnerIds/bronzeBlockedOwnerIds/stoneBlockedOwnerIds',
-  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null\s*\n\s*\|\| isForcedWarRelationBlocked\(pairRelationOfR8\(a, b\)\);/.test(main),
+  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*isWarTreatyBlocked\(\{\s*\n\s*eraWar: true,\s*\n\s*hasNap: hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\),\s*\n\s*peaceLocked: isPeaceLockedBetween\(a, b\),\s*\n\s*hasAlliance: allianceFormalKindBetween\(activeDeals, a, b\) !== null,\s*\n\s*\}\);/.test(main),
 );
 check(
   'wybór celu (wszystkich trzech epok naraz, w tym Żelaza) przechodzi przez assignForcedWarPairings '
     + 'z isForcedWarPairBlocked i hexDistanceFn: hexDistance',
   // R-WEB-ERA-WAR-COUNTER-Q1: dodana opcja isEraWarExhausted (licznik wojen epoki per cywilizacja).
-  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*pairRelationScore: pairRelationOfR8,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
+  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
 );
 check(
   'wynik przydziału Żelaza czytany z forcedWarAssignmentByOwner (nie z usuniętego pickIronForcedWarTargetId w pętli)',
@@ -143,8 +143,8 @@ check(
   /ironForceWarTargetId\?: number;/.test(ai),
 );
 check(
-  'ai.ts: guard Żelaza to wczesny return z wypowiedz_wojne i pełnym zestawem blokad',
-  /if \(inp\.ironForceWarTargetId != null\) \{[\s\S]{0,400}?!forcedRel\.stanWojny[\s\S]{0,200}?!forcedRel\.peaceLocked[\s\S]{0,200}?!forcedRel\.hasNapTreaty[\s\S]{0,200}?!forcedRel\.hasAllianceTreaty[\s\S]{0,300}?type:\s*'wypowiedz_wojne'/.test(ai),
+  'ai.ts: guard Żelaza to wczesny return z wypowiedz_wojne (stanWojny + sojusz; NAP/peaceLock nie blokują)',
+  /if \(inp\.ironForceWarTargetId != null\) \{[\s\S]{0,400}?!forcedRel\.stanWojny[\s\S]{0,200}?!forcedRel\.hasAllianceTreaty[\s\S]{0,300}?type:\s*'wypowiedz_wojne'/.test(ai),
 );
 check(
   'ai.ts: guard Żelaza stoi PRZED ogólnymi regułami wojny (przed budową DiplomacjaParams `const p:`)',

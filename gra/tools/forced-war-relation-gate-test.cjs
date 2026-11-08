@@ -138,16 +138,16 @@ console.log('--- B: okablowanie main.ts (R8) ---');
 {
   const mainSrc = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
   assert(
-    /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>[\s\S]{0,400}?\|\| isForcedWarRelationBlocked\(pairRelationOfR8\(a, b\)\);/.test(mainSrc),
-    'B1: isForcedWarPairBlocked zawiera bramkę Relacji R8',
+    /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*isWarTreatyBlocked\(\{\s*\n\s*eraWar: true,/.test(mainSrc) && !/isForcedWarRelationBlocked\(pairRelationOfR8/.test(mainSrc),
+    'B1 (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1): isForcedWarPairBlocked = isWarTreatyBlocked(eraWar:true), bez bramki Relacji R8',
   );
   assert(
-    /const pairRelationOfR8 = \(x: number, y: number\): number => relationScore\(getDiploRelation\(x, y\)\);/.test(mainSrc),
-    'B2: pairRelationOfR8 czyta relationScore(getDiploRelation(...)) -- ta sama miara co licznik pokoju R7',
+    !/const pairRelationOfR8 = /.test(mainSrc),
+    'B2 (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1): pairRelationOfR8 usunięte z main.ts (Relacja nie blokuje wojny epoki)',
   );
   assert(
-    /isPairBlocked: isForcedWarPairBlocked,\s*\n\s*pairRelationScore: pairRelationOfR8,/.test(mainSrc),
-    'B3: opts assignForcedWarPairings dostaje pairRelationScore (kandydaci gracza-pierwszego i parowanie)',
+    !/pairRelationScore: pairRelationOfR8/.test(mainSrc),
+    'B3 (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1): opts assignForcedWarPairings NIE dostają pairRelationScore (parowanie nie patrzy na Relację)',
   );
 }
 

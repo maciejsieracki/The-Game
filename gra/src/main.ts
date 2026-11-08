@@ -1312,7 +1312,6 @@ import {
   restoreForcedEraPeaceLocks,
   type ForcedEraPeaceLock,
   assignForcedWarPairings,
-  isForcedWarRelationBlocked,
   shouldEndForcedWarByCityCount,
   type ForcedWarPairingSubject,
   type ForcedWarPairingExistingPair,
@@ -1357,6 +1356,7 @@ import {
   isForcedEraWarEnabled,
   isInterCivWarOpenAtTurn,
   isWarRulesMultiwarEnabled,
+  isWarTreatyBlocked,
   isWarEpochPlayerFirstEnabled,
   pickPlayerReferenceCity,
   recordEraForcedWarParticipation,
@@ -38926,17 +38926,17 @@ async function boot(): Promise<void> {
                 .map(st => ({ attackerId: st.attackerId, targetId: st.targetId, era: 'iron' as const })),
             ];
 
-            // Krok E: NAP / peaceLocked (w tym cooldown tej samej pary) / aktywny sojusz --
-            // symetryczny predykat, ta sama trójka warunków co dawne bronze/stoneBlockedOwnerIds
-            // (i domina, ECHO 2: KTÓRAKOLWIEK strona blokuje CAŁĄ parę), teraz jeden predykat
-            // zamiast osobnego zbioru per owner.
-            // R-WEB-PEACE-RULES-R8R9-Q1 R8 (D1): Relacja (relationScore) >= próg blokuje wojnę epoki.
-            const pairRelationOfR8 = (x: number, y: number): number => relationScore(getDiploRelation(x, y));
+            // Krok E: R-WEB-ERA-WAR-IGNORE-TREATIES-Q1 (decyzja właściciela 2026-11-08): wojna
+            // epoki omija NAP, blokadę pokoju/cooldown, umowy handlowe i Relację (R8 wyłączone
+            // dla wojen epoki); blokuje ją WYŁĄCZNIE aktywny sojusz formalny. Jeden predykat
+            // symetryczny (ECHO 2: KTÓRAKOLWIEK strona blokuje CAŁĄ parę) -- `isWarTreatyBlocked`.
             const isForcedWarPairBlocked = (a: number, b: number): boolean =>
-              hasTreaty(activeDeals, a, b, RodzajTraktatu.PaktNieagresji)
-              || isPeaceLockedBetween(a, b)
-              || allianceFormalKindBetween(activeDeals, a, b) !== null
-              || isForcedWarRelationBlocked(pairRelationOfR8(a, b));
+              isWarTreatyBlocked({
+                eraWar: true,
+                hasNap: hasTreaty(activeDeals, a, b, RodzajTraktatu.PaktNieagresji),
+                peaceLocked: isPeaceLockedBetween(a, b),
+                hasAlliance: allianceFormalKindBetween(activeDeals, a, b) !== null,
+              });
 
             // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z1/Z4/K1): gracz pierwszy; bramka R1/R2 po stronie
             // AI (targetIsPlayer=true). Pusty obiekt gdy flaga OFF = wywołanie jak dotąd.
@@ -38980,7 +38980,6 @@ async function boot(): Promise<void> {
               existingActivePairsForJoin,
               {
                 isPairBlocked: isForcedWarPairBlocked,
-                pairRelationScore: pairRelationOfR8,
                 hexDistanceFn: hexDistance,
                 totalActiveForcedWarsByOwner,
                 isEraWarExhausted: isWarRulesMultiwarEnabled() ? isEraWarExhausted : undefined,
@@ -39903,8 +39902,9 @@ async function boot(): Promise<void> {
                 // Brązu (bronzeForceWarPendingOwners, ustawione w syncOwnerEraFromResearch),
                 // (b) cyklicznie po odpoczynku od poprzedniej wojny wymuszonej (owner już
                 // zapisany do bronzeForceWarCycleOwners). Miasta-państwa/kopie i barbarzyńcy
-                // wykluczeni; cel = najbliższa główna cywilizacja niezablokowana NAP/
-                // peaceLocked/sojuszem (B3, runda 2) (patrz `game/forced-war-bronze.ts`).
+                // wykluczeni; cel = najbliższa główna cywilizacja niezablokowana sojuszem
+                // (B3, runda 2; NAP/peaceLocked nie blokują — R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)
+                // (patrz `game/forced-war-bronze.ts`).
                 // B4 (runda 2, Evaluator FAIL): `wasPending` jest TYLKO ODCZYTEM — pending
                 // NIE jest tu kasowany. Jeśli ta próba nie zakończy się faktycznym udanym
                 // wypowiedzeniem wojny (bo owner już jest w wojnie z innego powodu, albo
@@ -39913,8 +39913,8 @@ async function boot(): Promise<void> {
                 // wypowiedz_wojne niżej, przy faktycznym sukcesie.
                 // EN: Bronze-era forced war on a territorial neighbor — (a) one-shot on Bronze
                 // advance, (b) cyclic after resting from a previous forced war. City-states/
-                // copies/barbarians excluded; target = nearest major civ not NAP/peaceLocked/
-                // allied (B3, round 2). B4 (round 2): `wasPending` is READ-ONLY here — pending
+                // copies/barbarians excluded; target = nearest major civ not allied
+                // (B3, round 2; NAP/peaceLocked do not block — R-WEB-ERA-WAR-IGNORE-TREATIES-Q1). B4 (round 2): `wasPending` is READ-ONLY here — pending
                 // is NOT deleted at this point; it is only consumed on an actual successful war
                 // declaration in the wypowiedz_wojne block below, so a civ that happens to
                 // already be at war (or has every candidate blocked) is retried next turn
@@ -40099,10 +40099,15 @@ async function boot(): Promise<void> {
                       ) {
                         continue;
                       }
-                      if (isPeaceLockedBetween(ownerId, targetId)) continue;
-                      if (hasTreaty(activeDeals, ownerId, targetId, RodzajTraktatu.PaktNieagresji)) {
-                        continue;
-                      }
+                      // R-WEB-ERA-WAR-IGNORE-TREATIES-Q1: wojna epoki (powód R-EPOKA-*-WYMUSZONA-WOJNA)
+                      // omija NAP i blokadę pokoju; blokuje ją tylko sojusz. Zwykłe wypowiedzenie AI
+                      // nadal respektuje NAP i blokadę pokoju (`isWarTreatyBlocked`, eraWar=false).
+                      if (isWarTreatyBlocked({
+                        eraWar: gateForcedTagAny !== null,
+                        hasNap: hasTreaty(activeDeals, ownerId, targetId, RodzajTraktatu.PaktNieagresji),
+                        peaceLocked: isPeaceLockedBetween(ownerId, targetId),
+                        hasAlliance: allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null,
+                      })) continue;
                       if (
                         stoneForceWarTargetId != null
                         && targetId === stoneForceWarTargetId

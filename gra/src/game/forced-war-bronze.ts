@@ -139,7 +139,7 @@ export interface BronzeForcedWarNeighborCandidate {
 }
 
 export interface PickBronzeForcedWarTargetOpts {
-  /** OwnerIds wykluczone z wyboru — NAP, peaceLocked (w tym cooldown tej samej pary), aktywny sojusz (B3), już wyeliminowani itd. */
+  /** OwnerIds wykluczone z wyboru — aktywny sojusz (B3), już wyeliminowani itd. NAP i peaceLocked NIE wykluczają wojny epoki (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1). */
   blockedOwnerIds?: ReadonlySet<number>;
 }
 
