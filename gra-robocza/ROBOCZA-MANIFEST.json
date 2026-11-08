@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "ae6e3358cffffa808eb2d3d4be11ecef",
-  "bundleSha256": "943ae770e5e28a10c379d06e4e74cccd3efc9638c2eafd924b7acc4f69acd91d",
-  "bundleBytes": 85766761,
+  "bundleMd5": "143ef7300b7d3548e888dd6ed742fb33",
+  "bundleSha256": "e912c822a4bfb134cfae3359a8ea69c90746037124d02971f1b87df8bc674224",
+  "bundleBytes": 14306594,
   "sourceSnapshot": {
-    "source": "FC 8d18f9044 (kod b679ed33c)",
+    "source": "FC 41d2b9f74 (MUSIC2 d8c4d1d58 + SPLIT)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 561: gra/data/building-cards-top5.json (43 budynki, generator gra/tools/gen-building-cards-top5.cjs), gra/src/ui/entityCards/buildingAdapter.ts (sekcja Top 5 + CMZ, opisKarty), registry.ts (Wielka odlewnia, Wielka Kuznia, Teatr bez karty), gra/data/buildings.json (tylko teksty opis/uwagi/top3[1] Trybunalu i opis/uwagi Palacu II/III — -30% korupcji wg FALA 560)"
+    "FALA 562: przywitania+negocjacje wszystkich 15 civ (rotacja przywitan), audio poza HTML w 3 pakietach .js ladowanych <script src> z file://; HTML 14,3 MB, limit 100 MB GitHub nieaktualny"
   ],
   "verification": [
-    "FC PASS-WITH-NOTES 8d18f9044 (kod b679ed33c, Opus 5.5); building-cards-top5 1179/0, emporion 47/0, tech-cards-top5 594/0, civpedia-budynki-historia 146/0, overlap-real-render 21/0, queue-detail-card 8/8, historia-section 36/0, ai-test 289/0, logic 213/213, tsc 0, vite OK; zrzuty 6 kart w Chromium (harness)"
+    "civ-music-test 100/0, menu-game-music 7/0, menu-music-delay 9/0, audio-sidecar PASS (Chromium file://, z i bez sasiadow), logic 213/213, ai-test 289/0, tsc 0"
   ],
   "limits": [
-    "Kafelek Technologie (cityPanel.ts appendTechDetailBlock) nadal pokazuje odwolania do martwych efektow na 3 kartach (5 wierszy: Akademia x2 Teatr, Akademia wojskowa, Warsztat oblezniczy x2) — osobny temat; Trybunal Top3 +2 Szczescia vs sekcja Plony +1 (rozbieznosc danych); zywa gra NIE_ZMIERZONO; zalozenia 1-5 do potwierdzenia przez wlasciciela"
+    "ROBOCZA wymaga plikow audio-pack-*.js obok Gra-ROBOCZA.html (bez nich cisza i 3 wpisy ERR_FILE_NOT_FOUND w konsoli); pamiec procesu NIE_ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-08T20:11:37",
+  "hubGeneratedAt": "2026-11-08T21:02:39",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
-      "sizeBytes": 85766761
+      "md5": "143ef7300b7d3548e888dd6ed742fb33",
+      "sizeBytes": 14306594
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
-      "sizeBytes": 85766761
+      "md5": "143ef7300b7d3548e888dd6ed742fb33",
+      "sizeBytes": 14306594
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
-      "sizeBytes": 85766761
+      "md5": "143ef7300b7d3548e888dd6ed742fb33",
+      "sizeBytes": 14306594
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
-      "sizeBytes": 85766761
+      "md5": "143ef7300b7d3548e888dd6ed742fb33",
+      "sizeBytes": 14306594
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
-      "sizeBytes": 85766761
+      "md5": "143ef7300b7d3548e888dd6ed742fb33",
+      "sizeBytes": 14306594
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
-      "sizeBytes": 85766761
+      "md5": "143ef7300b7d3548e888dd6ed742fb33",
+      "sizeBytes": 14306594
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
-      "sizeBytes": 85766761
+      "md5": "143ef7300b7d3548e888dd6ed742fb33",
+      "sizeBytes": 14306594
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
-      "sizeBytes": 85766761
+      "md5": "143ef7300b7d3548e888dd6ed742fb33",
+      "sizeBytes": 14306594
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
-      "sizeBytes": 85766761
+      "md5": "143ef7300b7d3548e888dd6ed742fb33",
+      "sizeBytes": 14306594
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
-      "sizeBytes": 85766761
+      "md5": "143ef7300b7d3548e888dd6ed742fb33",
+      "sizeBytes": 14306594
     }
   ],
-  "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
+  "md5": "143ef7300b7d3548e888dd6ed742fb33",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
@@ -1288,5 +1288,22 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "FALA 508: MARCH-END-OF-TURN-ONLY"
+  "releaseScope": "FALA 508: MARCH-END-OF-TURN-ONLY",
+  "sidecars": [
+    {
+      "file": "audio-pack-1.js",
+      "md5": "5b990bc33b4513f343ccc4bc7f12f26f",
+      "sizeBytes": 39803262
+    },
+    {
+      "file": "audio-pack-2.js",
+      "md5": "0a9a10473f9d29bbe01fd9a4f592f89d",
+      "sizeBytes": 39999512
+    },
+    {
+      "file": "audio-pack-3.js",
+      "md5": "9e88be9fa542eaf2f2a2ecb5c2424fa2",
+      "sizeBytes": 11556324
+    }
+  ]
 }

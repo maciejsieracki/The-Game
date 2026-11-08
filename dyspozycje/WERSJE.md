@@ -1,3 +1,9 @@
+## ROBOCZA 143ef730 -- 2026-11-06 -- FALA 562: MUSIC2 + SPLIT: muzyka 15 cywilizacji; cale audio w plikach-sasiadach audio-pack-N.js obok HTML (testowa)
+
+- przywitania+negocjacje wszystkich 15 civ (rotacja przywitan), audio poza HTML w 3 pakietach .js ladowanych <script src> z file://; HTML 14,3 MB, limit 100 MB GitHub nieaktualny
+- Weryfikacja: civ-music-test 100/0, menu-game-music 7/0, menu-music-delay 9/0, audio-sidecar PASS (Chromium file://, z i bez sasiadow), logic 213/213, ai-test 289/0, tsc 0
+- Limity: ROBOCZA wymaga plikow audio-pack-*.js obok Gra-ROBOCZA.html (bez nich cisza i 3 wpisy ERR_FILE_NOT_FOUND w konsoli); pamiec procesu NIE_ZMIERZONO
+
 ## ROBOCZA ae6e3358 -- 2026-11-06 -- FALA 561: BLDIMPL: karty budynkow — TOP 5 po rysie historycznym, nowa sekcja Co mozesz teraz zrobic (czynnosc w celu korzysci), niedostepne budynki i martwe efekty ukryte (etap 2 projektu kart) (testowa)
 
 - gra/data/building-cards-top5.json (43 budynki, generator gra/tools/gen-building-cards-top5.cjs), gra/src/ui/entityCards/buildingAdapter.ts (sekcja Top 5 + CMZ, opisKarty), registry.ts (Wielka odlewnia, Wielka Kuznia, Teatr bez karty), gra/data/buildings.json (tylko teksty opis/uwagi/top3[1] Trybunalu i opis/uwagi Palacu II/III — -30% korupcji wg FALA 560)
