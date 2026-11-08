@@ -9,13 +9,14 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use civ_engine::domain::improvements::TerrainType as ImprovementTerrainType;
+use civ_engine::domain::improvements::{
+    territory_resource_yield_for_improvement, TerrainType as ImprovementTerrainType,
+};
 use civ_engine::domain::pathfinding::{
     find_path, movement_cost, path_cost, HexCoord as PathHexCoord, Improvement, MovementCost,
     PathMap, TerrainType as PathTerrainType, Tile as PathTile, COST_SCALE,
 };
 use civ_engine::domain::recruitment::{recruitment_for, spend_recruitment};
-use civ_engine::domain::resource_production::{stack_resource_production, ResourceKey};
 use civ_engine::domain::trade::{
     create_trade_route, find_city_connection, trade_route_id, trade_route_pair_key,
     HexCoord as TradeHexCoord, TerrainType as TradeTerrainType, TradeCity, TradeMap,
@@ -163,11 +164,17 @@ fn improvements_and_resource_production_vectors_match_catalogue_rules() {
         }
     );
 
-    let totals = stack_resource_production(["tartak", "tartak", "kamieniolom", "glinianka"], 3);
-    assert_eq!(totals.amount_for(ResourceKey::Wood), 900);
-    assert_eq!(totals.amount_for(ResourceKey::Stone), 450);
-    assert_eq!(totals.amount_for(ResourceKey::Clay), 50);
-    assert_eq!(totals.amount_for(ResourceKey::Gold), 0);
+    // Web (terrain-improvements.ts, era 3 = x2,25 od bazy 50, Math.round): 113 na producenta.
+    let mut totals: BTreeMap<String, f64> = BTreeMap::new();
+    for key in ["tartak", "tartak", "kamieniolom", "glinianka"] {
+        let row = territory_resource_yield_for_improvement(Some(key), None, Some(3.0))
+            .expect("territory producer");
+        *totals.entry(row.resource_key).or_insert(0.0) += row.amount;
+    }
+    assert_eq!(totals.get("drewno").copied().unwrap_or(0.0), 226.0);
+    assert_eq!(totals.get("kamien").copied().unwrap_or(0.0), 113.0);
+    assert_eq!(totals.get("glina").copied().unwrap_or(0.0), 113.0);
+    assert_eq!(totals.get("zloto").copied().unwrap_or(0.0), 0.0);
 }
 
 #[test]
