@@ -13,7 +13,7 @@
     "podstawa_podwajania": 2
   },
   "produkcja_epoka": {
-    "zrodlo_web": "terrain-improvements.ts:218-239 (ERA_SCALED_RESOURCE_IMPROVEMENTS, normalizeProductionEra, resourceProductionAmountForEra)",
+    "zrodlo_web": "terrain-improvements.ts:218-239 (ERA_SCALED_RESOURCE_IMPROVEMENTS, normalizeProductionEra, resourceProductionAmountForEra). UWAGA (REPIN-AUTOIMPROVE r2): ta lista to MIGAWKA STAREGO weba (tylko tartak i kamieniolom) dla dotychczasowych wolajacych turn_economy; web 180c08305 skaluje KAZDY surowiec terytorium (R-WEB-IMPROVEMENT-ERA-SCALING-Q1) - patrz improvements::resource_production_amount_for_era_all_producers (zbior = terytorium.ulepszenia)",
     "mnoznik_za_epoke": 1.5,
     "epoka_min": 1,
     "epoka_max": 3,
@@ -89,7 +89,7 @@
       { "ulepszenie": "kopalnia_zelaza", "nakladki": [], "zloza": ["zelazo"] },
       { "ulepszenie": "kopalnia_zlota", "nakladki": [], "zloza": ["zloto"] },
       { "ulepszenie": "warzelnia_soli", "nakladki": [], "zloza": ["sol"] },
-      { "ulepszenie": "stadnina", "nakladki": ["zloze_konia"], "zloza": [] },
+      { "ulepszenie": "stadnina", "nakladki": ["zloze_konia"], "zloza": ["konie"] },
       { "ulepszenie": "bydlo", "nakladki": ["zloze_bydla"], "zloza": [] },
       { "ulepszenie": "owce", "nakladki": ["zloze_owiec"], "zloza": [] },
       { "ulepszenie": "lama", "nakladki": ["zloze_lamy"], "zloza": [] }

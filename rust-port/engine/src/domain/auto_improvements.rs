@@ -12,6 +12,7 @@
 //! - Porownania i `Math.max/min` zachowuja semantyke JS dla NaN (`js_max`/`js_min`).
 //! - Brak portu: klucz niedoboru o nazwie wlasciwosci `Object.prototype` (web rzuca `TypeError`).
 
+pub mod auto_build_gate;
 pub mod city_phases;
 pub mod fort_claim;
 pub mod hex_phases;

@@ -648,11 +648,7 @@ pub fn hex_has_clay_deposit(hex: &BuildHex) -> bool {
 /// 52, 55, 99, 100): zloze konia = nakladka `ZlozeKonia` (nowe mapy) LUB `zloze === 'konie'` po
 /// trim/lowercase (stare zapisy: kon pod lasem, las zostaje).
 pub fn hex_has_horse_deposit(hex: &BuildHex) -> bool {
-    hex.overlay == Overlay::ZlozeKonia
-        || hex
-            .zloze
-            .as_deref()
-            .is_some_and(|zloze| js_trim(zloze).to_lowercase() == "konie")
+    crate::domain::improvements::hex_has_horse_deposit_like(Some(hex.overlay), hex.zloze.as_deref())
 }
 
 /// Web `isOutpostPlacementAllowed` (`game/fort-territory.ts`, R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1): heks musi
@@ -1624,6 +1620,20 @@ pub fn create_improvement_build_api<'a>(
     for node in &state.city_nodes {
         let rad = city_territory_radius(node) + tables().file.domyslne.pierscien_kandydatow;
         for key in hex_keys_within_radius(node.q, node.r, rad, &state.map) {
+            add(key);
+        }
+    }
+    // R-WEB-STADNINA-NO-HEX-FALSE-NEGATIVE-Q1 (`buildCandidateHexKeys`): od R-WEB-OUTPOST-FORT-TERRITORY-Q1 posterunek i
+    // fort tworza TWARDE terytorium (`territoryNodes`, `ownerId` = gracz) - kandydaci obejmuja tez ich pierscienie.
+    let owner_num = state
+        .player_owner_id_num
+        .unwrap_or(tables().file.domyslne.wlasciciel_gracza);
+    for node in state.territory_nodes.iter().flatten() {
+        if node.owner_id != owner_num {
+            continue;
+        }
+        let rad = city_territory_radius(&node.node) + tables().file.domyslne.pierscien_kandydatow;
+        for key in hex_keys_within_radius(node.node.q, node.node.r, rad, &state.map) {
             add(key);
         }
     }
