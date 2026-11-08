@@ -19,8 +19,8 @@ DO ZROBIENIA = w zakresie tematu, nie zrobione w rundzie 2; POZA ZAKRESEM = wg d
 | `playerEpochWarEnabled` = `params.playerEpochWarEnabled ?? true` | `main.ts:43049` (flaga `isWarEpochPlayerFirstEnabled` = `war-rules-multiwar.ts:72`, stała ON) | `diplomacy_multiwar::player_epoch_war_enabled(Option<bool>)` | ZROBIONE (flaga ON jako stała) |
 | `recordEraForcedWarParticipation` | `war-rules-multiwar.ts:208` | — | DO ZROBIENIA (zapis licznika; wymaga stanu sesji) |
 | `rebuildEraWarCountsFromActivePairs` / `restoreEraWarCounts` | `war-rules-multiwar.ts:225` / `:243` | — | DO ZROBIENIA (odczyt zapisu bez pola) |
-| `evaluateInterCivWarGate` (R1 tura 40, R2 limit Kamienia) | `war-rules-multiwar.ts:119` | — | DO ZROBIENIA (poza allowlistą tego tematu w praktyce; zgłoszone jako dług) |
-| `pickPlayerReferenceCity` | `war-rules-multiwar.ts:292` | — | DO ZROBIENIA |
+| `evaluateInterCivWarGate` (R1 tura 40, R2 limit Kamienia) + `isInterCivWarOpenAtTurn` (:82) + `concurrentWarLimitForEra` (:90) | `war-rules-multiwar.ts:82-130` | `diplomacy_multiwar_gate::evaluate_inter_civ_war_gate`, `is_inter_civ_war_open_at_turn`, `concurrent_war_limit_for_era` | ZROBIONE (r4; wektory `intercivgate.json`, test `p6_dyplo_multiwar_interciv`) |
+| `pickPlayerReferenceCity` | `war-rules-multiwar.ts:292` | `diplomacy_multiwar_gate::pick_player_reference_city` | ZROBIONE (r4; wektory `intercivgate.json`) |
 | `pickEngagementArmy` / `allocateGroupsToEnemies` | `war-rules-multiwar.ts:312` / `:351` | `war_rules_multiwar.rs` (REPIN-WOJNA-NOWE-D, już na parity-v2) | ZROBIONE wcześniej; DO REPIN wobec nowego pinu (nie zrobione) |
 | `warWearinessLevel` | `war-weariness.ts:59` | `diplomacy_multiwar::war_weariness_level` (`Option` = `undefined`) | ZROBIONE |
 | `wearinessPeacePriceFactor` | `war-weariness.ts:68` | `diplomacy_multiwar::weariness_peace_price_factor` | ZROBIONE |
