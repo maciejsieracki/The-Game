@@ -170,8 +170,8 @@ try {
   });
   assert(stoneCommand().some(c => c.type === 'wypowiedz_wojne'), 'Stone target generuje DOW');
   assert(!stoneCommand({ stanWojny: true }).some(c => c.type === 'wypowiedz_wojne'), 'target w wojnie blokuje DOW');
-  assert(!stoneCommand({ peaceLocked: true }).some(c => c.type === 'wypowiedz_wojne'), 'peace lock blokuje DOW');
-  assert(!stoneCommand({ hasNapTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'NAP blokuje DOW');
+  assert(stoneCommand({ peaceLocked: true }).some(c => c.type === 'wypowiedz_wojne'), 'peace lock NIE blokuje wojny epoki (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)');
+  assert(stoneCommand({ hasNapTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'NAP NIE blokuje wojny epoki (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)');
   assert(!stoneCommand({ hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'sojusz z celem blokuje DOW');
 
   console.log('--- save/load i mutacje stanu ---');

@@ -68,7 +68,7 @@ console.log('2. B3 -- aktywny sojusz z celem wyklucza go z puli wymuszonej wojny
 check(
   'main.ts: sojusz (obok NAP i blokady pokoju) blokuje wybór pary WSZĘDZIE -- przez '
     + 'isForcedWarPairBlocked, wspólny predykat zastępujący dawne bronzeBlockedOwnerIds',
-  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null\s*\n\s*\|\| isForcedWarRelationBlocked\(pairRelationOfR8\(a, b\)\);/.test(mainSrc)
+  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*isWarTreatyBlocked\(\{\s*\n\s*eraWar: true,\s*\n\s*hasNap: hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\),\s*\n\s*peaceLocked: isPeaceLockedBetween\(a, b\),\s*\n\s*hasAlliance: allianceFormalKindBetween\(activeDeals, a, b\) !== null,\s*\n\s*\}\);/.test(mainSrc)
     && !mainSrc.includes('bronzeBlockedOwnerIds'),
 );
 
@@ -90,8 +90,8 @@ check(
 
 check(
   'ai.ts: decideAIDiplomacy guard bronzeForceWarTargetId sprawdza !forcedRel.hasAllianceTreaty '
-    + 'obok !forcedRel.stanWojny / !forcedRel.peaceLocked / !forcedRel.hasNapTreaty',
-  /if \(inp\.bronzeForceWarTargetId != null\) \{[\s\S]{0,400}?&& !forcedRel\.stanWojny\s*&& !forcedRel\.peaceLocked\s*&& !forcedRel\.hasNapTreaty\s*&& !forcedRel\.hasAllianceTreaty\s*\)/.test(aiSrc),
+    + 'obok !forcedRel.stanWojny (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1: NAP i blokada pokoju NIE blokują)',
+  /if \(inp\.bronzeForceWarTargetId != null\) \{[\s\S]{0,400}?&& !forcedRel\.stanWojny\s*&& !forcedRel\.hasAllianceTreaty\s*\)/.test(aiSrc),
 );
 
 console.log('');

@@ -290,8 +290,8 @@ const dipNoForcePeaceLocked = decideAIDiplomacy({
   bronzeForceWarTargetId: 7,
 });
 assert(
-  !dipNoForcePeaceLocked.some(c => c.type === 'wypowiedz_wojne'),
-  'DA4: peaceLocked (cooldown) → brak wymuszonej wojny',
+  dipNoForcePeaceLocked.some(c => c.type === 'wypowiedz_wojne'),
+  'DA4 (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1): peaceLocked (cooldown) NIE blokuje wymuszonej wojny',
 );
 
 const dipNoForceNap = decideAIDiplomacy({
@@ -302,8 +302,8 @@ const dipNoForceNap = decideAIDiplomacy({
   bronzeForceWarTargetId: 7,
 });
 assert(
-  !dipNoForceNap.some(c => c.type === 'wypowiedz_wojne'),
-  'DA5: pakt nieagresji z celem → brak wymuszonej wojny',
+  dipNoForceNap.some(c => c.type === 'wypowiedz_wojne'),
+  'DA5 (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1): pakt nieagresji z celem NIE blokuje wymuszonej wojny',
 );
 
 console.log('\n--- T10 (B3, runda 2): sojusz z SAMYM CELEM blokuje decideAIDiplomacy ---');

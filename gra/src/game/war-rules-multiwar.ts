@@ -286,6 +286,23 @@ export function evaluateEraForcedWarGate(
 }
 
 /**
+ * R-WEB-ERA-WAR-IGNORE-TREATIES-Q1 (decyzja właściciela 2026-11-08): wojna epoki omija WSZYSTKIE
+ * umowy i blokady pokoju pary (NAP, blokada pokoju/cooldown, umowy handlowe, Relacja), a blokuje
+ * ją WYŁĄCZNIE aktywny sojusz formalny. Zwykłe (nie-epokowe) wypowiedzenie wojny nadal respektuje
+ * NAP i blokadę pokoju; sojusz w zwykłym wypowiedzeniu nie jest tą funkcją rozstrzygany (zostaje
+ * dotychczasowy guard celu Kamienia/Żelaza w main.ts). Czysta funkcja — testowana wprost.
+ */
+export function isWarTreatyBlocked(input: {
+  eraWar: boolean;
+  hasNap: boolean;
+  peaceLocked: boolean;
+  hasAlliance: boolean;
+}): boolean {
+  if (input.eraWar) return input.hasAlliance;
+  return input.hasNap || input.peaceLocked;
+}
+
+/**
  * R-WEB-ERA-WAR-COUNTER-Q1 (5): miasto referencyjne gracza do odległości partnera — stolica,
  * a gdy jej brak (lub nie należy do gracza) — pierwsze miasto gracza. Ta sama kolejność co main.ts.
  */

@@ -258,8 +258,9 @@ try {
     'BEZ ironForceWarTargetId ta sama relacja NIE daje DOW (dowód, że to mechanizm, nie ogólna reguła)',
   );
   assert(!ironCommand({ stanWojny: true }).some(c => c.type === 'wypowiedz_wojne'), 'target już w wojnie blokuje DOW');
-  assert(!ironCommand({ peaceLocked: true }).some(c => c.type === 'wypowiedz_wojne'), 'peace lock (w tym cooldown pary) blokuje DOW');
-  assert(!ironCommand({ hasNapTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'NAP blokuje DOW');
+  assert(ironCommand({ peaceLocked: true }).some(c => c.type === 'wypowiedz_wojne'), 'peace lock (w tym cooldown pary) NIE blokuje wojny epoki (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)');
+  assert(ironCommand({ hasNapTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'NAP NIE blokuje wojny epoki (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)');
+  assert(!ironCommand({ hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'sojusz z celem nadal blokuje wojnę Żelaza');
   assert(!ironCommand({ hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'sojusz z celem blokuje DOW');
 
   console.log('--- ironForceWarTargetId bez pasującej relacji (żaden target, w tym gracz) ---');

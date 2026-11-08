@@ -62,9 +62,9 @@ check(
 // wszystkich trzech epok (patrz forced-war-trojstronna-main-guard-test.cjs dla pełnego
 // dowodu, ta sama trójka warunków NAP/peaceLock/sojusz zachowana 1:1).
 check(
-  'Stone target filtruje NAP, peace lock i sojusz -- przez isForcedWarPairBlocked, wspólny '
+  'Stone target: isForcedWarPairBlocked = isWarTreatyBlocked(eraWar:true), blokuje tylko sojusz (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1) -- wspólny '
     + 'predykat zastępujący dawne stoneBlockedOwnerIds',
-  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null\s*\n\s*\|\| isForcedWarRelationBlocked\(pairRelationOfR8\(a, b\)\);/.test(main)
+  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*isWarTreatyBlocked\(\{\s*\n\s*eraWar: true,\s*\n\s*hasNap: hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\),\s*\n\s*peaceLocked: isPeaceLockedBetween\(a, b\),\s*\n\s*hasAlliance: allianceFormalKindBetween\(activeDeals, a, b\) !== null,\s*\n\s*\}\);/.test(main)
     // Świadomie NIE zero-wystąpień "stoneBlockedOwnerIds" -- nazwa żyje dziś WYŁĄCZNIE w
     // komentarzu historycznym (main.ts, przy isForcedWarPairBlocked), nie w kodzie.
     && !/const stoneBlockedOwnerIds/.test(main),

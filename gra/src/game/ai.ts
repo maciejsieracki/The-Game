@@ -6155,9 +6155,9 @@ export interface DiplomacjaInputs {
    * R-EPOKA-BRAZU-WYMUSZONA-WOJNA (2026-08-09): wymuszona wojna głównej cywilizacji AI
    * z sąsiadem terytorialnym po awansie do epoki Brąz (lub po odpoczynku po poprzedniej
    * wojnie wymuszonej) — priorytet przed normalną dyplomacją, wzorem clusterForceWarTargetId
-   * (patrz `game/forced-war-bronze.ts`). Silnik (main.ts) już wyklucza cele NAP/peaceLocked/
-   * przy-wojnie/sojusz (B3, runda 2) przy wyborze — tu tylko finalne domknięcie tego samego
-   * guarda.
+   * (patrz `game/forced-war-bronze.ts`). Silnik (main.ts) wyklucza przy wyborze cele
+   * przy-wojnie/sojusz (B3); NAP i blokada pokoju NIE wykluczają (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)
+   * — tu tylko finalne domknięcie tego samego guarda.
    * EN: Bronze-era forced war against a territorial neighbor after advancing into the Bronze
    * age (or after resting from a previous forced war) — takes priority over normal diplomacy,
    * same pattern as clusterForceWarTargetId. main.ts already excludes NAP/peaceLocked/at-war/
@@ -6550,8 +6550,6 @@ export function decideAIDiplomacy(
     if (
       forcedRel
       && !forcedRel.stanWojny
-      && !forcedRel.peaceLocked
-      && !forcedRel.hasNapTreaty
       && !forcedRel.hasAllianceTreaty
     ) {
       return [{
@@ -6564,15 +6562,14 @@ export function decideAIDiplomacy(
 
   // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: cel został wybrany przez main.ts według
   // identycznych filtrów terytorialnych jak w mechanizmie Brązu. Nie omijamy
-  // tu aktywnej wojny, NAP, blokady pokoju ani sojuszu z samym celem.
+  // tu aktywnej wojny ani sojuszu z samym celem (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1:
+  // NAP i blokada pokoju NIE blokują wojny epoki).
   if (inp.stoneForceWarTargetId != null) {
     const forcedId = String(inp.stoneForceWarTargetId);
     const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);
     if (
       forcedRel
       && !forcedRel.stanWojny
-      && !forcedRel.peaceLocked
-      && !forcedRel.hasNapTreaty
       && !forcedRel.hasAllianceTreaty
     ) {
       return [{
@@ -6587,17 +6584,16 @@ export function decideAIDiplomacy(
   // przez main.ts według identycznych filtrów terytorialnych jak w mechanizmie Brązu
   // (wyzwalacz = awans do Żelaza). Ten wczesny `return` stoi POZA ogólnymi regułami wojny
   // (ECHO właściciela 2026-08-27) — tak samo jak Kamień i Brąz wyżej. Nie omijamy tu
-  // aktywnej wojny, NAP, blokady pokoju ani sojuszu z samym celem.
+  // aktywnej wojny ani sojuszu z samym celem (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1: NAP i blokada
+  // pokoju nie blokują wojny epoki).
   // EN: Iron-era forced war — same early return, outside the general war rules, as Stone
-  // and Bronze above; the target-side guards (at war / peace lock / NAP / alliance) stay.
+  // and Bronze above; the target-side guards (at war / alliance) stay; NAP and peace lock do not block (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1).
   if (inp.ironForceWarTargetId != null) {
     const forcedId = String(inp.ironForceWarTargetId);
     const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);
     if (
       forcedRel
       && !forcedRel.stanWojny
-      && !forcedRel.peaceLocked
-      && !forcedRel.hasNapTreaty
       && !forcedRel.hasAllianceTreaty
     ) {
       return [{
