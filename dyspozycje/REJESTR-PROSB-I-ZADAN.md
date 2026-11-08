@@ -9003,3 +9003,9 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 ## 2026-11-08 — BRZWAR (R-WEB-ERA-WAR-BRONZE-NOT-DECLARED-DIAG-Q1): diagnoza (DECISION_REQUIRED)
 - Nie jest to błąd filtra `oid > 0` (ten należy do P-AI-MAJOR-ABSORB). Gracz jest w puli celów równo dla Kamienia/Brązu/Żelaza (`assignForcedWarPairings`, forced-war-common.ts:300). Awans gracza do Brązu NIE jest wyzwalaczem. Gracz z trwającą wojną wymuszoną Kamienia wypada z puli (totalActiveForcedWarsByOwner(0) > 0) → tryb „gracz pierwszy” się nie uruchamia → AI parują się między sobą, a nieparzysta AI nie może dołączyć do pary gracza (filtr `targetId !== 0` w main.ts). Zasada: „kto już ma wojnę, nie musi wypowiadać”.
 - Opcje: A bez zmian; B gracz z ≥ 20 tur w Brązie wchodzi do puli mimo wojny Kamienia (rozwiązuje ogólnie); C nieparzysta AI dołącza jako trzecia do pary gracza (pomaga tylko przy nieparzystej reszcie — Operator rekomendował, Evaluator: niepełne). Hipoteza H2 (stary zapis bez licznika → wojna Kamienia liczona jako Brąz 0:2) NIE_ZMIERZONO; poprawka w main.ts:45004 = osobny temat. Test 22/22 (nowy era-war-bronze-player-target-test.cjs), kod gry bez zmian.
+
+## 2026-11-08 — DECYZJE WŁAŚCICIELA (ABC) po AIPEACE/BRZWAR/CAVFLANK
+- BRZWAR: opcja **B** — gracz z ≥ 20 tur w Brązie wchodzi do puli wojen Brązu/Żelaza mimo trwającej wojny Kamienia → temat R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1 (Sonnet; H2 stary zapis klucz 0:2 do sprawdzenia).
+- AIPEACE: `zada_miasto_za_pokoj` — **A: zostawić** (silna AI może żądać miasta, decyduje gracz); cooldown — **B: osobny klucz** dla oferty miasta → temat R-WEB-DIPLO-CITY-OFFER-REJECT-OWN-COOLDOWN-Q1 (Haiku).
+- CAVFLANK: konnica na końcach linii czołowej, gdy piechota najszersza — **wystarcza** (bez zmian). Weryfikacja wizualna po wdrożeniu nadal otwarta.
+- TECHCARDS: wyniki (FC 58339997b) w dyspozycje/analizy/karty-odkryc/ (ANALIZA, odkrycia-top5.csv, turnieje/); pytania Q1–Q7 do właściciela w §9 analizy.
