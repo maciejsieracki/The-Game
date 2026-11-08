@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "bda1c7197ac2f72b821621e135a1920a",
-  "bundleSha256": "5fd5413f1422870aaf5f46bd01d9d6345d6835ca7e3e9ff2f749708bf852f90d",
-  "bundleBytes": 85676356,
+  "bundleMd5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
+  "bundleSha256": "673605e7dd7898ee35d53e73fadacda45bfc9b491b197c5aaf56f8bc5adb79a5",
+  "bundleBytes": 85676379,
   "sourceSnapshot": {
-    "source": "main 247f1ef2a + FC 91942fa9b (AIMPQ2)",
+    "source": "main 9dcb8e39d + FC eef2c86a7 (AIHOME) + FC e30c824ec (AIZFOG testy)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 549: R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2: naprawa regresu z cf236dafc (2026-10-29): petla etapow E1..E6 w pickAutoImprovementsStaged konczyla sie na pierwszym etapie z pickami, wiec gdy obywatele przybywaja co ture farmy (E1) glodzily trzode (E3) i irygacje (E4). Teraz etap bez dalszych celow przechodzi w tej samej turze do nastepnego (farmy->trzoda->irygacja) z reszta budzetu; tury z niedoborem surowca i z wycinka lasu koncza etapy jak dawniej; trzoda poza rzeka dopuszczona (rzeka = priorytet); regula 'tylko pola obywateli' bez zmian; sonda etapu pomija miasta z efektywnym 0%"
+    "FALA 550: R-WEB-AI-HOME-WAR-SEES-OWN-LAND-Q1: AI broniaca wlasnego terytorium moze zaatakowac wroga na nim mimo mgly wojny (wyjatek w bramce 'Atak na niewidoczny cel' main.ts, tylko komendy AI; poza wlasnym terytorium mgla bez zmian; czlowiek bez zmian). R-WEB-AI-ZDOBYCIE-FOG-DIAG-Q1: poprawione fixtury i kotwice testow ai-zdobycie-miasta-adiacencja (96/96) i ai-fog (W2 przepisany, W2b nowy)"
   ],
   "verification": [
-    "tsc 0, logic-test 213/213, autoimprove-pasture-irrigation-q2 17/0 (na starym kodzie 12/5), ai-food-improvement-priority-stages 13/0, autoimprove-irrigation-after-farms 42/0, autoimprove-stages-q1 299/0, vite build OK"
+    "tsc 0, logic-test 213/213, ai-fog 9/9, ai-home-war-sees-own-land 4/4, ai-zdobycie-miasta-adiacencja 96/96, ai-test 289/0, vite build OK"
   ],
   "limits": [
-    "NIE_ZMIERZONO: zachowanie po naprawie w zywej grze (pomiar 'post' po deployu), koszt wydajnosciowy dodatkowej sondy; przyczyna zera irygacji w pomiarze zywym przed naprawa (tech Gospodarka wodna)"
+    "NIE_ZMIERZONO: zachowanie bramki w pelnej petli main.ts w Chromium (test K1 sprawdza okablowanie tekstowo); wyjatek dotyczy kazdego ataku AI na wroga na wlasnym terytorium"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-08T13:58:38",
+  "hubGeneratedAt": "2026-11-08T14:03:45",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "bda1c7197ac2f72b821621e135a1920a",
-      "sizeBytes": 85676356
+      "md5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
+      "sizeBytes": 85676379
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "bda1c7197ac2f72b821621e135a1920a",
-      "sizeBytes": 85676356
+      "md5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
+      "sizeBytes": 85676379
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "bda1c7197ac2f72b821621e135a1920a",
-      "sizeBytes": 85676356
+      "md5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
+      "sizeBytes": 85676379
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "bda1c7197ac2f72b821621e135a1920a",
-      "sizeBytes": 85676356
+      "md5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
+      "sizeBytes": 85676379
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "bda1c7197ac2f72b821621e135a1920a",
-      "sizeBytes": 85676356
+      "md5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
+      "sizeBytes": 85676379
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "bda1c7197ac2f72b821621e135a1920a",
-      "sizeBytes": 85676356
+      "md5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
+      "sizeBytes": 85676379
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "bda1c7197ac2f72b821621e135a1920a",
-      "sizeBytes": 85676356
+      "md5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
+      "sizeBytes": 85676379
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "bda1c7197ac2f72b821621e135a1920a",
-      "sizeBytes": 85676356
+      "md5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
+      "sizeBytes": 85676379
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "bda1c7197ac2f72b821621e135a1920a",
-      "sizeBytes": 85676356
+      "md5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
+      "sizeBytes": 85676379
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "bda1c7197ac2f72b821621e135a1920a",
-      "sizeBytes": 85676356
+      "md5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
+      "sizeBytes": 85676379
     }
   ],
-  "md5": "bda1c7197ac2f72b821621e135a1920a",
+  "md5": "0b310c4bc7dc78a3cdf3e45ee2a31555",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

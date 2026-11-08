@@ -1,3 +1,9 @@
+## ROBOCZA 0b310c4b -- 2026-11-06 -- FALA 550: AI: obrona wlasnej ziemi widzi wszystko; poprawki testow ai-zdobycie i ai-fog (testowa)
+
+- R-WEB-AI-HOME-WAR-SEES-OWN-LAND-Q1: AI broniaca wlasnego terytorium moze zaatakowac wroga na nim mimo mgly wojny (wyjatek w bramce 'Atak na niewidoczny cel' main.ts, tylko komendy AI; poza wlasnym terytorium mgla bez zmian; czlowiek bez zmian). R-WEB-AI-ZDOBYCIE-FOG-DIAG-Q1: poprawione fixtury i kotwice testow ai-zdobycie-miasta-adiacencja (96/96) i ai-fog (W2 przepisany, W2b nowy)
+- Weryfikacja: tsc 0, logic-test 213/213, ai-fog 9/9, ai-home-war-sees-own-land 4/4, ai-zdobycie-miasta-adiacencja 96/96, ai-test 289/0, vite build OK
+- Limity: NIE_ZMIERZONO: zachowanie bramki w pelnej petli main.ts w Chromium (test K1 sprawdza okablowanie tekstowo); wyjatek dotyczy kazdego ataku AI na wroga na wlasnym terytorium
+
 ## ROBOCZA bda1c719 -- 2026-11-06 -- FALA 549: auto-ulepszenia: kaskada etapow (trzoda i irygacja nie sa glodzone przez farmy) (testowa)
 
 - R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2: naprawa regresu z cf236dafc (2026-10-29): petla etapow E1..E6 w pickAutoImprovementsStaged konczyla sie na pierwszym etapie z pickami, wiec gdy obywatele przybywaja co ture farmy (E1) glodzily trzode (E3) i irygacje (E4). Teraz etap bez dalszych celow przechodzi w tej samej turze do nastepnego (farmy->trzoda->irygacja) z reszta budzetu; tury z niedoborem surowca i z wycinka lasu koncza etapy jak dawniej; trzoda poza rzeka dopuszczona (rzeka = priorytet); regula 'tylko pola obywateli' bez zmian; sonda etapu pomija miasta z efektywnym 0%
