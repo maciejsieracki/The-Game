@@ -1156,21 +1156,17 @@ pub mod p6_7a {
             }
         }
 
-        /// Web `rationEraFoodCostMultiplier` (`population-growth-v85.ts`, pin 91dc998a):
-        /// Stone 1x, Bronze 2x, Iron+ 4x; non-finite or <=1 eras are neutral (1x).
-        // web: gra/src/game/population-growth-v85.ts (rationEraFoodCostMultiplier)
+        /// Mnoznik kosztu racji zywnosci wg epoki wlasciciela. Web USUNAL `rationEraFoodCostMultiplier`
+        /// (1/2/4) w R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1 (origin/main `16c0509f6`,
+        /// `population-growth-v85.ts` `computeCityRationCost`): koszt = ... x `citizenConsumptionEraMultiplier(ownerEra)`
+        /// = m(e) = 1 + 0,5 x (floor(e) - 1). Nazwa Rust zachowana (wolajacy/testy), tresc = m(e).
+        // web: gra/src/game/population-growth-v85.ts (computeCityRationCost -> citizenConsumptionEraMultiplier)
         pub fn ration_era_food_cost_multiplier(owner_era: f64) -> f64 {
-            if !owner_era.is_finite() || owner_era <= 1.0 {
-                return 1.0;
-            }
-            if owner_era == 2.0 {
-                2.0
-            } else {
-                4.0
-            }
+            crate::domain::resource_production::citizen_consumption_era_multiplier(owner_era)
         }
 
-        /// Web `computeCityRationCost` (`population-growth-v85.ts:205`, pin 91dc998a: + `ownerEra`).
+        /// Web `computeCityRationCost` (`population-growth-v85.ts`, origin/main `16c0509f6`): populacja x
+        /// poziom Wyzywienia x R_STAWKI_KOSZT_MULT x m(ownerEra), potem Spichlerz.
         // web: gra/src/game/population-growth-v85.ts (computeCityRationCost)
         pub fn compute_city_ration_cost(
             population: f64,

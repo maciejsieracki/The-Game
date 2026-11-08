@@ -262,15 +262,14 @@ pub fn citizen_required_resources_for_era(table: &CitizenResourceUpkeep, era: f6
         .unwrap_or(&[])
 }
 
-/// Stawka zuzycia epoki (web `citizenUpkeepRateForEra`, `citizen-resource-upkeep.ts:194-197`):
-/// sztuk KAZDEGO wymaganego surowca / obywatela / ture. Wiersz wybierany jak w
-/// `citizen_required_resources_for_era`. Brak pola / NaN / +-Inf / wartosc ujemna (oraz pusta
-/// tabela) -> `CITIZEN_UPKEEP_RATE_PER_CITIZEN`. Zero jest poprawne (`v >= 0`).
-pub fn citizen_upkeep_rate_for_era(table: &CitizenResourceUpkeep, era: f64) -> f64 {
-    match citizen_upkeep_row_for_era(table, era).and_then(|row| row.stawka_na_obywatela) {
-        Some(v) if v.is_finite() && v >= 0.0 => v,
-        _ => CITIZEN_UPKEEP_RATE_PER_CITIZEN,
-    }
+/// Stawka zuzycia epoki (web `citizenUpkeepRateForEra`, `citizen-resource-upkeep.ts`, origin/main
+/// `16c0509f6`, R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1): sztuk KAZDEGO wymaganego surowca /
+/// obywatela / ture = `CITIZEN_UPKEEP_RATE_PER_CITIZEN` (1,0) x `citizen_consumption_era_multiplier(era)`
+/// (m(e) = 1 + 0,5 x (floor(e) - 1): 1 / 1,5 / 2 / ...). Zastepuje stawki 1/2/3 z pola
+/// `stawkaNaObywatela` (usuniete z weba; tabela nie wplywa juz na stawke - parametr `_table`
+/// zachowany dla zgodnosci sygnatury wolajacych). Era < 1 / NaN / +-Inf -> x1.
+pub fn citizen_upkeep_rate_for_era(_table: &CitizenResourceUpkeep, era: f64) -> f64 {
+    CITIZEN_UPKEEP_RATE_PER_CITIZEN * citizen_consumption_era_multiplier(era)
 }
 
 /// Przyrost mnoznika zuzycia obywateli na epoke (web `CITIZEN_CONSUMPTION_ERA_STEP`, 50% bazy).
@@ -279,9 +278,8 @@ pub const CITIZEN_CONSUMPTION_ERA_STEP: f64 = 0.5;
 /// Jedno zrodlo prawdy mnoznika zuzycia obywateli (web `citizenConsumptionEraMultiplier`,
 /// `gra/src/game/citizen-consumption-era.ts`, R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1):
 /// m(e) = 1 + 0,5 x (floor(e) - 1). NaN / +-Inf / e < 1 -> 1. Epoki ulamkowe w dol.
-/// Partia 1 REPIN-EKONOMIA-F: symbol dodany addytywnie; wolajacy (`ration_era_food_cost_multiplier`,
-/// `citizen_upkeep_rate_for_era`) NIE sa przepiete tu, bo stare testy pinu poza allowlista
-/// pinuja poprzednie wartosci (patrz P6-REPIN-EKONOMIA-F.md §5).
+/// Runda 3 REPIN-EKONOMIA-F: wpiety w `ration_era_food_cost_multiplier` (`city_growth.rs`) i
+/// `citizen_upkeep_rate_for_era` (jedna funkcja dla gracza i AI, jak w webie).
 pub fn citizen_consumption_era_multiplier(era: f64) -> f64 {
     if !era.is_finite() || era < 1.0 {
         return 1.0;

@@ -16,16 +16,11 @@ use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_8d_vectors/citizen_upkeep.json");
 
-/// Tabela w wersji HISTORYCZNEJ (pin edb8fb56): stawka jednolita 1,0 dla wszystkich epok.
-/// REPIN-EKONOMIA-E (pin 4bbef081d) dodal `stawkaNaObywatela` per epoka (1/2/3); tu pole jest
-/// zerowane, wiec `citizen_upkeep_rate_for_era` zwraca fallback 1,0 i stare wektory (policzone przy
-/// stawce jednolitej) pozostaja regresja sciezki fallback. Stawki per epoka: `p6_repin_ekonomia_e_citizen.rs`.
+/// Tabela z `data/citizen-resource-upkeep.json` (REPIN-EKONOMIA-F: 1:1 z webem `16c0509f6`, bez pola
+/// `stawkaNaObywatela`). Stawka = 1,0 x m(epoka) liczona w kodzie (`citizen_upkeep_rate_for_era`);
+/// wektory regenerowane z web origin/main (`gen-p6-8d-vectors.mjs`, run REPIN-EKONOMIA-F).
 fn table() -> CitizenResourceUpkeep {
-    let mut t = parse_citizen_resource_upkeep().expect("citizen-resource-upkeep.json");
-    for row in &mut t.epoki {
-        row.stawka_na_obywatela = None;
-    }
-    t
+    parse_citizen_resource_upkeep().expect("citizen-resource-upkeep.json")
 }
 
 fn vectors() -> Value {
@@ -205,7 +200,9 @@ fn drain_matches_web() {
         with_deductions > 300,
         "za malo przypadkow z odjeciem: {with_deductions}"
     );
-    assert!(partial > 100, "za malo przypadkow czesciowych: {partial}");
+    // REPIN-EKONOMIA-F: wyzsza stawka m(e) (1,5 / 2) zmniejsza liczbe przypadkow czesciowych w tych
+    // samych wektorach z 100+ do 81 (web 16c0509f6); prog dopasowany do nowego rozkladu (>70), nie oslabiony.
+    assert!(partial > 70, "za malo przypadkow czesciowych: {partial}");
 }
 
 #[test]

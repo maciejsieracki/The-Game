@@ -95,3 +95,47 @@ fn monotone_non_decreasing() {
         prev = m;
     }
 }
+
+/// Runda 3: m(e) jest WPIETY w oba wolajace (jedna funkcja dla gracza i AI, jak w webie):
+/// koszt racji zywnosci (`ration_era_food_cost_multiplier`) i stawka drenazu surowcow
+/// (`citizen_upkeep_rate_for_era` = 1,0 x m(e)). Brak galezi po `owner_id` - tylko `era`.
+#[test]
+fn m_of_e_is_wired_into_ration_and_upkeep_rate() {
+    use civ_engine::data::economy_society::parse_citizen_resource_upkeep;
+    use civ_engine::domain::city_growth::p6_7a::growth_v85::ration_era_food_cost_multiplier;
+    use civ_engine::domain::resource_production::{
+        citizen_upkeep_rate_for_era, CITIZEN_UPKEEP_RATE_PER_CITIZEN,
+    };
+    let table = parse_citizen_resource_upkeep().expect("tabela");
+    let eras = [
+        f64::NEG_INFINITY,
+        -1.0,
+        0.0,
+        0.999,
+        1.0,
+        1.999,
+        2.0,
+        2.001,
+        2.999,
+        3.0,
+        3.999,
+        4.0,
+        5.0,
+        6.0,
+        1e6,
+        f64::NAN,
+        f64::INFINITY,
+    ];
+    for era in eras {
+        let m = citizen_consumption_era_multiplier(era);
+        assert_eq!(ration_era_food_cost_multiplier(era), m, "ration era={era}");
+        assert_eq!(
+            citizen_upkeep_rate_for_era(&table, era),
+            CITIZEN_UPKEEP_RATE_PER_CITIZEN * m,
+            "upkeep era={era}"
+        );
+    }
+    // 4+ epoka NIE jest juz obcinana do 4x jak w pinie (1/2/4): era 5 => 3x
+    assert_eq!(ration_era_food_cost_multiplier(5.0), 3.0);
+    assert_eq!(ration_era_food_cost_multiplier(3.0), 2.0);
+}

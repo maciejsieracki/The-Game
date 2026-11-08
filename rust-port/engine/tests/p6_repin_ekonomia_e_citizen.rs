@@ -116,25 +116,23 @@ fn assert_cov(label: &str, got: &CitizenUpkeepCoverage, want: &Value) {
 }
 
 #[test]
-fn real_file_has_era_rates_one_two_three() {
+fn real_file_has_no_row_rates_and_era_rate_is_m_of_e() {
+    // REPIN-EKONOMIA-F (web 16c0509f6): pole `stawkaNaObywatela` USUNIETE z pliku; stawka = 1,0 x m(e).
     let v = vectors();
     let t = parse_citizen_resource_upkeep().expect("tabela");
     let want = v["realRates"].as_array().expect("realRates");
     assert_eq!(t.epoki.len(), want.len());
     for (row, w) in t.epoki.iter().zip(want) {
         assert_eq!(row.epoka, w["epoka"].as_i64().expect("epoka"));
-        assert_bits(
-            &format!("stawka epoka {}", row.epoka),
-            row.stawka_na_obywatela.expect("stawka obecna w pinie"),
-            num(&w["stawka"]),
-        );
+        assert!(w["stawka"].is_null(), "web: brak pola w wierszu");
+        assert_eq!(row.stawka_na_obywatela, None, "epoka {}", row.epoka);
     }
     let rates: Vec<f64> = t
         .epoki
         .iter()
-        .map(|r| r.stawka_na_obywatela.unwrap())
+        .map(|r| citizen_upkeep_rate_for_era(&t, r.epoka as f64))
         .collect();
-    assert_eq!(rates, vec![1.0, 2.0, 3.0]);
+    assert_eq!(rates, vec![1.0, 1.5, 2.0]);
     assert_eq!(CITIZEN_UPKEEP_RATE_PER_CITIZEN, 1.0);
 }
 
@@ -153,7 +151,8 @@ fn missing_rate_field_parses_as_none_and_round_trips() {
     let with = text.replace(r#""nazwa":"K""#, r#""nazwa":"K","stawkaNaObywatela":2"#);
     let t2: CitizenResourceUpkeep = serde_json::from_str(&with).expect("nowy format");
     assert_eq!(t2.epoki[0].stawka_na_obywatela, Some(2.0));
-    assert_eq!(citizen_upkeep_rate_for_era(&t2, 1.0), 2.0);
+    // REPIN-EKONOMIA-F: stawka wiersza jest IGNOROWANA (web liczy 1,0 x m(e)), era 1 => 1,0.
+    assert_eq!(citizen_upkeep_rate_for_era(&t2, 1.0), 1.0);
     // round-trip zachowuje calkowitosc (data_compliance liczy int vs float): `2`, nie `2.0`.
     let back2 = serde_json::to_string(&t2).expect("ser");
     assert!(
@@ -316,8 +315,8 @@ fn display_lines_use_rate_from_coverage_like_web() {
     }
 }
 
-/// Brzegi N-1 / N / N+1 dla progu `magazyn >= floor(pop * stawka)` na realnej tabeli (stawki 1/2/3):
-/// Brąz (stawka 2), 7 obywateli => N = 14.
+/// Brzegi N-1 / N / N+1 dla progu `magazyn >= floor(pop * stawka)` na realnej tabeli (REPIN-EKONOMIA-F:
+/// stawki 1,0 x m(e) = 1 / 1,5 / 2): Braz (stawka 1,5), 7 obywateli => N = floor(10,5) = 10.
 #[test]
 fn edge_n_minus_1_n_plus_1_real_table_bronze() {
     let t = parse_citizen_resource_upkeep().expect("tabela");
@@ -327,55 +326,65 @@ fn edge_n_minus_1_n_plus_1_real_table_bronze() {
             .map(|k| ((*k).to_owned(), x))
             .collect()
     };
-    for (have, covered) in [(13.0, false), (14.0, true), (15.0, true)] {
+    for (have, covered) in [(9.0, false), (10.0, true), (11.0, true)] {
         let st = stock(have);
         let d = compute_citizen_resource_drain(&t, 2.0, 7.0, Some(&st));
         assert_eq!(d.coverage.available.len(), if covered { 4 } else { 0 });
-        assert_eq!(d.coverage.rate_per_citizen, Some(2.0));
+        assert_eq!(d.coverage.rate_per_citizen, Some(1.5));
         let p = resolve_citizen_resource_coverage(&t, 2.0, Some(&st), Some(7.0));
         assert_eq!(p.available, d.coverage.available, "have={have}");
         // bez populacji: stara bramka „magazyn > 0” (zgodnosc wsteczna)
         let l = resolve_citizen_resource_coverage(&t, 2.0, Some(&st), None);
         assert_eq!(l.available.len(), 4);
     }
-    // Zelazo: stawka 3 => N = 21
-    for (have, covered) in [(20.0, false), (21.0, true), (22.0, true)] {
+    // Zelazo: stawka 2,0 => N = 14
+    for (have, covered) in [(13.0, false), (14.0, true), (15.0, true)] {
         let mut st = stock(have);
         st.insert("cegla".to_owned(), have);
         let d = compute_citizen_resource_drain(&t, 3.0, 7.0, Some(&st));
         assert_eq!(d.coverage.available.len(), if covered { 5 } else { 0 });
-        assert_eq!(d.coverage.rate_per_citizen, Some(3.0));
+        assert_eq!(d.coverage.rate_per_citizen, Some(2.0));
     }
-    // era 4+ => wiersz najwyzszej epoki (stawka 3); era < 1 / NaN => Kamien (stawka 1)
-    assert_eq!(citizen_upkeep_rate_for_era(&t, 4.0), 3.0);
-    assert_eq!(citizen_upkeep_rate_for_era(&t, 1e9), 3.0);
+    // era 4+ => lista surowcow z wiersza najwyzszej epoki, ale stawka dalej rosnie: m(4) = 2,5
+    assert_eq!(citizen_upkeep_rate_for_era(&t, 4.0), 2.5);
+    assert_eq!(
+        citizen_upkeep_rate_for_era(&t, 1e9),
+        1.0 + 0.5 * (1e9 - 1.0)
+    );
     assert_eq!(citizen_upkeep_rate_for_era(&t, 0.0), 1.0);
     assert_eq!(citizen_upkeep_rate_for_era(&t, f64::NAN), 1.0);
-    assert_eq!(citizen_upkeep_rate_for_era(&t, 2.9999), 2.0);
-    assert_eq!(citizen_upkeep_rate_for_era(&t, 3.0), 3.0);
+    assert_eq!(citizen_upkeep_rate_for_era(&t, 1.9999), 1.0);
+    assert_eq!(citizen_upkeep_rate_for_era(&t, 2.0), 1.5);
+    assert_eq!(citizen_upkeep_rate_for_era(&t, 2.9999), 1.5);
+    assert_eq!(citizen_upkeep_rate_for_era(&t, 3.0), 2.0);
 }
 
-/// Wartosci niefinitowe/ujemne wiersza => fallback 1,0 (tu bezposrednio w Rust, takze `+/-Inf`).
+/// REPIN-EKONOMIA-F: stawka wiersza (nawet NaN/Inf/ujemna/0) nie wplywa na stawke epoki - web liczy
+/// 1,0 x m(e) i NIE czyta pola `stawkaNaObywatela`.
 #[test]
-fn nonfinite_and_negative_row_rates_fall_back() {
+fn row_rates_of_any_value_are_ignored() {
     let mut t = parse_citizen_resource_upkeep().expect("tabela");
-    for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, -1.0, -0.0001] {
+    for bad in [
+        f64::NAN,
+        f64::INFINITY,
+        f64::NEG_INFINITY,
+        -1.0,
+        -0.0001,
+        0.0,
+        7.0,
+    ] {
         for row in &mut t.epoki {
             row.stawka_na_obywatela = Some(bad);
         }
-        for era in [1.0, 2.0, 3.0] {
-            assert_eq!(citizen_upkeep_rate_for_era(&t, era), 1.0, "bad={bad:?}");
+        for (era, want) in [(1.0, 1.0), (2.0, 1.5), (3.0, 2.0)] {
+            assert_eq!(citizen_upkeep_rate_for_era(&t, era), want, "bad={bad:?}");
         }
     }
-    for row in &mut t.epoki {
-        row.stawka_na_obywatela = Some(0.0);
-    }
-    assert_eq!(
-        citizen_upkeep_rate_for_era(&t, 2.0),
-        0.0,
-        "zero jest poprawne"
-    );
+    // zerowa stawka wiersza nie wylacza drenazu: need = floor(10 * 1,5) = 15 > 0
     let d = compute_citizen_resource_drain(&t, 2.0, 10.0, None);
-    assert_eq!(d.coverage.available.len(), 4, "need=0 => pokryte");
-    assert!(d.deductions.is_empty());
+    assert_eq!(
+        d.coverage.available.len(),
+        0,
+        "brak magazynu => brak pokrycia"
+    );
 }

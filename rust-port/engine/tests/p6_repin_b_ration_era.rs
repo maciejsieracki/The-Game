@@ -26,7 +26,10 @@ fn dec(v: &Value) -> f64 {
             "NaN" => f64::NAN,
             "Infinity" => f64::INFINITY,
             "-Infinity" => f64::NEG_INFINITY,
-            other => panic!("nieznany napis liczbowy: {other}"),
+            // REPIN-EKONOMIA-F: liczby niecalkowite jako napisy (std parse = poprawne zaokraglenie).
+            other => other
+                .parse::<f64>()
+                .unwrap_or_else(|_| panic!("nieznany napis liczbowy: {other}")),
         },
         other => panic!("to nie liczba: {other}"),
     }
@@ -90,15 +93,20 @@ fn ration_cost_with_era_matches_web_bits() {
     }
 }
 
-/// Zabija mutanty progow: era 2 -> 2x (nie 4x), era 3..=5 -> 4x, era <=1 / NaN / Infinity -> 1x.
+/// Zabija mutanty progow: m(e) = 1 + 0,5 x (floor(e) - 1) (REPIN-EKONOMIA-F, web `16c0509f6`
+/// `citizenConsumptionEraMultiplier`): era <= 1 / NaN / +-Infinity -> 1x; N-1 / N / N+1 dla epok 2..=5.
 #[test]
 fn era_thresholds_are_exact() {
     assert_eq!(ration_era_food_cost_multiplier(1.0), 1.0);
     assert_eq!(ration_era_food_cost_multiplier(0.0), 1.0);
-    assert_eq!(ration_era_food_cost_multiplier(1.0000001), 4.0);
-    assert_eq!(ration_era_food_cost_multiplier(2.0), 2.0);
-    assert_eq!(ration_era_food_cost_multiplier(3.0), 4.0);
-    assert_eq!(ration_era_food_cost_multiplier(5.0), 4.0);
+    assert_eq!(ration_era_food_cost_multiplier(1.0000001), 1.0);
+    assert_eq!(ration_era_food_cost_multiplier(1.999), 1.0);
+    assert_eq!(ration_era_food_cost_multiplier(2.0), 1.5);
+    assert_eq!(ration_era_food_cost_multiplier(2.5), 1.5);
+    assert_eq!(ration_era_food_cost_multiplier(2.999), 1.5);
+    assert_eq!(ration_era_food_cost_multiplier(3.0), 2.0);
+    assert_eq!(ration_era_food_cost_multiplier(4.0), 2.5);
+    assert_eq!(ration_era_food_cost_multiplier(5.0), 3.0);
     assert_eq!(ration_era_food_cost_multiplier(f64::NAN), 1.0);
     assert_eq!(ration_era_food_cost_multiplier(f64::INFINITY), 1.0);
     assert_eq!(ration_era_food_cost_multiplier(f64::NEG_INFINITY), 1.0);
