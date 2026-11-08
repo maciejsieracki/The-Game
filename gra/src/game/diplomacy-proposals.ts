@@ -2440,6 +2440,12 @@ export interface PendingNegotiation {
   source: 'player' | 'ai';
   /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: uzasadnienie oferty handlowej AI (niedobór/nadwyżka). */
   reason?: string;
+  /**
+   * R-WEB-DIPLO-CITY-OFFER-REJECT-OWN-COOLDOWN-Q1: klucz cooldownu odrzucenia, gdy inny niż actionId
+   * (oferta miasta za pokój ma actionId 'pokoj', ale własny klucz 'miasto_za_pokoj').
+   * Brak pola = cooldown wg actionId (zachowanie sprzed zmiany; stare zapisy bez pola działają).
+   */
+  rejectCooldownKey?: 'miasto_za_pokoj';
 }
 
 function otherPartyOf(

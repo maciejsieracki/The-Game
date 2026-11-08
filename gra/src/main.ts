@@ -1457,10 +1457,12 @@ import {
 } from './game/diplomacy-proposals';
 import {
   type RejectedOfferCooldown,
+  type RejectCooldownKey,
   recordRejectedOffer,
   isOfferRejectedOnCooldown,
   pruneExpiredRejectedOffers,
   negotiationPartnerOwnerId,
+  rejectCooldownKeyFor,
 } from './game/diplomacy-rejection-cooldown';
 import {
   type ActiveDeal, hasTreaty, expireTreaties, treatiesBrokenByWar,
@@ -19346,12 +19348,15 @@ async function boot(): Promise<void> {
       // Dedup — nie stackuj drugiej propozycji TEGO SAMEGO typu, gdy jedna już czeka.
       if (hasPendingNegotiationForPair(negotiationTable, ME(), ownerId, converted.actionId)) return;
       // D-DYPLO-AI-NO-NAG: gracz odrzucił ten typ — AI nie nęka ponownie do wygaśnięcia cooldownu.
-      if (isOfferRejectedOnCooldown(rejectedOfferCooldowns, ownerId, converted.actionId, turn)) return;
+      // R-WEB-DIPLO-CITY-OFFER-REJECT-OWN-COOLDOWN-Q1: oferta miasta ma własny klucz cooldownu.
+      const cooldownKey = rejectCooldownKeyFor(workingCmd.type, converted.actionId);
+      if (isOfferRejectedOnCooldown(rejectedOfferCooldowns, ownerId, cooldownKey, turn)) return;
       negotiationSeq += 1;
       const entry = createNegotiation(
         { actionId: converted.actionId, proposerOwnerId: ownerId, responderOwnerId: ME(), payload: converted.payload },
         turn, 'ai', negotiationSeq,
       );
+      if (cooldownKey !== converted.actionId) entry.rejectCooldownKey = 'miasto_za_pokoj';
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B7): uzasadnienie oferty trafia na stół (pole reason).
       if (workingCmd.type === 'zaproponuj_handel_surowiec' && workingCmd.reasonHandlu) {
         entry.reason = workingCmd.reasonHandlu;
@@ -19721,10 +19726,12 @@ async function boot(): Promise<void> {
       if (entry.payload.warThreat && !isMe(entry.proposerOwnerId)) {
         ownerDeclareWarOn(entry.proposerOwnerId, ME());
       }
+      // R-WEB-DIPLO-CITY-OFFER-REJECT-OWN-COOLDOWN-Q1: klucz z pola wpisu (oferta miasta → własny klucz).
+      const rejectKey: RejectCooldownKey = entry.rejectCooldownKey ?? entry.actionId;
       rejectedOfferCooldowns = recordRejectedOffer(
         rejectedOfferCooldowns,
         aiPartnerId,
-        entry.actionId,
+        rejectKey,
         turn,
       );
       if (entry.actionId === 'trybut_zadanie' || entry.actionId === 'trybut_oferta') {
