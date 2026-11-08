@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "be9bd087111f15c45ed4c77a930c31c7",
-  "bundleSha256": "8e4135d99573ecbf140d51e04ddd6fe8aafe607161c7ab65e21928532250db2d",
-  "bundleBytes": 85680090,
+  "bundleMd5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+  "bundleSha256": "a900aa7da5b1553dbe6de9f8be2ca055d117d4b5fd42b1d3c498fe4ef8f2737b",
+  "bundleBytes": 85725179,
   "sourceSnapshot": {
-    "source": "FC 8f5cd21d2 (kod 39fc14158)",
+    "source": "FC 73f199187",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 558: gra/src/game/war-rules-multiwar.ts (helpery isPlayerEligibleForEraWarPool, isPlayerEraWarSlotFree, eraWarCounterEpoch, forcedEraTagEpoch; rebuild/restoreEraWarCounts z tagEpoch), gra/src/main.ts (krok C doboru par: wojna Kamienia nie zajmuje slotu Brazu, prog 20 tur od wejscia gracza w epoke, filtr kandydatow po wolnym slocie); progi war-rules-params.json bez zmian"
+    "FALA 559: gra/data/tech-cards-top5.json (32/32 odkryc, generator gra/tools/gen-tech-cards-top5.cjs), gra/src/ui/entityCards/technologyAdapter.ts (sekcja Top 5 + CMZ z danych, ukrywanie martwych efektow, brak wiersza Nie oznacza), renderer.ts (tylko CSS bloku top5), techDiscoveryNotice.ts (sciezka zapasowa popupu); bez zmian w buildings/tech/units/terrain-improvements.json i w mechanice"
   ],
   "verification": [
-    "FC PASS 8f5cd21d2 (kod 39fc14158, r2/5); era-war-bronze-player-target 44/0 (mutacja filtra lapana), forced-war bronze 48/iron 55/stone 31, war-rules-multiwar 57, war-era-counter 82, wojna-wymuszona-prog-tury-gracz 9, player-first 33, nearest-city-peace-2t mutacje 16/16, ai-test 289/0, logic 213/213, tsc 0, vite OK"
+    "FC PASS 73f199187 (r1/5, Opus 5.5); tech-cards-top5 594/0, karta-technologia-uklad 11/0, tech-discovery-card-click 13/0, technology-discovery-card-visual 48/0, tech-unlock-units 129/0, historia-section 36/0, harness Z4 10/0, tsc 0, logic 213/213, ai-test 289/0, vite OK; testy kart w Chromium wg FC"
   ],
   "limits": [
-    "Brak weryfikacji w grze na zywo; zmiana zachowania: prog 20 tur od wejscia gracza w epoke (dotad tura >=25); stary zapis bez wpisu tury wejscia pomija prog; dlug Rust: REPIN (licznik 0:1 gracza, isPlayerEraWarSlotFree, prog wejscia)"
+    "Zywa gra/przegladarka NIE_ZMIERZONO (wg orkiestratora); entity-card-contract-test w moim srodowisku bez Chromium (WebGL) — wynik 75/0 wg FC; czerwone jak na bazie: tech-discovery-badge-diorama 61/2, entitycard-sufit-dwoch-kart 58/9; niestabilne jak na bazie: cross-links-nested, civpedia-caly-wiersz; Astronomia 0 pozycji Top5 (efekty martwe ukryte); do potwierdzenia przez wlasciciela: usuniecie wiersza Nie oznacza, ulepszenia z terrain-improvements.json, sekcja Cuda"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-08T18:01:19",
+  "hubGeneratedAt": "2026-11-08T19:03:29",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "be9bd087111f15c45ed4c77a930c31c7",
-      "sizeBytes": 85680090
+      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+      "sizeBytes": 85725179
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "be9bd087111f15c45ed4c77a930c31c7",
-      "sizeBytes": 85680090
+      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+      "sizeBytes": 85725179
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "be9bd087111f15c45ed4c77a930c31c7",
-      "sizeBytes": 85680090
+      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+      "sizeBytes": 85725179
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "be9bd087111f15c45ed4c77a930c31c7",
-      "sizeBytes": 85680090
+      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+      "sizeBytes": 85725179
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "be9bd087111f15c45ed4c77a930c31c7",
-      "sizeBytes": 85680090
+      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+      "sizeBytes": 85725179
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "be9bd087111f15c45ed4c77a930c31c7",
-      "sizeBytes": 85680090
+      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+      "sizeBytes": 85725179
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "be9bd087111f15c45ed4c77a930c31c7",
-      "sizeBytes": 85680090
+      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+      "sizeBytes": 85725179
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "be9bd087111f15c45ed4c77a930c31c7",
-      "sizeBytes": 85680090
+      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+      "sizeBytes": 85725179
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "be9bd087111f15c45ed4c77a930c31c7",
-      "sizeBytes": 85680090
+      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+      "sizeBytes": 85725179
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "be9bd087111f15c45ed4c77a930c31c7",
-      "sizeBytes": 85680090
+      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+      "sizeBytes": 85725179
     }
   ],
-  "md5": "be9bd087111f15c45ed4c77a930c31c7",
+  "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
