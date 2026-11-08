@@ -1,3 +1,9 @@
+## ROBOCZA d79fa577 -- 2026-11-06 -- FALA 560: CORRUPT: Palac II i III oraz Trybunal daja -30% korupcji (jak Palac I i Pretorium) (testowa)
+
+- gra/src/game/economy.ts: lista KORUPCJA_REDUKCJA_BUDYNKI + palac_ii, palac_iii, trybunal (addytywnie, sufit 0.60; Pałac II/III zastepuja poprzednika); dane JSON bez zmian
+- Weryfikacja: FC PASS 30ef19530 (kod 553bb26fa + komentarz); nowy test 34/0, korupcja 18/0, owner-economy 20/0, grupy-budynkow 84/0, building-happiness 14/0, ai-test 289/0, logic 213/213, tsc 0, vite OK
+- Limity: Opisy kart (opis/top3/uwagi) Trybunalu i Palacu w buildings.json nieaktualne — do wdrozenia kart budynkow; sufit 0.60 teraz osiagalny (Sad+Trybunal); brak weryfikacji w grze na zywo
+
 ## ROBOCZA 4cd0b466 -- 2026-11-06 -- FALA 559: TECHIMPL: karty odkryc — TOP 5 korzysci po rysie historycznym, Co mozesz teraz zrobic jako CZYNNOSC w celu KORZYSCI, martwe efekty ukryte (etap 1 projektu kart) (testowa)
 
 - gra/data/tech-cards-top5.json (32/32 odkryc, generator gra/tools/gen-tech-cards-top5.cjs), gra/src/ui/entityCards/technologyAdapter.ts (sekcja Top 5 + CMZ z danych, ukrywanie martwych efektow, brak wiersza Nie oznacza), renderer.ts (tylko CSS bloku top5), techDiscoveryNotice.ts (sciezka zapasowa popupu); bez zmian w buildings/tech/units/terrain-improvements.json i w mechanice

@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4cd0b46627edd4fcf5aed19a92d4da6b",
-  "bundleSha256": "a900aa7da5b1553dbe6de9f8be2ca055d117d4b5fd42b1d3c498fe4ef8f2737b",
-  "bundleBytes": 85725179,
+  "bundleMd5": "d79fa57762e2c3b75fd72bf9994e9126",
+  "bundleSha256": "0d816341464ede0d22e637327891dcc0cfcd1f13f7ba0dbf5b9e68930545ee01",
+  "bundleBytes": 85725213,
   "sourceSnapshot": {
-    "source": "FC 73f199187",
+    "source": "FC 30ef19530 (kod 553bb26fa)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 559: gra/data/tech-cards-top5.json (32/32 odkryc, generator gra/tools/gen-tech-cards-top5.cjs), gra/src/ui/entityCards/technologyAdapter.ts (sekcja Top 5 + CMZ z danych, ukrywanie martwych efektow, brak wiersza Nie oznacza), renderer.ts (tylko CSS bloku top5), techDiscoveryNotice.ts (sciezka zapasowa popupu); bez zmian w buildings/tech/units/terrain-improvements.json i w mechanice"
+    "FALA 560: gra/src/game/economy.ts: lista KORUPCJA_REDUKCJA_BUDYNKI + palac_ii, palac_iii, trybunal (addytywnie, sufit 0.60; Pałac II/III zastepuja poprzednika); dane JSON bez zmian"
   ],
   "verification": [
-    "FC PASS 73f199187 (r1/5, Opus 5.5); tech-cards-top5 594/0, karta-technologia-uklad 11/0, tech-discovery-card-click 13/0, technology-discovery-card-visual 48/0, tech-unlock-units 129/0, historia-section 36/0, harness Z4 10/0, tsc 0, logic 213/213, ai-test 289/0, vite OK; testy kart w Chromium wg FC"
+    "FC PASS 30ef19530 (kod 553bb26fa + komentarz); nowy test 34/0, korupcja 18/0, owner-economy 20/0, grupy-budynkow 84/0, building-happiness 14/0, ai-test 289/0, logic 213/213, tsc 0, vite OK"
   ],
   "limits": [
-    "Zywa gra/przegladarka NIE_ZMIERZONO (wg orkiestratora); entity-card-contract-test w moim srodowisku bez Chromium (WebGL) — wynik 75/0 wg FC; czerwone jak na bazie: tech-discovery-badge-diorama 61/2, entitycard-sufit-dwoch-kart 58/9; niestabilne jak na bazie: cross-links-nested, civpedia-caly-wiersz; Astronomia 0 pozycji Top5 (efekty martwe ukryte); do potwierdzenia przez wlasciciela: usuniecie wiersza Nie oznacza, ulepszenia z terrain-improvements.json, sekcja Cuda"
+    "Opisy kart (opis/top3/uwagi) Trybunalu i Palacu w buildings.json nieaktualne — do wdrozenia kart budynkow; sufit 0.60 teraz osiagalny (Sad+Trybunal); brak weryfikacji w grze na zywo"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-08T19:03:29",
+  "hubGeneratedAt": "2026-11-08T19:16:00",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
-      "sizeBytes": 85725179
+      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
+      "sizeBytes": 85725213
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
-      "sizeBytes": 85725179
+      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
+      "sizeBytes": 85725213
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
-      "sizeBytes": 85725179
+      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
+      "sizeBytes": 85725213
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
-      "sizeBytes": 85725179
+      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
+      "sizeBytes": 85725213
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
-      "sizeBytes": 85725179
+      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
+      "sizeBytes": 85725213
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
-      "sizeBytes": 85725179
+      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
+      "sizeBytes": 85725213
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
-      "sizeBytes": 85725179
+      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
+      "sizeBytes": 85725213
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
-      "sizeBytes": 85725179
+      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
+      "sizeBytes": 85725213
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
-      "sizeBytes": 85725179
+      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
+      "sizeBytes": 85725213
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
-      "sizeBytes": 85725179
+      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
+      "sizeBytes": 85725213
     }
   ],
-  "md5": "4cd0b46627edd4fcf5aed19a92d4da6b",
+  "md5": "d79fa57762e2c3b75fd72bf9994e9126",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
