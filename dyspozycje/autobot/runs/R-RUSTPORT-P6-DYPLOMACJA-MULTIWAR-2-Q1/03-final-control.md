@@ -23,3 +23,31 @@ ZARZUTY: 1 C ODDAL; 2 D/E/F/G NAPRAW; 3 price (brak portu peaceOfferAiOwnBilans)
 RUNDY: 4/5, zostaje jedna runda.
 NASTEPNY KROK: runda 5: F (REPIN, pomiar diffu), E, D; G wycenic LOC i wydzielic. Najpierw zwolnic dysk >=2 GB. Kolejnosc integracji po origin/rust-port/parity-v2: 707b50c41, 44c80e96f, 9b8f68c88, eb5393494 (czesciowe, bez READY_FOR_DEPLOY).
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+## FINAL CONTROL r5 (po obronie; zakres 11ba87fe0..d03aa0e1d)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (RUST)
+TEMAT: R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-2-Q1
+GOAL: Domkniecie jakosci B i C (mutacje, wycena `price` 1:1 z webem), pomiar F, wycena LOC D/E/G (D/E/port F -> MULTIWAR-3-Q1; G -> FORCED-WAR-MODULES-Q1).
+
+WERDYKTY ZARZUTOW (FC r5 -> obrona):
+1. L117/L148 `||`->`&&` nierownowazny: ODDAL (obrona przyjela; FC sam ponownie zabil mutanta: balance 2 FAILED, plik przywrocony).
+2. Brak wektorow NaN/Inf: ODDAL. FC niezaleznie zregenerowal `balance.json` z weba (5dd53e60f, Node 22 --experimental-transform-types, gen-balance.mts): 3276 wierszy, `cmp` = IDENTYCZNY z plikiem w repo.
+3. Prog dyskowy 644 MB: ODDAL (fakt procesowy, nie do cofniecia; bramki powtorzone przy >=2 GB).
+4. Pelny clippy/test: ODDAL jako NIE_ZMIERZONO (bez dowodu regresji; kod B/C uzywany tylko przez lib + 4 binarki, wszystkie zielone).
+5. Liczby mutacji: ODDAL. Nawet przy uznaniu 3 wpisow L117 za ocalale wynik B = 71/75 (94,7%) >= 85%; C = 42/43. Pelny ponowny przebieg NIE_ZMIERZONO.
+6. Piny: ODDAL (obrona poprawila na piny z naglowkow; FC zweryfikowal `git diff --numstat`: brake 91dc998a +23/-0; params +7/-2; war_rules_multiwar vs dc8a3adc +182/-2 przy 5dd53e60f, doc podaje +196/-2 wzgledem nowszego origin/main - inna baza porownania). Port hunkow = MULTIWAR-3.
+7. Kinked: ODDAL (oznaczony `ODSTEPSTWO OD WEBU`, tylko test-double).
+Zadnego NAPRAW. Brak DO DECYZJI CZLOWIEKA.
+
+DOWODY FC:
+- Allowlista: `git diff --name-only 11ba87fe0 d03aa0e1d` = tylko diplomacy_war_weariness_tick.rs, diplomacy_ai_forced_peace.rs (komentarz +4), tests/p6_dyplo_multiwar2_*, P6-DYPLOMACJA-MULTIWAR-2.md, runs/<ID>/**. Zero gra/**, WERSJE.md, save_load.rs, Cargo.toml, mod.rs. `git diff --check` czysty. 0 nowych #[ignore]. Cargo.lock untracked (nie dodawac).
+- 11ba87fe0 i 3f9eeb17f sa przodkami d03aa0e1d.
+- Bramki (wlasne): fmt --check OK; clippy -D warnings lib + 4 binarki (balance, tick, peace_ai, peace_helpers) OK; lib 22/22, balance 5/5, tick 5/5, peace_ai 8/8, peace_helpers 4/4, eraign 3/3.
+- NIE_ZMIERZONO: clippy --all-targets pelny, cargo test 391 plikow, pelny ponowny mutation score, semantyka evaluateInterCivWarGate, D/E/F-port/G.
+
+INTEGRACJA: SHA do integracji = kod d03aa0e1d (+ commit tego raportu). `git merge-tree` d03aa0e1d z origin/rust-port/parity-v2 (f095e8a46) = czysty; parity-v2 NIE zawiera kodu B/C (baza wspolna 707b50c41), wiec scalic cala sciezke 11ba87fe0..d03aa0e1d (z r4) przed MULTIWAR-3 i FORCED-WAR-MODULES, ktore startuja z wyniku scalenia. Przed integracja: `merge-base --is-ancestor` kodu operatora.
+NASTEPNY KROK: integracja orkiestratora, potem MULTIWAR-3-Q1 (D, E, brakeWarOutcome, isWarMarchOpenForPair, hunki F) i FORCED-WAR-MODULES-Q1 (G); osobny temat: NaN w diplomacy.rs (`treaty_base_fairness_gap`, f64::max).
+DEPLOY/PUSH: NIE WYKONANO
