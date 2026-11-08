@@ -1,0 +1,12 @@
+--- T1: canAfford=wszystko dostępne -> pick=najwyzszy score, fallback=reszta w kolejności score ---
+
+--- T2: koszary NIE afordowalne -> pick spada na Wojownika, fallback=[Łucznik] ---
+
+--- T3: WYŚCIG o wspólną pulę (2 miasta tego samego ownera) — egzekucja PRAWDZIWYM pickExecutableCandidate (game/ai.ts) ---
+
+--- T4: decideAITurn end-to-end -- dwa miasta jednego ownera, fallbackIds niepuste (P-AI-MOC-GAP-EVAL mutacja 1) ---
+
+--- T5: checks.canAfford (jednostka) BEZ pokrycia magazynowego -> false, mimo atWar+zloto (P-AI-MOC-GAP-EVAL/R2, Maciej 2026-08-08) ---
+
+=== ai-prod-fallback-test: 17 passed, 0 failed ===
+EXIT=0

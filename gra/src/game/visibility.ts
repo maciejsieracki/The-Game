@@ -268,6 +268,8 @@ export interface ComputePlayerVisibilityOptions {
   /** Przed pierwszym miastem/jednostką — krąg startu (domyślnie r=5). */
   startHex?: { q: number; r: number } | null;
   startRevealRadius?: number;
+  /** R-WEB-FORT-VISION-FOG-Q1: dodatkowe stałe źródła wzroku (forty/posterunki: promień = terytorium). */
+  extraSightSources?: ReadonlyArray<{ q: number; r: number; radius: number }>;
 }
 
 /**
@@ -282,6 +284,7 @@ export function computePlayerVisibility(opts: ComputePlayerVisibilityOptions): S
     unitSight,
     startHex = null,
     startRevealRadius = 5,
+    extraSightSources = [],
   } = opts;
 
   const visible = new Set<string>();
@@ -295,6 +298,11 @@ export function computePlayerVisibility(opts: ComputePlayerVisibilityOptions): S
     const sight = citySightRadius(c.population, c.kultura ?? 0);
     if (sight <= 0) continue;
     for (const k of computeVisibleAt(c.q, c.r, map, sight)) visible.add(k);
+  }
+
+  for (const s of extraSightSources) {
+    if (s.radius <= 0) continue;
+    for (const k of computeVisibleAt(s.q, s.r, map, s.radius)) visible.add(k);
   }
 
   if (visible.size > 0) return visible;

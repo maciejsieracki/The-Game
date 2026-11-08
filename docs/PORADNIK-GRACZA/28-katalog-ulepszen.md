@@ -265,8 +265,8 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 **Posterunek (Strażnica)** (epoka **Brąz**) kosztuje **30** pracy. Daje: **—**.
 Dozwolony teren: ląd w/na krawędzi własnego zasięgu.
-**Warunek:** NIE miasto, BEZ plonów; ROZSZERZA zasięg terytorium o promień 5 pól; odkrywa mgłę; węzeł sieci dróg; +50% Obrony jednostkom obozującym na polu
-**Zasięg terytorium:** +5 pól.
+**Warunek:** NIE miasto, BEZ plonów; ROZSZERZA zasięg terytorium o promień 3 pól; odkrywa mgłę; węzeł sieci dróg; +50% Obrony jednostkom obozującym na polu
+**Zasięg terytorium:** +3 pól.
 
 
 ### Przykład liczbowy
@@ -280,8 +280,8 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 **Fort / umocnienia** (epoka **Żelazo**) kosztuje **25** pracy i wymaga technologii **Wojskowosc**. Daje: **—**.
 Dozwolony teren: dowolny ląd w terytorium.
-**Warunek:** +100% Obrony jednostkom obozującym na polu fortu (bez plonów); rozszerza zasięg terytorium o promień 10 pól
-**Zasięg terytorium:** +10 pól.
+**Warunek:** +100% Obrony jednostkom obozującym na polu fortu (bez plonów); rozszerza zasięg terytorium o promień 5 pól
+**Zasięg terytorium:** +5 pól.
 
 
 ### Przykład liczbowy

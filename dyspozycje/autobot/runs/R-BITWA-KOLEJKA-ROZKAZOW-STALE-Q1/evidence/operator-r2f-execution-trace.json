@@ -1,0 +1,1258 @@
+{
+  "phase": "manual-pointer-battle",
+  "marks": [
+    {
+      "at": "2026-10-30T00:42:49.273Z",
+      "phase": "build:start",
+      "data": {
+        "out": "/workspace/tmp-queued-order-lifecycle-defense/battle-manual-queued-order-lifecycle-391853-0qgngk",
+        "evidenceDir": "/workspace/tmp-queued-order-lifecycle-defense/battle-manual-queued-order-lifecycle-evidence-391853-0qgngk",
+        "mapBootTimeoutMs": 120000
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:07.550Z",
+      "phase": "build:complete",
+      "data": {
+        "bundlePath": "/workspace/tmp-queued-order-lifecycle-defense/battle-manual-queued-order-lifecycle-391853-0qgngk/index.html",
+        "bundleBytes": 70029425,
+        "bundleSha256": "2164c747231241b2c148940fa1c6b602a77006c984b3f12f45330b6f42ecac0e"
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:07.918Z",
+      "phase": "browser:launched",
+      "data": null
+    },
+    {
+      "at": "2026-10-30T00:43:08.043Z",
+      "phase": "navigation:start",
+      "data": null
+    },
+    {
+      "at": "2026-10-30T00:43:10.675Z",
+      "phase": "navigation:loaded",
+      "data": {
+        "href": "http://127.0.0.1:41025/?playtest=mapa",
+        "readyState": "complete",
+        "title": "The Game — 4X",
+        "bodyText": "",
+        "canvasCount": 1,
+        "canvases": [
+          {
+            "connected": true,
+            "width": 1440,
+            "height": 900,
+            "id": "",
+            "cls": ""
+          }
+        ],
+        "loadOverlay": null,
+        "debugReady": false,
+        "turnDebugReady": false,
+        "mapCanvas": null,
+        "battleProbeReady": false,
+        "battleCanvas": null,
+        "errors": []
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:10.675Z",
+      "phase": "wait:debug-hook:start",
+      "data": null
+    },
+    {
+      "at": "2026-10-30T00:43:10.982Z",
+      "phase": "wait:debug-hook:complete",
+      "data": {
+        "href": "http://127.0.0.1:41025/?playtest=mapa",
+        "readyState": "complete",
+        "title": "The Game — 4X",
+        "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\nPrzygotowanie…\n\nUpłynęło: 0:00",
+        "canvasCount": 2,
+        "canvases": [
+          {
+            "connected": true,
+            "width": 1440,
+            "height": 900,
+            "id": "",
+            "cls": ""
+          },
+          {
+            "connected": true,
+            "width": 280,
+            "height": 170,
+            "id": "",
+            "cls": ""
+          }
+        ],
+        "loadOverlay": {
+          "visible": true,
+          "text": "Tworzenie świata\n\nMaly · Kontynenty\n\nPrzygotowanie…\n\nUpłynęło: 0:00"
+        },
+        "debugReady": true,
+        "turnDebugReady": true,
+        "mapCanvas": {
+          "connected": true,
+          "width": 1440,
+          "height": 900
+        },
+        "battleProbeReady": false,
+        "battleCanvas": null,
+        "errors": []
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:10.983Z",
+      "phase": "wait:map-ready:start",
+      "data": {
+        "mapBootTimeoutMs": 120000
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:16.241Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 5255,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n6/10 · Rzeki — główne\n\nUpłynęło: 0:05",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n6/10 · Rzeki — główne\n\nUpłynęło: 0:05"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:21.267Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 10282,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n6/10 · Rzeki — główne\n\nUpłynęło: 0:10",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n6/10 · Rzeki — główne\n\nUpłynęło: 0:10"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:26.298Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 15313,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n6/10 · Rzeki — główne\n\nUpłynęło: 0:15",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n6/10 · Rzeki — główne\n\nUpłynęło: 0:15"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:31.332Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 20347,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:20",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:20"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:36.359Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 25374,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:25",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:25"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:41.390Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 30405,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:30",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:30"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:46.416Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 35432,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:35",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:35"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:51.446Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 40461,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:40",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:40"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:43:56.473Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 45488,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:45",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:45"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:01.500Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 50515,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:50",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:50"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:06.541Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 55555,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:55",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n7/10 · Rzeki — uzupełnianie\n\nUpłynęło: 0:55"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:11.572Z",
+      "phase": "wait:map-ready",
+      "data": {
+        "elapsedMs": 60587,
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n0\n0\nPraca\n0\n0\nSpichlerz\n0\n0\nNauka\n0\n0\nSurowce\nHandel\n0\nEpoka kamienia\n0 (0)\n0\nMOC\nArmia\n0\n0\nMiasta\n0\n0\nObywatele\n0\n0\nKultura\n0\n0\nReligia\n0\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\nTworzenie świata\n\nMaly · Kontynenty\n\n10/10 · Pozycje startowe\n\nUpłynęło: 1:00",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": {
+            "visible": true,
+            "text": "Tworzenie świata\n\nMaly · Kontynenty\n\n10/10 · Pozycje startowe\n\nUpłynęło: 1:00"
+          },
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:14.292Z",
+      "phase": "wait:map-ready:complete",
+      "data": {
+        "href": "http://127.0.0.1:41025/?playtest=mapa",
+        "readyState": "complete",
+        "title": "The Game — 4X",
+        "bodyText": "Skarbiec\n5000\n+33\nPraca\n800\n+28\nSpichlerz\n0\n−64\nNauka\n200\n+9\nSurowce\nHandel\n0\nEpoka brązu\n18 tys. (9)\n2847\nMOC\nArmia\n3\n+9\nMiasta\n1\n+1\nObywatele\n9\n+1\nKultura\n120\n+2\nReligia\n9\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\n1",
+        "canvasCount": 2,
+        "canvases": [
+          {
+            "connected": true,
+            "width": 1440,
+            "height": 900,
+            "id": "",
+            "cls": ""
+          },
+          {
+            "connected": true,
+            "width": 280,
+            "height": 170,
+            "id": "",
+            "cls": ""
+          }
+        ],
+        "loadOverlay": null,
+        "debugReady": true,
+        "turnDebugReady": true,
+        "mapCanvas": {
+          "connected": true,
+          "width": 1440,
+          "height": 900
+        },
+        "battleProbeReady": false,
+        "battleCanvas": null,
+        "errors": []
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:17.712Z",
+      "phase": "evidence:map-before-battle",
+      "data": {
+        "jsonPath": "/workspace/tmp-queued-order-lifecycle-defense/battle-manual-queued-order-lifecycle-evidence-391853-0qgngk/1793321055408-map-before-battle.json",
+        "screenshotPath": "/workspace/tmp-queued-order-lifecycle-defense/battle-manual-queued-order-lifecycle-evidence-391853-0qgngk/1793321055408-map-before-battle.png",
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n5000\n+33\nPraca\n800\n+28\nSpichlerz\n0\n−64\nNauka\n200\n+9\nSurowce\nHandel\n0\nEpoka brązu\n18 tys. (9)\n2847\nMOC\nArmia\n3\n+9\nMiasta\n1\n+1\nObywatele\n9\n+1\nKultura\n120\n+2\nReligia\n9\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\n1",
+          "canvasCount": 2,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": null,
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": false,
+          "battleCanvas": null,
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:18.269Z",
+      "phase": "battle:open:start",
+      "data": null
+    },
+    {
+      "at": "2026-10-30T00:44:22.602Z",
+      "phase": "battle:open:complete",
+      "data": {
+        "href": "http://127.0.0.1:41025/?playtest=mapa",
+        "readyState": "complete",
+        "title": "The Game — 4X",
+        "bodyText": "Skarbiec\n5000\n+33\nPraca\n800\n+28\nSpichlerz\n0\n−64\nNauka\n200\n+9\nSurowce\nHandel\n0\nEpoka brązu\n18 tys. (9)\n2847\nMOC\nArmia\n3\n+9\nMiasta\n1\n+1\nObywatele\n9\n+1\nKultura\n120\n+2\nReligia\n9\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\n1\nFaza rozstawiania\nx1\nWYCOFAJ SIĘ\nRzym\nNuma Pompiliusz\natakujacy\n8\n·\n10\n·\n10\n·\n28\n00:00\nSTART PO ROZSTAWIENIU\nSzacunkowa przewaga: 50% Ty · 50% wróg\nGrecja\nAgamemnon\nobronca\n8\n·\n10\n·\n10\n·\n28\nMINIMAPA · ROZ",
+        "canvasCount": 4,
+        "canvases": [
+          {
+            "connected": true,
+            "width": 1440,
+            "height": 900,
+            "id": "",
+            "cls": ""
+          },
+          {
+            "connected": true,
+            "width": 280,
+            "height": 170,
+            "id": "",
+            "cls": ""
+          },
+          {
+            "connected": true,
+            "width": 1440,
+            "height": 900,
+            "id": "",
+            "cls": ""
+          },
+          {
+            "connected": true,
+            "width": 180,
+            "height": 120,
+            "id": "",
+            "cls": ""
+          }
+        ],
+        "loadOverlay": null,
+        "debugReady": true,
+        "turnDebugReady": true,
+        "mapCanvas": {
+          "connected": true,
+          "width": 1440,
+          "height": 900
+        },
+        "battleProbeReady": true,
+        "battleCanvas": {
+          "connected": true,
+          "width": 1440,
+          "height": 900,
+          "finished": false
+        },
+        "errors": []
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:30.318Z",
+      "phase": "evidence:battle-open",
+      "data": {
+        "jsonPath": "/workspace/tmp-queued-order-lifecycle-defense/battle-manual-queued-order-lifecycle-evidence-391853-0qgngk/1793321064817-battle-open.json",
+        "screenshotPath": "/workspace/tmp-queued-order-lifecycle-defense/battle-manual-queued-order-lifecycle-evidence-391853-0qgngk/1793321064817-battle-open.png",
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n5000\n+33\nPraca\n800\n+28\nSpichlerz\n0\n−64\nNauka\n200\n+9\nSurowce\nHandel\n0\nEpoka brązu\n18 tys. (9)\n2847\nMOC\nArmia\n3\n+9\nMiasta\n1\n+1\nObywatele\n9\n+1\nKultura\n120\n+2\nReligia\n9\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\n1\nFaza rozstawiania\nx1\nWYCOFAJ SIĘ\nRzym\nNuma Pompiliusz\natakujacy\n8\n·\n10\n·\n10\n·\n28\n00:00\nSTART PO ROZSTAWIENIU\nSzacunkowa przewaga: 50% Ty · 50% wróg\nGrecja\nAgamemnon\nobronca\n8\n·\n10\n·\n10\n·\n28\nMINIMAPA · ROZ",
+          "canvasCount": 4,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 180,
+              "height": 120,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": null,
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": true,
+          "battleCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900,
+            "finished": false
+          },
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:31.140Z",
+      "phase": "manual:real-28v28-roster",
+      "data": {
+        "attacker": 28,
+        "defender": 28,
+        "ranged": 30,
+        "mounted": 16,
+        "playerSide": "atk"
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:32.060Z",
+      "phase": "manual:commander-gate-negative",
+      "data": {
+        "gateEnabled": true,
+        "commanders": [],
+        "autoToManualBlocked": true,
+        "manualModeAfterAttempt": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:37.077Z",
+      "phase": "manual:full-roster-setup",
+      "data": {
+        "attacker": 28,
+        "defender": 28,
+        "ownCount": 28,
+        "enemyCount": 28,
+        "playerSide": "atk",
+        "ranged": 20,
+        "mounted": 8,
+        "friendly": {
+          "id": "atk0",
+          "point": {
+            "x": 689.3432207014171,
+            "y": 420.75242214021847,
+            "tile": {
+              "col": 30,
+              "row": 73
+            },
+            "hitId": "atk0"
+          }
+        },
+        "target": {
+          "id": "def0",
+          "point": {
+            "x": 747.5495065107673,
+            "y": 414.1149736566458,
+            "tile": {
+              "col": 36,
+              "row": 72
+            },
+            "hitId": "def0"
+          }
+        },
+        "ground": {
+          "x": 660.4913291765727,
+          "y": 180.11409826801085,
+          "tile": {
+            "col": 25,
+            "row": 25
+          }
+        },
+        "allChip": true,
+        "manualMode": true,
+        "awaitingOrders": true
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:37.078Z",
+      "phase": "manual:tempo-16x-keyv:start",
+      "data": {
+        "expected": [
+          2,
+          4,
+          8,
+          16
+        ]
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:41.248Z",
+      "phase": "manual:tempo-keyv:step",
+      "data": {
+        "expected": 2,
+        "actual": 2
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:43.730Z",
+      "phase": "manual:tempo-keyv:step",
+      "data": {
+        "expected": 4,
+        "actual": 4
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:46.559Z",
+      "phase": "manual:tempo-keyv:step",
+      "data": {
+        "expected": 8,
+        "actual": 8
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:49.135Z",
+      "phase": "manual:tempo-keyv:step",
+      "data": {
+        "expected": 16,
+        "actual": 16
+      }
+    },
+    {
+      "at": "2026-10-30T00:44:49.905Z",
+      "phase": "manual:tempo-16x-keyv:complete",
+      "data": {
+        "speedProbe": {
+          "speedMul": 16
+        },
+        "speedSteps": [
+          2,
+          4,
+          8,
+          16
+        ]
+      }
+    },
+    {
+      "at": "2026-10-30T00:45:00.109Z",
+      "phase": "manual:first-activation:space-before",
+      "data": {
+        "round": 1,
+        "turnIdx": 0,
+        "queued": 28
+      }
+    },
+    {
+      "at": "2026-10-30T00:45:02.049Z",
+      "phase": "manual:first-activation:space-after",
+      "data": {
+        "pressed": true
+      }
+    },
+    {
+      "at": "2026-10-30T00:45:02.049Z",
+      "phase": "manual:first-activation:wait-start",
+      "data": {
+        "timeoutMs": 180000
+      }
+    },
+    {
+      "at": "2026-10-30T00:45:35.918Z",
+      "phase": "manual:first-activation:wait-complete",
+      "data": {
+        "round": 1,
+        "turnIdx": 28,
+        "queueRemaining": 0,
+        "live": 28,
+        "acted": 28,
+        "moved": 8,
+        "movedIds": [
+          "atk20",
+          "atk21",
+          "atk22",
+          "atk23",
+          "atk24",
+          "atk25",
+          "atk26",
+          "atk27"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-30T00:45:48.545Z",
+      "phase": "manual:tempo-slowdown-step",
+      "data": {
+        "expected": 8,
+        "actual": 8
+      }
+    },
+    {
+      "at": "2026-10-30T00:45:59.231Z",
+      "phase": "manual:tempo-slowdown-step",
+      "data": {
+        "expected": 4,
+        "actual": 4
+      }
+    },
+    {
+      "at": "2026-10-30T00:46:10.780Z",
+      "phase": "manual:tempo-slowdown-step",
+      "data": {
+        "expected": 2,
+        "actual": 2
+      }
+    },
+    {
+      "at": "2026-10-30T00:46:22.583Z",
+      "phase": "manual:tempo-slowdown-step",
+      "data": {
+        "expected": 1,
+        "actual": 1
+      }
+    },
+    {
+      "at": "2026-10-30T00:46:23.501Z",
+      "phase": "manual:tempo-1x-before-round-two",
+      "data": {
+        "speedMul": 1,
+        "slowSteps": [
+          8,
+          4,
+          2,
+          1
+        ]
+      }
+    },
+    {
+      "at": "2026-10-30T00:46:23.501Z",
+      "phase": "manual:round-two-active-turn:wait-start",
+      "data": {
+        "timeoutMs": 240000,
+        "condition": "roundNo===2 && turnIdx>0"
+      }
+    },
+    {
+      "at": "2026-10-30T00:46:24.568Z",
+      "phase": "manual:round-two-active-turn:progress",
+      "data": {
+        "at": "2026-10-30T00:46:24.568Z",
+        "round": 1,
+        "turnIdx": 47,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:46:27.203Z",
+      "phase": "manual:round-two-active-turn:progress",
+      "data": {
+        "at": "2026-10-30T00:46:27.203Z",
+        "round": 1,
+        "turnIdx": 48,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:46:32.491Z",
+      "phase": "manual:round-two-active-turn:progress",
+      "data": {
+        "at": "2026-10-30T00:46:32.491Z",
+        "round": 1,
+        "turnIdx": 49,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:46:47.780Z",
+      "phase": "manual:round-two-active-turn:progress",
+      "data": {
+        "at": "2026-10-30T00:46:47.780Z",
+        "round": 1,
+        "turnIdx": 50,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:47:02.976Z",
+      "phase": "manual:round-two-active-turn:progress",
+      "data": {
+        "at": "2026-10-30T00:47:02.976Z",
+        "round": 1,
+        "turnIdx": 51,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:47:22.261Z",
+      "phase": "manual:round-two-active-turn:progress",
+      "data": {
+        "at": "2026-10-30T00:47:22.261Z",
+        "round": 1,
+        "turnIdx": 52,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:47:38.739Z",
+      "phase": "manual:round-two-active-turn:progress",
+      "data": {
+        "at": "2026-10-30T00:47:38.739Z",
+        "round": 1,
+        "turnIdx": 53,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:47:56.428Z",
+      "phase": "manual:round-two-active-turn:progress",
+      "data": {
+        "at": "2026-10-30T00:47:56.428Z",
+        "round": 1,
+        "turnIdx": 54,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:48:12.180Z",
+      "phase": "manual:round-two-active-turn:progress",
+      "data": {
+        "at": "2026-10-30T00:48:12.180Z",
+        "round": 1,
+        "turnIdx": 55,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:48:29.686Z",
+      "phase": "manual:round-two-active-turn:progress",
+      "data": {
+        "at": "2026-10-30T00:48:29.686Z",
+        "round": 1,
+        "turnIdx": 56,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:48:51.834Z",
+      "phase": "manual:round-two-active-turn:progress",
+      "data": {
+        "at": "2026-10-30T00:48:51.834Z",
+        "round": 2,
+        "turnIdx": 1,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:48:51.834Z",
+      "phase": "manual:round-two-active-turn:wait-complete",
+      "data": {
+        "round": 2,
+        "turnIdx": 1,
+        "awaitingOrders": false
+      }
+    },
+    {
+      "at": "2026-10-30T00:48:59.280Z",
+      "phase": "evidence:failure",
+      "data": {
+        "jsonPath": "/workspace/tmp-queued-order-lifecycle-defense/battle-manual-queued-order-lifecycle-evidence-391853-0qgngk/1793321333811-failure.json",
+        "screenshotPath": "/workspace/tmp-queued-order-lifecycle-defense/battle-manual-queued-order-lifecycle-evidence-391853-0qgngk/1793321333811-failure.png",
+        "state": {
+          "href": "http://127.0.0.1:41025/?playtest=mapa",
+          "readyState": "complete",
+          "title": "The Game — 4X",
+          "bodyText": "Skarbiec\n5000\n+33\nPraca\n800\n+28\nSpichlerz\n0\n−64\nNauka\n200\n+9\nSurowce\nHandel\n0\nEpoka brązu\n18 tys. (9)\n2847\nMOC\nArmia\n3\n+9\nMiasta\n1\n+1\nObywatele\n9\n+1\nKultura\n120\n+2\nReligia\n9\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\n1\nTura 2 · Ręczne\nx1\nWYCOFAJ SIĘ\nRzym\nNuma Pompiliusz\natakujacy\n8\n·\n10\n·\n10\n·\n28\n02:15\nCZAS BITWY\nPrzewaga na polu: 50% Ty · 50% wróg\nGrecja\nAgamemnon\nobronca\n8\n·\n10\n·\n10\n·\n28\nTEMPO\nKIERUNEK NATARCIA\nTAKTYK",
+          "canvasCount": 4,
+          "canvases": [
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 280,
+              "height": 170,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 1440,
+              "height": 900,
+              "id": "",
+              "cls": ""
+            },
+            {
+              "connected": true,
+              "width": 180,
+              "height": 120,
+              "id": "",
+              "cls": ""
+            }
+          ],
+          "loadOverlay": null,
+          "debugReady": true,
+          "turnDebugReady": true,
+          "mapCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900
+          },
+          "battleProbeReady": true,
+          "battleCanvas": {
+            "connected": true,
+            "width": 1440,
+            "height": 900,
+            "finished": false
+          },
+          "errors": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-30T00:48:59.280Z",
+      "phase": "cleanup:start",
+      "data": {
+        "phase": "manual-pointer-battle",
+        "evidenceDir": "/workspace/tmp-queued-order-lifecycle-defense/battle-manual-queued-order-lifecycle-evidence-391853-0qgngk"
+      }
+    }
+  ]
+}

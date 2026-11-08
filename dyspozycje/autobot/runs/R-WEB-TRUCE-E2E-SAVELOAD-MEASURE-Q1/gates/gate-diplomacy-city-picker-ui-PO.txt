@@ -1,0 +1,16 @@
+  OK  pokój: blok wyboru miasta jest widoczny (2 miasta do oddania)
+  OK  pokój: etykiety miast zawierają wycenę PW
+  OK  pokój: po kliknięciu miasto „Beta · 700 PW" pojawia się w podsumowaniu koszyka
+  OK  pokój: dodane miasto znika z listy wyboru (zostaje 1)
+  zrzut: <WORKTREE>/dyspozycje/autobot/runs/R-WEB-PEACE-CITY-CESSION-Q1/evidence/r3-modal-pokoj-miasto.png
+  OK  pokój: zatwierdzenie wysyła payload
+  OK  payload: giveItems[0].typ = miasto
+  OK  payload: giveItems[0].id = c2 (wybrane miasto)
+  OK  payload: giveItems[0].cityPn = 700
+  OK  payload: givePn = round(700 × 1.5) = 1050 (waga oddającego przez actionId)
+  OK  handel (14): brak chipa „Miasto" i bloku wyboru miasta
+  OK  prezent (13): brak chipa „Miasto" i bloku wyboru miasta
+  OK  pokój bez miast do oddania: brak bloku wyboru miasta
+  OK  brak pageerror / console.error w scenariuszu
+diplomacy-city-picker-ui-test: 13 pass, 0 fail
+EXIT=0

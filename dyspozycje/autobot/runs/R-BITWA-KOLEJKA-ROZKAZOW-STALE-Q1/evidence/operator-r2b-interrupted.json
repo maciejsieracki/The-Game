@@ -1,0 +1,34 @@
+{
+  "status": "INTERRUPTED_BY_ORCHESTRATOR_NOT_A_TEST_RESULT",
+  "runId": "388573-nbg7c9",
+  "startedAt": "2026-10-30T00:12:27Z",
+  "stoppedAt": "2026-10-30T00:18:52Z",
+  "elapsedSeconds": 391,
+  "stop": "Ctrl+C after orchestration instruction; no timeout exception was observed.",
+  "build": {
+    "status": "PASS",
+    "viteModules": 917,
+    "bytes": 70029425,
+    "sha256": "2164c747231241b2c148940fa1c6b602a77006c984b3f12f45330b6f42ecac0e"
+  },
+  "lastObserved": {
+    "at": "2026-10-30T00:14:13Z",
+    "phase": "manual:full-roster-setup",
+    "attacker": 28,
+    "defender": 28,
+    "playerRanged": 20,
+    "playerMounted": 8,
+    "manualMode": true,
+    "awaitingOrders": true,
+    "pageErrors": 0,
+    "consoleErrors": 0
+  },
+  "activeWaitAtStop": "UNKNOWN: the harness emitted no phase marker between full-roster setup and its finalization; the process was interrupted before it recorded a failing phase or state dump.",
+  "reusableArtifacts": [
+    "1793319232412-map-before-battle.json",
+    "1793319232412-map-before-battle.png",
+    "1793319240893-battle-open.json",
+    "1793319240893-battle-open.png"
+  ],
+  "limitation": "No evidence exists for the Space activation wait, next real planning cycle, or second pointer order. This run is not PASS or FAIL for those claims. Added phase timeline and bounded failure snapshots to the harness for a future run."
+}

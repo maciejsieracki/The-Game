@@ -1,0 +1,2 @@
+battle-mode-save-reload-contract-test: PASS — both settings roundtrip; legacy saves retain choice
+EXIT=0

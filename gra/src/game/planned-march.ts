@@ -5,7 +5,9 @@
 
 import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
-import { computePath, pathCost, keyOf, terrainMoveCost, type RuntimeUnit } from '../units/setup';
+import {
+  computePath, pathCost, keyOf, terrainMoveCost, trimSegmentEndOffPassThrough, isPassThroughHex, type RuntimeUnit,
+} from '../units/setup';
 
 /** TEMAT #15 (embarkacja): opcjonalny koszt wejścia na heks (woda przejezdna). */
 export type MarchCostFn = (hex: Hex) => number;
@@ -16,6 +18,8 @@ export interface PlannedMarchDest {
   destR: number;
   /** Id wrogiej jednostki — marsz do dojścia + atak (tylko gdy cel widoczny). */
   attackUnitId?: string;
+  /** Moving friendly General whose live position is the destination. */
+  generalTargetId?: string;
 }
 
 /** Pole save A3-P0-2 (backward compat — jeden marsz). */
@@ -264,7 +268,11 @@ export function planPathTurns(
   }
 
   const budget = movementBudget ?? perTurn;
-  const segmentPath = truncatePathToBudget(path, budget, map, costFn);
+  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: segment skrocony budzetem nie konczy sie na heksie z wlasna
+  // jednostka (przejscie != laczenie); pelna trasa do celu na wlasnej jednostce = laczenie.
+  const segmentPath = trimSegmentEndOffPassThrough(
+    truncatePathToBudget(path, budget, map, costFn), path.length, occupied,
+  );
   const segmentCost = segmentPath.length > 0 ? pathCost(segmentPath, map, costFn) : 0;
 
   return {
@@ -300,7 +308,9 @@ export function shouldStopAtObstacle(
     && segmentPath[segmentPath.length - 1]!.r === dest.destR;
   if (arrived) return { stop: false };
 
-  const truncated = truncatePathToBudget(path, movementBudget, map, costFn);
+  const truncated = trimSegmentEndOffPassThrough(
+    truncatePathToBudget(path, movementBudget, map, costFn), path.length, occupied,
+  );
   if (truncated.length === 0) {
     return { stop: true, reason: 'no_movement', detail: 'brak punktów ruchu' };
   }
@@ -377,13 +387,16 @@ export function executeMarchStep(
 
   const movePath = plan.segmentPath;
   if (movePath.length === 0) {
+    // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: budzet starcza tylko na heksy z wlasnymi jednostkami
+    // (przejscie bez zatrzymania niemozliwe w tej turze) -- to przeszkoda, nie brak ruchu.
+    const onlyOwnInReach = plan.fullPath.length > 0 && isPassThroughHex(occupied, plan.fullPath[0]!.q, plan.fullPath[0]!.r);
     return {
       ok: false,
       movePath: [],
       cost: 0,
       arrived: false,
-      stopReason: 'no_movement',
-      stopDetail: 'brak punktów ruchu',
+      stopReason: onlyOwnInReach ? 'obstacle' : 'no_movement',
+      stopDetail: onlyOwnInReach ? 'własna jednostka na trasie — brak wolnego heksu w zasięgu' : 'brak punktów ruchu',
     };
   }
 
@@ -447,10 +460,16 @@ export function plannedMarchesFromSave(
       if (!dest || !Number.isFinite(dest.destQ) || !Number.isFinite(dest.destR)) continue;
       const u = units.find(x => x.id === uid);
       if (!u || u.ownerId !== playerOwnerId) continue;
-      if (u.q === dest.destQ && u.r === dest.destR) continue;
+      // A General-follow order stores the leader's last coordinates as a fallback.
+      // Keep it even when the follower happens to match those stale coordinates;
+      // syncGeneralMarchTargets will resolve the leader's live position after load.
+      if (u.q === dest.destQ && u.r === dest.destR && !(typeof dest.generalTargetId === 'string' && dest.generalTargetId.length > 0)) continue;
       const entry: PlannedMarchDest = { destQ: dest.destQ, destR: dest.destR };
       if (typeof dest.attackUnitId === 'string' && dest.attackUnitId.length > 0) {
         entry.attackUnitId = dest.attackUnitId;
+      }
+      if (typeof dest.generalTargetId === 'string' && dest.generalTargetId.length > 0) {
+        entry.generalTargetId = dest.generalTargetId;
       }
       out.set(uid, entry);
     }
@@ -470,9 +489,12 @@ export function plannedMarchesToSave(
   const plannedMarches: PlannedMarchesSave = {};
   let first: AutoMarchSave | undefined;
   for (const [unitId, dest] of marches) {
-    plannedMarches[unitId] = dest.attackUnitId
-      ? { destQ: dest.destQ, destR: dest.destR, attackUnitId: dest.attackUnitId }
-      : { destQ: dest.destQ, destR: dest.destR };
+    plannedMarches[unitId] = {
+      destQ: dest.destQ,
+      destR: dest.destR,
+      ...(dest.attackUnitId ? { attackUnitId: dest.attackUnitId } : {}),
+      ...(dest.generalTargetId ? { generalTargetId: dest.generalTargetId } : {}),
+    };
     if (!first) first = { leaderId: unitId, destQ: dest.destQ, destR: dest.destR };
   }
   return { autoMarch: first, plannedMarches };

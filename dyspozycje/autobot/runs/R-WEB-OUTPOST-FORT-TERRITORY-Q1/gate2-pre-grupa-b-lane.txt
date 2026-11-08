@@ -1,0 +1,7 @@
+FAIL: empire food 30% to state
+FAIL: empire reserve after army cost 1 (50% netto bez Spichlerza w imperium: round(29*0.5)=15)
+FAIL: las rownina: handel 1-1 floored
+FAIL: las rownina: drewno 10+15 (x5, bylo 2+3=5)
+FAIL: clearing tick 25 (B2, bylo 5), expired po 1 turze
+grupa-b-lane-test: 44 pass, 5 fail
+EXIT=1

@@ -1,0 +1,49 @@
+  [info] wycięty blok komitu AI zawiera strażnik lasu: true (linie main.ts 34511-34537)
+
+=== WYŚCIG: wycinka (ten sam AI, ten sam heks, ta sama tura) PRZED komitem budowy ===
+     tartak: placed=null poolAfter=100
+  [OK] A1 TARTAK: komit AI NIE dochodzi do skutku, gdy las zniknął między planem a wykonaniem (wyścig)
+  [OK] A2 TARTAK: Praca AI NIE jest pobierana za pominięty komit (brak kosztu bez efektu)
+     oboz_lowiecki: placed=null poolAfter=100
+  [OK] B1 OBÓZ ŁOWIECKI: komit AI NIE dochodzi do skutku, gdy las zniknął między planem a wykonaniem (wyścig)
+  [OK] B2 OBÓZ ŁOWIECKI: Praca AI NIE jest pobierana za pominięty komit
+
+=== KONTROLA: las JEST na heksie -> komit budowy przechodzi normalnie ===
+[AI 1] Ulepszenie: tartak @ (0,0) (-20 Pracy)
+  [OK] C1 kontrola: TARTAK buduje się normalnie, gdy las faktycznie jest na heksie (test nie jest zbyt szeroki)
+[AI 1] Ulepszenie: oboz_lowiecki @ (0,0) (-20 Pracy)
+  [OK] C2 kontrola: OBÓZ ŁOWIECKI buduje się normalnie, gdy las faktycznie jest na heksie
+
+=== KONTROLA ZAKRESU: strażnik NIE blokuje ulepszeń niezależnych od lasu ===
+[AI 1] Ulepszenie: droga @ (0,0) (-20 Pracy)
+  [OK] D1 kontrola: droga buduje się z lasem (nietknięte)
+[AI 1] Ulepszenie: droga @ (0,0) (-20 Pracy)
+  [OK] D2 kontrola: droga buduje się TAKŻE bez lasu — strażnik dotyczy wyłącznie tartak/oboz_lowiecki, nie poszerza zakresu
+
+=== CZĘŚĆ E: pętla automatu ulepszeń GRACZA -- strażnik lasu przy komicie ===
+  [info] wycięty blok komitu GRACZA (pętla automatu) zawiera strażnik lasu: true (linie main.ts 32322-32392)
+
+--- E: las ZNIKNĄŁ przed komitem pick-a (symulacja okna wyścigu w pętli gracza) ---
+  [OK] E1 TARTAK (pętla gracza): komit NIE dochodzi do skutku, gdy las zniknął przed pick-iem
+  [OK] E1b TARTAK (pętla gracza): Praca gracza NIE jest pobierana za pominięty pick
+  [OK] E2 OBÓZ ŁOWIECKI (pętla gracza): komit NIE dochodzi do skutku, gdy las zniknął przed pick-iem
+
+--- KONTROLA (pętla gracza): las JEST -> komit przechodzi; inne klucze nietknięte ---
+/home/user/The-Game/.claude/worktrees/wf_02431a33-d5e-1/gra/tools/.tartak-race-player-bundle.cjs:79
+    setOwnerLastPraca(hOid, playerPracaPool);
+    ^
+
+ReferenceError: setOwnerLastPraca is not defined
+    at commitPlayerPick (/home/user/The-Game/.claude/worktrees/wf_02431a33-d5e-1/gra/tools/.tartak-race-player-bundle.cjs:79:5)
+    at playerScenario (/home/user/The-Game/.claude/worktrees/wf_02431a33-d5e-1/gra/tools/tartak-oboz-wyscig-race-test.cjs:258:3)
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_02431a33-d5e-1/gra/tools/tartak-oboz-wyscig-race-test.cjs:277:29)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+
+Node.js v22.22.0
+EXIT=1

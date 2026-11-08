@@ -1,0 +1,9 @@
+
+pre-battle-retreat-exhausted-test: 27 pass, 6 fail
+FAIL: [A] znaleziono koniec funkcji (showPreBattle(...}, { defaultAction: 'manual' }))
+FAIL: [A1] retreatExhaustedThisTurn = defRosterRef.some(u => u.retreatedThisTurn === true) — sprawdza CAŁY roster obrony, nie tylko lidera
+FAIL: [A2] defenderCanRetreat: playerDefends && !defenderLockedByGarnizon && !retreatExhaustedThisTurn — trzeci warunek NIE zniknął
+FAIL: [A3] retreatExhaustedThisTurn: playerDefends && !defenderLockedByGarnizon && retreatExhaustedThisTurn — pole przekazane do PreBattleInfo, osobne od defenderCanRetreat
+FAIL: [A4] onCancel: warunek wykonania applyDefenderPreBattleRetreat zawiera !retreatExhaustedThisTurn (obrona w głąb — nie tylko widoczność przycisku w UI)
+FAIL: [A5] "for (const u of defRosterRef) u.retreatedThisTurn = true;" obecne i wykonywane PO applyDefenderPreBattleRetreat(...) (jednostki faktycznie się przesunęły, zanim je oznaczymy)
+EXIT=1

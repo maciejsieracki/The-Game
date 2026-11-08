@@ -906,7 +906,7 @@ export function loadTradeRouteParams(
  * nadal działa: Targowisko/Port/Port wielki zostają.
  */
 export const TRADE_BUILDING_IDS: ReadonlySet<string> = new Set([
-  'targowisko', 'port', 'port_wielki',
+  'targowisko', 'port', 'port_wielki', 'emporion',
 ]);
 
 /** Limit tras handlowych danego miasta = liczba zbudowanych budynków handlowych. */
@@ -996,91 +996,72 @@ function detectBestConnection(
 }
 
 /**
- * E6 (2026-07-23) — czy istnieje geometrycznie MOŻLIWE połączenie tras handlowych
- * (ląd LUB morze, zgodnie z findCityConnection) między KTÓRĄKOLWIEK parą miast z
- * `citiesA` i `citiesB`. Używane przez AI↔gracz/AI↔AI proaktywne propozycje Umowy
- * Handlowej (decideAIDiplomacy) — bramka "połączenie możliwe", NIE "trasa aktywna
- * dziś": ignoruje limit slotów z tradeRouteLimitForCity (budynki handlowe), bo ten
- * limit dotyczy przepustowości istniejących tras, nie tego, czy fizyczne
- * połączenie w ogóle istnieje. Wymóg Portu dla morza pozostaje (wbudowany w
- * findCityConnection).
+ * R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (decyzja właściciela 2026-11-04) — JEDNA funkcja
+ * warunku „czy wolno zestawić trasę zewnętrzną między tymi cywilizacjami" w części
+ * NIEFIZYCZNEJ, współdzielona przez silnik (refreshTradeRoutes), UI (panel miasta,
+ * diagnoza) i AI (propozycje Umowy Szlaków): wystarczy, że cywilizacje SIĘ ZNAJĄ
+ * (kontakt dyplomatyczny — ten sam warunek, który otwiera stół negocjacji) i obie
+ * mają miasta. Fizyczna łączność (przechodnia ścieżka lądowa/morska, Port, wspólna
+ * granica) NIE jest już warunkiem. Dotychczasowe warunki niefizyczne (brak wojny,
+ * aktywna Umowa Szlaków, sloty, tech „Wymiana") sprawdzają wołający / refreshTradeRoutes.
  *
- * Czysta, zwraca na pierwszym trafieniu (short-circuit) — tanie dla typowej
- * liczby miast per cywilizacja.
+ * Zastępuje dawne `citiesHaveTradeConnection` (E6: ląd/morze BFS + Port + granica).
+ * Czysta, O(1), bez dostępu do mapy.
  */
-export function citiesHaveTradeConnection(
+export function externalTradeContactOk(
   citiesA: readonly TradeRouteCityRef[],
   citiesB: readonly TradeRouteCityRef[],
-  map: GameMap,
-  builtByCity: ReadonlyMap<string, readonly string[]>,
-  params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
-  territoryNodes?: readonly TerritoryNode[],
+  hasContact: boolean,
 ): boolean {
-  // GOAL 4: memoizacja per-para-właścicieli lokalna dla TEGO wywołania — citiesA/
-  // citiesB to zwykle wszystkie miasta dwóch konkretnych cywilizacji, więc bez
-  // tego granica liczyłaby się ponownie dla każdej pary miast zamiast raz.
-  const landBorderCache = new Map<string, boolean>();
-  for (const a of citiesA) {
-    for (const b of citiesB) {
-      if (findCityConnection(a, b, map, 'lad', params, builtByCity, territoryNodes, landBorderCache).connected) return true;
-      if (findCityConnection(a, b, map, 'morze', params, builtByCity, territoryNodes, landBorderCache).connected) return true;
-    }
-  }
-  return false;
+  return hasContact && citiesA.length > 0 && citiesB.length > 0;
 }
 
 /**
+ * R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 — medium i dystans trasy ZEWNĘTRZNEJ bez wymogu
+ * fizycznego połączenia. Medium wybiera krzywą dochodu (ląd/morze), NIE warunek
+ * istnienia: 'lad' gdy miasta leżą w jednym komponencie lądowym (kontynent, cache
+ * flood-fill per mapa — O(1) po jednorazowym przeliczeniu, zero BFS), w przeciwnym
+ * razie 'morze' (szlak ponad oceanem/pustkowiem). Dystans = hexDistance miast, bez
+ * zmian względem dawnej `findCityConnection`.
+ */
+export function contactTradeConnection(
+  a: TradeRouteCityRef,
+  b: TradeRouteCityRef,
+  map: GameMap,
+): { medium: TradeRouteMedium; distance: number } {
+  const distance = hexDistance(a.q, a.r, b.q, b.r);
+  // Memo per mapa i para współrzędnych (teren stały między turami, jak komponenty spójności) —
+  // refreshTradeRoutes pyta o każdą parę miast co turę, a tu nie ma już BFS do cache'owania.
+  let memo = __contactMediumCache.get(map);
+  if (!memo) { memo = new Map<string, TradeRouteMedium>(); __contactMediumCache.set(map, memo); }
+  const key = `${a.q},${a.r}|${b.q},${b.r}`;
+  let medium = memo.get(key);
+  if (medium === undefined) {
+    medium = landComponentsMayConnect(map, a, b, distance) ? 'lad' : 'morze';
+    memo.set(key, medium);
+  }
+  return { medium, distance };
+}
+const __contactMediumCache = new WeakMap<GameMap, Map<string, TradeRouteMedium>>();
+
+/**
  * Diagnoza, dlaczego między graczem a partnerem nie ma aktywnej trasy handlowej
- * mimo zawartej Umowy Handlowej (panel imperium → Aktywne umowy handlowe).
- * Zwraca komunikat PL lub null, gdy połączenie geometryczne jest możliwe (wtedy
- * trasa PODJĘŁA już istnieć — patrz T3 niżej — i brak jej w danych to kwestia
- * odświeżenia, nie blokady terytorialnej ani budynkowej).
+ * mimo zawartej Umowy Szlaków (panel imperium → Aktywne umowy handlowe).
+ * Zwraca komunikat PL lub null, gdy nic nie blokuje (wtedy trasa POWINNA istnieć —
+ * brak jej w danych to kwestia odświeżenia lub slotów, nie blokady terytorialnej).
  *
- * T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, 2026-08-24): PRZED T3 ta funkcja filtrowała
- * miasta po `tradeRouteLimitForCity(...) > 0` (budynek handlowy), bo bez niego
- * trasa faktycznie nie mogła istnieć — stąd komunikaty „brak Targowiska/Portu"
- * i „brak wolnego slotu trasy". Od T3 budynek handlowy JUŻ NIE warunkuje
- * istnienia trasy (tylko `TradeRoute.budynekOdblokowany`, konsumowane w T4) —
- * te dwa komunikaty są więc nieaktualne jako powód BRAKU trasy i zostały
- * usunięte; diagnoza sprawdza teraz geometrię/wojnę bezpośrednio na WSZYSTKICH
- * miastach (fizyczny wymóg Portu na morze pozostaje bez zmian, wewnątrz
- * `findCityConnection`/`citiesHaveTradeConnection`).
- *
- * GOAL 5 (R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1, 2026-09-03): dawny branch
- * „za daleko (N heks.)" był oparty na `hexDistance > params.ladMaxDist` — dystans
- * w LINII PROSTEJ jako powód BRAKU trasy lądowej. Od GOAL 1 dystans już NIE
- * blokuje connectivity lądowej (ani morskiej), więc ten branch jest MARTWY: skoro
- * `citiesHaveTradeConnection` niżej zwróciła false, oznacza to, że KAŻDA para
- * miast gracz↔partner jest fizycznie nieosiągalna (BFS) zarówno lądem, jak i
- * morzem — powód nigdy już nie jest „za daleko w linii prostej", tylko realna
- * geografia (różne kontynenty/wyspy bez portu) — dokładnie to, co właściciel
- * wprost zaakceptował jako warunek pozostający bez zmian (GOAL 6 dispatchu).
- * Komunikat morski („wymagany Port") zostaje — TO nadal bywa faktyczną,
- * osobną przyczyną (fizyczna ścieżka wodna istnieje, ale żadne miasto nie ma
- * Portu) — rozróżniona teraz jawnie od czysto geograficznej nieosiągalności.
- *
- * GOAL 5 (R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1, 2026-09-03): nowa gałąź
- * odróżnia "brak wspólnej granicy lądowej" (terytoria fizycznie osiągalne
- * lądem — BFS by się powiódł — ale żadna para miast gracz↔partner nie ma
- * stykających się terytoriów) od "brak fizycznego połączenia" (żadna ścieżka
- * lądowa nie istnieje niezależnie od granic, np. inny kontynent). Wykrywane
- * przez ponowne sprawdzenie `citiesHaveTradeConnection` z `territoryNodes`
- * jawnie `undefined` — to WYŁĄCZA wymóg granicy (patrz `landBorderShared`),
- * więc różnica wyniku między "z territoryNodes" i "bez" izoluje dokładnie ten
- * jeden warunek (medium='morze' jest identyczne w obu przypadkach — granica go
- * nie dotyczy — więc jeśli druga próba się powiedzie, to wyłącznie dzięki
- * lądowi bez wymogu granicy).
+ * R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (2026-11-04): fizyczna łączność (BFS lądowy/
+ * morski, Port, wspólna granica) NIE jest już warunkiem — dawne komunikaty „brak
+ * wspólnej granicy lądowej", „brak Portu", „różne kontynenty/wyspy" usunięte.
+ * Pozostają: wojna, brak miast, brak kontaktu (cywilizacje się nie znają).
  */
 export function diagnoseMissingTradeRouteForPartner(
   playerOwnerId: number,
   partnerOwnerId: number,
   cities: readonly TradeRouteCityRef[],
-  map: GameMap,
-  builtByCity: ReadonlyMap<string, readonly string[]>,
   isAtWar: (ownerA: number, ownerB: number) => boolean,
-  params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
+  hasContact: boolean,
   partnerLabel?: string,
-  territoryNodes?: readonly TerritoryNode[],
 ): string | null {
   if (isAtWar(playerOwnerId, partnerOwnerId)) {
     return 'wojna — szlaki zawieszone';
@@ -1094,31 +1075,11 @@ export function diagnoseMissingTradeRouteForPartner(
     return 'brak miast do handlu';
   }
 
-  if (citiesHaveTradeConnection(playerCities, partnerCities, map, builtByCity, params, territoryNodes)) {
-    return null; // T3: geometria połączona + traktat aktywny + brak wojny => trasa istnieje, nic do zdiagnozowania.
+  if (!externalTradeContactOk(playerCities, partnerCities, hasContact)) {
+    return `brak kontaktu z ${label}`;
   }
 
-  // GOAL 5: fizycznie osiągalne lądem (BFS by się powiódł), ale zadna para
-  // terytoriów sie nie styka -- jedyny brakujacy warunek to wspolna granica.
-  if (
-    territoryNodes !== undefined &&
-    citiesHaveTradeConnection(playerCities, partnerCities, map, builtByCity, params, undefined)
-  ) {
-    return `brak wspólnej granicy lądowej z ${label}`;
-  }
-
-  // GOAL 5 (dziedziczone z R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1): brak
-  // połączenia (lądem ANI morzem, sprawdzone wyżej dla WSZYSTKICH par miast) —
-  // rozróżnij "brak Portu" (fizyczna przyczyna łatwa do naprawienia przez
-  // gracza, budując Port) od czysto geograficznej nieosiągalności (różne
-  // kontynenty/wyspy — nic do zbudowania, to realna geografia mapy).
-  const anyPlayerPort = playerCities.some(c => cityHasPort(c.id, builtByCity));
-  const anyPartnerPort = partnerCities.some(c => cityHasPort(c.id, builtByCity));
-  if (!anyPlayerPort || !anyPartnerPort) {
-    return `brak fizycznego połączenia lądowego z ${label} i brak Portu do szlaku morskiego`;
-  }
-
-  return `brak fizycznego połączenia (lądowego ani morskiego) z ${label} — różne kontynenty/wyspy`;
+  return null; // kontakt + traktat aktywny + brak wojny => trasa istnieje (ograniczają ją już tylko sloty).
 }
 
 /**
@@ -1262,7 +1223,18 @@ export const TRADE_TECH = 'Wymiana';
  *                       WYŁĄCZNIE referencyjne dla connectivity legacy (GOAL 1 w
  *                       poprzednim temacie); realny szczyt krzywej DOCHODU (do
  *                       sortowania priorytetu, ten temat) czyta `incomeParams`.
- * @param territoryNodes R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1: węzły terytorium
+ * @param hasContact    R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (decyzja właściciela 2026-11-04):
+ *                       (ownerA, ownerB) => czy cywilizacje się ZNAJĄ (kontakt
+ *                       dyplomatyczny — ten sam warunek co stół negocjacji). Dla par
+ *                       ZEWNĘTRZNYCH to JEDYNY warunek łączności: zniesione BFS
+ *                       lądowy/morski, wymóg Portu i wspólnej granicy (dalej obowiązują
+ *                       wojna, Umowa Szlaków, tech, sloty). Medium (ląd/morze) wynika z
+ *                       `contactTradeConnection` i wybiera tylko krzywą dochodu. Trasy
+ *                       WEWNĘTRZNE bez zmian (fizyczna łączność). Domyślne `() => true`
+ *                       = wstecznie zgodne dla wołających spoza allowlisty.
+ * @param territoryNodes (R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: dla par zewnętrznych
+ *                       NIEUŻYWANE — wymóg granicy zniesiony; parametr zostaje dla zgodności
+ *                       sygnatury.) Dawniej — R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1: węzły terytorium
  *                       WSZYSTKICH właścicieli (reużycie main.ts:buildAllTerritoryNodes()/
  *                       map/territory.ts:territoryOwnerAt — model terytorium BEZ
  *                       ZMIAN), do wymogu wspólnej granicy lądowej między ownerami
@@ -1310,6 +1282,7 @@ export function refreshTradeRoutes(
   territoryNodes?: readonly TerritoryNode[],
   incomeParams: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
   hasTradeTech: (ownerId: number) => boolean = () => true,
+  hasContact: (ownerA: number, ownerB: number) => boolean = () => true,
 ): TradeRoute[] {
   if (cities.length === 0) return [];
 
@@ -1398,14 +1371,26 @@ export function refreshTradeRoutes(
       if (!hasTradeTreaty(from.ownerId, to.ownerId)) continue; // C-HANDEL-UMOWA=B: brak/zerwana Umowa Szlaków -> trasa znika
       if (!hasTradeTech(from.ownerId) || !hasTradeTech(to.ownerId)) continue; // R-HANDEL-WYMIANA-TECH-GATE-Q1: brak techu po ktorejkolwiek stronie -> trasa zewnetrzna znika
     }
-    const conn = findCityConnection(
-      from, to, map, route.medium, params, builtByCity,
-      wewnetrzna ? undefined : territoryNodes, // GOAL 5: wewnętrzna pomija wymóg granicy
-      landBorderCache,
-      false, // GOAL 6: candidate-generation nie czyta pathHexes -- pomiń rekonstrukcję ścieżki
-    );
-    if (!conn.connected) continue; // dla morza wciąż wymaga fizycznego Portu w obu miastach; dla lądu zewnętrznego dodatkowo wymaga wspólnej granicy
-    stillValid.push({ from, to, medium: route.medium, distance: conn.distance, id: route.id, isExisting: true });
+    if (wewnetrzna) {
+      const conn = findCityConnection(
+        from, to, map, route.medium, params, builtByCity,
+        undefined, // GOAL 5: wewnętrzna pomija wymóg granicy
+        landBorderCache,
+        false, // GOAL 6: candidate-generation nie czyta pathHexes -- pomiń rekonstrukcję ścieżki
+      );
+      if (!conn.connected) continue; // trasa wewnętrzna: bez zmian — fizyczna łączność (dla morza Port)
+      stillValid.push({ from, to, medium: route.medium, distance: conn.distance, id: route.id, isExisting: true });
+    } else {
+      // R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: trasa zewnętrzna utrzymuje się, dopóki cywilizacje
+      // się znają (kontakt) — zero BFS/Portu/granicy. Medium przeliczane z geometrii
+      // (krzywa dochodu); utrata kontaktu usuwa trasę jak dotąd utrata łączności.
+      if (!hasContact(from.ownerId, to.ownerId)) continue;
+      const cc = contactTradeConnection(from, to, map);
+      stillValid.push({
+        from, to, medium: cc.medium, distance: cc.distance,
+        id: tradeRouteId(route.fromCityId, route.toCityId, cc.medium), isExisting: true,
+      });
+    }
   }
   // Runda 2 / zarzut 1: dedup po BEZKIERUNKOWEJ parze miast, nie po id (patrz
   // `tradeRoutePairKey`). `stillValid` dedupujemy TAKŻE wobec siebie — zapis gry
@@ -1437,11 +1422,10 @@ export function refreshTradeRoutes(
       if (!hasTradeTech(ownerA) || !hasTradeTech(ownerB)) continue; // R-HANDEL-WYMIANA-TECH-GATE-Q1: brak techu po ktorejkolwiek stronie -> para wykluczona z candidate-generation
       const citiesA = citiesByOwner.get(ownerA)!;
       const citiesB = citiesByOwner.get(ownerB)!;
+      if (!externalTradeContactOk(citiesA, citiesB, hasContact(ownerA, ownerB))) continue; // R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: wystarczy znajomość
       for (const a of citiesA) {
         for (const b of citiesB) {
-          // GOAL 6: needPath=false -- candidate-generation nie czyta pathHexes.
-          const best = detectBestConnection(a, b, map, params, builtByCity, territoryNodes, landBorderCache, false);
-          if (!best) continue; // dla morza nadal wymaga Portu w obu miastach; dla lądu dodatkowo wymaga wspólnej granicy
+          const best = contactTradeConnection(a, b, map); // bez BFS/Portu/granicy
           const id = tradeRouteId(a.id, b.id, best.medium);
           if (stillValidPairs.has(tradeRoutePairKey(a.id, b.id))) continue; // ta PARA MIAST już policzona jako kontynuacja (dedup bezkierunkowy, patrz `tradeRoutePairKey`)
           fresh.push({ from: a, to: b, medium: best.medium, distance: best.distance, id, isExisting: false });
@@ -1615,27 +1599,56 @@ export function loadTradeRouteIncomeParams(
  * zależności cyklicznej i zachowanie trade-routes.ts jako pure logic bez wiedzy
  * o cudach). Zwraca sumę % bonusu "handel_procent" (addytywna kumulacja, patrz
  * wonders-data.ts) dla danego ownera i medium tej KONKRETNEJ trasy — liczony
- * OSOBNO dla każdej strony (fromCityId wg route.ownerId, toCityId wg
- * route.toOwnerId), bo obaj właściciele mogą mieć różne cuda. Domyślnie 0 (brak
- * bonusu) — zachowuje dokładnie dawne zachowanie dla wywołań bez 3. argumentu.
+ * osobno dla każdej strony. `targowiskoBonusForCity` then applies the city's
+ * difficulty-scaled Targowisko bonus to that endpoint's route proceeds. Both
+ * callbacks default to 0, preserving existing call behavior when omitted.
  */
+export interface TradeRouteIncomeByCityBreakdown {
+  totalByCity: Map<string, number>;
+  maritimeByCity: Map<string, number>;
+}
+
+/** Same per-route amounts as the total aggregator, with the typed sea subset retained. */
+export function computeTradeRouteIncomeByCityBreakdown(
+  routes: readonly TradeRoute[],
+  params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+  wonderTradeBonusForOwner: (ownerId: number, medium: TradeRouteMedium) => number = () => 0,
+  targowiskoBonusForCity: (cityId: string) => number = () => 0,
+): TradeRouteIncomeByCityBreakdown {
+  const totalByCity = new Map<string, number>();
+  const maritimeByCity = new Map<string, number>();
+  for (const route of routes) {
+    if (route.status !== 'polaczony') continue;
+    const routeIncome = tradeRouteIncomeForRoute(route, params);
+    const fromWonder = wonderTradeBonusForOwner(route.ownerId, route.medium);
+    const toWonder = wonderTradeBonusForOwner(route.toOwnerId, route.medium);
+    const fromAfterWonder = fromWonder === 0 ? routeIncome : Math.floor(routeIncome * (1 + fromWonder));
+    const toAfterWonder = toWonder === 0 ? routeIncome : Math.floor(routeIncome * (1 + toWonder));
+    const fromTargowisko = targowiskoBonusForCity(route.fromCityId);
+    const toTargowisko = targowiskoBonusForCity(route.toCityId);
+    const fromIncome = fromTargowisko === 0
+      ? fromAfterWonder
+      : Math.floor(fromAfterWonder * (1 + fromTargowisko));
+    const toIncome = toTargowisko === 0
+      ? toAfterWonder
+      : Math.floor(toAfterWonder * (1 + toTargowisko));
+    totalByCity.set(route.fromCityId, (totalByCity.get(route.fromCityId) ?? 0) + fromIncome);
+    totalByCity.set(route.toCityId,   (totalByCity.get(route.toCityId)   ?? 0) + toIncome);
+    if (route.medium === 'morze') {
+      maritimeByCity.set(route.fromCityId, (maritimeByCity.get(route.fromCityId) ?? 0) + fromIncome);
+      maritimeByCity.set(route.toCityId,   (maritimeByCity.get(route.toCityId)   ?? 0) + toIncome);
+    }
+  }
+  return { totalByCity, maritimeByCity };
+}
+
 export function computeTradeRouteIncomeByCity(
   routes: readonly TradeRoute[],
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
   wonderTradeBonusForOwner: (ownerId: number, medium: TradeRouteMedium) => number = () => 0,
+  targowiskoBonusForCity: (cityId: string) => number = () => 0,
 ): Map<string, number> {
-  const out = new Map<string, number>();
-  for (const route of routes) {
-    if (route.status !== 'polaczony') continue;
-    const routeIncome = tradeRouteIncomeForRoute(route, params);
-    const fromMult = 1 + wonderTradeBonusForOwner(route.ownerId, route.medium);
-    const toMult   = 1 + wonderTradeBonusForOwner(route.toOwnerId, route.medium);
-    const fromIncome = fromMult === 1 ? routeIncome : Math.floor(routeIncome * fromMult);
-    const toIncome   = toMult === 1 ? routeIncome : Math.floor(routeIncome * toMult);
-    out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + fromIncome);
-    out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + toIncome);
-  }
-  return out;
+  return computeTradeRouteIncomeByCityBreakdown(routes, params, wonderTradeBonusForOwner, targowiskoBonusForCity).totalByCity;
 }
 
 /**
@@ -1743,10 +1756,16 @@ export const PORT_SEA_TRADE_BONUS_PIENIADZ = 1;
 
 export function computeSeaTradeBonusIncomeByCity(
   seaTradeRouteCountByCity: ReadonlyMap<string, number>,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
   bonusPerRoutePieniadz: number = PORT_SEA_TRADE_BONUS_PIENIADZ,
 ): Map<string, number> {
   const out = new Map<string, number>();
   for (const [cityId, count] of seaTradeRouteCountByCity) {
+    // R-WEB-TRADE-SEA-BONUS-REQUIRES-PORT-Q1 (decyzja właściciela 2026-11-04, ABC B):
+    // po R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 trasa morska powstaje bez Portu, więc
+    // bonus ponad pierwszą trasę morską należy się TYLKO miastu z Portem.
+    // Trasa i dochód dystansowy zostają bez zmian.
+    if (!cityHasPort(cityId, builtByCity)) continue;
     const extraRoutes = Math.max(0, count - 1);
     if (extraRoutes > 0) out.set(cityId, extraRoutes * bonusPerRoutePieniadz);
   }
@@ -1892,6 +1911,116 @@ export function computeTradeRouteResourceGrants(
     }
   }
   return grants;
+}
+
+/**
+ * R-WEB-LONGRUN-100-TURNS-LEAK-Q1: memoizacja `ownerHasNativeAccess` NA CZAS JEDNEGO przeliczenia grantow.
+ * `computeTradeRouteResourceGrants` pyta o ten sam (wlasciciel, surowiec) 4x na kazda trase x 5 surowcow,
+ * a kazde zapytanie w main.ts skanowalo WSZYSTKIE ulepszenia na mapie x wszystkie wezly terytorium
+ * (`placedImprovementsForOwner`) -- ok. 1/2 czasu tury w t.~95 (profil CPU). Stan gry nie zmienia sie w trakcie
+ * jednego przeliczenia, wiec wynik jest identyczny; cache zyje tylko w zamknieciu zwroconej funkcji
+ * (utworz nowy na kazde przeliczenie -- NIE trzymaj go miedzy turami).
+ */
+export function memoizeOwnerResourceAccess(
+  fn: (ownerId: number, resourceKey: TradeRouteResourceKey) => boolean,
+): (ownerId: number, resourceKey: TradeRouteResourceKey) => boolean {
+  const memo = new Map<string, boolean>();
+  return (ownerId, resourceKey) => {
+    const k = `${ownerId}|${resourceKey}`;
+    let v = memo.get(k);
+    if (v === undefined) { v = fn(ownerId, resourceKey); memo.set(k, v); }
+    return v;
+  };
+}
+
+/**
+ * R-WEB-PERF-PLACED-IMPROVEMENTS-CACHE-Q1: Map z licznikiem mutacji. KAZDY zapis (`set`/`delete`/`clear`) zwieksza
+ * `version` -- to jedyne zrodlo niezmiennika inwalidacji cache'u ulepszen per wlasciciel (kazdy zapis w main.ts
+ * idzie przez te trzy metody, wiec nie ma "cichej" mutacji omijajacej licznik). Zachowuje sie jak zwykla Map.
+ */
+export class VersionedMap<K, V> extends Map<K, V> {
+  version = 0;
+  override set(key: K, value: V): this { this.version++; return super.set(key, value); }
+  override delete(key: K): boolean { this.version++; return super.delete(key); }
+  override clear(): void { this.version++; super.clear(); }
+}
+
+/** Pola wezla terytorium czytane przez `territoryOwnerAt`/`cityTerritoryRadius` (podpis inwalidacji). */
+export interface OwnerCacheTerritoryNode {
+  q: number;
+  r: number;
+  pop: number;
+  isFort?: boolean;
+  isOutpost?: boolean;
+  ownerId: number;
+  order?: { turn: number; seq: number };
+}
+
+function sameTerritoryNodes(a: readonly OwnerCacheTerritoryNode[], b: readonly OwnerCacheTerritoryNode[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i]!, y = b[i]!;
+    if (x.q !== y.q || x.r !== y.r || x.pop !== y.pop || x.ownerId !== y.ownerId
+      || !!x.isFort !== !!y.isFort || !!x.isOutpost !== !!y.isOutpost) return false;
+    const ox = x.order, oy = y.order;
+    if (!!ox !== !!oy) return false;
+    if (ox && oy && (ox.turn !== oy.turn || ox.seq !== oy.seq)) return false;
+  }
+  return true;
+}
+
+/**
+ * R-WEB-PERF-PLACED-IMPROVEMENTS-CACHE-Q1: cache "ulepszenia terenu w terytorium wlasciciela" (dawne
+ * `placedImprovementsForOwner`: skan WSZYSTKICH ulepszen mapy x wszystkie wezly terytorium na KAZDE wywolanie,
+ * a wolane per jednostka/miasto/surowiec -- w t.~95 ok. 14 s z 57 s profilu).
+ * Wynik zalezy WYLACZNIE od (a) zawartosci `source` (licznik `version`) i (b) wezlow terytorium (miasta + forty;
+ * porownywane POLE PO POLU z poprzednim snapshotem -- zmiana wlasciciela/populacji/pozycji/typu wezla = pudlo).
+ * Gdy ktorekolwiek sie zmieni, CALY cache jest wyrzucany, a zwrocone wczesniej mapy pozostaja nietkniete
+ * (nigdy nie mutujemy zwroconej mapy). Zadnego TTL ani stanu miedzyturowego bez walidacji: kazdy odczyt waliduje.
+ */
+export function createOwnerImprovementsCache<L, N extends OwnerCacheTerritoryNode = OwnerCacheTerritoryNode>(
+  ownerAt: (q: number, r: number, nodes: readonly N[]) => number | null,
+) {
+  let src: VersionedMap<string, L> | null = null;
+  let srcVersion = -1;
+  let snapshot: OwnerCacheTerritoryNode[] = [];
+  /** Wlasciciel kazdego heksa (memo `ownerAt`). Zalezy WYLACZNIE od wezlow terytorium, wiec przezywa zapisy do mapy
+   *  ulepszen (zapis dotyka tylko klucza tego heksa, ktory liczymy leniwie); czyszczony tylko przy zmianie wezlow. */
+  let hexOwner = new Map<string, number | null>();
+  let byOwner = new Map<number, ReadonlyMap<string, L>>();
+  const stats = { hits: 0, misses: 0, invalidations: 0 };
+  return {
+    stats,
+    get(ownerId: number, source: VersionedMap<string, L>, nodes: readonly N[]): ReadonlyMap<string, L> {
+      const nodesChanged = !sameTerritoryNodes(snapshot, nodes);
+      const sourceChanged = src !== source || srcVersion !== source.version;
+      if (nodesChanged || sourceChanged) {
+        if (byOwner.size > 0) stats.invalidations++;
+        if (nodesChanged) {
+          snapshot = nodes.map(n => ({ q: n.q, r: n.r, pop: n.pop, isFort: n.isFort, isOutpost: n.isOutpost, ownerId: n.ownerId, order: n.order ? { turn: n.order.turn, seq: n.order.seq } : undefined }));
+          hexOwner = new Map();
+        }
+        src = source;
+        srcVersion = source.version;
+        byOwner = new Map();
+      }
+      const hit = byOwner.get(ownerId);
+      if (hit) { stats.hits++; return hit; }
+      stats.misses++;
+      const out = new Map<string, L>();
+      for (const [hexKey, layers] of source) {
+        let owner = hexOwner.get(hexKey);
+        if (owner === undefined) {
+          const comma = hexKey.indexOf(',');
+          owner = ownerAt(Number(hexKey.slice(0, comma)), Number(hexKey.slice(comma + 1)), nodes) ?? null;
+          hexOwner.set(hexKey, owner);
+        }
+        if (owner === ownerId) out.set(hexKey, layers);
+      }
+      byOwner.set(ownerId, out);
+      return out;
+    },
+  };
 }
 
 /** Czy `ownerId` ma (dowolny) grant "z trasy" na `resourceKey`. */

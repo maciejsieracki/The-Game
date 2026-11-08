@@ -36,6 +36,7 @@ export { pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP } from ${JSON.str
 export { isMajorAiOwner } from ${JSON.stringify(AI_SRC + '/game/owner-utils')};
 export { hexDistance, hexNeighborCoords } from ${JSON.stringify(AI_SRC + '/units/setup')};
 export { diplomacyLayerForOwner, filterDiplomacyCommandsForLayer } from ${JSON.stringify(AI_SRC + '/game/diplomacy-layers')};
+export { setArmyConsolidationOverride } from ${JSON.stringify(AI_SRC + '/game/army-consolidation')};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -57,7 +58,7 @@ try {
 }
 
 const AI = require(BUNDLE_FILE);
-const { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, hexNeighborCoords, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP, pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP, isMajorAiOwner, computeMajorAiEarlyGame, AI_MAJOR_EARLY_MAX_TURN, AI_MAJOR_EARLY_MAX_TURN_L1, AI_MAJOR_EARLY_ECON_BUILDING_MULT, AI_EARLY_SCOUT_REPEAT_PENALTY, computeEarlyScoutProductionScore } = AI;
+const { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, hexNeighborCoords, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP, pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP, isMajorAiOwner, computeMajorAiEarlyGame, AI_MAJOR_EARLY_MAX_TURN, AI_MAJOR_EARLY_MAX_TURN_L1, AI_MAJOR_EARLY_ECON_BUILDING_MULT, AI_EARLY_SCOUT_REPEAT_PENALTY, computeEarlyScoutProductionScore, setArmyConsolidationOverride } = AI;
 
 // --- tiny assertion framework ----------------------------------------------
 let passed = 0;
@@ -896,6 +897,9 @@ console.log('\n--- T4c: idle fallback does NOT override attack behavior ---');
 // TEST 14: T4 - IDLE FALLBACK nie działa gdy jednostka już przy mieście (dist <= 1)
 // ============================================================================
 console.log('\n--- T4d: idle fallback does NOT force move when unit already at/adjacent to own city ---');
+// R-WEB-ARMY-CONSOLIDATION-Q1 (wydanie nr 6, DEFAULT=true): T4d testuje bazowy fallback idle -> flaga OFF.
+// Zbiorka w stolicy (flaga ON) ma wlasny kontrakt w army-consolidation-test.cjs.
+setArmyConsolidationOverride(false);
 {
   const mapD = makeMap(10, 10);
   const myUnit  = makeUnit('my2', 1, 1, 1, 'miecznik');
@@ -917,6 +921,7 @@ console.log('\n--- T4d: idle fallback does NOT force move when unit already at/a
   );
   eq(result[result.length - 1].type, 'endTurn', 'T4d: endTurn still last');
 }
+setArmyConsolidationOverride(null);
 
 
 // ============================================================================

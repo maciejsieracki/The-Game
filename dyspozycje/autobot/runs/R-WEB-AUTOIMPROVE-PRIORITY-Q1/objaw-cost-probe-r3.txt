@@ -1,0 +1,9 @@
+farma epoka 1 kosztPraca 20 tech Rolnictwo
+bydlo epoka 1 kosztPraca 20 tech Oswojenie zwierząt
+irygacja epoka 2 kosztPraca 60 tech Gospodarka wodna
+owce epoka 1 kosztPraca 20 tech Oswojenie zwierząt
+lama epoka 1 kosztPraca 20 tech Oswojenie zwierząt
+tartak epoka 1 kosztPraca 25 tech Obróbka drewna
+oboz_lowiecki epoka 1 kosztPraca 18 tech Łowiectwo
+wyrab epoka 1 kosztPraca 2.5 tech null
+EXIT=0

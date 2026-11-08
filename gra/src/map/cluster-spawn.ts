@@ -254,10 +254,11 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     map.szerokoscQ,
     map.wysokoscR,
   );
-  const minCapitalSep = capitalMinSeparationForMap(
+  const minCapitalSep = placement.capitalMinSep ?? capitalMinSeparationForMap(
     placement.rozmiarMapy,
     map.szerokoscQ,
     map.wysokoscR,
+    placement.requestedTypy,
   );
 
   /** Stolice obcych typów z computeClusters — do bramki sep przy relokacji gracza. */
@@ -404,14 +405,14 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
   const hardClusterCapitalOwnerIds = hardAcceptedSlots
     .filter(s => s.isClusterCapital)
     .map(s => s.ownerId);
-  const usedNamesByCiv = new Map<string, Set<string>>();
+  // R-WEB-CITY-NAME-UNIQUE-FOREVER-Q1: jeden globalny zbiór zużytych nazw (pule różnych
+  // cywilizacji nakładają się, np. Teby/Memfis) — dwa miasta o tej samej nazwie nie powstają.
+  // Stolica gracza zuzywa swoja nazwe jako pierwsza (jak w sciezce rywali wyzej).
+  const playerCapitalName = playerStartCityName(civs, playerTyp, cityNamesPools);
+  const usedNamesGlobal = new Set<string>([playerCapitalName]);
   const rivalIndexByCiv = new Map<string, number>();
   const namedAcceptedSlots = hardAcceptedSlots.map((slot) => {
-    let used = usedNamesByCiv.get(slot.typ);
-    if (!used) {
-      used = new Set<string>();
-      usedNamesByCiv.set(slot.typ, used);
-    }
+    const used = usedNamesGlobal;
     let name: string;
     if (slot.isClusterCapital) {
       name = foreignCapitalCityName(civs, slot.typ, cityNamesPools, used);
@@ -426,7 +427,7 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
 
   return {
     playerStartHex: capPos,
-    playerStartCityName: playerStartCityName(civs, playerTyp, cityNamesPools),
+    playerStartCityName: playerCapitalName,
     slots: namedAcceptedSlots,
     foreignTypeClusters: groupForeignTypeClusters(namedAcceptedSlots),
     placement,

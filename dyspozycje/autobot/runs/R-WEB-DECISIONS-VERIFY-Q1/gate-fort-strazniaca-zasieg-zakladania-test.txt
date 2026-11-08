@@ -1,0 +1,3 @@
+--- D3: main.ts registerFortNodeIfNeeded (F7) -- straznik tekstowy dla kontestacji cudzym fortem w chwili budowy ---
+=== fort-strazniaca-zasieg-zakladania-test: 85 passed, 0 failed ===
+EXIT=0

@@ -1,0 +1,23 @@
+
+-- A. Major early slider: max wzrost + procentBudynki STALY 50 (R-AI-PRACA-PODZIAL-STALY-50-50-Q1) --
+
+-- B. Major early peace: procentBudynki zostaje na stalej 50 (R-AI-PRACA-PODZIAL-STALY-50-50-Q1) --
+
+-- C. Archetype 60/40 fraction (ai-params) --
+/home/user/The-Game/.claude/worktrees/wf_3c6d247e-72f-1/gra/tools/ai-major-economy-test.cjs:147
+  const warrior = computeMajorArchetypeMilitaryFraction({ wojsko: 2, ekonomia: -1, nauka: 0, obrona: 0 });
+                  ^
+
+TypeError: computeMajorArchetypeMilitaryFraction is not a function
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_3c6d247e-72f-1/gra/tools/ai-major-economy-test.cjs:147:19)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49
+
+Node.js v22.22.0
+EXIT=1

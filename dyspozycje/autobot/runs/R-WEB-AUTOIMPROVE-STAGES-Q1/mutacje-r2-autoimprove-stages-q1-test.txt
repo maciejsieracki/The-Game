@@ -1,0 +1,5 @@
+R2 mutacje limitu tartak/oboz (limitForestKeysToMinimum), autoimprove-stages-q1-test.cjs:
+MUT-A (limit wylaczony wszedzie): 107 passed, 4 failed ([K2]/[K3] tartaki 6 w granicach 1..2, obozy 6 <= 2) - ZABITA
+MUT-B (limit wlaczony wszedzie, jak R1): 110 passed, 1 failed ([S] profil surowce: tartak 2 == 6) - ZABITA
+Czerwony PRZED (kod R1 bc045cf22): [S] profil surowce tartak 2 != 6 (baza 4d1916f2c = 6)
+EXIT=0

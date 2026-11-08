@@ -41,6 +41,10 @@ export interface GamePauseMenuConfig {
   onSfxToggle?: (enabled: boolean) => void;
   /** Suwak głośności odgłosów jednostek, wartość 0..1 (setMarchVolume). */
   onSfxVolumeChange?: (volume: number) => void;
+  /** R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: „Automatyzacja budowy” gracza — stan bieżący (domyślnie WYŁ.). */
+  getAutoBuildEnabled?: () => boolean;
+  /** R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: przełącznik „Automatyzacja budowy” w trakcie gry. */
+  onAutoBuildToggle?: (enabled: boolean) => void;
   /** M: co ile tur wykonywać rotacyjny autozapis (1..20; 10 ostatnich wstecz). */
   getAutosaveFreq?: () => number;
   /** M: zmiana częstotliwości autozapisu (liczba tur). */
@@ -141,6 +145,7 @@ export function showGamePauseMenu(): void {
   const ambienceVolumeNow = cfg.getAmbienceVolume?.() ?? 0.7;
   const sfxEnabledNow = cfg.getSfxEnabled?.() ?? true;
   const sfxVolumeNow = cfg.getSfxVolume?.() ?? 0.35;
+  const autoBuildNow = cfg.getAutoBuildEnabled?.() ?? false;
   const autosaveFreqNow = Math.max(1, Math.min(20, Math.round(cfg.getAutosaveFreq?.() ?? 1)));
 
   const box = document.createElement('div');
@@ -174,6 +179,14 @@ export function showGamePauseMenu(): void {
     '<input type="range" class="civ-pause-sfx-vol" data-act="sfx-vol" min="0" max="100" step="5" ' +
     'value="' + Math.round(sfxVolumeNow * 100) + '"' + (sfxEnabledNow ? '' : ' disabled') + ' aria-label="Głośność odgłosów jednostek" />' +
     '</div>' +
+    (cfg.onAutoBuildToggle
+      ? '<div class="civ-pause-ambience" data-pause-autobuild>' +
+        '<div class="civ-pause-ambience-row"><span class="civ-pause-ambience-lbl">Automatyzacja budowy</span>' +
+        '<button type="button" class="civ-pause-ambience-toggle" data-act="autobuild-toggle" role="switch" ' +
+        'aria-pressed="' + (autoBuildNow ? 'true' : 'false') + '" aria-label="Automatyzacja budowy WŁ/WYŁ"></button></div>' +
+        '<div style="font-size:11px;color:#8b97a8;margin-top:4px">Auto-budowa budynków i auto-ulepszenia terenu gracza. Domyślnie wyłączona.</div>' +
+        '</div>'
+      : '') +
     '<div class="civ-pause-ambience">' +
     '<div class="civ-pause-ambience-row"><span class="civ-pause-ambience-lbl">Autozapis co N tur</span>' +
     '<input type="number" class="civ-pause-autosave-freq" data-act="autosave-freq" min="1" max="20" step="1" ' +
@@ -241,6 +254,13 @@ export function showGamePauseMenu(): void {
   sfxVolInput?.addEventListener('input', () => {
     const v = Math.max(0, Math.min(100, Number(sfxVolInput.value))) / 100;
     cfg?.onSfxVolumeChange?.(v);
+  });
+
+  const autoBuildToggleBtn = box.querySelector('[data-act="autobuild-toggle"]') as HTMLButtonElement | null;
+  autoBuildToggleBtn?.addEventListener('click', () => {
+    const next = autoBuildToggleBtn.getAttribute('aria-pressed') !== 'true';
+    autoBuildToggleBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
+    cfg?.onAutoBuildToggle?.(next);
   });
 
   const autosaveFreqInput = box.querySelector('[data-act="autosave-freq"]') as HTMLInputElement | null;

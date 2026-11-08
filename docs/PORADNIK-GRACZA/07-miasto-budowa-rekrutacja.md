@@ -104,7 +104,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Domyślnie **3 heksy** od centrum miasta — tylko we **własnym** terytorium. Centrum miasta nie przyjmuje farmy; ulepszenia stawiasz na sąsiadach.
 
-Zasięg rośnie z **posterunek** (+5) i **fort** (+10) na mapie (Część V §28).
+Zasięg rośnie z **posterunek** (+3) i **fort** (+5) na mapie (Część V §28).
 
 ### 44.2. Profile automatyczne
 
@@ -184,7 +184,7 @@ Szare na liście = brak tech. Przykłady: Murarstwo → kamieniarski; Brązownic
 Dwa osobne mechanizmy działają razem:
 
 - **Dostęp** do surowca na mapie (miedź, żelazo, koń, drewno…) — nadal **tak/nie** po złożu + ulepszeniu na heksie (Część VIII §53.1), nie magazyn sztuk.
-- **Koszt materiałowy** — budynki Brązu/Żelazo pobierają surowce z magazynu państwa przy wejściu do kolejki (realne odejmowanie sztuk, nie flaga). **Cegła/ceramika:** m.in. Świątynia, Biblioteka, Spichlerz II, Akwedukt, Pretorium, Łaźnia, Akademia. **Mury / Cytadela / Baszta:** **drewno + kamień** (bez cegły — miasto bez gliny nie traci obrony). Pełna tabela — Część VIII §53.2 i katalog §45.
+- **Koszt materiałowy** — budynki Brązu/Żelazo pobierają surowce z magazynu państwa przy wejściu do kolejki (realne odejmowanie sztuk, nie flaga). **Cegła/ceramika:** m.in. Świątynia, Biblioteka, Spichlerz Królewski, Akwedukt, Pretorium, Łaźnia, Akademia. **Mury / Cytadela / Baszta:** **drewno + kamień** (bez cegły — miasto bez gliny nie traci obrony). Pełna tabela — Część VIII §53.2 i katalog §45.
 
 **To dlatego Cegielnia i Garncarnia wreszcie mają sens** — bez zapasu cegły/ceramiki karta budynku pokazuje brakujący chip surowca i nie wejdzie do kolejki, nawet przy pełnej puli Pracy.
 

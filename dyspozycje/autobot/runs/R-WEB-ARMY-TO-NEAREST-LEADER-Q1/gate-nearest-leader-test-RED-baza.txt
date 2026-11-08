@@ -1,0 +1,19 @@
+FAIL: A pickNearestAvailableLeader istnieje (baza bez funkcji)
+FAIL: B1 dwoch wodzow: jednostka idzie do BLIZSZEGO, nie do wodza kampanii {"type":"move","unitId":"w1","toQ":18,"toR":5,"allowFriendlyStack":false}
+PASS: B2 wodz za zablokowanym terenem pomijany (idzie do osiagalnego)
+PASS: B3 jeden wodz: marsz do niego jak dotad
+FAIL: B4 zniknal wodz kampanii: ponowny wybor zyjacego wodza {"type":"move","unitId":"w1","toQ":18,"toR":5,"allowFriendlyStack":false}
+FAIL: B5 remis (zalozenie symetrii 6==6): wodz z wieksza armia {"type":"move","unitId":"w1","toQ":12,"toR":5,"allowFriendlyStack":false}
+SIM seed=1 koniec: jednostek u wodzow=36, u nie-najblizszego=15
+SIM seed=2 koniec: jednostek u wodzow=36, u nie-najblizszego=18
+SIM seed=3 koniec: jednostek u wodzow=37, u nie-najblizszego=21
+SIM seed=1 turns=120 ruchow=305 do_nie_najblizszego=17 odsetek=0.056
+SIM seed=2 turns=120 ruchow=347 do_nie_najblizszego=19 odsetek=0.055
+SIM seed=3 turns=120 ruchow=389 do_nie_najblizszego=22 odsetek=0.057
+SIM razem ruchow=1041 do_nie_najblizszego=58 odsetek=0.056 (PRZED)
+FAIL: D odsetek jednostek idacych do nie-najblizszego wodza < 5% odsetek=0.056
+FAIL: E1 main.ts: planSpawnedUnitFollowGeneral wybiera najblizszego (nie units.find) 
+FAIL: E2 main.ts: wodz kampanii AI wybierany przez pickNearestAvailableLeader 
+
+WYNIK: 2 PASS, 7 FAIL
+EXIT=1

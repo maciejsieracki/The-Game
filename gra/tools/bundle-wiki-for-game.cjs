@@ -136,7 +136,16 @@ function bundleEncyklopedia(dir = ENCY_DIR) {
   }).sort((a, b) => a.title.localeCompare(b.title, 'pl'));
 }
 
-function main() {
+function outputPathFromArgs(argv) {
+  if (argv.length === 0) return OUT;
+  if (argv.length !== 2 || argv[0] !== '--output' || !argv[1]) {
+    throw new Error('Usage: node bundle-wiki-for-game.cjs [--output <path>]');
+  }
+  return path.resolve(process.cwd(), argv[1]);
+}
+
+function main(argv = process.argv.slice(2)) {
+  const outputPath = outputPathFromArgs(argv);
   const bundle = {
     version: 'rev-civpedia-2026-08-05',
     // Stabilna metadana rewizji; build nie może zależeć od zegara środowiska.
@@ -145,10 +154,11 @@ function main() {
     encyklopedia: bundleEncyklopedia(),
   };
 
-  fs.mkdirSync(path.dirname(OUT), { recursive: true });
-  fs.writeFileSync(OUT, JSON.stringify(bundle), 'utf8');
-  const kb = (Buffer.byteLength(JSON.stringify(bundle)) / 1024).toFixed(0);
-  console.log(`wikiBundle.json: ${bundle.poradnik.length} rozdz. + ${bundle.encyklopedia.length} haseł (~${kb} KB)`);
+  const json = JSON.stringify(bundle);
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, json, 'utf8');
+  const kb = (Buffer.byteLength(json) / 1024).toFixed(0);
+  console.log(`${path.basename(outputPath)}: ${bundle.poradnik.length} rozdz. + ${bundle.encyklopedia.length} haseł (~${kb} KB)`);
 }
 
 // R-CIVPEDIA-HISTORIA-INFRA-Q1: uruchomienie skryptu (i realny zapis do
@@ -157,7 +167,12 @@ function main() {
 // pozwala testom wywoływać extractSection()/bundleEncyklopedia() na fixture'ach
 // bez dotykania prawdziwego gra/src/data/wikiBundle.json.
 if (require.main === module) {
-  main();
+  try {
+    main();
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : String(err));
+    process.exitCode = 1;
+  }
 }
 
 module.exports = { extractSection, bundleEncyklopedia, bundlePoradnik, metaField, titleFromMd, stripFrontMatter };

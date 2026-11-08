@@ -1,0 +1,1 @@
+EXIT=1 (cluster-plan-name-test 2 pass/4 fail - identycznie na bazie 57a7ada40, niezwiazane)

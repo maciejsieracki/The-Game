@@ -292,7 +292,8 @@ negative('save/load disconnected queue progress', () => assert.equal(loaded.city
 
 // 7. Integration seams: UI rush display/charge and turn upkeep must use engine state.
 check(panelSource.includes('rushCost'), 'city panel imports/uses engine rushCost');
-check(/const koszt = rushCost\(prod\);/.test(panelSource), 'city panel displays the canonical rush cost');
+// r2: cityPanel.ts liczy koszt przyspieszenia z modyfikatorem miasta (rushCost(prod, rushCostModifierForCity(city))) — kanoniczny rushCost silnika nadal.
+check(/const koszt = rushCost\(prod(?:, rushCostModifierForCity\(city\))?\);/.test(panelSource), 'city panel displays the canonical rush cost');
 check(!/Math\.ceil\([^;]*UI_PARAMS\.panel_miasta\.rush_cost_mnoznik/.test(panelSource), 'city panel has no divergent rush multiplier');
 const rushProd = { kolejka: [{ ...stoneItem }], postep: 7 };
 equal(rushCost(rushProd), stoneItem.koszt - 7, 'engine rush cost table');

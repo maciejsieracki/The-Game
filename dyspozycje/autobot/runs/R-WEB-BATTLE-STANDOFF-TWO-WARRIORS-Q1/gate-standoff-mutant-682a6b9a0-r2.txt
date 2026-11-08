@@ -1,0 +1,9 @@
+EXIT=1
+Mutation: gra/src/battle/battleScene.ts HEAD lines 7721-7726 (adjacent strike in _advanceStep) replaced by the
+682a6b9a0 early exit `if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }`. Restored after run (diff vs HEAD empty).
+FAIL AUTO 1v1 gap 0: blows
+FAIL AUTO 1v1 gap 1: blows
+FAIL AUTO 1v1 gap 3: blows
+FAIL AUTO 2v2 gap 3: blows and contact
+FAIL manual 2 rounds -> AUTO 2v2 gap 3: blows and contact
+FAIL manual 2 rounds -> AUTO 1v1 gap 3: blows and contact

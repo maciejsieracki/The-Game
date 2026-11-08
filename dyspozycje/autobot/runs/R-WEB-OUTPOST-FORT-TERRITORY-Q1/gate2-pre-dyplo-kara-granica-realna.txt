@@ -1,0 +1,14 @@
+dyplo-kara-granica-realna-test
+  OK: K1 kontrola: obie strony >2 miasta (3 / 3)
+  OK: K1 kontrola dystansu (ANTY-HALUCYNACYJNA): najbliższa para centrów miast w odległości 58 hexów, suma promieni terytorium = 10 -> JEDNOZNACZNIE poza zasięgiem, nie "geograficznie blisko"
+  OK: K1 (kontrola prymitywu) ownersHaveSharedLandBorder=false przy odległości 58
+  OK: KRYTERIUM KOŃCA #1: brak granicy, obie strony >2 miasta -> karaWspolnaGranica=false
+  OK: K2 kontrola: obie strony >2 miasta (3 / 3)
+  OK: K2 (kontrola prymitywu) ownersHaveSharedLandBorder=true dla pary miast q=20/q=31 (odległość 11 = 5+5+1, wzorem n1 trade-routes-test.cjs)
+  OK: KRYTERIUM KOŃCA #2: granica lądowa istnieje, obie strony >2 miasta -> karaWspolnaGranica=true
+  OK: K3 kontrola: strona A >2 miasta (3), strona B dokładnie 2 miasta (próg NIE spełniony)
+  OK: K3 (kontrola prymitywu) ownersHaveSharedLandBorder=true -- ta sama para graniczna q=20/q=31 co K2, granica REALNIE istnieje
+  OK: KRYTERIUM KOŃCA #3: granica istnieje, ale strona B ma tylko 2 miasta (próg ">2" zachowany jako dodatkowy warunek) -> karaWspolnaGranica=false
+
+10 OK, 0 FAIL
+EXIT=0

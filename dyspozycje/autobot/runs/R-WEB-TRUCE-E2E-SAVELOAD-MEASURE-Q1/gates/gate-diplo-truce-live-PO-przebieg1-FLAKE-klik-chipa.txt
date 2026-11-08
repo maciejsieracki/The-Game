@@ -1,0 +1,11 @@
+[truce-live] SKIP_BUILD=1 — używam istniejącego bundle: <SCRATCH>/bundle
+U1 UI: modal pokoj/rozejm
+  OK  U1a domyślnie rodzaj = pokoj
+  OK  U1b w trybie pokoju brak chipów rozejmu
+  OK  U1c przełącznik na rozejm zmienia pole
+  OK  U1d rozejm pokazuje 3 chipy 5/10/15
+ FAIL wyjątek: locator.click: Timeout 10000ms exceeded. | Call log: | [2m  - waiting for locator('.cdb-chip-truceturns[data-turns="5"]')[22m | [2m    - locator resolved to <button type="button" data-turns="5" class="cdb-chip cdb-chip-truceturns">5 tur</button>[22m
+  OK  C zero pageerror/console.error
+
+5 pass / 1 fail
+EXIT=1

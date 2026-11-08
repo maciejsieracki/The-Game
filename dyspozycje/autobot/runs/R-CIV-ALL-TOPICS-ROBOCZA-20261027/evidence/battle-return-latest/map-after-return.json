@@ -1,0 +1,43 @@
+{
+  "phase": "return-map",
+  "state": {
+    "href": "http://127.0.0.1:45437/?playtest=mapa",
+    "readyState": "complete",
+    "title": "The Game — 4X",
+    "bodyText": "Skarbiec\n5000\n+33\nPraca\n800\n+28\nSpichlerz\n0\n−64\nNauka\n200\n+9\nSurowce\nHandel\n0\nEpoka brązu\n18 tys. (9)\n2847\nMOC\nArmia\n3\n+9\nMiasta\n1\n+1\nObywatele\n9\n+1\nKultura\n120\n+2\nReligia\n9\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\n1",
+    "canvasCount": 2,
+    "canvases": [
+      {
+        "connected": true,
+        "width": 1440,
+        "height": 900,
+        "id": "",
+        "cls": ""
+      },
+      {
+        "connected": true,
+        "width": 280,
+        "height": 170,
+        "id": "",
+        "cls": ""
+      }
+    ],
+    "loadOverlay": null,
+    "debugReady": true,
+    "turnDebugReady": true,
+    "mapCanvas": {
+      "connected": true,
+      "width": 1440,
+      "height": 900
+    },
+    "battleProbeReady": true,
+    "battleCanvas": {
+      "connected": false,
+      "width": 1440,
+      "height": 900,
+      "finished": true
+    },
+    "errors": []
+  },
+  "errors": []
+}

@@ -251,7 +251,7 @@ async function idbGetHandle(): Promise<FsaDirectoryHandleLike | null> {
  * ensureFsaAutosaveReady() is effectively instant. Safe under Node/without
  * indexedDB -- idbGetHandle() itself degrades to null.
  */
-const preloadedIdbHandlePromise: Promise<FsaDirectoryHandleLike | null> = idbGetHandle();
+let preloadedIdbHandlePromise: Promise<FsaDirectoryHandleLike | null> = idbGetHandle();
 
 async function idbPutHandle(handle: FsaDirectoryHandleLike): Promise<void> {
   try {
@@ -447,6 +447,55 @@ export async function listFsaAutosaveFiles(): Promise<FsaSaveFileRef[]> {
 }
 
 /**
+ * R-WEB-LOAD-GAME-REGRESSION-Q1: czy katalog autozapisu FSA jest ZAPAMIĘTANY
+ * (uchwyt w IndexedDB albo żywy w tej sesji). Nie pyta o zgodę i nie wywołuje
+ * requestPermission -- tylko odczyt IDB, więc działa przy starcie strony bez
+ * kliknięcia. Używane przez "Wczytaj grę": po przeładowaniu strony lista plików
+ * jest pusta do czasu bootstrapu FSA (wymaga gestu), a przycisk nie może być
+ * wyszarzony tylko dlatego. Nigdy nie rzuca.
+ * / EN: whether the FSA autosave directory is remembered (IDB handle or live
+ * this session). No permission prompt, IDB read only, so it works at page
+ * start without a click. Never throws.
+ */
+export async function hasRememberedFsaDirectory(): Promise<boolean> {
+  // R-WEB-LOAD-GAME-REGRESSION-Q1 (r3, zarzut 3/8): gdy katalog jest już zgodnie
+  // odczytywalny (żywy uchwyt albo zgoda przetrwała: queryPermission === 'granted'),
+  // liczymy pliki rotacji -- przycisk ma być aktywny TYLKO przy zapisach na dysku.
+  // Bez zgody nie wolno pytać (brak gestu), więc liczba plików jest nieznana:
+  // ZAŁOŻENIE: zapamiętany katalog bez zgody = zapis prawdopodobnie istnieje
+  // (klik „Wczytaj" poprosi o zgodę i pokaże hint, gdy katalog jest pusty).
+  // / EN: with a readable directory we count rotation files (button enabled only
+  // with disk saves); without permission we must not prompt, so the presence is
+  // unknown: ASSUMPTION -- a remembered directory counts as present.
+  if (liveDirHandle !== null) {
+    if (!livePermissionGranted) return true; // zapamiętany, bez zgody w tej chwili: jak wyżej (ZAŁOŻENIE)
+    return (await listFsaAutosaveFiles()).length > 0;
+  }
+  let handle: FsaDirectoryHandleLike | null;
+  try {
+    handle = await preloadedIdbHandlePromise;
+  } catch {
+    return false;
+  }
+  if (handle === null) return false;
+  let perm: string | undefined;
+  try {
+    perm = await handle.queryPermission?.({ mode: 'readwrite' });
+  } catch {
+    perm = undefined;
+  }
+  if (perm !== 'granted' || typeof handle.keys !== 'function') return true;
+  try {
+    for await (const name of handle.keys()) {
+      if (name.startsWith(FSA_AUTOSAVE_FILE_PREFIX) && name.endsWith(FSA_AUTOSAVE_FILE_SUFFIX)) return true;
+    }
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+/**
  * Czyta surowy tekst pliku `fileName` z zapamiętanego katalogu FSA.
  * Zwraca null przy dowolnym niepowodzeniu (nigdy nie rzuca).
  */
@@ -512,6 +561,11 @@ export function _resetFsaStateForTests(): void {
   liveDirHandle = null;
   liveAvailability = { available: false, reason: 'no-window' };
   livePermissionGranted = false;
+}
+
+/** Test-only (R-WEB-LOAD-GAME-REGRESSION-Q1 r4): zapamiętany uchwyt z IDB po przeładowaniu. */
+export function _setPreloadedIdbHandleForTests(handle: unknown): void {
+  preloadedIdbHandlePromise = Promise.resolve(handle as FsaDirectoryHandleLike | null);
 }
 
 /**

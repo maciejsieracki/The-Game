@@ -1,0 +1,120 @@
+PASS: [1] bydlo.md: "## Metadane" -> id === "bydlo"
+PASS: [1] bydlo.md: JSON["bydlo"].historia niepuste
+PASS: [1] bydlo.md: "## Rys historyczny" === dokładnie JSON["bydlo"].historia
+PASS: [1] droga.md: "## Metadane" -> id === "droga"
+PASS: [1] droga.md: JSON["droga"].historia niepuste
+PASS: [1] droga.md: "## Rys historyczny" === dokładnie JSON["droga"].historia
+PASS: [1] farma.md: "## Metadane" -> id === "farma"
+PASS: [1] farma.md: JSON["farma"].historia niepuste
+PASS: [1] farma.md: "## Rys historyczny" === dokładnie JSON["farma"].historia
+PASS: [1] fort.md: "## Metadane" -> id === "fort"
+PASS: [1] fort.md: JSON["fort"].historia niepuste
+PASS: [1] fort.md: "## Rys historyczny" === dokładnie JSON["fort"].historia
+PASS: [1] glinianka.md: "## Metadane" -> id === "glinianka"
+PASS: [1] glinianka.md: JSON["glinianka"].historia niepuste
+PASS: [1] glinianka.md: "## Rys historyczny" === dokładnie JSON["glinianka"].historia
+PASS: [1] irygacja.md: "## Metadane" -> id === "irygacja"
+PASS: [1] irygacja.md: JSON["irygacja"].historia niepuste
+PASS: [1] irygacja.md: "## Rys historyczny" === dokładnie JSON["irygacja"].historia
+PASS: [1] kamieniolom.md: "## Metadane" -> id === "kamieniolom"
+PASS: [1] kamieniolom.md: JSON["kamieniolom"].historia niepuste
+PASS: [1] kamieniolom.md: "## Rys historyczny" === dokładnie JSON["kamieniolom"].historia
+PASS: [1] lama.md: "## Metadane" -> id === "lama"
+PASS: [1] lama.md: JSON["lama"].historia niepuste
+PASS: [1] lama.md: "## Rys historyczny" === dokładnie JSON["lama"].historia
+PASS: [1] lodzie_rybackie.md: "## Metadane" -> id === "lodzie_rybackie"
+PASS: [1] lodzie_rybackie.md: JSON["lodzie_rybackie"].historia niepuste
+PASS: [1] lodzie_rybackie.md: "## Rys historyczny" === dokładnie JSON["lodzie_rybackie"].historia
+PASS: [1] oboz_lowiecki.md: "## Metadane" -> id === "oboz_lowiecki"
+PASS: [1] oboz_lowiecki.md: JSON["oboz_lowiecki"].historia niepuste
+PASS: [1] oboz_lowiecki.md: "## Rys historyczny" === dokładnie JSON["oboz_lowiecki"].historia
+PASS: [1] owce.md: "## Metadane" -> id === "owce"
+PASS: [1] owce.md: JSON["owce"].historia niepuste
+PASS: [1] owce.md: "## Rys historyczny" === dokładnie JSON["owce"].historia
+PASS: [1] posterunek.md: "## Metadane" -> id === "posterunek"
+PASS: [1] posterunek.md: JSON["posterunek"].historia niepuste
+PASS: [1] posterunek.md: "## Rys historyczny" === dokładnie JSON["posterunek"].historia
+PASS: [1] tarasy.md: "## Metadane" -> id === "tarasy"
+PASS: [1] tarasy.md: JSON["tarasy"].historia niepuste
+PASS: [1] tarasy.md: "## Rys historyczny" === dokładnie JSON["tarasy"].historia
+PASS: [1] tartak.md: "## Metadane" -> id === "tartak"
+PASS: [1] tartak.md: JSON["tartak"].historia niepuste
+PASS: [1] tartak.md: "## Rys historyczny" === dokładnie JSON["tartak"].historia
+PASS: [1] warzelnia_soli.md: "## Metadane" -> id === "warzelnia_soli"
+PASS: [1] warzelnia_soli.md: JSON["warzelnia_soli"].historia niepuste
+PASS: [1] warzelnia_soli.md: "## Rys historyczny" === dokładnie JSON["warzelnia_soli"].historia
+PASS: [1] wyrab.md: "## Metadane" -> id === "wyrab"
+PASS: [1] wyrab.md: JSON["wyrab"].historia niepuste
+PASS: [1] wyrab.md: "## Rys historyczny" === dokładnie JSON["wyrab"].historia
+PASS: [2] kopalnia.md: "## Metadane" -> id === "kopalnia"
+PASS: [2] kopalnia.md: "## Metadane" -> gra-id wymienia wszystkie 4 warianty
+PASS: [2] kopalnia.md: DOKŁADNIE JEDNA sekcja "## Rys historyczny" (nie 4 osobne)
+PASS: [2] kopalnia.md: sekcja "## Rys historyczny" istnieje
+PASS: [2] kopalnia.md: JSON["kopalnia_miedzi"].historia niepuste
+PASS: [2] kopalnia.md: podnagłówek "**Kopalnia miedzi**" obecny w sekcji
+PASS: [2] kopalnia.md: tekst dla "kopalnia_miedzi" DOKŁADNIE zgodny z JSON-em (bez skrótów)
+PASS: [2] kopalnia.md: JSON["kopalnia_zelaza"].historia niepuste
+PASS: [2] kopalnia.md: podnagłówek "**Kopalnia żelaza**" obecny w sekcji
+PASS: [2] kopalnia.md: tekst dla "kopalnia_zelaza" DOKŁADNIE zgodny z JSON-em (bez skrótów)
+PASS: [2] kopalnia.md: JSON["kopalnia_cyny"].historia niepuste
+PASS: [2] kopalnia.md: podnagłówek "**Kopalnia cyny**" obecny w sekcji
+PASS: [2] kopalnia.md: tekst dla "kopalnia_cyny" DOKŁADNIE zgodny z JSON-em (bez skrótów)
+PASS: [2] kopalnia.md: JSON["kopalnia_zlota"].historia niepuste
+PASS: [2] kopalnia.md: podnagłówek "**Kopalnia złota**" obecny w sekcji
+PASS: [2] kopalnia.md: tekst dla "kopalnia_zlota" DOKŁADNIE zgodny z JSON-em (bez skrótów)
+PASS: [2] kopalnia.md: kolejność podnagłówków miedź/żelazo/cyna/złoto
+PASS: [2] kopalnia.md: WSZYSTKIE 4 (nie 1, nie 2, nie 3) teksty obecne jednocześnie
+PASS: [3] bydlo.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] bydlo.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] droga.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] droga.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] farma.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] farma.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] fort.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] fort.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] glinianka.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] glinianka.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] irygacja.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] irygacja.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] kamieniolom.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] kamieniolom.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] lama.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] lama.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] lodzie_rybackie.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] lodzie_rybackie.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] oboz_lowiecki.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] oboz_lowiecki.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] owce.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] owce.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] posterunek.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] posterunek.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] tarasy.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] tarasy.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] tartak.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] tartak.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] warzelnia_soli.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] warzelnia_soli.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] wyrab.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] wyrab.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+PASS: [3] kopalnia.md: "## Historia / decyzje" nadal obecna i niezmieniona (linia rev. E 2026-07-03)
+PASS: [3] kopalnia.md: "## Rys historyczny" dopisana PO "## Historia / decyzje" (na końcu pliku)
+[civpedia-ulepszenia-historia-batch-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: [4] żywy DOM: 'bydlo' (depth 'm') zawiera nagłówek "Rys historyczny"
+PASS: [4] żywy DOM: 'bydlo' — treść sekcji zawiera dokładny tekst z JSON-a
+PASS: [4] żywy DOM: 'farma' (depth 'm') zawiera nagłówek "Rys historyczny"
+PASS: [4] żywy DOM: 'farma' — treść sekcji zawiera dokładny tekst z JSON-a
+PASS: [4] żywy DOM: 'tartak' (depth 'm') zawiera nagłówek "Rys historyczny"
+PASS: [4] żywy DOM: 'tartak' — treść sekcji zawiera dokładny tekst z JSON-a
+PASS: [4] żywy DOM: "kopalnia" (depth 'm') zawiera nagłówek "Rys historyczny"
+PASS: [4] żywy DOM: "kopalnia" — podnagłówek "Kopalnia miedzi" obecny w DOM
+PASS: [4] żywy DOM: "kopalnia" — tekst dla "kopalnia_miedzi" obecny w DOM
+PASS: [4] żywy DOM: "kopalnia" — podnagłówek "Kopalnia żelaza" obecny w DOM
+PASS: [4] żywy DOM: "kopalnia" — tekst dla "kopalnia_zelaza" obecny w DOM
+PASS: [4] żywy DOM: "kopalnia" — podnagłówek "Kopalnia cyny" obecny w DOM
+PASS: [4] żywy DOM: "kopalnia" — tekst dla "kopalnia_cyny" obecny w DOM
+PASS: [4] żywy DOM: "kopalnia" — podnagłówek "Kopalnia złota" obecny w DOM
+PASS: [4] żywy DOM: "kopalnia" — tekst dla "kopalnia_zlota" obecny w DOM
+PASS: brak błędów konsoli/pageerror podczas całego scenariusza przeglądarkowego
+
+[civpedia-ulepszenia-historia-batch-test] 116 pass, 0 fail
+EXIT=0

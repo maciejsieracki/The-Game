@@ -1,0 +1,34 @@
+
+================ SEKCJA 1: repro "Milet trzyma pracownikow na heksie Aten" ================
+
+1.1 Milet (recznie) ma nielegalny wpis na centrum Aten -- podboj Aten + reconcile usuwa wpis natychmiast
+PASS: precondition: Milet ma wpis na (8,0), centrum Aten, PRZED podbojem
+PASS: PO naprawie: wpis Miletu na (8,0), centrum (teraz WLASNYCH) Aten, usuniety natychmiast po podboju
+PASS: bezsporny wpis (1,0) Miletu nietkniety
+
+1.2 kontrola czulosci: BEZ reconcile po zmianie wlasciciela wpis Miletu na centrum Aten POZOSTAJE (dokladnie bug ze zgloszenia)
+PASS: kontrola: bez reconcile wpis Miletu na (8,0) POZOSTAJE po podboju Aten -- dokladnie bug zgloszony przez Macieja
+
+1.3 reconcileAllWorkedTiles czysci WSZYSTKICH wlascicieli (nie tylko nowego), gdy Ateny zmieniaja rece
+PASS: wpis Sparty (trzeci, niezwiazany wlasciciel) na centrum Aten tez usuniety -- reconcileAllWorkedTiles nie ogranicza sie do stron podboju
+
+================ SEKCJA 2: wiring main.ts -- naprawa faktycznie wpieta we WSZYSTKIE call site'y ================
+
+2.1 main.ts::seedCityOwnerDefaults(...) wola reconcileAllWorkedTiles z prawidlowymi argumentami
+PASS: znaleziono seedCityOwnerDefaults(...) w main.ts
+PASS: znaleziono koniec seedCityOwnerDefaults(...) (kolejna funkcja na tym samym poziomie)
+PASS: P-MILET-ATENY: cialo seedCityOwnerDefaults(...) wola reconcileAllWorkedTiles(...)
+PASS: wywolanie uzywa tego samego wzorca argumentow co juz istniejacy call site zakladania miasta gracza (main.ts ~linia 10922): cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map)
+
+2.2 wszystkie 4 realne miejsca zmiany wlasciciela miasta nadal woluja seedCityOwnerDefaults(...) (naprawa (2.1) je wiec pokrywa)
+FAIL: (a) kapitulacja glodowa (resolveSiegeSurrender): city.ownerId = newOwner -> seedCityOwnerDefaults(city)
+FAIL: (b) wchloniecie dyplomatyczne (annexCityStateToOwner): city.ownerId = annexerId -> seedCityOwnerDefaults(city) w petli po csCities
+PASS: (c) podboj w bitwie (applyCityCaptureToMap): callback onOwnerChanged wola seedCityOwnerDefaults(c)
+FAIL: post-battle-map.ts::applyCityCaptureAfterBattle: city.ownerId = atkOwner USTAWIONE przed wywolaniem onOwnerChanged (wiec reconcile widzi juz NOWEGO wlasciciela)
+PASS: (d) przejscie do rebeliantow: city.ownerId = REBEL_FACTION_OWNER_ID -> seedCityOwnerDefaults(city)
+
+2.3 kontrakt "wywoluj PO kazdej zmianie city.ownerId" nadal udokumentowany w JSDoc seedCityOwnerDefaults
+PASS: JSDoc seedCityOwnerDefaults nadal jednoznacznie wymaga wywolania PO zmianie ownerId (kontrakt, na ktorym opiera sie cala naprawa)
+
+OKOLICA-OWNERSHIP-CHANGE-RECONCILE FAIL (12/15 passed, 3 failed)
+EXIT=1

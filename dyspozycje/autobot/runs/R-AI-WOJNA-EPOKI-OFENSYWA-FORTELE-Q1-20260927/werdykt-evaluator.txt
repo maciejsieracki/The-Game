@@ -1,0 +1,35 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: EVAL-R-AI-WOJNA-EPOKI-OFENSYWA-FORTELE-Q1-20260927
+DATA: 2026-09-27
+
+WERDYKT:
+PASS-WITH-NOTES — kryteria A+B są spełnione w kodzie i ponownie przechodzą testy. Etap C (osobny wybór forteli) pozostaje świadomie odłożony zgodnie z raportem operatora i nie był kryterium tej karty.
+
+ZAKRES GIT / ALLOWLISTA:
+- HEAD == origin/main (6eab3b40); `git diff origin/main..HEAD` nie zawiera commitowanych zmian.
+- Bieżący diff roboczy zawiera wyłącznie: gra/src/game/ai.ts oraz gra/src/main.ts.
+- Nie ma zmian w WERSJE.md, dyspozycje/_handoff/KANAL-PRACA.md ani gra-robocza/units.json.
+- Untracked tematowe artefakty: gra/tools/ai-ofensywa-wojna-epoki-test.cjs oraz raport.txt/ten werdykt w katalogu runu.
+- DYSPOZYCJA-AI-OFENSYWA-FORTELE.md jest osobnym, wcześniej istniejącym untracked artefaktem odnotowanym w handoffie operatora; evaluator go nie zmieniał.
+- `git diff --check`: PASS.
+
+TESTY WYKONANE PONOWNIE:
+- z gra/: `node ./node_modules/typescript/bin/tsc --noEmit` — PASS.
+- `node tools/ai-ofensywa-wojna-epoki-test.cjs` — 7 passed, 0 failed.
+- `node tools/army-concentration-test.cjs` — 55 passed, 0 failed.
+- `node tools/forced-war-bronze-test.cjs` — PASSED 56/56, FAILED 0.
+
+DOWODY W KODZIE:
+1. Dyrektywa aktywnej pary jest budowana z rejestrów Brązu/Kamienia/Żelaza i przekazywana do `decideAITurn`: gra/src/main.ts:33454-33473 oraz 33501-33502. Rola i cel są wyznaczane względem attackerId/targetId.
+2. Napastnik wojny wymuszonej wymusza jeden klaster: gra/src/game/ai.ts:3446-3449 (`targetClusterCount: forcedWarAttack ? 1 : ...`).
+3. Miasta celu są ograniczone do właściciela aktywnej pary: gra/src/game/ai.ts:3290-3293. Wybór marszu dla napastnika omija zwykłą pulę ekspansji i wybiera deterministycznie najbliższe miasto tego właściciela: gra/src/game/ai.ts:3571-3587.
+4. Atak jednostkowy napastnika jest filtrowany do właściciela celu: gra/src/game/ai.ts:3489-3493; wejście na miasto w pierwszej kolejności używa `forcedWarTargetCities`: gra/src/game/ai.ts:3501-3513.
+5. Obrońca wybiera najbliższego wykrytego napastnika aktywnej pary: gra/src/game/ai.ts:3294-3302, a następnie wydaje ruch do niego przed zwykłym marszem/patrolem: gra/src/game/ai.ts:3555-3567.
+6. Próg dwóch miast pozostał bez zmiany: gra/src/game/forced-war-bronze.ts:55 (`... = 2`), wspólna funkcja końca wojny nadal ma warunek OR na progu: gra/src/game/forced-war-common.ts:69-75. Moduły forced-war-common/bronze/stone/iron nie mają diffu względem origin/main.
+
+UWAGA NIEBLOKUJĄCA:
+- W `gra/src/game/ai.ts:3507-3513` po próbie wejścia na miasto celu forced-war pozostaje istniejący fallback do `engageableEnemyCities`. Przy rzadkim układzie, gdy jednostka stoi obok miasta trzeciej cywilizacji, może ono zostać wybrane jako akcja sąsiedniego miasta przed dalszym marszem na cel wojny. Główna ścieżka marszu (`3571-3587`) pozostaje wymuszona na aktywnym przeciwniku, a testy są zielone; warto rozważyć osobną kartę, jeśli wojna wymuszona ma zakazywać także okazjonalnego przejęcia miasta spoza pary.
+
+DEPLOY/PUSH: NIE WYKONANO
+NASTĘPNY KROK: Final Control / integracja zgodnie z obiegiem; bez deployu ani pushu z tej karty.

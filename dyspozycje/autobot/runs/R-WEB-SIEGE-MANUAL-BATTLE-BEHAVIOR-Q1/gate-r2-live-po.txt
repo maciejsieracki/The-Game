@@ -1,0 +1,21 @@
+# runda 2, PO naprawie (HEAD obrony): nowe scenariusze harnessu zywego (A3 D1 D1b D2 D3 E1 E1b E2) + A1/A2/B1 mury
+PASS A3-archers-shoot-wall-mury
+PASS A3-archers-shoot-wall-palisada
+PASS D1-chariot-nomachines-mury-attackMove
+PASS D3-doctrine-aggressive-mury
+PASS E2-auto-rams-mury
+PASS E1-auto-nomachines-mury
+PASS E1b-auto-aggressive-nomachines-mury
+PASS D1-chariot-nomachines-palisada-attackMove
+PASS D1b-chariot-ram-army-palisada
+PASS D2-move-order-melee-palisada
+PASS D3-doctrine-aggressive-palisada
+PASS E1-auto-nomachines-palisada
+PASS E1b-auto-aggressive-nomachines-palisada
+PASS E2-auto-rams-palisada
+PASS A1-ram-gate-mury-attackMove
+PASS A2-tower-climb-mury-attackMove
+PASS B1-inf-charge-nomachines-mury-attackMove
+PASS D1b-chariot-ram-army-mury
+PASS D2-move-order-melee-mury (32 rund; przebieg po5, wynik z konsoli)
+EXIT=0

@@ -1,0 +1,139 @@
+
+--- (1) predykaty terenu ---
+  [OK] owce: Wzgorza + Las nadal zablokowane
+  [OK] owce: gole Wzgorza bez zmian
+  [OK] owce: zloze owiec bez zmian
+  [OK] owce: inna nakladka NADAL blokuje
+  [OK] owce: Las na Lace to nie Wzgorza (teren bazowy rzadzi)
+  [OK] owce: Las w Gorach nie kwalifikuje
+  [OK] las nadal blokuje owce
+  [OK] las blokuje bydlo
+  [OK] las NIE blokuje lamy
+  [OK] stadnina JUZ NIE blokowana na lesie (zakaz cofniety 2026-09-03)
+  [OK] predykat stadniny zawsze false od tej rundy
+  [OK] stadnina poza lasem nie blokowana
+  [OK] predykat stadniny nie lapie owiec
+  [OK] KONTROLA: farma nadal zabroniona na lesie
+  [OK] KONTROLA: irygacja nadal zabroniona
+  [OK] KONTROLA: tarasy nadal zabronione
+  [OK] poza lasem predykat zawsze false
+  [OK] hint blokady lasu nie odsyla juz hodowli do obozu lowieckiego
+  [OK] formatter hintu dziala takze dla stadniny (dziS nieosiagalne w UI, patrz komentarz)
+
+--- (2) sciezka gracza: buildImprovementQualifier ---
+  [OK] GRACZ: owce na Wzgorzu Z LASEM zablokowane
+  [OK] GRACZ: bydlo na Lace Z LASEM zablokowane
+  [OK] GRACZ: bydlo na Rowninie Z LASEM zablokowane
+  [OK] GRACZ: lama na Wzgorzu Z LASEM (Inkowie)
+  [OK] GRACZ: lama w Gorach Z LASEM (Inkowie)
+  [OK] GRACZ: owce NIE na Lace z lasem (teren bazowy rzadzi)
+  [OK] GRACZ: bydlo NIE na Wzgorzu z lasem
+  [OK] GRACZ: lama NIE na Lace z lasem
+  [OK] GRACZ: bydlo NIE na Pustyni z lasem
+  [OK] GRACZ: owce NIE na Pustyni z lasem
+  [OK] GRACZ: lama NIE dla Rzymu (bramka cywilizacji bez zmian)
+  [OK] GRACZ: stadnina NA golej Lace (warunek istotnosci)
+  [OK] GRACZ: stadnina TERAZ NA Lace z lasem (zakaz cofniety 2026-09-03)
+  [OK] KONTROLA GRACZ: farma NA golej Lace (warunek istotnosci)
+  [OK] KONTROLA GRACZ: farma NIE na Lace z lasem
+  [OK] GRACZ bez lasu: owce na golym Wzgorzu (bez zmian)
+  [OK] GRACZ bez lasu: bydlo na golej Lace (bez zmian)
+  [OK] GRACZ bez lasu: lama na golym Wzgorzu (bez zmian)
+  [OK] GRACZ bez lasu: owce NIE na Lace (bez zmian)
+  [OK] GRACZ bez lasu: bydlo NIE na Pustyni (bez zmian)
+  [OK] KONTROLA: Inkowie epoka 1 — owce nadal zablokowane (Nowy Swiat)
+  [OK] KONTROLA: Inkowie epoka 1 — bydlo nadal zablokowane
+
+--- (3) gate commitu: computeImprovementBuildImpact ---
+  [OK] COMMIT: owce na Wzgorzu+Las zablokowane
+  [OK] COMMIT: bydlo na Lace+Las zablokowane
+  [OK] COMMIT: lama w Gorach+Las przechodzi
+  [OK] COMMIT: owce na Lace+Las nadal null
+  [OK] COMMIT: stadnina na Lace+Las przechodzi (zakaz cofniety)
+  [OK] KONTROLA COMMIT: farma na lesie null
+  [OK] COMMIT: bydlo ma dokladny tooltip blokady lasu
+  [OK] COMMIT: lama obok tartaku na tym samym lesie
+  [OK] COMMIT: lama NIE zdejmuje tartaku
+  [OK] COMMIT: budowa hodowli NIE usuwa lasu (bez wyrebu)
+  [OK] COMMIT: lama obok obozu lowieckiego (sektor lowiectwo != hodowla)
+  [OK] WYRAB: hodowla zostaje po wyrebie (las nie jest jej warunkiem)
+  [OK] KONTROLA WYRAB: oboz lowiecki nadal znika po wyrebie
+  [OK] KONTROLA WYRAB: tartak znika po wyrebie (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07)
+
+--- (4) automat miasta + AI CYWILIZACJI: pickAutoImprovements ---
+  [OK] AUTOMAT/AI CYW: NIE stawia owiec na Wzgorzu Z LASEM
+  [OK] AUTOMAT/AI CYW: NIE stawia bydla na Lace Z LASEM
+  [OK] AUTOMAT/AI CYW: stawia lame w Gorach Z LASEM
+  [OK] AUTOMAT/AI CYW: NIE stawia owiec na Lace z lasem (teren bazowy rzadzi)
+  [OK] AUTOMAT/AI CYW runda 2: NIE stawia juz stadniny na golej Lace bez zloza (Model B retirowany, brak kosztu do zaplacenia)
+  [OK] AUTOMAT/AI CYW runda 2: NIE stawia stadniny na Lace+Las bez zloza (jw., ta sama przyczyna co wyzej, nie regula lasu)
+  [OK] AUTOMAT/AI CYW runda 3: magazyn 49/50 (o 1 za malo) — NADAL NIE wybiera stadniny poza zlozem
+  [OK] AUTOMAT/AI CYW runda 3 (NAPRAWA Zarzutu 2): magazyn imperium DOKLADNIE 50 kon — automat/AI REALNIE WYBIERA budowe stadniny poza zlozem (nie tylko formalnie kwalifikuje) — AI odzyskuje zdolnosc utracona w rundzie 2, symetrycznie do gracza
+  [OK] AUTOMAT/AI CYW runda 3: magazyn z duzym zapasem (500) — stadnina poza zlozem nadal wybierana
+  [OK] AUTOMAT/AI CYW runda 2: stawia stadnine NA zlozu konia bez zmian (zawsze darmowa)
+  [OK] KONTROLA AUTOMAT/AI CYW: stawia farme na golej Lace (warunek istotnosci)
+  [OK] KONTROLA AUTOMAT/AI CYW: NIE stawia farmy na lesie
+  [OK] KONTROLA AUTOMAT/AI CYW bez lasu: owce na golym Wzgorzu (bez zmian)
+
+--- (5) galeria/tooltip: galleryTerrainEligible bez zmian ---
+  [OK] galeria: owce na Wzgorzach
+  [OK] galeria: owce nie na Lace
+  [OK] galeria: bydlo na Lace
+  [OK] galeria: bydlo nie na Wzgorzach
+  [OK] galeria: lama w Gorach
+  [OK] galeria: lama nie na Pustyni
+
+--- (6) mapy z generateMap (3 ziarna) ---
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=12 landSea=140 relief=117 coast=19 riversMain=383 riversFill=327 forest=4 deposits=12 starts=56 total=1073
+  seed 90210: lasHex=103 owce=0 bydlo=0 lama=29 stadnina=74 farma=0 | bez lasu: stadnina=69 farma=69
+  [OK] mapa 90210: sa heksy z lasem (warunek istotnosci)
+  [OK] mapa 90210: stadnina kwalifikuje sie POZA lasem (warunek istotnosci)
+  [OK] mapa 90210: farma kwalifikuje sie POZA lasem (warunek istotnosci)
+  [OK] mapa 90210: owce nie kwalifikuja sie na lesie
+  [OK] mapa 90210: bydlo nie kwalifikuje sie na lesie
+  [OK] mapa 90210: lama kwalifikuje sie na >0 heksach z lasem
+  [OK] mapa 90210: stadnina kwalifikuje sie na >0 heksach z lasem (zakaz cofniety)
+  [OK] KONTROLA mapa 90210: farma na 0 heksach z lasem
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=74 relief=67 coast=13 riversMain=260 riversFill=601 forest=4 deposits=12 starts=49 total=1085
+  seed 777: lasHex=107 owce=0 bydlo=0 lama=27 stadnina=80 farma=0 | bez lasu: stadnina=84 farma=84
+  [OK] mapa 777: sa heksy z lasem (warunek istotnosci)
+  [OK] mapa 777: stadnina kwalifikuje sie POZA lasem (warunek istotnosci)
+  [OK] mapa 777: farma kwalifikuje sie POZA lasem (warunek istotnosci)
+  [OK] mapa 777: owce nie kwalifikuja sie na lesie
+  [OK] mapa 777: bydlo nie kwalifikuje sie na lesie
+  [OK] mapa 777: lama kwalifikuje sie na >0 heksach z lasem
+  [OK] mapa 777: stadnina kwalifikuje sie na >0 heksach z lasem (zakaz cofniety)
+  [OK] KONTROLA mapa 777: farma na 0 heksach z lasem
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=6 landSea=72 relief=68 coast=12 riversMain=176 riversFill=558 forest=3 deposits=9 starts=37 total=942
+  seed 31415: lasHex=103 owce=0 bydlo=0 lama=29 stadnina=74 farma=0 | bez lasu: stadnina=114 farma=114
+  [OK] mapa 31415: sa heksy z lasem (warunek istotnosci)
+  [OK] mapa 31415: stadnina kwalifikuje sie POZA lasem (warunek istotnosci)
+  [OK] mapa 31415: farma kwalifikuje sie POZA lasem (warunek istotnosci)
+  [OK] mapa 31415: owce nie kwalifikuja sie na lesie
+  [OK] mapa 31415: bydlo nie kwalifikuje sie na lesie
+  [OK] mapa 31415: lama kwalifikuje sie na >0 heksach z lasem
+  [OK] mapa 31415: stadnina kwalifikuje sie na >0 heksach z lasem (zakaz cofniety)
+  [OK] KONTROLA mapa 31415: farma na 0 heksach z lasem
+
+--- (7) dane: terrain-improvements.json ---
+  [OK] JSON: owce.warunek nie stawia juz zakazu lasu jako warunku
+  [OK] JSON: owce.uwagi zachowuje slad decyzji (zakaz cofniety, data)
+  [OK] JSON: owce.uwagi nie wymazuje historii (data pierwotnego zakazu)
+  [OK] JSON: owce.teren nie mowi juz „bez lasu"
+  [OK] JSON: bydlo.uwagi ma slad cofniecia zakazu
+  [OK] JSON: lama.uwagi ma slad cofniecia zakazu
+  [OK] JSON: stadnina.warunek juz nie mowi, ze zakaz lasu zostaje
+  [OK] JSON: stadnina.uwagi zachowuje CYTAT ECHO wlasciciela (nie sama date z prefiksu)
+  [OK] JSON: stadnina.uwagi wskazuje temat, w ktorym zapadla decyzja
+  [OK] JSON: stadnina.uwagi nie wymazuje historii (data pierwotnego, cofnietego zakazu)
+  [OK] JSON: stadnina.teren nie mowi juz „bez lasu"
+  [OK] JSON: owce.warunek (tekst gracza) bez sygnatury notatki deweloperskiej
+  [OK] JSON: bydlo.warunek (tekst gracza) bez sygnatury notatki deweloperskiej
+  [OK] JSON: lama.warunek (tekst gracza) bez sygnatury notatki deweloperskiej
+  [OK] JSON: stadnina.warunek (tekst gracza) bez sygnatury notatki deweloperskiej
+
+hodowla-las-test: 113 passed, 0 failed
+EXIT=0

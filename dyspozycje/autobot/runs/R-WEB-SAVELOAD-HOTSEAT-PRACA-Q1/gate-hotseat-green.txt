@@ -1,0 +1,26 @@
+[saveload-praca-pool-hotseat] vite build -> /tmp/civ-saveload-praca-hs-Kcwg6P
+  OK  H5 snapshot niesie meta.pracaPoolByHuman z parami [0,405] i [1,77]
+  OK  H1.0 zapis do slotu IndexedDB OK
+  OK  H1.1 fresh page: pula fotela 0 = 405 (po=405)
+  OK  H1.2 fresh page: pula fotela 1 = 77 (po=77)
+  OK  H1.3 fresh page: cache HUD fotela 1 (_lastPraca) = 77 (po=77)
+  OK  H2 round-trip fotel 1 = 0 i fotel 0 = 405 (po={"v":0,"seat0":405,"seat1":0})
+  OK  H2 round-trip fotel 1 = 1500 i fotel 0 = 405 (po={"v":1500,"seat0":405,"seat1":1500})
+  OK  H2.3 izolacja foteli po round-tripie 11/22 (po={"s0":11,"s1":22})
+  OK  H4 fotel 1 5e9 -> 1_000_000 (po=1000000)
+  OK  H4 fotel 1 1_000_000 zostaje (po=1000000)
+  OK  H4 fotel 1 999_999 zostaje (po=999999)
+  OK  H4 fotel 1 -5 -> 0 (po=0)
+  OK  H4 fotel 1 "abc" -> 0 (po=0)
+  OK  H4 fotel 1 null -> 0 (po=0)
+  OK  H4 fotel 1 0 -> 0 (po=0)
+  OK  H4.8 pole nie-tablica -> brak bledu, fotel 1 = 0 (po=0)
+  OK  H4.9 smieciowe wpisy ignorowane, poprawny [1,31] wczytany (po=31)
+  OK  H4.10 brak pola w meta -> fotel 1 = 0, bez bledu (po=0)
+  OK  H3.1 stary zapis: fotel 0 = 405 (po=405)
+  OK  H3.2 stary zapis: fotel 1 = 0, bez wyjatku (po=0)
+  OK  H3.3 stary zapis: zero pageerror/console.error przy wczytaniu
+  OK  C zero pageerror/console.error w calym tescie (n=0)
+
+saveload-praca-pool-hotseat-live-test: 22 pass / 0 fail
+EXIT=0

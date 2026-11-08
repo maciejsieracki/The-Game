@@ -1,0 +1,13 @@
+--- kontrakt parametrów (dispatch §PARAMETR: wartości jak Brąz/Kamień) ---
+--- wyzwalacz = AWANS do Żelaza, nie próg tury ---
+--- guardy ownera (napastnik) ---
+--- R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: próg 25 tur od WEJŚCIA W ŻELAZO ---
+--- wybór celu: najbliższy terytorialnie + wykluczenia ---
+--- czysta funkcja pickera nie dokłada celów spoza podanej puli (filtr puli żyje w main.ts) ---
+--- 2 miasta, odpoczynek i cooldown ---
+--- decideAIDiplomacy: wymuszona wojna Żelaza POZA ogólnymi regułami ---
+--- ironForceWarTargetId bez pasującej relacji (żaden target, w tym gracz) ---
+--- rozdzielność od Kamienia i Brązu (osobne pola wejścia) ---
+--- save/load i mutacje stanu ---
+PASSED: 54 / FAILED: 0 / TOTAL: 54
+EXIT=0

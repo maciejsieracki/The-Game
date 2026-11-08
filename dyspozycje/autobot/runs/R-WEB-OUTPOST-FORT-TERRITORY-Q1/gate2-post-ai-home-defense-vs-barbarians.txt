@@ -1,0 +1,17 @@
+
+--- T1: zagrożenie w zasięgu -- AI broni domu zamiast maszerować na odległe miasto ---
+
+--- T2: zagrożenie TUŻ POZA zasięgiem (dystans 10 > 9) -- obrona domu NIE wyzwolona ---
+
+--- T3 (runda 3 pkt 2): miasto pop=15, zagrożenie 14 hex (poza prefiltrem=9, w zasięgu 19) ---
+
+--- T4: miasto pop=15, zagrożenie 20 hex (poza realnym zasięgiem 19) -- obrona NIE wyzwolona ---
+
+--- T5 (runda 3 pkt 3): podwójne zaangażowanie -- obrońca na heksie miasta, zagrożenie już obsłużone ---
+
+--- T6: formuła isHomeDefenseThreatForCity -- dokładna granica per populacja ---
+
+--- T7 (P-AI-BARBARZYNCY-PRIORYTET-ELIMINACJA-Q1): barb w zasięgu obrony domu, ALE poza faktyczną widocznością AI (citySight) -- garnizon musi mimo to ruszyć na obronę, nie na odległą wojnę ---
+
+ai-home-defense-vs-barbarians-test: 42 passed, 0 failed
+EXIT=0

@@ -1,8 +1,7 @@
 /**
  * order.ts
  * City "Porządek" (Order) logic for The Game — pure module, no DOM, no THREE,
- * no imports from other src/ modules. Self-contained for later turn-loop
- * integration (NOT wired into main.ts here).
+ * matrix adapter for the existing effects; runtime wiring remains in the turn loop.
  *
  * Spec sources / context:
  *   - User spec (task D4): "Porządek = Szczęście + Prawo, progi T1/T2."
@@ -80,6 +79,7 @@
  * harshest.
  */
 
+
 // ---------------------------------------------------------------------------
 // Public types
 // ---------------------------------------------------------------------------
@@ -156,6 +156,27 @@ export interface OrderEffects {
   tradeMult: number;
   /** Per-turn migration probability in [0,1]. 0 = no risk. */
   revoltRisk: number;
+}
+
+/** Apply the selected F04 per-civ modifiers to existing Order effects exactly once. */
+export function orderEffectsWithCivMatrix(
+  effects: OrderEffects,
+  modifiers: Partial<Record<'porzadek_produkcja_proc' | 'porzadek_nauka_proc' | 'porzadek_kultura_proc' | 'porzadek_wzrost_proc' | 'porzadek_pieniadz_proc', number>> = {},
+): OrderEffects {
+  const apply = (base: number, paramId: keyof typeof modifiers): number => {
+    const modifier = modifiers[paramId];
+    const factor = Number.isFinite(modifier) ? Math.max(0, 1 + modifier!) : 1;
+    return Math.max(0, base * factor);
+  };
+  return {
+    ...effects,
+    productionMult: apply(effects.productionMult, 'porzadek_produkcja_proc'),
+    pieniadzMult: apply(effects.pieniadzMult, 'porzadek_pieniadz_proc'),
+    tradeMult: apply(effects.tradeMult, 'porzadek_pieniadz_proc'),
+    naukaMult: apply(effects.naukaMult, 'porzadek_nauka_proc'),
+    kulturaMult: apply(effects.kulturaMult, 'porzadek_kultura_proc'),
+    growthMult: apply(effects.growthMult, 'porzadek_wzrost_proc'),
+  };
 }
 
 /** Mnożniki plonów per miasto — do advanceCityEconomy (następna tura, jak growthMult). */

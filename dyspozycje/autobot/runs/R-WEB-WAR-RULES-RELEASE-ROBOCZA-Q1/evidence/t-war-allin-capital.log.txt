@@ -1,0 +1,27 @@
+
+--- 1: AI<->AI, PRZED (flaga OFF) vs PO (flaga ON) ---
+
+--- 2: AI -> GRACZ; gracz bez automatycznych rozkazow; zmiana stolicy ---
+
+--- 3: barbarzyncy -> NAJBLIZSZA stolica ---
+
+--- 4: brak sciezki ladowej (morze) -- bez zawieszenia, jednostki zostaja ---
+
+--- 5: przeciwnik wyeliminowany (brak miast) => dotychczasowe zachowanie ---
+
+--- 6: flaga OFF == baza origin/main (hash stanu po TURNS turach) ---
+  [INFO] aiVsAi: baza pre-zasieg=49f36d28989cf940 OFF=d7316c5be9bffe39 (roznica = zamierzona zmiana zasiegu)
+  [INFO] aiVsPlayer: baza pre-zasieg=22a63c096e698720 OFF=83f07f345643f6fb (roznica = zamierzona zmiana zasiegu)
+  [INFO] barbarians: baza pre-zasieg=65542d56510bcef9 OFF=c07e60985cb8a2ab (roznica = zamierzona zmiana zasiegu)
+  [INFO] noLandPath: baza pre-zasieg=176b6b39e9773451 OFF=69d49bd592471e58 (roznica = zamierzona zmiana zasiegu)
+
+--- 7: determinizm przy fladze ON (2 przebiegi) ---
+
+--- 8: planWarAllInCapital -- grupowanie / rendezvous ---
+
+--- 10: realne scalanie grup, gesta grupa, brak krokow wstecz i dubli ---
+
+--- 9: okablowanie main.ts (testy statyczne) ---
+
+95 passed, 0 failed
+EXIT=0

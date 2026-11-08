@@ -36,7 +36,11 @@ export interface EmpireFoodState {
 export interface EmpireFoodParams {
   /** Baza capu magazynu centralnego 🍞. */
   centralCapBaza: number;
-  /** Dodatek capu za każdy budynek Magazyn w imperium. */
+  /**
+   * Dodatek capu za każdy budynek Magazyn w imperium. DZIŚ 0 (R-WEB-MAGAZYN-NO-FOOD-CAP-BONUS-Q1,
+   * decyzja właściciela 2026-11-05): Magazyn nie zwiększa pojemności ŻYWNOŚCI; daje ją wyłącznie
+   * Spichlerz. Klucz i parametr zostają (wartość 0), żeby nie rozbijać struktury i testów.
+   */
   centralCapBonusMagazyn: number;
   glodWojskaHpFrac: number;
   glodWojskaKarencjaTur: number;
@@ -124,7 +128,7 @@ export function buildEmpireFoodParams(
     ),
     centralCapBonusMagazyn: pick(
       gl.magazyn_centralny_bonus_zywnosc_na_budynek ?? em.magazyn_centralny_bonus_zywnosc_na_budynek,
-      difficulty, 100,
+      difficulty, 0,
     ),
     glodWojskaHpFrac: pick(em.glod_wojska_hp_frac, difficulty, 0.08),
     glodWojskaKarencjaTur: pick(em.glod_wojska_karencja_tur, difficulty, 3),
@@ -161,8 +165,13 @@ function countMagazynByOwner(
  * (magazyn_centralny_baza_zywnosc / magazyn_centralny_bonus_zywnosc_na_budynek)
  * NIE są objęte tym zadaniem, zostają FLAT bez zmian (poza zakresem
  * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 -- właściciel wskazał wyłącznie magazyn_baza_surowce
- * / magazyn_bonus_surowce_na_budynek / Spichlerz I/II). Domyślne era=1 -> mnożnik
+ * / magazyn_bonus_surowce_proc_na_budynek / Spichlerz I/II). Domyślne era=1 -> mnożnik
  * ×1, zachowanie identyczne jak przed ta zmiana.
+ *
+ * R-WEB-MAGAZYN-NO-FOOD-CAP-BONUS-Q1 (decyzja właściciela 2026-11-05): cap żywności =
+ * baza + Spichlerze I/II; składnik „× liczba Magazynów" (`centralCapBonusMagazyn`) = 0,
+ * więc liczba Magazynów NIE zmienia capu żywności. Pojemność surowców Magazynu -- osobny
+ * mechanizm (WAREH), nie w tej funkcji.
  */
 function computeCentralFoodCap(
   ownerId: number,

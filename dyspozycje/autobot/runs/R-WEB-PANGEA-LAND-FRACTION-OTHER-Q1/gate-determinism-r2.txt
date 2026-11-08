@@ -1,0 +1,50 @@
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=17 terrain=158 landSea=1938 relief=2476 coast=435 riversMain=13 riversFill=168 forest=113 deposits=228 starts=1003 total=6549
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=12 terrain=104 landSea=1653 relief=2555 coast=394 riversMain=7 riversFill=106 forest=86 deposits=147 starts=856 total=5920
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=9 terrain=101 landSea=1754 relief=2383 coast=421 riversMain=7 riversFill=173 forest=101 deposits=146 starts=791 total=5886
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=8 terrain=121 landSea=1574 relief=2344 coast=357 riversMain=6 riversFill=96 forest=90 deposits=135 starts=749 total=5481
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=5 terrain=79 landSea=1427 relief=1928 coast=296 riversMain=7 riversFill=144 forest=116 deposits=163 starts=876 total=5042
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=4 terrain=73 landSea=1677 relief=2476 coast=347 riversMain=7 riversFill=151 forest=112 deposits=159 starts=761 total=5767
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=4 terrain=71 landSea=1424 relief=2440 coast=379 riversMain=7 riversFill=136 forest=93 deposits=162 starts=827 total=5542
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=3 terrain=75 landSea=1266 relief=1998 coast=318 riversMain=6 riversFill=143 forest=114 deposits=179 starts=872 total=4974
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=1 terrain=105 landSea=1776 relief=2726 coast=186 riversMain=8 riversFill=67 forest=64 deposits=132 starts=1100 total=6166
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=121 landSea=1778 relief=2309 coast=199 riversMain=7 riversFill=118 forest=93 deposits=216 starts=831 total=5672
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=74 landSea=1943 relief=2988 coast=216 riversMain=7 riversFill=70 forest=68 deposits=195 starts=1074 total=6636
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=43 landSea=1746 relief=3107 coast=182 riversMain=6 riversFill=64 forest=65 deposits=132 starts=854 total=6201
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=1 terrain=212 landSea=1935 relief=3822 coast=1448 riversMain=7 riversFill=224 forest=124 deposits=202 starts=782 total=8757
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=141 landSea=2115 relief=3446 coast=1469 riversMain=6 riversFill=201 forest=107 deposits=167 starts=782 total=8435
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=147 landSea=2306 relief=3774 coast=1212 riversMain=7 riversFill=209 forest=109 deposits=173 starts=886 total=8823
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=160 landSea=1823 relief=3229 coast=1046 riversMain=6 riversFill=184 forest=99 deposits=163 starts=746 total=7457
+kontynenty seed=1 hash=e74242c34ecb7f0b land=30.00%
+kontynenty seed=42 hash=0e77e0b16879956b land=30.00%
+kontynenty seed=99 hash=57284d6ef0161ba8 land=30.00%
+kontynenty seed=7777 hash=9cf2edabb5b7c0a2 land=30.00%
+wyspy seed=1 hash=9cc4bc9535c46b18 land=50.00%
+wyspy seed=42 hash=2c1d8c5b5b889fe4 land=50.00%
+wyspy seed=99 hash=aacd8ddc9bb95bcf land=50.00%
+wyspy seed=7777 hash=38f56785b1a59cbc land=50.00%
+ziemia seed=1 hash=458ee817695e84f2 land=15.65%
+ziemia seed=42 hash=4a5f002feaaccc86 land=15.65%
+ziemia seed=99 hash=9487a92ea5b2cbb0 land=15.65%
+ziemia seed=7777 hash=70d790e81f76a606 land=15.65%
+pangea seed=1 hash=ecdcc4aa99ceeb72 land=59.49%
+pangea seed=42 hash=8d345ea78e3f5a62 land=59.15%
+pangea seed=99 hash=5da29363f423ba1b land=59.68%
+pangea seed=7777 hash=a5dcd09e004ce762 land=59.67%
+PASS: hashe 3 typow identyczne z baza, Pangea 59-61%
+EXIT=0

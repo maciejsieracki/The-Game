@@ -10,6 +10,7 @@ import {
   computeTerritoryBorderLoops,
   type BorderLoopPoint,
 } from '../map/territory-border';
+import { MINE_BUILD_HIGHLIGHT_OPACITY } from './buildHighlight';
 
 const HEX_DIRS: { dq: number; dr: number }[] = [
   { dq: 1, dr: 0 },
@@ -473,7 +474,7 @@ export const RELIGION_RANGE_STYLE: RangeOverlayStyle = {
  */
 export const MINE_ELIGIBLE_TINT_COLOR = 0x66ccff;
 /** Przezroczystość 30 % — dokładnie wartość podana przez właściciela, bez zaokrąglania. */
-export const MINE_ELIGIBLE_TINT_OPACITY = 0.30;
+export const MINE_ELIGIBLE_TINT_OPACITY = MINE_BUILD_HIGHLIGHT_OPACITY;
 export const MINE_ELIGIBLE_STYLE: RangeOverlayStyle = {
   tintColor: MINE_ELIGIBLE_TINT_COLOR,
   tintOpacity: MINE_ELIGIBLE_TINT_OPACITY,

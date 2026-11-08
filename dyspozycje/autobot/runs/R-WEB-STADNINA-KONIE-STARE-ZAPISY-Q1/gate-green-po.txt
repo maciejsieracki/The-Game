@@ -1,0 +1,4 @@
+  [OK] mutacja: kwalifikator odrzuca stary zapis (test C by padl)
+
+WYNIK: pass=29 fail=0
+EXIT=0

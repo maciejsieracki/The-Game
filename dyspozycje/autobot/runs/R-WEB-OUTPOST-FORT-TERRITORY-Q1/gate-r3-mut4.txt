@@ -1,0 +1,44 @@
+
+--- A: promienie i territoryOwnerAt ---
+
+--- B: obcy nie buduje ulepszen, wlasciciel buduje ---
+
+--- C: zakladanie miast, limit miast ---
+
+--- D: spor o ten sam heks ---
+
+--- E: straznik main.ts ---
+
+--- F: fort NIE odbiera heksow sasiedniemu miastu (R2, zarzut 1) ---
+
+--- G: R3 Q-B=B — sporny heks nalezy do WCZESNIEJSZEGO fortu ---
+
+--- H: R3 Q-A=A — zdobycie fortu przez wejscie wojska ---
+
+--- I: straznik main.ts R3 ---
+
+=== fort-outpost-hard-territory-test: 56 passed, 23 failed ===
+  FAIL: A3: posterunek -> 37 heksow (r=3) nalezy do wlasciciela (got 0, want 37)
+  FAIL: A4: fort -> 91 heksow (r=5) nalezy do wlasciciela (got 0, want 91)
+  FAIL: A5: heks na krawedzi (dist 3) nalezy (got null, want 3)
+  FAIL: A7: fort dist 5 nalezy (got null, want 3)
+  FAIL: B1: wlasciciel fortu buduje farme w zasiegu fortu (brak miasta)
+  FAIL: B3: OBCY z jednostka nie stawia fortu w terenie cudzego fortu
+  FAIL: B4: ... ani posterunku
+  FAIL: C1: obcy nie zaklada miasta w terytorium fortu
+  FAIL: C5: ... ale 91 heksow terytorium fortu pozostaje wlasnoscia gracza (limit nie dotyka terytorium) (got 0, want 91)
+  FAIL: D1: dist 4 vs 4 -> remis, pierwszy wezel (got null, want 1)
+  FAIL: D2: najblizszy wezel wygrywa (dist 5 vs 3) (got null, want 2)
+  FAIL: F3: fort zajmuje wolny teren poza miastami (got null, want 1)
+  FAIL: F4: spor fort-fort: najblizszy (got null, want 2)
+  FAIL: G1: wczesniejszy fort (tura 3) wygrywa sporny heks mimo wiekszej odleglosci (5 vs 3) (got null, want 1)
+  FAIL: G2: wczesniejszy jest drugi fort -> jego (got null, want 2)
+  FAIL: G3: remis odleglosci 4:4 -> wczesniejszy (drugi), nie "pierwszy w tablicy" (got null, want 2)
+  FAIL: G4: heks blizej pozniejszego fortu (3 vs 5) -> wczesniejszy (drugi) (got null, want 2)
+  FAIL: G5: heks w zasiegu tylko jednego fortu -> ten fort (got null, want 1)
+  FAIL: G6: ta sama tura -> mniejszy seq (got null, want 1)
+  FAIL: G7: ta sama tura, seq odwrotnie (got null, want 2)
+  FAIL: G11: po backfillu starszy (indeks 0) wygrywa sporny heks (5 vs 3) (got null, want 1)
+  FAIL: H3: zdobywca dostaje CALE terytorium fortu (91 heksow) (got 0, want 91)
+  FAIL: H6: posterunek zdobyty -> 37 heksow (got 0, want 37)
+EXIT=1

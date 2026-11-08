@@ -1,0 +1,9 @@
+file: /home/user/The-Game/.claude/worktrees/wf_d8931786-ed6-1/gra-robocza/Gra-ROBOCZA.html
+lines: 31201
+md5: 99c6b33b2587673b3c377d40d22f6396
+stamp md5: a1039295ba165713c48a0ba8869678b3
+manifest md5: 99c6b33b2587673b3c377d40d22f6396
+manifest match: OK
+stamp match: WARN (użyj manifest/certutil)
+VERIFY OK
+EXIT=0

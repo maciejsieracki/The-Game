@@ -1,0 +1,13 @@
+#!/bin/bash
+S=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r1
+R=/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1
+cd "$R/gra" || exit 1
+for pair in "new:$R/gra-robocza/Gra-ROBOCZA.html" "base:$S/base-a289d2c4.html"; do
+  tag="${pair%%:*}"; html="${pair#*:}"
+  for mode in peace war; do
+    timeout 3000 node "$S/smoke.cjs" --html "$html" --mode "$mode" --turns 46 --out "$S/smoke-$tag-$mode" > "$S/smoke-$tag-$mode.log" 2>&1
+    echo "EXIT=$?" >> "$S/smoke-$tag-$mode.log"
+    echo "DONE $tag $mode"
+  done
+done
+echo SMOKEDONE

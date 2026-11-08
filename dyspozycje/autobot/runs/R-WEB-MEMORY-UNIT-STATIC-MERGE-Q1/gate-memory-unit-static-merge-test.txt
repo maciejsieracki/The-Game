@@ -1,0 +1,15 @@
+  info zetony 170, czas run A/B ms 10596/8667
+  OK  S1 meshe w zetonach B < 40% A -- {"A":11701,"B":3315,"perTokenA":68.8,"perTokenB":19.5}
+  OK  S2 draw calls B < 40% A -- {"A":12636,"B":4250}
+  OK  S3 obraz stanie/marsz/atak A vs B <= 120 px z 1,6 mln -- {"idle":6,"march":1,"attack":2}
+  OK  S4 picking A == B (stanie, marsz), trafienia >= 95% -- {"hits":170,"of":170,"idleSame":true,"marchSame":true}
+  OK  S3b zblizenie (5 zetonow na cala klatke) stanie/marsz/atak/przyciemnienie A vs B <= 120 px -- {"idle":0,"march":0,"attack":0,"dim":0}
+  OK  S5 przyciemnienie: B przyciemnione, inne nietkniete, A vs B przyciemnione <= 120; po zdjeciu: ten sam obiekt zetonu (bez przebudowy), scalony w miejscu (meshe == baza B), klatka B vs baza B <= 120, A == baza A (0 px), picking == baza -- {"dimOk":true,"othersOk":true,"dimAvsB":6,"sameUuid":true,"meshes":{"base":3315,"dim":6102,"undim":3315},"undimVsIdleB":0,"undimVsIdleA":0,"pickSame":true}
+  OK  S6 LOD: schowane czesci B == A dla kazdego oddalenia, cos schowane, klatka LOD A vs B <= 120, picking w LOD == bez LOD, powrot == baza -- {"A":[{"dist":8,"parts":44,"meshes":44},{"dist":20,"parts":1278,"meshes":1278},{"dist":40,"parts":4536,"meshes":4536},{"dist":70,"parts":7780,"meshes":7780},{"dist":110,"parts":9680,"meshes":9680},{"dist":160,"parts":10508,"meshes":10508}],"B":[{"dist":8,"parts":44,"meshes":0},{"dist":20,"parts":1278,"meshes":198},{"dist":40,"parts":4536,"meshes":574},{"dist":70,"parts":7780,"meshes":982},{"dist":110,"parts":9680,"meshes":1752},{"dist":160,"parts":10508,"meshes":2192}],"lodFrameAvsB":4,"pickLodSame":true,"backVsIdle":0}
+  OK  S7 przebudowa i usuniecie bez wyjatku, pule puste -- {"err":"","geo":{"shared":0,"refs":0},"mat":{"shared":0,"refs":0}}
+  OK  S8 brak bledow strony -- []
+  zrzuty: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/usm/shots
+WYNIK {"tokens":170,"meshes":[11701,3315],"drawCalls":[12636,4250],"px":{"idle":6,"march":1,"attack":2,"dim":6,"lod40":4,"zoom":{"idle":0,"march":0,"attack":0,"dim":0}},"lodParts":{"A":[44,1278,4536,7780,9680,10508],"B":[44,1278,4536,7780,9680,10508],"Bmeshes":[0,198,574,982,1752,2192]},"runMs":[10596,8667]}
+
+memory-unit-static-merge-test: 9 pass, 0 fail
+EXIT=0

@@ -1,0 +1,12 @@
+  [perf] F2-PERF: 12 jednostek x 118 miast / 39 wysp / 10000 heksów wyspy domowej -> 302ms (budżet 3000ms)
+
+-- Sekcja 9 / dowód mutacyjny: cofnięcie CAŁEJ naprawy RUNDY 4 do stanu RUNDY 3 --
+-- F1/KRAZENIE-Q1 / dowód mutacyjny: przywrócenie resetu mimo obecności bronionego miasta --
+-- F2 (runda 5) / dowód mutacyjny: cofnięcie strażnika osiągalności --
+-- USTERKA 1 / asercja przeslanki: warunek resetu i brak martwej galezi --
+-- USTERKA 2 (runda 6) / dowód mutacyjny: usunięcie filtra spójnych składowych F2-PERF --
+-- M2b (runda 7) / dowód mutacyjny: zaostrzenie etykietowania (Wzgórza nieprzechodnie tylko w etykiecie) --
+-- M3 (runda 7) / dowód mutacyjny: cofnięcie fallbacku unitComp===undefined --
+
+barb-city-behavior-test: 178 passed, 0 failed
+EXIT=0

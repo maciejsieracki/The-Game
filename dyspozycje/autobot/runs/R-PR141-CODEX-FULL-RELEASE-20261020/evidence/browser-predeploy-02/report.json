@@ -1,0 +1,320 @@
+{
+  "mode": "predeploy",
+  "startedAt": "2026-10-20T19:40:49.860Z",
+  "baseUrl": "http://127.0.0.1:8766/Gra-ROBOCZA.html",
+  "bundleUrl": "http://127.0.0.1:8766/Gra-ROBOCZA.html",
+  "expectedHash": "234dff75036b22e423b33f9d6134428c559b612922b866399346f0e94ebfca4a",
+  "browser": "/usr/bin/chromium",
+  "result": "FAIL",
+  "phase": "first-city",
+  "events": [
+    {
+      "at": "2026-10-20T19:40:50.150Z",
+      "action": "verified exact served bundle bytes",
+      "sha256": "234dff75036b22e423b33f9d6134428c559b612922b866399346f0e94ebfca4a",
+      "resolvedUrl": "http://127.0.0.1:8766/Gra-ROBOCZA.html"
+    },
+    {
+      "at": "2026-10-20T19:40:54.928Z",
+      "action": "visible wizard configured",
+      "humanCiv": "rzymianie",
+      "epoch": "zelazo",
+      "seed": 141,
+      "aiCiv": "egipt",
+      "mapSize": "Standardowy",
+      "worldType": "Kontynenty",
+      "hotSeat": false
+    },
+    {
+      "at": "2026-10-20T19:44:16.259Z",
+      "action": "map ready through visible loading-overlay lifecycle",
+      "seedEvidence": "Visible wizard input confirmed 141; runtime snapshot does not expose a seed field",
+      "humanOwnerIds": [
+        0
+      ],
+      "humanCiv": "rzymianie",
+      "canvases": 2
+    }
+  ],
+  "screenshots": [
+    "01-main-menu.png",
+    "02-configured-wizard.png",
+    "03-map-ready-first-city-prompt.png",
+    "04-failure-first-city.png"
+  ],
+  "publicHostingClaim": "NONE: local HTTP bundle readback only",
+  "bundleHttpStatus": 200,
+  "bundleFinalUrl": "http://127.0.0.1:8766/Gra-ROBOCZA.html",
+  "actualHash": "234dff75036b22e423b33f9d6134428c559b612922b866399346f0e94ebfca4a",
+  "settingsSummary": {
+    "verified": true,
+    "seed": "141",
+    "settingsText": "POZIOM TRUDNOŚCI\nⓘ\n‹\nNormalny\n›\nROZMIAR MAPY\nⓘ\n‹\nStandardowy\n›\nTYP ŚWIATA\nⓘ\n‹\nKontynenty\n›\nPRĘDKOŚĆ GRY\nⓘ\n‹\nStandardowa\n›\nMIASTA-PAŃSTWA\nⓘ\n‹\n6\n›\nLICZBA CYWILIZACJI\nⓘ\n‹\n6\n›"
+  },
+  "mapLoadLifecycle": {
+    "ok": true,
+    "shown": true,
+    "hidden": true,
+    "overlayError": null,
+    "reason": "map loading overlay appeared and was hidden"
+  },
+  "seedEvidence": "Visible wizard input confirmed 141; runtime snapshot does not expose a seed field",
+  "firstCity": {
+    "status": "PASS",
+    "detail": {
+      "stage": "first-city-founding",
+      "elapsedMs": 2368,
+      "ownerId": 0,
+      "cityId": "city0",
+      "projectedStartHex": {
+        "q": 125,
+        "r": 61
+      },
+      "actualCityHex": {
+        "q": 125,
+        "r": 60
+      },
+      "awaitingFirstPlayerCity": false,
+      "activeHumanOwnerId": 0,
+      "clickTarget": {
+        "tag": "CANVAS",
+        "id": "",
+        "className": "",
+        "ancestorPath": [
+          {
+            "tag": "CANVAS",
+            "id": "",
+            "className": ""
+          },
+          {
+            "tag": "BODY",
+            "id": "",
+            "className": ""
+          },
+          {
+            "tag": "HTML",
+            "id": "",
+            "className": ""
+          }
+        ],
+        "canvasHit": true
+      },
+      "clickIssued": true
+    }
+  },
+  "postFoundingAudience": {
+    "ok": false,
+    "audiencesDismissed": 0,
+    "listsClosed": 0,
+    "elapsedMs": 4444,
+    "reason": "TIMEOUT:dismiss-audience"
+  },
+  "failure": {
+    "phase": "first-city",
+    "message": "Error: ordinary first-contact dismissal failed: TIMEOUT:dismiss-audience\n    at expect (file:///workspace/pr141-publish-20261020/browser-operator/pr141-real-browser-smoke.mjs:62:61)\n    at file:///workspace/pr141-publish-20261020/browser-operator/pr141-real-browser-smoke.mjs:143:3"
+  },
+  "browserEvents": [
+    {
+      "at": "2026-10-20T19:40:51.668Z",
+      "kind": "console-log",
+      "text": "[Diag:boot] start"
+    },
+    {
+      "at": "2026-10-20T19:40:51.669Z",
+      "kind": "console-log",
+      "text": "Jednostki: 75, Technologie: 32"
+    },
+    {
+      "at": "2026-10-20T19:40:51.847Z",
+      "kind": "console-info",
+      "text": "[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+    },
+    {
+      "at": "2026-10-20T19:40:52.654Z",
+      "kind": "console-info",
+      "text": "[civ] mapGen ms | prep=2 terrain=8 landSea=92 relief=64 coast=12 riversMain=324 riversFill=424 forest=4 deposits=10 starts=45 total=985"
+    },
+    {
+      "at": "2026-10-20T19:40:52.751Z",
+      "kind": "console-warning",
+      "text": "[.WebGL-0x233c001b5400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "at": "2026-10-20T19:40:52.754Z",
+      "kind": "console-info",
+      "text": "[civ] riverRenderStage 2"
+    },
+    {
+      "at": "2026-10-20T19:40:52.794Z",
+      "kind": "console-info",
+      "text": "[civ] buildScene ms | hexes=26 coast=25 overlays=2 rivers=34 tail=8 total=95 | hexCount=1008 overlaysN=11 riverStage=2"
+    },
+    {
+      "at": "2026-10-20T19:40:52.794Z",
+      "kind": "console-info",
+      "text": "[civ] buildScene detail heksy | alokacja=17 pryzmy=8 instancjeReliefu=1 styledWPetli=0 brzegWPetli=3 pustynia=6 finalizacja=0"
+    },
+    {
+      "at": "2026-10-20T19:40:52.795Z",
+      "kind": "console-info",
+      "text": "[civ] buildScene detail nakladki | scalMerge=2 instancjePlazaWydmy=0 collapsed=1 skipMerged=0 skipLight=10"
+    },
+    {
+      "at": "2026-10-20T19:40:52.923Z",
+      "kind": "console-log",
+      "text": "[main] hodowla złoże meshes synced · resource overlays: 59"
+    },
+    {
+      "at": "2026-10-20T19:40:52.957Z",
+      "kind": "console-warning",
+      "text": "[EndTurn] blocked: awaitingFirstPlayerCity"
+    },
+    {
+      "at": "2026-10-20T19:40:52.968Z",
+      "kind": "console-warning",
+      "text": "[EndTurn] blocked: awaitingFirstPlayerCity"
+    },
+    {
+      "at": "2026-10-20T19:40:52.996Z",
+      "kind": "console-warning",
+      "text": "[EndTurn] blocked: awaitingFirstPlayerCity"
+    },
+    {
+      "at": "2026-10-20T19:40:53.002Z",
+      "kind": "console-log",
+      "text": "[Diag:session] resetStuckInteractiveState"
+    },
+    {
+      "at": "2026-10-20T19:40:53.369Z",
+      "kind": "console-warning",
+      "text": "[.WebGL-0x233c001b5400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "at": "2026-10-20T19:40:53.876Z",
+      "kind": "console-warning",
+      "text": "[FSA] showDirectoryPicker blad: NotAllowedError: Failed to execute 'showDirectoryPicker' on 'Window': The request is not allowed by the user agent or the platform in the current context."
+    },
+    {
+      "at": "2026-10-20T19:40:54.972Z",
+      "kind": "console-log",
+      "text": "[NewGame] Nacja gracza: Rzymianie (rzymianie)"
+    },
+    {
+      "at": "2026-10-20T19:40:54.973Z",
+      "kind": "console-log",
+      "text": "[NewGame] AI nacje: {1: inkowie, 2: egipt, 3: asyria, 4: harappa, 5: fenicjanie, 6: inkowie}"
+    },
+    {
+      "at": "2026-10-20T19:40:54.973Z",
+      "kind": "console-log",
+      "text": "[NewGame] tempoGry = standardowa · kosztJednostekPace = niski · buildingCostPace = niski · wzrostLudnosciPace = wysoki · ruchSwiataPace = krotki · epoka= 3 (zelazo) · typSwiata= kontynenty (Kontynenty) · jakoscMapy= Średnia → render=medium, mapDetail=medium · advanced={\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"niski\",\"kosztJednostekPace\":\"niski\",\"wzrostLudnosciPace\":\"wysoki\",\"ruchSwiataPace\":\"krotki\",\"landFractionPercent\":30,\"landFractionCust"
+    },
+    {
+      "at": "2026-10-20T19:40:54.973Z",
+      "kind": "console-log",
+      "text": "[NewGame] Tech wcześniejszych epok: 24 · epoka start= zelazo"
+    },
+    {
+      "at": "2026-10-20T19:40:58.103Z",
+      "kind": "console-info",
+      "text": "[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"
+    },
+    {
+      "at": "2026-10-20T19:44:08.172Z",
+      "kind": "console-info",
+      "text": "[civ] mapGen ms | prep=12 terrain=73 landSea=1180 relief=1563 coast=273 riversMain=93676 riversFill=95555 forest=62 deposits=112 starts=667 total=193175"
+    },
+    {
+      "at": "2026-10-20T19:44:08.586Z",
+      "kind": "console-info",
+      "text": "[civ] riverRenderStage 2"
+    },
+    {
+      "at": "2026-10-20T19:44:10.341Z",
+      "kind": "console-info",
+      "text": "[civ] buildScene ms | hexes=225 coast=16 overlays=23 rivers=1744 tail=12 total=2019 | hexCount=20160 overlaysN=127 riverStage=2"
+    },
+    {
+      "at": "2026-10-20T19:44:10.341Z",
+      "kind": "console-info",
+      "text": "[civ] buildScene detail heksy | alokacja=48 pryzmy=101 instancjeReliefu=18 styledWPetli=0 brzegWPetli=14 pustynia=37 finalizacja=0"
+    },
+    {
+      "at": "2026-10-20T19:44:10.341Z",
+      "kind": "console-info",
+      "text": "[civ] buildScene detail nakladki | scalMerge=23 instancjePlazaWydmy=0 collapsed=46 skipMerged=0 skipLight=81"
+    },
+    {
+      "at": "2026-10-20T19:44:10.929Z",
+      "kind": "console-log",
+      "text": "[ClusterStart] typ=rzymianie rywale=6 (deferred) foreignAI=35 (deferred) typow=6"
+    },
+    {
+      "at": "2026-10-20T19:44:10.935Z",
+      "kind": "console-log",
+      "text": "[NewGame] StartPreview: Rzym · rywale= 6 · typy= 6"
+    },
+    {
+      "at": "2026-10-20T19:44:10.959Z",
+      "kind": "console-info",
+      "text": "[civ-perf] postScene — init sceny: 2 ms"
+    },
+    {
+      "at": "2026-10-20T19:44:10.960Z",
+      "kind": "console-info",
+      "text": "[civ-perf] postScene — kamera: 1 ms"
+    },
+    {
+      "at": "2026-10-20T19:44:10.960Z",
+      "kind": "console-info",
+      "text": "[civ-perf] postScene — renderery jednostek: 8 ms"
+    },
+    {
+      "at": "2026-10-20T19:44:10.961Z",
+      "kind": "console-info",
+      "text": "[civ-perf] postScene — renderery miast: 8 ms"
+    },
+    {
+      "at": "2026-10-20T19:44:10.961Z",
+      "kind": "console-info",
+      "text": "[civ-perf] postScene — markery oblężenia i cuda: 6 ms"
+    },
+    {
+      "at": "2026-10-20T19:44:10.961Z",
+      "kind": "console-info",
+      "text": "[civ-perf] postScene — plan klastra startowego: 564 ms"
+    },
+    {
+      "at": "2026-10-20T19:44:10.961Z",
+      "kind": "console-info",
+      "text": "[civ-perf] postScene — mgła startowa: 25 ms"
+    },
+    {
+      "at": "2026-10-20T19:44:10.962Z",
+      "kind": "console-info",
+      "text": "[civ-perf] postScene — nakładki zasobów (defer): 4 ms"
+    },
+    {
+      "at": "2026-10-20T19:44:10.962Z",
+      "kind": "console-log",
+      "text": "[NewGame] Mapa: 168x120 seed=141 typ=kontynenty rywale=6 typy=6"
+    },
+    {
+      "at": "2026-10-20T19:44:10.962Z",
+      "kind": "console-info",
+      "text": "[civ-perf] wall-clock Nowa gra → hide overlay: 195987 ms (postScene/finishLoading=618 ms)"
+    },
+    {
+      "at": "2026-10-20T19:44:10.967Z",
+      "kind": "console-info",
+      "text": "[civ-perf] === Civ — raport czasów ładowania mapy ===\nData: 20.10.2026, 19:44:10\nrozmiar: Standardowy · kształt: Kontynenty\n20160 heksów · nakładek 127\n\nGENERATOR (ms):\n  Rzeki (gen): GŁÓWNE + ŚREDNIE (riverGenPhase=main+medium)\n  Przygotowanie siatki: 12 ms\n  Klimat i teren bazowy: 73 ms\n  Ląd i ocean: 1180 ms\n  Relief (góry i wzgórza): 1563 ms\n  Płytkie morze: 273 ms\n  Rzeki — główne: 93676 ms\n  Rzeki — uzupełnianie: 95555 ms\n  Las i roślinność: 62 ms\n  Złoża mineralne: 112 ms\n  Pozycje startowe: 667 ms\n "
+    },
+    {
+      "at": "2026-10-20T19:44:11.097Z",
+      "kind": "console-warning",
+      "text": "[EndTurn] blocked: awaitingFirstPlayerCity"
+    }
+  ],
+  "endedAt": "2026-10-20T19:44:27.480Z",
+  "elapsedMs": 217620
+}

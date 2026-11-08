@@ -1,0 +1,17 @@
+=== Pangea landFraction (standardowy) ===
+  seed 42 target 20% (resolved 20%): actual 11.7% land=2355 bbox 62x59 fill=0.644 annular=0
+  seed 42 target 50% (resolved 50%): actual 44.8% land=9037 bbox 113x113 fill=0.708 annular=0
+  seed 42 target 80% (resolved 80%): actual 75.6% land=15240 bbox 161x116 fill=0.816 annular=0
+  → seed 42 AC: ratio80/20=6.47 (≥1.6 OK) fracΔ=63.9pp (≥12 OK) actual80=75.6% (≥45 OK) annular=0 (≤120 OK) 50≠80 OK bboxArea×5.11 → PASS
+  seed 123 target 20% (resolved 20%): actual 12.1% land=2440 bbox 62x60 fill=0.656 annular=0
+  seed 123 target 50% (resolved 50%): actual 44.4% land=8958 bbox 114x111 fill=0.708 annular=0
+  seed 123 target 80% (resolved 80%): actual 75.8% land=15277 bbox 162x116 fill=0.813 annular=0
+  → seed 123 AC: ratio80/20=6.26 (≥1.6 OK) fracΔ=63.7pp (≥12 OK) actual80=75.8% (≥45 OK) annular=0 (≤120 OK) 50≠80 OK bboxArea×5.05 → PASS
+  seed 777 target 20% (resolved 20%): actual 10.5% land=2122 bbox 57x57 fill=0.653 annular=0
+  seed 777 target 50% (resolved 50%): actual 43.4% land=8753 bbox 112x111 fill=0.704 annular=0
+  seed 777 target 80% (resolved 80%): actual 75.8% land=15282 bbox 164x116 fill=0.803 annular=0
+  → seed 777 AC: ratio80/20=7.20 (≥1.6 OK) fracΔ=65.3pp (≥12 OK) actual80=75.8% (≥45 OK) annular=0 (≤120 OK) 50≠80 OK bboxArea×5.86 → PASS
+
+=== AC ===
+  3 seedów PASS: PASS (0 fail)
+EXIT=0

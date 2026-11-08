@@ -254,6 +254,13 @@ function zbudujHarness(src) {
     siegeTurnByCity,
     refreshSiegeMarkers: () => { calls.refreshSiegeMarkers++; },
     getActiveSiegeCityId: () => null,
+    // R-WEB-AI-SIEGE-WITHOUT-WAR-Q1: validateActiveSieges ma bramkę wojny; ten harness testuje
+    // logikę przyległości, więc strony są wrogami (areEnemyOwners = zawsze true) — bramka
+    // wojny ma własny test: ai-siege-requires-war-test.cjs.
+    areEnemyOwners: () => true,
+    siegeAllowedBetween: (a, b, f) => a !== b && f(a, b),
+    isSiegeStillValid: (city, bId, us) => us.some(
+      u => u.ownerId === bId && hexDistance(u.q, u.r, city.q, city.r) === 1),
     hideSiegeMapPanel: () => { calls.hideSiegeMapPanel++; },
     showHintMessage: (msg) => { calls.hints.push(msg); },
     syncUnitsRender: () => { calls.syncUnitsRender++; },
@@ -266,7 +273,8 @@ function zbudujHarness(src) {
   const fabryka = new Function('deps', `
     const { cities, units, hexDistance, clearSiegeMachines, siegeBesiegerByCity,
             siegeAiStateByKey, siegeAiKey, siegeTurnByCity, refreshSiegeMarkers,
-            getActiveSiegeCityId, hideSiegeMapPanel, showHintMessage } = deps;
+            getActiveSiegeCityId, hideSiegeMapPanel, showHintMessage,
+            areEnemyOwners, siegeAllowedBetween, isSiegeStillValid } = deps;
     ${js}
     return {
       validateActiveSieges, endMapSiege,

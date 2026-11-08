@@ -1,0 +1,4 @@
+  PASS: building-resource-gate.ts: brak defaultu params / SPICHLERZ_DRAIN_DEFAULT_PARAMS
+  PASS: building-resource-gate.ts: drainParams w resolveOwnedBuildingInactiveStatus wymagany
+spichlerz-hud-params-parity-test: 66 pass, 0 fail
+EXIT=0

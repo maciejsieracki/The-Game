@@ -135,15 +135,15 @@ console.log('\n-- A. unitStockCost: mapowanie diakrytyki -> klucze ASCII (City.s
   if (brazUnit) {
     deepEq(
       M.unitStockCost(brazUnit),
-      { braz: brazUnit['Surowiec (ilość)'] },
-      `units.json realny rekord Brąz (${brazUnit.Jednostka}): mapuje na klucz 'braz'`,
+      { braz: brazUnit['Surowiec (ilość)'] * 2 },
+      `units.json realny rekord Brąz (${brazUnit.Jednostka}): maps to 'braz' and scales x2`,
     );
   }
   if (zelazoUnit) {
     deepEq(
       M.unitStockCost(zelazoUnit),
-      { zelazo: zelazoUnit['Surowiec (ilość)'] },
-      `units.json realny rekord Żelazo (${zelazoUnit.Jednostka}): mapuje na klucz 'zelazo'`,
+      { zelazo: zelazoUnit['Surowiec (ilość)'] * 4 },
+      `units.json realny rekord Żelazo (${zelazoUnit.Jednostka}): maps to 'zelazo' and scales x4`,
     );
   }
   if (dashUnit) {
@@ -252,41 +252,31 @@ console.log('\n-- E. PYTANIE-84 U-15: koszt +5 Koni dla Typ Mount (wyjątek Rydw
   assert(!!rydwanWoly, 'units.json: Rydwan (woły) istnieje');
   assert(!!wojownik, 'units.json: Wojownik istnieje');
 
-  eq(M.MOUNT_UNIT_HORSE_STOCK_COST, 5, 'MOUNT_UNIT_HORSE_STOCK_COST = 5');
+  eq(M.MOUNT_UNIT_HORSE_STOCK_COST, 25, 'MOUNT_UNIT_HORSE_STOCK_COST base = 25 before era scaling');
   eq(M.MOUNT_UNIT_HORSE_STOCK_KEY, 'kon', "MOUNT_UNIT_HORSE_STOCK_KEY = 'kon'");
   eq(M.MOUNT_HORSE_EXEMPT_UNIT, 'Rydwan (woły)', 'wyjątek: Rydwan (woły)');
 
-  // P-UNIT-STOCK-COST-TEST-DLUG (2026-08-09): oczekiwane wartosci ponizej zaktualizowane do
-  // zgodnosci z dzisiejszym units.json, NIE zmiana logiki testu. Sledztwo (git blame na
-  // gra/data/units.json): commit 7d4ad9690 "feat: utrzymanie surowcowe jednostek (x5 rekrutacja
-  // + upkeep/turę)" (2026-08-06, co-authored-by maciejsieracki) podniosl Surowiec (ilość) dla
-  // Konnicy i Rydwanu (woły) z Brąz=2 na Brąz=10 (x5 rebalans -- ta sama sesja rownolegle
-  // wprowadzila analogiczny x5 dla utrzymania surowcowego jednostek) i nadal ta sama sesja
-  // ustawila Wojownikowi Surowiec='Drewno'/ilość=10 (wczesniej Wojownik nie mial kosztu
-  // magazynowego wcale). Silnik (unitStockCost w building-stock-cost.ts) poprawnie czyta
-  // te pola live z units.json przez data.units we wszystkich miejscach wywolania (main.ts,
-  // ai.ts, cityPanel.ts, economy-upkeep.ts) -- zweryfikowane grepem, brak sciezki z
-  // zahardkodowanymi/starymi wartosciami. To dlug testowy (zdezaktualizowane `want` po
-  // legalnej zmianie danych), nie regresja silnika.
+  // These expectations include the current epoch multipliers: Stone x1, Bronze x2,
+  // Iron x4. Mount horse stock uses the same multiplier; the Ox Chariot remains exempt.
   if (konnica) {
     assert(M.unitRequiresMountHorseStock(konnica), 'Konnica wymaga Koni');
     deepEq(
       M.unitStockCost(konnica),
-      { braz: 10, kon: 5 },
-      'Konnica: Brąz 10 + Konie 5 ze skarbca',
+      { braz: 50, kon: 50 },
+      'Bronze Konnica: Brąz 25 and base horse stock 25 each scale x2',
     );
   }
   if (rydwanWoly) {
     assert(!M.unitRequiresMountHorseStock(rydwanWoly), 'Rydwan (woły) bez kosztu Koni');
     deepEq(
       M.unitStockCost(rydwanWoly),
-      { braz: 10 },
-      'Rydwan (woły): tylko Brąz (10), bez Koni',
+      { drewno: 25 },
+      'Stone Rydwan (woły): Drewno 25 x1, exempt from horse stock',
     );
   }
   if (wojownik) {
     assert(!M.unitRequiresMountHorseStock(wojownik), 'Wojownik (nie Mount) bez Koni');
-    deepEq(M.unitStockCost(wojownik), { drewno: 10 }, 'Wojownik: koszt magazynowy Drewno 10 (od 2026-08-06)');
+    deepEq(M.unitStockCost(wojownik), { drewno: 13 }, 'Stone Wojownik: current wood stock cost 13 x1');
   }
 
   const mountUnits = units.filter(u => u.Typ === 'Mount');
@@ -294,20 +284,22 @@ console.log('\n-- E. PYTANIE-84 U-15: koszt +5 Koni dla Typ Mount (wyjątek Rydw
   assert(mountUnits.length >= 2, 'units.json: co najmniej 2 jednostki Mount');
   for (const u of mountExceptWoly) {
     const cost = M.unitStockCost(u);
-    eq(cost.kon, 5, `${u.Jednostka}: +5 Koni (Typ Mount)`);
+    const multiplierByEra = { 'Kamień': 1, 'Brąz': 2, 'Żelazo': 4 };
+    const multiplier = multiplierByEra[u.Epoka] ?? 1;
+    eq(cost.kon, 25 * multiplier, `${u.Jednostka}: Mount horse stock 25 x ${multiplier} for ${u.Epoka}`);
   }
 
-  // Blokada rekrutu gdy brak Koni w puli państwa (Konnica: braz 2 + kon 5).
+  // Recruitment gate uses the fully epoch-scaled Bronze Konnica cost (50 bronze + 50 horses).
   const cities = makeCities([
-    { id: 'm1', ownerId: 0, surowce: { braz: 10, kon: 4 } },
+    { id: 'm1', ownerId: 0, surowce: { braz: 50, kon: 49 } },
   ]);
   const cost = M.unitStockCost(konnica);
   const pool = M.ownerResourceStockAll(cities, 0);
-  assert(!M.canAffordBuildingStock(pool, cost), 'brak 5 Koni (jest 4) -> blokada rekrutu');
-  cities[0].surowce.kon = 5;
+  assert(!M.canAffordBuildingStock(pool, cost), 'brak 50 Koni (jest 49) -> blokada rekrutu');
+  cities[0].surowce.kon = 50;
   assert(
     M.canAffordBuildingStock(M.ownerResourceStockAll(cities, 0), cost),
-    '5 Koni + Brąz -> rekrut dozwolony',
+    '50 Koni + 50 Brązu -> rekrut dozwolony',
   );
 }
 

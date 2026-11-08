@@ -1,0 +1,33 @@
+PASS: (0) mutanty zmieniły źródło dokładnie raz (M1..M5)
+PASS: L0: dozwolone długości = [5,10,15]
+PASS: L1: normalize akceptuje 5/10/15
+PASS: L2: normalize odrzuca 0/7/11/NaN/null
+PASS: L3: until = start + czas (20+5=25)
+PASS: L4: until dla złej długości = null
+PASS: L5: aktywny w N-1 (24), zawarcie w turze 20 aktywne
+PASS: L6: nieaktywny w N (25) i N+1 (26)
+PASS: L7: wygaśnięcie: N-1 none, N revert_to_war, N+1 revert_to_war
+PASS: L8: brak rozejmu (null/undefined) → none, bez wypowiedzenia = brak złamania
+PASS: L9: wypowiedzenie w oknie (24) = złamanie; po oknie (25) = nie
+PASS: L10: granica start+5/+10/+15 (N-1/N/N+1) dla każdej długości
+PASS: N1: NaN/Infinity/undefined w helperach cyklu życia nie aktywują rozejmu ani nie wywołują wygaśnięcia
+PASS: P1: rozejm za wcześnie (3 tury wojny) = odrzucenie „za wcześnie" jak pokój
+PASS: P2: rozejm silniejsze AI (9 tur) = odrzucenie „czuje się silniejsze" jak pokój
+PASS: P3: rozejm po 20 turach nie podlega bramce czasu/siły
+PASS: P4: rozejm bez trwającej wojny odrzucony
+PASS: P5: długość 7 tur odrzucona, 0 tur odrzucona
+PASS: P6: długości 5 i 15 przechodzą walidację czasu
+PASS: P7: baza PW rozejmu (200) niższa niż pokoju (500): pwBalance rozejmu > pokoju (ta sama sytuacja)
+PASS: P8: rozejm ze złotem (400) w wojnie zostaje zaakceptowany (bramka walutowa jak dla pokoju)
+PASS: P8b: pokój ze złotem w wojnie — kontrola: ta sama ścieżka co rozejm
+PASS: P9: eksport resolvePlayerAcceptsAiPending dostępny (ścieżka akceptacji gracza)
+PASS: P10: rozejm z za niską ofertą PW odrzucony bramką PW pokoju (jak pokój, ujemny pwBalance)
+PASS: P11: rozejm z turns=NaN odrzucony walidacją długości
+PASS: M1 (brak walidacji długości): 7 tur przechodzi — mutacja wykrywalna
+PASS: M2 (baza rozejmu = baza pokoju): pwBalance równy pokojowi — mutacja wykrywalna
+PASS: M3 (bramka PW pokoju bez rozejmu): P10 wykrywa różnicę
+PASS: M4 (wygaśnięcie w N+1 zamiast N): L7/L10 wykrywają
+PASS: M5 (aktywny w N zamiast tylko przed N): L6/L10 wykrywają
+
+diplo-truce-r1-test: 30 pass / 0 fail
+EXIT=0

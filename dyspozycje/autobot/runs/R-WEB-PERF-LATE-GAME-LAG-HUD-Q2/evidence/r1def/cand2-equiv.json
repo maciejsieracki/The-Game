@@ -1,0 +1,171 @@
+{
+  "build": {
+    "gitHead": "21cd11793d6d7f5fee219e530f1d167e143cccba",
+    "indexHtmlBytes": 75325671,
+    "indexHtmlSha256": "4ca753d49f4fa9cc71fbb7c512568f800d793cc6e54440a94c78b6b46c4d63d8",
+    "sourceBeforeBuild": {
+      "mainTsSha256": "97d2076b57b01c320378e940ff575504fb754799479e81c4db35cde02117a262",
+      "productionTsSha256": "de00bf3add58f346d643bbca5494412a6c506706e822bb5d84b2c1cc82a8d715",
+      "buildInputTreeSha256": "3a889c60041fa9a14c853c6511f61eff7f9e6067e94585706345e5d42a3d0ee0",
+      "harnessSha256": "80fa20e425f5e82bb60918ffbbc5ef08ce462139ef2ae857820ac7c64ab5c4ea"
+    },
+    "sourceAfterBuild": {
+      "mainTsSha256": "97d2076b57b01c320378e940ff575504fb754799479e81c4db35cde02117a262",
+      "productionTsSha256": "de00bf3add58f346d643bbca5494412a6c506706e822bb5d84b2c1cc82a8d715",
+      "buildInputTreeSha256": "3a889c60041fa9a14c853c6511f61eff7f9e6067e94585706345e5d42a3d0ee0",
+      "harnessSha256": "80fa20e425f5e82bb60918ffbbc5ef08ce462139ef2ae857820ac7c64ab5c4ea"
+    }
+  },
+  "sections": [
+    "equiv",
+    "micro"
+  ],
+  "loadavgStart": [
+    4.48,
+    6.1,
+    6.66
+  ],
+  "seeded": {
+    "counts": {
+      "0": 40,
+      "1": 15,
+      "2": 1,
+      "3": 15,
+      "4": 1,
+      "5": 15,
+      "6": 1,
+      "7": 15,
+      "8": 1,
+      "9": 15,
+      "10": 1,
+      "11": 15,
+      "12": 1,
+      "13": 1
+    },
+    "majorAiOwners": [
+      1,
+      3,
+      5,
+      7,
+      9,
+      11
+    ],
+    "cities": 137,
+    "improvements": 180,
+    "buildingsPerCity": [
+      "stolarnia",
+      "spichlerz",
+      "targowisko",
+      "koszary",
+      "biblioteka"
+    ]
+  },
+  "seededUnits": {
+    "seeded": 300,
+    "total": 321
+  },
+  "renderInfo": {
+    "calls": 707,
+    "triangles": 1393160,
+    "points": 0,
+    "lines": 24
+  },
+  "equiv": {
+    "mismatches": [],
+    "owners": 14,
+    "events_baseline": 1,
+    "events_city-buildings-cleared": 1,
+    "events_improvement-removed": 1,
+    "events_queue-emptied": 1,
+    "events_restored": 1
+  },
+  "hudFresh": {
+    "has111": true,
+    "has222": true,
+    "stale111": false,
+    "has333viaMainUpdateHud": true
+  },
+  "micro_t1": {
+    "updateHud": {
+      "samples": [
+        93.7,
+        91.6,
+        100.7,
+        110.1,
+        99.2,
+        103,
+        94.7
+      ],
+      "n": 7,
+      "min": 91.6,
+      "med": 99.2,
+      "max": 110.1
+    },
+    "buildHudState": {
+      "samples": [
+        50.3,
+        55.6,
+        53,
+        59.5,
+        67.4,
+        45.6,
+        47.1
+      ],
+      "n": 7,
+      "min": 45.6,
+      "med": 53,
+      "max": 67.4
+    },
+    "collectTurnEvents": {
+      "samples": [
+        37,
+        40.7,
+        35.9,
+        36.6,
+        37,
+        36,
+        37.2
+      ],
+      "n": 7,
+      "min": 35.9,
+      "med": 37,
+      "max": 40.7
+    },
+    "territoryBorder": {
+      "samples": [
+        37.1,
+        26.4,
+        26.3,
+        26.3,
+        25.9,
+        33.7,
+        34.5
+      ],
+      "n": 7,
+      "min": 25.9,
+      "med": 26.4,
+      "max": 37.1
+    },
+    "refreshFog": {
+      "samples": [
+        232.1,
+        172.9,
+        193.4,
+        168.8,
+        159.5,
+        154.4,
+        154.2
+      ],
+      "n": 7,
+      "min": 154.2,
+      "med": 168.8,
+      "max": 232.1
+    }
+  },
+  "loadavgEnd": [
+    8.94,
+    7.58,
+    7.12
+  ],
+  "errors": []
+}

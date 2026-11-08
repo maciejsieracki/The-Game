@@ -1,0 +1,18 @@
+R-EPOKA-KAMIEN-WYMUSZONA-WOJNA — main.ts guards
+PASS: main.ts importuje osobny moduł forced-war-stone
+PASS: trigger ma ochronę startową turn >= 20
+PASS: trigger dotyczy wyłącznie ownera w Kamieniu
+PASS: guard wyklucza player/CS/barbarzyńców/eliminowanych
+PASS: Stone target filtruje NAP, peace lock i sojusz -- przez isForcedWarPairBlocked, wspólny predykat zastępujący dawne stoneBlockedOwnerIds
+PASS: Stone target jest przekazywany do decideAIDiplomacy
+PASS: udany DOW mutuje active/cycle i konsumuje pending Stone
+PASS: R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)
+PASS: resolveSiegeSurrender nadal przypisuje city.ownerId = newOwner (funnel kapitulacji bez zmian poza R9)
+PASS: finalizePeaceTreatyBetween ustawia Stone rest timer
+PASS: save snapshot zawiera komplet 4 pól Stone
+PASS: restoreGameFromSave odtwarza komplet 4 struktur Stone
+PASS: eliminacja i nowa gra czyszczą Stone state
+PASS: Kamień zachowuje własny moduł i rejestry (przywrócone po R9: nie zastąpione przez Brąz/Żelazo)
+PASS: main.ts: stoneForceWarTargetId ustawiane z forcedWarAssignmentByOwner (nowy rdzeń parowania), nie z usuniętego pickStoneForcedWarTargetIdCoordinated
+WYNIK: 15 PASS, 0 FAIL
+EXIT=0

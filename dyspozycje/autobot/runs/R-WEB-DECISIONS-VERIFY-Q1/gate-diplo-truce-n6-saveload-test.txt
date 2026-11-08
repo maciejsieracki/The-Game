@@ -1,0 +1,4 @@
+PASS: odczyt: wczytanie czyści i odtwarza diplomacyPairMeta (main.ts ~42263)
+PASS: reset nowej gry: applyClusterStartPlan czyści diplomacyPairMeta (main.ts ~9714)
+8 pass / 0 fail
+EXIT=0

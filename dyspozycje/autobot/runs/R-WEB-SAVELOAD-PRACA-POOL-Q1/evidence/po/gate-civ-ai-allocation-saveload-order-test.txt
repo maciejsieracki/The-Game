@@ -1,0 +1,4 @@
+PASS: mutant usuwający reapply po mapach zapisu jest wykrywany
+
+5/5 PASS
+EXIT=0

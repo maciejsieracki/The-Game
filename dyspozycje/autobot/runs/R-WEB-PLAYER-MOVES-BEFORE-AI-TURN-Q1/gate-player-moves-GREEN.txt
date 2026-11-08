@@ -1,0 +1,60 @@
+[S] strukturalna + mutacje
+  OK   S: main.ts spelnia wszystkie asercje strukturalne
+  OK   MUTACJA M1 (powrot do enqueueMarchSegments w fazie gracza) — wykryta (nowa porazka S1)
+  OK   MUTACJA M2 (ruchy gracza PO swiecie) — wykryta (nowa porazka S3)
+  OK   MUTACJA M3 (brak oczekiwania na bitwe) — wykryta (nowa porazka S4)
+  OK   MUTACJA M4 (hot-seat: brak dokonczenia ruchow fotela) — wykryta (nowa porazka S5)
+  OK   MUTACJA M5 (hot-seat: marsz fotela PO przelaczeniu fotela) — wykryta (nowa porazka S5)
+[L] zywa (Chromium)
+[L1-L4] jeden fotel: marsze gracza vs faza AI
+  OK   L0 scenariusz: 3 jednostki na roznych heksach i cele znalezione
+  OK   L4a round-trip zapisu przed koncem tury: pozycje i ruch bez zmian (nic nie wykonane w trakcie wczytania)
+  OK   L4b round-trip zapisu: wszystkie 3 plany marszu zachowane
+  log faz: PLAYER_MOVES_START(seat 0)@92472 | PLAYER_MARCH_INSTANT(civtest-0-47-31-4 47,31->45,32)@92474 | PLAYER_MARCH_RESULT(civtest-0-47-31-4 arrived=true stop= atk= launch=true)@92512 | PLAYER_MARCH_INSTANT(civtest-0-47-32-5 47,32->45,34)@92513 | PLAYER_MARCH_RESULT(civtest-0-47-32-5 arrived=true stop= atk= launch=true)@92548 | PLAYER_MARCH_INSTANT(civtest-0-49-31-6 49,31->48,30)@92549 | PLAYER_MARCH_RESULT(civtest-0-49-31-6 arrived=false stop= atk= launch=true)@92584 | PLAYER_MOVES_END@92587 | WORLD_START@93081 | ECONOMY@93531 | AI_START@93980 | AI_CIV_START(1)@94443 | AI_END@95202 | PLAYER_TURN_BEGIN@96282
+  OK   L1a kolejnosc faz: ruchy gracza < swiat < ekonomia < AI < koniec AI < nowa tura gracza
+  OK   L1b zadnej animowanej sciezki marszu w koncu tury (PLAYER_MARCH_ANIM_START)
+  OK   L1c wszystkie 3 marsze wykonane natychmiast PRZED swiatem
+  OK   L1d brak ANIM_FINISH po starcie swiata
+  OK   L2a pozycje jednostek gracza przy KAZDYM znaczniku po PLAYER_MOVES_END == pozycje z PLAYER_MOVES_END (faza AI nie dopala ruchow)
+  OK   L2b jednostki u1,u2 faktycznie poruszone w fazie ruchow gracza
+  OK   L2c ruch odnowiony na nowa ture (ruchLeft == ruch) dla wszystkich 3
+  OK   L4c u3: po 1 turze posuniety o 1..ruch heksow (jeden segment, nie dwa) i plan nadal zakolejkowany
+  OK   L4d round-trip zapisu po turze: pozycje/ruch bez zmian (idempotencja)
+  OK   brak bledow strony
+[L3] marsz z wrogiem na trasie (stan wojny): przerwanie/obejscie w fazie gracza, nie w fazie AI
+  OK   L3a scenariusz z wrogiem na trasie przygotowany
+  log faz: PLAYER_MOVES_START(seat 0):["47,31","45,32"] | PLAYER_MARCH_INSTANT(civtest-0-47-31-4 47,31->45,31):["47,31","45,32"] | PLAYER_MARCH_RESULT(civtest-0-47-31-4 arrived=false stop= atk= launch=true):["45,31","45,32"] | PLAYER_MOVES_END:["45,31","45,32"] | WORLD_START:["45,31","45,32"] | ECONOMY:["45,31","45,32"] | AI_START:["45,31","45,32"] | AI_CIV_START(1):["45,31","45,32"] | AI_END:["45,31","45,32"] | PLAYER_TURN_BEGIN:["45,31","45,32"]
+  OK   L3b ruchy gracza (lub ich przerwanie) zakonczone PRZED swiatem; zero ANIM po starcie swiata
+  OK   L3c jednostka gracza nigdy nie weszla na heks wroga
+  OK   L3d pozycja jednostki gracza przy znacznikach AI == pozycja z konca fazy ruchow gracza
+  OK   brak bledow strony (L3)
+[L5] hot-seat: ruchy konczacego fotela dokanczane przed swiatem
+  OK   L5a scenariusz hot-seat przygotowany
+  log faz (fotel 0 konczy): SEAT_MOVES_START(seat 0) | PLAYER_MARCH_INSTANT(civtest-0-48-31-4 48,31->46,32) | PLAYER_MARCH_RESULT(civtest-0-48-31-4 arrived=true stop= atk= launch=false) | SEAT_MOVES_END(seat 0)
+  OK   L5b fotel 0 skonczyl ture: jego zakolejkowany marsz zostal wykonany (nie przepadl)
+  OK   L5c to jeszcze NIE jest swiat (runda niekompletna): brak WORLD_START, jest SEAT_MOVES przed przelaczeniem
+  OK   L5d aktywny jest fotel 1
+  log faz (fotel 1 konczy): PLAYER_MOVES_START(seat 1) | PLAYER_MOVES_END | WORLD_START | ECONOMY | AI_START | AI_END | PLAYER_TURN_BEGIN
+  OK   L5e swiat po ostatnim fotelu: ruchy PRZED swiatem, zadnych zmian pozycji po PLAYER_MOVES_END
+  OK   L5f jednostka fotela 0 nie przesunieta ponownie w tej samej turze (idempotencja: stoi w celu albo dalej)
+  OK   brak bledow strony (hot-seat)
+[L6] marsz-z-atakiem otwiera okno bitwy W FAZIE GRACZA; swiat/AI czeka na jego zamkniecie
+  OK   L6a scenariusz marszu-z-atakiem przygotowany
+  OK   L6b okno bitwy gracza otwarte przez marsz-z-atakiem (faza ruchow gracza)
+  OK   L6c przy otwartym oknie bitwy: jest PLAYER_BATTLE_WAIT_START, brak WORLD_START/AI_START
+  OK   L6d przycisk Auto okna bitwy znaleziony i kliknięty
+  log faz: PLAYER_MOVES_START(seat 0) | PLAYER_MARCH_INSTANT(civtest-0-47-31-4 47,31->45,32) | PLAYER_MARCH_RESULT(civtest-0-47-31-4 arrived=false stop= atk=civtest-1-44-32-5 launch=true) | PLAYER_MOVES_END | PLAYER_BATTLE_WAIT_START | PLAYER_BATTLE_WAIT_END | WORLD_START | ECONOMY | AI_START | AI_CIV_START(1) | AI_END | PLAYER_TURN_BEGIN
+  OK   L6e kolejnosc: ruchy gracza < czekanie na bitwe < koniec czekania < swiat < nowa tura gracza
+  OK   L6f po rozstrzygnieciu bitwy gracza swiat doszedl do konca i tura gracza sie rozpoczela
+  OK   brak bledow strony (L6)
+[L7] hot-seat: marsz-z-atakiem konczacego fotela dochodzi do celu, ale NIE odpala ataku (ZALOZENIE)
+  OK   L7a scenariusz hot-seat z marszem-z-atakiem przygotowany
+  log faz (fotel 0): SEAT_MOVES_START(seat 0) | PLAYER_MARCH_INSTANT(civtest-0-47-31-4 47,31->45,32) | PLAYER_MARCH_RESULT(civtest-0-47-31-4 arrived=false stop= atk=civtest-1-44-32-5 launch=false) | SEAT_MOVES_END(seat 0)
+  OK   L7b marsz dotarl do pola sasiadujacego z wrogiem (odleglosc 1) -- nie przepadl
+  OK   L7c ZALOZENIE: ataku z marszu NIE odpalono (zero okna bitwy, brak czekania na bitwe, brak WORLD_START)
+  OK   L7d plan marszu fotela zamkniety przy przelaczeniu fotela (istniejaca regula KROK 2, nie regresja)
+  OK   L7e aktywny jest fotel 1 (okno bitwy nie wyciekło na kolejny fotel)
+  OK   brak bledow strony (L7)
+
+WYNIK: 44 OK, 0 FAIL
+EXIT=0

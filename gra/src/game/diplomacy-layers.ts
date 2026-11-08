@@ -8,6 +8,8 @@ import type { AIDiplomacyCommand } from './ai';
 import { getBaseDiplomacyParams, type Relation } from './diplomacy';
 import { zaufaniePierwszyKontaktZD4 } from './diplomacy-credibility';
 import { isBarbarian } from './barbarians';
+import { nastawienieBazoweZaufanieDelta } from './civ-ai-data';
+import { TypCywilizacji } from '../types/player';
 
 export type DiplomacyLayer = 'simplified' | 'full' | 'pre_contact';
 
@@ -52,6 +54,36 @@ export function startRelationForPair(sameType: boolean): Relation {
     respekt: p.startRespekt,
     status: 'neutralni',
   };
+}
+
+/** Initial trust for a pair of major civilizations (DIP activation Q2). */
+export function startRelationForMajorPair(civA: string, civB: string): Relation {
+  const p = getBaseDiplomacyParams();
+  const sameType = civA === civB;
+  const modifier = sameType
+    ? p.rywalizacjaTenSamTyp_zaufanie
+    : p.roznicaKulturowa_zaufanie;
+  const trust = majorPairStartTrust(
+    p.startZaufanie,
+    nastawienieBazoweZaufanieDelta(civA as TypCywilizacji, 50, 'normal'),
+    nastawienieBazoweZaufanieDelta(civB as TypCywilizacji, 50, 'normal'),
+    modifier,
+  );
+  return {
+    zaufanie: trust,
+    respekt: p.startRespekt,
+    status: 'neutralni',
+  };
+}
+
+/** Applies the current per-pair modifier, then clamps the major-pair start trust. */
+export function majorPairStartTrust(
+  startZaufanie: number,
+  deltaA: number,
+  deltaB: number,
+  pairModifier: number,
+): number {
+  return clamp(startZaufanie + deltaA + deltaB + pairModifier, 0, 100);
 }
 
 /**

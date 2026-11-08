@@ -1,0 +1,15 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (WEB, gra/)
+TEMAT: R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1
+GOAL: (A) pomiar i naprawa przebiegu decyzja AI -> karta rozejmu na stole; (B) prawdziwy roundtrip zapisu w rozejmie, wczytanie w NOWEJ sesji Chromium, wygasniecie bez kary.
+ZMIANY/COMMIT: baza 4d1916f2c + da33a30f7 (ocalony postep R1). Ta runda: gra/tools/diplo-truce-saveload-live-test.cjs przebudowany (fazy save/load/expire/legacy, osobne procesy, trwaly profil Chromium = prawdziwa nowa sesja, rozejm 5 tur, brak sciezek worktree), logi gate-*.txt, 02-operator-r2.md. main.ts bez nowych zmian w tej rundzie (weryfikacja diffu da33a30f7: gra/src/main.ts ~18090-18170 `peaceBareAllowed` tylko dla rodzaj==='rozejm' && neededPn<=0 && brak pozycji; ~26052 hak `__truceSaveLoadTestDebug`). SHA: patrz commit tej rundy (git log). Push: NIE.
+TESTY (Chromium, /opt/pw-browsers/chromium):
+- A rozejm PO: wpis stolu {actionId:rozejm, proposerOwnerId:1, turns:10} w turze 2, karta w DOM ("Dyplomacja: Grecy · Rozpatrz"), zrzut evidence/ai-table-rozejm-karta-stol.png; PASS, czas 122.0 s (gate-ai-table-rozejm-PO.txt). PRZED (baza bez poprawki): wpisy 0, FAIL (gate-ai-table-rozejm-PRZED.txt) = mutacja/regresja poprawki.
+- A kontrola pokoju (wojna 25 tur): PRZED i PO identyczne, wpisy 0 -> pokoj zachowuje stary ubytek (nie zmieniony; decyzja wlasciciela, poza zakresem).
+- B pelny przebieg, 4 fazy w osobnych procesach: save 107 s (2/0), load 123 s (8/0), expire 128 s (5/0), legacy 140 s (3/0) -> PASS (gate-saveload-PO.txt). Zgodne: truceUntilTurn=6 (zawarcie t1 + 5), status, aggressorFlagUntilByOwner, casusBelli, licznik wojen epoki, diplomacyPairMeta bez duplikatow, Wiarygodnosc; rozejm aktywny w U-1 (5), wygasa w U (6) do wojny bez nowej kary i flagi; stary zapis bez pol -> wartosci domyslne, zero pageerror.
+- Mutacje B (bundle do scratch): MUT1 zdjecie zapisu aggressorFlagUntilByOwner (main.ts:33182) -> FAIL flaga agresora (gate-saveload-MUT1-*); MUT2 zdjecie odczytu diplomacyPairMeta (main.ts:42394) -> FAIL truceUntilTurn i meta pary (gate-saveload-MUT2-*). Zrodlo przywrocone (cmp OK).
+- Bramki (gate-bramki-PO.txt) = baza: truce-r1 30, n6-saveload 8, r4-ai 24, war-gates 22, aggressor 73/15, cession 79+73, picker-ui 13, war-era-counter 82, multiwar 57/21, relation-gate 14, stone 31/15, iron 54/35, peace profile 198/gate 11/sim 22/main-guard 28/d7 8, diplomacy 148, peace-lock 9; znane czerwone civ-matrix 42/1, ai-test 274/20 (bez zmian). tsc --noEmit EXIT=0.
+BLOKADY / ZALOZENIA: (1) limit 120 s na test przekroczony o 2-20 s: stale koszt generowania swiata 82-95 s w tym srodowisku (4 CPU), faza = swiat + scenariusz; limit fazy w tescie ustawiony na 150 s (PHASE_LIMIT_MS) - ZALOZENIE. (2) NIE_ZMIERZONO: diplo-truce-live (23, live Chromium) i "ring 15" (brak pliku o tej nazwie w gra/tools). (3) Pokoj: ten sam ubytek AI->stol co rozejm przed poprawka, nienaprawiony.
+RUNDY: 2/5
+NASTEPNY KROK: Evaluator (niezalezne powtorzenie faz B i mutacji, ocena zalozenia 150 s), decyzja o pokoju.
+DEPLOY/PUSH: NIE WYKONANO

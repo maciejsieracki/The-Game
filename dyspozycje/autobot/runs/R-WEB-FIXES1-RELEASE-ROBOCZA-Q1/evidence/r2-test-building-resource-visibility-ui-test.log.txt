@@ -1,0 +1,19 @@
+
+-- LISTA BUDOWY: Stolarnia (wymaga Drewna), pusty magazyn --
+PASS: B1: Stolarnia widoczna jako wiersz mimo braku Drewna
+PASS: B2: wiersz wyszarzony (cannot-build-row), przycisk Buduj nieaktywny
+
+-- LISTA BUDOWY: Stolarnia, Drewno w magazynie (1000, koszt budowy pokryty) --
+PASS: B3: z Drewnem wiersz Stolarni aktywny (can-build-row)
+
+-- MODAL ZASTĄP: pozycja bez zapasu surowca --
+PASS: P1: pozycja z blockedReason ma klase disabled (wyszarzona)
+PASS: P2: przyczyna braku widoczna w tekscie pozycji
+PASS: P3: klik w zablokowana pozycje nie wywoluje onPick
+PASS: P4: pozycja bez blokady nadal wybieralna
+PASS: P5: tooltip pozycji zablokowanej podaje przyczyne
+
+Bledy strony: 0
+
+8 passed, 0 failed
+EXIT=0

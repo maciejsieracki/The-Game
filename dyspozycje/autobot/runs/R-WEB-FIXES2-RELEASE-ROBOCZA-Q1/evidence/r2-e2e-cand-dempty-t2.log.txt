@@ -1,0 +1,4 @@
+PASS D-EMPTY: „Wczytaj grę" WYSZAROWANY przy pustym katalogu :: {"missing":false,"disabled":true,"title":null,"hint":"Wczytaj grębrak zapisów"}
+PASS D-EMPTY: podpowiedz „brak zapisów" widoczna przy przycisku :: {"hint":"Wczytaj grębrak zapisów"}
+load-game-regression-e2e-r5: OK (0 FAIL)
+EXIT=0

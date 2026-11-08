@@ -1,0 +1,53 @@
+Bundling veteran.ts, unit-power.ts with esbuild...
+Bundle OK.
+
+========================================================================
+R-MOC-HUD-GLOWNY-Q1=C -- HUD + ekran dyplomacji + ranking -> Moc EFEKTYWNA
+========================================================================
+
+1. Grunt liczbowy: Konnica ★★★, sumArmyMForOwner NOMINALNA vs EFEKTYWNA
+  FAIL: sumArmyMForOwner (NOMINALNA) == 49 dla Konnicy (bez skalowania weterana) -- 98
+  FAIL: sumArmyMForOwnerEffective (EFEKTYWNA) == 58.0 dla Konnicy ★★★ (veteranScaledDefFor, R-MOC-TABLICZKA-VS-CIVPOWER-Q1) -- 116
+  PASS: Różnica NOMINALNA vs EFEKTYWNA jest realna (49 != 58.0) -- to ta różnica, którą HUD/dyplomacja/ranking musiały przejąć
+
+2. main.ts: nowe podłączenia -- HUD, ekran dyplomacji, ranking, respekt UI
+  FAIL: buildHudState: pole "power" czyta objectivePowerForOwnerEffective(0) (NIE objectivePowerForOwner)
+  FAIL: openDiplomacyAudience: playerPower czyta objectivePowerForOwnerEffective(0)
+  PASS: openDiplomacyAudience: otherPower czyta objectivePowerForOwnerEffective(ownerId) (OBIE strony efektywne)
+  PASS: openDiplomacyAudience: formatPowerRelationLine nadal woła z (playerPower, otherPower) -- oba już efektywne w scope
+  FAIL: buildPlayerDiploSummary: militaryPower czyta objectivePowerForOwnerEffective(0)
+  PASS: buildPlayerDiploSummary: powerRank czyta buildAbsolutePowerRankEffective() (NIE buildAbsolutePowerRank nominalną)
+  PASS: buildAbsolutePowerRank (bez Effective) ma ZERO trafień substringa w pliku -- funkcja martwa usunięta całkowicie (jedyny konsument, buildPlayerDiploSummary, już na buildAbsolutePowerRankEffective; ranking nominalny dla AI żyje przez inline callback w computeAbsolutePowerRank, nie przez tę nazwaną funkcję)
+  PASS: objectiveRespektPctTowardEffective() istnieje i liczy obie strony przez objectivePowerForOwnerEffective
+  PASS: buildPlayerDiploRelations: respekt czyta objectiveRespektPctTowardEffective(otherId)
+  FAIL: buildPlayerDiploRelations: theirRespekt czyta computeRespekt z OBOMA argumentami Effective
+  PASS: audienceRelTotalEffective() istnieje i liczy przez objectiveRespektPctTowardEffective
+  PASS: getState() payload ekranu audiencji: relacjaTotal czyta audienceRelTotalEffective (spójność z `respekt: respektNorm` na tym samym ekranie)
+
+3. Ścieżki NOMINALNE bajtowo nietknięte (AI, gating, warunek zwycięstwa)
+  PASS: (nominalna) #1 bajtowo nietknięta
+  PASS: (nominalna) #2 bajtowo nietknięta
+  FAIL: (nominalna) #3 bajtowo nietknięta -- wzorzec nie znaleziony -- ktoś zmienił/przesunął ten call-site: "                  sumArmyMForOwner(ownerId),\n               "
+  PASS: (nominalna) #4 bajtowo nietknięta
+  PASS: (nominalna) #5 bajtowo nietknięta
+  PASS: (nominalna) #6 bajtowo nietknięta
+  PASS: (nominalna) #7 bajtowo nietknięta
+  PASS: (nominalna) #8 bajtowo nietknięta
+  PASS: (nominalna) #9 bajtowo nietknięta
+  PASS: (nominalna) #10 bajtowo nietknięta
+  PASS: (nominalna) #11 bajtowo nietknięta
+  PASS: audienceRelTotal (NOMINALNA, bez Effective) nadal istnieje jako funkcja niezależna
+  PASS: objectiveRespektPctToward (NOMINALNA, bez Effective) nadal istnieje i liczy obie strony przez objectivePowerForOwner nominalną
+
+========================================================================
+WYNIK: 21 PASS, 7 FAIL
+========================================================================
+
+  .../tmp/civ-hud-moc-warstwa-OUjkLu/veteran-bundle-hud-moc-warstwa.cjs  9.3kb
+
+⚡ Done in 5ms
+
+  ...p/civ-hud-moc-warstwa-OUjkLu/unit-power-bundle-hud-moc-warstwa.cjs  8.2kb
+
+⚡ Done in 4ms
+EXIT=1

@@ -1,0 +1,22 @@
+[zrzuty] katalog zrzutow tego przebiegu: /tmp/civ-recruit-card-stock-chip-shots-YwtFon
+
+-- KOSZT JEDNORAZOWY: pula 15 Drewna, koszt 13 + utrzymanie 3/t --
+PASS: B1: chip Drewna widoczny w prawdziwym renderze
+PASS: B2: bramka rekrutacji przepuszcza przy puli wystarczającej na zakup
+PASS: B3: chip NIE ma klasy stock-missing
+PASS: B4: REALNY kolor chipa = normalny (nie czerwony)
+PASS: B5: przycisk „Rekrutuj" AKTYWNY
+PASS: B6: brak komunikatu odmowy — tooltip to zwykłe „Rekrutuj za ...", nie „Brakuje w magazynie"
+PASS: B7: chip utrzymania nadal pokazany (informacyjnie, nie jako blokada)
+PASS: B8: chip utrzymania NIE jest czerwony
+
+-- KONTROLA ODWROTNA: pula 12 Drewna, koszt 13 --
+PASS: B9: bramka rekrutacji BLOKUJE poniżej kosztu Drewna
+PASS: B10: chip ma klasę stock-missing
+PASS: B11: REALNY kolor chipa = czerwony
+PASS: B12: przycisk „Rekrutuj" ZABLOKOWANY
+PASS: B13: komunikat odmowy (tooltip „Rekrutuj") wskazuje brakujący koszt Drewna
+PASS: B14: komunikat odmowy NIE wspomina utrzymania
+PASS: B15: brak błędów strony w Chromium
+
+recruit-card-stock-chip-real-render-test: 15 passed, 0 failed

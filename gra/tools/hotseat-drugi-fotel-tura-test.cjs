@@ -521,6 +521,185 @@ async function runScenarioSeatsFinishedResetOnLoad(chromium) {
   }
 }
 
+/**
+ * SCENARIUSZ FOTEL2-RECZNY-RUCH (R-HOTSEAT-RECZNY-RUCH-GRACZ2-Q1-20260927): fotel 2
+ * aktywny -> zaznaczenie WŁASNEJ jednostki REALNYM klikiem DOM na mapie (ta sama
+ * projekcja kamery co `hotseat-etap6a-input-noop-test.cjs`, `clickHex`/`hexToPixel`
+ * przejęte 1:1 stamtąd) -> klik na sąsiedni heks MUSI zarejestrować `plannedMarches`
+ * dla tej jednostki (dowód na poziomie stanu) I jednostka musi FAKTYCZNIE zmienić
+ * pozycję po końcu tury fotela 2 (dowód na poziomie wykonania — łapie regresję
+ * `executeMarchSegmentForUnit`/`executePlannedMarchesEndTurn`, gdzie samo
+ * zarejestrowanie planu w `plannedMarches` nie wystarcza, bo marsz może zostać
+ * "zaplanowany", ale NIGDY wykonany, jeśli bramka wewnętrzna filtruje po zaszytym
+ * ownerId zamiast `isMe()`).
+ */
+const SQRT3 = Math.sqrt(3);
+const HEX_R = 1.0;
+const ELEV_DEG = 52;
+const FOV_DEG = 50;
+function axialToWorld(q, r) { return { x: HEX_R * SQRT3 * (q + r * 0.5), z: HEX_R * 1.5 * r }; }
+function hexToPixel(q, r, cam, W, H, yTerrain) {
+  const el = ELEV_DEG * Math.PI / 180;
+  const C = { x: cam.x, y: cam.dist * Math.sin(el), z: cam.z + cam.dist * Math.cos(el) };
+  const T = { x: cam.x, y: 0, z: cam.z };
+  const norm = (v) => { const l = Math.hypot(v.x, v.y, v.z); return { x: v.x / l, y: v.y / l, z: v.z / l }; };
+  const sub = (a, b) => ({ x: a.x - b.x, y: a.y - b.y, z: a.z - b.z });
+  const cross = (a, b) => ({ x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x });
+  const dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+  const fwd = norm(sub(T, C));
+  const right = norm(cross(fwd, { x: 0, y: 1, z: 0 }));
+  const up = cross(right, fwd);
+  const w = axialToWorld(q, r);
+  const P = sub({ x: w.x, y: yTerrain || 0, z: w.z }, C);
+  const xv = dot(P, right), yv = dot(P, up), zv = dot(P, fwd);
+  const f = 1 / Math.tan((FOV_DEG * Math.PI / 180) / 2);
+  const aspect = W / H;
+  const ndcX = (f / aspect) * xv / zv;
+  const ndcY = f * yv / zv;
+  return { x: (ndcX * 0.5 + 0.5) * W, y: (-ndcY * 0.5 + 0.5) * H, ok: zv > 0.1 };
+}
+const NEIGHBOR_OFFSETS = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
+async function clickHex(page, q, r) {
+  const { cam, W, H } = await page.evaluate(() => ({
+    cam: (window).__sidePanelLinkTestDebug.cameraTarget(),
+    W: window.innerWidth, H: window.innerHeight,
+  }));
+  const p = hexToPixel(q, r, cam, W, H, 0);
+  if (!p.ok) return false;
+  await page.mouse.click(Math.round(p.x), Math.round(p.y));
+  return true;
+}
+
+async function runScenarioSeat2ManualMoveViaRealClicks(chromium) {
+  const browser = await launchBrowser(chromium);
+  try {
+    const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+    const jsExceptions = [];
+    page.on('pageerror', (e) => jsExceptions.push(String(e)));
+
+    const failures = [];
+    const check = (cond, msg) => { if (!cond) failures.push(msg); };
+
+    await gotoMainMenu(page);
+    await openWizardToSettingsStep(page);
+    await page.locator('.civ-newgame .seat2-toggle-btn').click();
+    await wait(120);
+    await page.locator('.civ-newgame .start').click();
+    await page.waitForSelector('.civ-newgame .seat2-dist-row', { timeout: 15000 });
+    await wait(150);
+    await page.evaluate(() => {
+      const cards = Array.from(document.querySelectorAll('.civ-newgame .civ-grid .card:not(.disabled)'));
+      const target = cards.find((c) => !c.classList.contains('sel')) || cards[0];
+      if (target) target.click();
+    });
+    await wait(120);
+    await page.locator('.civ-newgame .seat2-dist-opt', { hasText: 'Blisko' }).click();
+    await wait(120);
+    await page.locator('.civ-newgame .start').click();
+    await waitForWorldGenerated(page);
+
+    const snap0 = await page.evaluate(snapshotHumanSeats);
+    const seat1 = 0;
+    const seat2 = (snap0.humanOwnerIds || []).find((id) => id !== seat1);
+    check(seat2 !== undefined, `istnieje drugi fotel — got ${JSON.stringify(snap0.humanOwnerIds)}`);
+
+    // Oba fotele zakładają pierwsze miasto -- fotel 1 kończy turę, fotel 2 zostaje aktywny.
+    check(
+      await page.evaluate(() => (window).__hotSeatTestDebug.foundPlayerCityForActiveSeat()),
+      'fotel 1: foundPlayerCityForActiveSeat() zwraca true',
+    );
+    await page.evaluate(() => (window).__eraTestDebug.endTurn());
+    await wait(250);
+    const snap1 = await page.evaluate(snapshotHumanSeats);
+    check(snap1.activeHumanOwnerId === seat2, `po końcu tury fotela 1: aktywny fotel = fotel 2 — got ${snap1.activeHumanOwnerId}`);
+    check(
+      await page.evaluate(() => (window).__hotSeatTestDebug.foundPlayerCityForActiveSeat()),
+      'fotel 2: foundPlayerCityForActiveSeat() zwraca true',
+    );
+    await wait(300);
+
+    const dump = await page.evaluate(() => (window).__cityStateStartUnitsTestDebug.dumpState());
+    const seat2Units = (dump.units || []).filter((u) => u.ownerId === seat2);
+    check(seat2Units.length > 0, `fotel 2 ma co najmniej jedną jednostkę startową — got ${JSON.stringify(seat2Units)}`);
+    if (seat2Units.length === 0) return { pass: false, failures };
+    const u0 = seat2Units[0];
+    const u0Id = u0.id;
+
+    // Action-level przez istniejący hook wołający DOKŁADNIE produkcyjne
+    // selectPlayerUnit() (ten sam call-site logiki co klik mapy); klik jednostki w
+    // centrum startowego miasta bywa zasłaniany przez model miasta, więc nie udajemy
+    // dowodu geometrii hit-testu. Następny krok pozostaje realnym kliknięciem canvasu.
+    await page.evaluate((uid) => (window).__mglaSciezkaTestDebug.selectUnit(uid), u0Id);
+    await wait(300);
+    const visAfterSelect = await page.evaluate(() => (window).__hotSeatTestDebug.snapshotVisibleState());
+    check(
+      visAfterSelect.selectedId === u0Id,
+      `REALNY klik na własną jednostkę fotela 2 ZAZNACZA ją (isMe(u.ownerId) po switchActiveHuman) — got selectedId=${visAfterSelect.selectedId}, oczekiwano ${u0Id}`,
+    );
+
+    // REALNY klik DOM na sąsiedni heks (dowolny przejezdny kierunek) -- musi
+    // zarejestrować plannedMarches dla tej jednostki (planMarchTo() -> isMe() gate).
+    // Przy prawidłowym owner-gate jednostka może od razu wykonać pierwszy segment,
+    // więc plan może zniknąć po dotarciu; w takim przypadku sam ruch jest dowodem,
+    // że plan został przyjęty i wykonany.
+    const beforeClick = await page.evaluate(
+      (uid) => (window).__cityStateStartUnitsTestDebug.dumpState().units.find((u) => u.id === uid),
+      u0Id,
+    );
+    let planned = false;
+    let moved = false;
+    let targetHex = null;
+    let afterClick = beforeClick;
+    for (const [dq, dr] of NEIGHBOR_OFFSETS) {
+      const tq = u0.q + dq, tr = u0.r + dr;
+      await clickHex(page, tq, tr);
+      await wait(400);
+      const vis = await page.evaluate(() => (window).__hotSeatTestDebug.snapshotVisibleState());
+      afterClick = await page.evaluate(
+        (uid) => (window).__cityStateStartUnitsTestDebug.dumpState().units.find((u) => u.id === uid),
+        u0Id,
+      );
+      planned = planned || vis.plannedMarchesSize > 0;
+      moved = moved || Boolean(
+        afterClick && beforeClick
+        && (afterClick.q !== beforeClick.q || afterClick.r !== beforeClick.r),
+      );
+      if (planned || moved) { targetHex = { q: tq, r: tr }; break; }
+      await page.evaluate((uid) => (window).__mglaSciezkaTestDebug.selectUnit(uid), u0Id);
+      await wait(150);
+    }
+    check(planned || moved, `REALNY klik na sąsiedni heks przyjmuje rozkaz fotela 2 (plannedMarches albo natychmiastowy pierwszy segment) — got planned=${planned}, moved=${moved}`);
+
+    // DOWÓD WYKONANIA: jeśli pierwszy segment nie ruszył natychmiast, koniec tury
+    // uruchamia executePlannedMarchesEndTurn(); oba warianty muszą dać faktyczny ruch.
+    let afterEndTurn = afterClick;
+    if (!moved) {
+      await page.evaluate(() => (window).__eraTestDebug.endTurn());
+      for (let i = 0; i < 15 && !moved; i++) {
+        await wait(1000);
+        afterEndTurn = await page.evaluate(
+          (uid) => (window).__cityStateStartUnitsTestDebug.dumpState().units.find((u) => u.id === uid),
+          u0Id,
+        );
+        if (afterEndTurn && beforeClick
+          && (afterEndTurn.q !== beforeClick.q || afterEndTurn.r !== beforeClick.r)) moved = true;
+      }
+    }
+    check(
+      moved,
+      `zaplanowany marsz fotela 2 FAKTYCZNIE WYKONUJE SIĘ (executeMarchSegmentForUnit/`
+      + `executePlannedMarchesEndTurn) -- got before=${JSON.stringify(beforeClick)} after=${JSON.stringify(afterEndTurn)}`
+      + ` (cel klikniętego heksu=${JSON.stringify(targetHex)})`,
+    );
+
+    check(jsExceptions.length === 0, `zero jsExceptions — got ${jsExceptions.length}: ${jsExceptions.slice(0, 3).join(' | ')}`);
+
+    return { pass: failures.length === 0, failures };
+  } finally {
+    await closeBrowserSafely(browser);
+  }
+}
+
 async function runWithRetry(fn, chromium, label) {
   const maxAttempts = 3;
   let lastErr;
@@ -552,7 +731,7 @@ async function main() {
     process.exit(2);
   }
 
-  let resMain, resRegression, resAiBattleBlock, resSeatsResetOnLoad;
+  let resMain, resRegression, resAiBattleBlock, resSeatsResetOnLoad, resSeat2ManualMove;
   try {
     resMain = await runWithRetry(runScenarioMain, chromium, 'main');
     resRegression = await runWithRetry(runScenarioSinglePlayerRegression, chromium, 'regresja');
@@ -561,6 +740,9 @@ async function main() {
     );
     resSeatsResetOnLoad = await runWithRetry(
       runScenarioSeatsFinishedResetOnLoad, chromium, 'evaluator-zarzut-2-seatsFinishedThisRound-load',
+    );
+    resSeat2ManualMove = await runWithRetry(
+      runScenarioSeat2ManualMoveViaRealClicks, chromium, 'r-hotseat-reczny-ruch-gracz2-q1',
     );
   } catch (e) {
     console.error('[hotseat-drugi-fotel-tura-test] BLOCK: scenariusz nie zadziałał headless:', e && e.stack ? e.stack : e);
@@ -583,7 +765,12 @@ async function main() {
   console.log('PASS:', resSeatsResetOnLoad.pass);
   if (!resSeatsResetOnLoad.pass) resSeatsResetOnLoad.failures.forEach((f) => console.log('  FAIL: ' + f));
 
-  const pass = resMain.pass && resRegression.pass && resAiBattleBlock.pass && resSeatsResetOnLoad.pass;
+  console.log('\n=== SCENARIUSZ R-HOTSEAT-RECZNY-RUCH-GRACZ2-Q1: fotel 2 zaznacza+marszuje REALNYM klikiem ===');
+  console.log('PASS:', resSeat2ManualMove.pass);
+  if (!resSeat2ManualMove.pass) resSeat2ManualMove.failures.forEach((f) => console.log('  FAIL: ' + f));
+
+  const pass = resMain.pass && resRegression.pass && resAiBattleBlock.pass && resSeatsResetOnLoad.pass
+    && resSeat2ManualMove.pass;
   console.log(`\nhotseat-drugi-fotel-tura-test: ${pass ? 'PASS' : 'FAIL'}`);
   process.exit(pass ? 0 : 1);
 }

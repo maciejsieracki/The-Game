@@ -1,0 +1,31 @@
+(A) Zbiór bramki: młyn tylko rzeka; port nie
+  [OK] RIVER_ONLY_BUILDING_IDS zawiera mlyn
+  [OK] porty NIE są w zbiorze „tylko rzeka”
+  [OK] Port nadal w bramce morze/rzeka; mlyn nie
+(B) availableProduction: młyn wymaga rzeki w zasięgu miasta
+  [OK] młyn dostępny przy rzece (cityHasRiver=true)
+  [OK] młyn NIEdostępny bez rzeki (cityHasRiver=false)
+  [OK] samo wybrzeże (cityHasCoastOrRiver) NIE odblokowuje młyna
+  [OK] brak flagi rzeki → młyn NIEdostępny (bezpiecznie domyślnie)
+  [OK] morze + brak rzeki → młyn NIE
+(C) Wspólna definicja „przy rzece” (isHexNearRiver)
+  [OK] heks z rzeką → TAK
+  [OK] sąsiad rzeki → TAK
+  [OK] suchy ląd → NIE
+  [OK] jezioro/morze bez rzeki → NIE
+(D) Stare zapisy z młynem
+  [OK] builtBuildingIds zawiera mlyn bez wyjątku (bez rzeki i z rzeką)
+  [OK] availableProduction nie mutuje ctx/builtBuildingIds (stary zapis z młynem)
+  [OK] lista dostępnych pozycji dla starego zapisu ma poprawne id
+  [OK] bramka rzeki NIE zmienia dostępności innych budynków (tylko młyn)
+(E) Pin main.ts
+  [OK] cityHasRiverAccess = isHexNearRiver(map, q, r)
+  [OK] każde wołanie ctx z cityHasCoastOrRiver ma cityHasRiver (6/6)
+  [OK] cfg panelu miasta dostaje getCityHasRiver
+(F) Pin UI
+  [OK] blokada UI „Wymaga rzeki przy mieście” dla młyna
+(G) Spójność id „mlyn” (bramka vs. efekty i UI)
+  [OK] literały 'mlyn' w src wykryte (4)
+  [OK] efekt młyna (turn-economy) czyta runtimeBuiltIds — bramka go nie dotyka
+ALL PASS
+EXIT=0

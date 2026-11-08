@@ -1,0 +1,2 @@
+esbuild failed: Build failed with 1 error:
+src/game/economy.ts:45:9: ERROR: No matching export in "../../../../../tmp/pr141-population-eHzCFM/civ-matrix-fixture.ts" for import "applyCivMatrixParam"

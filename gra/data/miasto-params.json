@@ -96,6 +96,16 @@
     "jednostka": "% Obrony (wczesna palisada drewniana)",
     "opis": "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broniącym się jednostkom. Epoka Kamienia, tech Obróbka drewna. Mury (+200%) ZASTĘPUJĄ bonus palisady (nie stackują -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
   },
+  "wieze_strzeleckie_odstep_kafli": {
+    "wartosc": 4,
+    "jednostka": "kafle obwodu muru/palisady",
+    "opis": "R-WEB-PALISADE-BATTLE-WALL-RULES-Q1 (R4, decyzja wlasciciela 2026-11-03): co ile kafli obwodu muru/palisady stoi wiezyczka strzelecka. Wiezyczki powstaja automatycznie i za darmo przy palisadzie ORAZ przy murze (budynek Baszta bez zmian, bez ostrzalu). Konsumuje game/city-towers.ts towerRows."
+  },
+  "wieze_strzeleckie_zasieg_min": {
+    "wartosc": 2,
+    "jednostka": "kafle",
+    "opis": "R4: minimalny zasieg ostrzalu wiezyczki. Zasieg = zasieg najmocniejszej jednostki dystansowej epoki wlasciciela miasta, nie mniej niz ta wartosc. Moc strzalu = missileAttack tej jednostki (game/city-towers.ts strongestRangedUnitForEra); strzal liczy battleScene _singleBlow jak strzal tej jednostki."
+  },
   "zasieg_okolicy_baza": {
     "wartosc": 5,
     "jednostka": "pola/strona",
@@ -130,5 +140,10 @@
     "wartosc": 0.1,
     "jednostka": "udzial [0..1]",
     "opis": "Domyslny udzial outputu miasta kierowany do strumienia ROZWOJ. production.DEFAULT_OUTPUT_SHARES / splitOutput."
+  },
+  "capture_pop_loss": {
+    "wartosc": 1,
+    "jednostka": "obywatele",
+    "opis": "Ludnosc tracona przez miasto przy ZDOBYCIU przez obcego (szturm, bitwa o miasto, wejscie do pustego miasta, kapitulacja glodowa; gracz/AI/panstwa-miasta/barbarzyncy). Dokladnie tyle, min. 1 obywatel zostaje. NIE dotyczy: odzyskania wlasnego miasta (zdobywca = poprzedni wlasciciel / wlasciciel sprzed buntu), cesji w traktacie, aneksji dyplomatycznej, zwyklej bitwy bez zdobycia, strat Milicji. cities.applyCapturePopulationLoss (R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1)."
   }
 }

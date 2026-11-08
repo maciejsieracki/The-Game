@@ -1,0 +1,14 @@
+EXIT=0
+--- P: parametry (war-rules-params.json) ---
+--- C: licznik per (cywilizacja, epoka) ---
+--- S: symulacja wielotur (gracz + AI, Kamień) ---
+--- X: wykluczenie z puli / kandydatów / dołączania ---
+--- K: partner gracza liczony od stolicy ---
+--- Z: zapis/odczyt licznika ---
+WYNIK: 37 OK / 0 FAIL
+--- G: evaluateEraForcedWarGate (czysta bramka, ta sama co main.ts) ---
+--- S2: wielotur -- gracz po wojnie Kamienia nie dostaje drugiej w tej epoce ---
+--- R: pickPlayerReferenceCity + restoreEraWarCounts ---
+--- B: okablowanie main.ts (tekstowe) ---
+WYNIK B: 16 / 16 OK
+war-era-counter-test: 82 pass / 0 fail

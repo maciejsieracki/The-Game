@@ -106,7 +106,9 @@ const OUT_AFTER = path.join(os.tmpdir(), `civ-ikona-robotnik-kolor-after-${TMPDI
 const OUT_BEFORE = path.join(os.tmpdir(), `civ-ikona-robotnik-kolor-before-${TMPDIR_RUN_ID}`);
 
 /** Jedyny plik dotknięty tym dispatchem (allowlista 00-dispatch.md). */
-const TOUCHED_FILES = ['src/ui/hud.ts'].map(p => path.join(GRA, p));
+// R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1: bundle PRZED musi mieć spójną parę main.ts/hud.ts/minimapHud.ts z bazy
+// (main.ts importuje updateMinimapViewport z hud.ts) — ta sama lista co minimapa-pasek-narzedzi-reorganizacja-live-test.cjs.
+const TOUCHED_FILES = ['src/ui/minimapHud.ts', 'src/ui/hud.ts', 'src/main.ts'].map(p => path.join(GRA, p));
 
 /** Złoto motywu z `.civ-hud-util-dock .b-util-toggle{color:#e8d88a}` (hud.ts). */
 const ZLOTO = 'rgb(232, 216, 138)';

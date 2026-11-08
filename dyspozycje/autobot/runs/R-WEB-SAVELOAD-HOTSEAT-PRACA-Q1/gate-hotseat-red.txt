@@ -1,0 +1,15 @@
+[saveload-praca-pool-hotseat] vite build -> /tmp/civ-saveload-praca-hs-cgaIc5
+ FAIL H5 snapshot niesie meta.pracaPoolByHuman z parami [0,405] i [1,77] -- null
+  OK  H1.0 zapis do slotu IndexedDB OK
+  OK  H1.1 fresh page: pula fotela 0 = 405 (po=405)
+ FAIL H1.2 fresh page: pula fotela 1 = 77 (po="THROW:Cannot read properties of undefined (reading 'praca')")
+ FAIL H1.3 fresh page: cache HUD fotela 1 (_lastPraca) = 77 (po=0)
+[saveload-praca-pool-hotseat] BLAD: page.evaluate: TypeError: Cannot set properties of undefined (setting 'praca')
+    at KI (file:///tmp/civ-saveload-praca-hs-cgaIc5/index.html:31285:204619)
+    at Object.setOwnerPracaPoolForTest (file:///tmp/civ-saveload-praca-hs-cgaIc5/index.html:31285:309561)
+    at eval (eval at evaluate (:303:30), <anonymous>:1:34)
+    at UtilityScript.evaluate (<anonymous>:305:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+    at D (/home/user/The-Game/.claude/worktrees/wf_99334725-a8b-1/gra/tools/saveload-praca-pool-hotseat-live-test.cjs:70:31)
+    at main (/home/user/The-Game/.claude/worktrees/wf_99334725-a8b-1/gra/tools/saveload-praca-pool-hotseat-live-test.cjs:113:11)
+EXIT=2

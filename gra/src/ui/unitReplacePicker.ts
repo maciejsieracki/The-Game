@@ -24,6 +24,13 @@ export interface UnitReplaceOption {
   atk: number;
   def: number;
   hpMax: number;
+  /**
+   * R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): przyczyna niedostępności z powodu braku
+   * zapasu surowca (np. „Brak w magazynie państwa: Drewno”). Ustawiona → pozycja wyszarzona,
+   * nie do wyboru, z tą przyczyną jako tooltip i tekst. Brak = dostępna (dopłata ograniczona
+   * tylko skarbcem, jak dotąd).
+   */
+  blockedReason?: string;
 }
 
 export interface UnitReplacePickerOptions {
@@ -152,7 +159,7 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
   }
 
   for (const o of opts.options) {
-    const affordable = opts.skarb >= o.surcharge;
+    const affordable = opts.skarb >= o.surcharge && !o.blockedReason;
     const item = document.createElement('div');
     item.className = 'civ-urp-item' + (affordable ? '' : ' disabled');
     item.setAttribute('role', 'button');
@@ -178,7 +185,16 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
     const cost = document.createElement('div');
     cost.className = 'civ-urp-cost' + (o.surcharge === 0 ? ' free' : affordable ? '' : ' short');
     cost.innerHTML = o.surcharge === 0 ? 'bez dopłaty' : `${o.surcharge} 💰`;
-    if (!affordable) cost.title = `Za mało Pieniądza (${opts.skarb}/${o.surcharge})`;
+    if (o.blockedReason) {
+      cost.title = o.blockedReason;
+      item.title = o.blockedReason;
+      const why = document.createElement('div');
+      why.className = 'civ-urp-stats';
+      why.textContent = o.blockedReason;
+      body.appendChild(why);
+    } else if (!affordable) {
+      cost.title = `Za mało Pieniądza (${opts.skarb}/${o.surcharge})`;
+    }
     item.appendChild(cost);
 
     const pick = (): void => {

@@ -1,0 +1,8 @@
+FAIL: [A8 kontrola G2] zaden warunek `if (...)` w tej funkcji nie odwoluje sie do aiTurnAwaitingBattle/aiCmdResume -- funkcja jest NIEZALEZNA od tych flag, w przeciwienstwie do starej galezi 1 (bramkowanej `aiTurnAwaitingBattle||aiCmdResume`), wiec pokrywa tez sciezke barbarzynska
+FAIL: [A9] triggerPlayerEndTurn: healStuckDeferredPreBattleQueueOnEndTurnAttempt() jest DOSLOWNIE pierwsza linia ciala funkcji, przed `if (!canPlayerInitiateEndTurn())` i jego early return -- zweryfikowane w kodzie, nie zalozone
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+
+koniec-tury-g1-g2-runda4-test: 36 pass, 2 fail
+EXIT=1

@@ -1,0 +1,1748 @@
+# Surowe wyjscia bramek: KANDYDAT 4643863f (worktree wf_a09ad2e6-bb5-3)
+# Kazdy blok konczy sie linia EXIT=<kod procesu> (z pliku summary.txt uruchamiacza, timeout 900 s).
+# Uruchamiacz: node gra/tools/<test>.cjs z katalogu gra/ danego drzewa.
+
+=================== diplo-tick-war-brake-unit-test
+diplo-tick-war-brake-unit-test: 69 pass / 0 fail
+
+EXIT=0  (diplo-tick-war-brake-unit-test)
+
+=================== diplo-tick-war-brake-test
+diplo-tick-war-brake-test: 51 pass / 0 fail
+
+EXIT=0  (diplo-tick-war-brake-test)
+
+=================== diplo-tick-war-brake-mutation-test
+diplo-tick-war-brake-mutation-test: 17 pass / 0 fail (baza + 16 mutantow)
+
+EXIT=0  (diplo-tick-war-brake-mutation-test)
+
+=================== war-rules-multiwar-test
+--- R1: opóźnienie wojen między cywilizacjami do tury 40 ---
+--- R2: Kamień -- najwyżej 1 równoczesna wojna na cywilizację ---
+--- R3: jedna wojna epoki na epokę w skali świata ---
+--- W1: wybór najbliższej wrogiej armii w promieniu ---
+--- W2: podział armii na grupy wg siły wrogów ---
+--- planner: W1 (engage) i W2 (podział) ---
+
+WYNIK: 55 OK / 0 FAIL
+
+EXIT=0  (war-rules-multiwar-test)
+
+=================== war-rules-multiwar-main-guard-test
+R-WEB-WAR-RULES-MULTIWAR-Q1 — okablowanie main.ts (main.ts)
+PASS: main.ts importuje bramki z war-rules-multiwar
+PASS: interCivWarBlockedForAi: flaga OFF -> false (zachowanie bazowe)
+PASS: interCivWarBlockedForAi: gracz jako napastnik nieograniczony
+PASS: interCivWarBlockedForAi: deleguje do evaluateInterCivWarGate (R1+R2) z liczbami wojen bez barbarzyńców
+PASS: wypowiedz_wojne: blok bramki R1/R2/R3 istnieje (flaga ON)
+PASS: wypowiedz_wojne: R3 -- blokada wojny epoki przez canDeclareEraForcedWar(tag, forcedEraWarDeclaredByTag) -> continue
+PASS: wypowiedz_wojne: R1/R2 -- evaluateInterCivWarGate z turn/era/liczbą wojen napastnika i celu
+PASS: wypowiedz_wojne: werdykt != ok -> continue (pominięcie komendy, pending nie konsumowany)
+PASS: wypowiedz_wojne: bramka wykonuje się PRZED chargeWarDeclarationCredibility(ownerId, targetId)
+PASS: R3: inkrementacja licznika jest w bloku if (declaredEraTag !== null) (nie bezwarunkowo)
+PASS: R3: licznik wojen epoki inkrementowany PO wypowiedzeniu (po applyAllianceObligationsOnWar)
+PASS: klaster państw-miast: interCivWarBlockedForAi(csOwnerId, ME()) -> continue PRZED wypowiedzeniem
+PASS: applyAllianceObligationsOnWar: sojusznik blokowany przez bramkę (nie gracz) -> continue
+PASS: applyAllianceObligationsOnWar: bramka sojusznika PRZED joinAllyToWar
+PASS: joinAllyToWar: istnieje i zapisuje wojnę przez setDiploRelation(... wojna_wypowiedziana)
+PASS: R1: reset triggeredSubjects przed turą 40 (isInterCivWarOpenAtTurn) w ścieżce wymuszeń
+PASS: W1: garnizon (jednostka na własnym mieście) NIE trafia do enemyArmies
+PASS: W1: cywile i zwiadowcy wyłączeni z puli armii (przed push)
+PASS: W1/W2: flaga OFF zwraca kontekst bez pól (zachowanie bazowe)
+PASS: R1 (r6): warAllInContextFor bramka tury delayInterCivWarsUntilTurn dla cywilizacji AI
+PASS: R3/zapis (r6): warRulesForcedEraDeclared w meta save tylko przy fladze ON
+
+21 PASS / 0 FAIL
+
+EXIT=0  (war-rules-multiwar-main-guard-test)
+
+=================== war-allin-capital-test
+
+--- 1: AI<->AI, PRZED (flaga OFF) vs PO (flaga ON) ---
+
+--- 2: AI -> GRACZ; gracz bez automatycznych rozkazow; zmiana stolicy ---
+
+--- 3: barbarzyncy -> NAJBLIZSZA stolica ---
+
+--- 4: brak sciezki ladowej (morze) -- bez zawieszenia, jednostki zostaja ---
+
+--- 5: przeciwnik wyeliminowany (brak miast) => dotychczasowe zachowanie ---
+
+--- 6: flaga OFF == baza origin/main (hash stanu po TURNS turach) ---
+  [INFO] aiVsAi: baza pre-zasieg=49f36d28989cf940 OFF=d7316c5be9bffe39 (roznica = zamierzona zmiana zasiegu)
+  [INFO] aiVsPlayer: baza pre-zasieg=22a63c096e698720 OFF=83f07f345643f6fb (roznica = zamierzona zmiana zasiegu)
+  [INFO] barbarians: baza pre-zasieg=65542d56510bcef9 OFF=c07e60985cb8a2ab (roznica = zamierzona zmiana zasiegu)
+  [INFO] noLandPath: baza pre-zasieg=176b6b39e9773451 OFF=69d49bd592471e58 (roznica = zamierzona zmiana zasiegu)
+
+--- 7: determinizm przy fladze ON (2 przebiegi) ---
+
+--- 8: planWarAllInCapital -- grupowanie / rendezvous ---
+
+--- 10: realne scalanie grup, gesta grupa, brak krokow wstecz i dubli ---
+
+--- 9: okablowanie main.ts (testy statyczne) ---
+
+95 passed, 0 failed
+
+EXIT=0  (war-allin-capital-test)
+
+=================== ai-move-range-test
+
+--- A: pomocnik truncatePathWithinBudget / farthestStepWithinBudget ---
+  [OK] A1 budzet 4 na plaskim terenie -> 4 heksy (got 4, want 4)
+  [OK] A2 budzet 0 -> brak ruchu (got 0, want 0)
+  [OK] A3 budzet > dlugosc trasy -> cala trasa (got 10, want 10)
+  [OK] A4 heks kosztowny 3 przy budzecie 3 -> zatrzymanie przed nim (got 1, want 1)
+  [OK] A5 koszt terenu liczony (1+3=4 <= 4) (got 2, want 2)
+  [OK] A6 farthest: budzet 5 -> heks (5,0) (got 5, want 5)
+  [OK] A7 farthest: budzet 1 -> heks (1,0) (got 1, want 1)
+  [OK] A8 farthest: wolny cel (10,0) w budzecie jest krokiem (jak u gracza) (got 10, want 10)
+  [OK] A8b zajety cel (10,0) poza wyborem -> najdalej (9,0) (got 9, want 9)
+  [OK] A8c budzet 9 -> dochodzi do (9,0), cel (10,0) poza zasiegiem (got 9, want 9)
+  [OK] A9 trasa 1-heksowa (cel sasiedni) -> null (wolajacy bierze path[0]) (got null, want null)
+
+--- B: planer wojny all-in (AI / miasta-panstwa / barbarzyncy) na plaskim terenie ---
+  [OK] B2 planer: jednostka z budzetem 2 przechodzi 2 heksow w jednej turze (got 2, want 2)
+  [OK] B3 planer: jednostka z budzetem 3 przechodzi 3 heksow w jednej turze (got 3, want 3)
+  [OK] B5 planer: jednostka z budzetem 5 przechodzi 5 heksow w jednej turze (got 5, want 5)
+  [OK] B8 planer: jednostka z budzetem 8 przechodzi 8 heksow w jednej turze (got 8, want 8)
+  [OK] B9 determinizm: dwa przebiegi planera, ten sam wynik (got true, want true)
+  [OK] B10 brak ruchLeft -> 1 heks (zgodnosc wsteczna) (got 1, want 1)
+
+--- C: egzekutor komendy move (executeAiCityMove + truncatePath) ---
+  [OK] C2 komenda do odleglego heksu: egzekutor przesuwa o budzet 2 (got 2, want 2)
+  [OK] C3 komenda do odleglego heksu: egzekutor przesuwa o budzet 3 (got 3, want 3)
+  [OK] C4 komenda do odleglego heksu: egzekutor przesuwa o budzet 4 (got 4, want 4)
+  [OK] C6 komenda do odleglego heksu: egzekutor przesuwa o budzet 6 (got 6, want 6)
+  [OK] C7 egzekutor zeruje ruchLeft po ruchu (jak dotad); budzet czytany wczesniej przez truncatePath (got 0, want 0)
+  [OK] C9 budzet 1 -> 1 heks (got 1, want 1)
+
+--- D: mutacje REALNEGO zrodla musza czerwienic asercje zasiegu ---
+  [OK] D1 AI firstStep -> path[0]: dystans=1 (!= 5) -> asercja zasiegu AI czerwona
+  [OK] D2 barbarzynca firstStep -> path[0]: dystans=1 (!= 5) -> asercja zasiegu barbarzyncy czerwona
+  [OK] D3 planer wojny: budzet kroku = 1: dystans=1 (!= 5) -> asercja planera czerwona
+  [OK] D4 egzekutor: wylaczony truncatePath: dystans=25 (!= 4) -> asercja egzekutora czerwona
+  [OK] D5 kontrola: bez mutacji AI firstStep = 5 (got 5, want 5)
+
+--- F: PRAWDZIWE firstStep z ai.ts i barbarians.ts ---
+  [OK] F-AI1 ai.ts firstStep: budzet 1 -> 1 heksow (got 1, want 1)
+  [OK] F-BARB1 barbarians.ts firstStep: budzet 1 -> 1 heksow (got 1, want 1)
+  [OK] F-AI2 ai.ts firstStep: budzet 2 -> 2 heksow (got 2, want 2)
+  [OK] F-BARB2 barbarians.ts firstStep: budzet 2 -> 2 heksow (got 2, want 2)
+  [OK] F-AI3 ai.ts firstStep: budzet 3 -> 3 heksow (got 3, want 3)
+  [OK] F-BARB3 barbarians.ts firstStep: budzet 3 -> 3 heksow (got 3, want 3)
+  [OK] F-AI5 ai.ts firstStep: budzet 5 -> 5 heksow (got 5, want 5)
+  [OK] F-BARB5 barbarians.ts firstStep: budzet 5 -> 5 heksow (got 5, want 5)
+  [OK] F-AI8 ai.ts firstStep: budzet 8 -> 8 heksow (got 8, want 8)
+  [OK] F-BARB8 barbarians.ts firstStep: budzet 8 -> 8 heksow (got 8, want 8)
+  [OK] F-ADJ cel sasiedni -> krok na cel (zachowanie bez zmian) (got 1, want 1)
+  [INFO] budzet 1: PRZED sr. 1.00 heks/jedn., kolizje=0; PO sr. 1.00 heks/jedn., kolizje=0
+  [OK] F-AVG1 PO: srednio 1 heksow na jednostke (budzet 1)
+  [INFO] budzet 2: PRZED sr. 1.00 heks/jedn., kolizje=0; PO sr. 2.00 heks/jedn., kolizje=0
+  [OK] F-AVG2 PO: srednio 2 heksow na jednostke (budzet 2)
+  [INFO] budzet 5: PRZED sr. 1.00 heks/jedn., kolizje=0; PO sr. 5.00 heks/jedn., kolizje=0
+  [OK] F-AVG5 PO: srednio 5 heksow na jednostke (budzet 5)
+  [INFO] budzet 8: PRZED sr. 1.00 heks/jedn., kolizje=0; PO sr. 8.00 heks/jedn., kolizje=0
+  [OK] F-AVG8 PO: srednio 8 heksow na jednostke (budzet 8)
+
+--- E: koszt obliczen: PRZED (mutant = path[0]) vs PO, ten sam stan ---
+  [INFO] planer, budzet 5, mediana 9x20 wywolan: PRZED=52.1 ms, PO=46.2 ms, stosunek=0.89
+  [OK] E1 planer: PO nie wolniejszy niz PRZED x1,3 (stosunek 0.89, bez tolerancji addytywnej)
+  [INFO] ai firstStep, 300 wywolan, mediana 9x: PRZED=345.9 ms, PO=312.1 ms, stosunek=0.90
+  [OK] E2 ai firstStep: PO nie wolniejszy niz PRZED x1,3 (stosunek 0.90)
+
+--- G: okablowanie w main.ts (statyczne) ---
+  [OK] G1 main.ts: executeAiCityMove dostaje truncatePath (przycinanie do ruchLeft przed zerowaniem)
+
+ai-move-range: 46 passed, 0 failed
+
+EXIT=0  (ai-move-range-test)
+
+=================== endturn-battle-deadlock-test
+[PreBattle] flush rzucił wyjątek -- element odrzucony z kolejki, sprzątam ekran {
+  where: 'C-real',
+  error: Error: boom-C
+      at Object.get [as atakujacy] (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/endturn-battle-deadlock-test.cjs:409:51)
+      at buildOverlay (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/.endturn-deadlock-bundle.cjs:727:38)
+      at showPreBattle (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/.endturn-deadlock-bundle.cjs:339:15)
+      at flushDeferredAutoPreBattle (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/.endturn-deadlock-bundle.cjs:396:3)
+      at flushDeferredPreBattleSafely (eval at makeWrapper (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/endturn-battle-deadlock-test.cjs:387:32), <anonymous>:5:5)
+      at runScenario (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/endturn-battle-deadlock-test.cjs:417:11)
+      at runUiPart (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/endturn-battle-deadlock-test.cjs:437:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async main (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/endturn-battle-deadlock-test.cjs:459:3)
+}
+
+endturn-battle-deadlock-test: 38 pass, 0 fail
+
+EXIT=0  (endturn-battle-deadlock-test)
+
+=================== endturn-battle-deadlock-exec-test
+== endturn-battle-deadlock-exec-test (R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 r6) ==
+
+[A] origin/main fcd86933 -- deadlock
+    funkcje obecne w bazie: healStaleEndTurnBlockers, canPlayerInitiateEndTurn, hintEndTurnBlocked, healStuckDeferredPreBattleQueueOnEndTurnAttempt, advanceSeat, triggerPlayerEndTurn
+  ok   [A0] stan osierocony odtworzony: kolejka niepusta, ekranu brak
+  ok   [A1] na fcd86933 klik 1 i klik 2 NIE kończą tury (endTurn=0)
+  ok   [A2] na fcd86933 podpowiedź: „Zakończ ekran bitwy, potem zakończ turę.”
+  ok   [A3] na fcd86933 po 10 kliknięciach nadal endTurn=0 i brak ekranu (deadlock trwały)
+
+[B] poprawka: klik 1 otwiera bitwę, klik 2 kończy turę
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [B1] klik 1 OTWIERA ekran bitwy (flush-first) i nie kończy tury
+  ok   [B1b] otwarty ekran to odłożona bitwa WOJNA1; got WOJNA1
+  ok   [B1c] klik 1 pokazuje podpowiedź blokady przy otwartym ekranie
+  ok   [B2] po rozstrzygnięciu bitwy klik 2 KOŃCZY turę (endTurn=1)
+
+[C] legalna blokada zostaje
+  ok   [C1-setup] bitwa odłożona przy otwartym ekranie
+  ok   [C1] przy OTWARTYM ekranie bitwy klik NIE kończy tury (także po 9 s fałszywego czasu)
+  ok   [C1b] podpowiedź blokady zachowana przy otwartym ekranie
+  ok   [C1c] watchdog NIE rusza kolejki ani ekranu, gdy ekran jest otwarty
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [C2] przy otwartej audiencji (odroczenie legalne) klik NIE kończy tury
+  ok   [C2b] przy otwartej audiencji bitwa NIE jest pokazywana i NIE jest kasowana z kolejki
+
+[D] N=4, jedna bitwa rzuca w showPreBattle
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [D1 advanceSeat] kolejka niepusta przed kliknięciami (4 żądania odłożone)
+  ok   [D2 advanceSeat] wyjątek z showPreBattle NIE wychodzi z kliknięcia
+  ok   [D3 advanceSeat] koniec tury po 5 kliknięciach (≤ N+1=5)
+  ok   [D4 advanceSeat] FIFO: pokazane W0,W2,W3 (W1 odrzucona przy wyjątku); got ["W0","W2","W3"]
+  ok   [D5 advanceSeat] ostrzeżenie w logu, kolejka pusta, brak ducha ekranu
+  ok   [D1 triggerPlayerEndTurn] kolejka niepusta przed kliknięciami (4 żądania odłożone)
+  ok   [D2 triggerPlayerEndTurn] wyjątek z showPreBattle NIE wychodzi z kliknięcia
+  ok   [D3 triggerPlayerEndTurn] koniec tury po 5 kliknięciach (≤ N+1=5)
+  ok   [D4 triggerPlayerEndTurn] FIFO: pokazane W0,W2,W3 (W1 odrzucona przy wyjątku); got ["W0","W2","W3"]
+  ok   [D5 triggerPlayerEndTurn] ostrzeżenie w logu, kolejka pusta, brak ducha ekranu
+  ok   [D-base] na fcd86933 ten sam scenariusz NIE kończy tury (kontrola: test wykrywa deadlock)
+
+[E] watchdog 50 ms (fałszywy zegar)
+[PreBattle] Clearing deferred auto preBattle queue (4 zaległych żądań)
+  ok   [E0] watchdog obecny w main.ts
+  ok   [E1] po healStale z kolejką bez ekranu zaplanowany DOKŁADNIE jeden timer 50 ms; got [50]
+  ok   [E2] przed 50 ms nic się nie dzieje (kolejka czeka)
+  ok   [E3] timer 50 ms ODPALONY bez kliknięcia: otwiera odłożoną bitwę, kolejka pusta
+  ok   [E4] odpalenie zalogowane (console.warn watchdog), koniec tury NIE nastąpił bez kliknięcia
+  ok   [E5] audiencja otwarta w chwili odpalenia -> watchdog NIE otwiera ekranu, kolejka zachowana
+
+[G] scena bitwy otwarta: kolejka nietknięta, brak flusha na żywej scenie
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [G0] bitwa odłożona przy otwartej scenie
+  ok   [G1] watchdog (50 ms) NIE pokazuje pre-bitwy na żywej scenie; kolejka zachowana
+  ok   [G2] przy otwartej scenie klik NIE kończy tury (legalna blokada)
+  ok   [G3] flush-first i 8 s czyszczenie NIE ruszają kolejki przy otwartej scenie (po 9 s nadal czeka)
+  ok   [G4] po zamknięciu sceny kolejka wznawia się: pokazana WOJNA1
+  ok   [G5] po rozstrzygnięciu bitwy koniec tury (endTurn=1)
+
+[H] gameOver: klik nie wywołuje flush-first
+  ok   [H1] przy gameOver klik NIE otwiera ani nie czyści kolejki (kolejność bramek zachowana)
+
+[F] mutacje siatki (każda musi czerwienić swój scenariusz)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M1] usunięcie flush-first w healStuck CZERWIENI scenariusz B (klik 1 nie otwiera bitwy)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M1d] usunięcie flush-first CZERWIENI też scenariusz D (bez watchdoga kolejka nie drenuje)
+[PreBattle] Clearing deferred auto preBattle queue (4 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M2] usunięcie watchdoga CZERWIENI scenariusz E (brak timera / brak otwarcia bez kliknięcia)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M3] usunięcie try/catch CZERWIENI scenariusz D (wyjątek wychodzi z kliknięcia)
+  ok   [F-M4] osłabiona bramka (tylko isPreBattleOpen) CZERWIENI scenariusz C2 (koniec tury przy czekającej kolejce)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M5] usunięcie bramki sceny w healStuck CZERWIENI scenariusz G (flush/clear na żywej scenie)
+  ok   [F-M6] usunięcie bramki sceny w watchdogu CZERWIENI scenariusz G (pre-bitwa na żywej scenie)
+  ok   [F-M7] heal bez bramek niezwiązanych z kolejką CZERWIENI scenariusz H (flush przy gameOver)
+
+endturn-battle-deadlock-exec-test: 46 pass, 0 fail
+
+EXIT=0  (endturn-battle-deadlock-exec-test)
+
+=================== load-game-regression-test
+PASS  1a. tylko slot IDB -> true
+PASS  1b. tylko plik FSA na dysku -> true (regresja: autozapis na dysk)
+PASS  1c. tylko zapamiętany katalog FSA (po przeładowaniu) -> true
+PASS  1d. nic nigdzie -> false
+PASS  1e. wszystkie źródła rzucają -> false, bez rzucania, każde zgłoszone
+PASS  1f. IDB rzuca, plik FSA jest -> true, błąd IDB zgłoszony (nie milczy)
+PASS  1g. onSourceError rzucający nie psuje wyniku
+PASS  2a. bez stanu FSA (brak IDB w Node) -> brak uchwytu, lista pusta
+PASS  2b. katalog żywy + zgoda -> listing widzi 2 pliki rotacji, pomija notes.txt
+PASS  2c. PO PRZELADOWANIU: uchwyt zapamiętany, zgody brak -> lista pusta, ale anySavePresent = true
+PASS  2d. brak uchwytu i brak zgody -> false
+PASS  2e. zapamiętany uchwyt, zgody brak (prompt) -> true (ZAŁOŻENIE; regresja: przycisk po przeładowaniu)
+PASS  2f. zapamiętany uchwyt z zgodą, ale katalog bez plików rotacji -> false (pusty katalog wyszarzony)
+PASS  2g. zapamiętany uchwyt, queryPermission rzuca -> true (jak prompt, bez zgadywania zgody)
+PASS  3a. start: get() = false; po refresh z zapisem IDB = true
+PASS  3b. wyścig: wolne przeliczenie (false) kończy się PO markPresent() -> cache nadal true
+PASS  3c. wyścig: starsze wolne przeliczenie (true) nie nadpisuje nowszego (false)
+PASS  4a. mutacja: usunięty krok plików FSA -> przypadek 1b MUSI oblać
+PASS  4b. mutacja: usunięty krok „zapamiętany katalog" -> przypadek 1c MUSI oblać
+PASS  3d. regresja S2 (Chromium): startowe przeliczenie (true) zastosowane, mimo że nowsze trwa
+PASS  3e. wyścig (zarzut 7): przeliczenie wystartowane PO markPresent czyta stary listing (false) -> cache nadal true
+PASS  4e. mutacja: markPresent nie jest trwały -> przypadek 3e MUSI oblać
+PASS  4f. mutacja: hasRememberedFsaDirectory bez zgody -> false (gałąź perm !== granted) -> przypadek 2e MUSI oblać
+PASS  4c. mutacja: cache bez ochrony kolejności (starsze przeliczenie nadpisuje) -> przypadek 3c MUSI oblać
+PASS  4d. mutacja: bootstrap-cache zamieniony na listSaves() -> wiring main.ts MUSI oblać
+PASS  5a. main.ts: cache zasilany listSlots + listFsaAutosaveFiles + hasRememberedFsaDirectory
+PASS  5b. main.ts: openLoadGameDialog liczy zapisy przez savePresence, nie samym listSaves()
+PASS  5c. main.ts: udane zapisy (ręczny, autozapis dysk, autozapis localStorage) -> savePresence.markPresent()
+PASS  5d. main.ts: onLoad czeka na bootstrap FSA przed listowaniem
+PASS  6a. mutacja: hasAnySaveSlot zwraca stałe false zamiast cache -> wiring MUSI oblać
+PASS  6b. mutacja: cache presence zawsze false (get) -> przypadek 3a MUSI oblać
+PASS  7a. notifyAutosaveFailureOnce: prawdziwa funkcja z main.ts pokazuje komunikat RAZ na sesję
+PASS  7b. mutacja: bez strażnika jednorazowości -> przypadek 7a MUSI oblać
+PASS  7c. main.ts: nieudany autozapis nie wywołuje już showHintMessage wprost (3 miejsca przez notifyAutosaveFailureOnce)
+
+load-game-regression: 34 PASS / 0 FAIL
+
+EXIT=0  (load-game-regression-test)
+
+=================== logic-test
+[logic-test] Bundling src/ with esbuild...
+[logic-test] Bundle written to /home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/.logic-bundle.cjs
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=27 landSea=212 relief=161 coast=25 riversMain=1318 riversFill=1383 forest=5 deposits=24 starts=107 total=3266
+PASS  [1] generateMap hexes > 100
+PASS  [2] computeStartPlacements has playerStart
+PASS  [3] computeStartPlacements aiStarts >= 3
+PASS  [4] placeStartingUnits returns empty (A-START-01)
+PASS  [5] synthetic settler category === "osadnik"
+PASS  [6] computeReachable returns size > 0
+PASS  [7] computeReachable does NOT contain settler own hex
+PASS  [8] computePath returns non-empty path
+PASS  [9] computePath last step === dest
+PASS  [10] computePath does not include start hex
+PASS  [11] computeVisible includes settler own hex
+PASS  [12] every key in computeVisible exists in map.hexes
+PASS  [13] cityRangeForPopulation(4) === 5 (min start)
+PASS  [14] cityRangeForPopulation(9) === 9
+PASS  [15] cityRangeForPopulation(20) === 15 (cap)
+PASS  [16] citySightRadius(9,0) === 9
+PASS  [17] citySightRadius(1,0) === 5
+PASS  [18] computePlayerVisibility city pop9 radius <= 9
+PASS  [19] computePlayerVisibility city pop9 radius >= 9 at edge
+PASS  [20] computePlayerVisibility start fallback radius <= 5
+PASS  [21] unitsVisibleOnMap always shows player units
+PASS  [22] unitsVisibleOnMap hides enemy outside current vision
+PASS  [23] unitsVisibleOnMap shows enemy on visible hex
+PASS  [24] unitsVisibleOnMap shows own garnizon (token na heksie miasta)
+PASS  [25] unitsVisibleOnMap hides enemy garnizon even on visible hex
+PASS  [26] canFoundCity on settler (land) returns ok=true
+PASS  [27] canFoundCity on water hex returns reason="morze"
+PASS  [28] foundCity returns non-null
+PASS  [29] foundCity population === 1
+PASS  [30] MIN_CITY_DISTANCE = 4 heksy (R-AI-KOLONIZACJA, było 5)
+PASS  [31] canFoundCity near city returns "za blisko innego miasta"
+PASS  [32] canFoundCity far from city returns ok=true
+PASS  [33] buildEconParams returns finite progWzrostuWspolczynnik
+PASS  [34] buildEconParams trade-science slider default === 20
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=7 landSea=81 relief=67 coast=13 riversMain=189 riversFill=559 forest=3 deposits=8 starts=90 total=1021
+PASS  [35] economy: player start hex resolved
+PASS  [36] economy: foundCity for tick test non-null
+PASS  [37] economy: workedTilesForCity returns 1..7 tiles
+PASS  [38] economy: every worked tile has a terenBazowy
+PASS  [39] economy: advanceCityEconomy processed 1 city
+PASS  [40] economy: aggregate yields are finite numbers
+PASS  [41] economy: city food store is a number >= 0 or undefined (oblezenie-only field)
+PASS  [42] economy: readCityFoodBuffer zawsze zwraca skończoną liczbę >= 0 (7 przypadków)
+PASS  [43] economy: readCityFoodBuffer(-3) klampuje do 0 (nie przepuszcza ujemnego bufora)
+PASS  [44] economy: readCityFoodBuffer czyta legacy { aktualny } ze starego zapisu
+PASS  [45] economy: population never goes below 1
+PASS  [46] economy: per-city result carries zywnoscNetto
+PASS  [47] research: fresh state era === 1
+PASS  [48] research: fresh state empty treasury+science
+PASS  [49] research: fresh state nothing researched + no current tech
+PASS  [50] research: fresh money multiplier === 1
+PASS  [51] research: found multi-prereq tech (Jeździectwo)
+PASS  [52] research: parsePrereqs splits "A + B" into 2 ids
+PASS  [53] research: prereqsMet false when prereqs missing
+PASS  [54] research: prereqsMet true when all prereqs present
+PASS  [55] research: with no research, only prereq-free techs available
+PASS  [56] research: a tech with prereqs is NOT available initially
+PASS  [57] research: cheapestAvailable returns an available prereq-free tech
+PASS  [58] research: cheapestAvailable has the minimum available cost
+PASS  [59] research: after all Kamień tier 1-2 techs, Brązownictwo becomes available
+PASS  [60] research: found Obróbka drewna (cost 5)
+PASS  [61] research: completing a tech moves it into zbadane
+PASS  [62] research: completing a tech deducts its cost from science
+PASS  [63] research: researchStep reports the completed tech
+PASS  [64] research: after spending all science, a new (different) tech is selected
+PASS  [65] research: insufficient science completes nothing
+PASS  [66] research: insufficient science leaves the pool untouched
+PASS  [67] research: era tech (Brązownictwo) marks the era-advance flag
+PASS  [68] research: era tech bumps player.era by 1
+PASS  [69] research: isEraAdvanceTech true for Brązownictwo
+PASS  [70] research: found Waluta (money tech)
+PASS  [71] research: isMoneyTech true for Waluta
+PASS  [72] research: money tech (Waluta) sets the money flag in completion
+PASS  [73] research: money tech sets pieniadzMnoznik to PIENIADZ_MNOZNIK (x10)
+PASS  [74] research: a large science budget completes multiple techs
+PASS  [75] research: cascade never researches a tech twice
+PASS  [76] research: cascade leaves no available tech behind when fully funded
+PASS  [77] player-research: setPlayerResearchTarget returns true for valid target
+PASS  [78] player-research: playerResearchTargetId set to chosen tech
+PASS  [79] player-research: setPlayerResearchTarget rejects completed tech
+PASS  [80] player-research: playerResearchTargetId unchanged on rejection
+PASS  [81] player-research: setPlayerResearchTarget rejects unmet prereqs
+PASS  [82] player-research: target set before researchStep
+PASS  [83] player-research: researchStep completes the player-chosen tech
+PASS  [84] player-research: playerResearchTargetId cleared after completion
+PASS  [85] player-research: Brązownictwo added to zbadane
+PASS  [86] player-research: no target -> researchStep picks first available (default)
+PASS  [87] player-research: default does not clear playerResearchTargetId (was null)
+PASS  [88] player-research: getResearchState pula equals nauka
+PASS  [89] player-research: getResearchState targetId equals chosen tech
+PASS  [90] player-research: getResearchState kosztCelu equals tech cost
+PASS  [91] player-research: getResearchState postepFraction = 0.5
+PASS  [92] player-research: getResearchState turnsLeft correct
+PASS  [93] player-research: getResearchState uses badana as fallback target
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=11 landSea=110 relief=67 coast=13 riversMain=191 riversFill=967 forest=3 deposits=9 starts=57 total=1427
+PASS  [94] mapgen: generated map has BOTH land and water
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=91 relief=97 coast=19 riversMain=232 riversFill=969 forest=5 deposits=11 starts=60 total=1490
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=88 relief=96 coast=20 riversMain=278 riversFill=822 forest=3 deposits=6 starts=37 total=1355
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=57 relief=60 coast=12 riversMain=167 riversFill=619 forest=3 deposits=7 starts=33 total=962
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=81 relief=64 coast=12 riversMain=317 riversFill=908 forest=3 deposits=6 starts=36 total=1431
+PASS  [95] mapgen: deposits obey terrain rules (ruda Wzgorza/Gory, glina Laka/coast/river, konie Rownina, wegiel Gory)
+PASS  [96] mapgen: at least some deposits are placed across seeds
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=55 relief=55 coast=11 riversMain=144 riversFill=803 forest=3 deposits=12 starts=48 total=1135
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=60 relief=62 coast=11 riversMain=182 riversFill=760 forest=2 deposits=6 starts=35 total=1124
+PASS  [97] mapgen: deposits identical for the same seed (deterministic)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=68 relief=64 coast=14 riversMain=323 riversFill=987 forest=6 deposits=15 starts=37 total=1517
+PASS  [98] mapgen: deposits differ for a different seed
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=58 relief=62 coast=11 riversMain=141 riversFill=719 forest=3 deposits=6 starts=35 total=1039
+PASS  [99] mapgen: re-running placeDeposits never overwrites forest
+PASS  [100] mapgen: forest+deposit coexistence on the same hex is allowed (decyzja wlasciciela)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=59 relief=65 coast=14 riversMain=203 riversFill=870 forest=6 deposits=8 starts=37 total=1265
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=64 relief=171 coast=11 riversMain=364 riversFill=934 forest=3 deposits=7 starts=37 total=1595
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=69 relief=62 coast=14 riversMain=184 riversFill=910 forest=3 deposits=6 starts=50 total=1302
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=6 landSea=150 relief=114 coast=17 riversMain=303 riversFill=1385 forest=4 deposits=11 starts=56 total=2045
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=117 relief=116 coast=26 riversMain=381 riversFill=804 forest=5 deposits=14 starts=55 total=1523
+PASS  [101] mapgen: startPositions has >=5 entries, all on land, pairwise distance >= absMinDist (all seeds)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=4 landSea=91 relief=126 coast=16 riversMain=177 riversFill=1580 forest=9 deposits=12 starts=58 total=2075
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=7 landSea=88 relief=247 coast=48 riversMain=286 riversFill=731 forest=3 deposits=10 starts=38 total=1458
+PASS  [102] mapgen: startPositions identical for the same seed (deterministic)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=68 relief=66 coast=13 riversMain=125 riversFill=566 forest=3 deposits=6 starts=44 total=893
+PASS  [103] mapgen: computeStartPositions helper returns >=5 land starts
+PASS  [104] siege: wall constants retired to 0 in buildings.json mury (flat bonus removed 2026-07-25)
+PASS  [105] siege: exported WALL_BASE_OBRONA/PER_LEVEL match retired (0) data defaults
+PASS  [106] siege: no walls -> zero Obrona bonus
+PASS  [107] siege: level-1 walls add NO flat Obrona bonus (retired; was 5)
+PASS  [108] siege: wall level no longer changes the flat defence bonus (all 0)
+PASS  [109] siege: walls no longer harden Pancerz (retired; flat bonus == 0)
+PASS  [110] siege: hill terrain defence multiplier === HILL_DEFENSE_MULT (1.5)
+PASS  [111] siege: flat terrain has no defence multiplier (1.0)
+PASS  [112] siege: city on a hill carries the terrain multiplier in its bonus
+PASS  [113] siege: applyCityBonus raises defender effective Obrona on walled hill
+PASS  [114] siege: wall level no longer changes damage dealt here (flat bonus retired; was less)
+PASS  [115] siege: both engagements produced a defender HP loss (sanity)
+PASS  [116] siege: an overwhelming attacker defeats the garrison defender
+PASS  [117] siege: a city with no garrison is capturable
+PASS  [118] siege: captureCity transfers ownership to the new owner
+PASS  [119] siege: captureCity is PURE (does not mutate the input city)
+PASS  [120] siege: captured city has an empty garrison and is no longer fortified
+PASS  [121] siege: a defended city is NOT capturable
+PASS  [122] siege: captureCity refuses to flip a defended city
+PASS  [123] siege: a garrison of only dead units is capturable
+PASS  [124] siege: adjacent enemy may capture an undefended city
+PASS  [125] siege: a non-adjacent enemy may NOT capture (distance > 1)
+PASS  [126] siege: the owner cannot "capture" their own city
+PASS  [127] siege: makeMilitia builds a defender from ~20% of population
+PASS  [128] siege: militia is weaker than a Stone-age Warrior (half strength)
+PASS  [129] siege: a city with no population raises no militia
+PASS  [130] siege: effectiveGarrison falls back to militia for an empty garrison
+PASS  [131] siege: a militia-defended city is engaged (not a free walk-in)
+PASS  [132] siege: same seed => identical outcome, HP losses and round count (deterministic)
+PASS  [133] siege: resolveSiegeAttack never throws and returns finite HP for another seed
+PASS  [134] siege: hitChance clamps to [10,90] and matches 50+(A-D)*5
+PASS  [135] siege: baseDamage = max(1, A-Panc+Przeb) + Uderzenie only on charge
+PASS  [136] order: loadOrderParams reads T1/T2 from society-params.json (normal)
+PASS  [137] order: loadOrderParams reads the Szczęście/Prawo weights from the json
+PASS  [138] order: loadOrderParams scales by difficulty (easy T1=-1, hard T1=1)
+PASS  [139] order: loadOrderParams falls back to constants when block absent
+PASS  [140] order: loadOrderParams falls back per missing key (partial block)
+PASS  [141] order: Order rises with Szczęście
+PASS  [142] order: Order rises with Prawo
+PASS  [143] order: Order is monotonic non-decreasing across an input sweep
+PASS  [144] order: default formula is the average of Szczęście and Prawo (0.5/0.5)
+PASS  [145] order: weights tilt the sum (wP=1,wS=0 => Order === Prawo)
+PASS  [146] order: orderTier returns unrest below T1
+PASS  [147] order: orderTier returns order at/above T2
+PASS  [148] order: orderTier returns neutral between T1 and T2
+PASS  [149] order: unrest effects penalise production+growth+yields and carry revolt risk
+PASS  [150] order: neutral effects are all-1 with no revolt risk
+PASS  [151] order: orderEffectsToYieldMults maps trade bonus to pieniadz on order tier
+PASS  [152] order: pickRevoltMigrationTarget picks highest-order city of same owner
+PASS  [153] order: pickRevoltMigrationTarget returns null when no other city
+PASS  [154] order: loadOrderParams reads B2 unrest yield penalties from json
+PASS  [155] order: order-tier effects give a production+trade bonus and no risk
+PASS  [156] order: the three tiers yield strictly different production multipliers
+PASS  [157] order: revoltRisk is clamped to [0,1]
+PASS  [158] order: production multiplier floored at 0 for an extreme penalty
+PASS  [159] order: computeOrder is deterministic
+PASS  [160] order: evaluateOrder is deterministic (order+tier+effects)
+PASS  [161] order: non-finite inputs are coerced to 0 (NaN-safe, finite output)
+PASS  [162] order: evaluateOrder flags unrest for very low Szczęście+Prawo
+PASS  [163] order: evaluateOrder flags the order bonus for high Szczęście+Prawo
+PASS  [164] culture: loadCultureParams reads border thresholds from society-params.json (normal 100/250/500)
+PASS  [165] culture: cultureThresholds returns the sorted threshold triple
+PASS  [166] culture: loadCultureParams falls back to 100/250/500 when block absent
+PASS  [167] culture: loadCultureParams scales by difficulty (easy thresholds lower than hard)
+PASS  [168] culture: cityBorderRadius is 0 below the first threshold
+PASS  [169] culture: cityBorderRadius is 1 at/above prog1, 2 at prog2, 3 at prog3
+PASS  [170] culture: cityBorderRadius is NaN-safe (coerces to 0)
+PASS  [171] culture: accumulateCulture crossing a threshold expands the border radius
+PASS  [172] culture: accumulateCulture within a band does NOT expand the border
+PASS  [173] culture: accumulateCulture is deterministic and treats negative gain as 0
+PASS  [174] culture: cultureHappiness gives the full-unity bonus at 100% own culture
+PASS  [175] culture: cultureHappiness gives a smaller bonus at >=75% and neutral at 50%
+PASS  [176] culture: cultureHappiness penalises foreign-dominated cities (<50% and <25%)
+PASS  [177] culture: cultureHappiness defaults missing share to 100% (full bonus)
+PASS  [178] culture: convertCulture raises own-culture share toward 1.0
+PASS  [179] culture: a Biblioteka converts culture strictly faster than without
+PASS  [180] culture: Swiatynia (religious-only building, B-KULT-REL split) has NO effect on culture conversion
+PASS  [181] culture: convertCulture caps the per-turn rate (cap from params)
+PASS  [182] religion: loadReligionParams reads the 50% dominance threshold from society-params.json
+PASS  [183] religion: loadReligionParams falls back (dominance 50%) when block absent
+PASS  [184] religion: civReligion maps a civ from society-params.json (Grecy -> Politeizm olimpijski)
+PASS  [185] religion: civReligion returns null for an unknown civ
+PASS  [186] religion: isKnownCiv validates civ names against civs.json
+PASS  [187] religion: dominantReligion returns the >50% faith
+PASS  [188] religion: dominantReligion returns none when no faith exceeds 50% (split)
+PASS  [189] religion: dominantReligion returns none for an empty city
+PASS  [190] religion: dominance is exclusive at exactly 50% (must EXCEED the threshold)
+PASS  [191] religion: religionHappiness rewards our dominant religion and penalises a foreign one
+PASS  [192] religion: convertViaTemple shifts share toward the owner religion
+PASS  [193] religion: a temple converts faith strictly faster than without
+PASS  [194] religion: convertViaTemple is deterministic and conserves total adherents
+PASS  [195] religion: repeated convertViaTemple eventually fully converts the city
+PASS  [196] religion: convertViaTemple does nothing without a target or in an empty city
+PASS  [197] religion: spreadReligion reaches in-range neighbours and adds the source faith
+PASS  [198] religion: spreadReligion never reaches an out-of-range neighbour (n3 at dist 5 > max 3)
+PASS  [199] religion: spreadReligion is deterministic for the same seed
+PASS  [200] religion: a Swiatynia lets religion reach at least as many neighbours as without
+PASS  [201] religion: a city with no dominant religion does not spread
+PASS  [202] religion: makeRng (culture-religion) is a deterministic [0,1) generator for a fixed seed
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=55 relief=63 coast=12 riversMain=247 riversFill=754 forest=4 deposits=7 starts=35 total=1180
+PASS  [203] cityfix: found a valid founding hex in test map
+PASS  [204] cityfix: canFoundCity passes for first city (no territory restriction)
+PASS  [205] cityfix: foundCityAt returns non-null city
+PASS  [206] cityfix: city has correct q,r
+PASS  [207] cityfix: city has id=city0
+PASS  [208] cityfix: city ownerId=0
+PASS  [209] cityfix: city population=1
+PASS  [210] cityfix: cities array has 1 city after push
+PASS  [211] cityfix: city coords in map.hexes
+PASS  [212] cityfix: after 1st city, playerCityNodes has 1 node
+PASS  [213] cityfix: pop1 territory radius is 5 (B min start)
+
+LOGIC OK (213/213)
+
+EXIT=0  (logic-test)
+
+=================== ai-test
+
+--- T1a: decideAITurn basic contract ---
+
+--- T1b: wartosc (ASCII) read discriminator ---
+  FAIL: at least one city chooses economy building (wartosc=5 read correctly); got: koszary, koszary, koszary
+  FAIL: economy buildings (0) chosen more than Koszary (3) — proves wartosc read correctly
+
+--- T1c: wartość (unicode) backward compat ---
+  FAIL: unicode 'wartość' also read correctly; got: koszary, koszary, koszary
+
+--- T1d: early phase builds (no Osadnik) ---
+
+--- T1e: endTurn always last ---
+
+--- T2a: loadDifficultyParams reads levels ---
+
+--- T2b: higher difficulty → stronger economy production score ---
+
+--- T2c: loadDifficultyParams empty aiParams → fallbacks ---
+  FAIL: empty params: poziom1 bonusWalka fallback = 0 (got -0.05, want 0)
+
+--- T2d: default difficulty = Normal (2) ---
+
+--- T3a: Celtowie archetype readArchMods ---
+
+--- T3b: Germanie archetype readArchMods ---
+
+--- T3c: Celtowie civType mapping (CIV_TO_ARCH roundtrip) ---
+
+--- T3d: Germanie civType mapping (CIV_TO_ARCH roundtrip) ---
+
+--- T3e: roster-6 ai-params.json keys exist ---
+
+--- T3f: Harappa own archetype path (ekonomia discriminator) ---
+  FAIL: Harappa own arch (ekonomia=5): eko (0) >= Koszary (3)
+
+--- T3g: Asyria wojsko>ekonomia (imperium oblężnicze) ---
+
+--- T3h: roster-6 CIV_TO_ARCH roundtrip (no throw) ---
+
+--- T4a: idle fallback (a) — unit far from everything, has own city ---
+
+--- T4b: idle fallback (b) — unit with no own cities moves toward map center ---
+
+--- T4c: idle fallback does NOT override attack behavior ---
+
+--- T4d: idle fallback does NOT force move when unit already at/adjacent to own city ---
+
+--- T5a: canAfford gate — koszary blocked, fallback to affordable ---
+
+--- T5b: canAfford gate — all blocked -> AI saves (no build command) ---
+
+--- T6a: clusterCenter+radius -> planCityFounding prefers hex inside cluster ---
+
+--- T6b: no clusterCenter -> planCityFounding still works (regression) ---
+
+--- T6c: planCityFounding w klastrze -> foundCityAt ---
+
+--- T6d: clusterStateTargets -> planCityFounding blocked (consolidation) ---
+
+--- T6e: planCityFounding prefers hex inside cluster ---
+
+--- T6g: AI-LOCAL-Q1=A faza lokalna tura 20 LUB 1 skaut ---
+
+--- T6f: decideAITurn z clusterStateTargets -> brak foundCityAt ---
+
+--- T7a: decideAIReaction - przewaga AI -> bitwa ---
+
+--- T7b: decideAIReaction - slabosc -> odwrot ---
+
+--- T7c: decideAIReaction - pokoj + przyjazn -> odwrot ---
+
+--- T7d: decideAIReaction - terytorium podnosi ratio ---
+
+--- T7e: decideAIReaction - agresja obniza prog (agresywny archetyp bije przy nizszym ratio) ---
+
+--- T7f: decideAIReaction - cenna jednostka -> ostrozniejsca (prog wyzszy) ---
+
+--- T8a: decideAIReinforcements - dorzuca kandydatow az do targetu ---
+
+--- T8b: decideAIReinforcements - nie dorzuca gdy juz duzy zapas ---
+
+--- T8c: decideAIReinforcements - pomija zbyt dalekich (dystans > 1) ---
+
+--- T8d: decideAIReinforcements - kolejnosc wg wartosci (tani najpierw) ---
+
+--- T9a: decideAIDiplomacy - silny+agresywny+wrogi -> wypowiedz_wojne ---
+  FAIL: T9a: jedna komenda
+  FAIL: T9a: typ=wypowiedz_wojne (got undefined)
+  FAIL: T9a: targetId=rzym-1
+
+--- T9b: decideAIDiplomacy - bardzo silny -> zadaj_trybut (nie wojna) ---
+
+--- T9c: decideAIDiplomacy - slaby w wojnie -> zaproponuj_pokoj ---
+
+--- T9d: decideAIDiplomacy - b. slaby w wojnie -> oferuj_trybut_za_pokoj ---
+
+--- T9e: decideAIDiplomacy - przyjazny/pokoj -> brak agresywnych komend (sojusz/handel OK) ---
+
+--- T9f: decideAIDiplomacy - agresja ponizej progu -> brak wojny mimo przewagi ---
+
+--- T9g: decideAIDiplomacy - rownosc sil -> brak komendy ---
+
+--- T9h: decideAIDiplomacy - wiele relacji mieszanych -> komendy per partner ---
+  FAIL: T9h: partner C -> wypowiedz_wojne (got undefined)
+
+--- T9i: decideAIDiplomacy - max 1 komenda per partner ---
+
+--- T9j: decideAIDiplomacy - powod jest niepustym stringiem ---
+  FAIL: T9j: co najmniej jedna komenda
+
+--- T9k: decideAIDiplomacy Priorytet 3b (zaproponuj_pakt) — zywy test progNapRelacja 90->110 (R-DYPLO-PROG-NAP-90-DO-110-Q1) ---
+
+--- T2S-a: zaproponuj_sojusz gdy rowny partner + willingnessAlly >= PROG_SOJUSZ ---
+  FAIL: T2S-a: zaproponuj_sojusz dla rownego partnera z wysoka relacja; got: []
+  FAIL: T2S-a: targetId prawidlowy
+  FAIL: T2S-a: powod niepusty
+
+--- T2S-b: zaproponuj_handel gdy neutralny + handlowosc >= 0.4 + willingnessTrade >= PROG_HANDEL ---
+  FAIL: T2S-b: zaproponuj_handel dla neutralnej relacji + handlowosc=0.7; got: []
+  FAIL: T2S-b: targetId prawidlowy
+
+--- T2S-b2: cooldown blokuje kolejny zaproponuj_handel ---
+  FAIL: T2S-b2: po cooldownie (tura 36) handel wraca; got: []
+
+--- T2S-c: brak sojuszu gdy ofiara (rw > 0.7 -> dominacja, nie rowny partner) ---
+
+--- T2S-d: priorytet - wojna bije sojusz ---
+
+--- T2S-e: max 1 komenda per partner (sojusz + handel nie razem) ---
+
+--- T4S-a: loadDifficultyParams - rosnacy agresjaMnoznik per poziom ---
+
+--- T4S-b: loadDifficultyParams - rosnacy dyplomacjaAktywnosc + celObranie ---
+
+--- T4S-c: decideAIReaction agresjaMnoznik=1.2 bije czesciej niz 0.85 (graniczny input) ---
+
+--- T4S-d: decideAIDiplomacy - wyzszy agresjaMnoznik czesciej wypowiada wojne ---
+  FAIL: T4S-d: mnoznik=1.5 effAgresja=0.6 >= 0.5 -> wypowiedz_wojne; got: []
+
+--- T5a: canAfford odfiltrowuje wszystkich -> brak build (AI oszczedza) ---
+
+--- T5b: canAfford filtruje drogie, AI wybiera tansze o lepszym score ---
+
+--- T5c: brak canAfford -> zachowanie jak dotad (regresja=0) ---
+
+--- T5d: itemCost prefers cheaper items w tym samym score-band ---
+
+--- T5e: Kamien (Praca) - canAfford z epoką Kamień nie blokuje przez brak Pieniadza ---
+
+--- T5f: canAfford=true dla jednego, reszta false -> buduje to jedno ---
+
+--- T5g: itemCost bez canAfford -> brak efektu (regresja) ---
+
+--- T5h: endTurn zawsze ostatni przy roznym canAfford ---
+
+--- T7D-a: defensiveCopy -> brak foundCityAt i build ---
+
+--- T7D-b: defensiveCopy -> brak founding mimo pracy ---
+
+--- T7D-c: defensiveCopy -> riposta na sasiedniego wroga (AI, nie gracz) ---
+
+--- T7D-g: defensiveCopy -> brak ataku na gracza bez wojny ---
+
+--- T7D-d: defensiveCopy -> brak marszu na odlegle miasto wroga ---
+
+--- T7D-e: 20 tur defensiveCopy — zero foundCityAt (regresja D-START) ---
+
+--- T7D-f: bez defensiveCopy -> foundCityAt gdy stac (regresja) ---
+
+--- T7D-l: defensiveCopy -> MP idzie po wolna chatke WE WLASNYM terytorium ---
+
+--- T7D-m: defensiveCopy -> chatka POZA wlasnym terytorium MP jest ignorowana ---
+
+--- T7D-n: defensiveCopy -> atak na sasiedniego wroga wygrywa priorytetem nad chatka ---
+
+--- T7D-o: defensiveCopy -> chatka WE WLASNYM terytorium, MP bez miasta-siostry (brak posilkow) ---
+
+--- T7D-p: runda 2 -- po ZEBRANIU chatki (wioska.istnieje=false) MP juz jej NIE goni (koniec oscylacji rundy 1) ---
+
+--- T8a: R-AI-FOUNDING-THROTTLE-Q1=A pickSourceCityForFounding wymaga pop >= 3 ---
+
+--- T8b: countFreeIndependentCityStates ---
+
+--- T8c: planCityFounding z pop>=5 i civEra<=3 omija blokade skautow ---
+
+--- T10a: miasto-panstwo bez odkrycia -> pre_contact, brak handlu ---
+
+--- T10b: miasto-panstwo po odkryciu -> simplified, handel mozliwy ---
+  FAIL: T10b: zaproponuj_handel po odkryciu; got: []
+
+--- T10c: obca cywilizacja bez odkrycia -> pre_contact ---
+
+--- T11-scout-a: pełna cywilizacja w fazie startowej -> kolejka Zwiadowca ---
+
+--- T11-scout-b: defensiveCopy (państwo-miasto) -> brak Zwiadowca ---
+
+--- T7D-h: defensiveCopy z garnizonem (na progu) -> infrastruktura, nie kolejny Wojownik ---
+
+--- T7D-i: defensiveCopy bez garnizonu -> nadal Wojownik pierwszy ---
+
+--- T7D-j: defensiveCopy + garnizon + isProductionAllowed odrzuca budynki -> Wojownik ---
+
+--- T7D-k: defensiveCopy + garnizon (na progu) + isProductionAllowed tylko studnia -> studnia ---
+
+--- T11-scout-c: zwiadowca rusza w stronę neutralnej wioski ---
+
+--- T11-scout-d: po 2 zwiadowcach nie wymusza trzeciego w early phase ---
+
+--- T12-dip-a: pokojowa cywilizacja -> pakt/handlu, bez haraczu ---
+
+--- T12-dip-b: agresywna cywilizacja -> szybciej wojna niz pokojowa ---
+
+--- T12-dip-c: agresywna zada haracz, pokojowa nie ---
+
+--- T12-dip-d: resolveDiplomacyCivBias klasyfikuje profile ---
+
+--- T12-dip-e: brak kontaktu + oferta handlu -> zaproponuj_audiencje ---
+
+--- T13: AI-MANAGE-Q1=A isMajorAiOwner ---
+
+--- T14-p1-1a: majorEarly econ building mult = 0.70 ---
+
+--- T14-p1-1b: L1 majorEarly konczy sie tura 25, L2 tura 40 ---
+
+--- T14-p2: L3 majorEarly max turn 25 gdy startowe_miasta≥1 (P2-Q2=A) ---
+
+--- T14-p1-1c: majorEarly stolarnia score ×0.70 (ranking vs biblioteka) ---
+
+--- T14-p1-2a: scout repeat penalty constant = 80 ---
+
+--- T14-p1-2b: drugi scout score −80 vs pierwszy (ta sama economyScore) ---
+
+ai-test: 276 passed, 18 failed
+
+EXIT=1  (ai-test)
+
+=================== diplomacy-test
+
+[diplomacy-test] 148 passed, 0 failed (total 148).
+
+EXIT=0  (diplomacy-test)
+
+=================== alliance-war-obligation-test
+
+--- 1: gracz (allyId=0) zawsze honoruje ---
+  OK: gracz honoruje mimo słabej pozycji (got true, want true)
+  OK: aiHonors: gracz honoruje (got true, want true)
+
+--- 2: słabe AI odmawia (ratio 0.4) ---
+  OK: ratio 0.4 < 0.55 → odmowa (got false, want false)
+
+--- 3: silne AI honoruje (ratio 1.2) ---
+  OK: ratio 1.2 → honor (got true, want true)
+
+--- 4: archetyp pokojowy odmawia przy ratio 0.7 ---
+  OK: pokojowy 0.7 < 0.75 → odmowa (got false, want false)
+
+--- 5: archetyp pokojowy honoruje przy ratio 0.9 ---
+  OK: pokojowy 0.9 ≥ 0.75 → honor (got true, want true)
+
+--- 6: activeWarCount=1 odmawia ---
+  OK: już w wojnie → odmowa (got false, want false)
+
+--- 7: granica minRatio (0.55) → honor ---
+  OK: ratio == 0.55 (nie <) → honor (got true, want true)
+  OK: ratio 0.549 < 0.55 → odmowa (got false, want false)
+
+--- 8: niskie Zaufanie do proszącego sojusznika ---
+  OK: zaufanie 15 < 20 → odmowa mimo silnej armii (got false, want false)
+  OK: zaufanie 20 (nie <) → honor (got true, want true)
+
+--- 9: aiHonorsAllianceWarObligation (allyId=3) ---
+  OK: bez ctx → true (kompatybilność wsteczna) (got true, want true)
+  OK: aiHonors: słabe AI odmawia (got false, want false)
+  OK: aiHonors: silne AI honoruje (got true, want true)
+
+========================================
+alliance-war-obligation-test: 14 passed, 0 failed
+
+EXIT=0  (alliance-war-obligation-test)
+
+=================== forced-war-stone-test
+--- kontrakt Q1/Q3, R-WOJNA-WYMUSZONA-REGULY-Q1 Część A/C ---
+--- trigger po turn 25 i guardy ownera (R-WOJNA-WYMUSZONA-REGULY-Q1 Część A) ---
+--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): shouldEndStoneForcedWarByDuration ---
+--- target guard: najbliższy i wykluczenia ---
+--- 2 miasta, odpoczynek i cooldown ---
+--- decideAIDiplomacy: finalny target guard ---
+--- save/load i mutacje stanu ---
+PASSED: 38 / FAILED: 0 / TOTAL: 38
+
+EXIT=0  (forced-war-stone-test)
+
+=================== forced-war-bronze-test
+--- T8: nazwane stałe (parametry) ---
+
+--- T1 (a): awans do Brązu bez aktywnej wojny → eligibility TRUE (bez pól tury -- pomija próg) ---
+
+--- T2 (b): awans do Brązu gdy już w wojnie (obie role) → eligibility FALSE ---
+
+--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): próg 25 tur OD WEJŚCIA W BRĄZ ---
+
+--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): shouldEndBronzeForcedWarByDuration ---
+
+--- T9: pickBronzeForcedWarTargetId — najbliższy sąsiad terytorialny ---
+
+--- T3 (c): próg 2 miast zdobytych/straconych → automatyczny pokój ---
+
+--- T4 (d): odpoczynek po pokoju blokuje szukanie nowego celu ---
+
+--- T5 (e): po odpoczynku, cooldown NA TĘ SAMĄ cywilizację nadal blokuje wybór ---
+
+--- T6 (f): sojusz z trzecią, niepowiązaną cywilizacją PRZETRWA wojnę wymuszoną ---
+
+--- T7 (g): miasto-państwo NIE podlega regule wymuszonej wojny Brązu ---
+
+--- decideAIDiplomacy: bronzeForceWarTargetId (analogicznie clusterForceWarTargetId) ---
+
+--- T10 (B3, runda 2): sojusz z SAMYM CELEM blokuje decideAIDiplomacy ---
+
+--- T11 (B5, runda 2): roundtrip serialize→restore, w tym wojna z aktywnym licznikiem ---
+
+--- T12 (B5, runda 2): restore bez `saved` (stary zapis sprzed tej naprawy) ---
+
+============================================================
+PASSED: 56 / FAILED: 0 / TOTAL: 56
+ALL GREEN
+
+EXIT=0  (forced-war-bronze-test)
+
+=================== forced-war-iron-test
+--- kontrakt parametrów (dispatch §PARAMETR: wartości jak Brąz/Kamień) ---
+--- wyzwalacz = AWANS do Żelaza, nie próg tury ---
+--- guardy ownera (napastnik) ---
+--- R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: próg 25 tur od WEJŚCIA W ŻELAZO ---
+--- wybór celu: najbliższy terytorialnie + wykluczenia ---
+--- czysta funkcja pickera nie dokłada celów spoza podanej puli (filtr puli żyje w main.ts) ---
+--- 2 miasta, odpoczynek i cooldown ---
+--- decideAIDiplomacy: wymuszona wojna Żelaza POZA ogólnymi regułami ---
+--- ironForceWarTargetId bez pasującej relacji (żaden target, w tym gracz) ---
+--- rozdzielność od Kamienia i Brązu (osobne pola wejścia) ---
+--- save/load i mutacje stanu ---
+PASSED: 55 / FAILED: 0 / TOTAL: 55
+
+EXIT=0  (forced-war-iron-test)
+
+=================== forced-war-waves-test
+forced-war-waves-test: 17 passed, 0 failed
+
+EXIT=0  (forced-war-waves-test)
+
+=================== forced-war-trojstronna-test
+--- GOAL 1 (adaptacja): para AI-A/AI-B już aktywna, gracz bez pary -> gracz dołącza jako trzeci ---
+
+--- GOAL 2 / ECHO 2: sojusz strony-napastnika blokuje CAŁĄ parę dla leftovera-gracza ---
+
+--- ECHO 2 (symetria): sojusz TYLKO obrońcy blokuje CAŁĄ parę identycznie jak sojusz napastnika ---
+
+--- GOAL 5: gracz ma już parę -> nie wchodzi do puli, mechanizm się nie uruchamia ---
+
+--- Brak jakiejkolwiek pary AI-vs-AI, gracz sam -> unresolved, zero efektu ubocznego ---
+
+--- Dwie niezależne pary + dwóch (wzajemnie zablokowanych) leftoverów -> każdy dołącza do jakiejś pary ---
+
+--- Bezpiecznik: para z attackerId===targetId odrzucona (obrona w głąb) ---
+--- decideAIDiplomacy: finalny target guard, wpis wygenerowany przez assignForcedWarPairings ---
+PASSED: 23 / FAILED: 0 / TOTAL: 23
+
+EXIT=0  (forced-war-trojstronna-test)
+
+=================== forced-war-stone-main-guard-test
+R-EPOKA-KAMIEN-WYMUSZONA-WOJNA — main.ts guards
+PASS: main.ts importuje osobny moduł forced-war-stone
+PASS: trigger ma ochronę startową turn >= 20
+PASS: trigger dotyczy wyłącznie ownera w Kamieniu
+PASS: guard wyklucza player/CS/barbarzyńców/eliminowanych
+PASS: Stone target filtruje NAP, peace lock i sojusz -- przez isForcedWarPairBlocked, wspólny predykat zastępujący dawne stoneBlockedOwnerIds
+PASS: Stone target jest przekazywany do decideAIDiplomacy
+PASS: udany DOW mutuje active/cycle i konsumuje pending Stone
+PASS: automatyczny pokój po 2 miastach ma Stone cooldown
+PASS: capture battle funnel rozlicza Stone
+PASS: siege surrender funnel rozlicza Stone
+PASS: resolveSiegeSurrender: Stone hook jest po zmianie city.ownerId
+PASS: regresja mutacyjna: usunięcie Stone hooka z resolveSiegeSurrender jest wykrywalne
+PASS: zwykła wojna pozostaje bez zmian: licznik Stone działa tylko dla aktywnej pary
+PASS: finalizePeaceTreatyBetween ustawia Stone rest timer
+PASS: save snapshot zawiera komplet 4 pól Stone
+PASS: restoreGameFromSave odtwarza komplet 4 struktur Stone
+PASS: eliminacja i nowa gra czyszczą Stone state
+PASS: Brąz zachowuje własny moduł i rejestr
+PASS: main.ts: stoneForceWarTargetId ustawiane z forcedWarAssignmentByOwner (nowy rdzeń parowania), nie z usuniętego pickStoneForcedWarTargetIdCoordinated
+WYNIK: 19 PASS, 0 FAIL
+
+EXIT=0  (forced-war-stone-main-guard-test)
+
+=================== forced-war-bronze-main-guard-test
+========================================================================
+R-EPOKA-BRAZU-WYMUSZONA-WOJNA runda 2 -- bramka tekstowa main.ts + ai.ts
+========================================================================
+
+1. B1 -- maybeResolveBronzeForcedWarOnCityCapture wołany z OBU funnel-i przejęcia miasta
+  PASS: maybeResolveBronzeForcedWarOnCityCapture() zdefiniowana jako funkcja w main.ts
+  PASS: applyCityCaptureToMap: woła maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner) PO applyCityCaptureAfterBattle
+  PASS: resolveSiegeSurrender (kapitulacja głodowa): woła maybeResolveBronzeForcedWarOnCityCapture(oldOwner, newOwner) PO city.ownerId = newOwner -- bez tego wojna wymuszona AI<->AI nigdy się nie kończy (negocjacje pokojowe obsługują wyłącznie targetId===0)
+
+2. B3 -- aktywny sojusz z celem wyklucza go z puli wymuszonej wojny Brązu
+  PASS: main.ts: sojusz (obok NAP i blokady pokoju) blokuje wybór pary WSZĘDZIE -- przez isForcedWarPairBlocked, wspólny predykat zastępujący dawne bronzeBlockedOwnerIds
+  PASS: main.ts: relacjeDip AI<->AI (pętla "for (const otherId of aiOwnerList)") zasila hasAllianceTreaty: allianceFormalKindBetween(activeDeals, ownerId, otherId) !== null
+  PASS: main.ts: diploInp przekazuje bronzeForceWarTargetId do DiplomacjaInputs
+  PASS: ai.ts: RelacjaWejscie deklaruje pole hasAllianceTreaty?: boolean
+  PASS: ai.ts: decideAIDiplomacy guard bronzeForceWarTargetId sprawdza !forcedRel.hasAllianceTreaty obok !forcedRel.stanWojny / !forcedRel.peaceLocked / !forcedRel.hasNapTreaty
+
+3. B4 -- pending konsumowany WYŁĄCZNIE przy udanym wypowiedzeniu wojny
+  PASS: REGRESJA B4: wzorzec "if (wasPending) bronzeForceWarPendingOwners.delete(ownerId);" (kasowanie NIEZALEŻNIE od wyniku próby) ma ZERO wystąpień w main.ts
+  PASS: main.ts: wasPending Brązu obliczany jako CZYSTY ODCZYT (bronzeForceWarPendingOwners.has(ownerId)) bez towarzyszącego .delete() w tej samej linii/bloku odczytu
+  PASS: main.ts: bronzeForceWarPendingOwners.delete(ownerId) występuje DOKŁADNIE 2x w całym pliku -- (1) blok sukcesu wypowiedz_wojne (konsumpcja B4), (2) eliminateOwner (sprzątanie po eliminacji cywilizacji). Jeśli >2, ktoś dołożył trzecie (podejrzane) miejsce kasujące; jeśli <2, jedno z tych dwóch zniknęło
+  PASS: main.ts: bronzeForceWarPendingOwners.delete(ownerId) leży w BLOKU SUKCESU -- bezpośrednio obok bronzeForceWarActiveByPairKey.set(...) i bronzeForceWarCycleOwners.add(ownerId), wewnątrz "if (bronzeForceWarTargetId != null && targetId === bronzeForceWarTargetId)". R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): budżet {0,200} (zamiast dawnego dokładnego dopasowania) wchłania nowe pole `startTurn: turn,` dołożone do literału stanu pary bez utraty czułości na usunięcie samego wywołania .set/.add/.delete w tym bloku.
+
+4. B5 -- 4 struktury stanu w snapshot ORAZ restore (save/load roundtrip wiązanie)
+  PASS: buildSaveGameSnapshot: woła serializeBronzeForcedWarState(pendingOwners, cycleOwners, restUntilByOwner, activeByPairKey) PRZED return
+  PASS: meta w buildSaveGameSnapshot zawiera pole #1: "bronzeForceWarPendingOwners"
+  PASS: meta w buildSaveGameSnapshot zawiera pole #2: "bronzeForceWarCycleOwners"
+  PASS: meta w buildSaveGameSnapshot zawiera pole #3: "bronzeForceWarRestUntilByOwner"
+  PASS: meta w buildSaveGameSnapshot zawiera pole #4: "bronzeForceWarActiveByPairKey"
+  PASS: restoreGameFromSave: woła restoreBronzeForcedWarState({...}) czytając saved.meta?.bronzeForceWar*
+  PASS: restoreGameFromSave: repopuluje WSZYSTKIE 4 struktury (.clear() + pętla .add()/.set()) z bronzeForceWarRestored. R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): pętla activeByPairKey teraz backfilluje `startTurn` (`{ ...st, startTurn: st.startTurn ?? turn }` zamiast gołego `st`) -- regex dopuszcza DOWOLNĄ treść ciała pętli activeByPairKey ({0,200}), o ile nadal realnie .set()-uje do mapy w pętli po bronzeForceWarRestored.activeByPairKey (czułość na usunięcie SAMEJ pętli/repopulacji zostaje, czułość na DOKŁADNY kształt wnętrza — nie)
+
+5. Baseline -- eligibility check obecny przed próbą, sprzątanie stanu przy eliminacji
+  PASS: main.ts: isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: ..., currentTurn: turn, eraEnterTurn: ... }) wołane w gałęzi wasPending PRZED wyborem celu (shouldSearch). R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): shouldSearch teraz zaczyna się od `forcedWarDifficultyLevel !== 1 && (...)` (Część B, Łatwy) i isEligibleForBronzeForcedWar dostaje 2 nowe pola (próg 25 tur od wejścia w Brąz) -- regex dopuszcza to bez utraty czułości na usunięcie SAMEGO wywołania eligibility PRZED shouldSearch
+  PASS: main.ts: eliminateOwner() sprząta bronzeForceWarPendingOwners/CycleOwners/RestUntilByOwner oraz usuwa ownera z bronzeForceWarActiveByPairKey (jako attacker LUB target)
+
+6. RUNDA 3 (B6a) -- 4 nowe asercje łapiące M19/M7/M12/M16, które przeżyły rundę 2
+  PASS: maybeResolveBronzeForcedWarOnCityCapture(): woła finalizePeaceTreatyBetween(st.attackerId, st.targetId, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR) -- Z ARGUMENTEM COOLDOWNU. Łapie DWIE mutacje jedną asercją: M19 (usunięcie SAMEGO wywołania auto-pokoju z wnętrza haka -- licznik nadal liczy, wojna AI<->AI nigdy się nie kończy) ORAZ M16 (utrata TEGO argumentu -- finalizePeaceTreatyBetween spada na domyślny PEACE_TREATY_LOCK_TURNS=10 zamiast WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR=20, cooldown cicho spada z 20 na 10)
+  PASS: maybeResolveBronzeForcedWarOnCityCapture(): wyszukuje stan pary przez diploPairKey(oldOwner, newOwner) -- NIE przez prostą interpolację stringów bez sortowania (M7: zamiana na np. `${oldOwner}-${newOwner}` sprawia, że licznik działa TYLKO gdy oldOwner<newOwner, po cichu gubiąc połowę zdobyczy -- para (5,3) szuka innego klucza niż zapisana przy wypowiedzeniu wojny jako (3,5))
+  FAIL: finalizePeaceTreatyBetween(): zawiera blok sprzątający stan wojny wymuszonej Brązu -- bronzeForceWarActiveByPairKey.delete(bronzePairKey) + uzbrojenie odpoczynku napastnika (bronzeForceWarRestUntilByOwner.set) -- WEWNĄTRZ CIAŁA TEJ FUNKCJI, nie tylko wywoływane przez nią. Łapie M12: pokój wynegocjowany NORMALNIE (nie przez próg miast wymuszonej wojny, np. zwykła oferta pokoju gracza/AI) zostawiałby martwy wpis w bronzeForceWarActiveByPairKey -- napastnik trwale i cicho wypadałby z cyklu (ta sama klasa błędu co B4 z rundy 1)
+  PASS: maybeResolveBronzeForcedWarOnCityCapture(): woła shouldEndBronzeForcedWarByCityCount(...) i wraca wcześnie (return) gdy próg NIE jest osiągnięty -- PRZED jakimkolwiek wywołaniem finalizePeaceTreatyBetween niżej w tej samej funkcji. Usunięcie tego warunku kończyłoby wojnę wymuszoną automatycznym pokojem po KAŻDYM pojedynczym przejęciu miasta między parą, nie dopiero po osiągnięciu progu WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE
+
+7. RUNDA 4 (Operator obrona) -- Część A/B/C: koordynacja Brązu, limit czasu, licznik wejścia w Brąz
+  PASS: main.ts: bronzeForceWarTargetId ustawiane z forcedWarAssignmentByOwner (nowy rdzeń parowania), nie z usuniętego pickBronzeForcedWarTargetIdCoordinated
+  PASS: main.ts: resolveForcedWarDurationLimits() faktycznie WOŁANE w pętli tury AI -- wewnątrz "if (!aiCmdResume) {" OBOK pruneInvalidNegotiations(), PRZED reconcileAllOwnerErasFromResearch() -- nie tylko zdefiniowane. Część C (limit trwania 25 tur, Kamień+Brąz) bez tego wywołania funkcja nigdy się nie uruchamia i żadna wojna wymuszona nie kończy się z powodu czasu. Zweryfikowano mutacyjnie: usunięcie SAMEJ linii wywołania (definicja funkcji nietknięta) czerwieni tę asercję.
+  PASS: main.ts: przy awansie Kamień(1)→Brąz(2) (obok bronzeForceWarPendingOwners.add(ownerId)) wołane JEST bronzeEraEnterTurnByOwner.set(ownerId, turn) -- Część A: bez tego zapisu próg „25 tur od wejścia w Brąz" (isEligibleForBronzeForcedWar eraEnterTurn) nie ma od czego liczyć dla nowo awansowanych cywilizacji. Zweryfikowano mutacyjnie: usunięcie SAMEJ linii .set() (pozostawiając .add(ownerId) i resztę bloku awansu) czerwieni tę asercję.
+
+========================================================================
+WYNIK: 27 PASS, 1 FAIL
+========================================================================
+
+EXIT=1  (forced-war-bronze-main-guard-test)
+
+=================== forced-war-iron-main-guard-test
+R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1 — main.ts + ai.ts guards
+
+PASS: main.ts importuje osobny moduł forced-war-iron
+PASS: wyzwalacz siedzi w syncOwnerEraFromResearch i używa isIronEraEntry(prev, next)
+PASS: wyzwalacz Żelaza NIE jest progiem tury (żadnego turn >= … obok ironForceWarPendingOwners.add)
+PASS: wyzwalacz wyklucza miasta-państwa/kopie (isOwnerClusterCityState przy awansie)
+PASS: guard napastnika (wspólna pętla pre-pass) wyklucza gracza, kopie typu, barbarzyńców, wyeliminowanych i miasta-państwa PRZED zebraniem wasPending Żelaza
+PASS: kwalifikacja napastnika przechodzi przez isEligibleForIronForcedWar (isMainAiCiv + brak wojny w dowolnej roli)
+PASS: R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: isEligibleForIronForcedWar wołane z currentTurn: turn, eraEnterTurn: ironEraEnterTurnByOwner.get(ownerId) -- bez tego próg 25 tur od wejścia w Żelazo nigdy nie jest sprawdzany, mechanizm strzela natychmiast po awansie
+PASS: cykl po odpoczynku: wymaga cycleOwners, braku wojny i wygaśnięcia isRestingFromIronForcedWar
+PASS: gracz dołącza do wspólnej puli triggeredSubjects (na równi z AI) WYŁĄCZNIE gdy sam nie ma dziś żadnej aktywnej wojny wymuszonej ORAZ minął próg tury (R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1, turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY) -- bez innego specjalnego wykluczania
+PASS: isForcedWarPairBlocked (NAP, blokada pokoju, sojusz) -- ten sam symetryczny predykat dla WSZYSTKICH trzech epok, zastępuje dawne ironBlockedOwnerIds/bronzeBlockedOwnerIds/stoneBlockedOwnerIds
+PASS: wybór celu (wszystkich trzech epok naraz, w tym Żelaza) przechodzi przez assignForcedWarPairings z isForcedWarPairBlocked i hexDistanceFn: hexDistance
+PASS: wynik przydziału Żelaza czytany z forcedWarAssignmentByOwner (nie z usuniętego pickIronForcedWarTargetId w pętli)
+PASS: Iron target jest przekazywany do decideAIDiplomacy
+PASS: ai.ts: DiplomacjaInputs ma pole ironForceWarTargetId
+PASS: ai.ts: guard Żelaza to wczesny return z wypowiedz_wojne i pełnym zestawem blokad
+PASS: ai.ts: guard Żelaza stoi PRZED ogólnymi regułami wojny (przed budową DiplomacjaParams `const p:`)
+PASS: ai.ts: guardy Kamienia i Brązu nietknięte (zero regresji dwóch istniejących epok)
+PASS: udany DOW mutuje active/cycle i konsumuje pending Żelaza
+PASS: pending Żelaza jest kasowany DOKŁADNIE w jednym miejscu (blok sukcesu), nie przy samej próbie
+PASS: komenda DOW ma finalny guard sojuszu dla celu Żelaza
+PASS: maybeResolveIronForcedWarOnCityCapture() zdefiniowana w main.ts
+PASS: automatyczny pokój po 2 miastach używa cooldownu Żelaza
+PASS: capture battle funnel rozlicza Żelazo
+PASS: siege surrender funnel rozlicza Żelazo PO zmianie city.ownerId
+PASS: zwykła wojna bez zmian: licznik Żelaza działa tylko dla aktywnej pary wymuszonej
+PASS: finalizePeaceTreatyBetween uzbraja odpoczynek Żelaza (cleanupIronForcedWarOnPeace)
+PASS: save snapshot zawiera komplet 4 pól Żelaza
+PASS: restoreGameFromSave odtwarza komplet 4 struktur Żelaza
+PASS: eliminacja i nowa gra czyszczą stan Żelaza
+PASS: deklaracja: const ironEraEnterTurnByOwner = new Map<number, number>();
+PASS: przy awansie do Żelaza (isIronEraEntry) ustawiane jest ironEraEnterTurnByOwner.set(ownerId, turn) OBOK ironForceWarPendingOwners.add(ownerId) -- bez tego próg 25 tur nie ma od czego liczyć dla nowo awansowanych cywilizacji
+PASS: eliminacja ownera sprząta ironEraEnterTurnByOwner.delete(ownerId) OBOK reszty sprzątacza Żelaza
+PASS: reset nowej gry (bez przeładowania strony) czyści ironEraEnterTurnByOwner.clear() OBOK reszty rejestrów Żelaza -- inaczej reużyte ownerId dziedziczą licznik z poprzedniej gry
+PASS: save snapshot zawiera ironEraEnterTurnByOwner: Array.from(ironEraEnterTurnByOwner.entries())
+PASS: restoreGameFromSave odtwarza ironEraEnterTurnByOwner z saved.meta?.ironEraEnterTurnByOwner (clear() + pętla .set(), analogicznie do bronzeEraEnterTurnByOwner)
+PASS: Kamień i Brąz zachowują własne moduły, rejestry i haki
+PASS: rejestry Żelaza są ROZŁĄCZNE z Kamieniem i Brązem (żadne pole nie jest współdzielone)
+
+WYNIK: 37 PASS, 0 FAIL
+
+EXIT=0  (forced-war-iron-main-guard-test)
+
+=================== forced-war-trojstronna-main-guard-test
+R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 — main.ts guards (okablowanie)
+PASS: main.ts importuje assignForcedWarPairings i typy z forced-war-common (nie osobne funkcje domina per epoka -- USUNIĘTE)
+PASS: pre-pass (triggeredSubjects, budowa puli) jest policzony RAZ, PRZED ownerLoop (nie per-owner) -- ECHO: "Najpierw wszyscy mają wojnę, potem trójkąty" wymaga znać WSZYSTKICH triggered tej tury NARAZ, zanim ktokolwiek dostanie przydział
+PASS: wywołanie assignForcedWarPairings występuje RAZ, PRZED ownerLoop (nie wewnątrz pętli per-owner)
+PASS: pre-pass zbiera triggeredSubjects Brązu (bronzeTriggeredSubjects.push) i Kamienia (stoneTriggeredSubjects.push) -- Żelazo pokryte w forced-war-iron-main-guard-test.cjs
+PASS: triggeredSubjects finalny to złączenie WSZYSTKICH trzech epok, PLUS gracz (dopisany osobno)
+PASS: existingActivePairsForJoin łączy WSZYSTKIE trzy mapy aktywnych par (AI<->AI, targetId!==0, bez eliminowanych), każda otagowana WŁASNĄ erą -- krok 4 ECHO (leftover dołącza do DOWOLNEJ epoki)
+PASS: ECHO, brzegowy przypadek: unresolvedOwnerIds NIEPUSTE loguje DECISION_REQUIRED (nie zgaduje, nie crashuje) -- owner zostaje bez przydziału tej tury
+PASS: wynik czytany do forcedWarAssignmentByOwner (Map<ownerId, assignment>) z assignments zwróconych przez assignForcedWarPairings
+PASS: Brąz: bronzeForceWarTargetId czytany z forcedWarAssignmentByOwner z rozróżnieniem WŁASNEJ ery (era === 'bronze'), nie z usuniętego domina/coordinated
+PASS: Kamień: stoneForceWarTargetId czytany z forcedWarAssignmentByOwner z rozróżnieniem WŁASNEJ ery (era === 'stone')
+PASS: Żelazo: ironForceWarTargetId czytany z forcedWarAssignmentByOwner z rozróżnieniem WŁASNEJ ery (era === 'iron')
+PASS: ECHO 2 (sojusz KTÓREJKOLWIEK strony blokuje CAŁĄ parę): isForcedWarPairBlocked sprawdza NAP, blokadę pokoju (w tym cooldown tej samej pary) i sojusz -- symetryczny predykat dla WSZYSTKICH par (nowych i dołączeń do istniejących), nie tylko względem gracza
+PASS: regresja mutacyjna: usunięcie odczytu Brązu z forcedWarAssignmentByOwner jest wykrywalne (test czerwienieje)
+PASS: GOAL 3 (nietknięte tą naprawą): ai.ts nadal woła WYŁĄCZNIE istniejące, niezmienione pola diploInp.*ForceWarTargetId (ten sam kanał co stary fallback/domino, ai.ts poza allowlistą)
+WYNIK: 14 PASS, 0 FAIL
+
+EXIT=0  (forced-war-trojstronna-main-guard-test)
+
+=================== forced-war-bronze-new-game-reset-test
+R-WOJNA-BRAZ-CZYSZCZENIE-NOWA-GRA-Q1 — realna egzekucja bloku "nowa gra"
+
+  OK  wyodrębniony fragment zawiera dokładnie 4 wywołania stoneForceWar*.clear()
+  OK  wyodrębniony fragment zawiera dokładnie 4 wywołania ironForceWar*.clear()
+  OK  wyodrębniony fragment zawiera dokładnie 4 wywołania bronzeForceWar*.clear()
+  OK  wyodrębniony fragment czyści też bronzeEraEnterTurnByOwner (13. rejestr, Część A)
+  OK  seed: stoneForceWarPendingOwners.size > 0 przed egzekucją
+  OK  seed: stoneForceWarCycleOwners.size > 0 przed egzekucją
+  OK  seed: stoneForceWarRestUntilByOwner.size > 0 przed egzekucją
+  OK  seed: stoneForceWarActiveByPairKey.size > 0 przed egzekucją
+  OK  seed: ironForceWarPendingOwners.size > 0 przed egzekucją
+  OK  seed: ironForceWarCycleOwners.size > 0 przed egzekucją
+  OK  seed: ironForceWarRestUntilByOwner.size > 0 przed egzekucją
+  OK  seed: ironForceWarActiveByPairKey.size > 0 przed egzekucją
+  OK  seed: bronzeForceWarPendingOwners.size > 0 przed egzekucją
+  OK  seed: bronzeForceWarCycleOwners.size > 0 przed egzekucją
+  OK  seed: bronzeForceWarRestUntilByOwner.size > 0 przed egzekucją
+  OK  seed: bronzeForceWarActiveByPairKey.size > 0 przed egzekucją
+  OK  seed: bronzeEraEnterTurnByOwner.size > 0 przed egzekucją
+  OK  seed: ironEraEnterTurnByOwner.size > 0 przed egzekucją
+<anonymous_script>:23
+      forcedWarWavesByPairKey.clear();
+      ^
+
+ReferenceError: forcedWarWavesByPairKey is not defined
+    at eval (eval at runSlice (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/forced-war-bronze-new-game-reset-test.cjs:115:14), <anonymous>:23:7)
+    at runSlice (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/forced-war-bronze-new-game-reset-test.cjs:116:3)
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/forced-war-bronze-new-game-reset-test.cjs:128:1)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+
+Node.js v22.22.0
+
+EXIT=1  (forced-war-bronze-new-game-reset-test)
+
+=================== recruitment-no-upkeep-gate-test
+
+-- A0: dane kanoniczne zgodne ze zrzutem właściciela --
+FAIL: A0a: Wojownik koszt zakupu = 50 Drewna (got {"drewno":13}, want {"drewno":50})
+FAIL: A0b: Wojownik utrzymanie = 10 Drewna/turę (got {"drewno":3}, want {"drewno":10})
+
+-- A1: SCENARIUSZ WŁAŚCICIELA — pula 57 Drewna, koszt 50, utrzymanie 10/t --
+
+-- A2: ODWROTNIE — bramka kosztu NIE rozbraja się (pula 49 < koszt 50) --
+FAIL: A2: 49 Drewna, koszt 50 -> rekrutacja NADAL ZABLOKOWANA
+FAIL: A2b: komunikat odmowy = brak jednorazowego kosztu w magazynie
+FAIL: A2c: chip Drewna czerwony przy 49 Drewna (brak kosztu zakupu)
+FAIL: A2d: komunikat odmowy nie wspomina utrzymania
+
+-- A3: UTRZYMANIE DALEJ POBIERANE W NASTĘPNEJ TURZE (prawdziwy tick) --
+FAIL: A3a: po rekrutacji 57 - 50 = 7 Drewna w puli (got 44, want 7)
+FAIL: A3b: tick ekonomii NASTĘPNEJ tury nalicza utrzymanie 10 Drewna za zrekrutowaną jednostkę (got {"drewno":3}, want {"drewno":10})
+FAIL: A3d: NIEDOBÓR wykryty — brakuje 3 Drewna na utrzymanie (7 < 10) (got {}, want {"drewno":3})
+FAIL: A3e: pobór przy niedoborze zabiera wszystko i podłogowuje na 0 (bez ujemnej puli) (got 4, want 0)
+FAIL: A3g: UTRZYMANIE POBRANE w następnej turze: 27 - 10 = 17 (got 24, want 17)
+
+-- A4: PARYTET gracz / AI / MP — jedna bramka owner-agnostyczna --
+FAIL: A4c gracz: 49 Drewna -> zablokowana
+FAIL: A4c AI: 49 Drewna -> zablokowana
+FAIL: A4c MP (miasto-państwo): 49 Drewna -> zablokowana
+
+-- A5: kontrakt symboli po wycofaniu R-AI-RECRUIT-UPKEEP-GATE --
+
+recruitment-no-upkeep-gate-test: 22 passed, 14 failed
+
+EXIT=1  (recruitment-no-upkeep-gate-test)
+
+=================== deposit-building-gate-test
+  PASS: glinianka bez złoża → brak active Glina
+  PASS: improvementUnlockActiveOnHex glina false
+  PASS: glinianka na złożu gliny → active Glina
+  PASS: Glina złoże → poza potencjałem panelu (magazynowe)
+  PASS: buildingResourceGateMet: garncarnia z etykietą active bez stocku — bramka zamknięta (DOSTEP-SUROWCE-Q1)
+  PASS: buildingResourceGateMet: garncarnia z Gliną w magazynie — OK
+  PASS: buildingResourceGateMet: garncarnia bez Gliny — bramka zamknięta
+  PASS: glinianka na las+zloze gliny → active Glina
+  PASS: improvementUnlockActiveOnHex glina las+zloze
+  PASS: miedz bez ulepszenia → poza potencjałem panelu (tylko Koń/Sól/Złoto)
+  PASS: miedz bez ulepszenia → brak active Ruda
+  PASS: kopalnia_miedzi na miedzi → active Ruda
+  PASS: kopalnia_miedzi false na zelazo
+  PASS: kopalnia_miedzi na ZlozeRudy → Ruda
+  PASS: kopalnia_zelaza na zelazo → Ruda żelaza
+  PASS: kopalnia_zelaza false na miedz
+  PASS: warzelnia na zloze sol → Sól
+  PASS: warzelnia na wybrzeżu → Sól bez złoża
+  PASS: warzelnia coast active
+  PASS: złoże konia → potencjał Koń
+  PASS: stadnina na złożu konia → Koń
+  PASS: stadnina false bez złoża
+  PASS: złoże złota bez kopalni → potencjał panelu
+  PASS: złoże złota bez kopalni → brak active Złoto
+  PASS: kopalnia_zlota na złożu → active Złoto (imperium)
+  PASS: kopalnia_zlota → Złoto nie w potencjale
+  PASS: tartak bez złoża → Drewno
+  PASS: kamieniołom bez złoża → Kamień
+  PASS: bydlo NIE jest surowcem -> brak w active mimo hodowli
+  PASS: bydlo active bez złoża
+  PASS: buildingResourceGateMet: stolarnia bez drewna w magazynie — bramka zamknięta
+  PASS: buildingResourceGateMet: stolarnia z drewnem w magazynie — OK (tylko stock)
+  PASS: buildingResourceGateMet: stolarnia z samym activeLabels bez stocku — bramka zamknięta
+  PASS: buildingResourceGateMet: garncarnia z Gliną w magazynie — OK
+  PASS: buildingResourceGateMet: odlewnia brązu z Rudą w magazynie — OK (bez kopalni mapy)
+  PASS: stolarnia NIE w buildableProduction bez drewna w magazynie
+  PASS: stolarnia w buildableProduction z drewnem w magazynie (bez Tartaku)
+  PASS: stolarnia eraBuildingCatalog locked bez drewna w magazynie
+  FAIL: stolarnia eraBuildingCatalog ready z drewnem w magazynie (bez Tartaku)
+  PASS: runtime: stolarnia działa z drewnem w magazynie
+  PASS: runtime: stolarnia śpi bez zapasu drewna mimo activeLabels
+  PASS: runtime: spichlerz II działa z Solą w magazynie państwa
+  PASS: runtime: spichlerz II śpi bez Soli w magazynie
+  PASS: runtime: mennica śpi bez Złota w magazynie
+  PASS: runtime filter: garncarnia śpi bez gliny i bez dostępu
+  PASS: runtime filter: spichlerz I bez bramki Ceramiki (U-24) — zawsze aktywny
+  PASS: runtime filter: garncarnia+spichlerz przy zapasie Gliny w magazynie państwa
+
+deposit-building-gate: 46 pass, 1 fail
+
+EXIT=1  (deposit-building-gate-test)
+
+=================== koniec-tury-f1-f4-runda3-test
+FAIL: [F1-A3] finishIncomingBattleUi: battleUiResolving=true PRZED try{updateHud();refreshD1bHud();onResolved();}finally{battleUiResolving=false;} -- kolejność wywołań NIETKNIĘTA, tylko owinięta flagą
+FAIL: [F2-A11 runda 4] triggerPlayerEndTurn woła healStuckDeferredPreBattleQueueOnEndTurnAttempt() JAKO PIERWSZĄ instrukcję, PRZED sprawdzeniem canPlayerInitiateEndTurn() -- inaczej G2 (early return) omijałby sprzątanie
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+
+koniec-tury-f1-f4-runda3-test: 37 pass, 2 fail
+
+EXIT=1  (koniec-tury-f1-f4-runda3-test)
+
+=================== koniec-tury-g1-g2-runda4-test
+FAIL: [A8 kontrola G2] zaden warunek `if (...)` w tej funkcji nie odwoluje sie do aiTurnAwaitingBattle/aiCmdResume -- funkcja jest NIEZALEZNA od tych flag, w przeciwienstwie do starej galezi 1 (bramkowanej `aiTurnAwaitingBattle||aiCmdResume`), wiec pokrywa tez sciezke barbarzynska
+FAIL: [A9] triggerPlayerEndTurn: healStuckDeferredPreBattleQueueOnEndTurnAttempt() jest DOSLOWNIE pierwsza linia ciala funkcji, przed `if (!canPlayerInitiateEndTurn())` i jego early return -- zweryfikowane w kodzie, nie zalozone
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+
+koniec-tury-g1-g2-runda4-test: 36 pass, 2 fail
+
+EXIT=1  (koniec-tury-g1-g2-runda4-test)
+
+=================== diplomacy-audience-close-flush-test
+FAIL: [A4] main.ts ma DOKLADNIE 3 gole wywolania hideDiplomacyAudience() poza importem (wrapper + onBack + hak testowy __audienceRelTestDebug.closeAudience) -- got 4. Nowe miejsce zamkniecia audiencji MUSI isc przez closeDiplomacyAudienceAndFlush().
+FAIL: [A4f] kazde gole wywolanie hideDiplomacyAudience() jest w jednym z trzech NAZWANYCH miejsc -- rozpoznano 3 z 4. Nierozpoznane miejsce MUSI isc przez closeDiplomacyAudienceAndFlush().
+
+diplomacy-audience-close-flush-test: 49 pass, 2 fail
+
+EXIT=1  (diplomacy-audience-close-flush-test)
+
+=================== diplomacy-lista-podglad-przed-wizyta-test
+diplomacy-lista-podglad-przed-wizyta-test
+
+-- Część 1: B1 barbarzyńcy --
+  OK: 1a) owner 2: wojna z 1 wykryta
+  OK: 1b) owner 2: barbarzyńca (-1) NIE pojawia się w wojnach (B1)
+  OK: 1c) owner 2: dokładnie jeden partner wojny (bez barbarzyńcy)
+  OK: 1d) zapytanie o wojny SAMEGO barbarzyńcy zwraca pustą listę
+  OK: 1e) owner 2: sojusz z 5 wykryty
+  OK: 1f) owner 2: sojusz z barbarzyńcą (-1) wykluczony
+
+-- Część 2: B2 mgła wojny --
+  OK: 2a) partner spotkany (5) widoczny
+  OK: 2b) partner NIESPOTKANY (6) ukryty — wyciek mgły wojny naprawiony
+  OK: 2c) partner wyeliminowany (7) ukryty
+  OK: 2d) dokładnie jeden widoczny partner wojny
+  OK: 2e) bez isVisiblePartner: brak filtrowania (parametr opcjonalny)
+  OK: 2f) gracz (0) widoczny gdy wywołujący tak zdecyduje
+  OK: 2g) inny AI (8) ukryty przy tej samej regule
+  OK: 2h) handel: mgła wojny respektowana
+
+-- Klasyfikacja rodzaju traktatu --
+  OK: 3a) sojusze: pełny + legacy wojskowy (znormalizowany)
+  OK: 3b) sojusze: handel/NAP nie wliczone
+  OK: 3c) handel: tylko umowa_szlakow
+
+-- compareDiploListEntries (czysta funkcja) --
+  OK: 4a) cywilizacja przed miastem-państwem mimo odwrotnej kolejności alfabetycznej
+  OK: 4b) w obrębie grupy: alfabetycznie (pl)
+
+-- Część 2b: BB2 kontrakt diploListEntryFromRelation.isCityState --
+  OK: 2b-1) BB2: isCityState:true przepływa przez diploListEntryFromRelation
+  OK: 2b-2) BB2: isCityState:false przepływa przez diploListEntryFromRelation
+
+-- Część 3: B3/BB2 sortowanie chronione w render() + w diploListEntryFromRelation (jsdom) --
+  OK: 5-pre) wszystkie 4 wejścia zbudowane przez diploListEntryFromRelation (kontrola sanity)
+  OK: 5a) DOM renderuje wiersze W POSORTOWANEJ kolejności (cywilizacje nad miastami-państwami, alfabetycznie w grupie), wejścia z diploListEntryFromRelation: ["Babilon","Sparta","Alfa (miasto-państwo)","Zeta (miasto-państwo)"]
+
+-- Część 4: wpięcie w main.ts (tekst) --
+  OK: 6a) źródło: buildDiploPairSummaryData znaleziona
+  OK: 6b) wywołuje warPartnerIdsForOwner
+  OK: 6c) wywołuje dealPartnerIdsForOwner
+  OK: 6d) definiuje/przekazuje isVisiblePartner (B2 — bramka mgły wojny nie wypadła z wpięcia)
+  FAIL: 6e) predykat widoczności = id===0 || (isActiveDiploOwner(id) && kontakt) — dokładnie specyfikacja Evaluatora
+  OK: 6j) N1: alliances wołane z rodzajem 'sojusz'
+  OK: 6k) N1: deals wołane z rodzajem 'handel'
+  OK: 6f) źródło: openDiplomacyAudience znaleziona
+  OK: 6g) N2: openDiplomacyAudience sprawdza isDiploPairSummaryOpen()
+  OK: 6h) N2: openDiplomacyAudience woła hideDiploPairSummary()
+  OK: 6i) N2: strażnik pop-upu STOI NA POCZĄTKU funkcji (przed istniejącym strażnikiem listy) — pokrywa wszystkie 5 miejsc wywołania naraz
+
+-- Część 5: BB1 wpięcie showDiploPairSummary w onSelectEntry (main.ts) --
+  OK: 7a) źródło: onSelectEntry(createDiploListHud) znalezione
+  OK: 7b) BB1: onSelectEntry woła showDiploPairSummary(...) — pop-up podsumowania, nie audiencja wprost
+  OK: 7c) BB1: showDiploPairSummary dostaje getData: () => buildDiploPairSummaryData(...)
+  OK: 7d) BB1: BRAK bezpośredniego openDiplomacyAudience(ownerId) w ciele onSelectEntry — regres (stary skok wprost do audiencji) byłby wykryty
+  OK: 7e) kontrola sanity: przejście do audiencji istnieje w onOpenAudience(oid), nie bezpośrednio w onSelectEntry
+
+-- Część 6: BB3 showDiploPairSummary nie otwiera pustego pop-upu (diplomacyPanel.ts) --
+  OK: 8a) źródło: showDiploPairSummary znalezione (diplomacyPanel.ts)
+  OK: 8b) wywołuje renderPairSummary()
+  OK: 8c) BB3: zawiera strażnik if (!pairSummaryOpen) return;
+  OK: 8d) kontrola sanity: classList.add(open) i pushOverlay( nadal obecne
+  OK: 8e) BB3: strażnik stoi DOKŁADNIE między renderPairSummary() a classList.add(open)/pushOverlay( — getData()===null nie otwiera pustego pop-upu
+
+-- Część 7: N4 ensureDiplomacyUiClosed zamyka też pop-up pary (main.ts) --
+  OK: 9a) źródło: ensureDiplomacyUiClosed znaleziona
+  OK: 9b) N4: ensureDiplomacyUiClosed zamyka pop-up pary (isDiploPairSummaryOpen()/hideDiploPairSummary())
+
+diplomacy-lista-podglad-przed-wizyta-test: 45 pass, 1 fail
+
+EXIT=1  (diplomacy-lista-podglad-przed-wizyta-test)
+
+=================== diplomacy-negotiation-table-test
+diplomacy-negotiation-table-test
+  OK: NEGOTIATION_MAX_ROUNDS = 3
+  OK: NEGOTIATION_EXPIRY_TURNS > 0
+  OK: createNegotiation: round=1
+  OK: createNegotiation: awaitingOwnerId=responder
+  OK: createNegotiation: authorOwnerId=proposer
+  OK: createNegotiation: expiresTurn = createdTurn + limit
+  OK: createNegotiation: source=player
+  OK: createNegotiation: id niepusty
+  OK: NAP bez słodzika: AI odrzuca (relacja za niska)
+  FAIL: runda 1: AI składa kontrofertę (słodzik)
+  OK: sojusz beznadziejny: kończy się odrzuceniem, nie pętlą
+  OK: limit rund respektowany (rounds=0 <= 3)
+  OK: canCounter round 1 -> true
+  OK: canCounter round 2 -> true
+  OK: canCounter round 3 (limit) -> false
+  OK: umowa_handlowa @ rel 100: accepted + deal szlaków
+  OK: umowa_handlowa: gracz canPlayerCounter true
+  OK: trybut zbyt wysoki: odrzucone (przekracza limit Respektu)
+  OK: trybut zbyt wysoki: respondent kontruje (oferuje mniej)
+  OK: kontroferta trybutu: kwota obniżona
+  OK: po kontrze gracza: czeka AI (proponent)
+  OK: ważne warunki bazowe -> valid
+  OK: wybuch wojny unieważnia NAP z czytelnym powodem
+  OK: eliminacja strony unieważnia propozycję
+  OK: upływ terminu -> wygasła z czytelnym powodem
+  OK: trybut_oferta: wojna NIE unieważnia (to jej właśnie dotyczy)
+  OK: handel (dar goldOnce) + wojna: negotiationStillValid invalid
+  OK: PendingNegotiation przetrwa JSON.stringify/parse bez strat (save/load)
+  OK: zagnieżdżony koszyk (giveItems) przetrwa round-trip
+  OK: techDirection='buy': PendingNegotiation przetrwa JSON.stringify/parse bez strat
+  OK: techDirection='buy' przetrwa round-trip bez degradacji
+  OK: stary zapis bez techDirection: pole faktycznie nieobecne po round-tripie (nie np. null wstawione przez silnik)
+  OK: stary zapis bez techDirection degraduje się bezpiecznie do 'sell' (ten sam fallback co main.ts/diplomacyTradeBasket.ts)
+  OK: techPaymentMode='tech' + techOfferId: PendingNegotiation przetrwa JSON round-trip bez strat
+  OK: techPaymentMode/techOfferId przetrwają round-trip bez degradacji
+  OK: zapis sprzed tech-za-tech: pola faktycznie nieobecne po round-tripie
+  OK: zapis sprzed tech-za-tech degraduje się bezpiecznie do techPaymentMode='gold' (ten sam fallback co main.ts)
+  OK: makeNegotiationId: kolejność ownerId bez znaczenia (para kanoniczna)
+  OK: makeNegotiationId: różny seq -> różne id (unikalność przy tej samej parze/turze)
+  OK: applyCounterOffer: round+1
+  OK: applyCounterOffer: authorOwnerId = kto kontrował
+  OK: applyCounterOffer: awaitingOwnerId = druga strona
+  OK: applyCounterOffer: nowy termin ważności
+  OK: applyCounterOffer: nowe warunki na stole (ustępstwo)
+  OK: pokój bez koszyka: akceptowany (sama propozycja = PN traktatu @ Relacji)
+  OK: pokój + dar 28¤ od AI: akceptowany (traktat + słodzik)
+  OK: pokój na progu: brak zbędnej kontroferty ze słodzikiem
+  OK: pokój z 500¤ @ rel 80 w wojnie: akceptowany
+  OK: pokój bez wojny: odrzucony
+  OK: pokój: propozycja ważna PODCZAS wojny (nie gasi się jak NAP)
+  OK: dedup: wykrywa własną propozycję gracza
+  OK: dedup: para 0↔2 ma umowa_szlakow
+  OK: dedup: inny typ akcji nie blokuje
+  OK: dedup: inny partner nie matchuje
+  OK: dedup: oba kierunki na stole
+  OK: NAP + koszyk 5 vs 10: odrzucony (nieuczciwy dla partnera)
+  OK: handel 105 vs 110 PW: odrzucony
+  OK: resolveNegotiationAsResponder: NAP nieuczciwy nie akceptuje
+
+57/58 PASS
+
+EXIT=1  (diplomacy-negotiation-table-test)
+
+=================== diplomacy-package-ai-counter-actionable-test
+diplomacy-package-ai-counter-actionable-test
+<anonymous_script>:3
+return (n => isMe(n.awaitingOwnerId) || n.awaitingOwnerId === ownerId);
+                                     ^
+
+ReferenceError: isMe is not defined
+    at eval (eval at makePredicate (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/diplomacy-package-ai-counter-actionable-test.cjs:78:19), <anonymous>:3:38)
+    at /home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/diplomacy-package-ai-counter-actionable-test.cjs:125:42
+    at Array.filter (<anonymous>)
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/diplomacy-package-ai-counter-actionable-test.cjs:125:30)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+
+Node.js v22.22.0
+
+EXIT=1  (diplomacy-package-ai-counter-actionable-test)
+
+=================== diplomacy-proposal-test
+diplomacy-proposal-test
+  OK: normal progNapRelacja 110
+  OK: normal progHandelRelacja 0
+  OK: easy progNapRelacja 100
+  OK: easy progHandelRelacja 0
+  OK: hard progNapRelacja 120
+  OK: hard progHandelRelacja 0 (bez skali trudnosci)
+  OK: NAP accept rel 110 @ normal
+  OK: NAP accept rel 110 (bez progu Zauf)
+  OK: NAP reject relacja 49 normal
+  OK: NAP reject ekspansja — Relacja 129 < próg+narzut
+  OK: NAP accept ekspansja — Relacja 130 = próg+narzut (kompensowalne)
+  OK: NAP bezterminowy → wygasaTura null
+  OK: resolveNapDealExpiry turns=0 → null
+  OK: resolveNapDealExpiry turns=15 → turn+15
+  OK: NAP turns=8 clamped to 10 → wygasa t.15
+  OK: sojusz pełny accept
+  OK: sojusz reject relacja 150
+  OK: sojusz reject równowaga zauf 75
+  OK: sojusz reject zaufanie 50 słaby proponent
+  OK: sojusz silny proponent premia siły
+  OK: sojusz gracz 3× silniejszy zauf 90 rel 152
+  OK: sojusz gracz 3× silniejszy zauf 85 rel 151
+  OK: sojusz reject gracz 3× rel 150
+  OK: sojusz gracz 2× silniejszy zauf 91 rel 152
+  OK: sojusz gracz 2× silniejszy zauf 85 rel 151
+  OK: sojusz reject gracz 2× rel 150
+  OK: sojusz gracz 2× silniejszy zauf 100 rel 152
+  OK: sojusz reject hegemon AI 3× zauf 100
+  OK: sojusz reject AI 2× zauf 100 (kara siły respondenta)
+  OK: sojusz reject AI 2× zauf 50
+  OK: trybut żądanie accept
+  OK: trybut żądanie reject Respekt 70
+  OK: trybut żądanie reject słabszy
+  OK: trybut żądanie reject kwota powyżej limitu (Respekt 80)
+  OK: trybut żądanie reject duplikat wasalizacja aktywna
+  OK: trybut oferta jednorazowy
+  OK: trybut oferta reject CS partner
+  OK: trybut żądanie reject CS proposer
+  OK: TRIBUTE_PROPOSAL_ACTIONS exported
+  OK: negotiationStillValid gasi trybut CS
+  OK: handel fair strict PN rel 45
+  OK: handel accept relacja 39 normal (progHandelRelacja=0)
+  OK: handel accept relacja 40 normal
+  OK: NAP accept rel 100 easy
+  OK: NAP reject relacja 39 easy
+  OK: handel accept relacja 39 easy (progHandelRelacja=0)
+  OK: handel reject unfair PN
+  OK: handel zloze odrzucony po wycofaniu dostepu
+  OK: clampDealTurns 1-20
+  OK: proposalHasResourceAccess zloze
+  OK: tier NAP
+  OK: tier sojusz
+  OK: tier pokoj kontakt
+  OK: brak tier bez kontaktu
+  OK: namów wojna + łapówka
+  OK: tech sprzedaż rel+zauf OK
+  OK: tech reject zauf 25 rel 45
+  OK: tech-za-tech: akceptowana bez ceny gotówkowej (próg gotówkowy nie dotyczy)
+  OK: tech-za-tech reject: brak techOfferId
+  OK: tech-za-tech reject: techOfferId === techId
+  OK: granice wojskowe
+  OK: granice reject zauf 40 rel 105
+  OK: granice reject rel 90 zauf 50
+  OK: wojna zerwie traktaty pary
+  OK: AI pending sojusz
+  OK: capAiGoldOffer 5¤ → 5
+  OK: capAiGoldOffer 0¤ → brak oferty
+  OK: capAiGoldOffer 100¤ → max 20
+  OK: enrich handel 5¤ skarbca
+  OK: enrich handel 0¤ → null
+  OK: UI tekst handel 5¤
+  OK: AI pending handel goldOnce 5 + isGift
+  OK: gracz akceptuje AI handel → oneShotTrade
+  OK: evaluateProposal handel gift + wojna: rejected
+  OK: resolvePlayerAcceptsAiPending handel gift + atWar: rejected
+  OK: resolvePlayerAcceptsAiPending handel gift + atWar false: accepted (regresja)
+  OK: AI pending handel 0¤ → null
+  OK: handel gracz→AI: oferta przebija PODNIESIONY (niska willingnessTrade Zulusów) próg PW @ Relacji — R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1=B+C runda 3 (etykieta poprawiona pkt 4: nie "mimo", tylko "mimo podniesionego progu")
+  OK: handel gracz→AI unfair + niska willingness: mnożnik chęci respondenta-AI podnosi próg PW (komunikat "niechęć")
+  OK: AI→gracz handel @ progu neutralnym (200 PW oferty ≥ 200 PW wymagane @ Relacji 50): akceptacja bez wpływu (sztucznej) checi gracza-jako-respondenta
+  OK: AI→gracz handel accept: komunikat bez "niechęć" (multiplier neutralny=1)
+  OK: AI→gracz handel poniżej progu neutralnego (oferta 199 PW < wymagane 200 PW @ Relacji 50): odrzucenie
+  OK: AI→gracz handel reject: komunikat NIE przypisuje przyczyny nieistniejącej "niechęci AI" (AI jest proponentem, nie respondentem, w tym kierunku)
+  OK: AI→gracz handel reject: komunikat z realnymi liczbami PW (wymagane ≥ 200 PW, oferta 199 PW)
+  OK: PODŁOGA PARYTETU: handel gracz→AI @ rel(100,100) (relTotal=200→clamp 100 pkt, parytet fair=receivePn=110 PW), oferta 105 PW < receivePn 110 PW: odrzucenie mimo wysokiej chęci partnera (Fenicjanie)
+  OK: PODŁOGA PARYTETU reject: komunikat z realnymi liczbami PW (wymagane ≥ 110 PW, oferujesz 105 PW)
+  OK: kontrola podłogi: diplomacyFairGivePn(receivePn=100 PW, relTotal=60 pkt Relacji)=167 PW > receivePn=100 PW (poniżej parytetu, ulga ma pole działania)
+  OK: punkt odniesienia: handel gracz→AI @ rel 60 pkt, oferta 167 PW == fair-neutralny (bez ulgi): akceptacja
+  OK: kontrola ulgi (realnie działa poniżej parytetu): handel gracz→AI @ rel 60 pkt, oferta 160 PW (poniżej fair-neutralnego 167 PW, powyżej wymaganego z ulgą 159 PW) @ wysoka chęć partnera (Fenicjanie): akceptacja — podłoga nie blokuje ulgi tam, gdzie fair>receivePn
+  OK: kontrola ulgi (ograniczona, nie sięga podłogi): handel gracz→AI @ rel 60 pkt, oferta 158 PW (poniżej wymaganego z ulgą 159 PW) @ wysoka chęć partnera (Fenicjanie): odrzucenie
+  OK: AI(1)→AI(2) handel @ parytecie dokładnym (100 PW = 100 PW, rel(50,50)→relForFair=100 pkt, fair=receivePn bez modyfikatora): ODRZUCENIE z niską chęcią respondenta-AI(2) (Zulusi) — dowód że zaostrzenie mnożnika chęci działa też dla pary AI↔AI, nie tylko gracz→AI
+  OK: AI(1)→AI(2) handel odrzucone @ niskiej chęci: komunikat zawiera "Niechęć" (przyczynowo trafny, ten sam mechanizm co gracz→AI)
+  OK: AI(1)→AI(2) handel odrzucone: komunikat z realnymi liczbami PW (wymagane ≥ 108 PW, oferujesz 100 PW)
+  OK: AI(1)→AI(2) handel @ rel 60 pkt, oferta 167 PW == fair-neutralny (bez ulgi): akceptacja (identyczny próg co gracz→AI)
+  OK: AI(1)→AI(2) handel @ rel 60 pkt, oferta 160 PW (poniżej fair-neutralnego 167 PW, powyżej wymaganego z ulgą 159 PW) @ wysoka chęć respondenta-AI(2) (Fenicjanie): akceptacja — ulga działa identycznie jak dla gracz→AI
+  OK: AI(1)→AI(2) handel @ rel 60 pkt, oferta 158 PW (poniżej wymaganego z ulgą 159 PW) @ wysoka chęć respondenta-AI(2) (Fenicjanie): odrzucenie — ulga ograniczona identycznie jak dla gracz→AI
+  OK: KONTROLA STRUKTURALNA — brak luki: AI(1)→AI(2) @ rel(100,100) (parytet fair=receivePn=110 PW), oferta 105 PW < 110 PW: odrzucenie mimo wysokiej chęci respondenta-AI(2) (Fenicjanie) — podłoga parytetu chroni AI(2) przed AI(1) identycznie jak chroniła AI przed graczem (proposerUnfairToPartnerGate nieobecny dla 'handel' niezależnie od tożsamości proponenta — to nie luka, handelFairnessGate jest proposer-identity-agnostyczny)
+  OK: KONTROLA STRUKTURALNA reject: komunikat z realnymi liczbami PW (wymagane ≥ 110 PW, oferujesz 105 PW) — identyczny format co gracz→AI
+  OK: traktat handlowy fair PW: akceptacja mimo willingness
+  OK: traktat handlowy bez koszyka @ niska Rel: odrzucenie (ujemny bilans PW)
+  OK: traktat handlowy bez koszyka @ rel 100: bilans 0
+  OK: traktat handlowy: dopłata gold pokrywa bilans @ niska Rel
+  OK: umowa_handlowa alias @ rel 100: accepted + deal szlaków (R-DYPLO-PRZYJMIJ-TRADE)
+  OK: umowa_handlowa @ niska Rel bez koszyka: odrzucenie jak szlaki
+  OK: Q2: traktat bez własnego koszyka + sąsiad na stole daje DOKŁADNIE 40 PW (== deficyt 40): pakiet akceptowany
+  OK: Q2: sąsiad 54 PW > deficyt 40 PW: pakiet akceptowany z nadwyżką (scenariusz zgłoszenia — pakiet total ≥ wymagane)
+  OK: Q2: sąsiad 20 PW < deficyt 40 PW: nadal zablokowane, komunikat "Brakuje 20 PW ... pakiet na stole" (nie stara liczba 40 licząca sam traktat)
+  OK: Q2: BEZ sąsiada (ctx bez packageSiblingGivePn/receivePn) — zachowanie identyczne jak przed Q2 (Brakuje 40 PW, bez wzmianki o pakiecie): brak regresji dla wywołań spoza stołu
+  OK: Q2: sąsiad z OBIE stronami koszyka (give 50, receive 15) — receive sąsiada TEŻ liczy się do gapu (80+15) - (40+50) = 5 PW, nie tylko give
+  OK: Q2: alias umowa_handlowa też package-aware (ten sam case w evaluateProposal)
+  OK: pokój z dopłatą bilansu PW @ wojna: bez bramki willingnessTrade (willingnessPeace)
+  OK: dar złota w pokoju accepted
+  OK: dar złota w wojnie blocked
+  OK: pokój ze złotem w wojnie — brak blokady waluty
+  OK: koszt wchłonięcia pop 4 → max(200,150+100)=250
+  OK: wchłonięcie reject not CS
+  OK: wchłonięcie reject no wasal
+  OK: wchłonięcie reject wasal age 9
+  OK: wchłonięcie accept age 10 respekt 90 CS goldOnce ok
+  OK: nap @ niska Rel bez koszyka: dedykowany komunikat "Relacja zbyt niska na pakt", nie generyczny
+  OK: sojusz_defensywny @ niska Rel bez koszyka: dedykowany komunikat Zaufanie/Relacja, nie generyczny
+  OK: sojusz_pelny @ niska Rel bez koszyka: dedykowany komunikat Zaufanie/Relacja, nie generyczny
+  OK: wasal @ niska Rel bez koszyka: dedykowany komunikat Respekt, nie generyczny
+  FAIL: RUNDA 4: pokój bez koszyka podczas wojny @ niska Rel — PRZYJĘTY (pwBalance nigdy nie blokuje 'pokoj', decyzja właściciela); pwBalance nadal poprawnie ujemny (informacyjnie)
+  FAIL: RUNDA 4: pokój bez koszyka @ wojna, Relacja przedwojenna neutralna: PRZYJĘTY mimo WAR_RELATION_SCORE_CAP (dawniej wymagał dopłaty — blokada usunięta tą rundą)
+  OK: nap proposer=gracz, koszyk tylko-odbieram (receivePn=100, givePn=0): odrzucone jako nieuczciwe dla partnera
+  OK: nap proposer=AI, koszyk tylko-odbieram: treatyPnGate receive-side NIE odrzuca (zakres zawężony do proposerIsPlayer, poza literą decyzji A)
+  OK: UI: akcja 5 (traktat szlaków) NIE używa koszyka wymiany (actionUsesTradeBasket)
+  OK: UI: TRADE_BASKET_ACTION_IDS nie zawiera akcji 5 (traktat szlaków bez koszyka)
+  OK: UI: kontrola pozytywna — akcje 13 (dar) i 14 (umowa wymiany) nadal używają koszyka
+markup traktatów bez koszyka — realny render (R-DYP-STOL-A-KOREKTA)
+  OK: akcja 2: getTradeBasketMode → 'treaty' (warunek wejścia w gałąź isTreatyOnly)
+  OK: akcja 2: box.className zawiera cdb-treaty-only-mode
+  OK: akcja 2: markup BEZ klasy "cdb-add" (formularz dodawania pozycji koszyka)
+  OK: akcja 2: markup BEZ klasy "cdb-chip-typ" (chip wyboru typu pozycji)
+  OK: akcja 2: markup BEZ klasy "cdb-add-section"
+  OK: akcja 2: markup BEZ nagłówka koszyka "My oddajemy (opcjonalnie)"
+  OK: akcja 2: markup BEZ nagłówka koszyka "Oni oddają (opcjonalnie)"
+  OK: akcja 3: getTradeBasketMode → 'treaty' (warunek wejścia w gałąź isTreatyOnly)
+  OK: akcja 3: box.className zawiera cdb-treaty-only-mode
+  OK: akcja 3: markup BEZ klasy "cdb-add" (formularz dodawania pozycji koszyka)
+  OK: akcja 3: markup BEZ klasy "cdb-chip-typ" (chip wyboru typu pozycji)
+  OK: akcja 3: markup BEZ klasy "cdb-add-section"
+  OK: akcja 3: markup BEZ nagłówka koszyka "My oddajemy (opcjonalnie)"
+  OK: akcja 3: markup BEZ nagłówka koszyka "Oni oddają (opcjonalnie)"
+  OK: akcja 4: getTradeBasketMode → 'treaty' (warunek wejścia w gałąź isTreatyOnly)
+  OK: akcja 4: box.className zawiera cdb-treaty-only-mode
+  OK: akcja 4: markup BEZ klasy "cdb-add" (formularz dodawania pozycji koszyka)
+  OK: akcja 4: markup BEZ klasy "cdb-chip-typ" (chip wyboru typu pozycji)
+  OK: akcja 4: markup BEZ klasy "cdb-add-section"
+  OK: akcja 4: markup BEZ nagłówka koszyka "My oddajemy (opcjonalnie)"
+  OK: akcja 4: markup BEZ nagłówka koszyka "Oni oddają (opcjonalnie)"
+  OK: akcja 8: getTradeBasketMode → 'treaty' (warunek wejścia w gałąź isTreatyOnly)
+  OK: akcja 8: box.className zawiera cdb-treaty-only-mode
+  OK: akcja 8: markup BEZ klasy "cdb-add" (formularz dodawania pozycji koszyka)
+  OK: akcja 8: markup BEZ klasy "cdb-chip-typ" (chip wyboru typu pozycji)
+  OK: akcja 8: markup BEZ klasy "cdb-add-section"
+  OK: akcja 8: markup BEZ nagłówka koszyka "My oddajemy (opcjonalnie)"
+  OK: akcja 8: markup BEZ nagłówka koszyka "Oni oddają (opcjonalnie)"
+  OK: akcja 10: getTradeBasketMode → 'treaty' (warunek wejścia w gałąź isTreatyOnly)
+  OK: akcja 10: box.className zawiera cdb-treaty-only-mode
+  OK: akcja 10: markup BEZ klasy "cdb-add" (formularz dodawania pozycji koszyka)
+  OK: akcja 10: markup BEZ klasy "cdb-chip-typ" (chip wyboru typu pozycji)
+  OK: akcja 10: markup BEZ klasy "cdb-add-section"
+  OK: akcja 10: markup BEZ nagłówka koszyka "My oddajemy (opcjonalnie)"
+  OK: akcja 10: markup BEZ nagłówka koszyka "Oni oddają (opcjonalnie)"
+  OK: akcja 12: getTradeBasketMode → 'treaty' (warunek wejścia w gałąź isTreatyOnly)
+  OK: akcja 12: box.className zawiera cdb-treaty-only-mode
+  OK: akcja 12: markup BEZ klasy "cdb-add" (formularz dodawania pozycji koszyka)
+  OK: akcja 12: markup BEZ klasy "cdb-chip-typ" (chip wyboru typu pozycji)
+  OK: akcja 12: markup BEZ klasy "cdb-add-section"
+  OK: akcja 12: markup BEZ nagłówka koszyka "My oddajemy (opcjonalnie)"
+  OK: akcja 12: markup BEZ nagłówka koszyka "Oni oddają (opcjonalnie)"
+  OK: akcja 15: getTradeBasketMode → 'treaty' (warunek wejścia w gałąź isTreatyOnly)
+  OK: akcja 15: box.className zawiera cdb-treaty-only-mode
+  OK: akcja 15: markup BEZ klasy "cdb-add" (formularz dodawania pozycji koszyka)
+  OK: akcja 15: markup BEZ klasy "cdb-chip-typ" (chip wyboru typu pozycji)
+  OK: akcja 15: markup BEZ klasy "cdb-add-section"
+  OK: akcja 15: markup BEZ nagłówka koszyka "My oddajemy (opcjonalnie)"
+  OK: akcja 15: markup BEZ nagłówka koszyka "Oni oddają (opcjonalnie)"
+  OK: akcja 14: getTradeBasketMode → 'trade'
+  OK: akcja 14 (kontrola negatywna): box.className BEZ cdb-treaty-only-mode
+  OK: akcja 14 (kontrola negatywna): markup NADAL zawiera "cdb-add" (koszyk aktywny)
+  OK: akcja 14 (kontrola negatywna): markup NADAL zawiera "cdb-chip-typ"
+  OK: akcja 13 (kontrola negatywna, dar): box.className BEZ cdb-treaty-only-mode
+  OK: akcja 13 (kontrola negatywna, dar): markup NADAL zawiera "cdb-add"
+  OK: akcja 9 (kontrola negatywna, poza zakresem naprawy): getTradeBasketMode → 'treaty'
+  OK: akcja 9 (kontrola negatywna): box.className BEZ cdb-treaty-only-mode (poza zakresem tej naprawy)
+  OK: akcja 9 (kontrola negatywna): markup NADAL zawiera nagłówek koszyka "My oddajemy (opcjonalnie)"
+
+186/188 PASS
+
+EXIT=1  (diplomacy-proposal-test)
+
+=================== ai-war-gate-test
+
+--- W1a: pokoj -> brak ataku (canEngageOwner symulacja) ---
+
+--- W1b: wojna -> atak dozwolony ---
+
+--- W1c: barbarzynca zawsze wrog ---
+
+--- W2: AI nie atakuje gdy canEngageOwner blokuje ---
+
+--- W3: AI atakuje gdy canEngageOwner=true (sasiedztwo) ---
+
+--- W4a: planCityFounding max 1 komenda w decideAITurn ---
+
+--- W4b: defensiveCopy blokuje founding ---
+
+--- W4c: clusterStateTargets blokuje founding ---
+
+--- W4d: za malo Pracy -> brak founding ---
+
+--- E6a: aiFoundingWorkReserve skalowanie ---
+
+--- E6b: rezerwa Pracy blokuje founding przy niskiej puli ---
+
+--- E6c: ekspansywnosc >= 4 omija blokade klastra ---
+
+--- E6d: aiPowerGoalFoundingInterval ---
+
+--- E6e: aiClusterOutsidePenalty ---
+
+--- W4e: surge 2/ture gdy brak wolnych MP (R-AI-KOLONIZACJA-Q2) ---
+
+========================================
+ai-war-gate-test: 24 passed, 0 failed
+
+EXIT=0  (ai-war-gate-test)
+
+=================== barbarzyncy-krazenie-test
+-- 9a / mutacja: cofniecie warunku resetu do wersji rundy 5 --
+-- 9b / mutacja: przywrocenie bramki trudnosci --
+-- 9c / mutacja M2b: zaostrzenie etykietowania spojnych skladowych --
+-- 9e / mutacja: `continue` cofniete do `break` w petli kandydatow --
+-- 9d / mutacja M3: cofniecie fallbacku unitComp === undefined --
+
+barbarzyncy-krazenie-test: 249 passed, 0 failed
+
+EXIT=0  (barbarzyncy-krazenie-test)
+
+=================== load-game-blockers-exec-test
+-- L1: kolejka niepusta + blokady -> prepareSessionForLoad
+  ok   L1 przed: kolejka odlozonych bitew niepusta
+  ok   L1 przed: koniec tury zablokowany (stan wyjsciowy)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   L1 po load: kolejka wyczyszczona
+  ok   L1 po load: endTurnInProgress/aiCmdResume/aiTurnAwaitingBattle zresetowane
+  ok   L1 po load: canPlayerInitiateEndTurn() === true
+-- L2: otwarty ekran bitwy + kolejka -> prepareSessionForLoad
+  ok   L2 przed: ekran bitwy otwarty
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   L2 po load: ekran bitwy zamkniety
+  ok   L2 po load: kolejka pusta
+  ok   L2 po load: canPlayerInitiateEndTurn() === true
+-- L3: aiTurnAwaitingBattle + aiCmdResume (bez kolejki) -> prepareSessionForLoad
+  info L3 przed (healStale sprząta osierocone flagi): canPlayer=true
+  ok   L3 po load: canPlayerInitiateEndTurn() === true
+-- K1: kontrola bez wczytania -- blokada musi zostac
+  ok   K1 bez load: koniec tury nadal zablokowany (kolejka+blokady)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   K1b bez load: otwarty ekran bitwy blokuje (legalna blokada)
+-- mutacje (kazda musi czerwienic swoj scenariusz)
+  ok   M3 (bez aiCmdResume=null) RÓWNOWAZNA: po load nadal odblokowane (healStale)
+  ok   mutacja M1 bez clearDeferredAutoPreBattleQueue czerwieni L1
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   mutacja M2 bez hidePreBattle czerwieni L2
+load-blockers-exec: 15 PASS / 0 FAIL
+
+EXIT=0  (load-game-blockers-exec-test)
+
+=================== fsa-autosave-test
+--- 1. detectFsaAvailability(env) ---
+  [OK] brak window -> {available:false, reason:'no-window'} (got {"available":false,"reason":"no-window"})
+  [OK] protokol file:// -> {available:false, reason:'file-protocol'} (got {"available":false,"reason":"file-protocol"}) -- FSA nie dziala pod file://, wymagany http://localhost
+  [OK] http: bez secure context -> {available:false, reason:'insecure-context'} (got {"available":false,"reason":"insecure-context"})
+  [OK] brak showDirectoryPicker (Firefox/Safari) -> {available:false, reason:'no-api'} (got {"available":false,"reason":"no-api"})
+  [OK] http://localhost + Chrome/Edge -> {available:true} (got {"available":true})
+  [OK] https: + Chrome/Edge -> {available:true} (got {"available":true})
+  [OK] file:// z isSecureContext=true nadal daje reason:'file-protocol' (got {"available":false,"reason":"file-protocol"})
+
+--- 2. autosaveFileName(idx) ---
+  [OK] idx=0 -> civ-autosave-1.json (got civ-autosave-1.json)
+  [OK] idx=9 -> civ-autosave-10.json (got civ-autosave-10.json)
+  [OK] idx=10 zawija sie do civ-autosave-1.json (got civ-autosave-1.json)
+  [OK] idx=-1 zawija sie do civ-autosave-10.json (got civ-autosave-10.json)
+  [OK] FSA_AUTOSAVE_ROT_COUNT === 10 (got 10)
+  [OK] idx=NaN degraduje do civ-autosave-1.json, NIE "civ-autosave-NaN.json" (got civ-autosave-1.json)
+  [OK] idx=Infinity degraduje do civ-autosave-1.json (got civ-autosave-1.json)
+  [OK] idx=-Infinity degraduje do civ-autosave-1.json (got civ-autosave-1.json)
+  [OK] 10 kolejnych idx daje 10 unikalnych nazw plikow (got 10)
+
+--- 3. shouldUseFsaAutosave(state) ---
+  [OK] dostepne + handle + zgoda -> true (uzyj FSA)
+  [OK] niedostepne srodowisko (mimo handle+zgoda z poprzedniej sesji) -> false (fallback)
+  [OK] brak wybranego katalogu -> false (fallback, gracz nie kliknal jeszcze startu sesji)
+  [OK] zgoda nieudzielona/wycofana -> false (fallback)
+  [OK] nic gotowe -> false (stan domyslny na starcie procesu)
+
+--- 4. fsaUnavailableMessage(reason) ---
+  [OK] reason="no-window" -> string niepusty (got "Autozapis na dysk niedostępny w tym środowisku — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="file-protocol" -> string niepusty (got "Autozapis na dysk wymaga uruchomienia gry przez http://localhost (nie działa z pliku otwartego bezpośrednio) — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="insecure-context" -> string niepusty (got "Autozapis na dysk wymaga bezpiecznego połączenia (localhost/HTTPS) — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="no-api" -> string niepusty (got "Ta przeglądarka nie wspiera zapisu na dysk (dostępne w Chrome/Edge) — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="permission-denied" -> string niepusty (got "Autozapis na dysk niedostępny — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="picker-cancelled" -> string niepusty (got "Autozapis na dysk niedostępny — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="error" -> string niepusty (got "Autozapis na dysk niedostępny — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason=undefined -> string niepusty (got "Autozapis na dysk niedostępny — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason='file-protocol' wspomina http://localhost (naprowadza gracza jak wlaczyc funkcje)
+  [OK] reason='no-api' wymienia wspierane przegladarki (Chrome/Edge)
+
+--- 5. Brak window (plain Node) -- bezpieczna degradacja ---
+  [OK] detectFsaAvailabilityFromWindow() bez window -> available:false
+  [OK] getFsaReadinessState() domyslnie: niedostepne, brak handle, brak zgody (got {"availability":{"available":false,"reason":"no-window"},"hasDirectoryHandle":false,"permissionGranted":false})
+  [OK] shouldUseFsaAutosave(stan domyslny) === false -- main.ts od razu idzie na localStorage
+  [OK] ensureFsaAutosaveReady() pod plain Node NIGDY nie rzuca
+  [OK] ensureFsaAutosaveReady() pod plain Node -> {ok:false, reason:'no-window'} (got {"ok":false,"reason":"no-window"})
+  [OK] fsaRotatingAutosaveWrite() bez gotowego katalogu NIGDY nie rzuca
+  [OK] fsaRotatingAutosaveWrite() bez gotowego katalogu -> {ok:false, reason:'not-ready'} (got {"ok":false,"reason":"not-ready"})
+
+--- 6. Zgodnosc FSA_AUTOSAVE_ROT_COUNT z main.ts::AUTOSAVE_ROT_COUNT ---
+  [OK] main.ts::AUTOSAVE_ROT_COUNT znaleziony zrodlowo
+  [OK] main.ts::AUTOSAVE_ROT_COUNT (10) === fsa-autosave.ts::FSA_AUTOSAVE_ROT_COUNT (10) -- zapis na dysk i do localStorage rotuja po tej samej liczbie slotow
+  [OK] main.ts importuje z './game/fsa-autosave'
+  [OK] main.ts::doRotatingAutosave uzywa shouldUseFsaAutosave(getFsaReadinessState()) do wyboru sciezki zapisu
+  [OK] main.ts wola triggerFsaAutosaveBootstrap() (co za kulisami woa ensureFsaAutosaveReady()) z klikniecia startu sesji
+
+--- 7. BLOKER B2: galaz FSA nie klamie w setLastPlayedSlotId ---
+  [OK] galaz FSA w doRotatingAutosave znaleziona (miedzy shouldUseFsaAutosave(...) a await saveToLocal(slot, snapshot))
+  [OK] B2: galaz FSA NIE woa juz (w wykonywalnym kodzie, poza komentarzami) setLastPlayedSlotId(slot) z kluczem-klamstwem localStorage (dysk nic nie zapisal do localStorage) -- kod bez komentarzy: "try {\n          const { ok, reason } = await fsaRotatingAutosaveWrite(idx, snapshot);\n          if (ok) {\n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            setLastPlayedSlotId(FSA_SLOT_PREFIX + autosaveFileName(idx));\n            \n            \n            savePresence.markPresent();\n            autosaveFailureNotified = false; \n            try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch {  }\n            console.log('[Autosave] rotacyjny (dysk) slot=' + (idx + 1) + ' tura=' + turn);\n            return;\n          }\n          console.warn('[Autosave] zapis na dysk nieudany (' + (reason ?? 'nieznany') + ') — fallback na localStorage, tura=' + turn);\n          notifyFsaAutosaveDegraded();\n        } catch (eFsa) {\n          console.warn('[Autosave] wyjatek zapisu na dysk — fallback na localStorage:', eFsa);\n          notifyFsaAutosaveDegraded();\n        }\n      }\n\n      try {\n        \n        \n        \n        \n        \n        const _perfSaveLocalT0 = PERF_DEBUG ? performance.now() : 0;"
+  [OK] B2: galaz FSA woa setLastPlayedSlotId(FSA_SLOT_PREFIX + autosaveFileName(idx)) -- wskaznik prawdziwie odroznia plik na dysku od slotu localStorage
+--- 8. N2: .catch() na jedynym call site doRotatingAutosave() ---
+  [OK] N2: void doRotatingAutosave().catch(...) -- wyjatek, ktory mimo wewnetrznych try/catch/finally przecieklby, nie konczy sie unhandled rejection
+
+--- 9. BLOKER B1: mock odczytu katalogu FSA (plik -> lista zapisow) ---
+  [OK] listFsaAutosaveFiles() pomija plik spoza konwencji (notes.txt), zwraca 2 (got 2)
+  [OK] listFsaAutosaveFiles() zwraca civ-autosave-3.json z idx=2 (0-based, odwrotnosc autosaveFileName)
+  [OK] listFsaAutosaveFiles() zwraca civ-autosave-7.json z idx=6 (0-based)
+  [OK] readFsaAutosaveFile() zwraca surowa tresc pliku z dysku
+  [OK] loadFsaAutosaveFile() deserializuje SaveGame z pliku (tura=42) -- ten sam ksztalt, ktory saveLoadDialog.ts::summarizeFsaSaveSlots() wstawia do listy zapisow do wczytania (got {"wersja":3,"tura":42,"seed":7,"units":[],"cities":[],"exploredByHuman":[],"gracze":[],"humanOwnerIds":[0],"activeHumanOwnerId":0,"meta":{"label":"Test dysk","savedAt":"2026-08-10T10:00:00.000Z"}})
+  [OK] loadFsaAutosaveFile() zachowuje meta.label z pliku na dysku (etykieta widoczna w dialogu Wczytaj)
+[FSA] readFsaAutosaveFile blad: Error: brak pliku: civ-autosave-9.json
+    at Object.getFileHandle (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/fsa-autosave-test.cjs:338:37)
+    at readFsaAutosaveFile (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/.fsa-autosave-bundle.cjs:431:44)
+    at Object.loadFsaAutosaveFile (/home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/.fsa-autosave-bundle.cjs:441:22)
+    at /home/user/The-Game/.claude/worktrees/wf_a09ad2e6-bb5-3/gra/tools/fsa-autosave-test.cjs:368:31
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+  [OK] loadFsaAutosaveFile() dla nieistniejacego pliku -> null (nigdy nie rzuca, main.ts::loadGameFromSlot ma bezpieczny fallback)
+  [OK] po _resetFsaStateForTests() listFsaAutosaveFiles() znow zwraca [] (brak katalogu/zgody -- stan jak przed mockiem)
+
+=== fsa-autosave-test: 55 pass, 0 fail ===
+
+EXIT=0  (fsa-autosave-test)

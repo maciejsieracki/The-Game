@@ -1,0 +1,13 @@
+
+-- A. Gracz (ownerId=0): wieloturowa symulacja, produkcja rosnąca, rezerwa startowa=0 --
+
+-- B. PARYTET: AI (ownerId=1, bez flag gracza) -- rezerwa nadal MOŻE pokryć krok (stock-based, jak dawniej) --
+
+-- C1. Gracz: krok DOKŁADNIE bilansujący się (nadwyzka==0 po kroku) -- zatrzymany, NIE cofnięty --
+
+-- C2. Gracz: krok przestrzeliwujący o dokładnie WYZYWIENIE_STEP -- COFNIĘTY (repro dokładnego mechanizmu defektu) --
+
+-- C3. maxSafePoziomRacjiForCity (gracz): backstop zwraca ten sam flow-safe poziom co raise, NIE stary stock-based --
+
+auto-wyzywienie-flow-balance-test: 17 pass, 0 fail
+EXIT=0

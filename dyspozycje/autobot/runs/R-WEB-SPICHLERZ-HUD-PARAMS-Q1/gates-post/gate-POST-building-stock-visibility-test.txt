@@ -1,0 +1,17 @@
+
+[building-stock-visibility-test] Running tests...
+
+1. Budynek z kosztem surowcowym bez bramki dostepu, PUSTY magazyn: widoczny na liscie
+  [OK] targowisko (Targowisko (Rynek)) nie jest ukrywany przy pustym magazynie (lista budowy)
+  [OK] przy pustym magazynie brakuje surowca z iloscia (przyczyna do pokazania)
+  [OK] przycisk budowy wylaczony: canAffordBuildingStock=false przy pustym magazynie
+  [OK] z pelnym magazynem budynek dostepny (canAffordBuildingStock=true)
+     kandydat: targowisko koszt={"drewno":60}
+
+2. Bramka surowca etykietowego (R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3, D1): w widoku wyszarzony, domyslnie (AI) ukryty
+  [OK] stolarnia: bez dostepu do surowca (brak etykiety i zapasu) bramka surowca nie przechodzi
+  [OK] stolarnia: domyslnie (AI/walidacja) nadal ukryty z listy budowy
+  [OK] stolarnia: w widoku listy budowy widoczny (wyszarzony z przyczyna)
+
+7 passed, 0 failed
+EXIT=0

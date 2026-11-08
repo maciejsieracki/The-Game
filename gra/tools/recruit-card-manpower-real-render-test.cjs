@@ -113,7 +113,8 @@ async function buildBundle(outfile) {
     "import { configureCityPanel, appendUnitRecruitCompactRow } from '../src/ui/cityPanel';",
     "import { UNIT_RECRUIT_CARD_CSS } from '../src/ui/unitRecruitCard';",
     "import { unitManpowerCostForType, formatManpower } from '../src/game/manpower';",
-    'window.__api = { configureCityPanel, appendUnitRecruitCompactRow, UNIT_RECRUIT_CARD_CSS, unitManpowerCostForType, formatManpower };',
+    "import { formatCompactNumber } from '../src/ui/formatCompactNumber';",
+    'window.__api = { configureCityPanel, appendUnitRecruitCompactRow, UNIT_RECRUIT_CARD_CSS, unitManpowerCostForType, formatManpower, formatCompactNumber };',
     '',
   ].join('\n'), 'utf8');
   const plugins = [stubPlugin];
@@ -159,7 +160,7 @@ async function main() {
     if (!wojownik) throw new Error('units.json: brak Wojownika');
     const expectedWoodCost = wojownik['Surowiec (ilość)'];
 
-    const run = (available, stock) => page.evaluate(({ udef, available, stock }) => {
+    const run = (available, stock, multipliers) => page.evaluate(({ udef, available, stock, multipliers }) => {
       const A = window.__api;
       const root = document.getElementById('root');
       root.innerHTML = '';
@@ -173,6 +174,7 @@ async function main() {
         getCities: () => [city],
         getEpoch: () => 1,
         getCivBonusy: () => [],
+        getManpowerMultipliers: multipliers ? () => multipliers : undefined,
         getEmpireRekruciTotal: () => available,
         getTreasury: () => 100,
         onPurchaseUnit: () => { purchases++; },
@@ -199,6 +201,8 @@ async function main() {
         statusMissing: status ? status.dataset.missing : null,
         statusVisible: !!status && (() => { const r = status.getBoundingClientRect(); return r.width > 0 && r.height > 0; })(),
         shortfallText: shortfall ? shortfall.textContent : null,
+        shortfallVisible: !!shortfall && (() => { const r = shortfall.getBoundingClientRect(); return r.width > 0 && r.height > 0; })(),
+        shortfallColor: shortfall ? getComputedStyle(shortfall).color : null,
         buttonDisabled: button ? button.disabled : null,
         buttonTitle: button ? button.title : null,
         woodChipClass: woodChip ? woodChip.className : null,
@@ -206,22 +210,33 @@ async function main() {
         beforeClick,
         purchases,
       };
-    }, { udef: wojownik, available, stock });
+    }, { udef: wojownik, available, stock, multipliers });
 
     const requiredProbe = await run(0, { drewno: 50 });
     const required = requiredProbe.required;
     const format = value => page.evaluate(value => window.__api.formatManpower(value), value);
     const requiredLabel = await format(required);
+    // R-WEB-HUD-NUMBER-ABBREV-Q1 r2: WIDOCZNY zapis na karcie (summary, „brak N") = formatCompactNumber (jak pula nad listą);
+    // title zostaje pełnym opisem przez formatManpower.
+    const fmtC = value => page.evaluate(value => window.__api.formatCompactNumber(value), value);
+    const requiredCompact = await fmtC(required);
 
     console.log('\n-- BRAK REKRUTÓW + BRAK DREWNA --');
     const none = await run(0, {});
     await page.screenshot({ path: path.join(shotDir, 'recruit-card-manpower-none-plus-no-wood.png'), fullPage: true });
     const requiredMissing = requiredLabel;
     check('B1: karta ma widoczny tekstowy status rekrutów', none.statusVisible, none);
-    check('B2: status opisuje dostępne i potrzebne wartości',
-      none.statusText === `Rekruci: dostępne 0 / potrzebne ${requiredLabel}`, none.statusText);
-    check('B3: status pokazuje brakującą pulę',
-      none.shortfallText === `Brakuje: ${requiredMissing}`, none.shortfallText);
+    // R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1: pula państwa („dostępne”) to jedna linia nad
+    // listą (cityPanel.renderPurchasableUnits); karta pokazuje widocznie „potrzebne”
+    // (summary) i „brak N”, a pełny tekst „dostępne X / potrzebne Y” jest w tooltipie.
+    check('B2: status pokazuje potrzebne na karcie, a dostępne/potrzebne/brak w tooltipie',
+      none.statusText === requiredCompact
+        && none.statusTitle === `Rekruci: dostępne 0 / potrzebne ${requiredLabel} — brakuje ${requiredMissing}`,
+      { statusText: none.statusText, statusTitle: none.statusTitle });
+    check('B3: status pokazuje widoczną, czerwoną brakującą pulę',
+      none.shortfallText === `brak ${requiredCompact}` && none.shortfallVisible
+        && none.shortfallColor === 'rgb(232, 138, 122)',
+      { text: none.shortfallText, visible: none.shortfallVisible, color: none.shortfallColor });
     check('B4: data attributes przechowują available/required/missing',
       none.statusAvailable === '0'
         && none.statusRequired === String(required)
@@ -244,11 +259,13 @@ async function main() {
     await page.screenshot({ path: path.join(shotDir, 'recruit-card-manpower-partial.png'), fullPage: true });
     const partialAvailableLabel = await format(partialAvailable);
     const partialMissingLabel = await format(required - partialAvailable);
-    check('B8: częściowa pula pokazuje dostępne / potrzebne',
-      partial.statusText === `Rekruci: dostępne ${partialAvailableLabel} / potrzebne ${requiredLabel}`,
-      partial.statusText);
-    check('B9: częściowa pula pokazuje dokładny shortfall',
-      partial.shortfallText === `Brakuje: ${partialMissingLabel}`
+    const partialMissingCompact = await fmtC(required - partialAvailable);
+    check('B8: częściowa pula: potrzebne na karcie, dostępne / potrzebne / brak w tooltipie',
+      partial.statusText === requiredCompact
+        && partial.statusTitle === `Rekruci: dostępne ${partialAvailableLabel} / potrzebne ${requiredLabel} — brakuje ${partialMissingLabel}`,
+      { statusText: partial.statusText, statusTitle: partial.statusTitle });
+    check('B9: częściowa pula pokazuje widoczny, dokładny shortfall',
+      partial.shortfallText === `brak ${partialMissingCompact}` && partial.shortfallVisible
         && partial.statusMissing === String(required - partialAvailable),
       partial);
     check('B10: brak rekrutów blokuje przy częściowym stanie i wskazuje przyczynę',
@@ -259,15 +276,25 @@ async function main() {
 
     console.log('\n-- PEŁNA PULA REKRUTÓW --');
     const full = await run(required, { drewno: 50 });
-    check('B12: pełna pula pokazuje dostępne / potrzebne',
-      full.statusText === `Rekruci: dostępne ${requiredLabel} / potrzebne ${requiredLabel}`,
-      full.statusText);
+    check('B12: pełna pula: potrzebne na karcie, dostępne / potrzebne w tooltipie (bez „brakuje”)',
+      full.statusText === requiredCompact
+        && full.statusTitle === `Rekruci: dostępne ${requiredLabel} / potrzebne ${requiredLabel}`,
+      { statusText: full.statusText, statusTitle: full.statusTitle });
     check('B13: pełna pula nie pokazuje fałszywego shortfallu',
       full.shortfallText === null && full.statusMissing === '0', full);
     check('B14: pełna pula odblokowuje Rekrutuj',
       full.buttonDisabled === false && !/Brakuje/.test(full.buttonTitle || ''), full);
     check('B15: karta czyta pulę imperium, nie lokalny City.manpower',
       full.cityManpower === 0 && full.buttonDisabled === false, full);
+    const matrixCost = await run(750, { drewno: 50 }, { maxMult: 1.5, costMult: 0.75 });
+    check('matrix: karta pokazuje koszt 750 zamiast limitowego 1500',
+      matrixCost.statusRequired === '750', matrixCost);
+    check('matrix: pula 750 odblokowuje zakup i callback',
+      matrixCost.buttonDisabled === false && matrixCost.purchases === 1, matrixCost);
+    const matrixShortfall = await run(749, { drewno: 50 }, { maxMult: 1.5, costMult: 0.75 });
+    check('matrix: pula 749 blokuje zakup i pokazuje brak 1',
+      matrixShortfall.buttonDisabled === true && matrixShortfall.statusMissing === '1'
+        && matrixShortfall.purchases === 0, matrixShortfall);
     check('B16: istniejąca rekrutacja nadal wywołuje callback',
       full.purchases === full.beforeClick + 1, full);
 

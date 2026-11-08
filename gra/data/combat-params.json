@@ -48,8 +48,18 @@
     "fortify_obrona_bonus": 2,
     "fortify_obrona_proc": 50,
     "_fortify_obrona_proc_opis": "ufortyfikowanyWPolu (fortyfikacja W POLU, NIE garnizon): +50% Obrony jednostki (mnożnik na efektywnej Obronie przed terenem/brodem). Garnizon miasta nadal używa fortify_obrona_bonus (flat +2 pkt).",
-    "militia_pop_fraction": 0.2,
+    "_militia_opis": "R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (spec wlasciciela 2026-11-03): Milicja = 1 jednostka na 1 mieszkanca (militia_pop_fraction 1.0), ZAWSZE przy ataku na miasto z ukonczonym budynkiem Garnizon, jako wsparcie realnych obroncow. Polowa wrecz (nieparzysta: dodatkowa wrecz), polowa dystans; typy wg EPOKI wlasciciela miasta (militia_roster, nazwy z units.json). Wrecz: staty x militia_strength_fraction (min 1 gdy oryginal > 0). Dystans: PELNE staty. Morale ('Morale bazowe') x militia_morale_fraction, z podloga 'Morale ucieczki' + militia_morale_min_margin_over_flee (inaczej jednostka bylaby zlamana od startu). Polegli milicjanci zmniejszaja ludnosc (min. 1 zostaje).",
+    "_militia_regen_opis": "R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1 (zgloszenie wlasciciela 2026-11-03): gdy Milicja miasta zostanie CALKOWICIE zniszczona (zero zywych milicjantow po bitwie/szturmie), miasto przez militia_regen_turns TUR (globalnych) nie wystawia Milicji; dopiero po uplywie okresu Milicja sie odnawia (liczba = aktualna ludnosc). Stan: City.militiaRegenAtTurn (tura, od ktorej Milicja znow walczy).",
+    "militia_regen_turns": 5,
+    "militia_pop_fraction": 1.0,
     "militia_strength_fraction": 0.5,
+    "militia_morale_fraction": 0.5,
+    "militia_morale_min_margin_over_flee": 3,
+    "militia_roster": {
+      "kamien": { "wrecz": "Wojownik", "dystans": "Oszczepnik" },
+      "braz": { "wrecz": "Włócznik", "dystans": "Łucznik" },
+      "zelazo": { "wrecz": "Wojownik z mieczem i tarczą", "dystans": "Procarz" }
+    },
     "siege_max_rounds": 30
   },
   "siege_ai": {

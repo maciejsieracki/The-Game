@@ -1,0 +1,2 @@
+RESULT_FILE=/home/user/The-Game/.claude/worktrees/wf_7eac36a3-85e-1/dyspozycje/autobot/runs/R-WEB-LIVE-MEASURE-CLEARING-DEFICIT-Q1/evidence/A-save-zywnosc-praca90-seed2024.json
+EXIT=0

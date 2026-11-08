@@ -1,0 +1,38 @@
+riverPaths hexes in map: 1173 obecna total: 1961
+city 47,24{laka/brak RIVERPATH CENTRUM} worked 49,24{laka/zloze_gliny RIVERPATH OBYWATEL}
+R2 otoczenie:
+  45,24{laka/brak przy-rzece(sasiad)}
+  45,25{laka/brak przy-rzece(sasiad)}
+  45,26{laka/las przy-rzece(sasiad)}
+  46,23{laka/las rzeka.obecna(bez riverPaths)}
+  46,24{laka/las rzeka.obecna(bez riverPaths)}
+  46,25{laka/las rzeka.obecna(bez riverPaths)}
+  46,26{laka/las rzeka.obecna(bez riverPaths)}
+  47,22{laka/las RIVERPATH}
+  47,23{laka/las RIVERPATH}
+  47,24{laka/brak RIVERPATH CENTRUM}
+  47,25{laka/las RIVERPATH}
+  47,26{laka/las RIVERPATH}
+  48,22{laka/las RIVERPATH}
+  48,23{rownina/las RIVERPATH}
+  48,24{laka/las RIVERPATH}
+  48,25{rownina/las rzeka.obecna(bez riverPaths)}
+  49,22{plytkie_morze/brak rzeka.obecna(bez riverPaths)}
+  49,23{plytkie_morze/brak rzeka.obecna(bez riverPaths)}
+  49,24{laka/zloze_gliny RIVERPATH OBYWATEL}
+tura 1: pula 300->262 farma 47,24{laka/brak RIVERPATH CENTRUM}
+tura 1: pula 300->262 farma 49,24{laka/zloze_gliny RIVERPATH OBYWATEL}
+tura 2: pula 262->223 bydlo 47,24{laka/brak RIVERPATH CENTRUM}
+tura 2: pula 262->223 bydlo 49,24{laka/zloze_gliny RIVERPATH OBYWATEL}
+tura 3: pula 223->165 irygacja 47,24{laka/brak RIVERPATH CENTRUM}
+tura 5: pula 173->128 irygacja 49,24{laka/zloze_gliny RIVERPATH OBYWATEL}
+tura 11: pula 208->224 kamieniolom 42,27{gory/brak RIVERPATH}
+tura 12: pula 224->220 farma 49,25{laka/zloze_gliny RIVERPATH}
+tura 13: pula 220->221 bydlo 49,25{laka/zloze_gliny RIVERPATH}
+tura 14: pula 221->185 irygacja 49,25{laka/zloze_gliny RIVERPATH}
+tura 18: pula 257->281 farma 42,28{laka/brak RIVERPATH}
+tura 20: pula 305->269 warzelnia_soli 49,22{plytkie_morze/brak rzeka.obecna(bez riverPaths)}
+tura 20: pula 305->269 lodzie_rybackie 49,22{plytkie_morze/brak rzeka.obecna(bez riverPaths)}
+tura 22: pula 298->327 farma 42,29{laka/brak RIVERPATH}
+tura 25: pula 385->414 bydlo 42,28{laka/brak RIVERPATH}
+tura 27: pula 443->452 lodzie_rybackie 49,23{plytkie_morze/brak rzeka.obecna(bez riverPaths)}

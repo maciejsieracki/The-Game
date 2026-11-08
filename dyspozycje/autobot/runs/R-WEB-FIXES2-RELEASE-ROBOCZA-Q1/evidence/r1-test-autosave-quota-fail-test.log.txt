@@ -1,0 +1,28 @@
+--- 1. save.ts::saveToLocal kontrakt {ok, reason} ---
+  [OK] 1a. sukces -> { ok: true } (got {"ok":true})
+  [OK] 1a. sukces -> bez reason
+  [OK] 1b. QuotaExceededError -> ok:false (got {"ok":false,"reason":"quota"})
+  [OK] 1b. QuotaExceededError -> reason:'quota' (got {"ok":false,"reason":"quota"})
+  [OK] 1c. inny blad -> ok:false (got {"ok":false,"reason":"other"})
+  [OK] 1c. inny blad -> reason:'other' (nie 'quota') (got {"ok":false,"reason":"other"})
+  [OK] 1d. legacy DOMException code=22 -> reason:'quota' (got {"ok":false,"reason":"quota"})
+  [OK] 1d. legacy DOMException code=1014 -> reason:'quota' (got {"ok":false,"reason":"quota"})
+
+--- 2-3. Zrodlo main.ts (doRotatingAutosave / persistSaveToSlot) ---
+  [OK] doRotatingAutosave() znaleziona w main.ts (dopasowanie do End turn markera)
+  [OK] doRotatingAutosave() destrukturyzuje { ok, reason } z await saveToLocal (nie samo bool)
+  [OK] doRotatingAutosave() ma galaz else (niepowodzenie zapisu) przed catch(eRot)
+  [OK] Galaz niepowodzenia woa console.warn (dzis: calkowita cisza) -- body: "console.warn('[Autosave] rotacyjny zapis nieudany slot=' + slot + ' tura=' + turn + ' powod=' + (reason ?? 'nieznany'));\n          notifyAutosaveFailureOnce(\n            reason === 'quota'\n              ? 'Autozapis nieudany — brak miejsca w zapisie przeglądarki'\n              : 'Autozapis nieudany (blad zapisu)',\n          );"
+  [OK] main.ts ma helper notifyAutosaveFailureOnce(msg)
+  [OK] Galaz niepowodzenia sygnalizuje gracza: elseBody -> notifyAutosaveFailureOnce -> showHintMessage (gracz jest informowany, nie milczy jak dzis)
+  [OK] Flaga autosaveFailureNotified zerowana po udanym autozapisie (FSA + IDB, count=2), nie w galezi niepowodzenia
+  [OK] Galaz niepowodzenia rozroznia reason==='quota' i pokazuje komunikat o braku miejsca w zapisie przegladarki
+  [OK] Galaz niepowodzenia NIE przesuwa AUTOSAVE_ROT_IDX_KEY -- nastepna proba rotacji celuje ponownie w ten sam (nieudany) slot zamiast po cichu przeskoczyc dalej i zamrozic slot bez wiedzy gracza
+  [OK] doRotatingAutosave() ma galaz if (ok) { ... } przed else
+  [OK] Galaz sukcesu (if (ok)) nadal przesuwa AUTOSAVE_ROT_IDX_KEY -- zachowanie przy udanym zapisie bez zmian
+  [OK] Galaz sukcesu nadal loguje console.log (bez zmian wzgledem stanu przed poprawka)
+  [OK] persistSaveToSlot() znaleziona w main.ts (async, zwraca Promise<SaveToLocalResult>, nie goly boolean)
+  [OK] persistSaveToSlot() zwraca caly wynik await saveToLocal ({ ok, reason }), nie tylko ok
+
+=== autosave-quota-fail-test: 22 pass, 0 fail ===
+EXIT=0

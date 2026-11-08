@@ -1,0 +1,30 @@
+20:34:46 worldgen ms 53292
+20:35:00 end-turn {"n":1,"turn0":1,"turn1":2,"endTurnMs":7577,"retries":0,"cities":10,"heapMB":273}
+20:35:10 end-turn {"n":2,"turn0":2,"turn1":3,"endTurnMs":8046,"retries":0,"cities":10,"heapMB":273}
+20:35:20 end-turn {"n":3,"turn0":3,"turn1":4,"endTurnMs":7641,"retries":0,"cities":10,"heapMB":273}
+20:35:31 end-turn {"n":4,"turn0":4,"turn1":5,"endTurnMs":8747,"retries":0,"cities":10,"heapMB":273}
+20:35:41 end-turn {"n":5,"turn0":5,"turn1":6,"endTurnMs":7943,"retries":0,"cities":10,"heapMB":273}
+20:35:52 end-turn {"n":6,"turn0":6,"turn1":7,"endTurnMs":8004,"retries":0,"cities":10,"heapMB":273}
+20:36:01 end-turn {"n":7,"turn0":7,"turn1":8,"endTurnMs":7279,"retries":0,"cities":10,"heapMB":273}
+20:36:10 end-turn {"n":8,"turn0":8,"turn1":9,"endTurnMs":6626,"retries":0,"cities":10,"heapMB":273}
+20:36:17 end-turn {"n":9,"turn0":9,"turn1":10,"endTurnMs":5968,"retries":0,"cities":10,"heapMB":273}
+20:36:25 end-turn {"n":10,"turn0":10,"turn1":11,"endTurnMs":6312,"retries":0,"cities":10,"heapMB":273}
+20:36:33 end-turn {"n":11,"turn0":11,"turn1":12,"endTurnMs":6288,"retries":0,"cities":10,"heapMB":273}
+20:36:42 end-turn {"n":12,"turn0":12,"turn1":13,"endTurnMs":6484,"retries":0,"cities":10,"heapMB":273}
+SUMMARY {"mode":"peace","turns":12,"finalTurn":13,"medianMs":7577,"meanMs":7243,"maxMs":8747,"stalls":0}
+MEMDEBUG_LOGS_BEGIN
+[memdebug] koniec tury=2 · geometries=305 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+[memdebug] koniec tury=3 · geometries=305 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+[memdebug] koniec tury=4 · geometries=305 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+[memdebug] koniec tury=5 · geometries=304 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+[memdebug] koniec tury=6 · geometries=304 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+[memdebug] koniec tury=7 · geometries=304 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+[memdebug] koniec tury=8 · geometries=304 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+[memdebug] koniec tury=9 · geometries=305 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+[memdebug] koniec tury=10 · geometries=305 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+[memdebug] koniec tury=11 · geometries=306 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+[memdebug] koniec tury=12 · geometries=322 · textures=15 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+[memdebug] koniec tury=13 · geometries=323 · textures=15 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=272.8
+MEMDEBUG_LOGS_END
+BAD_RESPONSES []
+ERRORS []

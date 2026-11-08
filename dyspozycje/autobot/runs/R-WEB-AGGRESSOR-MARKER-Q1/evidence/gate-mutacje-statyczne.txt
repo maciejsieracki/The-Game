@@ -1,0 +1,10 @@
+KILLED   panel: funkcja zawsze zwraca pusty znacznik  (przez diplo-aggressor-marker-unit-test.cjs)
+KILLED   panel: brak licznika w tekście  (przez diplo-aggressor-marker-unit-test.cjs)
+KILLED   panel: flaga wygasła (N<1) nadal pokazuje znacznik  (przez diplo-aggressor-marker-unit-test.cjs)
+KILLED   panel: tooltip bez licznika  (przez diplo-aggressor-marker-unit-test.cjs)
+KILLED   panel: renderRow nie wstawia znacznika  (przez diplo-aggressor-wiring-test.cjs)
+KILLED   panel: znacznik dostaje obwódkę (przesłania ramkę)  (przez diplo-aggressor-marker-unit-test.cjs)
+KILLED   main: N = tura końca zamiast pozostałych tur  (przez diplo-aggressor-wiring-test.cjs)
+KILLED   main: licznik nie maleje (stała)  (przez diplo-aggressor-wiring-test.cjs)
+diplo-aggressor-marker-mutation-test: 8/8 KILLED, 0 SURVIVED
+EXIT=0

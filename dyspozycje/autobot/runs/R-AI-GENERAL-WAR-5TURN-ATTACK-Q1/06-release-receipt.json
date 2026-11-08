@@ -1,0 +1,46 @@
+{
+  "release": "ROBOCZA — R-AI-GENERAL-WAR-5TURN-ATTACK-Q1 + R-ARMY-COMMANDER-UNIT-MARKERS-20261028",
+  "publishedAt": "2026-10-28",
+  "baseCommit": "85f8c5f0e0aa6ff46aa8b85a03d0bc0c71d86268",
+  "productCommit": "7fdc191ac8efa4e3e1c71a4c82b1772bb55ec145",
+  "publicationCommit": "c72cd08a2de33a0f4ff920e6b314503a50811cb0",
+  "remoteMainAtPublication": "c72cd08a2de33a0f4ff920e6b314503a50811cb0",
+  "bundle": "gra-robocza/Gra-ROBOCZA.html",
+  "bundleMd5": "e5eb21d82c2be611ab9c491327f696c3",
+  "bundleSha256": "76078759e78f3cb466156cec296da925759dd685764dc42242d9a5f02ef40eb2",
+  "bundleBytes": 70021251,
+  "remoteReadback": {
+    "status": "PASS",
+    "http": 200,
+    "urls": {
+      "status": "PASS",
+      "remote": "origin/main",
+      "commit": "c72cd08a2de33a0f4ff920e6b314503a50811cb0",
+      "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/c72cd08a2de33a0f4ff920e6b314503a50811cb0/gra-robocza/Gra-ROBOCZA.html",
+      "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/c72cd08a2de33a0f4ff920e6b314503a50811cb0/gra-robocza/ROBOCZA-MANIFEST.json",
+      "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/c72cd08a2de33a0f4ff920e6b314503a50811cb0/gra-robocza/START.html",
+      "httpStatus": 200,
+      "bundleMd5": "e5eb21d82c2be611ab9c491327f696c3",
+      "bundleSha256": "76078759e78f3cb466156cec296da925759dd685764dc42242d9a5f02ef40eb2",
+      "bundleBytes": 70021251,
+      "checks": "GitHub Raw bundle/manifest/START HTTP 200; fetched bundle bytes and hashes match manifest."
+    },
+    "verified": true
+  },
+  "tests": {
+    "aiCampaign": "31/31",
+    "aiFullTurnChromium": "24/24; five full gather turns then sixth attack turn; 4/4 units moved including physical General",
+    "commanderMapMarkers": "11/11",
+    "armyConsolidation": "6/6",
+    "eraWarOffense": "7/7",
+    "typescript": "PASS",
+    "viteBuild": "PASS; 916 modules",
+    "artifactChromium": "HTTP 200; 2 canvases; HUD; no pageerror; one test-server favicon 404"
+  },
+  "notes": [
+    "PASS-WITH-NOTES for commander markers: full-game viewport with an active military unit was not captured; production UnitRenderer map harness shows the marker.",
+    "AI naval invasion/transport is outside this work item.",
+    "Large-empire performance testing remains open.",
+    "No external hosted public Robocza URL was supplied or verified."
+  ]
+}

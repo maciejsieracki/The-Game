@@ -1,5 +1,79 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
+## `R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1` — PASS-WITH-NOTES / niezintegrowane
+
+- ZGŁOSZENIE: cykliczna wymiana handlowa kończyła się maksymalnie po 20 turach, mimo że stepper pokazywał `+100`; brakowało trybu bezterminowego.
+- ZAKRES: limit 30 tur, opcja „Bezterminowo”, jawne pole `exchangeDurationTurns` (`null` = bez końca; brak = historyczny fallback do `turns`). `turns` pozostaje skończonym horyzontem wyceny.
+- STATUS: `DEPLOY-ROBOCZA / REMOTE-READBACK-PASS`; release `401893417f2a47545c44ef5bba168dc10d0fcf31` pushed to `origin/main`; bundle/manifest/START remote readback zgodny.
+- TESTY: TypeScript PASS, domena 53/53, render UI 12/12; access mode zachowuje cap 20 bez przycisku bezterminowego; szerszy `diplomacy-proposal-test` 186/188 z dwoma błędami asercji pokoju w wojnie potwierdzonymi jako identyczne na bazie. Final Control: `dyspozycje/autobot/runs/R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1/30-final-control.md`.
+- OPERATOR: `autobot/trade-duration-indefinite-q1`; ślad: `dyspozycje/autobot/runs/R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1/`.
+- ZGODNOŚĆ: istniejące aktywne umowy zapisują liczbowe `wygasaTura` i pozostają bez zmian; nowe umowy bezterminowe korzystają z już obsługiwanego `wygasaTura: null`.
+## `R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1` — Operator r3
+
+- STATUS: **OPERATOR r3 PASS — niezależna kontrola oczekuje; brak publikacji.**
+- Przyczyna r2→r3: test izolowanego panelu nie odtwarzał `transform:scale()` na `body`, którego używa zoom UI gry. Panel `position:fixed` montowany wewnątrz transformowanego `body` tracił geometrię viewportu.
+- Naprawa: modal jest montowany na `document.documentElement`, poza transformowanym `body`; roster pozostaje jedynym scroll regionem, a CTA poza nim.
+- Weryfikacja r3: komponent Chromium 34/34; produkcyjny `Gra-ROBOCZA.html` z rzeczywistym zoomem 150% i stosem 88+1 — 9/9; TypeScript i `git diff --check` PASS. Raport: `dyspozycje/autobot/runs/R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1/07-operator-runda3.md`.
+- Granica: harness wstrzykuje kandydacki komponent na prawdziwą stronę Roboczej; nie dowodzi, że poprawka jest w aktualnie opublikowanym bundlu. Nie wykonywano merge, push ani deploy.
+
+## `R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1` — Final Control r2
+
+- STATUS: **PASS — zakres kontraktu UI**, bez READY_FOR_DEPLOY i bez publikacji.
+- Final Control niezależnie uruchomił Chromium regression: 31/31 PASS, TypeScript PASS, `git diff --check` PASS.
+- 59 istniejących jednostek + wiersz przybywającej jednostki, 600×413 CSS px / DPR 1.5: widoczny i przeciągalny thumb przewija do ostatniego wiersza; oba CTA są widoczne w stopce; marginesy zmierzone 28.59 px u góry / 27.88 px u dołu.
+- Granica: callback testowy jest licznikiem fixture; pełna transakcja scalania w grze nie została wykonana. Raport: `dyspozycje/autobot/runs/R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1/05-final-control.md`.
+- Final Control nie zmienił kodu produktu; brak commit, push, merge i deploy.
+## `R-BITWA-ATAK-MARSZEM-HEX-Q1` — rozkaz Atakuj-marszem do wskazanego heksa
+
+- **STATUS:** `OPERATOR DEFENSE COMPLETE — FINAL CONTROL REQUIRED` — evaluator returned PASS-WITH-NOTES; operator defense addresses both notes and adds mixed 42-unit, two-activation regression. Owner override 2026-10-29 waives Kanban for this project. No Kanban card/graph was used.
+- **Wymaganie:** wskazanie pustego heksa rozkazem „Atakuj-marszem” kieruje jednostki do tego miejsca, atakuje napotkanych po drodze wrogów i po rozwiązaniu starcia wznawia marsz do punktu. Zwykły ruch i kliknięcie jednostki wroga zachowują dotychczasowe odmienne znaczenie.
+- **Zakres:** wyłącznie ręczna bitwa, z dotychczasowym warunkiem wodza/generała dla kontroli polowej. Rozkaz ma respektować legalny zasięg/wyczerpanie amunicji, trasowanie, odwołanie i postęp tury.
+- **Run:** `dyspozycje/autobot/runs/R-BITWA-ATAK-MARSZEM-HEX-Q1/`; podstawa `747ade419e9771f5a94eb1f82f174ceda100eaa1`; nie wdrożono.
+
+## `R-AI-GENERAL-WAR-5TURN-ATTACK-Q1` + `R-ARMY-COMMANDER-UNIT-MARKERS-20261028` — wspólna integracja ROBOCZA
+
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS; baza `85f8c5f0e0aa6ff46aa8b85a03d0bc0c71d86268`; oba zakresy niezależnie zaakceptowane (AI: PASS; oznaczenia: PASS-WITH-NOTES).
+- AI: po pięciu pełnych turach zbiórki kampania przechodzi do ataku; live Chromium przez produkcyjny end-turn wykonał w szóstej turze ruch 4/4 jednostek, łącznie z fizycznym wodzem. Test logiki 31/31; test live 24/24.
+- Oznaczenia: odrębna gwiazda wodza nad trzema gwiazdami doświadczenia, emblemat cywilizacji 4×; test 11/11. Final Control dopuszcza integrację na podstawie mapowego render proof; brak pełnego gameplay screenshot z wojskowym oddziałem pozostaje odnotowaną uwagą.
+- Wspólne testy integracyjne: army consolidation 6/6, era-war offense 7/7, TypeScript PASS, `git diff --check` PASS. AI morska kampania i test dużego imperium są poza tymi dwoma zakresami.
+- Raporty: `dyspozycje/autobot/runs/R-AI-GENERAL-WAR-5TURN-ATTACK-Q1/` oraz `dyspozycje/autobot/runs/R-ARMY-COMMANDER-UNIT-MARKERS-20261028/`.
+- Artefakt Roboczej: MD5 `e5eb21d82c2be611ab9c491327f696c3`, SHA-256 `76078759e78f3cb466156cec296da925759dd685764dc42242d9a5f02ef40eb2`, `70,021,251` B; verifier PASS. Lokalny Chromium: HTTP 200, HUD + 2 canvasy, bez pageerror; jedno 404 faviconu serwera testowego.
+- Push do `origin/main` i publikacja bundle’a: `c72cd08a2de33a0f4ff920e6b314503a50811cb0`; GitHub Raw bundle/manifest/START zwróciły HTTP 200, SHA/MD5/rozmiar bundla zgodne. Receipt: `dyspozycje/autobot/runs/R-AI-GENERAL-WAR-5TURN-ATTACK-Q1/06-release-receipt.json`.
+
+## `R-CIV-ALL-TOPICS-ROBOCZA-20261027` — DEPLOY-ROBOCZA / remote readback PASS
+
+- STATUS: DEPLOY-ROBOCZA — testowy, ograniczony release; nie jest odbiorem pełnej rozgrywki.
+- GOAL: opublikować tematy zatwierdzone poza testem wydajności; pomiar wydajności i pełny 100-turowy save/load nie wchodzą do tego wydania.
+- Source main `92d124b721dbd4405b4547301751499316b9ec4c`; release commit `fc18c02efd5359844c2439217e8855d549417d0a`.
+- Bundle MD5 `2f4d87176ffcfc2aa6cdf44e3e562981`, SHA-256 `38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692`, 69,998,033 B; verifier PASS; raw GitHub readback zgodny dla bundle/manifest/START.
+- Zakres: AI armie/kopalnie/jednostki epokowe; koszty ulepszeń; żywność mieszkańców; przejście muzyki; liczba pełnych jednostek HUD; rozdział handlu/podatku; ręczne Praca→podatek. Optymalizacja zasobów wchodzi do bundle’a, jej test wydajności pozostaje odroczony.
+- Final Control: PASS-WITH-NOTES; brak 100-turowego gameplay/save-load w tym odbiorze. Szczegóły: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/`.
+- DEPLOY/PUSH: wykonano; brak promocji do KANON/FINALNA, brak twierdzenia o wdrożeniu na zewnętrznym hostingu.
+
+
+## `R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925` — bounded F-01/F-02/F-03 ROBOCZA DEPLOY (2026-10-17)
+
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — tylko selektywnie zaakceptowane F-01, F-02 i F-03 r2 semantic-classification artifacts. Nie jest to akceptacja całego PR141 ani macierzy 93×15.
+- Owner instruction (2026-10-17): deploy as much completed work as can be safely published. Orchestrator recorded the scope on existing workerless gate `t_ceb77ee5`; that gate remains blocked, unassigned and runless.
+- Base `dca87077eb16b6b8f6f747944906466c89deda28`; product candidate `3c11d0b8b651745b7a5e61b6db69ed45690aa380`; branch `hermes/integration/accepted-f01-f02-f03-20261017`.
+- Allowlist: `gra/src/game/civ-matrix-semantic.ts`, `gra/tools/civ-matrix-semantic-labels-test.cjs`; bundle `gra-robocza/Gra-ROBOCZA.html`, manifest and hub are publication artifacts only.
+- F-01 `t_8a2396ee/run60`, F-02 `t_cf652715/run63`, F-03 r2 `t_de434c66/run68`: each independently accepted for selective Orchestrator integration only. Tests on the clean current-base integration: semantic `348/0`, meta-roster `63/0`, combat `6/6`, army-hunger combat `13/13`, TypeScript PASS, Vite `893` modules, local HTTP/Chromium smoke `200` with canvas/HUD and zero page/console errors, bundle verifier `VERIFY OK`.
+- Bundle candidate: MD5 `0e3ad637add786c556fd2fa148a99d82`, SHA-256 `6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc`, `69,936,305` bytes.
+- Excluded and still held: F-04 (360 unapproved values), F-05/G11, seven other combat holds, runtime/full gameplay acceptance, Rally Point PR142, worldgen and all unrelated dirty worktrees. Raw matrix values and original `0/9` accepted-obligation ledger unchanged.
+- Merge/publish: fast-forward push to `origin/main`, publish SHA `47981902f4aa98c254e8c1e7d04bab8b13776f4a`; remote main/branch readback and pinned artifact hashes/bytes verified, bundle + manifest HTTP 200, Chromium smoke PASS. Receipt: `dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/release-20261017/receipt.json`.
+
+## `R-GAME-END-TURN-INPUT-REPAIR-Q1` — DEPLOY-ROBOCZA, remote readback PASS (2026-10-09)
+
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS. Tylko bounded naprawa „Zakończ turę”, nie odbiór całego produktu. Branch/main `fd629959191dc4e46b59cf19bdb5941e27c2ef79`; zdalny bundle/manifest zgodny bajtowo/hashami, Chromium HTTP smoke pobranego bundla PASS.
+- Owner A: wydzielić i wdrożyć end-turn osobno; wcześniejsza zgoda main/push zachowana.
+- Source `c63a7bc89757cf165e7752e3dc0d124abdb06506`, bundle `b407a5421b4aa5f537c600a21d5bea54ba7a2737`, base `69ccb145a8682f9c2754834afbb16a8d1eaaf825`; branch `hermes/integration/end-turn-only-20261009`.
+- Operator `t_4e7f423a/run43`, niezależny Evaluator `t_3a306fbd/run44`, Final Control `t_9aac456c/run45`: bounded PASS-WITH-NOTES, zero zarzutów. Źródła zgodne z zaakceptowanymi hashami.
+- Świeże typecheck/build/regresje PASS; minifikowany bundle i zwykłe onboarding/dialog Back/trusted clicks potwierdziły 1→2→3, zero page/console errors. Ostemplowany bundle HTTP smoke 200 i UI/canvas PASS.
+- Wersja: [WERSJE.md](WERSJE.md); receipt: `autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/release-20261009/receipt.json`.
+- `t_9c7bf537` i kolejne process gates pozostają workerless; komentarze dokumentują integrację/publikację, nie wolno ich dispatchować.
+- Rally Point `t_b5997c1d/run48` pozostaje TRIAGE/BLOCK 5/5, jego Evaluator/Final Control zablokowane; brak retry i brak zmian Rally w tej publikacji. Worldgen, PR141, matrix i Desktop otwarte. Pełny gameplay/worldgen NOT_PROVEN; oryginalny ledger 0/9 bez zmiany.
+
+
 ## FALA 388 — DEPLOYED / REMOTE READBACK PASS
 
 - Board `the-game-real24`, profile `default`, project `p_9ae9ac64`; base `origin/main@7d02dfc5b73e992e389dd01992a52159e943a621`; local integration commit `95fd93050585c19584700e34205da74576f2150f`.
@@ -4529,6 +4603,26 @@ zamiast cichego zaakceptowania złamania §5a.
   referencyjnych + 7 bramek związanych). Zintegrowane allowlist-only. Worktree
   i branch posprzątane.
 
+  UZUPEŁNIENIE 2026-10-29: deterministyczny test real-render w Chromium
+  `R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1` sprawdza także tartak na
+  leśnym wzgórzu. Potwierdzono `overlay=Las`, relief wzgórza, model na wysokości
+  powierzchni oraz dekor lasu 3→3 po budowie; kontrolna mutacja odtwarza regresję
+  3→1. Po późniejszym wyrębie tartak znika zgodnie z osobnym kontraktem
+  `R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1`. Operator 8/8, niezależny Evaluator
+  8/8, testy relief/qualify/typecheck zielone. Kod produktu bez zmian; dodano
+  regresyjny test i dowody. Raporty `06-operator-visual-closeout.md` oraz
+  `07-evaluator-visual-closeout.md` i screenshoty są w katalogu runu.
+
+  Final Control r2 wykrył dwie końcowe spacje w raporcie Evaluatora; Operator
+  usunął je i `git diff --check cc2c6a50..995de7b5` przeszedł. Final Control
+  retry: PASS-WITH-NOTES. Integracja zawiera wyłącznie regresyjny test, dowody
+  i raporty — nie zmienia kodu produktu. Aktualna Robocza z publikacji
+  `682a6b9a` została zbudowana z kodu źródłowego zawierającego tę naprawę;
+  ponowny deploy bundla nie jest potrzebny. Integracyjne bramki: Chromium
+  8/8, relief 8/8, kwalifikacja budowy 133/133, relief kopalni 24/24,
+  TypeScript PASS, `git diff --check` PASS. Raport Final Control retry:
+  `09-final-control-retry.md`.
+
 Kolejna kontrola zaplanowana automatycznie; po zamknięciu wszystkich powyższych
 — integracja allowlist-only każdego PASS, potem pełny deploy ROBOCZA (build →
 stamp → manifest → weryfikacja → FALA w `WERSJE.md`) i raport końcowy dla
@@ -8443,3 +8537,67 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 
 - **STATUS:** `ROUTING ANOMALY — NO WORKER / CLOSED`
 - **KARTA/EVENT:** `t_9009f348`; process-only no-op gate `created → promoted → completed run 356`; assignee `null`, brak claimu/worker runu. Produkt był już obecny w `origin/main`/ROBOCZA; nie wykonano fake commit/push.
+## `R-CIV-ALL-TOPICS-ROBOCZA-20261027` — integracja poprawek gotowych do ROBOCZEJ (2026-10-29)
+
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — integracja, typecheck, testy Chromium i build PASS; `main` commit `682a6b9a0cd7c4e5d35b8e1cf68a76a9a508c510`.
+- Włączono zatwierdzone poprawki dowódcy/rekrutacji, AI wojennej (5 tur zbiórki, cel morski, odtworzenie kampanii), zachowania i formacji bitwy, oraz kreatora cywilizacji.
+- Test dużego imperium wykonano po publikacji: 39/100; tura 39→40 przekroczyła bramkę 60 s o 611 ms. Wydajność pozostaje otwarta do profilowania i optymalizacji. C-064 jest zablokowany brakiem natywnego konektora Kanban i nie jest częścią release.
+- Dokładne dowody integracji i ograniczenia: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/70-integrated-release-20261029.md`.
+- Raport nieudanego testu dużego imperium i raw JSON: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/72-large-empire-performance-20261029.md`.
+
+## Kontrola walki — łucznicy, szyk i rydwany (2026-10-29)
+
+- **STATUS:** `PASS-WITH-NOTES — diagnostyka/testy zintegrowane; brak reprodukcji błędu produktu; logika produktu bez zmian`.
+- Naturalny szyk jednej linii łuczników w Chromium: po aktywacji rozpoczynającej 1 pole poza zasięgiem łucznik przeszedł do legalnego zasięgu; w następnej aktywacji produkcyjny picker wybrał cel, a produkcyjne `_doAttack` → `_doRangedAttack` zużyły amunicję. Niezależny rerun potwierdził trafienie HP 38→37.
+- Test naturalny 8v8 potwierdził ruch rydwanu konnego w Ataku oraz ruch i atak wręcz w Szarży (HP celu 56→32). Test naturalny ustawił jedną linię łuczników przez UI rozstawienia.
+- Macierz doktryn: 36/36, a cztery scenariusze z wydłużonym horyzontem 4/4; wcześniejsze cztery alarmy wynikały z końca testu w tej samej aktywacji, w której jednostka dopiero weszła w zasięg.
+- Ograniczenia: w R5 ustawienie Obrony nie utrzymało się w śladzie obrońcy, więc nie jest tu dowodem dla Obrony; osobny R3 28v28 potwierdza akcje obrony i ruch konnicy. Test 28v28 nie zawierał rydwanów, a naturalny R5/R6 obejmował mały skład na mapie presetowej; zachowanie na każdym terenie i pełnym dużym polu bitwy nie jest dowiedzione. Brak przypadku, który uzasadniałby zmianę kodu produktu.
+- Raporty i artefakty: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/`; testy: `gra/tools/battle-large-mixed-doctrine-matrix-test.cjs`, `gra/tools/battle-doctrine-live-r3-test.cjs`, `gra/tools/battle-doctrine-live-r4-test.cjs`, `gra/tools/battle-natural-chariot-r5-test.cjs`, `gra/tools/battle-natural-near-range-r6-test.cjs`.
+- Kod bitwy z dotychczasowych poprawek jest już w Roboczej z publikacji `682a6b9a`; ten follow-up dodaje wyłącznie testy i dokumentację, więc nie wymaga nowego bundla/deployu. Final Control: `PASS-WITH-NOTES`; ograniczenia zakresu potwierdzone. Raport niezależnego ewaluatora: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/18-evaluator-r6-closeout.md`; końcowy audyt: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/19-final-control.md`.
+
+## `R-BITWA-ATAK-LUCZNICY-POZA-ZASIEGIEM-Q1` — łucznicy w Ataku oddalają się od wroga
+
+- **STATUS:** NOWE — błąd potwierdzony w Chromium na produkcyjnym `BattleScene`; przypisany niezależnemu Operatorowi AutoBot.
+- **DOWÓD:** przy celu poza zasięgiem (odległość 5), po sześciu rzeczywistych aktywacjach łucznik przeszedł 18 pól, nie wystrzelił (amunicja pozostała 12), a odległość do najbliższego przeciwnika wzrosła kolejno 5, 5, 5, 8, 11, 14. Kontrola celu w zasięgu zadziałała: oddano strzał, zużyto amunicję i spadło HP celu.
+- **OCZEKIWANIE:** w doktrynie Atak łucznicy podążają do legalnego zasięgu strzału, utrzymując się za linią piechoty; po wejściu w zasięg strzelają. Bez zmiany zachowania Obrony i Szturmu.
+- **FOLLOW-UP:** `/workspace/battle-large-mixed-operator` początkowo wskazał dalekie skrzydła konnicy, lecz korekta pomiaru wykazała odległość 1–3 heksy od rdzenia; fałszywe podejrzenie wycofano, bez zgłoszenia produktowego.
+
+## `R-ARMY-MERGE-SPLIT-ICONS-Q2` — kierunki ikon łączenia i rozdzielania armii (2026-10-29)
+
+- **STATUS:** `DEPLOY-ROBOCZA / REMOTE-READBACK-PASS` — Operator, niezależny Evaluator i Final Control PASS; fast-forward/publish `42b4dac831765176684a506d0be377232fef008a`; remote bundle, manifest i START zgodne.
+- **Zgłoszenie:** ikony „Połącz” i „Rozdziel” w karcie armii wyglądały identycznie mimo wcześniejszego ustalenia, że strzałki scalania mają kierować się do środka, a rozdzielania na zewnątrz.
+- **Przyczyna:** definicje SVG w `gra/src/ui/unitActionBarHtml.ts` używały dla obu akcji tych samych dwóch grotów skierowanych na zewnątrz.
+- **Zmiana:** rozdzielenie ma teraz dwa wyraźne trzony zakończone grotami odśrodkowymi; połączenie ma groty skierowane do wspólnego środka. Test sprawdza wyrenderowane HTML produkcyjnego renderera i geometrię kierunku obu strzałek.
+- **Weryfikacja Operatora:** test ikon PASS; kompletność paska akcji 31/31; test „Odfortyfikuj całą armię” 16/16; TypeScript PASS; render Chromium zapisany w `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/01-merge-split-icons.png`.
+- **Pliki:** `gra/src/ui/unitActionBarHtml.ts`, `gra/tools/army-merge-split-direction-icons-test.cjs`; raporty: `10-operator.md`, `20-evaluator.md`, `30-final-control.md` w `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/`.
+
+## `R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1` — domyślny marsz nowych jednostek do wodza (2026-10-29)
+
+- **STATUS:** `DEPLOY-ROBOCZA / REMOTE-READBACK-PASS` — release `fb2d613b68a3a32a370fb6a2d29121c312cac51f` pushed do `origin/main`; zdalny bundle/manifest/START zgodne.
+- **Oczekiwane działanie:** przełącznik włączony ustawia wodza jako cel nowo zrekrutowanych jednostek. Wyłączony stan nie wydaje im marszu do wodza. Stan widoczny przy jednostce musi odzwierciedlać wybór domyślny, a gracz nadal może ręcznie włączyć lub wyłączyć marsz dla pojedynczej jednostki. Część oddziałów może iść do wodza, pozostałe gdzie indziej.
+- **Zakres weryfikacji:** rekrutacja z panelu miasta i panelu budowania w armii, niezależne zmiany ustawienia globalnego oraz jednostkowego, zachowanie celu przy ruchomym wodzu, save/load oraz właściwy cel nowo zrekrutowanych jednostek.
+- **Run:** `dyspozycje/autobot/runs/R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1/`; Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS. Post-rebase 20/20 follow test, UI/save checks, TypeScript/build and bundle smoke PASS; raw remote hashes PASS.
+
+## Otwarte zgłoszenia AutoBot — 2026-10-29
+
+### `R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1` — kolejność automatycznego budowania żywności
+
+- **STATUS:** Etap 1/11 DONE — zarejestrowane i dispatch gotowy; Operator `/root/food_priority_operator` przypisany. Kanban `the-game-real24` niedostępny w tej sesji, więc brak natywnej karty został jawnie odnotowany w dispatchu.
+- **Zgłoszenie:** AI cywilizacji i auto-budowanie gracza powinny: (0) najpierw wycinać lasy na kwalifikujących się polach przy rzekach, (1) budować farmy na wszystkich kwalifikujących się pustych polach, gdzie pracują obywatele, (2) dopiero potem trzodę/hodowlę, (3) dopiero po farmach i hodowli irygację lub właściwe cywilizacji tarasy.
+- **Powiązane historyczne prace:** `R-AI-WYRAB-PRZY-RZECE-FARMY-Q1` jest częściowo zintegrowane, ale temat nie został zamknięty i wykorzystał limit pięciu rund; nowy ticket obejmuje dokładnie nową, zatwierdzoną kolejność i parytet AI/gracz, bez nadpisania starego runu. Istniejący kanon obywateli/wycinki należy zachować.
+- **Pipeline:** Operator → niezależny Evaluator → warunkowa Obrona → Final Control → integracja main → ROBOCZA → push i receipt (graf 1–11 w `dyspozycje/autobot/runs/R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1/00-dispatch.md`).
+
+### `R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1` — jaśniejsze podświetlenie i znikanie po budowie
+
+- **STATUS:** Etap 1/11 DONE — zarejestrowane i dispatch gotowy; Operator `/root/improvement_highlight_operator` przypisany. Kanban `the-game-real24` niedostępny w tej sesji, więc brak natywnej karty został jawnie odnotowany w dispatchu.
+- **Zgłoszenie:** Dla wszystkich ulepszeń zwiększyć jasność kwalifikujących się pól o 20%; po udanej budowie podświetlenie pola ma zniknąć natychmiast, a po odznaczeniu/odświeżeniu ma ponownie pokazywać tylko aktualne pola możliwe do zbudowania. Szczególny przykład: kopalnia na górze.
+- **Powiązane historyczne prace:** `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-Q1` i `R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1` są wcześniejszym, węższym kontekstem renderowania kopalni; nowy ticket obejmuje każdą klasę ulepszeń oraz aktualizację eligibility po budowie.
+- **Pipeline:** Operator → niezależny Evaluator → warunkowa Obrona → Final Control → integracja main → ROBOCZA → push i receipt (graf 1–11 w `dyspozycje/autobot/runs/R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1/00-dispatch.md`).
+
+## 2026-11-05 — Notatka: niestabilność `hud-topbar-grid-gross-net` sekcja [B] (z R-WEB-TEST-DEBT-HUD-Q3)
+
+W 1 z 2 przebiegów z `--dist` próba „live Spichlerz+ (proba 1)” dała netto −44 vs zmiana magazynu 0 (przed 600, po 600); drugi przebieg i próba 2 zgodne (−44 == −44). Nieustalone, czy race w teście czy rzadka usterka gry. Status: OBSERWACJA (nie naprawiano). Jeśli powtórzy się w grze — osobny temat diagnostyczny.
+
+## 2026-11-05 — NUMERACJA FAL USTALONA (właściciel: „liczymy od realnych fal z repo”) — KOREKTA wcześniejszego wpisu „FALA 1–5”
+
+Wcześniejszy wpis o „FALA 1–5” z tej nocy był błędną, wymyśloną numeracją — **unieważniony**. Obowiązuje numeracja repo: fala = jedno wdrożenie ROBOCZEJ, wpis `## ROBOCZA <md5> - data - FALA N: tytuł` w `dyspozycje/WERSJE.md`. Ostatnia numerowana w repo: **FALA 389** (2026-09-21; w historii 318 różnych numerów 1–387 + 388, 389 w WERSJE.md). Od FALA 389 do dziś było 105 wdrożeń ROBOCZEJ bez numeru (2026-09-21 … 2026-11-05) — **numerowane wstecz chronologicznie: FALA 390–494**. Ostatnia wdrożona: **FALA 494** (ROBOCZA `3775188b`, 2026-11-05). **Następna: FALA 495** (i dalej kolejno, jeden numer na wdrożenie ROBOCZEJ). Tematy w toku (RIVER-FOREST-LIVE-VERIFY, TERRAIN-ID-NAME-MAP-UNIFY, TEST-TIMING-STABILIZE) wejdą do FALA 495+.

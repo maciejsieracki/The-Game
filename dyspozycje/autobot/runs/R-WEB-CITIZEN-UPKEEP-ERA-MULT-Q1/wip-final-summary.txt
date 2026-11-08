@@ -1,0 +1,34 @@
+ai-major-economy-test EXIT=1 ::
+ai-recruit-upkeep-gate-test EXIT=0 :: ai-recruit-upkeep-gate-test: 23 passed, 0 failed
+ai-test EXIT=1 ::   FAIL: T10b: zaproponuj_handel po odkryciu; got: [] ai-test: 274 passed, 20 failed
+barbarian-cooperation-grace-maints-wiring-test EXIT=0 :: 29 passed, 0 failed
+citizen-resource-upkeep-test EXIT=1 :: FAIL: F1 (mutant 1): "citizenResourceHappinessDelta: citizenUpkeep.happinessDelta," obecne w oknie wywołania evaluateOrderFromBreakdown -- jako ŻYWY kod (nie w komentarzu) citizen-resource-upkeep-test: 107 passed, 2 fa
+civ-matrix-ai-diplomacy-wiring-test EXIT=1 :: FAIL: main AI path reads the matrix profile per owner and difficulty RESULT: 42 passed, 1 failed
+civ-matrix-meta-roster-wiring-test EXIT=1 :: FAIL: real economy result differs by matrix currency multiplier (15 > 15) civ-matrix-meta-roster-wiring-test: 62 passed, 1 failed
+cs-military-cap-wiring-test EXIT=0 ::   PASS: z opts.cityStateDifficultyVsPlayer=undefined (symulacja mutanta 2a) cap znika CAŁKOWICIE -- ta sama sytuacja (7/7 jednostek) znów pozwala na wojsko, bo blok capu w ai.ts jest pomijany przy undefined (dowód run
+diplo-aggressor-wiring-test EXIT=0 :: PASS UI panel: znacznik Agresor z tooltipem „do tury N" diplo-aggressor-wiring-test: 15 PASS, 0 FAIL
+diplo-truce-r4-ai-test EXIT=0 :: PASS: main.ts: akceptacja AI rozejmu idzie gałęzią cywAction===rozejm (długość z payloadu) diplo-truce-r4-ai-test: 24 pass / 0 fail
+diplomacy-economy-test EXIT=0 :: 21/21 PASS
+diplomacy-test EXIT=0 :: [diplomacy-test] 148 passed, 0 failed (total 148).
+era-improvement-cost-upkeep-test EXIT=0 :: era-improvement-cost-upkeep-test: 52 pass, 0 fail
+hotseat-etap6c-economy-noop-test EXIT=0 :: hotseat-etap6c-economy-noop-test: 70 PASS, 0 FAIL
+kolor-surowce-spojnosc-test EXIT=0 :: PASS: A8 cityPanel.ts importuje paletę resourceColors [kolor-surowce-spojnosc-test] 34/34 PASS
+koszty-surowcowe-test EXIT=1 ::   FAIL: Kamienne kregi: kamien 8 (wyjatek) koszty-surowcowe-test: 126 pass, 3 fail
+owner-economy-test EXIT=0 :: PASS: przy 3 miastach total >> player (wykrywalny leak) 20 passed, 0 failed
+population-civ-matrix-wiring-test EXIT=0 :: population Matrix wiring: 122 passed, 0 failed
+pr141-matrix-only-ai-test EXIT=0 :: pr141-matrix-only-ai-test: 40 passed, 0 failed
+pr141-matrix-only-economy-test EXIT=1 ::
+recruitment-no-upkeep-gate-test EXIT=1 :: FAIL: A4c MP (miasto-państwo): 49 Drewna -> zablokowana recruitment-no-upkeep-gate-test: 22 passed, 14 failed
+siege-ai-test EXIT=0 :: --- 17 ok, 0 fail
+spichlerz-cap-citypanel-wiring-test EXIT=0 :: spichlerz-cap-citypanel-wiring-test: 12 pass, 0 fail
+surowce-dostep-test EXIT=0 ::   OK: wszystkie 13 surowców trafiają do siatki „Magazynowane" (cap != null) surowce-dostep: 13 pass, 0 fail
+surowce-katalog-kolejnosc-test EXIT=0 :: surowce-katalog-kolejnosc: 62 pass, 0 fail
+unit-info-card-wiring-test EXIT=1 ::   FAIL: wiring rozpoznaje właściwą jednostkę runtime unit-info-card-wiring-test: 5 pass, 1 fail
+unit-owner-emblem-ring-civ-color-test EXIT=0 :: PASS: applyUnitOwnerEmblem nadal tworzy sprite dla pełnej cywilizacji unit-owner-emblem-ring-civ-color-test: 15 passed, 0 failed
+unit-resource-upkeep-test EXIT=1 :: FAIL: 2× Włócznik -> {braz:4} (got {"braz":20}, want {"braz":4}) unit-resource-upkeep-test: 3 passed, 4 failed
+upkeep-test EXIT=0 :: upkeep-test: 73 passed, 0 failed
+war-era-counter-test EXIT=0 :: WYNIK: 37 OK / 0 FAIL war-era-counter-test: 82 pass / 0 fail
+resource-usage-breakdown-test EXIT=1 :: FAIL: D4: gracz -- unitResourceUpkeepByOwner.set(0, ...) czyta WPROST econ.resourceUpkeepUnitsByOwner.get(0) resource-usage-breakdown-test: 98 passed, 2 failed
+porzadek-panel-czytelnosc-test EXIT=0 :: porzadek-panel-czytelnosc-test: 93 passed, 0 failed
+szczescie-przebudowa-skali-test EXIT=1 ::   [FAIL] 2b: epoka 3 — komplet to 31 budynkow (nie 39) -- got 32, want 31 [szczescie-przebudowa-skali-test] 515 OK, 4 FAIL
+DONE

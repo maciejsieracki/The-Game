@@ -7,7 +7,7 @@
 import type { DiploPairMeta } from './diplomacy-pn-engine';
 import type { AllianceObligation } from './diplomacy-treaties';
 
-/** Minimalna liczba tur pokoju po akceptacji traktatu pokoju / rozejmu. */
+/** Liczba tur pokoju po akceptacji traktatu pokoju / rozejmu. */
 export const PEACE_TREATY_LOCK_TURNS = 10;
 
 /** Czy aktywna jest blokada wypowiedzenia wojny (włącznie z turą zawarcia, do końca okna). */
@@ -54,4 +54,54 @@ export function filterAllianceObligationsRespectingPeaceLock(
     out.push({ ...ob, obligatedAllies });
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// R-WEB-TRUCE-Q1 — rozejm: czasowe zawieszenie broni (5 / 10 / 15 tur).
+// Czysta logika cyklu życia; stan (`truceUntilTurn` per para) trzyma silnik (main.ts).
+// Różnica względem pokoju: po wygaśnięciu wojna WRACA bez kary Wiarygodności i bez
+// flagi agresora; wypowiedzenie wojny w trakcie rozejmu = złamanie (kara jak za pakt).
+// ---------------------------------------------------------------------------
+
+/** Dozwolone długości rozejmu w turach (stół negocjacyjny: wybór 5/10/15). */
+export const TRUCE_DURATION_OPTIONS: readonly number[] = Object.freeze([5, 10, 15]);
+
+/** Domyślna długość rozejmu, gdy payload jej nie podaje. */
+export const TRUCE_DEFAULT_TURNS = 10;
+
+/** Zwraca długość tylko z listy dozwolonych (5/10/15), w przeciwnym razie null. */
+export function normalizeTruceDuration(turns: number | null | undefined): number | null {
+  if (turns == null || !Number.isFinite(turns)) return null;
+  return TRUCE_DURATION_OPTIONS.includes(turns) ? turns : null;
+}
+
+/** Tura, w której rozejm przestaje obowiązywać (wyłącznie). Null = nieprawidłowa długość. */
+export function truceUntilTurn(startTurn: number, durationTurns: number): number | null {
+  const d = normalizeTruceDuration(durationTurns);
+  if (d == null || !Number.isFinite(startTurn)) return null;
+  return startTurn + d;
+}
+
+/** Czy rozejm obowiązuje w danej turze (włącznie z turą zawarcia, wyłącznie od `until`). */
+export function isTruceActive(until: number | null | undefined, currentTurn: number): boolean {
+  if (until == null || !Number.isFinite(until)) return false;
+  return currentTurn < until;
+}
+
+/**
+ * Co zrobić z parą w danej turze: 'revert_to_war' = rozejm właśnie wygasł (wojna wraca
+ * bez kary), 'none' = nic nie robić (brak rozejmu albo jeszcze trwa).
+ * Wywoływane raz na turę przez silnik; wygaśnięcie jest dokładnie w `until`.
+ */
+export function truceExpiryAction(
+  until: number | null | undefined,
+  currentTurn: number,
+): 'none' | 'revert_to_war' {
+  if (until == null || !Number.isFinite(until)) return 'none';
+  return currentTurn >= until ? 'revert_to_war' : 'none';
+}
+
+/** Wypowiedzenie wojny w trakcie aktywnego rozejmu = złamanie (kara jak za pakt). */
+export function isTruceBreach(until: number | null | undefined, currentTurn: number): boolean {
+  return isTruceActive(until, currentTurn);
 }

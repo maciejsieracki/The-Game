@@ -1,0 +1,57 @@
+-- A. Inwariant strukturalny: wszystkie wartości surowcowe wielokrotnością 5, >=5 --
+   (sprawdzono 71 niezerowych pól koszt_surowce w 42 budynkach)
+FAIL: units.json: "Wojownik"."Surowiec (ilość)" = 13 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Wojownik"."Utrzymanie surowiec (ilość)" = 3 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Oszczepnik"."Surowiec (ilość)" = 13 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Oszczepnik"."Utrzymanie surowiec (ilość)" = 3 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Łucznik"."Surowiec (ilość)" = 13 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Łucznik"."Utrzymanie surowiec (ilość)" = 3 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Hieros Lochos (Święty Zastęp)"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Hieros Lochos (Święty Zastęp)"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Triari"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Triari"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Hu Ben Wei (Gwardia Tygrysa)"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Hu Ben Wei (Gwardia Tygrysa)"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Oszczepnik Zulu (Izijula)"."Surowiec (ilość)" = 13 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Oszczepnik Zulu (Izijula)"."Utrzymanie surowiec (ilość)" = 3 musi być wielokrotnością 5, >=5
+FAIL: units.json: "uThulwana (Białe Tarcze)"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "uThulwana (Białe Tarcze)"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Wojownik z maczugą (Chaska)"."Surowiec (ilość)" = 13 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Wojownik z maczugą (Chaska)"."Utrzymanie surowiec (ilość)" = 3 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Oszczepnik (Estólica)"."Surowiec (ilość)" = 13 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Oszczepnik (Estólica)"."Utrzymanie surowiec (ilość)" = 3 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Królewska Gwardia"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Królewska Gwardia"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Łucznik egipski"."Surowiec (ilość)" = 13 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Łucznik egipski"."Utrzymanie surowiec (ilość)" = 3 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Medżaj (Gwardia Faraona)"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Medżaj (Gwardia Faraona)"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Łucznik sumeryjski"."Surowiec (ilość)" = 13 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Łucznik sumeryjski"."Utrzymanie surowiec (ilość)" = 3 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Gwardia Królewska Sumeru"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Gwardia Królewska Sumeru"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Wojownik germański"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Wojownik germański"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Taran"."Surowiec (ilość)" = 19 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Taran"."Utrzymanie surowiec (ilość)" = 4 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Taran okuty"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Taran okuty"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Katapulta"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Katapulta"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Wieża oblężnicza"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Wieża oblężnicza"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Evocati"."Surowiec (ilość)" = 38 musi być wielokrotnością 5, >=5
+FAIL: units.json: "Evocati"."Utrzymanie surowiec (ilość)" = 8 musi być wielokrotnością 5, >=5
+   (sprawdzono 148 niezerowych pól Surowiec/Utrzymanie w 75 jednostkach)
+-- B. Inwariant przypięty: konkretne wartości reprezentatywne --
+FAIL: PRZYPIĘTE: Wojownik "Surowiec (ilość)" === 50 (x5, bylo 10) (got 13, want 50)
+FAIL: PRZYPIĘTE: Wojownik "Utrzymanie surowiec (ilość)" === 10 (x5, bylo 2) (got 3, want 10)
+FAIL: PRZYPIĘTE: Hieros Lochos "Surowiec (ilość)" === 75 (x5, bylo 15) (got 38, want 75)
+FAIL: PRZYPIĘTE: Hieros Lochos "Utrzymanie surowiec (ilość)" === 15 (x5, bylo 3) (got 8, want 15)
+-- C. Inwariant przypięty: terrain-yields.json / terrain-improvements.json (Runda 3) --
+FAIL: PRZYPIĘTE: terrain-yields Równina.Drewno === 10 (x5, bylo 2) (got 5, want 10)
+FAIL: PRZYPIĘTE: terrain-yields Równina.Kamień === 5 (x5, bylo 1) (got 2, want 5)
+FAIL: PRZYPIĘTE: terrain-yields Rzeka.Glina === 10 (x5, bylo 2) (got 5, want 10)
+FAIL: PRZYPIĘTE: terrain-improvements wyrab.wycinka.praca_per_tura === 25 (x5, bylo 5) (got 50, want 25)
+ekonomia-5x-inwariant-test: 197 passed, 50 failed
+EXIT=1

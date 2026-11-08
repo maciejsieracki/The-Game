@@ -20,9 +20,12 @@ import {
   galleryTerrainEligible,
   hexHasClayDeposit,
   isFarmBaseTerrain,
+  isHexNearRiver,
   isImprovementBlockedOnForest,
 } from '../map/improvement-build';
 import type { ImprovementKey } from '../render/improvements';
+// R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1: etykiety terenu z jednego źródła (map/terrain-names.ts).
+import { TEREN_LABEL_PL as TEREN_LABEL } from '../map/terrain-names';
 // R-ZETON-PASKI (Maciej 2026-07-29): kolory pasków Zdrowia i Ruchu były tu
 // wpisane na sztywno w CSS. Wyciągnięte do JEDNEGO źródła prawdy, bo te same
 // barwy niesie teraz tabliczka nad żetonem na mapie (render/unitStatPlate.ts) —
@@ -40,6 +43,7 @@ import {
   labelsForImprovementUnlock,
 } from '../game/resource-access';
 import { isLamaDepositVisibleForCiv } from '../game/livestock-unlock';
+import { hexHasHorseDeposit } from '../game/terrain-improvements';
 import { formatEntityDisplayName } from '../game/display-names';
 import type { DaninaLabel } from '../game/danina-nazwa';
 import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
@@ -59,6 +63,7 @@ import {
 } from './unitCardStatus';
 import type { UnitPanelAction } from './unitPanelHud';
 import { buildUnitActionBarHtml, UNIT_ACTION_BAR_CSS } from './unitActionBarHtml';
+import { armyStackCardLabel, sortArmyStackGeneralsFirst } from './armyStackLabel';
 import {
   brandIconSvg,
   mapResourceIconSvg,
@@ -81,17 +86,6 @@ function yieldIconSvg(key: YieldKey): string {
 function yieldIconHtml(key: YieldKey): string {
   return `<span class="cp-yield-ic">${yieldIconSvg(key)}</span>`;
 }
-
-const TEREN_LABEL: Record<TerenBazowy, string> = {
-  [TerenBazowy.Laka]: 'Łąka',
-  [TerenBazowy.Rownina]: 'Równina',
-  [TerenBazowy.Wzgorza]: 'Wzgórza',
-  [TerenBazowy.Gory]: 'Góry',
-  [TerenBazowy.PlytkieMorze]: 'Płytkie morze',
-  [TerenBazowy.Morze]: 'Morze',
-  [TerenBazowy.Pustynia]: 'Pustynia',
-  [TerenBazowy.Polarny]: 'Polarny',
-};
 
 type CityYieldKey = keyof Pick<TileYield, 'zywnosc' | 'praca' | 'handel'>;
 type MagazynYieldKey = keyof Pick<TileYield, 'drewno' | 'kamien'>;
@@ -132,9 +126,13 @@ function territoryResourceIconHtml(key: TerritoryResourceKey): string {
   return `<span class="cp-yield-ic">${mapResourceIconSvg(key, 16)}</span>`;
 }
 
-/** Magazyn państwa z ulepszenia (automatycznie, bez 👤). */
-function formatTerritoryMagazynPart(key: string, zloze?: string | null): string | null {
-  const row = territoryResourceYieldForImprovement(key, zloze);
+/**
+ * Produkcja surowca przez ulepszenie (ikona + „+50 Kamień/t"). Działa automatycznie, bez 👤 —
+ * to reguła domyślna, więc nie dopisujemy „automatycznie"/„bez 👤" ani „magazyn państwa"
+ * (R-WEB-HEX-TOOLTIP-IMPROVEMENT-PRODUCTION-TEXT-Q1).
+ */
+function formatTerritoryMagazynPart(key: string, zloze?: string | null, ownerEra?: number): string | null {
+  const row = territoryResourceYieldForImprovement(key, zloze, ownerEra);
   if (!row || !(row.amount > 0)) return null;
   const label = TERRITORY_RESOURCE_LABEL[row.resourceKey];
   const icon = territoryResourceIconHtml(row.resourceKey);
@@ -153,8 +151,8 @@ function formatTerrainMagazynWorkedPart(
 }
 
 /** Drewno/kamień z terrain-yields — trafia do magazynu przy obrabianiu pola. */
-function formatTerrainMagazynWorkedNotes(hex: Hex): string[] {
-  const y = fullTileYield(hex);
+function formatTerrainMagazynWorkedNotes(hex: Hex, ownerEra?: number): string[] {
+  const y = fullTileYield(hex, ownerEra);
   const notes: string[] = [];
   const drewno = formatTerrainMagazynWorkedPart('drewno', y.drewno ?? 0);
   if (drewno) notes.push(drewno);
@@ -165,37 +163,41 @@ function formatTerrainMagazynWorkedNotes(hex: Hex): string[] {
   return notes;
 }
 
+/**
+ * R-WEB-HEX-TOOLTIP-UNLOCK-LABEL-DEDUP-Q1: etykieta odblokowania (`labelsForImprovementUnlock`)
+ * nie powtarza surowca już podanego w wierszu produkcji ("+113 Drewno/t"). Zostają tylko
+ * etykiety niosące dodatkową informację (inny surowiec niż w produkcji). Czysta prezentacja.
+ */
+function unlockLabelsBeyondProduction(key: string, zloze?: string | null, ownerEra?: number): string[] {
+  const unlocks = labelsForImprovementUnlock(key);
+  if (!unlocks.length) return unlocks;
+  const row = territoryResourceYieldForImprovement(key, zloze, ownerEra);
+  if (!row || !(row.amount > 0)) return unlocks;
+  const prod = TERRITORY_RESOURCE_LABEL[row.resourceKey].trim().toLowerCase();
+  return unlocks.filter(u => u.trim().toLowerCase() !== prod);
+}
+
 function formatImprovementDesc(
   key: string,
   hex: Hex,
   esc: (raw: string) => string,
   tag?: string,
+  ownerEra?: number,
 ): string {
   const name = esc(improvementDisplayName(key));
-  const bonus = formatCityBonusParts(improvementBonusForKey(key));
-  const mag = formatTerritoryMagazynPart(key, (hex as { zloze?: string }).zloze);
-  const unlocks = labelsForImprovementUnlock(key);
+  const bonus = formatCityBonusParts(improvementBonusForKey(key, ownerEra));
+  const mag = formatTerritoryMagazynPart(key, (hex as { zloze?: string }).zloze, ownerEra);
+  const unlocks = unlockLabelsBeyondProduction(key, (hex as { zloze?: string }).zloze, ownerEra);
   let s = `<b>${name}</b>`;
   if (tag) s += ` (${esc(tag)})`;
-  s += ` → plony miasta: ${bonus}`;
   if (mag) {
-    s += `<br><span class="cp-magazyn-line">magazyn państwa: ${mag} · bez 👤</span>`;
+    // Produkcja surowca NAJPIERW (pod nazwą), potem plony miasta.
+    s += `<br><span class="cp-magazyn-line cp-prod-line">${mag}</span><br>→ plony miasta: ${bonus}`;
+  } else {
+    s += ` → plony miasta: ${bonus}`;
   }
   if (unlocks.length) s += ` · ${esc(unlocks.join(', '))}`;
   return s;
-}
-
-/** Podsumowanie wpływu do magazynu państwa z tego heksa (tylko ulepszenia SUROW-TERYT-01). */
-function formatHexMagazynSummary(hex: Hex, esc: (raw: string) => string): string | null {
-  const lines: string[] = [];
-
-  for (const key of builtImprovementKeys(hex)) {
-    const mag = formatTerritoryMagazynPart(key, (hex as { zloze?: string }).zloze);
-    if (!mag) continue;
-    lines.push(`${esc(improvementDisplayName(key))}: ${mag} · automatycznie`);
-  }
-
-  return lines.length ? lines.join('<br>') : null;
 }
 
 function formatCityYieldLine(y: TileYield, empty = '—'): string {
@@ -256,13 +258,14 @@ function terrainBaseYield(hex: Hex): TileYield {
   });
 }
 
-function fullTileYield(hex: Hex): TileYield {
+function fullTileYield(hex: Hex, ownerEra?: number): TileYield {
   return tileYield({
     terenBazowy: hex.terenBazowy,
     nakladka: hex.nakladka ?? Nakladka.Brak,
     maRzeke: !!(hex.rzeka && hex.rzeka.obecna),
     zloze: (hex as { zloze?: string }).zloze,
     ulepszeniaKeys: improvementKeysForHex(hex),
+    wlascicielEra: ownerEra,
   });
 }
 
@@ -272,7 +275,7 @@ interface YieldPart {
 }
 
 /** Składowe plonów — teren, las, rzeka, ulepszenia / złoża hodowlane. */
-function yieldParts(hex: Hex): YieldPart[] {
+function yieldParts(hex: Hex, ownerEra?: number): YieldPart[] {
   const parts: YieldPart[] = [
     { label: 'teren bazowy', delta: terrainBaseYield(hex) },
   ];
@@ -284,7 +287,7 @@ function yieldParts(hex: Hex): YieldPart[] {
   }
   const builtSet = new Set(builtImprovementKeys(hex));
   for (const key of improvementKeysForHex(hex)) {
-    const bonus = cityYieldOnly(bonusToTileYield(improvementBonusForKey(key)));
+    const bonus = cityYieldOnly(bonusToTileYield(improvementBonusForKey(key, ownerEra)));
     const hasBonus = CITY_YIELD_ROWS.some(({ key: yk }) => (bonus[yk] ?? 0) !== 0);
     if (!hasBonus) continue;
     const name = improvementDisplayName(key);
@@ -295,9 +298,9 @@ function yieldParts(hex: Hex): YieldPart[] {
 }
 
 /** Rozbicie plonów miasta: baza + modyfikatory = suma (tylko Żywność/Praca/Podatek). */
-function formatCityYieldBreakdownHtml(hex: Hex): string {
-  const parts = yieldParts(hex);
-  const total = cityYieldOnly(fullTileYield(hex));
+function formatCityYieldBreakdownHtml(hex: Hex, ownerEra?: number): string {
+  const parts = yieldParts(hex, ownerEra);
+  const total = cityYieldOnly(fullTileYield(hex, ownerEra));
   const lines: string[] = [];
 
   for (const { key, label } of CITY_YIELD_ROWS) {
@@ -328,9 +331,16 @@ function collectResourceLabels(hex: Hex, era: number, playerCivType?: string | n
   const out: string[] = [];
   const seen = new Set<string>();
 
+  // R-WEB-TOOLTIP-RESOURCES-LINE-DEDUP-Q1: dedup bez wrażliwości na diakrytyki; etykieta
+  // ogólna ('Ruda') jest zbędna, gdy jest już doprecyzowana ('Ruda miedzi'), a 'Las (drewno)'
+  // — gdy 'Drewno' już jest w linii (ta sama informacja dwa razy).
+  const norm = (s: string): string =>
+    s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l');
   const push = (label: string): void => {
-    const k = label.toLowerCase();
+    const k = norm(label);
     if (seen.has(k)) return;
+    if (k === 'las (drewno)' && seen.has('drewno')) return;
+    for (const s of seen) if (s.startsWith(`${k} `)) return;
     seen.add(k);
     out.push(label);
   };
@@ -375,72 +385,24 @@ function collectResourceLabels(hex: Hex, era: number, playerCivType?: string | n
  */
 
 /**
- * Te same przesunięcia osi aksjalnej co `hexNeighbors()` w map/improvement-build.ts i
- * `hexNeighborCoords()` w units/setup.ts — skopiowane lokalnie (nie importowane), żeby nie
- * ciągnąć do tego modułu UI całego łańcucha importów `units/setup.ts` (m.in. `map/startScoring`)
- * tylko dla 6 stałych.
- * EN: same axial-offset pairs as `hexNeighbors()` in map/improvement-build.ts and
- * `hexNeighborCoords()` in units/setup.ts — copied locally (not imported) to avoid pulling this
- * UI module's dependency graph through `units/setup.ts` (incl. `map/startScoring`) just for 6
- * constants.
- */
-const HEX_NEIGHBOR_OFFSETS: ReadonlyArray<readonly [number, number]> = [
-  [1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1],
-];
-
-/**
- * Zbiór kluczy heksów `"q,r"` faktycznie leżących NA rzece, zbudowany z `map.riverPaths` —
- * kopia lokalna `buildRiverHexSet()` z map/improvement-build.ts (linia ~563). Ten zbiór jest
- * ŚCIŚLE WĘŻSZY niż flaga `hex.rzeka.obecna`: `syncRiverEdgeBonusHexes()`
- * (gen-helpers.ts:~7241) świadomie ROZLEWA `rzeka.obecna` na wszystkie heksy stykające się
- * z rzeką jednym bokiem (bonus plonu), więc `rzeka.obecna` sąsiada NIE jest dowodem, że ten
- * sąsiad leży na `riverPaths` — a to właśnie `riverPaths`/`riverHexSet`, nie `rzeka.obecna`,
- * silnik sprawdza dla SĄSIADÓW w `isRiverAdjacent()`.
- * EN: set of hex keys `"q,r"` actually ON a river, built from `map.riverPaths` — local copy of
- * `buildRiverHexSet()` in map/improvement-build.ts (line ~563). This set is STRICTLY NARROWER
- * than the `hex.rzeka.obecna` flag: `syncRiverEdgeBonusHexes()` deliberately SPREADS
- * `rzeka.obecna` onto every hex touching a river on one edge (yield bonus), so a neighbor's
- * `rzeka.obecna` is not proof it's on `riverPaths` — and it's `riverPaths`/`riverHexSet`, not
- * `rzeka.obecna`, that the engine checks for NEIGHBORS in `isRiverAdjacent()`.
- */
-function buildRiverHexSet(map: GameMap): Set<string> {
-  const set = new Set<string>();
-  for (const path of map.riverPaths) {
-    for (const p of path) set.add(`${p.q},${p.r}`);
-  }
-  return set;
-}
-
-/**
- * Rzeka NA heksie LUB na dowolnym z 6 sąsiadów — lustrzane odbicie `isRiverAdjacent()` z
- * `createQualifier()` w map/improvement-build.ts (linia ~636): `hex?.rzeka?.obecna` LUB
- * `riverHexSet.has(ownKey)` dla sam heks; WYŁĄCZNIE `riverHexSet` (nie `rzeka.obecna`) dla
- * sąsiadów — dokładnie ta sama kolejność i te same trzy warunki co silnik. Bez dostępu do `map`
- * (np. wołający nie ma jej pod ręką) sprawdzamy tylko flagę na samym heksie — bezpieczny,
- * węższy fallback (podzbiór poprawnego wyniku, nigdy fałszywy pozytyw).
- * EN: river ON the hex OR any of its 6 neighbors — mirrors `isRiverAdjacent()` from
- * `createQualifier()` in map/improvement-build.ts (line ~636): `hex?.rzeka?.obecna` OR
- * `riverHexSet.has(ownKey)` for the hex itself; `riverHexSet` ONLY (not `rzeka.obecna`) for
- * neighbors — same order, same three conditions as the engine. Without a `map` reference
- * (caller doesn't have one) we fall back to the hex's own flag only — a safe, narrower fallback
- * (subset of the correct result, never a false positive).
+ * Rzeka NA heksie LUB w sąsiedztwie — R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1: JEDNA wspólna definicja z silnika
+ * (`isHexNearRiver`, map/improvement-build.ts) używana też przez kwalifikator ręcznej budowy i automat: własne
+ * `rzeka.obecna`, heks w `riverPaths`, albo sąsiad w `riverPaths` / z `rzeka.obecna`. Bez `map` sprawdzamy tylko flagę na samym
+ * heksie — bezpieczny, węższy fallback (podzbiór poprawnego wyniku, nigdy fałszywy pozytyw).
+ * EN: river ON the hex or next to it — delegates to the shared engine definition `isHexNearRiver`. Without `map`
+ * falls back to the hex's own flag only (safe, narrower subset).
  */
 export function hexHasRiverAccess(hex: Hex, map?: GameMap): boolean {
   if (hex.rzeka?.obecna) return true;
   if (!map) return false;
-  const riverHexSet = buildRiverHexSet(map);
-  const { q, r } = hex.coords;
-  if (riverHexSet.has(`${q},${r}`)) return true;
-  for (const [dq, dr] of HEX_NEIGHBOR_OFFSETS) {
-    if (riverHexSet.has(`${q + dq},${r + dr}`)) return true;
-  }
-  return false;
+  return isHexNearRiver(map, hex.coords.q, hex.coords.r);
 }
 
 function listTerrainPossibleImprovements(
   hex: Hex,
   playerCivType?: string | null,
   map?: GameMap,
+  ownerEra?: number,
 ): string[] {
   const active = new Set(improvementKeysForHex(hex));
   const teren = hex.terenBazowy;
@@ -470,7 +432,7 @@ function listTerrainPossibleImprovements(
     // (isLivestockUnlockedForPlacement/empireUnlocks) -- that is player/empire state, not a hex
     // property, so it's deliberately SKIPPED here, same as territory/tech are skipped throughout
     // this function (see docstring above).
-    if (key === 'stadnina' && nakladka !== Nakladka.ZlozeKonia) continue;
+    if (key === 'stadnina' && !hexHasHorseDeposit({ nakladka, zloze })) continue;
     if (key === 'farma' && !isFarmBaseTerrain(teren, nakladka)) continue;
     if (key === 'tartak' && nakladka !== Nakladka.Las) continue;
     if (key === 'wyrab' && nakladka !== Nakladka.Las) continue;
@@ -500,11 +462,10 @@ function listTerrainPossibleImprovements(
     // Irygacja wymaga rzeki NA heksie lub na sąsiedzie (isRiverAdjacent w createQualifier).
     // EN: irrigation requires a river on the hex or a neighbor (isRiverAdjacent in createQualifier).
     if (key === 'irygacja' && !hexHasRiverAccess(hex, map)) continue;
-    const bonus = formatCityBonusParts(improvementBonusForKey(key));
-    const mag = formatTerritoryMagazynPart(key);
-    const unlocks = labelsForImprovementUnlock(key);
-    let line = `<b>${improvementDisplayName(key)}</b> → plony miasta: ${bonus}`;
-    if (mag) line += ` · magazyn państwa: ${mag} · bez 👤`;
+    const bonus = formatCityBonusParts(improvementBonusForKey(key, ownerEra));
+    const mag = formatTerritoryMagazynPart(key, undefined, ownerEra);
+    const unlocks = unlockLabelsBeyondProduction(key, undefined, ownerEra);
+    let line = `<b>${improvementDisplayName(key)}</b> → ${mag ? `${mag} · ` : ''}plony miasta: ${bonus}`;
     if (unlocks.length) line += ` · odblok. ${unlocks.join(', ')}`;
     out.push(line);
     if (out.length >= 10) break;
@@ -551,11 +512,13 @@ export interface HexContextTooltipInput {
 export function buildHexContextTooltipHtml(input: HexContextTooltipInput): string {
   const { q, r, hex, esc, cityName } = input;
   const era = input.currentEra ?? 99;
+  // R-WEB-IMPROVEMENT-ERA-SCALING-Q1: plony ulepszeń wg aktualnej epoki gracza (brak = Kamień).
+  const yieldEra = input.currentEra;
   const teren = TEREN_LABEL[hex.terenBazowy] ?? esc(String(hex.terenBazowy));
   const resources = collectResourceLabels(hex, era, input.playerCivType);
   const built = builtImprovementKeys(hex);
   const implicitKeys = improvementKeysForHex(hex).filter(k => !built.includes(k));
-  const possible = listTerrainPossibleImprovements(hex, input.playerCivType, input.map);
+  const possible = listTerrainPossibleImprovements(hex, input.playerCivType, input.map, yieldEra);
 
   const lines: string[] = [];
 
@@ -574,13 +537,13 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   }
 
   if (built.length > 0) {
-    const builtDesc = built.map((key) => formatImprovementDesc(key, hex, esc, 'postawione')).join('<br>');
+    const builtDesc = built.map((key) => formatImprovementDesc(key, hex, esc, 'postawione', yieldEra)).join('<br>');
     lines.push(subLine('Ulepszenia postawione', builtDesc));
   }
 
   if (implicitKeys.length > 0) {
     const impDesc = implicitKeys.map((key) => {
-      const bonus = formatCityBonusParts(improvementBonusForKey(key));
+      const bonus = formatCityBonusParts(improvementBonusForKey(key, yieldEra));
       return `<b>${esc(improvementDisplayName(key))}</b> (naturalne) → plony miasta: ${bonus}`;
     }).join('<br>');
     lines.push(subLine('Hodowla / złoże aktywne', impDesc));
@@ -590,24 +553,19 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
     lines.push(subLine('Ulepszenie', 'brak — goły teren'));
   }
 
-  const magazynSummary = formatHexMagazynSummary(hex, esc);
   const terrainMagazyn = input.hexWorkedForMagazyn
-    ? formatTerrainMagazynWorkedNotes(hex)
+    ? formatTerrainMagazynWorkedNotes(hex, yieldEra)
     : [];
-  if (magazynSummary || terrainMagazyn.length > 0) {
-    lines.push('<div class="cp-yield-head">Do magazynu państwa</div>');
-    const parts: string[] = [];
-    if (magazynSummary) parts.push(magazynSummary);
-    if (terrainMagazyn.length) {
-      parts.push(terrainMagazyn.map(n => `<span class="cp-magazyn-line">${n}</span>`).join('<br>'));
-    }
-    lines.push(`<div class="cp-sub cp-magazyn-block">${parts.join('<br>')}</div>`);
+  // Produkcja ulepszeń jest w ich własnych wierszach (wyżej); tu zostaje tylko teren (przy 👤).
+  if (terrainMagazyn.length > 0) {
+    lines.push('<div class="cp-yield-head">Surowce z terenu (przy 👤)</div>');
+    lines.push(`<div class="cp-sub cp-magazyn-block">${terrainMagazyn.map(n => `<span class="cp-magazyn-line">${n}</span>`).join('<br>')}</div>`);
   }
 
   lines.push('<div class="cp-yield-head">Plony miasta — rozbicie (przy 👤)</div>');
-  lines.push(formatCityYieldBreakdownHtml(hex));
-  lines.push(`<div class="cp-total">Razem (miasto): ${formatCityYieldLine(cityYieldOnly(fullTileYield(hex)), '0')}</div>`);
-  lines.push('<div class="cp-sub cp-yield-foot">Żywność · Praca · Podatek → ekonomia miasta (przy 👤). Magazyn → ulepszenia (Tartak, Kamieniołom… — auto) + drewno/kamień/glina z terenu (przy 👤 lub centrum).</div>');
+  lines.push(formatCityYieldBreakdownHtml(hex, yieldEra));
+  lines.push(`<div class="cp-total">Razem (miasto): ${formatCityYieldLine(cityYieldOnly(fullTileYield(hex, yieldEra)), '0')}</div>`);
+  lines.push('<div class="cp-sub cp-yield-foot">Żywność · Praca · Podatek → ekonomia miasta (przy 👤). Surowce z ulepszeń (Tartak, Kamieniołom…) — w wierszu produkcji przy ulepszeniu; drewno/kamień/glina z terenu — przy 👤 lub centrum.</div>');
 
   if (possible.length > 0) {
     lines.push('<div class="cp-yield-head">Możliwe ulepszenia (teren)</div>');
@@ -696,12 +654,16 @@ export interface UnitContextTooltipInput extends UnitSufferingStatusFields {
   stackCards?: ReadonlyArray<{
     id: string;
     name: string;
+    /** Rola jednostki dowodzącej, odróżniana od zwykłej jednostki tego samego typu. */
+    commanderTitle?: 'Wódz' | 'Generał';
     icon: string;
     hp: number;
     hpMax: number;
     ruchLeft: number;
     ruchMax: number;
     active: boolean;
+    /** Zaznaczona do zbiorowego rozwiązania (pole wyboru na karcie). */
+    picked?: boolean;
   }>;
   /** Przyciski akcji (kompakt + rozszerzony, na dole karty). */
   actions?: ReadonlyArray<UnitPanelAction>;
@@ -758,18 +720,49 @@ function buildUnitStackBarHtml(pct: number, kind: 'hp' | 'mov'): string {
   return `<div class="sp-unit-stack-bar sp-unit-stack-bar-${kind}"><i style="width:${width}%"></i></div>`;
 }
 
+/**
+ * Pasek nad kartami stosu: licznik zaznaczenia + „Zaznacz wszystko” (bez generała/wodza)
+ * + „Odznacz”. Przyciski idą przez data-act → onContextAction (jak reszta akcji karty).
+ */
+function buildUnitStackPickBarHtml(cards: NonNullable<UnitContextTooltipInput['stackCards']>): string {
+  const total = cards.length;
+  const picked = cards.filter(c => c.picked === true).length;
+  const count = picked > 0
+    ? `Zaznaczono ${picked} z ${total}`
+    : `Zaznacz do rozwiązania (${total})`;
+  return '<div class="sp-unit-pick-bar">'
+    + `<span class="sp-unit-pick-count" data-pick-count>${count}</span>`
+    + '<span class="sp-unit-pick-btns">'
+    + '<button type="button" class="sp-unit-pick-btn" data-act="pick-all"'
+    + ' title="Zaznacz wszystkie jednostki oprócz generała/wodza">Zaznacz wszystko</button>'
+    + `<button type="button" class="sp-unit-pick-btn" data-act="pick-none"${picked === 0 ? ' disabled' : ''}>Odznacz</button>`
+    + '</span></div>';
+}
+
 function buildUnitStackCardsHtml(
   cards: NonNullable<UnitContextTooltipInput['stackCards']>,
   esc: (raw: string) => string,
 ): string {
   if (cards.length <= 1) return '';
-  let html = '<div class="sp-unit-stack">';
-  for (const c of cards) {
+  // Generałowie/wodzowie zawsze na początku listy — odróżnialni nawet w długim stosie.
+  const ordered = sortArmyStackGeneralsFirst(cards);
+  let html = buildUnitStackPickBarHtml(cards) + '<div class="sp-unit-stack">';
+  for (const c of ordered) {
     const hpPct = c.hpMax > 0 ? (c.hp / c.hpMax) * 100 : 0;
     const movPct = c.ruchMax > 0 ? (c.ruchLeft / c.ruchMax) * 100 : 0;
-    html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}" data-unit="${esc(c.id)}" role="button" tabindex="0">`
+    const isCommander = c.commanderTitle === 'Wódz' || c.commanderTitle === 'Generał';
+    const cardLabel = armyStackCardLabel(c);
+    const pickLabel = `Zaznacz do rozwiązania: ${cardLabel}`;
+    html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}${isCommander ? ' commander' : ''}${c.picked ? ' picked' : ''}" data-unit="${esc(c.id)}"`
+      + (isCommander ? ` data-commander="true" aria-label="${esc(cardLabel)}" title="${esc(cardLabel)}"` : '')
+      + ' role="button" tabindex="0">'
+      + `<span class="sp-unit-pick${c.picked ? ' on' : ''}" data-pick="${esc(c.id)}" role="checkbox"`
+      + ` tabindex="0" aria-checked="${c.picked ? 'true' : 'false'}" aria-label="${esc(pickLabel)}"`
+      + ` title="Zaznacz do rozwiązania"></span>`
       + `<div class="sp-unit-stack-ic">${c.icon || unitIconSvg(undefined)}</div>`
-      + `<div class="sp-unit-stack-name">${esc(c.name)}</div>`
+      + (isCommander
+        ? `<div class="sp-unit-stack-commander-role">★ ${esc(c.commanderTitle!)}</div><div class="sp-unit-stack-name sp-unit-stack-commander-type">${esc(c.name)}</div>`
+        : `<div class="sp-unit-stack-name">${esc(c.name)}</div>`)
       + '<div class="sp-unit-stack-bars">'
       + buildUnitStackBarHtml(hpPct, 'hp')
       + buildUnitStackBarHtml(movPct, 'mov')
@@ -878,6 +871,9 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-stack-card{flex:0 0 auto;width:76px;padding:6px 4px;border-radius:8px;cursor:pointer;
   border:1px solid rgba(212,175,90,.22);background:rgba(16,20,28,.85);text-align:center;}
 .sp-unit-stack-card.on{border-color:rgba(212,175,90,.55);box-shadow:0 0 10px rgba(212,175,90,.12);}
+.sp-unit-stack-card.commander{border-color:rgba(232,216,138,.78);background:linear-gradient(180deg,rgba(92,73,28,.4),rgba(10,14,22,.72));box-shadow:inset 0 0 0 1px rgba(232,216,138,.12);}
+.sp-unit-stack-commander-role{font-size:8px;font-weight:800;line-height:1.15;color:var(--civ-gold-primary,#e8d88a);white-space:nowrap;}
+.sp-unit-stack-commander-type{font-size:8px!important;color:var(--civ-text-muted,#a09880);}
 .sp-unit-stack-ic{font-size:18px;line-height:1;min-height:20px;}
 .sp-unit-stack-name{font-size:9px;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sp-unit-stack-bars{display:flex;flex-direction:column;gap:3px;margin-top:5px;padding:0 3px;}
@@ -886,6 +882,23 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-stack-bar-hp i{background:linear-gradient(90deg,${VITALS_HP_DARK_CSS},${VITALS_HP_FULL_CSS});}
 .sp-unit-stack-bar-mov i{background:linear-gradient(90deg,${VITALS_MOVE_DARK_CSS},${VITALS_MOVE_FULL_CSS});}
 .sp-unit-stack-meta{font-size:8px;color:var(--civ-text-muted,#8a8070);margin-top:4px;}
+.sp-unit-stack-card{position:relative;}
+.sp-unit-stack-card.commander .sp-unit-stack-commander-role{font-size:10px!important;font-weight:900;padding:2px 4px;border-radius:3px;
+  background:rgba(232,216,138,.24);color:#fff3b0;}
+.sp-unit-stack-card.commander .sp-unit-stack-commander-type{font-size:9px!important;color:#f0e8c8!important;}
+.sp-unit-stack-card.picked{border-color:rgba(232,216,138,.9);box-shadow:inset 0 0 0 1px rgba(232,216,138,.35);}
+.sp-unit-pick-bar{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;
+  margin:8px 0 0;font-size:10px;color:var(--civ-text-muted,#a09880);}
+.sp-unit-pick-count{letter-spacing:.04em;}
+.sp-unit-pick-btns{display:flex;gap:6px;}
+.sp-unit-pick-btn{font:inherit;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:5px;
+  border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);color:var(--civ-gold-primary,#e8d88a);cursor:pointer;}
+.sp-unit-pick-btn:disabled{opacity:.4;cursor:not-allowed;}
+.sp-unit-pick{position:absolute;top:4px;left:4px;width:14px;height:14px;box-sizing:border-box;border-radius:3px;
+  border:1.5px solid rgba(212,175,90,.7);background:rgba(0,0,0,.4);cursor:pointer;}
+.sp-unit-pick.on{background:var(--civ-gold-primary,#e8d88a);border-color:var(--civ-gold-primary,#e8d88a);}
+.sp-unit-pick.on::after{content:'';position:absolute;left:4px;top:0;width:4px;height:8px;
+  border:solid #2e2708;border-width:0 2px 2px 0;transform:rotate(45deg);}
 .uc-unit-head-meta{font-size:10px;color:var(--civ-text-muted,#a09880);margin-top:3px;font-weight:400;}
 ${UNIT_ACTION_BAR_CSS}
 .sp-unit-card-body{display:flex;flex-direction:column;gap:0;}
@@ -910,7 +923,10 @@ function buildArmySelectedUnitLabelHtml(
 ): string {
   const active = cards.find(c => c.active);
   if (!active) return '';
-  return `<div class="sp-army-sel-lbl">Wybrana jednostka: <b>${esc(active.name)}</b></div>`;
+  const activeName = active.commanderTitle
+    ? `${active.commanderTitle} — ${active.name}`
+    : active.name;
+  return `<div class="sp-army-sel-lbl">Wybrana jednostka: <b>${esc(activeName)}</b></div>`;
 }
 
 function buildUnitDetailExtrasHtml(u: UnitContextTooltipInput, statusInput: UnitCardStatusInput): string {

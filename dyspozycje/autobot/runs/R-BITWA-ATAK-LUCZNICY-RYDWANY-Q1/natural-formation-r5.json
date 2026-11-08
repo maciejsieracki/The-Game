@@ -1,0 +1,9088 @@
+{
+  "sceneInfo": {
+    "rosterBeforeConstructor": {
+      "attacker": [
+        {
+          "id": "atk0",
+          "name": "Hastati",
+          "key": "Hastati"
+        },
+        {
+          "id": "atk1",
+          "name": "Hastati",
+          "key": "Hastati"
+        },
+        {
+          "id": "atk40",
+          "name": "Javelineer",
+          "key": "Oszczepnik"
+        },
+        {
+          "id": "atk60",
+          "name": "Archer",
+          "key": "Łucznik"
+        },
+        {
+          "id": "atk61",
+          "name": "Archer",
+          "key": "Łucznik"
+        },
+        {
+          "id": "atk62",
+          "name": "Archer",
+          "key": "Łucznik"
+        },
+        {
+          "id": "atk80",
+          "name": "Horseman",
+          "key": "Konnica"
+        },
+        {
+          "id": "atk82",
+          "name": "War Chariot",
+          "key": "Rydwan konny"
+        }
+      ],
+      "defender": [
+        {
+          "id": "def0",
+          "name": "Phalanx",
+          "key": "Falanga"
+        },
+        {
+          "id": "def1",
+          "name": "Phalanx",
+          "key": "Falanga"
+        },
+        {
+          "id": "def40",
+          "name": "Javelineer",
+          "key": "Oszczepnik"
+        },
+        {
+          "id": "def60",
+          "name": "Archer",
+          "key": "Łucznik"
+        },
+        {
+          "id": "def61",
+          "name": "Archer",
+          "key": "Łucznik"
+        },
+        {
+          "id": "def62",
+          "name": "Archer",
+          "key": "Łucznik"
+        },
+        {
+          "id": "def80",
+          "name": "Horseman",
+          "key": "Konnica"
+        },
+        {
+          "id": "def82",
+          "name": "War Chariot",
+          "key": "Rydwan konny"
+        }
+      ]
+    },
+    "attacker": [
+      {
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "pos": [
+          30,
+          77
+        ],
+        "rank": 0,
+        "role": null,
+        "mounted": false,
+        "rangedBase": true,
+        "canShoot": true,
+        "ammo": 2,
+        "rangeBase": 2
+      },
+      {
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "pos": [
+          30,
+          79
+        ],
+        "rank": 0,
+        "role": null,
+        "mounted": false,
+        "rangedBase": true,
+        "canShoot": true,
+        "ammo": 2,
+        "rangeBase": 2
+      },
+      {
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "pos": [
+          28,
+          77
+        ],
+        "rank": 1,
+        "role": null,
+        "mounted": false,
+        "rangedBase": true,
+        "canShoot": true,
+        "ammo": 6,
+        "rangeBase": 2
+      },
+      {
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          27,
+          76
+        ],
+        "rank": 2,
+        "role": null,
+        "mounted": false,
+        "rangedBase": true,
+        "canShoot": true,
+        "ammo": 12,
+        "rangeBase": 3
+      },
+      {
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          27,
+          77
+        ],
+        "rank": 2,
+        "role": null,
+        "mounted": false,
+        "rangedBase": true,
+        "canShoot": true,
+        "ammo": 12,
+        "rangeBase": 3
+      },
+      {
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          27,
+          78
+        ],
+        "rank": 2,
+        "role": null,
+        "mounted": false,
+        "rangedBase": true,
+        "canShoot": true,
+        "ammo": 12,
+        "rangeBase": 3
+      },
+      {
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "pos": [
+          30,
+          78
+        ],
+        "rank": 0,
+        "role": null,
+        "mounted": true,
+        "rangedBase": false,
+        "canShoot": false,
+        "ammo": null,
+        "rangeBase": 0
+      },
+      {
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "pos": [
+          31,
+          76
+        ],
+        "rank": 0,
+        "role": null,
+        "mounted": true,
+        "rangedBase": false,
+        "canShoot": false,
+        "ammo": null,
+        "rangeBase": 0
+      }
+    ],
+    "defender": [
+      {
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "pos": [
+          36,
+          76
+        ],
+        "rank": 0,
+        "role": null,
+        "mounted": false,
+        "rangedBase": false,
+        "canShoot": false,
+        "ammo": null,
+        "rangeBase": 0
+      },
+      {
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "pos": [
+          36,
+          77
+        ],
+        "rank": 0,
+        "role": null,
+        "mounted": false,
+        "rangedBase": false,
+        "canShoot": false,
+        "ammo": null,
+        "rangeBase": 0
+      },
+      {
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "pos": [
+          37,
+          77
+        ],
+        "rank": 1,
+        "role": null,
+        "mounted": false,
+        "rangedBase": true,
+        "canShoot": true,
+        "ammo": 6,
+        "rangeBase": 2
+      },
+      {
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          38,
+          76
+        ],
+        "rank": 2,
+        "role": null,
+        "mounted": false,
+        "rangedBase": true,
+        "canShoot": true,
+        "ammo": 12,
+        "rangeBase": 3
+      },
+      {
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          38,
+          77
+        ],
+        "rank": 2,
+        "role": null,
+        "mounted": false,
+        "rangedBase": true,
+        "canShoot": true,
+        "ammo": 12,
+        "rangeBase": 3
+      },
+      {
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          38,
+          78
+        ],
+        "rank": 2,
+        "role": null,
+        "mounted": false,
+        "rangedBase": true,
+        "canShoot": true,
+        "ammo": 12,
+        "rangeBase": 3
+      },
+      {
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "pos": [
+          36,
+          75
+        ],
+        "rank": 0,
+        "role": null,
+        "mounted": true,
+        "rangedBase": false,
+        "canShoot": false,
+        "ammo": null,
+        "rangeBase": 0
+      },
+      {
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "pos": [
+          36,
+          79
+        ],
+        "rank": 0,
+        "role": null,
+        "mounted": true,
+        "rangedBase": false,
+        "canShoot": false,
+        "ammo": null,
+        "rangeBase": 0
+      }
+    ],
+    "deployArcherLines": 1,
+    "deployPhase": true
+  },
+  "afterLines": {
+    "archerLines": 1,
+    "units": [
+      {
+        "id": "atk0",
+        "name": "Hastati",
+        "pos": [
+          29,
+          77
+        ],
+        "rank": 0,
+        "rangeBase": 2,
+        "ammo": 2,
+        "canShoot": true
+      },
+      {
+        "id": "atk1",
+        "name": "Hastati",
+        "pos": [
+          29,
+          78
+        ],
+        "rank": 0,
+        "rangeBase": 2,
+        "ammo": 2,
+        "canShoot": true
+      },
+      {
+        "id": "atk40",
+        "name": "Javelineer",
+        "pos": [
+          28,
+          77
+        ],
+        "rank": 1,
+        "rangeBase": 2,
+        "ammo": 6,
+        "canShoot": true
+      },
+      {
+        "id": "atk60",
+        "name": "Archer",
+        "pos": [
+          27,
+          76
+        ],
+        "rank": 2,
+        "rangeBase": 3,
+        "ammo": 12,
+        "canShoot": true
+      },
+      {
+        "id": "atk61",
+        "name": "Archer",
+        "pos": [
+          27,
+          77
+        ],
+        "rank": 2,
+        "rangeBase": 3,
+        "ammo": 12,
+        "canShoot": true
+      },
+      {
+        "id": "atk62",
+        "name": "Archer",
+        "pos": [
+          27,
+          78
+        ],
+        "rank": 2,
+        "rangeBase": 3,
+        "ammo": 12,
+        "canShoot": true
+      },
+      {
+        "id": "def40",
+        "name": "Javelineer",
+        "pos": [
+          37,
+          77
+        ],
+        "rank": 1,
+        "rangeBase": 2,
+        "ammo": 6,
+        "canShoot": true
+      },
+      {
+        "id": "def60",
+        "name": "Archer",
+        "pos": [
+          38,
+          76
+        ],
+        "rank": 2,
+        "rangeBase": 3,
+        "ammo": 12,
+        "canShoot": true
+      },
+      {
+        "id": "def61",
+        "name": "Archer",
+        "pos": [
+          38,
+          77
+        ],
+        "rank": 2,
+        "rangeBase": 3,
+        "ammo": 12,
+        "canShoot": true
+      },
+      {
+        "id": "def62",
+        "name": "Archer",
+        "pos": [
+          38,
+          78
+        ],
+        "rank": 2,
+        "rangeBase": 3,
+        "ammo": 12,
+        "canShoot": true
+      }
+    ]
+  },
+  "chargeSet": true,
+  "final": {
+    "round": 4,
+    "finished": false,
+    "atk": [
+      {
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "pos": [
+          33,
+          75
+        ],
+        "ammo": 0,
+        "hp": 38,
+        "range": 2,
+        "rank": 1
+      },
+      {
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "pos": [
+          33,
+          78
+        ],
+        "ammo": 0,
+        "hp": 38,
+        "range": 2,
+        "rank": 1
+      },
+      {
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "pos": [
+          32,
+          75
+        ],
+        "ammo": 5,
+        "hp": 16,
+        "range": 2,
+        "rank": 2
+      },
+      {
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          31,
+          75
+        ],
+        "ammo": 12,
+        "hp": 16,
+        "range": 3,
+        "rank": 3
+      },
+      {
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          30,
+          75
+        ],
+        "ammo": 12,
+        "hp": 16,
+        "range": 3,
+        "rank": 3
+      },
+      {
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          31,
+          78
+        ],
+        "ammo": 12,
+        "hp": 16,
+        "range": 3,
+        "rank": 3
+      },
+      {
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "pos": [
+          36,
+          78
+        ],
+        "ammo": null,
+        "hp": 29,
+        "range": 0,
+        "rank": 1
+      },
+      {
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "pos": [
+          34,
+          74
+        ],
+        "ammo": null,
+        "hp": 31,
+        "range": 0,
+        "rank": 1
+      }
+    ],
+    "def": [
+      {
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "pos": [
+          34,
+          75
+        ],
+        "ammo": null,
+        "hp": 38,
+        "range": 0,
+        "rank": 0
+      },
+      {
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "pos": [
+          34,
+          78
+        ],
+        "ammo": null,
+        "hp": 39,
+        "range": 0,
+        "rank": 0
+      },
+      {
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "pos": [
+          35,
+          78
+        ],
+        "ammo": 5,
+        "hp": 16,
+        "range": 2,
+        "rank": 1
+      },
+      {
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          37,
+          74
+        ],
+        "ammo": 9,
+        "hp": 16,
+        "range": 3,
+        "rank": 2
+      },
+      {
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          37,
+          75
+        ],
+        "ammo": 11,
+        "hp": 16,
+        "range": 3,
+        "rank": 2
+      },
+      {
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "pos": [
+          37,
+          79
+        ],
+        "ammo": 11,
+        "hp": 16,
+        "range": 3,
+        "rank": 2
+      },
+      {
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "pos": [
+          35,
+          74
+        ],
+        "ammo": null,
+        "hp": 32,
+        "range": 0,
+        "rank": 0
+      },
+      {
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "pos": [
+          36,
+          75
+        ],
+        "ammo": null,
+        "hp": 112,
+        "range": 0,
+        "rank": 0
+      }
+    ],
+    "trace": [
+      {
+        "type": "activation-start",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 1,
+        "at": [
+          29,
+          77
+        ],
+        "range": 2,
+        "ammo": 2,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 32723.30000001192
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk0",
+        "name": "Hastati",
+        "unitKey": "Hastati",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 2,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          29,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 29,
+          "row": 78
+        },
+        "ms": 32724
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          77
+        ],
+        "to": [
+          30,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          77
+        ],
+        "ms": 32725
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          30,
+          77
+        ],
+        "to": [
+          31,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          77
+        ],
+        "ms": 32725.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          31,
+          77
+        ],
+        "to": [
+          32,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          32,
+          77
+        ],
+        "ms": 32725.19999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "atk0",
+        "round": 1,
+        "at": [
+          32,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 32725.30000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 1,
+        "at": [
+          29,
+          78
+        ],
+        "range": 2,
+        "ammo": 2,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 32726.59999999404
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk1",
+        "name": "Hastati",
+        "unitKey": "Hastati",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 2,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          29,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 29,
+          "row": 79
+        },
+        "ms": 32726.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          78
+        ],
+        "to": [
+          30,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          78
+        ],
+        "ms": 32726.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          30,
+          78
+        ],
+        "to": [
+          30,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          77
+        ],
+        "ms": 32726.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          30,
+          77
+        ],
+        "to": [
+          31,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          77
+        ],
+        "ms": 32727
+      },
+      {
+        "type": "activation-end",
+        "id": "atk1",
+        "round": 1,
+        "at": [
+          31,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 32727
+      },
+      {
+        "type": "activation-start",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 2,
+        "at": [
+          28,
+          77
+        ],
+        "range": 2,
+        "ammo": 6,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 32728
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk40",
+        "name": "Javelineer",
+        "unitKey": "Oszczepnik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 6,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          28,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 28,
+          "row": 78
+        },
+        "ms": 32728.09999999404
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          28,
+          77
+        ],
+        "to": [
+          28,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          76
+        ],
+        "ms": 32728.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          28,
+          76
+        ],
+        "to": [
+          29,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          76
+        ],
+        "ms": 32728.40000000596
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          76
+        ],
+        "to": [
+          29,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          75
+        ],
+        "ms": 32728.59999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "atk40",
+        "round": 1,
+        "at": [
+          29,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 32728.59999999404
+      },
+      {
+        "type": "activation-start",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 3,
+        "at": [
+          27,
+          76
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 32729.69999998808
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk60",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          27,
+          76
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 27,
+          "row": 77
+        },
+        "ms": 32729.80000001192
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          27,
+          76
+        ],
+        "to": [
+          28,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          76
+        ],
+        "ms": 32730
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          28,
+          76
+        ],
+        "to": [
+          28,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          75
+        ],
+        "ms": 32730.5
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          28,
+          75
+        ],
+        "to": [
+          28,
+          74
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          74
+        ],
+        "ms": 32730.59999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "atk60",
+        "round": 1,
+        "at": [
+          28,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 32730.59999999404
+      },
+      {
+        "type": "activation-start",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 3,
+        "at": [
+          27,
+          77
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 32732.09999999404
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk61",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          27,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 27,
+          "row": 78
+        },
+        "ms": 32732.19999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "atk61",
+        "round": 1,
+        "at": [
+          27,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 32732.5
+      },
+      {
+        "type": "activation-start",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 3,
+        "at": [
+          27,
+          78
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 32733.69999998808
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk62",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          27,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 27,
+          "row": 79
+        },
+        "ms": 32733.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          27,
+          78
+        ],
+        "to": [
+          28,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          78
+        ],
+        "ms": 32733.80000001192
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          28,
+          78
+        ],
+        "to": [
+          28,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          79
+        ],
+        "ms": 32733.80000001192
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          28,
+          79
+        ],
+        "to": [
+          28,
+          80
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          80
+        ],
+        "ms": 32733.90000000596
+      },
+      {
+        "type": "activation-end",
+        "id": "atk62",
+        "round": 1,
+        "at": [
+          28,
+          80
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 32733.90000000596
+      },
+      {
+        "type": "activation-start",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 1,
+        "at": [
+          29,
+          80
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 32735.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          80
+        ],
+        "to": [
+          29,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          29,
+          79
+        ],
+        "ms": 32736.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          79
+        ],
+        "to": [
+          30,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          30,
+          79
+        ],
+        "ms": 32736.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          30,
+          79
+        ],
+        "to": [
+          31,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          31,
+          79
+        ],
+        "ms": 32736.80000001192
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          31,
+          79
+        ],
+        "to": [
+          32,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          32,
+          79
+        ],
+        "ms": 32736.80000001192
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          32,
+          79
+        ],
+        "to": [
+          33,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          33,
+          79
+        ],
+        "ms": 32736.80000001192
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          33,
+          79
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          34,
+          79
+        ],
+        "ms": 32736.80000001192
+      },
+      {
+        "type": "activation-end",
+        "id": "atk80",
+        "round": 1,
+        "at": [
+          34,
+          79
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 32736.80000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 1,
+        "at": [
+          29,
+          74
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 32737.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          74
+        ],
+        "to": [
+          30,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          30,
+          74
+        ],
+        "ms": 32738
+      },
+      {
+        "type": "move",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          30,
+          74
+        ],
+        "to": [
+          31,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          31,
+          74
+        ],
+        "ms": 32738
+      },
+      {
+        "type": "move",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          31,
+          74
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          32,
+          74
+        ],
+        "ms": 32738.09999999404
+      },
+      {
+        "type": "move",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          33,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          33,
+          74
+        ],
+        "ms": 32738.09999999404
+      },
+      {
+        "type": "move",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          33,
+          74
+        ],
+        "to": [
+          34,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          34,
+          74
+        ],
+        "ms": 32738.09999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "atk82",
+        "round": 1,
+        "at": [
+          34,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 32738.09999999404
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          77
+        ],
+        "to": [
+          30,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          77
+        ],
+        "ms": 33988.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          78
+        ],
+        "to": [
+          30,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          78
+        ],
+        "ms": 33988.5
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          28,
+          77
+        ],
+        "to": [
+          28,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          76
+        ],
+        "ms": 33988.5
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          27,
+          78
+        ],
+        "to": [
+          28,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          78
+        ],
+        "ms": 33988.5
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          80
+        ],
+        "to": [
+          29,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          29,
+          79
+        ],
+        "ms": 33988.59999999404
+      },
+      {
+        "type": "chariot-move",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          74
+        ],
+        "to": [
+          30,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          30,
+          74
+        ],
+        "ms": 33988.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          30,
+          77
+        ],
+        "to": [
+          31,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          77
+        ],
+        "ms": 35782.80000001192
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          28,
+          76
+        ],
+        "to": [
+          29,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          76
+        ],
+        "ms": 35782.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          28,
+          78
+        ],
+        "to": [
+          28,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          79
+        ],
+        "ms": 35783
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          79
+        ],
+        "to": [
+          30,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          30,
+          79
+        ],
+        "ms": 35783
+      },
+      {
+        "type": "chariot-move",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          30,
+          74
+        ],
+        "to": [
+          31,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          31,
+          74
+        ],
+        "ms": 35783
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          31,
+          77
+        ],
+        "to": [
+          32,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          32,
+          77
+        ],
+        "ms": 37532.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          29,
+          76
+        ],
+        "to": [
+          29,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          75
+        ],
+        "ms": 37532.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          28,
+          79
+        ],
+        "to": [
+          28,
+          80
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          80
+        ],
+        "ms": 37532.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          30,
+          79
+        ],
+        "to": [
+          31,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          31,
+          79
+        ],
+        "ms": 37532.19999998808
+      },
+      {
+        "type": "chariot-move",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "round": 1,
+        "from": [
+          31,
+          74
+        ],
+        "to": [
+          32,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          32,
+          74
+        ],
+        "ms": 37532.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          31,
+          79
+        ],
+        "to": [
+          32,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          32,
+          79
+        ],
+        "ms": 39248.69999998808
+      },
+      {
+        "type": "chariot-move",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "round": 1,
+        "from": [
+          32,
+          74
+        ],
+        "to": [
+          33,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          33,
+          74
+        ],
+        "ms": 39248.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          32,
+          79
+        ],
+        "to": [
+          33,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          33,
+          79
+        ],
+        "ms": 40983.59999999404
+      },
+      {
+        "type": "chariot-move",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "round": 1,
+        "from": [
+          33,
+          74
+        ],
+        "to": [
+          34,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          34,
+          74
+        ],
+        "ms": 40983.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          33,
+          79
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          34,
+          79
+        ],
+        "ms": 42921
+      },
+      {
+        "type": "activation-start",
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 0,
+        "at": [
+          36,
+          76
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 44185.5
+      },
+      {
+        "type": "move",
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          36,
+          76
+        ],
+        "to": [
+          35,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          76
+        ],
+        "ms": 44185.69999998808
+      },
+      {
+        "type": "move",
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          35,
+          76
+        ],
+        "to": [
+          35,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          75
+        ],
+        "ms": 44185.69999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "def0",
+        "round": 1,
+        "at": [
+          35,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 44185.69999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 0,
+        "at": [
+          36,
+          77
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 44186.80000001192
+      },
+      {
+        "type": "move",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          36,
+          77
+        ],
+        "to": [
+          36,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          36,
+          78
+        ],
+        "ms": 44186.80000001192
+      },
+      {
+        "type": "move",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          36,
+          78
+        ],
+        "to": [
+          35,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          78
+        ],
+        "ms": 44187
+      },
+      {
+        "type": "move",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          35,
+          78
+        ],
+        "to": [
+          35,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          79
+        ],
+        "ms": 44190.09999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "def1",
+        "round": 1,
+        "at": [
+          35,
+          79
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 44190.19999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 1,
+        "at": [
+          37,
+          77
+        ],
+        "range": 2,
+        "ammo": 6,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 44191.5
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def40",
+        "name": "Javelineer",
+        "unitKey": "Oszczepnik",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 6,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          37,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": null,
+        "ms": 44191.59999999404
+      },
+      {
+        "type": "move",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          37,
+          77
+        ],
+        "to": [
+          37,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          78
+        ],
+        "ms": 44191.59999999404
+      },
+      {
+        "type": "move",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          37,
+          78
+        ],
+        "to": [
+          36,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          36,
+          78
+        ],
+        "ms": 44191.59999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "def40",
+        "round": 1,
+        "at": [
+          36,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 1,
+        "ms": 44191.69999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 2,
+        "at": [
+          38,
+          76
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 44192.69999998808
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def60",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          38,
+          76
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": null,
+        "ms": 44192.69999998808
+      },
+      {
+        "type": "move",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          38,
+          76
+        ],
+        "to": [
+          38,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          38,
+          75
+        ],
+        "ms": 44192.80000001192
+      },
+      {
+        "type": "move",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          38,
+          75
+        ],
+        "to": [
+          38,
+          74
+        ],
+        "mounted": false,
+        "after": [
+          38,
+          74
+        ],
+        "ms": 44192.80000001192
+      },
+      {
+        "type": "move",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          38,
+          74
+        ],
+        "to": [
+          37,
+          74
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          74
+        ],
+        "ms": 44192.80000001192
+      },
+      {
+        "type": "activation-end",
+        "id": "def60",
+        "round": 1,
+        "at": [
+          37,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 44192.80000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 2,
+        "at": [
+          38,
+          77
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 44194
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def61",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          38,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": null,
+        "ms": 44194.19999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "def61",
+        "round": 1,
+        "at": [
+          38,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 44194.19999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 2,
+        "at": [
+          38,
+          78
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 44195.30000001192
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def62",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          38,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": null,
+        "ms": 44195.59999999404
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          38,
+          78
+        ],
+        "to": [
+          38,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          38,
+          79
+        ],
+        "ms": 44195.80000001192
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          38,
+          79
+        ],
+        "to": [
+          37,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          79
+        ],
+        "ms": 44196.69999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "def62",
+        "round": 1,
+        "at": [
+          37,
+          79
+        ],
+        "acted": false,
+        "moveLeft": 1,
+        "ms": 44196.69999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 0,
+        "at": [
+          36,
+          75
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 44199.59999999404
+      },
+      {
+        "type": "move",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          36,
+          75
+        ],
+        "to": [
+          36,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          74
+        ],
+        "ms": 44199.59999999404
+      },
+      {
+        "type": "move",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          36,
+          74
+        ],
+        "to": [
+          35,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          35,
+          74
+        ],
+        "ms": 44199.69999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "def80",
+        "round": 1,
+        "at": [
+          35,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 4,
+        "ms": 44199.69999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 1,
+        "rank": 0,
+        "at": [
+          36,
+          79
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 44200.59999999404
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          36,
+          79
+        ],
+        "to": [
+          35,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          35,
+          79
+        ],
+        "ms": 44200.59999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "def82",
+        "round": 1,
+        "at": [
+          35,
+          79
+        ],
+        "acted": false,
+        "moveLeft": 4,
+        "ms": 44200.59999999404
+      },
+      {
+        "type": "move",
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          36,
+          76
+        ],
+        "to": [
+          35,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          76
+        ],
+        "ms": 45934.30000001192
+      },
+      {
+        "type": "move",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          36,
+          77
+        ],
+        "to": [
+          36,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          36,
+          78
+        ],
+        "ms": 45934.40000000596
+      },
+      {
+        "type": "move",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          37,
+          77
+        ],
+        "to": [
+          37,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          78
+        ],
+        "ms": 45934.40000000596
+      },
+      {
+        "type": "move",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          38,
+          76
+        ],
+        "to": [
+          38,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          38,
+          75
+        ],
+        "ms": 45934.40000000596
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          38,
+          78
+        ],
+        "to": [
+          38,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          38,
+          79
+        ],
+        "ms": 45934.40000000596
+      },
+      {
+        "type": "move",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          36,
+          75
+        ],
+        "to": [
+          36,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          74
+        ],
+        "ms": 45934.40000000596
+      },
+      {
+        "type": "move",
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          35,
+          76
+        ],
+        "to": [
+          35,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          75
+        ],
+        "ms": 47627.90000000596
+      },
+      {
+        "type": "move",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          36,
+          78
+        ],
+        "to": [
+          35,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          78
+        ],
+        "ms": 47628
+      },
+      {
+        "type": "move",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          38,
+          75
+        ],
+        "to": [
+          38,
+          74
+        ],
+        "mounted": false,
+        "after": [
+          38,
+          74
+        ],
+        "ms": 47628
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          38,
+          79
+        ],
+        "to": [
+          37,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          79
+        ],
+        "ms": 47628
+      },
+      {
+        "type": "move",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          36,
+          74
+        ],
+        "to": [
+          35,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          35,
+          74
+        ],
+        "ms": 47628
+      },
+      {
+        "type": "move",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          35,
+          78
+        ],
+        "to": [
+          35,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          79
+        ],
+        "ms": 49347
+      },
+      {
+        "type": "move",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 1,
+        "from": [
+          38,
+          74
+        ],
+        "to": [
+          37,
+          74
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          74
+        ],
+        "ms": 49347.09999999404
+      },
+      {
+        "type": "activation-start",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 1,
+        "at": [
+          32,
+          77
+        ],
+        "range": 2,
+        "ammo": 2,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 52214.90000000596
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk0",
+        "name": "Hastati",
+        "unitKey": "Hastati",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 2,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          32,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 31,
+          "row": 78
+        },
+        "ms": 52215
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          32,
+          77
+        ],
+        "to": [
+          32,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          32,
+          76
+        ],
+        "ms": 52215.09999999404
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          32,
+          76
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          32,
+          75
+        ],
+        "ms": 52215.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          32,
+          75
+        ],
+        "to": [
+          33,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          33,
+          75
+        ],
+        "ms": 52215.19999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "atk0",
+        "round": 2,
+        "at": [
+          33,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 52215.19999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 1,
+        "at": [
+          30,
+          78
+        ],
+        "range": 2,
+        "ammo": 2,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 52216.19999998808
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk1",
+        "name": "Hastati",
+        "unitKey": "Hastati",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 2,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          30,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 31,
+          "row": 79
+        },
+        "ms": 52216.40000000596
+      },
+      {
+        "type": "move",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          30,
+          78
+        ],
+        "to": [
+          31,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          78
+        ],
+        "ms": 52216.40000000596
+      },
+      {
+        "type": "move",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          31,
+          78
+        ],
+        "to": [
+          32,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          32,
+          78
+        ],
+        "ms": 52216.40000000596
+      },
+      {
+        "type": "move",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          32,
+          78
+        ],
+        "to": [
+          33,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          33,
+          78
+        ],
+        "ms": 52216.5
+      },
+      {
+        "type": "activation-end",
+        "id": "atk1",
+        "round": 2,
+        "at": [
+          33,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 52216.5
+      },
+      {
+        "type": "activation-start",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 2,
+        "at": [
+          29,
+          75
+        ],
+        "range": 2,
+        "ammo": 6,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 52217.5
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk40",
+        "name": "Javelineer",
+        "unitKey": "Oszczepnik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 6,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          29,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 30,
+          "row": 78
+        },
+        "ms": 52217.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          29,
+          75
+        ],
+        "to": [
+          30,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          75
+        ],
+        "ms": 52217.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          30,
+          75
+        ],
+        "to": [
+          31,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          75
+        ],
+        "ms": 52217.80000001192
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          31,
+          75
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          32,
+          75
+        ],
+        "ms": 52217.80000001192
+      },
+      {
+        "type": "activation-end",
+        "id": "atk40",
+        "round": 2,
+        "at": [
+          32,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 52217.80000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 3,
+        "at": [
+          27,
+          76
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 52219.30000001192
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk60",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          27,
+          76
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 29,
+          "row": 77
+        },
+        "ms": 52219.40000000596
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          27,
+          76
+        ],
+        "to": [
+          28,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          76
+        ],
+        "ms": 52219.5
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          28,
+          76
+        ],
+        "to": [
+          29,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          76
+        ],
+        "ms": 52219.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          29,
+          76
+        ],
+        "to": [
+          29,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          77
+        ],
+        "ms": 52219.59999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "atk60",
+        "round": 2,
+        "at": [
+          29,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 52219.59999999404
+      },
+      {
+        "type": "activation-start",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 3,
+        "at": [
+          27,
+          77
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 52221.19999998808
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk61",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          27,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 29,
+          "row": 78
+        },
+        "ms": 52221.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          27,
+          77
+        ],
+        "to": [
+          28,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          77
+        ],
+        "ms": 52221.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          28,
+          77
+        ],
+        "to": [
+          28,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          76
+        ],
+        "ms": 52221.5
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          28,
+          76
+        ],
+        "to": [
+          29,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          76
+        ],
+        "ms": 52221.69999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "atk61",
+        "round": 2,
+        "at": [
+          29,
+          76
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 52221.69999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 3,
+        "at": [
+          28,
+          80
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 52223.09999999404
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk62",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          28,
+          80
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 29,
+          "row": 79
+        },
+        "ms": 52223.09999999404
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          28,
+          80
+        ],
+        "to": [
+          28,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          79
+        ],
+        "ms": 52223.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          28,
+          79
+        ],
+        "to": [
+          29,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          79
+        ],
+        "ms": 52223.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          29,
+          79
+        ],
+        "to": [
+          29,
+          80
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          80
+        ],
+        "ms": 52223.30000001192
+      },
+      {
+        "type": "activation-end",
+        "id": "atk62",
+        "round": 2,
+        "at": [
+          29,
+          80
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 52223.30000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 1,
+        "at": [
+          34,
+          79
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 52224.80000001192
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          34,
+          78
+        ],
+        "mounted": true,
+        "after": [
+          34,
+          78
+        ],
+        "ms": 52224.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          34,
+          78
+        ],
+        "to": [
+          35,
+          78
+        ],
+        "mounted": true,
+        "after": [
+          35,
+          78
+        ],
+        "ms": 52224.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          35,
+          78
+        ],
+        "to": [
+          36,
+          78
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          78
+        ],
+        "ms": 52225
+      },
+      {
+        "type": "activation-end",
+        "id": "atk80",
+        "round": 2,
+        "at": [
+          36,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 52225
+      },
+      {
+        "type": "activation-start",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "round": 2,
+        "rank": 1,
+        "at": [
+          34,
+          74
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 52226.5
+      },
+      {
+        "type": "attack",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 56,
+        "ms": 52226.69999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "atk82",
+        "round": 2,
+        "at": [
+          34,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 52226.80000001192
+      },
+      {
+        "type": "attack",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 56,
+        "ms": 52227.19999998808
+      },
+      {
+        "type": "chariot-melee-start",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "round": 2,
+        "dist": 1,
+        "hpBefore": 56,
+        "ms": 52227.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          32,
+          77
+        ],
+        "to": [
+          32,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          32,
+          76
+        ],
+        "ms": 53949
+      },
+      {
+        "type": "move",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          30,
+          78
+        ],
+        "to": [
+          31,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          78
+        ],
+        "ms": 53949.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          29,
+          75
+        ],
+        "to": [
+          30,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          75
+        ],
+        "ms": 53949.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          27,
+          76
+        ],
+        "to": [
+          28,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          76
+        ],
+        "ms": 53949.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          27,
+          77
+        ],
+        "to": [
+          28,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          77
+        ],
+        "ms": 53949.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          28,
+          80
+        ],
+        "to": [
+          28,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          79
+        ],
+        "ms": 53949.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          34,
+          78
+        ],
+        "mounted": true,
+        "after": [
+          34,
+          78
+        ],
+        "ms": 53949.19999998808
+      },
+      {
+        "type": "chariot-melee-complete",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "round": 2,
+        "dist": 1,
+        "hpBefore": 56,
+        "hpAfter": 32,
+        "ms": 55569.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          32,
+          76
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          32,
+          75
+        ],
+        "ms": 55611.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          31,
+          78
+        ],
+        "to": [
+          32,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          32,
+          78
+        ],
+        "ms": 55611.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          30,
+          75
+        ],
+        "to": [
+          31,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          75
+        ],
+        "ms": 55611.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          28,
+          76
+        ],
+        "to": [
+          29,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          76
+        ],
+        "ms": 55611.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          28,
+          79
+        ],
+        "to": [
+          29,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          79
+        ],
+        "ms": 55611.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          34,
+          78
+        ],
+        "to": [
+          35,
+          78
+        ],
+        "mounted": true,
+        "after": [
+          35,
+          78
+        ],
+        "ms": 55611.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          32,
+          75
+        ],
+        "to": [
+          33,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          33,
+          75
+        ],
+        "ms": 57379.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          32,
+          78
+        ],
+        "to": [
+          33,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          33,
+          78
+        ],
+        "ms": 57379.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          29,
+          76
+        ],
+        "to": [
+          29,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          77
+        ],
+        "ms": 57379.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          29,
+          79
+        ],
+        "to": [
+          29,
+          80
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          80
+        ],
+        "ms": 57379.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          35,
+          78
+        ],
+        "to": [
+          36,
+          78
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          78
+        ],
+        "ms": 57379.90000000596
+      },
+      {
+        "type": "activation-start",
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 0,
+        "at": [
+          35,
+          75
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 58439.40000000596
+      },
+      {
+        "type": "move",
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          35,
+          75
+        ],
+        "to": [
+          34,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          34,
+          75
+        ],
+        "ms": 58439.59999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "def0",
+        "round": 2,
+        "at": [
+          34,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 2,
+        "ms": 58439.59999999404
+      },
+      {
+        "type": "activation-start",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 0,
+        "at": [
+          35,
+          79
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 58441.09999999404
+      },
+      {
+        "type": "move",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          35,
+          79
+        ],
+        "to": [
+          35,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          78
+        ],
+        "ms": 58441.30000001192
+      },
+      {
+        "type": "activation-end",
+        "id": "def1",
+        "round": 2,
+        "at": [
+          35,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 2,
+        "ms": 58441.30000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 1,
+        "at": [
+          37,
+          78
+        ],
+        "range": 2,
+        "ammo": 6,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 58442.80000001192
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def40",
+        "name": "Javelineer",
+        "unitKey": "Oszczepnik",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 6,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          37,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "targetAt": [
+          36,
+          78
+        ],
+        "distance": 1,
+        "candidateMove": null,
+        "ms": 58443.09999999404
+      },
+      {
+        "type": "attack",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "range": 2,
+        "dist": 1,
+        "ammo": 6,
+        "hpBefore": 56,
+        "ms": 58443.19999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "def40",
+        "round": 2,
+        "at": [
+          37,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 58443.19999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 2,
+        "at": [
+          37,
+          74
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 58444.90000000596
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def60",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          37,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "targetAt": [
+          34,
+          74
+        ],
+        "distance": 3,
+        "candidateMove": null,
+        "ms": 58444.90000000596
+      },
+      {
+        "type": "attack",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 3,
+        "dist": 3,
+        "ammo": 12,
+        "hpBefore": 92,
+        "ms": 58444.90000000596
+      },
+      {
+        "type": "activation-end",
+        "id": "def60",
+        "round": 2,
+        "at": [
+          37,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 58444.90000000596
+      },
+      {
+        "type": "activation-start",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 2,
+        "at": [
+          38,
+          77
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 58446.5
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def61",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          38,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "targetAt": [
+          36,
+          78
+        ],
+        "distance": 3,
+        "candidateMove": null,
+        "ms": 58446.5
+      },
+      {
+        "type": "attack",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "range": 3,
+        "dist": 3,
+        "ammo": 12,
+        "hpBefore": 56,
+        "ms": 58446.5
+      },
+      {
+        "type": "activation-end",
+        "id": "def61",
+        "round": 2,
+        "at": [
+          38,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 58446.5
+      },
+      {
+        "type": "activation-start",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 2,
+        "at": [
+          37,
+          79
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 58448.69999998808
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def62",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          37,
+          79
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "targetAt": [
+          36,
+          78
+        ],
+        "distance": 2,
+        "candidateMove": null,
+        "ms": 58448.69999998808
+      },
+      {
+        "type": "attack",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "range": 3,
+        "dist": 2,
+        "ammo": 12,
+        "hpBefore": 56,
+        "ms": 58448.80000001192
+      },
+      {
+        "type": "activation-end",
+        "id": "def62",
+        "round": 2,
+        "at": [
+          37,
+          79
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 58448.80000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 0,
+        "at": [
+          35,
+          74
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 58450.59999999404
+      },
+      {
+        "type": "attack",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 92,
+        "ms": 58450.69999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "def80",
+        "round": 2,
+        "at": [
+          35,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 58450.69999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 2,
+        "rank": 0,
+        "at": [
+          36,
+          79
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 58452.19999998808
+      },
+      {
+        "type": "attack",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 56,
+        "ms": 58452.19999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "def82",
+        "round": 2,
+        "at": [
+          36,
+          79
+        ],
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 58452.19999998808
+      },
+      {
+        "type": "attack",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "range": 2,
+        "dist": 1,
+        "ammo": 6,
+        "hpBefore": 56,
+        "ms": 58452.59999999404
+      },
+      {
+        "type": "shot-start",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "round": 2,
+        "range": 2,
+        "dist": 1,
+        "ammo": 6,
+        "hpBefore": 56,
+        "ms": 58452.80000001192
+      },
+      {
+        "type": "attack",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 3,
+        "dist": 3,
+        "ammo": 12,
+        "hpBefore": 92,
+        "ms": 58454.30000001192
+      },
+      {
+        "type": "shot-start",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "round": 2,
+        "range": 3,
+        "dist": 3,
+        "ammo": 12,
+        "hpBefore": 92,
+        "ms": 58454.30000001192
+      },
+      {
+        "type": "attack",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "range": 3,
+        "dist": 3,
+        "ammo": 12,
+        "hpBefore": 56,
+        "ms": 58455.19999998808
+      },
+      {
+        "type": "shot-start",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "round": 2,
+        "range": 3,
+        "dist": 3,
+        "ammo": 12,
+        "hpBefore": 56,
+        "ms": 58455.19999998808
+      },
+      {
+        "type": "attack",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "range": 3,
+        "dist": 2,
+        "ammo": 12,
+        "hpBefore": 56,
+        "ms": 58455.80000001192
+      },
+      {
+        "type": "shot-start",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "round": 2,
+        "range": 3,
+        "dist": 2,
+        "ammo": 12,
+        "hpBefore": 56,
+        "ms": 58455.80000001192
+      },
+      {
+        "type": "attack",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 92,
+        "ms": 58455.90000000596
+      },
+      {
+        "type": "melee-start",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "round": 2,
+        "dist": 1,
+        "hpBefore": 92,
+        "ms": 58455.90000000596
+      },
+      {
+        "type": "attack",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 56,
+        "ms": 58455.90000000596
+      },
+      {
+        "type": "melee-start",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "round": 2,
+        "dist": 1,
+        "hpBefore": 56,
+        "ms": 58455.90000000596
+      },
+      {
+        "type": "move",
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          35,
+          75
+        ],
+        "to": [
+          34,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          34,
+          75
+        ],
+        "ms": 60237.90000000596
+      },
+      {
+        "type": "move",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 2,
+        "from": [
+          35,
+          79
+        ],
+        "to": [
+          35,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          78
+        ],
+        "ms": 60238
+      },
+      {
+        "type": "melee-complete",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "round": 2,
+        "dist": 1,
+        "hpBefore": 92,
+        "hpAfter": 72,
+        "ms": 61933.5
+      },
+      {
+        "type": "melee-complete",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "round": 2,
+        "dist": 1,
+        "hpBefore": 56,
+        "hpAfter": 29,
+        "ms": 61933.59999999404
+      },
+      {
+        "type": "shot-complete",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "round": 2,
+        "range": 2,
+        "dist": 1,
+        "ammo": 6,
+        "hpBefore": 56,
+        "ammoAfter": 5,
+        "hpAfter": 29,
+        "ms": 63092.59999999404
+      },
+      {
+        "type": "shot-complete",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "round": 2,
+        "range": 3,
+        "dist": 3,
+        "ammo": 12,
+        "hpBefore": 92,
+        "ammoAfter": 11,
+        "hpAfter": 72,
+        "ms": 63092.69999998808
+      },
+      {
+        "type": "shot-complete",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "round": 2,
+        "range": 3,
+        "dist": 3,
+        "ammo": 12,
+        "hpBefore": 56,
+        "ammoAfter": 11,
+        "hpAfter": 29,
+        "ms": 63092.69999998808
+      },
+      {
+        "type": "shot-complete",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk80",
+        "targetName": "Horseman",
+        "round": 2,
+        "range": 3,
+        "dist": 2,
+        "ammo": 12,
+        "hpBefore": 56,
+        "ammoAfter": 11,
+        "hpAfter": 29,
+        "ms": 63092.69999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 1,
+        "at": [
+          33,
+          75
+        ],
+        "range": 2,
+        "ammo": 2,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 66160.19999998808
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk0",
+        "name": "Hastati",
+        "unitKey": "Hastati",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 2,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          33,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "targetAt": [
+          34,
+          75
+        ],
+        "distance": 1,
+        "candidateMove": {
+          "col": 30,
+          "row": 78
+        },
+        "ms": 66160.5
+      },
+      {
+        "type": "attack",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "range": 2,
+        "dist": 1,
+        "ammo": 2,
+        "hpBefore": 40,
+        "ms": 66160.5
+      },
+      {
+        "type": "activation-end",
+        "id": "atk0",
+        "round": 3,
+        "at": [
+          33,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 66160.5
+      },
+      {
+        "type": "activation-start",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 1,
+        "at": [
+          33,
+          78
+        ],
+        "range": 2,
+        "ammo": 2,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 66162.30000001192
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk1",
+        "name": "Hastati",
+        "unitKey": "Hastati",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 2,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          33,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": "def1",
+        "targetName": "Phalanx",
+        "targetAt": [
+          35,
+          78
+        ],
+        "distance": 2,
+        "candidateMove": {
+          "col": 30,
+          "row": 79
+        },
+        "ms": 66162.40000000596
+      },
+      {
+        "type": "attack",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def1",
+        "targetName": "Phalanx",
+        "range": 2,
+        "dist": 2,
+        "ammo": 2,
+        "hpBefore": 40,
+        "ms": 66162.40000000596
+      },
+      {
+        "type": "activation-end",
+        "id": "atk1",
+        "round": 3,
+        "at": [
+          33,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 66162.40000000596
+      },
+      {
+        "type": "activation-start",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 2,
+        "at": [
+          31,
+          75
+        ],
+        "range": 2,
+        "ammo": 6,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 66163.90000000596
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk40",
+        "name": "Javelineer",
+        "unitKey": "Oszczepnik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 6,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          31,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 29,
+          "row": 78
+        },
+        "ms": 66164
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          31,
+          75
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          32,
+          75
+        ],
+        "ms": 66164.09999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "atk40",
+        "round": 3,
+        "at": [
+          32,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 2,
+        "ms": 66164.09999999404
+      },
+      {
+        "type": "activation-start",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 3,
+        "at": [
+          29,
+          77
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 66165.69999998808
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk60",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          29,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 28,
+          "row": 77
+        },
+        "ms": 66165.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          29,
+          77
+        ],
+        "to": [
+          29,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          76
+        ],
+        "ms": 66165.90000000596
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          29,
+          76
+        ],
+        "to": [
+          30,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          76
+        ],
+        "ms": 66166
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          30,
+          76
+        ],
+        "to": [
+          31,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          76
+        ],
+        "ms": 66166
+      },
+      {
+        "type": "activation-end",
+        "id": "atk60",
+        "round": 3,
+        "at": [
+          31,
+          76
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 66166
+      },
+      {
+        "type": "activation-start",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 3,
+        "at": [
+          28,
+          77
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 66167.5
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk61",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          28,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 28,
+          "row": 78
+        },
+        "ms": 66167.5
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          28,
+          77
+        ],
+        "to": [
+          28,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          76
+        ],
+        "ms": 66167.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          28,
+          76
+        ],
+        "to": [
+          29,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          76
+        ],
+        "ms": 66167.80000001192
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          29,
+          76
+        ],
+        "to": [
+          30,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          76
+        ],
+        "ms": 66167.90000000596
+      },
+      {
+        "type": "activation-end",
+        "id": "atk61",
+        "round": 3,
+        "at": [
+          30,
+          76
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 66167.90000000596
+      },
+      {
+        "type": "activation-start",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 3,
+        "at": [
+          29,
+          80
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 66169.5
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk62",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          29,
+          80
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 28,
+          "row": 79
+        },
+        "ms": 66169.5
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          29,
+          80
+        ],
+        "to": [
+          29,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          79
+        ],
+        "ms": 66169.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          29,
+          79
+        ],
+        "to": [
+          29,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          78
+        ],
+        "ms": 66169.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          29,
+          78
+        ],
+        "to": [
+          30,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          78
+        ],
+        "ms": 66169.69999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "atk62",
+        "round": 3,
+        "at": [
+          30,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 66169.69999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 1,
+        "at": [
+          36,
+          78
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 66171.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          36,
+          78
+        ],
+        "to": [
+          35,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          35,
+          79
+        ],
+        "ms": 66171.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          35,
+          79
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          34,
+          79
+        ],
+        "ms": 66171.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          33,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          33,
+          79
+        ],
+        "ms": 66171.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          33,
+          79
+        ],
+        "to": [
+          32,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          32,
+          79
+        ],
+        "ms": 66171.69999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "atk80",
+        "round": 3,
+        "at": [
+          32,
+          79
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 66171.69999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "round": 3,
+        "rank": 1,
+        "at": [
+          34,
+          74
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 66174.5
+      },
+      {
+        "type": "attack",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 32,
+        "ms": 66174.59999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "atk82",
+        "round": 3,
+        "at": [
+          34,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 66174.59999999404
+      },
+      {
+        "type": "attack",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "range": 2,
+        "dist": 1,
+        "ammo": 2,
+        "hpBefore": 40,
+        "ms": 66174.69999998808
+      },
+      {
+        "type": "shot-start",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "round": 3,
+        "range": 2,
+        "dist": 1,
+        "ammo": 2,
+        "hpBefore": 40,
+        "ms": 66174.69999998808
+      },
+      {
+        "type": "attack",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def1",
+        "targetName": "Phalanx",
+        "range": 2,
+        "dist": 2,
+        "ammo": 2,
+        "hpBefore": 40,
+        "ms": 66175.19999998808
+      },
+      {
+        "type": "shot-start",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def1",
+        "targetName": "Phalanx",
+        "round": 3,
+        "range": 2,
+        "dist": 2,
+        "ammo": 2,
+        "hpBefore": 40,
+        "ms": 66175.19999998808
+      },
+      {
+        "type": "attack",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 32,
+        "ms": 66175.5
+      },
+      {
+        "type": "chariot-melee-start",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "round": 3,
+        "dist": 1,
+        "hpBefore": 32,
+        "ms": 66175.5
+      },
+      {
+        "type": "move",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          31,
+          75
+        ],
+        "to": [
+          32,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          32,
+          75
+        ],
+        "ms": 68082.19999998808
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          29,
+          77
+        ],
+        "to": [
+          29,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          76
+        ],
+        "ms": 68082.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          28,
+          77
+        ],
+        "to": [
+          28,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          76
+        ],
+        "ms": 68082.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          29,
+          80
+        ],
+        "to": [
+          29,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          79
+        ],
+        "ms": 68082.30000001192
+      },
+      {
+        "type": "chariot-melee-complete",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "round": 3,
+        "dist": 1,
+        "hpBefore": 32,
+        "hpAfter": 32,
+        "ms": 69758.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          29,
+          76
+        ],
+        "to": [
+          30,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          76
+        ],
+        "ms": 69800.09999999404
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          29,
+          79
+        ],
+        "to": [
+          29,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          78
+        ],
+        "ms": 69800.30000001192
+      },
+      {
+        "type": "shot-complete",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "round": 3,
+        "range": 2,
+        "dist": 1,
+        "ammo": 2,
+        "hpBefore": 40,
+        "ammoAfter": 1,
+        "hpAfter": 39,
+        "ms": 71112.09999999404
+      },
+      {
+        "type": "shot-complete",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def1",
+        "targetName": "Phalanx",
+        "round": 3,
+        "range": 2,
+        "dist": 2,
+        "ammo": 2,
+        "hpBefore": 40,
+        "ammoAfter": 1,
+        "hpAfter": 39,
+        "ms": 71112.09999999404
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          30,
+          76
+        ],
+        "to": [
+          31,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          76
+        ],
+        "ms": 71847.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          29,
+          78
+        ],
+        "to": [
+          30,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          78
+        ],
+        "ms": 71847.30000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 0,
+        "at": [
+          34,
+          75
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 72929.19999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "def0",
+        "round": 3,
+        "at": [
+          34,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 72929.19999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 0,
+        "at": [
+          35,
+          78
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 72930.09999999404
+      },
+      {
+        "type": "move",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          35,
+          78
+        ],
+        "to": [
+          34,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          34,
+          78
+        ],
+        "ms": 72930.09999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "def1",
+        "round": 3,
+        "at": [
+          34,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 2,
+        "ms": 72930.09999999404
+      },
+      {
+        "type": "activation-start",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 1,
+        "at": [
+          37,
+          78
+        ],
+        "range": 2,
+        "ammo": 5,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 72932.90000000596
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def40",
+        "name": "Javelineer",
+        "unitKey": "Oszczepnik",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 5,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          37,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": null,
+        "ms": 72933
+      },
+      {
+        "type": "move",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          78
+        ],
+        "to": [
+          37,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          77
+        ],
+        "ms": 72933.09999999404
+      },
+      {
+        "type": "move",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          77
+        ],
+        "to": [
+          36,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          36,
+          77
+        ],
+        "ms": 72933.19999998808
+      },
+      {
+        "type": "move",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          36,
+          77
+        ],
+        "to": [
+          35,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          77
+        ],
+        "ms": 72933.19999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "def40",
+        "round": 3,
+        "at": [
+          35,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 72933.19999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 2,
+        "at": [
+          37,
+          74
+        ],
+        "range": 3,
+        "ammo": 11,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 72940.90000000596
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def60",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 11,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          37,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "targetAt": [
+          34,
+          74
+        ],
+        "distance": 3,
+        "candidateMove": null,
+        "ms": 72941
+      },
+      {
+        "type": "attack",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 3,
+        "dist": 3,
+        "ammo": 11,
+        "hpBefore": 52,
+        "ms": 72941
+      },
+      {
+        "type": "activation-end",
+        "id": "def60",
+        "round": 3,
+        "at": [
+          37,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 72941
+      },
+      {
+        "type": "activation-start",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 2,
+        "at": [
+          38,
+          77
+        ],
+        "range": 3,
+        "ammo": 11,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 72943.19999998808
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def61",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 11,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          38,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": null,
+        "ms": 72943.19999998808
+      },
+      {
+        "type": "move",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          38,
+          77
+        ],
+        "to": [
+          37,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          77
+        ],
+        "ms": 72943.5
+      },
+      {
+        "type": "move",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          77
+        ],
+        "to": [
+          37,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          76
+        ],
+        "ms": 72943.5
+      },
+      {
+        "type": "move",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          76
+        ],
+        "to": [
+          37,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          75
+        ],
+        "ms": 72943.5
+      },
+      {
+        "type": "activation-end",
+        "id": "def61",
+        "round": 3,
+        "at": [
+          37,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 72943.5
+      },
+      {
+        "type": "activation-start",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 2,
+        "at": [
+          37,
+          79
+        ],
+        "range": 3,
+        "ammo": 11,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 72945.90000000596
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def62",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 11,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          37,
+          79
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": null,
+        "ms": 72945.90000000596
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          79
+        ],
+        "to": [
+          37,
+          80
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          80
+        ],
+        "ms": 72946
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          80
+        ],
+        "to": [
+          37,
+          81
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          81
+        ],
+        "ms": 72946.09999999404
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          81
+        ],
+        "to": [
+          37,
+          82
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          82
+        ],
+        "ms": 72946.30000001192
+      },
+      {
+        "type": "activation-end",
+        "id": "def62",
+        "round": 3,
+        "at": [
+          37,
+          82
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 72946.30000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 0,
+        "at": [
+          35,
+          74
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 72947.80000001192
+      },
+      {
+        "type": "attack",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 52,
+        "ms": 72947.90000000596
+      },
+      {
+        "type": "activation-end",
+        "id": "def80",
+        "round": 3,
+        "at": [
+          35,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 72947.90000000596
+      },
+      {
+        "type": "activation-start",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 3,
+        "rank": 0,
+        "at": [
+          36,
+          79
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 72949.5
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          36,
+          79
+        ],
+        "to": [
+          36,
+          78
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          78
+        ],
+        "ms": 72949.69999998808
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          36,
+          78
+        ],
+        "to": [
+          36,
+          77
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          77
+        ],
+        "ms": 72949.80000001192
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          36,
+          77
+        ],
+        "to": [
+          36,
+          76
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          76
+        ],
+        "ms": 72949.80000001192
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          36,
+          76
+        ],
+        "to": [
+          36,
+          75
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          75
+        ],
+        "ms": 72950.09999999404
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          36,
+          75
+        ],
+        "to": [
+          36,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          74
+        ],
+        "ms": 72950.09999999404
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          36,
+          74
+        ],
+        "to": [
+          36,
+          73
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          73
+        ],
+        "ms": 72950.09999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "def82",
+        "round": 3,
+        "at": [
+          36,
+          73
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 72950.09999999404
+      },
+      {
+        "type": "attack",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 3,
+        "dist": 3,
+        "ammo": 11,
+        "hpBefore": 52,
+        "ms": 72950.40000000596
+      },
+      {
+        "type": "shot-start",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "round": 3,
+        "range": 3,
+        "dist": 3,
+        "ammo": 11,
+        "hpBefore": 52,
+        "ms": 72950.40000000596
+      },
+      {
+        "type": "attack",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 52,
+        "ms": 72950.80000001192
+      },
+      {
+        "type": "melee-start",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "round": 3,
+        "dist": 1,
+        "hpBefore": 52,
+        "ms": 72950.80000001192
+      },
+      {
+        "type": "move",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          35,
+          78
+        ],
+        "to": [
+          34,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          34,
+          78
+        ],
+        "ms": 74756.40000000596
+      },
+      {
+        "type": "move",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          78
+        ],
+        "to": [
+          37,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          77
+        ],
+        "ms": 74756.40000000596
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          79
+        ],
+        "to": [
+          37,
+          80
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          80
+        ],
+        "ms": 74756.5
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          36,
+          79
+        ],
+        "to": [
+          36,
+          78
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          78
+        ],
+        "ms": 74756.5
+      },
+      {
+        "type": "melee-complete",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "round": 3,
+        "dist": 1,
+        "hpBefore": 52,
+        "hpAfter": 31,
+        "ms": 76469.80000001192
+      },
+      {
+        "type": "move",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          77
+        ],
+        "to": [
+          36,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          36,
+          77
+        ],
+        "ms": 76510.80000001192
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          80
+        ],
+        "to": [
+          37,
+          81
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          81
+        ],
+        "ms": 76510.90000000596
+      },
+      {
+        "type": "shot-complete",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "round": 3,
+        "range": 3,
+        "dist": 3,
+        "ammo": 11,
+        "hpBefore": 52,
+        "ammoAfter": 10,
+        "hpAfter": 31,
+        "ms": 77585.19999998808
+      },
+      {
+        "type": "move",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          36,
+          77
+        ],
+        "to": [
+          35,
+          77
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          77
+        ],
+        "ms": 78228.30000001192
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 3,
+        "from": [
+          37,
+          81
+        ],
+        "to": [
+          37,
+          82
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          82
+        ],
+        "ms": 78228.40000000596
+      },
+      {
+        "type": "activation-start",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 1,
+        "at": [
+          33,
+          75
+        ],
+        "range": 2,
+        "ammo": 1,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 81183.19999998808
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk0",
+        "name": "Hastati",
+        "unitKey": "Hastati",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 1,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          33,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "targetAt": [
+          34,
+          75
+        ],
+        "distance": 1,
+        "candidateMove": {
+          "col": 31,
+          "row": 78
+        },
+        "ms": 81183.19999998808
+      },
+      {
+        "type": "attack",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "range": 2,
+        "dist": 1,
+        "ammo": 1,
+        "hpBefore": 39,
+        "ms": 81183.30000001192
+      },
+      {
+        "type": "activation-end",
+        "id": "atk0",
+        "round": 4,
+        "at": [
+          33,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 81183.30000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 1,
+        "at": [
+          33,
+          78
+        ],
+        "range": 2,
+        "ammo": 1,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 81184.09999999404
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk1",
+        "name": "Hastati",
+        "unitKey": "Hastati",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 1,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          33,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": "def1",
+        "targetName": "Phalanx",
+        "targetAt": [
+          34,
+          78
+        ],
+        "distance": 1,
+        "candidateMove": {
+          "col": 31,
+          "row": 79
+        },
+        "ms": 81184.09999999404
+      },
+      {
+        "type": "attack",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def1",
+        "targetName": "Phalanx",
+        "range": 2,
+        "dist": 1,
+        "ammo": 1,
+        "hpBefore": 39,
+        "ms": 81184.09999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "atk1",
+        "round": 4,
+        "at": [
+          33,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 81184.09999999404
+      },
+      {
+        "type": "activation-start",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 2,
+        "at": [
+          32,
+          75
+        ],
+        "range": 2,
+        "ammo": 6,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 81185
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk40",
+        "name": "Javelineer",
+        "unitKey": "Oszczepnik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 6,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          32,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "targetAt": [
+          34,
+          75
+        ],
+        "distance": 2,
+        "candidateMove": {
+          "col": 30,
+          "row": 78
+        },
+        "ms": 81185.40000000596
+      },
+      {
+        "type": "attack",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "range": 2,
+        "dist": 2,
+        "ammo": 6,
+        "hpBefore": 39,
+        "ms": 81185.40000000596
+      },
+      {
+        "type": "activation-end",
+        "id": "atk40",
+        "round": 4,
+        "at": [
+          32,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 81185.40000000596
+      },
+      {
+        "type": "activation-start",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 3,
+        "at": [
+          31,
+          76
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 81186.30000001192
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk60",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          31,
+          76
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 29,
+          "row": 77
+        },
+        "ms": 81186.40000000596
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          31,
+          76
+        ],
+        "to": [
+          31,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          75
+        ],
+        "ms": 81186.40000000596
+      },
+      {
+        "type": "activation-end",
+        "id": "atk60",
+        "round": 4,
+        "at": [
+          31,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 2,
+        "ms": 81186.40000000596
+      },
+      {
+        "type": "activation-start",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 3,
+        "at": [
+          28,
+          76
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 81187.30000001192
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk61",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          28,
+          76
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 29,
+          "row": 78
+        },
+        "ms": 81187.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          28,
+          76
+        ],
+        "to": [
+          28,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          75
+        ],
+        "ms": 81187.5
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          28,
+          75
+        ],
+        "to": [
+          29,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          75
+        ],
+        "ms": 81187.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          29,
+          75
+        ],
+        "to": [
+          30,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          75
+        ],
+        "ms": 81187.59999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "atk61",
+        "round": 4,
+        "at": [
+          30,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 81187.59999999404
+      },
+      {
+        "type": "activation-start",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 3,
+        "at": [
+          30,
+          78
+        ],
+        "range": 3,
+        "ammo": 12,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 81188.59999999404
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk62",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 3,
+        "canShoot": true,
+        "ammo": 12,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          30,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": {
+          "col": 29,
+          "row": 79
+        },
+        "ms": 81188.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          30,
+          78
+        ],
+        "to": [
+          31,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          78
+        ],
+        "ms": 81188.59999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "atk62",
+        "round": 4,
+        "at": [
+          31,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 2,
+        "ms": 81188.59999999404
+      },
+      {
+        "type": "activation-start",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 1,
+        "at": [
+          36,
+          78
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 81189.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          36,
+          78
+        ],
+        "to": [
+          35,
+          78
+        ],
+        "mounted": true,
+        "after": [
+          35,
+          78
+        ],
+        "ms": 81189.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          35,
+          78
+        ],
+        "to": [
+          34,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          34,
+          79
+        ],
+        "ms": 81189.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          34,
+          79
+        ],
+        "to": [
+          33,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          33,
+          79
+        ],
+        "ms": 81189.59999999404
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          33,
+          79
+        ],
+        "to": [
+          32,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          32,
+          79
+        ],
+        "ms": 81189.69999998808
+      },
+      {
+        "type": "move",
+        "id": "atk80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          32,
+          79
+        ],
+        "to": [
+          31,
+          79
+        ],
+        "mounted": true,
+        "after": [
+          31,
+          79
+        ],
+        "ms": 81189.69999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "atk80",
+        "round": 4,
+        "at": [
+          31,
+          79
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 81189.69999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "round": 4,
+        "rank": 1,
+        "at": [
+          34,
+          74
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 81190.59999999404
+      },
+      {
+        "type": "attack",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 32,
+        "ms": 81190.59999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "atk82",
+        "round": 4,
+        "at": [
+          34,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 81190.59999999404
+      },
+      {
+        "type": "attack",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "range": 2,
+        "dist": 1,
+        "ammo": 1,
+        "hpBefore": 39,
+        "ms": 81190.80000001192
+      },
+      {
+        "type": "shot-start",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "round": 4,
+        "range": 2,
+        "dist": 1,
+        "ammo": 1,
+        "hpBefore": 39,
+        "ms": 81190.80000001192
+      },
+      {
+        "type": "attack",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def1",
+        "targetName": "Phalanx",
+        "range": 2,
+        "dist": 1,
+        "ammo": 1,
+        "hpBefore": 39,
+        "ms": 81191.19999998808
+      },
+      {
+        "type": "shot-start",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def1",
+        "targetName": "Phalanx",
+        "round": 4,
+        "range": 2,
+        "dist": 1,
+        "ammo": 1,
+        "hpBefore": 39,
+        "ms": 81191.19999998808
+      },
+      {
+        "type": "attack",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "range": 2,
+        "dist": 2,
+        "ammo": 6,
+        "hpBefore": 39,
+        "ms": 81191.30000001192
+      },
+      {
+        "type": "shot-start",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "round": 4,
+        "range": 2,
+        "dist": 2,
+        "ammo": 6,
+        "hpBefore": 39,
+        "ms": 81191.30000001192
+      },
+      {
+        "type": "attack",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 32,
+        "ms": 81191.5
+      },
+      {
+        "type": "chariot-melee-start",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "round": 4,
+        "dist": 1,
+        "hpBefore": 32,
+        "ms": 81191.5
+      },
+      {
+        "type": "move",
+        "id": "atk60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          31,
+          76
+        ],
+        "to": [
+          31,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          75
+        ],
+        "ms": 83161.5
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          28,
+          76
+        ],
+        "to": [
+          28,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          28,
+          75
+        ],
+        "ms": 83161.5
+      },
+      {
+        "type": "move",
+        "id": "atk62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          30,
+          78
+        ],
+        "to": [
+          31,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          31,
+          78
+        ],
+        "ms": 83161.59999999404
+      },
+      {
+        "type": "chariot-melee-complete",
+        "id": "atk82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "aggressive",
+        "targetId": "def80",
+        "targetName": "Horseman",
+        "round": 4,
+        "dist": 1,
+        "hpBefore": 32,
+        "hpAfter": 32,
+        "ms": 85045.30000001192
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          28,
+          75
+        ],
+        "to": [
+          29,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          29,
+          75
+        ],
+        "ms": 85080.90000000596
+      },
+      {
+        "type": "shot-complete",
+        "id": "atk0",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "round": 4,
+        "range": 2,
+        "dist": 1,
+        "ammo": 1,
+        "hpBefore": 39,
+        "ammoAfter": 0,
+        "hpAfter": 38,
+        "ms": 86622.5
+      },
+      {
+        "type": "shot-complete",
+        "id": "atk1",
+        "name": "Hastati",
+        "key": "Hastati",
+        "doctrine": "steady",
+        "targetId": "def1",
+        "targetName": "Phalanx",
+        "round": 4,
+        "range": 2,
+        "dist": 1,
+        "ammo": 1,
+        "hpBefore": 39,
+        "ammoAfter": 0,
+        "hpAfter": 39,
+        "ms": 86622.5
+      },
+      {
+        "type": "shot-complete",
+        "id": "atk40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "targetId": "def0",
+        "targetName": "Phalanx",
+        "round": 4,
+        "range": 2,
+        "dist": 2,
+        "ammo": 6,
+        "hpBefore": 39,
+        "ammoAfter": 5,
+        "hpAfter": 38,
+        "ms": 86622.5
+      },
+      {
+        "type": "move",
+        "id": "atk61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          29,
+          75
+        ],
+        "to": [
+          30,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          30,
+          75
+        ],
+        "ms": 87490.30000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "def0",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 0,
+        "at": [
+          34,
+          75
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 88779.59999999404
+      },
+      {
+        "type": "activation-end",
+        "id": "def0",
+        "round": 4,
+        "at": [
+          34,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 88779.69999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def1",
+        "name": "Phalanx",
+        "key": "Falanga",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 0,
+        "at": [
+          34,
+          78
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 88780.90000000596
+      },
+      {
+        "type": "activation-end",
+        "id": "def1",
+        "round": 4,
+        "at": [
+          34,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 88780.90000000596
+      },
+      {
+        "type": "activation-start",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 1,
+        "at": [
+          35,
+          77
+        ],
+        "range": 2,
+        "ammo": 5,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 88782
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def40",
+        "name": "Javelineer",
+        "unitKey": "Oszczepnik",
+        "doctrine": "steady",
+        "rank": 1,
+        "canShoot": true,
+        "ammo": 5,
+        "range": 2,
+        "rangeBase": 2,
+        "at": [
+          35,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": null,
+        "ms": 88782
+      },
+      {
+        "type": "move",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          35,
+          77
+        ],
+        "to": [
+          35,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          78
+        ],
+        "ms": 88782
+      },
+      {
+        "type": "activation-end",
+        "id": "def40",
+        "round": 4,
+        "at": [
+          35,
+          78
+        ],
+        "acted": false,
+        "moveLeft": 2,
+        "ms": 88782
+      },
+      {
+        "type": "activation-start",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 2,
+        "at": [
+          37,
+          74
+        ],
+        "range": 3,
+        "ammo": 10,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 88783
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def60",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 10,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          37,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "targetAt": [
+          34,
+          74
+        ],
+        "distance": 3,
+        "candidateMove": null,
+        "ms": 88783
+      },
+      {
+        "type": "attack",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 3,
+        "dist": 3,
+        "ammo": 10,
+        "hpBefore": 31,
+        "ms": 88783
+      },
+      {
+        "type": "activation-end",
+        "id": "def60",
+        "round": 4,
+        "at": [
+          37,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 88783
+      },
+      {
+        "type": "activation-start",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 2,
+        "at": [
+          38,
+          77
+        ],
+        "range": 3,
+        "ammo": 11,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 88784.09999999404
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def61",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 11,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          38,
+          77
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": null,
+        "ms": 88784.09999999404
+      },
+      {
+        "type": "move",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          38,
+          77
+        ],
+        "to": [
+          38,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          38,
+          76
+        ],
+        "ms": 88784.09999999404
+      },
+      {
+        "type": "move",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          38,
+          76
+        ],
+        "to": [
+          38,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          38,
+          75
+        ],
+        "ms": 88784.19999998808
+      },
+      {
+        "type": "move",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          38,
+          75
+        ],
+        "to": [
+          37,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          75
+        ],
+        "ms": 88784.19999998808
+      },
+      {
+        "type": "activation-end",
+        "id": "def61",
+        "round": 4,
+        "at": [
+          37,
+          75
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 88784.19999998808
+      },
+      {
+        "type": "activation-start",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 2,
+        "at": [
+          37,
+          82
+        ],
+        "range": 3,
+        "ammo": 11,
+        "acted": false,
+        "moveLeft": 3,
+        "ms": 88785.30000001192
+      },
+      {
+        "type": "ranged-pick",
+        "id": "def62",
+        "name": "Archer",
+        "unitKey": "Łucznik",
+        "doctrine": "steady",
+        "rank": 2,
+        "canShoot": true,
+        "ammo": 11,
+        "range": 3,
+        "rangeBase": 3,
+        "at": [
+          37,
+          82
+        ],
+        "acted": false,
+        "moveLeft": 3,
+        "targetId": null,
+        "targetName": null,
+        "targetAt": null,
+        "distance": null,
+        "candidateMove": null,
+        "ms": 88785.30000001192
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          37,
+          82
+        ],
+        "to": [
+          37,
+          81
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          81
+        ],
+        "ms": 88785.30000001192
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          37,
+          81
+        ],
+        "to": [
+          37,
+          80
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          80
+        ],
+        "ms": 88785.30000001192
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          37,
+          80
+        ],
+        "to": [
+          37,
+          79
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          79
+        ],
+        "ms": 88785.30000001192
+      },
+      {
+        "type": "activation-end",
+        "id": "def62",
+        "round": 4,
+        "at": [
+          37,
+          79
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 88785.30000001192
+      },
+      {
+        "type": "activation-start",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 0,
+        "at": [
+          35,
+          74
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 88786.40000000596
+      },
+      {
+        "type": "attack",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 31,
+        "ms": 88786.5
+      },
+      {
+        "type": "activation-end",
+        "id": "def80",
+        "round": 4,
+        "at": [
+          35,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 88786.5
+      },
+      {
+        "type": "activation-start",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 4,
+        "rank": 0,
+        "at": [
+          36,
+          78
+        ],
+        "range": 0,
+        "ammo": null,
+        "acted": false,
+        "moveLeft": 6,
+        "ms": 88787.5
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          36,
+          78
+        ],
+        "to": [
+          36,
+          77
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          77
+        ],
+        "ms": 88787.5
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          36,
+          77
+        ],
+        "to": [
+          36,
+          76
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          76
+        ],
+        "ms": 88787.5
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          36,
+          76
+        ],
+        "to": [
+          36,
+          75
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          75
+        ],
+        "ms": 88787.5
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          36,
+          75
+        ],
+        "to": [
+          36,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          74
+        ],
+        "ms": 88787.5
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          36,
+          74
+        ],
+        "to": [
+          36,
+          73
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          73
+        ],
+        "ms": 88787.5
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          36,
+          73
+        ],
+        "to": [
+          36,
+          74
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          74
+        ],
+        "ms": 88787.5
+      },
+      {
+        "type": "activation-end",
+        "id": "def82",
+        "round": 4,
+        "at": [
+          36,
+          74
+        ],
+        "acted": false,
+        "moveLeft": 0,
+        "ms": 88787.5
+      },
+      {
+        "type": "attack",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 3,
+        "dist": 3,
+        "ammo": 10,
+        "hpBefore": 31,
+        "ms": 88787.69999998808
+      },
+      {
+        "type": "shot-start",
+        "id": "def60",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "round": 4,
+        "range": 3,
+        "dist": 3,
+        "ammo": 10,
+        "hpBefore": 31,
+        "ms": 88787.69999998808
+      },
+      {
+        "type": "attack",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "range": 0,
+        "dist": 1,
+        "ammo": null,
+        "hpBefore": 31,
+        "ms": 88788.19999998808
+      },
+      {
+        "type": "melee-start",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "round": 4,
+        "dist": 1,
+        "hpBefore": 31,
+        "ms": 88788.30000001192
+      },
+      {
+        "type": "move",
+        "id": "def40",
+        "name": "Javelineer",
+        "key": "Oszczepnik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          35,
+          77
+        ],
+        "to": [
+          35,
+          78
+        ],
+        "mounted": false,
+        "after": [
+          35,
+          78
+        ],
+        "ms": 90851.5
+      },
+      {
+        "type": "move",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          38,
+          77
+        ],
+        "to": [
+          38,
+          76
+        ],
+        "mounted": false,
+        "after": [
+          38,
+          76
+        ],
+        "ms": 90851.5
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          37,
+          82
+        ],
+        "to": [
+          37,
+          81
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          81
+        ],
+        "ms": 90851.59999999404
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          36,
+          78
+        ],
+        "to": [
+          36,
+          77
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          77
+        ],
+        "ms": 90851.59999999404
+      },
+      {
+        "type": "melee-complete",
+        "id": "def80",
+        "name": "Horseman",
+        "key": "Konnica",
+        "doctrine": "steady",
+        "targetId": "atk82",
+        "targetName": "War Chariot",
+        "round": 4,
+        "dist": 1,
+        "hpBefore": 31,
+        "hpAfter": 31,
+        "ms": 92565.30000001192
+      },
+      {
+        "type": "move",
+        "id": "def61",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          38,
+          76
+        ],
+        "to": [
+          38,
+          75
+        ],
+        "mounted": false,
+        "after": [
+          38,
+          75
+        ],
+        "ms": 92610
+      },
+      {
+        "type": "move",
+        "id": "def62",
+        "name": "Archer",
+        "key": "Łucznik",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          37,
+          81
+        ],
+        "to": [
+          37,
+          80
+        ],
+        "mounted": false,
+        "after": [
+          37,
+          80
+        ],
+        "ms": 92610.09999999404
+      },
+      {
+        "type": "move",
+        "id": "def82",
+        "name": "War Chariot",
+        "key": "Rydwan konny",
+        "doctrine": "steady",
+        "round": 4,
+        "from": [
+          36,
+          77
+        ],
+        "to": [
+          36,
+          76
+        ],
+        "mounted": true,
+        "after": [
+          36,
+          76
+        ],
+        "ms": 92610.09999999404
+      }
+    ]
+  },
+  "errors": []
+}

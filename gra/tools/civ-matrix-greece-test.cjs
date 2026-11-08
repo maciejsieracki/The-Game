@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Greece 113-column matrix contract and runtime adapter tests.
+ * Greece 93-column matrix contract and runtime adapter tests.
  * Run from gra/: node tools/civ-matrix-greece-test.cjs
  */
 
@@ -85,13 +85,13 @@ const greece = matrix.cywilizacje.find(row => row.ikonaId === 'grecy');
 const difficulties = ['easy', 'normal', 'hard'];
 const mainSource = fs.readFileSync(path.resolve(sourceRoot, 'main.ts'), 'utf8');
 
-console.log('--- matrix shape and complete 113-column snapshots ---');
-equal(matrix._meta.kolumny, 113, 'matrix declares 113 columns');
-equal(matrix.paramDefs && Object.keys(matrix.paramDefs).length, 113, '113 parameter definitions');
-equal(greece && Object.keys(greece.params).length, 113, 'Greece has 113 flat values');
+console.log('--- matrix shape and complete 93-column snapshots ---');
+equal(matrix._meta.kolumny, 93, 'matrix declares 93 columns');
+equal(matrix.paramDefs && Object.keys(matrix.paramDefs).length, 93, '93 parameter definitions');
+equal(greece && Object.keys(greece.params).length, 93, 'Greece has 93 flat values');
 for (const difficulty of difficulties) {
   const snapshot = civMatrixParamsAtDifficulty('grecy', difficulty);
-  equal(Object.keys(snapshot).length, 113, `Greece ${difficulty} snapshot has all parameters`);
+  equal(Object.keys(snapshot).length, 93, `Greece ${difficulty} snapshot has all parameters`);
   for (const id of Object.keys(matrix.paramDefs)) {
     assert(Object.prototype.hasOwnProperty.call(snapshot, id), `${difficulty} snapshot includes ${id}`);
   }
@@ -105,7 +105,7 @@ equal(civMatrixParamAtDifficulty('grecy', 'ai_ekspansywnosc', 'easy'), 2, 'Easy 
 equal(civMatrixParamAtDifficulty('grecy', 'ai_ekspansywnosc', 'hard'), 4, 'Hard scales expansion 3 -> 4');
 equal(civMatrixParamAtDifficulty('grecy', 'walka_obrona_piechota', 'easy'), 0.2, 'combat trait stays neutral on Easy');
 equal(civMatrixParamAtDifficulty('grecy', 'walka_obrona_piechota', 'hard'), 0.2, 'combat trait stays neutral on Hard');
-equal(civMatrixParamAtDifficulty('grecy', 'spec_Obrona', 'hard'), 100, 'special-unit stat stays neutral on Hard');
+
 equal(civMatrixParam('unknown-civ', 'ai_agresywnosc'), 5, 'unknown civ uses matrix default');
 for (const difficulty of difficulties) {
   const expected = difficulty === 'easy' ? 4 : difficulty === 'normal' ? 5 : 6;
@@ -272,7 +272,7 @@ assert(
 );
 
 // Optional durable evidence for the Operator handoff. The report is built
-// from the live 113 definitions, rather than a hand-maintained sample.
+// from the live 91 definitions, rather than a hand-maintained sample.
 if (process.env.CIV_MATRIX_REPORT) {
   const gameplay = new Map([
     ['lud_wzrost_proc', 'population-growth-v85.ts:207'],
@@ -298,7 +298,7 @@ if (process.env.CIV_MATRIX_REPORT) {
     ['dip_pamietliwosc', 'diplomacy-display.ts:82'],
   ]);
   const lines = [
-    '# Greece 113 matrix coverage (generated from civ-matrix.json)',
+    '# Greece 93 matrix coverage (generated from civ-matrix.json)',
     `definitions=${Object.keys(matrix.paramDefs).length}`,
     'status\tparameter\tconsumer\tnext action',
   ];

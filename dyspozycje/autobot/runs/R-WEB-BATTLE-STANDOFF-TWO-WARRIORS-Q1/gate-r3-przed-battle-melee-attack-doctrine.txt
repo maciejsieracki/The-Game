@@ -1,0 +1,151 @@
+{
+  "controlledRoster": {
+    "attackers": 24,
+    "defenders": 24,
+    "sameIds": true,
+    "samePositions": true
+  },
+  "attack": {
+    "checks": [
+      {
+        "type": "advance-check",
+        "id": "def-warrior-1",
+        "doctrine": "steady",
+        "position": [
+          13,
+          5
+        ],
+        "nearestTarget": "atk-warrior-1",
+        "turn": 1,
+        "distance": 1,
+        "canAttackFromHere": true
+      },
+      {
+        "type": "advance-check",
+        "id": "atk-warrior-1",
+        "doctrine": "steady",
+        "position": [
+          12,
+          5
+        ],
+        "nearestTarget": "def-warrior-1",
+        "turn": 2,
+        "distance": 1,
+        "canAttackFromHere": true
+      },
+      {
+        "type": "advance-check",
+        "id": "def-warrior-1",
+        "doctrine": "steady",
+        "position": [
+          13,
+          5
+        ],
+        "nearestTarget": "atk-warrior-1",
+        "turn": 2,
+        "distance": 1,
+        "canAttackFromHere": true
+      }
+    ],
+    "firstWarriorCandidateSteps": [
+      {
+        "type": "line-candidate",
+        "id": "atk-warrior-1",
+        "from": [
+          10,
+          5
+        ],
+        "candidateCol": 10,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "id": "atk-warrior-1",
+        "from": [
+          10,
+          5
+        ],
+        "candidateCol": 11,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "id": "atk-warrior-1",
+        "from": [
+          10,
+          5
+        ],
+        "candidateCol": 10,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "id": "atk-warrior-1",
+        "from": [
+          10,
+          5
+        ],
+        "candidateCol": 9,
+        "allowed": false,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "id": "atk-warrior-1",
+        "from": [
+          10,
+          5
+        ],
+        "candidateCol": 11,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "id": "atk-warrior-1",
+        "from": [
+          11,
+          5
+        ],
+        "candidateCol": 11,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "id": "atk-warrior-1",
+        "from": [
+          11,
+          5
+        ],
+        "candidateCol": 12,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "id": "atk-warrior-1",
+        "from": [
+          11,
+          5
+        ],
+        "candidateCol": 12,
+        "allowed": true,
+        "rank": 0
+      }
+    ],
+    "meleeAttacks": 72,
+    "attackerMeleeAttacks": 24,
+    "hpLoss": 720
+  },
+  "charge": {
+    "meleeAttacks": 72,
+    "attackerMeleeAttacks": 24,
+    "hpLoss": 720
+  }
+}
+PASS same 24v24 warriors advance to adjacency then strike in Atak and Szturm; PASS empty target remains no-op
+EXIT=0

@@ -1,0 +1,88 @@
+hex-tooltip-mozliwe-ulepszenia-zloze-test (P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA)
+
+[1] regex na źródle: listTerrainPossibleImprovements() + hexHasRiverAccess()/buildRiverHexSet()
+PASS: znaleziono ciało funkcji listTerrainPossibleImprovements()
+PASS: znaleziono ciało funkcji hexHasRiverAccess() (i że jest eksportowana -- F2)
+PASS: tooltip nie reimplementuje buildRiverHexSet() (jedna definicja w improvement-build.ts)
+PASS: zawiera warunek: if (key === 'bydlo' && nakladka !== Nakladka.ZlozeBydla) continue;
+PASS: zawiera warunek: if (key === 'owce' && nakladka !== Nakladka.ZlozeOwiec) continue;
+PASS: zawiera warunek: if (key === 'lama' && nakladka !== Nakladka.ZlozeLamy) continue;
+PASS: zawiera warunek: if (isImprovementBlockedOnForest(key, nakladka)) continue;
+PASS: zawiera warunek: if (key === 'farma' && !isFarmBaseTerrain(teren, nakladka)) continue;
+PASS: zawiera warunek: if (key === 'tartak' && nakladka !== Nakladka.Las) continue;
+PASS: zawiera warunek: if (key === 'wyrab' && nakladka !== Nakladka.Las) continue;
+PASS: zawiera warunek: if (key === 'glinianka' && !hexHasClayDeposit(hex)) continue;
+PASS: zawiera warunek: if (key === 'oboz_lowiecki' && nakladka !== Nakladka.Las) continue;
+PASS: zawiera warunek: if (key === 'warzelnia_soli' && teren !== TerenBazowy.PlytkieMorze && zloze !== 'sol') continue;
+PASS: zawiera warunek: if (key === 'kopalnia_zelaza' && zloze !== 'zelazo') continue;
+PASS: zawiera warunek: if (key === 'kopalnia_miedzi' && zloze !== 'miedz' && nakladka !== Nakladka.ZlozeRudy && zloze !== 'ruda') continue;
+PASS: zawiera warunek: if (key === 'kopalnia_zlota' && zloze !== 'zloto') continue;
+PASS: zawiera warunek: if (key === 'kopalnia_cyny' && zloze !== 'cyna') continue;
+PASS: zawiera warunek: if (key === 'droga_brukowana' && !active.has('droga') && hex.ulepszenie !== Ulepszenie.Droga) continue;
+PASS: zawiera warunek: if (key === 'irygacja' && !hexHasRiverAccess(hex, map)) continue;
+PASS: hexHasRiverAccess() zawiera: if (hex.rzeka?.obecna) return true;
+PASS: hexHasRiverAccess() zawiera: if (!map) return false;
+PASS: hexHasRiverAccess() zawiera: return isHexNearRiver(map, hex.coords.q, hex.coords.r);
+PASS: hexHasRiverAccess() nie ma własnej logiki riverHexSet (deleguje)
+
+[2] bundle A: realne funkcje silnika (bez hexContextTooltip.ts) dla warunków nakładka/złoże
+[2b] bundle B: prawdziwy hexContextTooltip.ts (stub icons/brandAssets), export hexHasRiverAccess real
+PASS: stub brandAssets istnieje: /home/user/The-Game/.claude/worktrees/wf_9492b69d-710-3/gra/tools/.stubs/hex-tooltip-zloze-brandAssets-stub.ts
+PASS: zbundlowano prawdziwy, eksportowany hexHasRiverAccess() z hexContextTooltip.ts
+PASS: Łąka bez lasu/złoża: lista NIE zawiera Tartaka (wymaga Lasu)
+PASS: Łąka bez lasu/złoża: lista NIE zawiera Glinianki (wymaga złoża gliny)
+PASS: Łąka bez lasu/złoża: lista NIE zawiera Wyrębu (wymaga Lasu)
+PASS: Łąka bez lasu/złoża: lista NIE zawiera Obozu łowieckiego (wymaga Lasu/zwierzęcia)
+PASS: Łąka bez lasu/złoża: lista NIE zawiera Kopalni żelaza (Łąka nie jest Wzgórzem/Górami)
+PASS: Łąka bez lasu/złoża: lista NIE zawiera Kopalni miedzi
+PASS: Łąka bez lasu/złoża: lista NIE zawiera Kopalni złota
+PASS: Łąka bez lasu/złoża: lista NIE zawiera Kopalni cyny
+PASS: Łąka bez soli: lista NIE zawiera Warzelni soli (nie Wybrzeże, brak złoża soli)
+PASS: Łąka bez rzeki (map undefined): lista NIE zawiera Irygacji
+PASS: Wzgórza + złoże żelaza: lista ZAWIERA Kopalnię żelaza
+PASS: Wzgórza + złoże żelaza (nie miedzi): lista NIE zawiera Kopalni miedzi
+PASS: Wzgórza + złoże żelaza (nie złota): lista NIE zawiera Kopalni złota
+PASS: Równina + Las: lista ZAWIERA Tartak
+PASS: Równina + Las: lista ZAWIERA Wyrąb
+PASS: Równina + Las: lista ZAWIERA Obóz łowiecki
+PASS: Równina + Las: lista NIE zawiera Irygacji (blokada lasu -- trzeba wyrąbać)
+PASS: Łąka + złoże gliny (nakładka): lista ZAWIERA Glinianki
+PASS: Wybrzeże bez złoża: lista ZAWIERA Warzelni soli (sól z morza, bez złoża)
+
+[4] droga_brukowana wymaga istniejącej Drogi na heksie
+PASS: Łąka BEZ Drogi: lista NIE zawiera Drogi brukowanej (silnik wymaga istniejącej Drogi)
+PASS: Łąka Z Drogą (hex.ulepszenie=droga): lista ZAWIERA Drogę brukowaną (upgrade istniejącej Drogi)
+
+[5] irygacja wymaga rzeki na heksie/sąsiedzie via map.riverPaths (isRiverAdjacent, F1 runda 4)
+PASS: Łąka bez mapy (map=undefined): lista NIE zawiera Irygacji
+PASS: Łąka + mapa z riverPaths=[] (brak rzek): lista NIE zawiera Irygacji
+PASS: Łąka z rzeka.obecna=true NA heksie (riverPaths puste): lista ZAWIERA Irygacji (fallback własnej flagi)
+PASS: Łąka BEZ rzeka.obecna, ale własny heks JEST w riverPaths: lista ZAWIERA Irygacji (riverHexSet.has(ownKey))
+PASS: Łąka bez rzeki na sobie, sąsiad (q+1,r) JEST w riverPaths: lista ZAWIERA Irygacji
+PASS: UNIFY: sąsiad z widoczną rzeka.obecna (riverPaths puste): lista ZAWIERA Irygacji (jedna definicja z automatem)
+PASS: UNIFY: rzeka 3 heksy dalej (nie sąsiad): lista NIE zawiera Irygacji
+
+[3] mutacja: cofnięcie warunku tartak odtwarza stary bug (dowód, że [1] by to złapał)
+PASS: Z warunkiem (naprawiona wersja): Tartak NIE pojawia się na gołej Łące
+PASS: Bez warunku (zmutowana wersja): Tartak WRACA na gołej Łące -- stary bug odtworzony
+
+[3b] mutacja: cofnięcie warunku droga_brukowana odtwarza stary bug
+PASS: Z warunkiem: Droga brukowana NIE pojawia się bez Drogi
+PASS: Bez warunku: Droga brukowana WRACA bez Drogi -- odtworzony zgłoszony bug (720/1008 przy 0 dozwolonych)
+
+[3c]/[3d] mutacja NA PRAWDZIWYM hexContextTooltip.ts -- dowód, że test ma zęby na produkcji
+PASS: [3c] przygotowanie: prawdziwe źródło zawiera dosłowną delegację do isHexNearRiver (kotwica mutacji)
+PASS: [3c] kontrola: PRAWDZIWA funkcja wykrywa rzekę na sąsiedzie (q+1,r) w riverPaths
+PASS: [3c] MUTANT (delegacja usunięta): przestaje wykrywać rzekę na sąsiedzie -- mutacja złapana
+PASS: [3d] PRAWDZIWA funkcja: sąsiad z widoczną rzeka.obecna liczy się (D2=A)
+PASS: [3d] MUTANT (delegacja usunięta) -- mutacja złapana
+
+[N1] HEX_NEIGHBOR_OFFSETS (hexContextTooltip.ts) == hexNeighbors() (improvement-build.ts) == HEX_NEIGHBORS (units/setup.ts)
+PASS: [N1] hexContextTooltip.ts nie ma kopii HEX_NEIGHBOR_OFFSETS
+PASS: [N1] znaleziono hexNeighbors() w improvement-build.ts
+PASS: [N1] hexNeighbors() (improvement-build.ts) == referencja (6 przesunięć)
+PASS: [N1] hexNeighborCoords() (units/setup.ts, WYKONANA naprawdę) == referencja (6 przesunięć)
+PASS: [N1] hexNeighborCoords() z drugiego punktu startowego -- też == referencja (offsety nie zależą od punktu)
+
+67 passed, 0 failed
+EXIT=0

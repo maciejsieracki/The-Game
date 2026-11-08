@@ -1,0 +1,53 @@
+{
+  "cityCount": 1,
+  "p1": [
+    {
+      "before": 405,
+      "after": 405
+    },
+    {
+      "before": 1500,
+      "after": 1500
+    },
+    {
+      "before": 5000,
+      "after": 5000
+    }
+  ],
+  "p2": [
+    {
+      "input": 5000000000,
+      "after": 1000000
+    },
+    {
+      "input": 1000000,
+      "after": 1000000
+    },
+    {
+      "input": 999999,
+      "after": 999999
+    },
+    {
+      "input": -5,
+      "after": 0
+    },
+    {
+      "input": "abc",
+      "after": 0
+    },
+    {
+      "input": null,
+      "after": 0
+    },
+    {
+      "input": 0,
+      "after": 0
+    }
+  ],
+  "p3": {
+    "seat0Before": 405,
+    "seat0After": 405,
+    "seat1Before": 77,
+    "seat1After": 77
+  }
+}

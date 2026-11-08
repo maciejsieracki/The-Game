@@ -68,6 +68,25 @@ function roundCardStat(n: number): number {
   return Math.abs(r - Math.round(r)) < 1e-6 ? Math.round(r) : r;
 }
 
+/**
+ * Canonical effective maximum HP resolver.
+ *
+ * Building-path and veteran health bonuses are additive percentage points on
+ * the base HP. They must be combined before the single multiplier is applied;
+ * multiplying the already boosted value again would make the same bonus count
+ * twice (for example 22 -> 26.4, not 22 -> 27.72).
+ */
+export function effectiveMaxHp(
+  baseHp: number,
+  parametryBonusFrac = 0,
+  veteranBonusFrac = 0,
+): number {
+  return roundCardStat(applyMultiplier(
+    baseHp,
+    parametryBonusFrac + veteranBonusFrac,
+  ));
+}
+
 /** Efektywne staty karty z baz JSON + pól progresu jednostki. */
 export function unitCardCombatDisplay(
   bases: UnitCardCombatBases,
@@ -86,7 +105,7 @@ export function unitCardCombatDisplay(
     obronaBase: bases.obrona,
     obronaEffective: roundCardStat(applyMultiplier(bases.obrona, softFrac)),
     hpMaxBase: bases.hpMax,
-    hpMaxEffective: roundCardStat(applyMultiplier(bases.hpMax, softFrac)),
+    hpMaxEffective: effectiveMaxHp(bases.hpMax, unitParametryBonusFrac(unit), veteranFrac),
     pancerzBase: bases.pancerz,
     pancerzEffective: roundCardStat(applyMultiplier(bases.pancerz, armorFrac)),
     weaponDamageBase: weaponDamage,

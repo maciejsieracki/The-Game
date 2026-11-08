@@ -1,0 +1,56 @@
+{
+  "typ": "kontynenty",
+  "seedWanted": 1001,
+  "okType": true,
+  "uiLand": "30% lądu / 70% morze",
+  "uiSize": "Standardowy",
+  "seedSeen": 1001,
+  "mapLog": "[NewGame] Mapa: 168x120 seed=1001 typ=kontynenty rywale=6 typy=7",
+  "genMs": 233099,
+  "turnsPlanned": 0,
+  "ok": true,
+  "turnLog": [],
+  "start": {
+    "turn": 1,
+    "hexes": 20160,
+    "landHexes": 6048,
+    "waterHexes": 14112,
+    "landPct": 30,
+    "landNoCoastPct": 30,
+    "terrainCounts": {
+      "morze": 5383,
+      "plytkie_morze": 8729,
+      "wzgorza": 802,
+      "laka": 2982,
+      "gory": 472,
+      "rownina": 1585,
+      "pustynia": 207
+    },
+    "polarHexes": 0,
+    "citiesTotal": 49,
+    "aiCitiesTotal": 48,
+    "capsCount": 7,
+    "capMin": 26,
+    "capPair": [
+      "egipt#1",
+      "grecy#36"
+    ],
+    "caps": [
+      "gracz@91,56",
+      "egipt#1@47,90",
+      "chinczycy#8@134,90",
+      "zulusi#15@134,29",
+      "inkowie#22@35,29",
+      "sumer#29@136,60",
+      "grecy#36@27,84"
+    ],
+    "polarCaps": [],
+    "polarAiCities": [],
+    "playerPolar": false,
+    "cityTerrainResolved": "48/48"
+  },
+  "menuCivId": "rzymianie",
+  "polarFallbackLogs": [],
+  "pageErrors": [],
+  "totalMs": 265231
+}

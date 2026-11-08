@@ -1,0 +1,259 @@
+{
+  "baseCommit": "c799325c77bc11c24684c1b35077ae80913d6f8d",
+  "referenceCount": 42,
+  "files": [
+    {
+      "path": "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/attempt-codex-f05-20261017/01-operator.md",
+      "sha256": "77d2fe75b2c93e81b499228a3a1ef75c37bd7b20e730116ef78f399c8ca07181",
+      "bytes": 2047,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/attempt-codex-g11-20261017/01-operator.md",
+      "sha256": "0b036637c69dfe64b4f5e659a1d373374bdae2c793c17c1a357fd6f368524516",
+      "bytes": 3401,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/00-dispatch.md",
+      "sha256": "bfb54138ac1afbd6bc3986c9dc6575035e5874dc52948d60d40ccf5641ddc595",
+      "bytes": 14895,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/06-v3-dispatch-proposal.md",
+      "sha256": "0d5423d4b1c09be1ea427d7ed8dd3c14c9dc7ca0839302000aeb6610df6a6c7a",
+      "bytes": 12734,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/evidence/matrix-93x15-current-evidence-ledger-v2.json",
+      "sha256": "df8741a6b4eca0064e2f4f7c84f8147f2cdec86353a6bff825c71e1eddc4cd68",
+      "bytes": 3363101,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/evidence/matrix-93x15-current-evidence-ledger-v3.json",
+      "sha256": "ce75eb36b16016270f54bdbe715091025a4be6d57f139dbee0a3c1fa11fae11c",
+      "bytes": 3616430,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/evidence/source-history/26-owner-decisions-20261015.md",
+      "sha256": "d6e8205e4f3ab76192d67135ff55e590bf77094d4d91a2072ee379115b273328",
+      "bytes": 6614,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/evidence/source-history/review-f05.md",
+      "sha256": "0c3d595927c157d92cbcdef03820ea048a4e688c3b3351f0ca25c180bb4c6b04",
+      "bytes": 3373,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/evidence/source-history/review-g11.md",
+      "sha256": "ed4295a5d6b6cd93ca51d6bb530b5896d899aa7dbe7cb1ff88343d4b3b25e906",
+      "bytes": 2750,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/evidence/source-history/source-history-index.json",
+      "sha256": "de1bb9baa426ac2675930c2012f9614d3904ca11ab43eac0288e003e403c17a4",
+      "bytes": 1539,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/evidence/source-manifest-v3.json",
+      "sha256": "d8c16e430cd714954a8a77064cf37d45f9ed924a2ed5e4e22940027b72c91ebb",
+      "bytes": 11651,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/evidence/source-manifest.json",
+      "sha256": "e902337973b8d74c60424f0a33ce1d57c082c48e12d9adafefb9d137530fbf9d",
+      "bytes": 7611,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-RECON-20261018/06-classifier-ledger-sync-dispatch-r4.md",
+      "sha256": "390c16123ae4e5f2ca87b66daf975393c5175316ed205c560149c2a319f7f16e",
+      "bytes": 16686,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-DIP-ACTIVATION-20261018/07-final-control.md",
+      "sha256": "d4c14adc1384b803c945253c133482b4c08a0789af966f9026dad7b80b7afb45",
+      "bytes": 4234,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-DIP-ACTIVATION-20261018/08-integration.md",
+      "sha256": "1812e6a66ae8eb5a41521349e61c875ae7d1e567795615500e7fd7fe050ae97e",
+      "bytes": 1760,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-EVIDENCE-LEDGER-20261017/evidence/matrix-93x15-evidence-ledger.json",
+      "sha256": "eb525a44822569139bcb902300dd3e9dcc3af7f2b4c1ebfcec37f84c58544be6",
+      "bytes": 2631471,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-COST-ACTIVATION-20261018/05-final-control.md",
+      "sha256": "89cfd0f2f4a42dad716d83be40b4c84d0d1ec77f88fe64b672d72626dfc04407",
+      "bytes": 5135,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-COST-ACTIVATION-20261018/06-integration.md",
+      "sha256": "d6d7743bdebe0d864d32bd262499a1b8d8c52317da8ae3ad49561e2a8d0b3aa7",
+      "bytes": 1797,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/06-final-control-building-speed.md",
+      "sha256": "828bbf023ba261dd8f365323364b8a2dad9b7d64ea93ba17f6382160e8899787",
+      "bytes": 2884,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/07-integration-building-speed.md",
+      "sha256": "5ee510f890c05bc0ddafdd99ad34d497930646ae23d5ab4aecc3eeb30777973d",
+      "bytes": 2378,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/08-unit-speed-operator.md",
+      "sha256": "10c85ccf92059590109b39eefd5c187950019720af0176d32f6e889ba2d8e0dc",
+      "bytes": 3566,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/09-unit-speed-fixture-addendum.md",
+      "sha256": "ecb707ed2736df36e5f77d5ec2cddbc7a881f59ff8a533ae011be28bd0019bd8",
+      "bytes": 1772,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/10-unit-speed-evaluator.md",
+      "sha256": "693305c65ecf0c244dc6ddb8c88a6516be015562195d69a95f7ef70033fa55da",
+      "bytes": 3149,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/11-unit-speed-final-control.md",
+      "sha256": "3ee566711bf933968bc2fac94da4f9b92f082ffd879c070e91d077eaaedaef47",
+      "bytes": 3319,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/12-unit-speed-integration.md",
+      "sha256": "e2a25086c034a25bbdc43efad78d44eb91614b05595d518a4860c6782c67b324",
+      "bytes": 3027,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/05-final-control.md",
+      "sha256": "b59f5cf5dd4a0305b8e78d1fb35d04903f3ec95253bcc5e1be66071f0ca62746",
+      "bytes": 5013,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/06-integration.md",
+      "sha256": "54b619797cbe2ceb4f9410deaf85620a3a3b1670f042b9fb2dadaaa669627b3e",
+      "bytes": 2084,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-REMAINING-20261018/13-final-control.md",
+      "sha256": "7292ad0ac16dc01ad4374ba5810b96a6720d920ad706a94acf1f73c4a7285a2a",
+      "bytes": 3639,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-REMAINING-20261018/14-integration.md",
+      "sha256": "44deb8fcac5dcba6d29eb12849f08f4e34376370070c12aa82054c736e9724b6",
+      "bytes": 2187,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOURCE-APPROVAL-20261018/source-approval-receipt.json",
+      "sha256": "ed0217c81c45ec487227fcbed6b68c73edd3179b204b3ba89c8fdd08285b6745",
+      "bytes": 176403,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-WORK-ACTIVATION-20261018/05-final-control.md",
+      "sha256": "79045e42cb2fc889b8c09fc1a1adba4def04364d28e9fcc821d42718e5898ba8",
+      "bytes": 3541,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-WORK-ACTIVATION-20261018/06-integration.md",
+      "sha256": "d3776e0553b55f66a6651eea8cc9dabcc2593c6b94ab1b249491de8ff845570d",
+      "bytes": 1857,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/07-final-control.md",
+      "sha256": "2873c65a97ab143322e77f91d13b72b6bf1e6ae0973ea90eed1deaa588aa414c",
+      "bytes": 5708,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/08-integration.md",
+      "sha256": "67b259b3f384d10826a5b4fbaf4fd744a6fa11e40144d7a37d41ebb415f61774",
+      "bytes": 2865,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/10-final-control-runda3.md",
+      "sha256": "5ae2626d8aeae69ffef415482278e58d8a1da08b4aba14dad420776f243abda9",
+      "bytes": 2216,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/11-integration.md",
+      "sha256": "6143162749e697b7d099b5d496b8ad3fcd491d0a9e016180dc29821f4c0ddb6c",
+      "bytes": 1946,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-MATRIX-ONLY-BONUSES-20261018/01-rush-operator-addendum.md",
+      "sha256": "05c5e6fc794b1451f5cdebc73a7a669fd4134bda1ecd6c85c909f1a23558c48f",
+      "bytes": 1942,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-SEMANTIC-CONSUMER-CONSISTENCY-20261018/01-operator.md",
+      "sha256": "c20d0e7a4b2ad006249d558f42c909e3132cdaf5184ca6f43c4c804c2bf4bac5",
+      "bytes": 7878,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-SEMANTIC-CONSUMER-CONSISTENCY-20261018/08-integration.md",
+      "sha256": "ab3e3130d19984e0bda3ddc6f8a1c814f369288380497392666303416abfdca0",
+      "bytes": 2366,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PRAWO-PRZEBUDOWA-SKALI-Q1/00-dispatch.md",
+      "sha256": "622691d96fe794e2ba22bad7f7ee60b8a26479cc347304e93200b9b35d6a071b",
+      "bytes": 17721,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/t_89eb5708/00-dispatch.md",
+      "sha256": "7afa2912397f23f180084e2691581e4bdcde5180a5a081b20f780854fba7c817",
+      "bytes": 527,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/t_89eb5708/01-operator.md",
+      "sha256": "b4ad80446182ae2794e99b4295b680f32d5452af450a487a5a70ba858576566a",
+      "bytes": 942,
+      "reason": "exact run artifact referenced by a source/docs file in the candidate overlay"
+    }
+  ],
+  "exclusionNote": "Only exact run paths referenced from the 101-file candidate overlay are selected. Other historical/scratch run artifacts remain outside the release tree."
+}

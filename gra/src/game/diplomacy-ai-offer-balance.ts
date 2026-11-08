@@ -92,6 +92,29 @@ export function aiOfferPwUndershootAllowance(difficulty: GameDifficulty = 'norma
   return AI_OFFER_PW_UNDERSHOOT_PN[difficulty];
 }
 
+/**
+ * R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (pkt 4): zakres „zerowego undershoot" — gdy aktywny, strona
+ * SPRZEDAŻY surowca celuje w bilans PW gracza dokładnie w 0 (zamiast -undershoot, np. -3 PN na
+ * Trudnym). Ustawiany WYŁĄCZNIE wokół wyliczeń ofert handlowych przy fladze DIPLO_SENSIBLE_DEALS_ENABLED
+ * ON; poza zakresem (flaga OFF) zachowanie bazowe. Synchroniczny, przywracany w `finally`.
+ */
+let zeroPwUndershootScope = false;
+
+export function withZeroPwUndershoot<T>(fn: () => T): T {
+  const prev = zeroPwUndershootScope;
+  zeroPwUndershootScope = true;
+  try {
+    return fn();
+  } finally {
+    zeroPwUndershootScope = prev;
+  }
+}
+
+/** Czy aktywny jest zakres „zerowego undershoot" (test i diagnostyka). */
+export function isZeroPwUndershootScopeActive(): boolean {
+  return zeroPwUndershootScope;
+}
+
 /** Czy AI ma celować w bilans ≈ 0 zamiast oferować duże plusy. */
 export function aiOfferTargetsZeroBalance(difficulty: GameDifficulty = 'normal'): boolean {
   return difficulty !== 'easy';
@@ -265,7 +288,7 @@ export function targetResourceTradePaymentPn(
   }
   const maxAcceptedPn = Math.floor(resourceGivePn * rel / 100);
   if (!aiOfferTargetsZeroBalance(difficulty)) return maxAcceptedPn;
-  const undershoot = aiOfferPwUndershootAllowance(difficulty);
+  const undershoot = zeroPwUndershootScope ? 0 : aiOfferPwUndershootAllowance(difficulty);
   return Math.max(0, maxAcceptedPn - undershoot);
 }
 

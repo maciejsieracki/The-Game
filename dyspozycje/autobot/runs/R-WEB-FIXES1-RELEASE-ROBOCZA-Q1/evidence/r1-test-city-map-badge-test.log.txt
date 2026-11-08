@@ -1,0 +1,66 @@
+city-map-badge-test (pigułka miasta v1)
+
+PASS: brak budynków → tier 0
+PASS: koszary nie dają tieru obrony
+PASS: palisada → tier 1 (szara)
+PASS: mury → tier 2 (złota)
+PASS: fort/cytadela → tier 2
+PASS: mury+fort → tier 2
+PASS: maMur ignorowane (Q1=A) → tier 0
+PASS: wallKind none → tier 0
+PASS: wallKind palisada → tier 1
+PASS: wallKind stone → tier 2
+PASS: built palisada → palisada
+PASS: built mury → stone
+PASS: built pusta → none
+PASS: klucz cache zawiera defense+civ+growth
+PASS: klucz domyślny: major bez epoki
+PASS: major AI: cs0 + epoka w kluczu
+PASS: major: civ w kluczu
+PASS: miasto-państwo: cs1 w kluczu
+PASS: MP vs major — różne klucze cache
+PASS: prod zmienia klucz cache
+PASS: klucz zawiera rodzaj+id produkcji
+PASS: klucz budynku zawiera id
+PASS: klucz zawiera WZROST% (procent przyrostu ludności / turę)
+PASS: growth zmienia klucz cache
+PASS: stolica → segment k1 jako własny segment klucza cache
+PASS: nie-stolica → segment k0 jako własny segment klucza cache
+PASS: stolica vs nie-stolica — różne klucze cache
+PASS: brak isCapital === isCapital:false (ten sam klucz)
+PASS: grecy → G
+PASS: rzym → R
+PASS: pusty → ?
+PASS: dpr=2 → kanwa pigułki 2× w obu wymiarach (ostrość przy zoomie)
+PASS: dpr nie zmienia aspect → sprite tej samej wielkości w świecie
+PASS: dpr=8 przycięte capem do 3× (bez patologicznych tekstur)
+PASS: kontekst przeskalowany o dpr → geometria dalej liczona w px CSS
+PASS: wspólny sygnet ładowany tylko raz dla obu plakietek
+PASS: przed doczytaniem obie plakietki mają placeholder-romb (stan wyjściowy)
+PASS: pierwszy zamawiający dostaje przerysowanie z sygnetem
+PASS: DRUGI zamawiający (przegrał wyścig) też dostaje sygnet — brak trwałego rombu
+PASS: po doczytaniu druga plakietka przerysowana BEZ rombu
+PASS: żądanie sygnetu Sparty wystartowało (w locie)
+PASS: przewiązanie sygnetu w trakcie ładowania NIE gubi callbacku (brak trwałego rombu)
+PASS: żądanie A (Memfis) wystartowało — sygnet w locie
+PASS: żądanie B po przewiązaniu startuje własne ładowanie (bookkeeping był wyczyszczony)
+PASS: A i B to dwie różne plakietki (różne klucze cache tekstur)
+PASS: przeplot A→clear→B: callback A NIE zginął — plakietka A dostała sygnet
+PASS: przeplot A→clear→B: plakietka B też dostała sygnet
+PASS: przeplot A→clear→B: plakietka A faktycznie przerysowana i BEZ rombu
+PASS: przeplot A→clear→B: plakietka B faktycznie przerysowana i BEZ rombu
+PASS: portret: dwa miasta = dwie różne plakietki
+PASS: portret: wspólny sygnet + wspólny portret ładowane po razie (drugi zamawiający tylko czeka)
+PASS: portret: pierwszy zamawiający dostaje portret władcy na medalionie
+PASS: portret: druga plakietka W OGÓLE się przerysowała (kontrola — inaczej asercja niżej nic nie znaczy)
+PASS: portret: DRUGI zamawiający (przegrał wyścig) też dostaje portret — nie zostaje na fallbacku sygnetu
+PASS: ikona produkcji: dwa miasta = dwie różne plakietki
+PASS: ikona produkcji: wspólny sygnet + wspólna ikona ładowane po razie
+PASS: ikona produkcji: pierwszy zamawiający dostaje glif produkcji
+PASS: ikona produkcji: druga plakietka W OGÓLE się przerysowała (kontrola)
+PASS: ikona produkcji: DRUGI zamawiający (przegrał wyścig) też dostaje glif — pigułka nie zostaje bez ikony
+PASS: przewiązanie: sygnet + portret + ikona w locie
+PASS: przewiązanie portretu w trakcie ładowania NIE gubi callbacku
+PASS: przewiązanie ikony produkcji w trakcie ładowania NIE gubi callbacku
+
+62 passed, 0 failed

@@ -1,0 +1,78 @@
+PASS: fixture: terrain-improvements.json ma klucz "stadnina"
+PASS: fixture: "stadnina" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "stadnina": karta ma sekcję "resources"
+PASS: "stadnina": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "stadnina": wiersz "Odblokowuje surowiec" NIE zawiera wewnętrznej notatki dziennika balansu
+PASS: "stadnina": wiersz "Odblokowuje surowiec" = dokładnie nazwa surowca (bez nawiasu z uwagą)
+PASS: fixture: terrain-improvements.json ma klucz "glinianka"
+PASS: fixture: "glinianka" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "glinianka": karta ma sekcję "resources"
+PASS: "glinianka": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "glinianka": wiersz "Odblokowuje surowiec" NIE zawiera wewnętrznej notatki dziennika balansu
+PASS: "glinianka": wiersz "Odblokowuje surowiec" = dokładnie nazwa surowca (bez nawiasu z uwagą)
+PASS: fixture: terrain-improvements.json ma klucz "kamieniolom"
+PASS: fixture: "kamieniolom" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "kamieniolom": karta ma sekcję "resources"
+PASS: "kamieniolom": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "kamieniolom": wiersz "Odblokowuje surowiec" NIE zawiera wewnętrznej notatki dziennika balansu
+PASS: "kamieniolom": wiersz "Odblokowuje surowiec" = dokładnie nazwa surowca (bez nawiasu z uwagą)
+PASS: fixture: terrain-improvements.json ma klucz "tartak"
+PASS: fixture: "tartak" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "tartak": karta ma sekcję "resources"
+PASS: "tartak": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "tartak": wiersz "Odblokowuje surowiec" NIE zawiera wewnętrznej notatki dziennika balansu
+PASS: "tartak": wiersz "Odblokowuje surowiec" = dokładnie nazwa surowca (bez nawiasu z uwagą)
+PASS: fixture: terrain-improvements.json ma klucz "warzelnia_soli"
+PASS: fixture: "warzelnia_soli" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "warzelnia_soli": karta ma sekcję "resources"
+PASS: "warzelnia_soli": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "warzelnia_soli": wiersz "Odblokowuje surowiec" NIE zawiera wewnętrznej notatki dziennika balansu
+PASS: "warzelnia_soli": wiersz "Odblokowuje surowiec" = dokładnie nazwa surowca (bez nawiasu z uwagą)
+PASS: fixture: terrain-improvements.json ma klucz "kopalnia_miedzi"
+PASS: fixture: "kopalnia_miedzi" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "kopalnia_miedzi": karta ma sekcję "resources"
+PASS: "kopalnia_miedzi": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "kopalnia_miedzi": wiersz "Odblokowuje surowiec" NIE zawiera wewnętrznej notatki dziennika balansu
+PASS: "kopalnia_miedzi": wiersz "Odblokowuje surowiec" = dokładnie nazwa surowca (bez nawiasu z uwagą)
+PASS: fixture: terrain-improvements.json ma klucz "kopalnia_zelaza"
+PASS: fixture: "kopalnia_zelaza" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "kopalnia_zelaza": karta ma sekcję "resources"
+PASS: "kopalnia_zelaza": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "kopalnia_zelaza": wiersz "Odblokowuje surowiec" NIE zawiera wewnętrznej notatki dziennika balansu
+PASS: "kopalnia_zelaza": wiersz "Odblokowuje surowiec" = dokładnie nazwa surowca (bez nawiasu z uwagą)
+PASS: fixture: terrain-improvements.json ma klucz "kopalnia_cyny"
+PASS: fixture: "kopalnia_cyny" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "kopalnia_cyny": karta ma sekcję "resources"
+PASS: "kopalnia_cyny": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "kopalnia_cyny": wiersz "Odblokowuje surowiec" NIE zawiera wewnętrznej notatki dziennika balansu
+PASS: "kopalnia_cyny": wiersz "Odblokowuje surowiec" = dokładnie nazwa surowca (bez nawiasu z uwagą)
+PASS: fixture: terrain-improvements.json ma klucz "kopalnia_zlota"
+PASS: fixture: "kopalnia_zlota" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "kopalnia_zlota": karta ma sekcję "resources"
+PASS: "kopalnia_zlota": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "kopalnia_zlota": wiersz "Odblokowuje surowiec" NIE zawiera wewnętrznej notatki dziennika balansu
+PASS: "kopalnia_zlota": wiersz "Odblokowuje surowiec" = dokładnie nazwa surowca (bez nawiasu z uwagą)
+PASS: "tartak": "Odblokowuje surowiec" === "drewno" (bez notatki)
+PASS: "tartak": "Produkcja surowca" nietknięta — "50 / turę" (baza epoki 1)
+PASS: "farma": karta pokazuje koszt budowy po FALA2 i stawce epoki Kamienia (20 P)
+PASS: dane: terrain-improvements.json["tartak"].surowiecOdblokowany_uwaga wciąż w pliku (dane NIETKNIĘTE)
+PASS: fixture: terrain-improvements.json ma klucz "bydlo"
+PASS: fixture: "bydlo" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "bydlo": karta ma sekcję "resources"
+PASS: "bydlo": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "bydlo" (krótka notatka, nie dziennik balansu): wiersz i tak = sama nazwa surowca (bez nawiasu)
+PASS: fixture: terrain-improvements.json ma klucz "owce"
+PASS: fixture: "owce" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "owce": karta ma sekcję "resources"
+PASS: "owce": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "owce" (krótka notatka, nie dziennik balansu): wiersz i tak = sama nazwa surowca (bez nawiasu)
+PASS: fixture: terrain-improvements.json ma klucz "lama"
+PASS: fixture: "lama" ma niepuste surowiecOdblokowany_uwaga (test faktycznie ćwiczy to pole)
+PASS: "lama": karta ma sekcję "resources"
+PASS: "lama": sekcja "resources" ma wiersz "Odblokowuje surowiec"
+PASS: "lama" (krótka notatka, nie dziennik balansu): wiersz i tak = sama nazwa surowca (bez nawiasu)
+PASS: "oboz_lowiecki": brak surowiecOdblokowany w danych → wiersz "Odblokowuje surowiec" poprawnie NIEOBECNY
+PASS: "lodzie_rybackie": brak surowiecOdblokowany w danych → wiersz "Odblokowuje surowiec" poprawnie NIEOBECNY
+
+[improvement-adapter-resource-note-test] 75 pass, 0 fail
+EXIT=0

@@ -1,0 +1,57 @@
+{
+  "typ": "wyspy",
+  "seedWanted": 1001,
+  "okType": true,
+  "uiLand": "50% lądu / 50% morze",
+  "uiSize": "Standardowy",
+  "seedSeen": 1001,
+  "mapLog": "[NewGame] Mapa: 168x120 seed=1001 typ=wyspy rywale=6 typy=7",
+  "genMs": 373713,
+  "turnsPlanned": 0,
+  "ok": true,
+  "turnLog": [],
+  "start": {
+    "turn": 1,
+    "hexes": 20160,
+    "landHexes": 10080,
+    "waterHexes": 10080,
+    "landPct": 50,
+    "landNoCoastPct": 50,
+    "terrainCounts": {
+      "morze": 2217,
+      "plytkie_morze": 7863,
+      "polarny": 567,
+      "wzgorza": 1438,
+      "gory": 926,
+      "rownina": 2189,
+      "laka": 4718,
+      "pustynia": 242
+    },
+    "polarHexes": 567,
+    "citiesTotal": 49,
+    "aiCitiesTotal": 48,
+    "capsCount": 7,
+    "capMin": 25,
+    "capPair": [
+      "gracz",
+      "inkowie#15"
+    ],
+    "caps": [
+      "gracz@96,60",
+      "egipt#1@22,44",
+      "sumer#8@66,104",
+      "inkowie#15@107,74",
+      "grecy#22@146,102",
+      "chinczycy#29@107,102",
+      "zulusi#36@62,46"
+    ],
+    "polarCaps": [],
+    "polarAiCities": [],
+    "playerPolar": false,
+    "cityTerrainResolved": "48/48"
+  },
+  "menuCivId": "rzymianie",
+  "polarFallbackLogs": [],
+  "pageErrors": [],
+  "totalMs": 408040
+}

@@ -1,0 +1,7 @@
+dyspozycje/analizy/EPOKI-KLASYCZNA-SREDNIOWIECZE-PROPOZYCJA.xlsx
+dyspozycje/analizy/PLAN-WDROZENIA-NOWEJ-EPOKI.md
+dyspozycje/autobot/runs/R-DESIGN-EPOKI-KLASYCZNA-SREDNIOWIECZE-ANALIZA-Q1/02-operator-r2.md
+dyspozycje/autobot/runs/R-DESIGN-EPOKI-KLASYCZNA-SREDNIOWIECZE-ANALIZA-Q1/gate-md-wordcount.txt
+dyspozycje/autobot/runs/R-DESIGN-EPOKI-KLASYCZNA-SREDNIOWIECZE-ANALIZA-Q1/gate-xlsx-reload.txt
+ZAKAZANE sciezki (gra/**, gra-robocza/**, WERSJE.md, rust-port/**, src-tauri/**, battle/**): 0 trafien
+EXIT=0

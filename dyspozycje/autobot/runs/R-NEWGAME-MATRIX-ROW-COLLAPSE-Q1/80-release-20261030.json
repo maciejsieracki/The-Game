@@ -1,0 +1,32 @@
+{
+  "stage": "11/11",
+  "status": "DEPLOYED_AND_PUSHED_READBACK_PASS",
+  "sourceCommit": "4f0e92ec",
+  "publicationCommit": "2bbb192380fea0f43a74109ce04b50e74d229fb3",
+  "remote": "2bbb192380fea0f43a74109ce04b50e74d229fb3\trefs/heads/main",
+  "files": {
+    "Gra-ROBOCZA.html": {
+      "http": 200,
+      "sha256": "e5acc382cf8210d913bda9c57d82dc42e5ae1b9097be0d8c3315aa09537bfe81",
+      "bytes": 70046987
+    },
+    "ROBOCZA-MANIFEST.json": {
+      "http": 200,
+      "sha256": "03a5bc630bdbe51ea2cc360a78c9c83a9a7809addcf868581c3191052b0c6a78",
+      "bytes": 17517
+    },
+    "START.html": {
+      "http": 200,
+      "sha256": "23d8909a2a5facbab58b89a50abbb50c1c5359528320642838012885b9dfd15e",
+      "bytes": 7022
+    }
+  },
+  "checks": [
+    "commander 8/8",
+    "civilization parameters 270/270",
+    "typecheck PASS",
+    "build 919 modules PASS",
+    "smoke PASS",
+    "bundle/manifest verify PASS"
+  ]
+}

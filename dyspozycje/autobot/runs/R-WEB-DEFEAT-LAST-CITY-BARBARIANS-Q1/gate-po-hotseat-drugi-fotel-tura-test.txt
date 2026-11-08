@@ -1,0 +1,6 @@
+[2m  - waiting for locator('.civ-newgame .start')[22m
+
+    at runScenarioMain (/home/user/The-Game/.claude/worktrees/wf_33d847bd-330-1/gra/tools/hotseat-drugi-fotel-tura-test.cjs:177:47)
+    at async runWithRetry (/home/user/The-Game/.claude/worktrees/wf_33d847bd-330-1/gra/tools/hotseat-drugi-fotel-tura-test.cjs:708:14)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_33d847bd-330-1/gra/tools/hotseat-drugi-fotel-tura-test.cjs:736:15)
+EXIT=2

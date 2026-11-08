@@ -1,0 +1,22 @@
+  ok  src/ui/cityPanel.ts: formatManpower( uzyte 0x (dozwolone 0)
+  ok  src/ui/cityPanel.ts: uzywa formatManpowerCompact
+  ok  src/ui/unitRecruitCard.ts: formatManpower( uzyte 3x (dozwolone 3)
+  ok  src/ui/unitRecruitCard.ts: uzywa formatManpowerCompact
+  ok  src/ui/empireDetailPanel.ts: formatManpower( uzyte 0x (dozwolone 0)
+  ok  src/ui/empireDetailPanel.ts: uzywa formatManpowerCompact
+  ok  main.ts: rekruciMaxLabel przez formatManpowerCompact
+  ok  main.ts: rekruciLabel przez formatManpowerCompact
+  ok  main.ts: ludnoscAbsLabel przez formatManpowerCompact
+  ok  formatManpowerCompact 999 -> "999"
+  ok  tooltip karty bez zmian (formatManpower) 999 -> "Rekruci: dostępne 999 / potrzebne 999"
+  ok  formatManpowerCompact 1000 -> "1k"
+  ok  tooltip karty bez zmian (formatManpower) 1000 -> "Rekruci: dostępne 1 tys. / potrzebne 1 tys."
+  ok  formatManpowerCompact 12345 -> "12,3k"
+  ok  tooltip karty bez zmian (formatManpower) 12345 -> "Rekruci: dostępne 12.3 tys. / potrzebne 12.3 tys."
+  ok  formatManpowerCompact 1234567 -> "1,2M"
+  ok  tooltip karty bez zmian (formatManpower) 1234567 -> "Rekruci: dostępne 1.2 mln / potrzebne 1.2 mln"
+  ok  formatManpower bez zmian (12345) -> "12.3 tys."
+  ok  formatManpower bez zmian (1234567) -> "1.2 mln"
+
+OK: manpower-panels-abbrev-test
+EXIT=0

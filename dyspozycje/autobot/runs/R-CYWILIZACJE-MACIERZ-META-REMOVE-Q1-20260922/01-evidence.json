@@ -1,0 +1,107 @@
+{
+  "topic": "R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922",
+  "role": "Operator",
+  "round": "1/5",
+  "head": "b00cfaefe69c1ff2eaed96056c5ae98a73aba19b",
+  "branch": "hermes/R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922",
+  "worktree": "/home/ubuntu/projects/The-Game-civ-matrix-meta-remove-20260922",
+  "removedParameterIds": [
+    "meta_epoka_kamien",
+    "meta_epoka_braz",
+    "meta_epoka_zelazo",
+    "meta_tier_roster"
+  ],
+  "civMatrixJson": {
+    "before": {
+      "paramDefsCount": 113,
+      "defaultsCount": 113,
+      "metaKolumny": 113,
+      "cellsPerRow": 113,
+      "totalCells": 1695
+    },
+    "after": {
+      "paramDefsCount": 109,
+      "defaultsCount": 109,
+      "metaKolumny": 109,
+      "cellsPerRow": 109,
+      "totalCells": 1635,
+      "allRowsHave109Params": true
+    },
+    "removedCells": 60,
+    "occurrencesOfRemovedIdsAfter": 0,
+    "onlyModifiedLine": "_meta.kolumny: 113 -> 109 (every other diff line is pure removal, verified via `git diff` grep for '^+' lines)",
+    "gitDiffCheck": "clean"
+  },
+  "civMatrixSemanticTs": {
+    "removed": [
+      "CivMatrixConsumerStatus union member 'REFERENCE_ONLY'",
+      "REFERENCE_ONLY Set (4 identifiers)",
+      "civMatrixConsumerStatus() REFERENCE_ONLY branch",
+      "statusLabel() case 'REFERENCE_ONLY'",
+      "statusReason() case 'REFERENCE_ONLY'",
+      "difficultyBehavior() REFERENCE_ONLY branch"
+    ],
+    "occurrencesOfRemovedIdsAfter": 0,
+    "occurrencesOfStringReferenceOnlyAfter": "1 (historical prose in the superseding comment only, not a type/Set/branch)",
+    "commentReplaced": "yes, points to R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922 and OWNER-DECISION-20260922.md, does not spell out the 4 raw IDs to satisfy the 0-occurrence acceptance criterion",
+    "tscNoEmit": "PASS, 0 errors"
+  },
+  "testFiles": {
+    "civMatrixSemanticLabelsTestCjs": {
+      "nodeCheck": "OK",
+      "before": { "pass": 309, "fail": 0 },
+      "after": { "pass": 309, "fail": 0 },
+      "changes": [
+        "matrix declares 109 parameter definitions (was 113)",
+        "semantic contract/snapshot expects 1635 cells (was 1695)",
+        "Greece profile has 109 cells (was 113)",
+        "unique cell count 1635 (was 1695)",
+        "allParameterIdsPresent check now === 109",
+        "artifact-generation prose (coverage object, operator.md doc strings) updated 113->109, 1695->1635",
+        "UNWIRED assertion message text corrected: 4 former meta REFERENCE_ONLY parameters were removed from the matrix entirely, not reclassified as UNWIRED (numeric value 480 unchanged, was already correct pre-change since removed params never counted toward UNWIRED)"
+      ]
+    },
+    "civMatrixMetaRosterWiringTestCjs": {
+      "nodeCheck": "OK",
+      "before": { "pass": 83, "fail": 0 },
+      "after": { "pass": 63, "fail": 0 },
+      "changes": [
+        "ids fixture reduced to ['meta_mnoznik_waluta'] only",
+        "removed epoch-conflict assertions for hetyci/babilonia/asyria (referenced meta_epoka_zelazo)",
+        "removed tier-coverage assertion (referenced meta_tier_roster)",
+        "removed REFERENCE_ONLY classification assertions for the 4 removed IDs",
+        "kept: currency-multiplier accessor/consumer assertions and the real economy.ts city-yield assertion (meta_mnoznik_waluta), untouched per scope",
+        "header comment updated: 'five meta fields' -> 'meta fields'"
+      ],
+      "passDelta": "83 -> 63 (20 fewer assertions, matches exactly the removed epoch/tier/REFERENCE_ONLY checks; no assertion was weakened, only removed because its subject no longer exists)"
+    }
+  },
+  "grepScanOutsideAllowlist": {
+    "note": "Reported per SCOPE point 4; none of these were edited (outside the 4-file allowlist and none block compile/test of the allowlisted files)",
+    "filesStillReferencingRemovedIds": [
+      "panele-sterowania/cyw_macierz_schema.py",
+      "panele-sterowania/gen-cyw-macierz.py",
+      "panele-sterowania/cyw-macierz/civ-matrix-14-audit.json",
+      "panele-sterowania/cyw-macierz/civ-matrix-14-coverage.tsv",
+      "gra-robocza/data — kopia/civ-matrix.json",
+      "Gra-FINALNA.html",
+      "dyspozycje/_handoff/KANAL-PRACA.md",
+      "gra-robocza/Gra-ROBOCZA.html",
+      "gra-robocza/ROBOCZA-MANIFEST.json"
+    ]
+  },
+  "gitDiffSummary": {
+    "filesChanged": 4,
+    "files": [
+      "gra/data/civ-matrix.json",
+      "gra/src/game/civ-matrix-semantic.ts",
+      "gra/tools/civ-matrix-meta-roster-wiring-test.cjs",
+      "gra/tools/civ-matrix-semantic-labels-test.cjs"
+    ],
+    "insertions": 20,
+    "deletions": 150,
+    "gitDiffCheckClean": true,
+    "unexpectedFilesInDiff": "none"
+  },
+  "pushDeploy": "NIE WYKONANO"
+}

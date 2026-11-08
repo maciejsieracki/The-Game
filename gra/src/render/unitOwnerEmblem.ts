@@ -97,6 +97,13 @@ export interface UnitOwnerEmblemContext {
   isCityState: boolean;
   /** Właściciel to barbarzyńcy (BARBARIAN_OWNER_ID). Sprawdzane PRZED isCityState. */
   isBarbarian: boolean;
+  /**
+   * Barwa OBWÓDKI dla pełnej cywilizacji — `#rrggbb`, ta sama co obwódka heksu
+   * (`civColorFn` w main.ts = `_resolveOwnerColor` w render/units.ts). Używana
+   * WYŁĄCZNIE dla wariantu `civ`; miasto-państwo i barbarzyńcy mają stałe barwy.
+   * `null` / nieprawidłowy zapis → fallback: mosiądz `RING_COLOR.civ`.
+   */
+  ringHex?: string | null;
 }
 
 /** Rezolwer wstrzykiwany do UnitRenderer: ownerId → kontekst znaku (null = brak emblematu). */
@@ -238,15 +245,32 @@ export function svgToDataUri(svg: string): string {
 
 type EmblemVariant = 'civ' | 'cityState' | 'barbarian';
 
+/** `#rrggbb` (bez skrótu i bez przezroczystości) → ten sam zapis lowercase; inaczej `null`. */
+function normalizeRingHex(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const v = raw.trim();
+  return /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : null;
+}
+
+/**
+ * Barwa pierścienia dla danego wariantu. Tylko pełna cywilizacja niesie barwę
+ * własnej cywilizacji (`ringHex`); miasto-państwo i barbarzyńcy zostają przy
+ * stałych barwach z `RING_COLOR`, a brak/zła barwa cywilizacji → mosiądz.
+ */
+function ringColorFor(variant: EmblemVariant, ringHex: string | null | undefined): string {
+  if (variant !== 'civ') return RING_COLOR[variant];
+  return normalizeRingHex(ringHex) ?? RING_COLOR.civ;
+}
+
 /** Tarcza: ciemne koło + pierścień wariantu. Rysowana ZAWSZE, także przed wczytaniem obrazka. */
-function drawDisc(ctx: CanvasRenderingContext2D, variant: EmblemVariant): void {
+function drawDisc(ctx: CanvasRenderingContext2D, ringColor: string): void {
   const c = CANVAS_PX / 2;
   ctx.clearRect(0, 0, CANVAS_PX, CANVAS_PX);
   ctx.fillStyle = DISC_FILL;
   ctx.beginPath();
   ctx.arc(c, c, DISC_R, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = RING_COLOR[variant];
+  ctx.strokeStyle = ringColor;
   ctx.lineWidth = DISC_RING_W;
   ctx.beginPath();
   ctx.arc(c, c, DISC_R, 0, Math.PI * 2);
@@ -254,9 +278,9 @@ function drawDisc(ctx: CanvasRenderingContext2D, variant: EmblemVariant): void {
 }
 
 /** Zastępczy glif na czas ładowania obrazka (i trwały fallback, gdy obrazka nie ma). */
-function drawFallbackGlyph(ctx: CanvasRenderingContext2D, variant: EmblemVariant): void {
+function drawFallbackGlyph(ctx: CanvasRenderingContext2D, variant: EmblemVariant, ringColor: string): void {
   const c = CANVAS_PX / 2;
-  ctx.fillStyle = RING_COLOR[variant];
+  ctx.fillStyle = ringColor;
   ctx.font = 'bold 58px "Segoe UI Symbol", "Segoe UI", Arial, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -308,7 +332,10 @@ function emblemKey(ctx: UnitOwnerEmblemContext): string {
   const civ = (ctx.civId ?? '').trim().toLowerCase() || 'unknown';
   if (ctx.isCityState) return `cs:${civ}`;
   const era = Math.max(1, Math.round(ctx.era) || 1);
-  return `civ:${civ}:${era}`;
+  // Barwa obwódki wchodzi do klucza: dwie pełne cywilizacje o różnych kolorach
+  // NIE mogą dzielić tekstury (inaczej obwódka jednej byłaby w barwie drugiej).
+  const ring = normalizeRingHex(ctx.ringHex) ?? 'brass';
+  return `civ:${civ}:${era}:${ring}`;
 }
 
 /** Wczytuje obrazek (data-URI) i woła `onReady`. Eksportowana — używa jej też unitUpgradeBadges.ts. */
@@ -343,8 +370,9 @@ function getEmblemAsset(octx: UnitOwnerEmblemContext): EmblemAsset | null {
       ? 'cityState'
       : 'civ';
 
-  drawDisc(ctx, variant);
-  drawFallbackGlyph(ctx, variant);
+  const ringColor = ringColorFor(variant, octx.ringHex);
+  drawDisc(ctx, ringColor);
+  drawFallbackGlyph(ctx, variant, ringColor);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.minFilter = THREE.LinearFilter;
@@ -366,7 +394,7 @@ function getEmblemAsset(octx: UnitOwnerEmblemContext): EmblemAsset | null {
   if (variant === 'barbarian') {
     const svg = prepareSvgForCanvas(assets.barbarianSigilSvg(), RING_COLOR.barbarian);
     loadImageInto(svgToDataUri(svg), (img) => {
-      drawDisc(ctx, variant);
+      drawDisc(ctx, ringColor);
       drawSigil(ctx, img);
       texture.needsUpdate = true;
     });
@@ -376,7 +404,7 @@ function getEmblemAsset(octx: UnitOwnerEmblemContext): EmblemAsset | null {
   if (variant === 'cityState') {
     const svg = prepareSvgForCanvas(assets.civSigilSvg(civ), RING_COLOR.cityState);
     loadImageInto(svgToDataUri(svg), (img) => {
-      drawDisc(ctx, variant);
+      drawDisc(ctx, ringColor);
       drawSigil(ctx, img);
       texture.needsUpdate = true;
     });
@@ -386,11 +414,12 @@ function getEmblemAsset(octx: UnitOwnerEmblemContext): EmblemAsset | null {
   const portrait = assets.leaderPortraitUrl(civ, octx.era);
   if (portrait) {
     loadImageInto(portrait, (img) => {
-      drawDisc(ctx, variant);
+      drawDisc(ctx, ringColor);
       drawPortrait(ctx, img);
       // Pierścień na wierzchu portretu — inaczej zdjęcie zjada mu wewnętrzną krawędź.
+      // Barwa = barwa obwódki tej cywilizacji (ten sam pierścień co na tarczy).
       const c = CANVAS_PX / 2;
-      ctx.strokeStyle = RING_COLOR.civ;
+      ctx.strokeStyle = ringColor;
       ctx.lineWidth = DISC_RING_W;
       ctx.beginPath();
       ctx.arc(c, c, DISC_R, 0, Math.PI * 2);
@@ -405,7 +434,7 @@ function getEmblemAsset(octx: UnitOwnerEmblemContext): EmblemAsset | null {
   const svg = prepareSvgForCanvas(assets.civSigilSvg(civ), RING_COLOR.civ);
   if (svg) {
     loadImageInto(svgToDataUri(svg), (img) => {
-      drawDisc(ctx, variant);
+      drawDisc(ctx, ringColor);
       drawSigil(ctx, img);
       texture.needsUpdate = true;
     });

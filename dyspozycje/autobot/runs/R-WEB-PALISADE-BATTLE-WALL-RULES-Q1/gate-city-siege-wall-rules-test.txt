@@ -1,0 +1,45 @@
+
+R1 -- zdobycie wymaga wylomu (machiny)
+  [OK] units.json: machiny oblezenicze rozpoznane: Taran, Taran okuty, Katapulta, Wieża oblężnicza
+  [OK] zwykla piechota nie jest machina
+  [OK] MUR, bez machin: miasto NIE do zdobycia
+  [OK] MUR, z taranem (wylom): zdobycie
+  [OK] MUR, z katapulta: zdobycie
+  [OK] MUR, z wieza oblezniczna: zdobycie (zalozenie dispatchu)
+  [OK] PALISADA, bez machin: miasto NIE do zdobycia
+  [OK] PALISADA, z taranem (wylom): zdobycie
+  [OK] PALISADA, z katapulta: zdobycie
+  [OK] PALISADA, z wieza oblezniczna: zdobycie (zalozenie dispatchu)
+  [OK] bez obwarowania, bez machin: zdobycie jak dotad (bez zmian)
+  [OK] canCaptureCity: wylom taktyczny (BattleResult.wallBreached) otwiera miasto
+
+R2 -- melee vs obronca na murze/za palisada
+  [OK] MUR: melee zablokowane
+  [OK] MUR: dystansowy/machina moga
+  [OK] MUR: po wylomie melee wchodzi i walczy
+  [OK] PALISADA: melee zablokowane
+  [OK] PALISADA: dystansowy/machina moga
+  [OK] PALISADA: po wylomie melee wchodzi i walczy
+  [OK] units.json zawiera lucznika (jednostka dystansowa) do scenariusza
+
+R3 -- bonus obrony na murze/palisadzie naliczany w bitwie
+  [OK] mur +200%
+  [OK] palisada +100%
+  [OK] bonus naliczany -- konstruktor: wallDefenseTotalProc z builtBuildingIds (palisada w P)
+  [OK] mutacja lamie: konstruktor: wallDefenseTotalProc z builtBuildingIds (palisada w P)
+  [OK] bonus naliczany -- _singleBlow: bonus tylko dla obroncy onWallWalkway
+  [OK] mutacja lamie: _singleBlow: bonus tylko dla obroncy onWallWalkway
+  [OK] bonus naliczany -- skip(): computeInstantResult dostaje wallDefenseTotalProc
+  [OK] mutacja lamie: skip(): computeInstantResult dostaje wallDefenseTotalProc
+  [OK] R1 okablowanie -- AI bez machin nie szturmuje obwarowanego miasta
+  [OK] mutacja lamie: AI bez machin nie szturmuje obwarowanego miasta
+  [OK] R1 okablowanie -- szturm gracza: puste obwarowane miasto bez machin nie pada
+  [OK] mutacja lamie: szturm gracza: puste obwarowane miasto bez machin nie pada
+  [OK] R1 okablowanie -- wynik szturmu: wylom z BattleResult albo machina (Auto)
+  [OK] mutacja lamie: wynik szturmu: wylom z BattleResult albo machina (Auto)
+
+Mutacja funkcji: wylom zawsze true => R1 czerwone
+  [OK] zmutowane canCaptureCity zdobywa mur bez wylomu => asercje R1 by padly
+
+WYNIK: 34 OK, 0 FAIL
+EXIT=0

@@ -1,0 +1,4 @@
+EXIT=0
+Command: node tools/battle-melee-attack-doctrine-test.cjs (cwd gra/), HEAD gra/src.
+PASS same 24v24 warriors advance to adjacency then strike in Atak and Szturm
+PASS empty target remains no-op

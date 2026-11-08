@@ -32,10 +32,13 @@ export interface ResolveProposalPnOptions {
   /** Pełny cykl płatności (handel per_turn × turns tur). */
   turnsMultiplier?: number;
   perTurn?: boolean;
+  /** R-WEB-PEACE-CITY-CESSION-Q1 r2: akcja propozycji (bramka pozycji 'miasto'). */
+  actionId?: string;
 }
 
 export function buildProposalPnSumOpts(opts?: ResolveProposalPnOptions): DiplomacySumPnOptions {
   return {
+    actionId: opts?.actionId,
     difficulty: opts?.difficulty ?? 'normal',
     proposerOwnerId: opts?.proposerOwnerId,
     playerOwnerId: opts?.playerOwnerId ?? 0,
@@ -85,6 +88,12 @@ export interface DiploPairMeta {
    */
   peaceUntilTurn?: number;
   /**
+   * R-WEB-TRUCE-Q1 r3 (N1/N6) — rozejm: tura, w której rozejm przestaje obowiązywać (wyłącznie).
+   * Ustawiany przy akceptacji rozejmu (długość 5/10/15 tur); po osiągnięciu tury silnik
+   * przywraca wojnę BEZ kary Wiarygodności i bez flagi agresora. Brak pola = brak rozejmu.
+   */
+  truceUntilTurn?: number;
+  /**
    * Odwet (C-WIAR-ODWET=A) — ostatnie przewinienie w TEJ parze otwierające prawo
    * do bezkarnej (bez N1/N2) wojny odwetowej w oknie `wiarygodnoscOdwetOknoTur`
    * tur. `byOwnerId` = kto zawinił, `againstOwnerId` = wobec kogo (tylko TA strona
@@ -109,6 +118,12 @@ export interface BasketItem {
   id: string;
   ilosc?: number;
   hexKey?: string;
+  /** R-WEB-PEACE-CITY-CESSION-Q1 r2: wycena miasta (PW, `diplomacyPnMiasto`) — tylko typ 'miasto'. */
+  cityPn?: number;
+  /** Waga miasta po stronie oddającej (`diplomacyMiastoWagaBilansu`). */
+  cityWeight?: number;
+  /** R-WEB-PEACE-CITY-CESSION-Q1 r3: czytelna nazwa miasta (tylko UI; typ 'miasto'). */
+  cityLabel?: string;
 }
 
 export function diploPairKey(a: number, b: number): string {
@@ -215,12 +230,13 @@ export function resolveProposalPn(
     goldOnce?: number;
     giveItems?: readonly BasketItem[];
     receiveItems?: readonly BasketItem[];
+    actionId?: string;
   },
   opts?: ResolveProposalPnOptions,
 ): { givePn: number; receivePn: number } {
   let givePn = payload.givePn ?? 0;
   let receivePn = payload.receivePn ?? 0;
-  const sumBase = buildProposalPnSumOpts(opts);
+  const sumBase = buildProposalPnSumOpts({ ...opts, actionId: payload.actionId ?? opts?.actionId });
   if (payload.giveItems?.length) {
     const sum = diplomacySumPn([...payload.giveItems], { ...sumBase, side: 'give' });
     if (sum != null) givePn = sum;

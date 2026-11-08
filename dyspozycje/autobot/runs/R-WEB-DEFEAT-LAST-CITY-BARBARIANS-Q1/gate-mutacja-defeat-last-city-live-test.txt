@@ -1,0 +1,31 @@
+[defeat-last-city-live] vite build do katalogu tymczasowego: /tmp/tmp.f17iUk2B7N
+
+-- S1: jedno miasto + osadnik, barbarzyńcy zdobywają miasto --
+  OK  S1 gracz ma dokładnie 1 miasto na starcie
+  OK  S1 osadnik gracza dodany
+  OK  S1 gracz ma osadnika przed utratą miasta
+  OK  S1 miasto przejęte przez barbarzyńców (ownerId=-1)
+      S1 po endTurn: {"turnBefore":1,"turnAfter":2,"overlay":false,"gameOver":false}
+ FAIL S1 ekran przegranej po realnym endTurn -- {"turnBefore":1,"turnAfter":2,"overlay":false,"gameOver":false}
+ FAIL S1 gameOver=true -- {"turnBefore":1,"turnAfter":2,"overlay":false,"gameOver":false}
+  OK  S1 kolejny endTurn nie przesuwa tury po przegranej
+
+-- S2: jedno miasto, bez osadnika, barbarzyńcy zdobywają miasto --
+  OK  S2 gracz ma dokładnie 1 miasto na starcie
+  OK  S2 miasto przejęte przez barbarzyńców (ownerId=-1)
+      S2 po endTurn: {"turnBefore":1,"turnAfter":2,"overlay":false,"gameOver":false}
+ FAIL S2 ekran przegranej po realnym endTurn -- {"turnBefore":1,"turnAfter":2,"overlay":false,"gameOver":false}
+ FAIL S2 gameOver=true -- {"turnBefore":1,"turnAfter":2,"overlay":false,"gameOver":false}
+  OK  S2 kolejny endTurn nie przesuwa tury po przegranej
+
+-- S3 (kontrola): dwa miasta, barbarzyńcy zdobywają jedno --
+  OK  S3 gracz ma 2 miasta przed utratą
+  OK  S3 jedno miasto przejęte przez barbarzyńców
+      S3 po endTurn: {"turnBefore":1,"turnAfter":2,"overlay":false,"gameOver":false}
+  OK  S3 BRAK ekranu przegranej (gracz ma jeszcze miasto)
+  OK  S3 gameOver=false
+  OK  S3 endTurn przesunął turę
+  OK  C. zero pageerror / console.error w scenariuszach
+
+[defeat-last-city-live] 14 passed, 4 failed
+EXIT=1

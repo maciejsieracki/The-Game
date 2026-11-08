@@ -418,7 +418,15 @@ export interface SaveGame {
   autoMarch?: { leaderId: string; destQ: number; destR: number };
 
   /** A3: wszystkie zaplanowane marsze gracza (unitId → cel). */
-  plannedMarches?: Record<string, { destQ: number; destR: number; attackUnitId?: string }>;
+  plannedMarches?: Record<string, {
+    destQ: number;
+    destR: number;
+    attackUnitId?: string;
+    generalTargetId?: string;
+  }>;
+
+  /** Default rally behavior applied to newly completed player recruits. */
+  recruitFollowGeneralDefault?: boolean;
 
   /** R-RALLY-POINT-AUTOMARCH-Q1: one explicit rally point per empire. */
   rallyPoints?: Record<string, { q: number; r: number }>;
@@ -719,6 +727,8 @@ export function deserializeGame(json: string): SaveGame {
     diploRelations: obj2.diploRelations,
     autoMarch: obj2.autoMarch,
     plannedMarches: obj2.plannedMarches,
+    recruitFollowGeneralDefault: typeof obj2.recruitFollowGeneralDefault === 'boolean'
+      ? obj2.recruitFollowGeneralDefault : undefined,
     rallyPoints: obj2.rallyPoints,
     tradeRoutes: Array.isArray(obj2.tradeRoutes) ? obj2.tradeRoutes : undefined,
     meta: obj.meta,

@@ -86,7 +86,7 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 {
   const fnStart = mainSrc.indexOf('function healStuckDeferredPreBattleQueueOnEndTurnAttempt(): void {');
   ok(fnStart >= 0, '[A1] main.ts deklaruje function healStuckDeferredPreBattleQueueOnEndTurnAttempt(');
-  const fnEnd = fnStart >= 0 ? mainSrc.indexOf('\n    function triggerPlayerEndTurn', fnStart) : -1;
+  const fnEnd = fnStart >= 0 ? mainSrc.indexOf('\n    }\n', fnStart) : -1;
   const fnBody = (fnStart >= 0 && fnEnd > fnStart) ? mainSrc.slice(fnStart, fnEnd) : '';
 
   ok(/if \(!hasPendingAutoPreBattle\(\)\) return;/.test(fnBody),
@@ -112,15 +112,16 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
     '[A8 kontrola G2] zaden warunek `if (...)` w tej funkcji nie odwoluje sie do aiTurnAwaitingBattle/aiCmdResume -- funkcja jest NIEZALEZNA od tych flag, w przeciwienstwie do starej galezi 1 (bramkowanej `aiTurnAwaitingBattle||aiCmdResume`), wiec pokrywa tez sciezke barbarzynska');
 }
 
-// A9) triggerPlayerEndTurn wola healStuckDeferredPreBattleQueueOnEndTurnAttempt() JAKO
-//     PIERWSZA instrukcje, PRZED sprawdzeniem canPlayerInitiateEndTurn() -- G2, zeby
-//     sprzatanie zdazylo sie odpalic nawet na sciezce ktora zaraz potem robi early return.
+// A9) wspólny punkt wejścia advanceSeat wola timeout przed bramką, triggerPlayerEndTurn
+//     deleguje do advanceSeat -- G2, również na aktualnym wejściu z HUD/klawiatury.
 {
   const tpetIdx = mainSrc.indexOf('function triggerPlayerEndTurn(): void {');
   ok(tpetIdx >= 0, '[A9-setup] znaleziono function triggerPlayerEndTurn(');
   const tpetHead = tpetIdx >= 0 ? mainSrc.slice(tpetIdx, tpetIdx + 400) : '';
-  ok(/function triggerPlayerEndTurn\(\): void \{\s*\n\s*healStuckDeferredPreBattleQueueOnEndTurnAttempt\(\);\s*\n\s*if \(!canPlayerInitiateEndTurn\(\)\) \{\s*\n\s*console\.warn\('\[EndTurn\] triggerPlayerEndTurn: odrzucono \(canPlayerInitiateEndTurn=false\)'\);\s*\n\s*hintEndTurnBlocked\(\);\s*\n\s*return;\s*\n\s*\}/.test(tpetHead),
-    '[A9] triggerPlayerEndTurn: healStuckDeferredPreBattleQueueOnEndTurnAttempt() jest DOSLOWNIE pierwsza linia ciala funkcji, przed `if (!canPlayerInitiateEndTurn())` i jego early return -- zweryfikowane w kodzie, nie zalozone');
+  const advanceIdx = mainSrc.indexOf('function advanceSeat(): void {');
+  ok(/function triggerPlayerEndTurn\(\): void \{[\s\S]*?advanceSeat\(\);/.test(tpetHead)
+    && /function advanceSeat\(\): void \{[\s\S]*?healStuckDeferredPreBattleQueueOnEndTurnAttempt\(\);[\s\S]*?if \(!canPlayerInitiateEndTurn\(\)\)/.test(mainSrc.slice(advanceIdx, advanceIdx >= 0 ? mainSrc.indexOf('\n    function ', advanceIdx + 20) : -1)),
+    '[A9] triggerPlayerEndTurn deleguje do advanceSeat, który czyści kolejkę przed bramką end-turn');
 }
 
 // A-order kontrola) canPlayerInitiateEndTurn SAMO tez wola healStaleEndTurnBlockers() na
@@ -144,6 +145,24 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
   const codeLines = hsBody.split('\n').filter(line => !/^\s*\/\//.test(line));
   ok(!codeLines.some(line => line.includes('pendingBattleStuck')),
     '[A10] healStaleEndTurnBlockers (galaz pasywna, wolana tez z canEndTurn) NIE zawiera juz pendingBattleStuck w kodzie wykonywalnym -- G1 fix');
+}
+
+// A10b) aktywny pipeline świata jest osobnym markerem życia. Pasywny healer nie może
+// skasować jego flag/overlay po 8 s, a endActiveHumanTurn zdejmuje marker tylko w finally.
+{
+  const hsStart = mainSrc.indexOf('function healStaleEndTurnBlockers(): void {');
+  const hsEnd = hsStart >= 0 ? mainSrc.indexOf('\n    function canPlayerInitiateEndTurn', hsStart) : -1;
+  const hsBody = (hsStart >= 0 && hsEnd > hsStart) ? mainSrc.slice(hsStart, hsEnd) : '';
+  const eotStart = mainSrc.indexOf('function endActiveHumanTurn(humanOwnerId: number): void {');
+  const eotEnd = eotStart >= 0 ? mainSrc.indexOf('\n    function ', eotStart + 20) : -1;
+  const eotBody = eotStart >= 0 ? mainSrc.slice(eotStart, eotEnd > eotStart ? eotEnd : eotStart + 20000) : '';
+  ok(/if \(!activeWorldEndTurnPipeline\) \{[\s\S]*?aiTurnAwaitingBattle = false;/.test(hsBody)
+    && /if \(!activeWorldEndTurnPipeline && endTurnInProgress/.test(hsBody),
+    '[A10b-1] pasywny healer bramkuje czyszczenie flag end-turn, AI resume i nakładki, gdy żyje world-EOT');
+  ok(/endTurnInProgress = true;\s*\n\s*endTurnStartedAt = Date\.now\(\);\s*\n\s*activeWorldEndTurnPipeline = true;\s*\n\s*void \(async \(\) => \{/.test(eotBody),
+    '[A10b-2] marker ustawiany synchronicznie przed startem async EOT');
+  ok(/finally \{[\s\S]*?activeWorldEndTurnPipeline = false;/.test(eotBody),
+    '[A10b-3] marker czyszczony w finally endActiveHumanTurn');
 }
 
 // A11) G-DODATKOWO -- 3 wywolania showArmyMergePanel w main.ts, WSZYSTKIE maja flush w

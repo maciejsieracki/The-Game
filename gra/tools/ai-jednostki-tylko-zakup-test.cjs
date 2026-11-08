@@ -19,6 +19,7 @@ const fs = require('fs');
 const path = require('path');
 const GRA = path.resolve(__dirname, '..');
 const esbuild = require(path.resolve(GRA, 'node_modules', 'esbuild'));
+const ts = require(path.resolve(GRA, 'node_modules', 'typescript'));
 
 const entry  = path.join(__dirname, '.ai-jednostki-tylko-zakup-entry.ts');
 const bundle = path.join(__dirname, '.ai-jednostki-tylko-zakup-bundle.cjs');
@@ -395,10 +396,39 @@ if (guardSrcTs) {
     'D13c: zebrane 2 Pracy wracaja do puli wlasciciela (refunded: 0 -> 2)');
 }
 
-// --- D10-D12: wpiecie guardu w tick — relacja, nie tekst hunku --------------
-const idxCall = mainTsSrc.indexOf('stripLegacyUnitsFromPracaQueue(city.ownerId, prod0');
-const idxAdvance = mainTsSrc.indexOf('advanceProduction(prod0, pracaBudynki)');
-assert(idxCall > 0 && idxAdvance > 0 && idxCall < idxAdvance,
+// --- D10-D12: wpiecie guardu w tick — relacja AST, nie tekst wywolania ------
+const mainTsAst = ts.createSourceFile(MAIN_TS, mainTsSrc, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+let guardCallNode = null;
+let advanceCallNode = null;
+function findRelevantCalls(node) {
+  if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+    if (node.expression.text === 'stripLegacyUnitsFromPracaQueue'
+      && node.arguments[0]?.getText(mainTsAst) === 'city.ownerId'
+      && node.arguments[1]?.getText(mainTsAst) === 'prod0') {
+      guardCallNode = node;
+    }
+    if (node.expression.text === 'advanceProduction'
+      && node.arguments.length >= 2
+      && node.arguments[0]?.getText(mainTsAst) === 'prod0'
+      && node.arguments[1]?.getText(mainTsAst) === 'pracaBudynki') {
+      advanceCallNode = node;
+    }
+  }
+  ts.forEachChild(node, findRelevantCalls);
+}
+findRelevantCalls(mainTsAst);
+function nearestIterationStatement(node) {
+  let parent = node?.parent ?? null;
+  while (parent && !ts.isIterationStatement(parent, false)) parent = parent.parent;
+  return parent;
+}
+const sameCityIteration = guardCallNode
+  && advanceCallNode
+  && nearestIterationStatement(guardCallNode) === nearestIterationStatement(advanceCallNode)
+  && ts.isForOfStatement(nearestIterationStatement(guardCallNode));
+assert(guardCallNode && advanceCallNode
+  && guardCallNode.getStart(mainTsAst) < advanceCallNode.getStart(mainTsAst)
+  && sameCityIteration,
   'D10: guard jest wolany PRZED `advanceProduction` w ticku per-miasto');
 assert((mainTsSrc.match(/advanceProduction\(/g) || []).length === 1,
   'D11: main.ts ma DOKLADNIE JEDEN punkt zuzycia Pracy — nowy, niebroniony by tu uciekl');

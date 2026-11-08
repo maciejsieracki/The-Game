@@ -1,0 +1,22 @@
+  [FAIL] [K2] S3-1: tartak NA lesie rownina pod farme bez dostepu do rzeki (3/3) — D-R5-1 usunieta
+  [FAIL] [K3] S3-1: tartak NA lesie rownina pod farme bez dostepu do rzeki (3/3) — D-R5-1 usunieta
+  [FAIL] auto-improvements.ts: blokada D-R5-1 `farmWouldClaimForest` usunieta (S3-1b)
+  [FAIL] [K2] S3-1: ZERO tartakow na lesie SASIADUJACYM z rzeka (wzgorza i rownina)
+  [FAIL] [K2] S3-1: ZERO obozow na rzece i na heksie z dostepem do rzeki
+  [FAIL] [K2] S3-1: tartak na lesie BEZ dostepu do rzeki (wzgorza i rownina) 4/4
+  [FAIL] [K2] S3-1(c): tartaki na WZGORZACH (ost. tura 0) przed tartakami na rowninie (pierwsza tura 1000000000)
+  [FAIL] [K3] S3-1: ZERO tartakow na lesie SASIADUJACYM z rzeka (wzgorza i rownina)
+  [FAIL] [K3] S3-1: ZERO obozow na rzece i na heksie z dostepem do rzeki
+  [FAIL] [K3] S3-1: tartak na lesie BEZ dostepu do rzeki (wzgorza i rownina) 4/4
+  [FAIL] [K3] S3-1(c): tartaki na WZGORZACH (ost. tura 0) przed tartakami na rowninie (pierwsza tura 1000000000)
+  [FAIL] [K2] S3-1(c): las-rownina bez dostepu dopuszczony PO wzgorzach
+  [FAIL] [K3] S3-1(c): las-rownina bez dostepu dopuszczony PO wzgorzach
+  [FAIL] [K2] S3-1: heks NA rzece (bez sasiada rzeki) i jego sasiedzi — zero tartaku/obozu (2/2)
+  [FAIL] [K3] S3-1: heks NA rzece (bez sasiada rzeki) i jego sasiedzi — zero tartaku/obozu (2/2)
+  [FAIL] [S „surowce”] ZERO tartakow na lesie z dostepem do rzeki
+  [FAIL] [K1] S3-2: wiecej niz 3 rozkazy/miasto/ture przy duzej puli (3) — limit etapu zdjety
+  [FAIL] [K2] S3-2: wiecej niz 3 rozkazy/miasto/ture przy duzej puli (3) — limit etapu zdjety
+  [FAIL] [K3] S3-2: wiecej niz 3 rozkazy/miasto/ture przy duzej puli (3) — limit etapu zdjety
+  [FAIL] auto-improvements.ts: FOOD_STAGE_MAX_ITEMS_PER_CITY = Infinity (limit zdjety)
+autoimprove-stages-q1-test: 278 passed, 20 failed
+EXIT=1

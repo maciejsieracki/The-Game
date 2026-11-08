@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Celtowie** — agresywna piechota z bronią sieczną; brawurowa szarża. Jednostka unikalna: **Miecznik galijski**. Religia: Religia celtycka (druidyzm).
+**Celtowie** — agresywna piechota z bronią sieczną; brawurowa szarża. Jednostki specjalne według rosteru: **Soldurii, Rydwan celtycki, Miecznik galijski**. Religia: Religia celtycka (druidyzm).
 
 ---
 
@@ -24,19 +24,12 @@
 **Celtowie** to typ cywilizacji dostępny w wersji 1.0. Charakter: *agresywna piechota z bronią sieczną; brawurowa szarża*.
 
 **Epoki startowe w kreatorze:** Brąz, Żelazo.
-**Jednostka specjalna:** Miecznik galijski.
+**Zamienniki według rosteru:** Soldurii, Rydwan celtycki, Miecznik galijski
 **Religia państwa:** Religia celtycka (druidyzm).
 **Przykładowe miasta w klastrze:** Bibracte, Gergowia, Alezja, Avaricum, Uxellodunum….
 **Władcy (imiona per epoka):** Kamień — Ambigatos · Brąz — Brennus · Żelazo — Wercyngetoryks · Antyk — Boudika.
 
-**Bonus startowy:** +Atak/Morale piechoty przy szarży (brawura); długie miecze — premia do Uderzenia.
-
-**Trzy linie bonusów (macierz):**
-- Brawura szarży: +25% ataku piechoty przy pierwszym uderzeniu (furia celtycka)
-- Długi miecz galijski: +15% Uderzenia (zasięg ostrza i siła cięcia)
-- Miecznik galijski = wojownik z długim mieczem; silny w szarży, słabszy w przeciągłej obronie
-
-**Słabsza strona (balans):** słabsza dyscyplina/obrona w przeciągłej walce; brak ciężkiej formacji.
+**Bonusy cywilizacji:** Obowiązujące bonusy i modyfikatory cywilizacji wynikają z macierzy parametrów. Dawne bonusy opisowe nie są doliczane.
 
 **Profil AI (skala 0–9):** agresja 6/9 — umiarkowana.
 

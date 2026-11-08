@@ -38,10 +38,12 @@
 
 export type { HexCoords } from '../types/hex';
 import { TerenBazowy, Nakladka } from '../types/hex';
+import { TEREN_DANE_LABEL_TO_ENUM } from '../map/terrain-names';
 import terrainYieldsData from '../../data/terrain-yields.json';
 import type { TerrainModifierDef, TerrainTypeDef } from '../data/loader';
 import { buildingEffectAtLevel, cityPracaInteger, splitPraca, buildingLevelForEpoch } from './production';
 import { applyImprovementBonuses, oreYieldFromImprovements } from './terrain-improvements';
+import { applyCivMatrixParam, civMatrixParam, loadCivMatrix } from './civ-matrix';
 
 // ---------------------------------------------------------------------------
 // Building record shape (mirrors buildings.json)
@@ -107,11 +109,17 @@ export interface EconParams {
   /** Twardy cap ludności bez ŻADNEGO budynku (Spichlerz/Akwedukt) — dolny stopień drabinki, domyślnie 5. */
   akweduktProgLudnosci:             number;
   /**
-   * Twardy cap ludności ze Spichlerzem (I lub II), ale BEZ Akweduktu — środkowy stopień
+   * Twardy cap ludności ze Spichlerzem I (bez Spichlerza II i bez Akweduktu) — środkowy stopień
    * drabinki (R-SPICHLERZ-CAP-LUDNOSCI-ETAP, Maciej 2026-08-09, ECHO A), domyślnie 8.
    */
   spichlerzProgLudnosci:            number;
-  /** Twardy cap ludności po zbudowaniu Akweduktu — górny stopień (domyślnie 12, obniżka z dawnych 15). */
+  /**
+   * Twardy cap ludności ze Spichlerzem II, ale BEZ Akweduktu — stopień drabinki dodany przez
+   * R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1 (decyzja właściciela 2026-11-04), domyślnie 12.
+   * Opcjonalny w typie `Pick`-ów wołających (brak → spadek do `spichlerzProgLudnosci`).
+   */
+  spichlerzIIProgLudnosci:          number;
+  /** Twardy cap ludności po zbudowaniu Akweduktu — górny stopień (domyślnie 20, niezależnie od Spichlerza; wcześniej 12, a przed tym 15). */
   akweduktMaxLudnosci:              number;
   zywnoscZuzytkaPopulacja:          number;
   zdrowieModyfikatorWspolczynnik:   number;  // health->growth coeff [PT 0.05]
@@ -145,14 +153,10 @@ export interface EconParams {
    */
   budynekMennicaMnoznik:            number;
   /**
-   * JEDYNY mnożnik Handlu netto po scaleniu (Maciej 2026-07-25): mnoży CAŁY
-   * handelNetto miasta (Skarb + Nauka + Zamożność razem, PRZED podziałem
-   * suwakiem) TYLKO gdy technologia Waluta jest odkryta ORAZ Mennica jest
-   * zbudowana w tym mieście (bramka AND liczona przez wołającego -- ctx.maMennica
-   * && ctx.walutaOdkryta w cityYieldPerTurn). Wartości właściciela: easy x2,0 /
-   * normal x1,5 / hard x1,0 (brak efektu). Dawne DWA osobne mnożniki (waluta_mnoznik
-   * na cały Handel przy samym techu; mennica_mnoznik_po_walucie tylko na strumień
-   * Pieniądza) zostały scalone w ten jeden -- patrz CityYieldContext.walutaOdkryta.
+   * Tax-only Mint multiplier on handelNetto before the tax slider split.
+   * The caller gates it with the owner's currency tech, a built Mint and gold
+   * access. Rates: easy ×1.62, normal ×1.50, hard ×1.38. Route income bypasses
+   * this city tax calculation and is unaffected.
    */
   mennicaMnoznikPoWalucie:          number;
   /**
@@ -163,7 +167,6 @@ export interface EconParams {
    * już nigdzie nie konsumuje w formule Efektu 1.
    */
   walutaMnoznik:                    number;
-  targowiskoPracaMnoznik:           number;  // Efekt 2: doPuli x mnoznik -> Pieniadz gdy maTargowisko+waluta (domyslnie 2)
   suwaakHandelNaukaDefault:         number;
   suwaakHandelPieniadz:             number;
   suwaakHandelLuksus:               number;
@@ -223,7 +226,8 @@ export function loadEconParams(
     spichlerzZachowaniePoPrzroscie: read(em, 'spichlerz_zachowanie_po_wzroscie', 0.5),
     akweduktProgLudnosci:           read(em, 'akwedukt_prog_ludnosci', 5),
     spichlerzProgLudnosci:          read(em, 'spichlerz_prog_ludnosci', 8),
-    akweduktMaxLudnosci:            read(em, 'akwedukt_max_ludnosci', 12),
+    spichlerzIIProgLudnosci:        read(em, 'spichlerz_ii_prog_ludnosci', 12),
+    akweduktMaxLudnosci:            read(em, 'akwedukt_max_ludnosci', 20),
     zywnoscZuzytkaPopulacja:        read(em, 'zywnosc_zuzytka_populacja', 1),
     zdrowieModyfikatorWspolczynnik: read(em, 'zdrowie_modyfikator_wspolczynnik', 0.05),
     korupcjaWspolczynnikDystansu:   read(em, 'korupcja_wspolczynnik_dystansu', 2),
@@ -239,7 +243,6 @@ export function loadEconParams(
     budynekMennicaMnoznik:          read(bu, 'budynek_mennica_mnoznik', 1),      // NIEUZYWANE 2026-07-25
     mennicaMnoznikPoWalucie:        read(gl, 'mennica_mnoznik_po_walucie', 1.5), // JEDYNY mnoznik Efektu 1
     walutaMnoznik:                  read(bu, 'waluta_mnoznik', 2),               // NIEUZYWANE 2026-07-25
-    targowiskoPracaMnoznik:         read(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
     suwaakHandelNaukaDefault:       read(em, 'suwak_handel_nauka_domyslnie', 60),
     suwaakHandelPieniadz:           read(em, 'suwak_handel_pieniadz_domyslnie', 30),
     suwaakHandelLuksus:             read(em, 'suwak_handel_luksus_domyslnie', 10),
@@ -277,6 +280,12 @@ export interface WorkedTile {
   ulepszenieKey?: string;
   /** Wiele warstw ulepszeń na heksie (farma+irygacja, farma+bydło). */
   ulepszeniaKeys?: string[];
+  /**
+   * R-WEB-IMPROVEMENT-ERA-SCALING-Q1: AKTUALNA epoka właściciela heksu (1=Kamień, 2=Brąz, 3=Żelazo).
+   * Skaluje plony ulepszeń (+1 Żyw/Pra/Han/Pieniądz za epokę ponad Kamień) w `tileYield`.
+   * Brak = Kamień (wartości bazowe).
+   */
+  wlascicielEra?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -291,6 +300,8 @@ export interface WorkedTile {
 export interface EconomyCity {
   id:              string;
   ludnosc:         number;
+  /** Civilization key used to resolve Matrix population-cap deltas. */
+  civKey?:         string | null;
   zdrowie:         number;
   czyStolica:      boolean;
   maSpichlerz:     boolean;
@@ -326,16 +337,16 @@ export interface CityYieldResult {
   handelBrutto:   number;
   pracaTerenu:    number;
   pracaBudynkow:  number;
-  pieniadzZPracy: number;  // Efekt 2: doPuli * targowiskoPracaMnoznik (0 gdy brak Targowiska/Waluty)
+  pieniadzZPracy: number;  // deprecated compatibility field; always 0 (Work is converted manually from the empire pool)
   /**
    * Decyzja 67B (Maciej 2026-07-25, cytat: "Budynki, jeżeli miały wcześniej handel...
    * powinny go dawać nie bezpośrednio do skarbca, tylko do puli, do podziału"). Suma
    * SUROWA (przed-mnoznikowa, przed podzialem suwakiem) Pieniadza z bazy budynkow
    * (Σ buildingValue(record, level, 'pieniadz')) -- WYLACZNIE pole informacyjne do
-   * UI/debug (panel miasta "ile Pieniadza z budynkow"), analogicznie do pieniadzZPracy
-   * powyzej. Ta wartosc NIE trafia juz bezposrednio do `pieniadz` (patrz Step 3/8
+   * UI/debug (panel miasta "ile Pieniadza z budynkow"). Ta wartosc NIE trafia
+   * bezposrednio do `pieniadz` (patrz Step 3/8
    * nizej) -- wchodzi do handelBazowy PRZED Targowiskiem/civHandelMult/trasami/
-   * korupcja/Waluta+Mennica, dokladnie jak pieniadzZPracy (D5), i dopiero POTEM jest
+   * korupcja/Waluta+Mennica i dopiero POTEM jest
    * dzielona suwakiem Nauka/Pieniadz/Luksus razem z reszta Daniny. Realny wplyw
    * mnoznikow/podzialu widac w polu `pieniadz` (i `nauka`/`luksus`), NIE tutaj.
    */
@@ -375,16 +386,8 @@ const ZERO_YIELD: TileYield = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kami
 // Klucz 'Wybrzeże' zostaje dosłownie — etykieta z terrain-yields.json, poza allowlistą
 // P-MAPGEN-PANGEA-OBRYS-P4-WYBRZEZE-Q1 (nietknięty plik danych); wartość mapuje już na
 // nowy TerenBazowy.PlytkieMorze.
-const TERRAIN_NAME_TO_ENUM: Record<string, TerenBazowy> = {
-  'Łąka':     TerenBazowy.Laka,
-  'Równina':  TerenBazowy.Rownina,
-  'Wzgórza':  TerenBazowy.Wzgorza,
-  'Góry':     TerenBazowy.Gory,
-  'Wybrzeże': TerenBazowy.PlytkieMorze,
-  'Morze':    TerenBazowy.Morze,
-  'Pustynia': TerenBazowy.Pustynia,
-  'Polarny':  TerenBazowy.Polarny,
-};
+// R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1: mapa etykiet danych z jednego źródła (map/terrain-names.ts).
+const TERRAIN_NAME_TO_ENUM: Record<string, TerenBazowy> = TEREN_DANE_LABEL_TO_ENUM;
 
 function terrainRowToTileYield(row: TerrainTypeDef | TerrainModifierDef): TileYield {
   return {
@@ -462,7 +465,7 @@ export function tileYield(tile: WorkedTile): TileYield {
     ? tile.ulepszeniaKeys
     : (tile.ulepszenieKey ? [tile.ulepszenieKey] : []);
   if (impKeys.length) {
-    applyImprovementBonuses(out, impKeys);
+    applyImprovementBonuses(out, impKeys, tile.wlascicielEra);
     out.zywnosc = Math.max(0, out.zywnosc);
     out.praca   = Math.max(0, out.praca);
     out.handel  = Math.max(0, out.handel);
@@ -644,32 +647,19 @@ export interface CityYieldContext {
    * Mennica stoi WYŁĄCZNIE w stolicy). Wołający (turn-economy.ts, cityPanel.ts)
    * liczy to jako union budynków po WSZYSTKICH miastach tego ownera -- economy.ts
    * samo nie zna innych miast, dostaje gotowy boolean. Sam ten flag nic nie
-   * mnoży -- jest jednym z DWÓCH warunków (obok walutaOdkryta) bramki Efektu 1
-   * (patrz niżej). Dawne osobne pole `mennicaMnoznik` (mnożnik TYLKO na strumień
-   * Pieniądza) zostało USUNIĘTE 2026-07-25 (decyzja Maciej) -- efekt jest teraz
-   * jeden, scalony w Efekcie 1 poniżej, i wymaga Mennicy + Waluty razem.
+   * mnoży -- jest jednym z DWÓCH warunków (obok walutaOdkryta) bramki Mint
+   * tax multiplier below. The one built Mint activates its tax effect across
+   * every city owned by that civilization.
    */
   maMennica:      boolean;
   /**
-   * Waluta (currency tech) discovered by this player.
-   * Efekt 1 (SCALONY, decyzja Maciej 2026-07-25): handelNetto *= mennicaMnoznikPoWalucie
-   * (easy x2,0 / normal x1,5 / hard x1,0 -- BRAK efektu na hard) TYLKO gdy
-   * walutaOdkryta ORAZ maMennica są oba prawdziwe. Sam tech Waluty już NIE
-   * wystarcza -- to jest sedno zmiany; przedtem (do 2026-07-24) sam tech dawał
-   * już x2 niezależnie od trudności i budynku, a Mennica mnożyła osobno tylko
-   * strumień Pieniądza -- oba stare efekty są teraz jednym.
-   * Efekt 2 (bez zmian): doPuli (Praca surplus) -> Pieniadz x targowiskoPracaMnoznik gdy maTargowisko && walutaOdkryta.
+   * Waluta (currency tech) discovered by this player. Mint modifies only local
+   * tax when this and the empire-wide Mint flag are both true. Difficulty rate:
+   * easy ×1.62 / normal ×1.50 / hard ×1.38. Trade routes are not in this pool.
+   * Work-to-tax conversion is an explicit owner action from the remaining empire pool.
    * Optional; defaults to false so existing ctx literals remain valid.
    */
   walutaOdkryta?: boolean;
-  /**
-   * Per-cyw/religia override for Efekt 1 bazy (mnoznikHandelPieniadz z civs.json,
-   * 1.7-2.4, lub religionTradeWalutaOverride). Gdy ustawione, zastepuje
-   * params.mennicaMnoznikPoWalucie jako WARTOŚĆ mnożnika -- NIE omija bramki
-   * walutaOdkryta && maMennica powyżej (bramka decyduje CZY mnożyć, override
-   * decyduje O ILE).
-   */
-  walutaMnoznikOverride?: number;
   /** RDY-01: mnoznik na Handel z bonusu cyw (np. Grecy +15%). Domyslnie 1. */
   civHandelMult?: number;
   /** RDY-01: mnoznik na Nauke z bonusu cyw (np. Inkowie +15%). Domyslnie 1. */
@@ -687,20 +677,8 @@ export interface CityYieldContext {
    * (brak tras z budynkiem).
    */
   premiaHandluTrasHandlowych?: number;
-  /**
-   * R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1 (ECHO wlasciciela, "Pelna integracja: przed
-   * mnoznikiem Wealth"): dochod DYSTANSOWY z tras handlowych tego miasta
-   * (computeTradeRouteIncomeByCity w trade-routes.ts, wolany w main.ts, przekazany przez
-   * advanceCityEconomy/previewCityEconomy jako tradeIncomeByCity.get(city.id)). PRZEDTEM
-   * dodawany OSOBNO do skarbca miasta PO mnozniku Wealth (pieniadzZTras w turn-economy.ts) --
-   * TERAZ wchodzi tu, do wspolnej puli handelBrutto, wiec przechodzi przez korupcje/Waluta+
-   * Mennica i podzial suwakami Handlu (nauka/zloto/luksus) DOKLADNIE tak jak reszta Daniny,
-   * a finalny pieniadz jest mnozony przez Wealth jak kazdy inny strumien miasta. Domyslnie 0
-   * (brak tras) tak, zeby istniejace literaly ctx zostaly wazne. NIE mylic z
-   * premiaHandluTrasHandlowych powyzej (osobny mechanizm -- premia budynkowa za SAM fakt
-   * posiadania trasy z budynkiem, nie dochod dystansowy).
-   */
-  dochodTrasHandlowych?: number;
+  /** Owner-selected Work converted to ordinary tax, already expressed at the configured rate. */
+  additionalTax?: number;
   /**
    * Zadanie 2 (2026-07-23): liczba Garncarni ZBUDOWANYCH W TYM MIESCIE (nie civ-wide).
    * Kazda dodaje +budynekGarncarniaBonusZywnosci (domyslnie 10%) do lokalnej Zywnosci
@@ -728,62 +706,40 @@ export interface CivMnoznikRow {
   mnoznikHandelPieniadz?: number;
 }
 
-/**
- * Per-nacja mnoznik Handel->Pieniadz (decyzja 5A: baza 2, widelki 1.7-2.4).
- * Matches civ by ikonaId, typCywilizacji, or display name (case-insensitive).
- */
+/** Compatibility API: matrix value, or the supplied generic system fallback. */
 export function mnoznikHandelPieniadzForCiv(
   civKey: string | null | undefined,
-  civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
-  fallback = 2,
+  _civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
+  fallback = 1,
 ): number {
-  if (!civKey || !civs?.cywilizacje?.length) return fallback;
-  const key = civKey.toLowerCase();
-  for (const row of civs.cywilizacje) {
-    if (!row) continue;
-    const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja]
-      .filter((s): s is string => typeof s === 'string' && s.length > 0)
-      .map(s => s.toLowerCase());
-    if (!ids.includes(key)) continue;
-    const v = row.mnoznikHandelPieniadz;
-    if (typeof v === 'number' && Number.isFinite(v) && v > 0) return v;
-    return fallback;
-  }
-  return fallback;
+  const matrixValue = civMatrixMnoznikHandelPieniadzRaw(civKey);
+  return matrixValue === undefined ? fallback : matrixValue;
 }
 
 /**
- * Raw civs.json mnoznikHandelPieniadz lookup that DISTINGUISHES "civ not found /
- * field missing" (returns undefined) from "civ found with a valid value" -- used
- * by mnoznikHandelPieniadzForCivByDifficulty() below to decide whether the
- * difficulty delta should apply (only to a REAL per-civ value, never to the
- * already-difficulty-scaled fallback).
+ * Canonical matrix source for a known civilization. Raw zero is a matrix value
+ * and must not reactivate the retired civs.json multiplier.
  */
-function mnoznikHandelPieniadzRawForCiv(
-  civKey: string | null | undefined,
-  civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
-): number | undefined {
-  if (!civKey || !civs?.cywilizacje?.length) return undefined;
+function civMatrixMnoznikHandelPieniadzRaw(civKey: string | null | undefined): number | undefined {
+  if (!civKey) return undefined;
   const key = civKey.toLowerCase();
-  for (const row of civs.cywilizacje) {
-    if (!row) continue;
-    const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja]
-      .filter((s): s is string => typeof s === 'string' && s.length > 0)
-      .map(s => s.toLowerCase());
-    if (!ids.includes(key)) continue;
-    const v = row.mnoznikHandelPieniadz;
-    return (typeof v === 'number' && Number.isFinite(v) && v > 0) ? v : undefined;
-  }
-  return undefined;
+  const known = loadCivMatrix().cywilizacje.some((row) => [
+    row.ikonaId,
+    row.typCywilizacji,
+    row.Cywilizacja,
+  ].some((id) => id.toLowerCase() === key));
+  if (!known) return undefined;
+  const value = civMatrixParam(civKey, 'meta_mnoznik_waluta');
+  return Number.isFinite(value) ? value : undefined;
 }
 
 /**
- * Difficulty delta applied on top of the civs.json mnoznikHandelPieniadz value
- * (decyzja Maciej 2026-07-25, pytanie 69 -- "mnoznik cywilizacyjny skalowany
- * poziomem trudnosci"): "Zostawmy go jako obowiazujacy dla poziomu normal.
- * Wersja easy bedzie miala pol punktu wiecej [...] wersja hard pol punktu
- * mniej." The civs.json number IS the normal-difficulty value; we NEVER edit
- * civs.json itself -- the +0.5 / -0.5 scaling lives only here.
+ * Difficulty delta applied on top of the canonical civ-matrix.json
+ * meta_mnoznik_waluta value (decyzja Maciej 2026-07-25, pytanie 69 --
+ * "mnoznik cywilizacyjny skalowany poziomem trudnosci"): "Zostawmy go jako
+ * obowiazujacy dla poziomu normal. Wersja easy bedzie miala pol punktu wiecej
+ * [...] wersja hard pol punktu mniej." The matrix number IS the normal-difficulty
+ * value; we never edit source data here -- the +0.5 / -0.5 scaling lives only here.
  */
 const MNOZNIK_HANDEL_TRUDNOSC_DELTA: Record<Difficulty, number> = {
   easy:   0.5,
@@ -792,27 +748,21 @@ const MNOZNIK_HANDEL_TRUDNOSC_DELTA: Record<Difficulty, number> = {
 };
 
 /**
- * Per-nacja mnoznik Handel->Pieniadz SKALOWANY TRUDNOSCIA (Maciej 2026-07-25,
- * pytanie 69). civs.json niesie wartosc dla poziomu normal (1.7-2.6); tutaj
- * doliczamy +0.5 (easy) / -0.5 (hard). Zastepuje dawna regule "2/1.5/1 dla
- * wszystkich cywilizacji" -- ta zostaje TYLKO jako `fallbackScaled` (przekaz
- * przez wolajacego z params.mennicaMnoznikPoWalucie, ktory JUZ niesie
- * poprawna skale per trudnosc w econ-params.json), dla cywilizacji BEZ wpisu
- * w civs.json ("cywilizacja bez wpisu dostaje wartosc zapasowa, tez
- * skalowana trudnoscia" -- spelnione, bo fallbackScaled juz jest per-trudnosc).
+ * Matrix multiplier with the established difficulty delta. The civs.json
+ * numerical field is never read. `fallbackScaled` is the generic difficulty
+ * baseline for owners without a resolving matrix key.
  *
- * WAZNE: `fallbackScaled` NIE dostaje drugiej warstwy delty tutaj -- gdyby
- * dolozyc +0.5/-0.5 na juz-przeskalowanej wartosci (np. easy=2.0), wyszloby
- * podwojne skalowanie (2.5 zamiast 2.0). Delta dziala WYLACZNIE na surowej
- * wartosci civs.json (poziom normal).
+ * `fallbackScaled` already includes generic difficulty behavior and is not
+ * adjusted a second time. Known matrix raw zero remains authoritative and
+ * receives the existing difficulty delta like any other matrix value.
  */
 export function mnoznikHandelPieniadzForCivByDifficulty(
   civKey: string | null | undefined,
-  civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
+  _civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
   difficulty: Difficulty,
   fallbackScaled: number,
 ): number {
-  const raw = mnoznikHandelPieniadzRawForCiv(civKey, civs);
+  const raw = civMatrixMnoznikHandelPieniadzRaw(civKey);
   if (raw === undefined) return fallbackScaled;
   return raw + (MNOZNIK_HANDEL_TRUDNOSC_DELTA[difficulty] ?? 0);
 }
@@ -834,25 +784,11 @@ export function civBonusyForCivKey(
   return [];
 }
 
-/**
- * Mnozniki yield z bonusow realizuje=ekonomia (RDY-01: Grecy handel, Inkowie nauka).
- */
+/** Legacy civs.json yield bonuses are no longer numerical consumer inputs. */
 export function civEconomyYieldMultipliers(
-  bonusy: readonly CivEconomyBonus[] | undefined,
+  _bonusy: readonly CivEconomyBonus[] | undefined,
 ): { handel: number; nauka: number } {
-  let handel = 1;
-  let nauka = 1;
-  if (!bonusy?.length) return { handel, nauka };
-  for (const b of bonusy) {
-    if (b.realizuje !== 'ekonomia') continue;
-    if (b.typ === 'bonus_zloto' && b.cel === 'handel' && typeof b.wartosc === 'number') {
-      handel += b.wartosc;
-    }
-    if (b.typ === 'bonus_nauka' && typeof b.wartosc === 'number') {
-      nauka += b.wartosc;
-    }
-  }
-  return { handel, nauka };
+  return { handel: 1, nauka: 1 };
 }
 
 /**
@@ -861,25 +797,16 @@ export function civEconomyYieldMultipliers(
  * Steps (Spec-ekonomia.md ss.1.2, 1.3, 1.4, 2.1, 3.1):
  *   1. Sum terrain yields from workedTiles.
  *   2. Apply Mlyn multiplier on tile Praca; Cegielnia bonus on gross tile Praca.
- *   3'. Sum building BASE outputs (praca, pieniadz, zywnosc, nauka, kultura, zadowolenie)
- *      -- PRZESUNIETE przed dawny Step 3 (D5, 2026-07-25): pracaBudynkow jest
- *      potrzebne juz tutaj, bo pracaNetto -> doPuli -> pieniadzZPracy (Efekt 2:
- *      Targowisko+Waluta, Praca "wystawiona na handel") musi wejsc do Handlu PRZED
- *      jego mnoznikami, nie po nich. Buildings are a direct source of Praca i Pieniadz.
- *   3. Apply Targowisko bonus, civHandelMult, trasy handlowe -- do (tile Handel +
- *      pieniadzZPracy + pieniadzBudynkow) RAZEM, D5/decyzja 67B (Maciej 2026-07-25,
- *      cytat D5: "Pieniądz z konwersji pracy wchodzi do daniny... i jest potem
- *      mnożony przez walutę i mennicę i wszystkie inne wskaźniki handlu"; cytat 67B:
+ *   3'. Sum building BASE outputs; Work stays in the empire pool unless manually converted.
+ *   3. Build the local tax pool from terrain and building cash, then apply local trade modifiers.
  *      "Budynki, jeżeli miały wcześniej handel... powinny go dawać nie bezpośrednio
- *      do skarbca, tylko do puli, do podziału"). Ani pieniadzZPracy, ani
- *      pieniadzBudynkow NIE sa juz osobnymi strumieniami doklejanymi po fakcie --
- *      oba sa czescia bazy Handlu/Daniny u zrodla.
+ *      do skarbca, tylko do puli, do podziału"). pieniadzBudynkow is part of the
+ *      trade/tax base; Work remains in the empire pool unless explicitly converted.
  *   5. Apply corruption/waste (strataFraction) do calego Handlu/Daniny (juz z
- *      pieniadzZPracy i pieniadzBudynkow w srodku) -- D1: Praca NIGDY nie jest tym
+ *      pieniadzBudynkow w srodku) -- D1: Praca NIGDY nie jest tym
  *      dotknieta.
  *   6. Split Handel via trade slider into Nauka / Pieniadz / Luksus.
- *   7. Apply Mennica multiplier to caly Handel (w tym pieniadzZPracy i
- *      pieniadzBudynkow); Biblioteka bonus to Nauka.
+ *   7. Apply Mennica multiplier to caly Handel (w tym pieniadzBudynkow); Biblioteka bonus to Nauka.
  *   8. Add specialist Poborca bonus do Pieniadza (jedyny strumien Pieniadza, ktory
  *      nadal omija podzial suwakiem -- poza zakresem decyzji 67B).
  *   9. Apply Garncarnia +Zywnosc% (lokalnie, per miasto, ctx.liczbaGarncarni) to
@@ -938,24 +865,34 @@ export function cityYieldPerTurn(
     pracaBruttoTerenu = pracaBruttoTerenu * (1 + params.budynekCegielniBonusPracy);
   }
 
-  // --- Step 3 (przesuniete PRZED dawny Step 3 -- patrz D5 nizej): Sum building
-  // BASE outputs. Musi powstac TERAZ (a nie po handlu, jak dawniej), bo pracaBudynkow
-  // jest potrzebne do pracaBruttoLacznie -> pracaNetto -> doPuli -> pieniadzZPracy,
-  // ktore z kolei musza wejsc do handelBrutto PRZED jego mnoznikami (patrz D5).
+  // --- Step 3: Sum building BASE outputs. Musi powstac TERAZ (a nie po handlu),
+  // because building Work is part of the city production split.
+  // is retained as a city yield component; the resulting empire pool is handled separately.
   let pracaBudynkow    = 0;
   let pieniadzBudynkow = 0;
   let zywnoscBudynkow  = 0;
   let naukaBudynkow    = 0;
   let kulturaBudynkow  = 0;
   let zadBudynkow      = 0;
+  let pieniadzPortu    = 0;
 
   for (const { record, level } of cityBuildings) {
     pracaBudynkow    += buildingValue(record, level, 'praca');
-    pieniadzBudynkow += buildingValue(record, level, 'pieniadz');
+    const buildingMoney = buildingValue(record, level, 'pieniadz');
+    pieniadzBudynkow += buildingMoney;
+    if (record.id === 'port') pieniadzPortu += buildingMoney;
     zywnoscBudynkow  += buildingValue(record, level, 'zywnosc');
     naukaBudynkow    += buildingValue(record, level, 'nauka');
     kulturaBudynkow  += buildingValue(record, level, 'kultura');
     zadBudynkow      += buildingHappinessAtLevel(record, level);
+  }
+
+  // Port income is a separately named source: its own building cash and connected
+  // maritime routes receive this coefficient once, before the general gross-trade
+  // and cash-share stages. Land-route income remains untouched here.
+  const portRaw = city.civKey ? civMatrixParam(city.civKey, 'eko_pieniadz_port_proc') : 0;
+  if (city.civKey && portRaw !== 0) {
+    pieniadzBudynkow += pieniadzPortu * portRaw;
   }
 
   // Dawne "mnoznik% -> Praca" USUNIETE 2026-07-25 — patrz komentarz funkcji powyzej.
@@ -964,38 +901,28 @@ export function cityYieldPerTurn(
   // D1 (Maciej 2026-07-25): "Korupcja ma dotykać tylko i wyłącznie daniny, a potem
   // podatku, nie pracy." -- Praca NIGDY nie jest mnozona przez strate korupcji
   // (patrz Step 5 nizej, ktory strata dotyka tylko Handel/Danine).
-  const pracaNetto = pracaBruttoLacznie;
+  // F-04 approved owner work coefficient (mul_proc). A source zero is neutral;
+  // the matrix owns this effect, while unrelated building/terrain/Order effects
+  // remain in their existing stages. Missing owner identity stays neutral.
+  const pracaNetto = city.civKey
+    ? applyCivMatrixParam(pracaBruttoLacznie, city.civKey, 'eko_praca_proc')
+    : pracaBruttoLacznie;
 
-  // D5 (Maciej 2026-07-25, PYTANIE 76=B, POPRAWKA tego samego dnia -- cytat wlasciciela:
-  // "Pieniądz z konwersji pracy wchodzi do daniny, później do podatku i jest potem
-  // mnożony przez walutę i mennicę i wszystkie inne wskaźniki handlu... zamieniamy to
-  // na równowartość podatku"). To NIE jest osobny strumien doklejany do gotowej puli --
-  // to Praca WYSTAWIONA NA HANDEL, wiec wchodzi do Daniny U ZRODLA, na tych samych
-  // prawach co Danina z terenu, i przechodzi przez WSZYSTKIE mnozniki Handlu ponizej
-  // (Targowisko, civHandelMult, trasy handlowe, korupcja, Waluta+Mennica) -- dokladnie
-  // tak samo jak reszta Daniny. Dlatego liczymy je TU, PRZED Step 3 (Targowisko itd.),
-  // a nie po nich jak w bledej wersji D5 sprzed poprawki.
+  // Work assigned to the empire pool remains there unless the owner explicitly
+  // converts some of the remaining balance. `additionalTax` enters the tax stream
+  // through its own context field, after the local Targowisko gross-trade bonus.
   const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
-  const pctPracaBudynki = city.podziałPracy.procentBudynki / 100;
   const pracaInt = cityPracaInteger(pracaNetto);
-  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
-  const pieniadzZPracy = (ctx.maTargowisko && walutaOdkrytaOnly)
-    ? Math.floor(doPuli * params.targowiskoPracaMnoznik)
-    : 0;
+  const pieniadzZPracy = 0;
 
-  // --- Step 3: Targowisko bonus na Handel (Spec ss.1.3) -- baza TERAZ zawiera
-  // pieniadzZPracy (D5) ORAZ pieniadzBudynkow (decyzja 67B, Maciej 2026-07-25: Pieniadz
-  // z budynkow NIE trafia wprost do skarbca, tylko do puli do podzialu), wiec premia
-  // Targowiska/civHandelMult/trasy handlowe dzialaja na Danine terenowa + budynkowa +
-  // konwersje Pracy RAZEM, jak jedna wartosc. ---
-  const handelBazowy = handelTerenu + pieniadzZPracy + pieniadzBudynkow;
-  let handelBrutto: number;
-  if (ctx.maTargowisko) {
-    handelBrutto = handelBazowy * (1 + params.budynekTargowiskoBonusHandlu);
-  } else {
-    handelBrutto = handelBazowy;
-  }
-  const civHandelMult = ctx.civHandelMult ?? 1;
+  // City tax excludes route proceeds. Manual Work tax is added after route-only
+  // bonuses, then follows the ordinary corruption, Mint and slider stages.
+  const handelBazowy = handelTerenu + pieniadzBudynkow;
+  let handelBrutto = handelBazowy;
+  // For a known matrix owner, the matrix is authoritative (including raw zero)
+  // for this legacy-overlapping gross-trade effect. Unknown/missing owner keys
+  // retain the existing legacy multiplier behavior.
+  const civHandelMult = city.civKey ? 1 : (ctx.civHandelMult ?? 1);
   if (civHandelMult !== 1) {
     handelBrutto *= civHandelMult;
   }
@@ -1007,26 +934,23 @@ export function cityYieldPerTurn(
   if (premiaTrasHandlowych > 0) {
     handelBrutto += premiaTrasHandlowych;
   }
-  // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: dochod dystansowy z tras handlowych (patrz
-  // CityYieldContext.dochodTrasHandlowych) -- wpiety TU, wiec przechodzi przez korupcje/
-  // Waluta+Mennica (Step 5) i podzial suwakami Handlu (Step 6+7) razem z reszta Daniny.
-  const dochodTrasHandlowych = ctx.dochodTrasHandlowych ?? 0;
-  if (dochodTrasHandlowych > 0) {
-    handelBrutto += dochodTrasHandlowych;
-  }
+  // F-04: replace the same-effect legacy multiplier above and apply the approved
+  // general gross-trade coefficient once to the complete named gross stage.
+  if (city.civKey) handelBrutto = applyCivMatrixParam(handelBrutto, city.civKey, 'eko_handel_brutto_proc');
+  // Manual Work tax joins after local and route-only gross modifiers, so it is
+  // never multiplied by the Market route bonus or route-building premiums.
+  handelBrutto += Math.max(0, ctx.additionalTax ?? 0);
 
-  // --- Step 5 (renumbered from 6): Apply corruption/waste -- dotyczy WYLACZNIE
-  // handelBrutto (ktory juz zawiera pieniadzZPracy, D5 powyzej), NIGDY Pracy (D1). ---
-  const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
+  // --- Step 5: Apply corruption/waste to the complete tax base, including manual
+  // Work tax. Unconverted Work still in the empire pool is not affected. ---
+  const strataRaw = city.civKey
+    ? applyCivMatrixParam(ctx.strataFraction, city.civKey, 'eko_korupcja_proc')
+    : ctx.strataFraction;
+  const strata = Math.min(strataRaw, params.korupcjaCap);
   const handelNettoRaw    = handelBrutto       * (1 - strata);
-  // Efekt 1 SCALONY (Waluta + Mennica, decyzja Maciej 2026-07-25): caly handelNetto
-  // jest mnozony x mennicaMnoznikPoWalucie (easy x2,0 / normal x1,5 / hard x1,0) TYLKO
-  // gdy walutaOdkryta ORAZ maMennica sa oba prawdziwe -- sam tech Waluty juz NIE
-  // wystarcza. Dziala na cala pule PRZED podzialem na Nauka/Pieniadz/Luksus (wiec i na
-  // pieniadzZPracy juz wtopiony w handelBrutto, D5 powyzej) -- nauka i zamoznosc z
-  // handlu (oraz z konwersji Pracy) rosna razem ze Skarbem (decyzja: wariant A).
+  // Mint affects the local tax pool only. Separately settled route cash bypasses it.
   const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
-  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
+  const walutaMnoznikBase = params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto   = handelNettoRaw * walutaMnoznikAktywny;
 
@@ -1042,7 +966,10 @@ export function cityYieldPerTurn(
   const naukaZHandlu    = Math.floor(handelNetto * pctNauka);
   const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
   // Luksus stream (Spec ss.2.1/2.2): feeds Zadowolenie downstream (society lane).
-  const luksusZHandlu   = Math.floor(handelNetto * pctLuksus);
+  const luksusZHandluRaw = Math.floor(handelNetto * pctLuksus);
+  const luksusZHandlu = city.civKey
+    ? Math.floor(applyCivMatrixParam(luksusZHandluRaw, city.civKey, 'eko_luksus_proc'))
+    : luksusZHandluRaw;
 
   // Biblioteka: +Nauka% applied to the city's local science (master par.2a).
   // Akademia (ZADANIE 2, 2026-07-25, decyzja 4): +Nauka% osobny, stackuje ADDYTYWNIE
@@ -1053,18 +980,18 @@ export function cityYieldPerTurn(
     + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0)
     + (ctx.maAkademia   ? params.budynekAkademiaBonusNauki   : 0);
   const naukaLokalnaRaw  = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
-  const civNaukaMult     = ctx.civNaukaMult ?? 1;
-  const naukaLokalna     = civNaukaMult !== 1
-    ? Math.floor(naukaLokalnaRaw * civNaukaMult)
-    : naukaLokalnaRaw;
+  const naukaLokalna = city.civKey
+    ? Math.floor(applyCivMatrixParam(naukaLokalnaRaw, city.civKey, 'eko_nauka_proc'))
+    : (ctx.civNaukaMult !== undefined && ctx.civNaukaMult !== 1
+      ? Math.floor(naukaLokalnaRaw * ctx.civNaukaMult)
+      : naukaLokalnaRaw);
 
-  // --- Step 8: Total Pieniadz = from trade (handelNetto juz zawiera pieniadzZPracy
-  // ORAZ pieniadzBudynkow, wtopione w Step 3, D5/67B powyzej -- przeszly przez
-  // WSZYSTKIE mnozniki Handlu: Targowisko, civHandelMult, trasy, korupcja, Waluta+
-  // Mennica -- i podzial suwakiem) + specialist Poborca. Decyzja 67B: pieniadzBudynkow
-  // NIE jest juz doliczany tu osobno -- inaczej liczylby sie PODWOJNIE (raz w
-  // pieniadzZHandlu przez handelBazowy, drugi raz tutaj).
-  let pieniadzTotal = pieniadzZHandlu;
+  // --- Step 8: Money from the tax allocation plus specialist Poborca. Building
+  // money, manual Work tax, and route-derived amounts are each added to their own
+  // appropriate stage above, preventing duplicate credit.
+  let pieniadzTotal = city.civKey
+    ? applyCivMatrixParam(pieniadzZHandlu, city.civKey, 'eko_pieniadz_proc')
+    : pieniadzZHandlu;
   for (const spec of city.specjalisci) {
     if (spec === 'poborca') {
       pieniadzTotal += 2;
@@ -1079,7 +1006,13 @@ export function cityYieldPerTurn(
   const zywnoscBruttoBaza = zywnoscTerenu + zywnoscBudynkow;
   const liczbaGarncarni = ctx.liczbaGarncarni ?? 0;
   const garncarniaMnoznikZywnosci = 1 + params.budynekGarncarniaBonusZywnosci * liczbaGarncarni;
-  const zywnoscBrutto = zywnoscBruttoBaza * garncarniaMnoznikZywnosci;
+  const zywnoscBruttoRaw = zywnoscBruttoBaza * garncarniaMnoznikZywnosci;
+  const zywnoscBrutto = city.civKey
+    ? applyCivMatrixParam(zywnoscBruttoRaw, city.civKey, 'eko_zywnosc_proc')
+    : zywnoscBruttoRaw;
+  // R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: to MARTWY wzór przedV85 (flat; wynik `.zywnosc` nie zasila bilansu
+  // żywności). Realny koszt racji = `computeCityRationCost` (population-growth-v85.ts) × m(epoka)
+  // z `citizen-consumption-era.ts`. Celowo bez mnożnika epoki, żeby nie powstały dwie ścieżki.
   const zywnoscZuzyta = city.ludnosc * params.zywnoscZuzytkaPopulacja
                        + ctx.wojskoZuzycieZywnosci;
   const zywnoscNetto  = zywnoscBrutto - zywnoscZuzyta;
@@ -1090,7 +1023,9 @@ export function cityYieldPerTurn(
     zywnosc:        Math.floor(zywnoscNetto),
     nauka:          naukaLokalna,
     luksus:         luksusZHandlu,
-    kultura:        Math.floor(kulturaBudynkow),
+    kultura:        Math.floor(city.civKey
+      ? applyCivMatrixParam(kulturaBudynkow, city.civKey, 'eko_kultura_proc')
+      : kulturaBudynkow),
     zadowolenie:    Math.floor(zadBudynkow),
     zywnoscBrutto:  Math.floor(zywnoscBrutto),
     handelBrutto:   Math.floor(handelBrutto),
@@ -1111,22 +1046,48 @@ export function cityYieldPerTurn(
 // ---------------------------------------------------------------------------
 
 /**
- * Aktualny twardy cap ludności miasta — drabinka 3 stopni (R-SPICHLERZ-CAP-LUDNOSCI-ETAP,
- * Maciej 2026-08-09, ECHO A): bez żadnego budynku → akweduktProgLudnosci (normal=5); ze
- * Spichlerzem (I lub II), ale bez Akweduktu → spichlerzProgLudnosci (normal=8); z Akweduktem
- * (niezależnie od Spichlerza) → akweduktMaxLudnosci (normal=12, obniżka z dawnych 15).
+ * Aktualny twardy cap ludności miasta — drabinka 4 stopni (R-SPICHLERZ-CAP-LUDNOSCI-ETAP,
+ * Maciej 2026-08-09, ECHO A; rozszerzona przez R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1,
+ * decyzja właściciela 2026-11-04): bez żadnego budynku → akweduktProgLudnosci (normal=5);
+ * ze Spichlerzem I, bez Akweduktu → spichlerzProgLudnosci (normal=8); ze Spichlerzem II,
+ * bez Akweduktu → spichlerzIIProgLudnosci (normal=12); z Akweduktem (niezależnie od
+ * Spichlerza) → akweduktMaxLudnosci (normal=20).
  * `maSpichlerz` = sam fakt POSIADANIA budynku w DOWOLNYM tierze (I lub II) — cap to stały
  * parametr strukturalny, nie zależy od odprowadzenia Ceramiki/Soli w danej turze (to inny
  * mechanizm, patrz `SpichlerzCityBonusState` w `building-resource-gate.ts`).
+ * `maSpichlerzII` = posiadanie `spichlerz_ii` w builtIds (ulepszenie usuwa `spichlerz`);
+ * Spichlerz II sam implikuje `maSpichlerz`. Domyślnie false (stare wywołania = tier I).
+ * Górny clamp = akweduktMaxLudnosci + 2 (największa dodatnia delta macierzy cywilizacji).
  */
 export function cityPopulationCap(
   maAkwedukt: boolean,
   maSpichlerz: boolean,
-  params: Pick<EconParams, 'akweduktProgLudnosci' | 'spichlerzProgLudnosci' | 'akweduktMaxLudnosci'>,
+  params: Pick<EconParams, 'akweduktProgLudnosci' | 'spichlerzProgLudnosci' | 'akweduktMaxLudnosci'>
+    & Partial<Pick<EconParams, 'spichlerzIIProgLudnosci'>>,
+  matrixDelta: number = 0,
+  maSpichlerzII: boolean = false,
 ): number {
-  if (maAkwedukt) return params.akweduktMaxLudnosci;
-  if (maSpichlerz) return params.spichlerzProgLudnosci;
-  return params.akweduktProgLudnosci;
+  const granaryIICap = params.spichlerzIIProgLudnosci ?? params.spichlerzProgLudnosci;
+  const buildingCap = maAkwedukt
+    ? params.akweduktMaxLudnosci
+    : maSpichlerzII
+      ? granaryIICap
+      : maSpichlerz
+        ? params.spichlerzProgLudnosci
+        : params.akweduktProgLudnosci;
+  const safeDelta = matrixDelta === -1 || matrixDelta === 0 || matrixDelta === 1 || matrixDelta === 2
+    ? matrixDelta
+    : 0;
+  // Odporny clamp: gdy `akweduktMaxLudnosci` brak/nieskończony (niekompletny fixture) -> bez górnego sufitu
+  // (Math.min z NaN zwracałoby NaN i blokowało wzrost).
+  const ceiling = Number.isFinite(params.akweduktMaxLudnosci) ? params.akweduktMaxLudnosci + 2 : Infinity;
+  return Math.min(ceiling, buildingCap + safeDelta);
+}
+
+/** Resolve the owner civilization's approved additive population-cap delta. */
+export function resolvePopulationCapMatrixDelta(civKey: string | null | undefined): number {
+  const value = civKey ? civMatrixParam(civKey, 'lud_limit_populacji') : 0;
+  return value === -1 || value === 0 || value === 1 || value === 2 ? value : 0;
 }
 
 /**
@@ -1138,8 +1099,9 @@ export function cityPopulationCap(
  *   - Po wzroście: bez Spichlerza bufor → 0; ze Spichlerzem bufor × spichlerzZachowaniePoPrzroscie (50%).
  *   - Deficyt: magazyn maleje; przy 0 i ujemnej nadwyżce → −1 ludność (min 1).
  *   - Cap bez żadnego budynku: akweduktProgLudnosci (normal=5).
- *   - Cap ze Spichlerzem (I lub II), bez Akweduktu: spichlerzProgLudnosci (normal=8).
- *   - Cap z Akweduktem: akweduktMaxLudnosci (normal=12).
+ *   - Cap ze Spichlerzem I, bez Akweduktu: spichlerzProgLudnosci (normal=8).
+ *   - Cap ze Spichlerzem II, bez Akweduktu: spichlerzIIProgLudnosci (normal=12).
+ *   - Cap z Akweduktem: akweduktMaxLudnosci (normal=20).
  *   - Zdrowie: modifier = max(0, 1 + zdrowie * wsp) [PT]
  */
 export function populationGrowth(
@@ -1155,7 +1117,13 @@ export function populationGrowth(
     ? zywnoscNetto * healthModifier
     : zywnoscNetto;
 
-  const popCap = cityPopulationCap(maAkwedukt, maSpichlerz || !!maSpichlerzII, params);
+  const popCap = cityPopulationCap(
+    maAkwedukt,
+    maSpichlerz || !!maSpichlerzII,
+    params,
+    resolvePopulationCapMatrixDelta(city.civKey),
+    !!maSpichlerzII,
+  );
 
   let nowaLudnosc  = ludnosc;
   let nowyMagazynZywnosci  = magazynZywnosci;

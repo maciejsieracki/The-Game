@@ -1,0 +1,11 @@
+PASS: (0) mutant M_D7 podmienił dokładnie 1 miejsce
+PASS: D7a: gracz silniejszy -> brak deklaracji (mayDeclare=false), deklaruje gracz
+PASS: D7b: gracz silniejszy jako strona B -> mayDeclare=false
+PASS: D7c: AI silniejsza -> mayDeclare=true, deklaruje AI, ofiara = gracz
+PASS: D7d: para AI↔AI -> mayDeclare=true (bez zmian), deklaruje silniejsza
+PASS: D7e: remis z graczem -> deklaruje gracz (niższe ownerId) -> mayDeclare=false
+PASS: M_D7 wykryty: bez warunku gracza gracz silniejszy wypowiada (mayDeclare=true)
+PASS: M_D7 test pada: D7a w wersji ok jest rozróżnialna od mutanta
+
+diplo-war-peace-d7-test: 8 pass / 0 fail
+EXIT=0

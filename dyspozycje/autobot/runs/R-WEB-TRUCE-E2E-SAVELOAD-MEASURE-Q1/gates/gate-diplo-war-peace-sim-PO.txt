@@ -1,0 +1,25 @@
+PASS: (0) każdy mutant podmienił dokładnie 1 miejsce
+PASS: S1: AI słabsze (rw 0.2) proponuje pokój co 3 tury od minTurWojny (zulusi: tury 7,10,13,16,19,22,25,28)
+PASS: S1a: AI słabsze nie proponuje pokoju przed minTurWojny (zarzut 2: spójność z R5a)
+PASS: S1b: propozycje AI słabszej niosą powód sygnału (a)
+PASS: S2: AI silniejsze (rw 0.7) nie proponuje pokoju w turach 8 i 9 (sygnał e aktywny, ale „czuje się silniejsze")
+PASS: S2b: AI silniejsze pierwszą propozycję składa dopiero w turze >= 10
+PASS: S3: gracz (silna AI, bez utraty) dostaje „czuje się silniejsze" w turach 7-9 (po minTur 7)
+PASS: S3b: gracz (silna AI, bez utraty) od tury 10 nie dostaje odrzucenia „silniejsze"
+PASS: S3c: po 20 turach odrzucenie (silniejsze / za wcześnie) znika całkowicie
+PASS: S4: po utracie miasta (tura 5) gracz NIE dostaje „silniejsze" w turach 6-9
+PASS: S4b: kontrola — bez utraty w turze 8 odrzucenie „silniejsze" jest
+PASS: S5: AI średnia (rw 0.5, bez sygnału) pierwszy raz chce pokoju w turze 8 (zmęczenie 8/20 = 0.4)
+PASS: S5b: pierwsza propozycja AI średniej to sygnał (e) zmęczenia
+PASS: S6: zdrowie armii 0.1 (< progZdrowia) → AI chce pokoju w turze 7 (sygnał c, po minTurWojny)
+PASS: S6b: zdrowie armii 0.9 → brak chęci pokoju w turze 7 (minTurWojny zulusi)
+PASS: S7: spójność — AI nigdy nie proponuje pokoju w stanie „czuje się silniejsze" (0 naruszeń)
+PASS: S7b: spójność — AI nigdy nie proponuje pokoju w stanie „za wcześnie" (R5a, 0 naruszeń)
+PASS: M_SIG wykryty: AI średnia nie chce pokoju w turze 8 (sygnał e wyłączony)
+PASS: M_FEEL wykryty: AI silniejsze chce pokoju w turze 8 lub 9
+PASS: M_WEAR wykryty: stałe zmęczenie 0.5 daje chęć pokoju AI średniej już w turze 1
+PASS: M_TUR wykryty: bez bramki minTurWojny AI składa propozycję w turze 1 (S1/S7b padają)
+PASS: M_HEALTH wykryty: zdrowie armii 0.1 nie daje chęci pokoju (sygnał c off)
+
+diplo-war-peace-sim-test: 22 pass / 0 fail
+EXIT=0

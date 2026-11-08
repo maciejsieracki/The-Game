@@ -1,0 +1,18 @@
+
+--- T1: AI nie zaklada miasta poza wlasnym terytorium (repro) ---
+
+--- T2: drugie miasto AI mozliwe blisko pierwszego (early-game) ---
+
+--- T3: brak miast wlasnych -> founding bez restrykcji terytorium ---
+
+--- T4: AI woli hex z rzeka w obrebie terytorium (nie pierwszy legalny) ---
+
+--- T5: hex promien+1 (tuz poza terytorium) odrzucony mimo najwyzszego score ---
+
+--- A5: straznik tekstowy ai.ts -- premia +15 za oddalenie i flaga requireOutsideTerritory USUNIETE ---
+
+--- B1: straznik tekstowy main.ts -- blok obslugi cmd.type === "foundCityAt" (AI) ---
+  FAIL: B1e-a: pierwsza instrukcja w foundingTerritoryOpts musi zaczynac sie od "if (ownerId === 0 && ...)"
+
+=== ai-founding-territory-test: 25 passed, 1 failed ===
+EXIT=1

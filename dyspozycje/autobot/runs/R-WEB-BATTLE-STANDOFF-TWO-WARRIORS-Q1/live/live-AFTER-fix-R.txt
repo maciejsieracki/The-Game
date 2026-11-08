@@ -1,0 +1,10 @@
+preBattle data-act: ["skarbiec","praca","spichlerz","nauka","surowce","handel","power","rekruci","armia","miasta","ludnosc","kultura","religia","wiki","menu","worker-toggle","deposit-toggle","zoom-out","zoom-in","fullscreen","cities","science","diplo","army","build","cancel","auto","deploy","save"]
+START WALKI clicked: false
+START {"manual":false,"awaiting":false,"gate":true,"round":1,"active":"atk","atk":[{"id":"u0","name":"Wojownik","side":"atk","q":34,"r":77,"hp":22,"dead":false,"routed":false,"acted":true,"ml":0,"order":"none","grp":null,"doc":"steady","auto":true,"ranged":false,"range":0,"morale":50}],"def":[{"id":"u-ai-1","name":"Wojownik","side":"def","q":35,"r":77,"hp":22,"dead":false,"routed":false,"acted":true,"ml":2,"order":"none","grp":null,"doc":"steady","auto":true,"ranged":false,"range":0,"morale":50}]}
+pressed R
+FIRST u0:22@34,77/none/steady | u-ai-1:22@35,77/none/steady
+LAST  u0:16@34,77/none/steady | u-ai-1:19@35,77/none/steady
+flags last {"manual":false,"awaiting":false,"fin":false,"round":3,"active":"atk","busy":true,"susp":false,"queued":[]}
+CALLS [["kick",true,false,true,false],["begin",false,false],["begin",false,false],["begin",false,false]]
+samples 22 errs []
+EXIT=0

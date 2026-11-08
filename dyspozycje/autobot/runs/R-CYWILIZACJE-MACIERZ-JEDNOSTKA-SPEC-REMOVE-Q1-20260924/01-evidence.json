@@ -1,0 +1,88 @@
+{
+  "status": "PASS",
+  "domain": "GAME",
+  "topic": "R-CYWILIZACJE-MACIERZ-JEDNOSTKA-SPEC-REMOVE-Q1-20260924",
+  "base": {
+    "commit": "bdb439e31cdc84c0c6e92ae348ded2eb6a43ec26",
+    "branch": "hermes/R-CYWILIZACJE-MACIERZ-JEDNOSTKA-SPEC-REMOVE-Q1-20260924",
+    "expected_base": "origin/integration/meta-remove-20260924"
+  },
+  "removed_parameter_ids": [
+    "spec_Atak",
+    "spec_Obrazenia",
+    "spec_Obrona",
+    "spec_Uderzenie",
+    "spec_Pancerz",
+    "spec_Przebicie",
+    "spec_Health",
+    "spec_Atak_dystansowy",
+    "spec_Zasieg_hex",
+    "spec_Pociski",
+    "spec_Ruch_bitwa",
+    "spec_Ruch_mapa",
+    "spec_Widok",
+    "spec_Dezercja_proc",
+    "spec_Morale",
+    "spec_Koszt_pieniadz",
+    "spec_Utrzymanie",
+    "spec_Zywnosc_ture"
+  ],
+  "matrix": {
+    "before_param_defs": 109,
+    "after_param_defs": 91,
+    "civilizations": 15,
+    "removed_cells": 270,
+    "after_meta_kolumny": 91,
+    "remaining_definitions_unchanged": true,
+    "remaining_defaults_unchanged": true,
+    "remaining_civilization_values_unchanged_all_15": true,
+    "defaults_match_param_defs": true,
+    "all_15_rows_match_param_defs": true
+  },
+  "semantic_classifier": {
+    "before": {
+      "expected_cells": 1635,
+      "actual_cells": 1635,
+      "status_counts": {
+        "REAL_GAMEPLAY": 210,
+        "UI_ONLY": 75,
+        "DECISION_REQUIRED": 30,
+        "BLOCKED": 525,
+        "DEAD_UNWIRED": 375,
+        "UNWIRED": 420
+      }
+    },
+    "after": {
+      "expected_cells": 1365,
+      "actual_cells": 1365,
+      "status_counts": {
+        "REAL_GAMEPLAY": 210,
+        "UI_ONLY": 75,
+        "DECISION_REQUIRED": 30,
+        "BLOCKED": 255,
+        "DEAD_UNWIRED": 375,
+        "UNWIRED": 420
+      }
+    }
+  },
+  "tests": [
+    {"command": "node tools/civ-matrix-semantic-labels-test.cjs", "result": "PASS 233/233, FAIL 0"},
+    {"command": "node tools/civ-matrix-greece-test.cjs", "result": "PASS 323/323, FAIL 0"},
+    {"command": "node tools/civ-matrix-meta-roster-wiring-test.cjs", "result": "PASS 63/63, FAIL 0"},
+    {"command": "npx tsc --noEmit", "result": "PASS, 0 errors, TypeScript 5.9.3"},
+    {"command": "git diff --check", "result": "CLEAN"},
+    {"command": "grep active spec IDs/BLOCKED_SPECIAL_UNIT_STAT excluding legacy bundles", "result": "ZERO_ACTIVE_REFERENCES"}
+  ],
+  "scope_guard": {
+    "generator_files_unchanged": true,
+    "legacy_bundles_unchanged": true,
+    "commit": false,
+    "push": false,
+    "merge": false,
+    "deploy": false
+  },
+  "artifacts": [
+    "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-JEDNOSTKA-SPEC-REMOVE-Q1-20260924/01-operator.md",
+    "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-JEDNOSTKA-SPEC-REMOVE-Q1-20260924/01-evidence.json"
+  ]
+}

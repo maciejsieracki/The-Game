@@ -15,8 +15,9 @@
  *       hit%      = clamp(50 + (Atak - Obrona) * 5, 10, 90)
  *       obrazenia = max(1, Atak - Pancerz + Przebicie) + Uderzenie (tylko R1/szarza)
  *   - PROJEKT-GRY-master.md SS9c "Milicja wieśniaków": miasto atakowane/oblegane
- *       wystawia ~20% mieszkancow jako milicje (chlopi z widlami, ~1/2 Wojownika
- *       Ep. Kamienia).
+ *       wystawia 100% mieszkancow (1 mieszkaniec = 1 jednostka; spec wlasciciela
+ *       2026-11-03) jako milicje, pod warunkiem budynku Garnizon; polowa wrecz
+ *       (staty x0,5), polowa dystans (pelne staty), typy wg epoki.
  *   - data/terrain-combat.json -> "Wzgórza" Bonus Obrona "+50%" (miasto na
  *       wzgorzu => obronca x1.5 Obrony), spojnie z combat.ts terrainDefenseMultiplier.
  *
@@ -148,6 +149,19 @@ export const MILITIA_POP_FRACTION = OBL.militia_pop_fraction;
  * Uderzenie 4, Pancerz 4. We halve the offensive/defensive stats for militia.
  */
 export const MILITIA_STRENGTH_FRACTION = OBL.militia_strength_fraction;
+
+/** Okres odnowy Milicji (tury globalne) po jej calkowitym zniszczeniu (combat-params.json oblezenie.militia_regen_turns). */
+export const MILITIA_REGEN_TURNS: number = OBL.militia_regen_turns;
+
+/** Morale fraction of a militiaman vs the regular counterpart (spec 2026-11-03; 'Morale bazowe' x this). */
+export const MILITIA_MORALE_FRACTION: number = OBL.militia_morale_fraction;
+
+/** Floor margin above 'Morale ucieczki' so a militiaman is not routed from the very first tick. */
+export const MILITIA_MORALE_MIN_MARGIN_OVER_FLEE: number = OBL.militia_morale_min_margin_over_flee;
+
+/** Era key -> units.json names of the melee / ranged militia counterpart (combat-params.json militia_roster). */
+export const MILITIA_ROSTER: Readonly<Record<'kamien' | 'braz' | 'zelazo', { wrecz: string; dystans: string }>> =
+  OBL.militia_roster;
 
 /** Default maximum exchange rounds in a single siege attack before a stalemate. */
 export const SIEGE_MAX_ROUNDS = OBL.siege_max_rounds;
@@ -509,8 +523,9 @@ function roundHalfUp(value: number): number {
 }
 
 /**
- * Build a militia defender for a city (SS9c): ~20% of population stand to defend,
- * each with ~1/2 the strength of a Stone-age Warrior. We model the whole militia
+ * Build a POOLED militia defender for the abstract siege math (SS9c): one militiaman per
+ * inhabitant (militia_pop_fraction), each with ~1/2 the strength of a Stone-age Warrior.
+ * (The 3D / roster battle uses the per-unit squad of siegeDefenders.buildMilitiaSquad.) We model the whole militia
  * as a single pooled SiegeUnit whose Health scales with the number of militiamen,
  * and whose offensive/defensive stats are halved. Militia never routs from morale
  * (defends to the last). Returns null when there is no population to draw on.
@@ -551,9 +566,10 @@ export function makeMilitia(
 }
 
 /**
- * Return the effective garrison for defending a city: the real garrison, and if
- * it is empty, the auto-raised militia (SS9c) when a completed Garnizon and
- * eligible population allow it. Pure. Queued/missing buildings do not qualify.
+ * Return the effective garrison for defending a city: the real garrison plus the
+ * auto-raised militia (SS9c) when a completed Garnizon and eligible population
+ * allow it (militia supports real defenders, it no longer needs an empty garrison).
+ * Pure. Queued/missing buildings do not qualify.
  */
 export function effectiveGarrison(
   city: SiegeCity,
@@ -561,10 +577,11 @@ export function effectiveGarrison(
   completedBuildingIds?: CompletedBuildingIdCollection,
 ): SiegeUnit[] {
   const alive = city.garrison.filter((u) => u.Health > 0);
-  if (alive.length > 0) return alive;
-  if (!hasCompletedGarrison(city, completedBuildingIds)) return [];
+  // Spec 2026-11-03 (M2): with a completed Garnizon the militia ALWAYS joins the
+  // real defenders (appended after them, so real units still take the first blow).
+  if (!hasCompletedGarrison(city, completedBuildingIds)) return alive;
   const militia = makeMilitia(city.population ?? 0, popFraction);
-  return militia ? [militia] : [];
+  return militia ? [...alive, militia] : alive;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,4016 @@
+{
+  "before": {
+    "attacker": 28,
+    "defender": 28,
+    "melee": 20,
+    "ranged": 20,
+    "mounted": 16,
+    "canvas": {
+      "connected": true,
+      "width": 128,
+      "height": 80
+    }
+  },
+  "probeFixture": {
+    "warriorDataRow": "Wojownik (Kamień)",
+    "sceneRoleFlagsOverridden": false,
+    "movementLane": 23
+  },
+  "roster": {
+    "attacker": 28,
+    "defender": 28,
+    "sameUnitIds": true,
+    "samePositionsAtReset": true
+  },
+  "metrics": {
+    "attackInfantryStrikes": 3,
+    "attackInfantryHpLossEvents": 2,
+    "chargeInfantryStrikes": 2,
+    "chargeInfantryHpLossEvents": 1,
+    "attackArcherShots": 4,
+    "chargeArcherShots": 1,
+    "attackInfantryMoves": 2,
+    "attackMountedActions": 14,
+    "firstInfantryId": "atk0",
+    "trace": [
+      {
+        "type": "activation-start",
+        "doctrine": "steady",
+        "turn": 1,
+        "unitId": "atk0",
+        "name": "Warrior",
+        "position": [
+          10,
+          23
+        ],
+        "targetId": "def0",
+        "distance": 3,
+        "legalAttackAtStart": false
+      },
+      {
+        "type": "advance-entry",
+        "unitId": "atk0",
+        "moveLeft": 4,
+        "pos": [
+          10,
+          23
+        ],
+        "nearest": "def0"
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          10,
+          23
+        ],
+        "candidateCol": 10,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          10,
+          23
+        ],
+        "candidateCol": 11,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          10,
+          23
+        ],
+        "candidateCol": 10,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          10,
+          23
+        ],
+        "candidateCol": 9,
+        "allowed": false,
+        "rank": 0
+      },
+      {
+        "type": "attack-path-result",
+        "unitId": "atk0",
+        "result": "11,23",
+        "moveLeft": 4,
+        "pos": [
+          10,
+          23
+        ]
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          10,
+          23
+        ],
+        "candidateCol": 11,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "move-start",
+        "doctrine": "steady",
+        "unitId": "atk0",
+        "name": "Warrior",
+        "from": [
+          10,
+          23
+        ],
+        "to": [
+          11,
+          23
+        ],
+        "mounted": false
+      },
+      {
+        "type": "move-complete",
+        "doctrine": "steady",
+        "unitId": "atk0",
+        "name": "Warrior",
+        "from": [
+          10,
+          23
+        ],
+        "to": [
+          11,
+          23
+        ],
+        "mounted": false,
+        "after": [
+          11,
+          23
+        ]
+      },
+      {
+        "type": "advance-entry",
+        "unitId": "atk0",
+        "moveLeft": 3,
+        "pos": [
+          11,
+          23
+        ],
+        "nearest": "def0"
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          11,
+          23
+        ],
+        "candidateCol": 11,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          11,
+          23
+        ],
+        "candidateCol": 12,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "attack-path-result",
+        "unitId": "atk0",
+        "result": "12,23",
+        "moveLeft": 3,
+        "pos": [
+          11,
+          23
+        ]
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          11,
+          23
+        ],
+        "candidateCol": 12,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "move-start",
+        "doctrine": "steady",
+        "unitId": "atk0",
+        "name": "Warrior",
+        "from": [
+          11,
+          23
+        ],
+        "to": [
+          12,
+          23
+        ],
+        "mounted": false
+      },
+      {
+        "type": "move-complete",
+        "doctrine": "steady",
+        "unitId": "atk0",
+        "name": "Warrior",
+        "from": [
+          11,
+          23
+        ],
+        "to": [
+          12,
+          23
+        ],
+        "mounted": false,
+        "after": [
+          12,
+          23
+        ]
+      },
+      {
+        "type": "activation-end",
+        "doctrine": "steady",
+        "turn": 1,
+        "unitId": "atk0",
+        "position": [
+          12,
+          23
+        ]
+      },
+      {
+        "type": "activation-start",
+        "doctrine": "steady",
+        "turn": 2,
+        "unitId": "atk0",
+        "name": "Warrior",
+        "position": [
+          12,
+          23
+        ],
+        "targetId": "def0",
+        "distance": 1,
+        "legalAttackAtStart": true
+      },
+      {
+        "type": "advance-entry",
+        "unitId": "atk0",
+        "moveLeft": 4,
+        "pos": [
+          12,
+          23
+        ],
+        "nearest": "def0"
+      },
+      {
+        "type": "attack-start",
+        "doctrine": "steady",
+        "attackerId": "atk0",
+        "attackerName": "Warrior",
+        "targetId": "def0",
+        "distance": 1,
+        "ranged": false,
+        "hpBefore": 22,
+        "pos": [
+          12,
+          23
+        ]
+      },
+      {
+        "type": "attack-complete",
+        "doctrine": "steady",
+        "attackerId": "atk0",
+        "attackerName": "Warrior",
+        "targetId": "def0",
+        "distance": 1,
+        "ranged": false,
+        "hpBefore": 22,
+        "pos": [
+          12,
+          23
+        ],
+        "hpAfter": 19
+      },
+      {
+        "type": "activation-end",
+        "doctrine": "steady",
+        "turn": 2,
+        "unitId": "atk0",
+        "position": [
+          12,
+          23
+        ]
+      },
+      {
+        "type": "activation-start",
+        "doctrine": "aggressive",
+        "turn": 1,
+        "unitId": "atk0",
+        "name": "Warrior",
+        "position": [
+          10,
+          23
+        ],
+        "targetId": "def0",
+        "distance": 3,
+        "legalAttackAtStart": false
+      },
+      {
+        "type": "advance-entry",
+        "unitId": "atk0",
+        "moveLeft": 4,
+        "pos": [
+          10,
+          23
+        ],
+        "nearest": "def0"
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          10,
+          23
+        ],
+        "candidateCol": 10,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          10,
+          23
+        ],
+        "candidateCol": 11,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          10,
+          23
+        ],
+        "candidateCol": 10,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          10,
+          23
+        ],
+        "candidateCol": 9,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "attack-path-result",
+        "unitId": "atk0",
+        "result": "11,23",
+        "moveLeft": 4,
+        "pos": [
+          10,
+          23
+        ]
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          10,
+          23
+        ],
+        "candidateCol": 11,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "move-start",
+        "doctrine": "aggressive",
+        "unitId": "atk0",
+        "name": "Warrior",
+        "from": [
+          10,
+          23
+        ],
+        "to": [
+          11,
+          23
+        ],
+        "mounted": false
+      },
+      {
+        "type": "move-complete",
+        "doctrine": "aggressive",
+        "unitId": "atk0",
+        "name": "Warrior",
+        "from": [
+          10,
+          23
+        ],
+        "to": [
+          11,
+          23
+        ],
+        "mounted": false,
+        "after": [
+          11,
+          23
+        ]
+      },
+      {
+        "type": "advance-entry",
+        "unitId": "atk0",
+        "moveLeft": 3,
+        "pos": [
+          11,
+          23
+        ],
+        "nearest": "def0"
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          11,
+          23
+        ],
+        "candidateCol": 11,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          11,
+          23
+        ],
+        "candidateCol": 12,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "attack-path-result",
+        "unitId": "atk0",
+        "result": "12,23",
+        "moveLeft": 3,
+        "pos": [
+          11,
+          23
+        ]
+      },
+      {
+        "type": "line-candidate",
+        "unitId": "atk0",
+        "from": [
+          11,
+          23
+        ],
+        "candidateCol": 12,
+        "allowed": true,
+        "rank": 0
+      },
+      {
+        "type": "move-start",
+        "doctrine": "aggressive",
+        "unitId": "atk0",
+        "name": "Warrior",
+        "from": [
+          11,
+          23
+        ],
+        "to": [
+          12,
+          23
+        ],
+        "mounted": false
+      },
+      {
+        "type": "move-complete",
+        "doctrine": "aggressive",
+        "unitId": "atk0",
+        "name": "Warrior",
+        "from": [
+          11,
+          23
+        ],
+        "to": [
+          12,
+          23
+        ],
+        "mounted": false,
+        "after": [
+          12,
+          23
+        ]
+      },
+      {
+        "type": "activation-end",
+        "doctrine": "aggressive",
+        "turn": 1,
+        "unitId": "atk0",
+        "position": [
+          12,
+          23
+        ]
+      },
+      {
+        "type": "activation-start",
+        "doctrine": "aggressive",
+        "turn": 2,
+        "unitId": "atk0",
+        "name": "Warrior",
+        "position": [
+          12,
+          23
+        ],
+        "targetId": "def0",
+        "distance": 1,
+        "legalAttackAtStart": true
+      },
+      {
+        "type": "attack-start",
+        "doctrine": "aggressive",
+        "attackerId": "atk0",
+        "attackerName": "Warrior",
+        "targetId": "def0",
+        "distance": 1,
+        "ranged": false,
+        "hpBefore": 22,
+        "pos": [
+          12,
+          23
+        ]
+      },
+      {
+        "type": "attack-complete",
+        "doctrine": "aggressive",
+        "attackerId": "atk0",
+        "attackerName": "Warrior",
+        "targetId": "def0",
+        "distance": 1,
+        "ranged": false,
+        "hpBefore": 22,
+        "pos": [
+          12,
+          23
+        ],
+        "hpAfter": 17
+      },
+      {
+        "type": "activation-end",
+        "doctrine": "aggressive",
+        "turn": 2,
+        "unitId": "atk0",
+        "position": [
+          12,
+          23
+        ]
+      }
+    ],
+    "browserErrors": [],
+    "screenshotNote": null
+  },
+  "attack": {
+    "doctrine": "steady",
+    "units": [
+      {
+        "id": "atk0",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 12,
+        "r": 23,
+        "hp": 16
+      },
+      {
+        "id": "atk1",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 21,
+        "hp": 22
+      },
+      {
+        "id": "atk2",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 22,
+        "hp": 22
+      },
+      {
+        "id": "atk3",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 23,
+        "hp": 22
+      },
+      {
+        "id": "atk4",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 24,
+        "hp": 22
+      },
+      {
+        "id": "atk5",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 25,
+        "hp": 22
+      },
+      {
+        "id": "atk6",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 26,
+        "hp": 22
+      },
+      {
+        "id": "atk7",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 27,
+        "hp": 22
+      },
+      {
+        "id": "atk8",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 28,
+        "hp": 22
+      },
+      {
+        "id": "atk9",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 29,
+        "hp": 22
+      },
+      {
+        "id": "atk10",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 30,
+        "hp": 14
+      },
+      {
+        "id": "atk11",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 31,
+        "hp": 16
+      },
+      {
+        "id": "atk12",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 32,
+        "hp": 16
+      },
+      {
+        "id": "atk13",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 33,
+        "hp": 16
+      },
+      {
+        "id": "atk14",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 34,
+        "hp": 16
+      },
+      {
+        "id": "atk15",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 35,
+        "hp": 16
+      },
+      {
+        "id": "atk16",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 36,
+        "hp": 16
+      },
+      {
+        "id": "atk17",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 37,
+        "hp": 16
+      },
+      {
+        "id": "atk18",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 38,
+        "hp": 16
+      },
+      {
+        "id": "atk19",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 39,
+        "hp": 16
+      },
+      {
+        "id": "atk20",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 40,
+        "hp": 18
+      },
+      {
+        "id": "atk21",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 41,
+        "hp": 56
+      },
+      {
+        "id": "atk22",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 42,
+        "hp": 56
+      },
+      {
+        "id": "atk23",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 43,
+        "hp": 56
+      },
+      {
+        "id": "atk24",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 44,
+        "hp": 56
+      },
+      {
+        "id": "atk25",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 45,
+        "hp": 56
+      },
+      {
+        "id": "atk26",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 46,
+        "hp": 56
+      },
+      {
+        "id": "atk27",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 47,
+        "hp": 56
+      },
+      {
+        "id": "def0",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 23,
+        "hp": 19
+      },
+      {
+        "id": "def1",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 21,
+        "hp": 22
+      },
+      {
+        "id": "def2",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 22,
+        "hp": 22
+      },
+      {
+        "id": "def3",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 23,
+        "hp": 22
+      },
+      {
+        "id": "def4",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 24,
+        "hp": 22
+      },
+      {
+        "id": "def5",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 25,
+        "hp": 22
+      },
+      {
+        "id": "def6",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 26,
+        "hp": 22
+      },
+      {
+        "id": "def7",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 27,
+        "hp": 22
+      },
+      {
+        "id": "def8",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 28,
+        "hp": 22
+      },
+      {
+        "id": "def9",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 29,
+        "hp": 22
+      },
+      {
+        "id": "def10",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 30,
+        "hp": 14
+      },
+      {
+        "id": "def11",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 31,
+        "hp": 16
+      },
+      {
+        "id": "def12",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 32,
+        "hp": 16
+      },
+      {
+        "id": "def13",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 33,
+        "hp": 16
+      },
+      {
+        "id": "def14",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 34,
+        "hp": 16
+      },
+      {
+        "id": "def15",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 35,
+        "hp": 16
+      },
+      {
+        "id": "def16",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 36,
+        "hp": 16
+      },
+      {
+        "id": "def17",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 37,
+        "hp": 16
+      },
+      {
+        "id": "def18",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 38,
+        "hp": 16
+      },
+      {
+        "id": "def19",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 39,
+        "hp": 16
+      },
+      {
+        "id": "def20",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 11,
+        "r": 41,
+        "hp": 56
+      },
+      {
+        "id": "def21",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 41,
+        "hp": 56
+      },
+      {
+        "id": "def22",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 42,
+        "hp": 56
+      },
+      {
+        "id": "def23",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 43,
+        "hp": 56
+      },
+      {
+        "id": "def24",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 44,
+        "hp": 56
+      },
+      {
+        "id": "def25",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 45,
+        "hp": 56
+      },
+      {
+        "id": "def26",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 46,
+        "hp": 56
+      },
+      {
+        "id": "def27",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 47,
+        "hp": 56
+      }
+    ]
+  },
+  "charge": {
+    "doctrine": "aggressive",
+    "units": [
+      {
+        "id": "atk0",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 12,
+        "r": 23,
+        "hp": 22
+      },
+      {
+        "id": "atk1",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 21,
+        "hp": 22
+      },
+      {
+        "id": "atk2",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 22,
+        "hp": 22
+      },
+      {
+        "id": "atk3",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 23,
+        "hp": 22
+      },
+      {
+        "id": "atk4",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 24,
+        "hp": 22
+      },
+      {
+        "id": "atk5",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 25,
+        "hp": 22
+      },
+      {
+        "id": "atk6",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 26,
+        "hp": 22
+      },
+      {
+        "id": "atk7",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 27,
+        "hp": 22
+      },
+      {
+        "id": "atk8",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 28,
+        "hp": 22
+      },
+      {
+        "id": "atk9",
+        "name": "Warrior",
+        "side": "atk",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 10,
+        "r": 29,
+        "hp": 22
+      },
+      {
+        "id": "atk10",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 11,
+        "r": 30,
+        "hp": 16
+      },
+      {
+        "id": "atk11",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 31,
+        "hp": 16
+      },
+      {
+        "id": "atk12",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 32,
+        "hp": 16
+      },
+      {
+        "id": "atk13",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 33,
+        "hp": 16
+      },
+      {
+        "id": "atk14",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 34,
+        "hp": 16
+      },
+      {
+        "id": "atk15",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 35,
+        "hp": 16
+      },
+      {
+        "id": "atk16",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 36,
+        "hp": 16
+      },
+      {
+        "id": "atk17",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 37,
+        "hp": 16
+      },
+      {
+        "id": "atk18",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 38,
+        "hp": 16
+      },
+      {
+        "id": "atk19",
+        "name": "Archer",
+        "side": "atk",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 10,
+        "r": 39,
+        "hp": 16
+      },
+      {
+        "id": "atk20",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 40,
+        "hp": 18
+      },
+      {
+        "id": "atk21",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 41,
+        "hp": 56
+      },
+      {
+        "id": "atk22",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 42,
+        "hp": 56
+      },
+      {
+        "id": "atk23",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 43,
+        "hp": 56
+      },
+      {
+        "id": "atk24",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 44,
+        "hp": 56
+      },
+      {
+        "id": "atk25",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 45,
+        "hp": 56
+      },
+      {
+        "id": "atk26",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 46,
+        "hp": 56
+      },
+      {
+        "id": "atk27",
+        "name": "Horseman",
+        "side": "atk",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 10,
+        "r": 47,
+        "hp": 56
+      },
+      {
+        "id": "def0",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 17,
+        "r": 23,
+        "hp": 17
+      },
+      {
+        "id": "def1",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 21,
+        "hp": 22
+      },
+      {
+        "id": "def2",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 22,
+        "hp": 22
+      },
+      {
+        "id": "def3",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 23,
+        "hp": 22
+      },
+      {
+        "id": "def4",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 24,
+        "hp": 22
+      },
+      {
+        "id": "def5",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 25,
+        "hp": 22
+      },
+      {
+        "id": "def6",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 26,
+        "hp": 22
+      },
+      {
+        "id": "def7",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 27,
+        "hp": 22
+      },
+      {
+        "id": "def8",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 28,
+        "hp": 22
+      },
+      {
+        "id": "def9",
+        "name": "Warrior",
+        "side": "def",
+        "melee": true,
+        "ranged": false,
+        "mounted": false,
+        "q": 13,
+        "r": 29,
+        "hp": 22
+      },
+      {
+        "id": "def10",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 19,
+        "r": 30,
+        "hp": 14
+      },
+      {
+        "id": "def11",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 31,
+        "hp": 16
+      },
+      {
+        "id": "def12",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 32,
+        "hp": 16
+      },
+      {
+        "id": "def13",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 33,
+        "hp": 16
+      },
+      {
+        "id": "def14",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 34,
+        "hp": 16
+      },
+      {
+        "id": "def15",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 35,
+        "hp": 16
+      },
+      {
+        "id": "def16",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 36,
+        "hp": 16
+      },
+      {
+        "id": "def17",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 37,
+        "hp": 16
+      },
+      {
+        "id": "def18",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 38,
+        "hp": 16
+      },
+      {
+        "id": "def19",
+        "name": "Archer",
+        "side": "def",
+        "melee": false,
+        "ranged": true,
+        "mounted": false,
+        "q": 13,
+        "r": 39,
+        "hp": 16
+      },
+      {
+        "id": "def20",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 11,
+        "r": 41,
+        "hp": 56
+      },
+      {
+        "id": "def21",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 41,
+        "hp": 56
+      },
+      {
+        "id": "def22",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 42,
+        "hp": 56
+      },
+      {
+        "id": "def23",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 43,
+        "hp": 56
+      },
+      {
+        "id": "def24",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 44,
+        "hp": 56
+      },
+      {
+        "id": "def25",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 45,
+        "hp": 56
+      },
+      {
+        "id": "def26",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 46,
+        "hp": 56
+      },
+      {
+        "id": "def27",
+        "name": "Horseman",
+        "side": "def",
+        "melee": false,
+        "ranged": false,
+        "mounted": true,
+        "q": 13,
+        "r": 47,
+        "hp": 56
+      }
+    ]
+  },
+  "events": [
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "atk0",
+      "name": "Warrior",
+      "position": [
+        10,
+        23
+      ],
+      "targetId": "def0",
+      "distance": 3,
+      "legalAttackAtStart": false
+    },
+    {
+      "type": "advance-entry",
+      "unitId": "atk0",
+      "moveLeft": 4,
+      "pos": [
+        10,
+        23
+      ],
+      "nearest": "def0"
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        10,
+        23
+      ],
+      "candidateCol": 10,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        10,
+        23
+      ],
+      "candidateCol": 11,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        10,
+        23
+      ],
+      "candidateCol": 10,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        10,
+        23
+      ],
+      "candidateCol": 9,
+      "allowed": false,
+      "rank": 0
+    },
+    {
+      "type": "attack-path-result",
+      "unitId": "atk0",
+      "result": "11,23",
+      "moveLeft": 4,
+      "pos": [
+        10,
+        23
+      ]
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        10,
+        23
+      ],
+      "candidateCol": 11,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "move-start",
+      "doctrine": "steady",
+      "unitId": "atk0",
+      "name": "Warrior",
+      "from": [
+        10,
+        23
+      ],
+      "to": [
+        11,
+        23
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "steady",
+      "unitId": "atk0",
+      "name": "Warrior",
+      "from": [
+        10,
+        23
+      ],
+      "to": [
+        11,
+        23
+      ],
+      "mounted": false,
+      "after": [
+        11,
+        23
+      ]
+    },
+    {
+      "type": "advance-entry",
+      "unitId": "atk0",
+      "moveLeft": 3,
+      "pos": [
+        11,
+        23
+      ],
+      "nearest": "def0"
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        11,
+        23
+      ],
+      "candidateCol": 11,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        11,
+        23
+      ],
+      "candidateCol": 12,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "attack-path-result",
+      "unitId": "atk0",
+      "result": "12,23",
+      "moveLeft": 3,
+      "pos": [
+        11,
+        23
+      ]
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        11,
+        23
+      ],
+      "candidateCol": 12,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "move-start",
+      "doctrine": "steady",
+      "unitId": "atk0",
+      "name": "Warrior",
+      "from": [
+        11,
+        23
+      ],
+      "to": [
+        12,
+        23
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "steady",
+      "unitId": "atk0",
+      "name": "Warrior",
+      "from": [
+        11,
+        23
+      ],
+      "to": [
+        12,
+        23
+      ],
+      "mounted": false,
+      "after": [
+        12,
+        23
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "atk0",
+      "position": [
+        12,
+        23
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "atk10",
+      "name": "Archer",
+      "position": [
+        10,
+        30
+      ],
+      "targetId": "def10",
+      "distance": 3,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "steady",
+      "attackerId": "atk10",
+      "attackerName": "Archer",
+      "targetId": "def10",
+      "distance": 3,
+      "ranged": true,
+      "hpBefore": 16,
+      "pos": [
+        10,
+        30
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "steady",
+      "attackerId": "atk10",
+      "attackerName": "Archer",
+      "targetId": "def10",
+      "distance": 3,
+      "ranged": true,
+      "hpBefore": 16,
+      "pos": [
+        10,
+        30
+      ],
+      "hpAfter": 14
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "atk10",
+      "position": [
+        10,
+        30
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "atk20",
+      "name": "Horseman",
+      "position": [
+        10,
+        40
+      ],
+      "targetId": "def20",
+      "distance": 3,
+      "legalAttackAtStart": false
+    },
+    {
+      "type": "move-start",
+      "doctrine": "steady",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        10,
+        40
+      ],
+      "to": [
+        11,
+        40
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "steady",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        10,
+        40
+      ],
+      "to": [
+        11,
+        40
+      ],
+      "mounted": true,
+      "after": [
+        11,
+        40
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "steady",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        11,
+        40
+      ],
+      "to": [
+        12,
+        40
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "steady",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        11,
+        40
+      ],
+      "to": [
+        12,
+        40
+      ],
+      "mounted": true,
+      "after": [
+        12,
+        40
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "atk20",
+      "position": [
+        12,
+        40
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "def0",
+      "name": "Warrior",
+      "position": [
+        13,
+        23
+      ],
+      "targetId": "atk0",
+      "distance": 1,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "steady",
+      "attackerId": "def0",
+      "attackerName": "Warrior",
+      "targetId": "atk0",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 22,
+      "pos": [
+        13,
+        23
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "steady",
+      "attackerId": "def0",
+      "attackerName": "Warrior",
+      "targetId": "atk0",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 22,
+      "pos": [
+        13,
+        23
+      ],
+      "hpAfter": 22
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "def0",
+      "position": [
+        13,
+        23
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "def10",
+      "name": "Archer",
+      "position": [
+        13,
+        30
+      ],
+      "targetId": "atk10",
+      "distance": 3,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "steady",
+      "attackerId": "def10",
+      "attackerName": "Archer",
+      "targetId": "atk10",
+      "distance": 3,
+      "ranged": true,
+      "hpBefore": 16,
+      "pos": [
+        13,
+        30
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "steady",
+      "attackerId": "def10",
+      "attackerName": "Archer",
+      "targetId": "atk10",
+      "distance": 3,
+      "ranged": true,
+      "hpBefore": 16,
+      "pos": [
+        13,
+        30
+      ],
+      "hpAfter": 16
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "def10",
+      "position": [
+        13,
+        30
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "def20",
+      "name": "Horseman",
+      "position": [
+        13,
+        40
+      ],
+      "targetId": "atk20",
+      "distance": 1,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "steady",
+      "attackerId": "def20",
+      "attackerName": "Horseman",
+      "targetId": "atk20",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 56,
+      "pos": [
+        13,
+        40
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "steady",
+      "attackerId": "def20",
+      "attackerName": "Horseman",
+      "targetId": "atk20",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 56,
+      "pos": [
+        13,
+        40
+      ],
+      "hpAfter": 18
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 1,
+      "unitId": "def20",
+      "position": [
+        13,
+        40
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "atk0",
+      "name": "Warrior",
+      "position": [
+        12,
+        23
+      ],
+      "targetId": "def0",
+      "distance": 1,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "advance-entry",
+      "unitId": "atk0",
+      "moveLeft": 4,
+      "pos": [
+        12,
+        23
+      ],
+      "nearest": "def0"
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "steady",
+      "attackerId": "atk0",
+      "attackerName": "Warrior",
+      "targetId": "def0",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 22,
+      "pos": [
+        12,
+        23
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "steady",
+      "attackerId": "atk0",
+      "attackerName": "Warrior",
+      "targetId": "def0",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 22,
+      "pos": [
+        12,
+        23
+      ],
+      "hpAfter": 19
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "atk0",
+      "position": [
+        12,
+        23
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "atk10",
+      "name": "Archer",
+      "position": [
+        10,
+        30
+      ],
+      "targetId": "def10",
+      "distance": 3,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "steady",
+      "attackerId": "atk10",
+      "attackerName": "Archer",
+      "targetId": "def10",
+      "distance": 3,
+      "ranged": true,
+      "hpBefore": 14,
+      "pos": [
+        10,
+        30
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "steady",
+      "attackerId": "atk10",
+      "attackerName": "Archer",
+      "targetId": "def10",
+      "distance": 3,
+      "ranged": true,
+      "hpBefore": 14,
+      "pos": [
+        10,
+        30
+      ],
+      "hpAfter": 14
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "atk10",
+      "position": [
+        10,
+        30
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "atk20",
+      "name": "Horseman",
+      "position": [
+        12,
+        40
+      ],
+      "targetId": "def20",
+      "distance": 1,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "move-start",
+      "doctrine": "steady",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        12,
+        40
+      ],
+      "to": [
+        11,
+        40
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "steady",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        12,
+        40
+      ],
+      "to": [
+        11,
+        40
+      ],
+      "mounted": true,
+      "after": [
+        11,
+        40
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "steady",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        11,
+        40
+      ],
+      "to": [
+        10,
+        40
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "steady",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        11,
+        40
+      ],
+      "to": [
+        10,
+        40
+      ],
+      "mounted": true,
+      "after": [
+        10,
+        40
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "atk20",
+      "position": [
+        10,
+        40
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "def0",
+      "name": "Warrior",
+      "position": [
+        13,
+        23
+      ],
+      "targetId": "atk0",
+      "distance": 1,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "steady",
+      "attackerId": "def0",
+      "attackerName": "Warrior",
+      "targetId": "atk0",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 19,
+      "pos": [
+        13,
+        23
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "steady",
+      "attackerId": "def0",
+      "attackerName": "Warrior",
+      "targetId": "atk0",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 19,
+      "pos": [
+        13,
+        23
+      ],
+      "hpAfter": 16
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "def0",
+      "position": [
+        13,
+        23
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "def10",
+      "name": "Archer",
+      "position": [
+        13,
+        30
+      ],
+      "targetId": "atk10",
+      "distance": 3,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "steady",
+      "attackerId": "def10",
+      "attackerName": "Archer",
+      "targetId": "atk10",
+      "distance": 3,
+      "ranged": true,
+      "hpBefore": 16,
+      "pos": [
+        13,
+        30
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "steady",
+      "attackerId": "def10",
+      "attackerName": "Archer",
+      "targetId": "atk10",
+      "distance": 3,
+      "ranged": true,
+      "hpBefore": 16,
+      "pos": [
+        13,
+        30
+      ],
+      "hpAfter": 14
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "def10",
+      "position": [
+        13,
+        30
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "def20",
+      "name": "Horseman",
+      "position": [
+        13,
+        40
+      ],
+      "targetId": "atk19",
+      "distance": 4,
+      "legalAttackAtStart": false
+    },
+    {
+      "type": "move-start",
+      "doctrine": "steady",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        13,
+        40
+      ],
+      "to": [
+        12,
+        40
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "steady",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        13,
+        40
+      ],
+      "to": [
+        12,
+        40
+      ],
+      "mounted": true,
+      "after": [
+        12,
+        40
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "steady",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        12,
+        40
+      ],
+      "to": [
+        12,
+        41
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "steady",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        12,
+        40
+      ],
+      "to": [
+        12,
+        41
+      ],
+      "mounted": true,
+      "after": [
+        12,
+        41
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "steady",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        12,
+        41
+      ],
+      "to": [
+        11,
+        41
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "steady",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        12,
+        41
+      ],
+      "to": [
+        11,
+        41
+      ],
+      "mounted": true,
+      "after": [
+        11,
+        41
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "steady",
+      "turn": 2,
+      "unitId": "def20",
+      "position": [
+        11,
+        41
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "atk0",
+      "name": "Warrior",
+      "position": [
+        10,
+        23
+      ],
+      "targetId": "def0",
+      "distance": 3,
+      "legalAttackAtStart": false
+    },
+    {
+      "type": "advance-entry",
+      "unitId": "atk0",
+      "moveLeft": 4,
+      "pos": [
+        10,
+        23
+      ],
+      "nearest": "def0"
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        10,
+        23
+      ],
+      "candidateCol": 10,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        10,
+        23
+      ],
+      "candidateCol": 11,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        10,
+        23
+      ],
+      "candidateCol": 10,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        10,
+        23
+      ],
+      "candidateCol": 9,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "attack-path-result",
+      "unitId": "atk0",
+      "result": "11,23",
+      "moveLeft": 4,
+      "pos": [
+        10,
+        23
+      ]
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        10,
+        23
+      ],
+      "candidateCol": 11,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "atk0",
+      "name": "Warrior",
+      "from": [
+        10,
+        23
+      ],
+      "to": [
+        11,
+        23
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "atk0",
+      "name": "Warrior",
+      "from": [
+        10,
+        23
+      ],
+      "to": [
+        11,
+        23
+      ],
+      "mounted": false,
+      "after": [
+        11,
+        23
+      ]
+    },
+    {
+      "type": "advance-entry",
+      "unitId": "atk0",
+      "moveLeft": 3,
+      "pos": [
+        11,
+        23
+      ],
+      "nearest": "def0"
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        11,
+        23
+      ],
+      "candidateCol": 11,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        11,
+        23
+      ],
+      "candidateCol": 12,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "attack-path-result",
+      "unitId": "atk0",
+      "result": "12,23",
+      "moveLeft": 3,
+      "pos": [
+        11,
+        23
+      ]
+    },
+    {
+      "type": "line-candidate",
+      "unitId": "atk0",
+      "from": [
+        11,
+        23
+      ],
+      "candidateCol": 12,
+      "allowed": true,
+      "rank": 0
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "atk0",
+      "name": "Warrior",
+      "from": [
+        11,
+        23
+      ],
+      "to": [
+        12,
+        23
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "atk0",
+      "name": "Warrior",
+      "from": [
+        11,
+        23
+      ],
+      "to": [
+        12,
+        23
+      ],
+      "mounted": false,
+      "after": [
+        12,
+        23
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "atk0",
+      "position": [
+        12,
+        23
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "atk10",
+      "name": "Archer",
+      "position": [
+        10,
+        30
+      ],
+      "targetId": "def10",
+      "distance": 3,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "aggressive",
+      "attackerId": "atk10",
+      "attackerName": "Archer",
+      "targetId": "def10",
+      "distance": 3,
+      "ranged": true,
+      "hpBefore": 16,
+      "pos": [
+        10,
+        30
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "aggressive",
+      "attackerId": "atk10",
+      "attackerName": "Archer",
+      "targetId": "def10",
+      "distance": 3,
+      "ranged": true,
+      "hpBefore": 16,
+      "pos": [
+        10,
+        30
+      ],
+      "hpAfter": 14
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "atk10",
+      "position": [
+        10,
+        30
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "atk20",
+      "name": "Horseman",
+      "position": [
+        10,
+        40
+      ],
+      "targetId": "def20",
+      "distance": 3,
+      "legalAttackAtStart": false
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        10,
+        40
+      ],
+      "to": [
+        11,
+        40
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        10,
+        40
+      ],
+      "to": [
+        11,
+        40
+      ],
+      "mounted": true,
+      "after": [
+        11,
+        40
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        11,
+        40
+      ],
+      "to": [
+        12,
+        40
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        11,
+        40
+      ],
+      "to": [
+        12,
+        40
+      ],
+      "mounted": true,
+      "after": [
+        12,
+        40
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "atk20",
+      "position": [
+        12,
+        40
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "def0",
+      "name": "Warrior",
+      "position": [
+        13,
+        23
+      ],
+      "targetId": "atk0",
+      "distance": 1,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "aggressive",
+      "attackerId": "def0",
+      "attackerName": "Warrior",
+      "targetId": "atk0",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 22,
+      "pos": [
+        13,
+        23
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "aggressive",
+      "attackerId": "def0",
+      "attackerName": "Warrior",
+      "targetId": "atk0",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 22,
+      "pos": [
+        13,
+        23
+      ],
+      "hpAfter": 22
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "def0",
+      "position": [
+        13,
+        23
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "def10",
+      "name": "Archer",
+      "position": [
+        13,
+        30
+      ],
+      "targetId": "atk10",
+      "distance": 3,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        13,
+        30
+      ],
+      "to": [
+        14,
+        30
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        13,
+        30
+      ],
+      "to": [
+        14,
+        30
+      ],
+      "mounted": false,
+      "after": [
+        14,
+        30
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        14,
+        30
+      ],
+      "to": [
+        15,
+        30
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        14,
+        30
+      ],
+      "to": [
+        15,
+        30
+      ],
+      "mounted": false,
+      "after": [
+        15,
+        30
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        15,
+        30
+      ],
+      "to": [
+        16,
+        30
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        15,
+        30
+      ],
+      "to": [
+        16,
+        30
+      ],
+      "mounted": false,
+      "after": [
+        16,
+        30
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "def10",
+      "position": [
+        16,
+        30
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "def20",
+      "name": "Horseman",
+      "position": [
+        13,
+        40
+      ],
+      "targetId": "atk20",
+      "distance": 1,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "aggressive",
+      "attackerId": "def20",
+      "attackerName": "Horseman",
+      "targetId": "atk20",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 56,
+      "pos": [
+        13,
+        40
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "aggressive",
+      "attackerId": "def20",
+      "attackerName": "Horseman",
+      "targetId": "atk20",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 56,
+      "pos": [
+        13,
+        40
+      ],
+      "hpAfter": 18
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 1,
+      "unitId": "def20",
+      "position": [
+        13,
+        40
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "atk0",
+      "name": "Warrior",
+      "position": [
+        12,
+        23
+      ],
+      "targetId": "def0",
+      "distance": 1,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "attack-start",
+      "doctrine": "aggressive",
+      "attackerId": "atk0",
+      "attackerName": "Warrior",
+      "targetId": "def0",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 22,
+      "pos": [
+        12,
+        23
+      ]
+    },
+    {
+      "type": "attack-complete",
+      "doctrine": "aggressive",
+      "attackerId": "atk0",
+      "attackerName": "Warrior",
+      "targetId": "def0",
+      "distance": 1,
+      "ranged": false,
+      "hpBefore": 22,
+      "pos": [
+        12,
+        23
+      ],
+      "hpAfter": 17
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "atk0",
+      "position": [
+        12,
+        23
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "atk10",
+      "name": "Archer",
+      "position": [
+        10,
+        30
+      ],
+      "targetId": "def9",
+      "distance": 4,
+      "legalAttackAtStart": false
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "atk10",
+      "name": "Archer",
+      "from": [
+        10,
+        30
+      ],
+      "to": [
+        11,
+        30
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "atk10",
+      "name": "Archer",
+      "from": [
+        10,
+        30
+      ],
+      "to": [
+        11,
+        30
+      ],
+      "mounted": false,
+      "after": [
+        11,
+        30
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "atk10",
+      "position": [
+        11,
+        30
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "atk20",
+      "name": "Horseman",
+      "position": [
+        12,
+        40
+      ],
+      "targetId": "def20",
+      "distance": 1,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        12,
+        40
+      ],
+      "to": [
+        11,
+        40
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        12,
+        40
+      ],
+      "to": [
+        11,
+        40
+      ],
+      "mounted": true,
+      "after": [
+        11,
+        40
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        11,
+        40
+      ],
+      "to": [
+        10,
+        40
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "atk20",
+      "name": "Horseman",
+      "from": [
+        11,
+        40
+      ],
+      "to": [
+        10,
+        40
+      ],
+      "mounted": true,
+      "after": [
+        10,
+        40
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "atk20",
+      "position": [
+        10,
+        40
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "def0",
+      "name": "Warrior",
+      "position": [
+        13,
+        23
+      ],
+      "targetId": "atk0",
+      "distance": 1,
+      "legalAttackAtStart": true
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def0",
+      "name": "Warrior",
+      "from": [
+        13,
+        23
+      ],
+      "to": [
+        14,
+        23
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def0",
+      "name": "Warrior",
+      "from": [
+        13,
+        23
+      ],
+      "to": [
+        14,
+        23
+      ],
+      "mounted": false,
+      "after": [
+        14,
+        23
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def0",
+      "name": "Warrior",
+      "from": [
+        14,
+        23
+      ],
+      "to": [
+        15,
+        23
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def0",
+      "name": "Warrior",
+      "from": [
+        14,
+        23
+      ],
+      "to": [
+        15,
+        23
+      ],
+      "mounted": false,
+      "after": [
+        15,
+        23
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def0",
+      "name": "Warrior",
+      "from": [
+        15,
+        23
+      ],
+      "to": [
+        16,
+        23
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def0",
+      "name": "Warrior",
+      "from": [
+        15,
+        23
+      ],
+      "to": [
+        16,
+        23
+      ],
+      "mounted": false,
+      "after": [
+        16,
+        23
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def0",
+      "name": "Warrior",
+      "from": [
+        16,
+        23
+      ],
+      "to": [
+        17,
+        23
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def0",
+      "name": "Warrior",
+      "from": [
+        16,
+        23
+      ],
+      "to": [
+        17,
+        23
+      ],
+      "mounted": false,
+      "after": [
+        17,
+        23
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "def0",
+      "position": [
+        17,
+        23
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "def10",
+      "name": "Archer",
+      "position": [
+        16,
+        30
+      ],
+      "targetId": "atk10",
+      "distance": 5,
+      "legalAttackAtStart": false
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        16,
+        30
+      ],
+      "to": [
+        17,
+        30
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        16,
+        30
+      ],
+      "to": [
+        17,
+        30
+      ],
+      "mounted": false,
+      "after": [
+        17,
+        30
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        17,
+        30
+      ],
+      "to": [
+        18,
+        30
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        17,
+        30
+      ],
+      "to": [
+        18,
+        30
+      ],
+      "mounted": false,
+      "after": [
+        18,
+        30
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        18,
+        30
+      ],
+      "to": [
+        19,
+        30
+      ],
+      "mounted": false
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def10",
+      "name": "Archer",
+      "from": [
+        18,
+        30
+      ],
+      "to": [
+        19,
+        30
+      ],
+      "mounted": false,
+      "after": [
+        19,
+        30
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "def10",
+      "position": [
+        19,
+        30
+      ]
+    },
+    {
+      "type": "activation-start",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "def20",
+      "name": "Horseman",
+      "position": [
+        13,
+        40
+      ],
+      "targetId": "atk19",
+      "distance": 4,
+      "legalAttackAtStart": false
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        13,
+        40
+      ],
+      "to": [
+        12,
+        40
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        13,
+        40
+      ],
+      "to": [
+        12,
+        40
+      ],
+      "mounted": true,
+      "after": [
+        12,
+        40
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        12,
+        40
+      ],
+      "to": [
+        12,
+        41
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        12,
+        40
+      ],
+      "to": [
+        12,
+        41
+      ],
+      "mounted": true,
+      "after": [
+        12,
+        41
+      ]
+    },
+    {
+      "type": "move-start",
+      "doctrine": "aggressive",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        12,
+        41
+      ],
+      "to": [
+        11,
+        41
+      ],
+      "mounted": true
+    },
+    {
+      "type": "move-complete",
+      "doctrine": "aggressive",
+      "unitId": "def20",
+      "name": "Horseman",
+      "from": [
+        12,
+        41
+      ],
+      "to": [
+        11,
+        41
+      ],
+      "mounted": true,
+      "after": [
+        11,
+        41
+      ]
+    },
+    {
+      "type": "activation-end",
+      "doctrine": "aggressive",
+      "turn": 2,
+      "unitId": "def20",
+      "position": [
+        11,
+        41
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+  OK: save.ts nie zawiera identyfikatora pasujacego do /upgradeSaveV2/i (brak funkcji migrujacej v2->v3, ABC-4)
+
+59 passed, 0 failed
+EXIT=0

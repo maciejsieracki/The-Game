@@ -1,0 +1,29 @@
+INFO ZASTOJ tury :: {"turn":2,"endAriaDisabled":"true","ostatnieLogi":["[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] triggerPlayerEndTurn: START tura 1","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[Autosave] rotacyjny (dysk) slot=1 tura=2","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] triggerPlayerEndTurn: DONE tura 2"]}
+INFO rozegrane tury :: {"turn_koncowa":2,"czas_s":124}
+PASS A-FSA gra: rozegrano tury (>=2) :: {"turn":2}
+INFO A-FSA pliki autozapisu na dysku :: 1
+PASS A-FSA autozapis na dysk: pliki istnieja :: 1
+INFO A-FSA czas do aktywnego „Wczytaj grę" po reloadzie (ms) :: {"ms":349,"disabled":false}
+PASS A-FSA po reloadzie: „Wczytaj grę" AKTYWNY :: {"missing":false,"disabled":false,"title":null,"hint":"Wczytaj grę"}
+INFO LOAD komunikaty w 9 s po kliknieciu :: ["Brak wydarzeń w tej turze"]
+PASS A-FSA lista zapisów w dialogu wczytywania :: {"listed":true,"rows":1}
+PASS A-FSA wczytanie: tura>1, miasta>=1, jednostki>=1 :: {"turn":2,"cities":9,"units":12,"awaiting":false}
+INFO A-FSA po wczytaniu :: {"turn":2,"cities":9,"units":12,"awaiting":false}
+PASS A-FSA po wczytaniu: „Zakończ turę" klikalny :: {"enabled":true}
+PASS A-FSA po wczytaniu: koniec tury podnosi turę o 1 :: {"before":2,"after":3}
+PASS A-FSA brak pageerror / console.error :: []
+INFO ZASTOJ tury :: {"turn":2,"endAriaDisabled":"true","ostatnieLogi":["[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] triggerPlayerEndTurn: START tura 1","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[Autosave] rotacyjny slot=autosave-1 tura=2","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] triggerPlayerEndTurn: DONE tura 2"]}
+INFO rozegrane tury :: {"turn_koncowa":2,"czas_s":124}
+PASS A-IDB gra: rozegrano tury (>=2) :: {"turn":2}
+INFO A-IDB czas do aktywnego „Wczytaj grę" po reloadzie (ms) :: {"ms":346,"disabled":false}
+PASS A-IDB po reloadzie: „Wczytaj grę" AKTYWNY :: {"missing":false,"disabled":false,"title":null,"hint":"Wczytaj grę"}
+INFO LOAD komunikaty w 9 s po kliknieciu :: ["Brak wydarzeń w tej turze"]
+PASS A-IDB lista zapisów w dialogu wczytywania :: {"listed":true,"rows":1}
+PASS A-IDB wczytanie: tura>1, miasta>=1, jednostki>=1 :: {"turn":2,"cities":9,"units":12,"awaiting":false}
+INFO A-IDB po wczytaniu :: {"turn":2,"cities":9,"units":12,"awaiting":false}
+PASS A-IDB po wczytaniu: „Zakończ turę" klikalny :: {"enabled":true}
+PASS A-IDB po wczytaniu: koniec tury podnosi turę o 1 :: {"before":2,"after":3}
+PASS A-IDB brak pageerror / console.error :: []
+FAIL wyjatek :: page.evaluate: Target page, context or browser has been closed |     at stateOf (/home/user/The-Game/.claude/worktrees/wf_ba89ebbf-458-3/gra/tools/load-game-regression-e2e-r5.cjs:68:32) |     at playNewGame (/home/user/The-Game/.claude/worktrees/wf_ba89ebbf-458-3/gra/tools/load-game-regression-e2e-r5.cjs:113:19)
+load-game-regression-e2e-r5: FAIL (1)
+EXIT=124

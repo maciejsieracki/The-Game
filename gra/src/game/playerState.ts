@@ -39,7 +39,7 @@
  *                -> sets pieniadzMnoznik to PIENIADZ_MNOZNIK (x10)
  */
 
-import type { TechDef, CivBonus, BuildingDef } from '../data/loader';
+import type { TechDef, BuildingDef } from '../data/loader';
 import { applyTempoKoszt, type TempoGry } from './tech-tempo';
 import type { BuildingCostPace } from './building-cost-tempo';
 import type { KosztJednostekPace } from './unit-cost-tempo';
@@ -131,11 +131,6 @@ export interface PlayerState {
    * Ustawiany w applyMenuParams przy starcie gry.
    */
   civType: string;
-  /**
-   * Bonusy cywilizacji gracza (tablica z civs.json[].bonusy).
-   * Attachowane przy starcie — realizacja po stronie właściwych systemów (walka, ekonomia, miasto).
-   */
-  civBonusy: CivBonus[];
   /** Projekt kosmiczny ukończony (warunek zwycięstwa nauki 10=A*). */
   rakietaWystrzelona: boolean;
 }
@@ -157,7 +152,6 @@ export function createPlayerState(): PlayerState {
     wzrostLudnosciPace: 'wysoki',
     ruchSwiataPace: 'krotki',
     civType: 'grecy',    // default: Grecy; nadpisywany przez applyMenuParams
-    civBonusy: [],       // puste do czasu startu gry
     rakietaWystrzelona: false,
   };
 }

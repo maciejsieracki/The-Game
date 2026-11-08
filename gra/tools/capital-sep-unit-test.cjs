@@ -60,14 +60,14 @@ assert(M.capitalMinSeparation('super') === 19, 'sep Super = 19');
 
 // FALA 176/179: brak ścinania dimCap short/12
 assert(M.capitalMinSeaDistForMap('duza', 168, 120) === 10, 'sea ForMap 168×120 → 10');
-assert(M.capitalMinSeparationForMap('duza', 168, 120) === 15, 'sep ForMap 168×120 → 15');
+assert(M.capitalMinSeparationForMap('duza', 168, 120) === 25, 'sep ForMap 168×120 → 25 (R-WEB-CAPITAL-SPACING-TUNE-Q1: 0,21×120)');
 assert(M.capitalMinSeaDistForMap('duza', 120, 100) === 10, 'sea ForMap 120×100 → 10');
-assert(M.capitalMinSeparationForMap('duza', 120, 100) === 15, 'sep ForMap 120×100 → 15');
+assert(M.capitalMinSeparationForMap('duza', 120, 100) === 21, 'sep ForMap 120×100 → 21 (TUNE-Q1: 0,21×100)');
 assert(M.capitalMinSeaDistForMap('duza', 50, 50) === 0, 'sea ForMap 50×50 → 0 (harness)');
 assert(M.capitalMinSeparationForMap('duza', 50, 50) === 0, 'sep ForMap 50×50 → 0 (harness)');
 
 assert(M.capitalMinSeaDistForMap('ogromna', 240, 168) === 12, 'sea Duża = 12');
-assert(M.capitalMinSeparationForMap('ogromna', 240, 168) === 16, 'sep Duża = 16');
+assert(M.capitalMinSeparationForMap('ogromna', 240, 168) === 35, 'sep Duża = 35 (TUNE-Q1: 0,21×168, podłoga 16)');
 
 // Bramka
 const priors = [{ q: 0, r: 0 }];
@@ -78,10 +78,22 @@ assert(M.passesMinCapitalSeparationGate({ q: 0, r: 0 }, [], 15) === true, 'brak 
 // FALA 182 + Maciej 2026-08-02: Mała/Średnia 12, Standard 15, Duża 16, Super 19
 assert(M.capitalMinSeparation('duza') === 15, 'FALA182+: Standard (duza) sep=15');
 assert(M.capitalMinSeparation('ogromna') === 16, 'FALA182: Duża (ogromna) sep=16');
-assert(M.capitalMinSeparationForMap('ogromna', 240, 168) === 16, 'FALA182: Duża map sep=16');
+// ADNOTACJA (R-WEB-CAPITAL-SPACING-FIX-Q1, obrona r1 zarzut 5): dawne `=== 16` zastapione DOKLADNA asercja `=== 25`
+// (0,15 x 168, podloga tabeli 16 jest osobno sprawdzona w :79 capitalMinSeparation('ogromna') === 16) + zachowana semantyka >= 16.
+assert(M.capitalMinSeparationForMap('ogromna', 240, 168) === 35, 'FALA182: Duża map sep = 35 (TUNE-Q1: 0,21×168; >= podłoga 16)');
+assert(M.capitalMinSeparationForMap('ogromna', 240, 168) >= M.capitalMinSeparation('ogromna'), 'FALA182: Duża map sep >= podłoga tabeli');
 // minDystObcyOdGracza = max(12 floor, minDystKlastrow) → na Dużej 16, nie hardcode 12
-assert(Math.max(12, M.capitalMinSeparationForMap('ogromna', 240, 168)) === 16,
-  'FALA182: obcy od gracza na Dużej ≥16 (nie 12)');
+assert(Math.max(12, M.capitalMinSeparationForMap('ogromna', 240, 168)) === 35,
+  'FALA182: obcy od gracza na Dużej = 35 (TUNE-Q1; >=16, nie 12; dawniej === 16)');
+
+// R-WEB-CAPITAL-SPACING-FIX-Q1: proporcjonalny sep, podłoga = tabela, sufit wykonalności, short<80
+assert(M.capitalMinSeparationForMap('duza', 168, 120, 5) === 25, 'sep 168×120 civ=5 → 25 (TUNE-Q1: sufit sqrt(20160×0,6/5)=49 > 25)');
+assert(M.capitalMinSeparationForMap('duza', 168, 120, 1) === 25, 'civCount<2 → bez sufitu (25)');
+assert(M.capitalMinSeparationForMap('duza', 168, 120, 60) >= 15, 'sufit nigdy poniżej podłogi tabeli (>=15) przy short>=80');
+assert(M.capitalMinSeparationForMap('srednia', 108, 74, 4) === 16, 'short<80 z civ=4 → 16 (TUNE-Q1: round(0,21×74)=16 < sufit 22; włączone, dawniej 0)');
+assert(M.capitalMinSeparationForMap('srednia', 108, 74) === 0, 'short<80 bez civCount → 0');
+assert(M.capitalMinSeparationForMap('mala', 50, 50, 6) < 12, 'short<80 za ciasna mapa → obniżone poniżej tabeli (wykonalne)');
+assert(M.capitalMinSeparationForMap('super', 672, 476, 8) === 100, 'sep 672×476 → 100 (TUNE-Q1: 0,21×476)');
 
 // Klastr MP: MIN=MAX=5 hex — bliskie etykiety to design klastra, nie bypass sep stolic (14)
 assert(M.CLUSTER_CITY_STATE_MIN_HEX === 5, 'CLUSTER_CITY_STATE_MIN_HEX=5');

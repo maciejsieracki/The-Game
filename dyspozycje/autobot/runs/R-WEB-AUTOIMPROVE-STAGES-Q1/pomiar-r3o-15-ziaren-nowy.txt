@@ -1,0 +1,164 @@
+# R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 — Krok 1 diagnoza + Krok 3 twardy sufit/dolna granica
+# ziarna: 1, 2, 3, 5, 11, 21, 33, 44, 55, 66, 77, 88, 101, 202, 303 · tur: 160 · 3 miasta AI CYWILIZACJI, pop 4->8 (co 4 tur), scenariusz BEZ niedoboru surowca
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=10 landSea=45 relief=30 coast=6 riversMain=80 riversFill=29 forest=2 deposits=8 starts=28 total=241
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=2 landSea=33 relief=23 coast=5 riversMain=110 riversFill=48 forest=1 deposits=2 starts=17 total=243
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=23 relief=22 coast=5 riversMain=93 riversFill=62 forest=1 deposits=2 starts=12 total=222
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=3 landSea=35 relief=31 coast=9 riversMain=103 riversFill=90 forest=1 deposits=3 starts=18 total=294
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=23 relief=23 coast=6 riversMain=75 riversFill=35 forest=1 deposits=2 starts=10 total=177
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=18 relief=19 coast=4 riversMain=54 riversFill=33 forest=1 deposits=2 starts=10 total=142
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=17 relief=21 coast=4 riversMain=63 riversFill=46 forest=1 deposits=2 starts=11 total=166
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=17 relief=19 coast=5 riversMain=59 riversFill=36 forest=1 deposits=2 starts=10 total=150
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=3 landSea=29 relief=27 coast=7 riversMain=104 riversFill=82 forest=1 deposits=3 starts=17 total=274
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=1 landSea=20 relief=18 coast=5 riversMain=50 riversFill=37 forest=1 deposits=2 starts=11 total=145
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=28 relief=21 coast=4 riversMain=59 riversFill=31 forest=1 deposits=2 starts=12 total=160
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=24 relief=25 coast=4 riversMain=68 riversFill=52 forest=1 deposits=2 starts=13 total=190
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=18 relief=18 coast=4 riversMain=53 riversFill=41 forest=1 deposits=2 starts=11 total=149
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=16 relief=17 coast=4 riversMain=39 riversFill=14 forest=1 deposits=2 starts=9 total=104
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=16 relief=17 coast=4 riversMain=50 riversFill=17 forest=1 deposits=2 starts=10 total=118
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=27 relief=17 coast=5 riversMain=43 riversFill=14 forest=1 deposits=1 starts=14 total=123
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=16 relief=19 coast=4 riversMain=51 riversFill=35 forest=1 deposits=2 starts=10 total=138
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=16 relief=17 coast=3 riversMain=61 riversFill=45 forest=1 deposits=2 starts=10 total=156
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=26 relief=20 coast=3 riversMain=72 riversFill=64 forest=1 deposits=3 starts=15 total=207
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=20 relief=26 coast=4 riversMain=58 riversFill=26 forest=1 deposits=1 starts=9 total=147
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=16 relief=17 coast=3 riversMain=44 riversFill=26 forest=1 deposits=2 starts=8 total=118
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=16 relief=17 coast=4 riversMain=58 riversFill=59 forest=1 deposits=2 starts=12 total=170
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=25 relief=24 coast=3 riversMain=66 riversFill=44 forest=1 deposits=2 starts=12 total=180
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=18 relief=21 coast=3 riversMain=50 riversFill=51 forest=1 deposits=3 starts=10 total=158
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=16 relief=19 coast=4 riversMain=44 riversFill=32 forest=1 deposits=2 starts=10 total=128
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=19 relief=23 coast=5 riversMain=52 riversFill=25 forest=1 deposits=2 starts=10 total=138
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=24 relief=20 coast=4 riversMain=43 riversFill=43 forest=1 deposits=2 starts=9 total=145
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=20 relief=19 coast=5 riversMain=69 riversFill=40 forest=1 deposits=2 starts=12 total=169
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=17 relief=18 coast=3 riversMain=38 riversFill=16 forest=1 deposits=2 starts=13 total=109
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=27 relief=31 coast=6 riversMain=87 riversFill=28 forest=1 deposits=3 starts=18 total=202
+
+### KROK 1 — PRZED (kod main.ts sprzed tego tematu, pct=MAX=100 przy nadwyzce)
+  ziarno 1: udzial puli (srednia calego biegu) 15.3% (min 0.0% / max 50.0%) · tur z udzialem 0%: 111/160 (69%) · nadwyzka: 112/160 tur, pierwsza t23 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 0.0%, 0% w 48/48 tur
+  ziarno 2: udzial puli (srednia calego biegu) 20.9% (min 0.0% / max 50.0%) · tur z udzialem 0%: 93/160 (58%) · nadwyzka: 94/160 tur, pierwsza t23 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 11.5%, 0% w 37/48 tur
+  ziarno 3: udzial puli (srednia calego biegu) 17.5% (min 0.0% / max 50.0%) · tur z udzialem 0%: 104/160 (65%) · nadwyzka: 105/160 tur, pierwsza t25 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 3.1%, 0% w 45/48 tur
+  ziarno 5: udzial puli (srednia calego biegu) 17.2% (min 0.0% / max 50.0%) · tur z udzialem 0%: 105/160 (66%) · nadwyzka: 106/160 tur, pierwsza t18 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 12.5%, 0% w 36/48 tur
+  ziarno 11: udzial puli (srednia calego biegu) 16.6% (min 0.0% / max 50.0%) · tur z udzialem 0%: 107/160 (67%) · nadwyzka: 108/160 tur, pierwsza t19 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 0.0%, 0% w 48/48 tur
+  ziarno 21: udzial puli (srednia calego biegu) 14.1% (min 0.0% / max 50.0%) · tur z udzialem 0%: 115/160 (72%) · nadwyzka: 116/160 tur, pierwsza t22 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 0.0%, 0% w 48/48 tur
+  ziarno 33: udzial puli (srednia calego biegu) 23.1% (min 0.0% / max 50.0%) · tur z udzialem 0%: 86/160 (54%) · nadwyzka: 87/160 tur, pierwsza t23 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 18.8%, 0% w 30/48 tur
+  ziarno 44: udzial puli (srednia calego biegu) 20.3% (min 0.0% / max 50.0%) · tur z udzialem 0%: 95/160 (59%) · nadwyzka: 96/160 tur, pierwsza t27 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 12.5%, 0% w 36/48 tur
+  ziarno 55: udzial puli (srednia calego biegu) 22.5% (min 0.0% / max 50.0%) · tur z udzialem 0%: 88/160 (55%) · nadwyzka: 89/160 tur, pierwsza t23 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 17.7%, 0% w 31/48 tur
+  ziarno 66: udzial puli (srednia calego biegu) 23.4% (min 0.0% / max 50.0%) · tur z udzialem 0%: 85/160 (53%) · nadwyzka: 86/160 tur, pierwsza t22 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 18.8%, 0% w 30/48 tur
+  ziarno 77: udzial puli (srednia calego biegu) 23.1% (min 0.0% / max 50.0%) · tur z udzialem 0%: 86/160 (54%) · nadwyzka: 87/160 tur, pierwsza t23 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 18.8%, 0% w 30/48 tur
+  ziarno 88: udzial puli (srednia calego biegu) 13.8% (min 0.0% / max 50.0%) · tur z udzialem 0%: 116/160 (73%) · nadwyzka: 117/160 tur, pierwsza t18 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 0.0%, 0% w 48/48 tur
+  ziarno 101: udzial puli (srednia calego biegu) 21.3% (min 0.0% / max 50.0%) · tur z udzialem 0%: 92/160 (58%) · nadwyzka: 93/160 tur, pierwsza t13 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 18.8%, 0% w 30/48 tur
+  ziarno 202: udzial puli (srednia calego biegu) 13.8% (min 0.0% / max 50.0%) · tur z udzialem 0%: 116/160 (73%) · nadwyzka: 117/160 tur, pierwsza t22 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 0.0%, 0% w 48/48 tur
+  ziarno 303: udzial puli (srednia calego biegu) 18.4% (min 0.0% / max 50.0%) · tur z udzialem 0%: 101/160 (63%) · nadwyzka: 102/160 tur, pierwsza t22 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 12.5%, 0% w 36/48 tur
+
+### KROK 3 — PO (dolna granica MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA)
+  ziarno 1: udzial puli (srednia calego biegu) 25.3% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 99/160 tur, pierwsza t23 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 20.8%, 0% w 0/48 tur
+  ziarno 2: udzial puli (srednia calego biegu) 23.3% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 108/160 tur, pierwsza t23 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 16.7%, 0% w 0/48 tur
+  ziarno 3: udzial puli (srednia calego biegu) 24.5% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 103/160 tur, pierwsza t25 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 20.0%, 0% w 0/48 tur
+  ziarno 5: udzial puli (srednia calego biegu) 21.8% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 114/160 tur, pierwsza t18 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 18.3%, 0% w 0/48 tur
+  ziarno 11: udzial puli (srednia calego biegu) 24.5% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 103/160 tur, pierwsza t19 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 20.8%, 0% w 0/48 tur
+  ziarno 21: udzial puli (srednia calego biegu) 22.8% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 110/160 tur, pierwsza t22 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 18.3%, 0% w 0/48 tur
+  ziarno 33: udzial puli (srednia calego biegu) 23.8% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 106/160 tur, pierwsza t23 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 19.2%, 0% w 0/48 tur
+  ziarno 44: udzial puli (srednia calego biegu) 20.5% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 119/160 tur, pierwsza t27 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 12.5%, 0% w 0/48 tur
+  ziarno 55: udzial puli (srednia calego biegu) 23.0% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 109/160 tur, pierwsza t23 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 18.3%, 0% w 0/48 tur
+  ziarno 66: udzial puli (srednia calego biegu) 25.0% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 101/160 tur, pierwsza t22 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 20.8%, 0% w 0/48 tur
+  ziarno 77: udzial puli (srednia calego biegu) 23.0% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 109/160 tur, pierwsza t23 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 16.7%, 0% w 0/48 tur
+  ziarno 88: udzial puli (srednia calego biegu) 24.3% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 104/160 tur, pierwsza t18 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 20.8%, 0% w 0/48 tur
+  ziarno 101: udzial puli (srednia calego biegu) 21.8% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 114/160 tur, pierwsza t13 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 19.2%, 0% w 0/48 tur
+  ziarno 202: udzial puli (srednia calego biegu) 20.8% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 118/160 tur, pierwsza t22 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 14.2%, 0% w 0/48 tur
+  ziarno 303: udzial puli (srednia calego biegu) 23.3% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 108/160 tur, pierwsza t22 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 18.3%, 0% w 0/48 tur
+
+### OBRONA ZARZUTU 1 (Evaluator runda 1) — INNY observable niz rozkazy buildImprovement:
+# zakladanie miast AI z TEJ SAMEJ puli imperium (`evaluateFoundCityAffordance`, PRAWDZIWA
+# funkcja silnika, koszt Pracy = 20). Evaluator zmierzyl delta=0 na rozkazach
+# buildImprovement (poprawnie — patrz naglowek pliku); ponizej mierzymy INNEGO konsumenta tej
+# samej puli, TAKZE PODCZAS samej nadwyzki (gdy buildImprovement generuje 0 rozkazow).
+  PRZED ziarno 1: miast zalozonych (caly bieg) 68, z tego PODCZAS nadwyzki 30, pierwsze podczas nadwyzki: t25
+  PRZED ziarno 2: miast zalozonych (caly bieg) 106, z tego PODCZAS nadwyzki 59, pierwsze podczas nadwyzki: t26
+  PRZED ziarno 3: miast zalozonych (caly bieg) 85, z tego PODCZAS nadwyzki 44, pierwsze podczas nadwyzki: t25
+  PRZED ziarno 5: miast zalozonych (caly bieg) 116, z tego PODCZAS nadwyzki 93, pierwsze podczas nadwyzki: t18
+  PRZED ziarno 11: miast zalozonych (caly bieg) 81, z tego PODCZAS nadwyzki 43, pierwsze podczas nadwyzki: t21
+  PRZED ziarno 21: miast zalozonych (caly bieg) 65, z tego PODCZAS nadwyzki 32, pierwsze podczas nadwyzki: t22
+  PRZED ziarno 33: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 68, pierwsze podczas nadwyzki: t24
+  PRZED ziarno 44: miast zalozonych (caly bieg) 114, z tego PODCZAS nadwyzki 78, pierwsze podczas nadwyzki: t28
+  PRZED ziarno 55: miast zalozonych (caly bieg) 121, z tego PODCZAS nadwyzki 77, pierwsze podczas nadwyzki: t26
+  PRZED ziarno 66: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 67, pierwsze podczas nadwyzki: t22
+  PRZED ziarno 77: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 68, pierwsze podczas nadwyzki: t24
+  PRZED ziarno 88: miast zalozonych (caly bieg) 65, z tego PODCZAS nadwyzki 34, pierwsze podczas nadwyzki: t18
+  PRZED ziarno 101: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 74, pierwsze podczas nadwyzki: t13
+  PRZED ziarno 202: miast zalozonych (caly bieg) 64, z tego PODCZAS nadwyzki 33, pierwsze podczas nadwyzki: t22
+  PRZED ziarno 303: miast zalozonych (caly bieg) 109, z tego PODCZAS nadwyzki 71, pierwsze podczas nadwyzki: t22
+  PO    ziarno 1: miast zalozonych (caly bieg) 123, z tego PODCZAS nadwyzki 68, pierwsze podczas nadwyzki: t25
+  PO    ziarno 2: miast zalozonych (caly bieg) 121, z tego PODCZAS nadwyzki 77, pierwsze podczas nadwyzki: t26
+  PO    ziarno 3: miast zalozonych (caly bieg) 123, z tego PODCZAS nadwyzki 85, pierwsze podczas nadwyzki: t25
+  PO    ziarno 5: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 84, pierwsze podczas nadwyzki: t18
+  PO    ziarno 11: miast zalozonych (caly bieg) 123, z tego PODCZAS nadwyzki 70, pierwsze podczas nadwyzki: t21
+  PO    ziarno 21: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 83, pierwsze podczas nadwyzki: t22
+  PO    ziarno 33: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 78, pierwsze podczas nadwyzki: t24
+  PO    ziarno 44: miast zalozonych (caly bieg) 115, z tego PODCZAS nadwyzki 82, pierwsze podczas nadwyzki: t28
+  PO    ziarno 55: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 81, pierwsze podczas nadwyzki: t25
+  PO    ziarno 66: miast zalozonych (caly bieg) 123, z tego PODCZAS nadwyzki 69, pierwsze podczas nadwyzki: t22
+  PO    ziarno 77: miast zalozonych (caly bieg) 118, z tego PODCZAS nadwyzki 76, pierwsze podczas nadwyzki: t24
+  PO    ziarno 88: miast zalozonych (caly bieg) 123, z tego PODCZAS nadwyzki 71, pierwsze podczas nadwyzki: t18
+  PO    ziarno 101: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 85, pierwsze podczas nadwyzki: t13
+  PO    ziarno 202: miast zalozonych (caly bieg) 115, z tego PODCZAS nadwyzki 83, pierwsze podczas nadwyzki: t22
+  PO    ziarno 303: miast zalozonych (caly bieg) 120, z tego PODCZAS nadwyzki 79, pierwsze podczas nadwyzki: t22
+  SUMA (5 ziaren) — miast zalozonych PODCZAS nadwyzki: PRZED=871 · PO=1171 · delta=300
+  SUMA (5 ziaren) — miast zalozonych w calym biegu: PRZED=1482 · PO=1814 · delta=332
+
+### SCENARIUSZ NIEDOBORU (regresja ZASADY 1/2, nie przedmiot tego tematu — kontrola braku regresu)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=20 relief=18 coast=4 riversMain=50 riversFill=19 forest=1 deposits=3 starts=10 total=126
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=21 relief=21 coast=4 riversMain=61 riversFill=37 forest=1 deposits=2 starts=12 total=161
+  ziarno 1: nadwyzka 0/160 tur (przy stalym niedoborze drewna oczekiwane ~0)
+  ziarno 2: nadwyzka 0/160 tur (przy stalym niedoborze drewna oczekiwane ~0)
+
+### WERYFIKACJA — KRYTERIA KONCA
+  OK   Krok 1: scenariusz bez niedoboru faktycznie generuje tury z nadwyzka (pomiar nie jest pusty)
+  OK   Krok 1 potwierdza objaw: PRZED, udzial puli = 0% na >=10% tur (w tym w OGONIE, populacja ustabilizowana)
+  OK   Krok 2/3: PO poprawce zero tur z udzialem puli 0% (podloga trzyma)
+  OK   Krok 2/3: PO poprawce min. udzial puli PODCZAS nadwyzki >= MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA
+  OK   Obrona zarzutu 1: podloga 10% zwieksza (SCISLE, > PRZED) liczbe miast AI zalozonych PODCZAS nadwyzki z tej samej puli imperium
+  OK   Obrona zarzutu 1: wzrost jest spojny na WIEKSZOSCI ziaren (nie artefakt jednego wyniku)
+  OK   Krok 3: twardy sufit — PRZED, udzial puli nigdy nie przekracza MAX_PROCENT_PULI_IMPERIUM (50%)
+  OK   Krok 3: twardy sufit — PO, udzial puli nigdy nie przekracza MAX_PROCENT_PULI_IMPERIUM (50%)
+  OK   Krok 4 (brak regresu): PO poprawce, PO zadzialaniu przekierowania udzial puli wyraznie ponizej baseline (<=15%, nie „prawie 50%")
+  OK   Krok 4 (brak regresu ZASADY 1): przy stalym niedoborze surowca nadwyzka jest rzadka (<=10% tur)
+
+### OBRONA ZARZUTU 2 — mutacja MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA=80 (>50)
+  surowy wzor (bez clampingu) dalby pct=20 (< sufit 50 -> pula imperium 80% > 50%)
+  PRAWDZIWY main.ts (wyciety tekst, ZASADA 3) daje pct=50 -> pula imperium 50%
+  OK   Obrona zarzutu 2: mutacja stalej > 50 NIE lamie sufitu 50% w REALNYM main.ts (clampPodzialPracyBudynkiPercent trzyma procentBudynki >= 50)
+  OK   Obrona zarzutu 2: kontrola negatywna — surowy (nieklamrowany) wzor PRZY TEJ SAMEJ mutacji faktycznie lamie sufit 50 (dowod, ze test cos realnie sprawdza, nie jest tautologia)
+  OK   main.ts faktycznie importuje i uzywa MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA w ZASADZIE 3
+
+13 PASS, 0 FAIL
+EXIT=0

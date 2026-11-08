@@ -25,12 +25,17 @@
  */
 
 import * as THREE from 'three';
+import { GeometryContentPool } from './geometryContentPool';
+import { MaterialContentPool } from './materialContentPool';
 import { clientRectToNdc } from '../input/picker';
 import { HUMAN_OWNER_PRIMARY } from '../game/human-owners';
 import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
 import { TerenBazowy } from '../types/hex';
 import { axialToWorld, HEX_R } from './hexutil';
+import {
+  MAP_HEX_HIGHLIGHT_BASE_OPACITY,
+} from './buildHighlight';
 import { buildHorse } from './kon-nowy-model';
 import { GAME_MAP_RENDER_STYLE, terrainVisualForStyle } from './mapRenderStyle';
 import type { RuntimeUnit } from '../units/setup';
@@ -45,7 +50,7 @@ import { applyUnitUpgradeBadgeRow, syncUnitUpgradeBadges } from './unitUpgradeBa
 // VETERAN_BADGE_RESERVED_Y. Zasoby to singletony modułu, jak wyżej.
 // VETERAN_BADGE_HIT_UD: znacznik siatek gwiazdek dla raycastera — tooltip
 // poziomu weterana (C-OBCE-JEDN-Q3) rozpoznaje po nim trafienie w odznakę.
-import { applyUnitVeteranBadgeStarCount, syncUnitVeteranBadges, VETERAN_BADGE_HIT_UD } from './unitVeteranBadges';
+import { applyUnitCommanderStar, applyUnitVeteranBadgeStarCount, syncUnitVeteranBadges, VETERAN_BADGE_HIT_UD } from './unitVeteranBadges';
 // Znak właściciela przy lewej krawędzi żetonu (C-OBCE-JEDN-Q2): portret władcy /
 // sygnet kultury miasta-państwa / czaszka barbarzyńców. Kontekst właściciela
 // wstrzykuje main.ts przez setOwnerEmblemResolver — ten renderer nie sięga do
@@ -58,6 +63,8 @@ import type { UnitOwnerEmblemResolver } from './unitOwnerEmblem';
 // Duży, samodzielny medalion właściciela ZNIKNĄŁ — wszedł do tabliczki.
 // Zasoby to singletony modułu; NIC nie trafia do userData['mats'].
 import { applyUnitStatPlate } from './unitStatPlate';
+import { SmallPartLod } from './smallPartLod';
+import { mergeUnitStaticParts } from './unitStaticMerge';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
@@ -404,7 +411,7 @@ const HIGHLIGHT_RADIUS  = HEX_R * 0.88;
 const HIGHLIGHT_HEIGHT  = 0.015 * HEX_R;
 const HIGHLIGHT_LIFT    = 0.005 * HEX_R;
 const HIGHLIGHT_COLOR   = 0x66ccff;
-const HIGHLIGHT_OPACITY = 0.35;
+const HIGHLIGHT_OPACITY = MAP_HEX_HIGHLIGHT_BASE_OPACITY;
 
 // Route
 const ROUTE_Y_LIFT  = 0.06 * HEX_R;
@@ -1606,7 +1613,7 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // („Włócznik sumeryjski", „Procarz (Huaracoc)", „Rydwan egipski"…) mają
   // własne wpisy wyżej i muszą zachować swoje modele. units.json: „Włócznik"/
   // „Spearman", „Wojownik z mieczem i tarczą"/„Swordsman", „Procarz"/„Slinger",
-  // „Rydwan (woły)"/„Ox Chariot" — wszystkie Epoka=Brąz.
+  // „Rydwan (woły)"/„Ox Chariot" — późny Kamień, odblokowany technologią Koło.
   if (n === 'wlocznik' || n === 'spearman') return buildWlocznikBrazOpus5(ownerColor_);
   if (n === 'wojownik z mieczem i tarcza' || n === 'swordsman') return buildMiecznikBrazOpus5(ownerColor_);
   if (n === 'procarz' || n === 'slinger') return buildProcarzBrazOpus5(ownerColor_);
@@ -5752,7 +5759,24 @@ function attachEmbarkBoat(group: THREE.Group): void {
 }
 
 export class UnitRenderer {
+  /**
+   * R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: scalanie statycznych części żetonu przy rejestracji (patrz
+   * unitStaticMerge.ts). Przełącznik wyłącznie dla testów/pomiarów porównawczych (A/B w jednym bundlu).
+   */
+  static staticMerge = true;
+
   private scene: THREE.Scene;
+
+  /** R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R3): LOD drobnych części figurek (patrz smallPartLod.ts). */
+  private lodTokensVersion = 0;
+  private readonly smallPartLod = new SmallPartLod();
+
+  /** Liczba meshy aktualnie schowanych przez LOD (diagnostyka/test). */
+  get lodHiddenCount(): number { return this.smallPartLod.hiddenCount; }
+
+  applySmallPartLod(camDist: number, fovDeg: number, viewportH: number, minPx = 3): void {
+    this.smallPartLod.apply(this.tokens.values(), this.scene, this.lodTokensVersion, camDist, fovDeg, viewportH, minPx);
+  }
 
   /** Fast hex lookup by "q,r" key. */
   private hexGrid: Map<string, Hex>;
@@ -5765,6 +5789,15 @@ export class UnitRenderer {
 
   /** Per-token unique geometries (stored for disposal -- not shared singletons). */
   private tokenGeos: Map<string, THREE.BufferGeometry[]> = new Map();
+  /** R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: pula wspólnych geometrii TEGO renderera (nie globalna — Z6). */
+  private readonly geoPool = new GeometryContentPool();
+  /** R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: pula wspólnych materiałów TEGO renderera (kolejność rysowania bez zmian). */
+  private readonly matPool = new MaterialContentPool();
+  /**
+   * R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: żetony zarejestrowane bez scalenia (utworzone w oknie przyciemnienia) →
+   * obiekty modelu z chwili rejestracji; po zdjęciu przyciemnienia scalane są tylko one (nakładki zostają).
+   */
+  private readonly unmergedParts = new Map<string, Set<THREE.Object3D>>();
 
   /** Current highlight group (all discs live inside). */
   private highlightGroup: THREE.Group | null = null;
@@ -6009,7 +6042,12 @@ export class UnitRenderer {
     const obj = this.tokens.get(unitId);
     if (!obj) return;
     if ((obj.userData['deferredDim'] === true) === dim) return;
-    for (const m of this.tokenMaterials.get(unitId) ?? []) {
+    // R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: materiały żetonu bywają wspólne (pula) — kopia przy zapisie,
+    // żeby przyciemnienie nie przeszło na inne jednostki.
+    // Po puli dwa dawne materiały o tym samym stanie to JEDNA instancja (dwa wpisy w tablicy) — każdą
+    // przyciemniamy raz, inaczej druga iteracja nadpisałaby `dimBase` stanem już przyciemnionym.
+    if (dim) this.matPool.unshare(obj, this.tokenMaterials.get(unitId) ?? []);
+    for (const m of new Set(this.tokenMaterials.get(unitId) ?? [])) {
       const mat = m as THREE.Material & { opacity: number };
       if (dim) {
         const base: DeferredDimBase = { transparent: mat.transparent, opacity: mat.opacity };
@@ -6054,6 +6092,11 @@ export class UnitRenderer {
       const ringStance = this.ringStanceForOwner(unit.ownerId);
       // TEMAT #15: jednostka zaokrętowana — token z łódką (przebudowa przy zmianie).
       const embarked = unit.embarked === true;
+      // R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: żeton tworzony jako przyciemniony (okno odroczenia) zostaje NIESCALONY —
+      // półprzezroczyste części muszą sortować się osobno jak dotąd (w jednym meshu zasłaniałyby się inaczej). Po
+      // zdjęciu przyciemnienia jest scalany W MIEJSCU (ten sam obiekt żetonu, bez przebudowy — `_mergeDeferredToken`).
+      const dimmed = dimmedUnitIds?.has(unit.id) === true;
+      const wantMerge = UnitRenderer.staticMerge && !dimmed;
 
       if (this.tokens.has(unit.id)) {
         const obj = this.tokens.get(unit.id)!;
@@ -6067,7 +6110,9 @@ export class UnitRenderer {
         ) {
           this.scene.remove(obj);
           this._disposeToken(unit.id, obj);
+          this.lodTokensVersion++;
           this.tokens.delete(unit.id);
+          this.unmergedParts.delete(unit.id);
           this.tokenMaterials.delete(unit.id);
           this.tokenGeos.delete(unit.id);
 
@@ -6082,7 +6127,7 @@ export class UnitRenderer {
           group.userData['embarked'] = embarked;
 
           this._attachOwnerRing(group, unit.ownerId);
-          this._registerToken(unit.id, group);
+          this._registerToken(unit.id, group, wantMerge);
           this.scene.add(group);
         } else {
           obj.position.set(x, yBase, z);
@@ -6101,7 +6146,7 @@ export class UnitRenderer {
         group.userData['embarked'] = embarked;
 
         this._attachOwnerRing(group, unit.ownerId);
-        this._registerToken(unit.id, group);
+        this._registerToken(unit.id, group, wantMerge);
         this.scene.add(group);
       }
 
@@ -6110,7 +6155,8 @@ export class UnitRenderer {
       // ownerId; zbiór wypełnia silnik), zaraz po utworzeniu/aktualizacji żetonu,
       // żeby świeżo przebudowany model dostał stan przezroczystości w tej samej
       // klatce, w której powstał (inaczej mignąłby raz pełną widocznością).
-      this._applyDeferredDim(unit.id, dimmedUnitIds?.has(unit.id) === true);
+      this._applyDeferredDim(unit.id, dimmed);
+      if (!dimmed) this._mergeDeferredToken(unit.id);
 
       // TABLICZKA JEDNOSTKI nad figurką (R-ZETON-PASKI, Maciej 2026-07-29):
       //
@@ -6141,6 +6187,7 @@ export class UnitRenderer {
       const tokenObj = this.tokens.get(unit.id);
       if (tokenObj) {
         const vitals = stackDisplay?.vitalsByRepId?.get(unit.id);
+        applyUnitCommanderStar(tokenObj, vitals ? vitals.hasCommander : unit.isGeneral === true);
         if (vitals) {
           // Odznaki ulepszeń budynkowych — poziom OSOBNO dla ścieżki A
           // (Pancerz → Kuźnia, prawo) i ścieżki B (Parametry → Koszary, lewo).
@@ -6175,7 +6222,9 @@ export class UnitRenderer {
       if (!presentIds.has(id)) {
         this.scene.remove(obj);
         this._disposeToken(id, obj);
+        this.lodTokensVersion++;
         this.tokens.delete(id);
+        this.unmergedParts.delete(id);
         this.tokenMaterials.delete(id);
         this.tokenGeos.delete(id);
       }
@@ -6199,20 +6248,28 @@ export class UnitRenderer {
       obj.visible = show;
     }
 
+    // These small sprites own a CanvasTexture each. Keep them while their
+    // semantic state is unchanged; rebuilding them on every world sync caused
+    // needless canvas allocation and GPU upload churn.
     for (const [id, sprite] of this.stackBadgeSprites) {
+      const count = badges.get(id);
       const obj = this.tokens.get(id);
-      if (obj) obj.remove(sprite);
-      sprite.material.map?.dispose();
-      (sprite.material as THREE.SpriteMaterial).dispose();
+      if (count !== undefined && count > 1 && obj?.visible && sprite.parent === obj &&
+          sprite.userData['stackBadgeCount'] === count) continue;
+      this._disposeOverlaySprite(sprite);
+      this.stackBadgeSprites.delete(id);
     }
-    this.stackBadgeSprites.clear();
 
     for (const [repId, count] of badges) {
       if (count <= 1) continue;
       const obj = this.tokens.get(repId);
       if (!obj || !obj.visible) continue;
+      const current = this.stackBadgeSprites.get(repId);
+      if (current?.parent === obj && current.userData['stackBadgeCount'] === count) continue;
+      if (current) this._disposeOverlaySprite(current);
       const sprite = this._makeStackBadgeSprite(count);
       sprite.position.set(0.28 * HEX_R, 0.55 * HEX_R, 0.15 * HEX_R);
+      sprite.userData['stackBadgeCount'] = count;
       obj.add(sprite);
       this.stackBadgeSprites.set(repId, sprite);
     }
@@ -6234,47 +6291,61 @@ export class UnitRenderer {
     const starving = stackDisplay?.starvingRepIds;
     const goldDeficit = stackDisplay?.goldDeficitRepIds;
 
-    for (const map of [this.stackStarvingSprites, this.stackGoldDeficitSprites]) {
-      for (const [id, sprite] of map) {
-        const obj = this.tokens.get(id);
-        if (obj) obj.remove(sprite);
-        sprite.material.map?.dispose();
-        (sprite.material as THREE.SpriteMaterial).dispose();
-      }
-      map.clear();
+    this._syncSufferingIconMap(
+      this.stackStarvingSprites,
+      starving,
+      (scale) => this._makeStarvingChipSprite(scale),
+      (id) => goldDeficit?.has(id) === true,
+      true,
+    );
+    this._syncSufferingIconMap(
+      this.stackGoldDeficitSprites,
+      goldDeficit,
+      (scale) => this._makeGoldDeficitChipSprite(scale),
+      (id) => starving?.has(id) === true,
+      false,
+    );
+  }
+
+  /** Keep an unchanged suffering icon sprite/texture attached to its token. */
+  private _syncSufferingIconMap(
+    sprites: Map<string, THREE.Sprite>,
+    desiredIds: ReadonlySet<string> | undefined,
+    create: (scale: number) => THREE.Sprite,
+    hasOtherCause: (id: string) => boolean,
+    isStarving: boolean,
+  ): void {
+    for (const [id, sprite] of sprites) {
+      const obj = this.tokens.get(id);
+      if (desiredIds?.has(id) && obj?.visible && sprite.parent === obj &&
+          sprite.userData['sufferingIconPaired'] === hasOtherCause(id)) continue;
+      this._disposeOverlaySprite(sprite);
+      sprites.delete(id);
     }
 
-    if (!starving?.size && !goldDeficit?.size) return;
-
-    const repIds = new Set<string>();
-    if (starving) for (const id of starving) repIds.add(id);
-    if (goldDeficit) for (const id of goldDeficit) repIds.add(id);
-
-    for (const repId of repIds) {
-      const obj = this.tokens.get(repId);
+    if (!desiredIds?.size) return;
+    for (const id of desiredIds) {
+      const obj = this.tokens.get(id);
       if (!obj || !obj.visible) continue;
-      const hasHunger = starving?.has(repId) === true;
-      const hasGold = goldDeficit?.has(repId) === true;
-      const both = hasHunger && hasGold;
-      const scale = both ? SUFFER_ICON_SCALE_PAIR : SUFFER_ICON_SCALE_SINGLE;
-
-      if (hasHunger) {
-        const sprite = this._makeStarvingChipSprite(scale);
-        // Wyśrodkowana nad jednostką (x=0) gdy sama; przy dwóch przyczynach
-        // w lewo o SUFFER_ICON_PAIR_DX. Y — wysoko nad głową, Z — lekko ku
-        // kamerze, żeby ikona nie ginęła w geometrii tokena.
-        sprite.position.set(both ? -SUFFER_ICON_PAIR_DX : 0, SUFFER_ICON_Y, SUFFER_ICON_Z);
-        obj.add(sprite);
-        this.stackStarvingSprites.set(repId, sprite);
-      }
-
-      if (hasGold) {
-        const sprite = this._makeGoldDeficitChipSprite(scale);
-        sprite.position.set(both ? SUFFER_ICON_PAIR_DX : 0, SUFFER_ICON_Y, SUFFER_ICON_Z);
-        obj.add(sprite);
-        this.stackGoldDeficitSprites.set(repId, sprite);
-      }
+      const paired = hasOtherCause(id);
+      const existing = sprites.get(id);
+      if (existing?.parent === obj && existing.userData['sufferingIconPaired'] === paired) continue;
+      if (existing) this._disposeOverlaySprite(existing);
+      const scale = paired ? SUFFER_ICON_SCALE_PAIR : SUFFER_ICON_SCALE_SINGLE;
+      const sprite = create(scale);
+      const x = paired ? (isStarving ? -SUFFER_ICON_PAIR_DX : SUFFER_ICON_PAIR_DX) : 0;
+      sprite.position.set(x, SUFFER_ICON_Y, SUFFER_ICON_Z);
+      sprite.userData['sufferingIconPaired'] = paired;
+      obj.add(sprite);
+      sprites.set(id, sprite);
     }
+  }
+
+  private _disposeOverlaySprite(sprite: THREE.Sprite): void {
+    sprite.parent?.remove(sprite);
+    const material = sprite.material as THREE.SpriteMaterial;
+    material.map?.dispose();
+    material.dispose();
   }
 
   /**
@@ -6415,7 +6486,7 @@ export class UnitRenderer {
    * Draw translucent hex discs over the given set of hexes.
    * Replaces any previously drawn highlights.
    */
-  setHighlight(hexes: Set<string>): void {
+  setHighlight(hexes: Set<string>, opacity = HIGHLIGHT_OPACITY): void {
     this.clearHighlight();
 
     if (hexes.size === 0) return;
@@ -6424,7 +6495,7 @@ export class UnitRenderer {
     const mat = new THREE.MeshBasicMaterial({
       color: HIGHLIGHT_COLOR,
       transparent: true,
-      opacity: HIGHLIGHT_OPACITY,
+      opacity,
       depthWrite: false,
     });
     this.highlightMaterials.push(mat);
@@ -6649,6 +6720,7 @@ export class UnitRenderer {
     this.tokens.clear();
     this.tokenMaterials.clear();
     this.tokenGeos.clear();
+    this.unmergedParts.clear();
 
     // Dispose shared singleton geometries
     geoAvLeg?.dispose();    geoAvLeg    = null;
@@ -6756,10 +6828,51 @@ export class UnitRenderer {
    * Register token in tracking maps.
    * Reads group.userData['mats'] and group.userData['perTokenGeos'] set by buildUnitModel.
    */
-  private _registerToken(id: string, group: THREE.Group): void {
+  private _registerToken(id: string, group: THREE.Group, merge = UnitRenderer.staticMerge): void {
+    this.lodTokensVersion++;
     this.tokens.set(id, group);
-    this.tokenMaterials.set(id, (group.userData['mats'] as THREE.Material[]) ?? []);
-    this.tokenGeos.set(id, (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? []);
+    const mats = (group.userData['mats'] as THREE.Material[] | undefined) ?? [];
+    // R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: identyczne materiały żetonów → jedna wspólna instancja.
+    this.matPool.poolOwned(group, mats);
+    this.tokenMaterials.set(id, mats);
+    const geos = (group.userData['perTokenGeos'] as THREE.BufferGeometry[] | undefined) ?? [];
+    group.userData['perTokenGeos'] = geos;
+    // R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: statyczne części o wspólnym materiale → jeden mesh (po puli materiałów,
+    // przed pulą geometrii: scalone geometrie identycznych typów żetonów dzielą jedną instancję).
+    if (merge) mergeUnitStaticParts(group, geos);
+    else if (UnitRenderer.staticMerge) {
+      const parts = new Set<THREE.Object3D>();
+      group.traverse((o) => { if (o !== group) parts.add(o); });
+      this.unmergedParts.set(id, parts);
+    }
+    group.userData['staticMerged'] = merge;
+    // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: identyczne geometrie żetonów → jedna wspólna instancja (licznik odwołań).
+    this.geoPool.poolOwned(group, geos);
+    this.tokenGeos.set(id, geos);
+  }
+
+  /**
+   * R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1: scalenie W MIEJSCU żetonu zarejestrowanego bez scalenia (okno przyciemnienia
+   * już zdjęte, materiały wróciły do stanu bazowego). Ten sam obiekt żetonu (brak przebudowy, brak migotania);
+   * scalane wyłącznie obiekty modelu z chwili rejestracji. Geometrie części wracają do puli (`release`, licznik
+   * odwołań), scalone trafiają do puli i do `tokenGeos`. No-op dla żetonów już scalonych.
+   */
+  private _mergeDeferredToken(id: string): void {
+    const parts = this.unmergedParts.get(id);
+    if (!parts) return;
+    const obj = this.tokens.get(id);
+    this.unmergedParts.delete(id);
+    if (!obj || !UnitRenderer.staticMerge) return;
+    // części schowane przez LOD (visible=false) nie byłyby scalone — przywróć je; LOD przeliczy się (version++)
+    this.smallPartLod.reset();
+    const geos = this.tokenGeos.get(id) ?? [];
+    const r = mergeUnitStaticParts(obj, geos, { only: parts, release: (gs) => this.geoPool.release(gs), appendMerged: false });
+    const fresh = r.merged.slice();
+    this.geoPool.poolOwned(obj, fresh);
+    for (const g of fresh) geos.push(g);
+    this.tokenGeos.set(id, geos);
+    obj.userData['staticMerged'] = true;
+    this.lodTokensVersion++;
   }
 
   /**
@@ -6767,13 +6880,7 @@ export class UnitRenderer {
    * Does NOT call scene.remove() -- caller is responsible for that.
    */
   private _disposeToken(id: string, _obj: THREE.Object3D): void {
-    const mats = this.tokenMaterials.get(id) ?? [];
-    for (const m of mats) {
-      m.dispose();
-    }
-    const geos = this.tokenGeos.get(id) ?? [];
-    for (const g of geos) {
-      g.dispose();
-    }
+    this.matPool.release(this.tokenMaterials.get(id) ?? []);
+    this.geoPool.release(this.tokenGeos.get(id) ?? []);
   }
 }

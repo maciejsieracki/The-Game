@@ -1,7 +1,7 @@
 /**
  * braz-rydwan-woly-opus5.ts — RYDWAN NA WOŁACH (Ox-Drawn Battle Cart),
- * najwcześniejszy pojazd bojowy EPOKI BRĄZU (units.json: „Rydwan (woły)",
- * Epoka=Brąz, Kultura=null → dostępny dla WSZYSTKICH cywilizacji,
+ * wczesny, ciężki pojazd bojowy późnej EPOKI KAMIENIA (units.json: „Rydwan (woły)",
+ * Epoka=Kamień, Kultura=null → dostępny dla WSZYSTKICH cywilizacji,
  * Tech=Koło, Rola (linia)=Flanka).
  * ---------------------------------------------------------------------------
  * Drop-in zgodne z rodziną builderów:

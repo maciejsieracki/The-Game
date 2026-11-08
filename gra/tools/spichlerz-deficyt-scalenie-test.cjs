@@ -35,7 +35,14 @@ function extractFunctionBody(src, startMarker, label) {
   const start = src.indexOf(startMarker);
   ok(start >= 0, `znaleziono ${label}`);
   if (start < 0) return '';
-  const nextFn = src.slice(start + startMarker.length).search(/\n(export )?function /);
+  // R-WEB-TEST-DEBT-AI-Q2: funkcja moze byc zagniezdzona (buildHudState w main.ts jest wciete) --
+  // koniec = najblizsze `function` na TYM SAMYM wcieciu co start (albo top-level), zeby wycinek
+  // nie wyciekal na odlegle, niepowiazane funkcje i regexy nie dopasowywaly sie przypadkiem.
+  const lineStart = src.lastIndexOf('\n', start) + 1;
+  const indent = src.slice(lineStart, start).match(/^[ \t]*/)[0];
+  const rest = src.slice(start + startMarker.length);
+  const esc = indent.replace(/[ \t]/g, c => (c === ' ' ? ' ' : '\\t'));
+  const nextFn = rest.search(new RegExp('\\n(export )?function |\\n' + esc + '(async )?function '));
   const end = nextFn >= 0 ? start + startMarker.length + nextFn : src.length;
   return src.slice(start, end);
 }
@@ -48,7 +55,8 @@ const empireSrc = fs.readFileSync(EMPIRE_PANEL_TS, 'utf8');
 
 const spichlerzFn = extractFunctionBody(
   empireSrc,
-  'function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {',
+  // R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: sygnatura zyskala opcjonalny 2. parametr `economy` (linia „Brutto -> netto").
+  "function renderSpichlerzCentralnySection(food: EmpireFoodSnap, economy?: EmpireDetailSnap['economy']): string {",
   'renderSpichlerzCentralnySection w empireDetailPanel.ts',
 );
 
@@ -182,7 +190,9 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
 const buildHudStateFn = extractFunctionBody(
   mainSrc,
-  'function buildHudState(): HudState {',
+  // R-WEB-TEST-DEBT-AI-Q2: sygnatura zyskala parametr `ownerId` (R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1).
+  // FALA 525 (R-WEB-PERF-LATE-GAME-LAG-HUD-Q2): buildHudState to wrapper hudPureScope.run; logika jest w buildHudStateRaw (main.ts:21122).
+  'function buildHudStateRaw(ownerId: number = ME()): HudState {',
   'buildHudState w main.ts',
 );
 ok(

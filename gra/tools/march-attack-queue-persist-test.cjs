@@ -284,8 +284,11 @@ function zbudujHarness(marchTxt, selTxt) {
   const hudActionTxt = wytnijFunkcje(realMainSrc, 'function handleSelectedUnitHudAction(actionId: string): void {');
   ok(!!hudActionTxt, '(g5) handleSelectedUnitHudAction wycięte z main.ts');
   const forceCallsInHud = (hudActionTxt.match(/clearPlannedMarch\(u\.id,\s*true\)/g) || []).length;
-  ok(forceCallsInHud === 4,
-    `(g5) handleSelectedUnitHudAction: DOKŁADNIE 4 wywołania clearPlannedMarch(u.id, true) — skip/garnizon/sentry/scout-explore (got ${forceCallsInHud})`);
+  // R-WEB-WAR-ALLIN-CAPITAL-TEST-DEBT-Q1 (kat. A): 98e9f6ee7 (przelacznik "zbiorka u wodza") dodal 5. gałąź --
+  // 'general-follow' wylaczany (`followGeneral=false`) jawnie kasuje plan marszu do wodza (force=true). To tez nowy,
+  // jawny rozkaz gracza, wiec 5 wywolan (4 stare + general-follow), nadal wszystkie z force=true.
+  ok(forceCallsInHud === 5,
+    `(g5) handleSelectedUnitHudAction: DOKŁADNIE 5 wywołań clearPlannedMarch(u.id, true) — skip/garnizon/sentry/scout-explore + general-follow (got ${forceCallsInHud})`);
   ok(!/clearPlannedMarch\(u\.id\);/.test(hudActionTxt),
     '(g5) kontrola: ŻADNE wywołanie w tej funkcji nie zostało z domyślnym (bezargumentowym) force — wszystkie jawnie force=true');
 
@@ -310,8 +313,11 @@ function zbudujHarness(marchTxt, selTxt) {
   // cichym dodaniem/usunięciem call site'u bez przeglądu.
   const codeOnlyMain = realMainSrc.split('\n').filter(l => !/^\s*(\/\/|\*)/.test(l)).join('\n');
   const wystapieniaWKodzie = (codeOnlyMain.match(/clearPlayerUnitSelection\(/g) || []).length;
-  ok(wystapieniaWKodzie === 33,
-    `(g8) DOKŁADNIE 33 wystąpienia "clearPlayerUnitSelection(" w KODZIE main.ts, bez komentarzy (1 definicja + 32 realne wywołania) — zgodne z przeglądem Operatora (got ${wystapieniaWKodzie})`);
+  // R-WEB-WAR-ALLIN-CAPITAL-TEST-DEBT-Q1 (kat. A): bed15cb82 (R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1) dodal 2 swiadome
+  // wywolania (toggleInterHumanDiplomacyHud, onOpenInterHumanDiplo) -- otwarcie panelu dyplomacji hot-seat czyści
+  // zaznaczenie jak inne panele; nie dotyka planow marszu. Przeglad: 33 -> 35 (1 definicja + 34 wywolania).
+  ok(wystapieniaWKodzie === 35,
+    `(g8) DOKŁADNIE 35 wystąpień "clearPlayerUnitSelection(" w KODZIE main.ts, bez komentarzy (1 definicja + 34 realne wywołania; +2 z bed15cb82) — zgodne z przeglądem (got ${wystapieniaWKodzie})`);
 }
 
 // ===========================================================================

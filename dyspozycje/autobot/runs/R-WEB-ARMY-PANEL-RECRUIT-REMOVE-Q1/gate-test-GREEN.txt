@@ -1,0 +1,36 @@
+
+-- WIDOK: kolejka pod kazdym miastem --
+PASS: V1: miasto A (3 poz.) ma sekcje kolejki z 3 wierszami
+PASS: V2: miasto B (1 poz.) ma 1 wiersz
+PASS: V3: miasto C bez kolejki -- brak sekcji
+PASS: V4: naglowek "Kolejka rekrutacji:" jak w panelu miasta
+PASS: V5: wiersz ma uchwyt, ikone, koszt, ETA "nast. tura", 3 przyciski
+PASS: V6: kazdy przycisk ma aria-label
+PASS: V7: ↑ pierwszego i ↓ ostatniego wylaczone
+PASS: V8: brak poziomego przewijania na 360 px
+
+-- USUWANIE (✕) zmienia realny stan --
+PASS: X1: stan A = [Wojownik, Zwiadowca]
+PASS: X2: zwrot kosztu do skarbca (+15)
+PASS: X3: callback anulowania wywolany raz z (A, Oszczepnik, 15)
+PASS: X4: widok odswiezony (2 wiersze), B nietkniete (1)
+PASS: X5: usuniecie jedynej pozycji B -- stan pusty, sekcja znika, A bez zmian
+PASS: X6: skarbiec po obu zwrotach = start + 15 + 15
+
+-- ZMIANA KOLEJNOSCI ↑ ↓ --
+PASS: R1: ↓ zamienia miejscami w stanie [Zwiadowca, Wojownik]
+PASS: R2: ↑ przywraca [Wojownik, Zwiadowca]
+PASS: R3: zmiana kolejnosci nie dotyka skarbca
+
+-- PRZECIAGANIE --
+PASS: D1: przeciagniecie wiersza 3 na 1 zmienia stan
+PASS: D2: widok zgodny ze stanem
+
+-- FALLBACK bez onChange (host nadal w DOM) --
+PASS: F1: widok kolejki odswiezony lokalnie (2 wiersze) gdy panel nie jest przebudowany
+
+Bledy strony: 0
+PASS: E0: brak bledow strony
+
+21 passed, 0 failed
+EXIT=0

@@ -1,0 +1,4 @@
+OK: PO != SPRZED dla syncTargets([0,1,5])
+
+WSZYSTKIE TESTY PASS (hotseat-etap6d-podetap-c-migracja-test)
+EXIT=0

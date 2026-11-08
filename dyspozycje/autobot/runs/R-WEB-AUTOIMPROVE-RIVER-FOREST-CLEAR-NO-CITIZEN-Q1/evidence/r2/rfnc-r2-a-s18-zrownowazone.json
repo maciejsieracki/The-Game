@@ -1,0 +1,808 @@
+{
+  "tag": "r2-a-s18-zrownowazone",
+  "focus": "zrownowazone",
+  "seed": 18,
+  "turns": [
+    {
+      "ok": true,
+      "turn": 1,
+      "ms": 19783,
+      "lasLeftMe": 66,
+      "cutMe": 0,
+      "cutAi": 0,
+      "lc": {
+        "kamieniolom": 25,
+        "kopalnia_miedzi": 4,
+        "farma": 13,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 2,
+      "ms": 13832,
+      "lasLeftMe": 56,
+      "cutMe": 10,
+      "cutAi": 1,
+      "lc": {
+        "kamieniolom": 25,
+        "kopalnia_miedzi": 4,
+        "farma": 17,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 3,
+      "ms": 12607,
+      "lasLeftMe": 51,
+      "cutMe": 15,
+      "cutAi": 1,
+      "lc": {
+        "kamieniolom": 25,
+        "kopalnia_miedzi": 4,
+        "farma": 17,
+        "bydlo": 17,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 4,
+      "ms": 12741,
+      "lasLeftMe": 47,
+      "cutMe": 19,
+      "cutAi": 1,
+      "lc": {
+        "kamieniolom": 25,
+        "kopalnia_miedzi": 4,
+        "farma": 17,
+        "bydlo": 17,
+        "irygacja": 17,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {}
+    },
+    {
+      "ok": true,
+      "turn": 5,
+      "ms": 13730,
+      "lasLeftMe": 43,
+      "cutMe": 23,
+      "cutAi": 1,
+      "lc": {
+        "kamieniolom": 25,
+        "kopalnia_miedzi": 4,
+        "farma": 18,
+        "bydlo": 17,
+        "irygacja": 17,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 6,
+      "ms": 11467,
+      "lasLeftMe": 39,
+      "cutMe": 27,
+      "cutAi": 1,
+      "lc": {
+        "kamieniolom": 22,
+        "kopalnia_miedzi": 4,
+        "farma": 20,
+        "bydlo": 17,
+        "irygacja": 17,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 1,
+        "tartak": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 7,
+      "ms": 11895,
+      "lasLeftMe": 35,
+      "cutMe": 31,
+      "cutAi": 2,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 20,
+        "bydlo": 20,
+        "irygacja": 17,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 3,
+        "tartak": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 8,
+      "ms": 10177,
+      "lasLeftMe": 31,
+      "cutMe": 35,
+      "cutAi": 2,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 21,
+        "bydlo": 20,
+        "irygacja": 17,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 4,
+        "tartak": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 9,
+      "ms": 9476,
+      "lasLeftMe": 28,
+      "cutMe": 38,
+      "cutAi": 3,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 21,
+        "bydlo": 21,
+        "irygacja": 17,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 4,
+        "tartak": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 10,
+      "ms": 11887,
+      "lasLeftMe": 24,
+      "cutMe": 42,
+      "cutAi": 5,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 21,
+        "bydlo": 21,
+        "irygacja": 21,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 4,
+        "tartak": 4,
+        "bydlo": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 11,
+      "ms": 10990,
+      "lasLeftMe": 21,
+      "cutMe": 45,
+      "cutAi": 6,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 22,
+        "bydlo": 21,
+        "irygacja": 21,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 8,
+        "tartak": 5,
+        "bydlo": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 12,
+      "ms": 10012,
+      "lasLeftMe": 19,
+      "cutMe": 47,
+      "cutAi": 8,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 22,
+        "bydlo": 22,
+        "irygacja": 21,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 9,
+        "tartak": 6,
+        "bydlo": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 13,
+      "ms": 9237,
+      "lasLeftMe": 16,
+      "cutMe": 50,
+      "cutAi": 13,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 22,
+        "bydlo": 22,
+        "irygacja": 22,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 11,
+        "tartak": 6,
+        "bydlo": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 14,
+      "ms": 11525,
+      "lasLeftMe": 12,
+      "cutMe": 54,
+      "cutAi": 21,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 23,
+        "bydlo": 22,
+        "irygacja": 22,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 16,
+        "bydlo": 3,
+        "tartak": 6
+      }
+    },
+    {
+      "ok": true,
+      "turn": 15,
+      "ms": 12144,
+      "lasLeftMe": 8,
+      "cutMe": 58,
+      "cutAi": 28,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 23,
+        "bydlo": 23,
+        "irygacja": 22,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 21,
+        "bydlo": 5,
+        "tartak": 6
+      }
+    },
+    {
+      "ok": true,
+      "turn": 16,
+      "ms": 10320,
+      "lasLeftMe": 6,
+      "cutMe": 60,
+      "cutAi": 35,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 24,
+        "bydlo": 23,
+        "irygacja": 22,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 30,
+        "bydlo": 9,
+        "tartak": 7
+      }
+    },
+    {
+      "ok": true,
+      "turn": 17,
+      "ms": 8643,
+      "lasLeftMe": 4,
+      "cutMe": 62,
+      "cutAi": 43,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 24,
+        "bydlo": 24,
+        "irygacja": 22,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 38,
+        "bydlo": 10,
+        "tartak": 7,
+        "oboz_lowiecki": 2,
+        "lama": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 18,
+      "ms": 9817,
+      "lasLeftMe": 1,
+      "cutMe": 65,
+      "cutAi": 51,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 25,
+        "bydlo": 24,
+        "irygacja": 22,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 44,
+        "bydlo": 15,
+        "tartak": 7,
+        "oboz_lowiecki": 2,
+        "lama": 1,
+        "tarasy": 1
+      }
+    },
+    {
+      "ok": true,
+      "turn": 19,
+      "ms": 8771,
+      "lasLeftMe": 1,
+      "cutMe": 66,
+      "cutAi": 61,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 26,
+        "bydlo": 24,
+        "irygacja": 22,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 51,
+        "bydlo": 20,
+        "tartak": 7,
+        "oboz_lowiecki": 2,
+        "owce": 1,
+        "lama": 1,
+        "tarasy": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 20,
+      "ms": 7831,
+      "lasLeftMe": 0,
+      "cutMe": 67,
+      "cutAi": 71,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 26,
+        "bydlo": 26,
+        "irygacja": 22,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 60,
+        "bydlo": 21,
+        "tartak": 7,
+        "oboz_lowiecki": 4,
+        "owce": 1,
+        "lama": 2,
+        "tarasy": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 21,
+      "ms": 7072,
+      "lasLeftMe": 1,
+      "cutMe": 67,
+      "cutAi": 84,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 27,
+        "bydlo": 26,
+        "irygacja": 22,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 67,
+        "bydlo": 27,
+        "tartak": 7,
+        "oboz_lowiecki": 4,
+        "owce": 1,
+        "lama": 2,
+        "tarasy": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 22,
+      "ms": 7212,
+      "lasLeftMe": 0,
+      "cutMe": 68,
+      "cutAi": 104,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 27,
+        "bydlo": 27,
+        "irygacja": 22,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 94,
+        "bydlo": 28,
+        "tartak": 7,
+        "oboz_lowiecki": 4,
+        "owce": 1,
+        "warzelnia_soli": 7,
+        "lama": 2,
+        "tarasy": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 23,
+      "ms": 8698,
+      "lasLeftMe": 0,
+      "cutMe": 68,
+      "cutAi": 124,
+      "lc": {
+        "kamieniolom": 25,
+        "glinianka": 38,
+        "kopalnia_miedzi": 4,
+        "farma": 28,
+        "bydlo": 27,
+        "irygacja": 22,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 103,
+        "bydlo": 28,
+        "tartak": 7,
+        "oboz_lowiecki": 4,
+        "owce": 1,
+        "warzelnia_soli": 7,
+        "lama": 2,
+        "tarasy": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 24,
+      "ms": 7921,
+      "lasLeftMe": 0,
+      "cutMe": 68,
+      "cutAi": 148,
+      "lc": {
+        "kamieniolom": 24,
+        "glinianka": 36,
+        "kopalnia_miedzi": 4,
+        "farma": 27,
+        "bydlo": 26,
+        "irygacja": 21,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 114,
+        "bydlo": 29,
+        "tartak": 7,
+        "oboz_lowiecki": 4,
+        "warzelnia_soli": 8,
+        "kamieniolom": 1,
+        "owce": 1,
+        "glinianka": 1,
+        "irygacja": 1,
+        "lama": 2,
+        "tarasy": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 25,
+      "ms": 8885,
+      "lasLeftMe": 0,
+      "cutMe": 68,
+      "cutAi": 176,
+      "lc": {
+        "kamieniolom": 24,
+        "glinianka": 36,
+        "kopalnia_miedzi": 4,
+        "farma": 28,
+        "bydlo": 26,
+        "irygacja": 21,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 125,
+        "bydlo": 29,
+        "tartak": 7,
+        "oboz_lowiecki": 4,
+        "warzelnia_soli": 8,
+        "kamieniolom": 1,
+        "owce": 1,
+        "glinianka": 1,
+        "irygacja": 1,
+        "lama": 2,
+        "tarasy": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 26,
+      "ms": 10401,
+      "lasLeftMe": 0,
+      "cutMe": 68,
+      "cutAi": 203,
+      "lc": {
+        "kamieniolom": 22,
+        "glinianka": 35,
+        "kopalnia_miedzi": 4,
+        "farma": 32,
+        "bydlo": 26,
+        "irygacja": 21,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 136,
+        "bydlo": 30,
+        "tartak": 7,
+        "oboz_lowiecki": 4,
+        "warzelnia_soli": 8,
+        "kamieniolom": 1,
+        "owce": 1,
+        "glinianka": 2,
+        "irygacja": 2,
+        "lama": 2,
+        "tarasy": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 27,
+      "ms": 11038,
+      "lasLeftMe": 0,
+      "cutMe": 68,
+      "cutAi": 234,
+      "lc": {
+        "kamieniolom": 22,
+        "glinianka": 35,
+        "kopalnia_miedzi": 4,
+        "farma": 33,
+        "bydlo": 26,
+        "irygacja": 21,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 149,
+        "bydlo": 30,
+        "tartak": 7,
+        "oboz_lowiecki": 4,
+        "warzelnia_soli": 8,
+        "kamieniolom": 36,
+        "owce": 1,
+        "glinianka": 2,
+        "irygacja": 2,
+        "lama": 2,
+        "tarasy": 2
+      }
+    },
+    {
+      "ok": true,
+      "turn": 28,
+      "ms": 10826,
+      "lasLeftMe": 0,
+      "cutMe": 68,
+      "cutAi": 258,
+      "lc": {
+        "kamieniolom": 21,
+        "glinianka": 34,
+        "kopalnia_miedzi": 4,
+        "farma": 34,
+        "bydlo": 25,
+        "irygacja": 21,
+        "stadnina": 1,
+        "kopalnia_zelaza": 2,
+        "tartak": 6,
+        "kopalnia_cyny": 1
+      },
+      "lcAi": {
+        "farma": 157,
+        "bydlo": 32,
+        "tartak": 7,
+        "oboz_lowiecki": 4,
+        "warzelnia_soli": 8,
+        "kamieniolom": 41,
+        "glinianka": 3,
+        "owce": 1,
+        "irygacja": 3,
+        "lama": 2,
+        "tarasy": 2
+      }
+    }
+  ],
+  "start": {
+    "seedSeen": 18,
+    "mapLog": "[NewGame] Mapa: 76x52 seed=18 typ=kontynenty rywale=4 typy=5",
+    "genMs": 15787
+  },
+  "setup": {
+    "cities": 3,
+    "policy": {
+      "focus": "zrownowazone",
+      "tryb": "auto",
+      "pracaAutoPercent": 100,
+      "onlyWorked": true
+    }
+  },
+  "lasStart": {
+    "me": 66,
+    "meWorked": 4,
+    "ai": 325
+  },
+  "me": {
+    "cut": 68,
+    "cutNoCit": 64,
+    "cutWithCit": 4,
+    "assigned": 19,
+    "assignedPct": 27.9,
+    "assignedAfterNoCit": 15,
+    "lagAvg": 11.95,
+    "lagMax": 25
+  },
+  "ai": {
+    "cut": 258,
+    "cutNoCit": 249,
+    "cutWithCit": 9,
+    "assigned": 85,
+    "assignedPct": 32.9,
+    "assignedAfterNoCit": 78,
+    "lagAvg": 2.42,
+    "lagMax": 11
+  },
+  "firstCutTurn": 2,
+  "firstCutTurnAi": 2,
+  "final": {
+    "lc": {
+      "kamieniolom": 21,
+      "glinianka": 34,
+      "kopalnia_miedzi": 4,
+      "farma": 34,
+      "bydlo": 25,
+      "irygacja": 21,
+      "stadnina": 1,
+      "kopalnia_zelaza": 2,
+      "tartak": 6,
+      "kopalnia_cyny": 1
+    },
+    "lcAi": {
+      "farma": 157,
+      "bydlo": 32,
+      "tartak": 7,
+      "oboz_lowiecki": 4,
+      "warzelnia_soli": 8,
+      "kamieniolom": 41,
+      "glinianka": 3,
+      "owce": 1,
+      "irygacja": 3,
+      "lama": 2,
+      "tarasy": 2
+    },
+    "lasLeftMe": 0,
+    "msAvg": 10676
+  },
+  "pageErrors": []
+}

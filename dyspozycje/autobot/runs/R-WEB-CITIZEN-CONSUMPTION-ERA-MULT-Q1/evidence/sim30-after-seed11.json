@@ -1,0 +1,316 @@
+{
+ "seed": 11,
+ "turns": 30,
+ "summary": {
+  "aiCityTurnsInFoodDeficit": 61,
+  "aiCityTurns": 466,
+  "aiMissingResourceTurns": 661,
+  "aiPopFinal": 99,
+  "aiCitiesFinal": 24,
+  "aiPopMax": 99,
+  "aiErasMaxFinal": 2
+ },
+ "per": [
+  {
+   "turn": 2,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 14,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 28,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 3,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 14,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 28,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 4,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 14,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 26,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 5,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 14,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 26,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 6,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 14,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 27,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 7,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 14,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 26,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 8,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 14,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 26,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 9,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 15,
+   "aiFoodDeficit": 1,
+   "aiMissingResources": 27,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 10,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 16,
+   "aiFoodDeficit": 1,
+   "aiMissingResources": 26,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 11,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 19,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 24,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 12,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 19,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 25,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 13,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 20,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 22,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 14,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 21,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 22,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 15,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 22,
+   "aiFoodDeficit": 1,
+   "aiMissingResources": 23,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 16,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 24,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 26,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 17,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 27,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 24,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 18,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 30,
+   "aiFoodDeficit": 2,
+   "aiMissingResources": 19,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 19,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 32,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 20,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 20,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 35,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 20,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 21,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 38,
+   "aiFoodDeficit": 1,
+   "aiMissingResources": 19,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 22,
+   "aiTicks": 14,
+   "aiCities": 14,
+   "aiPop": 41,
+   "aiFoodDeficit": 0,
+   "aiMissingResources": 19,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 23,
+   "aiTicks": 14,
+   "aiCities": 15,
+   "aiPop": 45,
+   "aiFoodDeficit": 3,
+   "aiMissingResources": 17,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 24,
+   "aiTicks": 15,
+   "aiCities": 16,
+   "aiPop": 48,
+   "aiFoodDeficit": 4,
+   "aiMissingResources": 17,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 25,
+   "aiTicks": 16,
+   "aiCities": 18,
+   "aiPop": 59,
+   "aiFoodDeficit": 6,
+   "aiMissingResources": 17,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 26,
+   "aiTicks": 18,
+   "aiCities": 20,
+   "aiPop": 63,
+   "aiFoodDeficit": 7,
+   "aiMissingResources": 18,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 27,
+   "aiTicks": 20,
+   "aiCities": 22,
+   "aiPop": 69,
+   "aiFoodDeficit": 5,
+   "aiMissingResources": 19,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 28,
+   "aiTicks": 22,
+   "aiCities": 22,
+   "aiPop": 76,
+   "aiFoodDeficit": 11,
+   "aiMissingResources": 17,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 29,
+   "aiTicks": 22,
+   "aiCities": 22,
+   "aiPop": 82,
+   "aiFoodDeficit": 8,
+   "aiMissingResources": 18,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 30,
+   "aiTicks": 22,
+   "aiCities": 23,
+   "aiPop": 91,
+   "aiFoodDeficit": 6,
+   "aiMissingResources": 18,
+   "aiErasMax": 2,
+   "meEra": 2
+  },
+  {
+   "turn": 31,
+   "aiTicks": 23,
+   "aiCities": 24,
+   "aiPop": 99,
+   "aiFoodDeficit": 5,
+   "aiMissingResources": 17,
+   "aiErasMax": 2,
+   "meEra": 2
+  }
+ ],
+ "errors": []
+}

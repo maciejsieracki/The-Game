@@ -1,0 +1,38 @@
+R-WOJNA-BRAZ-CZYSZCZENIE-NOWA-GRA-Q1 — realna egzekucja bloku "nowa gra"
+
+  OK  wyodrębniony fragment zawiera dokładnie 4 wywołania stoneForceWar*.clear()
+  OK  wyodrębniony fragment zawiera dokładnie 4 wywołania ironForceWar*.clear()
+  OK  wyodrębniony fragment zawiera dokładnie 4 wywołania bronzeForceWar*.clear()
+  OK  wyodrębniony fragment czyści też bronzeEraEnterTurnByOwner (13. rejestr, Część A)
+  OK  seed: stoneForceWarPendingOwners.size > 0 przed egzekucją
+  OK  seed: stoneForceWarCycleOwners.size > 0 przed egzekucją
+  OK  seed: stoneForceWarRestUntilByOwner.size > 0 przed egzekucją
+  OK  seed: stoneForceWarActiveByPairKey.size > 0 przed egzekucją
+  OK  seed: ironForceWarPendingOwners.size > 0 przed egzekucją
+  OK  seed: ironForceWarCycleOwners.size > 0 przed egzekucją
+  OK  seed: ironForceWarRestUntilByOwner.size > 0 przed egzekucją
+  OK  seed: ironForceWarActiveByPairKey.size > 0 przed egzekucją
+  OK  seed: bronzeForceWarPendingOwners.size > 0 przed egzekucją
+  OK  seed: bronzeForceWarCycleOwners.size > 0 przed egzekucją
+  OK  seed: bronzeForceWarRestUntilByOwner.size > 0 przed egzekucją
+  OK  seed: bronzeForceWarActiveByPairKey.size > 0 przed egzekucją
+  OK  seed: bronzeEraEnterTurnByOwner.size > 0 przed egzekucją
+  OK  seed: ironEraEnterTurnByOwner.size > 0 przed egzekucją
+<anonymous_script>:23
+      forcedWarWavesByPairKey.clear();
+      ^
+
+ReferenceError: forcedWarWavesByPairKey is not defined
+    at eval (eval at runSlice (/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1/gra/tools/forced-war-bronze-new-game-reset-test.cjs:115:14), <anonymous>:23:7)
+    at runSlice (/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1/gra/tools/forced-war-bronze-new-game-reset-test.cjs:116:3)
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1/gra/tools/forced-war-bronze-new-game-reset-test.cjs:128:1)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+
+Node.js v22.22.0
+EXIT=1

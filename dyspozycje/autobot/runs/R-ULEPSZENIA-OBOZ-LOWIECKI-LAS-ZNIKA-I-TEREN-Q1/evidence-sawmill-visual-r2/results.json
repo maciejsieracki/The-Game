@@ -1,0 +1,160 @@
+{
+  "before": {
+    "foodKeysOnForest": [
+      "lama",
+      "lodzie_rybackie",
+      "oboz_lowiecki"
+    ],
+    "hillForestCount": 233,
+    "camp": {
+      "q": 40,
+      "r": 29
+    },
+    "campBefore": 3,
+    "campInfoBefore": {
+      "teren": "wzgorza",
+      "nakladka": "las",
+      "layers": []
+    },
+    "campAfter": 1,
+    "campInfoAfter": {
+      "teren": "wzgorza",
+      "nakladka": "las",
+      "layers": [
+        "oboz_lowiecki"
+      ]
+    },
+    "campToast": {
+      "display": "block",
+      "html": "PLAYTEST MAPA: 3× Hastati · Ateny: Łucznik · szturm = preBattle · Ctrl+F5 = restart · ?density=low|medium|high (E2 gęstość)."
+    },
+    "sawmill": {
+      "q": 41,
+      "r": 28
+    },
+    "sawmillBefore": 3,
+    "sawmillInfoBefore": {
+      "terrain": "wzgorza",
+      "overlay": "las",
+      "layers": [],
+      "hasMesh": false,
+      "groupY": null,
+      "topY": 0.64,
+      "sectorR": null,
+      "sectorSurfaceY": null,
+      "hasSurfaceSampler": false
+    },
+    "sawmillAfter": 1,
+    "sawmillInfoAfter": {
+      "terrain": "wzgorza",
+      "overlay": "las",
+      "layers": [
+        "tartak"
+      ],
+      "hasMesh": true,
+      "groupY": 0.65,
+      "topY": 0.64,
+      "sectorR": null,
+      "sectorSurfaceY": null,
+      "hasSurfaceSampler": false
+    },
+    "sawmillAfterCut": {
+      "terrain": "wzgorza",
+      "overlay": "brak",
+      "layers": [],
+      "hasMesh": false,
+      "groupY": null,
+      "topY": 0.64,
+      "sectorR": null,
+      "sectorSurfaceY": null,
+      "hasSurfaceSampler": false
+    },
+    "sawmillForestAfterCut": 1
+  },
+  "after": {
+    "foodKeysOnForest": [
+      "lama",
+      "lodzie_rybackie",
+      "oboz_lowiecki"
+    ],
+    "hillForestCount": 233,
+    "camp": {
+      "q": 40,
+      "r": 29
+    },
+    "campBefore": 3,
+    "campInfoBefore": {
+      "teren": "wzgorza",
+      "nakladka": "las",
+      "layers": []
+    },
+    "campAfter": 3,
+    "campInfoAfter": {
+      "teren": "wzgorza",
+      "nakladka": "las",
+      "layers": [
+        "oboz_lowiecki"
+      ]
+    },
+    "campToast": {
+      "display": "block",
+      "html": "PLAYTEST MAPA: 3× Hastati · Ateny: Łucznik · szturm = preBattle · Ctrl+F5 = restart · ?density=low|medium|high (E2 gęstość)."
+    },
+    "sawmill": {
+      "q": 41,
+      "r": 28
+    },
+    "sawmillBefore": 3,
+    "sawmillInfoBefore": {
+      "terrain": "wzgorza",
+      "overlay": "las",
+      "layers": [],
+      "hasMesh": false,
+      "groupY": null,
+      "topY": 0.64,
+      "sectorR": null,
+      "sectorSurfaceY": null,
+      "hasSurfaceSampler": false
+    },
+    "sawmillAfter": 3,
+    "sawmillInfoAfter": {
+      "terrain": "wzgorza",
+      "overlay": "las",
+      "layers": [
+        "tartak"
+      ],
+      "hasMesh": true,
+      "groupY": 0.65,
+      "topY": 0.64,
+      "sectorR": 0.86,
+      "sectorSurfaceY": 0,
+      "hasSurfaceSampler": true
+    },
+    "sawmillAfterCut": {
+      "terrain": "wzgorza",
+      "overlay": "brak",
+      "layers": [],
+      "hasMesh": false,
+      "groupY": null,
+      "topY": 0.64,
+      "sectorR": null,
+      "sectorSurfaceY": null,
+      "hasSurfaceSampler": false
+    },
+    "sawmillForestAfterCut": 1
+  },
+  "browserErrors": {
+    "before": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "after": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  "checks": {
+    "pass": 8,
+    "fail": 0
+  }
+}

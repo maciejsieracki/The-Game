@@ -1,0 +1,32 @@
+run=1 rc=0 ms=40082 summary=[33 passed, 0 failed] fails=[]
+POMIAR ms/wywolanie decideAITurn (min z 5, przeplatane): stos 40 (stan ustalony) PO=163.82 bez bramki=147.76; chmura 40 (faza zbierania, 10 tur) PO=43.62 bez bramki=18.95
+POMIAR planFieldStackGather (min z 5): stos 100 = 0.046 ms, chmura 100 = 0.831 ms na wywolanie
+run=2 rc=0 ms=35622 summary=[33 passed, 0 failed] fails=[]
+POMIAR ms/wywolanie decideAITurn (min z 5, przeplatane): stos 40 (stan ustalony) PO=171.36 bez bramki=141.08; chmura 40 (faza zbierania, 10 tur) PO=39.26 bez bramki=16.32
+POMIAR planFieldStackGather (min z 5): stos 100 = 0.044 ms, chmura 100 = 0.975 ms na wywolanie
+run=3 rc=0 ms=33841 summary=[33 passed, 0 failed] fails=[]
+POMIAR ms/wywolanie decideAITurn (min z 5, przeplatane): stos 40 (stan ustalony) PO=223.73 bez bramki=136.67; chmura 40 (faza zbierania, 10 tur) PO=33.29 bez bramki=14.65
+POMIAR planFieldStackGather (min z 5): stos 100 = 0.036 ms, chmura 100 = 0.763 ms na wywolanie
+run=4 rc=0 ms=34575 summary=[33 passed, 0 failed] fails=[]
+POMIAR ms/wywolanie decideAITurn (min z 5, przeplatane): stos 40 (stan ustalony) PO=186.60 bez bramki=133.76; chmura 40 (faza zbierania, 10 tur) PO=30.37 bez bramki=15.65
+POMIAR planFieldStackGather (min z 5): stos 100 = 0.042 ms, chmura 100 = 1.267 ms na wywolanie
+run=5 rc=0 ms=30777 summary=[33 passed, 0 failed] fails=[]
+POMIAR ms/wywolanie decideAITurn (min z 5, przeplatane): stos 40 (stan ustalony) PO=149.25 bez bramki=121.19; chmura 40 (faza zbierania, 10 tur) PO=30.86 bez bramki=12.89
+POMIAR planFieldStackGather (min z 5): stos 100 = 0.038 ms, chmura 100 = 1.411 ms na wywolanie
+run=6 rc=0 ms=35781 summary=[33 passed, 0 failed] fails=[]
+POMIAR ms/wywolanie decideAITurn (min z 5, przeplatane): stos 40 (stan ustalony) PO=146.90 bez bramki=164.94; chmura 40 (faza zbierania, 10 tur) PO=33.96 bez bramki=15.95
+POMIAR planFieldStackGather (min z 5): stos 100 = 0.036 ms, chmura 100 = 1.519 ms na wywolanie
+run=7 rc=0 ms=35662 summary=[33 passed, 0 failed] fails=[]
+POMIAR ms/wywolanie decideAITurn (min z 5, przeplatane): stos 40 (stan ustalony) PO=147.49 bez bramki=185.76; chmura 40 (faza zbierania, 10 tur) PO=31.75 bez bramki=12.93
+POMIAR planFieldStackGather (min z 5): stos 100 = 0.033 ms, chmura 100 = 0.752 ms na wywolanie
+run=8 rc=0 ms=33931 summary=[33 passed, 0 failed] fails=[]
+POMIAR ms/wywolanie decideAITurn (min z 5, przeplatane): stos 40 (stan ustalony) PO=134.22 bez bramki=117.52; chmura 40 (faza zbierania, 10 tur) PO=27.96 bez bramki=11.88
+POMIAR planFieldStackGather (min z 5): stos 100 = 0.033 ms, chmura 100 = 2.384 ms na wywolanie
+run=9 rc=0 ms=35048 summary=[33 passed, 0 failed] fails=[]
+POMIAR ms/wywolanie decideAITurn (min z 5, przeplatane): stos 40 (stan ustalony) PO=176.89 bez bramki=141.21; chmura 40 (faza zbierania, 10 tur) PO=29.33 bez bramki=17.36
+POMIAR planFieldStackGather (min z 5): stos 100 = 0.038 ms, chmura 100 = 0.989 ms na wywolanie
+run=10 rc=0 ms=34226 summary=[33 passed, 0 failed] fails=[]
+POMIAR ms/wywolanie decideAITurn (min z 5, przeplatane): stos 40 (stan ustalony) PO=163.71 bez bramki=141.43; chmura 40 (faza zbierania, 10 tur) PO=36.37 bez bramki=16.02
+POMIAR planFieldStackGather (min z 5): stos 100 = 0.033 ms, chmura 100 = 1.636 ms na wywolanie
+DONE
+EXIT=0 runs_rc0=10 fail_runs=0

@@ -1,0 +1,560 @@
+{
+  "tag": "after2-s42-zywnosc-auto",
+  "focus": "zywnosc",
+  "workers": "auto",
+  "seed": 42,
+  "turns": [
+    {
+      "ok": true,
+      "turnBefore": 1,
+      "turnAfter": 2,
+      "rfOwned": 64,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 6
+      },
+      "missReasons": {},
+      "aiRfOwned": 287,
+      "aiRfWorked": 3,
+      "aiRfPersistMissed": 3,
+      "aiMissReasons": {
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 3
+      },
+      "aiPersistHexes": [
+        "57,36",
+        "12,37",
+        "14,42"
+      ],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 2,
+      "turnAfter": 3,
+      "rfOwned": 56,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 10
+      },
+      "missReasons": {},
+      "aiRfOwned": 287,
+      "aiRfWorked": 3,
+      "aiRfPersistMissed": 3,
+      "aiMissReasons": {
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 3
+      },
+      "aiPersistHexes": [
+        "57,36",
+        "12,37",
+        "14,42"
+      ],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 3,
+      "turnAfter": 4,
+      "rfOwned": 48,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 12
+      },
+      "missReasons": {},
+      "aiRfOwned": 283,
+      "aiRfWorked": 3,
+      "aiRfPersistMissed": 3,
+      "aiMissReasons": {
+        "kandydat E2 odpada: qualifies(wyrab)=false|odrzucony": 1,
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 2
+      },
+      "aiPersistHexes": [
+        "57,36",
+        "12,37",
+        "14,42"
+      ],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 4,
+      "turnAfter": 5,
+      "rfOwned": 40,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 12
+      },
+      "missReasons": {},
+      "aiRfOwned": 279,
+      "aiRfWorked": 3,
+      "aiRfPersistMissed": 3,
+      "aiMissReasons": {
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 3
+      },
+      "aiPersistHexes": [
+        "57,36",
+        "12,37",
+        "14,42"
+      ],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 5,
+      "turnAfter": 6,
+      "rfOwned": 28,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 12
+      },
+      "missReasons": {},
+      "aiRfOwned": 271,
+      "aiRfWorked": 3,
+      "aiRfPersistMissed": 3,
+      "aiMissReasons": {
+        "kandydat E2 odpada: qualifies(wyrab)=false|odrzucony": 3
+      },
+      "aiPersistHexes": [
+        "57,36",
+        "12,37",
+        "14,42"
+      ],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 6,
+      "turnAfter": 7,
+      "rfOwned": 20,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 12
+      },
+      "missReasons": {},
+      "aiRfOwned": 271,
+      "aiRfWorked": 3,
+      "aiRfPersistMissed": 3,
+      "aiMissReasons": {
+        "brak decyzji pickera (poza etapem bez wyrab) dla heksu": 3
+      },
+      "aiPersistHexes": [
+        "57,36",
+        "12,37",
+        "14,42"
+      ],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 7,
+      "turnAfter": 8,
+      "rfOwned": 14,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 13
+      },
+      "missReasons": {},
+      "aiRfOwned": 254,
+      "aiRfWorked": 3,
+      "aiRfPersistMissed": 2,
+      "aiMissReasons": {
+        "kandydat E2 odpada: qualifies(wyrab)=false|odrzucony": 2
+      },
+      "aiPersistHexes": [
+        "57,36",
+        "14,42"
+      ],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 8,
+      "turnAfter": 9,
+      "rfOwned": 12,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 13
+      },
+      "missReasons": {},
+      "aiRfOwned": 211,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 9,
+      "turnAfter": 10,
+      "rfOwned": 5,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 13
+      },
+      "missReasons": {},
+      "aiRfOwned": 201,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 10,
+      "turnAfter": 11,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 13,
+        "bydlo": 13
+      },
+      "missReasons": {},
+      "aiRfOwned": 166,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 11,
+      "turnAfter": 12,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 13,
+        "bydlo": 13,
+        "irygacja": 13
+      },
+      "missReasons": {},
+      "aiRfOwned": 134,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 12,
+      "turnAfter": 13,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 14,
+        "bydlo": 13,
+        "irygacja": 13
+      },
+      "missReasons": {},
+      "aiRfOwned": 124,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 19
+    },
+    {
+      "ok": true,
+      "turnBefore": 13,
+      "turnAfter": 14,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 3,
+        "bydlo": 2,
+        "irygacja": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 157,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 20
+    },
+    {
+      "ok": true,
+      "turnBefore": 14,
+      "turnAfter": 15,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 3,
+        "bydlo": 2,
+        "irygacja": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 143,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 20
+    },
+    {
+      "ok": true,
+      "turnBefore": 15,
+      "turnAfter": 16,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 3,
+        "bydlo": 2,
+        "irygacja": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 131,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 20
+    },
+    {
+      "ok": true,
+      "turnBefore": 16,
+      "turnAfter": 17,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 3,
+        "bydlo": 3,
+        "irygacja": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 115,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 20
+    },
+    {
+      "ok": true,
+      "turnBefore": 17,
+      "turnAfter": 18,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 4,
+        "bydlo": 3,
+        "irygacja": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 107,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 20
+    },
+    {
+      "ok": true,
+      "turnBefore": 18,
+      "turnAfter": 19,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 4,
+        "bydlo": 4,
+        "irygacja": 2
+      },
+      "missReasons": {},
+      "aiRfOwned": 101,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 20
+    },
+    {
+      "ok": true,
+      "turnBefore": 19,
+      "turnAfter": 20,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {
+        "farma": 4,
+        "bydlo": 4,
+        "irygacja": 4
+      },
+      "missReasons": {},
+      "aiRfOwned": 82,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 20
+    },
+    {
+      "ok": true,
+      "turnBefore": 20,
+      "turnAfter": 21,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {},
+      "missReasons": {},
+      "aiRfOwned": 69,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 21
+    },
+    {
+      "ok": false,
+      "turnBefore": 21,
+      "turnAfter": 21,
+      "rfOwned": 0,
+      "rfOwnedWorked": 0,
+      "rfWorkedBefore": 0,
+      "rfCut": 0,
+      "rfMissed": 0,
+      "layerCounts": {},
+      "missReasons": {},
+      "aiRfOwned": 69,
+      "aiRfWorked": 0,
+      "aiRfPersistMissed": 0,
+      "aiMissReasons": {},
+      "aiPersistHexes": [],
+      "aiCities": 21
+    }
+  ],
+  "start": {
+    "seedSeen": 42,
+    "mapLog": "[NewGame] Mapa: 76x52 seed=42 typ=kontynenty rywale=4 typy=5",
+    "genMs": 18846
+  },
+  "setup": {
+    "city": {
+      "id": "city0",
+      "ownerId": 0,
+      "q": 20,
+      "r": 16,
+      "pop": 9,
+      "name": "Rzym"
+    },
+    "policy": {
+      "focus": "zywnosc",
+      "tryb": "auto",
+      "pracaAutoPercent": 100,
+      "onlyWorked": true
+    },
+    "workers": [
+      "15,18",
+      "14,18",
+      "13,18",
+      "13,19",
+      "12,19",
+      "12,20",
+      "12,21",
+      "12,22",
+      "12,23"
+    ]
+  },
+  "aiDetail": [
+    {
+      "turn": 1,
+      "hex": "57,36",
+      "workedBy": [],
+      "decisions": []
+    },
+    {
+      "turn": 1,
+      "hex": "12,37",
+      "workedBy": [],
+      "decisions": []
+    },
+    {
+      "turn": 2,
+      "hex": "57,36",
+      "workedBy": [],
+      "decisions": []
+    },
+    {
+      "turn": 2,
+      "hex": "12,37",
+      "workedBy": [],
+      "decisions": []
+    },
+    {
+      "turn": 3,
+      "hex": "57,36",
+      "workedBy": [],
+      "decisions": [
+        "city15|wycinka poza priorytetami tego przebiegu (etap bez wyrab)|odrzucony",
+        "city15|kandydat E2 odpada: qualifies(wyrab)=false|odrzucony"
+      ]
+    },
+    {
+      "turn": 3,
+      "hex": "12,37",
+      "workedBy": [],
+      "decisions": []
+    }
+  ],
+  "firstCutTurn": null,
+  "pageErrors": []
+}

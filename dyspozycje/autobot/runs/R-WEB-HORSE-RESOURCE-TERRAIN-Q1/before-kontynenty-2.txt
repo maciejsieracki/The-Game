@@ -1,0 +1,28 @@
+
+--- (A) placeDeposits na syntetycznej siatce [kod bieżący] ---
+  [FAIL] A1: 0 koni na lesie (siatka 50% lasu) :: 670
+  [OK] A2: liczba koni zachowana (=== liczba bez lasu) i wszystkie na Równinie
+  [OK] A3: kontrola — test faktycznie generuje konie
+
+--- (B) prawdziwy generator, Standardowy ---
+  [mapa] kontynenty:2026 horses=33 forest=20
+  [mapa] kontynenty:314 horses=49 forest=26
+  [mapa] kontynenty:99 horses=42 forest=23
+  [mapa] kontynenty:11 horses=35 forest=19
+  kontynenty:11 konie=35 naLesie=19 tereny={"rownina":35} rodzaj={"nakladka":16,"zloze+las":19}
+  [FAIL] B1 kontynenty:11: 0 koni na lesie :: 19
+  [OK] B2 kontynenty:11: konie tylko na równinie/łące
+  kontynenty:2026 konie=33 naLesie=20 tereny={"rownina":33} rodzaj={"nakladka":13,"zloze+las":20}
+  [FAIL] B1 kontynenty:2026: 0 koni na lesie :: 20
+  [OK] B2 kontynenty:2026: konie tylko na równinie/łące
+  kontynenty:314 konie=49 naLesie=26 tereny={"rownina":49} rodzaj={"nakladka":23,"zloze+las":26}
+  [FAIL] B1 kontynenty:314: 0 koni na lesie :: 26
+  [OK] B2 kontynenty:314: konie tylko na równinie/łące
+  kontynenty:99 konie=42 naLesie=23 tereny={"rownina":42} rodzaj={"nakladka":19,"zloze+las":23}
+  [FAIL] B1 kontynenty:99: 0 koni na lesie :: 23
+  [OK] B2 kontynenty:99: konie tylko na równinie/łące
+
+HISTOGRAM przyczyn (Stadnina, miasto przy każdym koniu): {"OK_mozna_budowac":71,"ODMOWA_kon_pod_lasem(zloze=konie,nakladka=las)":88}
+GOLDEN_RECORD {"kontynenty:11":{"horses":35,"forestBefore":19,"noHorse":"5e178c23fbe74759b5e3cfc6c928e714","other":"2cc32a0c20973c33e2686769735291b0"},"kontynenty:2026":{"horses":33,"forestBefore":20,"noHorse":"c19533bcbd0c0df1d84f17e5bca63609","other":"ba61db2c0da74d9c01216a497b45d9b1"},"kontynenty:314":{"horses":49,"forestBefore":26,"noHorse":"784b2cee1e89fdd90276958cc3172f6d","other":"b408b365024c0e470de23df37a9e7251"},"kontynenty:99":{"horses":42,"forestBefore":23,"noHorse":"0d3fadc763ab79a59b4dfbd199a89055","other":"2bc17a5043d614b1a85785fa7530701b"}}
+
+WYNIK: 6 OK, 5 FAIL

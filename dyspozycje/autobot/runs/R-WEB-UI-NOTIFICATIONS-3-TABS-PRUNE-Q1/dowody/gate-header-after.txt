@@ -1,0 +1,31 @@
+PASS: (0) deferredHintsToSidePanelEvents nie wstawia juz literalu „Koniec tury" do title
+PASS: (0) fallbackiem title jest pusty lancuch
+PASS: (0) klucz deduplikacji opiera sie na samym subtitle (nie na title)
+PASS: (0) render rozroznia karty po PUSTYM title, nie po tresci lancucha
+PASS: (D0) mutacja PRZED faktycznie podmienila obie polowy poprawki (test nie jest pusty)
+[sidepanel-event-header-wydarzenie-real-render-test] domyslny Chromium niedostepny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+--- (A)-(C) render PO poprawce (bundel z niezmienionych zrodel) ---
+PASS: (A1) karta generyczna NIE zawiera juz nigdzie tekstu „Koniec tury"
+PASS: (A2) dominujacy (najwiekszy) wiersz karty generycznej to doslownie „Wydarzenie"
+PASS: (A3) „Wydarzenie" jest w slocie tytulu (.sp-title), a overline .sp-kicker znika (zero duplikacji slowa)
+PASS: (A4) slot dominujacy karty generycznej ma DOKLADNIE rozmiar tytulu zwyklej karty (inwariant, patrz nota nad funkcja)
+PASS: (A5) pelna tresc zdarzenia (eliminacja miasta-panstwa) nadal widoczna w .sp-sub
+PASS: (B1) karta „Dyplomacja" nadal pokazuje swoj wlasny tytul
+PASS: (B2) karta z wlasnym tytulem zachowuje maly overline „Wydarzenie" (uklad jak dotad)
+PASS: (B3) na karcie z wlasnym tytulem overline jest MNIEJSZY od tytulu (hierarchia bez zmian)
+PASS: (B4) karta „Dyplomacja" NIE dostala klasy generycznej
+PASS: (C1) karta blokujaca zachowuje badge „Wymaga decyzji"
+PASS: (C2) karta blokujaca zachowuje swoj wlasny tytul w .sp-title
+PASS: (C3) karta blokujaca NIE przeszla przez nowa galaz (brak .sp-title-generic, brak slowa „Wydarzenie")
+
+--- (D) mutacja: ten sam render na kodzie SPRZED poprawki ---
+PASS: (D1) na kodzie sprzed poprawki KAZDA asercja rozstrzygajaca (A1-A3) pada — test nie jest tautologiczny
+PASS: (D2) render PRZED faktycznie pokazywal „Koniec tury" duza czcionka (kontrast do A2)
+PASS: (E0) zero bledow konsoli/JS w obu renderach
+PASS: (E1) artefakt vite build niesie regule CSS awansowanego tytulu (.sp-title-generic)
+PASS: (E2) artefakt vite build NIE niesie juz fallbacku title „Koniec tury" w sciezce EOT
+PASS: (E3) artefakt vite build nadal niesie specyficzny tytul „Dyplomacja"
+
+sidepanel-event-header-wydarzenie-real-render-test: 23 pass, 0 fail
+EXIT=0

@@ -1,0 +1,35 @@
+[porzadek-panel-punkty-absolutne-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+-- Bloki wyrenderowane przez renderSpoleczenstwo --
+  {"subhd":"Szczęście27%(9/35 pkt)","pctText":"27%(9/35 pkt)","ptsText":"(9/35 pkt)"}
+  {"subhd":"Zaopatrzenie obywateli","pctText":"","ptsText":""}
+  {"subhd":"Prawo0%(0/47 pkt)","pctText":"0%(0/47 pkt)","ptsText":"(0/47 pkt)"}
+  {"subhd":"Porządek łącznie14%","pctText":"14%","ptsText":""}
+PASS: blok "Szczęście" istnieje w DOM
+PASS: blok "Szczęście": pokazuje %
+PASS: blok "Szczęście": pokazuje TAKŻE netto/max w punktach (wzorzec "N/M pkt")
+PASS: blok "Prawo" istnieje w DOM
+PASS: blok "Prawo": pokazuje %
+PASS: blok "Prawo": pokazuje TAKŻE netto/max w punktach (wzorzec "N/M pkt")
+
+-- Wiersze gridu buildPorzadekDetailCard (Szczęście/Prawo) --
+  Porządek łącznie: 14% — Bunt
+  Szczęście: 27% (9/35 pkt)
+  Prawo: 0% (0/47 pkt)
+  Kultura (udział własnej 100%): +10
+  Wealth (pula luksusu): +1
+  Wysokie podatki (Zamożność 20%): -5.6
+  Zaopatrzenie obywateli (surowce): +4
+  ≥90% Ład: Bonus praca ×1,10, podatek ×1,10
+  70–89% Spokój: Brak kar
+  50–69% Napięcie: Praca ×0,95
+  30–49% Niepokój: Kary ~×0,85 plony, wzrost ×0,75
+  10–29% Bunt: Kary + migracja ~5%
+  <10% Bunt skrajny: Kary max + grace 2 tury → rebelia
+PASS: karta szczegółów Porządku: state.szMax/prawMax obecne (nie undefined)
+PASS: karta szczegółów Porządku: wiersz "Szczęście" pokazuje % ORAZ "N/M pkt"
+PASS: karta szczegółów Porządku: wiersz "Prawo" pokazuje % ORAZ "N/M pkt"
+PASS: brak błędów konsoli/pageerror podczas całego scenariusza
+
+[porzadek-panel-punkty-absolutne-real-render-test] 10 pass, 0 fail
+EXIT=0

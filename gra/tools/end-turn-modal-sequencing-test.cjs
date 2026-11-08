@@ -130,27 +130,49 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
     ok(fnStart >= 0, '[A5] znaleziono ' + marker + ' w main.ts');
     const callIdx = fnStart >= 0 ? mainSrc.indexOf('showPreBattle(', fnStart) : -1;
     ok(callIdx > fnStart, '[A5] znaleziono wywołanie showPreBattle w ' + marker);
-    const endIdx = callIdx >= 0 ? mainSrc.indexOf("{ defaultAction: 'manual' });", callIdx) : -1;
-    ok(endIdx > callIdx && endIdx - callIdx < 4000,
-      '[A5] ' + marker + ': showPreBattle kończy się dokładnie { defaultAction: \'manual\' } -- BEZ auto:true (ręczna akcja gracza, nigdy nie odraczana)');
+    // AKTUALIZACJA R-TEST-DEBT-MISC-Q5: opcje showPreBattle są wieloliniowe
+    // ({ onAuto, onBattlefield, defaultAction: 'manual', manualControlAllowed, automaticOnly }),
+    // więc sprawdzamy segment od wywołania do domykającego `});` pod kątem obecności
+    // defaultAction:'manual' i BRAKU auto:true (kontrola negatywna).
+    // Domknięcie wywołania = `});` na tym samym poziomie wcięcia co linia wywołania
+    // (pomija zagnieżdżone `});` z callbacków onBattlefield itp.).
+    const lineStart = callIdx >= 0 ? mainSrc.lastIndexOf('\n', callIdx) + 1 : -1;
+    const indent = lineStart >= 0 ? (mainSrc.slice(lineStart, callIdx).match(/^\s*/) || [''])[0] : '';
+    const endIdx = callIdx >= 0 ? mainSrc.indexOf('\n' + indent + '});', callIdx) : -1;
+    const segment = (endIdx > callIdx && endIdx - callIdx < 4000) ? mainSrc.slice(callIdx, endIdx) : '';
+    ok(segment.length > 0 && /defaultAction:\s*'manual'/.test(segment) && !/\bauto:\s*true\b/.test(segment),
+      '[A5] ' + marker + ': showPreBattle ma defaultAction:\'manual\' i BEZ auto:true (ręczna akcja gracza, nigdy nie odraczana)');
   }
 }
 
 // A6) configurePreBattle (oba miejsca wywołania) wpina isOtherEndTurnModalOpen.
 {
-  const matches = mainSrc.match(/isOtherEndTurnModalOpen: \(\) => isDiplomacyAudienceOpen\(\) \|\| isArmyMergePanelOpen\(\),/g) || [];
+  // AKTUALIZACJA R-TEST-DEBT-MISC-Q5: hook obejmuje też isTechDiscoveryNoticeOpen() (karta
+  // ukończenia badań, świadoma zmiana w main.ts) i jest wieloliniowy.
+  const matches = mainSrc.match(/isOtherEndTurnModalOpen: \(\) => isDiplomacyAudienceOpen\(\)\s*\|\|\s*isArmyMergePanelOpen\(\)\s*\|\|\s*isTechDiscoveryNoticeOpen\(\),/g) || [];
   ok(matches.length === 2,
     '[A6] configurePreBattle wpięte DOKŁADNIE w 2 miejscach (init + reset nowej gry) z hookiem isOtherEndTurnModalOpen (got ' + matches.length + ')');
 }
 
 // A7) finally w triggerPlayerEndTurn woła flushDeferredAutoPreBattle() PO flushDeferredMergePrompts().
 {
-  const finallyIdx = mainSrc.indexOf('} finally {\n          endTurnTransition();');
+  // AKTUALIZACJA R-TEST-DEBT-MISC-Q5: finally kończący pipeline tury zaczyna się od
+  // `activeWorldEndTurnPipeline = false;` (wcześniej pierwszą instrukcją było endTurnTransition()).
+  const finRe = /\} finally \{\s*activeWorldEndTurnPipeline = false;\s*endTurnTransition\(\);/;
+  const finMatch = mainSrc.match(finRe);
+  const finallyIdx = finMatch ? finMatch.index : -1;
   ok(finallyIdx >= 0, '[A7] znaleziono blok finally triggerPlayerEndTurn');
   const revealsIdx = finallyIdx >= 0 ? mainSrc.indexOf('flushDeferredPlayerUnitReveals();', finallyIdx) : -1;
   const mergeIdx = revealsIdx >= 0 ? mainSrc.indexOf('flushDeferredMergePrompts();', revealsIdx) : -1;
-  const autoPbIdx = mergeIdx >= 0 ? mainSrc.indexOf('flushDeferredAutoPreBattle();', mergeIdx) : -1;
-  ok(revealsIdx > finallyIdx && mergeIdx > revealsIdx && autoPbIdx > mergeIdx && autoPbIdx - finallyIdx < 2200,
+  // AKTUALIZACJA R-TEST-DEBT-MISC-Q5: krok 3 idzie przez siatkę wyjątku
+  // flushDeferredPreBattleSafely('endActiveHumanTurn') (R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 r.3),
+  // która sama woła flushDeferredAutoPreBattle() -- sprawdzamy to łańcuchowo poniżej.
+  const autoPbIdx = mergeIdx >= 0 ? mainSrc.indexOf("flushDeferredPreBattleSafely('endActiveHumanTurn');", mergeIdx) : -1;
+  const safeFnIdx = mainSrc.indexOf('function flushDeferredPreBattleSafely(');
+  const safeBody = safeFnIdx >= 0 ? mainSrc.slice(safeFnIdx, safeFnIdx + 600) : '';
+  ok(/flushDeferredAutoPreBattle\(\);/.test(safeBody),
+    '[A7 kontrola] flushDeferredPreBattleSafely() woła flushDeferredAutoPreBattle() (łańcuch siatki wyjątku)');
+  ok(revealsIdx > finallyIdx && mergeIdx > revealsIdx && autoPbIdx > mergeIdx && autoPbIdx - finallyIdx < 4000,
     '[A7] finally woła flushDeferredPlayerUnitReveals() -> flushDeferredMergePrompts() -> flushDeferredAutoPreBattle() w tej kolejności');
 }
 

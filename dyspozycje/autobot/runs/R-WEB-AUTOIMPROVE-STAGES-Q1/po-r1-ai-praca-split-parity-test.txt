@@ -1,0 +1,12 @@
+1. Jedyny podział: 100 Pracy przy 50% budynków → 50 budynki + 50 pula (ulepszenia)
+2. Major AI: po wydaniu 50 na budynki nadal ma cap ulepszeń 50
+3. Miasto-państwo defensiveCopy: identyczny routing i wynik
+4. Mutacja capu 50 → 25 musi zostać wykryta (negacja drugiego splitu)
+5. Strażnik routingu main.ts i brak drugiego splitu w planie AI
+6. Kontrakt 10% ulepszeń → 90% budynków działa identycznie dla ownera AI/MP
+
+ai-praca-split-parity-test: 25 passed, 2 failed
+  FAIL: mutacja do capu 25 nie przechodzi jako pełny budżet 50 (got 1, want 0)
+  FAIL: mutacja zmienia wynik — test nie jest tautologią
+
+EXIT=1

@@ -1,0 +1,77 @@
+
+[population-growth-v85-bonus-test]
+
+--- Q4 Spichlerz ---
+  [OK] Spichlerz bez drain → 0% ze spichlerza
+  [OK] breakdown.spichlerz = 0 bez drain
+  [OK] Spichlerz II + Ceramika only → +1%
+  [OK] breakdown.spichlerz = 1 (II ceramika only)
+  [OK] Spichlerz II pełny → +2%
+--- Q5 cywilizacja addytywnie ---
+  [OK] Chiny +0.05 → +5 p.p. cywilizacja
+  [OK] total = suma składników breakdown
+--- Q8 brak capa ---
+  [OK] suma WZROST% >20% bez capa (got=22)
+  [OK] total = 22% (7+5+2+3+5)
+--- Q9 Zdrowie → wzrost% ---
+  [OK] zdrowie 25 pkt → +2% wzrostu (floor÷10)
+  [OK] Wyżywienie 4 → +4.5%
+  [OK] maleMiasto pop=3 → max(0,6-3)=3
+  [OK] GrowthPercentBreakdown ma wszystkie pola nazwane
+--- P84 Spichlerz Zdrowie + racje ---
+  [OK] Spichlerz I → +5 Zdrowia
+  [OK] Spichlerz I → nadal +1% wzrostu
+  [OK] Spichlerz I → koszt racji ×0.75
+  [OK] Spichlerz II pełny → +10 Zdrowia
+  [OK] Spichlerz II pełny → koszt racji ×0.5
+  [OK] pop 10 racje 3 ×0.5 = 30
+  [OK] bez Spichlerza = 60
+  [OK] Stone citizen multiplier = 1
+  [OK] Bronze citizen multiplier = 2
+  [OK] Iron citizen multiplier = 4
+  [OK] missing era defaults to Stone
+  [OK] Stone level 0
+  [OK] Bronze level 0
+  [OK] Iron level 0
+  [OK] Stone level 0.5
+  [OK] Bronze level 0.5
+  [OK] Iron level 0.5
+  [OK] Stone level 1
+  [OK] Bronze level 1
+  [OK] Iron level 1
+  [OK] Stone level 1.5
+  [OK] Bronze level 1.5
+  [OK] Iron level 1.5
+  [OK] Stone level 2
+  [OK] Bronze level 2
+  [OK] Iron level 2
+  [OK] Stone level 2.5
+  [OK] Bronze level 2.5
+  [OK] Iron level 2.5
+  [OK] Stone level 3
+  [OK] Bronze level 3
+  [OK] Iron level 3
+  [OK] Stone level 3.5
+  [OK] Bronze level 3.5
+  [OK] Iron level 3.5
+  [OK] Stone level 4
+  [OK] Bronze level 4
+  [OK] Iron level 4
+  [OK] Stone level 4.5
+  [OK] Bronze level 4.5
+  [OK] Iron level 4.5
+  [OK] Stone level 5
+  [OK] Bronze level 5
+  [OK] Iron level 5
+  [OK] Stone level 5.5
+  [OK] Bronze level 5.5
+  [OK] Iron level 5.5
+  [OK] Stone level 6
+  [OK] Bronze level 6
+  [OK] Iron level 6
+  [OK] Iron epoch scaling before Spichlerz I -25%
+  [OK] Iron epoch scaling before Spichlerz II -50%
+
+--- wynik: 65 pass, 0 fail ---
+
+EXIT=0

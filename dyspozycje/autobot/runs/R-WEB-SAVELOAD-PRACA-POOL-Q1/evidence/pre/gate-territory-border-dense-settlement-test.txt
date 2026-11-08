@@ -1,0 +1,4 @@
+  OK scenariusz C (klaster na osi zero): brak wierzcholkow o nieparzystym stopniu (0 znalezionych, degeneracja klucza -0/0)
+
+territory-border-dense-settlement-test: 15 pass, 0 fail
+EXIT=0

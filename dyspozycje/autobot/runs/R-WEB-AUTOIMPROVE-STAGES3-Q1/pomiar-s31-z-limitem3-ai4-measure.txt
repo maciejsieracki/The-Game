@@ -1,0 +1,191 @@
+# POMIAR RUNDY 4 (S31-Z-LIMITEM-3) — zasady 1/2/3
+# zrodlo: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/M3/gra/src
+# ziarna: 7, 99, 512, 4242, 1337 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=21 landSea=151 relief=131 coast=13 riversMain=293 riversFill=764 forest=6 deposits=21 starts=108 total=1510
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=133 relief=129 coast=17 riversMain=210 riversFill=681 forest=3 deposits=9 starts=41 total=1228
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=9 landSea=78 relief=74 coast=16 riversMain=198 riversFill=410 forest=4 deposits=7 starts=43 total=838
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=13 landSea=61 relief=58 coast=15 riversMain=204 riversFill=526 forest=3 deposits=8 starts=52 total=940
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=3 landSea=64 relief=70 coast=13 riversMain=118 riversFill=729 forest=3 deposits=7 starts=72 total=1079
+
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ A: BEZ NIEDOBORU przez cale 40 tur
+  rozkazow razem: 228
+  kategorie zyw/sur/infra/wyrab/inne: 182/0/28/18/0
+  udzial: zywnosc 79.8% · surowce 0.0% · infra 12.3% · wyrab 7.9%
+  BEZ NIEDOBORU (228 rozkazow): zyw/sur/infra/wyrab = 182/0/28/18
+  PRZY NIEDOBORZE (0 rozkazow): zyw/sur/infra/wyrab = 0/0/0/0
+  ZASADA 2: rozkazy na heksach BEZ obywateli: 19 (8.3%), w tym ZLOZOWE (wyjatek): 0 · NIE-zlozowe: 19 (8.3%)
+  PER KLUCZ: farma=57 · irygacja=53 · lodzie_rybackie=41 · bydlo=31 · wyrab=18 · droga=14 · droga_brukowana=14
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=99 relief=66 coast=15 riversMain=137 riversFill=584 forest=3 deposits=6 starts=33 total=946
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=64 relief=93 coast=15 riversMain=167 riversFill=647 forest=2 deposits=6 starts=33 total=1030
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=9 landSea=67 relief=102 coast=17 riversMain=200 riversFill=483 forest=3 deposits=16 starts=46 total=943
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=3 landSea=59 relief=78 coast=18 riversMain=228 riversFill=633 forest=3 deposits=6 starts=40 total=1068
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=57 relief=68 coast=12 riversMain=117 riversFill=754 forest=3 deposits=7 starts=31 total=1053
+
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ B: NIEDOBOR DREWNA przez cale 40 tur
+  rozkazow razem: 263
+  kategorie zyw/sur/infra/wyrab/inne: 185/34/28/16/0
+  udzial: zywnosc 70.3% · surowce 12.9% · infra 10.6% · wyrab 6.1%
+  BEZ NIEDOBORU (0 rozkazow): zyw/sur/infra/wyrab = 0/0/0/0
+  PRZY NIEDOBORZE (263 rozkazow): zyw/sur/infra/wyrab = 185/34/28/16
+  ZASADA 2: rozkazy na heksach BEZ obywateli: 54 (20.5%), w tym ZLOZOWE (wyjatek): 3 · NIE-zlozowe: 51 (19.4%)
+  PER KLUCZ: farma=55 · irygacja=53 · lodzie_rybackie=41 · tartak=34 · bydlo=31 · wyrab=16 · droga=14 · droga_brukowana=14 · oboz_lowiecki=5
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=72 relief=80 coast=19 riversMain=133 riversFill=595 forest=3 deposits=8 starts=35 total=949
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=14 landSea=84 relief=102 coast=24 riversMain=230 riversFill=707 forest=3 deposits=5 starts=48 total=1219
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=67 relief=80 coast=19 riversMain=180 riversFill=429 forest=3 deposits=8 starts=36 total=824
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=71 relief=79 coast=11 riversMain=194 riversFill=576 forest=2 deposits=6 starts=55 total=997
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=57 relief=70 coast=12 riversMain=114 riversFill=679 forest=2 deposits=6 starts=30 total=973
+
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ C: NIEDOBOR DREWNA tylko w turach 10-19
+  rozkazow razem: 263
+  kategorie zyw/sur/infra/wyrab/inne: 185/32/28/18/0
+  udzial: zywnosc 70.3% · surowce 12.2% · infra 10.6% · wyrab 6.8%
+  BEZ NIEDOBORU (192 rozkazow): zyw/sur/infra/wyrab = 174/0/0/18
+  PRZY NIEDOBORZE (71 rozkazow): zyw/sur/infra/wyrab = 11/32/28/0
+  ZASADA 2: rozkazy na heksach BEZ obywateli: 54 (20.5%), w tym ZLOZOWE (wyjatek): 3 · NIE-zlozowe: 51 (19.4%)
+  PER KLUCZ: farma=57 · irygacja=53 · lodzie_rybackie=41 · tartak=32 · bydlo=31 · wyrab=18 · droga=14 · droga_brukowana=14 · oboz_lowiecki=3
+  SLAD CZASOWY (tura: zywnosc/nie-zywnosc; * = niedobor drewna aktywny)
+    t0 :18/0  t1 :6/11  t2 :19/0  t3 :24/0  t4 :18/0  t5 :26/3  t6 :20/0  t7 :11/3  t8 :13/0  t9 :19/1
+    t10*:8/29  t11*:1/11  t12*:1/10  t13*:1/8  t14*:0/2  t15*:0/0  t16*:0/0  t17*:0/0  t18*:0/0  t19*:0/0
+    t20 :0/0  t21 :0/0  t22 :0/0  t23 :0/0  t24 :0/0  t25 :0/0  t26 :0/0  t27 :0/0  t28 :0/0  t29 :0/0
+    t30 :0/0  t31 :0/0  t32 :0/0  t33 :0/0  t34 :0/0  t35 :0/0  t36 :0/0  t37 :0/0  t38 :0/0  t39 :0/0
+
+### ZASADA 3 — raport nadwyzki pickera (AI CYWILIZACJI, scenariusz A: zero niedoboru)
+  ziarno: tur z nadwyzka 30/40 · pierwsza tura z nadwyzka: t1 · tur z niedoborem: 0 · tur z demandActive: 40
+  ziarno: tur z nadwyzka 30/40 · pierwsza tura z nadwyzka: t10 · tur z niedoborem: 0 · tur z demandActive: 40
+  ziarno: tur z nadwyzka 31/40 · pierwsza tura z nadwyzka: t1 · tur z niedoborem: 0 · tur z demandActive: 40
+  ziarno: tur z nadwyzka 33/40 · pierwsza tura z nadwyzka: t7 · tur z niedoborem: 0 · tur z demandActive: 40
+  ziarno: tur z nadwyzka 27/40 · pierwsza tura z nadwyzka: t1 · tur z niedoborem: 0 · tur z demandActive: 40
+
+### AI GRACZA — cztery profile, onlyWorked=FALSE (stale po obu stronach), skipWyrab=true
+profil          | razem | zywnosc | surowce | infra | wyrab | odcisk (klucz=liczba)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=82 relief=89 coast=11 riversMain=124 riversFill=535 forest=2 deposits=6 starts=36 total=889
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=4 landSea=60 relief=103 coast=14 riversMain=198 riversFill=610 forest=3 deposits=5 starts=31 total=1030
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=87 relief=87 coast=16 riversMain=168 riversFill=402 forest=5 deposits=5 starts=39 total=814
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=57 relief=57 coast=14 riversMain=188 riversFill=554 forest=2 deposits=6 starts=35 total=917
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=56 relief=72 coast=24 riversMain=134 riversFill=708 forest=3 deposits=7 starts=32 total=1039
+zywnosc         |   549 |     549 |       0 |     0 |     0 | bydlo=19,farma=30,irygacja=28,lodzie_rybackie=471,owce=1
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=4 terrain=4 landSea=61 relief=67 coast=10 riversMain=120 riversFill=528 forest=3 deposits=7 starts=32 total=836
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=54 relief=82 coast=12 riversMain=171 riversFill=664 forest=2 deposits=6 starts=32 total=1025
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=55 relief=62 coast=11 riversMain=190 riversFill=412 forest=3 deposits=6 starts=31 total=774
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=7 landSea=76 relief=75 coast=16 riversMain=223 riversFill=525 forest=3 deposits=5 starts=39 total=969
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=56 relief=62 coast=11 riversMain=107 riversFill=637 forest=2 deposits=5 starts=32 total=916
+surowce         |   371 |       0 |     371 |     0 |     0 | glinianka=17,kamieniolom=126,kopalnia_cyny=4,kopalnia_miedzi=5,tartak=31,warzelnia_soli=188
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=52 relief=55 coast=10 riversMain=111 riversFill=519 forest=3 deposits=6 starts=44 total=803
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=57 relief=80 coast=11 riversMain=180 riversFill=705 forest=4 deposits=9 starts=58 total=1108
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=114 relief=161 coast=30 riversMain=169 riversFill=443 forest=3 deposits=5 starts=56 total=983
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=67 relief=71 coast=12 riversMain=196 riversFill=602 forest=3 deposits=6 starts=49 total=1009
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=54 relief=63 coast=13 riversMain=110 riversFill=782 forest=2 deposits=5 starts=34 total=1067
+infrastruktura  |    98 |       0 |       0 |    98 |     0 | droga=43,droga_brukowana=43,fort=6,posterunek=6
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=75 relief=65 coast=12 riversMain=141 riversFill=562 forest=4 deposits=6 starts=59 total=928
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=60 relief=95 coast=11 riversMain=180 riversFill=687 forest=2 deposits=5 starts=34 total=1077
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=4 landSea=155 relief=63 coast=12 riversMain=146 riversFill=426 forest=3 deposits=5 starts=31 total=851
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=58 relief=63 coast=10 riversMain=175 riversFill=560 forest=2 deposits=5 starts=34 total=911
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=56 relief=59 coast=11 riversMain=108 riversFill=676 forest=4 deposits=10 starts=55 total=983
+zrownowazone    |   418 |     190 |     205 |    23 |     0 | bydlo=4,droga=18,farma=6,glinianka=16,irygacja=6,kamieniolom=30,kopalnia_cyny=3,kopalnia_miedzi=5,lodzie_rybackie=173,oboz_lowiecki=1,posterunek=5,tartak=1,warzelnia_soli=150
+
+### AI GRACZA — profil „zrownowazone" Z ZASADA 1 (demandDriven), onlyWorked=FALSE
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=54 relief=60 coast=11 riversMain=117 riversFill=563 forest=3 deposits=6 starts=39 total=858
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=6 landSea=58 relief=81 coast=10 riversMain=147 riversFill=666 forest=2 deposits=5 starts=56 total=1034
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=81 relief=74 coast=50 riversMain=224 riversFill=490 forest=4 deposits=7 starts=46 total=980
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=61 relief=72 coast=12 riversMain=207 riversFill=574 forest=3 deposits=6 starts=35 total=973
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=82 relief=102 coast=17 riversMain=124 riversFill=813 forest=2 deposits=5 starts=30 total=1179
+  bez niedoboru    razem  549 · zyw/sur/infra/wyrab 549/0/0/0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=57 relief=86 coast=12 riversMain=124 riversFill=608 forest=3 deposits=5 starts=35 total=932
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=60 relief=80 coast=10 riversMain=154 riversFill=713 forest=3 deposits=6 starts=34 total=1062
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=54 relief=70 coast=16 riversMain=141 riversFill=411 forest=3 deposits=7 starts=35 total=740
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=68 relief=57 coast=12 riversMain=198 riversFill=604 forest=4 deposits=6 starts=46 total=1000
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=51 relief=58 coast=11 riversMain=117 riversFill=678 forest=2 deposits=6 starts=30 total=955
+  niedobor drewna  razem  553 · zyw/sur/infra/wyrab 538/15/0/0
+
+### R4-Q2 — automat GRACZA a przelacznik „wolno wycinac las" (profil zrownowazone, demandDriven)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=7 landSea=99 relief=97 coast=19 riversMain=121 riversFill=530 forest=3 deposits=6 starts=33 total=914
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=19 landSea=66 relief=79 coast=11 riversMain=169 riversFill=600 forest=3 deposits=6 starts=31 total=983
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=8 landSea=70 relief=62 coast=11 riversMain=143 riversFill=435 forest=3 deposits=6 starts=32 total=768
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=54 relief=62 coast=10 riversMain=179 riversFill=557 forest=3 deposits=7 starts=38 total=913
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=7 landSea=66 relief=72 coast=24 riversMain=132 riversFill=779 forest=7 deposits=11 starts=44 total=1143
+  przelacznik WYLACZONY (skipWyrab=true)  · razem  137 · wyrab 0 · farmy 39
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=7 landSea=82 relief=87 coast=15 riversMain=159 riversFill=648 forest=3 deposits=8 starts=51 total=1061
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=7 landSea=95 relief=111 coast=13 riversMain=166 riversFill=653 forest=4 deposits=6 starts=34 total=1089
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=63 relief=83 coast=11 riversMain=157 riversFill=488 forest=3 deposits=19 starts=72 total=899
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=68 relief=100 coast=13 riversMain=191 riversFill=567 forest=3 deposits=11 starts=52 total=1007
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=65 relief=61 coast=10 riversMain=115 riversFill=685 forest=5 deposits=5 starts=31 total=982
+  przelacznik WLACZONY  (skipWyrab=false) · razem  197 · wyrab 18 · farmy 56
+
+### ZASADA 2 — AI GRACZA, profil zrownowazone: onlyWorked FALSE vs TRUE (demandDriven)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=55 relief=54 coast=11 riversMain=113 riversFill=547 forest=3 deposits=9 starts=32 total=827
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=58 relief=88 coast=10 riversMain=161 riversFill=706 forest=3 deposits=6 starts=33 total=1066
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=54 relief=68 coast=12 riversMain=147 riversFill=431 forest=3 deposits=6 starts=37 total=759
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=54 relief=58 coast=11 riversMain=182 riversFill=513 forest=2 deposits=6 starts=33 total=863
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=63 relief=68 coast=12 riversMain=116 riversFill=693 forest=3 deposits=5 starts=31 total=994
+  onlyWorked=false · razem  549 · poza obywatelami NIE-zlozowe 462 (84.2%) · zlozowe poza obywatelami 0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=53 relief=56 coast=11 riversMain=238 riversFill=750 forest=4 deposits=9 starts=35 total=1159
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=59 relief=101 coast=12 riversMain=164 riversFill=712 forest=4 deposits=11 starts=66 total=1133
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=64 relief=72 coast=12 riversMain=147 riversFill=436 forest=3 deposits=7 starts=35 total=780
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=59 relief=60 coast=10 riversMain=205 riversFill=541 forest=3 deposits=6 starts=36 total=922
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=56 relief=63 coast=12 riversMain=131 riversFill=770 forest=4 deposits=5 starts=38 total=1081
+  onlyWorked=true  · razem  137 · poza obywatelami NIE-zlozowe 11 (8.0%) · zlozowe poza obywatelami 0

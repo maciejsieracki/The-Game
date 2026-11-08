@@ -45,6 +45,7 @@ import {
 import type { Hex } from '../types/hex';
 import type { GameMap } from '../types/map';
 import { Nakladka, TerenBazowy } from '../types/hex';
+import { hasFreshwaterAccess, hasRiverWaterAccess } from '../map/freshwater';
 import type { GameData } from '../data/loader';
 import type { City, CityPodzialHandlu, CityPodzialPracy } from './cities';
 import { resolveCityPodzialHandlu } from './empire-handel-split';
@@ -53,7 +54,6 @@ import {
   cityYieldPerTurn,
   civBonusyForCivKey,
   civEconomyYieldMultipliers,
-  mnoznikHandelPieniadzForCivByDifficulty,
   tileYield,
   type EconParams,
   type EconomyCity,
@@ -72,7 +72,8 @@ import {
   terrainImprovementEraMultiplier,
   type TerritoryResourceKey,
 } from './terrain-improvements';
-import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, loadManpowerRegenParams, tickManpowerUnitReplenishment, type ManpowerHealUnit } from './manpower';
+import { applyCivMatrixParam, civMatrixParam } from './civ-matrix';
+import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, civManpowerMatrixMults, loadManpowerRegenParams, tickManpowerUnitReplenishment, type ManpowerHealUnit } from './manpower';
 import {
   loadStorageParams,
   foodStorageCapacity,
@@ -101,7 +102,7 @@ import {
   loadThroughput,
   DEFAULT_CONVERTER_RECIPES,
   converterBuildingIdForRecipe,
-  converterThroughputForEra,
+  converterThroughputsForEra,
   computeGarncarniaSurplusBonus,
   type RawConverterParamsJson,
 } from './converters';
@@ -124,10 +125,11 @@ import {
   resolveSpichlerzCityBonusState,
   spichlerzArmyFoodCostMultiplier,
   spichlerzHealthBonus,
-  SPICHLERZ_DRAIN_CERAMIKA_PER_TURN,
-  SPICHLERZ_DRAIN_SOL_PER_TURN,
+  loadSpichlerzDrainParams,
+  spichlerzCeramikaDrainAmount,
   type BuildingRuntimeGateOptions,
   type SpichlerzCityBonusState,
+  type SpichlerzDrainParams,
 } from './building-resource-gate';
 import {
   deductMennicaZlotoDrain,
@@ -137,7 +139,10 @@ import {
 import {
   advanceWealth,
   loadWealthParams,
+  wealthParamsWithCapModifier,
+  wealthParamsWithMultiplierModifier,
   freshWealthState,
+  type WealthParams,
   type WealthState,
   type WealthTickResult,
 } from './wealth';
@@ -153,12 +158,9 @@ import {
   type TileYield as OkolicaTileYield,
 } from './okolica';
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
-import { territoryOwnerAt, type TerritoryNode } from '../map/territory';
-import {
-  cityTradeMultiplier,
-  loadReligionParams,
-  type ReligionState,
-} from './culture-religion';
+import { territoryOwnerAt, territoryNodesContentId, type TerritoryNode } from '../map/territory';
+import { hudPureScope, scopeObjectId } from './frame-memo';
+import type { ReligionState } from './culture-religion';
 import type { OrderYieldMults } from './order';
 import {
   buildRationParams,
@@ -173,7 +175,7 @@ import { hexDistance } from '../units/setup';
 import { type WonderYieldBonus } from './wonders-data';
 
 /** Stosuje mnożniki Porządku na plony (B2-Q6) — przed Wealth i splitPraca. */
-function applyOrderYieldMults(
+export function applyOrderYieldMults(
   yld: { praca: number; pieniadz: number; nauka: number; kultura: number },
   mults: OrderYieldMults,
 ): void {
@@ -181,6 +183,22 @@ function applyOrderYieldMults(
   if (mults.pieniadzMult !== 1) yld.pieniadz *= mults.pieniadzMult;
   if (mults.naukaMult !== 1) yld.nauka *= mults.naukaMult;
   if (mults.kulturaMult !== 1) yld.kultura *= mults.kulturaMult;
+}
+
+/** Resolve all approved owner-specific Wealth parameters through the shared owner map. */
+export function wealthParamsForOwner(
+  baseParams: WealthParams,
+  wealthCivKey: string | undefined,
+): WealthParams {
+  if (!wealthCivKey) return baseParams;
+  const withCap = wealthParamsWithCapModifier(
+    baseParams,
+    civMatrixParam(wealthCivKey, 'wealth_cap_proc'),
+  );
+  return wealthParamsWithMultiplierModifier(
+    withCap,
+    civMatrixParam(wealthCivKey, 'wealth_mnoznik_proc'),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -209,48 +227,10 @@ function applyWonderCityYields(
   // dopisywanie tu nic by nie zmieniło w rozgrywce.
 }
 
-/** Nazwa wyświetlana cywilizacji z klucza (grecy → Grecy) — pod cityTradeMultiplier. */
-function civDisplayNameForKey(
-  civKey: string | undefined,
-  civs: GameData['civs'],
-): string | null {
-  if (!civKey || !civs?.cywilizacje?.length) return null;
-  const key = civKey.toLowerCase();
-  for (const row of civs.cywilizacje) {
-    if (!row) continue;
-    const ids = [row.ikonaId, (row as { typCywilizacji?: string }).typCywilizacji, row.Cywilizacja]
-      .filter((s): s is string => typeof s === 'string' && s.length > 0)
-      .map(s => s.toLowerCase());
-    if (ids.includes(key)) return row.Cywilizacja ?? null;
-  }
-  return null;
-}
-
-/**
- * B-KULT-REL-Q3A — mnożnik handlu z religii (gate: Waluta + Mennica + dominująca
- * wiara). Maciej 2026-07-25 (pytanie 71/C): Mennica stoi wyłącznie w stolicy,
- * więc bramka "Mennica" tutaj musi być IMPERIUM-WIDE (czy właściciel ma Mennicę
- * GDZIEKOLWIEK), nie "w tym mieście" — spójnie z resztą Efektu 1 (patrz
- * economy.ts CityYieldContext.maMennica). Wołający liczy union po miastach raz
- * per tick i przekazuje gotowy boolean.
- */
-function religionTradeWalutaOverride(
-  cityReligion: ReligionState | undefined,
-  ownerCivKey: string | undefined,
-  maMennicaEmpireWide: boolean,
-  walutaOdkryta: boolean,
-  civs: GameData['civs'],
-  societyParams: GameData['societyParams'],
-  difficulty: Difficulty,
-): number | undefined {
-  if (!walutaOdkryta || !maMennicaEmpireWide || !cityReligion) return undefined;
-  const civName = civDisplayNameForKey(ownerCivKey, civs);
-  if (!civName) return undefined;
-  const rp = loadReligionParams(societyParams, difficulty);
-  const trade = cityTradeMultiplier(
-    cityReligion, civName, civs as unknown as import('./culture-religion').CivsDataLike, rp, true,
-  );
-  return trade.applied ? trade.multiplier : undefined;
+/** Route proceeds settle separately from tax; maritime income keeps its city coefficient. */
+function routeCashForCity(total: number, maritime: number, civKey: string | undefined): number {
+  const sea = Math.min(total, Math.max(0, maritime));
+  return total - sea + (civKey ? applyCivMatrixParam(sea, civKey, 'eko_pieniadz_port_proc') : sea);
 }
 
 /**
@@ -270,36 +250,28 @@ function ownersWithMennica(
   return owners;
 }
 
-/**
- * Wartość Efektu 1 (mnożnik Handel netto) gdy bramka jest otwarta: override z
- * religii (dominująca wiara, patrz religionTradeWalutaOverride) ma pierwszeństwo;
- * w przeciwnym razie mnożnik CYWILIZACYJNY skalowany trudnością (Maciej
- * 2026-07-25, pytanie 69) -- ZASTĘPUJE dawną płaską regułę "2/1.5/1 dla
- * wszystkich", która żyje teraz tylko jako `fallbackScaled` dla cywilizacji bez
- * wpisu w civs.json.
- */
-function resolveWalutaMnoznikOverride(
-  cityReligion: ReligionState | undefined,
-  ownerCivKey: string | undefined,
-  maMennicaEmpireWide: boolean,
-  walutaOdkryta: boolean,
-  civs: GameData['civs'],
-  societyParams: GameData['societyParams'],
-  difficulty: Difficulty,
-  fallbackScaled: number,
-): number | undefined {
-  const religionOverride = religionTradeWalutaOverride(
-    cityReligion, ownerCivKey, maMennicaEmpireWide, walutaOdkryta, civs, societyParams, difficulty,
-  );
-  if (religionOverride !== undefined) return religionOverride;
-  return mnoznikHandelPieniadzForCivByDifficulty(ownerCivKey, civs, difficulty, fallbackScaled);
-}
-
 // ---------------------------------------------------------------------------
 // Difficulty
 // ---------------------------------------------------------------------------
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
+
+/**
+ * R-WEB-AI-PLAYER-PARITY-FIXES-Q1 (poprawka 4): JEDYNE miejsce zastępczej epoki właściciela
+ * (dawniej 12 rozproszonych literałów `ownerId === 0 ? playerEra : 1`).
+ *
+ * Używane WYŁĄCZNIE, gdy wołający NIE poda `resolveOwnerEra`. W grze (main.ts) KAŻDE wywołanie
+ * advanceCityEconomy/previewCityEconomy podaje `empireEpochForOwner`, więc ta gałąź jest tam
+ * martwa (pilnuje tego tools/ai-player-parity-fixes-test.cjs). Zostaje świadomie, bo żyje w
+ * harnessach `gra/tools/*-test.cjs`, które liczą ekonomię pojedynczego miasta bez resolvera
+ * (np. ai-nauka-podzial-tura1-seed-test) -- usunięcie wymagałoby zmiany sygnatur i ok. 20
+ * testów poza allowlistą. UWAGA: to NIE jest bezpieczna reguła dla gry -- dla ownera != 0
+ * zwraca epokę 1 (także dla drugiego człowieka w hot-seat), więc nowy kod w main.ts ma zawsze
+ * przekazywać resolver, nigdy polegać na tym fallbacku.
+ */
+function legacyEraForOwner(ownerId: number, playerEra: number): number {
+  return ownerId === 0 ? playerEra : 1;
+}
 
 // ---------------------------------------------------------------------------
 // EconParams builder
@@ -339,7 +311,8 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     spichlerzZachowaniePoPrzroscie: num(em, 'spichlerz_zachowanie_po_wzroscie', 0.5),
     akweduktProgLudnosci:           num(em, 'akwedukt_prog_ludnosci', 5),
     spichlerzProgLudnosci:          num(em, 'spichlerz_prog_ludnosci', 8),
-    akweduktMaxLudnosci:            num(em, 'akwedukt_max_ludnosci', 12),
+    spichlerzIIProgLudnosci:        num(em, 'spichlerz_ii_prog_ludnosci', 12),
+    akweduktMaxLudnosci:            num(em, 'akwedukt_max_ludnosci', 20),
     zywnoscZuzytkaPopulacja:        num(em, 'zywnosc_zuzytka_populacja', 1),
     zdrowieModyfikatorWspolczynnik: num(em, 'zdrowie_modyfikator_wspolczynnik', 0.05),
     korupcjaWspolczynnikDystansu:   num(em, 'korupcja_wspolczynnik_dystansu', 2),
@@ -355,7 +328,6 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     budynekMennicaMnoznik:          num(bu, 'budynek_mennica_mnoznik', 1),      // NIEUZYWANE 2026-07-25 (patrz economy.ts)
     mennicaMnoznikPoWalucie:        num(gl, 'mennica_mnoznik_po_walucie', 1.5), // JEDYNY mnoznik Efektu 1 (Waluta+Mennica scalone)
     walutaMnoznik:                  num(bu, 'waluta_mnoznik', 2),               // NIEUZYWANE 2026-07-25 (patrz economy.ts)
-    targowiskoPracaMnoznik:         num(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
     suwaakHandelNaukaDefault:       num(em, 'suwak_handel_nauka_domyslnie', 60),
     suwaakHandelPieniadz:           num(em, 'suwak_handel_pieniadz_domyslnie', 30),
     suwaakHandelLuksus:             num(em, 'suwak_handel_luksus_domyslnie', 10),
@@ -462,34 +434,13 @@ function loadHealthParams(
 }
 
 /**
- * Czy miasto ma dostęp do wody (D17-A): centrum lub sąsiad z rzeką / riverPaths.
+ * Czy miasto ma dostęp do wody (D17-A): SŁODKA woda — rzeka (centrum lub sąsiad z rzeką / riverPaths)
+ * LUB jezioro na heksie miasta/sąsiedzie. Morze/ocean NIE (R-WEB-FRESHWATER-ACCESS-LAKE-Q1, decyzja
+ * właściciela 2026-11-02). Definicja i cache D6 (zbiór rzek per `riverPaths`, zbiór jezior per `map.hexes`)
+ * żyją w `map/freshwater.ts`; dla map bez jezior wynik jest identyczny z dawną wersją rzeka-only.
  */
-const __riverHexSetCache = new WeakMap<object, Set<string>>();
 export function cityHasWaterAccess(city: Pick<City, 'q' | 'r'>, map: GameMap): boolean {
-  // D6: memoizuj zbiór heksów rzek per referencja riverPaths — cityHasWaterAccess leci
-  // per computeView w pętli po miastach, a odbudowa całego zbioru (alokacje stringów) za
-  // każdym razem to koszt + GC na Super Huge. Cache auto-inwaliduje, gdy riverPaths się zmieni.
-  const paths = map.riverPaths ?? [];
-  const riverHexSet: Set<string> = __riverHexSetCache.get(paths as object) ?? (() => {
-    const s = new Set<string>();
-    for (const path of paths) {
-      for (const h of path) s.add(`${h.q},${h.r}`);
-    }
-    __riverHexSetCache.set(paths as object, s);
-    return s;
-  })();
-
-  function hexHasRiver(q: number, r: number): boolean {
-    const hex = map.hexes[`${q},${r}`];
-    if (hex?.rzeka?.obecna) return true;
-    if (riverHexSet.has(`${q},${r}`)) return true;
-    for (const [dq, dr] of HEX_NEIGHBORS) {
-      if (riverHexSet.has(`${q + dq},${r + dr}`)) return true;
-    }
-    return false;
-  }
-
-  return hexHasRiver(city.q, city.r);
+  return hasFreshwaterAccess(city, map);
 }
 
 /**
@@ -595,7 +546,9 @@ export function computeCityHealthBreakdown(
   const maTargowisko = builtIds.includes('targowisko');
   const maAkwedukt   = builtIds.includes('akwedukt');
   const maLaznia     = builtIds.includes('laznia_publiczna');
-  if (maRzeke)      lines.push({ label: 'Rzeka', value: hp.rzeka });
+  // Etykieta: „Rzeka” (jak dotąd) albo „Jezioro”, gdy słodką wodę daje wyłącznie jezioro (FRESHWATER-LAKE-Q1).
+  const wodaEtykieta = mapCtx && !hasRiverWaterAccess(mapCtx.map, mapCtx.city.q, mapCtx.city.r) ? 'Jezioro' : 'Rzeka';
+  if (maRzeke)      lines.push({ label: wodaEtykieta, value: hp.rzeka });
   if (maAkwedukt)   lines.push({ label: 'Akwedukt', value: hp.akwedukt });
   if (maStudnie)    lines.push({ label: 'Studnia', value: hp.studnia });
   if (maTargowisko) lines.push({ label: 'Targowisko', value: hp.targowisko });
@@ -633,7 +586,11 @@ const HEX_NEIGHBORS: ReadonlyArray<readonly [number, number]> = [
   [+1,  0], [-1,  0], [ 0, +1], [ 0, -1], [+1, -1], [-1, +1],
 ];
 
-export function hexToWorkedTile(hex: Hex & { ulepszenia?: readonly string[] | null; zloze?: string }): WorkedTile {
+export function hexToWorkedTile(
+  hex: Hex & { ulepszenia?: readonly string[] | null; zloze?: string },
+  /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: aktualna epoka właściciela (skaluje plony ulepszeń). */
+  ownerEra?: number,
+): WorkedTile {
   const ulepszeniaKeys = improvementKeysForHex(hex);
   return {
     terenBazowy: hex.terenBazowy,
@@ -642,6 +599,7 @@ export function hexToWorkedTile(hex: Hex & { ulepszenia?: readonly string[] | nu
     zloze:       hex.zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
+    wlascicielEra: ownerEra,
   };
 }
 
@@ -673,6 +631,27 @@ export function cityWorkedTilesForEconomy(
   city: City,
   map: GameMap,
   territoryNodes?: readonly TerritoryNode[],
+  excludeHexKeys?: ReadonlySet<string>,
+  ownerEra?: number,
+): WorkedTile[] {
+  // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): wewnątrz zakresu czystego odczytu HUD (buildHudState) wynik jest liczony raz na
+  // (miasto, parametry okolicy, mapa, zawartość węzłów, zbiór wykluczeń, epoka). Poza zakresem - bez zmian.
+  if (hudPureScope.active) {
+    const nid = territoryNodes ? territoryNodesContentId(territoryNodes) : -2;
+    if (nid !== -1) {
+      const key = 'cwt:' + scopeObjectId(city) + ':' + scopeObjectId(map.hexes) + ':' + nid + ':' + scopeObjectId(excludeHexKeys)
+        + ':' + (ownerEra ?? 'u') + ':' + city.q + ',' + city.r + ',' + city.population + ',' + (city.okolicaFocus ?? '') + ',' + (city.okolicaTryb ?? '')
+        + (city.okolicaTryb === 'reczny' ? ',' + JSON.stringify(city.okolicaReczne ?? {}) : '');
+      return hudPureScope.cached(key, () => cityWorkedTilesForEconomyRaw(city, map, territoryNodes, excludeHexKeys, ownerEra), v => v.slice());
+    }
+  }
+  return cityWorkedTilesForEconomyRaw(city, map, territoryNodes, excludeHexKeys, ownerEra);
+}
+
+function cityWorkedTilesForEconomyRaw(
+  city: City,
+  map: GameMap,
+  territoryNodes?: readonly TerritoryNode[],
   /**
    * P-HEKS-SPOR-SASIAD (Maciej 2026-08-13): heksy w promieniu TEGO miasta przegrane na rzecz
    * bliższego miasta TEGO SAMEGO właściciela — wynik
@@ -680,11 +659,13 @@ export function cityWorkedTilesForEconomy(
    * przez wołającego (advanceCityEconomy/previewCityEconomy), nie tutaj.
    */
   excludeHexKeys?: ReadonlySet<string>,
+  /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: aktualna epoka właściciela miasta (brak = Kamień). */
+  ownerEra?: number,
 ): WorkedTile[] {
   const tiles: WorkedTile[] = [];
 
   const centreHex = map.hexes[`${city.q},${city.r}`];
-  if (centreHex) tiles.push(hexToWorkedTile(centreHex));
+  if (centreHex) tiles.push(hexToWorkedTile(centreHex, ownerEra));
 
   const pop = Math.max(0, Math.floor(city.population ?? 0));
   if (pop <= 0) return tiles;
@@ -695,7 +676,7 @@ export function cityWorkedTilesForEconomy(
   const yieldOf = (q: number, r: number): OkolicaTileYield => {
     const h = map.hexes[`${q},${r}`];
     if (!h) return {};
-    const wt = hexToWorkedTile(h);
+    const wt = hexToWorkedTile(h, ownerEra);
     const y = tileYield(wt);
     return {
       zywnosc: y.zywnosc,
@@ -715,14 +696,14 @@ export function cityWorkedTilesForEconomy(
     radius,
     territoryNodes,
     ownerId: city.ownerId,
-    isWorkable: (q, r) => isLandWorkableHex(map, q, r),
+    isWorkable: (q, r, key) => isLandWorkableHex(map, q, r, key),
     excludeHexKeys,
   });
 
   // Konwertuj przypisane pozycje na WorkedTile.
   for (const t of assigned) {
     const h = map.hexes[t.key];
-    if (h) tiles.push(hexToWorkedTile(h));
+    if (h) tiles.push(hexToWorkedTile(h, ownerEra));
   }
 
   return tiles;
@@ -735,6 +716,8 @@ export function workedHexCoordsForCity(
   territoryNodes?: readonly TerritoryNode[],
   /** P-HEKS-SPOR-SASIAD: patrz `cityWorkedTilesForEconomy`. */
   excludeHexKeys?: ReadonlySet<string>,
+  /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: epoka właściciela (ranking pól wg plonów skalowanych epoką). */
+  ownerEra?: number,
 ): Array<{ q: number; r: number }> {
   const pop = Math.max(0, Math.floor(city.population ?? 0));
   if (pop <= 0) return [];
@@ -742,7 +725,7 @@ export function workedHexCoordsForCity(
   const yieldOf = (q: number, r: number): OkolicaTileYield => {
     const h = map.hexes[`${q},${r}`];
     if (!h) return {};
-    const wt = hexToWorkedTile(h);
+    const wt = hexToWorkedTile(h, ownerEra);
     const y = tileYield(wt);
     return { zywnosc: y.zywnosc, praca: y.praca, handel: y.handel };
   };
@@ -750,7 +733,7 @@ export function workedHexCoordsForCity(
     radius,
     territoryNodes,
     ownerId: city.ownerId,
-    isWorkable: (q, r) => isLandWorkableHex(map, q, r),
+    isWorkable: (q, r, key) => isLandWorkableHex(map, q, r, key),
     excludeHexKeys,
   });
   return assigned.map(t => ({ q: t.q, r: t.r }));
@@ -763,6 +746,23 @@ export function workedHexCoordsForCity(
 
 /** Suma surowcow logistycznych/ture per miasto (klucz = City.id). */
 export type TerritoryResourceYieldByCity = ReadonlyMap<string, Partial<Record<TerritoryResourceKey, number>>>;
+
+/**
+ * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): lista obiektów heksów w kolejności `Object.keys(map.hexes)` (= kolejność wstawienia,
+ * ta sama co w poprzedniej pętli), pamiętana per obiekt `map.hexes`. Zbiór kluczy i obiekty heksów są po wygenerowaniu/
+ * wczytaniu mapy stałe (jedyne zapisy `hexes[key] =` to generator.ts i mapSnapshot.ts); mutowane są POLA heksów (ulepszenia),
+ * które pętla czyta na żywo przez referencję. Nowa mapa/wczytany zapis = nowy obiekt `hexes` = nowa lista.
+ */
+const hexListCache = new WeakMap<object, Array<GameMap['hexes'][string]>>();
+function hexListOf(map: GameMap): Array<GameMap['hexes'][string]> {
+  let list = hexListCache.get(map.hexes);
+  if (!list) {
+    list = [];
+    for (const k of Object.keys(map.hexes)) { const h = map.hexes[k]; if (h) list.push(h); }
+    hexListCache.set(map.hexes, list);
+  }
+  return list;
+}
 
 /**
  * Nalicza surowce logistyczne (drewno/kamien/glina/ruda/ruda_zelaza) z KAŻDEGO
@@ -803,9 +803,7 @@ export function computeTerritoryResourceYieldByCity(
     return best;
   }
 
-  for (const hexKey of Object.keys(map.hexes)) {
-    const hex = map.hexes[hexKey];
-    if (!hex) continue;
+  for (const hex of hexListOf(map)) {
     const impKeys = improvementKeysForHex(hex);
     if (!impKeys.length) continue;
 
@@ -880,11 +878,15 @@ export function computeWorkedMagazynYieldsByCity(
    * `advanceCityEconomy` przekazuje go jawnie (liczony RAZ na tick, patrz tam).
    */
   lostToSiblingByCity?: ReadonlyMap<string, ReadonlySet<string>>,
+  /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: epoka właściciela (plony pól skalowane epoką). */
+  resolveOwnerEra?: OwnerEraResolver,
 ): ReadonlyMap<string, WorkedMagazynYield> {
   const lostMap = lostToSiblingByCity ?? computeLostToNearerSiblingByCity(cities, map);
   const out = new Map<string, WorkedMagazynYield>();
   for (const city of cities) {
-    const worked = cityWorkedTilesForEconomy(city as City, map, territoryNodes, lostMap.get(city.id));
+    const worked = cityWorkedTilesForEconomy(
+      city as City, map, territoryNodes, lostMap.get(city.id), resolveOwnerEra?.(city.ownerId),
+    );
     let drewno = 0;
     let kamien = 0;
     let glina = 0;
@@ -1009,6 +1011,7 @@ export function toEconomyCity(
   buildings: { maSpichlerz?: boolean; maSpichlerzII?: boolean; maAkwedukt?: boolean } = {},
   ownerDefaultPodzial?: CityPodzialHandlu,
   ownerDefaultPodzialPracy?: CityPodzialPracy,
+  ownerCivKey?: string | null,
 ): EconomyCity {
   const paramsFallback: CityPodzialHandlu = {
     procentNauka:    params.suwaakHandelNaukaDefault,
@@ -1021,6 +1024,7 @@ export function toEconomyCity(
   return {
     id:              city.id,
     ludnosc:         city.population,
+    civKey:          ownerCivKey ?? null,
     zdrowie,
     czyStolica:      isCapital,
   maSpichlerz:     buildings.maSpichlerz ?? false,
@@ -1095,6 +1099,8 @@ export function getCityFood(city: City): number {
 export interface CityEconomyTick {
   cityId:         string;
   ownerId:        number;
+  /** Owner civilization era used for era-scaled citizen food upkeep. */
+  ownerEra?:      number;
   praca:          number;
   pieniadz:       number;  // po mnozniku Wealth (strumien do skarbca gracza)
   pieniadzBrutto: number;  // pieniadz przed mnoznikiem Wealth (z economy.ts)
@@ -1113,15 +1119,11 @@ export interface CityEconomyTick {
   wealthZadowolenie: number;       // WIRE 3: wklad do zadowolenia
   /** R7-C: nadwyżka Ceramiki po Spichlerzu → +Zadowolenie (miasto z Garncarnią). */
   garncarniaSurplusZadowolenie?: number;
-  pieniadzZPracy: number;          // Efekt 2: doPuli*targowiskoPracaMnoznik (0 bez Targowiska/Waluty)
+  pieniadzZPracy: number;          // deprecated compatibility field; always 0
   /**
-   * Handel E3: dochod dystansowy z tras handlowych dotykajacych to miasto
-   * (trade-routes.ts computeTradeRouteIncomeByCity) -- juz WLICZONY w `pieniadz`
-   * powyzej PRZED mnoznikiem Wealth (wpiety do handelBrutto w economy.ts przez
-   * ctx.dochodTrasHandlowych, wiec przechodzi przez korupcje, Waluta+Mennica i
-   * suwak podzialHandlu razem z reszta Daniny -- NIE "czysto" do skarbca), a tutaj
-   * wystawiony osobno wylacznie do rozbicia w UI (surowa kwota trasy). 0 gdy
-   * miasto nie ma tras.
+   * Handel E3: route proceeds credited separately from tax, corruption, sliders,
+   * Mint and Wealth. Included once in `pieniadz` and separately exposed here for
+   * the existing Handel breakdown. Includes the maritime city coefficient.
    */
   pieniadzZTras: number;
   // WIRE 4: oblezenie
@@ -1201,7 +1203,7 @@ export interface OwnerEconomySum {
   doPuli: number;
   praca: number;
   kultura: number;
-  /** Handel E3: podzbior `pieniadz` pochodzacy z dochodu dystansowego tras (rozbicie UI). */
+  /** Handel E3: route cash component of `pieniadz` (breakdown UI). */
   pieniadzZTras: number;
 }
 
@@ -1401,8 +1403,9 @@ function resolveSpichlerzForCity(
   ownerId: number,
   builtIds: readonly string[],
   dryRun: boolean,
+  drainParams: SpichlerzDrainParams,
 ): SpichlerzCityBonusState {
-  const drain = paySpichlerzDrainForCity(cities, ownerId, builtIds, dryRun);
+  const drain = paySpichlerzDrainForCity(cities, ownerId, builtIds, dryRun, drainParams);
   return resolveSpichlerzCityBonusState(builtIds, drain);
 }
 
@@ -1411,14 +1414,16 @@ function simulateCeramikaAfterSpichlerzDrains(
   cities: ReadonlyArray<City>,
   ownerId: number,
   builtByCity: ReadonlyMap<string, readonly string[]>,
+  drainParams: SpichlerzDrainParams,
 ): number {
   let ceramika = ownerResourceStock(cities, ownerId, 'ceramika');
   for (const city of cities) {
     if (city.ownerId !== ownerId) continue;
     const builtIds = builtByCity.get(city.id) ?? [];
     const hasSpichlerz = cityHasSpichlerzBuilding(builtIds);
-    if (hasSpichlerz && ceramika >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN) {
-      ceramika -= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
+    const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, drainParams);
+    if (hasSpichlerz && ceramika >= ceramikaAmount) {
+      ceramika -= ceramikaAmount;
     }
   }
   return ceramika;
@@ -1448,6 +1453,7 @@ function simulateResourcePipelineForPreview(
   ceramikaByOwner: Map<number, number>;
 } {
   const raw = data.econParams as unknown as RawConverterParamsJson;
+  const spichlerzDrainParams = loadSpichlerzDrainParams(raw, difficulty);
   const ownerIds = new Set(cities.map(city => city.ownerId));
   const storageParams = loadOwnerStorageParams(
     raw as unknown as Parameters<typeof loadOwnerStorageParams>[0],
@@ -1463,19 +1469,17 @@ function simulateResourcePipelineForPreview(
   }
   const eraForOwner = (ownerId: number): number => resolveOwnerEra
     ? resolveOwnerEra(ownerId)
-    : (ownerId === 0 ? playerEra : 1);
+    : legacyEraForOwner(ownerId, playerEra);
   const capForOwner = (ownerId: number): number => ownerResourceCapacityPerType(
     magazynCountByOwner.get(ownerId) ?? 0,
     storageParams,
     eraForOwner(ownerId),
   );
   const throughputsForOwner = (ownerId: number): Record<string, number> => {
-    const out: Record<string, number> = {};
-    for (const recipe of DEFAULT_CONVERTER_RECIPES) {
-      const base = loadThroughput(raw, recipe.throughputParamKey, difficulty, recipe.throughputFallback);
-      out[recipe.id] = converterThroughputForEra(recipe.id, base, eraForOwner(ownerId));
-    }
-    return out;
+    return converterThroughputsForEra(
+      recipe => loadThroughput(raw, recipe.throughputParamKey, difficulty, recipe.throughputFallback),
+      eraForOwner(ownerId),
+    );
   };
 
   // Keep preview's pre-converter inflow identical to tickEmpireResourcePipeline:
@@ -1487,10 +1491,10 @@ function simulateResourcePipelineForPreview(
     cities,
     map,
     territoryNodes,
-    resolveOwnerEra ?? ((ownerId: number) => ownerId === 0 ? playerEra : 1),
+    resolveOwnerEra ?? ((ownerId: number) => legacyEraForOwner(ownerId, playerEra)),
   );
   const workedMagazynByCity = computeWorkedMagazynYieldsByCity(
-    cities, map, territoryNodes, lostToSiblingByCity,
+    cities, map, territoryNodes, lostToSiblingByCity, eraForOwner,
   );
   const stolarniaCountByOwner = new Map<number, number>();
   const kamieniarskiCountByOwner = new Map<number, number>();
@@ -1588,10 +1592,11 @@ function simulateResourcePipelineForPreview(
         }));
         continue;
       }
-      const ceramikaPaid = (pool.ceramika ?? 0) >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
-      const solPaid = hasII && (pool.sol ?? 0) >= SPICHLERZ_DRAIN_SOL_PER_TURN;
-      if (ceramikaPaid) pool.ceramika = (pool.ceramika ?? 0) - SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
-      if (solPaid) pool.sol = (pool.sol ?? 0) - SPICHLERZ_DRAIN_SOL_PER_TURN;
+      const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, spichlerzDrainParams);
+      const ceramikaPaid = (pool.ceramika ?? 0) >= ceramikaAmount;
+      const solPaid = hasII && (pool.sol ?? 0) >= spichlerzDrainParams.solII;
+      if (ceramikaPaid) pool.ceramika = (pool.ceramika ?? 0) - ceramikaAmount;
+      if (solPaid) pool.sol = (pool.sol ?? 0) - spichlerzDrainParams.solII;
       spichlerzByCity.set(city.id, resolveSpichlerzCityBonusState(builtIds, {
         ceramikaPaid,
         solPaid,
@@ -1607,7 +1612,8 @@ export function computeGarncarniaSurplusZadowolenieByOwner(
   cities: ReadonlyArray<City>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
   /** true po tickEmpireResourcePipeline (drain już w puli); false w podglądzie HUD. */
-  stockAlreadyDrained = false,
+  stockAlreadyDrained: boolean,
+  drainParams: SpichlerzDrainParams,
 ): Map<number, number> {
   const out = new Map<number, number>();
   const ownerIds = new Set(cities.map(c => c.ownerId));
@@ -1622,7 +1628,7 @@ export function computeGarncarniaSurplusZadowolenieByOwner(
     }
     const ceramikaAfter = stockAlreadyDrained
       ? ownerResourceStock(cities, ownerId, 'ceramika')
-      : simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity);
+      : simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity, drainParams);
     const { zadowolenieBonus } = computeGarncarniaSurplusBonus({
       ceramikaPoDrainSpichlerza: ceramikaAfter,
       maGarncarnie,
@@ -1641,6 +1647,7 @@ export function computeCityFoodBalanceV85(
   city: Pick<City, 'poziomRacji' | 'procentRozwoj'>,
   rationParams: RationParams,
   spichlerzState?: SpichlerzCityBonusState,
+  ownerEra = 1,
 ): { kosztRacji: number; bilansLokalny: number; poziomRacji: number } {
   const poziomRacji = getCityRationLevel(city);
   const kosztRacji = computeCityRationCost(
@@ -1648,6 +1655,7 @@ export function computeCityFoodBalanceV85(
     poziomRacji,
     rationParams,
     spichlerzState,
+    ownerEra,
   );
   return {
     kosztRacji,
@@ -1681,6 +1689,7 @@ export function recomputeCityFoodBalancesInEcon(
       city,
       rationParams,
       spichlerz,
+      tick.ownerEra ?? 1,
     );
     tick.kosztRacji = foodBal.kosztRacji;
     tick.bilansLokalny = foodBal.bilansLokalny;
@@ -1738,14 +1747,16 @@ function tickEmpireResourcePipeline(
   kamieniarskiBonusKamieniaCiv: number,
   /**
    * P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): funkcja, nie stała mapa --
-   * Cegielnia/Garncarnia skalują się +10% bazy/epokę WŁAŚCICIELA konwertera (owner
+   * Garncarnia skaluje cykle +10% bazy/epokę, Cegielnia WYJŚCIE ×(1+0,5·(e−1)) (epoka WŁAŚCICIELA konwertera (owner
    * to zwykły parametr, PARYTET AI: identyczna funkcja dla ownerId=0 i AI). Wołana
    * raz na ownera w pętli Faza 2 niżej.
    */
   converterThroughputsForOwner: (ownerId: number) => Record<string, number>,
   ownerResourceCapFor: (ownerId: number) => number,
-  resolveOwnerActiveLabels?: OwnerActiveLabelsResolver,
-  resolveOwnerZlotoAccess?: OwnerZlotoAccessResolver,
+  resolveOwnerActiveLabels: OwnerActiveLabelsResolver | undefined,
+  resolveOwnerZlotoAccess: OwnerZlotoAccessResolver | undefined,
+  /** R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params (wg trudności). Wymagane — bez domyślnej wartości. */
+  spichlerzDrainParams: SpichlerzDrainParams,
 ): Map<string, SpichlerzCityBonusState> {
   const ownerIds = new Set(cities.map(c => c.ownerId));
 
@@ -1831,7 +1842,7 @@ function tickEmpireResourcePipeline(
   _spichlerzSolCityIdsByOwner.clear();
   for (const city of cities) {
     const builtIds = builtByCity.get(city.id) ?? [];
-    const drain = paySpichlerzDrainForCity(cities, city.ownerId, builtIds, false);
+    const drain = paySpichlerzDrainForCity(cities, city.ownerId, builtIds, false, spichlerzDrainParams);
     const state = resolveSpichlerzCityBonusState(builtIds, drain);
     spichlerzByCity.set(city.id, state);
     if (state.solActive) {
@@ -1898,6 +1909,10 @@ export function previewCityEconomy(
   ownerDefaultPodzialHandluByOwner: ReadonlyMap<number, CityPodzialHandlu> = new Map(),
   /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: domyślny podział Pracy per owner. */
   ownerDefaultPodzialPracyByOwner: ReadonlyMap<number, CityPodzialPracy> = new Map(),
+  /** F-04: connected sea-route income subset, including existing sea-route cash bonus. */
+  maritimeTradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
+  /** One-shot owner-selected Work tax. Distinct from route income. */
+  additionalTaxByCity: ReadonlyMap<string, number> = new Map(),
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
   const buildingCatalog = data.buildings as unknown as BuildingRecord[];
@@ -1967,7 +1982,10 @@ export function previewCityEconomy(
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
 
-    const worked = cityWorkedTilesForEconomy(city, map, territoryNodes, lostToSiblingByCity.get(city.id));
+    const worked = cityWorkedTilesForEconomy(
+      city, map, territoryNodes, lostToSiblingByCity.get(city.id),
+      resolveOwnerEra ? resolveOwnerEra(city.ownerId) : legacyEraForOwner(city.ownerId, playerEra),
+    );
     const builtIds = builtByCity.get(city.id) ?? [];
     const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
       builtIds,
@@ -1993,22 +2011,22 @@ export function previewCityEconomy(
     const poziomRacji = getCityRationLevel(city);
     const ownerDefaultPodzial = ownerDefaultPodzialHandluByOwner.get(city.ownerId);
     const ownerDefaultPodzialPracy = ownerDefaultPodzialPracyByOwner.get(city.ownerId);
+    const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const econCity = toEconomyCity(
       city, params, isCapital, zdrowie,
       { maSpichlerz, maSpichlerzII, maAkwedukt },
       ownerDefaultPodzial,
       ownerDefaultPodzialPracy,
+      ownerCivKey,
     );
 
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
-      : (city.ownerId === 0 ? playerEra : 1);
+      : legacyEraForOwner(city.ownerId, playerEra);
     const ownerTech = resolveOwnerTech
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
-    const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
-    const cityReligion = cityReligionByCityId.get(city.id);
     const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
     // PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
     // do złota. Mnożnik znika, Podatek wraca do Daniny." Budynek NIE jest burzony
@@ -2017,16 +2035,6 @@ export function previewCityEconomy(
     // resolveOwnerZlotoAccess to memoizowany resolver ownera (RAZ per owner per tick,
     // main.ts) -- patrz OwnerZlotoAccessResolver powyżej.
     const maMennicaEmpireWide = maMennicaBuiltEmpireWide && resolveOwnerZlotoAccess(city.ownerId);
-    const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
-      cityReligion,
-      ownerCivKey,
-      maMennicaEmpireWide,
-      walutaOdkryta,
-      data.civs,
-      data.societyParams,
-      difficulty,
-      params.mennicaMnoznikPoWalucie,
-    );
     const ownerBonusy = ownerCivKey
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
@@ -2053,24 +2061,17 @@ export function previewCityEconomy(
       maTargowisko: runtimeBuiltIds.includes('targowisko'),
       maBiblioteka: runtimeBuiltIds.includes('biblioteka'),
       maAkademia: runtimeBuiltIds.includes('akademia'),
-      // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
-      // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
-      // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
-      // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
-      // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
-      // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
+      // Mint multiplies tax using the fixed difficulty rate when both gates are open.
+      // It is empire-wide because the building is placed in the capital.
       // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B). PYTANIE 83=B:
       // maMennicaEmpireWide juz zawiera bramke dostepu do zlota (patrz wyzej) --
       // gdy zlota brak, ta flaga jest false mimo ze budynek dalej stoi.
       maMennica: maMennicaEmpireWide,
       walutaOdkryta,
-      walutaMnoznikOverride,
       civHandelMult,
       civNaukaMult,
       premiaHandluTrasHandlowych: premiaTrasHandlowych,
-      // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: HUD preview musi zgadzac sie z realnym
-      // tickiem (advanceCityEconomy) -- ten sam punkt wpiecia dochodu z tras (patrz tam).
-      dochodTrasHandlowych: tradeIncomeByCity.get(city.id) ?? 0,
+      additionalTax: additionalTaxByCity.get(city.id) ?? 0,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
@@ -2087,11 +2088,13 @@ export function previewCityEconomy(
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
     const zywnoscBrutto = yld.zywnoscBrutto;
-    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams, spichlerzState);
+    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams, spichlerzState, ownerEra);
     yld.zywnosc = foodBal.bilansLokalny;
     // +wonder yields (CUDA-EKON-01) — patrz applyWonderCityYields, krok osobny od reszty.
     applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
 
+    const wealthCivKey = ownerCivByOwnerId.get(city.ownerId);
+    const cityWealthParams = wealthParamsForOwner(wealthParams, wealthCivKey);
     const prevWealth: WealthState = city.wealthState ?? freshWealthState();
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
     const wt: WealthTickResult = advanceWealth(
@@ -2099,14 +2102,16 @@ export function previewCityEconomy(
       yld.luksus,
       yld.pieniadz,
       ownerEra,
-      wealthParams,
+      cityWealthParams,
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
-    // yld.pieniadz JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych powyzej) -- patrz
-    // komentarz przy pieniadzPoWealth w advanceCityEconomy.
+    // Wealth applies to tax cash only; route proceeds settle separately.
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
-    // Wylacznie wartosc do raportu/UI (breakdown "dochod z tras") -- nie dodawac ponownie.
-    const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
+    const pieniadzZTras = routeCashForCity(
+      tradeIncomeByCity.get(city.id) ?? 0,
+      maritimeTradeIncomeByCity.get(city.id) ?? 0,
+      ownerCivByOwnerId.get(city.ownerId),
+    );
 
     // NAPRAWA CACHE/LIVE (Maciej 2026-08-10, znalezisko B): PRZEDTEM czytano `city.podzialPracy`
     // wprost -- pole wypełnione WYŁĄCZNIE gdy miasto ma aktywny lokalny override
@@ -2133,8 +2138,9 @@ export function previewCityEconomy(
       perCity.push({
         cityId: city.id,
         ownerId: city.ownerId,
+        ownerEra,
         praca: yld.praca,
-        pieniadz: pieniadzPoWealth,
+        pieniadz: pieniadzPoWealth + pieniadzZTras,
         pieniadzBrutto: yld.pieniadz,
         zywnoscNetto: 0,
         nauka: yld.nauka,
@@ -2187,11 +2193,10 @@ export function previewCityEconomy(
     perCity.push({
       cityId: city.id,
       ownerId: city.ownerId,
+      ownerEra,
       praca: yld.praca,
-      // pieniadzPoWealth JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych, wpiety w
-      // handelBrutto w economy.ts) -- NIE dodawac pieniadzZTras ponownie (podwojne liczenie,
-      // por. komentarz przy pieniadzPoWealth wyzej).
-      pieniadz: pieniadzPoWealth,
+      // Route proceeds are added after local tax modifiers and Wealth.
+      pieniadz: pieniadzPoWealth + pieniadzZTras,
       pieniadzBrutto: yld.pieniadz,
       zywnoscNetto: foodBal.bilansLokalny,
       nauka: yld.nauka,
@@ -2274,7 +2279,7 @@ export function previewOwnerUpkeep(
     if (builtIds.length === 0) continue;
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
-      : (city.ownerId === 0 ? playerEra : 1);
+      : legacyEraForOwner(city.ownerId, playerEra);
     const ownerTech = resolveOwnerTech
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
@@ -2330,6 +2335,10 @@ export function advanceCityEconomy(
   },
   /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: domyślny podział Pracy per owner. */
   ownerDefaultPodzialPracyByOwner: ReadonlyMap<number, CityPodzialPracy> = new Map(),
+  /** F-04: connected sea-route income subset, including existing sea-route cash bonus. */
+  maritimeTradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
+  /** One-shot owner-directed Work tax, distinct from land/sea route income. */
+  manualWorkTaxByCity: ReadonlyMap<string, number> = new Map(),
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
@@ -2353,7 +2362,7 @@ export function advanceCityEconomy(
     cities,
     map,
     territoryNodes,
-    resolveOwnerEra ?? ((ownerId: number) => ownerId === 0 ? playerEra : 1),
+    resolveOwnerEra ?? ((ownerId: number) => legacyEraForOwner(ownerId, playerEra)),
   );
 
   // R-KOSZTY-EPOKOWE-ULEPSZENIA-Q1: upkeep Pracy civ-wide za trwałe ulepszenia terenu
@@ -2379,8 +2388,8 @@ export function advanceCityEconomy(
       rawForConverters, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
     );
   }
-  // P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): Cegielnia/Garncarnia +10%
-  // przepustowości bazowej ADDYTYWNIE za każdą epokę CYWILIZACJI WŁAŚCICIELA (nie
+  // P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): Garncarnia +10% przepustowości
+  // (Cegielnia: od BRICK-X2 mnożnik WYJŚCIA 1+0,5·(e−1), klucze '<id>#outMult') bazowej ADDYTYWNIE za każdą epokę CYWILIZACJI WŁAŚCICIELA (nie
   // globalną epokę gry) -- `resolveOwnerEra` to ten sam resolver PARYTETU AI już
   // używany dla buildingLevelForEpoch/upkeep (main.ts: empireEpochForOwner), zero
   // nowej gałęzi po ownerId; owner 0 bez resolvera spada na `playerEra` (parametr
@@ -2389,13 +2398,11 @@ export function advanceCityEconomy(
   const converterThroughputsForOwner = (ownerId: number): Record<string, number> => {
     const era = resolveOwnerEra
       ? resolveOwnerEra(ownerId)
-      : (ownerId === 0 ? playerEra : 1);
-    const out: Record<string, number> = {};
-    for (const recipe of DEFAULT_CONVERTER_RECIPES) {
-      const base = converterThroughputs[recipe.id] ?? recipe.throughputFallback;
-      out[recipe.id] = converterThroughputForEra(recipe.id, base, era);
-    }
-    return out;
+      : legacyEraForOwner(ownerId, playerEra);
+    return converterThroughputsForEra(
+      recipe => converterThroughputs[recipe.id] ?? recipe.throughputFallback,
+      era,
+    );
   };
 
   // Zadanie 2 (2026-07-23): Stolarnia / Warsztat kamieniarski -- bonus CIV-WIDE do
@@ -2453,7 +2460,7 @@ export function advanceCityEconomy(
     if (cached !== undefined) return cached;
     const era = resolveOwnerEra
       ? resolveOwnerEra(ownerId)
-      : (ownerId === 0 ? playerEra : 1);
+      : legacyEraForOwner(ownerId, playerEra);
     const cap = ownerResourceCapacityPerType(magazynCountByOwner.get(ownerId) ?? 0, ownerStorageParams, era);
     ownerResCapByOwner.set(ownerId, cap);
     return cap;
@@ -2515,7 +2522,15 @@ export function advanceCityEconomy(
   const incomeByOwner = new Map<number, number>();
 
   // PYTANIE-84 R2: wpływ mapy → konwertery → drain Spichlerza PRZED plonami miast.
-  const workedMagazynByCity = computeWorkedMagazynYieldsByCity(cities, map, territoryNodes, lostToSiblingByCity);
+  const workedMagazynByCity = computeWorkedMagazynYieldsByCity(
+    cities, map, territoryNodes, lostToSiblingByCity,
+    resolveOwnerEra ?? ((ownerId: number) => legacyEraForOwner(ownerId, playerEra)),
+  );
+  // R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params wg trudności (jedno źródło prawdy).
+  const spichlerzDrainParams = loadSpichlerzDrainParams(
+    data.econParams as unknown as RawConverterParamsJson,
+    difficulty,
+  );
   const spichlerzByCity = tickEmpireResourcePipeline(
     cities,
     builtByCity,
@@ -2529,17 +2544,21 @@ export function advanceCityEconomy(
     ownerResourceCapFor,
     resolveOwnerActiveLabels,
     resolveOwnerZlotoAccess,
+    spichlerzDrainParams,
   );
 
   const garncarniaSurplusZadowolenieByOwner = computeGarncarniaSurplusZadowolenieByOwner(
-    cities, builtByCity, true,
+    cities, builtByCity, true, spichlerzDrainParams,
   );
 
   for (const city of cities) {
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
 
-    const worked    = cityWorkedTilesForEconomy(city, map, territoryNodes, lostToSiblingByCity.get(city.id));
+    const worked    = cityWorkedTilesForEconomy(
+      city, map, territoryNodes, lostToSiblingByCity.get(city.id),
+      resolveOwnerEra ? resolveOwnerEra(city.ownerId) : legacyEraForOwner(city.ownerId, playerEra),
+    );
     const builtIds  = builtByCity.get(city.id) ?? [];
     const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
       builtIds,
@@ -2568,22 +2587,22 @@ export function advanceCityEconomy(
     const poziomRacji = getCityRationLevel(city);
     const ownerDefaultPodzial = ownerDefaultPodzialHandluByOwner.get(city.ownerId);
     const ownerDefaultPodzialPracy = ownerDefaultPodzialPracyByOwner.get(city.ownerId);
+    const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const econCity = toEconomyCity(
       city, params, isCapital, zdrowie,
       { maSpichlerz, maSpichlerzII, maAkwedukt },
       ownerDefaultPodzial,
       ownerDefaultPodzialPracy,
+      ownerCivKey,
     );
 
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
-      : (city.ownerId === 0 ? playerEra : 1);
+      : legacyEraForOwner(city.ownerId, playerEra);
     const ownerTech = resolveOwnerTech
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
-    const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
-    const cityReligion = cityReligionByCityId.get(city.id);
     const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
     // PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
     // do złota. Mnożnik znika, Podatek wraca do Daniny." Budynek NIE jest burzony
@@ -2592,16 +2611,6 @@ export function advanceCityEconomy(
     // resolveOwnerZlotoAccess to memoizowany resolver ownera (RAZ per owner per tick,
     // main.ts) -- patrz OwnerZlotoAccessResolver powyżej.
     const maMennicaEmpireWide = maMennicaBuiltEmpireWide && resolveOwnerZlotoAccess(city.ownerId);
-    const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
-      cityReligion,
-      ownerCivKey,
-      maMennicaEmpireWide,
-      walutaOdkryta,
-      data.civs,
-      data.societyParams,
-      difficulty,
-      params.mennicaMnoznikPoWalucie,
-    );
     const ownerBonusy = ownerCivKey
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
@@ -2628,25 +2637,18 @@ export function advanceCityEconomy(
       maTargowisko:          runtimeBuiltIds.includes('targowisko'),
       maBiblioteka:          runtimeBuiltIds.includes('biblioteka'),
       maAkademia:            runtimeBuiltIds.includes('akademia'),
-      // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
-      // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
-      // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
-      // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
-      // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
-      // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
+      // Mint multiplies tax using the fixed difficulty rate when both gates are open.
+      // It is empire-wide because the building is placed in the capital.
       // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B). PYTANIE 83=B:
       // maMennicaEmpireWide juz zawiera bramke dostepu do zlota -- gdy brak, false
       // mimo ze budynek dalej stoi (nie jest burzony).
       maMennica:             maMennicaEmpireWide,
       walutaOdkryta,         // P1b: bramka Efektu 1 (razem z maMennica) w cityYieldPerTurn
-      walutaMnoznikOverride, // per-cyw skalowany trudnoscia (lub override religii)
       civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)
       premiaHandluTrasHandlowych: premiaTrasHandlowych, // T4: suma 0.05*dochod per trasa Z BUDYNKIEM
-      // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1 (ECHO wlasciciela): dochod dystansowy z tras
-      // handlowych -- TERAZ wpiety do puli handelBrutto (economy.ts) zamiast dodawany osobno
-      // po mnozniku Wealth (patrz pieniadzZTras nizej -- juz TYLKO wartosc do raportu/UI).
-      dochodTrasHandlowych:  tradeIncomeByCity.get(city.id) ?? 0,
+      // Owner-directed Work-to-tax amount for this city, distinct from route income.
+      additionalTax:        manualWorkTaxByCity.get(city.id) ?? 0,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni:       runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
@@ -2663,7 +2665,7 @@ export function advanceCityEconomy(
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
     const zywnoscBrutto = yld.zywnoscBrutto;
-    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams, spichlerzState);
+    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams, spichlerzState, ownerEra);
     yld.zywnosc = foodBal.bilansLokalny;
     // +wonder yields (CUDA-EKON-01) — patrz applyWonderCityYields, krok osobny od reszty
     // ekonomii/Pracy (nie dotyka economy.ts ani formul terenu/ulepszen powyzej).
@@ -2671,6 +2673,8 @@ export function advanceCityEconomy(
 
     // WIRE 3: Luksus -> Wealth tick
     // wealthState per miasto -- persystowane na city jako pole dynamiczne
+    const wealthCivKey = ownerCivByOwnerId.get(city.ownerId);
+    const cityWealthParams = wealthParamsForOwner(wealthParams, wealthCivKey);
     const prevWealth: WealthState = city.wealthState ?? freshWealthState();
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
     const wt: WealthTickResult = advanceWealth(
@@ -2678,7 +2682,7 @@ export function advanceCityEconomy(
       yld.luksus,      // spoleczMoney = strumien Luksus
       yld.pieniadz,    // miastoMoney  = pieniadz brutto tej tury
       ownerEra,
-      wealthParams,
+      cityWealthParams,
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
     if (wealthImmunity && city.wealthImmunityRemaining != null) {
@@ -2687,18 +2691,13 @@ export function advanceCityEconomy(
     // Zapisz nowy stan Wealth na obiekt City (dynamiczne pole)
     city.wealthState = { poziom: wt.poziom, pula: wt.pula };
 
-    // Pieniadz po mnozniku Wealth (KONTRAKT: mnozi strumien podatku, nie nauka/luksus).
-    // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: yld.pieniadz JUZ zawiera dochod z tras
-    // (ctx.dochodTrasHandlowych powyzej, wpiety do handelBrutto w economy.ts) -- wiec ten
-    // mnoznik teraz obejmuje TAKZE dochod z tras, zgodnie z ECHO "Pelna integracja: przed
-    // mnoznikiem Wealth".
+    // Wealth modifies the local tax stream only; route cash is settled separately.
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
-    // Handel E3 (PRZEBUDOWANE): pieniadzZTras jest TERAZ wylacznie wartoscia do
-    // raportu/UI (breakdown "dochod z tras" w main.ts) -- SUROWY dochod dystansowy z tras
-    // PRZED przejsciem przez suwaki Handlu i mnoznik Wealth (juz wliczony do
-    // pieniadzPoWealth wyzej). NIE dodawac go ponownie do pieniadz nizej (podwojne
-    // liczenie) -- kredytowany OBU miastom trasy (Q8=B) w samym tradeIncomeByCity.
-    const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
+    const pieniadzZTras = routeCashForCity(
+      tradeIncomeByCity.get(city.id) ?? 0,
+      maritimeTradeIncomeByCity.get(city.id) ?? 0,
+      ownerCivByOwnerId.get(city.ownerId),
+    );
 
     // WIRE 2: splitPraca
     // NAPRAWA CACHE/LIVE (Maciej 2026-08-10, znalezisko B) -- ten sam błąd co w
@@ -2711,11 +2710,8 @@ export function advanceCityEconomy(
     // resolves it correctly.
     const udzialBudynki = econCity.podziałPracy.procentBudynki / 100;
     const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
-    if (ctx.maTargowisko && walutaOdkryta) {
-      const pieniadzZPracyPoSplit = Math.floor(doPuli * params.targowiskoPracaMnoznik);
-      yld.pieniadz = yld.pieniadz - yld.pieniadzZPracy + pieniadzZPracyPoSplit;
-      yld.pieniadzZPracy = pieniadzZPracyPoSplit;
-    }
+    // doPuli is credited to the empire pool below. Work-to-tax conversion is a
+    // separate, explicit owner action, so this city tick never monetizes it.
 
     // WIRE 4: oblezenie -- zegar glodu
     // Gdy city.oblegane === true: pomijamy dochod zywnosci z pol, odejmujemy zuzycie.
@@ -2740,10 +2736,10 @@ export function advanceCityEconomy(
       const tick: CityEconomyTick = {
         cityId:            city.id,
         ownerId:           city.ownerId,
+        ownerEra,
         praca:             yld.praca,
-        // pieniadzPoWealth JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych, wpiety w
-        // yld.pieniadz powyzej) -- nie dodawac pieniadzZTras ponownie (podwojne liczenie).
-        pieniadz:          pieniadzPoWealth,
+        // Route proceeds are added after local tax modifiers and Wealth.
+        pieniadz:          pieniadzPoWealth + pieniadzZTras,
         pieniadzBrutto:    yld.pieniadz,
         zywnoscNetto:      0,           // brak dochodu podczas oblezenia
         nauka:             yld.nauka,
@@ -2812,7 +2808,7 @@ export function advanceCityEconomy(
     });
 
     const ownerEpoka = ownerEra;
-    const mpMults = civManpowerMults(ownerBonusy);
+    const mpMults = civManpowerMatrixMults(ownerCivKey, undefined, civManpowerMults(ownerBonusy));
     if (city.manpower === undefined) {
       city.manpower = cityManpowerMax(city.population, ownerEpoka, mpMults.maxMult);
     }
@@ -2826,14 +2822,14 @@ export function advanceCityEconomy(
 
     magazynPoTurze = city.wzrostUlamkowy ?? 0;
 
-    // pieniadzPoWealth JUZ zawiera dochod z tras -- patrz komentarz przy jego wyliczeniu wyzej.
-    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
+    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth + pieniadzZTras);
 
     const tick: CityEconomyTick = {
       cityId:            city.id,
       ownerId:           city.ownerId,
+      ownerEra,
       praca:             yld.praca,
-      pieniadz:          pieniadzPoWealth,
+      pieniadz:          pieniadzPoWealth + pieniadzZTras,
       pieniadzBrutto:    yld.pieniadz,
       zywnoscNetto:      foodBal.bilansLokalny,
       nauka:             yld.nauka,
@@ -2902,7 +2898,7 @@ export function advanceCityEconomy(
     if (builtIds.length === 0) continue;
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
-      : (city.ownerId === 0 ? playerEra : 1);
+      : legacyEraForOwner(city.ownerId, playerEra);
     const ownerTech = resolveOwnerTech
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
@@ -2956,6 +2952,15 @@ export function advanceCityEconomy(
       manpowerHeal.getMaxHp,
       undefined,
       manpowerHeal.onUnitHpChanged,
+      (oid: number) => {
+        const key = ownerCivByOwnerId.get(oid);
+        if (!key) return undefined;
+        return {
+          mp_regen_proc: civMatrixParam(key, 'mp_regen_proc'),
+          mp_max_proc: civMatrixParam(key, 'mp_max_proc'),
+          mp_koszt_jednostki_proc: civMatrixParam(key, 'mp_koszt_jednostki_proc'),
+        };
+      },
     );
   }
 

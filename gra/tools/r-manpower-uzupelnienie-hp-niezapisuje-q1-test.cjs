@@ -63,16 +63,58 @@ ok(multiCity.manpower === 0, 'proporcjonalny tick wydaje całą dostępną pulę
 
 // Proporcja ma dotyczyć brakującego HP, nie kolejności tablicy: przy dwóch
 // różnych maxHP każda jednostka dostaje połowę ograniczonej puli MP, więc
-// większa jednostka odzyskuje proporcjonalnie więcej HP.
-const weightedCity = { id: 'c3', ownerId: 0, population: 10, manpower: 300, q: 0, r: 0, oblegane: false };
-const smallUnit = { id: 'u4', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 9, r: 9 };
-const largeUnit = { id: 'u5', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 20, hpMax: 200, q: 10, r: 10 };
-const weightedResult = tickManpowerUnitReplenishment(
-  [weightedCity], [largeUnit, smallUnit], 'normal', () => 1, () => [], () => 100,
-);
-ok(weightedResult.healedCount === 2, 'proporcjonalny tick leczy obie jednostki o różnym maxHP');
-ok(smallUnit.hp === 25 && largeUnit.hp === 50, 'proporcjonalny tick dzieli MP wg niedoboru HP, niezależnie od kolejności');
-ok(weightedCity.manpower === 0, 'proporcjonalny tick nie przekracza dostępnej puli MP');
+// większa jednostka odzyskuje proporcjonalnie więcej HP. Uruchamiamy identyczny
+// stan w obu kolejnościach i porównujemy cały wynik domenowy.
+const weightedTemplate = [
+  { id: 'u4', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 9, r: 9 },
+  { id: 'u5', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 20, hpMax: 200, q: 10, r: 10 },
+];
+function runWeighted(order, ownerId = 0) {
+  const weightedCity = { id: 'c3', ownerId, population: 10, manpower: 300, q: 0, r: 0, oblegane: false };
+  const weightedUnits = order.map(unit => ({ ...unit, ownerId }));
+  const ownerEraCalls = [];
+  const ownerBonusCalls = [];
+  const weightedResult = tickManpowerUnitReplenishment(
+    [weightedCity], weightedUnits, 'normal',
+    (resolvedOwnerId) => { ownerEraCalls.push(resolvedOwnerId); return 1; },
+    (resolvedOwnerId) => { ownerBonusCalls.push(resolvedOwnerId); return []; },
+    (_typeId, unit) => unit?.hpMax ?? 100,
+  );
+  const byId = [...weightedUnits].sort((a, b) => a.id.localeCompare(b.id));
+  return {
+    hp: Object.fromEntries(byId.map(unit => [unit.id, unit.hp])),
+    hpMax: Object.fromEntries(byId.map(unit => [unit.id, unit.hpMax])),
+    manpower: weightedCity.manpower,
+    healedCount: weightedResult.healedCount,
+    totalMpSpent: weightedResult.totalMpSpent,
+    ownerEraCalls,
+    ownerBonusCalls,
+  };
+}
+const weightedForward = runWeighted(weightedTemplate);
+const weightedReverse = runWeighted([...weightedTemplate].reverse());
+const weightedMajorAiForward = runWeighted(weightedTemplate, 1);
+const weightedMajorAiReverse = runWeighted([...weightedTemplate].reverse(), 1);
+const weightedDomain = ({ ownerEraCalls: _ownerEraCalls, ownerBonusCalls: _ownerBonusCalls, ...domain }) => domain;
+ok(weightedForward.healedCount === 2, 'proporcjonalny tick leczy obie jednostki o różnym maxHP');
+ok(weightedForward.hp.u4 === 25 && weightedForward.hp.u5 === 50, 'proporcjonalny tick dzieli MP wg niedoboru HP');
+ok(weightedForward.manpower === 0 && weightedForward.totalMpSpent === 300,
+  'proporcjonalny tick nie przekracza dostępnej puli MP');
+ok(JSON.stringify(weightedForward) === JSON.stringify(weightedReverse),
+  'proporcjonalny tick jest niezależny od kolejności jednostek');
+console.log(`[owner-parity] ownerId=0 human ${JSON.stringify(weightedDomain(weightedForward))} vs ownerId=1 major-AI ${JSON.stringify(weightedDomain(weightedMajorAiForward))}`);
+ok(weightedForward.ownerEraCalls.length === 1 && weightedForward.ownerEraCalls[0] === 0
+  && weightedForward.ownerBonusCalls.length === 1 && weightedForward.ownerBonusCalls[0] === 0,
+  'weighted path calls both owner resolvers for ownerId=0');
+ok(weightedMajorAiForward.ownerEraCalls.length === 1 && weightedMajorAiForward.ownerEraCalls[0] === 1
+  && weightedMajorAiForward.ownerBonusCalls.length === 1 && weightedMajorAiForward.ownerBonusCalls[0] === 1,
+  'weighted path calls both owner resolvers for major-AI ownerId=1');
+ok(JSON.stringify(weightedDomain(weightedForward)) === JSON.stringify(weightedDomain(weightedMajorAiForward)),
+  'weighted result is identical for ownerId=0 and major-AI ownerId=1');
+ok(JSON.stringify(weightedDomain(weightedReverse)) === JSON.stringify(weightedDomain(weightedMajorAiReverse)),
+  'weighted reverse-order result remains identical for ownerId=0 and major-AI ownerId=1');
 
+try { fs.unlinkSync(entry); } catch {}
+try { fs.unlinkSync(bundle); } catch {}
 console.log(`[r-manpower-uzupelnienie-hp-niezapisuje-q1-test] ${pass} OK, ${fail} FAIL`);
 process.exit(fail > 0 ? 1 : 0);

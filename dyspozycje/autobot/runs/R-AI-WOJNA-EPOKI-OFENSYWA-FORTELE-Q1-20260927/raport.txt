@@ -1,0 +1,41 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-AI-WOJNA-EPOKI-OFENSYWA-FORTELE-Q1-20260927
+GOAL: Po wybuchu wojny wymuszonej AI ma konsolidować dostępną armię i prowadzić ją przeciw miastom celu; obrońca ma reagować na napastnika; próg dwóch miast pozostaje istniejącą regułą.
+
+DIAGNOZA KROKU 0:
+- `shouldEndForcedWarByCityCount` w `gra/src/game/forced-war-common.ts` kończy wojnę, gdy `capturedByAttacker >= threshold` albo `capturedByDefender >= threshold`; wywołania w `gra/src/main.ts` przekazują `WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE`, którego wartość wynosi 2.
+- `main.ts` poprawnie utrzymuje osobne rejestry aktywnych par Brązu, Kamienia i Żelaza oraz liczniki przejęć/strat. Limit czasu Kamienia/Brązu i istniejące rozstrzyganie pokoju pozostały nietknięte.
+- `gra/src/game/ai.ts` miał ogólną koncentrację armii (`planArmyConcentration` i `planArmyFrontMerge`), ale nie otrzymywał informacji o aktywnej wojnie wymuszonej. W efekcie wybór miasta odbywał się jak dla zwykłej ekspansji, a konsolidacja mogła być ograniczana liczbą zwykłych frontów.
+- Istniejący mechanizm fizycznego grupowania bazuje na klastrach pozycji i `stackGroupId`; ta karta rozszerza istniejący planista, bez budowania równoległego systemu armii.
+
+ZMIANY:
+- `gra/src/game/ai.ts`
+  - dodano opcjonalną dyrektywę `AITurnOpts.forcedWar` z rolą napastnika/obrońcy i epoką;
+  - napastnik wojny wymuszonej wymusza docelowo jeden klaster polowy (`targetClusterCount: 1`) i wykorzystuje istniejący plan koncentracji/front-merge;
+  - napastnik wybiera deterministycznie najbliższe miasto aktywnego przeciwnika i nie ogranicza marszu do zwykłego promienia ekspansji; po zdobyciu miasta kolejna tura wybiera pozostałe miasto;
+  - ataki jednostkowe i wejście na miasto podczas tej kampanii są kierowane na właściciela aktywnej pary;
+  - obrońca kieruje wolne jednostki do najbliższego wykrytego napastnika, zamiast pozostawać wyłącznie na patrolu.
+- `gra/src/main.ts`
+  - w pętli AI zbudowano dyrektywę z aktywnych rejestrów Brązu/Kamienia/Żelaza i przekazano ją do `decideAITurn`; rejestry, liczniki i warunki końca wojny nie zostały zmienione.
+- `gra/tools/ai-ofensywa-wojna-epoki-test.cjs`
+  - nowy test kontraktowy i żywa symulacja napastnika, obrońcy oraz progu dwóch miast.
+
+ETAPY:
+- A: UKOŃCZONY — wykorzystano istniejące planowanie koncentracji i front-merge, domyślnie jeden klaster dla aktywnej ofensywy.
+- B: UKOŃCZONY — aktywna para dostarcza cel właściciela, marsz obejmuje miasta także poza zwykłym promieniem ekspansji, a istniejący licznik dwóch miast pozostaje źródłem zakończenia wojny.
+- C: ODŁOŻONY — brak osobnego wyboru forteli (podział główna+mniejsza, okrążenie, podstęp, dwa fronty). Wymaga osobnej karty, aby nie osłabić priorytetu konsolidacji i nie zwiększać ryzyka regresji.
+
+TESTY:
+- `npm run typecheck` w `gra/` — PASS.
+- `node tools/ai-ofensywa-wojna-epoki-test.cjs` — 7 passed, 0 failed.
+- `node tools/army-concentration-test.cjs` — 55 passed, 0 failed.
+- Pełny glob `node tools/forced-war-*.cjs` uruchomiony, ale zatrzymany po długim przebiegu testów live; wcześniejsze zakończone pliki raportowały PASS, a mutacyjny probe celowo raportował czerwone bramki dla zmienionego źródła. Nie używam globu jako dowodu pełnego PASS.
+- `node tools/forced-war-player-target-live-test.cjs` — PASS, 12/12; Chromium/Vite live potwierdził realny trigger wojny AI→gracz, wpis DOW w DOM/dzienniku oraz zero console.error/pageerror.
+- `git diff --check` — PASS.
+- Smoke Chromium — PASS przez istniejący test live z realnym przejściem tury i asercjami DOM; osobny screenshot nie był potrzebny do tej zmiany planisty.
+
+BLOKADY: brak technicznej blokady. Pełny zestaw live forced-war był długotrwały; wynik końcowy globu nie został użyty jako PASS.
+RUNDY: 1/5
+NASTĘPNY KROK: Evaluator powinien niezależnie zweryfikować aktywną dyrektywę w pętli main.ts, uruchomić nowe testy i zdecydować o osobnej karcie Etapu C oraz smoke Chromium.
+DEPLOY/PUSH: NIE WYKONANO

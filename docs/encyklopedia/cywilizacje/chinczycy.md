@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Chińczycy** — dystans + kawaleria. Jednostka unikalna: **Kusznik (lepszy łucznik)** [NIEAKTUALNE — brak w units.json, 2026-07-23; civs.json nadal wymienia „Kusznik" jako ikoniczny zamiennik, gra buduje bazowego Łucznika, bonus +20% działa dalej przez `bonusy[]` — patrz `STAN-PRACY-HANDOFF.md` §8/§9 i `DRZEWKO-TECH-FIX.md`]. Religia: Konfucjanizm / Taoizm.
+**Chińczycy** — dystans + kawaleria. Jednostki specjalne według rosteru: **Jeździec chiński, Halabardnik Shang, Rydwan Shang**. Religia: Konfucjanizm / Taoizm.
 
 ---
 
@@ -24,25 +24,18 @@
 **Chińczycy** to typ cywilizacji dostępny w wersji 1.0. Charakter: *dystans + kawaleria*.
 
 **Epoki startowe w kreatorze:** Kamień, Brąz, Żelazo.
-**Jednostka specjalna:** Kusznik (lepszy łucznik) [NIEAKTUALNE — brak w units.json, 2026-07-23; realnie budowany jest bazowy Łucznik, bonus liczbowy zostaje].
+**Zamienniki według rosteru:** Jeździec chiński, Halabardnik Shang, Rydwan Shang
 **Religia państwa:** Konfucjanizm / Taoizm.
 **Przykładowe miasta w klastrze:** Qin, Qi, Chu, Jin, Yan….
 **Władcy (imiona per epoka):** Kamień — Huang Di · Brąz — Yu Wielki · Żelazo — Qin Shi Huang · Antyk — Han Wudi.
 
-**Bonus startowy:** lepsi łucznicy (+Atak/zasięg) i lepsza konnica (+Uderzenie).
-
-**Trzy linie bonusów (macierz):**
-- Kusznik: +20% ataku i zasięgu łuczników/kuszników (przewaga dystansowa) [NIEAKTUALNE — jednostka Kusznik brak w units.json, 2026-07-23; bonus nadal działa na Łucznika]
-- Konnica stepowa: +15% uderzenia kawalerii przy szarży
-- Kusznik = silniejszy łucznik z kuszą; większy zasięg i przebicie pancerza [NIEAKTUALNE — brak w units.json, 2026-07-23]
-
-**Słabsza strona (balans):** słabsza piechota szturmowa wręcz (nacisk na dystans i konnicę).
+**Bonusy cywilizacji:** Obowiązujące bonusy i modyfikatory cywilizacji wynikają z macierzy parametrów. Dawne bonusy opisowe nie są doliczane.
 
 **Profil AI (skala 0–9):** agresja 2/9 — niska.
 
 **Strategia dla gracza:** dopasuj rozwój do mocnych stron typu — handlowe typy buduj porty i suwak złota; wojskowe — wczesną armię i podbój miast-państw w klastrze.
 
-**Powiązane hasła:** [[Klaster miast-państw]] · [[Jednostki unikalne]] · [[Kusznik]] [NIEAKTUALNE — brak w units.json, 2026-07-23; karta jednostki przeniesiona do `jednostki/_archiwum/kusznik.md`]
+**Powiązane hasła:** [[Klaster miast-państw]] · [[Jednostki unikalne]] · [[Jeździec chiński]]
 
 ---
 

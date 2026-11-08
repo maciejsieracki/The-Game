@@ -1,0 +1,15 @@
+
+-- A. throughputFallback bazowe (DEFAULT_CONVERTER_RECIPES) --
+
+-- B. econ-params.json: wartosci realne, wszystkie trudnosci --
+
+-- C. converterThroughputForEra: skalowanie Cegielnia/Garncarnia, Odlewnie plaskie, brzegi --
+
+-- D. Regresja: dowod, ze scaling realnie zmienia produkcje wzgledem bazy --
+
+-- E. advanceCityEconomy: PARYTET AI (gracz era1, AI era3), Cegielnia/Garncarnia skaluja, Odlewnia plaska --
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=18 landSea=140 relief=115 coast=20 riversMain=1927 riversFill=1171 forest=5 deposits=17 starts=92 total=3512
+
+converter-era-scaling-test: 87 passed, 0 failed
+EXIT=0

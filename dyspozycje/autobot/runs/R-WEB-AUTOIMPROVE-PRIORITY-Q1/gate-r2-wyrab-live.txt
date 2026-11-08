@@ -1,0 +1,53 @@
+PASS: [1] JSON meta.nazwa dla "wyrab" == "Wycinka"
+PASS: [1] panel budowy (zywy DOM) zawiera tekst "Wycinka"
+PASS: [1] panel budowy (zywy DOM) NIE zawiera "Wyrąb"
+PASS: [2] improvements.ts static label dla "wyrab" == "Wycinka" (zmieniona zgodnie z allowlista)
+PASS: [2] meta.nazwa (JSON, zawsze wygrywa w listTypes()) != null -- staticEntry.label jest martwy dla "wyrab"
+PASS: [10] karta ulepszenia "Farma" zbudowana zywa sciezka produkcyjna
+PASS: [10] ZYWY DOM: wiersz "Warunek" karty Farma istnieje i wskazuje "Wycinka"
+PASS: [10] ZYWY DOM: wiersz "Warunek" NIE zawiera juz "wyrąb"
+PASS: [10] ZYWY DOM: CALA karta Farma bez "wyrąb" (dowod, ze `uwagi` -- zapis decyzyjny z "najpierw wyrąb" -- faktycznie NIE jest renderowane)
+PASS: [10] zrzut PNG karty Farma zapisany (dowod R5-K1)
+       zrzut: /home/user/The-Game/.claude/worktrees/wf_57447608-62f-3/dyspozycje/autobot/runs/P-ULEPSZENIA-WYRAB-WYCINKA-NAZWA-Q1/dowody/r5-karta-farma-warunek.png
+PASS: brak bledow konsoli/pageerror
+PASS: [3] main.ts: hint zaznaczenia akcji wycinki zawiera "Wycinka" (nie "Wyrąb")
+PASS: [3] main.ts: hint po zbiorze Drewna zawiera "Wycinka" (nie "Wyrąb") -- pokazuje FAKTYCZNIE zapisana (przycieta do capu) ilosc drewnoCredited, nie surowa drewnoCredit (R-WYCINKA-DREWNO-50-I-KOMUNIKAT-CAP-Q1)
+PASS: [3] main.ts: log konsoli AI zawiera "Wycinka" (opcjonalne, dla spojnosci)
+PASS: [4] improvement-build.ts: "najpierw wyrąb las" (czasownik) NIETKNIĘTY
+PASS: [5] bundle/encyklopedia: wpis "ulepszenia/wyrab" istnieje (klucz NIEZMIENIONY)
+PASS: [5] bundle/encyklopedia: title == "Wycinka"
+PASS: [5] bundle/poradnik/05-budowa-mapa: rozdzial obecny
+PASS: [5] bundle/poradnik/05-budowa-mapa: zawiera "Wycinka"
+PASS: [5] bundle/poradnik/05-budowa-mapa: NIE zawiera "Wyrąb"
+PASS: [5] bundle/poradnik/28-katalog-ulepszen: rozdzial obecny
+PASS: [5] bundle/poradnik/28-katalog-ulepszen: zawiera "Wycinka"
+PASS: [5] bundle/poradnik/28-katalog-ulepszen: NIE zawiera "Wyrąb"
+PASS: [5] bundle (CALY, obie sekcje): zero wystapien "Wyrąb"
+PASS: [6] CIVPEDIA (cala tresc bundla): zero wystapien "wyrab" w roli NAZWY ULEPSZENIA -- kazde trafienie musi byc na liscie uzyc pospolitych
+PASS: [6] sanity: skan objal realna tresc civpedii i znalazl dozwolone uzycia pospolite (asercja nie jest pusta)
+PASS: [6] bundle/poradnik/02-mapa-swiata: nazwa ulepszenia w wyliczeniu == "wycinka"
+PASS: [6] bundle/poradnik/07-miasto-budowa-rekrutacja: nazwa ulepszenia w wyliczeniu == "wycinka"
+PASS: [6] bundle/poradnik/05-budowa-mapa: nazwa ulepszenia w wyliczeniu == "wycinka"
+PASS: [6] bundle/poradnik/05-budowa-mapa: nazwa ulepszenia w wyliczeniu == "wycinka"
+PASS: [7] blok [6] faktycznie skanuje cala tresc civpedii (pokrycie >= 99% znakow tresciowych bundla, nie same tytuly)
+PASS: [7] skan objal obie sekcje bundla w realnej skali (> 100 000 znakow)
+PASS: [8] terrain-improvements.json (KOMPLET pol renderowanych graczowi): ZERO wystapien "wyrab" w roli nazwy ulepszenia -- zadnych wyjatkow
+PASS: [8] farma.warunek (wiersz "Warunek" karty) wskazuje ulepszenie "Wycinka" (R5-1)
+PASS: [8] farma.uwagi (zapis decyzyjny, NIE renderowany) NIETKNIETY -- zachowuje historyczne "najpierw wyrąb"
+PASS: [8] sanity: skan objal realne pola kart (nazwa wpisu "wyrab" == "Wycinka", historia obecna)
+PASS: [8b] kazde pole z POLA_GRACZA istnieje realnie w terrain-improvements.json (literowka/przemianowanie pola oslepiloby skan zamiast go wywalic)
+PASS: [9] przypadek testowy stoi w promieniu 40 znakow od dozwolonej frazy (inaczej nie testowalby niczego)
+PASS: [9] KOTWICZENIE DZIALA: nazwa ulepszenia w promieniu 40 znakow od dozwolonej frazy JEST wykrywana (dokladnie 1 trafienie -- nazwa, nie czasownik)
+PASS: [9] kontrola negatywna: sama dozwolona fraza (bez nazwy obok) NIE jest zglaszana -- whitelista nadal dziala
+PASS: [9] kontrola negatywna: nazwa ulepszenia BEZ dozwolonej frazy w poblizu jest zglaszana
+PASS: [11] gra/src (SKAN NEGATYWNY, wszystkie .ts/.tsx poza komentarzami): ZERO wystapien nazwy ulepszenia "Wyrąb" w stringach -- kazde trafienie musi byc na jawnej liscie uzyc pospolitych
+PASS: [11] sanity: skan objal wszystkie trzy znane, sklasyfikowane uzycia pospolite (asercja nie jest pusta ani slepa)
+PASS: [11b] skan [11] przeczytal realne drzewo zrodel (>= 300 plikow .ts/.tsx)
+PASS: [11b] skan [11] objal realna objetosc kodu poza komentarzami (> 1 000 000 znakow)
+PASS: [11b] skan [11] objal wszystkie pliki niosace znane stringi gracza
+PASS: [11c] kontrola negatywna: dozwolona fraza sama w sobie NIE jest zglaszana
+PASS: [11c] NIETAUTOLOGICZNOSC: nazwa ulepszenia w nowym stringu gracza JEST zgloszona
+PASS: [11c] KOTWICZENIE: nazwa ulepszenia tuz obok dozwolonej frazy JEST wykrywana (dokladnie 1 trafienie, pod indeksem nazwy -- nie czasownika)
+
+[wyrab-wycinka-nazwa-live-test] 49 pass, 0 fail
+EXIT=0

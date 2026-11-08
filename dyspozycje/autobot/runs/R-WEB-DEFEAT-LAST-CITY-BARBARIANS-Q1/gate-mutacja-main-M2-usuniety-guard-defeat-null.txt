@@ -1,0 +1,13 @@
+[defeat-last-city-live] vite build do katalogu tymczasowego: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/bDTLU/outm
+
+-- S3 (kontrola): dwa miasta, bitwa barbarzyńców zdobywa jedno --
+  OK  S3 gracz ma 2 miasta przed utratą
+  OK  S3 bitwa uruchomiona
+  OK  S3 gracz stracił jedno miasto w bitwie (zostało 1)
+  OK  S3 BRAK ekranu przegranej (gracz ma jeszcze miasto)
+ FAIL S3 gameOver=false
+ FAIL S3 endTurn przesunął turę, gra trwa -- {"turnBefore":1,"turnAfter":1,"overlay":false,"gameOver":true}
+ FAIL C. zero pageerror / console.error w scenariuszach -- ["console.error: [TheGame] Uncaught TypeError: Cannot read properties of null (reading 'rodzaj') @file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/bDTLU/outm/index.html?playtest=mapa:30746:75353","console.error: [Diag:window.error] Uncaught TypeError: Cannot read properties of null (reading 'rodzaj') @file:///tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/bDTLU/outm/index.html?playtest=mapa:30746","pageerror: Cannot read properties of null (reading 'rodzaj')"]
+
+[defeat-last-city-live] 4 passed, 3 failed
+EXIT=1

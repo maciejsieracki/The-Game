@@ -1,0 +1,14 @@
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=2 terrain=238 landSea=2475 relief=3472 coast=1296 riversMain=10 riversFill=231 forest=151 deposits=343 starts=1050 total=9268
+[pangea 4242] sites=56 onPolar=0 r<=1=0 r<=2=0 
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=195 landSea=1994 relief=3016 coast=1209 riversMain=6 riversFill=210 forest=117 deposits=232 starts=972 total=7953
+[pangea 7777] sites=56 onPolar=0 r<=1=0 r<=2=0 
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=8 terrain=126 landSea=1483 relief=2449 coast=417 riversMain=6 riversFill=155 forest=104 deposits=168 starts=835 total=5751
+[wyspy 4242] sites=56 onPolar=0 r<=1=2 r<=2=4 aiStart@62,106:d2:laka aiStart@66,107:d1:laka aiStart@52,106:d2:laka aiStart@23,108:d1:wzgorza
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=4 terrain=107 landSea=1453 relief=1875 coast=300 riversMain=6 riversFill=173 forest=106 deposits=157 starts=924 total=5105
+[wyspy 7777] sites=56 onPolar=0 r<=1=4 r<=2=6 aiStart@72,9:d1:wzgorza aiStart@25,106:d2:laka aiStart@29,107:d1:laka aiStart@26,112:d1:wzgorza aiStart@52,107:d1:rownina aiStart@57,107:d2:laka
+SUMA sites=224 (AI/MP=220) onPolar=0 (AI/MP=0) r<=1=6 r<=2=10
+EXIT=0

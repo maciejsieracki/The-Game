@@ -131,15 +131,19 @@ const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
 // the function body past this regex's old limit (10321 chars), breaking THIS test even though
 // nothing about it functionally regressed -- the limit was an arbitrary safety margin, not a
 // real constraint.
+// R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1 (ASERCJA PRZESTARZALA, klasa A): buildHudState
+// przyjmuje `ownerId` (domyslnie ME()) i liczy graczem `isMe(c.ownerId)` zamiast
+// dosłownego `ownerId === 0`. Zachowanie dla fotela 0 jest identyczne; test pinuje
+// obecna, zamierzona forme (stara forma nadal akceptowana dla zgodnosci).
 const buildHudStateMatch = mainTsSrc.match(
-  /function buildHudState\(\): HudState \{[\s\S]{0,20000}?\n {4}\}/,
+  /function buildHudStateRaw\((?:ownerId: number = ME\(\))?\): HudState \{[\s\S]{0,20000}?\n {4}\}/,
 );
-check('main.ts zawiera funkcje buildHudState(): HudState', buildHudStateMatch !== null);
+check('main.ts zawiera funkcje buildHudStateRaw(): HudState (FALA 525: buildHudState = cienki wrapper)', buildHudStateMatch !== null);
 const buildHudStateBody = buildHudStateMatch ? buildHudStateMatch[0] : '';
 
 check(
-  'buildHudState: `const pc = cities.filter(c => c.ownerId === 0);` (gracz = ownerId 0)',
-  /const pc = cities\.filter\(c => c\.ownerId === 0\);/.test(buildHudStateBody),
+  'buildHudState: `const pc = cities.filter(...)` po graczu (isMe(c.ownerId) == gracz; dawniej ownerId === 0)',
+  /const pc = cities\.filter\(c => (?:isMe\(c\.ownerId\)|c\.ownerId === 0)\);/.test(buildHudStateBody),
 );
 check(
   'buildHudState: `const pop = pc.reduce((s, c) => s + c.population, 0);` (suma populacji)',
@@ -179,20 +183,20 @@ check(
   /label: 'Obywatele'/.test(rightChipsBody),
 );
 check(
-  'Chip \'Obywatele\': value: String(s.ludnosc) -- CZYTA pole HudState, nie liczy sam',
-  /label: 'Obywatele',\s*\n\s*value: String\(s\.ludnosc\)/.test(rightChipsBody),
+  'Chip \'Obywatele\': value z s.ludnosc (...cn(s.ludnosc, ...), skrot k/M) -- CZYTA pole HudState, nie liczy sam',
+  /label: 'Obywatele',\s*\n\s*\.\.\.cn\(s\.ludnosc,/.test(rightChipsBody),
 );
 check(
   'Chip \'Obywatele\': act: \'ludnosc\' (klik otwiera panel MIASTA/populacja)',
   /label: 'Obywatele',[\s\S]{0,200}?act: 'ludnosc',/.test(rightChipsBody),
 );
 check(
-  'Chip \'Miasta\': value: String(s.osiedla) NIEZMIENIONE -- nadal liczba miast, nie populacja',
-  /label: 'Miasta',\s*\n\s*value: String\(s\.osiedla\)/.test(rightChipsBody),
+  'Chip \'Miasta\': value z s.osiedla (...cn(s.osiedla, ...)) NIEZMIENIONE ZRODLO -- nadal liczba miast, nie populacja',
+  /label: 'Miasta',\s*\n\s*\.\.\.cn\(s\.osiedla,/.test(rightChipsBody),
 );
 check(
   'Chip \'Miasta\' i chip \'Obywatele\' to DWA ROZNE pola HudState (s.osiedla != s.ludnosc jako expr)',
-  rightChipsBody.includes("value: String(s.osiedla)") && rightChipsBody.includes("value: String(s.ludnosc)"),
+  rightChipsBody.includes("...cn(s.osiedla,") && rightChipsBody.includes("...cn(s.ludnosc,"),
 );
 console.log('');
 

@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Inkowie** — nauka/kultura + elitarna piechota. Jednostka unikalna: **Chaska (maczuga gwiaździsta) + Królewska Gwardia (elita)**. Religia: Kult Słońca Inti.
+**Inkowie** — nauka/kultura + elitarna piechota. Jednostki specjalne według rosteru: **Wojownik z maczugą (Chaska), Wojownik z toporem, Procarz (Huaracoc), Oszczepnik (Estólica), Gwardzista z champi**. Religia: Kult Słońca Inti.
 
 ---
 
@@ -24,19 +24,12 @@
 **Inkowie** to typ cywilizacji dostępny w wersji 1.0. Charakter: *nauka/kultura + elitarna piechota*.
 
 **Epoki startowe w kreatorze:** Kamień, Żelazo.
-**Jednostka specjalna:** Chaska (maczuga gwiaździsta) + Królewska Gwardia (elita).
+**Zamienniki według rosteru:** Wojownik z maczugą (Chaska), Wojownik z toporem, Procarz (Huaracoc), Oszczepnik (Estólica), Gwardzista z champi
 **Religia państwa:** Kult Słońca Inti.
 **Przykładowe miasta w klastrze:** Cusco, Machu Picchu, Ollantaytambo, Pisac, Sacsayhuamán….
 **Władcy (imiona per epoka):** Kamień — Manco Cápac · Brąz — Wirakocza Inka · Żelazo — Pachacuti · Antyk — Túpac Inca Yupanqui.
 
-**Bonus startowy:** +Nauka/Kultura (kalendarz); bonus w lesie/dżungli.
-
-**Trzy linie bonusów (macierz):**
-- Kalendarz słoneczny: +15% produkcji punktów nauki (astronomia i agronomia)
-- Teren górski: +20% walki w lesie i dżungli (znajomość terenu)
-- Chaska (maczuga gwiaździsta) = elitarna piechota; Królewska Gwardia = oddziały prestiżowe
-
-**Słabsza strona (balans):** brak konnicy i rydwanów (brak koni/wołów; §8c) — siła w piechocie i dystansie.
+**Bonusy cywilizacji:** Obowiązujące bonusy i modyfikatory cywilizacji wynikają z macierzy parametrów. Dawne bonusy opisowe nie są doliczane.
 
 **Profil AI (skala 0–9):** agresja 4/9 — umiarkowana.
 

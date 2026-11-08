@@ -1,0 +1,11 @@
+PASS: roundtrip truceUntilTurn dla rozejmu 5 tur
+PASS: roundtrip truceUntilTurn dla rozejmu 10 tur
+PASS: roundtrip truceUntilTurn dla rozejmu 15 tur
+PASS: roundtrip: rozejm obok pokoju w tej samej zapisanej mapie zachowuje obie pary
+PASS: stary zapis bez truceUntilTurn wczytuje się jako brak rozejmu (bez crasha)
+PASS: zapis: snapshot zapisuje diplomacyPairMeta wraz z polami meta (main.ts)
+PASS: odczyt: wczytanie czyści i odtwarza diplomacyPairMeta (main.ts ~42263)
+PASS: reset nowej gry: applyClusterStartPlan czyści diplomacyPairMeta (main.ts ~9714)
+
+8 pass / 0 fail
+EXIT=0

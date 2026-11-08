@@ -1,0 +1,32 @@
+
+--- (A) placeDeposits na syntetycznej siatce [kod bieżący] ---
+  [FAIL] A1: 0 koni na lesie (siatka 50% lasu) :: 670
+  [OK] A2: liczba koni zachowana (=== liczba bez lasu) i wszystkie na Równinie
+  [OK] A3: kontrola — test faktycznie generuje konie
+
+--- (B) prawdziwy generator, Standardowy ---
+GOLDEN_ROW {"wyspy:11":{"horses":66,"forestBefore":36,"noHorse":"3cde04e80dc33094f2d5a4e448d2cb4e","other":"959b494e8f542b952fef9359031f9775"}}
+  [mapa] wyspy:11 horses=66 forest=36 msGen=1238471 msTotal=1241075
+GOLDEN_ROW {"wyspy:42":{"horses":45,"forestBefore":23,"noHorse":"7fe2fade1d240a6210ff37afd711e819","other":"5918ee19a349d5549f113d4b00df270b"}}
+  [mapa] wyspy:42 horses=45 forest=23 msGen=1857456 msTotal=1859369
+GOLDEN_ROW {"wyspy:777":{"horses":37,"forestBefore":26,"noHorse":"f13184c4a44605979b5e35cd72860bb3","other":"97c7fe7b67d4d5ea1004569b341a47f5"}}
+  [mapa] wyspy:777 horses=37 forest=26 msGen=2014833 msTotal=2015339
+GOLDEN_ROW {"wyspy:123":{"horses":34,"forestBefore":22,"noHorse":"ab74f795af701c3a83e274355e688b18","other":"43ea07b67e10a5da4ae9d907181575d4"}}
+  [mapa] wyspy:123 horses=34 forest=22 msGen=2086430 msTotal=2087240
+  wyspy:11 konie=66 naLesie=36 tereny={"rownina":66} rodzaj={"zloze+las":36,"nakladka":30}
+  [FAIL] B1 wyspy:11: 0 koni na lesie :: 36
+  [OK] B2 wyspy:11: konie tylko na równinie/łące
+  wyspy:123 konie=34 naLesie=22 tereny={"rownina":34} rodzaj={"zloze+las":22,"nakladka":12}
+  [FAIL] B1 wyspy:123: 0 koni na lesie :: 22
+  [OK] B2 wyspy:123: konie tylko na równinie/łące
+  wyspy:42 konie=45 naLesie=23 tereny={"rownina":45} rodzaj={"nakladka":22,"zloze+las":23}
+  [FAIL] B1 wyspy:42: 0 koni na lesie :: 23
+  [OK] B2 wyspy:42: konie tylko na równinie/łące
+  wyspy:777 konie=37 naLesie=26 tereny={"rownina":37} rodzaj={"zloze+las":26,"nakladka":11}
+  [FAIL] B1 wyspy:777: 0 koni na lesie :: 26
+  [OK] B2 wyspy:777: konie tylko na równinie/łące
+
+HISTOGRAM przyczyn (Stadnina, miasto przy każdym koniu): {"ODMOWA_kon_pod_lasem(zloze=konie,nakladka=las)":107,"OK_mozna_budowac":75}
+GOLDEN_RECORD {"wyspy:11":{"horses":66,"forestBefore":36,"noHorse":"3cde04e80dc33094f2d5a4e448d2cb4e","other":"959b494e8f542b952fef9359031f9775"},"wyspy:123":{"horses":34,"forestBefore":22,"noHorse":"ab74f795af701c3a83e274355e688b18","other":"43ea07b67e10a5da4ae9d907181575d4"},"wyspy:42":{"horses":45,"forestBefore":23,"noHorse":"7fe2fade1d240a6210ff37afd711e819","other":"5918ee19a349d5549f113d4b00df270b"},"wyspy:777":{"horses":37,"forestBefore":26,"noHorse":"f13184c4a44605979b5e35cd72860bb3","other":"97c7fe7b67d4d5ea1004569b341a47f5"}}
+
+WYNIK: 6 OK, 5 FAIL

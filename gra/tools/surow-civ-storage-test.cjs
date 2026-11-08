@@ -89,14 +89,17 @@ function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want
 // aktualizacji tych asercji (patrz przyznanie tego długu w sekcji F niżej). Teraz baza+bonus
 // oba ×5 (50000 + 500/Magazyn) wg R-EKONOMIA-SUROWCE-SKALA-5X-Q1 -- pinujemy dziesiejszy stan,
 // nie stary dług.
-console.log('\n-- A. ownerResourceCapacityPerType: 50000 + 500/Magazyn (addytywnie) --');
+// R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1 (decyzja wlasciciela 2026-11-05): kazdy Magazyn = +20% BAZY
+// (nie stale +500). cap = baza × (1 + 0,2×N) × mnoznik epoki; addytywnie miedzy Magazynami.
+console.log('\n-- A. ownerResourceCapacityPerType: 50000 × (1 + 0,2/Magazyn) (addytywnie) --');
 const SP = M.DEFAULT_OWNER_STORAGE_PARAMS;
 eq(SP.bazaSurowcePanstwo, 50000, 'default: baza panstwa = 50000 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13, ×5 vs 10000)');
-eq(SP.bonusSurowceNaBudynek, 500, 'default: bonus/Magazyn = 500 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, ×5 vs 100)');
+eq(SP.bonusProcNaBudynek, 0.2, 'default: bonus/Magazyn = 0,2 (+20% bazy, R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1)');
 eq(M.ownerResourceCapacityPerType(0, SP), 50000, '0 Magazynow -> cap 50000');
-eq(M.ownerResourceCapacityPerType(1, SP), 50500, '1 Magazyn -> cap 50500');
-eq(M.ownerResourceCapacityPerType(2, SP), 51000, '2 Magazyny -> cap 51000 (addytywnie, NIE x2)');
-eq(M.ownerResourceCapacityPerType(5, SP), 52500, '5 Magazynow -> cap 52500');
+eq(M.ownerResourceCapacityPerType(1, SP), 60000, '1 Magazyn -> cap 50000×1,2=60000');
+eq(M.ownerResourceCapacityPerType(2, SP), 70000, '2 Magazyny -> cap 50000×1,4=70000 (addytywnie: +20% za Magazyn, NIE ×1,2²=×1,44)');
+eq(M.ownerResourceCapacityPerType(3, SP), 80000, '3 Magazyny -> cap 50000×1,6=80000 (N=3 ×1,6)');
+eq(M.ownerResourceCapacityPerType(5, SP), 100000, '5 Magazynow -> cap 50000×2=100000');
 // nie mnoznik: kontrola jawna roznicujaca addytywny od hipotetycznego mnoznikowego --
 // formula-based, nie hardkoduje liczb, wiec dziala niezaleznie od dokladnych wartosci SP:
 assert(M.ownerResourceCapacityPerType(2, SP) !== SP.bazaSurowcePanstwo * 3 - 1, 'sanity addytywny (nie zbieg okolicznosci)');
@@ -104,7 +107,7 @@ assert(M.ownerResourceCapacityPerType(2, SP) !== SP.bazaSurowcePanstwo * 3 - 1, 
 // loadOwnerStorageParams: real econ-params.json (SUROW-CIV-01 wartosci wlasciciela)
 const paramsNormal = M.loadOwnerStorageParams(econParamsRaw, 'normal');
 eq(paramsNormal.bazaSurowcePanstwo, 50000, 'econ-params.json normal: magazyn_baza_surowce = 50000 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
-eq(paramsNormal.bonusSurowceNaBudynek, 500, 'econ-params.json normal: magazyn_bonus_surowce_na_budynek = 500 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(paramsNormal.bonusProcNaBudynek, 0.2, 'econ-params.json normal: magazyn_bonus_surowce_proc_na_budynek = 0,2 (R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1)');
 const paramsEasy = M.loadOwnerStorageParams(econParamsRaw, 'easy');
 eq(paramsEasy.bazaSurowcePanstwo, 50000, 'econ-params.json easy: 50000 (płaskie, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
 const paramsHard = M.loadOwnerStorageParams(econParamsRaw, 'hard');
@@ -276,10 +279,10 @@ console.log('\n-- E. advanceCityEconomy: cap panstwa + reconcile per owner (grac
   const ai1 = M.foundCityAt(spots[2].q, spots[2].r, 2, cities, map, 'AI1'); cities.push(ai1);
   const ai2 = M.foundCityAt(spots[3].q, spots[3].r, 2, cities, map, 'AI2'); cities.push(ai2);
 
-  // Zasilamy magazyny recznie PRZED tura, ponad cap (50000 + 500x1 magazyn = 50500,
-  // R-EKONOMIA-SUROWCE-SKALA-5X-Q1), zeby sprawdzic reconcile bez zaleznosci od tempa
-  // produkcji terenu. Wartosc 76000 przeskalowana ×100 vs poprzedni pin (760), żeby
-  // nadal komfortowo przekraczac nowy, wiekszy cap.
+  // Zasilamy magazyny recznie PRZED tura, ponad cap (50000 × 1,2 za 1 magazyn = 60000,
+  // R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1), zeby sprawdzic reconcile bez zaleznosci od tempa
+  // produkcji terenu. Wartosc 76000 nadal przekracza cap 60000 (1 Magazyn), wiec reconcile
+  // dalej sie uruchamia.
   p1.surowce = { drewno: 76000 };
   p2.surowce = { drewno: 0 };
   ai1.surowce = { drewno: 76000 };
@@ -300,9 +303,9 @@ console.log('\n-- E. advanceCityEconomy: cap panstwa + reconcile per owner (grac
   const playerTotal = cities.filter(c => c.ownerId === 0).reduce((s, c) => s + (c.surowce.drewno ?? 0), 0);
   const aiTotal = cities.filter(c => c.ownerId === 2).reduce((s, c) => s + (c.surowce.drewno ?? 0), 0);
   const expectedCap = M.ownerResourceCap(cities, builtByCity, 0, data, 'normal');
-  eq(expectedCap, 50500, 'cap panstwa (1 Magazyn, normal): 50000 + 500x1 = 50500 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+  eq(expectedCap, 60000, 'cap panstwa (1 Magazyn, normal): 50000 × 1,2 = 60000 (R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1)');
   const expectedCapAi = M.ownerResourceCap(cities, builtByCity, 2, data, 'normal');
-  eq(expectedCapAi, 50500, 'OWNERID-AGNOSTIC: cap panstwa AI (ownerId=2, 1 Magazyn) TAKI SAM jak gracza = 50500');
+  eq(expectedCapAi, 60000, 'OWNERID-AGNOSTIC: cap panstwa AI (ownerId=2, 1 Magazyn) TAKI SAM jak gracza = 60000');
   assert(playerTotal <= expectedCap, `gracz: suma drewna (${playerTotal}) <= cap panstwa (${expectedCap}) po turze`);
   assert(aiTotal <= expectedCapAi, `AI (ownerId=2): suma drewna (${aiTotal}) <= cap panstwa (${expectedCapAi}) po turze -- MAGAZYNY DZIALAJA DLA AI`);
   assert(aiTotal > 0, 'AI zachowuje surowiec do capu (nie zeruje wszystkiego -- reconcile tylko tnie nadwyzke)');

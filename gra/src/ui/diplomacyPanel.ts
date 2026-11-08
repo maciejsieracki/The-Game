@@ -31,6 +31,8 @@ export type DiploPlayerAction = 'pokoj' | 'wojna' | 'handel';
 export interface DiploRelation {
   /** ownerId rywala (wymagane do akcji gracza). */
   ownerId?: number;
+  /** R-WEB-AGGRESSOR-MARKER-Q1: pozostałe tury aktywnej flagi agresora (doTury - turn, >= 1); brak = bez znacznika. */
+  agresorPozostaleTury?: number;
   /** Nazwa wyświetlana (miasto rywala klastra lub nacja). */
   civ: string;
   /** Miasto-państwo klastra — silnik ustawia flagę; UI formatuje przez display-names. */
@@ -215,6 +217,22 @@ function panelRelTotal(zaufanie: number, respekt: number): number {
   return Math.round(Math.max(0, Math.min(200, zaufanie + respekt)));
 }
 
+/**
+ * R-WEB-AGGRESSOR-MARKER-Q1: znacznik „Agresor (N)" przy nazwie cywilizacji na liście (HUD), N = pozostałe
+ * tury flagi agresora (silnik: doTury - turn; flaga aktywna dla turn < doTury). Brak znacznika, gdy flaga
+ * wygasła/nieustawiona (undefined, < 1, nie-liczba). Tooltip: konsekwencje dyplomatyczne przez N tur.
+ */
+export function agresorBadgeHtml(pozostaleTury: number | undefined): string {
+  if (pozostaleTury === undefined || !Number.isFinite(pozostaleTury)) return '';
+  const n = Math.trunc(pozostaleTury);
+  if (n < 1) return '';
+  const title = 'Wypowiedział wojnę — konsekwencje dyplomatyczne przez ' + n + ' tur';
+  return '<span class="cd-agresor" role="note" aria-label="' + esc('Agresor, pozostało tur: ' + n) + '" title="' + esc(title)
+    + '" style="display:inline-block;margin-left:.4em;'
+    + 'padding:0 .45em;border-radius:3px;background:#7a1f1f;color:#fff;font-size:.72em;'
+    + 'font-weight:700;letter-spacing:.04em;vertical-align:middle;">Agresor (' + n + ')</span>';
+}
+
 function renderRow(rel: DiploRelation, isPlaceholder: boolean): string {
   const btnLabel = 'Porozmawiaj';
   let actionBtn = '';
@@ -245,6 +263,7 @@ function renderRow(rel: DiploRelation, isPlaceholder: boolean): string {
       pennant +
       '<div class="cd-civ-wrap">' +
         '<span class="cd-civ">' + esc(rel.civ) + '</span>' +
+        agresorBadgeHtml(rel.agresorPozostaleTury) +
         tierBadge + stats +
       '</div>' +
       actionBtn +

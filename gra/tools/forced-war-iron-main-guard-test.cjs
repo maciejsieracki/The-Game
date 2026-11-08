@@ -44,7 +44,6 @@ const siegeSurrender = functionSlice(
   'function resolveSiegeSurrender(cityId: string): void {',
   '\n    function endMapSiege(cityId: string): void {',
 );
-const ironSurrenderHook = 'maybeResolveIronForcedWarOnCityCapture(oldOwner, newOwner);';
 
 console.log('R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1 — main.ts + ai.ts guards\n');
 
@@ -79,7 +78,7 @@ check(
 check(
   'guard napastnika (wspólna pętla pre-pass) wyklucza gracza, kopie typu, barbarzyńców, '
     + 'wyeliminowanych i miasta-państwa PRZED zebraniem wasPending Żelaza',
-  /const bronzeTriggeredSubjects: ForcedWarPairingSubject\[\] = \[\];[\s\S]{0,320}?ownerId <= 0\s*\n\s*\|\| typCityCopyOwners\.has\(ownerId\)\s*\n\s*\|\| isBarbarian\(ownerId\)\s*\n\s*\|\| eliminatedOwners\.has\(ownerId\)\s*\n\s*\|\| isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) continue;[\s\S]{0,4200}?const wasPending = ironForceWarPendingOwners\.has\(ownerId\);/.test(main),
+  /const bronzeTriggeredSubjects: ForcedWarPairingSubject\[\] = \[\];[\s\S]{0,1000}?ownerId <= 0\s*\n\s*\|\| typCityCopyOwners\.has\(ownerId\)\s*\n\s*\|\| isBarbarian\(ownerId\)\s*\n\s*\|\| eliminatedOwners\.has\(ownerId\)\s*\n\s*\|\| isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) continue;[\s\S]{0,4200}?const wasPending = ironForceWarPendingOwners\.has\(ownerId\);/.test(main),
 );
 check(
   'kwalifikacja napastnika przechodzi przez isEligibleForIronForcedWar (isMainAiCiv + brak wojny w dowolnej roli)',
@@ -112,17 +111,19 @@ check(
   'gracz dołącza do wspólnej puli triggeredSubjects (na równi z AI) WYŁĄCZNIE gdy sam nie ma '
     + 'dziś żadnej aktywnej wojny wymuszonej ORAZ minął próg tury (R-WOJNA-WYMUSZONA-PROG-TURY-'
     + 'GRACZ-Q1, turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY) -- bez innego specjalnego wykluczania',
-  /const playerCity = cities\.find\(c => c\.ownerId === 0\);\s*\n\s*if \(\s*\n\s*playerCity\s*\n\s*&& turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY\s*\n\s*&& totalActiveForcedWarsByOwner\(0\) === 0\s*\n\s*\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
+  // R-WEB-ERA-WAR-COUNTER-Q1 (5): gracz liczony od STOLICY (capitalCityIdForOwner), fallback pierwsze miasto.
+  /const playerCity = pickPlayerReferenceCity\(cities, capitalCityIdForOwner\(0\), 0\);\s*\n\s*if \(\s*\n\s*playerCity\s*\n\s*&& turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY\s*\n\s*&& totalActiveForcedWarsByOwner\(0\) === 0\s*\n\s*\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
 );
 check(
   'isForcedWarPairBlocked (NAP, blokada pokoju, sojusz) -- ten sam symetryczny predykat dla '
     + 'WSZYSTKICH trzech epok, zastępuje dawne ironBlockedOwnerIds/bronzeBlockedOwnerIds/stoneBlockedOwnerIds',
-  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null;/.test(main),
+  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null\s*\n\s*\|\| isForcedWarRelationBlocked\(pairRelationOfR8\(a, b\)\);/.test(main),
 );
 check(
   'wybór celu (wszystkich trzech epok naraz, w tym Żelaza) przechodzi przez assignForcedWarPairings '
     + 'z isForcedWarPairBlocked i hexDistanceFn: hexDistance',
-  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner,\s*\n\s*\},\s*\n\s*\);/.test(main),
+  // R-WEB-ERA-WAR-COUNTER-Q1: dodana opcja isEraWarExhausted (licznik wojen epoki per cywilizacja).
+  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*pairRelationScore: pairRelationOfR8,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
 );
 check(
   'wynik przydziału Żelaza czytany z forcedWarAssignmentByOwner (nie z usuniętego pickIronForcedWarTargetId w pętli)',
@@ -174,36 +175,21 @@ check(
 );
 
 // ---------------------------------------------------------------------------
-// 6. Auto-pokój po 2 miastach — hak z OBU funnel-i zmiany city.ownerId.
+// 6. R9 (R-WEB-PEACE-RULES-R8R9-Q1): brak auto-pokoju wojny Żelaza po 2 miastach / limicie czasu.
 // ---------------------------------------------------------------------------
+// Jedyna asercja negatywna R9 dla Żelaza. Dowód zachowania (nie tylko tekstu źródła) daje
+// `tools/forced-war-r9-no-auto-end-live-test.cjs` (żywy Chromium: 2 miasta + tura po limicie).
 check(
-  'maybeResolveIronForcedWarOnCityCapture() zdefiniowana w main.ts',
-  /function maybeResolveIronForcedWarOnCityCapture\(oldOwner: number, newOwner: number\): void \{/.test(main),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
 );
 check(
-  'automatyczny pokój po 2 miastach używa cooldownu Żelaza',
-  /function maybeResolveIronForcedWarOnCityCapture[\s\S]{0,1400}shouldEndIronForcedWarByCityCount[\s\S]{0,1400}finalizePeaceTreatyBetween\([\s\S]{0,250}WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR/.test(main),
+  'resolveSiegeSurrender nadal przypisuje city.ownerId = newOwner (funnel kapitulacji bez zmian poza R9)',
+  siegeSurrender.includes('city.ownerId = newOwner;'),
 );
 check(
-  'capture battle funnel rozlicza Żelazo',
-  /applyCityCaptureAfterBattle[\s\S]{0,1000}maybeResolveIronForcedWarOnCityCapture\(oldOwner, atkOwner\);/.test(main),
-);
-check(
-  'siege surrender funnel rozlicza Żelazo PO zmianie city.ownerId',
-  siegeSurrender.includes('city.ownerId = newOwner;')
-    && siegeSurrender.includes(ironSurrenderHook)
-    && siegeSurrender.indexOf(ironSurrenderHook)
-      > siegeSurrender.indexOf('city.ownerId = newOwner;'),
-);
-// UWAGA: świadomie NIE ma tu meta-asercji „usunięcie haka jest wykrywalne" (taka, jaką
-// niesie bramka Kamienia) — jest tautologiczna: `replace(hook,'').includes(hook)` jest
-// fałszem z definicji, więc asercja nie może się zaczerwienić pod żadną mutacją źródła.
-// Dowód nietautologiczności tej bramki robi ZEWNĘTRZNA sonda
-// `tools/forced-war-iron-mutant-probe.cjs`, która czerwieni KAŻDĄ asercję obu bramek
-// Żelaza celowaną mutacją źródła.
-check(
-  'zwykła wojna bez zmian: licznik Żelaza działa tylko dla aktywnej pary wymuszonej',
-  /function maybeResolveIronForcedWarOnCityCapture\(oldOwner: number, newOwner: number\): void \{[\s\S]{0,350}?const st = ironForceWarActiveByPairKey\.get\(pairKey\);\s*\n\s*if \(!st\) return;/.test(main),
+  'zwykła wojna AI↔AI nietknięta: maybeResolveRegularWarOnCityCapture nadal zdefiniowana w main.ts',
+  /function maybeResolveRegularWarOnCityCapture\(oldOwner: number, newOwner: number\): void \{/.test(main),
 );
 check(
   'finalizePeaceTreatyBetween uzbraja odpoczynek Żelaza (cleanupIronForcedWarOnPeace)',
@@ -244,7 +230,7 @@ check(
   'przy awansie do Żelaza (isIronEraEntry) ustawiane jest ironEraEnterTurnByOwner.set(ownerId, turn) '
     + 'OBOK ironForceWarPendingOwners.add(ownerId) -- bez tego próg 25 tur nie ma od czego liczyć '
     + 'dla nowo awansowanych cywilizacji',
-  /isIronEraEntry\(prev, next\)\s*\n\s*&& !isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) \{\s*\n\s*ironForceWarPendingOwners\.add\(ownerId\);[\s\S]{0,400}?ironEraEnterTurnByOwner\.set\(ownerId, turn\);\s*\n\s*\}/.test(main),
+  /isIronEraEntry\(prev, next\)\s*\n\s*&& !isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) \{\s*\n(?:\s*\/\/[^\n]*\n)*\s*(?:if \(isForcedEraWarEnabled\('iron'\)\) )?ironForceWarPendingOwners\.add\(ownerId\);[\s\S]{0,400}?ironEraEnterTurnByOwner\.set\(ownerId, turn\);\s*\n\s*\}/.test(main),
 );
 check(
   'eliminacja ownera sprząta ironEraEnterTurnByOwner.delete(ownerId) OBOK reszty sprzątacza Żelaza',
@@ -269,13 +255,13 @@ check(
 // 8. Zero regresji Kamienia i Brązu — osobne moduły i osobne rejestry.
 // ---------------------------------------------------------------------------
 check(
-  'Kamień i Brąz zachowują własne moduły, rejestry i haki',
+  'Kamień i Brąz zachowują własne moduły i rejestry (przywrócone po R9)',
   main.includes("from './game/forced-war-stone';")
     && main.includes("from './game/forced-war-bronze';")
     && main.includes('stoneForceWarActiveByPairKey')
     && main.includes('bronzeForceWarActiveByPairKey')
-    && main.includes('maybeResolveStoneForcedWarOnCityCapture')
-    && main.includes('maybeResolveBronzeForcedWarOnCityCapture'),
+    && main.includes('stoneForceWarRestUntilByOwner')
+    && main.includes('bronzeForceWarRestUntilByOwner'),
 );
 check(
   'rejestry Żelaza są ROZŁĄCZNE z Kamieniem i Brązem (żadne pole nie jest współdzielone)',

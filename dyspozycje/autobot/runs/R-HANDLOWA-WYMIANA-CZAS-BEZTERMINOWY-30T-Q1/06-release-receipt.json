@@ -1,0 +1,29 @@
+{
+  "task": "R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1",
+  "status": "DEPLOY-ROBOCZA / REMOTE-READBACK-PASS",
+  "sourceBase": "aeecff7194c3a6490cc42fded6b918b7e4b23df5",
+  "sourceCommits": [
+    "5c65b20a Add indefinite 30-turn cyclic trade duration",
+    "f216263d Scope indefinite trade duration to cyclic exchanges"
+  ],
+  "releaseCommit": "401893417f2a47545c44ef5bba168dc10d0fcf31",
+  "remoteMain": "401893417f2a47545c44ef5bba168dc10d0fcf31",
+  "bundle": {
+    "path": "gra-robocza/Gra-ROBOCZA.html",
+    "md5": "29022be80b95e838a861a8ea70e8a915",
+    "sha256": "f0177a6469973e498389fa9b264f0287e9db5dff01f06487dac0d16a7bff2b97",
+    "sizeBytes": 70031368,
+    "remoteReadback": "byte-identical"
+  },
+  "manifestAndStart": "HTTP 200; byte-identical to local files",
+  "checks": {
+    "typecheck": "PASS",
+    "cyclicTradeDomain": "53/53 PASS",
+    "durationUI": "12/12 PASS",
+    "proposalSuite": "186/188; both failures reproduced at baseline",
+    "viteBuild": "PASS; 917 modules",
+    "roboczaVerifier": "VERIFY OK; stamp self-reference warning only",
+    "bootSmoke": "PASS; canvas and render frame"
+  },
+  "finalControl": "PASS-WITH-NOTES"
+}

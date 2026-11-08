@@ -1,0 +1,23 @@
+
+-- A. magazynEraMultiplier: podwajanie co epoke, brzegi --
+
+-- B. ownerResourceCapacityPerType(magazynCount, params, era) --
+
+-- C. ownerStorageParamsForEra: capBase + capBonusPerMagazyn x N == cap (brak rozjazdu HUD) --
+
+-- D. econ-params.json: magazyn_baza_surowce=50000, magazyn_bonus_surowce_na_budynek=500 (era1, R-EKONOMIA-SUROWCE-SKALA-5X-Q1) --
+
+-- E. SPICHLERZ_EMPIRE_CAP_I/II: 1000/1500 (era1, cytat "z 100 i 150 na 1000 i 1500") --
+
+-- F. advanceEmpireFood + resolveOwnerEra: wklad Spichlerza I/II do capu zywnosci skaluje sie co epoke --
+
+-- G. Regresja: cap RESPEKTUJE era (asercja ktora PADLABY na kodzie sprzed tej zmiany) --
+
+-- H. advanceCityEconomy: PARYTET AI (gracz era1, AI era3) -- magazyn panstwa realnie wiekszy w epoce3 --
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=4 terrain=19 landSea=149 relief=120 coast=21 riversMain=1900 riversFill=1405 forest=5 deposits=17 starts=84 total=3723
+
+-- I. reconcileOwnerResourceCaps: ruda_cyny objeta capem magazynu panstwa --
+
+magazyn-era-scaling-test: 58 passed, 0 failed
+EXIT=0

@@ -1,0 +1,20 @@
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 2 niebronionych, difficulty=easy): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 2 niebronionych, difficulty=normal): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 2 niebronionych, difficulty=hard): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 2 niebronionych, difficulty=pominiety): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 3 niebronionych, difficulty=easy): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 3 niebronionych, difficulty=normal): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 3 niebronionych, difficulty=hard): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 3 niebronionych, difficulty=pominiety): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 4 niebronionych, difficulty=easy): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 4 niebronionych, difficulty=normal): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 4 niebronionych, difficulty=hard): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+  FAIL: 10 (SCIEZKA PRODUKCYJNA, 4 niebronionych, difficulty=pominiety): jednostka REALNIE przemieszcza sie w kierunku celu (got 29 zmian pozycji, 56 heksow) -- to odroznia ruch od komendy bez skutku
+-- 9a / mutacja: cofniecie warunku resetu do wersji rundy 5 --
+-- 9b / mutacja: przywrocenie bramki trudnosci --
+-- 9c / mutacja M2b: zaostrzenie etykietowania spojnych skladowych --
+-- 9e / mutacja: `continue` cofniete do `break` w petli kandydatow --
+-- 9d / mutacja M3: cofniecie fallbacku unitComp === undefined --
+
+barbarzyncy-krazenie-test: 237 passed, 12 failed
+EXIT=1

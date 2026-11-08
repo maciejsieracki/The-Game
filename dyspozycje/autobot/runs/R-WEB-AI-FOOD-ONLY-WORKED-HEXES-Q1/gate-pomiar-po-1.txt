@@ -1,0 +1,27 @@
+{
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "worlds": [
+  "kontynenty",
+  "pangea"
+ ],
+ "TURNS": 60,
+ "foodImprovements": 362,
+ "offWorked": 0,
+ "offPct": 0,
+ "causes": {},
+ "byKey": {
+  "farma": 110,
+  "wyrab": 6,
+  "bydlo": 110,
+  "irygacja": 110,
+  "lodzie_rybackie": 26
+ },
+ "irrigation": 110,
+ "livestock": 110,
+ "avgDecideMsPerTurn": 13.61
+}
+EXIT=0

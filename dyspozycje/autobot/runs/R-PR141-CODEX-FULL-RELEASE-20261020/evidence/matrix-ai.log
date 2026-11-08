@@ -1,0 +1,6 @@
+--- approved matrix profile categories move actual production selection ---
+--- old archetype numeric bonuses neither replace nor stack with matrix values ---
+--- generic difficulty and production eligibility remain active ---
+--- unknown or missing diplomacy owner does not borrow Greek matrix behavior ---
+--- unmatched civ-ai/diplomacy rows cannot restore legacy numeric modifiers ---
+pr141-matrix-only-ai-test: 40 passed, 0 failed

@@ -1,0 +1,26 @@
+diplomacy-war-gates-test
+  OK: NAP blokuje DOW
+  OK: brak NAP — brak blokady
+  OK: pokoj = peace currency
+  OK: trybut_oferta = peace currency
+  OK: rozejm = peace currency (R-WEB-TRUCE-Q1 r3 N2)
+  OK: handel ≠ peace currency
+  OK: goldOnce wykryte
+  OK: zloto w koszyku
+  OK: pusty payload
+  OK: handel+złoto zabronione w wojnie
+  OK: pokoj+złoto dozwolone w wojnie
+  OK: rozejm+złoto dozwolone w wojnie (R-WEB-TRUCE-Q1 r3 N2, mutacja: usunięcie rozejm z zestawu łamie tę linię)
+  OK: rozejm+praca dozwolona w wojnie (N2)
+  OK: handel+złoto OK poza wojną
+  OK: dar złota w pokoju OK (actionId handel jak mode=gift)
+  OK: dar złota w wojnie zablokowany
+  OK: ugoda pokojowa ze złotem w wojnie OK
+  OK: PM roll: NAP blokuje DOW
+  OK: cluster force: pomija CS z NAP (owner 3)
+  OK: decideAIDiplomacy: NAP blokuje cluster force
+  OK: bez NAP — cluster force działa
+  OK: decideAIDiplomacy: NAP blokuje normalny DOW
+
+22 pass, 0 fail
+EXIT=0

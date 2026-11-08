@@ -1,0 +1,37 @@
+{
+  "artifactSha256": "38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692",
+  "saveLoad": {
+    "method": "in-game manual save dialog and in-game load dialog",
+    "savedTurn": 51,
+    "stateBefore": {
+      "turn": 51,
+      "cities": 2,
+      "units": 13
+    },
+    "stateAfter": {
+      "turn": 51,
+      "cities": 2,
+      "units": 13
+    },
+    "match": true,
+    "continuedToTurn": 101
+  },
+  "turnsCompleted": 100,
+  "elapsedMs": 656830,
+  "pageErrors": [],
+  "httpStatusErrors": [
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:8765/favicon.ico"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:8765/favicon.ico"
+    }
+  ],
+  "notes": [
+    "Two GET /favicon.ico requests to the local static server returned 404; the game bundle returned HTTP 200.",
+    "Heap measurements use Chromium performance.memory only and do not cover total process/GPU memory or listener/resource counts.",
+    "Victory check was disabled and player units were pulled home before each turn; visible battles/audience dialogs were handled through normal UI buttons."
+  ]
+}

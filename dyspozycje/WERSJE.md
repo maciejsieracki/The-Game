@@ -1,4 +1,1208 @@
-﻿# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
+## ROBOCZA aa82dabe -- 2026-11-06 -- FALA 545: AI vs gracz: parytet suwaków, dyplomacji i miast-państw (testowa)
+
+- seed suwaków AI w T1 = 60/20/20 (suma 100%, wcześniej 60/60/20 normalizowane do 40/60/0); dyplomacja: jedna reguła skarbca dla gracza i AI (bez podłogi 0 tylko dla AI); miasta-państwa: zakup i zastępowanie jednostek na trudności właściciela jak produkcja; fallback ownerId===0 scalony w legacyEraForOwner
+- Weryfikacja: ai-player-parity-fixes 44/0 (12 asercji pada na bazie), logic-test 213/213, tsc 0, ai-test jak baza; FC PASS-WITH-NOTES
+- Limity: pomiar T2-T10 lustrem pętli suwaków, nie live; poprawka miast-państw tylko asercje statyczne + macierz funkcji; utrzymanie miast-państw w ticku nadal na globalnej trudności (osobny temat R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1)
+
+## ROBOCZA 0bc3db08 -- 2026-11-06 -- FALA 544: AI: rezerwa utrzymania przy zakupie jednostek (Normal 10 tur) (testowa)
+
+- AI nie kupuje jednostek, gdy po zakupie dochód netto złota spadłby poniżej progu lub skarbiec nie pokrywałby ceny + N tur utrzymania; progi w ai-params.json: rezerwa_tur Easy 3 / Normal 10 (decyzja właściciela) / Hard 2, min dochód netto 0/0/-2; reguła wpięta w main.ts (aiPurchaseReserveInputs, przychód z ticku ekonomii); usunięte martwe klucze ai_rush_jednostka_*
+- Weryfikacja: ai-purchase-maintenance-reserve 44/0 (pada przy Normal=3), logic-test 213/213, tsc 0, ai-test jak baza; pomiar Chromium seed 4242 do T100: wojsko AI 59 (N=10) vs 172 (N=3), miasta 60 vs 52, wojny 79=79, bez degeneracji; FC PASS-WITH-NOTES
+- Limity: pomiar jeden seed/jedna mapa, barbarzyńcy niezbadani; Easy/Hard tylko test decyzji; AI nr 10 znika po T40 (przyczyna nierozstrzygnięta); AI gromadzi złoto (skarbiec ok 17 tys. w T100)
+
+## ROBOCZA 35e9ec5a -- 2026-11-06 -- FALA 543: cud: rebelianci/barbarzyńcy go nie posiadają, założenie miasta przenosi cud (testowa)
+
+- cud nie przechodzi na frakcje niecywilizacyjne (rebelianci -99, barbarzyńcy -1): zostaje przy ostatniej cywilizacji, po odbiciu przechodzi na odbijającą cywilizację; założenie miasta (finalizeCityFounding) na terytorium z cudem przenosi cud; bonusy ekskluzywne działają u zdobywcy (po ownerId)
+- Weryfikacja: wonder-transfer-on-conquest 43/0 (mutacje łamią), logic-test 213/213, tsc 0, ai-test jak baza; FC PASS-WITH-NOTES
+- Limity: założenie miasta pokryte logiką i kontrolą strukturalną (nie uruchomienie finalizeCityFounding); niespójne zapisy (cud ≠ właściciel terytorium) nadal pomijane; brak weryfikacji w przeglądarce
+
+## ROBOCZA c7479096 -- 2026-11-06 -- FALA 542: wojny epoki Brąz/Żelazo: weryfikacja na żywo + stare zapisy (testowa)
+
+- testy live w Chromium: wojna epoki wybucha w Brązie i Żelazie po 1 turze od progu (wpis w dzienniku i karta Wydarzeń); hooki testowe ustawiają playerEpochWarEnabled; wczytanie zapisu bez pola playerEpochWarEnabled = true (gracz nie wypada z puli wojen epoki), jawny false zostaje
+- Weryfikacja: forced-war-player-target 12/0, no-contact 14/0, iron 13/0 (Chromium), war-epoch-player-first-main-guard 35/0, guardy iron/bronze/stone 35/22/15, tsc 0; FC PASS-WITH-NOTES
+- Limity: dowód dla Żelaza inscenizowany (hook ustawia epokę 3), naturalny awans do epoki 3 niepokryty; ironForceWarActiveByPairKey nie asertowane (prywatne)
+
+## ROBOCZA 4a51cf05 -- 2026-11-06 -- FALA 541: cud świata przechodzi na zdobywcę z bonusami (testowa)
+
+- cud należy do cywilizacji kontrolującej terytorium jego hexa; zmiana właściciela miasta/hexa (podbój, odbicie, kapitulacja głodowa, cesja, aneksja miasta-państwa, rewolta, zdobycie fortu) przenosi cud i jego bonusy; komunikaty Zdobyto/Utracono cud; moduł wonder-transfer.ts
+- Weryfikacja: wonder-transfer-on-conquest 32/0 (mutacje łamią), logic-test 213/213, tsc 0, ai-test jak baza; FC PASS-WITH-NOTES
+- Limity: obecnie cud trafia też do rebeliantów i barbarzyńców oraz nie przechodzi przy założeniu miasta — decyzje właściciela (cud zostaje u ostatniej cywilizacji; założenie miasta przenosi) w R-WEB-WONDER-TRANSFER-FOLLOWUP-Q1; migracja niespójnych zapisów nie wykonana; weryfikacja w przeglądarce NIE_ZMIERZONO
+
+## ROBOCZA 1a04d5ec -- 2026-11-06 -- FALA 540: limit armii: żadna armia nie przekracza limitu bitwy (500) (testowa)
+
+- stos jednostek jednego właściciela na heksie (także w mieście) nie może przekroczyć BATTLE_MAX_PER_SIDE=500: bramki narodzin z produkcji i kolejki, zakupu, ruchu gracza i AI, podziału armii, wejścia po poddaniu, nagrody z chatki, bonusu AI; migracja zapisów i siatka na starcie tury (nadwyżka na najbliższe wolne heksy, nic nie jest usuwane)
+- Weryfikacja: army-stack-limit 51/0, battle-cap-500, army-merge, generals-limit, logic-test 213/213, tsc 0, ai-test jak baza; FC PASS-WITH-NOTES
+- Limity: pętla 60 tur prawdziwego silnika AI i weryfikacja wizualna NIE_ZMIERZONO; mgla-sciezka-inwariant 3 fail jak baza (dług klasyfikacji); AI nie szuka aktywnie innego heksu przy pełnym stosie; limit liczy też cywili i garnizon
+
+## ROBOCZA 8d8812cb -- 2026-11-06 -- FALA 539: muzyka cywilizacji w dyplomacji (Grecy, Rzymianie, Chińczycy, Zulusi, Egipt, Sumerowie, Inkowie) (testowa)
+
+- manifest gra/data/civ-music.json (klucz = ikonaId), przywitanie raz + pętla negocjacji z crossfade, powrót muzyki tła po zamknięciu; Inkowie 2 utwory na zmianę bez przywitania; Sumerowie samo przywitanie; pozostałe civ bez zmian; 13 mp3 (negocjacje 64 kbps, przywitania 96 kbps, razem ok 10,7 MiB); bundle +15 MB (70,7 -> 85,7 MB)
+- Weryfikacja: civ-music-test 27/0, civ-music-live-test (Chromium) 20/0, logic-test 213/213, tsc 0; test pada na pustym manifeście; FC PASS-WITH-NOTES
+- Limity: odsłuch pętli i jakość 64 kbps NIE_ZMIERZONO (do oceny właściciela); stare utwory Rzymian zostają jako zapas (ok 1,4 MB); rozmiar pliku ok 86 MB, limit GitHub 100 MB
+
+## ROBOCZA 2853fdee -- 2026-11-06 -- FALA 538: limit bitwy 120→500 na stronę (testowa)
+
+- MAX_PER_SIDE=500 (jedno źródło prawdy), przyspieszenie logiki tury i rozstawienia 500v500 (BFS celu, _placeUnits, _compactAttackAllowsStep), głębokość czyszczenia terenu liczona z rozmiaru większej armii (bitwy do 120 mają dawny teren); komunikat rezerwy działa z nowym limitem
+- Weryfikacja: battle-cap-500 59/0, battle-undeployed 35/0, teren-walki-etapy 33/0, logic-test 213/213, tsc 0, ai-test jak baza; logika tury 500v500 śr. ok 1,6-1,9 s, p95 ok 5,6 s, max do 11,8 s (bez renderu); FC PASS-WITH-NOTES
+- Limity: FPS i czas klatki w Chromium przy 1000 figurach NIE_ZMIERZONO; planowanie AUTO synchroniczne, możliwe zawieszenie kilku sekund; zaproponowany osobny temat (rozłożenie w czasie / LOD)
+
+## ROBOCZA b3bc8539 -- 2026-11-06 -- FALA 537: panele boczne startują pod lewym banerem HUD (testowa)
+
+- SIDE_PANEL_TOP = var(--civ-hud-toolbar-top,104px): panele Miasta/Wojsko, Dyplomacja, Badania (picker), Civpedia startują pod dolną krawędzią lewego banera (dynamicznie z fitHudTopbar), w trybie 1-liniowym przesunięcie 0; wysokość paneli maleje o przesunięcie
+- Weryfikacja: hud-panels-below-banner 119/0 (mutacja 93/26), hud-topbar-layout-a 144/0, logic-test 213/213, tsc 0; FC PASS-WITH-NOTES
+- Limity: niezweryfikowane w pełnej grze (main.ts); panel wydarzeń po prawej, minimapLayout i modale poza zakresem
+
+## ROBOCZA 0bcceb23 -- 2026-11-06 -- FALA 536: wojny epoki także w Brązie i Żelazie (testowa)
+
+- enabledForcedWarEras = [stone, bronze, iron] (wcześniej tylko Kamień przez commit 1db3e99b4); próg 25 tur i licznik 1 wojna epoki na cywilizację i epokę bez zmian; testy bez SKIP; nowy era-war-all-eras-test (3 epoki)
+- Weryfikacja: era-war-all-eras 10/0, war-rules-multiwar 57/0, war-era-counter 82/0, guardy iron/bronze/epoch-first 35/22/34 0 fail, logic-test 213/213, tsc 0; FC PASS-WITH-NOTES
+- Limity: testy live w przeglądarce (wybuch wojny Brązu/Żelaza w realnej grze) NIE_ZMIERZONO w workflow (limit czasu narzędzia); weryfikacja po wdrożeniu
+
+## ROBOCZA 2ba866b0 -- 2026-11-06 -- FALA 535: bitwa: jednostki spoza limitu 120 nie znikają po bitwie (testowa)
+
+- wynik bitwy ręcznej przekazuje pełny log zdarzeń (main.ts, mapFieldBattle.ts), więc niewystawione jednostki (rezerwa) zostają nietknięte; weterani tylko dla walczących; komunikat przed bitwą o jednostkach w rezerwie; limit 120 bez zmian
+- Weryfikacja: battle-undeployed-units 35/0, post-battle-map 32/0, auto-battle 52/0, map-field-battle 24/0, logic-test 213/213, tsc 0; FC PASS-WITH-NOTES
+- Limity: komunikat rezerwy niezweryfikowany wzrokowo w Chromium; zdobycie miasta nadal usuwa całą załogę z centrum (decyzja właściciela); utraconych wcześniej jednostek nie da się odzyskać
+
+## ROBOCZA ada2690c -- 2026-11-06 -- FALA 534: pasek HUD: układ A lewego banera, prawy baner w jednej linii (testowa)
+
+- lewy baner: żeton w dwóch piętrach, plusy 70% liczby sumarycznej, dopasowanie do szerokości (fitHudTopbar); prawy baner: wszystkie chipy w jednej linii, pod przyciskami, wyrównany do prawej; pasek narzędzi przesuwa się pod wysoki baner
+- Weryfikacja: hud-topbar-layout-a 144/0, tsc, logic-test 213/213, zrzuty 1920/1366/1024; FC PASS-WITH-NOTES
+- Limity: przy 640 px prawy baner może się przewijać poziomo; lewy baner w trybie 2×3 (do 139 px) może być częściowo zasłonięty przez otwarty panel boczny
+
+## ROBOCZA 09e75c36 -- 2026-11-06 -- FALA 533: wodzowie: limit epoki nie do przekroczenia (kolejka rekrutacji przy zdobyciu miasta) + migracja zapisów (testowa)
+
+- generals.ts/main.ts: bramka narodzin wodza z kolejki (canSpawnQueuedGeneral, generalMaySpawnForOwner w 2 miejscach), pozycja isGeneral przechodząca z miastem przy podboju/cesji/aneksji/odbiciu nie daje dodatkowego wodza; migracja wczytania: nadmiarowi (młodsi) wodzowie tracą flagę wodza, jednostki zostają
+- Weryfikacja: Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; generals-limit-invariant-test 23/23 (baza pada), tsc 0, logic 213/213, ai-test 274/20 jak baza, 6 testów generałów/armii/rekrutacji EXIT=0
+- Limity: test modelowy (nie live w Chromium); testy przeglądarkowe empire-recruit/army-panel NIE_ZMIERZONO (INFRA); wódz przejęty z kolejką miasta powstaje jako zwykła jednostka
+
+## ROBOCZA 40dff84a -- 2026-11-06 -- FALA 532: pamięć: scalenie statycznych części modeli jednostek (wariant B) (testowa)
+
+- render/unitStaticMerge.ts + units.ts + smallPartLod.ts: statyczne części żetonu scalone w jeden mesh na materiał; t.50 sterta po GC 171,7→143,9 MB (−27,8 MB, −16%), meshe żetonów 35 903→9 644, draw calls 1 192→863, renderLoop 29,2→20,4 ms/klatkę, syncUnitsRender 186,6→108,0 ms; stanowisko 475 żetonów −37,7 MB; picking 170/170; różnica obrazu stanie/marsz/atak 6/1/2 px (dopuszczone przez właściciela ≤~120 px)
+- Weryfikacja: Opus 5.5 Operator→Evaluator→Obrona→FC PASS; memory-unit-static-merge-test 9/0, tsc 0, logic 213/213, small-part-lod 24/0, overlay-sync 17/0, capture-render-sync 23/0, deferred-dim 19/0, city-badge 67/0, 5/5 mutacji, render-all 0 regresji, zrzuty K1–K5 przejrzane
+- Limity: obraz w t.50 NIE_ZMIERZONO (liczba jednostek różna między przebiegami); budowa żetonów od zera +27–46% (~0,2 s jednorazowo); renderLoop mierzony na swiftshader (względnie)
+
+## ROBOCZA f460a713 -- 2026-11-06 -- FALA 531: koniec tury: mniej przebudów żetonów jednostek i HUD (faza AI) (testowa)
+
+- main.ts: ruch AI z odwiedzinami miasta nie woła pełnego syncUnitsRender po każdym ruchu (aiUnitRenderBatch, flush po fazie AI/bitwie/błędzie, także po wznowieniu fazy), widoczne żetony odświeżane w klatce postępu; currentVisible liczone raz; unia syncUnitsRender+renderLoop+syncStatChips −18,9% (3 końce tury, 5 par naprzemiennie; 1. koniec tury znacznie więcej)
+- Weryfikacja: Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; tsc 0; logic 213/213; resume-flush i deferral OK; overlay-sync 17/0; capture-render-sync 23/0; city-badge-zoom-lod 67/0; pool testy 18/0 i 7/0; digest sceny 0 niezgodnych
+- Limity: cel −35,7% zawężony ECHO do zmierzonych −18,9%; brak testu live bitwa→wznowienie i zrzutu w połowie fazy AI (NIE_ZMIERZONO); ai-city-render-batch-test pada identycznie na bazie (dług)
+
+## ROBOCZA 9c024dcb -- 2026-11-06 -- FALA 530: pamięć: wspólne materiały modeli jednostek i miast (testowa)
+
+- render/materialContentPool.ts + units/cities/scene: wspólna pula materiałów per renderer, unshare przed przyciemnieniem, sortowanie jak three.js po id sprzed puli (obraz 0 px różnicy; wcześniej 51 px); unikalne materiały t.50 jednostki 7141→188, miasta 1747→135; sterta ~−6,8…−9 MB
+- Weryfikacja: Opus 5.5 Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; pixel-test 7/0, pełna klatka 0 px, 84/84 narzędzi *render* 0 regresji, tsc 0, logic 213/213
+- Limity: zysk MB w grze: 1 przebieg (−8,4 t.1, −5,9 t.50, szum ~3 MB); wariant B (scalenie części jednostek) NIE wdrożony — czeka na decyzję właściciela
+
+## ROBOCZA 1106078d -- 2026-11-06 -- FALA 529: koniec tury: szybszy JS (ścieżki, okolica, dostęp do surowców) (testowa)
+
+- resource-access/main.ts: etykiety aktywnych surowców bez zbędnego potencjału; units/setup.ts: memo blokady oblężenia; okolica.ts: Intl.Collator + memo rodzeństwa pole po polu; memo dysków widoczności; JS końca tury mediana 5693→4571 ms (1,25×, n=9/9, host współdzielony)
+- Weryfikacja: Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; tsc 0; logic 213/213; równoważność wartościowa 0 różnic (collator 23994, assignWorkedTiles 220, sibling 1320, computePath 240), 4/4 mutacje; ai-test 274/20 jak baza
+- Limity: GOAL 2× NIE osiągnięty (1,25×, rozrzut duży); pozostałe ~2 s w render/HUD (syncUnitsRender, renderLoop, syncStatChips) — kandydat na osobny temat
+
+## ROBOCZA 963a8fb8 -- 2026-11-06 -- FALA 528: minimapa: ramka widoku podąża za kamerą (testowa)
+
+- minimapHud.ts/hud.ts/main.ts: warstwa bazowa minimapy cache'owana, updateViewport przerysowuje tylko zmieniony prostokąt (co klatkę, poza bramką dirty); wcześniej ramka stała w miejscu, bo minimapę odświeżał tylko refreshFog
+- Weryfikacja: Operator→Evaluator→Obrona→FC PASS-WITH-NOTES; tsc 0; test jednostkowy 12/12 + mutacja; Chromium live: ramka x 108→18 po kliku, zoom 46×22→51×24 (stary build 0 px)
+- Limity: pomiar perf klatki NIE_ZMIERZONO (koszt O(1)); pre-existing FAIL hud-armia/moc/obywatele
+
+## ROBOCZA 1a7efcf5 -- 2026-11-06 -- FALA 527: pamięć: dane base64 (audio/obrazy) poza JS, wspólne Blob (testowa)
+
+- vite.config.ts: wtyczka civ-binary-assets-out-of-js — mp3/png/jpg jako elementy application/octet-stream w HTML, dekodowane raz do Blob (wspólne blob: URL); sterta po GC −125 MB (t.1: 213,7→88,3; t.50: 302,4→178,6)
+- Weryfikacja: Opus 5.5 Operator→Evaluator→Obrona→FC PASS; duplicates 14/14, piksele menu 0/1 024 000, mapa 0 px, muzyka-e2e 13/0, tsc 0, logic 213/213
+- Limity: t.100 nie mierzone; zmiana tylko w buildzie; HTML +13,5 KB
+
+## ROBOCZA 181b3ec1 -- 2026-11-06 -- FALA 526: pamięć: bundle w czystym ASCII + wspólne geometrie modeli (testowa)
+
+- R-WEB-MEMORY-STATIC-FOOTPRINT-Q1 — stałe zużycie pamięci: (1) krok budowania zapisujący wynikowy JS wyłącznie w ASCII (znaki spoza ASCII jako \uXXXX), dzięki czemu przeglądarka trzyma tekst skryptu po 1 bajcie na znak: skrypt 147,9→78,1 MB (−69,8 MB stale od tury 1), plik HTML +0,47%; (2) modele jednostek i miast o identycznej geometrii współdzielą jedną kopię (pula per renderer, liczniki referencji): geometrii miast 9359→191 w turze 100, na GPU 2573→943, obraz identyczny (0 różnych pikseli z 1,6 mln, 194 modele). Pamięć po GC (seed 4242): t.1 285,5→214,0; t.50 375,1→300,0; t.100 428,9→354,0 MB (−75 MB)
+- Weryfikacja: tsc PASS; logic 213/213; memory-static-geometry-pool 18/0; memory-growth-merge-index 24/0; small-part-lod 24/0; ASCII bundle Chromium 25/0 (tekst menu/mapy i 22 haseł Cywilopedii, 322 773 znaków, identyczny); pixel 194 modeli 6/0; ai-test 274/20; hashe war-allin zgodne; FC: build HEAD 0 znaków spoza ASCII w głównym skrypcie
+- Limity: Cel −100 MB w t.100 niespełniony (−75 MB); wspólne materiały (−10 MB) odrzucone, bo zmieniają 51 pikseli (kolejność rysowania) — decyzja właściciela; nie zrobione: scalenie części modeli jednostek (≈ −41 MB górna granica), dane base64 audio/obrazów trzymane drugi raz (~62 MB, poza allowlistą); porównanie t.100 zakłócone rozjazdem trajektorii gier
+
+## ROBOCZA 65785ec5 -- 2026-11-06 -- FALA 525: spowolnienie późnej gry cz.2: HUD, mgła, granice, wejście do miasta, LOD (testowa)
+
+- R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 — dalsze skrócenie interakcji w późnej grze (137 miast, 321 jednostek; mediana przed→po): odświeżanie mgły 869→76 ms (11,4×), odświeżanie HUD 719→53 ms (13,6×), zdarzenia tury 178→16 ms (10,8×), granice terytorium 71→4 ms (16,8×), wejście do miasta (HUD) 3749→174 ms (21×) i (czysty JS) 4466→564 ms (7,9×), pojedyncze budowanie stanu HUD 49,8→10,7 ms (4,7×), wybór jednostki (JS) 1716→378 ms (4,5×), koniec tury (JS) 16,5–17,6→5,1–5,2 s (3,3×, n=2); ukrywanie drobnych części modeli poniżej progu rzutu (LOD, próg 3 px; draw calle 28 881→5 255); indeks właściciela heksów terytorium i zakresowe memo odczytów; czasy płaskie względem rozmiaru historii
+- Weryfikacja: tsc PASS; perf-hud-frame-memo 16/0; perf-territory-index-equiv 6/0; small-part-lod 24/0; okolica 72/72; memory-growth-merge-index 24/0; placed-improvements-cache 15/0; ai-test 274/20 = baza; hashe war-allin zgodne
+- Limity: Nie osiągnięto 5× dla pojedynczego buildHudState (4,7×), wyboru jednostki (4,5×) i końca tury (3,3×, n=2); brak zrzutów LOD far/near i oceny wizualnej; brak pomiaru PRZED dla ruchu i panelu miasta; testy render/live z timeoutem (river-path-adjacency, hotseat-etap6e, oboz-lowiecki, player-moves-before-ai-turn)
+
+## ROBOCZA 39b70c14 -- 2026-11-06 -- FALA 524: pamięć: przyczyna wzrostu ustalona, bufory geometrii ulepszeń (testowa)
+
+- R-WEB-MEMORY-GROWTH-ROOTCAUSE-Q1 — przyczyna liniowego wzrostu pamięci: bufory geometrii scalonych meshy ulepszeń (86% wzrostu t.60→100: JSArrayBufferData) — trójkąty zapisywane bez indeksów i kopia CPU zostawała obok GPU; poprawka: wierzchołki identyczne bit w bit współdzielone przez indeksy (30,5% dawnych bajtów, trójkąty identyczne), zwolnienie kopii CPU po wysłaniu do GPU z odbudową po utracie kontekstu WebGL (z poprawką mgły po odbudowie); pamięć po GC (seed 4242): t.100 573→444 MB, nachylenie t.60→100 2,05→0,70 MB/turę
+- Weryfikacja: tsc PASS; memory-growth-merge-index 24/0; improvement-cpu-release Chromium 20/0; visual-parity 4/0 (piksel w piksel); logic 213/213; hashe war-allin zgodne; ai-test 274/20 = baza
+- Limity: Pomiar 100 tur nie powtórzony po rebase/R2; tylko 1 seed; mgła OFF w pomiarze; nieskorygowane: bundle tylko-ASCII −71 MB (vite.config.ts), scalenie modeli jednostek −35–45 MB i miast −15–20 MB
+
+## ROBOCZA 45168586 -- 2026-11-06 -- FALA 523: pamięć podręczna ulepszeń właściciela (koniec tury) (testowa)
+
+- R-WEB-PERF-PLACED-IMPROVEMENTS-CACHE-Q1 — drugi hotspot końca tury w późnej grze: placedImprovementsForOwner (skan wszystkich ulepszeń mapy dla każdej jednostki/trasy) jest teraz buforowany per właściciel z inwalidacją przy zapisie (VersionedMap) i zmianie miast/fortów; na stanie syntetycznym 12–112× szybciej (zależnie od częstości zapisów), wynik identyczny z wersją bez bufora
+- Weryfikacja: tsc PASS; placed-improvements-cache 15/0 (250 stanów×3 właścicieli, 1440 mutacji, 5 mutantów wykrytych); trade-grant 62/0; zloto-szlak 54/0; mennica-uspienie 49/0; auto-improvements 46/0
+- Limity: Brak pomiaru na żywej grze w t.95 (wymaga >30 min); hashe war-allin-capital-quick niezmierzone; okolica-load/ownership-change reconcile padają tak samo na bazie
+
+## ROBOCZA d1ce365c -- 2026-11-06 -- FALA 522: przyczyna spowolnienia po turze 60–80: dostęp do surowców tras (testowa)
+
+- R-WEB-LONGRUN-100-TURNS-LEAK-Q1 — 100 tur w Chromium (seed 4242): główna przyczyna spowolnienia = przeliczanie grantów surowców z tras handlowych (computeTradeRouteResourceGrants) skanujące wszystkie ulepszenia mapy 4× na trasę i surowiec (0 s w t.10 → 7,5 s w t.70 → 19,2 s w t.95 przy 57 s profilu); poprawka: memoizacja (właściciel, surowiec) na czas jednego przeliczenia — w profilu t.95 koszt zniknął, JS końca tury 29,7→11,6 s
+- Weryfikacja: tsc PASS; memo 6/0 (215 grantów identycznych, 60 wywołań zamiast 1351); trade-grant 62/0; zloto-szlak 54/0; mennica-uspienie 49/0; trade-ilosc 35/5 = baza
+- Limity: Drugi hotspot placedImprovementsForOwner (ok. 14 s w t.95, auto-ulepszanie jednostek) nieskorygowany; pomiar 100 tur tylko seed 4242 po poprawce; czasy ścienne PRE/POST niewspółmierne (obciążenie maszyny)
+
+## ROBOCZA b138b229 -- 2026-11-06 -- FALA 521: drogi AI tylko między miastami (testowa)
+
+- R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1 — automat (AI i auto-ulepszenia gracza) buduje drogi tylko jako połączenia między miastami tej samej cywilizacji (drzewo rozpinające po długości ścieżki), bez wypełniania terytorium siatką; w żywej grze 100 tur: 93→12 heksów dróg, 142→1 trójkąt
+- Weryfikacja: tsc PASS; roads-city-links-only 57/0; autoimprove-stages-q1 299/0; auto-improvements 46/0; autobuild-toggle 39/0; ai-test 274/20; hashe war-allin bez zmian
+- Limity: Zostaje do 1 trójkąt (węzeł Y); miasta bez lądowego połączenia po własnym terytorium nie są łączone; istniejące nadmiarowe drogi w starych zapisach nie są usuwane
+
+## ROBOCZA 49d20c33 -- 2026-11-06 -- FALA 520: wojny AI: szybszy pokój, karencja po pokoju (testowa)
+
+- R-WEB-AI-WAR-WEARINESS-LIVE-AUDIT-Q1 — przegrywająca AI oferuje pokój wcześniej (od 8. tury po utracie miasta, od 25. bez strat) z eskalacją złoto→surowce→miasta; ochrona słabego (≤3 miasta lub ≥3 utraty: zwycięzca musi przyjąć pokój, zostaje ≥3 miasta, nigdy stolica); symetria zmęczenia; karencja po pokoju 40 tur (100 dla chronionego) zamiast 10 — koniec cyklu wojna→pokój→ta sama wojna
+- Weryfikacja: tsc PASS; ai-war-weariness-peace 90/0; diplo-war-peace-sim 22/0; diplomacy-peace-lock 9/0; war-allin-capital-quick hash zgodny; ai-test 274/20
+- Limity: Pomiar na żywo tylko 1 ziarno (4242); oferta z miastem nie zaobserwowana w realnej grze; forced-war-bronze/iron-main-guard po 1 FAIL sprzed zmiany
+
+## ROBOCZA d956f56a -- 2026-11-06 -- FALA 519: górny baner: większe liczby, zwarta grupa (testowa)
+
+- R-WEB-HUD-TOPBAR-BIGGER-NUMBERS-NO-GAPS-Q1 — główne liczby w żetonach banera większe o 25–33% (17/15/13/12 px), liczba i przyrosty brutto/netto zwarte obok siebie (przerwa 0–4 px) i wyśrodkowane w żetonie; układ 3+3 stały bez przeskoków
+- Weryfikacja: tsc PASS; hud-topbar-bigger-numbers real-render 64/0 (+mutacje); hud-topbar-no-labels 94/0; hud-skarbiec 34/0; hud-resource-deficit-red 41/0
+- Limity: Puste boki żetonu nadal 55–93 px/stronę przy 1920 i do 47 px przy 1366 (baner na całą szerokość, N6); max-width banera kosztem N6 do decyzji właściciela
+
+## ROBOCZA 1ab8f82e -- 2026-11-06 -- FALA 518: powiadomienia: zakładki Dyplomacja/Ważne/Inne, mniej szumu (testowa)
+
+- R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 — panel Wydarzenia ma 3 zakładki (Dyplomacja, Ważne, Inne) zamiast chipa „Inne cyw.”; przycisk „Zamknij wszystkie informacyjne” nad zakładkami; usunięty szum u źródła (auto-ulepszenia, wycinka, nowy szlak handlowy, Dotarło do celu); pomiar 30 tur: 63→2 i 58→3 wpisy informacyjne
+- Weryfikacja: tsc PASS; klasyfikator eventTabOf PASS (9 mutacji); notification-tabs 29/0; events-toolbar 25/0; wyrab-wycinka-nazwa-live 49/0; Chromium real-render wg Operatora
+- Limity: Pomiar tylko 2 ziarna × 30 spokojnych tur (bez wojny); eventTabOf ma kilka fałszywych trafień słów kluczowych (naprawione częściowo)
+
+## ROBOCZA bb025154 -- 2026-11-06 -- FALA 517: odlewnie ×2 cykle i mnożnik epoki (testowa)
+
+- R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 — Odlewnia brązu, Odlewnia żelaza i Wielka odlewnia: przepustowość 25→50 cykli/turę oraz mnożnik epoki właściciela 1/1,5/2/2,5/3 (gracz i AI); receptury i koszty bez zmian; huta płaska
+- Weryfikacja: tsc PASS; foundry-throughput-x2-era-mult 153/0; converter-era-scaling 123/0; brick-production-x2 69/0; citypanel-konwerter-produkcja 83/0; hashe war-allin zgodne
+- Limity: Brak pomiaru w żywej grze; nieaktualne komentarze w turn-economy.ts/main.ts
+
+## ROBOCZA 2c27d321 -- 2026-11-06 -- FALA 516: Emporion + przyspieszenie późnej gry (testowa)
+
+- (1) R-WEB-BUILDING-EMPORION-Q1 — nowy budynek handlowy Emporion (epoka 2, badanie Handel, wymaga Targowiska w mieście, +1 slot tras, 5% handlu per trasa, ikona z odznaką); (2) R-WEB-PERF-LATE-GAME-LAG-T86-Q1 — memo obliczenia konfliktów obywateli między miastami (O(n²)), ruch/wejście do miasta/wybór jednostki ok. 25–30× szybsze przy 137 miastach (refreshFog ok. 3,5×)
+- Weryfikacja: tsc PASS; emporion-building 47/0; emporion-build-list Chromium 13/0; grupy-budynkow 84/0; perf-sibling-memo 13/13; okolica 72/72
+- Limity: PERF: p95<150 ms niezmierzone na realnym GPU i w turze 86; pozostają updateHud/previewCityEconomy i refreshTerritoryBorderOverlay (Q2). Emporion: bonus 5% per trasa (wariant A); koszt w magazynie skalowany 320/240
+
+## ROBOCZA 1115446e -- 2026-11-06 -- FALA 515: automatyzacja budowy (domyślnie wyłączona) + próg paktu w UI zgodny z silnikiem (testowa)
+
+- (1) R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 — opcja „Automatyzacja budowy” (budynki + ulepszenia terenu) dla gracza w głównych ustawieniach, domyślnie WYŁĄCZONA, także w menu gry, AI bez zmian; (2) R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1 — blokada paktu o nieagresji w UI liczy ten sam efektywny próg Relacji co silnik (narzut +20 za wspólną granicę, +15 flaga agresora)
+- Weryfikacja: tsc PASS; autobuild-toggle 39/0; diplo-nap-border-threshold 14/0; diplo-nap-trust-30 25/25; diplomacy-locks 88/0; newgame-sett-grid-layout 74/0
+- Limity: Inicjatywa AI paktu nadal liczy własny próg bez narzutu granicy (osobny temat); brak zrzutu Chromium z notką 130/140 przy granicy; brak powtórzenia ai-buduje-budynki
+
+## ROBOCZA 3ba85b7b -- 2026-11-06 -- FALA 514: pakt o nieagresji wymaga Zaufania 30 (testowa)
+
+- R-WEB-DIPLO-NAP-TRUST-30-Q1 — pakt o nieagresji wymaga Relacji ≥ próg ORAZ Zaufania ≥ 30 (stałe na trudnościach) dla gracza, AI i AI↔AI; notka blokady podaje wymagane Zaufanie
+- Weryfikacja: tsc PASS; diplo-nap-trust-30 25/25; diplomacy-locks 88/0; diplomacy/war-gates/treaties/wiarygodnosc/acceptance-points 0 FAIL; Chromium 6/6; ai-test 274/20 = baseline
+- Limity: UI blokady nie zna narzutu za wspólną granicę (110/120 vs silnik 130/140) — osobny temat; UPR automatyczny NAP bez zmian
+
+## ROBOCZA 5b7c38ed -- 2026-11-06 -- FALA 513: Magazyn nie zwiększa pojemności żywności (testowa)
+
+- R-WEB-MAGAZYN-NO-FOOD-CAP-BONUS-Q1 — Magazyn nie daje bonusu do pojemności żywności centralnej (100→0); pojemność żywności tylko ze Spichlerzy (baza 1000 bez zmian); pojemność surowców Magazynu bez zmian
+- Weryfikacja: tsc PASS; magazyn-food-cap-bez-magazynu 16/0 (+mutacja 7 FAIL); regresje food/magazyn/spichlerz EXIT=0
+- Limity: Opis klucza econ-params i komentarz building-resource-gate nadal wspominają +100 (kosmetyka)
+
+## ROBOCZA 1c69835a -- 2026-11-06 -- FALA 512: cegła ×2 i Cegielnia +50%/epokę (testowa)
+
+- R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 — Cegielnia daje 2 cegły z cyklu (×2) i mnożnik wyjścia 1/1,5/2/2,5/3 wg epoki właściciela (tylko Cegielnia, gracz i AI); era 2 ≈ 2,7× dotychczasowej produkcji
+- Weryfikacja: tsc PASS; brick-production-x2 69/0; converter-era-scaling 117/0; converters 49/0; ai-test 274/20 = baseline
+- Limity: Brak pomiaru w żywej grze; ok. 2,7× w erze 2 do oceny właściciela
+
+## ROBOCZA 7b1663df -- 2026-11-06 -- FALA 511: oblężenie: etap zapasów i głód garnizonu (testowa)
+
+- R-WEB-SIEGE-STARVATION-SURRENDER-Q1 — oblężenie w dwóch etapach: zapasy (garnizon zdrowy), potem głód garnizonu 6/8/10% maxHP na turę; poddanie gdy ΣHP spadnie poniżej 50% stanu z początku głodu; plakietka z nową prognozą
+- Weryfikacja: tsc PASS; siege-starvation 54/0; siege-surrender-forecast 57/0; siege-* 0 FAIL; ai-test 274/20 = baseline
+- Limity: Brak pomiaru PRZED/PO w Chromium; glod-wojska-karencja 10 FAIL sprzed zmiany
+
+## ROBOCZA 88d4a39c -- 2026-11-06 -- FALA 510: zwiadowca nie jest liderem armii (testowa)
+
+- R-WEB-ARMY-SCOUT-NOT-LEADER-Q1 — zwiadowca w armii nie jest liderem ani kotwicą ataku (miasto i jednostka), armia działa jak najsilniejsza jednostka bojowa, zwiadowca tylko poszerza widoczność
+- Weryfikacja: tsc PASS; army-scout-not-leader 19/0; ai-test 274/20 = baseline
+- Limity: Brak zrzutu Chromium panelu armii
+
+## ROBOCZA cbb335af -- 2026-11-06 -- FALA 509: panel rekrutacji całej cywilizacji + Spichlerz Królewski/Pismo (testowa)
+
+- R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: przycisk „Rekrutacja” w górnym pasku, równy rozkład zamówienia po miastach; liczniki w mieście nie zerują się po „Rekrutuj”.
+- R-WEB-GRANARY2-PISMO-ROYAL-RENAME-Q1: Spichlerz II = „Spichlerz Królewski”, wymaga technologii Pismo.
+- Weryfikacja: tsc PASS; empire-recruit-live 23/23; granary2-tech-guard 14/0. Limity: brak zrzutu pełnego panelu miasta z chipem Pismo.
+
+## ROBOCZA 9caf3c59 -- 2026-11-05 -- FALA 508: marsze tylko na koniec tury gracza (testowa)
+
+- md5 pełne: `9caf3c5955847edea53c605d366e0bf6` · 70253395 B · poprzednia `8408a731`.
+- R-WEB-MARCH-END-OF-TURN-ONLY-Q1: zaplanowane marsze wykonują się tylko w fazie końca tury gracza (przed ekonomią/AI/dyplomacją). Usunięto cztery ścieżki ruchu poza tą fazą (nowe jednostki idące do wodza na starcie tury, dokańczanie kolejki po animacji, dopisywanie podopiecznych wodza w dowolnej chwili). Nowa tura: jednostki tam, gdzie je zostawiono, z pełnym MP. Pierwszy segment rozkazu zleconego w trakcie tury — od razu (decyzja A).
+- FC PASS-WITH-NOTES. Żywy test Chromium 51 OK / 0 FAIL. Nie sprawdzono: ai-test, hashe determinizmu.
+
+## ROBOCZA 8408a731 -- 2026-11-05 -- FALA 507: Magazyn +20% pojemności surowców państwa (testowa)
+
+- md5 pełne: `8408a731941ca23cbe0d03366da91a99` · 70253091 B · poprzednia `1f71e6f2`.
+- R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1: każdy Magazyn zwiększa pojemność każdego surowca magazynu państwa o 20% bazy (1 Magazyn ×1,2; 3 ×1,6; razy mnożnik epoki) zamiast +500 (które przy bazie 50 000 dawało ~1%). Żywność centralna bez zmian.
+- FC PASS-WITH-NOTES. Uwaga: UI pokazuje wartości bezwzględne; Magazyn nadal +100 do żywności (osobny temat do usunięcia).
+
+## ROBOCZA 1f71e6f2 -- 2026-11-05 -- FALA 506: ostrzejszy render jednostek (testowa)
+
+- md5 pełne: `1f71e6f2690effbf220f9e1987ba1c20` · 70253436 B · poprzednia `ac3843f5`.
+- R-WEB-RENDER-UNIT-BLUR-HORSES-Q1: modele jednostek (konie, rydwan) bywały rozmyte, bo domyślny preset „medium” renderował w 1,5× pikseli ekranu (na HiDPI rozciągane do 2×); teraz 2,0×. Ostrość z bliska przy DPR 2 ×3,6; draw calls bez zmian.
+- FC PASS-WITH-NOTES. Uwaga: przyczyna niepotwierdzona dla sprzętu właściciela; LOD1–3 nadal miększe; koszt GPU niezmierzony (+1,78× pikseli na HiDPI w „medium”). Jeśli zbyt wolno — wrócić do 1,5 + AA.
+
+## ROBOCZA ac3843f5 -- 2026-11-05 -- FALA 505: wypad obleganej armii w każdej turze (testowa)
+
+- md5 pełne: `ac3843f57ae6c69cdfa1d2e82550036b` · 70253438 B · poprzednia `bec6901f`.
+- R-WEB-SIEGE-SORTIE-ANY-TURN-Q1: oblegana armia AI/barbarzyńców o sile ≥80% oblegających (10:8) kontratakuje w każdej turze oblężenia (dotąd tylko w ostatniej, przy wyczerpanej żywności); kotwica najsilniejsza; garnizon budzony po sprawdzeniu widoczności celu. Gracz bez zmian (ręczne dowodzenie).
+- FC PASS-WITH-NOTES. NIE_ZMIERZONO: realny Chromium; do decyzji: przycisk „Wypad” dla gracza.
+
+## ROBOCZA bec6901f -- 2026-11-05 -- FALA 504: panel armii — generał i wielokrotne zaznaczanie (testowa)
+
+- md5 pełne: `bec6901fb45f31083ac0101bbe76604b` · 70252936 B · poprzednia `bfb410ba`.
+- R-WEB-UI-ARMY-PANEL-GENERAL-LABEL-MULTISELECT-Q1: generał jako „Generał — Wojownik”, pierwszy na liście (panel stosu, podziału, scalania); zaznaczanie wielu jednostek (pola wyboru, licznik, „Zaznacz wszystko” bez generała, „Odznacz”); „ROZWIĄŻ ZAZNACZONE (N)” z potwierdzeniem i ostrzeżeniem o generale.
+- FC PASS-WITH-NOTES. Uwaga: panel „Lista” (armyListHud) bez osobnego testu sortowania.
+
+## ROBOCZA bfb410ba -- 2026-11-05 -- FALA 503: Spichlerz II da się zbudować (testowa)
+
+- md5 pełne: `bfb410badba810c44dd38a27b6a72d23` · 70248431 B · poprzednia `8c0e8f81`.
+- R-WEB-GRANARY2-TECH-DATA-FIX-Q1: Spichlerz II wymagał nieistniejącej technologii „Warzelnia soli” (to ulepszenie terenu) — był niebudowalny, więc limit ludności 12 był nieosiągalny. Teraz wymaga Garncarstwa, Spichlerza I, epoki 2, Soli i Ceramiki. Strażnik danych łapie techUnlock spoza tech.json.
+- FC PASS-WITH-NOTES. Do decyzji: Ceramika w bramce (Spichlerz I jej nie ma), Garncarstwo vs Pismo/Religia.
+
+## ROBOCZA 8c0e8f81 -- 2026-11-05 -- FALA 502: AI nie maszeruje bez wojny (testowa)
+
+- md5 pełne: `8c0e8f81147ad119ed25be1006b50eb4` · 70248064 B · poprzednia `351808ce`.
+- R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1: AI nie wybiera celu, nie zbiera armii i nie rusza marszem na cywilizację/państwo-miasto bez faktycznej wojny. Przyczyna (odtworzona syntetycznie): dyrektywa wojny wymuszonej (brąz/kamień/żelazo) żyła w rejestrze mimo braku wojny i omijała bramkę; wpisy bez wojny są teraz sprzątane (z odpoczynkiem), a kampania wymaga wojny.
+- FC PASS-WITH-NOTES. NIE_ZMIERZONO: 3×100 tur w grze; dokładna ścieżka z gry właściciela. Jeśli zjawisko wróci — potrzebny zapis gry.
+
+## ROBOCZA 351808ce -- 2026-11-05 -- FALA 501: zerwanie traktatu handlowego bez kary po 10 turach (testowa)
+
+- md5 pełne: `351808cecd98d318cc36285a8863397a` · 70247670 B · poprzednia `0256ee64`.
+- R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1: traktat handlowy (3 rodzaje, terminowy i bezterminowy) zawarty ≥10 tur temu można zerwać bez kar (brak −10 Zaufania, N5, okna N3); młodszy — kary jak dotąd; wiek nieznany (stare zapisy) — kary. Panel: „brak kary” / „kara jeszcze N tur”.
+- FC PASS-WITH-NOTES. NIE_ZMIERZONO: rendering tekstu w Chromium.
+
+## ROBOCZA 0256ee64 -- 2026-11-05 -- FALA 500: wycinka lasu przy rzece bez obywatela + mnożnik zużycia na epokę (testowa)
+
+- md5 pełne: `0256ee644598821ea0d181dd37b8a2be` · 70246781 B · poprzednia `e17f3ec8`.
+- R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-NO-CITIZEN-Q1: las przy rzece wycinany także bez obywatela (gracz i AI); znane: auto-rozdział obsadza wycięte pola rzadko, tartak AI do obserwacji.
+- R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: racja żywności i zużycie każdego surowca ×1/1,5/2/2,5/3 wg epoki właściciela (wcześniej żywność 1/2/4, surowce 1/2/3). Do oceny w grze.
+- FC PASS-WITH-NOTES obu. NIE_ZMIERZONO: symulacja AI 100 tur, wygląd etykiety racji.
+
+## ROBOCZA e17f3ec8 -- 2026-11-05 -- FALA 499: AI zbiera armię pod najbliższym wodzem (testowa)
+
+- md5 pełne: `e17f3ec82f5a4e98e4ea277067068232` · 70245153 B · poprzednia `2daa6255`.
+- R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: każda cywilizacja AI kupuje wodzów wg epoki, nowe jednostki idą do najbliższego wodza (po trasie); Brąz — wódz #2 zbiera 5 tur; po śmierci wodza nowy w stolicy.
+- FC PASS-WITH-NOTES. Znane: pierwszy wódz AI w Brązie późno (T23–26, wymóg Koszar) — decyzja A/B/C u właściciela; pomiar live 3×100 tur NIE_ZMIERZONO.
+
+## ROBOCZA 2daa6255 -- 2026-11-05 -- FALA 498: ruch przez własne jednostki (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`133bec933` + MOVE-PASS-THROUGH `1f3dc5d7d`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda (wdrożenie na prośbę: „jak najszybciej”).
+- Bundle MD5 `2daa6255eb7e0d3c87bcbe93ef5bd33e`, 70241917 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: przejście przez heks z własną jednostką (bez objazdu i bez propozycji połączenia); obce jednostki/miasta blokują zawsze; połączenie tylko gdy ruch kończy się na własnej jednostce; jedna wspólna zajętość ruchu dla gracza, AI, barbarzyńców, zwiadu, marszu, planera all-in.
+- Testy: tsc PASS; move-pass-through 34/0; barb-camp-blacklist 19/0; general-path 24/0; planned-march 18/0; no-siege-r2 10/0.
+- Ograniczenia: brak Chromium i pomiaru objazdów przed/po (do oceny w grze); hashe war-allin zmienione (uzasadnione).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `4c53a03fda77dbb5236946fc01bcfecf`, 70240096 bajtów.
+
+## ROBOCZA 4c53a03f -- 2026-11-05 -- FALA 497: oblężenie zdejmowane natychmiast po pokoju (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`522271468` + NO-SIEGE-WITHOUT-WAR `368d707d8`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `4c53a03fda77dbb5236946fc01bcfecf`, 70240096 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: `setDiploRelation` woła `validateActiveSieges()` przy przejściu z wojny na inny status — plakietka oblężenia, blokada rekrutacji i kapitulacja nie wiszą po pokoju; testy potwierdzają brak ataków/marszu pod mur/wejścia do miasta bez wojny dla AI i państw-miast.
+- Testy: tsc PASS; no-siege-r2 10/0; siege-requires-war 49/0; lifted-po-bitwie 16/0; war-gates 22/0.
+- Ograniczenia: przyczyna zgłoszenia (Chińczycy–Memfis) niepotwierdzona bez zapisu gry (hipoteza: karta „Wojny:” filtruje mgłą kontakt gracza).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `00e508b29f6759a3408e85b5315dfc6d`, 70240058 bajtów.
+
+## ROBOCZA 00e508b2 -- 2026-11-05 -- FALA 496: baner HUD bez słów brutto/netto, na całą szerokość (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`6efe338c7` + HUD-TOPBAR-NO-LABELS `f0a50fd68`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `00e508b29f6759a3408e85b5315dfc6d`, 70240058 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: baner górny — duża liczba całkowita + dwa przyrosty (brutto, netto) bez słów; tooltip wyjaśnia; baner na całą dostępną szerokość; brak rozjeżdżania przy dużych liczbach (1280–640 px).
+- Testy: tsc PASS; no-labels 94/0; gross-net-rest 752/0; grid-gross-net 192/0.
+- Ograniczenia: Handel/Surowce bez dużej liczby; panel imperium zachowuje etykiety.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `ed464ad13d0a100d123cda16fdb1a9bf`, 70237463 bajtów.
+
+## ROBOCZA ed464ad1 -- 2026-11-05 -- FALA 495: AI — poprawne pola obywateli przy wycince lasu; jedna mapa nazw terenu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`6a4b7419e` + AI-CITIZEN-HEX-SIBLING-EXCLUSION `65c224926` + TERRAIN-ID-NAME-MAP-UNIFY `d577f7eb2`) i commit wdrożenia; stała zgoda właściciela (wdrożenie na prośbę: „chcę już testować”).
+- Bundle MD5 `ed464ad13d0a100d123cda16fdb1a9bf`, 70237463 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: AI nie odrzuca już pól z obywatelem przy wycince lasu (heksy bliższego miasta tego samego właściciela wykluczone jak u gracza); refaktor jednej mapy id↔nazwa terenu.
+- Testy: tsc PASS; ai-citizen-hex 18/0; terrain-names 23/0; ai-food-only 66/0; defend-home 30/0.
+- Ograniczenia: wycinka lasu przy rzece BEZ obywatela (decyzja B, gracz i AI) jeszcze w toku — nie w tej wersji; wczesne chybienia AI (tury 1–7) nieustalone.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `3775188b059301fcbbd72a4453e9c503`, 70235654 bajtów.
+
+## ROBOCZA 3775188b -- 2026-11-05 -- FALA 494: AI — obrońcy domu tylko jednostki bojowe lądowe (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`037e6be36` + HOME-DEFENDERS `24ab89a1e`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `3775188b059301fcbbd72a4453e9c503`, 70235654 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: obrona domu przed barbarzyńcami nie przydziela cywili, zaokrętowanych, okrętów ani wodza.
+- Testy: tsc PASS; civilian-filter 8/0; general-path 24/0; home-defense-vs-barbarians 46/0; defend-home 30/0; war-allin-capital 98/0.
+- Ograniczenia: zmienia przebieg AI-vs-AI; brak Chromium; asercja czasowa w ai-army-scattered-merge bywa niestabilna.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f734ced937d9766f4f06bdfa9325f3ad`, 70235623 bajtów.
+
+## ROBOCZA f734ced9 -- 2026-11-05 -- FALA 493: bramka młyna przy rzece (nieaktywna do definicji młyna) (testowa)
+
+- **STATUS: DEPLOYED** — `origin/main` `ab9abb356` (MILL-RIVER-ONLY-GATE `57baeef47`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `f734ced937d9766f4f06bdfa9325f3ad`, 70235623 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: bramka młyna (rzeka) i Port (morze lub rzeka) w kodzie; w grze bez efektu, dopóki brak definicji młyna.
+- Testy: tsc PASS; mill-river-only-gate ALL PASS.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `1a834f4c5cbd4eaf16a2468636b8d7be`, 70235118 bajtów.
+
+## ROBOCZA 1a834f4c -- 2026-11-05 -- FALA 492: AI: ścieżka wodza nie przejmuje obrońców przed barbarzyńcami (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`ee269b6ed` + WAR-ALLIN-GENERAL-PATH `f1ca757ef`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `1a834f4c5cbd4eaf16a2468636b8d7be`, 70235118 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: w kampanii wodza obrońcy miasta przed barbarzyńcami zostają; pula obrońców bez cywili/okrętów/wodza.
+- Testy: tsc PASS; general-path 24/0; keep-barb 8/0; defend-home 30/0; general-war-campaign 51/0.
+- Ograniczenia: tylko barbarzyńcy; główna ścieżka bez filtra cywilów (osobny temat); brak Chromium.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `2c6b510176642bc4ea41f3a8b6a6b530`, 70234299 bajtów.
+
+## ROBOCZA 2c6b5101 -- 2026-11-05 -- FALA 491: wycinka lasu przy rzece przed farmami (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1297f51ff` + RIVER-FOREST-FIRST `f166b5eea`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `2c6b510176642bc4ea41f3a8b6a6b530`, 70234299 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: KROK 0 automatu — wycinka lasu przy rzece na polu obywatela jest pierwsza wśród ulepszeń żywności (po kroku niedoboru).
+- Testy: tsc PASS; river-forest-first 10/0; river-forest-priority 17/0; stages-q1 299/0; simple-food 36/0; ai-food-only 66/0.
+- Ograniczenia: NIE potwierdzono w realnej turze main.ts na mapie z lasem przy rzece; niedobór (tartak) nadal przed wycinką.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `a9b54baab545a248c1660100019cf748`, 70234079 bajtów.
+
+## ROBOCZA a9b54baa -- 2026-11-05 -- FALA 490: AI: wojna na stolicę nie ogałaca obrony przed barbarzyńcami (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`c3d859a40` + WAR-ALLIN-KEEP-BARB `cf2bc8d71`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `a9b54baab545a248c1660100019cf748`, 70234079 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: obrońcy miasta przed barbarzyńcami nie są przejmowani przez marsz na stolicę wroga.
+- Testy: tsc PASS; keep-barb 8/0; defend-home 30/0; home-defense-vs-barbarians 46/0; army-concentration 56/0.
+- Ograniczenia: tylko barbarzyńcy; ścieżka wodza nieobjęta; brak pomiaru pełnej rozgrywki.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `268a991cc962d00429f533580c7a9967`, 70233983 bajtów.
+
+## ROBOCZA 268a991c -- 2026-11-05 -- FALA 489: brutto/netto w tooltipach, baner do 640 px, bez wycinki lasu na Wzgórzach (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`7d2dccf42` + HUD-REST `6616c22b4` + HILLS-REVERT `97b12333e`) i commit wdrożenia; zgłoszenia/decyzja właściciela, stała zgoda.
+- Bundle MD5 `268a991cc962d00429f533580c7a9967`, 70233983 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: BRUTTO → NETTO w tooltipach (karta miasta, Kultura/Religia/Obywatele/Miasta); banery HUD nie nachodzą na Moc do 640 px; skrót „tys./mln” w komunikacie; las na Wzgórzach nie jest wycinany pod żywność.
+- Testy: tsc PASS; hud-gross-net-rest 756/0; hud-topbar 1223/0; simple-food-rule 36/0; ai-food-only 66/0.
+- Ograniczenia: Kultura/Religia/Obywatele/Miasta BRUTTO=NETTO; kolizja stosu z minimapą ≤800 px niezmierzona. Wycinka lasu przy rzece jako pierwszy krok tury — osobny temat w toku.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `800f0cdde6afbce8cc21817069fbca72`, 70230211 bajtów.
+
+## ROBOCZA 800f0cdd -- 2026-11-05 -- FALA 488: górny baner 3+3 z brutto i netto (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`e4245651f` + HUD-TOPBAR `b7fcfd3ce`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `800f0cdde6afbce8cc21817069fbca72`, 70230211 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: baner Skarbiec·Praca·Spichlerz / Handel·Nauka·Surowce, brutto i netto w każdej komórce, stały układ; netto = zmiana po końcu tury.
+- Testy: tsc PASS; hud-topbar 1221/0 (Chromium); praca-pula-rate-parity 20/0.
+- Ograniczenia: dodatnie netto Spichlerza niezmierzone; przy 640 px nachodzi na medalion Mocy; brak brutto/netto w karcie miasta i tooltipach.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `a2891378fa2a57a553e489fa0d48dfc6`, 70222772 bajtów.
+
+## ROBOCZA a2891378 -- 2026-11-05 -- FALA 487: bez przycisków żywność/wycinka; wycinka lasu na Wzgórzach (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`fd784af0d` + SIMPLE-FOOD-RULE `b97f9d46a`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `a2891378fa2a57a553e489fa0d48dfc6`, 70222772 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: usunięte oba przyciski; żywność tylko przy obywatelach (wyjątek: obóz łowiecki); wycinka pod farmy/irygację w Żywność i Zrównoważone; naprawiony filtr blokujący wycinkę lasu na Wzgórzach.
+- Testy: tsc PASS; simple-food-rule 38/0; ai-food-only 70/0; q3 41/0; river-forest 16/0.
+- Ograniczenia: wycinka na Wzgórzach = założenie (ABC do właściciela); brak testu na zapisie właściciela.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `5ab46e7b914d3a8a25b4c19bf5e12c62`, 70227877 bajtów.
+
+## ROBOCZA 5ab46e7b -- 2026-11-05 -- FALA 486: AI: obrona własnego terenu i odbijanie miast przed zdobywaniem (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`98ef746c2` + DEFEND-HOME `c2799546d`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `5ab46e7b914d3a8a25b4c19bf5e12c62`, 70227877 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: AI zwalcza wrogie wojsko na swoim terenie i odbija utracone miasta przed zdobywaniem cudzych; koniec wymiany miast.
+- Testy: tsc PASS; defend-home 30/0; ai-war-gate 24/0; army-concentration 56/0.
+- Ograniczenia: progi to założenia (80/60/25/125%); symulacja: zdobycia 33→4 — sprawdzić w grze, czy agresja nie jest zduszona; brak Chromium.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f34ab067cb42f24f3fcd0a25e805c153`, 70220331 bajtów.
+
+## ROBOCZA f34ab067 -- 2026-11-05 -- FALA 485: zbiórka armii AI w stos, plakietka oblężenia pod panelami (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`01fdd771f` + SCATTERED `5065852a2` + ZORDER `46776364f`) i commit wdrożenia; zgłoszenia właściciela, stała zgoda.
+- Bundle MD5 `f34ab067cb42f24f3fcd0a25e805c153`, 70220331 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: rozproszone jednostki AI schodzą się w jeden stos przed marszem; plakietka oblężenia pod panelami/tooltipami/toastami.
+- Testy: tsc PASS; scattered 33/0; army-concentration 56/0; move-full-range 20/0; badge-zorder 13/0.
+- Ograniczenia: brak pomiaru live SCATTERED; zbiórka może opóźnić marsz o ≥1 turę.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f55a07c9025cd7bf230d8055b236a7a8`, 70216974 bajtów.
+
+## ROBOCZA f55a07c9 -- 2026-11-04 -- FALA 484: zmęczenie wojną + pokój, unikalne nazwy miast, suwaki podatków (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`ac3698a97` + WEARY `6c0df7773` + NAME `41d1b53e3` + TAX `1c5eab9e2`) i commit wdrożenia; zgłoszenia właściciela, stała zgoda.
+- Bundle MD5 `f55a07c9025cd7bf230d8055b236a7a8`, 70216974 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: AI w długiej wojnie dąży do pokoju (zmęczenie ≈200 tur + utraty), przegrywający oferuje coraz lepsze warunki (złoto/surowce → miasta, nigdy stolica); nazwa miasta zużyta raz jest zużyta na zawsze; kropka suwaków podatku na końcu kolorowego wypełnienia.
+- Testy: tsc PASS; weariness-peace 66/0; city-name-unique-forever PASS; start-overlap 15/15; tax-slider 3/0.
+- Ograniczenia: balans zmęczenia wojną do oceny w grze; Firefox suwaków niezmierzony.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `7db5378a1d78e11025c72601b2b09c2d`, 70208994 bajtów.
+
+## ROBOCZA 7db5378a -- 2026-11-04 -- FALA 483: plakietka oblężenia z licznikiem tur do poddania; wejście do poddanego miasta (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`488d94364` + SIEGE-BADGE-TURNS `3bba9a56d` + SIEGE-SURRENDER-ENTER-CITY `8b7c8af3b`) i commit wdrożenia; zgłoszenia właściciela, stała zgoda.
+- Bundle MD5 `7db5378a1d78e11025c72601b2b09c2d`, 70208994 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: „poddanie za N tur” na plakietce oblężenia; po poddaniu miasta główna oblegająca armia wchodzi do miasta.
+- Testy: tsc PASS; forecast 56/0; enter-city 32/0; blockade 57/0; last-stand 58/0.
+- Ograniczenia: prognoza zakłada stały garnizon; wejście po poddaniu bez testu Chromium; kilka testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `b6f88c94de970b4c63a7ac3fd3354732`, 70206378 bajtów.
+
+## ROBOCZA b6f88c94 -- 2026-11-04 -- FALA 482: limit ludności: Spichlerz II = 12, Akwedukt = 20 (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`c4a541a27` + POPCAP `913b60189`) i commit wdrożenia; decyzja właściciela, stała zgoda.
+- Bundle MD5 `b6f88c94de970b4c63a7ac3fd3354732`, 70206378 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: limit ludności 5 / Spichlerz I 8 / **Spichlerz II 12** / **Akwedukt 20** (niezależnie od Spichlerza).
+- Testy: tsc PASS; popcap 46/0; akwedukt-popcap 7/0; spichlerz-cap-citypanel-wiring 12/0; population-growth-v85 50/0; matrix 122/0; empire-food-b5 34/0.
+- Ograniczenia: pełny pomiar balansu niezmierzony (proxy: Akwedukt+Spichlerz II pop 20 zamiast 12 po 100 turach); kilka testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `e1f1f5297522993e129c52c34927ee5e`, 70205406 bajtów.
+
+## ROBOCZA e1f1f529 -- 2026-11-04 -- FALA 481: atak ostatniej woli obleganej armii; jedna definicja „przy rzece” dla irygacji (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`319a84052` + SIEGE-LAST-STAND-SORTIE `a731027b8` + IRRIGATION-RIVER-DEFINITION-UNIFY `bbc761892`) i commit wdrożenia; zgłoszenia/decyzje właściciela, stała zgoda.
+- Bundle MD5 `e1f1f5297522993e129c52c34927ee5e`, 70205406 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: atak ostatniej woli (AI i barbarzyńcy; siła ≥ 80% oblegającego, ostatnia tura przed kapitulacją); ręczna budowa irygacji i tooltipy uznają te same heksy „przy rzece” co automat.
+- Testy: tsc PASS; last-stand 58/0; river-definition 30/0; irrigation-after-farms 42/0; ai-food-only 81/0; auto-improvements 46/0; qualify 133/0; siege-blockade 57/0.
+- Ograniczenia: wynik bitwy po wypadzie i żywa tura niezmierzone; kilka testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `88ca0b0d410937d88501797936057ca1`, 70203589 bajtów.
+
+## ROBOCZA 88ca0b0d -- 2026-11-04 -- FALA 480: wydarzenia żyją jedną turę; cofnięcie błędnej wycinki lasu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`124661ef2` + EVENTS-ONE-TURN `1fbfb080a`) oraz cofnięcie RIVER-FOREST-CLEAR; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `88ca0b0d410937d88501797936057ca1`, 70203589 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: wydarzenia informacyjne wygasają po jednej turze (nieprzeczytane znikają i nie wracają); decyzyjne bez zmian. Cofnięta zmiana `ca2a0d57` (wycinka zawsze w Żywności/Zrównoważonym) — wycinka znów zależy od włączonego przełącznika „Wolno wycinać las” w każdym profilu.
+- Testy: tsc PASS; events 25/0; ai-food-only 81/0; auto-improvements 46/0; irrigation 43/0; autoclear-priority 60/0; farma-lesie-usun 143/0.
+- Ograniczenia: część przeglądarkowych testów wydarzeń niezmierzona.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `1e206e6b93ead83afb1da71f589010d4`, 70203077 bajtów.
+
+## ROBOCZA 1e206e6b -- 2026-11-04 -- FALA 479: bonus za trasę morską tylko z Portem (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`c005d7500` + TRADE-SEA-BONUS-REQUIRES-PORT `2ecb33c7e`) i commit wdrożenia; decyzja właściciela (ABC B), stała zgoda.
+- Bundle MD5 `1e206e6b93ead83afb1da71f589010d4`, 70203077 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: bonus +1 za trasę morską ponad pierwszą wymaga Portu w mieście; trasy handlowe (kontakt) i dochód dystansowy bez zmian.
+- Testy: tsc PASS; trade-sea-bonus 30/0; trade-routes 96/0; hud-filter 64/0; contact-only 36/0; naval-gate 40/0.
+- Ograniczenia: bez symulacji ziaren; tooltipy UI niesprawdzone.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `ca2a0d57f78560d5ef4dbfabb03db9e7`, 70203042 bajtów.
+
+## ROBOCZA ca2a0d57 -- 2026-11-04 -- FALA 478: automat wycina las pod farmy (Żywność i Zrównoważony), także przy rzece (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`6983bbb4d` + RIVER-FOREST-CLEAR `43465cdf7` + WAR-ALLIN-CAPITAL-TEST-DEBT `fc629f392`) i commit wdrożenia; zgłoszenie właściciela (zrzut Ostia), stała zgoda.
+- Bundle MD5 `ca2a0d57f78560d5ef4dbfabb03db9e7`, 70203042 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: przyczyna braku wycinki = domyślnie wyłączony przełącznik „Wolno wycinać las” obcinał wycinkę z listy pickera także dla Żywności/Zrównoważonego; teraz te profile wycinają zawsze (tylko pola obywateli, pod farmę); pomiar: 0 → 13 wycinek (12 przy rzece), farmy i irygacje +13.
+- Testy: tsc PASS; river-forest-clear 28/0; ai-food-only 81/0; auto-improvements 46/0; irrigation-after-farms 43/0; testy wojny zielone (98/0, 17/0, 129/0).
+- Ograniczenia: bez przeglądarki; przełącznik w UI bez efektu dla Żywności/Zrównoważonego (do osobnej poprawki etykiety).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `81e45a205be36ed8f8b57a5017ddb567`, 70202943 bajtów.
+
+## ROBOCZA 81e45a20 -- 2026-11-04 -- FALA 477: automat buduje irygację po farmach i trzodzie przy widocznej rzece (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`f3831912a` + AUTOIMPROVE-IRRIGATION-NOT-BUILT `1b0833d54` + OBOZ-LOWIECKI-LAS-TEST-DEBT `6228d8c3a`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `81e45a205be36ed8f8b57a5017ddb567`, 70202943 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: irygacja po farmie/trzodzie na polach obywateli także tam, gdzie rzeka ma tylko znacznik „obecna” (automat gracza i AI); bez zmian filtra „tylko obywatele” i ręcznej budowy. Na mapach bez rzek irygacja/trzoda nadal nie powstają (reguła kanonu).
+- Testy: tsc PASS; irrigation-after-farms 43/0; ai-food-only 81/0; ai-improvements 56/0; auto-improvements 46/0; oboz-lowiecki-las-test 94/0.
+- Ograniczenia: bez przeglądarki; decyzje D1–D3 do właściciela.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `d5345611fe5bc89764f847b3a4029b53`, 70202771 bajtów.
+
+## ROBOCZA d5345611 -- 2026-11-04 -- FALA 476: skracanie liczb k/M w panelach miasta, rekrutacji i imperium (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`56aa8c68d` + MANPOWER-ABBREV-PANELS `717ab3ec8`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `d5345611fe5bc89764f847b3a4029b53`, 70202771 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: liczby rekrutów i ludności w panelach miasta, rekrutacji i imperium skracane jak w HUD (1k, 12,3k, 1,2M); tooltip rekrutów bez zmian.
+- Testy: tsc PASS; manpower-panels-abbrev OK; manpower 71/0; recruit-card-manpower-real-render 20/0; recruitment-panel-compact-row 39/0.
+- Ograniczenia: szerokość kolumn w pełnych panelach niezmierzona; komunikat zdarzenia (main.ts:6733) bez zmian.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `4b0d54195e48f4e10adf9efd4c2a941b`, 70202732 bajtów.
+
+## ROBOCZA 4b0d5419 -- 2026-11-04 -- FALA 475: blokada oblężonego miasta (rekrutacja, posiłki, wejście) (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`8c0fb5766` + SIEGE-BLOCKADE `258a13a7f` + SETCITYLIMIT `e26ed030d` + NAVAL-DEPOSIT-GATE-TEST-DEBT `86d7614cb`) i commit wdrożenia; zgłoszenie właściciela, stała zgoda.
+- Bundle MD5 `4b0d54195e48f4e10adf9efd4c2a941b`, 70202732 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: oblegane miasto nie rekrutuje, nie dostaje posiłków i nie przyjmuje obcych jednostek (gracz, AI, barbarzyńcy); atak na oblegających i wyjście z miasta działają; hak testowy limitu miast; testy bramek portów/złóż zaktualizowane.
+- Testy: tsc PASS; siege-blockade 57/0; setcitylimit 29/0; naval 40/0; deposit 49/0; batch-contract 17/0.
+- Ograniczenia: bez żywej tury AI/hot-seat w Chromium; units/setup.ts poza pierwotną allowlistą; kilka testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `57a964b28a96dcb0f9d8e62d8e10448c`, 70200489 bajtów.
+
+## ROBOCZA 57a964b2 -- 2026-11-04 -- FALA 474: handel tylko na znajomość + tooltip bez dubli surowców (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`9c1d28bb2` + TRADE-ROUTE-CONTACT-ONLY `b7a246cc9` + TOOLTIP-RESOURCES-LINE-DEDUP `198ee3d8a`) i commit wdrożenia; decyzja właściciela (ABC A/A/A/A), stała zgoda.
+- Bundle MD5 `57a964b28a96dcb0f9d8e62d8e10448c`, 70200489 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: szlaki handlowe między cywilizacjami wymagają tylko znajomości (kontakt dyplomatyczny) — bez fizycznego połączenia/Portu/granicy; dochód wg krzywej dystansu; trasy wewnętrzne bez zmian; tooltip heksu bez zdublowanych etykiet surowców.
+- Testy: tsc PASS; trade-routes-contact-only 36/0; trade-routes 96/0; trade-routes-income 134/0; tooltip dedup 28/0 + 28/0.
+- Ograniczenia: bonus +1 za trasę morską bez Portu (do decyzji); stare zapisy bez kontaktu; 8 testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `9b2119d6d1f642e2549ec32acccdff32`, 70200365 bajtów.
+
+## ROBOCZA 9b2119d6 -- 2026-11-04 -- FALA 473: Stadnina w kole fortu widoczna dla automatu (AI i gracz) (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`5f7dc5614` + AI-STADNINA-FORT-TERRITORY-SCAN `be18ff2c1`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `9b2119d6d1f642e2549ec32acccdff32`, 70200365 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: automat ulepszeń uwzględnia złoże konia w kole własnego fortu/posterunku (Stadnina); pomiar: AI widziało 10 z 45 legalnych, po zmianie 45/45, 0 nielegalnych.
+- Testy: tsc PASS; ai-stadnina-fort-territory 17/0; ai-improvements 56/0; ai-food-only-worked-hexes 81/0.
+- Ograniczenia: bez pełnej gry AI w przeglądarce.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `bcc1c16cd0519704730782f49e8724c7`, 70199729 bajtów.
+
+## ROBOCZA bcc1c16c -- 2026-11-04 -- FALA 472: bitwa ręczna na oblężone miasto: tarany, wieże, konnica, szarża poza ostrzałem (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`95a4b25ab` + SIEGE-MANUAL-BATTLE-BEHAVIOR `3c6224b77` + WATER-ACCESS test `b3d647b26`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `bcc1c16cd0519704730782f49e8724c7`, 70199729 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: tarany do bramy, wieża daje wejście na mur, łucznicy ostrzeliwują koronę, konnica/rydwany czekają do wyłomu, szarża/atakuj marszem/AUTO bez machin nie wchodzą w zasięg ostrzału. Dostęp do wody: bez zmian w kodzie (Port morze||rzeka; Młyn nie istnieje w danych).
+- Testy: tsc PASS; siege-manual-battle-behavior 40/0; harness żywy PASS (mur 0/11 → PASS); water-access ALL PASS.
+- Ograniczenia: część scenariuszy harnessu, miasto z mapy świata i AUTO-batch niezmierzone; testy przeglądarkowe częściowo czerwone na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `3c324fd32f2ab04d451e0206064910e9`, 70193957 bajtów.
+
+## ROBOCZA 3c324fd3 -- 2026-11-04 -- FALA 471: jednostki idą do najbliższego wodza (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`bfd437898` + ARMY-TO-NEAREST-LEADER `2f8064c94`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `3c324fd32f2ab04d451e0206064910e9`, 70193957 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: zbiórka do wodza po najbliższej realnej trasie (AI i gracz, „Idź do wodza”, nowe jednostki); wódz bez trasy pomijany. Pomiar: u nie-najbliższego wodza 54/109 → 0/114.
+- Testy: tsc PASS; army-to-nearest-leader 43/0; ai-march-avoid 99/0; army-concentration 56/0; ai-army-replacement 34/0; ai-move-full-range 20/0.
+- Ograniczenia: ścieżka gracza w main.ts bez przeglądarki; wydajność UI niezmierzona.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `067ed2a946232d7939ad67f353073e96`, 70191875 bajtów.
+
+## ROBOCZA 067ed2a9 -- 2026-11-04 -- FALA 470: tooltip bez dubli etykiety odblokowania + skrócone Rekruci w HUD (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`f54fb5c18` + TOOLTIP-UNLOCK-LABEL-DEDUP `34e1c8a60` + HUD-RECRUITS-NUMBER-ABBREV `ffd8bd2df`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `067ed2a946232d7939ad67f353073e96`, 70191875 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: tooltip heksu nie dubluje surowca (etykieta odblokowania vs wiersz produkcji); HUD „Rekruci” i tooltip Armia skracają liczby jak reszta HUD (k/M), pełna wartość w tooltipie.
+- Testy: tsc PASS; hex-tooltip-unlock-label-dedup 28/0; hud-recruits-abbrev OK; hud-number-abbrev OK.
+- Ograniczenia: formatManpower „tys./mln” zostaje w panelach miasta/rekrutacji/imperium; kilka testów tooltip/HUD czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `924471846c25768a31499d8dccd74b1c`, 70191473 bajtów.
+
+## ROBOCZA 92447184 -- 2026-11-04 -- FALA 469: AI omija obce terytorium w marszu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`96ec14f76` + AI-MARCH-AVOID-FOREIGN-TERRITORY `7cda8542a`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `924471846c25768a31499d8dccd74b1c`, 70191473 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: w wojnie AI omija teren trzeciej cywilizacji bez umowy przemarszu (twarda przeszkoda; trasa morska przy Żegludze; bez trasy odroczenie); prośba o przemarsz przez dyplomację, cooldown 8 tur zapisywany w save; gracz nieograniczony. Pomiar: jednostko-tury na obcym terenie 2336→0, kary Zaufania 492→0, przejęcia miast 14→20.
+- Testy: tsc PASS; ai-march-avoid-foreign-territory 99/0; ai-move-full-range 20/0.
+- Ograniczenia: bez przeglądarki (live/real-render); czas decyzji AI do 1,33x; AI bez trasy stoi w miejscu; kilka testów czerwonych na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `1ad81cfb89f069bdd0954d372a2968a0`, 70185473 bajtów.
+
+## ROBOCZA 1ad81cfb -- 2026-11-04 -- FALA 468: tryb ręczny: rebalans robotników z epoką właściciela (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`e2c9459fb` + MANUAL-REBALANCE-OWNER-ERA `d2ed1fc7c`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `1ad81cfb89f069bdd0954d372a2968a0`, 70185473 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: rebalans robotników po zmianie populacji w trybie ręcznym liczy ranking pól według epoki właściciela (jednolinijkowa poprawka w `population-growth-v85.ts`).
+- Testy: tsc PASS; manual-rebalance-owner-era 5/0; regresje 65 plików identycznie przed i po.
+- Ograniczenia: bez przeglądarki (zmiana logiczna).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `8984dc339111ee9283f5432577b42498`, 70185464 bajtów.
+
+## ROBOCZA 8984dc33 -- 2026-11-04 -- FALA 467: Stadnina w starych zapisach z koniem pod lasem (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`2d9b6aac8` + STADNINA-KONIE-STARE-ZAPISY `21734d07f`) i commit wdrożenia; stała zgoda właściciela (decyzja domyślna: `zloze==='konie'` = złoże konia).
+- Bundle MD5 `8984dc339111ee9283f5432577b42498`, 70185464 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: wspólny predykat `hexHasHorseDeposit`; Stadnina w starych zapisach (koń pod lasem) może powstać, tooltip i koszt koni to widzą. Bez migracji danych i zmian generatora.
+- Testy: tsc PASS; stadnina-konie-stare-zapisy 29/0; hex-tooltip-stadnina-kopalnia-cyny 29/0.
+- Ograniczenia: Chromium/live niezmierzone; oboz-lowiecki-las-test czerwony na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `56755bef122919a4c947b5c93a938613`, 70185442 bajtów.
+
+## ROBOCZA 56755bef -- 2026-11-04 -- FALA 466: AI zużywa pełny zasięg ruchu w marszu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`910083c97` + AI-MOVE-FULL-RANGE `2c1d43359`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `56755bef122919a4c947b5c93a938613`, 70185442 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: planer marszu AI (`warAllInCapital.ts`) rezerwuje tylko heks końcowy i wykonuje krok boczny; grupy AI zużywają pełny zapas ruchu. Dotyczy też barbarzyńców.
+- Testy: tsc PASS; ai-move-full-range 20/0 (RED na bazie); war-allin-capital 94/4 jak na bazie.
+- Ograniczenia: bez pełnej gry; balans barbarzyńców niezmierzony; ok. 5% ruchów nadal z zapasem.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `ac12379e477e12635f330896cb1a2772`, 70184635 bajtów.
+
+## ROBOCZA ac12379e -- 2026-11-04 -- FALA 465: spacja w rosterze + czerwony HUD przy niedoborze (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`a4eda2b7e` + ROSTER-SPACE `4995b2677` + HUD-RED `25ba4d0ad`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `ac12379e477e12635f330896cb1a2772`, 70184635 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: Spacja przechodzi do następnej aktywnej jednostki (także oblegająca/oblegana); HUD czerwony przy niedoborze złota/żywności/surowców.
+- Testy: tsc PASS; roster-space 43/0; hud-resource-deficit-red 41/0.
+- Ograniczenia: bez żywej gry; próg 5 tur do akceptacji; hot-seat surowce częściowo z fotela 0.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `a53cbc622f8ec548ea7bfd0ca38b3561`, 70182590 bajtów.
+
+## ROBOCZA a53cbc62 -- 2026-11-04 -- FALA 464: AI zbiera armię zastępczą w jednym miejscu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`16195968b` + AI-ARMY-CONCENTRATION-REPLACEMENT `35321d577`) i commit wdrożenia; stała zgoda właściciela.
+- Bundle MD5 `a53cbc622f8ec548ea7bfd0ca38b3561`, 70182590 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, stempel ROBOCZA.
+- Zakres: w wojnie jednostki AI spoza skupiska ≥3 (promień 4) idą do miasta zbiórki najbliższego celu, zamiast pojedynczo na front; limity czekania 6/30 tur.
+- Testy: tsc PASS; ai-army-replacement-concentration 34/0; army-concentration 56/0; ai-general-war-campaign 51/0.
+- Ograniczenia: symulacja z atrapami, bez pełnej gry; pangea +0.078 tur z armiami ponad liczbę wojen; czerwone na bazie war-allin-capital 94/4.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `a92797382bedc9c81e5edbc03c95d643`, 70180853 bajtów.
+
+## ROBOCZA a9279738 -- 2026-11-04 -- FALA 463: aneksja państwa-miasta przejmuje majątek; obóz łowiecki nie wypłaszcza wzgórza (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`b89ecee44` + ANNEX `080b58484` + HUNTING-CAMP `7c0a587c9`) i commit wdrożenia bundla; stała zgoda właściciela na poprawki.
+- Bundle MD5 `a92797382bedc9c81e5edbc03c95d643`, 70180853 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: aneksja państwa-miasta przejmuje cały majątek zamiast go gubić i odejmuje cenę; obóz łowiecki zachowuje wzgórze i las jak tartak (poprawka wizualna).
+- Testy: tsc PASS; annex-citystate-spoils 79/0; hunting-camp-hill-no-flatten 20/0; oboz-lowiecki-las-znika-render 26/1 (czerwony też na bazie).
+- Ograniczenia: Chromium/live ANNEX niezmierzone; czerwone na bazie: eliminacja-lup-kwoty, oboz-lowiecki-las-test.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `ca6a9e08cd9cb52df50e609d876631b7`, 70179670 bajtów.
+
+## ROBOCZA ca6a9e08 -- 2026-11-04 -- FALA 462: ulepszenia żywności tylko na polach z obywatelami (gracz i AI) (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`9fcb663ed` + AI-FOOD-ONLY-WORKED-HEXES `1a83b7f44`) i commit wdrożenia bundla; twarda zasada właściciela (2026-11-03/04, zrzuty Ateny), stała zgoda na poprawki.
+- Bundle MD5 `ca6a9e08cd9cb52df50e609d876631b7`, 70,179,670 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: farma, irygacja, trzoda, obóz łowiecki, łodzie, tarasy, warzelnia soli i wycinka lasu tylko na heksach z obywatelami, bez wyjątków; gracz (Żywność i Zrównoważone) i AI; po farmie na polach obywateli powstają irygacja i trzoda. Pomiar: ulepszeń żywności poza obywatelami AI 1120→0, gracz 1272→0 / 1128→0.
+- Testy: tsc PASS; ai-food-only-worked-hexes 81/0 (RED 52/29, mutacje 10/10); auto-improve-q3 48/0; ai-improvements 56/0.
+- Ograniczenia: Chromium/live i zapis właściciela niezmierzone; plon żywności nominalnie −17–19%; istniejące farmy po przesunięciu obywatela zostają.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `5cbd823a9ac446244f2cf641edd2168d`, 70,180,043 bajtów.
+
+## ROBOCZA 5cbd823a -- 2026-11-04 -- FALA 461: wyłom wieżą oblężniczą także w bitwie taktycznej (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`86d510c66` + SIEGE-TOWER-BREACH-EVERYWHERE `6593d7c3a`) i commit wdrożenia bundla; decyzja właściciela (wieża = wyłom wszędzie), stała zgoda na poprawki.
+- Bundle MD5 `5cbd823a9ac446244f2cf641edd2168d`, 70,180,043 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: atakujący, który wejdzie wieżą oblężniczą na mur/palisadę w bitwie taktycznej, daje wyłom i może zdobyć miasto bez tarana i katapulty; bez wieży i machin miasto nie pada; po wyłomie melee bije obrońców z muru.
+- Testy: tsc PASS; siege-tower-breach-everywhere 47/0 (Chromium, mutacje); palisade-battle-wall-rules 52/0.
+- Ograniczenia: pełny przebieg tury AI/barbarzyńców z wieżą niezmierzony; test sceny z przemianowanym Taranem; Rust: REPIN battle po wdrożeniu.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `34d2cada6f2b8b9d528e35dac8320247`, 70,179,813 bajtów.
+
+## ROBOCZA 34d2cada -- 2026-11-04 -- FALA 460: po „Koniec tury” najpierw ruchy gracza, potem AI (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`0c85c6b64` + PLAYER-MOVES-BEFORE-AI-TURN `1ff8657fc`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
+- Bundle MD5 `34d2cada6f2b8b9d528e35dac8320247`, 70,179,813 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: kolejność po „Koniec tury”: ruchy gracza (synchronicznie) → AI/państwa-miasta → ekonomia → nowa tura; marsz z atakiem czeka na okno bitwy; hot-seat dokańcza marsz kończącego fotela.
+- Testy: tsc PASS; player-moves 44/0 (live RED 26/18 na bazie); frozen-fortified 76/0; events-defer 40/0.
+- Ograniczenia: hot-seat — atak z marszu nie odpala się przy zmianie fotela; regresje live czerwone identycznie przed i po; ok. 29 testów live niezmierzone.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `fc48db59e3238e51cfa5056174b06f23`, 70,178,103 bajtów.
+
+## ROBOCZA fc48db59 -- 2026-11-04 -- FALA 459: „zamrożone” jednostki i armie: wybór, łączenie, samoleczenie (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`5fa0c1a84` + UNIT-FROZEN-FORTIFIED-UNSELECTABLE `dceaab0fa`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzuty Armia (112,101)), stała zgoda na poprawki.
+- Bundle MD5 `fc48db59e3238e51cfa5056174b06f23`, 70,178,103 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: jednostka z flagą garnizonu poza własnym miastem była rysowana, ale nieklikalna, a łączenie armii przenosiło „zamrożenie” na całość (pula ruchu = MIN → 0). Naprawa: samoleczenie stanu jednostek (klik, wybór, hover, start tury, wczytanie zapisu), łączenie normalizuje fortyfikację, garnizon tylko w własnym mieście.
+- Testy: tsc PASS; frozen-fortified 76/0 (Chromium, mutacje); merge-panel 104/0; merge-return 73/0.
+- Ograniczenia: organicznego odtworzenia i follow-leader nie zmierzono; jeśli zamrożenie wróci — zapis gry tuż po zdarzeniu.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `b05e96749bdfeefae4e9aa909b222ca9`, 70,174,827 bajtów.
+
+## ROBOCZA b05e9674 -- 2026-11-03 -- FALA 458: Milicja nie zabija mieszkańców; zdobycie miasta −1 obywatel (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`60621493a` + MILITIA-NO-POPULATION-LOSS `6daf342d4`) i commit wdrożenia bundla; pilne zgłoszenie właściciela (zrzut), stała zgoda na poprawki.
+- Bundle MD5 `b05e96749bdfeefae4e9aa909b222ca9`, 70,174,827 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: usunięty błędny mechanizm — straty Milicji nie zmniejszają ludności (tylko 5 tur odnowy); zdobycie obcego miasta −1 obywatel (min. 1), parametr `capture_pop_loss`, wiersz „Ludność: −1”; wyłączone: odzyskanie własnego/zbuntowanego miasta, cesja, aneksja.
+- Testy: tsc PASS; capture-pop-loss 29/0; no-population-loss PASS; regen-cooldown 53/0.
+- Ograniczenia: utraconej ludności w starych zapisach nie da się odzyskać; wiersz UI nieoglądany wizualnie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `83961b9bca4234b85f0a635e6f49e6de`, 70,173,786 bajtów.
+
+## ROBOCZA 83961b9b -- 2026-11-03 -- FALA 457: wojny AI↔AI: najbliższe miasto, pokój po 2 turach z ceną, zajmowanie miast (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`c1581619f` + AI-WAR-NEAREST-CITY-PEACE-2T `954a130cd`) i commit wdrożenia bundla; decyzje właściciela (cel = najbliższe miasto, pokój wymuszony po 2 turach, przegrywający płaci), stała zgoda na poprawki.
+- Bundle MD5 `83961b9bca4234b85f0a635e6f49e6de`, 70,173,786 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: cel ataku AI→AI = najbliższe miasto wroga; AI oblega i zajmuje obwarowane miasta innej AI; pokój po prośbie najpóźniej w 2. turze (cena: złoto → surowce → cesja miasta; rozejm osobno); bez gracza, wojen wymuszonych epok i państw-miast.
+- Testy: tsc PASS; ai-war-nearest-city-peace-2t 40/0 (mutacje 16/16).
+- Ograniczenia: pełne symulacje AI NIE_ZMIERZONO (liczba zajęć, opóźnienie pokoju, czas tury); część testów live ma timeouty także na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `4cff1d2384438a0dead09b37e514eb7d`, 70,166,764 bajtów.
+
+## ROBOCZA 4cff1d23 -- 2026-11-03 -- FALA 456: generator map: koń nie leży pod lasem (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` i commit wdrożenia bundla; decyzja właściciela (koń tylko równiny/trawa/łąki), stała zgoda na poprawki.
+- Bundle MD5 `4cff1d2384438a0dead09b37e514eb7d`, 70,166,764 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: złoże konia nigdy na lesie przy generowaniu mapy (przed: 59% koni na lesie, Stadnina odmawiała); przesunięcie na najbliższą wolną Równinę, liczba koni bez zmian. Tylko nowe mapy.
+- Testy: tsc PASS; determinism PASS; horse-resource-terrain 14/0 (FC); stadnina 15/0 i 28/0.
+- Ograniczenia: wyspy 4/8 ziaren; zapisy z koniem pod lasem bez naprawy; Rust wymaga REPIN mapgen.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `7c6b06c7e7e89c1f842d4257193a2717`, 70,165,138 bajtów.
+
+## ROBOCZA 7c6b06c7 -- 2026-11-03 -- FALA 455: ulepszenia: plony +1 za epokę, surowce ×1,5 za epokę (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`7c0c57a2a` + IMPROVEMENT-ERA-SCALING `0c4f6062e`) i commit wdrożenia bundla; decyzje właściciela (baza = epoka gracza, Pieniądz +1/epokę, złoto ×1,5), stała zgoda na poprawki.
+- Bundle MD5 `7c6b06c7e7e89c1f842d4257193a2717`, 70,165,138 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: plony Żywność/Praca/Handel/Pieniądz +1 za epokę (Farma 3/4/5, Irygacja żywność 5/6/7, Obóz łowiecki i Warzelnia soli Pieniądz 1/2/3); surowce ×1,5 za epokę (50/75/113 drewno, kamień, glina, sól; Stadnina 25/38/56; rudy 20/30/45; złoto 1/2/2); gracz i AI jednakowo.
+- Testy: tsc PASS; era-scaling 144/0; kamieniolom-epoka 37/0; tooltip 19/0.
+- Ograniczenia: symulacja AI 100+ tur NIE_ZMIERZONO (pomiar silnikowy: epoka 3 Żywność +24%, Praca +36%, Handel +29%); tryb ręczny przy zmianie populacji bez epoki (osobny temat); Rust wymaga REPIN.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `b23f563741c7c93c45438f2612986ed4`, 70,163,803 bajtów.
+
+## ROBOCZA b23f5637 -- 2026-11-03 -- FALA 454: Milicja: 5 tur odnowy po zniszczeniu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (po MERGE-PANEL + CITY-MILITIA-REGEN-COOLDOWN `97e5e9108`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
+- Bundle MD5 `b23f563741c7c93c45438f2612986ed4`, 70,163,803 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: po całkowitym zniszczeniu Milicji miasto przez 5 tur jej nie wystawia, potem odnowa w pełnym składzie; także Pomiń/Auto (wygrana atakującego); straty częściowe bez odnowy; licznik w zapisie; wiersz „Milicja odnawia się: za N tur”.
+- Testy: tsc PASS; regen-cooldown 53/0; no-defenders 113/0.
+- Ograniczenia: wiersz UI bez weryfikacji w Chromium; klucz do dopisania w export-c.py.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f937a3f9f349786247df6d0af64ff70a`, 70,162,448 bajtów.
+
+## ROBOCZA f937a3f9 -- 2026-11-03 -- FALA 453: panel „Połączenie armii”: siatka, licznik i wskaźnik „jeszcze N jednostek” (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`db9433d62` + ARMY-MERGE-PANEL-LIST-VISIBILITY `90e2d4ec3`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzut), stała zgoda na poprawki.
+- Bundle MD5 `f937a3f9f349786247df6d0af64ff70a`, 70,162,448 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: lista „Na polu” w siatce 3×5 z przewijaniem, „Przybywa (N)”, licznik „Na polu · Dołącza · Razem”, wskaźnik „▼ jeszcze N jednostek”; Enter wykonuje akcję sfokusowanego przycisku.
+- Testy: tsc PASS; list-visibility 104/0; scroll-real-render 27/0; production-mount 9/0.
+- Ograniczenia: ucięcia przy 18+2 nie odtworzono; army-split-panel-scroll-grid czerwony na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `a7b56a71335b8e9632c7666fcd01fe95`, 70,161,374 bajtów.
+
+## ROBOCZA a7b56a71 -- 2026-11-03 -- FALA 452: żelazo: natywny dostęp z własnego złoża naprawiony (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`f568e1ed3` + IRON-NATIVE-ACCESS-FIX `c62c1064f`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
+- Bundle MD5 `a7b56a71335b8e9632c7666fcd01fe95`, 70,161,374 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: dostęp do żelaza z własnej Kopalni (Kopalnia na złożu + zapas żelaza + Odlewnia) wreszcie się włącza; dotyczy grantów z tras handlowych i etykiety w dyplomacji, gracz i AI tą samą ścieżką.
+- Testy: tsc PASS; iron-native-access-fix 17/0 (RED 2/4); 4 mutacje łamią test.
+- Ograniczenia: brak pomiaru w symulacji; zelazo-gate i deposit-building-gate czerwone także na bazie; port Rust wymaga REPIN.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `83d4cbb583fed6cffb4f26b362dd085a`, 70,161,331 bajtów.
+
+## ROBOCZA 83d4cbb5 -- 2026-11-03 -- FALA 451: bonus obrony muru dla obrońców wewnątrz murów, zasięg ×2 strzelców na murze (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1117c6515` + WALL-DEFENDERS-BONUS-RANGE `4d41f3060`) i commit wdrożenia bundla; decyzje właściciela, stała zgoda na poprawki.
+- Bundle MD5 `83d4cbb583fed6cffb4f26b362dd085a`, 70,161,331 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: bonus obrony muru/palisady dla wszystkich obrońców na murze i za murem (taktyczna i „Pomiń”); zasięg strzelców na koronie ×2; atakujący na koronie bez bonusu.
+- Testy: tsc PASS; 58/0 (RED 22/13); regresje oblężenia zielone.
+- Ograniczenia: pełna tura z ostrzałem ×2 nie zmierzona end-to-end; 4 testy czerwone także na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `acb3c562ac9677091bf002fe1b75a3f8`, 70,160,592 bajtów.
+
+## ROBOCZA acb3c562 -- 2026-11-03 -- FALA 450: Milicja = mieszkańcy, wręcz i dystans wg epoki (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`4cd4c35cb` + CITY-MILITIA `5605d38ff`) i commit wdrożenia bundla; decyzje właściciela (nowa specyfikacja Milicji), stała zgoda na poprawki.
+- Bundle MD5 `acb3c562ac9677091bf002fe1b75a3f8`, 70,160,592 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: Milicja = liczba mieszkańców, zawsze przy ataku na miasto z budynkiem Garnizon (także gdy jest wojsko), połowa wręcz (×0,5 statystyk), połowa dystans (pełne statystyki: Oszczepnik/Łucznik/Procarz), niższe morale, straty zmniejszają ludność.
+- Testy: tsc PASS; 113/0 (RED przed); 10 mutacji łamie test; regresje zielone.
+- Ograniczenia: brak pomiaru w pełnej grze (60 jednostek w bitwie 3D); zamiast „Miecznika z tarczą” użyto „Wojownik z mieczem i tarczą”.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `3b1c46dadf8bcd29c49f8bb18ba71946`, 70,157,366 bajtów.
+
+## ROBOCZA 3b1c46da -- 2026-11-03 -- FALA 449: eliminacja cywilizacji: żywność ze Spichlerza w bilansie zdobycia (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`f832f6223` + ELIMINATION-FULL-SPOILS `b88ace31b`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzut), stała zgoda na poprawki.
+- Bundle MD5 `3b1c46dadf8bcd29c49f8bb18ba71946`, 70,157,366 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: przy eliminacji zwycięzca przejmuje żywność ze Spichlerza ofiary (do pojemności swojego Spichlerza), okno „Bilans zdobycia” ma wiersz „Żywność ze spichlerza”. Surowce, Praca, Nauka i złoto były przenoszone wcześniej.
+- Testy: tsc PASS; 114/0 (RED przed); mutacje łamią test.
+- Ograniczenia: brak pomiaru w przeglądarce; wchłonięcie dyplomatyczne państwa-miasta bez majątku (poza zakresem).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `4e022fcd0c2f3602d9a184a6434c849e`, 70,156,155 bajtów.
+
+## ROBOCZA 4e022fcd -- 2026-11-03 -- FALA 448: panel „Rozdziel armię”: przewijanie, siatka 3×5, brandbook (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`ae292911f` + ARMY-SPLIT-PANEL `798ec59eb`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
+- Bundle MD5 `4e022fcd0c2f3602d9a184a6434c849e`, 70,156,155 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: lista jednostek nie wraca na początek po zaznaczeniu; siatka 3×5; wygląd zgodny z brandbookiem; pasek statusu zaznaczenia.
+- Testy: tsc PASS; 18/0 (RED przed); regresje split/merge zielone.
+- Ograniczenia: render z prawdziwymi tokenami/ikonami i kontrast WCAG NIE_ZMIERZONO.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `6ee8f07f2ac5ecdee81a713a80b4847d`, 70,151,183 bajtów.
+
+## ROBOCZA 6ee8f07f -- 2026-11-03 -- FALA 447: wieżyczki strzeleckie przy murze i palisadzie, model palisady w bitwie (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`bb6cac3d4` + PALISADE r2 `7553d5f11`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
+- Bundle MD5 `6ee8f07f2ac5ecdee81a713a80b4847d`, 70,151,183 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: wieżyczki co 4 kafle obwodu przy palisadzie (drewniane) i murze (kamienne) strzelają w bitwie o miasto mocą najlepszej jednostki dystansowej epoki; model palisady w widoku bitwy.
+- Testy: tsc PASS; 59/0, 52/0, 50/0; Chromium: 39 wieżyczek, strzał w wroga; mutacje łamią testy.
+- Ograniczenia: wieżyczki tylko w bitwie taktycznej (nie w Auto/„Pomiń”); ostrzał zmierzony na żywo dla epoki 1.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `8409e6acbadad4ea4014278a2a579dd4`, 70,142,370 bajtów.
+
+## ROBOCZA 8409e6ac -- 2026-11-03 -- FALA 446: powiadomienia po turach AI, skala ×2 złóż i fortów (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`e0b20f430` + EVENTS-DEFER `0d86a0d5c`, MAP-MODELS-SCALE-2X `ad7c81907`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.
+- Bundle MD5 `8409e6acbadad4ea4014278a2a579dd4`, 70,142,370 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: (1) modale odkryć technologii, cudów i zdobycia miasta z fazy tur AI pokazują się dopiero na początku tury gracza (wyjątek: dyplomacja, okno przed bitwą); (2) złoża/surowce oraz Fort i Posterunek na mapie ×2.
+- Testy: tsc PASS po scaleniu; testy tematów zielone (40/0, 285/0); mutacje łamią testy.
+- Ograniczenia: rudy po ×2 wystają poza krawędź heksa (decyzja: skala 1,5?); EVENTS bez pomiaru w 2+ fotelach i przy zapisie w trakcie tury.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `bba4ae4efc75a18c55886ce2abfe934a`, 70,141,011 bajtów.
+
+## ROBOCZA bba4ae4e -- 2026-11-03 -- FALA 445: palisada jako mur, oblężenie wymaga wyłomu, tooltip ulepszeń (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1a2f1c721` + HEX-TOOLTIP `7e5c4aaca`, PALISADE r1 `ce77ddffa`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.
+- Bundle MD5 `bba4ae4efc75a18c55886ce2abfe934a`, 70,141,011 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: (1) tooltip heksu: produkcja ulepszenia na początku, bez „magazynu państwa”; (2) oblężenie: palisada = forma muru; miasto z murem/palisadą nie padnie bez wyłomu (machiny), gracz/AI/barbarzyńcy; melee nie atakuje obrońców na murze/za palisadą, po wyłomie wchodzi.
+- Testy: tsc PASS po scaleniu; testy tematów zielone (52/0, 50/0, 19/0); mutacje łamią testy.
+- Ograniczenia: wieżyczki strzeleckie i model palisady w bitwie (runda 2) jeszcze nie wdrożone; zachowanie w żywej scenie NIE_ZMIERZONO; wieża oblężnicza w bitwie taktycznej nie liczy się jako wyłom (do decyzji).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `abb556ee80b8583593e480034b1448fa`, 70,139,107 bajtów.
+
+## ROBOCZA abb556ee -- 2026-11-03 -- FALA 444: skracanie liczb w HUD, widoczna zamiana Pracy na podatek (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1247214fd` + HUD-NUMBER-ABBREV `65b031ac8`, LABOR-TO-TAX `bcd873fb4`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.
+- Bundle MD5 `abb556ee80b8583593e480034b1448fa`, 70,139,107 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: (1) liczby ≥ 1000 w pasku zasobów (Skarbiec, Praca, Spichlerz, Nauka i in.) i panelu Rekrutacja skracane do „k”/„M”, pełna wartość w tooltipie; (2) zamiana Pracy na podatek: podgląd „na koniec tury: +N do Skarbca”, natychmiastowe odświeżenie „+N/turę”, komunikat z wartościami i jasne odmowy. Złoto dochodziło na koniec tury także wcześniej (do Skarbca idzie udział „Podatek” suwaka stolicy, domyślnie 60%).
+- Testy: tsc PASS; testy tematów i regresje zielone; żywy pomiar PRZED/PO.
+- Ograniczenia: kurs/udział suwaka bez zmian; „Rekruci” w HUD i znaczniki mapy bez skracania.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `c02b4df42f1ba9976c959a5faf06929a`, 70,136,020 bajtów.
+
+## ROBOCZA c02b4df4 -- 2026-11-03 -- FALA 443: kolejność rekrutacji wg epok, automat Q3 (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`57a7ada40` + RECRUIT-LIST-ORDER `6f61f1d70`, AUTO-IMPROVE-Q3 `20bb45c49`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.
+- Bundle MD5 `c02b4df42f1ba9976c959a5faf06929a`, 70,136,020 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: (1) lista rekrutacji (miasto i panel Armia) — najnowsza epoka na górze, w epoce od najsilniejszej; (2) automat ulepszeń: wycinka przy rzece także w „Zrównoważone”, farma na wyciętym heksie rzeki bez obywatela, zlikwidowany limit fortów/posterunków (defenseCap), stały wskaźnik „Budżet niewydany” z przyciskiem „Wyłącz filtr”.
+- Testy: tsc PASS; recruit-list-order 18/0, auto-improve-q3 50/0 (RED 19/12), mutacje łamią testy; żywy pomiar K1 farmy 3→9, K2 wycinki 0→9.
+- Ograniczenia: rejestr wyciętych heksów nie jest w zapisie gry; wskaźnik niezweryfikowany w żywej grze; zużycie Pracy przez forty bez limitu NIE_ZMIERZONO.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `12546c5e2abb88ebad3737c9060b98cb`, 70,132,826 bajtów.
+
+## ROBOCZA 12546c5e -- 2026-11-03 -- FALA 442: oblężenie tylko na wojnie, reguły fortu/posterunku, Stadnina (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1099bdac2` + SIEGE `e6d4c8f85`, FORT-OUTPOST `3f7972629`, STADNINA `e88103e0d`, CAP `a8b953dbe`) i commit wdrożenia bundla; zgłoszenia właściciela (zrzuty), stała zgoda na poprawki.
+- Bundle MD5 `12546c5e2abb88ebad3737c9060b98cb`, 70,132,826 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: (1) oblężenie/szturm miasta tylko w stanie wojny, rozejm/NAP/sojusz/koniec wojny zdejmuje oblężenie, także w zapisach; (2) posterunek tylko na własnym terytorium przy granicy, fort w dowolnym miejscu, AI bez techu stawia posterunek przy granicy; (3) Stadnina: terytorium posterunków/fortów liczone do kandydatów, komunikat odmowy z prawdziwym powodem; (4) martwy parametr limitu liczby ulepszeń usunięty.
+- Testy: tsc PASS po scaleniu; testy tematów 48/0, 40/0, 15/0, 15/0 oraz regresje; mutacje łamią testy.
+- Ograniczenia: NIE_ZMIERZONO symulacji pełnych gier i nakładki oblężenia w przeglądarce; przyczyna Stadniny udowodniona dla posterunku/fortu (nie musi być jedyna).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `994a452483dcb05e33b71cff9520f738`, 70,130,233 bajtów.
+
+## ROBOCZA 994a4524 -- 2026-11-03 -- FALA 441: kolejka rekrutacji w panelu armii (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`89b3ee5db` + `R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1` `ff6ac152c`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzut), stała zgoda na poprawki.
+- Bundle MD5 `994a452483dcb05e33b71cff9520f738`, 70,130,233 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: w panelu armii pod każdym miastem „Kolejka rekrutacji” jak w panelu miasta — usuwanie ✕ (zwrot jak w mieście), ↑ ↓ i przeciąganie; jedna logika, oba panele odświeżają się po zmianie.
+- Testy: tsc PASS; army-panel-recruit-remove 21/0 (PRZED RED); regresje Chromium 4 testy zielone; 16 testów pada tak samo przed i po.
+- Ograniczenia: NIE_ZMIERZONO zwrot MP i surowców przy ✕ w pełnej grze (istniejąca ścieżka anulowania).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `300a5c5bafa7811a2f044165cbce8939`, 70,129,262 bajtów.
+
+## ROBOCZA 300a5c5b -- 2026-11-03 -- FALA 440: automat wycina las przy rzekach (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`23dd158e9` + `R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2` `451dacd61`) i commit wdrożenia bundla; zgłoszenie właściciela (2026-11-03, zrzut Mykeny), stała zgoda na poprawki z testów.
+- Bundle MD5 `300a5c5bafa7811a2f044165cbce8939`, 70,129,262 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: w trybie Żywność przy „Wolno wycinać las” ON automat wycina las na i przy rzece (pod farmę) także przy włączonym „Tylko pola z obywatelami” (wcześniej filtr odcinał las rzeczny bez obywatela i automat budował trzodę/irygację). OFF nadal blokuje całą wycinkę. Żywy pomiar: 0 wycinek w 15 turach → wycinka w t2.
+- Testy: tsc PASS; autoclear-river-forest-priority 19/0 (PRZED 9/2), mutacje M1–M3 łamią test; 13 testów regresji EXIT=0.
+- Ograniczenia: farma na wyciętym heksie rzeki bez obywatela nadal podlega filtrowi „tylko pola z obywatelami” (DECYZJA do właściciela); poprawka tylko w trybie Żywność, „Zrównoważone” bez zmian (DECYZJA); `oboz-lowiecki-las` pada też na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `4049e7807bdb1508e35f83dd6f7b0d2d`, 70,129,073 bajtów.
+
+## ROBOCZA 4049e780 -- 2026-11-02 -- FALA 439: strażnica i fort odsłaniają mgłę wojny (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`9ce1f5e50` + `R-WEB-FORT-VISION-FOG-Q1` `b38f40860`) i commit wdrożenia bundla; zgłoszenie właściciela (2026-11-02, zrzut), stała zgoda na poprawki.
+- Bundle MD5 `4049e7807bdb1508e35f83dd6f7b0d2d`, 70,129,073 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` manifest match OK.
+- Zakres: posterunek (r=3) i fort (r=5) gracza są źródłami wzroku o promieniu terytorium — całe koło odkryte i widoczne jak przy mieście. Żywy pomiar: koło 91 pól, nieodkrytych PRZED 91/91, PO 0/91 (także po zdobyciu fortu). Po utracie fortu pola zostają odkryte (znika widoczność); fort wroga niczego nie odsłania. AI z fortem widzi jego koło (91 → 182 pola).
+- Testy: tsc PASS; fort-vision 15/0, auto-fort-claim 63/0, auto-fort-diag 17/0, fort-outpost-hard-territory 80/0, river-fog-visibility 31/0, autoimprove-live-hooks 37/0.
+- Ograniczenia: NIE_ZMIERZONO budowa/cofnięcie fortu przez panel (hak testowy omija kod panelu) i wpływ zwiększonej widoczności na AI w pełnej grze; `ai-fog-test` pada też na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `1d59a3469fcee88c93c4c380e0867ef6`, 70,128,592 bajtów.
+
+## ROBOCZA 1d59a346 -- 2026-11-02 -- FALA 438: Pangea: faktyczny udział lądu zgodny z deklaracją 20–70% (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`420d97ffe` + `R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1` `c0f54012a`) i commit wdrożenia bundla; stała zgoda właściciela (dopalenie po `R-WEB-PANGEA-LAND-FRACTION-Q1`).
+- Bundle MD5 `1d59a3469fcee88c93c4c380e0867ef6`, 70,128,592 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` manifest match OK.
+- Zakres: `topUpPangeaLandFraction` — fazy 2–3 dosypywania lądu. Zmierzone (średnia z 3 ziaren): Mały 20/30/40/50/60/70% → 20,0/30,0/40,0/50,0/60,0/70,2; Standardowy 20–50% → dokładnie deklaracja; Standardowy 60% (59,4) i 70% (69,4) bez zmian bajt-w-bajt. Kontynenty, Wyspy, Ziemia — hashe identyczne. Pangea Mały dla wszystkich udziałów wygląda inaczej dla tych samych ziaren.
+- Testy: tsc PASS; pangea-land-determinism, pangea-land-fraction 3/3, capital-sep-pangea 3/0, cluster-spread 5/0, ai-city-yield 42/0, parity startów gracza 30/30, pangea-land-other-measure PASS, pangea-land-shape PASS.
+- Ograniczenia: NIE_ZMIERZONO pełny `map-gen-regression` (rzeki >24 min; Pangea Mały rzeki 462/462 tras OK) i kształt Pangei 20–30% w przeglądarce.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `e3f08be6b0dcc31e55c45234dcb92d78`, 70,125,616 bajtów.
+
+## ROBOCZA e3f08be6 -- 2026-11-02 -- FALA 437: automat: posterunek nie w kole własnego fortu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`a02d6bd30` + `R-WEB-AUTO-FORT-DIAG-Q1` `a13d97694`) i commit wdrożenia bundla; stała zgoda właściciela (usterka z testów na żywo U-3).
+- Bundle MD5 `e3f08be6b0dcc31e55c45234dcb92d78`, 70,125,616 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` manifest match OK.
+- Zakres: FAZA 0 automatu nie stawia fortu/posterunku, którego koło jest w całości w kole własnego fortu (kandydat dający ≥1 nowy heks nadal powstaje; posterunek obejmowany przez fort z tego samego wywołania jest cofany). Dodany opcjonalny log etapu E-FORT (domyślnie wyłączony).
+- Testy: tsc PASS; auto-fort-diag 17/0, auto-fort-claim 63/0, autoimprove-stages-q1 302/0, auto-improvements 46/0, ai-improvements 56/0, autoimprove-live-hooks 37/0.
+- Ograniczenia: U-2 (0 fortów gracza w profilu „zrównoważone”) — przyczyna NIE_ZMIERZONO (żywy bieg z logiem E-FORT); FAZA 0 dopuszcza częściowo nakładające się koła.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `8f59c5c22da274f1b64ca6a0bac53b44`, 70,122,731 bajtów.
+
+## ROBOCZA 8f59c5c2 -- 2026-11-02 -- FALA 436: log pickera automatu i hooki testowe ?civTest=1 (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`e1b0bae86` + `R-WEB-AUTOIMPROVE-LIVE-HOOKS-Q1` `3e2540a57`) i commit wdrożenia bundla; stała zgoda właściciela (dopalenia po testach na żywo).
+- Bundle MD5 `8f59c5c22da274f1b64ca6a0bac53b44`, 70,122,731 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` manifest match OK.
+- Zakres: BEZ zmiany rozgrywki. Opcjonalny log decyzji pickera automatu (domyślnie wyłączony) + hooki testowe `window.__civTest` wyłącznie przy `?civTest=1` (bez parametru obiekt nie istnieje). Wyniki pickera bajt-w-bajt jak przed zmianą.
+- Testy: tsc PASS; autoimprove-live-hooks-test 37/0, autoimprove-stages-q1 302/0, auto-improvements 46/0, auto-fort-claim 63/0.
+- Ograniczenia: żywe scenariusze fort/E2/E3 i przyczyna braku wycinki w Koryncie NIE_ZMIERZONO (następny run na tym bundlu).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f7a69e127b26c25f2ac7e39d8d8e8fd7`, 70,117,015 bajtów.
+
+## ROBOCZA f7a69e12 -- 2026-11-02 -- FALA 435: słodka woda (rzeka + jezioro) i tartak nie przy rzece (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`38f309b41` + `R-WEB-FRESHWATER-ACCESS-LAKE-Q1` `6ea49414a`) i commit wdrożenia bundla; implementacja dwóch decyzji właściciela z czatu (2026-11-02).
+- Bundle MD5 `f7a69e127b26c25f2ac7e39d8d8e8fd7`, 70,117,015 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` manifest match OK.
+- Zakres: „dostęp do wody” = tylko słodka woda (rzeka + jezioro, morze NIE) — `hasFreshwaterAccess` (`gra/src/map/freshwater.ts`), użyte w zdrowiu miasta; generator nie tworzy jezior (0/24 map), więc zdrowie bez zmian. Heksy na rzece i przy rzece są zarezerwowane pod żywność: tartak i obóz łowiecki tam nie powstają (luka: sąsiad z samym `rzeka.obecna`). Skutek: więcej lasów zarezerwowanych (Pangea Mały 1350 → 1611 z 2717). E2 (wycinka+farma) bez zmian.
+- Testy: tsc PASS; freshwater-access-test 37/0; autoimprove-stages-q1 302/0, auto-improvements 46/0, ai-improvements 56/0, farma-nie-w-lesie 138/0, wyrab-rzeka-r2 10/0, oboz-lowiecki-wymaga-tartaku 16/0, hodowla-las 113/0, wire-ekonomia 37/0.
+- Ograniczenia: NIE_ZMIERZONO Chromium/20 tur dla rezerwacji pod żywność i wpływ na drewno; padają też na bazie `naval-water-access-gate`, `ai4-popyt-obywatele`, `tartak-oboz-wyscig-race`.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `44416e983b69617dc799ed1583e83c56`, 70,115,380 bajtów.
+
+## ROBOCZA 44416e98 -- 2026-11-01 -- FALA 434: cywilizacje dalej od siebie (stolice min. 25 hexów na Standardzie) (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`22acd3542` + `R-WEB-CAPITAL-SPACING-TUNE-Q1` `1485a943d` + przegenerowany wzorzec testu startów) i commit wdrożenia bundla; stała zgoda właściciela (usterki z testów na żywo, 2026-11-01).
+- Bundle MD5 `44416e983b69617dc799ed1583e83c56`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: minimalny dystans stolic = 0,21 × krótszy bok mapy (Standard: 25 hexów, było 18), sufit wykonalności czynnik 0,8. Żywa gra, 10 map Standardowy, 7 cywilizacji: najbliższa para 25–33 hexów (mediana 25,5), par poniżej 25: 0/10 (było 7/10; pierwotnie 10/10). Wszystkie cywilizacje umieszczone. Start gracza przesuwa się razem ze stolicami.
+- Testy po scaleniu: tsc PASS; capital-sep-unit 44/0, capital-spacing-prop PASS, capital-sep-pangea 3/0, cluster-spread 5/0, cluster-start-q2-smoke 16/0, mp-spawn-ration 16/0, parity startów gracza 30/30 (wzorzec przegenerowany), pangea-land-determinism PASS, ai-city-yield 42/0, followups 9/0, autoclear 60/0, auto-improvements 46/0, ai-improvements 56/0.
+- Ograniczenia: `cluster-start-test` 478/3 (seaDist stolic obcych typów, czerwone też na bazie; sumer 8 → 6); przy 8 typach cywilizacji efektywny dystans 23; par poniżej 30 hexów nadal 8/10 w żywej grze; ostrzeżenia generatora w żywej grze NIE_ZMIERZONO.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `10307fe6d985c9dc6735083a0c3aba1c`, 70,115,380 bajtów.
+
+## ROBOCZA 10307fe6 -- 2026-11-01 -- FALA 433: Pangea 60% lądu, AI nie zakłada miast na biegunach w ekspansji (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`57cc8aded` + `R-WEB-PANGEA-LAND-FRACTION-Q1` `9ae6a5554` + `R-WEB-AI-POLAR-FALLBACK-Q1` `7fbf906ec`) i commit wdrożenia bundla; stała zgoda właściciela (usterki z testów na żywo, 2026-11-01).
+- Bundle MD5 `10307fe6d985c9dc6735083a0c3aba1c`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) Pangea przy deklarowanych 60% lądu daje 59,2–59,9% (było 56%); Kontynenty/Wyspy/Ziemia bez zmian (identyczne hashe map); mapy Pangei dla tych samych ziaren wyglądają inaczej; (2) AI nie zakłada miasta na heksie polarnym w ekspansji (fallback na biegun tylko gdy AI nie ma jeszcze żadnego miasta); żywa gra: Pangea 1001 → 0 miast AI na polarnym (było 1).
+- Testy po scaleniu: tsc PASS; ai-polar-fallback 8/0, ai-avoid-polar-pick 16/0, parity 30/30, pangea-land-determinism PASS, pangea-land-fraction PASS, capital-sep-unit 44/0, capital-sep-pangea 3/0, cluster-spread 5/0, ai-city-yield 42/0, followups 9/0, autoclear 60/0, stages 302/0, auto-improvements 46/0, ai-improvements 56/0.
+- Ograniczenia: Pangea 50% → 43–45%, 20% → 10,5% (poza zakresem); liczba miast AI w T100 w żywej grze NIE_ZMIERZONO (rozrzut ±4); w toku: większe rozproszenie stolic (`R-WEB-CAPITAL-SPACING-TUNE-Q1`).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `83f64d3fdba933db58c4319c53e7e3f0`, 70,114,029 bajtów.
+
+## ROBOCZA 83f64d3f -- 2026-11-01 -- FALA 432: AI poprawnie ocenia teren pod miasta (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`f8d7b55ea` + `R-WEB-AI-CITY-YIELD-FIX-Q1` `7ec22faa7` + `R-WEB-AI-CITY-YIELD-LIVE-Q1` `050bd69ba`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31; wdrożenie PO pomiarze pełnej gry (decyzja ABC-B właściciela).
+- Bundle MD5 `83f64d3fdba933db58c4319c53e7e3f0`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: ocena miejsca pod miasto AI liczyła plon terenu jako 0 (dopasowanie nazwy z diakrytykami do id); teraz plon jest liczony, z wagą 0,3, tak by nie zmieniać tempa ekspansji. Pomiar w pełnej grze (Chromium, Standardowy 168×120, ziarno 4242, 100 tur, 5 AI): miasta AI T100 Kontynenty 93 → 93 (0,0%), Pangea 92 → 90 (−2,2%); 0 miast na biegunach.
+- Testy po scaleniu: tsc PASS; ai-city-yield 42/0, ai-early-city-founding-pace 2/0, capital-sep-unit 44/0, capital-spacing-prop PASS, ai-avoid-polar-pick 16/0, followups 9/0, autoclear 60/0, stages 302/0, auto-improvements 46/0, ai-improvements 56/0.
+- Ograniczenia: jedno ziarno na typ, bez Wysp; wąskie plateau wagi (0,35 daje +27% na Wyspach w symulacji); w toku: pięć testów w żywej grze.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `02d1347767bd6067449b9c2e19c4c65d`, 70,113,050 bajtów.
+
+## ROBOCZA 02d13477 -- 2026-11-01 -- FALA 431: rozproszenie cywilizacji (stolice dalej od siebie), drobne poprawki kreatora i AI (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`c99ac58cd` + `R-WEB-CAPITAL-SPACING-FIX-Q1` `44108d7a1` + `R-WEB-FOLLOWUPS-LAND-AI-Q1` `ce830e0a1`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `02d1347767bd6067449b9c2e19c4c65d`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) rozproszenie cywilizacji (wariant A+B): stolica regionu najbliżej jego środka; minimalny dystans stolic proporcjonalny do krótszego boku mapy (współczynnik 0,15, podłoga = dotychczasowa tabela). Standard: pary stolic <25 hexów 73,3% → 13,3% map, <30: 73,3% → 26,7%; Mały/Duży/Ogromny → 0%; wszystkie cywilizacje umieszczone. (2) kreator: Ziemia „szablon kontynentów”; stare zapisy dostają domyślny udział lądu typu; (3) AI: miasto z bonusu unika biegunów.
+- Testy po scaleniu: tsc PASS; capital-sep-unit 44/0, capital-spacing-prop PASS, capital-sep-pangea 3/0, cluster-spread 5/0, cluster-start-q2-smoke 16/0, mp-spawn-ration 16/0, ai-avoid-polar 16/0 i parity 30/30, followups 9/0, autoclear 60/0, stages 302/0, auto-improvements 46/0, ai-improvements 56/0.
+- Ograniczenia: Pangea 30% lądu bez poprawy (sufit wykonalności); cluster-start-test 477/3 (3 asercje seaDist stolic obcych, baza miała 2); nie zmierzono w żywej grze; w toku: ocena plonu terenu przy wyborze miejsca na miasto AI (wdrożenie po pomiarze).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `fc1af15093852a9f221f75a44c86296e`, 70,111,912 bajtów.
+
+## ROBOCZA fc1af150 -- 2026-11-01 -- FALA 430: farma przed trzodą także przy rzece, AI unika biegunów (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`97dbcb416` = `50edcc264` + `R-WEB-AI-AVOID-POLAR-CITIES-Q1` `a4f702785`, potem `R-WEB-AUTOCLEAR-PRIORITY-LIVE-Q1` `f2f2e9d05`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `fc1af15093852a9f221f75a44c86296e`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) automat ulepszeń: farma PRZED trzodą także na heksie sąsiadującym z rzeką (zgłoszenia Korynt, Rodos); kolejność E1 farma → E2 wycinka+farma → E3 trzoda → E4 irygacja; dotyczy też AI (wspólny picker); (2) AI nie zakłada miast (stolice, miasta-państwa, osadnicy) na heksie polarnym ani w jego sąsiedztwie, gdy są lepsze tereny; gracz bez ograniczeń.
+- Testy po scaleniu: tsc PASS; autoclear-priority 60/0, autoimprove-stages-q1 302/0, auto-improvements 46/0, ai-improvements 56/0, ai-food-stages 13/0, wyrab-rzeka-r2 10/0, ai-avoid-polar-pick 16/0, capital-sep-unit 36/0, fort-outpost 80/0, auto-fort-claim 63/0, food-hodowla 24/0.
+- Ograniczenia: NIE_ZMIERZONO w żywej grze (Chromium); sweep na mapie: trzoda przed farmą 37/200 → 10/200 (reszta: heksy daleko od rzeki, zgodnie z decyzją #1); w toku: rozproszenie stolic (wariant A+B).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `20ebabc77b5003f42c550294ec0a3b23`, 70,109,819 bajtów.
+
+## ROBOCZA 20ebabc7 -- 2026-11-01 -- FALA 429: udział lądu przywrócony per typ świata, sprzątanie starych reguł (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`4bbef081d` + `R-WEB-LAND-FRACTION-RESTORE-Q1` `bfd7f59d3` + `R-WEB-STALE-RULES-CLEANUP-Q1` `dec01c31d`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `20ebabc77b5003f42c550294ec0a3b23`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) domyślny udział lądu: Pangea 60% (generator ok. 56%), Wyspy 50%, Kontynenty 30%, Ziemia szablon bez suwaka — naprawa regresu „normalna mapa mniejsza” (30% dla wszystkich typów od `9c3d921db`); zapisane ustawienia suwaka nie są nadpisywane; (2) sprzątanie komentarzy/opisów/testów ze starych reguł (zmiana widoczna: podpowiedź profilu „Zrównoważone”).
+- Testy po scaleniu: tsc PASS; auto-improvements 46/0, ai-improvements 56/0, autoimprove-stages-q1 302/0, fort-outpost-hard-territory 80/0, auto-fort-claim 63/0, food-hodowla 24/0. Pomiar generatora Standardowy: Kontynenty 30,0%, Pangea ok. 56%, Wyspy 50,0%, Ziemia 15,6% lądu.
+- Ograniczenia: NIE_URUCHOMIONO testy Chromium (newgame-defaults-test i in.); w toku: priorytet farma/trzoda przy rzece, odległości stolic, AI na terenach polarnych.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `d205f607cba1ed97e3e7ef441ce5e288`, 70,109,841 bajtów.
+
+## ROBOCZA d205f607 -- 2026-10-31 -- FALA 428: forty i posterunki z automatu ulepszeń (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`a07e6916f` + `R-WEB-AUTO-FORT-CLAIM-Q1` `0e93c3d6b` + wiązanie `main.ts`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `d205f607cba1ed97e3e7ef441ce5e288`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: automat (gracz „Zrównoważone”, AI) stawia fort/posterunek na złożach i górach, na granicy dostępnej budowy (maks. nowych hexów), po żywności i surowcach, tylko gdy limit miast wyczerpany; okręgi fortów rozłączne; drogi na końcu.
+- Testy po scaleniu: tsc PASS; auto-fort-claim 63/0, auto-improvements 46/0, ai-improvements 56/0, autoimprove-stages-q1 302/0, fort-outpost-hard-territory 80/0, saveload-praca-pool-live 13/0, diplomacy 304/0.
+- Ograniczenia: NIE_ZMIERZONO przebieg w pełnej grze w Chromium (pomiar AI tylko w uproszczonej symulacji); miasta-państwa wyłączone z kroku fortów (założenie).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `79a5ca16c766bdb736ea851746ae6962`, 70,106,346 bajtów.
+
+## ROBOCZA 79a5ca16 -- 2026-10-31 -- FALA 427: tartak nie przy rzece, bez limitu etapu, znacznik „Agresor (N)”, zerowanie HUD foteli hot-seat (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1b6dc1c08` + trzy tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `79a5ca16c766bdb736ea851746ae6962`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-AUTOIMPROVE-STAGES3-Q1` — tartak i obóz nigdy na heksie z rzeką ani sąsiadującym z rzeką (we wszystkich profilach automatu); preferencja: wzgórza z lasem, potem las bez dostępu do rzeki; tartak może stać na lesie pod farmę, jeśli nie ma tam dostępu do rzeki; zdjęty limit „3 budowle na etap na miasto na turę”; (2) `R-WEB-HOTSEAT-HUD-CACHE-Q1` — przy wczytaniu zapisu zerowane wartości pomocnicze HUD wszystkich foteli hot-seat; (3) `R-WEB-AGGRESSOR-MARKER-Q1` — znacznik „Agresor (N)” z licznikiem tur przy nazwie cywilizacji na liście dyplomacji (tylko przy aktywnej fladze).
+- Testy po scaleniu: tsc PASS; autoimprove-stages-q1 302/0, auto-improvements 46/0, ai-improvements 56/0, ai-food-stages 13/0, ai2-heks-po-heksie 37/0, hodowla-las 113/0, ai4-popyt-obywatele 55/0, wyrab-rzeka 3/0, 10/0, 2/0, city-clears-forest 18/0, fort-outpost-hard-territory 80/0, defeat-last-city 14/0, spichlerz-hud-params-parity 66/0, znacznik Agresor: unit 21/0, mutacje 8/8, Chromium 24/0; HUD hot-seat Chromium 18/0; diplomacy 148, war-era-counter 82, ring 15.
+- Ograniczenia: NIE_ZMIERZONO stan Drewna i Żywności w magazynie; skutek reguły rzeki: tartaki AI przy niedoborze drewna 123 → 34 w teście (decyzja właściciela); „dostęp do wody” = tylko rzeka (jezioro/morze nie liczą się — pytanie ABC otwarte); cztery pola HUD fotela 2+ zerowane (dowód statyczny); znane czerwone w bazie: ai-major-economy, tartak-oboz-wyscig-race, ai-praca-split-parity, food-hodowla 20/4, oboz-lowiecki-las 72/19, praca-jeden-podzial-kontrakt 635/2, civ-matrix-ai-diplomacy-wiring 42/1, ai-test.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f5b7b1b329fcc2fe3844a530c3d99964`, 70,105,484 bajtów.
+
+## ROBOCZA f5b7b1b3 -- 2026-10-31 -- FALA 426: auto-ulepszenia wg decyzji właściciela (budżet sztywno, brak limitów w niedoborze, tartak nie na rzece), pula Pracy foteli hot-seat (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`0f9f60a10` + trzy tematy i raport weryfikacji) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `f5b7b1b329fcc2fe3844a530c3d99964`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) auto-ulepszenia: brak limitów liczby ulepszeń brakującego surowca w niedoborze (stare „1 tartak na 10 obywateli” usunięte); tartak i obóz nigdy na heksie rzeka+las; wycinka tylko pod farmy (nie na wzgórzach); farma pierwsza na lesie pod farmę; drogi na końcu; „Wolno wycinać las” wyłączone = zero automatycznej wycinki gracza (AI i państwa-miasta bez przycisku); (2) budżet: procent budżetu Pracy gracza jest twardym sufitem (zmierzone max 31,8% przy ustawionych 33%, wcześniej do 75%), AI i państwa-miasta 100% puli, niewykorzystana Praca kumuluje się; (3) `R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1` — zapis i odczyt puli Pracy każdego fotela hot-seat (wcześniej fotel 2+ po świeżym wczytaniu rzucał błąd); (4) `R-WEB-DECISIONS-VERIFY-Q1` — raport weryfikacji 23 decyzji (21 zgodnych), bez zmian w grze.
+- Testy po scaleniu: tsc PASS; autoimprove-stages-q1 269/0, ai-improvements 56/0, auto-improvements 46/0, ai-food-stages 13/0, ai2-heks-po-heksie 37/0, hodowla-las 113/0, ai4-popyt-obywatele 55/0, wyrab-rzeka 3/0, 10/0, 2/0, city-clears-forest 18/0, fort-outpost-hard-territory 80/0, defeat-last-city 14/0, spichlerz-hud-params-parity 66/0, diplomacy 148, war-era-counter 82, ring 15; Chromium: hot-seat 22/0.
+- Ograniczenia: NIE_ZMIERZONO stan Drewna w magazynie i realny przebieg auto-ulepszeń w Chromium po zmianach (symulacja pickera); otwarte ABC: wersja ścisła „farma pierwsza” dla AI, limit 3 budów na etap, wskaźnik przyczyny braku budowy, cache HUD foteli 2+; znane czerwone w bazie: ai-major-economy, tartak-oboz-wyscig-race, ai-praca-split-parity 23/4, food-hodowla 20/4, oboz-lowiecki-las 72/19, praca-jeden-podzial-kontrakt 635/2, civ-matrix-ai-diplomacy-wiring 42/1, ai-test.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `871276f834ef658f7a4a060799017956`, 70,104,670 bajtów.
+
+## ROBOCZA 871276f8 -- 2026-10-31 -- FALA 425: pula Pracy zachowana przy wczytaniu zapisu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`9e54b96f8` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `871276f834ef658f7a4a060799017956`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-SAVELOAD-PRACA-POOL-Q1` — wczytanie zapisu zachowuje pulę Pracy gracza (dawniej zerowana powyżej max(50, 100×miasta): 405 → 0); ograniczona tylko wartość nierealna (powyżej 1 000 000); (2) `R-WEB-LIVE-MEASURE-CLEARING-DEFICIT-Q1` — pomiary na żywej grze (wycinka gracza kończy się w 1 turze, bez błędu; niedobór „<10 szt.” aktywny w 100% z 366 tur), tylko narzędzia i raporty.
+- Testy po scaleniu: tsc PASS; saveload-praca-pool-live 13/0 (mutacja starego warunku 6/7 FAIL); autoimprove-stages-q1 184/0, auto-improvements 46/0, ai-improvements 53/0, city-clears-forest 18/0, fort-outpost-hard-territory 80/0, defeat-last-city 14/0, spichlerz-hud-params-parity 66/0, diplomacy 148, war-era-counter 82, ring 15.
+- Ograniczenia: NIE_ZMIERZONO pula Pracy fotela 2+ w hot-seat po świeżym załadowaniu (nie trafia do zapisu — osobny temat); próg 1 000 000 bez pomiaru; w toku: auto-ulepszenia runda 5 i weryfikacja decyzji; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 291/4, 6 testów zapisu/wczytania czerwonych tak samo przed zmianą.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `e20eea75cc1b77db80f3c4456c0733e8`, 70,104,417 bajtów.
+
+## ROBOCZA e20eea75 -- 2026-10-31 -- FALA 424: zdobycie fortu wejściem wojska, kolejność fortów, opisy zasięgu 3/5 (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`18bbf0cf6` + temat) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `e20eea75cc1b77db80f3c4456c0733e8`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: `R-WEB-OUTPOST-FORT-TERRITORY-Q1` runda 3 — wróg zdobywa fort/posterunek razem z terytorium, gdy jego jednostka wojskowa (cywilizacji w stanie wojny) stanie na heksie fortu, a właściciel nie ma tam jednostki (gracz i AI); sporny heks między fortami różnych cywilizacji należy do wcześniejszego fortu; stare zapisy dostają kolejność z tablicy; opisy w grze i poradnik na 3/5.
+- Testy po scaleniu: tsc PASS; fort-outpost-hard-territory 80/0, fort-nodes-save-load 18/0, fort-strazniaca-zasieg-zakladania 85/0, territory-border 9/0 i 15/0, improvement-territory-gate 6/0, ai-founding-territory 29/0, autoimprove-stages-q1 184/0, city-clears-forest 18/0, defeat-last-city 14/0, diplomacy 148, war-era-counter 82, ring 15; Chromium (FC) 33/0.
+- Ograniczenia: NIE_ZMIERZONO zdobycie przez prawdziwy ruch AI w Chromium i wizualna zmiana granicy; barbarzyńcy nie zdobywają fortów; otwarte ABC: wiek zdobytego fortu, przypadki sporne zdobycia; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 291/4.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `3feaf8843cf610a4ce811924a85ffa29`, 70,101,816 bajtów.
+
+## ROBOCZA 3feaf884 -- 2026-10-31 -- FALA 423: auto-ulepszenia: niedobór tylko brakującego surowca, drogi na końcu, centrum miasta; twarde terytorium posterunku i fortu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`d8b2766b4` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `3feaf8843cf610a4ce811924a85ffa29`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-AUTOIMPROVE-STAGES-Q1` runda 4 — niedobór surowca otwiera tylko ulepszenia brakującego surowca (bez dróg/fortów/posterunków z „reszty listy”); drogi dopiero po wyczerpaniu żywności i zaspokojeniu surowców; centrum miasta zwykłym heksem (farma, trzoda, irygacja); sól→warzelnia, koń→stadnina; (2) `R-WEB-OUTPOST-FORT-TERRITORY-Q1` runda 2 — posterunek (promień 3) i fort (promień 5) tworzą twarde terytorium właściciela jak miasto: obcy nie buduje tam ulepszeń ani miast; limit miast nie dotyka terytorium fortu; fort nie odbiera heksów w promieniu miasta; opisy i poradnik na 3/5.
+- Testy po scaleniu: tsc PASS; autoimprove-stages-q1 184/0, auto-improvements 46/0, ai-improvements 53/0, ai2-heks-po-heksie 37/0, hodowla-las 113/0, ai4-popyt-obywatele 55/0, fort-outpost-hard-territory 46/0, fort-nodes-save-load 18/0, fort-strazniaca-zasieg-zakladania 85/0, territory-border 9/0 i 15/0, improvement-territory-gate 6/0, city-clears-forest 18/0, spichlerz-hud-params-parity 66/0, defeat-last-city 14/0, diplomacy 148, war-era-counter 82, ring 15. Chromium (FC): fort 15/0, auto-ulepszenia K2 na żywej grze (farma, bydło, irygacja na centrum; kamieniołom/tartak/warzelnia przy niedoborach; 0 dróg i fortów).
+- Ograniczenia: zdobycie fortu przez wejście wojska i spór „wcześniejszy fort” NIE są jeszcze zaimplementowane (decyzje właściciela, runda 3 w toku); wieloturowa wycinka gracza na żywo NIE_ZMIERZONO (pomiar w toku); drogi startują po osiągnięciu limitu tartaków przy stałym niedoborze (otwarte ABC); znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 291/4.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `bdd458723cd82b928a89fe09fe638a42`, 70,098,090 bajtów.
+
+## ROBOCZA bdd45872 -- 2026-10-31 -- FALA 422: auto-ulepszenia wg decyzji właściciela A–F; miasto bez lasu także po wczytaniu zapisu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`ac952c567` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `bdd458723cd82b928a89fe09fe638a42`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-AUTOIMPROVE-STAGES-Q1` runda 3 — profil „Żywność” gracza bez tartaku i obozu; w „Zrównoważone” (gracz i AI) tartak tylko przy niedoborze drewna, obóz tylko na heksie z tartakiem; AI bez limitu jednej budowy na miasto (do 3 na etap); centrum miasta wyłączone z ulepszeń w „Zrównoważone”; próg niedoboru <10 bez zmian; (2) `R-WEB-CITY-CLEARS-FOREST-Q1` — heks miasta nigdy nie ma lasu (wspólna funkcja także przy wczytaniu zapisu, w presetach i na granicy tury).
+- Testy po scaleniu: tsc PASS; autoimprove-stages-q1 143/0, city-clears-forest 18/0, wyrab-rzeka 3/0, 10/0, 2/0, auto-improvements 45/0, ai-improvements 53/0, ai-food-stages 13/0, ai2-heks-po-heksie 37/0, hodowla-las 113/0, ai4-popyt-obywatele 50/0, spichlerz-hud-params-parity 66/0, defeat-last-city 14/0, battle-standoff 9/9, diplomacy 148, war-era-counter 82, ring 15.
+- Ograniczenia: pomiar na żywej grze — niedobór surowca aktywny w 100% tur gracza (2 ziarna, wczesna gra), więc krok „brakujący surowiec” prawie zawsze poprzedza żywność w „Zrównoważone”; pytania ABC o definicję niedoboru otwarte; NIE_ZMIERZONO: wieloturowa wycinka gracza na żywo, niedobór i las pod miastem AI na żywo; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `dcbf2d10f7d146c620c362c2351cd99c`, 70,096,547 bajtów.
+
+## ROBOCZA dcbf2d10 -- 2026-10-31 -- FALA 421: przegrana po utracie ostatniego miasta; rozejm AI na stole i zapis gry (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`4d9ed1810` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `dcbf2d10f7d146c620c362c2351cd99c`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1` — gracz przegrywa po utracie jedynego miasta także na rzecz barbarzyńców (nawet z osadnikiem), po rozstrzygnięciu bitwy o miasto; (2) `R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1` — rozejm AI trafia na stół (naprawione mapowanie `rozejm` w UI), roundtrip zapisu w rozejmie zachowuje rozejm, flagę agresora, casus belli, licznik wojen epoki i metę pary; wygasanie bez kary.
+- Testy po scaleniu: tsc PASS; defeat-last-city 14/0, victory 12/0, barbarians 213/0, miasto-zdobycie-raport 117/0, autoimprove-stages 111/0, battle-standoff 9/9, diplomacy 148, war-era-counter 82; Chromium (FC): defeat-last-city-live 28/0, diplo-truce-live 23/0, saveload save 3/0 load 9/0 expire 6/0.
+- Ograniczenia: NIE_ZMIERZONO pętla decyzyjna barbarzyńców w Chromium; `hotseat-drugi-fotel-tura-test` EXIT=2 identycznie przed i po; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `8bad46d95da161129239e1ebe68671fe`, 70,093,115 bajtów.
+
+## ROBOCZA 8bad46d9 -- 2026-10-31 -- FALA 420: auto-ulepszenia: etapy żywnościowe, wycinka przy rzece; podgląd Spichlerza (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`93a6aba1d` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `8bad46d95da161129239e1ebe68671fe`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-AUTOIMPROVE-STAGES-Q1` — auto-ulepszenia: kolejność etapów (farma na rzece bez lasu → wycinka + farma → trzoda → irygacja, potem wycinka i farmy poza rzeką); niedobór surowca nie wyłącza etapów żywności (profil zrównoważone gracza i AI: brakujący surowiec idzie na przód, po zaspokojeniu powrót do żywności); profil „Żywność” bez odwołań do niedoborów; wycinka bez minimum leśnego i progu lasu, heks z tartakiem/obozem nie jest wycinany; brak technologii nie blokuje kolejnych etapów; trzoda i irygacja poza limitem % puli Pracy; naprawiony brak epoki w wywołaniu gracza; (2) `R-WEB-SPICHLERZ-HUD-PARAMS-Q1` — podgląd zużycia Spichlerza w panelu miasta z parametrów silnika.
+- Testy po scaleniu: tsc PASS; autoimprove-stages-q1 111/0, wyrab-rzeka-krok0 3/0, r2 10/0, d1 2/0, auto-improvements 45/0, ai-improvements 53/0, ai-food-improvement-priority-stages 13/0, ai2-heks-po-heksie 36/0, hodowla-las 113/0, spichlerz-hud-params-parity 66/0, spichlerz-drain-keys 44/0, battle-standoff 9/9, diplomacy 148, war-era-counter 82.
+- Ograniczenia: NIE_ZMIERZONO niedobór surowca na żywej grze i wieloturowa wycinka gracza w Chromium; otwarte pytania ABC (tartak/obóz w profilu „Żywność”, kiedy powstaje tartak, próg niedoboru <10, limit AI, lama na lesie, heks centrum miasta) — stare reguły zostają; czerwone także na bazie: ai4-popyt-obywatele (Z1a/Z1d/Z1g/Q2o), ai-test, civ-matrix-ai-diplomacy-wiring 42/1.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `765163444226f14cda2554986898a095`, 70,088,220 bajtów.
+
+## ROBOCZA 76516344 -- 2026-10-31 -- FALA 419: bitwa dwóch wojowników bez wodza, zużycie Spichlerza z JSON (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`4d1916f2c` + trzy tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31: scalanie do main i deploy do roboczej.
+- Bundle MD5 `765163444226f14cda2554986898a095`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-BATTLE-STANDOFF-TWO-WARRIORS-Q1` — bitwa gracza bez Wodza/Generała (np. dwóch Wojowników) nie startowała tury (stali w miejscu, „Tura 0”); poprawka `battleScene.ts:3471`; przyczyna: regresja z `e06ad53c8`, odtworzona w prawdziwym Chromium; (2) `R-WEB-SPICHLERZ-DRAIN-KEYS-Q1` — zużycie Spichlerza z `econ-params.json` wg trudności, wartości 25/25/25 bez zmian; (3) `R-WEB-AUTOIMPROVE-BLOCKERS-AUDIT-Q1` — audyt bramek auto-ulepszeń (dokumentacja, bez zmian w grze).
+- Testy po scaleniu: tsc PASS; battle-standoff 9/9, bitwa-auto-atak-wielojednostkowy 12/12, spichlerz-drain-keys 44/0, spichlerz-drain-pipeline 21/0, owned-building-inactive 4/0, citizen-upkeep-era-mult 663/0, sawmill-quarry-50 7/0, diplomacy 148, war-era-counter 82.
+- Ograniczenia: auto-ulepszenia (farma/trzoda/irygacja/wycinka) NIE naprawione (temat w toku); podgląd Spichlerza w panelu miasta nadal 25; NIE_ZMIERZONO live: bitwa z Generałem i 2v2; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `c6e24df9b5055e83d1d7ca8600d81368`, 70,088,261 bajtów.
+
+## ROBOCZA c6e24df9 -- 2026-10-31 -- FALA 418: produkcja tartaka/kamieniołomu 50 i zużycie surowców przez obywateli ×1/×2/×3 (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (źródło `914daa502` + dwa tematy) i commit wdrożenia bundla; polecenie właściciela 2026-10-31: deploy do roboczej, posprzątać piaskownicę.
+- Bundle MD5 `c6e24df9b5055e83d1d7ca8600d81368`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`, 70,088,261 bajtów. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1` — tartak i kamieniołom 50/turę w epoce 1 (50/75/113 z skalowaniem epoką); (2) `R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1` — stawka zużycia na obywatela: Kamień ×1, Brąz ×2, Żelazo ×3, listy surowców bez zmian.
+- Testy po scaleniu: tsc PASS; sawmill-quarry-50-economy 7/0, kamieniolom-kamien-epoka 37/0, improvement-adapter-resource-note 75/0, tartak-glinianka-rate-Q1 1281/0, citizen-upkeep-era-mult 663/0, diplomacy 148/0, war-era-counter 82/0. Każdy temat: Operator → Evaluator → (Obrona) → Final Control (PASS-WITH-NOTES).
+- Ograniczenia: nieaktualne komentarze „1,0 szt.” poza zakresem zostają; NIE_ZMIERZONO pełna tura end-to-end z drenażem w `main.ts`; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `d9408b27ad23b88d3c936138e166bc13`, 70,086,441 bajtów.
+
+## ROBOCZA d9408b27 -- 2026-10-31 -- FALA 417: menu nowej gry: układ, wartości domyślne, przycisk „Zastosuj” (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (źródło `5ab3d58e2` + trzy tematy) i commit wdrożenia bundla; polecenie właściciela 2026-10-31: merge main, deploy Robocza, git push.
+- Bundle SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`, MD5 `d9408b27ad23b88d3c936138e166bc13`, 70,086,441 bajtów. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-NEWGAME-MENU-REORDER-Q1` — 12 kart w 2 kolumnach w kroku 4 (lewa: Rozmiar mapy, Typ świata, Udział lądu, Prędkość gry, Poziom trudności, Warunki zwycięstwa; prawa: Liczba cywilizacji, Liczba miast-państw, Trudność miast-państw, Wojna epoki, Barbarzyńcy, Chatki z nagrodami), 13 pozycji w „Zaawansowanych” (Zasięg ruchu, Limit miast, Bitwy, Wymagaj rozpatrzenia ofert, Wzrost ludności, Koszty budynków, Koszty jednostek, Jakość grafiki, Surowce, Rzeki, Pustynie, Las, Góry i wzgórza); (2) `R-WEB-NEWGAME-DEFAULTS-Q1` — domyślnie 30% lądu (Kontynenty, Pangea, Wyspy; Ziemia bez zmian), Normalny: trudność miast-państw, zasięg ruchu, wzrost ludności, koszty budynków i jednostek; Bitwa ręczna i automatyczna; (3) `R-WEB-NEWGAME-ADV-APPLY-BTN-Q1` — przycisk „Zastosuj” (aktywny) w oknie Zaawansowane opcje.
+- Testy: tsc PASS; Chromium: menu-reorder-layout 6 konfiguracji, adv-apply-btn 87/0, defaults 60/0, settings-layout-reposition; adv-tooltip 30, bottom-navigation 270, sett-grid-layout 74, battle-mode-choice-labels i save-reload PASS; diplo-truce-r1 30, diplomacy 148, war-era-counter 82. Każdy temat: Operator → Evaluator → Obrona → Final Control (PASS-WITH-NOTES); po scaleniu poprawiono oczekiwania dwóch testów (konflikt oczekiwań między tematami).
+- Ograniczenia: zapisane preferencje kreatora (localStorage `civ-new-game-prefs-v1`) nie są nadpisywane — nowe domyślne widać po ich wyczyszczeniu; NIE_ZMIERZONO: zasłonięcie przycisku „Zastosuj” w pełnej aplikacji, `land-sea-ratio-test` (timeout); `main.ts` `startNewGame` zachowuje stare domyślne poza kreatorem; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `c415f278d71bd4d3d66c164b83ef33c2`, 70,086,171 bajtów.
+
+## ROBOCZA c415f278 -- 2026-10-31 -- FALA 416: diplomacja i wojny: licznik wojen epoki, zasady pokoju, cesja miasta, flaga agresora, rozejm, obwódki cywilizacji (testowa)
+
+- **STATUS: DEPLOYED** — merge fast-forward `origin/main` (`7164f7ca1` → `5f5ad5a3c`, 46 commitów, gałąź `web/integration-20261030`) i commit wdrożenia bundla; polecenie właściciela 2026-10-31: merge main, deploy Robocza, git push. `origin/main` = `1d7e469ac`; odczyt GitHub Raw (bundle, manifest, START) HTTP 200, rozmiar 70,086,171 B i MD5 `c415f278d71bd4d3d66c164b83ef33c2` zgodne.
+- Bundle SHA-256 `06ae666b626811a1c367db30e2d01d27b6ade2a3b0bba0f082b593a5429722eb`, MD5 `c415f278d71bd4d3d66c164b83ef33c2`, 70,086,171 bajtów. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: obwódka armii w kolorze cywilizacji; licznik wojen epoki (1 na cywilizację i epokę, także gracz); wspólne zasady pokoju (zmęczenie wojną po 20 turach, progi z macierzy cywilizacji, minimalna liczba tur, hamulec wojny wg Relacji); blokada wojny epoki przy Relacji ≥ 100 i brak automatycznego końca wojen wymuszonych; cesja miasta za pokój (AI oddaje/żąda, wybór w UI); flaga agresora (20 tur) i casus belli (15 tur); rozejm 5/10/15 tur.
+- Testy: tsc PASS; Chromium city-cession-live 17/0, city-picker-ui 13/0, truce-live 23/0; aggressor 73+15, truce 30+8+24, cession 79+73, war-era-counter 82, multiwar 57+21, relation-gate 14, peace profile 198/gate 11/sim 22/main-guard 28/d7 8, diplomacy 148, peace-lock 9, ring 15. Każdy temat: Operator → Evaluator → Obrona → Final Control (PASS / PASS-WITH-NOTES).
+- Ograniczenia: znane czerwone w bazie `civ-matrix-ai-diplomacy-wiring` 42/1 i `ai-test` 274/20; NIE_ZMIERZONO: E2E AI→stół dla rozejmu, żywy roundtrip pliku zapisu, forced-war-r9 live, war-rules-multiwar-live-test; niepokój po cesji miasta niewdrożony (brak mechaniki w modelu miasta); znacznik „Agresor” tylko w panelu dyplomacji (nie na liście HUD); ostrzeżenie hamulca wojny ukryte domyślnym filtrem „Inne cyw.”.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `e666ecb6020b55c68f0c2d3d5067ad54`, SHA-256 `e5acc382cf8210d913bda9c57d82dc42e5ae1b9097be0d8c3315aa09537bfe81`, 70,046,987 bajtów.
+
+## ROBOCZA 00f76663 -- 2026-10-28 -- FALA 415: tartak na zalesionym wzgórzu + nawigacja kreatora (testowa)
+
+- **STATUS: DEPLOYED** — product commit `b3cc4c5d`, release commit `eb6e0824`, fast-forward `origin/main`; GitHub Raw bundle/manifest/START HTTP 200, hash i rozmiar zgodne.
+- Bundle SHA-256 `5c10865a5e1b9b29c8dae6c2c09a73ca46d55cf7b3090a5566a029116bdc7d3e`, MD5 `00f7666343c2247dfdb21ee1e6ed27aa`, 70,015,515 bajtów.
+- Zakres: tartak na wzgórzu zachowuje relief i las oraz siada na stoku; profil cywilizacji w kreatorze można zwinąć, a „Dalej” pozostaje widoczne przy 150% zoom.
+- Testy: sawmill 8/8, relief 24/24, real render 3/3 dekoru, kreator 200/200 w 5 rozmiarach, TypeScript/build PASS.
+- Uwagi: legacy test obozu łowieckiego 26 PASS / 4 FAIL z przestarzałymi asercjami niezwiązanymi z tartakiem. Niezależne raporty w `R-ULEPSZENIA-TARTAK-WZGÓRZE-LAS-Q1` i `R-NEWGAME-CIV-PROFILE-COLLAPSE-Q1`.
+
+## ROBOCZA e4c3643d -- 2026-10-28 -- FALA 414: retencja kart wydarzeń i tekstur ikon jednostek (testowa)
+
+- **STATUS: DEPLOYED** — fast-forward `origin/main` do `17c1ba2a`; odczyt GitHub Raw (bundle, manifest, START) HTTP 200, hash i rozmiar zgodne.
+- Źródło: baza ROBOCZA `a1d86212`, product commits `a4d7bc30` i `782c9b34`.
+- Bundle MD5 `e4c3643d35ba88f9823373ac9419477c`, SHA-256 `d918fb1c5dfd221106c41aa6ec0c74450fbd5ddff1cdcad22c06ba8cf595fc9b`, rozmiar 70,013,155 bajtów.
+- Zakres: zwalnianie szczegółów kart przejęć po wypadnięciu z ograniczonego dziennika oraz zachowanie niezmienionych badge/ikon jednostek między synchronizacjami.
+- Testy: capture-retention 20 asercji, overlay-sync 17/17, memory lifecycle 55/55, capture report 117/117, typecheck, build Vite 916 modułów i weryfikator bundle’a PASS. Legacy browser test miał blokadę `file://` w środowisku.
+- Ograniczenia: test dużego imperium ukończył 38/100 tur i zatrzymał się po turze 70.2 s; nie wykazano przyczyny całego wzrostu RSS do 2 GB ani poprawy długosesyjnej. Raporty: `R-PERF-LARGE-EMPIRE-STRESS-Q1`, `R-PERF-CITY-PANEL-DOM-RETENTION-Q1` i `R-PERF-MEMORY-IMPROVEMENTS-ROBOCZA-Q1`.
+
+## ROBOCZA 31c64f65 -- 2026-10-28 -- FALA 413: zwalnianie zasobów GPU podglądów budowy i znaczników wyrębu (R-PERF-GPU-GHOST-RESOURCE-DISPOSAL-Q1) — WERSJA TESTOWA
+
+- **STATUS: DEPLOYED** to `origin/main` at `f2dbf853`; fast-forward from `54214e3a`. GitHub Raw readback of bundle, manifest and START returned HTTP 200; bundle hashes and size match. Source fix commit: `7637ab3e`; brak promocji do KANON/FINALNA.
+- Bundle MD5 `31c64f6545b9e30ab0171bc105143fbe`, SHA-256 `3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383`, 70,012,553 bajty.
+- Zakres: zwalnianie własnych geometrii i materiałów podglądów budowy oraz znaczników wyrębu przy usunięciu, podmianie, odbudowie stanu i resecie; współdzielone zasoby cache pozostają żywe.
+- Bramki: lifecycle 55/55; Chromium/WebGL 120 cykli, geometrie `1 → 1`; typecheck, build Vite 915 modułów, `verify-robocza-bundle.cjs` i `git diff --check` PASS. AutoBot Evaluator i Final Control PASS dla tego zakresu.
+- **Ograniczenie:** poprawka nie dowodzi, że sama wyjaśnia wzrost pamięci do 2 GB ani wszystkie późne przycięcia. Długosesyjny pomiar interakcji i RSS pozostaje otwarty.
+- Rollback: `git revert` wydania; poprzedni bundel MD5 `b897f519a377631081bd29b49c76fef2`, SHA-256 `accb2ee99c74ba7bbc70da060ed62fabf905cf2f021d6e37bacad4a9398ed798`, 70,011,909 bajtów.
+
+## ROBOCZA b897f519 -- 2026-10-28 -- FALA 412: poprawki armii, dowódców, bitew i wojen (R-CIV-ALL-TOPICS-ROBOCZA) — WERSJA TESTOWA
+
+- **STATUS: DEPLOYED** to `origin/main` at `e06ad53c`; fast-forward from `99bb834c`.
+  GitHub Raw readback of bundle, manifest and START returned HTTP 200 for all three.
+- Bundle MD5 `b897f519a377631081bd29b49c76fef2`, SHA-256
+  `accb2ee99c74ba7bbc70da060ed62fabf905cf2f021d6e37bacad4a9398ed798`,
+  70,011,909 bytes. Remote bundle bytes, manifest MD5/SHA/size and START link prefix agree.
+- Zakres: armie AI zbierają się przy Wodzu/Generale i prowadzą kampanię wojenną; gracze
+  mogą być celem AI, a kampania zachowuje stan w zapisie. Wódz i Generał mają wspólne
+  zasady morale, routu i bitwy. Formacje, zachowanie linii, panel łączenia przy skali 150%,
+  rekrutacja według epoki, pokój po wojnach epoki, ochrona pustych miast w czasie pokoju,
+  rozdzielenie handlu od podatku i pozostałe zatwierdzone poprawki zostały zweryfikowane.
+- Bramki: typecheck, Vite 914 modułów, smoke bundle i `verify-robocza-bundle.cjs` PASS;
+  Chromium: HTTP 200, dwa canvasy, bez pageerror ani błędów konsoli. AI war runtime 16/16,
+  test kampanii 25/25, walidacje operatorów i evaluatorów PASS. Final Control:
+  `READY_FOR_DEPLOY_WITH_NOTES`.
+- **Wydajność dużego imperium: test 100 tur PASS z zastrzeżeniem.** Scenariusz ukończył
+  100/100 tur, bez błędów i nieudanych budżetów tury; średnio 35,361 s, maksimum 58,139 s
+  przy progu 60 s (zapas 1,861 s). Szczyt pamięci sterty: 780,6 MiB; odnotowano 990
+  ostrzeżeń, w tym 4 ostrzeżenia WebGL. Poprzedni przebieg zakończony przy 47. turze
+  przerwał zewnętrzny limit 30 minut — nie był dowodem zawieszenia gry. Wynik zalicza bramkę,
+  ale niewielki zapas czasu, pamięć i koszt skanowania oblężeń/trasy/autozapisu wymagają
+  dalszego monitorowania i ewentualnej optymalizacji.
+- Raport Operatora: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/65-operator-large-empire-perf-resume.md`;
+  niezależny przegląd: `.../66-evaluator-large-empire-perf-resume.md`; surowe logi i podsumowanie
+  w `.../evidence/perf-resume-20261028/`.
+- Szczegóły i dowody: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/`.
+
+## ROBOCZA 2f4d8717 -- 2026-10-27 -- FALA 411: poprawki AI, epok, ekonomii, muzyki i HUD (R-CIV-ALL-TOPICS-ROBOCZA) — ZASTĄPIONA
+
+- STATUS: DEPLOYED to `origin/main` at `fc18c02efd5359844c2439217e8855d549417d0a`; remote raw readback bundle/manifest/START PASS.
+- Źródło produktu: `92d124b721dbd4405b4547301751499316b9ec4c`; bundle MD5 `2f4d87176ffcfc2aa6cdf44e3e562981`, SHA-256 `38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692`, 69,998,033 bytes. `verify-robocza-bundle.cjs` → VERIFY OK.
+- Zakres: skupianie armii AI; kopalnie surowców i jednostki epokowe; koszty ulepszeń Kamień ×0.5/Brąz ×1/Żelazo ×2; zużycie żywności mieszkańców ×1/×2/×4; przejście muzyki menu→gra; pełne jednostki przy Manpower; oddzielenie handlu od podatku oraz ręczna konwersja Pracy na podatek. Optymalizacja wyliczeń zasobów jest w kodzie.
+- Testy: TypeScript, 5 bramek referencyjnych i testy tematyczne PASS; Vite 908 modułów; Chromium smoke pokazuje menu, HUD i dwa canvasy. Final Control PASS-WITH-NOTES.
+- NIE ZMIERZONO: test wydajności (wyłączony na polecenie właściciela), pełny gameplay 100 tur oraz zapis/odczyt. To wydanie testowe Robocza; brak promocji do KANON/FINALNA.
+- Dowody: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/`; zewnętrzny host produkcyjny nie był weryfikowany.
+
+## ROBOCZA f491c3a2 -- 2026-10-26 -- FALA 410: wojna epoki: gracz pierwszy, mgla nie blokuje, opcja nowej gry (R-WEB-WAR-EPOCH-RELEASE-ROBOCZA) — WERSJA TESTOWA
+
+- STATUS: PUBLISHED to `origin/main` at `78ef8682c3a469c0e0a2a170feac2d3915cc5068` (fast-forward z `b3349709`), integration branch `integration/robocza-war-epoch-20261026` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `f491c3a2188d0d5ccea9bc715927a070` (zgodny z manifestem). Wydanie na wyrazne polecenie wlasciciela („wdrazamy wersje testowa, poprawimy pozniej jak sie odnowi limit”).
+- Bundle: SHA-256 `f0f9f18429a0cc2e19b15165f6c0eaf9f214dd8bff9fdc7c9b4e9d06f369aaa7`, 69,993,111 bytes.
+- Zakres (`R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1` r2, FC wydania PASS-WITH-NOTES): GRACZ jest pierwsza para fali wojny epoki z NAJBLIZSZA cywilizacja AI (major; nie tylko „uzbrojona”; odpada AI juz w wojnie / NAP / pokoj / sojusz); wojna epoki OMIJA mgle wojny i odkrycie wszedzie, takze dla gracza (nieodkryta strona zostaje odkryta w chwili wypowiedzenia); deklaracja pary gracza zapada PRZED parami AI↔AI w tej samej turze (bypass R3 ze snapshotu przydzialow); opcja nowej gry „Wojna epoki z udzialem gracza” (domyslnie Wlaczona, zapis w save, stary zapis = Wylaczona; wiersz zawsze widoczny); flaga `WAR_EPOCH_PLAYER_FIRST_ENABLED` = true (kod). Zalozenie: „jedna wojna epoki na epoke” = jedna fala parowania.
+- Bramki: tsc, Vite (bundle odtwarzalny ze zrodel), verify-robocza-bundle OK, war-epoch-player-first 33/0 + main-guard 34/0 (z mutacjami), war-rules-multiwar 55/0 + 21/0, forced-war stone 38/0 bronze 56/0 iron 55/0 trojstronna 23/0 + main-guardy, war-allin-capital 95/0, ai-move-range 46/0, tick-war-brake 69/0 + 51/0, diplomacy 148/0, logic 213/213, endturn 38/0, load-game 34/0, barbarzyncy 249/0, barb-city 178/0; zrzut ekranu nowej gry z wierszem opcji.
+- NIE ZMIERZONO (ryzyka): pomiar w grze — wojna gracza w T40–T42 w ≥3 seedach i kolejnosc gracz-przed-AI w grze; smoke ≥46 tur pokoj/wojna i czas tury kandydat/baza ≤×1,10 (u Evaluatora w smoke czas tury rosl 10 s → 45 s do T9 na obciazonej maszynie — przyczyna niewyjasniona, moze byc to obciazenie hosta, ale NIE wykluczone regresje wydajnosci; sprawdzic przy pierwszym tescie); zapis/odczyt opcji i stary zapis w przegladarce (tylko test statyczny); hotseat z kilkoma graczami (odkrycie liczone dla aktywnego gracza). Znane dlugi bazy bez zmian: forced-war-waves 16/1, forced-war-bronze-main-guard 27/1, load-game-blockers-exec (ReferenceError), stamp UI ≠ md5.
+- Rollback: poprzedni bundle MD5 `16d42d7a1d2dbaf790eab54c550df002` (ROBOCZA 16d42d7a), `git revert` commitow wydania.
+
+## ROBOCZA 16d42d7a -- 2026-10-26 -- FALA 409: dyplomacja: klik od razu do negocjacji + wojny/sojusze/handel na karcie; scalanie armii AI (R-WEB-UI-ARMY-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `6aff28ff1dae279a65ae0d320e01967cee860add` (fast-forward z `d49c21c6`), integration branch `integration/robocza-ui-army-20261026` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `16d42d7a1d2dbaf790eab54c550df002` (zgodny z manifestem).
+- Bundle: SHA-256 `50c3b6a4a5e5fba39663722cd8ea90340862c645da5abdb98b4714f27ac5fc12`, 69,990,763 bytes.
+- Zakres A (`R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1`, FC PASS-WITH-NOTES): klik cywilizacji na liscie dyplomacji od razu otwiera negocjacje (audiencje), posredni dymek usuniety; karta cywilizacji ma wiersze „Wojny / Sojusze / Handel” (do 3 nazw + „+N”, pelna lista w tooltipie; puste = „brak”). Test live w Chromium 15/0 (stan wstrzykniety), 360 px bez przewijania poziomego.
+- Zakres B (`R-WEB-ARMY-CONSOLIDATION-Q1`, FC PASS-WITH-NOTES): scalanie wojsk polowych AI za flaga `ARMY_CONSOLIDATION_ENABLED` (**true w ROBOCZEJ**, w kodzie bazowym false): pokoj — zbiorka w stolicy (limit na heks), obrona domu z kworum 2 jednostek zamiast pojedynczej, wojna — liczba armii = liczba wojen, marsz na stolice wrogow (reuse W1/W2). Parametry `gra/data/army-consolidation-params.json`. Garnizony zostaja.
+- Bramki: tsc, Vite, verify-robocza-bundle OK (manifest + `bundles[]`), army-consolidation-test mutacje 6/6, e2e 6/0, army-concentration 55/0, war-allin-capital 95/0, ai-move-range 46/0, war-rules-multiwar 55/0 + main-guard 21/0, tick-war-brake 69/0 + 51/0 + 17/0, sensible-deals 63/0 + main-guard 22/0, diplomacy 148/0, logic 213/213, endturn 38/0 + exec 46/0, load-game 34/0, barbarzyncy 249/0, barb-city 178/0, ai-test 276/18 (=baza); smoke Chromium 46 tur pokoj ×1,02, wojna sr. ×1,02 (mediana ×1,11 — szum przy ~200 ms/ture), 0 pageerror.
+- NIE ZMIERZONO: efekt scalania armii w pelnej grze (grupy polowe na cywilizacje, % wojsk w stolicy, liczba armii vs wojny, zrzuty OFF/ON), czas tury ON vs OFF na cichym hoscie, scalanie jednostek z ikona przekreslonego kolka. Znane dlugi bazy: `load-game-blockers-exec-test` (ReferenceError `pruneStaleAiTradeOffersAwaitingPlayer`) czerwony takze na bazie; stamp UI ≠ md5 pliku (znane).
+- Rollback: poprzedni bundle MD5 `bfba14e3424cd4f944fb5c235382696f` (ROBOCZA bfba14e3), `git revert` commitow wydania.
+
+## ROBOCZA bfba14e3 -- 2026-10-25 -- FALA 408: sensowne oferty handlowe AI + wymuszenie rozpatrzenia ofert przed koncem tury (R-WEB-DIPLO-DEALS-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `3e19be4f105fc3037fe765efe47898e0334a3985` (fast-forward z `e02c497e`), integration branch `integration/robocza-deals-20261025` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `bfba14e3424cd4f944fb5c235382696f` (zgodny z manifestem).
+- Bundle: SHA-256 `1e48f16ca9af9ea4cf58b010d0dd63cae96ac2214c58edb7815355d91224c7d2`, 69,986,438 bytes.
+- Zakres (`R-WEB-DIPLO-DEALS-SENSIBLE-Q1`, FC PASS-WITH-NOTES po 5 rundach): AI nie wysyla ofert handlowych o bilansie < 0 dla gracza (filtr + zerowy undershoot przy fladze ON, takze kontroferty); oferty tylko przy niedoborze (wzgledem zuzycia/przyrostu netto) lub nadwyzce wobec niedoboru gracza, z polem `reason` (tekst AI, `PendingNegotiation.reason`); filtr potrzeby takze dla `zaproponuj_umowe_handlowa`; opcja nowej gry „Wymagaj rozpatrzenia ofert handlowych przed koncem tury” (domyslnie WLACZONA, zapis w save, stare zapisy = wylaczona) z blokada `canPlayerInitiateEndTurn` i siatka bezpieczenstwa w `healStaleEndTurnBlockers`; flaga `DIPLO_SENSIBLE_DEALS_ENABLED` (w ROBOCZEJ wlaczona); hak testowy `__dealsLiveDebug` tylko w DEV/`?playtest`.
+- Bramki: tsc, Vite, verify-robocza-bundle OK, sensible-deals 63/0, main-guard 22/0, live-test 7/0 (Chromium: blokada + zwolnienie + OFF bez blokady), tick-war-brake 69/0 + 51/0 + 17/0, war-rules-multiwar 55/0 + 21/0, war-allin 95/0, ai-move-range 46/0, endturn 38/0 + exec 46/0, load-game 34/0, logic 213/213, diplomacy 148/0, alliance-war 14/0, ai-test 276/18 (=baza); smoke Chromium 46 tur (seed 778899) czas tury kandydat/baza pokoj 0,99, wojna 0,85, 0 pageerror.
+- NIE ZMIERZONO / swiadome ograniczenia: wymiana w naturze „surowiec za surowiec” NIE zaimplementowana (zaplata tylko zloto/praca); pomiar w pelnej grze (liczba ofert AI→gracz/ture, ofert z bilansem<0, rozklad `reason`, tury z zablokowanym koncem, czas tury BASE vs SENS, ≥2 seedy ×≥40 tur) odroczony do `R-WEB-TEST-HOOK-HEADLESS-GAME-Q1`/`-DETERMINISM-Q1`; brak zrzutu wiersza opcji w ekranie nowej gry (wiring potwierdzony kodem i guard-testem); skutek zerowego undershoot nieudowodniony (0 ofert z bilansem<0 takze w bazie syntetycznej).
+- Rollback: poprzedni bundle MD5 `b3b8e92eda76779d37e06fab4d5fac56` (ROBOCZA b3b8e92e), `git revert` commitow wydania.
+
+## ROBOCZA b3b8e92e -- 2026-10-25 -- FALA 407: dyplomacja: tick Zaufania AI↔AI, hamulec wojny, bonus za wymiane (R-WEB-DIPLO-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `d8b3eb264e5568a8df71fe31f7315eb1f0fa31b5` (fast-forward z `0ffe3c04`), integration branch `integration/robocza-diplo-20261025` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `b3b8e92eda76779d37e06fab4d5fac56` (zgodny z manifestem).
+- Bundle: SHA-256 `5e16fde03a045b354089af7c8623954bc45b36ed3441e4769cf33bc50c465384`, 69,980,630 bytes.
+- Zakres (`R-WEB-DIPLO-TICK-WAR-BRAKE-Q1`, FC PASS-WITH-NOTES po 3 rundach): P3 pary AI↔AI tickuja Zaufanie (plusy od umow, minusy od granicy; bez eliminowanych/bez miast/kopii/barbarzyncow); P4 dobra wola (+1 przez 3 tury) i wspolny wrog aktywne, UI = silnik; P6 hamulec wojny: wojna po N=5 turach Zaufania ≤ progu, ostrzezenie 2 tury przed (takze po wczytaniu), wypowiada silniejsza strona (remis → nizsze ownerId), podlega R1/R2/R3, licznik w save (stare zapisy ok); P7 schodkowy bonus za wymiane na plusie: krok kamien 100 / braz 200 / zelazo 400 / dalej ×2, +0,5 Zaufania za pelny krok, limit 5/ture, sufit Zaufania 60, min. 2 tury dostaw, przy zawarciu umowy cyklicznej tylko pierwsza tura, dar bez zmian. Parametry w `gra/data/diplomacy-tick-params.json`. Flaga `DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT` = **true w ROBOCZEJ** (w kodzie bazowym byla false; wlaczona na potrzeby testow wlasciciela).
+- Bramki: tsc, Vite, verify-robocza-bundle OK, diplo-tick-war-brake unit 69/0, wiring 51/0, mutation 17/0, war-rules-multiwar 55/0 + main-guard 21/0, war-allin-capital 95/0, ai-move-range 46/0, endturn 38/0 + exec 46/0, load-game 34/0 + blockers-exec 15/0, logic 213/213, ai-test 276/18 (=baza), diplomacy 148/0, alliance-war 14/0, forced-war stone 38/0 bronze 56/0 iron 55/0 waves 17/0 trojstronna 23/0; smoke Chromium 46 tur (3 niezalezne, 0 pageerror, czas tury kandydat/baza pokoj 1,095, wojna 0,81). Chromium 5 seedow × 80 tur (Evaluator tematu): 1 wojna z progu (tura 40), 0 wojen AI→gracz (gracz pasywny).
+- NIE ZMIERZONO: determinizm flagi ON, hash OFF=baza (baza w harnessie nie jest deterministyczna — patrz R-WEB-TEST-HOOK-DETERMINISM-Q1), czas tury ×1,10 na cichym hoscie, liczba wojen z progu na wiekszej probie. Stamp w UI ≠ md5 pliku z konstrukcji (znane).
+- Do oceny wlasciciela (zalozenia): gracz jako strona silniejsza moze byc agresorem z progu; fala wojen przy otwarciu R1 (tura 40) bez limitu na ture; para AI↔AI dostaje kare za rozna religie, ktorej nie ma para z graczem.
+- Rollback: poprzedni bundle MD5 `763320d70c0ab4d665908d3d7f13522c` (ROBOCZA 763320d7), `git revert` commitow wydania.
+
+## ROBOCZA 763320d7 -- 2026-10-25 -- FALA 406: reguly wojen: armie najpierw z armiami, podzial armii, brak wojen przed tura 40 (R-WEB-WAR-RULES-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `b3ced8c3413dad39203b9dc6fb6e897e08706a70` (fast-forward z `00fe8dc4`), integration branch `integration/robocza-warrules-20261025` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `763320d70c0ab4d665908d3d7f13522c` (zgodny z manifestem).
+- Bundle: SHA-256 `8f4b67a5e0a0e7ed63c03300549923a1378d6dbfc95927e6813ad8caadac037b`, 69,973,674 bytes.
+- Zakres (`R-WEB-WAR-RULES-MULTIWAR-Q1`, limit 5 rund wyczerpany — wydane z jawnym NIE ZMIERZONO): W1 armie najpierw biją najbliższą wrogą armię w promieniu, potem marsz na stolicę; W2 cywilizacja z k>1 wojnami dzieli armię (grupa walczy tylko z przydzielonym przeciwnikiem); R1 brak wojen między cywilizacjami przed turą 40 (także marsz all-in); R2 kamień: max 1 wojna na cywilizację; R3 max 1 wojna epoki na epokę globalnie. Parametry: `gra/data/war-rules-params.json`, flaga `WAR_RULES_MULTIWAR_ENABLED`.
+- Bramki: tsc, Vite, verify-robocza-bundle OK, war-rules-multiwar 55/0, main-guard 21/0, war-allin-capital 95/0, ai-move-range 46/0, endturn 38/0 + exec 46/0, load-game 34/0, logic 213/213, barbarzyncy 249/0, barb-city 178/0, forced-war stone 38/0 bronze 56/0 iron 55/0 waves 17/0 trojstronna 23/0; ai-test 276/18 (=baza); smoke Chromium 46 tur (pokoj/wojna, 0 pageerror). Czas tury kandydat/baza: pokoj 0,98, wojna 0,75–1,18 (rozrzut pomiaru przy obciazonym hoscie).
+- NIE ZMIERZONO: symulacja ≥60 tur × 5 seedow × 4–6 AI (brak haka headless), liczniki minien armii/zdobytych miast, hash flagi OFF vs baza i determinizm, diagnoza „dlaczego nikt nie wypowiada wojny graczowi” (tylko z kodu). Znane czerwone na bazie: forced-war-bronze-main-guard 27/1, forced-war-bronze-new-game-reset, recruitment-no-upkeep 22/14, deposit-building 46/1, koniec-tury f1-f4/g1-g2.
+- Rollback: poprzedni bundle MD5 `a289d2c4796333c97d1b46e3bdc69f33`, `git revert` commitow wydania.
+
+## ROBOCZA a289d2c4 -- 2026-10-25 -- FALA 405: pelny zasieg ruchu AI + "Wczytaj gre" widzi autozapisy na dysku (R-WEB-FIXES2-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `dcc2819702d5a14f7858a7a9ee098842c29b5bfb` (fast-forward z `7e0e7c71`), integration branch `integration/robocza-fixes2-20261025` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `a289d2c4796333c97d1b46e3bdc69f33` (zgodny z manifestem).
+- Bundle: SHA-256 `09f4a591f0790d10b8f6e4531295b2fc9c954ccff58b5f13462e2bfc1dd50751`, 69,969,032 bytes.
+- Zakres A (`R-WEB-AI-MOVE-RANGE-Q1`): AI, panstwa-miasta i barbarzyncy ida pelnym budzetem ruchu w turze (zamiast 1 heksa), takze regula wojny; strazniki zajetosci heksu barbarzyncow; czas fazy decyzji AI wyzszy, caly `endTurn` ~x0,94-0,99 (smoke 50 tur).
+- Zakres B (`R-WEB-LOAD-GAME-REGRESSION-Q1`, limit 5 rund wyczerpany — wydane rdzen naprawy): „Wczytaj gre" widzi autozapisy zapisane na dysk (File System Access) takze po przeladowaniu strony; nieudany autozapis sygnalizowany graczowi (jednorazowo, reset po sukcesie).
+- Bramki: tsc, verify-robocza-bundle OK, logic 213/213, ai-move-range 46/0, collision 12/0, endturn 38/0 + exec 46/0, load-game-regression 34/0, blockers-exec 15/0, fsa-autosave 55/0, autosave-quota 22/0, barbarzyncy 249/0, barb-city 178/0, ai-test 276/18 (=baza); smoke Chromium 50 tur (finalTurn 51, stalls 0) pokoj i wojna; E2E zapisu: A-FSA 8/8, A-IDB 6/6, B-PROMPT 3/3, D-EMPTY 2/2.
+- NIE ZMIERZONO / znane luki: wczytanie po >= 40 turach, stary zapis, kolizje/bonusy barbarzyncow w pelnej grze; E2E `--turns 5` zawiesza sie po turze 2 takze na poprzednim wydaniu (harness); test war-allin ma przypiete hashe zamiast niezmiennika „flaga OFF == baza" (zmiana zamierzona).
+- Rollback: poprzedni bundle MD5 `46401a9932fd92f47eed1848e772122b`, `git revert` commitow wydania.
+
+## ROBOCZA 46401a99 -- 2026-10-24 -- FALA 404: widocznosc jednostek/budynkow bez surowca + blokada konca tury (R-WEB-FIXES1-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `71794751` (fast-forward z `fcd86933`), integration branch `integration/robocza-fixes1-20261024` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `46401a9932fd92f47eed1848e772122b` (zgodny z manifestem).
+- Bundle: SHA-256 `5734348713663669fe6407fae9befc4d59fe233b58386105160c7ea093db2de2`, 69,966,015 bytes.
+- Zakres A (`R-WEB-RECRUIT-LIST-REGRESSION-Q1`): jednostki (lista rekrutacji), budynki z bramka surowca, „Zastap” — przy braku surowca sa WIDOCZNE, wyszarzone, z informacja czego brakuje (np. „13 Drewno (brak)”); reguly dostepnosci (era/tech/kultura) i zachowanie AI bez zmian.
+- Zakres B (`R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1`): siatka bezpieczenstwa kolejki odlozonych bitew — „Zakoncz ekran bitwy, potem zakoncz ture” bez widocznego ekranu nie blokuje juz konca tury (flush-first + watchdog 50 ms; nie dziala przy otwartej scenie bitwy/podsumowaniu). Zrodlo osieroconej kolejki nieustalone (osobny temat).
+- Bramki: tsc, Vite, verify-robocza-bundle OK, logic 213/213, endturn 38/0 + exec 46/0, recruit-list 9/0 + ui 15/0, building-resource 15/0 + ui 8/0, building-stock 7/0, unit-replace 13/13, war-allin 91/0 (base 75f53d58), memory-leaks 30/0; smoke Chromium 46-50 tur (finalTurn 47/51, stalls 0). Czerwone jak na bazie: recruitment-no-upkeep 22/14, deposit-building 46/1, koniec-tury f1-f4 i g1-g2 (po 2; F2-A11 i A9 nieaktualne wobec poprawki).
+- Rollback: poprzedni bundle MD5 `23893f19cc904b61065b20e712fb6b35`, `git revert` trzech commitow wydania.
+
+## ROBOCZA 23893f19 -- 2026-10-23 -- FALA 403: tymczasowa reguła wojny: cała armia na stolicę (R-WEB-WAR-ALLIN-CAPITAL / R-WEB-WAR-ALLIN-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `d783bfd6a266ae15d2216e0f1e1351a3344acd0a` (fast-forward z `75f53d58`), integration branch `integration/robocza-war-allin-20261023` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `23893f19cc904b61065b20e712fb6b35` (zgodny z manifestem).
+- Bundle: SHA-256 `0cf2f66f69d67711caa0c39c67ed6e2510e04b9d7e8bf46dfe99157e304b578b`, 69,964,335 bytes.
+- Zakres: w stanie wojny cywilizacje AI (AI↔AI, AI→gracz) i barbarzyńcy wysyłają wszystkie jednostki bojowe na aktualną stolicę przeciwnika (barbarzyńcy: najbliższa stolica spośród cywilizacji, z którymi są w wojnie), łączą się po drodze w grupy; gracz NIE dostaje automatycznych rozkazów. Nowe: `gra/src/game/warAllInCapital.ts`, `gra/data/war-allin-params.json`, wpięcia w `ai.ts`, `barbarians.ts`, `main.ts`. Flaga `WAR_ALLIN_CAPITAL_ENABLED` (reguła tymczasowa; OFF = zachowanie bazowe, hash zgodny).
+- Bramki: tsc, Vite, verify-robocza-bundle OK, logic 213/213, war-allin-capital 91/0, barbarzyncy-krazenie 249/0, barb-city-behavior 177/0; ai-test 276/18 = baza; ai-buduje-budynki PASS=40/FAIL=2 = baza; smoke Chromium memdebug tury 1-13 OK. Final Control PASS-WITH-NOTES.
+- NIE ZMIERZONO: tura z dużą armią (>12 jednostek/stronę); dotarcie armii do stolic w przeglądarce (dowód tylko w harnessie headless); mgla-sciezka-inwariant na nowym bundlu.
+- Rollback: poprzedni bundle MD5 `99c6b33b2587673b3c377d40d22f6396`, `git revert` trzech commitów wydania.
+
+## ROBOCZA 99c6b33b -- 2026-10-23 -- FALA 402: kompaktowy panel rekrutacji (R-WEB-RECRUITMENT-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `9b38334f` (fast-forward z `caa05fca`), integration branch `integration/robocza-recruitment-20261023` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `99c6b33b2587673b3c377d40d22f6396` (zgodny z manifestem).
+- Bundle `gra-robocza/Gra-ROBOCZA.html`: SHA-256 `6f969412d7e9b8a651b92259b135e299ca04d9b238d6722714522d75c4a51b07`, 69,956,805 bytes.
+- Zakres: panel rekrutacji jednostek (`gra/src/ui/unitRecruitCard.ts`, `cityPanel.ts`): wiersz jednostki w jednej linii (wariant A) + pula rekrutow nad lista; commity produktowe `72e876d6`, `54b47e3e` (wydane jako `1be48b7d`).
+- Bramki: tsc, Vite, verify-robocza-bundle OK, logic 213/213, territory-border 9/0, recruitment-panel-compact-row 39/0, recruit-card-manpower 20/0, recruitment-panel-height 13/0, web-memory-leaks 30/0, ai-prod-fallback 17/0, ai-city-recovery 7/0, autosave-quota-fail 20/0, city-badge-growth 38/0, city-badge-zoom-lod 67/0, city-map-badge 62/0; smoke Chromium `?memdebug=1` tury 1-9 OK. Final Control PASS.
+- Rollback: poprzedni bundle MD5 `517406ca871523b7c72ea8e3cd61d9b1` (publikacja `0e6aa590`), `git revert` commitow `1be48b7d` i `9b38334f`.
+
+## ROBOCZA 517406ca -- 2026-10-23 -- FALA 401: spowolnienie w dalszych turach (R-WEB-TURN-SLOWDOWN)
+
+- STATUS: PUBLISHED to `origin/main` at `0e6aa5906c8f95b5fa4ce45bcef44ecd9fac9c23` (fast-forward z `c11f5087`), integration branch `integration/robocza-turnslow-20261023` na tym samym SHA. Readback z `origin/main`: bundle MD5/SHA-256/bajty zgodne z manifestem (przeliczone z opublikowanego pliku). Wydanie na jawna zgode wlasciciela w czacie (AskUserQuestion 2026-10-23: „A: Tak, wdroz na ROBOCZA”). Production host nie testowany.
+- Bundle `gra-robocza/Gra-ROBOCZA.html`: MD5 `517406ca871523b7c72ea8e3cd61d9b1`, SHA-256 `a059d4f4cbfb161902dea9e76d81e6a1585d7e81c6585b4be896cf688418100a`, 69,953,071 bytes. `verify-robocza-bundle.cjs` VERIFY OK; stamp WARN to znane ograniczenie.
+- Zakres: cztery przyczyny rosnacego czasu tury/otwarcia miasta w `gra/src/main.ts` (wynik gry bez zmian): `isProductionAllowed` (pamiec na czas `decideAITurn`), `placedImprovementsForOwner`, `refreshTerritoryBorderOverlay`, `empireTerritoryResourceRatesForOwner`; hak testowy tylko do odczytu `__turnSlowdownTestDebug`; narzedzia `gra/tools/web-turn-slowdown-*.cjs`. Pomiar tury 72 (seed 778899, mapa Mala, 6 rywali): czas pracy kodu gry 4472 -> 1267 ms (-72%); czas tury 70-80 / 10-20: x1,45 -> x1,26; panel miasta: x1,66 -> x1,35 (do 2. klatki), synchronicznie x3,35 -> x1,84 (cel x1,3 dla panelu NIE spelniony; wzrost rozproszony, miast x3,6).
+- Bramki: tsc, Vite, verify-robocza-bundle, logic 213/213, territory-border 9/0, ai-prod-fallback 17/0, ai-city-recovery 7/0, autosave-quota-fail 20/0, city-badge-growth 38/0, city-badge-zoom-lod 67/0, city-map-badge 62/0, web-memory-leaks 30/0; smoke Chromium tury 1-10 (heap 292-320 MB bez trendu rosnacego).
+- NIE ZMIERZONO / OTWARTE: `web-turn-slowdown-test.cjs` w tym srodowisku daje 11 OK / 2 FAIL (D1, D2: determinizm skrotu stanu) przy load average ok. 20-24 na 4 rdzeniach; ten sam kod dal 13/13 w osobnym przebiegu Final Control (load 9-17). D2 porownuje dwa przebiegi tego samego kodu, wiec jego porazka wskazuje zaleznosc stanu gry od zegara/obciazenia CPU (istniejaca przed poprawkami: `Date.now()`/`performance.now()` w `main.ts`, `armyMerge.ts:73`), nie regresje — kandydat na osobny temat. `errors=16` w kazdym przebiegu (rowniez bez poprawek), textures 18->22 od tury 7 (ograniczone cache), M3 nadal bez weryfikacji w przegladarce.
+- Rollback: poprzedni bundle MD5 `0c7f13d9dbb869ea648bd65dfd3bea1c` (publikacja `ecef9ff8`), `git revert` commitow `43279ecc` i `0e6aa590`.
+- Run: `dyspozycje/autobot/runs/R-WEB-TURN-SLOWDOWN-RELEASE-ROBOCZA-Q1/`, `R-WEB-TURN-SLOWDOWN-Q2/`.
+
+## ROBOCZA 0c7f13d9 -- 2026-10-22 -- FALA 400: poprawki wyciekow pamieci weba (R-WEB-MEMORY-LEAKS)
+
+- STATUS: PUBLISHED to `origin/main` at `ecef9ff8b47681211cf9bb2d7cbb2363ad2841a4` (fast-forward z `cfc26c17`), integration branch `integration/robocza-memleaks-20261022` na tym samym SHA. Readback z `origin/main`: bundle MD5/SHA-256/bajty zgodne z manifestem (przeliczone z opublikowanego pliku). Wydanie na jawne polecenie wlasciciela w czacie (deploy do roboczej + push). Production host nie testowany.
+- Bundle `gra-robocza/Gra-ROBOCZA.html`: MD5 `0c7f13d9dbb869ea648bd65dfd3bea1c`, SHA-256 `0ab5f654d19f1be30c8139ca3de77781b75e327d5d4c0e8e262bbcd3be839a22`, 69,945,591 bytes. `verify-robocza-bundle.cjs` VERIFY OK; stamp self-MD5 WARN to znane ograniczenie (dotyczy tez poprzedniego bundla).
+- Zakres: M1 dispose modeli miast, M2 przycinanie cache plakietek, M3 zdejmowanie nasluchiwaczy bitwy, `?memdebug=1` (licznik pamieci/obiektow GPU). Zmienione: `gra/src/render/cities.ts`, `gra/src/battle/battleScene.ts`, `gra/src/main.ts`, `gra/src/render/memDebug.ts`, `gra/tools/web-memory-leaks-test.cjs`, bundle, manifest, START.html.
+- Bramki (Final Control PASS-WITH-NOTES): npm ci, tsc, Vite 894 modules; web-memory-leaks 30/0, city-badge-growth, city-badge-zoom-lod, autosave-quota-fail, ai-city-recovery, city-map-badge zielone; smoke Chromium 8 tur (jsHeap 293-333 MB bez trendu rosnacego; geometries/programs stale).
+- NIE ZMIERZONO: porownanie przed/po poprawce; liczba tekstur 18->22 w turach 7-9 (przyczyna nieustalona); M3 (nasluchiwacze bitwy) tylko straz statyczna, bez sprawdzenia w przegladarce; brak pelnej akceptacji rozgrywki. Test dlugiej gry przez wlasciciela z `?memdebug=1` nadal potrzebny.
+- Rollback: poprzedni bundle MD5 `3b6610b74fd6586c5507908fe7665369` (commit `b4d37d9f`), `git revert` commitow wydania.
+- Run: `dyspozycje/autobot/runs/R-WEB-MEMORY-LEAKS-RELEASE-ROBOCZA-Q1/`.
+
+## ROBOCZA APPROVED 3b6610b7 -- 2026-10-20 -- FALA 399: PR141 bounded source release
+
+- STATUS: PUBLISHED to `origin/main` at `b4d37d9f81686b5b21bb256087a55e3a592721f0`; pinned GitHub raw readback PASS for bundle, manifest, and START (all HTTP 200, exact hashes/bytes). A separate bounded menu/canvas check passed on the fetched bundle. Both predeploy full-flow browser attempts remain FAIL; no complete gameplay smoke or external website deployment is claimed.
+- Base `c799325c77bc11c24684c1b35077ae80913d6f8d`; actual source/test delta: 51 modified and 49 added paths. Already-pushed recruitment regeneration, diplomacy overlay, and river changes are in the base.
+- Bundle `gra-robocza/Gra-ROBOCZA.html`: MD5 `3b6610b74fd6586c5507908fe7665369`, SHA-256 `234dff75036b22e423b33f9d6134428c559b612922b866399346f0e94ebfca4a`, 69,943,587 bytes. `verify-robocza-bundle.cjs` reports `VERIFY OK`, manifest match; known Linux stamp self-MD5 warning remains.
+- Direct TypeScript noEmit and Vite (893 modules) passed. Focused suites passed, including rush 72/72, semantic consumer 52/52, and corrected population behavior 24/24. See release run evaluator record for exact suite list and retained first fixture failure history.
+- No full 93x15 gameplay acceptance, full runtime/save-load parity, F-05 legal battle observation, or terrain/runtime closure is claimed. Both predeploy attempts remain FAIL for the complete flow; the separate bounded menu/canvas check is not full gameplay acceptance. KANON/FINALNA are not included.
+- Readback receipt: `dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/07-publication-receipt.md`; raw Git readback evidence and hashes are retained in that run. External production host not identified or claimed.
+
+# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
 
 ZASADA: md5/stempel wpisuje siÄ™ TYLKO tutaj, zaraz po publishu. Inne pliki linkujÄ…,
 nigdy nie kopiujÄ… (stary system miaĹ‚ 4 sprzeczne â€žaktualne" md5 â€” nigdy wiÄ™cej).
@@ -12,6 +1216,114 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Punkt wejścia bieżącego handoffu procesu: [`_handoff/HANDOFF-AKTUALNY.md`](_handoff/HANDOFF-AKTUALNY.md).
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
+
+## ROBOCZA 0e3ad637 — 2026-10-17 — FALA 398: PR141 bounded F-01/F-02/F-03 semantic status
+
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS. Publish commit `47981902f4aa98c254e8c1e7d04bab8b13776f4a`; `origin/main` and integration branch read back to the same SHA. Pinned GitHub bundle and manifest returned HTTP 200 and match hashes/bytes; remote-bundle Chromium smoke showed title/canvas/HUD with zero page/console errors. External website not claimed.
+- Bundle: MD5 `0e3ad637add786c556fd2fa148a99d82`; SHA-256 `6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc`; `69,936,305` bytes; verifier `VERIFY OK` (manifest match OK; Linux stamp warning is known).
+- Base: `dca87077eb16b6b8f6f747944906466c89deda28`; bounded product commit: `3c11d0b8b651745b7a5e61b6db69ed45690aa380`; branch: `hermes/integration/accepted-f01-f02-f03-20261017`.
+- Scope: only accepted semantic classifications F-01 (1 field), F-02 (6 fields), F-03 r2 (9 fields), plus their exact semantic-label assertions. No raw matrix values, runtime consumer, gameplay formula, difficulty or denominator change.
+- Gates on the integrated tree: semantic labels `348/0`; meta-roster `63/0`; combat `6/6`; army-hunger combat `13/13`; TypeScript PASS; direct Vite build `893` modules; Chromium local-HTTP smoke `200`, title/canvas/HUD present, zero page/console errors.
+- Excluded: F-04 360-cell provenance, F-05/G11, seven other combat holds, whole PR141/gameplay acceptance, Rally/worldgen, Rust/Desktop, KANON/FINALNA. Original accepted-obligation ledger remains `0/9`.
+- Receipt: `dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/release-20261017/receipt.json`.
+- Remote readback: main + branch `47981902f4aa98c254e8c1e7d04bab8b13776f4a`; GitHub raw bundle SHA-256 `6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc`, MD5 `0e3ad637add786c556fd2fa148a99d82`, `69,936,305` bytes; manifest matches, both raw resources HTTP 200; Chromium smoke on the fetched bundle PASS (canvas/HUD, zero page/console errors). Public production website not independently tested.
+
+## ROBOCZA f228f490 — 2026-10-09 — FALA 397: osobno „Zakończ turę”
+
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS. Branch i main odczytane jako `fd629959191dc4e46b59cf19bdb5941e27c2ef79`; dokładny zdalny bundle/manifest zgodny bajtowo i hashami, HTTP smoke pobranego bundla PASS (200, canvas/UI, zero błędów). Końcowy commit aktualizacji tego readbacku jest potomkiem tego SHA.
+- md5: `f228f4908d72dabbaef8866994c6452a`; sha256: `0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2`; bajty: `69930169`.
+- Source/integration: `c63a7bc89757cf165e7752e3dc0d124abdb06506`; bundle commit: `b407a5421b4aa5f537c600a21d5bea54ba7a2737`; base: `69ccb145a8682f9c2754834afbb16a8d1eaaf825`.
+- Co weszło: tylko `R-GAME-END-TURN-INPUT-REPAIR-Q1` — zachowanie tożsamości przycisku i trusted click podczas odświeżania HUD. Bez zmian reguł gry, mapy ani danych.
+- Bramki: Operator43 → niezależny Evaluator44 → Final Control45 PASS-WITH-NOTES; identyczne hashe źródeł. Świeże npm ci/typecheck/build PASS; input 10 grup, HUD 33/33, save/load 59/59, AI restore 5/5; prawdziwy Chromium na świeżym minifikowanym bundlu: 1→2→3, dwa trusted clicks, zero page/console errors. HTTP smoke ostemplowanego bundla: 200, canvas/UI, zero błędów.
+- Znane ograniczenia: ostrzeżenie samoodwołującego stempla (manifest zgodny, VERIFY OK); npm audit 1 moderate + 8 high bez upgrade; tylko owner 0, bez browser save/load. Pierwszy dodatkowy runtime przerwany SIGTERM — zachowany jako INFRA, późniejsze bounded wznowienie PASS.
+- Decyzja właściciela A: wdrożyć end-turn osobno. Rally Point nie weszło i pozostaje TRIAGE/BLOCK po run48 5/5; worldgen/PR141/matrix/Desktop poza zakresem; pierwotne acceptance 0/9 bez zmiany. Bez promocji KANON/FINALNA.
+- Receipt: `autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/release-20261009/receipt.json`.
+
+## ROBOCZA b889074c - 2026-09-27 18:20 UTC - FALA 396: Etap C wojny epoki: fale z roznych kierunkow (kontynuacja 5 tematow)
+
+- md5 (pelne): b889074c6dac56eab875da24eeeae492 · sha256: acf837f294b1d354cacb912ba4be7e31d616fb3854a6c02827116bac7ff89ea1
+- bajty: 69928949 · stempel menu: ROBOCZA b889074c
+- publishCommit: e4caea5fb29d2d161388a976214ac974675542fa (branch `hermes/R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK-Q1-20260927`, fast-forward z `origin/main=93f5ed43`)
+- Co weszlo (1 temat, kontynuacja "AI ofensywa wojny epoki" z poprzedniej fali):
+  - `R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK-Q1-20260927` (Etap C, zadanie wlasciciela: "druga armia powinna byc zbierana ponownie... i atakowac z innego miejsca... nie z tego samego, z ktorego atakuje glowna armia"). Nowy modul `gra/src/game/forced-war-waves.ts`: sledzenie aktywnych fal wojny wymuszonej, jednostki fali w drodze sa wykluczane z nowej koncentracji, kolejna fala (po zebraniu min. 3 wolnych jednostek) wybiera cel/sektor mierzalnie inny niz fale aktywne ORAZ juz rozwiazane (historyczne). Stan `forcedWarWavesByPairKey` w `main.ts`, zapisywany/wczytywany w save, czyszczony na wszystkich 17 sciezkach konca wojny wymuszonej.
+  - Operator `t_38409843` PASS-WITH-NOTES (4 rundy self-review) -> Evaluator `t_d7ad067b` **FAIL** (realny blad: `targetDifferent` liczyl tylko aktywne fale, nie historyczne -- fala 2 mogla ponownie zaatakowac miasto juz zdobyte/stracone przez rozwiazana falke 1) -> poprawka Operator `t_6e057d4b` PASS-WITH-NOTES (naprawiono `excludedTargetIds` = aktywne+historyczne cele, nowy test regresyjny) -> Evaluator dodatkowy `t_498a5063` PASS-WITH-NOTES (niezalezny probe potwierdzil nawrote behawioralnie, nie tylko istniejacym testem).
+- Integracja: fast-forward merge (branch oparty na aktualnym `origin/main`, zero konfliktow).
+- Bramki po integracji (wszystkie uruchomione od zera przez orkiestratora): `tsc --noEmit` PASS; `forced-war-waves-test.cjs` 17/17; `ai-ofensywa-wojna-epoki-test.cjs` 7/7 (regresja Etapu A+B potwierdzona); `army-concentration-test.cjs` 55/55; `forced-war-bronze-test.cjs` 56/56; `git diff --check` PASS; `vite build` 893 modules (892+1 nowy modul); `smoke.cjs` (Chromium headless) SMOKE OK; `verify-robocza-bundle.cjs` VERIFY OK (manifest match OK, stamp match WARN = znany non-blocking false-positive).
+- STATUS: DEPLOYED do ROBOCZA. Push do `origin/main` w tej samej sesji, patrz commit powyzej i log push.
+- Wciaz POZA zakresem (niezmienione): `ai_profil_obronna`, Dyplomacja (macierz cywilizacji), PR #142 (rally-point UI, niezalezny).
+
+## ROBOCZA 699f53bc - 2026-09-27 13:01 UTC - FALA 395: hotseat x2 + rydwan/konnica x2 + rydwan AI + wojna epoki ofensywa (5 tematow)
+
+||- md5 (pelne): 699f53bc0286e5bc5f4044251bdf32ee · sha256: e5880bce4be8fed11b2152a8a076e0cddf1a2e0f4e3bc06be83e6da0c2e6f508 · stempel label `699f53bc` · integration/publish commit: `7ccb1dc078c0be7d7d93a12e8dc32fd1748d0c4d` (repo: `The-Game-integration-20260927`, branch `hermes/integration/20260927-piec-tematow`) · base: `6eab3b40` (origin/main)
+||- **Piec rownoleglych tematow scalone razem** na wyrazne polecenie wlasciciela: (1) `R-HOTSEAT-RECZNY-RUCH-GRACZ2-Q1-20260927` -- reczny ruch jednostek fotela 2 w hot-seat: `executeMarchSegmentForUnit()` mial zaszyty `ownerId !== 0`, ktory odrzucal komendy marszu gracza 2 (zwiedzanie dzialalo, reczny marsz nie); naprawione na `isMe(u.ownerId)`. (2) `R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1-20260927` -- ustawienia imperium (praca/podatki/pieniadze/inne domyslne) byly kopiowane z gracza 1 na gracza 2 przez niezmigrowany `empireDetailPanel.ts`; teraz izolowane per fotel. (3) `R-JEDNOSTKI-RYDWAN-KONNICA-X2-Q1-20260927` -- podwojenie wszystkich pol bojowych 13 jednostek Typ:Mount (rydwany + konnica), koszt/ruch/utrzymanie niezmienione. (4) `P-RYDWAN-BIERNY-BRAK-ATAKU-Q1-20260927` -- rydwany stace bezczynnie zamiast atakowac/okrazac: dodano aktywne zblizanie flankerow do najblizszego wroga w zasiegu, naprawiono tez realny blad bramki zasiegu (`Math.max(unit.ruchLeft, unit.ruch)` zamiast `unit.ruchLeft`) znaleziony przez recenzenta w rundzie 2. (5) `R-AI-WOJNA-EPOKI-OFENSYWA-FORTELE-Q1-20260927` (Etap A+B) -- po wybuchu wojny epoki AI-napastnik konsoliduje dostepna armie do jednego klastra i idzie na miasta aktywnego przeciwnika az do zdobycia obu lub konca wojny; obronca kieruje wolne jednostki do najblizszego napastnika. Etap C (fortele: glowna+mniejsza armia, atak od tylu, okrazenie, podstep, dwa fronty) **odlozony jako osobna kontynuacja**, NIE wdrozony w tym deployu.
+||- Kazdy temat mial osobny worktree/branch/karte Kanban, operatorzy i evaluatorzy na `gpt-5.6-luna-900k`/`openai-codex`. Tematy 1 i 5 zakonczyly sie samodzielnie (`kanban_complete`) bez wbudowanego review -- dla obu utworzono dodatkowa, niezalezna karte Evaluatora (`t_9eb58bbe`, `t_c9a375bc`), ktora potwierdzila PASS-WITH-NOTES z wlasna weryfikacja diffu i testow (w tym powtorzenie testow na czystym `origin/main` dla porownania). Temat 4 przeszedl 3 rundy review (runda 2 znalazla realny blad, naprawiony w rundzie 3). Temat 2 i 3 PASS od pierwszego review.
+||- Integracja: 5x `git merge --no-ff` z czystego `origin/main` (6eab3b40) w swiezym worktree. 1 konflikt merge w `gra/src/game/ai.ts` miedzy tematami 4 i 5 (oba dotykaly tej samej petli jednostek) -- rozwiazany **addytywnie**, oba bloki logiki zachowane bez utraty zadnej zmiany (flanking-approach z tematu 4 przed forced-war-defense fallback z tematu 5).
+||- Bramki: `tsc --noEmit` PASS na scalonym drzewie. Testy celowane: `hotseat-ustawienia-kopiowane-test` 16/16, `rydwan-konnica-x2-test` 548/548 asercji, `rydwan-bierny-atak-test` 6/6, `ai-ofensywa-wojna-epoki-test` 7/7 -- wszystkie zielone. `hotseat-drugi-fotel-tura-test` ma pre-existing live-harness timeout (`pollUntil world-end-turn-after-both-seats`, `turn=2/activeHumanOwnerId=49`) potwierdzony **niezaleznie przez Evaluatora `t_9eb58bbe` rowniez na czystym `origin/main`** -- nie jest to regresja tej integracji, znany infra-problem harnessu. `vite build` 892 modulow PASS (identyczne z poprzednia fala).
+||- `node gra/tools/verify-robocza-bundle.cjs` -> `VERIFY OK`, manifest match OK (stamp match WARN oczekiwany na Linuksie, znany nieszkodliwy false-positive). Smoke test headless Chromium: tytul `The Game — 4X`, canvas obecny, HUD renderuje sie, `SMOKE OK`, zero bledow.
+||- **Poza tym deployem**: Etap C forteli AI wojny epoki (patrz wyzej), 93x15 matrix pozostale komorki, `ai_profil_obronna` (`b4c9582f`, niezmergowany), pakiet Dyplomacja 8 pol (w toku), PR #142 rally-point UI (`2cca1748`, OPEN/MERGEABLE, niezalezny) -- wszystkie czekaja na wlasny cykl.
+||- Push do zdalnego repo: patrz readback w KANAL-PRACA.md.
+||- **AKTUALNA**
+
+## ROBOCZA bc76a12e - 2026-09-26 16:17 UTC - FALA 394: zywnosc + automanage + ai-miasta (3 tematy) -- ZASTĄPIONA przez ROBOCZA 699f53bc (2026-09-27)
+
+||- md5 (pelne): bc76a12ed28947153b7ec32ceeb6b9d3 · sha256: a80e6a62b998aa23a18dc9524e47dda2dfae392b1c0dc366b486c42cb83198b8 · stempel label `bc76a12e` · integration/publish commit: `27fe22fc92770490ea119ce22bda45ad1643a453` (bundle commit: `c1adee26`) · base: `f057729a` (origin/main)
+||- **Trzy rownolegle tematy scalone razem** na wyrazne polecenie wlasciciela: (1) `R-EKONOMIA-ZYWNOSC-NADWYZKA-PO-LIMICIE-Q1-20260925` (fa20567c) -- nadwyzka zywnosci po osiagnieciu limitu populacji (popCapByCityId, gra/src/main.ts +55/-1). (2) `R-AUTOMANAGE-ULEPSZENIA-NIE-BUDOWANE-Q1-20260925` (0361c8b9) -- autonomiczna kolejka ulepszen: pickAutoBuildItem dostaje fallback do ulepszen dla tryb='priorytet', tozsamy z istniejacym dla tryb='lista' (gra/src/game/auto-manage.ts). (3) `R-AI-ZAKLADANIE-MIAST-TELEPORTACJA-Q1-20260925` (bcc11fe5) -- major AI Trudny nie zaklada juz bonusowych miast poza wlasnym promieniem terytorium stolicy (pickBonusCityHex, gra/src/game/ai-difficulty-bonus.ts).
+||- Kazdy temat: Operator -> niezalezny Evaluator -> Final Control, wszystkie PASS. Zero konfliktu plikowego miedzy tematami (kazdy dotyka innych plikow produkcyjnych, potwierdzone `git diff --name-only` per temat). Integracja: 3x `git merge --no-ff` z czystego `origin/main` (f057729a) w swiezym worktree, zero konfliktow merge.
+||- Bramki: `tsc --noEmit` PASS. Testy celowane: `auto-wyzywienie-live-recalc-test` 60/60, `auto-manage-ulepszenia-fallback-test` 11/11, `auto-manage-test` 45/45, `ai-founding-territory-test` 29/29, `cities-buildings-production-owner-contract-test` (regresja wspolna niezwiazana) 53/53 -- wszystkie zielone. 4 legacy zywnosc-testy (`spichlerz-widocznosc-test` 37/8, `akwedukt-popcap-test` 6/1, `spichlerz-deficyt-scalenie-test` 54/4, `spichlerz-wzrost-test` 2/7) potwierdzone **identyczne liczbowo** na scalonym drzewie i na osobnym czystym `origin/main` worktree (`/tmp/clean-baseline-check`) -- rozstrzyga to ostatecznie wczesniej otwarty punkt: zero regresji wprowadzonej przez te trzy tematy. `git diff --check` PASS. `vite build` 892 modulow PASS (bezposrednio, bez npm run).
+||- `node gra/tools/verify-robocza-bundle.cjs` -> `VERIFY OK`, manifest match OK (stamp match WARN oczekiwany na Linuksie, znany nieszkodliwy false-positive). Smoke test headless Chromium na zbudowanym bundlu: tytul `The Game — 4X`, canvas obecny, pelny HUD renderuje sie (Skarbiec/Praca/Spichlerz/Nauka/Armia/Miasta/Obywatele/Kultura/Religia), zero bledow strony, zero bledow konsoli.
+||- **Poza tym deployem**: `ai_profil_obronna` (lokalny commit `b4c9582f`, niezmergowany), pakiet Dyplomacja 8 pol (implementacja w toku), PR #142 rally-point UI (`2cca1748`, OPEN/MERGEABLE, niezalezny od tej integracji) -- wszystkie czekaja na wlasny cykl.
+||- Push do zdalnego repo: WYKONANY -- patrz commit `c1adee26` na `origin/main` (readback w KANAL-PRACA.md).
+||- **AKTUALNA**
+
+## ROBOCZA 706bf94a - 2026-09-25 19:00 UTC - FALA 393: civ-matrix consolidated integration (PR #140) -- ZASTĄPIONA przez ROBOCZA bc76a12e (2026-09-26)
+
+||- md5 (pelne): 706bf94a379763473ed4add9d508f622 · sha256: 86cd67aca862ab6fbad13aba48b6117d57bb175166ed555e1e66478a80ac85d0 · stempel label `706bf94a` · source/deploy commit: `b15bdb36` (origin/main, PR #140 merged) · base: `a8c9cf6c`
+||- **civ-matrix consolidated integration** -- lacz sekwencje trzech wlascicielskich decyzji do jednego PR na wyrazne polecenie (2026-09-25): `R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922` (4 pola meta usuniete, 113->109), `R-CYWILIZACJE-MACIERZ-JEDNOSTKA-SPEC-REMOVE-Q1-20260924` (18 pol spec_* usuniete, 109->91), `R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925` (32 pola walki podlaczone G2-G11 + 2 nowe pola + 5 uzupelnien historycznych: Zulusi melee, Egipt ruch rydwanow, Slowianie obrona lesna, Asyria kawaleria, Babilonia potwierdzona jako zamierzone zero bojowe). Netto paramDefs: 113 -> 93.
+||- Integracja: PR #140 (github.com/maciejsieracki/The-Game/pull/140), czysty fast-forward z origin/main, zero konfliktow. Walka: Operator (`t_5be3645a`) -> niezalezny Evaluator (zarzut G8: brakujace wartosci walki morskiej Grecja/Fenicja) -> Defense (`t_f63e4337`, naprawione) -> Final Control PASS.
+||- Bramki: `tsc --noEmit` PASS, `git diff --check` PASS, `vite build` 892 modulow PASS. 17/19 zestawow testow regresyjnych 100% PASS na zintegrowanym drzewie (civ-bonusy-test 36/36, combat-test 6/6, structure-defense-bonus-test 8/8, civ-matrix-greece-test 329/329, civ-matrix-semantic-labels-test 233/233, walka-jeden-kontratak-test 24/24, walka-morale-przewaga-mocy-test 123/123, civ-matrix-meta-roster-wiring-test 63/63, civ-matrix-ai-diplomacy-wiring-test 51/51, civ-matrix-difficulty-test 16/16, population-civ-matrix-wiring-test 122/122, ai-difficulty-bonus-test 97/97, unit-building-bonuses-test 82/82). 2 przedistniejace awarie (`budynek-civ-bonus-u17-test`, `population-growth-v85-bonus-test`) potwierdzone identyczne na czystym origin/main przed ta integracja -- nie sa regresja tego deploya.
+||- `node gra/tools/verify-robocza-bundle.cjs` -> `VERIFY OK`, manifest match OK (stamp match WARN oczekiwany na Linuksie). Smoke test headless Chromium: tytul poprawny, canvas obecny, pelny HUD renderuje sie, zero bledow konsoli/strony.
+||- **Poza tym deployem**: `ai_profil_obronna` (2 komponenty, zaimplementowane i zacommitowane lokalnie `b4c9582f` w izolowanym worktree, jeszcze niezmergowane do main) i pakiet Dyplomacja (8 pol, decyzja gotowa, implementacja w toku w izolowanym worktree w chwili tej publikacji) -- oba czekaja na wlasny cykl Operator->Evaluator->Final Control->merge.
+||- **AKTUALNA**
+
+## ROBOCZA 23319869 - 2026-09-23 17:23 UTC - FALA 392: lud_limit_populacji bounded integration
+
+|- md5 `2331986977a6fb9e6fdf7b0e3c41f081` · sha256 `842eb21a1d2340249daa4dd4fc08705faded341699e27df514686c02c63b4726` · rozmiar `69920420` bajtow.
+|- source/product commit: `c4b426e4`; bundle/publish commit: `7595b61733e2ecd467a5b64648bcd50f5e087d92`; base: `0caa4dfa31d37337cd74fdbab95ee77da4806d98`.
+|- Scope: owner-approved `lud_limit_populacji` for 15 civKeys; resolved cap = building ladder `5/8/12` + Matrix delta, bounded to `4..14`; no placeholder `10`.
+|- Final Control: `t_c4f7880f/run1138 PASS-WITH-NOTES`; integration gate `t_aed63575` remains workerless, blocked and unassigned.
+|- Gates: population wiring `122/0`, semantic `325/0`, auto-wyzywienie `42/0`, TypeScript PASS, JSON PASS, `git diff --check` PASS, Vite `892` modules, real Chromium smoke PASS, remote raw HTTP `200`, manifest/hash/bytes readback PASS.
+|- Known pre-existing broader reds reproduced unchanged: population-growth-v85 `48/2`, bonus `18/2`, tempo `12/2`; no new product failure attributed to this scope.
+|- No promotion to KANON/FINALNA.
+
+## ROBOCZA 240a82c3 - 2026-09-22 11:40 UTC - FALA 391: bounded civilization matrix integration
+
+|- md5 `240a82c3eb3ad1cd344f254eecc11887` · sha256 `f39b672fc59fe44f8c61a67458efe3336fa4b25b0f730c7d28cb5b1eeca1f497` · rozmiar `69914006` bajtów.
+|- source/product commit: `ad16a1b8`; bundle commit: `22fcd1a271509a9215e88e2ea92ae942b6ed74e5`; base: `a0cc8933c2341f63c0c084395e668bd509731392`.
+|- Scope: `meta_mnoznik_waluta` runtime consumer plus the approved semantic correction for `dip_nastawienie_bazowe`; exact product allowlist is recorded in the integration receipt.
+|- Final Control: `t_37c17961`, `t_eb282c93`, `t_f475a224`, `t_c3a89662` — all `PASS-WITH-NOTES`; workerless gates remain blocked/unassigned.
+|- Gates: semantic `47/0`, meta/roster `74/0`, AI boundary `42/0`, TypeScript PASS, Vite `892` modules, local Chromium smoke PASS, remote HTTP `200`, manifest/hash/bytes readback PASS, `verify-robocza-bundle.cjs` `VERIFY OK`.
+|- Publish/readback: remote branch and `main` read back to `4c9ae80b7230eda7f5d9c148acf0ef242b3efbe7`; raw remote bundle and manifest hashes match exactly. Linux stamp comparison is the known Node-port `WARN`.
+|- The full `113 × 15 = 1695` matrix is not claimed complete; unresolved contracts remain outside this bounded release. No promotion to KANON/FINALNA.
+
+## ROBOCZA d8d7071e - 2026-09-21 22:39 UTC - FALA 390: trzy zatwierdzone tematy
+
+|- md5 `d8d7071ee96ad85e249b9d92b7b8e432` · sha256 `a21b9b8143bd414eec5ee23f65150f33ba6266e595c028d50a7692695ce13fe4` · rozmiar `69913695` bajtów.
+|- source/product commit: `8c505dae8b06d1e523911c70c9e5cdf472910a1f`; integration receipt: `a21af6b96076bcce6d0cda60fe75e19e07b0853e`; base: `7cfead757737d1c1a7ddfc187a3241dad5bb0e57`.
+|- Scope: `R-MANPOWER-HP-MAX-EFFECTIVE-Q1`, `R-AUTO-BITWA-JEDNOCZESNA-Q1`, `R-REKRUTACJA-WIELE-JEDNOSTEK-UI-Q1`.
+|- Final Control: `t_c24ebf5d` PASS-WITH-NOTES; `t_08ea70f2` PASS-WITH-NOTES / READY_FOR_INTEGRATION; `t_1bbfe729` PASS-WITH-NOTES / READY_FOR_INTEGRATION. Workerless gates pozostają niedispatchowane.
+|- Gates: effective maxHP `15/0`, replenishment `17/0`, Manpower `63/0`, unit card `29/0`, veterans `79/0`, combat `6/6`, AUTO `29/0`, recruitment backend `17/0`, real Chromium recruitment `25/0`, logic `213/213`, tech-tree `19/0`, research `33/0`, unit replace `13/13`, TypeScript PASS, Vite `892` modules, fresh bundle smoke PASS, `verify-robocza-bundle.cjs` `VERIFY OK`.
+|- Publish commit: `77b762b3f622b92f50b187ac881732a6268aae7e`; remote `main` and branch readback match; manifest/hash/bytes readback PASS. Linux stamp `WARN` is the known Node-port behavior.
+|- No promotion to KANON/FINALNA. Matrix remainder and parameters without active runtime consumers remain outside this release.
+
+## ROBOCZA 9ca971c4 - 2026-09-21 19:26 UTC - FALA 389 - bounded civilization matrix
+
+|- md5 `9ca971c4a2f10130bdba954e45cb2114` · sha256 `8ba6a8cfd5ec1835883d4a3266a7de85dd8ff868200e7407a8cd0f57c5a865f8` · rozmiar `69901148` bajtów.
+|- source/integration commit: `cd7df6b655e1a061af1f6e3c88c7158993ad5578`; base: `f4c89d0081c622c16b207d338b49c8bacafc4553`.
+|- Scope: `R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1` (Normal semantic classifier + 113-row UI) oraz `R-CYWILIZACJE-MACIERZ-14-POZOSTALE-Q1` (14×113 specification/audit package).
+|- Final Control: `t_72362f60/run894` PASS-WITH-NOTES; `t_a1766119/run871` PASS-WITH-NOTES. Independent pre-commit review PASS; no security or logic objections.
+|- Gates: semantic `41/0`, Greece `390/0`, difficulty `16/0`, 14-matrix `1582/1582`, TypeScript PASS, Vite `891` modules, real Chromium UI flow PASS, `verify-robocza-bundle.cjs` `VERIFY OK`.
+|- Remote readback: publish commit `5a4e87b72003930d698c9d7411f57273ccb9b0bd`; GitHub raw bundle and manifest HTTP `200`; remote hashes/bytes match the manifest. Linux stamp `WARN` is the known Node-port behavior.
+|- 97 semantic rows remain `D_REQUIRED/UNWIRED`; 14-matrix `DEAD_UNWIRED/UNWIRED` fields remain specification-only. No promotion to KANON/FINALNA.
 
 ## ROBOCZA 0816f385 - 2026-09-18 16:35 UTC - FALA 388 - sześć zatwierdzonych tematów
 
@@ -5218,3 +6530,37 @@ regres przeszedł przez Operator→Evaluator→Final Control niezauważony.
 ## ROBOCZA — FALA 299 (2026-08-19)
 - źródło `4f099cb18605e0cecac55a19218e539962e30fd7` · ROBOCZA md5 `5dba37a12900d8f9a03a2da592d2cd8c` · `VERIFY OK`.
   Zakres: zweryfikowane integracje FALI 299 oraz korekta parytetu rekrutacji AI — AI kupuje jednostki za Skarbiec, wspólną ścieżką z graczem, bez kosztu Pracy i niezależnie od produkcji budynków. Deploy wykonany z czystego commita; ręczny `START.html` zachowany.
+# ROBOCZA — AI zbiórka wojsk i oznaczenia wodza (2026-10-28)
+- OPUBLIKOWANO w `origin/main` `c72cd08a2de33a0f4ff920e6b314503a50811cb0`; produkt z integracji `7fdc191ac8efa4e3e1c71a4c82b1772bb55ec145`, baza `85f8c5f0e0aa6ff46aa8b85a03d0bc0c71d86268`.
+- Zakres: kampania AI zbiera wojska przez pięć pełnych tur i w szóstej wykonuje atak wspólnym ruchem; dowódca otrzymuje osobną gwiazdę, a emblemat cywilizacji jednostki ma rozmiar 4×.
+- ROBOCZA bundle MD5 `e5eb21d82c2be611ab9c491327f696c3`, SHA-256 `76078759e78f3cb466156cec296da925759dd685764dc42242d9a5f02ef40eb2`, `70,021,251` B. TypeScript, 916-modułowy build i testy obu tematów oraz wspólne regresje PASS. Test pełnego imperium oraz kampania morska AI nie należą do tego wydania.
+- Zdalny odczyt: pinned GitHub Raw bundle, manifest i START HTTP 200; bundle hash/rozmiar zgodne z manifestem. Receipt: `dyspozycje/autobot/runs/R-AI-GENERAL-WAR-5TURN-ATTACK-Q1/06-release-receipt.json`.
+
+# ROBOCZA — kierunki ikon łączenia i rozdzielania armii (2026-10-29)
+- Zmiana produktu: `gra/src/ui/unitActionBarHtml.ts`; scalanie ma strzałki skierowane do środka, rozdzielanie na zewnątrz. Commit źródłowy `002a75815b067cf2cdbcae7eed5c488f8634ea34`; release/push do `origin/main`: `42b4dac831765176684a506d0be377232fef008a`.
+- Robocza bundle MD5 `c7c3e90d634feac44e63b9b69cbc3cad`, SHA-256 `93f846fffedd526eeda1d3b17e25a73e80729b6bb16d3d6e4c2f41224192b974`, `70,029,107` B. Verifier `VERIFY OK`; startowy smoke gry PASS (canvas i klatka renderu). Zmiana ikon: PASS; paska akcji 31/31; odfortyfikowanie 16/16; TypeScript PASS.
+- GitHub Raw: bundle, manifest i START HTTP 200; manifest i START byte-identical; bundle hash i rozmiar zgodne. Stempel self-referential: embedded iteration `60642361040b3ec93525f26595efa309`; verifier zgłasza WARN dla samego pola stempla, ale weryfikuje manifest i `bundles[]` jako zgodne. Receipt: `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/06-release-receipt.json`.
+
+# ROBOCZA — cykliczna wymiana handlowa: 30 tur lub bezterminowo (2026-10-29)
+- Zakres: ilościowa wymiana surowca ustawiona na „Co turę” ma czas 1–30 tur albo „Bezterminowo”; `+100` usunięto. Wycena zachowuje skończony horyzont; istniejące umowy i historyczne oferty pozostają zgodne. Dostęp surowcowy i traktaty zachowują limit 20 tur.
+- Operator `c960a16b` + korekta zakresu `f216263d`; niezależny Evaluator PASS, Final Control PASS-WITH-NOTES. TypeScript PASS, test domeny 53/53, UI 12/12. Szerszy test propozycji 186/188; obie niepowiązane asercje pokoju w wojnie powtarzają się na bazie.
+- Robocza bundle MD5 `29022be80b95e838a861a8ea70e8a915`, SHA-256 `f0177a6469973e498389fa9b264f0287e9db5dff01f06487dac0d16a7bff2b97`, `70,031,368` B; Vite 917 modułów, verifier `VERIFY OK`, boot smoke PASS. Release `401893417f2a47545c44ef5bba168dc10d0fcf31` wypchnięty do `origin/main`.
+- GitHub Raw bundle/manifest/START zwróciły HTTP 200; remote bundle hash/rozmiar zgodne, manifest i START byte-identical. Receipt: `dyspozycje/autobot/runs/R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1/06-release-receipt.json`.
+
+# ROBOCZA — domyślna zbiórka nowej rekrutacji do wodza (2026-10-29)
+- W panelu rekrutacji armii na mapie głównej dodano przełącznik „Idź do wodza”. Gdy jest włączony, nowe jednostki gracza z rekrutacji miejskiej i panelu armii podążają za aktualną pozycją wodza. Każdą jednostkę można niezależnie włączyć/wyłączyć, co pozwala zebrać tylko część armii. Domyślny wybór i indywidualne preferencje zapisują się w grze; starsze zapisy bez pola zachowują dotychczasowy domyślny wybór.
+- Operator trzy rundy: początkowa implementacja `98e9f6ee`, opt-in na wspólnym polu `869cde2a`, synchronizacja po ruchu końca tury `7738027f`. Evaluator PASS-WITH-NOTES; Final Control PASS. Test podążania 20/20, UI/save i legacy PASS, TypeScript/build PASS.
+- Robocza bundle MD5 `15eabd0ba132bde2454f74d47371a685`, SHA-256 `80be74dbece3ae923efdeffee193aec1607ae6e0555a4f36973406891a31b508`, `70,033,099` B; Vite 917 modułów, verifier `VERIFY OK`, boot smoke PASS. Release `fb2d613b68a3a32a370fb6a2d29121c312cac51f` pushed do `origin/main`.
+- GitHub Raw bundle/manifest/START HTTP 200; bundle hash i rozmiar zgodne, manifest i START byte-identical. Uwaga odbioru: test EOT wywołuje helpers i sprawdza produkcyjny hook, nie pełną rzeczywistą sekwencję końca tury. Receipt: `dyspozycje/autobot/runs/R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1/06-release-receipt.json`.
+
+
+# ROBOCZA — pakiet ustawień, bitwy, żywności, armii i budowy (2026-10-29)
+- Zakres: lokalny main @ 6f9ef3ce, wypchnięty do origin/main i opublikowany do Roboczej w release commit f66fcc2924617eae1810823d55d358ad0d5445ad. Obejmuje R-NEWGAME-SETTINGS-LAND-DIPLO-REPOSITION-Q1, R-BATTLE-MODE-CHOICE-LABELS-Q1 + R-BATTLE-MODE-SETTING-WIRING-Q1, R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1, R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1, R-ARMY-STACK-COMMANDER-IDENTITY-Q1, R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1.
+- Build Vite 5.4.21 single-file: 919 modules, PASS; TypeScript PASS. Testy: układ nowej gry Chromium PASS; żywność 11/11; wódz 5/5; highlight 39/39; panel łączenia Robocza 9/9 przy 150% i 88 oddziałach; boot smoke PASS; verifier VERIFY OK.
+- Robocza bundle: MD5 703bdf789fb23f37cacacc9aac405402, SHA-256 e1df7844da72cd5d03332f70ecba0f6e650b6344f563c183b866f54829fdeba7, 70,040,409 B. Pinned GitHub Raw bundle/manifest/START HTTP 200 i byte-identical; manifest hashes/size zgodne. Receipt: dyspozycje/autobot/runs/R-INTEGRATION-SETTINGS-BATTLE-FOOD-20261029/40-release-receipt.json.
+- Release zawiera tylko sześć zakresów z Final Control. Test szeroki bitwy wykrył osobny błąd łuczników w Ataku, który ma niezależnego operatora; szeroki pakiet bitewny pozostaje aktywny. Test dużego imperium odłożony.
+
+# ROBOCZA — czyszczenie ID kolejki rozkazów bitewnych (2026-10-30)
+- Zmiana: po zwykłej aktywacji albo pominięciu martwej/zużytej jednostki usuwamy jej ID z `_queuedOrderUnitIds`, aby kolejne rozkazy nie pozostawały oznaczone jako oczekujące. Źródło `main` commit `96d088b4`.
+- Integracja na aktualnym `main`: Operator R2-I, niezależny Evaluator i Final Control PASS-WITH-NOTES; Chromium 15/15, mieszana bitwa 28v28, kolejka 28/28→0, 8 ruchów, późniejszy rozkaz pointerowy wykonał jeden ruch; 60 s bez potwierdzonego drugiego ruchu. TypeScript, `node --check`, `git diff --check`, bundle `SMOKE OK`, `verify-robocza-bundle.cjs VERIFY OK`.
+- Robocza bundle MD5 `2f15bd3b3ef6b3732cee4007f8c49cda`, SHA-256 `2c6e0e446af65e6d76d6e09f378801fe69f3614391489f4d418bac90bad336b7`, `70,045,250` B; pole bitwy MD5 `daf66e2423e0f550db70ee41d8cdf12f`, SHA-256 `ecf1e42a8ec6eeaddca66a86596c34614199f101b253c73c98e266ca16fde4ec`, `57,380,299` B. Bundles opublikowane w Roboczej i `origin/main` release `87aa8678427109b9a109aea7797ca3c171cfd84f`; pinned GitHub Raw dla obu bundli zgodny z SHA-256 lokalnym, zdalny manifest potwierdza MD5/rozmiar; `git ls-remote` potwierdził release commit. Receipt: `dyspozycje/autobot/runs/R-BITWA-KOLEJKA-ROZKAZOW-STALE-Q1/80-deploy-and-push.md`.

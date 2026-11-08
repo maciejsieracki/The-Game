@@ -1,0 +1,274 @@
+R2 Operator obrona: ostatnie 25 linii wyjscia testow PO (stan d2f590d50)
+== ai-general-war-campaign-test
+== army-leadership
+== army-panel-recruit-rally-general
+== army-to-nearest-leader
+== general-capital-recruitment-order
+== general-quick-follow-action
+== generals-purchase-runtime
+== war-allin-general-path-barb-defense
+== war-allin-capital
+== army-concentration
+== ai-war-defend-home
+== general-eligible-unit-roster
+== po-ai-general-war-campaign-test
+PASS: route search accepts the farther enemy capital on the same landmass
+PASS: campaign picks the nearest reachable land target when the closer enemy is noPath
+PASS: save/load preserves stage, target, General identity, and gather turn count
+PASS: save/load preserves an AI campaign targeting human owner 0
+PASS: restore rejects malformed campaign records
+PASS: AI owner turn prepares the campaign and calls the shared General purchase transaction
+PASS: main filters campaign war targets by one land reachability component rooted at the AI capital
+PASS: General offer uses capital production availability, including era, barracks, tech, and stock gates
+PASS: General offer keeps existing capital availability gates for era and barracks
+PASS: campaign state is written to and restored from save metadata
+PASS: without Seafaring the near land capital is reachable and far sea target is not
+PASS: existing embarkation identifies the far capital as sea-reachable only across the barrier
+PASS: sea-only wartime target is preferred over the closer land target
+PASS: existing land target cannot be retained ahead of a feasible sea-only target
+PASS: route classifier reports both land and sea routes to the distant target
+PASS: a distant target with both routes outranks a nearer land-only target
+PASS: without Seafaring the distant sea route loses priority and nearest land target wins
+PASS: weighted classifier identifies the same sea route chosen by the production planner
+PASS: equal-cost route classifier follows the planner coordinate tie-break onto water
+PASS: without Seafaring the equal-cost sea tie is unavailable and the planner uses land
+PASS: production planner marches toward the same selected sea capital
+PASS: without Seafaring production planner reports noPath rather than a false water move
+PASS: main campaign wiring filters unreachable targets and gates sea movement on owner technology
+
+ai-general-war-campaign-test: 51 passed, 0 failed
+== po-live
+PASS: organic production turn 2: real troops muster without attack
+PASS: organic production turn 3: real troops muster without attack
+PASS: organic production turn 4: real troops muster without attack
+PASS: organic production pipeline completes five full gather turns
+PASS: sixth organic attack turn completed instead of timing out on a stale snapshot
+PASS: sixth organic production turn orders every field unit to the nearest reachable capital
+PASS: sixth organic production turn executes movement and spends each legal full movement budget
+PASS: battle-casualty fixture removes the active physical General
+PASS: unfunded casualty case begins below the replacement General Manpower cost
+PASS: AI waits in recruiting without issuing attacks while a replacement is unaffordable
+PASS: funded casualty case provides ordinary replacement recruitment costs
+PASS: real owner turn after General loss restarts recruitment before another attack
+PASS: replacement physical General binds to a fresh gathering campaign after the casualty
+PASS: replacement General real turn 1: fresh gathering without attack
+PASS: replacement General real turn 2: fresh gathering without attack
+PASS: replacement General real turn 3: fresh gathering without attack
+PASS: replacement General real turn 4: fresh gathering without attack
+PASS: replacement General completes a new five-turn muster
+PASS: replacement attack turn completed on a fresh world turn without timeout
+PASS: replacement General leads the renewed attack after five fresh muster turns
+Actual six-turn execution trace: [{"turn":1,"campaign":{"targetOwnerId":0,"stage":"gathering","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":1,"lastGatherTurn":8},"perUnit":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-1","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-2","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-3","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false}],"orders":[],"aiDecision":{"ownerId":1,"stage":"gathering","campaign":{"targetOwnerId":0,"stage":"gathering","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":1,"rallyQ":2,"rallyR":2,"target":{"ownerId":0,"cityId":"city0","q":5,"r":3},"turn":8,"seaTravelAllowed":true,"lastGatherTurn":8},"units":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-1","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-2","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-3","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"movement":6,"isGeneral":true}],"commands":[{"type":"build","cityId":"city2","buildingId":"stolarnia","fallbackIds":["palisada"]},{"type":"endTurn"}]},"warPlanDiagnostic":null},{"turn":2,"campaign":{"targetOwnerId":0,"stage":"gathering","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":2,"lastGatherTurn":9},"perUnit":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-1","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-2","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-3","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false}],"orders":[],"aiDecision":{"ownerId":1,"stage":"gathering","campaign":{"targetOwnerId":0,"stage":"gathering","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":2,"lastGatherTurn":9,"rallyQ":2,"rallyR":2,"target":{"ownerId":0,"cityId":"city0","q":5,"r":3},"turn":9,"seaTravelAllowed":true},"units":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-1","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-2","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-3","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"movement":6,"isGeneral":true}],"commands":[{"type":"build","cityId":"city2","buildingId":"palisada","fallbackIds":[]},{"type":"endTurn"}]},"warPlanDiagnostic":null},{"turn":3,"campaign":{"targetOwnerId":0,"stage":"gathering","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":3,"lastGatherTurn":10},"perUnit":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-1","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-2","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-3","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false}],"orders":[],"aiDecision":{"ownerId":1,"stage":"gathering","campaign":{"targetOwnerId":0,"stage":"gathering","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":3,"lastGatherTurn":10,"rallyQ":2,"rallyR":2,"target":{"ownerId":0,"cityId":"city0","q":5,"r":3},"turn":10,"seaTravelAllowed":true},"units":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-1","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-2","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-3","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"movement":6,"isGeneral":true}],"commands":[{"type":"endTurn"}]},"warPlanDiagnostic":null},{"turn":4,"campaign":{"targetOwnerId":0,"stage":"gathering","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":4,"lastGatherTurn":11},"perUnit":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-1","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-2","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-3","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false}],"orders":[],"aiDecision":{"ownerId":1,"stage":"gathering","campaign":{"targetOwnerId":0,"stage":"gathering","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":4,"lastGatherTurn":11,"rallyQ":2,"rallyR":2,"target":{"ownerId":0,"cityId":"city0","q":5,"r":3},"turn":11,"seaTravelAllowed":true},"units":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-1","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-2","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-3","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"movement":6,"isGeneral":true}],"commands":[{"type":"endTurn"}]},"warPlanDiagnostic":null},{"turn":5,"campaign":{"targetOwnerId":0,"stage":"attacking","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":5,"lastGatherTurn":12},"perUnit":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-1","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-2","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-3","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"movement":6,"maxMovement":6,"embarked":false,"onWater":false}],"orders":[],"aiDecision":{"ownerId":1,"stage":"attacking","campaign":{"targetOwnerId":0,"stage":"attacking","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":5,"lastGatherTurn":12,"rallyQ":2,"rallyR":2,"target":{"ownerId":0,"cityId":"city0","q":5,"r":3},"turn":12,"seaTravelAllowed":true},"units":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-1","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-2","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-3","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"movement":6,"isGeneral":true}],"commands":[{"type":"endTurn"}]},"warPlanDiagnostic":null},{"turn":6,"campaign":{"targetOwnerId":0,"stage":"attacking","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":5,"lastGatherTurn":12},"perUnit":[{"id":"diffbonus_1_1_d490sy42ocg","q":4,"r":3,"movement":0,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-1","q":4,"r":3,"movement":0,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-2","q":4,"r":3,"movement":0,"maxMovement":6,"embarked":false,"onWater":false},{"id":"war-campaign-live-stack-3","q":4,"r":3,"movement":0,"maxMovement":6,"embarked":false,"onWater":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":4,"r":3,"movement":0,"maxMovement":6,"embarked":false,"onWater":false}],"orders":[{"unitId":"diffbonus_1_1_d490sy42ocg","targetCityId":"city0","toQ":4,"toR":3,"allowFriendlyStack":true},{"unitId":"war-campaign-live-stack-1","targetCityId":"city0","toQ":4,"toR":3,"allowFriendlyStack":true},{"unitId":"war-campaign-live-stack-2","targetCityId":"city0","toQ":4,"toR":3,"allowFriendlyStack":true},{"unitId":"war-campaign-live-stack-3","targetCityId":"city0","toQ":4,"toR":3,"allowFriendlyStack":true},{"unitId":"rec_2_city2_0ffeos4k0gdb","targetCityId":"city0","toQ":4,"toR":3,"allowFriendlyStack":true}],"aiDecision":{"ownerId":1,"stage":"attacking","campaign":{"targetOwnerId":0,"stage":"attacking","generalUnitId":"rec_2_city2_0ffeos4k0gdb","gatherTurnsCompleted":5,"lastGatherTurn":12,"rallyQ":2,"rallyR":2,"target":{"ownerId":0,"cityId":"city0","q":5,"r":3},"turn":13,"seaTravelAllowed":true},"units":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-1","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-2","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"war-campaign-live-stack-3","q":2,"r":2,"movement":6,"isGeneral":false},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"movement":6,"isGeneral":true}],"commands":[{"type":"move","unitId":"diffbonus_1_1_d490sy42ocg","toQ":4,"toR":3,"targetCityId":"city0","allowFriendlyStack":true},{"type":"move","unitId":"war-campaign-live-stack-1","toQ":4,"toR":3,"targetCityId":"city0","allowFriendlyStack":true},{"type":"move","unitId":"war-campaign-live-stack-2","toQ":4,"toR":3,"targetCityId":"city0","allowFriendlyStack":true},{"type":"move","unitId":"war-campaign-live-stack-3","toQ":4,"toR":3,"targetCityId":"city0","allowFriendlyStack":true},{"type":"move","unitId":"rec_2_city2_0ffeos4k0gdb","toQ":4,"toR":3,"targetCityId":"city0","allowFriendlyStack":true},{"type":"endTurn"}]},"warPlanDiagnostic":{"playerId":1,"targets":[{"ownerId":0,"cityId":"city0","q":5,"r":3}],"eligible":[{"id":"diffbonus_1_1_d490sy42ocg","q":2,"r":2,"ruchLeft":6},{"id":"war-campaign-live-stack-1","q":2,"r":2,"ruchLeft":6},{"id":"war-campaign-live-stack-2","q":2,"r":2,"ruchLeft":6},{"id":"war-campaign-live-stack-3","q":2,"r":2,"ruchLeft":6},{"id":"rec_2_city2_0ffeos4k0gdb","q":2,"r":2,"ruchLeft":6}],"plans":[{"orders":[{"unitId":"diffbonus_1_1_d490sy42ocg","step":{"q":4,"r":3},"targetCityId":"city0","targetOwnerId":0,"mode":"capital"},{"unitId":"rec_2_city2_0ffeos4k0gdb","step":{"q":4,"r":4},"targetCityId":"city0","targetOwnerId":0,"mode":"capital"},{"unitId":"war-campaign-live-stack-1","step":{"q":5,"r":2},"targetCityId":"city0","targetOwnerId":0,"mode":"capital"},{"unitId":"war-campaign-live-stack-2","step":{"q":3,"r":3},"targetCityId":"city0","targetOwnerId":0,"mode":"capital"},{"unitId":"war-campaign-live-stack-3","step":{"q":3,"r":4},"targetCityId":"city0","targetOwnerId":0,"mode":"capital"}],"noPath":[],"held":[]}]}}]
+PASS: browser scenario completed without page errors
+
+ai-general-war-campaign-live-test: 68 pass, 0 fail
+EOT campaign evidence: five complete muster turns; sixth complete attack turn; elapsed 276s
+== po-army-leadership
+PASS: commander title, morale, aggregate rout/death contracts, placement, and Auto/manual gate
+== po-army-panel
+PASS tries to plan General-follow for every deferred recruit
+PASS returns every recruit whose General-follow route was planned
+PASS enqueues all planned recruits together exactly once
+PASS live completion handler plans all deferred recruits and reveals only the last one
+
+5 assertions passed
+== po-army-to-nearest-leader
+PASS: C mutacja lamie test: picker: pierwszy z listy zamiast najblizszego
+PASS: C mutacja lamie test: picker: null/nieosiagalny traktowany jak dystans 0
+PASS: C mutacja lamie test: picker: przycinanie przerywa przy rownej linii prostej (gubi remisy)
+PASS: C mutacja lamie test: ai.ts: zbiorka tylko do wodza kampanii (bez wyboru najblizszego)
+PASS: C mutacja lamie test: picker: remis nie patrzy na armie
+PASS: C mutacja lamie test: ai.ts: odleglosc w linii prostej zamiast dlugosci trasy
+PASS: C mutacja lamie test: collectLeaderCandidates: routed wodz dopuszczony
+PASS: C mutacja lamie test: collectLeaderCandidates: removed wodz dopuszczony
+PASS: C mutacja lamie test: collectLeaderCandidates: wyprawa ignorowana
+SIM seed=1 koniec: jednostek u wodzow=38, u nie-najblizszego=0
+SIM seed=2 koniec: jednostek u wodzow=38, u nie-najblizszego=0
+SIM seed=3 koniec: jednostek u wodzow=38, u nie-najblizszego=0
+SIM seed=1 turns=120 ruchow=55 do_nie_najblizszego=0 odsetek=0.000
+SIM seed=2 turns=120 ruchow=58 do_nie_najblizszego=0 odsetek=0.000
+SIM seed=3 turns=120 ruchow=82 do_nie_najblizszego=0 odsetek=0.000
+PERF decideAITurn: 360 wywolan, srednio 0.26 ms/ture (lacznie 94 ms)
+PERF stres (80 jednostek, 4 wodzow, 20 tur): srednio 4.1 ms/ture
+SIM razem ruchow=195 do_nie_najblizszego=0 odsetek=0.000 (PO)
+PASS: D odsetek jednostek idacych do nie-najblizszego wodza < 5%
+PASS: E1 main.ts: planSpawnedUnitFollowGeneral wybiera najblizszego (nie units.find)
+PASS: E2 main.ts: wodz kampanii AI wybierany przez pickNearestAvailableLeader
+PASS: E3 main.ts: przycisk "Idz do wodza" przekazuje wybranego wodza do issueGeneralQuickFollow
+PASS: E4 main.ts: syncGeneralMarchTargets nadpisuje cel marszu najblizszym po trasie
+
+WYNIK: 43 PASS, 0 FAIL
+== po-general-capital
+PASS: production offer is capital-only
+PASS: production commander candidate goes through purchasableUnits and city availability gates
+PASS: candidate availability still enforces current era, technology, and Barracks/Academy gates
+PASS: Stone commander offer follows Wheel-aware unit choice
+PASS: Stone Warrior commander remains available when a future national replacement hides the generic production card
+PASS: era commander offer is title/limit aware and respects queued plus living count
+PASS: Army city renderer omits the separately mounted commander card
+PASS: production card forwards the selected commander offer to onPurchaseGeneral
+PASS: production purchase invokes real commander preflight before ordinary payment
+PASS: Chromium mounted the production commander card with an enabled recruit button
+PASS: production card label identifies the commander role
+[Rekrutacja] Ateny: Wojownik oplacone 5 — kolejka x1 (−1000 MP)
+PASS: production card click callback returned accepted
+PASS: real card click invoked production handler without browser errors
+PASS: one real purchase appends exactly one General queue entry
+PASS: one purchase deducts exactly the offered gold, manpower, and stock once
+PASS: queued entry is marked as commander and has the visible title
+PASS: purchase marks game state dirty once
+PASS: real general preflight rejects a non-capital city without changing resources or queue
+PASS: real general preflight rejects a purchase after the current-era commander limit
+[Rekrutacja] Ateny: Wojownik oplacone 5 — kolejka x1 (−1000 MP)
+PASS: actual preflight expands the commander limit by one in the next era
+PASS: besieged capital rejects a General purchase without any resource or queue change
+
+general-capital-recruitment-order-test: PASS (0 failures)
+== po-general-quick-follow
+PASS chooses nearest living commander owned by the same civilization
+PASS commander does not receive a self-follow target
+PASS no commander is returned when the owner has none
+PASS dead units cannot start a commander-follow order
+PASS follow order stores commander identity and current destination for live tracking
+PASS production tracked planner calls the real pathfinder and stores a reachable leader march
+PASS tracked march follows the commander position and remains pathfindable
+PASS arrival on the moving commander hex completes and clears the tracked march
+PASS a follower can start a fresh tracked march after its prior order completes
+PASS zero-HP commander loss removes the tracked march and stale attack-target entry
+PASS same-hex unit can remain opted in while its commander has not moved
+PASS same-hex opt-in starts a tracked march after the commander moves
+PASS same-hex opt-in continues tracking the commander after activation
+PASS instant end-turn leader segment gives a colocated opt-in follower one tracked march
+PASS subsequent instant end-turn segment retargets the same follower order without duplication
+PASS follow action label tracks the live Wódz/Generał title and active state
+PASS unit action renderer exposes the clickable, accessible follow action
+PASS Chromium click executes production follow logic, stores live target, queues movement, and reports current title
+PASS unreachable route reports failure without queuing a replacement march
+PASS production HUD handler delegates to the executed follow service and live title resolver
+
+20/20 PASS
+== po-general-eligible
+PASS fenicjanie Stone before Wheel -> Warrior
+PASS availability context passed for fenicjanie/1
+PASS fenicjanie Stone after Wheel -> Ox Chariot
+PASS availability context passed for fenicjanie/2
+PASS fenicjanie Bronze -> chariot when currently legal, otherwise best legal fallback (Rydwan konny)
+PASS availability context passed for fenicjanie/3
+PASS fenicjanie Iron -> best cavalry Konnica
+PASS availability context passed for germanie/2
+PASS Bronze before Jeździectwo falls back to best currently available infantry, excluding the still-legal Ox Chariot
+PASS availability context passed for grecy/2
+PASS Bronze switches from fallback to the approved chariot after unlock
+PASS Celtic generic Bronze Chariot is suppressed by the future Iron replacement in the current production roster
+PASS availability context passed for celtowie/2
+PASS Celtic Bronze Wódz uses approved generic horse chariot when its normal tech and Barracks gates are met
+PASS availability context passed for celtowie/2
+PASS Celtic Bronze leader-only chariot does not bypass the Barracks gate
+PASS availability context passed for celtowie/2
+PASS Celtic Bronze leader-only chariot does not bypass the Jeździectwo gate
+PASS availability context passed for grecy/3
+PASS Iron offers no leader model if no cavalry is currently recruitable
+PASS production availability remains the source of current gates
+PASS civ-specific chariots are resolved from canonical owner civ key
+PASS Dystans and Oblężnicza roles are excluded
+PASS mounted units with missile attack stay eligible by type/role
+PASS 137 total checks
+== po-generals-purchase
+vite v5.4.21 building for production...
+transforming...
+✓ 943 modules transformed.
+rendering chunks...
+[plugin vite:singlefile]
+
+[plugin vite:singlefile] Inlining: index-BVpEemw_.js
+computing gzip size...
+../../../../../../../tmp/civ-general-purchase-runtime/index.html  74,690.01 kB │ gzip: 49,419.63 kB
+✓ built in 37.74s
+PASS: real game initialized and capital city founded
+PASS: runtime exposes an actual best-unit General offer
+PASS: real purchase transaction rejects non-capital with no resource or queue mutation
+PASS: real capital purchase succeeds and queues exactly one General
+PASS: real purchase deducts the quoted treasury amount and required stock/Manpower
+PASS: real purchase transaction rejects a second General at the era cap
+PASS: queued General spawns through the live end-turn recruitment pipeline
+PASS: runtime post-spawn hook assigns a new recruit to the General live position
+PASS: real map has three separated recruitment cities with routable multi-turn paths to the General
+PASS: Army-panel purchase callback queues one paid unit at each of three cities
+PASS: real end-turn recruitment completed all three queues and deferred flush assigned every march
+PASS: all three recruits actually begin moving from their cities without teleporting
+PASS: browser completed the real purchase/spawn scenario without page errors
+
+generals-purchase-runtime-test: 13 pass, 0 fail
+== po-war-allin-barb
+
+--- T1: obronca domu (kampania wodza, etap attacking) rusza ku barbarzyncy w bramce ---
+
+--- T2: jednostki marszu kampanii nadal ida na stolice wroga ---
+
+--- T3: barbarzynca poza bramka obrony -- brak przydzialu, obronca idzie na stolice ---
+
+--- T4: obronca w stosie z zolnierzem kampanii zachowuje ruch ku barbarzyncy ---
+
+--- T5: sciezka glowna (bez kampanii) -- zachowanie bez zmian ---
+
+--- T7: obronca domu nie jest kotwica armii zastepczej (planWarReplacementRally) ---
+
+--- T8: obrona domu w kampanii wybiera wojsko, nie cywila / okret / wodza ---
+
+--- T9: stos z obroncą i zolnierzem kampanii -- zolnierz dostaje marsz na stolice ---
+
+--- T6: determinizm ---
+
+war-allin-general-path-barb-defense-test: 24 passed, 0 failed
+== po-war-allin-capital
+--- 1: AI<->AI, PRZED (flaga OFF) vs PO (flaga ON) ---
+
+--- 2: AI -> GRACZ; gracz bez automatycznych rozkazow; zmiana stolicy ---
+
+--- 3: barbarzyncy -> NAJBLIZSZA stolica ---
+
+--- 4: brak sciezki ladowej (morze) -- bez zawieszenia, jednostki zostaja ---
+
+--- 5: przeciwnik wyeliminowany (brak miast) => dotychczasowe zachowanie ---
+
+--- 6: flaga OFF == baza origin/main (hash stanu po TURNS turach) ---
+  [INFO] aiVsAi: baza pre-zasieg=49f36d28989cf940 OFF=be060bceec8cef33 (roznica = zamierzona zmiana zasiegu)
+  [INFO] aiVsPlayer: baza pre-zasieg=22a63c096e698720 OFF=0ec28410234e2ed2 (roznica = zamierzona zmiana zasiegu)
+  [INFO] barbarians: baza pre-zasieg=65542d56510bcef9 OFF=c07e60985cb8a2ab (roznica = zamierzona zmiana zasiegu)
+  [INFO] noLandPath: baza pre-zasieg=176b6b39e9773451 OFF=3484217518ceb4ba (roznica = zamierzona zmiana zasiegu)
+
+--- 7: determinizm przy fladze ON (2 przebiegi) ---
+
+--- 8: planWarAllInCapital -- grupowanie / rendezvous ---
+
+--- 10: realne scalanie grup, gesta grupa, brak krokow wstecz i dubli ---
+
+--- 9: okablowanie main.ts (testy statyczne) ---
+
+98 passed, 0 failed
+== po-army-concentration
+army-concentration-test: 56 passed, 0 failed
+== po-ai-war-defend-home
+
+--- T1: wymiana miast (symetria) ---
+
+--- T2: obrona bije najezdzce ---
+
+--- T3: odbicie utraconego miasta przed zdobywaniem ---
+
+--- T4: za slaby -> obrona w miescie, bez samobojczego wypadu ---
+
+--- T5: maly najezdzca -> kampania kontynuuje, odrywany oddzial ---
+
+--- T6: histereza planera (pasmo 0.8/0.6, min. 3 tury) ---
+
+--- T7: determinizm i czas tury ---
+
+--- T9: zgodnosc -- zero ingerencji bez najezdzcow i utraconych miast ---
+
+--- T10: P3 nietkniete -- silny agresor bez zagrozenia u siebie nadal zdobywa miasta ---
+
+--- T8: mutacje -- kazda psuje co najmniej jeden test (testy rozrozniaja) ---
+
+ai-war-defend-home-test: 30 passed, 0 failed
+== po-tsc

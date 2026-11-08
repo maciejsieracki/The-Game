@@ -595,7 +595,7 @@ export function ownShareFromSignal(signal: number | undefined | null): number {
  * bez śmieci zmiennoprzecinkowych.
  *
  * Dlaczego wykładniczo, a nie liniowo (`1 + wsp × excess`): przy ustalonym mnożniku
- * końcowym na capie ludności (12, `econ-params.json → akwedukt_max_ludnosci`) wzrost
+ * końcowym na capie ludności (20, `econ-params.json → akwedukt_max_ludnosci`) wzrost
  * geometryczny jest MINIMAKSEM — daje najmniejszy możliwy NAJWIĘKSZY skok względny progu
  * przy +1 mieszkańcu, bo rozkłada ten sam mnożnik równo na wszystkie kroki, zamiast
  * upychać największy skok w pierwszy krok powyżej populacji odniesienia. Liniowo max skok
@@ -1071,6 +1071,39 @@ export function evaluateOrderFromBreakdown(
   const sz = computeHappinessBreakdown(happinessInput, society);
   const prawo = computeLawBreakdown(lawInput, society);
   return computeOrderPctBreakdown(sz, prawo, params, revolt);
+}
+
+/** Apply the owner matrix to the fully computed happiness result, then recompute Order once. */
+export function applyCivMatrixHappinessModifier(
+  order: OrderPctBreakdown,
+  raw: number,
+  society: SocietyParamsLike | null | undefined,
+  difficulty: Difficulty = 'normal',
+): OrderPctBreakdown {
+  if (!Number.isFinite(raw) || raw === 0) return order;
+  const scale = loadSocietyScaleParams(society, difficulty);
+  const max = order.sz.szMax > 0 ? order.sz.szMax : 1;
+  const netto = order.sz.netto * (1 + raw);
+  const delta = netto - order.sz.netto;
+  const lines = delta === 0
+    ? order.sz.lines
+    : [...order.sz.lines, {
+      id: 'matryca_eko_zadowolenie',
+      label: 'Modyfikator cywilizacji (macierz ekonomii)',
+      value: delta,
+    }];
+  const sz: HappinessPctBreakdown = {
+    ...order.sz,
+    lines,
+    netto,
+    szPct: pctFromNetto(netto, max, scale.szPctCap),
+  };
+  return computeOrderPctBreakdown(
+    sz,
+    order.prawo,
+    loadOrderParams(society, difficulty),
+    loadRevoltParams(society, difficulty),
+  );
 }
 
 // ---------------------------------------------------------------------------

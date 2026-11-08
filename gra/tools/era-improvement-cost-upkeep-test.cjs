@@ -2,8 +2,8 @@
 /**
  * R-KOSZTY-EPOKOWE-ULEPSZENIA-Q1 — construction cost + Work upkeep.
  *
- * This gate bundles the real pure modules. It proves that the current Stone
- * values remain the base, Bronze/Iron use x2/x4 exactly once, roads are in the
+ * This gate bundles the real pure modules. It proves Stone construction is
+ * halved, Bronze unchanged, Iron doubled, roads use the
  * same rule, clearing still has only its one-time start cost, and upkeep is
  * counted once per placed layer and assigned to the territory owner.
  */
@@ -21,6 +21,7 @@ export {
   IMPROVEMENT_KEYS,
   RESOURCE_UPKEEP_IMPROVEMENT_KEYS,
   terrainImprovementEraMultiplier,
+  terrainImprovementConstructionEraMultiplier,
   scaleTerrainImprovementWorkCost,
 } from ${JSON.stringify(path.join(SRC, 'game/terrain-improvements.ts'))};
 export { getImprovementMeta } from ${JSON.stringify(path.join(SRC, 'game/improvement-tech.ts'))};
@@ -65,10 +66,18 @@ same(M.terrainImprovementEraMultiplier(1), 1, 'Stone multiplier');
 same(M.terrainImprovementEraMultiplier(2), 2, 'Bronze multiplier');
 same(M.terrainImprovementEraMultiplier(3), 4, 'Iron multiplier');
 same(M.terrainImprovementEraMultiplier(4), 8, 'era 4 continues explicit doubling rule');
+same(M.terrainImprovementConstructionEraMultiplier(1), 0.5, 'Stone construction multiplier');
+same(M.terrainImprovementConstructionEraMultiplier(2), 1, 'Bronze construction multiplier');
+same(M.terrainImprovementConstructionEraMultiplier(3), 2, 'Iron construction multiplier');
+same(M.terrainImprovementConstructionEraMultiplier(4), 4, 'era 4 construction keeps doubling from Iron');
 same(M.terrainImprovementEraMultiplier(0), 1, 'era 0 safe fallback');
 same(M.terrainImprovementEraMultiplier(Number.NaN), 1, 'missing/NaN era safe fallback');
 same(M.scaleTerrainImprovementWorkCost(0, 3), 0, 'zero construction cost stays zero');
 same(M.scaleTerrainImprovementWorkCost(Number.NaN, 3), 0, 'invalid construction cost stays zero');
+same(M.scaleTerrainImprovementWorkCost(20, 1), 20, 'Stone construction is half of FALA2-scaled base');
+same(M.scaleTerrainImprovementWorkCost(20, 2), 40, 'Bronze construction keeps FALA2-scaled base');
+same(M.scaleTerrainImprovementWorkCost(20, 3), 80, 'Iron construction doubles FALA2-scaled base');
+same(M.scaleTerrainImprovementWorkCost(20, 4), 160, 'era 4 continues doubling from Iron');
 
 same(
   M.RESOURCE_UPKEEP_IMPROVEMENT_KEYS.size,
@@ -85,14 +94,14 @@ for (const key of M.IMPROVEMENT_KEYS) {
   const baseStone = row && typeof row.koszt_praca === 'number'
     ? Math.max(1, Math.round(row.koszt_praca * 2))
     : 0;
-  const multiplier = M.terrainImprovementEraMultiplier(row && row.epoka);
+  const multiplier = M.terrainImprovementConstructionEraMultiplier(row && row.epoka);
   const expected = baseStone > 0 ? baseStone * multiplier : 0;
   same(meta?.kosztPraca, expected, `${key} construction cost uses its data era exactly once`);
-  ok(Number.isInteger(meta?.kosztPraca ?? 0), `${key} construction cost is an integer`);
 }
-same(M.getImprovementMeta('droga')?.kosztPraca, 30, 'Droga keeps current Stone base');
-same(M.getImprovementMeta('droga_brukowana')?.kosztPraca, 200, 'Droga brukowana uses Iron x4');
-same(M.getImprovementMeta('wyrab')?.kosztPraca, 5, 'Wycinka scales only its start cost');
+same(M.getImprovementMeta('farma')?.kosztPraca, 20, 'Farma costs 20 Work in its Stone era');
+same(M.getImprovementMeta('droga')?.kosztPraca, 15, 'Droga uses the Stone rate');
+same(M.getImprovementMeta('droga_brukowana')?.kosztPraca, 100, 'Droga brukowana uses Iron x2');
+same(M.getImprovementMeta('wyrab')?.kosztPraca, 2.5, 'Wycinka start cost uses the Stone rate');
 
 function mkHex(q, r, layers) {
   return { coords: { q, r }, ulepszenia: layers };

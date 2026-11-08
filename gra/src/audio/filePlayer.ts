@@ -85,6 +85,10 @@
 //     hasTracks() / start() / startWithFadeIn(fadeMs) / stop() / setVolume(v: 0..1) / isPlaying()
 // ============================================================================
 
+import civMusicManifest from '../../data/civ-music.json';
+import { resolveCivDiplomacyTracks } from './civMusic';
+import type { CivMusicManifest } from './civMusic';
+
 /** Długość przenikania między utworami (i między powtórzeniami tego samego
  *  utworu) — JEDNA stała, dostrajalna po odsłuchu. Właściciel: "po sekundzie"
  *  było za krótko/za ostro dla ambientu; 1,5 s brzmi płynniej. */
@@ -111,9 +115,13 @@ export interface FilePlaylist {
    * ui-params.json). No-op, jeśli już gra albo brak plików (jak start()).
    */
   startWithFadeIn(fadeMs: number): void;
-  stop(): void;
+  stop(onStopped?: () => void): void;
   setVolume(v: number): void;
   isPlaying(): boolean;
+  /** Cofa playlistę na początek (kolejka od nowa, w tym utwory otwierające
+   *  `leadCount`). No-op, gdy playlista gra. Użycie: muzyka cywilizacji w
+   *  dyplomacji — każde otwarcie rozmowy zaczyna od przywitania. */
+  rewind(): void;
 }
 
 /** Ta sama krzywa percepcyjna głośności co suwak w silniku syntezy (patrz
@@ -158,11 +166,16 @@ function buildShuffledQueue(trackCount: number, avoidFirst: number | null): numb
  *  przejść, także między powtórzeniami, przenika (patrz nagłówek pliku).
  *  kolejnosc: 'losowa' (domyślnie) tasuje przy każdej turze; 'stala' gra
  *  zawsze w kolejności podanej w trackUrls — decyzja właściciela C-MUZ-Q6=A
- *  dla intro (dramaturgia menu: spokojne otwarcie, mocne zamknięcie). */
+ *  dla intro (dramaturgia menu: spokojne otwarcie, mocne zamknięcie).
+ *  leadCount: pierwsze N utworów (indeksy 0..N-1) gra JEDNORAZOWO na początku
+ *  (np. przywitanie cywilizacji); kolejne tury pętlą już tylko po pozostałych
+ *  (pętla negocjacji; 'losowa' tasuje wtedy tylko ogon). Gdy ogon pusty —
+ *  pętla po całości (lead jest ignorowany). */
 function createPlaylist(
   trackUrls: readonly string[],
   repeatsPerTrack: number,
   kolejnosc: 'losowa' | 'stala' = 'losowa',
+  leadCount = 0,
 ): FilePlaylist {
   const els: [HTMLAudioElement | null, HTMLAudioElement | null] = [null, null];
   let activeIdx: 0 | 1 = 0;
@@ -190,6 +203,22 @@ function createPlaylist(
 
   function hasTracks(): boolean { return trackUrls.length > 0; }
 
+  /** Efektywna liczba utworów otwierających (grane raz). */
+  const lead = leadCount > 0 && leadCount < trackUrls.length ? leadCount : 0;
+
+  /** Nowa kolejka. first=true: pierwsza tura (lead + ogon); inaczej wyłącznie
+   *  ogon (pętla). lastPlayed: indeks ostatniego utworu poprzedniej tury. */
+  function newQueue(first: boolean, lastPlayed: number | null): number[] {
+    const from = first ? 0 : lead;
+    const idx = Array.from({ length: trackUrls.length - from }, (_, i) => from + i);
+    if (kolejnosc === 'stala') return idx;
+    if (lead === 0) return buildShuffledQueue(trackUrls.length, lastPlayed);
+    const headLen = first ? lead : 0;
+    const tail = buildShuffledQueue(trackUrls.length - lead, lastPlayed !== null && lastPlayed >= lead ? lastPlayed - lead : null)
+      .map((i) => i + lead);
+    return [...idx.slice(0, headLen), ...tail];
+  }
+
   function currentUrl(): string | null {
     const i = queue[queuePos];
     return i === undefined ? null : (trackUrls[i] ?? null);
@@ -208,9 +237,7 @@ function createPlaylist(
     repeatsLeft = repeatsPerTrack;
     if (queuePos >= queue.length) {
       const lastOfOldQueue = queue[queue.length - 1] ?? null;
-      queue = kolejnosc === 'stala'
-        ? Array.from({ length: trackUrls.length }, (_, i) => i)
-        : buildShuffledQueue(trackUrls.length, lastOfOldQueue);
+      queue = newQueue(false, lastOfOldQueue);
       queuePos = 0;
     }
   }
@@ -385,9 +412,7 @@ function createPlaylist(
     clearStopFade(); // gdyby start() trafił w trakcie fade-out po stop()
     playing = true;
     if (queue.length === 0) {
-      queue = kolejnosc === 'stala'
-        ? Array.from({ length: trackUrls.length }, (_, i) => i)
-        : buildShuffledQueue(trackUrls.length, null);
+      queue = newQueue(true, null);
       queuePos = 0;
       repeatsLeft = repeatsPerTrack;
     }
@@ -406,9 +431,7 @@ function createPlaylist(
     clearStartFade();
     playing = true;
     if (queue.length === 0) {
-      queue = kolejnosc === 'stala'
-        ? Array.from({ length: trackUrls.length }, (_, i) => i)
-        : buildShuffledQueue(trackUrls.length, null);
+      queue = newQueue(true, null);
       queuePos = 0;
       repeatsLeft = repeatsPerTrack;
     }
@@ -443,7 +466,7 @@ function createPlaylist(
    *  zwalnia zasoby OBU elementów A/B. Pozycja w playliście ZOSTAJE —
    *  kolejny start() wraca do tego samego utworu z zapamiętaną liczbą
    *  pozostałych powtórzeń. */
-  function stop(): void {
+  function stop(onStopped?: () => void): void {
     playing = false;
     clearMonitor();
     clearCrossfadeTimer();
@@ -452,7 +475,7 @@ function createPlaylist(
     clearStartFade();
     const a = els[0];
     const b = els[1];
-    if (!a && !b) return; // nigdy nie odtwarzano / już zwolnione
+    if (!a && !b) { onStopped?.(); return; } // nigdy nie odtwarzano / już zwolnione
     const startVolA = a ? a.volume : 0;
     const startVolB = b ? b.volume : 0;
     const t0 = performance.now();
@@ -465,6 +488,7 @@ function createPlaylist(
         clearStopFade();
         releaseEl(0);
         releaseEl(1);
+        onStopped?.();
       }
     }, RAMP_STEP_MS);
   }
@@ -504,7 +528,14 @@ function createPlaylist(
 
   function isPlaying(): boolean { return playing; }
 
-  return { hasTracks, start, startWithFadeIn, stop, setVolume, isPlaying };
+  function rewind(): void {
+    if (playing) return;
+    queue = [];
+    queuePos = 0;
+    repeatsLeft = repeatsPerTrack;
+  }
+
+  return { hasTracks, start, startWithFadeIn, stop, setVolume, isPlaying, rewind };
 }
 
 // ---------------------------------------------------------------------------
@@ -592,6 +623,33 @@ function buildCivDiplomacyUrls(civId: string): readonly string[] {
 
 const civDiplomacyPlaylistCache = new Map<string, FilePlaylist>();
 
+// MUZYKA CYWILIZACJI (przywitanie + negocjacje): manifest data/civ-music.json,
+// pliki w ./utwory/dyplomacja/_civ/<civId>/ (podkatalog `_civ` celowo poza
+// globem `dyplomacja/*/*.mp3` powyżej). Logika wyboru: civMusic.ts (czysta).
+const civMusicModules = import.meta.glob('./utwory/dyplomacja/_civ/*/*.mp3', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+const CIV_MUSIC_AVAILABLE: Record<string, string> = {};
+for (const k of Object.keys(civMusicModules)) {
+  const m = k.match(/\/_civ\/([^/]+)\/([^/]+)$/);
+  if (m) CIV_MUSIC_AVAILABLE[`${m[1]}/${m[2]}`] = civMusicModules[k] as string;
+}
+const civMusicPlaylistCache = new Map<string, FilePlaylist | null>();
+
+function getCivMusicPlaylist(civId: string): FilePlaylist | null {
+  if (civMusicPlaylistCache.has(civId)) return civMusicPlaylistCache.get(civId) ?? null;
+  let pl: FilePlaylist | null = null;
+  try {
+    const sel = resolveCivDiplomacyTracks(civMusicManifest as CivMusicManifest, civId, CIV_MUSIC_AVAILABLE, DYPLOMACJA_URLS);
+    if (sel) pl = createPlaylist(sel.urls, 1, 'losowa', sel.leadCount);
+  } catch {
+    pl = null; // bezpieczny fallback na dotychczasowy dźwięk dyplomacji
+  }
+  civMusicPlaylistCache.set(civId, pl);
+  return pl;
+}
+
 function getOrCreateCivDiplomacyPlaylist(civId: string): FilePlaylist | null {
   const cached = civDiplomacyPlaylistCache.get(civId);
   if (cached) return cached.hasTracks() ? cached : null;
@@ -647,6 +705,9 @@ export const dyplomacjaPlaylist: FilePlaylist = createPlaylist(DYPLOMACJA_URLS, 
 /** Wybiera playlistę dyplomacji: per-civ gdy są utwory, inaczej wspólny fallback. */
 export function diplomacyPlaylistForCiv(civId: string | undefined): FilePlaylist {
   if (civId) {
+    const music = getCivMusicPlaylist(civId);
+    if (music) { music.rewind(); return music; } // każde otwarcie rozmowy od przywitania
+
     const civPl = getOrCreateCivDiplomacyPlaylist(civId);
     if (civPl) return civPl;
   }
@@ -655,7 +716,8 @@ export function diplomacyPlaylistForCiv(civId: string | undefined): FilePlaylist
 
 /** Wszystkie playlisty dyplomacji (fallback + per-civ) — do setVolume(). */
 export function allDiplomacyPlaylists(): readonly FilePlaylist[] {
-  return [dyplomacjaPlaylist, ...civDiplomacyPlaylistCache.values()];
+  const music = [...civMusicPlaylistCache.values()].filter((p): p is FilePlaylist => p !== null);
+  return [dyplomacjaPlaylist, ...civDiplomacyPlaylistCache.values(), ...music];
 }
 
 /** Pre-battle: 1 utwór, pętla póki nakładka przedbitewna otwarta. */

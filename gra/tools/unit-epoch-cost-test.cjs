@@ -192,6 +192,8 @@ try {
   // Existing layers must receive the epoch-scaled base exactly once.
   const recruitmentDiscount = [{
     realizuje: 'ekonomia',
+    cel: 'jednostki',
+    matrixParamId: 'prod_koszt_jednostki_proc',
     opis: '10% zniżki na koszt rekrutacji',
     wartosc: 0.1,
   }];

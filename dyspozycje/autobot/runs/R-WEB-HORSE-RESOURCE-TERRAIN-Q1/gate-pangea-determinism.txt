@@ -1,0 +1,1 @@
+EXIT=0 (pangea-land-determinism-test po aktualizacji EXPECTED; przed aktualizacja EXIT=1 na kluczach ziemia/kontynenty/wyspy)

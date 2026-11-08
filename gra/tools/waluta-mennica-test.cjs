@@ -7,12 +7,11 @@
  * Kontrakt (przed 2026-07-25 byly DWA osobne mnozniki -- teraz JEDEN):
  *   - Bramka AND: ctx.walutaOdkryta === true ORAZ ctx.maMennica === true.
  *     Sam tech Waluty (bez Mennicy) juz NIE wystarcza -- to jest sedno zmiany.
- *   - Wartosc mnoznika = params.mennicaMnoznikPoWalucie (globalne.mennica_mnoznik_po_walucie
- *     w econ-params.json): easy x2,0 / normal x1,5 / hard x1,0 (brak efektu na hard).
- *   - Mnoznik dziala na CALY handelNetto PRZED podzialem suwakiem -- Pieniadz,
- *     Nauka i Zamoznosc (Luksus) rosna RAZEM (wariant A, decyzja wlasciciela).
- *   - Efekt Targowiska (Praca->Pieniadz, targowiskoPracaMnoznik) jest OSOBNYM
- *     strumieniem, nie wymaga Mennicy, NIE zostal ruszony przez ta decyzje.
+ *   - Mennica mnoży lokalny podatek: easy x1,62 / normal x1,50 / hard x1,38.
+ *     Modyfikator działa przed podziałem suwakami, więc Pieniądz, Nauka i
+ *     Zamożność rosną razem. Dochód tras jest rozliczany osobno.
+ *   - Targowisko zwiększa wpływy ze szlaków i limit slotów tras; premia nie
+ *     trafia do lokalnego podatku ani do strumienia konwersji Pracy.
  *   - PARYTET AI: formula nie ma zadnej galezi po ownerId.
  *
  * Run from gra/:  node tools/waluta-mennica-test.cjs
@@ -60,6 +59,7 @@ try {
 const M = require(BUNDLE_FILE);
 const econParamsRaw = require('../data/econ-params.json');
 const civs = require('../data/civs.json');
+const civMatrix = require('../data/civ-matrix.json');
 const societyParams = require('../data/society-params.json');
 const buildings = require('../data/buildings.json');
 const units = require('../data/units.json');
@@ -75,12 +75,15 @@ const pHard   = M.loadEconParams(econParamsRaw, 'hard');
 
 // ---------------------------------------------------------------------------
 // 0. Wartosci parametru w econ-params.json (sanity, dowod ze JSON niesie decyzje
-//    wlasciciela: easy x2,0 / normal x1,5 / hard x1,0).
+//    wlasciciela: easy x1,62 / normal x1,50 / hard x1,38).
 // ---------------------------------------------------------------------------
 console.log('\n-- 0. mennica_mnoznik_po_walucie w econ-params.json --');
-eq(pEasy.mennicaMnoznikPoWalucie,   2,   'easy: mennicaMnoznikPoWalucie = 2,0');
+eq(pEasy.mennicaMnoznikPoWalucie,   1.62, 'easy: mennicaMnoznikPoWalucie = 1,62');
 eq(pNormal.mennicaMnoznikPoWalucie, 1.5, 'normal: mennicaMnoznikPoWalucie = 1,5');
-eq(pHard.mennicaMnoznikPoWalucie,   1,   'hard: mennicaMnoznikPoWalucie = 1,0 (brak efektu, NIE zero)');
+eq(pHard.mennicaMnoznikPoWalucie,   1.38, 'hard: mennicaMnoznikPoWalucie = 1,38');
+eq(pEasy.budynekTargowiskoBonusHandlu, 0.62, 'easy: Targowisko route bonus = +62% (x1,62)');
+eq(pNormal.budynekTargowiskoBonusHandlu, 0.5, 'normal: Targowisko route bonus = +50% (x1,50)');
+eq(pHard.budynekTargowiskoBonusHandlu, 0.38, 'hard: Targowisko route bonus = +38% (x1,38)');
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -106,7 +109,7 @@ const tiles20 = Array(20).fill(RTILE);
 const city = makeCity();
 
 // ---------------------------------------------------------------------------
-// 1. Waluta odkryta, BRAK Mennicy -> mnoznik 1, Handel netto BEZ ZMIAN
+// 1. Waluta odkryta, BRAK Mennicy -> local tax is unchanged
 //    (to jest sedno zmiany -- sam tech juz nie wystarcza).
 // ---------------------------------------------------------------------------
 console.log('\n-- 1. Waluta odkryta, brak Mennicy -> mnoznik 1 (BRAK zmiany) --');
@@ -132,7 +135,7 @@ eq(yldMennicaNoWaluta.nauka, yldBase.nauka,
   'Mennica bez Waluty: Nauka identyczna jak baseline (mnoznik=1)');
 
 // ---------------------------------------------------------------------------
-// 3. Waluta + Mennica na NORMAL -> Handel netto x1,5; Pieniadz, Nauka I Zamoznosc
+// 3. Waluta + Mennica na NORMAL -> local tax x1,5 before the slider split
 //    rosna RAZEM (wariant A -- mnoznik dziala PRZED podzialem suwakiem).
 // ---------------------------------------------------------------------------
 console.log('\n-- 3. Waluta + Mennica, normal -> x1,5 na Pieniadz+Nauka+Zamoznosc --');
@@ -148,26 +151,26 @@ assert(yldNormalBoth.nauka    > yldBase.nauka,    'normal x1,5: Nauka > baseline
 assert(yldNormalBoth.luksus   > yldBase.luksus,   'normal x1,5: Zamoznosc > baseline (wariant A)');
 
 // ---------------------------------------------------------------------------
-// 4. Waluta + Mennica na HARD -> BRAK efektu (x1,0) -- decyzja wlasciciela.
+// 4. Waluta + Mennica na HARD -> x1,38 lokalnego podatku.
 // ---------------------------------------------------------------------------
-console.log('\n-- 4. Waluta + Mennica, hard -> BRAK efektu (x1,0) --');
+console.log('\n-- 4. Waluta + Mennica, hard -> x1,38 lokalnego podatku --');
 const yldHardBase = M.cityYieldPerTurn(city, tiles20, [], pHard, makeCtx());
 const yldHardBoth = M.cityYieldPerTurn(city, tiles20, [], pHard,
   makeCtx({ walutaOdkryta: true, maMennica: true }));
-eq(yldHardBoth.pieniadz, yldHardBase.pieniadz, 'hard: Pieniadz z Waluta+Mennica = Pieniadz bez nich (brak efektu)');
-eq(yldHardBoth.nauka,    yldHardBase.nauka,    'hard: Nauka niezmieniona (brak efektu)');
-eq(yldHardBoth.luksus,   yldHardBase.luksus,   'hard: Zamoznosc niezmieniona (brak efektu)');
+eq(yldHardBoth.pieniadz, 19, 'hard x1,38: Pieniądz = floor(27,6×0,70) = 19');
+eq(yldHardBoth.nauka,     5, 'hard x1,38: Nauka = floor(27,6×0,20) = 5');
+eq(yldHardBoth.luksus,    2, 'hard x1,38: Zamożność = floor(27,6×0,10) = 2');
 
 // ---------------------------------------------------------------------------
-// 5. Waluta + Mennica na EASY -> x2,0.
+// 5. Waluta + Mennica na EASY -> x1,62.
 // ---------------------------------------------------------------------------
-console.log('\n-- 5. Waluta + Mennica, easy -> x2,0 --');
+console.log('\n-- 5. Waluta + Mennica, easy -> x1,62 --');
 const yldEasyBoth = M.cityYieldPerTurn(city, tiles20, [], pEasy,
   makeCtx({ walutaOdkryta: true, maMennica: true }));
-// handelNetto = 20*2 = 40; pieniadz=floor(40*0.70)=28; nauka=floor(40*0.20)=8; luksus=floor(40*0.10)=4
-eq(yldEasyBoth.pieniadz, 28, 'easy x2,0: Pieniadz = floor(40*0.70) = 28');
-eq(yldEasyBoth.nauka,     8, 'easy x2,0: Nauka = floor(40*0.20) = 8');
-eq(yldEasyBoth.luksus,    4, 'easy x2,0: Zamoznosc (Luksus) = floor(40*0.10) = 4');
+// tax=20*1,62=32,4; split: Pieniądz 22, Nauka 6, Zamożność 3.
+eq(yldEasyBoth.pieniadz, 22, 'easy x1,62: Pieniądz = floor(32,4×0,70) = 22');
+eq(yldEasyBoth.nauka,     6, 'easy x1,62: Nauka = floor(32,4×0,20) = 6');
+eq(yldEasyBoth.luksus,    3, 'easy x1,62: Zamożność = floor(32,4×0,10) = 3');
 
 // ---------------------------------------------------------------------------
 // 6. Tabela skutku (raport): dochod Pieniadz/Nauka/Zamoznosc z Handlu, dla trzech
@@ -230,29 +233,28 @@ if (!baseCityForParity) {
 }
 
 // ---------------------------------------------------------------------------
-// 8. Targowisko: efekt Praca->Pieniadz (targowiskoPracaMnoznik) dziala NIEZALEZNIE
-//    od bramki Waluta+Mennica i sie NIE dubluje z nowym mnoznikiem scalonym.
+// 8. Targowisko affects route receipts/slots, never local tax or the Work pool.
 // ---------------------------------------------------------------------------
-console.log('\n-- 8. Targowisko: efekt Praca->Pieniadz niezalezny, bez podwojnego liczenia --');
+console.log('\n-- 8. Targowisko: oddzielne dochody tras, bez efektu na lokalny podatek/Pracę --');
 const tiles6 = Array(6).fill(RTILE);
-// (a) Targowisko + Waluta, BEZ Mennicy: Efekt2 (Praca->Pieniadz) MUSI dzialac
-//     (nie wymaga Mennicy), Efekt1 scalony (Handel netto) MUSI byc nieaktywny.
+const yldTargTaxBase = M.cityYieldPerTurn(city, tiles6, [], pNormal, makeCtx());
+// (a) Targowisko + Waluta, BEZ Mennicy: cityYieldPerTurn remains a local-tax
+//     preview and must not invent route proceeds or convert the Work pool.
 const ctxTargNoMennica = makeCtx({ walutaOdkryta: true, maTargowisko: true, maMennica: false });
 const yldTargNoMennica = M.cityYieldPerTurn(city, tiles6, [], pNormal, ctxTargNoMennica);
-assert(yldTargNoMennica.pieniadzZPracy > 0,
-  `Targowisko+Waluta bez Mennicy: pieniadzZPracy > 0 (Efekt2 niezalezny od Mennicy, got ${yldTargNoMennica.pieniadzZPracy})`);
+eq(yldTargNoMennica.pieniadzZPracy, 0,
+  'Targowisko does not turn city Work into money inside the tax-yield calculation');
+eq(yldTargNoMennica.handelBrutto, yldTargTaxBase.handelBrutto,
+  'Targowisko does not alter the local tax base; route receipts are accounted separately');
 
-// (b) Ten sam ctx ALE z Mennica: pieniadzZPracy (strumien Efekt2, z doPuli) MUSI
-//     pozostac IDENTYCZNY -- gdyby scalony mnoznik "przeciekal" na Efekt2, dublowalby
-//     sie z wlasnym mnoznikiem Targowiska (targowiskoPracaMnoznik), co jest zakazane.
+// (b) The Mint affects tax before slider split, not route cash or Work conversion.
 const ctxTargZMennica = makeCtx({ walutaOdkryta: true, maTargowisko: true, maMennica: true });
 const yldTargZMennica = M.cityYieldPerTurn(city, tiles6, [], pNormal, ctxTargZMennica);
-eq(yldTargZMennica.pieniadzZPracy, yldTargNoMennica.pieniadzZPracy,
-  'Targowisko: pieniadzZPracy IDENTYCZNY z i bez Mennicy -- brak podwojnego liczenia z Efektem 1 scalonym');
-// Natomiast pieniadzZHandlu (strumien Efekt1) MUSI wzrosnac z Mennica -- dowod ze
-// oba efekty dzialaja na ROZNYCH strumieniach jednoczesnie, bez interferencji.
+eq(yldTargZMennica.pieniadzZPracy, 0,
+  'Targowisko and Mint leave Work-to-tax conversion outside cityYieldPerTurn');
+// The Mint's local tax multiplier still raises tax-derived money.
 assert(yldTargZMennica.pieniadz > yldTargNoMennica.pieniadz,
-  'Targowisko+Mennica: pieniadz total wyzszy niz bez Mennicy (Efekt1 dziala na strumieniu Handlu, Efekt2 na strumieniu Pracy, oba naraz)');
+  'Mint raises local tax money; route receipts are settled in a separate stream');
 
 // ---------------------------------------------------------------------------
 // 9. PYTANIE 69 (Maciej 2026-07-25): mnoznik cywilizacyjny SKALOWANY TRUDNOSCIA.
@@ -270,21 +272,23 @@ closeTo(M.mnoznikHandelPieniadzForCivByDifficulty('fenicjanie', civs, 'hard',   
 closeTo(M.mnoznikHandelPieniadzForCivByDifficulty('germanie',   civs, 'easy',   pEasy.mennicaMnoznikPoWalucie),   2.2, 'Germanie easy = 2,2 (1,7+0,5)');
 closeTo(M.mnoznikHandelPieniadzForCivByDifficulty('germanie',   civs, 'normal', pNormal.mennicaMnoznikPoWalucie), 1.7, 'Germanie normal = 1,7 (wartosc civs.json, bez zmian)');
 closeTo(M.mnoznikHandelPieniadzForCivByDifficulty('germanie',   civs, 'hard',   pHard.mennicaMnoznikPoWalucie),   1.2, 'Germanie hard = 1,2 (1,7-0,5)');
-// civs.json NIE zmieniony przez tę deceyzję -- sanity, wartości normal muszą pochodzić z pliku.
-eq(civs.cywilizacje.find(c => c.ikonaId === 'fenicjanie').mnoznikHandelPieniadz, 2.6, 'civs.json Fenicjanie mnoznikHandelPieniadz NIETKNIETY = 2,6');
-eq(civs.cywilizacje.find(c => c.ikonaId === 'germanie').mnoznikHandelPieniadz,   1.7, 'civs.json Germanie mnoznikHandelPieniadz NIETKNIETY = 1,7');
+// Civic base values remain sourced from civ-matrix.json; this contract does not edit them.
+eq(civMatrix.cywilizacje.find(c => c.ikonaId === 'fenicjanie').params.meta_mnoznik_waluta, 2.6,
+  'civ-matrix Fenicjanie base currency multiplier remains 2,6');
+eq(civMatrix.cywilizacje.find(c => c.ikonaId === 'germanie').params.meta_mnoznik_waluta, 1.7,
+  'civ-matrix Germanie base currency multiplier remains 1,7');
 
 // ---------------------------------------------------------------------------
 // 10. Cywilizacja BEZ wpisu w civs.json -> wartosc zapasowa, TEZ skalowana
 //     trudnoscia. Fallback = params.mennicaMnoznikPoWalucie (juz per-trudnosc
-//     w econ-params.json: easy 2,0 / normal 1,5 / hard 1,0) -- NIE dostaje
+//     w econ-params.json: easy 1,62 / normal 1,5 / hard 1,38) -- NIE dostaje
 //     DRUGIEJ warstwy delty (bez tego easy wyszloby 2,5 zamiast 2,0 -- podwojne
 //     skalowanie, zakazane).
 // ---------------------------------------------------------------------------
 console.log('\n-- 10. Cywilizacja bez wpisu w civs.json -> fallback skalowany trudnoscia --');
-eq(M.mnoznikHandelPieniadzForCivByDifficulty('nieznana-cywilizacja-xyz', civs, 'easy',   pEasy.mennicaMnoznikPoWalucie),   2,   'Brak wpisu, easy: fallback = 2,0 (bez podwojnej delty)');
+eq(M.mnoznikHandelPieniadzForCivByDifficulty('nieznana-cywilizacja-xyz', civs, 'easy',   pEasy.mennicaMnoznikPoWalucie),   1.62, 'Brak wpisu, easy: fallback = 1,62 (bez podwojnej delty)');
 eq(M.mnoznikHandelPieniadzForCivByDifficulty('nieznana-cywilizacja-xyz', civs, 'normal', pNormal.mennicaMnoznikPoWalucie), 1.5, 'Brak wpisu, normal: fallback = 1,5');
-eq(M.mnoznikHandelPieniadzForCivByDifficulty('nieznana-cywilizacja-xyz', civs, 'hard',   pHard.mennicaMnoznikPoWalucie),   1,   'Brak wpisu, hard: fallback = 1,0');
+eq(M.mnoznikHandelPieniadzForCivByDifficulty('nieznana-cywilizacja-xyz', civs, 'hard',   pHard.mennicaMnoznikPoWalucie),   1.38, 'Brak wpisu, hard: fallback = 1,38');
 eq(M.mnoznikHandelPieniadzForCivByDifficulty(undefined, civs, 'normal', pNormal.mennicaMnoznikPoWalucie), 1.5, 'civKey undefined: fallback = 1,5 (parytet z brakiem wpisu)');
 
 // ---------------------------------------------------------------------------
@@ -440,15 +444,10 @@ if (twoCities.length < 2) {
   }
 
   // -------------------------------------------------------------------------
-  // 15. Override z religii NADAL dziala spojnie po zmianie bramki na
-  //     imperium-wide (Maciej 2026-07-25): gdy stolica ma Mennice + Waluta
-  //     odkryta ORAZ dominujaca religia miasta = religia wlasnej cywilizacji,
-  //     mnoznik z religii (civBaseMultiplier z civs.json, NIEskalowany
-  //     trudnoscia -- zachowanie SPRZED dzisiejszej decyzji 69, nietkniete)
-  //     ma pierwszenstwo przed civ+trudnosc. Bez dominujacej religii ->
-  //     spada z powrotem na civ+trudnosc (bez zmian vs sekcja 12/14).
+  // 15. The current economy path does not take religion into account for Mint;
+  //     this keeps the Mint multiplier on the approved fixed difficulty/civ stages.
   // -------------------------------------------------------------------------
-  console.log('\n-- 15. Override z religii dziala spojnie (bramka Mennica -> imperium-wide) --');
+console.log('\n-- 15. Tax/Mint multiplier uses the current fixed difficulty/civ stages --');
   function tickWithReligion(cityReligionByCityId) {
     const cities = [{ ...capitalCity, ownerId: 0 }, { ...regionalCity, ownerId: 0 }];
     const builtByCity = new Map([[capitalCity.id, ['mennica']], [regionalCity.id, []]]);
@@ -459,19 +458,17 @@ if (twoCities.length < 2) {
     );
     return econ.perCity.find(t => t.cityId === regionalCity.id);
   }
-  // (a) BEZ religii dominujacej -> civ+trudnosc (Fenicjanie easy = 3,1), jak w sekcji 12/14.
+  // The optional legacy religion argument is intentionally outside this tax calculation.
   const noReligion = tickWithReligion(new Map());
-  // (b) Religia miasta W CALOSCI "Religia fenicka (Ba'al)" (Fenicjanie) -> dominuje,
-  //     override z religii uzywa civBaseMultiplier SUROWY z civs.json (2,6, BEZ +0,5 easy).
+  // Supplied religion snapshot must not redirect Mint receipts away from tax.
   const dominantReligionState = new Map([
     [regionalCity.id, { counts: { "Religia fenicka (Ba'al)": 100 } }],
   ]);
   const withReligion = tickWithReligion(dominantReligionState);
   assert(!!noReligion && !!withReligion, 'sanity: oba przebiegi (z/bez religii) zwracaja wpis');
   if (noReligion && withReligion) {
-    assert(withReligion.pieniadzBrutto !== noReligion.pieniadzBrutto,
-      `Override z religii ZMIENIA wynik vs plaski civ+trudnosc (dominujaca religia: ${withReligion.pieniadzBrutto} vs civ+trudnosc easy 3,1: ${noReligion.pieniadzBrutto}) -- ` +
-      'dowod ze bramka imperium-wide (Mennica w stolicy + Waluta) nadal otwiera override religii dla miasta REGIONALNEGO bez wlasnej Mennicy');
+    eq(withReligion.pieniadzBrutto, noReligion.pieniadzBrutto,
+      'religion snapshot does not change tax/Mint output; owner civic base and difficulty remain authoritative');
   }
 }
 

@@ -1,0 +1,17 @@
+  ok  hud.ts importuje wspolny formatter
+  ok  hud.ts: tooltip Rekruci z pelna wartoscia
+  ok  Rekruci HUD 999 -> "999"
+  ok  title ma pelna wartosc "999"
+  info 999: txt="999 (19)" szer=63px
+  ok  Rekruci HUD 1000 -> "1k"
+  ok  title ma pelna wartosc "1 000"
+  info 1000: txt="1k (20)" szer=57px
+  ok  Rekruci HUD 12345 -> "12,3k"
+  ok  title ma pelna wartosc "12 345"
+  info 12345: txt="12,3k (246)" szer=83px
+  ok  Rekruci HUD 1234567 -> "1,2M"
+  ok  title ma pelna wartosc "1 234 567"
+  info 1234567: txt="1,2M (24691)" szer=96px
+
+OK: hud-recruits-abbrev-test
+EXIT=0

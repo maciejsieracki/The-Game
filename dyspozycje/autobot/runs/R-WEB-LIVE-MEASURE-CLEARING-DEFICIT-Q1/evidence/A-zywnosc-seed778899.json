@@ -1,0 +1,896 @@
+{
+ "tag": "A-zywnosc-seed778899",
+ "seed": 778899,
+ "focus": "zywnosc",
+ "startTurn": 1,
+ "techs": 13,
+ "policy": {
+  "focus": "zywnosc",
+  "tryb": "auto",
+  "onlyWorked": true,
+  "pracaAutoPercent": 100,
+  "wolnoWycinacLas": true
+ },
+ "build": {
+  "before": {
+   "budowaFocus": "zrownowazone",
+   "budowaTryb": "zrownowazone"
+  },
+  "after": {
+   "budowaFocus": "zrownowazone",
+   "budowaTryb": "reczny"
+  },
+  "perCity": [
+   {
+    "budowaFocus": "zrownowazone",
+    "budowaTryb": "reczny"
+   }
+  ]
+ },
+ "popFixture": 9,
+ "scen": {
+  "cand": [
+   {
+    "q": 47,
+    "r": 23,
+    "dist": 1,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 48,
+    "r": 23,
+    "dist": 1,
+    "river": true,
+    "teren": "rownina",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 46,
+    "r": 24,
+    "dist": 1,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 48,
+    "r": 24,
+    "dist": 1,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 46,
+    "r": 25,
+    "dist": 1,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 47,
+    "r": 25,
+    "dist": 1,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 47,
+    "r": 22,
+    "dist": 2,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 48,
+    "r": 22,
+    "dist": 2,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 46,
+    "r": 23,
+    "dist": 2,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 48,
+    "r": 25,
+    "dist": 2,
+    "river": true,
+    "teren": "rownina",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 46,
+    "r": 26,
+    "dist": 2,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   },
+   {
+    "q": 47,
+    "r": 26,
+    "dist": 2,
+    "river": true,
+    "teren": "laka",
+    "nakladkaBefore": "las"
+   }
+  ],
+  "nCand": 20
+ },
+ "riverFound": true,
+ "target": {
+  "q": 47,
+  "r": 23,
+  "dist": 1,
+  "river": true,
+  "teren": "laka",
+  "nakladkaBefore": "las"
+ },
+ "assign": {
+  "tryb": "reczny",
+  "reczne": {
+   "47,23": 1
+  }
+ },
+ "hexAfterPlant": {
+  "hk": "47,23",
+  "nakladka": "las",
+  "teren": "laka",
+  "river": true,
+  "layers": [],
+  "clearing": null,
+  "worked": true
+ },
+ "shotFarm": true,
+ "rows": [
+  {
+   "turnAfter": 5,
+   "drewnoBefore": 0,
+   "drewnoAfter": 0,
+   "pracaBefore": 400,
+   "pracaAfter": 404.5,
+   "kosztAutoUlepszen": 2.5,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [],
+    "clearing": {
+     "turnsLeft": 1,
+     "pracaPerTurn": 50,
+     "ownerId": 0
+    },
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "clr-set",
+     "turn": 5,
+     "k": "47,23",
+     "v": {
+      "turnsLeft": 1,
+      "pracaPerTurn": 50,
+      "ownerId": 0
+     }
+    }
+   ],
+   "clearingAll": [
+    [
+     "47,23",
+     {
+      "turnsLeft": 1,
+      "pracaPerTurn": 50,
+      "ownerId": 0
+     }
+    ]
+   ]
+  },
+  {
+   "turnAfter": 6,
+   "drewnoBefore": 0,
+   "drewnoAfter": 44,
+   "pracaBefore": 404.5,
+   "pracaAfter": 391.5,
+   "kosztAutoUlepszen": 20,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "las",
+    "teren": "laka",
+    "river": true,
+    "layers": [],
+    "clearing": {
+     "turnsLeft": 1,
+     "pracaPerTurn": 50,
+     "ownerId": 0
+    },
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "clr-del",
+     "turn": 6,
+     "k": "47,23"
+    },
+    {
+     "ev": "layers-set",
+     "turn": 6,
+     "k": "47,23",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 6,
+     "k": "14,14",
+     "layers": [
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 7,
+   "drewnoBefore": 44,
+   "drewnoAfter": 23,
+   "pracaBefore": 391.5,
+   "pracaAfter": 377.5,
+   "kosztAutoUlepszen": 20,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 7,
+     "k": "47,23",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 8,
+   "drewnoBefore": 23,
+   "drewnoAfter": 2,
+   "pracaBefore": 377.5,
+   "pracaAfter": 325.5,
+   "kosztAutoUlepszen": 60,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 8,
+     "k": "47,23",
+     "layers": [
+      "farma",
+      "bydlo",
+      "irygacja"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 8,
+     "k": "91,58",
+     "layers": [
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 9,
+   "drewnoBefore": 2,
+   "drewnoAfter": 0,
+   "pracaBefore": 325.5,
+   "pracaAfter": 333.5,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 9,
+     "k": "86,60",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 9,
+     "k": "94,53",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 9,
+     "k": "14,18",
+     "layers": [
+      "kamieniolom"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 10,
+   "drewnoBefore": 0,
+   "drewnoAfter": 0,
+   "pracaBefore": 333.5,
+   "pracaAfter": 341.5,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 11,
+   "drewnoBefore": 0,
+   "drewnoAfter": 0,
+   "pracaBefore": 341.5,
+   "pracaAfter": 349.5,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 11,
+     "k": "15,17",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 11,
+     "k": "18,13",
+     "layers": [
+      "tartak"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 12,
+   "drewnoBefore": 0,
+   "drewnoAfter": 0,
+   "pracaBefore": 349.5,
+   "pracaAfter": 357.5,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 12,
+     "k": "42,27",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 12,
+     "k": "50,25",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 12,
+     "k": "90,51",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 12,
+     "k": "95,60",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 12,
+     "k": "14,16",
+     "layers": [
+      "droga"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 13,
+   "drewnoBefore": 0,
+   "drewnoAfter": 0,
+   "pracaBefore": 357.5,
+   "pracaAfter": 365.5,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 14,
+   "drewnoBefore": 0,
+   "drewnoAfter": 0,
+   "pracaBefore": 365.5,
+   "pracaAfter": 373.5,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 14,
+     "k": "37,33",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 14,
+     "k": "90,51",
+     "layers": [
+      "farma",
+      "bydlo"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 14,
+     "k": "94,55",
+     "layers": [
+      "kamieniolom"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 14,
+     "k": "14,16",
+     "layers": [
+      "droga",
+      "farma"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 15,
+   "drewnoBefore": 0,
+   "drewnoAfter": 0,
+   "pracaBefore": 373.5,
+   "pracaAfter": 381.5,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 15,
+     "k": "88,60",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 15,
+     "k": "18,16",
+     "layers": [
+      "farma"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 16,
+   "drewnoBefore": 0,
+   "drewnoAfter": 0,
+   "pracaBefore": 381.5,
+   "pracaAfter": 389.5,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 16,
+     "k": "87,56",
+     "layers": [
+      "kopalnia_miedzi"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 16,
+     "k": "15,14",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 16,
+     "k": "13,19",
+     "layers": [
+      "tartak"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 16,
+     "k": "20,12",
+     "layers": [
+      "kamieniolom"
+     ]
+    }
+   ],
+   "clearingAll": []
+  },
+  {
+   "turnAfter": 17,
+   "drewnoBefore": 0,
+   "drewnoAfter": 0,
+   "pracaBefore": 389.5,
+   "pracaAfter": 397.5,
+   "kosztAutoUlepszen": 0,
+   "before": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "after": {
+    "hk": "47,23",
+    "nakladka": "brak",
+    "teren": "laka",
+    "river": true,
+    "layers": [
+     "farma",
+     "bydlo",
+     "irygacja"
+    ],
+    "clearing": null,
+    "worked": true
+   },
+   "ev": [
+    {
+     "ev": "layers-set",
+     "turn": 17,
+     "k": "43,31",
+     "layers": [
+      "farma"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 17,
+     "k": "90,58",
+     "layers": [
+      "droga"
+     ]
+    },
+    {
+     "ev": "layers-set",
+     "turn": 17,
+     "k": "94,53",
+     "layers": [
+      "tartak",
+      "oboz_lowiecki"
+     ]
+    }
+   ],
+   "clearingAll": []
+  }
+ ],
+ "final": {
+  "hk": "47,23",
+  "nakladka": "brak",
+  "teren": "laka",
+  "river": true,
+  "layers": [
+   "farma",
+   "bydlo",
+   "irygacja"
+  ],
+  "clearing": null,
+  "worked": true
+ },
+ "errors": []
+}

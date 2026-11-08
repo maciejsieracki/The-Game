@@ -1,0 +1,40 @@
+[praca-panel-budowy-warstwa] domyslny Chromium niedostepny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: (A) tryb "reczny": suwak WARSTWY (c) (pracaAutoPercent) JEST w zywym DOM
+PASS: (A) tryb "reczny": suwak warstwy (c) jest realnie widoczny (niezerowa geometria)
+PASS: (A) tryb "reczny": suwak warstwy (c) jest NIEAKTYWNY (disabled)
+PASS: (A) tryb "reczny": pod suwakiem warstwy (c) stoi wyjasnienie, kiedy zadziala
+PASS: (A) tryb "reczny": etykieta warstwy (c) mowi o pracy automatycznej, nie o podziale Budynki/Pula
+PASS: (A) tryb "reczny": ZERO markupu WARSTWY (a) (procentBudynki) w panelu trybu budowy
+[shot] /tmp/civ-shots-praca-panel-budowy-warstwa-25957-4h2i83/A-tryb-reczny.png
+PASS: (B) tryb "auto": suwak warstwy (c) JEST w zywym DOM i jest AKTYWNY
+PASS: (B) tryb "auto": suwak warstwy (c) ma pelny zakres 0-100% (MAX_ULEPSZENIA_PRACA_AUTO_PERCENT)
+PASS: (B) tryb "auto": ZERO markupu WARSTWY (a) rowniez tutaj
+PASS: (B) tryb "auto": realny ruch suwakiem zapisuje warstwe (c) przez onUlepszeniaEmpirePracaPercentChange(64)
+PASS: (B) znalezisko uboczne: etykieta warstwy (c) po ruchu suwakiem ma TEN SAM format co render poczatkowy
+[shot] /tmp/civ-shots-praca-panel-budowy-warstwa-25957-4h2i83/B-tryb-auto.png
+PASS: (C) panel imperium: suwak WARSTWY (a) nadal sie renderuje
+PASS: (C) panel imperium: drag warstwy (a) na 40% puli ZAPISUJE procentBudynki = 60 (pomiar zachowania)
+PASS: (C) panel imperium: znacznik MAX warstwy (a) zapisuje procentBudynki = 50 (cap 0-50% puli dziala)
+PASS: (D) panel miasta: suwak WARSTWY (a) nadal sie renderuje
+PASS: (D) panel miasta: realny ruch suwakiem ZAPISUJE procentBudynki = 90 (pomiar zachowania)
+PASS: (D) panel miasta: zakres warstwy (a) to nadal 50-100% budynkow
+PASS: brak bledow konsoli/pageerror w calym renderze
+
+-- Mutacje zrodla: kazda MUSI zapalic swoja asercje na czerwono --
+PASS: (F/M1) po cofnieciu warstwy (c) pod `tryb === "auto"` asercja (A) "suwak JEST w reczny" PADA
+PASS: (F/M2) po usunieciu `disabled` asercja (A) "suwak NIEAKTYWNY w reczny" PADA
+FAIL: (F/M3) po ponownym wstawieniu bloku warstwy (a) asercja (A) "ZERO markupu warstwy (a)" PADA — {"warstwaC_obecna":true,"warstwaC_disabled":true,"warstwaC_max":"100","warstwaC_value":"33","warstwaC_etykieta":"Z puli imperium na pracę automatyczną:","warstwaC_wyjasnienie":"Tryb ręczny — cała pula zostaje na pracę ręczną. Suwak zadziała po włączeniu automatyzacji (profil powyżej).","warstwaC_widoczna":true,"warstwaA_markup":0}
+FAIL: (F/M4) mutacja przygotowana — "kotwica M4 nie trafila"
+
+-- (E) Dowod liczbowy warstwy (c): pula 5 000, pracaAutoPercent 10% vs 50% --
+[liczby] pula=5000 · pracaAutoPercent=10% -> 25 ulepszen (500 P)
+[liczby] pula=5000 · pracaAutoPercent=50% -> 125 ulepszen (2500 P)
+PASS: (E) 10% i 50% warstwy (c) daja ROZNA liczbe ulepszen w turze przy tej samej puli 5 000
+PASS: (E) wyzszy % warstwy (c) = WIECEJ ulepszen (kierunek zgodny z sensem pola)
+PASS: (E) wydatek miesci sie w zadeklarowanym budzecie warstwy (c) (10% z 5 000 = 500 P)
+PASS: (E) wydatek miesci sie w zadeklarowanym budzecie warstwy (c) (50% z 5 000 = 2 500 P)
+PASS: (E) kontrola: to samo 50% dwa razy daje TE SAMA liczbe (roznica wyzej to skutek %, nie szumu)
+PASS: (F/M5) po odpieciu pulapu od pracaAutoPercent asercja (E) "10% != 50%" PADA
+
+[praca-panel-budowy-warstwa-real-render-test] 26 pass, 2 fail
+EXIT=1

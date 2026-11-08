@@ -221,6 +221,14 @@ export function mapGenRozmiarDims(): Record<RozmiarSwiata, [number, number]> {
   return out;
 }
 
+/** R-WEB-CAPITAL-SPACING-FIX-Q1: wspolczynnik min. dystansu stolic x krotszy bok mapy (0 = wylaczone). */
+const FALLBACK_CAPITAL_SEP_COEF = 0.15;
+export function mapGenCapitalSepShortSideCoef(): number {
+  const v = (raw as { generator?: { capital_sep_short_side_coef?: { wartosc?: number } } })
+    .generator?.capital_sep_short_side_coef?.wartosc;
+  return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : FALLBACK_CAPITAL_SEP_COEF;
+}
+
 export function mapGenDepositRarity(id: string): number | undefined {
   const rules = (raw as { deposit_rules?: Record<string, { rarity?: number }> }).deposit_rules;
   const r = rules?.[id]?.rarity;

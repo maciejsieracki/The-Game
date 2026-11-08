@@ -39,6 +39,16 @@ export interface DiplomacyLockResult {
   active?: boolean;
 }
 
+// R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1: JEDEN próg Paktu dla UI i silnika (helper + narzut).
+import {
+  napRelacjaProgEfektywny,
+  NAP_GRANICA_RELACJA_NARZUT,
+} from './diplomacy-proposals';
+import { deltaRelacjiSojusz } from './diplomacy';
+
+/** Próg Zaufania paktu, gdy kontekst go nie niesie (fikstury). Ta sama wartość co diplomacy.json progNapZaufanie. */
+const NAP_ZAUFANIE_FALLBACK = 30;
+
 /** Kontekst zebrany przez SILNIK dla JEDNEJ akcji (jednego `actionId`). */
 export interface DiplomacyActionLockContext {
   actionId: string;
@@ -97,6 +107,20 @@ export interface DiplomacyActionLockContext {
   buyableTechCount: number;
   knownRivalsCount: number;
   progNapRelacja: number;
+  /**
+   * R-WEB-DIPLO-NAP-TRUST-30-Q1: próg Zaufania dla Paktu o nieagresji (wymagany OBOK Relacji).
+   * Opcjonalne tylko dla fikstur; `undefined` → NAP_ZAUFANIE_FALLBACK (fail-closed: bramka
+   * Zaufania działa zawsze, nigdy nie jest po cichu pomijana). main.ts przekazuje wartość
+   * z DIPLOMACY_PARAMS.
+   */
+  progNapZaufanie?: number;
+  /**
+   * R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1: aktywny narzut „Kara za wspólną granicę" (ta sama
+   * reguła co silnik: obie strony > 2 miasta ∧ wspólna granica lądowa). Opcjonalne → false.
+   */
+  karaWspolnaGranica?: boolean;
+  /** Proponent-gracz ma aktywną flagę agresora (+deltaRelacjiSojusz do progu Paktu). Opcjonalne → false. */
+  napAgresorAktywny?: boolean;
   progHandelRelacja: number;
   progSojuszRelacja: number;
   progSojuszZaufanie: number;
@@ -124,8 +148,9 @@ function fmtProg(n: number): string {
 }
 
 /** Notka „zablokowana — wymaga X N (masz M)" — format makiety v1.1. */
-export function formatLockedNote(label: string, prog: number, masz: number): string {
-  return `zablokowana — wymaga ${label} ${fmtProg(prog)} (masz ${fmtProg(masz)})`;
+export function formatLockedNote(label: string, prog: number, masz: number, powod = ''): string {
+  const extra = powod ? `; ${powod}` : '';
+  return `zablokowana — wymaga ${label} ${fmtProg(prog)} (masz ${fmtProg(masz)}${extra})`;
 }
 
 function zaufanieGate(prog: number, masz: number): DiplomacyLockResult | null {
@@ -146,34 +171,37 @@ function respektGate(prog: number, masz: number): DiplomacyLockResult | null {
   };
 }
 
-function relacjaGate(prog: number, masz: number): DiplomacyLockResult | null {
+function relacjaGate(prog: number, masz: number, powod = ''): DiplomacyLockResult | null {
   if (masz >= prog) return null;
   return {
     locked: true,
     requirement: { kind: 'stan', prog, masz },
-    note: formatLockedNote('Relacji', prog, masz),
+    note: formatLockedNote('Relacji', prog, masz, powod),
   };
 }
 
 /** Dual-gate Relacja+Zaufanie (sojusz/otwarte granice/wymiana tech) — jak diplomacyDualGateTooltip,
- *  ale zwraca kształt DiplomacyLockResult; preferuje zgłoszenie Zaufania (widoczne w makiecie). */
+ *  ale zwraca kształt DiplomacyLockResult; preferuje zgłoszenie Zaufania (widoczne w makiecie).
+ *  `powodRel` (R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1): przyczyna podwyższenia progu Relacji
+ *  (np. „+20 za wspólną granicę") dopisywana do notki Relacji; pusta dla pozostałych akcji. */
 function dualGate(
-  relTotal: number, zaufanie: number, minRel: number, minZauf: number,
+  relTotal: number, zaufanie: number, minRel: number, minZauf: number, powodRel = '',
 ): DiplomacyLockResult | null {
   const relOk = relTotal >= minRel;
   const zaufOk = zaufanie >= minZauf;
   if (relOk && zaufOk) return null;
   if (!zaufOk && !relOk) {
+    const relExtra = powodRel ? `; ${powodRel}` : '';
     return {
       locked: true,
       requirement: { kind: 'zaufanie', prog: minZauf, masz: zaufanie },
       note:
         `zablokowana — wymaga Zaufania ${fmtProg(minZauf)} (masz ${fmtProg(zaufanie)}) ` +
-        `i Relacji ${fmtProg(minRel)} (masz ${fmtProg(relTotal)})`,
+        `i Relacji ${fmtProg(minRel)} (masz ${fmtProg(relTotal)}${relExtra})`,
     };
   }
   if (!zaufOk) return zaufanieGate(minZauf, zaufanie);
-  return relacjaGate(minRel, relTotal);
+  return relacjaGate(minRel, relTotal, powodRel);
 }
 
 const ALREADY_NOTE: Record<string, string> = {
@@ -196,7 +224,20 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
     case '2': { // Pakt o nieagresji
       if (ctx.hasNap) return { locked: false, active: true, note: ALREADY_NOTE['2']! };
       if (ctx.atWar) return { locked: true, note: 'zablokowany — trwa wojna' };
-      const gate = relacjaGate(ctx.progNapRelacja, ctx.relTotal);
+      // R-WEB-DIPLO-NAP-TRUST-30-Q1: pakt wymaga Relacji ORAZ Zaufania (dualGate, jak sojusz/granice).
+      // R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1: próg Relacji = ten sam helper co evaluateProposal
+      // (baza + narzut granicy + delta agresora); słodzik = 0 (blokada nie zna payloadu).
+      const napRelProg = napRelacjaProgEfektywny(ctx.progNapRelacja, {
+        karaWspolnaGranica: ctx.karaWspolnaGranica,
+        proponentAgresor: ctx.napAgresorAktywny,
+      });
+      const powody: string[] = [];
+      if (ctx.karaWspolnaGranica) powody.push(`+${NAP_GRANICA_RELACJA_NARZUT} za wspólną granicę`);
+      if (ctx.napAgresorAktywny) powody.push(`+${deltaRelacjiSojusz(true)} za flagę agresora`);
+      const gate = dualGate(
+        ctx.relTotal, ctx.zaufanie, napRelProg, ctx.progNapZaufanie ?? NAP_ZAUFANIE_FALLBACK,
+        powody.join(', '),
+      );
       if (gate) return gate;
       return { locked: false, note: '' };
     }

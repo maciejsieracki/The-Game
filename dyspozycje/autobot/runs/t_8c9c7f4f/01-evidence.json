@@ -1,0 +1,93 @@
+{
+  "temat": "t_8c9c7f4f",
+  "root_cause": {
+    "file": "gra/src/game/ai-difficulty-bonus.ts",
+    "function": "pickBonusCityHex",
+    "problem": "maxRadius = MIN_CITY_DISTANCE * 3 (12 heksow) niezalezny od cityTerritoryRadius stolicy (5 dla pop=1) -- w gestym klastrze mogl zwrocic legalny hex 6-9 pol od stolicy, poza jej faktycznym terytorium.",
+    "invoked_from": "main.ts::grantDifficultyStartBonusesForMajorCapital (poziom trudnosci 3, trudnosc_poziom3_startowe_miasta=1)"
+  },
+  "ruled_out": [
+    {
+      "path": "buildClusterStartPlan (cluster-start.ts)",
+      "verdict": "brak naruszen w zywej symulacji, nie zrodlo teleportacji"
+    },
+    {
+      "path": "planCityFounding / findCityFoundingHex (ai.ts)",
+      "verdict": "brak naruszen w zywej symulacji 100 tur x wiele seedow, twardy withinTerritory dziala poprawnie"
+    },
+    {
+      "path": "foundingTerritoryOpts isMe(ownerId) vs ownerId===0 (main.ts:10382)",
+      "verdict": "semantycznie rownowazne dzis (isMe(ownerId) := ownerId===ME(), ME() zawsze HUMAN_OWNER_PRIMARY=0) -- test byl przestarzaly, nie main.ts"
+    }
+  ],
+  "fix": {
+    "file": "gra/src/game/ai-difficulty-bonus.ts",
+    "change": "maxRadius = Math.min(MIN_CITY_DISTANCE * 3, cityTerritoryRadius({q:capitalQ,r:capitalR,pop:1,level:1}))",
+    "import_added": "cityTerritoryRadius from ../map/territory"
+  },
+  "test_updates": [
+    {
+      "file": "gra/tools/ai-founding-territory-test.cjs",
+      "change": "B1e-a regex akceptuje isMe(ownerId) obok ownerId===0; dodana asercja B1e-isMe wymuszajaca ze isMe jest zdefiniowane doslownie jako ownerId===ME()",
+      "B1e_c_preserved": true
+    }
+  ],
+  "live_sim_evidence": {
+    "before_fix": {
+      "tool": "tools/diag-bonus-city-territory.cjs",
+      "seeds_tested": 8,
+      "violations": 3,
+      "sample": [
+        { "seed": 5242, "ownerId": 19, "capital": { "q": 13, "r": 6 }, "bonus": { "q": 12, "r": 15 }, "dist": 9, "radius": 5 },
+        { "seed": 7242, "ownerId": 15, "capital": { "q": 96, "r": 26 }, "bonus": { "q": 90, "r": 31 }, "dist": 6, "radius": 5 },
+        { "seed": 11242, "ownerId": 18, "capital": { "q": 17, "r": 42 }, "bonus": { "q": 19, "r": 34 }, "dist": 8, "radius": 5 }
+      ]
+    },
+    "after_fix": {
+      "tool": "tools/diag-bonus-city-territory.cjs",
+      "seeds_tested": 8,
+      "violations": 0
+    },
+    "colonization_path_check": {
+      "tool": "tools/diag-teleport-live-sim.cjs",
+      "turns": 100,
+      "ai_owners": 2,
+      "founding_attempts": ">0",
+      "violations": 0
+    }
+  },
+  "test_suite_results": {
+    "ai-founding-territory-test.cjs": "29/29 PASS (was 25 pass/1 fail stale regex)",
+    "ai-colonization-pop-test.cjs": "13/13 PASS",
+    "ai-early-city-founding-pace-test.cjs": "2/2 PASS",
+    "ai-difficulty-bonus-test.cjs": "97/97 PASS",
+    "fort-strazniaca-zasieg-zakladania-test.cjs": "85/85 PASS",
+    "cluster-start-recovery2-test.cjs": "29/29 PASS",
+    "cluster-plan-name-test.cjs": "6/6 PASS",
+    "logic-test.cjs": "213/213 PASS",
+    "ai-city-recovery-test.cjs": "7/7 PASS",
+    "miasta-zbyt-blisko-test.cjs": "PASS 23281/23281 + 25463/25463 realna kolejnosc",
+    "found-from-village-test.cjs": "24/24 PASS",
+    "hotseat-etap6f-part2-data-test.cjs": "24/24 PASS",
+    "ai-war-gate-test.cjs": "24/24 PASS",
+    "civ-configurator-opponent-test.cjs": "41/41 PASS",
+    "cluster-spread-test.cjs": "PASS",
+    "civ-roster-test.cjs": "115/115 PASS",
+    "capital-sep-pangea-test.cjs": "3/3 PASS",
+    "cluster-start-q2-smoke.cjs": "16/16 PASS",
+    "miasta-panstwa-wylaczone-test.cjs": "BLOCKED - wymaga git archive PRE-tree scratchpad, poza zakresem, brak zwiazku ze zmiana",
+    "cluster-start-test.cjs": "448/448 PASS + 8 FAIL identyczne na czystym origin/main (zweryfikowane git stash)",
+    "ai-test.cjs": "290/290 PASS + 5 FAIL identyczne na czystym origin/main (zweryfikowane git stash)"
+  },
+  "tsc_noemit": "PASS (exit 0)",
+  "git_diff_check": "PASS (exit 0)",
+  "changed_files": [
+    "gra/src/game/ai-difficulty-bonus.ts",
+    "gra/tools/ai-founding-territory-test.cjs"
+  ],
+  "new_diagnostic_files": [
+    "gra/tools/diag-bonus-city-territory.cjs",
+    "gra/tools/diag-teleport-live-sim.cjs"
+  ],
+  "deploy_push": "NOT_DONE"
+}

@@ -1,0 +1,22 @@
+R-EPOKA-KAMIEN-WYMUSZONA-WOJNA — main.ts guards
+PASS: main.ts importuje osobny moduł forced-war-stone
+PASS: trigger ma ochronę startową turn >= 20
+PASS: trigger dotyczy wyłącznie ownera w Kamieniu
+PASS: guard wyklucza player/CS/barbarzyńców/eliminowanych
+PASS: Stone target filtruje NAP, peace lock i sojusz -- przez isForcedWarPairBlocked, wspólny predykat zastępujący dawne stoneBlockedOwnerIds
+PASS: Stone target jest przekazywany do decideAIDiplomacy
+PASS: udany DOW mutuje active/cycle i konsumuje pending Stone
+PASS: automatyczny pokój po 2 miastach ma Stone cooldown
+PASS: capture battle funnel rozlicza Stone
+PASS: siege surrender funnel rozlicza Stone
+PASS: resolveSiegeSurrender: Stone hook jest po zmianie city.ownerId
+PASS: regresja mutacyjna: usunięcie Stone hooka z resolveSiegeSurrender jest wykrywalne
+PASS: zwykła wojna pozostaje bez zmian: licznik Stone działa tylko dla aktywnej pary
+PASS: finalizePeaceTreatyBetween ustawia Stone rest timer
+PASS: save snapshot zawiera komplet 4 pól Stone
+PASS: restoreGameFromSave odtwarza komplet 4 struktur Stone
+PASS: eliminacja i nowa gra czyszczą Stone state
+PASS: Brąz zachowuje własny moduł i rejestr
+PASS: main.ts: stoneForceWarTargetId ustawiane z forcedWarAssignmentByOwner (nowy rdzeń parowania), nie z usuniętego pickStoneForcedWarTargetIdCoordinated
+WYNIK: 19 PASS, 0 FAIL
+EXIT=0

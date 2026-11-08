@@ -1,0 +1,62 @@
+
+-- A. Mennica: wartosci w econ-params.json --
+FAIL: econ-params.json: easy mennicaMnoznikPoWalucie = 2 (got 1.62, want 2)
+PASS: econ-params.json: normal mennicaMnoznikPoWalucie = 1.5 (got 1.5, want 1.5)
+FAIL: econ-params.json: hard mennicaMnoznikPoWalucie = 1 (bez bonusu, NIE zero) (got 1.38, want 1)
+PASS: buildEconParams (turn-economy.ts): normal = 1.5 (parity z loadEconParams) (got 1.5, want 1.5)
+
+-- B. cityYieldPerTurn: Efekt 1 scalony (Waluta+Mennica) realnie podnosi Skarb --
+PASS: Mennica ×1.5: pieniadz wzrasta wzgledem braku Mennicy (6 > 4)
+PASS: przyklad: Waluta bez Mennicy -> pieniadz=4 (mnoznik=1, brak efektu -- sedno decyzji) (got 4, want 4)
+PASS: przyklad: Mennica x1.5 + Waluta -> pieniadz=6 (+50% wzgledem 4) (got 6, want 6)
+
+-- C. advanceCityEconomy: bramka Mennica AND Waluta (integracja pelna) --
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=6 terrain=22 landSea=198 relief=142 coast=22 riversMain=275 riversFill=702 forest=9 deposits=19 starts=118 total=1513
+PASS: Waluta BEZ Mennicy: BRAK zmiany wzgledem baseline (sedno decyzji 2026-07-25 -- sam tech juz nie wystarcza) (got 4, want 4)
+FAIL: Mennica BEZ Waluty: delta = tylko wlasny plon budynku po podziale suwakiem (67B), multiplikator Efektu 1 NIEaktywny (bramka AND) (got 1, want 2)
+PASS: Mennica + Waluta: dochod wyzszy niz sama Waluta (8 > 4)
+
+-- D. City.surowce: migracja starego zapisu --
+PASS: stary zapis bez pola surowce -> dostaje {}
+PASS: migracja: pusty magazyn surowcow (nie zgadujemy wartosci) (got 0, want 0)
+PASS: migracja: istniejacy magazyn surowcow NIE jest nadpisywany (got 7, want 7)
+
+-- E. cityYieldPerTurn: drewnoTerenu / kamienTerenu (Zadanie 2) --
+PASS: tileYield: Las daje drewno > 0 (got 20)
+PASS: cityYieldPerTurn: drewnoTerenu = suma drewna z 2 pol lasu (got 40, want 40)
+FAIL: cityYieldPerTurn: 6 pol Rownina (baza drewno=10, x5) -> drewnoTerenu = 60 (got 30, want 60)
+FAIL: cityYieldPerTurn: 6 pol Rownina (baza kamien=5, x5) -> kamienTerenu = 30 (got 12, want 30)
+PASS: cityYieldPerTurn: Morze -> drewnoTerenu = 0 (brak drewna/kamienia na morzu) (got 0, want 0)
+PASS: cityYieldPerTurn: Morze -> kamienTerenu = 0 (got 0, want 0)
+
+-- F. Converters: gating po builtIds (jak w turn-economy.ts) --
+PASS: brak Cegielni: glina niezmieniona (converter nieaktywny) (got 4, want 4)
+PASS: brak Cegielni: drewno niezmienione (converter nieaktywny) (got 5, want 5)
+PASS: brak Cegielni: brak cegly (converter nieaktywny) (got undefined, want undefined)
+PASS: z Cegielnia: cegla > 0 (got 2)
+PASS: z Cegielnia: glina zmalala (skonsumowana)
+PASS: z Cegielnia: drewno zmalalo (skonsumowane, bylo paliwo:1 -> teraz drewno:1)
+PASS: potwierdzenie: brak budynku "tartak" w buildings.json (recepta nieaktywna)
+PASS: potwierdzenie: brak budynku "huta" w buildings.json (recepta nieaktywna, duplikat odlewnia_brazu)
+PASS: Mielerz NIE istnieje juz w buildings.json (usuniety 2026-07-23)
+PASS: Cegielnia/Garncarnia/odlewnia_brazu MAJA budynek (Garncarnia = konwerter Ceramiki, PYTANIE-84)
+
+-- G. cityYieldPerTurn: glinaTerenu z glinianki (GLINA-Q1=A) --
+PASS: tileYield: glinianka daje glina=10 (bonus stala ilosc x5, bylo 2) (got 10, want 10)
+PASS: tileYield: teren bez glinianki -> glina=0 (baza terenu nie daje gliny) (got 0, want 0)
+PASS: cityYieldPerTurn: 2 pola z glinianka -> glinaTerenu = 20 (2 x 10/ture, x5) (got 20, want 20)
+
+-- H. Cegielnia + Garncarnia produkują; odlewnia_brazu NIE bez rudy --
+PASS: Cegielnia: cegla > 0 przy glina+drewno obecnych (got 20)
+FAIL: Garncarnia: ceramika > 0 przy glina+drewno (got undefined)
+PASS: Cegielnia+Garncarnia: glina zmalala (skonsumowana przez oba konwertery)
+PASS: brak Cegielni: brak cegly (converter nieaktywny) (got undefined, want undefined)
+PASS: brak Garncarni jako konwertera: brak ceramiki (got undefined, want undefined)
+PASS: brak budynkow: glina niezmieniona (got 8, want 8)
+PASS: odlewnia_brazu zbudowana ale brak rudy w magazynie -> braz NIE rosnie (undefined, brak-wejscia) (got undefined, want undefined)
+FAIL: odlewnia_brazu bez rudy NIE blokuje Cegielni ani Garncarni
+PASS: kontrola: odlewnia_brazu Z ruda w magazynie -> braz > 0 (got 4) -- receptura sama w sobie sprawna
+
+mennica-magazyn-test: 34 passed, 7 failed
+EXIT=1

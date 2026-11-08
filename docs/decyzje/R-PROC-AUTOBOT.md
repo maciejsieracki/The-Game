@@ -79,97 +79,26 @@ Przed dispatchiem każdy temat ma pełne ID, jawny `GOAL`, mierzalne kryteria ko
 allowlistę plików, bazę worktree i plan testów. Zgłoszenie trafia do rejestru; Operator
 nie rozszerza zakresu „przy okazji”. Każda zapisana zmiana wymaga niezależnej kontroli.
 
-### 2c. Karta Kanban i plan grafowy — przed każdą pracą (C-063)
+### 2c. Run plikowy i pętla etapów — bez Kanbana
 
-Każdy nowy lub odnowiony temat The-Game **najpierw** trafia do Kanbana. Karta musi
-istnieć i mieć kompletny plan **przed** uruchomieniem pierwszego workera albo zmianą
-statusu na aktywny. Nie wystarcza tytuł, opis w czacie, lista TODO ani sam rekord
-„oczekuje". Właścicielem planu jest karta tematu, a nie pamięć orkiestratora.
+AutoBot w tym repozytorium nie używa Kanbana ani zewnętrznego boardu jako warunku
+rejestracji lub uruchomienia pracy. Decyzja właściciela z 2026-10-29 unieważnia
+wcześniejszy C-063 dotyczący obowiązkowych kart Kanban. Zapisane historyczne karty i
+raporty pozostają archiwum; nie blokują bieżących tematów.
 
-Minimalny plan karty zawiera:
+Każdy temat zapisuje się w `dyspozycje/autobot/runs/<pełne-ID>/` przez `00-dispatch.md`,
+raporty kolejnych ról, Final Control oraz integrację. Dispatch zawiera `GOAL`, binarne
+kryteria, allowlistę, bazę/worktree, zależności, testy i jawny status. Każdy temat ma
+Operatora; kolejny etap uruchamia się po odczytaniu rzeczywistego artefaktu poprzedniej
+fazy. Jeśli procesu lub artefaktu brak, temat ma jawny status `WSTRZYMANY/BLOCKED` z
+przyczyną, a nie opis „w toku”. Raport postępu wymaga readbacku runu, statusu procesu,
+commita i wyniku testów oraz uruchomienia kwalifikowanego następnego etapu.
 
-- pełne, niezmienne `topic_id`/ID, jednozdaniowy `GOAL` i domenę;
-- binarne kryteria końca (`PRAWDA`/`FAŁSZ`) z nazwanymi bramkami/scenariuszami;
-- minimalną allowlistę plików i obszarów, bazę/worktree oraz zakazy;
-- jawne `parent_ids`/zależności, warunki odblokowania i limit rund;
-- wszystkie wymagane fazy, przyszłe bramki oraz ich status `blocked` i krawędzie;
-- `OWNER_HOLD`/`DECISION_REQUIRED` jako jawne bramki, a nie nieopisane „czekanie";
-- oczekiwany artefakt, raport, sposób notyfikacji i wybudzenia kolejnego workera.
-
-Plan jest **grafem**, nie listą faz do ręcznego przepisania. Minimalny graf dla jednego
-tematu wygląda tak:
-
-```text
-[ROOT: karta Kanban + plan]
-  └─> [P1: Operator, process_phase=Operator]
-        └─ PASS + terminal event/readback ─> [P2: Evaluator, process_phase=Evaluator]
-              ├─ concrete objections > 0 ─> [P3: Obrona, process_phase=Obrona]
-              │                              └─ terminal event/readback ─> [P4: Final Control]
-              └─ concrete objections = 0 ───────────────────────────────> [P4: Final Control]
-                                                                            ├─ PASS + terminal event/readback ─> [P5: integracja Orkiestratora]
-                                                                            │                                     └─> [G6: READY_FOR_DEPLOY]
-                                                                            │                                           └─> [G7: osobna zgoda push/deploy]
-                                                                            └─ FAIL | NAPRAW ─┐
-[terminal P1/P2/P3/P4] -- BLOCK | TIMEOUT | INFRA | ZWIS ───────────────────┴─> [R: terminal readback + retry guard]
-[R] -- round < 5, dependency satisfied ─> [P1: same ID, next round]
-[R] -- round = 5 ─> [L: LIMIT-5-EXCEEDED, blocked]
-[L] -- explicit owner/orchestrator decision ─> [M: manual resume, same ID/counter preserved] ─> [P1]
-[any started phase] -- OWNER_HOLD | DECISION_REQUIRED ─> [H: future successor blocked]
-[H] -- owner decision/dependency restored ─> [qualified next graph node]
-[any terminal event] ─> [T: technical + context readback] ─> [S: legal successor]
-[S] -- deterministic idempotency key ─> [C: create once] ─> [N: notify] ─> [W: wake/dispatch profile game]
-```
-
-P3 jest w grafie jako **warunkowy, przyszły węzeł** i pozostaje `blocked`, dopóki
-Evaluator nie zwróci niepustej listy konkretnych zarzutów. Nie wolno tworzyć ani budzić
-pustej Obrony. Węzły P4–G7, R, L, M i H są ujawnione na karcie przed pracą i pozostają
-`blocked` do spełnienia krawędzi poprzednika; nie wolno zastępować tego grafu płaską
-listą „następnych kroków". Każdy `FAIL`, `NAPRAW`, techniczny `BLOCK`, `TIMEOUT`,
-`INFRA` lub `ZWIS` z P1–P4 ma jawną krawędź do R, a guard prowadzi do P1 tylko dla
-rundy <5 albo do L po piątej rundzie. Wznowienie z L zachowuje to samo ID i licznik;
-H blokuje wyłącznie przyszłego sukcesora i odblokowuje właściwy węzeł po decyzji lub
-usunięciu zależności.
-
-**Profil i faza są różnymi pojęciami.** Wszystkie nowe i odnowione karty The-Game na
-boardzie `the-game-real24` używają jednego profilu wykonawczego `game`. Nie twórz
-profili `game-operator`, `game-evaluator`, `game-defense` ani `game-final-control`.
-Rola/etap jest wartością `process_phase` w karcie i raporcie, a przejście zapisuje
-`transition receipt`; profil nie może służyć jako skrót roli. `native_status` pozostaje
-technicznym stanem dostawcy Kanbana (`todo`/`ready`/`running`/`blocked`/`done` itd.)
-i **nie** jest źródłem roli, fazy ani następcy.
-
-**Terminalny event i następca.** Każde terminalne przejście Kanbana (np.
-`kanban_complete`, `kanban_block`, `review_requested` lub `changes_requested`, gdy kończy
-bieżącą fazę) jest terminalne dopiero wtedy, gdy istnieje odczytywalny event z ID/czasem i
-można wykonać readback. Przed utworzeniem/wybudzeniem sukcesora orkiestrator wykonuje dwa
-jawne odczyty:
-
-1. **technical readback:** dokładna karta i jej `native_status`, terminalny event,
-   `parent_ids`/graf, profil, `process_phase`, round/attempt, worktree/branch,
-   artefakt/raport, Git/diff oraz dostępne diagnostics, usage i journal;
-2. **context readback:** `00-dispatch.md`, niezmienny `GOAL`, kryteria, allowlista,
-   decyzje/ABC/ECHO, blokady i warunek krawędzi, która ma zostać uruchomiona.
-
-Następnie wystawia `transition receipt` zawierający co najmniej: `topic_id`, kartę i
-fazę źródłową, terminalny status oraz `event_id`/czas, round/attempt, `profile=game`,
-`process_phase`, rodziców, czas i odnośniki obu readbacków, legalnego sukcesora,
-deterministyczny `idempotency_key`, wynik `notify` i wynik `wake`. Klucz jest ponownie
-używany przy powtórzeniu tego samego eventu; nie wolno tworzyć losowej kopii sukcesora.
-
-Legalnego sukcesora wybiera się **wyłącznie z grafu i znaczenia terminalnego eventu**,
-nie z tytułu karty, treści raportu, samego `native_status`, kolejności w tabeli ani
-pamięci orkiestratora. Po utworzeniu aktywnej karty trzeba opublikować notyfikację do
-głównego kanału orkiestratora i wykonać `wake`/dispatch profilu `game`; oba wyniki
-muszą trafić do receipt. Karta przyszła, która nadal ma niespełnioną zależność, może
-być tylko jawnie `blocked` i nie jest budzona.
-
-`OWNER_HOLD` i `DECISION_REQUIRED` zatrzymują **wyłącznie przyszłe, niespełnione
-następstwo**. Nie anulują ani nie cofają workera, który już rozpoczął fazę: ten może
-dokończyć bieżący zakres i wystawić terminalny event, po którym readback zapisuje
-hold jako blokadę kolejnych węzłów. Gdy readback pokazuje kwalifikowanego legalnego
-sukcesora, orkiestrator ma go utworzyć i wybudzić — komunikat „nic nie może ruszyć"
-jest wtedy niedopuszczalny. Brak eventu/readbacku jest luką procesu do rozstrzygnięcia,
-a nie podstawą do zgadywania następcy ani do tworzenia duplikatu.
+Skala postępu 1–11 jest kanonicznie utrzymywana w
+`dyspozycje/autobot/runs/README.md`. Etapy 1–8 opisują rejestrację, wykonanie i
+niezależne role; etapy 9–11 to integracja `main`, deploy do Roboczej i `git push` z
+odczytem potwierdzającym. Numer etapu jest ostatnim potwierdzonym artefaktem, nie
+szacunkiem. Obrona uruchamia się wyłącznie, gdy Evaluator podał konkretne zarzuty.
 
 ### 2a. Zapis dispatchu — przed dispatchem, nie po
 

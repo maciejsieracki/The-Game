@@ -1,0 +1,2 @@
+wyrab-rzeka-d1-test: 2 passed, 0 failed
+EXIT=0

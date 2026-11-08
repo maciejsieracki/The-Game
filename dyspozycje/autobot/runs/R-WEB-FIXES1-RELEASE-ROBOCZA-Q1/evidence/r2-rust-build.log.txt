@@ -1,0 +1,9 @@
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.3
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.154
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_bb44b7c1-9c5-3/rust-port/engine)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 16.66s
+EXIT=0

@@ -1,0 +1,33 @@
+ai-food-improvement-priority-stages-test.cjs kod=0 | [PASS] mutation. disabling stage selection makes the behavioral gate fail ai-food-improvement-priority-stages-test: 13 p
+ai-improvements-test.cjs kod=0 |  AI-IMPROVEMENTS-TEST: 56 passed, 0 failed
+auto-improve-no-item-cap-test.cjs kod=0 |  auto-improve-no-item-cap-test: 15 passed, 0 failed
+auto-improve-q3-test.cjs kod=1 |  44 OK, 6 FAIL
+auto-improvements-test.cjs kod=0 |  auto-improvements-test: 46 passed, 0 failed
+autoclear-priority-live-test.cjs kod=124 |   log: [] }
+autoclear-priority-q1-test.cjs kod=0 |  autoclear-priority-q1-test: 60 passed, 0 failed
+autoclear-river-forest-priority-test.cjs kod=1 |  14 OK, 4 FAIL
+autoimprove-live-hooks-test.cjs kod=1 |  autoimprove-live-hooks-test: 36 passed, 1 failed
+autoimprove-stages-q1-test.cjs kod=0 |  autoimprove-stages-q1-test: 302 passed, 0 failed
+farma-cofnij-nieaktualny-wpis-test.cjs kod=0 |  21 pass · 0 fail
+farma-lesie-usun-istniejace-test.cjs kod=0 |  === farma-lesie-usun-istniejace: 143 OK / 0 FAIL ===
+farma-nie-w-lesie-test.cjs kod=0 |  farma-nie-w-lesie-test: 138 passed, 0 failed
+food-hodowla-test.cjs kod=0 |  --- food-hodowla-test: 24 OK, 0 FAIL ---
+hodowla-las-test.cjs kod=0 |  hodowla-las-test: 113 passed, 0 failed
+oboz-lowiecki-ev-r2-mainpath.cjs kod=1 |  oboz-lowiecki-ev-r2-mainpath: 29 passed, 1 failed
+oboz-lowiecki-fc-balans.cjs kod=0 |  oboz-lowiecki-fc-balans: 5 passed, 0 failed
+oboz-lowiecki-fc-r2-nowa-sciezka.cjs kod=0 |  oboz-lowiecki-fc-r2-nowa-sciezka: 22 passed, 0 failed
+oboz-lowiecki-las-test.cjs kod=1 |  oboz-lowiecki-las-test: 72 passed, 19 failed
+oboz-lowiecki-las-znika-render-test.cjs kod=124 |   ] }
+oboz-lowiecki-wymaga-tartaku-test.cjs kod=0 | === WYNIK === oboz-lowiecki-wymaga-tartaku-test: 16 passed, 0 failed
+wyrab-rzeka-d1-test.cjs kod=1 |   FAIL: Q3: K2 wycina las NA rzece także bez obywatela (filtr „tylko pola z obywatelami” nie dotyczy wycinki rzeczn
+wyrab-rzeka-krok0-test.cjs kod=0 |  Wynik: 3 PASS / 0 FAIL
+wyrab-rzeka-obywatel-turns.cjs kod=1 |  Node.js v22.22.0
+wyrab-rzeka-r2-test.cjs kod=0 |  Wynik: 10 PASS / 0 FAIL
+wyrab-wycinka-nazwa-live-test.cjs kod=0 |  [wyrab-wycinka-nazwa-live-test] 49 pass, 0 fail
+DONE
+--- PO AKTUALIZACJI 3 testow (Q3/autoclear/d1) i nowy test:
+48 OK, 0 FAIL
+18 OK, 0 FAIL
+wyrab-rzeka-d1-test: 3 passed, 0 failed
+27 OK, 0 FAIL
+EXIT=0

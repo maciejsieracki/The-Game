@@ -1,0 +1,73 @@
+hotseat-etap6d-podetap-b-exec-test (R-HOTSEAT-ETAP6D-PODETAP-B-Q1)
+
+1. playerFormalRelationLabel — realne wykonanie
+
+  OK: PRAWDZIWY ME(): getDiploRelation pierwszy arg = ME() = 7, otrzymano [7,4]
+  OK: PRAWDZIWY ME(): allianceFormalKindBetween drugi arg (a) = ME() = 7, otrzymano [7,4]
+  OK: PRAWDZIWY: hasNap=true (deal[strony includes ME()=7] rozpoznany), otrzymano true
+  OK (mutacja poprawnie czerwieni): MUTACJA ME()=>99: getDiploRelation POWINIEN dostać 99, nie 7 -- czerwieni się poprawnie
+  OK: MUTACJA ME()=>99: deal.strony.includes(ME()) POWINNO być false (deal ma [7,4], nie 99) -- hasNap POWINNO stać się false -- czerwieni się poprawnie
+
+2. foreignCivsMissingTradeTreatyForCity — realne wykonanie
+
+  OK: PRAWDZIWY isMe: miasto gracza rozpoznane, wynik=["AI-4"]
+  OK: PRAWDZIWY ME(): getDiploRelation pierwszy arg = 7, otrzymano [[7,4]]
+  OK: PRAWDZIWY ME(): hasSzlakowTreaty drugi arg = 7, otrzymano [[7,4]]
+  OK (mutacja poprawnie czerwieni): MUTACJA isMe=>false: !isMe(city.ownerId) POWINNO być true (miasto gracza nie rozpoznane) -> wczesny return [] -- czerwieni się poprawnie
+
+3. collectDiploChipCounts — realne wykonanie
+
+  OK: PRAWDZIWY ME() ścieżka (a) L15031 (d.strony.includes(ME())): AI1 poprawnie dodany do sojuszPartners -> sojusze=1, otrzymano {"sojusze":1,"pakty":1,"wojny":0}
+  OK: PRAWDZIWY: AI2 (bez deala, rel.status='pokoj') -> pakty=1 -- kontrola drugiej pętli, otrzymano {"sojusze":1,"pakty":1,"wojny":0}
+  OK: PRAWDZIWY: wojny=0 (żadna relacja 'wojna' w mocku), otrzymano {"sojusze":1,"pakty":1,"wojny":0}
+  OK: PRAWDZIWY: getDiploRelation wywołane dokładnie 2x (guard isMe(oid) L15038 wyklucza oid=PLAYER=7 z contacted={4,5,7}), otrzymano 2
+  OK: PRAWDZIWY ME() ścieżka (b) L15039, wywołanie 1 (oid=4): pierwszy arg = ME() = 7, otrzymano [7,4]
+  OK: PRAWDZIWY ME() ścieżka (b) L15039, wywołanie 2 (oid=5): pierwszy arg = ME() = 7, otrzymano [7,5]
+  OK: PRAWDZIWY guard L15038 `if (isMe(oid)) continue;`: żadne wywołanie getDiploRelation nie ma oid=PLAYER=7 jako drugiego argumentu (guard wykluczył wartość graniczną) -- otrzymano oid-y: [4,5]
+  OK: MUTACJA ME()=>99 ścieżka (a): d.strony.includes(99) POWINNO być false (deal ma [7,4]) -> sojuszPartners pusty -> sojusze POWINNO spaść z 1 do 0 -- czerwieni się poprawnie
+  OK (mutacja poprawnie czerwieni): MUTACJA ME()=>99 ścieżka (b): getDiploRelation pierwszy arg POWINIEN być 99, nie 7 -- czerwieni się poprawnie
+  OK: MUTACJA isMe=>zawsze false: guard L15038 NIE wyklucza już PLAYER=7 (isMe zepsute) -> getDiploRelation wywołane 3x zamiast 2x (AI1,AI2,PLAYER wszystkie przechodzą) -- czerwieni się poprawnie, otrzymano 3
+
+4. enqueueNegotiationFromAiCmd — realne wykonanie
+
+  OK: PRAWDZIWY (handel): getDiploRelation wywołane 3x (L15968, L15986, L16049), otrzymano 3
+  OK: PRAWDZIWY ME() L15968 (atWarWithPlayer): drugi arg getDiploRelation = 7, otrzymano [4,7]
+  OK: PRAWDZIWY ME() L15986 (rel, gałąź handlowa): drugi arg getDiploRelation = 7, otrzymano [4,7]
+  OK: PRAWDZIWY ME() L16049 (relForBalance): drugi arg getDiploRelation = 7, otrzymano [4,7]
+  OK: PRAWDZIWY ME() L15992 (theirResourceOptions): priceableTradableGoodOptions 2. wywołanie = ME() = 7, otrzymano [4,7]
+  OK: PRAWDZIWY ME() L15994 (theirQuantityResourceOptions): quantityTradableGoodOptions 2. wywołanie = ME() = 7, otrzymano [4,7]
+  OK: PRAWDZIWY ME() L16001 (ownerBasketAffordCtx dla theirCtx): 2. wywołanie = ME() = 7, otrzymano [4,7]
+  OK: PRAWDZIWY ME() L16054 (pnBalanceOpts.playerOwnerId) = 7, otrzymano {"difficulty":"normal","proposerOwnerId":4,"playerOwnerId":7}
+  OK: PRAWDZIWY ME() L15982: aiCommandToPendingProposal 3. arg (playerId) = 7, otrzymano [7]
+  OK: PRAWDZIWY ME() L16085: hasPendingNegotiationForPair 2. arg = 7, otrzymano [7]
+  OK: PRAWDZIWY ME() L16090: createNegotiation entry.responderOwnerId = 7, otrzymano [7]
+  OK (mutacja poprawnie czerwieni): MUTACJA ME()=>99 L15968: POWINIEN dostać 99, nie 7 -- czerwieni się poprawnie
+  OK (mutacja poprawnie czerwieni): MUTACJA ME()=>99 L15992: priceableTradableGoodOptions POWINIEN dostać 99, nie 7 -- czerwieni się poprawnie
+  OK (mutacja poprawnie czerwieni): MUTACJA ME()=>99 L16054: pnBalanceOpts.playerOwnerId POWINIEN być 99, nie 7 -- czerwieni się poprawnie
+  OK: PRAWDZIWY (pokój): getDiploRelation wywołane 3x (L15968, L16030, L16049), otrzymano 3
+  OK: PRAWDZIWY ME() L15968 (atWarWithPlayer, gałąź pokoju): drugi arg = 7, otrzymano [4,7]
+  OK: PRAWDZIWY ME() L16030 (relForPeace): drugi arg getDiploRelation = 7, otrzymano [4,7]
+  OK: PRAWDZIWY ME() L16049 (relForBalance, gałąź pokoju): drugi arg = 7, otrzymano [4,7]
+  OK: PRAWDZIWY ME() L16040 (peaceOfferAiRequestBasket arg): quantityTradableGoodOptions(ME()) = 7, otrzymano [7]
+  OK: PRAWDZIWY ME() L16054 (pnBalanceOpts.playerOwnerId, gałąź pokoju) = 7, otrzymano {"difficulty":"normal","proposerOwnerId":4,"playerOwnerId":7}
+  OK (mutacja poprawnie czerwieni): MUTACJA ME()=>99 L16030: relForPeace POWINIEN dostać 99, nie 7 -- czerwieni się poprawnie
+  OK (mutacja poprawnie czerwieni): MUTACJA ME()=>99 L16040: quantityTradableGoodOptions POWINIEN dostać 99, nie 7 -- czerwieni się poprawnie
+
+5. applyBorderMarchPenaltiesEndTurn — realne wykonanie
+
+  OK: PRAWDZIWY ME(): classifyPlayerBorderMarchNotice 3. arg = ME() = 7, otrzymano [7]
+  OK (mutacja poprawnie czerwieni): MUTACJA ME()=>99: classifyPlayerBorderMarchNotice POWINIEN dostać 99, nie 7 -- czerwieni się poprawnie
+
+6. currentVisibleForOwner — realne wykonanie
+
+  OK: PRAWDZIWY: !isMe(AI)=true wchodzi w gałąź, allianceFormalKindBetween(deals, ME()=7, AI) rozpoznaje sojusz, ownPlayerVisibleHexes dołączone, wynik=["h1","h2"]
+  OK: PRAWDZIWY ME(): drugi arg allianceFormalKindBetween = 7
+  OK (mutacja poprawnie czerwieni): MUTACJA ME()=>99: allianceFormalKindBetween(deals, 99, AI) POWINNO zwrócić null (nie 7) -> 'h2' NIE powinno zostać dołączone -- czerwieni się poprawnie
+
+7. peacefulArchetypeForOwner — realne wykonanie
+
+  OK: PRAWDZIWY isMe: peacefulArchetypeForOwner(ownerId=ME()=7) musi zwrócić false (gracz nie ma archetypu AI), otrzymano false
+  OK (mutacja poprawnie czerwieni): MUTACJA isMe=>false: guard isMe(ownerId) nigdy prawdziwy -> POWINNO fałszywie przejść dalej i zwrócić true (peaceful mocka) zamiast false -- czerwieni się poprawnie
+
+hotseat-etap6d-podetap-b-exec-test: 48 PASS, 0 FAIL
+EXIT=0

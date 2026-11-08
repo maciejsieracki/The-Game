@@ -1,0 +1,107 @@
+23:32:28 worldgen ms 42419
+23:32:38 end-turn {"n":1,"turn0":1,"turn1":2,"endTurnMs":5233,"retries":0,"cities":10,"heapMB":257}
+23:32:45 end-turn {"n":2,"turn0":2,"turn1":3,"endTurnMs":5313,"retries":0,"cities":10,"heapMB":257}
+23:32:52 end-turn {"n":3,"turn0":3,"turn1":4,"endTurnMs":5163,"retries":0,"cities":10,"heapMB":257}
+23:32:59 end-turn {"n":4,"turn0":4,"turn1":5,"endTurnMs":5401,"retries":0,"cities":10,"heapMB":257}
+23:33:05 end-turn {"n":5,"turn0":5,"turn1":6,"endTurnMs":4906,"retries":0,"cities":10,"heapMB":257}
+23:33:12 end-turn {"n":6,"turn0":6,"turn1":7,"endTurnMs":5141,"retries":0,"cities":10,"heapMB":257}
+23:33:18 end-turn {"n":7,"turn0":7,"turn1":8,"endTurnMs":5007,"retries":0,"cities":10,"heapMB":257}
+23:33:25 end-turn {"n":8,"turn0":8,"turn1":9,"endTurnMs":5045,"retries":0,"cities":10,"heapMB":257}
+23:33:31 end-turn {"n":9,"turn0":9,"turn1":10,"endTurnMs":5288,"retries":0,"cities":10,"heapMB":257}
+23:33:38 end-turn {"n":10,"turn0":10,"turn1":11,"endTurnMs":5399,"retries":0,"cities":10,"heapMB":257}
+23:33:45 end-turn {"n":11,"turn0":11,"turn1":12,"endTurnMs":5510,"retries":0,"cities":10,"heapMB":257}
+23:33:52 end-turn {"n":12,"turn0":12,"turn1":13,"endTurnMs":5621,"retries":0,"cities":10,"heapMB":257}
+23:33:59 end-turn {"n":13,"turn0":13,"turn1":14,"endTurnMs":5666,"retries":0,"cities":10,"heapMB":257}
+23:34:06 end-turn {"n":14,"turn0":14,"turn1":15,"endTurnMs":5524,"retries":0,"cities":10,"heapMB":257}
+23:34:13 end-turn {"n":15,"turn0":15,"turn1":16,"endTurnMs":5213,"retries":0,"cities":10,"heapMB":257}
+23:34:20 end-turn {"n":16,"turn0":16,"turn1":17,"endTurnMs":5697,"retries":0,"cities":10,"heapMB":257}
+23:34:27 end-turn {"n":17,"turn0":17,"turn1":18,"endTurnMs":5100,"retries":0,"cities":10,"heapMB":257}
+23:34:34 end-turn {"n":18,"turn0":18,"turn1":19,"endTurnMs":5495,"retries":0,"cities":10,"heapMB":257}
+23:34:41 end-turn {"n":19,"turn0":19,"turn1":20,"endTurnMs":5524,"retries":0,"cities":10,"heapMB":257}
+23:34:48 end-turn {"n":20,"turn0":20,"turn1":21,"endTurnMs":5981,"retries":0,"cities":10,"heapMB":257}
+23:34:54 end-turn {"n":21,"turn0":21,"turn1":22,"endTurnMs":4515,"retries":0,"cities":10,"heapMB":257}
+23:35:01 end-turn {"n":22,"turn0":22,"turn1":23,"endTurnMs":4845,"retries":0,"cities":10,"heapMB":257}
+23:35:07 end-turn {"n":23,"turn0":23,"turn1":24,"endTurnMs":4587,"retries":0,"cities":11,"heapMB":257}
+23:35:13 end-turn {"n":24,"turn0":24,"turn1":25,"endTurnMs":4607,"retries":0,"cities":11,"heapMB":257}
+23:35:19 end-turn {"n":25,"turn0":25,"turn1":26,"endTurnMs":4346,"retries":0,"cities":11,"heapMB":257}
+23:35:25 end-turn {"n":26,"turn0":26,"turn1":27,"endTurnMs":4875,"retries":0,"cities":12,"heapMB":257}
+23:35:32 end-turn {"n":27,"turn0":27,"turn1":28,"endTurnMs":4862,"retries":0,"cities":12,"heapMB":257}
+23:35:38 end-turn {"n":28,"turn0":28,"turn1":29,"endTurnMs":4966,"retries":0,"cities":12,"heapMB":257}
+23:35:45 end-turn {"n":29,"turn0":29,"turn1":30,"endTurnMs":4858,"retries":0,"cities":13,"heapMB":257}
+23:35:51 end-turn {"n":30,"turn0":30,"turn1":31,"endTurnMs":4747,"retries":0,"cities":13,"heapMB":257}
+23:35:57 end-turn {"n":31,"turn0":31,"turn1":32,"endTurnMs":4601,"retries":0,"cities":14,"heapMB":257}
+23:36:03 end-turn {"n":32,"turn0":32,"turn1":33,"endTurnMs":4601,"retries":0,"cities":14,"heapMB":257}
+23:36:09 end-turn {"n":33,"turn0":33,"turn1":34,"endTurnMs":4704,"retries":0,"cities":14,"heapMB":257}
+23:36:15 end-turn {"n":34,"turn0":34,"turn1":35,"endTurnMs":4405,"retries":0,"cities":14,"heapMB":257}
+23:36:22 end-turn {"n":35,"turn0":35,"turn1":36,"endTurnMs":4788,"retries":0,"cities":15,"heapMB":257}
+23:36:28 end-turn {"n":36,"turn0":36,"turn1":37,"endTurnMs":4696,"retries":0,"cities":15,"heapMB":257}
+23:36:34 end-turn {"n":37,"turn0":37,"turn1":38,"endTurnMs":4674,"retries":0,"cities":15,"heapMB":257}
+23:36:40 end-turn {"n":38,"turn0":38,"turn1":39,"endTurnMs":4815,"retries":0,"cities":15,"heapMB":257}
+23:36:47 end-turn {"n":39,"turn0":39,"turn1":40,"endTurnMs":4887,"retries":0,"cities":16,"heapMB":257}
+23:36:53 end-turn {"n":40,"turn0":40,"turn1":41,"endTurnMs":4785,"retries":0,"cities":16,"heapMB":257}
+23:36:59 end-turn {"n":41,"turn0":41,"turn1":42,"endTurnMs":4662,"retries":0,"cities":17,"heapMB":257}
+23:37:05 end-turn {"n":42,"turn0":42,"turn1":43,"endTurnMs":4692,"retries":0,"cities":17,"heapMB":257}
+23:37:12 end-turn {"n":43,"turn0":43,"turn1":44,"endTurnMs":4873,"retries":0,"cities":17,"heapMB":257}
+23:37:18 end-turn {"n":44,"turn0":44,"turn1":45,"endTurnMs":4643,"retries":0,"cities":18,"heapMB":257}
+23:37:24 end-turn {"n":45,"turn0":45,"turn1":46,"endTurnMs":4995,"retries":0,"cities":18,"heapMB":257}
+23:37:31 end-turn {"n":46,"turn0":46,"turn1":47,"endTurnMs":4699,"retries":0,"cities":18,"heapMB":257}
+23:37:37 end-turn {"n":47,"turn0":47,"turn1":48,"endTurnMs":4789,"retries":0,"cities":20,"heapMB":257}
+23:37:44 end-turn {"n":48,"turn0":48,"turn1":49,"endTurnMs":5190,"retries":0,"cities":20,"heapMB":257}
+23:37:50 end-turn {"n":49,"turn0":49,"turn1":50,"endTurnMs":5109,"retries":0,"cities":20,"heapMB":257}
+23:37:57 end-turn {"n":50,"turn0":50,"turn1":51,"endTurnMs":4690,"retries":0,"cities":22,"heapMB":257}
+SUMMARY {"mode":"peace","turns":50,"finalTurn":51,"medianMs":4887,"meanMs":4995,"maxMs":5981,"stalls":0}
+MEMDEBUG_LOGS_BEGIN
+[memdebug] koniec tury=2 · geometries=305 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=3 · geometries=305 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=4 · geometries=305 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=5 · geometries=304 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=6 · geometries=304 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=7 · geometries=304 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=8 · geometries=304 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=9 · geometries=305 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=10 · geometries=305 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=11 · geometries=306 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=12 · geometries=322 · textures=15 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=13 · geometries=323 · textures=15 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=14 · geometries=331 · textures=15 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=15 · geometries=332 · textures=15 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=16 · geometries=333 · textures=15 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=17 · geometries=353 · textures=15 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=18 · geometries=371 · textures=15 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=19 · geometries=372 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=20 · geometries=390 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=21 · geometries=399 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=22 · geometries=401 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=23 · geometries=409 · textures=14 · programs=23 · cityModels=10 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=24 · geometries=423 · textures=14 · programs=23 · cityModels=11 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=25 · geometries=423 · textures=14 · programs=23 · cityModels=11 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=26 · geometries=423 · textures=14 · programs=23 · cityModels=11 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=27 · geometries=422 · textures=14 · programs=23 · cityModels=12 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=28 · geometries=440 · textures=14 · programs=23 · cityModels=12 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=29 · geometries=442 · textures=14 · programs=23 · cityModels=12 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=30 · geometries=443 · textures=14 · programs=23 · cityModels=13 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=31 · geometries=444 · textures=14 · programs=23 · cityModels=13 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=32 · geometries=458 · textures=14 · programs=23 · cityModels=14 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=33 · geometries=459 · textures=14 · programs=23 · cityModels=14 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=34 · geometries=466 · textures=14 · programs=23 · cityModels=14 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=35 · geometries=467 · textures=14 · programs=23 · cityModels=14 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=36 · geometries=467 · textures=14 · programs=23 · cityModels=15 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=37 · geometries=468 · textures=17 · programs=23 · cityModels=15 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=38 · geometries=468 · textures=17 · programs=23 · cityModels=15 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=39 · geometries=468 · textures=17 · programs=23 · cityModels=15 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=40 · geometries=479 · textures=17 · programs=23 · cityModels=16 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=41 · geometries=479 · textures=17 · programs=23 · cityModels=16 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=42 · geometries=480 · textures=17 · programs=23 · cityModels=17 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=43 · geometries=480 · textures=17 · programs=23 · cityModels=17 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=44 · geometries=479 · textures=18 · programs=23 · cityModels=17 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=45 · geometries=480 · textures=18 · programs=23 · cityModels=18 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=46 · geometries=480 · textures=20 · programs=23 · cityModels=18 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=47 · geometries=481 · textures=20 · programs=23 · cityModels=18 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=48 · geometries=483 · textures=20 · programs=24 · cityModels=20 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=49 · geometries=483 · textures=20 · programs=24 · cityModels=20 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=50 · geometries=483 · textures=20 · programs=24 · cityModels=20 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+[memdebug] koniec tury=51 · geometries=488 · textures=20 · programs=24 · cityModels=22 · cityBadgeTextures=3 · cityBadgeTexturesFreed=0 · jsHeapMB=256.5
+MEMDEBUG_LOGS_END
+BAD_RESPONSES []
+ERRORS ["[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej)."]
+EXIT=0

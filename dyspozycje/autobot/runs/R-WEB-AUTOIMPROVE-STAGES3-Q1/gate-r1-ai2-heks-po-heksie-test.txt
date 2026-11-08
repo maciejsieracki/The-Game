@@ -1,0 +1,4 @@
+  [OK] ten sam picker przy skipWyrab: false -> wyrab jest (1 szt.)
+
+ai2-heks-po-heksie-test: 37 passed, 0 failed
+EXIT=0

@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Pismo** — epoka **Brąz** (poziom 4), koszt **90** PN (tempo Szybka), wymaga: Garncarstwo + Wymiana. Odblokowuje budynki: Biblioteka.
+**Pismo** — epoka **Brąz** (poziom 4), koszt **90** PN (tempo Szybka), wymaga: Garncarstwo + Wymiana. Odblokowuje budynki: Biblioteka, Spichlerz Królewski.
 
 ---
 
@@ -29,7 +29,7 @@
 - **Koszt nauki:** 90 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
-- **Budynki:** Biblioteka
+- **Budynki:** Biblioteka, Spichlerz Królewski
 - **Jednostki:** brak
 - **Ulepszenia terenu:** brak
 - **Surowce:** brak

@@ -1,0 +1,4 @@
+FAIL: (g5) handleSelectedUnitHudAction: DOKŁADNIE 4 wywołania clearPlannedMarch(u.id, true) — skip/garnizon/sentry/scout-explore (got 5)
+FAIL: (g8) DOKŁADNIE 33 wystąpienia "clearPlayerUnitSelection(" w KODZIE main.ts, bez komentarzy (1 definicja + 32 realne wywołania) — zgodne z przeglądem Operatora (got 35)
+march-attack-queue-persist-test: 55 passed, 2 failed
+EXIT=1

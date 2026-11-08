@@ -1,0 +1,23 @@
+PASS A1-ram-gate-mury-none
+PASS A1-ram-gate-mury-attackMove
+PASS A1-ram-gate-mury-attack
+PASS A2-tower-climb-mury-none
+PASS A2-tower-climb-mury-attackMove
+PASS B1-inf-charge-nomachines-mury-attackMove
+PASS B1-inf-charge-nomachines-mury-attack
+PASS B2-cav-charge-nomachines-mury-attackMove
+PASS B2-cav-charge-nomachines-mury-attack
+PASS B3-mixed-ram-army-mury
+PASS C1-after-gate-breach-army-enters-mury
+PASS A1-ram-gate-palisada-none
+PASS A1-ram-gate-palisada-attackMove
+PASS A1-ram-gate-palisada-attack
+PASS A2-tower-climb-palisada-none
+PASS A2-tower-climb-palisada-attackMove
+PASS B1-inf-charge-nomachines-palisada-attackMove
+PASS B1-inf-charge-nomachines-palisada-attack
+PASS B2-cav-charge-nomachines-palisada-attackMove
+PASS B2-cav-charge-nomachines-palisada-attack
+PASS B3-mixed-ram-army-palisada
+SUMMARY PO (mury+palisada) 21/21 PASS
+EXIT=0

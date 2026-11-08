@@ -1,0 +1,9 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=8 terrain=49 landSea=628 relief=620 coast=117 riversMain=17709 riversFill=20357 forest=30 deposits=71 starts=393 total=39981
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=59 landSea=614 relief=888 coast=316 riversMain=3524 riversFill=769 forest=32 deposits=54 starts=278 total=6536
+FAIL: pangea: ląd 52.6% ~ 60%
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=29 landSea=392 relief=579 coast=113 riversMain=17245 riversFill=77974 forest=31 deposits=69 starts=424 total=96860
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+EXIT=124

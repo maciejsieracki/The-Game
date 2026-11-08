@@ -1,0 +1,63 @@
+(1) K2 „Zrownowazone” + rzeka + las + „Tylko pola z obywatelami” ON: wycinka na heksie rzeki w <= 4 turach (jak K1)
+  [OK] zywnosc: wycinka rzeczna w turze 1 (log: 0:farma@12,12 1:wyrab@12,11 1:wyrab@12,10 1:wyrab@13,10 1:wyrab@11,12 1:wyrab@13,11 1:wyrab@11,11 1:wyrab@14,10 1:wyrab@11,10 1:wyrab@12,9)
+  [OK] zrownowazone: wycinka rzeczna w turze 1 (log: 0:farma@12,12 1:wyrab@12,11 1:wyrab@12,10 1:wyrab@13,10 1:wyrab@11,12 1:wyrab@13,11 1:wyrab@11,11 1:wyrab@14,10 1:wyrab@11,10 1:wyrab@12,9)
+(1b) K2: „Wolno wycinac las” OFF (skipWyrab) nadal blokuje cala wycinke (U-6 = A)
+  [OK] K2 + skipWyrab: brak wycinki (log: 0:farma@12,12 1:bydlo@12,12 2:irygacja@12,12 3:droga@11,12 3:droga_brukowana@11,12 3:droga@12,13 3:droga_brukowana@12,13 3:droga@13,12 3:droga_brukowana@13,12)
+(1c) K2: las BEZ rzeki poza polami obywateli nadal NIE jest wycinany (filtr zachowany)
+  [OK] K2: brak wycinki poza polami obywateli (0; log: 0:farma@12,12 0:wyrab@11,12 0:wyrab@12,13 0:wyrab@13,12 1:farma@11,12 1:farma@12,13 1:farma@13,12 2:droga@11,12 2:droga_brukowana@11,12 2:droga@12,13)
+(2) po wycince lasu na/przy rzece farma powstaje na wycietym heksie BEZ obywatela (K1 i K2, filtr ON)
+  [OK] zywnosc: 3 heksy rzeczne wyciete (3; log: 0:farma@12,12 1:wyrab@12,11 1:wyrab@12,10 1:wyrab@13,10 1:wyrab@11,12 1:wyrab@13,11 1:wyrab@11,11 1:wyrab@14,10 1:wyrab@11,10 1:wyrab@12,9)
+  [OK] zywnosc: kazdy wyciety heks rzeczny dostaje farme bez obywatela (3/3)
+  [OK] zywnosc: farmy rzeczne stoja na heksach BEZ obywatela
+  [OK] zrownowazone: 3 heksy rzeczne wyciete (3; log: 0:farma@12,12 1:wyrab@12,11 1:wyrab@12,10 1:wyrab@13,10 1:wyrab@11,12 1:wyrab@13,11 1:wyrab@11,11 1:wyrab@14,10 1:wyrab@11,10 1:wyrab@12,9)
+  [OK] zrownowazone: kazdy wyciety heks rzeczny dostaje farme bez obywatela (3/3)
+  [OK] zrownowazone: farmy rzeczne stoja na heksach BEZ obywatela
+(2b) wyjatek zawezony: reszta ulepszen nadal za filtrem „Tylko pola z obywatelami”
+  [OK] zywnosc: poza farma/wycinka nic bez obywatela (naruszen: 0; nic)
+  [OK] zywnosc: farma bez obywatela TYLKO na heksie na/przy rzece (gdzie indziej: 0)
+  [OK] zrownowazone: poza farma/wycinka nic bez obywatela (naruszen: 0; nic)
+  [OK] zrownowazone: farma bez obywatela TYLKO na heksie na/przy rzece (gdzie indziej: 0)
+(2c) „Wolno wycinac las” OFF: wyjatek farmy NIE dziala (wyciecie wylaczone) — heks rzeki bez lasu i bez obywatela bez farmy
+  [OK] zywnosc: skipWyrab -> brak farmy na heksie rzeki bez obywatela (log: 0:farma@12,12 0:farma@11,12 1:bydlo@12,12 1:bydlo@11,12 2:irygacja@12,12 2:irygacja@11,12 3:farma@12,13 3:farma@13,12)
+  [OK] zrownowazone: skipWyrab -> brak farmy na heksie rzeki bez obywatela (log: 0:farma@12,12 0:farma@11,12 1:bydlo@12,12 1:bydlo@11,12 2:irygacja@12,12 2:irygacja@11,12 3:farma@12,13 3:farma@13,12 4:droga@11,12 4:droga_brukowana@11,12)
+(2e) wyjatek tylko dla heksow WYCIETYCH przez automat: naturalnie otwarte pole przy rzece (bez lasu, bez obywatela) NIE dostaje farmy
+  [OK] zywnosc: brak farm bez obywatela na otwartych polach przy rzece (0; log: 0:farma@12,12 0:farma@11,12 1:bydlo@12,12 1:bydlo@11,12 2:irygacja@12,12 2:irygacja@11,12 3:farma@12,13 3:farma@13,12)
+  [OK] zrownowazone: brak farm bez obywatela na otwartych polach przy rzece (0; log: 0:farma@12,12 0:farma@11,12 1:bydlo@12,12 1:bydlo@11,12 2:irygacja@12,12 2:irygacja@11,12 3:farma@12,13 3:farma@13,12 4:droga@11,12 4:droga_brukowana@11,12)
+(2c2) „Wolno wycinac las” wylaczone PO wycince: wyjatek farmy gasnie (brak farm bez obywatela na wycietych heksach od tury wylaczenia)
+  [OK] zywnosc: wyciete przed wylaczeniem 3, farm bez obywatela po wylaczeniu 0 (log: 0:farma@12,12 1:wyrab@12,11 1:wyrab@12,10 1:wyrab@13,10 1:wyrab@11,12 1:wyrab@13,11 1:wyrab@11,11 1:wyrab@14,10 1:wyrab@11,10 1:wyrab@12,9)
+  [OK] zrownowazone: wyciete przed wylaczeniem 3, farm bez obywatela po wylaczeniu 0 (log: 0:farma@12,12 1:wyrab@12,11 1:wyrab@12,10 1:wyrab@13,10 1:wyrab@11,12 1:wyrab@13,11 1:wyrab@11,11 1:wyrab@14,10 1:wyrab@11,10 1:wyrab@12,9)
+(2d) profil „surowce” NIE dostaje wyjatku farmy (zakres: Zywnosc i Zrownowazone)
+  [OK] surowce: brak farmy rzecznej bez obywatela (log: 0:farma@11,12 1:bydlo@11,12 2:irygacja@11,12 3:farma@12,13 3:farma@13,12)
+(3) brak limitu fortow/posterunkow na miasto: pop 5, kilka posterunkow przy granicy -> wiecej niz 1 (profil „infrastruktura”)
+  [info] pop 5, 12 wywolan: posterunek=11, fort=12 (dawny sufit: 1 + 1)
+  [OK] wiecej niz dawny sufit 1 posterunek + 1 fort (jest 11+12)
+  [OK] przynajmniej jeden z kluczy przekracza 1 sztuke na miasto
+(4) wskaznik niewydanego budzetu: czysta funkcja zasilana prawdziwym surplusReport pickera
+  [OK] eksport unspentBudgetWarning istnieje
+  [info] filtr ON: picks=droga@11,12 droga_brukowana@11,12 droga@12,13 droga_brukowana@12,13 droga@13,12 droga_brukowana@13,12, anyCandidate=false, czeka=87
+  [OK] filtr ON, brak kandydatow przy obywatelach: wskaznik jest, X=87 pol czeka
+  [OK] stary raport nadwyzki (surplus) nadal true w tym scenariuszu (kompatybilnosc)
+  [OK] filtr OFF: automat wydaje, wskaznika brak
+  [OK] filtr (zglaszany) ON, ale sa kandydaci: wskaznika brak (warunek ustapil)
+  [OK] wskaznik znika po wylaczeniu filtra (onlyWorkedOn=false)
+  [OK] pula <= rezerwa+prog: wskaznika brak
+  [OK] niedobor surowca (kamien): wskaznika brak (deficitActive=true, picks=droga@11,12 droga_brukowana@11,12 droga@12,13 droga_brukowana@12,13 droga@13,12 droga_brukowana@13,12)
+  [OK] brak raportu: null
+  [OK] rezerwa Pracy bez zmian (30)
+(4b) UI: realny render `createBuildModeHud` w Chromium — wskaznik pojawia sie / znika, mobile bez poziomego przewijania, klik
+  [OK] playwright dostepny
+  [info] {"present":true,"text":"Budżet niewydany: włączony filtr „Tylko pola z obywatelami” (7 pól czeka). Wyłącz filtr, by go wydać.","w":252,"h":83,"belowSlider":true,"btnW":71,"btnH":22,"btnCx":86,"btnCy":307,"docScrollW":320,"elScrollW":268,"elClientW":268,"elementAtBtn":true}
+  [OK] wskaznik jest w DOM i ma niezerowy prostokat
+  [OK] tekst wskaznika zgodny z decyzja wlasciciela (jest: "Budżet niewydany: włączony filtr „Tylko pola z obywatelami” (7 pól czeka). Wyłącz filtr, by go wydać.")
+  [OK] wskaznik jest przy suwaku „Z puli imperium na prace automatyczna” (pod nim)
+  [OK] mobile 320 px: brak poziomego przewijania (doc 320, panel 268/268)
+  [OK] przycisk „Wyłącz filtr” jest klikalny (elementFromPoint)
+  [OK] klik „Wyłącz filtr” wywolal callback (filtr wylaczony)
+  [OK] wskaznik ZNIKA po wylaczeniu filtra (re-render)
+  [OK] wielokrotny render = dokladnie jeden element wskaznika (1)
+  [OK] warunek ustapil (null) -> wskaznik znika
+  [OK] 0 bledow strony (0: )
+  [info] zrzuty: /home/user/The-Game/.claude/worktrees/wf_c276cad6-a0f-1/dyspozycje/autobot/runs/R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1/evidence
+
+44 OK, 0 FAIL
+EXIT=0

@@ -1,0 +1,112 @@
+{
+ "threshold": 0.9,
+ "rows": [
+  {
+   "dpr": 1,
+   "case": "native(pr=DPR,noAA)",
+   "sharp": 210,
+   "ratio": 1
+  },
+  {
+   "dpr": 1,
+   "case": "medium LOD0",
+   "effPR": 1,
+   "sharp": 210,
+   "ratio": 1,
+   "asserted": true
+  },
+  {
+   "dpr": 1,
+   "case": "medium LOD1",
+   "effPR": 1,
+   "sharp": 210,
+   "ratio": 1,
+   "asserted": false
+  },
+  {
+   "dpr": 1,
+   "case": "medium LOD2",
+   "effPR": 0.975,
+   "sharp": 83.4,
+   "ratio": 0.397,
+   "asserted": false
+  },
+  {
+   "dpr": 1,
+   "case": "medium LOD3",
+   "effPR": 0.75,
+   "sharp": 58.7,
+   "ratio": 0.279,
+   "asserted": false
+  },
+  {
+   "dpr": 2,
+   "case": "native(pr=DPR,noAA)",
+   "sharp": 126.6,
+   "ratio": 1
+  },
+  {
+   "dpr": 2,
+   "case": "medium LOD0",
+   "effPR": 1.5,
+   "sharp": 35.4,
+   "ratio": 0.279,
+   "asserted": true
+  },
+  {
+   "dpr": 2,
+   "case": "medium LOD1",
+   "effPR": 1.275,
+   "sharp": 24.3,
+   "ratio": 0.192,
+   "asserted": false
+  },
+  {
+   "dpr": 2,
+   "case": "medium LOD2",
+   "effPR": 0.975,
+   "sharp": 13.3,
+   "ratio": 0.105,
+   "asserted": false
+  },
+  {
+   "dpr": 2,
+   "case": "medium LOD3",
+   "effPR": 0.75,
+   "sharp": 7.6,
+   "ratio": 0.06,
+   "asserted": false
+  },
+  {
+   "dpr": 2,
+   "case": "ALT pr1.5+AA LOD0",
+   "effPR": 1.5,
+   "sharp": 19.6,
+   "ratio": 0.155
+  },
+  {
+   "dpr": 2,
+   "case": "ruch medium LOD0 offX=0.13",
+   "effPR": 2,
+   "sharp": 129.7,
+   "ratio": 1.024
+  },
+  {
+   "dpr": 2,
+   "case": "ruch medium LOD0 offX=0.37",
+   "effPR": 2,
+   "sharp": 144,
+   "ratio": 1.137
+  },
+  {
+   "dpr": 2,
+   "case": "ruch medium LOD0 offX=0.71",
+   "effPR": 2,
+   "sharp": 162,
+   "ratio": 1.28
+  }
+ ],
+ "fails": [
+  "DPR2 medium LOD0 ratio 0.279 < 0.9"
+ ]
+}

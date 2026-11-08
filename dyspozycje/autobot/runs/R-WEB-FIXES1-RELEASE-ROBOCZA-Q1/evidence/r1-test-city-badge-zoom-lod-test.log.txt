@@ -1,0 +1,85 @@
+city-badge-zoom-lod-test (BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM)
+
+
+[1] progi LOD z odległości kamery
+PASS: próg poziomu 1 = 11 j.św. (od tej odległości nic się nie rozciąga) (got=11 want=11)
+PASS: próg poziomu 2 = 5,5 j.św. (~1,9× rozciągnięcia) (got=5.5 want=5.5)
+PASS: maksymalne oddalenie → poziom 0 (dzisiejsza rozdzielczość) (got=0 want=0)
+PASS: daleko (20 j.św.) → poziom 0 (got=0 want=0)
+PASS: dokładnie na progu 11 → jeszcze poziom 0 (got=0 want=0)
+PASS: tuż poniżej 11 → poziom 1 (got=1 want=1)
+PASS: dokładnie na progu 5,5 → jeszcze poziom 1 (got=1 want=1)
+PASS: tuż poniżej 5,5 → poziom 2 (got=2 want=2)
+PASS: minDist gry (8/3 ≈ 2,67 j.św.) → poziom 2 (najostrzejszy) (got=2 want=2)
+PASS: niepoprawna odległość → poziom 0, nigdy droższy (got=0 want=0)
+PASS: Infinity → poziom 0 (got=0 want=0)
+PASS: poziom 0 → mnożnik 1 (bez zmian względem dziś) (got=1 want=1)
+PASS: poziom 1 → ×2 pikseli kanwy (got=2 want=2)
+PASS: poziom 2 → ×3 pikseli kanwy (got=3 want=3)
+PASS: poziom spoza zakresu → mnożnik 1 (bezpieczny fallback) (got=1 want=1)
+
+[2] poziom LOD w kluczu cache tekstury
+PASS: brak pola lodLevel = poziom 0 → DOKŁADNIE dzisiejszy klucz (zero regresji) (got="Ateny|5|d1|cgrecy|p-|g-|w0|h0|cs0|e-|k0|l0" want="Ateny|5|d1|cgrecy|p-|g-|w0|h0|cs0|e-|k0|l0")
+PASS: stary prefiks klucza nietknięty
+PASS: segment LOD jest OSTATNI (po nim rozpoznaje poziom sprzątanie cache)
+PASS: poziom 1 → segment „l1” na końcu klucza
+PASS: poziom 2 → segment „l2” na końcu klucza
+PASS: przejście progu 0→1 zmienia klucz (inaczej stara, rozmyta tekstura z cache)
+PASS: przejście progu 1→2 zmienia klucz
+PASS: LOD nie zjada pozostałych segmentów — populacja dalej rozróżnia klucze
+
+[3] rozdzielczość kanwy: poziom 0 = dziś, wyższe = ostrzej, świat bez zmian
+PASS: poziom 0: szerokość kanwy identyczna jak dziś (zero regresji) (got=179 want=179)
+PASS: poziom 0: wysokość kanwy identyczna jak dziś (got=48 want=48)
+PASS: poziom 1: DOKŁADNIE ×2 pikseli w poziomie (got=358 want=358)
+PASS: poziom 1: DOKŁADNIE ×2 pikseli w pionie (got=96 want=96)
+PASS: poziom 2: DOKŁADNIE ×3 pikseli w poziomie (got=537 want=537)
+PASS: poziom 2: DOKŁADNIE ×3 pikseli w pionie (got=144 want=144)
+PASS: bliżej = więcej pikseli, monotonicznie
+PASS: proporcja kanwy bez zmian na poziomie 1 (świat ten sam)
+PASS: proporcja kanwy bez zmian na poziomie 2
+PASS: ten sam komplet napisów na obu poziomach (rośnie gęstość, nie treść/układ)
+PASS: kontekst przeskalowany ×3 — rysowanie dalej w px CSS (got=3 want=3)
+PASS: dpr 2, poziom 0: dalej dokładnie dzisiejsze zachowanie (×dpr) (got=358 want=358)
+PASS: dpr 2, poziom 1: 2×2 = ×4 (got=716 want=716)
+PASS: dpr 2, poziom 2: 2×3 = 6 przycięte sufitem do ×4 (got=716 want=716)
+PASS: dpr 3, poziom 2: sufit trzyma ×4, nie ×9 (got=716 want=716)
+
+[4] sprite: nowa tekstura na nowym poziomie, wielkość w świecie bez zmian
+PASS: dwa poziomy → dwie osobne tekstury w cache (klucz je rozróżnia) (got=2 want=2)
+PASS: poziom 2 dostaje INNĄ teksturę niż poziom 0
+PASS: tekstura poziomu 2 ma ×3 pikseli w poziomie
+PASS: wysokość sprite w świecie = worldH 0,52 j.św. (got=0.52 want=0.52)
+PASS: poziom 2 NIE zmienia wysokości plakietki w świecie (got=0.52 want=0.52)
+PASS: szerokość plakietki w świecie też bez zmian
+
+[4b] przemalowanie po dociągnięciu sygnetu trzyma poziom LOD i podnosi needsUpdate
+PASS: tekstura przed przemalowaniem: ×3 (poziom 2) (got=564 want=564)
+PASS: sygnet zamówiony i czeka w kolejce (kontrola harnessu)
+PASS: po przemalowaniu ustawiono tex.needsUpdate (three.js: version++)
+PASS: przemalowanie ZOSTAJE w rozdzielczości poziomu 2 (nie wraca do bazowej) (got=564 want=564)
+PASS: kanwa po przemalowaniu dalej ×3 względem poziomu 0 (got=564 want=564)
+
+[5] CityRenderer: przełączenie poziomu z odległości kamery
+PASS: start: poziom 0 (kamera nie zgłosiła jeszcze odległości) (got=0 want=0)
+PASS: plakietka powstała (kontrola harnessu)
+PASS: ta sama strefa odległości → false, zero przemalowań (got=false want=false)
+PASS: dalej powyżej progu 11 → false (got=false want=false)
+PASS: bez zmiany poziomu tekstura jest ta sama (brak pracy co klatkę)
+PASS: zbliżenie do minDist → zmiana poziomu, wywołujący ma odświeżyć (got=true want=true)
+PASS: poziom 2 po zbliżeniu (got=2 want=2)
+PASS: po przejściu progu plakietka dostaje NOWĄ teksturę
+PASS: tekstura z bliska ma ×3 pikseli — sedno naprawy (got=447 want=447)
+PASS: kolejna klatka w tej samej strefie → już bez pracy (got=false want=false)
+
+[5b] cache trzyma tylko bieżący poziom (koszt się przenosi, nie kumuluje)
+PASS: cache niepusty (kontrola harnessu)
+PASS: po przejściu na poziom 2 w cache zostają WYŁĄCZNIE tekstury poziomu 2
+PASS: tekstura ŻYWEGO sprite NIE została zwolniona przy sprzątaniu
+PASS: oddalenie z powrotem → zmiana poziomu (got=true want=true)
+PASS: po powrocie na poziom 0 w cache zostają WYŁĄCZNIE tekstury poziomu 0
+PASS: liczba tekstur w cache stała — koszt przeniesiony, nie skumulowany (got=2 want=2)
+PASS: z powrotem daleko → z powrotem dzisiejsza rozdzielczość (got=149 want=149)
+PASS: plakietka drugiego miasta też przeżyła sprzątanie (nie tylko pierwsza z listy)
+
+67 passed, 0 failed

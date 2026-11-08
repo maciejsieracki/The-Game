@@ -1,0 +1,9 @@
+hooks ok
+found true
+city {"id":"city0","ownerId":0,"startCityState":false,"q":47,"r":24,"civTypeId":null}
+focus zrown true
+wyrab false
+turn 21
+placed hexes 7 counts {"kamieniolom":1,"farma":4,"tartak":1,"bydlo":3,"irygacja":3,"warzelnia_soli":1,"lodzie_rybackie":1}
+center ["farma","bydlo","irygacja"]
+[NewGame] Mapa: 108x74 seed=778899 typ=kontynenty rywale=2 typy=3

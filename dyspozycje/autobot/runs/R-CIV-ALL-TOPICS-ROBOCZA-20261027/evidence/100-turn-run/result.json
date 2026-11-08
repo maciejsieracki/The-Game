@@ -1,0 +1,752 @@
+{
+  "ok": true,
+  "elapsedMs": 656830,
+  "checkpoints": [
+    {
+      "i": 10,
+      "world": {
+        "citiesLen": 2,
+        "unitsLen": 5,
+        "turn": 11
+      },
+      "ms": 96817,
+      "turnMs": {
+        "last10": [
+          4370,
+          4207,
+          3621,
+          3781,
+          3672,
+          3874,
+          3673,
+          3931,
+          3496,
+          3509
+        ],
+        "average": 3813.4,
+        "max": 4370
+      },
+      "memory": {
+        "usedBytes": 192899906,
+        "totalBytes": 200078954,
+        "limitBytes": 4395630592
+      },
+      "errors": 0,
+      "consoleErrors": 2
+    },
+    {
+      "i": 20,
+      "world": {
+        "citiesLen": 2,
+        "unitsLen": 8,
+        "turn": 21
+      },
+      "ms": 151824,
+      "turnMs": {
+        "last10": [
+          3902,
+          3701,
+          3793,
+          3232,
+          3817,
+          4154,
+          3739,
+          3905,
+          3552,
+          3808
+        ],
+        "average": 3760.3,
+        "max": 4154
+      },
+      "memory": {
+        "usedBytes": 206610038,
+        "totalBytes": 231983874,
+        "limitBytes": 4395630592
+      },
+      "errors": 0,
+      "consoleErrors": 2
+    },
+    {
+      "i": 30,
+      "world": {
+        "citiesLen": 2,
+        "unitsLen": 10,
+        "turn": 31
+      },
+      "ms": 210590,
+      "turnMs": {
+        "last10": [
+          3999,
+          4328,
+          3783,
+          3897,
+          3756,
+          4085,
+          3807,
+          3688,
+          3720,
+          4032
+        ],
+        "average": 3909.5,
+        "max": 4328
+      },
+      "memory": {
+        "usedBytes": 200850152,
+        "totalBytes": 236755884,
+        "limitBytes": 4395630592
+      },
+      "errors": 0,
+      "consoleErrors": 2
+    },
+    {
+      "i": 40,
+      "world": {
+        "citiesLen": 2,
+        "unitsLen": 12,
+        "turn": 41
+      },
+      "ms": 268984,
+      "turnMs": {
+        "last10": [
+          3898,
+          3769,
+          3650,
+          4187,
+          4127,
+          3916,
+          4021,
+          4018,
+          3571,
+          3688
+        ],
+        "average": 3884.5,
+        "max": 4187
+      },
+      "memory": {
+        "usedBytes": 219056599,
+        "totalBytes": 271606323,
+        "limitBytes": 4395630592
+      },
+      "errors": 0,
+      "consoleErrors": 2
+    },
+    {
+      "i": 50,
+      "world": {
+        "citiesLen": 2,
+        "unitsLen": 13,
+        "turn": 51
+      },
+      "ms": 365256,
+      "turnMs": {
+        "last10": [
+          4095,
+          3976,
+          3766,
+          3667,
+          3896,
+          3708,
+          3751,
+          3650,
+          3889,
+          3905
+        ],
+        "average": 3830.3,
+        "max": 4095
+      },
+      "memory": {
+        "usedBytes": 216888828,
+        "totalBytes": 268085544,
+        "limitBytes": 4395630592
+      },
+      "errors": 0,
+      "consoleErrors": 2
+    },
+    {
+      "i": 60,
+      "world": {
+        "citiesLen": 2,
+        "unitsLen": 14,
+        "turn": 61
+      },
+      "ms": 422969,
+      "turnMs": {
+        "last10": [
+          3745,
+          3898,
+          3825,
+          3688,
+          3840,
+          4013,
+          3822,
+          3702,
+          3502,
+          3953
+        ],
+        "average": 3798.8,
+        "max": 4013
+      },
+      "memory": {
+        "usedBytes": 222901130,
+        "totalBytes": 279800906,
+        "limitBytes": 4395630592
+      },
+      "errors": 0,
+      "consoleErrors": 2
+    },
+    {
+      "i": 70,
+      "world": {
+        "citiesLen": 2,
+        "unitsLen": 15,
+        "turn": 71
+      },
+      "ms": 481289,
+      "turnMs": {
+        "last10": [
+          3795,
+          3913,
+          3979,
+          3830,
+          3805,
+          4152,
+          3553,
+          3928,
+          3825,
+          4097
+        ],
+        "average": 3887.7,
+        "max": 4152
+      },
+      "memory": {
+        "usedBytes": 212686937,
+        "totalBytes": 275830273,
+        "limitBytes": 4395630592
+      },
+      "errors": 0,
+      "consoleErrors": 2
+    },
+    {
+      "i": 80,
+      "world": {
+        "citiesLen": 2,
+        "unitsLen": 15,
+        "turn": 81
+      },
+      "ms": 539189,
+      "turnMs": {
+        "last10": [
+          3739,
+          3544,
+          3699,
+          4016,
+          3711,
+          4103,
+          3663,
+          3722,
+          3824,
+          3583
+        ],
+        "average": 3760.4,
+        "max": 4103
+      },
+      "memory": {
+        "usedBytes": 192229727,
+        "totalBytes": 268532135,
+        "limitBytes": 4395630592
+      },
+      "errors": 0,
+      "consoleErrors": 2
+    },
+    {
+      "i": 90,
+      "world": {
+        "citiesLen": 2,
+        "unitsLen": 15,
+        "turn": 91
+      },
+      "ms": 598176,
+      "turnMs": {
+        "last10": [
+          3986,
+          3686,
+          3759,
+          3913,
+          4160,
+          4188,
+          3889,
+          3699,
+          3751,
+          4144
+        ],
+        "average": 3917.5,
+        "max": 4188
+      },
+      "memory": {
+        "usedBytes": 217282454,
+        "totalBytes": 268561118,
+        "limitBytes": 4395630592
+      },
+      "errors": 0,
+      "consoleErrors": 2
+    },
+    {
+      "i": 100,
+      "world": {
+        "citiesLen": 2,
+        "unitsLen": 15,
+        "turn": 101
+      },
+      "ms": 656830,
+      "turnMs": {
+        "last10": [
+          3782,
+          3979,
+          3977,
+          3840,
+          3877,
+          4032,
+          3481,
+          3984,
+          3868,
+          3791
+        ],
+        "average": 3861.1,
+        "max": 4032
+      },
+      "memory": {
+        "usedBytes": 221608004,
+        "totalBytes": 271961564,
+        "limitBytes": 4395630592
+      },
+      "errors": 0,
+      "consoleErrors": 2
+    }
+  ],
+  "turnMs": [
+    {
+      "turn": 2,
+      "ms": 4370
+    },
+    {
+      "turn": 3,
+      "ms": 4207
+    },
+    {
+      "turn": 4,
+      "ms": 3621
+    },
+    {
+      "turn": 5,
+      "ms": 3781
+    },
+    {
+      "turn": 6,
+      "ms": 3672
+    },
+    {
+      "turn": 7,
+      "ms": 3874
+    },
+    {
+      "turn": 8,
+      "ms": 3673
+    },
+    {
+      "turn": 9,
+      "ms": 3931
+    },
+    {
+      "turn": 10,
+      "ms": 3496
+    },
+    {
+      "turn": 11,
+      "ms": 3509
+    },
+    {
+      "turn": 12,
+      "ms": 3902
+    },
+    {
+      "turn": 13,
+      "ms": 3701
+    },
+    {
+      "turn": 14,
+      "ms": 3793
+    },
+    {
+      "turn": 15,
+      "ms": 3232
+    },
+    {
+      "turn": 16,
+      "ms": 3817
+    },
+    {
+      "turn": 17,
+      "ms": 4154
+    },
+    {
+      "turn": 18,
+      "ms": 3739
+    },
+    {
+      "turn": 19,
+      "ms": 3905
+    },
+    {
+      "turn": 20,
+      "ms": 3552
+    },
+    {
+      "turn": 21,
+      "ms": 3808
+    },
+    {
+      "turn": 22,
+      "ms": 3999
+    },
+    {
+      "turn": 23,
+      "ms": 4328
+    },
+    {
+      "turn": 24,
+      "ms": 3783
+    },
+    {
+      "turn": 25,
+      "ms": 3897
+    },
+    {
+      "turn": 26,
+      "ms": 3756
+    },
+    {
+      "turn": 27,
+      "ms": 4085
+    },
+    {
+      "turn": 28,
+      "ms": 3807
+    },
+    {
+      "turn": 29,
+      "ms": 3688
+    },
+    {
+      "turn": 30,
+      "ms": 3720
+    },
+    {
+      "turn": 31,
+      "ms": 4032
+    },
+    {
+      "turn": 32,
+      "ms": 3898
+    },
+    {
+      "turn": 33,
+      "ms": 3769
+    },
+    {
+      "turn": 34,
+      "ms": 3650
+    },
+    {
+      "turn": 35,
+      "ms": 4187
+    },
+    {
+      "turn": 36,
+      "ms": 4127
+    },
+    {
+      "turn": 37,
+      "ms": 3916
+    },
+    {
+      "turn": 38,
+      "ms": 4021
+    },
+    {
+      "turn": 39,
+      "ms": 4018
+    },
+    {
+      "turn": 40,
+      "ms": 3571
+    },
+    {
+      "turn": 41,
+      "ms": 3688
+    },
+    {
+      "turn": 42,
+      "ms": 4095
+    },
+    {
+      "turn": 43,
+      "ms": 3976
+    },
+    {
+      "turn": 44,
+      "ms": 3766
+    },
+    {
+      "turn": 45,
+      "ms": 3667
+    },
+    {
+      "turn": 46,
+      "ms": 3896
+    },
+    {
+      "turn": 47,
+      "ms": 3708
+    },
+    {
+      "turn": 48,
+      "ms": 3751
+    },
+    {
+      "turn": 49,
+      "ms": 3650
+    },
+    {
+      "turn": 50,
+      "ms": 3889
+    },
+    {
+      "turn": 51,
+      "ms": 3905
+    },
+    {
+      "turn": 52,
+      "ms": 3745
+    },
+    {
+      "turn": 53,
+      "ms": 3898
+    },
+    {
+      "turn": 54,
+      "ms": 3825
+    },
+    {
+      "turn": 55,
+      "ms": 3688
+    },
+    {
+      "turn": 56,
+      "ms": 3840
+    },
+    {
+      "turn": 57,
+      "ms": 4013
+    },
+    {
+      "turn": 58,
+      "ms": 3822
+    },
+    {
+      "turn": 59,
+      "ms": 3702
+    },
+    {
+      "turn": 60,
+      "ms": 3502
+    },
+    {
+      "turn": 61,
+      "ms": 3953
+    },
+    {
+      "turn": 62,
+      "ms": 3795
+    },
+    {
+      "turn": 63,
+      "ms": 3913
+    },
+    {
+      "turn": 64,
+      "ms": 3979
+    },
+    {
+      "turn": 65,
+      "ms": 3830
+    },
+    {
+      "turn": 66,
+      "ms": 3805
+    },
+    {
+      "turn": 67,
+      "ms": 4152
+    },
+    {
+      "turn": 68,
+      "ms": 3553
+    },
+    {
+      "turn": 69,
+      "ms": 3928
+    },
+    {
+      "turn": 70,
+      "ms": 3825
+    },
+    {
+      "turn": 71,
+      "ms": 4097
+    },
+    {
+      "turn": 72,
+      "ms": 3739
+    },
+    {
+      "turn": 73,
+      "ms": 3544
+    },
+    {
+      "turn": 74,
+      "ms": 3699
+    },
+    {
+      "turn": 75,
+      "ms": 4016
+    },
+    {
+      "turn": 76,
+      "ms": 3711
+    },
+    {
+      "turn": 77,
+      "ms": 4103
+    },
+    {
+      "turn": 78,
+      "ms": 3663
+    },
+    {
+      "turn": 79,
+      "ms": 3722
+    },
+    {
+      "turn": 80,
+      "ms": 3824
+    },
+    {
+      "turn": 81,
+      "ms": 3583
+    },
+    {
+      "turn": 82,
+      "ms": 3986
+    },
+    {
+      "turn": 83,
+      "ms": 3686
+    },
+    {
+      "turn": 84,
+      "ms": 3759
+    },
+    {
+      "turn": 85,
+      "ms": 3913
+    },
+    {
+      "turn": 86,
+      "ms": 4160
+    },
+    {
+      "turn": 87,
+      "ms": 4188
+    },
+    {
+      "turn": 88,
+      "ms": 3889
+    },
+    {
+      "turn": 89,
+      "ms": 3699
+    },
+    {
+      "turn": 90,
+      "ms": 3751
+    },
+    {
+      "turn": 91,
+      "ms": 4144
+    },
+    {
+      "turn": 92,
+      "ms": 3782
+    },
+    {
+      "turn": 93,
+      "ms": 3979
+    },
+    {
+      "turn": 94,
+      "ms": 3977
+    },
+    {
+      "turn": 95,
+      "ms": 3840
+    },
+    {
+      "turn": 96,
+      "ms": 3877
+    },
+    {
+      "turn": 97,
+      "ms": 4032
+    },
+    {
+      "turn": 98,
+      "ms": 3481
+    },
+    {
+      "turn": 99,
+      "ms": 3984
+    },
+    {
+      "turn": 100,
+      "ms": 3868
+    },
+    {
+      "turn": 101,
+      "ms": 3791
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (File not found)",
+    "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "httpErrors": [
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:8765/favicon.ico"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:8765/favicon.ico"
+    }
+  ],
+  "artifact": {
+    "url": "http://127.0.0.1:8765/Gra-ROBOCZA.html",
+    "bundleSha256": "38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692"
+  },
+  "notes": [
+    "Two local static-server requests for /favicon.ico returned 404; game bundle itself returned HTTP 200.",
+    "Heap measurements use Chromium performance.memory only and do not cover total process/GPU memory or listener/resource counts.",
+    "Victory check was disabled and player units were pulled home before each turn; visible battles/audience dialogs were handled through normal UI buttons."
+  ]
+}

@@ -1,0 +1,18 @@
+PASS: StateFrame: poza zakresem każdy odczyt jest świeży
+PASS: StateFrame: w zakresie jedno getState(), ta sama migawka; po zakresie znów świeżo
+PASS: StateFrame: HUD pokazuje aktualne dane po mutacji stanu PRZED updateHud (kolejne odświeżenia)
+PASS: StateFrame: zagnieżdżone odświeżenie po mutacji NIE renderuje starej migawki (zarzut 5)
+PASS: StateFrame: wyjątek w zakresie zamyka ramkę (brak przecieku starej migawki)
+PASS: StateFrame: invalidate() wymusza nowy odczyt w obrębie zakresu
+PASS: ScopeMemo: poza zakresem zawsze liczy od nowa
+PASS: ScopeMemo: w zakresie liczy raz per klucz; wynik równy wersji bez memo
+PASS: ScopeMemo: kopia chroni wpis przed zanieczyszczeniem; nowy zakres nie widzi starych wpisów po mutacji świata
+PASS: ScopeMemo: zagnieżdżony run współdzieli zakres; wyjątek zamyka zakres
+PASS: hud.ts: getState() wołane tylko przez StateFrame; updateHud = hudFrame.run
+PASS: main.ts: memo właściciela przez createScopeMemo; zwracane kolekcje kopiowane
+PASS: main.ts: odświeżenie HUD D1b idzie przez ramkę zdarzeń; zdarzenia kopiowane
+PASS: main.ts: siatka granic przebudowywana tylko przy zmianie podpisu zawartości
+PASS: rangeOverlay.ts: siatka granic czyta z mapy WYŁĄCZNIE istnienie heksu (rzeźba terenu nie wpływa na podpis, zarzut 7)
+
+WYNIK: 15 PASS, 0 FAIL
+EXIT=0

@@ -1,0 +1,37 @@
+PASS: (0) ENTITY_CARD_CSS zawiera regułę .entity-card-action
+PASS: (0) ENTITY_CARD_CSS zawiera regułę .entity-card-action-primary
+PASS: (0) ENTITY_CARD_CSS zawiera regułę .entity-card-action-secondary
+PASS: (0) ENTITY_CARD_CSS resetuje natywny wygląd <button> dla przycisków akcji
+PASS: (0) blok ma kotwicę początkową i końcową dla mutacji (E)
+[entity-card-action-buttons-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+PASS: fixture: tech.json ma co najmniej 1 technologię do testu
+PASS: (A) przycisk primary istnieje i jest <button>
+PASS: (A) przycisk secondary istnieje i jest <button>
+PASS: (A) primary NIE ma natywnego wyglądu przeglądarki (szare tło + cursor:default)
+PASS: (A) secondary NIE ma natywnego wyglądu przeglądarki (szare tło + cursor:default)
+PASS: (A) primary ma język wypełnionego przycisku karty (gradient, radius 8px, uppercase, pointer, padding 18px)
+PASS: (A) secondary ma język wypełnionego przycisku karty (gradient, radius 8px, uppercase, pointer, padding 18px)
+PASS: (A) primary ma realny rozmiar klikalny (nie zapadnięty do zera)
+PASS: (C) primary = wypełnienie złotym gradientem z tokenu --tg-btn-primary
+PASS: (C) primary = ciemny atrament na złocie (--tg-btn-primary-ink)
+PASS: (C) secondary = stonowane ciemne tło (nie złoty gradient)
+PASS: (C) secondary = złoty tekst (--tg-gold-primary), odwrotnie niż primary
+PASS: (C) primary i secondary są WIZUALNIE ROZRÓŻNIALNE (inne tło ORAZ inny kolor tekstu)
+PASS: (C) primary jest cięższy typograficznie niż secondary (700 vs 600)
+PASS: (D) żywy popup odkrycia renderuje 2 przyciski akcji z klasami primary/secondary
+PASS: (D) "Rozpocznij badanie" w żywym popupie NIE jest natywnym przyciskiem przeglądarki
+PASS: (D) "Rozpocznij badanie" w żywym popupie ma pełny język przycisku karty
+PASS: (D) "Otwórz drzewo" w żywym popupie ma pełny język przycisku karty
+PASS: (A) klik na przycisk akcji nadal wywołuje onClick (styl nie zjadł interakcji)
+FAIL: (D) elementFromPoint na środku przycisku w żywym popupie trafia w SAM PRZYCISK — {"calls":1,"hitTag":null,"hitClass":null}
+
+-- Mutacja: wycięcie bloku .entity-card-action* z arkuszy --
+PASS: (E) mutacja: primary WRACA do natywnego wyglądu przeglądarki (test realnie testuje)
+PASS: (E) mutacja: secondary WRACA do natywnego wyglądu przeglądarki
+PASS: (E) mutacja: primary i secondary stają się NIEROZRÓŻNIALNE (znika hierarchia)
+PASS: (E) mutacja: żywy popup odkrycia też wraca do natywnych przycisków
+PASS: (E) po przywróceniu arkuszy styl wraca (mutacja nie zostawiła strony w złym stanie)
+PASS: brak błędów konsoli/pageerror w trakcie renderu
+
+[entity-card-action-buttons-real-render-test] 30 pass, 1 fail
+EXIT=1

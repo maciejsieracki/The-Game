@@ -125,8 +125,8 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 | Obiekt | Zasięg terytorium (model v1) |
 |--------|------------------------------|
 | **Miasto** | ok. **10 heksów** wokół centrum |
-| **Posterunek (Strażnica)** | ok. **5 heksów** |
-| **Fort** | ok. **10 heksów** (jak miasto) |
+| **Posterunek (Strażnica)** | **3 heksy** |
+| **Fort** | **5 heksów** (teren zabezpieczony jak przy mieście) |
 
 Tylko **twoje** terytorium — tam stawiasz ulepszenia i zbierasz plony z przypisanych pól. Posterunek i fort rozszerzają zasięg **pól pracujących** dla miasta (Część VII §44.4).
 

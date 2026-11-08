@@ -1,0 +1,14 @@
+army-merge-dismiss-bounce-test (R-MERGE-DISMISS, zgloszenie blokujace 2026-07-26)
+
+/home/user/The-Game/.claude/worktrees/wf_bd96f31c-065-1/gra/tools/.army-merge-dismiss-bundle.cjs:309
+    rosterResizeObserver = new ResizeObserver(syncScrollbar);
+    ^
+
+ReferenceError: ResizeObserver is not defined
+    at showArmyMergePanel (/home/user/The-Game/.claude/worktrees/wf_bd96f31c-065-1/gra/tools/.army-merge-dismiss-bundle.cjs:309:5)
+    at simulateMoveWithMergePrompt (/home/user/The-Game/.claude/worktrees/wf_bd96f31c-065-1/gra/tools/army-merge-dismiss-bounce-test.cjs:171:5)
+    at main (/home/user/The-Game/.claude/worktrees/wf_bd96f31c-065-1/gra/tools/army-merge-dismiss-bounce-test.cjs:208:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Node.js v22.22.0
+EXIT=1

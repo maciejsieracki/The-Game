@@ -1,0 +1,29 @@
+# runda 2, PRZED naprawa (battleScene.ts == c2b65751e, hak + nowy harness): te same nowe scenariusze, mury
+FAIL A3-archers-shoot-wall-mury
+    - wieza pod murem (towersAtWall=[])
+    - lucznicy atakuja obroncow na murze po postawieniu wiezy (strzaly w cel na murze: 0, wszystkie strzaly lucznikow: 0)
+--
+FAIL D1-chariot-nomachines-mury-attackMove
+    - wrecz nie wszedl w zasieg ostrzalu przed wylomem (naruszen=2, min luz=-1)
+--
+FAIL D1b-chariot-ram-army-mury
+    - wrecz podszedl blisko granicy zasiegu (min luz = 19, wymagane <= 6)
+    - tarany uderzaja w brame (gateHp=400)
+--
+FAIL D2-move-order-melee-mury
+    - wrecz nie wszedl w zasieg ostrzalu przed wylomem (naruszen=6, min luz=-1)
+--
+FAIL D3-doctrine-aggressive-mury
+    - wrecz nie wszedl w zasieg ostrzalu przed wylomem (naruszen=43, min luz=-5)
+--
+FAIL E1b-auto-aggressive-nomachines-mury
+    - AUTO bez machin: wrecz nie wchodzi w ogien przed wylomem (naruszen=326)
+--
+FAIL E2-auto-rams-mury
+    - AUTO z taranami: brama uderzona (gateHp=400, open=false)
+--
+FAIL A2-tower-climb-mury-attackMove
+    - wieza pod murem (towersAtWall=[])
+    - piechota weszla na mur (na koronie: 0)
+    - wylom zarejestrowany (wallEverBreached)
+EXIT=1

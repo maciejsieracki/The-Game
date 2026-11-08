@@ -1,0 +1,84 @@
+# R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 — Krok 1 diagnoza + Krok 3 twardy sufit/dolna granica
+# ziarna: 7, 99, 512, 4242, 1337 · tur: 160 · 3 miasta AI CYWILIZACJI, pop 4->8 (co 4 tur), scenariusz BEZ niedoboru surowca
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=7 landSea=37 relief=29 coast=5 riversMain=77 riversFill=51 forest=2 deposits=4 starts=20 total=233
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=34 relief=22 coast=4 riversMain=39 riversFill=39 forest=1 deposits=2 starts=11 total=154
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=17 relief=20 coast=5 riversMain=21 riversFill=41 forest=1 deposits=2 starts=10 total=118
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=22 relief=20 coast=6 riversMain=43 riversFill=41 forest=1 deposits=2 starts=12 total=148
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=17 relief=19 coast=4 riversMain=33 riversFill=37 forest=1 deposits=2 starts=10 total=126
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=19 relief=18 coast=5 riversMain=25 riversFill=36 forest=1 deposits=2 starts=10 total=117
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=19 relief=17 coast=4 riversMain=35 riversFill=58 forest=1 deposits=4 starts=17 total=156
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=18 relief=17 coast=4 riversMain=18 riversFill=27 forest=1 deposits=2 starts=10 total=99
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=18 relief=17 coast=4 riversMain=35 riversFill=37 forest=1 deposits=1 starts=10 total=125
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=17 relief=18 coast=4 riversMain=32 riversFill=35 forest=1 deposits=2 starts=10 total=120
+
+### KROK 1 — PRZED (kod main.ts sprzed tego tematu, pct=MAX=100 przy nadwyzce)
+  ziarno 7: udzial puli (srednia calego biegu) 22.8% (min 0.0% / max 50.0%) · tur z udzialem 0%: 87/160 (54%) · nadwyzka: 88/160 tur, pierwsza t26 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 16.7%, 0% w 32/48 tur
+  ziarno 99: udzial puli (srednia calego biegu) 22.2% (min 0.0% / max 50.0%) · tur z udzialem 0%: 89/160 (56%) · nadwyzka: 90/160 tur, pierwsza t19 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 18.8%, 0% w 30/48 tur
+  ziarno 512: udzial puli (srednia calego biegu) 8.1% (min 0.0% / max 50.0%) · tur z udzialem 0%: 134/160 (84%) · nadwyzka: 135/160 tur, pierwsza t21 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 0.0%, 0% w 48/48 tur
+  ziarno 4242: udzial puli (srednia calego biegu) 16.9% (min 0.0% / max 50.0%) · tur z udzialem 0%: 106/160 (66%) · nadwyzka: 107/160 tur, pierwsza t13 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 9.4%, 0% w 39/48 tur
+  ziarno 1337: udzial puli (srednia calego biegu) 21.3% (min 0.0% / max 50.0%) · tur z udzialem 0%: 92/160 (58%) · nadwyzka: 93/160 tur, pierwsza t13 · OGON (ostatnie 48 tur, populacja ustabilizowana): srednia udzialu 18.8%, 0% w 30/48 tur
+
+### KROK 3 — PO (dolna granica MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA)
+  ziarno 7: udzial puli (srednia calego biegu) 25.3% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 100/160 tur, pierwsza t26 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 20.0%, 0% w 0/48 tur
+  ziarno 99: udzial puli (srednia calego biegu) 22.0% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 113/160 tur, pierwsza t19 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 17.5%, 0% w 0/48 tur
+  ziarno 512: udzial puli (srednia calego biegu) 17.8% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 130/160 tur, pierwsza t21 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 10.0%, 0% w 0/48 tur
+  ziarno 4242: udzial puli (srednia calego biegu) 23.5% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 107/160 tur, pierwsza t13 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 21.7%, 0% w 0/48 tur
+  ziarno 1337: udzial puli (srednia calego biegu) 21.8% (min 10.0% / max 50.0%) · tur z udzialem 0%: 0/160 · nadwyzka: 114/160 tur, pierwsza t13 · min udzialu PODCZAS nadwyzki: 10.0% · OGON: srednia 19.2%, 0% w 0/48 tur
+
+### OBRONA ZARZUTU 1 (Evaluator runda 1) — INNY observable niz rozkazy buildImprovement:
+# zakladanie miast AI z TEJ SAMEJ puli imperium (`evaluateFoundCityAffordance`, PRAWDZIWA
+# funkcja silnika, koszt Pracy = 20). Evaluator zmierzyl delta=0 na rozkazach
+# buildImprovement (poprawnie — patrz naglowek pliku); ponizej mierzymy INNEGO konsumenta tej
+# samej puli, TAKZE PODCZAS samej nadwyzki (gdy buildImprovement generuje 0 rozkazow).
+  PRZED ziarno 7: miast zalozonych (caly bieg) 121, z tego PODCZAS nadwyzki 81, pierwsze podczas nadwyzki: t26
+  PRZED ziarno 99: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 70, pierwsze podczas nadwyzki: t20
+  PRZED ziarno 512: miast zalozonych (caly bieg) 30, z tego PODCZAS nadwyzki 9, pierwsze podczas nadwyzki: t21
+  PRZED ziarno 4242: miast zalozonych (caly bieg) 108, z tego PODCZAS nadwyzki 79, pierwsze podczas nadwyzki: t13
+  PRZED ziarno 1337: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 74, pierwsze podczas nadwyzki: t13
+  PO    ziarno 7: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 80, pierwsze podczas nadwyzki: t26
+  PO    ziarno 99: miast zalozonych (caly bieg) 121, z tego PODCZAS nadwyzki 84, pierwsze podczas nadwyzki: t20
+  PO    ziarno 512: miast zalozonych (caly bieg) 111, z tego PODCZAS nadwyzki 87, pierwsze podczas nadwyzki: t21
+  PO    ziarno 4242: miast zalozonych (caly bieg) 123, z tego PODCZAS nadwyzki 74, pierwsze podczas nadwyzki: t13
+  PO    ziarno 1337: miast zalozonych (caly bieg) 122, z tego PODCZAS nadwyzki 85, pierwsze podczas nadwyzki: t13
+  SUMA (5 ziaren) — miast zalozonych PODCZAS nadwyzki: PRZED=313 · PO=410 · delta=97
+  SUMA (5 ziaren) — miast zalozonych w calym biegu: PRZED=503 · PO=599 · delta=96
+
+### SCENARIUSZ NIEDOBORU (regresja ZASADY 1/2, nie przedmiot tego tematu — kontrola braku regresu)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=19 relief=19 coast=4 riversMain=23 riversFill=37 forest=1 deposits=2 starts=11 total=118
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=1 landSea=17 relief=17 coast=4 riversMain=21 riversFill=33 forest=1 deposits=2 starts=10 total=105
+  ziarno 7: nadwyzka 0/160 tur (przy stalym niedoborze drewna oczekiwane ~0)
+  ziarno 99: nadwyzka 0/160 tur (przy stalym niedoborze drewna oczekiwane ~0)
+
+### WERYFIKACJA — KRYTERIA KONCA
+  OK   Krok 1: scenariusz bez niedoboru faktycznie generuje tury z nadwyzka (pomiar nie jest pusty)
+  OK   Krok 1 potwierdza objaw: PRZED, udzial puli = 0% na >=10% tur (w tym w OGONIE, populacja ustabilizowana)
+  OK   Krok 2/3: PO poprawce zero tur z udzialem puli 0% (podloga trzyma)
+  OK   Krok 2/3: PO poprawce min. udzial puli PODCZAS nadwyzki >= MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA
+  OK   Obrona zarzutu 1: podloga 10% zwieksza (SCISLE, > PRZED) liczbe miast AI zalozonych PODCZAS nadwyzki z tej samej puli imperium
+  OK   Obrona zarzutu 1: wzrost jest spojny na WIEKSZOSCI ziaren (nie artefakt jednego wyniku)
+  OK   Krok 3: twardy sufit — PRZED, udzial puli nigdy nie przekracza MAX_PROCENT_PULI_IMPERIUM (50%)
+  OK   Krok 3: twardy sufit — PO, udzial puli nigdy nie przekracza MAX_PROCENT_PULI_IMPERIUM (50%)
+  OK   Krok 4 (brak regresu): PO poprawce, PO zadzialaniu przekierowania udzial puli wyraznie ponizej baseline (<=15%, nie „prawie 50%")
+  OK   Krok 4 (brak regresu ZASADY 1): przy stalym niedoborze surowca nadwyzka jest rzadka (<=10% tur)
+
+### OBRONA ZARZUTU 2 — mutacja MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA=80 (>50)
+  surowy wzor (bez clampingu) dalby pct=20 (< sufit 50 -> pula imperium 80% > 50%)
+  PRAWDZIWY main.ts (wyciety tekst, ZASADA 3) daje pct=50 -> pula imperium 50%
+  OK   Obrona zarzutu 2: mutacja stalej > 50 NIE lamie sufitu 50% w REALNYM main.ts (clampPodzialPracyBudynkiPercent trzyma procentBudynki >= 50)
+  OK   Obrona zarzutu 2: kontrola negatywna — surowy (nieklamrowany) wzor PRZY TEJ SAMEJ mutacji faktycznie lamie sufit 50 (dowod, ze test cos realnie sprawdza, nie jest tautologia)
+  OK   main.ts faktycznie importuje i uzywa MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA w ZASADZIE 3
+
+13 PASS, 0 FAIL
+EXIT=0

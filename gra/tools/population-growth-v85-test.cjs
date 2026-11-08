@@ -119,8 +119,8 @@ const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJedn
   const ef = M.advanceEmpireFood(econ, units, states, upkeep, efParams);
   const t = ef.byOwner.get(0);
   ok(t.spichlerzStolicy === 16, 'Q2: surplus 16 in central before army');
-  ok(t.wojsko === 2, 'Q2: army costs 2 after central pool (×2 R-STAWKI)');
-  ok(states.get(0).zapasyPanstwa === 14, 'Q2: central ends at 14 (16-2 army)');
+  ok(t.wojsko === 4, 'Q2: army costs 4 after central pool (×2 R-STAWKI × ×2 FALA2)');
+  ok(states.get(0).zapasyPanstwa === 12, 'Q2: central ends at 12 (16-4 army)');
 }
 
 // --- Q6: cap 500 + magazyn +100 ---

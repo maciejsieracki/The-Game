@@ -1,0 +1,69 @@
+
+--- A: pomocnik truncatePathWithinBudget / farthestStepWithinBudget ---
+  [OK] A1 budzet 4 na plaskim terenie -> 4 heksy (got 4, want 4)
+  [OK] A2 budzet 0 -> brak ruchu (got 0, want 0)
+  [OK] A3 budzet > dlugosc trasy -> cala trasa (got 10, want 10)
+  [OK] A4 heks kosztowny 3 przy budzecie 3 -> zatrzymanie przed nim (got 1, want 1)
+  [OK] A5 koszt terenu liczony (1+3=4 <= 4) (got 2, want 2)
+  [OK] A6 farthest: budzet 5 -> heks (5,0) (got 5, want 5)
+  [OK] A7 farthest: budzet 1 -> heks (1,0) (got 1, want 1)
+  [OK] A8 farthest: wolny cel (10,0) w budzecie jest krokiem (jak u gracza) (got 10, want 10)
+  [OK] A8b zajety cel (10,0) poza wyborem -> najdalej (9,0) (got 9, want 9)
+  [OK] A8c budzet 9 -> dochodzi do (9,0), cel (10,0) poza zasiegiem (got 9, want 9)
+  [OK] A9 trasa 1-heksowa (cel sasiedni) -> null (wolajacy bierze path[0]) (got null, want null)
+
+--- B: planer wojny all-in (AI / miasta-panstwa / barbarzyncy) na plaskim terenie ---
+  [OK] B2 planer: jednostka z budzetem 2 przechodzi 2 heksow w jednej turze (got 2, want 2)
+  [OK] B3 planer: jednostka z budzetem 3 przechodzi 3 heksow w jednej turze (got 3, want 3)
+  [OK] B5 planer: jednostka z budzetem 5 przechodzi 5 heksow w jednej turze (got 5, want 5)
+  [OK] B8 planer: jednostka z budzetem 8 przechodzi 8 heksow w jednej turze (got 8, want 8)
+  [OK] B9 determinizm: dwa przebiegi planera, ten sam wynik (got true, want true)
+  [OK] B10 brak ruchLeft -> 1 heks (zgodnosc wsteczna) (got 1, want 1)
+
+--- C: egzekutor komendy move (executeAiCityMove + truncatePath) ---
+  [OK] C2 komenda do odleglego heksu: egzekutor przesuwa o budzet 2 (got 2, want 2)
+  [OK] C3 komenda do odleglego heksu: egzekutor przesuwa o budzet 3 (got 3, want 3)
+  [OK] C4 komenda do odleglego heksu: egzekutor przesuwa o budzet 4 (got 4, want 4)
+  [OK] C6 komenda do odleglego heksu: egzekutor przesuwa o budzet 6 (got 6, want 6)
+  [OK] C7 egzekutor zeruje ruchLeft po ruchu (jak dotad); budzet czytany wczesniej przez truncatePath (got 0, want 0)
+  [OK] C9 budzet 1 -> 1 heks (got 1, want 1)
+
+--- D: mutacje REALNEGO zrodla musza czerwienic asercje zasiegu ---
+  [OK] D1 AI firstStep -> path[0]: dystans=1 (!= 5) -> asercja zasiegu AI czerwona
+  [OK] D2 barbarzynca firstStep -> path[0]: dystans=1 (!= 5) -> asercja zasiegu barbarzyncy czerwona
+  [OK] D3 planer wojny: budzet kroku = 1: dystans=1 (!= 5) -> asercja planera czerwona
+  [OK] D4 egzekutor: wylaczony truncatePath: dystans=25 (!= 4) -> asercja egzekutora czerwona
+  [OK] D5 kontrola: bez mutacji AI firstStep = 5 (got 5, want 5)
+
+--- F: PRAWDZIWE firstStep z ai.ts i barbarians.ts ---
+  [OK] F-AI1 ai.ts firstStep: budzet 1 -> 1 heksow (got 1, want 1)
+  [OK] F-BARB1 barbarians.ts firstStep: budzet 1 -> 1 heksow (got 1, want 1)
+  [OK] F-AI2 ai.ts firstStep: budzet 2 -> 2 heksow (got 2, want 2)
+  [OK] F-BARB2 barbarians.ts firstStep: budzet 2 -> 2 heksow (got 2, want 2)
+  [OK] F-AI3 ai.ts firstStep: budzet 3 -> 3 heksow (got 3, want 3)
+  [OK] F-BARB3 barbarians.ts firstStep: budzet 3 -> 3 heksow (got 3, want 3)
+  [OK] F-AI5 ai.ts firstStep: budzet 5 -> 5 heksow (got 5, want 5)
+  [OK] F-BARB5 barbarians.ts firstStep: budzet 5 -> 5 heksow (got 5, want 5)
+  [OK] F-AI8 ai.ts firstStep: budzet 8 -> 8 heksow (got 8, want 8)
+  [OK] F-BARB8 barbarians.ts firstStep: budzet 8 -> 8 heksow (got 8, want 8)
+  [OK] F-ADJ cel sasiedni -> krok na cel (zachowanie bez zmian) (got 1, want 1)
+  [INFO] budzet 1: PRZED sr. 1.00 heks/jedn., kolizje=0; PO sr. 1.00 heks/jedn., kolizje=0
+  [OK] F-AVG1 PO: srednio 1 heksow na jednostke (budzet 1)
+  [INFO] budzet 2: PRZED sr. 1.00 heks/jedn., kolizje=0; PO sr. 2.00 heks/jedn., kolizje=0
+  [OK] F-AVG2 PO: srednio 2 heksow na jednostke (budzet 2)
+  [INFO] budzet 5: PRZED sr. 1.00 heks/jedn., kolizje=0; PO sr. 5.00 heks/jedn., kolizje=0
+  [OK] F-AVG5 PO: srednio 5 heksow na jednostke (budzet 5)
+  [INFO] budzet 8: PRZED sr. 1.00 heks/jedn., kolizje=0; PO sr. 8.00 heks/jedn., kolizje=0
+  [OK] F-AVG8 PO: srednio 8 heksow na jednostke (budzet 8)
+
+--- E: koszt obliczen: PRZED (mutant = path[0]) vs PO, ten sam stan ---
+  [INFO] planer, budzet 5, mediana 9x20 wywolan: PRZED=39.6 ms, PO=41.7 ms, stosunek=1.05
+  [OK] E1 planer: PO nie wolniejszy niz PRZED x1,3 (stosunek 1.05, bez tolerancji addytywnej)
+  [INFO] ai firstStep, 300 wywolan, mediana 9x: PRZED=215.9 ms, PO=216.3 ms, stosunek=1.00
+  [OK] E2 ai firstStep: PO nie wolniejszy niz PRZED x1,3 (stosunek 1.00)
+
+--- G: okablowanie w main.ts (statyczne) ---
+  [OK] G1 main.ts: executeAiCityMove dostaje truncatePath (przycinanie do ruchLeft przed zerowaniem)
+
+ai-move-range: 46 passed, 0 failed
+EXIT=0

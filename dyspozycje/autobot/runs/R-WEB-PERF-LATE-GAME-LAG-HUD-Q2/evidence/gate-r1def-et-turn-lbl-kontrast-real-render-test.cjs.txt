@@ -1,0 +1,28 @@
+PASS: [A1] .et-turn-lbl ma nowy kolor #fff8e6 + text-shadow (dokładny wzorzec)
+PASS: [A2] stara reguła (#8a8070, bez text-shadow) już NIE występuje w źródle
+PASS: [A3] sąsiednie reguły CSS (.wykonaj/.end-turn/.et-hint/.et-tooltip/.et-action) obecne bez zmian
+PASS: [B1] mutacja PRZED faktycznie podmieniła regułę w bundlu (nie porównujemy dwóch identycznych buildów)
+PASS: [F1] bundle PO i PRZED identyczne poza jedną regułą .et-turn-lbl (reszta paska bit-for-bit)
+[et-turn-lbl-kontrast-real-render-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+  [po/zolty-piaskowy] /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/.shots-et-turn-lbl/po-zolty-piaskowy.png — color=rgb(255, 248, 230) text-shadow=(obecny, 20 warstwy)
+  [po/zielony] /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/.shots-et-turn-lbl/po-zielony.png — color=rgb(255, 248, 230) text-shadow=(obecny, 20 warstwy)
+  [po/niebieski-woda] /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/.shots-et-turn-lbl/po-niebieski-woda.png — color=rgb(255, 248, 230) text-shadow=(obecny, 20 warstwy)
+  [przed/zolty-piaskowy] /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/.shots-et-turn-lbl/przed-zolty-piaskowy.png — color=rgb(138, 128, 112) text-shadow=none
+  [przed/zielony] /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/.shots-et-turn-lbl/przed-zielony.png — color=rgb(138, 128, 112) text-shadow=none
+  [przed/niebieski-woda] /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/.shots-et-turn-lbl/przed-niebieski-woda.png — color=rgb(138, 128, 112) text-shadow=none
+PASS: [C-zolty-piaskowy] PO: computed color = rgb(255, 248, 230) (#fff8e6)
+PASS: [C-zolty-piaskowy] PO: text-shadow obecny (nie "none")
+PASS: [D-zolty-piaskowy] PRZED (mutant): computed color = rgb(138, 128, 112) (#8a8070) — dowód, że mutacja realnie cofnęła wygląd
+PASS: [D-zolty-piaskowy] PRZED (mutant): text-shadow = "none" — te same asercje C świecą tu na czerwono, test nie jest tautologią
+PASS: [C-zielony] PO: computed color = rgb(255, 248, 230) (#fff8e6)
+PASS: [C-zielony] PO: text-shadow obecny (nie "none")
+PASS: [D-zielony] PRZED (mutant): computed color = rgb(138, 128, 112) (#8a8070) — dowód, że mutacja realnie cofnęła wygląd
+PASS: [D-zielony] PRZED (mutant): text-shadow = "none" — te same asercje C świecą tu na czerwono, test nie jest tautologią
+PASS: [C-niebieski-woda] PO: computed color = rgb(255, 248, 230) (#fff8e6)
+PASS: [C-niebieski-woda] PO: text-shadow obecny (nie "none")
+PASS: [D-niebieski-woda] PRZED (mutant): computed color = rgb(138, 128, 112) (#8a8070) — dowód, że mutacja realnie cofnęła wygląd
+PASS: [D-niebieski-woda] PRZED (mutant): text-shadow = "none" — te same asercje C świecą tu na czerwono, test nie jest tautologią
+
+et-turn-lbl-kontrast-real-render-test: 17 pass, 0 fail
+Zrzuty PRZED/PO (3 tereny) w: /home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/.shots-et-turn-lbl
+EXIT=0

@@ -1,0 +1,23 @@
+
+--- 1: AI<->AI, PRZED (flaga OFF) vs PO (flaga ON) ---
+
+--- 2: AI -> GRACZ; gracz bez automatycznych rozkazow; zmiana stolicy ---
+
+--- 3: barbarzyncy -> NAJBLIZSZA stolica ---
+
+--- 4: brak sciezki ladowej (morze) -- bez zawieszenia, jednostki zostaja ---
+
+--- 5: przeciwnik wyeliminowany (brak miast) => dotychczasowe zachowanie ---
+
+--- 6: flaga OFF == baza origin/main (hash stanu po TURNS turach) ---
+
+--- 7: determinizm przy fladze ON (2 przebiegi) ---
+
+--- 8: planWarAllInCapital -- grupowanie / rendezvous ---
+
+--- 10: realne scalanie grup, gesta grupa, brak krokow wstecz i dubli ---
+
+--- 9: okablowanie main.ts (testy statyczne) ---
+
+91 passed, 0 failed
+EXIT=0

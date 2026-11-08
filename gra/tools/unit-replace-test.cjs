@@ -37,6 +37,7 @@ export {
   availableReplacementsFor,
   availableProduction,
   epochNumber,
+  newestAvailableSameTypeUnit,
 } from '../src/game/production';
 export {
   buildReplaceAvailabilityCtx,
@@ -62,7 +63,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { availableReplacementsFor, buildReplaceAvailabilityCtx } = M;
+const { availableReplacementsFor, buildReplaceAvailabilityCtx, newestAvailableSameTypeUnit } = M;
 
 const unitsJson = require('../data/units.json');
 const DATA = { buildings: [], units: Object.values(unitsJson) };
@@ -108,6 +109,15 @@ const RZYM_ZELAZO_CTX = {
 const TECHS_ZELAZO = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];
 
 console.log('\n[unit-replace-test] Running tests...\n');
+
+// Same-Typ era mapping is deterministic, ignores cross-Typ named substitutions,
+// and keeps units.json order for equal-era candidates.
+{
+  const best = newestAvailableSameTypeUnit('Wojownik', ['Wojownik z mieczem i tarczą', 'Evocati'], DATA.units);
+  assert(best?.Jednostka === 'Evocati', 'newest same-Typ candidate is selected');
+  const crossTypeOnly = newestAvailableSameTypeUnit('Wojownik tyrreński', ['Evocati'], DATA.units);
+  assert(crossTypeOnly === null, 'cross-Typ named replacement is excluded from automatic mapping');
+}
 
 // --- Scenario 1: Hastati (Rzym, Zelazo, Typ=Swordsman) ----------------------
 console.log('1. Rzym / Zelazo -- zamienniki dla Hastati (Typ=Swordsman)');

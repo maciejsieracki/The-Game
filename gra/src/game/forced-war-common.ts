@@ -9,21 +9,17 @@
 export interface ForcedWarPairState {
   attackerId: number;
   targetId: number;
+  /**
+   * R-WEB-PEACE-RULES-R8R9-Q1 R9: pola liczników miast NIE są już inkrementowane dla wojen
+   * wymuszonych (brak auto-końca po 2 miastach). Zostają w typie i w zapisie gry wyłącznie dla
+   * zgodności formatu zapisu (serializacja/restore); zapis zawsze 0/0 dla nowych wojen.
+   */
   capturedByAttacker: number;
   capturedByDefender: number;
   /**
-   * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C, Kamień + Brąz WYŁĄCZNIE): tura rozpoczęcia
-   * TEJ KONKRETNEJ pary — podstawa limitu czasu trwania 25 tur, niezależnego od progu
-   * miast. OPCJONALNE i CELOWO NIEwypełniane przez Żelazo (`forced-war-iron.ts`, poza
-   * zakresem tego dispatchu — Żelazo ma świadomie odrębny mechanizm wyzwalania,
-   * `R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1`, i NIE dostaje limitu czasu trwania w tej
-   * naprawie) — gdyby to pole było wymagane, literały `{ attackerId, targetId,
-   * capturedByAttacker: 0, capturedByDefender: 0 }` budowane w gałęzi Żelaza w main.ts
-   * (poza allowlistą tego dispatchu, NIETKNIĘTE) przestałyby się kompilować. Brak pola
-   * (stary zapis sprzed tej naprawy, LUB para Żelaza) czytany jako `st.startTurn ??
-   * <bieżąca tura>` przez Kamień/Brąz — main.ts backfilluje wartość PRZY WCZYTANIU
-   * zapisu tak, by limit czasu liczył od realnego (lub, dla starych zapisów, od
-   * momentu wczytania) startu, nie zerował się co turę.
+   * Tura rozpoczęcia tej konkretnej pary — podstawa wspólnego 20-turowego limitu
+   * wymuszonych wojen epokowych Kamienia, Brązu i Żelaza. Opcjonalne dla zgodności ze
+   * starymi zapisami; main.ts backfilluje brakujące pole przy wczytaniu.
    */
   startTurn?: number;
 }
@@ -148,6 +144,39 @@ export function countActiveForcedWarsForOwner(
 
 export type ForcedWarEraTag = 'bronze' | 'stone' | 'iron';
 
+export interface ForcedEraPeaceLock {
+  ownerId: number;
+  era: number;
+}
+
+export type ForcedEraPeaceLocksSaveState = Array<[string, ForcedEraPeaceLock]>;
+
+/** Serialize the per-pair era peace lock exactly as stored in a game save. */
+export function serializeForcedEraPeaceLocks(
+  locks: ReadonlyMap<string, ForcedEraPeaceLock>,
+): ForcedEraPeaceLocksSaveState {
+  return Array.from(locks.entries());
+}
+
+/** Restore validated lock entries; missing or malformed fields are treated as old-save empties. */
+export function restoreForcedEraPeaceLocks(saved: unknown): Map<string, ForcedEraPeaceLock> {
+  const restored = new Map<string, ForcedEraPeaceLock>();
+  if (!Array.isArray(saved)) return restored;
+  for (const row of saved) {
+    if (!Array.isArray(row) || typeof row[0] !== 'string' || row[1] == null || typeof row[1] !== 'object') continue;
+    const lock = row[1] as Partial<ForcedEraPeaceLock>;
+    if (Number.isFinite(lock.ownerId) && Number.isFinite(lock.era)) {
+      restored.set(row[0], { ownerId: lock.ownerId!, era: lock.era! });
+    }
+  }
+  return restored;
+}
+
+/** A forced-era peace lock is released only after its declaring civilization advances. */
+export function isForcedEraPeaceLocked(currentEra: number, warEra: number): boolean {
+  return currentEra <= warEra;
+}
+
 /**
  * Podmiot "triggered" tej tury (shouldSearch===true per epoka main.ts, PLUS gracz gdy
  * warless) — wejście do kroku 1-3 ECHO. `era` brakuje WYŁĄCZNIE dla gracza (ownerId 0):
@@ -169,12 +198,53 @@ export interface ForcedWarPairingExistingPair {
   era: ForcedWarEraTag;
 }
 
+/**
+ * R-WEB-PEACE-RULES-R8R9-Q1 R8 (decyzja właściciela D1, 2026-10-30): wojna epoki jest
+ * BLOKOWANA wobec partnera, z którym Relacja (relationScore: Zaufanie + Respekt, 0–200)
+ * wynosi co najmniej ten próg. Próg 99 nie blokuje, 100 blokuje.
+ */
+export const FORCED_WAR_EPOCH_RELATION_BLOCK_THRESHOLD = 100;
+
+export function isForcedWarRelationBlocked(relationScore: number): boolean {
+  return relationScore >= FORCED_WAR_EPOCH_RELATION_BLOCK_THRESHOLD;
+}
+
 export interface ForcedWarPairingOpts {
+  /**
+   * R-WEB-PEACE-RULES-R8R9-Q1 R8: Relacja (relationScore 0–200) pary a↔b. Gdy podana i
+   * >= FORCED_WAR_EPOCH_RELATION_BLOCK_THRESHOLD, para jest zablokowana dla wojny epoki
+   * (dotyczy kandydatów gracza-pierwszego, parowania 1v1, dołączania trzeciego). Brak = brak bramki.
+   */
+  pairRelationScore?: (a: number, b: number) => number;
   /** Symetryczny predykat: NAP / peaceLocked (w tym cooldown tej samej pary) / aktywny sojusz MIĘDZY a i b — main.ts ta sama trójka warunków co dawne blockedOwnerIds, teraz jeden predykat zamiast osobnego zbioru per owner. */
   isPairBlocked: (a: number, b: number) => boolean;
+  /**
+   * R-WEB-ERA-WAR-COUNTER-Q1: `true` = podmiot ZUŻYŁ już wojnę epoki w bieżącej epoce
+   * (licznik per (cywilizacja, epoka), napastnik LUB cel). Taki podmiot odpada z puli
+   * warless, z kandydatów partnera gracza i nie może zostać stroną dołączanej pary.
+   * Brak pola = brak licznika (zachowanie bazowe).
+   */
+  isEraWarExhausted?: (ownerId: number) => boolean;
   hexDistanceFn: (aq: number, ar: number, bq: number, br: number) => number;
   /** Krok 2 ECHO: CAŁKOWITA liczba aktywnych wojen wymuszonych (wszystkie epoki) tego ownera PRZED przydziałem tej tury. */
   totalActiveForcedWarsByOwner: (ownerId: number) => number;
+  /**
+   * R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z1/Z3/Z4, K1) — TYLKO gdy flaga
+   * WAR_EPOCH_PLAYER_FIRST_ENABLED jest ON (main.ts); brak pola = zachowanie bazowe.
+   * Gracz (`playerOwnerId`) dostaje PIERWSZĄ parę fali: najbliższy (wg dystansu od
+   * stolicy gracza) podmiot AI z puli warless, który (a) nie jest zablokowany
+   * NAP/peaceLock/sojuszem z graczem i (b) przechodzi bramkę R1/R2 po stronie AI
+   * (`isPlayerPairGateOpen`). Widoczność/odkrycie gracza NIE jest tu brane pod uwagę
+   * (K1: mgła nie ogranicza wojny epoki). Remis dystansu → niższy ownerId.
+   * Gdy brak takiego AI — gracz nie dostaje pary w tej turze (bez pending, bez blokowania
+   * reszty: pozostałe pary AI↔AI są parowane normalnie).
+   */
+  playerFirst?: {
+    playerOwnerId: number;
+    isPlayerPairGateOpen: (aiOwnerId: number) => boolean;
+    /** D1 (r2): wszyscy major AI z erą = kandydaci na partnera gracza, także spoza puli. Brak = pula. */
+    candidates?: ForcedWarPairingSubject[];
+  };
 }
 
 export interface ForcedWarPairingAssignment {
@@ -195,6 +265,8 @@ export interface ForcedWarPairingResult {
    * `cycleOwners` nie są tu konsumowane).
    */
   unresolvedOwnerIds: number[];
+  /** R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (D2): partner pary gracza (wypowiada PIERWSZY w pętli AI) albo null. */
+  playerFirstPartnerId: number | null;
 }
 
 /**
@@ -232,15 +304,64 @@ export function assignForcedWarPairings(
 ): ForcedWarPairingResult {
   const assignments: ForcedWarPairingAssignment[] = [];
   const unresolvedOwnerIds: number[] = [];
+  // R-WEB-PEACE-RULES-R8R9-Q1 R8: jedyny predykat blokady pary w tej funkcji = NAP/peaceLock/
+  // sojusz (opts.isPairBlocked) LUB Relacja >= próg (opts.pairRelationScore).
+  const pairBlocked = (a: number, b: number): boolean =>
+    opts.isPairBlocked(a, b)
+    || (opts.pairRelationScore !== undefined && isForcedWarRelationBlocked(opts.pairRelationScore(a, b)));
+  // R-WEB-ERA-WAR-COUNTER-Q1: podmiot z zużytym licznikiem wojen epoki nie wchodzi do puli.
+  const exhausted = (ownerId: number): boolean => opts.isEraWarExhausted?.(ownerId) === true;
 
   // Krok 1-2: pula "warless", posortowana deterministycznie po ownerId.
-  const warless = triggeredSubjects
-    .filter(s => opts.totalActiveForcedWarsByOwner(s.ownerId) === 0)
+  let warlessAll = triggeredSubjects
+    .filter(s => opts.totalActiveForcedWarsByOwner(s.ownerId) === 0 && !exhausted(s.ownerId))
     .slice()
     .sort((a, b) => a.ownerId - b.ownerId);
+
+  // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z1/Z3/Z4, K1): gracz pierwszy. Najbliższy AI (wg
+  // dystansu od stolicy gracza) z puli warless, niezablokowany i z otwartą bramką R1/R2,
+  // dostaje parę z graczem PRZED parowaniem reszty; ten AI wypada z puli 1v1 poniżej.
+  let playerFirstPartnerId: number | null = null;
+  let playerFirstPartner: ForcedWarPairingSubject | null = null;
+  const playerFirst = opts.playerFirst;
+  if (playerFirst) {
+    const playerSubject = warlessAll.find(s => s.ownerId === playerFirst.playerOwnerId);
+    if (playerSubject) {
+      // D1 (r2): kandydaci = wszystkie major AI (candidates), nie tylko pula warless. Iteracja po
+      // ownerId rosnąco -> przy remisie dystansu wygrywa niższy ownerId (strict `<`).
+      const pool = (playerFirst.candidates ?? warlessAll)
+        .slice()
+        .sort((a, b) => a.ownerId - b.ownerId);
+      let bestDist = Infinity;
+      for (const cand of pool) {
+        if (cand.ownerId === playerFirst.playerOwnerId || cand.era == null) continue;
+        if (opts.totalActiveForcedWarsByOwner(cand.ownerId) !== 0) continue;
+        if (exhausted(cand.ownerId)) continue;
+        if (pairBlocked(playerFirst.playerOwnerId, cand.ownerId)) continue;
+        if (!playerFirst.isPlayerPairGateOpen(cand.ownerId)) continue;
+        const dist = opts.hexDistanceFn(playerSubject.q, playerSubject.r, cand.q, cand.r);
+        if (dist < bestDist) {
+          bestDist = dist;
+          playerFirstPartnerId = cand.ownerId;
+          playerFirstPartner = cand;
+        }
+      }
+    }
+    warlessAll = warlessAll.filter(s => s.ownerId !== playerFirst.playerOwnerId);
+  }
+  const warless = warlessAll;
   const byId = new Map(warless.map(s => [s.ownerId, s] as const));
-  const remaining = warless.map(s => s.ownerId);
+  const remaining = warless
+    .filter(s => s.ownerId !== playerFirstPartnerId)
+    .map(s => s.ownerId);
   const leftovers: number[] = [];
+
+  if (playerFirst && playerFirstPartnerId !== null && playerFirstPartner !== null) {
+    // Gracz jest stroną-celem; wypowiada AI (era partnera, także gdy partner spoza puli --
+    // „uzbrojenie” na potrzeby tej pary). Wpis jak w kroku 3.
+    const partnerEra: ForcedWarEraTag = playerFirstPartner.era!;
+    assignments.push({ ownerId: playerFirstPartnerId, era: partnerEra, targetId: playerFirst.playerOwnerId });
+  }
 
   const addAssignment = (actorId: number, targetId: number): void => {
     const actor = byId.get(actorId);
@@ -277,7 +398,7 @@ export function assignForcedWarPairings(
   if (remaining.length <= MAX_EXACT_MATCHING_N) {
     const ids = remaining.slice();
     const n = ids.length;
-    const blockedIdx: boolean[][] = ids.map(a => ids.map(b => a !== b && opts.isPairBlocked(a, b)));
+    const blockedIdx: boolean[][] = ids.map(a => ids.map(b => a !== b && pairBlocked(a, b)));
     const memo = new Map<number, number>();
     const lowestBitIndex = (mask: number): number => {
       let i = 0;
@@ -344,7 +465,7 @@ export function assignForcedWarPairings(
       if (remaining.length === 0) { leftovers.push(seekerId); break; }
       const seeker = byId.get(seekerId)!;
       const candidates: ForcedWarNeighborCandidate[] = remaining.map(id => byId.get(id)!);
-      const blocked = new Set(remaining.filter(id => opts.isPairBlocked(seekerId, id)));
+      const blocked = new Set(remaining.filter(id => pairBlocked(seekerId, id)));
       const partnerId = pickForcedWarTargetId(
         candidates,
         { q: seeker.q, r: seeker.r },
@@ -374,9 +495,12 @@ export function assignForcedWarPairings(
       // domino: "sojusz KTÓREJKOLWIEK ze stron blokuje CAŁĄ parę"), nie tylko tę jedną
       // zablokowaną stronę. Obie strony muszą być niezablokowane, żeby para w ogóle
       // kwalifikowała się do dołączenia.
-      const attackerBlocked = opts.isPairBlocked(leftoverId, pair.attackerId);
-      const targetBlocked = opts.isPairBlocked(leftoverId, pair.targetId);
+      const attackerBlocked = pairBlocked(leftoverId, pair.attackerId);
+      const targetBlocked = pairBlocked(leftoverId, pair.targetId);
       if (attackerBlocked || targetBlocked) continue;
+      // R-WEB-ERA-WAR-COUNTER-Q1: obie strony pary muszą mieć wolny licznik wojen epoki —
+      // strona z zużytym licznikiem nie dostaje drugiej wojny w tej epoce (także jako cel).
+      if (exhausted(pair.attackerId) || exhausted(pair.targetId)) continue;
       // Obie strony niezablokowane -- deterministyczny wybór (niższy ownerId), zgodny z
       // konwencją tie-breaku reszty modułu.
       const chosenSide = Math.min(pair.attackerId, pair.targetId);
@@ -393,7 +517,7 @@ export function assignForcedWarPairings(
     if (!joined) unresolvedOwnerIds.push(leftoverId);
   }
 
-  return { assignments, unresolvedOwnerIds };
+  return { assignments, unresolvedOwnerIds, playerFirstPartnerId };
 }
 
 export function restoreForcedWarState(

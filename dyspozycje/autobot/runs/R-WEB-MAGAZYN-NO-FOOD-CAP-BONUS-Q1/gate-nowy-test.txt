@@ -1,0 +1,27 @@
+
+-- A. Realny econ-params.json: skladnik Magazynu w capie zywnosci = 0 --
+  PASS  [easy] centralCapBonusMagazyn (oczekiwano 0, jest 0)
+  PASS  [easy] centralCapBaza (bez zmian) (oczekiwano 1000, jest 1000)
+  PASS  [normal] centralCapBonusMagazyn (oczekiwano 0, jest 0)
+  PASS  [normal] centralCapBaza (bez zmian) (oczekiwano 1000, jest 1000)
+  PASS  [hard] centralCapBonusMagazyn (oczekiwano 0, jest 0)
+  PASS  [hard] centralCapBaza (bez zmian) (oczekiwano 1000, jest 1000)
+
+-- B. Cap zywnosci bez Spichlerza nie zalezy od liczby Magazynow --
+  PASS  N=0 Magazynow, bez Spichlerza: cap = baza (oczekiwano 1000, jest 1000)
+  PASS  N=1 Magazynow, bez Spichlerza: cap = baza (oczekiwano 1000, jest 1000)
+  PASS  N=2 Magazynow, bez Spichlerza: cap = baza (oczekiwano 1000, jest 1000)
+  PASS  N=3 Magazynow, bez Spichlerza: cap = baza (oczekiwano 1000, jest 1000)
+
+-- C. Spichlerz I dokladany bez zmian (baza + 1000), Magazyny nic nie dodaja --
+  PASS  N=0 Magazynow, Spichlerz I: cap = 1000 + 1000 (oczekiwano 2000, jest 2000)
+  PASS  N=1 Magazynow, Spichlerz I: cap = 1000 + 1000 (oczekiwano 2000, jest 2000)
+  PASS  N=2 Magazynow, Spichlerz I: cap = 1000 + 1000 (oczekiwano 2000, jest 2000)
+  PASS  N=3 Magazynow, Spichlerz I: cap = 1000 + 1000 (oczekiwano 2000, jest 2000)
+
+-- D. Sanity: mierzony skladnik istnieje (jawny bonus=100 podnosi cap o 100/Magazyn) --
+  PASS  bonus=100, N=0: cap = baza (oczekiwano 1000, jest 1000)
+  PASS  bonus=100, N=2: cap = baza + 2x100 (test wykrylby by powrot +100) (oczekiwano 1200, jest 1200)
+
+WYNIK: 16 PASS, 0 FAIL
+EXIT=0

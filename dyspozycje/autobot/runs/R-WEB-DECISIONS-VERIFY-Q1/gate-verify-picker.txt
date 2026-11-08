@@ -1,0 +1,4 @@
+[INFO] M15 wolno_wycinac=OFF: wyrab@rzeka=2, wyrab@poza=0 (pin testu c3: rzeka tak, poza nie — do potwierdzenia intencji właściciela)
+[INFO] M11 FOOD_STAGE_MAX_ITEMS_PER_CITY=3, JEDEN_NA_ILU_OBYWATELI=10; IMPROVEMENT_FOR_DEFICIT={"drewno":["tartak","wyrab"],"kamien":["kamieniolom"],"glina":["glinianka"],"ruda":["kopalnia_miedzi"],"ruda_zelaza":["kopalnia_zelaza"],"ruda_cyny":["kopalnia_cyny"],"sol":["warzelnia_soli"],"kon":["stadnina"]}
+=== verify-decisions-picker: 17 ZGODNE, 7 NIEZGODNE (M3-K2-pop12, M3-K3-pop12, M3-K2-pop30, M3-K3-pop30, M4-K2, M4-K3, M8-K2) ===
+EXIT=0

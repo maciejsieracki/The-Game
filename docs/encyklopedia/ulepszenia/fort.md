@@ -23,7 +23,7 @@
 
 ### Co robi
 Ulepszenie **Fort / umocnienia** na polu w **twoim terytorium**. Teren: dowolny ląd w terytorium.
-**Warunek:** +100% Obrony jednostkom obozującym na polu fortu (bez plonów); rozszerza zasięg terytorium o promień 10 pól
+**Warunek:** +100% Obrony jednostkom obozującym na polu fortu (bez plonów); rozszerza zasięg terytorium o promień 5 pól
 ### Strategia
 - Buduj z trybu **Budowa** (lewy panel mapy) — koszt w **pracy** ze skarbca imperium.
 - Przypisz heks w **Okolica** miasta, które ma nadwyżkę pracy.

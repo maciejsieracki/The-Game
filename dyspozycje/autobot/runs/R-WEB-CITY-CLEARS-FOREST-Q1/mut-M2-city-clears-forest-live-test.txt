@@ -1,0 +1,22 @@
+[city-clears-forest-live] vite build -> /tmp/civ-city-clears-forest-WyX4bD
+  [info] lasy na mapie przed zalozeniem: 1373, Las="las"
+  OK  L1.0 fixture: playerStartHex ma Las przed zalozeniem
+  OK  L1.1 REALNE zalozenie stolicy gracza zwrocilo true
+  OK  L2.0 jest kandydat na drugie miasto (REALNA canFoundPlayerCityAt)
+  OK  L2.1 fixture: kandydat ma Las
+  OK  L2.2 REALNE zalozenie drugiego miasta zwrocilo true
+  OK  L3 lasy bez miasta zostaja: 1373 -> 1373 (spadek <= liczba miast 16 + fixture)
+  OK  L4.0 fixture „stary zapis": las+tartak pod KAZDYM z 16 miast
+  OK  L4.1 po wczytaniu: zadne miasto nie stoi na Las
+  OK  L4.2 po wczytaniu: tartak pod miastem zniknal
+  OK  L4.3 idempotencja: drugie wczytanie nie zmienia liczby lasow (1359 == 1359)
+  OK  L5.0 REALNY endTurn przesunal ture (1 -> 2)
+  OK  L5.1 las wstawiony pod miasto zniknal po granicy tury
+  OK  C zero pageerror/console.error (n=0)
+
+city-clears-forest-live-test: 13 pass / 4 fail
+ FAIL L1.2 stolica gracza: brak Las i brak tartaku -- [{"id":"city0","ownerId":0,"q":47,"r":24,"startCityState":false,"nakladka":"las","layers":[]}]
+ FAIL L1.3 miasta-panstwa/klastry istnieja (n=12) i zadne nie stoi na Las -- [{"id":"city1","ownerId":11,"q":42,"r":28,"startCityState":true,"nakladka":"brak","layers":[]},{"id":"city2","ownerId":12,"q":46,"r":29,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city3","ownerId":13,"q":51,"r":25,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city4","ownerId":14,"q":37,"r":31,"startCityState":true,"nakladka":"brak","layers":[]},{"id":"city6","ownerId":2,"q":87,"r":60,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city7","ownerId":3,"q":90,"r":55,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city8","ownerId":4,"q":94,"r":61,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city9","ownerId":5,"q":95,"r":53,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city11","ownerId":7,"q":12,"r":12,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city12","ownerId":8,"q":12,"r":20,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city13","ownerId":9,"q":17,"r":17,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city14","ownerId":10,"q":19,"r":12,"startCityState":true,"nakladka":"las","layers":[]}]
+ FAIL L1.4 ZADNE miasto na mapie (n=15) nie stoi na Las -- [{"id":"city0","ownerId":0,"q":47,"r":24,"startCityState":false,"nakladka":"las","layers":[]},{"id":"city2","ownerId":12,"q":46,"r":29,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city3","ownerId":13,"q":51,"r":25,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city5","ownerId":1,"q":92,"r":58,"startCityState":false,"nakladka":"las","layers":[]},{"id":"city6","ownerId":2,"q":87,"r":60,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city7","ownerId":3,"q":90,"r":55,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city8","ownerId":4,"q":94,"r":61,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city9","ownerId":5,"q":95,"r":53,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city10","ownerId":6,"q":14,"r":15,"startCityState":false,"nakladka":"las","layers":[]},{"id":"city11","ownerId":7,"q":12,"r":12,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city12","ownerId":8,"q":12,"r":20,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city13","ownerId":9,"q":17,"r":17,"startCityState":true,"nakladka":"las","layers":[]},{"id":"city14","ownerId":10,"q":19,"r":12,"startCityState":true,"nakladka":"las","layers":[]}]
+ FAIL L2.3 drugie miasto: brak Las i brak tartaku -- {"id":"city15","ownerId":0,"q":48,"r":20,"startCityState":false,"nakladka":"las","layers":[]}
+EXIT=1

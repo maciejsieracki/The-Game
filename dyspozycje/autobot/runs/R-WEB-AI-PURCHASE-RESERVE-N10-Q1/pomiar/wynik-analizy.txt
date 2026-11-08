@@ -1,0 +1,18 @@
+== N10: tury 2..100, done=true, error=brak, owners=1,2,3,4,5,6,7,8,9,10,11
+T20 sumMil=15 sumMiasta=11 minSkarb=-5 zeroMil=[10] | 10:m0/c1/$84 11:m1/c1/$6 1:m3/c1/$300 2:m1/c1/$92 3:m1/c1/$-5 4:m2/c1/$123 5:m1/c1/$52 6:m1/c1/$6 7:m3/c1/$22 8:m1/c1/$102 9:m1/c1/$11
+T40 sumMil=32 sumMiasta=34 minSkarb=205 zeroMil=[10] | 10:m0/c1/$606 11:m1/c1/$205/W 1:m8/c11/$2189/W 4:m3/c13/$1251 7:m20/c8/$2856
+T60 sumMil=56 sumMiasta=41 minSkarb=4923 zeroMil=[] | 11:m3/c2/$7422 1:m20/c15/$9597/W 4:m3/c15/$4923 7:m30/c9/$9535
+T80 sumMil=57 sumMiasta=48 minSkarb=13134 zeroMil=[] | 11:m3/c2/$13134 1:m20/c17/$28122/W 4:m4/c15/$18670 7:m30/c14/$22543
+T100 sumMil=59 sumMiasta=60 minSkarb=17326 zeroMil=[] | 11:m3/c2/$17326 1:m21/c20/$53628/W 4:m4/c19/$51269 7:m31/c19/$35939
+   (owner,tura) skarbiec<0: 40/572; (owner,tura) w wojnie: 79; min skarbiec: -10; (owner,tura) z 0 wojsk: 50
+   spadki liczby miast: brak
+   T100 miasta razem (owner>0): 60
+== N3: tury 2..100, done=true, error=brak, owners=1,2,3,4,5,6,7,8,9,10,11
+T20 sumMil=18 sumMiasta=11 minSkarb=-5 zeroMil=[10] | 10:m0/c1/$11 11:m1/c1/$17 1:m4/c1/$603 2:m2/c1/$66 3:m1/c1/$-5 4:m2/c1/$141 5:m2/c1/$46 6:m1/c1/$6 7:m3/c1/$-3 8:m1/c1/$92 9:m1/c1/$16
+T40 sumMil=110 sumMiasta=33 minSkarb=65 zeroMil=[] | 10:m3/c1/$65/W 11:m3/c1/$254/W 1:m33/c11/$1979/W 4:m35/c13/$1296 7:m36/c7/$2939
+T60 sumMil=164 sumMiasta=41 minSkarb=1083 zeroMil=[] | 10:m3/c1/$1723/W 11:m4/c1/$4013/W 1:m48/c15/$2882/W 4:m61/c15/$1083 7:m48/c9/$3735
+T80 sumMil=172 sumMiasta=48 minSkarb=3515 zeroMil=[] | 1:m48/c16/$3515 11:m4/c2/$13401 4:m62/c17/$12689 7:m58/c13/$4944
+T100 sumMil=172 sumMiasta=52 minSkarb=12934 zeroMil=[] | 1:m48/c16/$13502 11:m4/c2/$16148 4:m62/c20/$40387 7:m58/c14/$12934
+   (owner,tura) skarbiec<0: 45/582; (owner,tura) w wojnie: 79; min skarbiec: -11; (owner,tura) z 0 wojsk: 30
+   spadki liczby miast: brak
+   T100 miasta razem (owner>0): 52

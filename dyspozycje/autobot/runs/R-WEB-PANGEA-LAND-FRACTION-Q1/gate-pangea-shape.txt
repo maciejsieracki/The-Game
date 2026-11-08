@@ -1,0 +1,21 @@
+=== Pangea kształt lądu (FALA 189, standardowy) ===
+  seed 42: masy=1 dry=1 dominująca=100.0% bboxFill=0.883 coast/√A=4.130 aspect=1.16 annular=0 → PASS
+  seed 123: masy=1 dry=1 dominująca=100.0% bboxFill=0.881 coast/√A=4.219 aspect=1.17 annular=0 → PASS
+  seed 777: masy=1 dry=1 dominująca=100.0% bboxFill=0.876 coast/√A=4.122 aspect=1.17 annular=0 → PASS
+  seed 7: masy=1 dry=1 dominująca=100.0% bboxFill=0.866 coast/√A=4.488 aspect=1.19 annular=0 → PASS
+  seed 2026: masy=1 dry=1 dominująca=100.0% bboxFill=0.874 coast/√A=4.148 aspect=1.19 annular=0 → PASS
+
+=== AC ===
+  5 seedów PASS: PASS (0 fail)
+
+=== Pangea kształt lądu (standardowy · 20% lądu — anti-obwarzanek FALA 195) ===
+  seed 42: masy=1 dry=1 dominująca=100.0% land=2355 annular=0 → PASS
+  seed 123: masy=1 dry=1 dominująca=100.0% land=2440 annular=0 → PASS
+  seed 777: masy=1 dry=1 dominująca=100.0% land=2122 annular=0 → PASS
+  seed 7: masy=1 dry=1 dominująca=100.0% land=1734 annular=0 → PASS
+  seed 2026: masy=1 dry=1 dominująca=100.0% land=1944 annular=0 → PASS
+  20% lądu AC: PASS (0 fail)
+
+=== Pangea kształt (Super Huge pominięty w tym przebiegu — za wolny) ===
+  Super Huge AC: SKIP
+EXIT=0

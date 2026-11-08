@@ -1,0 +1,106 @@
+
+================ SEKCJA 1: P-HEKS-CENTRUM-OBCEGO-MIASTA (ZADANIE 1) ================
+
+1.1 assignWorkedTiles: centrum B (sam wlasciciel) wykluczone mimo najwyzszego score
+PASS: A dostaje pelna kwote (9) mimo wykluczenia centrum B (dosc innych legalnych pol) (got 9, want 9)
+PASS: centrum miasta B (8,0) NIE trafia na liste A mimo score=999
+PASS: kontrola: BEZ territoryNodes bait (8,0) WYGRYWA -- test czuly na regresje
+
+1.2 resolveWorkedTiles (auto): centrum B wykluczone
+PASS: resolveWorkedTiles: centrum B (8,0) nieobecne mimo bait score
+
+1.3 toggleTileWorker / adjustTileWorker: klik na centrum B odrzucony
+PASS: toggleTileWorker: klik na centrum B odrzucony (got false, want false)
+PASS: adjustTileWorker(+1): dodanie 👤 na centrum B odrzucone (got false, want false)
+
+1.4 workedHexCoordsForCity (silnik): centrum B nigdy nie wypelnia kwoty populacji
+PASS: kwota=3, ale tylko 2 legalne pola (centrum B wykluczone, brak substytutu w tej rzadkiej mapie) (got 2, want 2)
+PASS: centrum B (5,0) nieobecne w wyniku silnika
+PASS: oba legalne pola (1,0) i (2,0) obecne
+
+1.5 obca cywilizacja: centrum miasta AI (ownerId=1) wykluczone z listy gracza (ownerId=0)
+PASS: centrum AI (8,0) wykluczone z listy gracza (bez udzialu filtra wlasnosci)
+
+1.6 reconcileWorkedTilesForOwner: usuwa stary wpis okolicaReczne na centrum innego miasta
+PASS: reconcile zglasza zmiane (usunieto nielegalny wpis) (got true, want true)
+PASS: tylko legalny wpis (1,0) zostal (got 1, want 1)
+PASS: wpis na centrum B usuniety
+PASS: legalny wpis (1,0) nietkniety
+
+================ SEKCJA 2: P-HEKS-SPOR-SASIAD (ZADANIE 2) ================
+
+2.1 computeLostToNearerSiblingByCity: blizsze miasto wygrywa, dalsze przegrywa dokladnie ten heks
+PASS: A przegrywa sporny heks (6,0) na rzecz blizszego B
+PASS: B NIE przegrywa (6,0) -- to B jest blizej
+PASS: niesporny heks (1,0), poza zasiegiem B -- A go nie traci
+
+2.2 assignWorkedTiles + excludeHexKeys: dalsze miasto traci sporne pole, blizsze je dostaje
+PASS: A mimo utraty (6,0) i tak dostaje pelna kwote 8 (substytut z rankingu) (got 8, want 8)
+PASS: A (dalsze miasto) NIE dostaje spornego pola (6,0) mimo bait score
+PASS: B (blizsze miasto) DOSTAJE sporne pole (6,0)
+PASS: kontrola: BEZ excludeHexKeys A TEZ dostaje (6,0) -- podwojne liczenie, test czuly na regresje
+
+2.3 remis odleglosci: pierwsze miasto w tablicy cities wygrywa
+PASS: A (pierwsze w tablicy) wygrywa remis -- nie traci (4,0)
+PASS: C (drugie w tablicy) przegrywa remis -- traci (4,0)
+PASS: kolejnosc odwrocona: teraz to A (drugie) przegrywa remis
+PASS: kolejnosc odwrocona: C (pierwsze) wygrywa remis
+
+2.4 workedHexCoordsForCity (silnik) + computeLostToNearerSiblingByCity: integracja end-to-end
+PASS: A: kwota=3, tylko 2 legalne pola (T przegrany na rzecz B, centrum B wykluczone przez SEKCJE 1) (got 2, want 2)
+PASS: A NIE dostaje spornego (3,0)
+PASS: B (blizsze, kwota=1) DOSTAJE (3,0) jako jedyne/najlepsze pole
+
+2.5 wydajnosc: 50 zachodzacych miast tego samego wlasciciela, smoke bound czasu
+PASS: computeLostToNearerSiblingByCity(50 miast nachodzacych) < 5000ms (got 50ms)
+PASS: przy spacing=4 < 2*radius=20 realnie istnieja sporne heksy (mechanizm sie uruchamia)
+
+================ SEKCJA 3: RUNDA 2 NOTA A -- panel miasta liczy jak silnik ================
+
+3.1 CityPanelConfig deklaruje hook getExcludeHexKeys
+PASS: CityPanelConfig ma pole getExcludeHexKeys?: (cityId: string) => ReadonlySet<string> | undefined
+
+3.2 computeView(...): worked tiles licza z cfg.getExcludeHexKeys?.(city.id)
+PASS: znaleziono computeView(...) w cityPanel.ts
+PASS: znaleziono koniec computeView(...) (kolejna top-level function)
+PASS: znaleziono wiersz `const worked = cityWorkedTilesForEconomy(...)` w computeView(...)
+PASS: RUNDA 2 NOTA A: computeView przekazuje cfg.getExcludeHexKeys?.(city.id) -- wywolanie: "city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id), cfg.getEpoch?.(city.ownerId) ?? 1"
+
+3.3 resolveCityHealth(...) fallback: tiles licza z cfg.getExcludeHexKeys?.(city.id)
+PASS: znaleziono resolveCityHealth(...) w cityPanel.ts
+PASS: znaleziono koniec resolveCityHealth(...) (kolejna top-level function)
+PASS: znaleziono wiersz `const tiles = cityWorkedTilesForEconomy(...)` w resolveCityHealth(...) (fallback, gdy cfg.getCityHealth nie odpowiedzial)
+PASS: RUNDA 2 NOTA A: resolveCityHealth fallback przekazuje cfg.getExcludeHexKeys?.(city.id) -- wywolanie: "city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id), cfg.getEpoch?.(city.ownerId) ?? 1"
+
+3.4 main.ts wpina getExcludeHexKeys w OBU configureCityPanel(...) przez siblingClaimedHexKeysForCity
+PASS: main.ts definiuje getExcludeHexKeys DWA razy (jedna definicja na configureCityPanel(...) wywolanie) (got 2, want 2)
+PASS: obie definicje getExcludeHexKeys zwracaja siblingClaimedHexKeysForCity(city) -- ten sam mechanizm co getWorkedTiles/getCityHealth (got 2, want 2)
+
+================ SEKCJA 4: RUNDA 2 NOTA B -- rebalans po wzroscie populacji ================
+
+4.1 applyPostCentralPopulationGrowth + excludeHexKeysByCity: reczny rebalans NIE sadza 👤 na spornym polu
+PASS: kontrola geometrii: cityA-pg traci sporne (3,0) na rzecz blizszego cityB-pg
+PASS: precondition: cityA-pg faktycznie urosla o 1 w tym ticku (inaczej rebalans sie nie odpala) (got 3, want 3)
+PASS: RUNDA 2 NOTA B: reczny rebalans z excludeHexKeysByCity NIE sadza 👤 na spornym (3,0)
+PASS: kontrola: rowniez tu populacja urosla o 1 (ten sam scenariusz bazowy) (got 3, want 3)
+PASS: kontrola czulosci: BEZ excludeHexKeysByCity rebalans TEZ sadza 👤 na (3,0) -- dokladnie bug ktory NOTA B naprawia
+
+================ SEKCJA 5: RUNDA 2 NOTA D -- reconcile czysci kolizje wewnatrz-wlascicielskie ================
+
+5.1 reconcileWorkedTilesForOwner: usuwa stary wpis okolicaReczne na spornym (nie-centralnym) polu przegranym na rzecz blizszego miasta
+PASS: kontrola geometrii: cityA-r5 traci sporne (6,0) na rzecz blizszego cityB-r5 (ten sam scenariusz co SEKCJA 2.1)
+PASS: reconcile zglasza zmiane (usunieto sporny wpis) (got true, want true)
+PASS: tylko bezsporny wpis (1,0) zostal (got 1, want 1)
+PASS: sporny wpis (6,0), przegrany na rzecz cityB-r5, zostal usuniety
+PASS: bezsporny wpis (1,0) nietkniety
+
+5.2 kontrola czulosci: BEZ lostToSiblingByCity sporny wpis NIE jest usuwany (dowod ze SEKCJA 5.1 testuje realny mechanizm, nie efekt uboczny warstwy centrow)
+PASS: kontrola: bez lostToSiblingByCity reconcile nie zglasza zmiany (sporny wpis nie jest wykrywany bez tej warstwy) (got false, want false)
+PASS: kontrola: sporny wpis (6,0) POZOSTAJE bez lostToSiblingByCity -- dowod czulosci na regresje
+
+5.3 reconcileAllWorkedTiles: przekazuje lostToSiblingByCity dalej do reconcileWorkedTilesForOwner
+PASS: reconcileAllWorkedTiles(..., lostToSiblingByCity) usuwa sporny wpis przez cala funkcje zbiorcza
+PASS: bezsporny wpis (1,0) nietkniety przez reconcileAllWorkedTiles
+
+OKOLICA-MULTI-CITY-OVERLAP OK (55/55)
+EXIT=0

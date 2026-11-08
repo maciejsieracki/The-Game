@@ -1,0 +1,41 @@
+
+--- A: promienie i territoryOwnerAt ---
+
+--- B: obcy nie buduje ulepszen, wlasciciel buduje ---
+
+--- C: zakladanie miast, limit miast ---
+
+--- D: spor o ten sam heks ---
+
+--- E: straznik main.ts ---
+
+--- F: fort NIE odbiera heksow sasiedniemu miastu (R2, zarzut 1) ---
+
+--- G: R3 Q-B=B — sporny heks nalezy do WCZESNIEJSZEGO fortu ---
+  FAIL: G1: wczesniejszy fort (tura 3) wygrywa sporny heks mimo wiekszej odleglosci (5 vs 3) (got 2, want 1)
+  FAIL: G3: remis odleglosci 4:4 -> wczesniejszy (drugi), nie "pierwszy w tablicy" (got 1, want 2)
+  FAIL: G4: heks blizej pozniejszego fortu (3 vs 5) -> wczesniejszy (drugi) (got 1, want 2)
+  FAIL: G6: ta sama tura -> mniejszy seq (got 2, want 1)
+  FAIL: G9: backfill uzupelnia 2 wpisy (got -1, want 2)
+  FAIL: G10: backfill wg kolejnosci w tablicy
+  FAIL: G11: po backfillu starszy (indeks 0) wygrywa sporny heks (5 vs 3) (got 2, want 1)
+  FAIL: G12: nextFortSeq = max+1 (got -1, want 2)
+  FAIL: G13: backfill idempotentny (got -1, want 0)
+  FAIL: G14: backfill nie koliduje z istniejacym seq (got undefined, want 8)
+
+--- H: R3 Q-A=A — zdobycie fortu przez wejscie wojska ---
+  FAIL: H1: wrog (wojna) wchodzi na pusty fort -> zdobyty (got 0, want 1)
+  FAIL: H2: ownerId fortu = zdobywca (got 1, want 2)
+  FAIL: H3: zdobywca dostaje CALE terytorium fortu (91 heksow) (got 0, want 91)
+  FAIL: H4: dotychczasowy wlasciciel traci terytorium (got 91, want 0)
+  FAIL: H6: posterunek zdobyty -> 37 heksow (got 0, want 37)
+  FAIL: H15: poprzedni wlasciciel moze odbic fort tym samym torem (got 0, want 1)
+
+--- I: straznik main.ts R3 ---
+  FAIL: I1: rejestracja fortu stempluje builtAtTurn+seq
+  FAIL: I2: wczytanie zapisu robi backfill kolejnosci
+  FAIL: I3: sweepFortCaptures wolany w ruchu/bitwie/koncu tury (0 wywolan)
+  FAIL: I4: sweep uzywa applyFortCaptureByOccupation
+
+=== fort-outpost-hard-territory-test: 59 passed, 20 failed ===
+EXIT=1

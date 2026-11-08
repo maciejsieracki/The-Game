@@ -488,13 +488,13 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "Dostęp do Ceramiki w imperium (wybudowana Garncarnia gdziekolwiek w imperium ALBO zapas Ceramiki w puli państwa)",
-    "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): pole 'wymagania' bylo puste, wiec gdy bramka Ceramika nie byla spelniona, budynek znikal z panelu bez zadnego komunikatu (eraBuildingCatalog nie sprawdzal tej bramki w ogole -- naprawione w production.ts, patrz komentarz R-BUD-SPICHLERZ-ZNIKA tamze). Tekst tu teraz zasila formatBuildingCatalogLockHint w cityPanel.ts.",
+    "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz Królewski. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): pole 'wymagania' bylo puste, wiec gdy bramka Ceramika nie byla spelniona, budynek znikal z panelu bez zadnego komunikatu (eraBuildingCatalog nie sprawdzal tej bramki w ogole -- naprawione w production.ts, patrz komentarz R-BUD-SPICHLERZ-ZNIKA tamze). Tekst tu teraz zasila formatBuildingCatalogLockHint w cityPanel.ts.",
     "historia": "Spichlerz to budowla magazynowa służąca do przechowywania zboża i innych plonów, znana od czasów najwcześniejszych cywilizacji rolniczych Mezopotamii i Egiptu, gdzie nadwyżki żywności trzeba było zabezpieczyć przed gryzoniami, wilgocią i złodziejami. Egipskie spichlerze państwowe, opisywane już w biblijnej historii Józefa, pozwalały władcom gromadzić zapasy zboża na wypadek nieurodzaju i klęsk głodu, co czyniło kontrolę nad zapasami żywności realnym narzędziem władzy politycznej. Budowane zwykle na podwyższeniu, z drewnianą lub kamienną konstrukcją unoszącą podłogę nad ziemią, chroniły ziarno przed wilgocią i szkodnikami znacznie skuteczniej niż przechowywanie w domostwach. W średniowiecznej Europie spichlerze — szczególnie te budowane przez zakony i miasta hanzeatyckie w Gdańsku czy Toruniu — stały się symbolem zamożności i bezpieczeństwa żywnościowego całych regionów. Zdolność do gromadzenia i dystrybucji zapasów żywności była jednym z fundamentów, na których w ogóle mogły powstać duże, osiadłe społeczeństwa.",
     "opis": "Spichlerz gromadzi zapasy żywności i podnosi zadowolenie mieszkańców, pozwalając miastu utrzymać większą populację.",
     "top3": [
       { "tytul": "Żywność i zadowolenie", "tekst": "Dodaje 2 punkty Żywności i aż 4 punkty zadowolenia mieszkańców miasta." },
       { "tytul": "Wymaga ceramiki", "tekst": "Można go wybudować tylko przy dostępie do Ceramiki w imperium — dzięki wybudowanej gdziekolwiek Garncarni albo zapasowi ceramiki w magazynie państwa." },
-      { "tytul": "Podnosi limit populacji", "tekst": "Zwiększa górny pułap wielkości miasta, otwierając drogę do dalszej rozbudowy przez Spichlerz II." }
+      { "tytul": "Podnosi limit populacji", "tekst": "Zwiększa górny pułap wielkości miasta, otwierając drogę do dalszej rozbudowy przez Spichlerz Królewski." }
     ],
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
@@ -504,7 +504,7 @@
   {
     "id": "spichlerz_ii",
     "dajeSzczescie": true,
-    "nazwa": "Spichlerz II",
+    "nazwa": "Spichlerz Królewski",
     "kategoria": "Zywnosc",
     "grupa": "Żywność",
     "epokaWejscia": 2,
@@ -535,16 +535,16 @@
     "przyrostKosztu": 12,
     "utrzymanie": 2,
     "przyrostUtrzymania": 0,
-    "wymagania": "Upgrade ze Spichlerza I + dostęp do Soli w imperium (aktywne źródło — warzelnia na złożu lub wybrzeżu)",
-    "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupełnione o bramkę Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
+    "wymagania": "Upgrade ze Spichlerza I + Epoka 2 + zbadane Pismo (ewidencja zapasów zboża) + dostęp do Ceramiki w imperium (garncarnia gdziekolwiek ALBO zapas Ceramiki w puli państwa) + dostęp do Soli w imperium (zapas soli w magazynie państwa — warzelnia na złożu lub wybrzeżu)",
+    "uwagi": "B-SPIC: bramki Ceramika + Sól; cap armii 150; techUnlock=Pismo (ewidencja zapasów zboża; decyzja właściciela 2026-11-05, R-WEB-GRANARY2-PISMO-ROYAL-RENAME-Q1, wcześniej Garncarstwo); R-WEB-GRANARY2-TECH-DATA-FIX-Q1, 2026-11-05: wcześniej 'Warzelnia soli' było ulepszeniem terenu, nie technologią — budynek był niebudowalny; bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupełnione o bramkę Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
     "historia": "Rozbudowany spichlerz to naturalny etap rozwoju magazynowania żywności, jaki obserwujemy w miastach, które dorobiły się nadwyżek na tyle dużych, że pojedynczy budynek przestawał wystarczać. Wraz z upowszechnieniem soli jako konserwantu — pozyskiwanej z warzelni nadmorskich lub kopalń takich jak te w Wieliczce — możliwe stało się przechowywanie nie tylko zboża, ale i solonego mięsa oraz ryb przez wiele miesięcy, co znacząco wydłużało okres bezpieczeństwa żywnościowego. Wielkie kompleksy spichrzowe, jak te zachowane do dziś w Gdańsku czy w hanzeatyckiej Lubece, potrafiły magazynować zapasy dla całych miast i regionów, stając się jednocześnie ważnym elementem miejskiej zabudowy i architektury. Sól, ceniona w starożytności niemal jak metal szlachetny, bywała też środkiem płatniczym — od niej pochodzi zresztą łacińskie słowo „salarium”, czyli żołd. Rozwinięte spichlerze solno-zbożowe świadczyły o dojrzałości gospodarczej miasta i jego zdolności do przetrwania długich okresów niepewności.",
-    "opis": "Spichlerz II to rozbudowana wersja magazynu żywności, pozwalająca miastu utrzymać jeszcze większą populację i armię.",
+    "opis": "Spichlerz Królewski to rozbudowana wersja magazynu żywności, pozwalająca miastu utrzymać jeszcze większą populację i armię.",
     "top3": [
       { "tytul": "Więcej żywności i zadowolenia", "tekst": "Dodaje 3 punkty Żywności i 4 punkty zadowolenia, przewyższając bazowy Spichlerz." },
-      { "tytul": "Wymaga soli", "tekst": "Powstaje przez rozbudowę Spichlerza i wymaga dostępu do Soli w imperium, np. z warzelni na złożu lub wybrzeżu." },
+      { "tytul": "Wymaga ceramiki i soli", "tekst": "Powstaje przez rozbudowę Spichlerza, po zbadaniu Pisma (ewidencja zapasów zboża), i wymaga dostępu do Ceramiki oraz Soli w imperium (sól np. z warzelni na złożu lub wybrzeżu)." },
       { "tytul": "Wyższy limit populacji i armii", "tekst": "Podnosi górny pułap wielkości miasta i utrzymywanej armii ponad to, co daje zwykły Spichlerz." }
     ],
-    "techUnlock": "Warzelnia soli",
+    "techUnlock": "Pismo",
     "koszt_surowce": {
       "drewno": 40,
       "kamien": 50
@@ -631,7 +631,7 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "Dostęp do Gliny w imperium (aktywne źródło lub zapas gliny w magazynie państwa); koszt drewna i kamienia z magazynu państwa",
-    "uwagi": "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
+    "uwagi": "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23). R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (2026-11-05): receptura 2 glina + 1 drewno → 2 cegły (×2 produkcji cegły), przepustowość bazowa 50 cykli/turę, +50% bazy WYJŚCIA za każdą epokę właściciela (×1 / ×1,5 / ×2 / ×2,5 / ×3), cykle i wejścia na turę płaskie.",
     "historia": "Cegielnia produkuje cegły — formowane i wypalane bloki gliny, które od czasów starożytnej Mezopotamii i doliny Indusu umożliwiły budowę trwałych murów tam, gdzie brakowało naturalnego kamienia. Sumeryjczycy suszyli swoje pierwsze cegły na słońcu, lecz to wypalanie w piecu, znane już starożytnym Rzymianom, nadawało materiałowi twardość i odporność na wilgoć, dzięki czemu rzymskie mury i akwedukty przetrwały do naszych czasów. Produkcja cegieł wymagała dostępu do gliny o odpowiednim składzie oraz dużych ilości opału do wypału, co czyniło cegielnie zależnymi od bliskości złóż surowca i lasów. Ujednolicony rozmiar cegły pozwalał budowniczym planować konstrukcje z matematyczną precyzją i szybciej wznosić mury niż przy nieregularnym kamieniu. Rozwój cegielnictwa w średniowiecznej Europie północnej, gdzie brakowało kamienia budowlanego, dał początek charakterystycznemu stylowi gotyku ceglanego widocznemu do dziś w miastach nadbałtyckich.",
     "opis": "Cegielnia wypala z gliny cegłę, dostarczając materiał budowlany potrzebny do wznoszenia trwalszych konstrukcji i otwierający drogę do pisma.",
     "top3": [
@@ -1092,6 +1092,65 @@
     }
   },
   {
+    "id": "emporion",
+    "dajeSzczescie": false,
+    "nazwa": "Emporion",
+    "kategoria": "Pieniadz",
+    "grupa": "Handel i pieniądz",
+    "epokaWejscia": 2,
+    "maksPoziom": 1,
+    "nazwyPoziomow": [
+      "Emporion"
+    ],
+    "baza": {
+      "praca": 0,
+      "pieniadz": 8,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 4,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 50,
+    "przyrostKosztu": 20,
+    "utrzymanie": 2,
+    "przyrostUtrzymania": 1,
+    "wymagania": "",
+    "uwagi": "R-WEB-BUILDING-EMPORION-Q1 (decyzja właściciela 2026-11-05): nowy budynek handlu dalekosiężnego, odpowiednik większego Targowiska. Wymaga badania Handel (techUnlock) i Targowiska w tym samym mieście (CITY_BUILDING_PREREQ w building-resource-gate.ts). Efekt handlowy: +1 slot tras handlowych (TRADE_BUILDING_IDS, licznik tradeRouteLimitForCity), co kwalifikuje o jedną trasę więcej do bonusu 5% handlu (flaga budynekOdblokowany, TRADE_ROUTE_BUILDING_BONUS_RATE). Bonus jest per trasa i NIE kumuluje się per budynek: Emporion nie dodaje drugiego 5% na tej samej trasie. Nie dostaje osobnego bonusu per miasto, który ma Targowisko (budynekTargowiskoBonusHandlu, main.ts). Odstępstwo od pierwotnego GOAL (kumulacja z Targowiskiem) zostaje do zatwierdzenia przez właściciela. Pieniądz baza 8 / przyrost 4 (większy niż Targowisko 5/3). Koszt budowy 50 (+20/poziom, poziom maks 1), utrzymanie 2. Ikona: bld-emporion.svg (kopia ikony Targowiska z niebieską odznaką, rozróżnienie w UI).",
+    "historia": "Emporion to rozległy ośrodek handlu dalekosiężnego, do którego sprowadzano towary z odległych krain. W greckich miastach-portach, takich jak Naukratis w Egipcie, obcy kupcy mieli wyznaczone dzielnice i składy, a wymiana odbywała się pod nadzorem urzędników. Emporion łączył funkcję składu, kantoru i miejsca spotkań kupców z różnych ludów, a jego działalność pozwalała miastu zdobywać surowce i wyroby niedostępne w okolicy. Dzięki sieci takich ośrodków antyczne miasta budowały bogactwo i kontakty sięgające daleko poza własny horyzont.",
+    "opis": "Emporion organizuje dalekosiężną wymianę towarów z obcymi kupcami. Wymaga Targowiska w tym samym mieście i zwiększa liczbę tras handlowych miasta.",
+    "top3": [
+      {
+        "tytul": "Dalekosiężna wymiana",
+        "tekst": "Dodaje 8 monet dochodu miastu. Jest większym odpowiednikiem Targowiska."
+      },
+      {
+        "tytul": "+5% handlu",
+        "tekst": "Dzięki Emporionowi o jedną trasę więcej w mieście otrzymuje premię 5% do dochodu z tej trasy. Premia liczona jest za każdą trasę, a nie za każdy budynek."
+      },
+      {
+        "tytul": "Dodatkowa linia handlowa",
+        "tekst": "Emporion daje miastu dodatkowy slot linii wymiany. Wymaga badania Handel i Targowiska w tym samym mieście."
+      }
+    ],
+    "techUnlock": "Handel",
+    "koszt_surowce": {
+      "drewno": 80,
+      "kamien": 60
+    }
+  },
+  {
     "id": "magazyn",
     "dajeSzczescie": false,
     "nazwa": "Magazyn",
@@ -1127,7 +1186,7 @@
     "wymagania": "",
     "uwagi": "",
     "historia": "Magazyn państwowy to budowla służąca do gromadzenia zapasów surowców, broni i zaopatrzenia niezbędnych do funkcjonowania administracji i wojska w czasach pokoju i kryzysu. Starożytne imperia, od Egiptu po Chiny, budowały rozległe sieci magazynów wzdłuż szlaków handlowych i granic, by zaopatrywać garnizony i urzędników bez konieczności każdorazowego transportu towarów z odległych prowincji. Chińskie magazyny zbożowe funkcjonujące w ramach systemu „ping-cang” pozwalały władzom stabilizować ceny żywności, sprzedając zapasy w latach nieurodzaju i skupując nadwyżki w latach obfitych plonów. Zarządzanie magazynem wymagało sprawnej biurokracji — skrybowie i urzędnicy prowadzili szczegółowe rejestry przychodów i rozchodów, a kradzież z magazynu państwowego karano surowo jako przestępstwo przeciw całej wspólnocie. Sprawnie działające magazyny były jednym z filarów stabilności państwa, pozwalając przetrwać wojny, klęski żywiołowe i długie kampanie wojskowe bez załamania zaopatrzenia.",
-    "opis": "Magazyn gromadzi zapasy i usprawnia gospodarkę miasta, dając dodatkową produkcję i dochód.",
+    "opis": "Magazyn gromadzi zapasy i usprawnia gospodarkę miasta, dając dodatkową produkcję i dochód. Każdy Magazyn w imperium zwiększa pojemność magazynu państwa (surowce) o +20% bazy.",
     "top3": [
       { "tytul": "Wzrost Pracy i dochodu", "tekst": "Dodaje po 1 punkcie Pracy i pieniądza, rosnących o kolejny punkt każdego z nich z każdym poziomem rozbudowy." },
       { "tytul": "Niski koszt utrzymania", "tekst": "Wymaga jedynie 1 punktu utrzymania na pierwszym poziomie, bez dodatkowego wzrostu kosztu przy rozbudowie." },

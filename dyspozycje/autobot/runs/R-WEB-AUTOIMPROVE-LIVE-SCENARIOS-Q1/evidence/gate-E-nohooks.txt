@@ -1,0 +1,164 @@
+{
+  "queries": {
+    "&civTest=0": {
+      "civTest": "undefined",
+      "autoDebug": "undefined"
+    },
+    "&civTest=true": {
+      "civTest": "undefined",
+      "autoDebug": "undefined"
+    },
+    "&xcivTest=1": {
+      "civTest": "undefined",
+      "autoDebug": "undefined"
+    },
+    "&civTest=": {
+      "civTest": "undefined",
+      "autoDebug": "undefined"
+    }
+  },
+  "turns": [
+    {
+      "before": 1,
+      "after": 2,
+      "ms": 8501,
+      "ok": true
+    },
+    {
+      "before": 2,
+      "after": 3,
+      "ms": 5975,
+      "ok": true
+    },
+    {
+      "before": 3,
+      "after": 4,
+      "ms": 5562,
+      "ok": true
+    },
+    {
+      "before": 4,
+      "after": 5,
+      "ms": 5260,
+      "ok": true
+    },
+    {
+      "before": 5,
+      "after": 6,
+      "ms": 5300,
+      "ok": true
+    },
+    {
+      "before": 6,
+      "after": 7,
+      "ms": 5616,
+      "ok": true
+    },
+    {
+      "before": 7,
+      "after": 8,
+      "ms": 5787,
+      "ok": true
+    },
+    {
+      "before": 8,
+      "after": 9,
+      "ms": 5584,
+      "ok": true
+    },
+    {
+      "before": 9,
+      "after": 10,
+      "ms": 5849,
+      "ok": true
+    },
+    {
+      "before": 10,
+      "after": 11,
+      "ms": 5812,
+      "ok": true
+    },
+    {
+      "before": 11,
+      "after": 12,
+      "ms": 5646,
+      "ok": true
+    },
+    {
+      "before": 12,
+      "after": 13,
+      "ms": 6061,
+      "ok": true
+    },
+    {
+      "before": 13,
+      "after": 14,
+      "ms": 6254,
+      "ok": true
+    },
+    {
+      "before": 14,
+      "after": 15,
+      "ms": 6169,
+      "ok": true
+    },
+    {
+      "before": 15,
+      "after": 16,
+      "ms": 6086,
+      "ok": true
+    },
+    {
+      "before": 16,
+      "after": 17,
+      "ms": 5580,
+      "ok": true
+    },
+    {
+      "before": 17,
+      "after": 18,
+      "ms": 5991,
+      "ok": true
+    },
+    {
+      "before": 18,
+      "after": 19,
+      "ms": 6374,
+      "ok": true
+    },
+    {
+      "before": 19,
+      "after": 20,
+      "ms": 6528,
+      "ok": true
+    },
+    {
+      "before": 20,
+      "after": 21,
+      "ms": 6571,
+      "ok": true
+    }
+  ],
+  "menu": {
+    "url": "Gra-ROBOCZA.html?skipMenuRedirect=1",
+    "civTest": "undefined"
+  },
+  "start": {
+    "seedSeen": 18,
+    "mapLog": "[NewGame] Mapa: 76x52 seed=18 typ=kontynenty rywale=4 typy=5",
+    "genMs": 11454
+  },
+  "afterStart": {
+    "civTest": "undefined",
+    "turn": 1
+  },
+  "end": {
+    "civTest": "undefined",
+    "turn": 21,
+    "cities": 25,
+    "aiCities": 24
+  },
+  "consoleErrors": [],
+  "consoleErrorCount": 0,
+  "consoleWarnLikeCount": 0
+}EXIT=0

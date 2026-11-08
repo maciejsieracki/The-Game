@@ -36,7 +36,19 @@ export interface DiploListEntry {
   /** Kolor cywilizacji (civs.json kolorHex) — R-DYPLOLISTA-KOLOR-CYWILIZACJI: nazwa na
    *  liście koloruje się tym kolorem zamiast jednolitej bieli, żeby karty się odróżniały. */
   kolorHex?: string;
+  /** R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1: wiersze „Wojny / Sojusze / Handel" na karcie
+   *  cywilizacji (dawniej w pośrednim dymku). Puste `names` = „brak". */
+  relationRows?: readonly DiploListRelationRow[];
 }
+
+/** Jeden wiersz relacji na karcie listy (etykieta + nazwy partnerów). */
+export interface DiploListRelationRow {
+  label: string;
+  names: readonly string[];
+}
+
+/** Ile nazw pokazać w karcie wprost; reszta jako „+N” (pełna lista w tooltipie). */
+export const DIPLO_LIST_RELATION_SHOW_MAX = 3;
 
 /**
  * Porządek listy dyplomacji: pełnoprawne cywilizacje NAD miastami-państwami
@@ -165,6 +177,8 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-list-hud .dl-section{font-size:0.62em;letter-spacing:.18em;text-transform:uppercase;color:#6a6458;
   padding:0.15em 0.15em 0.35em;}
 .civ-diplo-list-hud .dl-locate-wrap{flex-shrink:0;display:flex;align-items:center;}
+.civ-diplo-list-hud .dl-rel-rows{margin-top:0.3em;display:flex;flex-direction:column;gap:2px;}
+.civ-diplo-list-hud .dl-rel-row{overflow-wrap:anywhere;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -350,6 +364,25 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
           perspective.textContent = e.perspectiveLine;
           body.appendChild(perspective);
         }
+        if (e.relationRows?.length) {
+          const relWrap = document.createElement('div');
+          relWrap.className = 'dl-rel-rows';
+          for (const relRow of e.relationRows) {
+            const line = document.createElement('div');
+            line.className = 'dl-meta dl-rel-row';
+            const total = relRow.names.length;
+            if (total === 0) {
+              line.textContent = relRow.label + ': brak';
+            } else {
+              const shown = relRow.names.slice(0, DIPLO_LIST_RELATION_SHOW_MAX).join(', ');
+              const more = total > DIPLO_LIST_RELATION_SHOW_MAX ? ` +${total - DIPLO_LIST_RELATION_SHOW_MAX}` : '';
+              line.textContent = relRow.label + ': ' + shown + more;
+              line.title = relRow.label + ': ' + relRow.names.join(', ');
+            }
+            relWrap.appendChild(line);
+          }
+          body.appendChild(relWrap);
+        }
         row.appendChild(pennant.firstElementChild ?? pennant);
         row.appendChild(body);
         if (config.onFocusCapital) {
@@ -476,6 +509,10 @@ export function diploListEntryFromRelation(rel: {
   activeTreaties?: readonly string[];
   isCityState?: boolean;
   kolorHex?: string;
+  /** Nazwy partnerów wojny / sojuszu / handlu (ta sama logika co dawny dymek). */
+  warPartnerNames?: readonly string[];
+  alliancePartnerNames?: readonly string[];
+  dealPartnerNames?: readonly string[];
 }): DiploListEntry | null {
   if (rel.ownerId === undefined) return null;
   const lines = formatDiploCivListLines({
@@ -498,5 +535,12 @@ export function diploListEntryFromRelation(rel: {
     treatyLabels: rel.activeTreaties?.length ? rel.activeTreaties : undefined,
     isCityState: rel.isCityState,
     kolorHex: rel.kolorHex,
+    relationRows: (rel.warPartnerNames !== undefined || rel.alliancePartnerNames !== undefined || rel.dealPartnerNames !== undefined)
+      ? [
+          { label: 'Wojny', names: rel.warPartnerNames ?? [] },
+          { label: 'Sojusze', names: rel.alliancePartnerNames ?? [] },
+          { label: 'Handel', names: rel.dealPartnerNames ?? [] },
+        ]
+      : undefined,
   };
 }
