@@ -66,7 +66,15 @@ długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playboo
 6. **Dispatch zapisany i wypchnięty PRZED uruchomieniem Workflow**; kolejne rundy jako dopisek w
    `00-dispatch.md` z BAZĄ (SHA/gałąź FC). Raport końcowy: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/
    BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH.
-7. **Komunikacja z właścicielem po polsku**, krótko, uczciwie: NIE_ZMIERZONO tam, gdzie nie zmierzono;
+7. **Rust: ZAWSZE co najmniej 4 operatorów równolegle** (właściciel, 2026-11-08: „wykorzystuj całe dostępne
+   zasoby"), każdy na **HAIKU 5.5** (zasada 2). Gdy kolejka jest krótsza niż 4 — dopisz tematy z planu
+   (`PLAN-PORT-RUST-TAURI-20261020.md` §0c, `REPIN-DELTA-5*.md`) i rozpisz dispatche; nie czekaj na zwolnienie
+   „limitu 2 worktree" (to stara reguła). Dysk godzi się przez: worktree `--no-checkout` + `git sparse-checkout`
+   (tylko `rust-port`, `dyspozycje`), zasoby weba przez `git show`, `CARGO_INCREMENTAL=0
+   CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w worktree i jego usuwanie po
+   każdej bramce, tematy dokumentacyjne (bez `cargo`) liczą się do czterech. Przy < 2 GB wolnego wstrzymaj
+   NOWE starty, nie kończące się rundy.
+8. **Komunikacja z właścicielem po polsku**, krótko, uczciwie: NIE_ZMIERZONO tam, gdzie nie zmierzono;
    żadnych zapewnień bez dowodu (SHA, liczby, MD5).
 
 ## Bariery krytyczne
