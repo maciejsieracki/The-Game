@@ -695,19 +695,19 @@
     "opis": "R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (decyzja właściciela 2026-11-03): liczba tur od prośby AI o pokój (przegrywająca AI ↔ wygrywająca AI), po której pokój wchodzi w życie automatycznie (z maksymalną możliwą płatnością przegranego). Dotyczy WYŁĄCZNIE par AI↔AI zwykłych wojen; gracz i wojny wymuszone epok bez zmian. Czytane w gra/src/game/diplomacy-ai-forced-peace.ts."
   },
   "kupno_jednostki_rezerwa_tur_poziom1": {
-    "wartosc": 3,
-    "sekcja": "§5 Zakup jednostek",
-    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Prosty: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
-  },
-  "kupno_jednostki_rezerwa_tur_poziom2": {
     "wartosc": 10,
     "sekcja": "§5 Zakup jednostek",
-    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Normalny: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). Wartość 10 = decyzja właściciela R-WEB-AI-PURCHASE-RESERVE-N10-Q1 (2026-11-07, ABC)."
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 / R-WEB-AI-PURCHASE-RESERVE-3-10-0-Q1 (decyzja właściciela 2026-11-08), poziom Prosty (ŁATWY): Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). Wartość 10 = decyzja właściciela 2026-11-08 (dotąd 3)."
+  },
+  "kupno_jednostki_rezerwa_tur_poziom2": {
+    "wartosc": 3,
+    "sekcja": "§5 Zakup jednostek",
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 / R-WEB-AI-PURCHASE-RESERVE-3-10-0-Q1 (decyzja właściciela 2026-11-08), poziom Normalny: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). Wartość 3 = decyzja właściciela 2026-11-08 (dotąd 10)."
   },
   "kupno_jednostki_rezerwa_tur_poziom3": {
-    "wartosc": 2,
+    "wartosc": 0,
     "sekcja": "§5 Zakup jednostek",
-    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Trudny: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
+    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 / R-WEB-AI-PURCHASE-RESERVE-3-10-0-Q1 (decyzja właściciela 2026-11-08), poziom Trudny: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). 0 = tylko skarbiec >= cena i netto >= próg (bez rezerwy utrzymania). Wartość 0 = decyzja właściciela 2026-11-08 (dotąd 2)."
   },
   "kupno_jednostki_min_dochod_netto_poziom1": {
     "wartosc": 0,
