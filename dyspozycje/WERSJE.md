@@ -1,3 +1,9 @@
+## ROBOCZA d25c5084 -- 2026-11-06 -- FALA 556: AIPEACE: przegrywajaca AI (>=3 miasta) oferuje graczowi miasto za pokoj — oferta trafia na stol negocjacji (brakowala galezi dispatchu) (testowa)
+
+- gra/src/main.ts (+5 linii: galaz else-if w lancuchu targetId===0 dla oferuj_miasto_za_pokoj i zada_miasto_za_pokoj); progi i ai.ts bez zmian
+- Weryfikacja: FC PASS-WITH-NOTES 75ab19443 (kod 41e574a76); nowy test 12/0 (mutant lapany), diplomacy-proposal 190/190 (mutacje 16/16), nearest-city-peace-2t PASS (mutacje 16/16), ai-war-weariness-peace 90/0, ai-test 289/0, logic 213/213, tsc 0, vite OK
+- Limity: Brak weryfikacji w przegladarce (karta Miasto za pokoj na stole); zada_miasto_za_pokoj staje sie osiagalne (silna AI moze zadac miasta gracza; decyzja wlasciciela); wspolny cooldown odrzucenia z pokojem; zmeczenie wojna wobec gracza dopiero ~100 tur (decyzja 2026-11-03)
+
 ## ROBOCZA c6d64ae5 -- 2026-11-06 -- FALA 555: SIEGEDUR: obroncy oblezonego miasta liczeni po wszystkich zywych jednostkach wojskowych na heksie miasta (nie tylko ufortyfikowanych) — oblezenie znow trwa kilka-kilkanascie tur (testowa)
 
 - gra/src/game/siege-starvation.ts (siegeDefenderUnits), gra/src/main.ts (blok N3 glodu i prognoza plakietki siegeSurrenderBadgeFor); progi 6/8/10% i <50% bez zmian
