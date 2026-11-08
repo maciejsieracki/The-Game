@@ -143,12 +143,42 @@ pub struct SaveMeta {
         skip_serializing_if = "Option::is_none"
     )]
     new_game_params: Option<Value>,
+    /// P6-ZAPIS-ERAWAR: web `meta.warRulesEraWarCountByCiv` (R-WEB-ERA-WAR-COUNTER-Q1), tablica
+    /// par `[klucz, n]` w kolejności wstawiania. Trzymane jako surowy JSON: zły typ w tym polu nie
+    /// może unieważnić całego bloku `meta`; reguły odczytu są w
+    /// `diplomacy_multiwar::restore_era_war_counts` (web `restoreEraWarCounts`).
+    #[serde(
+        rename = "warRulesEraWarCountByCiv",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    era_war_count_by_civ: Option<Value>,
 }
 
 impl SaveMeta {
     /// True when no metadata field is present (used to omit the block from the output).
     pub fn is_empty(&self) -> bool {
-        self.battle_mode_setting_version.is_none() && self.new_game_params.is_none()
+        self.battle_mode_setting_version.is_none()
+            && self.new_game_params.is_none()
+            && self.era_war_count_by_civ.is_none()
+    }
+
+    /// Sets `warRulesEraWarCountByCiv` from counter entries in insertion order (web
+    /// `Array.from(eraWarCountByCivKey.entries())`). The web writes it only when the multiwar flag
+    /// is on; that gate belongs to the caller that builds the save.
+    pub fn with_era_war_counts(mut self, entries: &[(String, i64)]) -> Self {
+        self.era_war_count_by_civ = Some(Value::Array(
+            entries
+                .iter()
+                .map(|(key, n)| Value::Array(vec![Value::String(key.clone()), Value::from(*n)]))
+                .collect(),
+        ));
+        self
+    }
+
+    /// Raw `warRulesEraWarCountByCiv` value as stored in the save (`None` when absent).
+    pub fn era_war_count_by_civ(&self) -> Option<&Value> {
+        self.era_war_count_by_civ.as_ref()
     }
 
     /// Sets the raw `battleModeSettingVersion` value (web `meta.battleModeSettingVersion`).

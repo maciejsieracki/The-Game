@@ -21,6 +21,8 @@
 
 use std::collections::HashMap;
 
+use serde_json::Value;
+
 /// Web `Math.max(a, b)`: NaN propaguje; remis zero: +0 wygrywa z -0.
 pub fn js_max(a: f64, b: f64) -> f64 {
     if a.is_nan() || b.is_nan() {
@@ -326,4 +328,137 @@ pub fn offer_multiplier(stage: i64, rejected_offers: f64, p: &WarWearinessParams
     let idx = stage.max(0).min(arr.len() as i64 - 1) as usize;
     let base = arr[idx];
     base * (1.0 + p.mnoznik_na_odrzucenie * js_max(0.0, rejected_offers))
+}
+
+// ---------------------------------------------------------------------------
+// P6-ZAPIS-ERAWAR (web R-WEB-ERA-WAR-COUNTER-Q1, pin `origin/main` 679ab078a):
+// `recordEraForcedWarParticipation` (war-rules-multiwar.ts:241),
+// `rebuildEraWarCountsFromActivePairs` (:258), `restoreEraWarCounts` (:276).
+// ---------------------------------------------------------------------------
+
+/// Web `Map<string, number>` licznika wojen epoki z zachowaną kolejnością wstawiania
+/// (web zapisuje `Array.from(map.entries())`, więc kolejność jest częścią zapisu).
+/// Wartości to liczby całkowite (web inkrementuje o 1; odczyt przyjmuje tylko całkowite, patrz
+/// `restore_era_war_counts`).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct EraWarCounts {
+    entries: Vec<(String, i64)>,
+}
+
+impl EraWarCounts {
+    /// Pusty licznik (web `new Map()`).
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Web `Map.set`: istniejący klucz zachowuje pozycję i dostaje nową wartość, nowy trafia na koniec.
+    pub fn set(&mut self, key: String, value: i64) {
+        match self.entries.iter_mut().find(|(k, _)| *k == key) {
+            Some(entry) => entry.1 = value,
+            None => self.entries.push((key, value)),
+        }
+    }
+
+    /// Web `Map.get` (`None` = brak wpisu).
+    pub fn get(&self, key: &str) -> Option<i64> {
+        self.entries.iter().find(|(k, _)| k == key).map(|(_, v)| *v)
+    }
+
+    /// Wpisy w kolejności wstawiania (web `Array.from(map.entries())`).
+    pub fn entries(&self) -> &[(String, i64)] {
+        &self.entries
+    }
+
+    /// Widok do odczytu przez `era_war_count_for` / `can_civ_join_era_forced_war`.
+    pub fn to_hash_map(&self) -> HashMap<String, i64> {
+        self.entries.iter().cloned().collect()
+    }
+
+    /// Liczba wpisów.
+    pub fn len(&self) -> usize {
+        self.entries.len()
+    }
+
+    /// True gdy licznik jest pusty.
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+}
+
+/// Para aktywnej wojny wymuszonej (web `{ attackerId, targetId }` z map `*ForceWarActiveByPairKey`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ActiveWarPair {
+    pub attacker_id: i64,
+    pub target_id: i64,
+}
+
+/// Web `recordEraForcedWarParticipation` (war-rules-multiwar.ts:241): napastnik i cel dostają
+/// po jednym wpisie w bieżącej epoce. Kroki są sekwencyjne jak w webie: gdy klucze są równe
+/// (napastnik == cel w tej samej epoce), licznik rośnie o 2.
+pub fn record_era_forced_war_participation(
+    counts: &mut EraWarCounts,
+    attacker_id: i64,
+    target_id: i64,
+    attacker_epoch: i64,
+    target_epoch: i64,
+) {
+    let ka = era_war_civ_key(attacker_id, attacker_epoch);
+    let kt = era_war_civ_key(target_id, target_epoch);
+    let na = counts.get(&ka).unwrap_or(0) + 1;
+    counts.set(ka, na);
+    let nt = counts.get(&kt).unwrap_or(0) + 1;
+    counts.set(kt, nt);
+}
+
+/// Web `rebuildEraWarCountsFromActivePairs` (war-rules-multiwar.ts:258): zapis bez pola liczników.
+/// Każda strona aktywnej pary dostaje wartość 1 w bieżącej epoce (ustawiane, nie dodawane).
+pub fn rebuild_era_war_counts_from_active_pairs(
+    active_pairs: &[ActiveWarPair],
+    epoch_of: impl Fn(i64) -> i64,
+) -> EraWarCounts {
+    let mut out = EraWarCounts::new();
+    for pair in active_pairs {
+        for oid in [pair.attacker_id, pair.target_id] {
+            out.set(era_war_civ_key(oid, epoch_of(oid)), 1);
+        }
+    }
+    out
+}
+
+/// Web `restoreEraWarCounts` (war-rules-multiwar.ts:276): odczyt licznika przy wczytaniu zapisu.
+/// `saved` = `meta.warRulesEraWarCountByCiv` (`None` = pole nieobecne). Gdy `saved` nie jest
+/// tablicą (brak, `null`, zły typ) → odbudowa z aktywnych par. Tablica → wpisy `[klucz, n]`,
+/// gdzie klucz to string, a `n` to liczba całkowita skończona; błędne wpisy są pomijane.
+/// Powtórzony klucz: wartość z ostatniego wpisu, pozycja z pierwszego (semantyka `Map.set`).
+pub fn restore_era_war_counts(
+    saved: Option<&Value>,
+    active_pairs: &[ActiveWarPair],
+    epoch_of: impl Fn(i64) -> i64,
+) -> EraWarCounts {
+    let entries = match saved {
+        Some(Value::Array(entries)) => entries,
+        _ => return rebuild_era_war_counts_from_active_pairs(active_pairs, epoch_of),
+    };
+    let mut out = EraWarCounts::new();
+    for entry in entries {
+        let Value::Array(pair) = entry else { continue };
+        let (Some(Value::String(key)), Some(raw)) = (pair.first(), pair.get(1)) else {
+            continue;
+        };
+        if let Some(n) = json_count(raw) {
+            out.set(key.clone(), n);
+        }
+    }
+    out
+}
+
+/// Liczba JSON jako licznik: skończona, całkowita, w zakresie dokładnej reprezentacji f64.
+/// Ułamki są pomijane (świadome odstępstwo od weba, zob. P6-ZAPIS-ERAWAR.md).
+fn json_count(v: &Value) -> Option<i64> {
+    let f = v.as_f64()?;
+    if f.is_finite() && f.fract() == 0.0 && f.abs() <= 9_007_199_254_740_991.0 {
+        Some(f as i64)
+    } else {
+        None
+    }
 }
