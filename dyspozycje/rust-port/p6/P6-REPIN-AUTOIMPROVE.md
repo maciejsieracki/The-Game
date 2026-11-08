@@ -472,3 +472,31 @@ Stan ZAMKNIETY/OTWARTY tych pozycji nie zmienia sie przez te liste: to tylko zes
 - `git diff --check`: EXIT=0.
 - Pozostale binarki `cargo test`: NIE_ZMIERZONO w r4 (kod `src` nie zmieniony wzgledem FC r3; baseline 2130/0 z r2).
 - Nowe `#[ignore]`: 0.
+
+## 11. Runda 1 — R-RUSTPORT-REPIN-AUTOIMPROVE-MUTANTY-Q1 (Operator, Haiku)
+
+Baza: `parity-v2` 8f9923d73. Kod `rust-port/engine/src` NIE zmieniony (mutant N88 zastosowany do pliku, zmierzony i cofnięty; `git diff` na `src` puste).
+Zmiana: `rust-port/engine/tests/p6_repin_autoimpr_vectors/roadplan.json` — dopisane 3 plany rodziny `rp-tie-n88-0..2` (400 -> 403).
+Oczekiwane wyniki WEBA: `planRoadNetwork` z `gra/src/game/road-network-plan.ts` (`git archive origin/main`; plik i `types/hex.ts` identyczne z pinem 180c08305 — `git diff --stat 180c08305 origin/main` puste), uruchomione node'em przez loader z generatora.
+Narzędzia i dowody: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-MUTANTY-Q1/tools/` (`search-n88.mjs`, `append-n88.mjs`, `search-n90.mjs`), `logs/search-n88-found.json`, `logs/search-n90-found.json`.
+
+Mechanizm N88 (krok 2b, remis par składowych): web i Rust wybierają globalnie najmniejszy `(d, i, j)`; przy kilku parach składowych o tym samym `d` wariant bez tie-breaku bierze pierwszą parę w kolejności iteracji (korzeń składowej, nie leksykograficzną). Wektor wymaga >= 3 składowych kNN, których pary mają równe `d`, a leksykograficznie mniejsza para jest w późniejszej parze korzeni.
+
+### 11.1 Status mutantów po r1 (zmiana względem §10.7)
+
+| ID | Status r1 | Dowód |
+|---|---|---|
+| N88_rp_comp_tie | ZABITY (r1) | `rp-tie-n88-0` (plan #400): mutant -> `plan_road_network_matches_web` FAILED, "plan #400 edges"; oryginał -> 8 passed. Web vs mutant na wejściu: edge `et4-jx2 901` (web) vs `hb7-iy3 901` (mutant). |
+| N90_rp_dij_cap | OTWARTE | 40 000 losowych map (dysk R 3-7, mieszany teren, jeziora, 6-9 miast) bez rozbieżności web vs `nd >= cap`. Nie udowodniono równoważności (ścieżka objazdowa o koszcie dokładnie `cap` jest konstruowalna), więc dług. NIE_ZMIERZONO w wektorze Rust. |
+| N07, N29, N42, N56, N57, N58, N85, N100 | OTWARTE, NIE_ZMIERZONO w r1 | Nie podjęte w tej rundzie (brak czasu/dysku na kolejne generatory). |
+| N20, N40, N47, N71, N81, N89, N93 | bez zmian | Dowody statyczne z r3-r5 (§9.2, §10.2, §10.3, §10.5); brak uruchomienia mutanta w r1. |
+
+Stan zbiorczy: zabite **103/119 = 86,6%** (102 z §10.7 + N88). Kryterium końca 119/119 NIE spełnione.
+
+### 11.2 Bramki r1
+
+- `cargo test --test p6_repin_autoimpr_terrain` na kodzie nieruszonym: **8 passed, 0 failed** (w tym `plan_road_network_matches_web`, 403 planów).
+- Ten sam test z mutantem N88: **FAILED** (plan #400 edges). Mutant cofnięty; `src` czysty.
+- `cargo fmt --check`, `cargo clippy --all-targets -D warnings`, pozostałe binarki `cargo test`, `p6_8i_pick`: NIE_ZMIERZONO w r1 (zmiana dotyczy tylko danych JSON czytanych przez jeden test binarny; kod `src` nie zmieniony).
+- Nowe `#[ignore]`: 0.
+- Dysk: start 2,5 GB wolnego, po zbudowaniu testu 2,0 GB, po usunięciu `target/` 3,3 GB (próg przerwania 1,5 GB nie naruszony).
