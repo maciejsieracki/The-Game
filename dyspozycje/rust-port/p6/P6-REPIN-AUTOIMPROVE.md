@@ -667,3 +667,16 @@ Zmiany generatora (powtarzalnosc): dodano F11 (`kz7-n56-0`) i F12 (`kz7-n58-0/1`
 Bramki r2 (zmierzone na zatwierdzonym drzewie): `cargo fmt --all -- --check` OK (po `rustfmt` jednego pliku testu); `cargo clippy --all-targets -- -D warnings` EXIT 0; `cargo test --test p6_repin_autoimpr_terrain`: 9 passed; `cargo test --test p6_8i_pick` (pelny, 5131 scenariuszy): 5 passed, 0 failed, 375.79 s. Nowe `#[ignore]`: 0. Pozostale binarki `cargo test` nie uruchamiane w tej rundzie (kod `src` nie zmieniony; zmienione tylko testy `p6_repin_autoimpr_terrain` i `p6_8i_pick` oraz dane JSON).
 
 Stan zbiorczy po tej rundzie: **KILLED 107/119** (103 z r1 + N85, N100, N56, N58). Dowody statyczne (EQUIVALENT, do akceptacji FC): N20, N47, N71, N81, N89, N93 (6). OTWARTE bez wektora i dowodu: N07, N29, N40, N42, N57, N90 (6). 107 + 6 + 6 = 119. Kryterium 119/119 lub dowod: NIE spelnione. DEPLOY/PUSH: NIE WYKONANO.
+
+### 11.6 Runda 4/5 — R-RUSTPORT-REPIN-AUTOIMPROVE-MUTANTY-Q1 (Operator r4, Haiku; baza `12d8cf5fd` = Operator r3)
+
+Raport: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-MUTANTY-Q1/01-operator-r4.md`. **Status: FAIL (niedomkniete).** Korekta statusu r3: PASS-WITH-NOTES byl zawyzony wobec 12 pozycji niedomknietych.
+
+- Brak uruchomien cargo i mutantow w r4: dysk ~1,43 GiB wolnego (prog 8 GB dla startu Rust w CLAUDE.md; prog 1,5 GB z dispatchu). Zadne mutanty nie zmierzone w r4; statusy z sek. 11.3 bez zmian.
+- N07, N42: bez zmian (OTWARTE, bez wektora i dowodu).
+- N29: analiza kodu (NIE dowod): mutant dodaje zloza konia z kola OBCEGO fortu do `fort_horse_extra`; `hex_allows_key` (`city_phases.rs:118-119`) pozwala tam tylko na `stadnina`; kwalifikator stadniny wymaga `in_player_territory` (`improvement_build.rs:1250-1251`). Luka: (a) rozbieznosc promienia pierscienia miasta (populacja z opts.cities) i promienia wezla (node.pop); (b) sciezka `pending_undo` omijajaca bramke terytorium. Pozostaje OPEN.
+- N40: dowod statyczny sek. 10.5 bez zmian; runtime NIE_ZMIERZONO.
+- N71: w podsumowaniach traktowany jako dowod statyczny (sek. 9.2) BEZ uruchomienia mutanta (TIMEOUT x2). Od r4: "dowod statyczny, runtime NIE_ZMIERZONO"; nie liczy sie do 119/119 bez akceptacji FC.
+- N57, N90: NIE_ZMIERZONO w r4 (wymagaja wektora z uruchomionego weba i testu cargo).
+
+Stan po r4 (bez zmian w liczbach): KILLED 107; dowody statyczne N20, N47, N71, N81, N89, N93; OTWARTE N07, N29, N40, N42, N57, N90. Suma 119.
