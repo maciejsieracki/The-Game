@@ -105,6 +105,48 @@ assert(
   'B7: ai.ts guardy Brązu/Kamienia/Żelaza nadal wykluczają sojusz z celem',
 );
 
+// Część C -- zachowanie decideAIDiplomacy (PRAWDZIWY moduł game/ai.ts, esbuild).
+// Wczesne zwroty wojny epoki: para z NAP + blokadą pokoju -> wypowiedz_wojne (dozwolona);
+// para z sojuszem -> wczesny zwrot NIE zachodzi (sojusz blokuje).
+const aiBundle = path.resolve(__dirname, '.era-war-ignore-treaties-ai-bundle.cjs');
+let aiApi;
+try {
+  esbuild.buildSync({
+    entryPoints: [path.join(SRC, 'game', 'ai.ts')], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
+    outfile: aiBundle, absWorkingDir: GRA_ROOT, logLevel: 'silent',
+  });
+  aiApi = require(aiBundle);
+} catch (e) {
+  console.error('  FAIL: nie udało się zbudować game/ai.ts:', e && e.message);
+  failed++;
+} finally {
+  try { fs.unlinkSync(aiBundle); } catch (e) { /* nieistotne */ }
+}
+if (aiApi) {
+  const rel = (o) => ({
+    partnerId: '2', relation: {}, respektWzgledny: 0.5, stanWojny: false,
+    hasNapTreaty: false, peaceLocked: false, hasAllianceTreaty: false, ...o,
+  });
+  const ERA = 'R-EPOKA-BRAZU-WYMUSZONA-WOJNA';
+  const decide = (relOpts, extra) => aiApi.decideAIDiplomacy({
+    myPlayerId: '1', agresja: 0.5, currentTurn: 50, relacje: [rel(relOpts)], ...extra,
+  });
+  console.log('--- C1: decideAIDiplomacy -- wojna epoki (Brąz/Kamień/Żelazo) przy NAP + blokadzie pokoju ---');
+  for (const key of ['bronzeForceWarTargetId', 'stoneForceWarTargetId', 'ironForceWarTargetId']) {
+    const cmds = decide({ hasNapTreaty: true, peaceLocked: true }, { [key]: 2 });
+    assert(
+      cmds.some(c => c.type === 'wypowiedz_wojne' && c.targetId === '2'),
+      key + ': NAP + blokada pokoju NIE blokują wojny epoki (wypowiedz_wojne na cel)',
+    );
+  }
+  console.log('--- C2: decideAIDiplomacy -- sojusz formalny blokuje wczesny zwrot wojny epoki ---');
+  const allied = decide({ hasAllianceTreaty: true }, { bronzeForceWarTargetId: 2 });
+  assert(
+    !allied.some(c => String(c.powod || '').includes(ERA)),
+    'sojusz z celem: wczesny zwrot wojny epoki NIE zachodzi',
+  );
+}
+
 console.log(`\nera-war-ignore-treaties-test: ${passed} pass, ${failed} fail`);
 try { fs.unlinkSync(bundle); } catch (e) { /* nieistotne */ }
 if (failed > 0) process.exitCode = 1;

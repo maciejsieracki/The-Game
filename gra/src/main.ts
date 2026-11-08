@@ -39902,8 +39902,9 @@ async function boot(): Promise<void> {
                 // Brązu (bronzeForceWarPendingOwners, ustawione w syncOwnerEraFromResearch),
                 // (b) cyklicznie po odpoczynku od poprzedniej wojny wymuszonej (owner już
                 // zapisany do bronzeForceWarCycleOwners). Miasta-państwa/kopie i barbarzyńcy
-                // wykluczeni; cel = najbliższa główna cywilizacja niezablokowana NAP/
-                // peaceLocked/sojuszem (B3, runda 2) (patrz `game/forced-war-bronze.ts`).
+                // wykluczeni; cel = najbliższa główna cywilizacja niezablokowana sojuszem
+                // (B3, runda 2; NAP/peaceLocked nie blokują — R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)
+                // (patrz `game/forced-war-bronze.ts`).
                 // B4 (runda 2, Evaluator FAIL): `wasPending` jest TYLKO ODCZYTEM — pending
                 // NIE jest tu kasowany. Jeśli ta próba nie zakończy się faktycznym udanym
                 // wypowiedzeniem wojny (bo owner już jest w wojnie z innego powodu, albo
@@ -39912,8 +39913,8 @@ async function boot(): Promise<void> {
                 // wypowiedz_wojne niżej, przy faktycznym sukcesie.
                 // EN: Bronze-era forced war on a territorial neighbor — (a) one-shot on Bronze
                 // advance, (b) cyclic after resting from a previous forced war. City-states/
-                // copies/barbarians excluded; target = nearest major civ not NAP/peaceLocked/
-                // allied (B3, round 2). B4 (round 2): `wasPending` is READ-ONLY here — pending
+                // copies/barbarians excluded; target = nearest major civ not allied
+                // (B3, round 2; NAP/peaceLocked do not block — R-WEB-ERA-WAR-IGNORE-TREATIES-Q1). B4 (round 2): `wasPending` is READ-ONLY here — pending
                 // is NOT deleted at this point; it is only consumed on an actual successful war
                 // declaration in the wypowiedz_wojne block below, so a civ that happens to
                 // already be at war (or has every candidate blocked) is retried next turn
