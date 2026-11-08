@@ -931,3 +931,5 @@ Port ERAIGN/ERADELAY (web 5dd53e60f): `is_era_forced_war_ignoring_r1`, `is_war_t
 ## 2026-11-08 19:1x — przegląd cykliczny
 - Aktywne: web CORRUPT (Pałac II/III −30% korupcji, Trybunał −30%; Sonnet r1). Rust: brak aktywnych, nowe wstrzymane do końca tematów webowych (priorytet weba; dysk 8,8 GB ≥ 8 GB ale trwa temat webowy). Wdrożone dziś na ROBOCZA: FALA 551–559 (ostatnia: karty odkryć TOP 5).
 - Kolejka web: wdrożenie kart budynków (po CORRUPT), jednostki/ulepszenia/CIVPEDIA (analiza + wdrożenie), R-WEB-TECH-CARDS-ECON-SECTION-BASE-Q1, niestabilne testy kart, dedup pending propozycji miasto/pokój. Kolejka Rust: MULTIWAR-3, FORCED-WAR-MODULES, REPIN-y (AI priorytety 551, cel 553, oblężenie 555, cooldown 557, wojny epoki gracza 558, karty?), podpięcie zakupu AI, OBLEZENIE P3–P5.
+
+- 2026-11-08 (wieczór): web FALA 562 wdrożona (MUSIC2 + SPLIT-AUDIO, audio w sąsiadach audio-pack-N.js, main fd8cc14a3). Rust: kolejka bez zmian; start nowych tematów dopiero po sprzątaniu i przy ≥ 8 GB wolnego.

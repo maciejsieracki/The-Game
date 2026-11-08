@@ -1,6 +1,6 @@
 # Muzyka cywilizacji (dyplomacja) — wpisy od właściciela
 
-Nazewnictwo: `<civId>/<civId>_przywitanie.mp3` (powitanie), `<civId>/<civId>_negocjacje.mp3` (pętla negocjacji). Tylko materiał zebrany, NIE podłączony do gry (wymaga decyzji właściciela i osobnego tematu).
+Nazewnictwo: `<civId>/<civId>_przywitanie.mp3` (powitanie), `<civId>/<civId>_negocjacje.mp3` (pętla negocjacji). **STATUS (2026-11-08): wszystkie 15 cywilizacji podłączone do gry (FALA 539 + 562), przywitania z rotacją. Tabela poniżej to rejestr materiału źródłowego z wcześniejszego etapu (nie zawiera późniejszych plików Celtów, Germanów, Harappy, Hetytów, Słowian, Babilonii, Asyrii, Fenicjan, drugich przywitań Zulusów/Inków i negocjacji Sumerów — patrz podfoldery). W grze audio idzie w plikach-sąsiadach audio-pack-N.js obok HTML.**
 
 | Cywilizacja | Plik | Tytuł oryginalny | Czas | Rozmiar |
 |---|---|---|---|---|
