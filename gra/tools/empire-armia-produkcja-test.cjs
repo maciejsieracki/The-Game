@@ -214,7 +214,8 @@ console.log('\n-- B. main.ts buildEmpireDetailSnap() + empireDetailTypes.ts -- w
   const armiaIdx = mainSrc.indexOf('const armiaProdukcja: EmpireDetailSnap[\'armiaProdukcja\'] = [];', fnIdx);
   assert(armiaIdx > fnIdx, 'B4: blok liczący armiaProdukcja leży WEWNĄTRZ buildEmpireDetailSnap()');
 
-  const religionIdx = mainSrc.indexOf('const relStateReligion = ownerReligionForOwnerId(0);', armiaIdx);
+  // Kotwica po migracji ME() (aeb247bb1, Etap 6d): dawniej `ownerReligionForOwnerId(0)`.
+  const religionIdx = mainSrc.indexOf('const relStateReligion = ownerReligionForOwnerId(ME());', armiaIdx);
   const block = (armiaIdx > -1 && religionIdx > armiaIdx) ? mainSrc.slice(armiaIdx, religionIdx) : '';
   assert(block.includes('for (const c of pc) {'), 'B5: pętla iteruje po `pc` -- miastach GRACZA (ownerId===0), nie po wszystkich miastach');
   assert(block.includes('const front = frontItem(prod);'), 'B6: blok woła frontItem() -- TA SAMA funkcja co sekcja A, zero zduplikowanej logiki frontu');

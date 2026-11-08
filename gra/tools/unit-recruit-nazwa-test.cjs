@@ -137,7 +137,9 @@ console.log('\n2. availableReplacementsFor() -- kazdy zamiennik ma niepuste nazw
     epoch: 3,
     civUnitNacja: 'Rzym',
     civBonusy: [],
-    builtBuildingIds: ['odlewnia_zelaza'],
+    // Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): bramka Koszar dla epok >= Braz (e06ad53c8) --
+    // fixture epoki Zelazo musi zawierac 'koszary', jak w realnej grze.
+    builtBuildingIds: ['odlewnia_zelaza', 'koszary'],
     empireResourceStock: { braz: 10, zelazo: 10, drewno: 10 },
   };
   const techs = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];
@@ -154,7 +156,9 @@ console.log('\n3. availableReplacementsFor() -- galaz B (pole "Zastąp specjalni
     epoch: 3,
     civUnitNacja: 'Rzym',
     civBonusy: [],
-    builtBuildingIds: ['odlewnia_zelaza'],
+    // Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): bramka Koszar dla epok >= Braz (e06ad53c8) --
+    // fixture epoki Zelazo musi zawierac 'koszary', jak w realnej grze.
+    builtBuildingIds: ['odlewnia_zelaza', 'koszary'],
     empireResourceStock: { braz: 10, zelazo: 10, drewno: 10 },
   };
   const techs = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];

@@ -189,11 +189,15 @@ async function main() {
   check('koniec buildUnitDetailCardViaEntityCard znaleziony', viaEnd > viaStart);
   const viaSrc = viaStart > -1 && viaEnd > viaStart ? cpSrc.slice(viaStart, viaEnd) : '';
   check('buildUnitDetailCardViaEntityCard woła unitAdapter(u, {})', viaSrc.includes('unitAdapter(u, {})'));
-  check('buildUnitDetailCardViaEntityCard woła renderEntityCard(built)', viaSrc.includes('renderEntityCard(built)'));
+  // Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): po 3cd2c34e0 (podglad 3D jednostki) karta
+  // przekazuje do renderEntityCard obiekt cardData = {...built, medallion:{kind:'unit3d'}}.
+  check('buildUnitDetailCardViaEntityCard woła renderEntityCard(cardData) (medalion 3D)', viaSrc.includes('renderEntityCard(cardData)'));
   check('buildUnitDetailCardViaEntityCard dopełnia sekcję Technologie (appendTechDetailBlock, jak dla budynków w T5)',
     viaSrc.includes('appendTechDetailBlock(techBody, data, u.Tech)'));
-  check('buildUnitDetailCardViaEntityCard dopełnia sekcję Uwagi (u.Uwagi, jak dla budynków w T5)',
-    viaSrc.includes('note.textContent = u.Uwagi;'));
+  // Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): wiersz "Uwagi" usunięty świadomie w 31a621d69
+  // (R-KARTY-HISTORIA-INFRA-Q1 2/17). Asercja odwrócona: Uwagi NIE jest doklejane przez host.
+  check('buildUnitDetailCardViaEntityCard NIE dopełnia sekcji Uwagi (usunięte w 31a621d69)',
+    !viaSrc.includes('note.textContent = u.Uwagi;'));
 
   const pubStart = cpSrc.indexOf('function buildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement {\n  try {');
   check('publiczna funkcja buildUnitDetailCard( próbuje ścieżkę entityCards w try/catch', pubStart > -1);

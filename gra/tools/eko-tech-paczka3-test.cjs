@@ -50,8 +50,11 @@ const placedEmpty = new Map();
 ok(!M.empireHasKopalniaMiedzi(placedEmpty), 'brak kopalni miedzi w imperium');
 ok(M.empireHasKopalniaMiedzi(placedWithPopalnia), 'kopalnia miedzi w imperium');
 ok(M.cityHasPiecHutniczy(['odlewnia_brazu']), 'miasto ma piec');
-ok(!M.hasBrazAccess(placedWithPopalnia, []), 'AND: kopalnia miedzi bez pieca = brak brązu');
-ok(M.hasBrazAccess(placedWithPopalnia, ['odlewnia_brazu']), 'AND: kopalnia miedzi + piec = brąz');
+// DOSTEP-SUROWCE-Q1 (daacd43a8): hasBrazAccess czyta stan Brązu z MAGAZYNU państwa (empireStock.braz),
+// a nie z mapy; poprzedni fixture przekazywał Map (ignorowana -> zawsze false). Brąz = stock + Piec.
+ok(!M.hasBrazAccess({ braz: 10 }, []), 'AND: stock Brązu bez pieca = brak brązu');
+ok(M.hasBrazAccess({ braz: 10 }, ['odlewnia_brazu']), 'AND: stock Brązu + piec = brąz');
+ok(!M.hasBrazAccess({ braz: 0 }, ['odlewnia_brazu']), 'AND: piec bez stocku Brązu = brak brązu');
 
 // B-ODLEWNIA-2026-07-27: Odlewnia brązu (Piec hutniczy = rezerwa na przyszłe epoki)
 {
@@ -74,9 +77,12 @@ ok(
   'Odlewnia brązu ukryta bez Kopalni miedzi',
 );
 
+// Bramka Odlewni brązu = "Ruda w magazynie państwa" (buildings.json wymagania): kopalnia
+// produkuje Rudę do magazynu, więc fixture niesie stock Rudy (klasa A — stary fixture bez stocku).
 const withPopalniaNoPiec = M.availableProduction(city, data, techs, {
   ...ctxBase,
   placedImprovements: placedWithPopalnia,
+  empireResourceStock: { ruda: 50 },
 });
 ok(
   withPopalniaNoPiec.some(it => it.kind === 'budynek' && it.id === M.PIEC_HUTNICZY_BUILDING_ID),

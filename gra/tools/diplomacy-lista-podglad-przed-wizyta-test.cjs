@@ -378,7 +378,9 @@ async function main() {
         '6d) definiuje/przekazuje isVisiblePartner (B2 — bramka mgły wojny nie wypadła z wpięcia)',
       );
       ok(
-        /id === 0 \|\|.*isActiveDiploOwner\(id\).*getDiplomaticContacts\(\)\.has\(id\)/.test(pairSummaryBody),
+        // Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): main.ts używa isMe(id) (= id === ME(),
+        // hotseat-poprawne; w single-player ME() = 0), a nie literału id === 0. Obie formy akceptowane.
+        /(id === 0|isMe\(id\)) \|\|.*isActiveDiploOwner\(id\).*getDiplomaticContacts\(\)\.has\(id\)/.test(pairSummaryBody),
         '6e) predykat widoczności = id===0 || (isActiveDiploOwner(id) && kontakt) — dokładnie specyfikacja Evaluatora',
       );
       // N1 (Evaluator runda 2, tania): rodzaj traktatu przekazany do

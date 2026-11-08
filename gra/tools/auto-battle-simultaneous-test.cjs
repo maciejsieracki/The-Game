@@ -120,6 +120,8 @@ function makeTurnFixture(BattleScene, manualMode) {
     finished: false,
     _battleAwaitingOrders: false,
     _manualMode: manualMode,
+    _queuedOrderUnitIds: new Set(),
+    _refreshQueuedOrderVisuals() {},
     _autoBattleSuspended: false,
     siegeWallCol: -1,
     roundNo: 0,

@@ -1,3 +1,7 @@
+// KLASA B (kandydat, przyczyna do potwierdzenia) -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4.
+// Test CELOWO pozostaje CZERWONY. Kod gry NIE jest naprawiany w tym temacie.
+// Czerwony na main i na ref 3aa1b3a2a (FULLREG). Kandydat na osobny temat R-WEB-* (decyzja orkiestratora).
+// NIE_ZWERYFIKOWANO w r4: nie ustalono przyczyny.
 'use strict';
 
 /**

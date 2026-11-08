@@ -75,8 +75,11 @@ ok(
 // Realny predykat jako wykonywalna funkcja — kompilowany z TEKSTU main.ts (nie ręczna kopia).
 function makePredicate(ownerId) {
   // eslint-disable-next-line no-new-func
-  const factory = new Function('ownerId', `return (${predicateSrc});`);
-  return factory(ownerId);
+  // Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): predykat z main.ts odwołuje się do isMe()
+  // (main.ts:12996: `ownerId === ME()`, ME() = człowiek = owner 0 w tym teście). Stary harness
+  // nie dostarczał isMe -> ReferenceError przy wywołaniu. Dostarczamy ten sam kontrakt.
+  const factory = new Function('ownerId', 'isMe', `return (${predicateSrc});`);
+  return factory(ownerId, (o) => o === 0);
 }
 const livePredicate = makePredicate(1);
 ok(typeof livePredicate === 'function', 'źródło: predykat main.ts skompilowany jako wykonywalna funkcja (ownerId=1)');

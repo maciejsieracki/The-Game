@@ -1,3 +1,7 @@
+// KLASA B (kandydat) -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4. RUNDA 4 (pokoj w wojnie).
+// Test CELOWO pozostaje CZERWONY. Kod gry NIE jest naprawiany w tym temacie.
+// Bramka r5Gate / treatyBaseFairnessGap: diplomacy-proposals.ts:875 i ok. 1289-1330 (grep r4).
+// Kandydat na osobny temat R-WEB-* (decyzja orkiestratora).
 'use strict';
 /** diplomacy-proposal-test.cjs — v1.1 evaluateProposal (15 scenariuszy) */
 const fs = require('fs');

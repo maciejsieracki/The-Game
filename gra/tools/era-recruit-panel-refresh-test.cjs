@@ -67,6 +67,11 @@ try {
     pendingEraDiscoveryTech: null,
     showTechDiscoveryNotice: () => {},
     showTechTreeView: () => {},
+    // Harness drift (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): funkcja main.ts dostala później wywołania
+    // trimWarEventLog() (dziennik wojenny) i emitOrDeferNotice(...) -- stub no-op, bez zmiany asercji.
+    trimWarEventLog: () => {},
+    emitOrDeferNotice: (_kind, _owner, fn) => { if (typeof fn === 'function') fn(); },
+    humanSeats: { activeHumanOwnerId: 0 },
   };
   vm.runInNewContext(fnSource + '\nthis.runNotify = notifyPlayerEraChangeIfAdvanced;', context);
 

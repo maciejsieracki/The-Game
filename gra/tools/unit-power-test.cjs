@@ -100,7 +100,10 @@ function assert(cond, msg) {
 
 const hastati = byName['Hastati'];
 const fp = fieldPower(hastati);
-assert(fp.total === 50, 'Hastati M_pole=50 (got ' + fp.total + ')');
+// Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): wartosc 50 byla nieaktualna wobec swiadomego
+// balansu 37db6cdc4 ("Balans: 2x zywnosc..."), ktory zmienil Hastati fieldPower 50.0 -> 57.5
+// (ta sama wartosc w gra/data/units.json). Formula i dane sa zgodne; zmienia sie tylko oczekiwana liczba.
+assert(fp.total === 57.5, 'Hastati M_pole=57.5 (got ' + fp.total + ')');
 
 const kat = byName['Katapulta'];
 assert(isSiegeUnit(kat), 'Katapulta is siege');
@@ -110,7 +113,8 @@ assert(sp.total > 0, 'Katapulta M_siege>0 (got ' + sp.total + ')');
 
 const wojsko = [hastati, hastati, byName['Falanga']];
 const sum = sumArmyFieldPower(wojsko);
-assert(sum === 50 + 50 + 45, 'sumArmyFieldPower 3 units (got ' + sum + ')');
+// Falanga = 52.5 (units.json fieldPower, ta sama kalibracja balansu co Hastati); 57.5 + 57.5 + 52.5.
+assert(sum === 57.5 + 57.5 + 52.5, 'sumArmyFieldPower 3 units (got ' + sum + ')');
 
 const cached = byName['Triari'];
 if (typeof cached.fieldPower === 'number') {

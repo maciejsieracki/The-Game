@@ -93,7 +93,10 @@ const RZYM_ZELAZO_CTX = {
   epoch: 3,
   civUnitNacja: 'Rzym',
   civBonusy: [],
-  builtBuildingIds: ['odlewnia_zelaza'],
+  // Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): bramka Koszar (production.ts passesAvailabilityGates,
+  // epoka >= Braz wymaga 'koszary') dodana w e06ad53c8 ("complete non-performance Robocza fixes"),
+  // po ostatniej zmianie tego testu. Fixture musi odzwierciedlac ten swiadomy warunek gry.
+  builtBuildingIds: ['odlewnia_zelaza', 'koszary'],
   placedImprovements: null,
   hasKopalniaNaZlozuZelaza: true,
   // UNIT-REPLACE-EVOCATI-Q1 runda 2: passesAvailabilityGates (production.ts) sprawdza
@@ -171,7 +174,8 @@ console.log('\n4. buildReplaceAvailabilityCtx (main.ts "Zastąp" -- pokrycie UNI
 {
   const baseParams = {
     epoch: 3,
-    builtBuildingIds: ['odlewnia_zelaza'],
+    // Klasa A: 'koszary' -- patrz komentarz w RZYM_ZELAZO_CTX (e06ad53c8).
+    builtBuildingIds: ['odlewnia_zelaza', 'koszary'],
     civBonusy: [],
     civUnitNacja: 'Rzym',
     placedImprovements: null,

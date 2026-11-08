@@ -430,8 +430,15 @@ assert(guardCallNode && advanceCallNode
   && guardCallNode.getStart(mainTsAst) < advanceCallNode.getStart(mainTsAst)
   && sameCityIteration,
   'D10: guard jest wolany PRZED `advanceProduction` w ticku per-miasto');
-assert((mainTsSrc.match(/advanceProduction\(/g) || []).length === 1,
-  'D11: main.ts ma DOKLADNIE JEDEN punkt zuzycia Pracy — nowy, niebroniony by tu uciekl');
+// Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): b7fcfd3ce dodal podglad prognozy Pracy
+// (`_livePracaForecast`), ktory wola advanceProduction() na KOPII kolejki (production.ts zwraca
+// nowe obiekty, nie mutuje wejscia) i NIE zuzywa Pracy. Punkt zuzycia = wywolanie w ticku
+// per-miasto (drugie). Asercja liczy zuzycie: 2 wywolania, pierwsze to tylko prognoza.
+const advCallIdx = [...mainTsSrc.matchAll(/advanceProduction\(/g)].map(m => m.index);
+assert(advCallIdx.length === 2,
+  'D11: main.ts ma DOKLADNIE DWA wywolania advanceProduction (1 prognoza + 1 zuzycie) — nowy, niebroniony by tu uciekl');
+assert(mainTsSrc.slice(advCallIdx[0], advCallIdx[0] + 600).includes('_livePracaForecast = {'),
+  'D11: pierwsze wywolanie advanceProduction jest w bloku prognozy (_livePracaForecast), nie zuzyciem');
 // D12 — ZAKTUALIZOWANE przy integracji R-PRACA-JEDEN-PODZIAL-Q1 (orkiestrator,
 // integration micro-fix; zmiana WYLACZNIE w tescie, zero zmian w kodzie gry).
 //

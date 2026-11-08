@@ -1,3 +1,13 @@
+// KLASA B (kandydat) -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4.
+// Test CELOWO pozostaje CZERWONY. Kod gry NIE jest naprawiany w tym temacie.
+// Bezposrednie wywolania hideDiplomacyAudience() zamiast closeDiplomacyAudienceAndFlush (grep r4):
+// main.ts:6914, 13160, 24227, 27108, 27749. Kandydat na osobny temat R-WEB-* (decyzja orkiestratora).
+// R5 (2026-11-08, asercje bez zmian, test CZERWONY): aktualne gole wywołania wg grep main.ts:
+// 6914 = wnętrze closeDiplomacyAudienceAndFlush (dozwolone, nazwane); 24227 = onBack (nazwane);
+// 27108 = hak __audienceRelTestDebug.closeAudience (nazwany); 13160 = switchActiveHuman KROK 1
+// (zamknięcie audiencji starego fotela BEZ flush -- legalne czy błąd reguły flush: NIE_ZWERYFIKOWANO);
+// 27749 = obiekt testowy `closeAudience` obok openAudience, bez flush (kandydat klasy A: dopisać do
+// listy nazwanych miejsc po decyzji orkiestratora).
 'use strict';
 /**
  * diplomacy-audience-close-flush-test.cjs

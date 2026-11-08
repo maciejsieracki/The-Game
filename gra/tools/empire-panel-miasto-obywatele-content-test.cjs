@@ -225,7 +225,9 @@ ok(fnBody.includes('happiness,'),
 // więc cityId/cityName muszą pochodzić z `side`, nie z literału `r.fromCityId`.
 ok(mainSrc.includes('cityId: side.myCityId,') && mainSrc.includes('cityName: myCity?.name ?? side.myCityId,'),
   'buildEmpireTradeSnap(): EmpireTradeRouteRow.cityId = side.myCityId (strona gracza trasy, po R2-2), obok cityName istniejącego');
-ok(mainSrc.includes('const side = r.ownerId === 0')
+// Po migracji na isMe() (Etap 6d, aeb247bb1/93040dbe0) warunek strony gracza to `isMe(r.ownerId)`
+// (dla ludzkiego miejsca = 0, semantyka bez zmian).
+ok(mainSrc.includes('const side = isMe(r.ownerId)')
   && mainSrc.includes('myCityId: r.fromCityId, partnerCityId: r.toCityId')
   && mainSrc.includes('myCityId: r.toCityId, partnerCityId: r.fromCityId'),
   'R2-2: side.myCityId pochodzi z prawdziwego wyboru strony gracza (fromCityId gdy ownerId===0, inaczej toCityId), nie z halucynowanej wartości');
