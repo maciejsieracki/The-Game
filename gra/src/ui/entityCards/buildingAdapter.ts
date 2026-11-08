@@ -47,7 +47,12 @@ import {
 import type { BuildingCostPace } from '../../game/building-cost-tempo';
 import type { GameDifficulty } from '../../game/difficulty-cost';
 import { buildingUpkeep, buildingResourceUpkeep } from '../../game/economy-upkeep';
-import type { BuildingRecord } from '../../game/economy';
+import {
+  BUILDING_HAPPINESS_BASE_PER_BUILDING,
+  buildingGivesHappiness,
+  buildingHappinessAtLevel,
+  type BuildingRecord,
+} from '../../game/economy';
 import { buildingStockCost, stockResourceLabel } from '../../game/building-stock-cost';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../../game/unit-building-bonuses';
 import { buildingStructuralDefenseBonusLine } from '../../game/building-upgrades';
@@ -189,6 +194,28 @@ function formatYieldDetailValue(baza: number, przyrost: number, level: number): 
   return main;
 }
 
+/** Szczęście z budynku WG SILNIKA (`economy.ts::buildingHappinessAtLevel`): ryczałt +1 (tylko
+ * `dajeSzczescie: true`) + `baza/przyrost.zadowolenie`. Wiersz „Zadowolenie” w „Plony i efekty”
+ * pokazuje tę wartość — tę samą, co silnik i co Top 5 (R-WEB-TRYBUNAL-CARD-HAPPINESS-DISPLAY-Q1:
+ * wcześniej karta pokazywała surowe `baza/przyrost` bez ryczałtu, np. Trybunał „+1” zamiast „+2”). */
+function formatHappinessDetailValue(record: BuildingRecord, level: number): string {
+  const eff = buildingHappinessAtLevel(record, level);
+  const extra = eff - BUILDING_HAPPINESS_BASE_PER_BUILDING;
+  const levelNote = level > 1 ? `poziom ${level}: ` : '';
+  return extra > 0
+    ? `+${eff} pkt/turę (${levelNote}ryczałt +${BUILDING_HAPPINESS_BASE_PER_BUILDING}, zadowolenie +${extra})`
+    : `+${eff} pkt/turę (${levelNote}ryczałt +${BUILDING_HAPPINESS_BASE_PER_BUILDING})`;
+}
+
+/** Skala poziomów Szczęścia wg silnika; `null` gdy budynek nie zmienia wartości między poziomami. */
+function formatHappinessScaleRow(record: BuildingRecord, maksPoziom: number): string | null {
+  if (maksPoziom <= 1) return null;
+  const values: number[] = [];
+  for (let l = 1; l <= maksPoziom; l++) values.push(buildingHappinessAtLevel(record, l));
+  if (values.every((v) => v === values[0])) return null;
+  return values.map((v, i) => `L${i + 1}: +${v}`).join(' · ');
+}
+
 /** 1:1 z `cityPanel.ts::formatBuildingYieldScaleRow`. */
 function formatYieldScaleRow(def: BuildingDef, baza: number, przyrost: number): string | null {
   if (przyrost === 0 || def.maksPoziom <= 1) return null;
@@ -312,7 +339,17 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
 
   // --- 7. EFEKTY/PLONY — 1:1 z dawną sekcją „Plony i efekty" ---------------------------------
   const yieldRows: EntityCardRow[] = [];
+  const happinessRecord = building as unknown as BuildingRecord;
   for (const y of YIELD_BRAND) {
+    if (y.key === 'zadowolenie') {
+      // Silnik daje Szczęście tylko budynkom `dajeSzczescie: true` i dolicza do nich ryczałt +1
+      // nawet bez `baza.zadowolenie` (Targowisko, Port, Stela). Budynek bez Szczęścia — brak wiersza.
+      if (!buildingGivesHappiness(happinessRecord)) continue;
+      yieldRows.push({ label: y.label, value: formatHappinessDetailValue(happinessRecord, displayLevel) });
+      const happinessScale = formatHappinessScaleRow(happinessRecord, building.maksPoziom);
+      if (happinessScale) yieldRows.push({ label: `${y.label} — skala poziomów`, value: happinessScale });
+      continue;
+    }
     const baza = building.baza[y.key] ?? 0;
     const inc = building.przyrost[y.key] ?? 0;
     if (baza === 0 && inc === 0) continue;
