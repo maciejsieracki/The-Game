@@ -1744,6 +1744,9 @@ pub mod p6_6b {
             pub wealth_state: Option<WealthState>,
             pub wealth_immunity_remaining: Option<f64>,
             pub founded_by_owner: Option<bool>,
+            /// Web `foundedBy?: number` (cities.ts, FALA 551 AIDRA): tworca miasta. `None` = pole nieobecne
+            /// (stary zapis / miasto bez tworcy); dodane addytywnie, wsteczna zgodnosc zachowana.
+            pub founded_by: Option<i64>,
             pub start_city_state: Option<bool>,
             pub postep_budynkow_usuniete: Option<BTreeMap<String, f64>>,
         }

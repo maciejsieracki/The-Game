@@ -1,0 +1,7450 @@
+{
+ "pool": [
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 1,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 30,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 40,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 59,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 79,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 80,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 0,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": true
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": null,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 40,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 50,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 100,
+    "playerEpoch": 4,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 1,
+    "eraEnterTurn": 70,
+    "poolStartTurn": 40
+   },
+   "out": false
+  }
+ ],
+ "slot": [
+  {
+   "counts": [],
+   "aiEpoch": 1,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [],
+   "aiEpoch": 1,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [],
+   "aiEpoch": 1,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [],
+   "aiEpoch": 2,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [],
+   "aiEpoch": 2,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [],
+   "aiEpoch": 2,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [],
+   "aiEpoch": 3,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [],
+   "aiEpoch": 3,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [],
+   "aiEpoch": 3,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [],
+   "aiEpoch": 4,
+   "playerEpoch": 1,
+   "out": false
+  },
+  {
+   "counts": [],
+   "aiEpoch": 4,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [],
+   "aiEpoch": 4,
+   "playerEpoch": 3,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 1,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 3,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 1,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 1,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 1,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:1",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 3,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 3,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 1,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 3,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 3,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 1,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:3",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 3,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 1,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "2:2",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 3,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 3,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 1,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 3,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 1,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 2,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 1,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 2,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 3,
+   "playerEpoch": 3,
+   "out": true
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 1,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 2,
+   "out": false
+  },
+  {
+   "counts": [
+    [
+     "3:1",
+     1
+    ]
+   ],
+   "aiEpoch": 4,
+   "playerEpoch": 3,
+   "out": false
+  }
+ ],
+ "tag": [
+  {
+   "epoch": 0,
+   "tag": null
+  },
+  {
+   "epoch": 1,
+   "tag": "stone"
+  },
+  {
+   "epoch": 2,
+   "tag": "bronze"
+  },
+  {
+   "epoch": 3,
+   "tag": "iron"
+  },
+  {
+   "epoch": 4,
+   "tag": null
+  },
+  {
+   "epoch": 5,
+   "tag": null
+  }
+ ],
+ "counter": [
+  {
+   "tag": "stone",
+   "epoch": 1
+  },
+  {
+   "tag": "bronze",
+   "epoch": 2
+  },
+  {
+   "tag": "iron",
+   "epoch": 3
+  },
+  {
+   "tag": null,
+   "epoch": null
+  },
+  {
+   "tagEpoch": null,
+   "ownerEpoch": 1,
+   "out": 1
+  },
+  {
+   "tagEpoch": null,
+   "ownerEpoch": 2,
+   "out": 2
+  },
+  {
+   "tagEpoch": 1,
+   "ownerEpoch": 2,
+   "out": 1
+  },
+  {
+   "tagEpoch": 2,
+   "ownerEpoch": 1,
+   "out": 1
+  },
+  {
+   "tagEpoch": 3,
+   "ownerEpoch": 2,
+   "out": 2
+  },
+  {
+   "tagEpoch": 2,
+   "ownerEpoch": 3,
+   "out": 2
+  },
+  {
+   "tagEpoch": 1,
+   "ownerEpoch": 1,
+   "out": 1
+  }
+ ],
+ "nearest": [
+  {
+   "inp": {
+    "self": 5,
+    "enemies": [
+     1,
+     2,
+     9
+    ],
+    "human": [
+     9
+    ],
+    "barb": [
+     0
+    ],
+    "engage": [
+     1,
+     2,
+     9
+    ],
+    "cities": [
+     {
+      "id": "c1",
+      "ownerId": 1,
+      "q": 3,
+      "r": 4
+     },
+     {
+      "id": "c2",
+      "ownerId": 1,
+      "q": 9,
+      "r": 9
+     },
+     {
+      "id": "c3",
+      "ownerId": 2,
+      "q": 0,
+      "r": 0
+     },
+     {
+      "id": "p9",
+      "ownerId": 9,
+      "q": 5,
+      "r": 5
+     }
+    ],
+    "units": [
+     {
+      "ownerId": 1,
+      "q": 3,
+      "r": 4
+     },
+     {
+      "ownerId": 1,
+      "q": 3,
+      "r": 4
+     },
+     {
+      "ownerId": 9,
+      "q": 5,
+      "r": 5
+     }
+    ],
+    "caps": {
+     "1": "c2",
+     "2": "c3",
+     "9": "p9"
+    }
+   },
+   "pairs": [
+    {
+     "target": 1,
+     "nearest": true
+    },
+    {
+     "target": 2,
+     "nearest": true
+    },
+    {
+     "target": 9,
+     "nearest": true
+    }
+   ],
+   "targets": [
+    {
+     "ownerId": 1,
+     "cityId": "c1",
+     "q": 3,
+     "r": 4,
+     "defenders": 2
+    },
+    {
+     "ownerId": 1,
+     "cityId": "c2",
+     "q": 9,
+     "r": 9,
+     "defenders": 0
+    },
+    {
+     "ownerId": 2,
+     "cityId": "c3",
+     "q": 0,
+     "r": 0,
+     "defenders": 0
+    },
+    {
+     "ownerId": 9,
+     "cityId": "p9",
+     "q": 5,
+     "r": 5,
+     "defenders": 1
+    }
+   ]
+  },
+  {
+   "inp": {
+    "self": 5,
+    "enemies": [
+     0,
+     1
+    ],
+    "human": [],
+    "barb": [
+     0
+    ],
+    "engage": [
+     0,
+     1
+    ],
+    "cities": [
+     {
+      "id": "b1",
+      "ownerId": 0,
+      "q": 1,
+      "r": 1
+     },
+     {
+      "id": "c1",
+      "ownerId": 1,
+      "q": 4,
+      "r": 4
+     },
+     {
+      "id": "c2",
+      "ownerId": 1,
+      "q": 2,
+      "r": 2
+     }
+    ],
+    "units": [],
+    "caps": {
+     "0": "b1",
+     "1": "c1"
+    }
+   },
+   "pairs": [
+    {
+     "target": 0,
+     "nearest": false
+    },
+    {
+     "target": 1,
+     "nearest": true
+    }
+   ],
+   "targets": [
+    {
+     "ownerId": 0,
+     "cityId": "b1",
+     "q": 1,
+     "r": 1,
+     "defenders": null
+    },
+    {
+     "ownerId": 1,
+     "cityId": "c1",
+     "q": 4,
+     "r": 4,
+     "defenders": 0
+    },
+    {
+     "ownerId": 1,
+     "cityId": "c2",
+     "q": 2,
+     "r": 2,
+     "defenders": 0
+    }
+   ]
+  },
+  {
+   "inp": {
+    "self": 2,
+    "enemies": [
+     3,
+     4
+    ],
+    "human": [
+     4
+    ],
+    "barb": [],
+    "engage": [
+     3
+    ],
+    "cities": [
+     {
+      "id": "a",
+      "ownerId": 3,
+      "q": 1,
+      "r": 0
+     },
+     {
+      "id": "b",
+      "ownerId": 3,
+      "q": 7,
+      "r": 7
+     },
+     {
+      "id": "h",
+      "ownerId": 4,
+      "q": 2,
+      "r": 2
+     }
+    ],
+    "units": [
+     {
+      "ownerId": 3,
+      "q": 7,
+      "r": 7
+     }
+    ],
+    "caps": {
+     "3": "b",
+     "4": "h"
+    }
+   },
+   "pairs": [
+    {
+     "target": 3,
+     "nearest": true
+    },
+    {
+     "target": 4,
+     "nearest": true
+    }
+   ],
+   "targets": [
+    {
+     "ownerId": 3,
+     "cityId": "a",
+     "q": 1,
+     "r": 0,
+     "defenders": 0
+    },
+    {
+     "ownerId": 3,
+     "cityId": "b",
+     "q": 7,
+     "r": 7,
+     "defenders": 1
+    }
+   ]
+  },
+  {
+   "inp": {
+    "self": 7,
+    "enemies": [
+     8
+    ],
+    "human": [],
+    "barb": [],
+    "engage": [],
+    "cities": [
+     {
+      "id": "x",
+      "ownerId": 8,
+      "q": 0,
+      "r": 0
+     }
+    ],
+    "units": [],
+    "caps": {
+     "8": "x"
+    }
+   },
+   "pairs": [
+    {
+     "target": 8,
+     "nearest": true
+    }
+   ],
+   "targets": []
+  }
+ ]
+}

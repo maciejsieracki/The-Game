@@ -237,6 +237,7 @@ pub fn city_from(v: &Value) -> City {
         }),
         wealth_immunity_remaining: f("wealthImmunityRemaining"),
         founded_by_owner: b("foundedByOwner"),
+        founded_by: v["foundedBy"].as_i64(),
         start_city_state: b("startCityState"),
         postep_budynkow_usuniete: v.get("postepBudynkowUsuniete").map(f64_map),
     }
