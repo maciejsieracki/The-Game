@@ -85,7 +85,7 @@ Kolejność jednej tury w webie (`60a18c60d`, r2: POPRAWIONA po zarzucie 1 — w
 | Sprzątanie przy pokoju / koniec wg liczby miast | `11206–11360`, `39335` | `war_turn_declare.rs` | `should_end_forced_war_by_city_count`, `prune_forced_war_waves`, `is_forced_era_peace_locked` |
 | Kampania generała + cele | `7480–7620`, `33513` | `ai_war_march_plan.rs` (nowy) | `choose_ai_general_war_target`, `reconcile_ai_general_war_campaign`, `build_war_city_targets`, `plan_war_all_in_capital` |
 | Obrona domu / fale | `ai.ts:3498`, `ai.ts:3840` | ten sam moduł | `plan_home_war` (+`HomeWarMemoryStore`), `plan_forced_war_wave` |
-| Dyplomacja AI (oferty miast, cooldown, blokady, zakup) | `19371`, `19749`, `23955`, `40130`, `40413`, `41206` | `ai_diplomacy_turn.rs` (nowy) | `ai_pick_miasto_do_oddania/zadania`, `is_offer_rejected_on_cooldown`, `record_rejected_offer`, `resolve_diplomacy_action_lock`, `should_ai_purchase_unit` |
+| Dyplomacja AI (oferty miast, cooldown, blokady) — r3: zakup jednostki AI NIE tu, tylko W4 (`ai_zakup_jednostki.rs`, §6, D7) | `19371`, `19749`, `23955`, `40130`, `40413` | `ai_diplomacy_turn.rs` (nowy) | `ai_pick_miasto_do_oddania/zadania`, `is_offer_rejected_on_cooldown`, `record_rejected_offer`, `resolve_diplomacy_action_lock` |
 | Brama „oblężenie tylko w wojnie” | `17245–17260` | `ai_diplomacy_turn.rs` / `siege_turn.rs` | `ai_auto_siege_allowed`, `is_siege_still_valid`, `auto_siege_candidate_for_scan` |
 | Tick oblężenia / wypad / wejście | `37226–37262`, `17301` | `siege_turn.rs` (nowy) | `siege_starvation_state`, `siege_defender_units`, `plan_last_stand_sortie`, `plan_surrender_entry` |
 | Pokój/zmęczenie AI↔AI | `34305–34380`, `41380–41386` | `war_turn_ai_ai.rs` (nowy) | `run_ai_ai_peace_tick`, `run_war_weariness_tick` |

@@ -17,3 +17,6 @@ NOTY (poza zakresem errat, nie zmieniano):
 RUNDY: 3/5 (DODATEK 1 — errata; numeracja zgodna z dispatchem)
 NASTĘPNY KROK: Evaluator r3 sprawdza tylko (A) i (B) oraz notę 1. Po PASS: FC r3 → integracja orkiestratora → ABC D1–D8 do właściciela → dispatche W1–W8.
 DEPLOY/PUSH: NIE WYKONANO
+
+## DOPISEK R3-OBRONA (odpowiedź na notę 1 Evaluatora r3 — PRZYJMUJĘ)
+Baza: `b310e2ebc` (Operator r3). Nota 1 (§3, wiersz „Dyplomacja AI”, linia 88) poprawiona: usunięto `should_ai_purchase_unit` i odwołanie `41206` z wiersza W6 (`ai_diplomacy_turn.rs`), wiersz wskazuje teraz zakup jako przeniesiony do W4 (`ai_zakup_jednostki.rs`, §6, D7). Zakres: tylko linia 88 planu. Dowód: `grep -n 'should_ai_purchase_unit' dyspozycje/rust-port/p6/P6-WIRE-WAR-TURN-PLAN.md` — wystąpienia tylko w wierszu W4/§3 `ai_zakup_jednostki.rs` (tabela pierwsza, linia 36) i w §6 W4. Bez zmian w `gra/**`, `rust-port/**`, bez `cargo`. `git diff --check` czysto.
