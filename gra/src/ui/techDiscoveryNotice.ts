@@ -54,6 +54,7 @@ import type { ImprovementKey } from '../render/improvements';
 import { buildEntityCardData, renderEntityCard, ENTITY_CARD_CSS, openEntityCard } from './entityCards/renderer';
 import { technologyIdFromName } from './entityCards/registry';
 import { techCardContentOf, cmzSentence, isDeadTechCardBuilding } from './entityCards/technologyAdapter';
+import { hiddenTechEffectNames } from './entityCards/techDeadEffects';
 import type { EntityCardData, EntityCardAction } from './entityCards/types';
 
 type TechRow = {
@@ -358,7 +359,7 @@ background:rgba(232,216,138,.025);text-align:center;font-size:13px;color:#c8b898
 function buildBody(tech: TechRow): { html: string } {
   // Obrona r1 (Z4): ścieżka zapasowa ukrywa te same efekty martwe co `technologyAdapter.ts`
   // (`ukryte` z `tech-cards-top5.json` + reguła budynków suppressed / epoka > 3).
-  const hidden = new Set(techCardContentOf(tech.Technologia)?.ukryte ?? []);
+  const hidden = hiddenTechEffectNames(tech.Technologia);
   const buildings = (buildingsData as BuildingRow[]).filter(b => b.techUnlock === tech.Technologia
     && !isDeadTechCardBuilding(b as unknown as { suppressed?: unknown; epokaWejscia?: unknown })
     && !hidden.has(b.nazwa ?? b.id));

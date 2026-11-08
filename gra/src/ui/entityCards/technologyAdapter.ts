@@ -47,6 +47,7 @@ import { terrainUnlockLabelsForTech } from '../../game/improvement-tech';
 import { techIconSvg } from '../techIcons';
 import { buildingIconSvg, unitIconSvg, improvementIconSvg } from '../icons/brandAssets';
 import { naukaCostSuffix } from '../naukaLabel';
+import { hiddenTechEffectNames, isDeadTechCardBuilding } from './techDeadEffects';
 import type { RawTech } from './registry';
 import { resolveBuildingRow, resolveUnitRow, resolveWonderRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
@@ -84,10 +85,10 @@ export function cmzSentence(item: TechCmzItem): string {
   return `${item.czynnosc}, aby ${item.korzysc}.`;
 }
 
-/** Najwyższa grywalna epoka (Kamień=1, Brąz=2, Żelazo=3) — `production.ts:966` pomija budynki
- * z `epokaWejscia` powyżej epoki miasta, więc budynek z epoką 4+ jest dziś martwy. Ta sama
- * reguła co w generatorze (`MAX_GRYWALNA_EPOKA`), żeby ukrycie działało też bez wpisu. */
-const MAX_GRYWALNA_EPOKA = 3;
+// R-WEB-CITYPANEL-TECH-TILE-DEAD-EFFECTS-Q1: reguła efektów martwych (`isDeadTechCardBuilding`,
+// `hiddenTechEffectNames`) żyje we WSPÓLNYM module `techDeadEffects.ts` (re-eksport dla
+// dotychczasowych importerów, np. techDiscoveryNotice.ts).
+export { isDeadTechCardBuilding } from './techDeadEffects';
 
 type BuildingRow = {
   id: string;
@@ -184,14 +185,6 @@ function isDeadBuilding(b: BuildingRow): boolean {
   return isDeadTechCardBuilding(b);
 }
 
-/** Ta sama reguła dla ścieżki zapasowej `techDiscoveryNotice.ts` (Obrona r1, zarzut Z4):
- * popup odkrycia nie może wypisywać budynków, które karta ukrywa. Typ strukturalny, bo
- * `techDiscoveryNotice.ts` ma własny, węższy `BuildingRow`. */
-export function isDeadTechCardBuilding(b: { suppressed?: unknown; epokaWejscia?: unknown }): boolean {
-  const epoka = typeof b.epokaWejscia === 'number' ? b.epokaWejscia : 1;
-  return b.suppressed === true || epoka > MAX_GRYWALNA_EPOKA;
-}
-
 /** Cuda odblokowywane przez technologię — Q6 (założenie Operatora): sekcja „Cuda” z oznaczeniem
  * cudu narodowego (dostęp E — tylko wskazane cywilizacje) albo wyścigowego (dostęp R); oba
  * typy mają `maxNaSwiecie = 1`, więc dopisek „maks. 1 na świecie” jest zawsze prawdziwy. */
@@ -210,7 +203,7 @@ function wonderTrailing(w: WonderRowLite, techName: string): string {
 export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   const techName = tech['Technologia'];
   const content = techCardContentOf(techName);
-  const hidden = new Set(content?.ukryte ?? []);
+  const hidden = hiddenTechEffectNames(techName);
   // Q3/Q4 właściciela: efekty martwe UKRYTE we wszystkich sekcjach odblokowań (bez napisu
   // „niedostępne”). Źródła: `ukryte` z danych + ta sama reguła budynków co w generatorze.
   const buildings = (buildingsData as BuildingRow[]).filter((b) => b.techUnlock === techName
