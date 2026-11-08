@@ -1,4 +1,4 @@
-//! P6.8I (8I-P2b): port `pickAutoImprovementsSinglePass` (`auto-improvements.ts:992-1824`, pin 4bbef081d).
+//! P6.8I (8I-P2b): port `pickAutoImprovementsSinglePass` (`auto-improvements.ts`); REPIN-AUTOIMPROVE: web main 180c08305.
 //!
 //! Jeden przebieg pickera: budzet Pracy wspolny dla wywolania, miasta po `id`, heksy po (rzeka,
 //! odleglosc, q, r); FAZA 0 (obrona), KROK 0 (wyrab), FAZA 1 (heks po heksie), FAZA 2 (wyrab po typie),
@@ -9,22 +9,29 @@
 //! ZALOZENIE (wydajnosc, bez wplywu na zachowanie): `Qualifier::new` liczy zbior heksow rzek przy kazdym
 //! wywolaniu; optymalizacja = NASTEPNA-PARTIA (po integracji z wolajacymi).
 
+use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::rc::Rc;
 
 use super::city_phases::{build_city_env, count_forest, finish_env, Acc, CityEnv};
 use super::fort_claim::{pick_fort_claims, FortBudget};
 use super::hex_phases::{phase_defense, phase_hexes, phase_probe, phase_wyrab_by_type};
-use super::opts::{AutoImprovementCity, AutoImprovementPick, PickAutoImprovementsOpts};
+use super::opts::{
+    AutoImprovementCity, AutoImprovementPick, PickAutoImprovementsOpts, RoadPlanMemo,
+};
+use super::road_network_plan::{plan_road_network, RoadNetworkPlanOpts, RoadPlanCity};
 use super::{
-    deficit_improvement_keys, has_non_food_resource_deficit, js_max, js_min,
-    ZERO_YIELD_IMPROVEMENTS,
+    deficit_improvement_keys, has_non_food_resource_deficit, js_max, js_min, territory_radius_pin,
+    ROAD_KEYS, ZERO_YIELD_IMPROVEMENTS,
 };
 use crate::domain::freshwater::FreshwaterCtx;
+use crate::domain::improvement_build::hex_keys_within_radius;
 use crate::domain::improvement_build::{
     is_improvement_tech_unlocked, BuildMap, ImprovementBuildState, PlacedLayers, Qualifier,
 };
 use crate::domain::improvements::is_improvement_allowed_for_civ;
 use crate::domain::terrain::CityNode;
+use crate::domain::territory::territory_owner_at;
 
 pub(super) fn cmp_city_id(a: &AutoImprovementCity, b: &AutoImprovementCity) -> std::cmp::Ordering {
     super::cmp_js_str(&a.id, &b.id)
@@ -48,9 +55,80 @@ pub(super) struct Shared<'a> {
     pub unlocked: &'a BTreeSet<String>,
     pub civ_gate: &'a dyn Fn(&str, Option<&str>) -> bool,
     pub civ: Option<&'a str>,
+    /// Web `roadPlanMemo` (R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1): wspolny dla wszystkich przebiegow wywolania.
+    pub road_memo: Rc<RefCell<RoadPlanMemo>>,
+    pub owner_id: i64,
 }
 
 impl Shared<'_> {
+    /// Web `roadPlanHexes(...).has(hexKey)` (hunk 27): heks nalezy do planu sieci drog MIEDZY miastami wlasciciela.
+    /// Plan liczony leniwie, RAZ na wywolanie `pickAutoImprovements` (pamiec `road_memo`); web trzyma tez cache
+    /// MIEDZY turami (`ROAD_PLAN_CACHE`, sama optymalizacja wydajnosci - nie portowany).
+    pub fn road_plan_has(&self, hex_key: &str) -> bool {
+        if let Some(plan) = &self.road_memo.borrow().plan {
+            return plan.contains(hex_key);
+        }
+        let own: Vec<RoadPlanCity> = self
+            .road_memo
+            .borrow()
+            .cities
+            .iter()
+            .filter(|c| c.owner_id == self.owner_id)
+            .map(|c| RoadPlanCity {
+                id: c.id.clone(),
+                q: c.q,
+                r: c.r,
+            })
+            .collect();
+        let own_full: Vec<AutoImprovementCity> = self
+            .road_memo
+            .borrow()
+            .cities
+            .iter()
+            .filter(|c| c.owner_id == self.owner_id)
+            .cloned()
+            .collect();
+        let mut road_keys: BTreeSet<(i32, i32)> = BTreeSet::new();
+        if let Some(placed) = &self.state.placed_improvements {
+            for (hk, v) in placed {
+                let layers: Vec<&String> = match v {
+                    PlacedLayers::Many(l) => l.iter().collect(),
+                    PlacedLayers::One(s) => vec![s],
+                };
+                if layers.iter().any(|l| ROAD_KEYS.contains(&l.as_str())) {
+                    road_keys.insert(parse_key(hk));
+                }
+            }
+        }
+        let nodes = self.state.territory_nodes.as_deref().unwrap_or(&[]);
+        let mut reach: HashSet<(i32, i32)> = HashSet::new();
+        for c in &own_full {
+            let rad = territory_radius_pin(&CityNode::city(c.q, c.r, c.population)) + 1.0;
+            for k in hex_keys_within_radius(c.q, c.r, rad, self.map) {
+                let kk = parse_key(&k);
+                if reach.contains(&kk) {
+                    continue;
+                }
+                if territory_owner_at(kk.0, kk.1, nodes) == Some(self.owner_id) {
+                    reach.insert(kk);
+                }
+            }
+        }
+        let trav = |q: i32, r: i32| reach.contains(&(q, r));
+        let plan = plan_road_network(
+            &own,
+            self.map,
+            RoadNetworkPlanOpts {
+                is_traversable: Some(&trav),
+                extra_road_keys: Some(&road_keys),
+            },
+        );
+        let set: BTreeSet<String> = plan.hexes.iter().map(|(q, r)| format!("{q},{r}")).collect();
+        let has = set.contains(hex_key);
+        self.road_memo.borrow_mut().plan = Some(set);
+        has
+    }
+
     pub fn qualifies(&self, key: &str, q: i32, r: i32) -> bool {
         Qualifier::new(&self.state).qualifies(key, q, r)
     }
@@ -165,7 +243,6 @@ pub fn pick_auto_improvements_single_pass(
     }
     let owner_id = opts.owner_id;
     let praca_budget_percent = opts.praca_budget_percent.unwrap_or(100.0);
-    let max_items = opts.max_items_per_city.unwrap_or(f64::INFINITY);
     let demand_driven = opts.demand_driven;
     let report = |f: &dyn Fn(&mut super::opts::AutoImprovementSurplusReport)| {
         if let Some(sr) = opts.surplus_report {
@@ -244,6 +321,13 @@ pub fn pick_auto_improvements_single_pass(
         unlocked: &opts.unlocked_techs,
         civ_gate,
         civ: opts.civ_archetype.as_deref(),
+        road_memo: opts.road_plan_memo.clone().unwrap_or_else(|| {
+            Rc::new(RefCell::new(RoadPlanMemo {
+                cities: cities.clone(),
+                plan: None,
+            }))
+        }),
+        owner_id,
     };
 
     if opts.fort_claim_pass {
@@ -266,7 +350,6 @@ pub fn pick_auto_improvements_single_pass(
         picks: Vec::new(),
         praca_left,
         global_spent: 0.0,
-        placed_this_city: 0.0,
         scheduled_wyrab: opts.clearing_hex_keys.clone().unwrap_or_default(),
         forest_left: 0.0,
         city_budget_exhausted: false,
@@ -286,11 +369,9 @@ pub fn pick_auto_improvements_single_pass(
             global_pula_at_entry,
             praca_budget_percent,
             reserve,
-            max_items,
             demand_driven,
         );
         report_demand(opts, &env);
-        acc.placed_this_city = 0.0;
         acc.city_budget_exhausted = false;
         let mut env = env;
         phase_defense(&mut sh, &env, &mut acc, opts);

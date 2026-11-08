@@ -1,4 +1,5 @@
-//! P6.8I: port `gra/src/game/auto-improvements.ts` (wspolny picker auto-ulepszen) z PINA `4bbef081d`.
+//! P6.8I: port `gra/src/game/auto-improvements.ts` (wspolny picker auto-ulepszen). Pin: `23dd158e9` (REPIN-DELTA-4),
+//! REPIN-AUTOIMPROVE (R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1): web `origin/main` 180c08305.
 //!
 //! Partia 8I-P1 (ten plik): stale, listy priorytetow, typy i male helpery (`AI_IMPROVEMENT_PRIORITY`,
 //! `prioritiesForUlepszeniaFocus`, `deficitImprovementKeys`, `isCityLimitExhausted`, ...).
@@ -17,6 +18,7 @@ pub mod hex_phases;
 pub mod opts;
 pub mod pick;
 pub mod relief_preserving;
+pub mod road_network_plan;
 pub mod single_pass;
 
 use std::cmp::Ordering;
@@ -111,8 +113,28 @@ pub const WYRAB_MIN_FOREST_IN_RADIUS: f64 = 3.0;
 /// Web `AUTO_ULEPSZENIA_PRACA_RESERVE`.
 pub const AUTO_ULEPSZENIA_PRACA_RESERVE: f64 = 30.0;
 
-/// Web `FOOD_STAGE_MAX_ITEMS_PER_CITY` (`Infinity`: limit zdjety, S3-2=C).
-pub const FOOD_STAGE_MAX_ITEMS_PER_CITY: f64 = f64::INFINITY;
+/// Web `RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY` (hunk 8): limit wycinek rzecznych BEZ obywatela na miasto/przebieg (gracz).
+pub const RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY: f64 = 2.0;
+/// Web `RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR` (hunk 8): podloga puli Pracy dla wycinki rzecznej bez obywatela.
+pub const RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR: f64 = 60.0;
+/// Web `AI_RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY` (hunk 8): limit dla AI.
+pub const AI_RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY: f64 = 1.0;
+/// Web `AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR` (hunk 8): podloga dla AI.
+pub const AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR: f64 = 60.0;
+
+/// Web `FOOD_IMPROVEMENT_KEYS` (hunk 25, SIMPLE-FOOD-RULE): ulepszenia ZYWNOSCIOWE buduje sie ZAWSZE tylko na heksie
+/// z obywatelem (albo centrum miasta). `oboz_lowiecki` NIE nalezy do zbioru (jedyny wyjatek); `wyrab` TAK.
+pub const FOOD_IMPROVEMENT_KEYS: [&str; 9] = [
+    "farma",
+    "irygacja",
+    "tarasy",
+    "bydlo",
+    "owce",
+    "lama",
+    "lodzie_rybackie",
+    "warzelnia_soli",
+    "wyrab",
+];
 
 /// Web `FOOD_LIVESTOCK_STAGE_KEYS`.
 pub const FOOD_LIVESTOCK_STAGE_KEYS: [&str; 3] = ["bydlo", "owce", "lama"];
