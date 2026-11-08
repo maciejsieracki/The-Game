@@ -57,6 +57,13 @@ export function initialBattleSlots<T>(
   const width = Math.max(1, Math.floor(bounds.rankWidth));
   const slots: InitialBattleSlot<T>[] = [];
   let rankBase = 0;
+  // R-WEB-BATTLE-DEPLOY-CAVALRY-FLANKS-AT-START-Q1: depth rank of the widest
+  // non-mounted band (first one on ties). Wings are anchored to THAT rank, so
+  // horse/chariots stand level with the units whose row span they flank
+  // instead of in front of them (a narrow front rank + a wide archer rank
+  // used to leave the cavalry alone ahead of the line, past the archers' rows).
+  let wingRank = 0;
+  let wingRankWidth = 0;
   const linesForBand = (count: number, configuredLines?: 1 | 2 | 3): { per: number; count: number } => {
     if (count === 0) return { per: 0, count: 0 };
     const playableRows = Math.max(1, bounds.playRow1 - bounds.playRow0 - 1);
@@ -71,6 +78,7 @@ export function initialBattleSlots<T>(
     // the legal battlefield rows. Do not silently turn a requested single
     // line into two ranks just because the default formation width is smaller.
     const { per, count: actualLineCount } = linesForBand(units.length, configuredLines);
+    if (per > wingRankWidth) { wingRankWidth = per; wingRank = rankBase; }
     units.forEach((unit, i) => {
       const rankWithinBand = Math.floor(i / per);
       const indexWithinRank = i % per;
@@ -112,7 +120,7 @@ export function initialBattleSlots<T>(
   formation.mounted.forEach((unit, i) => {
     const rows = i % 2 === 0 ? topRows : bottomRows;
     const wingIndex = Math.floor(i / 2);
-    slots.push({ unit, row: rows[wingIndex % rows.length]!, rank: Math.floor(wingIndex / rows.length) });
+    slots.push({ unit, row: rows[wingIndex % rows.length]!, rank: wingRank + Math.floor(wingIndex / rows.length) });
   });
   return slots;
 }
