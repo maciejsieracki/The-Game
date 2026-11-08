@@ -153,6 +153,66 @@ function suite(E) {
     return ok || 'zle wartosci pary';
   });
 
+  // ---- SCIEZKA KAMPANII WODZA (appendAiGeneralCampaignOrders, stage 'attacking'): ten sam cel co war-allin ----
+  // Kampania nie czyta warAllIn; cele marszu = opts.aiGeneralWarCampaign.targets (ustawiane w main.ts
+  // prepareAiGeneralWarCampaign). Brak pola targets = stara stolica jako jedyny cel (zgodnosc wsteczna).
+  const campaignMoves = (self, enemy, cities, capId, mine, targets) => {
+    E.setWarAllInCapitalOverride(true);
+    E.setArmyConsolidationOverride(false);
+    const cap = cities.find(c => c.id === capId);
+    const general = mine.find(u => u.isGeneral === true);
+    const campaign = {
+      targetOwnerId: enemy, stage: 'attacking', generalUnitId: general.id, gatherTurnsCompleted: 5,
+      rallyQ: general.q, rallyR: general.r, target: { ownerId: enemy, cityId: cap.id, q: cap.q, r: cap.r },
+      turn: 60, seaTravelAllowed: false, ...(targets ? { targets } : {}),
+    };
+    const cmds = E.decideAITurn(self, [...mine], cities, makeMap(40, 10), DATA,
+      { canEngageOwner: (x) => x === enemy, currentTurn: 60, aiGeneralWarCampaign: campaign });
+    return cmds.filter(c => c.type === 'move' && mine.some(u => u.id === c.unitId));
+  };
+  const general = (id, owner, q, r) => ({ ...mkUnit(id, owner, q, r), isGeneral: true });
+  t('C1 kampania wodza AI->gracz: 3 miasta, stolica NIE najblizsza -> ruch na najblizsze miasto gracza', () => {
+    const cities = [mkCity('m1', 1, 0, 4), mkCity('p-cap', HUMAN, 30, 4), mkCity('p-near', HUMAN, 12, 4), mkCity('p-mid', HUMAN, 20, 4)];
+    const mine = [general('g1', 1, 3, 4), mkUnit('u1', 1, 3, 5), mkUnit('u2', 1, 4, 4)];
+    const targets = targetsFor(1, HUMAN, cities, capFixed('p-cap'));
+    const mv = campaignMoves(1, HUMAN, cities, 'p-cap', mine, targets);
+    if (mv.length === 0) return 'brak komend ruchu kampanii';
+    const bad = mv.filter(c => c.targetCityId !== 'p-near');
+    return bad.length === 0 || 'kampania celuje w: ' + JSON.stringify([...new Set(bad.map(c => c.targetCityId))]);
+  });
+  t('C2 kampania wodza AI->AI: 3 miasta wroga, stolica NIE najblizsza -> najblizsze miasto', () => {
+    const cities = [mkCity('m1', 1, 0, 4), mkCity('a-cap', 2, 30, 4), mkCity('a-near', 2, 12, 4), mkCity('a-mid', 2, 20, 4)];
+    const mine = [general('g1', 1, 3, 4), mkUnit('u1', 1, 3, 5)];
+    const targets = targetsFor(1, 2, cities, capFixed('a-cap'));
+    const mv = campaignMoves(1, 2, cities, 'a-cap', mine, targets);
+    if (mv.length === 0) return 'brak komend ruchu kampanii';
+    const bad = mv.filter(c => c.targetCityId !== 'a-near');
+    return bad.length === 0 || 'kampania celuje w: ' + JSON.stringify([...new Set(bad.map(c => c.targetCityId))]);
+  });
+  t('C3 kampania wodza, stolica JEST najblizsza -> cel = stolica (bez zmian)', () => {
+    const cities = [mkCity('m1', 1, 0, 4), mkCity('p-cap', HUMAN, 10, 4), mkCity('p-far', HUMAN, 30, 4)];
+    const mine = [general('g1', 1, 3, 4), mkUnit('u1', 1, 3, 5)];
+    const targets = targetsFor(1, HUMAN, cities, capFixed('p-cap'));
+    const mv = campaignMoves(1, HUMAN, cities, 'p-cap', mine, targets);
+    return (mv.length > 0 && mv.every(c => c.targetCityId === 'p-cap')) || 'cele: ' + JSON.stringify(mv.map(c => c.targetCityId));
+  });
+  t('C4 kampania wodza bez pola targets (zapis sprzed zmiany) -> stara stolica jako cel', () => {
+    const cities = [mkCity('m1', 1, 0, 4), mkCity('p-cap', HUMAN, 30, 4), mkCity('p-near', HUMAN, 12, 4)];
+    const mine = [general('g1', 1, 3, 4), mkUnit('u1', 1, 3, 5)];
+    const mv = campaignMoves(1, HUMAN, cities, 'p-cap', mine, undefined);
+    return (mv.length > 0 && mv.every(c => c.targetCityId === 'p-cap')) || 'cele: ' + JSON.stringify(mv.map(c => c.targetCityId));
+  });
+  t('W2 main.ts: prepareAiGeneralWarCampaign buduje targets przez buildWarCityTargets i zwraca je w kampanii', () => {
+    const src = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
+    const i = src.indexOf('function prepareAiGeneralWarCampaign');
+    const body = i >= 0 ? src.slice(i, i + 9000) : '';
+    return (body.includes('buildWarCityTargets({') && body.includes('targets: campaignTargets')) || 'brak okablowania targets w kampanii';
+  });
+  t('W3 ai.ts: appendAiGeneralCampaignOrders przekazuje campaign.targets do applyWarAllInCapitalToCommands', () => {
+    const ai = fs.readFileSync(path.join(SRC, 'game', 'ai.ts'), 'utf8');
+    return ai.includes('targets: campaign.targets ?? [campaign.target]') || 'brak przekazania targets';
+  });
+
   // ---- Flaga wylaczona: brak kontekstu war-allin, brak celow ----
   t('F1 flaga war-allin OFF: isWarAllInCapitalEnabled = false (sciezka legacy)', () => {
     E.setWarAllInCapitalOverride(false);
