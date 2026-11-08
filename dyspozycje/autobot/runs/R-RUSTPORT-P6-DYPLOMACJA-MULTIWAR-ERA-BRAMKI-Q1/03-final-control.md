@@ -17,3 +17,15 @@ RUNDY: 4/5 zuzyte; runda 5/5 ostatnia na tym samym ID. Brak PASS po niej = LIMIT
 SHA DO INTEGRACJI: BRAK (FAIL). Najnowszy kod: b55a6de67 (lokalny, niewypchniety; potomek d8b288343; parity-v2 = 3a40d458e jest jego przodkiem). Kolejnosc: najpierw dokonczenie r5, potem rebase na aktualny origin/rust-port/parity-v2 (konflikt spodziewany tylko w domain/mod.rs, zachowac oba pub mod), potem FC.
 NASTEPNY KROK: Operator r5 od b55a6de67: runWarWearinessTick, runAiAiPeaceTick + 3 funkcje forced-peace, siege-war-gate, case'y locks, REPIN 5 modulow, wektory z weba, testy N-1/N/N+1/NaN, mutacje, pelne bramki w podzielonych przebiegach.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+## FC r5 (po obronie) — SHA oceniony: 23e157852 (baza f97001337)
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-ERA-BRAMKI-Q1
+GOAL: zawężony zakres r5 (bramki epoki, NAP-trust, zmęczenie czyste, peace/stepPairState, R1/R2, pickPlayerReferenceCity)
+Zarzuty: 1 ODDAL (MULTIWAR-2 + dług #8 zakłada orkiestrator); 2 ODDAL (assert == 23 jest w kodzie); 3 ODDAL (baseline f97001337 2235/0/1, HEAD 2250/0/1 wg Operatora; FC: pełna suma NIE_ZMIERZONO); 4 ODDAL (rebase na f97001337 zrobiony, jest przodkiem); 5 ODDAL (PC07 zabity wektorem resTiny; FC potwierdził: mutant `>` w diplomacy_multiwar_peace.rs:131 -> 2 testy FAILED, plik przywrócony); 6 ODDAL (by_id = encode_utf16, jak JS).
+Zweryfikowane przez FC: allowlista (git diff --name-only f97001337..23e157852, bez gra/, WERSJE.md, Cargo.toml, save_load.rs), git diff --check czysty, fmt EXIT=0, clippy -D warnings EXIT=0, testy P6 gates 10/0, interciv 2/0, peace 3/0; wektory regenerowane z pinu a61337844 generatorem = identyczne bajt w bajt (era, nap, weariness, peace, intercivgate).
+NIE_ZMIERZONO: pełna suma cargo test (dysk 2,9 GB).
+NASTĘPNY KROK: integracja do parity-v2 (FF na f97001337), założenie MULTIWAR-2, dług #8.
+DEPLOY/PUSH: NIE WYKONANO
