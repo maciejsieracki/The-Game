@@ -1,3 +1,11 @@
+//! DLUG R-RUSTPORT-REPIN-EKONOMII-D-R5-1 (jedna wersja regul ekonomii): rodzina `resolve_resource_production` /
+//! `resource_production_amount_for_era` / `stack_resource_production` (typy u32/u8, stale 200/50/20...) to MIGAWKA
+//! starego weba (skaluje epoka tylko tartak i kamieniolom) i NIE jest uzywana przez produkcje tury (`turn_economy*` liczy
+//! surowce terytorium przez `improvements::territory_resource_yield_for_improvement`, 9 kluczy x1,5/epoke, 1:1 z origin/main).
+//! Zostaje wylacznie dla `tests/resource_production.rs`, `tests/parity_suite.rs` i `benches/engine_modules.rs`
+//! (pliki poza allowlista tematu, asercje na starej regule np. glina 50 w epoce 3). Zywe w tym module:
+//! `citizen_*`, `compute_citizen_resource_drain`. Usuniecie/aktualizacja rodziny = osobny temat z edycja tych trzech plikow.
+
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};

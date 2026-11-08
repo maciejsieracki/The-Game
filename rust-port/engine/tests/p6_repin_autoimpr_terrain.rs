@@ -22,8 +22,8 @@ use civ_engine::domain::improvements::{
     apply_improvement_bonus, apply_improvement_bonus_era, apply_improvement_bonuses,
     apply_improvement_bonuses_era, hex_has_horse_deposit_like, improvement_bonus_for_key,
     improvement_bonus_for_key_era, improvement_hides_deposit_on_hex, improvement_yield_for_era,
-    resource_production_amount_for_era, resource_production_amount_for_era_all_producers,
-    territory_resource_yield_for_improvement_all_producers, CatalogBonus, TileYield,
+    resource_production_amount_for_era, territory_resource_yield_for_improvement, CatalogBonus,
+    TileYield,
 };
 use civ_engine::domain::start_position::Overlay;
 use serde_json::Value;
@@ -202,7 +202,7 @@ fn territory_and_production_era_scaling_matches_web() {
             Value::Null => None,
             other => Some(other.as_str().unwrap()),
         };
-        let got = territory_resource_yield_for_improvement_all_producers(key, None, on(&c["era"]));
+        let got = territory_resource_yield_for_improvement(key, None, on(&c["era"]));
         match (got, &c["out"]) {
             (None, Value::Null) => {}
             (Some(g), want) if !want.is_null() => {
@@ -215,21 +215,12 @@ fn territory_and_production_era_scaling_matches_web() {
     }
     assert!(scaled > 100);
     for c in cases(&root, "resourceProductionAmountForEra") {
-        let got = resource_production_amount_for_era_all_producers(
+        let got = resource_production_amount_for_era(
             c["key"].as_str().unwrap(),
             n(&c["base"]),
             on(&c["era"]),
         );
         assert!(same(got, n(&c["out"])), "{c}: rust {got:?}");
-        // Migawka starego weba: dla tartaku/kamieniolomu identyczna, dla reszty (np. glinianka) plaska.
-        let key = c["key"].as_str().unwrap();
-        let legacy = resource_production_amount_for_era(key, n(&c["base"]), on(&c["era"]));
-        if key == "tartak" || key == "kamieniolom" || !got.is_finite() {
-            assert!(
-                same(legacy, got) || !got.is_finite(),
-                "{c}: legacy {legacy:?} nowy {got:?}"
-            );
-        }
     }
 }
 

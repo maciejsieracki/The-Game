@@ -951,38 +951,12 @@ pub fn ore_yield_from_improvements(improvement_keys: &[String], _zloze: Option<&
     out
 }
 
-/// Web `resourceProductionAmountForEra` (`terrain-improvements.ts:225`).
+/// Web `resourceProductionAmountForEra` (`terrain-improvements.ts`, origin/main 247f1ef2a; R-WEB-IMPROVEMENT-ERA-SCALING-Q1,
+/// decyzja wlasciciela 2026-11-03): produkcja KAZDEGO ulepszenia surowcowego (`ERA_SCALED_RESOURCE_IMPROVEMENTS =
+/// TERRITORY_YIELD_IMPROVEMENTS`, tj. zbior `terytorium.ulepszenia`) rosnie x1,5 za epoke; era normalizowana jak w webie
+/// (`normalizeProductionEra`: dokladnie 2 i 3, reszta = Kamien). JEDYNA wersja reguly (R-RUSTPORT-REPIN-EKONOMII-JEDNA-WERSJA-Q1:
+/// usunieto migawke starego weba skalujaca tylko tartak/kamieniolom oraz sufiks `_all_producers`).
 pub fn resource_production_amount_for_era(key: &str, base_amount: f64, era: Option<f64>) -> f64 {
-    let production = &rules().produkcja_epoka;
-    if !production
-        .ulepszenia_skalowane
-        .iter()
-        .any(|name| name == key)
-    {
-        return base_amount;
-    }
-    let first = production.epoka_min as f64;
-    let normalized = match era {
-        Some(era) if era.fract() == 0.0 && era > first && era <= production.epoka_max as f64 => era,
-        _ => first,
-    };
-    js_round(base_amount * production.mnoznik_za_epoke.powf(normalized - first))
-}
-
-/// Web `resourceProductionAmountForEra` w wersji web `origin/main` 180c08305 (R-WEB-IMPROVEMENT-ERA-SCALING-Q1,
-/// decyzja wlasciciela 2026-11-03; REPIN-AUTOIMPROVE hunki 93-97): produkcja KAZDEGO ulepszenia surowcowego
-/// (`ERA_SCALED_RESOURCE_IMPROVEMENTS = TERRITORY_YIELD_IMPROVEMENTS`, tj. zbior `terytorium.ulepszenia`) rosnie x1,5 za
-/// epoke; era normalizowana jak w `resource_production_amount_for_era` (dokladnie 2 i 3, reszta = Kamien).
-///
-/// ZALOZENIE (rozlaczne nazwy): `resource_production_amount_for_era` / `territory_resource_yield_for_improvement` zostaja
-/// MIGAWKA starego weba (tylko tartak/kamieniolom), bo czytaja je `turn_economy_territory` oraz wektory potokow
-/// (`p6_adv_q*`, `p6_empirefood_e2e`) wygenerowane ze starego weba; przelaczenie wolajacych = repin ekonomii (poza zakresem
-/// tematu: `turn_economy*` zakazane, dlug P7).
-pub fn resource_production_amount_for_era_all_producers(
-    key: &str,
-    base_amount: f64,
-    era: Option<f64>,
-) -> f64 {
     if !rules()
         .terytorium
         .ulepszenia
@@ -1008,7 +982,8 @@ fn territory_yield_amount_for_key(key: &str) -> f64 {
         .unwrap_or(rules().terytorium.domyslna_ilosc)
 }
 
-/// Web `territoryResourceYieldForImprovement` (`terrain-improvements.ts:256`).
+/// Web `territoryResourceYieldForImprovement` (`terrain-improvements.ts`, origin/main 247f1ef2a): KAZDY surowiec terytorium
+/// skalowany epoka (patrz `resource_production_amount_for_era`); jedyna wersja reguly.
 pub fn territory_resource_yield_for_improvement(
     key: Option<&str>,
     _zloze: Option<&str>,
@@ -1023,29 +998,6 @@ pub fn territory_resource_yield_for_improvement(
     Some(TerritoryResourceYield {
         resource_key: resource.surowiec.clone(),
         amount: resource_production_amount_for_era(
-            &norm,
-            territory_yield_amount_for_key(&norm),
-            era,
-        ),
-    })
-}
-
-/// Web `territoryResourceYieldForImprovement` w wersji web `origin/main` 180c08305 (KAZDY surowiec terytorium skalowany
-/// epoka, hunki 93-97); patrz `resource_production_amount_for_era_all_producers` (rozlaczna nazwa, migawka starego weba).
-pub fn territory_resource_yield_for_improvement_all_producers(
-    key: Option<&str>,
-    _zloze: Option<&str>,
-    era: Option<f64>,
-) -> Option<TerritoryResourceYield> {
-    let norm = normalize_improvement_key(key)?;
-    let resource = rules()
-        .terytorium
-        .ulepszenia
-        .iter()
-        .find(|row| row.ulepszenie == norm)?;
-    Some(TerritoryResourceYield {
-        resource_key: resource.surowiec.clone(),
-        amount: resource_production_amount_for_era_all_producers(
             &norm,
             territory_yield_amount_for_key(&norm),
             era,

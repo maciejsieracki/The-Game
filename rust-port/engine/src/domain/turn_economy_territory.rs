@@ -27,8 +27,8 @@ use crate::data::terrain_map::TerrainYieldsFile;
 use crate::domain::economy_yield::{tile_yield_full, WorkedTileImpInput};
 use crate::domain::improvement_build::{BuildHex, BuildMap};
 use crate::domain::improvements::{
-    improvement_keys_for_hex, territory_resource_yield_for_improvement_all_producers, HexLike,
-    TerrainType, TileYield,
+    improvement_keys_for_hex, territory_resource_yield_for_improvement, HexLike, TerrainType,
+    TileYield,
 };
 use crate::domain::okolica::{
     compute_lost_to_nearer_sibling_by_city, is_land_workable_hex, resolve_worked_tiles,
@@ -229,7 +229,7 @@ pub fn compute_territory_resource_yield_by_city(
             continue;
         };
         for key in &keys {
-            let Some(row) = territory_resource_yield_for_improvement_all_producers(
+            let Some(row) = territory_resource_yield_for_improvement(
                 Some(key),
                 hex.zloze.as_deref(),
                 Some(resolve_owner_era(owner)),
