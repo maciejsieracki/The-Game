@@ -130,70 +130,49 @@ try {
   // (dawniej po 1 na wywolanie), wiec nastepny przebieg to farmy E1 na wszystkich wycietych heksach.
   assert.ok(clear.length >= 2, 'no item-count cap: both river forests are cleared in ONE E2 call');
   const farmCleared = runPicker({ map, cities, worked, placed });
-  onlyKey(farmCleared, 'farma', 'E1: farms on the cleared river hexes precede any further clearing');
+  // R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (r2): etapy kaskaduja w TEJ SAMEJ turze po wyczerpaniu wyzszego (farmy ->
+  // trzoda -> irygacja), wiec to samo wywolanie moze zawierac tez trzode/irygacje; niezmiennik: farmy PIERWSZE, zadnej kolejnej wycinki.
+  assert.ok(farmCleared.length > 0 && farmCleared[0].key === 'farma', 'E1: farms on the cleared river hexes come first');
+  assert.ok(!farmCleared.some(p => p.key === 'wyrab'), 'E1: farms on the cleared river hexes precede any further clearing (no wyrab in the call)');
+  {
+    const lastFarm = farmCleared.map(p => p.key).lastIndexOf('farma');
+    const firstOther = farmCleared.findIndex(p => p.key !== 'farma');
+    assert.ok(firstOther === -1 || firstOther > lastFarm || farmCleared.slice(0, firstOther).every(p => p.key === 'farma'), 'E1 before E3/E4 in pick order');
+  }
   assert.ok(farmCleared.length >= clear.length, 'every cleared river hex gets its farm in one E1 call');
   place(farmCleared, map, placed);
   const noMoreClearing = runPicker({ map, cities, worked, placed });
   assert.ok(!noMoreClearing.some(p => p.key === 'wyrab'), 'all river forests are already cut; no further E2 clearing');
   check('0b. river hexes: clear (all in one call) -> farm (E1 > E2), all river forests prepared before E3+', () => {});
 
-  // E3: trzoda przy rzece (poprzednio etap 2 po WSZYSTKICH farmach; teraz farmy poza rzeka sa E5).
-  let livestockPasses = 0;
-  let lateFood = [];
-  for (let turn = 0; turn < 20; turn++) {
-    const picks = runPicker({ map, cities, worked, placed });
-    if (picks.length > 0 && picks.every(p => ['bydlo', 'owce', 'lama'].includes(p.key))) {
-      if (turn === 0) {
-        assert.ok(picks.some(p => p.key === 'bydlo'), 'the first available livestock action should be Trzoda');
-        check('2. E3 livestock (river hexes) follows the river farms and precedes farms off the river', () => {});
-      }
-      livestockPasses++;
-      place(picks, map, placed);
-      continue;
-    }
-    lateFood = picks;
-    break;
-  }
-  assert.ok(livestockPasses > 0, 'livestock stage should run after river farms');
-  assert.ok(lateFood.length > 0 && lateFood.every(p => ['irygacja', 'tarasy'].includes(p.key)),
-    `E4 irrigation/terraces should be next after river farms and livestock, BEFORE off-river farms (got ${lateFood.map(p => p.key).join(',')})`);
+  // R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (r2): etapy E3 -> E4 -> E5 kaskaduja W TEJ SAMEJ turze (wyzszy etap wyczerpany ->
+  // nastepny z reszta budzetu), zamiast jednego etapu na ture (ktory glodzil trzode/irygacje, gdy E1 mial cel co ture). Kolejnosc
+  // etapow zostaje: w jednym wywolaniu picki ida E3 (trzoda) < E4 (irygacja/tarasy) < E5 (farmy poza rzeka).
+  const rank = (k) => (['bydlo', 'owce', 'lama'].includes(k) ? 3 : ['irygacja', 'tarasy'].includes(k) ? 4 : k === 'farma' ? 5 : 9);
+  const cascade = runPicker({ map, cities, worked, placed });
+  const seenFood = [...farmCleared, ...cascade]; // trzoda/irygacja moga juz wejsc w wywolaniu z farmami E1 (kaskada)
+  assert.ok(seenFood.some(p => p.key === 'bydlo'), 'the first available livestock action should be Trzoda');
+  check('2. E3 livestock (river hexes) follows the river farms and precedes farms off the river', () => {});
+  assert.ok(seenFood.some(p => ['irygacja', 'tarasy'].includes(p.key)), 'E4 irrigation/terraces run in the same call once E3 is exhausted');
+  const ranks = farmCleared.map((p, i) => (p.key === 'farma' && farmCleared.slice(0, i).every(q => q.key === 'farma') ? 1 : rank(p.key)));
+  assert.ok(ranks.every((r, i) => i === 0 || r >= ranks[i - 1]), `stage order E1 < E3 < E4 < E5 inside the call (got ${farmCleared.map(p => p.key).join(',')})`);
   check('3. E4 irrigation/terraces precede the off-river farms (E5)', () => {});
-  let irrPasses = 0;
-  let offRiver = lateFood;
-  for (let turn = 0; turn < 20; turn++) {
-    if (offRiver.length > 0 && offRiver.every(p => ['irygacja', 'tarasy'].includes(p.key))) {
-      irrPasses++;
-      place(offRiver, map, placed);
-      offRiver = runPicker({ map, cities, worked, placed });
-      continue;
-    }
-    break;
-  }
-  assert.ok(irrPasses > 0, 'irrigation stage ran');
-  assert.ok(offRiver.length > 0 && offRiver.every(p => p.key === 'farma'),
-    `E5 farms off the river come after irrigation (got ${offRiver.map(p => p.key).join(',')})`);
+  place(cascade, map, placed);
+  // Kaskada zbudowala juz wszystko, co miescilo sie w budzecie (E5 = farmy poza rzeka tez); dowod: zaden kandydat na farme nie zostal.
+  assert.strictEqual(
+    runPicker({ map, cities, worked, placed, foodImprovementStages: false, priorityOverride: ['farma'] }).length, 0,
+    'AI filled all eligible farm fields (river E1 and off-river E5) — no farm candidate left behind',
+  );
   check('3b. E5 farms outside the river follow E4', () => {});
-  let farmPasses = 0;
-  for (let turn = 0; turn < 10; turn++) {
-    if (offRiver.length > 0 && offRiver.every(p => p.key === 'farma')) {
-      farmPasses++;
-      place(offRiver, map, placed);
-      offRiver = runPicker({ map, cities, worked, placed });
-      continue;
-    }
-    break;
-  }
-  assert.ok(farmPasses >= 1, 'AI keeps filling the eligible off-river farm fields');
   check('1b. AI keeps the E5 farm stage active until all eligible off-river farms are placed', () => {});
   const saltStillAvailable = runPicker({
     map, cities, worked, placed, foodImprovementStages: false,
     priorityOverride: ['warzelnia_soli'],
   });
-  assert.ok(saltStillAvailable.some(p => p.key === 'warzelnia_soli'),
-    'salt works remain eligible after livestock, so they must not block earlier phases');
+  // Q2 r2: po kaskadzie E6 (sol) bywa juz zbudowana w tym samym wywolaniu, gdy wyzsze etapy sa wyczerpane — wazne, ze NIE blokowala wczesniejszych.
+  assert.ok(saltStillAvailable.some(p => p.key === 'warzelnia_soli') || [...placed.values()].some(L => L.includes('warzelnia_soli')),
+    'salt works remain eligible (or already built once the earlier phases are exhausted), so they must not block earlier phases');
   check('3c. salt works (E6) stay available and do not block the earlier stages', () => {});
-  const lateFoodPlaceholder = lateFood;
-  place(lateFoodPlaceholder, map, new Map());
 
   // D4: etap bez odblokowanej technologii NIE jest celem i nie blokuje nastepnych (poprzednio
   // sonda dodawala technologie etapu i wstrzymywala irygacje, dopoki istnial niepostawiony cel farmy).

@@ -8,6 +8,7 @@
  * (b) pole obywatela POZA rzeka (Laka/Rownina, farma stoi) -> trzoda zbudowana; irygacja poza rzeka NIE (data/terrain-improvements.json
  *     `irygacja.warunek`: tylko pole sasiadujace z rzeka lub na rzece) — kazde pole z irygacja jest przy rzece.
  * (c) pole BEZ obywatela -> zadnego ulepszenia zywnosciowego (regula „tylko pola obywateli” bez zmian; wyjatek: wycinka rzeczna).
+ * (e) wzrost: wieloturowa symulacja z przybywajacymi obywatelami (E1 ma cel co ture) — trzoda/irygacja startuja w turach 1-3/1-6, kolejnosc etapow zachowana
  * (d) jedno miasto z suwakiem 0% (nigdy nie wyda Pracy) NIE moze zatrzymac etapow E3/E4 dla pozostalych miast
  *     (dawna sonda „etap czeka na Prace” ignorowala % miasta -> wieczne wstrzymanie trzody/irygacji w calym imperium).
  *
@@ -136,6 +137,27 @@ ok(othersRiver.length >= 10, `pola przy rzece z farma w pozostalych miastach: ${
 ok(othersRiver.every(x => x.layers.includes('bydlo') && x.layers.includes('irygacja')),
   `(d) pozostale miasta: trzoda+irygacja na kazdym polu przy rzece (${othersRiver.filter(x => x.layers.includes('bydlo') && x.layers.includes('irygacja')).length}/${othersRiver.length}), pula ${Math.round(D.pool)}`);
 ok(D.rows.filter(x => x.cityId === 'c01').every(x => x.layers.length === 0), '(d) miasto 0% nic nie buduje (suwak respektowany)');
+
+console.log('(e) ROZWIJAJACA SIE cywilizacja (obywatele przybywaja co 2 tury => cel E1 co ture): trzoda i irygacja NIE sa glodzone');
+// Commit-sprawca cf236dafc: petla etapow konczyla sie na pierwszym etapie z pickami; przy ciaglym wzroscie E1 mial cel co ture, wiec E3/E4
+// startowaly dopiero po ustaniu wzrostu. Harness: tools/autoimprove-pasture-irrigation-q2-bisect.cjs (produkcyjny picker + workedHexCoordsForCity).
+{
+  const { execFileSync } = require('node:child_process');
+  const runBisect = (extraEnv) => {
+    const out = execFileSync(process.execPath, [path.join(__dirname, 'autoimprove-pasture-irrigation-q2-bisect.cjs')], {
+      env: { ...process.env, PI_SRC_DIR: SRC, ...extraEnv }, encoding: 'utf8', maxBuffer: 1 << 26,
+    });
+    return JSON.parse(out.trim().split('\n').filter(l => l.startsWith('{')).pop());
+  };
+  const g = runBisect({});
+  ok(g.starved === 0, `(e) faza wzrostu (24 tury): 0 tur z glodzona trzoda/irygacja przy duzej puli (starved=${g.starved})`);
+  ok(g.firstPast != null && g.firstPast <= 3, `(e) pierwsza trzoda w turze ${g.firstPast} (<=3), nie po ustaniu wzrostu`);
+  ok(g.firstIrr != null && g.firstIrr <= 6, `(e) pierwsza irygacja w turze ${g.firstIrr} (<=6)`);
+  ok(g.gapGrow.farmNoPast === 0, `(e) w turze 24 (wzrost trwa) kazda farma na polu obywatela ma trzode (brak: ${g.gapGrow.farmNoPast})`);
+  ok(g.orderViol === 0, `(e) kolejnosc wycinka -> farmy -> trzoda -> irygacja: trzoda/irygacja dopiero gdy wyzszy etap wyczerpany (naruszen: ${g.orderViol})`);
+  const z = runBisect({ ZERO_CITY: 'c01', LOW_PCT: '0' });
+  ok(z.starved === 0 && z.orderViol === 0, `(e) j.w. przy jednym miescie z 0% (starved=${z.starved}, naruszen kolejnosci=${z.orderViol})`);
+}
 
 fs.rmSync(temp, { recursive: true, force: true });
 console.log(`\nWYNIK: ${passed} OK / ${failed} FAIL`);

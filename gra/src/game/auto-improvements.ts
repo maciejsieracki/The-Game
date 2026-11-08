@@ -992,21 +992,51 @@ function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprove
   const foodCities = stagedCities;
 
   // KROK 2: etapy żywnościowe E1…E6.
+  //
+  // R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (runda 2, BISECT na wyniku wieloturowego przepływu): COMMIT-SPRAWCA
+  // cf236dafc (2026-10-29, „Stage food improvements across civilization”). Pętla poniżej kończyła się na PIERWSZYM etapie,
+  // który miał jakiekolwiek picki w tej turze (`break`), a „etap wyczerpany” oceniała z odczytu PRZED budową tej tury. W
+  // rozwijającej się cywilizacji (obywatele przybywają / zmieniają pola co turę) etap E1 (farma) ma kandydata KAŻDEJ tury —
+  // choćby jeden nowy heks — więc E3 (trzoda) i E4 (irygacja) nigdy nie dostawały tury, mimo że Praca leżała niewydana
+  // (zmierzone na HEAD r1: 23 z 24 tur wzrostu bez ani jednej trzody; trzoda startuje dopiero, gdy wzrost ustanie).
+  // Wersja sprzed cf236dafc (92d124b72) budowała farmy, trzodę i irygację w tych samych turach.
+  // Teraz: po zbudowaniu picków etapu (zapis do `mergedPlaced`) sprawdzamy, czy etap ma JESZCZE cel przy nieograniczonym
+  // budżecie. Brak celu = etap wyczerpany → przechodzimy do następnego etapu w TEJ SAMEJ turze z resztą budżetu (zgodnie ze
+  // specyfikacją właściciela: kolejność farmy → trzoda → irygacja, przejście gdy etap „wyczerpany”, nie gdy zabraknie puli).
+  // Jest cel (picki ucięte budżetem) = etap czeka na Pracę → niższe etapy wstrzymane (kolejność nie jest omijana).
   let stagedPicks: AutoImprovementPick[] = [];
+  let stagedSpent = 0;
   let earlierStageIsPending = false;
   for (const stage of foodCities.length === 0 ? [] : FOOD_STAGES) {
-    const stageOpts = after(riverClearSpent + deficitSpent, {
+    const stageExtra: Partial<PickAutoImprovementsOpts> = {
       cities: foodCities,
       priorityOverride: stage.keys,
       riverForestClearingOnly: stage.riverForestClearingOnly === true,
       riverHexesOnly: stage.riverHexesOnly === true,
       offRiverClearing: stage.offRiverClearing === true,
       irrigationNeedsFarm: true,
-    });
+    };
+    const stageOpts = after(riverClearSpent + deficitSpent + stagedSpent, stageExtra);
     const stagePicks = pickAutoImprovementsSinglePass(stageOpts);
     if (stagePicks.length > 0) {
-      stagedPicks = stagePicks;
-      break;
+      stagedPicks = [...stagedPicks, ...stagePicks];
+      record(stagePicks);
+      stagedSpent += sum(stagePicks);
+      // Czy etap ma jeszcze cel PO tych pickach (nieograniczony budżet)? Tak → budżet go ucina → czeka na Pracę.
+      const leftover = pickAutoImprovementsSinglePass(unlimitedBudgetProbe(
+        after(riverClearSpent + deficitSpent + stagedSpent, stageExtra),
+      ));
+      if (leftover.length > 0) {
+        earlierStageIsPending = true;
+        break;
+      }
+      // Tura, w której niedobór surowca właśnie postawił ulepszenie (tartak/kamieniołom…), zachowuje DAWNĄ kolejność „jeden etap
+      // na turę”: niedobór ma pierwszeństwo przed wycinką (kontrakt S3-1: lasu pod tartak nie ścina E5 w tej samej turze).
+      if (deficitPicks.length > 0) break;
+      // Tura, w której etap rozpoczął WYCINKĘ (E2/E5), kończy etapy: wycięty heks staje się kandydatem na farmę (E1) dopiero w
+      // kolejnych turach, a rejestr #1 właściciela wymaga „farmy na wyciętych polach PRZED pierwszą trzodą” (E2 < E3).
+      if (riverClearPicks.length > 0 || stagePicks.some(p => p.key === 'wyrab')) break; // KROK 0 (wycinka rzeczna) też otwiera wycinkę w tej turze
+      continue; // etap wyczerpany tymi pickami — niższy etap w tej samej turze, z resztą budżetu
     }
 
     // Do not skip a stage just because its valid targets are currently blocked by the Work
@@ -1020,8 +1050,7 @@ function pickAutoImprovementsStaged(opts: PickAutoImprovementsOpts): AutoImprove
       break;
     }
   }
-  record(stagedPicks);
-  const stageSpent = riverClearSpent + deficitSpent + sum(stagedPicks);
+  const stageSpent = riverClearSpent + deficitSpent + stagedSpent;
 
   // Preserve ordinary forestry fallback only after no food stage has any eligible
   // target. In particular, never let this fallback cut a non-river forest while a
