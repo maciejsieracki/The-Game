@@ -1,0 +1,698 @@
+{
+ "results": {
+  "L59:true2false:28": {
+   "v": "KILLED",
+   "op": "true2false",
+   "orig": "zwyciezca_musi_przyjac: true,",
+   "mut": "zwyciezca_musi_przyjac: false,",
+   "s": 43.2
+  },
+  "L94:ne2eq:6": {
+   "v": "KILLED",
+   "op": "ne2eq",
+   "orig": "d != WebDifficulty::Easy",
+   "mut": "d == WebDifficulty::Easy",
+   "s": 43.6
+  },
+  "L109:zero2one:18": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "if base_pn <= 0.0 {",
+   "mut": "if base_pn <= 1.0 {",
+   "s": 43.7
+  },
+  "L110:zero2one:15": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "return 0.0;",
+   "mut": "return 1.0;",
+   "s": 41.8
+  },
+  "L112:zero2one:38": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "treaty_base_fairness_gap(base_pn, 0.0, covered_pn, rel_total)",
+   "mut": "treaty_base_fairness_gap(base_pn, 1.0, covered_pn, rel_total)",
+   "s": 40.7
+  },
+  "L117:notdrop:7": {
+   "v": "KILLED",
+   "op": "notdrop",
+   "orig": "if !web_targets_zero_balance(d) || base_pn <= 0.0 {",
+   "mut": "if web_targets_zero_balance(d) || base_pn <= 0.0 {",
+   "s": 41.7
+  },
+  "L118:zero2one:15": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "return 0.0;",
+   "mut": "return 1.0;",
+   "s": 44.0
+  },
+  "L120:zero2one:53": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "let bilans = web_balance_for(base_pn, rel_total, 0.0);",
+   "mut": "let bilans = web_balance_for(base_pn, rel_total, 1.0);",
+   "s": 42.5
+  },
+  "L123:zero2one:15": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "return 0.0;",
+   "mut": "return 1.0;",
+   "s": 43.7
+  },
+  "L125:minus2plus:9": {
+   "v": "KILLED",
+   "op": "minus2plus",
+   "orig": "(-tol - bilans).ceil()",
+   "mut": "(-tol + bilans).ceil()",
+   "s": 45.5
+  },
+  "L136:zero2one:58": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "balance0: web_balance_for(base_pn, rel_total, 0.0),",
+   "mut": "balance0: web_balance_for(base_pn, rel_total, 1.0),",
+   "s": 49.1
+  },
+  "L137:le2lt:30": {
+   "v": "KILLED",
+   "op": "le2lt",
+   "orig": "slope: if base_pn <= 0.0 { 0.0 } else { 1.0 },",
+   "mut": "slope: if base_pn < 0.0 { 0.0 } else { 1.0 },",
+   "s": 45.2
+  },
+  "L137:zero2one:33": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "slope: if base_pn <= 0.0 { 0.0 } else { 1.0 },",
+   "mut": "slope: if base_pn <= 1.0 { 0.0 } else { 1.0 },",
+   "s": 43.9
+  },
+  "L137:one2zero:52": {
+   "v": "KILLED",
+   "op": "one2zero",
+   "orig": "slope: if base_pn <= 0.0 { 0.0 } else { 1.0 },",
+   "mut": "slope: if base_pn <= 0.0 { 0.0 } else { 0.0 },",
+   "s": 44.5
+  },
+  "L143:eq2ne:22": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "if self.slope == 0.0 {",
+   "mut": "if self.slope != 0.0 {",
+   "s": 46.9
+  },
+  "L143:zero2one:25": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "if self.slope == 0.0 {",
+   "mut": "if self.slope == 1.0 {",
+   "s": 45.9
+  },
+  "L146:plus2minus:21": {
+   "v": "KILLED",
+   "op": "plus2minus",
+   "orig": "self.balance0 + self.slope * covered_pn",
+   "mut": "self.balance0 - self.slope * covered_pn",
+   "s": 48.2
+  },
+  "L151:gt2ge:20": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub type AssetsFn<'a> = dyn Fn(i64, i64, &HashSet<String>) -> Vec<PeaceAsset> + 'a;",
+   "mut": "pub type AssetsFn<'a>= = dyn Fn(i64, i64, &HashSet<String>) -> Vec<PeaceAsset> + 'a;",
+   "s": 31.1
+  },
+  "L151:lt2le:17": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub type AssetsFn<'a> = dyn Fn(i64, i64, &HashSet<String>) -> Vec<PeaceAsset> + 'a;",
+   "mut": "pub type AssetsFn<='a> = dyn Fn(i64, i64, &HashSet<String>) -> Vec<PeaceAsset> + 'a;",
+   "s": 30.9
+  },
+  "L154:gt2ge:30": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub struct WearinessTickEnv<'a> {",
+   "mut": "pub struct WearinessTickEnv<'a>= {",
+   "s": 28.8
+  },
+  "L154:lt2le:27": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub struct WearinessTickEnv<'a> {",
+   "mut": "pub struct WearinessTickEnv<='a> {",
+   "s": 29.6
+  },
+  "L162:gt2ge:31": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub assets: &'a AssetsFn<'a>,",
+   "mut": "pub assets: &'a AssetsFn<'a>=,",
+   "s": 30.6
+  },
+  "L162:lt2le:28": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub assets: &'a AssetsFn<'a>,",
+   "mut": "pub assets: &'a AssetsFn<='a>,",
+   "s": 31.2
+  },
+  "L181:gt2ge:37": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub plan: Option<PeacePaymentPlan>,",
+   "mut": "pub plan: Option<PeacePaymentPlan>=,",
+   "s": 28.9
+  },
+  "L181:lt2le:20": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub plan: Option<PeacePaymentPlan>,",
+   "mut": "pub plan: Option<=PeacePaymentPlan>,",
+   "s": 29.4
+  },
+  "L189:gt2ge:33": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "plan: Option<PeacePaymentPlan>,",
+   "mut": "plan: Option<PeacePaymentPlan>=,",
+   "s": 30.1
+  },
+  "L189:lt2le:16": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "plan: Option<PeacePaymentPlan>,",
+   "mut": "plan: Option<=PeacePaymentPlan>,",
+   "s": 30.0
+  },
+  "L202:gt2ge:37": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub fn run_war_weariness_tick<P, F, L>(",
+   "mut": "pub fn run_war_weariness_tick<P, F, L>=(",
+   "s": 29.3
+  },
+  "L202:lt2le:29": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub fn run_war_weariness_tick<P, F, L>(",
+   "mut": "pub fn run_war_weariness_tick<=P, F, L>(",
+   "s": 29.9
+  },
+  "L206:gt2ge:29": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "env: &WearinessTickEnv<'_>,",
+   "mut": "env: &WearinessTickEnv<'_>=,",
+   "s": 30.7
+  },
+  "L206:lt2le:26": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "env: &WearinessTickEnv<'_>,",
+   "mut": "env: &WearinessTickEnv<='_>,",
+   "s": 30.0
+  },
+  "L210:gt2ge:25": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": ") -> Vec<WearinessOutcome>",
+   "mut": ") -> Vec<WearinessOutcome>=",
+   "s": 29.2
+  },
+  "L210:lt2le:8": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": ") -> Vec<WearinessOutcome>",
+   "mut": ") -> Vec<=WearinessOutcome>",
+   "s": 30.7
+  },
+  "L218:gt2ge:37": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "let mut out: Vec<WearinessOutcome> = Vec::new();",
+   "mut": "let mut out: Vec<WearinessOutcome>= = Vec::new();",
+   "s": 29.1
+  },
+  "L218:lt2le:20": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "let mut out: Vec<WearinessOutcome> = Vec::new();",
+   "mut": "let mut out: Vec<=WearinessOutcome> = Vec::new();",
+   "s": 30.1
+  },
+  "L219:gt2ge:32": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "let mut live: HashSet<String> = HashSet::new();",
+   "mut": "let mut live: HashSet<String>= = HashSet::new();",
+   "s": 30.4
+  },
+  "L219:lt2le:25": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "let mut live: HashSet<String> = HashSet::new();",
+   "mut": "let mut live: HashSet<=String> = HashSet::new();",
+   "s": 31.3
+  },
+  "L235:le2lt:31": {
+   "v": "KILLED",
+   "op": "le2lt",
+   "orig": "let loser = if share_a <= 0.5 { a } else { b };",
+   "mut": "let loser = if share_a < 0.5 { a } else { b };",
+   "s": 42.1
+  },
+  "L236:eq2ne:30": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "let winner = if loser == a { b } else { a };",
+   "mut": "let winner = if loser != a { b } else { a };",
+   "s": 45.7
+  },
+  "L237:eq2ne:35": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "let loser_share = if loser == a { share_a } else { 1.0 - share_a };",
+   "mut": "let loser_share = if loser != a { share_a } else { 1.0 - share_a };",
+   "s": 45.1
+  },
+  "L238:eq2ne:34": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "let lost_loser = if loser == a { w.lost_a } else { w.lost_b };",
+   "mut": "let lost_loser = if loser != a { w.lost_a } else { w.lost_b };",
+   "s": 42.5
+  },
+  "L241:notdrop:11": {
+   "v": "KILLED",
+   "op": "notdrop",
+   "orig": "if !clearly_losing {",
+   "mut": "if clearly_losing {",
+   "s": 46.1
+  },
+  "L242:notdrop:15": {
+   "v": "KILLED",
+   "op": "notdrop",
+   "orig": "if !is_war_weary(lvl, p) {",
+   "mut": "if is_war_weary(lvl, p) {",
+   "s": 44.9
+  },
+  "L250:drop_continue:16": {
+   "v": "KILLED",
+   "op": "drop_continue",
+   "orig": "continue;",
+   "mut": ";",
+   "s": 43.9
+  },
+  "L254:notdrop:27": {
+   "v": "COMPILE_ERR",
+   "op": "notdrop",
+   "orig": "log(&format!(",
+   "mut": "log(&format(",
+   "s": 30.9
+  },
+  "L277:drop_continue:12": {
+   "v": "KILLED",
+   "op": "drop_continue",
+   "orig": "continue;",
+   "mut": ";",
+   "s": 43.3
+  },
+  "L282:lt2le:26": {
+   "v": "KILLED",
+   "op": "lt2le",
+   "orig": "if w.turns_at_war < o.oferta_od_tury_wojny {",
+   "mut": "if w.turns_at_war <= o.oferta_od_tury_wojny {",
+   "s": 43.0
+  },
+  "L290:drop_continue:12": {
+   "v": "KILLED",
+   "op": "drop_continue",
+   "orig": "continue;",
+   "mut": ";",
+   "s": 41.9
+  },
+  "L292:and2or:29": {
+   "v": "KILLED",
+   "op": "and2or",
+   "orig": "if lost_loser <= 0.0 && w.turns_at_war < o.oferta_bez_strat_od_tur && !is_war_weary(lvl, p)",
+   "mut": "if lost_loser <= 0.0 || w.turns_at_war < o.oferta_bez_strat_od_tur && !is_war_weary(lvl, p)",
+   "s": 45.2
+  },
+  "L292:zero2one:25": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "if lost_loser <= 0.0 && w.turns_at_war < o.oferta_bez_strat_od_tur && !is_war_weary(lvl, p)",
+   "mut": "if lost_loser <= 1.0 && w.turns_at_war < o.oferta_bez_strat_od_tur && !is_war_weary(lvl, p)",
+   "s": 42.7
+  },
+  "L301:drop_continue:12": {
+   "v": "KILLED",
+   "op": "drop_continue",
+   "orig": "continue;",
+   "mut": ";",
+   "s": 46.5
+  },
+  "L304:ge2gt:79": {
+   "v": "KILLED",
+   "op": "ge2gt",
+   "orig": "let protected_loser = (own_cities <= o.ochrona_max_miast && lost_loser >= 1.0)",
+   "mut": "let protected_loser = (own_cities <= o.ochrona_max_miast && lost_loser > 1.0)",
+   "s": 50.9
+  },
+  "L304:and2or:65": {
+   "v": "KILLED",
+   "op": "and2or",
+   "orig": "let protected_loser = (own_cities <= o.ochrona_max_miast && lost_loser >= 1.0)",
+   "mut": "let protected_loser = (own_cities <= o.ochrona_max_miast || lost_loser >= 1.0)",
+   "s": 47.4
+  },
+  "L305:or2and:12": {
+   "v": "KILLED",
+   "op": "or2and",
+   "orig": "|| lost_loser >= o.ochrona_utraty_wojny;",
+   "mut": "&& lost_loser >= o.ochrona_utraty_wojny;",
+   "s": 46.9
+  },
+  "L311:max2min:12": {
+   "v": "KILLED",
+   "op": "max2min",
+   "orig": ".max(despair_stage(despair, p))",
+   "mut": ".min(despair_stage(despair, p))",
+   "s": 44.8
+  },
+  "L312:max2min:12": {
+   "v": "KILLED",
+   "op": "max2min",
+   "orig": ".max(protected_stage);",
+   "mut": ".min(protected_stage);",
+   "s": 45.0
+  },
+  "L319:lt2le:50": {
+   "v": "KILLED",
+   "op": "lt2le",
+   "orig": "if last_offer >= 0.0 && turn - last_offer < o.cooldown_oferty_tur {",
+   "mut": "if last_offer >= 0.0 && turn - last_offer <= o.cooldown_oferty_tur {",
+   "s": 49.7
+  },
+  "L319:and2or:29": {
+   "v": "KILLED",
+   "op": "and2or",
+   "orig": "if last_offer >= 0.0 && turn - last_offer < o.cooldown_oferty_tur {",
+   "mut": "if last_offer >= 0.0 || turn - last_offer < o.cooldown_oferty_tur {",
+   "s": 46.5
+  },
+  "L319:minus2plus:36": {
+   "v": "KILLED",
+   "op": "minus2plus",
+   "orig": "if last_offer >= 0.0 && turn - last_offer < o.cooldown_oferty_tur {",
+   "mut": "if last_offer >= 0.0 && turn + last_offer < o.cooldown_oferty_tur {",
+   "s": 44.7
+  },
+  "L321:drop_continue:12": {
+   "v": "KILLED",
+   "op": "drop_continue",
+   "orig": "continue;",
+   "mut": ";",
+   "s": 39.6
+  },
+  "L328:zero2one:12": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "0.0",
+   "mut": "1.0",
+   "s": 40.1
+  },
+  "L330:max2min:12": {
+   "v": "KILLED",
+   "op": "max2min",
+   "orig": "js_max(",
+   "mut": "js_min(",
+   "s": 39.3
+  },
+  "L331:zero2one:16": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "0.0,",
+   "mut": "1.0,",
+   "s": 42.3
+  },
+  "L332:min2max:16": {
+   "v": "KILLED",
+   "op": "min2max",
+   "orig": "js_min(",
+   "mut": "js_max(",
+   "s": 42.3
+  },
+  "L338:gt2ge:36": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "let mut skip: HashSet<String> = HashSet::new();",
+   "mut": "let mut skip: HashSet<String>= = HashSet::new();",
+   "s": 32.7
+  },
+  "L338:lt2le:29": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "let mut skip: HashSet<String> = HashSet::new();",
+   "mut": "let mut skip: HashSet<=String> = HashSet::new();",
+   "s": 30.8
+  },
+  "L346:and2or:53": {
+   "v": "KILLED",
+   "op": "and2or",
+   "orig": "i.kind == PeaceAssetKind::Miasto && !(env.city_cession_ok)(&i.id, loser, winner)",
+   "mut": "i.kind == PeaceAssetKind::Miasto || !(env.city_cession_ok)(&i.id, loser, winner)",
+   "s": 50.7
+  },
+  "L346:eq2ne:27": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "i.kind == PeaceAssetKind::Miasto && !(env.city_cession_ok)(&i.id, loser, winner)",
+   "mut": "i.kind != PeaceAssetKind::Miasto && !(env.city_cession_ok)(&i.id, loser, winner)",
+   "s": 40.5
+  },
+  "L109:le2lt:15": {
+   "v": "KILLED",
+   "op": "le2lt",
+   "orig": "if base_pn <= 0.0 {",
+   "mut": "if base_pn < 0.0 {",
+   "s": 40.5
+  },
+  "L227:plus2minus:20": {
+   "v": "KILLED",
+   "op": "plus2minus",
+   "orig": "w.lost_a + w.lost_b,",
+   "mut": "w.lost_a - w.lost_b,",
+   "s": 44.4
+  },
+  "L237:minus2plus:62": {
+   "v": "KILLED",
+   "op": "minus2plus",
+   "orig": "let loser_share = if loser == a { share_a } else { 1.0 - share_a };",
+   "mut": "let loser_share = if loser == a { share_a } else { 1.0 + share_a };",
+   "s": 43.3
+  },
+  "L237:one2zero:59": {
+   "v": "KILLED",
+   "op": "one2zero",
+   "orig": "let loser_share = if loser == a { share_a } else { 1.0 - share_a };",
+   "mut": "let loser_share = if loser == a { share_a } else { 0.0 - share_a };",
+   "s": 50.4
+  },
+  "L239:le2lt:41": {
+   "v": "KILLED",
+   "op": "le2lt",
+   "orig": "let clearly_losing = loser_share <= p.udzial_wyraznie;",
+   "mut": "let clearly_losing = loser_share < p.udzial_wyraznie;",
+   "s": 51.0
+  },
+  "L253:ge2gt:19": {
+   "v": "KILLED",
+   "op": "ge2gt",
+   "orig": "if lvl >= o.prog_wzajemny_pokoj {",
+   "mut": "if lvl > o.prog_wzajemny_pokoj {",
+   "s": 45.5
+  },
+  "L292:le2lt:22": {
+   "v": "KILLED",
+   "op": "le2lt",
+   "orig": "if lost_loser <= 0.0 && w.turns_at_war < o.oferta_bez_strat_od_tur && !is_war_weary(lvl, p)",
+   "mut": "if lost_loser < 0.0 && w.turns_at_war < o.oferta_bez_strat_od_tur && !is_war_weary(lvl, p)",
+   "s": 44.6
+  },
+  "L292:lt2le:47": {
+   "v": "KILLED",
+   "op": "lt2le",
+   "orig": "if lost_loser <= 0.0 && w.turns_at_war < o.oferta_bez_strat_od_tur && !is_war_weary(lvl, p)",
+   "mut": "if lost_loser <= 0.0 && w.turns_at_war <= o.oferta_bez_strat_od_tur && !is_war_weary(lvl, p)",
+   "s": 43.3
+  },
+  "L292:notdrop:78": {
+   "v": "KILLED",
+   "op": "notdrop",
+   "orig": "if lost_loser <= 0.0 && w.turns_at_war < o.oferta_bez_strat_od_tur && !is_war_weary(lvl, p)",
+   "mut": "if lost_loser <= 0.0 && w.turns_at_war < o.oferta_bez_strat_od_tur && is_war_weary(lvl, p)",
+   "s": 50.1
+  },
+  "L304:le2lt:42": {
+   "v": "KILLED",
+   "op": "le2lt",
+   "orig": "let protected_loser = (own_cities <= o.ochrona_max_miast && lost_loser >= 1.0)",
+   "mut": "let protected_loser = (own_cities < o.ochrona_max_miast && lost_loser >= 1.0)",
+   "s": 41.3
+  },
+  "L304:one2zero:82": {
+   "v": "KILLED",
+   "op": "one2zero",
+   "orig": "let protected_loser = (own_cities <= o.ochrona_max_miast && lost_loser >= 1.0)",
+   "mut": "let protected_loser = (own_cities <= o.ochrona_max_miast && lost_loser >= 0.0)",
+   "s": 38.8
+  },
+  "L305:ge2gt:26": {
+   "v": "KILLED",
+   "op": "ge2gt",
+   "orig": "|| lost_loser >= o.ochrona_utraty_wojny;",
+   "mut": "|| lost_loser > o.ochrona_utraty_wojny;",
+   "s": 38.6
+  },
+  "L314:le2lt:21": {
+   "v": "KILLED",
+   "op": "le2lt",
+   "orig": "if new_stage <= 0 {",
+   "mut": "if new_stage < 0 {",
+   "s": 39.8
+  },
+  "L316:drop_continue:12": {
+   "v": "KILLED",
+   "op": "drop_continue",
+   "orig": "continue;",
+   "mut": ";",
+   "s": 38.5
+  },
+  "L319:ge2gt:22": {
+   "v": "KILLED",
+   "op": "ge2gt",
+   "orig": "if last_offer >= 0.0 && turn - last_offer < o.cooldown_oferty_tur {",
+   "mut": "if last_offer > 0.0 && turn - last_offer < o.cooldown_oferty_tur {",
+   "s": 39.6
+  },
+  "L319:zero2one:25": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "if last_offer >= 0.0 && turn - last_offer < o.cooldown_oferty_tur {",
+   "mut": "if last_offer >= 1.0 && turn - last_offer < o.cooldown_oferty_tur {",
+   "s": 47.0
+  },
+  "L346:notdrop:56": {
+   "v": "KILLED",
+   "op": "notdrop",
+   "orig": "i.kind == PeaceAssetKind::Miasto && !(env.city_cession_ok)(&i.id, loser, winner)",
+   "mut": "i.kind == PeaceAssetKind::Miasto && (env.city_cession_ok)(&i.id, loser, winner)",
+   "s": 59.0
+  },
+  "L117:le2lt:47": {
+   "v": "SURVIVED",
+   "op": "le2lt",
+   "orig": "if !web_targets_zero_balance(d) || base_pn <= 0.0 {",
+   "mut": "if !web_targets_zero_balance(d) || base_pn < 0.0 {",
+   "s": 45.1
+  },
+  "L117:or2and:36": {
+   "v": "SURVIVED",
+   "op": "or2and",
+   "orig": "if !web_targets_zero_balance(d) || base_pn <= 0.0 {",
+   "mut": "if !web_targets_zero_balance(d) && base_pn <= 0.0 {",
+   "s": 40.5
+  },
+  "L117:zero2one:50": {
+   "v": "SURVIVED",
+   "op": "zero2one",
+   "orig": "if !web_targets_zero_balance(d) || base_pn <= 0.0 {",
+   "mut": "if !web_targets_zero_balance(d) || base_pn <= 1.0 {",
+   "s": 41.4
+  },
+  "L122:ge2gt:14": {
+   "v": "SURVIVED",
+   "op": "ge2gt",
+   "orig": "if bilans >= -tol {",
+   "mut": "if bilans > -tol {",
+   "s": 42.8
+  },
+  "L334:minus2plus:30": {
+   "v": "KILLED",
+   "op": "minus2plus",
+   "orig": "own_cities - o.min_miast_po_oddaniu,",
+   "mut": "own_cities + o.min_miast_po_oddaniu,",
+   "s": 40.8
+  },
+  "L364:ge2gt:16": {
+   "v": "KILLED",
+   "op": "ge2gt",
+   "orig": "lvl >= o.prog_wzajemny_pokoj && (rejected as f64) >= o.odrzucenia_do_kapitulacji;",
+   "mut": "lvl > o.prog_wzajemny_pokoj && (rejected as f64) >= o.odrzucenia_do_kapitulacji;",
+   "s": 41.9
+  },
+  "L364:and2or:41": {
+   "v": "KILLED",
+   "op": "and2or",
+   "orig": "lvl >= o.prog_wzajemny_pokoj && (rejected as f64) >= o.odrzucenia_do_kapitulacji;",
+   "mut": "lvl >= o.prog_wzajemny_pokoj || (rejected as f64) >= o.odrzucenia_do_kapitulacji;",
+   "s": 40.2
+  },
+  "L365:and2or:42": {
+   "v": "KILLED",
+   "op": "and2or",
+   "orig": "let must_accept = protected_loser && o.zwyciezca_musi_przyjac;",
+   "mut": "let must_accept = protected_loser || o.zwyciezca_musi_przyjac;",
+   "s": 39.8
+  },
+  "L368:plus2minus:30": {
+   "v": "KILLED",
+   "op": "plus2minus",
+   "orig": "quote.tolerance_pn + js_max(0.0, o.tolerancja_zmeczenia) * lvl * js_max(0.0, required);",
+   "mut": "quote.tolerance_pn - js_max(0.0, o.tolerancja_zmeczenia) * lvl * js_max(0.0, required);",
+   "s": 38.5
+  },
+  "L368:max2min:33": {
+   "v": "KILLED",
+   "op": "max2min",
+   "orig": "quote.tolerance_pn + js_max(0.0, o.tolerancja_zmeczenia) * lvl * js_max(0.0, required);",
+   "mut": "quote.tolerance_pn + js_min(0.0, o.tolerancja_zmeczenia) * lvl * js_max(0.0, required);",
+   "s": 39.2
+  },
+  "L368:zero2one:40": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "quote.tolerance_pn + js_max(0.0, o.tolerancja_zmeczenia) * lvl * js_max(0.0, required);",
+   "mut": "quote.tolerance_pn + js_max(1.0, o.tolerancja_zmeczenia) * lvl * js_max(0.0, required);",
+   "s": 42.5
+  },
+  "L369:ge2gt:74": {
+   "v": "KILLED",
+   "op": "ge2gt",
+   "orig": "if must_accept || exhausted || quote.balance_for(plan.covered_pn) >= -tol {",
+   "mut": "if must_accept || exhausted || quote.balance_for(plan.covered_pn) > -tol {",
+   "s": 37.5
+  },
+  "L369:or2and:23": {
+   "v": "KILLED",
+   "op": "or2and",
+   "orig": "if must_accept || exhausted || quote.balance_for(plan.covered_pn) >= -tol {",
+   "mut": "if must_accept && exhausted || quote.balance_for(plan.covered_pn) >= -tol {",
+   "s": 38.5
+  },
+  "L371:notdrop:23": {
+   "v": "COMPILE_ERR",
+   "op": "notdrop",
+   "orig": "log(&format!(",
+   "mut": "log(&format(",
+   "s": 27.0
+  }
+ },
+ "total": 99
+}
