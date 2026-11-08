@@ -251,18 +251,94 @@ export function recordEraForcedWarParticipation(
   counts.set(kt, (counts.get(kt) ?? 0) + 1);
 }
 
+/** Numer epoki (1 Kamień, 2 Brąz, 3 Żelazo) odpowiadający etykiecie wojny epoki; `null` = brak (zwykła wojna). */
+export function forcedEraTagEpoch(tag: ForcedEraTag | null | undefined): number | undefined {
+  if (tag === 'stone') return 1;
+  if (tag === 'bronze') return 2;
+  if (tag === 'iron') return 3;
+  return undefined;
+}
+
+/** Etykieta wojny epoki własnej epoki cywilizacji (1/2/3); epoki > 3 nie mają wojny wymuszonej → `null`. */
+export function forcedEraTagForEpoch(epoch: number): ForcedEraTag | null {
+  return epoch === 1 ? 'stone' : epoch === 2 ? 'bronze' : epoch === 3 ? 'iron' : null;
+}
+
+/**
+ * R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: epoka, pod którą liczy się wojna epoki GRACZA w
+ * liczniku (cywilizacja, epoka): epoka wojny, gdy gracz jest już w nowszej epoce (wojna Kamienia
+ * gracza w Brązie = klucz 0:1, nie 0:2). Bez etykiety (`tagEpoch` undefined) = bieżąca epoka.
+ */
+export function eraWarCounterEpoch(tagEpoch: number | undefined, ownerEpoch: number): number {
+  return tagEpoch === undefined ? ownerEpoch : Math.min(ownerEpoch, tagEpoch);
+}
+
+export interface PlayerEraWarPoolInput {
+  currentTurn: number;
+  /** Bieżąca epoka gracza. */
+  playerEpoch: number;
+  /** Aktywne wojny wymuszone gracza — wszystkie epoki. */
+  activeForcedWarsTotal: number;
+  /** Aktywne wojny wymuszone gracza TEJ SAMEJ epoki co jego bieżąca (Kamień/Brąz/Żelazo). */
+  activeForcedWarsInPlayerEra: number;
+  /** Tura wejścia gracza w bieżącą epokę (Brąz/Żelazo); brak (stary zapis/start w epoce) = próg pominięty. */
+  eraEnterTurn: number | undefined;
+  /** Najwcześniejsza tura puli gracza (WOJNA_KAMIEN_WYMUSZONA_START_TURY). */
+  poolStartTurn: number;
+}
+
+/**
+ * Czy gracz wchodzi do puli celów wojny epoki. Kamień/epoki > 3: bez zmian (brak jakiejkolwiek
+ * wojny wymuszonej). Brąz/Żelazo: liczy się tylko wojna TEJ SAMEJ epoki (wojna Kamienia nie zajmuje
+ * „miejsca” Brązu) oraz próg `eraForcedWarStartTurnsFromEra` od wejścia gracza w epokę.
+ */
+export function isPlayerEligibleForEraWarPool(
+  inp: PlayerEraWarPoolInput,
+  params: WarRulesParams = WAR_RULES_PARAMS,
+): boolean {
+  if (inp.currentTurn < inp.poolStartTurn) return false;
+  const tag = forcedEraTagForEpoch(inp.playerEpoch);
+  if (tag === null || tag === 'stone') return inp.activeForcedWarsTotal === 0;
+  if (inp.activeForcedWarsInPlayerEra !== 0) return false;
+  if (inp.eraEnterTurn === undefined) return true;
+  return inp.currentTurn - inp.eraEnterTurn >= params.eraForcedWarStartTurnsFromEra[tag];
+}
+
+/**
+ * R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1 (zarzut FC r1 nr 1): czy kandydat-AI o epoce `aiEpoch`
+ * może wejść w parę z GRACZEM — slot licznika gracza dla epoki wojny tagu AI wolny
+ * (`eraWarCounterEpoch(epoka tagu, epoka gracza)`, ta sama reguła co bramka wypowiedzenia w main.ts).
+ * Bez tego filtra AI Kamienia wybrana jako partner gracza w Brązie byłaby odrzucana bramką
+ * (`civ-cap-target`) w każdej turze, a wojna Brązu gracza nie byłaby deklarowana.
+ */
+export function isPlayerEraWarSlotFree(
+  counts: ReadonlyMap<string, number>,
+  aiEpoch: number,
+  playerEpoch: number,
+  params: WarRulesParams = WAR_RULES_PARAMS,
+): boolean {
+  const tag = forcedEraTagForEpoch(aiEpoch);
+  if (tag === null) return false;
+  return canCivJoinEraForcedWar(counts, 0, eraWarCounterEpoch(forcedEraTagEpoch(tag), playerEpoch), params);
+}
+
 /**
  * R-WEB-ERA-WAR-COUNTER-Q1, zapis stary bez pola: odtwarza licznik z AKTYWNYCH par wojen
  * wymuszonych (obie strony = 1 w bieżącej epoce); reszta = 0. Świadomie konserwatywne.
  */
 export function rebuildEraWarCountsFromActivePairs(
-  activePairs: ReadonlyArray<{ attackerId: number; targetId: number }>,
+  activePairs: ReadonlyArray<{ attackerId: number; targetId: number; tagEpoch?: number }>,
   epochOf: (ownerId: number) => number,
+  isHumanOwner?: (ownerId: number) => boolean,
 ): Map<string, number> {
   const out = new Map<string, number>();
   for (const p of activePairs) {
     for (const oid of [p.attackerId, p.targetId]) {
-      out.set(eraWarCivKey(oid, epochOf(oid)), 1);
+      // R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1 (H2): wojna Kamienia gracza, który jest już
+      // w Brązie, zajmuje slot EPOKI WOJNY (0:1), nie bieżącej (0:2) — inaczej odtworzony stary zapis
+      // blokowałby graczowi wojnę Brązu. Tylko gracz (isHumanOwner); AI bez zmian.
+      const human = isHumanOwner?.(oid) === true;
+      out.set(eraWarCivKey(oid, human ? eraWarCounterEpoch(p.tagEpoch, epochOf(oid)) : epochOf(oid)), 1);
     }
   }
   return out;
@@ -275,10 +351,11 @@ export function rebuildEraWarCountsFromActivePairs(
  */
 export function restoreEraWarCounts(
   saved: unknown,
-  activePairs: ReadonlyArray<{ attackerId: number; targetId: number }>,
+  activePairs: ReadonlyArray<{ attackerId: number; targetId: number; tagEpoch?: number }>,
   epochOf: (ownerId: number) => number,
+  isHumanOwner?: (ownerId: number) => boolean,
 ): Map<string, number> {
-  if (!Array.isArray(saved)) return rebuildEraWarCountsFromActivePairs(activePairs, epochOf);
+  if (!Array.isArray(saved)) return rebuildEraWarCountsFromActivePairs(activePairs, epochOf, isHumanOwner);
   const out = new Map<string, number>();
   for (const e of saved) {
     if (Array.isArray(e) && typeof e[0] === 'string' && Number.isFinite(e[1])) out.set(e[0], e[1] as number);

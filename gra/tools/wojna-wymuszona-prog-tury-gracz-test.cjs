@@ -43,22 +43,28 @@ console.log('R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1 — prog tury gracza (Krok C)'
 // WSPÓLNYM ze stałą stone (liczoną od startu gry, nie od wejścia w epokę -- gracz nie ma
 // odrębnego "wejścia w epokę").
 const krokCStart = main.indexOf('// Krok C:');
-const krokCSlice = krokCStart >= 0 ? main.slice(krokCStart, krokCStart + 900) : '';
+// R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: okno kończy się na wejściu do triggeredSubjects
+// (zamiast stałego 900/4200 znaków); kryteria progu i „brak wojny" żyją w isPlayerEligibleForEraWarPool.
+const krokCEnd = krokCStart >= 0 ? main.indexOf('triggeredSubjects.push({ ownerId: 0', krokCStart) : -1;
+const krokCSlice = krokCStart >= 0 && krokCEnd > krokCStart ? main.slice(krokCStart, krokCEnd + 60) : '';
+const warRulesMultiwarSrc = fs.readFileSync(path.join(GRA_ROOT, 'src', 'game', 'war-rules-multiwar.ts'), 'utf8');
 check(
   'Krok C zawiera blok warunkowy dołączenia gracza do triggeredSubjects',
-  /if \(\s*\n?\s*playerCity[\s\S]{0,400}triggeredSubjects\.push\(\{ ownerId: 0/.test(krokCSlice),
+  /if \(\s*\n?\s*playerCity[\s\S]{0,600}triggeredSubjects\.push\(\{ ownerId: 0/.test(krokCSlice),
 );
 check(
-  'warunek zawiera próg turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY',
-  /turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY/.test(krokCSlice),
+  'warunek zawiera próg turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY (jako poolStartTurn; porównanie w helperze)',
+  /poolStartTurn: WOJNA_KAMIEN_WYMUSZONA_START_TURY/.test(krokCSlice)
+    && /currentTurn < inp\.poolStartTurn\) return false/.test(warRulesMultiwarSrc),
 );
 check(
-  'warunek zachowuje istniejące kryterium totalActiveForcedWarsByOwner(0) === 0',
-  /totalActiveForcedWarsByOwner\(0\) === 0/.test(krokCSlice),
+  'warunek zachowuje istniejące kryterium totalActiveForcedWarsByOwner(0) === 0 (activeForcedWarsTotal; === 0 w helperze)',
+  /activeForcedWarsTotal: totalActiveForcedWarsByOwner\(0\)/.test(krokCSlice)
+    && /inp\.activeForcedWarsTotal === 0/.test(warRulesMultiwarSrc),
 );
 check(
   'literał 25 NIE jest zreimplementowany ręcznie w Kroku C (używana jest nazwana stała)',
-  !/turn >= 25/.test(krokCSlice),
+  !/turn >= 25/.test(krokCSlice) && !/poolStartTurn: 25\b/.test(krokCSlice),
 );
 
 // (B) Symulacja realna, prawdziwy import stałej progu (ZERO reimplementacji formuły).
