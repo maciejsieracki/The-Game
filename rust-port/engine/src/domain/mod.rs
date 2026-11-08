@@ -18,6 +18,7 @@ pub mod civ_names;
 pub mod combat;
 pub mod diplomacy;
 pub mod diplomacy_aggressor;
+pub mod diplomacy_ai_forced_peace;
 pub mod diplomacy_multiwar;
 pub mod diplomacy_multiwar_gate;
 pub mod diplomacy_multiwar_peace;

@@ -1,0 +1,2454 @@
+{
+ "meta": {
+  "pin": "origin/main 5dd53e60f",
+  "source": "gra/src/game/diplomacy-ai-forced-peace.ts",
+  "limitDefault": 2
+ },
+ "unit": {
+  "register": {
+   "results": [
+    true,
+    false,
+    true
+   ],
+   "store": [
+    {
+     "key": "1-2",
+     "requesterId": 1,
+     "otherId": 2,
+     "sinceTurn": 10,
+     "kind": "pokoj"
+    },
+    {
+     "key": "3-4",
+     "requesterId": 3,
+     "otherId": 4,
+     "sinceTurn": 12,
+     "kind": "rozejm"
+    }
+   ]
+  },
+  "turns": [
+   {
+    "in": {
+     "sinceTurn": 10,
+     "turn": 9
+    },
+    "out": 0
+   },
+   {
+    "in": {
+     "sinceTurn": 10,
+     "turn": 10
+    },
+    "out": 0
+   },
+   {
+    "in": {
+     "sinceTurn": 10,
+     "turn": "NaN"
+    },
+    "out": "NaN"
+   }
+  ],
+  "due": [
+   {
+    "in": {
+     "sinceTurn": 0,
+     "turn": 1
+    },
+    "out": false
+   },
+   {
+    "in": {
+     "sinceTurn": 0,
+     "turn": 2
+    },
+    "out": true
+   },
+   {
+    "in": {
+     "sinceTurn": 0,
+     "turn": 3
+    },
+    "out": true
+   },
+   {
+    "in": {
+     "sinceTurn": 0,
+     "turn": 0,
+     "limit": 0
+    },
+    "out": true
+   },
+   {
+    "in": {
+     "sinceTurn": 0,
+     "turn": 5,
+     "limit": 6
+    },
+    "out": false
+   },
+   {
+    "in": {
+     "sinceTurn": 0,
+     "turn": "NaN"
+    },
+    "out": false
+   },
+   {
+    "in": {
+     "sinceTurn": 0,
+     "turn": 1,
+     "limit": "NaN"
+    },
+    "out": false
+   }
+  ],
+  "limit": 2,
+  "eligible": [
+   {
+    "in": {
+     "aIsHuman": false,
+     "bIsHuman": false,
+     "aIsMajorAi": true,
+     "bIsMajorAi": true,
+     "eliminated": false,
+     "forcedEpochWar": false,
+     "atWar": true
+    },
+    "out": true
+   },
+   {
+    "in": {
+     "aIsHuman": true,
+     "bIsHuman": false,
+     "aIsMajorAi": true,
+     "bIsMajorAi": true,
+     "eliminated": false,
+     "forcedEpochWar": false,
+     "atWar": true
+    },
+    "out": false
+   },
+   {
+    "in": {
+     "aIsHuman": false,
+     "bIsHuman": false,
+     "aIsMajorAi": true,
+     "bIsMajorAi": false,
+     "eliminated": false,
+     "forcedEpochWar": false,
+     "atWar": true
+    },
+    "out": false
+   },
+   {
+    "in": {
+     "aIsHuman": false,
+     "bIsHuman": false,
+     "aIsMajorAi": true,
+     "bIsMajorAi": true,
+     "eliminated": true,
+     "forcedEpochWar": false,
+     "atWar": true
+    },
+    "out": false
+   },
+   {
+    "in": {
+     "aIsHuman": false,
+     "bIsHuman": false,
+     "aIsMajorAi": true,
+     "bIsMajorAi": true,
+     "eliminated": false,
+     "forcedEpochWar": true,
+     "atWar": true
+    },
+    "out": false
+   },
+   {
+    "in": {
+     "aIsHuman": false,
+     "bIsHuman": false,
+     "aIsMajorAi": true,
+     "bIsMajorAi": true,
+     "eliminated": false,
+     "forcedEpochWar": false,
+     "atWar": false
+    },
+    "out": false
+   }
+  ],
+  "share": [
+   {
+    "in": {
+     "rp": 1,
+     "op": 1
+    },
+    "out": {
+     "share": 0.5,
+     "clearly": false,
+     "still": true
+    }
+   },
+   {
+    "in": {
+     "rp": 45,
+     "op": 55
+    },
+    "out": {
+     "share": 0.45,
+     "clearly": true,
+     "still": true
+    }
+   },
+   {
+    "in": {
+     "rp": 46,
+     "op": 54
+    },
+    "out": {
+     "share": 0.46,
+     "clearly": false,
+     "still": true
+    }
+   },
+   {
+    "in": {
+     "rp": 50,
+     "op": 50
+    },
+    "out": {
+     "share": 0.5,
+     "clearly": false,
+     "still": true
+    }
+   },
+   {
+    "in": {
+     "rp": 51,
+     "op": 49
+    },
+    "out": {
+     "share": 0.51,
+     "clearly": false,
+     "still": false
+    }
+   },
+   {
+    "in": {
+     "rp": 0,
+     "op": 0
+    },
+    "out": {
+     "share": 0.5,
+     "clearly": false,
+     "still": true
+    }
+   },
+   {
+    "in": {
+     "rp": "NaN",
+     "op": 3
+    },
+    "out": {
+     "share": 0.5,
+     "clearly": false,
+     "still": true
+    }
+   }
+  ],
+  "decide": [
+   {
+    "name": "force_limit_mimo_bramki",
+    "in": {
+     "sinceTurn": 0,
+     "turn": 2,
+     "requiredPn": 100,
+     "assets": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "balanceBeforePn": -50,
+     "balanceAfterPn": -40,
+     "tolerancePn": 0,
+     "gate": "stronger"
+    },
+    "out": {
+     "action": "force",
+     "reason": "limit",
+     "balanceBefore": -50,
+     "balanceAfter": -40,
+     "turnsSince": 2
+    },
+    "plan": {
+     "items": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "covered": 10,
+     "shortfall": 90,
+     "full": false,
+     "hist": [
+      1,
+      0,
+      0
+     ]
+    }
+   },
+   {
+    "name": "wait_limit_minus_1",
+    "in": {
+     "sinceTurn": 0,
+     "turn": 1,
+     "requiredPn": 100,
+     "assets": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 100,
+       "pn": 100
+      }
+     ],
+     "balanceBeforePn": -50,
+     "balanceAfterPn": 50,
+     "tolerancePn": 0,
+     "gate": "ok"
+    },
+    "out": {
+     "action": "accept_paid",
+     "reason": "balance_in_tolerance",
+     "balanceBefore": -50,
+     "balanceAfter": 50,
+     "turnsSince": 1
+    },
+    "plan": {
+     "items": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 100,
+       "pn": 100
+      }
+     ],
+     "covered": 100,
+     "shortfall": 0,
+     "full": true,
+     "hist": [
+      1,
+      0,
+      0
+     ]
+    }
+   },
+   {
+    "name": "gate_too_early_pelna_zaplata",
+    "in": {
+     "sinceTurn": 0,
+     "turn": 1,
+     "requiredPn": 100,
+     "assets": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 100,
+       "pn": 100
+      }
+     ],
+     "balanceBeforePn": -50,
+     "balanceAfterPn": 50,
+     "tolerancePn": 0,
+     "gate": "too_early"
+    },
+    "out": {
+     "action": "wait",
+     "reason": "gate:too_early",
+     "balanceBefore": -50,
+     "balanceAfter": 50,
+     "turnsSince": 1
+    },
+    "plan": {
+     "items": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 100,
+       "pn": 100
+      }
+     ],
+     "covered": 100,
+     "shortfall": 0,
+     "full": true,
+     "hist": [
+      1,
+      0,
+      0
+     ]
+    }
+   },
+   {
+    "name": "accept_tolerancja_granica",
+    "in": {
+     "sinceTurn": 0,
+     "turn": 1,
+     "requiredPn": 100,
+     "assets": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "balanceBeforePn": -50,
+     "balanceAfterPn": -50,
+     "tolerancePn": 50,
+     "gate": "ok"
+    },
+    "out": {
+     "action": "accept_paid",
+     "reason": "balance_in_tolerance",
+     "balanceBefore": -50,
+     "balanceAfter": -50,
+     "turnsSince": 1
+    },
+    "plan": {
+     "items": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "covered": 10,
+     "shortfall": 90,
+     "full": false,
+     "hist": [
+      1,
+      0,
+      0
+     ]
+    }
+   },
+   {
+    "name": "wait_ponizej_tolerancji",
+    "in": {
+     "sinceTurn": 0,
+     "turn": 1,
+     "requiredPn": 100,
+     "assets": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "balanceBeforePn": -50,
+     "balanceAfterPn": -51,
+     "tolerancePn": 50,
+     "gate": "ok"
+    },
+    "out": {
+     "action": "wait",
+     "reason": "balance_below_tolerance",
+     "balanceBefore": -50,
+     "balanceAfter": -51,
+     "turnsSince": 1
+    },
+    "plan": {
+     "items": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "covered": 10,
+     "shortfall": 90,
+     "full": false,
+     "hist": [
+      1,
+      0,
+      0
+     ]
+    }
+   },
+   {
+    "name": "zaokraglenie_polowki",
+    "in": {
+     "sinceTurn": 0,
+     "turn": 1,
+     "requiredPn": 100,
+     "assets": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "balanceBeforePn": -50.5,
+     "balanceAfterPn": -49.5,
+     "tolerancePn": 0,
+     "gate": "ok"
+    },
+    "out": {
+     "action": "wait",
+     "reason": "balance_below_tolerance",
+     "balanceBefore": -50,
+     "balanceAfter": -49,
+     "turnsSince": 1
+    },
+    "plan": {
+     "items": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "covered": 10,
+     "shortfall": 90,
+     "full": false,
+     "hist": [
+      1,
+      0,
+      0
+     ]
+    }
+   },
+   {
+    "name": "limit_jawny_nan_nie_wymusza",
+    "in": {
+     "sinceTurn": 0,
+     "turn": 5,
+     "requiredPn": 100,
+     "assets": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "balanceBeforePn": -50,
+     "balanceAfterPn": -50,
+     "tolerancePn": 0,
+     "gate": "ok",
+     "limit": "NaN"
+    },
+    "out": {
+     "action": "wait",
+     "reason": "balance_below_tolerance",
+     "balanceBefore": -50,
+     "balanceAfter": -50,
+     "turnsSince": 5
+    },
+    "plan": {
+     "items": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "covered": 10,
+     "shortfall": 90,
+     "full": false,
+     "hist": [
+      1,
+      0,
+      0
+     ]
+    }
+   },
+   {
+    "name": "limit_jawny_6_wait",
+    "in": {
+     "sinceTurn": 0,
+     "turn": 5,
+     "requiredPn": 100,
+     "assets": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "balanceBeforePn": -50,
+     "balanceAfterPn": -50,
+     "tolerancePn": 0,
+     "gate": "ok",
+     "limit": 6
+    },
+    "out": {
+     "action": "wait",
+     "reason": "balance_below_tolerance",
+     "balanceBefore": -50,
+     "balanceAfter": -50,
+     "turnsSince": 5
+    },
+    "plan": {
+     "items": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "covered": 10,
+     "shortfall": 90,
+     "full": false,
+     "hist": [
+      1,
+      0,
+      0
+     ]
+    }
+   }
+  ]
+ },
+ "ticks": [
+  {
+   "name": "przegrany_przyjety_po_oplacie_pelny",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     }
+    ],
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 100,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": -50,
+       "slope": 1
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.3
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 60,
+       "pn": 60
+      },
+      {
+       "kind": "surowiec_ilosc",
+       "id": "zelazo",
+       "amount": 10,
+       "pn": 40
+      }
+     ]
+    },
+    "ticks": [
+     0
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 0,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "accept_paid",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 60,
+           "pn": 60
+          },
+          {
+           "kind": "surowiec_ilosc",
+           "id": "zelazo",
+           "amount": 10,
+           "pn": 40
+          }
+         ],
+         "covered": 100,
+         "shortfall": 0,
+         "full": true,
+         "hist": [
+          1,
+          1,
+          0
+         ]
+        },
+        "decision": {
+         "action": "accept_paid",
+         "reason": "balance_in_tolerance",
+         "balanceBefore": -50,
+         "balanceAfter": 50,
+         "turnsSince": 0
+        }
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        100
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [pokoj] (accept_paid, tury od prośby 0); bilans zwycięzcy przed -50 -> po 50; zapłata zloto=1 surowce=1 miasto=0 (100/100 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "bramka_too_early_wait_potem_force_przy_limicie",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 10
+     }
+    ],
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 300,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": -500,
+       "slope": 1
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.3
+    },
+    "gate": {
+     "2-1": "too_early"
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 50,
+       "pn": 50
+      }
+     ]
+    },
+    "ticks": [
+     10,
+     11,
+     12
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 10,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "wait",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 50,
+           "pn": 50
+          }
+         ],
+         "covered": 50,
+         "shortfall": 250,
+         "full": false,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "wait",
+         "reason": "gate:too_early",
+         "balanceBefore": -500,
+         "balanceAfter": -450,
+         "turnsSince": 0
+        }
+       }
+      ],
+      "pays": [],
+      "finalizes": [],
+      "logs": [],
+      "store": [
+       {
+        "key": "1-2",
+        "requesterId": 1,
+        "otherId": 2,
+        "sinceTurn": 10,
+        "kind": "pokoj"
+       }
+      ]
+     },
+     {
+      "turn": 11,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "wait",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 50,
+           "pn": 50
+          }
+         ],
+         "covered": 50,
+         "shortfall": 250,
+         "full": false,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "wait",
+         "reason": "gate:too_early",
+         "balanceBefore": -500,
+         "balanceAfter": -450,
+         "turnsSince": 1
+        }
+       }
+      ],
+      "pays": [],
+      "finalizes": [],
+      "logs": [],
+      "store": [
+       {
+        "key": "1-2",
+        "requesterId": 1,
+        "otherId": 2,
+        "sinceTurn": 10,
+        "kind": "pokoj"
+       }
+      ]
+     },
+     {
+      "turn": 12,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "force",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 50,
+           "pn": 50
+          }
+         ],
+         "covered": 50,
+         "shortfall": 250,
+         "full": false,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "force",
+         "reason": "limit",
+         "balanceBefore": -500,
+         "balanceAfter": -450,
+         "turnsSince": 2
+        }
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        50
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [pokoj] (force, tury od prośby 2); bilans zwycięzcy przed -500 -> po -450; zapłata zloto=1 surowce=0 miasto=0 (50/300 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "bilans_ponizej_tolerancji_wait_N_minus_1_force_N",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 5
+     }
+    ],
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 300,
+      "tolerancePn": 10,
+      "shape": {
+       "type": "linear",
+       "balance0": -200,
+       "slope": 1
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.2
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 50,
+       "pn": 50
+      }
+     ]
+    },
+    "ticks": [
+     6,
+     7
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 6,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "wait",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 50,
+           "pn": 50
+          }
+         ],
+         "covered": 50,
+         "shortfall": 250,
+         "full": false,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "wait",
+         "reason": "balance_below_tolerance",
+         "balanceBefore": -200,
+         "balanceAfter": -150,
+         "turnsSince": 1
+        }
+       }
+      ],
+      "pays": [],
+      "finalizes": [],
+      "logs": [],
+      "store": [
+       {
+        "key": "1-2",
+        "requesterId": 1,
+        "otherId": 2,
+        "sinceTurn": 5,
+        "kind": "pokoj"
+       }
+      ]
+     },
+     {
+      "turn": 7,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "force",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 50,
+           "pn": 50
+          }
+         ],
+         "covered": 50,
+         "shortfall": 250,
+         "full": false,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "force",
+         "reason": "limit",
+         "balanceBefore": -200,
+         "balanceAfter": -150,
+         "turnsSince": 2
+        }
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        50
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [pokoj] (force, tury od prośby 2); bilans zwycięzcy przed -200 -> po -150; zapłata zloto=1 surowce=0 miasto=0 (50/300 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "kinked_akceptacja_przez_tolerancje_bez_pelnej_zaplaty",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     }
+    ],
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 120,
+      "tolerancePn": 50,
+      "shape": {
+       "type": "kinked",
+       "balance0": -100,
+       "slope": 1,
+       "knee": 50,
+       "slope2": 0.5
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.4
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 60,
+       "pn": 60
+      }
+     ]
+    },
+    "ticks": [
+     0
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 0,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "accept_paid",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 60,
+           "pn": 60
+          }
+         ],
+         "covered": 60,
+         "shortfall": 60,
+         "full": false,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "accept_paid",
+         "reason": "balance_in_tolerance",
+         "balanceBefore": -100,
+         "balanceAfter": -45,
+         "turnsSince": 0
+        }
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        60
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [pokoj] (accept_paid, tury od prośby 0); bilans zwycięzcy przed -100 -> po -45; zapłata zloto=1 surowce=0 miasto=0 (60/120 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "kinked_tolerancja_granica_wait",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     }
+    ],
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 120,
+      "tolerancePn": 44,
+      "shape": {
+       "type": "kinked",
+       "balance0": -100,
+       "slope": 1,
+       "knee": 50,
+       "slope2": 0.5
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.4
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 60,
+       "pn": 60
+      }
+     ]
+    },
+    "ticks": [
+     0
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 0,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "wait",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 60,
+           "pn": 60
+          }
+         ],
+         "covered": 60,
+         "shortfall": 60,
+         "full": false,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "wait",
+         "reason": "balance_below_tolerance",
+         "balanceBefore": -100,
+         "balanceAfter": -45,
+         "turnsSince": 0
+        }
+       }
+      ],
+      "pays": [],
+      "finalizes": [],
+      "logs": [],
+      "store": [
+       {
+        "key": "1-2",
+        "requesterId": 1,
+        "otherId": 2,
+        "sinceTurn": 0,
+        "kind": "pokoj"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "nie_eligible_drop",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     }
+    ],
+    "eligibleNot": [
+     "1-2"
+    ],
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 10,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": 0,
+       "slope": 1
+      }
+     }
+    },
+    "ticks": [
+     0
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 0,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "dropped_ineligible",
+        "kind": "pokoj",
+        "plan": null,
+        "decision": null
+       }
+      ],
+      "pays": [],
+      "finalizes": [],
+      "logs": [],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "przestal_przegrywac_drop_granica_0_5",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     },
+     {
+      "key": "3-4",
+      "requesterId": 3,
+      "otherId": 4,
+      "sinceTurn": 0
+     }
+    ],
+    "share": {
+     "1-2": 0.5,
+     "3-4": 0.5000001
+    },
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 10,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": 100,
+       "slope": 1
+      }
+     }
+    },
+    "ticks": [
+     0
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 0,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "accept_paid",
+        "kind": "pokoj",
+        "plan": {
+         "items": [],
+         "covered": 0,
+         "shortfall": 10,
+         "full": false,
+         "hist": [
+          0,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "accept_paid",
+         "reason": "balance_in_tolerance",
+         "balanceBefore": 100,
+         "balanceAfter": 100,
+         "turnsSince": 0
+        }
+       },
+       {
+        "pairKey": "3-4",
+        "action": "dropped_not_losing",
+        "kind": "pokoj",
+        "plan": null,
+        "decision": null
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        0
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [pokoj] (accept_paid, tury od prośby 0); bilans zwycięzcy przed 100 -> po 100; zapłata zloto=0 surowce=0 miasto=0 (0/10 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "kolejnosc_wstawiania_i_usuwanie",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "5-6",
+      "requesterId": 5,
+      "otherId": 6,
+      "sinceTurn": 0
+     },
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     },
+     {
+      "key": "3-4",
+      "requesterId": 3,
+      "otherId": 4,
+      "sinceTurn": 0
+     }
+    ],
+    "eligibleNot": [
+     "5-6"
+    ],
+    "share": {
+     "1-2": 0.3,
+     "3-4": 0.3
+    },
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 100,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": -400,
+       "slope": 1
+      }
+     },
+     "4-3-pokoj": {
+      "requiredPn": 50,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": 0,
+       "slope": 1
+      }
+     }
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ],
+     "3-4": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 50,
+       "pn": 50
+      }
+     ]
+    },
+    "gate": {
+     "2-1": "stronger"
+    },
+    "ticks": [
+     0,
+     1
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 0,
+      "outcomes": [
+       {
+        "pairKey": "5-6",
+        "action": "dropped_ineligible",
+        "kind": "pokoj",
+        "plan": null,
+        "decision": null
+       },
+       {
+        "pairKey": "1-2",
+        "action": "wait",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 10,
+           "pn": 10
+          }
+         ],
+         "covered": 10,
+         "shortfall": 90,
+         "full": false,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "wait",
+         "reason": "gate:stronger",
+         "balanceBefore": -400,
+         "balanceAfter": -390,
+         "turnsSince": 0
+        }
+       },
+       {
+        "pairKey": "3-4",
+        "action": "accept_paid",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 50,
+           "pn": 50
+          }
+         ],
+         "covered": 50,
+         "shortfall": 0,
+         "full": true,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "accept_paid",
+         "reason": "balance_in_tolerance",
+         "balanceBefore": 0,
+         "balanceAfter": 50,
+         "turnsSince": 0
+        }
+       }
+      ],
+      "pays": [
+       [
+        3,
+        4,
+        50
+       ]
+      ],
+      "finalizes": [
+       [
+        3,
+        4,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI3↔AI4 [pokoj] (accept_paid, tury od prośby 0); bilans zwycięzcy przed 0 -> po 50; zapłata zloto=1 surowce=0 miasto=0 (50/50 PW)"
+      ],
+      "store": [
+       {
+        "key": "1-2",
+        "requesterId": 1,
+        "otherId": 2,
+        "sinceTurn": 0,
+        "kind": "pokoj"
+       }
+      ]
+     },
+     {
+      "turn": 1,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "wait",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 10,
+           "pn": 10
+          }
+         ],
+         "covered": 10,
+         "shortfall": 90,
+         "full": false,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "wait",
+         "reason": "gate:stronger",
+         "balanceBefore": -400,
+         "balanceAfter": -390,
+         "turnsSince": 1
+        }
+       }
+      ],
+      "pays": [],
+      "finalizes": [],
+      "logs": [],
+      "store": [
+       {
+        "key": "1-2",
+        "requesterId": 1,
+        "otherId": 2,
+        "sinceTurn": 0,
+        "kind": "pokoj"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "battle_pending_zakazuje_miast",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     }
+    ],
+    "battlePending": true,
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 100,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": -30,
+       "slope": 1
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.3
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "miasto",
+       "id": "c1",
+       "amount": 1,
+       "pn": 30
+      },
+      {
+       "kind": "miasto",
+       "id": "c2",
+       "amount": 1,
+       "pn": 200
+      }
+     ]
+    },
+    "ticks": [
+     0,
+     2
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 0,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "wait",
+        "kind": "pokoj",
+        "plan": {
+         "items": [],
+         "covered": 0,
+         "shortfall": 100,
+         "full": false,
+         "hist": [
+          0,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "wait",
+         "reason": "balance_below_tolerance",
+         "balanceBefore": -30,
+         "balanceAfter": -30,
+         "turnsSince": 0
+        }
+       }
+      ],
+      "pays": [],
+      "finalizes": [],
+      "logs": [],
+      "store": [
+       {
+        "key": "1-2",
+        "requesterId": 1,
+        "otherId": 2,
+        "sinceTurn": 0,
+        "kind": "pokoj"
+       }
+      ]
+     },
+     {
+      "turn": 2,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "force",
+        "kind": "pokoj",
+        "plan": {
+         "items": [],
+         "covered": 0,
+         "shortfall": 100,
+         "full": false,
+         "hist": [
+          0,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "force",
+         "reason": "limit",
+         "balanceBefore": -30,
+         "balanceAfter": -30,
+         "turnsSince": 2
+        }
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        0
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [pokoj] (force, tury od prośby 2); bilans zwycięzcy przed -30 -> po -30; zapłata zloto=0 surowce=0 miasto=0 (0/100 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "miasto_bez_battle_pending_cesja",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     }
+    ],
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 100,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": -30,
+       "slope": 1
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.3
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "miasto",
+       "id": "c1",
+       "amount": 1,
+       "pn": 30
+      },
+      {
+       "kind": "miasto",
+       "id": "c2",
+       "amount": 1,
+       "pn": 200
+      }
+     ]
+    },
+    "ticks": [
+     0
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 0,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "accept_paid",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "miasto",
+           "id": "c2",
+           "amount": 1,
+           "pn": 200
+          }
+         ],
+         "covered": 200,
+         "shortfall": 0,
+         "full": true,
+         "hist": [
+          0,
+          0,
+          1
+         ]
+        },
+        "decision": {
+         "action": "accept_paid",
+         "reason": "balance_in_tolerance",
+         "balanceBefore": -30,
+         "balanceAfter": 170,
+         "turnsSince": 0
+        }
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        200
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [pokoj] (accept_paid, tury od prośby 0); bilans zwycięzcy przed -30 -> po 170; zapłata zloto=0 surowce=0 miasto=1 (200/100 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "cesja_miasta_odrzucona_przechodzi_do_nastepnego",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     }
+    ],
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 100,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": -30,
+       "slope": 1
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.3
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "miasto",
+       "id": "c1",
+       "amount": 1,
+       "pn": 150
+      },
+      {
+       "kind": "miasto",
+       "id": "c2",
+       "amount": 1,
+       "pn": 300
+      }
+     ]
+    },
+    "cityFail": [
+     "c1"
+    ],
+    "ticks": [
+     0
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 0,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "accept_paid",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "miasto",
+           "id": "c2",
+           "amount": 1,
+           "pn": 300
+          }
+         ],
+         "covered": 300,
+         "shortfall": 0,
+         "full": true,
+         "hist": [
+          0,
+          0,
+          1
+         ]
+        },
+        "decision": {
+         "action": "accept_paid",
+         "reason": "balance_in_tolerance",
+         "balanceBefore": -30,
+         "balanceAfter": 270,
+         "turnsSince": 0
+        }
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        300
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [pokoj] (accept_paid, tury od prośby 0); bilans zwycięzcy przed -30 -> po 270; zapłata zloto=0 surowce=0 miasto=1 (300/100 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "wszystkie_miasta_odrzucone_guard_force_zero",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     }
+    ],
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 100,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": -300,
+       "slope": 1
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.3
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "miasto",
+       "id": "c1",
+       "amount": 1,
+       "pn": 150
+      },
+      {
+       "kind": "miasto",
+       "id": "c2",
+       "amount": 1,
+       "pn": 300
+      },
+      {
+       "kind": "miasto",
+       "id": "c3",
+       "amount": 1,
+       "pn": 120
+      }
+     ]
+    },
+    "cityFail": [
+     "c1",
+     "c2",
+     "c3"
+    ],
+    "ticks": [
+     2
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 2,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "force",
+        "kind": "pokoj",
+        "plan": {
+         "items": [],
+         "covered": 0,
+         "shortfall": 100,
+         "full": false,
+         "hist": [
+          0,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "force",
+         "reason": "limit",
+         "balanceBefore": -300,
+         "balanceAfter": -300,
+         "turnsSince": 2
+        }
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        0
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [pokoj] (force, tury od prośby 2); bilans zwycięzcy przed -300 -> po -300; zapłata zloto=0 surowce=0 miasto=0 (0/100 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "nan_tura_akceptacja_i_log_nan",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     }
+    ],
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 40,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": -10,
+       "slope": 1
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.3
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 100,
+       "pn": 100
+      }
+     ]
+    },
+    "ticks": [
+     "NaN"
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": "NaN",
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "accept_paid",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 40,
+           "pn": 40
+          }
+         ],
+         "covered": 40,
+         "shortfall": 0,
+         "full": true,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "accept_paid",
+         "reason": "balance_in_tolerance",
+         "balanceBefore": -10,
+         "balanceAfter": 30,
+         "turnsSince": "NaN"
+        }
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        40
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [pokoj] (accept_paid, tury od prośby NaN); bilans zwycięzcy przed -10 -> po 30; zapłata zloto=1 surowce=0 miasto=0 (40/40 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "rozejm_zachowuje_rodzaj",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0,
+      "kind": "rozejm"
+     }
+    ],
+    "price": {
+     "2-1-rozejm": {
+      "requiredPn": 20,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": 5,
+       "slope": 1
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.3
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "surowiec_ilosc",
+       "id": "zelazo",
+       "amount": 5,
+       "pn": 8
+      }
+     ]
+    },
+    "ticks": [
+     0
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 0,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "accept_paid",
+        "kind": "rozejm",
+        "plan": {
+         "items": [
+          {
+           "kind": "surowiec_ilosc",
+           "id": "zelazo",
+           "amount": 5,
+           "pn": 8
+          }
+         ],
+         "covered": 8,
+         "shortfall": 12,
+         "full": false,
+         "hist": [
+          0,
+          1,
+          0
+         ]
+        },
+        "decision": {
+         "action": "accept_paid",
+         "reason": "balance_in_tolerance",
+         "balanceBefore": 5,
+         "balanceAfter": 13,
+         "turnsSince": 0
+        }
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        8
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "rozejm"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [rozejm] (accept_paid, tury od prośby 0); bilans zwycięzcy przed 5 -> po 13; zapłata zloto=0 surowce=1 miasto=0 (8/20 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "limit_nadpisany_jeden_tura",
+   "op": "tick",
+   "env": {
+    "store0": [
+     {
+      "key": "1-2",
+      "requesterId": 1,
+      "otherId": 2,
+      "sinceTurn": 0
+     }
+    ],
+    "limit": 1,
+    "price": {
+     "2-1-pokoj": {
+      "requiredPn": 100,
+      "tolerancePn": 0,
+      "shape": {
+       "type": "linear",
+       "balance0": -500,
+       "slope": 1
+      }
+     }
+    },
+    "share": {
+     "1-2": 0.3
+    },
+    "gate": {
+     "2-1": "too_early"
+    },
+    "assets": {
+     "1-2": [
+      {
+       "kind": "zloto",
+       "id": "zloto",
+       "amount": 10,
+       "pn": 10
+      }
+     ]
+    },
+    "ticks": [
+     0,
+     1
+    ]
+   },
+   "out": {
+    "ticks": [
+     {
+      "turn": 0,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "wait",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 10,
+           "pn": 10
+          }
+         ],
+         "covered": 10,
+         "shortfall": 90,
+         "full": false,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "wait",
+         "reason": "gate:too_early",
+         "balanceBefore": -500,
+         "balanceAfter": -490,
+         "turnsSince": 0
+        }
+       }
+      ],
+      "pays": [],
+      "finalizes": [],
+      "logs": [],
+      "store": [
+       {
+        "key": "1-2",
+        "requesterId": 1,
+        "otherId": 2,
+        "sinceTurn": 0,
+        "kind": "pokoj"
+       }
+      ]
+     },
+     {
+      "turn": 1,
+      "outcomes": [
+       {
+        "pairKey": "1-2",
+        "action": "force",
+        "kind": "pokoj",
+        "plan": {
+         "items": [
+          {
+           "kind": "zloto",
+           "id": "zloto",
+           "amount": 10,
+           "pn": 10
+          }
+         ],
+         "covered": 10,
+         "shortfall": 90,
+         "full": false,
+         "hist": [
+          1,
+          0,
+          0
+         ]
+        },
+        "decision": {
+         "action": "force",
+         "reason": "limit",
+         "balanceBefore": -500,
+         "balanceAfter": -490,
+         "turnsSince": 1
+        }
+       }
+      ],
+      "pays": [
+       [
+        1,
+        2,
+        10
+       ]
+      ],
+      "finalizes": [
+       [
+        1,
+        2,
+        "pokoj"
+       ]
+      ],
+      "logs": [
+       "pokój AI1↔AI2 [pokoj] (force, tury od prośby 1); bilans zwycięzcy przed -500 -> po -490; zapłata zloto=1 surowce=0 miasto=0 (10/100 PW)"
+      ],
+      "store": []
+     }
+    ]
+   }
+  }
+ ]
+}

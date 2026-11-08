@@ -43,9 +43,48 @@ Mutanty ręczne (tick): M1 cooldown `<=` zabity; M2 brak `mustAccept` zabity; M3
 M4 brak członu tolerancji zmęczenia zabity (test granicy); M5 bitwa w toku ignorowana zabity; M6 oferta od tury N+1 zabity;
 M7 `>` zamiast `>=` przy bilansie zabity (test granicy). 7/7 zabitych. Pełny mutation score ≥85% — NIE_ZMIERZONO.
 
+## Zrobione (partia C, runda 4)
+
+Baza: `origin/rust-port/parity-v2` 707b50c41 + partia B (44c80e96f / 9b8f68c88). Pin webu bez zmian (5dd53e60f).
+
+| Symbol web (`gra/src/game/diplomacy-ai-forced-peace.ts`) | Symbol Rust | Plik Rust | Wektory / testy |
+|---|---|---|---|
+| `AI_PEACE_TURNS_AFTER_REQUEST` / `aiPeaceTurnsAfterRequest` (`tury_do_pokoju_po_prosbie` = 2) | `AI_PEACE_TURNS_AFTER_REQUEST` (literal 2.0) | `domain/diplomacy_ai_forced_peace.rs` | `unit.due` (limit domyślny, jawny, NaN) |
+| `registerAiPeaceRequest` (Map, brak nadpisania) | `register_ai_peace_request` + `AiPeaceRequestStore` (kolejność wstawiania jak Map) | `domain/diplomacy_ai_forced_peace.rs` | `unit.register` |
+| `turnsSincePeaceRequest`, `isForcedPeaceDue` | `turns_since_peace_request`, `is_forced_peace_due(_default)` | `domain/diplomacy_ai_forced_peace.rs` | `unit.turns`, `unit.due` |
+| `isForcedPeaceEligiblePair` | `is_forced_peace_eligible_pair` | `domain/diplomacy_ai_forced_peace.rs` | `unit.eligible` (6 kombinacji) |
+| `requesterShare`, `isClearlyLosing`, `isStillLosing` (0.45 / 0.5) | `requester_share`, `is_clearly_losing`, `is_still_losing` | `domain/diplomacy_ai_forced_peace.rs` | `unit.share` (granice 0.45/0.5, 0/0, NaN) |
+| `decideAiPeaceRequest` (Math.round, tolerancja, bramka) | `decide_ai_peace_request` + `AiPeaceDecision` | `domain/diplomacy_ai_forced_peace.rs` | `unit.decide` (8 przypadków) |
+| `planPeacePayment` | `plan_peace_payment` (już był; nie kopiowany) | `domain/diplomacy_multiwar_peace.rs` | `p6_dyplo_multiwar_peace` (3/3, bez zmian) |
+| `runAiAiPeaceTick` (dropy, guard 8, battlePending, pay/finalize/log) | `run_ai_ai_peace_tick` + `AiPeaceTickEnv` | `domain/diplomacy_ai_forced_peace.rs` | `ticks` (15 scenariuszy, 22 tury), log tekstowo |
+
+Wektory: `tests/p6_dyplo_multiwar2_peace_ai_data/peace_ai.json` (pin 5dd53e60f), test `tests/p6_dyplo_multiwar2_peace_ai.rs` (8 testów).
+Generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-2-Q1/gen-forced-peace.mts`
+(Node 22.22, `--experimental-strip-types --import reg.mjs`; loader `hooks.mjs`/`reg.mjs` w tym samym katalogu).
+
+Założenia partii C:
+- `price(winner, loser, kind).balanceFor` (closure w TS) modelowane jako `PeaceBalanceShape` (`Linear` | `Kinked`, dwie postacie);
+  logika ticka działa na dowolnej postaci, ale rzeczywista wycena z `ai.ts` (`peaceOfferAiOwnBilans`) NIE jest portowana.
+- Log `d.log` odtwarzany tekstowo (`js_num` = `String(number)`); porównywany 1:1 w wektorach.
+- `kind` w prośbie zawsze ustawiony (web: brak pola = 'pokoj'; w Rust rejestracja domyślnie `Pokoj`).
+
+Bramki partii C: `cargo fmt --check` OK; `cargo clippy --lib --test p6_dyplo_multiwar2_peace_ai -- -D warnings` OK
+(pełne `--all-targets` NIE_ZMIERZONO: dysk); `--lib` 22/22; `p6_dyplo_multiwar2_tick` 5/5; `p6_dyplo_multiwar2_peace_ai` 8/8;
+`p6_dyplo_multiwar_peace` 3/3; `p6_dyplo_multiwar2_eraign` 3/3.
+Mutanty ręczne (`diplomacy_ai_forced_peace.rs`, 11 sztuk): M1 `>` zamiast `>=` przy limicie; M2 brak filtra udziału;
+M3 brak blokady miast przy bitwie; M4 brak sprawdzenia cesji; M5 brak `Math.round`; M6 bramka ignorowana; M7 tolerancja ostra;
+M8 rejestracja nadpisuje; M9 brak wykluczenia eliminacji; M10 próg 0.5 ostry; M11 `sum >= 0`. Zabite 11/11.
+Pełny mutation score ≥85% — NIE_ZMIERZONO (11 ręcznych mutantów, bez dowodu równoważności reszty).
+
+## Odstępstwa świadome (log tekstowy partii B)
+
+- Partia B (`run_war_weariness_tick`) porównuje `d.log` tylko jako liczbę wywołań. Tekst TS zawiera sufiksy
+  (`, ochrona przegrywającego`, `, wyczerpanie`, `oferta #N`, `toFixed(2)`, histogram) — NIE odtworzone. Świadome odstępstwo
+  diagnostyczne (warstwa logu, nie stan gry); do ewentualnego domknięcia osobnym tematem.
+
 ## NIE zrobione (kolejne partie, NIE_ZMIERZONO)
 
-- (C) forced-peace AI↔AI: `registerAiPeaceRequest`, `isForcedPeaceDue`, `decideAiPeaceRequest`, `runAiAiPeaceTick` (`diplomacy-ai-forced-peace.ts`, `tury_do_pokoju_po_prosbie`).
+- (G) timer ERADELAY / `forced_war_bronze|iron|stone` + podpięcie `is_war_treaty_blocked` — osobny moduł, wycena LOC NIE wykonana.
 - (D) `diplomacy-siege-war-gate.ts`.
 - (E) case'y locks poza '2' (`diplomacy-locks.ts:244+`).
 - (F) REPIN modułów `diplomacy_war_gates`, `war_rules_multiwar`, `alliance_war_obligation`, `diplomacy_tick_war_brake`, `diplomacy_war_peace_profile` wobec origin/main (diff nie zmierzony w tej rundzie).
