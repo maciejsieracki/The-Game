@@ -1,0 +1,3445 @@
+[
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": null,
+   "blocked": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": null,
+   "blocked": [
+    1
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": null,
+   "blocked": [
+    2,
+    4
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": null,
+   "blocked": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": null
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": null,
+   "blocked": [
+    9
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 0,
+    "r": 0
+   },
+   "blocked": []
+  },
+  "out": 3
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 0,
+    "r": 0
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": 3
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 0,
+    "r": 0
+   },
+   "blocked": [
+    2,
+    4
+   ]
+  },
+  "out": 3
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 0,
+    "r": 0
+   },
+   "blocked": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": null
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 0,
+    "r": 0
+   },
+   "blocked": [
+    9
+   ]
+  },
+  "out": 3
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 2,
+    "r": -1
+   },
+   "blocked": []
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 2,
+    "r": -1
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 2,
+    "r": -1
+   },
+   "blocked": [
+    2,
+    4
+   ]
+  },
+  "out": 3
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 2,
+    "r": -1
+   },
+   "blocked": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": null
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 2,
+    "r": -1
+   },
+   "blocked": [
+    9
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 4,
+    "r": 0
+   },
+   "blocked": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 4,
+    "r": 0
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 4,
+    "r": 0
+   },
+   "blocked": [
+    2,
+    4
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 4,
+    "r": 0
+   },
+   "blocked": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": null
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 4,
+    "r": 0
+   },
+   "blocked": [
+    9
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [],
+   "ref": null,
+   "blocked": []
+  },
+  "out": null
+ },
+ {
+  "fn": "pickForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": null,
+   "blocked": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 0,
+   "t": 1
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 0,
+   "t": 2
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 0,
+   "t": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 1,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 1,
+   "t": 2
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 1,
+   "t": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 2,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 2,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 2,
+   "t": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 3,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 3,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 0,
+   "d": 3,
+   "t": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 0,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 0,
+   "t": 2
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 0,
+   "t": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 1,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 1,
+   "t": 2
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 1,
+   "t": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 2,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 2,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 2,
+   "t": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 3,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 3,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 1,
+   "d": 3,
+   "t": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 0,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 0,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 0,
+   "t": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 1,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 1,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 1,
+   "t": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 2,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 2,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 2,
+   "t": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 3,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 3,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 2,
+   "d": 3,
+   "t": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 0,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 0,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 0,
+   "t": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 1,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 1,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 1,
+   "t": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 2,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 2,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 2,
+   "t": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 3,
+   "t": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 3,
+   "t": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "shouldEndForcedWarByCityCount",
+  "in": {
+   "a": 3,
+   "d": 3,
+   "t": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": []
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": []
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": []
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": []
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": []
+  },
+  "out": 2
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": []
+  },
+  "out": 2
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": []
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "2-3"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": []
+  },
+  "out": 4
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 3
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "1-2",
+    "1-3",
+    "1-4",
+    "4-5",
+    "0-1"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": []
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 1,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 2,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": []
+  },
+  "out": 2
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": [
+    0
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": [
+    0,
+    4
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "countActiveWarsExcluding",
+  "in": {
+   "ownerId": 5,
+   "owners": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "wars": [
+    "2-5",
+    "3-5"
+   ],
+   "exclude": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 0,
+   "rest": "undefined"
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 0,
+   "rest": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 0,
+   "rest": 10
+  },
+  "out": true
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 0,
+   "rest": 20
+  },
+  "out": true
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 9,
+   "rest": "undefined"
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 9,
+   "rest": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 9,
+   "rest": 10
+  },
+  "out": true
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 9,
+   "rest": 20
+  },
+  "out": true
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": "undefined"
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": 10
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": 20
+  },
+  "out": true
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 11,
+   "rest": "undefined"
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 11,
+   "rest": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 11,
+   "rest": 10
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 11,
+   "rest": 20
+  },
+  "out": true
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 25,
+   "rest": "undefined"
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 25,
+   "rest": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 25,
+   "rest": 10
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromForcedWar",
+  "in": {
+   "cur": 25,
+   "rest": 20
+  },
+  "out": false
+ },
+ {
+  "fn": "countActiveForcedWarsForOwner",
+  "in": {
+   "ownerId": 0,
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 1
+    },
+    {
+     "attackerId": 4,
+     "targetId": 5
+    },
+    {
+     "attackerId": 1,
+     "targetId": 0
+    }
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveForcedWarsForOwner",
+  "in": {
+   "ownerId": 1,
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 1
+    },
+    {
+     "attackerId": 4,
+     "targetId": 5
+    },
+    {
+     "attackerId": 1,
+     "targetId": 0
+    }
+   ]
+  },
+  "out": 3
+ },
+ {
+  "fn": "countActiveForcedWarsForOwner",
+  "in": {
+   "ownerId": 2,
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 1
+    },
+    {
+     "attackerId": 4,
+     "targetId": 5
+    },
+    {
+     "attackerId": 1,
+     "targetId": 0
+    }
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveForcedWarsForOwner",
+  "in": {
+   "ownerId": 4,
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 1
+    },
+    {
+     "attackerId": 4,
+     "targetId": 5
+    },
+    {
+     "attackerId": 1,
+     "targetId": 0
+    }
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "countActiveForcedWarsForOwner",
+  "in": {
+   "ownerId": 9,
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 1
+    },
+    {
+     "attackerId": 4,
+     "targetId": 5
+    },
+    {
+     "attackerId": 1,
+     "targetId": 0
+    }
+   ]
+  },
+  "out": 0
+ },
+ {
+  "fn": "countActiveForcedWarsForOwner",
+  "in": {
+   "ownerId": 1,
+   "pairs": []
+  },
+  "out": 0
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 0,
+   "war": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 0,
+   "war": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 0,
+   "war": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 1,
+   "war": 1
+  },
+  "out": true
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 1,
+   "war": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 1,
+   "war": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 2,
+   "war": 1
+  },
+  "out": false
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 2,
+   "war": 2
+  },
+  "out": true
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 2,
+   "war": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 3,
+   "war": 1
+  },
+  "out": false
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 3,
+   "war": 2
+  },
+  "out": false
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 3,
+   "war": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 4,
+   "war": 1
+  },
+  "out": false
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 4,
+   "war": 2
+  },
+  "out": false
+ },
+ {
+  "fn": "isForcedEraPeaceLocked",
+  "in": {
+   "cur": 4,
+   "war": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "isForcedWarRelationBlocked",
+  "in": {
+   "r": -5
+  },
+  "out": false
+ },
+ {
+  "fn": "isForcedWarRelationBlocked",
+  "in": {
+   "r": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isForcedWarRelationBlocked",
+  "in": {
+   "r": 99
+  },
+  "out": false
+ },
+ {
+  "fn": "isForcedWarRelationBlocked",
+  "in": {
+   "r": 100
+  },
+  "out": true
+ },
+ {
+  "fn": "isForcedWarRelationBlocked",
+  "in": {
+   "r": 101
+  },
+  "out": true
+ },
+ {
+  "fn": "isForcedWarRelationBlocked",
+  "in": {
+   "r": 250
+  },
+  "out": true
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "FORCED_WAR_EPOCH_RELATION_BLOCK_THRESHOLD"
+  },
+  "out": 100
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_KAMIEN_WYMUSZONA_START_TURY"
+  },
+  "out": 25
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR"
+  },
+  "out": 20
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR"
+  },
+  "out": 20
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE"
+  },
+  "out": 2
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 24,
+   "isStoneEra": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 24,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "isStoneEra": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 26,
+   "isStoneEra": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 26,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 24,
+   "isStoneEra": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 24,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "isStoneEra": true
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 26,
+   "isStoneEra": true
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 26,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 24,
+   "isStoneEra": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 24,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "isStoneEra": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 26,
+   "isStoneEra": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 26,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 24,
+   "isStoneEra": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 24,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "isStoneEra": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 26,
+   "isStoneEra": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForStoneForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 26,
+   "isStoneEra": false
+  },
+  "out": false
+ },
+ {
+  "fn": "pickStoneForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 0,
+    "r": 0
+   },
+   "blocked": [
+    3
+   ]
+  },
+  "out": 5
+ },
+ {
+  "fn": "pickStoneForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": null,
+   "blocked": []
+  },
+  "out": 1
+ }
+]
