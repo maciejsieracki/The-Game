@@ -145,9 +145,11 @@ check(
 );
 
 // --- R1 reset w ścieżce wojen wymuszonych ---
+// R-WEB-ERA-DELAY-Q1: przed turą 40 pula NIE jest już czyszczona w całości -- Kamień i gracz
+// wypadają, a wojny epoki Brązu/Żelaza (eraForcedWarIgnoreR1) zostają.
 check(
-  'R1: reset triggeredSubjects przed turą 40 (isInterCivWarOpenAtTurn) w ścieżce wymuszeń',
-  /if \(isWarRulesMultiwarEnabled\(\) && !isInterCivWarOpenAtTurn\(turn\)\) triggeredSubjects\.length = 0;/.test(main),
+  'R1: reset triggeredSubjects przed turą 40 (isInterCivWarOpenAtTurn) w ścieżce wymuszeń (R-WEB-ERA-DELAY-Q1: bez Brązu/Żelaza)',
+  /if \(isWarRulesMultiwarEnabled\(\) && !isInterCivWarOpenAtTurn\(turn\)\) \{\s*for \(let ti = triggeredSubjects\.length - 1; ti >= 0; ti--\) \{\s*if \(!isEraForcedWarIgnoringR1\(triggeredSubjects\[ti\]!\.era, WAR_RULES_PARAMS\)\) triggeredSubjects\.splice\(ti, 1\);/.test(main),
 );
 
 // --- W1: garnizony wyłączone z puli armii wroga; flaga OFF -> brak kontekstu ---

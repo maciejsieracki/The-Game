@@ -1,3 +1,4 @@
+import { WAR_RULES_PARAMS } from './war-rules-multiwar';
 import {
   isRestingFromForcedWar,
   pickForcedWarTargetId,
@@ -126,7 +127,9 @@ export const WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
  * pozostać niezależne (gdyby właściciel podał w przyszłości inny próg dla Żelaza, zmienia
  * się WYŁĄCZNIE ta jedna stała, bez ryzyka zmiany Brązu przy okazji).
  */
-export const WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI = 25;
+// R-WEB-ERA-DELAY-Q1 (decyzja właściciela 2026-11-08): próg 20 tur, wartość z JSON
+// (`eraForcedWarStartTurnsFromEra.iron` w data/war-rules-params.json); nie wpisywana na stałe.
+export const WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI: number = WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.iron;
 
 export interface IronForcedWarEligibilityInput {
   /** Czy owner to główna cywilizacja AI (NIE miasto-państwo, NIE gracz, NIE barbarzyńca). */

@@ -111,8 +111,8 @@ try {
   assert(!eligibility({ isMainAiCiv: false }), 'brak dla gracza/miasta-państwa/barbarzyńcy');
   assert(!eligibility({ isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie (dowolna rola)');
 
-  console.log('--- R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: próg 25 tur od WEJŚCIA W ŻELAZO ---');
-  eq(startTuryOdEpoki, 25, 'próg startu Żelaza = 25 tur od wejścia w epokę (jak Brąz)');
+  console.log('--- R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1 + R-WEB-ERA-DELAY-Q1: próg 20 tur od WEJŚCIA W ŻELAZO ---');
+  eq(startTuryOdEpoki, 20, 'próg startu Żelaza = 20 tur od wejścia w epokę (R-WEB-ERA-DELAY-Q1, z JSON)');
 
   // Kryterium końca 1 (dispatch): 0 tur po wejściu w Żelazo -> NIE kwalifikuje się, mimo że
   // wszystkie pozostałe warunki (główna cywilizacja AI, brak wojny) są spełnione -- dziś (przed
@@ -123,18 +123,18 @@ try {
   );
   assert(
     !eligibility({ currentTurn: 40 + startTuryOdEpoki - 1, eraEnterTurn: 40 }),
-    'próg NIE jest spełniony jedną turą przed 25 (24 tury od wejścia)',
+    'próg NIE jest spełniony jedną turą przed 20 (19 tur od wejścia)',
   );
 
-  // Kryterium końca 2 (dispatch): dokładnie 25 tur po wejściu, nadal poza wojną -> KWALIFIKUJE
+  // Kryterium końca 2 (dispatch): dokładnie 20 tur po wejściu, nadal poza wojną -> KWALIFIKUJE
   // się (próg spełniony, granica włącznie: >=).
   assert(
     eligibility({ currentTurn: 40 + startTuryOdEpoki, eraEnterTurn: 40 }),
-    'kryterium 2: dokładnie 25 tur po wejściu w Żelazo KWALIFIKUJE się (próg spełniony, granica >=)',
+    'kryterium 2: dokładnie 20 tur po wejściu w Żelazo KWALIFIKUJE się (próg spełniony, granica >=)',
   );
   assert(
     eligibility({ currentTurn: 40 + startTuryOdEpoki + 10, eraEnterTurn: 40 }),
-    'próg pozostaje spełniony długo po 25 turach (nie jest to jednorazowe okno)',
+    'próg pozostaje spełniony długo po 20 turach (nie jest to jednorazowe okno)',
   );
 
   // Kryterium końca 3 (dispatch, ZERO REGRESJI): wojna z miastem-państwem (isAlreadyAtWarAnyRole)

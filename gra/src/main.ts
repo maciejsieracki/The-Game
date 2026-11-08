@@ -1353,6 +1353,7 @@ import {
   evaluateEraForcedWarGate,
   evaluateInterCivWarGate,
   forcedEraTagFromPowod,
+  isEraForcedWarIgnoringR1,
   isForcedEraWarEnabled,
   isInterCivWarOpenAtTurn,
   isWarRulesMultiwarEnabled,
@@ -38903,7 +38904,13 @@ async function boot(): Promise<void> {
               triggeredSubjects.push({ ownerId: 0, q: playerCity.q, r: playerCity.r });
             }
             // (R1, flaga ON): przed turą 40 pula podmiotów jest PUSTA (także gracz).
-            if (isWarRulesMultiwarEnabled() && !isInterCivWarOpenAtTurn(turn)) triggeredSubjects.length = 0;
+            // R-WEB-ERA-DELAY-Q1: przed turą 40 wypadają z puli Kamień i gracz (R1 zostaje), ale
+            // podmioty wojny epoki Brązu/Żelaza (`era` bronze/iron, `eraForcedWarIgnoreR1`) zostają.
+            if (isWarRulesMultiwarEnabled() && !isInterCivWarOpenAtTurn(turn)) {
+              for (let ti = triggeredSubjects.length - 1; ti >= 0; ti--) {
+                if (!isEraForcedWarIgnoringR1(triggeredSubjects[ti]!.era, WAR_RULES_PARAMS)) triggeredSubjects.splice(ti, 1);
+              }
+            }
             // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja „Wojna epoki z udziałem gracza” — gdy
             // OFF (tylko flaga ON), gracz wypada z puli (OFF = gracz jak dotąd, bez zmian).
             if (isWarEpochPlayerFirstEnabled() && !playerEpochWarEnabled) {
@@ -38948,6 +38955,11 @@ async function boot(): Promise<void> {
                     turn,
                     attackerEra: empireEpochForOwner(aiOwnerId),
                     attackerWarCount: countActiveWarsForOwnerExcludingBarbarians(aiOwnerId),
+                    // R-WEB-ERA-DELAY-Q1: tag epoki pary (Kamień = R1; Brąz/Żelazo = bez R1 przed turą 40).
+                    eraTag: (() => {
+                      const ep = empireEpochForOwner(aiOwnerId);
+                      return ep === 1 ? 'stone' : ep === 2 ? 'bronze' : ep === 3 ? 'iron' : null;
+                    })(),
                     targetIsPlayer: true,
                     targetEra: 0,
                     targetWarCount: 0,
@@ -40086,6 +40098,8 @@ async function boot(): Promise<void> {
                         turn,
                         attackerEra: empireEpochForOwner(ownerId),
                         attackerWarCount: countActiveWarsForOwnerExcludingBarbarians(ownerId),
+                        // R-WEB-ERA-DELAY-Q1: wojna epoki Brązu/Żelaza omija R1 (tura 40); Kamień i zwykłe wypowiedzenie -- bez zmian.
+                        eraTag: gateForcedTagAny,
                         targetIsPlayer: isHuman(targetId),
                         targetEra: empireEpochForOwner(targetId),
                         targetWarCount: countActiveWarsForOwnerExcludingBarbarians(targetId),

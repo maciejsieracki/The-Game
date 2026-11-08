@@ -1,3 +1,4 @@
+import { WAR_RULES_PARAMS } from './war-rules-multiwar';
 import {
   isRestingFromForcedWar,
   pickForcedWarTargetId,
@@ -82,7 +83,9 @@ export const WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
  * per-owner. Właściciel: "zmieńmy czas wybuchu wojny na 25 tur od początku epoki,
  * zarówno dla kamienia, jak i dla brązu".
  */
-export const WOJNA_WYMUSZONA_START_TURY_OD_EPOKI = 25;
+// R-WEB-ERA-DELAY-Q1 (decyzja właściciela 2026-11-08): próg 20 tur (było 25), wartość z JSON
+// (`eraForcedWarStartTurnsFromEra.bronze` w data/war-rules-params.json); nie wpisywana na stałe.
+export const WOJNA_WYMUSZONA_START_TURY_OD_EPOKI: number = WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.bronze;
 /**
  * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): limit czasu trwania TEJ KONKRETNEJ pary wojny
  * wymuszonej Brązu — niezależnie od progu miast (`WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_

@@ -17,6 +17,10 @@ import warRulesParamsRaw from '../../data/war-rules-params.json';
 
 export interface WarRulesParams {
   delayInterCivWarsUntilTurn: number;
+  /** R-WEB-ERA-DELAY-Q1: próg startu wojny epoki Brązu/Żelaza liczony od tury wejścia TEGO ownera w epokę (tury). */
+  eraForcedWarStartTurnsFromEra: { bronze: number; iron: number };
+  /** R-WEB-ERA-DELAY-Q1: epoki wojen wymuszonych, dla których bramka R1 (tura 40) NIE obowiązuje. */
+  eraForcedWarIgnoreR1: ForcedEraTag[];
   maxConcurrentWarsStone: number | null;
   maxConcurrentWarsFromBronze: number | null;
   /** R3 (r3, właściciel 2026-10-25): najwyżej N wojen epoki na epokę w skali świata (`null` = bez limitu). R-WEB-ERA-WAR-COUNTER-Q1: `null` (limit globalny zniesiony). */
@@ -31,6 +35,8 @@ export interface WarRulesParams {
 
 export const WAR_RULES_PARAMS: WarRulesParams = {
   delayInterCivWarsUntilTurn: warRulesParamsRaw.delayInterCivWarsUntilTurn,
+  eraForcedWarStartTurnsFromEra: warRulesParamsRaw.eraForcedWarStartTurnsFromEra,
+  eraForcedWarIgnoreR1: warRulesParamsRaw.eraForcedWarIgnoreR1 as ForcedEraTag[],
   maxConcurrentWarsStone: warRulesParamsRaw.maxConcurrentWarsStone,
   maxConcurrentWarsFromBronze: warRulesParamsRaw.maxConcurrentWarsFromBronze,
   maxEraForcedWarsPerEra: warRulesParamsRaw.maxEraForcedWarsPerEra,
@@ -86,6 +92,17 @@ export function isInterCivWarOpenAtTurn(
   return turn >= params.delayInterCivWarsUntilTurn;
 }
 
+/**
+ * R-WEB-ERA-DELAY-Q1: czy wojna epoki tego tagu omija bramkę R1 (tura 40). Kamień -> false
+ * (R1 zostaje); Brąz/Żelazo -> true (wg `eraForcedWarIgnoreR1`). `null` (zwykłe wypowiedzenie) -> false.
+ */
+export function isEraForcedWarIgnoringR1(
+  tag: ForcedEraTag | null | undefined,
+  params: WarRulesParams = WAR_RULES_PARAMS,
+): boolean {
+  return tag != null && params.eraForcedWarIgnoreR1.includes(tag);
+}
+
 /** R2: limit równoczesnych wojen cywilizacji w danej epoce (`null` = bez limitu). */
 export function concurrentWarLimitForEra(
   era: number,
@@ -107,6 +124,8 @@ export interface InterCivWarGateInput {
   targetEra: number;
   /** Liczba aktywnych wojen celu (ignorowana gdy `targetIsPlayer`). */
   targetWarCount: number;
+  /** R-WEB-ERA-DELAY-Q1: tag wojny epoki (`null`/brak = zwykłe wypowiedzenie, R1 obowiązuje). */
+  eraTag?: ForcedEraTag | null;
 }
 
 export type WarGateReason = 'ok' | 'delay_r1' | 'stone_limit_attacker_r2' | 'stone_limit_target_r2';
@@ -120,7 +139,7 @@ export function evaluateInterCivWarGate(
   inp: InterCivWarGateInput,
   params: WarRulesParams = WAR_RULES_PARAMS,
 ): WarGateReason {
-  if (!isInterCivWarOpenAtTurn(inp.turn, params)) return 'delay_r1';
+  if (!isInterCivWarOpenAtTurn(inp.turn, params) && !isEraForcedWarIgnoringR1(inp.eraTag, params)) return 'delay_r1';
   const attackerLimit = concurrentWarLimitForEra(inp.attackerEra, params);
   if (attackerLimit !== null && inp.attackerWarCount >= attackerLimit) return 'stone_limit_attacker_r2';
   if (!inp.targetIsPlayer) {
