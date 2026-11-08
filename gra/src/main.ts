@@ -513,7 +513,7 @@ import {
   siegeSurrenderBadgeText,
   siegeSurrenderTooltip,
 } from './game/siege-surrender-forecast';
-import { siegeStarvationState } from './game/siege-starvation';
+import { siegeStarvationState, siegeDefenderUnits } from './game/siege-starvation';
 import { WORLD_OVERLAY_Z_INDEX } from './ui/worldOverlayLayer';
 import {
   showSiegeMapPanel, hideSiegeMapPanel, updateSiegeMapPanelTurn, isSiegeMapPanelOpen,
@@ -16744,8 +16744,7 @@ async function boot(): Promise<void> {
       const food = getCityFood(city);
       // R-WEB-SIEGE-STARVATION-SURRENDER-Q1: prognoza = tury do zera zapasów + tury głodu garnizonu do HP < 50%.
       const getMaxHp = (typeId: string): number => unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {});
-      const garrison = units
-        .filter(u => u.ownerId === city.ownerId && u.q === city.q && u.r === city.r && u.inGarnizon === true && !isCivilianUnit(u))
+      const garrison = siegeDefenderUnits(units, city, isCivilianUnit)
         .map(u => ({ hp: u.hp, hpMax: u.hpMax ?? getMaxHp(u.typeId) }));
       const turns = turnsUntilSiegeSurrender(city, {
         food,
@@ -37197,12 +37196,9 @@ async function boot(): Promise<void> {
                 effectiveGameDifficultyForOwner(oblCity.ownerId),
               ).glodWojskaHpFrac;
 
-              const realGarnizonUnits = units.filter(
-                u => u.ownerId === oblCity.ownerId
-                  && u.q === oblCity.q
-                  && u.r === oblCity.r
-                  && u.inGarnizon === true,
-              );
+              // R-WEB-SIEGE-STARVATION-DURATION-REGRESS-Q1: obroncy = wszystkie wojskowe jednostki wlasciciela
+              // na heksie miasta (nie tylko inGarnizon===true) -- patrz siegeDefenderUnits.
+              const realGarnizonUnits = siegeDefenderUnits(units, oblCity, isCivilianUnit);
               // R-WEB-SIEGE-STARVATION-SURRENDER-Q1: etap 1 (zapasy) -- garnizon zdrowy; etap 2 (głód) od
               // ticka PO wyzerowaniu zapasów: atrycja HP, kapitulacja gdy ΣHP/startMaxHP < 50% (siege-starvation.ts).
               const militaryGarrison = () => realGarnizonUnits.filter(u => !isCivilianUnit(u) && units.includes(u));

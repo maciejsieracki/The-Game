@@ -56,6 +56,22 @@ export interface SiegeStarvationState {
 
 export const SIEGE_SURRENDER_BELOW_FRAC = 0.5;
 
+/**
+ * R-WEB-SIEGE-STARVATION-DURATION-REGRESS-Q1: obroncy obleganego miasta dla glodu i prognozy =
+ * KAZDA wojskowa jednostka wlasciciela miasta stojaca na heksie miasta -- niezaleznie od flagi
+ * `inGarnizon` (Ufort.). Dawniej liczono tylko `inGarnizon===true`: jednostka stojaca w miescie
+ * bez fortyfikacji (albo zbudzona z garnizonu wypadem obleganej armii) dawala garnizon = 0 ->
+ * sciezka historyczna "bez garnizonu" -> poddanie po 2 turach zamiast zapasy + glod do HP < 50%.
+ */
+export function siegeDefenderUnits<T extends { ownerId: number; q: number; r: number; hp?: number }>(
+  units: readonly T[],
+  city: { ownerId: number; q: number; r: number },
+  isCivilian: (u: T) => boolean,
+): T[] {
+  return units.filter(u => u.ownerId === city.ownerId && u.q === city.q && u.r === city.r
+    && !isCivilian(u) && !(typeof u.hp === 'number' && u.hp <= 0));
+}
+
 function unitMax(u: SiegeGarrisonUnit, getMaxHp: (typeId: string) => number): number {
   const m = u.hpMax ?? (u.typeId != null ? getMaxHp(u.typeId) : 0);
   return Number.isFinite(m) && m > 0 ? m : 0;

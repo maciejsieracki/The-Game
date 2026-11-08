@@ -149,7 +149,7 @@ const main = fs.readFileSync(path.join(GRA, 'src/main.ts'), 'utf8');
 const eco = fs.readFileSync(path.join(GRA, 'src/game/turn-economy.ts'), 'utf8');
 const cities = fs.readFileSync(path.join(GRA, 'src/game/cities.ts'), 'utf8');
 const n3 = main.slice(main.indexOf('N3: TURA OBLEZENIA'), main.indexOf('N3: TURA OBLEZENIA') + 6500);
-ok(/import \{ siegeStarvationState \} from '\.\/game\/siege-starvation'/.test(main), 'main.ts importuje siegeStarvationState');
+ok(/import \{ siegeStarvationState, siegeDefenderUnits \} from '\.\/game\/siege-starvation'/.test(main), 'main.ts importuje siegeStarvationState');
 ok(/st0\.recordStart[\s\S]*siegeStarveStartMaxHp = st0\.startMaxHp/.test(n3), 'N3: tick zera zapasow zapisuje start glodu');
 ok(/else if \(st0\.applyAttrition && !st0\.surrender\)[\s\S]*applyArmyStarvationHpLoss/.test(n3), 'N3: atrycja WYLACZNIE w etapie glodu (applyAttrition), nie od pierwszej tury');
 ok(!/realGarnizonUnits\.length > 0\) \{\s*const garnizonBefore/.test(n3), 'N3: brak bezwarunkowej atrycji od pierwszej tury oblezenia');
@@ -158,7 +158,8 @@ ok(/if \(st0\.setLegacyPending\) \{\s*handleSiegeCapitulationPhase/.test(n3), 'N
 ok(/magazynPoTurze = Math\.max\(0, magazynPrzed - zuzycie\);/.test(eco), 'turn-economy.ts: etap 1 bez zmian (magazyn -= ludnosc + garnizon)');
 ok(/siegeStarveStartMaxHp\?: number/.test(cities), 'cities.ts: pole siegeStarveStartMaxHp (zapis)');
 ok((main.match(/delete (city|c)\.siegeStarveStartMaxHp/g) || []).length === 3, 'main.ts: pole kasowane przy starcie/zdjeciu oblezenia (3 miejsca)');
-ok(/hpFrac: buildEmpireFoodParams\(data\.econParams, _menuDifficulty\)\.glodWojskaHpFrac/.test(main), 'plakietka: prognoza z hpFrac trudnosci');
+// R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1 r2 zmienil _menuDifficulty na trudnosc WLASCICIELA miasta (miasto-panstwo -> cityStateDifficulty).
+ok(/hpFrac: buildEmpireFoodParams\(data\.econParams, effectiveGameDifficultyForOwner\(city\.ownerId\)\)\.glodWojskaHpFrac/.test(main), 'plakietka: prognoza z hpFrac trudnosci wlasciciela miasta');
 
 console.log('F. mutacje');
 const src = fs.readFileSync(REAL, 'utf8');
