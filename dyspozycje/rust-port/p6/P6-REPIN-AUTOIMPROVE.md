@@ -412,6 +412,14 @@ Wczesniejsze wpisy r2 w logu byly przeniesione bez pomiaru; teraz zmierzone na a
 N07 wymaga stanu `river_no_citizen_clears == max` i kandydata innego klucza (np. `tartak`) na heksie rzecznym bez obywatela
 (`city_phases.rs:121`, `hex_allows_key` dla KAZDEGO klucza). N40/N42: przyczyna NIE_ZMIERZONO (nie zbadano, czy istniejace rodziny `df-`/`rc-` osiagaja stan graniczny limitu lub kapu miasta).
 
+N40 — dowod statyczny r5 (mutant nieuruchomiony, brak wektora): zewnetrzny `break` `hex_phases.rs:116-118` (`global_spent >= effective_city_cap`) jest
+zbedny. Po nim nastepuja tylko odczyty bez efektow (`:119-127`: `praca_left`, `get_improvement_meta`, `tech_ok`, `civ_ok`, `continue`),
+a dla kazdego heksu petla `border` (`:128`) przerywa na `:135-136` (`global_spent + koszt > cap`), zanim nastapi `push_pick` (`:163`).
+Warunek: `koszt_praca > 0` dla `fort` i `posterunek` (`defense_priority` = wylacznie `ZERO_YIELD_IMPROVEMENTS`, `city_phases.rs:391-399`,
+`auto_improvements.rs:106`; `koszt_praca_baza` fort = 25, posterunek = 15, `data/derived/improvement-work.json`). Przy koszcie > 0 i
+`global_spent >= cap` warunek `:135` jest zawsze prawdziwy -> brak `push_pick`, brak zmiany stanu -> ROWNOWAZNE. Dowod zalezy od
+danych (koszt > 0); zmiana kosztu fortu na 0 cofnieje dowod. N42 bez dowodu w r5 (OTWARTE).
+
 ### 10.6 N56, N57, N58, N85, N88, N90, N100 — OTWARTE (bez wektora i bez dowodu w r4)
 
 Nie wygenerowano wektorow ani dowodow w tej rundzie (ograniczenie czasu/dysku). Kierunki: N56-N58 — stan oczekujacego
@@ -427,7 +435,34 @@ Uwaga: `logs/mut-result-all-r3.txt` zawiera zduplikowane ID (kolejne przebiegi);
 
 ### 10.8 Zalozenia Z-13..Z-16 i dlugi D-1/D-2
 
-NIE_WYKONANO w r4 (poza zakresem tej rundy): lista do akceptacji wlasciciela pozostaje jak w sek. 9.4-9.6.
+Lista do akceptacji wlasciciela (r5, aktualizacja tresci; decyzja NALEZY do wlasciciela, operator nie zamyka):
+- Z-13 (zmiana wartosci `stadnina.zloza` `[]` -> `["konie"]`, nieaddytywna, parytet z `terrain-improvements.ts:425`) — do akceptacji.
+- Z-14 (`isOutpostPlacementAllowed`, posterunek tylko na terytorium wlasnym) — do akceptacji; w kodzie Rust NIE zweryfikowane mutantem.
+- Z-15 (`buildCandidateHexKeys` i sasiad `rzeka.obecna` w kwalifikatorze irygacji) — do akceptacji.
+- Z-16 (regeneracja `tests/p6_m16_vectors/qualifier.json` z 180c08305; rozszerza allowlist o hunk spoza tabeli 2c) — do akceptacji.
+- D-1 (dwie wersje reguł ekonomii; `*_all_producers` nie wolane produkcyjnie) — **Termin: NIE_USTALONO** (operator nie ustala terminu; wymaga decyzji wlasciciela/orkiestratora).
+- D-2 (`economy_yield.rs` bez epoki, Z-8; repin ekonomii poza zakresem) — dlug jawny, termin NIE_USTALONO.
+Stan ZAMKNIETY/OTWARTY tych pozycji nie zmienia sie przez te liste: to tylko zestawienie do akceptacji.
+
+### 10.10 Odpowiedzi na zarzuty FC r4 (operator r5, baza a1d98ca55)
+
+- Zarzut 1 (N56, N57, N58, N85, N88, N90, N100 bez wektora i dowodu): **PRZYJMUJE — NIE ZAMKNIETE w r5.** Brak nowych wektorow
+  (wymagaja nowych rodzin w generatorze + pelny pick ~358 s na mutant + kompilacja testu na dysku z 2,3 GB wolnego). Pozycje pozostaja OTWARTE.
+- Zarzut 2 (N07, N29, N40, N42 bez wektora i dowodu, sek. 10.4, 10.5): **N40 — DOWOD STATYCZNY (sek. 10.5, r5)**; N07, N29, N42 — **PRZYJMUJE, OTWARTE**.
+- Zarzut 3 (sek. 10.8 NIE_WYKONANO, D-1 bez terminu): **PRZYJMUJE — wykonane w r5** (lista Z-13..Z-16 i D-1/D-2 zaktualizowana powyzej).
+  Termin D-1 pozostaje NIE_USTALONO (decyzja wlasciciela; nie wolno go ustawic operatorowi).
+- Zarzut 4 (dowody N20, N47, N71, N81, N89, N93 nie uruchomione): **PRZYJMUJE jako ograniczenie.** Dowody sa statyczne (plik:linia), mutanty
+  nie byly uruchamiane; wymagaja decyzji FC/wlasciciela o uznaniu dowodu statycznego. Nie ODRZUCAM: nie mam wykonanego dowodu runtime.
+- Zarzut 5 (bramki: `cargo test --no-fail-fast` poza p6_8i_pick NIE_ZMIERZONO): **PRZYJMUJE — NIE_ZMIERZONO w r5.** Powod: wolne miejsce na dysku
+  (`df /`: 2,3 GB przed startem; brak `rust-port/engine/target` w worktree, pelna kompilacja testow nie miesci sie bez sprzatania po kazdej binarce)
+  oraz czas. To NIE jest zamkniecie bramki.
+
+### 10.11 Bramki r5
+
+- Zadnych zmian kodu Rust (`rust-port/engine/src`) i wektorow w r5. `cargo fmt/clippy/test` w r5 NIE uruchamiane (NIE_ZMIERZONO); wyniki
+  bazowe r4: fmt EXIT=0, clippy EXIT=0, `p6_8i_pick` 1 passed (358 s), pozostale binarki: baseline 2130/0 z r2.
+- Stan mutacji bez zmian: zabite 102/119 = 85,7%; OTWARTE 10 pozycji (N07, N29, N42, N56, N57, N58, N85, N88, N90, N100); N40 — rownowaznosc statyczna (sek. 10.5).
+  Prog 85% spelniony, kryterium "reszta z dowodem" NIE spelnione.
 
 ### 10.9 Bramki r4
 
