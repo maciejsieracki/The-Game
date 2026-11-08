@@ -1,18 +1,21 @@
-STATUS: FAIL (runda 2/5 -> runda 3, to samo ID)
+STATUS: PASS-WITH-NOTES (Final Control, runda 5/5; kod = 5776e1334, obrona 0a5c8b475 tylko raport)
 DOMAIN: GAME (RUST)
 TEMAT: R-RUSTPORT-REPIN-EKONOMII-JEDNA-WERSJA-Q1
-GOAL: jedna wersja regul ekonomii 1:1 z webem origin/main, uzyta w turn_economy; usuniete martwe duplikaty po przepieciu.
-ZMIANY/COMMIT: 9612c0b8e (baza 9ba4c2c75; baza galezi origin/rust-port/parity-v2 = 707b50c41). Diff 707b50c41..9612c0b8e: 3 pliki docs + dokladnie 1 plik kodu, turn_economy_territory.rs (import + wywolanie ok. linii 226 -> territory_resource_yield_for_improvement_all_producers). Allowlista zachowana, zero zmian gra/**.
-TESTY: FC nie uruchamial cargo (wolne 2,2 GB; kod niekompletny, nie ma czego bramkowac). Operator: cargo test przerwany, 115 binarek passed=1015 failed=0 (czesc); reszta binarek, clippy, baseline, #[ignore]: NIE_ZMIERZONO. Wektory p6_* nie zregenerowane.
-WERDYKTY ZARZUTOW (Obrona przyjela wszystkie 6):
-1 cel niespelniony (B2, C, D) - NAPRAW (B1 zrobione, reszta nie)
-2 baseline bramek - NAPRAW
-3 fallback 10 / zbior 9 kluczy / null vs None - NAPRAW
-4 wektory p6_* z weba; test pick_auto_improvements_matches_pinned_web_vectors >60 s - NAPRAW
-5 symbol z resource_production w order_effects_lane.rs - NAPRAW
-6 status PASS-WITH-NOTES - zamkniete (INFRA/FAIL)
-BLOKADY: dysk (<3 GB: CARGO_TARGET_DIR w worktree, usuwac po bramce, test per binarka); decyzja orkiestratora o rozszerzeniu allowlisty o improvements.rs i resource_production.rs przed czescia D (zalecenie FC: tak, decyzja techniczna, bez ABC).
-RUNDY: 2/5 (FAIL, wraca do tego samego ID)
-NASTEPNY KROK: runda 3 od 9612c0b8e: baseline per binarka (fmt, clippy, test), regeneracja wektorow z origin/main weba (Node 22, poza repo), testy p6_repin_ekonomii_*, zamkniecie pkt 3 i 5, potem C i D.
-KOLEJNOSC INTEGRACJI: nic do integracji teraz. 9612c0b8e lezy bezposrednio na origin/rust-port/parity-v2 (707b50c41), wiec kolejna runda nie wymaga rebase, o ile galaz nie ruszy.
+GOAL: jedna wersja reguł ekonomii 1:1 z webem w turn_economy, epoka w economy_yield, martwe duplikaty usunięte.
+
+WERDYKT ZARZUTÓW
+- Z1 (pin hybrid2 f873221ee, nie czysty origin/main): ODDAL. Zgłoszone jako ZAŁOŻENIE Z-R5-1/D-R4-1; pin origin/main dawał FAIL pieniądz/popCap spoza zakresu (trade-routes.ts, buildings.json, turn-economy.ts). Do akceptacji orkiestratora jako dług.
+- Z2 (resource_production.rs, D częściowe): ODDAL. Dług D-R5-1 udokumentowany w nagłówku modułu; wołający to tests/resource_production.rs, tests/parity_suite.rs, benches/engine_modules.rs (poza allowlistą); produkcja tury używa jednej wersji. Zielone: resource_production 11/0, parity_suite 5/0.
+- Z3 (economy_city_vectors_r3/r4.rs +1 linia `wlasciciel_era: None`): ODDAL. Wymuszone kompilacją nowego pola, semantycznie neutralne. Wyjątek allowlisty do akceptacji orkiestratora.
+- Z4 (brak pełnej korelacji pole po polu): ODDAL. p6_repin_ekonomii_era porównuje 1760 kafelków bit-w-bit z wektorem z uruchomionego weba + N-1/N/N+1. Nie zmierzono każdego pola; zmiany wektorów zgodne ze skalowaniem epoką, asercje nie osłabione.
+- Z5 (baseline pre-B1 NIE_ZMIERZONO): ODDAL. p6_8i_pick zmierzony przez Obronę 5/0 (404,93 s). Baseline pełnej sumy NIE_ZMIERZONO; suma Evaluatora 2228 passed / 0 failed / 1 ignored (ignored wcześniejszy, p6_order_lane.rs).
+Brak NAPRAW -> PASS-WITH-NOTES.
+
+ZMIANY/COMMIT: SHA do integracji = 0a5c8b475 (zawiera kod 5776e1334; 5776e1334 jest przodkiem; bazą jest b84d952d4, a 707b50c41 = origin/rust-port/parity-v2 jest jego przodkiem). Diff b84d952d4..0a5c8b475: 29 plików, tylko rust-port/engine/{src/domain,tests} i dyspozycje/**; zero zmian w gra/, WERSJE.md, Cargo.toml, save_load.rs; git diff --check czysty; 0 nowych #[ignore].
+TESTY (własne, na 0a5c8b475): cargo fmt --check OK; clippy --all-targets -D warnings OK; lib 22/0; p6_repin_ekonomii_era 2/0, p6_adv_q2a_pipeline, q4_pipeline, q4_preview, q5_tick, q6_wire, p6_empirefood_e2e, p6_23_improvements, p6_repin_autoimpr_terrain, p6_repin_d2_imp, economy_city_vectors_r3/r4 wszystkie ok, 0 failed. Pełnej sumy 300 binarek nie powtarzałem (opieram się na Evaluatorze 2228/0/1 i operatorze 2226/0/1).
+BLOKADY: brak. Do decyzji orkiestratora: (a) akceptacja Z-R5-1/D-R4-1, (b) wyjątek allowlisty dla economy_city_vectors_r3/r4.rs, (c) osobny temat dla D-R5-1.
+DŁUGI: D-R5-1 (rodzina resource_production.rs), D-R5-2 (utrzymanie per owner), D-R4-1 (handel morski/popCap: Rust != origin/main).
+RUNDY: 5/5
+KOLEJNOŚĆ INTEGRACJI: ten temat względem origin/rust-port/parity-v2 (707b50c41): fast-forward możliwy (parity-v2 jest przodkiem); integrować po wszystkich tematach już wpiętych na parity-v2 przez rebase/merge i ponowne fmt+clippy+testy tych p6_* jeśli parity-v2 poszedł dalej.
+NASTĘPNY KROK: integracja orkiestratora (merge 0a5c8b475 na parity-v2), potem READY_FOR_DEPLOY nie dotyczy (Rust).
 DEPLOY/PUSH: NIE WYKONANO
