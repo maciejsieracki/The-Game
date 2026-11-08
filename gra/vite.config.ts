@@ -116,22 +116,65 @@ function decodeB64(b64) {
 export function civEmbeddedAssetUrl(key, mime) {
   const hit = urls.get(key);
   if (hit !== undefined) return hit;
-  const el = document.getElementById('civ-asset-' + key);
-  if (!el) throw new Error('civEmbeddedAssetUrl: brak zasobu ' + key);
-  const bytes = decodeB64(el.textContent || '');
-  el.remove();
+  let b64 = null;
+  let el = null;
+  if (mime.indexOf('audio/') === 0) {
+    // AUDIO: pliki-sasiedzi audio-pack-N.js (<script src>) wpisuja base64 do rejestru window.__CIV_AUDIO__
+    // PRZED bundlem. Brak pliku-sasiada / brak klucza = cichy fallback: pusty URL (gra bez tej muzyki).
+    const reg = typeof window !== 'undefined' ? window.__CIV_AUDIO__ : undefined;
+    const v = reg ? reg[key] : undefined;
+    if (typeof v !== 'string') { urls.set(key, ''); return ''; }
+    b64 = v;
+    delete reg[key]; // base64 nie zostaje na stercie po zdekodowaniu
+  } else {
+    el = document.getElementById('civ-asset-' + key);
+    if (!el) throw new Error('civEmbeddedAssetUrl: brak zasobu ' + key);
+    b64 = el.textContent || '';
+  }
+  const bytes = decodeB64(b64);
+  if (el) el.remove();
   const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
   urls.set(key, url);
   return url;
 }
 `;
 
+/**
+ * R-WEB-BUILD-SPLIT-AUDIO-SIDECAR-Q1 — pakowanie audio do plikow-sasiadow.
+ * Cale audio (mp3) idzie do `audio-pack-N.js` obok HTML (stale nazwy), kazdy < AUDIO_PACK_MAX_BYTES; HTML
+ * niesie tylko kod + dane nie-audio. Pakiety ladowane klasycznym <script src> (wzgledna sciezka, dziala z
+ * file:// bez serwera i bez fetch) PRZED bundlem. Straznik: build konczy sie bledem, gdy jakikolwiek plik
+ * wyjsciowy > OUTPUT_FILE_FAIL_BYTES (limit GitHub 100 MB).
+ */
+export const AUDIO_PACK_REGISTRY = '__CIV_AUDIO__';
+export const AUDIO_PACK_TARGET_CHARS = 40_000_000; // cel pojedynczego pakietu (znaki base64)
+export const AUDIO_PACK_MAX_BYTES = 90_000_000; // twardy limit pakietu
+export const OUTPUT_FILE_FAIL_BYTES = 95_000_000; // build FAIL, gdy jakikolwiek plik wyjsciowy wiekszy
+export const audioPackName = (n: number): string => `audio-pack-${n}.js`;
+
+/** Deterministyczny podzial kluczy (posortowane) na pakiety, first-fit do celu; zasob wiekszy niz cel = wlasny pakiet. */
+export function planAudioPacks(sizes: ReadonlyMap<string, number>, target = AUDIO_PACK_TARGET_CHARS): string[][] {
+  const packs: { keys: string[]; size: number }[] = [];
+  for (const key of [...sizes.keys()].sort()) {
+    const sz = sizes.get(key) as number;
+    const slot = packs.find((p) => p.size + sz <= target);
+    if (slot) { slot.keys.push(key); slot.size += sz; } else packs.push({ keys: [key], size: sz });
+  }
+  return packs.map((p) => p.keys);
+}
+
+
 function binaryAssetsOutOfJs(): Plugin {
   const assets = new Map<string, { mime: string; b64: string }>();
+  let outDirCfg = 'dist';
+  const audioPacks = (): string[][] => planAudioPacks(new Map(
+    [...assets].filter(([, a]) => a.mime.startsWith('audio/')).map(([k, a]) => [k, a.b64.length] as [string, number]),
+  ));
   return {
     name: 'civ-binary-assets-out-of-js',
     apply: 'build',
     enforce: 'pre',
+    configResolved(cfg) { outDirCfg = path.resolve(cfg.root, cfg.build.outDir); },
     buildStart() { assets.clear(); },
     resolveId(id) { return id === EMBED_VIRTUAL ? EMBED_VIRTUAL : null; },
     async load(id) {
@@ -154,7 +197,10 @@ function binaryAssetsOutOfJs(): Plugin {
       handler(html: string): string {
         if (assets.size === 0) return html;
         let tags = '';
+        // Audio: znaczniki <script src> do plikow-sasiadow (rejestr wypelniany przed bundlem, kolejnosc = numeracja).
+        audioPacks().forEach((_keys, i) => { tags += `<script src="${audioPackName(i + 1)}"></script>\n`; });
         for (const [key, a] of assets) {
+          if (a.mime.startsWith('audio/')) continue;
           tags += `<script type="application/octet-stream" id="civ-asset-${key}" data-mime="${a.mime}">${a.b64}</script>\n`;
         }
         // Dane muszą być w DOM, zanim wykona się bundel (klasyczny skrypt w <head>, uruchamiany od razu):
@@ -164,6 +210,41 @@ function binaryAssetsOutOfJs(): Plugin {
         const at = m.index + m[0].length;
         return html.slice(0, at) + '\n' + tags + html.slice(at);
       },
+    },
+    async writeBundle(options) {
+      const dir = options.dir ? path.resolve(options.dir) : outDirCfg;
+      const packs = audioPacks();
+      for (let i = 0; i < packs.length; i++) {
+        let body = `(function(r){\n`;
+        for (const key of packs[i] as string[]) body += `r[${JSON.stringify(key)}]=${JSON.stringify((assets.get(key) as { b64: string }).b64)};\n`;
+        body += `})(window.${AUDIO_PACK_REGISTRY}=window.${AUDIO_PACK_REGISTRY}||{});\n`
+          + `(function(s){if(s&&s.parentNode)s.parentNode.removeChild(s)})(document.currentScript);\n`;
+        const size = Buffer.byteLength(body);
+        if (size > AUDIO_PACK_MAX_BYTES) throw new Error(`civ-binary-assets-out-of-js: ${audioPackName(i + 1)} ma ${size} B > ${AUDIO_PACK_MAX_BYTES} B`);
+        await fs.writeFile(path.join(dir, audioPackName(i + 1)), body);
+      }
+      // Straznik rozmiaru: zaden plik wyjsciowy (rekurencyjnie) nie moze przekroczyc OUTPUT_FILE_FAIL_BYTES.
+      const walk = async (d: string): Promise<string[]> => {
+        const out: string[] = [];
+        for (const e of await fs.readdir(d, { withFileTypes: true })) {
+          const p = path.join(d, e.name);
+          if (e.isDirectory()) out.push(...await walk(p)); else out.push(p);
+        }
+        return out;
+      };
+      // CIV_OUTPUT_FAIL_BYTES: wylacznie do testu straznika (audio-sidecar-test.cjs); domyslnie OUTPUT_FILE_FAIL_BYTES.
+      const failBytes = Number(process.env.CIV_OUTPUT_FAIL_BYTES) || OUTPUT_FILE_FAIL_BYTES;
+      let total = 0;
+      const lines: string[] = [];
+      for (const f of await walk(dir)) {
+        const sz = (await fs.stat(f)).size;
+        total += sz;
+        lines.push(`  ${path.relative(dir, f)}: ${sz} B`);
+        if (sz > failBytes) {
+          throw new Error(`civ-binary-assets-out-of-js: plik wyjsciowy ${path.relative(dir, f)} ma ${sz} B > ${failBytes} B (limit GitHub 100 MB)`);
+        }
+      }
+      console.log(`\n[civ-audio-sidecar] pliki wyjsciowe (${lines.length}), razem ${total} B:\n${lines.join('\n')}`);
     },
   };
 }

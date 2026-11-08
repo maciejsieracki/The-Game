@@ -13,8 +13,8 @@
  *  L2. Zamkniecie dyplomacji -> zaden utwor cywilizacji nie gra, wraca muzyka tla.
  *  L3. Ponowne otwarcie -> znow od przywitania (rewind).
  *  L4. Inkowie: dwa utwory negocjacji, brak przywitania; po koncu pierwszego gra drugi.
- *  L5. Sumerowie (sumer): przywitanie, potem dotychczasowy utwor dyplomacji (29,3 s).
- *  L6. Cywilizacja bez utworow (celtowie): gra tylko dotychczasowy utwor (29,3 s) — bez zmian.
+ *  L5. Sumerowie (sumer): przywitanie, potem NEGOCJACJE (149,3 s; pakiet MUSIC2 dal im negocjacje).
+ *  L6. Celtowie (pakiet MUSIC2): gra ich przywitanie (38,5 s), NIE dotychczasowy utwor dyplomacji (29,3 s).
  *  L7. Wyciszona muzyka gry (stopMusic) -> dyplomacja nic nie gra.
  *  L8. Zero pageerror / console.error.
  *  L9. (drugi przebieg, polityka autoplay "wymaga gestu") play() odrzucony -> zero bledow.
@@ -39,7 +39,8 @@ const AI = 1;
 const DUR = {
   grecyHello: 40.75, grecyNeg: 139.34,
   inkNeg1: 147.93, inkNeg2: 143.28,
-  sumerHello: 38.32,
+  sumerHello: 38.32, sumerNeg: 149.29,
+  celtowieHello: 38.45,
   fallback: 29.31,
 };
 const near = (a, b) => Math.abs(a - b) < 0.6;
@@ -216,22 +217,22 @@ async function main() {
     await wait(1500);
 
     // --- L5: Sumerowie ---
-    console.log('L5 Sumerowie: tylko przywitanie');
+    console.log('L5 Sumerowie: przywitanie -> negocjacje');
     await openCiv(page, 'sumer');
     p = await waitFor(page, (a) => only(a, DUR.sumerHello), 14000);
     assert('L5a gra przywitanie Sumerow', only(p, DUR.sumerHello), durs(p));
     await page.evaluate((d) => window.__audioSeekNearEnd(d), DUR.sumerHello);
-    p = await waitFor(page, (a) => only(a, DUR.fallback), 14000);
-    if (!only(p, DUR.fallback)) { await wait(6000); console.log('      diag L5b +6s:', JSON.stringify(await probe(page))); }
-    assert('L5b po przywitaniu gra dotychczasowy utwor dyplomacji', only(p, DUR.fallback), durs(p));
+    p = await waitFor(page, (a) => only(a, DUR.sumerNeg), 14000);
+    if (!only(p, DUR.sumerNeg)) { await wait(6000); console.log('      diag L5b +6s:', JSON.stringify(await probe(page))); }
+    assert('L5b po przywitaniu gra negocjacje Sumerow', only(p, DUR.sumerNeg), durs(p));
     await closeAud(page);
     await wait(1500);
 
     // --- L6: cywilizacja bez utworow ---
-    console.log('L6 cywilizacja bez utworow (celtowie)');
+    console.log('L6 celtowie (pakiet MUSIC2): przywitanie, nie dotychczasowy utwor');
     await openCiv(page, 'celtowie');
-    p = await waitFor(page, (a) => only(a, DUR.fallback), 14000);
-    assert('L6a gra wylacznie dotychczasowy utwor dyplomacji (bez zmian)', only(p, DUR.fallback), durs(p));
+    p = await waitFor(page, (a) => only(a, DUR.celtowieHello), 14000);
+    assert('L6a gra wylacznie przywitanie Celtow (nie dotychczasowy utwor dyplomacji)', only(p, DUR.celtowieHello), durs(p));
     await closeAud(page);
     await wait(1500);
 
