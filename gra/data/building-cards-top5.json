@@ -1,0 +1,1350 @@
+{
+  "_meta": {
+    "temat": "R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1",
+    "generator": "gra/tools/gen-building-cards-top5.cjs (+ gen-building-cards-top5.korekty.json)",
+    "zrodloCsv": "budynki-top5.csv (FC c828a978f, docs 1c5009f71)",
+    "csvSha256": "b81c7b6547f6ddb51c35f54dba15bf49ca7452a3626eb12252ad2b75d684e5d0",
+    "pola": "top5:[{tytul, liczba?, zdanie, rodzaj:'efekt'|'warunek'|'rozbudowa', dowod?}] · cmz:[{czynnosc, korzysc}] · ukryty?:true · opisKarty?"
+  },
+  "stolarnia": {
+    "top5": [
+      {
+        "tytul": "+10% drewna w całym państwie",
+        "liczba": "+10%",
+        "zdanie": "Każda Stolarnia w dowolnym mieście zwiększa wydobycie drewna całego państwa o 10% (Stolarnie sumują się).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:285-291; gra/src/game/turn-economy.ts:1536"
+      },
+      {
+        "tytul": "+5 Pracy w mieście (8 w Brązie, 11 w Żelazie)",
+        "liczba": "+5",
+        "zdanie": "Daje miastu 5 Pracy, a z każdą kolejną epoką o 3 więcej.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:3; gra/src/game/production.ts:252-271"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Stolarnię",
+        "korzysc": "zwiększyć wydobycie drewna całego państwa o 10%"
+      }
+    ]
+  },
+  "kamieniarski": {
+    "top5": [
+      {
+        "tytul": "+10% kamienia w całym państwie",
+        "liczba": "+10%",
+        "zdanie": "Każdy Warsztat kamieniarski zwiększa wydobycie kamienia całego państwa o 10% (warsztaty sumują się).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:292-298; gra/src/game/turn-economy.ts:1539"
+      },
+      {
+        "tytul": "+4 Pracy w mieście (6 w Brązie, 8 w Żelazie)",
+        "liczba": "+4",
+        "zdanie": "Daje miastu 4 Pracy, a z każdą kolejną epoką o 2 więcej.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:61; gra/src/game/production.ts:252-271"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Warsztat kamieniarski",
+        "korzysc": "zwiększyć wydobycie kamienia całego państwa o 10%"
+      }
+    ]
+  },
+  "kuznia": {
+    "top5": [
+      {
+        "tytul": "+15% Pancerza jednostek (na stałe)",
+        "liczba": "+15%",
+        "zdanie": "Jednostka zrekrutowana w tym mieście albo wchodząca do niego dostaje trwale +15% Pancerza.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:108; gra/src/game/unit-building-bonuses.ts:9-21; gra/src/game/unit-building-bonuses.ts:171-176"
+      },
+      {
+        "tytul": "Rozbudowa do Kuźni żelaza: Pancerz do +30%",
+        "liczba": "+30%",
+        "zdanie": "Po Hutnictwie żelaza rozbudowa do Kuźni żelaza podnosi premię do +30% Pancerza.",
+        "rodzaj": "rozbudowa",
+        "dowod": "gra/data/buildings.json:1398; gra/src/game/unit-building-bonuses.ts:9-21"
+      },
+      {
+        "tytul": "+6 Pracy i +1 pieniądza w mieście",
+        "liczba": "+6",
+        "zdanie": "Stały dochód miasta niezależny od epoki.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:108"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Kuźnię brązu",
+        "korzysc": "dać jednostkom trwale +15% Pancerza"
+      },
+      {
+        "czynnosc": "Rozbuduj ją do Kuźni żelaza (Hutnictwo żelaza)",
+        "korzysc": "podnieść Pancerz jednostek do +30%"
+      }
+    ]
+  },
+  "odlewnia_brazu": {
+    "top5": [
+      {
+        "tytul": "Wytapia brąz: do 50 sztuk na turę",
+        "liczba": "do 50",
+        "zdanie": "Zamienia rudę miedzi, drewno i cynę w brąz (50 cykli na turę, więcej w kolejnych epokach); brąz to koszt wojska epoki Brązu.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/converters.ts:13; gra/src/game/converters.ts:97; gra/data/econ-params.json:362-368"
+      },
+      {
+        "tytul": "Warunek badania Hutnictwa żelaza",
+        "zdanie": "Bez Odlewni brązu w państwie nie zbadasz Hutnictwa żelaza (epoka Żelaza).",
+        "rodzaj": "warunek",
+        "dowod": "gra/data/tech.json:340; gra/src/game/research.ts:154-180"
+      },
+      {
+        "tytul": "Rozbudowa do Odlewni żelaza: żelazo i +12 Pracy",
+        "liczba": "+12",
+        "zdanie": "Po Hutnictwie żelaza rozbudowa daje drugi konwerter — żelazo.",
+        "rodzaj": "rozbudowa",
+        "dowod": "gra/data/buildings.json:204; gra/src/game/converters.ts:98-99"
+      },
+      {
+        "tytul": "+5 Pracy w mieście",
+        "liczba": "+5",
+        "zdanie": "Stały dodatek Pracy miasta.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:156"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Odlewnię brązu",
+        "korzysc": "wytwarzać brąz potrzebny do wojska epoki Brązu"
+      },
+      {
+        "czynnosc": "Rozbuduj ją do Odlewni żelaza (Hutnictwo żelaza)",
+        "korzysc": "wytwarzać także żelazo"
+      }
+    ]
+  },
+  "odlewnia_zelaza": {
+    "top5": [
+      {
+        "tytul": "Wytapia żelazo: do 50 sztuk na turę (i nadal brąz)",
+        "liczba": "do 50",
+        "zdanie": "Zamienia rudę żelaza i drewno w żelazo dla wojska epoki Żelaza, a obok dalej wytapia brąz.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/converters.ts:13; gra/src/game/converters.ts:98-99; gra/data/econ-params.json:369-375"
+      },
+      {
+        "tytul": "+12 Pracy i +1 pieniądza w mieście",
+        "liczba": "+12",
+        "zdanie": "Dwa razy więcej Pracy niż Odlewnia brązu.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:204"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Rozbuduj Odlewnię brązu do Odlewni żelaza",
+        "korzysc": "wytwarzać żelazo dla wojska epoki Żelaza"
+      }
+    ]
+  },
+  "wielka_odlewnia": {
+    "top5": [],
+    "cmz": [],
+    "ukryty": true
+  },
+  "targowisko": {
+    "top5": [
+      {
+        "tytul": "+5 pieniądza w mieście (8 w Brązie, 11 w Żelazie)",
+        "liczba": "+5",
+        "zdanie": "Stały dochód, rośnie o 3 z każdą epoką.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:303; gra/src/game/production.ts:252-271"
+      },
+      {
+        "tytul": "+50% dochodu z tras handlowych miasta",
+        "liczba": "+50%",
+        "zdanie": "Każda trasa handlowa tego miasta przynosi o połowę więcej (+62% łatwy, +38% trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:278-284; gra/src/main.ts:4212-4216"
+      },
+      {
+        "tytul": "Zamiana Pracy na podatek 1:1 w całym państwie",
+        "zdanie": "Pierwsze Targowisko pozwala przelewać nadwyżkę Pracy na podatek w panelu państwa (tylko gracz).",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/work-tax.ts:14-22; gra/data/econ-params.json:341-347; gra/src/main.ts:25940-25945"
+      },
+      {
+        "tytul": "+1 trasa handlowa i premia 5% trasy",
+        "liczba": "+1",
+        "zdanie": "Miasto może utrzymać o jedną trasę więcej, a jedna jego trasa dostaje +5% dochodu.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:925-945; gra/src/game/trade-routes.ts:1659"
+      },
+      {
+        "tytul": "Warunek Mennicy (stolica) i Emporionu",
+        "zdanie": "Bez Targowiska w tym samym mieście nie zbudujesz Mennicy ani Emporionu.",
+        "rodzaj": "warunek",
+        "dowod": "gra/src/game/building-resource-gate.ts:110-121"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Targowisko",
+        "korzysc": "dać miastu 5 pieniądza"
+      },
+      {
+        "czynnosc": "Zbuduj w stolicy Mennicę (Waluta)",
+        "korzysc": "pomnożyć podatek wszystkich miast ×1,5"
+      }
+    ]
+  },
+  "port": {
+    "top5": [
+      {
+        "tytul": "+5 pieniądza i +1 Pracy w mieście",
+        "liczba": "+5",
+        "zdanie": "Stały dochód miasta nad wodą.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:361"
+      },
+      {
+        "tytul": "+1 trasa handlowa i premia 5% trasy",
+        "liczba": "+1",
+        "zdanie": "Miasto portowe utrzymuje o jedną trasę więcej, a jedna trasa dostaje +5% dochodu.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:1659"
+      },
+      {
+        "tytul": "+1 pieniądza za każdą trasę morską ponad pierwszą",
+        "liczba": "+1",
+        "zdanie": "Premia morska należy się tylko miastu z Portem.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/trade-routes.ts:1755-1772"
+      },
+      {
+        "tytul": "Rozbudowa do Portu wielkiego: +10 pieniądza",
+        "liczba": "+10",
+        "zdanie": "Po Inżynierii rozbudowa podwaja dochód portu.",
+        "rodzaj": "rozbudowa",
+        "dowod": "gra/data/buildings.json:409"
+      },
+      {
+        "tytul": "+1 Szczęścia w mieście",
+        "liczba": "+1",
+        "zdanie": "Ryczałt Szczęścia za budynek szczęściodajny.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/economy.ts:509-535"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Port handlowy w mieście nad wodą",
+        "korzysc": "dać miastu 5 pieniądza"
+      },
+      {
+        "czynnosc": "Rozbuduj go do Portu wielkiego (Inżynieria)",
+        "korzysc": "podwoić dochód portu (+10 pieniądza)"
+      }
+    ]
+  },
+  "port_wielki": {
+    "top5": [
+      {
+        "tytul": "+10 pieniądza i +2 Pracy w mieście (Port: +5)",
+        "liczba": "+10",
+        "zdanie": "Podwaja dochód Portu handlowego, który zastępuje.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:409"
+      },
+      {
+        "tytul": "Zachowuje trasę handlową i premię morską Portu",
+        "zdanie": "Po rozbudowie miasto nie traci slotu trasy ani +1 pieniądza za trasę morską.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:208; gra/src/game/trade-routes.ts:1755-1772"
+      },
+      {
+        "tytul": "+1 Szczęścia w mieście",
+        "liczba": "+1",
+        "zdanie": "Ryczałt Szczęścia za budynek szczęściodajny.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/economy.ts:509-535"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Rozbuduj Port handlowy do Portu wielkiego",
+        "korzysc": "podwoić dochód portu (+10 pieniądza)"
+      }
+    ]
+  },
+  "spichlerz": {
+    "top5": [
+      {
+        "tytul": "Limit ludności miasta 5 → 8",
+        "liczba": "5 → 8",
+        "zdanie": "Bez Spichlerza (i Akweduktu) miasto nie urośnie ponad 5 mieszkańców.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:24-37; gra/src/game/economy.ts:1053"
+      },
+      {
+        "tytul": "+1000 pojemności spichlerza państwa",
+        "liczba": "+1000",
+        "zdanie": "Każdy Spichlerz zwiększa centralny zapas żywności państwa o 1000 (×2 na epokę).",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/empire-food.ts:175-192; gra/src/game/building-resource-gate.ts:548"
+      },
+      {
+        "tytul": "−25% kosztu racji żywnościowej w mieście",
+        "liczba": "−25%",
+        "zdanie": "Mieszkańcy tego miasta zjadają o jedną czwartą mniej żywności ze spichlerza państwa (racje ×0,75).",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/building-resource-gate.ts:486-491; gra/src/game/population-growth-v85.ts:206-223; gra/src/game/turn-economy.ts:1671"
+      },
+      {
+        "tytul": "+2 żywności i +5 Szczęścia w mieście",
+        "liczba": "+2",
+        "zdanie": "Najwyższy ryczałt Szczęścia wśród budynków Kamienia.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:458; gra/src/game/economy.ts:509-535"
+      },
+      {
+        "tytul": "Rozbudowa do Spichlerza Królewskiego: limit 12",
+        "zdanie": "Po Piśmie i z dostępem do soli limit ludności rośnie do 12.",
+        "rodzaj": "rozbudowa",
+        "dowod": "gra/data/buildings.json:505; gra/data/econ-params.json:38-44"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Spichlerz",
+        "korzysc": "podnieść limit ludności miasta z 5 do 8"
+      },
+      {
+        "czynnosc": "Rozbuduj go do Spichlerza Królewskiego (Pismo, sól)",
+        "korzysc": "podnieść limit ludności miasta z 8 do 12"
+      }
+    ]
+  },
+  "spichlerz_ii": {
+    "top5": [
+      {
+        "tytul": "Limit ludności miasta 8 → 12",
+        "liczba": "8 → 12",
+        "zdanie": "Spichlerz Królewski podnosi sufit miasta bez Akweduktu do 12 mieszkańców.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:38-44; gra/src/game/economy.ts:1053"
+      },
+      {
+        "tytul": "−50% kosztu racji żywnościowej (Spichlerz: −25%)",
+        "liczba": "−50%",
+        "zdanie": "Mieszkańcy tego miasta zjadają o połowę mniej żywności ze spichlerza państwa (racje ×0,5).",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/building-resource-gate.ts:486-491; gra/src/game/population-growth-v85.ts:206-223; gra/src/game/turn-economy.ts:1671"
+      },
+      {
+        "tytul": "+1500 pojemności spichlerza państwa (zamiast 1000)",
+        "liczba": "+1500",
+        "zdanie": "Większy wkład w centralny zapas żywności państwa.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/empire-food.ts:187; gra/src/game/building-resource-gate.ts:549"
+      },
+      {
+        "tytul": "+3 żywności i +5 Szczęścia w mieście",
+        "liczba": "+3",
+        "zdanie": "O 1 żywności więcej niż Spichlerz.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:505; gra/src/game/economy.ts:509-535"
+      },
+      {
+        "tytul": "+10 zdrowia w mieście (Spichlerz: +5)",
+        "liczba": "+10",
+        "zdanie": "Lepsze zdrowie przyspiesza wzrost ludności miasta.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/building-resource-gate.ts:472-477; gra/src/game/turn-economy.ts:2023"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Rozbuduj Spichlerz do Spichlerza Królewskiego",
+        "korzysc": "podnieść limit ludności miasta z 8 do 12"
+      }
+    ],
+    "opisKarty": "Spichlerz Królewski to rozbudowana wersja magazynu żywności, pozwalająca miastu utrzymać jeszcze większą populację."
+  },
+  "garncarnia": {
+    "top5": [
+      {
+        "tytul": "Wytwarza ceramikę: do 50 sztuk na turę",
+        "liczba": "do 50",
+        "zdanie": "Zamienia glinę i drewno w ceramikę; każdy Spichlerz zużywa jej 25 na turę.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/converters.ts:85; gra/data/econ-params.json:383-389; gra/data/econ-params.json:390-396"
+      },
+      {
+        "tytul": "Otwiera Spichlerz w każdym mieście (limit 5 → 8)",
+        "liczba": "5 → 8",
+        "zdanie": "Jedna Garncarnia gdziekolwiek spełnia bramkę ceramiki Spichlerza w całym państwie.",
+        "rodzaj": "warunek",
+        "dowod": "gra/data/buildings.json:458; gra/data/econ-params.json:31-37"
+      },
+      {
+        "tytul": "+10% żywności w mieście",
+        "liczba": "+10%",
+        "zdanie": "Premia procentowa do żywności miasta, w którym stoi.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:299-305; gra/src/game/economy.ts:1008"
+      },
+      {
+        "tytul": "+3 Pracy w mieście (5 w Brązie, 7 w Żelazie)",
+        "liczba": "+3",
+        "zdanie": "Daje miastu 3 Pracy, a z każdą epoką o 2 więcej.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:554; gra/src/game/production.ts:252-271"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Garncarnię",
+        "korzysc": "wytwarzać ceramikę dla Spichlerzy"
+      },
+      {
+        "czynnosc": "Zbuduj w miastach Spichlerze",
+        "korzysc": "podnieść limit ludności miast z 5 do 8"
+      }
+    ]
+  },
+  "cegielnia": {
+    "top5": [
+      {
+        "tytul": "Wytwarza cegłę: 50 cykli × 2 cegły na turę",
+        "liczba": "× 2",
+        "zdanie": "Zamienia 2 gliny i 1 drewno w 2 cegły; od epoki Brązu +50% bazy na epokę — cegła buduje budynki epoki Żelaza.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/converters.ts:11; gra/src/game/converters.ts:84; gra/data/econ-params.json:355-361"
+      },
+      {
+        "tytul": "+25% Pracy z terenu miasta",
+        "liczba": "+25%",
+        "zdanie": "Pola obrabiane przez miasto dają o jedną czwartą więcej Pracy (+31% łatwy, +19% trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:271-277; gra/src/game/economy.ts:863-866"
+      },
+      {
+        "tytul": "Warunek badania Pisma i Religii",
+        "zdanie": "Bez Cegielni w państwie nie zbadasz Pisma (Biblioteka) ani Religii (Świątynia).",
+        "rodzaj": "warunek",
+        "dowod": "gra/data/tech.json:200; gra/data/tech.json:214; gra/src/game/research.ts:154-180"
+      },
+      {
+        "tytul": "+4 Pracy w mieście (6 w Żelazie)",
+        "liczba": "+4",
+        "zdanie": "Daje miastu 4 Pracy, w epoce Żelaza 6.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:601; gra/src/game/production.ts:252-271"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Cegielnię",
+        "korzysc": "wytwarzać cegłę na budynki epoki Żelaza"
+      }
+    ]
+  },
+  "kamienne_kregi": {
+    "top5": [
+      {
+        "tytul": "Religia +2% na turę w mieście",
+        "liczba": "+2%",
+        "zdanie": "Przyspiesza szerzenie twojej religii w mieście (+3% łatwy, +1% trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:588-594; gra/src/game/culture-religion.ts:550"
+      },
+      {
+        "tytul": "+1 Kultury i +2 Szczęścia (rośnie z epoką)",
+        "liczba": "+1",
+        "zdanie": "Po 1 Kultury i zadowolenia więcej z każdą epoką.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:649; gra/src/game/economy.ts:509-535; gra/src/game/production.ts:252-271"
+      },
+      {
+        "tytul": "Warunek Świątyni (+4% religii na turę)",
+        "liczba": "+4%",
+        "zdanie": "Świątynię zbudujesz tylko w mieście z Kamiennymi kręgami.",
+        "rodzaj": "warunek",
+        "dowod": "gra/src/game/building-resource-gate.ts:110-121"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Kamienne kręgi",
+        "korzysc": "szerzyć swoją religię o 2% na turę"
+      },
+      {
+        "czynnosc": "Zbuduj obok Świątynię (Religia)",
+        "korzysc": "szerzyć religię o kolejne 4% na turę"
+      }
+    ]
+  },
+  "swiatynia": {
+    "top5": [
+      {
+        "tytul": "Religia +4% na turę w mieście",
+        "liczba": "+4%",
+        "zdanie": "Dwa razy szybsze szerzenie religii niż Kamienne kręgi (+6% łatwy, +2% trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:581-587; gra/src/game/culture-religion.ts:549"
+      },
+      {
+        "tytul": "Religia sięga 2 sąsiednich miast na turę (zamiast 1)",
+        "zdanie": "Dominująca religia miasta co turę zyskuje wyznawcę w kolejnym mieście w zasięgu 3 heksów (+2 łatwy, 0 trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:504-510; gra/src/game/culture-religion.ts:1064; gra/src/main.ts:37718-37730"
+      },
+      {
+        "tytul": "+2 Kultury i +3 Szczęścia (rośnie z epoką)",
+        "liczba": "+2",
+        "zdanie": "W epoce Żelaza +3 Kultury i +4 Szczęścia.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:696; gra/src/game/economy.ts:509-535; gra/src/game/production.ts:252-271"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Świątynię",
+        "korzysc": "szerzyć swoją religię o 4% na turę"
+      }
+    ]
+  },
+  "biblioteka": {
+    "top5": [
+      {
+        "tytul": "+30% Nauki miasta",
+        "liczba": "+30%",
+        "zdanie": "Procentowa premia do całej nauki miasta (+37% łatwy, +23% trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:320-326; gra/src/game/economy.ts:979-982"
+      },
+      {
+        "tytul": "+3 Nauki i +2 Kultury (5 i 3 w Żelazie)",
+        "liczba": "+3",
+        "zdanie": "Płaski dodatek, rośnie z epoką.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:744; gra/src/game/production.ts:252-271"
+      },
+      {
+        "tytul": "Asymilacja kultury +2% na turę (podbite miasta)",
+        "liczba": "+2%",
+        "zdanie": "Podbite miasto szybciej przyjmuje twoją kulturę.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:432-438; gra/src/game/culture-religion.ts:455; gra/src/game/conquest-stability.ts:63-72"
+      },
+      {
+        "tytul": "Warunek Akademii i badania Filozofii",
+        "zdanie": "Bez Biblioteki nie zbudujesz Akademii (+20% Nauki) ani nie zbadasz Filozofii.",
+        "rodzaj": "warunek",
+        "dowod": "gra/src/game/building-resource-gate.ts:110-121; gra/data/tech.json:383; gra/src/game/research.ts:154-180"
+      },
+      {
+        "tytul": "+1 Szczęścia w mieście",
+        "liczba": "+1",
+        "zdanie": "Ryczałt Szczęścia za budynek szczęściodajny.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/economy.ts:509-535"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Bibliotekę",
+        "korzysc": "zwiększyć Naukę miasta o 30%"
+      },
+      {
+        "czynnosc": "Zbuduj obok Akademię (Filozofia)",
+        "korzysc": "zwiększyć Naukę miasta o kolejne 20%"
+      }
+    ]
+  },
+  "studnia": {
+    "top5": [
+      {
+        "tytul": "+2 zdrowia i koniec kary −2 za brak wody",
+        "liczba": "+2",
+        "zdanie": "Miasto bez rzeki dostaje czystą wodę: +2 zdrowia zamiast −2.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:17-23; gra/data/society-params.json:116-122; gra/src/game/turn-economy.ts:476-498"
+      },
+      {
+        "tytul": "Warunek Akweduktu (limit 20) i Łaźni",
+        "zdanie": "Bez Studni w mieście nie zbudujesz Akweduktu ani Łaźni publicznej.",
+        "rodzaj": "warunek",
+        "dowod": "gra/src/game/building-resource-gate.ts:110-121; gra/data/buildings.json:853"
+      },
+      {
+        "tytul": "Warunek badania Medycyny",
+        "zdanie": "Bez Studni w państwie nie zbadasz Medycyny (Łaźnia publiczna).",
+        "rodzaj": "warunek",
+        "dowod": "gra/data/tech.json:425; gra/src/game/research.ts:154-180"
+      },
+      {
+        "tytul": "+2 Szczęścia w mieście (rośnie z epoką)",
+        "liczba": "+2",
+        "zdanie": "Ryczałt +1 i +1 zadowolenia na poziom.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:806; gra/src/game/economy.ts:509-535; gra/src/game/production.ts:252-271"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Studnię",
+        "korzysc": "dać miastu czystą wodę (+2 zdrowia, bez kary −2)"
+      },
+      {
+        "czynnosc": "Zbuduj obok Akwedukt (Budownictwo)",
+        "korzysc": "podnieść limit ludności miasta do 20"
+      }
+    ]
+  },
+  "akwedukt": {
+    "top5": [
+      {
+        "tytul": "Limit ludności miasta do 20",
+        "liczba": "do 20",
+        "zdanie": "Najwyższy próg drabinki: bez budynku 5 → Spichlerz 8 → Spichlerz Królewski 12 → Akwedukt 20.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:45-51; gra/src/game/economy.ts:1053"
+      },
+      {
+        "tytul": "+4 zdrowia w mieście",
+        "liczba": "+4",
+        "zdanie": "Akwedukt liczy się też jako dostęp do świeżej wody.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:10-16; gra/src/game/turn-economy.ts:476-498"
+      },
+      {
+        "tytul": "+3 Szczęścia w mieście (rośnie z epoką)",
+        "liczba": "+3",
+        "zdanie": "Ryczałt +1 i +2 zadowolenia.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:853; gra/src/game/economy.ts:509-535"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Akwedukt",
+        "korzysc": "podnieść limit ludności miasta do 20"
+      }
+    ]
+  },
+  "mennica": {
+    "top5": [
+      {
+        "tytul": "×1,5 podatku w każdym mieście państwa",
+        "liczba": "×1,5",
+        "zdanie": "Mnoży podatek z handlu wszystkich miast przed podziałem na naukę, pieniądz i luksus (×1,62 łatwy, ×1,38 trudny); nie obejmuje tras.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:585-591; gra/src/game/economy.ts:644-653; gra/src/game/economy.ts:952-955; gra/src/game/economy.ts:962-967"
+      },
+      {
+        "tytul": "+3 pieniądza w stolicy (5 w Żelazie)",
+        "liczba": "+3",
+        "zdanie": "Mały stały dochód stolicy.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:901; gra/src/game/production.ts:252-271"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Mennicę w stolicy",
+        "korzysc": "pomnożyć podatek wszystkich miast ×1,5"
+      }
+    ]
+  },
+  "palisada": {
+    "top5": [
+      {
+        "tytul": "+100% Obrony obrońców miasta",
+        "liczba": "+100%",
+        "zdanie": "Pierwsza fortyfikacja: podwaja obronę jednostek broniących miasta.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/miasto-params.json:94; gra/src/game/city-defense.ts:60-75"
+      },
+      {
+        "tytul": "Miasto trzeba oblegać — wróg nie wejdzie z marszu",
+        "zdanie": "Miasto z umocnieniem przechodzi w tryb oblężenia; pustego miasta nie da się zająć jednym ruchem.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:992; gra/src/game/production.ts:854-861; gra/src/game/mapSiegeDetect.ts:50-62; gra/src/game/city-hex-movement.ts:55-62"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Palisadę drewnianą",
+        "korzysc": "podwoić obronę miasta (+100% Obrony)"
+      }
+    ]
+  },
+  "mury": {
+    "top5": [
+      {
+        "tytul": "+200% Obrony obrońców miasta",
+        "liczba": "+200%",
+        "zdanie": "Trzykrotna obrona jednostek broniących miasta; zastępuje +100% Palisady.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/miasto-params.json:79; gra/src/game/city-defense.ts:60-75"
+      },
+      {
+        "tytul": "Miasto trzeba oblegać — wróg nie wejdzie z marszu",
+        "zdanie": "Mury włączają tryb oblężenia (także gdy w mieście nie ma wojska).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1040; gra/src/game/production.ts:854-861; gra/src/game/mapSiegeDetect.ts:50-62; gra/src/game/city-hex-movement.ts:55-62"
+      },
+      {
+        "tytul": "Warunek Cytadeli i Baszty (razem +400%)",
+        "liczba": "+400%",
+        "zdanie": "Bez Murów w mieście nie zbudujesz Cytadeli ani Baszty.",
+        "rodzaj": "warunek",
+        "dowod": "gra/src/game/building-resource-gate.ts:110-121; gra/src/game/city-defense.ts:60-75"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Mury",
+        "korzysc": "potroić obronę miasta (+200% Obrony)"
+      },
+      {
+        "czynnosc": "Zbuduj Cytadelę i Basztę (Inżynieria)",
+        "korzysc": "podnieść obronę miasta do +400%"
+      }
+    ]
+  },
+  "koszary": {
+    "top5": [
+      {
+        "tytul": "Rekrutacja wojska epoki Brązu i Żelaza",
+        "zdanie": "Bez Koszar w mieście nie zrekrutujesz tam żadnej jednostki epoki Brązu ani Żelaza.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/production.ts:1068-1076"
+      },
+      {
+        "tytul": "+20% parametrów bojowych jednostek (na stałe)",
+        "liczba": "+20%",
+        "zdanie": "Jednostka zrekrutowana lub odwiedzająca miasto dostaje trwale +20% ataku, obrony i zdrowia (bez Pancerza).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1047; gra/src/game/unit-building-bonuses.ts:23-33; gra/src/game/unit-building-bonuses.ts:179-184"
+      },
+      {
+        "tytul": "Warunek Warsztatu, Akademii wojskowej i 2 badań",
+        "zdanie": "Bez Koszar nie zbudujesz Warsztatu oblężniczego ani Akademii wojskowej i nie zbadasz Oblężnictwa ani Sztuki wojennej.",
+        "rodzaj": "warunek",
+        "dowod": "gra/src/game/building-resource-gate.ts:110-121; gra/data/tech.json:369; gra/data/tech.json:453; gra/src/game/research.ts:154-180"
+      },
+      {
+        "tytul": "+2 Pracy w mieście (3 w Żelazie)",
+        "liczba": "+2",
+        "zdanie": "Drobny dodatek Pracy.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1047; gra/src/game/production.ts:252-271"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Koszary",
+        "korzysc": "rekrutować wojsko epoki Brązu i Żelaza"
+      },
+      {
+        "czynnosc": "Zbuduj obok Akademię wojskową (Sztuka wojenna)",
+        "korzysc": "wzmocnić jednostki o kolejne +20%"
+      }
+    ]
+  },
+  "emporion": {
+    "top5": [
+      {
+        "tytul": "+8 pieniądza w mieście",
+        "liczba": "+8",
+        "zdanie": "Większy dochód niż Targowisko (+5).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1095"
+      },
+      {
+        "tytul": "+1 trasa handlowa i premia 5% trasy",
+        "liczba": "+1",
+        "zdanie": "Miasto utrzymuje o jedną trasę więcej, a kolejna trasa dostaje +5% dochodu.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:1659"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Emporion",
+        "korzysc": "dać miastu 8 pieniądza"
+      }
+    ]
+  },
+  "magazyn": {
+    "top5": [
+      {
+        "tytul": "+20% pojemności magazynu państwa",
+        "liczba": "+20%",
+        "zdanie": "Każdy Magazyn zwiększa limit każdego surowca w całym państwie o 20% bazy (np. 50 000 → 60 000 w Kamieniu).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:613-619; gra/src/game/economy-upkeep.ts:398; gra/src/game/economy-upkeep.ts:431"
+      },
+      {
+        "tytul": "+1 Pracy i +1 pieniądza (po 2 w Żelazie)",
+        "liczba": "+1",
+        "zdanie": "Drobny dochód miasta, rośnie z epoką.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1154; gra/src/game/production.ts:252-271"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Magazyn",
+        "korzysc": "zwiększyć pojemność magazynu państwa o 20%"
+      }
+    ]
+  },
+  "stela": {
+    "top5": [
+      {
+        "tytul": "+1 Kultury i +1 Szczęścia, bez utrzymania",
+        "liczba": "+1",
+        "zdanie": "Kultura rośnie o 1 z każdą epoką (do +3), a budynek nic nie kosztuje co turę.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1202; gra/src/game/economy.ts:509-535; gra/src/game/production.ts:252-271"
+      },
+      {
+        "tytul": "Asymilacja kultury +0,5% na turę (podbite miasta)",
+        "liczba": "+0,5%",
+        "zdanie": "Podbite miasto nieco szybciej przyjmuje twoją kulturę.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:446-452; gra/src/game/culture-religion.ts:457; gra/src/game/conquest-stability.ts:63-72"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Postaw Stelę",
+        "korzysc": "zyskać Kulturę bez kosztów utrzymania"
+      }
+    ]
+  },
+  "palac": {
+    "top5": [
+      {
+        "tytul": "+35 pkt Prawa w stolicy",
+        "liczba": "+35",
+        "zdanie": "Główne źródło Prawa stolicy (+45 łatwy, +28 trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:816-822; gra/src/game/society-breakdown.ts:858-867"
+      },
+      {
+        "tytul": "−30% korupcji w stolicy",
+        "liczba": "−30%",
+        "zdanie": "Zmniejsza straty z korupcji w mieście z Pałacem; redukcja zostaje po rozbudowie do Pałacu II i III.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/economy.ts:1225-1250"
+      },
+      {
+        "tytul": "Asymilacja kultury +2% na turę (podbite miasta)",
+        "liczba": "+2%",
+        "zdanie": "Miasto z Pałacem szybciej przyjmuje twoją kulturę.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:439-445; gra/src/game/culture-religion.ts:456; gra/src/game/conquest-stability.ts:63-72"
+      },
+      {
+        "tytul": "+5 Kultury i +3 Szczęścia w stolicy",
+        "liczba": "+5",
+        "zdanie": "Stały dodatek kultury i nastrojów.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1249; gra/src/game/economy.ts:509-535"
+      },
+      {
+        "tytul": "Rozbudowa do Pałacu II: Prawo 45, Kultura 8",
+        "zdanie": "W epoce Brązu Pałac rośnie do drugiego stopnia.",
+        "rodzaj": "rozbudowa",
+        "dowod": "gra/data/buildings.json:1298; gra/data/society-params.json:823-829"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Pałac w stolicy",
+        "korzysc": "zapewnić stolicy 35 pkt Prawa"
+      },
+      {
+        "czynnosc": "Rozbuduj go do Pałacu II (epoka Brązu)",
+        "korzysc": "podnieść Prawo stolicy do 45 i Kulturę do 8"
+      }
+    ]
+  },
+  "palac_ii": {
+    "top5": [
+      {
+        "tytul": "Prawo stolicy 35 → 45 pkt",
+        "liczba": "35 → 45",
+        "zdanie": "Wyższy stopień Pałacu daje więcej Prawa (+58 łatwy, +36 trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:823-829; gra/src/game/society-breakdown.ts:858-867"
+      },
+      {
+        "tytul": "−30% korupcji w stolicy (jak Pałac I)",
+        "liczba": "−30%",
+        "zdanie": "Rozbudowa zachowuje redukcję korupcji Pałacu I w mieście z Pałacem.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/economy.ts:1226-1232"
+      },
+      {
+        "tytul": "+8 Kultury i +4 Szczęścia w stolicy",
+        "liczba": "+8",
+        "zdanie": "Półtora raza więcej niż Pałac I.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1298; gra/src/game/economy.ts:509-535"
+      },
+      {
+        "tytul": "Asymilacja kultury +2% na turę (podbite miasta)",
+        "liczba": "+2%",
+        "zdanie": "Premia Pałacu do konwersji kultury działa dalej.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/conquest-stability.ts:63-72; gra/src/game/culture-religion.ts:456"
+      },
+      {
+        "tytul": "Rozbudowa do Pałacu III: Prawo 55, Kultura 11",
+        "zdanie": "W epoce Żelaza ostatni stopień Pałacu.",
+        "rodzaj": "rozbudowa",
+        "dowod": "gra/data/buildings.json:1348; gra/data/society-params.json:830-836"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Rozbuduj Pałac do Pałacu II",
+        "korzysc": "podnieść Prawo stolicy do 45 pkt"
+      },
+      {
+        "czynnosc": "Rozbuduj go do Pałacu III (epoka Żelaza)",
+        "korzysc": "podnieść Prawo stolicy do 55 i Kulturę do 11"
+      }
+    ]
+  },
+  "palac_iii": {
+    "top5": [
+      {
+        "tytul": "Prawo stolicy 45 → 55 pkt",
+        "liczba": "45 → 55",
+        "zdanie": "Najwyższy stopień Pałacu w obecnych epokach (+71 łatwy, +44 trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:830-836; gra/src/game/society-breakdown.ts:858-867"
+      },
+      {
+        "tytul": "−30% korupcji w stolicy (jak Pałac I)",
+        "liczba": "−30%",
+        "zdanie": "Najwyższy stopień Pałacu zachowuje redukcję korupcji w mieście z Pałacem.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/economy.ts:1226-1232"
+      },
+      {
+        "tytul": "+11 Kultury i +6 Szczęścia w stolicy",
+        "liczba": "+11",
+        "zdanie": "Ponad dwa razy więcej niż Pałac I.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1348; gra/src/game/economy.ts:509-535"
+      },
+      {
+        "tytul": "Asymilacja kultury +2% na turę (podbite miasta)",
+        "liczba": "+2%",
+        "zdanie": "Premia Pałacu do konwersji kultury działa dalej.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/conquest-stability.ts:63-72; gra/src/game/culture-religion.ts:456"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Rozbuduj Pałac II do Pałacu III",
+        "korzysc": "podnieść Prawo stolicy do 55 pkt"
+      }
+    ]
+  },
+  "kuznia_zelaza": {
+    "top5": [
+      {
+        "tytul": "Pancerz jednostek do +30% (brąz + żelazo)",
+        "liczba": "+30%",
+        "zdanie": "Przejmuje +15% Kuźni brązu i dokłada własne +15% — trwale dla jednostek z miasta.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1398; gra/src/game/unit-building-bonuses.ts:9-21; gra/src/game/unit-building-bonuses.ts:171-176"
+      },
+      {
+        "tytul": "Warunek badania Obróbki żelaza",
+        "zdanie": "Bez Kuźni żelaza w państwie nie zbadasz Obróbki żelaza.",
+        "rodzaj": "warunek",
+        "dowod": "gra/data/tech.json:439; gra/src/game/research.ts:154-180"
+      },
+      {
+        "tytul": "+8 Pracy i +2 pieniądza w mieście",
+        "liczba": "+8",
+        "zdanie": "Więcej niż Kuźnia brązu (+6 i +1).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1398"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Rozbuduj Kuźnię brązu do Kuźni żelaza",
+        "korzysc": "podnieść Pancerz jednostek do +30%"
+      }
+    ]
+  },
+  "wielka_kuznia": {
+    "top5": [],
+    "cmz": [],
+    "ukryty": true
+  },
+  "fort": {
+    "top5": [
+      {
+        "tytul": "+100% Obrony ponad Mury (razem +300%)",
+        "liczba": "+100%",
+        "zdanie": "Cytadela stoi obok Murów i dokłada kolejne +100% obrony.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/miasto-params.json:84; gra/src/game/city-defense.ts:60-75"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Cytadelę",
+        "korzysc": "podnieść obronę miasta do +300%"
+      }
+    ]
+  },
+  "baszta": {
+    "top5": [
+      {
+        "tytul": "+100% Obrony (z Murami i Cytadelą razem +400%)",
+        "liczba": "+100%",
+        "zdanie": "Trzecia, niezależna budowla obronna dokłada +100% obrony.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/miasto-params.json:89; gra/src/game/city-defense.ts:60-75"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Basztę",
+        "korzysc": "podnieść obronę miasta do +400%"
+      }
+    ]
+  },
+  "warsztat_oblezniczy": {
+    "top5": [
+      {
+        "tytul": "+10% parametrów jednostek (z Koszarami +30%)",
+        "liczba": "+10%",
+        "zdanie": "Trzecia warstwa ścieżki parametrów — sumuje się z Koszarami i Akademią wojskową (maks. +50%).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1596; gra/src/game/unit-building-bonuses.ts:23-33; gra/src/game/unit-building-bonuses.ts:179-184"
+      },
+      {
+        "tytul": "+4 Pracy i +2 pieniądza w mieście",
+        "liczba": "+4",
+        "zdanie": "Drobny dochód miasta.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1596"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Warsztat oblężniczy",
+        "korzysc": "wzmocnić jednostki o kolejne +10%"
+      }
+    ],
+    "opisKarty": "Warsztat oblężniczy to zaplecze do budowy ciężkiego sprzętu oblężniczego, wzmacniające jednostki, które odwiedziły miasto."
+  },
+  "akademia": {
+    "top5": [
+      {
+        "tytul": "+20% Nauki miasta (z Biblioteką razem +50%)",
+        "liczba": "+20%",
+        "zdanie": "Druga premia procentowa do nauki, sumuje się z Biblioteką (+25% łatwy, +15% trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/econ-params.json:327-333; gra/src/game/economy.ts:979-981"
+      },
+      {
+        "tytul": "+6 Nauki, +5 Kultury i +4 Szczęścia",
+        "liczba": "+6",
+        "zdanie": "Płaski dodatek ponad wkład Biblioteki.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1645; gra/src/game/economy.ts:509-535"
+      },
+      {
+        "tytul": "Asymilacja kultury +1% na turę (podbite miasta)",
+        "liczba": "+1%",
+        "zdanie": "Podbite miasto szybciej przyjmuje twoją kulturę.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:425-431; gra/src/game/culture-religion.ts:454; gra/src/game/conquest-stability.ts:63-66"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Akademię",
+        "korzysc": "zwiększyć Naukę miasta o kolejne 20%"
+      }
+    ]
+  },
+  "teatr": {
+    "top5": [],
+    "cmz": [],
+    "ukryty": true
+  },
+  "sad": {
+    "top5": [
+      {
+        "tytul": "−30% korupcji w mieście",
+        "liczba": "−30%",
+        "zdanie": "Zmniejsza straty z korupcji w mieście, w którym stoi; sumuje się z Pałacem, Pretorium i Trybunałem (łącznie maks. −60%).",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/economy.ts:1225-1250"
+      },
+      {
+        "tytul": "+19 pkt Prawa w mieście",
+        "liczba": "+19",
+        "zdanie": "Dodatkowe Prawo ponad administrację (+25 łatwy, +16 trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:809-815; gra/src/game/society-breakdown.ts:854-857"
+      },
+      {
+        "tytul": "Asymilacja kultury +2% na turę (podbite miasta)",
+        "liczba": "+2%",
+        "zdanie": "Podbite miasto szybciej przyjmuje twoją kulturę.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:453-459; gra/src/game/culture-religion.ts:458; gra/src/game/conquest-stability.ts:63-72"
+      },
+      {
+        "tytul": "+5 Kultury, +2 pieniądza i +3 Szczęścia",
+        "liczba": "+5",
+        "zdanie": "Stały dochód kultury i nastrojów.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1742; gra/src/game/economy.ts:509-535"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Sąd",
+        "korzysc": "obniżyć korupcję w mieście o 30%"
+      }
+    ]
+  },
+  "dom_starszyzny": {
+    "top5": [
+      {
+        "tytul": "+28 pkt Prawa w mieście regionalnym",
+        "liczba": "+28",
+        "zdanie": "Główne źródło Prawa miasta poza stolicą (+36 łatwy, +22 trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:781-787; gra/src/game/society-breakdown.ts:838-841"
+      },
+      {
+        "tytul": "Rozbudowa do Dworu Zarządcy: 33 pkt Prawa",
+        "liczba": "33 pkt",
+        "zdanie": "Po Kodeksie Dom Starszyzny rośnie do Dworu Zarządcy.",
+        "rodzaj": "rozbudowa",
+        "dowod": "gra/data/buildings.json:1838; gra/data/society-params.json:788-794"
+      },
+      {
+        "tytul": "+1 Pracy, +1 pieniądza i +2 Kultury",
+        "liczba": "+1",
+        "zdanie": "Drobny dochód miasta.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1790"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Dom Starszyzny w mieście regionalnym",
+        "korzysc": "zapewnić miastu 28 pkt Prawa"
+      },
+      {
+        "czynnosc": "Rozbuduj go do Dworu Zarządcy (Kodeks)",
+        "korzysc": "podnieść Prawo miasta do 33 pkt"
+      }
+    ]
+  },
+  "dwor_zarzadcy": {
+    "top5": [
+      {
+        "tytul": "Prawo miasta regionalnego 28 → 33 pkt",
+        "liczba": "28 → 33",
+        "zdanie": "Zastępuje Dom Starszyzny i daje więcej Prawa (+43 łatwy, +26 trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:788-794; gra/src/game/society-breakdown.ts:842-845"
+      },
+      {
+        "tytul": "Rozbudowa do Pretorium: −30% korupcji i 38 Prawa",
+        "liczba": "−30%",
+        "zdanie": "Po Prawie ostatni stopień administracji regionalnej.",
+        "rodzaj": "rozbudowa",
+        "dowod": "gra/data/buildings.json:1888; gra/src/game/economy.ts:1225-1250; gra/data/society-params.json:795-801"
+      },
+      {
+        "tytul": "+2 pieniądza, +3 Kultury i +1 Pracy",
+        "liczba": "+2",
+        "zdanie": "Więcej niż Dom Starszyzny (+1/+2/+1).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1838"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Rozbuduj Dom Starszyzny do Dworu Zarządcy",
+        "korzysc": "podnieść Prawo miasta do 33 pkt"
+      },
+      {
+        "czynnosc": "Rozbuduj go do Pretorium (Prawo)",
+        "korzysc": "obniżyć korupcję miasta o 30%"
+      }
+    ]
+  },
+  "pretorium": {
+    "top5": [
+      {
+        "tytul": "−30% korupcji w mieście regionalnym",
+        "liczba": "−30%",
+        "zdanie": "Zmniejsza straty z korupcji w mieście, w którym stoi; sumuje się z Sądem i Trybunałem (łącznie maks. −60%).",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/economy.ts:1225-1250"
+      },
+      {
+        "tytul": "Prawo miasta 33 → 38 pkt",
+        "liczba": "33 → 38",
+        "zdanie": "Najwięcej Prawa w łańcuchu administracji regionalnej (+50 łatwy, +31 trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:795-801; gra/src/game/society-breakdown.ts:846-849"
+      },
+      {
+        "tytul": "+3 pieniądza, +5 Kultury i +2 Pracy",
+        "liczba": "+3",
+        "zdanie": "Największy dochód w łańcuchu.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1888"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Rozbuduj Dwór Zarządcy do Pretorium",
+        "korzysc": "obniżyć korupcję miasta o 30%"
+      }
+    ]
+  },
+  "trybunal": {
+    "top5": [
+      {
+        "tytul": "−30% korupcji w mieście",
+        "liczba": "−30%",
+        "zdanie": "Zmniejsza straty z korupcji w dowolnym mieście, także w stolicy; sumuje się z Sądem i Pałacem (łącznie maks. −60%).",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/economy.ts:1226-1257"
+      },
+      {
+        "tytul": "+17 pkt Prawa w mieście",
+        "liczba": "+17",
+        "zdanie": "Dowolne miasto, także stolica (+22 łatwy, +13 trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:802-808; gra/src/game/society-breakdown.ts:850-853"
+      },
+      {
+        "tytul": "+1 pieniądza i +2 Szczęścia (rośnie z epoką)",
+        "liczba": "+1",
+        "zdanie": "W epoce Żelaza +2 pieniądza i +3 Szczęścia.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:1938; gra/src/game/economy.ts:509-535; gra/src/game/production.ts:252-271"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Trybunał",
+        "korzysc": "obniżyć korupcję w mieście o 30% i dodać mu 17 pkt Prawa"
+      }
+    ]
+  },
+  "garnizon": {
+    "top5": [
+      {
+        "tytul": "Milicja: 1 obrońca na mieszkańca przy ataku",
+        "zdanie": "Przy każdym ataku na miasto staje milicja w liczbie mieszkańców (połowa wręcz, połowa dystans), odnawia się po 5 turach.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/combat-params.json:51-58; gra/src/game/siegeDefenders.ts:84-90; gra/src/game/siege.ts:279-291"
+      },
+      {
+        "tytul": "+25 pkt Prawa (35 w Brązie, 47 w Żelazie)",
+        "liczba": "+25",
+        "zdanie": "Stałe Prawo niezależne od wojska stacjonującego w mieście.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:837-843; gra/src/game/society-breakdown.ts:879-882"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Garnizon w mieście regionalnym",
+        "korzysc": "bronić miasta milicją (1 obrońca na mieszkańca)"
+      }
+    ]
+  },
+  "laznia_publiczna": {
+    "top5": [
+      {
+        "tytul": "+5 zdrowia w mieście",
+        "liczba": "+5",
+        "zdanie": "Najsilniejsze źródło zdrowia z budynku (+6 łatwy, +4 trudny).",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:31-37; gra/src/game/turn-economy.ts:476-498"
+      },
+      {
+        "tytul": "+3 Kultury, +4 Szczęścia i +1 żywności",
+        "liczba": "+3",
+        "zdanie": "Termy poprawiają nastroje i kulturę miasta.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:2034; gra/src/game/economy.ts:509-535"
+      },
+      {
+        "tytul": "Asymilacja kultury +1% na turę (podbite miasta)",
+        "liczba": "+1%",
+        "zdanie": "Podbite miasto szybciej przyjmuje twoją kulturę.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/society-params.json:460-466; gra/src/game/culture-religion.ts:459; gra/src/game/conquest-stability.ts:63-72"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Łaźnię publiczną",
+        "korzysc": "podnieść zdrowie miasta o 5"
+      }
+    ]
+  },
+  "akademia_wojskowa": {
+    "top5": [
+      {
+        "tytul": "+20% parametrów jednostek (z Koszarami +40%)",
+        "liczba": "+20%",
+        "zdanie": "Sumuje się z Koszarami wprost; z Warsztatem oblężniczym razem +50%.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:2082; gra/src/game/unit-building-bonuses.ts:23-33; gra/src/game/unit-building-bonuses.ts:179-184"
+      },
+      {
+        "tytul": "+3 Pracy i +2 pieniądza w mieście",
+        "liczba": "+3",
+        "zdanie": "Drobny dochód miasta.",
+        "rodzaj": "efekt",
+        "dowod": "gra/data/buildings.json:2082"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Akademię wojskową",
+        "korzysc": "wzmocnić jednostki o kolejne +20%"
+      }
+    ]
+  }
+}

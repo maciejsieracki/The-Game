@@ -19,6 +19,7 @@
  */
 import type { UnitDef, BuildingDef } from '../../data/loader';
 import buildingsData from '../../../data/buildings.json';
+import buildingCardsTop5Data from '../../../data/building-cards-top5.json';
 import unitsData from '../../../data/units.json';
 import terrainImprovementsData from '../../../data/terrain-improvements.json';
 import techData from '../../../data/tech.json';
@@ -33,7 +34,25 @@ import type { EntityCardResolver } from './types';
 
 const BUILDINGS = buildingsData as unknown as BuildingDef[];
 
+/** R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1 — decyzja właściciela (4): budynki dziś
+ * niedostępne (Wielka odlewnia, Wielka Kuźnia — `epokaWejscia` 4 > epoka grywalna,
+ * `production.ts:966`; Teatr — `suppressed`) mają UKRYTĄ kartę. Źródło: flaga `ukryty`
+ * w `data/building-cards-top5.json` (generator `tools/gen-building-cards-top5.cjs`).
+ * Mechaniki budowy nie dotyka — to wyłącznie warstwa kart (resolver UI). */
+const HIDDEN_BUILDING_CARDS: ReadonlySet<string> = new Set(
+  Object.entries(buildingCardsTop5Data as unknown as Record<string, { ukryty?: boolean } | undefined>)
+    .filter(([key, v]) => !key.startsWith('_') && v?.ukryty === true)
+    .map(([key]) => key),
+);
+
+export function isBuildingCardHidden(id: string): boolean {
+  return HIDDEN_BUILDING_CARDS.has(id);
+}
+
+/** `null` także dla budynku z ukrytą kartą (patrz wyżej) — `renderEntityCard`/
+ * `buildEntityCardData` nie zbudują dla niego karty, a adaptery nie dadzą do niego linku. */
 export const resolveBuildingRow: EntityCardResolver<BuildingDef> = (id) => {
+  if (isBuildingCardHidden(id)) return null;
   return BUILDINGS.find((b) => b.id === id) ?? null;
 };
 
