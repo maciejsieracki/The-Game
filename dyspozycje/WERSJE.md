@@ -1,3 +1,9 @@
+## ROBOCZA bab9d4e4 -- 2026-11-06 -- FALA 553: NEARCITY: AI atakuje najblizsze miasto wroga (takze gracza), nie stolice (testowa)
+
+- gra/src/game/ai-war-target-select.ts (regula najblizszego miasta obejmuje gracza), gra/src/game/ai.ts + gra/src/main.ts (kampania wodza: cele = wszystkie miasta wroga, planer wybiera najblizsze od kotwicy)
+- Weryfikacja: FC PASS-WITH-NOTES cad7a4e92; ai-target-nearest-city 18/18, ai-general-war-campaign 51/0, nearest-city-peace-2t mutacje 16/16, defend-home 30/0, defend-recapture 55/0, ai-test 289/0, logic 213/213, tsc 0, vite OK; bez pomiaru w grze
+- Limity: Brak pomiaru zachowania w grze na zywo; cele kampanii bez filtra osiagalnosci per miasto (jak war-allin); war-allin-capital-test 96/2 (dlug sprzed zmiany)
+
 ## ROBOCZA 40f5555c -- 2026-11-06 -- FALA 552: CSFOOD: zuzycie zywnosci armii i atrycja glodu wg trudnosci wlasciciela (panstwo-miasto = wlasny poziom) (testowa)
 
 - gra/src/game/turn-economy.ts, gra/src/main.ts: resolver trudnosci wlasciciela dla zywnosci armii, auto-wyzywienia, atrycji glodu (tura pola i oblezenie) oraz wyswietlania (karta jednostki, prognoza poddania, panel oblezenia); gracz i AI bez zmian
