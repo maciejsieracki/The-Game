@@ -141,8 +141,13 @@ fn hex_like_of(hex: &BuildHex) -> HexLike {
     }
 }
 
-/// Web `tileYield(hexToWorkedTile(hex))` (`:588-598`, `economy.ts` `tileYield`).
-pub fn hex_tile_yield(terrain_yields: &TerrainYieldsFile, hex: &BuildHex) -> TileYield {
+/// Web `tileYield(hexToWorkedTile(hex, ownerEra))` (`:588-604`, `economy.ts` `tileYield`); `owner_era` = epoka
+/// wlasciciela (R-WEB-IMPROVEMENT-ERA-SCALING-Q1, skaluje plony ulepszen), `None` = Kamien.
+pub fn hex_tile_yield(
+    terrain_yields: &TerrainYieldsFile,
+    hex: &BuildHex,
+    owner_era: Option<f64>,
+) -> TileYield {
     let keys = improvement_keys_for_hex(&hex_like_of(hex));
     tile_yield_full(
         terrain_yields,
@@ -153,6 +158,7 @@ pub fn hex_tile_yield(terrain_yields: &TerrainYieldsFile, hex: &BuildHex) -> Til
             ulepszenia_keys: if keys.is_empty() { None } else { Some(&keys) },
             ulepszenie_key: keys.first().map(String::as_str),
             zloze: hex.zloze.as_deref(),
+            wlasciciel_era: owner_era,
         },
     )
 }
@@ -243,6 +249,7 @@ fn city_worked_hexes<'m>(
     ctx: &TerrainContext<'m>,
     territory_nodes: &[TerritoryNode],
     exclude: Option<&BTreeSet<String>>,
+    owner_era: Option<f64>,
 ) -> Vec<&'m BuildHex> {
     let map = ctx.map;
     let mut out = Vec::new();
@@ -266,7 +273,7 @@ fn city_worked_hexes<'m>(
         match map.hex(&format!("{q},{r}")) {
             None => OkolicaYield::default(),
             Some(h) => {
-                let y = hex_tile_yield(ctx.terrain_yields, h);
+                let y = hex_tile_yield(ctx.terrain_yields, h, owner_era);
                 OkolicaYield {
                     zywnosc: y.zywnosc,
                     praca: y.praca,
@@ -297,25 +304,29 @@ fn city_worked_hexes<'m>(
     out
 }
 
-/// Web `computeWorkedMagazynYieldsByCity` (`:824-854`): suma drewno/kamien/glina z `tileYield` po
-/// polach miasta; wpis tylko gdy ktorakolwiek suma > 0.
+/// Web `computeWorkedMagazynYieldsByCity` (`:870-905`): suma drewno/kamien/glina z `tileYield` po
+/// polach miasta; wpis tylko gdy ktorakolwiek suma > 0. `resolve_owner_era` = web `resolveOwnerEra?`
+/// (`None` = epoka nieznana = Kamien; ranking pol i plony skalowane epoka wlasciciela miasta).
 pub fn compute_worked_magazyn_yields_by_city(
     cities: &[City],
     ctx: &TerrainContext<'_>,
     territory_nodes: &[TerritoryNode],
     lost_to_sibling_by_city: &BTreeMap<String, BTreeSet<String>>,
+    resolve_owner_era: Option<&dyn Fn(i64) -> f64>,
 ) -> BTreeMap<String, WorkedMagazynYield> {
     let mut out = BTreeMap::new();
     for city in cities {
+        let owner_era = resolve_owner_era.map(|f| f(city.owner_id));
         let worked = city_worked_hexes(
             city,
             ctx,
             territory_nodes,
             lost_to_sibling_by_city.get(&city.id),
+            owner_era,
         );
         let (mut drewno, mut kamien, mut glina) = (0.0, 0.0, 0.0);
         for h in worked {
-            let y = hex_tile_yield(ctx.terrain_yields, h);
+            let y = hex_tile_yield(ctx.terrain_yields, h, owner_era);
             drewno += y.drewno;
             kamien += y.kamien;
             glina += y.glina;
@@ -352,8 +363,13 @@ pub fn compute_terrain_inputs(
         &territory_nodes,
         resolve_owner_era,
     );
-    let worked_magazyn_by_city =
-        compute_worked_magazyn_yields_by_city(cities, ctx, &territory_nodes, &lost);
+    let worked_magazyn_by_city = compute_worked_magazyn_yields_by_city(
+        cities,
+        ctx,
+        &territory_nodes,
+        &lost,
+        Some(resolve_owner_era),
+    );
     TerrainInputs {
         territory_resource_by_city,
         worked_magazyn_by_city,

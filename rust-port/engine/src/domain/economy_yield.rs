@@ -25,7 +25,7 @@ use crate::data::terrain_map::TerrainYieldsFile;
 use crate::domain::civ_matrix::js_compat::js_min;
 use crate::domain::civ_matrix::{apply_civ_matrix_param, civ_matrix_param, resolve_row};
 use crate::domain::improvements::{
-    apply_improvement_bonuses, ore_yield_from_improvements, TileYield,
+    apply_improvement_bonuses_era, ore_yield_from_improvements, TileYield,
 };
 use crate::domain::types::Difficulty;
 
@@ -789,6 +789,9 @@ pub struct WorkedTileImpInput<'a> {
     pub ulepszenia_keys: Option<&'a [String]>,
     pub ulepszenie_key: Option<&'a str>,
     pub zloze: Option<&'a str>,
+    /// Web `WorkedTile.wlascicielEra` (R-WEB-IMPROVEMENT-ERA-SCALING-Q1, `turn-economy.ts::hexToWorkedTile`):
+    /// aktualna epoka wlasciciela; `None` = `undefined` = Kamien (wartosci bazowe ulepszen).
+    pub wlasciciel_era: Option<f64>,
 }
 
 /// Web `impKeys` (L458-460): `ulepszeniaKeys?.length ? ulepszeniaKeys : (ulepszenieKey ? [ulepszenieKey] : [])`.
@@ -864,7 +867,7 @@ pub fn tile_yield_full(data: &TerrainYieldsFile, tile: &WorkedTileImpInput<'_>) 
     };
     let keys = imp_keys_of(tile);
     if !keys.is_empty() {
-        apply_improvement_bonuses(&mut out, &keys);
+        apply_improvement_bonuses_era(&mut out, &keys, tile.wlasciciel_era);
         out.zywnosc = js_math_max_zero(out.zywnosc);
         out.praca = js_math_max_zero(out.praca);
         out.handel = js_math_max_zero(out.handel);

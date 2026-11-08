@@ -286,6 +286,7 @@ fn tile_yield_matches_pin() {
             ulepszenia_keys: keys.as_deref(),
             ulepszenie_key: one.as_deref(),
             zloze: zloze.as_deref(),
+            wlasciciel_era: None,
         };
         let got = tile_yield_full(&data, &tile);
         assert_yield(&got, &v["out"], &format!("tileYield #{i}"));

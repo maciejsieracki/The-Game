@@ -96,6 +96,7 @@ fn borrow(o: &OwnedTile) -> WorkedTileImpInput<'_> {
         ulepszenia_keys: o.keys.as_deref(),
         ulepszenie_key: o.key.as_deref(),
         zloze: o.zloze.as_deref(),
+        wlasciciel_era: None,
     }
 }
 
@@ -271,6 +272,7 @@ fn base_tile<'a>(teren: &'a str, nakladka: &'a str, rzeka: bool) -> WorkedTileIm
         ulepszenia_keys: None,
         ulepszenie_key: None,
         zloze: None,
+        wlasciciel_era: None,
     }
 }
 

@@ -335,6 +335,7 @@ fn city_yield_per_turn_matches_pin() {
                 ulepszenia_keys: tiles_owned[k].0.as_deref(),
                 ulepszenie_key: tiles_owned[k].1.as_deref(),
                 zloze: tiles_owned[k].2.as_deref(),
+                wlasciciel_era: None,
             })
             .collect();
         let buildings: Vec<CityBuildingFullInput<'_>> = inp["buildings"]

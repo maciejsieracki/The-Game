@@ -383,6 +383,7 @@ fn city_worked_hexes<'m>(
     ctx: &TerrainContext<'m>,
     territory_nodes: &[TerritoryNode],
     exclude: Option<&BTreeSet<String>>,
+    owner_era: Option<f64>,
 ) -> Vec<&'m BuildHex> {
     let map = ctx.map;
     let mut out = Vec::new();
@@ -406,8 +407,11 @@ fn city_worked_hexes<'m>(
         match map.hex(&format!("{q},{r}")) {
             None => OkolicaYield::default(),
             Some(h) => {
-                let y =
-                    crate::domain::turn_economy_territory::hex_tile_yield(ctx.terrain_yields, h);
+                let y = crate::domain::turn_economy_territory::hex_tile_yield(
+                    ctx.terrain_yields,
+                    h,
+                    owner_era,
+                );
                 OkolicaYield {
                     zywnosc: y.zywnosc,
                     praca: y.praca,
@@ -575,6 +579,7 @@ pub fn advance_city_economy_loop(
             terrain,
             &territory_nodes,
             terrain_inputs.lost_to_sibling_by_city.get(&city_id),
+            Some(owner_era_for(input, owner_id)),
         );
         let keys_store: Vec<Vec<String>> = worked
             .iter()
@@ -590,6 +595,7 @@ pub fn advance_city_economy_loop(
                 ulepszenia_keys: if keys.is_empty() { None } else { Some(keys) },
                 ulepszenie_key: keys.first().map(String::as_str),
                 zloze: h.zloze.as_deref(),
+                wlasciciel_era: Some(owner_era_for(input, owner_id)),
             })
             .collect();
 

@@ -106,7 +106,7 @@ pub fn simulate_resource_pipeline_for_preview(
     let territory_resource_by_city =
         compute_territory_resource_yield_by_city(cities, terrain.map, nodes, &era);
     let worked_magazyn_by_city =
-        compute_worked_magazyn_yields_by_city(cities, terrain, nodes, &lost);
+        compute_worked_magazyn_yields_by_city(cities, terrain, nodes, &lost, Some(&era));
 
     let zloto = input.resolvers.owner_zloto_access;
     let tick_resolvers = || ResourceTickResolvers {

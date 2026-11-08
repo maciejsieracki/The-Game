@@ -367,7 +367,7 @@ fn direct_calls_with_fort_and_outpost_nodes_match_web() {
             map,
             terrain_yields: &ty,
         };
-        let worked = compute_worked_magazyn_yields_by_city(&cities, &ctx, &nodes, &lost);
+        let worked = compute_worked_magazyn_yields_by_city(&cities, &ctx, &nodes, &lost, None);
         assert_values(
             &format!("{name} worked"),
             &worked_value(&worked),
