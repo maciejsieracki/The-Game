@@ -1,5 +1,10 @@
-// KLASA B (kandydat) -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4.
-// Test CELOWO pozostaje CZERWONY. Kod gry NIE jest naprawiany w tym temacie.
+// R-WEB-TEST-DEBT-B-DIAG-Q1 r1: KLASA A rozstrzygnieta. Dwa dotad nierozpoznane gole wywolania to
+// (1) switchActiveHuman() KROK 1 (hot-seat "no-leak": zamkniecie audiencji STAREGO fotela przy zmianie
+// fotela; flush odroczonej bitwy/scalenia przeciekalby okno poprzedniego fotela do kolejnego --
+// advanceSeat() celowo robi launchAttacks:false z tego samego powodu) oraz (2) hak testowy
+// __truceTestDebug.closeAudience (zero wywolan z gra/src, wolany przez zywe bramki *-live-test.cjs).
+// Kod gry bez zmian; [A4]/[A4f] podniesione z 3 do 5 nazwanych miejsc z klasyfikacja.
+// (Ponizej: stary opis r4, historyczny.)
 // Bezposrednie wywolania hideDiplomacyAudience() zamiast closeDiplomacyAudienceAndFlush (grep r4):
 // main.ts:6914, 13160, 24227, 27108, 27749. Kandydat na osobny temat R-WEB-* (decyzja orkiestratora).
 // R5 (2026-11-08, asercje bez zmian, test CZERWONY): aktualne gole wywołania wg grep main.ts:
@@ -253,8 +258,8 @@ const firstAfter = (offsets, from) => { const o = offsets.find(x => x > from); r
   // Liczymy WYWOLANIA (patrz A0/callOffsets), nie znaki -- z pominieciem linii importu.
   const bareOffsets = bareCallOffsets.filter(o => o > importLineEnd);
 
-  ok(bareOffsets.length === 3,
-    `[A4] main.ts ma DOKLADNIE 3 gole wywolania hideDiplomacyAudience() poza importem (wrapper + onBack + hak testowy __audienceRelTestDebug.closeAudience) -- got ${bareOffsets.length}. Nowe miejsce zamkniecia audiencji MUSI isc przez closeDiplomacyAudienceAndFlush().`);
+  ok(bareOffsets.length === 5,
+    `[A4] main.ts ma DOKLADNIE 5 gole wywolan hideDiplomacyAudience() poza importem (wrapper + onBack + hak __audienceRelTestDebug.closeAudience + hak __truceTestDebug.closeAudience + switchActiveHuman KROK 1) -- got ${bareOffsets.length}. Nowe miejsce zamkniecia audiencji MUSI isc przez closeDiplomacyAudienceAndFlush().`);
 
   /** Zakres [start, end) nazwanego bloku, kotwiczony na treści (nie na numerze linii). */
   function region(anchor, endMark) {
@@ -362,6 +367,53 @@ const firstAfter = (offsets, from) => { const o = offsets.find(x => x > from); r
   ok(gateCallers.length >= 1,
     `[A4e] OSIAGALNOSC #3: hak jest faktycznie wolany przez co najmniej jedna zywa bramke w gra/tools/ (inaczej to martwy kod do usuniecia) -- got ${gateCallers.length}`);
 
+  // (3b) HAK TESTOWY __truceTestDebug.closeAudience -- jak wyzej: zero wywolan z gra/src/**,
+  //      wolany wylacznie przez zywe bramki live (diplo-truce-live-test.cjs itd.).
+  const truceHook = debugHookRegion('__truceTestDebug');
+  const truceCloseProp = propertyValueRange(truceHook, 'closeAudience');
+  const inTruceHook = bareOffsets.filter(o => inside(o, truceCloseProp));
+  ok(inTruceHook.length === 1,
+    `[A4g] dokladnie 1 gole wywolanie lezy w haku testowym __truceTestDebug.closeAudience -- got ${inTruceHook.length}`);
+  const truceSrcCallers = (() => {
+    const dir = path.join(__dirname, '..', 'src');
+    const hits = [];
+    (function walk(d) {
+      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const pp = path.join(d, e.name);
+        if (e.isDirectory()) walk(pp);
+        else if (/\.ts$/.test(e.name) && fs.readFileSync(pp, 'utf8').includes('__truceTestDebug.closeAudience')) hits.push(e.name);
+      }
+    })(dir);
+    return hits;
+  })();
+  ok(truceSrcCallers.length === 0,
+    `[A4g] hak __truceTestDebug.closeAudience pozostaje TYLKO hakiem (zero wywolan z gra/src/**) -- got ${truceSrcCallers.join(', ')}`);
+  const truceGateCallers = fs.readdirSync(path.join(__dirname))
+    .filter(f => /\.cjs$/.test(f) && f !== path.basename(__filename))
+    .filter(f => /__truceTestDebug\??\.closeAudience/.test(fs.readFileSync(path.join(__dirname, f), 'utf8')));
+  ok(truceGateCallers.length >= 1,
+    `[A4g] OSIAGALNOSC: hak __truceTestDebug.closeAudience jest wolany przez co najmniej jedna zywa bramke w gra/tools/ -- got ${truceGateCallers.length}`);
+
+  // (3c) switchActiveHuman() KROK 1 (hot-seat no-leak) -- zamkniecie audiencji STAREGO fotela
+  //      BEZ flush CELOWO: flush odroczonej bitwy/scalenia pokazalby okno poprzedniego fotela
+  //      nastepnemu (advanceSeat odpala marsze z launchAttacks:false z tego samego powodu).
+  const switchSigIdx = codeSrc.indexOf('function switchActiveHuman(newActiveOwnerId: number): void {');
+  let switchRange = null;
+  if (switchSigIdx >= 0) {
+    let depth = 0;
+    for (let k = codeSrc.indexOf('{', switchSigIdx); k < codeSrc.length; k++) {
+      if (codeSrc[k] === '{') depth++;
+      else if (codeSrc[k] === '}') { depth--; if (depth === 0) { switchRange = [switchSigIdx, k + 1]; break; } }
+    }
+  }
+  const inSwitch = bareOffsets.filter(o => inside(o, switchRange));
+  ok(inSwitch.length === 1,
+    `[A4h] dokladnie 1 gole wywolanie lezy w ciele switchActiveHuman() (KROK 1 hot-seat no-leak) -- got ${inSwitch.length}`);
+  ok(!!switchRange && /if \(isDiplomacyAudienceOpen\(\)\) hideDiplomacyAudience\(\);/.test(codeSrc.slice(switchRange[0], switchRange[1])),
+    '[A4h] zamkniecie w switchActiveHuman() jest chronione isDiplomacyAudienceOpen()');
+  ok(!!switchRange && !/flushDeferred(MergePrompts|AutoPreBattle)\(/.test(codeSrc.slice(switchRange[0], switchRange[1])),
+    '[A4h] switchActiveHuman() NIE flushuje odroczonych bitew/scalen (kontrakt no-leak: nie pokazuj okna starego fotela nowemu)');
+
   // (4) FAIL-SAFE MASKI: kazde wystapienie `hideDiplomacyAudience(` w main.ts, ktore maska
   //     uznala za NIE-kod, musi lezec w zakresie, ktory maska SAMA zaraportowala jako
   //     komentarz/napis/szablon. Gdyby maska pomylila sie i schowala realne wywolanie,
@@ -419,9 +471,9 @@ const firstAfter = (offsets, from) => { const o = offsets.find(x => x > from); r
   }
 
   // (5) Domkniecie: zaden goly hideDiplomacyAudience() nie moze zostac NIEROZPOZNANY.
-  const classified = inWrapper.length + inOnBack.length + inHook.length;
+  const classified = inWrapper.length + inOnBack.length + inHook.length + inTruceHook.length + inSwitch.length;
   ok(classified === bareOffsets.length,
-    `[A4f] kazde gole wywolanie hideDiplomacyAudience() jest w jednym z trzech NAZWANYCH miejsc -- rozpoznano ${classified} z ${bareOffsets.length}. Nierozpoznane miejsce MUSI isc przez closeDiplomacyAudienceAndFlush().`);
+    `[A4f] kazde gole wywolanie hideDiplomacyAudience() jest w jednym z pieciu NAZWANYCH miejsc -- rozpoznano ${classified} z ${bareOffsets.length}. Nierozpoznane miejsce MUSI isc przez closeDiplomacyAudienceAndFlush().`);
 }
 
 // ---------------------------------------------------------------------------

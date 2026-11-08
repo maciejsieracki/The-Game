@@ -290,6 +290,16 @@ const KLASYFIKACJA = [
   { plik: MAIN_TS, tekst: 'bu.r = bcmd.toR;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
   { plik: MAIN_TS, tekst: 'bu.q = bcmd.toQ;', nr: 2, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'komenda `raid` barbarzyncy' },
   { plik: MAIN_TS, tekst: 'bu.r = bcmd.toR;', nr: 2, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
+  // --- R-WEB-TEST-DEBT-B-DIAG-Q1 r1: klasyfikacja miejsc dodanych PO R-PROC-... (4 sklasyfikowane
+  //     z weryfikacja kodu; zadne nie jest marszem wieloheksowym bez odkrycia) ---
+  { plik: 'src/battle/battleScene.ts', tekst: 'ru.q = col;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: '_doMove (tryb _autoBatchPlanning) — ruch jednostki na siatce bitwy (col/row); dawniej jedna linia `ru.q = col; ru.r = row;`, rozbita na dwie' },
+  { plik: 'src/battle/battleScene.ts', tekst: 'ru.r = row;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: 'j.w.' },
+  { plik: 'src/game/siege-enter-city.ts', tekst: 'u.q = city.q;', nr: 1, klasa: 'KROK-1-HEX', uzasadnienie: 'enterCityAfterSurrender (R-WEB-SIEGE-SURRENDER-ENTER-CITY-Q1): oblegajaca armia stoi POD MUREM (heks sasiedni, juz widoczny) i wchodzi na heks poddanego miasta; bez kosztu ruchu, brak heksow posrednich' },
+  { plik: 'src/game/siege-enter-city.ts', tekst: 'u.r = city.r;', nr: 1, klasa: 'KROK-1-HEX', uzasadnienie: 'j.w.' },
+  { plik: MAIN_TS, tekst: 'u.q = mv.toQ; u.r = mv.toR; // R-WEB-ARMY-STACK-LIMIT-Q1: migracja nadwyzki stosu (relokacja, nie marsz)', nr: 1, klasa: 'TELEPORT-BEZ-SCIEZKI', uzasadnienie: 'enforceArmyStackLimit — relokacja nadwyzki stosu na najblizsze wolne heksy (planOversizedStackSplits), bez heksow posrednich; po przeniesieniu funkcja woła refreshFog() (odkrycie z pozycji docelowej)' },
+  { plik: MAIN_TS, tekst: 'if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }', nr: 3, klasa: 'NIE-JEDNOSTKA', uzasadnienie: 'trzeci hak testowy wymuszonej wojny — przestawia MIASTO gracza, nie jednostke' },
+  { plik: MAIN_TS, tekst: 'u.q = mv.q;', nr: 1, klasa: 'TELEPORT-BEZ-SCIEZKI', uzasadnienie: 'transferCityByTreaty (cesja miasta w pokoju, plan.unitMoves z cityCessionPlanFor): garnizon oddajacego wyrzucany na najblizsze wolne heksy (pierscien <= 3), bez heksow posrednich; funkcja woła refreshFog() po przeniesieniu' },
+  { plik: MAIN_TS, tekst: 'u.r = mv.r;', nr: 1, klasa: 'TELEPORT-BEZ-SCIEZKI', uzasadnienie: 'j.w.' },
   { plik: MAIN_TS, tekst: 'su.q = destQ;', nr: 1, klasa: 'WIELOHEKS-ODKRYWA', uzasadnienie: 'koniec animacji marszu w renderLoop (pathHexes); MIEJSCE 3 z 3' },
   { plik: MAIN_TS, tekst: 'su.r = destR;', nr: 1, klasa: 'WIELOHEKS-ODKRYWA', uzasadnienie: 'j.w.' },
 ];
@@ -324,7 +334,10 @@ for (const w of DOZWOLONE_NAWIASOWE) indeksNawiasowych.set(klucz(w.plik, w.tekst
 // z uzasadnieniem — albo jest jednostka i wtedy potrzebuje odkrycia wzdluz sciezki,
 // albo nia nie jest i trzeba to napisac wprost.
 // ---------------------------------------------------------------------------
-const DOZWOLONE_OBJECT_ASSIGN = [];
+const DOZWOLONE_OBJECT_ASSIGN = [
+  // R-WEB-TEST-DEBT-B-DIAG-Q1 r1: jedyny cel inny niz `*.style` — hak testowy round-trip zapisu.
+  { plik: 'src/main.ts', arg: 'snap.meta as any', uzasadnienie: '__*TestDebug.roundTripMeta (R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1) — nadpisuje pola `meta` migawki zapisu (playerPracaPool), nie pozycje jednostek; hak testowy' },
+];
 const indeksObjectAssign = new Map();
 for (const w of DOZWOLONE_OBJECT_ASSIGN) indeksObjectAssign.set(klucz(w.plik, w.arg, 1), w);
 

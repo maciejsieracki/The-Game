@@ -1,7 +1,5 @@
-// KLASA B (kandydat) -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4. RUNDA 4 (pokoj w wojnie).
-// Test CELOWO pozostaje CZERWONY. Kod gry NIE jest naprawiany w tym temacie.
-// Bramka r5Gate / treatyBaseFairnessGap: diplomacy-proposals.ts:875 i ok. 1289-1330 (grep r4).
-// Kandydat na osobny temat R-WEB-* (decyzja orkiestratora).
+// R-WEB-TEST-DEBT-B-DIAG-Q1 r1: KLASA A rozstrzygnieta -- asercje pokoju 19e dostosowane do
+// kierunkowej bramki R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 (e27418db, 2026-09-07). Kod gry bez zmian.
 'use strict';
 /** diplomacy-proposal-test.cjs — v1.1 evaluateProposal (15 scenariuszy) */
 const fs = require('fs');
@@ -996,18 +994,32 @@ ok(
 // NIGDY nie blokuje — nietknięte tą rundą) i tak nigdy nie były realną ochroną; jedyna realna
 // blokada (case 'pokoj', gap>0) została usunięta. accepted:true teraz zawsze, pwBalance
 // NIETKNIĘTY (nadal ujemny — informacyjnie, GOAL 2 dispatchu rundy 4).
-r = evaluateProposal(prop('pokoj', 0, 1, {}), ctx({ stanWojny: true, relation: rel(25, 24, 'wojna') }));
+// AKTUALIZACJA R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 (Maciej, ECHO 2026-09-07, commit e27418db —
+// częściowe odwrócenie rundy 4): bramka bilansu PW pokoju jest KIERUNKOWA (diplomacy-proposals.ts
+// ~1448: `authorIsPlayer && pokojPwBalance < 0` -> reject). Gdy AI proponuje pokój graczowi — NIGDY
+// nie blokuje (decyzja rundy 4 zachowana); gdy GRACZ jest autorem warunków — musi wyrównać bilans.
+// Poprzednia wersja asercji używała proposerOwnerId=0 (= gracz), więc trafiała w gałąź "gracz
+// proponuje" i oczekiwała accepted:true — nieaktualne wobec decyzji z 2026-09-07 (KLASA A).
+// (a) AI (owner 1) proponuje pokój graczowi (owner 0): PRZYJĘTY mimo ujemnego pwBalance.
+r = evaluateProposal(prop('pokoj', 1, 0, {}), ctx({ stanWojny: true, relation: rel(25, 24, 'wojna') }));
 ok(
   r.accepted && typeof r.pwBalance === 'number' && r.pwBalance < 0,
-  'RUNDA 4: pokój bez koszyka podczas wojny @ niska Rel — PRZYJĘTY (pwBalance nigdy nie blokuje '
-  + '\'pokoj\', decyzja właściciela); pwBalance nadal poprawnie ujemny (informacyjnie)',
+  'pokój proponowany PRZEZ AI bez koszyka podczas wojny @ niska Rel — PRZYJĘTY (pwBalance ujemny '
+  + 'informacyjnie; R-DYPLO-POKOJ-KIERUNEK: partner proponuje -> bramka pomijana)',
 );
-// ...i przy Relacji bliskiej neutralnej (capowanej WAR_RELATION_SCORE_CAP=29 podczas wojny) —
-// RUNDA 4: również przyjęty, mimo że baza pokoju (500 PW) nadal nie jest pokryta samą Relacją
-// @ tym capie (pwBalance ujemny, ale to już wyłącznie informacyjne — nie blokuje).
+r = evaluateProposal(prop('pokoj', 1, 0, {}), ctx({ stanWojny: true, relation: rel(50, 50, 'wojna') }));
+ok(r.accepted, 'pokój proponowany PRZEZ AI bez koszyka @ wojna, Relacja neutralna: PRZYJĘTY mimo '
+  + 'WAR_RELATION_SCORE_CAP (runda 4 zachowana dla kierunku AI -> gracz)');
+// (b) GRACZ (owner 0) proponuje pokój bez koszyka: ujemny bilans BLOKUJE i niesie liczbę.
+r = evaluateProposal(prop('pokoj', 0, 1, {}), ctx({ stanWojny: true, relation: rel(25, 24, 'wojna') }));
+ok(
+  !r.accepted && typeof r.pwBalance === 'number' && r.pwBalance < 0 && r.reason.includes('Brakuje'),
+  'pokój proponowany PRZEZ GRACZA bez koszyka podczas wojny @ niska Rel — ODRZUCONY z "Brakuje N PW" '
+  + '(R-DYPLO-POKOJ-KIERUNEK: gracz proponuje i bilans ujemny -> musi wyrównać)',
+);
 r = evaluateProposal(prop('pokoj', 0, 1, {}), ctx({ stanWojny: true, relation: rel(50, 50, 'wojna') }));
-ok(r.accepted, 'RUNDA 4: pokój bez koszyka @ wojna, Relacja przedwojenna neutralna: PRZYJĘTY mimo '
-  + 'WAR_RELATION_SCORE_CAP (dawniej wymagał dopłaty — blokada usunięta tą rundą)');
+ok(!r.accepted && typeof r.pwBalance === 'number' && r.pwBalance < 0,
+  'pokój proponowany PRZEZ GRACZA bez koszyka @ wojna, Relacja neutralna: nadal ODRZUCONY (cap wojenny)');
 
 // ---------------------------------------------------------------------------
 // 19f-g R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A — zakres treatyPnGate receive-side
