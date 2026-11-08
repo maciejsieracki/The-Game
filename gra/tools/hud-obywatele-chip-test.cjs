@@ -136,9 +136,9 @@ const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
 // dosłownego `ownerId === 0`. Zachowanie dla fotela 0 jest identyczne; test pinuje
 // obecna, zamierzona forme (stara forma nadal akceptowana dla zgodnosci).
 const buildHudStateMatch = mainTsSrc.match(
-  /function buildHudState\((?:ownerId: number = ME\(\))?\): HudState \{[\s\S]{0,20000}?\n {4}\}/,
+  /function buildHudStateRaw\((?:ownerId: number = ME\(\))?\): HudState \{[\s\S]{0,20000}?\n {4}\}/,
 );
-check('main.ts zawiera funkcje buildHudState(): HudState', buildHudStateMatch !== null);
+check('main.ts zawiera funkcje buildHudStateRaw(): HudState (FALA 525: buildHudState = cienki wrapper)', buildHudStateMatch !== null);
 const buildHudStateBody = buildHudStateMatch ? buildHudStateMatch[0] : '';
 
 check(

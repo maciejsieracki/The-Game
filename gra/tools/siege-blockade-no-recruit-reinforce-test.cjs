@@ -151,8 +151,10 @@ const prus = body('purchaseRecruitmentUnits', '    function purchaseRecruitmentU
 ok(/isCityUnderSiege\(cities, city\)/.test(prus.slice(0, 900)), 'C2 purchaseRecruitmentUnits (paczka) ma bramke oblezenia');
 const apc = body('applyProductionCompleted', '    function applyProductionCompleted(');
 ok(/isCityUnderSiege\(cities, city\)[\s\S]{0,300}insertAtFront/.test(apc), 'C3 ukonczona jednostka z kolejki Pracy wraca na front w obleganym miescie');
-ok(/recResult = isCityUnderSiege\(cities, city\)\s*\? \{ prod: prodFinal, completed: \[\]/.test(main), 'C4 kolejka rekrutacji (oplacona) stoi w obleganym miescie');
-ok(/setSiegeEntryBlocker\(\(unit, q, r\) => isSiegeEntryBlocked\(cities, unit, q, r, areEnemyOwners\)\)/.test(main), 'C5 blokada wejscia zarejestrowana (gracz/AI/barbarzyncy przez computePath/computeReachable)');
+// R-WEB-ARMY-STACK-LIMIT-Q1 (main.ts:38106): warunek rozszerzony o `|| recStackFree <= 0` -- oblezenie nadal zatrzymuje kolejke jako pierwszy czlon.
+ok(/recResult = \(isCityUnderSiege\(cities, city\) \|\| recStackFree <= 0\)\s*\? \{ prod: prodFinal, completed: \[\]/.test(main), 'C4 kolejka rekrutacji (oplacona) stoi w obleganym miescie');
+// R3 ENDTURN-AI-PHASE-Q1 (main.ts:12388): blokada szuka tylko wsrod obleganych miast (siegeScopeMemo filter oblegane===true, ta sama kolejnosc => ten sam wynik).
+ok(/setSiegeEntryBlocker\(\(unit, q, r\) => \{\s*const besieged = siegeScopeMemo\(\(\) => cities\.filter\(c => c\.oblegane === true\)\);\s*return isSiegeEntryBlocked\(besieged \?\? cities, unit, q, r, areEnemyOwners\);/.test(main), 'C5 blokada wejscia zarejestrowana (gracz/AI/barbarzyncy przez computePath/computeReachable)');
 ok(/siegeBlocked = isCityUnderSiege\(\[city\], city\)/.test(panel) && /CITY_SIEGE_RECRUIT_BLOCK_PL/.test(panel) && /canPurchase: !siegeBlocked/.test(panel), 'C6 panel miasta/Armia: przycisk nieaktywny z powodem PL');
 ok(/function recruitUnit\(city: City[^{]*\{\s*if \(isCityUnderSiege\(\[city\], city\)\) return false;/.test(panel), 'C7 recruitUnit (panel) odrzuca w obleganym miescie');
 const setup = fs.readFileSync(path.join(GRA, 'src', 'units', 'setup.ts'), 'utf8');

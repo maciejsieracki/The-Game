@@ -79,9 +79,10 @@ function buildIds(techs, ctxOverrides) {
 }
 
 // ===========================================================================
-// 1. CITY_BUILDING_PREREQ ma dokładnie dziewięć wpisów: dwa istniejące (nietknięte)
+// 1. CITY_BUILDING_PREREQ ma dokładnie dziesięć wpisów: dwa istniejące (nietknięte)
 //    + cztery z REGRESJA-KOLEJNOSC + jeden ZLOTO (2026-07-25: mennica -> targowisko)
-//    + dwa nowe DECYZJE 54a/54b (2026-07-25: baszta -> mury, akwedukt -> studnia).
+//    + dwa nowe DECYZJE 54a/54b (2026-07-25: baszta -> mury, akwedukt -> studnia)
+//    + jeden EMPORION (FALA 516, 2026-11-05: emporion -> targowisko).
 // ===========================================================================
 {
   const p = M.CITY_BUILDING_PREREQ;
@@ -96,7 +97,9 @@ function buildIds(techs, ctxOverrides) {
   ok(p.mennica === 'targowisko', `mennica: 'targowisko' (ma: ${JSON.stringify(p.mennica)})`);
   ok(p.baszta === 'mury', `baszta: 'mury' (DECYZJA 54a) (ma: ${JSON.stringify(p.baszta)})`);
   ok(p.akwedukt === 'studnia', `akwedukt: 'studnia' (DECYZJA 54b) (ma: ${JSON.stringify(p.akwedukt)})`);
-  ok(Object.keys(p).length === 9, `CITY_BUILDING_PREREQ ma dokładnie 9 wpisów (ma: ${Object.keys(p).length})`);
+  // FALA 516 (R-WEB-BUILDING-EMPORION-Q1, building-resource-gate.ts:123): dziesiąty wpis -- Emporion wymaga Targowiska.
+  ok(p.emporion === 'targowisko', `emporion: 'targowisko' (R-WEB-BUILDING-EMPORION-Q1) (ma: ${JSON.stringify(p.emporion)})`);
+  ok(Object.keys(p).length === 10, `CITY_BUILDING_PREREQ ma dokładnie 10 wpisów (ma: ${Object.keys(p).length})`);
 }
 
 // ===========================================================================

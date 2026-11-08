@@ -191,7 +191,8 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 const buildHudStateFn = extractFunctionBody(
   mainSrc,
   // R-WEB-TEST-DEBT-AI-Q2: sygnatura zyskala parametr `ownerId` (R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1).
-  'function buildHudState(ownerId: number = ME()): HudState {',
+  // FALA 525 (R-WEB-PERF-LATE-GAME-LAG-HUD-Q2): buildHudState to wrapper hudPureScope.run; logika jest w buildHudStateRaw (main.ts:21122).
+  'function buildHudStateRaw(ownerId: number = ME()): HudState {',
   'buildHudState w main.ts',
 );
 ok(
