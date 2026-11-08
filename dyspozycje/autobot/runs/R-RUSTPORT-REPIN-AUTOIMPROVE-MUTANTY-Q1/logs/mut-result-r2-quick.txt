@@ -1,0 +1,3 @@
+N81_rp_n_lt_2: SURVIVED
+N89_rp_dij_left: SURVIVED
+N93_ib_outpost_empty: SURVIVED

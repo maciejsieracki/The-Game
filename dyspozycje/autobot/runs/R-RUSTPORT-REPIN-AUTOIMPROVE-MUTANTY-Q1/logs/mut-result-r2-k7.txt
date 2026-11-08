@@ -1,0 +1,5 @@
+N56_pk_k7_drop_fallback: KILLED
+N57_pk_k7_drop_fort: SURVIVED
+N58_pk_k7_drop_deficit: SURVIVED
+N58_pk_k7_drop_deficit: KILLED
+N56_pk_k7_drop_fallback: KILLED

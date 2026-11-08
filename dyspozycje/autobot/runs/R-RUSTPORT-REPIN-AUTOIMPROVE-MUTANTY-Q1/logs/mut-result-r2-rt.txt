@@ -1,0 +1,5 @@
+N20_clear_drop_farmbase: SURVIVED
+N47_hp_probe_seen_drop: SURVIVED
+N29_env_horse_owner_drop: SURVIVED
+N07_allows_clear_keyany: SURVIVED
+N42_hp_counter_faza2_drop: SURVIVED

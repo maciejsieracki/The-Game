@@ -530,7 +530,7 @@ Stan: **KILLED 103/119 (86,6%)**. Otwarte bez wektora i dowodu: N07, N29, N40, N
 | N17 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N18 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N19 | KILLED | zabity wektorem (logi mut-result-all-r3) |
-| N20 | EQUIVALENT | dowod statyczny: dowod w dokumencie P6 sek. 10.2; nie uruchamiany |
+| N20 | EQUIVALENT | dowod statyczny sek. 10.2; runtime r2: SURVIVED (logs/mut-result-r2-rt.txt), zgodnie z dowodem |
 | N21 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N22 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N23 | KILLED | zabity wektorem (logi mut-result-all-r3) |
@@ -539,7 +539,7 @@ Stan: **KILLED 103/119 (86,6%)**. Otwarte bez wektora i dowodu: N07, N29, N40, N
 | N26 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N27 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N28 | KILLED | zabity wektorem (logi mut-result-all-r3) |
-| N29 | SURVIVED | OTWARTE (SURVIVED); sek. 8.5 (r2) superseded przez sek. 10.4; bez wektora i dowodu |
+| N29 | SURVIVED | OTWARTE; runtime r2: SURVIVED (bez wektora); dowod sek. 10.4 nie przyjety; bez dowodu |
 | N30 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N31 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N32 | KILLED | zabity wektorem (logi mut-result-all-r3) |
@@ -552,12 +552,12 @@ Stan: **KILLED 103/119 (86,6%)**. Otwarte bez wektora i dowodu: N07, N29, N40, N
 | N39 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N40 | SURVIVED | OTWARTE w logu (SURVIVED r4); dowod statyczny sek. 10.5 (r5), do akceptacji FC, bez wektora |
 | N41 | KILLED | zabity wektorem (logi mut-result-all-r3) |
-| N42 | SURVIVED | OTWARTE (SURVIVED r4); sek. 8.5 (r2) superseded przez sek. 10.5; bez wektora i dowodu |
+| N42 | SURVIVED | OTWARTE (SURVIVED r4; runtime r2: SURVIVED); sek. 8.5 (r2) superseded przez sek. 10.5; bez wektora i dowodu |
 | N43 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N44 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N45 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N46 | KILLED | zabity wektorem (logi mut-result-all-r3) |
-| N47 | EQUIVALENT | dowod statyczny: dowod w dokumencie P6 sek. 10.3; nie uruchamiany |
+| N47 | EQUIVALENT | dowod statyczny sek. 10.3; runtime r2: SURVIVED (zgodnie z dowodem) |
 | N48 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N49 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N50 | KILLED | zabity wektorem (logi mut-result-all-r3) |
@@ -566,9 +566,9 @@ Stan: **KILLED 103/119 (86,6%)**. Otwarte bez wektora i dowodu: N07, N29, N40, N
 | N53 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N54 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N55 | KILLED | zabity wektorem (logi mut-result-all-r3) |
-| N56 | SURVIVED | OTWARTE; NIE_ZMIERZONO w r1, bez wektora i bez dowodu |
-| N57 | SURVIVED | OTWARTE; NIE_ZMIERZONO w r1, bez wektora i bez dowodu |
-| N58 | SURVIVED | OTWARTE; NIE_ZMIERZONO w r1, bez wektora i bez dowodu |
+| N56 | KILLED (r2) | ZABITY r2: wektor kz7-n56-0 (pick.json, F11; web 0 wyborow, mutant wybiera wyrab (5,-5)) |
+| N57 | SURVIVED | OTWARTE r2: przeszukiwanie (tools/gen-pick-search.mjs, MODE=n57/n57h, ~8000 prob.) bez rozbieznosci web vs mutant; warunek fort-pending nie osiagniety |
+| N58 | KILLED (r2) | ZABITY r2: wektory kz7-n58-0, kz7-n58-1 (pick.json, F12; web bez wyrab, mutant wycina) |
 | N59 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N60 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N61 | KILLED | zabity wektorem (logi mut-result-all-r3) |
@@ -591,26 +591,26 @@ Stan: **KILLED 103/119 (86,6%)**. Otwarte bez wektora i dowodu: N07, N29, N40, N
 | N78 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N79 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N80 | KILLED | zabity wektorem (logi mut-result-all-r3) |
-| N81 | SURVIVED | dowod statyczny sek. 9.2 (r3, do akceptacji FC); mutant w logu SURVIVED |
+| N81 | SURVIVED | dowod statyczny sek. 9.2 (r3, do akceptacji FC); runtime r2: SURVIVED (zgodnie z dowodem) |
 | N82 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N83 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N84 | KILLED | zabity wektorem (logi mut-result-all-r3) |
-| N85 | SURVIVED | OTWARTE; NIE_ZMIERZONO w r1, bez wektora i bez dowodu |
+| N85 | KILLED (r2) | ZABITY r2: wektory rp-tri-n85-0..3 (roadplan.json, web planRoadNetwork na realnych heksach; mutant zmienia wynik) |
 | N86 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N87 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N88 | KILLED (r1) | ZABITY r1: wektor rp-tie-n88-0 (plan #400, FAILED "plan #400 edges") |
-| N89 | SURVIVED | dowod statyczny sek. 9.2 (r3, do akceptacji FC); mutant w logu SURVIVED |
-| N90 | SURVIVED | OTWARTE; 40 000 losowych map bez rozbieznosci (sek. 11.1); bez wektora i dowodu |
+| N89 | SURVIVED | dowod statyczny sek. 9.2 (r3, do akceptacji FC); runtime r2: SURVIVED (zgodnie z dowodem) |
+| N90 | SURVIVED | OTWARTE; r1: 40 000 losowych map bez rozbieznosci; r2: NIE_ZMIERZONO (analiza parzystosci kosztow, sek. 11.5); bez wektora i dowodu |
 | N91 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N92 | KILLED | zabity wektorem (logi mut-result-all-r3) |
-| N93 | SURVIVED | dowod statyczny sek. 9.2 (r3, do akceptacji FC); mutant w logu SURVIVED |
+| N93 | SURVIVED | dowod statyczny sek. 9.2 (r3, do akceptacji FC); runtime r2: SURVIVED (zgodnie z dowodem) |
 | N94 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N95 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N96 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N97 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N98 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N99 | KILLED | zabity wektorem (logi mut-result-all-r3) |
-| N100 | SURVIVED | OTWARTE; NIE_ZMIERZONO w r1, bez wektora i bez dowodu |
+| N100 | KILLED (r2) | ZABITY r2: test horse_unlock_hex_matches_web (horse-unlock.json, isLivestockUnlockedForPlacement z web) |
 | N101 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N102 | KILLED | zabity wektorem (logi mut-result-all-r3) |
 | N103 | KILLED | zabity wektorem (logi mut-result-all-r3) |
@@ -642,3 +642,28 @@ Stan: **KILLED 103/119 (86,6%)**. Otwarte bez wektora i dowodu: N07, N29, N40, N
 - Z7 (tabela statusu nie obejmuje 119 mutantow): **PRZYJMUJE, NAPRAWIONE**: sek. 11.3 ma 119 wierszy. Sek. 10.7 zostaje historyczna i nie jest przepisywana.
 
 Stan zbiorczy po tej rundzie: KILLED 103/119 (N88 zamkniety w r1, wektor `rp-tie-n88-0`). Kryterium 119/119 lub dowod: NIE spelnione. DEPLOY/PUSH: NIE WYKONANO.
+
+### 11.5 Runda 3/5 — R-RUSTPORT-REPIN-AUTOIMPROVE-MUTANTY-Q1 (Operator, Haiku; baza `origin/rust-port-wip/raimut-r2` 0596a9c8a)
+
+Kod `rust-port/engine/src` NIE zmieniony (mutanty stosowane przez `tools/mutate-repin.py` i cofane; `git diff` na `src` puste po kazdej partii). Wektory tylko z URUCHOMIONEGO weba (`git archive origin/main gra/src gra/data` do katalogu poza repo; pliki `road-network-plan.ts`, `auto-improvements.ts`, `livestock-unlock.ts` identyczne z pinem 180c08305). Narzedzia i logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-MUTANTY-Q1/tools/` (search-gen.mjs, gen-pick-search.mjs, gen-horse-unlock.mjs, verify-roadplan.mjs, append-gen.mjs) oraz `logs/`.
+
+Wyniki (zmierzone):
+
+- **N85 KILLED**: wektory `rp-tri-n85-0..3` (roadplan.json 403 -> 407) — realne heksy z przeszukiwania; web `planRoadNetwork` vs mutant `axial_dist == 2` roznia sie zbiorem heksow planu. `verify-roadplan.mjs`: 403/403 starych planow zgodnych z webem na wlasnych wejsciach.
+- **N100 KILLED**: nowy test `horse_unlock_hex_matches_web` (`p6_repin_autoimpr_terrain.rs`) + `p6_repin_autoimpr_vectors/horse-unlock.json` (512 przypadkow z `isLivestockUnlockedForPlacement`, web 180c08305). Bez mutanta: 9 passed.
+- **N56 KILLED**: scenariusz `kz7-n56-0` (pick.json, rodzina F11; web: 0 wyborow, mutant: wyrab (5,-5)).
+- **N58 KILLED**: scenariusze `kz7-n58-0`, `kz7-n58-1` (F12; web bez wyrab, mutant wycina).
+- **N57 OPEN**: ok. 8000 prob (losowe, ukierunkowane, mapa rzeka+Gory) bez rozbieznosci web vs mutant. Warunek: `fortIsPending` = true (fort niewykonalny w limicie Pracy, wykonalny w probe nieograniczonym) przy jednoczesnym wycinkowym celu KROKU 7. Dlug do nastepnej rundy (celowany scenariusz fort-claim).
+- **N90 NIE_ZMIERZONO w r2** (konstrukcja nie wykonana). Derywacja do celowania: wszystkie koszty krawedzi Dijkstry (`COST_BASE` 100, `COST_HILLS` 150, `COST_MOUNTAIN` 600, `COST_ROAD` 10) sa wielokrotnosciami 10, `COST_CITY` = 1, wiec koszt sciezki = (liczba wejsc do miast) mod 10. `cap = 300*last_d + 600` jest wielokrotnoscia 10, wiec `nd == cap` wymaga >= 10 wejsc do miast na sciezce do celu. Konstrukcja: korytarz ladowy otoczony woda, >= 10 miast na sciezce, `last_d` z 5 najblizszych. Nastepny krok.
+- **N07 SURVIVED** (runtime r2, `logs/mut-result-r2-rt.txt`): brak wektora; dowod nie przyjety.
+- **N29 SURVIVED** (runtime r2): brak wektora; dowod sek. 10.4 nie przyjety.
+- **N20, N47 SURVIVED** (runtime r2): zgodne z dowodami statycznymi sek. 10.2 i 10.3 (status EQUIVALENT, do akceptacji FC).
+- **N81, N89, N93 SURVIVED** (runtime r2): zgodne z dowodami statycznymi sek. 9.2.
+- **N42 SURVIVED** (runtime r2, `logs/mut-result-r2-rt.txt`): brak wektora; dowod nie przyjety.
+- **N40, N71**: NIE_ZMIERZONO r2 (sekwencja przerwana przez limit czasu wrappera; mutant cofany przez handler SIGTERM, src czysty). Do powtorzenia z dluzszym limitem; N71 w r3 TIMEOUT.
+
+Zmiany generatora (powtarzalnosc): dodano F11 (`kz7-n56-0`) i F12 (`kz7-n58-0/1`) na koncu `gen-repin-autoimpr-pick-vectors.mjs`. Regeneracja z `origin/main` daje 5128 pierwszych scenariuszy JSON-identycznych z commitowanym `pick.json` i `helpers.json` bajt-identyczny; nowe 3 scenariusze na koncu. `mutate-repin.py`: N56-N58 uzywaja filtra `kz7-` (`T_K7`).
+
+Bramki r2 (zmierzone na zatwierdzonym drzewie): `cargo fmt --all -- --check` OK (po `rustfmt` jednego pliku testu); `cargo clippy --all-targets -- -D warnings` EXIT 0; `cargo test --test p6_repin_autoimpr_terrain`: 9 passed; `cargo test --test p6_8i_pick` (pelny, 5131 scenariuszy): 5 passed, 0 failed, 375.79 s. Nowe `#[ignore]`: 0. Pozostale binarki `cargo test` nie uruchamiane w tej rundzie (kod `src` nie zmieniony; zmienione tylko testy `p6_repin_autoimpr_terrain` i `p6_8i_pick` oraz dane JSON).
+
+Stan zbiorczy po tej rundzie: **KILLED 107/119** (103 z r1 + N85, N100, N56, N58). Dowody statyczne (EQUIVALENT, do akceptacji FC): N20, N47, N71, N81, N89, N93 (6). OTWARTE bez wektora i dowodu: N07, N29, N40, N42, N57, N90 (6). 107 + 6 + 6 = 119. Kryterium 119/119 lub dowod: NIE spelnione. DEPLOY/PUSH: NIE WYKONANO.

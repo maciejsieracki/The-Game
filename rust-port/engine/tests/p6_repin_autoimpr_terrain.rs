@@ -17,7 +17,9 @@ use civ_engine::domain::auto_improvements::auto_build_gate::{
 use civ_engine::domain::auto_improvements::road_network_plan::{
     plan_road_network, RoadNetworkPlanOpts, RoadPlanCity,
 };
-use civ_engine::domain::improvement_build::{terrain_from_web_value, BuildHex, BuildMap};
+use civ_engine::domain::improvement_build::{
+    is_livestock_unlocked_for_placement_hex, terrain_from_web_value, BuildHex, BuildMap,
+};
 use civ_engine::domain::improvements::{
     apply_improvement_bonus, apply_improvement_bonus_era, apply_improvement_bonuses,
     apply_improvement_bonuses_era, hex_has_horse_deposit_like, improvement_bonus_for_key,
@@ -31,6 +33,7 @@ use serde_json::Value;
 const TERRAIN: &str = include_str!("p6_repin_autoimpr_vectors/terrain.json");
 const GATE: &str = include_str!("p6_repin_autoimpr_vectors/gate.json");
 const ROADPLAN: &str = include_str!("p6_repin_autoimpr_vectors/roadplan.json");
+const HORSE_UNLOCK: &str = include_str!("p6_repin_autoimpr_vectors/horse-unlock.json");
 
 fn n(v: &Value) -> f64 {
     match v {
@@ -395,4 +398,36 @@ fn plan_road_network_matches_web() {
         non_empty += usize::from(!got.hexes.is_empty());
     }
     assert!(non_empty >= 250, "za malo niepustych planow: {non_empty}");
+}
+
+/// N100 (REPIN-AUTOIMPROVE-MUTANTY-Q1): `is_livestock_unlocked_for_placement_hex` musi uznawac zloze konia po
+/// `hexHasHorseDeposit` (takze stare zapisy `zloze === 'konie'` przy innej nakladce), nie tylko po `ZlozeKonia`.
+/// Wektor: `horse-unlock.json` z `isLivestockUnlockedForPlacement` (web main 180c08305).
+#[test]
+fn horse_unlock_hex_matches_web() {
+    let root: Value = serde_json::from_str(HORSE_UNLOCK).unwrap();
+    let cases = root["cases"].as_array().unwrap();
+    let mut legacy_yes = 0;
+    for c in cases {
+        let hex_v = &c["hex"];
+        let mut hx = BuildHex::new(
+            0,
+            0,
+            terrain_from_web_value("rownina").expect("teren"),
+            overlay_of(hex_v).unwrap_or(Overlay::Brak),
+        );
+        hx.zloze = zloze_of(hex_v).map(str::to_owned);
+        let got = is_livestock_unlocked_for_placement_hex(
+            c["key"].as_str().unwrap(),
+            &hx,
+            c["trade"].as_bool().unwrap(),
+            c["stock"].as_f64().unwrap(),
+        );
+        assert_eq!(got, c["out"].as_bool().unwrap(), "{c}");
+        legacy_yes += usize::from(got && overlay_of(hex_v) != Some(Overlay::ZlozeKonia));
+    }
+    assert!(
+        legacy_yes > 20,
+        "za malo przypadkow starych zapisow: {legacy_yes}"
+    );
 }
