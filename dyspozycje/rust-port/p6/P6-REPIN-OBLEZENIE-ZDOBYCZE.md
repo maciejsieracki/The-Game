@@ -53,3 +53,12 @@ Limit ok. 600 LOC Rust na partię; osobny commit; testy N-1/N/N+1/NaN; wektory z
 - Mutation score ≥ 85% (cargo-mutants): NIE_ZMIERZONO (narzędzie nie uruchomione; 2 ręczne mutanty to dowód częściowy).
 - Pełny baseline `cargo test --no-fail-fast` (2155/0): NIE_ZMIERZONO. Powód: wolne miejsce na dysku 2,8–3,8 GB (wspólny dysk, 4 operatorów Rust), pełna kompilacja wszystkich binarek testowych nie była bezpieczna w tej rundzie. Katalog `target-oblezenie` usunięty po bramkach.
 - `git diff --check`: wykonać przed commitem (patrz run record).
+
+## 4. Runda 3 (partia P2) — status
+
+- **P2 zrobione** (commit `d56ccdc4f`, baza `8f9923d73`): `domain/siege_enter_city.rs` (`planSurrenderEntry`, `enterCityAfterSurrender`, Z1–Z5, limit stosu) i `domain/siege_sortie.rs` (`planLastStandSortie`, `shouldLastStandSortie`, `canUnitSortie`, `isLastTurnBeforeCapitulation`). Testy: `tests/p6_oblezenie_wejscie.rs` (15), `tests/p6_oblezenie_wypad.rs` (27); wektory z Node 22.22 na web `a61337844` (driver poza repo).
+- Mutanty ręczne 7/7 zabite (prog 8→7; `room >=`; flip generała; `cover >=`; `ruch < 0`; limit bez własnych jednostek; usunięty filtr zaokrętowanych).
+- Bramki: `rustfmt --check` OK, `clippy -D warnings` (lib + testy p6_oblezenie_*) EXIT=0, testy p6_oblezenie_glod 29/29, `cargo test --lib` 22/0.
+- NIE_ZMIERZONO: pełny baseline `cargo test --no-fail-fast` (2155/0), `cargo-mutants` ≥85%.
+- Nadal NIE_ZMIERZONO per symbol: `siegeDefenders`, `siegeAi`, aneksja miasta-państwa, wieża oblężnicza (wyłom).
+- Następne partie: P3 (`siege_state`, `siege_forecast`), P4 (`wonder_transfer`), P5 (wyłom, `BATTLE_MAX_PER_SIDE`, `battleReserveNotice`).
