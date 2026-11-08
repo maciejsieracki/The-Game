@@ -3,7 +3,7 @@ DOMAIN: GAME (RUST)
 TEMAT: R-RUSTPORT-REPIN-AI-ZAKUP-REZERWA-Q1
 GOAL: Port shouldAIPurchaseUnit z rezerwa 10/3/0 i progami netto, 1:1 z webem (bez zmiany celu).
 BAZA: c75a39b2f (kod Operatora r1), raport r1 e1a0df00d.
-ZMIANY-COMMIT: kod r2 = SHA_R2_PLACEHOLDER. Jedna zmiana: tests/p6_repin_ai_zakup_rezerwa.rs (usuniety guard r > 0) oraz dopisek ZALOZEN 6-7 w P6-REPIN-AI-ZAKUP.md. Allowlista zachowana dla tych plikow.
+ZMIANY-COMMIT: kod r2 = a8875b437. Jedna zmiana: tests/p6_repin_ai_zakup_rezerwa.rs (usuniety guard r > 0) oraz dopisek ZALOZEN 6-7 w P6-REPIN-AI-ZAKUP.md. Allowlista zachowana dla tych plikow.
 
 ODPOWIEDZI NA ZARZUTY:
 1. Plik poza allowlista (src/data/economy_society_part2.rs): PRZYJMUJE jako odstepstwo jawnie zgloszone. Dowod konieczności: AiParams ma #[serde(deny_unknown_fields)] (economy_society_part2.rs:250-251), wiec 6 kluczy kupno_jednostki_* w ai-params.json bez pol w strukturze uniemozliwia parse_ai_params. Odstepstwo dopisane jako ZALOZENIE 6 w P6-REPIN-AI-ZAKUP.md. Akceptacja nalezy do Final Control/orkiestratora; Operator nie rozszerza allowlisty sam.
@@ -19,5 +19,5 @@ TESTY (na kodzie r2; CARGO_INCREMENTAL=0, DEBUG=0, CARGO_TARGET_DIR poza repo, t
 
 BLOKADY: brak blokujacych w tej rundzie. Otwarte do decyzji Final Control: akceptacja odstepstwa (pkt 1) i baseline NIE_ZMIERZONO (pkt 2).
 RUNDY: 2/5 (poprzedni werdykt Evaluatora r1: PASS-WITH-NOTES, rekomendacja FC z uwagami 1-3).
-NASTEPNY KROK: Evaluator r2 na SHA_R2_PLACEHOLDER, potem Final Control.
+NASTEPNY KROK: Evaluator r2 na a8875b437, potem Final Control.
 DEPLOY/PUSH: NIE WYKONANO
