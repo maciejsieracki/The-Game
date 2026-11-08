@@ -8967,3 +8967,6 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 - Efekt: AI (także wobec gracza) wybiera najbliższe miasto wroga od kotwicy armii; barbarzyńcy jako atakujący bez zmian. Obrona S1/S2/S3 (FALA 551) o wyższym priorytecie.
 - Testy: ai-target-nearest-city 18/18 (C1–C4 wołają prawdziwe decideAITurn z kampanią w etapie attacking), campaign 51/0, nearest-city-peace-2t mutacje 16/16, ai-test 289/0, logic 213/213, tsc 0. NIE_ZMIERZONO: zachowanie w grze na żywo. Dług: war-allin-capital-test 96/2 (hash flagi OFF; identycznie na bazie).
 - Dług Rust: REPIN ai-war-target po integracji (porty: wybór celu).
+
+## 2026-11-08 — zgłoszenie: oblężenie trwa tylko 2 tury mimo garnizonu (regres)
+- Właściciel (zrzut: plakietka „OBŁĘŻENIE Rakhigarhi — poddanie za 2 tury”): kiedyś były 2 tury zapasów, potem garnizon tracił HP przez kilka–kilkanaście tur aż ΣHP < 50%; teraz poddanie po ~2 turach. Temat: R-WEB-SIEGE-STARVATION-DURATION-REGRESS-Q1 (Sonnet, bisect). Podejrzani: FALA 552 CSFOOD (blok N3 + prognoza wg trudności właściciela), mnożnik R_STAWKI_FALA1_FALA2_MULT x4 (glod-wojska-karencja-test 29/10), późniejsze zmiany oblężenia. Nie przesądzam przyczyny.
