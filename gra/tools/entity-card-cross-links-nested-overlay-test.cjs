@@ -253,6 +253,11 @@ async function main() {
         const section = document.querySelector('[data-section-key="next"]');
         const btn = section?.querySelector('.entity-card-row-action-text[data-entity-kind="technology"]');
         if (!btn) return null;
+        // R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1 (świadoma zmiana): karta odkrycia urosła o sekcje
+        // „Top 5 korzyści”/CMZ, więc „Kolejne technologie” leżą poniżej widocznej części
+        // przewijanej karty — przewijamy wiersz do widoku przed pomiarem (realny gracz też musi
+        // przewinąć). Asercja [4] (dokładnie jedna nowa nakładka) bez zmian.
+        btn.scrollIntoView({ block: 'center' });
         const r = btn.getBoundingClientRect();
         return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, entityId: btn.getAttribute('data-entity-id') };
       });
