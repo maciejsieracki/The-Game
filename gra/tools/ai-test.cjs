@@ -220,64 +220,11 @@ console.log('\n--- T1a: decideAITurn basic contract ---');
 }
 
 // ============================================================================
-// TEST 2: T1 DYSKRYMINATOR - odczyt 'wartosc' (ASCII) vs stary bug
-// Scenariusz: chinczycy, faza środkowa, Koszary NIE zbudowane
-// Przy poprawnym odczycie: ekonomia_priorytet=5 → budynek ekonomiczny wygrywa z Koszarami
+// Usunięte (R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4, klasa C): testy T1b/T1c (odczyt
+// wartosc / wartość dla archetype_*_ekonomia_priorytet) testowały regułę nieobowiązującą.
+// ai.ts: IGNORED_LEGACY_ARCHETYPE_MODS (ekonomia: 0) -- live scoring ignoruje te wartości
+// (commit b4d37d9f8). Dowód: wynik decideAITurn dla wartosc 0 i 5 identyczny (koszary x3).
 // ============================================================================
-console.log('\n--- T1b: wartosc (ASCII) read discriminator ---');
-{
-  // Koszary nie zbudowane - to najważniejszy kandydat w fazie środkowej
-  // Ale ekonomia_priorytet=5 powinno to przebić (score 340 vs 300)
-  const result = decideAITurn(1, units, cities, map, data, {
-    civType: 'chinczycy',
-    poziomTrudnosci: 2,
-    cityBuildings: {}, // nic nie zbudowane
-  });
-  
-  const buildCmds = result.filter(c => c.type === 'build');
-  assert(buildCmds.length > 0, 'at least one build command issued for 3 cities');
-  
-  // Przy poprawnym odczycie wartosc=5: ekonomia wygrywa
-  // Przy starym bugu wartość=undefined→0: koszary wygrywają
-  const econBuilds = buildCmds.filter(c => ECON_BUILDINGS.has(c.buildingId));
-  const kasarBuild = buildCmds.filter(c => c.buildingId === 'koszary');
-  
-  assert(
-    econBuilds.length > 0,
-    `at least one city chooses economy building (wartosc=5 read correctly); got: ${buildCmds.map(c=>c.buildingId).join(', ')}`
-  );
-  
-  // Jeśli ekonomia wygrała w KAŻDYM mieście — to silny dowód
-  // (3 miasta, wszystkie produkują, koszary nie wbudowane, ale ekonomia powinna dominować)
-  assert(
-    econBuilds.length > kasarBuild.length,
-    `economy buildings (${econBuilds.length}) chosen more than Koszary (${kasarBuild.length}) — proves wartosc read correctly`
-  );
-}
-
-// ============================================================================
-// TEST 3: T1 - z 'wartość' (unicode) - backward compat
-// ============================================================================
-console.log('\n--- T1c: wartość (unicode) backward compat ---');
-{
-  const aiParamsUnicode = JSON.parse(JSON.stringify(aiParamsT1));
-  aiParamsUnicode['archetype_chiny_ekonomia_priorytet'] = { 'wartość': 5, sekcja: 'test', opis: 'test' };
-  
-  const dataU = makeGameData(aiParamsUnicode);
-  const result = decideAITurn(1, units, cities, map, dataU, {
-    civType: 'chinczycy',
-    poziomTrudnosci: 2,
-    cityBuildings: {},
-  });
-  
-  const buildCmds = result.filter(c => c.type === 'build');
-  const econBuilds = buildCmds.filter(c => ECON_BUILDINGS.has(c.buildingId));
-  assert(
-    econBuilds.length > 0,
-    `unicode 'wartość' also read correctly; got: ${buildCmds.map(c=>c.buildingId).join(', ')}`
-  );
-}
-
 // ============================================================================
 // TEST 4: T1 - faza wczesna z 2 miastami, bez enemy → produkcja budynku
 // Sprawdzamy że ai produkuje budynki (nie tylko endTurn) w fazie wczesnej
@@ -662,36 +609,7 @@ console.log('\n--- T3e: roster-6 ai-params.json keys exist ---');
   }
 }
 
-console.log('\n--- T3f: Harappa own archetype path (ekonomia discriminator) ---');
-{
-  const harappaParams = {
-    'archetype_harappa_wojsko_priorytet':   { wartosc: -1, sekcja: 'test', opis: '' },
-    'archetype_harappa_nauka_priorytet':    { wartosc: 0,  sekcja: 'test', opis: '' },
-    'archetype_harappa_ekonomia_priorytet': { wartosc: 5,  sekcja: 'test', opis: '' },
-    'archetype_harappa_obrona_priorytet':   { wartosc: 0,  sekcja: 'test', opis: '' },
-    'ekspansja_min_dystans_miast':          { wartosc: 4,  sekcja: 'test', opis: '' },
-    'ekspansja_zagroz_zasieg':              { wartosc: 5,  sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_produkcja':     { wartosc: 0,  sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_nauka':         { wartosc: 0,  sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_startowe_jednostki':  { wartosc: 0,  sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_startowe_miasta':     { wartosc: 0,  sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_walka':         { wartosc: 0,  sekcja: 'test', opis: '' },
-  };
-  const citiesMid3 = [makeCity('h1', 1, 1, 1), makeCity('h2', 1, 5, 1), makeCity('h3', 1, 8, 1)];
-  const result = decideAITurn(1, [], citiesMid3, map, makeGameData(harappaParams), {
-    civType: 'harappa',
-    poziomTrudnosci: 2,
-    cityBuildings: {},
-  });
-  const buildCmds = result.filter(c => c.type === 'build');
-  assert(buildCmds.length > 0, 'Harappa: at least one build command');
-  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'koszary');
-  const econBuilds    = buildCmds.filter(c => ECON_BUILDINGS.has(c.buildingId));
-  assert(
-    econBuilds.length >= koszaryBuilds.length,
-    `Harappa own arch (ekonomia=5): eko (${econBuilds.length}) >= Koszary (${koszaryBuilds.length})`,
-  );
-}
+// T3f (Harappa ekonomia discriminator) usunięty w R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4, klasa C: ten sam powód co T1b/T1c.
 
 console.log('\n--- T3g: Asyria wojsko>ekonomia (imperium oblężnicze) ---');
 {
@@ -1499,10 +1417,11 @@ console.log('\n--- T9a: decideAIDiplomacy - silny+agresywny+wrogi -> wypowiedz_w
   // sprawdza sam mechanizm progu Priorytetu 4, niezaleznie od nowego wczesnego okna.
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
+    myTypCywilizacji: 'grecy',
     agresja: 0.8,
     currentTurn: 30,
     relacje: [{
-      partnerId: 'rzym-1',
+      partnerId: 'rzym-1', partnerTypCywilizacji: 'rzymianie',
       relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
       respektWzgledny: 0.7,
       stanWojny: false,
@@ -1536,12 +1455,17 @@ console.log('\n--- T9c: decideAIDiplomacy - slaby w wojnie -> zaproponuj_pokoj -
   // stanWojny=true, respektWzgledny=0.35 <= PROG_POKOJ_SLABOSC(0.4) i > 0.25 -> pokoj
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
+    myTypCywilizacji: 'grecy',
     agresja: 0.5,
     relacje: [{
-      partnerId: 'grk-1',
+      partnerId: 'grk-1', partnerTypCywilizacji: 'rzymianie',
       relation: { zaufanie: 10, respekt: 20, status: 'wojna' },
       respektWzgledny: 0.35,
       stanWojny: true,
+      // R5a (ai.ts: aiPeaceTimeOk = turnsAtWar >= minTurWojny, ZAMIANA ZAŁOŻENIA F2 r3):
+      // AI składa propozycję pokoju dopiero po minimalnym czasie wojny. Fixture pomijał
+      // turnsAtWar (=0) -> bramka czasu blokowała propozycję; ustawiamy czas wojny ponad próg.
+      turnsAtWar: 100,
     }],
   });
   assert(cmds.length === 1, 'T9c: jedna komenda');
@@ -1638,14 +1562,15 @@ console.log('\n--- T9h: decideAIDiplomacy - wiele relacji mieszanych -> komendy 
   // testuje sam prog Priorytetu 4, nie nowe wczesne okno.
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
+    myTypCywilizacji: 'grecy',
     agresja: 0.75,
     currentTurn: 30,
     // skarbiecGold wymagane dla oferuj_trybut_za_pokoj (partner A) -- patrz T9d.
     skarbiecGold: 100,
     relacje: [
-      { partnerId: 'A', relation: { zaufanie: 5, respekt: 5, status: 'wojna' }, respektWzgledny: 0.15, stanWojny: true },
-      { partnerId: 'B', relation: { zaufanie: 80, respekt: 50, status: 'pokoj' }, respektWzgledny: 0.52, stanWojny: false },
-      { partnerId: 'C', relation: { zaufanie: 5, respekt: 5, status: 'neutralni' }, respektWzgledny: 0.68, stanWojny: false },
+      { partnerId: 'A', partnerTypCywilizacji: 'rzymianie', relation: { zaufanie: 5, respekt: 5, status: 'wojna' }, respektWzgledny: 0.15, stanWojny: true },
+      { partnerId: 'B', partnerTypCywilizacji: 'rzymianie', relation: { zaufanie: 80, respekt: 50, status: 'pokoj' }, respektWzgledny: 0.52, stanWojny: false },
+      { partnerId: 'C', partnerTypCywilizacji: 'rzymianie', relation: { zaufanie: 5, respekt: 5, status: 'neutralni' }, respektWzgledny: 0.68, stanWojny: false },
     ],
   });
   const forA = cmds.find(c => c.targetId === 'A');
@@ -1680,10 +1605,11 @@ console.log('\n--- T9j: decideAIDiplomacy - powod jest niepustym stringiem ---')
   // P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1: currentTurn=30 (> okno 25 tur).
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
+    myTypCywilizacji: 'grecy',
     agresja: 0.8,
     currentTurn: 30,
     relacje: [{
-      partnerId: 'rzym-1',
+      partnerId: 'rzym-1', partnerTypCywilizacji: 'rzymianie',
       relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
       respektWzgledny: 0.7,
       stanWojny: false,
@@ -1745,9 +1671,10 @@ console.log('\n--- T2S-a: zaproponuj_sojusz gdy rowny partner + willingnessAlly 
   // allyW wyliczone przez aiDiplomacyStance >= PROG_SOJUSZ(0.6) -> zaproponuj_sojusz
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
+    myTypCywilizacji: 'grecy',
     agresja: 0.4,
     relacje: [{
-      partnerId: 'grecy-1',
+      partnerId: 'grecy-1', partnerTypCywilizacji: 'rzymianie',
       relation: { zaufanie: 95, respekt: 70, status: 'pokoj' },
       respektWzgledny: 0.55,
       stanWojny: false,
@@ -1768,16 +1695,19 @@ console.log('\n--- T2S-b: zaproponuj_handel gdy neutralny + handlowosc >= 0.4 + 
   // Zatem: zaproponuj_handel powinien sie pojawic (handlowosc=0.7 >= 0.4)
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
+    myTypCywilizacji: 'grecy',
     agresja: 0.3,
     handlowosc: 0.7,
     skarbiecGold: 100,
     relacje: [{
-      partnerId: 'chiny-1',
+      partnerId: 'chiny-1', partnerTypCywilizacji: 'rzymianie',
       relation: { zaufanie: 30, respekt: 30, status: 'neutralni' },
       respektWzgledny: 0.5,
       stanWojny: false,
     }],
-  });
+  }, undefined, 1, 1, 'easy');
+  // Jednostronny dar złota (zaproponuj_handel bez towaru) jest tylko na Łatwym
+  // (diplomacy-ai-offer-balance.ts:124, aiAllowsOneSidedGoldGift) -> test na 'easy'.
   const handelCmd = cmds.find(c => c.type === 'zaproponuj_handel');
   assert(!!handelCmd, `T2S-b: zaproponuj_handel dla neutralnej relacji + handlowosc=0.7; got: ${JSON.stringify(cmds.map(c=>c.type))}`);
   assert(handelCmd && handelCmd.targetId === 'chiny-1', 'T2S-b: targetId prawidlowy');
@@ -1786,7 +1716,7 @@ console.log('\n--- T2S-b: zaproponuj_handel gdy neutralny + handlowosc >= 0.4 + 
 console.log('\n--- T2S-b2: cooldown blokuje kolejny zaproponuj_handel ---');
 {
   const relBase = {
-    partnerId: 'chiny-1',
+    partnerId: 'chiny-1', partnerTypCywilizacji: 'rzymianie',
     relation: { zaufanie: 30, respekt: 30, status: 'neutralni' },
     respektWzgledny: 0.5,
     stanWojny: false,
@@ -1794,23 +1724,27 @@ console.log('\n--- T2S-b2: cooldown blokuje kolejny zaproponuj_handel ---');
   };
   const blocked = decideAIDiplomacy({
     myPlayerId: 'ai-1',
+    myTypCywilizacji: 'grecy',
     agresja: 0.3,
     handlowosc: 0.7,
     skarbiecGold: 100,
     currentTurn: 20,
     relacje: [relBase],
-  }, undefined, 1, 1, 'normal');
+  }, undefined, 1, 1, 'easy');
+  // Dar złota (zaproponuj_handel bez towaru) jest tylko na Łatwym (aiAllowsOneSidedGoldGift);
+  // cooldown Łatwy = AI_ONESHOT_GIFT_COOLDOWN_TURNS.easy = 15 (diplomacy-economy.ts:153).
   assert(!blocked.some(c => c.type === 'zaproponuj_handel'),
-    `T2S-b2: cooldown normal 25 tur blokuje handel w turze 20 po darze 10; got: ${JSON.stringify(blocked.map(c=>c.type))}`);
+    `T2S-b2: cooldown easy 15 tur blokuje handel w turze 20 po darze 10; got: ${JSON.stringify(blocked.map(c=>c.type))}`);
 
   const allowed = decideAIDiplomacy({
     myPlayerId: 'ai-1',
+    myTypCywilizacji: 'grecy',
     agresja: 0.3,
     handlowosc: 0.7,
     skarbiecGold: 100,
     currentTurn: 36,
     relacje: [relBase],
-  }, undefined, 1, 1, 'normal');
+  }, undefined, 1, 1, 'easy');
   assert(allowed.some(c => c.type === 'zaproponuj_handel'),
     `T2S-b2: po cooldownie (tura 36) handel wraca; got: ${JSON.stringify(allowed.map(c=>c.type))}`);
 }
@@ -1946,10 +1880,11 @@ console.log('\n--- T4S-d: decideAIDiplomacy - wyzszy agresjaMnoznik czesciej wyp
   // P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1: currentTurn=30 (> okno 25 tur).
   const relInput = {
     myPlayerId: 'ai-1',
+    myTypCywilizacji: 'grecy',
     agresja: 0.4,
     currentTurn: 30,
     relacje: [{
-      partnerId: 'rzym-1',
+      partnerId: 'rzym-1', partnerTypCywilizacji: 'rzymianie',
       relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
       respektWzgledny: 0.65,
       stanWojny: false,
@@ -2464,13 +2399,14 @@ console.log('\n--- T10b: miasto-panstwo po odkryciu -> simplified, handel mozliw
   eq(layer, 'simplified', 'T10b: city-state po odkryciu = simplified');
   const rawCmds = decideAIDiplomacy({
     myPlayerId: '3',
-    relacje: [{ partnerId: '0', relation: { zaufanie: 60, respekt: 50, status: 'pokoj' }, respektWzgledny: 0.55, stanWojny: false }],
+    myTypCywilizacji: 'grecy',
+    relacje: [{ partnerId: '0', partnerTypCywilizacji: 'rzymianie', relation: { zaufanie: 60, respekt: 50, status: 'pokoj' }, respektWzgledny: 0.55, stanWojny: false }],
     agresja: 0.3,
     handlowosc: 0.7,
     epoka: 'kamien',
     // skarbiecGold wymagane -- zaproponuj_handel wymaga tradeGold>0 (capAiGoldOffer), patrz T9d.
     skarbiecGold: 100,
-  });
+  }, undefined, 1, 1, 'easy');  // zaproponuj_handel (dar złota) tylko na Łatwym: diplomacy-ai-offer-balance.ts:124
   const filtered = filterDiplomacyCommandsForLayer(rawCmds, layer);
   assert(filtered.some(c => c.type === 'zaproponuj_handel'), `T10b: zaproponuj_handel po odkryciu; got: ${JSON.stringify(filtered.map(c => c.type))}`);
 }

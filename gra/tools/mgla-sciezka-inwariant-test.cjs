@@ -1,3 +1,9 @@
+// KLASA B (kandydat, przyczyna do potwierdzenia) -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4.
+// Test CELOWO pozostaje CZERWONY. Kod gry NIE jest naprawiany w tym temacie.
+// Kandydaci na osobny temat R-WEB-* (decyzja orkiestratora): miejsca zapisu pozycji
+// siege-enter-city.ts:99-100 (uzasadnienie legalne/bledne do rozstrzygniecia), main.ts:4275, 26414,
+// 34805-34806, battleScene.ts:8607-8608. Czerwony na main i na ref 3aa1b3a2a (FULLREG).
+// NIE_ZWERYFIKOWANO w r4: nie wykonano analizy przyczyny kazdego miejsca.
 'use strict';
 /**
  * mgla-sciezka-inwariant-test.cjs — P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1, GOAL 3.

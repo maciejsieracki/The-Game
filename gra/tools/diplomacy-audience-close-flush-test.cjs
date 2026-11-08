@@ -1,3 +1,7 @@
+// KLASA B (kandydat) -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4.
+// Test CELOWO pozostaje CZERWONY. Kod gry NIE jest naprawiany w tym temacie.
+// Bezposrednie wywolania hideDiplomacyAudience() zamiast closeDiplomacyAudienceAndFlush (grep r4):
+// main.ts:6914, 13160, 24227, 27108, 27749. Kandydat na osobny temat R-WEB-* (decyzja orkiestratora).
 'use strict';
 /**
  * diplomacy-audience-close-flush-test.cjs
