@@ -11,11 +11,33 @@ import type { ProposalActionId } from './diplomacy-proposals';
 /** Ile pełnych tur AI nie powtarza tej samej akcji po odrzuceniu przez gracza. */
 export const AI_REJECTED_OFFER_COOLDOWN_TURNS = 3;
 
+/**
+ * Klucz cooldownu oferty miasta za pokój (`oferuj_miasto_za_pokoj` / `zada_miasto_za_pokoj`).
+ * Te komendy mają actionId 'pokoj' (ten sam stół co zwykły pokój), więc bez osobnego klucza
+ * odrzucenie oferty miasta blokowało też zwykłą propozycję pokoju od tej samej AI.
+ * Decyzja właściciela (2026-11-08, ABC): osobny klucz, długość cooldownu bez zmian.
+ */
+export const CITY_FOR_PEACE_COOLDOWN_KEY = 'miasto_za_pokoj' as const;
+
+/** Klucz cooldownu: typ akcji stołu albo osobny klucz oferty miasta za pokój. */
+export type RejectCooldownKey = ProposalActionId | typeof CITY_FOR_PEACE_COOLDOWN_KEY;
+
+/**
+ * Wyznacza klucz cooldownu dla komendy AI (typ komendy + actionId z konwertera).
+ * Komendy miasta za pokój dostają osobny klucz; wszystkie pozostałe — actionId jak dotąd.
+ */
+export function rejectCooldownKeyFor(cmdType: string, actionId: ProposalActionId): RejectCooldownKey {
+  if (cmdType === 'oferuj_miasto_za_pokoj' || cmdType === 'zada_miasto_za_pokoj') {
+    return CITY_FOR_PEACE_COOLDOWN_KEY;
+  }
+  return actionId;
+}
+
 export interface RejectedOfferCooldown {
   /** Id właściciela AI (partner gracza, ownerId ≠ 0). */
   partnerOwnerId: number;
-  /** Typ umowy/akcji (np. nap, sojusz_defensywny, handel). */
-  actionId: ProposalActionId;
+  /** Typ umowy/akcji (np. nap, sojusz_defensywny, handel) lub klucz oferty miasta. */
+  actionId: RejectCooldownKey;
   /** Tura, w której gracz kliknął Odrzuć. */
   rejectedAtTurn: number;
   /** Pierwsza tura, w której AI MOŻE ponownie zaproponować tę akcję (wyłącznie). */
@@ -24,7 +46,7 @@ export interface RejectedOfferCooldown {
 
 export function makeRejectedOfferCooldown(
   partnerOwnerId: number,
-  actionId: ProposalActionId,
+  actionId: RejectCooldownKey,
   rejectedAtTurn: number,
   cooldownTurns: number = AI_REJECTED_OFFER_COOLDOWN_TURNS,
 ): RejectedOfferCooldown {
@@ -48,7 +70,7 @@ export function negotiationPartnerOwnerId(
 export function isOfferRejectedOnCooldown(
   cooldowns: readonly RejectedOfferCooldown[],
   partnerOwnerId: number,
-  actionId: ProposalActionId,
+  actionId: RejectCooldownKey,
   currentTurn: number,
 ): boolean {
   return cooldowns.some(
@@ -63,7 +85,7 @@ export function isOfferRejectedOnCooldown(
 export function recordRejectedOffer(
   cooldowns: readonly RejectedOfferCooldown[],
   partnerOwnerId: number,
-  actionId: ProposalActionId,
+  actionId: RejectCooldownKey,
   rejectedAtTurn: number,
   cooldownTurns: number = AI_REJECTED_OFFER_COOLDOWN_TURNS,
 ): RejectedOfferCooldown[] {
