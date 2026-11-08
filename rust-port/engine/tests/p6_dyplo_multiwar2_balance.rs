@@ -54,6 +54,17 @@ fn balance_required_and_tolerance_match_web_vectors() {
         let d = difficulty(r["diff"].as_str().unwrap());
         let cov = num(&r["cov"]);
         let ctx = format!("base={base} rel={rel} diff={d:?} cov={cov}");
+        // Funkcje czyste (port 1:1 `peaceOfferAiOwnBilans` / `peaceOfferAiRequestPn`), bez posrednictwa wyceny.
+        same(
+            web_balance_for(base, rel, cov),
+            num(&r["balance"]),
+            &format!("web_balance_for {ctx}"),
+        );
+        same(
+            web_required_pn(base, rel, d),
+            num(&r["required"]),
+            &format!("web_required_pn {ctx}"),
+        );
         let q = PeacePriceQuote::from_web(base, rel, d);
         same(
             q.balance_for(cov),

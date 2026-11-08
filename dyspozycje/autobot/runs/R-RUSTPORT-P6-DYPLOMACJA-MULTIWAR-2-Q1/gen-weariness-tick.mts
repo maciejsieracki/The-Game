@@ -198,6 +198,77 @@ const scenarios: Scenario[] = [
       assets: { '3:4': [gold('g1', 200, 200)] },
     })],
   },
+  // R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-2-Q1 r5: scenariusze graniczne dla mutantow (N-1/N/N+1, rownosc, galezie).
+  {
+    name: 'r5_suma_strat_obu_stron',
+    store0: [],
+    ticks: [base({ turn: 30, info: { '1:2': info(30, 2, 1), '2:1': info(30, 2, 1) }, share: { '1:2': 0.3, '2:1': 0.7 }, cities: { '1': 6, '2': 6 }, price: { '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -150, slope: 1 } }, assets: { '1:2': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_przegrany_b_udzial_08',
+    store0: [],
+    ticks: [base({ turn: 30, info: { '1:2': info(30, 0, 2), '2:1': info(30, 0, 2) }, share: { '1:2': 0.8, '2:1': 0.2 }, cities: { '1': 6, '2': 6 }, price: { '1:2': { requiredPn: 100, tolerancePn: 0, balance0: -150, slope: 1 }, '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -150, slope: 1 } }, assets: { '2:1': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_udzial_dokladnie_045',
+    store0: [],
+    ticks: [base({ turn: 30, info: { '1:2': info(30, 3, 0), '2:1': info(30, 0, 3) }, share: { '1:2': 0.45, '2:1': 0.55 }, cities: { '1': 6, '2': 6 }, price: { '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -150, slope: 1 } }, assets: { '1:2': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_zmeczenie_dokladnie_prog_pokoju',
+    store0: [{ key: '1-2', state: { warStart: 0, peak: 0.8, stage: 0, rejectedOffers: 0, lastOfferTurn: -1 } }],
+    ticks: [base({ turn: 50, info: { '1:2': info(30, 0, 0), '2:1': info(30, 0, 0) }, share: { '1:2': 0.5, '2:1': 0.5 } })],
+  },
+  {
+    name: 'r5_bez_strat_25_dokladnie',
+    store0: [],
+    ticks: [base({ turn: 30, info: { '1:2': info(25, 0, 0), '2:1': info(25, 0, 0) }, share: { '1:2': 0.2, '2:1': 0.8 }, cities: { '1': 6, '2': 6 }, price: { '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -150, slope: 1 } }, assets: { '1:2': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_bez_strat_20_udzial_02',
+    store0: [],
+    ticks: [base({ turn: 30, info: { '1:2': info(20, 0, 0), '2:1': info(20, 0, 0) }, share: { '1:2': 0.2, '2:1': 0.8 }, cities: { '1': 6, '2': 6 }, price: { '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -150, slope: 1 } }, assets: { '1:2': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_wyczerpanie_dokladnie_08',
+    store0: [{ key: '1-2', state: { warStart: 0, peak: 0.8, stage: 1, rejectedOffers: 3, lastOfferTurn: -1 } }],
+    ticks: [base({ turn: 30, info: { '1:2': info(30, 0, 0), '2:1': info(30, 0, 0) }, share: { '1:2': 0.3, '2:1': 0.7 }, cities: { '1': 6, '2': 6 }, price: { '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -1000, slope: 1 } }, assets: { '1:2': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_bez_strat_10_zmeczony',
+    store0: [{ key: '1-2', state: { warStart: 0, peak: 0.9, stage: 0, rejectedOffers: 0, lastOfferTurn: -1 } }],
+    ticks: [base({ turn: 30, info: { '1:2': info(20, 0, 0), '2:1': info(20, 0, 0) }, share: { '1:2': 0.3, '2:1': 0.7 }, cities: { '1': 6, '2': 6 }, price: { '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -150, slope: 1 } }, assets: { '1:2': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_ochrona_miasta_3_dokladnie',
+    store0: [],
+    ticks: [base({ turn: 30, info: { '1:2': info(30, 1, 0), '2:1': info(30, 1, 0) }, share: { '1:2': 0.3, '2:1': 0.7 }, cities: { '1': 3, '2': 6 }, price: { '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -1000, slope: 1 } }, assets: { '1:2': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_ochrona_bez_utraty_2_miasta',
+    store0: [],
+    ticks: [base({ turn: 30, info: { '1:2': info(30, 0, 0), '2:1': info(30, 0, 0) }, share: { '1:2': 0.3, '2:1': 0.7 }, cities: { '1': 2, '2': 6 }, price: { '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -1000, slope: 1 } }, assets: { '1:2': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_ochrona_utrata_wojny_3_dokladnie',
+    store0: [],
+    ticks: [base({ turn: 30, info: { '1:2': info(30, 3, 0), '2:1': info(30, 3, 0) }, share: { '1:2': 0.3, '2:1': 0.7 }, cities: { '1': 9, '2': 6 }, price: { '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -1000, slope: 1 } }, assets: { '1:2': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_stopien_zero_bez_oferty',
+    store0: [],
+    ticks: [base({ turn: 30, info: { '1:2': info(30, 0, 0), '2:1': info(30, 0, 0) }, share: { '1:2': 0.44, '2:1': 0.56 }, cities: { '1': 10, '2': 6 }, price: { '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -150, slope: 1 } }, assets: { '1:2': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_cooldown_last_offer_0',
+    store0: [{ key: '1-2', state: { warStart: 0, peak: 0.5, stage: 1, rejectedOffers: 0, lastOfferTurn: 0 } }],
+    ticks: [base({ turn: 2, info: { '1:2': info(40, 1, 0), '2:1': info(40, 0, 1) }, share: { '1:2': 0.3, '2:1': 0.7 }, cities: { '1': 6, '2': 6 }, price: { '2:1': { requiredPn: 100, tolerancePn: 0, balance0: -150, slope: 1 } }, assets: { '1:2': [gold('g1', 200, 200), city('c1', 50), city('c2', 60)] } })],
+  },
+  {
+    name: 'r5_miasta_minus_minimum',
+    store0: [{ key: '1-2', state: { warStart: 0, peak: 0.9, stage: 3, rejectedOffers: 0, lastOfferTurn: -1 } }],
+    ticks: [base({ turn: 60, info: { '1:2': info(60, 2, 0), '2:1': info(60, 0, 2) }, share: { '1:2': 0.1, '2:1': 0.9 }, cities: { '1': 4, '2': 9 }, price: { '2:1': { requiredPn: 1000, tolerancePn: 0, balance0: -1000, slope: 1 } }, assets: { '1:2': [gold('g1', 100, 100), city('c1', 80), city('c2', 80), city('c3', 80), city('c4', 80)] } })],
+  },
 ];
 
 const runTick = (store: WarWearinessStore, t: TickIn, log: { n: number }) => {
@@ -259,7 +330,8 @@ const runTick = (store: WarWearinessStore, t: TickIn, log: { n: number }) => {
 
 const out = scenarios.map((sc) => {
   const store: WarWearinessStore = new Map();
-  for (const e of sc.store0) store.set(e.key, e.state as never);
+  // r5: kopia stanu (bez aliasu) - stepPairState mutuje obiekt; store0 w wektorze ma byc stanem PRZED tickiem.
+  for (const e of sc.store0) store.set(e.key, { ...e.state } as never);
   const ticks = sc.ticks.map((t) => runTick(store, t, { n: 0 }));
   return { name: sc.name, store0: sc.store0, ticks: sc.ticks, expect: ticks };
 });

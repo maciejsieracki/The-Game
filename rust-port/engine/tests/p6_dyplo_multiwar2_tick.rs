@@ -313,8 +313,12 @@ fn run_war_weariness_tick_matches_web() {
             n_ticks += 1;
         }
     }
-    assert_eq!(scenarios.len(), 16, "liczba scenariuszy");
-    assert_eq!(n_ticks, 23, "liczba tur");
+    assert_eq!(
+        scenarios.len(),
+        30,
+        "liczba scenariuszy (16 bazowych + 14 granicznych r5)"
+    );
+    assert_eq!(n_ticks, 37, "liczba tur");
     // Każda gałąź decyzyjna ma co najmniej jeden przypadek w wektorach.
     for a in ["none", "mutual_peace", "offer_accepted", "offer_rejected"] {
         assert!(
