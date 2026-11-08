@@ -8952,3 +8952,8 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 
 ## 2026-11-08 — zgłoszenie: AI idzie na stolicę zamiast na najbliższe miasto
 - Właściciel: „gdy cywilizacja atakuje gracza, idzie na jego stolicę; pewnie wobec innych AI podobnie; umówiliśmy się, że najpierw zdobywa najbliższe miasta”. Temat: R-WEB-AI-TARGET-NEAREST-CITY-NOT-CAPITAL-Q1 (dispatch w runs/). Wstępny pomiar: `buildWarCityTargets` (ai-war-target-select.ts) daje wszystkie miasta tylko dla par AI↔AI (isNearestCityWarPair); dla gracza zawsze stolica. Do potwierdzenia przez Operatora (w tym czy AI↔AI faktycznie wybiera najbliższe).
+
+## FALA 552 — CSFOOD (2026-11-08)
+- Temat: R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1 (spójność z FALA 548/CSUPK: państwo-miasto używa własnego poziomu trudności). FC PASS-WITH-NOTES, kod 183fd5d19, FC 9f6602c5e (wip: web-wip/CSFOOD; refs/keep lokalnie). Main 0679666ac, ROBOCZA MD5 40f5555ca69aaca291fa7073d96d5e7a (zgodny z GitHub Raw).
+- Zakres: żywność armii (kosztArmii, auto-wyżywienie), atrycja głodu HP (tura pola i oblężenie N3) wg trudności właściciela; wyświetlanie (karta jednostki, prognoza poddania, panel oblężenia) spójne z mechaniką. Gracz i AI bez zmian. Liczbowy efekt dla państw-miast: ruch 1/1/2, obóz 0,38/0,5/0,62, hp_frac 0,06/0,08/0,10; stat_mult i karencja równe na poziomach (efekt 0).
+- Testy: citystate-army-food-difficulty 29/0, upkeep-per-owner 19/0, army-hunger-combat 13/0, empire-food-b5 34/0, ai-test 289/0, logic 213/213, tsc 0. NIE_ZMIERZONO: przeglądarka, wykonanie boot() (test podpięcia to skan źródła). Dług: glod-wojska-karencja-test 29/10 (identycznie na bazie; test zakłada mnożnik x1, w kodzie x4).
