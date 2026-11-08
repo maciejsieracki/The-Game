@@ -1,3 +1,0 @@
-
-grupy-budynkow-test: 84 pass, 0 fail
-EXIT=0

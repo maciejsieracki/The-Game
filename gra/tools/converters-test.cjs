@@ -54,12 +54,11 @@ const huta   = C.DEFAULT_CONVERTER_RECIPES.find(r => r.id === 'huta');
 const odlewnia = C.DEFAULT_CONVERTER_RECIPES.find(r => r.id === 'odlewnia_brazu');
 assert(!!odlewnia && odlewnia.output === 'braz', 'odlewnia_brazu -> braz');
 
-// Cegielnia: 2 glina + 1 drewno -> 2 cegly (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1: outputAmount 1->2;
-// wejscia na cykl BEZ zmian; 2 cykle = 4 cegly -- stare oczekiwanie 2 odpowiadalo outputAmount 1)
+// Cegielnia: 2 glina + 1 drewno -> 1 cegla (paliwo:1 zastapione drewno:1, 1:1)
 eq(cegielnia.inputs.glina, 2, 'cegielnia: 2 glina/cykl');
 eq(cegielnia.inputs.drewno, 1, 'cegielnia: 1 drewno/cykl (bylo paliwo:1)');
 let r = C.runConverter(cegielnia, { glina: 4, drewno: 2 }, 2, 50);
-eq(r.produced, 4, 'cegielnia: 2 cykle x 2 = 4 cegły'); eq(r.stores.glina, 0, 'cegielnia: glina zużyta'); eq(r.stores.drewno, 0, 'cegielnia: drewno zużyte');
+eq(r.produced, 2, 'cegielnia: 2 cegły'); eq(r.stores.glina, 0, 'cegielnia: glina zużyta'); eq(r.stores.drewno, 0, 'cegielnia: drewno zużyte');
 
 // no input -> brak-wejscia
 r = C.runConverter(cegielnia, { glina: 0, drewno: 0 }, 2, 50);
@@ -104,7 +103,7 @@ eq(r.produced, 2, 'wielka_odlewnia__stal: 2 stal z zelazo');
 // drewna (surowiec surowy, NIE produkt innego konwertera -- odmiennie niz dawny
 // lancuch Mielerz->Huta, ktory juz nie istnieje).
 const parallel = C.runConverters([cegielnia, huta], { glina: 4, ruda: 5, drewno: 6 }, { cegielnia: 3, huta: 3 }, () => 50);
-eq(parallel.perBuilding.cegielnia.produced, 4, 'parallel: cegielnia 2 cykle x 2 = 4 cegly (2 glina/cykl limituje; outputAmount 2)');
+eq(parallel.perBuilding.cegielnia.produced, 2, 'parallel: cegielnia 2 cegla (2 glina/cykl limituje)');
 eq(parallel.perBuilding.huta.produced, 3, 'parallel: huta 3 braz (throughput limituje, ruda/drewno starcza)');
 eq(parallel.stores.braz, 3, 'parallel: final braz 3');
 eq(parallel.stores.drewno, 6 - 2 - 3, 'parallel: drewno zuzyte przez oba konwertery (1/cykl kazdy)');

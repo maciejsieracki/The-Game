@@ -1,3 +1,0 @@
-kontynenty POST "histogram":{"fort":{"poza-nieprzylegle":274,"RAZEM":284,"poza-przylegle":10}},"runs":5}
-pangea POST "histogram":{"fort":{"poza-nieprzylegle":274,"RAZEM":283,"poza-przylegle":9}},"runs":5}
-wyspy POST "histogram":{"fort":{"poza-nieprzylegle":290,"RAZEM":293,"poza-przylegle":3}},"runs":5}

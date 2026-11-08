@@ -1,2 +1,0 @@
-tsc --noEmit (base)
-EXIT=0

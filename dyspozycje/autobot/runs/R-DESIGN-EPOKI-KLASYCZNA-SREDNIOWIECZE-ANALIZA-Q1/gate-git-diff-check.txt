@@ -1,2 +1,0 @@
-git diff --cached --check (przed commitem R2)
-EXIT=0

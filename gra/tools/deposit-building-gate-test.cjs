@@ -18,7 +18,6 @@ export {
   filterRuntimeActiveBuiltIds,
 } from '../src/game/building-resource-gate';
 export { buildableProduction, eraBuildingCatalog } from '../src/game/production';
-export { buildingStockCost } from '../src/game/building-stock-cost';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
 `, 'utf8');
 
@@ -197,19 +196,9 @@ function mapWith(...hexes) {
   const catNoStock = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx()).find(e => e.id === 'stolarnia');
   ok(catNoStock && catNoStock.status === 'locked',
     'stolarnia eraBuildingCatalog locked bez drewna w magazynie');
-  // (A, R-WEB-NAVAL-DEPOSIT-GATE-TEST-DEBT-Q1) Stolarnia ma koszt_surowce {drewno: 25} w buildings.json,
-  // a efektywny koszt magazynowy to buildingStockCost() (FALA2 x2 + mnoznik ery). eraBuildingCatalog
-  // liczy status z canAffordBuildingStock, wiec stary pin z drewno:10 (zalozenie "brak kosztu
-  // magazynowego") jest przestarzaly: 10 < koszt => 'locked'. Test uzywa realnego kosztu z kodu.
-  const stolarniaDef = rawBuildings.find(b => b.id === 'stolarnia');
-  const stolarniaDrewnoKoszt = M.buildingStockCost(stolarniaDef).drewno ?? 0;
-  ok(stolarniaDrewnoKoszt > 10, 'sanity: efektywny koszt drewna stolarni > 10 (' + stolarniaDrewnoKoszt + ')');
-  const catLow = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx({ empireResourceStock: { drewno: stolarniaDrewnoKoszt - 1 } }));
-  ok(catLow.find(e => e.id === 'stolarnia')?.status === 'locked',
-    'stolarnia eraBuildingCatalog locked gdy drewna w magazynie = koszt-1 (' + (stolarniaDrewnoKoszt - 1) + ')');
-  const catStock = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx({ empireResourceStock: { drewno: stolarniaDrewnoKoszt } }));
+  const catStock = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx({ empireResourceStock: { drewno: 10 } }));
   ok(catStock.find(e => e.id === 'stolarnia')?.status === 'ready',
-    'stolarnia eraBuildingCatalog ready z drewnem w magazynie >= koszt (bez Tartaku)');
+    'stolarnia eraBuildingCatalog ready z drewnem w magazynie (bez Tartaku)');
 }
 
 // --- PYTANIE-84 + DOSTEP-SUROWCE-Q1: runtime gate = magazyn ---
@@ -222,14 +211,9 @@ function mapWith(...hexes) {
     !M.buildingRuntimeGateMet({ id: 'stolarnia' }, ['Drewno'], [], {}),
     'runtime: stolarnia śpi bez zapasu drewna mimo activeLabels',
   );
-  // R-WEB-GRANARY2-TECH-DATA-FIX-Q1 (2026-11-05): bramka Spichlerza II = Ceramika + Sól (zasada właściciela).
   ok(
-    M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], { sol: 99, ceramika: 99 }),
-    'runtime: spichlerz II działa z Ceramiką i Solą w magazynie państwa',
-  );
-  ok(
-    !M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], { sol: 99 }),
-    'runtime: spichlerz II śpi bez Ceramiki (sama Sól już nie wystarcza)',
+    M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], { sol: 99 }),
+    'runtime: spichlerz II działa z Solą w magazynie państwa',
   );
   ok(
     !M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], {}),

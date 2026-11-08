@@ -1,1 +1,0 @@
-EXIT=1 (heks-panel-tooltip-warstwa: 20 passed, 2 failed) mutant gra/src/ui/cityPanel.ts: ulepszeniaKeys: undefined

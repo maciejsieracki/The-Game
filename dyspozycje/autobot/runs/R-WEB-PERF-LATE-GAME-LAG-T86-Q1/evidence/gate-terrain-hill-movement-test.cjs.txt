@@ -1,2 +1,0 @@
-terrain-hill-movement-test: 10 pass, 0 fail
-EXIT=0

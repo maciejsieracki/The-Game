@@ -14,7 +14,6 @@ import {
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { openEntityCard } from './entityCards/renderer';
-import { AUTO_BUILD_DISABLED_HINT } from '../game/auto-build-gate';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
 // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: `PODZIAL_PRACY_PULA_LBL*` / `PODZIAL_PRACY_PULA_TIP`
 // (nazwy warstwy (a) — `CityPodzialPracy.procentBudynki`) juz tu NIE sa importowane: ten panel
@@ -85,19 +84,9 @@ export interface BuildModeHudConfig {
   getPracaPool?: () => number;
   /** Auto-ulepszenia terenu — polityka państwa + wyjątek per miasto (R-AUTO-V2-Q3=C). */
   listPlayerCities?: () => { id: string; name: string }[];
-  /**
-   * R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: czy „Automatyzacja budowy” gracza jest włączona w Ustawieniach.
-   * Brak haka = włączona. Wyłączona: blok „Automatyzacja ulepszeń terenu” zastępuje podpowiedź.
-   */
-  isAutoBuildEnabled?: () => boolean;
   getUlepszeniaCityId?: () => string | null;
   onUlepszeniaCityIdChange?: (cityId: string) => void;
   getUlepszeniaEmpireState?: () => UlepszeniaEmpirePolicy | null;
-  /**
-   * Q3: stały wskaźnik „Budżet niewydany” (żywność powstaje tylko na polach z obywatelami); `null` = brak ostrzeżenia.
-   * R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: bez przycisku „Wyłącz filtr” — reguła nie ma przełącznika.
-   */
-  getUnspentBudgetWarning?: () => { waitingHexes: number } | null;
   /**
    * R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: pozycje `getEmpirePracaSplit` /
    * `onEmpirePracaSplitChange` USUNIETE. Sterowaly warstwa (a) — polem
@@ -111,6 +100,9 @@ export interface BuildModeHudConfig {
    */
   onUlepszeniaEmpireFocusChange?: (focus: UlepszeniaFocus) => void;
   onUlepszeniaEmpireTrybChange?: (tryb: UlepszeniaTryb) => void;
+  onUlepszeniaEmpireOnlyWorkedChange?: (onlyWorked: boolean) => void;
+  /** R4-Q2=C: „wolno wycinać las" dla automatu GRACZA — zakres PAŃSTWO. */
+  onUlepszeniaEmpireWyrabChange?: (wolnoWycinacLas: boolean) => void;
   /** Historyczny budżet automatu ulepszeń; zakres 0–100%, osobny od nadrzędnego splitu Pracy. */
   onUlepszeniaEmpirePracaPercentChange?: (pracaAutoPercent: UlepszeniaPracaPercent) => void;
   getUlepszeniaCityOverride?: (cityId: string) => boolean;
@@ -119,11 +111,17 @@ export interface BuildModeHudConfig {
   getUlepszeniaEffectiveState?: (cityId: string) => {
     focus: UlepszeniaFocus;
     tryb: UlepszeniaTryb;
+    onlyWorked: boolean;
     pracaAutoPercent: UlepszeniaPracaPercent;
+    /** R4-Q2=C: „wolno wycinać las" — efektywna wartość dla tego miasta. */
+    wolnoWycinacLas: boolean;
     override: boolean;
   } | null;
   onUlepszeniaCityFocusChange?: (cityId: string, focus: UlepszeniaFocus) => void;
   onUlepszeniaCityTrybChange?: (cityId: string, tryb: UlepszeniaTryb) => void;
+  onUlepszeniaCityOnlyWorkedChange?: (cityId: string, onlyWorked: boolean) => void;
+  /** R4-Q2=C: „wolno wycinać las" dla automatu GRACZA — zakres MIASTO. */
+  onUlepszeniaCityWyrabChange?: (cityId: string, wolnoWycinacLas: boolean) => void;
   onUlepszeniaCityPracaPercentChange?: (cityId: string, pracaAutoPercent: UlepszeniaPracaPercent) => void;
 }
 
@@ -210,7 +208,7 @@ const ULEPSZENIA_FOCUS_TITLES: Record<UlepszeniaFocus, string> = {
   zywnosc: 'Żywność — farma, hodowla, irygacja',
   surowce: 'Surowce — tartak, kamieniołom, kopalnie',
   infrastruktura: 'Infrastruktura — drogi, fort',
-  zrownowazone: 'Zrównoważone — żywność; przy niedoborze tylko brakujący surowiec; drogi na końcu',
+  zrownowazone: 'Zrównoważone — żywność, surowce, infra',
 };
 
 const ULEPSZENIA_PROFILES: UlepszeniaFocus[] = [
@@ -302,13 +300,6 @@ html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
 .civ-build-percent-head{display:flex;align-items:baseline;gap:6px;font-size:10px;color:#9a9070;}
 .civ-build-percent-head b{font-size:11px;color:#f0e8b8;}
 .civ-build-city-split-note{font-size:9px;color:#9a9070;line-height:1.35;margin:4px 0 2px;}
-/* R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: stały wskaźnik „Budżet niewydany” pod suwakiem puli automatu.
-   Jeden element (nie toast), zawija tekst — bez poziomego przewijania na wąskim ekranie. */
-.civ-build-unspent{margin:6px 0 2px;padding:6px 8px;border:1px solid rgba(240,170,70,.55);border-left-width:3px;
-  background:rgba(240,170,70,.10);color:#f3dcae;border-radius:4px;font-size:10px;line-height:1.4;
-  display:flex;flex-direction:column;gap:5px;min-width:0;overflow-wrap:anywhere;word-break:break-word;}
-.civ-build-unspent b{color:#ffd58a;}
-.civ-build-unspent .civ-build-hbtn{align-self:flex-start;max-width:100%;}
 /* R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: suwak warstwy (c) jest renderowany takze
    przy trybie recznym — wtedy nieaktywny, z krotkim wyjasnieniem pod spodem. */
 .civ-build-percent-row.off .civ-build-percent-head{opacity:.55;}
@@ -557,15 +548,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       const empireState = config.getUlepszeniaEmpireState?.() ?? null;
       const effState = uCityId ? config.getUlepszeniaEffectiveState?.(uCityId) ?? null : null;
       const cityOverride = uCityId ? (config.getUlepszeniaCityOverride?.(uCityId) ?? false) : false;
-      const autoBuildOn = config.isAutoBuildEnabled ? config.isAutoBuildEnabled() : true;
-      if (playerCities.length > 0 && empireState && !autoBuildOn) {
-        // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: bez automatyzacji budowy — żadnych profili/suwaków auto, tylko podpowiedź.
-        html += '<div class="civ-build-auto" data-auto-build-locked="1">';
-        html += '<div class="lbl">Automatyzacja ulepszeń terenu</div>';
-        html += `<div class="civ-build-city-split-note" data-auto-build-hint>${AUTO_BUILD_DISABLED_HINT}</div>`;
-        html += '</div>';
-      }
-      if (playerCities.length > 0 && empireState && autoBuildOn) {
+      if (playerCities.length > 0 && empireState) {
         html += '<div class="civ-build-auto">';
         html += '<div class="lbl">Automatyzacja ulepszeń terenu</div>';
         html += renderUlepszeniaProfileRow(
@@ -573,8 +556,23 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           empireState.tryb,
           'empire',
         );
-        // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1: przyciski „Tylko pola z obywatelami” i „Wolno wycinać las” USUNIĘTE
-        // (właściciel 2026-11-04) — żywność zawsze tylko przy obywatelach, wycinka pod farmę zawsze dozwolona.
+        if (empireState.tryb === 'auto') {
+          const onE = empireState.onlyWorked ? ' active' : '';
+          html += '<div class="civ-build-auto-row">';
+          html += `<button type="button" class="civ-build-hbtn${onE}" data-ulepszenia-empire-only-worked`
+            + ` aria-pressed="${empireState.onlyWorked ? 'true' : 'false'}"`
+            + ` title="Buduj tylko na polach z obywatelami (👤); złoża surowców są wyjątkiem">Tylko pola z obywatelami</button>`;
+          html += '</div>';
+          // R4-Q2=C (R-AI-WYRAB-PRZY-RZECE-FARMY-Q1, runda 4): przełącznik wyrębu dla
+          // automatu GRACZA, zakres PAŃSTWO. Domyślnie WYŁĄCZONY.
+          const onW = empireState.wolnoWycinacLas ? ' active' : '';
+          html += '<div class="civ-build-auto-row">';
+          html += `<button type="button" class="civ-build-hbtn${onW}" data-ulepszenia-empire-wyrab`
+            + ` aria-pressed="${empireState.wolnoWycinacLas ? 'true' : 'false'}"`
+            + ` title="Pozwól automatowi wycinać las (wyrąb pod farmę przy rzece). Domyślnie wyłączone.">`
+            + `Wolno wycinać las</button>`;
+          html += '</div>';
+        }
         // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (pkt 2): suwak warstwy (c)
         // (`UlepszeniaEmpirePolicy.pracaAutoPercent`) renderuje sie TAKZE przy
         // `tryb === 'reczny'` — wtedy `disabled`, z wyjasnieniem. Wczesniej byl schowany
@@ -600,13 +598,6 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
                 : 'Tryb ręczny — cała pula zostaje na pracę ręczną. Suwak zadziała po włączeniu automatyzacji (profil powyżej).',
             },
           );
-          // R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: stały wskaźnik niewydanego budżetu (znika, gdy warunek ustąpi).
-          const unspent = trybAuto ? (config.getUnspentBudgetWarning?.() ?? null) : null;
-          if (unspent && unspent.waitingHexes > 0) {
-            html += '<div class="civ-build-unspent" role="status" data-ulepszenia-unspent>'
-              + `<span><b>Budżet niewydany:</b> żywność powstaje tylko na polach z obywatelami (${unspent.waitingHexes} pól czeka na obywatela).</span>`
-              + '</div>';
-          }
         }
         if (playerCities.length > 1) {
           html += '<div class="civ-build-auto-city-wrap">';
@@ -624,7 +615,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           const effLabel = effState.tryb === 'reczny'
             ? 'Ręczny'
             : `${ULEPSZENIA_FOCUS_LABELS[effState.focus]} · ${effState.pracaAutoPercent}% Pracy`
-              ;
+              + (effState.onlyWorked ? ' · tylko 👤' : '');
           html += `<div class="civ-build-auto-eff">Efekt w mieście: ${effLabel}`
             + (effState.override ? ' (własne)' : ' (państwo)') + '</div>';
         }
@@ -643,6 +634,19 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             effState.tryb,
             'city',
           );
+          if (effState.tryb === 'auto') {
+            const onC = effState.onlyWorked ? ' active' : '';
+            html += '<div class="civ-build-auto-row">';
+            html += `<button type="button" class="civ-build-hbtn${onC}" data-ulepszenia-city-only-worked`
+              + ` aria-pressed="${effState.onlyWorked ? 'true' : 'false'}">Tylko pola z obywatelami</button>`;
+            html += '</div>';
+            // R4-Q2=C: ten sam przełącznik w zakresie MIASTA (override lokalny).
+            const onWC = effState.wolnoWycinacLas ? ' active' : '';
+            html += '<div class="civ-build-auto-row">';
+            html += `<button type="button" class="civ-build-hbtn${onWC}" data-ulepszenia-city-wyrab`
+              + ` aria-pressed="${effState.wolnoWycinacLas ? 'true' : 'false'}">Wolno wycinać las</button>`;
+            html += '</div>';
+          }
           // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (pkt 2): ten sam wzorzec co wyzej,
           // dla lokalnego pola warstwy (c) `City.ulepszeniaPracaPercent`.
           {
@@ -829,6 +833,21 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       render();
     });
 
+    const empireOnlyWorkedBtn = el.querySelector('[data-ulepszenia-empire-only-worked]') as HTMLButtonElement | null;
+    empireOnlyWorkedBtn?.addEventListener('click', () => {
+      const current = config.getUlepszeniaEmpireState?.()?.onlyWorked ?? false;
+      config.onUlepszeniaEmpireOnlyWorkedChange?.(!current);
+      render();
+    });
+
+    // R4-Q2=C: przełącznik wyrębu automatu GRACZA — zakres PAŃSTWO.
+    const empireWyrabBtn = el.querySelector('[data-ulepszenia-empire-wyrab]') as HTMLButtonElement | null;
+    empireWyrabBtn?.addEventListener('click', () => {
+      const current = config.getUlepszeniaEmpireState?.()?.wolnoWycinacLas ?? false;
+      config.onUlepszeniaEmpireWyrabChange?.(!current);
+      render();
+    });
+
     // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: `input` = tylko lokalny podgląd (etykieta + wypełnienie
     // toru) BEZ pełnego render() -- wzorzec `wireSkarbiecTaxSplitInputs` w empireDetailPanel.ts,
     // żeby przebudowa innerHTML w trakcie przeciągania nie przerywała gestu. `change` (puszczenie
@@ -858,6 +877,27 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     el.querySelector('[data-ulepszenia-city-reczny]')?.addEventListener('click', () => {
       const cityId = config.getUlepszeniaCityId?.();
       if (cityId) config.onUlepszeniaCityTrybChange?.(cityId, 'reczny');
+      render();
+    });
+
+    const cityOnlyWorkedBtn = el.querySelector('[data-ulepszenia-city-only-worked]') as HTMLButtonElement | null;
+    cityOnlyWorkedBtn?.addEventListener('click', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      if (cityId) {
+        const current = config.getUlepszeniaEffectiveState?.(cityId)?.onlyWorked ?? false;
+        config.onUlepszeniaCityOnlyWorkedChange?.(cityId, !current);
+      }
+      render();
+    });
+
+    // R4-Q2=C: przełącznik wyrębu automatu GRACZA — zakres MIASTO.
+    const cityWyrabBtn = el.querySelector('[data-ulepszenia-city-wyrab]') as HTMLButtonElement | null;
+    cityWyrabBtn?.addEventListener('click', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      if (cityId) {
+        const current = config.getUlepszeniaEffectiveState?.(cityId)?.wolnoWycinacLas ?? false;
+        config.onUlepszeniaCityWyrabChange?.(cityId, !current);
+      }
       render();
     });
 

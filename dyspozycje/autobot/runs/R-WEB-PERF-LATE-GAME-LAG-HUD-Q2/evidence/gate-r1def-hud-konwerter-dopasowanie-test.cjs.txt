@@ -1,2 +1,0 @@
-hud-konwerter-dopasowanie-test: 20 passed, 0 failed
-EXIT=0

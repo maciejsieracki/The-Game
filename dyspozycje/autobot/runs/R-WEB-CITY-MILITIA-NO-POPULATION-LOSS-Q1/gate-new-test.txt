@@ -1,6 +1,0 @@
-BASE: 20 PASS, 0 FAIL
-mutacja restore-pop-loss-in-cooldown: ZLAPANA
-mutacja cooldown-turns-zero: ZLAPANA
-mutacja headcount-off-by-one: ZLAPANA
-RESULT: PASS
-EXIT=0

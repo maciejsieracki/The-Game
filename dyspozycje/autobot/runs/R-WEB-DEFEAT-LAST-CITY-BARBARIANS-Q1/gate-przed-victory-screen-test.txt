@@ -1,3 +1,0 @@
-
-[victory-screen-test] 11 passed, 0 failed (total 11).
-EXIT=0

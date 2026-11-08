@@ -87,9 +87,8 @@ ok(/import\s*\{[^}]*\bcityHasSpichlerzBuilding\b[^}]*\}\s*from\s*['"][^'"]*build
 const popCapAktualnyMatch = fnBody.match(/const popCapAktualny = ([^\n]+);/);
 ok(!!popCapAktualnyMatch, 'znaleziono wiersz `const popCapAktualny = ...;` w computeView(...)');
 const popCapAktualnyExpr = popCapAktualnyMatch ? popCapAktualnyMatch[1] : '';
-// R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1: dodane 4. i 5. argument (delta=0, maSpichlerzII) — kolejność dwóch pierwszych bez zmian.
-ok(/^cityPopulationCap\(maAkwedukt, maSpichlerz, params(, 0, maSpichlerzII)?\)$/.test(popCapAktualnyExpr),
-  `popCapAktualny wyliczane przez cityPopulationCap(maAkwedukt, maSpichlerz, params[, 0, maSpichlerzII]) — znaleziono: "${popCapAktualnyExpr}"`);
+ok(/^cityPopulationCap\(maAkwedukt, maSpichlerz, params\)$/.test(popCapAktualnyExpr),
+  `popCapAktualny wyliczane przez cityPopulationCap(maAkwedukt, maSpichlerz, params) — znaleziono: "${popCapAktualnyExpr}"`);
 
 // Wymóg 5: `const popCapBezAkweduktu = ...;` MUSI wołać cityPopulationCap(false,
 // maSpichlerz, params) — NIE stary martwy kod (params.akweduktProgLudnosci ani żaden
@@ -98,8 +97,8 @@ ok(/^cityPopulationCap\(maAkwedukt, maSpichlerz, params(, 0, maSpichlerzII)?\)$/
 const popCapBezAkweduktuMatch = fnBody.match(/const popCapBezAkweduktu = ([^\n]+);/);
 ok(!!popCapBezAkweduktuMatch, 'znaleziono wiersz `const popCapBezAkweduktu = ...;` w computeView(...)');
 const popCapBezAkweduktuExpr = popCapBezAkweduktuMatch ? popCapBezAkweduktuMatch[1] : '';
-ok(/^cityPopulationCap\(false, maSpichlerz, params(, 0, maSpichlerzII)?\)$/.test(popCapBezAkweduktuExpr),
-  `popCapBezAkweduktu wyliczane przez cityPopulationCap(false, maSpichlerz, params[, 0, maSpichlerzII]) — znaleziono: "${popCapBezAkweduktuExpr}"`);
+ok(/^cityPopulationCap\(false, maSpichlerz, params\)$/.test(popCapBezAkweduktuExpr),
+  `popCapBezAkweduktu wyliczane przez cityPopulationCap(false, maSpichlerz, params) — znaleziono: "${popCapBezAkweduktuExpr}"`);
 
 // ---------------------------------------------------------------------------
 // Kontrola przytomności: helper w building-resource-gate.ts faktycznie sprawdza OBA id

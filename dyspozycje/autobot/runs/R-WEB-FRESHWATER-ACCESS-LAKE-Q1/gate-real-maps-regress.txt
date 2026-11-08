@@ -1,3 +1,0 @@
-{"typ":"pangea","sz":"maly","seed":11,"hexes":7992,"lakeHexes":0,"waterAccessDiffVsLegacy":0,"waterAccessYes":2346,"forest":2717,"forestReservedLegacy":1350,"forestReservedNew":1611}
-{"typ":"kontynenty","sz":"maly","seed":222,"hexes":7992,"lakeHexes":0,"waterAccessDiffVsLegacy":0,"waterAccessYes":2843,"forest":1453,"forestReservedLegacy":1290,"forestReservedNew":1379}
-EXIT=0

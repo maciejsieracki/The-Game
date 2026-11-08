@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { Nakladka } from '../types/hex';
 import type { MapRenderStyle } from './mapRenderStyle';
-import { buildResourceOverlay, buildResourceOverlayFromZloze, RESOURCE_MODEL_SCALE } from './resources';
+import { buildResourceOverlay, buildResourceOverlayFromZloze } from './resources';
 import { buildZlozeKrowy, buildZlozeOwce } from './pastwisko-modele';
 import { buildTrzoda } from './swinia-trzoda';
 import { buildZlozeKonie } from './kon-nowy-model';
@@ -441,17 +441,7 @@ function styledSalt(style: MapRenderStyle): THREE.Group {
   return g;
 }
 
-/**
- * R-WEB-MAP-MODELS-SCALE-2X-Q1: wspólny punkt skali złóż — mnoży istniejące
- * depositDisplayScale (np. kon ×2 z 2026-07-29) przez RESOURCE_MODEL_SCALE.
- */
 export function buildStyledResourceOverlay(nakladka: Nakladka, style: MapRenderStyle, zloze?: string): THREE.Group | null {
-  const g = buildStyledResourceOverlayBase(nakladka, style, zloze);
-  if (g) g.userData.depositDisplayScale = ((g.userData.depositDisplayScale as number) || 1) * RESOURCE_MODEL_SCALE;
-  return g;
-}
-
-function buildStyledResourceOverlayBase(nakladka: Nakladka, style: MapRenderStyle, zloze?: string): THREE.Group | null {
   if (style === 'civ') {
     const fromNak = buildResourceOverlay(nakladka);
     if (fromNak) return fromNak;

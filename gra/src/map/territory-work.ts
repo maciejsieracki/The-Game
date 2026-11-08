@@ -3,7 +3,7 @@
  * Rozstrzyga overlap zasięgów miast (territoryOwnerAt → najbliższe centrum).
  */
 import type { City } from '../game/cities';
-import { territoryOwnerAt, territoryOwnerLookup, type TerritoryNode } from './territory';
+import { territoryOwnerAt, type TerritoryNode } from './territory';
 
 export type { TerritoryNode };
 
@@ -37,18 +37,11 @@ export function isTerritoryHexOwnedBy(
 export function makeTerritoryWorkableFilter(
   territoryNodes: readonly TerritoryNode[],
   ownerId: number,
-  baseWorkable?: (q: number, r: number, key?: string) => boolean,
-): (q: number, r: number, key?: string) => boolean {
-  if (!territoryNodes.length) {
-    // fail-closed jak isTerritoryHexOwnedBy: brak węzłów -> nic nie jest własnością
-    return (q, r) => (baseWorkable && !baseWorkable(q, r) ? false : false);
-  }
-  // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): ten sam wynik co isTerritoryHexOwnedBy, ale przez indeks (pamięć po podpisie węzłów).
-  let ownerOf: ((q: number, r: number) => number | null) | null = null;
-  return (q, r, key) => {
-    if (baseWorkable && !baseWorkable(q, r, key)) return false;
-    if (ownerOf === null) ownerOf = territoryOwnerLookup(territoryNodes);
-    return ownerOf(q, r) === ownerId;
+  baseWorkable?: (q: number, r: number) => boolean,
+): (q: number, r: number) => boolean {
+  return (q, r) => {
+    if (baseWorkable && !baseWorkable(q, r)) return false;
+    return isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes);
   };
 }
 

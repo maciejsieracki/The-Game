@@ -1,3 +1,0 @@
-
-trade-routes-test: 96 passed, 0 failed
-EXIT=0

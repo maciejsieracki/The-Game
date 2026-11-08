@@ -231,13 +231,11 @@ assert(/function refreshFog\(opts\?\s*:\s*\{\s*skipVeteranEducation\?\s*:\s*bool
 // `u.ownerId === 0`, albo (b) currentVisible() delegujaca do `ownPlayerVisibleHexes()`
 // (np. po R-DYPLO-SOJUSZ...), ktora filtruje po `u.ownerId === ME()` -- w obu przypadkach
 // zrodlem widocznosci WLASNEGO gracza pozostaje BIEZACA pozycja jednostek (u.q, u.r), zero
-// heksow sciezki. FALA 529 (perf): rdzen liczenia to teraz `visibleDiskKeys(u.q, u.r, sight)`
-// (ten sam dysk co computeVisibleAt, bez alokacji posredniej) -- dopuszczamy oba wywolania.
-// Test sprawdza to ZACHOWANIE, nie jeden literalny zapis identyfikatora.
+// heksow sciezki. Test sprawdza to ZACHOWANIE, nie jeden literalny zapis identyfikatora.
 const currentVisibleInline = /function currentVisible\(\): Set<string> \{[\s\S]{0,400}?for \(const u of units\.filter\(u => u\.ownerId === 0\)\) \{[\s\S]{0,200}?computeVisibleAt\(u\.q, u\.r, map, sight\)/.test(mainSrc);
 const currentVisibleDelegated =
   /function currentVisible\(\): Set<string> \{[\s\S]{0,300}?ownPlayerVisibleHexes\(\)/.test(mainSrc)
-  && /function ownPlayerVisibleHexes\(\): Set<string> \{[\s\S]{0,400}?for \(const u of units\.filter\(u => u\.ownerId === ME\(\)\)\) \{[\s\S]{0,200}?(?:computeVisibleAt|visibleDiskKeys)\(u\.q, u\.r, (?:map, )?sight\)/.test(mainSrc);
+  && /function ownPlayerVisibleHexes\(\): Set<string> \{[\s\S]{0,400}?for \(const u of units\.filter\(u => u\.ownerId === ME\(\)\)\) \{[\s\S]{0,200}?computeVisibleAt\(u\.q, u\.r, map, sight\)/.test(mainSrc);
 assert(currentVisibleInline || currentVisibleDelegated,
   'static: currentVisible() nadal liczy WYLACZNIE z biezacej pozycji jednostek (u.q, u.r) -- nietkniete (inline lub przez ownPlayerVisibleHexes())');
 

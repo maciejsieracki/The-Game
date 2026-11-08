@@ -149,11 +149,7 @@ export function resolveRenderPreset(
       return {
         robloxLite,
         antialias: false,
-        // R-WEB-RENDER-UNIT-BLUR-HORSES-Q1: było 1.5. Na ekranach HiDPI (DPR 2: Mac/laptopy 4K)
-        // bufor 1.5x rozciągany do 2x pikseli urządzenia rozmywał jednostki z bliska (rydwan,
-        // konie) ~6x w metryce Laplace'a (patrz runs/R-WEB-RENDER-UNIT-BLUR-HORSES-Q1). Na DPR<=1.5
-        // zmiana nie ma skutku (min(DPR, max)), więc koszt rośnie tylko tam, gdzie była utrata ostrości.
-        pixelRatioMax: 2.0,
+        pixelRatioMax: 1.5,
         shadowsEnabled: false,
         shadowMapSize: 1024,
         fogFarMul: 0.9,

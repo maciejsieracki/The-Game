@@ -1,3 +1,0 @@
-mutacja: usuniecie 'irygacja' z FOOD_IMPROVEMENT_KEYS (auto-improvements.ts), FAIL=1
-  [FAIL] irygacja: przebieg niedoboru (getOnlyWorked=false) + filtr zywnosci: 0 poza obywatelami (jest 29)
-EXIT=1

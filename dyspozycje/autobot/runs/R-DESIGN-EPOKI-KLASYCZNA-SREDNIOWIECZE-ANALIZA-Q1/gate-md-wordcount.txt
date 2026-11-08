@@ -1,3 +1,0 @@
-plan_md_wc_w=4208 (licznik wc zawiera separatory tabel)
-readme_analiza_wc_w=239
-EXIT=0

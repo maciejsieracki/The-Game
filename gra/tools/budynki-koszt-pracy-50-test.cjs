@@ -46,15 +46,11 @@ for (const b of buildings) {
   }
 }
 ok(checkedLevels > buildings.length, `pokryto wszystkie poziomy (${checkedLevels} poziomów, ${buildings.length} budynków)`);
-// R-WEB-BUILDING-EMPORION-Q1 (2026-11-06): 42 -> 43 (+ Emporion, decyzja właściciela 2026-11-05).
-ok(buildings.length === 43, `pełny katalog budynków ma 43 rekordy (ma ${buildings.length})`);
+ok(buildings.length === 42, `pełny katalog budynków ma 42 rekordy (ma ${buildings.length})`);
 
 // Niezależny, zamrożony fingerprint kosztów surowcowych — nie wolno go wyliczać
 // z oczekiwanego wyniku tej samej mutacji ani go przepisywać po zmianie mnożnika.
-// R-WEB-BUILDING-EMPORION-Q1: fingerprint przepisany WYŁĄCZNIE z powodu dodania
-// nowego rekordu Emporion (koszt_surowce {drewno 80, kamien 60}); pozostałe 42
-// rekordy bez zmian. Poprzednia wartość: 586ef458...08554.
-const RESOURCE_BASELINE_SHA256 = '033cb1b7e662b6204cd23f15321e8b9e426951033c854d57453c0f456178e5a4';
+const RESOURCE_BASELINE_SHA256 = '586ef4582f40496c36c667b2363921a78f99f2180fcf8db3f00cd3b501a08554';
 const resourceCanonical = buildings.map(b => `${b.id}\t${JSON.stringify(b.koszt_surowce ?? null)}`).join('\n');
 const resourceSha = crypto.createHash('sha256').update(resourceCanonical).digest('hex');
 ok(resourceSha === RESOURCE_BASELINE_SHA256, `koszt_surowce wszystkich budynków bez zmian (sha256 ${resourceSha})`);

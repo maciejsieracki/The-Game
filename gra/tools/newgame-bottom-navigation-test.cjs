@@ -14,18 +14,13 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const http = require('http');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(GRA_DIR, 'dist-newgame-bottom-navigation-test');
-let OUT_HTML = '';
+const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
 const EPS = 1;
 const VIEWPORTS = [
-  { label: 'desktop', width: 1770, height: 970 },
-  { label: 'mały ekran', width: 1365, height: 768 },
-  // Approximation of a 150% desktop-zoom CSS viewport on a 1770×970 display.
-  { label: '150% zoom — viewport CSS', width: 1180, height: 647 },
   { label: '2K DCI', width: 2048, height: 1080 },
   { label: '4K UHD', width: 3840, height: 2160 },
 ];
@@ -55,33 +50,9 @@ function buildBundle() {
   console.log('[newgame-bottom-navigation-test] build OK.');
 }
 
-async function serveBundleOverHttp() {
-  const htmlPath = path.join(OUT_DIR, 'index.html');
-  const server = http.createServer((request, response) => {
-    const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
-    if (pathname === '/favicon.ico') {
-      response.writeHead(204).end();
-      return;
-    }
-    if (pathname !== '/') {
-      response.writeHead(404).end();
-      return;
-    }
-    response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-    fs.createReadStream(htmlPath).pipe(response);
-  });
-  await new Promise((resolve, reject) => {
-    server.once('error', reject);
-    server.listen(0, '127.0.0.1', resolve);
-  });
-  OUT_HTML = `http://127.0.0.1:${server.address().port}/`;
-  return server;
-}
-
 function browserCandidates() {
   const explicit = process.env.CIV_CHROME_PATH || process.env.CHROME_PATH;
   const candidates = explicit ? [explicit] : [];
-  candidates.push('/usr/bin/chromium');
   const roots = [];
   const playwrightRoot = process.env.PLAYWRIGHT_BROWSERS_PATH;
   if (playwrightRoot && playwrightRoot !== '0') roots.push(playwrightRoot);
@@ -234,53 +205,6 @@ async function exerciseViewport(browser, viewport) {
     await assertUsable(page, '.civ-newgame .nav .nb.back', `${viewport.label}/cywilizacja Wstecz`);
     await assertUsable(page, '.civ-newgame .nav .nb.next', `${viewport.label}/cywilizacja Dalej`);
 
-    const profileToggle = page.locator('.civ-newgame .civ-profile-toggle');
-    assert(`${viewport.label}/cywilizacja: uchwyt zwijania profilu jest dostępny`, await profileToggle.count() === 1);
-    const detailPanel = page.locator('.civ-newgame #civ-profile-detail-panel');
-    assert(`${viewport.label}/cywilizacja: parametry są domyślnie zwinięte`,
-      await profileToggle.getAttribute('aria-expanded') === 'false' && !(await detailPanel.isVisible()));
-    assert(`${viewport.label}/cywilizacja: sekcja ma nazwę Parametry cywilizacji`,
-      (await detailPanel.locator('.dlbl').textContent())?.trim() === 'Parametry cywilizacji');
-    await profileToggle.click();
-    assert(`${viewport.label}/cywilizacja: uchwyt rozwija szczegóły`,
-      await profileToggle.getAttribute('aria-expanded') === 'true' && await detailPanel.isVisible());
-    const matrixRows = detailPanel.locator('.civ-matrix-cell');
-    const profileNote = await detailPanel.locator('.civ-matrix-profile-note').textContent();
-    const reportedParameterCount = Number(profileNote?.match(/^(\d+) wskaźników/)?.[1]);
-    assert(`${viewport.label}/macierz: licznik (${reportedParameterCount}) odpowiada liczbie kart`,
-      Number.isInteger(reportedParameterCount) && await matrixRows.count() === reportedParameterCount);
-    assert(`${viewport.label}/macierz: każda karta jest domyślnie zwinięta`,
-      await detailPanel.locator('.civ-matrix-cell[open]').count() === 0);
-    const previewRow = matrixRows.first();
-    const previewParameter = await previewRow.getAttribute('data-parameter-id');
-    await previewRow.locator('summary').click();
-    assert(`${viewport.label}/macierz: wybrany parametr można rozwinąć do podglądu`,
-      await previewRow.evaluate(element => element.hasAttribute('open'))
-        && await previewRow.locator('.civ-matrix-cell-body').isVisible());
-    await previewRow.locator('summary').click();
-    assert(`${viewport.label}/macierz: podgląd parametru można ponownie zwinąć`,
-      !(await previewRow.evaluate(element => element.hasAttribute('open'))));
-    const matrixSearch = detailPanel.locator('.civ-matrix-profile-search');
-    await matrixSearch.fill(previewParameter || '');
-    assert(`${viewport.label}/macierz: wyszukiwanie nadal filtruje karty parametrów`,
-      await previewRow.isVisible() && await detailPanel.locator('.civ-matrix-profile-legend').textContent().then(t => new RegExp(`Widoczne: 1 \\/ ${reportedParameterCount}`).test(t || '')));
-    assert(`${viewport.label}/macierz: wyszukany parametr pozostaje zwinięty do ręcznego podglądu`,
-      !(await previewRow.evaluate(element => element.hasAttribute('open'))));
-    await matrixSearch.fill('');
-    const matrixFilter = detailPanel.locator('.civ-matrix-profile-filter');
-    await matrixFilter.selectOption('inactive');
-    assert(`${viewport.label}/macierz: filtr kategorii nadal pokazuje pasujące pozycje`,
-      await detailPanel.locator('.civ-matrix-cell:visible').count() > 0);
-    assert(`${viewport.label}/macierz: filtrowanie nie rozwija automatycznie kart`,
-      await detailPanel.locator('.civ-matrix-cell[open]').count() === 0);
-    await matrixFilter.selectOption('all');
-    await profileToggle.click();
-    assert(`${viewport.label}/cywilizacja: uchwyt ponownie zwija profil`,
-      await profileToggle.getAttribute('aria-expanded') === 'false' && !(await detailPanel.isVisible()));
-    const collapsedNext = await assertUsable(page, '.civ-newgame .nav .nb.next', `${viewport.label}/cywilizacja Dalej po zwinięciu`);
-    assert(`${viewport.label}/cywilizacja: Dalej mieści się w ekranie bez przewijania głównego kontenera`,
-      !!collapsedNext && collapsedNext.rootScrollTop === 0);
-
     // Back on step 3 must return to the epoch without losing the route.
     await page.locator('.civ-newgame .nav .nb.back').click();
     await page.waitForSelector('.civ-newgame .epoch-grid', { timeout: 10000 });
@@ -294,11 +218,8 @@ async function exerciseViewport(browser, viewport) {
 
     await assertStepLabel(page, 'Ustawienia', `${viewport.label}/ustawienia`);
     await assertUsable(page, '.civ-newgame .nav .nb.back', `${viewport.label}/ustawienia Wstecz`);
-    assert(`${viewport.label}/ustawienia: końcowa akcja znajduje się w stałej nawigacji`,
-      await page.locator('.civ-newgame .nav .nb.next').count() === 1
-        && (await page.locator('.civ-newgame .nav .nb.next').textContent()).includes('Rozpocznij grę'));
-    assert(`${viewport.label}/ustawienia: nie ma duplikatu Start w przewijanej treści`,
-      await page.locator('.civ-newgame .content .sett-actions .start').count() === 0);
+    assert(`${viewport.label}/ustawienia: brak Dalej na ostatnim kroku konfiguracji`,
+      await page.locator('.civ-newgame .nav .nb.next').count() === 0);
 
     const aiCards = page.locator('.civ-newgame .ai-civ-grid .card');
     const candidateCount = await aiCards.count();
@@ -312,34 +233,13 @@ async function exerciseViewport(browser, viewport) {
     assert(`${viewport.label}/ustawienia: scenariusz 5/5 faktycznie zaznaczył 5 cywilizacji`, selectedCount === 5);
 
     const navState = await assertUsable(page, '.civ-newgame .nav', `${viewport.label}/ustawienia dolna nawigacja`);
-    const startState = await readState(page, '.civ-newgame .nav .nb.next');
-    printState(`${viewport.label}/ustawienia Start`, startState);
-    const advancedReachable = await page.evaluate(() => {
-      const content = document.querySelector('.civ-newgame .content');
-      const advanced = document.querySelector('.civ-newgame .sett-actions .btn-adv');
-      if (!(content instanceof HTMLElement) || !(advanced instanceof HTMLElement)) return false;
-      content.scrollTop = content.scrollHeight;
-      const rect = advanced.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0
-        && rect.top >= 0 && rect.bottom <= window.innerHeight;
-    });
-    assert(`${viewport.label}/ustawienia: Zaawansowane jest osiągalne w wewnętrznym przewijaniu treści`,
-      advancedReachable);
+    const startState = await assertUsable(page, '.civ-newgame .sett-actions .start', `${viewport.label}/ustawienia Start`);
+    await assertUsable(page, '.civ-newgame .sett-actions .btn-adv', `${viewport.label}/ustawienia Zaawansowane`);
     printState(`${viewport.label}/ustawienia root overflow`, navState);
-    assert(`${viewport.label}/ustawienia: dolna nawigacja jest stale widoczna bez przewijania root`,
-      !!navState && navState.rootScrollTop === 0
-        && navState.rootScrollHeight <= navState.rootClientHeight + EPS);
-    const startReachable = await page.evaluate(() => {
-      const content = document.querySelector('.civ-newgame .content');
-      const start = document.querySelector('.civ-newgame .nav .nb.next');
-      if (!(content instanceof HTMLElement) || !(start instanceof HTMLElement)) return false;
-      content.scrollTop = content.scrollHeight;
-      const rect = start.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0
-        && rect.top >= 0 && rect.bottom <= window.innerHeight;
-    });
-    assert(`${viewport.label}/ustawienia: Start pozostaje widoczny bez przewijania treści`,
-      !!startState && startState.fullyInViewport && startState.rootScrollTop === 0 && startReachable);
+    assert(`${viewport.label}/ustawienia: Start i dolna nawigacja są widoczne bez przewijania root`,
+      !!navState && !!startState && navState.rootScrollTop === 0
+        && navState.rootScrollHeight <= navState.rootClientHeight + EPS
+        && startState.rootScrollTop === 0);
 
     // Mutation proof: if the lower navigation is hidden, the same viewport
     // oracle must detect it. Restore the live DOM before continuing the flow.
@@ -369,22 +269,7 @@ async function exerciseViewport(browser, viewport) {
     // synchronously, so this checks the active click path without waiting for map generation.
     await page.locator('.civ-newgame .nav .nb.next').click();
     await page.waitForSelector('.civ-newgame .sett-layout', { timeout: 10000 });
-    await page.locator('.civ-newgame .seat2-toggle-btn').click();
-    assert(`${viewport.label}/ustawienia hot-seat: akcja stopki zmienia się na Dalej`,
-      (await page.locator('.civ-newgame .nav .nb.next').textContent()).includes('Dalej'));
-    await page.locator('.civ-newgame .nav .nb.next').click();
-    await page.waitForSelector('.civ-newgame .seat2-dist', { timeout: 10000 });
-    assert(`${viewport.label}/fotel 2: Start znajduje się w prawej nawigacji`,
-      (await page.locator('.civ-newgame .nav .nb.next').textContent()).includes('Rozpocznij grę')
-        && await page.locator('.civ-newgame .content .sett-actions .start').count() === 0);
-    const seat2Toggle = page.locator('.civ-newgame .civ-profile-toggle');
-    const seat2Detail = page.locator('.civ-newgame .detail');
-    assert(`${viewport.label}/fotel 2: parametry domyślnie zwinięte`,
-      await seat2Toggle.getAttribute('aria-expanded') === 'false' && !(await seat2Detail.isVisible()));
-    await seat2Toggle.click();
-    assert(`${viewport.label}/fotel 2: parametry można rozwinąć`,
-      await seat2Toggle.getAttribute('aria-expanded') === 'true' && await seat2Detail.isVisible());
-    await page.locator('.civ-newgame .nav .nb.next').click();
+    await page.locator('.civ-newgame .sett-actions .start').click();
     await wait(120);
     const rootAfterStart = await page.evaluate(() => {
       const root = document.querySelector('.civ-newgame');
@@ -409,14 +294,11 @@ async function main() {
   }
 
   buildBundle();
-  const server = await serveBundleOverHttp();
-  let browser = null;
+  const browser = await launchBrowser(chromium);
   try {
-    browser = await launchBrowser(chromium);
     for (const viewport of VIEWPORTS) await exerciseViewport(browser, viewport);
   } finally {
-    if (browser) await browser.close();
-    await new Promise((resolve) => server.close(resolve));
+    await browser.close();
     try { fs.rmSync(OUT_DIR, { recursive: true, force: true }); } catch (_) { /* cleanup best effort */ }
   }
 

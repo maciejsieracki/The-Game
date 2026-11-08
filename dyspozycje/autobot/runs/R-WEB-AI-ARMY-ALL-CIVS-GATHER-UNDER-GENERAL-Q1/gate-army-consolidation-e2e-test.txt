@@ -1,2 +1,0 @@
-army-consolidation e2e: 6 passed / 0 failed
-EXIT=0

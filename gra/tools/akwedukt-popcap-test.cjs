@@ -38,8 +38,7 @@ const params = {
   spichlerzZachowaniePoPrzroscie: 0.5,
   akweduktProgLudnosci: 5,
   spichlerzProgLudnosci: 8,
-  spichlerzIIProgLudnosci: 12,
-  akweduktMaxLudnosci: 20, // R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1: 20 (stare 15 było nieaktualne od obniżki do 12)
+  akweduktMaxLudnosci: 15,
 };
 
 const atCap = {
@@ -63,13 +62,13 @@ const withAq = { ...atCap, maAkwedukt: true, magazynZywnosci: 60 };
 const r3 = populationGrowth(withAq, 10, params);
 assert(r3.wzrost && r3.nowaLudnosc === 6, 'pop 5 z akweduktem — wzrost do 6');
 
-const atCapAq = { ludnosc: 20, zdrowie: 0, maSpichlerz: false, maAkwedukt: true, magazynZywnosci: 500 };
+const atCapAq = { ludnosc: 15, zdrowie: 0, maSpichlerz: false, maAkwedukt: true, magazynZywnosci: 200 };
 const r4 = populationGrowth(atCapAq, 50, params);
-assert(!r4.wzrost && r4.nowaLudnosc === 20, 'pop 20 z akweduktem — brak wzrostu do 21');
+assert(!r4.wzrost && r4.nowaLudnosc === 15, 'pop 15 z akweduktem — brak wzrostu do 16');
 
-const belowAq = { ...atCapAq, ludnosc: 19, magazynZywnosci: 500 };
+const belowAq = { ...atCapAq, ludnosc: 14, magazynZywnosci: 130 };
 const r5 = populationGrowth(belowAq, 10, params);
-assert(r5.wzrost && r5.nowaLudnosc === 20, 'pop 19 z akweduktem i buforem — wzrost do 20');
+assert(r5.wzrost && r5.nowaLudnosc === 15, 'pop 14 z akweduktem i buforem — wzrost do 15');
 
 // Środkowy szczebel drabinki (R-SPICHLERZ-CAP-LUDNOSCI-ETAP): maSpichlerz=true, bez
 // Akweduktu — cap = spichlerzProgLudnosci (8), NIE akweduktProgLudnosci (5). Bez tych

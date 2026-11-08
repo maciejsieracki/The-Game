@@ -270,9 +270,8 @@ assert(emptyDef.roster.length === 0, 'collectCityDefRoster: no garrison no units
 const milDef = collectCityDefRoster({ ...openCity, garnizon: 0 }, [], {
   completedBuildingIds: ['garnizon'],
 });
-// R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1: pop 10 -> 10 jednostek (5 Wojownik + 5 Oszczepnik, Kamien).
-assert(milDef.roster.length === 10 && milDef.roster.every(u => u.isMilitia === true), 'collectCityDefRoster: militia synth');
-assert(milDef.militiaDefs.size === 10 && milDef.militiaDefs.has('militia-c-open-0'), 'collectCityDefRoster: militia def map');
+assert(milDef.roster.length === 1 && milDef.roster[0].typeId === 'Milicja', 'collectCityDefRoster: militia synth');
+assert(milDef.militiaDefs.has('militia-c-open'), 'collectCityDefRoster: militia def map');
 const queuedMilDef = collectCityDefRoster({ ...openCity, garnizon: 0 }, [], {
   completedBuildingIds: [],
   queuedBuildingIds: ['garnizon'],
@@ -332,9 +331,9 @@ const militiaPlan = planOpenCityFieldBattle(
 );
 assert(
   militiaPlan !== null
-    && militiaPlan.defRoster.length === 10
+    && militiaPlan.defRoster.length === 1
     && militiaPlan.defRoster[0].isMilitia === true
-    && militiaPlan.militiaDefs.has('militia-c-open-0'),
+    && militiaPlan.militiaDefs.has('militia-c-open'),
   'planOpenCityFieldBattle: completed Garnizon reaches preBattle as virtual militia',
 );
 

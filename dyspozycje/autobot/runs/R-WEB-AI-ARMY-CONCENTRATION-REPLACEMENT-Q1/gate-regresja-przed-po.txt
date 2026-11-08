@@ -1,8 +1,0 @@
-Regresja PRZED vs PO (gra/tools: *army*, *concentration*, ai-*, *war*; bez live/measure/bench/sim/diag/kronika) = 134 plikow.
-PO: 100 zielonych, 34 czerwonych. PRZED (origin/main b89ecee44): te same 34 czerwone (kody identyczne), jedyna roznica kodu wyjscia:
-  ai-avoid-polar-plan-test.cjs: PO=KILLED (limit 150 s przy rownoleglym obciazeniu 4 procesow), solo PO: PASS (36 s).
-Rozbieznosci licznikow sprawdzone osobno, na tej samej bazie z git:
-  war-allin-capital-test.cjs: 94 passed / 4 failed zarowno z ai.ts z HEAD (baza), jak i z poprawka (te same hashe 6b; sekcja 6 w kopii bez .git jest SKIP -- dlatego "87/1" w kopii).
-  ai-test.cjs: 274/20 PRZED i PO. forced-war-waves 16/1, ai-siege-requires-war 47/1, ai-home-defense-vs-barbarians 35/3 -- identycznie PRZED i PO.
-Zielone PO (podzbior wojenny): army-concentration-test 56/0, army-consolidation(-e2e) 10/0 i 6/0, ai-general-war-campaign 51/0, war-rules-multiwar 57/0, ai-war-gate 24/0, ai-war-nearest-city-peace-2t PASS, ai-ofensywa-wojna-epoki 7/0.
-EXIT=0

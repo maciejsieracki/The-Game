@@ -285,7 +285,7 @@ function runBlockB(src, ME, calls) {
     ownersShareLandBorderLive: (a, b) => { calls.ownersShareLandBorderLiveArgs = [a, b]; return false; },
     getWiarygodnosc: (id) => { calls.getWiarygodnoscArgs.push(id); return 50; },
     tickDiplomacy: (rel) => rel,
-    externalTradeContactOk: () => false, tradeContactBetween: () => false, // R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (dawniej citiesHaveTradeConnection)
+    citiesHaveTradeConnection: () => false,
     map: {}, cityBuilt: new Map(), DEFAULT_TRADE_ROUTE_PARAMS: {}, buildAllTerritoryNodes: () => [],
     resolveArchetypeTrade: () => 0.5,
     ARCHETYPE_TRADE: {},

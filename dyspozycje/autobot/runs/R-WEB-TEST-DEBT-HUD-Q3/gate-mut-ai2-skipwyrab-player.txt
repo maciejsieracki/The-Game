@@ -1,1 +1,0 @@
-EXIT=1 (ai2-heks-po-heksie: 37 passed, 1 failed) mutant gra/src/main.ts:37377 dodane skipWyrab: true w pickerze gracza

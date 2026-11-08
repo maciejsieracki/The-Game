@@ -15,10 +15,7 @@
  * Identyfikatory wszystkich surowcow w grze.
  * Typ surowy: pochodzi bezposrednio z terenu / zloza.
  * Typ przetworzony: wymaga budynku produkcyjnego (tartak, itp.).
- * Typ hodowla: ulepszenia terenu Trzoda (bydlo) / owce / lama NIE wymagaja zloza startowego ani zadnych
- * zasobow i nie dodaja etykiety dostepu do surowca (decyzja wlasciciela 2026-07-23, potwierdzona
- * 2026-10-31, rejestr #4: "Trzoda nie wymaga zloza ani zasobow"; kod: resource-access.ts
- * `LIVESTOCK_NOT_RESOURCE`). Zloze + stadnina dotyczy tylko Konia.
+ * Typ hodowla: wymaga zloza startowego + pastwiska.
  */
 export enum SurowiecId {
   // Surowe

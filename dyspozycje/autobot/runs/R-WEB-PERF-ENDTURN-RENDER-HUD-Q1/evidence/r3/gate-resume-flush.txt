@@ -1,2 +1,0 @@
-resume-flush behavior test: OK (3 scenariusze x {kod, mutacja} + okablowanie)
-EXIT=0

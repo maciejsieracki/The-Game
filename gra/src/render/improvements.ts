@@ -392,12 +392,6 @@ export function buildImprovement(
 const SECTOR_R = 0.72;      // dosunięcie do ścianki (HEX_R=1)
 const SECTOR_SCALE = 0.30;  // znacząco mniejsze
 /**
- * R-WEB-MAP-MODELS-SCALE-2X-Q1 (2026-11-03): fort/posterunek byly 0.5 (×SECTOR_SCALE);
- * decyzja właściciela ×2 → 1.0. Jeden punkt skali; skala wokół podstawy modelu (Y=0).
- */
-export const FORT_OUTPOST_MODEL_SCALE = 2;
-const FORT_OUTPOST_BASE_SCALE = 0.5;
-/**
  * Pierścień sektorów na heksie z ZACHOWANĄ bryłą wzgórza/góry (kopalnia, kamieniołom,
  * hodowla — patrz preservesHillRelief w game/relief-preserving-improvements.ts). Obrys kopca sięga 0.87 HEX_R
  * (góra) / 0.92 (wzgórze), więc przy domyślnym 0.72 model stoi w połowie stromizny:
@@ -504,7 +498,7 @@ export function buildImprovementSectored(
       box.getCenter(c);
       model.position.x -= c.x;
       model.position.z -= c.z; // wyśrodkuj w XZ (spód Y zostaje na 0)
-      if (FORT_KEYS.has(k)) model.scale.multiplyScalar(FORT_OUTPOST_BASE_SCALE * FORT_OUTPOST_MODEL_SCALE); // fort/posterunek (×2 wzgl. 0.5)
+      if (FORT_KEYS.has(k)) model.scale.multiplyScalar(0.5); // fort/posterunek dodatkowo mniejsze
       sub.add(model);
     }
     sub.scale.setScalar(SECTOR_SCALE);

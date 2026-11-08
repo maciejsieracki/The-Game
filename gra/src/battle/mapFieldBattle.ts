@@ -27,8 +27,6 @@ import { veteranCombatBonusFrac, applyVeteranFracToCombatUnit } from '../game/ve
 import { snapshotRosterPositions } from '../game/post-battle-map';
 import type { RuntimeUnit } from '../units/setup';
 import { collectAtkRosterNearCity } from '../units/battleRoster';
-import type { BattleEventLog } from '../units/battleRoster';
-import { battleReserveNotice } from '../game/post-battle-map';
 import type { PreBattleInfo, PreBattleCallbacks, PreBattleOptions } from '../ui/preBattle';
 import type { BattleOpts, BattleResult, BattleUnit } from './battleScene';
 import type { CivBonusEntry } from '../game/civ-bonuses';
@@ -79,7 +77,7 @@ export interface MapFieldBattleLaunchDeps {
   fortifyScaledDefFor: (u: RuntimeUnit) => UnitPowerInput & Record<string, unknown>;
   terrainCombatData: readonly TerrainEntry[];
   battleData: { terrainData?: unknown[]; counters?: unknown[]; units?: unknown[] };
-  showHint: (msg: string, ms?: number, aboveBattle?: boolean) => void;
+  showHint: (msg: string, ms?: number) => void;
   showPreBattle: (
     info: PreBattleInfo,
     cb: PreBattleCallbacks,
@@ -98,8 +96,6 @@ export interface MapFieldBattleLaunchDeps {
       lossAtkPct?: number;
       lossDefPct?: number;
       allowCityCapture?: boolean;
-      /** Faktycznie wystawieni (R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1). */
-      battleEventLog?: BattleEventLog;
     },
     summary: {
       mode: 'auto' | 'manual';
@@ -133,8 +129,6 @@ export interface MapFieldBattleLaunchDeps {
     onContinue: () => void,
   ) => void;
   clearBattleUiState: () => void;
-  /** Limit jednostek na strone na polu bitwy (komunikat o rezerwie; brak = bez komunikatu). */
-  battleMaxPerSide?: number;
   createBattleScene: (opts: BattleOpts) => { play: (cb: (res: BattleResult) => void) => void; dispose: () => void };
   /** Głód wojska — opcje do BattleOpts (PYTANIE-85). */
   armyHungerBattleOpts?: (atkOwnerId: number, defOwnerId: number) => Pick<BattleOpts, 'attackerArmyHungry' | 'defenderArmyHungry' | 'armyHungerStatMult'>;
@@ -325,7 +319,6 @@ export function planOpenCityFieldBattle(
   if (city.maMur) return null;
   const defenderOptions = {
     completedBuildingIds: deps.getCompletedBuildingIds?.(city.id),
-    ownerEra: deps.eraForOwnerId?.(city.ownerId),
   };
   if (!hasCityDefenders(city, units, defenderOptions)) return null;
 
@@ -515,13 +508,6 @@ export function launchFieldBattleFromMap(
       deps.hidePreBattle();
       const atkLead = atkRosterRef[0]!;
       const defLead = defRosterRef[0]!;
-      if (deps.battleMaxPerSide != null) {
-        const note = battleReserveNotice(
-          atkRosterRef.length, defRosterRef.length, deps.battleMaxPerSide,
-          atkLead.ownerId === 0 ? 'atk' : defLead.ownerId === 0 ? 'def' : null,
-        );
-        if (note) deps.showHint(note, 5000, true);
-      }
       setMood('bitwa');
       const bs = deps.createBattleScene({
         attacker: rosterToBattleUnits(atkRosterRef, 0xffd54a),
@@ -563,7 +549,6 @@ export function launchFieldBattleFromMap(
             battleR: plan.battleHex.r,
             atkStart: atkStartSnap,
             allowCityCapture: true,
-            battleEventLog: res.eventLog,
           },
           summaryMeta('manual'),
           () => {

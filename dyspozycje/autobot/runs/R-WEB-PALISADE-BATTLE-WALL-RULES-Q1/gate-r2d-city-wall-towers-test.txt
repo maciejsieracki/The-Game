@@ -1,3 +1,0 @@
-
-WYNIK: 59 OK, 0 FAIL
-EXIT=0

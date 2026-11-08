@@ -199,12 +199,6 @@ export { WYZYWIENIE_MAX, WYZYWIENIE_MIN } from '../src/game/population-growth-v8
 // teraz koszt żywności armii inline w swoim ciele -- potrzebuje loadUpkeepParams (prawdziwa
 // funkcja z economy-upkeep.ts, nie mock).
 export { loadUpkeepParams } from '../src/game/economy-upkeep';
-// R-EKONOMIA-ZYWNOSC-NADWYZKA-PO-LIMICIE: getMaxSafePoziomRacjiForPlayerCity buduje teraz
-// popCapByCityIdHud (limit ludności per miasto) i przekazuje go do maxSafePoziomRacjiForCity --
-// potrzebuje tych samych funkcji co main.ts, PRAWDZIWYCH, nie mocków.
-export { buildEconParams } from '../src/game/turn-economy';
-export { cityPopulationCap, resolvePopulationCapMatrixDelta } from '../src/game/economy';
-export { cityHasSpichlerzBuilding } from '../src/game/building-resource-gate';
 `, 'utf8');
 esbuild.buildSync({
   entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs',
@@ -535,7 +529,6 @@ function runGetMaxSafePoziomRacjiForPlayerCity({
     'maxSafePoziomRacjiForCity', '_maxSafeRationCache',
     'loadUpkeepParams', 'militaryFoodConsumptionWithSpichlerz', 'spichlerzSolArmyBonusActive',
     'units', 'unitFoodTbl', 'cityAtUnit', 'isCampingForFoodDiscount', 'territoryOwnerAt',
-    'buildEconParams', 'cityPopulationCap', 'resolvePopulationCapMatrixDelta', 'cityHasSpichlerzBuilding',
     gmsBody,
   );
   const result = fn(
@@ -547,7 +540,6 @@ function runGetMaxSafePoziomRacjiForPlayerCity({
     M.maxSafePoziomRacjiForCity, _maxSafeRationCache,
     M.loadUpkeepParams, M.militaryFoodConsumptionWithSpichlerz, M.spichlerzSolArmyBonusActive,
     units, unitFoodTbl, cityAtUnit, isCampingForFoodDiscount, territoryOwnerAt,
-    M.buildEconParams, M.cityPopulationCap, M.resolvePopulationCapMatrixDelta, M.cityHasSpichlerzBuilding,
   );
   return { result, _maxSafeRationCache };
 }

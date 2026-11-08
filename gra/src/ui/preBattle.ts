@@ -11,7 +11,7 @@
  */
 
 import type { CivBonusLite } from '../game/production';
-import { civCombatUnitShapeFromCategory, effectiveCombatBonusChipTexts } from '../game/civ-bonuses';
+import { bonusChipTexts } from '../game/defenseBreakdown';
 import { terrainIconSvg, civIconSvg, brandIconSvg } from './icons/brandAssets';
 import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';
@@ -152,10 +152,6 @@ export interface PreBattleCallbacks {
 
 export interface PreBattleOptions {
   defaultAction?: 'auto' | 'manual';
-  /** Resolve immediately without opening the pre-battle choice overlay. */
-  automaticOnly?: boolean;
-  /** Manual battlefield controls require a Wódz/Generał in the player's roster. */
-  manualControlAllowed?: boolean;
   /** Nadpisanie hooka z configurePreBattle (np. jednorazowy test). */
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
   /**
@@ -249,13 +245,6 @@ export function showPreBattle(
     // main.ts::healStaleEndTurnBlockers() uses it so a request stuck in the queue past the
     // threshold (8s, see main.ts) doesn't disable its branch 1 FOREVER.
     deferredAutoRequests.push({ info, cb, opts, enqueuedAt: Date.now() });
-    return;
-  }
-  // The new-game setting Bitwa automatyczna means automatic resolution, with no
-  // manual-vs-auto prompt. Keep this after the deferred-auto guard so incoming attacks
-  // queued behind another modal are still resolved in FIFO order when they flush.
-  if (opts?.automaticOnly === true) {
-    cb.onAuto();
     return;
   }
   hidePreBattle();
@@ -714,7 +703,6 @@ function commanderHtml(
   isYou: boolean,
   explicit: readonly CivBonusLite[] | undefined,
   getBonusy?: (ownerId: number) => readonly CivBonusLite[],
-  terrain = '',
 ): string {
   const total = unitCount(side.units);
   const civ = esc(side.cywilizacja ?? side.nazwa);
@@ -722,10 +710,7 @@ function commanderHtml(
   const sideCls = isYou ? 'pb-you' : 'pb-foe';
   const posCls = isYou ? 'pb-l' : 'pb-r';
   const bonusy = resolveSideBonusy(side, explicit, getBonusy);
-  const combatRoster = side.units.map(unit => civCombatUnitShapeFromCategory(unit.nazwa, unit.kategoria));
-  const chipTexts = effectiveCombatBonusChipTexts(bonusy, combatRoster, {
-    side: role === 'atk' ? 'attacker' : 'defender', terrain, isChargeRound: false,
-  });
+  const chipTexts = bonusChipTexts(bonusy);
   const chipsHtml = chipTexts.length
     ? '<div class="pb-bonuses">' +
       chipTexts.map(t => '<span class="pb-bchip">' + PB_ICON_DOT + esc(t) + '</span>').join('') +
@@ -817,13 +802,7 @@ function metaHtml(info: PreBattleInfo): string {
   return '<div class="pb-meta">' + parts.join('<span>·</span>') + '</div>';
 }
 
-function buildDeployPanel(
-  info: PreBattleInfo,
-  canRetreat: boolean,
-  defaultManual: boolean,
-  hasSave: boolean,
-  manualControlAllowed: boolean,
-): HTMLElement {
+function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManual: boolean, hasSave: boolean): HTMLElement {
   const defenderCanRetreat = info.defenderCanRetreat === true;
   const showRetreat = canRetreat || defenderCanRetreat;
   // P-WYCOFANIE-JEDNORAZOWE-TURA (Maciej 2026-08-13): obrońca już wycofany w tej
@@ -849,8 +828,6 @@ function buildDeployPanel(
     btns.push('<button type="button" class="pb-btn pb-danger" data-act="cancel" disabled>' + PB_SVG.retreat + 'Wycofaj</button>');
   }
   btns.push('<button type="button" class="pb-btn" data-act="auto">' + PB_SVG.auto + 'Auto</button>');
-  // Wybór trybu bitwy należy do pre-battle prompt i zawsze pozostaje dostępny.
-  // manualControlAllowed ogranicza dopiero sterowanie na polu bitwy (BattleScene).
   btns.push('<button type="button" class="pb-btn pb-primary" data-act="deploy">' + deployIcon + esc(deployLabel) + '</button>');
   if (hasSave) {
     btns.push('<button type="button" class="pb-btn" data-act="save">Zapisz</button>');
@@ -875,9 +852,6 @@ function buildDeployPanel(
   const prognoza = info.prognoza
     ? '<div class="pb-note">' + esc(info.prognoza) + '</div>'
     : '';
-  const commanderNote = manualControlAllowed
-    ? ''
-    : '<div class="pb-note">Bez Wodza lub Generała możesz wejść na pole bitwy, ale walka rozegra się automatycznie bez indywidualnego sterowania.</div>';
 
   const panel = document.createElement('div');
   panel.className = 'pb-deploy';
@@ -891,7 +865,6 @@ function buildDeployPanel(
     oddsHtml(info, canRetreat) +
     modPillsHtml(allMods) +
     prognoza +
-    commanderNote +
     '<div class="pb-btns">' + btns.join('') + '</div>' +
     noRetreatBar +
     keys +
@@ -902,7 +875,6 @@ function buildDeployPanel(
 function buildOverlay(info: PreBattleInfo, cb: PreBattleCallbacks, opts?: PreBattleOptions): HTMLDivElement {
   ensureStyles();
   const canRetreat = info.canRetreat !== false;
-  const manualControlAllowed = opts?.manualControlAllowed !== false;
   const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual';
   const getBonusy = opts?.getCivBonusy ?? pbCfg.getCivBonusy;
 
@@ -922,20 +894,17 @@ function buildOverlay(info: PreBattleInfo, cb: PreBattleCallbacks, opts?: PreBat
   // roster wroga renderowany w pelni z dostepnych danych (tak jak dotychczas).
 
   overlay.innerHTML =
-    commanderHtml(info.atakujacy, 'atk', isYouAtk, info.bonusyAtakujacy, getBonusy, info.teren) +
-    commanderHtml(info.obronca, 'def', isYouDef, info.bonusyObronca, getBonusy, info.teren) +
+    commanderHtml(info.atakujacy, 'atk', isYouAtk, info.bonusyAtakujacy, getBonusy) +
+    commanderHtml(info.obronca, 'def', isYouDef, info.bonusyObronca, getBonusy) +
     rosterHtml(info.atakujacy, 'atk', isYouAtk) +
     rosterHtml(info.obronca, 'def', isYouDef);
 
-  overlay.appendChild(buildDeployPanel(info, canRetreat, defaultManual, !!cb.onSave, manualControlAllowed));
+  overlay.appendChild(buildDeployPanel(info, canRetreat, defaultManual, !!cb.onSave));
 
   const dismiss = (): void => hidePreBattle();
   overlay.querySelector('[data-act="cancel"]')?.addEventListener('click', () => { cb.onCancel(); dismiss(); });
   overlay.querySelector('[data-act="auto"]')?.addEventListener('click', () => { cb.onAuto(); dismiss(); });
-  overlay.querySelector('[data-act="deploy"]')?.addEventListener('click', () => {
-    cb.onBattlefield();
-    dismiss();
-  });
+  overlay.querySelector('[data-act="deploy"]')?.addEventListener('click', () => { cb.onBattlefield(); dismiss(); });
   overlay.querySelector('[data-act="save"]')?.addEventListener('click', () => {
     if (!cb.onSave) return;
     void (async () => {

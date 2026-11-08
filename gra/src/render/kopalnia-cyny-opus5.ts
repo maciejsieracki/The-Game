@@ -77,7 +77,6 @@
  *   pieca i czarny kasyteryt — jasny akcent jest mały i punktowy.
  */
 import * as THREE from 'three';
-import { markSharedTransientGeometry, markSharedTransientMaterial } from './transientObjectResources';
 import { HEX_R } from './hexutil';
 
 // ═══ KOR-1 (korekta po oględzinach zrzutu w skali mapy, 2026-08-17) ════════
@@ -136,7 +135,7 @@ function mat(color: number): THREE.MeshStandardMaterial {
       roughness: cynowy ? 0.30 : 0.88,
       emissive: zarowy ? new THREE.Color(color).multiplyScalar(0.35) : new THREE.Color(0x000000),
     });
-    MATS.set(color, markSharedTransientMaterial(m));
+    MATS.set(color, m);
   }
   return m;
 }
@@ -146,13 +145,13 @@ const GEOS = new Map<string, THREE.BufferGeometry>();
 function boxGeo(w: number, h: number, d: number): THREE.BoxGeometry {
   const k = `b|${w}|${h}|${d}`;
   let g = GEOS.get(k) as THREE.BoxGeometry | undefined;
-  if (!g) { g = new THREE.BoxGeometry(w, h, d); GEOS.set(k, markSharedTransientGeometry(g)); }
+  if (!g) { g = new THREE.BoxGeometry(w, h, d); GEOS.set(k, g); }
   return g;
 }
 function cylGeo(rt: number, rb: number, h: number, seg = 6, open = false): THREE.CylinderGeometry {
   const k = `c|${rt}|${rb}|${h}|${seg}|${open ? 1 : 0}`;
   let g = GEOS.get(k) as THREE.CylinderGeometry | undefined;
-  if (!g) { g = new THREE.CylinderGeometry(rt, rb, h, seg, 1, open); GEOS.set(k, markSharedTransientGeometry(g)); }
+  if (!g) { g = new THREE.CylinderGeometry(rt, rb, h, seg, 1, open); GEOS.set(k, g); }
   return g;
 }
 /** Walec jednostkowy (r=1, h=1) — belki pod dowolnym kątem robimy przez scale. */

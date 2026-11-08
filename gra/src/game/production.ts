@@ -62,7 +62,7 @@ import {
   applyDifficultyCostMultiplier,
   type GameDifficulty,
 } from './difficulty-cost';
-import { civMatrixParam, loadCivMatrix } from './civ-matrix';
+import { buildingCostAfterCivDiscount } from './civ-bonuses';
 import { unitManpowerCostForType, tryDeductUnitSpawnCosts, cityManpowerCurrent } from './manpower';
 import {
   CITY_BUILDING_PREREQ,
@@ -126,8 +126,6 @@ export type ProductionItem = {
   nazwa: string;
   koszt: number;
   postep?: number;
-  /** Purchased unit is a General, while retaining the selected combat unit's type/stats. */
-  isGeneral?: boolean;
 };
 
 /**
@@ -161,15 +159,6 @@ export interface CityProduction {
    */
   rekrutacja?: ProductionItem[];
 }
-
-/**
- * R-WEB-MILL-RIVER-ONLY-GATE-Q1 (decyzja właściciela 2026-11-04, ABC: „Porty: morze LUB rzeka; młyn TYLKO rzeka”):
- * budynki wymagające RZEKI w zasięgu TEGO miasta (nie morza/jeziora) — ta sama definicja „przy rzece” co irygacja
- * (`isHexNearRiver`), wyliczana w main.ts (`cityHasRiverAccess`) jako `ctx.cityHasRiver`. Młyn nie ma jeszcze
- * definicji w buildings.json (stan 2026-11-05); bramka działa dla każdej definicji o id `mlyn`.
- * EN: river-only buildings (mill); gate uses ctx.cityHasRiver (isHexNearRiver, same as irrigation).
- */
-export const RIVER_ONLY_BUILDING_IDS: ReadonlySet<string> = new Set(['mlyn']);
 
 /** v0.1: ile jednostek moze zakonczyc rekrutacje w jednej turze (na miasto). */
 export const RECRUIT_UNITS_PER_TURN = 1;
@@ -211,26 +200,6 @@ export function epochNumber(epoka: string | null | undefined): number {
   if (epoka == null) return 1;
   const n = EPOCH_BY_NAME[epoka];
   return typeof n === 'number' ? n : 1;
-}
-
-/** Deterministically pick the highest-era currently eligible unit in the same Typ line.
- * Equal-era candidates keep units.json order, which is stable and product-data owned. */
-export function newestAvailableSameTypeUnit(
-  currentUnitName: string,
-  candidateNames: readonly string[],
-  units: readonly UnitDef[],
-): UnitDef | null {
-  const current = units.find(u => u.Jednostka === currentUnitName);
-  const currentTyp = (current?.Typ ?? '').trim();
-  if (!current || !currentTyp) return null;
-  const names = new Set(candidateNames);
-  let best: UnitDef | null = null;
-  for (const unit of units) {
-    if (!names.has(unit.Jednostka) || (unit.Typ ?? '').trim() !== currentTyp) continue;
-    if (epochNumber(unit.Epoka) <= epochNumber(current.Epoka)) continue;
-    if (!best || epochNumber(unit.Epoka) > epochNumber(best.Epoka)) best = unit;
-  }
-  return best;
 }
 
 // ---------------------------------------------------------------------------
@@ -426,7 +395,6 @@ export function unitProductionItem(
       kosztJednostekPace,
       ownerId,
       difficulty,
-      u.Jednostka,
     ),
   };
 }
@@ -454,8 +422,6 @@ export interface AvailabilityContext {
   buildingLevel?: number;
   /** RDY-01: bonusy cyw z civs.json (np. Zulusi -10% rekrutacji Impi). */
   civBonusy?: readonly CivBonusLite[];
-  /** Canonical civilization identity for matrix-only roster and cost resolution. */
-  civKey?: string;
   /** Etykieta Nacja z units.json (np. Celtowie, Grecja) — filtr jednostek per cyw. */
   civUnitNacja?: string;
   /** Ulepszenia terenu imperium — bramka Popalnia brązu (ABC-13). */
@@ -495,22 +461,6 @@ export interface AvailabilityContext {
    *  nie tylko aktywnym źródłem (fix: budynek blokowany mimo posiadanego surowca w puli). */
   empireResourceStock?: Readonly<Record<string, number>>;
   /**
-   * R-WEB-RECRUIT-LIST-REGRESSION-Q1 (2026-10-24): TYLKO widok panelu rekrutacji. Gdy true,
-   * jednostki z bramką zapasu surowca (Braz/Żelazo/Drewno, Surowiec=typ) NIE są ukrywane,
-   * gdy magazyn państwa nie ma tego surowca — wiersz pozostaje widoczny, a brak jest
-   * pokazany jako wyszarzony z przyczyną (stockMissing w unitRecruitCard). Domyślnie false:
-   * reguła gry (AI, walidacja produkcji) jest niezmieniona.
-   */
-  showStockGatedUnits?: boolean;
-  /**
-   * R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): TYLKO widok listy budowy. Gdy true, budynek
-   * z bramką surowca etykietowego (buildingResourceGateMet: Glina/Drewno/Ruda/... w magazynie
-   * państwa) NIE jest ukrywany, gdy magazyn go nie ma — wiersz zostaje wyszarzony, a brak jest
-   * pokazany chipem („Glina w magazynie państwa (masz 0)”). Reguły ery/technologii/lokalizacji/
-   * prerekwizytów/wody NADAL ukrywają. Domyślnie false: AI (auto-manage, main.ts) bez zmian.
-   */
-  showResourceGatedBuildings?: boolean;
-  /**
    * TEMAT 8 Q2 (2026-07-24): czy TO miasto ma wybrzeże morskie LUB rzekę w zasięgu — bramka
    * Portu/Portu wielkiego (`WATER_ACCESS_BUILDING_IDS`, building-resource-gate.ts). Per-miasto
    * (nie imperium — lokalizacja portu jest stała), WYLICZONE przez wołającego (main.ts zna
@@ -524,11 +474,6 @@ export interface AvailabilityContext {
    * nie osobne pole.
    */
   cityHasCoastOrRiver?: boolean;
-  /**
-   * R-WEB-MILL-RIVER-ONLY-GATE-Q1: rzeka w zasięgu TEGO miasta (`isHexNearRiver`, ta sama definicja co
-   * irygacja) — bramka `RIVER_ONLY_BUILDING_IDS` (młyn). Wyliczana przez main.ts (`cityHasRiverAccess`).
-   */
-  cityHasRiver?: boolean;
   /**
    * ADMIN-STOLICA (decyzja Macieja 2026-07-25): czy TO miasto jest stolicą TEGO
    * właściciela — bramka budynków z `BuildingDef.lokalizacja` ('stolica' = tylko
@@ -573,8 +518,7 @@ export function buildingWorkCost(
   ownerId = 0,
   difficulty: GameDifficulty = 'normal',
 ): number {
-  const matrixDiscount = civMatrixCostDiscount(civBonusy, 'prod_koszt_budynku_proc') ?? 0;
-  const afterCiv = applyCostDiscount(baseCost, matrixDiscount);
+  const afterCiv = buildingCostAfterCivDiscount(baseCost, civBonusy);
   const afterPace = pace ? applyBuildingCostPace(afterCiv, pace) : afterCiv;
   // GLOBAL×0.5 × FALA1×2 × FALA2×2 → efekt 2.0 vs JSON koszt Pracy budynku
   const afterGlobal = Math.max(
@@ -594,12 +538,10 @@ export function unitMoneyCost(
   pace?: KosztJednostekPace,
   ownerId = 0,
   difficulty: GameDifficulty = 'normal',
-  unitTypeName?: string,
 ): number {
   if (!Number.isFinite(baseCost) || baseCost <= 0) return 0;
   let koszt = baseCost;
-  const matrixDiscount = civMatrixCostDiscount(civBonusy, 'prod_koszt_jednostki_proc');
-  const recDisc = civRecruitmentDiscount(civBonusy, unitTypeName) + (matrixDiscount ?? 0);
+  const recDisc = civRecruitmentDiscount(civBonusy);
   if (recDisc > 0) {
     koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
   }
@@ -616,58 +558,21 @@ export interface CivBonusLite {
   wartosc: number | string | string[];
   opis?: string;
   realizuje?: string;
-  matrixParamId?: string;
 }
 
-/** F-04 cost markers for a resolved owner civ; explicit zero values carry replacement precedence. */
-export function civProductionCostBonusyForCivKey(civKey: string): CivBonusLite[] {
-  const rows = loadCivMatrix().cywilizacje;
-  const key = civKey.toLowerCase();
-  if (!rows.some(row => [row.ikonaId, row.typCywilizacji, row.Cywilizacja].some(value => value.toLowerCase() === key))) return [];
-  return (['prod_koszt_budynku_proc', 'prod_koszt_jednostki_proc'] as const).map(matrixParamId => ({
-    typ: 'koszt_redukcja',
-    cel: matrixParamId === 'prod_koszt_budynku_proc' ? 'budynki' : 'jednostki',
-    wartosc: civMatrixParam(civKey, matrixParamId),
-    opis: `Matrix:${matrixParamId}`,
-    realizuje: matrixParamId === 'prod_koszt_budynku_proc' ? 'miasto' : 'ekonomia',
-    matrixParamId,
-  }));
-}
-
-/** Only the approved, distinct G11 matrix field contributes here; legacy descriptions are inert.
- * F-04 general unit reduction is applied separately and can stack with this Impi-only field.
- */
+/** Ulga na koszt rekrutacji z bonusow realizuje=ekonomia (Zulusi Impi -10%). */
 export function civRecruitmentDiscount(
   bonusy: readonly CivBonusLite[] | undefined,
-  unitTypeName?: string,
 ): number {
-  let discount = 0;
-  for (const b of bonusy ?? []) {
+  if (!bonusy?.length) return 0;
+  for (const b of bonusy) {
     if (b.realizuje !== 'ekonomia') continue;
-    if (b.matrixParamId !== 'walka_koszt_rekrutacji_proc') continue;
-    const impiOnly = (b.cel ?? '').toLowerCase() === 'impi';
-    if (impiOnly && unitTypeName?.trim().toLowerCase() !== 'impi') continue;
-    if (typeof b.wartosc === 'number' && Number.isFinite(b.wartosc) && b.wartosc > 0) {
-      discount += b.wartosc;
+    const opis = (b.opis ?? '').toLowerCase();
+    if (opis.includes('rekrutacji') && typeof b.wartosc === 'number' && b.wartosc > 0) {
+      return b.wartosc;
     }
   }
-  return discount;
-}
-
-/** Returns null when this owner has no matrix marker; absent data is neutral, never legacy fallback. */
-function civMatrixCostDiscount(
-  bonusy: readonly CivBonusLite[] | undefined,
-  parameterId: 'prod_koszt_budynku_proc' | 'prod_koszt_jednostki_proc',
-): number | null {
-  const marker = bonusy?.find(b => b.matrixParamId === parameterId);
-  return marker && typeof marker.wartosc === 'number' && Number.isFinite(marker.wartosc)
-    ? marker.wartosc
-    : null;
-}
-
-function applyCostDiscount(baseCost: number, discount: number): number {
-  if (!Number.isFinite(baseCost) || baseCost <= 0 || discount <= 0) return baseCost;
-  return Math.max(1, Math.floor(baseCost * (1 - discount)));
+  return 0;
 }
 
 /** DOSTEP-SUROWCE-Q1: czy imperium ma >0 szt. surowca w magazynie państwa. */
@@ -678,38 +583,8 @@ function empireStockHas(
   return (stock?.[asciiKey] ?? 0) > 0;
 }
 
-// R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): czysta funkcja string->string wołana dziesiątki tysięcy razy na odświeżenie HUD
-// (isCivSpecialReplacement x jednostki x miasta); pamięć ograniczona (nazwy jednostek/nacji to mały, stały zbiór).
-const stripDiacriticsMemo = new Map<string, string>();
 function stripDiacritics(s: string): string {
-  const hit = stripDiacriticsMemo.get(s);
-  if (hit !== undefined) return hit;
-  const v = s.normalize('NFD').replace(/[\u0300-\u036F]/g, '').toLowerCase();
-  if (stripDiacriticsMemo.size >= 2000) stripDiacriticsMemo.clear();
-  stripDiacriticsMemo.set(s, v);
-  return v;
-}
-
-const UNIT_STOCK_GATE_LABEL: Readonly<Record<string, string>> = {
-  braz: 'Brąz',
-  zelazo: 'Żelazo',
-  drewno: 'Drewno',
-};
-
-/**
- * R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): przyczyna blokady jednostki przez brak
- * zapasu surowca (Braz/Żelazo/Drewno, bramka DOSTEP-SUROWCE-Q1 / BUG-BRAMKA-DREWNO-BRAK), albo
- * `null` gdy zapas jest. Tylko czytelnik — nie zmienia reguły (AI/walidacja nadal blokuje).
- */
-export function unitStockShortfallLabel(
-  u: Pick<UnitDef, 'Surowiec'>,
-  stock: Readonly<Record<string, number>> | undefined,
-): string | null {
-  const key = stripDiacritics((u.Surowiec ?? '').toString().trim());
-  const label = UNIT_STOCK_GATE_LABEL[key];
-  if (!label) return null;
-  if (empireStockHas(stock, key)) return null;
-  return `Brak w magazynie państwa: ${label}`;
+  return s.normalize('NFD').replace(/[\u0300-\u036F]/g, '').toLowerCase();
 }
 
 /** typCywilizacji / ikonaId → kolumna Nacja w units.json. */
@@ -752,33 +627,6 @@ function unitAllowedForCivNation(unitNacja: string, civUnitNacja: string | undef
   const c = (civUnitNacja ?? '').trim();
   if (!c) return false;
   return stripDiacritics(n) === stripDiacritics(c);
-}
-
-/** Resolve roster nation from the canonical civ key when present; older callers
- * may supply the already-resolved nation. Legacy bonus descriptions are never
- * consulted for roster eligibility. */
-function availabilityCivNation(ctx: AvailabilityContext): string | undefined {
-  return ctx.civKey !== undefined ? unitNacjaForCivKey(ctx.civKey) : ctx.civUnitNacja;
-}
-
-function isCivSpecialReplacement(unit: UnitDef, civNation: string | undefined): boolean {
-  if (!civNation) return false;
-  const replacement = (unit['W zamian za'] ?? '').toString().trim();
-  const unitNation = (unit.Nacja ?? '').toString().trim();
-  return !isBlankReplacement(replacement)
-    && unitNation.length > 0
-    && stripDiacritics(unitNation) === stripDiacritics(civNation);
-}
-
-function civHasReplacementFor(
-  data: ProductionData,
-  baseUnitName: string,
-  civNation: string | undefined,
-): boolean {
-  if (!civNation) return false;
-  return data.units.some(unit =>
-    isCivSpecialReplacement(unit, civNation)
-      && (unit['W zamian za'] ?? '').toString().trim() === baseUnitName);
 }
 
 /** Mnoznik: kupno budynku za Pieniadz = koszt Pracy × ten wspolczynnik. */
@@ -955,7 +803,7 @@ export function availableProduction(
   const builtList = ctx.builtBuildingIds ?? [];
   const queue = ctx.productionQueue ?? [];
   const techs = new Set(unlockedTechs);
-  const civNation = availabilityCivNation(ctx);
+  const specTokens = civSpecialUnitNameTokens(ctx.civBonusy);
   const ownerId = ctx.ownerId ?? 0;
   const difficulty = ctx.difficulty ?? 'normal';
 
@@ -1002,13 +850,7 @@ export function availableProduction(
     if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
       continue;
     }
-    // R-WEB-MILL-RIVER-ONLY-GATE-Q1: młyn wymaga RZEKI w zasięgu miasta (morze/jezioro nie wystarcza).
-    if (RIVER_ONLY_BUILDING_IDS.has(b.id) && ctx.cityHasRiver !== true) {
-      continue;
-    }
-    // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: brak surowca etykietowego nie ukrywa budynku w widoku
-    // listy budowy (showResourceGatedBuildings) — wiersz wyszarzony + chip z przyczyną.
-    if (!ctx.showResourceGatedBuildings && !buildingResourceGateMet(
+    if (!buildingResourceGateMet(
       b,
       ctx.empireActiveResourceLabels,
       ctx.empireBuiltIds,
@@ -1050,15 +892,20 @@ export function availableProduction(
     const isZwiadowcaException = (u.Typ ?? '').toString().trim() === 'Civilian';
     if (!isZwiadowcaException && (unitEpoch > epoch || unitEpoch < epoch - 1)) continue;
     const nacja = (u.Nacja ?? '').toString().trim();
-    if (!unitAllowedForCivNation(nacja, civNation)) continue;
+    if (!unitAllowedForCivNation(nacja, ctx.civUnitNacja)) continue;
     const zamiast = (u['W zamian za'] ?? '').toString().trim();
     const isReplacement = !isBlankReplacement(zamiast);
     if (isReplacement) {
-      // National replacements derive from canonical owner nation and the unit
-      // data's replacement relation, never from legacy bonus prose.
-      if (!isCivSpecialReplacement(u, civNation)) continue;
-    } else if (civHasReplacementFor(data, u.Jednostka, civNation)) {
-      continue;
+      // Jednostka specjalna (zastepuje bazowa) — tylko gdy cyw ma wpis w bonusy[].
+      if (!unitMatchesSpecialName(u.Jednostka, specTokens)) continue;
+    } else if (specTokens.length > 0) {
+      // Ukryj jednostke bazowa, gdy cyw ma specjalna wymiane tej samej roli.
+      const replacedBySpec = data.units.some(su => {
+        const sz = (su['W zamian za'] ?? '').toString().trim();
+        if (isBlankReplacement(sz) || sz !== u.Jednostka) return false;
+        return unitMatchesSpecialName(su.Jednostka, specTokens);
+      });
+      if (replacedBySpec) continue;
     }
     const tech = (u.Tech ?? '').toString().trim();
     // BUGFIX: blank-tech marker w units.json bywa zapisany jako '-' LUB '—'
@@ -1067,12 +914,12 @@ export function availableProduction(
     // pojawia w produkcji (szuka nieistniejacej technologii "—"). Uzgodnione
     // z isBlankReplacement(), ktora juz uznaje obie formy za puste.
     if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) continue;
-    // Koszary gate: każda jednostka od epoki Brązu wzwyż wymaga wybudowanych
-    // Koszar (id='koszary') w tym mieście. Jednostki epok wcześniejszych bez zmian.
+    // Koszary gate (decyzja Maciej 2026-06-25): jednostki epoki Brazu wymagaja
+    // wybudowanych Koszar (id='koszary') w miescie. Inne epoki bez zmian.
     // Ulepszenie Koszary->Akademia wojskowa usuwa 'koszary' z builtIds (fix #32) —
     // bramka akceptuje wiec tez budynek nadrzedny (ten sam wzorzec co przy
     // zelazo-access.ts dla odlewni), inaczej ulepszenie odbiera miastu Braz.
-    if (epochNumber(u.Epoka) >= 2 && !built.has('koszary')
+    if (epochNumber(u.Epoka) === 2 && !built.has('koszary')
       && !isBuildingSupersededByUpgrade('koszary', builtList, data.buildings)) continue;
     // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): jednostki morskie (Typ='Naval',
     // np. Galera) wymagają, żeby TO miasto miało dostęp do wody (morze LUB rzeka) — ten sam
@@ -1086,21 +933,17 @@ export function availableProduction(
     // stripDiacritics() (NFD + lowercase) naprawia dopasowanie.
     const surowiec = stripDiacritics((u.Surowiec ?? '').toString().trim());
     // DOSTEP-SUROWCE-Q1 (2026-07-29): jednostki brązowe/żelazne — tylko zapas w magazynie państwa.
-    // R-WEB-RECRUIT-LIST-REGRESSION-Q1: w widoku panelu (showStockGatedUnits) brak zapasu
-    // NIE ukrywa jednostki — wiersz jest wyszarzony z przyczyną (cityPanel/unitRecruitCard).
-    if (!ctx.showStockGatedUnits) {
-      if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) {
-        continue;
-      }
-      if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) {
-        continue;
-      }
-      // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): jednostki drewniane — analogiczna
-      // bramka do brązu/żelaza, tylko zapas w magazynie państwa. Bez progu startowego
-      // (odrzucona opcja C) — świadome ryzyko blokady startu gry bez Drewna w zapasie.
-      if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) {
-        continue;
-      }
+    if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) {
+      continue;
+    }
+    if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) {
+      continue;
+    }
+    // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): jednostki drewniane — analogiczna
+    // bramka do brązu/żelaza, tylko zapas w magazynie państwa. Bez progu startowego
+    // (odrzucona opcja C) — świadome ryzyko blokady startu gry bez Drewna w zapasie.
+    if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) {
+      continue;
     }
     // Super-jednostka (audyt #11, decyzja A3=A): max 1 ŻYWA sztuka na cywilizację --
     // znika z listy produkcji dopóki egzemplarz danej nazwy żyje (respawn po śmierci
@@ -1112,7 +955,6 @@ export function availableProduction(
       ctx.kosztJednostekPace,
       ownerId,
       difficulty,
-      u.Jednostka,
     );
     items.push({
       kind: 'jednostka',
@@ -1173,7 +1015,7 @@ export function availableReplacementsFor(
   const builtList = ctx.builtBuildingIds ?? [];
   const built = new Set(builtList);
   const techs = new Set(unlockedTechs);
-  const civNation = availabilityCivNation(ctx);
+  const specTokens = civSpecialUnitNameTokens(ctx.civBonusy);
   const ownerId = ctx.ownerId ?? 0;
   const difficulty = ctx.difficulty ?? 'normal';
 
@@ -1183,13 +1025,13 @@ export function availableReplacementsFor(
   function passesAvailabilityGates(u: UnitDef): boolean {
     if (epochNumber(u.Epoka) > epoch) return false;
     const nacja = (u.Nacja ?? '').toString().trim();
-    if (!unitAllowedForCivNation(nacja, civNation)) return false;
+    if (!unitAllowedForCivNation(nacja, ctx.civUnitNacja)) return false;
     const tech = (u.Tech ?? '').toString().trim();
     // Blank-tech marker bywa '-' LUB '—' (em dash) -- patrz uwaga w availableProduction.
     if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) return false;
-    // Koszary gate: wszystkie jednostki od epoki Brązu wzwyż wymagają Koszar.
+    // Koszary gate (decyzja Maciej 2026-06-25): jednostki epoki Brazu wymagaja Koszar.
     // Ulepszenie do Akademii wojskowej tez sie liczy (fix #32) — patrz uwaga w availableProduction.
-    if (epochNumber(u.Epoka) >= 2 && !built.has('koszary')
+    if (epochNumber(u.Epoka) === 2 && !built.has('koszary')
       && !isBuildingSupersededByUpgrade('koszary', builtList, data.buildings)) return false;
     // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): identyczna bramka jak w
     // availableProduction — jednostka morska (Typ='Naval') wymaga dostępu do wody w TYM mieście.
@@ -1199,14 +1041,10 @@ export function availableReplacementsFor(
     // -> bramka dostępu była MARTWA (jednostki brązowe/żelazne budowały się bez dostępu do surowca).
     // stripDiacritics() (NFD + lowercase) naprawia dopasowanie.
     const surowiec = stripDiacritics((u.Surowiec ?? '').toString().trim());
-    // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: w widoku Zastąp (showStockGatedUnits) brak zapasu NIE
-    // ukrywa jednostki — wiersz wyszarzony z przyczyną (unitStockShortfallLabel, unitReplacePicker).
-    if (!ctx.showStockGatedUnits) {
-      if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) return false;
-      if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) return false;
-      // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): ta sama bramka drewna co w availableProduction.
-      if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) return false;
-    }
+    if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) return false;
+    if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) return false;
+    // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): ta sama bramka drewna co w availableProduction.
+    if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) return false;
     // Super-jednostka (audyt #11, decyzja A3=A): "Zastąp" nie może dać drugiej żywej
     // sztuki -- ta sama bramka co availableProduction (aliveUnitTypeNames).
     if (u['Super-jednostka'] === 'TAK' && ctx.aliveUnitTypeNames?.has(u.Jednostka)) return false;
@@ -1220,7 +1058,6 @@ export function availableReplacementsFor(
       ctx.kosztJednostekPace,
       ownerId,
       difficulty,
-      u.Jednostka,
     );
   }
 
@@ -1238,7 +1075,7 @@ export function availableReplacementsFor(
     // Krok "chowaj jednostke bazowa gdy istnieje lepszy zamiennik cyw." jest CELOWO
     // POMINIĘTY (Zastąp ma pokazać też warianty słabsze -- inaczej niż w rekrutacji).
     const zamiast = (u['W zamian za'] ?? '').toString().trim();
-    if (!isBlankReplacement(zamiast) && !isCivSpecialReplacement(u, civNation)) continue;
+    if (!isBlankReplacement(zamiast) && !unitMatchesSpecialName(u.Jednostka, specTokens)) continue;
 
     items.push({ kind: 'jednostka', id: u.Jednostka, nazwa: u.Jednostka, koszt: costOf(u) });
     seen.add(u.Jednostka);
@@ -1294,22 +1131,6 @@ export function frontItem(prod: CityProduction): ProductionItem | null {
 export function etaTurns(koszt: number, postep: number, praca: number): number | null {
   if (!(praca > 0)) return null;
   return Math.max(1, Math.ceil(Math.max(0, koszt - postep) / praca));
-}
-
-/** Apply the approved fractional owner speed modifier to an active building Work budget. */
-export function buildingWorkPerTurn(pracaPerTurn: number, speedBonus = 0): number {
-  const base = Number.isFinite(pracaPerTurn) && pracaPerTurn > 0 ? pracaPerTurn : 0;
-  const bonus = Number.isFinite(speedBonus) ? speedBonus : 0;
-  const scaled = base * (1 + bonus);
-  return Number.isFinite(scaled) && scaled > 0 ? scaled : 0;
-}
-
-/** Integer per-turn capacity for paid recruitment, with the approved no-carry contract. */
-export function unitRecruitmentCapacityPerTurn(baseCapacity: number, speedBonus = 0): number {
-  const base = Number.isFinite(baseCapacity) && baseCapacity > 0 ? baseCapacity : 0;
-  if (base <= 0) return 0;
-  const bonus = Number.isFinite(speedBonus) ? speedBonus : 0;
-  return Math.max(1, Math.floor(base * (1 + bonus)));
 }
 
 /**
@@ -1925,7 +1746,6 @@ export interface AdvanceProductionResult {
 export function advanceProduction(
   prod: CityProduction,
   pracaPerTurn: number,
-  buildingSpeedBonus = 0,
 ): AdvanceProductionResult {
   const front = frontItem(prod);
 
@@ -1934,7 +1754,7 @@ export function advanceProduction(
     return { prod: { ...prod, kolejka: [...prod.kolejka] }, completed: null };
   }
 
-  const basePraca = Number.isFinite(pracaPerTurn) && pracaPerTurn > 0 ? pracaPerTurn : 0;
+  const praca = Number.isFinite(pracaPerTurn) && pracaPerTurn > 0 ? pracaPerTurn : 0;
 
   // Pusta kolejka: doBudynkow nie ma na co iść → całość na pulę ulepszeń (Maciej 2026-07-22).
   if (front === null) {
@@ -1946,12 +1766,9 @@ export function advanceProduction(
         rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
       },
       completed: null,
-      overflowToPool: basePraca > 0 ? basePraca : undefined,
+      overflowToPool: praca > 0 ? praca : undefined,
     };
   }
-  const praca = front.kind === 'budynek'
-    ? buildingWorkPerTurn(basePraca, buildingSpeedBonus)
-    : basePraca;
   const accumulated = prod.postep + praca;
   const rqCopy = prod.rekrutacja ? [...prod.rekrutacja] : undefined;
 
@@ -2008,8 +1825,8 @@ export function populationCostOf(item: ProductionItem): number {
 }
 
 /** Manpower cost of completing a unit at empire epoch (Zwiadowca = 0). */
-export function manpowerCostOf(item: ProductionItem, epoka: number, maxMult = 1, costMult = maxMult): number {
-  return item.kind === 'jednostka' ? unitManpowerCostForType(item.id, epoka, maxMult, costMult) : 0;
+export function manpowerCostOf(item: ProductionItem, epoka: number, maxMult = 1): number {
+  return item.kind === 'jednostka' ? unitManpowerCostForType(item.id, epoka, maxMult) : 0;
 }
 
 /** Set/clear the Wstrzymaj (pause) flag. Returns a fresh CityProduction. */
@@ -2079,11 +1896,9 @@ export function advanceRecruitmentGated(
   maxPerTurn = RECRUIT_UNITS_PER_TURN,
   /** true gdy koszt Manpower pobrano przy opłaceniu złotem (kolejka rekrutacji). */
   costAlreadyPaid = false,
-  maxMult = 1,
-  costMult = maxMult,
 ): AdvanceRecruitmentGatedResult {
   let pop = city.population;
-  let mp = cityManpowerCurrent(city, epoka, maxMult);
+  let mp = cityManpowerCurrent(city, epoka);
   const rq = [...(prod.rekrutacja ?? [])];
   const completed: ProductionItem[] = [];
   let n = 0;
@@ -2098,9 +1913,8 @@ export function advanceRecruitmentGated(
       { population: pop, manpower: mp },
       epoka,
       UNIT_POPULATION_COST,
-      maxMult,
+      1,
       front.id,
-      costMult,
     );
     if (!d.ok) break;
     completed.push(rq.shift()!);
@@ -2160,12 +1974,10 @@ export function advanceRecruitment(
  * 1 Praca = 1 Pieniadz rate (Schemat sec.3.2): ceil(koszt - postep), never < 0.
  * Returns 0 when the queue is empty.
  */
-export function rushCost(prod: CityProduction, modifier = 0): number {
+export function rushCost(prod: CityProduction): number {
   const front = frontItem(prod);
   if (front === null) return 0;
-  const rawModifier = Number.isFinite(modifier) ? modifier : 0;
-  const roundedRemainingBase = Math.max(0, Math.ceil(front.koszt - prod.postep));
-  return Math.max(0, Math.ceil(roundedRemainingBase * (1 + rawModifier)));
+  return Math.max(0, Math.ceil(front.koszt - prod.postep));
 }
 
 /**
@@ -2325,7 +2137,6 @@ export function unitPurchaseCost(
     kosztJednostekPace,
     ownerId,
     difficulty,
-    def.Jednostka,
   );
 }
 

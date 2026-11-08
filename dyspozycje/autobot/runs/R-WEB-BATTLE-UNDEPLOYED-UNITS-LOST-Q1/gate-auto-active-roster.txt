@@ -1,2 +1,0 @@
-auto-battle-active-roster-event-test: 6 pass, 0 fail
-EXIT=0

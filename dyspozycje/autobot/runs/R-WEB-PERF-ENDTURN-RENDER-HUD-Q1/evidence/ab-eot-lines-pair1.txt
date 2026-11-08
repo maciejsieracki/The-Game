@@ -1,4 +1,0 @@
-[perf] eot {"wall":14389,"jsMs":3810.3,"nativeMs":405.6,"gcMs":288.8,"glNativeMs":99.8,"cnt":{"renderLoop":15,"syncUnitsRender":37,"currentVisible":111,"ownVisible":111,"buildHudState":7,"collectTurnEvents":21,"border":4,"refreshFog":3}}
-[perf] eot {"wall":15103,"jsMs":3376.3,"nativeMs":398.3,"gcMs":86.8,"glNativeMs":172.5,"cnt":{"renderLoop":15,"syncUnitsRender":9,"currentVisible":55,"ownVisible":55,"buildHudState":6,"collectTurnEvents":18,"border":4,"refreshFog":3}}
-[perf] eot {"wall":15195,"jsMs":3476.2,"nativeMs":606,"gcMs":186.1,"glNativeMs":90.3,"cnt":{"renderLoop":15,"syncUnitsRender":4,"currentVisible":44,"ownVisible":44,"buildHudState":7,"collectTurnEvents":21,"border":4,"refreshFog":3}}
-[perf] eot {"wall":15356,"jsMs":3132.4,"nativeMs":411.7,"gcMs":87.4,"glNativeMs":172.3,"cnt":{"renderLoop":15,"syncUnitsRender":4,"currentVisible":44,"ownVisible":44,"buildHudState":6,"collectTurnEvents":18,"border":4,"refreshFog":3}}

@@ -1,4 +1,0 @@
-regresje PO (36 testow z listy dispatchu): czerwone wylacznie 4 pre-istniejace, identyczne jak PRZED
-(ai-test 274/20, citizen-resource-upkeep-test 107/2, empire-panel-miasto-obywatele-content-test 115/1, resource-usage-breakdown-test 98/2).
-Nowe/zaktualizowane zielone: citizen-consumption-era-mult-test, citizen-upkeep-era-mult-test (663/0), population-growth-v85-bonus-test (65/0), empire-food-b5-test (34/0).
-EXIT=0

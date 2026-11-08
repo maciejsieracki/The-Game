@@ -1,2 +1,0 @@
-diplomacy-city-cession-test: 79 pass, 0 fail
-EXIT=0

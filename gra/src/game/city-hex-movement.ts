@@ -4,7 +4,7 @@
  */
 
 import type { City } from './cities';
-import { hexDistance, keyOf, cloneMoveOccupancy } from '../units/setup';
+import { hexDistance, keyOf } from '../units/setup';
 
 export type CityHexRef = Pick<City, 'q' | 'r' | 'ownerId'> & { maMur?: boolean };
 
@@ -79,11 +79,7 @@ export function addForeignCityBlocks(
   unitOwnerId: number,
   cities: readonly CityHexRef[],
 ): Set<string> {
-  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: zachowaj `passThrough` (wlasne jednostki); obce miasto zawsze blokuje.
-  const out = cloneMoveOccupancy(occupied);
-  for (const k of foreignCityHexKeys(unitOwnerId, cities)) {
-    out.add(k);
-    out.passThrough.delete(k);
-  }
+  const out = new Set(occupied);
+  for (const k of foreignCityHexKeys(unitOwnerId, cities)) out.add(k);
   return out;
 }

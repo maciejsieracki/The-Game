@@ -124,15 +124,8 @@ async function main() {
   check('"tartak": "Odblokowuje surowiec" === "drewno" (bez notatki)',
     !!tartakResourceRow && tartakResourceRow.value === 'drewno', tartakResourceRow && tartakResourceRow.value);
   const tartakProdRow = tartakResources && tartakResources.rows.find((r) => r.label === 'Produkcja surowca');
-  // R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1 (2026-10-31): baza 50 (przywrócona z regresu 200)
-  check('"tartak": "Produkcja surowca" nietknięta — "50 / turę" (baza epoki 1)',
+  check('"tartak": "Produkcja surowca" nietknięta — nadal "50 / turę"',
     !!tartakProdRow && tartakProdRow.value === '50 / turę', tartakProdRow && tartakProdRow.value);
-
-  const farmCard = improvementAdapter(terrainImprovements.farma, {});
-  const farmRequirements = farmCard.sections.find((s) => s.key === 'requirements');
-  const farmCostRow = farmRequirements && farmRequirements.rows.find((r) => r.label === 'Koszt (Praca)');
-  check('"farma": karta pokazuje koszt budowy po FALA2 i stawce epoki Kamienia (20 P)',
-    !!farmCostRow && farmCostRow.value === '20 P', farmCostRow && farmCostRow.value);
 
   // --- kontrola negatywna: pole JSON samo w sobie NIE zostało ruszone (dane nietknięte) ---
   check('dane: terrain-improvements.json["tartak"].surowiecOdblokowany_uwaga wciąż w pliku (dane NIETKNIĘTE)',

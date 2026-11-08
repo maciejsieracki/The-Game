@@ -207,18 +207,13 @@ const citiesTs = fs.readFileSync(citiesTsPath, 'utf8');
   // już osobno dopasowywać shouldAllowBarbCityCapture/canCaptureCityWithoutBattle
   // (te żyją teraz WEWNĄTRZ funkcji, chronione przez 1c).
   const marker1d = 'P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1';
-  // AKTUALIZACJA R-TEST-DEBT-MISC-Q5: marker występuje 3× (komentarze), a okno 4000 znaków
-  // od PIERWSZEGO trafienia nie sięga miejsca wywołania. Kotwica = deklaracja zmiennej
-  // w miejscu użycia (move-branch), a wywołanie ma teraz 5 argumentów (fortyfikacja + obrona).
-  assert(mainTs.indexOf(marker1d) !== -1, '1d: main.ts zawiera marker P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1');
-  const idx1d = mainTs.indexOf('const barbCanWalkIntoEmptyCity =');
-  assert(idx1d !== -1, '1d: main.ts deklaruje const barbCanWalkIntoEmptyCity = (miejsce użycia)');
+  const idx1d = mainTs.indexOf(marker1d);
+  assert(idx1d !== -1, '1d: main.ts zawiera marker P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1');
   const window1d = mainTs.slice(idx1d, idx1d + 4000);
   assert(window1d.includes('barbCanWalkIntoEmptyCity'),
     '1d: okno wokół markera zawiera zmienną barbCanWalkIntoEmptyCity');
-  assert(window1d.includes('canBarbarianWalkIntoEmptyCity(')
-    && window1d.includes('moveDestCity, units, _menuDifficulty,'),
-    '1d: okno zawiera wywołanie canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty, ...) -- '
+  assert(window1d.includes('canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty)'),
+    '1d: okno zawiera wywołanie canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty) -- '
     + 'CAŁA koniunkcja (włącznie z bramką trudności) idzie przez funkcję z 1c, nie inline');
   assert(window1d.includes("tryAutoCaptureEmptyCityAt(bcmd.toQ, bcmd.toR, [bu])"),
     '1d: okno zawiera wywołanie tryAutoCaptureEmptyCityAt(bcmd.toQ, bcmd.toR, [bu]) -- '

@@ -7,7 +7,6 @@
 import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
 import { worldToAxial, HEX_R } from '../render/hexutil';
-import { TEREN_MINIMAP_KEY } from './terrain-names';
 
 /** Zgodne z gra/src/ui/hud.ts — MinimapHexData. */
 export interface MinimapHexData {
@@ -75,8 +74,16 @@ export interface GetMinimapDataOptions {
   fogOn?: boolean;
 }
 
-// R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1: klucz ASCII terenu z jednego źródła (map/terrain-names.ts).
-const TEREN_KEY: Record<TerenBazowy, string> = TEREN_MINIMAP_KEY;
+const TEREN_KEY: Record<TerenBazowy, string> = {
+  [TerenBazowy.Laka]: 'Laka',
+  [TerenBazowy.Rownina]: 'Rownina',
+  [TerenBazowy.Wzgorza]: 'Wzgorza',
+  [TerenBazowy.Gory]: 'Gory',
+  [TerenBazowy.PlytkieMorze]: 'Wybrzeze',
+  [TerenBazowy.Morze]: 'Morze',
+  [TerenBazowy.Pustynia]: 'Pustynia',
+  [TerenBazowy.Polarny]: 'Polarny',
+};
 
 const DEFAULT_CITY_COLOR = '#ffd479';
 const DEFAULT_OUTPOST_COLOR = '#88aaff';

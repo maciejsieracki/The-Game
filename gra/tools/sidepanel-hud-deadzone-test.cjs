@@ -38,7 +38,7 @@
  *
  * Pokrycie:
  *  A. Martwa strefa .civ-side-panel → canvas (przed/po + mutacja).
- *  B. Zakładki powiadomień ([data-sp-tab]; dawniej chip "Inne cyw.") nadal klikalne prawdziwym kliknięciem myszy
+ *  B. Pasek narzędzi (.sp-toolbar-chip "Inne cyw.") nadal klikalny prawdziwym kliknięciem myszy
  *     (regresja funkcjonalności — nie tylko brak zmiany, ale faktyczne działanie).
  *  C. Karta własnej jednostki w lewym doku (.civ-side-ctx-dock .sp-ctx-card) nadal w pełni
  *     klikalna (środek karty + przycisk strzałki cyklowania ▶).
@@ -220,11 +220,8 @@ async function wheelAndPollScrollTop(page, sel, cx, cy, deltaY, scrollBefore, ti
 async function gotoPlaytestMapa(page) {
   await page.goto(OUT_HTML, { waitUntil: 'load', timeout: 120000 });
   await page.waitForSelector('.civ-hud, .civ-ux-frame, .civ-cs', { timeout: 120000 });
-  // R-WEB-TEST-DEBT-REGRESSION-A-SYNC-Q1: czekamy na ZNIKNIECIE samego overlayu (.civ-map-load-overlay,
-  // mapLoadingOverlay.ts:197-198; tryb 'load' ma inny tytul niz „Tworzenie swiata"), do 240 s -- przy obciazonym
-  // hoscie 90 s po tekscie nie wystarczalo i klik trafial w overlay (log FULLREG: elementFromPoint -> civ-map-load-overlay).
-  for (let i = 0; i < 240; i++) {
-    const overlayCount = await page.locator('.civ-map-load-overlay').count();
+  for (let i = 0; i < 90; i++) {
+    const overlayCount = await page.locator('text=Tworzenie świata').count();
     if (overlayCount === 0) break;
     await wait(1000);
   }
@@ -332,37 +329,23 @@ async function main() {
       }
     }
 
-    // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: chip „Inne cyw.” zastąpiony trzema zakładkami
-    // (Dyplomacja / Ważne / Inne). Sprawdzamy, że PRAWDZIWY klik myszy na zakładkę działa.
-    console.log('\n-- B. Zakładki powiadomień ([data-sp-tab]) nadal klikalne realnym kliknięciem --');
-    // Zakładka domyślna zależy od zawartości (Ważne gdy są wpisy, inaczej Dyplomacja, inaczej Inne),
-    // więc test klika zakładkę, która NIE jest aktywna (Inne, a gdy to ona jest domyślna — Ważne).
-    const activeTabName = await page.evaluate(() => {
-      const a = document.querySelector('[data-sp-tab].sp-tab-active');
-      return a ? a.getAttribute('data-sp-tab') : null;
-    });
-    const targetTab = activeTabName === 'inne' ? 'wazne' : 'inne';
-    const tabTarget = page.locator('[data-sp-tab="' + targetTab + '"]').first();
-    const tabCount = await tabTarget.count();
-    assert('zakładka „' + targetTab + '” istnieje w DOM', tabCount > 0);
-    if (tabCount > 0) {
-      const beforeActive = await tabTarget.evaluate(el => el.classList.contains('sp-tab-active'));
-      assert('zakładka „' + targetTab + '” przed kliknięciem NIE jest aktywna', !beforeActive);
-      const box = await tabTarget.boundingBox();
-      assert('zakładka „' + targetTab + '” ma niezerową geometrię (boundingBox)', !!box);
+    console.log('\n-- B. Pasek narzędzi (.sp-toolbar-chip "Inne cyw.") nadal klikalny realnym kliknięciem --');
+    const chip = page.locator('[data-sp-toggle-other-civs]').first();
+    const chipCount = await chip.count();
+    assert('chip "Inne cyw." istnieje w DOM', chipCount > 0);
+    if (chipCount > 0) {
+      const beforeActive = await chip.evaluate(el => el.className.includes('sp-toolbar-chip-active'));
+      assert('chip domyślnie NIE ma klasy active', !beforeActive);
+      const box = await chip.boundingBox();
+      assert('chip ma niezerową geometrię (boundingBox)', !!box);
       if (box) {
         await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
         await wait(200);
-        const afterActive = await tabTarget.evaluate(el => el.classList.contains('sp-tab-active'));
-        assert('PRAWDZIWY klik myszy na zakładkę „' + targetTab + '” ją aktywuje (funkcjonalność panelu NIE ucierpiała)', afterActive);
-        // Higiena kolejnych scenariuszy (F–I wstrzykują karty do zakładki „Ważne”): wróć na „Ważne”
-        // (zakładka z wcześniejszej wersji testu), a nie zostawaj na klikniętej.
-        const wazne = page.locator('[data-sp-tab="wazne"]').first();
-        const wBox = await wazne.boundingBox();
-        if (wBox) {
-          await page.mouse.click(wBox.x + wBox.width / 2, wBox.y + wBox.height / 2);
-          await wait(150);
-        }
+        const afterActive = await chip.evaluate(el => el.className.includes('sp-toolbar-chip-active'));
+        assert('PRAWDZIWY klik myszy na chip przełącza klasę active (funkcjonalność panelu NIE ucierpiała)', afterActive);
+        // Przywróć stan domyślny dla higieny kolejnych scenariuszy.
+        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+        await wait(150);
       }
     }
 

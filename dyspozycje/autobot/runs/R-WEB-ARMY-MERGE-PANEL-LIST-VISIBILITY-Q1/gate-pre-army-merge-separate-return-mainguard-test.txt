@@ -1,3 +1,0 @@
-
-army-merge-separate-return-mainguard-test: 73 pass, 0 fail
-EXIT=0

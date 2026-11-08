@@ -1,9 +1,0 @@
---- P1: polarny heks najlepszy, ale istnieje niepolarny -> niepolarny ---
---- P2: rowny wynik, jeden przy polarnym -> daleki od polarnego ---
---- P3: jedyny kandydat przy polarnym nadal zakladany (kara tylko w rankingu) ---
---- P4: caly dostepny lad polarny -> ostatni fallback (pierwsze miasto) ---
---- P5: kara = 0 wylacza ranking sasiedztwa ---
---- P6: polarProximityTier ---
-
-16 passed, 0 failed
-EXIT=0

@@ -1,1 +1,0 @@
-EXIT=0 (hud-resource-deficit-red-test)

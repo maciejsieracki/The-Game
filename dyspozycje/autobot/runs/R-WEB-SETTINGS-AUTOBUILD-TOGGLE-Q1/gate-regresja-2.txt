@@ -1,8 +1,0 @@
-autobuild-toggle-test.cjs EXIT=0 ::  | 36 passed, 0 failed
-autoimprove-irrigation-after-farms-test.cjs EXIT=null :: (C) prog budzetu: irygacja 3 x droższa od farmy — przy 33% i rezerwie 30 rusza dopiero od puli >= koszt/0.33 | [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
-autoimprove-stages-q1-test.cjs EXIT=0 ::  | autoimprove-stages-q1-test: 299 passed, 0 failed
-newgame-defaults-test.cjs EXIT=null ::   name: 'Error' | }
-newgame-sett-grid-layout-test.cjs EXIT=0 ::  | 74 pass · 0 fail
-newgame-settings-layout-reposition-test.cjs EXIT=0 :: newgame-settings-layout-reposition-test: PASS — 13-card grid order, 13-row advanced order, persistence and game-start params verified
-newgame-menu-reorder-layout-test.cjs EXIT=0 ::   OK  1920x1080-z150: 13 cards, 2 columns, all visible in scroll area, no overlap, Dalej reachable | newgame-menu-reorder-layout-test: PASS — 6 viewport/zoom configurations; screenshots in /home/user/
-BATCH_FAILS=2

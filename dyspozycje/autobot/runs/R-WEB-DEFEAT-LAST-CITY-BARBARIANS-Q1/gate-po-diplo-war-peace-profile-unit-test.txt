@@ -1,2 +1,0 @@
-diplo-war-peace-profile-unit-test: 198 pass / 0 fail
-EXIT=0

@@ -1,8 +1,0 @@
-TSC_EXIT=0
-CAP_EXIT=0
-PERF rozstawienie 500v500 (plains): 3343 ms
-PERF rozstawienie 500v500 (obstacles): 2043 ms
-PERF logika tury 500v500 (1000 jedn., bez renderu): tur=42 srednia=1513.0 ms p95=5311.0 ms max=8840.8 ms; rozstawienie plains=3343.2 ms obstacles=2043.3 ms
-PASS 59 asercji
-
-[exited with code 0]

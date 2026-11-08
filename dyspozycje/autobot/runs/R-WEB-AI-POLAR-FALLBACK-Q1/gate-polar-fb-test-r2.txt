@@ -1,8 +1,0 @@
---- F1: polarny wysoki, niepolarne < minScore -> null ---
---- F2: + niepolarny ponad progiem -> niepolarny ---
---- F3: caly lad polarny, brak miast -> fallback ---
---- F4: caly lad polarny, AI ma miasto -> null ---
---- F5: bonus klastra na polarnym, niepolarne < minScore -> null ---
-
-8 passed, 0 failed
-EXIT=0

@@ -3,7 +3,7 @@
  * ev-rzeka-slad-czasowy-measure.cjs — POMIAR EVALUATORA (nie bramka) dla
  * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1, runda 1. Niezalezna weryfikacja raportu Operatora.
  *
- * Harness (mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6, limit sztuk/miasto usuniety, 40 tur)
+ * Harness (mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6, maxItemsPerCity=1, 40 tur)
  * jest 1:1 z tools/oboz-lowiecki-ai-40tur-measure.cjs, zeby liczby byly porownywalne
  * z baza 99/56 i z pomiarem Operatora.
  *
@@ -134,6 +134,7 @@ function simulate(seed, turns) {
       unlockedTechs: TECHS,
       pracaSurplusThreshold: 0,
       pracaBudgetPercent: 100,
+      maxItemsPerCity: 1,
       skipWyrab: false,
       playerEra: 3,
       priorityOverride: M.AI_IMPROVEMENT_PRIORITY,

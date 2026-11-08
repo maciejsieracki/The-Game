@@ -90,10 +90,8 @@ assert(
   'cityPanel.ts importuje improvementKeysForHex z ../game/terrain-improvements',
 );
 
-// Asercja przestarzala (klasa A): tileYieldLabel przyjmuje dodatkowo `ownerEra?: number`
-// (epoka wlasciciela do tileYield, cityPanel.ts:10029). Logika warstw bez zmian.
 const tileYieldLabelMatch = src.match(
-  /function tileYieldLabel\(hex: Hex(?:, ownerEra\?: number)?\): string \{[\s\S]{0,700}?\n\}/,
+  /function tileYieldLabel\(hex: Hex\): string \{[\s\S]{0,500}?\n\}/,
 );
 assert(tileYieldLabelMatch !== null, 'znaleziono cialo funkcji tileYieldLabel()');
 if (tileYieldLabelMatch) {

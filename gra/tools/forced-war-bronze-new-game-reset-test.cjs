@@ -89,22 +89,7 @@ const PARAM_NAMES = [
   'bronzeForceWarActiveByPairKey',
   'bronzeEraEnterTurnByOwner',
   'ironEraEnterTurnByOwner',
-  'forcedEraPeaceUntilNextEraByPairKey',
-  'forcedWarWavesByPairKey',
-  'aiGeneralWarCampaignByOwner',
 ];
-// R-WEB-ERA-WAR-BRONZE-IRON-REENABLE-Q1: lista jest JAWNA (nie wyliczana z bloku), żeby test
-// pozostał niezależny od tego, co blok czyści. Kontrola pokrycia poniżej: każdy `X.clear();`
-// w bloku musi być na liście -- nowy rejestr dodany do bloku bez wpisu tutaj = FAIL.
-{
-  const clearedInBlock = [...new Set([...originalSlice.matchAll(/(\w+)\.clear\(\);/g)].map(m => m[1]))];
-  const missing = clearedInBlock.filter(n => !PARAM_NAMES.includes(n));
-  assert(
-    'pokrycie: każdy rejestr czyszczony w bloku "nowa gra" jest na liście PARAM_NAMES',
-    missing.length === 0,
-    missing,
-  );
-}
 
 function seededRegistries() {
   const reg = {};

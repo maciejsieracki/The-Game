@@ -87,25 +87,3 @@ export function hasZelazoAccess(
   if (!builtIds) return hasStock;
   return hasStock && cityHasOdlewniaZelaza(builtIds);
 }
-
-/**
- * R-WEB-IRON-NATIVE-ACCESS-FIX-Q1 — jedna wspólna ścieżka dostępu NATYWNEGO do żelaza
- * (gracz i AI; używana przez main.ts: ownerHasNativeResourceAccess('zelazo') oraz etykietę
- * dóbr dyplomacji). Reguła: Kopalnia żelaza na złożu gdziekolwiek w imperium (`hasKopalnia`)
- * ORAZ w którymkolwiek mieście ownera `hasZelazoAccess(empireStock, builtIds)` (Żelazo w
- * magazynie państwa + Odlewnia w TYM mieście).
- *
- * Poprzednio wołający przekazywali `boolean` (hasKopalnia) w miejsce `empireStock` —
- * `hasZelazoAccess` traktowało to jako brak zapasu, więc wynik był ZAWSZE false.
- */
-export function ownerHasNativeZelazoAccess(
-  hasKopalnia: boolean,
-  empireStock: Readonly<Record<string, number>> | undefined,
-  ownerCityBuiltIds: Iterable<readonly string[]>,
-): boolean {
-  if (!hasKopalnia) return false;
-  for (const builtIds of ownerCityBuiltIds) {
-    if (hasZelazoAccess(empireStock, builtIds)) return true;
-  }
-  return false;
-}

@@ -11,8 +11,6 @@ import { TRAKTAT_HANDLOWY_LABEL } from '../game/diplomacy-display';
 
 export interface NegotiationPayload {
   actionId: string;
-  /** R-WEB-TRUCE-Q1 (N5): 'rozejm' dla akcji '10' wybranej jako rozejm (dlugosc w `turns`). */
-  rodzaj?: 'rozejm';
   /**
    * Czas/częstotliwość WYMIANY z koszyka („Co ile tur trwa wymiana" — `dealTurns`).
    * To JEDNOCZEŚNIE mnożnik wyceny PN cyklicznego słodzika
@@ -22,8 +20,6 @@ export interface NegotiationPayload {
    * runda 1, zarzut 1 Evaluatora).
    */
   turns?: number;
-  /** Czas obowiązywania cyklicznej wymiany surowców. Brak pola zachowuje stare `turns`; null = bezterminowo. */
-  exchangeDurationTurns?: number | null;
   /**
    * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, zarzut 1 Evaluatora
    * PRZYJĘTY): czas TRWANIA TRAKTATU wybrany JAWNIE w formularzu „Warunki traktatu"
@@ -100,16 +96,6 @@ export interface NegotiationModalContext {
   cityOptions?: ReadonlyArray<{ id: string; label: string; spichlerz?: number }>;
   /** Miasta partnera (żywność ze spichlerza — strona „Co dostaję") */
   receiveCityOptions?: ReadonlyArray<{ id: string; label: string; spichlerz?: number }>;
-  /**
-   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): miasta gracza do oddania w pokoju/wasalizacji (strona
-   * „Daję"), z wyceną PW (`diplomacyPnMiasto`). Bez stolicy i bez ostatniego miasta (main.ts).
-   */
-  miastoOptions?: ReadonlyArray<{ id: string; label: string; pn: number }>;
-  /**
-   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): id akcji PROPOZYCJI (`proposalActionIdFromUi`, np. '10' → 'pokoj')
-   * — bramka pozycji 'miasto' w `diplomacySumPn`. Ustawiane przez showTradeBasketModal, nie przez main.ts.
-   */
-  basketActionId?: string;
   /** Dostępne złoża do handlu */
   zlozeOptions?: ReadonlyArray<{ id: string; label: string }>;
   /** Jednostki gracza do oddania */
@@ -562,7 +548,6 @@ export function hideNegotiationModal(): void {
 /** Mapowanie payload UI → actionId CYW evaluateProposal */
 export function proposalActionIdFromPayload(payload: NegotiationPayload): string {
   if (payload.isGift === true || payload.actionId === '13') return 'handel';
-  if (payload.actionId === '10') return payload.rodzaj === 'rozejm' ? 'rozejm' : 'pokoj';
   if (payload.actionId === '3') {
     return payload.allianceKind === 'defensywny' ? 'sojusz_defensywny' : 'sojusz_pelny';
   }

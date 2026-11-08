@@ -1,4 +1,0 @@
-1920 {"left":[20,16,830,82],"leftCls":"civ-hud-banner-left","right":[1292,64,1900,98],"rightCls":"civ-hud-banner-shell civ-hud-banner-right","power":[840,10,1080,116],"chipTops":[67],"tbVar":"","toolbar":[22,104,74,412],"overlay":0}
-1366 {"left":[20,16,553,139],"leftCls":"civ-hud-banner-left hud-left-fallback","right":[1047,64,1346,98],"rightCls":"civ-hud-banner-shell civ-hud-banner-right","power":[563,10,803,118],"chipTops":[67],"tbVar":"148px","toolbar":[22,148,74,456],"overlay":1}
-1024 {"left":[20,16,382,109],"leftCls":"civ-hud-banner-left hud-left-fallback","right":[667,64,1004,98],"rightCls":"civ-hud-banner-shell civ-hud-banner-right","power":[392,10,632,116],"chipTops":[67],"tbVar":"118px","toolbar":[22,118,74,426],"overlay":0}
-EXIT=0

@@ -42,14 +42,12 @@ const esbuild = (() => {
 })();
 
 const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
-const ECON_PARAMS_RAW = require('../data/econ-params.json');
 const ENTRY_FILE  = path.resolve(__dirname, '.trade-hud-filter-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.trade-hud-filter-bundle.cjs');
 fs.writeFileSync(ENTRY_FILE, `
 export {
   refreshTradeRoutes, diffTradeRoutes, findCityConnection,
-  computeTradeRouteIncomeByCity, computeTradeRouteIncomeByCityBreakdown, computeTradeRouteBuildingBonusByCity,
-  computeSeaTradeRouteCountByCity, computeSeaTradeBonusIncomeByCity,
+  computeTradeRouteIncomeByCity, computeTradeRouteBuildingBonusByCity,
   tradeRouteBuildingBonusForRoute, tradeRouteIncomeForRoute,
   DEFAULT_TRADE_ROUTE_PARAMS, DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 } from '../src/game/trade-routes';
@@ -101,7 +99,6 @@ function runSnippet(tsSource, ctx, tail) {
 }
 
 const SRC_CHIP    = extractBetween(MAIN_SRC, '      let handelIncome = 0;', '        handelRouteCount++;\n      }');
-const SRC_MARKET_BONUS = extractFunction(MAIN_SRC, 'targowiskoTradeRouteBonusForCity');
 const SRC_PANEL   = extractBetween(MAIN_SRC, '      const routes = tradeRoutes', '.sort((a, b) => a.dystans - b.dystans || a.id.localeCompare(b.id));');
 const SRC_OVERLAY = extractFunction(MAIN_SRC, 'refreshTradeRoutesOverlay');
 const SRC_REPORT  = extractFunction(MAIN_SRC, 'reportTradeRouteEvents');
@@ -110,23 +107,6 @@ const SRC_REPORT  = extractFunction(MAIN_SRC, 'reportTradeRouteEvents');
 // osobno (to kilka linii w srodku dlugiej petli, nie cala funkcja), bo decyduje o
 // tym, czy panel dokleja partnerowi `blockReason` („brak polaczenia").
 const SRC_HASROUTE = extractBetween(MAIN_SRC, '        const hasActiveRoute = tradeRoutes.some(', '\n        );');
-
-const MARKET_BONUS = ECON_PARAMS_RAW.budynki.budynek_targowisko_bonus_handlu.normal;
-function runMainRouteSnippet(source, ctx, tail) {
-  return runSnippet(`${SRC_MARKET_BONUS}\n${source}`, {
-    ...ctx,
-    computeTradeRouteIncomeByCityBreakdown: TR.computeTradeRouteIncomeByCityBreakdown,
-    computeSeaTradeRouteCountByCity: TR.computeSeaTradeRouteCountByCity,
-    computeSeaTradeBonusIncomeByCity: TR.computeSeaTradeBonusIncomeByCity,
-    wonderTradeRouteBonusForOwner: WONDER_BONUS,
-    cityBuilt: CITY_BUILT,
-    data: { econParams: ECON_PARAMS_RAW },
-    _menuDifficulty: 'normal',
-    buildEconParams: (_data, difficulty) => ({
-      budynekTargowiskoBonusHandlu: ECON_PARAMS_RAW.budynki.budynek_targowisko_bonus_handlu[difficulty],
-    }),
-  }, tail);
-}
 
 // ---------------------------------------------------------------------------
 // Fikstura swiata: gracz(0) + AI(1) + AI(2) + AI(3), kazdy po 2 miasta.
@@ -197,8 +177,7 @@ assert(!PLAYER_ROUTES.some(r => r.toOwnerId === 0 && r.ownerId !== 0),
 // Niezalezny punkt odniesienia dla dochodu gracza: to, co silnik realnie kredytuje
 // MIASTOM GRACZA (turn-economy.ts::pieniadzZTras czyta dokladnie te mape).
 const WONDER_BONUS = () => 0; // brak cudow handlowych w tej fiksturze
-const incomeByCity = TR.computeTradeRouteIncomeByCity(ROUTES, incP, WONDER_BONUS, cityId =>
-  CITY_BUILT.get(cityId)?.includes('targowisko') ? MARKET_BONUS : 0);
+const incomeByCity = TR.computeTradeRouteIncomeByCity(ROUTES, incP, WONDER_BONUS);
 let EXPECTED_PLAYER_INCOME = 0;
 for (const id of PLAYER_CITY_IDS) EXPECTED_PLAYER_INCOME += incomeByCity.get(id) ?? 0;
 console.log(`  [ODNIESIENIE] dochod gracza wg silnika (computeTradeRouteIncomeByCity zawezone do miast gracza) = ${EXPECTED_PLAYER_INCOME}`);
@@ -250,14 +229,11 @@ function reportCtx() {
     tradeRouteEventPlayerCityIds: state.anchors,
     showHintMessage: msg => { state.hints.push(msg); },
     refreshD1bHud: () => {},
-    // harness: pushOnce (reportTradeRouteEvents) woła stampEventTurn z main.ts (import z event-lifetime)
-    stampEventTurn: (ev, t) => ({ ...ev, turnCreated: t }),
     ownerDiploLabel: id => 'CYW' + id,
     isMe: ownerId => ownerId === 0,
     buildAllTerritoryNodes: () => undefined,
     diffTradeRoutes: TR.diffTradeRoutes,
     findCityConnection: TR.findCityConnection,
-    tradeContactBetween: () => true, // R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: main.ts:reportTradeRouteEvents pyta o kontakt zamiast o sciezke
     tradeRouteIncomeForRoute: TR.tradeRouteIncomeForRoute,
   };
 }
@@ -266,7 +242,7 @@ function reportCtx() {
 // R2-K1 + R2-K5 -- chip HUD „Handel"
 // ===========================================================================
 console.log('\n-- R2-K1/R2-K5: chip HUD „Handel" (realne zrodlo main.ts) --');
-const chip = runMainRouteSnippet(SRC_CHIP, chipCtx(), 'return { handelIncome, handelRouteCount };');
+const chip = runSnippet(SRC_CHIP, chipCtx(), 'return { handelIncome, handelRouteCount };');
 console.log(`  chip: handelIncome=${chip.handelIncome}, handelRouteCount=${chip.handelRouteCount}`);
 eq(chip.handelIncome, EXPECTED_PLAYER_INCOME,
   'R2-K1: chip HUD pokazuje DOKLADNIE dochod gracza wg silnika (nie dochod calego swiata)');
@@ -283,14 +259,12 @@ eq(chip.handelRouteCount, PLAYER_ROUTES.length,
   // R2-K5: trasa WEWNETRZNA liczona RAZ w liczbie tras...
   const ctxOnlyInternal = chipCtx();
   ctxOnlyInternal.tradeRoutes = INTERNAL_PLAYER_ROUTES;
-  const only = runMainRouteSnippet(SRC_CHIP, ctxOnlyInternal, 'return { handelIncome, handelRouteCount };');
+  const only = runSnippet(SRC_CHIP, ctxOnlyInternal, 'return { handelIncome, handelRouteCount };');
   eq(only.handelRouteCount, 1, 'R2-K5: trasa WEWNETRZNA gracza liczy sie w chipie DOKLADNIE RAZ (1 trasa, nie 2)');
   // ...a jej dochod zgadza sie ze skarbcem (silnik kredytuje OBA miasta gracza).
   const r = INTERNAL_PLAYER_ROUTES[0];
-  const perSideBase = TR.tradeRouteIncomeForRoute(r, incP);
-  const perSide = Math.floor(perSideBase * (1 + MARKET_BONUS));
-  const engineInternal = TR.computeTradeRouteIncomeByCity([r], incP, WONDER_BONUS, cityId =>
-    CITY_BUILT.get(cityId)?.includes('targowisko') ? MARKET_BONUS : 0);
+  const perSide = TR.tradeRouteIncomeForRoute(r, incP);
+  const engineInternal = TR.computeTradeRouteIncomeByCity([r], incP, WONDER_BONUS);
   let engineSum = 0;
   for (const id of PLAYER_CITY_IDS) engineSum += engineInternal.get(id) ?? 0;
   eq(only.handelIncome, engineSum,
@@ -302,7 +276,7 @@ eq(chip.handelRouteCount, PLAYER_ROUTES.length,
 // R2-K2 -- panel imperium „Handel"
 // ===========================================================================
 console.log('\n-- R2-K2: panel imperium „Handel" (realne zrodlo buildEmpireTradeSnap) --');
-const panelRows = runMainRouteSnippet(SRC_PANEL, panelCtx(), 'return routes;');
+const panelRows = runSnippet(SRC_PANEL, panelCtx(), 'return routes;');
 console.log(`  wierszy w panelu: ${panelRows.length}`);
 for (const row of panelRows) console.log(`    id=${row.id} city=${row.cityId} partner=${row.partnerCityName} (${row.partnerOwnerLabel}) income=${row.income}`);
 assert(panelRows.every(row => PLAYER_CITY_IDS.has(row.cityId)),
@@ -334,8 +308,7 @@ assert(panelRows.every(row => PLAYER_CITY_IDS.has(row.cityId)),
   // Kwoty jednego wiersza trasy wewnetrznej MUSZA byc 2x -- silnik kredytuje OBA
   // miasta gracza (computeTradeRouteIncomeByCity Q8=B / computeTradeRouteBuildingBonusByCity T4).
   {
-    const incByCity = TR.computeTradeRouteIncomeByCity([r], incP, WONDER_BONUS, cityId =>
-      CITY_BUILT.get(cityId)?.includes('targowisko') ? MARKET_BONUS : 0);
+    const incByCity = TR.computeTradeRouteIncomeByCity([r], incP, WONDER_BONUS);
     let engineIncome = 0;
     for (const id of PLAYER_CITY_IDS) engineIncome += incByCity.get(id) ?? 0;
     eq(rows[0].income, engineIncome,
@@ -380,30 +353,35 @@ console.log('\n-- R2-K4: toasty i dziennik (realne zrodlo reportTradeRouteEvents
   // to CALY swiat naraz (handel wewnetrzny powstaje jednoczesnie dla kazdej cywilizacji
   // + trasy AI<->AI) -- dokladnie „wysyp" toastow, przed ktorym ostrzega dispatch R2-4.
   const ctx = reportCtx();
-  const priorP2Buildings = CITY_BUILT.get('p2');
-  CITY_BUILT.set('p2', []); // exercise a player endpoint without Targowisko beside p1 with it
-  runMainRouteSnippet(
+  runSnippet(
     SRC_REPORT, ctx,
     'reportTradeRouteEvents([], __ctx.__routes, __ctx.__cities, __ctx.__map, __ctx.__params, __ctx.__built, () => false, __ctx.__treaty, __ctx.__inc);',
   );
   console.log('  toasty:'); for (const h of ctx.state.hints) console.log('    ' + h);
-  // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: „Nowy szlak handlowy” NIE jest juz zdarzeniem --
-  // ani toast, ani wpis dziennika WYDARZENIA, ani kotwica linku. Zerwanie tras (nizej) nadal
-  // jest raportowane.
-  eq(ctx.state.hints.length, 0,
-    `R2-K4 (PRUNE): nowe trasy NIE generuja toastu (0 wywolan showHintMessage), mimo ${ROUTES.length} nowych tras w swiecie`);
-  eq(ctx.state.log.length, 0, 'R2-K4 (PRUNE): nowe trasy NIE trafiaja do dziennika WYDARZENIA');
-  eq(ctx.state.anchors.size, 0, 'R2-K4 (PRUNE): brak kotwic linkow dla nowych tras');
+  eq(ctx.state.hints.length, PLAYER_ROUTES.length,
+    `R2-K4: licznik wywolan showHintMessage == liczba tras GRACZA (${PLAYER_ROUTES.length}), mimo ${ROUTES.length} nowych tras w swiecie`);
   const foreignNames = CITIES.filter(c => !PLAYER_CITY_IDS.has(c.id)).map(c => c.name);
-  void foreignNames;
-  CITY_BUILT.set('p2', priorP2Buildings);
+  const playerNames  = CITIES.filter(c => PLAYER_CITY_IDS.has(c.id)).map(c => c.name);
+  assert(ctx.state.hints.every(h => playerNames.some(n => h.includes(n))),
+    'R2-K4: KAZDY komunikat dotyczy trasy z miastem gracza');
+  assert(!ctx.state.hints.some(h => foreignNames.every(n => h.includes(n))),
+    'R2-K4: zaden komunikat nie opisuje trasy miedzy DWOMA miastami obcymi (AI<->AI / wewnetrzny AI)');
+  eq(ctx.state.log.length, Math.min(6, PLAYER_ROUTES.length),
+    'R2-K4: dziennik WYDARZENIA dostaje wpisy wylacznie za trasy gracza');
+  // Kotwica linku musi wskazywac MIASTO GRACZA takze wtedy, gdy gracz jest strona `to`.
+  assert([...ctx.state.anchors.values()].every(cid => PLAYER_CITY_IDS.has(cid)),
+    'R2-K4: kotwica `tradeRouteEventPlayerCityIds` wskazuje ZAWSZE miasto gracza (nie `fromCityId` na slepo)');
+  // Trasa wewnetrzna gracza -> DOKLADNIE JEDEN komunikat.
+  const internalId = INTERNAL_PLAYER_ROUTES[0].id;
+  eq(ctx.state.log.filter(e => e.id.endsWith(internalId)).length, 1,
+    'R2-K4: trasa WEWNETRZNA gracza daje DOKLADNIE JEDEN wpis (nie dwa)');
 }
 {
   // Zerwanie trasy WEWNETRZNEJ gracza: powod NIE moze brzmiec „zerwana Umowa Szlakow"
   // (z samym soba nie ma traktatu) ani „brak polaczenia" (granica nie obowiazuje).
   const ctx = reportCtx();
   const internal = INTERNAL_PLAYER_ROUTES[0];
-  runMainRouteSnippet(
+  runSnippet(
     SRC_REPORT, ctx,
     'reportTradeRouteEvents(__ctx.__prev, [], __ctx.__cities, __ctx.__map, __ctx.__params, __ctx.__built, () => false, __ctx.__treaty, __ctx.__inc);',
     );
@@ -433,17 +411,15 @@ console.log('\n-- R2-D: trasa z graczem po stronie `to` (odwrocony kierunek) --'
     toCityId: src.fromCityId, toOwnerId: src.ownerId,
   };
   const only = [rev];
-  const incomeByCity = TR.computeTradeRouteIncomeByCity(only, incP, WONDER_BONUS, cityId =>
-    CITY_BUILT.get(cityId)?.includes('targowisko') ? MARKET_BONUS : 0);
-  const perSide = incomeByCity.get(rev.toCityId) ?? incomeByCity.get(rev.fromCityId) ?? 0;
+  const perSide = TR.tradeRouteIncomeForRoute(rev, incP);
 
   const c = chipCtx(); c.tradeRoutes = only;
-  const chipRev = runMainRouteSnippet(SRC_CHIP, c, 'return { handelIncome, handelRouteCount };');
+  const chipRev = runSnippet(SRC_CHIP, c, 'return { handelIncome, handelRouteCount };');
   eq(chipRev.handelRouteCount, 1, 'R2-D: chip liczy trase z graczem po stronie `to`');
   eq(chipRev.handelIncome, perSide, 'R2-D: chip nie podwaja dochodu trasy ZEWNETRZNEJ z graczem po stronie `to`');
 
   const p = panelCtx(); p.tradeRoutes = only;
-  const rowsRev = runMainRouteSnippet(SRC_PANEL, p, 'return routes;');
+  const rowsRev = runSnippet(SRC_PANEL, p, 'return routes;');
   eq(rowsRev.length, 1, 'R2-D: panel daje DOKLADNIE 1 wiersz dla trasy zewnetrznej (nie dwa)');
   eq(rowsRev[0].cityId, src.fromCityId, 'R2-D: wiersz panelu jest z perspektywy MIASTA GRACZA, nie `fromCityId` trasy');
   eq(rowsRev[0].id, rev.id, 'R2-D: id wiersza trasy zewnetrznej NIEZMIENIONE (bez sufiksu)');
@@ -454,10 +430,9 @@ console.log('\n-- R2-D: trasa z graczem po stronie `to` (odwrocony kierunek) --'
   eq((o.captured.inputs || []).length, 1, 'R2-D: nakladka rysuje trase z graczem po stronie `to`');
 
   const rc = reportCtx(); rc.__routes = only;
-  runMainRouteSnippet(SRC_REPORT, rc, 'reportTradeRouteEvents([], __ctx.__routes, __ctx.__cities, __ctx.__map, __ctx.__params, __ctx.__built, () => false, __ctx.__treaty, __ctx.__inc);');
-  // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: nowa trasa NIE jest zdarzeniem (ani toast, ani kotwica).
-  eq(rc.state.hints.length, 0, 'R2-D (PRUNE): nowa trasa z graczem po stronie `to` NIE generuje komunikatu');
-  eq(rc.state.anchors.size, 0, 'R2-D (PRUNE): brak kotwicy linku dla nowej trasy');
+  runSnippet(SRC_REPORT, rc, 'reportTradeRouteEvents([], __ctx.__routes, __ctx.__cities, __ctx.__map, __ctx.__params, __ctx.__built, () => false, __ctx.__treaty, __ctx.__inc);');
+  eq(rc.state.hints.length, 1, 'R2-D: dokladnie 1 komunikat o trasie z graczem po stronie `to`');
+  eq([...rc.state.anchors.values()][0], src.fromCityId, 'R2-D: kotwica linku wskazuje MIASTO GRACZA, nie `fromCityId` trasy');
 }
 
 console.log('\n-- ZARZUT 4: `hasActiveRoute` (activeDeals) symetryczny wzgledem kierunku trasy --');
@@ -490,36 +465,6 @@ console.log('\n-- ZARZUT 4: `hasActiveRoute` (activeDeals) symetryczny wzgledem 
   eq(mutRev, false, 'ZARZUT 4 [MUTANT]: asymetryczny warunek gubi trase partner->gracz (dowod nietautologicznosci)');
 }
 
-// R2-MARITIME: second maritime route's toast includes the marginal +1/city bonus.
-console.log('\n-- R2-MARITIME: toast for second sea route includes marginal sea bonus --');
-{
-  const existingSea = { id: 'sea-existing', status: 'polaczony', fromCityId: 'p1', toCityId: 'a1', ownerId: 0, toOwnerId: 1, medium: 'morze', dystans: 8, budynekOdblokowany: true };
-  const addedSea = { id: 'sea-added', status: 'polaczony', fromCityId: 'p1', toCityId: 'a2', ownerId: 0, toOwnerId: 1, medium: 'morze', dystans: 9, budynekOdblokowany: true };
-  // R-WEB-TRADE-SEA-BONUS-REQUIRES-PORT-Q1: bonus morski ponad pierwszą trasę wymaga Portu —
-  // p1 dostaje Port na czas tego bloku (inaczej marginalny +1 byłby 0 i test nic nie dowodził).
-  const p1BuiltBefore = CITY_BUILT.get('p1');
-  CITY_BUILT.set('p1', [...(p1BuiltBefore ?? []), 'port']);
-  const ctx = reportCtx();
-  ctx.__prev = [existingSea];
-  ctx.__routes = [existingSea, addedSea];
-  runMainRouteSnippet(SRC_REPORT, ctx,
-    'reportTradeRouteEvents(__ctx.__prev, __ctx.__routes, __ctx.__cities, __ctx.__map, __ctx.__params, __ctx.__built, () => false, __ctx.__treaty, __ctx.__inc);');
-  const endpointReceipt = routes => {
-    const routeReceipts = TR.computeTradeRouteIncomeByCityBreakdown(routes, incP, WONDER_BONUS,
-      cityId => CITY_BUILT.get(cityId)?.includes('targowisko') ? MARKET_BONUS : 0).totalByCity.get('p1') ?? 0;
-    const seaBonus = TR.computeSeaTradeBonusIncomeByCity(TR.computeSeaTradeRouteCountByCity(routes), CITY_BUILT).get('p1') ?? 0;
-    return routeReceipts + seaBonus;
-  };
-  const marginal = endpointReceipt([existingSea, addedSea]) - endpointReceipt([existingSea]);
-  // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: „Nowy szlak handlowy” nie ma toastu -- sprawdzamy
-  // brak komunikatu; marginalny dochod (marginal) zostaje policzony ekonomicznie nizej.
-  assert(ctx.state.hints.length === 0,
-    `R2-MARITIME (PRUNE): drugi szlak morski NIE generuje toastu (got ${ctx.state.hints.length}, marginal ekonomiczny = ${marginal})`);
-  assert(marginal >= 1 + 0 && TR.computeSeaTradeBonusIncomeByCity(TR.computeSeaTradeRouteCountByCity([existingSea, addedSea]), CITY_BUILT).get('p1') === 1,
-    'R2-MARITIME: p1 z Portem dostaje +1 bonusu morskiego (nietautologiczne)');
-  if (p1BuiltBefore) CITY_BUILT.set('p1', p1BuiltBefore);
-}
-
 // ===========================================================================
 // SEKCJA M -- MUTANTY (dowod nietautologicznosci)
 // Ten sam realny kod z USUNIETYM filtrem wlasciciela MUSI zawiesc te same asercje.
@@ -529,9 +474,7 @@ function mutantFails(label, mutatedSrc, ctxFactory, tail, check) {
   let ok = false, detail = '';
   try {
     const ctx = ctxFactory();
-  const res = mutatedSrc.includes('handelIncome') || mutatedSrc.includes('targowiskoTradeRouteBonusForCity')
-    ? runMainRouteSnippet(mutatedSrc, ctx, tail)
-    : runSnippet(mutatedSrc, ctx, tail);
+    const res = runSnippet(mutatedSrc, ctx, tail);
     const verdict = check(res, ctx);
     ok = verdict.failed;
     detail = verdict.detail;

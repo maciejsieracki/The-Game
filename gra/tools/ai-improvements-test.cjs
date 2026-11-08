@@ -64,7 +64,6 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-improvements-test-bundle.cjs');
 
 const ENTRY_TS = `
 export { decideAITurn } from ${JSON.stringify(AI_SRC + '/game/ai')};
-export { AI_IMPROVEMENT_PRIORITY } from ${JSON.stringify(AI_SRC + '/game/auto-improvements')};
 export { planExpansionFortBuilding } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export { getImprovementMeta, clearingTotalPraca } from ${JSON.stringify(AI_SRC + '/game/improvement-tech')};
 export { applyStolarniaDrewnoMapInflow, ownerResourceCap } from ${JSON.stringify(AI_SRC + '/game/turn-economy')};
@@ -91,7 +90,6 @@ try {
 
 const {
   decideAITurn,
-  AI_IMPROVEMENT_PRIORITY,
   planExpansionFortBuilding,
   getImprovementMeta,
   clearingTotalPraca,
@@ -179,16 +177,6 @@ const forestMap = makeForestMap(30, 30);
 const data = makeGameData();
 const PLAYER_ID = 3;
 
-// Strategic transition order: copper and tin supply bronze-era units before
-// the general iron supply chain takes priority.
-{
-  const copper = AI_IMPROVEMENT_PRIORITY.indexOf('kopalnia_miedzi');
-  const tin = AI_IMPROVEMENT_PRIORITY.indexOf('kopalnia_cyny');
-  const iron = AI_IMPROVEMENT_PRIORITY.indexOf('kopalnia_zelaza');
-  assert(copper >= 0 && tin >= 0 && iron >= 0 && copper < iron && tin < iron,
-    'copper and tin mines precede the iron mine in AI improvement priority');
-}
-
 /** Dane realne (nie fixture) -- test 11 potrzebuje ownerResourceCap() z prawdziwym econParams. */
 const DATA_FOR_CAP = { econParams: require('../data/econ-params.json') };
 
@@ -211,15 +199,9 @@ console.log('2. Praca niewystarczajaca -- throttling');
 {
   const city = makeCity('city0', PLAYER_ID, 15, 15);
   const opts = baseOpts(city);
-  // R-WEB-AUTOIMPROVE-STAGES2-Q1 (wlasciciel 2026-10-31): AI i panstwa-miasta maja 100% puli (zadnego capu 50%).
-  // Dawne oczekiwanie „Praca=25 -> 0" opieralo sie na capie 50% (floor(25*50%)=12 < koszt farmy 20) — USUNIETE;
-  // teraz 0 daje dopiero pula mniejsza niz koszt farmy (15 < 20), a 25 starcza na farme.
-  opts.pracaAvailable = 15;
+  opts.pracaAvailable = 25; // <= próg (dokumentowany w ai.ts jako 30)
   const cmds = decideAITurn(PLAYER_ID, [], [city], map, data, opts);
-  eq(buildImprovementCmds(cmds).length, 0, 'Praca=15 (pula < koszt farmy 20) -> zero buildImprovement');
-  opts.pracaAvailable = 25;
-  eq(buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts)).length, 1,
-    'Praca=25 (100% puli >= koszt farmy 20; brak capu 50%) -> 1 buildImprovement');
+  eq(buildImprovementCmds(cmds).length, 0, 'Praca=25 (ponizej progu) -> zero buildImprovement');
 
   const optsZero = baseOpts(city);
   delete optsZero.pracaAvailable; // domyslnie 0 gdy silnik nie poda (zero regresji)
@@ -247,9 +229,7 @@ console.log('4. Praca + tech -> 1 buildImprovement (farma)');
   const city = makeCity('city0', PLAYER_ID, 15, 15);
   const opts = baseOpts(city);
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu liczby sztuk na miasto —
-  // etap zywnosciowy: bez gornego limitu rozkazow/miasto/ture (jak gracz; ogranicza tylko budzet). Poprzednio: dokladnie 1.
-  assert(cmds.length >= 1 && cmds.length <= 3, `1..3 buildImprovement (ABC-D=B), got ${cmds.length}`);
+  eq(cmds.length, 1, 'dokladnie 1 buildImprovement');
   eq(cmds[0].key, 'farma', 'typ = farma (najwyzszy priorytet, plaska mapa)');
   eq(cmds[0].ownerId, PLAYER_ID, 'ownerId = AI');
 }
@@ -257,22 +237,19 @@ console.log('4. Praca + tech -> 1 buildImprovement (farma)');
 // ===========================================================================
 // 5. Throttle w 1 miescie: cala mapa kwalifikuje farme -> nadal 1 rozkaz
 // ===========================================================================
-console.log('5. limit etapu zywnosciowego na miasto/ture, bez limitu 1 (wiele kwalifikujacych heksow; ABC-D=B)');
+console.log('5. throttle 1/miasto/ture (wiele kwalifikujacych heksow)');
 {
   const city = makeCity('city0', PLAYER_ID, 15, 15, 5); // pop wyzsza -> wiekszy promien
   const opts = baseOpts(city);
   opts.territoryNodes = [{ q: city.q, r: city.r, pop: city.population, level: 1, ownerId: city.ownerId }];
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu liczby sztuk na miasto —
-  // etap zywnosciowy: bez gornego limitu rozkazow/miasto/ture (jak gracz; ogranicza tylko budzet). Poprzednio: dokladnie 1.
-  // R-WEB-AUTOIMPROVE-STAGES3-Q1 S3-2=C (wlasciciel 2026-10-31): limit 3/etap ZDJETY — liczbe rozkazow ogranicza tylko budzet (i obrabiane heksy).
-  assert(cmds.length > 3, `S3-2: brak limitu 3 budowli na etap na miasto na ture — wiecej niz 3 rozkazy przy duzej puli, got ${cmds.length}`);
+  eq(cmds.length, 1, 'maks. 1 buildImprovement mimo dziesiatek kwalifikujacych heksow');
 }
 
 // ===========================================================================
 // 6. 2 miasta tego samego AI -> maks. 1 rozkaz NA MIASTO
 // ===========================================================================
-console.log('6. 2 miasta -- do 3 rozkazow na miasto, bez limitu 1 (ABC-D=B)');
+console.log('6. 2 miasta -- 1 rozkaz na miasto (2 lacznie)');
 {
   const cityA = makeCity('city0', PLAYER_ID, 8, 8);
   const cityB = makeCity('city1', PLAYER_ID, 22, 22);
@@ -291,11 +268,9 @@ console.log('6. 2 miasta -- do 3 rozkazow na miasto, bez limitu 1 (ABC-D=B)');
     civEra: 1,
   };
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [cityA, cityB], map, data, opts));
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu liczby sztuk na miasto —
-  // etap zywnosciowy: bez gornego limitu rozkazow/miasto/ture (jak gracz; ogranicza tylko budzet). Poprzednio: dokladnie 1.
-  assert(cmds.length > 2 && cmds.length <= 6, `2 miasta -> wiecej niz 2, najwyzej 3 na miasto (ABC-D=B), got ${cmds.length}`);
+  eq(cmds.length, 2, '2 miasta -> lacznie 2 buildImprovement (1 kazde)');
   const hexKeys = new Set(cmds.map(c => `${c.q},${c.r}`));
-  eq(hexKeys.size, cmds.length, 'kazdy rozkaz na innym heksie');
+  eq(hexKeys.size, 2, 'dwa rozne heksy (po jednym na miasto)');
 }
 
 // ===========================================================================
@@ -308,10 +283,8 @@ console.log('7. wyrab na mapie lasu gdy brak innych tech');
   const opts = baseOpts(city);
   opts.improvementTechs = new Set(); // pusty zbior -- TYLKO wyrab jest bezwarunkowo odblokowany
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], forestMap, data, opts));
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu liczby sztuk na miasto —
-  // etap zywnosciowy: bez gornego limitu rozkazow/miasto/ture (jak gracz; ogranicza tylko budzet). Poprzednio: dokladnie 1.
-  assert(cmds.length >= 1 && cmds.length <= 3, `AI buduje wyrab gdy tylko ten typ jest dostepny (1..3), got ${cmds.length}`);
-  assert(cmds.every(c => c.key === 'wyrab'), 'mapa lasu + brak tech -> wylacznie wyrab');
+  eq(cmds.length, 1, 'AI buduje wyrab gdy tylko ten typ jest dostepny');
+  eq(cmds[0].key, 'wyrab', 'mapa lasu + brak tech -> wyrab');
 }
 
 // ===========================================================================
@@ -340,81 +313,79 @@ console.log('9. defensiveCopy -- ta sama intensywnosc co zwykle AI');
   const opts = baseOpts(city);
   opts.defensiveCopy = true;
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu liczby sztuk na miasto —
-  // etap zywnosciowy: bez gornego limitu rozkazow/miasto/ture (jak gracz; ogranicza tylko budzet). Poprzednio: dokladnie 1.
-  assert(cmds.length >= 1 && cmds.length <= 3, `defensiveCopy=true -> ta sama intensywnosc co zwykle AI (1..3), got ${cmds.length}`);
+  eq(cmds.length, 1, 'defensiveCopy=true -> nadal 1 buildImprovement (zero specjalnego throttlingu)');
   eq(cmds[0].key, 'farma', 'defensiveCopy -- ten sam wybor typu co zwykle AI');
 }
 
 // ===========================================================================
-// 10. R-WEB-AUTOIMPROVE-STAGES2-Q1 (wlasciciel 2026-10-31, zastepuje P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1
-// dla AI): AI/panstwa-miasta wydaja do 100% puli ulepszen (dawny fallback 50% = MAX_PROCENT_PULI_IMPERIUM
-// w ai.ts USUNIETY). Pula 15 -> 0 (ponizej bramki wejscia 30 kopii obronnej); pula 40 -> 2 farmy (cala pula).
+// 10. P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: AI respektuje nadrzędny cap 50%
+// całej puli. Przy puli 40 budżet ulepszeń wynosi 20, więc farma (koszt 40
+// po stawkach ×2) nie może zostać wybrana; przy puli 80 budżet wynosi 40.
 // ===========================================================================
-console.log('10. AI: 100% puli, bez capu 50% (15 -> 0, 40 -> 2 farmy; wejscie AI_IMPROVEMENT_PRACA_SURPLUS=30 to rezerwa techniczna, nie %)');
+console.log('10. AI: cap 50% całej puli (40 -> 0, 80 -> 1)');
 {
   const city = makeCity('city0', PLAYER_ID, 15, 15);
   const opts = baseOpts(city);
-  opts.pracaAvailable = 15;
+  opts.pracaAvailable = 40;
   opts.defensiveCopy = true;
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  eq(cmds.length, 0, 'praca=15 -> 0 (budżet ulepszeń 15 < koszt farmy 20)');
-  opts.pracaAvailable = 40;
+  eq(cmds.length, 0, 'praca=40 -> 0 (budżet ulepszeń 20 < koszt farmy 40)');
+  opts.pracaAvailable = 80;
   const cmds80 = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  eq(cmds80.length, 2, 'praca=40 -> 2 farmy (100% puli; brak capu 50%)');
-  eq(cmds80[0].key, 'farma', 'praca=40 -> farma');
+  eq(cmds80.length, 1, 'praca=80 -> 1 (budżet ulepszeń 40 = koszt farmy 40)');
+  eq(cmds80[0].key, 'farma', 'praca=80 -> farma');
 }
 
 // ===========================================================================
 // 11. P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: combined guard. Najpierw
 // wymuszamy oba legalne rozkazy na dużej puli, a dopiero potem sprawdzamy
-// wspólny cap; farma + fort nie mogą razem wydać ponad 40 z puli 80.
+// wspólny cap; farma + posterunek nie mogą razem wydać ponad 40 z puli 80.
 // ===========================================================================
-console.log('11. combined AI + defensive copy: city improvements + fort ekspansyjny <= 100% puli (bez capu 50%)');
+console.log('11. combined AI + defensive copy: city improvements + posterunek <= 50%');
 {
   const combinedMap = makeFlatMap(60, 60);
   const city = makeCity('combined-city', PLAYER_ID, 15, 15, 3);
   const unit = { id: 'combined-unit', ownerId: PLAYER_ID, q: 45, r: 45, inGarnizon: false };
   const farmMeta = getImprovementMeta('farma');
-  const fortMeta = getImprovementMeta('fort');
+  const outpostMeta = getImprovementMeta('posterunek');
   assert(farmMeta && Number.isFinite(farmMeta.kosztPraca), 'combined setup: realne dane farmy istnieja');
-  assert(fortMeta && Number.isFinite(fortMeta.kosztPraca), 'combined setup: realne dane fortu istnieja');
+  assert(outpostMeta && Number.isFinite(outpostMeta.kosztPraca), 'combined setup: realne dane posterunku istnieja');
   const farmCost = farmMeta.kosztPraca;
-  const fortCost = fortMeta.kosztPraca;
-  assert(farmCost > 0 && fortCost > 0, 'combined setup: oba koszty Pracy sa dodatnie');
+  const outpostCost = outpostMeta.kosztPraca;
+  assert(farmCost > 0 && outpostCost > 0, 'combined setup: oba koszty Pracy sa dodatnie');
   const combinedOpts = {
     ...baseOpts(city),
-    improvementTechs: new Set(['Rolnictwo', 'Obróbka drewna', 'Murarstwo', 'Wojskowość']),
+    improvementTechs: new Set(['Rolnictwo', 'Obróbka drewna', 'Murarstwo']),
     placedImprovements: new Map(),
     fortNodes: [],
   };
-  const directFort = planExpansionFortBuilding(
+  const directOutpost = planExpansionFortBuilding(
     PLAYER_ID,
     [city],
     [unit],
     combinedMap,
-    // Fort (R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1; dawniej posterunek) kosztuje 25 Pracy; 300 gives a
+    // Posterunek is Iron-era (120 Work after the new x4 rule); 300 gives a
     // 150-Work envelope, enough for its cost plus the 30-Work reserve.
     { ...combinedOpts, pracaAvailable: 300 },
   );
-  assert(directFort && directFort.type === 'buildImprovement' && directFort.key === 'fort',
-    'combined setup: planExpansionFortBuilding wybiera legalny fort ekspansyjny (R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1: AI poza terenem = fort, nie posterunek)');
+  assert(directOutpost && directOutpost.type === 'buildImprovement' && directOutpost.key === 'posterunek',
+    'combined setup: planExpansionFortBuilding wybiera legalny posterunek');
   const beforeCapOpts = { ...combinedOpts, pracaAvailable: 300 };
   const cityCommandsBeforeCap = decideAITurn(
     PLAYER_ID, [unit], [city], combinedMap, data, beforeCapOpts,
   ).filter(cmd => cmd.type === 'buildImprovement');
-  const fortBeforeCapCommand = planExpansionFortBuilding(
+  const outpostBeforeCapCommand = planExpansionFortBuilding(
     PLAYER_ID, [city], [unit], combinedMap, { ...beforeCapOpts, plannedImprovementCost: 0 },
   );
-  const improvementsBeforeCap = [...cityCommandsBeforeCap, ...(fortBeforeCapCommand ? [fortBeforeCapCommand] : [])];
+  const improvementsBeforeCap = [...cityCommandsBeforeCap, ...(outpostBeforeCapCommand ? [outpostBeforeCapCommand] : [])];
   const farmBeforeCap = improvementsBeforeCap.find(cmd => cmd.key === 'farma');
-  const fortBeforeCap = improvementsBeforeCap.find(cmd => cmd.key === 'fort');
+  const outpostBeforeCap = improvementsBeforeCap.find(cmd => cmd.key === 'posterunek');
   assert(farmBeforeCap, 'combined setup przed capem: obecna komenda farma');
-  assert(fortBeforeCap, `combined setup przed capem: obecna komenda fort (${JSON.stringify(improvementsBeforeCap)})`);
+  assert(outpostBeforeCap, `combined setup przed capem: obecna komenda posterunek (${JSON.stringify(improvementsBeforeCap)})`);
   if (farmBeforeCap) eq(farmBeforeCap.type, 'buildImprovement', 'farma ma typ buildImprovement');
-  if (fortBeforeCap) eq(fortBeforeCap.type, 'buildImprovement', 'fort ma typ buildImprovement');
+  if (outpostBeforeCap) eq(outpostBeforeCap.type, 'buildImprovement', 'posterunek ma typ buildImprovement');
   if (farmBeforeCap) eq(getImprovementMeta(farmBeforeCap.key).kosztPraca, farmCost, 'farma ma koszt z prawdziwych danych');
-  if (fortBeforeCap) eq(getImprovementMeta(fortBeforeCap.key).kosztPraca, fortCost, 'fort ma koszt z prawdziwych danych');
+  if (outpostBeforeCap) eq(getImprovementMeta(outpostBeforeCap.key).kosztPraca, outpostCost, 'posterunek ma koszt z prawdziwych danych');
 
   const normalOpts = { ...combinedOpts, pracaAvailable: 80 };
   const normalCityCommands = decideAITurn(
@@ -424,21 +395,20 @@ console.log('11. combined AI + defensive copy: city improvements + fort ekspansy
     (sum, cmd) => sum + getImprovementMeta(cmd.key).kosztPraca,
     0,
   );
-  const normalFortCommand = planExpansionFortBuilding(
+  const normalOutpostCommand = planExpansionFortBuilding(
     PLAYER_ID, [city], [unit], combinedMap, { ...normalOpts, plannedImprovementCost: normalCityCost },
   );
-  const normalImprovements = [...normalCityCommands, ...(normalFortCommand ? [normalFortCommand] : [])];
+  const normalImprovements = [...normalCityCommands, ...(normalOutpostCommand ? [normalOutpostCommand] : [])];
   const normalFarm = normalImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'farma');
-  const normalFort = normalImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'fort');
+  const normalOutpost = normalImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'posterunek');
   assert(normalFarm.length >= 1, 'combined normal: farma pozostaje wybrana pod capem');
-  eq(normalFort.length, 0, 'combined normal: fort odrzucony po odjeciu kosztu farmy');
+  eq(normalOutpost.length, 0, 'combined normal: posterunek odrzucony po odjeciu kosztu farmy');
   const normalSpent = normalImprovements.reduce(
     (sum, cmd) => sum + getImprovementMeta(cmd.key).kosztPraca,
     0,
   );
-  assert(normalSpent <= 80, 'combined normal: suma kosztow <= 100% puli 80 (AI bez capu %, STAGES2-Q1)');
-  assert(normalSpent > Math.floor(80 * 0.5), 'combined normal: wydatek > 50% puli 80 — dowod braku capu 50% (zarzut Evaluator R1 3a: asercja <= 80 sama byla tautologia)');
-  eq(normalSpent, farmCost * normalFarm.length, 'combined normal: wydane sa wylacznie koszty farm (ABC-D=B: kilka farm/ture), nie nieistotna komenda');
+  assert(normalSpent <= Math.floor(80 * 0.5), 'combined normal: suma kosztow <= floor(80*50%)');
+  eq(normalSpent, farmCost, 'combined normal: wydany jest koszt farmy, nie zero/nieistotna komenda');
 
   const defensiveOpts = { ...combinedOpts, pracaAvailable: 80, defensiveCopy: true };
   const defensiveCityCommands = decideAITurn(
@@ -448,24 +418,23 @@ console.log('11. combined AI + defensive copy: city improvements + fort ekspansy
     (sum, cmd) => sum + getImprovementMeta(cmd.key).kosztPraca,
     0,
   );
-  const defensiveFortCommand = planExpansionFortBuilding(
+  const defensiveOutpostCommand = planExpansionFortBuilding(
     PLAYER_ID, [city], [unit], combinedMap, { ...defensiveOpts, plannedImprovementCost: defensiveCityCost },
   );
   const defensiveImprovements = [
     ...defensiveCityCommands,
-    ...(defensiveFortCommand ? [defensiveFortCommand] : []),
+    ...(defensiveOutpostCommand ? [defensiveOutpostCommand] : []),
   ];
   const defensiveFarm = defensiveImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'farma');
-  const defensiveFort = defensiveImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'fort');
+  const defensiveOutpost = defensiveImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'posterunek');
   assert(defensiveFarm.length >= 1, 'combined defensiveCopy: farma pozostaje wybrana pod capem');
-  eq(defensiveFort.length, 0, 'combined defensiveCopy: brak ekspansyjnego fortu');
+  eq(defensiveOutpost.length, 0, 'combined defensiveCopy: brak ekspansyjnego posterunku');
   const defensiveSpent = defensiveImprovements.reduce(
     (sum, cmd) => sum + getImprovementMeta(cmd.key).kosztPraca,
     0,
   );
-  assert(defensiveSpent <= 80, 'combined defensiveCopy: suma kosztow <= 100% puli 80 (AI bez capu %, STAGES2-Q1)');
-  assert(defensiveSpent > Math.floor(80 * 0.5), 'combined defensiveCopy: wydatek > 50% puli 80 — dowod braku capu 50% (zarzut Evaluator R1 3a)');
-  eq(defensiveSpent, farmCost * defensiveFarm.length, 'combined defensiveCopy: wydane sa wylacznie koszty farm (ABC-D=B)');
+  assert(defensiveSpent <= Math.floor(80 * 0.5), 'combined defensiveCopy: suma kosztow <= floor(80*50%)');
+  eq(defensiveSpent, farmCost, 'combined defensiveCopy: wydany jest tylko koszt farmy');
 }
 
 // ===========================================================================
@@ -482,7 +451,7 @@ console.log('11. egzekucja wyrab (AI) — refundacja idzie do Drewna, nie Pracy'
   const wyrabCmds = buildImprovementCmds(
     decideAITurn(PLAYER_ID, [], [city], forestMap, data, opts),
   );
-  assert(wyrabCmds.length >= 1 && wyrabCmds.length <= 3, `sanity: decideAITurn emituje 1..3 komendy wyrab (ABC-D=B), got ${wyrabCmds.length}`);
+  eq(wyrabCmds.length, 1, 'sanity: decideAITurn emituje 1 komende wyrab');
   eq(wyrabCmds[0].key, 'wyrab', 'sanity: komenda to key=wyrab');
 
   // 11b. Symulacja egzekucji IDENTYCZNA z main.ts (cmd.type==='buildImprovement',

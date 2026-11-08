@@ -6,7 +6,7 @@
 
 import type { GameMap } from '../types/map';
 import type { City } from './cities';
-import { wasIndependentCityStateBeforeCapture, applyCapturePopulationLoss } from './cities';
+import { wasIndependentCityStateBeforeCapture } from './cities';
 import { isBarbarian } from './barbarians';
 import { onCityCapturedCulture } from './conquest-stability';
 import { applyPostCaptureLawOnCapture } from './post-capture-law';
@@ -52,30 +52,6 @@ export interface PostBattleMapInput {
   isUnitAt: (q: number, r: number, exceptId?: string | number) => boolean;
   rng?: () => number;
   cityOnBattleHex?: City | null;
-  /** R1 (obwarowanie bez wylomu): wygrana atakujacego NIE czysci miasta ani nie wchodzi na heks bitwy. */
-  holdPositionAfterWin?: boolean;
-}
-
-/**
- * R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: komunikat przed bitwa ręczną o jednostkach
- * w rezerwie (ponad limit pola bitwy -- nie wejda do walki, wracaja nietkniete).
- * Czysta funkcja tekstowa; zwraca '' gdy nikt nie jest w rezerwie.
- */
-export function battleReserveNotice(
-  atkCount: number,
-  defCount: number,
-  maxPerSide: number,
-  playerSide: 'atk' | 'def' | null,
-): string {
-  const parts: string[] = [];
-  const atkRes = Math.max(0, atkCount - maxPerSide);
-  const defRes = Math.max(0, defCount - maxPerSide);
-  if (playerSide === 'atk' && atkRes > 0) parts.push(atkRes + ' jednostek w rezerwie (nie wejd\u0105 do bitwy)');
-  else if (playerSide === 'def' && defRes > 0) parts.push(defRes + ' jednostek w rezerwie (nie wejd\u0105 do bitwy)');
-  else if (playerSide === null && (atkRes > 0 || defRes > 0)) {
-    parts.push('W rezerwie (nie wejd\u0105 do bitwy): ' + atkRes + ' / ' + defRes);
-  }
-  return parts.join('');
 }
 
 export interface PostBattleMapResult {
@@ -412,14 +388,8 @@ function registerVeteranProgressAfterBattle(input: PostBattleMapInput): void {
   if (input.winner === 'remis') return;
 
   const winningRoster = input.winner === 'atakujacy' ? input.atkRoster : input.defRoster;
-  // R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: jednostki w rezerwie (poza limitem pola
-  // bitwy) nie walczyly -- nie dostaja wygranej (log zdarzen = kto realnie wystapil).
-  const logged = loggedIdsForSide(input, input.winner === 'atakujacy' ? 'attacker' : 'defender');
   const ids = new Set<string | number>();
-  for (const ref of winningRoster) {
-    if (logged && !logged.has(String(ref.id))) continue;
-    ids.add(ref.id);
-  }
+  for (const ref of winningRoster) ids.add(ref.id);
 
   for (const id of ids) {
     const u = liveUnit(input.units, id);
@@ -440,9 +410,7 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
 
   registerVeteranProgressAfterBattle(input);
 
-  if (input.winner === 'atakujacy' && input.holdPositionAfterWin === true) {
-    // R1: mur/palisada stoi -- atakujacy zostaja pod murami, miasto nie pada.
-  } else if (input.winner === 'atakujacy') {
+  if (input.winner === 'atakujacy') {
     if (input.cityOnBattleHex) wipeDefenderOnCityCenter(input);
     retreatDefendersAfterAtkWin(input);
     moveAtkRosterOntoBattleHex(input);
@@ -503,9 +471,6 @@ export function applyCityCaptureAfterBattle(
   // (wołane niżej z main.ts przez captureOpts.onOwnerChanged, PO ustawieniu city.ownerId) —
   // patrz cities.ts, wasIndependentCityStateBeforeCapture.
   const wasIndependentCityState = wasIndependentCityStateBeforeCapture(city);
-  // R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1: zdobycie obcego miasta = -1 obywatel (min. 1);
-  // odzyskanie własnego bez straty. Wspólny punkt wszystkich zbrojnych ścieżek zdobycia.
-  applyCapturePopulationLoss(city, atkOwner, prevOwner, city.rebelPreviousOwnerId);
   for (let i = units.length - 1; i >= 0; i--) {
     const u = units[i]!;
     if (u.ownerId === city.ownerId && u.q === city.q && u.r === city.r) {

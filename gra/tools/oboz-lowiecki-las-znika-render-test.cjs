@@ -260,11 +260,6 @@ const FIX_SRC = `      const forestKeptUnderImprovement = hex.nakladka === Nakla
         && layers.every(k => ULEPSZENIA_ZYWNOSCIOWE.has(k as ImprovementKey)
           && !isImprovementBlockedOnForest(k, hex.nakladka));`;
 const FIX_REVERTED = '      const forestKeptUnderImprovement = false;';
-// R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1: od tej poprawki obóz jest w whiteliście zachowania reliefu,
-// więc sama mutacja forestKept→false nie odtwarza już objawu (dekor zostaje przez keepsReliefUnderImprovement).
-// Wariant PRZED cofa więc OBIE poprawki w locie: forestKept ORAZ wpis oboz_lowiecki w whiteliście.
-const RELIEF_SRC = "'kamieniolom', 'tartak', 'oboz_lowiecki']";
-const RELIEF_REVERTED = "'kamieniolom', 'tartak']";
 
 function writeViteConfig() {
   const cfg = `
@@ -276,18 +271,12 @@ const HOOKS = ${JSON.stringify(HOOKS)};
 const ANCHOR = ${JSON.stringify(ANCHOR)};
 const FIX_SRC = ${JSON.stringify(FIX_SRC)};
 const FIX_REVERTED = ${JSON.stringify(FIX_REVERTED)};
-const RELIEF_SRC = ${JSON.stringify(RELIEF_SRC)};
-const RELIEF_REVERTED = ${JSON.stringify(RELIEF_REVERTED)};
 
 function patchMain(): Plugin {
   return {
     name: 'oboz-las-patch',
     enforce: 'pre',
     transform(code: string, id: string) {
-      if (VARIANT === 'przed' && id.replace(/\\\\/g, '/').endsWith('/src/game/relief-preserving-improvements.ts')) {
-        if (!code.includes(RELIEF_SRC)) throw new Error('[oboz-las] wpis whitelisty reliefu nie znaleziony (mutacja niemozliwa)');
-        return code.replace(RELIEF_SRC, RELIEF_REVERTED);
-      }
       if (!id.replace(/\\\\/g, '/').endsWith('/src/main.ts')) return null;
       if (!code.includes(ANCHOR)) throw new Error('[oboz-las] kotwica haka testowego nie znaleziona w main.ts');
       let out = code.replace(ANCHOR, HOOKS + ANCHOR);

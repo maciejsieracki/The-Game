@@ -1,8 +1,0 @@
-MUT l.1348 changed=true ->   [FAIL] [K2] trzoda na centrum z rzeka poza riverPaths (7) stawia sie PO farmie (16) exit=1 ["[FAIL] [K1] obie farmy (11, 12) PRZED pierwsza trzoda (3) — rejestr #1: E1 < E3","[FAIL] [K1] 12,12: farma(11) przed trzoda(3) i irygacj
-MUT l.1350 changed=true -> autoclear-priority-q1-test: 44 passed, 0 failed exit=0 []
-MUT l.1351 changed=true -> autoclear-priority-q1-test: 44 passed, 0 failed exit=0 []
-MUT l.1504 changed=true ->   [FAIL] [K2] wycinka na lesie z rzeka (-1) exit=1 ["[FAIL] [K1] 11,12: trzoda STAWIA SIE (-1) dopiero PO farmie (16) na wyciętym heksie z rzeka poza riverPaths (E","[FAIL] [K1] 13,12: trzoda STAWIA SIE (-1) dopiero PO farmie (17) n
-MUT l.1530 changed=true -> autoclear-priority-q1-test: 44 passed, 0 failed exit=0 []
-MUT l.1540 changed=true -> autoclear-priority-q1-test: 44 passed, 0 failed exit=0 []
-MUT l.1624 changed=true ->   [FAIL] [K2] trzoda na centrum z rzeka poza riverPaths (-1) stawia sie PO farmie (0) exit=1 ["[FAIL] [K1] 11,12: trzoda STAWIA SIE (-1) dopiero PO farmie (6) na wyciętym heksie z rzeka poza riverPaths (E2","[FAIL] [K1] 13,12: trzod
-MUT l.1659 changed=true -> autoclear-priority-q1-test: 44 passed, 0 failed exit=0 []

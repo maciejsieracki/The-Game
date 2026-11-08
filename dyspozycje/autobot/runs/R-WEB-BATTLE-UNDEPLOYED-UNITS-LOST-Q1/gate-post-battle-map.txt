@@ -1,2 +1,0 @@
-post-battle-map-test: 32 pass, 0 fail
-EXIT=0

@@ -1,2 +1,0 @@
-tsc --noEmit (gra/): brak wyjscia
-EXIT=0

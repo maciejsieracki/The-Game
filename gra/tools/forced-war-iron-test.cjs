@@ -17,13 +17,13 @@ fs.writeFileSync(entry, `
 export {
   EPOKA_ZELAZO_NUMER,
   WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
-  WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
   WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI,
   isEligibleForIronForcedWar,
   isIronEraEntry,
   pickIronForcedWarTargetId,
+  shouldEndIronForcedWarByCityCount,
   isRestingFromIronForcedWar,
   serializeIronForcedWarState,
   restoreIronForcedWarState,
@@ -73,13 +73,13 @@ try {
   const {
     EPOKA_ZELAZO_NUMER: ironEra,
     WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE: cityLimit,
-    WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR: durationTurns,
     WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR: restTurns,
     WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR: cooldownTurns,
     WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI: startTuryOdEpoki,
     isEligibleForIronForcedWar,
     isIronEraEntry,
     pickIronForcedWarTargetId,
+    shouldEndIronForcedWarByCityCount,
     isRestingFromIronForcedWar,
     serializeIronForcedWarState,
     restoreIronForcedWarState,
@@ -89,7 +89,6 @@ try {
   console.log('--- kontrakt parametrów (dispatch §PARAMETR: wartości jak Brąz/Kamień) ---');
   eq(ironEra, 3, 'Żelazo to epoka numer 3 (KOLEJNOSC_EPOK = Kamien/Braz/Zelazo)');
   eq(cityLimit, 2, 'pokój po 2 miastach');
-  eq(durationTurns, 20, 'automatyczny pokój po maksymalnie 20 turach');
   eq(restTurns, 20, 'odpoczynek 20 tur');
   eq(cooldownTurns, 20, 'cooldown tej samej cywilizacji 20 tur');
 
@@ -220,12 +219,9 @@ try {
   );
 
   console.log('--- 2 miasta, odpoczynek i cooldown ---');
-  // R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna Żelaza NIE kończy się automatycznie (ani po 2 miastach, ani po 20 turach).
-  {
-    // R-WEB-PEACE-RULES-R8R9-Q1 R9: helper auto-końca usunięty z modułu (kontrakt źródła).
-    const srcTxt = require('fs').readFileSync(require('path').resolve(__dirname, '..', 'src', 'game', 'forced-war-iron.ts'), 'utf8');
-    assert(!/shouldEnd\w*ForcedWarBy(CityCount|Duration)/.test(srcTxt), 'R9: brak shouldEnd*ForcedWarBy(CityCount|Duration) w forced-war-iron.ts');
-  }
+  assert(!shouldEndIronForcedWarByCityCount(1, 1), '1 zdobyte i 1 utracone nie kończy wojny');
+  assert(shouldEndIronForcedWarByCityCount(2, 0), '2 zdobyte kończą wojnę pokojem');
+  assert(shouldEndIronForcedWarByCityCount(0, 2), '2 utracone kończą wojnę pokojem');
   assert(isRestingFromIronForcedWar(100, 120), 'odpoczynek działa przed restUntil');
   assert(!isRestingFromIronForcedWar(120, 120), 'odpoczynek kończy się na restUntil');
   assert(!isRestingFromIronForcedWar(100, undefined), 'brak wpisu restUntil = brak odpoczynku');

@@ -5,14 +5,12 @@
  */
 
 import { canAiEnterEmptyEnemyCity } from './city-hex-movement';
-import { keyOf, cloneMoveOccupancy, endBlockedKeys, type MoveOccupancy } from '../units/setup';
 
 export interface AiCityMoveCommand {
   unitId: string;
   toQ: number;
   toR: number;
   targetCityId?: string;
-  allowFriendlyStack?: boolean;
 }
 
 export interface AiCityMoveUnit {
@@ -51,8 +49,6 @@ export interface ExecuteAiCityMoveOptions {
   unitIsCivilian: boolean;
   targetVisible: boolean;
   canOccupyCityHex: boolean;
-  /** Stan wojny sprawdzany ponownie przy wykonaniu rozkazu, nie tylko przy jego planowaniu. */
-  canEngageOwner?: (targetOwnerId: number) => boolean;
   blockedKeys: Set<string>;
   destinationKey: string;
   computePath: (
@@ -61,13 +57,6 @@ export interface ExecuteAiCityMoveOptions {
     toR: number,
     blockedKeys: Set<string>,
   ) => readonly AiCityMovePathHex[];
-  /**
-   * R-WEB-AI-MOVE-RANGE-Q1: przycięcie trasy do budżetu ruchu jednostki (wołane
-   * PRZED zerowaniem `ruchLeft`). Wstrzykiwane z main.ts (koszt terenu jednostki).
-   * Gdy trasa zostaje skrócona, koniec nie może stać na zablokowanym heksie
-   * (obce miasto/zajęty heks) -- zdejmowany jest do ostatniego wolnego.
-   */
-  truncatePath?: (path: readonly AiCityMovePathHex[]) => readonly AiCityMovePathHex[];
   onMoved?: () => void;
   onCapture?: (city: AiCityMoveCity, unit: AiCityMoveUnit) => boolean;
 }
@@ -93,7 +82,6 @@ export function executeAiCityMove(
       && city.ownerId !== unit.ownerId,
   );
   const canEnterEmptyCity = destinationCity !== undefined
-    && (opts.canEngageOwner?.(destinationCity.ownerId) ?? true)
     && command.targetCityId === destinationCity.id
     && opts.targetVisible
     && canAiEnterEmptyEnemyCity(
@@ -110,35 +98,11 @@ export function executeAiCityMove(
     return { moved: false, captured: false, path: [] };
   }
 
-  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: kopia zachowuje `passThrough` (heksy z wlasnymi jednostkami
-  // = przejscie bez zatrzymania); sam zbior to obce jednostki/miasta.
-  const blockedKeys = cloneMoveOccupancy(opts.blockedKeys);
-  // Occupancy is resolved by the caller. A destination can contain both a
-  // friendly stack and an enemy, so the command flag cannot safely clear it.
-  if (canEnterEmptyCity) {
-    blockedKeys.delete(opts.destinationKey);
-    blockedKeys.passThrough.delete(opts.destinationKey);
-  }
-  let path: readonly AiCityMovePathHex[] = opts.computePath(
-    unit,
-    command.toQ,
-    command.toR,
-    blockedKeys,
-  );
+  const blockedKeys = new Set(opts.blockedKeys);
+  if (canEnterEmptyCity) blockedKeys.delete(opts.destinationKey);
+  const path = opts.computePath(unit, command.toQ, command.toR, blockedKeys);
   if (path.length === 0) {
     return { moved: false, captured: false, path };
-  }
-  if (opts.truncatePath !== undefined) {
-    const cut = opts.truncatePath(path);
-    if (cut.length < path.length) {
-      const endBlocked = endBlockedKeys(blockedKeys);
-      let end = cut.length;
-      while (end > 0 && endBlocked.has(keyOf(cut[end - 1]!.q, cut[end - 1]!.r))) end--;
-      path = cut.slice(0, end);
-      if (path.length === 0) {
-        return { moved: false, captured: false, path };
-      }
-    }
   }
 
   const last = path[path.length - 1]!;

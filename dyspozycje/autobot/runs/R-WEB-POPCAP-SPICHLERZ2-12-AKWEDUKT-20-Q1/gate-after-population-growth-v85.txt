@@ -1,2 +1,0 @@
-population-growth-v85-test: 50 passed, 0 failed
-EXIT=0

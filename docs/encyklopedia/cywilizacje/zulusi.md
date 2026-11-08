@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Zulusi** — szybka, agresywna piechota. Jednostki specjalne według rosteru: **Impi, Oszczepnik Zulu (Izijula), iButho z iklwa**. Religia: Kult przodków / animizm.
+**Zulusi** — szybka, agresywna piechota. Jednostka unikalna: **Impi**. Religia: Kult przodków / animizm.
 
 ---
 
@@ -24,12 +24,19 @@
 **Zulusi** to typ cywilizacji dostępny w wersji 1.0. Charakter: *szybka, agresywna piechota*.
 
 **Epoki startowe w kreatorze:** Kamień, Brąz, Żelazo.
-**Zamienniki według rosteru:** Impi, Oszczepnik Zulu (Izijula), iButho z iklwa
+**Jednostka specjalna:** Impi.
 **Religia państwa:** Kult przodków / animizm.
 **Przykładowe miasta w klastrze:** uMgungundlovu, Ondini, Ulundi, kwaBulawayo, eMakhosini….
 **Władcy (imiona per epoka):** Kamień — Zulu kaMalandela · Brąz — Senzangakhona · Żelazo — Czaka · Antyk — Cetshwayo.
 
-**Bonusy cywilizacji:** Obowiązujące bonusy i modyfikatory cywilizacji wynikają z macierzy parametrów. Dawne bonusy opisowe nie są doliczane.
+**Bonus startowy:** +Ruch i +Morale piechoty; tania, silna w grupie.
+
+**Trzy linie bonusów (macierz):**
+- Ruch i morale: +20% prędkości piechoty i +morale przy ataku w grupie (formacja buffalo)
+- Tania rekrutacja: koszt rekrutacji Impi -10% (liczebność > jakość)
+- Impi = szybka piechota z assegai; silna w zmasowanym ataku, słaba na dystans
+
+**Słabsza strona (balans):** słaby dystans.
 
 **Profil AI (skala 0–9):** agresja 9/9 — wysoka.
 

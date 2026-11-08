@@ -123,10 +123,9 @@ function naruszeniaStruktury(src) {
   // Trzy ISTNIEJĄCE miejsca (ruch natychmiastowy, ruch po animacji, koniec tury AI) nie
   // mogą się zgubić przy okazji tej naprawy — plus nowe w applyMapBattleOutcome = 4.
   const wywolania = (src.match(/validateActiveSieges\(\);/g) || []).length;
-  if (wywolania !== 6) {
-    b.push(`validateActiveSieges() wołane ${wywolania}× w main.ts, oczekiwano dokładnie 6 `
-      + '(2× obsługa ruchu + scanAutoSiegesAfterAiTurn + applyMapBattleOutcome + migracja wczytania zapisu '
-      + '+ setDiploRelation przy końcu wojny [R-WEB-AI-NO-SIEGE-WITHOUT-WAR-Q1 R2] + 1 pozostałe istniejące)');
+  if (wywolania !== 4) {
+    b.push(`validateActiveSieges() wołane ${wywolania}× w main.ts, oczekiwano dokładnie 4 `
+      + '(2× obsługa ruchu + scanAutoSiegesAfterAiTurn + applyMapBattleOutcome)');
   }
 
   return b;
@@ -134,7 +133,7 @@ function naruszeniaStruktury(src) {
 
 const naruszenia = naruszeniaStruktury(realSrc);
 ok(naruszenia.length === 0,
-  'applyMapBattleOutcome woła validateActiveSieges() PO applyPostBattleMap, 5 wywołań łącznie w main.ts'
+  'applyMapBattleOutcome woła validateActiveSieges() PO applyPostBattleMap, 4 wywołania łącznie w main.ts'
   + (naruszenia.length ? ' → ' + naruszenia.join(' | ') : ''));
 
 // ===========================================================================
@@ -179,21 +178,13 @@ function zbudujHarness(src) {
     siegeTurnByCity,
     refreshSiegeMarkers: () => { calls.refreshSiegeMarkers++; },
     getActiveSiegeCityId: () => null,
-    // R-WEB-AI-SIEGE-WITHOUT-WAR-Q1: validateActiveSieges ma bramkę wojny; ten harness testuje
-    // logikę przyległości, więc strony są wrogami (areEnemyOwners = zawsze true) — bramka
-    // wojny ma własny test: ai-siege-requires-war-test.cjs.
-    areEnemyOwners: () => true,
-    siegeAllowedBetween: (a, b, f) => a !== b && f(a, b),
-    isSiegeStillValid: (city, bId, us) => us.some(
-      u => u.ownerId === bId && hexDistance(u.q, u.r, city.q, city.r) === 1),
     hideSiegeMapPanel: () => { calls.hideSiegeMapPanel++; },
     showHintMessage: (msg) => { calls.hints.push(msg); },
   };
   const fabryka = new Function('deps', `
     const { cities, units, hexDistance, clearSiegeMachines, siegeBesiegerByCity,
             siegeAiStateByKey, siegeAiKey, siegeTurnByCity, refreshSiegeMarkers,
-            getActiveSiegeCityId, hideSiegeMapPanel, showHintMessage,
-            areEnemyOwners, siegeAllowedBetween, isSiegeStillValid } = deps;
+            getActiveSiegeCityId, hideSiegeMapPanel, showHintMessage } = deps;
     ${js}
     return { validateActiveSieges, endMapSiege };
   `);

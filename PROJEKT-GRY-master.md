@@ -643,19 +643,17 @@ Wszędzie w dokumentach, kodzie i arkuszach, gdzie pojawia się „Zadowolenie" 
 > Zasada uzupełnia §5 (Walka) i §8 (Miasta i ludność). Dotyczy każdego miasta w grze.
 
 **Mechanika:**
-- Gdy miasto z **ukończonym budynkiem Garnizon** jest **atakowane** (wróg wchodzi na pole bitwy miasta lub oblęga miasto), **100% mieszkańców** (1 mieszkaniec = 1 jednostka) staje do obrony jako milicja dołączona do ewentualnych regularnych obrońców — połowa walczy wręcz (Wojownik / Włócznik / Wojownik z mieczem i tarczą, staty ×0,5), połowa dystansowo (Oszczepnik / Łucznik / Procarz, pełne staty), typy wg epoki właściciela, z obniżonym morale; straty Milicji w bitwie **nie zmniejszają ludności** — ludność po bitwie = ludność przed bitwą (spec właściciela 2026-11-03, R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1; korekta R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1).
-- Milicjanci to **mieszkańcy w roli odpowiedników jednostek wojskowych** swojej epoki (nie osobny typ „chłop z widłami"); w bitwie noszą model i ikonę odpowiednika, oznaczone jako Milicja.
-- **Parametry milicji:** jednostki wręcz mają **50%** statów odpowiednika, dystansowe **pełne** staty, wszystkie obniżone **morale** (dane: `gra/data/combat-params.json` → `militia_*`, `units.json`).
+- Gdy miasto jest **atakowane** (wróg wchodzi na pole bitwy miasta lub oblęga miasto), **~20% mieszkańców** automatycznie staje do obrony jako jednostki milicji.
+- Milicjanci to **chłopi z widłami** (referencja: `Civ/Referencje-jednostek/ref-22.png`).
+- **Parametry milicji:** siła bojowa ~**1/2 Wojownika Epoki Kamienia** (konkretne staty: `Jednostki.xlsx`, wiersz „Milicja / Chłop z widłami").
 - Milicja **nie jest rekrutowana** przez gracza — pojawia się automatycznie przy obronie miasta.
 - Milicja **nie istnieje poza polem bitwy** — nie maszeruje, nie pojawia się na mapie świata.
-- **Zdobycie obcego miasta (2026-11-03):** każde zdobycie obcego miasta (szturm, bitwa o miasto, wejście do pustego miasta, kapitulacja głodowa; gracz, AI, miasta-państwa, barbarzyńcy) pomniejsza jego ludność o dokładnie 1 obywatela (`capture_pop_loss` w `miasto-params.json`), nie niżej niż do 1; bez straty: odzyskanie własnego miasta (też po buncie), cesja w traktacie, aneksja dyplomatyczna. Raport zdobycia pokazuje wiersz „Ludność: −1”.
-- **Odnowa po zniszczeniu (2026-11-03):** gdy cała Milicja miasta zginie w bitwie/szturmie, miasto przez 5 tur (`militia_regen_turns` w `combat-params.json`) nie wystawia Milicji; dopiero potem odnawia się w pełnym składzie (liczba = aktualna ludność).
 
 **Cel projektowy:** każde miasto ma minimalną obronę obywatelską — miasta nie można łatwo zdobyć nawet bez regularnej armii. Wymaga to od atakującego przewagi liczebnej lub jakościowej ponad milicję.
 
 **Balans (edytowalny):**
-- Odsetek mieszkańców tworzących milicję: **100%** (`militia_pop_fraction` w `gra/data/combat-params.json`).
-- Przelicznik statów milicji wręcz względem odpowiednika: **0.5** (`militia_strength_fraction`); morale: `militia_morale_fraction` (0.5, z podłogą nad progiem ucieczki).
+- Odsetek mieszkańców tworzących milicję: domyślnie **20%**, parametr w `Społeczeństwo-parametry.xlsx`.
+- Przelicznik siły milicji względem Wojownika Ep. Kamienia: domyślnie **0.5** (= 50% statów).
 
 ---
 
@@ -706,6 +704,6 @@ Tabela przypisania obrazów referencyjnych do konkretnych ról w mechanice gry:
 | ref-07 (Szpieg) | **Szpieg / Zabójca** — jednostka specjalna (patrz §9e) | Wszystkie | TBD |
 | ref-20 (Zabójca) | **Zabójca** — eliminacja generałów/jednostek (patrz §9e) | Wszystkie | TBD |
 | ref-17 (Miecznik Galów) | **Miecznik galijski** — Galowie (przyszła kultura, patrz §9d) | Galowie | Żelazo+ |
-| ref-22 (Chłop z widłami) | **Milicja wieśniaków** — obrona pasywna miast (patrz §9c; od 2026-11-03 modele odpowiedników epoki, nie osobny model) | Wszystkie | Ep. Kamienia |
+| ref-22 (Chłop z widłami) | **Milicja wieśniaków** — obrona pasywna miast (patrz §9c) | Wszystkie | Ep. Kamienia |
 
 > Pełna lista referencji z opisami: `Civ/Referencje-jednostek/README-referencje.md`.

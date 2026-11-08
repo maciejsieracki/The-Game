@@ -1,2 +1,0 @@
-RED na starym kodzie (TR_MODULE=old, HEAD~ trade-routes.ts): FAIL T1 (ocean bez Portu: got 0 want 1), T1 medium, T1 dystans, T5, T5b; potem TypeError (trasa undefined w tradeRouteIncomeForRoute) -> proces przerwany.
-EXIT=1

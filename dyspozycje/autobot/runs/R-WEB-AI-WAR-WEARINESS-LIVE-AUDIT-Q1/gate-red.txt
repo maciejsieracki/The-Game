@@ -1,4 +1,0 @@
-FAIL: 7a: przegrywajacy sklada oferte mimo niskiego zmeczenia (bylo: none)
-FAIL: 7c: chroniony przegrywajacy => pokoj mimo ceny nie do pokrycia (got "none", want "offer_accepted")
-TypeError: Cannot read properties of undefined (reading 'histogram')
-EXIT=1 (RED na bazie origin/main: AI_SRC_DIR=baza)

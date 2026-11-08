@@ -1,2 +1,0 @@
-tech-tree-test: 19 pass, 0 fail
-EXIT=0

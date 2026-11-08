@@ -855,12 +855,8 @@ function r4ExpectedAfterNTicks(baseZ, wa, wb, wSelf, n) {
 
 {
   const os = require('os');
+  const { execSync } = require('child_process');
   let tmpDir = null;
-  // R-WEB-DIPLO-NAP-TRUST-30-Q1: strażnik „nietknięty" porównuje treść pliku z migawką z początku
-  // sekcji (a nie `git status` — ten zawsze pokazywał „M" po każdej zamierzonej edycji diplomacy.json,
-  // a test i tak nie zapisuje do prawdziwego pliku; zapis idzie tylko na kopię w os.tmpdir()).
-  const realDiplomacyJsonPath = path.resolve(GRA_ROOT, 'data', 'diplomacy.json');
-  const realDiplomacyJsonBefore = fs.readFileSync(realDiplomacyJsonPath, 'utf8');
   try {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wiarygodnosc-json-src-'));
     fs.cpSync(path.resolve(GRA_ROOT, 'src'), path.join(tmpDir, 'src'), { recursive: true });
@@ -1090,13 +1086,13 @@ export {
   // Prawdziwy gra/data/diplomacy.json pozostaje nietknięty — cała modyfikacja
   // działa wyłącznie na kopii w os.tmpdir(), sprzątniętej wyżej.
   try {
-    const realDiplomacyJsonAfter = fs.readFileSync(realDiplomacyJsonPath, 'utf8');
-    ok(
-      realDiplomacyJsonAfter === realDiplomacyJsonBefore,
-      'prawdziwy gra/data/diplomacy.json nietknięty po sekcji 11 (treść jak na początku sekcji)',
-    );
+    const gitStatus = execSync('git status --porcelain -- data/diplomacy.json', {
+      cwd: GRA_ROOT,
+      encoding: 'utf8',
+    }).trim();
+    ok(gitStatus === '', `prawdziwy gra/data/diplomacy.json nietknięty po sekcji 11 (git status: "${gitStatus}")`);
   } catch (e) {
-    ok(false, `nie udało się odczytać data/diplomacy.json po sekcji 11: ${e.message}`);
+    ok(false, `nie udało się sprawdzić git status dla data/diplomacy.json: ${e.message}`);
   }
 }
 

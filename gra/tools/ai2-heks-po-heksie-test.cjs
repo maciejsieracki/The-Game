@@ -14,9 +14,9 @@
  *      `droga` kwalifikowala sie w kolko: 37 drog na jednym heksie w 40 turach).
  *
  * Plus trzy straznikie zakresu, ktore NIE moga byc tautologiami:
- *   D. AI CYWILIZACJI NIE ma juz `maxItemsPerCity: 1` (R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B
- *      wlasciciela 2026-10-31; zastapilo ECHO „Zostaw limit") — sprawdzane DWOMA niezaleznymi
- *      sposobami: tekstem `ai.ts` ORAZ zachowaniem `decideAITurn` (>1, najwyzej 3 rozkazy na miasto na ture);
+ *   D. AI CYWILIZACJI ma nadal `maxItemsPerCity: 1` (ECHO wlasciciela: „Zostaw limit,
+ *      zmien kolejnosc") — sprawdzane DWOMA niezaleznymi sposobami: tekstem `ai.ts`
+ *      ORAZ zachowaniem `decideAITurn` (max 1 rozkaz buildImprovement na miasto na ture);
  *   E. AI CYWILIZACJI faktycznie buduje `tartak` (przed runda 2: 0 na 183 kwalifikujacych
  *      sie heksach) — pomiar zachowania przez `decideAITurn`, nie regex;
  *   F. straznik tekstowy `main.ts`: konfiguracja wywolania pickera na sciezce AI GRACZA
@@ -90,18 +90,14 @@ const TECHS = new Set(['Łowiectwo', 'Rolnictwo', 'Oswojenie zwierząt', 'Obrób
 // ===========================================================================
 console.log('A. petla po HEKSACH, nie po TYPACH');
 {
-  // R-WEB-AUTOIMPROVE-PRIORITY-Q1 (R5): hodowla (bydlo/owce/lama) jest dozwolona TYLKO na heksach przy
-  // rzece (wiazaca specyfikacja E3 wlasciciela 2026-10-31; auto-improvements.ts: `riverHexKeys` w FAZIE 1).
-  // Domykanie heksa (farma -> trzoda na TYM SAMYM heksie) sprawdzamy wiec na heksie z rzeka; na mapie
-  // bez rzek trzoda nie powstaje (kontrola ponizej), wiec wczesniejsza mapa bez rzeki nie dawala pary.
-  const map = makeMap(12, 12, { riverAt: [[4, 5]] });
+  const map = makeMap(12, 12);
   const city = { id: 'c0', ownerId: 0, q: 5, r: 5, population: 6 };
   const picks = M.pickAutoImprovements({
     cities: [city], ownerId: 0, map,
     territoryNodes: territory(5, 5, 3, 0, 'c0', map),
     placedImprovements: new Map(),
     pracaAvailable: 100000, unlockedTechs: TECHS,
-    pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
+    pracaBudgetPercent: 100, maxItemsPerCity: 6, skipWyrab: true, playerEra: 3,
     priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
   });
   ok(picks.length >= 4, `picker zwrocil >= 4 ulepszenia (jest ${picks.length})`);
@@ -113,17 +109,6 @@ console.log('A. petla po HEKSACH, nie po TYPACH');
   ok(!przeplatanie, `zaden heks nie wraca po przerwie (sekwencja: ${seq.join(' ')})`);
   ok(seq[0] === seq[1], `pierwsze DWA ulepszenia trafiaja na TEN SAM heks (${seq[0]} vs ${seq[1]})`);
   ok(picks[0].key !== picks[1].key, `... i sa to ROZNE typy (${picks[0].key} / ${picks[1].key}) — czyli domykanie heksa, nie ten sam typ na dwoch heksach`);
-  const noRiverMap = makeMap(12, 12);
-  const noRiverPicks = M.pickAutoImprovements({
-    cities: [city], ownerId: 0, map: noRiverMap,
-    territoryNodes: territory(5, 5, 3, 0, 'c0', noRiverMap),
-    placedImprovements: new Map(),
-    pracaAvailable: 100000, unlockedTechs: TECHS,
-    pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
-    priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
-  });
-  ok(!noRiverPicks.some(p => p.key === 'bydlo' || p.key === 'owce' || p.key === 'lama'),
-    'E3: bez rzeki trzoda nie powstaje (hodowla tylko przy rzece)');
 }
 
 console.log('B. heks z rzeka ma priorytet przed heksem bez rzeki');
@@ -136,10 +121,10 @@ console.log('B. heks z rzeka ma priorytet przed heksem bez rzeki');
     territoryNodes: territory(5, 5, 3, 0, 'c0', map),
     placedImprovements: new Map(),
     pracaAvailable: 100000, unlockedTechs: TECHS,
-    pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
+    pracaBudgetPercent: 100, maxItemsPerCity: 1, skipWyrab: true, playerEra: 3,
     priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
   });
-  ok(picks.length > 1, `brak limitu liczby sztuk -> wiecej niz 1 pick w jednym wywolaniu (jest ${picks.length})`);
+  ok(picks.length === 1, `maxItemsPerCity=1 -> dokladnie 1 pick (jest ${picks.length})`);
   ok(picks[0] && picks[0].q === 8 && picks[0].r === 5,
     `pierwszy pick trafia na heks Z RZEKA (8,5), nie na blizszy heks bez rzeki (jest ${picks[0] ? picks[0].q + ',' + picks[0].r : 'brak'})`);
 }
@@ -156,7 +141,7 @@ console.log('C. brak duplikatu tego samego ulepszenia na tym samym heksie');
       territoryNodes: territory(5, 5, 3, 0, 'c0', map),
       placedImprovements: placed,
       pracaAvailable: 100000, unlockedTechs: TECHS,
-      pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
+      pracaBudgetPercent: 100, maxItemsPerCity: 1, skipWyrab: true, playerEra: 3,
       priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
     });
     for (const p of picks) {
@@ -166,23 +151,20 @@ console.log('C. brak duplikatu tego samego ulepszenia na tym samym heksie');
       placed.set(hk, [...cur, p.key]);
     }
   }
-  // Bez limitu liczby sztuk (R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1) straznik duplikatow dziala na pelnych wywolaniach pickera.
-  ok(dubel === null, `20 tur bez limitu sztuk: zero duplikatow warstwy${dubel ? ' (znaleziony: ' + dubel + ')' : ''}`);
+  ok(dubel === null, `20 tur x maxItemsPerCity=1: zero duplikatow warstwy${dubel ? ' (znaleziony: ' + dubel + ')' : ''}`);
 }
 
-console.log('D. AI CYWILIZACJI — BEZ limitu liczby sztuk na miasto (R-WEB-AUTOIMPROVE-STAGES-Q1 R3 ABC-D=B 2026-10-31; parametr usuniety calkowicie: R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1 2026-11-03)');
+console.log('D. AI CYWILIZACJI — limit maxItemsPerCity: 1 NIETKNIETY (ECHO: „Zostaw limit, zmien kolejnosc")');
 {
   const aiSrc = fs.readFileSync(path.resolve(SRC, 'game', 'ai.ts'), 'utf8');
   const i = aiSrc.indexOf('function planCityImprovements');
   // RUNDA 4: okno poszerzone 4000 -> 8000 znakow. Runda 4 dopisala w tej funkcji blok
-  // `workedHexKeysForAiCity` (ZASADA 2) wraz z komentarzem, przez co pilnowany kod
+  // `workedHexKeysForAiCity` (ZASADA 2) wraz z komentarzem, przez co `maxItemsPerCity: 1`
   // wypadlo poza stare okno — straznik czerwienil sie MIMO ze pilnowany kod jest na miejscu.
   // To jest zmiana SZEROKOSCI OKNA straznika, nie zmiana asercji.
   const blok = i >= 0 ? aiSrc.slice(i, i + 8000) : '';
-  ok(!/maxItemsPerCity/.test(blok),
-    'ai.ts / planCityImprovements nie przekazuje zadnego `maxItemsPerCity` do pickera (parametr usuniety)');
-  ok(!/maxItemsPerCity|FOOD_STAGE_MAX_ITEMS_PER_CITY/.test(fs.readFileSync(path.resolve(SRC, 'game', 'auto-improvements.ts'), 'utf8')),
-    'auto-improvements.ts: brak parametru `maxItemsPerCity` i stalej FOOD_STAGE_MAX_ITEMS_PER_CITY');
+  ok(/maxItemsPerCity:\s*1\b/.test(blok),
+    'ai.ts / planCityImprovements nadal przekazuje `maxItemsPerCity: 1` do pickera');
   ok(/pracaBudgetPercent:\s*100\b/.test(blok),
     'ai.ts / planCityImprovements nadal przekazuje `pracaBudgetPercent: 100`');
   // dowod behawioralny — nie regex
@@ -197,15 +179,8 @@ console.log('D. AI CYWILIZACJI — BEZ limitu liczby sztuk na miasto (R-WEB-AUTO
     territoryNodes: tn, placedImprovements: new Map(), improvementTechs: TECHS,
     pracaAvailable: 100000, civEra: 3,
   }).filter(c => c.type === 'buildImprovement');
-  // ABC-D=B: AI jak gracz — wiecej niz 1 rozkaz na miasto na ture, bez gornego limitu (ogranicza tylko budzet).
-  const perCity = new Map();
-  for (const c of cmds) {
-    const own = Math.abs(c.q - 5) + Math.abs(c.r - 5) <= Math.abs(c.q - 14) + Math.abs(c.r - 14) ? 'c0' : 'c1';
-    perCity.set(own, (perCity.get(own) ?? 0) + 1);
-  }
-  // R-WEB-AUTOIMPROVE-STAGES3-Q1 S3-2=C: limit 3/etap ZDJETY — brak gornego limitu na miasto (ogranicza tylko budzet).
-  ok(cmds.length > cities.length && [...perCity.values()].every(n => n >= 1) && [...perCity.values()].some(n => n > 3),
-    `decideAITurn: wiecej niz 1 ulepszenie na miasto na ture, brak limitu 3 na miasto (${cmds.length} rozkazow przy ${cities.length} miastach: ${JSON.stringify([...perCity])})`);
+  ok(cmds.length === cities.length,
+    `decideAITurn: dokladnie 1 ulepszenie na miasto na ture (${cmds.length} rozkazow przy ${cities.length} miastach)`);
 }
 
 console.log('E. AI CYWILIZACJI buduje TARTAK (przed runda 2: 0 na wszystkich ziarnach)');
@@ -249,19 +224,13 @@ console.log('F. straznik tekstowy main.ts — konfiguracja wywolania pickera na 
 {
   const mainSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
   const i = mainSrc.indexOf('const picks = pickAutoImprovements({');
-  const blok = i >= 0 ? mainSrc.slice(i, i + 5000) : '';
+  const blok = i >= 0 ? mainSrc.slice(i, i + 2500) : '';
   ok(i >= 0, 'main.ts zawiera wywolanie `pickAutoImprovements` auto-ulepszen gracza');
-  // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (klasa A, asercja przestarzala): `skipWyrab`
-  // usuniety z automatu gracza -- wycinka lasu pod farme jest zawsze dozwolona (obywatel
-  // stoi na polu). Pinujemy ZAMIERZONE zachowanie: BRAK `skipWyrab: true` w wywolaniu.
-  ok(!/skipWyrab:\s*true/.test(blok), 'main.ts (AI GRACZA): brak `skipWyrab: true` — wycinka lasu dozwolona (SIMPLE-FOOD-RULE)');
+  ok(/skipWyrab:\s*true/.test(blok), 'main.ts (AI GRACZA): `skipWyrab: true` — gracz nie karczuje automatem');
   ok(/pracaBudgetPercent:\s*playerUlepszeniaPolicy\.pracaAutoPercent/.test(blok),
     'main.ts (AI GRACZA): budzet z polityki gracza (`pracaAutoPercent`), nie 100%');
-  // Klasa A: przelacznik „tylko pola z obywatelami" (`getOnlyWorked`) usuniety razem z
-  // SIMPLE-FOOD-RULE. Profil (`getFocus`) nadal przekazywany; filtr zywnosci jest teraz
-  // stalym zachowaniem pickera (zywnosc tylko na polach obywateli), wiec pinujemy brak przelacznika.
-  ok(/getFocus:/.test(blok) && !/getOnlyWorked:/.test(blok),
-    'main.ts (AI GRACZA): profil (`getFocus`) przekazywany, a przelacznik `getOnlyWorked` usuniety (SIMPLE-FOOD-RULE)');
+  ok(/getFocus:/.test(blok) && /getOnlyWorked:/.test(blok),
+    'main.ts (AI GRACZA): profil (`getFocus`) i filtr obrabianych heksow (`getOnlyWorked`) nadal przekazywane');
   ok(!/maxItemsPerCity/.test(blok),
     'main.ts (AI GRACZA): brak `maxItemsPerCity` — throttle 1/ture jest WYLACZNIE mechanizmem AI cywilizacji');
 }
@@ -326,7 +295,7 @@ console.log('H. W-B: posterunek/fort NIE domykaja heksa i maja pulap ceil(pop/10
     territoryNodes: territory(6, 6, 3, 0, 'c0', map),
     placedImprovements: placedH,
     pracaAvailable: 100000, unlockedTechs: TECHS,
-    pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
+    pracaBudgetPercent: 100, maxItemsPerCity: 14, skipWyrab: true, playerEra: 3,
     priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
   });
   const cap = Math.max(1, Math.ceil(city.population / CAPDIV));
@@ -353,11 +322,6 @@ console.log('H. W-B: posterunek/fort NIE domykaja heksa i maja pulap ceil(pop/10
 console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (GOAL tematu)');
 {
   const map = makeMap(16, 16, { nakladka: 'las', riverAt: [[7, 5], [7, 6], [7, 7], [7, 8]] });
-  // R4 KOREKTA F (wlasciciel 2026-10-31): heks centrum miasta to ZWYKLY heks; tartaku na nim nie bedzie, bo
-  // centrum nigdy nie ma lasu (R-WEB-CITY-CLEARS-FOREST-Q1: zakladanie/wczytanie zapisu czysci las pod miastem).
-  // Fikstura odwzorowuje ten stan produkcyjny (to NIE obejscie kodu pickera — picker nie ma zadnego filtra
-  // centrum; sprawdzenie nizej: tartak/obóz na centrum sie nie kwalifikuja, a farma/inne wolno).
-  map.hexes['7,7'].nakladka = 'brak';
   // RUNDA 4, ZASADA 2: automat buduje wylacznie na heksach OBRABIANYCH przez obywateli
   // (poza zlozami). Zeby ten scenariusz nadal testowal to, co testowal w rundzie 3
   // („pierwszy wyrab trafia na heks Z RZEKA"), obywatele musza te heksy z rzeka realnie
@@ -406,28 +370,18 @@ console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (G
   // minimum lesne miasta: tartak i oboz nadal powstaja mimo wycinki
   const tartaki = slad.filter(e => e.key === 'tartak').length;
   const obozy = slad.filter(e => e.key === 'oboz_lowiecki').length;
-  // R-WEB-AUTOIMPROVE-STAGES2-Q1 (D-R5-1, wlasciciel 2026-10-31): „minimum lesne” (tartak I oboz) to nieaktualne ECHO
-  // 2026-08-27. Las nadajacy sie pod farme (tu: caly teren to rownina z lasem) zostaje wycince+farmie; tartak
-  // powstaje tylko na lesie poza zasiegiem farmy (tu: heksy bez obywateli), a oboz (kategoria ZYWNOSCI, tylko
-  // heksy obrabiane) nie ma wtedy gdzie powstac. Wymagamy wiec tylko, ze tartak powstaje mimo wycinki.
-  ok(tartaki > 0,
-    `tartak powstaje mimo wycinki (D-R5-1; oboz nie jest wymagany): tartak ${tartaki}, oboz ${obozy}`);
+  ok(tartaki > 0 && obozy > 0,
+    `minimum lesne miasta dotrzymane mimo wycinki: tartak ${tartaki}, oboz ${obozy}`);
   // heks z tartakiem/obozem nigdy nie idzie pod topor
   const zTartakiem = new Set(slad.filter(e => e.key === 'tartak' || e.key === 'oboz_lowiecki').map(e => e.hk));
   ok(!wyreby.some(e => zTartakiem.has(e.hk)),
     'zaden heks z tartakiem albo obozem nie zostal wyciety');
-  // KOREKTA F (K3): centrum miasta jest zwyklym kandydatem; bez lasu nie kwalifikuje sie tartak ani oboz.
-  const naCentrum = slad.filter(e => e.hk === '7,7').map(e => e.key);
-  ok(!naCentrum.includes('tartak') && !naCentrum.includes('oboz_lowiecki'),
-    `KOREKTA F: na centrum 7,7 (bez lasu) brak tartaku/obozu (rozkazy na centrum: ${naCentrum.join(',') || 'brak'})`);
-  ok(naCentrum.includes('farma'), `KOREKTA F: centrum 7,7 dostaje zwykle ulepszenie zywnosciowe (${naCentrum.join(',') || 'brak'})`);
-  // K — R4 (wlasciciel 2026-10-31: „Niedobor ma tylko otwierac ulepszenia brakujacego surowca, nic wiecej”):
-  // FAZA 0 (posterunek/fort) NIE jest otwierana niedoborem w K3 (wczesniej: posterunek>0 i fort>0 przy niedoborze
-  // drewna). Obrona AI poza pickerem (`planExpansionFortBuilding` w ai.ts) bez zmian. Test H wyzej nadal
-  // pilnuje semantyki FAZY 0 dla wywolan BEZ `demandDriven` (profil „infrastruktura” gracza itd.).
+  // K — obrona nadal powstaje przez decideAITurn, w granicach pulapu
   const post = slad.filter(e => e.key === 'posterunek').length;
   const fort = slad.filter(e => e.key === 'fort').length;
-  ok(post === 0 && fort === 0, `R4: picker AI (niedobor drewna) nie stawia posterunku/fortu (posterunek ${post}, fort ${fort})`);
+  const cap = Math.max(1, Math.ceil(6 / CAPDIV));
+  ok(post > 0 && fort > 0, `posterunek i fort NADAL powstaja poza sekwencja domykania (posterunek ${post}, fort ${fort})`);
+  ok(post <= cap && fort <= cap, `... i nie przekraczaja pulapu ${cap} na miasto`);
 }
 
 console.log('L. sciezka AI GRACZA: silnik wycinki jest WSPOLNY — blokuje ja wylacznie `skipWyrab` z main.ts');
@@ -438,7 +392,7 @@ console.log('L. sciezka AI GRACZA: silnik wycinki jest WSPOLNY — blokuje ja wy
     cities: [city], ownerId: 0, map,
     territoryNodes: territory(6, 6, 3, 0, 'c0', map),
     pracaAvailable: 100000, unlockedTechs: TECHS,
-    pracaBudgetPercent: 100, playerEra: 3,
+    pracaBudgetPercent: 100, maxItemsPerCity: 40, playerEra: 3,
   };
   const placed = new Map([['6,6', ['tartak']], ['6,5', ['oboz_lowiecki']]]);
   const zSkip = M.pickAutoImprovements({ ...wspolne, placedImprovements: new Map(placed), skipWyrab: true });

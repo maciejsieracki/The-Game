@@ -1,7 +1,0 @@
-[recruit-card-quantity-real-render-test] ERROR browserType.launch: Failed to launch chromium because executable doesn't exist at /usr/bin/chromium
-    at launchBrowser (/home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/recruit-card-quantity-real-render-test.cjs:79:27)
-    at async main (/home/user/The-Game/.claude/worktrees/wf_36561128-0dd-3/gra/tools/recruit-card-quantity-real-render-test.cjs:103:19) {
-  log: [],
-  name: 'Error'
-}
-EXIT=1

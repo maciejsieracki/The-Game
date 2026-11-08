@@ -1,6 +1,0 @@
-[perf] build identity: {"reused":"/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cand-build","gitHead":"3f6f6ec77bfff53f6f18080d99a0cb6985b780ba"}
-[perf] countEquiv {"mismatches":[],"rows":[[0,40,2653,2653,180,180],[13,1,91,91,0,0],[1,15,1549,1549,101,101],[2,1,91,91,0,0],[3,15,1806,1806,131,131],[4,1,91,91,0,0],[5,15,1686,1686,71,71],[6,1,91,91,0,0],[7,15,1439,1439,0,0],[8,1,91,91,0,0],[9,15,1728,1728,0,0],[10,1,91,91,0,0],[11,15,1565,1565,0,0],[12,1,91,91,0,0]],"ratesSample":["[{\"drewno\":11466,\"kamien\":129,\"glina\":1844,\"ruda_cyny\":1080,\"ruda\":1080},{\"drewno\":11466,\"kamien\":129,\"glina\":1844,\"ruda_cyny\":1080,\"ruda\":1080}]","[{\"drewno\":5,\"kamien\":2,\"glina\":12},{\"drewno\":5,\"kamien\":2,\"glina\":12}]","[{\"drewno\":2280,\"kamien\":35,\"glina\":769},{\"drewno\":2280,\"kamien\":35,\"glina\":769}]"]}
-[perf] scopeEquiv {"runs":[true,true,true],"len":2010,"equal":true}
-[perf] equiv {"mismatches":[],"owners":14,"events_baseline":1,"events_city-buildings-cleared":1,"events_improvement-removed":1,"events_queue-emptied":1,"events_restored":1} hudFresh {"has111":true,"has222":true,"stale111":false,"has333viaMainUpdateHud":true}
-[perf] result written: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cand-equiv.json
-EXIT=0

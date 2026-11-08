@@ -1,3 +1,0 @@
-mutacja: usuniecie 'oboz_lowiecki' z FOOD_IMPROVEMENT_KEYS (auto-improvements.ts), FAIL=1
-  [FAIL] oboz_lowiecki: przebieg niedoboru (getOnlyWorked=false) + filtr zywnosci: 0 poza obywatelami (jest 19)
-EXIT=1

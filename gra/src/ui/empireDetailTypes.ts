@@ -25,15 +25,15 @@ export function buildUchwalaSolSpichlerzII(
 ): EmpireUchwalaRow {
   const count = Math.max(0, spichlerzIISolCount ?? 0);
   const countNote = count > 0
-    ? ` Aktywne Spichlerze Królewskie płacące Sól: ${count}.`
+    ? ` Aktywne Spichlerze II płacące Sól: ${count}.`
     : '';
   return {
     id: UCHWALA_SOL_SPICHLERZ_II_ID,
     nazwa: 'Solanka zapasowa',
     opis: aktywna
       ? `Armia poza własnym terytorium zużywa 1 pkt Żywności/turę zamiast 2 (bonus imperium).${countNote}`
-      : 'Nieaktywna — wymaga co najmniej jednego Spichlerza Królewskiego z dostępem do Soli w magazynie państwa (5 Soli/turę).',
-    zrodlo: 'Spichlerz Królewski · Sól',
+      : 'Nieaktywna — wymaga co najmniej jednego Spichlerza II z dostępem do Soli w magazynie państwa (5 Soli/turę).',
+    zrodlo: 'Spichlerz II · Sól',
     aktywna,
   };
 }
@@ -94,7 +94,7 @@ export interface EmpireResourceRow {
    * wartości 100 na sztywno.
    */
   capBase?: number;
-  /** Bonus capu za KAŻDY Magazyn = baza × magazyn_bonus_surowce_proc_na_budynek (0,2 → +20%) × mnożnik epoki. */
+  /** Bonus capu za KAŻDY Magazyn (econ-params.json magazyn_bonus_surowce_na_budynek). */
   capBonusPerMagazyn?: number;
   /**
    * Opcjonalnie: skąd dostęp pochodzi (Ceramika/Sól/Koń/Złoto — budynek/złoże/szlak).
@@ -107,12 +107,6 @@ export interface EmpireResourceRow {
    * surowiec nie jest na liście tej epoki (badge nie jest rysowany).
    */
   citizenRequired?: boolean;
-  /**
-   * R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: stawka zużycia tej epoki (sztuk surowca / obywatela / turę),
-   * z której silnik policzył drenaż (`citizen-resource-upkeep.ts` `citizenUpkeepRateForEra`).
-   * Gdy `citizenRequired`. Brak → panel przyjmuje 1,0 (fallback).
-   */
-  citizenRatePerCitizen?: number;
   /**
    * Gdy `citizenRequired` — czy magazyn centralny akurat TERAZ ma > 0 tego surowca (pokrycie)
    * czy 0 (kara aktywna — Szczęście −1, Rozwój −1% w każdym mieście imperium).

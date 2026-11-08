@@ -113,19 +113,15 @@ interface EotEventDraft {
  * Wpisy dyplomatyczne — handel AI↔AI (marker „ handluje z ”) ORAZ komunikaty dyplomacji gracz↔AI
  * (treść zaczyna się od „Dyplomacja:”, patrz `DIPLOMACY_MSG_PREFIX`) — dostają etykietę „Dyplomacja”
  * + `kind:'diplo'` (spójnie z innymi kartami dyplomacji z main.ts). Tylko handel AI↔AI (jedyny
- * „nie-nasz” typ hintu odłożonego tą ścieżką) dostaje dodatkowo `origin:'other-civs'`, żeby panel
- * (zakładki Dyplomacja/Ważne/Inne, dawny chip 🌍 „Inne cyw.”; patrz `sidePanelEventTabs.ts`,
- * `sidePanelEventFilter.ts`) ukrywał go poza zakładką Dyplomacja i nie wliczał do nagłówka ani do
- * „Zamknij wszystkie informacyjne” — komunikaty gracz↔AI dotyczą gracza wprost, więc origin nie jest
+ * „nie-nasz” typ hintu odłożonego tą ścieżką) dostaje dodatkowo `origin:'other-civs'`, żeby chip
+ * 🌍 „Inne cyw.” mógł go filtrować — komunikaty gracz↔AI dotyczą gracza wprost, więc origin nie jest
  * im nadawany. Wszystkie pozostałe hinty EOT dostają PUSTY `title` (`''`) i `kind:'info'`
  * — P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1 skasowało dawny generyczny placeholder
  * „Koniec tury”; patrz komentarz przy samym `title:` niżej.
  * EN: diplomacy entries — AI↔AI trade (" handluje z " marker) AND player↔AI diplomacy messages
  * (text starting with "Dyplomacja:") — get the "Dyplomacja" label + `kind:'diplo'` (consistent with
  * other diplomacy cards from main.ts). Only AI↔AI trade (the sole "not-ours" hint type deferred via
- * this path) additionally gets `origin:'other-civs'`, so the panel (Dyplomacja/Ważne/Inne tabs,
- * the former 🌍 "Other civs" chip) hides it outside the Dyplomacja tab and excludes it from the header
- * counter and from "Zamknij wszystkie informacyjne" —
+ * this path) additionally gets `origin:'other-civs'`, so the 🌍 "Other civs" chip can filter it —
  * player↔AI messages concern the player directly, so no origin is set for them. All remaining EOT
  * hints get an EMPTY `title` (`''`) and `kind:'info'` — P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1
  * dropped the former generic "Koniec tury" placeholder; see the comment at `title:` below.
@@ -159,7 +155,7 @@ export function deferredHintsToSidePanelEvents(
     // znaczenie dla `origin`. Gdyby jakiś komunikat pasował do OBU wzorców naraz (zaczynał się
     // od „Dyplomacja:” I zawierał marker AI↔AI „ handluje z ”), `isAiAiTrade` „wygrywa” niżej
     // przy nadawaniu `origin:'other-civs'` — wpis dotyczący gracza wprost zostałby ukryty przy
-    // zakładkach innych niż Dyplomacja (dawny chip 🌍 „Inne cyw.” OFF), wbrew intencji naprawy P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK.
+    // filtrze 🌍 „Inne cyw.” OFF, wbrew intencji naprawy P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK.
     // Dziś nieosiągalne: żadna z 8 wartości `diploPendingTitle()` (main.ts) ani 4 reasonów
     // `negotiationStillValid()` (diplomacy-proposals.ts) nie zawiera markera „ handluje z ” —
     // zweryfikowane przeglądem obu list. Jeśli w przyszłości ktoś doda taki tekst do jednej
@@ -168,7 +164,7 @@ export function deferredHintsToSidePanelEvents(
     // EN: the check order of these two flags matters for `origin`. If a message ever matched
     // BOTH patterns at once (started with "Dyplomacja:" AND contained the AI↔AI " handluje z "
     // marker), `isAiAiTrade` "wins" below when assigning `origin:'other-civs'` — an entry that
-    // concerns the player directly would get hidden outside the Dyplomacja tab (the former 🌍 "Other civs" chip OFF),
+    // concerns the player directly would get hidden by the 🌍 "Other civs" filter when OFF,
     // against the intent of the P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK fix. Unreachable today:
     // none of the 8 `diploPendingTitle()` values (main.ts) nor the 4 `negotiationStillValid()`
     // reasons (diplomacy-proposals.ts) contain the " handluje z " marker — checked by review of

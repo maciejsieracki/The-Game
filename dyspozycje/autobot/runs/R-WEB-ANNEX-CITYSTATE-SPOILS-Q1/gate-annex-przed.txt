@@ -1,7 +1,0 @@
-1. Aneksja przez gracza (0): komplet majatku, MP wyzerowane
-/dev/shm/red/gra/tools/annex-citystate-spoils-test.cjs:106
-  const res = core.applyAnnexCityStateSpoils(CS, annexer, cs, acc, isBarb);
-                   ^
-
-TypeError: core.applyAnnexCityStateSpoils is not a function
-EXIT=1

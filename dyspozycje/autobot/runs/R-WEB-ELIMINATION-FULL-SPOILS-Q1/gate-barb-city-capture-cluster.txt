@@ -1,6 +1,0 @@
-  FAIL: 1d: okno zawiera wywołanie canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty) -- CAŁA koniunkcja (włącznie z bramką trudności) idzie przez funkcję z 1c, nie inline
-  FAIL: 1d: okno zawiera wywołanie tryAutoCaptureEmptyCityAt(bcmd.toQ, bcmd.toR, [bu]) -- FAKTYCZNE przejęcie, nie tylko sprawdzenie formuły
-  FAIL: 1f: tryAutoCaptureEmptyCityAt wołane WEWNĄTRZ `if (barbCanWalkIntoEmptyCity)`, nie bezwarunkowo
-
-barb-city-capture-cluster-test: 93 passed, 3 failed
-EXIT=1

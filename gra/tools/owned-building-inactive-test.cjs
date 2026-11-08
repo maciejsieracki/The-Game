@@ -11,7 +11,8 @@ const BUNDLE = path.resolve(__dirname, '.owned-building-inactive-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export {
   resolveOwnedBuildingInactiveStatus,
-  SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
+  SPICHLERZ_DRAIN_CERAMIKA_PER_TURN,
+  SPICHLERZ_DRAIN_SOL_PER_TURN,
 } from '../src/game/building-resource-gate';
 `, 'utf8');
 
@@ -22,8 +23,8 @@ esbuild.buildSync({
 });
 
 const M = require(BUNDLE);
-const CER = M.SPICHLERZ_DRAIN_FALLBACK_PER_TURN;
-const SOL = M.SPICHLERZ_DRAIN_FALLBACK_PER_TURN;
+const CER = M.SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
+const SOL = M.SPICHLERZ_DRAIN_SOL_PER_TURN;
 
 let pass = 0, fail = 0;
 function ok(c, m) { if (c) { pass++; console.log('  PASS:', m); } else { fail++; console.error('  FAIL:', m); } }
@@ -41,7 +42,6 @@ function resolveSpichlerz(buildingId, builtIds, surowce) {
     ownerId,
     runtimeActiveBuiltIds: [],
     empireStock: surowce,
-    drainParams: { ceramikaI: CER, ceramikaII: CER, solII: SOL },
   });
 }
 

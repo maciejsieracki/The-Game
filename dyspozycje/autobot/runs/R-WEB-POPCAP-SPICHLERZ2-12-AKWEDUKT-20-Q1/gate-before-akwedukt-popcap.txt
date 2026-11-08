@@ -1,3 +1,0 @@
-FAIL: pop 14 z akweduktem i buforem — wzrost do 15
-akwedukt-popcap-test: 6 pass, 1 fail
-EXIT=1

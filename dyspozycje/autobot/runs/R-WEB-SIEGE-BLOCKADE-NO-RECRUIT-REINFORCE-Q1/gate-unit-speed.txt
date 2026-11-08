@@ -1,2 +1,0 @@
-PASS: 15 approved source zeros; actual human/AI owner-routed gated completion and UI cadence; +20% floor neutral, +100% capacity 2, +200% capacity 3, negative minimum-one, zero-base, and missing-owner controls.
-EXIT=0

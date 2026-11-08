@@ -1768,8 +1768,8 @@ export function startIntroMusicWithFadeIn(fadeMs: number): void {
 }
 
 /** Zatrzymuje i zwalnia zasoby playlisty intro. */
-export function stopIntroMusic(onStopped?: () => void): void {
-  introPlaylist.stop(onStopped);
+export function stopIntroMusic(): void {
+  introPlaylist.stop();
 }
 
 export function isIntroMusicPlaying(): boolean { return introPlaylist.isPlaying(); }

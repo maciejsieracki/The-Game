@@ -1,1 +1,0 @@
-EXIT=0 (hud-topbar-grid-gross-net --dist --no-mutants, run 2: 192 ok, 0 fail) proba 1 netto -44 == zmiana -44

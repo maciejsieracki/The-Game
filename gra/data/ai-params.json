@@ -282,17 +282,17 @@
   "dyplomacja_relacja_prog_wojna": {
     "wartosc": -40,
     "sekcja": "§6 Dyplomacja",
-    "opis": "NIEAKTYWNY (R-WEB-PEACE-RULES-Q1 R10): nieczytany w kodzie; zastapiony progiem wojny per cywilizacja progWojnyRelacji z gra/data/diplomacy-war-peace-params.json (resolver diplomacy-war-peace-profile.ts). Wartosc zostawiona bez zmian."
+    "opis": "Relacja ≤ wartość → poboczna AI może wypowiedzieć wojnę."
   },
   "dyplomacja_max_propozycji_ture": {
     "wartosc": 1,
     "sekcja": "§6 Dyplomacja",
-    "opis": "NIEPODLACZONY (R-WEB-PEACE-RULES-Q1 R10): brak limitu propozycji AI na ture w gra/src (NIE_ZMIERZONO: grep bez trafien). Zachowanie bez zmian; decyzja o podlaczeniu = osobny temat."
+    "opis": "Max liczba propozycji dyplomatycznych wysyłanych przez AI do jednego gracza/tury."
   },
   "dyplomacja_zdrowie_armii_pokój": {
     "wartosc": 0.4,
     "sekcja": "§6 Dyplomacja",
-    "opis": "Próg zdrowia armii AI (Σ hp / Σ hpMax jednostek bojowych) poniżej którego AI szuka pokoju (sygnał c, R-WEB-PEACE-RULES-Q1 R3/R10). PODŁĄCZONY: baza progZdrowia w gra/src/game/diplomacy-war-peace-profile.ts (zdrowieBazaZAiParams), korekta per cywilizacja z tolerancji ryzyka."
+    "opis": "Próg HP armii AI (% startowego) poniżej którego AI wysyła propozycję pokoju."
   },
   "ai_diplomacja_prog_wojna_sila": {
     "wartosc": 0.6,
@@ -408,16 +408,6 @@
     "wartosc": -3,
     "sekcja": "§3 Ekspansja",
     "opis": "Kara punktowa za bliskość granicy wroga < 5 pól."
-  },
-  "ekspansja_waga_plonu_heksu": {
-    "wartosc": 0.3,
-    "sekcja": "§3 Ekspansja",
-    "opis": "R-WEB-AI-CITY-YIELD-FIX-Q1: mnożnik części „plon terenu” (Żywność/Praca/Handel) w hexCityScore. Po naprawie dopasowania terenu po id plon przestał być zerem; 1 = pełny plon (tempo ekspansji AI rośnie wielokrotnie w symulacji silnikowej), 0 = zachowanie sprzed naprawy (plon ignorowany). Wartość 0,3 dobrana pomiarem symulacji silnikowej (15 map 168×120; plateau 0,25–0,30: miasta AI major w t100 +4% łącznie, ≤ +20% w każdym typie świata; skok od 0,35 — Wyspy +27% — i od 0,5 — Pangea +100%). Rzeka/surowce/kara granicy bez zmian."
-  },
-  "ekspansja_kara_polarna_sasiedztwo": {
-    "wartosc": 8,
-    "sekcja": "§3 Ekspansja",
-    "opis": "R-WEB-AI-AVOID-POLAR-CITIES-Q1: kara rankingowa kandydata na miasto AI za heks Polarny w promieniu 1 (połowa przy promieniu 2). Sam heks Polarny jest zakazany, o ile istnieje kandydat niepolarny. 0 = wyłączona."
   },
   "barbarzyncy_start_tura": {
     "wartosc": 5,
@@ -688,40 +678,5 @@
     "wartosc": 1,
     "sekcja": "§9 Ludy Morza",
     "opis": "TEMAT #15 (placeholder do strojenia): fala rajdów co N tur na poziomie Trudnym (często — co turę)."
-  },
-  "tury_do_pokoju_po_prosbie": {
-    "wartosc": 2,
-    "sekcja": "§6 Dyplomacja",
-    "opis": "R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (decyzja właściciela 2026-11-03): liczba tur od prośby AI o pokój (przegrywająca AI ↔ wygrywająca AI), po której pokój wchodzi w życie automatycznie (z maksymalną możliwą płatnością przegranego). Dotyczy WYŁĄCZNIE par AI↔AI zwykłych wojen; gracz i wojny wymuszone epok bez zmian. Czytane w gra/src/game/diplomacy-ai-forced-peace.ts."
-  },
-  "kupno_jednostki_rezerwa_tur_poziom1": {
-    "wartosc": 3,
-    "sekcja": "§5 Zakup jednostek",
-    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Prosty: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
-  },
-  "kupno_jednostki_rezerwa_tur_poziom2": {
-    "wartosc": 10,
-    "sekcja": "§5 Zakup jednostek",
-    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Normalny: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). Wartość 10 = decyzja właściciela R-WEB-AI-PURCHASE-RESERVE-N10-Q1 (2026-11-07, ABC)."
-  },
-  "kupno_jednostki_rezerwa_tur_poziom3": {
-    "wartosc": 2,
-    "sekcja": "§5 Zakup jednostek",
-    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Trudny: Tury PEŁNEGO utrzymania (wojsko+budynki, wraz z kupowaną jednostką), które skarbiec AI musi pokryć PO zapłaceniu ceny. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
-  },
-  "kupno_jednostki_min_dochod_netto_poziom1": {
-    "wartosc": 0,
-    "sekcja": "§5 Zakup jednostek",
-    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Prosty: Minimalny dochód netto Złota/turę (przychód − utrzymanie wojska i budynków) PO zakupie; poniżej AI nie kupuje jednostki. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
-  },
-  "kupno_jednostki_min_dochod_netto_poziom2": {
-    "wartosc": 0,
-    "sekcja": "§5 Zakup jednostek",
-    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Normalny: Minimalny dochód netto Złota/turę (przychód − utrzymanie wojska i budynków) PO zakupie; poniżej AI nie kupuje jednostki. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
-  },
-  "kupno_jednostki_min_dochod_netto_poziom3": {
-    "wartosc": -2,
-    "sekcja": "§5 Zakup jednostek",
-    "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Trudny: Minimalny dochód netto Złota/turę (przychód − utrzymanie wojska i budynków) PO zakupie; poniżej AI nie kupuje jednostki. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
   }
 }

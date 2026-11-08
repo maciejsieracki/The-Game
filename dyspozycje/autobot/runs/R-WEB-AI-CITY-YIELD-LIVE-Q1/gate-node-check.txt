@@ -1,2 +1,0 @@
-node --check gra/tools/ai-city-live-measure.cjs; node --check gra/tools/ai-city-live-summarize.cjs
-EXIT=0

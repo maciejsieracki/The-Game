@@ -1,1 +1,0 @@
-EXIT=0 (danina-podatek-tooltip-ui-test)

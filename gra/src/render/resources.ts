@@ -6,17 +6,6 @@
 import * as THREE from 'three';
 import { Nakladka } from '../types/hex';
 
-/**
- * R-WEB-MAP-MODELS-SCALE-2X-Q1 (2026-11-03, decyzja właściciela): JEDEN mnożnik wielkości
- * wizerunków WSZYSTKICH złóż/surowców na mapie świata (kon, owce, bydlo, lama, glina, rudy,
- * miedz/zelazo/wegiel/sol/zloto, cyna). Stosowany raz, w buildStyledResourceOverlay
- * (styleResources.ts), przez userData.depositDisplayScale odczytywane w main.ts
- * compactDepositAtEdge — skala wokół podstawy modelu (spód Y=0), pozycja się nie przesuwa.
- * Dotyczy modeli w świecie gry; NIE minimapy ani ikon w panelach.
- * / EN: single ×2 multiplier for every deposit model on the world map.
- */
-export const RESOURCE_MODEL_SCALE = 2;
-
 const mat = (c: number) => new THREE.MeshLambertMaterial({ color: c });
 
 function legsAt(g: THREE.Group, col: THREE.Material, h: number, lx: number, lz: number): void {

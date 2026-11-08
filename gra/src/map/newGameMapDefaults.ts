@@ -461,13 +461,6 @@ export const LAND_FRACTION_PERCENT_OPTS = [80, 70, 60, 50, 40, 30, 20] as const;
 
 export type LandFractionPercent = (typeof LAND_FRACTION_PERCENT_OPTS)[number];
 
-/**
- * Domyślny udział lądu w suwaku kreatora (R-WEB-LAND-FRACTION-RESTORE-Q1, ABC-A 2026-11-01):
- * przywrócone domyślne per typ ze źródła generatora `defaultLandFractionForTyp`
- * (Pangea 60%, Wyspy 50%, Kontynenty 30%); Ziemia = szablon (~21% -> opcja 20, bez suwaka).
- * Cofa ujednolicenie do 30% z R-WEB-NEWGAME-DEFAULTS-Q1 (regres: mapy mniejsze niż wcześniej).
- * / EN: per-type slider default restored from the generator's single source of truth.
- */
 export function defaultLandFractionPercentForTyp(typ: TypSwiata): LandFractionPercent {
   const pct = Math.round(defaultLandFractionForTyp(typ) * 100);
   const opts = LAND_FRACTION_PERCENT_OPTS as readonly number[];

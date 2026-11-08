@@ -1,2 +1,0 @@
-PASS 3 passed, 0 failed (FC, limit 580 s)
-EXIT=0

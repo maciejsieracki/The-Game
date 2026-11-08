@@ -1,2 +1,0 @@
-{"r":{"dist":5,"archer":{"rangeBase":3,"startRange":6,"ammo":12},"tgtKeys":[],"tgtBefore":"[]","rangeAfterApply":6,"picked":true,"done":false,"ammoAfter":11,"tgtAfter":"[]"},"errs":[]}
-EXIT=0

@@ -1,2 +1,0 @@
-diplomacy-city-cession-r3-test: 73 pass, 0 fail
-EXIT=0

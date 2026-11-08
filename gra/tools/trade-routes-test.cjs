@@ -26,7 +26,7 @@ export {
   computeSeaTradeRouteCountByCity, computeSeaTradeBonusIncomeByCity,
   PORT_SEA_TRADE_BONUS_PIENIADZ,
   diagnoseMissingTradeRouteForPartner,
-  refreshTradeRoutes, externalTradeContactOk, contactTradeConnection, ownersHaveSharedLandBorder,
+  refreshTradeRoutes, citiesHaveTradeConnection, ownersHaveSharedLandBorder,
 } from '../src/game/trade-routes';
 `, 'utf8');
 
@@ -269,11 +269,11 @@ eq(countWithBroken.get('a'), 2, "l3: trasa morska ze statusem != 'polaczony' NIE
 assert(!countWithBroken.has('e'), "l3: partner niepolaczonej trasy (e) nie dostaje wpisu w mapie");
 
 // l4: count=1 -> bonus NIEOBECNY w mapie wyniku (klucz w ogole nie istnieje)
-const bonusSolo = TR.computeSeaTradeBonusIncomeByCity(new Map([['solo', 1]]), new Map([['solo', ['port']]]));
+const bonusSolo = TR.computeSeaTradeBonusIncomeByCity(new Map([['solo', 1]]));
 assert(!bonusSolo.has('solo'), 'l4: count=1 (tylko pierwsza trasa "juz oplacona") -> brak klucza w mapie bonusu');
 
 // l5: count=3 -> bonus = 2 x PORT_SEA_TRADE_BONUS_PIENIADZ (2 trasy PONAD pierwsza)
-const bonusThree = TR.computeSeaTradeBonusIncomeByCity(new Map([['trzy', 3]]), new Map([['trzy', ['port']]]));
+const bonusThree = TR.computeSeaTradeBonusIncomeByCity(new Map([['trzy', 3]]));
 eq(bonusThree.get('trzy'), 2 * TR.PORT_SEA_TRADE_BONUS_PIENIADZ, 'l5: count=3 -> bonus = 2 x PORT_SEA_TRADE_BONUS_PIENIADZ');
 
 // l6: PORT_SEA_TRADE_BONUS_PIENIADZ przypiete wprost jako stala = 1
@@ -294,26 +294,36 @@ eq(countSingle.get('y'), 1, 'l7: toCityId (y) dostaje wpis w mapie wyniku');
 const NO_WAR = () => false;
 const WAR = () => true;
 
-// R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (2026-11-04): diagnoza NIE bada juz fizycznej
-// lacznosci (BFS/Port/granica) -- nowa sygnatura (playerId, partnerId, cities, isAtWar,
-// hasContact, label). Dawne m1/m4/m5 (komunikaty o Gorach/Porcie/"rozne kontynenty")
-// pinowaly wymog polaczenia fizycznego -- zastapione ponizej.
-// (m1) para daleka, ze znajomoscia -> diagnoza null (nic nie blokuje).
-const diagFar = TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityFar1, cityFar2], NO_WAR, true);
-eq(diagFar, null, 'm1: znajomosc + brak wojny -> diagnoza null');
+// (m1) para daleka (20 heksow), ale fizycznie polaczona (GOAL 1) -> diagnoza
+// null, nic do zdiagnozowania (trasa geometrycznie istnieje).
+const diagFar = TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityFar1, cityFar2], map, new Map(), NO_WAR);
+eq(diagFar, null, 'm1: para daleka (20 heksow) ale fizycznie polaczona (GOAL 1) -> diagnoza null');
 
-// (m2) wojna -> zawsze ten komunikat.
-const diagWar = TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityNear1, cityNear2], WAR, true);
-eq(diagWar, 'wojna — szlaki zawieszone', 'm2: wojna blokuje diagnoze');
+// (m2) wojna -> zawsze ten komunikat, niezaleznie od geometrii.
+const diagWar = TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityNear1, cityNear2], map, new Map(), WAR);
+eq(diagWar, 'wojna — szlaki zawieszone', 'm2: wojna blokuje diagnoze niezaleznie od geometrii');
 
 // (m3) brak miast partnera.
-eq(TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityNear1], NO_WAR, true), 'brak miast do handlu', 'm3: brak miast partnera -> "brak miast do handlu"');
+eq(TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityNear1], map, new Map(), NO_WAR), 'brak miast do handlu', 'm3: brak miast partnera -> "brak miast do handlu"');
 
-// (m4) brak znajomosci -> "brak kontaktu".
-eq(TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityNear1, cityNear2], NO_WAR, false, 'Egipt'), 'brak kontaktu z Egipt', 'm4: bez znajomosci -> "brak kontaktu z <etykieta>"');
+// (m4) para fizycznie zablokowana Gorami (dystans=4, DALEKO PONIZEJ dawnego progu
+// 12) i BEZ Portu w zadnym miescie -> komunikat NIE wspomina juz dystansu
+// (martwy dawny branch "za daleko" usuniety), wspomina Port jako brakujacy
+// warunek szlaku morskiego.
+const diagMountainNoPort = TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityMountain1, cityMountain2], map, new Map(), NO_WAR);
+assert(diagMountainNoPort !== null, 'm4: para fizycznie zablokowana -> diagnoza NIE jest null');
+assert(!diagMountainNoPort.includes('za daleko'), 'm4: GOAL 5 -- komunikat NIE zawiera juz martwego dawnego tekstu "za daleko"');
+assert(diagMountainNoPort.includes('Port'), 'm4: brak Portu w zadnym miescie -> komunikat wspomina Port');
 
-// (m5) pas Gor/brak Portu NIE blokuje (dawne m4/m5): sama znajomosc wystarcza.
-eq(TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityMountain1, cityMountain2], NO_WAR, true), null, 'm5: Gory/brak Portu nie blokuja szlaku -- tylko znajomosc');
+// (m5) fizycznie zablokowane Gorami, ale OBA miasta maja Port (wciaz brak wody
+// przy ktoryms z miast na tym rzedzie mapy -> szlak morski nadal fizycznie
+// niemozliwy) -> komunikat generyczny "rozne kontynenty/wyspy", bez zarzutu
+// braku Portu (bo Port jest -- po prostu nie ma dokad nim plynac).
+const builtMountainBothPorts = new Map([['c7', ['port']], ['c8', ['port']]]);
+const diagMountainWithPort = TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityMountain1, cityMountain2], map, builtMountainBothPorts, NO_WAR);
+assert(diagMountainWithPort !== null, 'm5: nadal fizycznie zablokowane (brak wody przy miastach) -> diagnoza NIE jest null mimo Portow');
+assert(!diagMountainWithPort.includes('za daleko'), 'm5: GOAL 5 -- brak martwego tekstu "za daleko"');
+assert(!diagMountainWithPort.includes('brak Portu'), 'm5: oba miasta MAJA Port -> komunikat nie zarzuca braku Portu (rozroznienie przyczyn z GOAL 5)');
 
 // ---------------------------------------------------------------------------
 // R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1 (2026-09-03) -- KRYTERIA KONCA 1-5:
@@ -422,11 +432,17 @@ assert(!islandsConn.connected, 'n4: findCityConnection LAD -- wyspy rozdzielone 
 // granicy" jako powod, gdy to FAKTYCZNIE jedyny brakujacy warunek (scenariusz
 // n2: fizycznie osiagalne BFS, ale terytoria nie stykaja sie) -- odroznione od
 // "brak fizycznej sciezki"/"brak umowy"/"wojna" (testy m1-m5 wyzej).
-// R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: diagnoza "brak wspolnej granicy" USUNIETA (granica nie jest warunkiem).
-eq(
-  TR.diagnoseMissingTradeRouteForPartner(20, 21, [cityBorderA2, cityBorderB2], NO_WAR2, true),
-  null, 'n5: terytoria nie stykaja sie, ale znajomosc wystarcza -> diagnoza null (dawny komunikat granicy usuniety)',
+const diagNoBorder = TR.diagnoseMissingTradeRouteForPartner(
+  20, 21, [cityBorderA2, cityBorderB2], map, new Map(), NO_WAR2, TR.DEFAULT_TRADE_ROUTE_PARAMS, undefined, nodesDistant,
 );
+eq(diagNoBorder, 'brak wspólnej granicy lądowej z cywilizacja 21', 'n5: GOAL 5 -- diagnoza zglasza "brak wspolnej granicy" gdy fizycznie osiagalne, ale terytoria nie stykaja sie');
+// Kontrola: gdy territoryNodes NIE sa przekazane (wymog wylaczony), ta sama
+// fizycznie-polaczona para dostaje diagnoze null (bez zmian wzgledem starego
+// zachowania -- m1 wyzej testuje analogiczny przypadek).
+const diagNoBorderSkipped = TR.diagnoseMissingTradeRouteForPartner(
+  20, 21, [cityBorderA2, cityBorderB2], map, new Map(), NO_WAR2,
+);
+eq(diagNoBorderSkipped, null, 'n5: (kontrola) bez territoryNodes (wymog wylaczony) -- ta sama para fizycznie polaczona -> diagnoza null');
 
 // (n6 / KRYTERIUM #5) "zywy" test refreshTradeRoutes z >=3 cywilizacjami w
 // roznych konfiguracjach sasiedztwa -- LAD tworzy/usuwa trasy wg NOWEGO
@@ -455,32 +471,23 @@ const liveBuiltByCity = new Map([
   ['live-pSea', ['port']],
   ['live-f3', ['port']],
 ]);
-// R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1 (2026-11-04): n6 pinowal wymog granicy ladowej / Portu
-// dla par zewnetrznych (p1<->f2 bez granicy i Portu "NIE dostaje trasy"). Od tego tematu
-// JEDYNYM warunkiem lacznosci trasy zewnetrznej jest znajomosc (hasContact) -- zero BFS,
-// Portu i granicy. Test przepisany: owner 2 (f2) NIE jest znany -> zadnej trasy z f2;
-// gdy sie poznaja (kontakt), f2 -- osiagalne ladem, ale bez granicy i Portu -- trasa JEST mozliwa.
-const contactNot2 = (a, b) => a !== 2 && b !== 2;
 const liveRoutes = TR.refreshTradeRoutes(
   liveCities, [], map, liveBuiltByCity, NO_WAR2, () => true,
-  TR.DEFAULT_TRADE_ROUTE_PARAMS, liveTerritoryNodes, undefined, () => true, contactNot2,
+  TR.DEFAULT_TRADE_ROUTE_PARAMS, liveTerritoryNodes,
 );
-assert(liveRoutes.length >= 2, 'n6: bez kontaktu z owner 2 -- nadal powstaja trasy z f1/f3 (znajomosc wystarcza, brak Portu/granicy nie blokuje)');
+eq(liveRoutes.length, 2, 'n6: KRYTERIUM KONCA #5 -- dokladnie 2 trasy: p1<->f1 (LAD, granica) i pSea<->f3 (SEA, port) -- p1<->f2 (fizycznie osiagalne, brak granicy, brak Portu) NIE dostaje trasy');
+const liveLad = liveRoutes.find(r => r.medium === 'lad');
+const liveSea = liveRoutes.find(r => r.medium === 'morze');
+assert(!!liveLad, 'n6: trasa LAD (p1<->f1, stykajace sie terytoria) istnieje');
+eq(liveLad && liveLad.fromCityId, 'live-p1', 'n6: trasa LAD zaczyna sie w live-p1');
+eq(liveLad && liveLad.toCityId, 'live-f1', 'n6: trasa LAD konczy sie w live-f1 (jedyny sasiad graniczny gracza)');
+assert(!!liveSea, 'n6: trasa SEA (pSea<->f3, oba Porty, brak granicy ladowej) istnieje mimo braku granicy');
+eq(liveSea && liveSea.fromCityId, 'live-pSea', 'n6: trasa SEA zaczyna sie w live-pSea');
+eq(liveSea && liveSea.toCityId, 'live-f3', 'n6: trasa SEA konczy sie w live-f3');
 assert(
   !liveRoutes.some(r => r.toCityId === 'live-f2' || r.fromCityId === 'live-f2'),
-  'n6: zadna trasa NIE dotyczy live-f2, gdy cywilizacje sie NIE znaja',
+  'n6: zadna trasa NIE dotyczy live-f2 (fizycznie osiagalne lądem, ale brak wspolnej granicy i brak Portu -- dokladnie regres ze zgloszenia wlasciciela, teraz naprawiony)',
 );
-const liveRoutesAll = TR.refreshTradeRoutes(
-  liveCities, [], map, liveBuiltByCity, NO_WAR2, () => true,
-  TR.DEFAULT_TRADE_ROUTE_PARAMS, liveTerritoryNodes, undefined, () => true, () => true,
-);
-assert(
-  liveRoutesAll.some(r => r.toCityId === 'live-f2' || r.fromCityId === 'live-f2'),
-  'n6: po nawiazaniu kontaktu trasa do live-f2 (bez granicy, bez Portu) JEST mozliwa',
-);
-for (const r of liveRoutesAll) {
-  if (r.ownerId !== r.toOwnerId) assert(r.status === 'polaczony' && (r.medium === 'lad' || r.medium === 'morze'), 'n6: trasa zewnetrzna ma medium lad|morze');
-}
 
 console.log(`\ntrade-routes-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) {}

@@ -78,12 +78,6 @@ export type ResourceTradePickInput = {
   pakietWielkosc: number;
   maxPakietyPerTura: number;
   pricePerPakiet: (surowiecKey: string, pakiety: number) => number | null;
-  /**
-   * R-WEB-DIPLO-DEALS-SENSIBLE-Q1 R3 (zarzut 3): opcjonalny predykat selekcji kandydata.
-   * Kandydat odrzucony przez predykat NIE blokuje kolejnych kandydatów (wybór ląduje na
-   * pierwszym surowcu, który przechodzi). Brak predykatu = zachowanie bazowe.
-   */
-  acceptKey?: (surowiecKey: string) => boolean;
 };
 
 /**
@@ -103,7 +97,6 @@ export function pickResourceDeficitForOwnerPair(input: {
   } = input;
   const deficits = detectPricedResourceDeficits(goodsBuyer, pricedKeys, pakietWielkosc);
   for (const key of deficits) {
-    if (input.acceptKey && !input.acceptKey(key)) continue;
     const sellerOpt = sellerOptions.find(o => o.id === key);
     if (!sellerOpt || sellerOpt.maxQty <= 0) continue;
     const offer = buildOffer(key, sellerOpt, maxPakietyPerTura, pricePerPakiet);
@@ -131,13 +124,12 @@ export function pickResourceSurplusForOwnerPair(input: {
 } & ResourceTradePickInput): ResourceTradePickResult | null {
   const {
     sellerOwnerId, buyerOwnerId, goodsSeller, goodsBuyer, sellerOptions,
-    pricedKeys, pakietWielkosc, maxPakietyPerTura, pricePerPakiet, acceptKey,
+    pricedKeys, pakietWielkosc, maxPakietyPerTura, pricePerPakiet,
   } = input;
   void pricedKeys;
   void pakietWielkosc;
   const buyerHave = new Set(goodsBuyer.filter(g => (g.ilosc ?? 0) > 0).map(g => g.key));
-  const sorted = [...sellerOptions].sort((a, b) => b.maxQty - a.maxQty)
-    .filter(o => !acceptKey || acceptKey(o.id));
+  const sorted = [...sellerOptions].sort((a, b) => b.maxQty - a.maxQty);
   const pick = sorted.find(o => !buyerHave.has(o.id)) ?? sorted[0];
   if (!pick || pick.maxQty <= 0) return null;
   const offer = buildOffer(pick.id, pick, maxPakietyPerTura, pricePerPakiet);

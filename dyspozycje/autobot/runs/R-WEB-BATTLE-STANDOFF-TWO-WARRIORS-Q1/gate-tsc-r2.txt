@@ -1,2 +1,0 @@
-EXIT=0
-Command: node node_modules/typescript/bin/tsc --noEmit (cwd gra/), HEAD gra/src unchanged.

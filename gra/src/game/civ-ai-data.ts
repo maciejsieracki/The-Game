@@ -2,6 +2,7 @@
  * civ-ai-data.ts — odczyt per-nacja z civ-ai.json / civ-params.json (Excel 5A).
  */
 import civsRaw from '../../data/civs.json';
+import civAiRaw from '../../data/civ-ai.json';
 import diplomacyRaw from '../../data/diplomacy.json';
 import type { GameData } from '../data/loader';
 import { TypCywilizacji } from '../types/player';
@@ -34,9 +35,9 @@ export interface CivParamsProfile {
   uwagi?: string;
 }
 
-/** Agresja 0..1 from the matrix; unmatched keys have no civilization-specific value. */
+/** Agresja 0..1 z macierzy (fallback: civ-ai.json → ARCHETYPE). */
 export function civAiAggressionNorm(
-  _data: GameData,
+  data: GameData,
   civName: string,
   difficulty: CivMatrixDifficulty = 'normal',
 ): number | undefined {
@@ -47,11 +48,13 @@ export function civAiAggressionNorm(
   if (hasMatrixRow) {
     return Math.max(0, Math.min(1, civMatrixParamAtDifficulty(civName, 'ai_agresywnosc', difficulty) / 10));
   }
-  return undefined;
+  const row = data.civAi?.cywilizacje?.find(c => c.Cywilizacja === civName);
+  if (!row || row.agresywnosc == null) return undefined;
+  return Math.max(0, Math.min(1, row.agresywnosc / 10));
 }
 
 export function civAiProfilMapy(
-  _data: GameData,
+  data: GameData,
   civName: string,
   difficulty: CivMatrixDifficulty = 'normal',
 ): string | undefined {
@@ -64,7 +67,8 @@ export function civAiProfilMapy(
       ? 'kopia_typu_obronna'
       : 'standardowa';
   }
-  return undefined;
+  const row = data.civAi?.cywilizacje?.find(c => c.Cywilizacja === civName);
+  return row?.profilMapy?.trim() || undefined;
 }
 
 /** Pełny profil AI z macierzy; civ-ai.json pozostaje adapterem pól opisowych. */
@@ -78,9 +82,8 @@ export function civAiProfileFor(
   const matrixRow = matrix.cywilizacje.find(c =>
     c.Cywilizacja === civName || c.ikonaId === civName || c.typCywilizacji === civName,
   );
-  // A legacy-only row may still be displayed through separate descriptive
-  // readers, but the AI behavior profile is absent without an approved row.
-  if (!matrixRow) return undefined;
+  if (!legacy && !matrixRow) return undefined;
+  if (!matrixRow) return legacy;
 
   const values = civMatrixParamsAtDifficulty(matrixRow.ikonaId, difficulty);
   return {
@@ -107,16 +110,6 @@ export function civAiProfileForTyp(
 ): CivAiProfile | undefined {
   const name = civExcelNameFromTyp(typ);
   return name ? civAiProfileFor(data, name, difficulty) : undefined;
-}
-
-/** Reuses the legacy normalized difficulty delta with a 0..1 archetype base. */
-export function resolveArchetypeAggressionWithDifficulty(
-  base: number,
-  aggressionNormal: number,
-  aggressionAtDifficulty: number,
-): number {
-  const difficultyOffset = (aggressionAtDifficulty - aggressionNormal) / 10;
-  return Math.max(0, Math.min(1, base + difficultyOffset));
 }
 
 export function civParamsFor(data: GameData, civName: string): CivParamsProfile | undefined {
@@ -158,36 +151,39 @@ export function diplomacyPerNacjaForTyp(typ: TypCywilizacji): DiplomacyPerNacjaR
 }
 
 /**
- * Major AI aggression uses the matrix archetype baseline plus its approved
- * difficulty offset. Unmatched civilization keys use a neutral baseline.
+ * Agresja 0..1: civ-ai.json (Excel 5A) gdy wpis istnieje, inaczej fallback (ARCHETYPE_AGGRESSION).
  */
 export function resolveArchetypeAggression(
   typ: TypCywilizacji,
-  _fallback: number,
-  _data?: GameData,
+  fallback: number,
+  data?: GameData,
   difficulty: CivMatrixDifficulty = 'normal',
 ): number {
   const civName = civExcelNameFromTyp(typ);
-  if (!civName) return 0.5;
+  if (!civName) return fallback;
   const matrix = loadCivMatrix();
   const matrixRow = matrix.cywilizacje.find(c =>
     c.Cywilizacja === civName || c.ikonaId === typ || c.typCywilizacji === typ,
   );
   if (matrixRow) {
-    const base = civMatrixParamAtDifficulty(typ, 'dip_agresja_archetyp', 'normal');
-    const aggressionNormal = civMatrixParamAtDifficulty(typ, 'ai_agresywnosc', 'normal');
-    const aggressionAtDifficulty = civMatrixParamAtDifficulty(typ, 'ai_agresywnosc', difficulty);
-    return resolveArchetypeAggressionWithDifficulty(base, aggressionNormal, aggressionAtDifficulty);
+    return Math.max(0, Math.min(1, civMatrixParamAtDifficulty(typ, 'ai_agresywnosc', difficulty) / 10));
   }
-  return 0.5;
+  const fromData = data
+    ? civAiAggressionNorm(data, civName, difficulty)
+    : (() => {
+        const row = civAiRaw.cywilizacje?.find(c => c.Cywilizacja === civName);
+        if (!row || row.agresywnosc == null) return undefined;
+        return Math.max(0, Math.min(1, row.agresywnosc / 10));
+      })();
+  return fromData ?? fallback;
 }
 
 /**
- * Skłonność do handlu 0..1 from the matrix; unmatched keys use a neutral baseline.
+ * Skłonność do handlu 0..1: diplomacy.perNacja.otwartoscHandel / 10, inaczej fallback.
  */
 export function resolveArchetypeTrade(
   typ: TypCywilizacji,
-  _fallback: number,
+  fallback: number,
   difficulty: CivMatrixDifficulty = 'normal',
 ): number {
   const matrix = loadCivMatrix();
@@ -195,7 +191,11 @@ export function resolveArchetypeTrade(
   if (matrixRow) {
     return Math.max(0, Math.min(1, civMatrixParamAtDifficulty(typ, 'dip_handlowosc_archetyp', difficulty)));
   }
-  return 0.5;
+  const row = diplomacyPerNacjaForTyp(typ);
+  if (row?.otwartoscHandel != null) {
+    return Math.max(0, Math.min(1, row.otwartoscHandel / 10));
+  }
+  return fallback;
 }
 
 /**
@@ -212,5 +212,7 @@ export function nastawienieBazoweZaufanieDelta(
   if (matrixRow) {
     return (civMatrixParamAtDifficulty(typ, 'dip_nastawienie_bazowe', difficulty) - baseTotal) / 2;
   }
-  return 0;
+  const row = diplomacyPerNacjaForTyp(typ);
+  if (row?.nastawienieBazowe == null) return 0;
+  return (row.nastawienieBazowe - baseTotal) / 2;
 }

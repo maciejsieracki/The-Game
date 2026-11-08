@@ -1,3 +1,0 @@
-okolica-test 0 FAIL; okolica-isworkable-silnik 0; okolica-multi-city-overlap 0; okolica-tryb-reset 0; heks-plony-zloze-parytet-ui 0; heks-plony-warstwy 0
-okolica-load-reconcile 3 FAIL-lines i okolica-ownership-change-reconcile 4 FAIL-lines: identyczne bez zmian R2 w main.ts (wczesniejsze, grep po zrodle main.ts)
-EXIT=0

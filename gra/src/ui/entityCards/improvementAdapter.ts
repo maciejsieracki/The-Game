@@ -24,7 +24,6 @@
  * (dokładnie ten sam mechanizm co `buildingAdapter.ts`/`unitAdapter.ts`).
  */
 import terrainImprovementsData from '../../../data/terrain-improvements.json';
-import { scaleTerrainImprovementWorkCost } from '../../game/terrain-improvements';
 import { improvementIconSvg } from '../icons/brandAssets';
 import { resolveImprovementRow, resolveTechnologyRow, technologyIdFromName } from './registry';
 import type { ImprovementRow } from './registry';
@@ -157,12 +156,7 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
       value: techName,
       linkTo: techLinkTo,
     },
-    {
-      label: 'Koszt (Praca)',
-      value: hasValue(improvement.koszt_praca)
-        ? `${text(scaleTerrainImprovementWorkCost(improvement.koszt_praca as number, improvement.epoka))} P`
-        : '',
-    },
+    { label: 'Koszt (Praca)', value: hasValue(improvement.koszt_praca) ? `${text(improvement.koszt_praca)} P` : '' },
     { label: 'Warunek', value: text(improvement.warunek) },
     {
       // T-KARTY-HISTORIA-INFRA-Q1 (c): `improvement.cywilizacje_uwaga` NIE jest już

@@ -1,2 +1,0 @@
-battle-dead-unit-disappearance-test: PASS — killed unit detached immediately; routed unit still flees visibly
-EXIT=0

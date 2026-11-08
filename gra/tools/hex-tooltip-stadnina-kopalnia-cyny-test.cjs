@@ -18,7 +18,7 @@
  * NAPRAWA: dopisany `case 'stadnina'` (FLAT_FARM -- ten sam zbior co TERRAIN_ALLOW.stadnina) i
  * `case 'kopalnia_cyny'` (Wzgorza/Gory -- ta sama grupa co pozostale kopalnie) w
  * `galleryTerrainEligible()`; dopisana linia zawezajaca zloze dla stadniny
- * (`if (key === 'stadnina' && !hexHasHorseDeposit({ nakladka, zloze })) continue;`) w
+ * (`if (key === 'stadnina' && nakladka !== Nakladka.ZlozeKonia) continue;`) w
  * `listTerrainPossibleImprovements()` -- analogiczna do juz istniejacych linii bydlo/owce/lama.
  *
  * SWIADOMA GRANICA (nie regresja, udokumentowana i zaasertowana w sekcji [4] nizej): silnik
@@ -304,9 +304,7 @@ async function main() {
   console.log('\n[3] regex-pin: linia zawężająca stadninę do złoża konia istnieje w listTerrainPossibleImprovements()');
   {
     const tooltipSrc = fs.readFileSync(TOOLTIP_SRC, 'utf8');
-    // R-WEB-STADNINA-KONIE-STARE-ZAPISY-Q1: linia przepisana na wspólny predykat hexHasHorseDeposit
-    // (nakladka ZlozeKonia LUB zloze==='konie' -- stare zapisy); semantyka dla nowych map bez zmian.
-    const STADNINA_NARROW_LINE = "if (key === 'stadnina' && !hexHasHorseDeposit({ nakladka, zloze })) continue;";
+    const STADNINA_NARROW_LINE = "if (key === 'stadnina' && nakladka !== Nakladka.ZlozeKonia) continue;";
     assert(tooltipSrc.includes(STADNINA_NARROW_LINE),
       `hexContextTooltip.ts zawiera linię zawężającą stadninę do złoża konia: ${STADNINA_NARROW_LINE}`);
     // kopalnia_cyny -- linia istniała już PRZED tą naprawą (była martwym kodem), musi przetrwać.

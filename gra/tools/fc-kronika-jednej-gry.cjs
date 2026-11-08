@@ -10,7 +10,7 @@
  * zachowania; kronika nie klamie.
  *
  * Harness 1:1 z tools/oboz-lowiecki-ai-40tur-measure.cjs (mapa 36x28 „kontynenty”,
- * 3 miasta, promien 4, pop 6, limit sztuk/miasto usuniety, 40 tur) — liczby porownywalne z baza 99/56.
+ * 3 miasta, promien 4, pop 6, maxItemsPerCity=1, 40 tur) — liczby porownywalne z baza 99/56.
  *
  * WYJSCIE:
  *   A) KRONIKA — kazda tura: co, gdzie (q,r), ktore miasto, [RZEKA]/[LAS].
@@ -117,6 +117,7 @@ for (let t = 0; t < TURNS; t++) {
     unlockedTechs: TECHS,
     pracaSurplusThreshold: 0,
     pracaBudgetPercent: 100,
+    maxItemsPerCity: 1,
     skipWyrab: false,
     playerEra: 3,
     priorityOverride: M.AI_IMPROVEMENT_PRIORITY,
@@ -139,7 +140,7 @@ for (let t = 0; t < TURNS; t++) {
 }
 
 const out = [];
-out.push(`=== KRONIKA JEDNEJ GRY — ziarno ${SEED}, ${TURNS} tur, 3 miasta, limit sztuk/miasto usuniety ===`);
+out.push(`=== KRONIKA JEDNEJ GRY — ziarno ${SEED}, ${TURNS} tur, 3 miasta, maxItemsPerCity=1 ===`);
 out.push(`Miasta: ${cities.map(c => `${c.id}@(${c.q},${c.r})`).join('  ')}`);
 const terrRiver = [...hexCity.keys()].filter(k => riverSet.has(k));
 out.push(`Heksow w terytorium: ${hexCity.size}, z tego z rzeka: ${terrRiver.length}`);

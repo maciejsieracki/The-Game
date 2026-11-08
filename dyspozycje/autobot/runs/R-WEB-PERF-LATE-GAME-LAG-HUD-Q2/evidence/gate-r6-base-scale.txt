@@ -1,7 +1,0 @@
-[perf] build identity: {"reused":"/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/base-build","gitHead":"base-33855a540"}
-[perf] micro hist0 {"updateHud":"686.8/704.3/770.4","buildHudState":"47.5/47.8/49.3","collectTurnEvents":"172.4/179.2/199.7","territoryBorder":"66.7/69.1/70.1","refreshFog":"853.2/874/976.1"}
-[perf] micro hist0.5 {"updateHud":"675.1/690.8/735.3","buildHudState":"47.6/48.3/49","collectTurnEvents":"172.2/176.6/183","territoryBorder":"93.3/94.7/96.4","refreshFog":"889.6/927/1024.3"}
-[perf] micro hist1 {"updateHud":"682.5/707.6/765.1","buildHudState":"48.2/48.9/49.4","collectTurnEvents":"173/176.5/177.4","territoryBorder":"100.4/101.7/106.1","refreshFog":"891.8/948.1/965.2"}
-[perf] result written: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/base-scale.json
-
-EXIT=NIE_ZAPISANO (plik wynikowy pomiaru JSON bez kodu wyjscia; dopisane w obronie R2 bez ponownego uruchomienia, kod nieodtworzony)

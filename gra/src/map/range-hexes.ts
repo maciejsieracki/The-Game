@@ -2,7 +2,7 @@
  * range-hexes.ts — heksy zasięgu kultury i religii (logika MAPA, bez Three.js).
  */
 import type { GameMap } from '../types/map';
-import { axialDistance, cityTerritoryRadius, territoryOwnerAt, territoryOwnerLookup, type CityNode, type TerritoryNode } from './territory';
+import { axialDistance, cityTerritoryRadius, territoryOwnerAt, type CityNode, type TerritoryNode } from './territory';
 import { citySightRadius } from '../game/okolica';
 import {
   dominantReligion,
@@ -31,16 +31,13 @@ export function collectTerritoryHexKeysByOwner(
   filterHex?: (key: string, ownerId: number) => boolean,
 ): Map<number, Set<string>> {
   const byOwner = new Map<number, Set<string>>();
-  // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): ta sama pętla co dawniej (klucze w kolejności Object.keys, ta sama reguła
-  // własności `territoryOwnerAt`), ale współrzędne heksów są rozbierane z kluczy RAZ na obiekt `map.hexes`, a właściciel
-  // czytany z indeksu (territoryOwnerLookup) zamiast pętli po wszystkich węzłach dla każdego heksu.
-  const parsed = parsedHexKeysOf(map);
-  const ownerAt = territoryOwnerLookup(territoryNodes);
-  const { keys, qs, rs } = parsed;
-  for (let i = 0; i < keys.length; i++) {
-    const owner = ownerAt(qs[i]!, rs[i]!);
+  for (const key of Object.keys(map.hexes)) {
+    const parts = key.split(',');
+    const q = Number(parts[0]);
+    const r = Number(parts[1]);
+    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
+    const owner = territoryOwnerAt(q, r, territoryNodes);
     if (owner == null) continue;
-    const key = keys[i]!;
     if (filterHex && !filterHex(key, owner)) continue;
     let set = byOwner.get(owner);
     if (!set) {
@@ -50,29 +47,6 @@ export function collectTerritoryHexKeysByOwner(
     set.add(key);
   }
   return byOwner;
-}
-
-interface ParsedHexKeys { keys: string[]; qs: number[]; rs: number[]; }
-const parsedHexKeysCache = new WeakMap<object, ParsedHexKeys>();
-/**
- * Klucze heksów (kolejność Object.keys) z rozebranymi współrzędnymi; pomija klucze nieliczbowe jak dawna pętla.
- * Zbiór kluczy mapy jest po wygenerowaniu/wczytaniu stały (patrz okolica.ts: hexKeysWithinRadius), a pamięć jest
- * kluczowana tożsamością obiektu `map.hexes`.
- */
-function parsedHexKeysOf(map: GameMap): ParsedHexKeys {
-  let p = parsedHexKeysCache.get(map.hexes);
-  if (!p) {
-    p = { keys: [], qs: [], rs: [] };
-    for (const key of Object.keys(map.hexes)) {
-      const parts = key.split(',');
-      const q = Number(parts[0]);
-      const r = Number(parts[1]);
-      if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
-      p.keys.push(key); p.qs.push(q); p.rs.push(r);
-    }
-    parsedHexKeysCache.set(map.hexes, p);
-  }
-  return p;
 }
 
 /** Zasięg kultury imperium: ∪ heksów w promieniu okolica + pierścienie kultury. */

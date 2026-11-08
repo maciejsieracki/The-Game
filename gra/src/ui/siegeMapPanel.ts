@@ -217,16 +217,9 @@ function render(): void {
   const food = getCityFood(city);
   const garnizon = city.garnizon ?? 0;
   const zuzycie = city.population + garnizon;
-  // R-WEB-SIEGE-STARVATION-SURRENDER-Q1: atrycja HP garnizonu dziala WYLACZNIE w etapie glodu (zapasy = 0).
-  const hungerStage = food <= 0;
-  const starveFrac = hungerStage && garnizon > 0 && starveFracProvider ? starveFracProvider() : 0;
-  const atrycjaLabel = hungerStage
-    ? (garnizon > 0 && starveFrac > 0 ? '−' + Math.round(starveFrac * 100) + '% HP/turę (głód)' : 'brak garnizonu')
-    : 'brak (zapasy)';
-  // Milicja = 1 mieszkaniec = 1 jednostka, tylko z budynkiem Garnizon (estymator z main.ts).
-  const milicjaEst = militiaEstimator ? Math.max(0, militiaEstimator(city)) : 0;
-  // Okres odnowy po zniszczeniu Milicji (R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1).
-  const milicjaRegen = militiaRegenLeft ? Math.max(0, militiaRegenLeft(city)) : 0;
+  const atrycjaNext = garnizon > 0 ? Math.max(1, Math.floor(garnizon * 0.08)) : 0;
+  const milicjaEst = garnizon <= 0 ? 0
+    : Math.max(1, Math.floor((city.population ?? 0) * 0.2));
   const playerCanStorm = oblegajacyOwnerId === 0;
   const sm: SiegeMachinesState | undefined = city.siegeMachines;
   const qLabel = sm?.queue?.length
@@ -271,12 +264,9 @@ function render(): void {
         '<div>Zapasy: <b>' + food + '</b></div>' +
         '<div>Zużycie/turę: <b>' + zuzycie + '</b></div>' +
         '<div>Oblegających: <b>' + besiegerUnitCount + '</b></div>' +
-        '<div>Atrycja: <b>' + atrycjaLabel + '</b></div>' +
+        '<div>Atrycja: <b>−' + atrycjaNext + '</b>/turę</div>' +
         (milicjaEst > 0
-          ? '<div class="full">Milicja przy szturmie: <b>' + milicjaEst + '</b></div>'
-          : milicjaRegen > 0
-            ? '<div class="full">Milicja odnawia się: za <b>' + milicjaRegen + '</b> '
-              + (milicjaRegen === 1 ? 'turę' : (milicjaRegen % 10 >= 2 && milicjaRegen % 10 <= 4 && (milicjaRegen % 100 < 12 || milicjaRegen % 100 > 14)) ? 'tury' : 'tur') + '</div>'
+          ? '<div class="full">Milicja przy szturmie: ~<b>' + milicjaEst + '</b></div>'
           : '') +
       '</div>' +
       (city.siegeCapitulationPending
@@ -335,27 +325,6 @@ function render(): void {
 
   root.appendChild(box);
   attachKeyboard(city.id);
-}
-
-let starveFracProvider: (() => number) | null = null;
-
-/** Podpina ulamek maxHP tracony przez garnizon na ture glodu (zalezny od trudnosci; panel go nie zna). */
-export function setSiegePanelStarveFracProvider(fn: (() => number) | null): void {
-  starveFracProvider = fn;
-}
-
-let militiaEstimator: ((city: City) => number) | null = null;
-
-/** Podpina liczenie Milicji (wymaga wiedzy o budynkach, której panel nie ma). */
-export function setSiegePanelMilitiaEstimator(fn: ((city: City) => number) | null): void {
-  militiaEstimator = fn;
-}
-
-let militiaRegenLeft: ((city: City) => number) | null = null;
-
-/** Podpina liczbę tur do odnowy Milicji (0 = brak okresu odnowy). */
-export function setSiegePanelMilitiaRegenLeft(fn: ((city: City) => number) | null): void {
-  militiaRegenLeft = fn;
 }
 
 export function setSiegePanelBesiegerCount(n: number): void {

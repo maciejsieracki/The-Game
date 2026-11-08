@@ -1,7 +1,0 @@
-  OK  posterunek postawiony na tym samym heksie w obu buildach -- {"a":{"q":48,"r":29},"b":{"q":48,"r":29}}
-  OK  V0 posterunek jest w kadrze (kadr PO postawieniu rozni sie od startowego) -- {"n":315000,"any":25,"bad":25,"frac":0.00007936507936507937}
-  OK  V1 kadr startowy: piksele rozne >8/255 <= 2% -- {"n":315000,"any":201,"bad":0,"frac":0}
-  OK  V2 kadr z posterunkiem: piksele rozne >8/255 <= 2% -- {"n":315000,"any":201,"bad":0,"frac":0}
-
-WYNIK: 4 OK, 0 FAIL
-EXIT=0

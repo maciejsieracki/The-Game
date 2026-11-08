@@ -1,2 +1,0 @@
-ai-war-weariness-peace-test: PASS=66 FAIL=0
-EXIT=0

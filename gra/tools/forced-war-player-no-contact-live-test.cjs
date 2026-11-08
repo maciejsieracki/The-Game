@@ -174,7 +174,6 @@ async function main() {
     process.exit(1);
   }
 
-
   buildBundle();
 
   const browser = await launchBrowser(chromium);
@@ -191,18 +190,18 @@ async function main() {
     assert('bootstrap zakończony: unitsLen>0', world0.unitsLen > 0, world0);
     assert('bootstrap zakończony: turn===1', world0.turn === 1, world0);
 
-    console.log('\n-- A2. Fast-forward do tury 39 (próg R1 = 40; gracz od tury 25) --');
+    console.log('\n-- A2. Fast-forward do tury 24 (próg gracza R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1 = 25) --');
     // Sandbox `?playtest=mapa` (jeden realny AI) jest z natury niezrównoważony na 24 tury --
     // ten sam zabezpieczający hak i to samo uzasadnienie co `perf-long-session-live-test.cjs`/
     // `rebel-protection-live-test.cjs` (wyłącza WYŁĄCZNIE checkVictory dla tej sesji testowej).
     await page.evaluate(() => window.__rebelProtectionTestDebug.disableVictoryCheckForTest());
-    for (let i = 0; i < 38; i++) {
+    for (let i = 0; i < 23; i++) {
       // eslint-disable-next-line no-await-in-loop
       const settled = await advanceTurnBySettledEndTurn(page);
       if (!settled) throw new Error(`fast-forward: endTurn #${i + 1} nie ustabilizował się`);
     }
     const worldFF = await page.evaluate(() => window.__eraTestDebug.getWorldState());
-    assert('fast-forward zakończony: turn===39 (tuż przed progiem R1 = 40)', worldFF.turn === 39, worldFF);
+    assert('fast-forward zakończony: turn===24 (próg gracza jeszcze NIE minął)', worldFF.turn === 24, worldFF);
 
     console.log('\n-- B. forceBronzeForcedWarOnPlayerNoContact(): realny AI owner wybrany, wojny wyzerowane, reszta AI wykluczona --');
     const forced = await page.evaluate(() => window.__eraTestDebug.forceBronzeForcedWarOnPlayerNoContact());
@@ -281,13 +280,7 @@ async function main() {
     // UI") pozostaje w pełni wymagane, tylko przez WŁAŚCIWY, aktualny nośnik.
     const toastFinal = await page.evaluate(() => window.__eraTestDebug.getToast());
     assert('toast istnieje w DOM', !!toastFinal, toastFinal);
-    // R-WEB-ERA-WAR-LIVE-VERIFY-Q1: `getWarEventLogHead()` obcina do 3 wpisów, a w turze DOW kartę
-    // mogą zepchnąć poza okno 3 wpisy `eot-hint-*` (Głód wojska, Wojna epoki, Wróg atakuje). Czytamy
-    // pełny log (max 8) -- asercje bez zmian, tylko szersze okno odczytu.
-    const warLog = await page.evaluate(() => (window.__rebelNotifyTestDebug
-      && typeof window.__rebelNotifyTestDebug.getWarEventLog === 'function')
-      ? window.__rebelNotifyTestDebug.getWarEventLog()
-      : window.__eraTestDebug.getWarEventLogHead());
+    const warLog = await page.evaluate(() => window.__eraTestDebug.getWarEventLogHead());
     assert('warEventLog ma co najmniej 1 wpis po DOW', Array.isArray(warLog) && warLog.length > 0, warLog);
     // Bez colokacji miast (patrz nagłówek: NIE przesuwamy miasta gracza -- inaczej
     // sfałszowalibyśmy "odkrycie" przez widoczność renderowania mgły) DOW ląduje jako

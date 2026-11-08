@@ -1,7 +1,0 @@
-baseline: 68 passed, 0 failed
-OK   M1: usuniecie mnoznika w zywnosci (computeCityRationCost): zrodlo zmienione=true, porazek=17
-OK   M2: usuniecie mnoznika w surowcach (citizenUpkeepRateForEra): zrodlo zmienione=true, porazek=15
-OK   M3: hardkod stawki w tooltipie racji: zrodlo zmienione=true, porazek=2
-
-citizen-consumption-era-mult-test: PASS
-EXIT=0

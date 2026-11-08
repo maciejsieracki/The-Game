@@ -1,2 +1,0 @@
-improvement-territory-gate-test: 6 pass, 0 fail
-EXIT=0

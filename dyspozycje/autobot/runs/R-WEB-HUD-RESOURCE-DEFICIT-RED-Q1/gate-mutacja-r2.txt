@@ -1,1 +1,0 @@
-EXIT=0 (mutacja starej logiki runwayShort: 2 FAIL goldZero/foodZero, zabita)

@@ -1,9 +1,0 @@
-Logi: /tmp/civ-notif-logs/after-18.jsonl
-Tury: 30 | wpisy informacyjne razem: 2 (widoczne wg dawnego chipa OFF: 2) | srednio/ture: 0.07 | max/ture: 1
-
-| # | typ (znormalizowany) | wystapien | tur z wpisem | zakladka (eventTabOf) |
-|---|---|---|---|---|
-| 1 | Automatycznie obniżono racje żywnościowe / X: # → # · Mediolan: # → # | 1 | 1 | wazne |
-| 2 | Granice naruszone / Twoje granice naruszone — Kapua · Rzymianie · miasto-państwo: −# pkt Zaufania/turę u każde | 1 | 1 | dyplomacja |
-
-Podzial na zakladki (wystapienia): {"dyplomacja":1,"wazne":1,"inne":0}

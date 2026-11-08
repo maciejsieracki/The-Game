@@ -1,3 +1,0 @@
-
-spichlerz-deficyt-scalenie-test: 58 pass, 0 fail
-EXIT=0

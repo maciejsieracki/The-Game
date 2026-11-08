@@ -1,7 +1,0 @@
-  [OK] window.__civTest.setCityLimit jest funkcja (?civTest=1)
-  [OK] jest kandydat w terytorium (ring=48)
-  [OK] limit 1 + 1 miasto: odmowa "limit miast" (toast="Nie można założyć: limit miast na tej epoce")
-  [OK] limit 5: brak odmowy "limit miast" (founded=true)
-
-PASS=4 FAIL=0
-EXIT=0

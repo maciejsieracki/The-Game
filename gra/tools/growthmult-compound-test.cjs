@@ -75,12 +75,9 @@ console.log('\n--- 7.5 linear buildingUpkeep ---');
 // jest DOMYSLNA wartoscia tylko gdy budynek NIE MA wlasnego utrzymania w danych --
 // nie nadpisuje juz istniejacej wartosci per-budynek (stary test kodowal odwrotne,
 // wlasnie naprawione zachowanie -- patrz economy-upkeep.ts buildingUpkeep()).
-// AKTUALIZACJA R-TEST-DEBT-MISC-Q5 (2026-11-05): buildingUpkeep stosuje FALA2 ×2
-// (R_STAWKI_FALA2_MULT, economy-upkeep.ts) po wartości per-budynek; asercje mnożone × 2.
-const FALA2 = 2;
-eq(M.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 1 }, 3, 99), FALA2 * 7, 'per-building utrzymanie wins over flat override');
+eq(M.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 1 }, 3, 99), 7, 'per-building utrzymanie wins over flat override');
 // budynek bez pola utrzymanie (undefined -> not finite) -> flat jest DOMYSLNA wartoscia
-eq(M.buildingUpkeep({ przyrostUtrzymania: 1 }, 3, 99), FALA2 * 99, 'no per-building value -> flat default applies');
+eq(M.buildingUpkeep({ przyrostUtrzymania: 1 }, 3, 99), 99, 'no per-building value -> flat default applies');
 // budynek bez pola utrzymanie i bez flat override -> 0 (bezpieczny fallback)
 eq(M.buildingUpkeep({ przyrostUtrzymania: 1 }, 3), 0, 'no per-building value, no flat default -> 0');
 // utrzymanie=0 (Stela/Pomnik) to WARTOSC, nie "brak wpisu" -- flat NIE nadpisuje zera
@@ -89,18 +86,18 @@ eq(M.buildingUpkeep({ przyrostUtrzymania: 1 }, 3), 0, 'no per-building value, no
 eq(M.buildingUpkeep({ utrzymanie: 0, przyrostUtrzymania: 0 }, 1, 99), 0, 'Stela utrzymanie=0 nie jest nadpisywana flat override');
 // linear: floor(baza + przyrost*(level-1))
 // baza=5, lvl1: floor(5) = 5
-eq(M.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 1 }, 1), FALA2 * 5, 'linear baza=5 lvl1 -> 5 (×FALA2)');
+eq(M.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 1 }, 1), 5, 'linear baza=5 lvl1 -> 5');
 // baza=5, lvl2: floor(5 + 1) = 6
-eq(M.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 1 }, 2), FALA2 * 6, 'linear baza=5 lvl2 -> 6 (×FALA2)');
+eq(M.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 1 }, 2), 6, 'linear baza=5 lvl2 -> 6');
 // baza=5, lvl3: floor(5 + 2) = 7
-eq(M.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 1 }, 3), FALA2 * 7, 'linear baza=5 lvl3 -> 7 (×FALA2)');
+eq(M.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 1 }, 3), 7, 'linear baza=5 lvl3 -> 7');
 // baza=10, przyrost=2, lvl3: floor(10 + 2*2) = 14
-eq(M.buildingUpkeep({ utrzymanie: 10, przyrostUtrzymania: 2 }, 3), FALA2 * 14, 'linear baza=10 lvl3 -> 14 (×FALA2)');
+eq(M.buildingUpkeep({ utrzymanie: 10, przyrostUtrzymania: 2 }, 3), 14, 'linear baza=10 lvl3 -> 14');
 // baza=0, przyrost=0 -> always 0 (linear: unlike the old compound formula, a
 // zero base does NOT force zero at every level once przyrost > 0)
 eq(M.buildingUpkeep({ utrzymanie: 0, przyrostUtrzymania: 0 }, 5), 0, 'baza=0 przyrost=0 -> 0 at any level');
 // baza=0, przyrost=5, lvl5: floor(0 + 5*4) = 20
-eq(M.buildingUpkeep({ utrzymanie: 0, przyrostUtrzymania: 5 }, 5), FALA2 * 20, 'linear baza=0 przyrost=5 lvl5 -> 20 (×FALA2)');
+eq(M.buildingUpkeep({ utrzymanie: 0, przyrostUtrzymania: 5 }, 5), 20, 'linear baza=0 przyrost=5 lvl5 -> 20');
 
 // ===========================================================================
 // 3. growthMult hook via populationGrowth (simulates turn-economy logic)

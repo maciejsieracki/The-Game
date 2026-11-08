@@ -109,6 +109,7 @@ function simulate(seed, turns) {
       unlockedTechs: TECHS,
       pracaSurplusThreshold: 0,
       pracaBudgetPercent: 100,
+      maxItemsPerCity: 1,
       skipWyrab: false,
       playerEra: 3,
       priorityOverride: M.AI_IMPROVEMENT_PRIORITY,

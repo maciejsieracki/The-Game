@@ -1,2 +1,0 @@
-deferral regression: OK (7 assertions groups)
-EXIT=0

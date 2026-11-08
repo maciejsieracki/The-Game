@@ -1,9 +1,0 @@
-a-s18-zrownowazone         n=28 AI: farma=157 irygac=3 bydlo=32 kamien=41 tartak=7 kopaln=0 kopaln=0 oboz_l=4 | AIcut 258 AIasg% 32.9 | ME cut 68 asg% 27.9 first 2 | ME farma 34 irr 21 bydlo 25 tartak 6
-a-s18-zywnosc              n=28 AI: farma=155 irygac=3 bydlo=43 kamien=26 tartak=7 kopaln=0 kopaln=0 oboz_l=3 | AIcut 256 AIasg% 34.4 | ME cut 66 asg% 18.2 first 2 | ME farma 28 irr 27 bydlo 27 tartak 0
-a-s42-zrownowazone         n=28 AI: farma=143 irygac=0 bydlo=32 kamien=48 tartak=8 kopaln=0 kopaln=0 oboz_l=2 | AIcut 229 AIasg% 30.1 | ME cut 74 asg% 6.8 first 2 | ME farma 17 irr 12 bydlo 17 tartak 0
-a-s42-zywnosc              n=28 AI: farma=139 irygac=0 bydlo=35 kamien=33 tartak=9 kopaln=0 kopaln=0 oboz_l=5 | AIcut 215 AIasg% 28.8 | ME cut 70 asg% 11.4 first 2 | ME farma 19 irr 18 bydlo 19 tartak 0
-a-s7-zrownowazone          n=30 AI: farma=145 irygac=0 bydlo=34 kamien=90 tartak=13 kopaln=3 kopaln=14 oboz_l=2 | AIcut 220 AIasg% 35 | ME cut 49 asg% 16.3 first 2 | ME farma 19 irr 11 bydlo 13 tartak 1
-b-s7-zrownowazone          n=25 AI: farma=98 irygac=0 bydlo=36 kamien=30 tartak=11 kopaln=0 kopaln=0 oboz_l=4 | AIcut 78 AIasg% 52.6 | ME cut 46 asg% 4.3 first 2 | ME farma 13 irr 11 bydlo 13 tartak 2 err
-c-s7-zrownowazone          n=20 AI: farma=64 irygac=0 bydlo=21 kamien=0 tartak=2 kopaln=0 kopaln=0 oboz_l=2 | AIcut 94 AIasg% 38.3 | ME cut 37 asg% 5.4 first 2 | ME farma 11 irr 11 bydlo 10 tartak 2 err
-v0-s42-zrownowazone        n=28 AI: farma=115 irygac=0 bydlo=54 kamien=50 tartak=18 kopaln=0 kopaln=0 oboz_l=4 | AIcut 40 AIasg% 77.5 | ME cut 74 asg% 2.7 first 2 | ME farma 14 irr 14 bydlo 14 tartak 0
-v0-s7-zrownowazone         n=30 AI: farma=122 irygac=0 bydlo=72 kamien=99 tartak=14 kopaln=3 kopaln=11 oboz_l=4 | AIcut 53 AIasg% 83 | ME cut 49 asg% 4.1 first 2 | ME farma 13 irr 14 bydlo 13 tartak 2

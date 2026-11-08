@@ -18,7 +18,6 @@ export {
   buildRationParams,
   computeCityRationCost,
 } from '../src/game/population-growth-v85';
-export { citizenConsumptionEraMultiplier } from '../src/game/citizen-consumption-era';
 export {
   spichlerzGrowthBonusPercent,
   spichlerzHealthBonus,
@@ -168,24 +167,8 @@ console.log('--- P84 Spichlerz Zdrowie + racje ---');
       racje_wzrost_proc_3: { normal: 7 },
     },
   }, 'normal');
-  eq(M.computeCityRationCost(10, 3, rationParams, fullII), 30, 'pop 10 racje 3 ×0.5 = 30');
-  eq(M.computeCityRationCost(10, 3, rationParams), 60, 'bez Spichlerza = 60');
-
-  // Citizen upkeep follows owner era, then applies the existing local granary discount.
-  // R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: m(e)=1+0,5(e-1) zastąpiło 1/2/4 (decyzja właściciela 2026-11-05).
-  eq(M.citizenConsumptionEraMultiplier(1), 1, 'Stone citizen multiplier = 1');
-  eq(M.citizenConsumptionEraMultiplier(2), 1.5, 'Bronze citizen multiplier = 1.5');
-  eq(M.citizenConsumptionEraMultiplier(3), 2, 'Iron citizen multiplier = 2');
-  eq(M.citizenConsumptionEraMultiplier(undefined), 1, 'missing era defaults to Stone');
-  for (const level of [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]) {
-    const base = M.computeCityRationCost(10, level, rationParams);
-    eq(M.computeCityRationCost(10, level, rationParams), base, `Stone level ${level}`);
-    eq(M.computeCityRationCost(10, level, rationParams, undefined, 2), base * 1.5, `Bronze level ${level}`);
-    eq(M.computeCityRationCost(10, level, rationParams, undefined, 3), base * 2, `Iron level ${level}`);
-  }
-  const fullI = { ceramikaActive: true, solActive: false, maSpichlerzPop: true, maSpichlerzIIPop: false };
-  eq(M.computeCityRationCost(10, 4, rationParams, fullI, 3), 120, 'Iron epoch scaling (x2) before Spichlerz I -25%');
-  eq(M.computeCityRationCost(10, 4, rationParams, fullII, 3), 80, 'Iron epoch scaling (x2) before Spichlerz II -50%');
+  eq(M.computeCityRationCost(10, 3, rationParams, fullII), 15, 'pop 10 racje 3 ×0.5 = 15');
+  eq(M.computeCityRationCost(10, 3, rationParams), 30, 'bez Spichlerza = 30');
 }
 
 console.log('\n--- wynik: ' + passed + ' pass, ' + failed + ' fail ---\n');

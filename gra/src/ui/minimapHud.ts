@@ -122,10 +122,7 @@ export interface MinimapHudConfig {
 export interface MinimapHudApi {
   el: HTMLDivElement;
   canvas: HTMLCanvasElement | null;
-  /** Pełne odświeżenie (dane mapy/mgły/znaczniki) — kosztowne, tylko przy zmianie danych. */
   update: () => void;
-  /** Tylko ramka widoku (kamera) — tanie, bez przerysowania heksów; no-op gdy ramka bez zmian. */
-  updateViewport: (viewport: MinimapViewport | undefined) => void;
   destroy: () => void;
 }
 
@@ -217,45 +214,23 @@ function computeMinimapLayout(hexes: MinimapHexData[], w: number, h: number): Mi
   return { scale, offX, offY, drawR: scale * hexR };
 }
 
-/** Punkt znacznika policzony raz przy warstwie bazowej (pozycja na canvasie minimapy). */
-interface MinimapDot { cx: number; cy: number; rDot: number; color: string; }
+function renderCanvas(
+  canvas: HTMLCanvasElement,
+  data: MinimapData,
+  w: number,
+  h: number,
+): void {
+  const ctx = canvas.getContext('2d');
+  if (ctx === null) return;
 
-/** Prostokąt widoku (w przestrzeni heksów) — kształt jak `MinimapData.viewport`. */
-type MinimapViewport = NonNullable<MinimapData['viewport']>;
-
-/**
- * Stan jednej klatki minimapy: warstwa bazowa (tło + heksy + pozycje znaczników) budowana TYLKO przy
- * zmianie danych mapy/mgły (dirty). Ramka widoku NIE jest tu zapisywana — składana osobno.
- */
-interface MinimapFrame {
-  base: HTMLCanvasElement;
-  dots: MinimapDot[];
-  cols: number;
-  rows: number;
-  hasHexes: boolean;
-}
-
-/** Warstwa bazowa minimapy: tło + heksy + znaczniki (bez ramki widoku). Kosztowna (pętla po mapie). */
-function buildMinimapFrame(data: MinimapData, w: number, h: number): MinimapFrame {
-  const base = document.createElement('canvas');
-  base.width = w;
-  base.height = h;
-  const frame: MinimapFrame = {
-    base,
-    dots: [],
-    cols: data.cols,
-    rows: data.rows,
-    hasHexes: data.hexes.length > 0,
-  };
-  const ctx = base.getContext('2d');
-  if (ctx === null) return frame;
-
+  canvas.width = w;
+  canvas.height = h;
   // FPS: tło = kolor mgły (hidden). Dzięki temu heksy w mgle NIE muszą być rysowane
   // pojedynczo (na starcie to ~99% mapy) — pokrywa je tło.
   ctx.fillStyle = '#0b0d12';
   ctx.fillRect(0, 0, w, h);
 
-  if (data.hexes.length === 0) return frame;
+  if (data.hexes.length === 0) return;
 
   const { scale, offX, offY, drawR } = computeMinimapLayout(data.hexes, w, h);
 
@@ -279,6 +254,20 @@ function buildMinimapFrame(data: MinimapData, w: number, h: number): MinimapFram
     }
   }
 
+  if (data.viewport !== undefined) {
+    const vp = data.viewport;
+    const cellW = w / data.cols;
+    const cellH = h / data.rows;
+    ctx.strokeStyle = 'rgba(255,255,255,0.80)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(
+      Math.floor(vp.x * cellW) + 0.5,
+      Math.floor(vp.y * cellH) + 0.5,
+      Math.ceil(vp.w * cellW),
+      Math.ceil(vp.h * cellH),
+    );
+  }
+
   if (data.markers !== undefined && data.markers.length > 0) {
     const fogByKey = new Map<string, MinimapHexData['fog']>();
     for (const hex of data.hexes) {
@@ -288,65 +277,20 @@ function buildMinimapFrame(data: MinimapData, w: number, h: number): MinimapFram
       const fog = fogByKey.get(`${m.q},${m.r}`);
       if (fog === 'hidden') continue;
       const { x, y } = axialMinimapXY(m.q, m.r);
+      const cx = x * scale + offX;
+      const cy = y * scale + offY;
       const rDot = m.kind === 'unit'
         ? Math.max(2.5, drawR * 0.22)
         : Math.max(4.5, drawR * 0.38);
-      frame.dots.push({ cx: x * scale + offX, cy: y * scale + offY, rDot, color: m.color });
+      ctx.beginPath();
+      ctx.arc(cx, cy, rDot, 0, Math.PI * 2);
+      ctx.fillStyle = m.color;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
     }
   }
-  return frame;
-}
-
-/**
- * Składa widok na canvasie: warstwa bazowa → ramka widoku → znaczniki (ta sama kolejność co dawniej).
- * Tanie (drawImage + kilka rysunków na 280×170) — NIE dotyka pętli po heksach.
- */
-function drawMinimapFrame(
-  canvas: HTMLCanvasElement,
-  frame: MinimapFrame,
-  viewport: MinimapViewport | undefined,
-): void {
-  const ctx = canvas.getContext('2d');
-  if (ctx === null) return;
-
-  canvas.width = frame.base.width;
-  canvas.height = frame.base.height;
-  ctx.drawImage(frame.base, 0, 0);
-
-  if (viewport !== undefined && frame.hasHexes) {
-    const cellW = canvas.width / frame.cols;
-    const cellH = canvas.height / frame.rows;
-    ctx.strokeStyle = 'rgba(255,255,255,0.80)';
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(
-      Math.floor(viewport.x * cellW) + 0.5,
-      Math.floor(viewport.y * cellH) + 0.5,
-      Math.ceil(viewport.w * cellW),
-      Math.ceil(viewport.h * cellH),
-    );
-  }
-
-  for (const d of frame.dots) {
-    ctx.beginPath();
-    ctx.arc(d.cx, d.cy, d.rDot, 0, Math.PI * 2);
-    ctx.fillStyle = d.color;
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-}
-
-/**
- * R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1: czy ramka widoku się zmieniła (4 liczby, bez alokacji).
- * Wołane co klatkę z renderLoop — tani sprawdzian decyduje, czy minimapa w ogóle ma się przerysować.
- */
-export function sameMinimapViewport(
-  a: MinimapViewport | undefined,
-  b: MinimapViewport | undefined,
-): boolean {
-  if (a === undefined || b === undefined) return a === b;
-  return a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h;
 }
 
 const STYLE_ID = 'civ-minimap-hud-css-w2ring9-passthrough';
@@ -438,10 +382,6 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
   }
 
   let canvas: HTMLCanvasElement | null = null;
-  /** Ostatnio zbudowana warstwa bazowa (null = brak danych / placeholder). */
-  let frame: MinimapFrame | null = null;
-  /** Ramka widoku, która jest aktualnie na canvasie (do tanie porównania przy zmianie kamery). */
-  let shownViewport: MinimapViewport | undefined;
 
   function mountCanvas(): void {
     if (canvas !== null) return;
@@ -475,7 +415,6 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
       canvas.remove();
       canvas = null;
     }
-    frame = null;
     el.querySelectorAll('.mini-placeholder').forEach(n => n.remove());
     const ph = document.createElement('div');
     ph.className = 'mini-placeholder';
@@ -491,33 +430,16 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
       return;
     }
     mountCanvas();
-    if (canvas !== null) {
-      frame = buildMinimapFrame(data, w, h);
-      shownViewport = data.viewport;
-      drawMinimapFrame(canvas, frame, shownViewport);
-    }
-  }
-
-  /**
-   * R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1: ramka widoku podąża za kamerą. Wołane z renderLoop przy
-   * każdej klatce — NIE przerysowuje heksów (warstwa bazowa z ostatniego update() jest zapamiętana),
-   * tylko składa canvas ponownie, i to wyłącznie gdy prostokąt faktycznie się zmienił.
-   */
-  function updateViewport(viewport: MinimapViewport | undefined): void {
-    if (frame === null || canvas === null) return;
-    if (sameMinimapViewport(shownViewport, viewport)) return;
-    shownViewport = viewport;
-    drawMinimapFrame(canvas, frame, viewport);
+    if (canvas !== null) renderCanvas(canvas, data, w, h);
   }
 
   function destroy(): void {
     wrap.remove();
     canvas = null;
-    frame = null;
   }
 
   update();
-  return { el: wrap, get canvas() { return canvas; }, update, updateViewport, destroy };
+  return { el: wrap, get canvas() { return canvas; }, update, destroy };
 }
 
 /** Ustaw etykietę tury na minimapie (opcjonalnie — w mockupie 1E tura jest przy Końcu tury). */

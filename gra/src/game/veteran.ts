@@ -312,8 +312,6 @@ export interface VeteranScalableCombatStats {
   piercing: number;
   chargeBonus: number;
   health: number;
-  /** Metadata for combat.ts so an already scaled HP snapshot is not scaled again. */
-  veteranHealthBonusFrac?: number;
   missileAttack: number;
   /** Odwrócone pole -- niżej = trudniej zdezerterować. Skalowane W DÓŁ. */
   'Prog dezercji (% health)': number | null;
@@ -365,7 +363,6 @@ export function applyVeteranFracToCombatUnit<T extends VeteranScalableCombatStat
 ): T {
   if (!frac) return cu;
   const up = 1 + frac;
-  const veteranHealthBonusFrac = frac;
   const progRaw = cu['Prog dezercji (% health)'];
   const progScaled = progRaw === null || progRaw === undefined
     ? progRaw
@@ -378,7 +375,6 @@ export function applyVeteranFracToCombatUnit<T extends VeteranScalableCombatStat
     piercing: cu.piercing * up,
     chargeBonus: cu.chargeBonus * up,
     health: cu.health * up,
-    veteranHealthBonusFrac,
     missileAttack: cu.missileAttack * up,
     'Prog dezercji (% health)': progScaled,
   };

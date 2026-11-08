@@ -1,2 +1,0 @@
-ai-city-yield-test: 42 PASS, 0 FAIL
-EXIT=0

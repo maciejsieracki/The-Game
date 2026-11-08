@@ -1,1 +1,0 @@
-EXIT=0 (praca-pula-rate-parity-test)

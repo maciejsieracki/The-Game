@@ -26,8 +26,6 @@ import type { City } from './cities';
 import { isCivilianUnit } from '../units/setup';
 import epokaTable from '../../data/epoka-ludnosc-manpower.json';
 import miastoParams from '../../data/miasto-params.json';
-import { civMatrixParam } from './civ-matrix';
-import { formatCompactNumber } from '../ui/formatCompactNumber';
 
 export interface EpokaManpowerRow {
   epoka: number;
@@ -104,12 +102,7 @@ export interface ManpowerHealUnit {
   typeId: string;
   category: string;
   hp?: number;
-  /** Canonical effective max HP cache; old saves may omit or contain a stale raw value. */
   hpMax?: number;
-  /** Persistent building-path health bonus source (fraction is derived by the caller). */
-  parametryBonusProc?: number;
-  /** Persistent veteran health bonus source. */
-  battlesSurvived?: number;
   q?: number;
   r?: number;
   inGarnizon?: boolean;
@@ -279,15 +272,9 @@ export function tickManpowerUnitReplenishment(
   difficulty: ManpowerDifficulty,
   resolveOwnerEra: (ownerId: number) => number,
   resolveOwnerBonusy: (ownerId: number) => readonly CivBonusPoborLite[] | undefined,
-  /**
-   * Resolve the current effective max HP. The second argument is optional so
-   * existing callers that only know a type id remain compatible, while the
-   * live RuntimeUnit path can include persistent unit-specific bonuses.
-   */
-  getMaxHp: (typeId: string, unit?: ManpowerHealUnit) => number,
+  getMaxHp: (typeId: string) => number,
   rawMiastoParams?: typeof miastoParams,
   onUnitHpChanged?: (unitId: string, hp: number, hpMax: number) => void,
-  resolveOwnerMatrix?: (ownerId: number) => ManpowerMatrixOverrides | undefined,
 ): ManpowerReplenishResult {
   const params = loadManpowerReplenishParams(difficulty, rawMiastoParams);
   if (params.healPctMaxPerTurn <= 0 || units.length === 0) {
@@ -307,45 +294,26 @@ export function tickManpowerUnitReplenishment(
 
   for (const [ownerId, ownerUnits] of byOwner) {
     const epoka = resolveOwnerEra(ownerId);
-    const legacyMults = civManpowerMults(resolveOwnerBonusy(ownerId));
-    const matrixMults = civManpowerMatrixMults(undefined, resolveOwnerMatrix?.(ownerId), legacyMults);
-    const maxMult = matrixMults.maxMult;
-    const costMult = matrixMults.costMult;
+    const maxMult = civManpowerMaxMult(resolveOwnerBonusy(ownerId));
     let empireMp = empireManpowerCurrent(cities, ownerId, epoka, maxMult);
+    if (empireMp <= 0) continue;
 
     const candidates: ReplenishmentCandidate[] = [];
     for (const u of ownerUnits) {
       if (isUnitInBesiegedLocation(u, cities)) continue;
 
-      const resolvedMaxHp = getMaxHp(u.typeId, u);
-      const maxHp = Number.isFinite(resolvedMaxHp) && resolvedMaxHp > 0
-        ? resolvedMaxHp
-        : (typeof u.hpMax === 'number' && Number.isFinite(u.hpMax) ? u.hpMax : 0);
+      const maxHp = u.hpMax ?? getMaxHp(u.typeId);
       if (maxHp <= 0) continue;
-      // Backfill old saves and overwrite stale raw/base caches before applying
-      // the cap. This is what prevents a persistent +HP bonus from producing
-      // the visible raw-max plateau.
-      u.hpMax = maxHp;
-      const curHp = u.hp == null
-        ? maxHp
-        : (Number.isFinite(u.hp) ? Math.max(0, Math.min(maxHp, u.hp)) : maxHp);
-      // Normalize the live HP as well: old saves may contain a raw/stale value
-      // above the canonical effective maximum, which must not suppress the
-      // clamp or leak an impossible value into the next save.
-      u.hp = curHp;
+      if (u.hpMax == null) u.hpMax = maxHp;
+      const curHp = u.hp == null ? maxHp : u.hp;
+      if (u.hp == null) u.hp = curHp;
       if (curHp <= 0 || curHp >= maxHp) continue;
 
-      const unitCost = unitManpowerCostForType(u.typeId, epoka, maxMult, costMult);
-      if (isScoutTypeId(u.typeId)) continue;
+      const unitCost = unitManpowerCostForType(u.typeId, epoka, maxMult);
+      if (unitCost <= 0 || isScoutTypeId(u.typeId)) continue;
 
       const desiredHeal = manpowerHealCapForTurn(maxHp, curHp, params);
       if (desiredHeal <= 0) continue;
-      if (unitCost === 0) {
-        u.hp = Math.min(maxHp, curHp + desiredHeal);
-        onUnitHpChanged?.(u.id, u.hp, maxHp);
-        healedCount++;
-        continue;
-      }
 
       const desiredMp = manpowerCostForHeal(desiredHeal, maxHp, unitCost);
       if (desiredMp <= 0) continue;
@@ -400,70 +368,56 @@ export interface CivBonusPoborLite {
   realizuje?: string;
 }
 
-export interface ManpowerMatrixOverrides {
-  mp_regen_proc?: number;
-  mp_max_proc?: number;
-  mp_koszt_jednostki_proc?: number;
-}
-
-export interface CivManpowerMultipliers {
-  regenMult: number;
-  maxMult: number;
-  costMult: number;
-}
-
-/** Legacy civ-bonus compatibility helper; matrix-only source makes it neutral. */
+/**
+ * Mnożnik odnowy rekrutów per cywilizacja (domyślnie 1.0).
+ * bonus_pobor_regen +1.0 → ×2 (Rzymianie); −0.15 → ×0.85 (Grecy).
+ */
 export function civManpowerRegenMult(
-  _bonusy?: readonly CivBonusPoborLite[],
+  bonusy?: readonly CivBonusPoborLite[],
 ): number {
-  return 1;
-}
-
-/** Legacy civ-bonus compatibility helper; matrix-only source makes it neutral. */
-export function civManpowerMaxMult(
-  _bonusy?: readonly CivBonusPoborLite[],
-): number {
-  return 1;
-}
-
-/** Legacy civ-bonus compatibility API; all fields are neutral. */
-export function civManpowerMults(
-  _bonusy?: readonly CivBonusPoborLite[],
-): CivManpowerMultipliers {
-  return { regenMult: 1, maxMult: 1, costMult: 1 };
-}
-
-function matrixMultiplier(value: number | undefined): number {
-  return typeof value === 'number' && Number.isFinite(value)
-    ? Math.max(0, 1 + value)
-    : 1;
+  let mult = 1;
+  if (!bonusy?.length) return mult;
+  for (const b of bonusy) {
+    if (b.typ === 'bonus_pobor_regen' && typeof b.wartosc === 'number') {
+      mult *= 1 + b.wartosc;
+    } else if (b.typ === 'mnoznik_pobor_regen' && typeof b.wartosc === 'number') {
+      mult *= b.wartosc;
+    }
+  }
+  return Math.max(0.1, mult);
 }
 
 /**
- * Resolve the exact civilization-matrix manpower fields. `overrides` is used by
- * focused tests and keeps test fixtures independent from civ-matrix.json.
- * The legacy fallback parameter is retained for call compatibility only and is
- * intentionally ignored; a missing owner/matrix field is neutral.
+ * Mnożnik puli Manpower per obywatela (domyślnie 1.0).
+ * mnoznik_manpower_max 2.0 → ×2 (Rzymianie); bonus_pobor_pula +1.0 → ×2.
  */
-export function civManpowerMatrixMults(
-  civKey: string | undefined,
-  overrides?: ManpowerMatrixOverrides,
-  _legacyFallback: CivManpowerMultipliers = { regenMult: 1, maxMult: 1, costMult: 1 },
-): CivManpowerMultipliers {
-  const read = (field: keyof ManpowerMatrixOverrides): number | undefined => {
-    if (overrides && overrides[field] !== undefined) return overrides[field];
-    if (!civKey) return undefined;
-    return civMatrixParam(civKey, field);
-  };
+export function civManpowerMaxMult(
+  bonusy?: readonly CivBonusPoborLite[],
+): number {
+  let mult = 1;
+  if (!bonusy?.length) return mult;
+  for (const b of bonusy) {
+    if (b.typ === 'bonus_pobor_pula' && typeof b.wartosc === 'number') {
+      mult *= 1 + b.wartosc;
+    } else if (b.typ === 'mnoznik_manpower_max' && typeof b.wartosc === 'number') {
+      mult *= b.wartosc;
+    }
+  }
+  return Math.max(0.1, mult);
+}
+
+/** Mnożniki Manpower z bonusów cywilizacji (regen + max/koszt). */
+export function civManpowerMults(
+  bonusy?: readonly CivBonusPoborLite[],
+): { regenMult: number; maxMult: number } {
   return {
-    regenMult: matrixMultiplier(read('mp_regen_proc')),
-    maxMult: matrixMultiplier(read('mp_max_proc')),
-    costMult: matrixMultiplier(read('mp_koszt_jednostki_proc')),
+    regenMult: civManpowerRegenMult(bonusy),
+    maxMult: civManpowerMaxMult(bonusy),
   };
 }
 
 function scaledManpower(base: number, maxMult: number): number {
-  return Math.floor(base * Math.max(0, Number.isFinite(maxMult) ? maxMult : 1));
+  return Math.floor(base * Math.max(0.1, maxMult));
 }
 
 /** Ile MP miasto odzyska w tej turze (przed limitem cap). */
@@ -546,10 +500,9 @@ export function unitManpowerCostForType(
   typeId: string | undefined,
   epoka: number,
   maxMult = 1,
-  costMult = maxMult,
 ): number {
   if (isScoutTypeId(typeId)) return 0;
-  return unitManpowerCost(epoka, costMult);
+  return unitManpowerCost(epoka, maxMult);
 }
 
 /** Bieżąca pula: zapisana w city.manpower lub domyślnie max. */
@@ -613,13 +566,12 @@ export function cityManpowerSnapshot(
   epoka: number,
   regenMult = 1,
   maxMult = 1,
-  costMult = maxMult,
 ): CityManpowerSnapshot {
   const ludki = clampLudki(city.population);
   const row = epokaManpowerRow(epoka);
   const ludnoscAbsolutna = ludki * row.ludekNaLudka;
   const manpowerMax = scaledManpower(ludki * row.manpowerNaLudka, maxMult);
-  const kosztJednostki = scaledManpower(row.manpowerNaJednostke, costMult);
+  const kosztJednostki = scaledManpower(row.manpowerNaJednostke, maxMult);
   const manpowerBiezacy = cityManpowerCurrent(city, epoka, maxMult);
   const regenParams = loadManpowerRegenParams();
   return {
@@ -641,9 +593,8 @@ export function canAffordUnitManpower(
   epoka: number,
   maxMult = 1,
   typeId?: string,
-  costMult = maxMult,
 ): boolean {
-  const cost = unitManpowerCostForType(typeId, epoka, maxMult, costMult);
+  const cost = unitManpowerCostForType(typeId, epoka, maxMult);
   if (cost <= 0) return true;
   return cityManpowerCurrent(city, epoka, maxMult) >= cost;
 }
@@ -731,9 +682,8 @@ export function canAffordUnitManpowerEmpire(
   _popCost = 0,
   maxMult = 1,
   typeId?: string,
-  costMult = maxMult,
 ): boolean {
-  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult, costMult);
+  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult);
   if (kosztManpower <= 0) return true;
   return empireManpowerCurrent(cities, ownerId, epoka, maxMult) >= kosztManpower;
 }
@@ -747,10 +697,9 @@ export function tryDeductUnitSpawnCostsEmpire(
   _popCost = 0,
   maxMult = 1,
   typeId?: string,
-  costMult = maxMult,
 ): UnitSpawnDeduction {
   const recruitingCity = cities.find(c => c.id === recruitingCityId && c.ownerId === ownerId);
-  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult, costMult);
+  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult);
   const recruitingMp = recruitingCity
     ? cityManpowerCurrent(recruitingCity, epoka, maxMult)
     : 0;
@@ -802,9 +751,8 @@ export function tryDeductUnitSpawnCosts(
   popCost = 0,
   maxMult = 1,
   typeId?: string,
-  costMult = maxMult,
 ): UnitSpawnDeduction {
-  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult, costMult);
+  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult);
   const cur = cityManpowerCurrent(city, epoka, maxMult);
   if (cur < kosztManpower) {
     return {
@@ -843,9 +791,8 @@ export function refundUnitSpawnToCity(
   popCap?: number,
   maxMult = 1,
   typeId?: string,
-  costMult = maxMult,
 ): { population: number; manpower: number } {
-  const mpRefund = unitManpowerCostForType(typeId, epoka, maxMult, costMult);
+  const mpRefund = unitManpowerCostForType(typeId, epoka, maxMult);
   const rawPop = city.population + popCost;
   const population = popCap != null ? Math.min(popCap, rawPop) : rawPop;
   const max = cityManpowerMax(population, epoka, maxMult);
@@ -880,9 +827,8 @@ export function spendManpower(
   epoka: number,
   amount?: number,
   maxMult = 1,
-  costMult = maxMult,
 ): number {
-  const cost = amount ?? unitManpowerCost(epoka, costMult);
+  const cost = amount ?? unitManpowerCost(epoka, maxMult);
   const cur = cityManpowerCurrent(city, epoka, maxMult);
   return Math.max(0, cur - cost);
 }
@@ -902,15 +848,6 @@ export function formatPopulationAbs(n: number): string {
 
 export function formatManpower(n: number): string {
   return formatPopulationAbs(n);
-}
-
-/**
- * R-WEB-MANPOWER-ABBREV-PANELS-Q1 — prezentacja Manpower/ludności w panelach UI: wspólny
- * format k/M (`formatCompactNumber`), jak w HUD. Tylko prezentacja; `formatManpower`
- * („tys./mln") zostaje bez zmian dla testów i logów.
- */
-export function formatManpowerCompact(n: number): string {
-  return formatCompactNumber(n);
 }
 
 /** Eksport tabeli (testy / narzędzia). */

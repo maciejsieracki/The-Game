@@ -3,6 +3,7 @@ import {
   pickForcedWarTargetId,
   restoreForcedWarState,
   serializeForcedWarState,
+  shouldEndForcedWarByCityCount,
   type ForcedWarPairState,
   type ForcedWarSaveState,
 } from './forced-war-common';
@@ -89,11 +90,7 @@ export const WOJNA_WYMUSZONA_START_TURY_OD_EPOKI = 25;
  * LUB_STRACONE` wyżej, który zostaje jako DODATKOWY, zwykle wcześniejszy warunek
  * zakończenia — który z dwóch warunków spełni się pierwszy, kończy wojnę).
  */
-// R-WEB-PEACE-RULES-R8R9-Q1 R9: NIEUŻYWANA w runtime -- automatyczny koniec po czasie usunięty
-// (wojna wymuszona kończy się wyłącznie pokojem). Stała zostaje jako parametr/dokumentacja dla
-// testów (tools/forced-war-bronze-test.cjs, forced-war-reguly-multi-turn-simulation-test.cjs,
-// praca-podzial-staly-50-50-test.cjs); nie wolno jej ponownie podłączać do auto-końca.
-export const WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 20;
+export const WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 25;
 
 export interface BronzeForcedWarEligibilityInput {
   /** Czy owner to główna cywilizacja AI (NIE miasto-państwo, NIE gracz, NIE barbarzyńca). */
@@ -170,6 +167,24 @@ export function pickBronzeForcedWarTargetId(
 }
 
 /**
+ * Czy wojna wymuszona kończy się TERAZ automatycznym pokojem — jedna ze stron zdobyła LUB
+ * straciła `threshold` miast na rzecz drugiej (co pierwsze nastąpi).
+ * EN: whether the forced war auto-resolves into peace RIGHT NOW — either side hit the city
+ * threshold (whichever comes first).
+ */
+export function shouldEndBronzeForcedWarByCityCount(
+  citiesCapturedByAttacker: number,
+  citiesCapturedByDefender: number,
+  threshold: number = WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
+): boolean {
+  return shouldEndForcedWarByCityCount(
+    citiesCapturedByAttacker,
+    citiesCapturedByDefender,
+    threshold,
+  );
+}
+
+/**
  * Czy cywilizacja jest jeszcze w okresie odpoczynku po zawartym pokoju wojny wymuszonej (nie
  * szuka nowego celu). EN: whether the civ is still resting after a forced-war peace (not
  * searching for a new target yet).
@@ -179,6 +194,22 @@ export function isRestingFromBronzeForcedWar(
   restUntilTurn: number | undefined,
 ): boolean {
   return isRestingFromForcedWar(currentTurn, restUntilTurn);
+}
+
+/**
+ * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): czy TA KONKRETNA para wojny wymuszonej Brązu
+ * kończy się TERAZ automatycznym pokojem, bo minęło `maxDurationTurns` tur od jej
+ * rozpoczęcia — niezależnie od progu miast (`shouldEndBronzeForcedWarByCityCount`
+ * wyżej, niezmieniona). `startTurn === undefined` (stary zapis sprzed tego pola) →
+ * `currentTurn - currentTurn === 0`, więc NIGDY nie kończy wojny samym tym wywołaniem —
+ * main.ts backfilluje brakujące `startTurn` PRZY WCZYTANIU zapisu, patrz raport.
+ */
+export function shouldEndBronzeForcedWarByDuration(
+  currentTurn: number,
+  startTurn: number | undefined,
+  maxDurationTurns: number = WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
+): boolean {
+  return currentTurn - (startTurn ?? currentTurn) >= maxDurationTurns;
 }
 
 // ---------------------------------------------------------------------------

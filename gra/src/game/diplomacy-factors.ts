@@ -76,7 +76,6 @@ export const DIPLO_FACTOR_LABELS_PL: Record<string, string> = {
   trybut_oferta_przyjeta: 'Oferta trybutu przyjęta',
   wymiana_tech_gratis: 'Wymiana technologii (gratis)',
   zerwanie_handlu: 'Zerwana umowa (przeszłość)',
-  zerwanie_handlu_bez_kary: 'Zerwana umowa po 10 turach (bez kary)',
   zerwanie_traktatu: 'Zerwanie traktatu (decyzja własna)',
   ultimatum_spelnione: 'Ultimatum spełnione',
   ultimatum_bezpodstawne: 'Ultimatum bezpodstawne',

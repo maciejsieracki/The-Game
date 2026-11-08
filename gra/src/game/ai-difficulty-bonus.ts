@@ -9,7 +9,6 @@ import { canFoundCity, MIN_CITY_DISTANCE } from './cities';
 import { isBarbarian } from './barbarians';
 import type { DifficultyParams } from './ai';
 import { hexDistance } from '../units/setup';
-import { cityTerritoryRadius } from '../map/territory';
 
 /** Domyślny typ jednostki bonusowej startowej (epoka kamień). */
 export const AI_DIFFICULTY_BONUS_UNIT_TYPE = 'Wojownik';
@@ -179,16 +178,11 @@ export function pickBonusCityHex(
   capitalQ: number,
   capitalR: number,
 ): { q: number; r: number } | null {
-  // P-AI-ZAKLADANIE-MIAST-TELEPORTACJA-Q1 (t_8c9c7f4f): promień poszukiwania ograniczony
-  // do WŁASNEGO terytorium stolicy (cityTerritoryRadius, ta sama reguła co withinTerritory
-  // dla zwykłej kolonizacji AI w findCityFoundingHex/ai.ts) — wcześniej `maxRadius` był stałą
-  // wielokrotnością MIN_CITY_DISTANCE, niezależną od realnego zasięgu terytorium (pop=1 ->
-  // promień 5), i przy gęstym klastrze (dużo zablokowanych bliższych heksów) potrafił znaleźć
-  // wolny heks 6-9 pól od stolicy — POZA jej terytorium ("teleportacja" zgłoszona przez
-  // właściciela). Realny dowód: tools/diag-bonus-city-territory.cjs, 3 naruszenia / 8 seedów
-  // (Standardowy odpowiednik), dist do 9 przy promieniu terytorium 5.
-  const capitalNode = { q: capitalQ, r: capitalR, pop: 1, level: 1 };
-  const maxRadius = Math.min(MIN_CITY_DISTANCE * 3, cityTerritoryRadius(capitalNode));
+  // Promień wyszukiwania: wielokrotność MIN_CITY_DISTANCE (istniejąca stała) —
+  // nie balansowa liczba, tylko bezpieczna górna granica przeszukiwania; poza
+  // nią kolonia jest po prostu zablokowana (istniejąca ścieżka `extraCitiesBlocked`
+  // w `planMajorAiDifficultyStartBonuses`, bez zmiany semantyki).
+  const maxRadius = MIN_CITY_DISTANCE * 3;
   const candidates: Array<{ q: number; r: number; d: number }> = [];
   for (let dq = -maxRadius; dq <= maxRadius; dq++) {
     for (let dr = -maxRadius; dr <= maxRadius; dr++) {
@@ -201,18 +195,9 @@ export function pickBonusCityHex(
     }
   }
   candidates.sort((a, b) => a.d - b.d);
-  // R-WEB-FOLLOWUPS-LAND-AI-Q1 (3a): ta sama reguła co dla osadników AI (R-WEB-AI-AVOID-POLAR-CITIES-Q1) —
-  // heks Polarny tylko jako ostatni fallback, gdy w promieniu nie ma legalnego heksu niepolarnego.
-  let polarFallback: { q: number; r: number } | null = null;
   for (const c of candidates) {
     const { ok } = canFoundCity(c.q, c.r, cities, map);
-    if (!ok) continue;
-    const hx = map.hexes[`${c.q},${c.r}`];
-    if (hx !== undefined && (hx.terenBazowy as string) === 'polarny') {
-      if (polarFallback === null) polarFallback = { q: c.q, r: c.r };
-      continue;
-    }
-    return { q: c.q, r: c.r };
+    if (ok) return { q: c.q, r: c.r };
   }
-  return polarFallback;
+  return null;
 }

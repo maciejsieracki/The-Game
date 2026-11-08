@@ -2,16 +2,6 @@
 /**
  * food-hodowla-test.cjs — kanon żywność+hodowla (EKONOMIA P2)
  * Uruchom z gra/:  node tools/food-hodowla-test.cjs
- *
- * R-WEB-STALE-RULES-CLEANUP-Q1 (2026-11-01): 4 czerwone asercje (baza 20 OK / 4 FAIL) były przestarzałymi
- * pinami starych reguł, nie regresją kodu:
- *  - bonus pracy trzody: obowiązujące dane `data/terrain-improvements.json` bydlo.bonus = {zywnosc:2, praca:4,
- *    handel:3}, farma.bonus.praca=3 (stare piny: +3 praca trzody i +3 praca farma+trzoda); nie zmieniamy danych, test podąża za źródłem prawdy,
- *  - „Trzoda (krowa/świnia)” jako etykieta aktywnego dostępu do surowca: trzoda/owce/lama NIE są surowcami
- *    (decyzja właściciela 2026-07-23, potwierdzona 2026-10-31 w #4 rejestru
- *    DECYZJE-WLASCICIELA-20261031-AUTOULEPSZENIA-FORTY.md: „Trzoda nie wymaga złoża ani zasobów”);
- *    kod: resource-access.ts `LIVESTOCK_NOT_RESOURCE`. Zachowanie zachowane: trzoda nie odblokowuje imperium
- *    i nie wymaga złoża — asercje sprawdzają teraz brak etykiety surowca.
  */
 const fs   = require('fs');
 const path = require('path');
@@ -80,7 +70,7 @@ console.log('\nAC-E1: bonusy JSON (przez improvementBonusForKey)');
   eq(M.improvementBonusForKey('tarasy').zywnosc, 3, 'tarasy +3');
   eq(M.improvementBonusForKey('lodzie_rybackie').praca, 3, 'lodzie +3 praca');
   eq(M.improvementBonusForKey('bydlo').zywnosc, 2, 'bydlo +2 zywnosc');
-  eq(M.improvementBonusForKey('bydlo').praca, 4, 'bydlo +4 praca (data/terrain-improvements.json; stary pin +3 przestarzały)');
+  eq(M.improvementBonusForKey('bydlo').praca, 3, 'bydlo +3 praca');
   eq(M.improvementBonusForKey('owce').zywnosc, 1, 'owce +1');
   eq(M.improvementBonusForKey('lama').praca, 3, 'lama +3 praca');
   ok(!M.improvementBonusForKey('pastwisko').zywnosc, 'pastwisko usuniety z JSON');
@@ -106,7 +96,7 @@ console.log('\nAC-E2: tileYield suma warstw (delta ulepszen)');
   const base = M.tileYield(baseTile);
   const layered = M.tileYield({ ...baseTile, ulepszeniaKeys: ['farma', 'bydlo'] });
   eq(layered.zywnosc - base.zywnosc, 5, 'farma+bydlo delta = +5 zywnosci');
-  eq(layered.praca - base.praca, 7, 'farma+bydlo delta = +7 praca (JSON: farma.praca=3 + bydlo.praca=4; stary pin +3 przestarzały)');
+  eq(layered.praca - base.praca, 3, 'farma+bydlo delta = +3 praca');
 }
 
 console.log('\nAC-E3: Model B — bydlo bez złoża (aktywny dostęp lokalny)');
@@ -133,7 +123,7 @@ console.log('\nAC-E3: Model B — bydlo bez złoża (aktywny dostęp lokalny)');
     99,
     { ownerId: 'p1' },
   );
-  ok(!access.includes('Trzoda (krowa/świnia)'), 'trzoda NIE jest surowcem: brak etykiety dostępu (LIVESTOCK_NOT_RESOURCE; decyzja 2026-07-23 + #4 2026-10-31)');
+  ok(access.includes('Trzoda (krowa/świnia)'), 'Model B: bydlo w zasięgu → active Trzoda');
   // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): sygnatura isLivestockUnlockedForPlacement
   // zmieniona z (key, hex, empireUnlocks:Set) na (key, hex, tradeRouteKonUnlocked:boolean,
   // horseStockAvailable:number) — bydlo ignoruje oba (zawsze true), więc test bez zmian
@@ -196,7 +186,7 @@ console.log('\nAC-E5: Model B — brak złoża zwierzęcego, bydlo daje dostęp 
     99,
     { ownerId: 'p1' },
   );
-  ok(!access.includes('Trzoda (krowa/świnia)'), 'bydlo w zasięgu nie daje etykiety surowca (trzoda nie jest surowcem, nie wymaga złoża)');
+  ok(access.includes('Trzoda (krowa/świnia)'), 'bydlo w zasięgu → active Trzoda');
 }
 
 console.log('\n--- food-hodowla-test: ' + passed + ' OK, ' + failed + ' FAIL ---');

@@ -1,3 +1,0 @@
-kontynenty PRE "histogram":{"posterunek":{"poza-nieprzylegle":274,"RAZEM":284,"NARUSZENIE-REGULY":284,"poza-przylegle":10}},"runs":5}
-pangea PRE "histogram":{"posterunek":{"poza-nieprzylegle":274,"RAZEM":283,"NARUSZENIE-REGULY":283,"poza-przylegle":9}},"runs":5}
-wyspy PRE "histogram":{"posterunek":{"poza-nieprzylegle":290,"RAZEM":293,"NARUSZENIE-REGULY":293,"poza-przylegle":3}},"runs":5}

@@ -3,6 +3,7 @@ import {
   pickForcedWarTargetId,
   restoreForcedWarState,
   serializeForcedWarState,
+  shouldEndForcedWarByCityCount,
   type ForcedWarPairState,
   type ForcedWarSaveState,
 } from './forced-war-common';
@@ -34,10 +35,8 @@ import {
  * od `eraEnterTurn`, rozwiązuje dokładnie ten problem, tak jak już rozwiązywał go w Brązie].
  *
 
- * POZOSTAŁE PARAMETRY SĄ IDENTYCZNE Z BRĄZEM I KAMIENIEM (2 miasta = koniec wojny,
- * limit 20 tur = automatyczny pokój, 20 tur odpoczynku i 20 tur cooldownu na tego samego rywala).
- * Po pokoju wymuszonej wojny para nie może rozpocząć kolejnej wojny aż do awansu napastnika
- * do następnej epoki. Zwykły pokój nadal ma bazową blokadę 10 tur. Dziś nie ma żadnej
+ * POZOSTAŁE TRZY PARAMETRY SĄ IDENTYCZNE Z BRĄZEM I KAMIENIEM (2 miasta = koniec wojny,
+ * 20 tur odpoczynku, 20 tur cooldownu na tego samego rywala) — dziś nie ma żadnej
  * przesłanki, żeby epoka Żelaza miała inny rytm konfliktu niż Brąz. Gdyby właściciel
  * podał inne liczby dla Żelaza, zmienia się WYŁĄCZNIE trzy stałe niżej.
  *
@@ -85,11 +84,6 @@ export const EPOKA_ZELAZO_NUMER = 3;
 
 /** Próg zdobytych/utraconych miast kończący wojnę wymuszoną Żelaza automatycznym pokojem. / EN: city-count threshold (either side) that auto-ends an Iron forced war. */
 export const WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE = 2;
-/** Maksymalny czas wojny wymuszonej Żelaza; po 20 turach silnik zawiera automatyczny pokój. */
-// R-WEB-PEACE-RULES-R8R9-Q1 R9: NIEUŻYWANA w runtime -- automatyczny koniec po czasie usunięty
-// (wojna wymuszona kończy się wyłącznie pokojem). Zostaje jako parametr dla testów
-// (tools/forced-war-iron-test.cjs, forced-war-reguly-multi-turn-simulation-test.cjs).
-export const WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 20;
 
 /**
  * Tur odpoczynku po zawarciu pokoju wojny wymuszonej Żelaza, zanim cywilizacja zacznie
@@ -209,6 +203,23 @@ export function pickIronForcedWarTargetId(
     referenceHex,
     hexDistanceFn,
     opts?.blockedOwnerIds ?? new Set<number>(),
+  );
+}
+
+/**
+ * Czy wojna wymuszona Żelaza kończy się TERAZ automatycznym pokojem — jedna ze stron
+ * zdobyła LUB straciła `threshold` miast na rzecz drugiej (co pierwsze nastąpi).
+ * EN: whether the Iron forced war auto-resolves into peace RIGHT NOW.
+ */
+export function shouldEndIronForcedWarByCityCount(
+  citiesCapturedByAttacker: number,
+  citiesCapturedByDefender: number,
+  threshold: number = WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
+): boolean {
+  return shouldEndForcedWarByCityCount(
+    citiesCapturedByAttacker,
+    citiesCapturedByDefender,
+    threshold,
   );
 }
 

@@ -81,8 +81,7 @@ function ok(c, m) {
   //       luka w danych to nota, nie zgadywanie).
   //     +1 'Prawo i administracja' (8 -> 9) — Garnizon, ten temat.
   // ==========================================================================
-  //   2026-11-06 (R-WEB-BUILDING-EMPORION-Q1) — 42 -> 43: +1 'Handel i pieniądz' (5 -> 6), Emporion.
-  const TOTAL = 43;
+  const TOTAL = 42;
   ok(buildings.length === TOTAL, `buildings.json ma ${TOTAL} budynków (ma: ${buildings.length})`);
   ok(M.BUILDING_GROUP_ORDER.length === 8, 'BUILDING_GROUP_ORDER ma dokładnie 8 grup');
   const allowed = new Set(M.BUILDING_GROUP_ORDER);
@@ -101,7 +100,7 @@ function ok(c, m) {
   const expectedCounts = {
     'Prawo i administracja': 9,
     'Wojsko i obrona': 7,
-    'Handel i pieniądz': 6, // R-WEB-BUILDING-EMPORION-Q1: +1 Emporion (było 5)
+    'Handel i pieniądz': 5,
     'Nauka i kultura': 4,
     'Wiara': 2,
     'Zdrowie': 3,

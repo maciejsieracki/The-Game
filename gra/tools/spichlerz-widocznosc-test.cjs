@@ -45,7 +45,6 @@ const BUNDLE = path.resolve(__dirname, '.spichlerz-widocznosc-bundle.cjs');
 
 fs.writeFileSync(ENTRY, `
 export { buildableProduction, eraBuildingCatalog } from '../src/game/production';
-export { buildingStockCost } from '../src/game/building-stock-cost';
 `, 'utf8');
 
 esbuild.buildSync({
@@ -63,14 +62,6 @@ esbuild.buildSync({
 const M = require(BUNDLE);
 const rawBuildings = JSON.parse(fs.readFileSync(path.join(GRA, 'data/buildings.json'), 'utf8'));
 const DATA = { buildings: rawBuildings, units: [] };
-
-// AKTUALIZACJA R-TEST-DEBT-MISC-Q5 (2026-11-05): zaszyte koszty (drewno=8, {6,6}, …) były
-// przestarzałe względem data/buildings.json. Pełny stan magazynu liczony z DANYCH przez
-// kanoniczną funkcję kosztu magazynu (buildingStockCost = FALA2 ×2 × mnożnik epoki wejścia).
-function needStock(id) {
-  const b = rawBuildings.find(x => x.id === id);
-  return M.buildingStockCost(b);
-}
 
 let pass = 0, fail = 0;
 function ok(c, m) {
@@ -116,7 +107,7 @@ function catalogEntry(id, techs, ctxOverrides) {
   ok(locked && locked.status === 'locked',
     `Spichlerz eraBuildingCatalog status='locked' bez drewna w magazynie (ma: ${locked && locked.status})`);
 
-  const withStock = { empireResourceStock: needStock('spichlerz') };
+  const withStock = { empireResourceStock: { drewno: 16 } };
   ok(buildIds(techs, withStock).includes('spichlerz'),
     'Spichlerz w buildableProduction z drewnem w magazynie');
   ok(catalogEntry('spichlerz', techs, withStock).status === 'ready',
@@ -131,10 +122,10 @@ function catalogEntry(id, techs, ctxOverrides) {
   // to >=, więc nadmiarowy zapas przechodzi też przy MULT=1). 15 drewna musi zostać 'locked'
   // wyłącznie przy MULT=2 (koszt 16) — przy ewentualnym cofnięciu na MULT=1 (koszt 8) ta sama
   // wartość byłaby 'ready', więc ta asercja łapie regresję z dołu, nie tylko z góry.
-  const belowFala2 = { empireResourceStock: { drewno: needStock('spichlerz').drewno - 1 } };
+  const belowFala2 = { empireResourceStock: { drewno: 15 } };
   const belowFala2Entry = catalogEntry('spichlerz', techs, belowFala2);
   ok(belowFala2Entry && belowFala2Entry.status === 'locked',
-    `Spichlerz eraBuildingCatalog status='locked' z ${needStock('spichlerz').drewno - 1} drewna (poniżej progu ×2 FALA2=${needStock('spichlerz').drewno}, pinuje mnożnik od dołu)`);
+    'Spichlerz eraBuildingCatalog status=\'locked\' z 15 drewna (poniżej progu ×2 FALA2=16, pinuje mnożnik od dołu)');
 }
 
 // ===========================================================================
@@ -145,9 +136,9 @@ function catalogEntry(id, techs, ctxOverrides) {
 {
   const cases = [
     // [id, tech, etykieta (ascii), zapas etykiety (samo >0), koszt_surowce ×2 FALA2 pełny]
-    ['garncarnia', 'Garncarstwo', 'glina', { glina: 1 }, { glina: 1, ...needStock('garncarnia') }],
-    ['stolarnia', 'Obróbka drewna', 'drewno', { drewno: 1 }, { ...needStock('stolarnia') }],
-    ['kamieniarski', 'Murarstwo', 'kamien', { kamien: 1 }, { kamien: 1, ...needStock('kamieniarski') }],
+    ['garncarnia', 'Garncarstwo', 'glina', { glina: 1 }, { glina: 1, drewno: 12 }],
+    ['stolarnia', 'Obróbka drewna', 'drewno', { drewno: 1 }, { drewno: 10 }],
+    ['kamieniarski', 'Murarstwo', 'kamien', { kamien: 1 }, { kamien: 1, drewno: 12 }],
   ];
   for (const [id, tech, label, labelOnlyStock, fullStock] of cases) {
     const techs = [tech];
@@ -183,7 +174,7 @@ function catalogEntry(id, techs, ctxOverrides) {
       'cegielnia w liście z samą Gliną w magazynie (bez pełnego koszt_surowce)');
     ok(catalogEntry('cegielnia', techs, glinaOnly).status === 'locked',
       'cegielnia: catalog locked — Glina jest, ale drewno+kamień ×2 FALA2 nie pokryte');
-    const full = Object.assign({ empireResourceStock: { glina: 1, ...needStock('cegielnia') } }, epoch2);
+    const full = Object.assign({ empireResourceStock: { glina: 1, drewno: 12, kamien: 12 } }, epoch2);
     ok(catalogEntry('cegielnia', techs, full).status === 'ready',
       'cegielnia: catalog ready z Gliną + drewnem(12)+kamieniem(12) w magazynie (koszt_surowce {6,6} ×2 FALA2)');
   }
@@ -199,7 +190,7 @@ function catalogEntry(id, techs, ctxOverrides) {
       'kuznia w liście z samą Rudą w magazynie (bez pełnego koszt_surowce)');
     ok(catalogEntry('kuznia', techs, rudaOnly).status === 'locked',
       'kuznia: catalog locked — Ruda jest, ale drewno+kamień ×2 FALA2 nie pokryte');
-    const full = Object.assign({ empireResourceStock: { ruda: 1, ...needStock('kuznia') } }, epoch2);
+    const full = Object.assign({ empireResourceStock: { ruda: 1, drewno: 12, kamien: 12 } }, epoch2);
     ok(catalogEntry('kuznia', techs, full).status === 'ready',
       'kuznia: catalog ready z Rudą + drewnem(12)+kamieniem(12) w magazynie (koszt_surowce {6,6} ×2 FALA2)');
   }
@@ -217,10 +208,10 @@ function catalogEntry(id, techs, ctxOverrides) {
       'mennica w liście z Targowiskiem + samym Złotem w magazynie (bez pełnego koszt_surowce)');
     ok(catalogEntry('mennica', techs, zlotoOnly).status === 'locked',
       'mennica: catalog locked — Złoto jest, ale drewno+kamień ×2 FALA2 nie pokryte');
-    const fullNoZloto = Object.assign({ empireResourceStock: { ...needStock('mennica') } }, withTarg);
+    const fullNoZloto = Object.assign({ empireResourceStock: { drewno: 12, kamien: 16 } }, withTarg);
     ok(catalogEntry('mennica', techs, fullNoZloto).status === 'locked',
       'mennica: catalog locked — drewno+kamień pokryte, ale BEZ Złota w magazynie (bramka etykiety niezależna od kosztu)');
-    const full = Object.assign({ empireResourceStock: { zloto: 1, ...needStock('mennica') } }, withTarg);
+    const full = Object.assign({ empireResourceStock: { zloto: 1, drewno: 12, kamien: 16 } }, withTarg);
     ok(catalogEntry('mennica', techs, full).status === 'ready',
       'mennica: catalog ready z Targowiskiem + Złotem + drewnem(12)+kamieniem(16) w magazynie (koszt_surowce {6,8} ×2 FALA2)');
   }
@@ -241,7 +232,7 @@ function catalogEntry(id, techs, ctxOverrides) {
       'odlewnia_brazu DOSTĘPNA z samą Rudą w magazynie (bez pełnego koszt_surowce)');
     ok(catalogEntry('odlewnia_brazu', techs, rudaOnly).status === 'locked',
       'odlewnia_brazu: catalog locked — Ruda jest, ale drewno+kamień ×2 FALA2 nie pokryte');
-    const full = Object.assign({ empireResourceStock: { ruda: 1, ...needStock('odlewnia_brazu') } }, epoch2);
+    const full = Object.assign({ empireResourceStock: { ruda: 1, drewno: 12, kamien: 16 } }, epoch2);
     ok(buildIds(techs, full).includes('odlewnia_brazu'),
       'odlewnia_brazu DOSTĘPNA z Rudą + magazynem pełnym');
     ok(catalogEntry('odlewnia_brazu', techs, full).status === 'ready',

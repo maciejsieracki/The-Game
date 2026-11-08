@@ -12,7 +12,6 @@
  * LANE: src/ui/*.  Pokazanie + onEndTurn wpina MASTER (main.ts).
  */
 
-import { createStateFrame } from '../game/frame-memo';
 import {
   createMinimapHud,
   setMinimapTurnLabel,
@@ -26,7 +25,6 @@ import {
 import { naukaHudWordHtml } from './naukaLabel';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
 import { signedPl } from './formatPl';
-import { exactCompactNote, formatCompactNumber, formatCompactSigned, formatFullNumber } from './formatCompactNumber';
 import {
   createSidePanelHud,
   type ContextPanelData,
@@ -57,17 +55,15 @@ import {
   HUD_RIGHT_RAIL_ROW_GAP_PX,
   HUD_TOP_PX,
   HUD_ZOOM_EDGE_PX,
-  TOOLBAR_TOP_PX,
 } from './hudLayout';
 import { showPowerOverlay, hidePowerOverlay, type PowerOverlayData } from './powerOverlayHud';
 import { mocLabel } from './power-labels';
-import { recruitHudLabel } from './recruitHudLabel';
 import { wikiBookIcon } from './icons/wikiBookIcon';
 import { iconHtml, type IconId } from './icons/iconRegistry';
 import { brandIconSvg, civIconSvg } from './icons/brandAssets';
 import { leaderPortraitUrl } from './leaderPortraits';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
-import { chip6cHtml, chip6cSep, formatGrossNet } from './hudChip6c';
+import { chip6cHtml, chip6cSep } from './hudChip6c';
 import { resourceColorClassCss, resourceTextClass } from './resourceColors';
 import { installHudTitleTooltips } from './hudTitleTooltip';
 import { createLeaderBannersHud, type LeaderBannersHudApi } from './leaderBannersHud';
@@ -93,10 +89,6 @@ export interface HudState {
   zlotoRate: number;
   praca: number;
   pracaRate: number;
-  /** R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: PROGNOZA netto Pracy na następny koniec tury (wpływ + nadwyżka
-   *  z ukończonego budynku − utrzymanie ulepszeń), liczona jak tick; `pracaRate` = zrealizowane saldo
-   *  OSTATNIEJ tury. Brak → komórka Praca pokazuje `pracaRate`. */
-  pracaPrognoza?: number;
   /** ZADANIE 1 (Maciej 2026-07-23): Praca/turę odjęta z puli za utrzymanie ulepszeń
    *  surowcowych (civ-wide) w ostatniej turze — do rozbicia w panelu Bilans/ZASOBY IMPERIUM. */
   pracaUpkeep?: number;
@@ -217,17 +209,6 @@ export interface HudState {
   surowceSummary?: string;
   /** true → czerwony/bursztynowy alert: co najmniej jeden surowiec na capie lub w niedoborze. */
   surowceAlert?: boolean;
-  /** R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1: etykiety surowców magazynowanych w niedoborze
-   *  (ratePerTurn<0 — ta sama definicja „niedoboru" co alert chipu „Surowce" w main.ts). */
-  surowceNiedoborLabels?: string[];
-  /** R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: suma BRUTTO produkcji (+ przychód z umów) wszystkich
-   *  magazynowanych surowców/turę (buildEmpireResourceRows.rateProductionPerTurn + diploIn). */
-  surowceBrutto?: number;
-  /** Suma NETTO surowców/turę = ratePerTurn − zapotrzebowanie (obywatele+budynki+wojsko,
-   *  `usage` z resource-usage-breakdown). Te same rekordy co panel Surowców — bez 2. kalkulacji. */
-  surowceNetto?: number;
-  /** Rozbicie per surowiec (tylko magazynowane) do tooltipu i „najgorszego deficytu". */
-  surowceBilans?: Array<{ label: string; brutto: number; netto: number }>;
   /** TEMAT 14 (Maciej 2026-07-24) — dochód z aktywnych tras handlowych (gracz↔obca cyw.) tej tury. */
   handelIncome?: number;
   /** Liczba aktywnych tras handlowych gracza (do tytułu chipa). */
@@ -342,8 +323,6 @@ export interface HudConfig {
   onDiploChip?: (kind: 'sojusz' | 'pakt' | 'wojna') => void;
   /** Panel boczny imperium (klik chipów zasobów). section = np. kultura, econ-praca. */
   onOpenEmpireDetail?: (section?: string) => void;
-  /** R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: przycisk „Rekrutacja” w górnym pasku — panel zamówień dla całej cywilizacji. */
-  onOpenEmpireRecruit?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -569,9 +548,7 @@ const MINI_H = MINIMAP_H_PX;
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'civ-hud-css-w2ring7-util-z';
-// R-WEB-HUD-NUMBER-ABBREV-Q1: `export` WYŁĄCZNIE dla bramki tools/hud-number-abbrev-test.cjs
-// (pomiar układu w Chromium z prawdziwym CSS); zero zmiany zachowania.
-export function ensureStyles(): void {
+function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-hud-css')?.remove();
   document.getElementById('civ-hud-css-w2')?.remove();
@@ -584,7 +561,7 @@ html.civ-ui-zoom-active{overflow:hidden;width:100%;height:100%;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left{left:${HUD_ZOOM_EDGE_PX}px;max-width:min(calc(100vw - 240px),820px);}
 html.civ-ui-zoom-active .civ-hud .hud-right-cluster{right:${HUD_ZOOM_EDGE_PX}px;max-width:min(calc(100vw - 120px),960px);}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-shell{padding:7px 10px;}
-html.civ-ui-zoom-active .civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:nowrap;max-width:100%;}
+html.civ-ui-zoom-active .civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
 /* Etykiety PL (Skarbiec, Armia…) zostają widoczne także przy zoom UI — kanon mockup 6C. */
 html.civ-ui-zoom-active .civ-hud .civ-hud-chip-lbl{font-size:10px;}
@@ -643,118 +620,6 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
    na koncu zachowuje tez kolejnosc kaskady wobec .civ-hud .civ-hud-chip-val. */
 .civ-hud .civ-hud-chip-rate{font-size:10px;color:var(--tg-green);}
 .civ-hud .civ-hud-chip-rate.warn{color:var(--tg-orange);}
-/* R-WEB-HUD-TOPBAR-LAYOUT-A-Q1 (decyzja wlasciciela 2026-11-07: uklad A + prawy baner w jednej linii).
-   LEWY BANER = 6 zetonow (Skarbiec·Praca·Spichlerz·Handel·Nauka·Surowce). Zeton ma dwa pietra:
-   ikona po lewej na cala wysokosc; po prawej mala etykieta / DUZA liczba sumaryczna (--hud-cell-val) /
-   „+brutto / +netto" = 70% liczby sumarycznej (--hud-cell-sm). Tryb wybiera fitHudTopbar() (JS, po renderze):
-   wszystkie 6 w JEDNEJ linii (6 rownych kolumn => pozycje zetonow STALE przy zmianie liczb), a gdy
-   najszerszy zeton sie nie miesci — klasa .hud-left-fallback = 2 rzedy po 3 (ten sam zeton, bez uciec).
-   Baner zajmuje cala szerokosc od lewego marginesu do medalionu Mocy (50vw − 150 px). */
-.civ-hud{--hud-cell-med:30px;--hud-cell-lbl:10px;--hud-cell-val:22px;}
-.civ-hud .civ-hud-banner-left{--hud-k:1;}
-.civ-hud .hud-left-compact{--hud-k:.82;}
-.civ-hud .hud-left-compact.hud-left-tiny{--hud-k:.66;}
-.civ-hud .civ-hud-banner-left{width:calc(50vw - 150px);max-width:calc(50vw - 150px);}
-.civ-hud .civ-hud-banner-left>.civ-hud-banner-shell{width:100%;max-width:100%;box-sizing:border-box;}
-.civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:5px 8px;}
-.civ-hud .hud-chip-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));width:100%;
-  column-gap:6px;row-gap:4px;align-items:center;}
-.civ-hud .hud-left-fallback .hud-chip-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
-.civ-hud .civ-hud-chip-line{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;min-height:0;height:auto;}
-.civ-hud .civ-hud-chip-figs{display:inline-flex;flex-direction:row;align-items:baseline;gap:3px;flex-shrink:0;
-  margin-left:0;height:auto;line-height:1.1;font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));}
-.civ-hud .civ-hud-chip-fsep{color:#968c7c;font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));}
-.civ-hud .civ-hud-chip-figs .civ-hud-chip-rate.neg{color:var(--civ-hud-shortage,#ee6c6c);}
-.civ-hud .civ-hud-chip-figs .civ-hud-chip-rate.zero{color:#968c7c;}
-.civ-hud .civ-hud-chip-figs .civ-hud-chip-net.neg{color:var(--civ-hud-shortage,#ee6c6c);}
-.civ-hud .civ-hud-chip-cell{display:grid;grid-template-columns:calc(var(--hud-cell-med) * var(--hud-k,1)) max-content;justify-content:center;
-  column-gap:6px;align-items:center;width:100%;min-width:0;overflow:hidden;white-space:nowrap;}
-.civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 3px;margin:0;width:100%;}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-med{width:calc(var(--hud-cell-med) * var(--hud-k,1));height:calc(var(--hud-cell-med) * var(--hud-k,1));}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:calc(calc(var(--hud-cell-med) * var(--hud-k,1)) * .57);height:calc(calc(var(--hud-cell-med) * var(--hud-k,1)) * .57);}
-.civ-hud .civ-hud-chip-body{display:flex;flex-direction:column;gap:0;min-width:0;line-height:1.05;}
-.civ-hud .civ-hud-chip-top{display:flex;align-items:baseline;gap:4px;min-width:0;min-height:0;line-height:1.05;}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl{font-size:calc(var(--hud-cell-lbl) * var(--hud-k,1));flex-shrink:1;min-width:0;}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-val{font-size:calc(var(--hud-cell-val) * var(--hud-k,1));min-width:0;line-height:1.05;height:auto;}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-val:empty{display:block;min-height:calc(calc(var(--hud-cell-val) * var(--hud-k,1)) * 1.05);}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-lbl,.civ-hud .civ-hud-chip-k{color:#968c7c;}
-.civ-hud .civ-hud-chip-k{font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));flex-shrink:0;}
-.civ-hud .civ-hud-chip-cell .civ-hud-chip-rate{font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));font-weight:600;}
-.civ-hud .civ-hud-chip-net{font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));font-weight:700;}
-.civ-hud .civ-hud-chip-net.pos{color:var(--tg-green);}
-.civ-hud .civ-hud-chip-net.zero{color:#968c7c;}
-.civ-hud .civ-hud-chip-net.neg{color:var(--civ-hud-shortage,#ee6c6c);}
-/* Rozmiary schodza z oknem (liczba, etykieta, ikona); plusy zawsze = 70% liczby (--hud-cell-sm). */
-@media (max-width:1200px){.civ-hud{--hud-cell-med:24px;--hud-cell-lbl:9px;--hud-cell-val:17px;}
-  .civ-hud .hud-chip-grid{column-gap:4px;}
-  .civ-hud .civ-hud-chip-cell{column-gap:4px;}
-  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:4px 8px;}}
-@media (max-width:1100px){.civ-hud{--hud-cell-med:20px;--hud-cell-lbl:9px;--hud-cell-val:15px;}}
-@media (max-width:900px){.civ-hud{--hud-cell-med:18px;--hud-cell-lbl:8px;--hud-cell-val:14px;}
-  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:4px 5px;}
-  .civ-hud .hud-chip-grid{column-gap:2px;}
-  .civ-hud .civ-hud-chip-cell{column-gap:3px;}
-  .civ-hud .civ-hud-chip-cell.civ-hud-chip-click{padding:1px 0;}
-  .civ-hud .civ-hud-chip-top{gap:3px;}
-  .civ-hud .civ-hud-chip-fsep{display:none;}
-  .civ-hud .civ-hud-chip-figs{flex-direction:column;align-items:flex-start;gap:0;}}
-@media (max-width:700px){.civ-hud{--hud-cell-med:14px;--hud-cell-lbl:7px;--hud-cell-val:12px;}
-  .civ-hud .civ-hud-banner-left .civ-hud-banner-shell{padding:3px 3px;}
-  .civ-hud .civ-hud-chip-cell{column-gap:2px;}
-  .civ-hud .civ-hud-chip-figs{gap:0;}
-  .civ-hud .civ-hud-chip-fsep{display:none;}
-  .civ-hud .civ-hud-chip-figs{flex-direction:column;align-items:flex-start;gap:0;height:auto;}}
-/* Wysoki lewy baner (fallback 2x3 ma ~95–140 px) nie moze wchodzic na pasek narzedzi mapy: fitHudTopbar()
-   ustawia --civ-hud-toolbar-top = dol banera + 8 px, gdy baner siega glebiej niz domyslne TOOLBAR_TOP_PX. */
-html .civ-map-toolbar{top:var(--civ-hud-toolbar-top,${TOOLBAR_TOP_PX}px);}
-/* PRAWY BANER (Armia·Miasta·Obywatele·Kultura·Religia): WSZYSTKIE chipy w JEDNEJ linii (nowrap, bez zawijania
-   ikony do 2. wiersza). Klaster prawy (przyciski Rekrutacja/Civpedia/Menu) jest kolumna: przyciski u gory,
-   baner POD nimi, wyrownany do prawej — baner nie wchodzi na medalion Mocy (max-width = 50vw − 148 px) ani na
-   lewy baner. Rzad obok przyciskow tylko na bardzo szerokich oknach (>2600 px). Gdy chipy nie mieszcza sie
-   w banerze, fitHudTopbar() zaweza je stopniami: .hud-r-tight (mniejsze czcionki/ikony) → .hud-r-stack
-   (liczba nad przyrostem) → .hud-r-min (bez przyrostu; pelny opis w tooltipie). Etykiety schodza <= 1500 px. */
-.civ-hud .civ-hud-banner-right{max-width:max(150px,min(calc(50vw - 148px),900px));}
-.civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:nowrap;row-gap:0;max-width:100%;min-width:0;}
-.civ-hud .hud-right-cluster{flex-direction:column-reverse;align-items:flex-end;gap:6px;}
-.civ-hud .civ-hud-banner-right.civ-hud-banner-shell{padding:4px 8px;}
-.civ-hud .civ-hud-banner-right .civ-hud-chip-med{width:24px;height:24px;}
-.civ-hud .civ-hud-banner-right .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:14px;height:14px;}
-.civ-hud .civ-hud-banner-right .civ-hud-chip-sep{height:20px;margin:0 6px;}
-@media (min-width:2601px){
-  .civ-hud .hud-right-cluster{flex-direction:row;align-items:center;}
-  .civ-hud .civ-hud-banner-right{max-width:max(150px,min(calc(50vw - 521px),780px));}
-  .civ-hud .civ-hud-banner-right .civ-hud-chip-med{width:30px;height:30px;}
-  .civ-hud .civ-hud-banner-right .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:17px;height:17px;}}
-@media (max-width:1500px){
-  .civ-hud .civ-hud-banner-right .civ-hud-chip-lbl{display:none;}
-  .civ-hud .civ-hud-banner-right .civ-hud-chip-sep{margin:0 4px;}}
-@media (max-width:1100px){
-  .civ-hud .civ-hud-banner-right .civ-hud-chip-sep{display:none;}
-  .civ-hud .civ-hud-banner-right .hud-chip-row{gap:8px;}}
-@media (max-width:700px){
-  .civ-hud .civ-hud-banner-right{max-width:max(150px,calc(50vw - 105px));}}
-.civ-hud .civ-hud-banner-right.civ-hud-banner-shell.hud-r-tight{padding:3px 6px;}
-.civ-hud .hud-r-tight .civ-hud-chip{gap:3px;}
-.civ-hud .hud-r-tight .civ-hud-chip-med{width:20px;height:20px;}
-.civ-hud .hud-r-tight .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:12px;height:12px;}
-.civ-hud .hud-r-tight .civ-hud-chip-val{font-size:13px;}
-.civ-hud .hud-r-tight .civ-hud-chip-rate{font-size:9px;}
-.civ-hud .hud-r-tight .civ-hud-chip-sep{display:none;}
-.civ-hud .hud-r-tight .hud-chip-row{gap:6px;}
-.civ-hud .hud-r-stack .civ-hud-chip{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:3px;row-gap:0;align-items:center;}
-.civ-hud .hud-r-stack .civ-hud-chip-med{grid-row:1 / span 2;grid-column:1;}
-.civ-hud .hud-r-stack .civ-hud-chip-val{grid-column:2;grid-row:1;line-height:1.05;font-size:12px;}
-.civ-hud .hud-r-stack .civ-hud-chip-rate{grid-column:2;grid-row:2;line-height:1.05;font-size:9px;}
-.civ-hud .hud-r-stack .hud-chip-row{gap:5px;}
-.civ-hud .hud-r-min .civ-hud-chip-rate{display:none;}
-.civ-hud .hud-r-min .civ-hud-chip{display:inline-flex;}
-.civ-hud .hud-r-min .civ-hud-chip-med{width:16px;height:16px;}
-.civ-hud .hud-r-min .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:10px;height:10px;}
-.civ-hud .hud-r-min .civ-hud-chip-val{font-size:11px;}
-.civ-hud .hud-r-min .hud-chip-row{gap:4px;}
-/* Ostatnia deska ratunku (okno 640 px, najwieksze liczby): przewijanie poziome zamiast zawijania ikony. */
-@media (max-width:700px){
-  .civ-hud .civ-hud-banner-right .hud-chip-row{overflow-x:auto;scrollbar-width:none;}}
 .civ-hud .hud-right{display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;flex-shrink:0;}
 .civ-hud .hud-meta{text-align:right;}
 .civ-hud .b-menu{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
@@ -857,16 +722,6 @@ html.civ-ui-zoom-active .civ-hud-util-dock{
 .civ-hud .power-center .p-recruit-val{font-size:15px;color:#f4e6a8;font-weight:700;font-family:var(--civ-font-title);}
 .civ-hud .power-center .p-lbl{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#a08030;}
 .civ-hud .power-center .p-sub{display:none;}
-/* R-WEB-HUD-GROSS-NET-REST-Q1: zwarty medalion Mocy ≤700 px (po regułach bazowych — kolejność kaskady). */
-@media (max-width:700px){
-  .civ-hud .power-center{min-width:150px;padding:8px 8px 6px;}
-  .civ-hud .power-center .p-epoch{font-size:10px;margin-bottom:4px;}
-  .civ-hud .power-center .p-row{gap:5px;}
-  .civ-hud .power-center .p-ic{width:30px;height:30px;}
-  .civ-hud .power-center .p-ic svg{width:20px;height:20px;}
-  .civ-hud .power-center .p-ic.p-ic-civ svg{width:20px;height:20px;}
-  .civ-hud .power-center .p-ic.p-ic-leader .p-ic-portrait{width:30px;height:30px;}
-  .civ-hud .power-center .p-val-num{font-size:16px;}}
 .civ-hud.is-city-view .civ-hud-banner-left,
 .civ-hud.is-city-view .civ-hud-banner-right,
 .civ-hud.is-city-view .power-center{display:none!important;}
@@ -888,13 +743,7 @@ html.civ-ui-zoom-active .civ-hud-util-dock{
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
-  // R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1: niedobór = czerwona czcionka (--tg-red, rozjaśniona do AA
-  // na ciemnym pasku: #c84040 daje ~3.9:1 < 4.5:1). Reguła PO palecie, swoistość (0,4,0) > (0,2,0).
-  const shortCss = '.civ-hud{--civ-hud-shortage:#ee6c6c;}\n'
-    + '.civ-hud .civ-hud-chip.civ-hud-chip-short .civ-hud-chip-val,'
-    + '.civ-hud .civ-hud-chip.civ-hud-chip-short .civ-hud-chip-lbl,'
-    + '.civ-hud .civ-hud-chip.civ-hud-chip-short .civ-hud-chip-rate{color:var(--civ-hud-shortage);}\n';
-  s.textContent = css + '\n' + resourceColorClassCss('.civ-hud') + '\n' + shortCss;
+  s.textContent = css + '\n' + resourceColorClassCss('.civ-hud') + '\n';
   document.head.appendChild(s);
 }
 
@@ -913,40 +762,14 @@ function res(icon: string, val: string, lbl: string, rate?: string, rateO?: bool
 
 function signed(n: number): string { return signedPl(n); }
 
-/** R-WEB-HUD-NUMBER-ABBREV-Q1: value/rate chipu w formie skróconej („20,9k", „+1,3k") + nota „Dokładnie…". */
-function cn(value: number | undefined, rate?: number): { value: string; rate?: string; exact: string } {
-  return {
-    value: formatCompactNumber(value),
-    ...(rate !== undefined ? { rate: formatCompactSigned(rate) } : {}),
-    exact: exactCompactNote(value, rate),
-  };
-}
-
-/** R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: ton koloru linii „netto" (ujemne czerwone, dodatnie zielone). */
-function netTone(n: number): 'pos' | 'neg' | 'zero' {
-  const r = Math.round(n);
-  return r < 0 ? 'neg' : r > 0 ? 'pos' : 'zero';
-}
-
-/** Najgorszy (najbardziej ujemny) bilans netto spośród surowców; undefined gdy żaden nie jest < 0. */
-function surowceNajgorszy(s: HudState): { label: string; netto: number } | undefined {
-  let worst: { label: string; netto: number } | undefined;
-  for (const r of s.surowceBilans ?? []) {
-    if (r.netto < 0 && (!worst || r.netto < worst.netto)) worst = { label: r.label, netto: r.netto };
-  }
-  return worst;
-}
-
 /** Pierścień Nauki: postęp bieżącej tech (nie epoki). buildHudState ustawia researchProgress. */
 function resolveResearchProgress(s: HudState): number {
   const p = s.researchProgress ?? s.epokaPostep ?? 0;
   return Math.max(0, Math.min(1, p));
 }
 
-/** Spichlerz: `zywnoscLabel` to liczba w stringu (main.ts: String(foodReserve)); nienumeryczna → 0. */
-function foodHudValue(s: HudState): number | undefined {
-  const n = Number(s.zywnoscLabel);
-  return Number.isFinite(n) ? n : undefined;
+function formatFoodHudLabel(s: HudState): string {
+  return s.zywnoscLabel;
 }
 
 /** Odmiana „tura" w bierniku ("za 1 turę" / "za 2 tury" / "za 5 tur"). */
@@ -989,9 +812,7 @@ function skarbiecChipTitle(s: HudState): string {
   const utrzymanieBudynkow = s.bogactwoUtrzymanieBudynkow ?? 0;
   const utrzymanieJednostek = s.bogactwoUtrzymanieJednostek ?? 0;
   const netto = s.bogactwoRate ?? 0;
-  const short = hudGoldShortage(s) ? ' · ⚠ Zaczyna brakować pieniędzy (czerwony)' : '';
-  return `${base}${short}: BRUTTO (wpływy przed kosztami) ${signed(wplywyBrutto)} → NETTO (po utrzymaniu, zmiana stanu na turę) ${signed(netto)} pkt Pieniądza`
-    + ` · Podatek i budynki: ${signed(daninaIBudynki)} pkt Pieniądza`
+  return `${base}: Podatek i budynki: ${signed(daninaIBudynki)} pkt Pieniądza`
     + ` · Handel ze szlaków: ${signed(handel)} pkt Pieniądza`
     + ` · Utrzymanie budynków: ${signed(-utrzymanieBudynkow)} pkt Pieniądza`
     + ` · Utrzymanie jednostek: ${signed(-utrzymanieJednostek)} pkt Pieniądza`
@@ -1039,12 +860,7 @@ function pracaChipTitle(s: HudState): string {
   const autoUlepszenia = s.pracaAutoUlepszeniaKoszt ?? 0;
   const cudaNaMapie = s.pracaCudaKoszt ?? 0;
   const wplywBrutto = netto + utrzymanie + autoUlepszenia + cudaNaMapie;
-  const lead = s.pracaPrognoza !== undefined
-    ? `BRUTTO ${signed(s.pracaPrognoza + utrzymanie)} → NETTO ${signed(s.pracaPrognoza)} pkt Pracy/turę (PROGNOZA następnej tury: wpływ z miast + nadwyżka z ukończonego budynku − utrzymanie ulepszeń; bez auto-ulepszeń i Cudów na mapie, których koszt wychodzi dopiero w ticku)`
-      + ` · Ostatnia tura (zrealizowane): BRUTTO ${signed(wplywBrutto)} → NETTO ${signed(netto)}`
-    : `BRUTTO ${signed(wplywBrutto)} → NETTO ${signed(netto)} pkt Pracy/turę`;
-  return `${base}: ${lead}`
-    + ` · Wpływ do puli imperium: ${signed(wplywBrutto)} pkt Pracy`
+  return `${base}: Wpływ do puli imperium: ${signed(wplywBrutto)} pkt Pracy`
     + ` · Utrzymanie ulepszeń surowcowych: ${signed(-utrzymanie)} pkt Pracy`
     + ` · Auto-ulepszenia AI (gracz): ${signed(-autoUlepszenia)} pkt Pracy`
     + ` · Cuda na mapie: ${signed(-cudaNaMapie)} pkt Pracy`
@@ -1064,7 +880,7 @@ function naukaChipTitle(s: HudState): string {
   const rate = s.naukaRate ?? 0;
   return `Nauka — badania technologiczne`
     + ` · Duża liczba: ${stock} pkt Nauki (skumulowane do bieżącej technologii)`
-    + ` · BRUTTO ${signed(rate)} → NETTO ${signed(rate)} pkt Nauki/turę (brak dziś drenaży Nauki)`
+    + ` · Zielone +N: ${signed(rate)} pkt Nauki/turę (brutto = netto, brak dziś drenaży Nauki)`
     + ` · Kliknij po szczegóły.`;
 }
 
@@ -1076,8 +892,7 @@ function spichlerzChipTitle(s: HudState): string {
   const koszt = s.zywnoscKosztWojska ?? 0;
   let title = `Spichlerz — magazyn centralny żywności`
     + ` · W magazynie: ${s.zywnoscLabel}${maxPart} 🍞`
-    + ` · BRUTTO (nadwyżka miast → centrala): ${signed(wplyw)} 🍞/turę → NETTO (po deficytach miast i armii, zmiana magazynu): ${signed(netto)} 🍞/turę`
-    + ` · Deficyty miast pokryte z magazynu: ${signed(-Math.max(0, wplyw - koszt - netto))} 🍞/turę`
+    + ` · Przyrost zapasów (prognoza): ${signed(netto)} 🍞/turę`
     + ` · Nadwyżka miast → centrala: ${signed(wplyw)} 🍞/turę`
     + ` · Koszt armii: ${signed(-koszt)} 🍞/turę`;
   // P-SPICHLERZ-ZERO-MYLACE: liczba magazynu sama w sobie nie mówi, czy zero jest zdrowe
@@ -1088,15 +903,14 @@ function spichlerzChipTitle(s: HudState): string {
     const n = s.zywnoscMiastNiedokarmionych!;
     title += ` · ⚠ Realny niepokryty deficyt: ${n} ${miastoNiedokarmioneWordHud(n)}`;
   }
-  if (hudFoodShortage(s)) title += ` · ⚠ Zaczyna brakować żywności (czerwony)`;
   if (s.glodWojska) title += ` · Głód wojska: atrycja HP trwa!`;
   else if (s.zywnoscKarencjaZaTur != null && s.zywnoscKarencjaZaTur > 0) {
     title += ` · Głód wojska za ${s.zywnoscKarencjaZaTur} ${slowoTuraHud(s.zywnoscKarencjaZaTur)} — magazyn ujemny!`;
   }
   if (s.uchwalaSolAktywna) {
     const n = s.uchwalaSolSpichlerzIICount ?? 1;
-    title += ` · Uchwała „Solanka zapasowa" (Spichlerz Królewski · Sól): armia poza terytorium 2→1 🍞/turę`
-      + (n > 1 ? ` · ${n}× Spichlerz Królewski` : '');
+    title += ` · Uchwała „Solanka zapasowa" (Spichlerz II · Sól): armia poza terytorium 2→1 🍞/turę`
+      + (n > 1 ? ` · ${n}× Spichlerz II` : '');
   }
   return `${title} · Kliknij po szczegóły.`;
 }
@@ -1116,7 +930,7 @@ function armiaChipTitle(s: HudState): string {
   // regen/turn (the latter stays in the tooltip, it moved off the chip itself).
   let title = `Armia — wojsko i rekruci`
     + ` · Jednostki na mapie: ${units}`
-    + ` · Pula rekrutów: ${typeof s.rekruci === 'number' && Number.isFinite(s.rekruci) ? formatCompactNumber(s.rekruci) : (s.rekruciLabel ?? '—')}`
+    + ` · Pula rekrutów: ${s.rekruciLabel ?? '—'}`
     + ` · Można zwerbować: ${rekrutEkw} pełnych jednostek z całej puli`
     + (s.kosztJednostki != null ? ` (koszt ${s.kosztJednostki} rekr./szt.)` : '')
     + ` · Odnowa puli: ${signed(regen)} rekr./turę`;
@@ -1130,7 +944,7 @@ function miastaChipTitle(s: HudState): string {
   const rate = s.ludnoscRate ?? 0;
   return `Miasta — osiedla imperium`
     + ` · Duża liczba: ${s.osiedla} miast`
-    + ` · ${formatGrossNet(rate, rate, 'obyw./turę')} (przyrost ludności łącznie)`
+    + ` · Zielone +N: ${signed(rate)} obyw./turę (przyrost ludności łącznie)`
     + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
 }
 
@@ -1140,7 +954,7 @@ function obywateleChipTitle(s: HudState): string {
   const rate = s.ludnoscRate ?? 0;
   return `Obywatele — łączna populacja imperium`
     + ` · Duża liczba: ${s.ludnosc} obywateli (suma populacji wszystkich miast gracza)`
-    + ` · ${formatGrossNet(rate, rate, 'obyw./turę')} (HUD nie rozdziela przyrostu i strat ludności — pokazuje saldo)`
+    + ` · Zielone +N: ${signed(rate)} obyw./turę (przyrost ludności netto)`
     + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
 }
 
@@ -1149,7 +963,7 @@ function kulturaChipTitle(s: HudState): string {
   const rate = s.kulturaRate ?? 0;
   return `Kultura — wpływ kulturowy imperium`
     + ` · Duża liczba: ${stock} pkt Kultury (zapas imperium)`
-    + ` · ${formatGrossNet(rate, rate, 'pkt Kultury/turę')} (brak dziś drenaży Kultury)`
+    + ` · Zielone +N: ${signed(rate)} pkt Kultury/turę (przyrost netto)`
     + ` · Kliknij po szczegóły.`;
 }
 
@@ -1159,42 +973,8 @@ function religiaChipTitle(s: HudState): string {
   const rel = s.stateReligion ? ` (${s.stateReligion})` : '';
   return `Religia — wierni religii państwa${rel}`
     + ` · Duża liczba: ${stock} wiernych (łącznie w imperium)`
-    + ` · ${formatGrossNet(rate, rate, 'wiernych/turę')} (brak dziś drenaży wiernych; szerzenie łącznie)`
+    + ` · Zielone +N: ${signed(rate)} wiernych/turę (szerzenie netto)`
     + ` · Kliknij po szczegóły.`;
-}
-
-/**
- * R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1 — „zaczyna brakować" (tylko prezentacja, bez zmian logiki gry).
- * Okno zapasu: bilans netto < 0 i zapas starcza na <= tyle tur (lub zapas <= 0). Gra nie ma
- * istniejącego progu „bankructwa" złota; dla żywności reużywamy istniejących ostrzeżeń o głodzie.
- */
-export const HUD_SHORTAGE_RUNWAY_TURNS = 5;
-
-function runwayShort(stock: number, rate: number): boolean {
-  // Zapas ujemny = zawsze niedobór. Bilans >= 0 (także 0 po floor() z dodatniego ułamka, np. +0,6)
-  // NIE jest niedoborem, nawet przy zapasie 0 (start gry). Zapas 0 + bilans < 0 = niedobór.
-  if (stock < 0) return true;
-  if (rate >= 0) return false;
-  return stock <= 0 || stock / -rate <= HUD_SHORTAGE_RUNWAY_TURNS;
-}
-
-/** Skarbiec: zapas < 0 albo ujemny bilans netto wyczerpujący zapas w <= N turach. */
-export function hudGoldShortage(s: HudState): boolean {
-  return runwayShort(s.bogactwo, s.bogactwoRate ?? 0);
-}
-
-/** Spichlerz: istniejące ostrzeżenia o głodzie (głód wojska, karencja, niedokarmione miasta) lub okno zapasu. */
-export function hudFoodShortage(s: HudState): boolean {
-  if (s.glodWojska) return true;
-  if ((s.zywnoscKarencjaZaTur ?? 0) > 0) return true;
-  if ((s.zywnoscMiastNiedokarmionych ?? 0) > 0) return true;
-  const stock = Number(s.zywnoscLabel);
-  return runwayShort(Number.isFinite(stock) ? stock : 0, s.zywnoscRate ?? 0);
-}
-
-/** Surowce: choć jeden magazynowany surowiec w niedoborze. */
-export function hudResourceShortage(s: HudState): boolean {
-  return (s.surowceNiedoborLabels?.length ?? 0) > 0;
 }
 
 function surowceChipTitle(s: HudState): string {
@@ -1204,21 +984,6 @@ function surowceChipTitle(s: HudState): string {
   if (s.surowceAlert) {
     title += ` · ⚠ Alert: co najmniej jeden surowiec na limicie magazynu lub w niedoborze`;
   }
-  if (hudResourceShortage(s)) {
-    title += ` · Niedobór (czerwony): ${s.surowceNiedoborLabels!.join(', ')}`;
-  }
-  // R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: BRUTTO = suma produkcji (+ przychód z umów) / turę,
-  // NETTO = po odjęciu zużycia (obywatele, budynki, wojsko) i umów wychodzących; przy deficycie
-  // komórka pokazuje NAJGORSZY surowiec (linia „najgorszy"), nie sumę, która maskuje brak.
-  if (s.surowceBrutto !== undefined || s.surowceNetto !== undefined) {
-    title += ` · BRUTTO ${signed(s.surowceBrutto ?? 0)} → NETTO ${signed(s.surowceNetto ?? 0)} szt./turę (suma surowców)`;
-    const worst = surowceNajgorszy(s);
-    if (worst) title += ` · Najgorszy bilans: ${worst.label} ${signed(worst.netto)}/turę`;
-    const lines = (s.surowceBilans ?? [])
-      .filter(r => r.brutto !== 0 || r.netto !== 0)
-      .map(r => `${r.label}: brutto ${signed(r.brutto)}, netto ${signed(r.netto)}`);
-    if (lines.length > 0) title += ` · ${lines.join('; ')}`;
-  }
   return `${title} · Kliknij po szczegóły.`;
 }
 
@@ -1226,7 +991,7 @@ function handelChipTitle(s: HudState): string {
   const income = s.handelIncome ?? 0;
   const routes = s.handelRouteCount ?? 0;
   return `Handel — wymiana z obcymi cywilizacjami`
-    + ` · BRUTTO: ${signed(income)} pkt Pieniądza/turę (dochód z ${routes} aktywnych tras handlowych) → NETTO: ${signed(income)} (trasy nie mają kosztów; ten dochód jest już wliczony we wpływy Skarbca)`
+    + ` · Liczba na chipie: ${signed(income)} pkt Pieniądza/turę (dochód z ${routes} aktywnych tras handlowych)`
     + ` · Kliknij po szczegóły.`;
 }
 
@@ -1306,127 +1071,89 @@ function withChipRangeActive(html: string, active: boolean): string {
 // tylko wewnętrznie w tym module, jak dotąd).
 export function renderBarD1B(s: HudState): string {
   const powerIconHtml = powerCenterIconHtml(s);
-  // R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: STAŁY układ 3+3 (siatka CSS, 3 kolumny o stałej
-  // szerokości, zero zawijania zależnego od liczb): góra Skarbiec · Praca · Spichlerz,
-  // dół Handel · Nauka · Surowce. Każda komórka: linia 1 = etykieta + zapas, linia 2 =
-  // „brutto" (przychód przed kosztami), linia 3 = „netto" (po wszystkich opłatach = realna
-  // zmiana stanu na następną turę). Wartości z TYCH SAMYCH pól HudState co dotąd/panel.
-  const skarbiecBrutto = s.bogactwoWplywyBrutto ?? s.bogactwoRate ?? 0;
-  const skarbiecNetto = s.bogactwoRate ?? skarbiecBrutto;
-  // Praca: netto = PROGNOZA następnego końca tury (gdy dostępna), brutto = prognoza + utrzymanie ulepszeń
-  // (auto-ulepszenia i Cuda na mapie zależą od puli w ticku i nie wchodzą do prognozy).
-  const pracaNetto = s.pracaPrognoza ?? (s.pracaRate ?? 0);
-  const pracaBrutto = s.pracaPrognoza !== undefined ? s.pracaPrognoza + (s.pracaUpkeep ?? 0) : pracaWplywBrutto(s);
-  const foodBrutto = s.zywnoscWplywMiast ?? s.zywnoscRate ?? 0;
-  const foodNetto = s.zywnoscRate ?? 0;
-  const handelBrutto = s.handelIncome ?? 0;
-  const naukaStawka = s.naukaRate ?? 0;
-  const surBrutto = s.surowceBrutto ?? 0;
-  // Surowce: brutto i netto to TA SAMA wielkosc (suma po surowcach), wiec netto = suma netto; deficyt
-  // pojedynczego surowca sygnalizuje czerwony chip + ⚠ + tooltip („Najgorszy bilans" i lista per surowiec).
-  const surNetto = s.surowceNetto ?? 0;
-  // R-WEB-HUD-TOPBAR-NO-LABELS-Q1: w banerze tylko liczby (bez słów); wyjaśnienie w tooltipie komórki.
-  const NET_HINT = 'Przyrost: pierwsza liczba = BRUTTO (przychód przed kosztami), druga = NETTO (po wszystkich opłatach = zmiana stanu na turę)';
-  const row1: string[] = [
+  const leftHeadChips: string[] = [
     chip6cHtml({
       iconId: 'res-treasury',
       label: 'Skarbiec',
-      value: formatCompactNumber(s.bogactwo),
-      rate: formatCompactSigned(skarbiecBrutto),
-      net: formatCompactSigned(skarbiecNetto),
-      netTone: netTone(skarbiecNetto),
-      rateTone: netTone(skarbiecBrutto),
-      netHint: NET_HINT,
-      exact: exactCompactNote(s.bogactwo, skarbiecBrutto),
+      value: String(s.bogactwo),
       valClass: ` ${resourceTextClass('skarbiec')}`,
-      shortage: hudGoldShortage(s),
+      // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: żeton pokazuje WPŁYWY BRUTTO (przed
+      // utrzymaniem budynków/jednostek), nie `bogactwoRate` (netto) — redukcja do
+      // netto zostaje wyłącznie w rozpisce `skarbiecChipTitle()` i w panelu.
+      rate: signed(s.bogactwoWplywyBrutto ?? s.bogactwoRate ?? 0),
       act: 'skarbiec',
       title: skarbiecChipTitle(s),
     }),
+    chip6cSep(),
     chip6cHtml({
       iconId: 'res-work',
       label: 'Praca',
-      value: formatCompactNumber(s.praca),
-      rate: formatCompactSigned(pracaBrutto),
-      net: formatCompactSigned(pracaNetto),
-      netTone: netTone(pracaNetto),
-      rateTone: netTone(pracaBrutto),
-      netHint: NET_HINT,
-      exact: exactCompactNote(s.praca, pracaBrutto),
+      value: String(s.praca),
       valClass: ` ${resourceTextClass('praca')}`,
+      // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: żeton pokazuje WPŁYW BRUTTO do puli
+      // imperium (przed utrzymaniem/auto-ulepszeniami/Cudami na mapie), nie
+      // `pracaRate` (netto) — redukcja do netto zostaje wyłącznie w rozpisce
+      // `pracaChipTitle()` i w panelu. Ostrzeżenie (`rateWarn`) nadal patrzy na
+      // netto — to realny sygnał, że pula SIĘ KURCZY, niezależnie od brutto.
+      rate: signed(pracaWplywBrutto(s)),
+      rateWarn: s.pracaRate < 0,
       act: 'praca',
       title: pracaChipTitle(s),
     }),
+    chip6cSep(),
     chip6cHtml({
       iconId: 'res-food',
       label: 'Spichlerz',
-      value: formatCompactNumber(foodHudValue(s)),
-      rate: formatCompactSigned(foodBrutto),
-      net: formatCompactSigned(foodNetto),
-      netTone: netTone(foodNetto),
-      rateTone: netTone(foodBrutto),
-      netHint: NET_HINT,
-      exact: exactCompactNote(foodHudValue(s), foodBrutto),
+      value: formatFoodHudLabel(s),
       valClass: ` ${resourceTextClass('zywnosc')}`,
+      rate: signed(s.zywnoscRate ?? 0),
       // P-SPICHLERZ-ZERO-MYLACE: chip czerwony też przy niedokarmionych miastach, nie
       // tylko przy głodzie wojska/ujemnym tempie — sam kolor ma sygnalizować deficyt.
-      // (`hudFoodShortage` obejmuje `zywnoscMiastNiedokarmionych > 0`; dawny `rateWarn` na linii
-      // „brutto" zastąpiła czerwona linia „netto" + klasa shortage całego chipu.)
-      shortage: hudFoodShortage(s),
+      // / EN: chip turns red for unfed cities too, not only army hunger/negative rate —
+      // the color alone should signal a deficit.
+      rateWarn: !!(s.glodWojska || (s.zywnoscRate ?? 0) < 0 || (s.zywnoscMiastNiedokarmionych ?? 0) > 0),
       act: 'spichlerz',
       title: spichlerzChipTitle(s),
     }),
-  ];
-  const row2: string[] = [
-    chip6cHtml({
-      iconId: 'res-trade',
-      label: 'Handel',
-      value: '',   // dochód z tras to brutto=netto (brak kosztów tras) — w liniach brutto/netto
-      rate: formatCompactSigned(handelBrutto),
-      net: formatCompactSigned(handelBrutto),
-      netTone: netTone(handelBrutto),
-      rateTone: netTone(handelBrutto),
-      netHint: NET_HINT,
-      exact: exactCompactNote(undefined, handelBrutto),
-      act: 'handel',
-      title: handelChipTitle(s),
-    }),
+    chip6cSep(),
     chip6cHtml({
       iconId: 'res-science',
       label: 'Nauka',
-      value: formatCompactNumber(Math.floor(s.nauka)),
-      rate: formatCompactSigned(naukaStawka),
-      net: formatCompactSigned(naukaStawka),
-      netTone: netTone(naukaStawka),
-      rateTone: netTone(naukaStawka),
-      netHint: NET_HINT,
-      exact: exactCompactNote(Math.floor(s.nauka), naukaStawka),
+      value: String(Math.floor(s.nauka)),
+      rate: signed(s.naukaRate ?? 0),
       medVariant: 'science',
       valClass: ` ${resourceTextClass('nauka')}`,
       act: 'nauka',
       title: naukaChipTitle(s),
       researchProgress: resolveResearchProgress(s),
     }),
-    chip6cHtml({
-      iconId: 'res-resources',
-      label: 'Surowce',
-      value: s.surowceAlert ? '⚠' : '',   // bez liczby (Maciej 2026-07-24); ⚠ = alert magazynu/niedoboru
-      rate: formatCompactSigned(surBrutto),
-      net: formatCompactSigned(surNetto),
-      netTone: netTone(surNetto),
-      rateTone: netTone(surBrutto),
-      netHint: NET_HINT,
-      shortage: hudResourceShortage(s),
-      act: 'surowce',
-      title: surowceChipTitle(s),
-    }),
+    chip6cSep(),
   ];
-  const leftChipsHtml = '<div class="hud-chip-grid">' + row1.join('') + row2.join('') + '</div>';
+  // DYSPOZYCJA 85: Handel ZA Surowcami — grupa tail, żeby przy wąskim oknie nie lądował pod Skarbcem.
+  const leftTailChips = chip6cHtml({
+    iconId: 'res-resources',
+    label: 'Surowce',
+    value: '',   // Maciej 2026-07-24: bez liczby na chipie (był „9/9") — sam żeton + klik po magazyn
+    rate: s.surowceAlert ? '⚠' : undefined,
+    rateWarn: !!s.surowceAlert,
+    act: 'surowce',
+    title: surowceChipTitle(s),
+  })
+    + chip6cSep()
+    + chip6cHtml({
+      iconId: 'res-trade',
+      label: 'Handel',
+      value: signed(s.handelIncome ?? 0),
+      act: 'handel',
+      title: handelChipTitle(s),
+    });
+  const leftChipsHtml = leftHeadChips.join('')
+    + `<span class="hud-chip-tail-group">${leftTailChips}</span>`;
   const rightChips: string[] = [
     chip6cHtml({
       iconId: 'tb-army',
       label: 'Armia',
-      ...cn(s.armyUnitsOnMap ?? 0, s.rekrutEkw ?? 0),
+      value: String(s.armyUnitsOnMap ?? 0),
       // P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): "+" pokazywał surową odnowę puli
       // rekrutów/turę (mylące dla dużej puli — czytało się jak liczba rekrutów, nie jak
       // ile wojska da się wystawić). Teraz pokazuje PEŁNE jednostki możliwe do zwerbowania
@@ -1437,6 +1164,7 @@ export function renderBarD1B(s: HudState): string {
       // recruitable from the whole empire pool (rekrutEkw = floor(rekruci / kosztJednostki),
       // main.ts, same source as the "Rekruci (pula werbu)" panel). Regen/turn stays in the
       // tooltip.
+      rate: signed(s.rekrutEkw ?? 0),
       rateWarn: !!s.glodWojska,
       act: 'armia',
       title: armiaChipTitle(s),
@@ -1451,7 +1179,8 @@ export function renderBarD1B(s: HudState): string {
       // same icon for two different numbers.
       iconId: 'res-settlements',
       label: 'Miasta',
-      ...cn(s.osiedla, s.ludnoscRate ?? 0),
+      value: String(s.osiedla),
+      rate: signed(s.ludnoscRate ?? 0),
       act: 'miasta',
       title: miastaChipTitle(s),
     }),
@@ -1459,7 +1188,8 @@ export function renderBarD1B(s: HudState): string {
     chip6cHtml({
       iconId: 'res-population',
       label: 'Obywatele',
-      ...cn(s.ludnosc, s.ludnoscRate ?? 0),
+      value: String(s.ludnosc),
+      rate: signed(s.ludnoscRate ?? 0),
       act: 'ludnosc',
       title: obywateleChipTitle(s),
     }),
@@ -1472,8 +1202,9 @@ export function renderBarD1B(s: HudState): string {
     withChipRangeActive(chip6cHtml({
       iconId: 'res-culture',
       label: 'Kultura',
-      ...cn(Math.floor(s.kultura), s.kulturaRate ?? 0),
+      value: String(Math.floor(s.kultura)),
       valClass: ` ${resourceTextClass('kultura')}`,
+      rate: signed(s.kulturaRate ?? 0),
       act: 'kultura',
       title: kulturaChipTitle(s),
     }), cfg?.minimapLayers?.isCultureActive?.() ?? false),
@@ -1481,36 +1212,28 @@ export function renderBarD1B(s: HudState): string {
     withChipRangeActive(chip6cHtml({
       iconId: 'res-religion',
       label: 'Religia',
-      ...cn(Math.round(s.religionStock ?? 0), s.religionRate ?? 0),
+      value: String(Math.round(s.religionStock ?? 0)),
       valClass: ` ${resourceTextClass('religia')}`,
+      rate: signed(s.religionRate ?? 0),
       act: 'religia',
       title: religiaChipTitle(s),
     }), cfg?.minimapLayers?.isReligionActive?.() ?? false),
   ];
 
-  // R-WEB-HUD-RECRUITS-NUMBER-ABBREV-Q1: liczba rekrutów skracana wspólnym formatterem k/M
-  // (jak reszta HUD), pełna wartość w tooltipie; bez liczby → stara etykieta (fallback).
-  const recruitNum = typeof s.rekruci === 'number' && Number.isFinite(s.rekruci) ? s.rekruci : undefined;
-  const rekrLabel = recruitNum !== undefined ? formatCompactNumber(recruitNum) : (s.rekruciLabel ?? '—');
-  const rekrFull = recruitNum !== undefined ? formatFullNumber(recruitNum) : rekrLabel;
-  const recruitCount = Number.isSafeInteger(s.rekrutEkw) && (s.rekrutEkw ?? 0) > 0 ? s.rekrutEkw : 0;
-  const recruitCostTitle = s.kosztJednostki != null
-    ? ` · Koszt jednej jednostki: ${s.kosztJednostki} rekrutów`
-    : '';
-  const recruitTitle = `Manpower: ${rekrFull} · Możesz zwerbować ${recruitCount} pełnych jednostek${recruitCostTitle} · Kliknij po szczegóły.`;
+  const rekrLabel = s.rekruciLabel ?? '—';
 
-  let html = '<div class="civ-hud-banner-left"><div class="civ-hud-banner-shell">'
-    + leftChipsHtml + '</div></div>';
+  let html = '<div class="civ-hud-banner-left"><div class="civ-hud-banner-shell"><div class="hud-chip-row">'
+    + leftChipsHtml + '</div></div></div>';
 
   const eraGateTitle = s.eraGateSummary ? ' title="' + escHtml(s.eraGateSummary) + '"' : '';
   const eraGateCls = s.eraGateSummary ? ' p-epoch-gated' : '';
   html += '<div class="power-center" data-act="power" title="Moc imperium — siła absolutna państwa · Duża liczba: punkty Mocy (łączna siła imperium) · Kliknij po szczegóły.">'
     + '<div class="p-epoch' + eraGateCls + '"' + eraGateTitle + '>' + escHtml(s.epoka) + '</div>'
     + '<div class="p-row">'
-    + `<span class="p-side p-side-left" data-act="rekruci" title="${escHtml(recruitTitle)}">`
+    + `<span class="p-side p-side-left" data-act="rekruci" title="Rekruci — pula rekrutacji (Manpower) · Liczba: aktualna pula werbu do szkolenia wojsk · Kliknij po szczegóły.">`
     + '<span class="p-stack">'
     + recruitSideIconHtml()
-    + `<span class="p-recruit-val">${recruitHudLabel(rekrLabel, s.rekrutEkw)}</span>`
+    + `<span class="p-recruit-val">${rekrLabel}</span>`
     + '</span></span>'
     + `<span class="p-side p-side-center">${powerIconHtml}</span>`
     + `<span class="p-side p-side-right">`
@@ -1534,10 +1257,6 @@ export function renderBarD1B(s: HudState): string {
       + '<span aria-hidden="true">⛶</span></button>'
     : '';
   const showMapZoomDock = !mapChromeSuppressed;
-  const recruitBtn = (!mapChromeSuppressed && cfg?.onOpenEmpireRecruit)
-    ? '<button type="button" class="b-wiki" data-act="empire-recruit" aria-label="Rekrutacja — cała cywilizacja" '
-      + 'title="Rekrutacja wojsk dla całej cywilizacji — zamówienie rozkładane po miastach"><span>Rekrutacja</span></button>'
-    : '';
   const menuBtn = (!mapChromeSuppressed && cfg?.onOpenMenu)
     ? '<button type="button" class="b-menu" data-act="menu" title="Menu główne">'
       + (menuIc || '') + '<span>Menu</span></button>'
@@ -1546,7 +1265,6 @@ export function renderBarD1B(s: HudState): string {
     + '<div class="civ-hud-banner-shell civ-hud-banner-right"><div class="hud-chip-row">'
     + rightChips.join('') + '</div></div>'
     + '<div class="hud-right">'
-    + recruitBtn
     + wikiBtn
     + menuBtn
     + (showMapZoomDock ? '' : fsBtn)
@@ -1626,7 +1344,6 @@ function handleHudBarAction(act: string): void {
   else if (act === 'science') cfg.onOpenScience?.();
   else if (act === 'diplo') cfg.onOpenDiplomacy?.();
   else if (act === 'wiki') cfg.onOpenWiki?.();
-  else if (act === 'empire-recruit') cfg.onOpenEmpireRecruit?.();
   else if (act === 'menu') cfg.onOpenMenu?.();
   else if (act === 'fullscreen') toggleFullscreen();
   else if (act === 'zoom-in') stepUiZoom(UI_ZOOM_STEP);
@@ -1712,85 +1429,11 @@ function ensureBarActionsBound(): void {
   utilDockEl!.addEventListener('keydown', onActivate);
 }
 
-/**
- * R-WEB-HUD-TOPBAR-LAYOUT-A-Q1: dobór trybu banerów po renderze (zależy od treści i szerokości okna, więc
- * nie da się go zapisać samym CSS). LEWY: 6 żetonów w jednej linii, a gdy najszerszy żeton się nie mieści
- * — klasa `.hud-left-fallback` (2 rzędy po 3). PRAWY: wszystkie chipy w jednej linii; gdy nie mieszczą się
- * w banerze — stopnie `.hud-r-tight` → `.hud-r-stack` → `.hud-r-min` (patrz CSS). Wołane synchronicznie
- * zaraz po `innerHTML` (bez malowania pośredniego) i przy zmianie rozmiaru okna.
- */
-const HUD_RIGHT_TIERS = ['hud-r-tight', 'hud-r-stack', 'hud-r-min'] as const;
-export function fitHudTopbar(root: ParentNode | null = barEl): void {
-  if (root === null) return;
-  const left = root.querySelector<HTMLElement>('.civ-hud-banner-left');
-  const grid = left?.querySelector<HTMLElement>('.hud-chip-grid') ?? null;
-  // Medalion Mocy rośnie z liczbą rekrutów (szerszy niż bazowe 240 px) — banery nie mogą na niego wejść.
-  const power = root.querySelector<HTMLElement>('.power-center');
-  const powerRect = power !== null && power.getClientRects().length > 0 ? power.getBoundingClientRect() : null;
-  if (left !== null && grid !== null) {
-    left.classList.remove('hud-left-fallback', 'hud-left-compact', 'hud-left-tiny');
-    left.style.width = '';
-    left.style.maxWidth = '';
-    if (powerRect !== null) {
-      const room = powerRect.left - 10 - left.getBoundingClientRect().left;
-      if (room > 0 && room < left.getBoundingClientRect().width) {
-        left.style.width = room + 'px';
-        left.style.maxWidth = room + 'px';
-      }
-    }
-    const cells = Array.from(grid.querySelectorAll<HTMLElement>('.civ-hud-chip-cell'));
-    const leftOverflows = (): boolean => grid.scrollWidth > grid.clientWidth + 0.5
-      || cells.some((c) => c.scrollWidth > c.clientWidth + 0.5);
-    if (leftOverflows()) {
-      left.classList.add('hud-left-fallback');
-      // Ostatnia deska ratunku przy ekstremalnych liczbach: pomniejszenie czcionek/ikon (kolumny zostaja rowne).
-      for (const cls of ['hud-left-compact', 'hud-left-tiny']) {
-        if (!leftOverflows()) break;
-        left.classList.add(cls);
-      }
-    }
-  }
-  if (left !== null && typeof document !== 'undefined') {
-    const shellRect = left.querySelector<HTMLElement>('.civ-hud-banner-shell')?.getBoundingClientRect();
-    const need = shellRect !== undefined && shellRect.height > 0 ? Math.ceil(shellRect.bottom + 8) : 0;
-    const docStyle = document.documentElement.style;
-    if (need > TOOLBAR_TOP_PX) docStyle.setProperty('--civ-hud-toolbar-top', need + 'px');
-    else docStyle.removeProperty('--civ-hud-toolbar-top');
-  }
-  const right = root.querySelector<HTMLElement>('.civ-hud-banner-right');
-  if (right !== null) {
-    right.classList.remove(...HUD_RIGHT_TIERS);
-    right.style.maxWidth = '';
-    const cluster = right.closest<HTMLElement>('.hud-right-cluster');
-    if (powerRect !== null && cluster !== null && getComputedStyle(cluster).flexDirection.startsWith('column')) {
-      const room = cluster.getBoundingClientRect().right - (powerRect.right + 8);
-      if (room > 0 && room < right.getBoundingClientRect().width) right.style.maxWidth = room + 'px';
-    }
-    const row = right.querySelector<HTMLElement>('.hud-chip-row') ?? right;
-    // +4,5 px: ostatni chip klikalny ma margin-right −4 px (pole hover) — to nie jest ucięcie.
-    const rightOverflows = (): boolean => right.scrollWidth > right.clientWidth + 0.5
-      || row.scrollWidth > row.clientWidth + 4.5;
-    for (const tier of HUD_RIGHT_TIERS) {
-      if (!rightOverflows()) break;
-      right.classList.add(tier);
-    }
-  }
-}
-
-let hudFitResizeBound = false;
-function ensureHudFitOnResize(): void {
-  if (hudFitResizeBound || typeof window === 'undefined') return;
-  hudFitResizeBound = true;
-  window.addEventListener('resize', () => { if (hudSessionActive) fitHudTopbar(); });
-}
-
 function renderBar(): void {
   if (barEl === null || cfg === null) return;
-  const s = hudStateSnapshot();
+  const s = cfg.getState();
   if (useD1BLayout()) {
     barEl.innerHTML = renderBarD1B(s);
-    fitHudTopbar(barEl);
-    ensureHudFitOnResize();
   } else {
     barEl.innerHTML = renderBarLegacy(s);
     renderUtilDock(false, '');
@@ -1951,14 +1594,6 @@ let minimapDirty = true;
 /** D11: minimapa przerysowuje 320k heksów — rób to TYLKO gdy mapa/mgła/terytorium się zmieni
  *  (wołane z refreshFog), nie na każdym odświeżeniu HUD (wejście do miasta/hover/ekonomia). */
 export function markMinimapDirty(): void { minimapDirty = true; }
-/**
- * R-WEB-MINIMAP-VIEWPORT-RECT-FOLLOW-Q1: ramka widoku na minimapie podąża za kamerą. Wołane z renderLoop
- * w każdej klatce; przerysowuje tylko canvas minimapy i tylko gdy prostokąt się zmienił (minimapHud.updateViewport).
- * Sama kamera NIE ustawia `minimapDirty` (to bramka pełnego przerysowania heksów przy zmianie mgły/mapy).
- */
-export function updateMinimapViewport(viewport: { x: number; y: number; w: number; h: number } | undefined): void {
-  minimapApi?.updateViewport(viewport);
-}
 function refreshMinimap(): void {
   if (cfg === null) return;
   if (!miniMounted) { mountMinimap(); }
@@ -1966,7 +1601,7 @@ function refreshMinimap(): void {
   minimapDirty = false;
   if (minimapApi !== null) {
     minimapApi.update();
-    if (cfg.getState !== undefined) setMinimapTurnLabel(minimapApi, hudStateSnapshot().tura);
+    if (cfg.getState !== undefined) setMinimapTurnLabel(minimapApi, cfg.getState().tura);
     return;
   }
   if (miniEl === null) return;
@@ -2023,7 +1658,7 @@ function mountBottomBar(): void {
   if (cfg === null || bottomBarApi !== null) return;
   if (!useD1BLayout()) return;
   bottomBarApi = createBottomBarHud({
-    getTurn: () => hudStateSnapshot().tura,
+    getTurn: () => cfg!.getState().tura,
     getYearLabel: cfg.getYearLabel,
     onExecutePending: cfg.onExecutePending,
     onEndTurn: cfg.onEndTurn,
@@ -2044,7 +1679,7 @@ function mountMapToolbar(): void {
     isArmyListActive: base.isArmyListActive,
     isDiploListActive: base.isDiploListActive,
     isScienceHubActive: base.isScienceHubActive,
-    getResearchProgress: () => resolveResearchProgress(hudStateSnapshot()),
+    getResearchProgress: () => resolveResearchProgress(cfg!.getState()),
   });
 }
 
@@ -2188,24 +1823,12 @@ export function showHud(config: HudConfig): void {
 }
 
 /** Odswiez wartosci HUD (po turze / zmianie stanu) — odswieza tez minimape B. */
-/**
- * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: `getState()` (buildHudState w main.ts) jest drogie w dużej
- * cywilizacji, a w obrębie jednego `updateHud()` było wołane kilkanaście razy (pasek, minimapa,
- * dolny pasek, postęp badań...). Podmoduły HUD tylko RENDERUJĄ DOM z tego stanu i nie mutują
- * stanu gry, więc w obrębie jednego synchronicznego `updateHud()` wystarczy JEDNA migawka.
- * Poza `updateHud()` (zdarzenia, timery) każdy odczyt dalej woła `getState()` świeżo.
- */
-const hudFrame = createStateFrame<HudState>(() => cfg!.getState());
-function hudStateSnapshot(): HudState { return hudFrame.snapshot(); }
-
 export function updateHud(): void {
-  hudFrame.run(() => {
-    renderBar();
-    refreshMinimap();
-    refreshSidePanel();
-    refreshD1BModules();
-    refreshContextPanel();
-  });
+  renderBar();
+  refreshMinimap();
+  refreshSidePanel();
+  refreshD1BModules();
+  refreshContextPanel();
 }
 
 /** Ukryj HUD. */

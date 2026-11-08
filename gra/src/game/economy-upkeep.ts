@@ -317,11 +317,9 @@ export function onCityConquered(
 //  sol/zloto/kon -- PYTANIE-84-U20; NIE Zywnosc,
 // ktora zostaje przy modelu per-miasto powyzej, Spichlerz bez zmian) jest teraz
 // PULA PANSTWA (civ-wide, per ownerId), nie per-miasto:
-//   cap(typ) = bazaSurowcePanstwo * (1 + bonusProcNaBudynek * liczba budynkow
-//   "Magazyn" ZBUDOWANYCH GDZIEKOLWIEK w imperium ownera) * mnoznik epoki
-//   (R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1: kazdy Magazyn +20% BAZY, addytywnie
-//   miedzy Magazynami, nie skladane; w odroznieniu od foodStorageCapacity/Spichlerz
-//   powyzej, ktory zostaje przy modelu mnoznikowym).
+//   cap(typ) = bazaSurowcePanstwo + bonusSurowceNaBudynek * (liczba budynkow
+//   "Magazyn" ZBUDOWANYCH GDZIEKOLWIEK w imperium ownera) -- model ADDYTYWNY
+//   (nie mnoznik, w odroznieniu od foodStorageCapacity/Spichlerz powyzej).
 //
 // OWNERID-AGNOSTIC (twarda zasada Macieja 2026-07-24): dotyczy KAZDEGO ownera
 // identycznie -- gracz (ownerId=0) i kazda cywilizacja AI licza cap z TYCH SAMYCH
@@ -340,39 +338,42 @@ export function onCityConquered(
  *   - bazaSurowcePanstwo    : cap per typ surowca gdy owner ma 0 Magazynow
  *                             (globalne.magazyn_baza_surowce -- NOWA SEMANTYKA:
  *                             PANSTWO, nie per-miasto; placeholder 100).
- *   - bonusProcNaBudynek    : ulamek BAZY dodawany za KAZDY Magazyn w imperium ownera
- *                             (globalne.magazyn_bonus_surowce_proc_na_budynek, 0,2 = +20%;
- *                             addytywnie miedzy Magazynami, nie skladane).
+ *   - bonusSurowceNaBudynek : dodatkowy cap za KAZDY Magazyn w imperium ownera
+ *                             (globalne.magazyn_bonus_surowce_na_budynek,
+ *                             placeholder 100; addytywnie, nie mnoznik).
  */
 export interface OwnerStorageParams {
-  bazaSurowcePanstwo: number;
-  bonusProcNaBudynek: number;
-}
-
-/**
- * Rozbicie capu PANSTWA na jednej epoce, w jednostkach szt/typ (dla UI, patrz
- * ownerStorageParamsForEra): capBonusPerMagazyn = baza x proc x mnoznik epoki.
- */
-export interface OwnerStorageBreakdown {
   bazaSurowcePanstwo:    number;
   bonusSurowceNaBudynek: number;
 }
 
 /**
- * Historia bazy (P-MAGAZYN-SKALOWANIE-EPOKA-Q1, R-EKONOMIA-SUROWCE-SKALA-5X-Q1):
- * 1000→10000 (2026-08-12), potem ×5 → 50000 (2026-08-13). Baza jest ta sama
- * dla wszystkich trudnosci (plasko).
- *
- * R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1 (decyzja wlasciciela 2026-11-05): kazdy Magazyn
- * zwieksza pojemnosc panstwa o 20% BAZY (nie o staly "+500" -- przy bazie 50 000
- * stala 500 byla pomijalna). Wartosc 0,2 = +20% za Magazyn; addytywnie (2 Magazyny
- * = +40%, nie ×1,44). Stary klucz magazyn_bonus_surowce_na_budynek (500) USUNIETY.
- * / EN: each Magazyn adds +20% of the BASE to the state cap (additive, not compound);
- * replaces the flat +500 per Magazyn (owner decision 2026-11-05).
+ * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): baza podniesiona 1000→10000
+ * (epoka 1 / Kamień -- "zwiększ jeszcze wielkość magazynu do 10 tysięcy sztuk dla
+ * każdego surowca z obecnego 1000"). bonusSurowceNaBudynek NIEZMIENIONY (100) --
+ * właściciel podał docelowe "1000 i 1500" dla PARY Spichlerz I/II
+ * (SPICHLERZ_EMPIRE_CAP_I/II w building-resource-gate.ts, potwierdzone grepem
+ * komentarza "Spichlerze lokalne +100/+150, Magazyn +100" przy
+ * magazyn_centralny_baza_zywnosc), nie dla tego pola (ma tylko JEDNĄ wartość, nie
+ * parę) -- patrz raport Operatora. Oba pola mimo to dostają IDENTYCZNY mechanizm
+ * podwajania co epokę (magazynEraMultiplier), bo dzielą tę samą formułę
+ * cap(typ) = baza + bonus × liczba_magazynow. / EN: base raised 1000→10000 (era 1
+ * / Stone); bonusSurowceNaBudynek UNCHANGED (100) -- the owner's "1000 and 1500"
+ * target belongs to the Granary I/II PAIR (SPICHLERZ_EMPIRE_CAP_I/II), not this
+ * single-value field -- but both fields still get the same era-doubling mechanism.
+ */
+/**
+ * R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): OBA pola ×5 (baza I bonus/Magazyn,
+ * zgodnie z poleceniem "przeskalować WSZYSTKIE składowe formuły cap ×5") — było
+ * 10000/100, jest 50000/500. Ten sam fallback musi zgadzać się z
+ * econ-params.json globalne.magazyn_baza_surowce / magazyn_bonus_surowce_na_budynek
+ * (przeskalowane w tym samym zadaniu) -- patrz `loadOwnerStorageParams` niżej.
+ * / EN: BOTH fields ×5 (base and per-Magazyn bonus) -- was 10000/100, now 50000/500;
+ * must match econ-params.json (scaled in the same task).
  */
 export const DEFAULT_OWNER_STORAGE_PARAMS: OwnerStorageParams = {
-  bazaSurowcePanstwo: 50000,
-  bonusProcNaBudynek: 0.2,
+  bazaSurowcePanstwo:    50000,
+  bonusSurowceNaBudynek: 500,
 };
 
 /**
@@ -395,9 +396,8 @@ export function magazynEraMultiplier(era: number): number {
 
 /**
  * Surowce objęte capem magazynu państwa (SUROW-CIV-01 + PYTANIE-84-U20):
- * cap(typ) = magazyn_baza_surowce × (1 + magazyn_bonus_surowce_proc_na_budynek × liczba Magazynów) × mnożnik epoki
- * (dziś, epoka 1, po R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1 2026-11-05: 50000 × (1 + 0,2×Magazyn) per typ;
- * wcześniej R-EKONOMIA-SUROWCE-SKALA-5X-Q1 2026-08-13: 50000 + 500×Magazyn;
+ * cap(typ) = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek × liczba Magazynów
+ * (dziś, epoka 1, po R-EKONOMIA-SUROWCE-SKALA-5X-Q1 2026-08-13: 50000 + 500×Magazyn per typ;
  * NOTA: poprzedni tekst tego komentarza mówił „1000 + 100" i był już wtedy nieaktualny wobec
  * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 z 2026-08-12 -- poprawione przy okazji). Żywność (Spichlerz) —
  * osobny model per-miasto, poza zakresem tej skali.
@@ -427,8 +427,8 @@ export function loadOwnerStorageParams(
 ): OwnerStorageParams {
   const g = raw.globalne;
   return {
-    bazaSurowcePanstwo: readNum(g, 'magazyn_baza_surowce',                   difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bazaSurowcePanstwo),
-    bonusProcNaBudynek: readNum(g, 'magazyn_bonus_surowce_proc_na_budynek',  difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bonusProcNaBudynek),
+    bazaSurowcePanstwo:    readNum(g, 'magazyn_baza_surowce',              difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bazaSurowcePanstwo),
+    bonusSurowceNaBudynek: readNum(g, 'magazyn_bonus_surowce_na_budynek',  difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bonusSurowceNaBudynek),
   };
 }
 
@@ -451,10 +451,7 @@ export function ownerResourceCapacityPerType(
   era: number = 1,
 ): number {
   const cnt = Number.isFinite(magazynCount) && magazynCount > 0 ? Math.floor(magazynCount) : 0;
-  // R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1: baza × (1 + proc × N) × mnożnik epoki.
-  // Round: wynik to pojemność w całych sztukach (baza×mnożnik to całkowite, ułamkowy
-  // proc tylko dokłada dryf zmiennoprzecinkowy, np. 1,2×50000 -- zaokrąglamy go do całości).
-  return Math.round(p.bazaSurowcePanstwo * (1 + p.bonusProcNaBudynek * cnt) * magazynEraMultiplier(era));
+  return (p.bazaSurowcePanstwo + p.bonusSurowceNaBudynek * cnt) * magazynEraMultiplier(era);
 }
 
 /**
@@ -467,11 +464,11 @@ export function ownerResourceCapacityPerType(
 export function ownerStorageParamsForEra(
   p: OwnerStorageParams,
   era: number,
-): OwnerStorageBreakdown {
+): OwnerStorageParams {
   const mult = magazynEraMultiplier(era);
   return {
     bazaSurowcePanstwo:    p.bazaSurowcePanstwo * mult,
-    bonusSurowceNaBudynek: p.bazaSurowcePanstwo * p.bonusProcNaBudynek * mult,
+    bonusSurowceNaBudynek: p.bonusSurowceNaBudynek * mult,
   };
 }
 

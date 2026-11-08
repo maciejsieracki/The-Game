@@ -1,2 +1,0 @@
-oblezenie-siege-lifted-po-bitwie-test: 16 passed, 0 failed
-EXIT=0

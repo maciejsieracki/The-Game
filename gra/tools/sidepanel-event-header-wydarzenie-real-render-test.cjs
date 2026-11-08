@@ -284,15 +284,7 @@ async function measure(page, elimMsg, diploMsg) {
         subText: txt(c.querySelector('.sp-sub')),
       };
     };
-    // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 (r2): panel ma zakladki — karta ELIMINACJA (Wazne) i
-    // karta blokujaca sa widoczne w zakladce domyslnej, karta „Dyplomacja” dopiero po kliknieciu
-    // zakladki Dyplomacja. Test mierzy geometrie naglowka kart, wiec przelacza zakladke przed
-    // pomiarem karty dyplomatycznej (inwarianty A–C bez zmian).
-    const elimCard = card(elim.id);
-    const blockingCard = card('revolt-city3');
-    const diploTab = api.el.querySelector('[data-sp-tab="dyplomacja"]');
-    if (diploTab !== null) diploTab.click();
-    return { elim: elimCard, diplo: card(diplo.id), blocking: blockingCard };
+    return { elim: card(elim.id), diplo: card(diplo.id), blocking: card('revolt-city3') };
   }, { elimMsg, diploMsg });
 }
 

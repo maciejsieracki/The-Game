@@ -1,9 +1,0 @@
-PASS: hud.ts: cfg.getState() wołane tylko w hudStateSnapshot
-PASS: hud.ts: updateHud otwiera i zawsze zamyka ramkę (try/finally, zagnieżdżenie bezpieczne)
-PASS: hud.ts: poza updateHud snapshot czyta świeży stan
-PASS: main.ts: memo właściciela jest zakresowe i zwraca kopie
-PASS: main.ts: odświeżenie HUD D1b idzie przez ramkę zdarzeń; zdarzenia kopiowane
-PASS: main.ts: siatka granic przebudowywana tylko przy zmianie podpisu zawartości
-
-WYNIK: 6 PASS, 0 FAIL
-EXIT=0

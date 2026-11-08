@@ -224,15 +224,6 @@ function commitPlayerPick(ctx: any): void {
   const spawnImprovementMesh = (_k: string) => {};
   const syncResourceOverlayAtHex = (_k: string) => {};
   const getImprovementMeta = (key: string) => ({ nazwa: key });
-  // r2 (R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1): od R-HOTSEAT-ETAP6C blok komitu zapisuje cache per-fotel (setOwnerLast*, hOid) —
-  // harness nie mial tych symboli (ReferenceError: setOwnerLastPraca is not defined, czerwony PRZED i PO tematem). Stuby bez efektu.
-  const hOid = 0, humanOwnerId = 0;
-  const setOwnerLastPraca = (..._a: any[]) => {};
-  const setOwnerLastPracaRate = (..._a: any[]) => {};
-  const ownerLastPracaRate = (..._a: any[]) => 0;
-  const setOwnerLastPracaAutoUlepszeniaKoszt = (..._a: any[]) => {};
-  const ownerLastPracaAutoUlepszeniaKoszt = (..._a: any[]) => 0;
-  const freshClearingState = (..._a: any[]) => ({});
   for (let _once = 0; _once < 1; _once++) {
     ${PLAYER_SRC_BLOCK}
   }

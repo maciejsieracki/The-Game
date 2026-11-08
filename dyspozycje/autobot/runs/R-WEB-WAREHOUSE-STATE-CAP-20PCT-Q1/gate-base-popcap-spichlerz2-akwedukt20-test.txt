@@ -1,2 +1,0 @@
-popcap-spichlerz2-akwedukt20-test: 46 pass, 0 fail
-EXIT=0

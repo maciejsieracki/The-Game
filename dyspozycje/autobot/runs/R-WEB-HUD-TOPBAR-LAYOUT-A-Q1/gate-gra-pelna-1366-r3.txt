@@ -1,2 +1,0 @@
-1366 {"left":[20,16,553,139],"leftCls":"civ-hud-banner-left hud-left-fallback","right":[1005,64,1346,98],"rightCls":"civ-hud-banner-shell civ-hud-banner-right","power":[563,10,803,116],"chipTops":[67],"tbVar":"148px","toolbar":[22,148,74,456],"overlay":0}
-EXIT=0

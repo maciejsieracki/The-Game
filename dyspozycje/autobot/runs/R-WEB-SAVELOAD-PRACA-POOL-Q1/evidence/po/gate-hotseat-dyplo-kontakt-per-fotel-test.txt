@@ -1,4 +1,0 @@
-  log: [ "  - waiting for locator('.civ-newgame .start')" ],
-  name: 'TimeoutError'
-}
-EXIT=2

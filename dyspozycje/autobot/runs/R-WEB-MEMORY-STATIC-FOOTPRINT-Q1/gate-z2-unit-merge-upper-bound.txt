@@ -1,3 +1,0 @@
-node tools/memory-static-unit-merge-upper-bound.cjs <gra z node_modules> <scratchpad poza repo>   (obrona r1, zarzut Z2; pomiar V8 w Node)
-{"tokens":475,"heapTokensMB":66.66,"object3dPerToken":63.5,"meshesPerToken":61.6,"materialsPerToken":13.9,"bytesPerMesh":1889,"sceneGraphMB":54.32,"upperBoundMergeMB":40.74}
-EXIT=0

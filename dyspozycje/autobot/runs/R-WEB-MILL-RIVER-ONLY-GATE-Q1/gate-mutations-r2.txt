@@ -1,5 +1,0 @@
-Mutacje testu bramki (MILLRIVER_SRC_DIR = kopia gra/src z jedną zmianą; data/ dowiązane obok):
-M1 gate wyłączona (warunek RIVER_ONLY pominięty) -> FAILED=4 (oczekiwane: 4)
-M2 morze przepuszczone (!ctx.cityHasCoastOrRiver zamiast !cityHasRiver) -> FAILED=3
-M3 id zmienione (new Set(['mlyn_x'])) -> FAILED=6 (w tym pin spójności id w (G))
-EXIT=1 dla każdej mutacji (poprawnie)

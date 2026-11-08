@@ -1,3 +1,0 @@
-PARITY same=30/30 maxDist=0
-PASS
-EXIT=0

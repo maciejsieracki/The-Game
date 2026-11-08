@@ -758,48 +758,17 @@ for (const fcl of stdPlan.foreignTypeClusters) {
   const capPos = fcl.positions[0];
   if (!capPos) continue;
   const capSea = M.seaDistAt(stdSeaDist, capPos.q, capPos.r);
-  // R-WEB-CAPITAL-SEADIST-Q1: przy sep stolic 23 (0,21 x 120, sufit 0,8) na tej mapie (seed 4242, 8 typow) tylko ~6 stolic
-  // miesci sie >=10 hex od morza (pomiar: losowy pakunek zachlanny 300 prob, sep 25/23 => max 6; sep 20 => 7; sep 15 => 9).
-  // Drabina ratunkowa (seaDistRescueLadder) miekko schodzi z seaDist TYLKO gdy nie ma wolnego slotu >=10 hex od morza
-  // spelniajacego sep. Asercja: stolica < minSea jest dopuszczalna wylacznie, gdy zaden hex ladu o seaDist >= minSea
-  // nie spelnia sep wzgledem wszystkich INNYCH stolic (brak zmarnowanego slotu srodladowego).
-  // sepGate liczony DOKLADNIE jak runtime (clusters.ts:3517-3529): landCount = hexy nie-Morze/Gory/PlytkieMorze,
-  // civCount = nTypy (8). Bez marginesu -1 (obrona r2, zarzut 4).
-  const inlandFree = (others, sepGate) => Object.values(stdMap.hexes).filter(h =>
-    M.seaDistAt(stdSeaDist, h.coords.q, h.coords.r) >= minSeaStd &&
-    others.every(o => M.hexDistanceAxial(h.coords.q, h.coords.r, o.q, o.r) >= sepGate));
-  let capOk = capSea >= minSeaStd;
-  if (!capOk) {
-    const others = [stdPlan.playerStartHex, ...stdPlan.foreignTypeClusters.map(c => c.positions[0]).filter(p => p && p !== capPos)];
-    const landCountSep = Object.values(stdMap.hexes).filter(h =>
-      h.terenBazowy !== 'morze' && h.terenBazowy !== 'gory' && h.terenBazowy !== 'plytkie_morze').length;
-    const sepGate = M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120, 8, landCountSep);
-    const freeInland = inlandFree(others, sepGate);
-    capOk = freeInland.length === 0;
-    console.log(`INFO: stolica ${fcl.typ} seaDist=${capSea} < ${minSeaStd}; sepGate=${sepGate}; wolnych slotow srodladowych=${freeInland.length}`);
-    // Kontrola negatywna (obrona r2, zarzut 2): ten sam warunek MUSI wykryc wolny slot, gdy go sztucznie
-    // odslonic (tylko stolica gracza jako "inna") — inaczej warunek jest martwy i nic nie testuje.
-    const relaxed = inlandFree([stdPlan.playerStartHex], sepGate);
-    assert(relaxed.length > 0,
-      `Standard: kontrola negatywna warunku wolnego slotu srodladowego dla ${fcl.typ} (odslonieto ${relaxed.length} slotow)`);
-  }
-  assert(capOk,
-    `Standard: stolica obcego typu ${fcl.typ} min ${minSeaStd} hex od morza albo brak wolnego slotu srodladowego (seaDist=${capSea})`);
+  assert(capSea >= minSeaStd,
+    `Standard: stolica obcego typu ${fcl.typ} min ${minSeaStd} hex od morza (seaDist=${capSea})`);
 }
 
 // BUG-SPAWN-ODLEGLOSC-STOLICE: pary stolic różnych cywilizacji ≥ minSep na Standard
 const minSepStd = M.capitalMinSeparation(stdPlan.placement.rozmiarMapy);
 assert(minSepStd === 15, 'Standard (duza): minCapitalSep=15 (got ' + minSepStd + ')');
-// R-WEB-CAPITAL-SPACING-FIX-Q1 (B): sep proporcjonalny = max(tabela 15, round(wsp x krotszy bok 120)).
-// R-WEB-CAPITAL-SPACING-TUNE-Q1: wsp 0,15 -> 0,21 => round(0,21 x 120) = 25 (dawniej 18); sufit wykonalnosci
-// (CAPITAL_SEP_AREA_FACTOR 0,5 -> 0,8) nie obniza go dla Standardu ze startEpochId=kamien (clusters.ts capitalMinSeparationProportional).
-// Podloga tabeli (minSepStd=15) bez zmian; minDystansObcyOdGracza = sep efektywny + 2 (clusterCenterPlacementSepForMap).
-assert(M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120) === 25,
-  'Standard map 168×120: minCapitalSepForMap=25 (proporcjonalny 0,21 x 120, podloga tabeli 15)');
-// Ten plan ma 8 typow (aktywneTypy: 8) => sufit wykonalnosci floor(sqrt(lad x 0,8 / 8)) obniza sep efektywny 25 -> 23
-// (zmierzone: placement.capitalMinSep=23), wiec obcy od gracza = 23 + 2 = 25 (dawniej bez obnizki 18 + 2 = 20).
-assert(stdPlan.placement.capitalMinSep === 23 && stdPlan.placement.minDystansObcyOdGracza === 25,
-  'Standard (8 typow): capitalMinSep=23, minDystansObcyOdGracza=25 (got ' + stdPlan.placement.capitalMinSep + '/' + stdPlan.placement.minDystansObcyOdGracza + ')');
+assert(M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120) === 15,
+  'Standard map 168×120: minCapitalSepForMap=15');
+assert(stdPlan.placement.minDystansObcyOdGracza === 17,
+  'Standard: minDystansObcyOdGracza=17 (got ' + stdPlan.placement.minDystansObcyOdGracza + ')');
 const stdCapitals = [{ q: stdPlan.playerStartHex.q, r: stdPlan.playerStartHex.r }];
 for (const fcl of stdPlan.foreignTypeClusters) {
   const capPos = fcl.positions[0];
@@ -825,7 +794,7 @@ for (const fcl of stdPlan.foreignTypeClusters) {
   }
 }
 
-// BUG-SPAWN-ODLEGLOSC-STOLICE / FALA 182 / R-WEB-CAPITAL-SPACING-FIX-Q1: Duża (ogromna) 240×168 — minSep=25 (podloga tabeli 16), obcy od gracza ≥27
+// BUG-SPAWN-ODLEGLOSC-STOLICE / FALA 182: Duża (ogromna) 240×168 — minSep=16, obcy od gracza ≥16
 const largeMap = M.generateMap(240, 168, 4242, 'kontynenty');
 const largePlan = M.buildClusterStartPlan({
   map: largeMap,
@@ -835,23 +804,16 @@ const largePlan = M.buildClusterStartPlan({
   rywaleNaKlaster: 6,
   startEpochId: 'zelazo',
 });
-// R-WEB-CAPITAL-SPACING-TUNE-Q1: round(0,21 x 168)=35 (podloga tabeli 16) to sep BEZ liczby civ (czysta wersja);
-// przy 10 typach (zelazo) sufit wykonalnosci obniza go na mapie (placement.capitalMinSep, dawniej 25 = prop bez obnizki);
-// obcy od gracza = sep efektywny + 2. Progi par stolic liczone od sep EFEKTYWNEGO (to on jest egzekwowany przy generacji).
 assert(
-  M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) === 35,
-  'Duża 240×168: minCapitalSepForMap=35 (got ' +
+  M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) === 16,
+  'Duża 240×168: minCapitalSepForMap=16 (got ' +
     M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) + ')',
 );
 assert(
-  largePlan.placement.capitalMinSep >= 25 && largePlan.placement.capitalMinSep <= 35,
-  'Duża: capitalMinSep efektywny w [25,35] (got ' + largePlan.placement.capitalMinSep + ')',
+  largePlan.placement.minDystansObcyOdGracza === 16,
+  'Duża: minDystansObcyOdGracza=16 (got ' + largePlan.placement.minDystansObcyOdGracza + ')',
 );
-assert(
-  largePlan.placement.minDystansObcyOdGracza === largePlan.placement.capitalMinSep + 2,
-  'Duża: minDystansObcyOdGracza = capitalMinSep + 2 (got ' + largePlan.placement.minDystansObcyOdGracza + ')',
-);
-const minSepLarge = largePlan.placement.capitalMinSep;
+const minSepLarge = M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168);
 const largeCapitals = [{ q: largePlan.playerStartHex.q, r: largePlan.playerStartHex.r }];
 for (const fcl of largePlan.foreignTypeClusters) {
   const capPos = fcl.positions[0];

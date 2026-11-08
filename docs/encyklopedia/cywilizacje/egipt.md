@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Egipt** — rydwany + łucznicy dystansowi. Jednostki specjalne według rosteru: **Łucznik egipski, Rydwan egipski, Wojownik z khopesh, Łucznik nubijski, Wojownik z żelaznym khopesh**. Religia: Religia egipska — faraon-bóg.
+**Egipt** — rydwany + łucznicy dystansowi. Jednostka unikalna: **Medżaj (Gwardia Faraona)**. Religia: Religia egipska — faraon-bóg.
 
 ---
 
@@ -24,12 +24,19 @@
 **Egipt** to typ cywilizacji dostępny w wersji 1.0. Charakter: *rydwany + łucznicy dystansowi*.
 
 **Epoki startowe w kreatorze:** Kamień, Brąz, Żelazo.
-**Zamienniki według rosteru:** Łucznik egipski, Rydwan egipski, Wojownik z khopesh, Łucznik nubijski, Wojownik z żelaznym khopesh
+**Jednostka specjalna:** Medżaj (Gwardia Faraona).
 **Religia państwa:** Religia egipska — faraon-bóg.
 **Przykładowe miasta w klastrze:** Memfis, Teby, Heliopolis, Abydos, Nekhen….
 **Władcy (imiona per epoka):** Kamień — Narmer · Brąz — Chufu · Żelazo — Ramzes II · Antyk — Kleopatra VII.
 
-**Bonusy cywilizacji:** Obowiązujące bonusy i modyfikatory cywilizacji wynikają z macierzy parametrów. Dawne bonusy opisowe nie są doliczane.
+**Bonus startowy:** +Atak dystansowy łuczników; rydwany szybsze, z atakiem dystansowym i dużym zapasem strzału (rydwany-łucznicy).
+
+**Trzy linie bonusów (macierz):**
+- Łucznicy na rydwanach: +20% ataku dystansowego; rydwany z dużym zapasem strzał
+- Szybkie rydwany: +15% prędkości i zasięgu ataku rydwanów bojowych
+- Medżaj = elitarna gwardia; najlepsza piechota Egiptu, ochrona centrum miasta
+
+**Słabsza strona (balans):** słabsza ciężka piechota frontalna.
 
 **Profil AI (skala 0–9):** agresja 4/9 — umiarkowana.
 

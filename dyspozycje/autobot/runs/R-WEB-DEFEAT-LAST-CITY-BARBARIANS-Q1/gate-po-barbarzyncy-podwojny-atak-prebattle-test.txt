@@ -1,3 +1,0 @@
-
-barbarzyncy-podwojny-atak-prebattle-test: 18 pass, 0 fail
-EXIT=0

@@ -20,10 +20,7 @@
  *   4 = orange, 5 = purple, 6 = teal, 7 = pink
  */
 
-import { SmallPartLod } from './smallPartLod';
 import * as THREE from 'three';
-import { GeometryContentPool } from './geometryContentPool';
-import { MaterialContentPool } from './materialContentPool';
 import type { City } from '../game/cities';
 import { HUMAN_OWNER_PRIMARY } from '../game/human-owners';
 import { formatCityMapLabel } from '../game/display-names';
@@ -241,43 +238,15 @@ function buildSettlementModelForStyle(
   if (GAME_MAP_RENDER_STYLE === 'roblox') {
     if (era >= 2) {
       // era 2 = Brąz; era 3+ (Żelazo, brak modelu) [fallback do czasu partii Żelaza]
-      return registerOwnedMeshResources(buildMiastoBraz(civ, level, {
+      return buildMiastoBraz(civ, level, {
         mur: wallKind === 'stone',
         palisada: palisadaOnly,
         color: ownerCol,
-      }));
+      });
     }
-    return registerOwnedMeshResources(buildMiastoKamien(level, { mur: withWalls, color: ownerCol }));
+    return buildMiastoKamien(level, { mur: withWalls, color: ownerCol });
   }
   return buildSettlementModel(era, civ, level, ownerCol, withWalls);
-}
-
-/**
- * R-WEB-MEMORY-LEAKS-FIX-Q1 (M1): `buildMiastoBraz` / `buildMiastoKamien` tworzą przy KAŻDYM
- * wywołaniu świeże geometrie (`B`/`CYL`/`CONE`/`CircleGeometry`) i materiały (`mat`/`makeMats*`)
- * — nic nie jest współdzielone między wywołaniami (miasto-braz.ts:103-140, :212-228, :514-531;
- * miasto-kamien.ts:93-130, :176-192). Nie ustawiały jednak `userData['mats']`/`['perCityGeos']`,
- * więc `_disposeModel` przy przebudowie (zmiana populacji/ery/murów) nic nie zwalniał.
- * Zbieramy je tu RAZ, zaraz po zbudowaniu — PRZED doczepieniem plakietek/🔥 (sprite'y ze
- * współdzieloną teksturą i wspólną geometrią `THREE.Sprite`), więc rejestr obejmuje wyłącznie
- * zasoby należące do tego jednego modelu. Bez zmiany wyglądu.
- * / EN: collect per-call geometries/materials right after building, before any sprite is
- * attached, so `_disposeModel` frees exactly what this model owns.
- */
-function registerOwnedMeshResources(group: THREE.Group): THREE.Group {
-  const mats = new Set<THREE.Material>();
-  const geos = new Set<THREE.BufferGeometry>();
-  group.traverse((obj) => {
-    const mesh = obj as THREE.Mesh;
-    if (!(mesh as { isMesh?: boolean }).isMesh) return;
-    geos.add(mesh.geometry);
-    const m = mesh.material;
-    if (Array.isArray(m)) for (const x of m) mats.add(x);
-    else if (m) mats.add(m);
-  });
-  group.userData['mats'] = [...mats];
-  group.userData['perCityGeos'] = [...geos];
-  return group;
 }
 
 // ---------------------------------------------------------------------------
@@ -436,14 +405,6 @@ export class CityRenderer {
   /** Active city models keyed by city.id. */
   private models: Map<string, THREE.Group> = new Map();
 
-  /** R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R3): LOD drobnych części modeli miast (smallPartLod.ts). */
-  private lodModelsVersion = 0;
-  private readonly smallPartLod = new SmallPartLod();
-
-  applySmallPartLod(camDist: number, fovDeg: number, viewportH: number, minPx = 3): void {
-    this.smallPartLod.apply(this.models.values(), this.scene, this.lodModelsVersion, camDist, fovDeg, viewportH, minPx);
-  }
-
   /** B2-Q5: sprite 🔥 per city.id */
   private revoltSprites: Map<string, THREE.Sprite> = new Map();
   private revoltTex: THREE.CanvasTexture | null = null;
@@ -478,10 +439,6 @@ export class CityRenderer {
 
   /** Per-model unique geometries for disposal. */
   private modelGeos: Map<string, THREE.BufferGeometry[]> = new Map();
-  /** R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: pula wspólnych geometrii TEGO renderera (nie globalna — Z6). */
-  private readonly geoPool = new GeometryContentPool();
-  /** R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: pula wspólnych materiałów TEGO renderera. */
-  private readonly matPool = new MaterialContentPool();
 
   constructor(scene: THREE.Scene, map: GameMap) {
     this.scene   = scene;
@@ -524,10 +481,6 @@ export class CityRenderer {
       const visualKey = `${GAME_MAP_RENDER_STYLE}|${era}|${civ}|${level}|${wallKind}`;
       const visible = options?.isVisible?.(city) ?? true;
 
-      // R-WEB-MEMORY-LEAKS-FIX-Q1 (M1): zasoby starego modelu zwalniamy dopiero PO dodaniu
-      // nowego do sceny (bez okna, w którym miasto nie ma modelu). / EN: dispose old after swap.
-      let staleMats: THREE.Material[] | null = null;
-      let staleGeos: THREE.BufferGeometry[] | null = null;
       if (this.models.has(city.id)) {
         const grp = this.models.get(city.id)!;
         grp.userData['ownerId'] = ownerIndex;
@@ -552,9 +505,7 @@ export class CityRenderer {
         this._removeStatChip(city.id, grp);
         this._removeMapOutline(city.id);
         this.scene.remove(grp);
-        staleMats = this.modelMaterials.get(city.id) ?? [];
-        staleGeos = this.modelGeos.get(city.id) ?? [];
-        this.lodModelsVersion++;
+        this._disposeModel(city.id);
         this.models.delete(city.id);
         this.modelMaterials.delete(city.id);
         this.modelGeos.delete(city.id);
@@ -581,8 +532,6 @@ export class CityRenderer {
 
       this._registerModel(city.id, group);
       this.scene.add(group);
-      if (staleMats) this.matPool.release(staleMats);
-      if (staleGeos) this.geoPool.release(staleGeos);
       this._syncRevolt(city.id, group, options?.getRevolt?.(city.id) ?? false);
       this._syncStatChip(
         city,
@@ -601,43 +550,11 @@ export class CityRenderer {
         this._removeMapOutline(id);
         this.scene.remove(grp);
         this._disposeModel(id);
-        this.lodModelsVersion++;
         this.models.delete(id);
         this.modelMaterials.delete(id);
         this.modelGeos.delete(id);
       }
     }
-    this.pruneUnusedStatChipTextures();
-  }
-
-  /**
-   * R-WEB-MEMORY-LEAKS-FIX-Q1 (M2): zwalnia z `statTexCache` tekstury plakietek, których
-   * klucz nie jest już przypięty do ŻADNEGO żywego sprite'a (`statSpriteKeys` — każdy żywy
-   * sprite dostał teksturę z cache pod dokładnie tym kluczem, `_syncStatChip`). Wcześniej
-   * wpisy znikały wyłącznie przy zmianie LOD i przy `dispose()`, więc każda zmiana tekstu
-   * (populacja, produkcja, wzrost %, hover…) zostawiała starą `CanvasTexture` do końca sesji.
-   * Wygląd bez zmian: ten sam klucz w przyszłości maluje identyczną teksturę od nowa (obrazki
-   * godła/portretu/ikony są w osobnym cache obrazków i wracają synchronicznie).
-   * Wołane na końcu `sync()` oraz na końcu tury (main.ts).
-   * / EN: frees cached badge textures no live sprite references; appearance unchanged.
-   * @returns liczba zwolnionych tekstur
-   */
-  pruneUnusedStatChipTextures(): number {
-    if (this.statTexCache.size === 0) return 0;
-    const live = new Set(this.statSpriteKeys.values());
-    let freed = 0;
-    for (const [key, tex] of [...this.statTexCache]) {
-      if (live.has(key)) continue;
-      tex.dispose();
-      this.statTexCache.delete(key);
-      freed++;
-    }
-    return freed;
-  }
-
-  /** Diagnostyka (`?memdebug=1`): rozmiar cache tekstur plakietek i liczba modeli miast. */
-  getMemDebugCounts(): { badgeTextures: number; cityModels: number } {
-    return { badgeTextures: this.statTexCache.size, cityModels: this.models.size };
   }
 
   /** Odśwież etykiety nazwa + populacja (np. po wzroście ludności). */
@@ -1015,20 +932,15 @@ export class CityRenderer {
   }
 
   private _registerModel(id: string, group: THREE.Group): void {
-    this.lodModelsVersion++;
     this.models.set(id, group);
-    const mats = (group.userData['mats'] as THREE.Material[] | undefined) ?? [];
-    // R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: identyczne materiały modeli miast → jedna wspólna instancja.
-    this.matPool.poolOwned(group, mats);
-    this.modelMaterials.set(id, mats);
-    const geos = (group.userData['perCityGeos'] as THREE.BufferGeometry[] | undefined) ?? [];
-    // R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: identyczne geometrie modeli miast → jedna wspólna instancja.
-    this.geoPool.poolOwned(group, geos);
-    this.modelGeos.set(id, geos);
+    this.modelMaterials.set(id, (group.userData['mats'] as THREE.Material[]) ?? []);
+    this.modelGeos.set(id, (group.userData['perCityGeos'] as THREE.BufferGeometry[]) ?? []);
   }
 
   private _disposeModel(id: string): void {
-    this.matPool.release(this.modelMaterials.get(id) ?? []);
-    this.geoPool.release(this.modelGeos.get(id) ?? []);
+    const mats = this.modelMaterials.get(id) ?? [];
+    for (const m of mats) m.dispose();
+    const geos = this.modelGeos.get(id) ?? [];
+    for (const g of geos) g.dispose();
   }
 }

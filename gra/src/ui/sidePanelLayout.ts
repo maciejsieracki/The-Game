@@ -29,10 +29,5 @@ export const SIDE_PANEL_LEFT = `${SIDE_PANEL_LEFT_PX}px`;
 
 /** Górna krawędź paneli bocznych (px) — zgodna z top toolbara, czyści pasek chipów. */
 export const SIDE_PANEL_TOP_PX = TOOLBAR_TOP_PX;
-/**
- * j.w., gotowe do wstawienia w CSS (`top:${SIDE_PANEL_TOP}`). R-WEB-HUD-PANELS-BELOW-BANNER-Q1: zmienna
- * `--civ-hud-toolbar-top` ustawia `fitHudTopbar()` (hud.ts) = dol lewego banera + 8 px, gdy baner (tryb 2x3)
- * siega glebiej niz domyslne 104 px; bez niej (tryb 1-liniowy) wartosc = 104 px, czyli przesuniecie 0.
- * Panele maja tez `bottom`, wiec ich wysokosc zmniejsza sie o przesuniecie (bez wyjscia poza ekran).
- */
-export const SIDE_PANEL_TOP = `var(--civ-hud-toolbar-top,${SIDE_PANEL_TOP_PX}px)`;
+/** j.w., gotowe do wstawienia w CSS (`top:${SIDE_PANEL_TOP}`). */
+export const SIDE_PANEL_TOP = `${SIDE_PANEL_TOP_PX}px`;

@@ -1,8 +1,0 @@
-tsc --noEmit (gra): czysto
-capital-sep-unit 44/44; capital-sep-pangea 3/3; mp-spawn-ration 16/16; cluster-spread 5/5
-capital-spacing-prop-test ALL PASS; ai-avoid-polar pick 16/16, sim RESULT onPolar=0; cluster-start-q2-smoke 16/16; cluster-start-recovery2 29/29
-ai-avoid-polar-player-parity: same=30/30 maxDist=0 PASS (fixture BASE przegenerowany na HEAD A+B)
-cluster-start-test: 477 pass / 3 fail (3 = seaDist stolic obcych, pre-istniejace: baza 448/8 z 2 seaDist; mechanizm = seaDistRescueLadder FALA 188)
-seaDist stolic obcych (Standard 168x120, 3 typy x 10 ziaren): baza 64/210 ponizej min (17/30 map), HEAD 70/210 (18/30 map)
-Pangea 30% Standard 5 ziaren (capital-spacing-measure --lf 0.30 --types pangea): baza capMedianOfMin=15 minSep=15 warnClusters=0 placed 5/5 mapsLt25=100%; HEAD capMedianOfMin=16 minSep=15 warnClusters=5 (1/mape; bylo 15) placed 5/5 mapsLt25=100%
-EXIT=0

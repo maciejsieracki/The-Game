@@ -20,7 +20,6 @@ import type { Hex } from '../types/hex';
 import type { GameData } from '../data/loader';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import { findBestPlayerStartHex } from '../map/startScoring';
-import { TEREN_MOVEMENT_KEY_ALIASES } from '../map/terrain-names';
 import {
   applyRoadMovementModifier,
   ROAD_MOVE_SPEED_MULT as MAPA_ROAD_MULT,
@@ -42,8 +41,6 @@ export interface RuntimeUnit {
   id: string;
   ownerId: number;
   typeId: string;
-  /** Special civilian command unit; fights with the stats/model of its current typeId. */
-  isGeneral?: boolean;
   /** Model category for this unit (weapon/class type). See categoryOf(). */
   category: string;
   q: number;
@@ -59,7 +56,7 @@ export interface RuntimeUnit {
   fortifyRuchSnapshot?: number;
   /** HP po walce (undefined = pełne z definicji jednostki). */
   hp?: number;
-  /** Canonical effective max HP cache; recomputed from base HP + persistent bonuses. */
+  /** Zapisany maksymalny HP runtime jednostki (uzupełniany przy pierwszym użyciu). */
   hpMax?: number;
   /** Tura: liczba porażek obrony w tej turze (L2 — 2. = wipe). */
   defLossesThisTurn?: number;
@@ -84,8 +81,6 @@ export interface RuntimeUnit {
   /** P-SCOUT-EXPLORE-Q1=A: auto-zwiedzanie mapy — domyślnie wyłączone (undefined/false).
    *  Po włączeniu zużywa ruch od razu + kontynuuje na EOT (Q2=A założenie). */
   autoExplore?: boolean;
-  /** Whether this unit should automatically rally to its owner's commander. */
-  followGeneral?: boolean;
   /** DYSPOZYCJA Macieja 2026-07-26 ("fortyfikacja w polu"): jednostka ufortyfikowana
    *  POZA hexem własnego miasta (akcja „Ufortyfikuj" gdy cityAtUnit(u) nie zwraca
    *  własnego miasta -- w tym KAŻDA jednostka oblegająca, bo oblegający stoją przy
@@ -419,8 +414,29 @@ let _forestExtra: number = 1;
  * źródłowy nadal używa starej nazwy — te trzy klucze to udokumentowany mostek
  * wstecznej kompatybilności, nie przeoczenie (KRYTERIUM KOŃCA 4 dispatchu).
  */
-// R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1: aliasy z jednego źródła (map/terrain-names.ts).
-const TERRAIN_MOVEMENT_KEY_ALIASES: Record<string, TerenBazowy> = TEREN_MOVEMENT_KEY_ALIASES;
+const TERRAIN_MOVEMENT_KEY_ALIASES: Record<string, TerenBazowy> = {
+  Laka: TerenBazowy.Laka,
+  'Łąka': TerenBazowy.Laka,
+  laka: TerenBazowy.Laka,
+  Rownina: TerenBazowy.Rownina,
+  'Równina': TerenBazowy.Rownina,
+  rownina: TerenBazowy.Rownina,
+  Pustynia: TerenBazowy.Pustynia,
+  pustynia: TerenBazowy.Pustynia,
+  Wybrzeze: TerenBazowy.PlytkieMorze,
+  'Wybrzeże': TerenBazowy.PlytkieMorze,
+  wybrzeze: TerenBazowy.PlytkieMorze,
+  Wzgorza: TerenBazowy.Wzgorza,
+  'Wzgórza': TerenBazowy.Wzgorza,
+  wzgorza: TerenBazowy.Wzgorza,
+  Gory: TerenBazowy.Gory,
+  'Góry': TerenBazowy.Gory,
+  gory: TerenBazowy.Gory,
+  Morze: TerenBazowy.Morze,
+  morze: TerenBazowy.Morze,
+  Polarny: TerenBazowy.Polarny,
+  polarny: TerenBazowy.Polarny,
+};
 
 function resolveTerrainMovementKey(raw: string): TerenBazowy | undefined {
   if (raw in _terrainCosts) return raw as TerenBazowy;
@@ -678,139 +694,6 @@ export function embarkMoveCost(hex: Hex): number {
 }
 
 // ---------------------------------------------------------------------------
-// R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: blokada wejścia do obleganego miasta
-// ---------------------------------------------------------------------------
-
-/**
- * Rejestr blokady wejścia (ustawiany przez main.ts; null = brak blokady = zachowanie sprzed tematu).
- * Zwraca true, gdy `unit` NIE MOŻE wejść na heks (q,r) -- ani jako cel, ani jako heks pośredni trasy.
- * Jeden punkt dla gracza, AI i barbarzyńców (wszyscy idą przez computePath/computeReachable).
- */
-let siegeEntryBlocker: ((unit: RuntimeUnit, q: number, r: number) => boolean) | null = null;
-
-export function setSiegeEntryBlocker(fn: ((unit: RuntimeUnit, q: number, r: number) => boolean) | null): void {
-  siegeEntryBlocker = fn;
-}
-
-/**
- * R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): w obrębie JEDNEGO wywołania computeReachable/computePath (stan miast i jednostka
- * są stałe, to funkcje czyste) wynik blokady dla (właściciel, q, r) jest liczony raz - dawniej każda ekspansja Dijkstry
- * przeszukiwała liniowo WSZYSTKIE miasta (EOT 137 miast: ~1 mln wywołań `besiegedCityAtHex`).
- */
-let siegeScopeCache: Map<number, boolean> | null = null;
-/** Pamięć podręczna JEDNEGO zakresu (np. lista obleganych miast) — czyszczona razem z siegeScopeCache. */
-let siegeScopeAux: unknown = undefined;
-
-function withSiegeScope<T>(fn: () => T): T {
-  if (siegeScopeCache !== null || siegeEntryBlocker === null) return fn();
-  siegeScopeCache = new Map();
-  siegeScopeAux = undefined;
-  try { return fn(); } finally { siegeScopeCache = null; siegeScopeAux = undefined; }
-}
-
-/**
- * R-WEB-PERF-ENDTURN-AI-PHASE-Q1 (R3): wartość liczona raz na zakres computePath/computeReachable
- * (stan miast jest w nim stały). Poza zakresem zwraca null — wołający liczy wtedy po staremu.
- */
-export function siegeScopeMemo<T>(build: () => T): T | null {
-  if (siegeScopeCache === null) return null;
-  if (siegeScopeAux === undefined) siegeScopeAux = build();
-  return siegeScopeAux as T;
-}
-
-function siegeBlocksEntry(unit: RuntimeUnit, q: number, r: number): boolean {
-  if (siegeEntryBlocker === null) return false;
-  const cache = siegeScopeCache;
-  if (cache === null || !(unit.ownerId >= 0 && unit.ownerId < 256 && q > -8000 && q < 8000 && r > -8000 && r < 8000)) {
-    return siegeEntryBlocker(unit, q, r);
-  }
-  const key = ((q + 8192) * 16384 + (r + 8192)) * 256 + unit.ownerId;
-  let v = cache.get(key);
-  if (v === undefined) { v = siegeEntryBlocker(unit, q, r); cache.set(key, v); }
-  return v;
-}
-
-// ---------------------------------------------------------------------------
-// R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: przechodzenie przez WLASNE jednostki
-// ---------------------------------------------------------------------------
-
-/**
- * Zajetosc heksow na potrzeby ruchu jednostki wlasciciela X. Sam zbior (Set) zawiera WYLACZNIE heksy
- * zablokowane = obce jednostki (kazdy inny wlasciciel: wojna, pokoj, panstwa-miasta, barbarzyncy) i
- * obce miasta -- computePath/computeReachable nie wchodza w nie jako heks posredni. Heksy z WLASNYMI
- * jednostkami trafiaja do `passThrough`: wolno przez nie przejsc (koszt terenu jak zwykle), ale nie
- * wolno na nich ZAKONCZYC ruchu inaczej niz celowo (merge). Jedno zrodlo prawdy dla gracza, AI,
- * barbarzyncow, zwiadu i marszu (parytet).
- * / EN: movement occupancy for a mover of owner X: the Set itself holds only BLOCKED hexes (foreign
- * units / foreign cities); hexes with own units are in `passThrough` (enterable en route, not a valid
- * stopping hex unless the destination is that hex on purpose = merge).
- */
-export class MoveOccupancy extends Set<string> {
-  readonly passThrough: Set<string> = new Set<string>();
-}
-
-/**
- * Buduje zajetosc ruchu: obce jednostki -> blokada, wlasne -> przejscie. Heks z choc jedna obca
- * jednostka jest zablokowany (nawet gdy stoi tam tez wlasna). `excludeIds` = jednostki ruszajacej sie
- * armii (nie blokuja same siebie).
- */
-export function buildMoveOccupancy(
-  units: readonly { id: string; ownerId: number; q: number; r: number }[],
-  moverOwnerId: number,
-  excludeIds: Iterable<string> = [],
-): MoveOccupancy {
-  const skip = new Set(excludeIds);
-  const occ = new MoveOccupancy();
-  for (const u of units) {
-    if (skip.has(u.id)) continue;
-    if (u.ownerId !== moverOwnerId) occ.add(keyOf(u.q, u.r));
-  }
-  for (const u of units) {
-    if (skip.has(u.id) || u.ownerId !== moverOwnerId) continue;
-    const k = keyOf(u.q, u.r);
-    if (!occ.has(k)) occ.passThrough.add(k);
-  }
-  return occ;
-}
-
-/** Kopia zajetosci z zachowaniem `passThrough` (zwykle `new Set(occ)` je gubi). */
-export function cloneMoveOccupancy(occ: Set<string>): MoveOccupancy {
-  const copy = new MoveOccupancy();
-  for (const k of occ) copy.add(k);
-  if (occ instanceof MoveOccupancy) for (const k of occ.passThrough) copy.passThrough.add(k);
-  return copy;
-}
-
-/** Heksy, na ktorych ruch NIE moze sie zakonczyc (blokady + heksy z wlasnymi jednostkami). */
-export function endBlockedKeys(occ: Set<string>): Set<string> {
-  const out = new Set<string>(occ);
-  if (occ instanceof MoveOccupancy) for (const k of occ.passThrough) out.add(k);
-  return out;
-}
-
-/** Czy heks jest tylko przejsciem (wlasna jednostka) -- wolno przez niego przejsc, nie wolno stanac. */
-export function isPassThroughHex(occ: Set<string>, q: number, r: number): boolean {
-  return occ instanceof MoveOccupancy && occ.passThrough.has(keyOf(q, r));
-}
-
-/**
- * Ucina koniec SKROCONEGO segmentu trasy tak, by nie konczyl sie na heksie z wlasna jednostka
- * (przejscie = bez zatrzymania i bez propozycji polaczenia). Pelna trasa konczaca sie na celu
- * (`segment.length === fullLength`) zostaje bez zmian: cel na wlasnej jednostce = laczenie.
- */
-export function trimSegmentEndOffPassThrough<T extends { q: number; r: number }>(
-  segment: T[],
-  fullLength: number,
-  occ: Set<string>,
-): T[] {
-  if (!(occ instanceof MoveOccupancy) || occ.passThrough.size === 0) return segment;
-  if (segment.length >= fullLength) return segment;
-  let end = segment.length;
-  while (end > 0 && occ.passThrough.has(keyOf(segment[end - 1]!.q, segment[end - 1]!.r))) end--;
-  return end === segment.length ? segment : segment.slice(0, end);
-}
-
-// ---------------------------------------------------------------------------
 // computeReachable
 // ---------------------------------------------------------------------------
 
@@ -841,19 +724,7 @@ export function computeReachable(
   occupied: Set<string>,
   costFn: (hex: Hex) => number = terrainMoveCost,
 ): Set<string> {
-  return withSiegeScope(() => computeReachableImpl(unit, map, occupied, costFn));
-}
-
-function computeReachableImpl(
-  unit: RuntimeUnit,
-  map: GameMap,
-  occupied: Set<string>,
-  costFn: (hex: Hex) => number,
-): Set<string> {
   const reachable = new Set<string>();
-  const passThroughKeys: ReadonlySet<string> = occupied instanceof MoveOccupancy
-    ? occupied.passThrough
-    : new Set<string>();
 
   // Dijkstra: dist map tracks the lowest accumulated cost to reach each hex.
   // We use a simple array-based min-heap approach via a sorted array for
@@ -937,9 +808,6 @@ function computeReachableImpl(
       // Occupied hexes block entry.
       if (occupied.has(nKey)) continue;
 
-      // Oblężone miasto: wejście zablokowane (też jako hex pośredni).
-      if (siegeBlocksEntry(unit, nq, nr)) continue;
-
       const newCost = cost + movCost;
 
       // Check if within movement budget.
@@ -947,8 +815,7 @@ function computeReachableImpl(
         const prevDist = dist.get(nKey);
         if (prevDist === undefined || newCost < prevDist) {
           dist.set(nKey, newCost);
-          // Wlasna jednostka na heksie: przejscie TAK (heapPush), zatrzymanie NIE (nie jest celem zasiegu).
-          if (!passThroughKeys.has(nKey)) reachable.add(nKey);
+          reachable.add(nKey);
           heapPush([newCost, nq, nr]);
         }
       }
@@ -969,7 +836,7 @@ function computeReachableImpl(
       const movCost = costFn(hex);
 
       // Passable and unoccupied neighbor is always reachable.
-      if (movCost !== Infinity && !occupied.has(nKey) && !passThroughKeys.has(nKey) && !siegeBlocksEntry(unit, nq, nr)) {
+      if (movCost !== Infinity && !occupied.has(nKey)) {
         reachable.add(nKey);
       }
     }
@@ -1021,17 +888,6 @@ export function computePath(
   destR: number,
   occupied: Set<string>,
   costFn: (hex: Hex) => number = terrainMoveCost,
-): { q: number; r: number }[] {
-  return withSiegeScope(() => computePathImpl(unit, map, destQ, destR, occupied, costFn));
-}
-
-function computePathImpl(
-  unit: RuntimeUnit,
-  map: GameMap,
-  destQ: number,
-  destR: number,
-  occupied: Set<string>,
-  costFn: (hex: Hex) => number,
 ): { q: number; r: number }[] {
   const startKey = keyOf(unit.q, unit.r);
   const destKey  = keyOf(destQ, destR);
@@ -1132,9 +988,6 @@ function computePathImpl(
 
       const hex = map.hexes[nKey]!;
       const movCost = costFn(hex);
-
-      // Oblężone miasto: wejście zablokowane -- także gdy to cel (trasa odrzucona).
-      if (siegeBlocksEntry(unit, nq, nr)) continue;
 
       if (nKey === destKey) {
         // Destination: always passable as final step.

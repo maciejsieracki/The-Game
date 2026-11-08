@@ -1,2 +1,0 @@
-tsc --noEmit: brak bledow (plik wyjscia pusty)
-EXIT=0

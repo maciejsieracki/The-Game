@@ -1,3 +1,0 @@
-
-[emporion-building-test] 47 passed, 0 failed
-EXIT=0

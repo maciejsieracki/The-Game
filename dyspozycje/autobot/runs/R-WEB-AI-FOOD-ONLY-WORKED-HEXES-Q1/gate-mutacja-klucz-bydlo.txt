@@ -1,5 +1,0 @@
-mutacja: usuniecie 'bydlo' z FOOD_IMPROVEMENT_KEYS (auto-improvements.ts), FAIL=3
-  [FAIL] bydlo: przebieg niedoboru (getOnlyWorked=false) + filtr zywnosci: 0 poza obywatelami (jest 29)
-  [FAIL] bydlo: AI (decideAITurn, civ=grecy) 0 zywnosciowych poza obywatelami w sondzie (jest 22: bydlo@15,14 bydlo@15,13 bydlo@16,16; bydlo postawiony 24x)
-  [FAIL] bydlo: z filtrem ON 0 poza obywatelami (jest 22: bydlo@15,14 bydlo@15,13 bydlo@16,16)
-EXIT=1

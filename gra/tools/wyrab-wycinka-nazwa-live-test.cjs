@@ -237,8 +237,10 @@ async function main() {
   const mainTs = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
   check('[3] main.ts: hint zaznaczenia akcji wycinki zawiera "Wycinka" (nie "Wyrąb")',
     mainTs.includes("'Wycinka' + costPart + ': +20 Pracy/turę przez 3 tury"));
-  check('[3] main.ts: hint po zbiorze Drewna ("Wycinka: +N Drewna") USUNIETY -- R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1',
-    !mainTs.includes("'Wycinka: +' + drewnoCredited + ' Drewna"));
+  check('[3] main.ts: hint po zbiorze Drewna zawiera "Wycinka" (nie "Wyrąb") -- pokazuje'
+    + ' FAKTYCZNIE zapisana (przycieta do capu) ilosc drewnoCredited, nie surowa'
+    + ' drewnoCredit (R-WYCINKA-DREWNO-50-I-KOMUNIKAT-CAP-Q1)',
+    mainTs.includes("'Wycinka: +' + drewnoCredited + ' Drewna"));
   check('[3] main.ts: log konsoli AI zawiera "Wycinka" (opcjonalne, dla spojnosci)',
     mainTs.includes('] Wycinka @ (${cmd.q},${cmd.r})'));
 
@@ -590,14 +592,9 @@ async function main() {
     + ' wystapien nazwy ulepszenia "Wyrąb" w stringach -- kazde trafienie musi byc'
     + ' na jawnej liscie uzyc pospolitych',
     trafieniaSrc.length === 0, trafieniaSrc);
-  // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1 (r2, ODDAL: czerwony na bazie): dwa z trzech znanych
-  // uzyc pospolitych ("automat MOZE wycinac las (wyrab pod farme przy rzece)" w main.ts oraz
-  // "Pozwol automatowi wycinac las (...)" w buildModeHud.ts) zniknely z gra/src razem z przelacznikami
-  // automatu (R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1) — zostalo jedno: improvement-build.ts.
-  // Oczekiwana liczba = 1 (nie tautologia: [11c] nadal dowodzi, ze nowa nazwa ulepszenia jest zglaszana).
-  check('[11] sanity: skan objal jedyne pozostale, sklasyfikowane uzycie pospolite'
+  check('[11] sanity: skan objal wszystkie trzy znane, sklasyfikowane uzycia pospolite'
     + ' (asercja nie jest pusta ani slepa)',
-    dozwoloneSrc === 1, { dozwoloneSrc, oczekiwane: 1 });
+    dozwoloneSrc === 3, { dozwoloneSrc, oczekiwane: 3 });
 
   // [11b] STRAZNIK POKRYCIA bloku [11] -- ten sam wzorzec co [7] i [8b]. Sam skan
   //       negatywny nie wykryje wlasnej slepoty: zly glob, zla sciezka albo zbyt

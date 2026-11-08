@@ -6,17 +6,7 @@
 import type { City } from './cities';
 import type { RuntimeUnit } from '../units/setup';
 import { collectDefRosterNearCity } from '../units/battleRoster';
-import {
-  makeMilitia,
-  MILITIA_MORALE_FRACTION,
-  MILITIA_MORALE_MIN_MARGIN_OVER_FLEE,
-  MILITIA_POP_FRACTION,
-  MILITIA_REGEN_TURNS,
-  MILITIA_ROSTER,
-  MILITIA_STRENGTH_FRACTION,
-  type SiegeUnit,
-} from './siege';
-import unitsRaw from '../../data/units.json';
+import { makeMilitia, type SiegeUnit } from './siege';
 
 export const GARRISON_BUILDING_ID = 'garnizon';
 
@@ -29,12 +19,6 @@ export interface CityDefRosterOptions {
   queuedBuildingIds?: BuildingIdCollection;
   /** Alias for callers whose state adapter names the completed set `builtIds`. */
   builtBuildingIds?: BuildingIdCollection;
-  /** Era number (1 Kamien, 2 Braz, 3+ Zelazo) of the CITY OWNER; picks the militia unit types. Default 1. */
-  ownerEra?: number;
-  /** Biezaca tura globalna; potrzebna do okresu odnowy Milicji. Brak = bez odnowy (zgodnosc wsteczna). */
-  currentTurn?: number;
-  /** Override of the units.json rows (tests); default = data/units.json. */
-  unitRows?: readonly Record<string, unknown>[];
 }
 
 function includesBuilding(
@@ -44,42 +28,6 @@ function includesBuilding(
   if (!ids) return false;
   if ('has' in ids) return ids.has(buildingId);
   return ids.includes(buildingId);
-}
-
-/**
- * R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: ile tur zostalo do odnowy Milicji (0 = dostepna).
- * Tura odnowy `city.militiaRegenAtTurn`; Milicja zablokowana gdy currentTurn < ta wartosc.
- */
-export function militiaRegenTurnsLeft(
-  city: Pick<City, 'militiaRegenAtTurn'>,
-  currentTurn: number | undefined,
-): number {
-  const at = city.militiaRegenAtTurn;
-  if (typeof at !== 'number' || !Number.isFinite(at)) return 0;
-  if (typeof currentTurn !== 'number' || !Number.isFinite(currentTurn)) return 0;
-  return Math.max(0, at - currentTurn);
-}
-
-/** Stempluje miasto: cala Milicja zniszczona w turze `currentTurn` => odnowa po MILITIA_REGEN_TURNS turach. */
-export function markMilitiaDestroyed(city: City, currentTurn: number): void {
-  city.militiaRegenAtTurn = currentTurn + MILITIA_REGEN_TURNS;
-}
-
-/**
- * Po bitwie: jesli WSZYSCY wirtualni milicjanci rosteru polegli (i byl choc jeden) => start okresu odnowy.
- * Czesciowe straty NIE uruchamiaja odnowy. Zwraca true gdy licznik ustawiono.
- */
-export function applyMilitiaDestroyedCooldown(
-  city: City,
-  defRoster: readonly RuntimeUnit[],
-  fallenIds: ReadonlySet<string>,
-  currentTurn: number,
-): boolean {
-  const militia = defRoster.filter(isMilitiaUnit);
-  if (militia.length === 0) return false;
-  if (!militia.every(m => fallenIds.has(String(m.id)))) return false;
-  markMilitiaDestroyed(city, currentTurn);
-  return true;
 }
 
 /** True only when the completed-building state contains Garnizon. */
@@ -111,9 +59,7 @@ export function hasCityDefenders(
 ): boolean {
   if ((city.garnizon ?? 0) > 0) return true;
   if (defenderUnitsNearCity(city, units).length > 0) return true;
-  return isGarrisonBuildingCompleted(options)
-    && militiaRegenTurnsLeft(city, options?.currentTurn) === 0
-    && makeMilitia(city.population ?? 0) !== null;
+  return isGarrisonBuildingCompleted(options) && makeMilitia(city.population ?? 0) !== null;
 }
 
 /** C3-ST-2: Szturm może pominąć preBattle / bitwę 3D. */
@@ -131,7 +77,7 @@ export function survivorsLiveSet(survivors?: ReadonlyArray<{ id: string }>): Set
   return new Set(survivors.map(s => s.id));
 }
 
-/** Rekord statów syntetycznej (zbiorczej) Milicji (SS9c) — dla matematyki abstrakcyjnego oblężenia. */
+/** Rekord statów syntetycznej Milicji (SS9c) — do unitDefFor w silniku. */
 export function militiaDefRecord(m: SiegeUnit): Record<string, unknown> {
   return {
     'Jednostka': 'Milicja',
@@ -157,144 +103,18 @@ export function militiaDefRecord(m: SiegeUnit): Record<string, unknown> {
 
 export interface VirtualMilitiaUnit extends RuntimeUnit {
   isMilitia: true;
-  /** Always 1 — each virtual militiaman is its own battle unit (1 inhabitant = 1 unit). */
   militiaCount: number;
-  militiaKind: MilitiaKind;
 }
-
-export type MilitiaKind = 'wrecz' | 'dystans';
 
 export interface CityDefRosterResult {
   roster: RuntimeUnit[];
-  /** id → def for every virtual militiaman supplied by completed Garnizon. */
+  /** id → def for a virtual Milicja supplied by completed Garnizon. */
   militiaDefs: Map<string, Record<string, unknown>>;
 }
 
-// ---------------------------------------------------------------------------
-// Milicja (spec właściciela 2026-11-03, M1–M4) — skład zależny od epoki
-// ---------------------------------------------------------------------------
-
-const MELEE_SCALED_KEYS = [
-  'meleeAttack', 'meleeDefence', 'weaponDamage', 'chargeBonus', 'armor', 'piercing', 'health',
-  'Atak', 'Obrona', 'Uderzenie', 'Pancerz', 'Przebicie', 'Health',
-] as const;
-
-const UNIT_ROWS = unitsRaw as unknown as readonly Record<string, unknown>[];
-
-function roundHalfUp(v: number): number {
-  return Math.floor(v + 0.5);
-}
-
-/** Era number → key of MILITIA_ROSTER (1 Kamień, 2 Brąz, 3+ Żelazo). */
-export function militiaEraKey(era: number | undefined): 'kamien' | 'braz' | 'zelazo' {
-  const e = Number.isFinite(era) ? Number(era) : 1;
-  if (e >= 3) return 'zelazo';
-  if (e >= 2) return 'braz';
-  return 'kamien';
-}
-
-/** Liczba milicjantów = floor(ludność × udział z danych) (dziś 1,0 → 1 mieszkaniec = 1 jednostka). */
-export function militiaHeadcount(population: number | undefined): number {
-  return Math.floor(Math.max(0, population ?? 0) * MILITIA_POP_FRACTION);
-}
-
-/** Podział: połowa wręcz, połowa dystans; nieparzysta → dodatkowa jednostka wręcz. */
-export function militiaSplit(count: number): { wrecz: number; dystans: number } {
-  const c = Math.max(0, Math.floor(count));
-  const wrecz = Math.ceil(c / 2);
-  return { wrecz, dystans: c - wrecz };
-}
-
-function findUnitRow(
-  name: string,
-  rows: readonly Record<string, unknown>[],
-): Record<string, unknown> | undefined {
-  return rows.find(r => r['Jednostka'] === name);
-}
-
 /**
- * Definicja jednej jednostki Milicji z wiersza units.json:
- * wręcz = staty × MILITIA_STRENGTH_FRACTION (zaokr. w górę od .5; min 1 gdy oryginał > 0),
- * dystans = PEŁNE staty; w obu przypadkach morale zmniejszone (MILITIA_MORALE_FRACTION)
- * z podłogą 'Morale ucieczki' + margines (żeby jednostka nie była złamana od startu).
- * PURE.
- */
-export function buildMilitiaDef(
-  row: Readonly<Record<string, unknown>>,
-  kind: MilitiaKind,
-): Record<string, unknown> {
-  const def: Record<string, unknown> = { ...row };
-  if (kind === 'wrecz') {
-    for (const k of MELEE_SCALED_KEYS) {
-      const v = row[k];
-      if (typeof v !== 'number' || !Number.isFinite(v)) continue;
-      const scaled = roundHalfUp(v * MILITIA_STRENGTH_FRACTION);
-      def[k] = v > 0 ? Math.max(1, scaled) : v;
-    }
-  }
-  const base = row['Morale bazowe'];
-  const flee = row['Morale ucieczki'];
-  if (typeof base === 'number' && Number.isFinite(base)) {
-    const fleeN = typeof flee === 'number' && Number.isFinite(flee) ? flee : 0;
-    const floor = fleeN + MILITIA_MORALE_MIN_MARGIN_OVER_FLEE;
-    def['Morale bazowe'] = Math.min(base, Math.max(roundHalfUp(base * MILITIA_MORALE_FRACTION), floor));
-  }
-  // fieldPower to cache mocy z eksportu — musi być przeliczony z nowych statów.
-  delete def['fieldPower'];
-  def['isMilitia'] = true;
-  def['militiaKind'] = kind;
-  return def;
-}
-
-export interface MilitiaSquadMember {
-  /** units.json name (model / ikona odpowiednika). */
-  typeId: string;
-  kind: MilitiaKind;
-  def: Record<string, unknown>;
-}
-
-/**
- * Skład Milicji miasta: lista pojedynczych milicjantów (najpierw wręcz, potem dystans).
- * Typy wg epoki właściciela (MILITIA_ROSTER). Brak wiersza w danych → najbliższy odpowiednik
- * (Wojownik / Oszczepnik). PURE.
- */
-export function buildMilitiaSquad(
-  population: number | undefined,
-  ownerEra: number | undefined,
-  rows: readonly Record<string, unknown>[] = UNIT_ROWS,
-): MilitiaSquadMember[] {
-  const count = militiaHeadcount(population);
-  if (count <= 0) return [];
-  const names = MILITIA_ROSTER[militiaEraKey(ownerEra)];
-  const { wrecz, dystans } = militiaSplit(count);
-  const meleeRow = findUnitRow(names.wrecz, rows) ?? findUnitRow('Wojownik', rows);
-  const rangedRow = findUnitRow(names.dystans, rows) ?? findUnitRow('Oszczepnik', rows);
-  const out: MilitiaSquadMember[] = [];
-  if (meleeRow) {
-    const def = buildMilitiaDef(meleeRow, 'wrecz');
-    for (let i = 0; i < wrecz; i++) {
-      out.push({ typeId: String(meleeRow['Jednostka']), kind: 'wrecz', def: { ...def } });
-    }
-  }
-  if (rangedRow) {
-    const def = buildMilitiaDef(rangedRow, 'dystans');
-    for (let i = 0; i < dystans; i++) {
-      out.push({ typeId: String(rangedRow['Jednostka']), kind: 'dystans', def: { ...def } });
-    }
-  }
-  return out;
-}
-
-/** True dla wirtualnego milicjanta (nie istnieje w units[], nie maszeruje). */
-export function isMilitiaUnit(u: { id?: unknown }): u is VirtualMilitiaUnit {
-  return (u as { isMilitia?: unknown }).isMilitia === true;
-}
-
-/**
- * Obrońcy miasta (C1-Q4 / C3-ST-1 + M2): jednostki dist≤1 ORAZ — przy ukończonym budynku
- * Garnizon — Milicja (1 mieszkaniec = 1 jednostka), ZAWSZE jako wsparcie realnych obrońców
- * (dołącza także gdy w mieście są jednostki wojskowe). PURE — caller rejestruje militiaDefs
- * w silniku przed unitDefFor.
+ * Obrońcy miasta (C1-Q4 / C3-ST-1): jednostki dist≤1 lub syntetyczna Milicja.
+ * PURE — caller rejestruje militiaDefs w silniku przed unitDefFor.
  */
 export function collectCityDefRoster(
   city: City,
@@ -304,108 +124,39 @@ export function collectCityDefRoster(
   const roster = defenderUnitsNearCity(city, units);
   const militiaDefs = new Map<string, Record<string, unknown>>();
   if (!isGarrisonBuildingCompleted(options)) return { roster, militiaDefs };
-  // Okres odnowy po zniszczeniu Milicji: we wszystkich sciezkach (taktyczna, Pomin/Auto, oblezenie, AI).
-  if (militiaRegenTurnsLeft(city, options?.currentTurn) > 0) return { roster, militiaDefs };
 
-  const squad = buildMilitiaSquad(city.population, options?.ownerEra, options?.unitRows ?? UNIT_ROWS);
-  if (squad.length === 0) return { roster, militiaDefs };
+  const militia = makeMilitia(Math.max(0, city.population ?? 0));
+  if (!militia) return { roster, militiaDefs };
 
-  const virtual: VirtualMilitiaUnit[] = squad.map((m, i) => {
-    const id = 'militia-' + city.id + '-' + i;
-    militiaDefs.set(id, m.def);
-    return {
-      id,
-      ownerId: city.ownerId,
-      typeId: m.typeId,
-      category: 'domyslny',
-      q: city.q,
-      r: city.r,
-      ruch: 0,
-      ruchLeft: 0,
-      isMilitia: true,
-      militiaCount: 1,
-      militiaKind: m.kind,
-    };
-  });
-  return { roster: [...roster, ...virtual], militiaDefs };
-}
-
-/** Ile wirtualnych milicjantów jest w składzie. */
-export function countMilitia(defRoster: readonly RuntimeUnit[]): number {
-  return defRoster.filter(isMilitiaUnit).length;
-}
-
-/**
- * R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1: Milicja to syntetyczne, tymczasowe jednostki bitewne
- * liczone z ludności w chwili ataku. Jej straty NIE zmieniają city.population (dawny
- * `applyMilitiaPopulationLoss` z M4 usunięty — założenie było błędne). Jedyną konsekwencją
- * całkowitego zniszczenia Milicji jest okres odnowy (`applyMilitiaDestroyedCooldown`).
- */
-
-export interface FallenMilitiaInput {
-  /** Manual 3D result: survivors list (`undefined` = auto battle). */
-  survivors?: ReadonlyArray<{ id: string | number; hp?: number }>;
-  /** Defender ids present in the battle event log (`null`/absent = legacy: no log filter). */
-  loggedDefenderIds?: ReadonlySet<string> | null;
-  /** Auto battle: ids marked dead by the loss-percentage distribution. */
-  autoDeadIds?: ReadonlySet<string>;
-}
-
-/**
- * Ids of fallen virtual militiamen. Same semantics as post-battle-map.ts: a PARTIAL event
- * log is a partial result, so a militiaman missing from the log is NOT inferred dead.
- * Manual: dead = logged and absent from `survivors` (or hp <= 0). Auto: `autoDeadIds`.
- */
-export function fallenMilitiaIds(
-  defRoster: readonly RuntimeUnit[],
-  input: FallenMilitiaInput,
-): Set<string> {
-  const fallen = new Set<string>();
-  const logged = input.loggedDefenderIds ?? null;
-  const live = input.survivors
-    ? new Map(input.survivors.map(sv => [String(sv.id), sv.hp] as const))
-    : null;
-  for (const m of defRoster) {
-    if (!isMilitiaUnit(m)) continue;
-    const id = String(m.id);
-    if (logged && !logged.has(id)) continue;
-    if (live) {
-      if (!live.has(id) || (live.get(id) ?? 1) <= 0) fallen.add(id);
-    } else if (input.autoDeadIds?.has(id)) {
-      fallen.add(id);
-    }
-  }
-  return fallen;
-}
-
-/**
- * R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1 (runda 2): ids Milicji uznane za ZNISZCZONA na potrzeby okresu odnowy.
- * Wynik reczny/taktyczny (`survivors` zdefiniowane): dokladnie `fallen` (bez zmian).
- * Auto-bitwa (Pomin/Auto): wagi linii w applyLossPctToRoster (dystans 0,25) sprawiaja, ze milicjant dystansowy
- * nigdy nie ginie, wiec "zniszczona" definiujemy WYNIKIEM: przegrana obrony (winner atakujacy) = cala
- * wirtualna Milicja zniszczona. Remis / wygrana obrony nie uruchamia odnowy. Ludnosc NIE maleje (NO-POPULATION-LOSS-Q1).
- */
-export function militiaIdsDestroyedForCooldown(
-  defRoster: readonly RuntimeUnit[],
-  fallen: ReadonlySet<string>,
-  ctx: { isAutoBattle: boolean; attackerWon: boolean },
-): Set<string> {
-  if (!ctx.isAutoBattle || !ctx.attackerWon) return new Set(fallen);
-  const all = new Set<string>(fallen);
-  for (const m of defRoster) if (isMilitiaUnit(m)) all.add(String(m.id));
-  return all;
+  const id = 'militia-' + city.id;
+  militiaDefs.set(id, militiaDefRecord(militia));
+  const virtualMilitia: VirtualMilitiaUnit = {
+    id,
+    ownerId: city.ownerId,
+    typeId: 'Milicja',
+    category: 'domyslny',
+    q: city.q,
+    r: city.r,
+    ruch: 0,
+    ruchLeft: 0,
+    isMilitia: true,
+    militiaCount: militia.militiaCount ?? 0,
+  };
+  return {
+    roster: [...roster, virtualMilitia],
+    militiaDefs,
+  };
 }
 
 /** Tytuł strony obrońcy w preBattle (miasto otwarte / szturm). */
 export function defenderSideTitle(city: City, defRoster: readonly RuntimeUnit[]): string {
   if (defRoster.length === 0) return 'Brak';
-  const militia = countMilitia(defRoster);
-  const real = defRoster.length - militia;
-  if (militia > 0 && real === 0) return 'Milicja (' + militia + ')';
-  if (militia > 0) {
-    return (real > 1 ? 'Garnizon (' + real + ')' : defRoster.find(u => !isMilitiaUnit(u))!.typeId)
-      + ' + Milicja (' + militia + ')';
-  }
   const lead = defRoster[0]!;
+  if (lead.typeId === 'Milicja') {
+    const militiaCount = 'militiaCount' in lead && typeof lead.militiaCount === 'number'
+      ? lead.militiaCount
+      : Math.floor((city.population ?? 0) * 0.2);
+    return 'Milicja (~' + militiaCount + ')';
+  }
   return defRoster.length > 1 ? 'Garnizon (' + defRoster.length + ')' : lead.typeId;
 }

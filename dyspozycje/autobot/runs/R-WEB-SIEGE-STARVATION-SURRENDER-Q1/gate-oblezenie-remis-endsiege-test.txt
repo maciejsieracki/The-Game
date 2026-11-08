@@ -1,3 +1,0 @@
-[info] 63 konfiguracje: 33/63 zostawiało oblężenie TRWAJĄCE po samym validateActiveSieges() (stare zachowanie, geometrio-zależne — u Evaluatora naprawy zmierzone 33/63 przy identycznym wariancie pełnej przejezdności); 63/63 ma city.oblegane===false po WYKONANIU PRAWDZIWEJ gałęzi remis z finishSiegeStormBattle (main.ts, ten commit — endMapSiege() w tej gałęzi to realne wywołanie wyciętej funkcji, wołane TYLKO jeśli main.ts faktycznie je tam zawiera; patrz §3b niżej dla dowodu mutacyjnego).
-oblezenie-remis-endsiege-test: 271 passed, 0 failed
-EXIT=0

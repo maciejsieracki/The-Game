@@ -1,7 +1,0 @@
-=== ai-test
-
---- T14-p1-2b: drugi scout score −80 vs pierwszy (ta sama economyScore) ---
-
-ai-test: 274 passed, 20 failed
-EXIT=1 (ai-test)
-EXIT=done

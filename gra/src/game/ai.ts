@@ -17,32 +17,13 @@ import { Nakladka }     from '../types/hex';
 import type { GameData, BuildingDef } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
 import type { RuntimeUnit } from '../units/setup';
-import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
-import {
-  recordAiGeneralGatherTurn,
-  recordAiReserveGatherTurn,
-  type AiGeneralWarCampaign,
-} from './ai-general-war-campaign';
-import { armyFieldPower, type UnitPowerInput } from './unit-power';
-import { estimateUnitCombatStrength } from './siegeAi';
-import { isHomeWarDefenseEnabled, planHomeWar } from './ai-war-home-defense';
-import {
-  ARMY_CONSOLIDATION_HOME_GROUP_SIZE,
-  assignRallyTargets,
-  isArmyConsolidationEnabled,
-  pickRallyCity,
-  splitIntoWarArmies,
-  warArmyCount,
-} from './army-consolidation';
-import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit, terrainMoveCost, buildMoveOccupancy, endBlockedKeys, MoveOccupancy } from '../units/setup';
-import { type AiMarchGuard, firstBlockedOwnerOnPath, isDetourSignificant } from './ai-march-guard';
-import { farthestStepWithinBudget } from './ai-move-range';
+import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit } from '../units/setup';
 import {
   cityStateMilitaryProductionCap,
   type DifficultyLevel,
 } from './city-state-difficulty';
-import type { City, CityPodzialHandlu } from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA, DEFAULT_PODZIAL_HANDLU }    from './cities';
+import type { City }       from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, MAX_PROCENT_PULI_IMPERIUM, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -61,7 +42,7 @@ import type { CivAiProfile } from './civ-ai-data';
 import type { ImprovementKey } from '../render/improvements';
 import type { TerritoryNode, CityNode } from '../map/territory';
 import { cityTerritoryRadius, territoryOwnerAt } from '../map/territory';
-import { type FortNode, fortNodeAsCityNode, isOutpostPlacementAllowed } from './fort-territory';
+import { type FortNode, fortNodeAsCityNode } from './fort-territory';
 import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
 import {
   epochGateMet,
@@ -70,14 +51,8 @@ import {
   type ResearchBuildingGate,
 } from './research';
 import { hexKeysWithinRadius } from './okolica';
-import { resolveWarPeaceProfile, aiPeaceSignals, isFeelingStronger, type WarPeaceProfile } from './diplomacy-war-peace-profile';
 import {
   AI_IMPROVEMENT_PRIORITY,
-  IMPROVEMENT_FOR_DEFICIT,
-  actionableDeficitKeys,
-  AI_RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY,
-  AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR,
-  isCityLimitExhausted,
   pickAutoImprovements,
   type AutoImprovementSurplusReport,
 } from './auto-improvements';
@@ -88,22 +63,13 @@ import {
 import { workedHexCoordsForCity } from './turn-economy';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { CITY_BUILDING_PREREQ, cityBuildingPrereqMet } from './building-resource-gate';
-import { isBuildingSupersededByUpgrade, newestAvailableSameTypeUnit } from './production';
+import { isBuildingSupersededByUpgrade } from './production';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
 import type { AiTargetMemoryEntry } from './ai-fog';
 import {
-  planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity, planWarReplacementRally,
-  planFieldStackGather, noteStackGatherTurn,
-  ARMY_CONCENTRATION_RADIUS, isEligibleForArmyConcentration,
-  pickNearestAvailableLeader, collectLeaderCandidates, type LeaderPathLength,
+  planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity,
+  ARMY_CONCENTRATION_RADIUS,
 } from './army-concentration';
-import { allocateGroupsToEnemies, type ArmyGroupRef, type EngageArmyHex, type EnemyStrengthRef } from './war-rules-multiwar';
-import {
-  planForcedWarWave,
-  type ForcedWarWave,
-  type ForcedWarWaveHistory,
-  type ForcedWarWavePlan,
-} from './forced-war-waves';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -117,8 +83,6 @@ export interface AICmdMove {
   toR: number;
   /** Cel miasta, który musi zostać ponownie wykryty przed przejęciem. */
   targetCityId?: string;
-  /** Concentration movement may finish on an occupied friendly field stack. */
-  allowFriendlyStack?: boolean;
 }
 
 /** Found a city at (q, r) via panel budowy (foundCityAt — bez osadnika). */
@@ -191,19 +155,58 @@ export type AICommand =
   | AICmdBuildImprovement
   | AICmdEndTurn;
 
-/**
- * Deprecated compatibility shape for callers that still supply removed ai-params
- * archetype priorities. Live AI scoring deliberately ignores these values.
- */
-interface LegacyArchetypeMods {
+// ---------------------------------------------------------------------------
+// Archetype modifier keys (from ai-params.json)
+// ---------------------------------------------------------------------------
+
+type ArchKey =
+  | 'grecy' | 'rzym' | 'chiny' | 'zulusi' | 'inkowie' | 'egipt' | 'sumer' | 'celtowie' | 'germanie'
+  | 'harappa' | 'hetyci' | 'slowianie' | 'babilonia' | 'asyria' | 'fenicjanie';
+
+/** Maps TypCywilizacji string to archetype key used in ai-params.json. */
+const CIV_TO_ARCH: Record<string, ArchKey> = {
+  grecy:             'grecy',
+  rzymianie:         'rzym',
+  chinczycy:         'chiny',
+  zulusi:            'zulusi',
+  inkowie:           'inkowie',
+  egipt:             'egipt',
+  babilon:           'sumer',
+  sumer:             'sumer',
+  sumerowie:         'sumer',
+  celtowie:          'celtowie',
+  germanie:          'germanie',
+  harappa:           'harappa',
+  hetyci:            'hetyci',
+  slowianie:         'slowianie',
+  babilonia:         'babilonia',
+  asyria:            'asyria',
+  fenicjanie:        'fenicjanie',
+};
+
+/** Per-archetype production priority deltas loaded from ai-params.json. */
+interface ArchetypeMods {
   wojsko:   number;
   nauka:    number;
   ekonomia: number;
   obrona:   number;
 }
-const IGNORED_LEGACY_ARCHETYPE_MODS: LegacyArchetypeMods = {
-  wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0,
-};
+
+function readArchMods(data: GameData, archKey: ArchKey): ArchetypeMods {
+  const p = data.aiParams;
+
+  function val(key: string): number {
+    const entry = p[key];
+    return (entry !== undefined && (entry['wartość'] ?? entry['wartosc']) !== null && (entry['wartość'] ?? entry['wartosc']) !== undefined) ? ((entry['wartość'] ?? entry['wartosc']) as number) : 0;
+  }
+
+  return {
+    wojsko:   val(`archetype_${archKey}_wojsko_priorytet`),
+    nauka:    val(`archetype_${archKey}_nauka_priorytet`),
+    ekonomia: val(`archetype_${archKey}_ekonomia_priorytet`),
+    obrona:   val(`archetype_${archKey}_obrona_priorytet`),
+  };
+}
 
 function getAiParam(data: GameData, key: string, fallback: number): number {
   const entry = data.aiParams[key];
@@ -410,23 +413,11 @@ export interface AITurnOpts {
    */
   improvementSurplusReport?: AutoImprovementSurplusReport;
   /**
-   * R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1: heksy przegrane na rzecz bliższego miasta tego samego właściciela
-   * (`computeLostToNearerSiblingByCity`, id miasta -> zbiór kluczy) — ten sam wejściowy zbiór co ścieżka gracza i
-   * `workedHexCoordsForCity` silnika; bez niego zbiór pól z obywatelami wg AI rozjeżdża się z realnym.
-   */
-  improvementExcludeHexKeysByCity?: ReadonlyMap<string, ReadonlySet<string>>;
-  /**
    * D-IMPROVEMENTS: epoka TEGO AI (main.ts `empireEpochForOwner(ownerId)`) --
    * wymagane przez qualifier dla hodowli Inków (bydło/owce poza lamą dopiero
    * od epoki 3, patrz livestock-unlock.ts). Domyślnie 1 gdy brak.
    */
   civEra?: number;
-  /**
-   * R-WEB-AUTO-FORT-CLAIM-Q1: bazowy limit miast z konfiguracji gry (`gameConfig.cityLimitBase`, jak w `canFoundCity`).
-   * Brak = krok E-FORT (fort na cennym terenie przy wyczerpanym limicie miast) NIEAKTYWNY dla tego AI —
-   * silnik (main.ts, poza allowlistą tematu) musi go podać, patrz raport Operatora.
-   */
-  cityLimitBase?: number;
   /**
    * D-START posiłki v2 (Maciej 2026-07-21 przeróbka ZMIANA 1): "Wsparcie miast-państw"
    * — NIE osobna opcja setupu (usunięta), pochodna TRUDNOŚCI gry (niskie/normalne/mocne
@@ -468,56 +459,6 @@ export interface AITurnOpts {
    * Gdy brak — brak filtra (testy lane / stare save).
    */
   canEngageOwner?: (targetOwnerId: number) => boolean;
-  /**
-   * R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: straz marszu (ai-march-guard.ts). Gdy podana,
-   * jednostki wojenne tego AI traktuja teren trzecich cywilizacji bez umowy przemarszu jako
-   * zablokowany w planowaniu trasy. Brak pola = zachowanie sprzed tematu (testy lane / stare save).
-   */
-  marchGuard?: AiMarchGuard;
-  /**
-   * Aktywna wojna wymuszona epoki. Napastnik dostaje twardy priorytet
-   * konsolidacji dostępnej armii i marszu na miasta jednego przeciwnika;
-   * obrońca używa tej samej informacji do skupienia reakcji na napastniku.
-   * Brak pola zachowuje dotychczasową politykę AI.
-   */
-  forcedWar?: {
-    targetOwnerId: number;
-    role: 'attacker' | 'defender';
-    era: 'bronze' | 'stone' | 'iron';
-    capturedByAttacker: number;
-    capturedByDefender: number;
-    /** Waves still marching toward unresolved forced-war objectives. */
-    activeWaves?: readonly ForcedWarWave[];
-    /** Resolved-wave route history retained until this forced war ends. */
-    waveHistory?: readonly ForcedWarWaveHistory[];
-    /** Mutable per-turn handoff: main.ts records a newly formed wave after AI planning. */
-    wavePlan?: ForcedWarWavePlan;
-  };
-  /**
-   * R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE): aktualne stolice cywilizacji, z ktorymi ten AI
-   * jest w wojnie. Gdy ustawione (main.ts robi to tylko przy fladze ON) i niepuste, WSZYSTKIE
-   * jednostki bojowe tego AI ida na najblizsza stolice (patrz warAllInCapital.ts).
-   */
-  warAllIn?: WarAllInContext;
-  /** Active major-AI General-led war cycle; absent outside an eligible civilization war. */
-  aiGeneralWarCampaign?: AiGeneralWarCampaign & {
-    rallyQ: number;
-    rallyR: number;
-    target: { ownerId: number; cityId: string; q: number; r: number };
-    turn: number;
-    seaTravelAllowed?: boolean;
-  };
-  /**
-   * R-WEB-ARMY-CONSOLIDATION-Q1 (tylko gdy flaga ARMY_CONSOLIDATION_ENABLED ON; brak = baza):
-   * id aktualnej stolicy tej cywilizacji (main.ts: capitalCityIdForOwner). Punkt zbiorki w pokoju.
-   */
-  capitalCityId?: string | null;
-  /**
-   * R-WEB-ARMY-CONSOLIDATION-Q1 (tylko flaga ON): true = ta cywilizacja jest w wojnie z
-   * jakas inna cywilizacja (nie barbarzyncami). Stan pokoju = brak wojny; w pokoju wlacza
-   * sie zbiorka w stolicy (zamiast lokalnej planArmyConcentration), w wojnie zostaje baza + W1/W2.
-   */
-  atWarWithCiv?: boolean;
   /**
    * C-AI-PAKIET (2026-07-26): profil z civ-ai.json per typ cywilizacji —
    * ekspansywnosc i sklonnoscDoPodboju sterują ekspansją i agresją wojskową.
@@ -650,8 +591,11 @@ export interface AITechDef {
  * All fields are optional to keep the call site clean.
  */
 export interface AIResearchOpts {
-  /** Deprecated legacy compatibility input; intentionally ignored. */
-  mods?: LegacyArchetypeMods;
+  /**
+   * Archetype mods (nauka delta). When omitted, nauka delta = 0.
+   * Pass readArchMods result if available.
+   */
+  mods?: ArchetypeMods;
   /**
    * Number of cities the AI currently owns (for phase detection).
    * earlyPhase = myCitiesCount < 3 (default 1 = early).
@@ -689,6 +633,7 @@ function parsePrereqs(wyrazenie: string | null | undefined): string[] {
  *
  * Heuristic (Spec-AI §5):
  *   - Base score by strategic need (buildings the tech unlocks + phase/threat)
+ *   - nauka archetype delta shifts the total score by +/-20 per point
  *   - Lower cost = slight tie-breaker bonus (prefer cheaper / faster techs)
  *
  * Returns a numeric score; higher = higher priority.
@@ -713,6 +658,7 @@ function scoreTech(
   }
   if (opts.researchGate && !researchGatesMet(tech, opts.researchGate)) return -Infinity;
 
+  const mods          = opts.mods ?? { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 };
   const earlyPhase    = (opts.myCitiesCount ?? 1) < 3;
   const underThreat   = opts.underThreat ?? false;
   const allBuilt      = new Set(opts.allBuiltBuildings ?? []);
@@ -751,7 +697,6 @@ function scoreTech(
   const unlocksEconomy =
     unlocks.includes('tartak') ||
     unlocks.includes('targowisko') ||
-    unlocks.includes('emporion') ||
     unlocks.includes('akwedukt') ||
     unlocks.includes('biblioteka') ||
     unlocks.includes('studnia') ||
@@ -787,6 +732,10 @@ function scoreTech(
   // Base: any researchable tech gets a small floor so nothing is ignored
   score += 10;
 
+  // --- §5.2 / §8 archetype nauka delta ------------------------------------
+  // nauka delta +/-1..+2 shifts total by +/-20 per point
+  score += mods.nauka * 20;
+
   // --- Tie-breaker: prefer cheaper (faster) techs -------------------------
   score += Math.max(0, 30 - koszt);
 
@@ -801,7 +750,7 @@ function scoreTech(
  *
  * @param techData    All tech definitions (data.tech from GameData / tech.json)
  * @param ukonczone   Set of tech names already fully researched by this AI player
- * @param opts        Optional tuning (city count, threat flag, built buildings)
+ * @param opts        Optional tuning (archetype mods, city count, threat flag, built buildings)
  * @returns           Tech name (Technologia) to start researching, or null when nothing available
  *
  * Engine usage (§9 step 3):
@@ -892,27 +841,19 @@ function nearest<T>(
  * Build the occupied set (all units' keys) excluding this unit itself.
  * Used for pathfinding -- we do not block on the unit's own hex.
  */
-function occupiedExcluding(units: RuntimeUnit[], excludeId: string): MoveOccupancy {
-  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: obce jednostki blokuja, WLASNE (ten sam ownerId) = przejscie.
-  const moverOwner = units.find(u => u.id === excludeId)?.ownerId;
-  if (moverOwner === undefined) {
-    const all = new MoveOccupancy();
-    for (const u of units) if (u.id !== excludeId) all.add(keyOf(u.q, u.r));
-    return all;
+function occupiedExcluding(units: RuntimeUnit[], excludeId: string): Set<string> {
+  const occ = new Set<string>();
+  for (const u of units) {
+    if (u.id !== excludeId) {
+      occ.add(keyOf(u.q, u.r));
+    }
   }
-  return buildMoveOccupancy(units, moverOwner, [excludeId]);
+  return occ;
 }
 
 /**
  * Returns the first step along the path toward (destQ, destR).
  * If the path is empty returns null (already there or unreachable).
- */
-/**
- * R-WEB-AI-MOVE-RANGE-Q1: krok = NAJDALSZY heks trasy w budżecie `ruchLeft` (jak
- * u gracza: truncatePathToBudget), nie sam path[0]. Dawniej AI schodziło o 1 heks
- * na turę niezależnie od zasięgu. Gdy budżet <= 0 albo trasa krótka -- path[0]
- * (stare zachowanie). Heks docelowy jest krokiem, gdy mieści się w budżecie i jest wolny
- * (patrz farthestStepWithinBudget); zajęty cel -- krok do sąsiada.
  */
 function firstStep(
   unit: RuntimeUnit,
@@ -920,151 +861,11 @@ function firstStep(
   destQ: number,
   destR: number,
   units: RuntimeUnit[],
-  allowFriendlyDestination = false,
 ): { q: number; r: number } | null {
   const occ = occupiedExcluding(units, unit.id);
-  const path = marchPathFor(unit, map, destQ, destR, units, occ, allowFriendlyDestination);
+  const path = computePath(unit, map, destQ, destR, occ);
   if (path.length === 0) return null;
-  // Krok nie moze konczyc sie na zablokowanym ani na heksie z wlasna jednostka (przejscie != laczenie).
-  return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, endBlockedKeys(occ)) ?? path[0] ?? null;
-}
-
-/** Trasa marszu jednostki (ta sama co w firstStep: straz terytorium, zajetosc); `occ` jest modyfikowane. */
-function marchPathFor(
-  unit: RuntimeUnit,
-  map: GameMap,
-  destQ: number,
-  destR: number,
-  units: RuntimeUnit[],
-  occ: Set<string>,
-  allowFriendlyDestination: boolean,
-): { q: number; r: number }[] {
-  if (allowFriendlyDestination && units.some(u =>
-    u.ownerId === unit.ownerId && u.id !== unit.id && u.q === destQ && u.r === destR,
-  )) {
-    occ.delete(keyOf(destQ, destR));
-    if (occ instanceof MoveOccupancy) occ.passThrough.delete(keyOf(destQ, destR));
-  }
-  const guard = activeMarchGuard;
-  return guard !== null && !isCivilianUnit(unit)
-    ? guardedMarchPath(guard, unit, map, destQ, destR, occ)
-    : computePath(unit, map, destQ, destR, occ);
-}
-
-/**
- * R-WEB-ARMY-TO-NEAREST-LEADER-Q1: dlugosc realnej trasy marszu `unit` do wodza (null = brak trasy,
- * wodz niedostepny). Ta sama trasa co przy faktycznym marszu (firstStep), nie linia prosta.
- */
-function leaderPathLengthFor(unit: RuntimeUnit, map: GameMap, units: RuntimeUnit[]): LeaderPathLength {
-  // Zajetosc liczona RAZ na jednostke (nie na kazdego wodza); marchPathFor zdejmuje z niej heks celu,
-  // wiec przywracamy go po kazdym wywolaniu.
-  const occ = occupiedExcluding(units, unit.id);
-  return (_from, to) => {
-    const destKey = keyOf(to.q, to.r);
-    const hadDest = occ.has(destKey);
-    const path = marchPathFor(unit, map, to.q, to.r, units, occ, true);
-    if (hadDest) occ.add(destKey);
-    return path.length === 0 ? null : path.length;
-  };
-}
-
-/**
- * R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: straz marszu aktywna na czas jednego
- * decideAITurn (ustawiana w wrapperze; null = brak straży = zachowanie sprzed tematu).
- */
-let activeMarchGuard: AiMarchGuard | null = null;
-
-function pathCostOf(path: ReadonlyArray<{ q: number; r: number }>, map: GameMap): number {
-  let sum = 0;
-  for (const h of path) {
-    const hex = map.hexes[keyOf(h.q, h.r)];
-    sum += hex ? terrainMoveCost(hex) : 1;
-  }
-  return sum;
-}
-
-/**
- * Trasa jednostki wojennej AI z uwzglednieniem terenu TRZECICH cywilizacji bez umowy przemarszu
- * (twarda przeszkoda). Koszt: jeden Dijkstra jak dotad; drugi tylko gdy trasa wprost przecina
- * zakazany teren. Brak trasy okreznej / cel na zakazanym terenie => [] (odroczenie) + prosba
- * o przemarsz. Jednostka stojaca na zakazanym terenie bez wyjscia: wyjatek (trasa bez blokady
- * wlasnego heksu startowego), zliczony w stats.exitExceptions.
- */
-function guardedMarchPath(
-  guard: AiMarchGuard,
-  unit: RuntimeUnit,
-  map: GameMap,
-  destQ: number,
-  destR: number,
-  occ: Set<string>,
-): { q: number; r: number }[] {
-  const cacheKey = `${unit.q},${unit.r}>${destQ},${destR}${unit.embarked === true ? 'e' : ''}`;
-  const cached = guard.pathCache.get(cacheKey);
-  if (cached !== undefined) return cached.slice();
-  const result = guardedMarchPathUncached(guard, unit, map, destQ, destR, occ);
-  guard.pathCache.set(cacheKey, result);
-  return result.slice();
-}
-
-function guardedMarchPathUncached(
-  guard: AiMarchGuard,
-  unit: RuntimeUnit,
-  map: GameMap,
-  destQ: number,
-  destR: number,
-  occ: Set<string>,
-): { q: number; r: number }[] {
-  // Cel na zakazanym terenie: nie wchodzimy (odroczenie + prosba).
-  if (guard.isBlockedHex(destQ, destR)) {
-    guard.stats.destinationBlocked++;
-    guard.requestPassage(guard.territoryOwnerAtHex(destQ, destR), 'no-route');
-    return [];
-  }
-  // Jeden Dijkstra z kosztem Infinity na zakazanym terenie (koszt ~ jak dotad); trasa wprost liczona
-  // dopiero gdy trasa straznika jest podejrzanie dluga (objazd) albo jej brak.
-  // Jednostka juz zaokretowana (trasa morska z poprzedniej tury) planuje po wodzie -- inaczej utknie na morzu.
-  const baseCost = unit.embarked === true ? (guard.seaCostFor(unit) ?? terrainMoveCost) : terrainMoveCost;
-  let path = computePath(unit, map, destQ, destR, occ, guard.wrapCost(baseCost));
-  if (path.length === 0 && guard.isBlockedHex(unit.q, unit.r)) {
-    // Wyjatek: stoimy na zakazanym terenie -- pozwol przejsc przez teren startowy (wyjscie).
-    path = computePath(unit, map, destQ, destR, occ,
-      guard.wrapCost(baseCost, guard.territoryOwnerAtHex(unit.q, unit.r)));
-    if (path.length > 0) {
-      guard.stats.exitExceptions++;
-      console.log(`[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel ${guard.ownerId}, jednostka ${unit.id} (${unit.q},${unit.r}) -> (${destQ},${destR})`);
-    }
-  }
-  if (path.length > 0) {
-    guard.stats.routed++;
-    const guardedCost = pathCostOf(path, map);
-    if (guardedCost > hexDistance(unit.q, unit.r, destQ, destR) * 1.5 + 3) {
-      const direct = computePath(unit, map, destQ, destR, occ);
-      const crossing = direct.length > 0 ? firstBlockedOwnerOnPath(guard, direct) : null;
-      if (crossing !== null) {
-        guard.stats.detours++;
-        if (isDetourSignificant(pathCostOf(direct, map), guardedCost)) guard.requestPassage(crossing, 'detour');
-      }
-    }
-    return path;
-  }
-  const direct = computePath(unit, map, destQ, destR, occ);
-  if (direct.length === 0) return [];
-  const crossing = firstBlockedOwnerOnPath(guard, direct);
-  if (crossing === null) return [];
-  // Brak trasy ladowej omijajacej zakazany teren: trasa morska (transport/zaokretowanie przy Zegludze),
-  // nadal z zakazanym terenem jako przeszkoda (rowniez wod terytorialnych). Brak => odroczenie.
-  const seaCost = guard.seaCostFor(unit);
-  if (seaCost !== undefined) {
-    const seaPath = computePath(unit, map, destQ, destR, occ, guard.wrapCost(seaCost));
-    if (seaPath.length > 0) {
-      guard.stats.seaRoutes++;
-      guard.requestPassage(crossing, 'no-route');
-      return seaPath;
-    }
-  }
-  guard.stats.deferred++;
-  guard.requestPassage(crossing, 'no-route');
-  return [];
+  return path[0] ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -1366,37 +1167,8 @@ function planScoutExploreStep(
 // Terrain yield heuristic (city founding -- Spec-AI §3.3)
 // ---------------------------------------------------------------------------
 
-/**
- * R-WEB-AI-CITY-YIELD-FIX-Q1: id terenu (TerenBazowy: 'laka', 'rownina', ...) -> wiersz plonow z
- * terrain-yields.json, ktorego `Teren` to etykieta z diakrytykami ('Łąka', 'Równina', ...).
- * Wczesniej `t.Teren === hex.terenBazowy` nigdy nie zachodzilo (plon kazdego terenu = 0).
- * Porownanie po znormalizowanej nazwie (bez diakrytykow, male litery) + jawny alias etykiety
- * 'Wybrzeże' -> 'plytkie_morze' (patrz TERRAIN_NAME_TO_ENUM w economy.ts). Dopasowuje tez wpis
- * rowny id dosłownie (stare/testowe dane).
- */
-function normalizeTerrainLabel(s: string): string {
-  const folded = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').replace(/Ł/g, 'L').toLowerCase();
-  return folded === 'wybrzeze' ? 'plytkie_morze' : folded;
-}
-export function terrainYieldRowForId(
-  data: GameData,
-  terrainId: string,
-): GameData['terrainYields']['terrain_types'][number] | undefined {
-  const rows = data.terrainYields.terrain_types;
-  const exact = rows.find(t => t.Teren === terrainId);
-  if (exact !== undefined) return exact;
-  const want = normalizeTerrainLabel(terrainId);
-  return rows.find(t => normalizeTerrainLabel(t.Teren) === want);
-}
-
-/**
- * Fallback wagi czesci plonu w hexCityScore, gdy `ekspansja_waga_plonu_heksu` nie ma w danych: 1 = BRAK skalowania
- * (neutralne dla fixture'ow testowych). Produkcyjna wartosc strojona pomiarem siedzi w ai-params.json (0,3).
- */
-const AI_HEX_YIELD_WEIGHT_DEFAULT = 1;
-
 /** Score a candidate hex for city founding per ai-params.json §3.3 heuristic. */
-export function hexCityScore(
+function hexCityScore(
   hex: Hex,
   q: number,
   r: number,
@@ -1414,7 +1186,7 @@ export function hexCityScore(
   // Get terrain yields from data
   let food = 0; let work = 0; let trade = 0;
   const terrainName = hex.terenBazowy as string;
-  const tyRow = terrainYieldRowForId(data, terrainName);
+  const tyRow = data.terrainYields.terrain_types.find(t => t.Teren === terrainName);
   if (tyRow !== undefined) {
     // TerrainTypeDef fields use Polish names with diacritics in the JSON;
     // we access via bracket notation to handle both encodings
@@ -1424,14 +1196,10 @@ export function hexCityScore(
     trade = (rawRow['Podatek'] as number | null) ?? (rawRow['Handel'] as number | null) ?? 0;
   }
 
-  // R-WEB-AI-CITY-YIELD-FIX-Q1: waga czesci "plon terenu" (zywnosc/praca/handel) w ocenie heksu — skala
-  // tempa ekspansji po naprawie dopasowania terenu (ai-params.json `ekspansja_waga_plonu_heksu`).
-  const yieldWeight = getAiParam(data, 'ekspansja_waga_plonu_heksu', AI_HEX_YIELD_WEIGHT_DEFAULT);
-  let yieldScore = 0;
-  if (food  >= 3) yieldScore += foodPts;
-  if (work  >= 2) yieldScore += workPts;
-  if (trade >= 1) yieldScore += tradePts;
-  let score = yieldScore * yieldWeight;
+  let score = 0;
+  if (food  >= 3) score += foodPts;
+  if (work  >= 2) score += workPts;
+  if (trade >= 1) score += tradePts;
   if (hex.rzeka.obecna) score += riverPts;
 
   const deficits = opts?.resourceDeficitKeys ?? [];
@@ -1476,6 +1244,8 @@ export const AI_MAJOR_EARLY_MAX_AVG_POP = 5;
 export const AI_MAJOR_EARLY_MAX_BUILDINGS_AVG = 4;
 /** AI-BALANS-STEP2 / R-AI-TRUDNOSC C.3 Ś2: L3 pokój — kara score Wojownika w produkcji major AI. */
 export const AI_L3_PEACE_WARRIOR_SCORE_PENALTY = 40;
+/** Bias 60/40: ±5% udziału wojska na punkt różnicy priorytetów archetypu (ai-params). */
+export const AI_ARCHETYPE_BIAS_PER_POINT = 0.05;
 /** Early major: ~60% Pracy do puli państwa (ulepszenia), ~40% kolejka budowy. */
 export const AI_MAJOR_EARLY_PROCENT_BUDYNKI = 40;
 /** Mid major: ~50/50 budynki ↔ ulepszenia. */
@@ -1531,6 +1301,11 @@ export function computeMajorAiEarlyGame(
   return false;
 }
 
+/**
+ * Udział wojska w alokacji major AI (0.4–0.6) z ai-params archetypów.
+ * Wojowniczy (zulusi: wojsko +2, ekonomia -1) ≈60% wojsko;
+ * gospodarczy (chiny: wojsko -1, ekonomia +1) ≈40% wojsko (reszta rozwój).
+ */
 /** C.3 Ś2: obniż score Wojownika major AI na L3 gdy brak zagrożenia (nie MP). */
 export function applyL3PeaceWarriorPenalty(
   candidates: { id: string; score: number }[],
@@ -1541,6 +1316,31 @@ export function applyL3PeaceWarriorPenalty(
   for (const c of candidates) {
     if (c.id === 'Wojownik') {
       c.score -= AI_L3_PEACE_WARRIOR_SCORE_PENALTY;
+    }
+  }
+}
+
+export function computeMajorArchetypeMilitaryFraction(
+  mods: ArchetypeMods,
+): number {
+  const delta = (mods.wojsko - mods.ekonomia) * AI_ARCHETYPE_BIAS_PER_POINT;
+  return Math.min(0.6, Math.max(0.4, 0.5 + delta));
+}
+
+function applyMajorArchetypeProductionBias(
+  candidates: { id: string; score: number }[],
+  data: GameData,
+  militaryFraction: number,
+): void {
+  const unitNames = new Set(data.units.map(u => u.Jednostka));
+  const buildingIds = new Set(data.buildings.map(b => b.id));
+  const milBoost = Math.round((militaryFraction - 0.5) * 160);
+  const infraIds = new Set(['spichlerz', 'mury', 'koszary', 'studnia', 'garncarnia']);
+  for (const c of candidates) {
+    if (unitNames.has(c.id)) {
+      c.score += milBoost;
+    } else if (buildingIds.has(c.id) && !infraIds.has(c.id)) {
+      c.score -= milBoost;
     }
   }
 }
@@ -1721,9 +1521,8 @@ const AI_MAJOR_WALL_BORDER_BONUS = 120;
  * DOKŁADNIE tych samych progów co silnik ekonomii (`cityPopulationCap` w
  * `economy.ts`, `econ-params.json`: bez budynku -- `akwedukt_prog_ludnosci`,
  * SKALUJE SIĘ z trudnością (easy=6/normal=5/hard=4); ze Spichlerzem/Spichlerzem
- * I bez Akweduktu -- `spichlerz_prog_ludnosci`, PŁASKIE 8 na wszystkich
- * trudnościach; ze Spichlerzem II bez Akweduktu -- `spichlerz_ii_prog_ludnosci`
- * (12); z Akweduktem=20 -- ai.ts nie importuje `economy.ts` wprost, żeby
+ * II bez Akweduktu -- `spichlerz_prog_ludnosci`, PŁASKIE 8 na wszystkich
+ * trudnościach; z Akweduktem=12 -- ai.ts nie importuje `economy.ts` wprost, żeby
  * nie ciągnąć całego modułu ekonomii do testów jednostkowych AI, więc progi są
  * zduplikowane jako nazwane stałe `AI_POP_CAP_*` niżej z jawnym odnośnikiem do
  * źródła prawdy). Gdy miasto jest NA suficie (populacja >= aktualny sufit --
@@ -1731,7 +1530,7 @@ const AI_MAJOR_WALL_BORDER_BONUS = 120;
  * rangi Koszar/Biblioteki (`AI_MAJOR_GRANARY_PRIORITY_BONUS_STRONG`). Gdy
  * miasto ma jeszcze zapas do sufitu (jak `ai-jednostki-tylko-zakup-test` B,
  * populacja 4 < sufit "normal"=5) -- SŁABY, niezmieniony bonus (`_WEAK` = dawne
- * 8, zbisekcjonowane jako bezpieczne). Miasto z Akweduktem (sufit 20) nigdy nie
+ * 8, zbisekcjonowane jako bezpieczne). Miasto z Akweduktem (sufit 12) nigdy nie
  * dostaje silnego bonusu -- Spichlerz przestał być wąskim gardłem wzrostu.
  *
  * TRUDNOŚĆ (P-GRANARY-BONUS-IGNORUJE-TRUDNOSC, Evaluator runda 3, PRZYJĘTE):
@@ -1768,13 +1567,11 @@ const AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY: Record<DifficultyLevel, number> = {
 };
 /** Sufit populacji ZE Spichlerzem/Spichlerzem II, BEZ Akweduktu -- `economy.ts` `cityPopulationCap`, `econ-params.json` `spichlerz_prog_ludnosci` -- PŁASKIE 8 na wszystkich trudnościach (nie skaluje się, w przeciwieństwie do `akwedukt_prog_ludnosci`). */
 const AI_POP_CAP_WITH_GRANARY_I = 8;
-/** Sufit populacji ze Spichlerzem II, BEZ Akweduktu -- `economy.ts` `cityPopulationCap`, `econ-params.json` `spichlerz_ii_prog_ludnosci` -- PŁASKIE 12 (R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1, 2026-11-04). */
-const AI_POP_CAP_WITH_GRANARY_II = 12;
 
 /**
  * Czy i jak mocno miasto POTRZEBUJE Spichlerza/Spichlerza II TERAZ (zadania 1-2
  * dispatchu rundy 3) -- patrz komentarz przy stałych wyżej dla pełnego
- * uzasadnienia. Zwraca 0 gdy Akwedukt już stoi (sufit 20, Spichlerz przestał
+ * uzasadnienia. Zwraca 0 gdy Akwedukt już stoi (sufit 12, Spichlerz przestał
  * być wąskim gardłem wzrostu). `menuDifficulty` brakujący (stare
  * wywołania/testy) -> "normal", zero zmiany zachowania.
  */
@@ -1784,13 +1581,10 @@ function granaryPriorityBonus(
   menuDifficulty: DifficultyLevel | undefined,
 ): number {
   if (built.includes('akwedukt')) return 0;
-  const hasGranaryII = built.includes('spichlerz_ii');
-  const hasGranaryI = built.includes('spichlerz');
-  const capNow = hasGranaryII
-    ? AI_POP_CAP_WITH_GRANARY_II
-    : hasGranaryI
-      ? AI_POP_CAP_WITH_GRANARY_I
-      : AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY[menuDifficulty ?? 'normal'];
+  const hasGranaryI = built.includes('spichlerz') || built.includes('spichlerz_ii');
+  const capNow = hasGranaryI
+    ? AI_POP_CAP_WITH_GRANARY_I
+    : AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY[menuDifficulty ?? 'normal'];
   return city.population >= capNow
     ? AI_MAJOR_GRANARY_PRIORITY_BONUS_STRONG
     : AI_MAJOR_GRANARY_PRIORITY_BONUS_WEAK;
@@ -1844,7 +1638,7 @@ export function chooseCityProduction(
   allUnits: RuntimeUnit[],
   playerId: number,
   data: GameData,
-  _legacyMods: LegacyArchetypeMods,
+  mods: ArchetypeMods,
   opts: AITurnOpts,
   map: GameMap,
   difficultyParams: DifficultyParams,
@@ -1863,9 +1657,9 @@ export function chooseCityProduction(
     return s + n;
   }, 0) / Math.max(1, myCities.length);
   const majorEarly = computeMajorAiEarlyGame(opts, myCities, avgBuiltPerCity);
-  // Civilization-specific production category priorities come from the approved
-  // matrix profile only; the old derived military/economy fraction is removed.
-  const majorMilFrac = 0.5;
+  const majorMilFrac = isMajorAiOwner(opts)
+    ? computeMajorArchetypeMilitaryFraction(mods)
+    : 0.5;
 
   // Threat check: any enemy within threat range of this city
   const threatRange  = getAiParam(data, 'ekspansja_zagroz_zasieg', AI_THREAT_RANGE_DEFAULT);
@@ -1875,6 +1669,7 @@ export function chooseCityProduction(
   );
 
   // Base scores for each category (higher = higher priority)
+  // Archetype delta: +/- 20 per unit of mod
   // Difficulty bonus: bonusProdukcja scales economy score (higher difficulty = more efficient AI)
   const diffProdBonus = Math.round(difficultyParams.bonusProdukcja * 200); // e.g. +10% -> +20 pts, +25% -> +50 pts
   const panelBoost = aiProductionScoreBoosts(opts.civAiProfile);
@@ -1882,10 +1677,10 @@ export function chooseCityProduction(
     && opts.currentTurn % 3 === 0
     && (opts.powerRank ?? 1) > 1
     && !majorEarly;
-  const economyScore  = 100 + diffProdBonus + panelBoost.economy + (powerGoalBoost ? 40 : 0);
-  const militaryScore = 100 + panelBoost.military;
-  const defenseScore  = 100;
-  const scienceScore  = 100 + panelBoost.science;
+  const economyScore  = 100 + mods.ekonomia * 20 + diffProdBonus + panelBoost.economy + (powerGoalBoost ? 40 : 0);
+  const militaryScore = 100 + mods.wojsko   * 20 + panelBoost.military;
+  const defenseScore  = 100 + mods.obrona   * 20;
+  const scienceScore  = 100 + mods.nauka    * 20 + panelBoost.science;
 
   let candidates: { id: string; score: number }[] = [];
 
@@ -2199,6 +1994,7 @@ export function chooseCityProduction(
   }
 
   if (isMajorAiOwner(opts)) {
+    applyMajorArchetypeProductionBias(candidates, data, majorMilFrac);
     if (majorEarly) {
       // Kryterium 1: dawna lista 7 zaszytych id (stolarnia/cegielnia/odlewnia_brazu/
       // magazyn/targowisko/biblioteka/akademia) zastąpiona sprawdzeniem PRZYNALEŻNOŚCI
@@ -2322,30 +2118,6 @@ export function chooseCityProduction(
 
   if (opts.isProductionAllowed) {
     available = available.filter(c => opts.isProductionAllowed!(cityId, c.id));
-    // R-EPOCH-RECRUIT: when an existing military candidate has a newer eligible
-    // unit in the same data-defined Typ line, rank that era first while retaining
-    // the original as a same-score-band fallback if the newer unit is unaffordable.
-    const promoted: { id: string; score: number }[] = [];
-    for (const candidate of available) {
-      if (!isMilitaryProductionCandidate(candidate.id, buildingNames)) continue;
-      const source = data.units.find(u => u.Jednostka === candidate.id);
-      const sourceTyp = (source?.Typ ?? '').trim();
-      if (!source || !sourceTyp) continue;
-      const eligibleLine = data.units
-        .filter(unit => (unit.Typ ?? '').trim() === sourceTyp)
-        .filter(unit => opts.isProductionAllowed!(cityId, unit.Jednostka))
-        .map(unit => unit.Jednostka);
-      const newest = newestAvailableSameTypeUnit(candidate.id, eligibleLine, data.units);
-      if (newest) {
-        promoted.push({ id: newest.Jednostka, score: candidate.score + 0.001 });
-        candidate.score -= 0.001;
-      }
-    }
-    const present = new Set(available.map(c => c.id));
-    for (const candidate of promoted) {
-      if (!present.has(candidate.id)) available.push(candidate);
-      present.add(candidate.id);
-    }
   }
 
   if (available.length === 0) return null;
@@ -2613,7 +2385,14 @@ export function decideAiWonderBuild(
  */
 
 /** P-AI-011: ulepszenie terenu pod brakujący surowiec (priorytet po handlu). */
-export const AI_IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly ImprovementKey[]>> = IMPROVEMENT_FOR_DEFICIT;
+export const AI_IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly ImprovementKey[]>> = {
+  drewno: ['tartak', 'wyrab'],
+  kamien: ['kamieniolom'],
+  glina: ['glinianka'],
+  ruda: ['kopalnia_miedzi'],
+  ruda_zelaza: ['kopalnia_zelaza'],
+  ruda_cyny: ['kopalnia_cyny'],
+};
 
 /** P-AI-011: budynki miejskie pod brakujący surowiec. */
 const AI_BUILDING_FOR_DEFICIT: Readonly<Record<string, readonly string[]>> = {
@@ -2724,7 +2503,7 @@ const AI_IMPROVEMENT_PRACA_SURPLUS = 30;
  *   farma:3, irygacja:5, bydlo:2, owce:1, lama:1, oboz_lowiecki:1, tarasy:3,
  *   lodzie_rybackie:2, warzelnia_soli:1.
  * Wszystkie pozostałe klucze `AI_IMPROVEMENT_PRIORITY` (tartak, kamieniolom, glinianka,
- * kopalnia_miedzi/cyny/zelaza, stadnina, posterunek, droga, droga_brukowana, fort) mają
+ * kopalnia_miedzi/zelaza/cyny, stadnina, posterunek, droga, droga_brukowana, fort) mają
  * `bonus.zywnosc` zerowy/nieobecny -- kategoria „surowce/infrastruktura", BEZ ograniczenia
  * do heksów obrabianych dla AI (zgodnie z regułą właściciela: „inne nie-żywnościowe […]
  * wszędzie"). `wyrab` ZOSTAJE przy kategorii żywnościowej (onlyWorked=true): to KROK
@@ -2740,23 +2519,6 @@ const AI_IMPROVEMENT_ZYWNOSCIOWE_KEYS: ReadonlySet<ImprovementKey> = new Set<Imp
   'farma', 'irygacja', 'bydlo', 'owce', 'lama', 'oboz_lowiecki', 'tarasy', 'lodzie_rybackie',
   'warzelnia_soli',
 ]);
-
-/**
- * R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1: klucze `q,r` heksow z obywatelami miasta AI — to samo
- * `workedHexCoordsForCity` co silnik tury, z wykluczeniem heksow przegranych na rzecz blizszego miasta
- * tego samego wlasciciela (`excludeByCity`: id miasta -> zbior kluczy, `computeLostToNearerSiblingByCity`).
- */
-export function aiWorkedHexKeysForCity(
-  city: AICity,
-  map: GameMap,
-  territoryNodes: readonly TerritoryNode[] | undefined,
-  excludeByCity: ReadonlyMap<string, ReadonlySet<string>> | undefined,
-  civEra: number | undefined,
-): ReadonlySet<string> {
-  return new Set<string>(
-    workedHexCoordsForCity(city, map, territoryNodes, excludeByCity?.get(city.id), civEra).map(({ q, r }) => `${q},${r}`),
-  );
-}
 
 /**
  * D-IMPROVEMENTS: planuje maks. JEDNO ulepszenie terenu NA MIASTO na turę dla
@@ -2812,23 +2574,25 @@ function planCityImprovements(
   // ulepszen policzona z `pracaAutoPercent% x SKUMULOWANA pula` tego ownera
   // (main.ts, `aiImprovementBudgetByOwner`) — NIE z tegorocznego przyrostu puli i NIE
   // z drugiego podzialu tej samej Pracy. Fallback (test/AI bez silnika) to maksymalny
-  // dozwolony udzial puli: 100% (R-WEB-AUTOIMPROVE-STAGES2-Q1, wlasciciel 2026-10-31: AI i panstwa-miasta bez limitu %; dawne 50% = MAX_PROCENT_PULI_IMPERIUM USUNIETE).
+  // dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM`.
   const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
     ? Math.max(0, opts.improvementBudgetCap as number)
-    : Math.floor(Math.max(0, pracaAvailable)); // AI/państwa-miasta: 100% puli, BEZ limitu % (właściciel 2026-10-31)
+    : Math.floor(pracaAvailable * MAX_PROCENT_PULI_IMPERIUM / 100);
   // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 2): heksy obrabiane przez obywateli
   // TEGO miasta, liczone raz na wywołanie i cache'owane po `city.id` (picker pyta o nie
   // raz na miasto, ale `planCityImprovements` bywa wołane dwiema ścieżkami —
   // `decideAITurn` i `decideDefensiveCopyTurn`).
-  // R-WEB-AI-CITIZEN-HEX-SIBLING-EXCLUSION-Q1: zbior pol obywateli wyklucza heksy przegrane na rzecz
-  // blizszego miasta TEGO SAMEGO wlasciciela (`opts.improvementExcludeHexKeysByCity`, main.ts:
-  // `computeLostToNearerSiblingByCity`) — ten sam wejsciowy zbior co sciezka gracza i silnik tury
-  // (`aiWorkedHexKeysForCity`). Bez niego (undefined) zachowanie jak dawniej (testy bez main.ts).
+  // BRAK ODPOWIEDNIKA `lostToSiblingByCity` z main.ts (P-HEKS-SPOR-SASIAD): ścieżka
+  // gracza odejmuje heksy sporne z bliższym miastem-rodzeństwem. Dla AI ten wyjątek nie
+  // jest tu przekazywany — skutek jest wyłącznie w kierunku „AI uzna za swoje o kilka
+  // heksów spornych za dużo", nigdy w kierunku budowy poza obywatelami cudzego miasta.
   const workedKeysCache = new Map<string, ReadonlySet<string>>();
   const workedHexKeysForAiCity = (city: AICity): ReadonlySet<string> => {
     const hit = workedKeysCache.get(city.id);
     if (hit) return hit;
-    const set = aiWorkedHexKeysForCity(city, map, territoryNodes, opts.improvementExcludeHexKeysByCity, opts.civEra);
+    const set = new Set<string>(
+      workedHexCoordsForCity(city, map, territoryNodes).map(({ q, r }) => `${q},${r}`),
+    );
     workedKeysCache.set(city.id, set);
     return set;
   };
@@ -2842,6 +2606,9 @@ function planCityImprovements(
   const foodPriority = fullPriority.filter(
     k => AI_IMPROVEMENT_ZYWNOSCIOWE_KEYS.has(k) || k === 'wyrab',
   );
+  const resourcePriority = fullPriority.filter(
+    k => !AI_IMPROVEMENT_ZYWNOSCIOWE_KEYS.has(k) && k !== 'wyrab',
+  );
 
   const sharedOpts = {
     cities: myCities,
@@ -2853,8 +2620,7 @@ function planCityImprovements(
     // ZASADA 1 (runda 4): AI CYWILIZACJI buduje domyślnie samą żywność; pełna lista
     // otwiera się dopiero na czas niedoboru surowca (`resourceDeficitKeys`).
     demandDriven: true,
-    // K3 = K2: tylko niedobory, na ktore istnieje ulepszenie terenu (zloto/stal nie otwieraja listy).
-    resourceDeficitKeys: actionableDeficitKeys(opts.resourceDeficitKeys),
+    resourceDeficitKeys: opts.resourceDeficitKeys,
     // ZASADA 3 (runda 4): diagnostyka nadwyżki dla silnika (main.ts). Dzielona przez OBA
     // wywołania niżej -- wszystkie pola tego raportu są ustawiane WYŁĄCZNIE na `true`
     // (nigdy resetowane z powrotem na `false`), więc dwa kolejne wywołania na TYM SAMYM
@@ -2864,15 +2630,10 @@ function planCityImprovements(
     // absolutnemu splitowi całej puli co gracz. Picker nie może wykonać
     // drugiego, procentowego podziału na już wydzielonym budżecie.
     pracaBudgetPercent: 100,
-    // Brak limitu LICZBY ulepszen na miasto/ture (R-WEB-AUTOIMPROVE-STAGES-Q1 R3 ABC-D=B, STAGES3 S3-2=C; parametr usuniety z pickera
-    // calkowicie w R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1, wlasciciel 2026-11-03) — ogranicza tylko budzet (AI: 100% puli).
+    maxItemsPerCity: 1,
     skipWyrab: false,
     civArchetype: opts.civType,
     playerEra: opts.civEra ?? 1,
-    // R-WEB-AUTO-FORT-CLAIM-Q1 (K3 = K2): fort na cennym terenie dopiero przy WYCZERPANYM limicie miast. Miasta-państwa
-    // (`defensiveCopy`) są wyłączone z ekspansji terytorialnej (jak `planExpansionFortBuilding`, F4) — ZAŁOŻENIE.
-    cityLimitExhausted: !opts.defensiveCopy
-      && isCityLimitExhausted(myCities, opts.cityLimitBase, opts.civEra),
   };
 
   // WYWOŁANIE 1 — kategoria ŻYWNOŚCIOWA: zachowanie bez zmian (onlyWorked=true), pełny
@@ -2883,28 +2644,61 @@ function planCityImprovements(
     ...sharedOpts,
     placedImprovements: opts.placedImprovements,
     pracaAvailable,
-    // R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1 (właściciel 2026-11-04): reguła „żywność tylko na polach obywateli
-    // (wyjątek: obóz łowiecki)” jest wbudowana w picker (`hexAllowsKey`) i ZAWSZE włączona — AI nie przekazuje już flagi.
+    // ZASADA 2 (runda 4): domyślnie WŁĄCZONE dla AI CYWILIZACJI (wyjątek złożowy
+    // egzekwuje sam picker — patrz `hexAllowsKey` w auto-improvements.ts).
+    getOnlyWorked: () => true,
     // Rzutowanie na AICity (= City) jest bezpieczne: `myCities` to pełne obiekty miast
     // tego AI; `AutoImprovementCity` jest tylko WĘŻSZYM widokiem tego samego obiektu.
     getWorkedHexKeys: city => workedHexKeysForAiCity(city as AICity),
     improvementBudgetCap: improvementBudget,
     priorityOverride: foodPriority,
-    // Keep the same empire-wide sequence as Food automation for the player.
-    foodImprovementStages: true,
-    // R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-NO-CITIZEN-Q1 (runda 2): ta sama reguła rzeczna co gracz; AI ma tylko własne,
-    // ostrożniejsze liczby (limit/podłoga puli), bo jego skumulowana pula jest wspólna z ulepszeniami surowcowymi.
-    riverClearNoCitizenMaxPerCity: AI_RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY,
-    riverClearNoCitizenPoolFloor: AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR,
-    // K3 = K2 (jedna logika w pickerze): brakujący surowiec idzie na przód; ulepszenia surowcowe nie podlegają regule obywateli.
   });
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 R4 (właściciel 2026-10-31: „Niedobór ma tylko otwierać ulepszenia brakującego
-  // surowca, nic więcej” + „Drogi dopiero gdy zaspokojone potrzeby żywności i surowców”): DRUGIE wywołanie
-  // pickera (kategoria „surowcowa/infrastrukturalna” z `resourcePriority`, bez onlyWorked) ZLIKWIDOWANE.
-  // Otwierało ono całą resztę listy (kamieniołomy, warzelnie, drogi, forty, posterunki) przy niedoborze
-  // dowolnego surowca. Teraz JEDNO wywołanie (K3 = K2): picker sam robi krok „brakujący surowiec” (tylko jego
-  // ulepszenie), etapy żywności E1–E6 i — na samym końcu — drogi (auto-improvements.ts, `pickAutoImprovements`).
-  return foodPicks.map(p => ({
+  const foodSpent = foodPicks.reduce((s, p) => s + p.kosztPraca, 0);
+
+  // Scalony stan `placedImprovements` PRZED wywołaniem 2, żeby ono widziało to, co
+  // wywołanie 1 już postawiło TĘ SAMĄ turę (unika podwójnego stawiania tej samej warstwy
+  // na tym samym heksie i respektuje np. próg lasu/FAZA 0, patrz komentarz w
+  // auto-improvements.ts przy `workingPlaced`).
+  const mergedPlaced = new Map<string, string[]>();
+  if (opts.placedImprovements) {
+    for (const [hk, v] of opts.placedImprovements) {
+      mergedPlaced.set(hk, Array.isArray(v) ? [...v] : [v]);
+    }
+  }
+  const foodPickedCityIds = new Set<string>();
+  for (const p of foodPicks) {
+    const hk = `${p.q},${p.r}`;
+    mergedPlaced.set(hk, [...(mergedPlaced.get(hk) ?? []), p.key]);
+    foodPickedCityIds.add(p.cityId);
+  }
+
+  // P-AI-ULEPSZENIA-BUDOWA-ZNIKOMA-Q1 (runda 2, Evaluator/Operator znalezisko własne przy
+  // testowaniu): bez tego wykluczenia dwa NIEZALEŻNE wywołania `maxItemsPerCity: 1` (jedno
+  // na żywność, jedno na surowce) dają miastu do DWÓCH ulepszeń/turę zamiast dotychczasowego
+  // JEDNEGO -- co w symulacji PRZED/PO windowało też liczbę ŻYWNOŚCIOWYCH ulepszeń (bo
+  // wcześniej dzieliły z surowcowymi TEN SAM jeden slot na hex-po-hexie, teraz każda
+  // kategoria dostawała WŁASNY), łamiąc wprost kryterium 4 dispatchu („żywnościowe zostają
+  // na tym samym poziomie co dziś"). Naprawa: miasto, które W TEJ TURZE dostało już pick
+  // żywnościowy, jest WYKLUCZONE z wywołania 2 -- surowce dostają swój (nieograniczony
+  // hexowo) strzał WYŁĄCZNIE w miastach, gdzie żywność nic nie znalazła, zachowując
+  // dotychczasowy limit „maks. 1 ulepszenie/miasto/turę" 1:1 z kodem sprzed tej rundy.
+  const citiesForResource = myCities.filter(c => !foodPickedCityIds.has(c.id));
+
+  // WYWOŁANIE 2 — kategoria SUROWCOWA/INFRASTRUKTURALNA: BEZ ograniczenia do heksów
+  // obrabianych (ECHO właściciela runda 2: „surowce mogą być budowane bez problemu
+  // wszędzie"), z resztą budżetu i puli po wywołaniu 1, WYŁĄCZNIE dla miast bez picku
+  // żywnościowego tej tury.
+  const resourcePicks = citiesForResource.length === 0 ? [] : pickAutoImprovements({
+    ...sharedOpts,
+    cities: citiesForResource,
+    placedImprovements: mergedPlaced,
+    pracaAvailable: Math.max(0, pracaAvailable - foodSpent),
+    getOnlyWorked: () => false,
+    improvementBudgetCap: Math.max(0, improvementBudget - foodSpent),
+    priorityOverride: resourcePriority,
+  });
+
+  return [...foodPicks, ...resourcePicks].map(p => ({
     type: 'buildImprovement' as const,
     ownerId: p.ownerId,
     q: p.q,
@@ -2969,43 +2763,31 @@ export function planExpansionFortBuilding(
   if (opts.defensiveCopy) return null;
   if (myCities.length === 0) return null; // brak wlasnego terytorium do rozszerzenia (parytet z founding)
   const pracaAvailable = opts.pracaAvailable ?? 0;
-  // R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1 (wlasciciel 2026-11-03): ekspansja poza zasieg (jednostka stoi
-  // POZA terytorium/zasiegiem, np. inna wyspa/kontynent) to wylacznie FORT -- posterunek wolno stawiac tylko
-  // na wlasnym terytorium przy granicy (isOutpostPlacementAllowed), a tu hex z definicji jest poza zasiegiem.
-  // Obrona r1 (zarzut 2): gdy fort niedostepny (tech Wojskowosc/praca), AI nadal ekspanduje POSTERUNKIEM,
-  // ale wylacznie z heksu wlasnej granicy (isOutpostPlacementAllowed) -- zob. petla 2 nizej.
-  const EXPANSION_KEY = 'fort' as const;
-  const improvementTechs = opts.improvementTechs ?? new Set();
-  // Ten sam absolutny budżet obowiązuje fort i posterunek, aby koszt
+  const meta = getImprovementMeta('posterunek');
+  if (!meta) return null;
+  if (pracaAvailable < meta.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return null;
+  // Ten sam absolutny budżet obowiązuje także posterunek, aby koszt
   // zaplanowanych ulepszeń i ekspansji dzielił jedną kopertę.
   // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2): silnik podaje absolutna koperte automatu
   // ulepszen policzona z `pracaAutoPercent% x SKUMULOWANA pula` tego ownera
   // (main.ts, `aiImprovementBudgetByOwner`) — NIE z tegorocznego przyrostu puli i NIE
   // z drugiego podzialu tej samej Pracy. Fallback (test/AI bez silnika) to maksymalny
-  // dozwolony udzial puli: 100% (R-WEB-AUTOIMPROVE-STAGES2-Q1, wlasciciel 2026-10-31: AI i panstwa-miasta bez limitu %; dawne 50% = MAX_PROCENT_PULI_IMPERIUM USUNIETE).
+  // dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM`.
   const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
     ? Math.max(0, opts.improvementBudgetCap as number)
-    : Math.floor(Math.max(0, pracaAvailable)); // AI/państwa-miasta: 100% puli, BEZ limitu % (właściciel 2026-10-31)
+    : Math.floor(pracaAvailable * MAX_PROCENT_PULI_IMPERIUM / 100);
   const plannedCost = Number.isFinite(opts.plannedImprovementCost)
     ? Math.max(0, opts.plannedImprovementCost as number)
     : 0;
-  const canAfford = (key: 'fort' | 'posterunek'): boolean => {
-    const m = getImprovementMeta(key);
-    if (!m) return false;
-    if (pracaAvailable < m.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return false;
-    if (plannedCost + m.kosztPraca > improvementBudget) return false;
-    return isImprovementTechUnlocked(key, improvementTechs);
-  };
-  const fortOk = canAfford(EXPANSION_KEY);
-  const outpostOk = canAfford('posterunek');
-  if (!fortOk && !outpostOk) return null;
+  if (plannedCost + meta.kosztPraca > improvementBudget) return null;
+  if (!isImprovementTechUnlocked('posterunek', opts.improvementTechs ?? new Set())) return null;
 
   const territoryNodes = opts.territoryNodes ?? [];
   const myFortNodes = (opts.fortNodes ?? [])
     .filter(f => f.ownerId === playerId && !f.contestedUseless)
     .map(fortNodeAsCityNode);
 
-  for (const u of fortOk ? myUnits : []) {
+  for (const u of myUnits) {
     if (u.inGarnizon) continue;
     const { q, r } = u;
     const hex = map.hexes[`${q},${r}`];
@@ -3031,25 +2813,7 @@ export function planExpansionFortBuilding(
     if (isHexWithinAnyCityReach(q, r, myCities, myFortNodes)) continue;
     const owner = territoryNodes.length > 0 ? territoryOwnerAt(q, r, territoryNodes) : null;
     if (owner !== null && owner !== playerId) continue; // teren INNEJ cywilizacji (regula 1)
-    return { type: 'buildImprovement', ownerId: playerId, q, r, key: EXPANSION_KEY };
-  }
-  // Petla 2 (obrona r1): posterunek tylko na wlasnym heksie przy granicy (jeden wspolny predykat).
-  if (outpostOk && territoryNodes.length > 0) {
-    for (const u of myUnits) {
-      if (u.inGarnizon) continue;
-      const { q, r } = u;
-      const hex = map.hexes[`${q},${r}`];
-      if (!hex) continue;
-      const t = hex.terenBazowy as string;
-      if (t === 'morze' || t === 'plytkie_morze' || t === 'gory') continue;
-      const layers = opts.placedImprovements?.get(`${q},${r}`);
-      const has = Array.isArray(layers)
-        ? (layers.includes('fort') || layers.includes('posterunek'))
-        : (layers === 'fort' || layers === 'posterunek');
-      if (has) continue;
-      if (!isOutpostPlacementAllowed(q, r, playerId, territoryNodes)) continue;
-      return { type: 'buildImprovement', ownerId: playerId, q, r, key: 'posterunek' };
-    }
+    return { type: 'buildImprovement', ownerId: playerId, q, r, key: 'posterunek' };
   }
   return null;
 }
@@ -3234,19 +2998,6 @@ export function isHomeDefenseThreatForCity(enemyQ: number, enemyR: number, city:
 }
 
 /**
- * R-WEB-AI-HOME-DEFENDERS-CIVILIAN-FILTER-Q1: wspólna pula obrońców domu przed barbarzyńcami.
- * Obrońcami są wyłącznie jednostki bojowe lądowe: bez cywilów (robotnik, osadnik), bez jednostek
- * zaokrętowanych (embarked), bez jednostek morskich (seaRaider) i bez wodza kampanii (isGeneral).
- * Używane przez obie ścieżki przydziału: główną (decideAITurn, krok 4b/4b2) i kampanię wodza
- * (planCampaignBarbarianHomeDefense) -- jedna reguła, jedna funkcja.
- */
-export function homeDefenderPool(myUnits: RuntimeUnit[]): RuntimeUnit[] {
-  return myUnits.filter(
-    u => !isCivilianUnit(u) && u.embarked !== true && u.seaRaider !== true && u.isGeneral !== true,
-  );
-}
-
-/**
  * Przydziela obrońców zagrożeniom wykrytym w pobliżu własnego terytorium — algorytm
  * najbliższy-dostępny: zagrożenia posortowane wg pilności (rosnąco odległość do
  * najbliższego własnego miasta — najpierw najbardziej „u progu"), każde dostaje najbliższą
@@ -3259,7 +3010,6 @@ export function assignHomeDefenders(
   threats: RuntimeUnit[],
   myUnits: RuntimeUnit[],
   myCities: AICity[],
-  groupSize = 1,
 ): Map<string, RuntimeUnit> {
   const assignments = new Map<string, RuntimeUnit>();
   if (threats.length === 0 || myCities.length === 0) return assignments;
@@ -3272,15 +3022,11 @@ export function assignHomeDefenders(
 
   const used = new Set<string>();
   for (const threat of sortedThreats) {
-    // R-WEB-ARMY-CONSOLIDATION-Q1: groupSize > 1 (flaga ON) = kworum kilku obrońców na jedno
-    // zagrożenie. groupSize = 1 (domyslnie, flaga OFF) daje dokladnie dawny wynik 1:1.
-    const wanted = Math.max(1, Math.floor(groupSize));
-    for (let pick = 0; pick < wanted; pick++) {
-      const available = myUnits.filter(
-        u => u.ruchLeft > 0 && !isScoutUnit(u) && !used.has(u.id),
-      );
-      const defender = nearest(threat.q, threat.r, available, u => u.q, u => u.r);
-      if (defender === undefined) break;
+    const available = myUnits.filter(
+      u => u.ruchLeft > 0 && !isScoutUnit(u) && !used.has(u.id),
+    );
+    const defender = nearest(threat.q, threat.r, available, u => u.q, u => u.r);
+    if (defender !== undefined) {
       assignments.set(defender.id, threat);
       used.add(defender.id);
     }
@@ -3296,17 +3042,6 @@ export function assignHomeDefenders(
 function isRanged(unit: RuntimeUnit): boolean {
   const c = unit.category;
   return c === 'lucznik' || c === 'procarz' || c === 'oszczepnik';
-}
-
-/**
- * True for mobile flank units.  The role in units.json is the canonical
- * gameplay declaration; the category fallback keeps runtime units created by
- * older saves covered as well.
- */
-function isFlankingUnit(unit: RuntimeUnit, data: GameData): boolean {
-  if (unit.category === 'rydwan' || unit.category === 'konnica') return true;
-  const def = data.units.find(u => u.Jednostka === unit.typeId);
-  return String(def?.['Rola (linia)'] ?? '').toLowerCase().includes('flanka');
 }
 
 /** Max health from data.units (TW health, fallback Health), default 30. */
@@ -3372,7 +3107,7 @@ function applyIdleFallback(
  * @param cities        All cities on the map (all players)
  * @param map           The game map
  * @param data          Static game data (units, buildings, ai-params, terrain)
- * @param opts          Optional: civilization profile, cityBuildings already built
+ * @param opts          Optional: civType for archetype mods, cityBuildings already built
  * @returns             Ordered list of AI commands for this turn (engine executes them)
  */
 export function decideAITurn(
@@ -3383,155 +3118,12 @@ export function decideAITurn(
   data: GameData,
   opts: AITurnOpts = {},
 ): AICommand[] {
-  const prevGuard = activeMarchGuard;
-  activeMarchGuard = opts.marchGuard ?? null;
-  try {
-    const commands = decideAITurnCore(playerId, units, cities, map, data, opts);
-    // R-WEB-AI-WAR-DEFEND-HOME-BEFORE-OFFENSE-Q1: obrona wlasnego terenu i odbicie utraconych miast
-    // przed zdobywaniem cudzych -- ostatnie slowo nad rozkazami ruchu (po war-allin, kampanii wodza).
-    return opts.defensiveCopy ? commands : applyHomeWarPriorities(commands, playerId, units, cities, map, data, opts);
-  } finally {
-    activeMarchGuard = prevGuard;
-  }
-}
-
-/** Wspolna ocena sily jednostki (ta sama funkcja co atak ostatniej woli: siegeAi.estimateUnitCombatStrength). */
-export function aiUnitCombatStrength(u: RuntimeUnit, data: GameData): number {
-  const def = data.units.find(d => d.Jednostka === u.typeId) as unknown as Record<string, unknown> | undefined;
-  const maxHp = _unitMaxHealth(u, data);
-  const hp = u.hp ?? maxHp;
-  const n = (v: unknown, fb: number): number => {
-    const x = typeof v === 'string' ? parseFloat(v) : (v as number);
-    return typeof x === 'number' && Number.isFinite(x) ? x : fb;
-  };
-  let power = 0;
-  if (def !== undefined) {
-    const atak = n(def['meleeAttack'], 0);
-    power = estimateUnitCombatStrength({
-      typNazwa: u.typeId,
-      rola: String(def['Rola (linia)'] ?? 'Wrecz'),
-      Atak: atak,
-      Obrona: n(def['meleeDefence'], 0),
-      Uderzenie: n(def['chargeBonus'] ?? def['Uderzenie'], 0),
-      Pancerz: n(def['armor'] ?? def['Pancerz'], 0),
-      Przebicie: n(def['piercing'] ?? def['Przebicie'], 0),
-      weaponDamage: n(def['weaponDamage'], atak),
-      Health: hp,
-      progDezercji: null,
-    });
-  }
-  if (power > 0) return power;
-  // Brak statystyk (np. dane testowe): jednostka = 1 * ulamek HP, jak w partitionWarArmies.
-  return maxHp > 0 ? Math.max(0.1, Math.min(1, hp / maxHp)) : 1;
-}
-
-/**
- * R-WEB-AI-WAR-DEFEND-HOME-BEFORE-OFFENSE-Q1: nakladka priorytetow na gotowe komendy tury AI.
- * P1 odbicie wlasnych utraconych miast, P2 zwalczenie wrogiej armii na wlasnym terenie (albo obrona
- * w miescie, gdy za slabi), P3 = dotychczasowe zdobywanie (komendy rdzenia bez zmian dla pozostalych).
- * Planer: ai-war-home-defense.ts. Mutuje i zwraca `commands`.
- */
-function applyHomeWarPriorities(
-  commands: AICommand[],
-  playerId: number,
-  units: RuntimeUnit[],
-  cities: AICity[],
-  map: GameMap,
-  data: GameData,
-  opts: AITurnOpts,
-): AICommand[] {
-  if (!isHomeWarDefenseEnabled()) return commands;
-  const myCities = cities.filter(c => c.ownerId === playerId);
-  if (myCities.length === 0) return commands;
-  const BARB = -1;
-  const isField = (u: RuntimeUnit): boolean => !isCivilianUnit(u) && !isScoutUnit(u);
-  const enemyUnits = units.filter(u =>
-    u.ownerId !== playerId && u.ownerId !== BARB && aiCanEngageOwner(opts, u.ownerId) && isField(u));
-  const hasLost = cities.some(c => c.ownerId !== playerId && c.capturedFromOwnerId === playerId);
-  if (enemyUnits.length === 0 && !hasLost) return commands;
-
-  const enemyCityHex = new Set(cities.filter(c => c.ownerId !== playerId).map(c => keyOf(c.q, c.r)));
-  const locked = new Set<string>();
-  for (const cmd of commands) {
-    if (cmd.type === 'attack') locked.add(cmd.unitId);
-    else if (cmd.type === 'move' && enemyCityHex.has(keyOf(cmd.toQ, cmd.toR))) locked.add(cmd.unitId);
-  }
-  const nodes = opts.territoryNodes;
-  const isOwnTerritory = (q: number, r: number): boolean => {
-    if (nodes !== undefined && nodes.length > 0) return territoryOwnerAt(q, r, nodes) === playerId;
-    return myCities.some(c =>
-      hexDistance(q, r, c.q, c.r) <= cityTerritoryRadius({ q: c.q, r: c.r, pop: c.population, level: 1 }));
-  };
-  const plan = planHomeWar({
-    ownerId: playerId,
-    currentTurn: opts.currentTurn,
-    allUnits: units,
-    myUnits: units.filter(u => u.ownerId === playerId),
-    myCities,
-    allCities: cities,
-    enemyUnits,
-    canEngageOwner: o => aiCanEngageOwner(opts, o),
-    lockedUnitIds: locked,
-    isOwnTerritory,
-    strengthOf: u => aiUnitCombatStrength(u, data),
-    isFieldUnit: isField,
-    distance: hexDistance,
-  });
-  if (plan.orders.length === 0) return commands;
-
-  const byId = new Map(units.map(u => [u.id, u] as const));
-  for (const order of plan.orders) {
-    const unit = byId.get(order.unitId);
-    if (unit === undefined) continue;
-    let replacement: AICommand | null = null;
-    let noop = false;
-    if (order.kind === 'attack') {
-      replacement = { type: 'attack', unitId: unit.id, targetUnitId: order.targetUnitId };
-    } else if (order.kind === 'hold') {
-      if (hexDistance(unit.q, unit.r, order.toQ, order.toR) <= 1) noop = true;
-      else {
-        const step = firstStep(unit, map, order.toQ, order.toR, units, true);
-        if (step !== null) {
-          replacement = { type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
-            allowFriendlyStack: step.q === order.toQ && step.r === order.toR };
-        }
-      }
-    } else {
-      const adjCity = order.targetCityId !== undefined && hexDistance(unit.q, unit.r, order.toQ, order.toR) === 1;
-      if (adjCity) {
-        replacement = { type: 'move', unitId: unit.id, toQ: order.toQ, toR: order.toR, targetCityId: order.targetCityId };
-      } else {
-        const step = firstStep(unit, map, order.toQ, order.toR, units);
-        if (step !== null) {
-          replacement = { type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
-            ...(order.targetCityId !== undefined && step.q === order.toQ && step.r === order.toR
-              ? { targetCityId: order.targetCityId } : {}) };
-        }
-      }
-    }
-    if (replacement === null && !noop) continue; // brak trasy: zostaje komenda rdzenia
-    for (let i = commands.length - 1; i >= 0; i--) {
-      const c = commands[i]!;
-      if (c.type === 'move' && c.unitId === unit.id) commands.splice(i, 1);
-    }
-    if (replacement !== null) {
-      const endIdx = commands.findIndex(c => c.type === 'endTurn');
-      if (endIdx >= 0) commands.splice(endIdx, 0, replacement); else commands.push(replacement);
-    }
-  }
-  return commands;
-}
-
-function decideAITurnCore(
-  playerId: number,
-  units: RuntimeUnit[],
-  cities: AICity[],
-  map: GameMap,
-  data: GameData,
-  opts: AITurnOpts = {},
-): AICommand[] {
-  // Difficulty remains a generic AI setting. Civilization production priorities
-  // are supplied only through the approved matrix-backed profile in opts.
+  // Archetyp + trudność — wspólne dla ścieżki normalnej i defensywnej (kopie).
+  const archKeyRaw: string = opts.civType !== undefined
+    ? (CIV_TO_ARCH[opts.civType] ?? 'grecy')
+    : 'grecy';
+  const archKey = archKeyRaw as ArchKey;
+  const mods = readArchMods(data, archKey);
   const difficultyLevel: 1 | 2 | 3 = opts.poziomTrudnosci ?? 2;
   const difficultyParams = loadDifficultyParams(data, difficultyLevel);
   if (opts.startoweMiasta === undefined) {
@@ -3539,7 +3131,7 @@ function decideAITurnCore(
   }
 
   if (opts.defensiveCopy) {
-    return decideDefensiveCopyTurn(playerId, units, cities, map, data, opts, difficultyParams);
+    return decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts, difficultyParams);
   }
 
   opts.recruitStockDeficitScratch = new Set();
@@ -3599,7 +3191,7 @@ function decideAITurnCore(
   // -------------------------------------------------------------------------
   for (const city of myCities) {
     const buildId = chooseCityProduction(
-      city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
+      city.id, myCities, units, playerId, data, mods, opts, map, difficultyParams,
     );
     if (buildId !== null) {
       // P-AI-MOC-GAP: dołącz fallbacki (odczyt NATYCHMIAST — kolejne miasto w tej
@@ -3614,7 +3206,7 @@ function decideAITurnCore(
   }
 
   // -------------------------------------------------------------------------
-  // Step 2b: TERRAIN IMPROVEMENTS -- bez limitu liczby na miasto (patrz planCityImprovements; liczy się tylko budżet Pracy)
+  // Step 2b: TERRAIN IMPROVEMENTS -- max 1/miasto/turę (patrz planCityImprovements)
   // -------------------------------------------------------------------------
   if (opts.recruitStockDeficitScratch.size > 0) {
     const merged = new Set(opts.resourceDeficitKeys ?? []);
@@ -3637,11 +3229,6 @@ function decideAITurnCore(
   );
   if (expansionFortCmd !== null) commands.push(expansionFortCmd);
 
-  // Active leader campaign owns this turn's military orders.
-  if (appendAiGeneralCampaignOrders(playerId, myUnits, units, cities, map, data, opts, commands)) {
-    return commands;
-  }
-
   // -------------------------------------------------------------------------
   // Step 4: UNIT MOVEMENT AND ATTACK
   // Sort: super first, then military
@@ -3659,9 +3246,6 @@ function decideAITurnCore(
 
   // Track which units received at least one action command this turn (for fallback).
   const unitActed = new Set<string>();
-  // R-WEB-WAR-ALLIN-KEEP-BARB-DEFENSE-Q1: obrońcy wydani w kroku 4b2 (ruch ku zagrożeniu obrony domu,
-  // w tym barbarzyńcom) -- war-allin nie przejmuje ich komend (patrz applyWarAllInCapitalToCommands).
-  const homeDefenseMoveIds = new Set<string>();
 
   // Audyt #56: lista wolnych (neutralnych) wiosek liczona LENIWIE i RAZ na to wywołanie
   // decideAITurn (per gracz AI, per turę) zamiast pełnego Object.keys(map.hexes) + skanu
@@ -3685,38 +3269,6 @@ function decideAITurnCore(
   const expansionEnemyCities = engageableEnemyCities.filter(
     ec => isEnemyNearOwnTerritory(ec.q, ec.r, myCities, map, 8),
   );
-
-  // Wojna epoki nie jest zwykłą ekspansją: napastnik ma dążyć do miast
-  // konkretnej strony, również gdy są poza bieżącym promieniem ekspansji.
-  // Pozycje wszystkich miast są już znane silnikowi; mgła nadal blokuje samą
-  // próbę przejęcia w executorze, ale nie blokuje marszu do zapamiętanego celu.
-  // R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1: dyrektywa wojny wymuszonej NIE omija bramki wojny. Marsz/zbiorka na miasta
-  // celu tylko gdy cel jest faktycznie do zaangazowania (relacja 'wojna'); stary wpis rejestru bez wojny = zwykle zachowanie.
-  const forcedWarAttack = opts.forcedWar?.role === 'attacker'
-    && aiCanEngageOwner(opts, opts.forcedWar.targetOwnerId);
-  const forcedWarTargetCities = forcedWarAttack && opts.forcedWar !== undefined
-    ? cities.filter(c => c.ownerId === opts.forcedWar!.targetOwnerId)
-    : [];
-  const forcedWarActiveWaves: readonly ForcedWarWave[] = forcedWarAttack
-    ? (opts.forcedWar?.activeWaves ?? [])
-    : [];
-  const forcedWarWaveHistory: readonly ForcedWarWaveHistory[] = forcedWarAttack
-    ? (opts.forcedWar?.waveHistory ?? [])
-    : [];
-  const activeWaveByUnitId = new Map<string, ForcedWarWave>();
-  for (const wave of forcedWarActiveWaves) {
-    for (const unitId of wave.unitIds) activeWaveByUnitId.set(unitId, wave);
-  }
-  const activeWaveUnitIds = new Set(activeWaveByUnitId.keys());
-  const forcedWarDefenseTarget = opts.forcedWar?.role === 'defender'
-    ? engageableEnemyUnits
-      .filter(u => u.ownerId === opts.forcedWar!.targetOwnerId)
-      .sort((a, b) => {
-        const aDist = Math.min(...myUnits.map(m => hexDistance(m.q, m.r, a.q, a.r)));
-        const bDist = Math.min(...myUnits.map(m => hexDistance(m.q, m.r, b.q, b.r)));
-        return aDist - bDist || a.q - b.q || a.r - b.r || a.id.localeCompare(b.id);
-      })[0]
-    : undefined;
 
   // P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI (ECHO A, Maciej 2026-08-09): zagrożenia
   // wymagające obrony domu — warunek DOKŁADNY liczony OSOBNO dla każdego miasta (patrz
@@ -3747,12 +3299,7 @@ function decideAITurnCore(
   const homeThreats = knownEnemyUnitsForHomeDefense.filter(
     eu => myCities.some(city => isHomeDefenseThreatForCity(eu.q, eu.r, city)),
   );
-  const homeDefenderAssignments = assignHomeDefenders(
-    homeThreats,
-    homeDefenderPool(myUnits),
-    myCities,
-    isArmyConsolidationEnabled() && canConcentrateArmy(opts) ? ARMY_CONSOLIDATION_HOME_GROUP_SIZE : 1,
-  );
+  const homeDefenderAssignments = assignHomeDefenders(homeThreats, myUnits, myCities);
   // Zagrożenia już zaatakowane w kroku 4b W TEJ SAMEJ turze (inna jednostka, adjacentEnemy) —
   // przeciw podwójnemu zaangażowaniu: przydzielony obrońca takiego zagrożenia NIE ma już
   // maszerować do celu, który ktoś inny właśnie obsługuje/zabija.
@@ -3772,49 +3319,12 @@ function decideAITurnCore(
   // TERAZ woła własną, niezależną kopię planArmyConcentration/planArmyFrontMerge (ai.ts ok.
   // 3151+, przed jej pętlą per-jednostka) -- ale NIE przez TEN blok, który zostaje
   // nieosiągalny dla PM tak jak wcześniej.
-  // A visible enemy gives flank units a higher-priority job than waiting for a
-  // local army stack.  Without this exclusion a chariot selected as the rally
-  // anchor is placed in `deferredUnitIds`, skipped below, and never reaches the
-  // attack/chase logic even when an enemy is adjacent or one step away.
-  const activeFlankingUnitIds = new Set(
-    myUnits
-      .filter(u =>
-        isFlankingUnit(u, data)
-        && (engageableEnemyUnits.length > 0 || engageableEnemyCities.length > 0),
-      )
-      .map(u => u.id),
-  );
-  const concentrationExcludedUnitIds = new Set<string>([
-    ...homeDefenderAssignments.keys(),
-    ...activeFlankingUnitIds,
-    ...activeWaveUnitIds,
-  ]);
-  // R-WEB-ARMY-CONSOLIDATION-Q1: w POKOJU (flaga ON) jedyny mechanizm zbiorki to zbiorka w
-  // stolicy nizej; lokalna planArmyConcentration i front-merge nie dzialaja (jeden punkt
-  // zbiorki, brak konkurencji o te same jednostki). W wojnie zachowanie bazy.
-  const consolidationPeace = isArmyConsolidationEnabled() && canConcentrateArmy(opts)
-    && opts.atWarWithCiv !== true;
-  const standardConcentration = canConcentrateArmy(opts) && !consolidationPeace
+  const concentration = canConcentrateArmy(opts)
     ? planArmyConcentration(playerId, myUnits, {
-      excludedUnitIds: concentrationExcludedUnitIds,
+      excludedUnitIds: new Set(homeDefenderAssignments.keys()),
     })
     : null;
-  const forcedWarNextWavePlan = forcedWarAttack
-    && (forcedWarActiveWaves.length > 0 || forcedWarWaveHistory.length > 0)
-    && canConcentrateArmy(opts)
-    ? planForcedWarWave(
-      myUnits,
-      forcedWarTargetCities,
-      forcedWarActiveWaves,
-      concentrationExcludedUnitIds,
-      (a, b) => hexDistance(a.q, a.r, b.q, b.r),
-      opts.currentTurn ?? 0,
-      forcedWarWaveHistory,
-    )
-    : null;
-  const concentration = forcedWarNextWavePlan ?? standardConcentration;
   const concentrationDeferred = new Set(concentration?.deferredUnitIds ?? []);
-  let firstWaveMergeUnitIds: readonly string[] = [];
   if (concentration !== null) {
     for (const unitId of concentration.moveUnitIds) {
       const unit = myUnits.find(u => u.id === unitId);
@@ -3825,11 +3335,9 @@ function decideAITurnCore(
         concentration.rallyPoint.q,
         concentration.rallyPoint.r,
         units,
-        true,
       );
       if (step !== null) {
-        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
-          allowFriendlyStack: step.q === concentration.rallyPoint.q && step.r === concentration.rallyPoint.r });
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
       }
     }
   }
@@ -3845,14 +3353,14 @@ function decideAITurnCore(
   // bezpośrednią walkę/obronę domu". Jednostki już przydzielone do
   // `concentration` (jeśli powstał) są wyłączone również — to ich lokalny
   // klaster już jest zbierany, front-merge decyduje wyłącznie o RESZCIE.
-  if (canConcentrateArmy(opts) && !consolidationPeace && !(forcedWarAttack && (forcedWarActiveWaves.length > 0 || forcedWarWaveHistory.length > 0))) {
+  if (canConcentrateArmy(opts)) {
     const combatEngagedUnitIds = new Set(
       myUnits
         .filter(u => engageableEnemyUnits.some(eu => isWithinAttackRange(u, eu.q, eu.r, data)))
         .map(u => u.id),
     );
     const frontMergeExcluded = new Set<string>([
-      ...concentrationExcludedUnitIds,
+      ...homeDefenderAssignments.keys(),
       ...(concentration?.unitIds ?? []),
       ...combatEngagedUnitIds,
     ]);
@@ -3906,161 +3414,22 @@ function decideAITurnCore(
     );
     const frontMerge = planArmyFrontMerge(playerId, myUnits, {
       excludedUnitIds: frontMergeExcluded,
-      targetClusterCount: forcedWarAttack ? 1 : (threatFrontCount <= 1 ? 1 : threatFrontCount),
+      targetClusterCount: threatFrontCount <= 1 ? 1 : threatFrontCount,
       preferredAnchors: concentration !== null
         ? [{ q: concentration.rallyPoint.q, r: concentration.rallyPoint.r, weight: concentration.unitIds.length }]
         : [],
     });
     if (frontMerge !== null) {
-      firstWaveMergeUnitIds = frontMerge.deferredUnitIds;
       for (const order of frontMerge.moveOrders) {
         const unit = myUnits.find(u => u.id === order.unitId);
         if (unit === undefined) continue;
-        const step = firstStep(unit, map, order.towardQ, order.towardR, units, true);
+        const step = firstStep(unit, map, order.towardQ, order.towardR, units);
         if (step !== null) {
-          commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
-            allowFriendlyStack: step.q === order.towardQ && step.r === order.towardR });
+          commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
         }
       }
       for (const unitId of frontMerge.deferredUnitIds) concentrationDeferred.add(unitId);
     }
-  }
-
-  // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ARMY_CONSOLIDATION_ENABLED, OFF = baza): w POKOJU
-  // jednostki polowe, ktore nie maja zadania (nie garnizon, nie misja, nie obrona domu, nie
-  // walka), maszeruja do stolicy i scalaja sie tam (miasto zapasowe, gdy stolica pelna).
-  // Wojna obslugiwana jest przez applyWarAllInCapitalToCommands (armia na wojne).
-  if (consolidationPeace && !forcedWarAttack) {
-    const rally = pickRallyCity(myCities, opts.capitalCityId);
-    if (rally !== undefined) {
-      const busyIds = new Set<string>(
-        commands.map(c => (c as { unitId?: string }).unitId ?? ''),
-      );
-      const combatEngagedIds = new Set(
-        myUnits
-          .filter(u => engageableEnemyUnits.some(eu => isWithinAttackRange(u, eu.q, eu.r, data)))
-          .map(u => u.id),
-      );
-      const candidates = myUnits.filter(u =>
-        !busyIds.has(u.id)
-        && !concentrationDeferred.has(u.id)
-        && !homeDefenderAssignments.has(u.id)
-        && !activeFlankingUnitIds.has(u.id)
-        && !activeWaveUnitIds.has(u.id)
-        && !combatEngagedIds.has(u.id)
-        && isEligibleForArmyConcentration(u, playerId));
-      if (candidates.length > 0) {
-        const candidateIds = new Set(candidates.map(u => u.id));
-        // Zajetosc heksow zbiorki liczona tylko z jednostek STOJACYCH (garnizon, misje):
-        // kandydaci sa przydzielani od nowa.
-        const occupancy = new Map<string, number>();
-        for (const u of myUnits) {
-          if (candidateIds.has(u.id)) continue;
-          const k = keyOf(u.q, u.r);
-          occupancy.set(k, (occupancy.get(k) ?? 0) + 1);
-        }
-        // Peace-time consolidation forms one field army at the capital. Nearby
-        // cities are not overflow hubs: that split kept large rosters scattered
-        // across several smaller stacks instead of completing the rally.
-        const rallyHexes = [{ q: rally.q, r: rally.r }];
-        const rallyKey = keyOf(rally.q, rally.r);
-        // R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: w pokoju zolnierze zbieraja sie u NAJBLIZSZEGO
-        // zywego wodza wlasnej cywilizacji (dlugosc realnej trasy); sam wodz wraca do stolicy, a zolnierz bez
-        // dostepnego wodza (brak wodza / inna wyspa) zbiera sie w stolicy jak dotad (zachowanie awaryjne).
-        const peaceLeaders = collectLeaderCandidates({ id: '', ownerId: playerId, q: 0, r: 0 }, myUnits, () => false);
-        const musterTroops: Array<{ unit: RuntimeUnit; toQ: number; toR: number }> = [];
-        const rallyCandidates: RuntimeUnit[] = [];
-        for (const u of candidates) {
-          if (u.isGeneral === true || peaceLeaders.length === 0) { rallyCandidates.push(u); continue; }
-          const choice = peaceLeaders.length > 1
-            ? pickNearestAvailableLeader(u, peaceLeaders, leaderPathLengthFor(u, map, units))
-            : { leader: peaceLeaders[0]!, distance: 0 };
-          if (choice === null) rallyCandidates.push(u);
-          else musterTroops.push({ unit: u, toQ: choice.leader.q, toR: choice.leader.r });
-        }
-        for (const m of musterTroops) {
-          if (m.unit.q === m.toQ && m.unit.r === m.toR) { concentrationDeferred.add(m.unit.id); continue; }
-          const step = firstStep(m.unit, map, m.toQ, m.toR, units, true);
-          if (step !== null) {
-            commands.push({ type: 'move', unitId: m.unit.id, toQ: step.q, toR: step.r,
-              allowFriendlyStack: step.q === m.toQ && step.r === m.toR });
-            concentrationDeferred.add(m.unit.id);
-          }
-        }
-        const rallyCapacity = rallyCandidates.length + (occupancy.get(rallyKey) ?? 0);
-        const assignments = assignRallyTargets(
-          rallyCandidates,
-          rallyHexes,
-          rallyCapacity,
-          occupancy,
-        );
-        const byId = new Map(rallyCandidates.map(u => [u.id, u] as const));
-        for (const a of assignments) {
-          if (a.atRally) {
-            // Keep arrived troops in the assembled army for this turn; otherwise
-            // they fall through to ordinary exploration/patrol orders below.
-            concentrationDeferred.add(a.unitId);
-            continue;
-          }
-          const unit = byId.get(a.unitId);
-          if (unit === undefined) continue;
-          const step = firstStep(unit, map, a.targetQ, a.targetR, units, true);
-          if (step !== null) {
-            commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
-              allowFriendlyStack: step.q === a.targetQ && step.r === a.targetR });
-            concentrationDeferred.add(unit.id);
-          }
-        }
-      }
-    }
-  }
-
-  // Wymuszona wojna obronna nie zmienia priorytetu walki wręcz, ale gdy nie
-  // ma jeszcze celu w zasięgu, kieruje wolne jednostki do najbliższego
-  // wykrytego napastnika zamiast pozostawiać je na zwykłym patrolu.
-  const forcedWarDefenseTargetById = forcedWarDefenseTarget?.id;
-
-  const campaignAnchor = concentration?.rallyPoint ?? myUnits[0];
-  const forcedWarTargetCity = forcedWarAttack && forcedWarTargetCities.length > 0 && campaignAnchor !== undefined
-    ? [...forcedWarTargetCities].sort((a, b) => {
-      const da = hexDistance(campaignAnchor.q, campaignAnchor.r, a.q, a.r);
-      const db = hexDistance(campaignAnchor.q, campaignAnchor.r, b.q, b.r);
-      return da - db || a.q - b.q || a.r - b.r || a.id.localeCompare(b.id);
-    })[0]
-    : undefined;
-
-  if (forcedWarAttack && opts.forcedWar !== undefined) {
-    const firstWaveUnitIds = standardConcentration !== null && forcedWarTargetCity !== undefined
-      ? [...new Set([...standardConcentration.unitIds, ...firstWaveMergeUnitIds])]
-      : [];
-    const firstWavePlan = standardConcentration !== null && forcedWarTargetCity !== undefined
-      ? {
-        targetCityId: forcedWarTargetCity.id,
-        unitIds: firstWaveUnitIds,
-        moveUnitIds: standardConcentration.moveUnitIds,
-        deferredUnitIds: standardConcentration.deferredUnitIds,
-        originHex: { ...standardConcentration.rallyPoint },
-        rallyPoint: { ...standardConcentration.rallyPoint },
-        approachSector: ((Math.round(
-          (Math.atan2(
-            standardConcentration.rallyPoint.r - forcedWarTargetCity.r,
-            standardConcentration.rallyPoint.q - forcedWarTargetCity.q,
-          ) / (Math.PI * 2) * 6
-        ) % 6) + 6) % 6),
-        createdTurn: opts.currentTurn ?? 0,
-      }
-      : undefined;
-    opts.forcedWar.wavePlan = forcedWarActiveWaves.length > 0 || forcedWarWaveHistory.length > 0
-      ? (forcedWarNextWavePlan ?? undefined)
-      : firstWavePlan;
-  }
-
-  const forcedWarWaveTargetByUnitId = new Map<string, string>();
-  for (const wave of forcedWarActiveWaves) {
-    for (const unitId of wave.unitIds) forcedWarWaveTargetByUnitId.set(unitId, wave.targetCityId);
-  }
-  for (const unitId of opts.forcedWar?.wavePlan?.unitIds ?? []) {
-    forcedWarWaveTargetByUnitId.set(unitId, opts.forcedWar!.wavePlan!.targetCityId);
   }
 
   for (const unit of sortedUnits) {
@@ -4081,12 +3450,9 @@ function decideAITurnCore(
 
     // Military
 
-    const forcedWaveTargetId = forcedWarWaveTargetByUnitId.get(unit.id);
-
     // 4b: adjacent enemy unit -> attack (tylko engageable — np. gracz tylko w wojnie)
     const adjacentEnemy = engageableEnemyUnits.find(
-      eu => isWithinAttackRange(unit, eu.q, eu.r, data)
-        && (!forcedWarAttack || eu.ownerId === opts.forcedWar!.targetOwnerId),
+      eu => isWithinAttackRange(unit, eu.q, eu.r, data),
     );
     if (adjacentEnemy !== undefined) {
       commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adjacentEnemy.id });
@@ -4101,12 +3467,8 @@ function decideAITurnCore(
     // `!isCivilianUnit` w `tryAutoCaptureEmptyCityAt`), więc rozkaz wjazdu na heks
     // obcego miasta byłby dla niego turą straconą bez efektu. Zwiadowca ma własną
     // gałąź wyżej. Silnik trzyma tę samą granicę niezależnie (canAiEnterEmptyEnemyCity).
-    const forcedWarCitiesForUnit = forcedWaveTargetId === undefined
-      ? forcedWarTargetCities
-      : forcedWarTargetCities.filter(c => c.id === forcedWaveTargetId);
     const adjacentEnemyCity = isCivilianUnit(unit) ? undefined
-      : (forcedWarAttack ? forcedWarCitiesForUnit
-        : (clusterConsolidationPhase ? clusterEnemyCities : engageableEnemyCities)).find(
+      : (clusterConsolidationPhase ? clusterEnemyCities : engageableEnemyCities).find(
         ec => isWithinCityAttackRange(unit, ec, data),
       ) ?? engageableEnemyCities.find(
         ec => isWithinCityAttackRange(unit, ec, data),
@@ -4148,66 +3510,18 @@ function decideAITurnCore(
       if (step !== null) {
         commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
         unitActed.add(unit.id);
-        // Tylko barbarzyncy (ownerId -1): najezdzcow cywilizacji obsluguje nakladka applyHomeWarPriorities
-        // (DEFEND-HOME, ostatnie slowo nad ruchem) -- jej wynik zostaje bez zmian (test ai-war-defend-home).
-        if (assignedThreat.ownerId === -1) homeDefenseMoveIds.add(unit.id);
-        continue;
-      }
-    }
-
-    // Flankers actively close on the nearest visible enemy unit instead of
-    // falling through to city/patrol/idle behavior.  Adjacent targets were
-    // handled above, so this is the approach/orbit leg of the same attack
-    // pattern and also covers maps with no enemy city in the data.
-    const flankingTarget = isFlankingUnit(unit, data)
-      ? nearest(unit.q, unit.r, engageableEnemyUnits, u => u.q, u => u.r)
-      : undefined;
-    if (
-      flankingTarget !== undefined
-      && hexDistance(unit.q, unit.r, flankingTarget.q, flankingTarget.r) <= unit.ruchLeft
-    ) {
-      const step = firstStep(unit, map, flankingTarget.q, flankingTarget.r, units);
-      if (step !== null) {
-        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
-        unitActed.add(unit.id);
-        continue;
-      }
-    }
-
-    if (forcedWarDefenseTarget !== undefined && forcedWarDefenseTargetById !== undefined) {
-      const step = firstStep(
-        unit,
-        map,
-        forcedWarDefenseTarget.q,
-        forcedWarDefenseTarget.r,
-        units,
-      );
-      if (step !== null) {
-        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
-        unitActed.add(unit.id);
         continue;
       }
     }
 
     // 4c: march toward enemy city — faza 1: najpierw państwa w klastrze, potem sąsiedzi (8 hex)
-    const freeUnitDuringActiveForcedWar = forcedWarAttack
-      && forcedWarActiveWaves.length > 0
-      && forcedWaveTargetId === undefined;
     const citiesForMarch = (() => {
-      if (forcedWarAttack && !freeUnitDuringActiveForcedWar && forcedWarTargetCities.length > 0) {
-        return forcedWarTargetCities;
-      }
       if (clusterConsolidationPhase && clusterEnemyCities.length > 0) return clusterEnemyCities;
       if (expansionEnemyCities.length > 0) return expansionEnemyCities;
       return engageableEnemyCities;
     })();
     const powerOf = opts.powerOfOwner;
     const targetCity = (() => {
-      const forcedWaveTarget = forcedWaveTargetId === undefined
-        ? undefined
-        : forcedWarTargetCities.find(c => c.id === forcedWaveTargetId);
-      if (forcedWaveTarget !== undefined) return forcedWaveTarget;
-      if (!freeUnitDuringActiveForcedWar && forcedWarTargetCity !== undefined) return forcedWarTargetCity;
       if (citiesForMarch.length === 0) return undefined;
       let bestScore = -Infinity;
       let bestCity: typeof citiesForMarch[0] | undefined;
@@ -4335,368 +3649,8 @@ function decideAITurnCore(
   // Suppress unused-variable lint: unitActed populated for potential future use.
   void unitActed;
 
-  // R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE, flaga WAR_ALLIN_CAPITAL_ENABLED): w wojnie cala
-  // armia idzie na stolice przeciwnika. Nadpisuje komendy RUCHU jednostek bojowych (zostawia
-  // ataki oraz wejscie na heks wrogiego miasta); gracz nigdy tu nie trafia (decideAITurn = AI).
-  if (isWarAllInCapitalEnabled() && opts.warAllIn !== undefined && opts.warAllIn.targets.length > 0) {
-    applyWarAllInCapitalToCommands(commands, myUnits, units, cities, playerId, map, opts.warAllIn, data, true, opts.currentTurn, homeDefenseMoveIds);
-  }
-
   commands.push({ type: 'endTurn' });
   return commands;
-}
-
-/**
- * R-WEB-WAR-ALLIN-CAPITAL-Q1: zastepuje komendy ruchu jednostek bojowych rozkazem marszu na
- * najblizsza stolice wroga (grupowanie/rendezvous w planWarAllInCapital). Mutuje `commands`.
- */
-function applyWarAllInCapitalToCommands(
-  commands: AICommand[],
-  myUnits: RuntimeUnit[],
-  units: RuntimeUnit[],
-  cities: AICity[],
-  playerId: number,
-  map: GameMap,
-  ctx: WarAllInContext,
-  data: GameData,
-  gateLooseUnits = false,
-  currentTurn?: number,
-  homeDefenderIds?: ReadonlySet<string>,
-): void {
-  // Zaokretowane jednostki zostaja poza zwyklym marszem ladowym. Kampania
-  // wodna wodza jest wyjatkiem: jej planner musi kontynuowac ruch na wodzie i
-  // wskazac pierwsze pole ladu, zeby silnik zdjal stan embarked po desancie.
-  const eligible = myUnits.filter(u =>
-    !isCivilianUnit(u) && !isScoutUnit(u) && u.ruchLeft > 0
-      && (ctx.allowSea === true || u.embarked !== true
-        // Trasa morska omijajaca zakazany teren: juz zaokretowana jednostka kontynuuje plyniecie.
-        || (activeMarchGuard !== null && activeMarchGuard.seaCostFor(u) !== undefined))
-      && u.seaRaider !== true);
-  if (eligible.length === 0) return;
-  const enemyCityHex = new Set(
-    cities.filter(c => c.ownerId !== playerId).map(c => keyOf(c.q, c.r)),
-  );
-  const eligibleIds = new Set(eligible.map(u => u.id));
-  // Jednostki ktore juz atakuja lub wchodza na wrogie miasto zachowuja swoj rozkaz.
-  const keep = new Set<string>();
-  // R-WEB-WAR-ALLIN-KEEP-BARB-DEFENSE-Q1: obrona przed barbarzyncami w bramce obrony domu ma
-  // pierwszenstwo przed marszem na stolice -- przydzieleni obroncy zachowuja ruch z kroku 4b2.
-  if (homeDefenderIds !== undefined) {
-    for (const id of homeDefenderIds) keep.add(id);
-  }
-  for (const cmd of commands) {
-    if (cmd.type === 'attack' && eligibleIds.has(cmd.unitId)) {
-      const attacker = eligible.find(unit => unit.id === cmd.unitId);
-      if (attacker?.embarked !== true) keep.add(cmd.unitId);
-    }
-    else if (cmd.type === 'move' && eligibleIds.has(cmd.unitId) && enemyCityHex.has(keyOf(cmd.toQ, cmd.toR))) {
-      keep.add(cmd.unitId);
-    }
-  }
-  let planned = eligible.filter(u => !keep.has(u.id));
-  if (planned.length === 0) return;
-  const plannedIds = new Set(planned.map(u => u.id));
-  for (let i = commands.length - 1; i >= 0; i--) {
-    const cmd = commands[i]!;
-    if (cmd.type === 'move' && plannedIds.has(cmd.unitId)) commands.splice(i, 1);
-  }
-  // R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1 (flaga ARMY_CONSOLIDATION ON): jednostki spoza
-  // skupiska >= ARMY_CONCENTRATION_MIN_UNITS (np. armia zastepcza po stracie glownej) nie
-  // maszeruja na cel pojedynczo -- zbieraja sie w jednym miescie zbiorki; gdy prog zebrany,
-  // skupisko rusza jak kazda armia. Walczace jednostki (`keep`) liczą sie do skupisk, nie sa ruszane.
-  if (gateLooseUnits && isArmyConsolidationEnabled()) {
-    const rallyPlan = planWarReplacementRally(
-      planned,
-      // Zatrzymany obronca domu nie jest kotwica armii zastepczej (stoi przy zagrozeniu, nie walczy na wojnie).
-      eligible.filter(u => keep.has(u.id) && homeDefenderIds?.has(u.id) !== true),
-      cities.filter(c => c.ownerId === playerId),
-      ctx.targets,
-      { ownerId: playerId, currentTurn },
-    );
-    if (rallyPlan !== null) {
-      const looseIds = new Set(rallyPlan.looseUnitIds);
-      for (const unit of planned) {
-        if (!looseIds.has(unit.id)) continue;
-        if (unit.q === rallyPlan.rallyCity.q && unit.r === rallyPlan.rallyCity.r) continue;
-        const step = firstStep(unit, map, rallyPlan.rallyCity.q, rallyPlan.rallyCity.r, units, true);
-        if (step === null) {
-          // Brak trasy do miasta zbiorki (inny ladowy obszar, blokada): jednostka NIE zostaje
-          // porzucona -- wraca do dotychczasowego marszu na cel (zachowanie sprzed bramki).
-          looseIds.delete(unit.id);
-          continue;
-        }
-        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
-          allowFriendlyStack: step.q === rallyPlan.rallyCity.q && step.r === rallyPlan.rallyCity.r });
-      }
-      planned = planned.filter(u => !looseIds.has(u.id));
-      if (planned.length === 0) return;
-    }
-  }
-  // R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1 (flaga ARMY_CONSOLIDATION ON, tylko glowne wolanie): skupisko
-  // jednostek na ROZNYCH heksach (promien ARMY_CONCENTRATION_RADIUS od kotwicy) najpierw schodzi sie na
-  // JEDEN heks i scala w stos (allowFriendlyStack -> assignSharedStackGroupId w main.ts); dopiero stos
-  // rusza na cel. Bez tego planer marszu (rezerwacja heksu koncowego) prowadzi kazda jednostke po swoim
-  // heksie przez cala wojne -- chmura jednoosobowych armii. Grupa w kontakcie z wroga armia (promien
-  // zaangazowania) nie zbiera sie (walke prowadzi logika zaangazowania); brak trasy -> normalny marsz.
-  // Przy kilku wojnach zbiorka dziala OSOBNO w kazdej armii wojennej (ten sam podzial co w planie marszu,
-  // policzony raz przed zbiorka) -- inaczej scalalaby armie roznych wojen, ktore plan marszu zaraz rozdziela.
-  const armyGroups: RuntimeUnit[][] | undefined = isArmyConsolidationEnabled()
-    ? partitionWarArmies(planned, ctx, data) : undefined;
-  if (gateLooseUnits && isArmyConsolidationEnabled() && planned.length >= 2) {
-    const engageR = ctx.engageRadius ?? 0;
-    const gatherGroups = [];
-    for (const g of armyGroups ?? [planned]) {
-      const gp = planFieldStackGather(g, {
-        ownerId: playerId,
-        currentTurn,
-        isGroupBlocked: (anchor) => (ctx.enemyArmies ?? []).some(e =>
-          hexDistance(anchor.q, anchor.r, e.q, e.r) <= engageR),
-      });
-      if (gp !== null) gatherGroups.push(...gp.groups);
-    }
-    const gatherPlan = gatherGroups.length > 0 ? { groups: gatherGroups } : null;
-    if (gatherPlan !== null) {
-      const gatheredIds = new Set<string>();
-      const gatheringNow: string[] = [];
-      const byId = new Map(planned.map(u => [u.id, u] as const));
-      for (const group of gatherPlan.groups) {
-        const stepped: string[] = [];
-        // Jednostki startujace z jednego heksu (istniejacy stos) dostaja WSPOLNY krok i
-        // allowFriendlyStack -- inaczej pierwszy krok posredni rozbilby stos (executor blokuje heks
-        // zajety przez towarzysza bez tej flagi).
-        const byStart = new Map<string, RuntimeUnit[]>();
-        for (const id of group.moveUnitIds) {
-          const unit = byId.get(id);
-          if (unit === undefined) continue;
-          const k = keyOf(unit.q, unit.r);
-          let arr = byStart.get(k);
-          if (arr === undefined) byStart.set(k, arr = []);
-          arr.push(unit);
-        }
-        for (const members of byStart.values()) {
-          const step = firstStep(members[0]!, map, group.anchor.q, group.anchor.r, units, true);
-          if (step === null) continue; // brak trasy: zostaje w normalnym marszu
-          const atAnchor = step.q === group.anchor.q && step.r === group.anchor.r;
-          for (const unit of members) {
-            commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
-              ...(atAnchor || members.length > 1 ? { allowFriendlyStack: true } : {}) });
-            stepped.push(unit.id);
-          }
-        }
-        if (stepped.length === 0) continue;
-        for (const id of stepped) gatheredIds.add(id);
-        for (const id of group.stayUnitIds) gatheredIds.add(id);
-        gatheringNow.push(...stepped);
-      }
-      if (gatheredIds.size > 0) {
-        noteStackGatherTurn(playerId, gatheringNow, currentTurn);
-        planned = planned.filter(u => !gatheredIds.has(u.id));
-        if (planned.length === 0) return;
-      }
-    }
-  }
-  // Statycznie nietranzytowe: obce miasta (addForeignCityBlocks); jednostki jako `occupied`
-  // (ograniczaja tylko wybor kroku, nie trase -- brak krokow wstecz).
-  const blocked = new Set(enemyCityHex);
-  // R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: teren trzecich cywilizacji bez umowy przemarszu
-  // = twarda przeszkoda planera wojny (jak obce miasta). Wlasciciele terenu, na ktorym jednostki
-  // juz stoja, sa wyjatkiem (wyjscie z cudzego terenu, zliczone w stats.exitExceptions).
-  const marchGuard = activeMarchGuard;
-  let territoryBlocked: Set<string> | null = null;
-  if (marchGuard !== null) {
-    const startOwners = new Set<number>();
-    for (const u of planned) {
-      if (marchGuard.isBlockedHex(u.q, u.r)) startOwners.add(marchGuard.territoryOwnerAtHex(u.q, u.r));
-    }
-    marchGuard.stats.exitExceptions += startOwners.size;
-    if (startOwners.size > 0) console.log(`[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel ${marchGuard.ownerId}, tereny ${Array.from(startOwners).join(',')}`);
-    territoryBlocked = marchGuard.blockedHexKeys(startOwners);
-    for (const k of territoryBlocked) blocked.add(k);
-  }
-  const occupied = new Set(units.map(u => keyOf(u.q, u.r)));
-  // R-WEB-WAR-RULES-MULTIWAR-Q1: W1/W2 tylko gdy wołający przekazał dane (flaga ON w main.ts).
-  const warOpts = {
-    enemyArmies: ctx.enemyArmies,
-    engageRadius: ctx.engageRadius,
-    enemyStrength: ctx.enemyStrength,
-    marchMainGroupWhileRendezvous: ctx.marchMainGroupWhileRendezvous,
-  };
-  const seaInProgress = marchGuard !== null && planned.some(u => u.embarked === true);
-  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: heksy z WLASNYMI jednostkami (bez obcych) = przejscie w marszu.
-  const passThrough = planned.length > 0 && planned.every(u => u.ownerId === planned[0]!.ownerId)
-    ? buildMoveOccupancy(units, planned[0]!.ownerId, []).passThrough
-    : undefined;
-  const nav = { map, blocked, occupied, passThrough, allowSea: ctx.allowSea === true || seaInProgress };
-  // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ON): liczba armii = liczba wojen; kazda armia to
-  // zrownowazona czesc wojsk marszu, idaca na stolice JEDNEGO wroga. OFF = jedna wspolna
-  // procedura (dotychczasowe zachowanie).
-  const planWith = (n: typeof nav) => isArmyConsolidationEnabled()
-    ? planWarArmiesByEnemy(planned, ctx, n, warOpts, data, armyGroups)
-    : [planWarAllInCapital(planned, ctx.targets, n, warOpts)];
-  let plans = planWith(nav);
-  // R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: brak trasy ladowej omijajacej zakazany teren, a wlasciciel
-  // zna Zeglugę => przeplanuj z woda (trasa morska, nadal z zakazanym terenem jako przeszkoda).
-  if (marchGuard !== null && territoryBlocked !== null && territoryBlocked.size > 0 && !nav.allowSea
-      && plans.some(p => p.noPath.length > 0) && planned.some(u => marchGuard.seaCostFor(u) !== undefined)) {
-    const seaPlans = planWith({ ...nav, allowSea: true });
-    const noPathCount = (ps: typeof plans) => ps.reduce((a, p) => a + p.noPath.length, 0);
-    if (noPathCount(seaPlans) < noPathCount(plans)) {
-      plans = seaPlans;
-      marchGuard.stats.seaRoutes++;
-    }
-  }
-  // Jednostki zebrane na tym samym heksie nie mogą dostać od planera różnych kroków:
-  // rezerwacja pierwszego kroku oznaczała wcześniej `held` dla reszty stosu. W marszu
-  // kampanii wszystkie jednostki stosu podążają tym samym krokiem i legalnie współdzielą
-  // heks docelowy; main.ts przepuszcza takie komendy przez allowFriendlyStack.
-  if (marchGuard !== null && territoryBlocked !== null && territoryBlocked.size > 0) {
-    requestWarMarchPassage(marchGuard, planned, plans, ctx.targets, map, units);
-  }
-  for (const plan of plans) {
-    const orderByUnit = new Map(plan.orders.map(order => [order.unitId, order] as const));
-    const heldIds = new Set(plan.held);
-    const unitsByStart = new Map<string, RuntimeUnit[]>();
-    const startByUnit = new Map<string, string>();
-    for (const unit of planned) {
-      const start = keyOf(unit.q, unit.r);
-      startByUnit.set(unit.id, start);
-      let group = unitsByStart.get(start);
-      if (group === undefined) unitsByStart.set(start, group = []);
-      group.push(unit);
-    }
-    const emitted = new Map<string, typeof plan.orders[number]>();
-    for (const group of unitsByStart.values()) {
-      if (group.length < 2) continue;
-      const representatives = group
-        .map(unit => orderByUnit.get(unit.id))
-        .filter((order): order is typeof plan.orders[number] => order !== undefined);
-      if (representatives.length === 0) continue;
-      const first = representatives[0]!;
-      // Jednostki z jednego heksu należą do tego samego klastra i celu. Zachowujemy
-      // ostrożność dla planów wielowojennych: nie łączymy różnych celów.
-      if (representatives.some(order => order.targetCityId !== first.targetCityId)) continue;
-      for (const unit of group) {
-        if (!orderByUnit.has(unit.id) && !heldIds.has(unit.id)) continue;
-        emitted.set(unit.id, { ...first, unitId: unit.id });
-      }
-    }
-    // Zachowaj pozostałe rozkazy planera; dla współdzielonego kroku zaznacz legalny stos.
-    for (const o of plan.orders) {
-      const replacement = emitted.get(o.unitId);
-      const step = replacement ?? o;
-      const stack = (unitsByStart.get(startByUnit.get(o.unitId) ?? '')?.length ?? 0) > 1;
-      commands.push({
-        type: 'move',
-        unitId: step.unitId,
-        toQ: step.step.q,
-        toR: step.step.r,
-        targetCityId: step.targetCityId,
-        ...(stack ? { allowFriendlyStack: true } : {}),
-      });
-    }
-    for (const [unitId, order] of emitted) {
-      if (orderByUnit.has(unitId)) continue;
-      commands.push({ type: 'move', unitId, toQ: order.step.q, toR: order.step.r,
-        targetCityId: order.targetCityId, allowFriendlyStack: true });
-    }
-  }
-}
-
-/**
- * R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: po zaplanowaniu marszu wojny z zablokowanym terenem
- * trzecich cywilizacji: (a) jednostki bez trasy (plan.noPath) => odroczenie + prosba o przemarsz
- * do wlasciciela terenu, ktory lezy na trasie wprost; (b) reprezentant planu z trasa okrezna
- * znacznie gorsza niz wprost => prosba (trasa okrezna i tak obowiazuje). Koszt: co najwyzej
- * dwa Dijkstry na wywolanie (jeden reprezentant), nie na jednostke.
- */
-function requestWarMarchPassage(
-  guard: AiMarchGuard,
-  planned: RuntimeUnit[],
-  plans: ReadonlyArray<{ orders: ReadonlyArray<{ unitId: string }>; noPath: readonly string[] }>,
-  targets: ReadonlyArray<{ q: number; r: number }>,
-  map: GameMap,
-  units: RuntimeUnit[],
-): void {
-  if (targets.length === 0 || planned.length === 0) return;
-  const noPathIds = new Set<string>();
-  for (const pl of plans) for (const id of pl.noPath) noPathIds.add(id);
-  const nearestTarget = (u: RuntimeUnit): { q: number; r: number } =>
-    targets.reduce((b, t) => (hexDistance(u.q, u.r, t.q, t.r) < hexDistance(u.q, u.r, b.q, b.r) ? t : b), targets[0]!);
-  const rep = planned.find(u => noPathIds.has(u.id)) ?? planned[0]!;
-  // R-WEB-MOVE-PASS-THROUGH-OWN-UNITS-Q1: diagnostyka liczy trase tak jak realny ruch (wlasne = przejscie).
-  const occ = buildMoveOccupancy(units, rep.ownerId, [rep.id]);
-  const goal = nearestTarget(rep);
-  // Tani filtr geometryczny: bez zakazanego terenu w poblizu linii prostej nie ma czego wnioskowac.
-  if (!guard.nearBlockedTerritory(rep.q, rep.r, goal.q, goal.r, 3)) return;
-  const direct = computePath(rep, map, goal.q, goal.r, occ);
-  if (direct.length === 0) return;
-  const crossing = firstBlockedOwnerOnPath(guard, direct);
-  if (crossing === null) return;
-  if (noPathIds.has(rep.id)) {
-    guard.stats.deferred += noPathIds.size;
-    guard.requestPassage(crossing, 'no-route');
-    return;
-  }
-  const detour = computePath(rep, map, goal.q, goal.r, occ, guard.wrapCost(terrainMoveCost));
-  guard.stats.detours++;
-  if (detour.length > 0 && isDetourSignificant(pathCostOf(direct, map), pathCostOf(detour, map))) {
-    guard.requestPassage(crossing, 'detour');
-  }
-}
-
-/**
- * R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ON): armia na wojne. Wojska dzielone na `warArmyCount`
- * armii (liczba wrogich cywilizacji w `ctx.targets`, min 1), zrownowazone sila bojowa
- * (`splitIntoWarArmies`, sila = armyFieldPower * udzial HP). Cala armia przydzielana do wroga
- * wg W2 (`allocateGroupsToEnemies`, te same reguly co w warAllInCapital.ts); armia marszuje na
- * stolice przydzielonego wroga (planWarAllInCapital -> W1/W2 bez zmian).
- */
-function planWarArmiesByEnemy(
-  units: RuntimeUnit[],
-  ctx: WarAllInContext,
-  nav: { map: GameMap; blocked: ReadonlySet<string>; occupied: ReadonlySet<string>; passThrough?: ReadonlySet<string> },
-  warOpts: { enemyArmies?: ReadonlyArray<EngageArmyHex>; engageRadius?: number; enemyStrength?: ReadonlyArray<EnemyStrengthRef>;
-    marchMainGroupWhileRendezvous?: boolean },
-  data: GameData,
-  /** R-WEB-AI-ARMY-SCATTERED-NOT-MERGED-Q1: podzial na armie policzony PRZED zbiorka stosu (stabilny w obrebie tury). */
-  presetGroups?: ReadonlyArray<ReadonlyArray<RuntimeUnit>>,
-): ReturnType<typeof planWarAllInCapital>[] {
-  // Jeden cel na wroga (ctxFor w main.ts), wiec liczba wrogich cywilizacji = liczba wojen.
-  const enemyOwners = [...new Set(ctx.targets.map(t => t.ownerId))].sort((a, b) => a - b);
-  if (enemyOwners.length === 0) return [];
-  let groups: RuntimeUnit[][];
-  if (presetGroups !== undefined) {
-    const present = new Set(units.map(u => u.id));
-    groups = presetGroups.map(g => g.filter(u => present.has(u.id))).filter(g => g.length > 0);
-  } else {
-    groups = partitionWarArmies(units, ctx, data);
-  }
-  const groupRefs: ArmyGroupRef[] = groups.map((g, i) => ({ id: `wojna-${i}`, size: g.length }));
-  // W2: przydzial CALYCH armii do wrogow (sila z warOpts.enemyStrength; brak = po rowno).
-  const enemies: EnemyStrengthRef[] = enemyOwners.map(o => ({
-    ownerId: o,
-    strength: warOpts.enemyStrength?.find(e => e.ownerId === o)?.strength ?? 1,
-  }));
-  const alloc = allocateGroupsToEnemies(groupRefs, enemies);
-  return groups.map((group, i) => {
-    const owner = alloc.get(groupRefs[i]!.id) ?? enemyOwners[i % enemyOwners.length]!;
-    const groupTargets = ctx.targets.filter(t => t.ownerId === owner);
-    return planWarAllInCapital(group, groupTargets, nav, warOpts);
-  });
-}
-
-/** Podzial jednostek marszu na `warArmyCount` armii zrownowazonych silą (jak w planWarArmiesByEnemy). */
-function partitionWarArmies(units: RuntimeUnit[], ctx: WarAllInContext, data: GameData): RuntimeUnit[][] {
-  const enemyOwners = [...new Set(ctx.targets.map(t => t.ownerId))].sort((a, b) => a - b);
-  if (enemyOwners.length === 0) return [];
-  const strengthOf = (u: RuntimeUnit): number => {
-    const def = data.units.find(d => d.Jednostka === u.typeId);
-    const power = def !== undefined ? armyFieldPower(def as unknown as UnitPowerInput) : 0;
-    const maxHp = _unitMaxHealth(u, data);
-    const frac = maxHp > 0 ? Math.max(0, Math.min(1, (u.hp ?? maxHp) / maxHp)) : 1;
-    return (power > 0 ? power : 1) * frac;
-  };
-  return splitIntoWarArmies(units, warArmyCount(enemyOwners), strengthOf);
 }
 
 /** Progi posiłków w klastrze per poziom „Wsparcie miast-państw" (setup nowej gry). */
@@ -4886,218 +3840,18 @@ function planCityStateOffensiveMove(
 }
 
 /**
- * R-WEB-WAR-ALLIN-GENERAL-PATH-BARB-DEFENSE-Q1: sciezka kampanii wodza (etap attacking) wraca PRZED
- * krokiem 4b2, wiec obrona domu przed barbarzyncami nie byla tam liczona -- drugie wywolanie
- * applyWarAllInCapitalToCommands przejmowalo obroncow i wysylalo ich na stolice wroga. Tu: ten sam
- * przydzial (assignHomeDefenders) i ten sam ruch/atak co w kroku 4b/4b2, wylacznie dla barbarzyncow
- * (ownerId -1; najezdzcow cywilizacji obsluguje nakladka applyHomeWarPriorities). Zwraca komendy oraz
- * zbior id obroncow, ktorych war-allin nie przejmuje.
- */
-function planCampaignBarbarianHomeDefense(
-  playerId: number,
-  myUnits: RuntimeUnit[],
-  units: RuntimeUnit[],
-  cities: AICity[],
-  map: GameMap,
-  data: GameData,
-  opts: AITurnOpts,
-): { commands: AICommand[]; defenderIds: Set<string> } {
-  const result = { commands: [] as AICommand[], defenderIds: new Set<string>() };
-  const myCities = cities.filter(c => c.ownerId === playerId);
-  if (myCities.length === 0) return result;
-  const homeThreats = units.filter(u =>
-    u.ownerId === -1
-    && aiCanEngageOwner(opts, u.ownerId)
-    && myCities.some(city => isHomeDefenseThreatForCity(u.q, u.r, city)));
-  if (homeThreats.length === 0) return result;
-  // Obroncy domu to wojsko: bez cywilow (robotnik, osadnik), bez jednostek na okrecie i bez wodza
-  // kampanii (wodz nie wypada z marszu na stolice, zeby bronic miasta).
-  const assignments = assignHomeDefenders(
-    homeThreats,
-    homeDefenderPool(myUnits),
-    myCities,
-    isArmyConsolidationEnabled() && canConcentrateArmy(opts) ? ARMY_CONSOLIDATION_HOME_GROUP_SIZE : 1,
-  );
-  for (const [unitId, threat] of assignments) {
-    if (threat.ownerId !== -1) continue;
-    const unit = myUnits.find(u => u.id === unitId);
-    if (unit === undefined) continue;
-    if (isWithinAttackRange(unit, threat.q, threat.r, data)) {
-      result.commands.push({ type: 'attack', unitId, targetUnitId: threat.id });
-      result.defenderIds.add(unitId);
-      continue;
-    }
-    const step = firstStep(unit, map, threat.q, threat.r, units);
-    if (step === null) continue;
-    result.commands.push({ type: 'move', unitId, toQ: step.q, toR: step.r });
-    result.defenderIds.add(unitId);
-  }
-  return result;
-}
-
-/**
  * D-START kopia_typu_obronna — bez produkcji ekspansyjnej, bez osadników/foundCity;
  * poza tym pełna produkcja (jak zwykłe miasto AI, via chooseCityProduction), riposta
  * przy zagrożeniu własnego miasta i posiłki wewnątrz klastra ku zagrożonej siostrze
  * (Maciej 2026-07-20 — miasta-siostry aktywnym graczem, nie biernym łupem).
  */
-function appendAiGeneralCampaignOrders(
-  playerId: number,
-  myUnits: RuntimeUnit[],
-  units: RuntimeUnit[],
-  cities: AICity[],
-  map: GameMap,
-  data: GameData,
-  opts: AITurnOpts,
-  commands: AICommand[],
-): boolean {
-  const campaign = opts.aiGeneralWarCampaign;
-  if (!campaign) return false;
-  // R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1: zbiorka (recruiting/gathering) i marsz (attacking) tylko przy faktycznej wojnie z celem.
-  if (!aiCanEngageOwner(opts, campaign.target.ownerId)) return false;
-  const general = campaign.generalUnitId
-    ? myUnits.find(unit => unit.id === campaign.generalUnitId && unit.isGeneral === true)
-    : undefined;
-  if (campaign.stage === 'recruiting' || campaign.stage === 'gathering') {
-    const rallyQ = general?.q ?? campaign.rallyQ;
-    const rallyR = general?.r ?? campaign.rallyR;
-    // R-WEB-ARMY-TO-NEAREST-LEADER-Q1: kazda jednostka zbiera sie u NAJBLIZSZEGO dostepnego wodza
-    // (dlugosc realnej trasy), nie u jednego wodza kampanii. Brak dostepnego wodza -> dotychczasowy punkt.
-    const blockedIds = campaign.stage === 'recruiting' ? campaign.blockedGeneralIds ?? [] : [];
-    // Ten sam filtr zywych wodzow co gracz (dead/removed/routed/hp) -- collectLeaderCandidates.
-    // onExpedition=false: etapy recruiting/gathering z definicji nie maja wodza w marszu na cel.
-    const leaders = collectLeaderCandidates({ id: '', ownerId: playerId, q: 0, r: 0 }, myUnits, () => false)
-      .filter(l => !blockedIds.includes(l.id));
-    for (const unit of myUnits) {
-      if (!isEligibleForArmyConcentration(unit, playerId)) continue;
-      // Jeden wodz -> bez wyboru (bez kosztu liczenia trasy), zachowanie jak dotad.
-      const choice = leaders.length > 1
-        ? pickNearestAvailableLeader(unit, leaders, leaderPathLengthFor(unit, map, units))
-        : leaders.length === 1 ? { leader: leaders[0]!, distance: 0 } : null;
-      const toQ = choice?.leader.q ?? rallyQ;
-      const toR = choice?.leader.r ?? rallyR;
-      if (unit.q === toQ && unit.r === toR) continue;
-      const step = firstStep(unit, map, toQ, toR, units, true);
-      if (step !== null) commands.push({
-        type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
-        allowFriendlyStack: step.q === toQ && step.r === toR,
-      });
-    }
-    if (general && campaign.stage === 'gathering') {
-      opts.aiGeneralWarCampaign = {
-        ...recordAiGeneralGatherTurn(campaign, campaign.turn),
-        rallyQ, rallyR, target: campaign.target, turn: campaign.turn,
-      };
-    }
-    commands.push({ type: 'endTurn' });
-    return true;
-  }
-  if (campaign.stage === 'attacking' && general) {
-    // R-WEB-WAR-ALLIN-GENERAL-PATH-BARB-DEFENSE-Q1: obroncy domu przed barbarzyncami ida ku zagrozeniu
-    // (jak krok 4b2) i ich komendy zostaja poza marszem kampanii, takze poza ekspansja stosow nizej.
-    const barbDefense = planCampaignBarbarianHomeDefense(playerId, myUnits, units, cities, map, data, opts);
-    commands.push(...barbDefense.commands);
-    // R-WEB-AI-ARMY-ALL-CIVS-GATHER-UNDER-GENERAL-Q1: drugi wodz (Braz: limit 2) zostaje w miescie i zbiera
-    // kolejna armie przez AI_GENERAL_WAR_GATHER_TURNS tur, gdy pierwszy ruszyl na atak; potem rusza jako
-    // druga fala (rezerwa przestaje byc zatrzymywana). Jednostka nalezy do rezerwy, gdy NAJBLIZSZY po
-    // realnej trasie (ta sama metryka co w pokoju i zbiorce; remis lub brak trasy -> wodz kampanii) jest
-    // wodz rezerwowy.
-    const reserveGenerals = myUnits.filter(unit => unit.isGeneral === true && unit.id !== general.id
-      && (unit.hp == null || unit.hp > 0)).sort((a, b) => a.id.localeCompare(b.id));
-    const reserveIds = new Set<string>();
-    const keepCampaignFields = {
-      rallyQ: campaign.rallyQ, rallyR: campaign.rallyR, target: campaign.target, turn: campaign.turn,
-      ...(campaign.seaTravelAllowed !== undefined ? { seaTravelAllowed: campaign.seaTravelAllowed } : {}),
-    };
-    if (reserveGenerals.length > 0) {
-      const tracked = recordAiReserveGatherTurn(campaign, reserveGenerals[0]!.id, campaign.turn);
-      if (tracked.campaign !== campaign) opts.aiGeneralWarCampaign = { ...tracked.campaign, ...keepCampaignFields };
-      if (!tracked.released) {
-        for (const g of reserveGenerals) reserveIds.add(g.id);
-        for (const unit of myUnits) {
-          if (unit.isGeneral === true || barbDefense.defenderIds.has(unit.id)) continue;
-          if (!isEligibleForArmyConcentration(unit, playerId)) continue;
-          const pathLen = leaderPathLengthFor(unit, map, units);
-          const dMain = unit.q === general.q && unit.r === general.r ? 0 : pathLen(unit, general) ?? Infinity;
-          let best: RuntimeUnit | null = null;
-          let dBest = Infinity;
-          for (const g of reserveGenerals) {
-            const d = unit.q === g.q && unit.r === g.r ? 0 : pathLen(unit, g) ?? Infinity;
-            if (d < dBest) { best = g; dBest = d; }
-          }
-          if (best === null || dBest >= dMain) continue;
-          reserveIds.add(unit.id);
-          if (dBest === 0) continue;
-          const step = firstStep(unit, map, best.q, best.r, units, true);
-          if (step !== null) commands.push({
-            type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
-            allowFriendlyStack: step.q === best.q && step.r === best.r,
-          });
-        }
-      }
-    } else if (campaign.reserveGeneralId !== undefined) {
-      opts.aiGeneralWarCampaign = { ...recordAiReserveGatherTurn(campaign, undefined, campaign.turn).campaign,
-        ...keepCampaignFields };
-    }
-    const marchKeepIds = reserveIds.size > 0
-      ? new Set<string>([...barbDefense.defenderIds, ...reserveIds])
-      : barbDefense.defenderIds;
-    const campaignCommandStart = commands.length;
-    applyWarAllInCapitalToCommands(
-      commands, myUnits, units, cities, playerId, map,
-      { targets: [campaign.target], allowSea: campaign.seaTravelAllowed === true,
-        marchMainGroupWhileRendezvous: true }, data,
-      false, undefined, marchKeepIds,
-    );
-    // Campaign members can already be concentrated on one friendly hex after
-    // five muster turns. The shared war planner reserves each destination once,
-    // so without this expansion it emits an order for only part of that stack.
-    // Preserve one route for every eligible unit in each starting stack and let
-    // the real AI move executor admit its friendly-stack destination.
-    const campaignMoves = commands.slice(campaignCommandStart)
-      .filter((command): command is Extract<AICommand, { type: 'move' }> => command.type === 'move');
-    const stackGroups = new Map<string, RuntimeUnit[]>();
-    for (const unit of myUnits) {
-      if (!isEligibleForArmyConcentration(unit, playerId)) continue;
-      const key = keyOf(unit.q, unit.r);
-      const group = stackGroups.get(key) ?? [];
-      group.push(unit);
-      stackGroups.set(key, group);
-    }
-    const expandedStackIds = new Set<string>();
-    const stackOrders: Extract<AICommand, { type: 'move' }>[] = [];
-    for (const stack of stackGroups.values()) {
-      // Obroncy domu w stosie nie sa rozwijani do stolicy (maja wlasny ruch ku barbarzyncy).
-      const group = stack.filter(unit => !marchKeepIds.has(unit.id));
-      if (group.length < 2) continue;
-      const ids = new Set(group.map(unit => unit.id));
-      const route = campaignMoves.find(command => ids.has(command.unitId));
-      if (!route) continue;
-      for (const unit of group) expandedStackIds.add(unit.id);
-      for (const unit of group) stackOrders.push({
-        ...route,
-        unitId: unit.id,
-        allowFriendlyStack: true,
-      });
-    }
-    if (expandedStackIds.size > 0) {
-      commands.splice(campaignCommandStart, commands.length - campaignCommandStart,
-        ...commands.slice(campaignCommandStart).filter(command =>
-          command.type !== 'move' || !expandedStackIds.has(command.unitId)));
-      commands.push(...stackOrders);
-    }
-    commands.push({ type: 'endTurn' });
-    return true;
-  }
-  return false;
-}
-
 function decideDefensiveCopyTurn(
   playerId: number,
   units: RuntimeUnit[],
   cities: AICity[],
   map: GameMap,
   data: GameData,
+  mods: ArchetypeMods,
   opts: AITurnOpts,
   difficultyParams: DifficultyParams,
 ): AICommand[] {
@@ -5114,7 +3868,7 @@ function decideDefensiveCopyTurn(
   // nie emitujemy foundCity). Zero bonusu: identyczna funkcja co dla zwykłego AI.
   for (const city of myCities) {
     const buildId = chooseCityProduction(
-      city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
+      city.id, myCities, units, playerId, data, mods, opts, map, difficultyParams,
     );
     if (buildId !== null) {
       // P-AI-MOC-GAP: dołącz fallbacki (odczyt NATYCHMIAST — kolejne miasto w tej
@@ -5150,10 +3904,6 @@ function decideDefensiveCopyTurn(
     { ...opts, plannedImprovementCost },
   );
   if (expansionFortCmd !== null) commands.push(expansionFortCmd);
-
-  if (appendAiGeneralCampaignOrders(playerId, myUnits, units, cities, map, data, opts, commands)) {
-    return commands;
-  }
 
   // ---------------------------------------------------------------------------
   // POSIŁKI W KLASTRZE (D-START pkt c/e; Maciej 2026-07-21 przeróbka ZMIANA 1 —
@@ -5482,29 +4232,6 @@ function decideDefensiveCopyTurn(
 // ---------------------------------------------------------------------------
 
 /**
- * R-WEB-AI-AVOID-POLAR-CITIES-Q1: AI unika terenu polarnego przy zakladaniu miast.
- * Zwraca kare rankingowa (>= 0) za polarne sasiedztwo kandydata: pelna kara, gdy heks Polarny lezy w
- * promieniu 1; polowa, gdy najblizszy lezy w promieniu 2; 0 gdy brak. Kara wchodzi TYLKO do rankingu
- * (nie do progu `ekspansja_min_score_hex`), zeby nie zmniejszac liczby zakladanych miast.
- */
-export function aiPolarNeighbourhoodPenalty(map: GameMap, q: number, r: number, penalty: number): number {
-  if (penalty <= 0) return 0;
-  let nearest = Infinity;
-  for (let dq = -2; dq <= 2; dq++) {
-    for (let dr = -2; dr <= 2; dr++) {
-      if (dq === 0 && dr === 0) continue;
-      const d = hexDistance(q, r, q + dq, r + dr);
-      if (d > 2 || d >= nearest) continue;
-      const nb = map.hexes[`${q + dq},${r + dr}`];
-      if (nb !== undefined && (nb.terenBazowy as string) === 'polarny') nearest = d;
-    }
-  }
-  if (nearest <= 1) return penalty;
-  if (nearest === 2) return penalty / 2;
-  return 0;
-}
-
-/**
  * Scans map hexes and returns the highest-scoring land hex for city founding.
  * Must be >= minCityDist from all existing cities.
  * (Dawniej findSettlerTarget — reuse heurystyki bez jednostki osadnika.)
@@ -5540,11 +4267,6 @@ function findCityFoundingHex(
   const excludeSet = new Set(
     (hexOpts.excludeHexes ?? []).map(h => `${h.q},${h.r}`),
   );
-  // R-WEB-AI-AVOID-POLAR-CITIES-Q1: heks Polarny = twardy zakaz, o ile istnieje jakikolwiek
-  // kandydat niepolarny; ostatni fallback (mapa/okolica prawie cala polarna) z logiem.
-  const polarPenalty = getAiParam(data, 'ekspansja_kara_polarna_sasiedztwo', 8);
-  let bestPolarScore = -Infinity;
-  let bestPolarHex: { q: number; r: number } | null = null;
 
   for (const key of Object.keys(map.hexes)) {
     const hex = map.hexes[key];
@@ -5552,7 +4274,6 @@ function findCityFoundingHex(
 
     const t = hex.terenBazowy as string;
     if (t === 'morze' || t === 'plytkie_morze' || t === 'gory') continue;
-    const isPolarHex = t === 'polarny';
 
     const { q, r } = hex.coords;
     if (excludeSet.has(`${q},${r}`)) continue;
@@ -5584,34 +4305,14 @@ function findCityFoundingHex(
 
     if (score < minScore) continue;
 
-    if (isPolarHex) {
-      if (score > bestPolarScore) {
-        bestPolarScore = score;
-        bestPolarHex = { q, r };
-      }
-      continue;
-    }
-
-    // Kara za polarne sasiedztwo — tylko ranking (po progu minScore).
-    const rankScore = score - aiPolarNeighbourhoodPenalty(map, q, r, polarPenalty);
-    if (rankScore > bestScore) {
-      bestScore = rankScore;
+    if (score > bestScore) {
+      bestScore = score;
       bestHex = { q, r };
     }
   }
 
-  if (bestHex !== null) return bestHex;
-  // R-WEB-AI-POLAR-FALLBACK-Q1: fallback na heks Polarny TYLKO gdy AI nie ma jeszcze zadnego wlasnego
-  // miasta (pierwsze miasto na mapie calkiem polarnej — inaczej AI nie zaistnieje). Ekspansja (>=1
-  // wlasne miasto): brak kandydata niepolarnego ponad progiem => null (AI nie zaklada miasta).
-  // Przyczyna zrodlowa (Pangea 1001, T24): jedyne niepolarne heksy w zasiegu mialy wynik < minScore
-  // (max -5,76), a polarny dostawal +50 z bonusu klastra i wygrywal jako "ostatni fallback".
-  const hasOwnCity = hexOpts.myCities !== undefined && hexOpts.myCities.length > 0;
-  if (bestPolarHex !== null && !hasOwnCity) {
-    console.warn(`[ai] polar-fallback: brak kandydata niepolarnego, miasto AI na heksie polarnym (${bestPolarHex.q},${bestPolarHex.r})`);
-    return bestPolarHex;
-  }
-  return null;
+  if (bestHex !== null && bestScore < minScore) return null;
+  return bestHex;
 }
 
 // ---------------------------------------------------------------------------
@@ -5874,17 +4575,12 @@ import {
   relationScore,
 } from './diplomacy';
 import type { Relation, AIDiplomacyContext } from './diplomacy';
-import { deltaRelacjiSojusz } from './diplomacy';
-import { diplomacyMiastoWagaBilansu } from './diplomacy-value-catalog';
 import {
   shouldHonorAllianceWarObligation,
   type AllianceWarObligationInput,
 } from './alliance-war-obligation';
 import type { GameDifficulty } from './difficulty-cost';
 import { TypCywilizacji } from '../types/player';
-import {
-  WAR_WEARINESS_PARAMS, warWearinessLevel, isWarWeary, loserDespair, despairStage, offerMultiplier,
-} from './war-weariness';
 import {
   AI_TRADE_GOLD_MAX,
   AI_TRIBUTE_PEACE_MAX,
@@ -5934,18 +4630,6 @@ export const PROG_TRYBUT       = 0.7;
 export const PROG_POKOJ_SLABOSC = 0.4;
 
 /**
- * R-WEB-TRUCE-Q1 r4 (N4): wojna krótsza niż ten próg tur → słabsze AI proponuje ROZEJM
- * (5/10/15 tur, wojna wraca bez kary); od tego progu wzwyż → POKÓJ. Rozstrzygnięcie ZAŁOŻENIE
- * z dispatchu: „AI proponuje rozejm gdy słabsze i wojna < 20 tur, pokój po 20 turach".
- */
-export const AI_ROZEJM_DO_TUR = 20;
-
-/** R-WEB-TRUCE-Q1 r4 (N4): rodzaj propozycji pokoju AI wg realnych tur wojny (19 → rozejm, 20 → pokój). */
-export function aiPeaceProposalKind(turnsAtWar: number): 'pokoj' | 'rozejm' {
-  return Math.max(0, turnsAtWar) < AI_ROZEJM_DO_TUR ? 'rozejm' : 'pokoj';
-}
-
-/**
  * Minimalne willingnessAlly (0..1) wymagane do zaproponowania sojuszu.
  * 0.6 = wysokie zaufanie + dobra relacja; partner musi być „równy" (rw w [0.4,0.7]).
  */
@@ -5984,8 +4668,6 @@ export const AI_MAJOR_EARLY_NO_WAR_TURNS = 25;
 export interface RelacjaWejscie {
   /** Id cywilizacji partnera (klucz silnikowy, np. 'rzym-1'). */
   partnerId: string;
-  /** R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner ma aktywną flagę agresora (main.ts: czyAgresorAktywny). */
-  celAgresorAktywny?: boolean;
   /** Bieżąca relacja (zaufanie + respekt + status). */
   relation: Relation;
   /**
@@ -6007,9 +4689,9 @@ export interface RelacjaWejscie {
    */
   hasHandelTreaty?: boolean;
   /**
-   * E6 → R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1: czy strony mogą handlować — od 2026-11-04
-   * wystarczy znajomość (kontakt dyplomatyczny; silnik: game/trade-routes.ts
-   * externalTradeContactOk), bez wymogu fizycznego połączenia. Wymagane === true, by AI zaproponowało Umowę
+   * E6: czy istnieje geometrycznie możliwe połączenie tras handlowych między
+   * miastami obu stron (silnik: game/trade-routes.ts findCityConnection /
+   * citiesHaveTradeConnection). Wymagane === true, by AI zaproponowało Umowę
    * Handlową — bez tego pola (undefined) propozycja się NIE pojawia (bezpieczny
    * domyślny brak zachowania dla wywołujących, które go nie dostarczają).
    */
@@ -6065,35 +4747,6 @@ export interface RelacjaWejscie {
    * Ustawiane przez silnik z DiploPairMeta.peaceUntilTurn.
    */
   peaceLocked?: boolean;
-  /**
-   * R-WEB-PEACE-RULES-Q1 R1: realne tury trwania wojny w tej parze (od wojnaOdTury). 0 poza wojną.
-   * Brak pola przy stanWojny = 0 (dawna stała 5 usunięta).
-   */
-  turnsAtWar?: number;
-  /** R-WEB-PEACE-RULES-Q1 R2/R3: miasta utracone przez AI (właściciela decyzji) w TEJ wojnie. */
-  lostCitiesInWar?: number;
-  /** R-WEB-PEACE-RULES-Q1 R3(d): tury od ostatniej zmiany posiadania miast w tej wojnie. */
-  turnsSinceCityChange?: number;
-  /** R-WEB-PEACE-RULES-Q1 R3(c): zdrowie armii AI 0..1 (Σ health / Σ hpMax jednostek bojowych). */
-  armyHealthShare?: number;
-  /**
-   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): miasta PARTNERA (gracza) z wyceną PW — kandydaci do
-   * żądania w kontrofercie pokoju. Pusto = brak żądania miasta.
-   */
-  miastaPartnera?: ReadonlyArray<MiastoWycenaWejscie>;
-  /**
-   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): miasta, które AI zdobyło od partnera w TEJ wojnie
-   * (= lostCities partnera). Warunek „zdobyło miasto gracza" z kryterium (5).
-   */
-  zdobyteMiastaPartnera?: number;
-}
-
-/** Miasto w wycenie pokoju (R-WEB-PEACE-CITY-CESSION-Q1 r3). `cityPn` = diplomacyPnMiasto. */
-export interface MiastoWycenaWejscie {
-  cityId: string;
-  cityPn: number;
-  /** Stolica lub ostatnie miasto właściciela — nie można oddać (diplomacyMiastoZakaz). */
-  zakazane: boolean;
 }
 
 /**
@@ -6135,13 +4788,6 @@ export interface DiplomacjaInputs {
   agresywnoscRaw?: number;
   /** Tolerancja ryzyka 1–10 z civ-ai.json (niższa = ostrożniejsza dyplomacja). */
   tolerancjaRyzyka?: number;
-  /**
-   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): miasta TEGO AI z wyceną PW — kandydaci do oddania
-   * w pokoju (zamiast trybutu). Mniej niż AI_MIASTO_PRZEKAZ_MIN_MIAST miast = brak oddania.
-   */
-  miastaAI?: ReadonlyArray<MiastoWycenaWejscie>;
-  /** R-WEB-PEACE-CITY-CESSION-Q1 r3: ekspansywność AI z civ-ai.json (waga oddawanego miasta). Domyślnie 3. */
-  ekspansywnosc?: number;
   /** Pełna warstwa dyplomacji (nie miasto-państwo) — paki/sojusze wielostronne. */
   fullDiplomacyLayer?: boolean;
   /** To AI jest miastem-państwem (częstszy handel przy deficycie). */
@@ -6192,84 +4838,9 @@ export interface DiplomacjaInputs {
  * v0.1 zakres: wojna / pokój / trybut.
  * v0.2 TODO: 'zaproponuj_sojusz', 'zaproponuj_handel' (wieloturowe).
  */
-/** R-WEB-PEACE-CITY-CESSION-Q1 r3: bazowy próg słabości AI do oddania miasta (rw). */
-export const AI_MIASTO_PRZEKAZ_RW_BAZA = 0.15;
-/** Minimalna liczba miast AI, by mogło oddać miasto. */
-export const AI_MIASTO_PRZEKAZ_MIN_MIAST = 3;
-/** Próg siły AI (rw), od którego AI żąda miasta gracza w kontrofercie pokoju. */
-export const AI_MIASTO_ZADANIE_RW = 0.7;
-/** Tury wojny, po których silne AI żąda miasta (alternatywnie: zdobycie miasta gracza). */
-export const AI_MIASTO_ZADANIE_TURY_WOJNY = 20;
-/**
- * Cena bazowa pokoju w PW = traktaty.pokoj.punkty z diplomacy-acceptance-points.json (500).
- * Stała lustrzana — test r3 pilnuje zgodności z `treatyBasePnFromConfig('pokoj')`.
- */
-export const AI_MIASTO_CENA_POKOJU_PN = 500;
-
-/** Próg rw oddania miasta: 0.15 − 0.01·(agresywność − 5); brak danych = agresywność 5. */
-export function aiMiastoPrzekazRwProg(agresywnoscRaw?: number): number {
-  const agr = agresywnoscRaw ?? 5;
-  // Arytmetyka w setnych (bez błędu zmiennoprzecinkowego: 0.15 − 0.01·5 ≠ 0.10 w IEEE754).
-  return (AI_MIASTO_PRZEKAZ_RW_BAZA * 100 - (agr - 5)) / 100;
-}
-
-/** Waga oddawanego przez AI miasta w bilansie (×1.5 × (1+0.1·(eks−3))), zaokrąglona do 0.001. */
-export function aiMiastoWagaOddawanego(ekspansywnosc?: number): number {
-  const w = diplomacyMiastoWagaBilansu({ oddajacyJestAI: true, aiEkspansywnosc: ekspansywnosc ?? 3 });
-  return Math.round(w * 1000) / 1000;
-}
-
-/**
- * Najtańsze miasto AI (niezakazane), którego ważona wycena pokrywa cenę pokoju.
- * Null, gdy AI ma < AI_MIASTO_PRZEKAZ_MIN_MIAST miast lub żadne miasto nie pokrywa ceny.
- */
-export function aiPickMiastoDoOddania(
-  miasta: ReadonlyArray<MiastoWycenaWejscie>,
-  ekspansywnosc?: number,
-  /** R-WEB-AI-WAR-WEARINESS-PEACE-Q1: eskalacja — niższy próg liczby miast i wyższa wymagana wartość oferty. */
-  opcje?: { minMiast?: number; cenaPn?: number },
-): MiastoWycenaWejscie | null {
-  if (miasta.length < (opcje?.minMiast ?? AI_MIASTO_PRZEKAZ_MIN_MIAST)) return null;
-  const waga = aiMiastoWagaOddawanego(ekspansywnosc);
-  const cena = opcje?.cenaPn ?? AI_MIASTO_CENA_POKOJU_PN;
-  let best: MiastoWycenaWejscie | null = null;
-  for (const m of miasta) {
-    if (m.zakazane) continue;
-    if (!(m.cityPn * waga >= cena)) continue;
-    if (best === null || m.cityPn < best.cityPn) best = m;
-  }
-  return best;
-}
-
-/**
- * Najtańsze miasto gracza (niezakazane), którego wycena PW pokrywa brakującą cenę pokoju
- * (strona przyjmująca liczy wagę 1, jak w diplomacySumPn). Null gdy żadne nie pokrywa.
- */
-export function aiPickMiastoDoZadania(
-  miastaPartnera: ReadonlyArray<MiastoWycenaWejscie>,
-): MiastoWycenaWejscie | null {
-  let best: MiastoWycenaWejscie | null = null;
-  for (const m of miastaPartnera) {
-    if (m.zakazane) continue;
-    if (!(m.cityPn >= AI_MIASTO_CENA_POKOJU_PN)) continue;
-    if (best === null || m.cityPn < best.cityPn) best = m;
-  }
-  return best;
-}
-
 export type AIDiplomacyCommand =
   | { type: 'wypowiedz_wojne';       targetId: string; powod: string }
-  /**
-   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI oddaje własne miasto w pokoju (zamiast trybutu).
-   * `cityWeight` = waga oddającego (diplomacyMiastoWagaBilansu z ekspansywnością AI).
-   */
-  | { type: 'oferuj_miasto_za_pokoj'; targetId: string; powod: string; cityId: string; cityPn: number; cityWeight: number }
-  /**
-   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI żąda miasta gracza w kontrofercie pokoju.
-   */
-  | { type: 'zada_miasto_za_pokoj';  targetId: string; powod: string; cityId: string; cityPn: number }
-  /** R-WEB-TRUCE-Q1 r4 (N4): 'rozejm' gdy wojna < AI_ROZEJM_DO_TUR; brak pola = pokój (dawne zachowanie). */
-  | { type: 'zaproponuj_pokoj';      targetId: string; powod: string; rodzaj?: 'pokoj' | 'rozejm' }
+  | { type: 'zaproponuj_pokoj';      targetId: string; powod: string }
   | { type: 'zadaj_trybut';          targetId: string; powod: string }
   | { type: 'oferuj_trybut_za_pokoj'; targetId: string; powod: string; goldOnce?: number }
   | { type: 'zaproponuj_sojusz'; targetId: string; powod: string; allianceKind?: 'defensywny' | 'pelny' }
@@ -6281,12 +4852,8 @@ export type AIDiplomacyCommand =
       zaplataTyp: 'zloto' | 'praca'; zaplataPerTura: number; turns: number;
       kierunek?: 'sprzedaz' | 'zakup';
       powodHandlu?: 'deficyt' | 'nadwyzka';
-      /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: uzasadnienie oferty widoczne dla gracza (niedobór / nadwyżka). */
-      reasonHandlu?: string;
     }
   | { type: 'zaproponuj_pakt'; targetId: string; powod: string; turns?: number }
-  /** R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: prosba AI o umowe przemarszu wojskowego ('granice' + borderMilitary). */
-  | { type: 'zaproponuj_przemarsz'; targetId: string; powod: string }
   | {
       type: 'zaproponuj_audiencje'; targetId: string; powod: string;
       /** Krótki powód dla HUD (np. „chcą handlować”). */
@@ -6620,17 +5187,7 @@ export function decideAIDiplomacy(
     inp.tolerancjaRyzyka,
   );
 
-  // R-WEB-PEACE-RULES-Q1 R6: profil wojny/pokoju właściciela decyzji (brak danych = wartości bazowe).
-  const warProfile: WarPeaceProfile = resolveWarPeaceProfile(inp.myTypCywilizacji);
-  // Próg słabości do pokoju: jawny override z params wygrywa, inaczej wartość per cywilizacja.
-  const progPokojSlabosc = params?.progPokojSlabosc !== undefined
-    ? p.progPokojSlabosc
-    : warProfile.progPokojSlabosc;
-
   const komendy: AIDiplomacyCommand[] = [];
-  const knownCivTypes = new Set<string>(Object.values(TypCywilizacji));
-  const normalizeCivType = (value?: string): TypCywilizacji | undefined =>
-    value !== undefined && knownCivTypes.has(value) ? value as TypCywilizacji : undefined;
 
   for (const rel of inp.relacje) {
     // Budujemy context dla aiDiplomacyStance.
@@ -6641,29 +5198,23 @@ export function decideAIDiplomacy(
     const rw = rel.respektWzgledny;
     const militaryRatio = rw >= 1 ? 99 : rw <= 0 ? 0.01 : rw / (1 - rw);
 
-    // R-WEB-PEACE-RULES-Q1 R1: realny czas wojny z pary (dawniej stała 5 = martwa heurystyka).
-    const turnsAtWarRel = rel.stanWojny ? Math.max(0, rel.turnsAtWar ?? 0) : 0;
     const ctx: AIDiplomacyContext = {
       isMinorCiv:   false,   // decyzja o minor civ leży po stronie silnika; tu zakładamy główną cyw.
       militaryRatio,
       currentTurn:  0,       // nie wpływa na logikę v0.1
-      turnsAtWar:   turnsAtWarRel,
+      turnsAtWar:   rel.stanWojny ? 5 : 0,  // heurystyka – wystarczy do oceny peaceW
       civMatrixDifficulty: difficulty,
-      // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner (druga strona stance) z aktywną flagą agresora.
-      celAgresorAktywny: rel.celAgresorAktywny === true,
     };
 
-    // Missing/unknown owner type must not borrow a civilization's matrix row.
-    // Passing undefined through to aiDiplomacyStance selects its generic neutral path.
-    const aiTyp = normalizeCivType(inp.myTypCywilizacji);
-    const partnerTyp = normalizeCivType(rel.partnerTypCywilizacji);
+    // Stub gracza AI — aiDiplomacyStance wymaga Player z prawdziwym typem cywilizacji.
+    const aiTyp = (inp.myTypCywilizacji ?? 'grecy') as TypCywilizacji;
+    const partnerTyp = (rel.partnerTypCywilizacji ?? 'rzymianie') as TypCywilizacji;
     const stubAIPlayer  = { typCywilizacji: aiTyp } as Parameters<typeof aiDiplomacyStance>[0];
     const stubOtherPlayer = { typCywilizacji: partnerTyp } as Parameters<typeof aiDiplomacyStance>[1];
 
     const stance = aiDiplomacyStance(stubAIPlayer, stubOtherPlayer, rel.relation, ctx);
     const score  = relationScore(rel.relation);
-    // R-WEB-PEACE-RULES-Q1 R6: próg wojny per cywilizacja z macierzy (zastępuje globalne 30).
-    const progMinimalnyRelacja = warProfile.progWojnyRelacji;
+    const { progMinimalnyRelacja } = getEffectiveDiplomacyParams(difficulty);
     // Efektywna agresja z uwzglednieniem mnoznika trudnosci (T4=B: spryt AI)
     const effAgresja = Math.min(1, inp.agresja * agresjaMnoznik);
     // C-AI-MOC-Q1: wysoka sklonnoscDoPodboju → łatwiej wypowiada wojnę
@@ -6676,88 +5227,6 @@ export function decideAIDiplomacy(
       0.15,
       p.progWojnaAgresja - podbojBoost * 0.5 + bias.warAgresjaBonus,
     );
-
-    // R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 4 Evaluatora): bramki czasu wojny i „czuje się
-    // silniejsze" z R5a/R5b (ta sama definicja co zaproponuj_pokoj niżej) obowiązują także dla
-    // oddania miasta (N1a) i żądania miasta (N1b). Przeniesione wyżej, przed bloki miast.
-    const aiFeelsStronger = rel.stanWojny && isFeelingStronger({
-      rw,
-      turnsAtWar: turnsAtWarRel,
-      lostCitiesInWar: Math.max(0, rel.lostCitiesInWar ?? 0),
-    });
-    const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;
-
-    // ---- R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI ODDAJE miasto zamiast trybutu ----
-    // Warunki: wojna z graczem, rw <= 0.15 − 0.01·(agresywność − 5), ≥ 3 miasta, a niezakazane
-    // miasto AI pokrywa cenę pokoju (najtańsze z pokrywających). Brak takiego miasta →
-    // przechodzimy do priorytetu 1 (trybut), jak dotąd. r4: + bramki czasu wojny (R5a/R5b).
-    const csBlocksCession = inp.isMinorCivSelf === true || rel.isMinorCivPartner === true;
-    // R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną + wyraźna przegrana podnoszą próg oddania miasta
-    // (do +rwProgBonusMax), obniżają minimum miast AI i podnoszą wartość oferowanego miasta (eskalacja).
-    // Gracz decyduje o przyjęciu; powtórki ogranicza istniejący cooldown odrzuconych ofert.
-    const wearyLevel = rel.stanWojny
-      ? warWearinessLevel({
-          turnsAtWar: turnsAtWarRel,
-          lostCitiesTotal: Math.max(0, rel.lostCitiesInWar ?? 0) + Math.max(0, rel.zdobyteMiastaPartnera ?? 0),
-          turnsSinceCityChange: rel.turnsSinceCityChange,
-        })
-      : 0;
-    const wearyDespair = rel.stanWojny && isWarWeary(wearyLevel)
-      ? loserDespair({ level: wearyLevel, share: rw, lostCities: Math.max(0, rel.lostCitiesInWar ?? 0) })
-      : 0;
-    const wearyStage = despairStage(wearyDespair);
-    const wearyCityBonus = wearyStage >= 2 ? WAR_WEARINESS_PARAMS.czlowiek.rwProgBonusMax * wearyDespair : 0;
-    const wearyOfferMult = wearyStage >= 2 ? offerMultiplier(wearyStage, 0) : 1;
-    if (
-      rel.stanWojny
-      && rel.partnerId === '0'
-      && !csBlocksCession
-      && !aiFeelsStronger
-      && aiPeaceTimeOk
-      && rw <= aiMiastoPrzekazRwProg(inp.agresywnoscRaw) + wearyCityBonus
-    ) {
-      const wearyMinMiast = wearyDespair > 0 ? WAR_WEARINESS_PARAMS.czlowiek.minMiastAi : undefined;
-      const pick = aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, {
-        minMiast: wearyMinMiast,
-        cenaPn: AI_MIASTO_CENA_POKOJU_PN * wearyOfferMult,
-      }) ?? aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, { minMiast: wearyMinMiast });
-      if (pick) {
-        komendy.push({
-          type:       'oferuj_miasto_za_pokoj',
-          targetId:   rel.partnerId,
-          powod:      `krytyczna slabosc w wojnie (respektWzgledny=${rw.toFixed(2)}): oddajemy miasto ${pick.cityId} (${pick.cityPn} PW) za pokoj`,
-          cityId:     pick.cityId,
-          cityPn:     pick.cityPn,
-          cityWeight: aiMiastoWagaOddawanego(inp.ekspansywnosc),
-        });
-        continue;
-      }
-    }
-
-    // ---- R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI ŻĄDA miasta gracza (kontroferta pokoju) ----
-    // Warunki: wojna z graczem, rw >= 0.7 ORAZ (tury wojny >= 20 LUB AI zdobyło miasto gracza
-    // w tej wojnie) i gracz ma niezakazane miasto pokrywające cenę pokoju. r4: + bramka
-    // czasu wojny (R5a, aiPeaceTimeOk); „czuje się silniejsze" (R5b) NIE — żądanie to właśnie
-    // sytuacja silnego AI.
-    if (
-      rel.stanWojny
-      && rel.partnerId === '0'
-      && aiPeaceTimeOk
-      && rw >= AI_MIASTO_ZADANIE_RW
-      && (turnsAtWarRel >= AI_MIASTO_ZADANIE_TURY_WOJNY || (rel.zdobyteMiastaPartnera ?? 0) > 0)
-    ) {
-      const pick = aiPickMiastoDoZadania(rel.miastaPartnera ?? []);
-      if (pick) {
-        komendy.push({
-          type:     'zada_miasto_za_pokoj',
-          targetId: rel.partnerId,
-          powod:    `silni w wojnie (respektWzgledny=${rw.toFixed(2)}, tury wojny=${turnsAtWarRel}): zadamy miasta ${pick.cityId} (${pick.cityPn} PW) za pokoj`,
-          cityId:   pick.cityId,
-          cityPn:   pick.cityPn,
-        });
-        continue;
-      }
-    }
 
     // ---- Priorytet 1: oferuj_trybut_za_pokoj (b. słaby w trakcie wojny) ----
     const csBlocksTribute = inp.isMinorCivSelf === true || rel.isMinorCivPartner === true;
@@ -6774,33 +5243,12 @@ export function decideAIDiplomacy(
       }
     }
 
-    // ---- Priorytet 2: zaproponuj_pokoj (słaby w trakcie wojny; R-WEB-PEACE-RULES-Q1 R3) ----
-    // Sygnały: (a) rw <= progPokojSlabosc(civ); (b) utracone miasto i rw <= 0.5; (d) pat;
-    // (e) zmęczenie wojną >= próg. Sygnał (c) zdrowie armii — NIEZAIMPLEMENTOWANY (brak HP armii).
-    const peaceSignals = rel.stanWojny
-      ? aiPeaceSignals(
-          {
-            rw,
-            turnsAtWar: turnsAtWarRel,
-            lostCitiesInWar: Math.max(0, rel.lostCitiesInWar ?? 0),
-            turnsSinceCityChange: rel.turnsSinceCityChange,
-            armyHealthShare: rel.armyHealthShare,
-          },
-          { ...warProfile, progPokojSlabosc },
-        )
-      : { wantsPeace: false, reasons: [] as string[] };
-    // Spójność (R5 ↔ R3): AI NIE proponuje pokoju, gdy sama odrzuciłaby pokój od gracza jako
-    // „czuje się silniejsze" (isFeelingStronger = bramka R5b) ANI gdy odrzuciłaby go jako
-    // „za wcześnie" (turnsAtWar < minTurWojny = bramka R5a). Obie bramki są stosowane przez
-    // evaluatePeaceAiGate do propozycji gracza; AI składa propozycję dopiero, gdy spełnia te same
-    // warunki czasu wojny i nie czuje się silniejsza (ZAMIANA ZAŁOŻENIA F2 z rundy 3, zarzut 2:
-    // poprzednio minTurWojny nie blokował propozycji AI, co dawało propozycję już w turze 1).
-    if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
+    // ---- Priorytet 2: zaproponuj_pokoj (słaby w trakcie wojny) ----
+    if (rel.stanWojny && rw <= p.progPokojSlabosc) {
       komendy.push({
         type:     'zaproponuj_pokoj',
         targetId: rel.partnerId,
-        rodzaj:   aiPeaceProposalKind(turnsAtWarRel),
-        powod:    `slabszy w wojnie (respektWzgledny=${rw.toFixed(2)} <= prog=${progPokojSlabosc}; sygnaly=${peaceSignals.reasons.join(',') || '-'}; tury wojny=${turnsAtWarRel}): proponujemy ${aiPeaceProposalKind(turnsAtWarRel) === 'rozejm' ? 'rozejm' : 'pokoj'}`,
+        powod:    `slabszy w wojnie (respektWzgledny=${rw.toFixed(2)} <= prog=${p.progPokojSlabosc}): proponujemy pokoj`,
       });
       continue;
     }
@@ -6912,9 +5360,7 @@ export function decideAIDiplomacy(
       && (inp.fullDiplomacyLayer !== false)
       && bias.proposeNap
       && !rel.hasNapTreaty
-      && score >= dipP.progNapRelacja - bias.napScoreEase + deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined)
-      // R-WEB-DIPLO-NAP-TRUST-30-Q1: AI proponuje pakt dopiero przy Zaufaniu ≥ progNapZaufanie.
-      && rel.relation.zaufanie >= dipP.progNapZaufanie
+      && score >= dipP.progNapRelacja - bias.napScoreEase
     ) {
       const napIndefinite = score >= dipP.progSojuszRelacja;
       komendy.push({
@@ -6971,10 +5417,8 @@ export function decideAIDiplomacy(
       dipP,
     );
     const minSojuszAlly = p.progSojusz - sojuszAdj.ease.allyThresholdDelta + sojuszAdj.penaltyAlly - bias.allyThresholdEase;
-    // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner z aktywną flagą agresora — wyższy próg Relacji na sojusz.
     const minSojuszScore = diplomacyTreatyMinRelacja(
-      dipP.progSojuszRelacja - sojuszAdj.ease.scoreThresholdDelta + sojuszAdj.penaltyScore
-        + deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined),
+      dipP.progSojuszRelacja - sojuszAdj.ease.scoreThresholdDelta + sojuszAdj.penaltyScore,
       dipP,
     );
     // D-MP-DYPL Q1 (część 2): dyplomacjaAktywnosc skaluje willingnessAlly (T4=B analogicznie
@@ -7179,56 +5623,8 @@ export function shouldAIPurchaseUnit(inp: {
   treasury: number;
   goldCost: number;
   hasManpower: boolean;
-  /**
-   * R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1: reguła rezerwy utrzymania.
-   * Wszystkie trzy pola poniżej muszą być podane, żeby reguła zadziałała;
-   * brak któregokolwiek = zachowanie dawne (tylko cena + Manpower).
-   */
-  reserve?: AiPurchaseReserveParams;
-  /** Dochód netto złota/turę PRZED zakupem (przychód − utrzymanie wojska i budynków). */
-  netIncomePerTurn?: number;
-  /** Łączne utrzymanie złota/turę PRZED zakupem (wojsko + budynki), >= 0. */
-  upkeepPerTurn?: number;
-  /** Utrzymanie złota/turę dokupywanej jednostki, >= 0. */
-  unitUpkeepPerTurn?: number;
 }): boolean {
-  if (!inp.hasManpower || inp.treasury < inp.goldCost) return false;
-  const r = inp.reserve;
-  if (r === undefined || inp.netIncomePerTurn === undefined
-    || inp.upkeepPerTurn === undefined || inp.unitUpkeepPerTurn === undefined) {
-    return true;
-  }
-  const unitUpkeep = Math.max(0, inp.unitUpkeepPerTurn);
-  const netAfter = inp.netIncomePerTurn - unitUpkeep;
-  if (netAfter < r.minDochodNetto) return false;
-  const upkeepAfter = Math.max(0, inp.upkeepPerTurn) + unitUpkeep;
-  return inp.treasury - inp.goldCost >= r.rezerwaTur * upkeepAfter;
-}
-
-/**
- * R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1: progi rezerwy utrzymania zakupu
- * jednostki przez AI (ai-params.json, per poziom trudności).
- * - rezerwaTur: po zapłaceniu ceny skarbiec musi pokryć jeszcze tyle tur
- *   PEŁNEGO utrzymania (wojsko + budynki, wraz z nową jednostką);
- * - minDochodNetto: dochód netto złota/turę po zakupie nie może spaść poniżej.
- */
-export interface AiPurchaseReserveParams {
-  /** Tury utrzymania, które skarbiec musi pokryć PO zakupie (>= 0). */
-  rezerwaTur: number;
-  /** Minimalny dochód netto Złota/turę PO zakupie (może być ujemny = tolerowany deficyt). */
-  minDochodNetto: number;
-}
-
-/** Ładuje progi rezerwy utrzymania dla poziomu 1/2/3 (Easy/Normal/Hard) z ai-params.json. */
-export function loadAiPurchaseReserveParams(
-  data: GameData,
-  poziom: 1 | 2 | 3 = 2,
-): AiPurchaseReserveParams {
-  const n = poziom;
-  return {
-    rezerwaTur: Math.max(0, getAiParam(data, `kupno_jednostki_rezerwa_tur_poziom${n}`, n === 1 ? 3 : n === 2 ? 3 : 2)),
-    minDochodNetto: getAiParam(data, `kupno_jednostki_min_dochod_netto_poziom${n}`, n === 1 ? 0 : n === 2 ? 0 : -2),
-  };
+  return inp.hasManpower && inp.treasury >= inp.goldCost;
 }
 
 /** Kompatybilny alias dla istniejących testów/narzędzi; parametry AI-only są ignorowane. */
@@ -7253,34 +5649,6 @@ type RawAiRushRow = Record<string, number | string | undefined>;
 // imperium (AI nie mikrozarządza suwakami per miasto, tak samo jak gracz
 // zwykle ustawia je raz dla całego państwa).
 // ---------------------------------------------------------------------------
-
-/**
- * R-WEB-AI-PLAYER-PARITY-FIXES-Q1 (poprawka 1): STARTOWY (seed) podział Daniny/Podatku
- * Skarb/Nauka/Zamożność dla ownera AI -- ZAWSZE o sumie 100%.
- *
- * Dawny seed `{ ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA }` dawał
- * 60/60/20 = 140% (Nauka 60 z polityki AI, Skarb 60 i Zamożność 20 z domyślnego podziału
- * GRACZA 20/60/20). `normalizePodzialHandlu` ratowało sumę po cichu, ucinając Zamożność do 0
- * i Naukę do 40: w turze 1 AI liczyło 40/60/0 (Nauka/Skarb/Zamożność), a od tury 2 --
- * po pierwszej korekcie `decideAIEconomySliders` w main.ts -- 60/20/20. Tura 1 AI była więc
- * wyjątkiem od własnej polityki, a 140% było wewnętrznie sprzeczne.
- *
- * Wybór: zachowujemy pomysł AI (Nauka = AI_FIXED_PROCENT_NAUKA) i domyślną Zamożność
- * gracza (20% = próg utrzymania poziomu Zamożności), a Skarb jest resztą do 100% (=20%).
- * To DOKŁADNIE ten podział, do którego AI i tak dochodzi po pierwszej korekcie suwaków
- * (nextPieniadz = 60 - (60 - 20) = 20, nextLuksus = 100 - 60 - 20 = 20), więc tura 1
- * jest spójna z turą 2+. Reguły sumowania (jedno `normalizePodzialHandlu`) są wspólne
- * z graczem; gracz dalej startuje na 20/60/20.
- */
-export function aiSeedPodzialHandlu(): CityPodzialHandlu {
-  const procentNauka = Math.min(AI_FIXED_PROCENT_NAUKA, 100);
-  const procentLuksus = Math.min(DEFAULT_PODZIAL_HANDLU.procentLuksus, 100 - procentNauka);
-  return {
-    procentNauka,
-    procentLuksus,
-    procentPieniadz: 100 - procentNauka - procentLuksus,
-  };
-}
 
 /** Bieżące/docelowe ustawienia trzech suwaków ekonomii AI (wszystkie 0-100 pkt %). */
 export interface AiSliderSettings {

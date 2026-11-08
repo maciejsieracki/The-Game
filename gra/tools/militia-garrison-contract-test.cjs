@@ -99,18 +99,16 @@ try {
 
   const completedRoster = M.collectCityDefRoster(city, [], completed);
   const virtual = completedRoster.roster[0];
-  // R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (M1/M3): 1 mieszkaniec = 1 jednostka (pop 9 -> 9), nie jedna
-  // zbiorcza 'Milicja'; typy wg epoki (domyslnie Kamien: Wojownik + Oszczepnik).
   assert(
-    completedRoster.roster.length === 9
-      && virtual?.typeId === 'Wojownik'
-      && completedRoster.roster.every((u) => u.isMilitia === true && u.militiaCount === 1),
-    'completed Garnizon -> 9 virtual militia units (1 per inhabitant) with marker',
+    completedRoster.roster.length === 1
+      && virtual?.typeId === 'Milicja'
+      && virtual?.isMilitia === true
+      && virtual?.militiaCount === 1,
+    'completed Garnizon -> one virtual Milicja with snapshot count and marker',
   );
   assert(
-    completedRoster.militiaDefs.size === 9
-      && completedRoster.militiaDefs.get('militia-city-militia-0')?.isMilitia === true,
-    'militia definitions: one per unit, keyed militia-<city>-<i>',
+    completedRoster.militiaDefs.get('militia-city-militia')?.militiaCount === 1,
+    'militia definition carries the same snapshot count',
   );
   assert(
     M.hasCityDefenders(city, [], completed)
@@ -121,21 +119,21 @@ try {
 
   const additionalRoster = M.collectCityDefRoster(city, [regular], completed);
   assert(
-    additionalRoster.roster.length === 10
+    additionalRoster.roster.length === 2
       && additionalRoster.roster[0].id === regular.id
       && additionalRoster.roster[1].isMilitia === true,
     'militia is additional to regular defenders',
   );
 
-  const oldHealth = completedRoster.militiaDefs.get('militia-city-militia-0').health;
+  const oldHealth = completedRoster.militiaDefs.get('militia-city-militia').health;
   city.population = 19;
   assert(
-    completedRoster.militiaDefs.get('militia-city-militia-0').health === oldHealth
-      && completedRoster.roster.length === 9,
+    completedRoster.militiaDefs.get('militia-city-militia').health === oldHealth
+      && completedRoster.roster[0].militiaCount === 1,
     'existing battle snapshot stays stable after population changes',
   );
   const newRoster = M.collectCityDefRoster(city, [], completed);
-  assert(newRoster.roster.length === 19, 'new roster takes a new population snapshot (19 units)');
+  assert(newRoster.roster[0].militiaCount === 3, 'new roster takes a new population snapshot');
 
   const oddWarrior = {
     Atak: 5,
@@ -147,8 +145,7 @@ try {
     Health: 5,
   };
   const oddMilitia = M.makeMilitia(15, 0.2, 0.5, oddWarrior);
-  assert(oddMilitia?.militiaCount === 3, 'explicit popFraction argument still honoured: floor(15 × 0.2)');
-  assert(M.makeMilitia(15)?.militiaCount === 15, 'default popFraction is 1.0: 15 inhabitants -> 15 militiamen');
+  assert(oddMilitia?.militiaCount === 3, 'odd population uses floor(population × 20%)');
   assert(
     oddMilitia
       && oddMilitia.Atak === 3

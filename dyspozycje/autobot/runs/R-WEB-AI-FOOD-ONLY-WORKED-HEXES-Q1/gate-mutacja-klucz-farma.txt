@@ -1,3 +1,0 @@
-mutacja: usuniecie 'farma' z FOOD_IMPROVEMENT_KEYS (auto-improvements.ts), FAIL=1
-  [FAIL] farma: przebieg niedoboru (getOnlyWorked=false) + filtr zywnosci: 0 poza obywatelami (jest 89)
-EXIT=1

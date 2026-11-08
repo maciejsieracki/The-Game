@@ -1,6 +1,0 @@
-  OK  M1 zrzut menu PRZED == PO (0 pikseli różnych) -- {"n":1024000,"diff":0,"maxd":0,"a":[1280,800],"b":[1280,800]}
-  OK  M2 obraz menu wczytany w obu, te same wymiary -- {"a":{"scheme":"data","w":1672,"h":941},"b":{"scheme":"blob","w":1672,"h":941}}
-  OK  M3 brak błędów konsoli/strony -- {"a":[],"b":[]}
-
-WYNIK: 3 OK, 0 FAIL
-EXIT=0

@@ -276,10 +276,10 @@ let wchlonieciaBlockCode = '';
     && mainSrc.includes('eliminatedDetails: string;'),
     'Defekt C: runCapitalCapturePlunder zwraca obiekt z polem eliminatedDetails');
 
-  const showCityCaptureNoticeCallCount = countOf(mainSrc, 'showCityCaptureNoticeDeferred(') - 1; // R-WEB-EVENTS-DEFER-TO-TURN-START-Q1: call site'y idą przez wrapper odroczenia; -1 = jego deklaracja
+  const showCityCaptureNoticeCallCount = countOf(mainSrc, 'showCityCaptureNotice(');
   const eliminatedDetailsAtCallSites = countOf(mainSrc, 'eliminatedDetails: captureResult.eliminatedDetails ?? undefined,');
   ok(showCityCaptureNoticeCallCount === 2,
-    `Defekt C: dokładnie 2 wywołania showCityCaptureNotice (przez wrapper Deferred) w main.ts (znaleziono ${showCityCaptureNoticeCallCount})`);
+    `Defekt C: dokładnie 2 wywołania showCityCaptureNotice( w main.ts (znaleziono ${showCityCaptureNoticeCallCount})`);
   ok(eliminatedDetailsAtCallSites === 2,
     `Defekt C: OBA call site'y showCityCaptureNotice przekazują eliminatedDetails `
     + `(znaleziono ${eliminatedDetailsAtCallSites}/2)`);

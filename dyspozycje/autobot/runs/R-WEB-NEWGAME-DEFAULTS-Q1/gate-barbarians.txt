@@ -1,3 +1,0 @@
-
-barbarians-test: 213 passed, 0 failed
-EXIT=0
