@@ -933,3 +933,5 @@ Port ERAIGN/ERADELAY (web 5dd53e60f): `is_era_forced_war_ignoring_r1`, `is_war_t
 - Kolejka web: wdrożenie kart budynków (po CORRUPT), jednostki/ulepszenia/CIVPEDIA (analiza + wdrożenie), R-WEB-TECH-CARDS-ECON-SECTION-BASE-Q1, niestabilne testy kart, dedup pending propozycji miasto/pokój. Kolejka Rust: MULTIWAR-3, FORCED-WAR-MODULES, REPIN-y (AI priorytety 551, cel 553, oblężenie 555, cooldown 557, wojny epoki gracza 558, karty?), podpięcie zakupu AI, OBLEZENIE P3–P5.
 
 - 2026-11-08 (wieczór): web FALA 562 wdrożona (MUSIC2 + SPLIT-AUDIO, audio w sąsiadach audio-pack-N.js, main fd8cc14a3). Rust: kolejka bez zmian; start nowych tematów dopiero po sprzątaniu i przy ≥ 8 GB wolnego.
+
+- 2026-11-08 21:11 (przegląd godzinowy): bez zmian. Aktywne Rust (Haiku r1): MULTIWAR-3 (wf_81603d71-7d7), REPIN-AI-PRIORYTETY-CEL (wf_472ce0c3-c01), REPIN-OBLEZENIE-GLOD-COOLDOWN (wf_87dd902a-38c). Web: brak aktywnych tematów (FALA 562 wdrożona). Nowych tematów Rust nie otwieram (limit 3 kompilacji przy tym dysku).
