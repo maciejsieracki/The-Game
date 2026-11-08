@@ -143,6 +143,15 @@ async function main() {
     const mod = { exports: {} };
     new Function('module', 'exports', js)(mod, mod.exports);
     const { playerFacingNote, isEmptyDataVal } = mod.exports;
+    // R-WEB-CITYPANEL-TECH-TILE-DEAD-EFFECTS-Q1: kafelek przechodzi przez WSPÓLNY filtr
+    // (techDeadEffects.ts) — bundlujemy go do CJS w pamięci, tak jak cityPanel go używa.
+    const dead = esbuild.buildSync({
+      entryPoints: [path.join(GRA, 'src/ui/entityCards/techDeadEffects.ts')], bundle: true, format: 'cjs',
+      platform: 'node', write: false, absWorkingDir: GRA, logLevel: 'silent',
+    }).outputFiles[0].text;
+    const deadMod = { exports: {} };
+    new Function('module', 'exports', 'require', dead)(deadMod, deadMod.exports, require);
+    const { filterDeadEffectText } = deadMod.exports;
     const techRaw = JSON.parse(fs.readFileSync(path.join(GRA, 'data/tech.json'), 'utf8'));
     const techs = Array.isArray(techRaw) ? techRaw : techRaw.technologie;
     const hits = new Set();
@@ -150,10 +159,14 @@ async function main() {
       if (cards[b.id].ukryty) continue;
       const t = techs.find((x) => x.Technologia === b.techUnlock);
       if (!t) continue;
+      // Wartości tak, jak je pokazuje kafelek po filtrze efektów martwych (ten sam filtr co karta odkrycia).
       const rows = {
-        'Odblokowuje budynek': t['Odblokowuje budynek'], 'Wymaga budynek': t['wymagany budynek'],
-        'Surowiec (tech)': t['Dostęp do surowca.'], 'Odblokowuje surowiec': t['Odblokowuje surowiec.'],
-        'Odblokowuje pole': t['Odblokowuje ulepszenie terenu'], 'Uwagi tech': playerFacingNote(t.Uwagi),
+        'Odblokowuje budynek': filterDeadEffectText(t['Odblokowuje budynek'], t.Technologia),
+        'Wymaga budynek': filterDeadEffectText(t['wymagany budynek'], t.Technologia),
+        'Surowiec (tech)': filterDeadEffectText(t['Dostęp do surowca.'], t.Technologia),
+        'Odblokowuje surowiec': filterDeadEffectText(t['Odblokowuje surowiec.'], t.Technologia),
+        'Odblokowuje pole': filterDeadEffectText(t['Odblokowuje ulepszenie terenu'], t.Technologia),
+        'Uwagi tech': filterDeadEffectText(playerFacingNote(t.Uwagi), t.Technologia),
       };
       for (const [k, v] of Object.entries(rows)) {
         if (!v || isEmptyDataVal(v)) continue;
@@ -162,10 +175,15 @@ async function main() {
         }
       }
     }
-    // Stan zmierzony 2026-11-08 (obrona r1). Naprawa wymaga zmiany cityPanel.ts (poza allowlistą).
+    // Stan po R-WEB-CITYPANEL-TECH-TILE-DEAD-EFFECTS-Q1 (2026-11-08): Teatr (Filozofia) ukryty
+    // wspólnym filtrem (efekt martwy wg tech-cards-top5 `ukryte` i reguły suppressed), usunięty z listy.
+    // Pozostałe 3 trafienia to FAŁSZYWE dopasowania frazy z `_martweFrazy` (korekty budynków), NIE
+    // efekty martwe w silniku: Katapulta to jednostka odblokowywana przez Warsztat oblężniczy
+    // (buildings.json:1637-1639, units.json Tech=Oblężnictwo, Top1 Oblężnictwa wg ANALIZA-KART-ODKRYC);
+    // „elitarnych” = realna bramka jednostek elit (uwagi Akademii wojskowej). Karty odkryć ich NIE
+    // ukrywają, więc kafelek też ich nie ukrywa (jeden filtr, bez rozjazdu). Ewentualna korekta
+    // `_martweFrazy` to osobna decyzja danych (poza allowlistą tego tematu).
     const ZNANY_STAN_HOST = [
-      'akademia|Filozofia|Odblokowuje budynek|Teatr',
-      'akademia|Filozofia|Uwagi tech|Teatr',
       'akademia_wojskowa|Sztuka wojenna|Uwagi tech|elit',
       'warsztat_oblezniczy|Oblężnictwo|Odblokowuje budynek|Katapult',
       'warsztat_oblezniczy|Oblężnictwo|Uwagi tech|Katapult',

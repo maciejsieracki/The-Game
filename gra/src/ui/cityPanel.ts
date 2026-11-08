@@ -185,6 +185,7 @@ import { unitAdapter } from './entityCards/unitAdapter';
 import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { showTechDiscoveryNotice } from './techDiscoveryNotice';
+import { filterDeadEffectText } from './entityCards/techDeadEffects';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import {
   resourceColorClassCss,
@@ -7528,23 +7529,22 @@ function appendTechDetailBlock(parent: HTMLElement, data: GameData, techName: st
     }
   }
 
-  if (t['wymagany budynek'] && !isEmptyDataVal(t['wymagany budynek'])) {
-    gridDetailRow(grid, 'Wymaga budynek', String(t['wymagany budynek']));
-  }
+  // R-WEB-CITYPANEL-TECH-TILE-DEAD-EFFECTS-Q1: wiersze tekstowe przechodzą przez WSPÓLNY filtr
+  // efektów martwych (ten sam co karta odkrycia: `ukryte` z tech-cards-top5.json + budynki
+  // suppressed / epoka > 3) — bez tego kafelek pokazywał np. „Teatr” przy Filozofii.
+  const wymagaBudynek = filterDeadEffectText(t['wymagany budynek'], techName);
+  if (wymagaBudynek) gridDetailRow(grid, 'Wymaga budynek', wymagaBudynek);
   if (t['Dostęp do surowca.'] && !isEmptyDataVal(t['Dostęp do surowca.'])) {
     gridDetailRow(grid, 'Surowiec (tech)', String(t['Dostęp do surowca.']));
   }
-  if (t['Odblokowuje budynek'] && !isEmptyDataVal(t['Odblokowuje budynek'])) {
-    gridDetailRow(grid, 'Odblokowuje budynek', String(t['Odblokowuje budynek']));
-  }
-  if (t['Odblokowuje surowiec.'] && !isEmptyDataVal(t['Odblokowuje surowiec.'])) {
-    gridDetailRow(grid, 'Odblokowuje surowiec', String(t['Odblokowuje surowiec.']));
-  }
+  const odblokowujeBudynek = filterDeadEffectText(t['Odblokowuje budynek'], techName);
+  if (odblokowujeBudynek) gridDetailRow(grid, 'Odblokowuje budynek', odblokowujeBudynek);
+  const odblokowujeSurowiec = filterDeadEffectText(t['Odblokowuje surowiec.'], techName);
+  if (odblokowujeSurowiec) gridDetailRow(grid, 'Odblokowuje surowiec', odblokowujeSurowiec);
   const terrainUnlock = (t as unknown as Record<string, unknown>)['Odblokowuje ulepszenie terenu'];
-  if (terrainUnlock && !isEmptyDataVal(terrainUnlock)) {
-    gridDetailRow(grid, 'Odblokowuje pole', String(terrainUnlock));
-  }
-  const techNote = playerFacingNote(t.Uwagi);
+  const odblokowujePole = filterDeadEffectText(terrainUnlock == null ? null : String(terrainUnlock), techName);
+  if (odblokowujePole) gridDetailRow(grid, 'Odblokowuje pole', odblokowujePole);
+  const techNote = filterDeadEffectText(playerFacingNote(t.Uwagi), techName);
   if (techNote) gridDetailRow(grid, 'Uwagi tech', techNote);
 
   // T10 LINKOWANIE-KRZYZOWE: JEDEN nowy link wyjścia z tego wbudowanego bloku (celowo
