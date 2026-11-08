@@ -1,0 +1,649 @@
+rust_plik	piny	web_zmienione_edb8_4bbef	web_zmienione_91dc_4bbef
+rust-port/assets/MANIFEST.tsv	edb8fb56		-
+rust-port/engine/data/derived/README.md	edb8fb56	units.json	-
+rust-port/engine/data/derived/army-merge-params.json	edb8fb56	armyMerge.ts	-
+rust-port/engine/data/derived/building-cost-params.json	edb8fb56	building-resource-gate.ts	building-resource-gate.ts
+rust-port/engine/data/derived/building-gold-upkeep.json	edb8fb56	production.ts	-
+rust-port/engine/data/derived/building-stock-costs.json	edb8fb56		-
+rust-port/engine/data/derived/building-work-costs.json	edb8fb56	production.ts	-
+rust-port/engine/data/derived/building-work-states.json	edb8fb56	civ-bonuses.ts;civs.json;production.ts	-
+rust-port/engine/data/derived/cities-params.json	edb8fb56	population-growth-v85.ts;wealth.ts	-
+rust-port/engine/data/derived/city-founding-params.json	edb8fb56		-
+rust-port/engine/data/derived/city-hex-clear-rules.json	edb8fb56	city-hex-clear.ts	city-hex-clear.ts
+rust-port/engine/data/derived/civ-bonus-city-names.json	edb8fb56		-
+rust-port/engine/data/derived/civ-bonus-diacritics.json	edb8fb56	civ-bonuses.ts	-
+rust-port/engine/data/derived/civ-bonus-matrix-specs.json	91dc998a	civ-bonuses.ts	-
+rust-port/engine/data/derived/civ-bonus-rules.json	edb8fb56	civ-bonuses.ts	-
+rust-port/engine/data/derived/civ-matrix-params.json	edb8fb56	civ-ai-data.ts	-
+rust-port/engine/data/derived/civ-matrix-semantic.json	91dc998a	ai.ts;civ-ai-data.ts;civ-bonuses.ts;civ-matrix-semantic.ts;civs.json;cluster-start.ts;combat.ts;diplomacy.ts;economy.ts;embarkation.ts;manpower.ts;population-growth-v85.ts;production.ts;turn-economy.ts	ai.ts;diplomacy.ts;turn-economy.ts
+rust-port/engine/data/derived/combat-ai-multipliers.json	edb8fb56	ai.ts;combat.ts;embarkation.ts;terrain-improvements.json	ai.ts;terrain-improvements.json
+rust-port/engine/data/derived/conquest-stability-params.json	edb8fb56		-
+rust-port/engine/data/derived/counter-multipliers.json	edb8fb56	combat.ts	-
+rust-port/engine/data/derived/diplomacy-multipliers.json	edb8fb56	diplomacy-proposals.ts;diplomacy-value-catalog.ts;diplomacy.ts;economy.ts	diplomacy-proposals.ts;diplomacy-value-catalog.ts;diplomacy.ts
+rust-port/engine/data/derived/display-names-params.json	edb8fb56		-
+rust-port/engine/data/derived/earth-land-mask.json	edb8fb56		-
+rust-port/engine/data/derived/era-diakrytyki.json	edb8fb56		-
+rust-port/engine/data/derived/formation-role-keywords.json	91dc998a		-
+rust-port/engine/data/derived/improvement-work.json	edb8fb56	terrain-improvements.json;terrain-improvements.ts	terrain-improvements.json;terrain-improvements.ts
+rust-port/engine/data/derived/locale-compare-ascii.json	edb8fb56	manpower.ts	-
+rust-port/engine/data/derived/manpower-params.json	edb8fb56	manpower.ts	-
+rust-port/engine/data/derived/mapgen-cluster-compute.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-cluster-layout.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-cluster-mass.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-cluster-rivals.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-coast.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-core-params.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-desert-purge.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-jagged-coast.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-landmass.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-landsea-fill.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-landsea-pangea-annular.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-landsea-pangea-bridge.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-landsea-pangea-fill.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-landsea-pangea.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-landsea.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-masks.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-nowa-gra.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-relief-a.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-relief-b.json	edb8fb56		-
+rust-port/engine/data/derived/mapgen-terrain-class.json	edb8fb56		-
+rust-port/engine/data/derived/player-state-params.json	edb8fb56	playerState.ts	-
+rust-port/engine/data/derived/porzadek-params.json	edb8fb56	order.ts	-
+rust-port/engine/data/derived/racje.json	edb8fb56	population-growth-v85.ts	-
+rust-port/engine/data/derived/research-costs.json	edb8fb56	tech.json	tech.json
+rust-port/engine/data/derived/road-movement-multipliers.json	edb8fb56		-
+rust-port/engine/data/derived/ruch-jednostek-params.json	edb8fb56	armyMerge.ts;embarkation.ts;planned-march.ts	-
+rust-port/engine/data/derived/start-braz-access.json	edb8fb56	terrain-improvements.json;terrain-improvements.ts	terrain-improvements.json;terrain-improvements.ts
+rust-port/engine/data/derived/start-cluster-params.json	edb8fb56	cluster-start.ts;diplomacy-layers.ts	-
+rust-port/engine/data/derived/start-llama-params.json	edb8fb56		-
+rust-port/engine/data/derived/start-scoring.json	edb8fb56		-
+rust-port/engine/data/derived/storage-caps.json	edb8fb56	econ-params.json	econ-params.json
+rust-port/engine/data/derived/teren-ruch-reguly.json	edb8fb56	fort-territory.ts;terrain-improvements.json	fort-territory.ts;terrain-improvements.json
+rust-port/engine/data/derived/trade-multipliers.json	edb8fb56	civs.json;culture-religion.ts;economy.ts;trade-routes.ts	-
+rust-port/engine/data/derived/ulepszenia-budowa.json	edb8fb56		-
+rust-port/engine/data/derived/ulepszenia-reguly.json	edb8fb56	terrain-improvements.json;terrain-improvements.ts	terrain-improvements.json;terrain-improvements.ts
+rust-port/engine/data/derived/unit-building-bonuses.json	edb8fb56		-
+rust-port/engine/data/derived/unit-cost-tempo.json	edb8fb56		-
+rust-port/engine/data/derived/unit-food.json	91dc998a,edb8fb56	econ-params.json;units.json	econ-params.json
+rust-port/engine/data/derived/unit-gold-costs.json	91dc998a,edb8fb56	production.ts;units.json	-
+rust-port/engine/data/derived/unit-gold-states.json	edb8fb56	production.ts;units.json	-
+rust-port/engine/data/derived/unit-stock-costs.json	91dc998a,edb8fb56	units.json	-
+rust-port/engine/data/derived/visibility-params.json	edb8fb56		-
+rust-port/engine/data/derived/war-leadership-params.json	91dc998a	army-leadership.ts	-
+rust-port/engine/data/derived/wonder-work.json	edb8fb56		-
+rust-port/engine/data/derived/wzrost-ludnosci-params.json	edb8fb56	building-resource-gate.ts;economy.ts;population-growth-v85.ts	building-resource-gate.ts
+rust-port/engine/src/data/civilizations.rs	91dc998a,edb8fb56	civs.json;diplomacy-acceptance-points.json	diplomacy-acceptance-points.json
+rust-port/engine/src/data/derived.rs	91dc998a,edb8fb56	armyMerge.ts;building-resource-gate.ts;city-hex-clear.ts;civ-ai-data.ts;civ-bonuses.ts;civ-matrix-semantic.ts;economy.ts;manpower.ts;playerState.ts;population-growth-v85.ts;production.ts;units.json;war-allin-params.json	building-resource-gate.ts;city-hex-clear.ts
+rust-port/engine/src/data/economy_society.rs	91dc998a,edb8fb56	citizen-resource-upkeep.json;econ-params.json	citizen-resource-upkeep.json;econ-params.json
+rust-port/engine/src/data/economy_society_part2.rs	edb8fb56	ai-params.json;ai.ts;ui-params.json	ai-params.json;ai.ts;ui-params.json
+rust-port/engine/src/domain/ai_era_unit_promotion.rs	91dc998a	ai-era-unit-promotion.ts	-
+rust-port/engine/src/domain/ai_general_war_campaign.rs	91dc998a	ai-general-war-campaign.ts	-
+rust-port/engine/src/domain/ai_move_range.rs	91dc998a	ai-move-range.ts	-
+rust-port/engine/src/domain/army_consolidation.rs	91dc998a	army-consolidation-params.json;army-consolidation.ts	-
+rust-port/engine/src/domain/army_leadership.rs	91dc998a	army-leadership.ts	-
+rust-port/engine/src/domain/auto_improvements/relief_preserving.rs	91dc998a	relief-preserving-improvements.ts	-
+rust-port/engine/src/domain/building_costs.rs	91dc998a,edb8fb56	building-resource-gate.ts;econ-params.json;production.ts;units.json	building-resource-gate.ts;econ-params.json
+rust-port/engine/src/domain/city_growth.rs	91dc998a,edb8fb56	barbarians.ts;building-resource-gate.ts;econ-params.json;economy.ts;population-growth-v85.ts;turn-economy.ts;wealth.ts	building-resource-gate.ts;econ-params.json;turn-economy.ts
+rust-port/engine/src/domain/city_names.rs	edb8fb56	civs.json	-
+rust-port/engine/src/domain/civ_bonuses.rs	91dc998a	civ-bonuses.ts;civs.json	-
+rust-port/engine/src/domain/civ_matrix.rs	91dc998a,edb8fb56	civ-ai-data.ts;civ-matrix-semantic.ts;civs.json	-
+rust-port/engine/src/domain/civ_names.rs	edb8fb56	civs.json	-
+rust-port/engine/src/domain/combat.rs	edb8fb56	combat.ts	-
+rust-port/engine/src/domain/diplomacy_tick_war_brake.rs	91dc998a	diplomacy-tick-params.json;diplomacy-tick-war-brake.ts	diplomacy-tick-war-brake.ts
+rust-port/engine/src/domain/economy_city_fns.rs	91dc998a	economy.ts	-
+rust-port/engine/src/domain/economy_city_params.rs	91dc998a	econ-params.json;economy.ts	econ-params.json
+rust-port/engine/src/domain/economy_city_terrain.rs	91dc998a	economy.ts	-
+rust-port/engine/src/domain/economy_yield.rs	91dc998a	civs.json;economy.ts;production.ts	-
+rust-port/engine/src/domain/formation_rules.rs	91dc998a	units.json	-
+rust-port/engine/src/domain/generals.rs	edb8fb56	generalQuickFollow.ts;generals.ts	generalQuickFollow.ts;generals.ts
+rust-port/engine/src/domain/improvement_build.rs	edb8fb56	terrain-improvements.json	terrain-improvements.json
+rust-port/engine/src/domain/improvements.rs	91dc998a	economy.ts;terrain-improvements.json;terrain-improvements.ts	terrain-improvements.json;terrain-improvements.ts
+rust-port/engine/src/domain/map_snapshot.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/cluster_compute.rs	edb8fb56	civs.json;cluster-start.ts	-
+rust-port/engine/src/domain/mapgen/cluster_layout.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/cluster_mass.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/cluster_rivals.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/landsea.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/masks.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/params.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/prims.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/relief.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/rivers_a.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/rivers_a/grow.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/rivers_a/profile.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/rivers_a/walk.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/rivers_b/coast_grow.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/rivers_b/edges.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/rivers_b/meander.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/rivers_b/trace_coast.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/rivers_b/turn.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/rivers_b/window.rs	edb8fb56		-
+rust-port/engine/src/domain/mapgen/terrain_class.rs	edb8fb56		-
+rust-port/engine/src/domain/pathfinding.rs	edb8fb56	armyMerge.ts;embarkation.ts;planned-march.ts	-
+rust-port/engine/src/domain/player.rs	edb8fb56	playerState.ts	-
+rust-port/engine/src/domain/production_queue.rs	91dc998a	production.ts	-
+rust-port/engine/src/domain/production_units.rs	91dc998a	production.ts;units.json	-
+rust-port/engine/src/domain/recruitment.rs	91dc998a,edb8fb56	armyMerge.ts;civs.json;manpower.ts;population-growth-v85.ts;production.ts;units.json	-
+rust-port/engine/src/domain/resource_access.rs	91dc998a	building-resource-gate.ts	building-resource-gate.ts
+rust-port/engine/src/domain/resource_production.rs	91dc998a	citizen-resource-upkeep.ts	citizen-resource-upkeep.ts
+rust-port/engine/src/domain/roads.rs	edb8fb56		-
+rust-port/engine/src/domain/society_breakdown.rs	91dc998a	society-breakdown.ts	-
+rust-port/engine/src/domain/society_breakdown/breakdown.rs	91dc998a	society-breakdown.ts	-
+rust-port/engine/src/domain/society_breakdown/order.rs	91dc998a	society-breakdown.ts	-
+rust-port/engine/src/domain/start_position.rs	edb8fb56	cluster-start.ts;diplomacy-layers.ts;terrain-improvements.json;terrain-improvements.ts	terrain-improvements.json;terrain-improvements.ts
+rust-port/engine/src/domain/state.rs	edb8fb56	city-hex-clear.ts;culture-religion.ts;population-growth-v85.ts;wealth.ts	city-hex-clear.ts
+rust-port/engine/src/domain/terrain.rs	edb8fb56	city-hex-clear.ts;economy.ts;fort-territory.ts;terrain-improvements.json;turn-economy.ts	city-hex-clear.ts;fort-territory.ts;terrain-improvements.json;turn-economy.ts
+rust-port/engine/src/domain/territory.rs	edb8fb56	culture-religion.ts;terrain-improvements.json	terrain-improvements.json
+rust-port/engine/src/domain/turn_economy.rs	91dc998a	econ-params.json;units.json;wealth.ts	econ-params.json
+rust-port/engine/src/domain/unit_epoch.rs	edb8fb56		-
+rust-port/engine/src/domain/wonder_placement.rs	edb8fb56		-
+rust-port/engine/src/domain/work_tax.rs	91dc998a	work-tax.ts	-
+rust-port/engine/tests/assets_manifest.rs	edb8fb56		-
+rust-port/engine/tests/data_civilizations.rs	91dc998a,edb8fb56	civs.json;diplomacy-acceptance-points.json	diplomacy-acceptance-points.json
+rust-port/engine/tests/data_compliance.rs	edb8fb56	ai-params.json;citizen-resource-upkeep.json;civs.json;diplomacy-acceptance-points.json;econ-params.json;tech.json;terrain-improvements.json;ui-params.json;units.json	ai-params.json;citizen-resource-upkeep.json;diplomacy-acceptance-points.json;econ-params.json;tech.json;terrain-improvements.json;ui-params.json
+rust-port/engine/tests/data_economy_society.rs	edb8fb56	ai-params.json;citizen-resource-upkeep.json;econ-params.json;ui-params.json	ai-params.json;citizen-resource-upkeep.json;econ-params.json;ui-params.json
+rust-port/engine/tests/data_units_combat.rs	91dc998a,edb8fb56	units.json	-
+rust-port/engine/tests/derived_values.rs	edb8fb56	diplomacy-proposals.ts;units.json	diplomacy-proposals.ts
+rust-port/engine/tests/diplomacy.rs	edb8fb56	diplomacy-proposals.ts;units.json	diplomacy-proposals.ts
+rust-port/engine/tests/economy_city_vectors.rs	91dc998a	economy.ts;production.ts	-
+rust-port/engine/tests/economy_city_vectors_r3.rs	91dc998a	economy.ts	-
+rust-port/engine/tests/economy_city_vectors_r4.rs	91dc998a	economy.ts	-
+rust-port/engine/tests/fixtures/economy_city_vectors_91dc998a.json	91dc998a	economy.ts;production.ts	-
+rust-port/engine/tests/fixtures/economy_city_vectors_r3_91dc998a.json	91dc998a	economy.ts	-
+rust-port/engine/tests/fixtures/economy_city_vectors_r4_91dc998a.json	91dc998a	economy.ts	-
+rust-port/engine/tests/p6_1_civ_entry_epoch.rs	edb8fb56		-
+rust-port/engine/tests/p6_1_vectors/first-player-city.json	edb8fb56		-
+rust-port/engine/tests/p6_1_vectors/web-vectors.json	edb8fb56	barbarians.ts;society-breakdown.ts	-
+rust-port/engine/tests/p6_1b_playerstate.rs	edb8fb56	playerState.ts;tech.json	tech.json
+rust-port/engine/tests/p6_1b_vectors/web-vectors.json	edb8fb56	playerState.ts;units.json	-
+rust-port/engine/tests/p6_1c_vectors/braz.json	edb8fb56	terrain-improvements.ts	terrain-improvements.ts
+rust-port/engine/tests/p6_1c_vectors/cluster-start.json	edb8fb56	cluster-start.ts;diplomacy-layers.ts	-
+rust-port/engine/tests/p6_1c_vectors/llama.json	edb8fb56		-
+rust-port/engine/tests/p6_1c_vectors/maps.json	edb8fb56		-
+rust-port/engine/tests/p6_1d_city_names.rs	edb8fb56	civs.json	-
+rust-port/engine/tests/p6_1d_civ_bonuses.rs	91dc998a,edb8fb56	civ-bonuses.ts;civs.json;units.json	-
+rust-port/engine/tests/p6_1d_vectors/web-vectors.json	edb8fb56	civ-bonuses.ts;civs.json	-
+rust-port/engine/tests/p6_1e_civ_gaps.rs	91dc998a	civ-bonuses.ts;civ-matrix-semantic.ts	-
+rust-port/engine/tests/p6_1e_civ_matrix.rs	91dc998a,edb8fb56	civ-ai-data.ts;civ-matrix-semantic.ts	-
+rust-port/engine/tests/p6_1e_civ_names.rs	edb8fb56	civs.json	-
+rust-port/engine/tests/p6_1e_js_compat.rs	edb8fb56	civ-matrix-semantic.ts	-
+rust-port/engine/tests/p6_1e_tables.rs	91dc998a	civ-matrix-semantic.ts;civs.json	-
+rust-port/engine/tests/p6_1e_vectors/web-vectors.json	edb8fb56	ai.ts;civ-ai-data.ts;civ-bonuses.ts;civ-matrix-semantic.ts;civs.json;cluster-start.ts;combat.ts;culture-religion.ts;diplomacy.ts;economy.ts;embarkation.ts;manpower.ts;order.ts;population-growth-v85.ts;production.ts;turn-economy.ts;wealth.ts	ai.ts;diplomacy.ts;turn-economy.ts
+rust-port/engine/tests/p6_23_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_23_vectors/hexmove.json	edb8fb56		-
+rust-port/engine/tests/p6_23_vectors/order.json	edb8fb56	order.ts	-
+rust-port/engine/tests/p6_4_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_4_vectors/core.json	edb8fb56		-
+rust-port/engine/tests/p6_4_vectors/embark.json	edb8fb56		-
+rust-port/engine/tests/p6_4_vectors/maps.json	edb8fb56		-
+rust-port/engine/tests/p6_4_vectors/march.json	edb8fb56		-
+rust-port/engine/tests/p6_4_vectors/rally.json	edb8fb56		-
+rust-port/engine/tests/p6_4_vectors/scout.json	edb8fb56		-
+rust-port/engine/tests/p6_5a_cost.rs	edb8fb56		-
+rust-port/engine/tests/p6_5a_display.rs	edb8fb56	armyMerge.ts	-
+rust-port/engine/tests/p6_5a_ruch.rs	edb8fb56	armyMerge.ts	-
+rust-port/engine/tests/p6_5a_stack.rs	edb8fb56	armyMerge.ts	-
+rust-port/engine/tests/p6_5a_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_5a_vectors/cost.json	edb8fb56		-
+rust-port/engine/tests/p6_5a_vectors/display.json	edb8fb56		-
+rust-port/engine/tests/p6_5a_vectors/ruch.json	edb8fb56		-
+rust-port/engine/tests/p6_5a_vectors/stack.json	edb8fb56		-
+rust-port/engine/tests/p6_5b_bonuses.rs	edb8fb56		-
+rust-port/engine/tests/p6_5b_format.rs	edb8fb56	manpower.ts	-
+rust-port/engine/tests/p6_5b_manpower.rs	91dc998a,edb8fb56	civs.json;manpower.ts	-
+rust-port/engine/tests/p6_5b_replenish.rs	edb8fb56		-
+rust-port/engine/tests/p6_5b_vectors/buildings.json	91dc998a		-
+rust-port/engine/tests/p6_5b_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_5b_vectors/format.json	91dc998a		-
+rust-port/engine/tests/p6_5b_vectors/manpower.json	91dc998a		-
+rust-port/engine/tests/p6_5b_vectors/replenish.json	91dc998a		-
+rust-port/engine/tests/p6_6a_conquest.rs	edb8fb56		-
+rust-port/engine/tests/p6_6a_founding.rs	edb8fb56		-
+rust-port/engine/tests/p6_6a_hexclear.rs	edb8fb56	city-hex-clear.ts;economy.ts;turn-economy.ts	city-hex-clear.ts;turn-economy.ts
+rust-port/engine/tests/p6_6a_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_6a_visibility.rs	edb8fb56	units.json	-
+rust-port/engine/tests/p6_6b_cities_ensure.rs	edb8fb56		-
+rust-port/engine/tests/p6_6b_cities_found.rs	edb8fb56		-
+rust-port/engine/tests/p6_6b_display.rs	edb8fb56		-
+rust-port/engine/tests/p6_6b_empire.rs	edb8fb56		-
+rust-port/engine/tests/p6_6b_lists.rs	edb8fb56		-
+rust-port/engine/tests/p6_6b_percent.rs	edb8fb56		-
+rust-port/engine/tests/p6_6b_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_7a_empire.rs	edb8fb56		-
+rust-port/engine/tests/p6_7a_growth.rs	edb8fb56	econ-params.json;economy.ts;population-growth-v85.ts	econ-params.json
+rust-port/engine/tests/p6_7a_post_central.rs	edb8fb56	manpower.ts;population-growth-v85.ts	-
+rust-port/engine/tests/p6_7a_tempo.rs	edb8fb56		-
+rust-port/engine/tests/p6_7a_vectors/common.rs	edb8fb56	econ-params.json	econ-params.json
+rust-port/engine/tests/p6_7b_cost.rs	edb8fb56	units.json	-
+rust-port/engine/tests/p6_7b_gate.rs	edb8fb56	building-resource-gate.ts	building-resource-gate.ts
+rust-port/engine/tests/p6_7b_pool.rs	edb8fb56		-
+rust-port/engine/tests/p6_7b_spichlerz.rs	edb8fb56	building-resource-gate.ts	building-resource-gate.ts
+rust-port/engine/tests/p6_7b_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_8a_building_upgrades.rs	91dc998a		-
+rust-port/engine/tests/p6_8a_pending_improvements.rs	91dc998a		-
+rust-port/engine/tests/p6_8a_production_costs.rs	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors.rs	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/building_upgrades.json	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/defaults-brak-rol.json	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/defaults-inne-wartosci.json	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/defaults-realny.json	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/pending.json	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/production_costs.json	91dc998a	production.ts	-
+rust-port/engine/tests/p6_8a_vectors/structural-brak.json	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/structural-napis.json	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/structural-null.json	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/structural-realny.json	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/structural-ujemna.json	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/structural-ulamek.json	91dc998a		-
+rust-port/engine/tests/p6_8a_vectors/structural-zero.json	91dc998a		-
+rust-port/engine/tests/p6_8b2_p2_gaps.rs	91dc998a	production.ts	-
+rust-port/engine/tests/p6_8b2_p2_vectors.rs	91dc998a	production.ts;units.json	-
+rust-port/engine/tests/p6_8b_c2a_vectors.rs	91dc998a	production.ts	-
+rust-port/engine/tests/p6_8b_c2b_vectors.rs	91dc998a	production.ts;units.json	-
+rust-port/engine/tests/p6_8b_c2c_vectors.rs	91dc998a	production.ts;units.json	-
+rust-port/engine/tests/p6_8b_helpers_vectors.rs	91dc998a	production.ts;units.json	-
+rust-port/engine/tests/p6_8b_p1b_vectors.rs	91dc998a	production.ts	-
+rust-port/engine/tests/p6_8b_vectors/helpers.json	91dc998a	production.ts	-
+rust-port/engine/tests/p6_8b_vectors/p1b-c2a.json	91dc998a	manpower.ts;production.ts	-
+rust-port/engine/tests/p6_8b_vectors/p1b-c2b.json	91dc998a	production.ts;units.json	-
+rust-port/engine/tests/p6_8b_vectors/p1b-c2c.json	91dc998a	production.ts;units.json	-
+rust-port/engine/tests/p6_8b_vectors/p1b.json	91dc998a	production.ts	-
+rust-port/engine/tests/p6_8c_vectors.rs	91dc998a	production.ts	-
+rust-port/engine/tests/p6_8c_vectors/p8c.json	91dc998a		-
+rust-port/engine/tests/p6_8d_citizen_upkeep.rs	91dc998a,edb8fb56	citizen-resource-upkeep.json;citizen-resource-upkeep.ts	citizen-resource-upkeep.json;citizen-resource-upkeep.ts
+rust-port/engine/tests/p6_8d_gold_deficit.rs	91dc998a		-
+rust-port/engine/tests/p6_8d_mennica_grace.rs	91dc998a		-
+rust-port/engine/tests/p6_8d_vectors/citizen_upkeep.json	91dc998a	citizen-resource-upkeep.ts	citizen-resource-upkeep.ts
+rust-port/engine/tests/p6_8d_vectors/gold_deficit.json	91dc998a		-
+rust-port/engine/tests/p6_8d_vectors/mennica_zloto_grace.json	91dc998a		-
+rust-port/engine/tests/p6_8d_vectors/wealth.json	91dc998a	wealth.ts	-
+rust-port/engine/tests/p6_8d_wealth.rs	91dc998a	wealth.ts	-
+rust-port/engine/tests/p6_8e_upkeep_p1.rs	91dc998a		-
+rust-port/engine/tests/p6_8e_upkeep_p2.rs	91dc998a	econ-params.json;units.json	econ-params.json
+rust-port/engine/tests/p6_8e_vectors/economy_upkeep_p1.json	91dc998a		-
+rust-port/engine/tests/p6_8e_vectors/economy_upkeep_p2.json	91dc998a		-
+rust-port/engine/tests/p6_8g_okolica.rs	91dc998a		-
+rust-port/engine/tests/p6_8g_vectors/okolica.json	91dc998a		-
+rust-port/engine/tests/p6_8g_web_vectors.rs	91dc998a		-
+rust-port/engine/tests/p6_8g_web_vectors_r4.rs	91dc998a		-
+rust-port/engine/tests/p6_8h2_active_access.rs	91dc998a		-
+rust-port/engine/tests/p6_8h2_society_inputs.rs	91dc998a		-
+rust-port/engine/tests/p6_8h2_vectors/gen-vectors.sh	91dc998a		-
+rust-port/engine/tests/p6_8h2_vectors/gen_cases.py	91dc998a		-
+rust-port/engine/tests/p6_8h_access.rs	91dc998a		-
+rust-port/engine/tests/p6_8h_vectors/cyna.json	91dc998a		-
+rust-port/engine/tests/p6_8h_vectors/society.json	91dc998a		-
+rust-port/engine/tests/p6_8h_vectors/zelazo.json	91dc998a		-
+rust-port/engine/tests/p6_8h_vectors/zloto.json	91dc998a		-
+rust-port/engine/tests/p6_8i_relief.rs	91dc998a		-
+rust-port/engine/tests/p6_8i_vectors/relief.json	91dc998a	relief-preserving-improvements.ts	-
+rust-port/engine/tests/p6_8j_guards.rs	91dc998a	society-breakdown.ts	-
+rust-port/engine/tests/p6_8j_order.rs	91dc998a	society-breakdown.ts	-
+rust-port/engine/tests/p6_8j_society.rs	91dc998a	society-breakdown.ts	-
+rust-port/engine/tests/p6_8j_vectors/society.json	91dc998a		-
+rust-port/engine/tests/p6_m01_climate.rs	edb8fb56		-
+rust-port/engine/tests/p6_m01_earth_mask.rs	edb8fb56		-
+rust-port/engine/tests/p6_m01_prims.rs	edb8fb56		-
+rust-port/engine/tests/p6_m01_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m03_centers.rs	edb8fb56		-
+rust-port/engine/tests/p6_m03_earth.rs	edb8fb56		-
+rust-port/engine/tests/p6_m03_edges.rs	edb8fb56		-
+rust-port/engine/tests/p6_m03_jsmath.rs	edb8fb56		-
+rust-port/engine/tests/p6_m03_masks.rs	edb8fb56		-
+rust-port/engine/tests/p6_m03_strait.rs	edb8fb56		-
+rust-port/engine/tests/p6_m03_vectors/core.json	edb8fb56		-
+rust-port/engine/tests/p6_m03_vectors/earth.json	edb8fb56		-
+rust-port/engine/tests/p6_m03_vectors/edges.json	edb8fb56		-
+rust-port/engine/tests/p6_m03_vectors/jsmath.json	edb8fb56		-
+rust-port/engine/tests/p6_m03_vectors/masks.json	edb8fb56		-
+rust-port/engine/tests/p6_m03_vectors/strait.json	edb8fb56		-
+rust-port/engine/tests/p6_m04_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m05a_tables.rs	edb8fb56		-
+rust-port/engine/tests/p6_m05a_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m05b_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_m05b_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a2_landsea.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a2_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a3_climate.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a3_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a4_chan.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a4_jagged.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a4_landsea.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a4_trim.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a4_vectors/chan-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a4_vectors/jagged-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a4_vectors/trim-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a4_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a5_landfrac.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a5_landfrac_edge.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a5_vectors/landfrac-edge-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a5_vectors/landfrac-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a6_pangea.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a6_vectors/carve-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a6_vectors/contfrac-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a6_vectors/erode-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a7_annular.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a8_landsea.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a8_pomiary.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a9_edge.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a9_landsea.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a9_vectors/edge-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a9_vectors/fill-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a9_vectors/pangea-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a9_vectors/ratio-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06a_landsea.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06a_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06b1_boundary.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06b1_cap.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06b1_coast.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06b1_ocean.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06b1_tables.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06b1_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06b1_vectors/web-boundary.json	edb8fb56		-
+rust-port/engine/tests/p6_m06b1_vectors/web-cap.json	edb8fb56		-
+rust-port/engine/tests/p6_m06b1_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m06b2_enforce.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06b2_finalize.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06b2_specks.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06b2_tiny.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06b2_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_m06b2_vectors/web-enforce-large.json	edb8fb56		-
+rust-port/engine/tests/p6_m06b2_vectors/web-enforce-probe.json	edb8fb56		-
+rust-port/engine/tests/p6_m06b2_vectors/web-enforce.json	edb8fb56		-
+rust-port/engine/tests/p6_m06b2_vectors/web-finalize.json	edb8fb56		-
+rust-port/engine/tests/p6_m06b2_vectors/web-specks.json	edb8fb56		-
+rust-port/engine/tests/p6_m06b2_vectors/web-tiny.json	edb8fb56		-
+rust-port/engine/tests/p6_m07a_cap.rs	edb8fb56		-
+rust-port/engine/tests/p6_m07a_grow.rs	edb8fb56		-
+rust-port/engine/tests/p6_m07a_rivers_a.rs	edb8fb56		-
+rust-port/engine/tests/p6_m07a_rivers_a_caps.rs	edb8fb56		-
+rust-port/engine/tests/p6_m07a_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_m07a_vectors/web-rivers-a.json	edb8fb56		-
+rust-port/engine/tests/p6_m07a_walk.rs	edb8fb56		-
+rust-port/engine/tests/p6_m07b2_coast.rs	edb8fb56		-
+rust-port/engine/tests/p6_m07b2_edges.rs	edb8fb56		-
+rust-port/engine/tests/p6_m07b2_q2r4.rs	edb8fb56		-
+rust-port/engine/tests/p6_m07b2_vectors/gen_coast_grow_vectors.mjs	edb8fb56		-
+rust-port/engine/tests/p6_m07b2_vectors/gen_edges_vectors.mjs	edb8fb56		-
+rust-port/engine/tests/p6_m07b2_vectors/gen_q2_r4_vectors.mjs	edb8fb56		-
+rust-port/engine/tests/p6_m07b2_vectors/n3_table_m07b2_q2.py	edb8fb56		-
+rust-port/engine/tests/p6_m07b2_vectors/verify_m07b2_q2.py	edb8fb56		-
+rust-port/engine/tests/p6_m07b2_vectors/web-rivers-b-coast-grow.json	edb8fb56		-
+rust-port/engine/tests/p6_m07b2_vectors/web-rivers-b-edges.json	edb8fb56		-
+rust-port/engine/tests/p6_m07b2_vectors/web-rivers-b-q2r4.json	edb8fb56		-
+rust-port/engine/tests/p6_m07b_turn.rs	edb8fb56		-
+rust-port/engine/tests/p6_m07b_vectors/gen_turn_vectors.mjs	edb8fb56		-
+rust-port/engine/tests/p6_m07b_vectors/verify_m07b_turn.py	edb8fb56		-
+rust-port/engine/tests/p6_m07b_vectors/web-rivers-b-turn.json	edb8fb56		-
+rust-port/engine/tests/p6_m09_rivals.rs	edb8fb56		-
+rust-port/engine/tests/p6_m09_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m10_masses.rs	edb8fb56		-
+rust-port/engine/tests/p6_m10_placement.rs	edb8fb56		-
+rust-port/engine/tests/p6_m10_start_scoring.rs	edb8fb56		-
+rust-port/engine/tests/p6_m10_v8sort.rs	edb8fb56		-
+rust-port/engine/tests/p6_m10_vectors/web-vectors.json	edb8fb56	civs.json	-
+rust-port/engine/tests/p6_m11_gates.rs	edb8fb56		-
+rust-port/engine/tests/p6_m11_layout.rs	edb8fb56		-
+rust-port/engine/tests/p6_m11_repair.rs	edb8fb56		-
+rust-port/engine/tests/p6_m11_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m12_compute.rs	edb8fb56		-
+rust-port/engine/tests/p6_m12_vectors/web-vectors.json	edb8fb56		-
+rust-port/engine/tests/p6_m14_range.rs	edb8fb56		-
+rust-port/engine/tests/p6_m14_territory.rs	edb8fb56		-
+rust-port/engine/tests/p6_m14_wonder.rs	edb8fb56		-
+rust-port/engine/tests/p6_m14_work.rs	edb8fb56		-
+rust-port/engine/tests/p6_m15_roads.rs	edb8fb56		-
+rust-port/engine/tests/p6_m16_doc.rs	edb8fb56		-
+rust-port/engine/tests/p6_m16_gallery.rs	edb8fb56		-
+rust-port/engine/tests/p6_m16_qualifier.rs	edb8fb56		-
+rust-port/engine/tests/p6_m16_rules.rs	edb8fb56		-
+rust-port/engine/tests/p6_m16_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_m17_rebuild.rs	edb8fb56		-
+rust-port/engine/tests/p6_m17_serialize.rs	edb8fb56		-
+rust-port/engine/tests/p6_m17_validate.rs	edb8fb56		-
+rust-port/engine/tests/p6_m17_vectors/common.rs	edb8fb56		-
+rust-port/engine/tests/p6_m17_vectors/rebuild.json	edb8fb56		-
+rust-port/engine/tests/p6_m17_vectors/serialize.json	edb8fb56		-
+rust-port/engine/tests/p6_m17_vectors/validate.json	edb8fb56		-
+rust-port/engine/tests/p6_repin_a_costmult.rs	91dc998a	manpower.ts	-
+rust-port/engine/tests/p6_repin_b2_production.rs	91dc998a	production.ts	-
+rust-port/engine/tests/p6_repin_b2_vectors/building_work_cost.json	91dc998a		-
+rust-port/engine/tests/p6_repin_b2_vectors/civ_cost_markers.json	91dc998a		-
+rust-port/engine/tests/p6_repin_b2_vectors/unit_money_cost.json	91dc998a		-
+rust-port/engine/tests/p6_repin_b2_vectors/unit_newest.json	91dc998a		-
+rust-port/engine/tests/p6_repin_b3_route.rs	91dc998a	economy.ts;turn-economy.ts	turn-economy.ts
+rust-port/engine/tests/p6_repin_b3_vectors/route_cash.json	91dc998a	economy.ts;turn-economy.ts	turn-economy.ts
+rust-port/engine/tests/p6_repin_b3_vectors/route_cash_mod.json	91dc998a	economy.ts;turn-economy.ts	turn-economy.ts
+rust-port/engine/tests/p6_repin_b3_vectors/wealth_owner.json	91dc998a	economy.ts;turn-economy.ts;wealth.ts	turn-economy.ts
+rust-port/engine/tests/p6_repin_b3_vectors/wealth_owner_mod.json	91dc998a	economy.ts;turn-economy.ts;wealth.ts	turn-economy.ts
+rust-port/engine/tests/p6_repin_b3_wealth.rs	91dc998a	economy.ts;turn-economy.ts;wealth.ts	turn-economy.ts
+rust-port/engine/tests/p6_repin_b_ration_era.rs	91dc998a	population-growth-v85.ts	-
+rust-port/engine/tests/p6_repin_b_recompute_era.rs	91dc998a		-
+rust-port/engine/tests/p6_repin_c_construction.rs	91dc998a	terrain-improvements.ts	terrain-improvements.ts
+rust-port/engine/tests/p6_repin_d2_full.rs	91dc998a	economy.ts	-
+rust-port/engine/tests/p6_repin_d2_full_vectors/full-main.json	91dc998a		-
+rust-port/engine/tests/p6_repin_d2_head.rs	91dc998a	economy.ts	-
+rust-port/engine/tests/p6_repin_d2_head_vectors/head-main.json	91dc998a		-
+rust-port/engine/tests/p6_repin_d2_imp.rs	91dc998a	economy.ts	-
+rust-port/engine/tests/p6_repin_d2_imp_vectors/imp-main.json	91dc998a		-
+rust-port/engine/tests/p6_repin_d2_tail.rs	91dc998a	economy.ts	-
+rust-port/engine/tests/p6_repin_d2_tail_vectors/tail-main.json	91dc998a		-
+rust-port/engine/tests/p6_repin_d_economy_mnoznik.rs	91dc998a	economy.ts	-
+rust-port/engine/tests/p6_repin_d_work_tax.rs	91dc998a	work-tax.ts	-
+rust-port/engine/tests/p6_repin_d_work_tax_edge.rs	91dc998a	work-tax.ts	-
+rust-port/engine/tests/p6_repin_ekon_f_vectors/load_econ_params.json	91dc998a		-
+rust-port/engine/tests/p6_repin_ekon_f_vectors/popcap_pinned_inputs.json	91dc998a	economy.ts	-
+rust-port/engine/tests/p6_repin_wojna_a_formation.rs	91dc998a		-
+rust-port/engine/tests/p6_repin_wojna_a_leadership.rs	91dc998a	army-leadership.ts	-
+rust-port/engine/tests/p6_repin_wojna_a_promotion.rs	91dc998a	ai-era-unit-promotion.ts	-
+rust-port/engine/tests/p6_repin_wojna_a_vectors/ai-era-unit-promotion.json	91dc998a	ai-era-unit-promotion.ts;army-leadership.ts	-
+rust-port/engine/tests/p6_repin_wojna_a_vectors/army-leadership.json	91dc998a	ai-era-unit-promotion.ts;army-leadership.ts	-
+rust-port/engine/tests/p6_repin_wojna_b_ai_general.rs	91dc998a	ai-general-war-campaign.ts	-
+rust-port/engine/tests/p6_repin_wojna_b_army_consolidation.rs	91dc998a	army-consolidation.ts	-
+rust-port/engine/tests/p6_repin_wojna_b_vectors/ai-general-war-campaign.json	91dc998a	ai-general-war-campaign.ts;army-consolidation-params.json;army-consolidation.ts	-
+rust-port/engine/tests/p6_repin_wojna_b_vectors/army-consolidation.json	91dc998a	ai-general-war-campaign.ts;army-consolidation-params.json;army-consolidation.ts	-
+rust-port/engine/tests/p6_repin_wojna_c_move_range.rs	91dc998a	ai-move-range.ts	-
+rust-port/engine/tests/p6_repin_wojna_c_vectors/ai-move-range.json	91dc998a	ai-move-range.ts;diplomacy-tick-params.json;diplomacy-tick-war-brake.ts	diplomacy-tick-war-brake.ts
+rust-port/engine/tests/p6_repin_wojna_c_vectors/diplomacy-tick-war-brake.json	91dc998a	ai-move-range.ts;diplomacy-tick-params.json;diplomacy-tick-war-brake.ts	diplomacy-tick-war-brake.ts
+rust-port/engine/tests/p6_repin_wojna_c_war_brake.rs	91dc998a	diplomacy-tick-params.json;diplomacy-tick-war-brake.ts	diplomacy-tick-war-brake.ts
+rust-port/engine/tests/recruitment.rs	91dc998a,edb8fb56	units.json	-
+rust-port/engine/tests/terrain_movement_fix.rs	edb8fb56	trade-routes.ts	-
+rust-port/renderer/src/battle/dynamics.rs	edb8fb56		-
+rust-port/renderer/src/battle/field.rs	edb8fb56		-
+rust-port/renderer/src/battle/mod.rs	edb8fb56		-
+rust-port/renderer/src/battle/orders.rs	edb8fb56		-
+rust-port/renderer/src/battle/picking.rs	edb8fb56		-
+rust-port/renderer/src/battle/siege_wall.rs	edb8fb56		-
+rust-port/renderer/src/battle/units.rs	edb8fb56	units.json	-
+rust-port/renderer/src/battle/view.rs	edb8fb56		-
+rust-port/renderer/src/camera.rs	edb8fb56		-
+rust-port/renderer/src/cities/overlay/mod.rs	edb8fb56		-
+rust-port/renderer/src/cities/overlay/okolica.rs	edb8fb56	terrain-improvements.ts	terrain-improvements.ts
+rust-port/renderer/src/cities/overlay/stat_chip.rs	edb8fb56		-
+rust-port/renderer/src/cities/overlay/worker_field.rs	edb8fb56		-
+rust-port/renderer/src/core/bronze.rs	edb8fb56	civs.json	-
+rust-port/renderer/src/core/fog_dim.rs	edb8fb56		-
+rust-port/renderer/src/core/hex_shape.rs	edb8fb56		-
+rust-port/renderer/src/core/hexutil.rs	edb8fb56		-
+rust-port/renderer/src/core/map_style.rs	edb8fb56		-
+rust-port/renderer/src/core/mod.rs	edb8fb56		-
+rust-port/renderer/src/core/vitals.rs	edb8fb56		-
+rust-port/renderer/src/core/zoom_lod.rs	edb8fb56		-
+rust-port/renderer/src/decor/desert.rs	edb8fb56		-
+rust-port/renderer/src/decor/forest.rs	edb8fb56		-
+rust-port/renderer/src/decor/jungle.rs	edb8fb56		-
+rust-port/renderer/src/decor/meadow.rs	edb8fb56		-
+rust-port/renderer/src/decor/mod.rs	edb8fb56		-
+rust-port/renderer/src/decor/relief.rs	edb8fb56		-
+rust-port/renderer/src/decor/river_lod.rs	edb8fb56		-
+rust-port/renderer/src/decor/style.rs	edb8fb56		-
+rust-port/renderer/src/decor/terraces.rs	edb8fb56		-
+rust-port/renderer/src/labels/mod.rs	edb8fb56		-
+rust-port/renderer/src/labels/style.rs	edb8fb56		-
+rust-port/renderer/src/models/cities/braz.rs	edb8fb56		-
+rust-port/renderer/src/models/cities/ghost_braz.rs	edb8fb56		-
+rust-port/renderer/src/models/cities/ghost_kamien.rs	edb8fb56		-
+rust-port/renderer/src/models/cities/kamien.rs	edb8fb56		-
+rust-port/renderer/src/models/cities/mod.rs	edb8fb56		-
+rust-port/renderer/src/models/cities/outline.rs	edb8fb56		-
+rust-port/renderer/src/models/cities/renderer.rs	edb8fb56		-
+rust-port/renderer/src/models/cities/settlement.rs	edb8fb56		-
+rust-port/renderer/src/models/cities/stone_civ.rs	edb8fb56		-
+rust-port/renderer/src/models/improvements/droga.rs	edb8fb56		-
+rust-port/renderer/src/models/improvements/kopalnie.rs	edb8fb56		-
+rust-port/renderer/src/models/improvements/mod.rs	edb8fb56		-
+rust-port/renderer/src/models/improvements/p2.rs	edb8fb56		-
+rust-port/renderer/src/models/improvements/p3a.rs	edb8fb56		-
+rust-port/renderer/src/models/improvements/p3b.rs	edb8fb56		-
+rust-port/renderer/src/models/improvements/registry.rs	edb8fb56		-
+rust-port/renderer/src/models/improvements/roblox.rs	edb8fb56		-
+rust-port/renderer/src/models/improvements/roblox_legacy.rs	edb8fb56		-
+rust-port/renderer/src/models/improvements/zasoby.rs	edb8fb56		-
+rust-port/renderer/src/models/improvements/zwierzeta.rs	edb8fb56		-
+rust-port/renderer/src/models/misc/build_highlight.rs	edb8fb56		-
+rust-port/renderer/src/models/misc/mod.rs	edb8fb56	order.ts	-
+rust-port/renderer/src/models/misc/range.rs	edb8fb56		-
+rust-port/renderer/src/models/misc/sky.rs	edb8fb56		-
+rust-port/renderer/src/models/misc/territory.rs	edb8fb56	order.ts	-
+rust-port/renderer/src/models/misc/trade.rs	edb8fb56		-
+rust-port/renderer/src/models/misc/wioska.rs	edb8fb56		-
+rust-port/renderer/src/models/unit_core/avatar.rs	edb8fb56		-
+rust-port/renderer/src/models/unit_core/consts.rs	edb8fb56		-
+rust-port/renderer/src/models/unit_core/galera.rs	edb8fb56		-
+rust-port/renderer/src/models/unit_core/horse.rs	edb8fb56		-
+rust-port/renderer/src/models/unit_core/mod.rs	edb8fb56		-
+rust-port/renderer/src/models/unit_core/p1.rs	edb8fb56		-
+rust-port/renderer/src/models/unit_core/parts.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/kit.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/konnica.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/lucznik_nubijski.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/miecznik.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/mod.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/p2_inka.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/p3_dystans.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/p4_melee.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/p57.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/p8a.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/p8b.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/procarz.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/rydwan_kapadokijski.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/rydwan_konny.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/rydwan_woly.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/taran.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/units_ts.rs	edb8fb56		-
+rust-port/renderer/src/models/units_braz/wlocznik.rs	edb8fb56		-
+rust-port/renderer/src/models/units_kamien/bazowe.rs	edb8fb56		-
+rust-port/renderer/src/models/units_kamien/inka.rs	edb8fb56		-
+rust-port/renderer/src/models/units_kamien/kit.rs	edb8fb56		-
+rust-port/renderer/src/models/units_kamien/lucznicy.rs	edb8fb56		-
+rust-port/renderer/src/models/units_kamien/mod.rs	edb8fb56		-
+rust-port/renderer/src/models/units_kamien/zulu_taran.rs	edb8fb56		-
+rust-port/renderer/src/models/units_zelazo/hastati_falangita.rs	edb8fb56		-
+rust-port/renderer/src/models/units_zelazo/hastati_opus5.rs	edb8fb56		-
+rust-port/renderer/src/models/units_zelazo/jezdziec.rs	edb8fb56		-
+rust-port/renderer/src/models/units_zelazo/kit.rs	edb8fb56		-
+rust-port/renderer/src/models/units_zelazo/konnica_asyr.rs	edb8fb56		-
+rust-port/renderer/src/models/units_zelazo/mod.rs	edb8fb56		-
+rust-port/renderer/src/models/units_zelazo/p6_super.rs	edb8fb56		-
+rust-port/renderer/src/models/units_zelazo/units_ts.rs	edb8fb56		-
+rust-port/renderer/src/models/units_zelazo/z1.rs	edb8fb56		-
+rust-port/renderer/src/models/units_zelazo/z2.rs	edb8fb56		-
+rust-port/renderer/src/models/units_zelazo/z3.rs	edb8fb56		-
+rust-port/renderer/src/models/wonders/builders.rs	edb8fb56		-
+rust-port/renderer/src/models/wonders/mod.rs	edb8fb56		-
+rust-port/renderer/src/models/wonders/renderer.rs	edb8fb56		-
+rust-port/renderer/src/pick/camera.rs	edb8fb56		-
+rust-port/renderer/src/pick/hex.rs	edb8fb56		-
+rust-port/renderer/src/pick/mod.rs	edb8fb56		-
+rust-port/renderer/src/pick/terrain.rs	edb8fb56		-
+rust-port/renderer/src/raster/atlas/cache.rs	edb8fb56		-
+rust-port/renderer/src/raster/atlas/keys.rs	edb8fb56	civs.json	-
+rust-port/renderer/src/raster/color.rs	edb8fb56		-
+rust-port/renderer/src/raster/image/svg.rs	edb8fb56		-
+rust-port/renderer/src/raster/text/font.rs	edb8fb56		-
+rust-port/renderer/src/terrain/coast.rs	edb8fb56		-
+rust-port/renderer/src/terrain/mod.rs	edb8fb56		-
+rust-port/renderer/src/units/overlay/emblem.rs	edb8fb56		-
+rust-port/renderer/src/units/overlay/mod.rs	edb8fb56		-
+rust-port/renderer/src/units/overlay/stat_plate.rs	edb8fb56		-
+rust-port/renderer/src/units/overlay/upgrade_badges.rs	edb8fb56		-
+rust-port/renderer/src/units/overlay/veteran_badges.rs	edb8fb56		-
+rust-port/renderer/tests/atlas_keys.rs	edb8fb56		-
+rust-port/renderer/tests/battle3d_dynamics.rs	edb8fb56		-
+rust-port/renderer/tests/battle3d_field.rs	edb8fb56		-
+rust-port/renderer/tests/battle3d_picking.rs	edb8fb56		-
+rust-port/renderer/tests/battle3d_siege_wall.rs	edb8fb56		-
+rust-port/renderer/tests/battle3d_units.rs	edb8fb56	units.json	-
+rust-port/renderer/tests/camera_web_parity.rs	edb8fb56		-
+rust-port/renderer/tests/cities_web_parity.rs	edb8fb56		-
+rust-port/renderer/tests/cityoverlay_web_parity.rs	edb8fb56		-
+rust-port/renderer/tests/core_web_parity.rs	edb8fb56		-
+rust-port/renderer/tests/decor_web_parity.rs	edb8fb56		-
+rust-port/renderer/tests/fixtures/atlas/README.md	edb8fb56		-
+rust-port/renderer/tests/fixtures/atlas/atlas_keys.json	edb8fb56		-
+rust-port/renderer/tests/fixtures/atlas/gen.sh	edb8fb56		-
+rust-port/renderer/tests/fixtures/atlas/gen.ts	edb8fb56		-
+rust-port/renderer/tests/fixtures/battle3d/README.md	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/battle3d/gen.ts	edb8fb56		-
+rust-port/renderer/tests/fixtures/battle3d/gen_dynamics.ts	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/battle3d/gen_field.ts	edb8fb56		-
+rust-port/renderer/tests/fixtures/battle3d/gen_picking.ts	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/battle3d/gen_units.ts	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/camera/README.md	edb8fb56		-
+rust-port/renderer/tests/fixtures/camera/gen.ts	edb8fb56		-
+rust-port/renderer/tests/fixtures/cities/README.md	edb8fb56		-
+rust-port/renderer/tests/fixtures/cities/gen.ts	edb8fb56		-
+rust-port/renderer/tests/fixtures/cityoverlay/README.md	edb8fb56	terrain-improvements.ts	terrain-improvements.ts
+rust-port/renderer/tests/fixtures/cityoverlay/gen.mjs	edb8fb56		-
+rust-port/renderer/tests/fixtures/cityoverlay/gen.ts	edb8fb56		-
+rust-port/renderer/tests/fixtures/core/README.md	edb8fb56		-
+rust-port/renderer/tests/fixtures/core/gen.ts	edb8fb56		-
+rust-port/renderer/tests/fixtures/decor/README.md	edb8fb56		-
+rust-port/renderer/tests/fixtures/decor/gen.ts	edb8fb56		-
+rust-port/renderer/tests/fixtures/image/gen.mjs	edb8fb56		-
+rust-port/renderer/tests/fixtures/improvements/README.md	edb8fb56		-
+rust-port/renderer/tests/fixtures/improvements/gen.ts	edb8fb56		-
+rust-port/renderer/tests/fixtures/labels/consts.tsv	edb8fb56		-
+rust-port/renderer/tests/fixtures/labels/gen.mjs	edb8fb56		-
+rust-port/renderer/tests/fixtures/misc/README.md	edb8fb56	order.ts	-
+rust-port/renderer/tests/fixtures/misc/gen.ts	edb8fb56	order.ts	-
+rust-port/renderer/tests/fixtures/misc/gen_relief.ts	edb8fb56		-
+rust-port/renderer/tests/fixtures/overlay/README.md	edb8fb56		-
+rust-port/renderer/tests/fixtures/overlay/gen.mjs	edb8fb56		-
+rust-port/renderer/tests/fixtures/overlay/gen.ts	edb8fb56		-
+rust-port/renderer/tests/fixtures/pick/README.md	edb8fb56	terrain-improvements.ts	terrain-improvements.ts
+rust-port/renderer/tests/fixtures/pick/gen.ts	edb8fb56	terrain-improvements.ts	terrain-improvements.ts
+rust-port/renderer/tests/fixtures/raster/gen.mjs	edb8fb56		-
+rust-port/renderer/tests/fixtures/terrain/README.md	edb8fb56	terrain-improvements.ts	terrain-improvements.ts
+rust-port/renderer/tests/fixtures/terrain/gen.ts	edb8fb56	terrain-improvements.ts	terrain-improvements.ts
+rust-port/renderer/tests/fixtures/text/gen.mjs	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/textmix/gen.mjs	edb8fb56		-
+rust-port/renderer/tests/fixtures/unit_core/README.md	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/unit_core/gen.ts	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/units_braz/README.md	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/units_braz/gen.ts	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/units_kamien/README.md	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/units_kamien/gen.ts	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/units_zelazo/README.md	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/units_zelazo/gen.ts	edb8fb56	units.json	-
+rust-port/renderer/tests/fixtures/wonders/README.md	edb8fb56		-
+rust-port/renderer/tests/fixtures/wonders/gen.ts	edb8fb56		-
+rust-port/renderer/tests/image_assets.rs	edb8fb56		-
+rust-port/renderer/tests/image_scenes.rs	edb8fb56		-
+rust-port/renderer/tests/improvements_web_parity.rs	edb8fb56		-
+rust-port/renderer/tests/misc_web_parity.rs	edb8fb56		-
+rust-port/renderer/tests/overlay_web_parity.rs	edb8fb56		-
+rust-port/renderer/tests/pick_golden.rs	edb8fb56		-
+rust-port/renderer/tests/raster_api_closed.rs	edb8fb56		-
+rust-port/renderer/tests/raster_scenes.rs	edb8fb56		-
+rust-port/renderer/tests/repin3d_fixtures/README.md	edb8fb56	units.json	-
+rust-port/renderer/tests/repin3d_fixtures/README_B.md	edb8fb56		-
+rust-port/renderer/tests/terrain_web_parity.rs	edb8fb56		-
+rust-port/renderer/tests/text_api_closed.rs	edb8fb56		-
+rust-port/renderer/tests/text_scenes.rs	edb8fb56		-
+rust-port/renderer/tests/text_upper.rs	edb8fb56		-
+rust-port/renderer/tests/unit_core_web_parity.rs	edb8fb56		-
+rust-port/renderer/tests/units_braz_web_parity.rs	edb8fb56	units.json	-
+rust-port/renderer/tests/units_kamien_web_parity.rs	edb8fb56	units.json	-
+rust-port/renderer/tests/units_zelazo_web_parity.rs	edb8fb56	units.json	-
+rust-port/renderer/tests/wonders_web_parity.rs	edb8fb56		-
