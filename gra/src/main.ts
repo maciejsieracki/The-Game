@@ -1356,6 +1356,7 @@ import {
   isEraForcedWarIgnoringR1,
   isForcedEraWarEnabled,
   isInterCivWarOpenAtTurn,
+  isWarMarchOpenForPair,
   isWarRulesMultiwarEnabled,
   isWarTreatyBlocked,
   isWarEpochPlayerFirstEnabled,
@@ -33406,19 +33407,32 @@ async function boot(): Promise<void> {
         o !== selfOwnerId && !isBarbarian(o) && !eliminatedOwners.has(o)
         && getDiploRelation(selfOwnerId, o).status === 'wojna');
     }
+    /** R-WEB-WAR-MARCH-BEFORE-40-Q1: tag aktywnej wojny epoki Brązu/Żelaza tej pary (mapy aktywnych par); null = brak (Kamień, zwykła wojna). */
+    function activeEraWarTagForPair(a: number, b: number): ForcedEraTag | null {
+      const key = diploPairKey(a, b);
+      if (bronzeForceWarActiveByPairKey.has(key)) return 'bronze';
+      if (ironForceWarActiveByPairKey.has(key)) return 'iron';
+      return null;
+    }
     function warAllInContextFor(
       selfOwnerId: number,
-      engage: (targetOwnerId: number) => boolean,
+      engageRaw: (targetOwnerId: number) => boolean,
     ): WarAllInContext | undefined {
       if (!isWarAllInCapitalEnabled()) return undefined;
       // R-WEB-WAR-RULES-MULTIWAR-Q1 (r6, zarzut Evaluatora 5 / R1): flaga ON -> ruch all-in
       // (marsz na stolicę, W1 zaangażowanie) cywilizacji AI NIE ma skutku przed turą
       // `delayInterCivWarsUntilTurn`. Barbarzyńcy nie są cywilizacją -- ich kontekst bez zmian.
-      if (isWarRulesMultiwarEnabled() && !isBarbarian(selfOwnerId)
-        && !isInterCivWarOpenAtTurn(turn)) return undefined;
+      // R-WEB-WAR-MARCH-BEFORE-40-Q1: wyjątek po AKTYWNEJ parze (nie po turze): przed turą 40
+      // kontekst otwiera się wyłącznie dla celów w wojnie epoki Brązu/Żelaza; reszta zablokowana.
+      const r1Closed = isWarRulesMultiwarEnabled() && !isBarbarian(selfOwnerId)
+        && !isInterCivWarOpenAtTurn(turn);
+      const engage = r1Closed
+        ? (o: number) => engageRaw(o) && isWarMarchOpenForPair(turn, activeEraWarTagForPair(selfOwnerId, o))
+        : engageRaw;
       const ownerIds = [...new Set(cities.map(c => c.ownerId))]
         .filter(o => o !== selfOwnerId && !isBarbarian(o) && !eliminatedOwners.has(o))
         .sort((a, b) => a - b);
+      if (r1Closed && !ownerIds.some(o => engage(o))) return undefined;
       // R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (A): cel ataku AI w wojnie z inną AI = NAJBLIŻSZE miasto wroga
       // (planWarAllInCapital wybiera najbliższy cel od kotwicy grupy; remis: słabiej broniowane, potem niższe id).
       // Gracz jako cel i barbarzyńcy jako atakujący -- bez zmian (tylko stolica). Logika: game/ai-war-target-select.ts.

@@ -167,8 +167,8 @@ check(
   /if \(!isWarRulesMultiwarEnabled\(\) \|\| isBarbarian\(selfOwnerId\)\) return \{ targets \};/.test(main),
 );
 check(
-  'R1 (r6): warAllInContextFor bramka tury delayInterCivWarsUntilTurn dla cywilizacji AI',
-  /isWarRulesMultiwarEnabled\(\) && !isBarbarian\(selfOwnerId\)\s*&& !isInterCivWarOpenAtTurn\(turn\)\) return undefined;/.test(main),
+  'R1 (r6, MARCH-BEFORE-40-Q1): warAllInContextFor bramka R1 = para w aktywnej wojnie epoki (isWarMarchOpenForPair), reszta zablokowana',
+  /const r1Closed = isWarRulesMultiwarEnabled\(\) && !isBarbarian\(selfOwnerId\)\s*&& !isInterCivWarOpenAtTurn\(turn\);[\s\S]*isWarMarchOpenForPair\(turn, activeEraWarTagForPair\(selfOwnerId, o\)\)[\s\S]*if \(r1Closed && !ownerIds\.some\(o => engage\(o\)\)\) return undefined;/.test(main),
 );
 check(
   'R3/zapis (r6): warRulesForcedEraDeclared w meta save tylko przy fladze ON',
