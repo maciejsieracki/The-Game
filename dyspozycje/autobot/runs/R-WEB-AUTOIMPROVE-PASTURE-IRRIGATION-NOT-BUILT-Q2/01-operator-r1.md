@@ -25,5 +25,5 @@ tsc --noEmit: 0 bledow. logic-test 213/213. ai-test 274 OK / 20 FAIL (bez zmian 
 - Zmiana dotyczy tez AI (ten sam picker); ai-test bez nowych FAIL.
 
 ## Zmiany/Commit
-SHA: patrz commit na gałęzi worktree (jawny git add: auto-improvements.ts, 6 testow, ten raport). DEPLOY/PUSH: NIE WYKONANO.
+SHA: a4396c3d8 na gałęzi worktree-wf_d857e60e-f67-1 (baza a8823b16b; jawny git add: auto-improvements.ts, 6 testow, ten raport). DEPLOY/PUSH: NIE WYKONANO.
 NASTEPNY KROK: Evaluator (zweryfikowac sonde + test, ewentualnie zywa weryfikacja po buildzie poza repo).
