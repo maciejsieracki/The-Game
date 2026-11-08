@@ -22,3 +22,29 @@ KOLEJNOŚĆ INTEGRACJI: baza origin/rust-port/parity-v2 = 783c6b766 (niezmienion
 RUNDY: 1/5 (po obronie)
 NASTĘPNY KROK: runda 2 - port hunków wg tabeli 2c (Operator), potem Evaluator i Final Control.
 DEPLOY/PUSH: NIE WYKONANO
+
+
+---
+## Final Control, runda 3 (nowy wpis; wpis r1 powyzej bez zmian)
+
+STATUS: FAIL
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1
+GOAL: REPIN auto-ulepszen terenu Rust do weba 180c08305, parytet 1:1, mutacje >=85% zabitych, reszta z dowodem rownowaznosci.
+ZMIANY/COMMIT: Oceniany SHA ad546d905 (baza 7d7bc05cd). Diff 7d7bc05cd..ad546d905 poza rust-port/engine i dyspozycje: pusty (zero gra/**, src-tauri, Cargo.toml, WERSJE.md). git diff --check: czysto. Final Control nie zmienial kodu; dodany tylko ten plik.
+TESTY:
+- Z logow (logs/mut-result-all-r3.txt, 146 linii): KILLED = 101 (zgodne z deklaracja Operatora r3, 101/119 = 84,9%).
+- Nadal SURVIVED w wyniku koncowym (bez dowodu zabicia/rownowaznosci): N20, N35, N47, N56, N57, N58, N85, N88, N90 oraz N100 (wg Obrony). 84,9% < 85%.
+- cargo fmt/clippy/test: NIE_ZMIERZONO w tej rundzie. Wolne 504 MB na dysku (<1,5 GB, dispatch nakazuje przerwac). Wyniki r2 (fmt, clippy 0, 2130 passed, 0 failed) potwierdzone w poprzedniej rundzie FC; r3 nie zmienia kodu Rust, tylko pick.json (+8) i generator; Obrona raportuje p6_8i_pick 5 passed.
+WERDYKT ZARZUTOW:
+- Z1 (mianownik/mutacje): NAPRAW. Prog 85% nie osiagniety (101/119), brakuje min. 1 zabojstwa; 10 mutantow otwartych.
+- Z2 (ocalale bez dowodu): NAPRAW. N56/N57/N58 (KROK 7, rdzen wycinki lasu przy rzece), N85, N88, N90 oraz N20, N35, N47, N100 bez wektora zabijajacego ani dowodu rownowaznosci. N81, N89, N93 uznane za udowodnione (wg Obrony); N07/N29/N40/N42 przeniesione z r2 bez ponownej weryfikacji - do potwierdzenia w r4.
+- Z3 (podloga Pracy 60): ODDAL. N59/N60 po poprawce kotwicy wg Obrony KILLED (N62/N118/N119 potwierdzaja progi). Do weryfikacji w logu r4.
+- Z4 (dane nieaddytywne): ODDAL jako ZALOZENIE Z-13 (parytet z terrain-improvements.ts:399-401, :425; jedyny czytelnik zloza improvements.rs:1123) - do akceptacji wlasciciela przez orkiestratora.
+- Z5 (zakres improvement_build.rs): ODDAL jako ZALOZENIA Z-14..Z-16 (posterunek, pierscienie kandydatow, sasiad rzeki, regeneracja qualifier.json) - do akceptacji wlasciciela przez orkiestratora.
+- Z6 (dwie wersje regul): ODDAL jako DLUG D-1/D-2 (wlasciciel: orkiestrator, termin NIE_USTALONO, proponowane zamkniecie z repinem ekonomii); produkcyjny wywolujacy pick_auto_improvements = dlug P7.
+BLOKADY: Mutacje <85% oraz 10 otwartych ocalalych. Dysk 504 MB (brak mozliwosci powtorzenia testow). N35 r3b INVALID(compile) vs r3c SURVIVED - rozstrzygnac w r4. Brak DO DECYZJI CZLOWIEKA.
+RUNDY: 3/5 zuzyte; nastepna 4/5, ten sam ID.
+NASTEPNY KROK: Operator r4 (baza ad546d905): wektory kz- zabijajace N20, N35, N100 (-> 104/119 = 87,4%), N47, N56-N58, N85, N88, N90 lub dowod rownowaznosci; potwierdzic log N59/N60; zaktualizowac liste Z-13..Z-16 do akceptacji. Wymaga >=1,5 GB wolnego dysku. Potem Evaluator, Final Control.
+KOLEJNOSC WZGLEDEM origin/rust-port/parity-v2: ad546d905 ma 9 commitow ponad i 16 ponizej parity-v2 (rozbiezny); po PASS integracja (merge/rebase) przez orkiestratora. SHA do integracji: BRAK (FAIL).
+DEPLOY/PUSH: NIE WYKONANO
