@@ -1,3 +1,9 @@
+## ROBOCZA 963d938c -- 2026-11-06 -- FALA 548: wojna epoki: marsz AI przed tura 40; utrzymanie wg trudnosci wlasciciela (testowa)
+
+- R-WEB-ERA-WAR-MARCH-BEFORE-40-Q1: wojna epoki Brazu/Zelaza przed tura 40 otwiera marsz i kontekst wojenny AI dla pary w aktywnej wojnie epoki (Kamien i zwykle wojny nadal pod bramka R1). R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1: utrzymanie wojska i budynkow wg poziomu trudnosci wlasciciela (miasto-panstwo wg cityStateDifficulty, AI i gracz wg menu), liczby balansu bez zmian
+- Weryfikacja: tsc 0, logic-test 213/213, era-war-march-before-40 18/0, upkeep-difficulty-per-owner 19/0, era-war-delays 41/0, ai-test 289/0, vite build OK
+- Limity: NIE_ZMIERZONO: test przeplywu main.ts w Chromium, war-rules-multiwar-live-test; efekt liczbowy upkeepu miast-panstw dzis 0 (wszystkie jednostki maja wlasne utrzymanie); dlugi: zywnosc armii miast-panstw, upkeep pracy globalny
+
 ## ROBOCZA fc22f551 -- 2026-11-06 -- FALA 547: wojna epoki Braz/Zelazo po 20 turach od wejscia w epoke, bez bramki tury 40 (testowa)
 
 - R-WEB-ERA-WAR-DELAYS-Q1: Kamien zostaje pod bramka R1 (tura 40); wojna epoki Brazu i Zelaza wybucha 20 tur po wejsciu panstwa w epoke (parametr eraForcedWarStartTurnsFromEra w war-rules-params.json, wczesniej 25) i nie podlega bramce tury 40; zwykle wypowiedzenia nadal pod R1; odpoczynek i cooldown bez zmian; sojusz nadal blokuje wojne epoki
