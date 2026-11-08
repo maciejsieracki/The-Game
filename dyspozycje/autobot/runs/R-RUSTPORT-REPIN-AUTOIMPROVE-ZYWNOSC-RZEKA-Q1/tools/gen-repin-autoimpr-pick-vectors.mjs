@@ -1094,6 +1094,24 @@ for (const order of [['z1', 'a1'], ['a1', 'z1']]) {
   const cs = [rvc({ id: order[0], q: -4, r: 0, population: 4 }), rvc({ id: order[1], q: 4, r: 0, population: 4 })];
   add(mkSpec(`kz-tie-${order.join('')}`, M_HORSE_TIE, { cities: cs, praca: 6000, opts: { priorityOverride: ['stadnina', 'farma'] } }));
 }
+// F9 (REPIN-AUTOIMPROVE r4, zarzut Z2, N35): remis odleglosci wlasciciela konia PRZY WEZLE FORTU. Zloze konia (0,0)
+// lezy w kole WLASNEGO fortu (0,-2, promien FORT_TERRITORY_RADIUS=5), poza kandydatami obu miast (z1 (-8,0), a1 (8,0):
+// kandydaci miasta = promien okolicy (pop 4 -> 5) + 1 = 6 < odleglosc 8) - rownoodlegle od obu. Kolejnosc id zgodna
+// i odwrotna wzgledem listy miast: web (auto-improvements.ts fortHorseExtra) wybiera mniejsze id; mutant tie=false - pierwsze z listy.
+for (const order of [['z1', 'a1'], ['a1', 'z1']]) {
+  const cs = [rvc({ id: order[0], q: -8, r: 0, population: 4 }), rvc({ id: order[1], q: 8, r: 0, population: 4 })];
+  const nodes = cs.map(c => ({ q: c.q, r: c.r, pop: 4, level: 1, ownerId: 1 }));
+  nodes.push({ q: 0, r: -2, pop: 0, level: 1, ownerId: 1, isFort: true });
+  add(mkSpec(`kz-fort-tie-${order.join('')}`, M_HORSE_TIE, { cities: cs, territoryNodes: nodes, praca: 6000, opts: { priorityOverride: ['stadnina', 'farma'] } }));
+}
+// F10 (REPIN-AUTOIMPROVE r4, zarzut Z2, N29): fort OBCEGO wlasciciela (ownerId 2) w kole zloza konia (0,0) - web NIE
+// dodaje zloza do kandydatow wlasciciela 1 (filtr `n.ownerId !== ownerId`); mutant `|| false` dodaje.
+{
+  const cs = [rvc({ id: 'z1', q: -8, r: 0, population: 4 }), rvc({ id: 'a1', q: 8, r: 0, population: 4 })];
+  const nodes = cs.map(c => ({ q: c.q, r: c.r, pop: 4, level: 1, ownerId: 1 }));
+  nodes.push({ q: 0, r: -2, pop: 0, level: 1, ownerId: 2, isFort: true });
+  add(mkSpec('kz-fort-obcy-konie', M_HORSE_TIE, { cities: cs, territoryNodes: nodes, praca: 6000, opts: { priorityOverride: ['stadnina', 'farma'] } }));
+}
 
 writeFileSync(join(outDir, 'pick.json'), JSON.stringify({ pin: PIN, source: 'gra/src/game/auto-improvements.ts', techs: TECHS, maps: buildMapOut(), scenarios }) + '\n');
 writeFileSync(join(outDir, 'helpers.json'), JSON.stringify({ pin: PIN, ...helpers }) + '\n');

@@ -361,3 +361,79 @@ Progi: N62 (domyślna podłoga +1) KILLED; N119 (podłoga 30 zamiast 60) KILLED;
 - `cargo test --test p6_8i_pick` (pełny, 5125 scenariuszy, z nowym `pick.json`): **5 passed, 0 failed** (349 s).
 - Pozostałe binarki: kod Rust nie zmieniony; wyniki r2 (§8.6: 2103 + 22 + 5) dotyczą tego samego drzewa `src`.
 - Nowe `#[ignore]`: 0.
+
+## 10. Runda 4/5 — zarzut Z2 (Operator r4, baza 07fa33dad = FC r3)
+
+Kod Rust (`rust-port/engine/src`) NIE zmieniony (puste `git diff`). Zmiany r4: generator (rodziny F9 `kz-fort-tie-*`,
+F10 `kz-fort-obcy-konie`, dopiski na koncu listy), wektor `tests/p6_8i_vectors/pick.json` (5128 scenariuszy; `helpers.json`
+bajt-identyczny), log `logs/mut-result-r4.txt`, ta sekcja. Wektory z web `180c08305` (`git archive` do katalogu poza repo).
+Przed zmiana generatora regeneracja dala bajt-identyczny `pick.json` z commitowanym stanem.
+
+### 10.1 N35 (remis wlasciciela konia) — ZABITY
+
+- Przyczyna braku zabojstwa w r3: scenariusze `kz-tie-*` nie maja wezla fortu, wiec galaz `fortHorseExtra` (web) /
+  `fort_horse_extra` (Rust, `city_phases.rs:317-351`) nie jest osiagalna.
+- Proba 1 (miasta +-4, bez fortu) i proba 2 (fort (0,-2), miasta +-6): SURVIVED. Przyczyna: kandydaci miasta to
+  promien okolicy (`cityRangeForPopulation`, min 5) + 1 (`territory_radius_pin + 1`); zloze (0,0) w odleglosci 6 lezy
+  w pierscieniu kandydatow obu miast, wiec `inCityRing` je wyklucza z galezi fortu.
+- F9 `kz-fort-tie-z1a1` / `kz-fort-tie-a1z1`: miasta z1 (-8,0), a1 (8,0), wlasny fort (0,-2) promien 5 (`FORT_TERRITORY_RADIUS`),
+  zloze konia (0,0). Web (remis -> mniejsze id): stadnina na (0,0) dla a1 w obu kolejnosciach. Rust = web (`P6_8I_ONLY=kz-` PASS).
+  Mutant `tie = false`: w kolejnosci [z1,a1] stadnina przechodzi na z1 -> **KILLED**.
+- Wynik: 101 + 1 = **102/119 = 85,7%** (prog 85% spelniony).
+
+### 10.2 N20 (zdjety `is_farm_base_terrain` z `is_river_no_citizen_clear_hex`) — ROWNOWAZNE (dowod)
+
+Wszystkie wywolania predykatu sa poprzedzone sprawdzeniem `wyrab_ma_sens` (= `is_farm_base_terrain(hx.terrain, Brak)` na
+TYM SAMYM heksie), wiec klauzula usunieta przez mutanta jest zawsze prawdziwa w miejscu uzycia:
+- `city_phases.rs:121` (`hex_allows_key`, klucz `wyrab`): osiagalne tylko z `river_krok0_ok` (`:146` sprawdza `wyrab_ma_sens`)
+  albo z petli `phase_wyrab_by_type` (`hex_phases.rs:369`), albo z `step0_applies` (`hex_phases.rs:317/323`).
+- `hex_phases.rs:251` (licznik po `push_pick`): tylko gdy `step0_applies` = prawda (wszystkie galezie wymagaja `wyrab_ma_sens`).
+- `hex_phases.rs:393` (licznik): po `wyrab_ma_sens` (`:369`) w tej samej petli.
+- `hex_phase_priority` NIE zawiera `wyrab` (`city_phases.rs:388`), a `defense_priority` to tylko `ZERO_YIELD` (`posterunek`,
+  `fort`; `auto_improvements.rs:106`), wiec `hex_allows_key(wyrab)` nie jest wolane z petli bez strazy.
+Wniosek: mutant nie zmienia zadnego wyniku. Dlatego `kz-gory-*` nie zabija N20 (to nie jest luka wektorow).
+
+### 10.3 N47 (pominiete `continue` w `phase_probe`) — ROWNOWAZNE (dowod)
+
+`hex_phases.rs:452-454`: bez `continue` ponowne przejscie petli dla heksu juz obecnego w `filter_waiting_keys` moze tylko
+wykonac `filter_waiting_keys.insert(hex_key)` (idempotentne; zbior tylko rosnie, nic go nie usuwa), a `break` konczy
+iteracje. Pozostale wywolania w ciele (`hex_allows_key`, `key_blocked_on_hex`, `qualifies`, `hex_layers_contain`) sa
+bez efektow obserwowalnych poza memo (`road_plan_has`), ktorych wynik nie zalezy od stanu cache (jak w N71, sek. 9.2).
+Brak zmiany wyniku pickera -> ROWNOWAZNE.
+
+### 10.4 N29 (`n.owner_id != opts.owner_id` -> `false`) — OTWARTE
+
+Wektor F10 `kz-fort-obcy-konie` (fort wlasciciela 2 przy zlozu, web: brak stadniny) PRZEZYWA mutanta. Hipoteza do
+sprawdzenia: po dodaniu zloza do kandydatow bramka wlasnosci heksu (`territory`) je odrzuca. NIE_ZMIERZONO, nie udowodniono.
+
+### 10.5 N07, N40, N42 — ponownie zmierzone w r4: SURVIVED (OTWARTE)
+
+Wczesniejsze wpisy r2 w logu byly przeniesione bez pomiaru; teraz zmierzone na aktualnych wektorach: N07, N40, N42 — SURVIVED.
+N07 wymaga stanu `river_no_citizen_clears == max` i kandydata innego klucza (np. `tartak`) na heksie rzecznym bez obywatela
+(`city_phases.rs:121`, `hex_allows_key` dla KAZDEGO klucza). N40/N42: przyczyna NIE_ZMIERZONO (nie zbadano, czy istniejace rodziny `df-`/`rc-` osiagaja stan graniczny limitu lub kapu miasta).
+
+### 10.6 N56, N57, N58, N85, N88, N90, N100 — OTWARTE (bez wektora i bez dowodu w r4)
+
+Nie wygenerowano wektorow ani dowodow w tej rundzie (ograniczenie czasu/dysku). Kierunki: N56-N58 — stan oczekujacego
+celu (etap/fort/niedobor) i jednoczesnie wolny heks rzeczny (`pick.rs:258-290`, `:335-346`); N85/N88/N90 — plan drog z
+cyklem bez trojkata, remis kosztu skladowych MST, koszt sciezki = cap (`road_network_plan.rs`); N100 — rozszerzenie M16
+o heks `zloze='konie'` bez nakladki `ZlozeKonia` (`improvement_build.rs`).
+
+### 10.7 Stan zbiorczy (ostatni wpis per ID w `logs/mut-result-all-r3.txt` + r4)
+
+Zabite: 102/119 (85,7%). Rownowazne z dowodem: N20, N47 (r4); N71, N81, N89, N93 (r3, sek. 9.2 — do akceptacji FC).
+Otwarte bez zabojstwa i bez dowodu: N07, N29, N40, N42, N56, N57, N58, N85, N88, N90, N100 (11 pozycji).
+Uwaga: `logs/mut-result-all-r3.txt` zawiera zduplikowane ID (kolejne przebiegi); werdykt = ostatni wpis.
+
+### 10.8 Zalozenia Z-13..Z-16 i dlugi D-1/D-2
+
+NIE_WYKONANO w r4 (poza zakresem tej rundy): lista do akceptacji wlasciciela pozostaje jak w sek. 9.4-9.6.
+
+### 10.9 Bramki r4
+
+- `cargo fmt --all -- --check`: EXIT=0.
+- `cargo clippy --all-targets -- -D warnings`: EXIT=0.
+- `cargo test --test p6_8i_pick pick_auto` (pelny, 5128 scenariuszy, nowy `pick.json`): 1 passed, 0 failed (358 s).
+- `git diff --check`: EXIT=0.
+- Pozostale binarki `cargo test`: NIE_ZMIERZONO w r4 (kod `src` nie zmieniony wzgledem FC r3; baseline 2130/0 z r2).
+- Nowe `#[ignore]`: 0.
