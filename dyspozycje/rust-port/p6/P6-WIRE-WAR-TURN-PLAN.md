@@ -1,6 +1,6 @@
 # P6-WIRE-WAR-TURN-PLAN — plan podpięcia funkcji czystych wojny/dyplomacji do tury Rust
 
-Temat: `R-RUSTPORT-P6-WIRE-WAR-TURN-PLAN-Q1`, runda 2/5 (rewizja r2 po zarzutach Evaluatora z r1; zmiany r2 oznaczone „r2”). Domena: PROCESS (dokumentacja, zero kodu Rust, zero `cargo`, zero zmian w `gra/**`).
+Temat: `R-RUSTPORT-P6-WIRE-WAR-TURN-PLAN-Q1`, runda 3/5 (rewizja r3 = errata po FC r2: sekcja 7 D7 „W4” zamiast „W6”; komentarz sumy LOC pod tabelą partii §6 poprawiony; zmiany r2 oznaczone „r2”, errata r3 oznaczona „r3”). Domena: PROCESS (dokumentacja, zero kodu Rust, zero `cargo`, zero zmian w `gra/**`).
 Baza Rust: `origin/rust-port/parity-v2` = `730cd6f18`. Web (numery linii): `main` = `60a18c60d` (`gra/src/main.ts` = 45 671 linii).
 Pomiar: `grep`/`wc -l`/`git show` po plikach z tych dwóch SHA. Nic nie kompilowano ani nie uruchamiano. Gdzie nie zmierzono: `NIE_ZMIERZONO`.
 
@@ -143,7 +143,7 @@ LOC to **szacunek planistyczny** (`NIE_ZMIERZONO`), nie liczy testów ani wektor
 | W7 | `R-RUSTPORT-P6-WIRE-WAR-SIEGE-AIAI-TURN-Q1` | tick oblężenia (głód, poddanie, wypad, wejście do miasta) + tiki AI↔AI (prośba o pokój, zmęczenie) | W2, W6 | `domain/siege_turn.rs`, `domain/war_turn_ai_ai.rs`, `tests/p6_wire_war_siege_aiai.rs` | 560 | wektory `37226–37262`, `17301`, `34305–34380` |
 | W8 | `R-RUSTPORT-P6-WIRE-WAR-PIPELINE-Q1` | `run_war_turn(world,&mut state,turn)` (r2, kolejność wg sekcji 3): dyplomacja tury (brake AI↔AI) → ekonomia → oblężenie → AI (umowy AI↔AI → sweep → Krok A → parowanie → pętla właścicieli: prune fal → kampania → tickDiplomacy gracz↔AI → decideAIDiplomacy → komendy → decideAITurn) → tiki AI↔AI → scan oblężeń → zapis; jedno miejsce wywołania w fazach `Diplomacy`/`Ai`; test 2–3 tur | W1–W7 | `domain/turn_war_pipeline.rs`, `playable.rs` lub `session.rs` (jedno wywołanie), `tests/p6_wire_war_pipeline.rs` | 400 | 3 tury deterministyczne = ten sam hash zapisu; sekwencja zdarzeń zgodna z webem na wektorze |
 
-Równoległość: W1 ∥ W2; potem W3; W4 ∥ W6; W5 po W4; W7 po W6; W8 ostatni. Maks. 4 naraz. Suma ≈ 4 230 LOC (szacunek r2; r1 = 4 040, różnica: +70 W1 siege/dyplomacja, +84 zakup przeniesiony do W4 bez zmiany sumy, +136 wiring brake w W6 — wszystko `NIE_ZMIERZONO`, szacunek planistyczny). Podział 8 partii zachowany (limit 5–8); żadna partia > 600.
+Równoległość: W1 ∥ W2; potem W3; W4 ∥ W6; W5 po W4; W7 po W6; W8 ostatni. Maks. 4 naraz. Suma ≈ 4 230 LOC (szacunek r2/r3; r1 = 4 040; różnica +190 = W1 +70 (stan oblężenia i dyplomacja), W4 +84 (zakup jednostki AI przeniesiony z W6), W6 +36 (wiring brake tury); suma z tabeli: 520+550+500+534+580+586+560+400 = 4 230 — wszystko `NIE_ZMIERZONO`, szacunek planistyczny). Podział 8 partii zachowany (limit 5–8); żadna partia > 600.
 
 ## 7. Pytania ABC dla właściciela (zadaje orkiestrator; w tej rundzie nie zadawane)
 
@@ -155,7 +155,7 @@ Równoległość: W1 ∥ W2; potem W3; W4 ∥ W6; W5 po W4; W7 po W6; W8 ostatni
 - **D4 Format zapisu.** A (R) addytywne pola w `meta` o kluczach identycznych z webem; B własny format Rust + migracja (P6-ZAPIS-MIGRACJE); C dual-write.
 - **D5 Wznowienie pętli AI po bitwie.** A (R) pominąć (pętla synchroniczna); B odtworzyć `aiOwnerListResumed/startOi` w zapisie.
 - **D6 Flagi runtime i histereza obrony domu.** A (R) struktura `WarFlags` z domyślnymi jak web, histereza nie zapisywana; B flagi zahardkodowane ON; C histereza w zapisie.
-- **D7 Zakup jednostki AI.** A (R) w W6 (wspólna bramka skarbca/manpower jak gracz); B osobny temat po stronie ekonomii/rekrutacji.
+- **D7 Zakup jednostki AI.** A (R) w W4 (wykonanie zakupu jako krok wykonania komend ownerLoop; wspólna bramka skarbca/manpower jak gracz); B osobny temat po stronie ekonomii/rekrutacji.
 - **D8 Determinizm.** A (R) pętla właścicieli w kolejności `ownerLoopList` (partner pary gracza pierwszy), bez RNG; B z `Rng` silnika dla remisów (czy web gdziekolwiek losuje w tej ścieżce: `NIE_ZMIERZONO`).
 
 ## 8. Założenia
