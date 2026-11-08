@@ -43,22 +43,22 @@ console.log('R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1 — prog tury gracza (Krok C)'
 // WSPÓLNYM ze stałą stone (liczoną od startu gry, nie od wejścia w epokę -- gracz nie ma
 // odrębnego "wejścia w epokę").
 const krokCStart = main.indexOf('// Krok C:');
-const krokCSlice = krokCStart >= 0 ? main.slice(krokCStart, krokCStart + 900) : '';
+const krokCSlice = krokCStart >= 0 ? main.slice(krokCStart, krokCStart + 4200) : '';
 check(
   'Krok C zawiera blok warunkowy dołączenia gracza do triggeredSubjects',
-  /if \(\s*\n?\s*playerCity[\s\S]{0,400}triggeredSubjects\.push\(\{ ownerId: 0/.test(krokCSlice),
+  /if \(\s*\n?\s*playerCity[\s\S]{0,1200}triggeredSubjects\.push\(\{ ownerId: 0/.test(krokCSlice),
 );
 check(
   'warunek zawiera próg turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY',
-  /turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY/.test(krokCSlice),
+  /poolStartTurn: WOJNA_KAMIEN_WYMUSZONA_START_TURY/.test(krokCSlice),
 );
 check(
   'warunek zachowuje istniejące kryterium totalActiveForcedWarsByOwner(0) === 0',
-  /totalActiveForcedWarsByOwner\(0\) === 0/.test(krokCSlice),
+  /activeForcedWarsTotal: totalActiveForcedWarsByOwner\(0\)/.test(krokCSlice),
 );
 check(
   'literał 25 NIE jest zreimplementowany ręcznie w Kroku C (używana jest nazwana stała)',
-  !/turn >= 25/.test(krokCSlice),
+  !/poolStartTurn: 25/.test(krokCSlice),
 );
 
 // (B) Symulacja realna, prawdziwy import stałej progu (ZERO reimplementacji formuły).

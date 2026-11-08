@@ -287,7 +287,7 @@ try {
   const gChecks = [
     ['bypass R3 (const waveActorBypassR3) usunięty', !/const waveActorBypassR3/.test(main)],
     ['bramka dostaje licznik per cywilizacja i epoki napastnika/celu (ownerId/targetId)', /counts: eraWarCountByCivKey,/.test(main)
-      && /attackerEpoch: empireEpochForOwner\(ownerId\),/.test(main) && /targetEpoch: empireEpochForOwner\(targetId\),/.test(main)],
+      && /attackerEpoch: empireEpochForOwner\(ownerId\),/.test(main) && /targetEpoch: eraWarCounterEpochOf\(targetId, gateForcedTagAny\),/.test(main)],
     ['zużycie licznika przy wypowiedzeniu (napastnik + cel)', /recordEraForcedWarParticipation\(\s*\n?\s*eraWarCountByCivKey, ownerId, targetId,/.test(main)],
     ['bramka wypowiedzenia = evaluateEraForcedWarGate (cała logika epok/liczników w czystej funkcji)', /const eraGateVerdict = evaluateEraForcedWarGate\(\{[\s\S]*?attackerId: ownerId,[\s\S]*?targetId,[\s\S]*?\}, WAR_RULES_PARAMS\);\s*\n\s*if \(eraGateVerdict !== 'ok'\) continue;/.test(main)],
     ['pending Brąz/Żelazo przy awansie epoki gated flagą', /if \(isForcedEraWarEnabled\('bronze'\)\) bronzeForceWarPendingOwners\.add\(ownerId\);/.test(main) && /if \(isForcedEraWarEnabled\('iron'\)\) ironForceWarPendingOwners\.add\(ownerId\);/.test(main)],

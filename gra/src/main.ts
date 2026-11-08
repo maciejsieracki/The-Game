@@ -1366,6 +1366,10 @@ import {
   pickPlayerReferenceCity,
   recordEraForcedWarParticipation,
   restoreEraWarCounts,
+  forcedEraTagEpoch,
+  forcedEraTagForEpoch,
+  eraWarCounterEpoch,
+  isPlayerEligibleForEraWarPool,
   type EngageArmyHex,
   type ForcedEraTag,
 } from './game/war-rules-multiwar';
@@ -2338,6 +2342,15 @@ async function boot(): Promise<void> {
       return ownerEraByOwner.get(ownerId) ?? gameStartEra();
     }
 
+    /**
+     * R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: epoka, pod którą wojna epoki `tag` liczy się w
+     * liczniku (cywilizacja, epoka). Tylko GRACZ (wojna Kamienia w Brązie = slot Kamienia); AI — bieżąca epoka.
+     */
+    function eraWarCounterEpochOf(ownerId: number, tag: ForcedEraTag | null): number {
+      const epoch = empireEpochForOwner(ownerId);
+      return isHuman(ownerId) ? eraWarCounterEpoch(forcedEraTagEpoch(tag), epoch) : epoch;
+    }
+
     function initOwnerEra(ownerId: number, era = 1): void {
       if (isHuman(ownerId)) return;
       const e = Math.max(1, Math.min(10, era));
@@ -2438,6 +2451,10 @@ async function boot(): Promise<void> {
         completedWorldWonders,
       );
       player.era = next;
+      // R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: tura wejścia GRACZA w Brąz/Żelazo (owner 0 w
+      // tych samych mapach co AI) — podstawa progu `eraForcedWarStartTurnsFromEra` dla puli celów.
+      if (prev < 2 && next >= 2) bronzeEraEnterTurnByOwner.set(0, turn);
+      if (isIronEraEntry(prev, next)) ironEraEnterTurnByOwner.set(0, turn);
       syncGeneralFormsForOwner(0);
       return prev !== next;
     }
@@ -38968,10 +38985,34 @@ async function boot(): Promise<void> {
             // R-WEB-ERA-WAR-COUNTER-Q1 (5): odległość partnera gracza liczona od STOLICY gracza
             // (`capitalCityIdForOwner`), fallback na pierwsze miasto gdy stolicy brak.
             const playerCity = pickPlayerReferenceCity(cities, capitalCityIdForOwner(0), 0);
+            // R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1 (decyzja właściciela 2026-11-08, opcja B):
+            // w Brązie/Żelazie liczy się tylko wojna wymuszona TEJ SAMEJ epoki (wojna Kamienia nie
+            // zajmuje „miejsca” Brązu) + próg tur od wejścia gracza w epokę (jak dla AI).
+            const playerEpochNow = empireEpochForOwner(0);
+            const playerEraTagNow = forcedEraTagForEpoch(playerEpochNow);
+            const playerActiveInEra = (pairs: Iterable<{ attackerId: number; targetId: number }>): number =>
+              [...pairs].filter(st => !eliminatedOwners.has(st.attackerId) && !eliminatedOwners.has(st.targetId)
+                && (st.attackerId === 0 || st.targetId === 0)).length;
+            const playerActiveForcedWarsInEra: number =
+              playerEraTagNow === 'bronze' ? playerActiveInEra(bronzeForceWarActiveByPairKey.values())
+                : playerEraTagNow === 'iron' ? playerActiveInEra(ironForceWarActiveByPairKey.values())
+                  : playerEraTagNow === 'stone' ? playerActiveInEra(stoneForceWarActiveByPairKey.values())
+                    : totalActiveForcedWarsByOwner(0);
+            // Tylko dla gracza liczba „zajętych” wojen = wojny jego bieżącej epoki; AI — globalnie jak dotąd.
+            const totalActiveForcedWarsForPairing = (ownerId: number): number =>
+              ownerId === 0 && (playerEraTagNow === 'bronze' || playerEraTagNow === 'iron')
+                ? playerActiveForcedWarsInEra
+                : totalActiveForcedWarsByOwner(ownerId);
             if (
               playerCity
-              && turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY
-              && totalActiveForcedWarsByOwner(0) === 0
+              && isPlayerEligibleForEraWarPool({
+                currentTurn: turn,
+                playerEpoch: playerEpochNow,
+                activeForcedWarsTotal: totalActiveForcedWarsByOwner(0),
+                activeForcedWarsInPlayerEra: playerActiveForcedWarsInEra,
+                eraEnterTurn: playerEraTagNow === 'iron' ? ironEraEnterTurnByOwner.get(0) : bronzeEraEnterTurnByOwner.get(0),
+                poolStartTurn: WOJNA_KAMIEN_WYMUSZONA_START_TURY,
+              }, WAR_RULES_PARAMS)
             ) {
               triggeredSubjects.push({ ownerId: 0, q: playerCity.q, r: playerCity.r });
             }
@@ -39065,7 +39106,7 @@ async function boot(): Promise<void> {
               {
                 isPairBlocked: isForcedWarPairBlocked,
                 hexDistanceFn: hexDistance,
-                totalActiveForcedWarsByOwner,
+                totalActiveForcedWarsByOwner: totalActiveForcedWarsForPairing,
                 isEraWarExhausted: isWarRulesMultiwarEnabled() ? isEraWarExhausted : undefined,
                 ...forcedWarPlayerFirstOpt,
               },
@@ -40165,7 +40206,9 @@ async function boot(): Promise<void> {
                         attackerId: ownerId,
                         attackerEpoch: empireEpochForOwner(ownerId),
                         targetId,
-                        targetEpoch: empireEpochForOwner(targetId),
+                        // R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: wojna Kamienia wobec gracza w Brązie
+                        // liczy się w slocie Kamienia (0:1), nie Brązu (0:2).
+                        targetEpoch: eraWarCounterEpochOf(targetId, gateForcedTagAny),
                       }, WAR_RULES_PARAMS);
                       if (eraGateVerdict !== 'ok') continue;
                     }
@@ -40240,7 +40283,7 @@ async function boot(): Promise<void> {
                         if (isWarRulesMultiwarEnabled()) {
                           recordEraForcedWarParticipation(
                             eraWarCountByCivKey, ownerId, targetId,
-                            empireEpochForOwner(ownerId), empireEpochForOwner(targetId),
+                            eraWarCounterEpochOf(ownerId, declaredEraTag), eraWarCounterEpochOf(targetId, declaredEraTag),
                           );
                         }
                       }
@@ -45005,11 +45048,12 @@ async function boot(): Promise<void> {
       const restoredEraWarCounts = restoreEraWarCounts(
         saved.meta?.warRulesEraWarCountByCiv,
         [
-          ...bronzeForceWarActiveByPairKey.values(),
-          ...stoneForceWarActiveByPairKey.values(),
-          ...ironForceWarActiveByPairKey.values(),
+          ...[...bronzeForceWarActiveByPairKey.values()].map(st => ({ attackerId: st.attackerId, targetId: st.targetId, tagEpoch: 2 })),
+          ...[...stoneForceWarActiveByPairKey.values()].map(st => ({ attackerId: st.attackerId, targetId: st.targetId, tagEpoch: 1 })),
+          ...[...ironForceWarActiveByPairKey.values()].map(st => ({ attackerId: st.attackerId, targetId: st.targetId, tagEpoch: 3 })),
         ],
         empireEpochForOwner,
+        isHuman,
       );
       for (const [k, n] of restoredEraWarCounts) eraWarCountByCivKey.set(k, n);
       const savedStartEra = saved.meta?.ownerStartEraByOwner as Array<[number, number]> | undefined;

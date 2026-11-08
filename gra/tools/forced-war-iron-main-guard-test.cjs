@@ -112,7 +112,7 @@ check(
     + 'dziś żadnej aktywnej wojny wymuszonej ORAZ minął próg tury (R-WOJNA-WYMUSZONA-PROG-TURY-'
     + 'GRACZ-Q1, turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY) -- bez innego specjalnego wykluczania',
   // R-WEB-ERA-WAR-COUNTER-Q1 (5): gracz liczony od STOLICY (capitalCityIdForOwner), fallback pierwsze miasto.
-  /const playerCity = pickPlayerReferenceCity\(cities, capitalCityIdForOwner\(0\), 0\);\s*\n\s*if \(\s*\n\s*playerCity\s*\n\s*&& turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY\s*\n\s*&& totalActiveForcedWarsByOwner\(0\) === 0\s*\n\s*\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
+  /const playerCity = pickPlayerReferenceCity\(cities, capitalCityIdForOwner\(0\), 0\);[\s\S]*?\n\s*if \(\s*\n\s*playerCity\s*\n\s*&& isPlayerEligibleForEraWarPool\(\{[\s\S]*?\}, WAR_RULES_PARAMS\)\s*\n\s*\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
 );
 check(
   'isForcedWarPairBlocked = isWarTreatyBlocked(eraWar:true) -- blokuje tylko sojusz (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1), ten sam predykat dla '
@@ -123,7 +123,7 @@ check(
   'wybór celu (wszystkich trzech epok naraz, w tym Żelaza) przechodzi przez assignForcedWarPairings '
     + 'z isForcedWarPairBlocked i hexDistanceFn: hexDistance',
   // R-WEB-ERA-WAR-COUNTER-Q1: dodana opcja isEraWarExhausted (licznik wojen epoki per cywilizacja).
-  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
+  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner(?:: totalActiveForcedWarsForPairing)?,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
 );
 check(
   'wynik przydziału Żelaza czytany z forcedWarAssignmentByOwner (nie z usuniętego pickIronForcedWarTargetId w pętli)',
