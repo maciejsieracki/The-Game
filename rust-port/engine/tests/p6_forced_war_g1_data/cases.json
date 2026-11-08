@@ -3441,5 +3441,535 @@
    "blocked": []
   },
   "out": 1
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -3,
+   "br": -3
+  },
+  "out": 6
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -3,
+   "br": -2
+  },
+  "out": 5
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -3,
+   "br": -1
+  },
+  "out": 4
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -3,
+   "br": 0
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -3,
+   "br": 1
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -3,
+   "br": 2
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -3,
+   "br": 3
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -2,
+   "br": -3
+  },
+  "out": 5
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -2,
+   "br": -2
+  },
+  "out": 4
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -2,
+   "br": -1
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -2,
+   "br": 0
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -2,
+   "br": 1
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -2,
+   "br": 2
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -2,
+   "br": 3
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -1,
+   "br": -3
+  },
+  "out": 4
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -1,
+   "br": -2
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -1,
+   "br": -1
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -1,
+   "br": 0
+  },
+  "out": 1
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -1,
+   "br": 1
+  },
+  "out": 1
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -1,
+   "br": 2
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": -1,
+   "br": 3
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 0,
+   "br": -3
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 0,
+   "br": -2
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 0,
+   "br": -1
+  },
+  "out": 1
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 0,
+   "br": 0
+  },
+  "out": 0
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 0,
+   "br": 1
+  },
+  "out": 1
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 0,
+   "br": 2
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 0,
+   "br": 3
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 1,
+   "br": -3
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 1,
+   "br": -2
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 1,
+   "br": -1
+  },
+  "out": 1
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 1,
+   "br": 0
+  },
+  "out": 1
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 1,
+   "br": 1
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 1,
+   "br": 2
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 1,
+   "br": 3
+  },
+  "out": 4
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 2,
+   "br": -3
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 2,
+   "br": -2
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 2,
+   "br": -1
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 2,
+   "br": 0
+  },
+  "out": 2
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 2,
+   "br": 1
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 2,
+   "br": 2
+  },
+  "out": 4
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 2,
+   "br": 3
+  },
+  "out": 5
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 3,
+   "br": -3
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 3,
+   "br": -2
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 3,
+   "br": -1
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 3,
+   "br": 0
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 3,
+   "br": 1
+  },
+  "out": 4
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 3,
+   "br": 2
+  },
+  "out": 5
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 0,
+   "ar": 0,
+   "bq": 3,
+   "br": 3
+  },
+  "out": 6
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 2,
+   "ar": -1,
+   "bq": -1,
+   "br": 1
+  },
+  "out": 3
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 5,
+   "ar": 0,
+   "bq": 2,
+   "br": -1
+  },
+  "out": 4
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": -4,
+   "ar": 2,
+   "bq": 3,
+   "br": -5
+  },
+  "out": 7
+ },
+ {
+  "fn": "hexDistance",
+  "in": {
+   "aq": 1,
+   "ar": 1,
+   "bq": 1,
+   "br": 1
+  },
+  "out": 0
  }
 ]

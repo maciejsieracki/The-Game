@@ -46,3 +46,10 @@ Pominięte w G1 świadomie: `WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR` (web: 
 
 - Pełna zgodność semantyki `evaluateInterCivWarGate` z pinem dc8a3adc (hunk l.156) — zmierzona tylko istnienie hunku w Rust, nie cała semantyka (jak w MULTIWAR-2).
 - Trigger wejścia AI w epokę (`main.ts`, FALA 558 „ERAPOOL”) — NIE_ZMIERZONO w Rust (brak odpowiednika poza `war_era_pool.rs`).
+
+## 5. Obrona rundy 1 (ODPOWIEDZI NA ZARZUTY)
+
+- Generator wektorów jest w repo: `rust-port/engine/tests/p6_forced_war_g1_data/gen_cases.mjs` (tryb weryfikacji: `node gen_cases.mjs <gra/src> <cases.json>`, z `--write` przelicza `out` i dopisuje 53 wektory `hexDistance`). Przeliczenie 208 wektorów bazowych przez prawdziwe funkcje weba: 0 różnic.
+- Jedyny patch weba: w kopii `forced-war-stone.ts` import `./forced-war-common` dostaje `.ts` (gen_cases.mjs robi to programowo w katalogu tymczasowym; logika bez zmian).
+- Odległość heksowa: web `hexDistance` (units/setup.ts) = max(|dq|,|dr|,|ds|) z s=-q-r; test Rust używa (|dq|+|dr|+|dq+dr|)/2, co jest tożsame przy dq+dr+ds=0. Sprawdzone wektorami `hexDistance` (siatka 7x7 + 4 pary). Porównanie z hexDistance w ścieżkach main.ts pozostaje na G3.
+- Pełne 318 binarek tests/ NIE_ZMIERZONO (dysk < 8 GB, stan repo: zmiana src addytywna).

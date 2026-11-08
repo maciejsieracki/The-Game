@@ -1,7 +1,7 @@
 //! P6-FORCED-WAR-MODULES-Q1 (runda 1, partia G1): zgodnosc helperow wojen wymuszonych
 //! (`forced-war-common.ts` + `forced-war-stone.ts`, pin `origin/main`) z URUCHOMIONYM webem.
-//! Wektory: `tests/p6_forced_war_g1_data/cases.json` (generator: Node 22 +
-//! `--experimental-strip-types`, prawdziwe funkcje weba; jedyny patch to rozszerzenie `.ts` w imporcie).
+//! Wektory: `tests/p6_forced_war_g1_data/cases.json` (generator: `tests/p6_forced_war_g1_data/gen_cases.mjs`,
+//! Node 22, prawdziwe funkcje weba; jedyny patch to rozszerzenie `.ts` w imporcie stone -> common).
 //! Liczby: JSON number; `"undefined"` = brak wartosci (undefined w webie). Odleglosc heksowa: formula axialna.
 
 use std::collections::HashSet;
@@ -183,6 +183,18 @@ fn forced_war_g1_vectors_match_web() {
                     other => panic!("nieznana stala {other}"),
                 };
                 assert_eq!(got, num(out), "stala {input}");
+            }
+            "hexDistance" => {
+                // Formula axialna uzyta przez pickForcedWarTargetId w tym tescie == web hexDistance
+                // (units/setup.ts) na siatce 7x7 + 4 pary. Pelne porownanie z prawdziwym hexDistance
+                // dla sciezek main.ts wejdzie w G3 (forced-war-waves).
+                let got = hd(
+                    int(&input["aq"]) as i32,
+                    int(&input["ar"]) as i32,
+                    int(&input["bq"]) as i32,
+                    int(&input["br"]) as i32,
+                );
+                assert_eq!(got, int(out), "hexDistance {input}");
             }
             other => panic!("nieobslugiwana funkcja wektora: {other}"),
         }
