@@ -7460,6 +7460,8 @@ async function boot(): Promise<void> {
     function prepareAiGeneralWarCampaign(ownerId: number): (AiGeneralWarCampaign & {
       rallyQ: number; rallyR: number;
       target: { ownerId: number; cityId: string; q: number; r: number };
+      /** R-WEB-AI-TARGET-NEAREST-CITY-NOT-CAPITAL-Q1: cele marszu (miasta wroga; planer wybiera najblizsze). */
+      targets: WarCapitalTarget[];
       turn: number;
       seaTravelAllowed: boolean;
     }) | undefined {
@@ -7534,6 +7536,23 @@ async function boot(): Promise<void> {
         return undefined;
       }
 
+      // R-WEB-AI-TARGET-NEAREST-CITY-NOT-CAPITAL-Q1 (2026-11-08, zgloszenie wlasciciela): kampania wodza
+      // prowadzila cala armie na STOLICE wroga (takze gracza). Cele marszu = te same reguly co war-allin
+      // (buildWarCityTargets, game/ai-war-target-select.ts): AI/gracz -> WSZYSTKIE miasta wroga (planer wybiera
+      // najblizsze od kotwicy grupy); barbarzynca -> stolica. Wybor WLASCICIELA zostaje jak byl (stolice).
+      const warTargets = buildWarCityTargets({
+        selfOwnerId: ownerId,
+        enemyOwnerIds: [target.ownerId],
+        engage: () => true,
+        cities,
+        combatUnits: units.filter(unit => !isCivilianUnit(unit) && !isScoutUnit(unit)),
+        isHuman,
+        isBarbarian,
+        capitalCityIdForOwner,
+      });
+      const campaignTargets = warTargets.length > 0 ? warTargets
+        : [{ ownerId: target.ownerId, cityId: target.id, q: target.q, r: target.r }];
+
       const previousLeader = prior?.generalUnitId;
       const aliveGenerals = units.filter(unit => unit.ownerId === ownerId && unit.isGeneral === true);
       const generalPool = aliveGenerals
@@ -7579,6 +7598,7 @@ async function boot(): Promise<void> {
         rallyQ: leader?.q ?? capital?.q ?? target.q,
         rallyR: leader?.r ?? capital?.r ?? target.r,
         target: { ownerId: target.ownerId, cityId: target.id, q: target.q, r: target.r },
+        targets: campaignTargets,
         turn,
         seaTravelAllowed,
       };
@@ -33464,7 +33484,8 @@ async function boot(): Promise<void> {
       if (r1Closed && !ownerIds.some(o => engage(o))) return undefined;
       // R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (A): cel ataku AI w wojnie z inną AI = NAJBLIŻSZE miasto wroga
       // (planWarAllInCapital wybiera najbliższy cel od kotwicy grupy; remis: słabiej broniowane, potem niższe id).
-      // Gracz jako cel i barbarzyńcy jako atakujący -- bez zmian (tylko stolica). Logika: game/ai-war-target-select.ts.
+      // R-WEB-AI-TARGET-NEAREST-CITY-NOT-CAPITAL-Q1: dotyczy także gracza jako celu (AI->gracz = najbliższe miasto).
+      // Barbarzyńcy jako atakujący -- bez zmian (tylko stolica). Logika: game/ai-war-target-select.ts.
       const targets: WarCapitalTarget[] = buildWarCityTargets({
         selfOwnerId,
         enemyOwnerIds: ownerIds,

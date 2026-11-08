@@ -134,10 +134,11 @@ function suite(E) {
       { map: makeMap(40, 10), blocked: new Set(['8,4', '7,5']), occupied: new Set() });
     return p2.orders[0] && p2.orders[0].targetCityId === 'a-down' || 'remis przy rownych obroncach: ' + JSON.stringify(p2.orders[0] && p2.orders[0].targetCityId);
   });
-  t('A5 gracz jako cel: tylko stolica (bez zmian)', () => {
+  // R-WEB-AI-TARGET-NEAREST-CITY-NOT-CAPITAL-Q1 (2026-11-08): gracz jako cel = jak AI->AI (wszystkie miasta gracza).
+  t('A5 gracz jako cel: wszystkie miasta gracza (nie tylko stolica)', () => {
     const cities = [mkCity('m1', 1, 0, 4), mkCity('a-cap', 0, 30, 4), mkCity('z-near', 0, 12, 4)];
     const tg = targetsFor(1, 0, cities, []);
-    return (tg.length === 1 && tg[0].cityId === 'a-cap') || 'cele: ' + JSON.stringify(tg.map(x => x.cityId));
+    return (tg.length === 2 && tg.some(x => x.cityId === 'z-near') && tg.some(x => x.cityId === 'a-cap')) || 'cele: ' + JSON.stringify(tg.map(x => x.cityId));
   });
   t('A6 barbarzynca jako atakujacy: tylko stolica (bez zmian)', () => {
     const cities = [mkCity('m1', 99, 0, 4), mkCity('a-cap', 2, 30, 4), mkCity('z-near', 2, 12, 4)];

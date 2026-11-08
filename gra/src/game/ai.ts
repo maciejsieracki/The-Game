@@ -510,6 +510,8 @@ export interface AITurnOpts {
     rallyQ: number;
     rallyR: number;
     target: { ownerId: number; cityId: string; q: number; r: number };
+    /** R-WEB-AI-TARGET-NEAREST-CITY-NOT-CAPITAL-Q1: cele marszu kampanii (miasta wroga); brak = [target]. */
+    targets?: { ownerId: number; cityId: string; q: number; r: number; defenders?: number }[];
     turn: number;
     seaTravelAllowed?: boolean;
   };
@@ -5041,6 +5043,7 @@ function appendAiGeneralCampaignOrders(
     const keepCampaignFields = {
       rallyQ: campaign.rallyQ, rallyR: campaign.rallyR, target: campaign.target, turn: campaign.turn,
       ...(campaign.seaTravelAllowed !== undefined ? { seaTravelAllowed: campaign.seaTravelAllowed } : {}),
+      ...(campaign.targets !== undefined ? { targets: campaign.targets } : {}),
     };
     if (reserveGenerals.length > 0) {
       const tracked = recordAiReserveGatherTurn(campaign, reserveGenerals[0]!.id, campaign.turn);
@@ -5078,7 +5081,9 @@ function appendAiGeneralCampaignOrders(
     const campaignCommandStart = commands.length;
     applyWarAllInCapitalToCommands(
       commands, myUnits, units, cities, playerId, map,
-      { targets: [campaign.target], allowSea: campaign.seaTravelAllowed === true,
+      // R-WEB-AI-TARGET-NEAREST-CITY-NOT-CAPITAL-Q1: cele = miasta wroga (planer wybiera najblizsze od kotwicy);
+      // brak listy (np. zapis sprzed zmiany) -> stara stolica jako jedyny cel.
+      { targets: campaign.targets ?? [campaign.target], allowSea: campaign.seaTravelAllowed === true,
         marchMainGroupWhileRendezvous: true }, data,
       false, undefined, marchKeepIds,
     );
