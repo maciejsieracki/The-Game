@@ -1,3 +1,9 @@
+## ROBOCZA 722269e7 -- 2026-11-06 -- FALA 554: CAVFLANK: konnica i rydwany na skrzydlach przy starcie bitwy (na wysokosci najszerszego szeregu, nie przed nim) (testowa)
+
+- gra/src/battle/formationRules.ts (initialBattleSlots): glebokosc slotu konnicy liczona od najszerszego szeregu nie-konnego zamiast rank 0; start i reset deploy; tryb 'rear' i reczne ustawienie bez zmian
+- Weryfikacja: FC PASS-WITH-NOTES c9e836c0e (kod a3546ffcc + obrona 9bbac60e7); nowy test 536 asercji, flank-close-formation 994, formation-rules, initial-placement-runtime (mutacja 4/4), ranged-mounted-doctrine 10/10, ai-test 289/0, logic 213/213, tsc 0, vite OK; mutacja: test pada bez poprawki
+- Limity: BRAK weryfikacji wizualnej w przegladarce; gdy piechota jest najszerszym szeregiem konnica zostaje na koncach linii czolowej (decyzja produktowa do wlasciciela); brak pokrycia kierunkow natarcia C-FLANK i terenu
+
 ## ROBOCZA bab9d4e4 -- 2026-11-06 -- FALA 553: NEARCITY: AI atakuje najblizsze miasto wroga (takze gracza), nie stolice (testowa)
 
 - gra/src/game/ai-war-target-select.ts (regula najblizszego miasta obejmuje gracza), gra/src/game/ai.ts + gra/src/main.ts (kampania wodza: cele = wszystkie miasta wroga, planer wybiera najblizsze od kotwicy)
