@@ -122,8 +122,12 @@ console.log('A. petla po HEKSACH, nie po TYPACH');
     pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
     priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
   });
-  ok(!noRiverPicks.some(p => p.key === 'bydlo' || p.key === 'owce' || p.key === 'lama'),
-    'E3: bez rzeki trzoda nie powstaje (hodowla tylko przy rzece)');
+  // R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (wlasciciel 2026-11-08): rzeka = PRIORYTET, nie WYMOG — bydlo poza rzeka
+  // stawia sie na farmie (domykanie heksa: farma -> bydlo), nigdy solo bez farmy; irygacji bez rzeki nadal nie ma.
+  const bydloPicks = noRiverPicks.filter(p => p.key === 'bydlo');
+  ok(bydloPicks.length > 0 && bydloPicks.every(p => noRiverPicks.slice(0, noRiverPicks.indexOf(p)).some(f => f.key === 'farma' && f.q === p.q && f.r === p.r)),
+    `E3: bez rzeki trzoda powstaje wylacznie na farmie na tym heksie (bydlo: ${bydloPicks.length})`);
+  ok(!noRiverPicks.some(p => p.key === 'irygacja'), 'E3/E4: bez rzeki irygacja nie powstaje (warunek danych: tylko przy rzece)');
 }
 
 console.log('B. heks z rzeka ma priorytet przed heksem bez rzeki');

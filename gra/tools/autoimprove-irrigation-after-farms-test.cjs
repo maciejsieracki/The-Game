@@ -202,12 +202,15 @@ for (const actor of ACTORS) {
   ok(a.offWorked === 0, `${actor}: 0 ulepszen zywnosciowych poza polami obywateli (jest ${a.offWorked})`);
 }
 
-console.log('(B) mapy BEZ rzek: irygacja/trzoda niemozliwe z reguly gry (tylko przy rzece) — nie bug; budzet niewydany jest jawnie sygnalizowany');
+console.log('(B) mapy BEZ rzek: irygacja niemozliwa z reguly gry (tylko przy rzece) — nie bug (trzoda od Q2 dozwolona poza rzeka); budzet niewydany jest jawnie sygnalizowany');
 const noRivers = runAll(true);
 for (const actor of ACTORS) {
   const a = noRivers[actor];
   ok(a.farma >= 20, `${actor}: farmy nadal powstaja (${a.farma})`);
-  ok(a.irygacja === 0 && a.stock === 0, `${actor}: irygacja ${a.irygacja} / trzoda ${a.stock} = 0 (regula: tylko przy rzece)`);
+  // R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (wlasciciel 2026-11-08): rzeka jest PRIORYTETEM, nie WYMOGIEM dla trzody — dane
+  // (terrain-improvements.json: bydlo „Laka, Rownina”, bez warunku rzeki) dopuszczaja trzode poza rzeka na polu obywatela z farma.
+  // IRYGACJA zostaje przy rzece (irygacja.warunek: „TYLKO pole sasiadujace z rzeka lub na rzece”) — bez rzek nadal 0.
+  ok(a.irygacja === 0 && a.stock > 0, `${actor}: irygacja ${a.irygacja} = 0 (regula: tylko przy rzece) / trzoda ${a.stock} > 0 (poza rzeka na polu obywatela z farma)`);
   const bug = a.causes['ZALEGA(plaski+rzeka, brak irygacji)'] ?? 0;
   ok(bug === 0 && (a.causes['brak-rzeki'] ?? 0) > 0, `${actor}: kazda niezirygowana farma ma powod „brak-rzeki” (${a.causes['brak-rzeki'] ?? 0}), zalegajacych ${bug}`);
   ok(a.offWorked === 0, `${actor}: 0 ulepszen zywnosciowych poza polami obywateli (jest ${a.offWorked})`);
