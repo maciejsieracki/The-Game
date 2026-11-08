@@ -228,7 +228,7 @@ fn run_scenario(s: &Value, maps: &[BuildMap]) -> (Vec<Pick>, Option<AutoImprovem
         river_hexes_only: flag("riverHexesOnly"),
         off_river_clearing: flag("offRiverClearing"),
         irrigation_needs_farm: flag("irrigationNeedsFarm"),
-        river_clear_no_citizen_pass: false,
+        river_clear_no_citizen_pass: flag("riverClearNoCitizenPass"),
         river_clear_no_citizen_max_per_city: opt_num(&so["riverClearNoCitizenMaxPerCity"]),
         river_clear_no_citizen_pool_floor: opt_num(&so["riverClearNoCitizenPoolFloor"]),
         road_plan_memo: None,
@@ -295,16 +295,26 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
         .collect();
     let scenarios = d["scenarios"].as_array().unwrap();
     assert!(
-        scenarios.len() >= 3800,
+        scenarios.len() >= 4600,
         "za malo scenariuszy: {}",
         scenarios.len()
     );
+    // `P6_8I_ONLY=ci-,rc-` - tylko scenariusze o podanych prefiksach nazw (szybkie mutacje; bez zmiennej: komplet).
+    let only: Option<Vec<String>> = std::env::var("P6_8I_ONLY")
+        .ok()
+        .map(|v| v.split(',').map(str::to_owned).collect());
     let mut bad: Vec<String> = Vec::new();
     let mut nonempty = 0;
     // Tryb OSTRY (REPIN-TERYTORIUM-FORTY): bez tolerancji dryfu; promienie fort/posterunek = 5/3.
     assert_eq!(city_territory_radius(&fort_probe(true)), 5.0);
     assert_eq!(city_territory_radius(&fort_probe(false)), 3.0);
     for s in scenarios {
+        if let Some(prefixes) = &only {
+            let name = s["name"].as_str().unwrap();
+            if !prefixes.iter().any(|p| name.starts_with(p.as_str())) {
+                continue;
+            }
+        }
         let (got, report) = run_scenario(s, &maps);
         if let Ok(prefix) = std::env::var("P6_8I_DUMP") {
             if s["name"].as_str().unwrap().starts_with(&prefix) {
@@ -345,7 +355,7 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
         }
     }
     assert!(
-        nonempty >= 1000,
+        only.is_some() || nonempty >= 1000,
         "za malo niepustych scenariuszy: {nonempty}"
     );
     assert!(

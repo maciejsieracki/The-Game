@@ -274,7 +274,7 @@ function runWeb(spec) {
     unlockedTechs: new Set(spec.techs),
   };
   for (const k of ['pracaBudgetPercent', 'improvementBudgetCap', 'pracaSurplusThreshold', 'skipWyrab',
-    'riverClearNoCitizenMaxPerCity', 'riverClearNoCitizenPoolFloor',
+    'riverClearNoCitizenMaxPerCity', 'riverClearNoCitizenPoolFloor', 'riverClearNoCitizenPass',
     'demandDriven', 'civArchetype', 'playerEra', 'riverForestClearingOnly', 'roadsPass', 'cityLimitExhausted',
     'fortClaimPass', 'riverHexesOnly', 'offRiverClearing', 'irrigationNeedsFarm']) {
     if (so[k] !== undefined) opts[k] = dec(so[k]);
@@ -943,6 +943,24 @@ for (const [nm, mapIdx, a, b] of [
 for (let i = 0; i < 260; i++) {
   const mi = pick([RV_A, RV_H, RV_MIX, RV_NOPATH, M_HORSE, M_R_MIX, M_R_PLAIN, M_R_ROADS]);
   add(genScenario(`ra-rnd-${i}`, { map: mi, nCities: pick([1, 2, 2, 3, 4]), pop: [ri(2, 12), ri(2, 12), ri(2, 12), ri(2, 12)], praca: pick([60, 300, 1500, 6000]), techs: chance(0.8) ? T_ALL : undefined, staged: chance(0.7) }));
+}
+
+// F8 (rcd-): przebieg `riverClearNoCitizenPass` wywolany BEZPOSREDNIO (flaga wewnetrzna) - bez etapow/KROKU 7, rozne tryby
+// wycinki i zestawy pol z obywatelami (w tym brak `getWorkedHexKeys`), limit na miasto i profile
+for (const mapIdx of [RV_A, RV_MIX, RV_NOPATH, RV_H, SPECIAL_BASE + 1]) for (const focus of FOODFOC) {
+  for (const [oi, o] of [{}, { offRiverClearing: true }, { riverForestClearingOnly: true }, { riverForestClearingOnly: true, offRiverClearing: true }, { riverClearNoCitizenMaxPerCity: 1 }, { riverClearNoCitizenMaxPerCity: 0 }, { riverClearNoCitizenMaxPerCity: 'NaN' }].entries()) {
+    for (const wk of ['none', 'empty', 'few']) {
+      const fnx = wk === 'none' ? {} : { workedKeysByCity: { c1: wk === 'empty' ? [] : nearKeys(0, 0, 6, 0.2) } };
+      add(mkSpec(`rcd-${mapIdx}-${focus}-${oi}-${wk}`, mapIdx, {
+        cities: [rvc({ focus, population: 6 })], praca: 6000, fn: fnx,
+        opts: { riverClearNoCitizenPass: true, priorityOverride: ['wyrab'], ...o },
+      }));
+      add(mkSpec(`rcd-b-${mapIdx}-${focus}-${oi}-${wk}`, mapIdx, {
+        cities: [rvc({ focus, population: 6 })], praca: 6000, fn: fnx,
+        opts: { riverClearNoCitizenPass: true, ...o },
+      }));
+    }
+  }
 }
 
 // ---- helpery (P1) --------------------------------------------------------------------------
