@@ -1,3 +1,9 @@
+## ROBOCZA ae6e3358 -- 2026-11-06 -- FALA 561: BLDIMPL: karty budynkow — TOP 5 po rysie historycznym, nowa sekcja Co mozesz teraz zrobic (czynnosc w celu korzysci), niedostepne budynki i martwe efekty ukryte (etap 2 projektu kart) (testowa)
+
+- gra/data/building-cards-top5.json (43 budynki, generator gra/tools/gen-building-cards-top5.cjs), gra/src/ui/entityCards/buildingAdapter.ts (sekcja Top 5 + CMZ, opisKarty), registry.ts (Wielka odlewnia, Wielka Kuznia, Teatr bez karty), gra/data/buildings.json (tylko teksty opis/uwagi/top3[1] Trybunalu i opis/uwagi Palacu II/III — -30% korupcji wg FALA 560)
+- Weryfikacja: FC PASS-WITH-NOTES 8d18f9044 (kod b679ed33c, Opus 5.5); building-cards-top5 1179/0, emporion 47/0, tech-cards-top5 594/0, civpedia-budynki-historia 146/0, overlap-real-render 21/0, queue-detail-card 8/8, historia-section 36/0, ai-test 289/0, logic 213/213, tsc 0, vite OK; zrzuty 6 kart w Chromium (harness)
+- Limity: Kafelek Technologie (cityPanel.ts appendTechDetailBlock) nadal pokazuje odwolania do martwych efektow na 3 kartach (5 wierszy: Akademia x2 Teatr, Akademia wojskowa, Warsztat oblezniczy x2) — osobny temat; Trybunal Top3 +2 Szczescia vs sekcja Plony +1 (rozbieznosc danych); zywa gra NIE_ZMIERZONO; zalozenia 1-5 do potwierdzenia przez wlasciciela
+
 ## ROBOCZA d79fa577 -- 2026-11-06 -- FALA 560: CORRUPT: Palac II i III oraz Trybunal daja -30% korupcji (jak Palac I i Pretorium) (testowa)
 
 - gra/src/game/economy.ts: lista KORUPCJA_REDUKCJA_BUDYNKI + palac_ii, palac_iii, trybunal (addytywnie, sufit 0.60; Pałac II/III zastepuja poprzednika); dane JSON bez zmian

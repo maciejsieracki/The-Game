@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "d79fa57762e2c3b75fd72bf9994e9126",
-  "bundleSha256": "0d816341464ede0d22e637327891dcc0cfcd1f13f7ba0dbf5b9e68930545ee01",
-  "bundleBytes": 85725213,
+  "bundleMd5": "ae6e3358cffffa808eb2d3d4be11ecef",
+  "bundleSha256": "943ae770e5e28a10c379d06e4e74cccd3efc9638c2eafd924b7acc4f69acd91d",
+  "bundleBytes": 85766761,
   "sourceSnapshot": {
-    "source": "FC 30ef19530 (kod 553bb26fa)",
+    "source": "FC 8d18f9044 (kod b679ed33c)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 560: gra/src/game/economy.ts: lista KORUPCJA_REDUKCJA_BUDYNKI + palac_ii, palac_iii, trybunal (addytywnie, sufit 0.60; Pałac II/III zastepuja poprzednika); dane JSON bez zmian"
+    "FALA 561: gra/data/building-cards-top5.json (43 budynki, generator gra/tools/gen-building-cards-top5.cjs), gra/src/ui/entityCards/buildingAdapter.ts (sekcja Top 5 + CMZ, opisKarty), registry.ts (Wielka odlewnia, Wielka Kuznia, Teatr bez karty), gra/data/buildings.json (tylko teksty opis/uwagi/top3[1] Trybunalu i opis/uwagi Palacu II/III — -30% korupcji wg FALA 560)"
   ],
   "verification": [
-    "FC PASS 30ef19530 (kod 553bb26fa + komentarz); nowy test 34/0, korupcja 18/0, owner-economy 20/0, grupy-budynkow 84/0, building-happiness 14/0, ai-test 289/0, logic 213/213, tsc 0, vite OK"
+    "FC PASS-WITH-NOTES 8d18f9044 (kod b679ed33c, Opus 5.5); building-cards-top5 1179/0, emporion 47/0, tech-cards-top5 594/0, civpedia-budynki-historia 146/0, overlap-real-render 21/0, queue-detail-card 8/8, historia-section 36/0, ai-test 289/0, logic 213/213, tsc 0, vite OK; zrzuty 6 kart w Chromium (harness)"
   ],
   "limits": [
-    "Opisy kart (opis/top3/uwagi) Trybunalu i Palacu w buildings.json nieaktualne — do wdrozenia kart budynkow; sufit 0.60 teraz osiagalny (Sad+Trybunal); brak weryfikacji w grze na zywo"
+    "Kafelek Technologie (cityPanel.ts appendTechDetailBlock) nadal pokazuje odwolania do martwych efektow na 3 kartach (5 wierszy: Akademia x2 Teatr, Akademia wojskowa, Warsztat oblezniczy x2) — osobny temat; Trybunal Top3 +2 Szczescia vs sekcja Plony +1 (rozbieznosc danych); zywa gra NIE_ZMIERZONO; zalozenia 1-5 do potwierdzenia przez wlasciciela"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-08T19:16:00",
+  "hubGeneratedAt": "2026-11-08T20:11:37",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
-      "sizeBytes": 85725213
+      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
+      "sizeBytes": 85766761
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
-      "sizeBytes": 85725213
+      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
+      "sizeBytes": 85766761
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
-      "sizeBytes": 85725213
+      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
+      "sizeBytes": 85766761
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
-      "sizeBytes": 85725213
+      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
+      "sizeBytes": 85766761
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
-      "sizeBytes": 85725213
+      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
+      "sizeBytes": 85766761
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
-      "sizeBytes": 85725213
+      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
+      "sizeBytes": 85766761
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
-      "sizeBytes": 85725213
+      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
+      "sizeBytes": 85766761
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
-      "sizeBytes": 85725213
+      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
+      "sizeBytes": 85766761
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
-      "sizeBytes": 85725213
+      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
+      "sizeBytes": 85766761
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "d79fa57762e2c3b75fd72bf9994e9126",
-      "sizeBytes": 85725213
+      "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
+      "sizeBytes": 85766761
     }
   ],
-  "md5": "d79fa57762e2c3b75fd72bf9994e9126",
+  "md5": "ae6e3358cffffa808eb2d3d4be11ecef",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
