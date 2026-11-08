@@ -93,12 +93,15 @@ console.log('W3 remembered target -> planning only, no attack');
   const commands = api.decideAITurn(
     1, [unit('a3', 1, 5, 5)], [city('home', 1, 4, 4)],
     makeMap(), data, {
-      canEngageOwner: atWar, visibleHexes: new Set(['5,5']), rememberedTargets: memory,
+      // Wojna z cywilizacja 2 jawnie (jak main.ts: atWarWithCivFor); bez niej ai.ts
+      // prowadzi jednostkę do stolicy w pokoju (R-WEB-ARMY-CONSOLIDATION-Q1, f2100f9cf).
+      canEngageOwner: atWar, atWarWithCiv: true, visibleHexes: new Set(['5,5']), rememberedTargets: memory,
     },
   );
   assert.strictEqual(commands.some(c => c.type === 'attack'), false);
+  // Pełny budżet ruchu (R-WEB-AI-MOVE-RANGE-Q1, 8b522e8f6): dwa heksy w stronę (8,5), nie jeden.
   assert.deepStrictEqual(commands.find(c => c.type === 'move'), {
-    type: 'move', unitId: 'a3', toQ: 6, toR: 5,
+    type: 'move', unitId: 'a3', toQ: 7, toR: 5,
   });
 }
 
@@ -165,6 +168,7 @@ console.log('W8 remembered city A cannot capture replacement city B; A can be re
     makeMap(), data,
     {
       canEngageOwner: atWar,
+      atWarWithCiv: true,
       visibleHexes: new Set(['5,5']),
       rememberedTargets: [{ targetId: 'city-a', targetOwnerId: 2, kind: 'city', q: 6, r: 5 }],
     },
@@ -189,7 +193,7 @@ console.log('W8 remembered city A cannot capture replacement city B; A can be re
     [unit('a8', 1, 5, 5)],
     [city('home', 1, 4, 4), city('city-a', 2, 6, 5)],
     makeMap(), data,
-    { canEngageOwner: atWar, visibleHexes: new Set(['6,5']) },
+    { canEngageOwner: atWar, atWarWithCiv: true, visibleHexes: new Set(['6,5']) },
   );
   const cityMove = commands.find(c => c.type === 'move' && c.targetCityId !== undefined);
   assert.strictEqual(cityMove.targetCityId, 'city-a');
