@@ -1076,6 +1076,25 @@ const helpers = {
   })(),
 };
 
+// F8 (REPIN-AUTOIMPROVE r3, zarzut Z2): DETERMINISTYCZNE dopiski na KONCU listy (bez `rnd`, zeby nie przesuwac
+// poprzednich scenariuszy). N20: wycinka lasu NA RZECE bez obywatela na terenie NIE-farmowym (Gory) - web nie wycina.
+const M_RIVER_GORY = addMap(pureMap((q, r) => {
+  const onRiver = r === 0 && Math.abs(q) <= 2;
+  const las = (onRiver && q !== 0) || M_FOREST_SPOTS.has(`${q},${r}`);
+  return { teren: las ? TB.Gory : TB.Rownina, nak: las ? NK.Las : NK.Brak, rzeka: onRiver };
+}, 8, [[[-2, 0], [-1, 0], [0, 0], [1, 0], [2, 0]]]));
+for (const focus of ['zywnosc', 'zrownowazone']) for (const praca of [60, 200, 6000]) {
+  add(mkSpec(`kz-gory-${focus}-${praca}`, M_RIVER_GORY, {
+    cities: [rvc({ focus, population: 6 })], praca, fn: { workedKeysByCity: { c1: [] } }, opts: { foodImprovementStages: true, demandDriven: true },
+  }));
+}
+// N35: remis odleglosci wlasciciela konia - dwa miasta w tej samej odleglosci, kolejnosc id odwrotna i zgodna.
+const M_HORSE_TIE = addMap(pureMap((q, r) => ({ teren: TB.Rownina, nak: q === 0 && r === 0 ? NK.ZlozeKonia : NK.Brak }), 10, []));
+for (const order of [['z1', 'a1'], ['a1', 'z1']]) {
+  const cs = [rvc({ id: order[0], q: -4, r: 0, population: 4 }), rvc({ id: order[1], q: 4, r: 0, population: 4 })];
+  add(mkSpec(`kz-tie-${order.join('')}`, M_HORSE_TIE, { cities: cs, praca: 6000, opts: { priorityOverride: ['stadnina', 'farma'] } }));
+}
+
 writeFileSync(join(outDir, 'pick.json'), JSON.stringify({ pin: PIN, source: 'gra/src/game/auto-improvements.ts', techs: TECHS, maps: buildMapOut(), scenarios }) + '\n');
 writeFileSync(join(outDir, 'helpers.json'), JSON.stringify({ pin: PIN, ...helpers }) + '\n');
 const nonEmpty = scenarios.filter(s => s.expected.picks.length > 0).length;

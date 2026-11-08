@@ -1,0 +1,1 @@
+N35_env_horse_tie_drop: SURVIVED

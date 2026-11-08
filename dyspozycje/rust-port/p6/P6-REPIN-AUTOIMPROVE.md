@@ -290,3 +290,74 @@ W `improvement-build.ts` (poza tabelą 2c, ale konieczne dla parytetu pickera): 
 ### 8.6 Bramki r2
 
 `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `git diff --check` EXIT=0; `cargo test` w przebiegach po jednej binarce: 2103 (integracyjne, bez p6_8i_pick) + 22 (lib) + 5 (p6_8i_pick, 5117 scenariuszy) = **2130 passed, 0 failed, 0 nowych `#[ignore]`** (1 istniejący `ignored` w `p6_order_lane`). Szczegóły: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1/logs/gates-r2.txt`.
+
+## 9. Runda 3/5 — odpowiedzi na zarzuty FAIL (Operator r3)
+
+Baza: `6f797faef` (r2). Kod Rust NIE zmieniony (puste `git diff` na `rust-port/engine/src`). Zmiany r3: skrypt mutacji (kotwice),
+generator wektorów (rodzina F8 `kz-`, dopiski na końcu listy, bez zmiany poprzednich scenariuszy), wektor `pick.json` (5125 scenariuszy,
++8 `kz-`), logi, ta sekcja. Wektory z `origin/main` 180c08305 (`git archive` do katalogu poza repo). Regeneracja PRZED zmianą generatora
+dała bajt-identyczny `pick.json` i `helpers.json` z commitowanym stanem (powtarzalność potwierdzona).
+Generator wymaga `node --experimental-transform-types` (enumy TS); sam `--import` loadera nie wystarcza.
+
+### 9.1 Z1 — mianownik i wynik mutacji: PRZYJMUJĘ (poprawka + pomiar), próg 85% NIE DOMKNIĘTY
+
+- Mianownik: **119** zdefiniowanych mutantów (`tools/mut-denominator.py`). Każdy uruchomiony co najmniej raz; log łączny `logs/mut-result-all-r3.txt` (= `mut-result.txt` + `mut-result-r3.txt` + `mut-result-r3b.txt` + `mut-result-r3c.txt`). Wpis N106 w §8.5 był błędny: w logu N106 = KILLED.
+- Nieuruchomione w r2 (N15, N17, N20, N23, N26, N28, N31, N35, N44-N47, N49, N61-N66, N70-N73, N78, N96, N100) — uruchomione w r3.
+- Kotwice niedopasowane po rustfmt (NOOP): N35, N48, N49, N59, N60, N63, N66 — poprawione; `tools/mut-precheck.py` potwierdza 119/119 trafień.
+- Wynik: **101 zabitych / 119 = 84,9%**. Próg 85% wymaga 102 zabójstw (brak 1).
+- N71 = TIMEOUT (420 s na mutant). Klasyfikacja: równoważność wydajnościowa (§9.2), nie zabójstwo.
+- N35: wynik r3b = INVALID(compile) był artefaktem uruchomienia; ręczne zastosowanie mutanta kompiluje się, testy przechodzą; r3c = SURVIVED.
+
+### 9.2 Z2 — ocalałe mutanty: PRZYJMUJĘ (częściowo), 10 pozycji OTWARTYCH
+
+Równoważność udowodniona (argument z kodu):
+- **N71** (`road_plan_has`, usunięty cache `road_memo.plan`): plan jest funkcją niezmiennych wejść (`state` przez `&`, `memo.cities`) w obrębie jednego wywołania; mutant zmienia wyłącznie czas (`single_pass.rs:67-70`).
+- **N81** (`n < 2` -> `n < 1`): dla n=1 brak krawędzi, `comps.len() <= 1`, `disconnected = 0`, pusty plan = `RoadNetworkPlan::default()` (`road_network_plan.rs:207-209`, `:263-270`, `:307-308`).
+- **N89** (`left <= 0` -> `< 0`): `left` zlicza tylko cele; po zdjęciu ostatniego celu nie ma aktualizacji `dist`/`parent` ani celów, ani węzłów ich ścieżek (węzeł po `done` nie jest relaksowany, `road_network_plan.rs:145-157`).
+- **N93** (usunięty `if all_nodes.is_empty() return false`): `territory_owner_at` z pustą listą = `None` (`territory.rs:235-275`), `None != Some(owner)` -> `false`, jak w oryginale.
+
+Przeniesione z r2 (§8.5), NIE_PONOWNIE_ZWERYFIKOWANE w r3: N07, N29, N40, N42.
+
+OTWARTE (ocalały, brak zabójstwa i brak dowodu):
+- **N20** (zdjęty `is_farm_base_terrain` z `is_river_no_citizen_clear_hex`): dodana rodzina `kz-gory-*` (las na rzece, teren Gory, bez obywatela) — Rust = web, mutant nie zabity. Do wyjaśnienia (prawdopodobnie równoważne przez kwalifikator `wyrab`). Dług r4.
+- **N35** (remis właściciela konia, `tie = false`): rodzina `kz-tie-*` (dwa miasta w tej samej odległości, kolejność id zgodna i odwrotna) — nie zabija. Dług r4.
+- **N47** (pominięty `continue` w probe): nowe ocalenie r3; brak dowodu idempotencji. Dług r4.
+- **N56, N57, N58** (warunki KROKU 7): wymagają wektora z oczekującym celem (fallback/fort/niedobór) i jednocześnie wolnym heksem rzecznym; nie wygenerowane w r3.
+- **N85** (wygładzanie trójkątów): wymaga planu z cyklem bez trójkąta; nie wygenerowane.
+- **N88** (remis składowych MST): wymaga dwóch par o równym koszcie; nie wygenerowane.
+- **N90** (`nd > cap` vs `>=`): wymaga kosztu ścieżki dokładnie równego `cap`; nie wygenerowane.
+- **N100** (`hex_has_horse_deposit` bez gałęzi `zloze=='konie'`): generator M16 nie tworzy heksu z `zloze='konie'` bez nakładki `ZlozeKonia` na ścieżce odblokowania (`improvement_build.rs`). Wymaga rozszerzenia M16.
+
+Projekcja: domknięcie N20/N35/N100 dałoby 104/119 = 87,4%; N47, N56-N58, N85, N88, N90 wymagają osobnych wektorów.
+
+### 9.3 Z3 — podłoga Pracy 60 (N59/N60): PRZYJMUJĘ, ZABITE
+
+Po poprawce kotwic: **N59 KILLED, N60 KILLED** (podłoga puli `praca - normal - floor` oraz `budget_cap`); także N48, N49, N61-N66 KILLED.
+Progi: N62 (domyślna podłoga +1) KILLED; N119 (podłoga 30 zamiast 60) KILLED; N118 (limit 3 zamiast 2) KILLED.
+
+### 9.4 Z4 — zmiana danych nie jest addytywna: PRZYJMUJĘ JAKO ODSTĘPSTWO (ZAŁOŻENIE Z-13)
+
+- Zmiana istniejącej wartości: `stadnina.zloza` `[]` -> `["konie"]` w `rust-port/engine/data/derived/ulepszenia-reguly.json`. NIE jest addytywna; deklaruję odstępstwo od „addytywnie”.
+- Uzasadnienie: parytet z webem. Web `improvementHidesDepositOnHex('stadnina')` = `hexHasHorseDeposit` (`gra/src/game/terrain-improvements.ts:425`), a `hexHasHorseDeposit` obejmuje `zloze === 'konie'` po trim/lowercase (`:399-401`). Wcześniejsza wartość `[]` była rozbieżnością z webem.
+- Czytelnik pola: `rust-port/engine/src/domain/improvements.rs:1123` (`row.zloza.iter()`); w `src` brak innych odczytów `zloza` tego wiersza.
+- Zmiana `zrodlo_web` w `produkcja_epoka` to tekst opisu (UWAGA o migawce), nie wartość liczbowa.
+- ZAŁOŻENIE Z-13 do akceptacji właściciela: zmiana wartości danych (nie addytywna) jako korekta do parytetu.
+
+### 9.5 Z5 — zakres poza tabelą hunków: PRZYJMUJĘ JAKO ZAŁOŻENIA do akceptacji (Z-14..Z-16)
+
+- Z-14: `isOutpostPlacementAllowed` (posterunek tylko na własnym terytorium przy granicy; web `game/fort-territory.ts`) w `improvement_build.rs`.
+- Z-15: `buildCandidateHexKeys` (pierścienie węzłów terytorium gracza) oraz sąsiad z `rzeka.obecna` w kwalifikatorze irygacji (`improvement_build.rs::is_river_adjacent`). Źródło: `improvement-build.ts` (§8.2).
+- Z-16: regeneracja `tests/p6_m16_vectors/qualifier.json` z 180c08305 (`rules.json`, `gallery.json` bajt-identyczne). Wymaga osobnej akceptacji właściciela: rozszerza allowlistę o hunk spoza tabeli 2c.
+
+### 9.6 Z6 — dwie wersje reguł ekonomii: PRZYJMUJĘ JAKO DŁUG (D-1, D-2)
+
+- D-1: `resource_production_amount_for_era` (stare nazwy, migawka dla `turn_economy`) i `*_all_producers` współistnieją; `*_all_producers` nie jest wołane produkcyjnie. Właściciel długu: orkiestrator. **Termin: NIE_USTALONO.** Propozycja: zamknięcie razem z repinem ekonomii (D-2).
+- D-2: `economy_yield.rs` wywołuje `apply_improvement_bonuses` bez epoki (Z-8). Rust NIE jest 1:1 z webem w ekonomii do czasu repinu ekonomii. Poza zakresem tego tematu.
+- Cache planu dróg między turami (Z-9): tylko wydajność, bez wpływu na wynik.
+
+### 9.7 Bramki r3
+
+- `cargo fmt --all -- --check` EXIT=0; `git diff --check` EXIT=0 (przed commitem).
+- `cargo test --test p6_8i_pick` (pełny, 5125 scenariuszy, z nowym `pick.json`): **5 passed, 0 failed** (349 s).
+- Pozostałe binarki: kod Rust nie zmieniony; wyniki r2 (§8.6: 2103 + 22 + 5) dotyczą tego samego drzewa `src`.
+- Nowe `#[ignore]`: 0.
