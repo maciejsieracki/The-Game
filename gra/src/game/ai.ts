@@ -42,7 +42,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City, CityPodzialHandlu } from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA, DEFAULT_PODZIAL_HANDLU }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA, DEFAULT_PODZIAL_HANDLU, isCityLostOf }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -469,6 +469,12 @@ export interface AITurnOpts {
    */
   canEngageOwner?: (targetOwnerId: number) => boolean;
   /**
+   * R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1 (KONTAKT): main.ts ustawia: barbarzyńca = true,
+   * inaczej kontakt dyplomatyczny (tradeContactBetween). Bez kontaktu AI nie dostaje celu
+   * odzyskania utraconego miasta ani wyjątku widoczności wobec tego właściciela. Gdy brak -- true.
+   */
+  hasContactWith?: (targetOwnerId: number) => boolean;
+  /**
    * R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: straz marszu (ai-march-guard.ts). Gdy podana,
    * jednostki wojenne tego AI traktuja teren trzecich cywilizacji bez umowy przemarszu jako
    * zablokowany w planowaniu trasy. Brak pola = zachowanie sprzed tematu (testy lane / stare save).
@@ -553,6 +559,11 @@ export interface AITurnOpts {
 /** Bramka walki AI — domyślnie przepuszcza (testy bez silnika). */
 function aiCanEngageOwner(opts: AITurnOpts, targetOwnerId: number): boolean {
   return opts.canEngageOwner ? opts.canEngageOwner(targetOwnerId) : true;
+}
+
+/** KONTAKT (R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1): bramka kontaktu dla celow utraconych miast. */
+function aiHasContactWith(opts: AITurnOpts, targetOwnerId: number): boolean {
+  return opts.hasContactWith ? opts.hasContactWith(targetOwnerId) : true;
 }
 
 /**
@@ -3447,21 +3458,41 @@ function applyHomeWarPriorities(
   const isField = (u: RuntimeUnit): boolean => !isCivilianUnit(u) && !isScoutUnit(u);
   const enemyUnits = units.filter(u =>
     u.ownerId !== playerId && u.ownerId !== BARB && aiCanEngageOwner(opts, u.ownerId) && isField(u));
-  const hasLost = cities.some(c => c.ownerId !== playerId && c.capturedFromOwnerId === playerId);
+  const hasLost = cities.some(c => isCityLostOf(c, playerId) && aiCanEngageOwner(opts, c.ownerId)
+    && aiHasContactWith(opts, c.ownerId));
   if (enemyUnits.length === 0 && !hasLost) return commands;
 
   const enemyCityHex = new Set(cities.filter(c => c.ownerId !== playerId).map(c => keyOf(c.q, c.r)));
-  const locked = new Set<string>();
-  for (const cmd of commands) {
-    if (cmd.type === 'attack') locked.add(cmd.unitId);
-    else if (cmd.type === 'move' && enemyCityHex.has(keyOf(cmd.toQ, cmd.toR))) locked.add(cmd.unitId);
-  }
   const nodes = opts.territoryNodes;
   const isOwnTerritory = (q: number, r: number): boolean => {
     if (nodes !== undefined && nodes.length > 0) return territoryOwnerAt(q, r, nodes) === playerId;
     return myCities.some(c =>
       hexDistance(q, r, c.q, c.r) <= cityTerritoryRadius({ q: c.q, r: c.r, pop: c.population, level: 1 }));
   };
+  // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: cywilizacje zagrazajace "mojemu" (zalozonemu) terytorium:
+  // maja wojsko na mojej ziemi albo trzymaja miasto przeze mnie zalozone. Tylko zdobycie ICH miasta
+  // (lub odbicie utraconego) konczy zagrozenie -- takie wejscie/oblezenie zostaje; reszta ofensywy
+  // (marsz na trzecia cywilizacje) jest odwolywana do obrony.
+  const threatOwners = new Set<number>();
+  for (const eu of enemyUnits) if (isOwnTerritory(eu.q, eu.r)) threatOwners.add(eu.ownerId);
+  // KONTAKT: utracone miasto daje zagrozenie tylko od wlasciciela, z ktorym jest wojna i kontakt.
+  for (const c of cities) {
+    if (isCityLostOf(c, playerId) && aiCanEngageOwner(opts, c.ownerId) && aiHasContactWith(opts, c.ownerId)) {
+      threatOwners.add(c.ownerId);
+    }
+  }
+  const cityById = new Map(cities.map(c => [c.id, c] as const));
+  const cityAtHex = new Map(cities.map(c => [keyOf(c.q, c.r), c] as const));
+  const endsThreat = (c: AICity | undefined): boolean =>
+    c !== undefined && c.ownerId !== playerId && aiCanEngageOwner(opts, c.ownerId)
+    && aiHasContactWith(opts, c.ownerId)
+    && (isCityLostOf(c, playerId) || threatOwners.has(c.ownerId));
+  const locked = new Set<string>();
+  for (const cmd of commands) {
+    if (cmd.type === 'attack') locked.add(cmd.unitId);
+    else if (cmd.type === 'move' && enemyCityHex.has(keyOf(cmd.toQ, cmd.toR))
+      && endsThreat(cityAtHex.get(keyOf(cmd.toQ, cmd.toR)))) locked.add(cmd.unitId);
+  }
   const plan = planHomeWar({
     ownerId: playerId,
     currentTurn: opts.currentTurn,
@@ -3471,8 +3502,10 @@ function applyHomeWarPriorities(
     allCities: cities,
     enemyUnits,
     canEngageOwner: o => aiCanEngageOwner(opts, o),
+    hasContactWith: o => aiHasContactWith(opts, o),
     lockedUnitIds: locked,
     isOwnTerritory,
+    isRelevantSiege: cityId => endsThreat(cityById.get(cityId)),
     strengthOf: u => aiUnitCombatStrength(u, data),
     isFieldUnit: isField,
     distance: hexDistance,

@@ -268,7 +268,7 @@ section('T10: P3 nietkniete -- silny agresor bez zagrozenia u siebie nadal zdoby
 async function mutationTests() {
   section('T8: mutacje -- kazda psuje co najmniej jeden test (testy rozrozniaja)');
   const muts = [
-    ['M1 brak P2 (bez zwalczania najezdzcy)', [['const clusters = invaders.length > 0 && input.myCities.length > 0 ? buildClusters(invaders, input) : [];', 'const clusters: any[] = [];']], 'T2'],
+    ['M1 brak P2 (bez zwalczania najezdzcy)', [['const allClusters = invaders.length > 0 && input.myCities.length > 0 ? buildClusters(invaders, input) : [];', 'const allClusters: any[] = [];']], 'T2'],
     ['M2 brak P1 (bez odbicia)', [['if (lost.length > 0 && pool.size > 0) {', 'if (false) {']], 'T3'],
     ['M3 zawsze obrona (nigdy atak)', [["\n  return ratio >= enter ? 'attack' : 'hold';\n}", "\n  return 'hold';\n}"], ["return ratio >= leave ? 'attack' : 'hold';", "return 'hold';"], ["return ratio >= enter ? 'attack' : 'hold';\n  }", "return 'hold';\n  }"]], 'T3'],
     ['M4 brak histerezy (leave=enter, 0 tur)', [['export const HOME_WAR_ATTACK_RATIO_LEAVE = 0.6;', 'export const HOME_WAR_ATTACK_RATIO_LEAVE = 0.8;'], ['export const HOME_WAR_MIN_COMMIT_TURNS = 3;', 'export const HOME_WAR_MIN_COMMIT_TURNS = 0;']], 'T6'],

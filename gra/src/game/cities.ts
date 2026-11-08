@@ -1008,6 +1008,14 @@ export interface City {
    */
   foundedByOwner?: boolean;
   /**
+   * R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: ownerId cywilizacji, która MIASTO ZAŁOŻYŁA (twórca).
+   * Nie zmienia się przy zdobyciu (zdobyte cudze miasto NIE staje się „założone przeze mnie”).
+   * Brak pola w starym zapisie: patrz `cityFounderId` (fallback: bieżący właściciel, o ile
+   * `foundedByOwner !== false`; przy `false` twórca nieznany -> fallback `capturedFromOwnerId`).
+   * Pole dopisywane przy założeniu oraz leniwie przy pierwszym zdobyciu (`stampCityFounderOnCapture`).
+   */
+  foundedBy?: number;
+  /**
    * Pula Manpower (siła rekrutacyjna miasta). Brak = przy pierwszym odczycie równa manpowerMax.
    * Koszt jednostki: manpowerNaJednostke[epoka] — patrz gra/src/game/manpower.ts.
    */
@@ -1105,6 +1113,64 @@ export function countsTowardCityFoundingLimit(city: Pick<City, 'foundedByOwner'>
 }
 
 /**
+ * R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: twórca (założyciel) miasta albo `undefined`, gdy nieznany.
+ * `foundedBy` jeśli zapisane; stary zapis bez pola: bieżący właściciel (miasto, którego nikt nie
+ * zdobył, ma `foundedByOwner !== false`), a przy `foundedByOwner === false` twórca jest nieznany.
+ */
+export function cityFounderId(
+  city: Pick<City, 'ownerId' | 'foundedBy' | 'foundedByOwner'>,
+): number | undefined {
+  if (city.foundedBy !== undefined) return city.foundedBy;
+  return city.foundedByOwner === false ? undefined : city.ownerId;
+}
+
+/**
+ * „Utracone miasto” cywilizacji `ownerId`: miasto, które ona założyła, a które należy dziś do kogoś
+ * innego (dowolna liczba przejść z rąk do rąk). Brak `foundedBy` (stary zapis):
+ * fallback na `capturedFromOwnerId === ownerId` (dotychczasowa definicja).
+ */
+export function isCityLostOf(
+  city: Pick<City, 'ownerId' | 'foundedBy' | 'foundedByOwner' | 'capturedFromOwnerId'>,
+  ownerId: number,
+): boolean {
+  if (city.ownerId === ownerId) return false;
+  // Twórca zapisany (nowe zapisy/miasta): tylko on decyduje. Brak pola (stary zapis): dotychczasowa
+  // definicja = poprzedni właściciel (`capturedFromOwnerId`) — zgodność wsteczna.
+  if (city.foundedBy !== undefined) return city.foundedBy === ownerId;
+  return city.capturedFromOwnerId === ownerId;
+}
+
+/**
+ * R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1 (DODATEK 2/3 właściciela 2026-11-08): klasyfikacja miasta
+ * PER CYWILIZACJA `ownerId`, wg dwóch faktów: twórca (historia, `cityFounderId`) i obecny właściciel.
+ *  - S1 `'S1'`: założone przez ownerId i nadal jego  -> priorytet 1: obrona.
+ *  - S2 `'S2'`: założone przez ownerId, obecnie cudze -> priorytet 2: odzyskanie (= isCityLostOf).
+ *  - S3 `'S3'`: obecnie ownerId, założone przez kogo innego (zdobyte) -> priorytet 3: utrzymanie.
+ *  - `null`: miasto nie jest własne dla ownerId.
+ * Klasyfikacja jest per cywilizacja: to samo miasto może być S2 dla założyciela i S3 dla zdobywcy.
+ * Stare zapisy bez pola twórcy: patrz `cityFounderId` / `isCityLostOf` (fallbacki).
+ */
+export type OwnTerritoryClass = 'S1' | 'S2' | 'S3';
+export function ownTerritoryClassOf(
+  city: Pick<City, 'ownerId' | 'foundedBy' | 'foundedByOwner' | 'capturedFromOwnerId'>,
+  ownerId: number,
+): OwnTerritoryClass | null {
+  if (city.ownerId === ownerId) return cityFounderId(city) === ownerId ? 'S1' : 'S3';
+  return isCityLostOf(city, ownerId) ? 'S2' : null;
+}
+
+/**
+ * Zapamiętuje twórcę PRZED pierwszą zmianą właściciela (wołać, gdy `city.ownerId` to jeszcze
+ * poprzedni właściciel). Idempotentne; nie nadpisuje znanego twórcy.
+ */
+export function stampCityFounderOnCapture(
+  city: Pick<City, 'foundedBy' | 'foundedByOwner'>,
+  prevOwner: number,
+): void {
+  if (city.foundedBy === undefined && city.foundedByOwner !== false) city.foundedBy = prevOwner;
+}
+
+/**
  * R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1: czy miasto było, TUŻ PRZED tym
  * KONKRETNYM podbojem, jeszcze niezależnym miastem-państwem (nigdy wcześniej nie
  * przejętym przez żadną cywilizację) — a nie już własnością innej cywilizacji (czy to
@@ -1161,6 +1227,7 @@ export function applyCapturePopulationLoss(
   prevOwner: number,
   rebelPrevOwnerSnapshot?: number,
 ): number {
+  stampCityFounderOnCapture(city, prevOwner);
   const reclaim = newOwner === prevOwner
     || (city.capturedFromOwnerId !== undefined && city.capturedFromOwnerId === newOwner)
     || (rebelPrevOwnerSnapshot !== undefined && rebelPrevOwnerSnapshot === newOwner);
@@ -1284,6 +1351,7 @@ export function foundCity(
     poziomRacji: DEFAULT_POZIOM_RACJI,
     poziomRacjiOverride: false,
     foundedByOwner: true,
+    foundedBy: settler.ownerId,
   };
 }
 
@@ -1323,6 +1391,7 @@ export function foundCityAt(
     autoWyzywienie: true, // Włączone automatyczne wyżywienie dla nowo założonych miast / EN: enable auto-feeding for newly founded cities
     budowaTryb: 'zrownowazone', // Domyślna zrównoważona budowa dla nowych miast / EN: default balanced build mode for new cities
     foundedByOwner: true,
+    foundedBy: ownerId,
     ...(foundingCityState ? { startCityState: true as const } : {}),
   };
 }
