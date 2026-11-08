@@ -894,3 +894,7 @@ Port ERAIGN/ERADELAY (web 5dd53e60f): `is_era_forced_war_ignoring_r1`, `is_war_t
 - Testy: fmt+clippy OK, lib 22/0, 298 binarek 2226 passed/0 failed/1 ignored (stary, p6_order_lane.rs:1530), p6_repin_ekonomii_era (1760 kafelków z weba).
 - Zaakceptowane ZAŁOŻENIA (orkiestrator): Z-R5-1/D-R4-1 pin wektorów hybrid2 (331ef699b + terrain-improvements.ts z 247f1ef2a), nie czysty origin/main; wyjątek allowlisty economy_city_vectors_r3/r4 (+1 linia `wlasciciel_era: None`).
 - DŁUGI: D-R5-1 (resource_production.rs — stara migawka u32/u8; wołają tests/resource_production.rs, tests/parity_suite.rs, benches/engine_modules.rs), D-R5-2 (utrzymanie per owner wg trudności — Rust nie ma), D-R4-1 (trade-routes.ts/buildings.json na 4bbef081d). NIE_ZMIERZONO: baseline pre-B1 pełnej sumy.
+
+## 2026-11-08 15:2x — dysk 127 MB, RESPROD wstrzymany
+- Trzy workflow Rust naraz (AIZAKUP, RESPROD, ZAPISERA) + MULTIWAR-2 → dysk 127 MB wolnego (po ~2,7 GB na worktree z cargo target). Usunięto stare kopie robocze w scratchpadzie i target RESPROD (2 GB) → 2,6 GB wolnego.
+- R-RUSTPORT-REPIN-RESPROD-DUPLIKAT-Q1 (wf_f222cc2b-1c8) zatrzymany; nieskomitowane zmiany w worktree wf_f222cc2b-1c8-1 (benches/engine_modules.rs, resource_production.rs, tests/parity_suite.rs, tests/resource_production.rs). Wznowienie: resumeFromRunId wf_f222cc2b-1c8, gdy wolne ≥ 4 GB. Maks. 3 równoległe kompilacje Rust przy tej wielkości dysku.
