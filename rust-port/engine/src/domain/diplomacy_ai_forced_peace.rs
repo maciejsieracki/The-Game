@@ -316,6 +316,10 @@ pub fn decide_ai_peace_request(inp: &AiPeaceDecisionInput) -> AiPeaceDecision {
 pub enum PeaceBalanceShape {
     /// `balance0 + slope * c`.
     Linear { balance0: f64, slope: f64 },
+    /// ODSTEPSTWO OD WEBU (runda 5, zarzut FC): web NIE ma kształtu `Kinked` - `balanceFor` z closure
+    /// (`peaceOfferAiOwnBilans`) jest liniowe w pokryciu. Ten wariant to TYLKO test-double generatora
+    /// `gen-forced-peace.mts` (wektory tick); nie jest wycena weba i nie wolno go uzywac w produkcji.
+    /// Usuniecie wymaga przepisania wektorow tick (plan: R-RUSTPORT-P6-FORCED-WAR-MODULES-Q1 lub MULTIWAR-3).
     /// `c <= knee ? balance0 + slope*c : balance0 + slope*knee + slope2*(c-knee)`.
     Kinked {
         balance0: f64,

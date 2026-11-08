@@ -5,6 +5,8 @@
 //! (origin/main 5dd53e60f, `peaceOfferAiOwnBilans` / `peaceOfferAiRequestPn` / `aiOfferPwSurplusTolerance`).
 //! Pokrycie: bazy {0,-10,1,2,333,500,1000,2000,500=pokoj}, relacje -50..300 (w tym granice clamp +-90 i 100),
 //! trzy trudnosci, pokrycie {0,1,5.5,100,777.25,-3,1234}.
+//! Runda 5 (domkniecie zarzutu FC): dodane bazy +Infinity/-Infinity/NaN i relacja NaN (3276 wektorow z weba).
+//! Wartosci nieskonczone sa zapisane jako stringi "Infinity"/"-Infinity"/"NaN" (JSON.stringify daje null).
 
 use civ_engine::domain::diplomacy_ai_forced_peace::PeaceBalanceShape;
 use civ_engine::domain::diplomacy_war_weariness_tick::*;
@@ -48,7 +50,7 @@ fn balance_required_and_tolerance_match_web_vectors() {
         "baza pokoju z acceptance-points.json"
     );
     let rows = doc["rows"].as_array().unwrap();
-    assert_eq!(rows.len(), 2268, "liczba wektorow");
+    assert_eq!(rows.len(), 3276, "liczba wektorow");
     for r in rows {
         let base = num(&r["base"]);
         let rel = num(&r["rel"]);
@@ -114,6 +116,34 @@ fn easy_difficulty_targets_no_required_pn_and_infinite_tolerance() {
     let q = PeacePriceQuote::from_web(500.0, 0.0, WebDifficulty::Easy);
     assert_eq!(q.required_pn, 0.0);
     assert!(q.tolerance_pn.is_infinite() && q.tolerance_pn > 0.0);
+}
+
+#[test]
+fn non_finite_base_matches_web_rules() {
+    // Web (origin/main 5dd53e60f, peaceOfferAiRequestPn): Lagodny nie celuje w zero bilansu -> 0 nawet dla bazy
+    // +Infinity / NaN. Normalny/Trudny: bilans = Infinity-Infinity = NaN -> requiredPn = NaN (NIE 0).
+    // Zabija mutant `||`->`&&` w web_required_pn (L117): dla Lagodnego zwracal wtedy NaN.
+    assert_eq!(
+        web_required_pn(f64::INFINITY, 0.0, WebDifficulty::Easy),
+        0.0
+    );
+    assert_eq!(
+        web_required_pn(f64::INFINITY, 100.0, WebDifficulty::Easy),
+        0.0
+    );
+    assert_eq!(web_required_pn(f64::NAN, 0.0, WebDifficulty::Easy), 0.0);
+    assert_eq!(web_required_pn(f64::NAN, 100.0, WebDifficulty::Easy), 0.0);
+    assert!(web_required_pn(f64::INFINITY, 0.0, WebDifficulty::Normal).is_nan());
+    assert!(web_required_pn(f64::INFINITY, 0.0, WebDifficulty::Hard).is_nan());
+    assert!(web_required_pn(f64::NAN, 0.0, WebDifficulty::Normal).is_nan());
+    for d in [
+        WebDifficulty::Easy,
+        WebDifficulty::Normal,
+        WebDifficulty::Hard,
+    ] {
+        assert_eq!(web_required_pn(f64::NEG_INFINITY, 0.0, d), 0.0);
+    }
+    assert_eq!(web_pw_surplus_tolerance(WebDifficulty::Easy), f64::INFINITY);
 }
 
 #[test]

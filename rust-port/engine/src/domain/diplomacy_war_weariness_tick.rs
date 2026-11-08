@@ -16,7 +16,7 @@
 //!
 //! JS-SEMANTYKA: `Math.max/min` propaguja NaN (`js_max`, `js_min`); porownania z NaN sa fałszywe jak w JS.
 
-use super::diplomacy::treaty_base_fairness_gap;
+use super::diplomacy_ai_forced_peace::js_round;
 use super::diplomacy_multiwar::{
     despair_stage, is_war_weary, js_max, js_min, loser_despair, offer_multiplier, stage_city_limit,
     war_weariness_level, WAR_WEARINESS_PARAMS,
@@ -109,7 +109,38 @@ pub fn web_balance_for(base_pn: f64, rel_total: f64, covered_pn: f64) -> f64 {
     if base_pn <= 0.0 {
         return 0.0;
     }
-    treaty_base_fairness_gap(base_pn, 0.0, covered_pn, rel_total)
+    // Dokladne odwzorowanie `treatyBaseFairnessGap(base, 0, covered, rel)` z JS (NaN propaguje przez
+    // Math.max/min/round; NIE uzywa `treaty_base_fairness_gap` z diplomacy.rs, bo `f64::max` gubi NaN).
+    let partner_required = js_max(0.0, base_pn); // partnerTreatyPnRequired
+    let player_required = web_effective_treaty_pn_required(base_pn, rel_total); // effectiveTreatyPnRequired
+    (partner_required + covered_pn) - (player_required + 0.0)
+}
+
+/// Web `relationPnModPct(relationSignedFromTotal(relTotal))`: clamp(-100,100) potem clamp(-90,90), `toFixed(1)`.
+/// NaN propaguje (Math.max/min), a `toFixed(1)` zaokragla polowki od zera (jak JS dla |x|).
+pub fn web_rel_mod_pct(rel_total: f64) -> f64 {
+    let signed = js_max(-100.0, js_min(100.0, rel_total - 100.0));
+    let clamped = js_max(-90.0, js_min(90.0, signed));
+    if clamped.is_nan() {
+        return f64::NAN;
+    }
+    let r = (clamped.abs() * 10.0 + 0.5).floor() / 10.0;
+    if clamped < 0.0 {
+        -r
+    } else {
+        r
+    }
+}
+
+/// Web `effectiveTreatyPnRequired(basePn, relTotal)`: `basePn <= 0` -> 0; inaczej `max(0, round(base*(1+mod/100)))`.
+pub fn web_effective_treaty_pn_required(base_pn: f64, rel_total: f64) -> f64 {
+    if base_pn <= 0.0 {
+        return 0.0;
+    }
+    js_max(
+        0.0,
+        js_round(base_pn * (1.0 + web_rel_mod_pct(rel_total) / 100.0)),
+    )
 }
 
 /// Web `peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty)`: ile PW wymagać, by bilans AI wpadł w tolerancję.
