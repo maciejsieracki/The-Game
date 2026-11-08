@@ -71,5 +71,5 @@ Legenda kolumny „zrobione / przeniesione do MULTIWAR-2”:
   - `MW01` (`js_max`: usunięty warunek `b.is_nan()`) — EKWIWALENT: gałąź `a > b` z NaN w `b` jest fałszywa, więc zwracane jest `b` = NaN, tak jak w oryginale.
   - `PC12` (`if rem >= 0.0` w gałęzi `else` planu) — EKWIWALENT: w gałęzi `else` jest `res_total < rem`, więc `rem - res_total > 0` zawsze.
   - `PC17` (`if base.full` bez `|| max_cities <= 0.0`) — EKWIWALENT: pętla `while n < max_cities` nie wykonuje się dla `max_cities <= 0` (także NaN), a wynik odtwarza `base` pole po polu.
-  - `PC07` (`res_total > rem` zamiast `>=`) — EKWIWALENT dla pn całkowitych (pn w wektorach są całkowite): obie gałęzie dodają te same zasoby w tej samej kolejności, a `rem` wychodzi jako 0. Dla ułamkowych pn możliwa rozbieżność przez zaokrąglenie sumy (`rem - Σ` vs sekwencyjne odejmowanie) — NIE_ZMIERZONO, bez wektora.
-- Wynik: 101/105 zabitych (96,2%); po wykluczeniu 4 ocalałych jako ekwiwalentów 101/101 nieekwiwalentnych.
+  - `PC07` (`res_total > rem` zamiast `>=`) — ZABITY (r6) wektorem `resTiny` w `peace.json` (surowce pn 1, 1, 1e-17; wynik web: `[a,b]`, bez `c`, bo gałąź `>=` przerywa przy `rem <= 0`; mutant dodaje `c`). Wcześniejsze twierdzenie „ekwiwalent dla wszystkich f64” było BŁĘDNE (obalone wektorem).
+- Wynik (r6): 102/105 zabitych (97,1%); 3 ocalałe to ekwiwalenty (`MW01`, `PC12`, `PC17`); po ich wykluczeniu 102/102 nieekwiwalentnych.

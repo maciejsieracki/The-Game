@@ -259,9 +259,16 @@ const peaceSets = {
     { kind: 'miasto', id: 'b', amount: 1, pn: 150 },
     { kind: 'miasto', id: 'c', amount: 1, pn: 60 },
   ],
+  // R-RUSTPORT-P6 r6 (zarzut 5 FC/obrona): trzeci surowiec pn=1e-17 ginie w sumie (1+1+1e-17 == 2).
+  // Web `resTotal >= rem` -> petla z `if (rem <= 0) break` pomija ten surowiec; mutant `>` idzie w gałąź else i go dodaje.
+  resTiny: [
+    { kind: 'surowiec_ilosc', id: 'a', amount: 1, pn: 1 },
+    { kind: 'surowiec_ilosc', id: 'b', amount: 1, pn: 1 },
+    { kind: 'surowiec_ilosc', id: 'c', amount: 1, pn: 1e-17 },
+  ],
   empty: [],
 };
-const peaceReq = [0, -5, 0.4, 50, 100, 101, 250, 399.5, 1000, NaN, 5000];
+const peaceReq = [0, -5, 0.4, 2, 50, 100, 101, 250, 399.5, 1000, NaN, 5000];
 const peakOut = (plan) => ({
   items: plan.items.map(it => ({ kind: it.kind, id: it.id, amount: S(it.amount), pn: S(it.pn) })),
   coveredPn: S(plan.coveredPn), shortfallPn: S(plan.shortfallPn), full: plan.full === true,

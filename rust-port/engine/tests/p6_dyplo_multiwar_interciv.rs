@@ -102,7 +102,8 @@ fn intercivgate_vectors_match_web() {
             other => panic!("nieznana funkcja {other}"),
         }
     }
-    assert!(cases.len() >= 20, "za malo wektorow: {}", cases.len());
+    // Dokladna liczba z generatora (intercivgate.json = 23 wpisy; r5 zarzut 2: nie >= 20).
+    assert_eq!(cases.len(), 23, "liczba wektorow intercivgate");
 }
 
 #[test]

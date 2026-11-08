@@ -49,8 +49,9 @@ pub struct PeacePaymentPlan {
 }
 
 /// Web `byId` (porządek po id, `<` na stringach).
+/// Web `byId`: porównanie `<`/`>` na stringach JS = jednostki UTF-16 (nie bajty UTF-8).
 fn by_id(a: &PeaceAsset, b: &PeaceAsset) -> Ordering {
-    a.id.cmp(&b.id)
+    a.id.encode_utf16().cmp(b.id.encode_utf16())
 }
 
 /// Web `(a, b) => b.pn - a.pn || byId(a, b)` — gdy różnica NaN lub 0, rozstrzyga id.
