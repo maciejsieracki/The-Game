@@ -1,0 +1,177 @@
+[
+ {
+  "turn": 0,
+  "tag": "bronze",
+  "out": true
+ },
+ {
+  "turn": 0,
+  "tag": "iron",
+  "out": true
+ },
+ {
+  "turn": 0,
+  "tag": "stone",
+  "out": false
+ },
+ {
+  "turn": 0,
+  "tag": null,
+  "out": false
+ },
+ {
+  "turn": 0,
+  "tag": "undefined",
+  "out": false
+ },
+ {
+  "turn": 19,
+  "tag": "bronze",
+  "out": true
+ },
+ {
+  "turn": 19,
+  "tag": "iron",
+  "out": true
+ },
+ {
+  "turn": 19,
+  "tag": "stone",
+  "out": false
+ },
+ {
+  "turn": 19,
+  "tag": null,
+  "out": false
+ },
+ {
+  "turn": 19,
+  "tag": "undefined",
+  "out": false
+ },
+ {
+  "turn": 39,
+  "tag": "bronze",
+  "out": true
+ },
+ {
+  "turn": 39,
+  "tag": "iron",
+  "out": true
+ },
+ {
+  "turn": 39,
+  "tag": "stone",
+  "out": false
+ },
+ {
+  "turn": 39,
+  "tag": null,
+  "out": false
+ },
+ {
+  "turn": 39,
+  "tag": "undefined",
+  "out": false
+ },
+ {
+  "turn": 40,
+  "tag": "bronze",
+  "out": true
+ },
+ {
+  "turn": 40,
+  "tag": "iron",
+  "out": true
+ },
+ {
+  "turn": 40,
+  "tag": "stone",
+  "out": true
+ },
+ {
+  "turn": 40,
+  "tag": null,
+  "out": true
+ },
+ {
+  "turn": 40,
+  "tag": "undefined",
+  "out": true
+ },
+ {
+  "turn": 41,
+  "tag": "bronze",
+  "out": true
+ },
+ {
+  "turn": 41,
+  "tag": "iron",
+  "out": true
+ },
+ {
+  "turn": 41,
+  "tag": "stone",
+  "out": true
+ },
+ {
+  "turn": 41,
+  "tag": null,
+  "out": true
+ },
+ {
+  "turn": 41,
+  "tag": "undefined",
+  "out": true
+ },
+ {
+  "turn": "NaN",
+  "tag": "bronze",
+  "out": true
+ },
+ {
+  "turn": "NaN",
+  "tag": "iron",
+  "out": true
+ },
+ {
+  "turn": "NaN",
+  "tag": "stone",
+  "out": false
+ },
+ {
+  "turn": "NaN",
+  "tag": null,
+  "out": false
+ },
+ {
+  "turn": "NaN",
+  "tag": "undefined",
+  "out": false
+ },
+ {
+  "turn": "undefined",
+  "tag": "bronze",
+  "out": true
+ },
+ {
+  "turn": "undefined",
+  "tag": "iron",
+  "out": true
+ },
+ {
+  "turn": "undefined",
+  "tag": "stone",
+  "out": false
+ },
+ {
+  "turn": "undefined",
+  "tag": null,
+  "out": false
+ },
+ {
+  "turn": "undefined",
+  "tag": "undefined",
+  "out": false
+ }
+]

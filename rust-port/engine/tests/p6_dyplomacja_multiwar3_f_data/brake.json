@@ -1,0 +1,10978 @@
+[
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 0
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 1
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 2.5
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": 3
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "NaN"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 0
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 1
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 2.5
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": 3
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 0,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 2,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 0,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 1,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 2,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "NaN"
+  },
+  "player": 3,
+  "declarer": 3,
+  "victim": 1,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 0,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 0,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 2,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 2,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 0,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 1,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": false
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 2,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ },
+ {
+  "a": {
+   "owner": 1,
+   "power": "Infinity"
+  },
+  "b": {
+   "owner": 3,
+   "power": "Infinity"
+  },
+  "player": 3,
+  "declarer": 1,
+  "victim": 3,
+  "mayDeclare": true
+ }
+]

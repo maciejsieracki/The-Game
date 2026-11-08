@@ -310,6 +310,35 @@ pub fn pick_war_declarer(a: WarPower, b: WarPower) -> i64 {
     a.owner_id.min(b.owner_id)
 }
 
+/// Web: `BrakeWarOutcome` (`diplomacy-tick-war-brake.ts`, R-WEB-PEACE-RULES-Q1 D7).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct BrakeWarOutcome {
+    pub declarer: i64,
+    pub victim: i64,
+    /// `false` = strona silniejsza to gracz: brak automatycznej deklaracji i brak ostrzezenia.
+    pub may_declare: bool,
+}
+
+/// Web: `brakeWarOutcome`. Wypowiada `pick_war_declarer`; `victim` = druga strona;
+/// `may_declare` = `!isPlayer(declarer)`. Para AI<->AI: zawsze `true`.
+pub fn brake_war_outcome(
+    a: WarPower,
+    b: WarPower,
+    is_player: impl Fn(i64) -> bool,
+) -> BrakeWarOutcome {
+    let declarer = pick_war_declarer(a, b);
+    let victim = if declarer == a.owner_id {
+        b.owner_id
+    } else {
+        a.owner_id
+    };
+    BrakeWarOutcome {
+        declarer,
+        victim,
+        may_declare: !is_player(declarer),
+    }
+}
+
 /// Web: `dobraWolaTurnStep` (P4 r3). Odliczanie przed tickiem AI; `activeThisTurn` = licznik > 0 PRZED odliczeniem.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DobraWolaStep {
