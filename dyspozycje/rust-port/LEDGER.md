@@ -888,3 +888,9 @@ Zawężony zakres (decyzja orkiestratora, runda 5): moduły `diplomacy_multiwar.
 
 ## 2026-11-08 — R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-2-Q1 partia A ZINTEGROWANA (rundy 1–2; FC PASS; FF parity-v2 9e6d26c4b → 707b50c41)
 Port ERAIGN/ERADELAY (web 5dd53e60f): `is_era_forced_war_ignoring_r1`, `is_war_treaty_blocked`, progi 20/20 dla Brązu i Żelaza, `era_tag` w `evaluate_inter_civ_war_gate`; `ForcedEraTag` jedna definicja (re-eksport). 183 wektory z uruchomionego weba (Node 22), bajt-w-bajt; mutacje ręczne 5/5; fmt/clippy 0; testy eraign 3/0, interciv 2/0, lib 22/0. NIE_ZMIERZONO: pełny baseline, mutacje ≥85%. Funkcje czyste nie są jeszcze podpięte (timer ERADELAY i podpięcie isWarTreatyBlocked pod wypowiedzenie wymagają modułu forced_war_* w Rust). TEMAT NIEZAMKNIĘTY: do zrobienia partie B (war-weariness), C (forced-peace AI↔AI), D (siege-war-gate), E (locks poza '2'), F (REPIN 5 modułów) — runda 3+.
+
+## 2026-11-08 — REKON (R-RUSTPORT-REPIN-EKONOMII-JEDNA-WERSJA-Q1) ZINTEGROWANE
+- parity-v2: FF 707b50c41 → 0fd287721 (FC PASS-WITH-NOTES r5/5; ancestry sprawdzone: parity-v2 przodkiem FC, kod 5776e1334 przodkiem 0fd287721). wip: rust-port-wip/REKON; refs/keep/REKON-fc lokalnie (push refs/keep → 403).
+- Testy: fmt+clippy OK, lib 22/0, 298 binarek 2226 passed/0 failed/1 ignored (stary, p6_order_lane.rs:1530), p6_repin_ekonomii_era (1760 kafelków z weba).
+- Zaakceptowane ZAŁOŻENIA (orkiestrator): Z-R5-1/D-R4-1 pin wektorów hybrid2 (331ef699b + terrain-improvements.ts z 247f1ef2a), nie czysty origin/main; wyjątek allowlisty economy_city_vectors_r3/r4 (+1 linia `wlasciciel_era: None`).
+- DŁUGI: D-R5-1 (resource_production.rs — stara migawka u32/u8; wołają tests/resource_production.rs, tests/parity_suite.rs, benches/engine_modules.rs), D-R5-2 (utrzymanie per owner wg trudności — Rust nie ma), D-R4-1 (trade-routes.ts/buildings.json na 4bbef081d). NIE_ZMIERZONO: baseline pre-B1 pełnej sumy.
