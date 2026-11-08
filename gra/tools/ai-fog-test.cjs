@@ -1,7 +1,9 @@
-// KLASA B (kandydat, przyczyna do potwierdzenia) -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4.
-// Test CELOWO pozostaje CZERWONY. Kod gry NIE jest naprawiany w tym temacie.
-// Czerwony na main i na ref 3aa1b3a2a (FULLREG). Kandydat na osobny temat R-WEB-* (decyzja orkiestratora).
-// NIE_ZWERYFIKOWANO w r4: nie ustalono przyczyny.
+// KLASA B -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4; diagnoza R-WEB-AI-ZDOBYCIE-FOG-DIAG-Q1 r1 (499487c1a).
+// Stan: W1, W3-W8 ZIELONE (W3/W8: jawne atWarWithCiv w fixturze). W2 (linia ~83) CELOWO CZERWONY:
+// applyHomeWarPriorities (ai.ts:3448-3449) planuje atak na wroga poza visibleHexes, a egzekucja
+// (main.ts, "Atak na niewidoczny cel") go pomija. Sprawca: 344e5b3fd (2026-11-05), dowod bisectu:
+// parent 344e5b3fd^ W2 zielony, 344e5b3fd W2 czerwony. Decyzja wlasciciela A/B/C pozostaje otwarta.
+// Test NIE jest naprawiany w tym temacie. Kod gry (ai.ts) bez zmian.
 'use strict';
 
 /**
