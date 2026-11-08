@@ -320,4 +320,6 @@ pub fn classify_war_target_routes(
     result
 }
 
-pub use super::war_all_in_capital_plan::plan_war_all_in_capital;
+pub use super::war_all_in_capital_plan::{
+    plan_war_all_in_capital, plan_war_all_in_capital_with_defenders,
+};

@@ -100,7 +100,12 @@ pub mod unit_health;
 pub mod war_all_in_capital;
 pub mod war_all_in_capital_nav;
 pub mod war_all_in_capital_plan;
+pub mod war_city_founder;
+pub mod war_era_pool;
+pub mod war_home_defense;
+pub mod war_home_defense_plan;
 pub mod war_rules_multiwar;
+pub mod war_target_select;
 pub mod wonder_placement;
 pub mod work_tax;
 
