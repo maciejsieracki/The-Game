@@ -325,7 +325,11 @@ fn player_epoch_missing_field_is_true() {
 fn era_params_literal_is_stone_bronze_iron_cap_one_per_civ() {
     assert_eq!(
         ERA_WAR_PARAMS.enabled_forced_war_eras,
-        &[ForcedEraTag::Stone, ForcedEraTag::Bronze, ForcedEraTag::Iron][..]
+        &[
+            ForcedEraTag::Stone,
+            ForcedEraTag::Bronze,
+            ForcedEraTag::Iron
+        ][..]
     );
     assert_eq!(ERA_WAR_PARAMS.max_era_forced_wars_per_era, None);
     assert_eq!(ERA_WAR_PARAMS.max_era_forced_wars_per_civ_per_era, Some(1));
@@ -341,7 +345,10 @@ fn js_math_semantics_nan_and_signed_zero() {
     assert!(js_min(-0.0, 0.0).is_sign_negative(), "Math.min(-0, 0) = -0");
     assert!(js_max(1.0, f64::NAN).is_nan(), "Math.max(1, NaN) = NaN");
     assert!(js_min(f64::NAN, 1.0).is_nan(), "Math.min(NaN, 1) = NaN");
-    assert!(js_clamp(0.5, f64::NAN, 1.0).is_nan(), "clamp z NaN dolnym = NaN");
+    assert!(
+        js_clamp(0.5, f64::NAN, 1.0).is_nan(),
+        "clamp z NaN dolnym = NaN"
+    );
 }
 
 /// Wartosci policzone w node 22 (ten sam silnik JS co web): `Number.isInteger(n) ? String(n) : n.toFixed(1)`.
