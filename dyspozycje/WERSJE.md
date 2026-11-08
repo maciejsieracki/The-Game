@@ -1,3 +1,9 @@
+## ROBOCZA 40f5555c -- 2026-11-06 -- FALA 552: CSFOOD: zuzycie zywnosci armii i atrycja glodu wg trudnosci wlasciciela (panstwo-miasto = wlasny poziom) (testowa)
+
+- gra/src/game/turn-economy.ts, gra/src/main.ts: resolver trudnosci wlasciciela dla zywnosci armii, auto-wyzywienia, atrycji glodu (tura pola i oblezenie) oraz wyswietlania (karta jednostki, prognoza poddania, panel oblezenia); gracz i AI bez zmian
+- Weryfikacja: FC PASS-WITH-NOTES 183fd5d19; citystate-army-food-difficulty 29/0, upkeep-per-owner 19/0, army-hunger-combat 13/0, empire-food-b5 34/0, ai-test 289/0, logic 213/213, tsc 0, vite OK; bez przegladarki
+- Limity: Test podpiecia to skan zrodla (nie boot()); glod-wojska-karencja-test 29/10 (dlug sprzed zmiany, mnoznik x4); efekt liczbowy glod_wojska_stat_mult/karencja = 0
+
 ## ROBOCZA 0e9e32e1 -- 2026-11-06 -- FALA 551: AIDRA: priorytety wojenne AI (S1 obrona, S2 odzyskanie, S3 utrzymanie, potem atak) (testowa)
 
 - gra/src/game/{ai.ts,ai-war-home-defense.ts,cities.ts}, gra/src/main.ts: City.foundedBy (zalozyciel), klasyfikacja per cywilizacja, odwolanie armii do obrony, wyjatek mgly na terenie S1/S2/S3 po sprawdzeniu wojny i kontaktu
