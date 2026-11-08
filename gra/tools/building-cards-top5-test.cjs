@@ -24,6 +24,17 @@
  *   [F] budynki ukryte (Wielka odlewnia, Wielka Kuźnia, Teatr): resolver i
  *       `buildEntityCardData` zwracają null (brak karty), adapter wołany wprost nie daje
  *       Top 5 ani CMZ.
+ *   [G] ZAKRES / ZNANY STAN (obrona r1, zarzut 2 Evaluatora): [B]–[F] sprawdzają WYŁĄCZNIE
+ *       wynik adaptera (`buildingAdapter` + `renderEntityCard`). Prawdziwa karta w grze
+ *       (`cityPanel.ts` `buildBuildingDetailCardViaEntityCard`) dokleja do niej kafelek
+ *       „Technologie” (`appendTechDetailBlock`: wiersz „Odblokowuje budynek” i „Uwagi tech”
+ *       z `tech.json` przez `playerFacingNote`). `cityPanel.ts` nie daje się bundlować
+ *       w izolacji (precedens: building-detail-card-entitycard-migration-test.cjs), więc [G]
+ *       (1) kotwiczy to okablowanie w źródle, (2) liczy treść tych wierszy z PRAWDZIWEGO
+ *       `playerFacingNote` (wycinek źródła cityPanel.ts, esbuild transform) i `tech.json`,
+ *       (3) porównuje trafienia fraz martwych z listą ZNANY_STAN_HOST. Lista to jawny,
+ *       NIENAPRAWIONY stan poza allowlistą tego tematu (wymaga zmiany cityPanel.ts) —
+ *       nowe trafienie = FAIL (regres), zniknięcie trafienia = FAIL „zaktualizuj listę”.
  * Opcjonalnie `--screens <katalog>` zapisuje zrzuty PNG 6 kart (Mennica, Koszary, Trybunał,
  * Akwedukt, Garnizon, Warsztat oblężniczy). Ikony brandAssets są zastąpione stubem (jak
  * w pozostałych testach kart) — zrzut pokazuje treść i układ, nie grafikę ikon.
@@ -113,6 +124,58 @@ async function main() {
   }
   const top3Kept = buildings.filter((b) => Array.isArray(b.top3)).length;
   check('[A] pole `top3` w buildings.json zachowane (inne konsumenty: emporion-building-test)', top3Kept === 43, top3Kept);
+
+  // ---- [G] kafelek „Technologie” hosta (cityPanel.ts) — ZNANY STAN poza allowlistą ----------
+  {
+    const cp = fs.readFileSync(path.join(GRA, 'src/ui/cityPanel.ts'), 'utf8');
+    const hostStart = cp.indexOf('function buildBuildingDetailCardViaEntityCard(');
+    const hostBody = hostStart > -1 ? cp.slice(hostStart, cp.indexOf('\n}\n', hostStart)) : '';
+    check('[G] kotwica: host karty budynku dokleja appendTechDetailBlock(…, def.techUnlock)',
+      hostBody.includes('appendTechDetailBlock(techBody, data, def.techUnlock)'));
+    const tdStart = cp.indexOf('function appendTechDetailBlock(');
+    const tdBody = tdStart > -1 ? cp.slice(tdStart, cp.indexOf('\n}\n', tdStart)) : '';
+    check('[G] kotwica: kafelek pokazuje „Odblokowuje budynek” i „Uwagi tech” = playerFacingNote(t.Uwagi)',
+      tdBody.includes("'Odblokowuje budynek'") && tdBody.includes('playerFacingNote(t.Uwagi)'));
+    const a = cp.indexOf('function isEmptyDataVal(');
+    const pf = cp.indexOf('function playerFacingNote(');
+    const js = esbuild.transformSync(cp.slice(a, cp.indexOf('\n}\n', pf) + 3)
+      + '\nmodule.exports = { playerFacingNote, isEmptyDataVal };', { loader: 'ts', format: 'cjs' }).code;
+    const mod = { exports: {} };
+    new Function('module', 'exports', js)(mod, mod.exports);
+    const { playerFacingNote, isEmptyDataVal } = mod.exports;
+    const techRaw = JSON.parse(fs.readFileSync(path.join(GRA, 'data/tech.json'), 'utf8'));
+    const techs = Array.isArray(techRaw) ? techRaw : techRaw.technologie;
+    const hits = new Set();
+    for (const b of buildings) {
+      if (cards[b.id].ukryty) continue;
+      const t = techs.find((x) => x.Technologia === b.techUnlock);
+      if (!t) continue;
+      const rows = {
+        'Odblokowuje budynek': t['Odblokowuje budynek'], 'Wymaga budynek': t['wymagany budynek'],
+        'Surowiec (tech)': t['Dostęp do surowca.'], 'Odblokowuje surowiec': t['Odblokowuje surowiec.'],
+        'Odblokowuje pole': t['Odblokowuje ulepszenie terenu'], 'Uwagi tech': playerFacingNote(t.Uwagi),
+      };
+      for (const [k, v] of Object.entries(rows)) {
+        if (!v || isEmptyDataVal(v)) continue;
+        for (const f of new Set([...(martwe[b.id] || []), ...(martwe['*'] || [])])) {
+          if (String(v).includes(f)) hits.add(`${b.id}|${b.techUnlock}|${k}|${f}`);
+        }
+      }
+    }
+    // Stan zmierzony 2026-11-08 (obrona r1). Naprawa wymaga zmiany cityPanel.ts (poza allowlistą).
+    const ZNANY_STAN_HOST = [
+      'akademia|Filozofia|Odblokowuje budynek|Teatr',
+      'akademia|Filozofia|Uwagi tech|Teatr',
+      'akademia_wojskowa|Sztuka wojenna|Uwagi tech|elit',
+      'warsztat_oblezniczy|Oblężnictwo|Odblokowuje budynek|Katapult',
+      'warsztat_oblezniczy|Oblężnictwo|Uwagi tech|Katapult',
+    ];
+    for (const h of [...hits].sort()) console.log('ZNANY STAN (host cityPanel, poza allowlistą): ' + h);
+    const nowe = [...hits].filter((h) => !ZNANY_STAN_HOST.includes(h));
+    const zniknely = ZNANY_STAN_HOST.filter((h) => !hits.has(h));
+    check('[G] brak NOWYCH fraz martwych w kafelku „Technologie” hosta (regres)', nowe.length === 0, nowe);
+    check('[G] znany stan aktualny (gdy cityPanel naprawiony — zaktualizuj ZNANY_STAN_HOST)', zniknely.length === 0, zniknely);
+  }
 
   // ---- bundle + przeglądarka ---------------------------------------------------------------
   fs.writeFileSync(ENTRY, [
