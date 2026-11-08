@@ -210,7 +210,9 @@ const MAXT = 4;
     // K2, brak rzek, miasto w lesie ze wszystkimi polami obywateli juz po farmie -> brak kandydatow przy obywatelach, reszta terytorium czeka.
     const mapOpen = makeMap({ river: [], forest: [] });
     const workedAll = [[CQ, CR], [11, 12], [13, 12], [12, 13]];
-    const placedFarms = new Map(workedAll.map(([q, r]) => [K(q, r), ['farma']]));
+    // R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (2026-11-08): trzoda wolno stawiac tez POZA rzeka (na farmie na polu obywatela), wiec
+    // „brak kandydatow przy obywatelach” oznacza teraz pola po farmie I trzodzie (irygacji bez rzeki i tak nie ma).
+    const placedFarms = new Map(workedAll.map(([q, r]) => [K(q, r), ['farma', 'bydlo']]));
     const run = ({ onlyWorked, pool = 400, deficit = [], freeFarmAt = null }) => {
       const report = freshSurplusReport();
       const placedNow = new Map(placedFarms);

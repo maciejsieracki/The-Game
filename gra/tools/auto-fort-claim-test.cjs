@@ -282,7 +282,9 @@ console.log('H. kolejnosc: zywnosc -> fort -> drogi');
   // 4) drogi: fort ma priorytet nad drogami. Heks przy miescie (obrabiany, farma juz stoi) kwalifikuje droge.
   const mapR = makeMap({ mountains: [[CQ + 5, CR]] });
   const wR = new Set([K(CQ + 1, CR)]);
-  const placedR = () => new Map([[K(CQ + 1, CR), ['farma']]]);
+  // R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (2026-11-08): „zywnosc zagospodarowana” poza rzeka = farma + trzoda (trzoda dozwolona
+  // poza rzeka na farmie pola obywatela); sama farma zostawialaby trzode jako czekajacy cel zywnosciowy i wstrzymywala fort/drogi.
+  const placedR = () => new Map([[K(CQ + 1, CR), ['farma', 'bydlo']]]);
   const callR = over => callK2(mapR, { placed: placedR(), ...over, extra: { getWorkedHexKeys: () => wR, ...(over.extra ?? {}) } });
   const isRoad = p => p.key === 'droga' || p.key === 'droga_brukowana';
   const noFort = callR({ exhausted: false });
@@ -418,7 +420,7 @@ console.log('M. fort drozszy od sufitu % gracza na stale: drogi wstrzymane (udok
 {
   const map = makeMap({ mountains: [[CQ + 5, CR]] });
   const wR = new Set([K(CQ + 1, CR)]);
-  const placedR = new Map([[K(CQ + 1, CR), ['farma']]]);
+  const placedR = new Map([[K(CQ + 1, CR), ['farma', 'bydlo']]]); // Q2: zywnosc poza rzeka = farma + trzoda
   const isRoad = p => p.key === 'droga' || p.key === 'droga_brukowana';
   const pct = Math.floor((FORT_COST - 1) / 10);
   const picks = callK2(map, { pool: 1000, pct, placed: placedR, extra: { getWorkedHexKeys: () => wR } });
