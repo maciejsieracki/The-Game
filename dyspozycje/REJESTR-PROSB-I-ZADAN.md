@@ -8960,3 +8960,10 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 
 ## 2026-11-08 — zgłoszenie: konnica/rydwany na froncie na starcie bitwy
 - Właściciel: domyślnie konnica i rydwany mają być na skrzydłach (jak najbliżej pozostałych jednostek), a na starcie bitwy stoją na samym froncie. Temat: R-WEB-BATTLE-DEPLOY-CAVALRY-FLANKS-AT-START-Q1 (dispatch w runs/; Sonnet — wiele ścieżek rozmieszczenia). Wstępnie: `_deployCavalryMode` domyślnie 'flanks' w battleScene.ts, więc przyczyny szukać w kolejności/ścieżce rozmieszczenia, nie w domyślnej wartości.
+
+## FALA 553 — NEARCITY (2026-11-08)
+- Temat: R-WEB-AI-TARGET-NEAREST-CITY-NOT-CAPITAL-Q1 (zgłoszenie właściciela: AI idzie na stolicę zamiast na najbliższe miasto). FC PASS-WITH-NOTES r2/5: kod cad7a4e92, FC bd2329395 (wip: web-wip/NEARCITY). Main b497fd0df, ROBOCZA MD5 bab9d4e481137d1f91d1f9fd96c0ab25 (zgodny z GitHub Raw).
+- Przyczyna: (1) `isNearestCityWarPair` w ai-war-target-select.ts obejmowała tylko pary AI↔AI — dla gracza cel = stolica; (2) po wprowadzeniu kampanii wodza (ARMY-ALL-CIVS-GATHER-UNDER-GENERAL) główna ścieżka ataku `prepareAiGeneralWarCampaign` (main.ts) / `appendAiGeneralCampaignOrders` (ai.ts) budowała cele wyłącznie ze stolic — runda 1 tego nie objęła (Evaluator FAIL), runda 2 tak.
+- Efekt: AI (także wobec gracza) wybiera najbliższe miasto wroga od kotwicy armii; barbarzyńcy jako atakujący bez zmian. Obrona S1/S2/S3 (FALA 551) o wyższym priorytecie.
+- Testy: ai-target-nearest-city 18/18 (C1–C4 wołają prawdziwe decideAITurn z kampanią w etapie attacking), campaign 51/0, nearest-city-peace-2t mutacje 16/16, ai-test 289/0, logic 213/213, tsc 0. NIE_ZMIERZONO: zachowanie w grze na żywo. Dług: war-allin-capital-test 96/2 (hash flagi OFF; identycznie na bazie).
+- Dług Rust: REPIN ai-war-target po integracji (porty: wybór celu).
