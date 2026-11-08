@@ -908,3 +908,9 @@ Port ERAIGN/ERADELAY (web 5dd53e60f): `is_era_forced_war_ignoring_r1`, `is_war_t
 - parity-v2: merge f930df641 (rodzice f095e8a46 + FC c129eba18; baza FC 0fd287721 była już za parity-v2, więc merge zamiast FF; merge-tree czysty, ancestry kodu 5506a554b OK). Testy po merge: p6_zapis_erawar_counts 11/11, p6_zapis_erawar_save 5/5, p6_repin_ai_zakup_rezerwa 5/5. Pełna suma binarek po merge: NIE_ZMIERZONO (dysk).
 - ZAŁOŻENIA zaakceptowane: liczniki i64 (pomijane ułamki i |n|>2^53-1 — odstępstwo opisane w P6-ZAPIS-ERAWAR.md); ścieżka domain/save_load.rs zamiast src/save_load.rs; bramka flagi multiwar po stronie wołającego.
 - DŁUG: runtime licznik i rejestry aktywnych par w Rust nie istnieją (wiązanie z wypowiedzeniem wojny — temat FORCED-WAR/ERAIGN).
+
+## 2026-11-08 — MULTIWAR-2 partie B+C (r5) ZINTEGROWANE
+- parity-v2: merge bf9298737 (rodzice: f930df641 + FC 210d31dbc; merge-base 707b50c41; merge-tree czysty; kod d03aa0e1d przodkiem FC). wip: rust-port-wip/MULTIWAR2.
+- Zakres: B (war_weariness_tick) mutacje 71/75 żywotnych (94,7%), C (forced_peace) 42/43 (97,7%); `web_balance_for/web_required_pn/from_web` 1:1 z webem (balance.json 3276 wierszy po regeneracji z weba, NaN/∞); pomiar F; wycena LOC D/E/G.
+- Testy po merge: lib 22/22, multiwar2 balance 5/5, tick 5/5, peace_ai 8/8, peace_helpers 4/4, p6_zapis_erawar_counts 11/11, p6_repin_ai_zakup_rezerwa 5/5. NIE_ZMIERZONO: clippy --all-targets i cargo test na pełnej sumie binarek (dysk), pełny ponowny przebieg mutacji.
+- NASTĘPNE TEMATY (wg r5): R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-3-Q1 (D ~120–160 LOC, E ~180–260 LOC, port hunków F: brakeWarOutcome, isWarMarchOpenForPair, evaluateInterCivWarGate ~l.123 NIE_ZMIERZONO) oraz R-RUSTPORT-P6-FORCED-WAR-MODULES-Q1 (G ~700–1000 LOC, 2–3 partie). Do usunięcia/oznaczenia: `PeaceBalanceShape::Kinked` (test-double bez odpowiednika w webie).
