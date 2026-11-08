@@ -79,9 +79,10 @@ export const WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
  * `WOJNA_KAMIEN_WYMUSZONA_START_TURY` (Kamień) — ALE mierzony od tury WEJŚCIA TEGO
  * OWNERA w epokę Brąz (`bronzeEraEnterTurnByOwner` w main.ts, ustawiane w
  * `syncOwnerEraFromResearch` w chwili awansu 1→2), NIE od startu gry — cywilizacje
- * wchodzą w Brąz w bardzo różnych turach, więc "25 tur od początku epoki" musi być
- * per-owner. Właściciel: "zmieńmy czas wybuchu wojny na 25 tur od początku epoki,
- * zarówno dla kamienia, jak i dla brązu".
+ * wchodzą w Brąz w bardzo różnych turach, więc "N tur od początku epoki" musi być
+ * per-owner (N = 25 w R-WOJNA-WYMUSZONA-REGULY-Q1; od R-WEB-ERA-DELAY-Q1 N = 20, z JSON).
+ * Historyczny zapis właściciela (2026-09): "zmieńmy czas wybuchu wojny na 25 tur od początku
+ * epoki, zarówno dla kamienia, jak i dla brązu" — cytat historyczny, nie aktualna wartość.
  */
 // R-WEB-ERA-DELAY-Q1 (decyzja właściciela 2026-11-08): próg 20 tur (było 25), wartość z JSON
 // (`eraForcedWarStartTurnsFromEra.bronze` w data/war-rules-params.json); nie wpisywana na stałe.
