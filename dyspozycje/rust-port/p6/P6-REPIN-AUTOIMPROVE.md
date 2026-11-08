@@ -287,6 +287,8 @@ W `improvement-build.ts` (poza tabelą 2c, ale konieczne dla parytetu pickera): 
 
 119 mutantów zdefiniowanych, 93 uruchomione, 3 NOOP (tekst po rustfmt — nie liczone), **90 zastosowanych: 77 zabitych (85,6%)**, 13 ocalałych. Ocalałe z dowodem równoważności (7): N07 (klucz inny niż `wyrab` nie kwalifikuje się na heksie z `Overlay::Las`), N29 (węzeł obcego fortu: kwalifikator odrzuca heks poza terytorium gracza), N40 (zewnętrzny `break` na `global_spent >= cap` zbędny wobec wewnętrznego `global_spent + koszt > cap` przy koszcie > 0), N42 (heks rzeczny bez obywatela zawsze zajmuje KROK 0 przed FAZĄ 2, licznik ten sam), N81 (`n < 2` vs `n < 1`: jedno miasto daje pusty plan), N89 (`left <= 0` vs `< 0`: dodatkowe zdjęcie z kopca po rozliczeniu celów nie zmienia `dist`), N93 (pusta lista węzłów -> `territory_owner_at` = None -> false tak samo). Ocalałe NIEROZSTRZYGNIĘTE (6, dług na r3): N56, N57, N58 (warunki KROKU 7: `fallback_is_pending`, `fort_is_pending`, niedobór czeka — wymagają dedykowanych wektorów z oczekującym celem i jednocześnie wolnym heksem rzecznym), N85 (wygładzanie trójkątów: wektor „Y-junction”), N88 (remis składowych w uzupełnieniu MST), N90 (`nd > cap` vs `>=` na dokładnej granicy). Niezałatwione (nieuruchomione): N15, N17, N20, N23, N26, N28, N31, N35, N45, N46, N47, N49, N59-N66, N70-N73, N78, N100, N106 (lista w skrypcie).
 
+**Korekta (Q1 r2, obrona zarzutu o sprzecznosci):** argumenty o rownowaznosci N07, N29, N42 z tego akapitu sa NIEAKTUALNE. Pomiar r4 (sek. 10.4, 10.5) dal: N07 i N42 SURVIVED bez dowodu, N29 OTWARTE. Stan wiazacy dla tych trzech: sek. 11.3.
+
 ### 8.6 Bramki r2
 
 `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `git diff --check` EXIT=0; `cargo test` w przebiegach po jednej binarce: 2103 (integracyjne, bez p6_8i_pick) + 22 (lib) + 5 (p6_8i_pick, 5117 scenariuszy) = **2130 passed, 0 failed, 0 nowych `#[ignore]`** (1 istniejący `ignored` w `p6_order_lane`). Szczegóły: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1/logs/gates-r2.txt`.
@@ -500,3 +502,143 @@ Stan zbiorczy: zabite **103/119 = 86,6%** (102 z §10.7 + N88). Kryterium końca
 - `cargo fmt --check`, `cargo clippy --all-targets -D warnings`, pozostałe binarki `cargo test`, `p6_8i_pick`: NIE_ZMIERZONO w r1 (zmiana dotyczy tylko danych JSON czytanych przez jeden test binarny; kod `src` nie zmieniony).
 - Nowe `#[ignore]`: 0.
 - Dysk: start 2,5 GB wolnego, po zbudowaniu testu 2,0 GB, po usunięciu `target/` 3,3 GB (próg przerwania 1,5 GB nie naruszony).
+
+### 11.3 Tabela statusu 119/119 po r1 (zbiorcza)
+
+Zrodlo: `logs/mut-result-all-r3.txt` (ostatni wpis per ID) + `logs/mut-result-r4.txt` + N88 z r1 (wektor `rp-tie-n88-0`). Legenda: KILLED = zabity wektorem; SURVIVED = ocalaly, bez wektora i bez dowodu, jesli nie podano inaczej; "dowod statyczny" = argument z kodu, do akceptacji FC, nie pomiar runtime.
+
+Stan: **KILLED 103/119 (86,6%)**. Otwarte bez wektora i dowodu: N07, N29, N40, N42, N56, N57, N58, N85, N90, N100 (10). Pomiar TIMEOUT bez powtorzenia: N71 (dowod statyczny sek. 9.2). Dowody statyczne bez runtime: N20, N47 (sek. 10.2-10.3), N71, N81, N89, N93 (sek. 9.2), N40 (sek. 10.5).
+
+| ID | Status po r1 | Dowod / uwaga |
+|---|---|---|
+| N01 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N02 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N03 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N04 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N05 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N06 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N07 | SURVIVED | OTWARTE (SURVIVED r4); wektor brakuje; sek. 8.5 (r2) superseded przez sek. 10.5 |
+| N08 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N09 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N10 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N11 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N12 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N13 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N14 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N15 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N16 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N17 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N18 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N19 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N20 | EQUIVALENT | dowod statyczny: dowod w dokumencie P6 sek. 10.2; nie uruchamiany |
+| N21 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N22 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N23 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N24 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N25 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N26 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N27 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N28 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N29 | SURVIVED | OTWARTE (SURVIVED); sek. 8.5 (r2) superseded przez sek. 10.4; bez wektora i dowodu |
+| N30 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N31 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N32 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N33 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N34 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N35 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N36 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N37 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N38 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N39 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N40 | SURVIVED | OTWARTE w logu (SURVIVED r4); dowod statyczny sek. 10.5 (r5), do akceptacji FC, bez wektora |
+| N41 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N42 | SURVIVED | OTWARTE (SURVIVED r4); sek. 8.5 (r2) superseded przez sek. 10.5; bez wektora i dowodu |
+| N43 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N44 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N45 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N46 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N47 | EQUIVALENT | dowod statyczny: dowod w dokumencie P6 sek. 10.3; nie uruchamiany |
+| N48 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N49 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N50 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N51 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N52 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N53 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N54 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N55 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N56 | SURVIVED | OTWARTE; NIE_ZMIERZONO w r1, bez wektora i bez dowodu |
+| N57 | SURVIVED | OTWARTE; NIE_ZMIERZONO w r1, bez wektora i bez dowodu |
+| N58 | SURVIVED | OTWARTE; NIE_ZMIERZONO w r1, bez wektora i bez dowodu |
+| N59 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N60 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N61 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N62 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N63 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N64 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N65 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N66 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N67 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N68 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N69 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N70 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N71 | TIMEOUT | dowod statyczny sek. 9.2 (r3, do akceptacji FC); w logu TIMEOUT, nie powtorzono |
+| N72 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N73 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N74 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N75 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N76 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N77 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N78 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N79 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N80 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N81 | SURVIVED | dowod statyczny sek. 9.2 (r3, do akceptacji FC); mutant w logu SURVIVED |
+| N82 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N83 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N84 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N85 | SURVIVED | OTWARTE; NIE_ZMIERZONO w r1, bez wektora i bez dowodu |
+| N86 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N87 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N88 | KILLED (r1) | ZABITY r1: wektor rp-tie-n88-0 (plan #400, FAILED "plan #400 edges") |
+| N89 | SURVIVED | dowod statyczny sek. 9.2 (r3, do akceptacji FC); mutant w logu SURVIVED |
+| N90 | SURVIVED | OTWARTE; 40 000 losowych map bez rozbieznosci (sek. 11.1); bez wektora i dowodu |
+| N91 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N92 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N93 | SURVIVED | dowod statyczny sek. 9.2 (r3, do akceptacji FC); mutant w logu SURVIVED |
+| N94 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N95 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N96 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N97 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N98 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N99 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N100 | SURVIVED | OTWARTE; NIE_ZMIERZONO w r1, bez wektora i bez dowodu |
+| N101 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N102 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N103 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N104 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N105 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N106 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N107 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N108 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N109 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N110 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N111 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N112 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N113 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N114 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N115 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N116 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N117 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N118 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+| N119 | KILLED | zabity wektorem (logi mut-result-all-r3) |
+
+### 11.4 Odpowiedzi na zarzuty obrony (Q1, runda 2 Operatora, baza eb5658466)
+
+- Z1 (119/119 nie domkniete, 103/119): **PRZYJMUJE** jako stan faktyczny. Kryterium konca NIE spelnione. Poprawka w tej rundzie NIEWYKONANA: wektory N56-N58, N85, N90, N100 wymagaja nowych rodzin w generatorze, pelnego przebiegu `p6_8i_pick` (~6 min) i kompilacji testow. Blokada: `df /` = 1,49 GB wolne przed startem rundy, czyli ponizej progu 1,5 GB z dispatchu. Nie uruchomiono zadnego `cargo`.
+- Z2 (N90 bez wektora i dowodu): **PRZYJMUJE**, OTWARTE. Dowodu rownowaznosci nie skonstruowano; 40 000 losowych map (sek. 11.1) nie dalo rozbieznosci, ale to nie jest dowod.
+- Z3 (N56, N57, N58, N85, N100 nie podjete w r1 z powodu "brak czasu/dysku"): **PRZYJMUJE**. Przyczyna w sek. 11.1 byla nieścisla: po r1 dysk (3,3 GB po sprzataniu) nie blokowal generatora. Zakres r1 swiadomie ograniczono do N88 i N90; pozostale pozycje NIE_ZMIERZONO. Nie zamykamy ich bez wektora ani dowodu.
+- Z4 (N07, N29, N42: sprzecznosc sek. 8.5 z sek. 10.4-10.5): **PRZYJMUJE, NAPRAWIONE** w tym commicie. Dopisana korekta w sek. 8.5 (argumenty z r2 nieaktualne). Wiazacy stan: sek. 11.3 (N07 i N42 SURVIVED bez dowodu, N29 OTWARTE).
+- Z5 (N20, N40, N47, N71, N81, N89, N93: brak proby runtime): **PRZYJMUJE jako NIE_ZMIERZONO**. Mutanty nie byly uruchamiane (wymagaja `cargo test`; patrz Z1). Dowody statyczne zostaja argumentami do akceptacji FC, nie dowodem runtime.
+- Z6 (bramki fmt/clippy/cargo test NIE_ZMIERZONO): **PRZYJMUJE**. Zmierzono bez cargo: `git diff 8f9923d73 HEAD -- rust-port/engine/src gra WERSJE.md` daje 0 linii, czyli temat nie dotyka kodu Rust ani gra/. Bramki kompilacji nie uruchomiono (dysk).
+- Z7 (tabela statusu nie obejmuje 119 mutantow): **PRZYJMUJE, NAPRAWIONE**: sek. 11.3 ma 119 wierszy. Sek. 10.7 zostaje historyczna i nie jest przepisywana.
+
+Stan zbiorczy po tej rundzie: KILLED 103/119 (N88 zamkniety w r1, wektor `rp-tie-n88-0`). Kryterium 119/119 lub dowod: NIE spelnione. DEPLOY/PUSH: NIE WYKONANO.
