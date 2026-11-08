@@ -917,3 +917,9 @@ Port ERAIGN/ERADELAY (web 5dd53e60f): `is_era_forced_war_ignoring_r1`, `is_war_t
 
 ## 2026-11-08 16:1x — przegląd cykliczny
 - Aktywne: web CAVFLANK (Sonnet r1), Rust RESPROD (Haiku, wznowiony). Wdrożone dziś na ROBOCZA: FALA 551 AIDRA, 552 CSFOOD, 553 NEARCITY. Na parity-v2 (bf9298737): REKON, AIZAKUP, ZAPISERA, MULTIWAR-2 B+C. Kolejka Rust: MULTIWAR-3 (D/E/F), FORCED-WAR-MODULES (G), AIDRA-REPIN + NEARCITY-REPIN, podpięcie zakupu AI do tury, OBLEZENIE P3–P5, #5, #6, D-R5-2. Nowe tematy Rust wstrzymane do końca CAVFLANK (priorytet weba) i przy dysku < 8 GB; reguła właściciela „≥4 operatorów Rust” stosowana tam, gdzie pozwala dysk.
+
+## 2026-11-08 — RESPROD (R-RUSTPORT-REPIN-RESPROD-DUPLIKAT-Q1) ZINTEGROWANE
+- parity-v2: merge d6414fcf1 (rodzice bf9298737 + FC fae57cf39; merge-tree czysty; kod fc02c9289 przodkiem). wip: rust-port-wip/RESPROD.
+- Usunięta rodzina `resolve_resource_production` / `stack_resource_production` / `ResourceKey` / `ResourceProductionTotals`; wołający (tests/resource_production.rs, tests/parity_suite.rs, benches/engine_modules.rs) na `improvements::territory_resource_yield_for_improvement`; wartości z weba (50/75/113, miedź/żelazo/cyna 20/30/45, stadnina 25/38/56, złoto 1/2/2). Dług D-R5-1 ZAMKNIĘTY.
+- Testy po merge: resource_production 10, parity_suite 5/8, p6_repin_autoimpr_terrain, p6_23_improvements, multiwar2_balance, zapis_erawar_save — 0 failed. Operator/FC: fmt+clippy --all-targets czyste, 300 binarek 0 FAILED (wg Operatora); NIE_ZMIERZONO: pełna suma po merge.
+- ZAŁOŻENIA zaakceptowane: aliasy `lumber_mill`/`quarry` → None (zgodnie z webem); `ResourceKey::as_str()` → literały; bench checksum f64→u64. Drobiazgi porządkowe (osobno): komentarz start_position.rs:694 (nieaktualna ścieżka normalize_improvement_key), nota `zrodlo_web` w data/derived/ulepszenia-reguly.json.
