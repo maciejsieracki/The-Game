@@ -8914,3 +8914,6 @@ Weryfikacja wdrożenia: build z merge 3c81d34c8, tsc 0, vite 0; Raw MD5 = 963d93
 
 ### KOREKTA wpisu „OTWARTE: auto-ulepszenia same farmy” (2026-11-08)
 Diagnoza z R-WEB-AUTOIMPROVE-REGRESSION-ONLY-FARMS-Q1 („skutek reguły pól obywateli”) ODRZUCONA przez właściciela (regres: trzoda i irygacja nie powstają mimo obywatela, rzeki i budżetu; rzeka = priorytet, nie wymóg; reguła „tylko pola obywateli” bez zmian). Zastąpiona tematem R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (runda 2, Sonnet, w toku; kryterium binarne: w realnym przepływie automat stawia trzodę i irygację; wymagany commit-sprawca). STATUS: OTWARTE do FC PASS i wdrożenia (FALA 549).
+
+### Diagnoza R-WEB-AI-ZDOBYCIE-FOG-DIAG-Q1 (2026-11-08, FC e30c824ec PASS-WITH-NOTES) i decyzja ABC
+ai-zdobycie-miasta-adiacencja: kod poprawny, nieaktualne fixtury/kotwice (brak atWarWithCiv → consolidationPeace ai.ts:3796; kotwice po zmianach main.ts) → test 96/96. ai-fog W3/W8 nieaktualne fixtury → zielone; W2: AI w obronie domu planuje atak na niewidoczny cel (ai.ts:3448-3449, 344e5b3fd), silnik odrzuca (main.ts:40832) → obrońca traci turę. DECYZJA WŁAŚCICIELA (ABC=A): obrona własnej ziemi widzi wszystko → temat R-WEB-AI-HOME-WAR-SEES-OWN-LAND-Q1 (w toku). Integracja poprawek testów razem z tym tematem (baza web-wip/aizfog-fc).
