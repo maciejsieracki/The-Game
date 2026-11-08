@@ -1,0 +1,20 @@
+BRAMKI RUNDY 2 (rust-port/engine, CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0, target w worktree)
+
+cargo fmt --all -- --check                      -> FMT_EXIT=0
+cargo clippy --all-targets -- -D warnings       -> CLIPPY_EXIT=0
+git diff --check                                -> DIFFCHECK_EXIT=0
+
+cargo test PODZIELONE przebiegi (skrypt: po jednej binarce tests/*.rs, `cargo test --no-fail-fast --test <nazwa>`):
+  czesc 1 (indeksy 0-113)                       -> passed=993  failed=0 ignored=0
+  czesc 2 (indeksy 115-219) lacznie z czescia 1 -> passed=1629 failed=0 ignored=0
+  czesc 3 (indeksy 220-286) lacznie             -> passed=2103 failed=0 ignored=1   (ignored: p6_order_lane, istniejacy przed tematem; 0 NOWYCH #[ignore])
+  cargo test --lib                              -> 22 passed, 0 failed
+  cargo test --test p6_8i_pick (5 testow, 5117 scenariuszy z uruchomionego weba 180c08305, 331 s) -> 5 passed, 0 failed
+  cargo test --doc                              -> 0 testow
+SUMA: 2103 + 22 + 5 = 2130 passed, 0 failed (baseline 2122/0; nowe: p6_repin_autoimpr_terrain 8 testow)
+
+Wektory z uruchomionego weba (origin/main 180c08305, git archive gra/src gra/data poza repo):
+  p6_8i_vectors/pick.json     5117 scenariuszy (3492 niepustych), helpers.json, relief.json (41 kluczy, 23 warstwy)
+  p6_repin_autoimpr_vectors/  terrain.json (cases ~13 tys.), gate.json, roadplan.json (400 planow, 305 niepustych)
+  p6_m16_vectors/qualifier.json (regenerowany; rules.json i gallery.json bez zmian - identyczne bajt w bajt)
+Brak niezgodnosci z webem na zadnym wektorze.
