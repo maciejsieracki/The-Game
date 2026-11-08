@@ -126,6 +126,24 @@
   "out": "NaN"
  },
  {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "-100",
+   "lostCitiesTotal": "0",
+   "turnsSinceCityChange": "200"
+  },
+  "out": "0.3"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "100",
+   "lostCitiesTotal": "-2",
+   "turnsSinceCityChange": "undefined"
+  },
+  "out": "0.71"
+ },
+ {
   "fn": "wearinessPeacePriceFactor",
   "in": {
    "level": "0"

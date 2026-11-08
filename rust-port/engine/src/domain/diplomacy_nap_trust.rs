@@ -40,12 +40,43 @@ pub fn nap_relacja_prog_efektywny(
     js_max(0.0, prog_nap_relacja + narzut - nap_ease + delta)
 }
 
-/// Web `fmtProg` (diplomacy-locks.ts:146): liczba całkowita -> `String(n)`, inaczej `toFixed(1)`.
+/// Web `fmtProg` (diplomacy-locks.ts:146): `Number.isInteger(n) ? String(n) : n.toFixed(1)`.
 pub fn fmt_prog(n: f64) -> String {
     if n.is_finite() && n.fract() == 0.0 {
         format!("{}", n as i64)
     } else {
-        format!("{:.1}", n)
+        js_to_fixed_1(n)
+    }
+}
+
+/// JS `Number.prototype.toFixed(1)` (ECMA-262 21.1.3.3): dokładny remis (np. 0.25, 29.25) zaokrąglany
+/// w GÓRĘ po wartości bezwzględnej; Rust `{:.1}` zaokrągla remisy do parzystej (0.25 -> "0.2").
+/// Niefinityczne: `NaN`, `Infinity`, `-Infinity` jak w JS.
+fn js_to_fixed_1(n: f64) -> String {
+    if n.is_nan() {
+        return "NaN".to_string();
+    }
+    if n.is_infinite() {
+        return if n > 0.0 { "Infinity" } else { "-Infinity" }.to_string();
+    }
+    let neg = n < 0.0;
+    let a = n.abs();
+    // Remis dokładny: po drugim miejscu po przecinku stoi „5”, a dalej same zera (np. 0.25, 29.25).
+    // Dla f64 różnica od remisu nie mieści się w 60 cyfrach, więc to rozstrzygnięcie jest dokładne.
+    let exact = format!("{:.60}", a);
+    let is_tie = exact.find('.').is_some_and(|d| {
+        let frac = &exact[d + 1..];
+        frac.len() >= 2 && frac.as_bytes()[1] == b'5' && frac[2..].bytes().all(|b| b == b'0')
+    });
+    let body = if is_tie {
+        format!("{:.1}", ((a * 10.0).floor() + 1.0) / 10.0)
+    } else {
+        format!("{:.1}", a)
+    };
+    if neg {
+        format!("-{body}")
+    } else {
+        body
     }
 }
 

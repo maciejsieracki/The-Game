@@ -97,7 +97,7 @@ fn verdict_name(v: EraWarGateVerdict) -> &'static str {
 #[test]
 fn weariness_vectors_match_web() {
     let cases = load(WEARINESS);
-    assert_eq!(cases.len(), 64, "liczba wektorow zmeczenia");
+    assert_eq!(cases.len(), 66, "liczba wektorow zmeczenia");
     let p = &WAR_WEARINESS_PARAMS;
     for (i, c) in cases.iter().enumerate() {
         let inp = &c["in"];
@@ -234,7 +234,7 @@ fn era_vectors_match_web() {
 #[test]
 fn nap_vectors_match_web() {
     let cases = load(NAP);
-    assert_eq!(cases.len(), 64, "liczba wektorow NAP");
+    assert_eq!(cases.len(), 67, "liczba wektorow NAP");
     for (i, c) in cases.iter().enumerate() {
         let inp = &c["in"];
         let ctx = format!("nap[{i}] {}", s(c, "fn"));
@@ -323,7 +323,10 @@ fn player_epoch_missing_field_is_true() {
 
 #[test]
 fn era_params_literal_is_stone_bronze_iron_cap_one_per_civ() {
-    assert_eq!(ERA_WAR_PARAMS.enabled_forced_war_eras.len(), 3);
+    assert_eq!(
+        ERA_WAR_PARAMS.enabled_forced_war_eras,
+        &[ForcedEraTag::Stone, ForcedEraTag::Bronze, ForcedEraTag::Iron][..]
+    );
     assert_eq!(ERA_WAR_PARAMS.max_era_forced_wars_per_era, None);
     assert_eq!(ERA_WAR_PARAMS.max_era_forced_wars_per_civ_per_era, Some(1));
 }
@@ -333,7 +336,12 @@ fn js_math_semantics_nan_and_signed_zero() {
     assert!(js_max(f64::NAN, 0.0).is_nan(), "Math.max propaguje NaN");
     assert!(js_clamp(f64::NAN, 0.0, 1.0).is_nan());
     assert!(js_max(-0.0, 0.0).is_sign_positive(), "Math.max(-0, 0) = +0");
+    assert!(js_max(0.0, -0.0).is_sign_positive(), "Math.max(0, -0) = +0");
     assert!(js_min(0.0, -0.0).is_sign_negative(), "Math.min(0, -0) = -0");
+    assert!(js_min(-0.0, 0.0).is_sign_negative(), "Math.min(-0, 0) = -0");
+    assert!(js_max(1.0, f64::NAN).is_nan(), "Math.max(1, NaN) = NaN");
+    assert!(js_min(f64::NAN, 1.0).is_nan(), "Math.min(NaN, 1) = NaN");
+    assert!(js_clamp(0.5, f64::NAN, 1.0).is_nan(), "clamp z NaN dolnym = NaN");
 }
 
 #[test]
