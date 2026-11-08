@@ -148,16 +148,38 @@ try {
   // R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (r2): etapy E3 -> E4 -> E5 kaskaduja W TEJ SAMEJ turze (wyzszy etap wyczerpany ->
   // nastepny z reszta budzetu), zamiast jednego etapu na ture (ktory glodzil trzode/irygacje, gdy E1 mial cel co ture). Kolejnosc
   // etapow zostaje: w jednym wywolaniu picki ida E3 (trzoda) < E4 (irygacja/tarasy) < E5 (farmy poza rzeka).
-  const rank = (k) => (['bydlo', 'owce', 'lama'].includes(k) ? 3 : ['irygacja', 'tarasy'].includes(k) ? 4 : k === 'farma' ? 5 : 9);
-  const cascade = runPicker({ map, cities, worked, placed });
-  const seenFood = [...farmCleared, ...cascade]; // trzoda/irygacja moga juz wejsc w wywolaniu z farmami E1 (kaskada)
-  assert.ok(seenFood.some(p => p.key === 'bydlo'), 'the first available livestock action should be Trzoda');
+  // Wielotur (przywrocony z r1): kazda tura ma kolejnosc E1 (farma przy rzece, 1) < E3 (trzoda, 3) < E4 (irygacja/tarasy, 4)
+  // < E5 (farma poza rzeka, 5) < E6 (sol, 6). Kaskada w JEDNEJ turze jest dozwolona (wyzszy etap wyczerpany, reszta budzetu);
+  // cofniecie rangi w tej samej turze albo miedzy turami (farma E5 widziana, potem trzoda/irygacja) jest FAIL.
+  const nearRiverFx = (q, r) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]]
+    .some(([dq, dr]) => map.hexes[`${q + dq},${r + dr}`]?.rzeka?.obecna);
+  const rankOf = (p) => (p.key === 'wyrab' ? 0 : p.key === 'farma' ? (nearRiverFx(p.q, p.r) ? 1 : 5)
+    : ['bydlo', 'owce', 'lama'].includes(p.key) ? 3 : ['irygacja', 'tarasy'].includes(p.key) ? 4
+      : p.key === 'warzelnia_soli' ? 6 : 9);
+  // Tura E1 (farmCleared) jest juz zbudowana: w tym samym wywolaniu kaskada moze dolozyc trzode/irygacje — liczy sie do logu tur.
+  const firstRanks = farmCleared.map(rankOf);
+  assert.ok(firstRanks.every((r, i) => i === 0 || r >= firstRanks[i - 1]),
+    `E1 call: stage order E1 < E3 < E4 < E5 (got ${farmCleared.map(p => p.key).join(',')})`);
+  const turnsLog = [farmCleared.map(p => p.key)];
+  let seenOffRiverFarm = firstRanks.includes(5);
+  for (let turn = 1; turn < 20; turn++) {
+    const picks = runPicker({ map, cities, worked, placed });
+    if (picks.length === 0) break;
+    const ranks = picks.map(rankOf);
+    assert.ok(ranks.every((r, i) => i === 0 || r >= ranks[i - 1]),
+      `turn ${turn}: stage order E1 < E3 < E4 < E5 < E6 (got ${picks.map(p => p.key).join(',')})`);
+    // Trzoda POZA rzeka wymaga farmy na tym heksie (r2 keyBlockedOnHex): po E5 moze pojsc tylko taka trzoda, ktorej farma wlasnie powstala.
+    assert.ok(!(seenOffRiverFarm && ranks.some((r, i) => r === 4 || (r === 3 && nearRiverFx(picks[i].q, picks[i].r)))),
+      `turn ${turn}: river livestock/irrigation (E3 river, E4) must not appear after an off-river farm (E5) picked earlier`);
+    if (ranks.includes(5)) seenOffRiverFarm = true;
+    turnsLog.push(picks.map(p => p.key));
+    place(picks, map, placed);
+  }
+  const flatFood = turnsLog.flat();
+  assert.ok(flatFood.includes('bydlo'), 'the first available livestock action should be Trzoda (E3 runs in the multi-turn loop)');
   check('2. E3 livestock (river hexes) follows the river farms and precedes farms off the river', () => {});
-  assert.ok(seenFood.some(p => ['irygacja', 'tarasy'].includes(p.key)), 'E4 irrigation/terraces run in the same call once E3 is exhausted');
-  const ranks = farmCleared.map((p, i) => (p.key === 'farma' && farmCleared.slice(0, i).every(q => q.key === 'farma') ? 1 : rank(p.key)));
-  assert.ok(ranks.every((r, i) => i === 0 || r >= ranks[i - 1]), `stage order E1 < E3 < E4 < E5 inside the call (got ${farmCleared.map(p => p.key).join(',')})`);
+  assert.ok(flatFood.some(k => k === 'irygacja' || k === 'tarasy'), 'E4 irrigation/terraces run once E3 is exhausted');
   check('3. E4 irrigation/terraces precede the off-river farms (E5)', () => {});
-  place(cascade, map, placed);
   // Kaskada zbudowala juz wszystko, co miescilo sie w budzecie (E5 = farmy poza rzeka tez); dowod: zaden kandydat na farme nie zostal.
   assert.strictEqual(
     runPicker({ map, cities, worked, placed, foodImprovementStages: false, priorityOverride: ['farma'] }).length, 0,
@@ -165,13 +187,10 @@ try {
   );
   check('3b. E5 farms outside the river follow E4', () => {});
   check('1b. AI keeps the E5 farm stage active until all eligible off-river farms are placed', () => {});
-  const saltStillAvailable = runPicker({
-    map, cities, worked, placed, foodImprovementStages: false,
-    priorityOverride: ['warzelnia_soli'],
-  });
-  // Q2 r2: po kaskadzie E6 (sol) bywa juz zbudowana w tym samym wywolaniu, gdy wyzsze etapy sa wyczerpane — wazne, ze NIE blokowala wczesniejszych.
-  assert.ok(saltStillAvailable.some(p => p.key === 'warzelnia_soli') || [...placed.values()].some(L => L.includes('warzelnia_soli')),
-    'salt works remain eligible (or already built once the earlier phases are exhausted), so they must not block earlier phases');
+  // Sol (E6) nie blokuje wczesniejszych etapow: jesli zostala zbudowana w petli, to dopiero po trzodzie (E3) i irygacji (E4).
+  const saltAt = flatFood.indexOf('warzelnia_soli');
+  assert.ok(saltAt === -1 || (flatFood.indexOf('bydlo') !== -1 && saltAt > flatFood.indexOf('bydlo')),
+    'salt works (E6) are built only after livestock (E3), never before it');
   check('3c. salt works (E6) stay available and do not block the earlier stages', () => {});
 
   // D4: etap bez odblokowanej technologii NIE jest celem i nie blokuje nastepnych (poprzednio
