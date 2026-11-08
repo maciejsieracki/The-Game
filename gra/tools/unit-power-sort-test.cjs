@@ -153,9 +153,12 @@ try {
     mainSource.includes('const availableRecruitment = sortByUnitPowerDescending'),
     'empire recruitment snapshot sorts its roster at the display boundary',
   );
+  // Klasa A (R-WEB-TEST-DEBT-PREEXISTING-B-Q1): po 6f61f1d70 (R-WEB-RECRUIT-LIST-ORDER-BY-ERA-Q1)
+  // panel miasta sortuje listę rekrutacji przez sortRecruitListByEra (epoka, potem siła), a nie
+  // przez sortByUnitPowerDescending. Asercja sprawdza nowy punkt sortowania wyświetlania.
   check(
-    (cityPanelSource.match(/const units = sortByUnitPowerDescending/g) || []).length === 2,
-    'city panel detail and recruitment lists both sort at the display boundary',
+    (cityPanelSource.match(/return sortRecruitListByEra\(/g) || []).length === 1,
+    'city panel recruitment list sorts at the display boundary (sortRecruitListByEra)',
   );
 } finally {
   try { fs.unlinkSync(BUNDLE_PATH); } catch { /* best effort */ }
