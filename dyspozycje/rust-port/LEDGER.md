@@ -898,3 +898,8 @@ Port ERAIGN/ERADELAY (web 5dd53e60f): `is_era_forced_war_ignoring_r1`, `is_war_t
 ## 2026-11-08 15:2x — dysk 127 MB, RESPROD wstrzymany
 - Trzy workflow Rust naraz (AIZAKUP, RESPROD, ZAPISERA) + MULTIWAR-2 → dysk 127 MB wolnego (po ~2,7 GB na worktree z cargo target). Usunięto stare kopie robocze w scratchpadzie i target RESPROD (2 GB) → 2,6 GB wolnego.
 - R-RUSTPORT-REPIN-RESPROD-DUPLIKAT-Q1 (wf_f222cc2b-1c8) zatrzymany; nieskomitowane zmiany w worktree wf_f222cc2b-1c8-1 (benches/engine_modules.rs, resource_production.rs, tests/parity_suite.rs, tests/resource_production.rs). Wznowienie: resumeFromRunId wf_f222cc2b-1c8, gdy wolne ≥ 4 GB. Maks. 3 równoległe kompilacje Rust przy tej wielkości dysku.
+
+## 2026-11-08 — AIZAKUP (R-RUSTPORT-REPIN-AI-ZAKUP-REZERWA-Q1) ZINTEGROWANE
+- parity-v2: FF 0fd287721 → f095e8a46 (FC PASS-WITH-NOTES r1; ancestry OK). wip: rust-port-wip/AIZAKUP. Funkcja czysta `ai_zakup_jednostki.rs` (shouldAIPurchaseUnit, rezerwa 10/3/0), 39 wektorów z weba, test 5/5, data_compliance 40/40, fmt/clippy czyste.
+- ZAŁOŻENIA zaakceptowane: klucze `kupno_jednostki_*` obowiązkowe w AiParams (wyjątek allowlisty: src/data/economy_society_part2.rs, deny_unknown_fields); panic dla poziomu spoza 1..=3; min_dochod_netto 0/0/-2 = PLACEHOLDER (decyzja właściciela po pomiarze).
+- DŁUG: zakup AI NIE jest podpięty do tury AI w Rust (osobny temat); baseline i pełny przebieg binarek NIE_ZMIERZONO (dysk).
