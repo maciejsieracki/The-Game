@@ -177,8 +177,9 @@ where
 // - `compute_citizen_resource_drain` - realny drenaz: `required = floor(pop * stawka_epoki)`,
 //   `drained = min(required, stock)`, kara binarna per surowiec.
 // REPIN-EKONOMIA-E (pin weba 4bbef081d, R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1): stawka zalezy od epoki
-// (`citizen_upkeep_rate_for_era`: Kamien 1,0 / Braz 2,0 / Zelazo 3,0; pole `stawkaNaObywatela`
-// wiersza epoki; brak / NaN / niefinitowa / ujemna -> `CITIZEN_UPKEEP_RATE_PER_CITIZEN`).
+// (`citizen_upkeep_rate_for_era`: stawka = 1,0 x m(e), m(e) = 1 + 0,5(e-1) jak web
+// `citizen-consumption-era.ts`, REPIN-EKONOMIA-F; pole `stawkaNaObywatela` wiersza epoki jest
+// ignorowane; brak / NaN / niefinitowa / ujemna era -> m(1) = 1,0).
 // Wolajacy MUSI zsumowac populacje wszystkich miast ownera i wywolac raz per owner per tura.
 // Liczby (populacja, magazyn) sa f64 jak w JS; wartosci niefinite/niedodatnie traktowane
 // tak samo jak w webie (`Number.isFinite` / `> 0`).

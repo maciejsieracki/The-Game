@@ -146,3 +146,50 @@ Metoda "hybrid web ref": wektory e2e regenerowane z `origin/main` z cofnietymi p
 - `R-RUSTPORT-REPIN-EKONOMIA-F-ZELAZO-MLYN-WODA-Q1`: poz. 4 (zelazo natywne ze stanem zapasu, Mlyn tylko rzeka) i 5 (woda ladowa).
 - `R-RUSTPORT-REPIN-VECTORS-E2E-POSTEKONF-Q1`: 3 testy `#[ignore]`: `p6_7a_post_central::post_central_growth_matches_web` (c5 manpower web 16041 vs Rust 8041, przyczyna poza zakresem F, NIE_ZMIERZONO), `p6_order_lane` x2 (generator pada na main, `rows` undefined).
 - Poza zakresem: `emporion`, tekst `top3` w buildings.json, skalowanie ulepszen terenu, trade-port, okolica ownerEra.
+
+## 9. Runda 4 - odpowiedzi na zarzuty FC r3 (Operator r4, ten sam ID)
+
+Baza: `269852e64` (Operator r3). Zmiana r4: komentarz `resource_production.rs` (zarzut 8) i ta sekcja.
+Pomiar pozycji 4 i 5 wykonany ODCZYTEM KODU (bez uruchamiania wektorow). Web = `origin/main` `180c08305` w tym klonie.
+
+### 9.1 Pomiar pozycji 4 i 5 (plik:linia)
+
+| Pozycja | Web | Rust | Status |
+|---|---|---|---|
+| 4a. natywny zelazo (`ownerHasNativeZelazoAccess`) | `gra/src/game/zelazo-access.ts:101-107` (bramka `hasKopalnia`, potem `builtIds` albo zapas panstwa) | `domain/turn_economy_inputs_native.rs:167` `has_zelazo_access(None, Some(built))` - brak zapasu imperium | NIE PORTOWANE (ZMIERZONE) |
+| 4b. Mlyn tylko przy rzece | `gra/src/game/production.ts:172` `RIVER_ONLY_BUILDING_IDS = {mlyn}`, `production.ts:1006` `ctx.cityHasRiver !== true` -> pominiecie | brak bramki rzeki; `domain/turn_economy_loop.rs:722` tylko `ma_mlyn: has("mlyn")` | NIE PORTOWANE (ZMIERZONE) |
+| 5. woda = slodka woda ladowa | `gra/src/game/turn-economy.ts:443` `cityHasWaterAccess` = `hasFreshwaterAccess` (`gra/src/map/freshwater.ts:143-147`: rzeka LUB jezioro) | `domain/turn_economy_health.rs:149-175` `city_has_water_access_in` (rzeka: `river_present` na hexie, `riverPaths` na hexie i 6 sasiadach; jezioro: `is_lake_adjacent_cached`), `domain/freshwater.rs:101-135` (`is_lake_adjacent`, `has_river_water_access`) | ZGODNY (odczyt; wektory NIE uruchomione) |
+
+Pozycja 4 wymaga zmian w plikach spoza allowlisty (`turn_economy_inputs_native.rs`, `turn_economy_loop.rs`, miejsce bramki Mlyna) - patrz 9.2, Z1.
+
+### 9.2 Odpowiedzi na zarzuty FC r3
+
+- Z1 (poz. 4 niezportowana): PRZYJMUJE. Luka potwierdzona w 9.1. Nie domknieta w r4: wymaga rozszerzenia allowlisty. DECYZJA ORKIESTRATORA: rozszerzyc allowlist o `turn_economy_inputs_native.rs` i `turn_economy_loop.rs` albo wydzielic nowy ID. Dlug: `R-RUSTPORT-REPIN-EKONOMIA-F-ZELAZO-MLYN-Q1`.
+- Z2 (poz. 5 NIE_ZMIERZONO): PRZYJMUJE brak pomiaru; POMIAR ODCZYTEM w 9.1: ZGODNY (logika 1:1 z `hasFreshwaterAccess`). Uruchomienie wektorow dla poz. 5: dlug, nowy ID.
+- Z3 (osłabienie testów przez `#[ignore]`): PRZYJMUJE, ze w drzewie sa 4 `#[ignore]`: 3 nowe (`tests/p6_7a_post_central.rs:65`, `tests/p6_order_lane.rs:1133`, `tests/p6_order_lane.rs:1563`) i 1 stary (`tests/p6_order_lane.rs:1531` `dump_tick1_econ_for_web_generator`, obecny w `4b4f9e038` jako linia 1530). Raport r3 podawal 3 - bledna liczba. ODRZUCAM twierdzenie, ze przyczyna to "zmiana web poza zakresem F", bo nie jest to udowodnione. Pomiar strukturalny: web `gra/src/game/manpower.ts:859-872` i Rust `domain/recruitment.rs:2610-2626` maja te sama formule (`max`, `cur + (max - oldMax)`, `min(cur, max)`). Roznica 8000 (c5: web 16041, Rust 8041) pochodzi wiec z danych wejsciowych wolajacego (maxMult, previousPop, epoka, civ bonusy) albo ze sciezki post-central. NIE_ZMIERZONO - przyczyna nieustalona. Test nie zostal odblokowany w r4. DECYZJA ORKIESTRATORA: czy `#[ignore]` z ID dlugu jest dopuszczalny (dispatch r3 tego zakazuje).
+- Z4 (wyjscie poza allowlisty, nieujawnione): PRZYJMUJE. Pliki spoza allowlisty i spoza rozszerzenia r3:
+  - zrodla: `domain/turn_economy.rs` (zmiana `OwnerStorageParams`; raport r3 to przyznawal jako ZAŁOŻENIE), `domain/turn_economy_post.rs` (+2 linie `spichlerz_ii_prog_ludnosci`, w raporcie r3 NIEUJETE), `data/economy_society.rs` (loader; modyfikacja, nie addytywna).
+  - testy: `tests/city_growth.rs`, `tests/economy_city_vectors.rs`, `tests/economy_city_vectors_r3.rs`, `tests/p6_7a_post_central.rs`, `tests/p6_8e_upkeep_p1.rs`, `tests/p6_order_lane.rs`.
+  - wektory: `tests/p6_adv_*_vectors/*.json` (7 plikow), `tests/p6_econ_post_vectors/post_0.json`, `tests/p6_empirefood_vectors/empirefood.json`.
+  Operator nie cofa tych zmian samodzielnie (cofniecie zlamaloby 1:1). DECYZJA ORKIESTRATORA: rozszerzenie allowlisty o liste powyzej (ZAŁOŻENIE: konieczne do 1:1) albo cofniecie.
+- Z5 (usunieta asercja `cityPopulationCap`): PRZYJMUJE. `tests/economy_city_vectors.rs` ~l.240 ma `let _ = (...)`. Przywrocenie wymaga regeneracji wektorow `cityPopulationCap` z web (zmienily sie). Substytut `tests/p6_repin_ekon_f_popcap.rs` to INNY plik, wiec nie spelnia wymogu "w tym samym tescie". Dlug: nie zrobione w r4.
+- Z6 (`tests/p6_8d_citizen_upkeep.rs`):
+  - Prog `partial > 100` -> `> 70` (l.205): PRZYJMUJE, to obnizenie progu bez akceptacji. Liczba 81 pochodzi z pomiaru FC r3 (nie powtorzylem). Propozycja: rozszerzyc generator o dodatkowe przypadki czesciowe i przywrocic `> 100`, albo decyzja orkiestratora, ze 70 jest progiem pokrycia.
+  - Zarzut "usunieto asercje `available.len()==4` i `deductions.is_empty()`": ODRZUCAM. Dowod: `len(), 4` nie wystepuje ani w `4b4f9e038`, ani w `269852e64`; liczba linii z `assert` w pliku = 56 w obu wersjach; `deductions.is_empty()` obecne (base l.285, l.300; teraz l.282, l.297); `available.len(), 2` obecne (base l.302; teraz l.299). Zmiana dotyczy `table()` (usuniete zerowanie `stawka_na_obywatela`) i progu.
+- Z7 (mutacje partii 3 niedomkniete): PRZYJMUJE. Gałęzi tier II, `js_math_round` i etykiet bramki Spichlerza II nie zmutowano. Dlug w r4 (nie zrobione).
+- Z8 (nieaktualny komentarz `resource_production.rs:180`): PRZYJMUJE, NAPRAWIONE w r4 (komentarz: stawka = 1,0 x m(e), pole `stawkaNaObywatela` ignorowane). Commit w tej rundzie.
+
+### 9.3 Gates r4
+
+- `cargo fmt --all -- --check` (w `rust-port/engine`): EXIT=0.
+- `git diff --check`: EXIT=0.
+- `cargo clippy` i `cargo test`: NIE uruchamiane w r4 (zmiana tylko komentarza w `resource_production.rs`). Wynik FC r3 na tym samym kodzie: 2143 passed, 0 failed, 4 ignored.
+
+### 9.4 Dlugi (nowe ID, do rozpisania przez orkiestratora)
+
+- `R-RUSTPORT-REPIN-EKONOMIA-F-ZELAZO-MLYN-Q1`: poz. 4 (zelazo z zapasem imperium, Mlyn tylko rzeka); wymaga allowlisty (Z1).
+- `R-RUSTPORT-REPIN-EKONOMIA-F-WODA-VEC-Q1`: uruchomic wektory dla poz. 5.
+- `R-RUSTPORT-REPIN-VECTORS-E2E-POSTEKONF-Q1` (istniejacy): 3 testy `#[ignore]`; przyczyna 8000 manpower NIE_ZMIERZONO; generator order-lane nie dziala na main.
+- `R-RUSTPORT-REPIN-EKONOMIA-F-POPCAP-REGEN-Q1`: przywrocic asercje `cityPopulationCap` w `economy_city_vectors.rs` (Z5).
+- `R-RUSTPORT-REPIN-EKONOMIA-F-MUT-P3-Q1`: mutacje partii 3 (tier II, round, etykiety bramki) (Z7).
+- `R-RUSTPORT-REPIN-EKONOMIA-F-PARTIAL-Q1`: przywrocic prog `partial > 100` w `p6_8d_citizen_upkeep.rs` (Z6), albo decyzja o progu 70.
