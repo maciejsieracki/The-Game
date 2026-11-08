@@ -40829,7 +40829,13 @@ async function boot(): Promise<void> {
                     console.warn(`[AI ${ownerId}] Atak na owner ${defender.ownerId} bez wojny — pominięto`);
                     continue;
                   }
-                  if (!aiTargetVisibleForAction(
+                  // R-WEB-AI-HOME-WAR-SEES-OWN-LAND-Q1 (decyzja właściciela 2026-11-08, ABC=A): AI broniąca
+                  // WŁASNEGO terytorium widzi wszystko na nim — planner obrony (applyHomeWarPriorities,
+                  // ai.ts) nie filtruje wrogów po visibleHexes, więc bez tego wyjątku obrońca traciłby turę.
+                  // Poza własnym terytorium mgła obowiązuje bez zmian. Ścieżka dotyczy wyłącznie komend AI
+                  // (człowiek nie przechodzi tym blokiem).
+                  const targetOnOwnTerritory = territoryOwnerAtLive(defender.q, defender.r) === ownerId;
+                  if (!targetOnOwnTerritory && !aiTargetVisibleForAction(
                     currentVisibleForOwner(ownerId), fogOn, defender.q, defender.r, keyOf,
                   )) {
                     console.warn(`[AI ${ownerId}] Atak na niewidoczny cel — pominięto`);

@@ -1,7 +1,9 @@
-// KLASA B (kandydat, przyczyna do potwierdzenia) -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4.
-// Test CELOWO pozostaje CZERWONY. Kod gry NIE jest naprawiany w tym temacie.
-// Czerwony na main i na ref 3aa1b3a2a (FULLREG). Kandydat na osobny temat R-WEB-* (decyzja orkiestratora).
-// NIE_ZWERYFIKOWANO w r4: nie ustalono przyczyny.
+// KLASA B -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4; diagnoza R-WEB-AI-ZDOBYCIE-FOG-DIAG-Q1 r1 (499487c1a).
+// R-WEB-AI-HOME-WAR-SEES-OWN-LAND-Q1 (decyzja ABC=A, 2026-11-08): AI broniaca WLASNEGO terytorium
+// widzi wroga na nim (bramka main.ts "Atak na niewidoczny cel" ma wyjatek targetOnOwnTerritory).
+// W2 = atak na niewidocznego wroga NA WLASNYM terytorium jest planowany i wykonalny;
+// W2b = atak na niewidocznego wroga POZA wlasnym terytorium nie jest planowany (mgla obowiazuje).
+// Test kontraktu granicy: tools/ai-home-war-sees-own-land-test.cjs.
 'use strict';
 
 /**
@@ -19,6 +21,7 @@ const entry = path.join(__dirname, '.ai-fog-entry.ts');
 const bundle = path.join(__dirname, '.ai-fog-bundle.cjs');
 fs.writeFileSync(entry, `
 export { decideAITurn } from ${JSON.stringify(path.join(root, 'src/game/ai'))};
+export { territoryOwnerAt } from ${JSON.stringify(path.join(root, 'src/map/territory'))};
 export {
   aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets,
   restoreAiTargetMemory, snapshotAiTargetMemory,
@@ -74,15 +77,32 @@ console.log('W1 visible target -> attack');
   assert.strictEqual(commands.filter(c => c.type === 'attack').length, 1);
 }
 
-console.log('W2 invisible target -> not selected/attacked');
+console.log('W2 invisible enemy on OWN territory -> planned and executable');
 {
+  const ownCity = { id: 'home', ownerId: 1, q: 4, r: 4, pop: 5, level: 1 };
   const commands = api.decideAITurn(
     1, [unit('a2', 1, 5, 5), unit('e2', 2, 6, 5)], [city('home', 1, 4, 4)],
     makeMap(), data, { canEngageOwner: atWar, visibleHexes: new Set(['5,5']) },
   );
-  assert.strictEqual(commands.some(c => c.type === 'attack'), false);
+  const attacks = commands.filter(c => c.type === 'attack');
+  assert.strictEqual(attacks.length, 1);
+  assert.strictEqual(attacks[0].unitId, 'a2');
+  assert.strictEqual(attacks[0].targetUnitId, 'e2');
+  // Bramka silnika (main.ts targetOnOwnTerritory): hex celu nalezy do wlasciciela atakujacego -> wyjatek od mgly.
+  assert.strictEqual(api.territoryOwnerAt(6, 5, [ownCity]), 1);
   assert.strictEqual(api.aiTargetVisibleForAction(new Set(['5,5']), true, 6, 5, keyOf), false);
-  assert.strictEqual(api.aiTargetVisibleForAction(undefined, false, 6, 5, keyOf), true);
+}
+
+console.log('W2b invisible enemy OUTSIDE own territory -> not planned, fog holds');
+{
+  const ownCity = { id: 'home', ownerId: 1, q: 4, r: 4, pop: 5, level: 1 };
+  const commands = api.decideAITurn(
+    1, [unit('a2b', 1, 9, 5), unit('e2b', 2, 10, 5)], [city('home', 1, 4, 4)],
+    makeMap(), data, { canEngageOwner: atWar, visibleHexes: new Set(['9,5']) },
+  );
+  assert.strictEqual(commands.some(c => c.type === 'attack'), false);
+  assert.strictEqual(api.territoryOwnerAt(10, 5, [ownCity]), null);
+  assert.strictEqual(api.aiTargetVisibleForAction(new Set(['9,5']), true, 10, 5, keyOf), false);
 }
 
 console.log('W3 remembered target -> planning only, no attack');
@@ -93,12 +113,15 @@ console.log('W3 remembered target -> planning only, no attack');
   const commands = api.decideAITurn(
     1, [unit('a3', 1, 5, 5)], [city('home', 1, 4, 4)],
     makeMap(), data, {
-      canEngageOwner: atWar, visibleHexes: new Set(['5,5']), rememberedTargets: memory,
+      // Wojna z cywilizacja 2 jawnie (jak main.ts: atWarWithCivFor); bez niej ai.ts
+      // prowadzi jednostkę do stolicy w pokoju (R-WEB-ARMY-CONSOLIDATION-Q1, f2100f9cf).
+      canEngageOwner: atWar, atWarWithCiv: true, visibleHexes: new Set(['5,5']), rememberedTargets: memory,
     },
   );
   assert.strictEqual(commands.some(c => c.type === 'attack'), false);
+  // Pełny budżet ruchu (R-WEB-AI-MOVE-RANGE-Q1, 8b522e8f6): dwa heksy w stronę (8,5), nie jeden.
   assert.deepStrictEqual(commands.find(c => c.type === 'move'), {
-    type: 'move', unitId: 'a3', toQ: 6, toR: 5,
+    type: 'move', unitId: 'a3', toQ: 7, toR: 5,
   });
 }
 
@@ -165,6 +188,7 @@ console.log('W8 remembered city A cannot capture replacement city B; A can be re
     makeMap(), data,
     {
       canEngageOwner: atWar,
+      atWarWithCiv: true,
       visibleHexes: new Set(['5,5']),
       rememberedTargets: [{ targetId: 'city-a', targetOwnerId: 2, kind: 'city', q: 6, r: 5 }],
     },
@@ -189,7 +213,7 @@ console.log('W8 remembered city A cannot capture replacement city B; A can be re
     [unit('a8', 1, 5, 5)],
     [city('home', 1, 4, 4), city('city-a', 2, 6, 5)],
     makeMap(), data,
-    { canEngageOwner: atWar, visibleHexes: new Set(['6,5']) },
+    { canEngageOwner: atWar, atWarWithCiv: true, visibleHexes: new Set(['6,5']) },
   );
   const cityMove = commands.find(c => c.type === 'move' && c.targetCityId !== undefined);
   assert.strictEqual(cityMove.targetCityId, 'city-a');
@@ -204,4 +228,4 @@ console.log('W8 remembered city A cannot capture replacement city B; A can be re
   );
 }
 
-console.log('AI fog tests PASS (8/8)');
+console.log('AI fog tests PASS (9/9)');
