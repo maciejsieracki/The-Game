@@ -4,7 +4,7 @@ TEMAT: R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-3-Q1
 GOAL: Port wielowojenności dyplomacji (LEDGER r5): partia D, partia E, port hunków F (brakeWarOutcome, isWarMarchOpenForPair, evaluateInterCivWarGate) 1:1 z gra/src.
 BAZA: origin/rust-port/parity-v2 d6414fcf1 (detached); pin webu origin/main (wypakowanie git archive poza repo, Node 22.22).
 ZMIANY/COMMIT:
-- Partia F (commit: patrz SHA w sekcji niżej po commicie).
+- Partia F (commit 72af05957, baza d6414fcf1).
   - `rust-port/engine/src/domain/diplomacy_tick_war_brake.rs`: `BrakeWarOutcome`, `brake_war_outcome` (web `brakeWarOutcome`, D7).
   - `rust-port/engine/src/domain/diplomacy_multiwar_gate.rs`: `is_war_march_open_for_pair` (web `isWarMarchOpenForPair`).
   - `rust-port/engine/tests/p6_dyplomacja_multiwar3_f.rs` + `p6_dyplomacja_multiwar3_f_data/{brake,march}.json` (wektory z uruchomionego weba: 784 + 35).
