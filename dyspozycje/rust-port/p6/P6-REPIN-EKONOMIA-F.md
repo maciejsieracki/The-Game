@@ -231,3 +231,14 @@ Kazda zlapana, kod/dane przywrocone (`git status` czysty po kazdej):
 
 - Wektory `p6_state_src` (`native_sources_match_running_web`) pochodza z weba sprzed `R-WEB-IRON-NATIVE-ACCESS-FIX-Q1`; test zielony (swiaty bez zapasu zelaza i odlewni jednoczesnie), ale e2e klucza `zelazo` na wektorze z web main nie byl regenerowany (pokrycie: `native_iron_end_to_end_*` w nowym pliku + wektory `ownerHasNativeZelazoAccess`). Dlug: `R-RUSTPORT-REPIN-EKONOMIA-F-STATESRC-REGEN-Q1`.
 - Pozostale hunki `turn-economy.ts`/`main.ts` niedotyczace pozycji 1-5 oraz skalowanie plonow ulepszen epoka (`R-RUSTPORT-REPIN-IMPROVEMENT-ERA-F-Q1`) - bez zmian (sekcja 6).
+
+## 11. R-RUSTPORT-REPIN-EKONOMIA-F-STATESRC-REGEN-Q1 (Operator r1) - regeneracja `p6_state_src` z web a61337844
+
+- Pin weba: `a61337844` (main; zawiera `R-WEB-IRON-NATIVE-ACCESS-FIX-Q1`). Poprzedni pin wektorow `23dd158e9`.
+- Generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-F-STATESRC-REGEN-Q1/gen-p6-state-src-vectors.mjs` (kopia z tematu `R-RUSTPORT-P6-ECON-TICK-STATE-SOURCES-Q1` z: pin, zapas miast `City.surowce` z osobnego PRNG, zelazo jak web `ownerHasNativeZelazoAccess` + `sumCitySurowce`, 18 scen. macierzy `zm-*`). Uruchomiony poza repo (`git archive a61337844 gra/src gra/data`), esbuild poza `gra/`.
+- Dowod bledu w porcie: w starym generatorze i w Rust-testach `ownerHasNativeResourceAccess('zelazo')` przekazywal boolean kopalni jako zapas (`hasZelazoAccess(hasKopalnia, ...)`) - ten sam blad, ktory web naprawil w `zelazo-access.ts:101-107` / `main.ts:5504-5511`. Rust (`resource_access.rs`, `turn_economy_inputs_native.rs:179-186`) juz liczy zapas z `City.surowce`.
+- Wejscia 260 scen. losowych: bez zmian poza polem `surowce` miast. Zmienione wyjscia (zmierzone skryptem porownawczym): `native` w 44 scen., `grants` w 13 scen. (zelazo). `civCases`/`podzialCases`: bez zmian.
+- Macierz `zm-kop{0|1}-odl-{brak|to_samo|inne}-zap{0|1|2.5}` (18 scen.): web zgodny z regula (kopalnia && odlewnia w miescie && zapas>0) we wszystkich 18.
+- Test `zelazo_key_matrix_e2e_kopalnia_odlewnia_zapas` (`rust-port/engine/tests/p6_state_src.rs`): sprawdza Rust i web na macierzy.
+- Zloto: `native_zloto_access` nie uwzglednia zapasu zlota (`ownerHasZlotoStock`); web `ownerHasZlotoAccessNow` (`main.ts:5588-5592`) go dodaje. Roznica swiadoma, poza zakresem zelaza; Rust liczy zapas zlota osobno (`turn_economy_wire.rs:309-313`). NIE_ZMIERZONO jako jeden wspolny wektor.
+- Bramki: `cargo fmt --check` EXIT=0; `cargo clippy --all-targets -D warnings` EXIT=0; `p6_state_src` 5/5 passed. Pelny `cargo test` NIE ZAKONCZONY: dysk (wolne 1,5 GB -> 305 MB przez inne sesje); `--lib` + 185 plikow testowych zielonych (1429 passed w 186 przebiegach, 0 failed), od `p6_m06b2_finalize` (186. przebieg) do konca listy: ENOSPC (EXIT=101), nie uruchomione. Pelna suma: NIE_ZMIERZONO.
