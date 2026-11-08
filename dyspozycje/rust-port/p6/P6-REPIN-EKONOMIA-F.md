@@ -193,3 +193,41 @@ Pozycja 4 wymaga zmian w plikach spoza allowlisty (`turn_economy_inputs_native.r
 - `R-RUSTPORT-REPIN-EKONOMIA-F-POPCAP-REGEN-Q1`: przywrocic asercje `cityPopulationCap` w `economy_city_vectors.rs` (Z5).
 - `R-RUSTPORT-REPIN-EKONOMIA-F-MUT-P3-Q1`: mutacje partii 3 (tier II, round, etykiety bramki) (Z7).
 - `R-RUSTPORT-REPIN-EKONOMIA-F-PARTIAL-Q1`: przywrocic prog `partial > 100` w `p6_8d_citizen_upkeep.rs` (Z6), albo decyzja o progu 70.
+
+## 10. Runda 5/5 (ostatnia) - Operator r5, baza `9b544302a`
+
+Web: `origin/main` = `180c0830504ad4fee99c7ccc1bd1337f8d6e4eb5` (wektory z `git archive origin/main gra/src gra/data` do katalogu poza repo). Rozszerzenie allowlisty (decyzja procesowa orkiestratora, dispatch r5): `turn_economy*.rs`, `freshwater.rs`, wszystkie `tests/**` i `data/**` z raportow r2-r4 oraz potrzebne do wektorow. Dodatkowo, ujawnione: `domain/production_units.rs` (bramka Mlyna `production.ts:1006` zyje w `availableProduction`) i `domain/resource_access.rs` (`ownerHasNativeZelazoAccess`, `zelazo-access.ts:101-107`) - ZAŁOŻENIE: konieczne do 1:1, do akceptacji.
+
+### 10.1 Tabela symboli (status po pomiarze)
+
+| Pozycja | Web (plik:linia) | Rust | Status |
+|---|---|---|---|
+| 4a natywny zelazo | `zelazo-access.ts:101-107`, `main.ts:5506` (zapas = `citySurowceSumForOwner`, `main.ts:3485`) | `resource_access::owner_has_native_zelazo_access`, `turn_economy_inputs_native::city_surowce_sum_for_owner` | PORT (commit `54f5b0e62`), wektory 84+168+12 z weba |
+| 4b Mlyn tylko rzeka | `production.ts:172,531,1006` | `production_units::is_river_only_building`, `ProductionAvailabilityCtx::city_has_river` | PORT (`54f5b0e62`), 36 wektorow `availableProduction`; `mlyn` nie ma definicji w `buildings.json` main (zmierzone: 0 trafien), wiec bramka jest w danych nieaktywna - tak jak w webie |
+| 5 woda = slodka woda | `turn-economy.ts:442-444` -> `freshwater.ts:149-155` | `freshwater.rs` + `turn_economy_health::city_has_water_access` | ZGODNY (ZMIERZONE): generator `gen-repin4-vectors.mjs` uruchomiony na web main daje 93 mapy (28 z jeziorami, >3000 zapytan) bajt-w-bajt identyczne z `tests/p6_repin4_vectors/freshwater.json`; test `freshwater_matches_web` zielony |
+
+### 10.2 Przyczyny (zadania 3-4)
+
+- c5 manpower 16041 (web) vs 8041 (Rust), `p6_7a_post_central::post_central_growth_matches_web`: ZMIERZONE. Scenariusz 0: miasto c5 (Sumerowie, epoka 5), wzrost 3->4; roznica = dokladnie 1 x `manpowerNaLudka`(epoka 5) x (1 - 0,5). Web (`population-growth-v85.ts:597-599`, bez zmian od pinu poza `ownerEra`) liczy `maxMult = civManpowerMatrixMults(civ).maxMult` (`manpower.ts:448-463`, `legacyFallback` IGNOROWANY; `mp_max_proc` Sumerow = 0 -> mnoznik 1). Wrapper P6.7A `apply_post_central_population_growth` ma domyslne `PostCentralGrowthExt` = tryb legacy edb8fb56 (`bonus_pobor_pula` -0,5 -> mnoznik 0,5), czyli 8000. Produkcyjny wolajacy (`turn_economy_post.rs:315`) ustawia `pin_matrix: Some(...)` i jest zgodny z webem. NIE regresja silnika, tylko test wolajacy tryb legacy na wektorach z web main. Naprawa: test wola `apply_post_central_population_growth_ext` z `pin_matrix` (macierz z `civ-matrix.json`), `#[ignore]` zdjety.
+- 2 testy `p6_order_lane` (`rows undefined`): generator uruchamial faze 2 z BLEDNYM 5. argumentem (`econ-params.json` zamiast zrzutu econ z ticku 1 Rust), stad `e2eEcon[i].rows` undefined. Procedura poprawna: faza 1 (bez 5. arg.) -> instalacja -> `P6_OL_ECON_OUT=... cargo test dump_tick1_econ_for_web_generator -- --ignored` -> faza 2 z zrzutem. Wykonana na web main (750 scenariuszy, 80 swiatow e2e); `order_lane.json` zregenerowany, oba `#[ignore]` zdjete, testy zielone bez zmiany kodu silnika.
+- `cityPopulationCap` (`economy_city_vectors.rs`): asercja PRZYWROCONA. Te same 400 wejsc z fixtury pinu, wyjscia z weba main (`popcap_pinned_inputs.json`, generator `gen-ekonf-popcap-pinned-inputs.mjs`); 78/400 wyjsc rozni sie od pinu 91dc998a (clamp = akwedukt_max + 2). Test porownuje `city_population_cap(..., false)` bit-w-bit.
+- Prog `partial` w `p6_8d_citizen_upkeep.rs`: zmierzona wartosc 81 (liczona z pol `missing`/`available` w wektorach weba, nie z wyniku Rust); `assert!(partial > 70)` zastapione `assert_eq!(web_partial, 81)` i `assert_eq!(partial, web_partial)`. Uwaga: prog `partial > 200` w `p6_repin_ekonomia_e_citizen.rs:280` nie byl zmieniany w tej rundzie.
+
+### 10.3 Mutacje partii 3 (zadanie 5) i poz. 4
+
+Kazda zlapana, kod/dane przywrocone (`git status` czysty po kazdej):
+- (a) gałąź tier II: `else if ma_spichlerz_ii` -> `else if false && ...` w `city_population_cap` oraz `has_granary_tier_two` w `city_population_cap_tiered` -> FAILED: `city_growth::granary_retains_food_after_growth_and_tier_two_uses_its_fixed_retention`, `p6_repin_ekon_f_popcap::{simple_growth_module_four_step_defaults, canonical_ladder_5_8_12_20_and_boundaries, city_population_cap_matches_running_web}`.
+- (b) `js_math_round` w `owner_resource_capacity_per_type` (`turn_economy.rs`) -> `.floor()` -> FAILED `p6_repin_ekon_f_storage::capacity_doubles_per_era_and_rounds_like_js`.
+- (c) etykiety bramki Spichlerza II `["Ceramika","Sól"]` -> `["Sól"]` (`data/derived/building-cost-params.json`) -> FAILED `p6_7b_gate::{required_active_labels_match_running_web, missing_runtime_labels_match_running_web, runtime_gate_matches_running_web}`.
+- (d) poz. 4: `is_river_only_building` `"mlyn"` -> `"mlynX"` oraz `has_zelazo_access(empire_stock, ...)` -> `has_zelazo_access(None, ...)` -> FAILED 6/9 testow `p6_repin_ekon_f_zelazo_mlyn`.
+
+### 10.4 Gates r5 (CARGO_INCREMENTAL=0, CARGO_TARGET_DIR w worktree)
+
+- `cargo fmt --all -- --check`: EXIT=0. `cargo clippy --all-targets -- -D warnings`: EXIT=0 (po poprawce doc-comment w nowym tescie).
+- `cargo test --no-fail-fast` w 6 przebiegach po 50 plikow testowych + `--lib`: 480 + 379 + 365 + 272 + 354 + 283 = 2133 passed (integracyjne) + 22 passed (`--lib`) = 2155 passed, 0 failed, 1 ignored (stary `dump_tick1_econ_for_web_generator`); doc-tests 0. Poprzednio (FC r3) 2143 passed / 4 ignored; +9 nowych testow `p6_repin_ekon_f_zelazo_mlyn` +3 odblokowane.
+- `grep -rn "#\[ignore" rust-port/engine/tests rust-port/engine/src`: 1 trafienie (`tests/p6_order_lane.rs:1530`, stary generator-dump). Nowych `#[ignore]`: 0.
+
+### 10.5 Dlugi / ograniczenia (NIE_ZMIERZONO)
+
+- Wektory `p6_state_src` (`native_sources_match_running_web`) pochodza z weba sprzed `R-WEB-IRON-NATIVE-ACCESS-FIX-Q1`; test zielony (swiaty bez zapasu zelaza i odlewni jednoczesnie), ale e2e klucza `zelazo` na wektorze z web main nie byl regenerowany (pokrycie: `native_iron_end_to_end_*` w nowym pliku + wektory `ownerHasNativeZelazoAccess`). Dlug: `R-RUSTPORT-REPIN-EKONOMIA-F-STATESRC-REGEN-Q1`.
+- Pozostale hunki `turn-economy.ts`/`main.ts` niedotyczace pozycji 1-5 oraz skalowanie plonow ulepszen epoka (`R-RUSTPORT-REPIN-IMPROVEMENT-ERA-F-Q1`) - bez zmian (sekcja 6).

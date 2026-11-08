@@ -2,6 +2,7 @@
 //!  * natywny dostep do zelaza `ownerHasNativeZelazoAccess` (`zelazo-access.ts:101-107`, R-WEB-IRON-NATIVE-ACCESS-FIX-Q1),
 //!  * `citySurowceSumForOwner` = `sumCitySurowce` (`diplomacy-goods.ts:126-138`, `main.ts:3485`),
 //!  * bramka Mlyna `RIVER_ONLY_BUILDING_IDS` / `ctx.cityHasRiver` (`production.ts:172,1006`, R-WEB-MILL-RIVER-ONLY-GATE-Q1).
+//!
 //! Wektory z URUCHOMIONEGO weba `origin/main` (`gen-ekonf-zelazo-mlyn-vectors.mjs`, `p6_repin_ekon_f_vectors/zelazo_mlyn.json`)
 //! oraz testy progow N-1/N/N+1, NaN i brakujacych kluczy liczone recznie (mutacje: patrz dokument tematu, sekcja 10).
 
