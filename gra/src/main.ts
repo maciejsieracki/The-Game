@@ -36699,6 +36699,9 @@ async function boot(): Promise<void> {
             ownerDefaultPodzialPracy,
             maritimeTradeIncomeByCity,
             manualWorkTaxByCity,
+            // R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1: utrzymanie miasta-państwa wg
+            // cityStateDifficulty (osobny suwak), AI wg trudności menu, gracz wg menu.
+            (oid: number) => effectiveGameDifficultyForOwner(oid),
           );
           pendingManualWorkTaxByOwner.clear();
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);

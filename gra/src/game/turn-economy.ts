@@ -2339,6 +2339,13 @@ export function advanceCityEconomy(
   maritimeTradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
   /** One-shot owner-directed Work tax, distinct from land/sea route income. */
   manualWorkTaxByCity: ReadonlyMap<string, number> = new Map(),
+  /**
+   * R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1: poziom trudności wg OWNERA dla utrzymania
+   * (budynki + jednostki) w `upkeepByOwner`. Brak = globalny `difficulty` (dawne zachowanie).
+   * main.ts podaje effectiveGameDifficultyForOwner: miasto-państwo -> cityStateDifficulty,
+   * reszta -> trudność menu. Tylko WYBÓR poziomu, liczby z econ-params.json bez zmian.
+   */
+  resolveOwnerUpkeepDifficulty?: (ownerId: number) => Difficulty,
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
@@ -2373,6 +2380,19 @@ export function advanceCityEconomy(
   // Load upkeep + storage params from the same econ-params.json blob.
   const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
   const upkeepParams  = loadUpkeepParams(rawEconParams, difficulty);
+  // R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1: parametry utrzymania per poziom (cache po poziomie).
+  const upkeepParamsByLevel = new Map<Difficulty, UpkeepParams>();
+  const upkeepParamsForOwner = (oid: number): UpkeepParams => {
+    if (!resolveOwnerUpkeepDifficulty) return upkeepParams;
+    const level = resolveOwnerUpkeepDifficulty(oid);
+    if (level === difficulty) return upkeepParams;
+    let cached = upkeepParamsByLevel.get(level);
+    if (!cached) {
+      cached = loadUpkeepParams(rawEconParams, level);
+      upkeepParamsByLevel.set(level, cached);
+    }
+    return cached;
+  };
   const storageParams = loadStorageParams(rawEconParams, difficulty);
   const rationParams = buildRationParams(rawEconParams, difficulty);
 
@@ -2920,7 +2940,7 @@ export function advanceCityEconomy(
   for (const oid of ownerIds) {
     const income  = incomeByOwner.get(oid) ?? 0;
     const ounits  = econUnits.filter(u => u.ownerId === oid) as unknown as UnitUpkeepLike[];
-    const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
+    const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParamsForOwner(oid));
     result.upkeepByOwner.set(oid, balance);
     // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: liczone OSOBNO (buildingsResUpkeep / unitsResUpkeep),
     // publikowane OSOBNO do result.resourceUpkeepBuildingsByOwner/UnitsByOwner PONIŻEJ, potem
