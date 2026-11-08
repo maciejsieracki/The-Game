@@ -10,13 +10,24 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::hint::black_box;
 use std::time::Instant;
 
+use civ_engine::domain::improvements::territory_resource_yield_for_improvement;
 use civ_engine::domain::pathfinding::{find_path, HexCoord, PathMap, TerrainType, Tile};
-use civ_engine::domain::resource_production::{stack_resource_production, ResourceKey};
 use civ_engine::domain::turn_economy::{EconomyBalances, EconomyFlow};
 use civ_engine::{
     advance_city_growth, generate_map, recruitment_for, resolve_turn, CityGrowthParams,
     CityGrowthState, WorldType,
 };
+
+/// Suma plonow terytorium po kluczu surowca (web `territoryResourceYieldForImprovement`, jedna regula).
+fn stack_territory_yield(keys: &[&str], era: f64) -> BTreeMap<String, f64> {
+    let mut totals = BTreeMap::new();
+    for key in keys {
+        if let Some(row) = territory_resource_yield_for_improvement(Some(*key), None, Some(era)) {
+            *totals.entry(row.resource_key).or_insert(0.0) += row.amount;
+        }
+    }
+    totals
+}
 
 fn report(name: &str, iterations: u32, started: Instant, checksum: u64) {
     assert_ne!(checksum, 0, "benchmark checksum must observe the workload");
@@ -106,11 +117,12 @@ fn growth_and_resource_catalogue_benchmark() {
     let mut checksum = 0_u64;
     for iteration in 0..iterations {
         let growth = advance_city_growth(&growth_state, f64::from(iteration % 64), &growth_params);
-        let totals = stack_resource_production(resource_keys, (iteration % 3 + 1) as u8);
+        let totals = stack_territory_yield(&resource_keys, f64::from(iteration % 3 + 1));
         let warrior = recruitment_for("Wojownik").expect("canonical recruitment workload");
+        let wood = totals.get("drewno").copied().unwrap_or(0.0);
         checksum = checksum
             .wrapping_add(u64::from(growth.population))
-            .wrapping_add(u64::from(totals.amount_for(ResourceKey::Wood)))
+            .wrapping_add(wood as u64)
             .wrapping_add(u64::from(warrior.gold_cost));
         black_box((growth, totals, warrior));
     }
