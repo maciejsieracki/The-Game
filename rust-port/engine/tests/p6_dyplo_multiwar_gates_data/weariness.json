@@ -1,0 +1,508 @@
+[
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "0",
+   "lostCitiesTotal": "0",
+   "turnsSinceCityChange": "undefined"
+  },
+  "out": "0"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "199",
+   "lostCitiesTotal": "0",
+   "turnsSinceCityChange": "undefined"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "200",
+   "lostCitiesTotal": "0",
+   "turnsSinceCityChange": "undefined"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "201",
+   "lostCitiesTotal": "0",
+   "turnsSinceCityChange": "undefined"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "100",
+   "lostCitiesTotal": "3",
+   "turnsSinceCityChange": "0"
+  },
+  "out": "0.59"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "100",
+   "lostCitiesTotal": "0",
+   "turnsSinceCityChange": "30"
+  },
+  "out": "0.5"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "100",
+   "lostCitiesTotal": "0",
+   "turnsSinceCityChange": "31"
+  },
+  "out": "0.503"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "100",
+   "lostCitiesTotal": "0",
+   "turnsSinceCityChange": "130"
+  },
+  "out": "0.8"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "100",
+   "lostCitiesTotal": "0",
+   "turnsSinceCityChange": "131"
+  },
+  "out": "0.8"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "300",
+   "lostCitiesTotal": "50",
+   "turnsSinceCityChange": "undefined"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "-5",
+   "lostCitiesTotal": "-2",
+   "turnsSinceCityChange": "undefined"
+  },
+  "out": "0"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "NaN",
+   "lostCitiesTotal": "0",
+   "turnsSinceCityChange": "undefined"
+  },
+  "out": "NaN"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "50",
+   "lostCitiesTotal": "NaN",
+   "turnsSinceCityChange": "undefined"
+  },
+  "out": "NaN"
+ },
+ {
+  "fn": "warWearinessLevel",
+  "in": {
+   "turnsAtWar": "50",
+   "lostCitiesTotal": "0",
+   "turnsSinceCityChange": "NaN"
+  },
+  "out": "NaN"
+ },
+ {
+  "fn": "wearinessPeacePriceFactor",
+  "in": {
+   "level": "0"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "isWarWeary",
+  "in": {
+   "level": "0"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "wearinessPeacePriceFactor",
+  "in": {
+   "level": "0.49"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "isWarWeary",
+  "in": {
+   "level": "0.49"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "wearinessPeacePriceFactor",
+  "in": {
+   "level": "0.5"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "isWarWeary",
+  "in": {
+   "level": "0.5"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "wearinessPeacePriceFactor",
+  "in": {
+   "level": "0.51"
+  },
+  "out": "0.988"
+ },
+ {
+  "fn": "isWarWeary",
+  "in": {
+   "level": "0.51"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "wearinessPeacePriceFactor",
+  "in": {
+   "level": "0.8"
+  },
+  "out": "0.6399999999999999"
+ },
+ {
+  "fn": "isWarWeary",
+  "in": {
+   "level": "0.8"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "wearinessPeacePriceFactor",
+  "in": {
+   "level": "1"
+  },
+  "out": "0.4"
+ },
+ {
+  "fn": "isWarWeary",
+  "in": {
+   "level": "1"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "wearinessPeacePriceFactor",
+  "in": {
+   "level": "0.75"
+  },
+  "out": "0.7"
+ },
+ {
+  "fn": "isWarWeary",
+  "in": {
+   "level": "0.75"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "wearinessPeacePriceFactor",
+  "in": {
+   "level": "NaN"
+  },
+  "out": "NaN"
+ },
+ {
+  "fn": "isWarWeary",
+  "in": {
+   "level": "NaN"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "loserDespair",
+  "in": {
+   "level": "0.9",
+   "share": "0.45",
+   "lostCities": "0"
+  },
+  "out": "0.45"
+ },
+ {
+  "fn": "loserDespair",
+  "in": {
+   "level": "0.9",
+   "share": "0.46",
+   "lostCities": "0"
+  },
+  "out": "0"
+ },
+ {
+  "fn": "loserDespair",
+  "in": {
+   "level": "0",
+   "share": "0.2",
+   "lostCities": "0"
+  },
+  "out": "0.2777777777777778"
+ },
+ {
+  "fn": "loserDespair",
+  "in": {
+   "level": "0.4",
+   "share": "0.3",
+   "lostCities": "1"
+  },
+  "out": "0.4666666666666667"
+ },
+ {
+  "fn": "loserDespair",
+  "in": {
+   "level": "1",
+   "share": "0.1",
+   "lostCities": "3"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "loserDespair",
+  "in": {
+   "level": "1",
+   "share": "0.1",
+   "lostCities": "10"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "loserDespair",
+  "in": {
+   "level": "0.5",
+   "share": "0",
+   "lostCities": "0"
+  },
+  "out": "0.75"
+ },
+ {
+  "fn": "loserDespair",
+  "in": {
+   "level": "0",
+   "share": "0.45",
+   "lostCities": "0"
+  },
+  "out": "0"
+ },
+ {
+  "fn": "loserDespair",
+  "in": {
+   "level": "NaN",
+   "share": "0.2",
+   "lostCities": "0"
+  },
+  "out": "NaN"
+ },
+ {
+  "fn": "loserDespair",
+  "in": {
+   "level": "0.5",
+   "share": "NaN",
+   "lostCities": "0"
+  },
+  "out": "NaN"
+ },
+ {
+  "fn": "despairStage",
+  "in": {
+   "despair": "0"
+  },
+  "out": "0"
+ },
+ {
+  "fn": "despairStage",
+  "in": {
+   "despair": "0.24999"
+  },
+  "out": "0"
+ },
+ {
+  "fn": "despairStage",
+  "in": {
+   "despair": "0.25"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "despairStage",
+  "in": {
+   "despair": "0.44"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "despairStage",
+  "in": {
+   "despair": "0.45"
+  },
+  "out": "2"
+ },
+ {
+  "fn": "despairStage",
+  "in": {
+   "despair": "0.64"
+  },
+  "out": "2"
+ },
+ {
+  "fn": "despairStage",
+  "in": {
+   "despair": "0.65"
+  },
+  "out": "3"
+ },
+ {
+  "fn": "despairStage",
+  "in": {
+   "despair": "1"
+  },
+  "out": "3"
+ },
+ {
+  "fn": "despairStage",
+  "in": {
+   "despair": "NaN"
+  },
+  "out": "0"
+ },
+ {
+  "fn": "stageCityLimit",
+  "in": {
+   "stage": "0"
+  },
+  "out": "0"
+ },
+ {
+  "fn": "stageCityLimit",
+  "in": {
+   "stage": "1"
+  },
+  "out": "0"
+ },
+ {
+  "fn": "stageCityLimit",
+  "in": {
+   "stage": "2"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "stageCityLimit",
+  "in": {
+   "stage": "3"
+  },
+  "out": "2"
+ },
+ {
+  "fn": "stageCityLimit",
+  "in": {
+   "stage": "4"
+  },
+  "out": "2"
+ },
+ {
+  "fn": "offerMultiplier",
+  "in": {
+   "stage": "0",
+   "rejectedOffers": "0"
+  },
+  "out": "1"
+ },
+ {
+  "fn": "offerMultiplier",
+  "in": {
+   "stage": "1",
+   "rejectedOffers": "0"
+  },
+  "out": "1.5"
+ },
+ {
+  "fn": "offerMultiplier",
+  "in": {
+   "stage": "2",
+   "rejectedOffers": "0"
+  },
+  "out": "2"
+ },
+ {
+  "fn": "offerMultiplier",
+  "in": {
+   "stage": "3",
+   "rejectedOffers": "0"
+  },
+  "out": "2.5"
+ },
+ {
+  "fn": "offerMultiplier",
+  "in": {
+   "stage": "4",
+   "rejectedOffers": "0"
+  },
+  "out": "2.5"
+ },
+ {
+  "fn": "offerMultiplier",
+  "in": {
+   "stage": "1",
+   "rejectedOffers": "1"
+  },
+  "out": "1.7999999999999998"
+ },
+ {
+  "fn": "offerMultiplier",
+  "in": {
+   "stage": "3",
+   "rejectedOffers": "2"
+  },
+  "out": "3.5"
+ },
+ {
+  "fn": "offerMultiplier",
+  "in": {
+   "stage": "2",
+   "rejectedOffers": "-1"
+  },
+  "out": "2"
+ },
+ {
+  "fn": "offerMultiplier",
+  "in": {
+   "stage": "0",
+   "rejectedOffers": "NaN"
+  },
+  "out": "NaN"
+ },
+ {
+  "fn": "offerMultiplier",
+  "in": {
+   "stage": "2",
+   "rejectedOffers": "NaN"
+  },
+  "out": "NaN"
+ }
+]

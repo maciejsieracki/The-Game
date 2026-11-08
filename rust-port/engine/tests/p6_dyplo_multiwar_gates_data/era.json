@@ -1,0 +1,694 @@
+[
+ {
+  "fn": "forcedEraTagFromPowod",
+  "in": {
+   "powod": "R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: x"
+  },
+  "out": "stone"
+ },
+ {
+  "fn": "forcedEraTagFromPowod",
+  "in": {
+   "powod": "R-EPOKA-BRAZU-WYMUSZONA-WOJNA:"
+  },
+  "out": "bronze"
+ },
+ {
+  "fn": "forcedEraTagFromPowod",
+  "in": {
+   "powod": "R-EPOKA-ZELAZO-WYMUSZONA-WOJNA:y"
+  },
+  "out": "iron"
+ },
+ {
+  "fn": "forcedEraTagFromPowod",
+  "in": {
+   "powod": "R-EPOKA-KAMIEN-WYMUSZONA-WOJNA"
+  },
+  "out": "null"
+ },
+ {
+  "fn": "forcedEraTagFromPowod",
+  "in": {
+   "powod": "R-EPOKA-XYZ-WYMUSZONA-WOJNA:"
+  },
+  "out": "null"
+ },
+ {
+  "fn": "forcedEraTagFromPowod",
+  "in": {
+   "powod": " R-EPOKA-KAMIEN-WYMUSZONA-WOJNA:"
+  },
+  "out": "null"
+ },
+ {
+  "fn": "forcedEraTagFromPowod",
+  "in": {
+   "powod": "inne"
+  },
+  "out": "null"
+ },
+ {
+  "fn": "forcedEraTagFromPowod",
+  "in": {
+   "powod": ""
+  },
+  "out": "null"
+ },
+ {
+  "fn": "forcedEraTagFromPowod",
+  "in": {
+   "powod": "undefined"
+  },
+  "out": "null"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "stone",
+    "bronze",
+    "iron"
+   ],
+   "tag": "stone"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "stone",
+    "bronze",
+    "iron"
+   ],
+   "tag": "bronze"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "stone",
+    "bronze",
+    "iron"
+   ],
+   "tag": "iron"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "stone"
+   ],
+   "tag": "stone"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "stone"
+   ],
+   "tag": "bronze"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "stone"
+   ],
+   "tag": "iron"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "stone",
+    "bronze"
+   ],
+   "tag": "stone"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "stone",
+    "bronze"
+   ],
+   "tag": "bronze"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "stone",
+    "bronze"
+   ],
+   "tag": "iron"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "bronze",
+    "iron"
+   ],
+   "tag": "stone"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "bronze",
+    "iron"
+   ],
+   "tag": "bronze"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [
+    "bronze",
+    "iron"
+   ],
+   "tag": "iron"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [],
+   "tag": "stone"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [],
+   "tag": "bronze"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isForcedEraWarEnabled",
+  "in": {
+   "enabled": [],
+   "tag": "iron"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "null",
+   "declared": "0"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "null",
+   "declared": "1"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "null",
+   "declared": "2"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "null",
+   "declared": "3"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "0",
+   "declared": "0"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "0",
+   "declared": "1"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "0",
+   "declared": "2"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "0",
+   "declared": "3"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "1",
+   "declared": "0"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "1",
+   "declared": "1"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "1",
+   "declared": "2"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "1",
+   "declared": "3"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "2",
+   "declared": "0"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "2",
+   "declared": "1"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "2",
+   "declared": "2"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canDeclareEraForcedWar",
+  "in": {
+   "cap": "2",
+   "declared": "3"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "null",
+   "count": "0"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "null",
+   "count": "1"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "null",
+   "count": "2"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "0",
+   "count": "0"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "0",
+   "count": "1"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "0",
+   "count": "2"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "1",
+   "count": "0"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "1",
+   "count": "1"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "1",
+   "count": "2"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "2",
+   "count": "0"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "2",
+   "count": "1"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "canCivJoinEraForcedWar",
+  "in": {
+   "cap": "2",
+   "count": "2"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "evaluateEraForcedWarGate",
+  "in": {
+   "multiwarEnabled": true,
+   "tag": null,
+   "enabled": [
+    "stone",
+    "bronze",
+    "iron"
+   ],
+   "cap": null,
+   "declared": 0,
+   "counts": [],
+   "att": 1,
+   "attE": 1,
+   "tgt": 2,
+   "tgtE": 1,
+   "civCap": 1
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateEraForcedWarGate",
+  "in": {
+   "multiwarEnabled": true,
+   "tag": "iron",
+   "enabled": [
+    "stone"
+   ],
+   "cap": null,
+   "declared": 0,
+   "counts": [],
+   "att": 1,
+   "attE": 1,
+   "tgt": 2,
+   "tgtE": 1,
+   "civCap": 1
+  },
+  "out": "era-disabled"
+ },
+ {
+  "fn": "evaluateEraForcedWarGate",
+  "in": {
+   "multiwarEnabled": false,
+   "tag": "iron",
+   "enabled": [
+    "stone"
+   ],
+   "cap": null,
+   "declared": 0,
+   "counts": [],
+   "att": 1,
+   "attE": 1,
+   "tgt": 2,
+   "tgtE": 1,
+   "civCap": 1
+  },
+  "out": "era-disabled"
+ },
+ {
+  "fn": "evaluateEraForcedWarGate",
+  "in": {
+   "multiwarEnabled": false,
+   "tag": "stone",
+   "enabled": [
+    "stone"
+   ],
+   "cap": 0,
+   "declared": 5,
+   "counts": [
+    [
+     "1:1",
+     9
+    ]
+   ],
+   "att": 1,
+   "attE": 1,
+   "tgt": 2,
+   "tgtE": 1,
+   "civCap": 1
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateEraForcedWarGate",
+  "in": {
+   "multiwarEnabled": true,
+   "tag": "stone",
+   "enabled": [
+    "stone"
+   ],
+   "cap": 1,
+   "declared": 1,
+   "counts": [],
+   "att": 1,
+   "attE": 1,
+   "tgt": 2,
+   "tgtE": 1,
+   "civCap": 1
+  },
+  "out": "era-cap"
+ },
+ {
+  "fn": "evaluateEraForcedWarGate",
+  "in": {
+   "multiwarEnabled": true,
+   "tag": "stone",
+   "enabled": [
+    "stone"
+   ],
+   "cap": 1,
+   "declared": 0,
+   "counts": [],
+   "att": 1,
+   "attE": 1,
+   "tgt": 2,
+   "tgtE": 1,
+   "civCap": 1
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateEraForcedWarGate",
+  "in": {
+   "multiwarEnabled": true,
+   "tag": "stone",
+   "enabled": [
+    "stone"
+   ],
+   "cap": null,
+   "declared": 9,
+   "counts": [
+    [
+     "1:1",
+     1
+    ]
+   ],
+   "att": 1,
+   "attE": 1,
+   "tgt": 2,
+   "tgtE": 1,
+   "civCap": 1
+  },
+  "out": "civ-cap-attacker"
+ },
+ {
+  "fn": "evaluateEraForcedWarGate",
+  "in": {
+   "multiwarEnabled": true,
+   "tag": "stone",
+   "enabled": [
+    "stone"
+   ],
+   "cap": null,
+   "declared": 9,
+   "counts": [
+    [
+     "1:1",
+     0
+    ],
+    [
+     "2:1",
+     1
+    ]
+   ],
+   "att": 1,
+   "attE": 1,
+   "tgt": 2,
+   "tgtE": 1,
+   "civCap": 1
+  },
+  "out": "civ-cap-target"
+ },
+ {
+  "fn": "evaluateEraForcedWarGate",
+  "in": {
+   "multiwarEnabled": true,
+   "tag": "stone",
+   "enabled": [
+    "stone"
+   ],
+   "cap": null,
+   "declared": 9,
+   "counts": [
+    [
+     "2:1",
+     1
+    ]
+   ],
+   "att": 1,
+   "attE": 1,
+   "tgt": 2,
+   "tgtE": 1,
+   "civCap": 1
+  },
+  "out": "civ-cap-target"
+ },
+ {
+  "fn": "evaluateEraForcedWarGate",
+  "in": {
+   "multiwarEnabled": true,
+   "tag": "stone",
+   "enabled": [
+    "stone"
+   ],
+   "cap": null,
+   "declared": 9,
+   "counts": [
+    [
+     "1:1",
+     2
+    ]
+   ],
+   "att": 1,
+   "attE": 1,
+   "tgt": 2,
+   "tgtE": 1,
+   "civCap": null
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateEraForcedWarGate",
+  "in": {
+   "multiwarEnabled": true,
+   "tag": "bronze",
+   "enabled": [
+    "bronze"
+   ],
+   "cap": null,
+   "declared": 0,
+   "counts": [
+    [
+     "1:2",
+     1
+    ],
+    [
+     "2:1",
+     0
+    ]
+   ],
+   "att": 1,
+   "attE": 2,
+   "tgt": 2,
+   "tgtE": 1,
+   "civCap": 1
+  },
+  "out": "civ-cap-attacker"
+ }
+]
