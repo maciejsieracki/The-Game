@@ -103,6 +103,20 @@ export function isEraForcedWarIgnoringR1(
   return tag != null && params.eraForcedWarIgnoreR1.includes(tag);
 }
 
+/**
+ * R-WEB-WAR-MARCH-BEFORE-40-Q1: czy kontekst wojenny / marsz AI pary jest otwarty w tej turze.
+ * Otwarte po R1 (tura >= delayInterCivWarsUntilTurn) albo gdy para jest w AKTYWNEJ wojnie epoki
+ * tagu omijającego R1 (Brąz/Żelazo). `activePairEraTag` = tag aktywnej wojny epoki tej pary
+ * (z mapy aktywnych par), `null` = brak takiej wojny (np. Kamień, zwykłe wypowiedzenie).
+ */
+export function isWarMarchOpenForPair(
+  turn: number,
+  activePairEraTag: ForcedEraTag | null | undefined,
+  params: WarRulesParams = WAR_RULES_PARAMS,
+): boolean {
+  return isInterCivWarOpenAtTurn(turn, params) || isEraForcedWarIgnoringR1(activePairEraTag, params);
+}
+
 /** R2: limit równoczesnych wojen cywilizacji w danej epoce (`null` = bez limitu). */
 export function concurrentWarLimitForEra(
   era: number,
