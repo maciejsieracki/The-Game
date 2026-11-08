@@ -1,9 +1,9 @@
 // KLASA B -- R-WEB-TEST-DEBT-PREEXISTING-B-Q1 r4; diagnoza R-WEB-AI-ZDOBYCIE-FOG-DIAG-Q1 r1 (499487c1a).
-// Stan: W1, W3-W8 ZIELONE (W3/W8: jawne atWarWithCiv w fixturze). W2 (linia ~83) CELOWO CZERWONY:
-// applyHomeWarPriorities (ai.ts:3448-3449) planuje atak na wroga poza visibleHexes, a egzekucja
-// (main.ts, "Atak na niewidoczny cel") go pomija. Sprawca: 344e5b3fd (2026-11-05), dowod bisectu:
-// parent 344e5b3fd^ W2 zielony, 344e5b3fd W2 czerwony. Decyzja wlasciciela A/B/C pozostaje otwarta.
-// Test NIE jest naprawiany w tym temacie. Kod gry (ai.ts) bez zmian.
+// R-WEB-AI-HOME-WAR-SEES-OWN-LAND-Q1 (decyzja ABC=A, 2026-11-08): AI broniaca WLASNEGO terytorium
+// widzi wroga na nim (bramka main.ts "Atak na niewidoczny cel" ma wyjatek targetOnOwnTerritory).
+// W2 = atak na niewidocznego wroga NA WLASNYM terytorium jest planowany i wykonalny;
+// W2b = atak na niewidocznego wroga POZA wlasnym terytorium nie jest planowany (mgla obowiazuje).
+// Test kontraktu granicy: tools/ai-home-war-sees-own-land-test.cjs.
 'use strict';
 
 /**
@@ -21,6 +21,7 @@ const entry = path.join(__dirname, '.ai-fog-entry.ts');
 const bundle = path.join(__dirname, '.ai-fog-bundle.cjs');
 fs.writeFileSync(entry, `
 export { decideAITurn } from ${JSON.stringify(path.join(root, 'src/game/ai'))};
+export { territoryOwnerAt } from ${JSON.stringify(path.join(root, 'src/map/territory'))};
 export {
   aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets,
   restoreAiTargetMemory, snapshotAiTargetMemory,
@@ -76,15 +77,32 @@ console.log('W1 visible target -> attack');
   assert.strictEqual(commands.filter(c => c.type === 'attack').length, 1);
 }
 
-console.log('W2 invisible target -> not selected/attacked');
+console.log('W2 invisible enemy on OWN territory -> planned and executable');
 {
+  const ownCity = { id: 'home', ownerId: 1, q: 4, r: 4, pop: 5, level: 1 };
   const commands = api.decideAITurn(
     1, [unit('a2', 1, 5, 5), unit('e2', 2, 6, 5)], [city('home', 1, 4, 4)],
     makeMap(), data, { canEngageOwner: atWar, visibleHexes: new Set(['5,5']) },
   );
-  assert.strictEqual(commands.some(c => c.type === 'attack'), false);
+  const attacks = commands.filter(c => c.type === 'attack');
+  assert.strictEqual(attacks.length, 1);
+  assert.strictEqual(attacks[0].unitId, 'a2');
+  assert.strictEqual(attacks[0].targetUnitId, 'e2');
+  // Bramka silnika (main.ts targetOnOwnTerritory): hex celu nalezy do wlasciciela atakujacego -> wyjatek od mgly.
+  assert.strictEqual(api.territoryOwnerAt(6, 5, [ownCity]), 1);
   assert.strictEqual(api.aiTargetVisibleForAction(new Set(['5,5']), true, 6, 5, keyOf), false);
-  assert.strictEqual(api.aiTargetVisibleForAction(undefined, false, 6, 5, keyOf), true);
+}
+
+console.log('W2b invisible enemy OUTSIDE own territory -> not planned, fog holds');
+{
+  const ownCity = { id: 'home', ownerId: 1, q: 4, r: 4, pop: 5, level: 1 };
+  const commands = api.decideAITurn(
+    1, [unit('a2b', 1, 9, 5), unit('e2b', 2, 10, 5)], [city('home', 1, 4, 4)],
+    makeMap(), data, { canEngageOwner: atWar, visibleHexes: new Set(['9,5']) },
+  );
+  assert.strictEqual(commands.some(c => c.type === 'attack'), false);
+  assert.strictEqual(api.territoryOwnerAt(10, 5, [ownCity]), null);
+  assert.strictEqual(api.aiTargetVisibleForAction(new Set(['9,5']), true, 10, 5, keyOf), false);
 }
 
 console.log('W3 remembered target -> planning only, no attack');
@@ -210,4 +228,4 @@ console.log('W8 remembered city A cannot capture replacement city B; A can be re
   );
 }
 
-console.log('AI fog tests PASS (8/8)');
+console.log('AI fog tests PASS (9/9)');
