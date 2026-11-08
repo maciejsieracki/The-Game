@@ -10,7 +10,6 @@
 
 use std::collections::{HashMap, HashSet};
 
-use civ_engine::domain::city_growth::p6_7a::{city_population_cap, PopCapParams};
 use civ_engine::domain::economy_city_fns::{
     city_building_entries_from_built_ids, corruption_building_reduction, corruption_rate,
     production_progress, sum_building_happiness, sum_building_happiness_from_built_ids,
@@ -234,19 +233,11 @@ fn vectors_match_pinned_web_economy() {
                 );
             }
             "cityPopulationCap" => {
-                // Istniejacy port (nie kopiowany): city_growth::p6_7a (web cityPopulationCap, economy.ts:1048).
-                let params = PopCapParams {
-                    akwedukt_prog_ludnosci: parse_num(&input["akwProg"]),
-                    spichlerz_prog_ludnosci: parse_num(&input["spProg"]),
-                    akwedukt_max_ludnosci: parse_num(&input["akwMax"]),
-                };
-                let got = city_population_cap(
-                    input["akw"].as_bool().unwrap(),
-                    input["sp"].as_bool().unwrap(),
-                    &params,
-                    parse_num(&input["delta"]),
-                );
-                assert_num(got, out, &format!("cityPopulationCap {input}"));
+                // REPIN-EKONOMIA-F: web `cityPopulationCap` zmienil sie po pinie 91dc998a (4. stopien Spichlerz II,
+                // clamp = akwedukt_max + 2 zamiast stalego 14) - wektory pinu przestaly byc oracle'em tej funkcji.
+                // Dowod nowej wersji: `p6_repin_ekon_f_popcap.rs` (wektory z web origin/main). Tu tylko liczymy
+                // wektory (kontrola kompletnosci fixture), bez porownywania wartosci.
+                let _ = (&input["akw"], &input["sp"], &input["akwMax"], out);
             }
             other => panic!("nieznana funkcja w wektorach: {other}"),
         }

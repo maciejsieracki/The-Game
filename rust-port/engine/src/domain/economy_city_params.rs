@@ -18,6 +18,8 @@ pub struct EconParams {
     pub spichlerz_zachowanie_po_wzroscie: f64,
     pub akwedukt_prog_ludnosci: f64,
     pub spichlerz_prog_ludnosci: f64,
+    /// Web `spichlerzIIProgLudnosci` (`read(em, 'spichlerz_ii_prog_ludnosci', 12)`).
+    pub spichlerz_ii_prog_ludnosci: f64,
     pub akwedukt_max_ludnosci: f64,
     pub zywnosc_zuzytka_populacja: f64,
     pub zdrowie_modyfikator_wspolczynnik: f64,
@@ -74,7 +76,8 @@ pub fn load_econ_params(raw: &Value, difficulty: &str) -> EconParams {
         spichlerz_zachowanie_po_wzroscie: read(em, "spichlerz_zachowanie_po_wzroscie", 0.5, d),
         akwedukt_prog_ludnosci: read(em, "akwedukt_prog_ludnosci", 5.0, d),
         spichlerz_prog_ludnosci: read(em, "spichlerz_prog_ludnosci", 8.0, d),
-        akwedukt_max_ludnosci: read(em, "akwedukt_max_ludnosci", 12.0, d),
+        spichlerz_ii_prog_ludnosci: read(em, "spichlerz_ii_prog_ludnosci", 12.0, d),
+        akwedukt_max_ludnosci: read(em, "akwedukt_max_ludnosci", 20.0, d),
         zywnosc_zuzytka_populacja: read(em, "zywnosc_zuzytka_populacja", 1.0, d),
         zdrowie_modyfikator_wspolczynnik: read(em, "zdrowie_modyfikator_wspolczynnik", 0.05, d),
         korupcja_wspolczynnik_dystansu: read(em, "korupcja_wspolczynnik_dystansu", 2.0, d),

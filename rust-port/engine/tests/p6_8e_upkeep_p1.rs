@@ -106,6 +106,14 @@ fn storage_from(v: &Value) -> eu::StorageParams {
 fn owner_from(v: &Value) -> eu::OwnerStorageParams {
     eu::OwnerStorageParams {
         baza_surowce_panstwo: num(&v["bazaSurowcePanstwo"]),
+        bonus_proc_na_budynek: num(&v["bonusProcNaBudynek"]),
+    }
+}
+
+/// Rozbicie capu na epoke (web `OwnerStorageBreakdown`): wartosc `ownerEra[].out`.
+fn breakdown_from(v: &Value) -> eu::OwnerStorageBreakdown {
+    eu::OwnerStorageBreakdown {
+        baza_surowce_panstwo: num(&v["bazaSurowcePanstwo"]),
         bonus_surowce_na_budynek: num(&v["bonusSurowceNaBudynek"]),
     }
 }
@@ -172,8 +180,8 @@ fn defaults_match_web() {
     );
     assert_same(
         "DEFAULT_OWNER.bonus",
-        o.bonus_surowce_na_budynek,
-        num(&d["ownerStorage"]["bonusSurowceNaBudynek"]),
+        o.bonus_proc_na_budynek,
+        num(&d["ownerStorage"]["bonusProcNaBudynek"]),
     );
     let want_keys: Vec<&str> = d["ownerCappedKeys"]
         .as_array()
@@ -231,8 +239,8 @@ fn load_owner_storage_params_matches_web() {
         );
         assert_same(
             &format!("loadOwner[{i}].bonus"),
-            got.bonus_surowce_na_budynek,
-            want.bonus_surowce_na_budynek,
+            got.bonus_proc_na_budynek,
+            want.bonus_proc_na_budynek,
         );
     }
 }
@@ -362,7 +370,7 @@ fn owner_capacity_and_era_match_web() {
     for (i, c) in arr(&v, "ownerEra").iter().enumerate() {
         let era = num(&c["era"]);
         let got = eu::owner_storage_params_for_era(&owner_from(&c["p"]), era);
-        let want = owner_from(&c["out"]);
+        let want = breakdown_from(&c["out"]);
         if is_fractional_era_above_one(era) {
             assert_within_ulps(
                 &format!("ownerEra[{i}].baza epoka {era}"),

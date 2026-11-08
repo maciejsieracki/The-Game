@@ -110,6 +110,7 @@ fn econ_pairs(p: &EconParams) -> Vec<(&'static str, f64)> {
         ),
         ("akweduktProgLudnosci", p.akwedukt_prog_ludnosci),
         ("spichlerzProgLudnosci", p.spichlerz_prog_ludnosci),
+        ("spichlerzIIProgLudnosci", p.spichlerz_ii_prog_ludnosci),
         ("akweduktMaxLudnosci", p.akwedukt_max_ludnosci),
         ("zywnoscZuzytkaPopulacja", p.zywnosc_zuzytka_populacja),
         (
@@ -169,10 +170,23 @@ fn vector_counts_are_pinned() {
     }
 }
 
-/// #1 `loadEconParams` (L198-244).
+/// #1 `loadEconParams` (L198-244). REPIN-EKONOMIA-F: wejscia z wektorow pinu 91dc998a, WYJSCIA z weba
+/// origin/main `16c0509f6` (`p6_repin_ekon_f_vectors/load_econ_params.json`; nowe pole
+/// `spichlerzIIProgLudnosci`, fallback `akweduktMaxLudnosci` = 20).
 #[test]
 fn load_econ_params_matches_pin() {
-    let vs = vectors_of("loadEconParams");
+    static EKONF: &str = include_str!("p6_repin_ekon_f_vectors/load_econ_params.json");
+    let ekonf: Value = serde_json::from_str(EKONF).expect("load_econ_params.json");
+    let vs: Vec<&Value> = ekonf["vectors"]
+        .as_array()
+        .expect("vectors")
+        .iter()
+        .collect();
+    assert_eq!(vs.len(), 400);
+    // wejscia identyczne jak w wektorach pinu (ten sam zestaw raw/difficulty)
+    for (a, b) in vs.iter().zip(vectors_of("loadEconParams")) {
+        assert_eq!(a["in"], b["in"]);
+    }
     for (i, v) in vs.iter().enumerate() {
         let diff = v["in"]["difficulty"].as_str().expect("difficulty");
         let p = load_econ_params(&v["in"]["raw"], diff);

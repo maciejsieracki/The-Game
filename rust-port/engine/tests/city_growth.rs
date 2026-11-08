@@ -12,14 +12,15 @@ fn population_cap_uses_the_three_canonical_building_steps() {
 
     assert_eq!(city_population_cap(false, false, &params), 5);
     assert_eq!(city_population_cap(false, true, &params), 8);
+    // REPIN-EKONOMIA-F (web 16c0509f6, R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1): Akwedukt = 20 (bylo 12).
     assert_eq!(
         city_population_cap(true, false, &params),
-        12,
+        20,
         "aqueduct is the upper step even without a granary"
     );
     assert_eq!(
         city_population_cap(true, true, &params),
-        12,
+        20,
         "aqueduct takes precedence over the granary"
     );
 }
@@ -69,7 +70,8 @@ fn granary_retains_food_after_growth_and_tier_two_uses_its_fixed_retention() {
     let tier_two_result = advance_city_growth(&tier_two, 28.0, &params);
     assert_eq!(tier_two_result.population, 4);
     assert_eq!(tier_two_result.food_store, 47, "floor(68 * 0.7)");
-    assert_eq!(tier_two_result.population_cap, 8);
+    // REPIN-EKONOMIA-F: Spichlerz II ma wlasny stopien 12 (bylo wspolny z Spichlerzem I = 8).
+    assert_eq!(tier_two_result.population_cap, 12);
 }
 
 #[test]

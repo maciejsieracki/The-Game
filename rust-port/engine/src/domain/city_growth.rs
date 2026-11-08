@@ -14,8 +14,12 @@ use serde::{Deserialize, Serialize};
 pub const DEFAULT_POPULATION_CAP: u32 = 5;
 /// Population cap after building a granary, without an aqueduct.
 pub const DEFAULT_GRANARY_POPULATION_CAP: u32 = 8;
-/// Population cap after building an aqueduct (with or without a granary).
-pub const DEFAULT_AQUEDUCT_POPULATION_CAP: u32 = 12;
+/// Population cap after building a tier-two granary, without an aqueduct
+/// (web `spichlerz_ii_prog_ludnosci`, R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1).
+pub const DEFAULT_GRANARY_TIER_TWO_POPULATION_CAP: u32 = 12;
+/// Population cap after building an aqueduct (with or without a granary): 20 since
+/// R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1 (web `akwedukt_max_ludnosci`; was 12).
+pub const DEFAULT_AQUEDUCT_POPULATION_CAP: u32 = 20;
 
 /// Base part of the food threshold for one additional citizen.
 pub const DEFAULT_GROWTH_THRESHOLD_BASE: f64 = 20.0;
@@ -49,6 +53,8 @@ pub struct CityGrowthParams {
     pub population_cap: u32,
     /// Cap with a granary but without an aqueduct.
     pub granary_population_cap: u32,
+    /// Cap with a tier-two granary but without an aqueduct.
+    pub granary_tier_two_population_cap: u32,
     /// Cap with an aqueduct, regardless of the granary state.
     pub aqueduct_population_cap: u32,
     /// Food-buffer fraction retained after a tier-one granary growth.
@@ -68,6 +74,7 @@ impl Default for CityGrowthParams {
             health_growth_modifier: DEFAULT_HEALTH_GROWTH_MODIFIER,
             population_cap: DEFAULT_POPULATION_CAP,
             granary_population_cap: DEFAULT_GRANARY_POPULATION_CAP,
+            granary_tier_two_population_cap: DEFAULT_GRANARY_TIER_TWO_POPULATION_CAP,
             aqueduct_population_cap: DEFAULT_AQUEDUCT_POPULATION_CAP,
             granary_food_retention: DEFAULT_GRANARY_FOOD_RETENTION,
             granary_tier_two_food_retention: DEFAULT_GRANARY_TIER_TWO_FOOD_RETENTION,
@@ -86,6 +93,7 @@ impl CityGrowthParams {
             health_growth_modifier: DEFAULT_HEALTH_GROWTH_MODIFIER,
             population_cap: DEFAULT_POPULATION_CAP,
             granary_population_cap: DEFAULT_GRANARY_POPULATION_CAP,
+            granary_tier_two_population_cap: DEFAULT_GRANARY_TIER_TWO_POPULATION_CAP,
             aqueduct_population_cap: DEFAULT_AQUEDUCT_POPULATION_CAP,
             granary_food_retention: DEFAULT_GRANARY_FOOD_RETENTION,
             granary_tier_two_food_retention: DEFAULT_GRANARY_TIER_TWO_FOOD_RETENTION,
@@ -202,6 +210,23 @@ pub fn city_population_cap(
         params.granary_population_cap
     } else {
         params.population_cap
+    }
+}
+
+/// Four-step cap (web `cityPopulationCap` with `maSpichlerzII`): aqueduct, tier-two granary,
+/// tier-one granary, none. `has_granary` must be true whenever `has_granary_tier_two` is.
+pub fn city_population_cap_tiered(
+    has_aqueduct: bool,
+    has_granary: bool,
+    has_granary_tier_two: bool,
+    params: &CityGrowthParams,
+) -> u32 {
+    if has_aqueduct {
+        params.aqueduct_population_cap
+    } else if has_granary_tier_two {
+        params.granary_tier_two_population_cap
+    } else {
+        city_population_cap(false, has_granary, params)
     }
 }
 
@@ -406,7 +431,7 @@ pub fn advance_city_growth(
 ) -> CityGrowthResult {
     let has_tier_two = state.has_granary_tier_two || state.has_granary_ii;
     let has_granary = state.has_granary || has_tier_two;
-    let cap = city_population_cap(state.has_aqueduct, has_granary, params);
+    let cap = city_population_cap_tiered(state.has_aqueduct, has_granary, has_tier_two, params);
     let threshold = growth_threshold(state.population, params);
     let flow = effective_food_flow(net_food, state.health, params.health_growth_modifier);
     let food_delta = floor_to_i64(flow);
@@ -857,6 +882,9 @@ pub mod p6_7a {
     pub struct PopCapParams {
         pub akwedukt_prog_ludnosci: f64,
         pub spichlerz_prog_ludnosci: f64,
+        /// Web `spichlerzIIProgLudnosci` (opcjonalny w `Partial<Pick<..>>`): `None` = spadek do
+        /// `spichlerz_prog_ludnosci` (`params.spichlerzIIProgLudnosci ?? params.spichlerzProgLudnosci`).
+        pub spichlerz_ii_prog_ludnosci: Option<f64>,
         pub akwedukt_max_ludnosci: f64,
     }
 
@@ -877,6 +905,7 @@ pub mod p6_7a {
             Self {
                 akwedukt_prog_ludnosci: pick(&m.akwedukt_prog_ludnosci),
                 spichlerz_prog_ludnosci: pick(&m.spichlerz_prog_ludnosci),
+                spichlerz_ii_prog_ludnosci: Some(pick(&m.spichlerz_ii_prog_ludnosci)),
                 akwedukt_max_ludnosci: pick(&m.akwedukt_max_ludnosci),
             }
         }
@@ -889,15 +918,24 @@ pub mod p6_7a {
             .contains(&delta)
     }
 
-    /// Web `cityPopulationCap` (`economy.ts:1145`).
+    /// Web `cityPopulationCap` (`economy.ts`, origin/main `16c0509f6`): drabinka 4 stopni -
+    /// Akwedukt (`akwedukt_max_ludnosci`, 20) > Spichlerz II (`spichlerz_ii_prog_ludnosci`, 12; brak
+    /// parametru -> `spichlerz_prog_ludnosci`) > Spichlerz I (8) > brak (`akwedukt_prog_ludnosci`).
+    /// Gorny clamp = `akwedukt_max_ludnosci + 2` (nieskonczony/NaN -> brak sufitu).
     pub fn city_population_cap(
         ma_akwedukt: bool,
         ma_spichlerz: bool,
         params: &PopCapParams,
         matrix_delta: f64,
+        ma_spichlerz_ii: bool,
     ) -> f64 {
+        let granary_ii_cap = params
+            .spichlerz_ii_prog_ludnosci
+            .unwrap_or(params.spichlerz_prog_ludnosci);
         let building_cap = if ma_akwedukt {
             params.akwedukt_max_ludnosci
+        } else if ma_spichlerz_ii {
+            granary_ii_cap
         } else if ma_spichlerz {
             params.spichlerz_prog_ludnosci
         } else {
@@ -908,10 +946,12 @@ pub mod p6_7a {
         } else {
             0.0
         };
-        js_min(
-            wzrost_ludnosci_params().limit_populacji.twardy_max,
-            building_cap + safe_delta,
-        )
+        let ceiling = if params.akwedukt_max_ludnosci.is_finite() {
+            params.akwedukt_max_ludnosci + 2.0
+        } else {
+            f64::INFINITY
+        };
+        js_min(ceiling, building_cap + safe_delta)
     }
 
     /// Web `resolvePopulationCapMatrixDelta` (`economy.ts:1163`).
@@ -1263,6 +1303,7 @@ pub mod p6_7a {
             econ_params: &PopCapParams,
             ma_spichlerz: bool,
             population_cap_delta: f64,
+            ma_spichlerz_ii: bool,
         ) -> FractionalGrowthResult {
             let mut pop = population;
             let mut frac = wzrost_ulamkowy.unwrap_or(0.0);
@@ -1276,6 +1317,7 @@ pub mod p6_7a {
                     ma_spichlerz,
                     econ_params,
                     population_cap_delta,
+                    ma_spichlerz_ii,
                 );
                 if growth_pct > 0.0 && pop < pop_cap {
                     frac += pop * growth_pct / hundred;
@@ -1653,6 +1695,7 @@ pub mod p6_7a {
                         &opts.pop_cap_params,
                         ma_spichlerz_building,
                         population_matrix.population_cap_delta,
+                        built_ids.iter().any(|b| b == "spichlerz_ii"),
                     );
                     cities[city_index].city.population = growth.nowa_ludnosc;
                     cities[city_index].city.wzrost_ulamkowy = Some(growth.wzrost_ulamkowy);

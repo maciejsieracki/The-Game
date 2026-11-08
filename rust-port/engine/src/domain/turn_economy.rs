@@ -1329,13 +1329,21 @@ pub mod economy_upkeep_p1 {
     #[derive(Debug, Clone, Copy, PartialEq)]
     pub struct OwnerStorageParams {
         pub baza_surowce_panstwo: f64,
+        /// Web `bonusProcNaBudynek` (R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1): ulamek BAZY za Magazyn, 0,2 = +20%.
+        pub bonus_proc_na_budynek: f64,
+    }
+
+    /// Web `OwnerStorageBreakdown` (rozbicie capu na epoke dla UI: baza i bonus/Magazyn osobno).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct OwnerStorageBreakdown {
+        pub baza_surowce_panstwo: f64,
         pub bonus_surowce_na_budynek: f64,
     }
 
-    /// Web `DEFAULT_OWNER_STORAGE_PARAMS` (R-EKONOMIA-SUROWCE-SKALA-5X-Q1: 50000 / 500).
+    /// Web `DEFAULT_OWNER_STORAGE_PARAMS` (R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1: 50000 / 0,2).
     pub const DEFAULT_OWNER_STORAGE_PARAMS: OwnerStorageParams = OwnerStorageParams {
         baza_surowce_panstwo: 50000.0,
-        bonus_surowce_na_budynek: 500.0,
+        bonus_proc_na_budynek: 0.2,
     };
 
     /// Web `OWNER_CAPPED_RESOURCE_KEYS` (kolejnosc jak w webie).
@@ -1374,11 +1382,11 @@ pub mod economy_upkeep_p1 {
                 difficulty,
                 DEFAULT_OWNER_STORAGE_PARAMS.baza_surowce_panstwo,
             ),
-            bonus_surowce_na_budynek: read_num(
+            bonus_proc_na_budynek: read_num(
                 g,
-                "magazyn_bonus_surowce_na_budynek",
+                "magazyn_bonus_surowce_proc_na_budynek",
                 difficulty,
-                DEFAULT_OWNER_STORAGE_PARAMS.bonus_surowce_na_budynek,
+                DEFAULT_OWNER_STORAGE_PARAMS.bonus_proc_na_budynek,
             ),
         }
     }
@@ -1394,15 +1402,20 @@ pub mod economy_upkeep_p1 {
         } else {
             0.0
         };
-        (p.baza_surowce_panstwo + p.bonus_surowce_na_budynek * cnt) * magazyn_era_multiplier(era)
+        // Web: `Math.round(baza * (1 + proc * cnt) * magazynEraMultiplier(era))` (JS: round half up).
+        crate::domain::civ_matrix::js_compat::js_math_round(
+            p.baza_surowce_panstwo
+                * (1.0 + p.bonus_proc_na_budynek * cnt)
+                * magazyn_era_multiplier(era),
+        )
     }
 
     /// Web `ownerStorageParamsForEra`.
-    pub fn owner_storage_params_for_era(p: &OwnerStorageParams, era: f64) -> OwnerStorageParams {
+    pub fn owner_storage_params_for_era(p: &OwnerStorageParams, era: f64) -> OwnerStorageBreakdown {
         let mult = magazyn_era_multiplier(era);
-        OwnerStorageParams {
+        OwnerStorageBreakdown {
             baza_surowce_panstwo: p.baza_surowce_panstwo * mult,
-            bonus_surowce_na_budynek: p.bonus_surowce_na_budynek * mult,
+            bonus_surowce_na_budynek: p.baza_surowce_panstwo * p.bonus_proc_na_budynek * mult,
         }
     }
 

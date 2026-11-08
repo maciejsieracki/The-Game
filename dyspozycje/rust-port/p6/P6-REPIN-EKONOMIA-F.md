@@ -122,3 +122,27 @@ Wniosek: zmiana tych partii zmienia wartości pinowane w testach spoza allowlist
 ### 7.4 Plan rundy 3 (ten sam ID)
 
 Wymagana decyzja orkiestratora o allowliście dla 4 plików pinu (§5) LUB zgoda na addytywny port z osobnymi symbolami. Po decyzji: partia 2 (konwertery) z wektorami z `git archive origin/main gra/src gra/data` w katalogu tymczasowym poza repo.
+
+## 8. Runda 3 - stan po portach (Operator, runda 3/5)
+
+Commity: partia 2 `2146da43f`, partia 1b `11a180e0a`, partia 3 (patrz raport 01-operator-r1.md).
+
+| Web (origin/main 16c0509f6) | Rust | Stan | Poz. |
+|---|---|---|---|
+| `citizenConsumptionEraMultiplier` | `citizen_consumption_era_multiplier` (+ podpiecie: `citizen_upkeep_rate_for_era`, `ration_era_food_cost_multiplier`) | PORTOWANE, wektory z web | 1 |
+| converters.ts cegla x2 / Cegielnia +50%/epoke / odlewnie 50 x m(e) | `turn_economy_resources.rs` (`run_converter_with_output_multiplier`, klucz `<id>#outMult`) | PORTOWANE, mutacje M1-M7 (M5 rownowazny) | 2 |
+| economy.ts cap ludnosci 4-stopniowy (12 / 20) | `city_growth.rs` `city_population_cap(..., ma_spichlerz_ii)`, `city_population_cap_tiered`; `economy_city_params.rs` | PORTOWANE, `p6_repin_ekon_f_popcap.rs`; mutacja sufit +2 -> +3 ubita | 3 |
+| Magazyn +20% bazy (bez zywnosci) | `turn_economy.rs` `OwnerStorageParams.bonus_proc_na_budynek`, `OwnerStorageBreakdown`; `p6_repin_ekon_f_storage.rs`; mutacja (cnt+1) ubita | PORTOWANE | 3 |
+| `spichlerz_ii: ['Ceramika','Sol']` (`building-resource-gate.ts:70`) | `building-cost-params.json` etykiety, `p6_7b_vectors/gate.json` | PORTOWANE | 3 |
+| `ownerHasNativeZelazoAccess` (`zelazo-access.ts`) | `owner_has_native_resource_access` (`turn_economy_inputs_native.rs:141`) - arm zelazo nadal `has_zelazo_access(None, ..)`; `StateSourcesWorld` nie ma zapasu imperium | ZMIERZONE: NIE PORTOWANE (wymaga rozszerzenia swiata i wektorow p6_state_src) | 4 |
+| Mlyn tylko przy rzece (`RIVER_ONLY_BUILDING_IDS`, `production.ts:172`) | Rust: tylko `ma_mlyn` w `turn_economy_loop.rs:722`, brak bramki rzeki | ZMIERZONE: NIE PORTOWANE | 4 |
+| Woda = woda ladowa | `freshwater.rs` | NIE ZMIERZONO (brak hunka web rozpoznanego) | 5 |
+
+Zalozenie (ASSUMPTION): `src/domain/turn_economy.rs` jest poza allowlista dispatchu, ale pozycja 3 (Magazyn +20%) zyje w `economy_upkeep_p1` tego pliku; zmieniony wylacznie parametr magazynu.
+
+Metoda "hybrid web ref": wektory e2e regenerowane z `origin/main` z cofnietymi plikami spoza zakresu (improvement scaling, trade-port, emporion, top3, okolica ownerEra) do pinu; pozwala wyizolowac roznice zakresu F.
+
+### Dlug (nowe ID)
+- `R-RUSTPORT-REPIN-EKONOMIA-F-ZELAZO-MLYN-WODA-Q1`: poz. 4 (zelazo natywne ze stanem zapasu, Mlyn tylko rzeka) i 5 (woda ladowa).
+- `R-RUSTPORT-REPIN-VECTORS-E2E-POSTEKONF-Q1`: 3 testy `#[ignore]`: `p6_7a_post_central::post_central_growth_matches_web` (c5 manpower web 16041 vs Rust 8041, przyczyna poza zakresem F, NIE_ZMIERZONO), `p6_order_lane` x2 (generator pada na main, `rows` undefined).
+- Poza zakresem: `emporion`, tekst `top3` w buildings.json, skalowanie ulepszen terenu, trade-port, okolica ownerEra.

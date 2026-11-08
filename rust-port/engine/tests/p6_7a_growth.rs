@@ -251,6 +251,8 @@ fn population_cap_matches_web() {
             from_data.akwedukt_max_ludnosci,
             num(&e["akweduktMaxLudnosci"]),
         );
+        // REPIN-EKONOMIA-F: Spichlerz II (12) z econ-params.json - oracle w `p6_repin_ekon_f_popcap.rs`.
+        assert_eq!(from_data.spichlerz_ii_prog_ludnosci, Some(12.0));
         let delta = if absent(&c["delta"]) {
             0.0
         } else {
@@ -261,6 +263,7 @@ fn population_cap_matches_web() {
             c["sp"].as_bool().expect("bool"),
             &from_data,
             delta,
+            false,
         );
         assert_bits(&format!("cap[{i}]"), got, num(&c["out"]));
     }
@@ -268,6 +271,7 @@ fn population_cap_matches_web() {
         let pr = PopCapParams {
             akwedukt_prog_ludnosci: num(&c["params"]["akweduktProgLudnosci"]),
             spichlerz_prog_ludnosci: num(&c["params"]["spichlerzProgLudnosci"]),
+            spichlerz_ii_prog_ludnosci: js_num(&c["params"]["spichlerzIIProgLudnosci"]),
             akwedukt_max_ludnosci: num(&c["params"]["akweduktMaxLudnosci"]),
         };
         let delta = if absent(&c["delta"]) {
@@ -280,6 +284,7 @@ fn population_cap_matches_web() {
             c["sp"].as_bool().expect("bool"),
             &pr,
             delta,
+            false,
         );
         assert_bits(&format!("capCustom[{i}]"), got, num(&c["out"]));
     }
@@ -320,6 +325,7 @@ fn fractional_growth_matches_web() {
         let econ = PopCapParams {
             akwedukt_prog_ludnosci: num(&c["econ"]["akweduktProgLudnosci"]),
             spichlerz_prog_ludnosci: num(&c["econ"]["spichlerzProgLudnosci"]),
+            spichlerz_ii_prog_ludnosci: js_num(&c["econ"]["spichlerzIIProgLudnosci"]),
             akwedukt_max_ludnosci: num(&c["econ"]["akweduktMaxLudnosci"]),
         };
         let delta = if absent(&c["delta"]) {
@@ -336,6 +342,7 @@ fn fractional_growth_matches_web() {
             &econ,
             c["sp"].as_bool().expect("bool"),
             delta,
+            false,
         );
         let want = &c["out"];
         assert_bits(

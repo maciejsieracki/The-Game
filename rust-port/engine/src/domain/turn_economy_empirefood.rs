@@ -247,6 +247,7 @@ pub fn run_empire_food_block(
     let pop_cap_params = PopCapParams {
         akwedukt_prog_ludnosci: econ_cfg.akwedukt_prog_ludnosci,
         spichlerz_prog_ludnosci: econ_cfg.spichlerz_prog_ludnosci,
+        spichlerz_ii_prog_ludnosci: Some(econ_cfg.spichlerz_ii_prog_ludnosci),
         akwedukt_max_ludnosci: econ_cfg.akwedukt_max_ludnosci,
     };
     let mut pop_cap_by_city_id: BTreeMap<String, f64> = BTreeMap::new();
@@ -255,6 +256,7 @@ pub fn run_empire_food_block(
         let built = ctx.built_by_city.get(&c.id).unwrap_or(&empty);
         let ma_akwedukt = built.iter().any(|b| b == "akwedukt");
         let ma_spichlerz = city_has_spichlerz_building(built);
+        let ma_spichlerz_ii = built.iter().any(|b| b == "spichlerz_ii");
         let civ_key = ctx
             .owner_civ_by_owner_id
             .get(&c.owner_id)
@@ -266,6 +268,7 @@ pub fn run_empire_food_block(
                 ma_spichlerz,
                 &pop_cap_params,
                 resolve_population_cap_matrix_delta_in(ctx.matrix, civ_key),
+                ma_spichlerz_ii,
             ),
         );
     }

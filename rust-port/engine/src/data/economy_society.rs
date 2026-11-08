@@ -78,6 +78,8 @@ pub struct EconParamsEkonomiaMiasta {
     pub akwedukt_prog_ludnosci: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "spichlerz_prog_ludnosci")]
     pub spichlerz_prog_ludnosci: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
+    #[serde(rename = "spichlerz_ii_prog_ludnosci")]
+    pub spichlerz_ii_prog_ludnosci: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "akwedukt_max_ludnosci")]
     pub akwedukt_max_ludnosci: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "zywnosc_zuzytka_populacja")]
@@ -292,8 +294,9 @@ pub struct EconParamsGlobalne {
     pub magazyn_baza_zywnosc: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "magazyn_baza_surowce")]
     pub magazyn_baza_surowce: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
-    #[serde(rename = "magazyn_bonus_surowce_na_budynek")]
-    pub magazyn_bonus_surowce_na_budynek: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
+    #[serde(rename = "magazyn_bonus_surowce_proc_na_budynek")]
+    pub magazyn_bonus_surowce_proc_na_budynek:
+        EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie,
     #[serde(rename = "magazyn_centralny_baza_zywnosc")]
     pub magazyn_centralny_baza_zywnosc: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "magazyn_centralny_bonus_zywnosc_na_budynek")]

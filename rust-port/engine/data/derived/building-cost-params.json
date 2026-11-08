@@ -78,7 +78,7 @@
     "zloza_budynkow": [
       { "budynek": "garncarnia", "etykiety": ["Glina"] },
       { "budynek": "cegielnia", "etykiety": ["Glina"] },
-      { "budynek": "spichlerz_ii", "etykiety": ["Sól"] },
+      { "budynek": "spichlerz_ii", "etykiety": ["Ceramika", "Sól"] },
       { "budynek": "stolarnia", "etykiety": ["Drewno"] },
       { "budynek": "kamieniarski", "etykiety": ["Kamień"] },
       { "budynek": "kuznia", "etykiety": ["Ruda"] },

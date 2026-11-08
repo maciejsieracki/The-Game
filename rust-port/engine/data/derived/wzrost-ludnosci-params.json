@@ -131,7 +131,7 @@
   "empire_food_domyslne": {
     "zrodlo": "empire-food.ts:106-134 (buildEmpireFoodParams - wartosci zapasowe pick())",
     "centralny_cap_baza": 1000,
-    "centralny_cap_bonus_magazyn": 100,
+    "centralny_cap_bonus_magazyn": 0,
     "glod_hp_frac": 0.08,
     "glod_karencja_tur": 3,
     "glod_stat_mult": 0.75

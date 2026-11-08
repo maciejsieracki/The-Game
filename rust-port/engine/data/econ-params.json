@@ -33,21 +33,28 @@
       "normal": 8,
       "hard": 8,
       "jednostka": "ludność",
-      "opis": "Twardy cap populacji ze Spichlerzem (I lub II), ale BEZ Akweduktu — środkowy stopień drabinki R-SPICHLERZ-CAP-LUDNOSCI-ETAP (Maciej 2026-08-09, ECHO A: normal=8). Płaski 8/8/8 na wszystkich trudnościach — zgodne z dosłownymi słowami Macieja z propozycji, do wiadomości (nie skaluje się z trudnością tak jak akwedukt_prog_ludnosci)."
+      "opis": "Twardy cap populacji ze Spichlerzem I (tylko stopień I, bez Spichlerza Królewskiego i bez Akweduktu) — środkowy stopień drabinki R-SPICHLERZ-CAP-LUDNOSCI-ETAP (Maciej 2026-08-09, ECHO A: normal=8). Płaski 8/8/8 na wszystkich trudnościach (nie skaluje się z trudnością tak jak akwedukt_prog_ludnosci). Od R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1 (2026-11-04) Spichlerz Królewski ma własny, wyższy cap: spichlerz_ii_prog_ludnosci."
     },
-    "akwedukt_max_ludnosci": {
+    "spichlerz_ii_prog_ludnosci": {
       "easy": 12,
       "normal": 12,
       "hard": 12,
       "jednostka": "ludność",
-      "opis": "Twardy cap populacji Z Akweduktem — górny stopień drabinki (Maciej 2026-08-09, R-SPICHLERZ-CAP-LUDNOSCI-ETAP ECHO A: obniżka z dawnych 15 → normal=12). Epoka 4+ — osobny unlock (do decyzji ABC)."
+      "opis": "Twardy cap populacji ze Spichlerzem Królewskim, ale BEZ Akweduktu — nowy stopień drabinki (R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1, decyzja właściciela 2026-11-04: Spichlerz Królewski = 12 mieszkańców). Płaski 12/12/12 na wszystkich trudnościach. Drabinka: bez budynku 5 → Spichlerz I 8 → Spichlerz Królewski 12 → Akwedukt 20."
+    },
+    "akwedukt_max_ludnosci": {
+      "easy": 20,
+      "normal": 20,
+      "hard": 20,
+      "jednostka": "ludność",
+      "opis": "Twardy cap populacji Z Akweduktem — górny stopień drabinki, niezależny od Spichlerza (decyzja właściciela 2026-11-04, R-WEB-POPCAP-SPICHLERZ2-12-AKWEDUKT-20-Q1: Akwedukt daje możliwość wzrostu do 20; wcześniej 12 wg R-SPICHLERZ-CAP-LUDNOSCI-ETAP 2026-08-09). Epoka 4+ — osobny unlock (do decyzji ABC)."
     },
     "zywnosc_zuzytka_populacja": {
       "easy": 1,
       "normal": 1,
       "hard": 2,
       "jednostka": "żywność/turę/os.",
-      "opis": "Zużycie żywności na 1 punkt populacji na turę."
+      "opis": "MARTWY WZÓR przedV85 (flat ludnosc × tu, tylko `cityYieldPerTurn().zywnosc`, nieużywane w bilansie żywności). Realny koszt racji obywateli = populacja × Wyżywienie × R_STAWKI_KOSZT_MULT × m(epoka właściciela), m(e) = 1 + 0,5 × (e − 1) — `computeCityRationCost` + `citizen-consumption-era.ts` (R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1). Wartości tego parametru NIE zmieniono."
     },
     "zywnosc_jednostka_ruch": {
       "easy": 1,
@@ -350,28 +357,28 @@
       "normal": 50,
       "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Glina+Drewno)→Cegła w Cegielni na turę (baza przed skalowaniem epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 3→10, flat na wszystkich trudnościach (cytat właściciela nie różnicował trudności); +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5, produkcja budynkowa surowców fizycznych)."
+      "opis": "Maks konwersja (Glina+Drewno)→Cegła w Cegielni na turę (baza przed skalowaniem epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 3→10, flat na wszystkich trudnościach (cytat właściciela nie różnicował trudności); +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5, produkcja budynkowa surowców fizycznych). R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (Maciej 2026-11-05): wartość BEZ zmian (50 cykli); ×2 cegły przez outputAmount 1→2 w recepturze (converters.ts), cykle Cegielni PŁASKIE (50), a epoka właściciela skaluje WYJŚCIE cegły +50% bazy/epokę (mnożnik 1 / 1,5 / 2 / 2,5 / 3; CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE, converterOutputMultiplierForEra) — działa także gdy produkcję ogranicza drewno."
     },
     "budynek_huta_przepustowosc": {
-      "easy": 25,
-      "normal": 25,
-      "hard": 25,
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Ruda+Drewno)→Brąz w Odlewni brązu (i tier wyższy łańcucha odlewni) na turę. Płaskie (BEZ skalowania epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5)."
+      "opis": "Maks konwersja (Ruda+Drewno)→Brąz w Odlewni brązu (i tier wyższy łańcucha odlewni) na turę. Cykle × m(e) epoki WŁAŚCICIELA (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1: 1/1,5/2/2,5/3; converters.ts CONVERTER_FOUNDRY_ERA_RECIPE_IDS). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): 25→50 (×2) cykli/turę; mnożnik epoki właściciela na cykle; Wielka odlewnia w tej samej rodzinie (założenie)."
     },
     "budynek_odlewnia_zelaza_przepustowosc": {
-      "easy": 25,
-      "normal": 25,
-      "hard": 25,
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Ruda żelaza+Drewno)→Żelazo w Odlewni żelaza / Wielka odlewnia na turę. Płaskie (BEZ skalowania epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5)."
+      "opis": "Maks konwersja (Ruda żelaza+Drewno)→Żelazo w Odlewni żelaza / Wielka odlewnia na turę. Cykle × m(e) epoki WŁAŚCICIELA (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1: 1/1,5/2/2,5/3; converters.ts CONVERTER_FOUNDRY_ERA_RECIPE_IDS). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): 25→50 (×2) cykli/turę; mnożnik epoki właściciela na cykle; Wielka odlewnia w tej samej rodzinie (założenie)."
     },
     "budynek_wielka_odlewnia_przepustowosc": {
-      "easy": 25,
-      "normal": 25,
-      "hard": 25,
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Żelazo+Drewno)→Stal w Wielka odlewnia na turę (Maciej 2026-07-27: przeniesione z Wielka Kuźnia). Płaskie (BEZ skalowania epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5)."
+      "opis": "Maks konwersja (Żelazo+Drewno)→Stal w Wielka odlewnia na turę (Maciej 2026-07-27: przeniesione z Wielka Kuźnia). Cykle × m(e) epoki WŁAŚCICIELA (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1: 1/1,5/2/2,5/3; converters.ts CONVERTER_FOUNDRY_ERA_RECIPE_IDS). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): 25→50 (×2) cykli/turę; mnożnik epoki właściciela na cykle; Wielka odlewnia w tej samej rodzinie (założenie)."
     },
     "budynek_garncarnia_przepustowosc": {
       "easy": 50,
@@ -392,14 +399,14 @@
       "normal": 25,
       "hard": 25,
       "jednostka": "Sól/turę",
-      "opis": "PYTANIE-84-B7/U-2 (Maciej 2026-07-27): Spichlerz II zużywa Sól ze skarbca × każdy działający Spichlerz II płacący Sól; brak Soli → brak bonusu wojska (imperium-wide). Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz solII) → paySpichlerzDrainForCity (building-resource-gate.ts:418, gałąź sol). R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
+      "opis": "PYTANIE-84-B7/U-2 (Maciej 2026-07-27): Spichlerz Królewski zużywa Sól ze skarbca × każdy działający Spichlerz Królewski płacący Sól; brak Soli → brak bonusu wojska (imperium-wide). Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz solII) → paySpichlerzDrainForCity (building-resource-gate.ts:418, gałąź sol). R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
     },
     "budynek_spichlerz_ii_zuzywa_ceramika": {
       "easy": 25,
       "normal": 25,
       "hard": 25,
       "jednostka": "Ceramika/turę",
-      "opis": "PYTANIE-84-B8 (Maciej 2026-07-27): Spichlerz II zużywa Ceramikę ze skarbca co turę (obok Soli); brak Ceramiki → brak bonusu ludności w mieście. Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz ceramikaII; używany gdy miasto ma Spichlerz II) → paySpichlerzDrainForCity (building-resource-gate.ts:418) oraz turn-economy.ts:1375, :1407, :1548, :2479. R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
+      "opis": "PYTANIE-84-B8 (Maciej 2026-07-27): Spichlerz Królewski zużywa Ceramikę ze skarbca co turę (obok Soli); brak Ceramiki → brak bonusu ludności w mieście. Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz ceramikaII; używany gdy miasto ma Spichlerz Królewski) → paySpichlerzDrainForCity (building-resource-gate.ts:418) oraz turn-economy.ts:1375, :1407, :1548, :2479. R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
     },
     "utrzymanie_budynek": {
       "easy": 1,
@@ -603,12 +610,12 @@
       "jednostka": "szt/typ surowca (PAŃSTWO), epoka 1 (Kamień)",
       "opis": "SUROW-CIV-01 (decyzja Macieja 2026-07-24): ZMIANA SEMANTYKI — od teraz to baza pojemności CAŁEGO PAŃSTWA (civ-wide, suma po wszystkich miastach ownera) per typ surowca, przy 0 zbudowanych budynków „Magazyn” w imperium — NIE per-miasto jak dawniej. Model ADDYTYWNY razem z magazyn_bonus_surowce_na_budynek (nie mnożnikowy). BAZA PODNIESIONA 100→500 (Maciej 2026-07-24), 500→1000 (Maciej 2026-07-28), potem 1000→10000 (Maciej 2026-08-12, P-MAGAZYN-SKALOWANIE-EPOKA-Q1: „zwiększ jeszcze wielkość magazynu do 10 tysięcy sztuk dla każdego surowca z obecnego 1000”), potem 10000→50000 (Maciej 2026-08-13, R-EKONOMIA-SUROWCE-SKALA-5X-Q1: ×5 na WSZYSTKIE składowe formuły cap, razem z produkcją/kosztami/utrzymaniem). Ta wartość to EPOKA 1 (Kamień) — od epoki 2 wzwyż PODWAJA SIĘ co epokę CYWILIZACJI WŁAŚCICIELA (epoka2=100000, epoka3=200000; PARYTET AI, ta sama formuła dla gracza i AI) przez ownerResourceCapacityPerType/magazynEraMultiplier w economy-upkeep.ts — JSON zostaje FLAT (era1), skalowanie liczone w kodzie, wzorem P-KONWERTERY-PRZEPUSTOWOSC-Q1. Cap per typ (epoka 1) = 50000 + 500 × liczba Magazynów (każdy Magazyn w dowolnym mieście dokłada +500, nie jednorazowo). Płaskie na easy/normal/hard. Dotyczy WYŁĄCZNIE surowców (drewno/kamień/glina/ruda/ruda_zelaza/cegła/brąz/żelazo/stal) — Żywność/Spichlerz nadal używa modelu mnożnikowego per-miasto (bez zmian, patrz magazyn_baza_zywnosc)."
     },
-    "magazyn_bonus_surowce_na_budynek": {
-      "easy": 500,
-      "normal": 500,
-      "hard": 500,
-      "jednostka": "szt/typ surowca (PAŃSTWO) / Magazyn, epoka 1 (Kamień)",
-      "opis": "SUROW-CIV-01 (decyzja Macieja 2026-07-24, NOWY PARAMETR): dodatkowa pojemność CAŁEGO PAŃSTWA per typ surowca za KAŻDY budynek „Magazyn” zbudowany GDZIEKOLWIEK w imperium ownera (addytywnie, nie mnożnik — 2 Magazyny = +1000, nie ×2). Cap per typ (epoka 1) = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek × liczba_magazynow. WARTOŚĆ BAZOWA NIEZMIENIONA przez P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): cytat właściciela „z 100 i 150 na 1000 i 1500” dotyczy PARY Spichlerz I/II (SPICHLERZ_EMPIRE_CAP_I/II w building-resource-gate.ts — potwierdzone grepem komentarza „Spichlerze lokalne +100/+150, Magazyn +100” przy magazyn_centralny_baza_zywnosc niżej), NIE tego pola (ma tylko JEDNĄ wartość, nie parę). PÓŹNIEJ 100→500 (Maciej 2026-08-13, R-EKONOMIA-SUROWCE-SKALA-5X-Q1: ×5, tym razem TO pole EXPLICITE objęte poleceniem „przeskalować WSZYSTKIE składowe formuły cap ×5 — bazę I mnożnik za budynek”). Pole DOSTAJE ten sam mechanizm podwajania co epokę (epoka2=1000, epoka3=2000) przez ownerResourceCapacityPerType/magazynEraMultiplier w economy-upkeep.ts, bo dzieli tę samą formułę cap(typ) z magazyn_baza_surowce."
+    "magazyn_bonus_surowce_proc_na_budynek": {
+      "easy": 0.2,
+      "normal": 0.2,
+      "hard": 0.2,
+      "jednostka": "ułamek BAZY pojemności państwa (surowce) / Magazyn; 0,2 = +20%",
+      "opis": "R-WEB-WAREHOUSE-STATE-CAP-20PCT-Q1 (decyzja właściciela 2026-11-05): każdy budynek „Magazyn” zbudowany GDZIEKOLWIEK w imperium zwiększa pojemność CAŁEGO PAŃSTWA per typ surowca o 20% BAZY (magazyn_baza_surowce), zamiast stałego +500 (przy bazie 50 000 stałe 500 było pomijalne). Model ADDYTYWNY między Magazynami (2 Magazyny = +40%, nie ×1,44). Cap per typ = magazyn_baza_surowce × (1 + magazyn_bonus_surowce_proc_na_budynek × liczba_magazynow) × mnożnik epoki (magazynEraMultiplier w economy-upkeep.ts: epoka2 ×2, epoka3 ×4). Epoka 1: 0 Magazynów → 50 000; 1 → 60 000; 3 → 80 000. Płaskie na easy/normal/hard. Stary klucz magazyn_bonus_surowce_na_budynek (500 szt/Magazyn) USUNIĘTY."
     },
     "magazyn_centralny_baza_zywnosc": {
       "easy": 1000,
@@ -618,11 +625,11 @@
       "opis": "PYTANIE-85-Q6: baza capu centralnego magazynu żywności imperium (+ Spichlerze lokalne +100/+150, Magazyn +100). Podniesione 500→1000 (Maciej 2026-07-28)."
     },
     "magazyn_centralny_bonus_zywnosc_na_budynek": {
-      "easy": 100,
-      "normal": 100,
-      "hard": 100,
+      "easy": 0,
+      "normal": 0,
+      "hard": 0,
       "jednostka": "🍞 / Magazyn",
-      "opis": "PYTANIE-85: dodatek capu centralnego magazynu żywności za każdy budynek Magazyn w imperium."
+      "opis": "R-WEB-MAGAZYN-NO-FOOD-CAP-BONUS-Q1 (decyzja właściciela 2026-11-05: „Usuń żywność, dodatkową pojemność wynikającą z magazynu. Zostawmy tylko to w spichlerzu.”): Magazyn NIE zwiększa capu żywności centralnej; pojemność żywności daje wyłącznie Spichlerz. Było 100 za każdy Magazyn (PYTANIE-85). Pojemność SUROWCÓW Magazynu to osobny klucz (magazyn_bonus_surowce_proc_na_budynek, WAREH) i nie jest tu zmieniana."
     },
     "magazyn_mnoznik_spichlerz": {
       "easy": 6,

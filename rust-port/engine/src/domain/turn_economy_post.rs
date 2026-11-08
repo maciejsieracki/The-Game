@@ -294,6 +294,7 @@ pub fn run_post_central_growth(
         pop_cap_params: PopCapParams {
             akwedukt_prog_ludnosci: econ_cfg.akwedukt_prog_ludnosci,
             spichlerz_prog_ludnosci: econ_cfg.spichlerz_prog_ludnosci,
+            spichlerz_ii_prog_ludnosci: Some(econ_cfg.spichlerz_ii_prog_ludnosci),
             akwedukt_max_ludnosci: econ_cfg.akwedukt_max_ludnosci,
         },
         ration_params: ef_params.ration_params,
@@ -427,6 +428,7 @@ pub fn pop_cap_params_of(econ_params: &Value, difficulty: &str) -> PopCapParams 
     PopCapParams {
         akwedukt_prog_ludnosci: c.akwedukt_prog_ludnosci,
         spichlerz_prog_ludnosci: c.spichlerz_prog_ludnosci,
+        spichlerz_ii_prog_ludnosci: Some(c.spichlerz_ii_prog_ludnosci),
         akwedukt_max_ludnosci: c.akwedukt_max_ludnosci,
     }
 }
