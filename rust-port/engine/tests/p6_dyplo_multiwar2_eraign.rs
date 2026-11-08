@@ -100,7 +100,7 @@ fn eraign_vectors_match_web() {
 
 #[test]
 fn era_delay_n_minus_1_n_n_plus_1_for_bronze_and_iron() {
-    // Brak tagi (zwykle wypowiedzenie): R1 obowiazuje na 39/40.
+    // Brak tagu (zwykle wypowiedzenie): R1 obowiazuje na 39/40.
     let base = InterCivWarGateInput {
         turn: 39.0,
         attacker_era: 2.0,

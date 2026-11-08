@@ -50,13 +50,9 @@ impl WarGateReason {
     }
 }
 
-/// Web `ForcedEraTag` (`'bronze' | 'stone' | 'iron'`): etykieta epoki wojny wymuszonej.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ForcedEraTag {
-    Bronze,
-    Stone,
-    Iron,
-}
+// Web `ForcedEraTag` (`'bronze' | 'stone' | 'iron'`): jedyna definicja w `diplomacy_multiwar.rs`
+// (ponowne uzycie, bez drugiego typu); re-eksport zachowuje sciezke `diplomacy_multiwar_gate::ForcedEraTag`.
+pub use crate::domain::diplomacy_multiwar::ForcedEraTag;
 
 /// Web `WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.bronze` (R-WEB-ERA-DELAY-Q1).
 pub const ERA_FORCED_WAR_START_TURNS_BRONZE: f64 = 20.0;

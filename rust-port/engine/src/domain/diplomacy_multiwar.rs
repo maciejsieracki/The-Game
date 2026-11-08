@@ -64,7 +64,7 @@ pub enum ForcedEraTag {
     Iron,
 }
 
-/// Literal `enabledForcedWarEras` z `gra/data/war-rules-params.json` (pin a61337844): Kamień, Brąz, Żelazo.
+/// Literal `enabledForcedWarEras` z `gra/data/war-rules-params.json` (pin a61337844; wartosc zgodna z 5dd53e60f): Kamień, Brąz, Żelazo.
 pub const ENABLED_FORCED_WAR_ERAS: [ForcedEraTag; 3] = [
     ForcedEraTag::Stone,
     ForcedEraTag::Bronze,
@@ -82,7 +82,7 @@ pub struct EraWarParams<'a> {
     pub max_era_forced_wars_per_civ_per_era: Option<i64>,
 }
 
-/// Literal parametrów z `gra/data/war-rules-params.json` (pin a61337844).
+/// Literal parametrów z `gra/data/war-rules-params.json` (pin a61337844; pola zgodne z 5dd53e60f, REPIN = partia F).
 pub const ERA_WAR_PARAMS: EraWarParams<'static> = EraWarParams {
     enabled_forced_war_eras: &ENABLED_FORCED_WAR_ERAS,
     max_era_forced_wars_per_era: None,
