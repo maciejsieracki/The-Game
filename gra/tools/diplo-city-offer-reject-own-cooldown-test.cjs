@@ -119,5 +119,25 @@ const T = 10;
   ok(!isOfferRejectedOnCooldown(cd, AI, keyAtEnqueue('zaproponuj_pokoj', 'pokoj'), T + 1), 'zaproponuj_pokoj możliwy po odrzuceniu oferty miasta');
 }
 
+{
+  // Okablowanie w main.ts (closure, nie do wywołania z testu): test źródłowy trzech miejsc zmiany.
+  // Usunięcie któregokolwiek wiersza = FAIL (domknięcie zarzutu: wiring nie był objęty testem).
+  const mainSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
+  ok(/const cooldownKey = rejectCooldownKeyFor\(workingCmd\.type, converted\.actionId\);/.test(mainSrc),
+    'main.ts: sprawdzenie cooldownu używa rejectCooldownKeyFor(workingCmd.type, converted.actionId)');
+  ok(/isOfferRejectedOnCooldown\(rejectedOfferCooldowns, ownerId, cooldownKey, turn\)/.test(mainSrc),
+    'main.ts: isOfferRejectedOnCooldown dostaje cooldownKey (nie surowe actionId)');
+  ok(/if \(cooldownKey !== converted\.actionId\) entry\.rejectCooldownKey = 'miasto_za_pokoj';/.test(mainSrc),
+    'main.ts: wpis stołu dostaje rejectCooldownKey dla oferty miasta');
+  ok(/const rejectKey: RejectCooldownKey = entry\.rejectCooldownKey \?\? entry\.actionId;/.test(mainSrc),
+    'main.ts: zapis odrzucenia używa entry.rejectCooldownKey ?? entry.actionId');
+  ok(/recordRejectedOffer\(\s*rejectedOfferCooldowns,\s*aiPartnerId,\s*rejectKey,/.test(mainSrc),
+    'main.ts: recordRejectedOffer zapisuje rejectKey');
+  // Zapis/odczyt stołu: wpisy trafiają do meta.negotiationTable jako całe obiekty (slice) i wracają
+  // przez push(entry) — pole rejectCooldownKey przeżywa zapis i wczytanie gry.
+  ok(/negotiationTable: negotiationTable\.slice\(\),/.test(mainSrc) && /negotiationTable\.push\(entry\);/.test(mainSrc),
+    'main.ts: stół zapisywany i wczytywany jako całe wpisy (rejectCooldownKey przeżywa save/load)');
+}
+
 console.log(`\nWynik: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);
