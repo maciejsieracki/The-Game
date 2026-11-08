@@ -19,3 +19,11 @@ Kolejność: S1 obrona → S2 odzyskanie → S3 utrzymanie → dopiero atak na p
 **Mgła wojny:** na terenie wszystkich trzech stanów (heksy/okolica miast S1, S2 i S3) NIE obowiązuje mgła wojny dla decyzji AI, a cywilizacja może atakować każdego wroga przebywającego na tym terenie. Rozszerz wyjątek FALA 550 (`targetOnOwnTerritory`) tak, by obejmował także tereny S2 (miasto utracone — heksy wokół niego) i S3, nie tylko bieżące heksy własne.
 **Granica (kontakt, bez zmian):** wyjątek stoi PO sprawdzeniu wojny (`areEnemyOwners`) — „każdego" = każdą cywilizację/barbarzyńców, z którymi jest wojna. Jeśli implementacja wymagałaby ataku także bez wojny — NIE rób tego, zgłoś jako DECISION_REQUIRED.
 Raport: tabela S1/S2/S3 (skąd historia założonych miast, jak liczony S3), plik:linia, testy na każdy stan i na kolejność priorytetów.
+
+## DODATEK 3 (właściciel, 2026-11-08): klasyfikacja per cywilizacja, kluczem jest ZAŁOŻYCIEL miasta
+
+- Każda cywilizacja stosuje IDENTYCZNE reguły (S1/S2/S3 z dodatku 2) i klasyfikuje miasto WYŁĄCZNIE wg dwóch faktów: **kto je pierwotnie założył (`foundedBy`/odpowiednik — historia, niezmienna po podboju)** oraz **kto je obecnie posiada**.
+  - założyciel = ja, posiadacz = ja → S1; założyciel = ja, posiadacz ≠ ja → S2; założyciel ≠ ja, posiadacz = ja → S3; w pozostałych przypadkach miasto NIE jest „własne" dla mnie.
+- Klasyfikacja jest **per cywilizacja, nie globalna**: to samo miasto/teren może być jednocześnie własne dla DWÓCH cywilizacji — dla założyciela jako S2 (założone, utracone), dla zdobywcy jako S3 (zdobyte, utrzymuje). Obie stosują wtedy swoje priorytety (założyciel: odzyskanie S2; zdobywca: utrzymanie S3) i obie mają wyjątek mgły (brak mgły, atak na wrogów na tym terenie) — nie wolno blokować jednej klasyfikacji przez drugą ani cache'ować „właściciela terenu" jako jednej wartości.
+- Test obowiązkowy: scenariusz A założyło miasto M, B je zdobyło → dla A: M ∈ S2, dla B: M ∈ S3, dla C (trzecia): M poza „własnym"; kolejność akcji A (odzyskaj M) i B (broń M) oraz brak mgły u obu.
+- Przypadek brzegowy do zgłoszenia w raporcie (NIE rozstrzygaj sam, jeśli zmienia zachowanie): B zdobyło M od A, potem C zdobyło M od B — dla B miasto przestaje być własne (nie założyło go); dla A nadal S2.
