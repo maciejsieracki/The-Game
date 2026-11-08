@@ -79,3 +79,35 @@ NIE_ZMIERZONO w G2: pełne `cargo test` 318 binarek (dysk < 5 GB w trakcie; uruc
 - Jedyny patch weba: w kopii `forced-war-stone.ts` import `./forced-war-common` dostaje `.ts` (gen_cases.mjs robi to programowo w katalogu tymczasowym; logika bez zmian).
 - Odległość heksowa: web `hexDistance` (units/setup.ts) = max(|dq|,|dr|,|ds|) z s=-q-r; test Rust używa (|dq|+|dr|+|dq+dr|)/2, co jest tożsame przy dq+dr+ds=0. Sprawdzone wektorami `hexDistance` (siatka 7x7 + 4 pary). Porównanie z hexDistance w ścieżkach main.ts pozostaje na G3.
 - Pełne 318 binarek tests/ NIE_ZMIERZONO (dysk < 8 GB, stan repo: zmiana src addytywna).
+
+## 2b. Partia G3a (runda 3, dodatek 2) — fale wojny wymuszonej (`forced-war-waves.ts`)
+
+Baza: `abc5f58b9` = `origin/rust-port/parity-v2` (G1+G2 zintegrowane). Wektory: `tests/p6_forced_war_g3_data/cases.json` (554 przypadki: plan 226, prune 122, approach 121, hexDistance 30, restore 49, serialize 3, empty 1, stałe 2; generator `gen_cases_g3.mjs`, Node 22 + `--experimental-strip-types`, prawdziwy web z `git archive origin/main gra/src gra/data`; PRNG ziarno 20261109; 80 planów niepustych).
+
+| Symbol web (`forced-war-waves.ts`) | Rust | Plik | Wektory |
+|---|---|---|---|
+| `approachSectorForHex` (:~70) | `approach_sector_for_hex` | `domain/war_forced_waves.rs` | `p6_forced_war_g3_data/cases.json` (121: siatka 9x9 + 40 losowych) |
+| `hexDistanceForForcedWar` (:~290) | `hex_distance_for_forced_war` (+ `hex_distance` = `hexDistance` z `units/setup.ts`) | `domain/war_forced_waves.rs` | j.w. (30) |
+| `planForcedWarWave` (:~140-230) | `plan_forced_war_wave` | `domain/war_forced_waves.rs` | j.w. (226, w tym 80 niepustych) |
+| `pruneForcedWarWaves` (:~232-266) | `prune_forced_war_waves` | `domain/war_forced_waves.rs` | j.w. (122) |
+| `serializeForcedWarWaves` (:~268-276) | `serialize_forced_war_waves` (klon, kolejność Map) | `domain/war_forced_waves.rs` | j.w. (3) |
+| `restoreForcedWarWaves` (:~278-318) | `restore_forced_war_waves` (walidacja JSON, duplikat klucza = nadpisanie na pierwotnej pozycji) | `domain/war_forced_waves.rs` | j.w. (49 w tym 30 losowych) |
+| `emptyForcedWarWaveState` | `empty_forced_war_wave_state` | `domain/war_forced_waves.rs` | j.w. |
+| `ARMY_CONCENTRATION_MIN_UNITS = 3`, `ARMY_CONCENTRATION_RADIUS = 4` (`army-concentration.ts`) | stałe `ARMY_CONCENTRATION_MIN_UNITS`, `ARMY_CONCENTRATION_RADIUS` | `domain/war_forced_waves.rs` | j.w. (wartość z webu, regex) |
+
+ZAŁOŻENIA / ODSTĘPSTWA G3a (wszystkie w nagłówku `war_forced_waves.rs`):
+- `isCivilianUnit` (zbiory kategorii/typów w `units/setup.ts`) NIE jest portowane: wywołujący podaje `is_civilian`. Wektory: stub zwracający pole wejściowe.
+- `localeCompare` identyfikatorów = porządek bajtowy Rust. Zalożenie: identyfikatory z alfabetu małych liter/cyfr (wektory: `u<n>`, `c<n>`). Dla innych alfabetów (wielkie litery, `_`) porządek może się różnić — do weryfikacji przy podpinaniu do tury.
+- Liczby jako `f64` (lustro JS `number`). `approachSectorForHex`: zaokrąglenie JS `Math.round` (połówki w stronę +∞), NIE `f64::round` (inaczej sektor dla kąta −90° różniłby się: −1,5 → JS −1, Rust −2). Wektory pokrywają ten przypadek.
+- `restore`: w falach nieliczbowe `createdTurn` daje 0 (web zachowuje surową wartość); nieznane pola fali są odrzucane (web je przepisuje przez spread); elementy `unitIds` niebędące tekstem są odrzucane; `originHex`/`rallyPoint` niebędące obiektem z `q`,`r` odrzucają falę (web przepuszcza). Dane produkowane przez `serialize` nie mają tych kształtów; wektory ich nie zawierają.
+- Wektory `hexDistanceFn` (argument planu) = `hexDistance` z obiektami `{q,r}` (w webie to parametr obiektowy; generator to adaptuje). Rust przyjmuje `&dyn Fn`; wektory nie testują innych funkcji.
+- Obsługa błędu generatora (naprawiona w trakcie): pierwsza wersja przekazywała pozycyjne `hexDistance(aq,ar,bq,br)` jako funkcję obiektową — 26 rozbieżności wynikało z NaN po stronie weba, nie z portu. Poprawione w generatorze; wektory przeliczone ponownie (roznic=0).
+
+POZA ZAKRESEM G3a (przeniesione na G3b, NIE_ZMIERZONO w Rust): timer/trigger wojny wymuszonej z `main.ts`:
+- trigger wejścia AI w epokę (`bronzeForceWarPendingOwners` / `stoneForceWarPendingOwners` / `ironForceWarPendingOwners`, `syncOwnerEraFromResearch`, ok. :2398-2415, :26269-26472),
+- wywołanie planu i wpis fali w ownerLoop (`forcedWarDirective.wavePlan`, ok. :40498-40507) oraz pruning przed turą AI (ok. :39333-39337),
+- sprzątanie przy pokoju (`cleanupStoneForcedWarOnPeace`, `cleanupIronForcedWarOnPeace`, bronze, ok. :11206-11230, :11355-11356) i `sweepStaleForcedWarEntries` (ok. :11245-11260),
+- odpoczynek napastnika `WOJNA_WYMUSZONA_ODPOCZYNEK_TUR` po zakończeniu wojny.
+Logika jest silnie związana z domknięciami na stanie gry w `main.ts` (mapy, `getDiploRelation`, tury); wyodrębnienie czystych funkcji wymaga osobnego tematu lub zgody na szerszy zakres (zob. raport `03-operator-r3.md`).
+
+Rozmiar partii G3a: `war_forced_waves.rs` ~520 linii + `tests/p6_forced_war_g3.rs` ~293 linii (przekroczenie budżetu 600 LOC na partię — ZAŁOŻENIE: moduł i jego test to jedna nierozdzielna całość 1:1 z `forced-war-waves.ts`; analogicznie do G2a).
