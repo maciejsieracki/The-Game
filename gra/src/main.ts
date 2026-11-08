@@ -1370,6 +1370,7 @@ import {
   forcedEraTagForEpoch,
   eraWarCounterEpoch,
   isPlayerEligibleForEraWarPool,
+  isPlayerEraWarSlotFree,
   type EngageArmyHex,
   type ForcedEraTag,
 } from './game/war-rules-multiwar';
@@ -39076,7 +39077,13 @@ async function boot(): Promise<void> {
                     targetIsPlayer: true,
                     targetEra: 0,
                     targetWarCount: 0,
-                  }, WAR_RULES_PARAMS) === 'ok',
+                  }, WAR_RULES_PARAMS) === 'ok'
+                  // R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1 (zarzut FC r1 nr 1): kandydat-AI wchodzi
+                  // w parę z graczem tylko, gdy slot licznika gracza dla JEGO epoki wojny jest wolny
+                  // (inaczej bramka wypowiedzenia odrzuca parę `civ-cap-target` w każdej turze).
+                  && (!isWarRulesMultiwarEnabled() || isPlayerEraWarSlotFree(
+                    eraWarCountByCivKey, empireEpochForOwner(aiOwnerId), empireEpochForOwner(0), WAR_RULES_PARAMS,
+                  )),
                 // D1 (r2): kandydaci na partnera = WSZYSTKIE major AI z erą (nie tylko pula warless).
                 candidates: aiOwnerList.flatMap((oid): ForcedWarPairingSubject[] => {
                   if (

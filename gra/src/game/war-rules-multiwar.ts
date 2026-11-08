@@ -305,6 +305,24 @@ export function isPlayerEligibleForEraWarPool(
 }
 
 /**
+ * R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1 (zarzut FC r1 nr 1): czy kandydat-AI o epoce `aiEpoch`
+ * może wejść w parę z GRACZEM — slot licznika gracza dla epoki wojny tagu AI wolny
+ * (`eraWarCounterEpoch(epoka tagu, epoka gracza)`, ta sama reguła co bramka wypowiedzenia w main.ts).
+ * Bez tego filtra AI Kamienia wybrana jako partner gracza w Brązie byłaby odrzucana bramką
+ * (`civ-cap-target`) w każdej turze, a wojna Brązu gracza nie byłaby deklarowana.
+ */
+export function isPlayerEraWarSlotFree(
+  counts: ReadonlyMap<string, number>,
+  aiEpoch: number,
+  playerEpoch: number,
+  params: WarRulesParams = WAR_RULES_PARAMS,
+): boolean {
+  const tag = forcedEraTagForEpoch(aiEpoch);
+  if (tag === null) return false;
+  return canCivJoinEraForcedWar(counts, 0, eraWarCounterEpoch(forcedEraTagEpoch(tag), playerEpoch), params);
+}
+
+/**
  * R-WEB-ERA-WAR-COUNTER-Q1, zapis stary bez pola: odtwarza licznik z AKTYWNYCH par wojen
  * wymuszonych (obie strony = 1 w bieżącej epoce); reszta = 0. Świadomie konserwatywne.
  */

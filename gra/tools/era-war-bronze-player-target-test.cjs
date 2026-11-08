@@ -25,7 +25,7 @@ export { isEligibleForBronzeForcedWar, WOJNA_WYMUSZONA_START_TURY_OD_EPOKI } fro
 export {
   WAR_RULES_PARAMS, evaluateEraForcedWarGate, evaluateInterCivWarGate, canCivJoinEraForcedWar,
   recordEraForcedWarParticipation, restoreEraWarCounts, isWarTreatyBlocked, isEraForcedWarIgnoringR1,
-  isInterCivWarOpenAtTurn, eraWarCivKey, isPlayerEligibleForEraWarPool, eraWarCounterEpoch, forcedEraTagEpoch, forcedEraTagForEpoch,
+  isInterCivWarOpenAtTurn, eraWarCivKey, isPlayerEligibleForEraWarPool, isPlayerEraWarSlotFree, eraWarCounterEpoch, forcedEraTagEpoch, forcedEraTagForEpoch,
 } from ${JSON.stringify(SRC + '/game/war-rules-multiwar')};
 `, 'utf8');
 try {
@@ -61,6 +61,10 @@ function runWave(world) {
   for (const a of ai) {
     const row = { id: a.id, epoch: a.epoch, candidate: false, reason: [] };
     rows.push(row);
+    if (a.epoch === 1 && a.stonePending) { // uproszczenie testu: pending Kamienia bez progu Brązu (tylko miks epok)
+      row.candidate = true; subjects.push({ ownerId: a.id, q: a.q, r: a.r, era: 'stone' });
+      row.reason.push('wojna Kamienia (pending)'); continue;
+    }
     if (a.epoch !== 2) { row.reason.push('nie w Brązie (epoka ' + a.epoch + ') -> brak pending Brązu'); continue; }
     if (a.difficulty === 1) { row.reason.push('poziom Łatwy: forcedWarDifficultyLevel===1 wyłącza szukanie'); continue; }
     const el = M.isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: !!a.atOrdinaryWar || totalActive(a.id) > 0, currentTurn: turn, eraEnterTurn: a.eraEnterTurn });
@@ -94,7 +98,7 @@ function runWave(world) {
         isPlayerPairGateOpen: (aiId) => M.evaluateInterCivWarGate({
           turn, attackerEra: epochOf(aiId), attackerWarCount: (ai.find(a => a.id === aiId).atOrdinaryWar ? 1 : 0) + totalActive(aiId),
           eraTag: epochOf(aiId) === 1 ? 'stone' : epochOf(aiId) === 2 ? 'bronze' : 'iron', targetIsPlayer: true, targetEra: 0, targetWarCount: 0,
-        }, M.WAR_RULES_PARAMS) === 'ok',
+        }, M.WAR_RULES_PARAMS) === 'ok' && M.isPlayerEraWarSlotFree(counts, epochOf(aiId), playerEra),
         candidates: ai.map(a => ({ ownerId: a.id, q: a.q, r: a.r, era: a.epoch === 1 ? 'stone' : a.epoch === 2 ? 'bronze' : 'iron' })),
       },
     },
@@ -102,7 +106,7 @@ function runWave(world) {
   // Gate wypowiedzenia (main.ts blok wypowiedz_wojne) dla przydziałów na gracza.
   const toPlayer = res.assignments.filter(x => x.targetId === 0);
   const gateVerdicts = toPlayer.map(x => ({ attacker: x.ownerId, verdict: M.evaluateEraForcedWarGate({
-    multiwarEnabled: true, tag: x.era, declaredByTag: new Map(), counts, attackerId: x.ownerId, attackerEpoch: epochOf(x.ownerId), targetId: 0, targetEpoch: playerEra,
+    multiwarEnabled: true, tag: x.era, declaredByTag: new Map(), counts, attackerId: x.ownerId, attackerEpoch: epochOf(x.ownerId), targetId: 0, targetEpoch: M.eraWarCounterEpoch(M.forcedEraTagEpoch(x.era), playerEra),
   }, M.WAR_RULES_PARAMS) }));
   for (const row of rows) {
     const asn = res.assignments.filter(x => x.ownerId === row.id);
@@ -176,6 +180,22 @@ const baseAi = () => [
   print('S1c: 3 AI w Brązie + gracz w wojnie Kamienia', r);
   assert(r.toPlayer.length === 1 && r.toPlayer[0].ownerId === 1, 'S1c: AI1 -> gracz');
   assert(r.res.unresolvedOwnerIds.length === 0, 'S1c: brak unresolved');
+}
+
+// S-mixed (zarzut FC r1 nr 1+2): gracz w Brązie ma wojnę Kamienia (licznik 0:1); najbliższa AI to AI7 w Kamieniu
+// (pending, q=1). Kandydat AI7 jest pomijany (slot 0:1 zajęty), partnerem gracza zostaje AI1 (Brąz) i wojna Brązu
+// jest deklarowana (bramka ok). Bez filtru AI7 byłaby wybrana i odrzucana civ-cap-target w każdej turze.
+{
+  const forcedPairs = [{ attackerId: 6, targetId: 0, era: 'stone' }];
+  const counts = new Map(); M.recordEraForcedWarParticipation(counts, 6, 0, 1, M.eraWarCounterEpoch(1, 2));
+  const ai = baseAi().map(a => (a.id === 6 ? { ...a, q: 60 } : a)).concat([{ id: 7, q: 1, r: 0, epoch: 1, stonePending: true }]);
+  const r = runWave({ turn: TURN, playerCapital, ai, forcedPairs, counts });
+  print('S-mixed: gracz w Brązie z wojną Kamienia, najbliższa AI7 w Kamieniu', r);
+  assert(r.playerInPool, 'S-mixed: gracz w puli');
+  assert(!r.toPlayer.some(x => x.ownerId === 7), 'S-mixed: AI7 (Kamień, slot 0:1 zajęty) NIE jest partnerem gracza');
+  assert(r.toPlayer.length === 1 && r.toPlayer[0].ownerId === 1 && r.toPlayer[0].era === 'bronze', 'S-mixed: partnerem gracza jest AI1 (Brąz), wojna Brązu');
+  assert(r.gateVerdicts.every(g => g.verdict === 'ok'), 'S-mixed: bramka wypowiedzenia ok dla przydziałów na gracza (bez civ-cap-target)');
+  assert(r.res.playerFirstPartnerId === 1, 'S-mixed: tryb „gracz pierwszy” wybiera AI1, nie AI7');
 }
 
 // S2: gracz BEZ wojny Kamienia (pokój) — jak dotąd.
