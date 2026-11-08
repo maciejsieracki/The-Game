@@ -6,6 +6,7 @@
 //! Pokrycie: bazy {0,-10,1,2,333,500,1000,2000,500=pokoj}, relacje -50..300 (w tym granice clamp +-90 i 100),
 //! trzy trudnosci, pokrycie {0,1,5.5,100,777.25,-3,1234}.
 
+use civ_engine::domain::diplomacy_ai_forced_peace::PeaceBalanceShape;
 use civ_engine::domain::diplomacy_war_weariness_tick::*;
 use serde_json::Value;
 
@@ -66,6 +67,16 @@ fn balance_required_and_tolerance_match_web_vectors() {
             &format!("web_required_pn {ctx}"),
         );
         let q = PeacePriceQuote::from_web(base, rel, d);
+        // Postac liniowa wyceny z modulu pokoju AI (`PeaceBalanceShape::Linear`) = closure weba.
+        let shape = PeaceBalanceShape::Linear {
+            balance0: q.balance0,
+            slope: q.slope,
+        };
+        same(
+            shape.balance_for(cov),
+            num(&r["balance"]),
+            &format!("PeaceBalanceShape::Linear {ctx}"),
+        );
         same(
             q.balance_for(cov),
             num(&r["balance"]),
