@@ -1,3 +1,9 @@
+## ROBOCZA b1a76485 -- 2026-11-06 -- FALA 563: TRYBUNAL-CARD: karta budynku pokazuje efektywne Szczescie zgodne z silnikiem (testowa)
+
+- buildingAdapter.ts: wiersz Zadowolenie i skala poziomow z buildingHappinessAtLevel dla 19 budynkow dajeSzczescie (Trybunal L1 +2, L2 +3); liczby silnika bez zmian
+- Weryfikacja: trybunal-card-happiness-display-test 128/0 (Chromium DOM), building-happiness 14/0, plony-budynkow 68/0, logic 213/213, ai-test 289/0, tsc 0
+- Limity: legacy formatery w cityPanel.ts moga nadal pokazywac surowe zadowolenie (NIE_ZMIERZONO); building-detail-card-entitycard-migration-test 54/1 (dlug sprzed zmiany); brak zrzutow PNG
+
 ## ROBOCZA 143ef730 -- 2026-11-06 -- FALA 562: MUSIC2 + SPLIT: muzyka 15 cywilizacji; cale audio w plikach-sasiadach audio-pack-N.js obok HTML (testowa)
 
 - przywitania+negocjacje wszystkich 15 civ (rotacja przywitan), audio poza HTML w 3 pakietach .js ladowanych <script src> z file://; HTML 14,3 MB, limit 100 MB GitHub nieaktualny
