@@ -119,7 +119,7 @@ pub struct NapLockCtx {
 }
 
 /// Web `dualGate` (diplomacy-locks.ts:187-205). `None` = bramka przepuszcza.
-fn dual_gate(
+pub fn dual_gate(
     rel_total: f64,
     zaufanie: f64,
     min_rel: f64,
