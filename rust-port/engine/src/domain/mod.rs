@@ -108,6 +108,7 @@ pub mod war_forced_common;
 pub mod war_forced_iron;
 pub mod war_forced_pairing;
 pub mod war_forced_stone;
+pub mod war_forced_trigger;
 pub mod war_forced_waves;
 pub mod war_home_defense;
 pub mod war_home_defense_plan;

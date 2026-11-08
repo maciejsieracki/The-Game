@@ -10,8 +10,8 @@
 //! ZALOZENIA / ODSTEPSTWA (opisane w `dyspozycje/rust-port/p6/P6-FORCED-WAR-MODULES.md`, sekcja 2b):
 //! - `isCivilianUnit` (zbiory w `units/setup.ts`) NIE jest portowane tutaj: wywolujacy podaje
 //!   wynik jako pole `is_civilian` (wektory liczone przez prawdziwy web ze stubem zwracajacym to pole).
-//! - Porownanie identyfikatorow (`localeCompare`) = porzadek bajtowy Rust; poprawne dla identyfikatorow
-//!   jednostek/miast z alfabetu malych liter, cyfr i `-` (zalozenie, potwierdzone wektorami).
+//! - Porownanie identyfikatorow (`localeCompare`) = [`compare_ids_icu`] (ICU root/en dla alfabetu
+//!   ASCII `[A-Za-z0-9_-]`, runda 4; wczesniej porzadek bajtowy, bledny dla `dip_5_1` vs `dip_51_1`).
 //! - Liczby (wspolrzedne, sektory, tury) jako `f64`: lustrzane do JS `number`.
 //! - `restore`: pola nieliczbowe / zlego ksztaltu w falach (np. `createdTurn` inny niz liczba) daja
 //!   0 zamiast surowej wartosci webu; nieznane pola fali sa odrzucane. Wektory nie zawieraja tych
@@ -101,6 +101,47 @@ fn cmp_f64(a: f64, b: f64) -> std::cmp::Ordering {
     a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
 }
 
+/// Web `a.id.localeCompare(b.id)` (ICU root/en, poziom domyslny) dla identyfikatorow z alfabetu
+/// ASCII `[A-Za-z0-9_-]` (P6-FORCED-WAR-MODULES-Q1, runda 4): poziom 1 bez wielkosci liter,
+/// kolejnosc znakow `_` < `-` < cyfry < litery, krotsza przedrostek-first; poziom 3: przy rownosci
+/// bez wielkosci liter MALA litera przed WIELKA (pierwsza roznica). Znaki spoza alfabetu: porzadek
+/// bajtowy za wszystkimi znakami alfabetu (ZALOZENIE; identyfikatory gry sa z tego alfabetu,
+/// wektory: `tests/p6_forced_war_g3b_data/cases.json`, sekcja `idcmp`).
+pub fn compare_ids_icu(a: &str, b: &str) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+    fn primary(c: u8) -> u32 {
+        match c {
+            b'_' => 1,
+            b'-' => 2,
+            b'0'..=b'9' => 10 + u32::from(c - b'0'),
+            b'a'..=b'z' => 100 + u32::from(c - b'a'),
+            b'A'..=b'Z' => 100 + u32::from(c - b'A'),
+            _ => 1000 + u32::from(c),
+        }
+    }
+    let (x, y) = (a.as_bytes(), b.as_bytes());
+    for (p, q) in x.iter().zip(y.iter()) {
+        let o = primary(*p).cmp(&primary(*q));
+        if o != Ordering::Equal {
+            return o;
+        }
+    }
+    let o = x.len().cmp(&y.len());
+    if o != Ordering::Equal {
+        return o;
+    }
+    for (p, q) in x.iter().zip(y.iter()) {
+        if p != q {
+            return match (p.is_ascii_lowercase(), q.is_ascii_lowercase()) {
+                (true, false) => Ordering::Less,
+                (false, true) => Ordering::Greater,
+                _ => p.cmp(q),
+            };
+        }
+    }
+    Ordering::Equal
+}
+
 /// Web `hexDistance` (units/setup.ts): max(|dq|, |dr|, |ds|), s = -q - r.
 pub fn hex_distance(a: WaveHex, b: WaveHex) -> f64 {
     let dq = (a.q - b.q).abs();
@@ -174,7 +215,7 @@ fn eligible_wave_unit(u: &WaveUnit, excluded: &HashSet<String>) -> bool {
 fn compare_unit(a: &WaveUnit, b: &WaveUnit) -> std::cmp::Ordering {
     cmp_f64(a.q, b.q)
         .then(cmp_f64(a.r, b.r))
-        .then(a.id.cmp(&b.id))
+        .then(compare_ids_icu(&a.id, &b.id))
 }
 
 /// Wynik `targetForAnchor` (web): miasto, sektor i trzy klucze rankingu.
@@ -213,7 +254,7 @@ fn target_for_anchor<'a>(
         )
         .then(cmp_f64(a.q, b.q))
         .then(cmp_f64(a.r, b.r))
-        .then(a.id.cmp(&b.id))
+        .then(compare_ids_icu(&a.id, &b.id))
     });
     let city = sorted[0];
     let sector = approach_sector_for_hex(city_hex(city), anchor);
@@ -326,7 +367,7 @@ pub fn plan_forced_war_wave(
                 .then(cmp_f64(a.sum, b.sum))
                 .then(cmp_f64(a.anchor.q, b.anchor.q))
                 .then(cmp_f64(a.anchor.r, b.anchor.r))
-                .then(a.anchor.id.cmp(&b.anchor.id))
+                .then(compare_ids_icu(&a.anchor.id, &b.anchor.id))
         } else {
             b.group
                 .len()
@@ -334,7 +375,7 @@ pub fn plan_forced_war_wave(
                 .then(cmp_f64(a.sum, b.sum))
                 .then(cmp_f64(a.anchor.q, b.anchor.q))
                 .then(cmp_f64(a.anchor.r, b.anchor.r))
-                .then(a.anchor.id.cmp(&b.anchor.id))
+                .then(compare_ids_icu(&a.anchor.id, &b.anchor.id))
         }
     });
     let best = candidates.into_iter().next()?;

@@ -97,7 +97,7 @@ Baza: `abc5f58b9` = `origin/rust-port/parity-v2` (G1+G2 zintegrowane). Wektory: 
 
 ZAŁOŻENIA / ODSTĘPSTWA G3a (wszystkie w nagłówku `war_forced_waves.rs`):
 - `isCivilianUnit` (zbiory kategorii/typów w `units/setup.ts`) NIE jest portowane: wywołujący podaje `is_civilian`. Wektory: stub zwracający pole wejściowe.
-- `localeCompare` identyfikatorów = porządek bajtowy Rust. Zalożenie: identyfikatory z alfabetu małych liter/cyfr (wektory: `u<n>`, `c<n>`). Dla innych alfabetów (wielkie litery, `_`) porządek może się różnić — do weryfikacji przy podpinaniu do tury.
+- `localeCompare` identyfikatorów = `compare_ids_icu` (od rundy 4, sekcja 2c): ICU root/en dla alfabetu `[A-Za-z0-9_-]`, zweryfikowane wektorami `idcmp`. Znaki spoza alfabetu: porządek bajtowy (ZAŁOŻENIE).
 - Liczby jako `f64` (lustro JS `number`). `approachSectorForHex`: zaokrąglenie JS `Math.round` (połówki w stronę +∞), NIE `f64::round` (inaczej sektor dla kąta −90° różniłby się: −1,5 → JS −1, Rust −2). Wektory pokrywają ten przypadek.
 - `restore`: w falach nieliczbowe `createdTurn` daje 0 (web zachowuje surową wartość); nieznane pola fali są odrzucane (web je przepisuje przez spread); elementy `unitIds` niebędące tekstem są odrzucane; `originHex`/`rallyPoint` niebędące obiektem z `q`,`r` odrzucają falę (web przepuszcza). Dane produkowane przez `serialize` nie mają tych kształtów; wektory ich nie zawierają.
 - Wektory `hexDistanceFn` (argument planu) = `hexDistance` z obiektami `{q,r}` (w webie to parametr obiektowy; generator to adaptuje). Rust przyjmuje `&dyn Fn`; wektory nie testują innych funkcji.
@@ -111,3 +111,32 @@ POZA ZAKRESEM G3a (przeniesione na G3b, NIE_ZMIERZONO w Rust): timer/trigger woj
 Logika jest silnie związana z domknięciami na stanie gry w `main.ts` (mapy, `getDiploRelation`, tury); wyodrębnienie czystych funkcji wymaga osobnego tematu lub zgody na szerszy zakres (zob. raport `03-operator-r3.md`).
 
 Rozmiar partii G3a: `war_forced_waves.rs` ~520 linii + `tests/p6_forced_war_g3.rs` ~293 linii (przekroczenie budżetu 600 LOC na partię — ZAŁOŻENIE: moduł i jego test to jedna nierozdzielna całość 1:1 z `forced-war-waves.ts`; analogicznie do G2a).
+
+## 2c. Partia G3b (runda 4, odpowiedź na zarzuty rundy 3) — trigger/timer (funkcje czyste)
+
+Moduł: `rust-port/engine/src/domain/war_forced_trigger.rs`; testy: `tests/p6_forced_war_g3b.rs`; wektory: `tests/p6_forced_war_g3b_data/cases.json` (generator `gen_cases_g3b.mjs`, Node 22, pin `origin/main`).
+
+| Funkcja Rust | Odpowiednik web (main.ts, pin origin/main) | Wektory |
+|---|---|---|
+| `should_search_bronze` | warunek "szukaj" Brązu (`shouldSearch && isForcedEraWarEnabled('bronze')`, ownerLoop Krok A, ok. :38885-38910) | `search:bronze` |
+| `should_search_stone` | warunek "szukaj" Kamienia z uzbrojeniem tej tury (ok. :38916-38940) | `search:stone` |
+| `should_search_iron` | warunek "szukaj" Żelaza (bez progu trudności, ok. :38946-38970) | `search:iron` |
+| `sweep_stale_forced_war_entries` | `sweepStaleForcedWarEntries` + `cleanup*ForcedWarOnPeace` (ok. :11206-11260): kolejność Kamień, Żelazo, Brąz; odpoczynek napastnika = tura + 20 | `sweep` (120 przypadków) |
+| `compare_ids_icu` (w `war_forced_waves.rs`) | `a.id.localeCompare(b.id)` | `idcmp` (11 640 par) |
+
+Predykaty składane są z już zportowanych `is_eligible_for_*` / `is_resting_from_*` (G1/G2); wektory `search` liczą je przez prawdziwe `forced-war-{bronze,stone,iron}.ts`. Replika warunku ownerLoop i sweepu to RĘCZNIE WYDZIELONA KOPIA (closure'y main.ts zamienione na argumenty), zapisana w generatorze.
+
+ZMIANA (odpowiedź na zarzut localeCompare): porządek identyfikatorów NIE jest już bajtowy. `compare_ids_icu` odtwarza ICU root/en dla alfabetu `[A-Za-z0-9_-]`: `_` < `-` < cyfry < litery; przy równości bez wielkości liter mała litera przed wielką. Dowód rozbieżności bajt vs ICU (Node): `'dip_5_1'.localeCompare('dip_51_1') = -1`, a bajtowo `dip_51_1` < `dip_5_1`. Identyfikatory `dip_<tura>_<seq>` (`main.ts` `allocateDipUnitId`) zawierają `_` i zmienną długość, więc porządek bajtowy byłby błędny. Pomiar: zgodność root/en z lokalem `pl` dla tego alfabetu = 0 rozbieżności na 11 640 parach (wektory liczone w locale domyślnym Node). Znaki spoza alfabetu: porządek bajtowy za alfabetem (ZAŁOŻENIE; identyfikatory gry są z tego alfabetu).
+
+ODSTĘPSTWA restore (zarzut 2) — ODRZUCONE dla danych realnych, ZAŁOŻENIE dla danych zepsutych:
+- Dane realne: web `planForcedWarWave` buduje fale z typowanymi polami (`unitIds` = id jednostek-tekstów, `createdTurn` liczba, hexy `{q,r}` liczbowe, `approachSector` liczba); `serializeForcedWarWaves` kopiuje te obiekty. Zapis produkowany przez web mieści się więc w kontrakcie `restore` Rust (test `g3b_restore_realistic_shape_roundtrip`).
+- Dane zepsute (ręczna edycja zapisu): zachowanie Rust jest UDOKUMENTOWANE testem `g3b_restore_malformed_documented_divergence` (element `unitIds` nie-tekstowy odrzucany; `createdTurn` nieliczbowy = 0). Web zachowuje je surowo (nie-tekst w `unitIds`, `createdTurn` jako "x"). Ta rozbieżność wymaga jawnej akceptacji właściciela; nie wpływa na logikę dla zapisów z webu.
+
+POZOSTAJE NIE_ZMIERZONE / NIE PORTOWANE w G3b (zakres G3b = funkcje decyzyjne, nie pełna pętla `main.ts`):
+- mutacje `bronzeForceWarPendingOwners` / `stoneForceWarPendingOwners` / `ironForceWarPendingOwners` i `*EraEnterTurnByOwner` w ownerLoop (wejście AI w epokę, uzbrojenie Kamienia po mutacji),
+- wpis fali (`forcedWarDirective.wavePlan`) i pruning fal w ownerLoop (ok. :39333-39337, :40498-40507) — `planForcedWarWave`/`pruneForcedWarWaves` są portowane w G3a, ale NIE podpięte do tury,
+- podpięcie wyniku `should_search_*` do `assignForcedWarPairings` (pairing już w `war_forced_pairing.rs`, poza tą partią),
+- pula gracza (`isPlayerEligibleForEraWarPool`, ok. :39000-39030) i odpoczynek gracza,
+- cooldown 20 tur (`WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR`): stała jest zgodna (test `g3b_constants_match_web_source`), ale jej zastosowanie w auto-pokoju (`lockTurnsOverride`) to ścieżka dyplomacji, nie trigger, i NIE jest tu portowane.
+
+Pomiar rozmiaru G3b: `war_forced_trigger.rs` ~230 linii, `p6_forced_war_g3b.rs` ~210 linii, `gen_cases_g3b.mjs` ~260 linii, `cases.json` ~495 KB (dane). Przekroczenie budżetu 600 LOC — ZAŁOŻENIE do akceptacji (jak G3a).
