@@ -1093,6 +1093,12 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
 .entity-card-top3-body{min-width:0;display:flex;flex-direction:column;gap:1px;}
 .entity-card-top3-title{font-size:13px;font-weight:700;color:#f0e3ab;}
 .entity-card-top3-text{font-size:12.5px;line-height:1.4;opacity:.85;overflow-wrap:anywhere;}
+/* R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1 — blok "Top 5 korzyści" karty odkrycia (ten sam layout
+   'top3'); pozycja 1 = GŁÓWNA KORZYŚĆ, wyróżniona mocniejszą ramką (ANALIZA-KART-ODKRYC §7). */
+.entity-card-section[data-section-key="top5"] .entity-card-top3-item:first-child{
+  border-color:rgba(232,216,138,.55);border-left-color:#e8d88a;
+  background:linear-gradient(180deg,rgba(232,216,138,.2),rgba(232,216,138,.07));}
+.entity-card-section[data-section-key="top5"] .entity-card-top3-item:first-child .entity-card-top3-title{font-size:13.5px;}
 /* R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1 — DIORAMA (Wariant A z zaakceptowanej makiety).
    Reguły .entity-card-header/.entity-card-medallion/.entity-card-title-wrap WYŻEJ zostają
    nietknięte i pełnią teraz rolę BAZY dla trybu kompaktowego; ten blok nadpisuje je dla

@@ -1,0 +1,1317 @@
+{
+  "_meta": {
+    "temat": "R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1",
+    "generator": "gra/tools/gen-tech-cards-top5.cjs (+ gen-tech-cards-top5.zdania.json)",
+    "zrodloCsv": "odkrycia-top5.csv (FC 58339997b, docs bdf44fd9d)",
+    "csvSha256": "1c3b9a14dca3cbf89ff4dc3187967195898e7271dfd8f0c50a8c36f24fbbc6f8",
+    "pola": "top5:[{tytul, liczba?, zdanie, dowod?}] · cmz:[{czynnosc, korzysc}] · ukryte:[nazwy efektów martwych ukrytych z karty]"
+  },
+  "Obróbka drewna": {
+    "top5": [
+      {
+        "tytul": "Tartak: +50 drewna na turę do magazynu państwa",
+        "liczba": "+50",
+        "zdanie": "Ulepszenie pola lasu; drewno trafia do wspólnego magazynu państwa i idzie na budowy oraz rekrutację.",
+        "dowod": "gra/data/terrain-improvements.json:194; gra/data/terrain-improvements.json:204"
+      },
+      {
+        "tytul": "Palisada: +100% Obrony obrońców miasta",
+        "liczba": "+100%",
+        "zdanie": "Pierwsze umocnienie miasta — podwaja Obronę jednostek, które go bronią.",
+        "dowod": "gra/data/buildings.json:950; gra/data/miasto-params.json:94; gra/src/game/city-defense.ts:63-71"
+      },
+      {
+        "tytul": "Każda Stolarnia: +10% drewna w całym państwie",
+        "liczba": "+10%",
+        "zdanie": "Premia sumuje się z każdą postawioną Stolarnią i działa na drewno całego państwa.",
+        "dowod": "gra/data/econ-params.json:285; gra/src/game/turn-economy.ts:1536"
+      },
+      {
+        "tytul": "Taran: pierwsza machina oblężnicza (2800 HP)",
+        "liczba": "2800 HP",
+        "zdanie": "Pozwala oblegać miasta i burzyć umocnienia wroga już w epoce Kamienia.",
+        "dowod": "gra/data/units.json:3330"
+      },
+      {
+        "tytul": "Posterunek (z Murarstwem): +50% Obrony, strefa 3 pól",
+        "liczba": "+50%",
+        "zdanie": "Strażnica na granicy wzmacnia obrońców i pilnuje strefy 3 pól; wymaga także Murarstwa.",
+        "dowod": "gra/data/terrain-improvements.json:394; gra/src/game/improvement-tech.ts:46-47"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Postaw Tartak na polu lasu",
+        "korzysc": "zasilić magazyn państwa 50 drewna na turę (budowy i rekrutacja)"
+      },
+      {
+        "czynnosc": "Zbuduj Palisadę drewnianą",
+        "korzysc": "podwoić obronę miasta (+100% Obrony obrońców)"
+      },
+      {
+        "czynnosc": "Zbuduj Stolarnię",
+        "korzysc": "zwiększyć produkcję drewna całego państwa o 10%"
+      },
+      {
+        "czynnosc": "Zrekrutuj Taran",
+        "korzysc": "móc oblegać i burzyć umocnienia wroga"
+      }
+    ],
+    "ukryte": []
+  },
+  "Garncarstwo": {
+    "top5": [
+      {
+        "tytul": "Spichlerz: limit ludności miasta 5 → 8",
+        "liczba": "5 → 8",
+        "zdanie": "Spichlerz (wymaga ceramiki) pozwala miastu urosnąć z 5 do 8 mieszkańców.",
+        "dowod": "gra/data/econ-params.json:24; gra/data/econ-params.json:31; gra/src/game/economy.ts:1053; gra/data/buildings.json:458"
+      },
+      {
+        "tytul": "Glinianka: +50 gliny na turę do magazynu państwa",
+        "liczba": "+50",
+        "zdanie": "Ulepszenie na złożu gliny; glina idzie na ceramikę i cegłę.",
+        "dowod": "gra/data/terrain-improvements.json:118; gra/data/terrain-improvements.json:128"
+      },
+      {
+        "tytul": "Garncarnia: wytwarza ceramikę (glina + drewno)",
+        "zdanie": "Przerabia glinę i drewno na ceramikę, której potrzebuje Spichlerz.",
+        "dowod": "gra/src/game/converters.ts:85; gra/data/buildings.json:554"
+      },
+      {
+        "tytul": "Cegielnia: cegła (2 glina + 1 drewno → 2 cegły)",
+        "zdanie": "Cegielnia jest dostępna od epoki Brązu; cegła jest potrzebna m.in. do zbadania Pisma.",
+        "dowod": "gra/src/game/converters.ts:84; gra/data/tech.json:196; gra/src/game/research.ts:180"
+      },
+      {
+        "tytul": "Warzelnia soli: +50 soli na turę",
+        "liczba": "+50",
+        "zdanie": "Ulepszenie na złożu soli; sól trafia do magazynu państwa.",
+        "dowod": "gra/data/terrain-improvements.json:251; gra/data/terrain-improvements.json:262"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Spichlerz (gdy masz ceramikę)",
+        "korzysc": "podnieść limit ludności miasta z 5 do 8"
+      },
+      {
+        "czynnosc": "Postaw Gliniankę na złożu gliny",
+        "korzysc": "wydobywać 50 gliny na turę"
+      },
+      {
+        "czynnosc": "Zbuduj Garncarnię przy dostępie do gliny",
+        "korzysc": "wytwarzać ceramikę potrzebną Spichlerzowi"
+      },
+      {
+        "czynnosc": "Zaplanuj Cegielnię (dostępna od epoki Brązu)",
+        "korzysc": "wytwarzać cegłę i otworzyć badanie Pisma"
+      }
+    ],
+    "ukryte": []
+  },
+  "Murarstwo": {
+    "top5": [
+      {
+        "tytul": "Kamieniołom: +50 kamienia na turę do magazynu",
+        "liczba": "+50",
+        "zdanie": "Ulepszenie wzgórza lub gór; kamień idzie na mury, świątynie i inne budowle.",
+        "dowod": "gra/data/terrain-improvements.json:136; gra/data/terrain-improvements.json:146"
+      },
+      {
+        "tytul": "Każdy Warsztat kamieniarski: +10% kamienia w państwie",
+        "liczba": "+10%",
+        "zdanie": "Premia sumuje się z każdym Warsztatem i działa na kamień całego państwa.",
+        "dowod": "gra/data/econ-params.json:292; gra/src/game/turn-economy.ts:1539"
+      },
+      {
+        "tytul": "Cuda narodowe: Piramidy (Egipt) i inne",
+        "zdanie": "Cuda tylko dla wybranych cywilizacji (np. Piramidy wyłącznie dla Egiptu), najwyżej 1 na świecie.",
+        "dowod": "gra/data/wonders.json:77-81; gra/data/wonders.json:347-351; gra/data/wonders.json:468-472"
+      },
+      {
+        "tytul": "Posterunek (z Obróbką drewna): strefa 3 pól, +50% Obrony",
+        "liczba": "3 pól",
+        "zdanie": "Strażnica na granicy wzmacnia obrońców i pilnuje strefy 3 pól; wymaga także Obróbki drewna.",
+        "dowod": "gra/data/terrain-improvements.json:394; gra/src/game/improvement-tech.ts:46-47"
+      },
+      {
+        "tytul": "Warsztat kamieniarski: +4 Pracy (+2 na poziom)",
+        "liczba": "+4",
+        "zdanie": "Dodatkowa Praca w mieście rośnie z każdym poziomem budynku.",
+        "dowod": "gra/data/buildings.json:61"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Postaw Kamieniołom na wzgórzu lub w górach",
+        "korzysc": "wydobywać 50 kamienia na turę (mury, świątynie)"
+      },
+      {
+        "czynnosc": "Zbuduj Warsztat kamieniarski",
+        "korzysc": "zwiększyć wydobycie kamienia państwa o 10%"
+      },
+      {
+        "czynnosc": "Postaw Posterunek na skraju granic (wymaga też Murarstwa/Obróbki drewna)",
+        "korzysc": "zabezpieczyć granicę strefą 3 pól"
+      },
+      {
+        "czynnosc": "Postaw Stelę / Pomnik",
+        "korzysc": "zyskać Kulturę bez kosztów utrzymania"
+      }
+    ],
+    "ukryte": []
+  },
+  "Rolnictwo": {
+    "top5": [
+      {
+        "tytul": "Farma: +3 żywności, +3 Pracy, +3 handlu na polu",
+        "liczba": "+3",
+        "zdanie": "Podstawowe ulepszenie łąki lub równiny — jedno pole daje naraz żywność, Pracę i handel.",
+        "dowod": "gra/data/terrain-improvements.json:12"
+      },
+      {
+        "tytul": "Tarasy (Chiny, Inkowie): +3 żywności na wzgórzu",
+        "liczba": "+3",
+        "zdanie": "Ulepszenie tylko dla Chińczyków i Inków — pozwala uprawiać wzgórza.",
+        "dowod": "gra/data/terrain-improvements.json:212"
+      },
+      {
+        "tytul": "Warunek Wymiany — klucza do tras handlowych",
+        "zdanie": "Rolnictwo jest jednym z trzech warunków Wymiany, bez której nie wyznaczysz żadnej trasy handlowej.",
+        "dowod": "gra/data/tech.json:124; gra/src/game/trade-routes.ts:1093"
+      },
+      {
+        "tytul": "Otwiera Gospodarkę wodną (Irygacja +5 żywności)",
+        "liczba": "+5",
+        "zdanie": "Następne badanie daje Irygację na polach przy rzece.",
+        "dowod": "gra/data/tech.json:138; gra/data/terrain-improvements.json:29"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Postaw Farmę na łące lub równinie",
+        "korzysc": "zyskać +3 żywności, +3 Pracy i +3 handlu z pola"
+      },
+      {
+        "czynnosc": "Postaw Tarasy uprawne na wzgórzu (Chińczycy, Inkowie)",
+        "korzysc": "uprawiać wzgórza (+3 żywności)"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Irygacji (+5 żywności przy rzece)"
+      }
+    ],
+    "ukryte": []
+  },
+  "Łowiectwo": {
+    "top5": [
+      {
+        "tytul": "Obóz łowiecki: +1 żywności, +1 Pracy, +1 pieniądza, +2 handlu",
+        "liczba": "+1",
+        "zdanie": "Ulepszenie lasu — jedno pole daje naraz żywność, Pracę, pieniądz i handel.",
+        "dowod": "gra/data/terrain-improvements.json:154; gra/data/terrain-improvements.json:155-160; gra/src/game/turn-economy.ts:223"
+      },
+      {
+        "tytul": "Otwiera Łucznictwo (Łucznik)",
+        "zdanie": "Następne badanie daje Łucznika — pierwszą jednostkę strzelającą z dystansu.",
+        "dowod": "gra/data/tech.json:82"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Postaw Obóz łowiecki w lesie z Tartakiem",
+        "korzysc": "zagospodarować las (+1 żywności, +1 Pracy, +1 pieniądza, +2 handlu)"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Łuczników"
+      }
+    ],
+    "ukryte": []
+  },
+  "Łucznictwo": {
+    "top5": [
+      {
+        "tytul": "Łucznik: zasięg 3 pola, Obrona 6 (Oszczepnik: 2 i 4)",
+        "liczba": "3 pola",
+        "zdanie": "Pierwsza jednostka razi wroga z 3 pól i lepiej się broni niż Oszczepnik.",
+        "dowod": "gra/data/units.json:225; gra/data/units.json:151"
+      },
+      {
+        "tytul": "Łucznicy narodowi Egiptu i Sumeru: 40 HP zamiast 20",
+        "liczba": "40 HP",
+        "zdanie": "Egipt i Sumer dostają własnych łuczników o podwójnej wytrzymałości.",
+        "dowod": "gra/data/units.json:1853; gra/data/units.json:2223"
+      },
+      {
+        "tytul": "Łucznicy Brązu (nubijski, akadyjski, asyryjski) — z Koszarami",
+        "zdanie": "Odmiany łuczników epoki Brązu rekrutujesz w mieście z Koszarami.",
+        "dowod": "gra/data/units.json:2149; gra/data/units.json:2889; gra/data/units.json:3968; gra/src/game/production.ts:1075"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Rekrutuj Łuczników",
+        "korzysc": "razić wroga z 3 pól (lepiej niż Oszczepnik)"
+      }
+    ],
+    "ukryte": []
+  },
+  "Oswojenie zwierząt": {
+    "top5": [
+      {
+        "tytul": "Trzoda: +2 żywności, +4 Pracy, +3 handlu, bez złoża",
+        "liczba": "+2",
+        "zdanie": "Ulepszenie łąki lub równiny, które nie potrzebuje złoża — dużo Pracy z jednego pola.",
+        "dowod": "gra/data/terrain-improvements.json:45"
+      },
+      {
+        "tytul": "Lama (Inkowie): +3 Pracy także w górach i lesie",
+        "liczba": "+3",
+        "zdanie": "Ulepszenie tylko dla Inków — zagospodarowuje pola w górach i w lesie.",
+        "dowod": "gra/data/terrain-improvements.json:81"
+      },
+      {
+        "tytul": "Owce: +1 żywności, +2 Pracy, +2 handlu na wzgórzu",
+        "liczba": "+1",
+        "zdanie": "Ulepszenie wzgórza — żywność, Praca i handel z pól trudnych do uprawy.",
+        "dowod": "gra/data/terrain-improvements.json:63"
+      },
+      {
+        "tytul": "Warunek Wymiany — klucza do tras handlowych",
+        "zdanie": "Oswojenie zwierząt jest jednym z trzech warunków Wymiany, bez której nie wyznaczysz żadnej trasy handlowej.",
+        "dowod": "gra/data/tech.json:124; gra/src/game/trade-routes.ts:1093"
+      },
+      {
+        "tytul": "Otwiera Koło (Drogi, Rydwan)",
+        "zdanie": "Następne badanie daje Drogi i Rydwan (woły).",
+        "dowod": "gra/data/tech.json:152"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Postaw Trzodę na łące lub równinie",
+        "korzysc": "zyskać +4 Pracy i +2 żywności z pola bez złoża"
+      },
+      {
+        "czynnosc": "Postaw Owce na wzgórzu",
+        "korzysc": "zagospodarować wzgórza (+2 Pracy)"
+      },
+      {
+        "czynnosc": "Postaw Lamy w górach (Inkowie)",
+        "korzysc": "zagospodarować góry (+3 Pracy)"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Dróg i Rydwanów"
+      }
+    ],
+    "ukryte": []
+  },
+  "Mistycyzm": {
+    "top5": [
+      {
+        "tytul": "Kamienne kręgi: szerzą religię +2% na turę",
+        "liczba": "+2%",
+        "zdanie": "Pierwszy budynek religijny — co turę szerzy religię Twojego państwa.",
+        "dowod": "gra/data/society-params.json:588"
+      },
+      {
+        "tytul": "Cud Wyrocznia: +3 Kultury, +3 Zaufania, +2 Wpływu",
+        "liczba": "+3",
+        "zdanie": "Cud wyścigowy: może go wznieść każde państwo, ale stanie tylko raz na świecie.",
+        "dowod": "gra/data/wonders.json:147-155"
+      },
+      {
+        "tytul": "Kamienne kręgi: +1 Kultury i +1 zadowolenia (na poziom)",
+        "liczba": "+1",
+        "zdanie": "Kultura i zadowolenie rosną z każdym poziomem Kamiennych kręgów.",
+        "dowod": "gra/data/buildings.json:649"
+      },
+      {
+        "tytul": "Otwiera Religię (Świątynia)",
+        "zdanie": "Następne badanie daje Świątynię, która szerzy religię dwa razy szybciej.",
+        "dowod": "gra/data/tech.json:210"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Kamienne kręgi",
+        "korzysc": "szerzyć swoją religię o 2% na turę"
+      },
+      {
+        "czynnosc": "Wznieś cud Wyrocznia",
+        "korzysc": "zdobyć +3 Zaufania i +2 Wpływu u innych państw"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Świątyni"
+      }
+    ],
+    "ukryte": []
+  },
+  "Wymiana": {
+    "top5": [
+      {
+        "tytul": "Otwiera handel: bez Wymiany żadnych tras handlowych",
+        "zdanie": "Wymiana jest bramką całego handlu szlakowego — dopiero po niej wyznaczysz trasy handlowe.",
+        "dowod": "gra/src/game/trade-routes.ts:1086-1093"
+      },
+      {
+        "tytul": "Targowisko: +50% dochodu z tras handlowych miasta",
+        "liczba": "+50%",
+        "zdanie": "Mnożnik działa na dochód ze wszystkich tras handlowych tego miasta.",
+        "dowod": "gra/data/econ-params.json:278; gra/src/main.ts:4192-4196"
+      },
+      {
+        "tytul": "Targowisko: +1 trasa handlowa i premia 5% trasy",
+        "liczba": "+1",
+        "zdanie": "Miasto z Targowiskiem prowadzi dodatkową trasę, a każda jego trasa daje więcej.",
+        "dowod": "gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:1659"
+      },
+      {
+        "tytul": "Cud narodowy: Pałac Weiyang (Chiny, z Murarstwem)",
+        "zdanie": "Cud narodowy tylko dla Chińczyków; wymaga także Murarstwa.",
+        "dowod": "gra/data/wonders.json:468-472"
+      },
+      {
+        "tytul": "Targowisko: +5 pieniądza (+3 na poziom, maks. 3)",
+        "liczba": "+5",
+        "zdanie": "Stały dochód budynku rośnie z każdym poziomem (do 3).",
+        "dowod": "gra/data/buildings.json:303"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Wyznacz trasy handlowe między miastami",
+        "korzysc": "zyskać nowe źródło dochodu — bez Wymiany handel szlakowy jest zablokowany"
+      },
+      {
+        "czynnosc": "Zbuduj Targowisko",
+        "korzysc": "zwiększyć dochód z tras handlowych miasta o 50%"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Pisma i Matematyki"
+      }
+    ],
+    "ukryte": []
+  },
+  "Gospodarka wodna": {
+    "top5": [
+      {
+        "tytul": "Irygacja: +5 żywności, +2 Pracy, +2 handlu przy rzece",
+        "liczba": "+5",
+        "zdanie": "Ulepszenie pola leżącego przy rzece — miasto rośnie szybciej.",
+        "dowod": "gra/data/terrain-improvements.json:29; gra/src/game/improvement-tech.ts:39"
+      },
+      {
+        "tytul": "Studnia: +2 zdrowia i koniec kary −2 za brak wody",
+        "liczba": "+2",
+        "zdanie": "Miasto dostaje czystą wodę: zdrowie rośnie, a kara za brak wody znika.",
+        "dowod": "gra/data/society-params.json:17; gra/data/society-params.json:116; gra/src/game/turn-economy.ts:476-498"
+      },
+      {
+        "tytul": "Studnia w państwie jest warunkiem badania Medycyny",
+        "zdanie": "Bez co najmniej jednej Studni w państwie nie zbadasz Medycyny (Łaźnia publiczna).",
+        "dowod": "gra/data/tech.json:421; gra/src/game/research.ts:180"
+      },
+      {
+        "tytul": "Studnia jest warunkiem Akweduktu (limit 20) i Łaźni",
+        "zdanie": "Akwedukt (limit ludności 20) i Łaźnia publiczna stawiasz w mieście ze Studnią.",
+        "dowod": "gra/data/buildings.json:853; gra/data/buildings.json:2034; gra/data/econ-params.json:45"
+      },
+      {
+        "tytul": "Studnia: +1 zadowolenia (+1 na poziom)",
+        "liczba": "+1",
+        "zdanie": "Zadowolenie rośnie z każdym poziomem Studni.",
+        "dowod": "gra/data/buildings.json:806"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Postaw Irygację przy rzece",
+        "korzysc": "zyskać +5 żywności z pola przy rzece"
+      },
+      {
+        "czynnosc": "Zbuduj Studnię",
+        "korzysc": "dać miastu czystą wodę (+2 zdrowia, bez kary −2)"
+      }
+    ],
+    "ukryte": []
+  },
+  "Koło": {
+    "top5": [
+      {
+        "tytul": "Droga: ruch po niej 3× szybszy",
+        "liczba": "3×",
+        "zdanie": "Wojska i jednostki cywilne przemieszczają się po Drodze trzy razy szybciej.",
+        "dowod": "gra/data/terrain-improvements.json:288; gra/src/map/road-movement.ts:14"
+      },
+      {
+        "tytul": "Rydwan (woły): Atak 12, 400 HP, bez Koszar",
+        "liczba": "400 HP",
+        "zdanie": "Silna jednostka uderzeniowa epoki Kamienia, której rekrutacja nie wymaga Koszar.",
+        "dowod": "gra/data/units.json:521; gra/src/game/production.ts:1071-1076"
+      },
+      {
+        "tytul": "Wódz epoki Kamienia to Rydwan (woły): 400 HP zamiast 60",
+        "liczba": "400 HP",
+        "zdanie": "Wódz w epoce Kamienia jeździ Rydwanem (woły), więc jest wielokrotnie trwalszy.",
+        "dowod": "gra/src/game/generals.ts:71-73; gra/src/main.ts:7304-7305; gra/data/units.json:19; gra/data/units.json:537"
+      },
+      {
+        "tytul": "Droga: +2 handlu na polu",
+        "liczba": "+2",
+        "zdanie": "Każde pole z Drogą daje dodatkowy handel.",
+        "dowod": "gra/data/terrain-improvements.json:288"
+      },
+      {
+        "tytul": "Z Brązownictwem otwiera Jeździectwo (Konnica)",
+        "zdanie": "Razem z Brązownictwem prowadzi do Konnicy i Stadniny.",
+        "dowod": "gra/data/tech.json:224"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Połącz miasta Drogą",
+        "korzysc": "przyspieszyć ruch wojsk między miastami 3×"
+      },
+      {
+        "czynnosc": "Rekrutuj Rydwan (woły)",
+        "korzysc": "wystawić silną jednostkę uderzeniową już w epoce Kamienia"
+      },
+      {
+        "czynnosc": "Rekrutuj Wodza w stolicy",
+        "korzysc": "mieć wodza na Rydwanie (woły) z 400 HP zamiast Wojownika z 60 HP"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Konnicy"
+      }
+    ],
+    "ukryte": []
+  },
+  "Brązownictwo": {
+    "top5": [
+      {
+        "tytul": "Awans do epoki Brązu: nowe budynki i wyższe ich poziomy",
+        "zdanie": "Państwo wchodzi w epokę Brązu — odblokowuje budynki tej epoki i wyższe poziomy już postawionych.",
+        "dowod": "gra/data/tech.json:178; gra/src/game/playerState.ts:310-323; gra/src/game/production.ts:252-262; gra/src/game/production.ts:966"
+      },
+      {
+        "tytul": "Odlewnia brązu: wytwarza brąz (ruda + drewno + cyna)",
+        "zdanie": "Brąz jest potrzebny do rekrutacji wojska epoki Brązu.",
+        "dowod": "gra/src/game/converters.ts:97; gra/data/buildings.json:156; gra/src/game/production.ts:1092"
+      },
+      {
+        "tytul": "Limit wodzów rośnie z 1 do 2",
+        "liczba": "z 1 do 2",
+        "zdanie": "Możesz mieć jednocześnie dwóch wodzów.",
+        "dowod": "gra/src/game/generals.ts:2-4"
+      },
+      {
+        "tytul": "Kopalnia miedzi: +20 rudy na turę, +5 handlu",
+        "liczba": "+20",
+        "zdanie": "Ulepszenie na złożu miedzi — dostarcza rudę do wytopu brązu.",
+        "dowod": "gra/data/terrain-improvements.json:322; gra/data/terrain-improvements.json:331"
+      },
+      {
+        "tytul": "Kuźnia brązu: +15% Pancerza jednostek w mieście",
+        "liczba": "+15%",
+        "zdanie": "Jednostki rekrutowane w mieście z Kuźnią są lepiej opancerzone.",
+        "dowod": "gra/data/buildings.json:108; gra/src/game/unit-building-bonuses.ts:15-22; gra/src/game/unit-building-bonuses.ts:170"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Odlewnię brązu",
+        "korzysc": "wytwarzać brąz — bez niego i bez Koszar brak wojska epoki Brązu"
+      },
+      {
+        "czynnosc": "Postaw Kopalnię miedzi na złożu",
+        "korzysc": "wydobywać 20 rudy miedzi na turę (do brązu)"
+      },
+      {
+        "czynnosc": "Zbuduj Kuźnię brązu",
+        "korzysc": "dać jednostkom +15% Pancerza"
+      },
+      {
+        "czynnosc": "Postaw Kopalnię cyny na złożu",
+        "korzysc": "wydobywać cynę do brązu"
+      }
+    ],
+    "ukryte": []
+  },
+  "Żegluga": {
+    "top5": [
+      {
+        "tytul": "Wojsko lądowe może wchodzić na wodę (zaokrętowanie)",
+        "zdanie": "Armia lądowa przepłynie morze lub rzekę bez budowy floty transportowej.",
+        "dowod": "gra/src/game/embarkation.ts:25; gra/src/game/embarkation.ts:28-36"
+      },
+      {
+        "tytul": "Łodzie rybackie: +2 żywności, +3 Pracy, +3 handlu",
+        "liczba": "+2",
+        "zdanie": "Ulepszenie ławicy — morze daje żywność, Pracę i handel.",
+        "dowod": "gra/data/terrain-improvements.json:234"
+      },
+      {
+        "tytul": "Cud Kamień Ha'amonga: +15% dochodu z tras morskich",
+        "liczba": "+15%",
+        "zdanie": "Cud wyścigowy: może go wznieść każde państwo, ale stanie tylko raz na świecie.",
+        "dowod": "gra/data/wonders.json:247-255"
+      },
+      {
+        "tytul": "Port: +1 trasa handlowa miasta",
+        "liczba": "+1",
+        "zdanie": "Miasto nad wodą prowadzi dodatkową trasę handlową.",
+        "dowod": "gra/src/game/trade-routes.ts:908-921"
+      },
+      {
+        "tytul": "Galera: okręt wojenny (miasto nad wodą + Koszary)",
+        "zdanie": "Pierwszy okręt wojenny; rekrutujesz go w mieście nad wodą z Koszarami.",
+        "dowod": "gra/data/units.json:669; gra/src/game/production.ts:1075-1083"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zaokrętuj wojsko lądowe",
+        "korzysc": "przerzucić armię przez morze lub rzekę bez budowy floty"
+      },
+      {
+        "czynnosc": "Postaw Łodzie rybackie na ławicy",
+        "korzysc": "wykorzystać morze (+2 żywności, +3 Pracy)"
+      },
+      {
+        "czynnosc": "Zbuduj Port handlowy w mieście nad wodą",
+        "korzysc": "otworzyć miastu kolejną trasę handlową"
+      },
+      {
+        "czynnosc": "Zbuduj Galerę w mieście nad wodą",
+        "korzysc": "mieć własną flotę wojenną"
+      }
+    ],
+    "ukryte": []
+  },
+  "Pismo": {
+    "top5": [
+      {
+        "tytul": "Biblioteka: +30% Nauki miasta",
+        "liczba": "+30%",
+        "zdanie": "Mnożnik działa na całą Naukę miasta, więc najwięcej daje w dużych miastach.",
+        "dowod": "gra/data/econ-params.json:320; gra/src/game/economy.ts:979-982"
+      },
+      {
+        "tytul": "Spichlerz Królewski: limit ludności 8 → 12",
+        "liczba": "8 → 12",
+        "zdanie": "Rozbudowa Spichlerza pozwala miastu urosnąć do 12 mieszkańców.",
+        "dowod": "gra/data/econ-params.json:38; gra/src/game/economy.ts:1053; gra/data/buildings.json:505"
+      },
+      {
+        "tytul": "Biblioteka: +3 Nauki i +2 Kultury (rośnie z poziomem)",
+        "liczba": "+3",
+        "zdanie": "Stały przyrost Nauki i Kultury rośnie z poziomem Biblioteki.",
+        "dowod": "gra/data/buildings.json:744; gra/data/buildings.json:750"
+      },
+      {
+        "tytul": "Cuda narodowe: Wiszące ogrody, Wielka stela",
+        "zdanie": "Wiszące ogrody tylko dla Babilonii, Wielka stela tylko dla Zulusów.",
+        "dowod": "gra/data/wonders.json:102-106; gra/data/wonders.json:123-127"
+      },
+      {
+        "tytul": "Otwiera Matematykę, Kodeks, Handel, Filozofię",
+        "zdanie": "Pismo jest warunkiem czterech kolejnych badań — to węzeł drzewka technologii.",
+        "dowod": "gra/data/tech.json:252; gra/data/tech.json:280; gra/data/tech.json:266; gra/data/tech.json:379"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Bibliotekę",
+        "korzysc": "zwiększyć Naukę miasta o 30%"
+      },
+      {
+        "czynnosc": "Rozbuduj Spichlerz do Spichlerza Królewskiego",
+        "korzysc": "podnieść limit ludności miasta z 8 do 12"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Matematyki, Kodeksu i Filozofii"
+      }
+    ],
+    "ukryte": []
+  },
+  "Religia": {
+    "top5": [
+      {
+        "tytul": "Świątynia: szerzy religię +4% na turę",
+        "liczba": "+4%",
+        "zdanie": "Szerzy religię Twojego państwa dwa razy szybciej niż Kamienne kręgi.",
+        "dowod": "gra/data/society-params.json:581"
+      },
+      {
+        "tytul": "Cud narodowy: Stupa w Sanchi (Harappa)",
+        "zdanie": "Cud narodowy tylko dla Harappy.",
+        "dowod": "gra/data/wonders.json:200-204"
+      },
+      {
+        "tytul": "Otwiera Kodeks i Filozofię",
+        "zdanie": "Prowadzi do Trybunału (Kodeks) i Akademii (Filozofia).",
+        "dowod": "gra/data/tech.json:280; gra/data/tech.json:379; gra/data/tech.json:322"
+      },
+      {
+        "tytul": "Świątynia: +2 Kultury i +2 zadowolenia",
+        "liczba": "+2",
+        "zdanie": "Kultura i zadowolenie w mieście ze Świątynią.",
+        "dowod": "gra/data/buildings.json:696"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Świątynię (obok Kamiennych kręgów)",
+        "korzysc": "szerzyć swoją religię o 4% na turę"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Kodeksu i Filozofii"
+      }
+    ],
+    "ukryte": []
+  },
+  "Jeździectwo": {
+    "top5": [
+      {
+        "tytul": "Stadnina: +25 koni/turę — koszt 1 jednostki konnej",
+        "liczba": "+25",
+        "zdanie": "Ulepszenie na złożu koni; 25 koni to koszt rekrutacji jednej jednostki konnej.",
+        "dowod": "gra/data/terrain-improvements.json:100; gra/data/terrain-improvements.json:109; gra/src/game/building-stock-cost.ts:362-369"
+      },
+      {
+        "tytul": "Konnica: Atak 12, 320 HP, ruch 4 (koszt: brąz i 25 koni)",
+        "liczba": "320 HP",
+        "zdanie": "Najszybsza jednostka uderzeniowa; rekrutujesz ją w mieście z Koszarami.",
+        "dowod": "gra/data/units.json:595; gra/src/game/production.ts:1075; gra/src/game/building-stock-cost.ts:362-369"
+      },
+      {
+        "tytul": "Rydwan konny: 360 HP, ruch 4",
+        "liczba": "360 HP",
+        "zdanie": "Rydwan zaprzężony w konie — trwalszy od Konnicy przy tym samym ruchu.",
+        "dowod": "gra/data/units.json:1779"
+      },
+      {
+        "tytul": "Rydwany i jeźdźcy narodowi (6 cywilizacji)",
+        "zdanie": "Sześć cywilizacji dostaje własne rydwany lub jeźdźców.",
+        "dowod": "gra/data/units.json:1039; gra/data/units.json:1927; gra/data/units.json:2297; gra/data/units.json:2593; gra/data/units.json:2815; gra/data/units.json:4394"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Postaw Stadninę na złożu koni",
+        "korzysc": "hodować 25 koni na turę — tyle kosztuje rekrutacja 1 jednostki konnej"
+      },
+      {
+        "czynnosc": "Rekrutuj Konnicę (w mieście z Koszarami)",
+        "korzysc": "mieć najszybszą jednostkę uderzeniową (ruch 4)"
+      }
+    ],
+    "ukryte": []
+  },
+  "Wojskowość": {
+    "top5": [
+      {
+        "tytul": "Koszary: rekrutacja wojska epoki Brązu i Żelaza",
+        "zdanie": "Bez Koszar w mieście nie zrekrutujesz żadnej jednostki epoki Brązu ani Żelaza.",
+        "dowod": "gra/src/game/production.ts:1071-1076; gra/data/buildings.json:1047"
+      },
+      {
+        "tytul": "Koszary: +20% parametrów bojowych jednostek",
+        "liczba": "+20%",
+        "zdanie": "Jednostki z miasta z Koszarami mają lepsze parametry bojowe.",
+        "dowod": "gra/data/buildings.json:1047; gra/src/game/unit-building-bonuses.ts:23-33; gra/src/game/unit-building-bonuses.ts:178"
+      },
+      {
+        "tytul": "Fort: +100% Obrony obozujących i strefa 5 pól",
+        "liczba": "+100%",
+        "zdanie": "Ulepszenie terenu bez złoża — umocniony obóz na granicy, pilnujący strefy 5 pól.",
+        "dowod": "gra/data/terrain-improvements.json:270"
+      },
+      {
+        "tytul": "Cuda: Terakotowa armia, Yerkapı, Brama narodów",
+        "zdanie": "Terakotowa armia (Chiny) i Yerkapı (Hetyci) to cuda narodowe; Brama narodów to wyścig — najwyżej 1 na świecie.",
+        "dowod": "gra/data/wonders.json:371-375; gra/data/wonders.json:491-496; gra/data/wonders.json:440-448"
+      },
+      {
+        "tytul": "Otwiera Oblężnictwo (Katapulta)",
+        "zdanie": "Razem z Matematyką prowadzi do Katapulty i Warsztatu oblężniczego.",
+        "dowod": "gra/data/tech.json:365"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Koszary",
+        "korzysc": "rekrutować jednostki epoki Brązu i Żelaza (np. Włócznik; Konnica wraz z Jeździectwem)"
+      },
+      {
+        "czynnosc": "Postaw Fort na granicy",
+        "korzysc": "lepiej bronić granic (+100% Obrony, strefa 5 pól)"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Katapult"
+      }
+    ],
+    "ukryte": []
+  },
+  "Matematyka": {
+    "top5": [
+      {
+        "tytul": "Otwiera drogę do Budownictwa, Waluty i Oblężnictwa",
+        "zdanie": "Sama Matematyka nie daje korzyści od ręki — prowadzi do Murów i Akweduktu, Mennicy oraz Katapult.",
+        "dowod": "gra/data/tech.json:294; gra/data/tech.json:308; gra/data/tech.json:322; gra/data/tech.json:365"
+      },
+      {
+        "tytul": "Cuda narodowe: Ziggurat (+15% Nauki), Mundo Perdido",
+        "liczba": "+15%",
+        "zdanie": "Ziggurat tylko dla Sumerów, Mundo Perdido tylko dla Inków (wymaga też Murarstwa).",
+        "dowod": "gra/data/wonders.json:326-330; gra/data/wonders.json:347-351"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Murów, Mennicy i Katapult"
+      }
+    ],
+    "ukryte": []
+  },
+  "Handel": {
+    "top5": [
+      {
+        "tytul": "Magazyn: +20% pojemności magazynu państwa",
+        "liczba": "+20%",
+        "zdanie": "Magazyn państwa mieści więcej surowców; premia sumuje się z każdym Magazynem.",
+        "dowod": "gra/data/econ-params.json:613; gra/src/game/economy-upkeep.ts:431"
+      },
+      {
+        "tytul": "Emporion: +1 trasa handlowa i premia 5% trasy",
+        "liczba": "+1",
+        "zdanie": "Miasto z Emporionem prowadzi dodatkową trasę handlową.",
+        "dowod": "gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:1659; gra/data/buildings.json:1095"
+      },
+      {
+        "tytul": "Z Matematyką otwiera Walutę (Mennica)",
+        "zdanie": "Prowadzi do Mennicy, która mnoży handel (podatek) wszystkich miast.",
+        "dowod": "gra/data/tech.json:308"
+      },
+      {
+        "tytul": "Emporion: +8 pieniądza (+4 na poziom)",
+        "liczba": "+8",
+        "zdanie": "Stały dochód budynku rośnie z jego poziomem.",
+        "dowod": "gra/data/buildings.json:1095"
+      },
+      {
+        "tytul": "Magazyn: +1 Pracy i +1 pieniądza",
+        "liczba": "+1",
+        "zdanie": "Drobny stały dochód Pracy i pieniądza w mieście.",
+        "dowod": "gra/data/buildings.json:1154"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Magazyn",
+        "korzysc": "zwiększyć pojemność magazynu państwa o 20%"
+      },
+      {
+        "czynnosc": "Zbuduj Emporion (obok Targowiska)",
+        "korzysc": "otworzyć miastu kolejną trasę handlową"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Mennicy"
+      }
+    ],
+    "ukryte": []
+  },
+  "Kodeks": {
+    "top5": [
+      {
+        "tytul": "Trybunał: +17 pkt Prawa w każdym mieście",
+        "liczba": "+17",
+        "zdanie": "Punkty Prawa wzmacniają porządek; Trybunał postawisz w dowolnym mieście.",
+        "dowod": "gra/data/society-params.json:802"
+      },
+      {
+        "tytul": "Dwór Zarządcy: 33 pkt Prawa w mieście regionalnym",
+        "liczba": "33 pkt",
+        "zdanie": "Rozbudowa Domu Starszyzny utrzymuje porządek w mieście regionalnym.",
+        "dowod": "gra/data/society-params.json:788; gra/data/society-params.json:781; gra/data/buildings.json:1838"
+      },
+      {
+        "tytul": "Z Filozofią otwiera Prawo (Sąd, Pretorium)",
+        "zdanie": "Prowadzi do Sądu i Pretorium, które obniżają korupcję o 30%.",
+        "dowod": "gra/data/tech.json:393"
+      },
+      {
+        "tytul": "Dwór Zarządcy: +2 pieniądza, +3 Kultury, +1 Pracy",
+        "liczba": "+2",
+        "zdanie": "Stały dochód pieniądza, Kultury i Pracy w mieście regionalnym.",
+        "dowod": "gra/data/buildings.json:1838"
+      },
+      {
+        "tytul": "Trybunał: +1 pieniądza i +1 zadowolenia",
+        "liczba": "+1",
+        "zdanie": "Drobny dochód i zadowolenie w mieście z Trybunałem.",
+        "dowod": "gra/data/buildings.json:1938"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Trybunał",
+        "korzysc": "dodać 17 pkt Prawa w dowolnym mieście"
+      },
+      {
+        "czynnosc": "Rozbuduj Dom Starszyzny do Dworu Zarządcy",
+        "korzysc": "utrzymać porządek w mieście regionalnym (33 pkt Prawa)"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Sądu (−30% korupcji)"
+      }
+    ],
+    "ukryte": []
+  },
+  "Budownictwo": {
+    "top5": [
+      {
+        "tytul": "Akwedukt: limit ludności miasta do 20",
+        "liczba": "do 20",
+        "zdanie": "Miasto ze Studnią i Akweduktem może urosnąć aż do 20 mieszkańców.",
+        "dowod": "gra/data/econ-params.json:45; gra/src/game/economy.ts:1053; gra/data/buildings.json:853"
+      },
+      {
+        "tytul": "Mury: +200% Obrony obrońców miasta",
+        "liczba": "+200%",
+        "zdanie": "Mury potrajają Obronę jednostek broniących miasta.",
+        "dowod": "gra/data/miasto-params.json:79; gra/src/game/city-defense.ts:67-68; gra/data/buildings.json:998"
+      },
+      {
+        "tytul": "Cud narodowy: Dur-Sharrukin (Asyria)",
+        "zdanie": "Cud narodowy tylko dla Asyrii; wymaga też Wojskowości.",
+        "dowod": "gra/data/wonders.json:417-421"
+      },
+      {
+        "tytul": "Mury są warunkiem Cytadeli i Baszty",
+        "zdanie": "Cytadela i Baszta (Inżynieria) stoją na Murach i podnoszą obronę miasta do +400%.",
+        "dowod": "gra/data/buildings.json:1498; gra/data/buildings.json:1547"
+      },
+      {
+        "tytul": "Otwiera Inżynierię i Drogi brukowane",
+        "zdanie": "Prowadzi do Cytadeli, Baszty i szybszych Dróg brukowanych.",
+        "dowod": "gra/data/tech.json:351; gra/data/tech.json:407"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Akwedukt (obok Studni)",
+        "korzysc": "podnieść limit ludności miasta do 20"
+      },
+      {
+        "czynnosc": "Zbuduj Mury",
+        "korzysc": "potroić obronę miasta (+200% Obrony)"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Cytadeli i Dróg brukowanych"
+      }
+    ],
+    "ukryte": []
+  },
+  "Waluta": {
+    "top5": [
+      {
+        "tytul": "Mennica: ×1,50 podatku (handlu) w każdym mieście",
+        "liczba": "×1,50",
+        "zdanie": "Jedna Mennica w stolicy (z Targowiskiem i dostępem do złota) mnoży handel netto każdego miasta, zanim podzielisz go na naukę, pieniądz i luksus.",
+        "dowod": "gra/data/econ-params.json:585-591; gra/src/game/economy.ts:952-955; gra/src/game/economy.ts:962-967; gra/src/game/economy.ts:644-653"
+      },
+      {
+        "tytul": "Kopalnia złota: +10 handlu i +1 złota na turę",
+        "liczba": "+10",
+        "zdanie": "Ulepszenie na złożu złota — daje handel i złoto potrzebne Mennicy.",
+        "dowod": "gra/data/terrain-improvements.json:376; gra/data/terrain-improvements.json:385"
+      },
+      {
+        "tytul": "Złoto jest warunkiem Mennicy (zużywa 1 złota/turę)",
+        "zdanie": "Mennica działa tylko przy dostępie do złota i zużywa 1 sztukę na turę.",
+        "dowod": "gra/src/game/building-resource-gate.ts:75-76; gra/src/game/zloto-access.ts:31; gra/src/game/turn-economy.ts:1879-1894"
+      },
+      {
+        "tytul": "Złoto w dyplomacji: 50 PN za sztukę",
+        "zdanie": "Nadwyżkę złota wymienisz w negocjacjach z innymi państwami.",
+        "dowod": "gra/data/econ-params.json:813"
+      },
+      {
+        "tytul": "Mennica: +3 pieniądza (+2 na poziom)",
+        "liczba": "+3",
+        "zdanie": "Stały dochód pieniądza rośnie z poziomem Mennicy.",
+        "dowod": "gra/data/buildings.json:901"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Mennicę w stolicy (z Targowiskiem i dostępem do złota)",
+        "korzysc": "pomnożyć podatek wszystkich miast ×1,50 (pieniądz i nauka)"
+      },
+      {
+        "czynnosc": "Postaw Kopalnię złota na złożu",
+        "korzysc": "zdobyć złoto (+10 handlu) i uruchomić Mennicę"
+      }
+    ],
+    "ukryte": []
+  },
+  "Astronomia": {
+    "top5": [],
+    "cmz": [],
+    "ukryte": [
+      "Obserwatorium (Biblioteka poz. 6)"
+    ]
+  },
+  "Hutnictwo żelaza": {
+    "top5": [
+      {
+        "tytul": "Awans do epoki Żelaza: nowe budynki i wyższe ich poziomy",
+        "zdanie": "Państwo wchodzi w epokę Żelaza — odblokowuje budynki tej epoki i wyższe poziomy już postawionych.",
+        "dowod": "gra/data/tech.json:347; gra/src/game/playerState.ts:310-323; gra/src/game/production.ts:252-262; gra/src/game/production.ts:966"
+      },
+      {
+        "tytul": "Odlewnia żelaza: żelazo i brąz, +12 Pracy",
+        "liczba": "+12",
+        "zdanie": "Rozbudowa Odlewni brązu wytapia żelazo potrzebne najlepszemu wojsku.",
+        "dowod": "gra/src/game/converters.ts:98-99; gra/data/buildings.json:204"
+      },
+      {
+        "tytul": "Limit wodzów rośnie z 2 do 3",
+        "liczba": "z 2 do 3",
+        "zdanie": "Możesz mieć jednocześnie trzech wodzów.",
+        "dowod": "gra/src/game/generals.ts:2-4"
+      },
+      {
+        "tytul": "Kopalnia żelaza: +20 rudy żelaza na turę",
+        "liczba": "+20",
+        "zdanie": "Ulepszenie na złożu żelaza — dostarcza rudę do Odlewni żelaza.",
+        "dowod": "gra/data/terrain-improvements.json:340; gra/data/terrain-improvements.json:349"
+      },
+      {
+        "tytul": "19 narodowych jednostek z żelaza, np. Falanga (Obrona 10)",
+        "zdanie": "Narodowe jednostki epoki Żelaza rekrutujesz w mieście z Koszarami.",
+        "dowod": "gra/data/units.json:743; gra/data/units.json:891; gra/src/game/production.ts:1075; gra/src/game/production.ts:1092"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Rozbuduj Odlewnię brązu do Odlewni żelaza",
+        "korzysc": "wytwarzać żelazo do najlepszego wojska"
+      },
+      {
+        "czynnosc": "Postaw Kopalnię żelaza na złożu",
+        "korzysc": "wydobywać 20 rudy żelaza na turę"
+      },
+      {
+        "czynnosc": "Rozbuduj Kuźnię brązu do Kuźni żelaza",
+        "korzysc": "podnieść Pancerz jednostek do +30%"
+      },
+      {
+        "czynnosc": "Rekrutuj jednostki z żelaza (w mieście z Koszarami)",
+        "korzysc": "wystawić narodową piechotę epoki Żelaza (np. Falanga z Obroną 10)"
+      }
+    ],
+    "ukryte": []
+  },
+  "Inżynieria": {
+    "top5": [
+      {
+        "tytul": "Cytadela: +100% Obrony ponad Mury (razem +300%)",
+        "liczba": "+100%",
+        "zdanie": "Stawiasz ją obok Murów — obrońcy miasta są wtedy cztery razy silniejsi.",
+        "dowod": "gra/data/miasto-params.json:84; gra/src/game/city-defense.ts:67-69; gra/data/buildings.json:1498"
+      },
+      {
+        "tytul": "Cud Brama narodów: +15% dochodu z tras, +10 Wpływu",
+        "liczba": "+15%",
+        "zdanie": "Cud wyścigowy (wymaga też Wojskowości) — stanie tylko raz na świecie.",
+        "dowod": "gra/data/wonders.json:440-448"
+      },
+      {
+        "tytul": "Baszta: kolejne +100% Obrony (komplet +400%)",
+        "liczba": "+100%",
+        "zdanie": "Z Murami i Cytadelą tworzy komplet umocnień: obrona miasta ×5.",
+        "dowod": "gra/data/miasto-params.json:89; gra/src/game/city-defense.ts:73; gra/data/buildings.json:1547"
+      },
+      {
+        "tytul": "Port wielki: +10 pieniądza i +1 trasa handlowa",
+        "liczba": "+10",
+        "zdanie": "Rozbudowa Portu handlowego — więcej dochodu i dodatkowa trasa.",
+        "dowod": "gra/data/buildings.json:409; gra/src/game/trade-routes.ts:908-909"
+      },
+      {
+        "tytul": "Z Budownictwem otwiera Drogi brukowane",
+        "zdanie": "Prowadzi do Dróg brukowanych, po których ruch jest 5× szybszy.",
+        "dowod": "gra/data/tech.json:407"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Cytadelę (obok Murów)",
+        "korzysc": "podnieść obronę miasta do +300%"
+      },
+      {
+        "czynnosc": "Zbuduj Basztę (obok Murów)",
+        "korzysc": "podnieść obronę miasta do +400%"
+      },
+      {
+        "czynnosc": "Rozbuduj Port handlowy do Portu wielkiego",
+        "korzysc": "podwoić dochód portu (+10 pieniądza)"
+      },
+      {
+        "czynnosc": "Wznieś cud Brama wszystkich narodów (z Wojskowością)",
+        "korzysc": "zwiększyć dochód z tras o 15% i zyskać 10 Wpływu"
+      }
+    ],
+    "ukryte": []
+  },
+  "Oblężnictwo": {
+    "top5": [
+      {
+        "tytul": "Katapulta: ostrzał z 6 pól, 1000 HP",
+        "liczba": "6 pól",
+        "zdanie": "Machina, która ostrzeliwuje wroga i mury z odległości 6 pól.",
+        "dowod": "gra/data/units.json:3482"
+      },
+      {
+        "tytul": "Warsztat oblężniczy: +10% parametrów jednostek",
+        "liczba": "+10%",
+        "zdanie": "Stawiasz go obok Koszar — jednostki z miasta dostają kolejne +10% parametrów.",
+        "dowod": "gra/data/buildings.json:1596; gra/src/game/unit-building-bonuses.ts:23-33; gra/src/game/unit-building-bonuses.ts:178"
+      },
+      {
+        "tytul": "Z Obróbką żelaza otwiera Sztukę wojenną",
+        "zdanie": "Prowadzi do Akademii wojskowej (+20% parametrów jednostek).",
+        "dowod": "gra/data/tech.json:449"
+      },
+      {
+        "tytul": "Warsztat oblężniczy: +4 Pracy, +2 pieniądza",
+        "liczba": "+4",
+        "zdanie": "Stały dochód Pracy i pieniądza w mieście z Warsztatem.",
+        "dowod": "gra/data/buildings.json:1596"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Rekrutuj Katapulty",
+        "korzysc": "burzyć mury z dystansu 6 pól"
+      },
+      {
+        "czynnosc": "Zbuduj Warsztat oblężniczy (obok Koszar)",
+        "korzysc": "wzmocnić jednostki z tego miasta o kolejne +10% (z Koszarami razem +30%)"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Akademii wojskowej"
+      }
+    ],
+    "ukryte": []
+  },
+  "Filozofia": {
+    "top5": [
+      {
+        "tytul": "Akademia: +20% Nauki (z Biblioteką razem +50%)",
+        "liczba": "+20%",
+        "zdanie": "Stawiasz ją obok Biblioteki — razem zwiększają Naukę miasta o połowę.",
+        "dowod": "gra/data/econ-params.json:327; gra/src/game/economy.ts:979-981; gra/data/buildings.json:1645"
+      },
+      {
+        "tytul": "Akademia: +6 Nauki, +5 Kultury, +3 zadowolenia",
+        "liczba": "+6",
+        "zdanie": "Stały przyrost Nauki, Kultury i zadowolenia w mieście.",
+        "dowod": "gra/data/buildings.json:1645"
+      },
+      {
+        "tytul": "Otwiera Prawo i Medycynę",
+        "zdanie": "Prowadzi do Sądu (−30% korupcji) i Łaźni publicznej (+5 zdrowia).",
+        "dowod": "gra/data/tech.json:393; gra/data/tech.json:421"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Akademię (obok Biblioteki)",
+        "korzysc": "zwiększyć Naukę miasta o kolejne 20%"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Sądu i Łaźni"
+      }
+    ],
+    "ukryte": [
+      "Teatr"
+    ]
+  },
+  "Prawo": {
+    "top5": [
+      {
+        "tytul": "Sąd: −30% korupcji w mieście",
+        "liczba": "−30%",
+        "zdanie": "Mniej dochodu miasta przepada przez korupcję.",
+        "dowod": "gra/src/game/economy.ts:1225-1235; gra/src/game/economy.ts:1247-1249"
+      },
+      {
+        "tytul": "Pretorium: −30% korupcji i 38 pkt Prawa w regionie",
+        "liczba": "−30%",
+        "zdanie": "Rozbudowa Dworu Zarządcy ogranicza korupcję i utrzymuje porządek w mieście regionalnym.",
+        "dowod": "gra/src/game/economy.ts:1225-1235; gra/data/society-params.json:795; gra/data/buildings.json:1888"
+      },
+      {
+        "tytul": "Sąd: +19 pkt Prawa",
+        "liczba": "+19",
+        "zdanie": "Punkty Prawa wzmacniają porządek w mieście z Sądem.",
+        "dowod": "gra/data/society-params.json:809"
+      },
+      {
+        "tytul": "Sąd: +5 Kultury, +2 pieniądza, +2 zadowolenia",
+        "liczba": "+5",
+        "zdanie": "Stały dochód Kultury, pieniądza i zadowolenia.",
+        "dowod": "gra/data/buildings.json:1742; gra/data/society-params.json:453"
+      },
+      {
+        "tytul": "Pretorium: +3 pieniądza, +5 Kultury, +2 Pracy",
+        "liczba": "+3",
+        "zdanie": "Stały dochód pieniądza, Kultury i Pracy w mieście regionalnym.",
+        "dowod": "gra/data/buildings.json:1888"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Sąd",
+        "korzysc": "obniżyć korupcję w mieście o 30%"
+      },
+      {
+        "czynnosc": "Rozbuduj Dwór Zarządcy do Pretorium",
+        "korzysc": "obniżyć korupcję miasta regionalnego o 30%"
+      }
+    ],
+    "ukryte": []
+  },
+  "Drogi brukowane": {
+    "top5": [
+      {
+        "tytul": "Droga brukowana: ruch 5× szybszy (Droga: 3×)",
+        "liczba": "5×",
+        "zdanie": "Przebudowa Drogi — wojska przemieszczają się po niej pięć razy szybciej.",
+        "dowod": "gra/data/terrain-improvements.json:303; gra/src/map/road-movement.ts:29"
+      },
+      {
+        "tytul": "Droga brukowana: +3 handlu na polu (Droga: +2)",
+        "liczba": "+3",
+        "zdanie": "Każde pole z Drogą brukowaną daje więcej handlu niż zwykła Droga.",
+        "dowod": "gra/data/terrain-improvements.json:303"
+      },
+      {
+        "tytul": "Z Hutnictwem otwiera Obróbkę żelaza",
+        "zdanie": "Prowadzi do Obróbki żelaza i dalej do Sztuki wojennej.",
+        "dowod": "gra/data/tech.json:435"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Przebuduj Drogi na Drogi brukowane",
+        "korzysc": "przyspieszyć ruch po drogach z 3× do 5×"
+      },
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Obróbki żelaza"
+      }
+    ],
+    "ukryte": []
+  },
+  "Medycyna": {
+    "top5": [
+      {
+        "tytul": "Łaźnia publiczna: +5 zdrowia miasta",
+        "liczba": "+5",
+        "zdanie": "Stawiasz ją w mieście ze Studnią — mieszkańcy są zdrowsi.",
+        "dowod": "gra/data/society-params.json:31; gra/src/game/turn-economy.ts:486"
+      },
+      {
+        "tytul": "Łaźnia: +3 Kultury, +3 zadowolenia, +1 żywności",
+        "liczba": "+3",
+        "zdanie": "Dodatkowa Kultura, zadowolenie i żywność w mieście.",
+        "dowod": "gra/data/buildings.json:2034; gra/data/society-params.json:460"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Łaźnię publiczną (obok Studni)",
+        "korzysc": "podnieść zdrowie miasta o 5"
+      }
+    ],
+    "ukryte": [
+      "Lazaret"
+    ]
+  },
+  "Obróbka żelaza": {
+    "top5": [
+      {
+        "tytul": "Otwiera drogę do Sztuki wojennej (z Oblężnictwem)",
+        "zdanie": "Dla większości państw Obróbka żelaza nie daje korzyści od ręki — razem z Oblężnictwem prowadzi do Akademii wojskowej.",
+        "dowod": "gra/data/tech.json:449"
+      },
+      {
+        "tytul": "Cud narodowy: Posąg Peruna (Słowianie)",
+        "zdanie": "Cud narodowy tylko dla Słowian.",
+        "dowod": "gra/data/wonders.json:517-521"
+      },
+      {
+        "tytul": "Jednostki Celtów i Germanów, np. Berserker Atak 10",
+        "zdanie": "Elitarne jednostki narodowe tylko dla Celtów i Germanów.",
+        "dowod": "gra/data/units.json:2963; gra/data/units.json:3081; gra/data/units.json:3182; gra/data/units.json:3256"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Wybierz kolejne badanie",
+        "korzysc": "dojść do Akademii wojskowej"
+      },
+      {
+        "czynnosc": "Rekrutuj jednostki narodowe",
+        "korzysc": "wystawić elitę Celtów i Germanów (np. Berserker z Atakiem 10)"
+      }
+    ],
+    "ukryte": [
+      "Wielka odlewnia",
+      "Wielka Kuźnia"
+    ]
+  },
+  "Sztuka wojenna": {
+    "top5": [
+      {
+        "tytul": "Akademia wojskowa: +20% parametrów (z Koszarami +40%)",
+        "liczba": "+20%",
+        "zdanie": "Stawiasz ją obok Koszar — jednostki z miasta dostają kolejne +20% parametrów.",
+        "dowod": "gra/data/buildings.json:2082; gra/src/game/unit-building-bonuses.ts:23-33; gra/src/game/unit-building-bonuses.ts:178"
+      },
+      {
+        "tytul": "Akademia wojskowa: +3 Pracy, +2 pieniądza",
+        "liczba": "+3",
+        "zdanie": "Stały dochód Pracy i pieniądza w mieście.",
+        "dowod": "gra/data/buildings.json:2082"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Akademię wojskową (obok Koszar)",
+        "korzysc": "wzmocnić jednostki o kolejne +20% (razem do +50%)"
+      }
+    ],
+    "ukryte": []
+  }
+}
