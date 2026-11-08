@@ -1,0 +1,13588 @@
+[
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [],
+   "pairs": [],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": -4,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [
+    1
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": 0,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 2,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 3,
+     "r": 0,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     1,
+     4
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     3,
+     4
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 4
+    },
+    {
+     "ownerId": 4,
+     "era": "bronze",
+     "targetId": 2
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 0,
+     "r": 0,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 5,
+     "r": 0,
+     "era": "iron"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     2
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 0
+    }
+   ],
+   "unresolvedOwnerIds": [
+    2
+   ],
+   "playerFirstPartnerId": 1
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 0,
+     "r": 0,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 5,
+     "r": 0,
+     "era": "iron"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 0,
+     "r": 0,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 5,
+     "r": 0,
+     "era": "iron"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     0,
+     1
+    ]
+   ],
+   "relations": [
+    [
+     0,
+     1,
+     100
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     2
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 0
+    }
+   ],
+   "unresolvedOwnerIds": [
+    1
+   ],
+   "playerFirstPartnerId": 2
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 2,
+     "r": 0,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 5,
+     "targetId": 6,
+     "era": "iron"
+    }
+   ],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 1
+    },
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 5
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 2,
+     "r": 0,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 5,
+     "targetId": 6,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     3,
+     5
+    ],
+    [
+     3,
+     6
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [
+    3
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 2,
+     "r": 0,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 5,
+     "targetId": 6,
+     "era": "iron"
+    }
+   ],
+   "blocked": [],
+   "relations": null,
+   "exhausted": [
+    5
+   ],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [
+    3
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 2,
+     "r": 0,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 5,
+     "targetId": 6,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     3
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 1
+    },
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 5
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 0,
+     "r": 0,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": 0,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 0
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 0,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": 0,
+     "r": 0,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 3,
+     "targetId": 3,
+     "era": "iron"
+    }
+   ],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -3,
+     "r": -2,
+     "era": null
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": [],
+   "exhausted": [],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     0
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": 0,
+      "r": -3,
+      "era": "stone"
+     },
+     {
+      "ownerId": 2,
+      "q": 0,
+      "r": -1,
+      "era": "iron"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -1,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": 4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": -2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": 4,
+     "r": -1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 5,
+     "q": -4,
+     "r": 2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 6,
+     "q": 0,
+     "r": 0,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 2,
+     "targetId": 3,
+     "era": "stone"
+    },
+    {
+     "attackerId": 4,
+     "targetId": 6,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     4
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     3,
+     5
+    ]
+   ],
+   "relations": [
+    [
+     2,
+     6,
+     7
+    ],
+    [
+     3,
+     4,
+     71
+    ],
+    [
+     4,
+     5,
+     152
+    ],
+    [
+     5,
+     6,
+     67
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     4,
+     5,
+     6
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": 2,
+      "r": -2,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 2,
+      "q": 0,
+      "r": -3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 3,
+      "q": 3,
+      "r": 3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 4,
+      "q": -2,
+      "r": 1,
+      "era": "stone"
+     },
+     {
+      "ownerId": 5,
+      "q": 4,
+      "r": 4,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 6,
+      "q": -4,
+      "r": 0,
+      "era": "stone"
+     },
+     {
+      "ownerId": 7,
+      "q": -3,
+      "r": -4,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 8,
+      "q": 4,
+      "r": 0,
+      "era": "stone"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "stone",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 3,
+     "r": 1,
+     "era": "iron"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [
+    1
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": 3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": -4,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": -2,
+     "r": 3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": -3,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 7,
+     "q": -1,
+     "r": -1,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 10,
+     "targetId": 1,
+     "era": "iron"
+    },
+    {
+     "attackerId": 9,
+     "targetId": 1,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     6
+    ],
+    [
+     1,
+     10
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     2,
+     10
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     3,
+     10
+    ],
+    [
+     4,
+     7
+    ],
+    [
+     5,
+     7
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     5,
+     11
+    ],
+    [
+     1,
+     6,
+     31
+    ],
+    [
+     1,
+     9,
+     1
+    ],
+    [
+     2,
+     3,
+     39
+    ],
+    [
+     2,
+     6,
+     66
+    ],
+    [
+     3,
+     4,
+     47
+    ],
+    [
+     3,
+     7,
+     82
+    ],
+    [
+     3,
+     10,
+     36
+    ],
+    [
+     4,
+     6,
+     198
+    ],
+    [
+     4,
+     7,
+     169
+    ],
+    [
+     4,
+     9,
+     187
+    ],
+    [
+     4,
+     10,
+     97
+    ],
+    [
+     5,
+     6,
+     11
+    ],
+    [
+     5,
+     10,
+     163
+    ],
+    [
+     6,
+     7,
+     73
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 7
+    },
+    {
+     "ownerId": 7,
+     "era": "iron",
+     "targetId": 2
+    },
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 4
+    },
+    {
+     "ownerId": 4,
+     "era": "stone",
+     "targetId": 3
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "bronze",
+     "targetId": 5
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": 1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": 4,
+     "r": 3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 4,
+     "q": 0,
+     "r": 1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": -3,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 7,
+     "targetId": 3,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 8,
+     "targetId": 6,
+     "era": "iron"
+    },
+    {
+     "attackerId": 1,
+     "targetId": 2,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     7
+    ],
+    [
+     1,
+     8
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     3,
+     8
+    ],
+    [
+     7,
+     8
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     2,
+     100
+    ],
+    [
+     1,
+     4,
+     163
+    ],
+    [
+     1,
+     5,
+     140
+    ],
+    [
+     2,
+     3,
+     148
+    ],
+    [
+     2,
+     4,
+     90
+    ],
+    [
+     2,
+     5,
+     85
+    ],
+    [
+     2,
+     7,
+     123
+    ],
+    [
+     3,
+     5,
+     44
+    ],
+    [
+     3,
+     6,
+     143
+    ],
+    [
+     3,
+     7,
+     103
+    ],
+    [
+     3,
+     8,
+     93
+    ],
+    [
+     4,
+     8,
+     198
+    ],
+    [
+     5,
+     6,
+     153
+    ],
+    [
+     5,
+     8,
+     191
+    ],
+    [
+     6,
+     8,
+     33
+    ]
+   ],
+   "exhausted": [
+    2
+   ],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     3,
+     4,
+     5,
+     6,
+     7,
+     8
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": 2,
+      "r": -4,
+      "era": "iron"
+     },
+     {
+      "ownerId": 2,
+      "q": 3,
+      "r": -3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 3,
+      "q": 2,
+      "r": 4,
+      "era": "stone"
+     },
+     {
+      "ownerId": 4,
+      "q": 3,
+      "r": 3,
+      "era": "stone"
+     },
+     {
+      "ownerId": 5,
+      "q": 4,
+      "r": 4,
+      "era": "stone"
+     },
+     {
+      "ownerId": 6,
+      "q": -1,
+      "r": 2,
+      "era": "stone"
+     },
+     {
+      "ownerId": 7,
+      "q": 3,
+      "r": 1,
+      "era": "stone"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 4,
+     "era": "stone",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 4
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": 4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": -2,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 5,
+     "q": 1,
+     "r": 3,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 8,
+     "targetId": 6,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 3,
+     "targetId": 5,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     4,
+     8
+    ],
+    [
+     5,
+     6
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     4,
+     115
+    ],
+    [
+     2,
+     3,
+     60
+    ],
+    [
+     2,
+     5,
+     10
+    ],
+    [
+     2,
+     8,
+     14
+    ],
+    [
+     3,
+     4,
+     57
+    ],
+    [
+     4,
+     8,
+     78
+    ],
+    [
+     6,
+     8,
+     165
+    ]
+   ],
+   "exhausted": [],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 4
+    },
+    {
+     "ownerId": 4,
+     "era": "stone",
+     "targetId": 2
+    },
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 6
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 2,
+     "r": 3,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": 2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": -3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 4,
+     "q": -4,
+     "r": 3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": -1,
+     "r": -4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 7,
+     "q": 4,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 8,
+     "q": -1,
+     "r": 0,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 4,
+     "targetId": 5,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 2,
+     "targetId": 10,
+     "era": "stone"
+    },
+    {
+     "attackerId": 7,
+     "targetId": 5,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     3,
+     8
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     4,
+     8
+    ],
+    [
+     4,
+     10
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     7,
+     8
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     0,
+     3,
+     7,
+     8,
+     10
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": 4,
+      "r": 0,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 2,
+      "q": -1,
+      "r": 1,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 3,
+      "q": 1,
+      "r": -1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 4,
+      "q": 0,
+      "r": -2,
+      "era": "stone"
+     },
+     {
+      "ownerId": 5,
+      "q": 0,
+      "r": 0,
+      "era": "iron"
+     },
+     {
+      "ownerId": 6,
+      "q": -3,
+      "r": -1,
+      "era": "stone"
+     },
+     {
+      "ownerId": 7,
+      "q": 2,
+      "r": -4,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 8,
+      "q": 2,
+      "r": 0,
+      "era": "iron"
+     },
+     {
+      "ownerId": 9,
+      "q": 0,
+      "r": -4,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 10,
+      "q": -4,
+      "r": -1,
+      "era": "stone"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 8,
+     "era": "iron",
+     "targetId": 0
+    },
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "stone",
+     "targetId": 1
+    },
+    {
+     "ownerId": 3,
+     "era": "iron",
+     "targetId": 2
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": 8
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": 4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": -1,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 0,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": -4,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 6,
+     "q": -3,
+     "r": -2,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 9,
+     "targetId": 8,
+     "era": "stone"
+    },
+    {
+     "attackerId": 2,
+     "targetId": 9,
+     "era": "stone"
+    },
+    {
+     "attackerId": 5,
+     "targetId": 2,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     2,
+     8
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     3,
+     5
+    ],
+    [
+     3,
+     9
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     5,
+     8
+    ],
+    [
+     6,
+     8
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 1
+    },
+    {
+     "ownerId": 4,
+     "era": "bronze",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "bronze",
+     "targetId": 4
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": 3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": -2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": -3,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": -1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 6,
+     "q": 3,
+     "r": -1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 7,
+     "q": -3,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 8,
+     "q": 1,
+     "r": -2,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 11,
+     "targetId": 8,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     8
+    ],
+    [
+     1,
+     11
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     2,
+     8
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     3,
+     8
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     5,
+     101
+    ],
+    [
+     1,
+     7,
+     129
+    ],
+    [
+     2,
+     5,
+     43
+    ],
+    [
+     2,
+     6,
+     145
+    ],
+    [
+     3,
+     4,
+     25
+    ],
+    [
+     3,
+     6,
+     29
+    ],
+    [
+     3,
+     11,
+     131
+    ],
+    [
+     4,
+     5,
+     153
+    ],
+    [
+     4,
+     7,
+     64
+    ],
+    [
+     5,
+     11,
+     126
+    ],
+    [
+     7,
+     8,
+     129
+    ],
+    [
+     8,
+     11,
+     121
+    ]
+   ],
+   "exhausted": [],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     6,
+     7
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": 1,
+      "r": -3,
+      "era": "stone"
+     },
+     {
+      "ownerId": 2,
+      "q": 1,
+      "r": 3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 3,
+      "q": -1,
+      "r": -4,
+      "era": "stone"
+     },
+     {
+      "ownerId": 4,
+      "q": -2,
+      "r": 1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 5,
+      "q": -3,
+      "r": -3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 6,
+      "q": -3,
+      "r": 0,
+      "era": "stone"
+     },
+     {
+      "ownerId": 7,
+      "q": 0,
+      "r": 2,
+      "era": "stone"
+     },
+     {
+      "ownerId": 8,
+      "q": 3,
+      "r": -4,
+      "era": "stone"
+     },
+     {
+      "ownerId": 9,
+      "q": -1,
+      "r": -2,
+      "era": "stone"
+     },
+     {
+      "ownerId": 10,
+      "q": 4,
+      "r": 0,
+      "era": "stone"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "stone",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 2
+    },
+    {
+     "ownerId": 4,
+     "era": "bronze",
+     "targetId": 7
+    },
+    {
+     "ownerId": 7,
+     "era": "bronze",
+     "targetId": 4
+    }
+   ],
+   "unresolvedOwnerIds": [
+    5
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": 3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": -3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": -2,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": 2,
+     "r": -4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 6,
+     "q": 0,
+     "r": 1,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 3,
+     "targetId": 8,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 1,
+     "targetId": 7,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     8
+    ],
+    [
+     3,
+     5
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     4,
+     7
+    ],
+    [
+     4,
+     8
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     5,
+     8
+    ],
+    [
+     6,
+     8
+    ],
+    [
+     7,
+     8
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     7,
+     158
+    ],
+    [
+     2,
+     4,
+     200
+    ],
+    [
+     2,
+     6,
+     112
+    ],
+    [
+     3,
+     5,
+     45
+    ],
+    [
+     3,
+     7,
+     107
+    ],
+    [
+     4,
+     5,
+     149
+    ],
+    [
+     5,
+     6,
+     45
+    ],
+    [
+     6,
+     8,
+     21
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "iron",
+     "targetId": 2
+    },
+    {
+     "ownerId": 4,
+     "era": "bronze",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "iron",
+     "targetId": 4
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": 2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": 0,
+     "r": -3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": 0,
+     "r": -1,
+     "era": "iron"
+    },
+    {
+     "ownerId": 6,
+     "q": -1,
+     "r": 4,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     3,
+     5
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     5,
+     23
+    ],
+    [
+     2,
+     3,
+     49
+    ],
+    [
+     2,
+     4,
+     197
+    ],
+    [
+     2,
+     6,
+     62
+    ],
+    [
+     3,
+     5,
+     137
+    ],
+    [
+     4,
+     6,
+     79
+    ],
+    [
+     5,
+     6,
+     41
+    ]
+   ],
+   "exhausted": [],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     2,
+     5,
+     6
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "iron",
+     "targetId": 2
+    },
+    {
+     "ownerId": 4,
+     "era": "bronze",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "bronze",
+     "targetId": 4
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": -3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": -1,
+     "era": "iron"
+    },
+    {
+     "ownerId": 4,
+     "q": -1,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": -2,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": 0,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 7,
+     "q": -4,
+     "r": 3,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 6,
+     "targetId": 5,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 2,
+     "targetId": 6,
+     "era": "iron"
+    },
+    {
+     "attackerId": 7,
+     "targetId": 5,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     2,
+     5
+    ],
+    [
+     5,
+     7
+    ]
+   ],
+   "relations": null,
+   "exhausted": [],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     3,
+     4,
+     5,
+     7
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "iron",
+     "targetId": 1
+    },
+    {
+     "ownerId": 4,
+     "era": "bronze",
+     "targetId": 2
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": -4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 4,
+     "q": -1,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": -4,
+     "r": -1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 6,
+     "q": 0,
+     "r": 1,
+     "era": "iron"
+    },
+    {
+     "ownerId": 7,
+     "q": 4,
+     "r": -3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 8,
+     "q": -2,
+     "r": -1,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 8,
+     "targetId": 4,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 6,
+     "targetId": 3,
+     "era": "stone"
+    },
+    {
+     "attackerId": 10,
+     "targetId": 11,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     6
+    ],
+    [
+     1,
+     8
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     5
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     3,
+     7
+    ],
+    [
+     4,
+     10
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     6,
+     10
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     8,
+     10
+    ],
+    [
+     8,
+     11
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     2,
+     171
+    ],
+    [
+     1,
+     3,
+     157
+    ],
+    [
+     1,
+     4,
+     196
+    ],
+    [
+     1,
+     6,
+     194
+    ],
+    [
+     1,
+     7,
+     45
+    ],
+    [
+     1,
+     8,
+     180
+    ],
+    [
+     1,
+     10,
+     103
+    ],
+    [
+     1,
+     11,
+     77
+    ],
+    [
+     2,
+     3,
+     115
+    ],
+    [
+     2,
+     4,
+     189
+    ],
+    [
+     2,
+     10,
+     36
+    ],
+    [
+     3,
+     7,
+     132
+    ],
+    [
+     3,
+     10,
+     166
+    ],
+    [
+     3,
+     11,
+     88
+    ],
+    [
+     4,
+     6,
+     40
+    ],
+    [
+     4,
+     11,
+     190
+    ],
+    [
+     5,
+     8,
+     35
+    ],
+    [
+     5,
+     11,
+     36
+    ],
+    [
+     6,
+     7,
+     127
+    ],
+    [
+     6,
+     8,
+     120
+    ],
+    [
+     7,
+     8,
+     23
+    ],
+    [
+     7,
+     11,
+     5
+    ],
+    [
+     8,
+     10,
+     108
+    ]
+   ],
+   "exhausted": [
+    4,
+    5,
+    8
+   ],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     2,
+     3,
+     6,
+     7,
+     8
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 7
+    },
+    {
+     "ownerId": 7,
+     "era": "iron",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "stone",
+     "targetId": 10
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 0,
+     "r": 2,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": -1,
+     "r": -1,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": 4,
+     "r": 0,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": 2,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": -2,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": 0,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": 0,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 7,
+     "q": -1,
+     "r": -3,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 8,
+     "targetId": 6,
+     "era": "stone"
+    },
+    {
+     "attackerId": 4,
+     "targetId": 2,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 5,
+     "targetId": 4,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     1,
+     8
+    ],
+    [
+     3,
+     5
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     4,
+     7
+    ],
+    [
+     6,
+     8
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     2,
+     5,
+     6,
+     7
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 7,
+     "era": "stone",
+     "targetId": 0
+    },
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": 7
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -1,
+     "r": -2,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -2,
+     "r": -1,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 5,
+     "targetId": 2,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     2,
+     5
+    ]
+   ],
+   "relations": null,
+   "exhausted": [
+    2,
+    5
+   ],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     0,
+     1,
+     2
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": 3,
+      "r": 0,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 2,
+      "q": -4,
+      "r": -1,
+      "era": "stone"
+     },
+     {
+      "ownerId": 3,
+      "q": 3,
+      "r": -1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 4,
+      "q": 3,
+      "r": 1,
+      "era": "iron"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 0
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": 1
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": 2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": 4,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 5,
+     "targetId": 1,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     3,
+     5
+    ]
+   ],
+   "relations": [
+    [
+     2,
+     3,
+     147
+    ]
+   ],
+   "exhausted": [
+    3
+   ],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     3
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 3,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": -1,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 5,
+     "targetId": 3,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 1,
+     "targetId": 2,
+     "era": "stone"
+    },
+    {
+     "attackerId": 5,
+     "targetId": 2,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     2,
+     3
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": -1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 4,
+     "r": -3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 5,
+     "q": -4,
+     "r": -2,
+     "era": "stone"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     2,
+     4
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 4
+    },
+    {
+     "ownerId": 4,
+     "era": "stone",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "stone",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 2
+    }
+   ],
+   "unresolvedOwnerIds": [
+    5
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": 1,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 2,
+     "targetId": 3,
+     "era": "iron"
+    },
+    {
+     "attackerId": 4,
+     "targetId": 3,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 1,
+     "targetId": 4,
+     "era": "iron"
+    }
+   ],
+   "blocked": [],
+   "relations": [
+    [
+     1,
+     2,
+     68
+    ],
+    [
+     1,
+     4,
+     184
+    ],
+    [
+     3,
+     4,
+     66
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": -4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": -1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 0,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": 1,
+     "r": -1,
+     "era": "iron"
+    },
+    {
+     "ownerId": 6,
+     "q": -2,
+     "r": -2,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 6,
+     "targetId": 1,
+     "era": "iron"
+    },
+    {
+     "attackerId": 2,
+     "targetId": 4,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     5
+    ],
+    [
+     2,
+     5
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     4,
+     5
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     2,
+     25
+    ],
+    [
+     1,
+     4,
+     187
+    ],
+    [
+     1,
+     5,
+     114
+    ],
+    [
+     2,
+     3,
+     157
+    ],
+    [
+     2,
+     6,
+     176
+    ],
+    [
+     3,
+     4,
+     111
+    ],
+    [
+     4,
+     5,
+     34
+    ],
+    [
+     4,
+     6,
+     6
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     2,
+     4,
+     5
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": -4,
+      "r": 0,
+      "era": "iron"
+     },
+     {
+      "ownerId": 2,
+      "q": -1,
+      "r": -1,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 3,
+      "q": 0,
+      "r": -2,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 4,
+      "q": 1,
+      "r": 1,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 5,
+      "q": 2,
+      "r": 3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 6,
+      "q": -3,
+      "r": 4,
+      "era": "stone"
+     },
+     {
+      "ownerId": 7,
+      "q": 0,
+      "r": 4,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 8,
+      "q": -3,
+      "r": -3,
+      "era": "bronze"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "iron",
+     "targetId": 3
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 2,
+     "r": 2,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 3,
+     "r": -4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": 1,
+     "era": "iron"
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -2,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 4,
+     "targetId": 2,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     0,
+     1
+    ],
+    [
+     2,
+     4
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 3,
+     "era": "iron",
+     "targetId": 0
+    },
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 2
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": 3
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 3,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": -2,
+     "r": -3,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 2,
+     "targetId": 1,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 6,
+     "targetId": 3,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     2,
+     6
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     3,
+     4,
+     6
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": -1,
+      "r": -1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 2,
+      "q": 1,
+      "r": -4,
+      "era": "iron"
+     },
+     {
+      "ownerId": 3,
+      "q": -3,
+      "r": -3,
+      "era": "iron"
+     },
+     {
+      "ownerId": 4,
+      "q": -4,
+      "r": 3,
+      "era": "stone"
+     },
+     {
+      "ownerId": 5,
+      "q": 3,
+      "r": -3,
+      "era": "stone"
+     },
+     {
+      "ownerId": 6,
+      "q": 0,
+      "r": 3,
+      "era": "iron"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 4,
+     "era": "iron",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 3,
+     "r": -3,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 3,
+     "targetId": 1,
+     "era": "iron"
+    }
+   ],
+   "blocked": [],
+   "relations": null,
+   "exhausted": [],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -1,
+     "r": 4,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": -2,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": 4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": 3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": 1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 5,
+     "q": 4,
+     "r": -1,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 2,
+     "targetId": 5,
+     "era": "stone"
+    },
+    {
+     "attackerId": 7,
+     "targetId": 3,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     7
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     3,
+     5
+    ],
+    [
+     3,
+     7
+    ],
+    [
+     4,
+     7
+    ]
+   ],
+   "relations": null,
+   "exhausted": [
+    3,
+    4
+   ],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     2,
+     3,
+     4,
+     5,
+     7
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 2
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": -3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": -3,
+     "r": -4,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 5,
+     "targetId": 3,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 3,
+     "targetId": 2,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 1,
+     "targetId": 4,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     4,
+     5
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     3,
+     65
+    ],
+    [
+     3,
+     5,
+     198
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -2,
+     "r": -4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": -2,
+     "r": 1,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": -1,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 5,
+     "q": -4,
+     "r": -2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 6,
+     "q": -3,
+     "r": 4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 7,
+     "q": 2,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 8,
+     "q": -3,
+     "r": -4,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 10,
+     "targetId": 3,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     10
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     8,
+     10
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     2,
+     3,
+     4,
+     6,
+     8,
+     10
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": -2,
+      "r": 0,
+      "era": "stone"
+     },
+     {
+      "ownerId": 2,
+      "q": 1,
+      "r": 3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 3,
+      "q": 3,
+      "r": -2,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 4,
+      "q": -3,
+      "r": -2,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 5,
+      "q": 4,
+      "r": -1,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 6,
+      "q": -2,
+      "r": 2,
+      "era": "stone"
+     },
+     {
+      "ownerId": 7,
+      "q": 1,
+      "r": -4,
+      "era": "stone"
+     },
+     {
+      "ownerId": 8,
+      "q": 1,
+      "r": -3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 9,
+      "q": 2,
+      "r": 3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 10,
+      "q": -1,
+      "r": -3,
+      "era": "iron"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 8
+    },
+    {
+     "ownerId": 8,
+     "era": "iron",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 4
+    },
+    {
+     "ownerId": 4,
+     "era": "stone",
+     "targetId": 2
+    },
+    {
+     "ownerId": 5,
+     "era": "stone",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "stone",
+     "targetId": 5
+    },
+    {
+     "ownerId": 7,
+     "era": "stone",
+     "targetId": 3
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": 2,
+     "era": "stone"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": [],
+   "exhausted": [],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [
+    1
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 3,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 4,
+     "r": -3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 5,
+     "q": 0,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": 1,
+     "r": 1,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ],
+    [
+     5,
+     6
+    ]
+   ],
+   "relations": null,
+   "exhausted": [],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 1
+    },
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 3
+    },
+    {
+     "ownerId": 4,
+     "era": "iron",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "bronze",
+     "targetId": 4
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": -1,
+     "r": -2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 5,
+     "q": 2,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": -1,
+     "r": 3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 7,
+     "q": 0,
+     "r": -3,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     1,
+     7
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     2,
+     7
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     2,
+     163
+    ],
+    [
+     2,
+     3,
+     58
+    ],
+    [
+     2,
+     7,
+     105
+    ],
+    [
+     3,
+     4,
+     135
+    ],
+    [
+     3,
+     6,
+     87
+    ],
+    [
+     4,
+     5,
+     71
+    ],
+    [
+     6,
+     7,
+     37
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 4,
+     "era": "iron",
+     "targetId": 7
+    },
+    {
+     "ownerId": 7,
+     "era": "bronze",
+     "targetId": 4
+    }
+   ],
+   "unresolvedOwnerIds": [
+    6
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -4,
+     "r": -3,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": -3,
+     "r": -3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": 4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": -2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     3
+    ]
+   ],
+   "relations": null,
+   "exhausted": [],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 3,
+     "era": "iron",
+     "targetId": 0
+    },
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 4
+    },
+    {
+     "ownerId": 4,
+     "era": "bronze",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [
+    2
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": 3,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 4,
+     "targetId": 3,
+     "era": "stone"
+    },
+    {
+     "attackerId": 3,
+     "targetId": 1,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 1,
+     "targetId": 2,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     4
+    ],
+    [
+     2,
+     3
+    ]
+   ],
+   "relations": [],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 0,
+     "r": -1,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": -1,
+     "r": 2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 4,
+     "q": 3,
+     "r": 3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 5,
+     "q": -4,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 6,
+     "q": 1,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 7,
+     "q": 4,
+     "r": 0,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     1,
+     4
+    ],
+    [
+     3,
+     5
+    ],
+    [
+     4,
+     7
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     2,
+     4,
+     5,
+     6,
+     7
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": -4,
+      "r": 2,
+      "era": "stone"
+     },
+     {
+      "ownerId": 2,
+      "q": 1,
+      "r": 2,
+      "era": "iron"
+     },
+     {
+      "ownerId": 3,
+      "q": -4,
+      "r": 0,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 4,
+      "q": 3,
+      "r": 4,
+      "era": "iron"
+     },
+     {
+      "ownerId": 5,
+      "q": 4,
+      "r": 1,
+      "era": "stone"
+     },
+     {
+      "ownerId": 6,
+      "q": 2,
+      "r": -3,
+      "era": "iron"
+     },
+     {
+      "ownerId": 7,
+      "q": 3,
+      "r": 3,
+      "era": "iron"
+     },
+     {
+      "ownerId": 8,
+      "q": 1,
+      "r": 3,
+      "era": "stone"
+     },
+     {
+      "ownerId": 9,
+      "q": -3,
+      "r": 4,
+      "era": "bronze"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 1
+    },
+    {
+     "ownerId": 3,
+     "era": "iron",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "bronze",
+     "targetId": 3
+    },
+    {
+     "ownerId": 4,
+     "era": "iron",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "stone",
+     "targetId": 4
+    }
+   ],
+   "unresolvedOwnerIds": [
+    7
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 4,
+     "r": -2,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": -1,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 4,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": 3,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 7,
+     "targetId": 1,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     1,
+     7
+    ],
+    [
+     4,
+     7
+    ]
+   ],
+   "relations": [
+    [
+     0,
+     2,
+     30
+    ],
+    [
+     1,
+     3,
+     159
+    ],
+    [
+     1,
+     4,
+     197
+    ],
+    [
+     4,
+     7,
+     65
+    ]
+   ],
+   "exhausted": [
+    3
+   ],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "stone",
+     "targetId": 0
+    }
+   ],
+   "unresolvedOwnerIds": [
+    4
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 0,
+     "r": 0,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": -3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 2,
+     "r": 4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": 2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 5,
+     "q": 0,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 6,
+     "q": -4,
+     "r": -2,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 8,
+     "targetId": 4,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     0,
+     6
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ],
+    [
+     1,
+     8
+    ],
+    [
+     2,
+     5
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     5,
+     8
+    ]
+   ],
+   "relations": [
+    [
+     0,
+     1,
+     127
+    ],
+    [
+     0,
+     8,
+     71
+    ],
+    [
+     1,
+     3,
+     154
+    ],
+    [
+     1,
+     4,
+     18
+    ],
+    [
+     1,
+     5,
+     65
+    ],
+    [
+     2,
+     3,
+     128
+    ],
+    [
+     2,
+     4,
+     83
+    ],
+    [
+     2,
+     5,
+     115
+    ],
+    [
+     2,
+     8,
+     197
+    ],
+    [
+     3,
+     4,
+     32
+    ],
+    [
+     4,
+     5,
+     108
+    ],
+    [
+     4,
+     8,
+     187
+    ],
+    [
+     6,
+     8,
+     98
+    ]
+   ],
+   "exhausted": [
+    4
+   ],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 5,
+     "era": "stone",
+     "targetId": 0
+    },
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [
+    3,
+    6
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -1,
+     "r": 1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": 0,
+     "r": 1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": -4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": 3,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": 3,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": -4,
+     "r": -4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 7,
+     "q": 3,
+     "r": 2,
+     "era": "stone"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     7
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     5
+    ],
+    [
+     2,
+     7
+    ],
+    [
+     3,
+     5
+    ],
+    [
+     4,
+     6
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     7
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     2,
+     108
+    ],
+    [
+     2,
+     3,
+     92
+    ],
+    [
+     2,
+     5,
+     34
+    ],
+    [
+     2,
+     7,
+     69
+    ],
+    [
+     3,
+     5,
+     178
+    ],
+    [
+     4,
+     7,
+     59
+    ],
+    [
+     6,
+     7,
+     173
+    ]
+   ],
+   "exhausted": [
+    4
+   ],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "iron",
+     "targetId": 1
+    },
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 7
+    },
+    {
+     "ownerId": 7,
+     "era": "stone",
+     "targetId": 3
+    }
+   ],
+   "unresolvedOwnerIds": [
+    2,
+    5
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 0,
+     "r": -1,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 3,
+     "r": -4,
+     "era": "iron"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     0,
+     1
+    ]
+   ],
+   "relations": [],
+   "exhausted": [],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [
+    0,
+    1
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -3,
+     "r": -1,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": 4,
+     "r": -1,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 5,
+     "targetId": 3,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 3,
+     "targetId": 2,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     3,
+     5
+    ]
+   ],
+   "relations": [],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [
+    1
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [],
+   "pairs": [],
+   "blocked": [],
+   "relations": [],
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": -2,
+      "r": -4,
+      "era": "stone"
+     },
+     {
+      "ownerId": 2,
+      "q": 2,
+      "r": 3,
+      "era": "iron"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": -4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": -3,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": -1,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 4,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": 2,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": 3,
+     "r": -4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 7,
+     "q": -4,
+     "r": 0,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     2,
+     7
+    ],
+    [
+     3,
+     5
+    ],
+    [
+     4,
+     6
+    ],
+    [
+     5,
+     6
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     5,
+     153
+    ],
+    [
+     1,
+     7,
+     34
+    ],
+    [
+     3,
+     5,
+     44
+    ],
+    [
+     4,
+     5,
+     119
+    ],
+    [
+     4,
+     7,
+     82
+    ],
+    [
+     5,
+     7,
+     179
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "stone",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 7
+    },
+    {
+     "ownerId": 7,
+     "era": "bronze",
+     "targetId": 3
+    }
+   ],
+   "unresolvedOwnerIds": [
+    4
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 3,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": 2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": -2,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": -2,
+     "r": -2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 5,
+     "q": 4,
+     "r": 0,
+     "era": "iron"
+    },
+    {
+     "ownerId": 6,
+     "q": -2,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 7,
+     "q": 1,
+     "r": -1,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 10,
+     "targetId": 2,
+     "era": "stone"
+    },
+    {
+     "attackerId": 3,
+     "targetId": 6,
+     "era": "stone"
+    },
+    {
+     "attackerId": 7,
+     "targetId": 3,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     4
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     3,
+     7
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     4,
+     7
+    ],
+    [
+     4,
+     10
+    ],
+    [
+     5,
+     7
+    ],
+    [
+     6,
+     10
+    ],
+    [
+     7,
+     10
+    ]
+   ],
+   "relations": null,
+   "exhausted": [],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "iron",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [
+    4
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -2,
+     "r": -3,
+     "era": "iron"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -1,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 4,
+     "r": -4,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 4,
+     "targetId": 3,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 1,
+     "targetId": 5,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 2,
+     "targetId": 1,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     2,
+     5
+    ]
+   ],
+   "relations": null,
+   "exhausted": [
+    3
+   ],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     2
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": -4,
+      "r": -1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 2,
+      "q": 4,
+      "r": 0,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 3,
+      "q": -1,
+      "r": 3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 4,
+      "q": 0,
+      "r": -3,
+      "era": "stone"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -3,
+     "r": 1,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": 0,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": -2,
+     "r": 0,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 0
+    }
+   ],
+   "unresolvedOwnerIds": [
+    1
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": -1,
+     "r": 2,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 5,
+     "targetId": 4,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     4
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     3,
+     4
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     2,
+     4
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": -3,
+      "r": -4,
+      "era": "iron"
+     },
+     {
+      "ownerId": 2,
+      "q": -2,
+      "r": 3,
+      "era": "stone"
+     },
+     {
+      "ownerId": 3,
+      "q": 2,
+      "r": 0,
+      "era": "stone"
+     },
+     {
+      "ownerId": 4,
+      "q": 1,
+      "r": -2,
+      "era": "iron"
+     },
+     {
+      "ownerId": 5,
+      "q": -1,
+      "r": -4,
+      "era": "stone"
+     },
+     {
+      "ownerId": 6,
+      "q": 0,
+      "r": -2,
+      "era": "iron"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [
+    2
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [],
+   "pairs": [
+    {
+     "attackerId": 2,
+     "targetId": 3,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     2,
+     3
+    ]
+   ],
+   "relations": [],
+   "exhausted": [
+    2
+   ],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": 3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": 0,
+     "r": -4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": -2,
+     "r": -2,
+     "era": "iron"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     3
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     2,
+     115
+    ],
+    [
+     2,
+     3,
+     1
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "iron",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [
+    2
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 4,
+     "r": 0,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": 3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": 4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": 4,
+     "r": -4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": 2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 5,
+     "q": -3,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": -3,
+     "r": 2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 7,
+     "q": -3,
+     "r": -3,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ],
+    [
+     1,
+     7
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     4,
+     6
+    ],
+    [
+     6,
+     7
+    ]
+   ],
+   "relations": null,
+   "exhausted": [
+    5
+   ],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 4,
+     "era": "iron",
+     "targetId": 0
+    },
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 1
+    },
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "stone",
+     "targetId": 3
+    }
+   ],
+   "unresolvedOwnerIds": [
+    7
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": -4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": -2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": -1,
+     "r": 4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 5,
+     "q": 0,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": 1,
+     "r": 2,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 3,
+     "targetId": 9,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 7,
+     "targetId": 8,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     9
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     4,
+     7
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     5,
+     9
+    ],
+    [
+     6,
+     8
+    ],
+    [
+     7,
+     9
+    ]
+   ],
+   "relations": null,
+   "exhausted": [
+    1,
+    3,
+    7
+   ],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": 1,
+      "r": 1,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 2,
+      "q": 4,
+      "r": -2,
+      "era": "iron"
+     },
+     {
+      "ownerId": 3,
+      "q": -1,
+      "r": -4,
+      "era": "stone"
+     },
+     {
+      "ownerId": 4,
+      "q": 3,
+      "r": 4,
+      "era": "iron"
+     },
+     {
+      "ownerId": 5,
+      "q": 2,
+      "r": -1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 6,
+      "q": 1,
+      "r": -1,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 7,
+      "q": 2,
+      "r": -2,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 8,
+      "q": -2,
+      "r": 0,
+      "era": "stone"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "stone",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 4,
+     "era": "iron",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "bronze",
+     "targetId": 4
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -1,
+     "r": 1,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": -1,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": [
+    [
+     0,
+     1,
+     10
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     0
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": -3,
+      "r": -3,
+      "era": "iron"
+     },
+     {
+      "ownerId": 2,
+      "q": -3,
+      "r": 2,
+      "era": "iron"
+     },
+     {
+      "ownerId": 3,
+      "q": 0,
+      "r": 0,
+      "era": "iron"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [
+    1
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 3,
+     "r": 4,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 2,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     0,
+     1
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 0
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": 1
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -4,
+     "r": -3,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 3,
+     "r": 2,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 4,
+     "targetId": 1,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 0
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -2,
+     "r": -2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": -3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 4,
+     "q": -3,
+     "r": 4,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [],
+   "relations": null,
+   "exhausted": [],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 1
+    },
+    {
+     "ownerId": 3,
+     "era": "iron",
+     "targetId": 4
+    },
+    {
+     "ownerId": 4,
+     "era": "bronze",
+     "targetId": 3
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [],
+   "pairs": [
+    {
+     "attackerId": 2,
+     "targetId": 3,
+     "era": "iron"
+    },
+    {
+     "attackerId": 1,
+     "targetId": 3,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 1,
+     "targetId": 2,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     3
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -2,
+     "r": 1,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 3,
+     "r": 4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": 2,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 3,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ]
+   ],
+   "relations": null,
+   "exhausted": [],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     2
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": 3,
+      "r": 2,
+      "era": "iron"
+     },
+     {
+      "ownerId": 2,
+      "q": -3,
+      "r": 1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 3,
+      "q": -1,
+      "r": 1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 4,
+      "q": 3,
+      "r": -3,
+      "era": "iron"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 0
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": 2
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": -4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": -2,
+     "r": 1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": 0,
+     "r": 0,
+     "era": "iron"
+    },
+    {
+     "ownerId": 5,
+     "q": 0,
+     "r": -3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 6,
+     "q": 2,
+     "r": 4,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 7,
+     "targetId": 1,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 2,
+     "targetId": 7,
+     "era": "iron"
+    },
+    {
+     "attackerId": 9,
+     "targetId": 4,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     2,
+     7
+    ],
+    [
+     3,
+     5
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     5,
+     7
+    ],
+    [
+     6,
+     9
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     6,
+     152
+    ],
+    [
+     1,
+     9,
+     124
+    ],
+    [
+     2,
+     3,
+     115
+    ],
+    [
+     2,
+     5,
+     120
+    ],
+    [
+     3,
+     4,
+     63
+    ],
+    [
+     3,
+     9,
+     136
+    ],
+    [
+     4,
+     7,
+     65
+    ],
+    [
+     4,
+     9,
+     115
+    ],
+    [
+     5,
+     6,
+     86
+    ],
+    [
+     6,
+     9,
+     5
+    ],
+    [
+     7,
+     9,
+     63
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "stone",
+     "targetId": 3
+    }
+   ],
+   "unresolvedOwnerIds": [
+    5
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": 0,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": -2,
+     "r": 3,
+     "era": "iron"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     2,
+     3
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     2,
+     89
+    ],
+    [
+     2,
+     3,
+     21
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [
+    3
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -3,
+     "r": 3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": -3,
+     "r": -2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": -2,
+     "r": -3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 5,
+     "q": 1,
+     "r": 4,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     4,
+     5
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     2,
+     118
+    ],
+    [
+     1,
+     4,
+     85
+    ],
+    [
+     3,
+     4,
+     103
+    ],
+    [
+     4,
+     5,
+     30
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 4
+    },
+    {
+     "ownerId": 4,
+     "era": "stone",
+     "targetId": 2
+    }
+   ],
+   "unresolvedOwnerIds": [
+    3
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": 3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": -1,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": -1,
+     "era": "iron"
+    },
+    {
+     "ownerId": 5,
+     "q": 4,
+     "r": -4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 6,
+     "q": 4,
+     "r": 2,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 4,
+     "targetId": 2,
+     "era": "iron"
+    },
+    {
+     "attackerId": 1,
+     "targetId": 4,
+     "era": "stone"
+    },
+    {
+     "attackerId": 6,
+     "targetId": 2,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     6
+    ],
+    [
+     2,
+     6
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     3,
+     33
+    ],
+    [
+     1,
+     5,
+     59
+    ],
+    [
+     1,
+     6,
+     9
+    ],
+    [
+     2,
+     3,
+     107
+    ],
+    [
+     2,
+     4,
+     69
+    ],
+    [
+     2,
+     5,
+     49
+    ],
+    [
+     2,
+     6,
+     23
+    ],
+    [
+     4,
+     5,
+     147
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "iron",
+     "targetId": 3
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -1,
+     "r": 0,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": 4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": 4,
+     "era": "stone"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 4,
+     "targetId": 1,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     3
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     2,
+     3,
+     4
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": -4,
+      "r": -1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 2,
+      "q": 4,
+      "r": -2,
+      "era": "stone"
+     },
+     {
+      "ownerId": 3,
+      "q": -1,
+      "r": -1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 4,
+      "q": -1,
+      "r": -3,
+      "era": "stone"
+     },
+     {
+      "ownerId": 5,
+      "q": -2,
+      "r": 1,
+      "era": "stone"
+     },
+     {
+      "ownerId": 6,
+      "q": -3,
+      "r": -3,
+      "era": "stone"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [
+    3
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -2,
+     "r": 3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": -3,
+     "r": 3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 5,
+     "q": 0,
+     "r": 0,
+     "era": "iron"
+    },
+    {
+     "ownerId": 6,
+     "q": 2,
+     "r": 3,
+     "era": "iron"
+    },
+    {
+     "ownerId": 7,
+     "q": -4,
+     "r": 4,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     3,
+     7
+    ],
+    [
+     4,
+     6
+    ],
+    [
+     5,
+     6
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "stone",
+     "targetId": 7
+    },
+    {
+     "ownerId": 7,
+     "era": "bronze",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "stone",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "iron",
+     "targetId": 2
+    },
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "iron",
+     "targetId": 3
+    }
+   ],
+   "unresolvedOwnerIds": [
+    4
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": -2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": -3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": 4,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": -3,
+     "r": 2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 7,
+     "q": -3,
+     "r": 2,
+     "era": "stone"
+    },
+    {
+     "ownerId": 8,
+     "q": -4,
+     "r": 2,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 7,
+     "targetId": 4,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     2,
+     8
+    ],
+    [
+     3,
+     8
+    ],
+    [
+     4,
+     6
+    ],
+    [
+     5,
+     7
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     7,
+     8
+    ]
+   ],
+   "relations": null,
+   "exhausted": [
+    1
+   ],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     3,
+     4,
+     5,
+     6
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": -3,
+      "r": 4,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 2,
+      "q": 1,
+      "r": 3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 3,
+      "q": 4,
+      "r": -1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 4,
+      "q": 3,
+      "r": -2,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 5,
+      "q": 3,
+      "r": 3,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 6,
+      "q": -3,
+      "r": -1,
+      "era": "stone"
+     },
+     {
+      "ownerId": 7,
+      "q": -1,
+      "r": 1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 8,
+      "q": 2,
+      "r": 2,
+      "era": "stone"
+     },
+     {
+      "ownerId": 9,
+      "q": 2,
+      "r": -1,
+      "era": "iron"
+     },
+     {
+      "ownerId": 10,
+      "q": -2,
+      "r": 0,
+      "era": "stone"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "iron",
+     "targetId": 2
+    },
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 3
+    }
+   ],
+   "unresolvedOwnerIds": [
+    8
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -1,
+     "r": 3,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": -1,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": 0,
+     "r": -4,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 3,
+     "era": "iron"
+    },
+    {
+     "attackerId": 5,
+     "targetId": 1,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     0,
+     1
+    ]
+   ],
+   "relations": null,
+   "exhausted": [
+    2
+   ],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [
+    0
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -4,
+     "r": -3,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": 4,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": 0,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": -4,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": 1,
+     "era": "stone"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     3
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 0
+    },
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 4
+    },
+    {
+     "ownerId": 4,
+     "era": "stone",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [
+    3
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -1,
+     "r": -1,
+     "era": null
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 3,
+     "targetId": 2,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     0,
+     3
+    ]
+   ],
+   "relations": [
+    [
+     0,
+     3,
+     159
+    ],
+    [
+     2,
+     3,
+     168
+    ]
+   ],
+   "exhausted": [
+    0
+   ],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": -3,
+     "r": -3,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 4,
+     "r": -2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": -2,
+     "r": -4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": -4,
+     "r": 0,
+     "era": "iron"
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": 3,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 3,
+     "targetId": 7,
+     "era": "stone"
+    },
+    {
+     "attackerId": 3,
+     "targetId": 7,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     5
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     3,
+     7
+    ],
+    [
+     5,
+     7
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     2,
+     3,
+     4,
+     7
+    ],
+    "candidates": [
+     {
+      "ownerId": 1,
+      "q": 0,
+      "r": 4,
+      "era": "stone"
+     },
+     {
+      "ownerId": 2,
+      "q": 2,
+      "r": 3,
+      "era": "stone"
+     },
+     {
+      "ownerId": 3,
+      "q": -4,
+      "r": 3,
+      "era": "stone"
+     },
+     {
+      "ownerId": 4,
+      "q": 3,
+      "r": -4,
+      "era": "stone"
+     },
+     {
+      "ownerId": 5,
+      "q": -3,
+      "r": -2,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 6,
+      "q": 1,
+      "r": 0,
+      "era": "bronze"
+     },
+     {
+      "ownerId": 7,
+      "q": 0,
+      "r": 3,
+      "era": "bronze"
+     }
+    ]
+   }
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 4,
+     "era": "stone",
+     "targetId": 0
+    },
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 1
+    }
+   ],
+   "unresolvedOwnerIds": [
+    2
+   ],
+   "playerFirstPartnerId": 4
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -2,
+     "r": 0,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2,
+     "era": "bronze"
+    },
+    {
+     "attackerId": 5,
+     "targetId": 1,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     5
+    ],
+    [
+     2,
+     5
+    ]
+   ],
+   "relations": null,
+   "exhausted": [
+    1
+   ],
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": 3,
+     "era": "stone"
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": 2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 4,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": 0,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 6,
+     "targetId": 1,
+     "era": "iron"
+    },
+    {
+     "attackerId": 6,
+     "targetId": 5,
+     "era": "bronze"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     5
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     4,
+     6
+    ]
+   ],
+   "relations": [
+    [
+     1,
+     5,
+     96
+    ],
+    [
+     1,
+     6,
+     100
+    ],
+    [
+     2,
+     3,
+     2
+    ],
+    [
+     2,
+     4,
+     57
+    ],
+    [
+     2,
+     5,
+     38
+    ],
+    [
+     2,
+     6,
+     20
+    ],
+    [
+     3,
+     5,
+     69
+    ],
+    [
+     3,
+     6,
+     66
+    ],
+    [
+     4,
+     6,
+     185
+    ],
+    [
+     5,
+     6,
+     14
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "iron",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 2
+    }
+   ],
+   "unresolvedOwnerIds": [
+    4
+   ],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": 3,
+     "r": -3,
+     "era": "iron"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 3,
+     "era": "stone"
+    },
+    {
+     "attackerId": 4,
+     "targetId": 2,
+     "era": "stone"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     4
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": {
+    "playerOwnerId": 0,
+    "gateOpen": [
+     1,
+     3,
+     4
+    ],
+    "candidates": null
+   }
+  },
+  "out": {
+   "assignments": [],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 1,
+     "r": 3,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": -3,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 3,
+     "targetId": 4,
+     "era": "stone"
+    },
+    {
+     "attackerId": 3,
+     "targetId": 5,
+     "era": "iron"
+    },
+    {
+     "attackerId": 1,
+     "targetId": 2,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     0,
+     3
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     3,
+     5
+    ]
+   ],
+   "relations": null,
+   "exhausted": [
+    4
+   ],
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 0
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 0,
+     "q": 3,
+     "r": 3,
+     "era": null
+    },
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": -2,
+     "era": "iron"
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": 0,
+     "era": "stone"
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": -4,
+     "r": -1,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [],
+   "blocked": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     2,
+     5
+    ],
+    [
+     3,
+     4
+    ]
+   ],
+   "relations": [
+    [
+     0,
+     2,
+     69
+    ],
+    [
+     0,
+     4,
+     178
+    ],
+    [
+     1,
+     2,
+     132
+    ],
+    [
+     1,
+     4,
+     92
+    ],
+    [
+     1,
+     5,
+     177
+    ],
+    [
+     2,
+     4,
+     10
+    ],
+    [
+     2,
+     5,
+     193
+    ]
+   ],
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 0
+    },
+    {
+     "ownerId": 1,
+     "era": "iron",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "stone",
+     "targetId": 1
+    },
+    {
+     "ownerId": 4,
+     "era": "bronze",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 4
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -3,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": -3,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": -4,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 3,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": -4,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": 1,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 7,
+     "q": -4,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 8,
+     "q": 2,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 9,
+     "q": 2,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 10,
+     "q": 3,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 11,
+     "q": 0,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 12,
+     "q": -2,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 13,
+     "q": 4,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 14,
+     "q": -1,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 15,
+     "q": 1,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 16,
+     "q": -4,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 17,
+     "q": 4,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 18,
+     "q": -2,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 19,
+     "q": 4,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 20,
+     "q": 3,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 21,
+     "q": 1,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 22,
+     "q": -3,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 23,
+     "q": 0,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 24,
+     "q": 2,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 25,
+     "q": 1,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 26,
+     "q": 3,
+     "r": -4,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 30,
+     "targetId": 31,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     3,
+     4
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 3
+    },
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 22
+    },
+    {
+     "ownerId": 22,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 4,
+     "era": "bronze",
+     "targetId": 9
+    },
+    {
+     "ownerId": 9,
+     "era": "bronze",
+     "targetId": 4
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 16
+    },
+    {
+     "ownerId": 16,
+     "era": "bronze",
+     "targetId": 5
+    },
+    {
+     "ownerId": 6,
+     "era": "bronze",
+     "targetId": 23
+    },
+    {
+     "ownerId": 23,
+     "era": "bronze",
+     "targetId": 6
+    },
+    {
+     "ownerId": 7,
+     "era": "bronze",
+     "targetId": 18
+    },
+    {
+     "ownerId": 18,
+     "era": "bronze",
+     "targetId": 7
+    },
+    {
+     "ownerId": 8,
+     "era": "bronze",
+     "targetId": 24
+    },
+    {
+     "ownerId": 24,
+     "era": "bronze",
+     "targetId": 8
+    },
+    {
+     "ownerId": 10,
+     "era": "bronze",
+     "targetId": 17
+    },
+    {
+     "ownerId": 17,
+     "era": "bronze",
+     "targetId": 10
+    },
+    {
+     "ownerId": 11,
+     "era": "bronze",
+     "targetId": 14
+    },
+    {
+     "ownerId": 14,
+     "era": "bronze",
+     "targetId": 11
+    },
+    {
+     "ownerId": 12,
+     "era": "bronze",
+     "targetId": 25
+    },
+    {
+     "ownerId": 25,
+     "era": "bronze",
+     "targetId": 12
+    },
+    {
+     "ownerId": 13,
+     "era": "bronze",
+     "targetId": 19
+    },
+    {
+     "ownerId": 19,
+     "era": "bronze",
+     "targetId": 13
+    },
+    {
+     "ownerId": 15,
+     "era": "bronze",
+     "targetId": 21
+    },
+    {
+     "ownerId": 21,
+     "era": "bronze",
+     "targetId": 15
+    },
+    {
+     "ownerId": 20,
+     "era": "bronze",
+     "targetId": 26
+    },
+    {
+     "ownerId": 26,
+     "era": "bronze",
+     "targetId": 20
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "assignForcedWarPairings",
+  "in": {
+   "subjects": [
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": 4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 4,
+     "q": 3,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 5,
+     "q": -2,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 6,
+     "q": -3,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 7,
+     "q": 3,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 8,
+     "q": 1,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 9,
+     "q": 3,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 10,
+     "q": 2,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 11,
+     "q": 2,
+     "r": -2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 12,
+     "q": -4,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 13,
+     "q": 2,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 14,
+     "q": -1,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 15,
+     "q": -2,
+     "r": -4,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 16,
+     "q": 2,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 17,
+     "q": -2,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 18,
+     "q": -2,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 19,
+     "q": 2,
+     "r": 2,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 20,
+     "q": -1,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 21,
+     "q": -3,
+     "r": 1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 22,
+     "q": -1,
+     "r": -3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 23,
+     "q": 1,
+     "r": 0,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 24,
+     "q": 3,
+     "r": 3,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 25,
+     "q": -2,
+     "r": -1,
+     "era": "bronze"
+    },
+    {
+     "ownerId": 26,
+     "q": -2,
+     "r": 4,
+     "era": "bronze"
+    }
+   ],
+   "pairs": [
+    {
+     "attackerId": 30,
+     "targetId": 31,
+     "era": "iron"
+    }
+   ],
+   "blocked": [
+    [
+     1,
+     2
+    ],
+    [
+     3,
+     4
+    ]
+   ],
+   "relations": null,
+   "exhausted": null,
+   "playerFirst": null
+  },
+  "out": {
+   "assignments": [
+    {
+     "ownerId": 1,
+     "era": "bronze",
+     "targetId": 6
+    },
+    {
+     "ownerId": 6,
+     "era": "bronze",
+     "targetId": 1
+    },
+    {
+     "ownerId": 2,
+     "era": "bronze",
+     "targetId": 9
+    },
+    {
+     "ownerId": 9,
+     "era": "bronze",
+     "targetId": 2
+    },
+    {
+     "ownerId": 3,
+     "era": "bronze",
+     "targetId": 5
+    },
+    {
+     "ownerId": 5,
+     "era": "bronze",
+     "targetId": 3
+    },
+    {
+     "ownerId": 4,
+     "era": "bronze",
+     "targetId": 10
+    },
+    {
+     "ownerId": 10,
+     "era": "bronze",
+     "targetId": 4
+    },
+    {
+     "ownerId": 7,
+     "era": "bronze",
+     "targetId": 19
+    },
+    {
+     "ownerId": 19,
+     "era": "bronze",
+     "targetId": 7
+    },
+    {
+     "ownerId": 8,
+     "era": "bronze",
+     "targetId": 13
+    },
+    {
+     "ownerId": 13,
+     "era": "bronze",
+     "targetId": 8
+    },
+    {
+     "ownerId": 11,
+     "era": "bronze",
+     "targetId": 16
+    },
+    {
+     "ownerId": 16,
+     "era": "bronze",
+     "targetId": 11
+    },
+    {
+     "ownerId": 12,
+     "era": "bronze",
+     "targetId": 15
+    },
+    {
+     "ownerId": 15,
+     "era": "bronze",
+     "targetId": 12
+    },
+    {
+     "ownerId": 14,
+     "era": "bronze",
+     "targetId": 18
+    },
+    {
+     "ownerId": 18,
+     "era": "bronze",
+     "targetId": 14
+    },
+    {
+     "ownerId": 17,
+     "era": "bronze",
+     "targetId": 21
+    },
+    {
+     "ownerId": 21,
+     "era": "bronze",
+     "targetId": 17
+    },
+    {
+     "ownerId": 20,
+     "era": "bronze",
+     "targetId": 25
+    },
+    {
+     "ownerId": 25,
+     "era": "bronze",
+     "targetId": 20
+    },
+    {
+     "ownerId": 22,
+     "era": "bronze",
+     "targetId": 23
+    },
+    {
+     "ownerId": 23,
+     "era": "bronze",
+     "targetId": 22
+    },
+    {
+     "ownerId": 24,
+     "era": "bronze",
+     "targetId": 26
+    },
+    {
+     "ownerId": 26,
+     "era": "bronze",
+     "targetId": 24
+    }
+   ],
+   "unresolvedOwnerIds": [],
+   "playerFirstPartnerId": null
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": null
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {}
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": null
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {
+    "restUntilByOwner": [
+     [
+      7,
+      39
+     ],
+     [
+      5,
+      33
+     ],
+     [
+      0,
+      49
+     ]
+    ],
+    "activeByPairKey": [
+     [
+      "0-7",
+      {
+       "attackerId": 7,
+       "targetId": 0,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 0,
+       "startTurn": 17
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [
+    [
+     7,
+     39
+    ],
+    [
+     5,
+     33
+    ],
+    [
+     0,
+     49
+    ]
+   ],
+   "activeByPairKey": [
+    [
+     "0-7",
+     {
+      "attackerId": 7,
+      "targetId": 0,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 0,
+      "startTurn": 17
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     0,
+     0
+    ],
+    "cycleOwners": [
+     0,
+     5,
+     1,
+     3
+    ],
+    "restUntilByOwner": [
+     [
+      6,
+      10
+     ],
+     [
+      2,
+      44
+     ]
+    ],
+    "activeByPairKey": []
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    0
+   ],
+   "cycleOwners": [
+    0,
+    5,
+    1,
+    3
+   ],
+   "restUntilByOwner": [
+    [
+     6,
+     10
+    ],
+    [
+     2,
+     44
+    ]
+   ],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {
+    "cycleOwners": [
+     7
+    ],
+    "restUntilByOwner": [
+     [
+      1,
+      52
+     ]
+    ],
+    "activeByPairKey": []
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [
+    7
+   ],
+   "restUntilByOwner": [
+    [
+     1,
+     52
+    ]
+   ],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     2
+    ],
+    "cycleOwners": [
+     4
+    ],
+    "restUntilByOwner": [],
+    "activeByPairKey": [
+     [
+      "0-4",
+      {
+       "attackerId": 0,
+       "targetId": 4,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 1,
+       "startTurn": 34
+      }
+     ],
+     [
+      "0-1",
+      {
+       "attackerId": 0,
+       "targetId": 1,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 2
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    2
+   ],
+   "cycleOwners": [
+    4
+   ],
+   "restUntilByOwner": [],
+   "activeByPairKey": [
+    [
+     "0-4",
+     {
+      "attackerId": 0,
+      "targetId": 4,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 1,
+      "startTurn": 34
+     }
+    ],
+    [
+     "0-1",
+     {
+      "attackerId": 0,
+      "targetId": 1,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 2
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     7,
+     2,
+     7,
+     3
+    ],
+    "cycleOwners": [
+     3,
+     5
+    ],
+    "restUntilByOwner": [],
+    "activeByPairKey": [
+     [
+      "4-5",
+      {
+       "attackerId": 5,
+       "targetId": 4,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 0
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    7,
+    2,
+    3
+   ],
+   "cycleOwners": [
+    3,
+    5
+   ],
+   "restUntilByOwner": [],
+   "activeByPairKey": [
+    [
+     "4-5",
+     {
+      "attackerId": 5,
+      "targetId": 4,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 0
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [],
+    "restUntilByOwner": [
+     [
+      6,
+      33
+     ],
+     [
+      5,
+      52
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [
+    [
+     6,
+     33
+    ],
+    [
+     5,
+     52
+    ]
+   ],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     7
+    ],
+    "cycleOwners": [
+     2,
+     4,
+     2,
+     0
+    ],
+    "activeByPairKey": [
+     [
+      "3-7",
+      {
+       "attackerId": 7,
+       "targetId": 3,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 1,
+       "startTurn": 32
+      }
+     ],
+     [
+      "6-7",
+      {
+       "attackerId": 7,
+       "targetId": 6,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 0,
+       "startTurn": 56
+      }
+     ],
+     [
+      "2-4",
+      {
+       "attackerId": 2,
+       "targetId": 4,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 0
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    7
+   ],
+   "cycleOwners": [
+    2,
+    4,
+    0
+   ],
+   "restUntilByOwner": [],
+   "activeByPairKey": [
+    [
+     "3-7",
+     {
+      "attackerId": 7,
+      "targetId": 3,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 1,
+      "startTurn": 32
+     }
+    ],
+    [
+     "6-7",
+     {
+      "attackerId": 7,
+      "targetId": 6,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 0,
+      "startTurn": 56
+     }
+    ],
+    [
+     "2-4",
+     {
+      "attackerId": 2,
+      "targetId": 4,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 0
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {
+    "cycleOwners": [
+     4,
+     7,
+     1
+    ],
+    "restUntilByOwner": [],
+    "activeByPairKey": [
+     [
+      "3-7",
+      {
+       "attackerId": 3,
+       "targetId": 7,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 2
+      }
+     ],
+     [
+      "3-7",
+      {
+       "attackerId": 3,
+       "targetId": 7,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 0,
+       "startTurn": 52
+      }
+     ],
+     [
+      "2-6",
+      {
+       "attackerId": 6,
+       "targetId": 2,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 2,
+       "startTurn": 24
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [
+    4,
+    7,
+    1
+   ],
+   "restUntilByOwner": [],
+   "activeByPairKey": [
+    [
+     "3-7",
+     {
+      "attackerId": 3,
+      "targetId": 7,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 0,
+      "startTurn": 52
+     }
+    ],
+    [
+     "2-6",
+     {
+      "attackerId": 6,
+      "targetId": 2,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 2,
+      "startTurn": 24
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     5,
+     2,
+     7
+    ],
+    "cycleOwners": [
+     5
+    ],
+    "restUntilByOwner": [
+     [
+      5,
+      23
+     ]
+    ],
+    "activeByPairKey": [
+     [
+      "0-7",
+      {
+       "attackerId": 0,
+       "targetId": 7,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 1,
+       "startTurn": 15
+      }
+     ],
+     [
+      "2-3",
+      {
+       "attackerId": 2,
+       "targetId": 3,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 0
+      }
+     ],
+     [
+      "3-6",
+      {
+       "attackerId": 6,
+       "targetId": 3,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 2,
+       "startTurn": 3
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    5,
+    2,
+    7
+   ],
+   "cycleOwners": [
+    5
+   ],
+   "restUntilByOwner": [
+    [
+     5,
+     23
+    ]
+   ],
+   "activeByPairKey": [
+    [
+     "0-7",
+     {
+      "attackerId": 0,
+      "targetId": 7,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 1,
+      "startTurn": 15
+     }
+    ],
+    [
+     "2-3",
+     {
+      "attackerId": 2,
+      "targetId": 3,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 0
+     }
+    ],
+    [
+     "3-6",
+     {
+      "attackerId": 6,
+      "targetId": 3,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 2,
+      "startTurn": 3
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     3,
+     0,
+     6
+    ],
+    "cycleOwners": [
+     2,
+     4,
+     0,
+     0
+    ],
+    "activeByPairKey": [
+     [
+      "1-6",
+      {
+       "attackerId": 1,
+       "targetId": 6,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 1
+      }
+     ],
+     [
+      "0-7",
+      {
+       "attackerId": 7,
+       "targetId": 0,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 0
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    3,
+    0,
+    6
+   ],
+   "cycleOwners": [
+    2,
+    4,
+    0
+   ],
+   "restUntilByOwner": [],
+   "activeByPairKey": [
+    [
+     "1-6",
+     {
+      "attackerId": 1,
+      "targetId": 6,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 1
+     }
+    ],
+    [
+     "0-7",
+     {
+      "attackerId": 7,
+      "targetId": 0,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 0
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "commonStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [],
+    "cycleOwners": [],
+    "restUntilByOwner": [
+     [
+      4,
+      39
+     ]
+    ],
+    "activeByPairKey": [
+     [
+      "4-7",
+      {
+       "attackerId": 7,
+       "targetId": 4,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 1
+      }
+     ],
+     [
+      "4-6",
+      {
+       "attackerId": 4,
+       "targetId": 6,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 2
+      }
+     ],
+     [
+      "0-2",
+      {
+       "attackerId": 2,
+       "targetId": 0,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 0
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [
+    [
+     4,
+     39
+    ]
+   ],
+   "activeByPairKey": [
+    [
+     "4-7",
+     {
+      "attackerId": 7,
+      "targetId": 4,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 1
+     }
+    ],
+    [
+     "4-6",
+     {
+      "attackerId": 4,
+      "targetId": 6,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 2
+     }
+    ],
+    [
+     "0-2",
+     {
+      "attackerId": 2,
+      "targetId": 0,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 0
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": null
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {}
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [],
+    "cycleOwners": [],
+    "restUntilByOwner": [
+     [
+      4,
+      8
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [
+    [
+     4,
+     8
+    ]
+   ],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     4,
+     2,
+     3
+    ],
+    "cycleOwners": [
+     7,
+     3,
+     7
+    ],
+    "restUntilByOwner": [],
+    "activeByPairKey": [
+     [
+      "2-4",
+      {
+       "attackerId": 4,
+       "targetId": 2,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 0,
+       "startTurn": 26
+      }
+     ],
+     [
+      "5-7",
+      {
+       "attackerId": 7,
+       "targetId": 5,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 1,
+       "startTurn": 66
+      }
+     ],
+     [
+      "2-7",
+      {
+       "attackerId": 7,
+       "targetId": 2,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 2,
+       "startTurn": 69
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    4,
+    2,
+    3
+   ],
+   "cycleOwners": [
+    7,
+    3
+   ],
+   "restUntilByOwner": [],
+   "activeByPairKey": [
+    [
+     "2-4",
+     {
+      "attackerId": 4,
+      "targetId": 2,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 0,
+      "startTurn": 26
+     }
+    ],
+    [
+     "5-7",
+     {
+      "attackerId": 7,
+      "targetId": 5,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 1,
+      "startTurn": 66
+     }
+    ],
+    [
+     "2-7",
+     {
+      "attackerId": 7,
+      "targetId": 2,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 2,
+      "startTurn": 69
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     5,
+     0
+    ],
+    "cycleOwners": [
+     3,
+     1,
+     2
+    ],
+    "restUntilByOwner": [],
+    "activeByPairKey": [
+     [
+      "5-6",
+      {
+       "attackerId": 6,
+       "targetId": 5,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 2,
+       "startTurn": 69
+      }
+     ],
+     [
+      "0-0",
+      {
+       "attackerId": 0,
+       "targetId": 0,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 2,
+       "startTurn": 29
+      }
+     ],
+     [
+      "2-4",
+      {
+       "attackerId": 4,
+       "targetId": 2,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 0,
+       "startTurn": 73
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    5,
+    0
+   ],
+   "cycleOwners": [
+    3,
+    1,
+    2
+   ],
+   "restUntilByOwner": [],
+   "activeByPairKey": [
+    [
+     "5-6",
+     {
+      "attackerId": 6,
+      "targetId": 5,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 2,
+      "startTurn": 69
+     }
+    ],
+    [
+     "0-0",
+     {
+      "attackerId": 0,
+      "targetId": 0,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 2,
+      "startTurn": 29
+     }
+    ],
+    [
+     "2-4",
+     {
+      "attackerId": 4,
+      "targetId": 2,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 0,
+      "startTurn": 73
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     0
+    ],
+    "cycleOwners": [],
+    "restUntilByOwner": [
+     [
+      2,
+      7
+     ]
+    ],
+    "activeByPairKey": []
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    0
+   ],
+   "cycleOwners": [],
+   "restUntilByOwner": [
+    [
+     2,
+     7
+    ]
+   ],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": null
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {
+    "cycleOwners": [
+     6
+    ],
+    "restUntilByOwner": [],
+    "activeByPairKey": [
+     [
+      "0-4",
+      {
+       "attackerId": 0,
+       "targetId": 4,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 2,
+       "startTurn": 26
+      }
+     ],
+     [
+      "3-3",
+      {
+       "attackerId": 3,
+       "targetId": 3,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 0,
+       "startTurn": 75
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [
+    6
+   ],
+   "restUntilByOwner": [],
+   "activeByPairKey": [
+    [
+     "0-4",
+     {
+      "attackerId": 0,
+      "targetId": 4,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 2,
+      "startTurn": 26
+     }
+    ],
+    [
+     "3-3",
+     {
+      "attackerId": 3,
+      "targetId": 3,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 0,
+      "startTurn": 75
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     0,
+     4
+    ],
+    "cycleOwners": [],
+    "restUntilByOwner": [
+     [
+      3,
+      7
+     ]
+    ],
+    "activeByPairKey": [
+     [
+      "0-7",
+      {
+       "attackerId": 7,
+       "targetId": 0,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 2
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    0,
+    4
+   ],
+   "cycleOwners": [],
+   "restUntilByOwner": [
+    [
+     3,
+     7
+    ]
+   ],
+   "activeByPairKey": [
+    [
+     "0-7",
+     {
+      "attackerId": 7,
+      "targetId": 0,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 2
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     2,
+     4,
+     5,
+     2
+    ],
+    "cycleOwners": [],
+    "restUntilByOwner": [
+     [
+      5,
+      45
+     ]
+    ],
+    "activeByPairKey": [
+     [
+      "3-3",
+      {
+       "attackerId": 3,
+       "targetId": 3,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 1
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    2,
+    4,
+    5
+   ],
+   "cycleOwners": [],
+   "restUntilByOwner": [
+    [
+     5,
+     45
+    ]
+   ],
+   "activeByPairKey": [
+    [
+     "3-3",
+     {
+      "attackerId": 3,
+      "targetId": 3,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 1
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {
+    "cycleOwners": [
+     7
+    ],
+    "restUntilByOwner": [
+     [
+      6,
+      28
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [
+    7
+   ],
+   "restUntilByOwner": [
+    [
+     6,
+     28
+    ]
+   ],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     3,
+     7
+    ],
+    "cycleOwners": [],
+    "restUntilByOwner": [],
+    "activeByPairKey": [
+     [
+      "1-4",
+      {
+       "attackerId": 4,
+       "targetId": 1,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 2,
+       "startTurn": 14
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    3,
+    7
+   ],
+   "cycleOwners": [],
+   "restUntilByOwner": [],
+   "activeByPairKey": [
+    [
+     "1-4",
+     {
+      "attackerId": 4,
+      "targetId": 1,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 2,
+      "startTurn": 14
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     0,
+     1,
+     1,
+     6
+    ],
+    "cycleOwners": [
+     1,
+     1,
+     7
+    ],
+    "restUntilByOwner": [
+     [
+      0,
+      17
+     ],
+     [
+      0,
+      14
+     ]
+    ],
+    "activeByPairKey": [
+     [
+      "3-5",
+      {
+       "attackerId": 3,
+       "targetId": 5,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 1
+      }
+     ],
+     [
+      "0-1",
+      {
+       "attackerId": 0,
+       "targetId": 1,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 2
+      }
+     ],
+     [
+      "0-6",
+      {
+       "attackerId": 6,
+       "targetId": 0,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 1,
+       "startTurn": 47
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    0,
+    1,
+    6
+   ],
+   "cycleOwners": [
+    1,
+    7
+   ],
+   "restUntilByOwner": [
+    [
+     0,
+     14
+    ]
+   ],
+   "activeByPairKey": [
+    [
+     "3-5",
+     {
+      "attackerId": 3,
+      "targetId": 5,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 1
+     }
+    ],
+    [
+     "0-1",
+     {
+      "attackerId": 0,
+      "targetId": 1,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 2
+     }
+    ],
+    [
+     "0-6",
+     {
+      "attackerId": 6,
+      "targetId": 0,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 1,
+      "startTurn": 47
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "bronzeStateRoundtrip",
+  "in": {
+   "saved": {
+    "cycleOwners": [
+     2,
+     0
+    ],
+    "restUntilByOwner": [],
+    "activeByPairKey": []
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [
+    2,
+    0
+   ],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": null
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {}
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     2,
+     7
+    ],
+    "cycleOwners": [
+     2,
+     0
+    ],
+    "restUntilByOwner": [
+     [
+      1,
+      35
+     ],
+     [
+      5,
+      17
+     ],
+     [
+      2,
+      16
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    2,
+    7
+   ],
+   "cycleOwners": [
+    2,
+    0
+   ],
+   "restUntilByOwner": [
+    [
+     1,
+     35
+    ],
+    [
+     5,
+     17
+    ],
+    [
+     2,
+     16
+    ]
+   ],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {
+    "cycleOwners": [
+     5,
+     4,
+     1
+    ],
+    "restUntilByOwner": [
+     [
+      7,
+      16
+     ],
+     [
+      7,
+      26
+     ],
+     [
+      1,
+      40
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [
+    5,
+    4,
+    1
+   ],
+   "restUntilByOwner": [
+    [
+     7,
+     26
+    ],
+    [
+     1,
+     40
+    ]
+   ],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     3,
+     5,
+     5
+    ],
+    "cycleOwners": [
+     4
+    ],
+    "restUntilByOwner": [
+     [
+      7,
+      2
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    3,
+    5
+   ],
+   "cycleOwners": [
+    4
+   ],
+   "restUntilByOwner": [
+    [
+     7,
+     2
+    ]
+   ],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     3
+    ],
+    "cycleOwners": []
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    3
+   ],
+   "cycleOwners": [],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {
+    "cycleOwners": [
+     5,
+     4,
+     7,
+     0
+    ],
+    "restUntilByOwner": [],
+    "activeByPairKey": [
+     [
+      "2-3",
+      {
+       "attackerId": 3,
+       "targetId": 2,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 1,
+       "startTurn": 55
+      }
+     ],
+     [
+      "6-6",
+      {
+       "attackerId": 6,
+       "targetId": 6,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 0,
+       "startTurn": 38
+      }
+     ],
+     [
+      "6-7",
+      {
+       "attackerId": 6,
+       "targetId": 7,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 1
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [
+    5,
+    4,
+    7,
+    0
+   ],
+   "restUntilByOwner": [],
+   "activeByPairKey": [
+    [
+     "2-3",
+     {
+      "attackerId": 3,
+      "targetId": 2,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 1,
+      "startTurn": 55
+     }
+    ],
+    [
+     "6-6",
+     {
+      "attackerId": 6,
+      "targetId": 6,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 0,
+      "startTurn": 38
+     }
+    ],
+    [
+     "6-7",
+     {
+      "attackerId": 6,
+      "targetId": 7,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 1
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     0,
+     3,
+     6
+    ],
+    "cycleOwners": [],
+    "restUntilByOwner": [
+     [
+      2,
+      57
+     ],
+     [
+      3,
+      18
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    0,
+    3,
+    6
+   ],
+   "cycleOwners": [],
+   "restUntilByOwner": [
+    [
+     2,
+     57
+    ],
+    [
+     3,
+     18
+    ]
+   ],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     1
+    ],
+    "cycleOwners": [
+     3
+    ],
+    "restUntilByOwner": [
+     [
+      0,
+      15
+     ]
+    ],
+    "activeByPairKey": [
+     [
+      "7-7",
+      {
+       "attackerId": 7,
+       "targetId": 7,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 2,
+       "startTurn": 0
+      }
+     ],
+     [
+      "1-6",
+      {
+       "attackerId": 6,
+       "targetId": 1,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 1,
+       "startTurn": 69
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    1
+   ],
+   "cycleOwners": [
+    3
+   ],
+   "restUntilByOwner": [
+    [
+     0,
+     15
+    ]
+   ],
+   "activeByPairKey": [
+    [
+     "7-7",
+     {
+      "attackerId": 7,
+      "targetId": 7,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 2,
+      "startTurn": 0
+     }
+    ],
+    [
+     "1-6",
+     {
+      "attackerId": 6,
+      "targetId": 1,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 1,
+      "startTurn": 69
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     3,
+     5,
+     6,
+     0
+    ],
+    "cycleOwners": [
+     0,
+     6
+    ],
+    "restUntilByOwner": [
+     [
+      3,
+      44
+     ],
+     [
+      0,
+      39
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    3,
+    5,
+    6,
+    0
+   ],
+   "cycleOwners": [
+    0,
+    6
+   ],
+   "restUntilByOwner": [
+    [
+     3,
+     44
+    ],
+    [
+     0,
+     39
+    ]
+   ],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": null
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {
+    "cycleOwners": [
+     3
+    ],
+    "restUntilByOwner": [
+     [
+      1,
+      30
+     ]
+    ],
+    "activeByPairKey": [
+     [
+      "4-7",
+      {
+       "attackerId": 4,
+       "targetId": 7,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 0,
+       "startTurn": 1
+      }
+     ],
+     [
+      "2-2",
+      {
+       "attackerId": 2,
+       "targetId": 2,
+       "capturedByAttacker": 0,
+       "capturedByDefender": 2,
+       "startTurn": 22
+      }
+     ],
+     [
+      "2-5",
+      {
+       "attackerId": 5,
+       "targetId": 2,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 1,
+       "startTurn": 51
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [],
+   "cycleOwners": [
+    3
+   ],
+   "restUntilByOwner": [
+    [
+     1,
+     30
+    ]
+   ],
+   "activeByPairKey": [
+    [
+     "4-7",
+     {
+      "attackerId": 4,
+      "targetId": 7,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 0,
+      "startTurn": 1
+     }
+    ],
+    [
+     "2-2",
+     {
+      "attackerId": 2,
+      "targetId": 2,
+      "capturedByAttacker": 0,
+      "capturedByDefender": 2,
+      "startTurn": 22
+     }
+    ],
+    [
+     "2-5",
+     {
+      "attackerId": 5,
+      "targetId": 2,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 1,
+      "startTurn": 51
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     7
+    ],
+    "cycleOwners": [
+     2,
+     6,
+     7
+    ],
+    "restUntilByOwner": [],
+    "activeByPairKey": []
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    7
+   ],
+   "cycleOwners": [
+    2,
+    6,
+    7
+   ],
+   "restUntilByOwner": [],
+   "activeByPairKey": []
+  }
+ },
+ {
+  "fn": "ironStateRoundtrip",
+  "in": {
+   "saved": {
+    "pendingOwners": [
+     1,
+     2,
+     1,
+     2
+    ],
+    "cycleOwners": [
+     4,
+     0
+    ],
+    "restUntilByOwner": [
+     [
+      3,
+      58
+     ],
+     [
+      1,
+      41
+     ],
+     [
+      3,
+      59
+     ]
+    ],
+    "activeByPairKey": [
+     [
+      "2-6",
+      {
+       "attackerId": 2,
+       "targetId": 6,
+       "capturedByAttacker": 1,
+       "capturedByDefender": 2,
+       "startTurn": 71
+      }
+     ],
+     [
+      "2-3",
+      {
+       "attackerId": 2,
+       "targetId": 3,
+       "capturedByAttacker": 2,
+       "capturedByDefender": 2,
+       "startTurn": 43
+      }
+     ]
+    ]
+   }
+  },
+  "out": {
+   "pendingOwners": [
+    1,
+    2
+   ],
+   "cycleOwners": [
+    4,
+    0
+   ],
+   "restUntilByOwner": [
+    [
+     3,
+     59
+    ],
+    [
+     1,
+     41
+    ]
+   ],
+   "activeByPairKey": [
+    [
+     "2-6",
+     {
+      "attackerId": 2,
+      "targetId": 6,
+      "capturedByAttacker": 1,
+      "capturedByDefender": 2,
+      "startTurn": 71
+     }
+    ],
+    [
+     "2-3",
+     {
+      "attackerId": 2,
+      "targetId": 3,
+      "capturedByAttacker": 2,
+      "capturedByDefender": 2,
+      "startTurn": 43
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 0,
+   "eraEnterTurn": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "eraEnterTurn": 5
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 26,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 30,
+   "eraEnterTurn": 10
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 20
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 21
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 19
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": -1,
+   "eraEnterTurn": -2
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 0,
+   "eraEnterTurn": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "eraEnterTurn": 5
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 26,
+   "eraEnterTurn": 6
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 30,
+   "eraEnterTurn": 10
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 20
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 21
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 19
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": -1,
+   "eraEnterTurn": -2
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 0,
+   "eraEnterTurn": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "eraEnterTurn": 5
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 26,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 30,
+   "eraEnterTurn": 10
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 20
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 21
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 19
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": -1,
+   "eraEnterTurn": -2
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 0,
+   "eraEnterTurn": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "eraEnterTurn": 5
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 26,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 30,
+   "eraEnterTurn": 10
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 20
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 21
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 19
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForBronzeForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": -1,
+   "eraEnterTurn": -2
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 0,
+   "eraEnterTurn": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "eraEnterTurn": 5
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 26,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 30,
+   "eraEnterTurn": 10
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 20
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 21
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 19
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": -1,
+   "eraEnterTurn": -2
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 0,
+   "eraEnterTurn": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "eraEnterTurn": 5
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 26,
+   "eraEnterTurn": 6
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 30,
+   "eraEnterTurn": 10
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 20
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 21
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 19
+  },
+  "out": true
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": true,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": -1,
+   "eraEnterTurn": -2
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 0,
+   "eraEnterTurn": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "eraEnterTurn": 5
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 25,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 26,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 30,
+   "eraEnterTurn": 10
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 20
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 21
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": 40,
+   "eraEnterTurn": 19
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": true,
+   "currentTurn": -1,
+   "eraEnterTurn": -2
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 0,
+   "eraEnterTurn": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "eraEnterTurn": 5
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 25,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 26,
+   "eraEnterTurn": 6
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 30,
+   "eraEnterTurn": 10
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 20
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 21
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": 40,
+   "eraEnterTurn": 19
+  },
+  "out": false
+ },
+ {
+  "fn": "isEligibleForIronForcedWar",
+  "in": {
+   "isMainAiCiv": false,
+   "isAlreadyAtWarAnyRole": false,
+   "currentTurn": -1,
+   "eraEnterTurn": -2
+  },
+  "out": false
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": -1
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": -1
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": 3
+    }
+   ],
+   "ref": {
+    "q": -2,
+    "r": 1
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": 3
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": -1
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": -2
+    },
+    {
+     "ownerId": 3,
+     "q": 2,
+     "r": -5
+    }
+   ],
+   "ref": null,
+   "blocked": [
+    3
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [],
+   "ref": {
+    "q": -5,
+    "r": 5
+   },
+   "blocked": []
+  },
+  "out": null
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": -5
+    }
+   ],
+   "ref": {
+    "q": -3,
+    "r": 3
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": null
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": 4
+    }
+   ],
+   "ref": {
+    "q": 4,
+    "r": 3
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": -1
+    },
+    {
+     "ownerId": 2,
+     "q": 4,
+     "r": 2
+    },
+    {
+     "ownerId": 3,
+     "q": -4,
+     "r": -4
+    },
+    {
+     "ownerId": 4,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 5,
+     "q": 0,
+     "r": -2
+    }
+   ],
+   "ref": {
+    "q": -1,
+    "r": 1
+   },
+   "blocked": [
+    2,
+    3
+   ]
+  },
+  "out": 4
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": -3,
+    "r": -5
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": null
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": -2
+    },
+    {
+     "ownerId": 2,
+     "q": 4,
+     "r": -5
+    },
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 4,
+     "q": 4,
+     "r": -1
+    },
+    {
+     "ownerId": 5,
+     "q": -3,
+     "r": -1
+    },
+    {
+     "ownerId": 6,
+     "q": -2,
+     "r": 1
+    }
+   ],
+   "ref": {
+    "q": 5,
+    "r": -1
+   },
+   "blocked": [
+    2,
+    3,
+    4
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": -3
+    }
+   ],
+   "ref": {
+    "q": -3,
+    "r": -1
+   },
+   "blocked": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": -3
+    }
+   ],
+   "ref": {
+    "q": -3,
+    "r": 3
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": null
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -3,
+     "r": -2
+    },
+    {
+     "ownerId": 2,
+     "q": 5,
+     "r": 4
+    },
+    {
+     "ownerId": 3,
+     "q": -4,
+     "r": 5
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": -2
+    },
+    {
+     "ownerId": 5,
+     "q": -2,
+     "r": -2
+    }
+   ],
+   "ref": {
+    "q": -3,
+    "r": 3
+   },
+   "blocked": [
+    4,
+    5
+   ]
+  },
+  "out": 3
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -5,
+     "r": 1
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": -4
+    },
+    {
+     "ownerId": 3,
+     "q": 5,
+     "r": 1
+    },
+    {
+     "ownerId": 4,
+     "q": 0,
+     "r": 2
+    }
+   ],
+   "ref": null,
+   "blocked": [
+    1,
+    3
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -1,
+     "r": 2
+    },
+    {
+     "ownerId": 2,
+     "q": -1,
+     "r": 5
+    }
+   ],
+   "ref": {
+    "q": 1,
+    "r": -1
+   },
+   "blocked": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": -1
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": -4
+    },
+    {
+     "ownerId": 3,
+     "q": -1,
+     "r": -4
+    },
+    {
+     "ownerId": 4,
+     "q": 3,
+     "r": 0
+    }
+   ],
+   "ref": {
+    "q": -4,
+    "r": -5
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 3,
+     "r": -1
+    },
+    {
+     "ownerId": 2,
+     "q": -2,
+     "r": -5
+    },
+    {
+     "ownerId": 3,
+     "q": 3,
+     "r": -1
+    },
+    {
+     "ownerId": 4,
+     "q": -4,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 0,
+    "r": 5
+   },
+   "blocked": [
+    2,
+    4
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": -3
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": 2
+    },
+    {
+     "ownerId": 4,
+     "q": -3,
+     "r": 5
+    }
+   ],
+   "ref": null,
+   "blocked": [
+    4
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 1,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": -2
+    },
+    {
+     "ownerId": 3,
+     "q": 5,
+     "r": 0
+    },
+    {
+     "ownerId": 4,
+     "q": 4,
+     "r": 1
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": -1
+    },
+    {
+     "ownerId": 6,
+     "q": 0,
+     "r": 4
+    }
+   ],
+   "ref": {
+    "q": -2,
+    "r": -4
+   },
+   "blocked": [
+    1,
+    3
+   ]
+  },
+  "out": 5
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -1,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": 0
+    }
+   ],
+   "ref": {
+    "q": -5,
+    "r": -4
+   },
+   "blocked": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -1
+    },
+    {
+     "ownerId": 3,
+     "q": -5,
+     "r": -4
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": 2
+    }
+   ],
+   "ref": {
+    "q": 3,
+    "r": 4
+   },
+   "blocked": [
+    3,
+    4
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "ownerId": 2,
+     "q": -2,
+     "r": -4
+    }
+   ],
+   "ref": null,
+   "blocked": [
+    1
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -3,
+     "r": -3
+    },
+    {
+     "ownerId": 2,
+     "q": -2,
+     "r": 4
+    },
+    {
+     "ownerId": 3,
+     "q": 2,
+     "r": 5
+    }
+   ],
+   "ref": {
+    "q": -5,
+    "r": 3
+   },
+   "blocked": [
+    2,
+    3
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -5,
+     "r": 5
+    }
+   ],
+   "ref": {
+    "q": -5,
+    "r": -4
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": null
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -5,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": -2
+    },
+    {
+     "ownerId": 3,
+     "q": 3,
+     "r": -5
+    },
+    {
+     "ownerId": 4,
+     "q": 3,
+     "r": 5
+    }
+   ],
+   "ref": {
+    "q": -2,
+    "r": 2
+   },
+   "blocked": [
+    3
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 5
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": 4
+    }
+   ],
+   "ref": {
+    "q": 1,
+    "r": 4
+   },
+   "blocked": []
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickBronzeForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": 4
+    },
+    {
+     "ownerId": 2,
+     "q": 0,
+     "r": -5
+    },
+    {
+     "ownerId": 3,
+     "q": -4,
+     "r": -3
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "ownerId": 5,
+     "q": -1,
+     "r": -4
+    },
+    {
+     "ownerId": 6,
+     "q": 1,
+     "r": -3
+    }
+   ],
+   "ref": {
+    "q": -2,
+    "r": 0
+   },
+   "blocked": []
+  },
+  "out": 6
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -1,
+     "r": -4
+    },
+    {
+     "ownerId": 2,
+     "q": -5,
+     "r": 3
+    }
+   ],
+   "ref": {
+    "q": 4,
+    "r": -1
+   },
+   "blocked": [
+    2
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": 3
+    },
+    {
+     "ownerId": 2,
+     "q": -5,
+     "r": 5
+    },
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": -3
+    },
+    {
+     "ownerId": 4,
+     "q": 0,
+     "r": -4
+    }
+   ],
+   "ref": {
+    "q": -1,
+    "r": -3
+   },
+   "blocked": [
+    2,
+    4
+   ]
+  },
+  "out": 3
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -3,
+     "r": 4
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": 1
+    },
+    {
+     "ownerId": 3,
+     "q": -4,
+     "r": 4
+    },
+    {
+     "ownerId": 4,
+     "q": 3,
+     "r": -3
+    },
+    {
+     "ownerId": 5,
+     "q": -2,
+     "r": 5
+    }
+   ],
+   "ref": {
+    "q": 2,
+    "r": -4
+   },
+   "blocked": [
+    2,
+    3
+   ]
+  },
+  "out": 4
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": -1
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": 2
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": 5
+    },
+    {
+     "ownerId": 4,
+     "q": -1,
+     "r": -4
+    }
+   ],
+   "ref": {
+    "q": 5,
+    "r": -5
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": 4
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 1
+    }
+   ],
+   "ref": {
+    "q": 4,
+    "r": -4
+   },
+   "blocked": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": -3
+    },
+    {
+     "ownerId": 2,
+     "q": 3,
+     "r": 4
+    }
+   ],
+   "ref": {
+    "q": -4,
+    "r": -2
+   },
+   "blocked": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": -5
+    },
+    {
+     "ownerId": 2,
+     "q": -2,
+     "r": 5
+    },
+    {
+     "ownerId": 3,
+     "q": -3,
+     "r": -3
+    },
+    {
+     "ownerId": 4,
+     "q": -4,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 3,
+    "r": 2
+   },
+   "blocked": [
+    4
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": -3
+    },
+    {
+     "ownerId": 2,
+     "q": 0,
+     "r": 2
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": -2
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": 1
+    }
+   ],
+   "ref": {
+    "q": 5,
+    "r": -4
+   },
+   "blocked": [
+    4
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": -4
+    },
+    {
+     "ownerId": 2,
+     "q": -2,
+     "r": 1
+    },
+    {
+     "ownerId": 3,
+     "q": 4,
+     "r": -3
+    },
+    {
+     "ownerId": 4,
+     "q": -2,
+     "r": 3
+    },
+    {
+     "ownerId": 5,
+     "q": -3,
+     "r": 3
+    }
+   ],
+   "ref": {
+    "q": -2,
+    "r": 0
+   },
+   "blocked": [
+    1
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": 5
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": -1
+    },
+    {
+     "ownerId": 3,
+     "q": -1,
+     "r": -5
+    },
+    {
+     "ownerId": 4,
+     "q": 3,
+     "r": 5
+    }
+   ],
+   "ref": {
+    "q": 5,
+    "r": 3
+   },
+   "blocked": [
+    3
+   ]
+  },
+  "out": 4
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [],
+   "ref": {
+    "q": -4,
+    "r": 2
+   },
+   "blocked": []
+  },
+  "out": null
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [],
+   "ref": {
+    "q": -1,
+    "r": -4
+   },
+   "blocked": []
+  },
+  "out": null
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -5,
+     "r": 1
+    },
+    {
+     "ownerId": 2,
+     "q": 0,
+     "r": 3
+    },
+    {
+     "ownerId": 3,
+     "q": -2,
+     "r": -2
+    },
+    {
+     "ownerId": 4,
+     "q": 0,
+     "r": -3
+    },
+    {
+     "ownerId": 5,
+     "q": -5,
+     "r": -5
+    },
+    {
+     "ownerId": 6,
+     "q": 0,
+     "r": 4
+    }
+   ],
+   "ref": {
+    "q": -1,
+    "r": 3
+   },
+   "blocked": [
+    3
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -2,
+     "r": 4
+    },
+    {
+     "ownerId": 2,
+     "q": 4,
+     "r": -2
+    },
+    {
+     "ownerId": 3,
+     "q": 0,
+     "r": -5
+    },
+    {
+     "ownerId": 4,
+     "q": 1,
+     "r": 4
+    },
+    {
+     "ownerId": 5,
+     "q": 1,
+     "r": 1
+    },
+    {
+     "ownerId": 6,
+     "q": -1,
+     "r": 3
+    }
+   ],
+   "ref": {
+    "q": 3,
+    "r": 5
+   },
+   "blocked": []
+  },
+  "out": 4
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [],
+   "ref": {
+    "q": -5,
+    "r": 3
+   },
+   "blocked": []
+  },
+  "out": null
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 2,
+     "r": 3
+    },
+    {
+     "ownerId": 2,
+     "q": -5,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": 1,
+    "r": 5
+   },
+   "blocked": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [],
+   "ref": {
+    "q": 0,
+    "r": 0
+   },
+   "blocked": []
+  },
+  "out": null
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 3,
+     "r": -2
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": 4
+    },
+    {
+     "ownerId": 3,
+     "q": 4,
+     "r": -4
+    },
+    {
+     "ownerId": 4,
+     "q": 0,
+     "r": -1
+    }
+   ],
+   "ref": null,
+   "blocked": [
+    1
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 4,
+     "r": -4
+    },
+    {
+     "ownerId": 2,
+     "q": 5,
+     "r": -2
+    },
+    {
+     "ownerId": 3,
+     "q": 1,
+     "r": -2
+    }
+   ],
+   "ref": {
+    "q": 2,
+    "r": -2
+   },
+   "blocked": []
+  },
+  "out": 3
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 5,
+     "r": 3
+    }
+   ],
+   "ref": {
+    "q": -3,
+    "r": -3
+   },
+   "blocked": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": 0,
+     "r": 0
+    },
+    {
+     "ownerId": 2,
+     "q": 1,
+     "r": -2
+    },
+    {
+     "ownerId": 3,
+     "q": 5,
+     "r": -1
+    },
+    {
+     "ownerId": 4,
+     "q": 2,
+     "r": 3
+    },
+    {
+     "ownerId": 5,
+     "q": -3,
+     "r": 2
+    }
+   ],
+   "ref": {
+    "q": -3,
+    "r": -1
+   },
+   "blocked": [
+    1,
+    3,
+    5
+   ]
+  },
+  "out": 2
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -1,
+     "r": 3
+    }
+   ],
+   "ref": {
+    "q": 4,
+    "r": 5
+   },
+   "blocked": []
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -4,
+     "r": -2
+    },
+    {
+     "ownerId": 2,
+     "q": -3,
+     "r": 0
+    },
+    {
+     "ownerId": 3,
+     "q": -5,
+     "r": 5
+    },
+    {
+     "ownerId": 4,
+     "q": -4,
+     "r": -4
+    },
+    {
+     "ownerId": 5,
+     "q": -2,
+     "r": -1
+    },
+    {
+     "ownerId": 6,
+     "q": 2,
+     "r": 1
+    }
+   ],
+   "ref": {
+    "q": 2,
+    "r": -5
+   },
+   "blocked": [
+    3,
+    6
+   ]
+  },
+  "out": 5
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -2,
+     "r": 4
+    },
+    {
+     "ownerId": 2,
+     "q": -4,
+     "r": -1
+    },
+    {
+     "ownerId": 3,
+     "q": -1,
+     "r": -3
+    },
+    {
+     "ownerId": 4,
+     "q": -4,
+     "r": 5
+    }
+   ],
+   "ref": {
+    "q": -1,
+    "r": 1
+   },
+   "blocked": [
+    2
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "pickIronForcedWarTargetId",
+  "in": {
+   "candidates": [
+    {
+     "ownerId": 1,
+     "q": -1,
+     "r": 1
+    },
+    {
+     "ownerId": 2,
+     "q": 2,
+     "r": -2
+    },
+    {
+     "ownerId": 3,
+     "q": -4,
+     "r": -1
+    }
+   ],
+   "ref": {
+    "q": -4,
+    "r": 3
+   },
+   "blocked": [
+    2
+   ]
+  },
+  "out": 1
+ },
+ {
+  "fn": "isRestingFromBronzeForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": null
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromBronzeForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": 10
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromBronzeForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": 11
+  },
+  "out": true
+ },
+ {
+  "fn": "isRestingFromBronzeForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": 9
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromBronzeForcedWar",
+  "in": {
+   "cur": 0,
+   "rest": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromBronzeForcedWar",
+  "in": {
+   "cur": 5,
+   "rest": 20
+  },
+  "out": true
+ },
+ {
+  "fn": "isRestingFromIronForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": null
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromIronForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": 10
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromIronForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": 11
+  },
+  "out": true
+ },
+ {
+  "fn": "isRestingFromIronForcedWar",
+  "in": {
+   "cur": 10,
+   "rest": 9
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromIronForcedWar",
+  "in": {
+   "cur": 0,
+   "rest": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isRestingFromIronForcedWar",
+  "in": {
+   "cur": 5,
+   "rest": 20
+  },
+  "out": true
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 0,
+   "next": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 0,
+   "next": 1
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 0,
+   "next": 2
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 0,
+   "next": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 0,
+   "next": 4
+  },
+  "out": true
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 1,
+   "next": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 1,
+   "next": 1
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 1,
+   "next": 2
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 1,
+   "next": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 1,
+   "next": 4
+  },
+  "out": true
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 2,
+   "next": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 2,
+   "next": 1
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 2,
+   "next": 2
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 2,
+   "next": 3
+  },
+  "out": true
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 2,
+   "next": 4
+  },
+  "out": true
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 3,
+   "next": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 3,
+   "next": 1
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 3,
+   "next": 2
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 3,
+   "next": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 3,
+   "next": 4
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 4,
+   "next": 0
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 4,
+   "next": 1
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 4,
+   "next": 2
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 4,
+   "next": 3
+  },
+  "out": false
+ },
+ {
+  "fn": "isIronEraEntry",
+  "in": {
+   "prev": 4,
+   "next": 4
+  },
+  "out": false
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "FORCED_WAR_EPOCH_RELATION_BLOCK_THRESHOLD"
+  },
+  "out": 100
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE"
+  },
+  "out": 2
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_WYMUSZONA_ODPOCZYNEK_TUR"
+  },
+  "out": 20
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR"
+  },
+  "out": 20
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_WYMUSZONA_START_TURY_OD_EPOKI"
+  },
+  "out": 20
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR"
+  },
+  "out": 20
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "EPOKA_ZELAZO_NUMER"
+  },
+  "out": 3
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE"
+  },
+  "out": 2
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR"
+  },
+  "out": 20
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR"
+  },
+  "out": 20
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR"
+  },
+  "out": 20
+ },
+ {
+  "fn": "constant",
+  "in": {
+   "name": "WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI"
+  },
+  "out": 20
+ }
+]

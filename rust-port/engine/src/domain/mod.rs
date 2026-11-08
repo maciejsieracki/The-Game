@@ -103,6 +103,7 @@ pub mod war_all_in_capital_plan;
 pub mod war_city_founder;
 pub mod war_era_pool;
 pub mod war_forced_common;
+pub mod war_forced_pairing;
 pub mod war_forced_stone;
 pub mod war_home_defense;
 pub mod war_home_defense_plan;
