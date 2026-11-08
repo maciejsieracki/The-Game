@@ -1,0 +1,638 @@
+[
+ {
+  "fn": "rebuildEraWarCountsFromActivePairs",
+  "in": {
+   "pairs": [],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[]"
+ },
+ {
+  "fn": "rebuildEraWarCountsFromActivePairs",
+  "in": {
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"1:2\",1],[\"2:3\",1]]"
+ },
+ {
+  "fn": "rebuildEraWarCountsFromActivePairs",
+  "in": {
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 1,
+     "targetId": 3
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"1:2\",1],[\"2:3\",1],[\"3:1\",1]]"
+ },
+ {
+  "fn": "rebuildEraWarCountsFromActivePairs",
+  "in": {
+   "pairs": [
+    {
+     "attackerId": 0,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 0
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"0:1\",1],[\"2:3\",1],[\"3:1\",1]]"
+ },
+ {
+  "fn": "rebuildEraWarCountsFromActivePairs",
+  "in": {
+   "pairs": [
+    {
+     "attackerId": 2,
+     "targetId": 2
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"2:3\",1]]"
+ },
+ {
+  "fn": "restoreEraWarCounts",
+  "in": {
+   "saved": "undefined",
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 0
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"1:2\",1],[\"2:3\",1],[\"3:1\",1],[\"0:1\",1]]"
+ },
+ {
+  "fn": "restoreEraWarCounts",
+  "in": {
+   "saved": null,
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 0
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"1:2\",1],[\"2:3\",1],[\"3:1\",1],[\"0:1\",1]]"
+ },
+ {
+  "fn": "restoreEraWarCounts",
+  "in": {
+   "saved": {
+    "a": 1
+   },
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 0
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"1:2\",1],[\"2:3\",1],[\"3:1\",1],[\"0:1\",1]]"
+ },
+ {
+  "fn": "restoreEraWarCounts",
+  "in": {
+   "saved": "x",
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 0
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"1:2\",1],[\"2:3\",1],[\"3:1\",1],[\"0:1\",1]]"
+ },
+ {
+  "fn": "restoreEraWarCounts",
+  "in": {
+   "saved": [
+    [
+     "1:2",
+     2
+    ],
+    [
+     "2:3",
+     1
+    ],
+    [
+     "0:1",
+     0
+    ]
+   ],
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 0
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"1:2\",2],[\"2:3\",1],[\"0:1\",0]]"
+ },
+ {
+  "fn": "restoreEraWarCounts",
+  "in": {
+   "saved": [
+    [
+     "1:2",
+     2
+    ],
+    [
+     "0:1",
+     1
+    ],
+    [
+     "1:2",
+     5
+    ]
+   ],
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 0
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"1:2\",5],[\"0:1\",1]]"
+ },
+ {
+  "fn": "restoreEraWarCounts",
+  "in": {
+   "saved": [
+    [
+     "1:2",
+     2
+    ],
+    "bad",
+    [
+     "2:3",
+     "1"
+    ],
+    [
+     7,
+     1
+    ],
+    [
+     "0:1"
+    ],
+    [
+     "3:1",
+     null
+    ],
+    [
+     "5:1",
+     3
+    ]
+   ],
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 0
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"1:2\",2],[\"5:1\",3]]"
+ },
+ {
+  "fn": "restoreEraWarCounts",
+  "in": {
+   "saved": [],
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 0
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[]"
+ },
+ {
+  "fn": "recordEraForcedWarParticipation",
+  "in": {
+   "attackerId": 1,
+   "targetId": 2,
+   "attackerEpoch": 1,
+   "targetEpoch": 1
+  },
+  "out": "[[\"1:1\",1],[\"2:1\",1]]"
+ },
+ {
+  "fn": "recordEraForcedWarParticipation",
+  "in": {
+   "attackerId": 1,
+   "targetId": 2,
+   "attackerEpoch": 1,
+   "targetEpoch": 1
+  },
+  "out": "[[\"1:1\",2],[\"2:1\",2]]"
+ },
+ {
+  "fn": "recordEraForcedWarParticipation",
+  "in": {
+   "attackerId": 0,
+   "targetId": 3,
+   "attackerEpoch": 2,
+   "targetEpoch": 1
+  },
+  "out": "[[\"1:1\",2],[\"2:1\",2],[\"0:2\",1],[\"3:1\",1]]"
+ },
+ {
+  "fn": "recordEraForcedWarParticipation",
+  "in": {
+   "attackerId": 2,
+   "targetId": 2,
+   "attackerEpoch": 3,
+   "targetEpoch": 3
+  },
+  "out": "[[\"1:1\",2],[\"2:1\",2],[\"0:2\",1],[\"3:1\",1],[\"2:3\",2]]"
+ },
+ {
+  "fn": "recordEraForcedWarParticipation",
+  "in": {
+   "attackerId": 1,
+   "targetId": 3,
+   "attackerEpoch": 2,
+   "targetEpoch": 2
+  },
+  "out": "[[\"1:1\",2],[\"2:1\",2],[\"0:2\",1],[\"3:1\",1],[\"2:3\",2],[\"1:2\",1],[\"3:2\",1]]"
+ },
+ {
+  "fn": "eraWarCountFor",
+  "in": {
+   "ownerId": 1,
+   "epoch": 1,
+   "counts": [
+    [
+     "1:1",
+     2
+    ],
+    [
+     "2:1",
+     2
+    ],
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:1",
+     1
+    ],
+    [
+     "2:3",
+     2
+    ],
+    [
+     "1:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ]
+  },
+  "out": "2"
+ },
+ {
+  "fn": "eraWarCivKey",
+  "in": {
+   "ownerId": 1,
+   "epoch": 1
+  },
+  "out": "1:1"
+ },
+ {
+  "fn": "eraWarCountFor",
+  "in": {
+   "ownerId": 1,
+   "epoch": 2,
+   "counts": [
+    [
+     "1:1",
+     2
+    ],
+    [
+     "2:1",
+     2
+    ],
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:1",
+     1
+    ],
+    [
+     "2:3",
+     2
+    ],
+    [
+     "1:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ]
+  },
+  "out": "1"
+ },
+ {
+  "fn": "eraWarCivKey",
+  "in": {
+   "ownerId": 1,
+   "epoch": 2
+  },
+  "out": "1:2"
+ },
+ {
+  "fn": "eraWarCountFor",
+  "in": {
+   "ownerId": 9,
+   "epoch": 9,
+   "counts": [
+    [
+     "1:1",
+     2
+    ],
+    [
+     "2:1",
+     2
+    ],
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:1",
+     1
+    ],
+    [
+     "2:3",
+     2
+    ],
+    [
+     "1:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ]
+  },
+  "out": "0"
+ },
+ {
+  "fn": "eraWarCivKey",
+  "in": {
+   "ownerId": 9,
+   "epoch": 9
+  },
+  "out": "9:9"
+ },
+ {
+  "fn": "eraWarCountFor",
+  "in": {
+   "ownerId": 0,
+   "epoch": 1,
+   "counts": [
+    [
+     "1:1",
+     2
+    ],
+    [
+     "2:1",
+     2
+    ],
+    [
+     "0:2",
+     1
+    ],
+    [
+     "3:1",
+     1
+    ],
+    [
+     "2:3",
+     2
+    ],
+    [
+     "1:2",
+     1
+    ],
+    [
+     "3:2",
+     1
+    ]
+   ]
+  },
+  "out": "0"
+ },
+ {
+  "fn": "eraWarCivKey",
+  "in": {
+   "ownerId": 0,
+   "epoch": 1
+  },
+  "out": "0:1"
+ },
+ {
+  "fn": "restoreEraWarCounts",
+  "in": {
+   "saved": [
+    [
+     "1:2",
+     -3
+    ],
+    [
+     "0:1",
+     0
+    ]
+   ],
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 0
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[[\"1:2\",-3],[\"0:1\",0]]"
+ },
+ {
+  "fn": "restoreEraWarCounts",
+  "in": {
+   "saved": [
+    [
+     "1:2",
+     true
+    ],
+    [
+     "2:3",
+     [
+      1
+     ]
+    ],
+    [
+     "3:1",
+     {
+      "n": 1
+     }
+    ]
+   ],
+   "pairs": [
+    {
+     "attackerId": 1,
+     "targetId": 2
+    },
+    {
+     "attackerId": 3,
+     "targetId": 0
+    }
+   ],
+   "epochs": {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    "3": 1
+   }
+  },
+  "out": "[]"
+ }
+]
