@@ -71,7 +71,12 @@ check('ai.ts: prog sojuszu/paktu i kontekst stance',
 check('diplomacy.ts: prog i mnoznik willingnessAlly w aiDiplomacyStance',
   dip.includes('+ agresorDeltaSojusz,') && dip.includes('mnoznikWillingnessAlly(context.celAgresorAktywny === true)'));
 check('diplomacy-proposals.ts: prog sojuszu, paktu i stance proponenta',
-  prop.includes('deltaRelacjiSojusz(proponentAgresor)') && count(prop, 'deltaRelacjiSojusz(proponentAgresor)') === 2
+  // FALA 515 (R-WEB-DIPLO-NAP-UI-BORDER-THRESHOLD-Q1): prog PAKTU liczy wspolny helper napRelacjaProgEfektywny
+  // (diplomacy-proposals.ts:544-552), ktory sam dodaje deltaRelacjiSojusz(opts.proponentAgresor === true);
+  // wywolanie w ocenie paktu (linia ~1146) przekazuje `proponentAgresor`. Prog SOJUSZU nadal inline (1 wystapienie).
+  prop.includes('deltaRelacjiSojusz(proponentAgresor)') && count(prop, 'deltaRelacjiSojusz(proponentAgresor)') === 1
+  && prop.includes('+ deltaRelacjiSojusz(opts.proponentAgresor === true)') && count(prop, 'deltaRelacjiSojusz(') === 2
+  && /napRelacjaProgEfektywny\(p\.progNapRelacja, \{[^}]*\bproponentAgresor,/.test(prop)
   && prop.includes('const proponentAgresor = czyAgresorAktywny(proposerOwnerId, ctx.turn);'));
 check('UI panel: znacznik Agresor (N) z tooltipem konsekwencji',
   panel.includes('konsekwencje dyplomatyczne przez ') && panel.includes('agresorBadgeHtml(rel.agresorPozostaleTury)'));

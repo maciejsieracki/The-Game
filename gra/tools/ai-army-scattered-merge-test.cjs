@@ -248,7 +248,11 @@ const cloud = (n, q0, r0, step) => { const u = []; const side = Math.ceil(Math.s
     // Stabilizacja (R-WEB-TEST-TIMING-STABILIZE-Q1): kazdy pomiar = MIN z 5 prob, a prob PO i bez bramki
     // przeplatane (ten sam stan obciazenia CPU dla obu wariantow). Min odrzuca piki od rownoleglych procesow;
     // progi NIE sa luzowane, a realny wzrost kosztu przesuwa takze minimum (mutacja spowolnienia -> FAIL).
-    const TRIALS = 5;
+    // R-WEB-TEST-DEBT-REGRESSION-A-SYNC-Q1: 5 -> 11 prob. Statystyka (MIN z przeplatanych prob) i progi BEZ ZMIAN; wiecej prob
+    // zmniejsza szanse, ze na obciazonym hoscie (log FULLREG: czerwone w 2 przebiegach) KAZDA z prob wariantu PO trafi na pik
+    // CPU. Pomiar bazowy (czysty host): chmura 40 PO~51 ms vs bez bramki~15 ms => margines do progu (3x+10) to zaledwie ~2-3 ms,
+    // czyli koszt fazy zbierania (FALA 520) lezy tuz przy progu -- zgloszone w raporcie jako obserwacja (nie blad gry w tym temacie).
+    const TRIALS = 11;
     const minOf = (xs) => Math.min(...xs);
     const bench1 = (b, make, turns) => { reset(b); const r = play(b, make(), turns, { enemies: [ENEMY1] }); return r.aiMs / r.calls; };
     const stack40 = () => { const u = []; for (let i = 0; i < 40; i++) u.push(mk(10, 10)); return u; };

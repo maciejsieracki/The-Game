@@ -172,8 +172,8 @@ check(
   !/function rekrutUnitEquivalents\(/.test(mainTsSrc),
 );
 
-const buildHudStateMatch = mainTsSrc.match(/function buildHudState\(ownerId: number = ME\(\)\): HudState \{[\s\S]{0,20000}?\n {4}\}/);
-check('main.ts zawiera buildHudState(ownerId = ME()): HudState', buildHudStateMatch !== null);
+const buildHudStateMatch = mainTsSrc.match(/function buildHudStateRaw\(ownerId: number = ME\(\)\): HudState \{[\s\S]{0,20000}?\n {4}\}/);
+check('main.ts zawiera buildHudStateRaw(ownerId = ME()): HudState (FALA 525: buildHudState = cienki wrapper hudPureScope.run)', buildHudStateMatch !== null);
 const buildHudStateBody = buildHudStateMatch ? buildHudStateMatch[0] : '';
 check(
   'buildHudState zwraca rekrutEkw z epoki ps.era i mnożnika mpMults.costMult',

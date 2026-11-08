@@ -220,8 +220,11 @@ async function wheelAndPollScrollTop(page, sel, cx, cy, deltaY, scrollBefore, ti
 async function gotoPlaytestMapa(page) {
   await page.goto(OUT_HTML, { waitUntil: 'load', timeout: 120000 });
   await page.waitForSelector('.civ-hud, .civ-ux-frame, .civ-cs', { timeout: 120000 });
-  for (let i = 0; i < 90; i++) {
-    const overlayCount = await page.locator('text=Tworzenie świata').count();
+  // R-WEB-TEST-DEBT-REGRESSION-A-SYNC-Q1: czekamy na ZNIKNIECIE samego overlayu (.civ-map-load-overlay,
+  // mapLoadingOverlay.ts:197-198; tryb 'load' ma inny tytul niz „Tworzenie swiata"), do 240 s -- przy obciazonym
+  // hoscie 90 s po tekscie nie wystarczalo i klik trafial w overlay (log FULLREG: elementFromPoint -> civ-map-load-overlay).
+  for (let i = 0; i < 240; i++) {
+    const overlayCount = await page.locator('.civ-map-load-overlay').count();
     if (overlayCount === 0) break;
     await wait(1000);
   }
