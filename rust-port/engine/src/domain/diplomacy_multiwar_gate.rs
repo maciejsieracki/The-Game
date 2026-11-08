@@ -50,6 +50,40 @@ impl WarGateReason {
     }
 }
 
+/// Web `ForcedEraTag` (`'bronze' | 'stone' | 'iron'`): etykieta epoki wojny wymuszonej.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ForcedEraTag {
+    Bronze,
+    Stone,
+    Iron,
+}
+
+/// Web `WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.bronze` (R-WEB-ERA-DELAY-Q1).
+pub const ERA_FORCED_WAR_START_TURNS_BRONZE: f64 = 20.0;
+/// Web `WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.iron` (R-WEB-ERA-DELAY-Q1).
+pub const ERA_FORCED_WAR_START_TURNS_IRON: f64 = 20.0;
+
+/// Web `isEraForcedWarIgnoringR1`: wojna epoki Brazu/Zelaza omija R1 (`eraForcedWarIgnoreR1`
+/// = `["bronze","iron"]`); Kamien -> false (R1 zostaje); `None` (zwykle wypowiedzenie) -> false.
+pub fn is_era_forced_war_ignoring_r1(tag: Option<ForcedEraTag>) -> bool {
+    matches!(tag, Some(ForcedEraTag::Bronze) | Some(ForcedEraTag::Iron))
+}
+
+/// Web `isWarTreatyBlocked` (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1): wojna epoki blokuje
+/// WYLACZNIE aktywny sojusz; zwykle wypowiedzenie blokuje NAP albo blokada pokoju.
+pub fn is_war_treaty_blocked(
+    era_war: bool,
+    has_nap: bool,
+    peace_locked: bool,
+    has_alliance: bool,
+) -> bool {
+    if era_war {
+        has_alliance
+    } else {
+        has_nap || peace_locked
+    }
+}
+
 /// Web `InterCivWarGateInput`.
 #[derive(Debug, Clone, Copy)]
 pub struct InterCivWarGateInput {
@@ -59,12 +93,14 @@ pub struct InterCivWarGateInput {
     pub target_is_player: bool,
     pub target_era: f64,
     pub target_war_count: i64,
+    /// Web `eraTag` (`undefined`/`null` = zwykle wypowiedzenie, R1 obowiazuje).
+    pub era_tag: Option<ForcedEraTag>,
 }
 
-/// Web `evaluateInterCivWarGate`: R1, potem limit napastnika, potem limit celu
-/// (cel-gracz bez limitu; limit celu pomijany dla `target_is_player`).
+/// Web `evaluateInterCivWarGate`: R1 (omijany przez wojne epoki Brazu/Zelaza), potem limit
+/// napastnika, potem limit celu (cel-gracz bez limitu; limit celu pomijany dla `target_is_player`).
 pub fn evaluate_inter_civ_war_gate(inp: &InterCivWarGateInput) -> WarGateReason {
-    if !is_inter_civ_war_open_at_turn(inp.turn) {
+    if !is_inter_civ_war_open_at_turn(inp.turn) && !is_era_forced_war_ignoring_r1(inp.era_tag) {
         return WarGateReason::DelayR1;
     }
     if let Some(limit) = concurrent_war_limit_for_era(inp.attacker_era) {

@@ -56,6 +56,12 @@ fn intercivgate_vectors_match_web() {
                     target_is_player: input["targetIsPlayer"].as_bool().expect("bool"),
                     target_era: num(&input["targetEra"]),
                     target_war_count: int(&input["targetWarCount"]),
+                    era_tag: match input.get("eraTag").and_then(Value::as_str) {
+                        Some("bronze") => Some(ForcedEraTag::Bronze),
+                        Some("iron") => Some(ForcedEraTag::Iron),
+                        Some("stone") => Some(ForcedEraTag::Stone),
+                        _ => None,
+                    },
                 };
                 assert_eq!(
                     evaluate_inter_civ_war_gate(&inp).as_web_str(),
@@ -119,6 +125,7 @@ fn n_minus_1_n_n_plus_1_around_turn_40_and_stone_limit() {
         target_is_player: false,
         target_era: 2.0,
         target_war_count: 0,
+        era_tag: None,
     };
     assert_eq!(evaluate_inter_civ_war_gate(&base), WarGateReason::Ok);
     let at_limit = InterCivWarGateInput {

@@ -1,0 +1,2291 @@
+[
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "0",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "19",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "20",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "39",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "40",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "41",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "NaN",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "bronze"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "ok"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "iron"
+  },
+  "out": "stone_limit_attacker_r2"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "stone"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": null
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "0",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": false,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "evaluateInterCivWarGate",
+  "in": {
+   "turn": "undefined",
+   "attackerEra": "1",
+   "attackerWarCount": "1",
+   "targetIsPlayer": true,
+   "targetEra": "2",
+   "targetWarCount": "0",
+   "eraTag": "undefined"
+  },
+  "out": "delay_r1"
+ },
+ {
+  "fn": "isEraForcedWarIgnoringR1",
+  "in": {
+   "eraTag": "bronze"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isEraForcedWarIgnoringR1",
+  "in": {
+   "eraTag": "iron"
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isEraForcedWarIgnoringR1",
+  "in": {
+   "eraTag": "stone"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isEraForcedWarIgnoringR1",
+  "in": {
+   "eraTag": null
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isEraForcedWarIgnoringR1",
+  "in": {
+   "eraTag": "undefined"
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": false,
+   "hasNap": false,
+   "peaceLocked": false,
+   "hasAlliance": false
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": false,
+   "hasNap": false,
+   "peaceLocked": false,
+   "hasAlliance": true
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": false,
+   "hasNap": false,
+   "peaceLocked": true,
+   "hasAlliance": false
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": false,
+   "hasNap": false,
+   "peaceLocked": true,
+   "hasAlliance": true
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": false,
+   "hasNap": true,
+   "peaceLocked": false,
+   "hasAlliance": false
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": false,
+   "hasNap": true,
+   "peaceLocked": false,
+   "hasAlliance": true
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": false,
+   "hasNap": true,
+   "peaceLocked": true,
+   "hasAlliance": false
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": false,
+   "hasNap": true,
+   "peaceLocked": true,
+   "hasAlliance": true
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": true,
+   "hasNap": false,
+   "peaceLocked": false,
+   "hasAlliance": false
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": true,
+   "hasNap": false,
+   "peaceLocked": false,
+   "hasAlliance": true
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": true,
+   "hasNap": false,
+   "peaceLocked": true,
+   "hasAlliance": false
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": true,
+   "hasNap": false,
+   "peaceLocked": true,
+   "hasAlliance": true
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": true,
+   "hasNap": true,
+   "peaceLocked": false,
+   "hasAlliance": false
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": true,
+   "hasNap": true,
+   "peaceLocked": false,
+   "hasAlliance": true
+  },
+  "out": "true"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": true,
+   "hasNap": true,
+   "peaceLocked": true,
+   "hasAlliance": false
+  },
+  "out": "false"
+ },
+ {
+  "fn": "isWarTreatyBlocked",
+  "in": {
+   "eraWar": true,
+   "hasNap": true,
+   "peaceLocked": true,
+   "hasAlliance": true
+  },
+  "out": "true"
+ },
+ {
+  "fn": "eraForcedWarStartTurnsFromEra",
+  "in": {
+   "tag": "bronze"
+  },
+  "out": "20"
+ },
+ {
+  "fn": "eraForcedWarStartTurnsFromEra",
+  "in": {
+   "tag": "iron"
+  },
+  "out": "20"
+ }
+]
