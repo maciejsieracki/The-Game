@@ -1,13 +1,20 @@
-//! P6.8I: port `relief-preserving-improvements.ts` (wersja z PINA 91dc998a).
+//! P6.8I: port `relief-preserving-improvements.ts`. REPIN-AUTOIMPROVE (hunki 84-85, web main 180c08305): dodany
+//! `oboz_lowiecki` (R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1 - warstwy `['tartak','oboz_lowiecki']`).
 //!
 //! Ulepszenia, ktore NIE splaszczaja wzgorza/gory pod soba: jawne klucze
-//! (bydlo / owce / lama / kamieniolom / tartak) oraz prefiks `kopalnia_*` i legacy `kopalnia`.
+//! (bydlo / owce / lama / kamieniolom / tartak / oboz_lowiecki) oraz prefiks `kopalnia_*` i legacy `kopalnia`.
 //! Pusta lista warstw = `false`. Porownanie kluczy: dokladna rownosc / `starts_with` na bajtach
 //! UTF-8 (odpowiednik `Set.has` i `String.prototype.startsWith` dla tych danych).
 
-/// Jawne klucze BEZ prefiksu "kopalnia" (pin 91dc998a: hodowla solo, kamieniolom, tartak).
-const PRESERVES_HILL_RELIEF_EXPLICIT_KEYS: [&str; 5] =
-    ["bydlo", "owce", "lama", "kamieniolom", "tartak"];
+/// Jawne klucze BEZ prefiksu "kopalnia" (hodowla solo, kamieniolom, tartak, oboz lowiecki).
+const PRESERVES_HILL_RELIEF_EXPLICIT_KEYS: [&str; 6] = [
+    "bydlo",
+    "owce",
+    "lama",
+    "kamieniolom",
+    "tartak",
+    "oboz_lowiecki",
+];
 
 const KOPALNIA_PREFIX: &str = "kopalnia_";
 /// Legacy uniwersalna "kopalnia" (stare zapisy/migracje).

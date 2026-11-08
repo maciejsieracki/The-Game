@@ -1,6 +1,6 @@
 //! P6.8I partia 8I-P1 - predykat reliefu `preservesHillReliefKey` / `preservesHillRelief`.
-//! Wektory z URUCHOMIONEGO weba (pin 91dc998a): `tests/p6_8i_vectors/relief.json`, generator:
-//! `dyspozycje/autobot/runs/R-RUSTPORT-P6-8I-AUTO-ULEPSZENIA-Q1/gen-p6-8i-relief-vectors.mjs`.
+//! Wektory z URUCHOMIONEGO weba (REPIN-AUTOIMPROVE, pin web main 180c08305): `tests/p6_8i_vectors/relief.json`,
+//! generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1/tools/gen-repin-autoimpr-relief-vectors.mjs`.
 
 use civ_engine::domain::auto_improvements::relief_preserving::{
     preserves_hill_relief, preserves_hill_relief_key,
@@ -14,8 +14,8 @@ fn doc() -> Value {
 }
 
 #[test]
-fn vectors_pin_is_91dc998a() {
-    assert_eq!(doc()["pin"].as_str(), Some("91dc998a"));
+fn vectors_pin_is_web_main_180c08305() {
+    assert_eq!(doc()["pin"].as_str(), Some("180c08305"));
 }
 
 #[test]
@@ -53,18 +53,18 @@ fn layers_predicate_matches_pinned_web_vectors() {
 
 #[test]
 fn explicit_keys_and_legacy_kopalnia() {
-    for k in ["bydlo", "owce", "lama", "kamieniolom", "tartak", "kopalnia"] {
+    for k in [
+        "bydlo",
+        "owce",
+        "lama",
+        "kamieniolom",
+        "tartak",
+        "oboz_lowiecki",
+        "kopalnia",
+    ] {
         assert!(preserves_hill_relief_key(k), "{k}");
     }
-    for k in [
-        "farma",
-        "wyrab",
-        "droga",
-        "fort",
-        "glinianka",
-        "stadnina",
-        "oboz_lowiecki",
-    ] {
+    for k in ["farma", "wyrab", "droga", "fort", "glinianka", "stadnina"] {
         assert!(!preserves_hill_relief_key(k), "{k}");
     }
 }

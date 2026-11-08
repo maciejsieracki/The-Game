@@ -1,6 +1,6 @@
-//! P6.8I (8I-P1/P2) - picker auto-ulepszen. Wektory z URUCHOMIONEGO weba (pin 23dd158e9):
+//! P6.8I (8I-P1/P2) - picker auto-ulepszen. Wektory z URUCHOMIONEGO weba (REPIN-AUTOIMPROVE, pin web main 180c08305):
 //! `tests/p6_8i_vectors/pick.json` (scenariusze `pickAutoImprovements`) i `helpers.json` (helpery P1),
-//! generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-8I-AUTO-ULEPSZENIA-Q1/gen-p6-8i-pick-vectors.mjs`.
+//! generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1/tools/gen-repin-autoimpr-pick-vectors.mjs`.
 //! Kodowanie liczb: skonczona -> liczba, NaN/Infinity/-Infinity -> napis.
 
 use std::cell::RefCell;
@@ -11,10 +11,12 @@ use civ_engine::domain::auto_improvements::{
     actionable_deficit_keys, deficit_improvement_keys, has_non_food_resource_deficit,
     is_city_limit_exhausted, pick_auto_improvements, priorities_for_ulepszenia_focus,
     AutoImprovementCity, AutoImprovementSurplusReport, FoodStages, PickAutoImprovementsOpts,
-    UlepszeniaFocus, AI_IMPROVEMENT_PRIORITY, AUTO_ULEPSZENIA_PRACA_RESERVE,
-    FOOD_STAGE_MAX_ITEMS_PER_CITY, FORT_CLAIM_MIN_NEW_HEXES, IMPROVEMENT_FOR_DEFICIT,
-    JEDEN_NA_ILU_OBYWATELI, ROAD_KEYS, ULEPSZENIA_FOCUS_ZYWNOSC, ULEPSZENIA_ZYWNOSCIOWE,
-    WYRAB_MIN_FOREST_IN_RADIUS, ZERO_YIELD_IMPROVEMENTS,
+    UlepszeniaFocus, AI_IMPROVEMENT_PRIORITY, AI_RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY,
+    AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR, AUTO_ULEPSZENIA_PRACA_RESERVE, FOOD_IMPROVEMENT_KEYS,
+    FORT_CLAIM_MIN_NEW_HEXES, IMPROVEMENT_FOR_DEFICIT, JEDEN_NA_ILU_OBYWATELI,
+    RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY, RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR, ROAD_KEYS,
+    ULEPSZENIA_FOCUS_ZYWNOSC, ULEPSZENIA_ZYWNOSCIOWE, WYRAB_MIN_FOREST_IN_RADIUS,
+    ZERO_YIELD_IMPROVEMENTS,
 };
 use civ_engine::domain::improvement_build::{terrain_from_web_value, BuildHex, BuildMap};
 use civ_engine::domain::start_position::Overlay;
@@ -122,7 +124,6 @@ fn run_scenario(s: &Value, maps: &[BuildMap]) -> (Vec<Pick>, Option<AutoImprovem
             r: c["r"].as_i64().unwrap() as i32,
             population: num(&c["population"]),
             ulepszenia_focus: c["focus"].as_str().map(focus_from),
-            ulepszenia_only_worked: c["onlyWorked"].as_bool(),
             kon_stock: c.get("kon").and_then(Value::as_f64),
         })
         .collect();
@@ -165,11 +166,6 @@ fn run_scenario(s: &Value, maps: &[BuildMap]) -> (Vec<Pick>, Option<AutoImprovem
             .map(focus_from)
             .unwrap_or_else(|| c.ulepszenia_focus.unwrap_or(DEFAULT_ULEPSZENIA_FOCUS))
     };
-    let only_worked_fn = |c: &AutoImprovementCity| {
-        by_id(&fnv["onlyWorkedByCity"], &c.id)
-            .and_then(Value::as_bool)
-            .unwrap_or_else(|| c.ulepszenia_only_worked.unwrap_or(false))
-    };
     let worked_fn = |c: &AutoImprovementCity| -> BTreeSet<String> {
         by_id(&fnv["workedKeysByCity"], &c.id)
             .map(|v| strings(v).into_iter().collect())
@@ -179,16 +175,6 @@ fn run_scenario(s: &Value, maps: &[BuildMap]) -> (Vec<Pick>, Option<AutoImprovem
         by_id(&fnv["pracaPercentByCity"], &c.id)
             .map(num)
             .unwrap_or_else(|| opt_num(&so["pracaBudgetPercent"]).unwrap_or(100.0))
-    };
-    let skip_fn = |c: &AutoImprovementCity| {
-        by_id(&fnv["skipWyrabByCity"], &c.id)
-            .and_then(Value::as_bool)
-            .unwrap_or(false)
-    };
-    let res_only_fn = |c: &AutoImprovementCity| {
-        by_id(&fnv["resourcePassOnlyWorkedByCity"], &c.id)
-            .and_then(Value::as_bool)
-            .unwrap_or(false)
     };
     let deny: Vec<String> = fnv["civDeny"]
         .as_array()
@@ -206,15 +192,12 @@ fn run_scenario(s: &Value, maps: &[BuildMap]) -> (Vec<Pick>, Option<AutoImprovem
         praca_available: num(&s["praca"]),
         unlocked_techs: strings(&s["techs"]).into_iter().collect(),
         get_focus: fnv.get("focusByCity").map(|_| &focus_fn as _),
-        get_only_worked: fnv.get("onlyWorkedByCity").map(|_| &only_worked_fn as _),
         get_worked_hex_keys: fnv.get("workedKeysByCity").map(|_| &worked_fn as _),
         praca_budget_percent: opt_num(&so["pracaBudgetPercent"]),
         improvement_budget_cap: opt_num(&so["improvementBudgetCap"]),
         get_praca_budget_percent: fnv.get("pracaPercentByCity").map(|_| &pct_fn as _),
-        max_items_per_city: opt_num(&so["maxItemsPerCity"]),
         praca_surplus_threshold: opt_num(&so["pracaSurplusThreshold"]),
         skip_wyrab: flag("skipWyrab"),
-        get_skip_wyrab: fnv.get("skipWyrabByCity").map(|_| &skip_fn as _),
         demand_driven: flag("demandDriven"),
         resource_deficit_keys: so["resourceDeficitKeys"]
             .as_array()
@@ -245,10 +228,10 @@ fn run_scenario(s: &Value, maps: &[BuildMap]) -> (Vec<Pick>, Option<AutoImprovem
         river_hexes_only: flag("riverHexesOnly"),
         off_river_clearing: flag("offRiverClearing"),
         irrigation_needs_farm: flag("irrigationNeedsFarm"),
-        get_resource_pass_only_worked: fnv
-            .get("resourcePassOnlyWorkedByCity")
-            .map(|_| &res_only_fn as _),
-        farm_priority_only_worked: None,
+        river_clear_no_citizen_pass: flag("riverClearNoCitizenPass"),
+        river_clear_no_citizen_max_per_city: opt_num(&so["riverClearNoCitizenMaxPerCity"]),
+        river_clear_no_citizen_pool_floor: opt_num(&so["riverClearNoCitizenPoolFloor"]),
+        road_plan_memo: None,
     };
     let picks = pick_auto_improvements(&opts);
     let out: Vec<Pick> = picks
@@ -256,7 +239,7 @@ fn run_scenario(s: &Value, maps: &[BuildMap]) -> (Vec<Pick>, Option<AutoImprovem
         .map(|p| (p.city_id, p.q, p.r, p.key, p.koszt_praca, p.owner_id))
         .collect();
     let report = if flag("withSurplusReport") {
-        Some(*report_cell.borrow())
+        Some(report_cell.borrow().clone())
     } else {
         None
     };
@@ -294,11 +277,11 @@ fn expected_picks(v: &Value) -> Vec<Pick> {
 }
 
 #[test]
-fn vectors_pin_is_23dd158e9() {
+fn vectors_pin_is_web_main_180c08305() {
     let d: Value = serde_json::from_str(PICK).unwrap();
-    assert_eq!(d["pin"].as_str(), Some("23dd158e9"));
+    assert_eq!(d["pin"].as_str(), Some("180c08305"));
     let h: Value = serde_json::from_str(HELPERS).unwrap();
-    assert_eq!(h["pin"].as_str(), Some("23dd158e9"));
+    assert_eq!(h["pin"].as_str(), Some("180c08305"));
 }
 
 #[test]
@@ -312,16 +295,26 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
         .collect();
     let scenarios = d["scenarios"].as_array().unwrap();
     assert!(
-        scenarios.len() >= 2227,
+        scenarios.len() >= 5100,
         "za malo scenariuszy: {}",
         scenarios.len()
     );
+    // `P6_8I_ONLY=ci-,rc-` - tylko scenariusze o podanych prefiksach nazw (szybkie mutacje; bez zmiennej: komplet).
+    let only: Option<Vec<String>> = std::env::var("P6_8I_ONLY")
+        .ok()
+        .map(|v| v.split(',').map(str::to_owned).collect());
     let mut bad: Vec<String> = Vec::new();
     let mut nonempty = 0;
-    // Tryb OSTRY (REPIN-TERYTORIUM-FORTY): bez tolerancji dryfu; promienie fort/posterunek = 5/3 (pin 23dd158e9).
+    // Tryb OSTRY (REPIN-TERYTORIUM-FORTY): bez tolerancji dryfu; promienie fort/posterunek = 5/3.
     assert_eq!(city_territory_radius(&fort_probe(true)), 5.0);
     assert_eq!(city_territory_radius(&fort_probe(false)), 3.0);
     for s in scenarios {
+        if let Some(prefixes) = &only {
+            let name = s["name"].as_str().unwrap();
+            if !prefixes.iter().any(|p| name.starts_with(p.as_str())) {
+                continue;
+            }
+        }
         let (got, report) = run_scenario(s, &maps);
         if let Ok(prefix) = std::env::var("P6_8I_DUMP") {
             if s["name"].as_str().unwrap().starts_with(&prefix) {
@@ -343,7 +336,9 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
             ok &= r.demand_active == b("demandActive")
                 && r.deficit_active == b("deficitActive")
                 && r.any_candidate == b("anyCandidate")
-                && r.surplus == b("surplus");
+                && r.surplus == b("surplus")
+                && r.filter_waiting_keys.iter().cloned().collect::<Vec<_>>()
+                    == strings(&w["filterWaitingKeys"]);
         }
         if !ok {
             bad.push(format!(
@@ -360,7 +355,7 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
         }
     }
     assert!(
-        nonempty >= 1000,
+        only.is_some() || nonempty >= 1000,
         "za malo niepustych scenariuszy: {nonempty}"
     );
     assert!(
@@ -401,9 +396,22 @@ fn helper_constants_match_web() {
         num(&c["AUTO_ULEPSZENIA_PRACA_RESERVE"]),
         AUTO_ULEPSZENIA_PRACA_RESERVE
     );
+    assert_eq!(strings(&c["FOOD_IMPROVEMENT_KEYS"]), FOOD_IMPROVEMENT_KEYS);
     assert_eq!(
-        num(&c["FOOD_STAGE_MAX_ITEMS_PER_CITY"]),
-        FOOD_STAGE_MAX_ITEMS_PER_CITY
+        num(&c["RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY"]),
+        RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY
+    );
+    assert_eq!(
+        num(&c["RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR"]),
+        RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR
+    );
+    assert_eq!(
+        num(&c["AI_RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY"]),
+        AI_RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY
+    );
+    assert_eq!(
+        num(&c["AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR"]),
+        AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR
     );
     assert_eq!(
         num(&c["FORT_CLAIM_MIN_NEW_HEXES"]),

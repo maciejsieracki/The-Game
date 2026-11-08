@@ -1,5 +1,5 @@
 {
-  "pin": "91dc998a",
+  "pin": "180c08305",
   "source": "gra/src/game/relief-preserving-improvements.ts",
   "keyCases": [
     {
@@ -128,7 +128,7 @@
     },
     {
       "key": "oboz_lowiecki",
-      "expected": false
+      "expected": true
     },
     {
       "key": "kopalnia_żółta",
@@ -137,6 +137,34 @@
     {
       "key": "kopalnia_miedzi",
       "expected": true
+    },
+    {
+      "key": "oboz_lowieck",
+      "expected": false
+    },
+    {
+      "key": "oboz_lowieckie",
+      "expected": false
+    },
+    {
+      "key": "Oboz_lowiecki",
+      "expected": false
+    },
+    {
+      "key": " oboz_lowiecki",
+      "expected": false
+    },
+    {
+      "key": "oboz_lowiecki ",
+      "expected": false
+    },
+    {
+      "key": "oboz",
+      "expected": false
+    },
+    {
+      "key": "oboz_lowiecki_x",
+      "expected": false
     }
   ],
   "layerCases": [
@@ -241,6 +269,55 @@
         "droga"
       ],
       "expected": false
+    },
+    {
+      "layers": [
+        "oboz_lowiecki"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "tartak",
+        "oboz_lowiecki"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "oboz_lowiecki",
+        "tartak"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "oboz_lowiecki",
+        "farma"
+      ],
+      "expected": false
+    },
+    {
+      "layers": [
+        "farma",
+        "oboz_lowiecki"
+      ],
+      "expected": false
+    },
+    {
+      "layers": [
+        "oboz_lowiecki",
+        "oboz_lowiecki"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "tartak",
+        "oboz_lowiecki",
+        "kopalnia_miedzi"
+      ],
+      "expected": true
     }
   ]
 }

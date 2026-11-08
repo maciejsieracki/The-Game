@@ -1,10 +1,10 @@
-//! P6.8I (8I-P2b, cz. 3): fazy per-miasto `pickAutoImprovementsSinglePass` (pin 4bbef081d): FAZA 0 obrona,
+//! P6.8I (8I-P2b, cz. 3): fazy per-miasto `pickAutoImprovementsSinglePass` (REPIN-AUTOIMPROVE: web 180c08305): FAZA 0 obrona,
 //! KROK 0 + FAZA 1 heks po heksie, FAZA 2 wyrab po typie, sonda nadwyzki (ZASADA 3).
 
 use super::city_phases::{count_forest, hex_dist, pop_or_zero, Acc, CityEnv};
 use super::opts::{AutoImprovementCity, AutoImprovementPick, PickAutoImprovementsOpts};
 use super::single_pass::{in_zero_yield, Shared};
-use super::{js_max, territory_radius_pin, JEDEN_NA_ILU_OBYWATELI, WYRAB_MIN_FOREST_IN_RADIUS};
+use super::{territory_radius_pin, WYRAB_MIN_FOREST_IN_RADIUS};
 use crate::domain::improvement_build::get_improvement_meta;
 use crate::domain::improvement_build::PlacedLayers;
 use crate::domain::start_position::Overlay;
@@ -82,10 +82,10 @@ pub(super) fn push_pick(
     });
     acc.praca_left -= koszt;
     acc.global_spent += koszt;
-    acc.placed_this_city += 1.0;
 }
 
-/// FAZA 0 - OBRONA (posterunek/fort na granicy zasiegu miasta, pulap `ceil(pop/10)`).
+/// FAZA 0 - OBRONA (posterunek/fort na granicy zasiegu miasta). Pulap `defenseCap = ceil(pop/10)` ZLIKWIDOWANY
+/// (hunki 16, 28, 32, 33, 38-40, 61-67: limitem zostaje budzet Pracy, `plonowe >= pop` i reguly polozenia).
 pub(super) fn phase_defense(
     sh: &mut Shared,
     env: &CityEnv,
@@ -104,7 +104,6 @@ pub(super) fn phase_defense(
         return;
     }
     let zero_start = acc.picks.len();
-    let defense_cap = js_max(1.0, (pop / JEDEN_NA_ILU_OBYWATELI).ceil());
     let mut border: Vec<(i32, i32)> = env.candidate_hexes.clone();
     border.sort_by(|a, b| {
         hex_dist(&env.city, b.0, b.1)
@@ -114,7 +113,7 @@ pub(super) fn phase_defense(
             .then(a.1.cmp(&b.1))
     });
     for key in &env.defense_priority {
-        if acc.global_spent >= env.effective_city_cap || acc.placed_this_city >= env.max_items {
+        if acc.global_spent >= env.effective_city_cap {
             break;
         }
         if acc.praca_left <= env.reserve {
@@ -126,18 +125,7 @@ pub(super) fn phase_defense(
         if !sh.tech_ok(key) || !sh.civ_ok(key) {
             continue;
         }
-        let have = env
-            .radius_hexes
-            .iter()
-            .filter(|&&(q, r)| sh.hex_layers_contain(&format!("{q},{r}"), key))
-            .count() as f64;
-        if have >= defense_cap {
-            continue;
-        }
         for &(q, r) in &border {
-            if acc.placed_this_city >= env.max_items {
-                break;
-            }
             if meta.koszt_praca > acc.praca_left {
                 break;
             }
@@ -210,7 +198,6 @@ pub(super) fn phase_defense(
         acc.picks.remove(idx);
         acc.praca_left += pk.koszt_praca;
         acc.global_spent -= pk.koszt_praca;
-        acc.placed_this_city -= 1.0;
         let hk = format!("{},{}", pk.q, pk.r);
         if let Some(placed) = sh.state.placed_improvements.as_mut() {
             let left: Vec<String> = match placed.get(&hk) {
@@ -246,10 +233,7 @@ pub(super) fn phase_hexes(
     opts: &PickAutoImprovementsOpts,
 ) {
     for &(q, r) in &env.ordered_hexes {
-        if acc.global_spent >= env.effective_city_cap
-            || acc.placed_this_city >= env.max_items
-            || acc.praca_left <= env.reserve
-        {
+        if acc.global_spent >= env.effective_city_cap || acc.praca_left <= env.reserve {
             acc.city_budget_exhausted = true;
             break;
         }
@@ -264,6 +248,10 @@ pub(super) fn phase_hexes(
                     && sh.qualifies("wyrab", q, r)
                 {
                     push_pick(acc, opts, &env.city, (q, r), "wyrab", meta.koszt_praca);
+                    if env.is_river_no_citizen_clear_hex(sh, q, r) {
+                        env.river_no_citizen_clears
+                            .set(env.river_no_citizen_clears.get() + 1.0);
+                    }
                     acc.scheduled_wyrab.insert(hex_key);
                     acc.forest_left -= 1.0;
                     continue;
@@ -271,7 +259,7 @@ pub(super) fn phase_hexes(
             }
         }
         for key in &env.hex_phase_priority {
-            if acc.global_spent >= env.effective_city_cap || acc.placed_this_city >= env.max_items {
+            if acc.global_spent >= env.effective_city_cap {
                 acc.city_budget_exhausted = true;
                 break;
             }
@@ -365,10 +353,7 @@ pub(super) fn phase_wyrab_by_type(
     if forest_count < WYRAB_MIN_FOREST_IN_RADIUS {
         return;
     }
-    while acc.global_spent < env.effective_city_cap
-        && acc.placed_this_city < env.max_items
-        && meta.koszt_praca <= acc.praca_left
-    {
+    while acc.global_spent < env.effective_city_cap && meta.koszt_praca <= acc.praca_left {
         if acc.praca_left - meta.koszt_praca < env.reserve {
             break;
         }
@@ -405,9 +390,12 @@ pub(super) fn phase_wyrab_by_type(
                 key: key.to_owned(),
                 koszt_praca: meta.koszt_praca,
             });
+            if env.is_river_no_citizen_clear_hex(sh, q, r) {
+                env.river_no_citizen_clears
+                    .set(env.river_no_citizen_clears.get() + 1.0);
+            }
             acc.praca_left -= meta.koszt_praca;
             acc.global_spent += meta.koszt_praca;
-            acc.placed_this_city += 1.0;
             acc.scheduled_wyrab.insert(hk);
             placed_one = true;
             break;
@@ -451,6 +439,39 @@ pub(super) fn phase_probe(sh: &Shared, env: &CityEnv, acc: &Acc, opts: &PickAuto
                 continue;
             }
             sr.borrow_mut().any_candidate = true;
+            break;
+        }
+    }
+    // Hunk 83 (Q3, wskaznik niewydanego budzetu): gdy nadal brak kandydatow, a regula obywateli jest aktywna
+    // (`foodWorkedKeys`), policz heksy promienia, ktore odpadly WYLACZNIE przez `hexAllowsKey`. Nie dodaje pickow.
+    if sr.borrow().any_candidate || env.food_worked_keys.is_none() {
+        return;
+    }
+    for &(q, r) in &env.radius_hexes {
+        let hex_key = format!("{q},{r}");
+        if sr.borrow().filter_waiting_keys.contains(&hex_key) {
+            continue;
+        }
+        for key in &env.hex_phase_priority {
+            if env.hex_allows_key(sh, q, r, key) {
+                continue;
+            }
+            if get_improvement_meta(key).is_none() {
+                continue;
+            }
+            if !sh.tech_ok(key) || !sh.civ_ok(key) {
+                continue;
+            }
+            if sh.hex_layers_contain(&hex_key, key) {
+                continue;
+            }
+            if env.key_blocked_on_hex(sh, acc, key, &hex_key) {
+                continue;
+            }
+            if !sh.qualifies(key, q, r) {
+                continue;
+            }
+            sr.borrow_mut().filter_waiting_keys.insert(hex_key.clone());
             break;
         }
     }

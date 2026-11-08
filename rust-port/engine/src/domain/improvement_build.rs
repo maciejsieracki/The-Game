@@ -644,6 +644,33 @@ pub fn hex_has_clay_deposit(hex: &BuildHex) -> bool {
             .is_some_and(|zloze| js_trim(zloze).to_lowercase() == k::ZLOZE_GLINA)
 }
 
+/// Web `hexHasHorseDeposit` (`terrain-improvements.ts`, R-WEB-STADNINA-KONIE-STARE-ZAPISY-Q1; REPIN-AUTOIMPROVE hunki
+/// 52, 55, 99, 100): zloze konia = nakladka `ZlozeKonia` (nowe mapy) LUB `zloze === 'konie'` po
+/// trim/lowercase (stare zapisy: kon pod lasem, las zostaje).
+pub fn hex_has_horse_deposit(hex: &BuildHex) -> bool {
+    crate::domain::improvements::hex_has_horse_deposit_like(Some(hex.overlay), hex.zloze.as_deref())
+}
+
+/// Web `isOutpostPlacementAllowed` (`game/fort-territory.ts`, R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1): heks musi
+/// nalezec do terytorium `owner_id` ORAZ przylegac do jego granicy (>= 1 z 6 sasiadow NIE jest jego terytorium).
+/// Brak wezlow terytorium -> `false`.
+pub fn is_outpost_placement_allowed(
+    q: i32,
+    r: i32,
+    owner_id: i64,
+    all_nodes: &[TerritoryNode],
+) -> bool {
+    if all_nodes.is_empty() {
+        return false;
+    }
+    if territory_owner_at(q, r, all_nodes) != Some(owner_id) {
+        return false;
+    }
+    [(1, 0), (-1, 0), (0, 1), (0, -1), (1, -1), (-1, 1)]
+        .iter()
+        .any(|(dq, dr)| territory_owner_at(q + dq, r + dr, all_nodes) != Some(owner_id))
+}
+
 /// Web `hexHasDepositReserve` (`:763`).
 pub fn hex_has_deposit_reserve(hex: &BuildHex) -> bool {
     if hex.zloze.as_deref().is_some_and(|zloze| !zloze.is_empty()) {
@@ -670,7 +697,7 @@ pub fn deposit_allows_player_improvement(key: &str, hex: &BuildHex) -> bool {
         k::BYDLO => nakladka == Overlay::ZlozeBydla,
         k::OWCE => nakladka == Overlay::ZlozeOwiec,
         k::LAMA => nakladka == Overlay::ZlozeLamy,
-        k::STADNINA => nakladka == Overlay::ZlozeKonia,
+        k::STADNINA => hex_has_horse_deposit(hex),
         k::OBOZ_LOWIECKI => nakladka == Overlay::Las,
         _ => false,
     }
@@ -791,6 +818,24 @@ pub fn is_livestock_unlocked_for_placement(
         return nakladka == Overlay::ZlozeKonia
             || trade_route_kon_unlocked
             || horse_stock_available >= hod.stadnina_koszt_koni;
+    }
+    true
+}
+
+/// Web `isLivestockUnlockedForPlacement` (`livestock-unlock.ts:162`) z calym heksem: zloze konia przez
+/// `hexHasHorseDeposit` (takze stare zapisy `zloze === 'konie'`). Wariant `nakladka`-only powyzej zostaje (P6.16).
+pub fn is_livestock_unlocked_for_placement_hex(
+    improvement_key: &str,
+    hex: &BuildHex,
+    trade_route_kon_unlocked: bool,
+    horse_stock_available: f64,
+) -> bool {
+    let norm = normalize_improvement_key(Some(improvement_key))
+        .unwrap_or_else(|| improvement_key.to_owned());
+    if norm == k::STADNINA {
+        return hex_has_horse_deposit(hex)
+            || trade_route_kon_unlocked
+            || horse_stock_available >= tables().file.hodowla.stadnina_koszt_koni;
     }
     true
 }
@@ -1083,7 +1128,12 @@ impl<'a> Qualifier<'a> {
             return true;
         }
         for (nq, nr) in hex_neighbors(q, r) {
-            if self.river_hex_set.contains(&hex_key(nq, nr)) {
+            let nk = hex_key(nq, nr);
+            if self.river_hex_set.contains(&nk) {
+                return true;
+            }
+            // R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1 (`isHexNearRiver`): sasiad z wlasnym `rzeka.obecna` tez.
+            if self.state.map.hex(&nk).is_some_and(|hex| hex.river_present) {
                 return true;
             }
         }
@@ -1161,9 +1211,9 @@ impl<'a> Qualifier<'a> {
 
         let livestock_ok = |hex: &BuildHex| {
             is_livestock_allowed(state.player_civ_archetype.as_deref(), key, self.player_era)
-                && is_livestock_unlocked_for_placement(
+                && is_livestock_unlocked_for_placement_hex(
                     key,
-                    hex.overlay,
+                    hex,
                     self.trade_route_kon_unlocked,
                     self.horse_stock_available,
                 )
@@ -1207,7 +1257,24 @@ impl<'a> Qualifier<'a> {
                     && self.in_player_territory(q, r)
                     && self.is_road_qualified(q, r)
             }
-            k::POSTERUNEK | k::FORT => {
+            // R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1 (REPIN-AUTOIMPROVE, hunki 61-67: "reguly polozenia posterunku"):
+            // POSTERUNEK tylko na wlasnym terytorium PRZY GRANICY (`isOutpostPlacementAllowed`); FORT bez zmian.
+            k::POSTERUNEK => {
+                let fallback: Vec<TerritoryNode>;
+                let outpost_nodes: &[TerritoryNode] = if self.territory_nodes.is_empty() {
+                    fallback = state
+                        .city_nodes
+                        .iter()
+                        .map(|c| TerritoryNode::new(c.clone(), self.player_owner_id_num))
+                        .collect();
+                    &fallback
+                } else {
+                    self.territory_nodes
+                };
+                t.teren_ladu.contains(&teren)
+                    && is_outpost_placement_allowed(q, r, self.player_owner_id_num, outpost_nodes)
+            }
+            k::FORT => {
                 let owner = if !self.territory_nodes.is_empty() {
                     territory_owner_at(q, r, self.territory_nodes)
                 } else {
@@ -1553,6 +1620,20 @@ pub fn create_improvement_build_api<'a>(
     for node in &state.city_nodes {
         let rad = city_territory_radius(node) + tables().file.domyslne.pierscien_kandydatow;
         for key in hex_keys_within_radius(node.q, node.r, rad, &state.map) {
+            add(key);
+        }
+    }
+    // R-WEB-STADNINA-NO-HEX-FALSE-NEGATIVE-Q1 (`buildCandidateHexKeys`): od R-WEB-OUTPOST-FORT-TERRITORY-Q1 posterunek i
+    // fort tworza TWARDE terytorium (`territoryNodes`, `ownerId` = gracz) - kandydaci obejmuja tez ich pierscienie.
+    let owner_num = state
+        .player_owner_id_num
+        .unwrap_or(tables().file.domyslne.wlasciciel_gracza);
+    for node in state.territory_nodes.iter().flatten() {
+        if node.owner_id != owner_num {
+            continue;
+        }
+        let rad = city_territory_radius(&node.node) + tables().file.domyslne.pierscien_kandydatow;
+        for key in hex_keys_within_radius(node.node.q, node.node.r, rad, &state.map) {
             add(key);
         }
     }

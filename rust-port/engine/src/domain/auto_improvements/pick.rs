@@ -1,21 +1,21 @@
-//! P6.8I (8I-P2c): port `pickAutoImprovements` (`auto-improvements.ts:759-990`, pin 4bbef081d) - orkiestrator
-//! etapow: KROK 1 brakujacy surowiec, KROK 2 etapy zywnosciowe E1-E6, sciezka zapasowa, KROK 2b E-FORT,
-//! KROK 3 drogi. Kazdy przebieg to `pick_auto_improvements_single_pass` na kopii opcji (`after`).
-//!
-//! ZALOZENIE: `farmPriorityOnlyWorked` (web) nie ma konsumenta w przebiegu pojedynczym - ustawiane tylko
-//! dla wiernosci kopii opcji (wartosc: `getOnlyWorked` wolajacego; domyslne domkniecie weba nie jest
-//! odtwarzane, bo nic go nie czyta).
+//! P6.8I (8I-P2c): port `pickAutoImprovements` (`auto-improvements.ts`, REPIN-AUTOIMPROVE: web 180c08305) -
+//! orkiestrator etapow: KROK 1 brakujacy surowiec, KROK 0 wycinka rzeczna na polu obywatela (hunki 30, 31, 34, 36),
+//! KROK 2 etapy zywnosciowe E1-E6, sciezka zapasowa, KROK 2b E-FORT, KROK 3 drogi, KROK 7 wycinka rzeczna BEZ
+//! obywatela (hunk 42). Kazdy przebieg to `pick_auto_improvements_single_pass` na kopii opcji (`after`).
+//! Limit liczby sztuk na miasto (`maxItemsPerCity`) USUNIETY z pickera (LIM), `getOnlyWorked` & spol. (PRZ) tez.
 
+use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet};
+use std::rc::Rc;
 
 use super::opts::{
     AutoImprovementCity, AutoImprovementPick, FoodStages, PickAutoImprovementsOpts, PlacedMap,
-    UlepszeniaFocus, DEFAULT_ULEPSZENIA_FOCUS,
+    RoadPlanMemo, UlepszeniaFocus, DEFAULT_ULEPSZENIA_FOCUS,
 };
 use super::single_pass::pick_auto_improvements_single_pass;
 use super::{
     actionable_deficit_keys, deficit_improvement_keys, js_max, js_min, FOOD_STAGES,
-    FOOD_STAGE_MAX_ITEMS_PER_CITY, ROAD_KEYS,
+    RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR, ROAD_KEYS,
 };
 
 /// `Number.MAX_SAFE_INTEGER` jako `f64`.
@@ -85,7 +85,6 @@ fn unlimited(mut o: PickAutoImprovementsOpts<'_>) -> PickAutoImprovementsOpts<'_
     o.improvement_budget_cap = Some(MAX_SAFE);
     o.praca_budget_percent = Some(100.0);
     o.get_praca_budget_percent = None;
-    o.max_items_per_city = Some(f64::INFINITY);
     o.praca_surplus_threshold = Some(0.0);
     o
 }
@@ -95,20 +94,27 @@ fn deficit_pass_opts<'a>(
     deficit_cities: &[AutoImprovementCity],
     deficit_keys: &[String],
 ) -> PickAutoImprovementsOpts<'a> {
-    let opts = run.opts;
     run.after(0.0, |o| {
         o.cities = deficit_cities.to_vec();
         o.priority_override = Some(deficit_keys.to_vec());
-        o.get_only_worked = opts.get_resource_pass_only_worked.or(opts.get_only_worked);
-        o.farm_priority_only_worked = opts.get_only_worked;
         o.river_forest_clearing_only = false;
         o.river_hexes_only = false;
         o.off_river_clearing = false;
     })
 }
 
-/// Web `pickAutoImprovements`.
+/// Web `pickAutoImprovements`: wrapper tworzacy pamiec planu drog (`roadPlanMemo`, wspolna dla wszystkich
+/// przebiegow tego wywolania) i delegujacy do `pickAutoImprovementsStaged`.
 pub fn pick_auto_improvements(opts: &PickAutoImprovementsOpts) -> Vec<AutoImprovementPick> {
+    let mut o = opts.clone();
+    o.road_plan_memo = Some(Rc::new(RefCell::new(RoadPlanMemo {
+        cities: opts.cities.clone(),
+        plan: None,
+    })));
+    pick_auto_improvements_staged(&o)
+}
+
+fn pick_auto_improvements_staged(opts: &PickAutoImprovementsOpts) -> Vec<AutoImprovementPick> {
     let staged_cities: Vec<AutoImprovementCity> = opts
         .cities
         .iter()
@@ -124,8 +130,6 @@ pub fn pick_auto_improvements(opts: &PickAutoImprovementsOpts) -> Vec<AutoImprov
         .filter(|c| !is_food_stage_city(opts, c))
         .cloned()
         .collect();
-    let max_items = opts.max_items_per_city.unwrap_or(f64::INFINITY);
-    let max_items_stage = js_min(max_items, FOOD_STAGE_MAX_ITEMS_PER_CITY);
     let total_budget = match opts.improvement_budget_cap {
         Some(c) if c.is_finite() => js_max(0.0, c),
         _ => (js_max(0.0, opts.praca_available)
@@ -175,29 +179,40 @@ pub fn pick_auto_improvements(opts: &PickAutoImprovementsOpts) -> Vec<AutoImprov
         run.record(&deficit_picks);
     }
     let deficit_spent = sum(&deficit_picks);
-    let mut used_by_city: BTreeMap<&str, f64> = BTreeMap::new();
-    for p in &deficit_picks {
-        *used_by_city.entry(p.city_id.as_str()).or_insert(0.0) += 1.0;
-    }
-    let food_cities: Vec<AutoImprovementCity> = staged_cities
-        .iter()
-        .filter(|c| used_by_city.get(c.id.as_str()).copied().unwrap_or(0.0) < max_items)
-        .cloned()
-        .collect();
+
+    // KROK 0 (R-WEB-AUTOIMPROVE-RIVER-FOREST-FIRST-PRIORITY-Q1): wycinka lasu PRZY RZECE na polu obywatela to PIERWSZY
+    // krok etapowy zywnosci (przed E1-E6). Niedobor (KROK 1) zostaje przed nia; gdy niedobor juz stawia ulepszenie
+    // w tej turze, wycinka czeka (dispatch b, kontrakt S3-1). Nie ustawia `earlier_stage_is_pending`.
+    let river_clear_picks: Vec<AutoImprovementPick> =
+        if staged_cities.is_empty() || !deficit_picks.is_empty() {
+            Vec::new()
+        } else {
+            pick_auto_improvements_single_pass(&run.after(deficit_spent, |o| {
+                o.cities = staged_cities.clone();
+                o.priority_override = Some(vec!["wyrab".to_owned()]);
+                o.river_forest_clearing_only = true;
+                o.river_hexes_only = false;
+                o.off_river_clearing = false;
+                o.irrigation_needs_farm = true;
+            }))
+        };
+    run.record(&river_clear_picks);
+    let river_clear_spent = sum(&river_clear_picks);
+    // Brak limitu liczby sztuk na miasto: wszystkie miasta etapowe biora udzial w etapach.
+    let food_cities: Vec<AutoImprovementCity> = staged_cities.clone();
 
     // KROK 2: etapy zywnosciowe E1...E6.
     let mut staged_picks: Vec<AutoImprovementPick> = Vec::new();
     let mut earlier_stage_is_pending = false;
     if !food_cities.is_empty() {
         for stage in FOOD_STAGES.iter() {
-            let stage_opts = run.after(deficit_spent, |o| {
+            let stage_opts = run.after(river_clear_spent + deficit_spent, |o| {
                 o.cities = food_cities.clone();
                 o.priority_override = Some(stage.keys.iter().map(|k| (*k).to_owned()).collect());
                 o.river_forest_clearing_only = stage.river_forest_clearing_only;
                 o.river_hexes_only = stage.river_hexes_only;
                 o.off_river_clearing = stage.off_river_clearing;
                 o.irrigation_needs_farm = true;
-                o.max_items_per_city = Some(max_items_stage);
             });
             let stage_picks = pick_auto_improvements_single_pass(&stage_opts);
             if !stage_picks.is_empty() {
@@ -213,7 +228,7 @@ pub fn pick_auto_improvements(opts: &PickAutoImprovementsOpts) -> Vec<AutoImprov
         }
     }
     run.record(&staged_picks);
-    let stage_spent = deficit_spent + sum(&staged_picks);
+    let stage_spent = river_clear_spent + deficit_spent + sum(&staged_picks);
 
     // Sciezka zapasowa (zwykla wycinka) dopiero gdy zaden etap nie ma celu.
     let mut fallback_picks: Vec<AutoImprovementPick> = Vec::new();
@@ -240,7 +255,8 @@ pub fn pick_auto_improvements(opts: &PickAutoImprovementsOpts) -> Vec<AutoImprov
     } else {
         Vec::new()
     };
-    let food_and_fallback_done = staged_picks.is_empty()
+    let food_and_fallback_done = river_clear_picks.is_empty()
+        && staged_picks.is_empty()
         && !earlier_stage_is_pending
         && fallback_picks.is_empty()
         && !fallback_is_pending
@@ -299,24 +315,63 @@ pub fn pick_auto_improvements(opts: &PickAutoImprovementsOpts) -> Vec<AutoImprov
             o.river_forest_clearing_only = false;
             o.river_hexes_only = false;
             o.off_river_clearing = false;
-            o.max_items_per_city = Some(max_items_stage);
         }));
         run.record(&road_picks);
     }
     let side_spent = fort_spent + sum(&road_picks);
 
+    // Zawodowe profile (nie-zywnosciowe) w tym samym wywolaniu - po aktualnej fazie zywnosci, w tej samej kopercie.
+    let normal: Vec<AutoImprovementPick> = if other_cities.is_empty() {
+        Vec::new()
+    } else {
+        pick_auto_improvements_single_pass(&run.after(side_spent, |o| {
+            o.cities = other_cities.clone();
+        }))
+    };
+    run.record(&normal);
+    let normal_spent = side_spent + sum(&normal);
+
+    // KROK 7 (R-WEB-AUTOIMPROVE-RIVER-FOREST-CLEAR-NO-CITIZEN-Q1): wycinka lasu przy rzece takze na heksie BEZ
+    // obywatela - OSTATNI krok i WYLACZNIE z reszty budzetu (ponad podloge puli); tylko gdy zaden wczesniejszy
+    // cel (etap, sciezka zapasowa, fort, niedobor) nie czeka na Prace.
+    let no_citizen_floor = opts
+        .river_clear_no_citizen_pool_floor
+        .unwrap_or(RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR);
+    let mut no_citizen_clear_picks: Vec<AutoImprovementPick> = Vec::new();
+    if !staged_cities.is_empty()
+        && !earlier_stage_is_pending
+        && !fallback_is_pending
+        && !fort_is_pending
+        && (deficit_cities.is_empty() || !deficit_is_pending_now(&run))
+    {
+        no_citizen_clear_picks =
+            pick_auto_improvements_single_pass(&run.after(normal_spent, |o| {
+                o.praca_available =
+                    js_max(0.0, opts.praca_available - normal_spent - no_citizen_floor);
+                o.improvement_budget_cap = Some(js_max(
+                    0.0,
+                    run.total_budget - normal_spent - no_citizen_floor,
+                ));
+                o.cities = staged_cities.clone();
+                o.priority_override = Some(vec!["wyrab".to_owned()]);
+                o.river_forest_clearing_only = true;
+                o.river_hexes_only = false;
+                o.off_river_clearing = false;
+                o.irrigation_needs_farm = true;
+                o.river_clear_no_citizen_pass = true;
+                o.surplus_report = None;
+            }));
+        run.record(&no_citizen_clear_picks);
+    }
+
     let mut out: Vec<AutoImprovementPick> = Vec::new();
     out.extend(deficit_picks);
+    out.extend(river_clear_picks);
     out.extend(staged_picks);
     out.extend(fallback_picks);
     out.extend(fort_picks);
     out.extend(road_picks);
-    if other_cities.is_empty() {
-        return out;
-    }
-    let normal = pick_auto_improvements_single_pass(&run.after(side_spent, |o| {
-        o.cities = other_cities.clone();
-    }));
     out.extend(normal);
+    out.extend(no_citizen_clear_picks);
     out
 }

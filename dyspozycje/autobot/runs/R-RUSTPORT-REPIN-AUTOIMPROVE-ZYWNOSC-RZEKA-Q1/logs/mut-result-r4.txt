@@ -1,0 +1,11 @@
+# Runda 4 (Operator) - mutanty ponownie zmierzone / nowe wektory. Format jak mut-result-all-r3.txt.
+# Ostatni wpis per ID = werdykt. Kod Rust (src) nieruszony; zmienione tylko wektory (pick.json, 5128 scenariuszy).
+N35_env_horse_tie_drop: SURVIVED   (proba 1: kz-tie, miasta +-4 bez fortu - galaz fortHorseExtra nieosiagalna)
+N35_env_horse_tie_drop: SURVIVED   (proba 2: kz-fort-tie, miasta +-6 - zloze w pierscieniu kandydatow miasta (promien 5+1), galaz nieosiagalna)
+N35_env_horse_tie_drop: KILLED     (F9 kz-fort-tie-z1a1, miasta +-8, fort wlasny (0,-2); web: stadnina dla a1, mutant: z1)
+N29_env_horse_owner_drop: SURVIVED (F10 kz-fort-obcy-konie: fort obcego wlasciciela przy zlozu; do dowodu lub wektora)
+N07_allows_clear_keyany: SURVIVED  (ponowny pomiar r4; wymaga miasta z limitem wycinek = max i kandydata tartak na heksie rzecznym bez obywatela)
+N40_hp_defense_cap_drop: SURVIVED  (ponowny pomiar r4, rodzina df-,ra-)
+N42_hp_counter_faza2_drop: SURVIVED (ponowny pomiar r4, rodziny rc-,ra-,ci-,stg-)
+N20_clear_drop_farmbase: EQUIVALENT (dowod w dokumencie P6 sek. 10.2; nie uruchamiany)
+N47_hp_probe_seen_drop: EQUIVALENT (dowod w dokumencie P6 sek. 10.3; nie uruchamiany)

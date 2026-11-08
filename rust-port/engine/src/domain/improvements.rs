@@ -680,7 +680,8 @@ pub struct OreYield {
 }
 
 fn lowered_trimmed(value: Option<&str>) -> Option<String> {
-    value.map(|value| value.trim().to_lowercase())
+    // JS `String.prototype.trim` (m.in. BOM U+FEFF), nie `str::trim` (REPIN-AUTOIMPROVE: zloze 'konie' z BOM).
+    value.map(|value| crate::domain::territory::js_trim(value).to_lowercase())
 }
 
 /// Web `IMPROVEMENT_KEYS` (`terrain-improvements.ts:66`).
@@ -826,12 +827,48 @@ pub fn scale_terrain_improvement_work_cost(base: f64, era: Option<f64>) -> f64 {
     stone_base * terrain_improvement_construction_era_multiplier(era)
 }
 
-/// Web `improvementBonusForKey` (`terrain-improvements.ts:117`): bez normalizacji klucza.
-pub fn improvement_bonus_for_key(key: &str) -> CatalogBonus {
-    improvement_catalog()
+/// Pola plonu ulepszenia skalowane epoka (web `ERA_SCALED_YIELD_STATS`): zywnosc, praca, handel, pieniadz.
+const ERA_SCALED_YIELD_STATS: [&str; 4] = ["zywnosc", "praca", "handel", "pieniadz"];
+
+/// Web `improvementYieldForEra` (`terrain-improvements.ts`, R-WEB-IMPROVEMENT-ERA-SCALING-Q1; REPIN-AUTOIMPROVE
+/// hunki 86-92): plon ulepszenia rosnie o +1 za epoke ponad Kamien (Kamien +0, Braz +1, Zelazo +2) dla Zywnosci,
+/// Pracy, Handlu i Pieniadza, ale tylko gdy baza > 0. `era = None` = `undefined` (domyslnie 1 = wartosci bazowe);
+/// skaluja WYLACZNIE dokladnie `2` i `3` (reszta, w tym NaN i 1,5, bez zmian). `_key` zostaje dla spojnosci API.
+pub fn improvement_yield_for_era(_key: &str, stat: &str, base: f64, era: Option<f64>) -> f64 {
+    let era = era.unwrap_or(1.0);
+    // web: `!(base > 0)` - prawda tez dla NaN
+    if base.is_nan() || base <= 0.0 || (era != 2.0 && era != 3.0) {
+        return base;
+    }
+    if !ERA_SCALED_YIELD_STATS.contains(&stat) {
+        return base;
+    }
+    base + (era - 1.0)
+}
+
+/// Web `improvementBonusForKey(key, era)` (`terrain-improvements.ts`): bonus plonu dla epoki wlasciciela
+/// (domyslnie Kamien = wartosci bazowe z JSON). Bez normalizacji klucza.
+pub fn improvement_bonus_for_key_era(key: &str, era: Option<f64>) -> CatalogBonus {
+    let mut out = improvement_catalog()
         .row(key)
         .and_then(|row| row.bonus)
-        .unwrap_or_default()
+        .unwrap_or_default();
+    for (stat, slot) in [
+        ("zywnosc", &mut out.zywnosc),
+        ("praca", &mut out.praca),
+        ("handel", &mut out.handel),
+        ("pieniadz", &mut out.pieniadz),
+    ] {
+        if let Some(v) = *slot {
+            *slot = Some(improvement_yield_for_era(key, stat, v, era));
+        }
+    }
+    out
+}
+
+/// Web `improvementBonusForKey` (`terrain-improvements.ts:117`): bez normalizacji klucza; epoka domyslna (Kamien).
+pub fn improvement_bonus_for_key(key: &str) -> CatalogBonus {
+    improvement_bonus_for_key_era(key, None)
 }
 
 fn add_nonzero(target: &mut f64, bonus: Option<f64>) {
@@ -840,26 +877,58 @@ fn add_nonzero(target: &mut f64, bonus: Option<f64>) {
     }
 }
 
-/// Web `applyImprovementBonus` (`terrain-improvements.ts:127`): `pieniadz` liczy sie jako `handel`.
-pub fn apply_improvement_bonus(yld: &mut TileYield, improvement_key: Option<&str>) {
+/// Web `applyImprovementBonus(yld, key, era)` (`terrain-improvements.ts:127`): `pieniadz` liczy sie jako `handel`;
+/// epoka wlasciciela skaluje Zyw/Pra/Han/Pieniadz (`improvementYieldForEra`).
+pub fn apply_improvement_bonus_era(
+    yld: &mut TileYield,
+    improvement_key: Option<&str>,
+    era: Option<f64>,
+) {
     let Some(key) = improvement_key.filter(|key| !key.is_empty()) else {
         return;
     };
-    let bonus = improvement_bonus_for_key(key);
-    add_nonzero(&mut yld.zywnosc, bonus.zywnosc);
-    add_nonzero(&mut yld.praca, bonus.praca);
-    add_nonzero(&mut yld.handel, bonus.handel);
-    add_nonzero(&mut yld.handel, bonus.pieniadz);
+    let Some(bonus) = improvement_catalog().row(key).and_then(|row| row.bonus) else {
+        return;
+    };
+    let scaled = |stat: &str, v: Option<f64>| {
+        v.filter(|x| *x != 0.0 && !x.is_nan())
+            .map(|x| improvement_yield_for_era(key, stat, x, era))
+    };
+    add_nonzero(&mut yld.zywnosc, scaled("zywnosc", bonus.zywnosc));
+    add_nonzero(&mut yld.praca, scaled("praca", bonus.praca));
+    add_nonzero(&mut yld.handel, scaled("handel", bonus.handel));
+    add_nonzero(&mut yld.handel, scaled("pieniadz", bonus.pieniadz));
     add_nonzero(&mut yld.drewno, bonus.drewno);
     add_nonzero(&mut yld.kamien, bonus.kamien);
     add_nonzero(&mut yld.glina, bonus.glina);
 }
 
-/// Web `applyImprovementBonuses` (`terrain-improvements.ts:175`).
-pub fn apply_improvement_bonuses(yld: &mut TileYield, improvement_keys: &[String]) {
+/// Web `applyImprovementBonus` (`terrain-improvements.ts:127`): epoka domyslna (Kamien).
+pub fn apply_improvement_bonus(yld: &mut TileYield, improvement_key: Option<&str>) {
+    apply_improvement_bonus_era(yld, improvement_key, None);
+}
+
+/// Web `applyImprovementBonuses(yld, keys, era)` (`terrain-improvements.ts:175`).
+pub fn apply_improvement_bonuses_era(
+    yld: &mut TileYield,
+    improvement_keys: &[String],
+    era: Option<f64>,
+) {
     for key in improvement_keys {
-        apply_improvement_bonus(yld, Some(key));
+        apply_improvement_bonus_era(yld, Some(key), era);
     }
+}
+
+/// Web `applyImprovementBonuses` (`terrain-improvements.ts:175`): epoka domyslna (Kamien).
+pub fn apply_improvement_bonuses(yld: &mut TileYield, improvement_keys: &[String]) {
+    apply_improvement_bonuses_era(yld, improvement_keys, None);
+}
+
+/// Web `hexHasHorseDeposit` (`terrain-improvements.ts`, R-WEB-STADNINA-KONIE-STARE-ZAPISY-Q1): zloze konia =
+/// nakladka `ZlozeKonia` (nowe mapy) LUB `zloze === 'konie'` po trim/lowercase (stare zapisy).
+pub fn hex_has_horse_deposit_like(nakladka: Option<Overlay>, zloze: Option<&str>) -> bool {
+    nakladka == Some(Overlay::ZlozeKonia)
+        || zloze.is_some_and(|z| crate::domain::territory::js_trim(z).to_lowercase() == "konie")
 }
 
 /// Web `oreYieldFromImprovements` (`terrain-improvements.ts:157`; `zloze` ignorowane jak w webie).
@@ -900,6 +969,37 @@ pub fn resource_production_amount_for_era(key: &str, base_amount: f64, era: Opti
     js_round(base_amount * production.mnoznik_za_epoke.powf(normalized - first))
 }
 
+/// Web `resourceProductionAmountForEra` w wersji web `origin/main` 180c08305 (R-WEB-IMPROVEMENT-ERA-SCALING-Q1,
+/// decyzja wlasciciela 2026-11-03; REPIN-AUTOIMPROVE hunki 93-97): produkcja KAZDEGO ulepszenia surowcowego
+/// (`ERA_SCALED_RESOURCE_IMPROVEMENTS = TERRITORY_YIELD_IMPROVEMENTS`, tj. zbior `terytorium.ulepszenia`) rosnie x1,5 za
+/// epoke; era normalizowana jak w `resource_production_amount_for_era` (dokladnie 2 i 3, reszta = Kamien).
+///
+/// ZALOZENIE (rozlaczne nazwy): `resource_production_amount_for_era` / `territory_resource_yield_for_improvement` zostaja
+/// MIGAWKA starego weba (tylko tartak/kamieniolom), bo czytaja je `turn_economy_territory` oraz wektory potokow
+/// (`p6_adv_q*`, `p6_empirefood_e2e`) wygenerowane ze starego weba; przelaczenie wolajacych = repin ekonomii (poza zakresem
+/// tematu: `turn_economy*` zakazane, dlug P7).
+pub fn resource_production_amount_for_era_all_producers(
+    key: &str,
+    base_amount: f64,
+    era: Option<f64>,
+) -> f64 {
+    if !rules()
+        .terytorium
+        .ulepszenia
+        .iter()
+        .any(|row| row.ulepszenie == key)
+    {
+        return base_amount;
+    }
+    let production = &rules().produkcja_epoka;
+    let first = production.epoka_min as f64;
+    let normalized = match era {
+        Some(era) if era.fract() == 0.0 && era > first && era <= production.epoka_max as f64 => era,
+        _ => first,
+    };
+    js_round(base_amount * production.mnoznik_za_epoke.powf(normalized - first))
+}
+
 fn territory_yield_amount_for_key(key: &str) -> f64 {
     improvement_catalog()
         .row(key)
@@ -923,6 +1023,29 @@ pub fn territory_resource_yield_for_improvement(
     Some(TerritoryResourceYield {
         resource_key: resource.surowiec.clone(),
         amount: resource_production_amount_for_era(
+            &norm,
+            territory_yield_amount_for_key(&norm),
+            era,
+        ),
+    })
+}
+
+/// Web `territoryResourceYieldForImprovement` w wersji web `origin/main` 180c08305 (KAZDY surowiec terytorium skalowany
+/// epoka, hunki 93-97); patrz `resource_production_amount_for_era_all_producers` (rozlaczna nazwa, migawka starego weba).
+pub fn territory_resource_yield_for_improvement_all_producers(
+    key: Option<&str>,
+    _zloze: Option<&str>,
+    era: Option<f64>,
+) -> Option<TerritoryResourceYield> {
+    let norm = normalize_improvement_key(key)?;
+    let resource = rules()
+        .terytorium
+        .ulepszenia
+        .iter()
+        .find(|row| row.ulepszenie == norm)?;
+    Some(TerritoryResourceYield {
+        resource_key: resource.surowiec.clone(),
+        amount: resource_production_amount_for_era_all_producers(
             &norm,
             territory_yield_amount_for_key(&norm),
             era,
