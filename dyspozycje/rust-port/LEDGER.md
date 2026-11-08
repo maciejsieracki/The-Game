@@ -903,3 +903,8 @@ Port ERAIGN/ERADELAY (web 5dd53e60f): `is_era_forced_war_ignoring_r1`, `is_war_t
 - parity-v2: FF 0fd287721 → f095e8a46 (FC PASS-WITH-NOTES r1; ancestry OK). wip: rust-port-wip/AIZAKUP. Funkcja czysta `ai_zakup_jednostki.rs` (shouldAIPurchaseUnit, rezerwa 10/3/0), 39 wektorów z weba, test 5/5, data_compliance 40/40, fmt/clippy czyste.
 - ZAŁOŻENIA zaakceptowane: klucze `kupno_jednostki_*` obowiązkowe w AiParams (wyjątek allowlisty: src/data/economy_society_part2.rs, deny_unknown_fields); panic dla poziomu spoza 1..=3; min_dochod_netto 0/0/-2 = PLACEHOLDER (decyzja właściciela po pomiarze).
 - DŁUG: zakup AI NIE jest podpięty do tury AI w Rust (osobny temat); baseline i pełny przebieg binarek NIE_ZMIERZONO (dysk).
+
+## 2026-11-08 — ZAPISERA (R-RUSTPORT-P6-ZAPIS-ERAWAR-MIGRACJE-Q1) ZINTEGROWANE
+- parity-v2: merge f930df641 (rodzice f095e8a46 + FC c129eba18; baza FC 0fd287721 była już za parity-v2, więc merge zamiast FF; merge-tree czysty, ancestry kodu 5506a554b OK). Testy po merge: p6_zapis_erawar_counts 11/11, p6_zapis_erawar_save 5/5, p6_repin_ai_zakup_rezerwa 5/5. Pełna suma binarek po merge: NIE_ZMIERZONO (dysk).
+- ZAŁOŻENIA zaakceptowane: liczniki i64 (pomijane ułamki i |n|>2^53-1 — odstępstwo opisane w P6-ZAPIS-ERAWAR.md); ścieżka domain/save_load.rs zamiast src/save_load.rs; bramka flagi multiwar po stronie wołającego.
+- DŁUG: runtime licznik i rejestry aktywnych par w Rust nie istnieją (wiązanie z wypowiedzeniem wojny — temat FORCED-WAR/ERAIGN).
