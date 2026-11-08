@@ -82,7 +82,7 @@ const CASES = [
           // 3. close to the other units (Chebyshev distance to the nearest non-mounted unit)
           const d = Math.min(...core.map(u => Math.max(Math.abs(u.q - m.q), Math.abs(u.r - m.r))));
           maxDist = Math.max(maxDist, d);
-          assert(d <= 4, `${tag}: ${m.bu.id} within 4 tiles of the nearest own unit (got ${d})`);
+          assert(d <= 3, `${tag}: ${m.bu.id} within 3 tiles of the nearest own unit (got ${d})`);
           checks++;
         }
         // 4. wing symmetry: both sides of the body are used when >= 2 horse
@@ -98,7 +98,10 @@ const CASES = [
         const widestCol = [...rankCols.entries()].sort((a, b) => b[1] - a[1] || sign * (b[0] - a[0]))[0][0];
         for (const m of mounted.filter(u => u.r < minRow || u.r > maxRow)) {
           const gapAhead = sign * (m.q - widestCol);
-          assert(gapAhead <= 0 || widestCol === (sign > 0 ? Math.max : Math.min)(...core.map(u => u.q)),
+          // Strict: no escape clause. When the widest rank is also the front
+          // column the wing horse may stand level with it (gapAhead === 0) but
+          // never beyond it.
+          assert(gapAhead <= 0,
             `${tag}: ${m.bu.id} not ahead of the widest rank (col ${m.q} vs ${widestCol})`);
           checks++;
         }
