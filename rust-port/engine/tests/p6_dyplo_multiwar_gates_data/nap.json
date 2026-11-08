@@ -1206,5 +1206,74 @@
     "masz": "5"
    }
   }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 0,
+   "progRel": 30,
+   "progZauf": 0.30000000000000004,
+   "kara": false,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 0.3 (masz 0)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "0.30000000000000004",
+    "masz": "0"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 0,
+   "progRel": 30,
+   "progZauf": 0.25,
+   "kara": false,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 0.3 (masz 0)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "0.25",
+    "masz": "0"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 0,
+   "progRel": 30,
+   "progZauf": 29.5,
+   "kara": false,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 29.5 (masz 0)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "29.5",
+    "masz": "0"
+   }
+  }
  }
 ]

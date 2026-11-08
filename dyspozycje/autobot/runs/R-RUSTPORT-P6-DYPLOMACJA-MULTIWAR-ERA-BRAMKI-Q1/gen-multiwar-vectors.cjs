@@ -82,6 +82,9 @@ const levelInputs = [
   { turnsAtWar: NaN, lostCitiesTotal: 0 },
   { turnsAtWar: 50, lostCitiesTotal: NaN },
   { turnsAtWar: 50, lostCitiesTotal: 0, turnsSinceCityChange: NaN },
+  // R-RUSTPORT-P6 r5: ujemne tury przy dodatnim stagnacji (turnsAtWar -> max(0,.) przed sumą) i ujemne straty.
+  { turnsAtWar: -100, lostCitiesTotal: 0, turnsSinceCityChange: 200 },
+  { turnsAtWar: 100, lostCitiesTotal: -2 },
 ];
 for (const inp of levelInputs) {
   wwCases.push({ fn: 'warWearinessLevel', in: { turnsAtWar: S(inp.turnsAtWar), lostCitiesTotal: S(inp.lostCitiesTotal), turnsSinceCityChange: S(inp.turnsSinceCityChange) },
@@ -197,6 +200,11 @@ napInputs.push({ atWar: true, hasNap: false, rel: 100, zauf: 100, progRel: 30, p
 napInputs.push({ atWar: false, hasNap: true, rel: 0, zauf: 0, progRel: 30, progZauf: 30, kara: false, agr: false });
 napInputs.push({ atWar: false, hasNap: false, rel: 0, zauf: 0, progRel: 30, progZauf: 30, kara: false, agr: false });
 napInputs.push({ atWar: false, hasNap: false, rel: 20, zauf: 5, progRel: 10, progZauf: 10, kara: true, agr: true });
+// R-RUSTPORT-P6 r5: formatowanie progów niecałkowitych (fmtProg = Number.isInteger ? String : toFixed(1)).
+// 0.1+0.2 -> "0.3" (String dałby "0.30000000000000004"); 0.25 -> "0.3" (toFixed: remis w górę); 29.5 -> "29.5".
+for (const pz of [0.1 + 0.2, 0.25, 29.5]) {
+  napInputs.push({ atWar: false, hasNap: false, rel: 50, zauf: 0, progRel: 30, progZauf: pz, kara: false, agr: false });
+}
 for (const o of napInputs) {
   const res = LK.resolveDiplomacyActionLock(ctxFor(o));
   napCases.push({
@@ -240,6 +248,16 @@ const peaceSets = {
     { kind: 'miasto', id: 'z', amount: 1, pn: 260 },
     { kind: 'miasto', id: 'y', amount: 1, pn: 200 },
     { kind: 'miasto', id: 'x', amount: 1, pn: 90, forbidden: true },
+  ],
+  // R-RUSTPORT-P6 r5: ułamkowa ilość złota (ceil przy wyliczeniu ilości) i miasta o pn == reszcie (remis >=).
+  goldFrac: [
+    { kind: 'zloto', id: 'zloto', amount: 3, pn: 10 },
+    { kind: 'miasto', id: 'k', amount: 1, pn: 7 },
+  ],
+  tie: [
+    { kind: 'miasto', id: 'a', amount: 1, pn: 100 },
+    { kind: 'miasto', id: 'b', amount: 1, pn: 150 },
+    { kind: 'miasto', id: 'c', amount: 1, pn: 60 },
   ],
   empty: [],
 };
