@@ -8949,3 +8949,6 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 ## 2026-11-08 — R-WEB-TEST-DEBT-B-DIAG-Q1 ZINTEGROWANE (bez deployu, tylko testy)
 - main 8dad78b3a (merge FC 15750517d; kod 52d5f65be; ancestry OK). Wszystkie 3 testy klasy B okazały się klasą A (nieaktualne wobec decyzji właściciela), bez błędu w kodzie gry: diplomacy-proposal 190/190 (kierunkowa bramka pokoju diplomacy-proposals.ts:1460, e27418db), mgla-sciezka-inwariant 42/0 (8 sklasyfikowanych zapisów pozycji), diplomacy-audience-close-flush 57/0 (hot-seat switchActiveHuman bez flush celowo). logic 213/213, ai-test 289/0, tsc 0.
 - NIE_ZMIERZONO: odroczone kolejki bitew/scaleń między fotelami hot-seat w żywej grze (chronione tylko testem tekstowym).
+
+## 2026-11-08 — zgłoszenie: AI idzie na stolicę zamiast na najbliższe miasto
+- Właściciel: „gdy cywilizacja atakuje gracza, idzie na jego stolicę; pewnie wobec innych AI podobnie; umówiliśmy się, że najpierw zdobywa najbliższe miasta”. Temat: R-WEB-AI-TARGET-NEAREST-CITY-NOT-CAPITAL-Q1 (dispatch w runs/). Wstępny pomiar: `buildWarCityTargets` (ai-war-target-select.ts) daje wszystkie miasta tylko dla par AI↔AI (isNearestCityWarPair); dla gracza zawsze stolica. Do potwierdzenia przez Operatora (w tym czy AI↔AI faktycznie wybiera najbliższe).
