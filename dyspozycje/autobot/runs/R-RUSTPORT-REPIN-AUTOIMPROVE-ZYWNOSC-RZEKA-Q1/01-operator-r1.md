@@ -15,3 +15,7 @@ BLOKADY: brak twardych. Nie zrobiono w r1: port hunków, mapowanie terrain (NIE_
 RUNDY: 1/5
 NASTĘPNY KROK: runda 2 — mapowanie terrain-improvements.ts na symbole Rust; port hunków auto-improvements.ts (priorytety, food-only, fort claim, staged/singlepass); regeneracja wektorów z pinu 16c0509f6 (git archive do mktemp poza repo) i zmiany testów p6_8i_*; Evaluator Sonnet 5.5 po zmianach kodu.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+## RUNDA 2/5 (port kodu)
+Raport rundy 2: `01-operator-r2.md` (STATUS PASS-WITH-NOTES; commity 2588284fe, 1116d68f5, 776a07f88, 22942b49a + dokument). Dokument tematu: `dyspozycje/rust-port/p6/P6-REPIN-AUTOIMPROVE.md` §8.

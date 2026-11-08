@@ -238,3 +238,55 @@ Jawnie poza zakresem (wg dispatch): produkcyjny wywołujący `pick_auto_improvem
 **Z-5 (werdykt PASS-WITH-NOTES niezgodny z wynikiem). PRZYJMUJĘ.** Poprawka statusu: poprzedni werdykt opierał się na błędnym pinie i pomiarze. Po poprawkach etap pomiarowy r1 jest kompletny (pin, hunki, tabela 2c, mapowanie terenu, tabela symboli). Status rundy: **PASS-WITH-NOTES** dla etapu pomiarowego; NOTES: port kodu i wektory są w r2–r3, statusy NIE_ZMIERZONO z sekcji 3 wymagają potwierdzenia w r2. To nie jest PASS portu.
 
 **Z-6 (zgodność raportu, bez zarzutu). PRZYJMUJĘ do wiadomości, bez zmian.** Potwierdzono: `git diff --name-only 783c6b766 bda98c616` = dwa pliki `.md`; commit obrony także tylko `.md`; `git diff --check` czysty (patrz run `02-operator-obrona-r1.md`). Bramki testów nie powtarzane (kod Rust nie zmieniony, baseline z sekcji 4).
+
+## 8. Runda 2/5 — PORT KODU (Operator, commity 2588284fe, 1116d68f5, 776a07f88, 22942b49a)
+
+Pin web: `origin/main` = `180c0830504ad4fee99c7ccc1bd1337f8d6e4eb5` (>= 180c08305). Pin Rust: `23dd158e9` -> web 180c08305. Wektory z URUCHOMIONEGO weba (`git archive origin/main gra/src gra/data` do katalogu poza repo, usunięty po użyciu), generatory w `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1/tools/`.
+
+### 8.1 Status hunków (tabela 2c) po r2
+
+| Kod | Hunki | Status | Gdzie w Rust |
+|---|---|---|---|
+| K (komentarze), PERF | 1, 7, 12-15, 18, 23, 51, 58-60, 68, 80, 84(k), 88, 98 | BEZ PORTU (jak w tabeli) | — |
+| I (importy), RIV | 2, 3, 5, 47 | ZGODNE: `isHexNearRiver` = `on_river_hex` (test równoważności: 5117 scenariuszy); w kwalifikatorze irygacji dodany sąsiad z `rzeka.obecna` | `improvement_build.rs::is_river_adjacent` |
+| PRZ | 6, 17, 19, 22, 29, 37, 43, 45, 49 | PORTOWANE: usunięte `get_only_worked`, `get_resource_pass_only_worked`, `farm_priority_only_worked`, `get_skip_wyrab`, pole miasta `ulepszenia_only_worked` | `opts.rs`, `city_phases.rs`, `pick.rs` |
+| LIM | 16, 24, 26, 28, 32, 33, 35, 38-40, 44, 48, 57, 61-67, 74, 76-79, 82 | PORTOWANE: brak `max_items_per_city`, `placed_this_city`, `defenseCap`, `FOOD_STAGE_MAX_ITEMS_PER_CITY` | `hex_phases.rs`, `pick.rs`, `single_pass.rs`, `auto_improvements.rs` |
+| REG | 11, 25, 50, 54, 56, 69, 70, 72, 73 | PORTOWANE: `FOOD_IMPROVEMENT_KEYS` (9 kluczy, bez `oboz_lowiecki`), `food_worked_keys` (+ centrum, każdy profil), `hex_allows_key`; HILLS-CLEAR-REVERT (`wyrab_ma_sens` tylko Łąka/Równina) | `city_phases.rs`, `auto_improvements.rs` |
+| RZ | 8, 21, 30, 31, 34, 36, 41, 42, 46, 53, 75, 81 | PORTOWANE: KROK 0 (przed E1-E6), KROK 7 (ostatni, podłoga puli 60, limit 2 gracz / 1 AI jako stałe + nadpisania `river_clear_no_citizen_*`), licznik per miasto | `pick.rs`, `city_phases.rs`, `hex_phases.rs`, `auto_improvements.rs` |
+| FW | 52, 55, 99, 100 | PORTOWANE: `hex_has_horse_deposit` (`zloze` 'konie' po trim/lowercase JS), `fortHorseExtra` (stadnina z koła własnego fortu/posterunku, remis: mniejsze id UTF-16), `is_livestock_unlocked_for_placement_hex`, wiersz `ukrywanie_zloza` stadniny | `city_phases.rs`, `improvement_build.rs`, `improvements.rs`, `data/derived/ulepszenia-reguly.json` |
+| DRG | 4, 20, 27, 71 + plik `road-network-plan.ts` | PORTOWANE: `plan_road_network` (MST, Dijkstra, wygładzanie), pamięć planu na wywołanie, bramka drogi w `key_blocked_on_hex` | `road_network_plan.rs`, `single_pass.rs`, `city_phases.rs` |
+| SUR | 9, 10, 83 | PORTOWANE: `filter_waiting_keys` w raporcie; `unspentBudgetWarning` POZA ZAKRESEM (renderer) | `opts.rs`, `hex_phases.rs` |
+| REL | 85 | PORTOWANE: `oboz_lowiecki` w `PRESERVES_HILL_RELIEF_EXPLICIT_KEYS` | `relief_preserving.rs` |
+| ERA | 86, 87, 89-92 | PORTOWANE: `improvement_yield_for_era`, `improvement_bonus_for_key_era`, `apply_improvement_bonus(es)_era` (stare sygnatury = era domyślna, bez zmiany zachowania) | `improvements.rs` |
+| SUR5 | 93-97 | PORTOWANE jako ROZŁĄCZNE funkcje `resource_production_amount_for_era_all_producers` / `territory_resource_yield_for_improvement_all_producers` (patrz założenie Z-7) | `improvements.rs` |
+| AUTOBUILD | `auto-build-gate.ts` | PORTOWANE (decyzja orkiestratora a): `AUTO_BUILD_ENABLED_DEFAULT=false`, bramka tylko dla gracza | `auto_improvements/auto_build_gate.rs` |
+
+Zaokrąglenie ×1,5: `js_round(base * 1.5^(era-1))` = `Math.round` (pół w górę, także dla ujemnych: -7,5 -> -7); zmierzone na 5712 przypadkach (klucze × bazy × epoki 0..5, NaN, ±Inf). Ciała symboli bez hunka (`hasNonFoodResourceDeficit`, `actionableDeficitKeys`, `isCityLimitExhausted`, `prioritiesForUlepszeniaFocus`, `IMPROVEMENT_FOR_DEFICIT`): potwierdzone wektorami `helpers.json` (regenerowane z 180c08305, 0 niezgodności).
+
+### 8.2 Zależności webu spoza 5 plików, które zmieniły wynik pickera (znalezione przez wektory)
+
+W `improvement-build.ts` (poza tabelą 2c, ale konieczne dla parytetu pickera): (a) `isOutpostPlacementAllowed` dla posterunku (R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1, `game/fort-territory.ts`) — posterunek tylko na własnym terytorium przy granicy; (b) `isHexNearRiver` w kwalifikatorze irygacji (sąsiad z `rzeka.obecna`); (c) `hexHasHorseDeposit` w `depositAllowsPlayerImprovement`/`isLivestockUnlockedForPlacement`; (d) `buildCandidateHexKeys` (pierścienie węzłów terytorium gracza — API budowy). Wszystkie w `improvement_build.rs` (allowlista: „tylko jeśli hunk tego wymaga”); wektory M16 `qualifier.json` regenerowane z 180c08305 (`rules.json`, `gallery.json` identyczne bajt w bajt).
+
+### 8.3 Założenia r2 (do akceptacji właściciela)
+
+- Z-7 (SUR5, rozłączne nazwy): `resource_production_amount_for_era` i `territory_resource_yield_for_improvement` zostają MIGAWKĄ starego weba (skalują tylko tartak/kamieniołom), bo czyta je `turn_economy_territory` (zakazane w tym temacie) i 6 potoków wektorów (`p6_adv_q2a/q4/q4_preview/q5/q6`, `p6_empirefood_e2e`) wygenerowanych ze starego weba — zmiana funkcji o tej nazwie dała 8 FAIL w tych testach (zmierzone w trakcie r2, cofnięte). Webowo wierne warianty: `*_all_producers`. Przełączenie wołających = repin ekonomii. `resource_production.rs` (osobny, stary moduł `order_effects_lane`) NIE zmieniony (poza allowlistą).
+- Z-8: `economy_yield.rs` wywołuje `apply_improvement_bonuses` bez epoki (era domyślna) — web przekazuje epokę właściciela; przełączenie = repin ekonomii (poza zakresem).
+- Z-9: cache planu dróg MIĘDZY turami (`ROAD_PLAN_CACHE` w webie) NIE portowany (sama wydajność); plan liczony raz na wywołanie `pick_auto_improvements`. Generator wektorów używa świeżej mapy weba na scenariusz (omija cache po referencji mapy).
+- Z-10: `lowered_trimmed` (improvements.rs) używa teraz `js_trim` (JS `trim`, m.in. BOM U+FEFF) zamiast `str::trim` — zgodnie z webem; dotyczy też bramki cywilizacji (`isImprovementAllowedForCiv`), 22+ wektorów p6_23 bez zmian.
+- Z-11: moduł bramki w `auto_improvements/auto_build_gate.rs` (zamiast `domain/auto_build_gate.rs`) — bez zmian w `domain/mod.rs` (poza allowlistą).
+- Z-12: `humanOwnerIds.includes(ownerId)` = równość `f64` z `NaN == NaN` (SameValueZero).
+
+### 8.4 Dług / poza zakresem (jawnie)
+
+- Produkcyjny wywołujący `pick_auto_improvements` (dług P7); bramka AUTOBUILD jest tylko czystą funkcją.
+- `unspentBudgetWarning` (renderer).
+- `get_stadnina_build_block_reason` (komunikat UI w API budowy) — nie portowany.
+- Przełączenie `turn_economy*`/`economy_yield.rs` na warianty epokowe (ERA/SUR5) — repin ekonomii.
+
+### 8.5 Mutacje (skrypt `tools/mutate-repin.py`, wyniki `logs/mut-result.txt`)
+
+119 mutantów zdefiniowanych, 93 uruchomione, 3 NOOP (tekst po rustfmt — nie liczone), **90 zastosowanych: 77 zabitych (85,6%)**, 13 ocalałych. Ocalałe z dowodem równoważności (7): N07 (klucz inny niż `wyrab` nie kwalifikuje się na heksie z `Overlay::Las`), N29 (węzeł obcego fortu: kwalifikator odrzuca heks poza terytorium gracza), N40 (zewnętrzny `break` na `global_spent >= cap` zbędny wobec wewnętrznego `global_spent + koszt > cap` przy koszcie > 0), N42 (heks rzeczny bez obywatela zawsze zajmuje KROK 0 przed FAZĄ 2, licznik ten sam), N81 (`n < 2` vs `n < 1`: jedno miasto daje pusty plan), N89 (`left <= 0` vs `< 0`: dodatkowe zdjęcie z kopca po rozliczeniu celów nie zmienia `dist`), N93 (pusta lista węzłów -> `territory_owner_at` = None -> false tak samo). Ocalałe NIEROZSTRZYGNIĘTE (6, dług na r3): N56, N57, N58 (warunki KROKU 7: `fallback_is_pending`, `fort_is_pending`, niedobór czeka — wymagają dedykowanych wektorów z oczekującym celem i jednocześnie wolnym heksem rzecznym), N85 (wygładzanie trójkątów: wektor „Y-junction”), N88 (remis składowych w uzupełnieniu MST), N90 (`nd > cap` vs `>=` na dokładnej granicy). Niezałatwione (nieuruchomione): N15, N17, N20, N23, N26, N28, N31, N35, N45, N46, N47, N49, N59-N66, N70-N73, N78, N100, N106 (lista w skrypcie).
+
+### 8.6 Bramki r2
+
+`cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `git diff --check` EXIT=0; `cargo test` w przebiegach po jednej binarce: 2103 (integracyjne, bez p6_8i_pick) + 22 (lib) + 5 (p6_8i_pick, 5117 scenariuszy) = **2130 passed, 0 failed, 0 nowych `#[ignore]`** (1 istniejący `ignored` w `p6_order_lane`). Szczegóły: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1/logs/gates-r2.txt`.
