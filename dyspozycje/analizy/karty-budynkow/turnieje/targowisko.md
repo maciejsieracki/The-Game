@@ -8,8 +8,8 @@ Cena korzyści (nie jest kandydatem): budowa 25 Pracy, 30 drewno, utrzymanie 1 z
 
 | ID | Rodzaj | Tytuł (z liczbą) | Zdanie | S | N | B | Z | O | C | Suma | Dowód |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| a | own | +50% dochodu z tras handlowych miasta | Każda trasa handlowa tego miasta przynosi o połowę więcej (+62% łatwy, +38% trudny). | 4 | 3 | 4 | 2 | 3 | 5 | 44 | gra/data/econ-params.json:278-284; gra/src/main.ts:4194-4198 (E1-B2: efekt warunkowy) |
-| b | own | Zamiana Pracy na podatek 1:1 w całym państwie | Pierwsze Targowisko pozwala przelewać nadwyżkę Pracy na podatek w panelu państwa (tylko gracz). | 1 | 3 | 4 | 5 | 4 | 3 | 41 | gra/src/game/work-tax.ts:14-22; gra/data/econ-params.json:341-347; gra/src/main.ts:25922-25927 (E1-B2: efekt warunkowy) |
+| a | own | +50% dochodu z tras handlowych miasta | Każda trasa handlowa tego miasta przynosi o połowę więcej (+62% łatwy, +38% trudny). | 4 | 3 | 4 | 2 | 3 | 5 | 44 | gra/data/econ-params.json:278-284; gra/src/main.ts:4212-4216 (E1-B2: efekt warunkowy) |
+| b | own | Zamiana Pracy na podatek 1:1 w całym państwie | Pierwsze Targowisko pozwala przelewać nadwyżkę Pracy na podatek w panelu państwa (tylko gracz). | 1 | 3 | 4 | 5 | 4 | 3 | 41 | gra/src/game/work-tax.ts:14-22; gra/data/econ-params.json:341-347; gra/src/main.ts:25940-25945 (E1-B2: efekt warunkowy) |
 | c | own | +1 trasa handlowa i premia 5% trasy | Miasto może utrzymać o jedną trasę więcej, a jedna jego trasa dostaje +5% dochodu. | 3 | 3 | 3 | 2 | 3 | 4 | 38 | gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:925-945; gra/src/game/trade-routes.ts:1659 (E1-B2: efekt warunkowy) |
 | d | own | +5 pieniądza w mieście (8 w Brązie, 11 w Żelazie) | Stały dochód, rośnie o 3 z każdą epoką. | 3 | 1 | 2 | 2 | 4 | 5 | 33 | gra/data/buildings.json:303; gra/src/game/production.ts:252-271 |
 | e | own | +2 zdrowia i +1 Szczęścia w mieście | Lepsze zaopatrzenie poprawia zdrowie i nastroje mieszkańców. | 1 | 1 | 2 | 2 | 4 | 5 | 27 | gra/data/society-params.json:24-30; gra/src/game/turn-economy.ts:476-485; gra/src/game/economy.ts:509-535 |

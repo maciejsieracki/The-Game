@@ -10,7 +10,7 @@ Cena korzyści (nie jest kandydatem): budowa 25 Pracy, 30 drewno + 40 kamien, ut
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | a | own | Religia +4% na turę w mieście | Dwa razy szybsze szerzenie religii niż Kamienne kręgi (+6% łatwy, +2% trudny). | 3 | 3 | 4 | 2 | 3 | 4 | 40 | gra/data/society-params.json:581-587; gra/src/game/culture-religion.ts:549 |
 | b | own | +2 Kultury i +3 Szczęścia (rośnie z epoką) | W epoce Żelaza +3 Kultury i +4 Szczęścia. | 2 | 1 | 2 | 2 | 4 | 5 | 30 | gra/data/buildings.json:696; gra/src/game/economy.ts:509-535; gra/src/game/production.ts:252-271 |
-| c | own | Religia sięga 2 sąsiednich miast na turę (zamiast 1) | Dominująca religia miasta co turę zyskuje wyznawcę w kolejnym mieście w zasięgu 3 heksów (+2 łatwy, 0 trudny). | 2 | 3 | 4 | 3 | 2 | 4 | 37 | gra/data/society-params.json:504-510; gra/src/game/culture-religion.ts:1064; gra/src/main.ts:37700-37712 (pewność ŚREDNIA) |
+| c | own | Religia sięga 2 sąsiednich miast na turę (zamiast 1) | Dominująca religia miasta co turę zyskuje wyznawcę w kolejnym mieście w zasięgu 3 heksów (+2 łatwy, 0 trudny). | 2 | 3 | 4 | 3 | 2 | 4 | 37 | gra/data/society-params.json:504-510; gra/src/game/culture-religion.ts:1064; gra/src/main.ts:37718-37730 (pewność ŚREDNIA) |
 
 S=SKALA(3), N=NOWA MECHANIKA(3), B=BRAK ZASTĘPNIKA(2), Z=ZASIĘG(2), O=ODCZUWALNOŚĆ(2), C=CZYTELNOŚĆ(1); maks. 65. R-B1: kandydat „next” (warunek/rozbudowa) → N=0, O≤1.
 

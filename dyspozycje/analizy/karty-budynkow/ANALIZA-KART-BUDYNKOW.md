@@ -20,7 +20,7 @@ Decyzje właściciela z etapu 1 stosowane wprost (dispatch, pkt 1–6): format �
 
 Kolejność zaufania jak w etapie 1 (`ANALIZA-KART-ODKRYC.md` §1.1): (1) kod, który zużywa wartość (`gra/src/game/*.ts`, `gra/src/main.ts`), (2) dane czytane przez ten kod (`gra/data/*.json`), (3) pola opisowe (`uwagi`, `opis`, dzisiejsze `top3`) tylko jako wskazówka. Liczby dla trudności **normal**; easy/hard w zdaniu, gdy dane je różnicują. Każdy `plik:linia` generator sprawdza (`check_ev`: linia istnieje). Pewność: WYSOKA = wartość i konsument potwierdzone; NIE_USTALONO = budynek niedostępny.
 
-Weryfikacja bazy: między bazą etapu 1 (57b916eb7) a 397f84f29 zmieniły się wyłącznie `diplomacy-proposals.ts`, `diplomacy-rejection-cooldown.ts` i `main.ts` (`git diff --stat`), więc dowody z etapu 1 dla `gra/data` i `gra/src/game` są aktualne; odwołania do `main.ts` sprawdzone na nowo (`main.ts:4194-4198`, `:25922-25927`).
+Weryfikacja bazy: między bazą etapu 1 (57b916eb7) a 397f84f29 zmieniły się wyłącznie `diplomacy-proposals.ts`, `diplomacy-rejection-cooldown.ts` i `main.ts` (`git diff --stat`), więc dowody z etapu 1 dla `gra/data` i `gra/src/game` są aktualne; odwołania do `main.ts` sprawdzone na nowo (`main.ts:4212-4216`, `:25940-25945`). Final Control r1: integracja na `origin/main` d36f8b3b0 (FALA 558 dodała 18 linii w `main.ts` przed l. 2460, `git diff -U0 397f84f29 d36f8b3b0 -- gra/src/main.ts`), więc WSZYSTKIE odwołania `main.ts` w analizie, CSV i turniejach przesunięto o +18 i sprawdzono treścią; `gra/data` i `gra/src/game` bez zmian między tymi bazami poza `war-rules-multiwar.ts` (niecytowany).
 
 ### 1.2 Kryteria i wagi (bez zmian względem etapu 1, §1.2)
 
@@ -78,7 +78,7 @@ Zdanie 1: czynność budowy tego budynku + najwyżej oceniony efekt własny z po
 5. **Trybunał** — „Ogranicza korupcję” (`buildings.json:1979`) nieprawda: listę redukcji tworzą tylko Sąd, Pretorium i Pałac (`economy.ts:1226`). Realnie: +17 pkt Prawa (`society-params.json:802`, `society-breakdown.ts:850-853`).
 6. **Pałac II / III tracą −30% korupcji** Pałacu I: redukcja liczy wyłącznie id `palac` (`economy.ts:1226`), a rozbudowa usuwa `palac` z listy budynków (`production.ts:820-838`). Prawdopodobny błąd — do osobnego tematu (Q4).
 7. **Garnizon** — `top3` (`buildings.json:2027`) pomija Milicję: przy ataku na miasto z Garnizonem staje 1 milicjant na mieszkańca (`combat-params.json:51-58`, `siegeDefenders.ts:84-90`).
-8. **Targowisko** — główne efekty (+50% dochodu z tras `econ-params.json:278`, `main.ts:4194-4198`; +1 trasa `trade-routes.ts:908-945`; zamiana Pracy na podatek `work-tax.ts:14-22`) nie występują w `top3`; są „Niski koszt wejścia” i „Otwiera Wymianę”.
+8. **Targowisko** — główne efekty (+50% dochodu z tras `econ-params.json:278`, `main.ts:4212-4216`; +1 trasa `trade-routes.ts:908-945`; zamiana Pracy na podatek `work-tax.ts:14-22`) nie występują w `top3`; są „Niski koszt wejścia” i „Otwiera Wymianę”.
 9. **Premie procentowe pominięte w `top3`**: Biblioteka +30% Nauki (`econ-params.json:320`), Cegielnia +25% Pracy z terenu (`:271`), Stolarnia/Warsztat kamieniarski +10% drewna/kamienia w państwie (`:285`, `:292`), Magazyn +20% pojemności państwa (`:613`), Garncarnia +10% żywności (`:299`).
 10. **Budynki niedostępne mają pełne `top3`**: Wielka odlewnia i Wielka Kuźnia (`epokaWejscia` = 4, `production.ts:966`), Teatr (`suppressed`, `buildings.json:1735`). Biblioteka obiecuje Obserwatorium na poziomie 6 przy `maksPoziom` = 2 (`buildings.json:750,797`). Kuźnie obiecują „do +45%” — realny sufit +30%.
 11. **Pola martwe w danych** (nie pokazywać): `przyrost` przy `maksPoziom` = 1 (uwagi wielu budynków), `baza.mnoznik` Akademii (brak w ścieżkach `unit-building-bonuses.ts:9-33`), `spichlerz_pojemnosc_zapasow_panstwa` (`econ-params.json:171`, brak konsumenta), flagi `maFort`/`maBaszta` (`cities.ts:828-842`, nieczytane).
@@ -98,7 +98,7 @@ Zdanie 1: czynność budowy tego budynku + najwyżej oceniony efekt własny z po
 
 ## 5. Wyniki — TOP 5 (43/43: 40 z TOP, 3 × NIE_USTALONO — budynek niedostępny)
 
-Pełne drabinki: `turnieje/<id>.md`; zdania i dowody `plik:linia` per pozycja: `budynki-top5.csv` (kolumny `Top1_GLOWNA`…`Top5`, `Dowod_plik_linia`). Status: **PROPOZYCJA OPERATORA r1 po OBRONIE r1** (do Final Control). Pozycji razem 123 (r1: 120); 6 budynków ma pełne 5 pozycji, reszta mniej (tylko realne efekty).
+Pełne drabinki: `turnieje/<id>.md`; zdania i dowody `plik:linia` per pozycja: `budynki-top5.csv` (kolumny `Top1_GLOWNA`…`Top5`, `Dowod_plik_linia`). Status: **FINALNE (Final Control r1, baza d36f8b3b0)** — patrz §13. Pozycji razem 123 (r1: 120); 6 budynków ma pełne 5 pozycji, reszta mniej (tylko realne efekty).
 
 <!-- TABELA_TOP -->
 
@@ -327,7 +327,22 @@ Kolejne w rankingu: Trybunał (nieprawdziwe „ogranicza korupcję”), Targowis
 
 - ZAŁOŻENIE: karta budynku nie ma sekcji „Co możesz teraz zrobić”, więc kolumna PROPOZYCJA to projekt nowej sekcji (Q1), a nie przepisanie istniejącej.
 - ZAŁOŻENIE: kandydaci „next” (warunki/rozbudowy) są realnymi korzyściami dalszymi i mogą zająć Top2–Top5 (R-B1); alternatywa w Q2.
-- ROZSTRZYGNIĘTE w Obronie r1 (zastępuje założenie r1 o Spichlerzu Królewskim): „zachowanie 50% / 70% zapasu żywności po wzroście” żyje tylko w `populationGrowth` (`economy.ts:1107-1159`), które nie ma żadnego wywołania w `gra/src` (grep `populationGrowth(`; jedyne użycie to test `gra/tools/popcap-spichlerz2-akwedukt20-test.cjs` opisany jako „legacy”). Żywy wzrost to `applyFractionalGrowthV85` (`population-growth-v85.ts:306-342`, wołane z `population-growth-v85.ts:567` w `applyPostCentralPopulationGrowth`, które woła tura w `main.ts:38297`) — ułamek wzrostu bez bufora, nic się nie zeruje ani nie zachowuje. Oba efekty przeniesione do listy martwej (§8); w ich miejsce realne premie Spichlerzy z żywego kodu: koszt racji ×0,75 / ×0,5 (`building-resource-gate.ts:486-491`, `population-growth-v85.ts:206-223`), zdrowie +5 / +10 (`building-resource-gate.ts:472-477`, `turn-economy.ts:2023`), wzrost +1% / +2% (`building-resource-gate.ts:479-484`, `population-growth-v85.ts:262-277`).
+- ROZSTRZYGNIĘTE w Obronie r1 (zastępuje założenie r1 o Spichlerzu Królewskim): „zachowanie 50% / 70% zapasu żywności po wzroście” żyje tylko w `populationGrowth` (`economy.ts:1107-1159`), które nie ma żadnego wywołania w `gra/src` (grep `populationGrowth(`; jedyne użycie to test `gra/tools/popcap-spichlerz2-akwedukt20-test.cjs` opisany jako „legacy”). Żywy wzrost to `applyFractionalGrowthV85` (`population-growth-v85.ts:306-342`, wołane z `population-growth-v85.ts:567` w `applyPostCentralPopulationGrowth`, które woła tura w `main.ts:38315`) — ułamek wzrostu bez bufora, nic się nie zeruje ani nie zachowuje. Oba efekty przeniesione do listy martwej (§8); w ich miejsce realne premie Spichlerzy z żywego kodu: koszt racji ×0,75 / ×0,5 (`building-resource-gate.ts:486-491`, `population-growth-v85.ts:206-223`), zdrowie +5 / +10 (`building-resource-gate.ts:472-477`, `turn-economy.ts:2023`), wzrost +1% / +2% (`building-resource-gate.ts:479-484`, `population-growth-v85.ts:262-277`).
 - Wartości dla normal; łańcuchy kumulacji (Koszary + Akademia wojskowa + Warsztat = +50%, Kuźnie +30%) z kodu (`unit-building-bonuses.ts:9-33`), bez testu w żywej grze.
-- **Zgodność Operator–Evaluator: NIE_ZMIERZONO w tej rundzie** — liczy ją Evaluator po własnym ślepym turnieju 43 budynków (macierz na 5 pozycji).
+- Zgodność Operator–Evaluator: policzona przez Evaluatora r1 (127/130, Top1 37/40) i przeliczona przez Final Control po Obronie (§13).
 - `.xlsx` nie powstał; CSV z BOM i `;` otwiera się w Excelu bezpośrednio.
+
+---
+
+## 13. Final Control r1 — rozstrzygnięcia i FINALNE TOP 5
+
+Pełny zapis (trzeci turniej, próbka zgodnych, bramki): `dyspozycje/autobot/runs/R-WEB-BUILDING-CARDS-TOP5-ANALYSIS-Q1/03-final-control.md`. CSV `budynki-top5.csv` ma status **FINALNE** we wszystkich 40 budynkach z TOP (3 × NIE_USTALONO bez zmian).
+
+| Zarzut Evaluatora | Werdykt FC | Dowód |
+|---|---|---|
+| 1. Spichlerz Królewski: brak „70% zapasu po wzroście” | ODDAL (efekt martwy; Obrona słusznie przeniosła też 50% Spichlerza I do §8) | `populationGrowth` (`economy.ts:1107`) nie ma wywołania w `gra/src`; tura liczy wzrost przez `applyFractionalGrowthV85` (`population-growth-v85.ts:306-342`, `:567`) bez magazynu żywności |
+| 2. Świątynia: brak szerzenia religii | ODDAL (naprawione w Obronie) | `society-params.json:504-510`, `culture-religion.ts:1064`, `main.ts:37718-37730` |
+| 3. Targowisko: Top1 warunkowy; +2 zdrowia poza TOP | ODDAL (Top1 naprawione w Obronie, reguła E1-B2 zatwierdzona); +2 zdrowia zostaje poza TOP do Q2 | `turn-economy.ts:420,485`; wpływ zdrowia na wzrost = `floor(zdrowie/10)` (`population-growth-v85.ts:268-269`) |
+| 4. Plan etapu 4: 23 → 22 ulepszenia | ODDAL (naprawione w Obronie) | `json.load(terrain-improvements.json)`: 24 klucze, 2 z `_` |
+
+Top1 rozstrzygnięte trzecim turniejem: Targowisko = +5 pieniądza, Port = +5 pieniądza i +1 Pracy, Emporion = +8 pieniądza (E1-B2: slot trasy wart 0 bez partnera), Pretorium = −30% korupcji (`economy.ts:1226-1253`, działa od zbudowania; Prawo +5 pkt słabsze).

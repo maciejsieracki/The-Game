@@ -163,7 +163,7 @@ for b in buildings:
         cmz = [f"{NIE} — budynek dziś niedostępny; sekcji nie pokazywać (karta do ukrycia)."]
     sr = any(c['sr'] for c in top)
     pew = NIE if not top else ('SREDNIA' if sr else 'WYSOKA')
-    status = 'PROPOZYCJA OPERATORA r1 + OBRONA r1 — do Final Control' if top else 'NIE_USTALONO — budynek niedostępny w grze (ukryć kartę)'
+    status = 'FINALNE (Final Control r1, baza d36f8b3b0)' if top else 'NIE_USTALONO — budynek niedostępny w grze (ukryć kartę)'
     dead_txt = ' | '.join(f"UKRYĆ: {x['tytul']} — {x['powod']} [{ev_expand(x['ev'])}]" for x in DEAD.get(bid, []))
     uw = ' '.join(filter(None, [NOTES.get(bid, ''), ('Martwe: ' + dead_txt) if dead_txt else '',
                                 f"Cena korzyści: {upkeep_text(b)}.", '' if e1 or not top else 'E1-B: brak efektu własnego.']))

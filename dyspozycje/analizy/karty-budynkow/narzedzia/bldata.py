@@ -155,9 +155,9 @@ NOTES['cegielnia'] = 'Dzisiejszy top3 pomija +25% Pracy z terenu (econ-params.js
 # ---------------------------------------------------------------- Handel / pieniądz
 B['targowisko'] = [
     c('a', 'own', '+50% dochodu z tras handlowych miasta', 'Każda trasa handlowa tego miasta przynosi o połowę więcej (+62% łatwy, +38% trudny).',
-      'zwiększyć dochód z tras handlowych miasta o 50%', 'EP:278-284;MN:4194-4198', 4, 3, 4, 2, 3, 5, war=True),
+      'zwiększyć dochód z tras handlowych miasta o 50%', 'EP:278-284;MN:4212-4216', 4, 3, 4, 2, 3, 5, war=True),
     c('b', 'own', 'Zamiana Pracy na podatek 1:1 w całym państwie', 'Pierwsze Targowisko pozwala przelewać nadwyżkę Pracy na podatek w panelu państwa (tylko gracz).',
-      'przelewać nadwyżkę Pracy na podatek', 'WT:14-22;EP:341-347;MN:25922-25927', 1, 3, 4, 5, 4, 3, war=True),
+      'przelewać nadwyżkę Pracy na podatek', 'WT:14-22;EP:341-347;MN:25940-25945', 1, 3, 4, 5, 4, 3, war=True),
     c('c', 'own', '+1 trasa handlowa i premia 5% trasy', 'Miasto może utrzymać o jedną trasę więcej, a jedna jego trasa dostaje +5% dochodu.',
       'otworzyć miastu kolejną trasę handlową', 'TR:908-921;TR:925-945;TR:1659', 3, 3, 3, 2, 3, 4, war=True),
     c('d', 'own', '+5 pieniądza w mieście (8 w Brązie, 11 w Żelazie)', 'Stały dochód, rośnie o 3 z każdą epoką.', 'dać miastu 5 pieniądza', 'B:303;' + LVL, 3, 1, 2, 2, 4, 5, old=(1,)),
@@ -282,7 +282,7 @@ B['swiatynia'] = [
       'szerzyć swoją religię o 4% na turę', 'SP:581-587;CR:549', 3, 3, 4, 2, 3, 4, old=(2,)),
     c('b', 'own', '+2 Kultury i +3 Szczęścia (rośnie z epoką)', 'W epoce Żelaza +3 Kultury i +4 Szczęścia.', None, 'B:696;' + HAP + ';' + LVL, 2, 1, 2, 2, 4, 5, old=(1,)),
     c('c', 'own', 'Religia sięga 2 sąsiednich miast na turę (zamiast 1)', 'Dominująca religia miasta co turę zyskuje wyznawcę w kolejnym mieście w zasięgu 3 heksów (+2 łatwy, 0 trudny).',
-      'szerzyć swoją religię na sąsiednie miasta', 'SP:504-510;CR:1064;MN:37700-37712', 2, 3, 4, 3, 2, 4, sr=True),
+      'szerzyć swoją religię na sąsiednie miasta', 'SP:504-510;CR:1064;MN:37718-37730', 2, 3, 4, 3, 2, 4, sr=True),
 ]
 NOTES['swiatynia'] = 'Pozycja 3 dzisiejszego top3 to warunek (Kamienne kręgi). Obrona r1 (zarzut Evaluatora 2): dodano premię szerzenia na sąsiednie miasta — działa tylko, gdy religia jest w mieście dominująca (culture-religion.ts:1050-1053); na poziomie trudnym premia = 0 (society-params.json:507).'
 
