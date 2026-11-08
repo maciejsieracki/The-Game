@@ -39265,6 +39265,10 @@ async function boot(): Promise<void> {
                 if (isBarbarian(targetOwnerId)) return true;
                 return getDiploRelation(ownerId, targetOwnerId).status === 'wojna';
               },
+              // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1 (KONTAKT): cel odzyskania utraconego miasta
+              // tylko od cywilizacji, z ktora AI ma kontakt (barbarzynca = zawsze, jak w canEngageOwner).
+              hasContactWith: (targetOwnerId: number) => isBarbarian(targetOwnerId)
+                || tradeContactBetween(ownerId, targetOwnerId),
               // R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: AI w wojnie z cywilizacja nie prowadzi
               // wojsk przez teren TRZECIEJ cywilizacji bez umowy przemarszu (twarda przeszkoda w
               // trasie); prosba o przemarsz = requestAiMarchPassage (cooldown, istniejaca dyplomacja).
@@ -40841,9 +40845,14 @@ async function boot(): Promise<void> {
                   // (człowiek nie przechodzi tym blokiem).
                   const targetOnOwnTerritory = territoryOwnerAtLive(defender.q, defender.r) === ownerId;
                   // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: UTRACONE miasta (założone przeze mnie, dziś
-                  // cudze) też są „moim terytorium” — garnizon i jednostki przy nim są widoczne do odbicia.
-                  const targetNearLostCity = !targetOnOwnTerritory && cities.some(lc =>
-                    isCityLostOf(lc, ownerId) && hexDistance(defender.q, defender.r, lc.q, lc.r) <= 1);
+                  // cudze, klasa S2) też są „moim terytorium” -- ich obszar (cityTerritoryRadius) jest widoczny
+                  // do odbicia. KONTAKT (dodatek 1): tylko garnizon WŁAŚCICIELA tego miasta, z którym jest
+                  // kontakt; bramka wojny (areEnemyOwners) stoi wyżej, więc ten wyjątek jej nie omija.
+                  const targetNearLostCity = !targetOnOwnTerritory
+                    && (isBarbarian(defender.ownerId) || tradeContactBetween(ownerId, defender.ownerId))
+                    && cities.some(lc => lc.ownerId === defender.ownerId && isCityLostOf(lc, ownerId)
+                      && hexDistance(defender.q, defender.r, lc.q, lc.r)
+                        <= cityTerritoryRadius({ q: lc.q, r: lc.r, pop: lc.population, level: 1 }));
                   if (!targetOnOwnTerritory && !targetNearLostCity && !aiTargetVisibleForAction(
                     currentVisibleForOwner(ownerId), fogOn, defender.q, defender.r, keyOf,
                   )) {

@@ -1141,6 +1141,25 @@ export function isCityLostOf(
 }
 
 /**
+ * R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1 (DODATEK 2/3 właściciela 2026-11-08): klasyfikacja miasta
+ * PER CYWILIZACJA `ownerId`, wg dwóch faktów: twórca (historia, `cityFounderId`) i obecny właściciel.
+ *  - S1 `'S1'`: założone przez ownerId i nadal jego  -> priorytet 1: obrona.
+ *  - S2 `'S2'`: założone przez ownerId, obecnie cudze -> priorytet 2: odzyskanie (= isCityLostOf).
+ *  - S3 `'S3'`: obecnie ownerId, założone przez kogo innego (zdobyte) -> priorytet 3: utrzymanie.
+ *  - `null`: miasto nie jest własne dla ownerId.
+ * Klasyfikacja jest per cywilizacja: to samo miasto może być S2 dla założyciela i S3 dla zdobywcy.
+ * Stare zapisy bez pola twórcy: patrz `cityFounderId` / `isCityLostOf` (fallbacki).
+ */
+export type OwnTerritoryClass = 'S1' | 'S2' | 'S3';
+export function ownTerritoryClassOf(
+  city: Pick<City, 'ownerId' | 'foundedBy' | 'foundedByOwner' | 'capturedFromOwnerId'>,
+  ownerId: number,
+): OwnTerritoryClass | null {
+  if (city.ownerId === ownerId) return cityFounderId(city) === ownerId ? 'S1' : 'S3';
+  return isCityLostOf(city, ownerId) ? 'S2' : null;
+}
+
+/**
  * Zapamiętuje twórcę PRZED pierwszą zmianą właściciela (wołać, gdy `city.ownerId` to jeszcze
  * poprzedni właściciel). Idempotentne; nie nadpisuje znanego twórcy.
  */

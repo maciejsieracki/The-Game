@@ -30,7 +30,7 @@ export { setWarAllInCapitalOverride } from ${J('game/warAllInCapital')};
 export { setHomeWarDefenseOverride, resetHomeWarMemory, planHomeWar } from ${J('game/ai-war-home-defense')};
 `;
   // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: pole tworcy miasta (cities.ts) -- brak w starszych drzewach (silnik PRZED).
-  const withFounder = baseEntry + `export { isCityLostOf, stampCityFounderOnCapture, cityFounderId } from ${J('game/cities')};\n`;
+  const withFounder = baseEntry + `export { isCityLostOf, stampCityFounderOnCapture, cityFounderId, ownTerritoryClassOf } from ${J('game/cities')};\n`;
   const build = (text) => {
     fs.writeFileSync(entry, text, 'utf8');
     esbuild.buildSync({
@@ -127,6 +127,11 @@ function simulate(state, o) {
     if (a === E.BARBARIAN_OWNER_ID || b === E.BARBARIAN_OWNER_ID) return a !== b;
     return state.wars.has(a < b ? `${a}_${b}` : `${b}_${a}`);
   };
+  // KONTAKT (R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1): pary bez kontaktu (state.noContact). Domyslnie kontakt.
+  const hasContact = (a, b) => {
+    if (a === E.BARBARIAN_OWNER_ID || b === E.BARBARIAN_OWNER_ID) return true;
+    return !(state.noContact && state.noContact.has(a < b ? `${a}_${b}` : `${b}_${a}`));
+  };
   const capitalOf = (owner) => state.cities.filter(c => c.ownerId === owner).sort((x, y) => (x.id < y.id ? -1 : 1))[0] || null;
   const ctxFor = (self) => {
     const owners = [...new Set(state.cities.map(c => c.ownerId))]
@@ -218,6 +223,7 @@ function simulate(state, o) {
       const own = capitalOf(owner);
       const opts = {
         canEngageOwner: (t) => atWar(owner, t),
+        hasContactWith: (t) => hasContact(owner, t),
         currentTurn: turn,
         warAllIn: ctxFor(owner),
         capitalCityId: own ? own.id : null,

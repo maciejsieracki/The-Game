@@ -214,6 +214,147 @@ section('T7: za slabi na odbicie -> zbiorka w domu, bez ofensywy w tle');
   ok(plan.orders.length === 1 && plan.orders[0].kind === 'hold' && plan.orders[0].toQ === 0, `jednostka wraca do miasta (${JSON.stringify(plan.orders)})`);
 }
 
+// --- T8 (dodatek 2/3): klasyfikacja S1/S2/S3 per cywilizacja, kluczem tworca -------------
+section('T8 (dodatek 2/3): S1/S2/S3 per cywilizacja (tworca = historia, wlasciciel = teraz)');
+if (NEW) {
+  const m = { id: 'M', ownerId: 1, q: 3, r: 3, foundedBy: 1, foundedByOwner: true };
+  ok(E.ownTerritoryClassOf(m, 1) === 'S1', 'zalozone i trzymane przeze mnie = S1');
+  ok(E.ownTerritoryClassOf(m, 2) === null, 'obca civ bez zwiazku z miastem -> null');
+  // A (1) zalozyl, B (2) zdobyl: dla A S2, dla B S3, dla C (3) null.
+  const ab = { id: 'M', ownerId: 1, q: 3, r: 3, foundedBy: 1, foundedByOwner: true };
+  E.stampCityFounderOnCapture(ab, 1); ab.capturedFromOwnerId = 1; ab.foundedByOwner = false; ab.ownerId = 2;
+  ok(E.ownTerritoryClassOf(ab, 1) === 'S2', 'A (zalozyciel, utracone) = S2');
+  ok(E.ownTerritoryClassOf(ab, 2) === 'S3', 'B (zdobywca, trzyma) = S3');
+  ok(E.ownTerritoryClassOf(ab, 3) === null, 'C (trzecia civ) = poza "wlasnym"');
+  // Lancuch: B zdobyl od A, potem C zdobyl od B. Dla B miasto nie jest wlasne (nie zalozyl), dla A nadal S2.
+  E.stampCityFounderOnCapture(ab, 2); ab.capturedFromOwnerId = 2; ab.ownerId = 3;
+  ok(E.ownTerritoryClassOf(ab, 2) === null, 'PRZYPADEK BRZEGOWY: B po utracie M na rzecz C -> nie wlasne (null)');
+  ok(E.ownTerritoryClassOf(ab, 1) === 'S2', 'PRZYPADEK BRZEGOWY: A nadal S2 (zalozone, utracone)');
+  ok(E.ownTerritoryClassOf(ab, 3) === 'S3', 'PRZYPADEK BRZEGOWY: C (zdobywca) = S3');
+  // Stary zapis (bez pola tworcy) zdobyty: zdobywca nie zgaduje tworcy (S3), poprzedni wlasciciel = S2 (fallback).
+  const legacy = { id: 'L', ownerId: 2, foundedByOwner: false, capturedFromOwnerId: 1 };
+  ok(E.ownTerritoryClassOf(legacy, 2) === 'S3', 'stary zapis zdobyty: zdobywca = S3');
+  ok(E.ownTerritoryClassOf(legacy, 1) === 'S2', 'stary zapis zdobyty: poprzedni wlasciciel (capturedFromOwnerId) = S2');
+}
+
+// --- T9: kolejnosc S1 -> S2 -> S3 -> atak, z jedna armia -------------------------------------
+section('T9 (dodatek 2): kolejnosc S1 obrona > S2 odzyskanie > S3 utrzymanie > atak');
+{
+  const base = (inv, lost, s3Home) => {
+    const my = [{ id: 'm0', ownerId: 1, q: 10, r: 10, ruchLeft: 2, typeId: 'W', category: 'x', ruch: 2 }];
+    const enemies = inv.map(([id, q, r]) => ({ id, ownerId: 2, q, r, ruchLeft: 2, typeId: 'W', category: 'x', ruch: 2 }));
+    // Miasto domowe S1 (0,0) zalozone przeze mnie; opcjonalnie S3 (zdobyte, zalozone przez 3) na (6,0).
+    const cities = [{ id: 'h', q: 0, r: 0, ownerId: 1, foundedBy: 1 }];
+    if (s3Home) cities.push({ id: 's3', q: 6, r: 0, ownerId: 1, foundedBy: 3, foundedByOwner: false, capturedFromOwnerId: 3 });
+    if (lost) cities.push({ id: 'lost', q: 20, r: 20, ownerId: 2, foundedBy: 1, capturedFromOwnerId: 1 });
+    return {
+      ownerId: 1, currentTurn: undefined, allUnits: [...my, ...enemies], myUnits: my,
+      myCities: cities.filter(c => c.ownerId === 1), allCities: cities, enemyUnits: enemies,
+      canEngageOwner: () => true, lockedUnitIds: new Set(),
+      isOwnTerritory: (q, r) => E.hexDistance(q, r, 0, 0) <= 4 || E.hexDistance(q, r, 6, 0) <= 3,
+      strengthOf: () => 1, isFieldUnit: () => true, distance: E.hexDistance,
+    };
+  };
+  // S3 zagrozenie (przy S3 domu, blizej armii) + S2 do odbicia -> odbicie (p1) dostaje jednostke, S3 nie.
+  E.resetHomeWarMemory();
+  const s2vsS3 = E.planHomeWar(base([['e3', 7, 0]], true, true));
+  ok(s2vsS3.orders.length === 1 && s2vsS3.orders[0].task === 'p1', `S2 odzyskanie przed S3 utrzymaniem (${JSON.stringify(s2vsS3.orders.map(o => o.task))})`);
+  // S1 zagrozenie + S2 -> obrona S1 (p2), S2 nie dostaje jednostki.
+  E.resetHomeWarMemory();
+  const s1vsS2 = E.planHomeWar(base([['e1', 2, 0]], true, false));
+  ok(s1vsS2.orders.length === 1 && s1vsS2.orders[0].task === 'p2', `S1 obrona przed S2 odzyskaniem (${JSON.stringify(s1vsS2.orders.map(o => o.task))})`);
+  // Tylko S3 zagrozenie, bez S2 -> utrzymanie (p2), zadnej ofensywy (rdzen nie tkniety).
+  E.resetHomeWarMemory();
+  const s3only = E.planHomeWar(base([['e3', 7, 0]], false, true));
+  ok(s3only.orders.length === 1 && s3only.orders[0].task === 'p2',
+    `S3 zagrozenie bez S2: utrzymanie (p2) (${JSON.stringify(s3only.orders)})`);
+  // Brak zagrozen i S2 -> odbicie, S3 nie generuje rozkazow.
+  E.resetHomeWarMemory();
+  const none = E.planHomeWar(base([], true, true));
+  ok(none.orders.length === 1 && none.orders[0].task === 'p1', 'bez zagrozen: S2 odbicie, brak rozkazu dla S3');
+}
+
+// --- T10 (KONTAKT, dodatek 1): bez kontaktu z wlascicielem utraconego miasta -> brak celu -----
+section('T10 (KONTAKT): AI bez kontaktu z X nie dostaje celu odzyskania X');
+{
+  const mk = (hasContact) => ({
+    ownerId: 1, currentTurn: undefined,
+    allUnits: [{ id: 'm0', ownerId: 1, q: 25, r: 10, ruchLeft: 2, typeId: 'W', category: 'x', ruch: 2 }],
+    myUnits: [{ id: 'm0', ownerId: 1, q: 25, r: 10, ruchLeft: 2, typeId: 'W', category: 'x', ruch: 2 }],
+    myCities: [{ id: 'h', q: 0, r: 0, ownerId: 1, foundedBy: 1 }],
+    allCities: [{ id: 'h', q: 0, r: 0, ownerId: 1, foundedBy: 1 }, { id: 'lost', q: 20, r: 20, ownerId: 2, foundedBy: 1, capturedFromOwnerId: 1 }],
+    enemyUnits: [], canEngageOwner: () => true, hasContactWith: hasContact ? () => true : () => false,
+    lockedUnitIds: new Set(), isOwnTerritory: () => false,
+    strengthOf: () => 1, isFieldUnit: () => true, distance: E.hexDistance,
+  });
+  E.resetHomeWarMemory();
+  const withC = E.planHomeWar(mk(true));
+  ok(withC.recapture !== null && withC.orders.length === 1, 'z kontaktem: odbicie utraconego miasta planowane (kontrola)');
+  E.resetHomeWarMemory();
+  const noC = E.planHomeWar(mk(false));
+  ok(noC.recapture === null && noC.orders.length === 0, `bez kontaktu z X: brak celu odbicia i brak rozkazow (${JSON.stringify(noC)})`);
+}
+
+// --- T11 (KONTAKT, zrodlo): bramka widocznosci i kontakt w main.ts / ai.ts -----------------
+section('T11 (KONTAKT, zrodlo): kolejnosc bramek wojna -> kontakt -> wyjatek mgly');
+{
+  const fs = require('fs');
+  const mainSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
+  const aiSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'ai.ts'), 'utf8');
+  const warIdx = mainSrc.indexOf('if (!areEnemyOwners(ownerId, defender.ownerId)) {');
+  const nearIdx = mainSrc.indexOf('const targetNearLostCity');
+  ok(warIdx > 0 && nearIdx > warIdx, 'wyjatek mgly (targetNearLostCity) stoi PO bramce wojny areEnemyOwners');
+  const nearBlock = mainSrc.slice(nearIdx, nearIdx + 600);
+  ok(nearBlock.includes('lc.ownerId === defender.ownerId'), 'wyjatek mgly: tylko garnizon wlasciciela utraconego miasta');
+  ok(nearBlock.includes('tradeContactBetween(ownerId, defender.ownerId)'), 'wyjatek mgly: wymagany kontakt (tradeContactBetween)');
+  ok(mainSrc.includes('hasContactWith: (targetOwnerId: number) => isBarbarian(targetOwnerId)'), 'main.ts: opts.hasContactWith podpiete do AI');
+  ok(aiSrc.includes('function aiHasContactWith(opts: AITurnOpts'), 'ai.ts: bramka kontaktu aiHasContactWith');
+  ok((aiSrc.match(/aiHasContactWith\(opts,/g) || []).length >= 4, 'ai.ts: kontakt sprawdzany w zagrozeniu, zakonczeniu zagrozenia i planerze');
+}
+
+// --- T12 (dodatek 3): A zalozyl M, B zdobyl M, C trzecia --------------------------------------
+section('T12 (dodatek 3): A zalozyl M, B zdobyl M: A odzyskuje, B broni, C nie ma M');
+{
+  const M = () => ({ id: 'M', q: 20, r: 20, ownerId: 2, foundedBy: 1, foundedByOwner: false, capturedFromOwnerId: 1 });
+  const base = (ownerId, myCities, units) => ({
+    ownerId, currentTurn: undefined,
+    allUnits: units, myUnits: units.filter(u => u.ownerId === ownerId),
+    myCities, allCities: [...myCities, M()],
+    enemyUnits: units.filter(u => u.ownerId !== ownerId && u.ownerId !== 0),
+    canEngageOwner: () => true, hasContactWith: () => true, lockedUnitIds: new Set(),
+    isOwnTerritory: (q, r) => myCities.some(c => E.hexDistance(q, r, c.q, c.r) <= 4),
+    strengthOf: () => 1, isFieldUnit: () => true, distance: E.hexDistance,
+  });
+  const aUnit = { id: 'a0', ownerId: 1, q: 5, r: 5, ruchLeft: 2, typeId: 'W', category: 'x', ruch: 2 };
+  const bUnit = { id: 'b0', ownerId: 2, q: 21, r: 20, ruchLeft: 2, typeId: 'W', category: 'x', ruch: 2 };
+  const bHome = { id: 'bh', q: 22, r: 20, ownerId: 2, foundedBy: 2 };
+  const aHome = { id: 'ah', q: 0, r: 0, ownerId: 1, foundedBy: 1 };
+  // Dla A (zalozyciel): M = S2 -> planer odbija M (p1).
+  E.resetHomeWarMemory();
+  const pa = E.planHomeWar(base(1, [aHome], [aUnit]));
+  ok(pa.recapture !== null && pa.recapture.cityId === 'M', 'A: M (S2) jest celem odzyskania');
+  // Dla B (zdobywca): M = S3 -> planer B nie odbija M jako S2, a zagrozenie M traktuje jako S3 (obrona p2).
+  E.resetHomeWarMemory();
+  const bCities = [bHome, Object.assign({}, M(), { ownerId: 2 })];
+  const eA = { id: 'e9', ownerId: 1, q: 19, r: 20, ruchLeft: 2, typeId: 'W', category: 'x', ruch: 2 };
+  const pb = E.planHomeWar(Object.assign(base(2, bCities, [bUnit, eA]), {
+    allCities: bCities,
+    enemyUnits: [eA],
+    isOwnTerritory: (q, r) => E.hexDistance(q, r, 20, 20) <= 4 || E.hexDistance(q, r, 22, 20) <= 4,
+  }));
+  ok(pb.recapture === null, 'B: nie ma odbicia (M nie jest jego zalozeniem)');
+  ok(pb.orders.length >= 1 && pb.orders.every(o => o.task === 'p2'), `B: zagrozenie M = obrona utrzymania (p2) (${JSON.stringify(pb.orders.map(o => o.task))})`);
+  // Dla C (trzecia): M nie jest wlasne, nie ma odbicia ani obrony M.
+  E.resetHomeWarMemory();
+  const cHome = { id: 'ch', q: 40, r: 40, ownerId: 3, foundedBy: 3 };
+  const cUnit = { id: 'c0', ownerId: 3, q: 39, r: 40, ruchLeft: 2, typeId: 'W', category: 'x', ruch: 2 };
+  const pc = E.planHomeWar(base(3, [cHome], [cUnit]));
+  ok(pc.recapture === null && pc.orders.length === 0, 'C: M poza "wlasnym" (brak odbicia i brak obrony M)');
+  ok(E.ownTerritoryClassOf(M(), 3) === null, 'C: klasyfikacja M = null');
+  ok(E.ownTerritoryClassOf(M(), 2) === 'S3', 'B: klasyfikacja M = S3');
+  ok(E.ownTerritoryClassOf(M(), 1) === 'S2', 'A: klasyfikacja M = S2');
+}
+
 S.cleanup(E);
 console.log(`\nai-defend-recapture-attack-priority-test: ${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

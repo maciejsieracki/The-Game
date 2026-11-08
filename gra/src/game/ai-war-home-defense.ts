@@ -30,7 +30,7 @@
  */
 
 import type { RuntimeUnit } from '../units/setup';
-import { isCityLostOf } from './cities';
+import { cityFounderId, isCityLostOf } from './cities';
 
 // ---------------------------------------------------------------------------
 // Stale (dokumentowane progi)
@@ -105,6 +105,11 @@ export interface HomeWarInput {
   enemyUnits: readonly RuntimeUnit[];
   /** Wlasciciel jest w wojnie z (bramka walki AI). */
   canEngageOwner: (ownerId: number) => boolean;
+  /**
+   * R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1 (KONTAKT, dodatek 1): odzyskanie utraconego miasta tylko
+   * od właściciela, z którym AI ma kontakt (i wojnę -- canEngageOwner). undefined = kontakt zakładany.
+   */
+  hasContactWith?: (ownerId: number) => boolean;
   /** Jednostki, ktore w tej turze juz atakuja / wchodza na wrogie miasto -- nie ruszane. */
   lockedUnitIds: ReadonlySet<string>;
   isOwnTerritory: (q: number, r: number) => boolean;
@@ -142,8 +147,8 @@ export interface HomeWarPlan {
 interface ModeMemory { mode: 'attack' | 'hold' | 'released'; since: number }
 interface HomeWarMemory {
   lastTurn: number;
-  /** Tryb obrony per wrog (ownerId wroga). */
-  p2: Map<number, ModeMemory>;
+  /** Tryb obrony per wrog i klasa zagrozenia: `${ownerId wroga}|S1` / `|S3`. */
+  p2: Map<string, ModeMemory>;
   /** Wybrany cel odbicia + tryb. */
   p1: { cityId: string; mode: 'go' | 'wait'; since: number } | null;
   /** Pierwsze zauwazenie utraty miasta (do starzenia). */
@@ -262,101 +267,121 @@ export function planHomeWar(input: HomeWarInput): HomeWarPlan {
 
   const initialPoolIds = new Set(pool.keys());
 
+  // Klasa zagrozenia (R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1, dodatek 2): wrog na moim terenie
+  // jest S1 (zagrozone miasto ZALOZONE przeze mnie), gdy NAJBLIZSZE moje miasto (ten sam wybor co
+  // zbiorka w obronie) ma tworce = ja; w pozostalych przypadkach S3 (zdobyte miasto, utrzymanie).
+  // Miasto bez pola tworcy (stary zapis) -> cityFounderId (fallback, patrz cities.ts).
+  const nearestHome = (q: number, r: number): HomeWarCity | undefined => {
+    let best: HomeWarCity | undefined;
+    let bd = Infinity;
+    for (const c of input.myCities) {
+      const d = input.distance(q, r, c.q, c.r);
+      if (d < bd || (d === bd && best !== undefined && c.id < best.id)) { bd = d; best = c; }
+    }
+    return best;
+  };
+  const isFounderHome = (c: HomeWarCity): boolean => cityFounderId(c) === input.ownerId;
+
   // ---- P2: wrog NA WLASNYM TERENIE ----
   const invaders = input.enemyUnits.filter(
     u => input.isFieldUnit(u) && u.embarked !== true && input.isOwnTerritory(u.q, u.r),
   );
-  const clusters = invaders.length > 0 && input.myCities.length > 0 ? buildClusters(invaders, input) : [];
-  const seenEnemies = new Set<number>();
-  for (const cl of clusters) {
-    seenEnemies.add(cl.enemyOwnerId);
-    const present = field.filter(u =>
-      cl.members.some(m => input.distance(u.q, u.r, m.q, m.r) <= HOME_WAR_PRESENT_RADIUS),
-    );
-    const presentStrength = present.reduce((s, u) => s + input.strengthOf(u), 0);
-    const small = cl.strength <= HOME_WAR_SMALL_THREAT_SHARE * fieldStrengthTotal;
-    // Sila obecna, ktorej nie da sie przydzielic (zablokowana/bez ruchu/oblegajaca), liczy sie do potrzeby.
-    const fixedStrength = present.filter(u => !initialPoolIds.has(u.id)).reduce((x, u) => x + input.strengthOf(u), 0);
-    const cands = [...pool.values()].sort((a, b) =>
-      input.distance(a.q, a.r, cl.anchor.q, cl.anchor.r) - input.distance(b.q, b.r, cl.anchor.q, cl.anchor.r)
-      || cmpId(a, b));
-    const chosen: RuntimeUnit[] = [];
-    let chosenStrength = 0;
-    if (small) {
-      let cum = fixedStrength;
-      for (const u of cands) {
-        if (cum >= HOME_WAR_DETACH_MARGIN * cl.strength) break;
-        const st = input.strengthOf(u);
-        chosen.push(u); cum += st; chosenStrength += st;
-      }
-    } else {
-      for (const u of cands) { chosen.push(u); chosenStrength += input.strengthOf(u); }
-    }
-    // Ocena szans: cala sila, ktora wezmie udzial (przydzielone jednostki + nieprzydzielalna obecna).
-    const ratio = cl.strength > 0 ? (chosenStrength + fixedStrength) / cl.strength : Infinity;
-    const prev = mem?.p2.get(cl.enemyOwnerId);
-    let mode: 'attack' | 'hold' | 'released';
-    if (prev?.mode === 'released') {
-      mode = 'released';
-    } else if (prev?.mode === 'hold' && turn !== undefined && turn - prev.since >= HOME_WAR_MAX_HOLD_TURNS) {
-      mode = 'released';
-      mem!.p2.set(cl.enemyOwnerId, { mode, since: turn });
-    } else {
-      mode = decideMode(prev, ratio, turn, HOME_WAR_ATTACK_RATIO_ENTER, HOME_WAR_ATTACK_RATIO_LEAVE);
-      if (mem && turn !== undefined && (prev === undefined || prev.mode !== mode)) {
-        mem.p2.set(cl.enemyOwnerId, { mode, since: turn });
-      }
-    }
-    const info: HomeWarClusterInfo = {
-      anchorId: cl.anchor.id, enemyOwnerId: cl.enemyOwnerId, size: cl.members.length,
-      strength: cl.strength, presentStrength, ratio, small, mode, assigned: 0,
-    };
-    plan.clusters.push(info);
-    if (mode === 'released') continue;
-    if (chosen.length === 0) continue;
-    info.assigned = chosen.length;
-
-    if (mode === 'attack') {
-      for (const u of chosen) {
-        pool.delete(u.id);
-        const adj = cl.members
-          .filter(m => input.distance(u.q, u.r, m.q, m.r) === 1)
-          .sort(cmpId)[0];
-        if (adj !== undefined) {
-          plan.orders.push({ unitId: u.id, kind: 'attack', targetUnitId: adj.id, task: 'p2' });
-          continue;
+  const allClusters = invaders.length > 0 && input.myCities.length > 0 ? buildClusters(invaders, input) : [];
+  const clusterIsS1 = (cl: Cluster): boolean => {
+    const h = nearestHome(cl.anchor.q, cl.anchor.r);
+    return h !== undefined && isFounderHome(h);
+  };
+  const seenKeys = new Set<string>();
+  const runP2 = (wantS1: boolean): void => {
+    for (const cl of allClusters) {
+      if (clusterIsS1(cl) !== wantS1) continue;
+      const key = `${cl.enemyOwnerId}|${wantS1 ? 'S1' : 'S3'}`;
+      seenKeys.add(key);
+      const present = field.filter(u =>
+        cl.members.some(m => input.distance(u.q, u.r, m.q, m.r) <= HOME_WAR_PRESENT_RADIUS),
+      );
+      const presentStrength = present.reduce((s, u) => s + input.strengthOf(u), 0);
+      const small = cl.strength <= HOME_WAR_SMALL_THREAT_SHARE * fieldStrengthTotal;
+      // Sila obecna, ktorej nie da sie przydzielic (zablokowana/bez ruchu/oblegajaca), liczy sie do potrzeby.
+      const fixedStrength = present.filter(u => !initialPoolIds.has(u.id)).reduce((x, u) => x + input.strengthOf(u), 0);
+      const cands = [...pool.values()].sort((a, b) =>
+        input.distance(a.q, a.r, cl.anchor.q, cl.anchor.r) - input.distance(b.q, b.r, cl.anchor.q, cl.anchor.r)
+        || cmpId(a, b));
+      const chosen: RuntimeUnit[] = [];
+      let chosenStrength = 0;
+      if (small) {
+        let cum = fixedStrength;
+        for (const u of cands) {
+          if (cum >= HOME_WAR_DETACH_MARGIN * cl.strength) break;
+          const st = input.strengthOf(u);
+          chosen.push(u); cum += st; chosenStrength += st;
         }
-        let tgt = cl.members[0]!;
-        let td = Infinity;
-        for (const m of cl.members) {
-          const d = input.distance(u.q, u.r, m.q, m.r);
-          if (d < td) { td = d; tgt = m; }
+      } else {
+        for (const u of cands) { chosen.push(u); chosenStrength += input.strengthOf(u); }
+      }
+      // Ocena szans: cala sila, ktora wezmie udzial (przydzielone jednostki + nieprzydzielalna obecna).
+      const ratio = cl.strength > 0 ? (chosenStrength + fixedStrength) / cl.strength : Infinity;
+      const prev = mem?.p2.get(key);
+      let mode: 'attack' | 'hold' | 'released';
+      if (prev?.mode === 'released') {
+        mode = 'released';
+      } else if (prev?.mode === 'hold' && turn !== undefined && turn - prev.since >= HOME_WAR_MAX_HOLD_TURNS) {
+        mode = 'released';
+        mem!.p2.set(key, { mode, since: turn });
+      } else {
+        mode = decideMode(prev, ratio, turn, HOME_WAR_ATTACK_RATIO_ENTER, HOME_WAR_ATTACK_RATIO_LEAVE);
+        if (mem && turn !== undefined && (prev === undefined || prev.mode !== mode)) {
+          mem.p2.set(key, { mode, since: turn });
         }
-        plan.orders.push({ unitId: u.id, kind: 'approach', toQ: tgt.q, toR: tgt.r, task: 'p2' });
       }
-    } else {
-      // Obrona w miescie najblizszym najezdzcy (zbiorka) -- bez samobojczego wypadu.
-      let city = input.myCities[0]!;
-      let cd = Infinity;
-      for (const c of input.myCities) {
-        const d = input.distance(cl.anchor.q, cl.anchor.r, c.q, c.r);
-        if (d < cd || (d === cd && c.id < city.id)) { cd = d; city = c; }
-      }
-      for (const u of chosen) {
-        pool.delete(u.id);
-        plan.orders.push({ unitId: u.id, kind: 'hold', toQ: city.q, toR: city.r, cityId: city.id, task: 'p2' });
+      const info: HomeWarClusterInfo = {
+        anchorId: cl.anchor.id, enemyOwnerId: cl.enemyOwnerId, size: cl.members.length,
+        strength: cl.strength, presentStrength, ratio, small, mode, assigned: 0,
+      };
+      plan.clusters.push(info);
+      if (mode === 'released') continue;
+      if (chosen.length === 0) continue;
+      info.assigned = chosen.length;
+
+      if (mode === 'attack') {
+        for (const u of chosen) {
+          pool.delete(u.id);
+          const adj = cl.members
+            .filter(m => input.distance(u.q, u.r, m.q, m.r) === 1)
+            .sort(cmpId)[0];
+          if (adj !== undefined) {
+            plan.orders.push({ unitId: u.id, kind: 'attack', targetUnitId: adj.id, task: 'p2' });
+            continue;
+          }
+          let tgt = cl.members[0]!;
+          let td = Infinity;
+          for (const m of cl.members) {
+            const d = input.distance(u.q, u.r, m.q, m.r);
+            if (d < td) { td = d; tgt = m; }
+          }
+          plan.orders.push({ unitId: u.id, kind: 'approach', toQ: tgt.q, toR: tgt.r, task: 'p2' });
+        }
+      } else {
+        // Obrona w miescie najblizszym najezdzcy (zbiorka) -- bez samobojczego wypadu.
+        const city = nearestHome(cl.anchor.q, cl.anchor.r) ?? input.myCities[0]!;
+        for (const u of chosen) {
+          pool.delete(u.id);
+          plan.orders.push({ unitId: u.id, kind: 'hold', toQ: city.q, toR: city.r, cityId: city.id, task: 'p2' });
+        }
       }
     }
-  }
-  if (mem) {
-    for (const k of [...mem.p2.keys()]) if (!seenEnemies.has(k)) mem.p2.delete(k);
-  }
+  };
 
-  // ---- P1: odbicie wlasnych utraconych miast ----
-  // "Utracone" = miasto ZALOZONE przeze mnie (twórca), dziś cudze -- także po wielu zmianach właściciela;
-  // zdobyte cudze miasto NIE jest "moje" (cities.ts: isCityLostOf).
+  // KOLEJNOSC (dodatek 2 wlasciciela): S1 obrona -> S2 odzyskanie (P1 nizej) -> S3 utrzymanie -> dopiero atak (rdzen).
+  runP2(true);
+
+  // ---- P1 (S2): odbicie wlasnych utraconych miast ----
+  // "Utracone" = miasto ZALOZONE przeze mnie (tworca), dzis cudze -- takze po wielu zmianach wlasciciela;
+  // zdobyte cudze miasto NIE jest "moje" (cities.ts: isCityLostOf). KONTAKT: tylko wlasciciel, z ktorym AI
+  // ma kontakt i wojne (canEngageOwner + hasContactWith).
   const lostAll = input.allCities.filter(c =>
-    isCityLostOf(c, input.ownerId) && input.canEngageOwner(c.ownerId));
+    isCityLostOf(c, input.ownerId) && input.canEngageOwner(c.ownerId)
+    && (input.hasContactWith === undefined || input.hasContactWith(c.ownerId)));
   const lostIds = new Set(lostAll.map(c => c.id));
   if (mem && turn !== undefined) {
     for (const c of lostAll) if (!mem.lostSeen.has(c.id)) mem.lostSeen.set(c.id, turn);
@@ -422,6 +447,12 @@ export function planHomeWar(input: HomeWarInput): HomeWarPlan {
     }
   } else if (mem && lost.length === 0) {
     mem.p1 = null;
+  }
+
+  // ---- P2b (S3): zagrozenie zdobytego, utrzymywanego miasta -- dopiero po S1 i S2 ----
+  runP2(false);
+  if (mem) {
+    for (const k of [...mem.p2.keys()]) if (!seenKeys.has(k)) mem.p2.delete(k);
   }
   return plan;
 }

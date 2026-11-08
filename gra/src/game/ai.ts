@@ -469,6 +469,12 @@ export interface AITurnOpts {
    */
   canEngageOwner?: (targetOwnerId: number) => boolean;
   /**
+   * R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1 (KONTAKT): main.ts ustawia: barbarzyńca = true,
+   * inaczej kontakt dyplomatyczny (tradeContactBetween). Bez kontaktu AI nie dostaje celu
+   * odzyskania utraconego miasta ani wyjątku widoczności wobec tego właściciela. Gdy brak -- true.
+   */
+  hasContactWith?: (targetOwnerId: number) => boolean;
+  /**
    * R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: straz marszu (ai-march-guard.ts). Gdy podana,
    * jednostki wojenne tego AI traktuja teren trzecich cywilizacji bez umowy przemarszu jako
    * zablokowany w planowaniu trasy. Brak pola = zachowanie sprzed tematu (testy lane / stare save).
@@ -553,6 +559,11 @@ export interface AITurnOpts {
 /** Bramka walki AI — domyślnie przepuszcza (testy bez silnika). */
 function aiCanEngageOwner(opts: AITurnOpts, targetOwnerId: number): boolean {
   return opts.canEngageOwner ? opts.canEngageOwner(targetOwnerId) : true;
+}
+
+/** KONTAKT (R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1): bramka kontaktu dla celow utraconych miast. */
+function aiHasContactWith(opts: AITurnOpts, targetOwnerId: number): boolean {
+  return opts.hasContactWith ? opts.hasContactWith(targetOwnerId) : true;
 }
 
 /**
@@ -3447,7 +3458,8 @@ function applyHomeWarPriorities(
   const isField = (u: RuntimeUnit): boolean => !isCivilianUnit(u) && !isScoutUnit(u);
   const enemyUnits = units.filter(u =>
     u.ownerId !== playerId && u.ownerId !== BARB && aiCanEngageOwner(opts, u.ownerId) && isField(u));
-  const hasLost = cities.some(c => isCityLostOf(c, playerId));
+  const hasLost = cities.some(c => isCityLostOf(c, playerId) && aiCanEngageOwner(opts, c.ownerId)
+    && aiHasContactWith(opts, c.ownerId));
   if (enemyUnits.length === 0 && !hasLost) return commands;
 
   const enemyCityHex = new Set(cities.filter(c => c.ownerId !== playerId).map(c => keyOf(c.q, c.r)));
@@ -3463,11 +3475,18 @@ function applyHomeWarPriorities(
   // (marsz na trzecia cywilizacje) jest odwolywana do obrony.
   const threatOwners = new Set<number>();
   for (const eu of enemyUnits) if (isOwnTerritory(eu.q, eu.r)) threatOwners.add(eu.ownerId);
-  for (const c of cities) if (isCityLostOf(c, playerId)) threatOwners.add(c.ownerId);
+  // KONTAKT: utracone miasto daje zagrozenie tylko od wlasciciela, z ktorym jest wojna i kontakt.
+  for (const c of cities) {
+    if (isCityLostOf(c, playerId) && aiCanEngageOwner(opts, c.ownerId) && aiHasContactWith(opts, c.ownerId)) {
+      threatOwners.add(c.ownerId);
+    }
+  }
   const cityById = new Map(cities.map(c => [c.id, c] as const));
   const cityAtHex = new Map(cities.map(c => [keyOf(c.q, c.r), c] as const));
   const endsThreat = (c: AICity | undefined): boolean =>
-    c !== undefined && c.ownerId !== playerId && (isCityLostOf(c, playerId) || threatOwners.has(c.ownerId));
+    c !== undefined && c.ownerId !== playerId && aiCanEngageOwner(opts, c.ownerId)
+    && aiHasContactWith(opts, c.ownerId)
+    && (isCityLostOf(c, playerId) || threatOwners.has(c.ownerId));
   const locked = new Set<string>();
   for (const cmd of commands) {
     if (cmd.type === 'attack') locked.add(cmd.unitId);
@@ -3483,6 +3502,7 @@ function applyHomeWarPriorities(
     allCities: cities,
     enemyUnits,
     canEngageOwner: o => aiCanEngageOwner(opts, o),
+    hasContactWith: o => aiHasContactWith(opts, o),
     lockedUnitIds: locked,
     isOwnTerritory,
     isRelevantSiege: cityId => endsThreat(cityById.get(cityId)),
