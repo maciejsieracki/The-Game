@@ -1,3 +1,9 @@
+## ROBOCZA f2a1874c -- 2026-11-06 -- FALA 564: CPTECH: kafelek Technologie w panelu miasta bez martwych efektow (wspolny filtr z karta odkrycia) (testowa)
+
+- nowy techDeadEffects.ts; cityPanel.ts, technologyAdapter.ts, techDiscoveryNotice.ts uzywaja wspolnego filtra; ukryte: Teatr (Filozofia), Lazaret (Medycyna), Wielka odlewnia i Wielka Kuznia (Obrobka zelaza); ZNANY STAN 5->3 wpisy
+- Weryfikacja: citypanel-tech-tile-dead-effects-test 17/0, building-cards-top5 1179/0, tech-cards-top5 594/0, tech-discovery-card-click 13/0, logic 213/213, ai-test 289/0, tsc 0
+- Limity: render w Chromium NIE_ZMIERZONO; Katapulta x2 i elit zostaja (realne odblokowania); _martweFrazy warsztat_oblezniczy/akademia_wojskowa do decyzji ABC
+
 ## ROBOCZA b1a76485 -- 2026-11-06 -- FALA 563: TRYBUNAL-CARD: karta budynku pokazuje efektywne Szczescie zgodne z silnikiem (testowa)
 
 - buildingAdapter.ts: wiersz Zadowolenie i skala poziomow z buildingHappinessAtLevel dla 19 budynkow dajeSzczescie (Trybunal L1 +2, L2 +3); liczby silnika bez zmian
