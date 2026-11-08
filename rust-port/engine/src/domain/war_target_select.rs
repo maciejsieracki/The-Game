@@ -7,9 +7,11 @@
 //!   gdy oba cele maja `defenders` -- slabiej broniony, potem nizsze id miasta; inaczej `cmpTarget`.
 //!
 //! Odstepstwo (ZALOZENIE, do akceptacji): `WarCapitalTarget` w Rust nie ma pola `defenders` (dodanie
-//! dotknie testow poza allowlista). Liczba obroncow jest tu w osobnym typie `WarCityTarget`.
-//! Planer `plan_war_all_in_capital` nadal wola `nearest_target` bez tie-breaku `defenders`
-//! (podpiecie = otwarty punkt, patrz raport). Wektory: `tests/p6_repin_ai_war_vectors.json`.
+//! dotknie testow poza allowlista). Liczba obroncow jest tu w osobnym typie `WarCityTarget`; do planera
+//! trafia przez `split_city_targets` -> `plan_war_all_in_capital_with_defenders` (tie-break `defenders`
+//! przy remisie odleglosci, `war_all_in_capital_plan.rs`). Wektory: `tests/p6_repin_ai_war_vectors.json`.
+
+use std::collections::HashMap;
 
 use crate::domain::pathfinding::ruch_jednostek::hex_distance;
 use crate::domain::war_all_in_capital::WarCapitalTarget;
@@ -124,6 +126,21 @@ fn tie_before_target(a: &WarCityTarget, b: &WarCityTarget) -> bool {
         }
         _ => cmp_target(&a.target, &b.target) == std::cmp::Ordering::Less,
     }
+}
+
+/// Rozbija cele na liste dla planera i mape `city_id -> defenders` (tylko cele miast; stolice bez wpisu).
+pub fn split_city_targets(
+    targets: &[WarCityTarget],
+) -> (Vec<WarCapitalTarget>, HashMap<String, i64>) {
+    let mut plain = Vec::with_capacity(targets.len());
+    let mut defenders = HashMap::new();
+    for t in targets {
+        if let Some(d) = t.defenders {
+            defenders.insert(t.target.city_id.clone(), d);
+        }
+        plain.push(t.target.clone());
+    }
+    (plain, defenders)
 }
 
 /// Web `nearestTarget` (warAllInCapital.ts, nieeksportowana) z tie-breakiem `tieBeforeTarget`.

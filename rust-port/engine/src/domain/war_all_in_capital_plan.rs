@@ -13,8 +13,8 @@ use super::war_rules_multiwar::EnemyStrengthRef;
 use crate::domain::pathfinding::ruch_jednostek::{hex_distance, Klucz};
 
 use super::war_all_in_capital::{
-    cmp_target, nearest_target, war_allin_params, WarAllInMode, WarAllInOrder, WarAllInPlan,
-    WarAllInPlanOpts, WarAllInUnit, WarCapitalTarget,
+    cmp_target, war_allin_params, WarAllInMode, WarAllInOrder, WarAllInPlan, WarAllInPlanOpts,
+    WarAllInUnit, WarCapitalTarget,
 };
 use super::war_all_in_capital_nav::{
     choose_step, distance_field, extend_walk, Field, Goal, StepResult, StepState, WarAllInNav,
@@ -262,6 +262,50 @@ pub fn plan_war_all_in_capital(
     nav: &WarAllInNav<'_>,
     opts: WarAllInPlanOpts,
 ) -> WarAllInPlan {
+    plan_war_all_in_capital_with_defenders(units, targets, &HashMap::new(), nav, opts)
+}
+
+/// Web `nearestTarget` z `tieBeforeTarget` (warAllInCapital.ts:413): przy remisie odleglosci, gdy OBA cele
+/// maja liczbe obroncow (`defenders`, cele miast z `buildWarCityTargets`) -- slabiej broniony, potem nizsze
+/// id miasta; inaczej `cmpTarget`. Pusta mapa = dokladnie `nearest_target` (stolice).
+fn nearest_target_def<'a>(
+    q: i32,
+    r: i32,
+    targets: &'a [WarCapitalTarget],
+    defenders: &HashMap<String, i64>,
+) -> Option<&'a WarCapitalTarget> {
+    let mut best: Option<&WarCapitalTarget> = None;
+    let mut best_d = i64::MAX;
+    for t in targets {
+        let d = hex_distance(q, r, t.q, t.r);
+        let replace = match best {
+            None => true,
+            Some(b) => {
+                d < best_d
+                    || (d == best_d
+                        && match (defenders.get(&t.city_id), defenders.get(&b.city_id)) {
+                            (Some(da), Some(db)) if da != db => da < db,
+                            (Some(_), Some(_)) => t.city_id < b.city_id,
+                            _ => cmp_target(t, b) == Ordering::Less,
+                        })
+            }
+        };
+        if replace {
+            best = Some(t);
+            best_d = d;
+        }
+    }
+    best
+}
+
+/// Planer z liczba obroncow celow miast (`city_id` -> `defenders`). Wejscie do tie-breaku remisu odleglosci.
+pub fn plan_war_all_in_capital_with_defenders(
+    units: &[WarAllInUnit],
+    targets: &[WarCapitalTarget],
+    defenders: &HashMap<String, i64>,
+    nav: &WarAllInNav<'_>,
+    opts: WarAllInPlanOpts,
+) -> WarAllInPlan {
     let mut plan = WarAllInPlan::default();
     if units.is_empty() || targets.is_empty() {
         return plan;
@@ -324,7 +368,7 @@ pub fn plan_war_all_in_capital(
                 anchor = m.clone();
             }
         }
-        let target = nearest_target(anchor.q, anchor.r, targets)
+        let target = nearest_target_def(anchor.q, anchor.r, targets, defenders)
             .expect("targets niepuste")
             .clone();
         let dist_to_target = hex_distance(anchor.q, anchor.r, target.q, target.r);
@@ -370,7 +414,7 @@ pub fn plan_war_all_in_capital(
                 if own.is_empty() {
                     continue;
                 }
-                c.target = nearest_target(c.anchor.q, c.anchor.r, &own)
+                c.target = nearest_target_def(c.anchor.q, c.anchor.r, &own, defenders)
                     .expect("own niepuste")
                     .clone();
                 c.dist_to_target = hex_distance(c.anchor.q, c.anchor.r, c.target.q, c.target.r);
