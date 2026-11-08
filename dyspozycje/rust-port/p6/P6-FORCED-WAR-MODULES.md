@@ -37,9 +37,35 @@ Pozostałe eksporty `war-rules-multiwar.ts` (setter/override flag `setWarRulesMu
 
 Pominięte w G1 świadomie: `WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR` (web: „NIEUŻYWANA w runtime”, stała zostaje tylko dla testów webowych); serialize/restore (zależą od struktur Map main.ts — G2/G3).
 
+## 2a. Partia G2 (runda 2, dodatek 1) — parowanie, stan zapisu, Bronze, Iron
+
+Baza: `f8c7007ef` (G1 zintegrowane). Wektory: `tests/p6_forced_war_g2_data/cases.json` (306 przypadków, generator `gen_cases_g2.mjs`, Node 22 + `--experimental-strip-types`, prawdziwy web z `git archive origin/main gra/src gra/data`; wejścia deterministyczne, PRNG ziarno 20261108).
+
+| Symbol web | Rust | Plik | Wektory |
+|---|---|---|---|
+| `assignForcedWarPairings` (common:~330-537; krok 1-4, DP n<=24, galaz zachlanna n>24, gracz pierwszy) | `assign_forced_war_pairings` | `domain/war_forced_pairing.rs` | `p6_forced_war_g2_data/cases.json` (85) |
+| `ForcedWarPairState`, `ForcedWarSaveState`, `restoreForcedWarState`, `serializeForcedWarState` (common:~17-35, ~520-537) | `ForcedWarPairState`, `ForcedWarSaveState`, `restore_forced_war_state`, `serialize_forced_war_state` | `domain/war_forced_pairing.rs` | j.w. (roundtrip, 42) |
+| `isEligibleForBronzeForcedWar`, `pickBronzeForcedWarTargetId`, `isRestingFromBronzeForcedWar`, stale `WOJNA_WYMUSZONA_*` (bronze) | `is_eligible_for_bronze_forced_war`, `pick_bronze_forced_war_target_id`, `is_resting_from_bronze_forced_war`, stale `WOJNA_WYMUSZONA_*` | `domain/war_forced_bronze.rs` | j.w. |
+| `serializeBronzeForcedWarState` / `restoreBronzeForcedWarState` (bronze) | `serialize_bronze_forced_war_state` / `restore_bronze_forced_war_state` | `domain/war_forced_bronze.rs` | j.w. |
+| `isEligibleForIronForcedWar`, `isIronEraEntry` (`prev<3 && next>=3`), `pickIronForcedWarTargetId`, `isRestingFromIronForcedWar`, stale `WOJNA_ZELAZO_*`, `EPOKA_ZELAZO_NUMER` (iron) | `is_eligible_for_iron_forced_war`, `is_iron_era_entry`, `pick_iron_forced_war_target_id`, `is_resting_from_iron_forced_war`, stale `WOJNA_ZELAZO_*`, `EPOKA_ZELAZO_NUMER` | `domain/war_forced_iron.rs` | j.w. |
+| `serializeIronForcedWarState` / `restoreIronForcedWarState` (iron) | `serialize_iron_forced_war_state` / `restore_iron_forced_war_state` | `domain/war_forced_iron.rs` | j.w. |
+
+Progi (1:1 z `war-rules-params.json` / stałymi webu): `ERA_FORCED_WAR_START_TURNS_BRONZE = ERA_FORCED_WAR_START_TURNS_IRON = 20` (`diplomacy_multiwar_gate.rs`, R-WEB-ERA-DELAY-Q1); pozostałe stałe (miasta=2, odpoczynek=20, cooldown=20, MAX_CZAS=20 nieużywany) jako literały z dokumentacją źródła.
+
+ODSTĘPSTWA / ZAŁOŻENIA G2:
+- Typ `ForcedWarEraTag` (bronze/stone/iron) zdefiniowany w `war_forced_pairing.rs` (web: union string); nie współdzielony z `ForcedEraTag` z `diplomacy_multiwar.rs` (różne moduły, ta sama semantyka).
+- `serialize_*` w Rust = klon wektorów (web `Array.from` zachowuje kolejność wstawiania; Set/Map w Rust są wektorami z semantyką JS: duplikaty Set odrzucane, Map nadpisuje pod pierwszym kluczem). Porównanie wektorowe obejmuje ten kształt.
+- `startTurn` (pair state) = `Option<f64>`; brak klucza w zapisie = `None` (zgodnie z `undefined` w JSON).
+- Wszystkie pary AI↔AI; pary z `targetId = 0` nie występują w `existingActivePairs` (kontrakt webu, `main.ts` filtruje).
+- `WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR` = 20 pozostaje ROBOCZYM ZAŁOŻENIEM webu (web: „zmień tę jedną liczbę, gdy Maciej poda właściwą”); Rust odzwierciedla wartość webu.
+- Galaz zachłanna (n > 24) pokryta 2 wektorami (26 podmiotów); w praktyce nieosiągalna (≤16 cywilizacji + gracz).
+- Rozmiar: `war_forced_pairing.rs` 417 LOC + `tests/p6_forced_war_g2.rs` 290 LOC w commicie G2a (przekroczenie budżetu 600 LOC na partię — ZAŁOŻENIE: pairing+state to jedna nierozdzielna całość 1:1 z `assignForcedWarPairings`); commit G2b: bronze 75 + iron 80 + test +181 LOC.
+
+NIE_ZMIERZONO w G2: pełne `cargo test` 318 binarek (dysk < 5 GB w trakcie; uruchomiono `--lib` (22/22) i 14 binarek war/multiwar/zapis-erawar: 0 failed). `clippy --all-targets -D warnings`: czysto. `rustfmt --check` na nowych plikach: czysto.
+
 ## 3. Partie kolejne (NIE w tej rundzie; szacunek z dossier MULTIWAR-2)
 
-- **G2** — `forced-war-common.ts` 186–537 (`assignForcedWarPairings`, `ForcedWarPairingOpts`, `restoreForcedWarState`, serialize/restore lock i stanu) + `forced-war-bronze.ts` (eligibility, pick, rest, serialize) + `forced-war-iron.ts` (eligibility, `isIronEraEntry`, pick, rest). Szacunek 500–600 LOC Rust. Bronze/iron importują `WAR_RULES_PARAMS` (JSON) — w Rust progi są stałymi (`ERA_FORCED_WAR_START_TURNS_*`).
+- **G3** — `forced-war-waves.ts` (293 linii: `planForcedWarWave`, `pruneForcedWarWaves`, `approachSectorForHex`, `hexDistanceForForcedWar`) oraz timer/podpięcie wypowiedzenia (`main.ts`: trigger wejścia AI w epokę, ERADELAY). Dispatch rundy 2 stanowi: G3 (waves/timer/trigger main.ts) zostaje na rundę 3.
 - **G3** — `forced-war-waves.ts` (293 linii: `planForcedWarWave`, `pruneForcedWarWaves`, `approachSectorForHex`, `hexDistanceForForcedWar`) oraz timer/podpięcie wypowiedzenia (`main.ts`: trigger wejścia AI w epokę, ERADELAY). Timer żyje w `main.ts` — poza allowlistą war_*.rs; wymaga osobnego tematu lub zgody na przeniesienie logiki do `domain/war_*.rs`.
 
 ## 4. Pomiar NIE_ZMIERZONO
