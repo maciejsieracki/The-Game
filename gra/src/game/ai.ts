@@ -7222,7 +7222,7 @@ export function loadAiPurchaseReserveParams(
 ): AiPurchaseReserveParams {
   const n = poziom;
   return {
-    rezerwaTur: Math.max(0, getAiParam(data, `kupno_jednostki_rezerwa_tur_poziom${n}`, n === 1 ? 3 : n === 2 ? 3 : 2)),
+    rezerwaTur: Math.max(0, getAiParam(data, `kupno_jednostki_rezerwa_tur_poziom${n}`, n === 1 ? 10 : n === 2 ? 3 : 0)),
     minDochodNetto: getAiParam(data, `kupno_jednostki_min_dochod_netto_poziom${n}`, n === 1 ? 0 : n === 2 ? 0 : -2),
   };
 }
