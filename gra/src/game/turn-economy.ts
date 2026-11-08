@@ -1369,8 +1369,25 @@ export function spichlerzSolPayingCityIds(ownerId: number): ReadonlySet<string> 
 }
 
 /**
+ * R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1: resolver parametrów utrzymania żywności
+ * WG WŁAŚCICIELA (miasto-państwo -> cityStateDifficulty, reszta -> trudność menu).
+ * Ustawiany raz przez main.ts. Brak resolvera (testy, stare wywołania) = dotychczasowe
+ * zachowanie: używany jest parametr `upkeep` przekazany przez wołającego.
+ */
+let _armyFoodUpkeepResolver: ((ownerId: number) => UpkeepParams) | null = null;
+
+export function setArmyFoodUpkeepResolver(
+  resolver: ((ownerId: number) => UpkeepParams) | null,
+): void {
+  _armyFoodUpkeepResolver = resolver;
+}
+
+/**
  * Koszt żywności armii z mnożnikami Spichlerza II / Sól (U-10B).
  * Wołający musi przekazać inGarnizon + garrisonCityId na jednostkach garnizonu.
+ * R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1: gdy zainstalowano `setArmyFoodUpkeepResolver`,
+ * zużycie jednostek właściciela liczy się z JEGO poziomu trudności (parametr `upkeep`
+ * jest wtedy tylko fallbackiem). Dla gracza i AI wynik identyczny jak dotąd.
  */
 export function militaryFoodConsumptionWithSpichlerz(
   units: ReadonlyArray<EconUnit & { inGarnizon?: boolean; garrisonCityId?: string }>,
@@ -1384,10 +1401,11 @@ export function militaryFoodConsumptionWithSpichlerz(
 ): number {
   const solArmy = opts?.solArmyOverride ?? spichlerzSolArmyBonusActive(ownerId);
   const solCities = opts?.solCityIdsOverride ?? spichlerzSolPayingCityIds(ownerId);
+  const upkeepForOwner = _armyFoodUpkeepResolver ? _armyFoodUpkeepResolver(ownerId) : upkeep;
   let sum = 0;
   for (const u of units) {
     if (u.ownerId !== ownerId) continue;
-    const base = unitFoodPerTurn(u, upkeep, foodTable);
+    const base = unitFoodPerTurn(u, upkeepForOwner, foodTable);
     const mult = spichlerzArmyFoodCostMultiplier({
       solArmyBonusActive: solArmy,
       onOwnTerritory: u.onOwnTerritory ?? true,

@@ -612,6 +612,7 @@ import {
   ownerResourceCap,
   cityHasWaterAccess,
   militaryFoodConsumptionWithSpichlerz,
+  setArmyFoodUpkeepResolver,
   spichlerzSolArmyBonusActive,
   applyStolarniaDrewnoMapInflow,
   refreshEconomyFoodTotals,
@@ -9046,6 +9047,23 @@ async function boot(): Promise<void> {
         typCityCopyOwners,
       );
     }
+    /**
+     * R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1: zużycie żywności armii (advanceEmpireFood,
+     * auto-wyżywienie, podgląd) wg poziomu trudności WŁAŚCICIELA jednostek -- tak jak
+     * utrzymanie w advanceCityEconomy (R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1). Miasto-państwo
+     * -> cityStateDifficulty, gracz/AI -> trudność menu (wynik dla nich bez zmian).
+     * Parametry per poziom są stałe (econ-params.json), więc cache po poziomie jest bezpieczny.
+     */
+    const _armyFoodUpkeepByLevel = new Map<GameDifficulty, ReturnType<typeof loadUpkeepParams>>();
+    setArmyFoodUpkeepResolver((oid: number) => {
+      const level = effectiveGameDifficultyForOwner(oid);
+      let cachedUpkeep = _armyFoodUpkeepByLevel.get(level);
+      if (!cachedUpkeep) {
+        cachedUpkeep = loadUpkeepParams(data.econParams, level);
+        _armyFoodUpkeepByLevel.set(level, cachedUpkeep);
+      }
+      return cachedUpkeep;
+    });
     /** N-1A: nazwa pierwszego miasta gracza z miasta_cywilizacji[0]. */
     let clusterPlayerStartCityName = playerStartCityName(data.civs, _menuCivId, data.cityNamesPools);
     /** Miasta-państwa tego samego typu — spawn po założeniu pierwszego miasta gracza. */
@@ -36927,10 +36945,12 @@ async function boot(): Promise<void> {
 
             for (const tick of efTickResult.perOwner) {
               if (!tick.glodWojskaAtrycjaAktywna) continue;
+              // R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1: ułamek atrycji wg trudności właściciela
+              // (econ-params glod_wojska_hp_frac: easy 0,06 / normal 0,08 / hard 0,10).
               const starv = applyArmyStarvationHpLoss(
                 units,
                 tick.ownerId,
-                efParams.glodWojskaHpFrac,
+                buildEmpireFoodParams(data.econParams, effectiveGameDifficultyForOwner(tick.ownerId)).glodWojskaHpFrac,
                 (typeId) => unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {}),
               );
               if (tick.ownerId === 0) {
