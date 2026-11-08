@@ -99,3 +99,51 @@ Pełny mutation score ≥85% — NIE_ZMIERZONO (11 ręcznych mutantów, bez dowo
 - Wartości progów jako literały (zgodnie z dotychczasową praktyką: `data/` nie zmieniane, bo liczą testy data_compliance).
 - `eraTag` = `Option<ForcedEraTag>`; `undefined`/`null` ⇒ `None` (zwykłe wypowiedzenie, R1 obowiązuje).
 - Porównanie NaN tury: jak w webie (`!(NaN >= 40)` = true; wojna Brazu/Żelaza i tak omija R1).
+
+## Runda 5 (domknięcie jakości B/C, wycena `price`, pomiar F, wycena D/E/G)
+
+Baza: `origin/rust-port-wip/rdyplo2-r4-fc` 11ba87fe0 → commity r5: d6151ab0e (wycena), 4f2475119 (mutacje B), 619d6b605 (mutacje C).
+Pin webu: `origin/main` 5dd53e60f. Wektory: wyłącznie z uruchomionego weba (Node 22, `git archive` poza repo).
+
+| Symbol web (`gra/src/game/diplomacy-ai-offer-balance.ts`, `main.ts` closure `price`) | Symbol Rust | Plik Rust | Wektory / testy |
+|---|---|---|---|
+| `peaceOfferAiOwnBilans(0, c, rel, base)` = `treatyBaseFairnessGap(base, 0, c, rel)`; 0 dla `base <= 0` | `web_balance_for` | `domain/diplomacy_war_weariness_tick.rs` | `p6_dyplo_multiwar2_balance_data/balance.json` (2268 wierszy), `p6_dyplo_multiwar2_balance.rs` |
+| `peaceOfferAiRequestPn(0, 0, rel, base, diff)` | `web_required_pn` + `WebDifficulty` | jw. | jw. |
+| `aiOfferPwSurplusTolerance` (easy = +∞, normal 5, hard 2); `aiOfferTargetsZeroBalance` | `web_pw_surplus_tolerance`, `web_targets_zero_balance` | jw. | jw. |
+| closure `price` → `{requiredPn, balanceFor, tolerancePn}` | `PeacePriceQuote::from_web` (zastępuje dobór liniowy; `balance_for` przy `slope == 0` = `balance0`, także dla NaN jak web) | jw. | jw. |
+| `balanceFor` jako `balance0 + slope*c` (ta sama postać) | `PeaceBalanceShape::Linear` z `from_web` | `domain/diplomacy_ai_forced_peace.rs` | `p6_dyplo_multiwar2_balance.rs` |
+| `requesterShare`, `isClearlyLosing`, `isStillLosing` | `requester_share`, `is_clearly_losing`, `is_still_losing` | `domain/diplomacy_ai_forced_peace.rs` | `p6_dyplo_multiwar2_peace_helpers_data/helpers.json`, `p6_dyplo_multiwar2_peace_helpers.rs` |
+
+Wycena: `treatyBaseFairnessGap` już istnieje w Rust (`diplomacy.rs`, bez zmian). Web `balanceFor` jest afiniczny (współczynnik 1 dla `base > 0`).
+`PeaceBalanceShape::Kinked` NIE ma odpowiednika w webie (test-double generatora `gen-forced-peace.mts`, l. 37); pozostaje, pinowany wektorami.
+
+Mutacje (operatorowe, 19 reguł na linię; skrypt `dyspozycje/autobot/runs/R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-2-Q1/mutate-r5.py`; log: `mutation-B.json`, `mutation-C.json`):
+
+| Moduł | Wszystkie | Niekompilujące (wykl.) | Żywotne | Zabite | Ocalałe (równoważne) | Wynik |
+|---|---|---|---|---|---|---|
+| B `diplomacy_war_weariness_tick.rs` | 99 | 24 | 75 | 71 | 4 (L117 ×3, L122) | 71/71 nierównoważnych (94,7% żywotnych) |
+| C `diplomacy_ai_forced_peace.rs` | 79 | 36 | 43 | 42 | 1 (L338 `<=`/`<` w Kinked) | 42/42 nierównoważnych (97,7% żywotnych) |
+
+Dowody równoważności (plik:linia):
+- `diplomacy_war_weariness_tick.rs:117` (`base_pn <= 0` w `web_required_pn`): dla base=0 i base∈(0,1] wynik to 0 niezależnie od warunku (bilans ≥ −2 ≥ −tol).
+- `diplomacy_war_weariness_tick.rs:117` (`||`→`&&`): gałąź obliczeniowa daje bilans ≥ −tol, zwraca 0; dla easy tol = −∞.
+- `diplomacy_war_weariness_tick.rs:122` (`>=`→`>`): dla bilans == −tol: `ceil(−tol − bilans) = ceil(0) = 0`.
+- `diplomacy_ai_forced_peace.rs:338` (`<=`→`<`, Kinked): dla c == knee obie gałęzie = `b0 + slope*knee` (składnik `slope2*0 = 0`).
+
+Pomiar F (diff web, `git diff --numstat pin 5dd53e60f`; hunki bez portu):
+
+| Moduł Rust | Plik(i) web | Pin | Hunki |
+|---|---|---|---|
+| `diplomacy_war_gates` | `diplomacy-war-gates.ts` | 4bbef081d | 0 |
+| `alliance_war_obligation` | `alliance-war-obligation.ts`, `diplomacy-treaties.ts` | 4bbef081d | 0 |
+| `diplomacy_tick_war_brake` | `diplomacy-tick-war-brake.ts`, `diplomacy-tick-params.json` | 4bbef081d (założony; brak pinu w nagłówku) | 0 |
+| `diplomacy_war_peace_profile` | `diplomacy-war-peace-profile.ts`, `diplomacy-war-peace-params.json`, `civ-matrix.json` | 23dd158e9 | 0 |
+| `diplomacy_war_peace_profile` | `ai-params.json` | 23dd158e9 | 1 hunk `+691,35`: `tury_do_pokoju_po_prosbie`=2 (pokrywa C), rezerwa zakupu 10/3/0 (NIE portowane tutaj; dług REPIN ai-params) |
+| `war_rules_multiwar` / `diplomacy_multiwar_gate` | `war-rules-multiwar.ts` (+37/−1, 6 hunków), `war-rules-params.json` (+3) | a61337844 | ERADELAY (params, `isEraForcedWarIgnoringR1`, `eraTag`) i ERAIGN (`isWarTreatyBlocked`): symbole OBECNE w `diplomacy_multiwar_gate.rs` (partia A). Zgodność hunka `evaluateInterCivWarGate` (l.~123) NIE_ZMIERZONO |
+
+Wycena LOC (bez portu):
+- D `diplomacy-siege-war-gate.ts`: 111 linii, 6 eksportów; brak modułu Rust; szacunek 120–160 LOC Rust, 1 partia.
+- E `diplomacy-locks.ts`: 13 bloków `case` w l.245–380 (~136 linii); brak `diplomacy_locks.rs` (miejsce case '2' NIE_ZMIERZONO); szacunek 180–260 LOC, 1 partia.
+- G `forced-war-common.ts` 537 + `bronze` 250 + `iron` 284 + `stone` 134 + `waves` 293 = 1498 linii TS; brak `forced_war_*`; szacunek 700–1000 LOC → min. 2–3 partie ≤600 LOC (G1 common+waves+timer, G2 bronze+iron, G3 stone+podpięcie `is_war_treaty_blocked`).
+
+NIE zrobione w rundzie 5 (NIE_ZMIERZONO): D, E, port hunków F, G; pełny `cargo test` (391 plików) — NIE_ZMIERZONO (uruchomiono 5 binarek: lib, tick, balance, peace_ai, peace_helpers).

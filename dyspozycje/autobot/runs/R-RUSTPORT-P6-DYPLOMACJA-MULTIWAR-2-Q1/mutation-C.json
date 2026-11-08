@@ -1,0 +1,558 @@
+{
+ "results": {
+  "L59:gt2ge:41": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "entries: Vec<(String, AiPeaceRequest)>,",
+   "mut": "entries: Vec<(String, AiPeaceRequest)>=,",
+   "s": 27.0
+  },
+  "L59:lt2le:16": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "entries: Vec<(String, AiPeaceRequest)>,",
+   "mut": "entries: Vec<=(String, AiPeaceRequest)>,",
+   "s": 26.6
+  },
+  "L67:eq2ne:43": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "self.entries.iter().any(|(k, _)| k == key)",
+   "mut": "self.entries.iter().any(|(k, _)| k != key)",
+   "s": 40.5
+  },
+  "L69:gt2ge:58": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub fn get(&self, key: &str) -> Option<&AiPeaceRequest> {",
+   "mut": "pub fn get(&self, key: &str) -> Option<&AiPeaceRequest>= {",
+   "s": 26.8
+  },
+  "L69:lt2le:42": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub fn get(&self, key: &str) -> Option<&AiPeaceRequest> {",
+   "mut": "pub fn get(&self, key: &str) -> Option<=&AiPeaceRequest> {",
+   "s": 25.5
+  },
+  "L74:ne2eq:39": {
+   "v": "KILLED",
+   "op": "ne2eq",
+   "orig": "self.entries.retain(|(k, _)| k != key);",
+   "mut": "self.entries.retain(|(k, _)| k == key);",
+   "s": 38.1
+  },
+  "L93:plus2minus:10": {
+   "v": "KILLED",
+   "op": "plus2minus",
+   "orig": "(x + 0.5).floor()",
+   "mut": "(x - 0.5).floor()",
+   "s": 40.3
+  },
+  "L101:eq2ne:16": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "} else if x == f64::INFINITY {",
+   "mut": "} else if x != f64::INFINITY {",
+   "s": 40.8
+  },
+  "L103:eq2ne:16": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "} else if x == f64::NEG_INFINITY {",
+   "mut": "} else if x != f64::NEG_INFINITY {",
+   "s": 41.8
+  },
+  "L105:eq2ne:16": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "} else if x == 0.0 {",
+   "mut": "} else if x != 0.0 {",
+   "s": 41.7
+  },
+  "L105:zero2one:19": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "} else if x == 0.0 {",
+   "mut": "} else if x == 1.0 {",
+   "s": 38.2
+  },
+  "L108:notdrop:14": {
+   "v": "COMPILE_ERR",
+   "op": "notdrop",
+   "orig": "format!(\"{x}\")",
+   "mut": "format(\"{x}\")",
+   "s": 27.6
+  },
+  "L123:false2true:15": {
+   "v": "KILLED",
+   "op": "false2true",
+   "orig": "return false;",
+   "mut": "return true;",
+   "s": 38.5
+  },
+  "L134:true2false:4": {
+   "v": "KILLED",
+   "op": "true2false",
+   "orig": "true",
+   "mut": "false",
+   "s": 41.6
+  },
+  "L139:minus2plus:20": {
+   "v": "KILLED",
+   "op": "minus2plus",
+   "orig": "js_max(0.0, turn - req.since_turn)",
+   "mut": "js_max(0.0, turn + req.since_turn)",
+   "s": 40.4
+  },
+  "L139:max2min:4": {
+   "v": "COMPILE_ERR",
+   "op": "max2min",
+   "orig": "js_max(0.0, turn - req.since_turn)",
+   "mut": "js_min(0.0, turn - req.since_turn)",
+   "s": 26.3
+  },
+  "L139:zero2one:11": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "js_max(0.0, turn - req.since_turn)",
+   "mut": "js_max(1.0, turn - req.since_turn)",
+   "s": 40.4
+  },
+  "L144:ge2gt:41": {
+   "v": "KILLED",
+   "op": "ge2gt",
+   "orig": "turns_since_peace_request(req, turn) >= limit",
+   "mut": "turns_since_peace_request(req, turn) > limit",
+   "s": 42.8
+  },
+  "L166:or2and:20": {
+   "v": "KILLED",
+   "op": "or2and",
+   "orig": "if p.a_is_human || p.b_is_human {",
+   "mut": "if p.a_is_human && p.b_is_human {",
+   "s": 45.4
+  },
+  "L167:false2true:15": {
+   "v": "KILLED",
+   "op": "false2true",
+   "orig": "return false;",
+   "mut": "return true;",
+   "s": 45.4
+  },
+  "L169:or2and:24": {
+   "v": "KILLED",
+   "op": "or2and",
+   "orig": "if !p.a_is_major_ai || !p.b_is_major_ai {",
+   "mut": "if !p.a_is_major_ai && !p.b_is_major_ai {",
+   "s": 43.7
+  },
+  "L169:notdrop:7": {
+   "v": "KILLED",
+   "op": "notdrop",
+   "orig": "if !p.a_is_major_ai || !p.b_is_major_ai {",
+   "mut": "if p.a_is_major_ai || !p.b_is_major_ai {",
+   "s": 41.7
+  },
+  "L170:false2true:15": {
+   "v": "KILLED",
+   "op": "false2true",
+   "orig": "return false;",
+   "mut": "return true;",
+   "s": 42.6
+  },
+  "L172:or2and:20": {
+   "v": "KILLED",
+   "op": "or2and",
+   "orig": "if p.eliminated || p.forced_epoch_war {",
+   "mut": "if p.eliminated && p.forced_epoch_war {",
+   "s": 41.5
+  },
+  "L173:false2true:15": {
+   "v": "KILLED",
+   "op": "false2true",
+   "orig": "return false;",
+   "mut": "return true;",
+   "s": 40.0
+  },
+  "L180:plus2minus:29": {
+   "v": "KILLED",
+   "op": "plus2minus",
+   "orig": "let sum = requester_power + other_power;",
+   "mut": "let sum = requester_power - other_power;",
+   "s": 45.3
+  },
+  "L181:gt2ge:11": {
+   "v": "KILLED",
+   "op": "gt2ge",
+   "orig": "if sum > 0.0 {",
+   "mut": "if sum >= 0.0 {",
+   "s": 45.4
+  },
+  "L190:le2lt:10": {
+   "v": "KILLED",
+   "op": "le2lt",
+   "orig": "share <= LOSER_MAX_SHARE_AT_REQUEST",
+   "mut": "share < LOSER_MAX_SHARE_AT_REQUEST",
+   "s": 39.2
+  },
+  "L195:le2lt:10": {
+   "v": "KILLED",
+   "op": "le2lt",
+   "orig": "share <= LOSER_MAX_SHARE_KEEP",
+   "mut": "share < LOSER_MAX_SHARE_KEEP",
+   "s": 39.6
+  },
+  "L258:gt2ge:34": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub struct AiPeaceDecisionInput<'a> {",
+   "mut": "pub struct AiPeaceDecisionInput<'a>= {",
+   "s": 27.4
+  },
+  "L258:lt2le:31": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub struct AiPeaceDecisionInput<'a> {",
+   "mut": "pub struct AiPeaceDecisionInput<='a> {",
+   "s": 26.8
+  },
+  "L266:gt2ge:25": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub limit: Option<f64>,",
+   "mut": "pub limit: Option<f64>=,",
+   "s": 25.6
+  },
+  "L266:lt2le:21": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub limit: Option<f64>,",
+   "mut": "pub limit: Option<=f64>,",
+   "s": 25.9
+  },
+  "L278:ge2gt:19": {
+   "v": "KILLED",
+   "op": "ge2gt",
+   "orig": "if turns_since >= limit {",
+   "mut": "if turns_since > limit {",
+   "s": 39.8
+  },
+  "L287:ne2eq:31": {
+   "v": "KILLED",
+   "op": "ne2eq",
+   "orig": "if inp.winner_gate_verdict != GateVerdict::Ok {",
+   "mut": "if inp.winner_gate_verdict == GateVerdict::Ok {",
+   "s": 42.7
+  },
+  "L296:ge2gt:38": {
+   "v": "KILLED",
+   "op": "ge2gt",
+   "orig": "if inp.plan.full || balance_after >= -inp.tolerance_pn {",
+   "mut": "if inp.plan.full || balance_after > -inp.tolerance_pn {",
+   "s": 41.6
+  },
+  "L296:or2and:21": {
+   "v": "KILLED",
+   "op": "or2and",
+   "orig": "if inp.plan.full || balance_after >= -inp.tolerance_pn {",
+   "mut": "if inp.plan.full && balance_after >= -inp.tolerance_pn {",
+   "s": 38.7
+  },
+  "L331:plus2minus:69": {
+   "v": "KILLED",
+   "op": "plus2minus",
+   "orig": "PeaceBalanceShape::Linear { balance0, slope } => balance0 + slope * covered_pn,",
+   "mut": "PeaceBalanceShape::Linear { balance0, slope } => balance0 - slope * covered_pn,",
+   "s": 42.4
+  },
+  "L341:plus2minus:28": {
+   "v": "KILLED",
+   "op": "plus2minus",
+   "orig": "balance0 + slope * knee + slope2 * (covered_pn - knee)",
+   "mut": "balance0 - slope * knee + slope2 * (covered_pn - knee)",
+   "s": 37.7
+  },
+  "L341:minus2plus:66": {
+   "v": "KILLED",
+   "op": "minus2plus",
+   "orig": "balance0 + slope * knee + slope2 * (covered_pn - knee)",
+   "mut": "balance0 + slope * knee + slope2 * (covered_pn + knee)",
+   "s": 39.9
+  },
+  "L357:gt2ge:27": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub type AiPeaceAssetsFn<'a> = dyn Fn(i64, i64, &HashSet<String>) -> Vec<PeaceAsset> + 'a;",
+   "mut": "pub type AiPeaceAssetsFn<'a>= = dyn Fn(i64, i64, &HashSet<String>) -> Vec<PeaceAsset> + 'a;",
+   "s": 28.9
+  },
+  "L357:lt2le:24": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub type AiPeaceAssetsFn<'a> = dyn Fn(i64, i64, &HashSet<String>) -> Vec<PeaceAsset> + 'a;",
+   "mut": "pub type AiPeaceAssetsFn<='a> = dyn Fn(i64, i64, &HashSet<String>) -> Vec<PeaceAsset> + 'a;",
+   "s": 26.4
+  },
+  "L360:gt2ge:28": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub struct AiPeaceTickEnv<'a> {",
+   "mut": "pub struct AiPeaceTickEnv<'a>= {",
+   "s": 26.6
+  },
+  "L360:lt2le:25": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub struct AiPeaceTickEnv<'a> {",
+   "mut": "pub struct AiPeaceTickEnv<='a> {",
+   "s": 25.9
+  },
+  "L362:gt2ge:25": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub limit: Option<f64>,",
+   "mut": "pub limit: Option<f64>=,",
+   "s": 27.0
+  },
+  "L362:lt2le:21": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub limit: Option<f64>,",
+   "mut": "pub limit: Option<=f64>,",
+   "s": 26.1
+  },
+  "L372:gt2ge:38": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub assets: &'a AiPeaceAssetsFn<'a>,",
+   "mut": "pub assets: &'a AiPeaceAssetsFn<'a>=,",
+   "s": 26.2
+  },
+  "L372:lt2le:35": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub assets: &'a AiPeaceAssetsFn<'a>,",
+   "mut": "pub assets: &'a AiPeaceAssetsFn<='a>,",
+   "s": 26.4
+  },
+  "L405:gt2ge:37": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub plan: Option<PeacePaymentPlan>,",
+   "mut": "pub plan: Option<PeacePaymentPlan>=,",
+   "s": 26.9
+  },
+  "L405:lt2le:20": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub plan: Option<PeacePaymentPlan>,",
+   "mut": "pub plan: Option<=PeacePaymentPlan>,",
+   "s": 26.6
+  },
+  "L406:gt2ge:40": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "pub decision: Option<AiPeaceDecision>,",
+   "mut": "pub decision: Option<AiPeaceDecision>=,",
+   "s": 25.3
+  },
+  "L406:lt2le:24": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "pub decision: Option<AiPeaceDecision>,",
+   "mut": "pub decision: Option<=AiPeaceDecision>,",
+   "s": 24.7
+  },
+  "L416:gt2ge:27": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": ") -> Vec<AiPeaceTickOutcome> {",
+   "mut": ") -> Vec<AiPeaceTickOutcome>= {",
+   "s": 25.3
+  },
+  "L416:lt2le:8": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": ") -> Vec<AiPeaceTickOutcome> {",
+   "mut": ") -> Vec<=AiPeaceTickOutcome> {",
+   "s": 25.2
+  },
+  "L418:gt2ge:46": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "let snapshot: Vec<(String, AiPeaceRequest)> = store.entries().to_vec();",
+   "mut": "let snapshot: Vec<(String, AiPeaceRequest)>= = store.entries().to_vec();",
+   "s": 26.8
+  },
+  "L418:lt2le:21": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "let snapshot: Vec<(String, AiPeaceRequest)> = store.entries().to_vec();",
+   "mut": "let snapshot: Vec<=(String, AiPeaceRequest)> = store.entries().to_vec();",
+   "s": 27.1
+  },
+  "L423:notdrop:11": {
+   "v": "KILLED",
+   "op": "notdrop",
+   "orig": "if !(env.pair_eligible)(loser, winner) {",
+   "mut": "if (env.pair_eligible)(loser, winner) {",
+   "s": 44.9
+  },
+  "L432:drop_continue:12": {
+   "v": "COMPILE_ERR",
+   "op": "drop_continue",
+   "orig": "continue;",
+   "mut": ";",
+   "s": 27.4
+  },
+  "L434:notdrop:11": {
+   "v": "KILLED",
+   "op": "notdrop",
+   "orig": "if !is_still_losing((env.requester_share_of)(loser, winner)) {",
+   "mut": "if is_still_losing((env.requester_share_of)(loser, winner)) {",
+   "s": 39.4
+  },
+  "L443:drop_continue:12": {
+   "v": "COMPILE_ERR",
+   "op": "drop_continue",
+   "orig": "continue;",
+   "mut": ";",
+   "s": 24.9
+  },
+  "L446:gt2ge:36": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "let mut skip: HashSet<String> = HashSet::new();",
+   "mut": "let mut skip: HashSet<String>= = HashSet::new();",
+   "s": 25.3
+  },
+  "L446:lt2le:29": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "let mut skip: HashSet<String> = HashSet::new();",
+   "mut": "let mut skip: HashSet<=String> = HashSet::new();",
+   "s": 26.8
+  },
+  "L447:gt2ge:45": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "let plan_for = |skip: &HashSet<String>| -> PeacePaymentPlan {",
+   "mut": "let plan_for = |skip: &HashSet<String>=| -> PeacePaymentPlan {",
+   "s": 25.3
+  },
+  "L447:lt2le:38": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "let plan_for = |skip: &HashSet<String>| -> PeacePaymentPlan {",
+   "mut": "let plan_for = |skip: &HashSet<=String>| -> PeacePaymentPlan {",
+   "s": 26.3
+  },
+  "L448:gt2ge:38": {
+   "v": "COMPILE_ERR",
+   "op": "gt2ge",
+   "orig": "let assets: Vec<PeaceAsset> = (env.assets)(loser, winner, skip)",
+   "mut": "let assets: Vec<PeaceAsset>= = (env.assets)(loser, winner, skip)",
+   "s": 26.7
+  },
+  "L448:lt2le:27": {
+   "v": "COMPILE_ERR",
+   "op": "lt2le",
+   "orig": "let assets: Vec<PeaceAsset> = (env.assets)(loser, winner, skip)",
+   "mut": "let assets: Vec<=PeaceAsset> = (env.assets)(loser, winner, skip)",
+   "s": 26.5
+  },
+  "L451:and2or:42": {
+   "v": "KILLED",
+   "op": "and2or",
+   "orig": "if env.battle_pending && a.kind == PeaceAssetKind::Miasto {",
+   "mut": "if env.battle_pending || a.kind == PeaceAssetKind::Miasto {",
+   "s": 44.2
+  },
+  "L451:eq2ne:52": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "if env.battle_pending && a.kind == PeaceAssetKind::Miasto {",
+   "mut": "if env.battle_pending && a.kind != PeaceAssetKind::Miasto {",
+   "s": 40.8
+  },
+  "L453:true2false:39": {
+   "v": "KILLED",
+   "op": "true2false",
+   "orig": "forbidden: true,",
+   "mut": "forbidden: false,",
+   "s": 42.3
+  },
+  "L465:eq2ne:66": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "let city_id = match plan.items.iter().find(|i| i.kind == PeaceAssetKind::Miasto) {",
+   "mut": "let city_id = match plan.items.iter().find(|i| i.kind != PeaceAssetKind::Miasto) {",
+   "s": 42.7
+  },
+  "L470:drop_break:16": {
+   "v": "KILLED",
+   "op": "drop_break",
+   "orig": "break;",
+   "mut": ";",
+   "s": 39.6
+  },
+  "L479:zero2one:57": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "balance_before_pn: price.balance.balance_for(0.0),",
+   "mut": "balance_before_pn: price.balance.balance_for(1.0),",
+   "s": 48.2
+  },
+  "L485:eq2ne:27": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "if decision.action == AiPeaceAction::Wait {",
+   "mut": "if decision.action != AiPeaceAction::Wait {",
+   "s": 51.5
+  },
+  "L493:drop_continue:12": {
+   "v": "COMPILE_ERR",
+   "op": "drop_continue",
+   "orig": "continue;",
+   "mut": ";",
+   "s": 27.7
+  },
+  "L497:notdrop:19": {
+   "v": "COMPILE_ERR",
+   "op": "notdrop",
+   "orig": "log(&format!(",
+   "mut": "log(&format(",
+   "s": 29.8
+  },
+  "L70:eq2ne:44": {
+   "v": "KILLED",
+   "op": "eq2ne",
+   "orig": "self.entries.iter().find(|(k, _)| k == key).map(|(_, r)| r)",
+   "mut": "self.entries.iter().find(|(k, _)| k != key).map(|(_, r)| r)",
+   "s": 60.5
+  },
+  "L181:zero2one:13": {
+   "v": "KILLED",
+   "op": "zero2one",
+   "orig": "if sum > 0.0 {",
+   "mut": "if sum > 1.0 {",
+   "s": 58.8
+  },
+  "L338:le2lt:30": {
+   "v": "SURVIVED",
+   "op": "le2lt",
+   "orig": "if covered_pn <= knee {",
+   "mut": "if covered_pn < knee {",
+   "s": 61.8
+  },
+  "L339:plus2minus:28": {
+   "v": "KILLED",
+   "op": "plus2minus",
+   "orig": "balance0 + slope * covered_pn",
+   "mut": "balance0 - slope * covered_pn",
+   "s": 58.2
+  }
+ },
+ "total": 79
+}
