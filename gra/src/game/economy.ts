@@ -1233,8 +1233,9 @@ const KORUPCJA_REDUKCJA_NA_BUDYNEK = 0.30;
 /**
  * Naturalny sufit sumy redukcji to 0.60 (Sad + Palac w stolicy, albo Sad + Pretorium
  * w regionie -- Palac ma lokalizacja:"stolica", Pretorium lokalizacja:"region", wiec
- * zaden budynek nie moze wystapic w obu miejscach naraz). Od decyzji 2026-11-08 (Palac II/III, Trybunal) sufit JEST realnie osiagalny (np. Sad + Trybunal + Pretorium = 0.90 -> 0.60). Jawny Math.min
- * ponizej zabezpiecza przed przyszla zmiana danych (D4, Maciej 2026-07-25).
+ * zaden budynek nie moze wystapic w obu miejscach naraz). Od decyzji 2026-11-08 (Palac II/III,
+ * Trybunal) sufit JEST realnie osiagalny (np. Sad + Trybunal + Pretorium = 0.90 -> 0.60).
+ * Jawny Math.min ponizej zabezpiecza przed przyszla zmiana danych (D4, Maciej 2026-07-25).
  */
 const KORUPCJA_REDUKCJA_SUFIT = 0.60;
 
