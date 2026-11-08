@@ -1,3 +1,9 @@
+## ROBOCZA be9bd087 -- 2026-11-06 -- FALA 558: ERAPOOL: gracz z >=20 tur w Brazie/Zelazie wchodzi do puli wojen epoki mimo trwajacej wojny Kamienia; naprawa liczenia wojny Kamienia w starych zapisach (testowa)
+
+- gra/src/game/war-rules-multiwar.ts (helpery isPlayerEligibleForEraWarPool, isPlayerEraWarSlotFree, eraWarCounterEpoch, forcedEraTagEpoch; rebuild/restoreEraWarCounts z tagEpoch), gra/src/main.ts (krok C doboru par: wojna Kamienia nie zajmuje slotu Brazu, prog 20 tur od wejscia gracza w epoke, filtr kandydatow po wolnym slocie); progi war-rules-params.json bez zmian
+- Weryfikacja: FC PASS 8f5cd21d2 (kod 39fc14158, r2/5); era-war-bronze-player-target 44/0 (mutacja filtra lapana), forced-war bronze 48/iron 55/stone 31, war-rules-multiwar 57, war-era-counter 82, wojna-wymuszona-prog-tury-gracz 9, player-first 33, nearest-city-peace-2t mutacje 16/16, ai-test 289/0, logic 213/213, tsc 0, vite OK
+- Limity: Brak weryfikacji w grze na zywo; zmiana zachowania: prog 20 tur od wejscia gracza w epoke (dotad tura >=25); stary zapis bez wpisu tury wejscia pomija prog; dlug Rust: REPIN (licznik 0:1 gracza, isPlayerEraWarSlotFree, prog wejscia)
+
 ## ROBOCZA d3d105dc -- 2026-11-06 -- FALA 557: CITYCD: odrzucenie oferty miasta za pokoj ma wlasny cooldown (klucz miasto_za_pokoj) — nie blokuje zwyklego pokoju (testowa)
 
 - gra/src/main.ts (sprawdzenie i zapis odrzucenia), gra/src/game/diplomacy-proposals.ts (PendingNegotiation.rejectCooldownKey, opcjonalne), gra/src/game/diplomacy-rejection-cooldown.ts (typ RejectCooldownKey, helper rejectCooldownKeyFor — poza allowlista, zatwierdzone); dlugosc cooldownu bez zmian

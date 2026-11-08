@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "d3d105dcfb37dfec9dbb896e41a95ab6",
-  "bundleSha256": "42b5b21bff4d8110d9bfdc0e707c2208c6f30660cf1f978af4317766a971bdce",
-  "bundleBytes": 85678636,
+  "bundleMd5": "be9bd087111f15c45ed4c77a930c31c7",
+  "bundleSha256": "8e4135d99573ecbf140d51e04ddd6fe8aafe607161c7ab65e21928532250db2d",
+  "bundleBytes": 85680090,
   "sourceSnapshot": {
-    "source": "FC e3ebccae2 (kod b8bd14e45)",
+    "source": "FC 8f5cd21d2 (kod 39fc14158)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 557: gra/src/main.ts (sprawdzenie i zapis odrzucenia), gra/src/game/diplomacy-proposals.ts (PendingNegotiation.rejectCooldownKey, opcjonalne), gra/src/game/diplomacy-rejection-cooldown.ts (typ RejectCooldownKey, helper rejectCooldownKeyFor — poza allowlista, zatwierdzone); dlugosc cooldownu bez zmian"
+    "FALA 558: gra/src/game/war-rules-multiwar.ts (helpery isPlayerEligibleForEraWarPool, isPlayerEraWarSlotFree, eraWarCounterEpoch, forcedEraTagEpoch; rebuild/restoreEraWarCounts z tagEpoch), gra/src/main.ts (krok C doboru par: wojna Kamienia nie zajmuje slotu Brazu, prog 20 tur od wejscia gracza w epoke, filtr kandydatow po wolnym slocie); progi war-rules-params.json bez zmian"
   ],
   "verification": [
-    "FC PASS-WITH-NOTES e3ebccae2 (kod b8bd14e45 + obrona 38b32dd25); nowy test 28/0 (2 mutacje main.ts lapane), rejection-cooldown 14/0, diplomacy-proposal 190/190, ai-losing-war 12/0, weariness-peace 90/0, ai-test 289/0, logic 213/213, tsc 0, vite OK"
+    "FC PASS 8f5cd21d2 (kod 39fc14158, r2/5); era-war-bronze-player-target 44/0 (mutacja filtra lapana), forced-war bronze 48/iron 55/stone 31, war-rules-multiwar 57, war-era-counter 82, wojna-wymuszona-prog-tury-gracz 9, player-first 33, nearest-city-peace-2t mutacje 16/16, ai-test 289/0, logic 213/213, tsc 0, vite OK"
   ],
   "limits": [
-    "Brak testu end-to-end handleNegotiationReject (zamkniecie w main.ts; test zrodlowy 6 miejsc); dedup hasPendingNegotiationForPair dalej na kluczu pokoj (oczekujaca propozycja pokoju blokuje oferte miasta i odwrotnie — osobny temat); brak przegladarki"
+    "Brak weryfikacji w grze na zywo; zmiana zachowania: prog 20 tur od wejscia gracza w epoke (dotad tura >=25); stary zapis bez wpisu tury wejscia pomija prog; dlug Rust: REPIN (licznik 0:1 gracza, isPlayerEraWarSlotFree, prog wejscia)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-08T17:55:39",
+  "hubGeneratedAt": "2026-11-08T18:01:19",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
-      "sizeBytes": 85678636
+      "md5": "be9bd087111f15c45ed4c77a930c31c7",
+      "sizeBytes": 85680090
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
-      "sizeBytes": 85678636
+      "md5": "be9bd087111f15c45ed4c77a930c31c7",
+      "sizeBytes": 85680090
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
-      "sizeBytes": 85678636
+      "md5": "be9bd087111f15c45ed4c77a930c31c7",
+      "sizeBytes": 85680090
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
-      "sizeBytes": 85678636
+      "md5": "be9bd087111f15c45ed4c77a930c31c7",
+      "sizeBytes": 85680090
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
-      "sizeBytes": 85678636
+      "md5": "be9bd087111f15c45ed4c77a930c31c7",
+      "sizeBytes": 85680090
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
-      "sizeBytes": 85678636
+      "md5": "be9bd087111f15c45ed4c77a930c31c7",
+      "sizeBytes": 85680090
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
-      "sizeBytes": 85678636
+      "md5": "be9bd087111f15c45ed4c77a930c31c7",
+      "sizeBytes": 85680090
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
-      "sizeBytes": 85678636
+      "md5": "be9bd087111f15c45ed4c77a930c31c7",
+      "sizeBytes": 85680090
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
-      "sizeBytes": 85678636
+      "md5": "be9bd087111f15c45ed4c77a930c31c7",
+      "sizeBytes": 85680090
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
-      "sizeBytes": 85678636
+      "md5": "be9bd087111f15c45ed4c77a930c31c7",
+      "sizeBytes": 85680090
     }
   ],
-  "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+  "md5": "be9bd087111f15c45ed4c77a930c31c7",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
