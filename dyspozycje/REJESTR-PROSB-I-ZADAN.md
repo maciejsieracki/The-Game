@@ -8979,3 +8979,6 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 
 ## 2026-11-08 — zgłoszenie: przegrywająca AI nie prosi o pokój gracza
 - Właściciel (zrzut audiencji Grecy vs Harappa, wojna): Harappa jest totalnie pokonana (moc 3127 vs 46079), a nie proponuje pokoju ani nie jest zmęczona wojną — „muszę się prosić o pokój”. Temat: R-WEB-AI-LOSING-WAR-ASKS-PEACE-VS-PLAYER-Q1 (Sonnet; diagnoza z dowodem; jeśli istnieje decyzja właściciela wykluczająca gracza/wojny epok → DECISION_REQUIRED, nie zmieniam kodu). Wiadomo: opis `tury_do_pokoju_po_prosbie` w ai-params.json mówi „WYŁĄCZNIE pary AI↔AI zwykłych wojen; gracz i wojny wymuszone epok bez zmian”.
+
+## 2026-11-08 — zgłoszenie: wojna epoki Brązu nie wypowiadana graczowi
+- Właściciel: są cywilizacje, które nie prowadzą wojen, a nikt nie wypowiada wojny graczowi mimo spełnionych przesłanek Brązu (trwa jeszcze wojna epoki Kamienia). Temat: R-WEB-ERA-WAR-BRONZE-NOT-DECLARED-DIAG-Q1 (Sonnet; diagnoza z dowodem; możliwe DECISION_REQUIRED). Sprostowanie wcześniejszej odpowiedzi: wojna epoki jest wyzwalana awansem AI do epoki (nie gracza); „może być celem” dotyczy puli celów, a nie gwarantuje ataku.
