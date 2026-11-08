@@ -1,4 +1,4 @@
-//! R-RUSTPORT-P6-ECON-TICK-STATE-SOURCES-Q1 (pin weba 23dd158e9; wektory zregenerowane z uruchomionego weba tego pinu (REPIN-VECTORS-POSTMERGE-Q1)): ZRODLA STANU ticku ekonomii
+//! R-RUSTPORT-P6-ECON-TICK-STATE-SOURCES-Q1 (pin weba a61337844; wektory zregenerowane z uruchomionego weba tego pinu (REPIN-EKONOMIA-F-STATESRC-REGEN-Q1; poprzednio pin 23dd158e9)): ZRODLA STANU ticku ekonomii
 //! (`turn_economy_inputs_{civ,podzial,native}`) wobec URUCHOMIONEGO weba
 //! (`dyspozycje/autobot/runs/R-RUSTPORT-P6-ECON-TICK-STATE-SOURCES-Q1/gen-p6-state-src-vectors.mjs`).
 //!
@@ -106,6 +106,12 @@ fn build_world(inp: &Value) -> World {
     let mut built = BTreeMap::new();
     for c in inp["cities"].as_array().unwrap() {
         let id = s(&c["id"]);
+        // REGEN-STATESRC: zapas miasta (`City.surowce`, web `c.surowce`; null = brak pola).
+        let surowce = c["surowce"].as_object().map(|o| {
+            o.iter()
+                .map(|(k, v)| (k.clone(), v.as_f64().expect("surowce liczba")))
+                .collect::<BTreeMap<String, f64>>()
+        });
         cities.push(City {
             id: id.clone(),
             owner_id: c["ownerId"].as_i64().unwrap(),
@@ -113,6 +119,7 @@ fn build_world(inp: &Value) -> World {
             r: c["r"].as_f64().unwrap(),
             name: id.clone(),
             population: c["population"].as_f64().unwrap(),
+            surowce,
             ..City::default()
         });
         if let Some(k) = c["kultura"].as_f64() {
@@ -524,4 +531,46 @@ fn e2e_tick_with_rust_sources_equals_tick_with_web_resolver_values() {
         diverged_when_flipped > 0,
         "kontrola negatywna: zadna zmiana wejscia nie wplynela na tick (test niczego nie dowodzi)"
     );
+}
+
+// REGEN-STATESRC (R-RUSTPORT-REPIN-EKONOMIA-F-STATESRC-REGEN-Q1): e2e klucza `zelazo` na macierzy
+// scenariuszy `zm-kop{0|1}-odl-{brak|to_samo|inne}-zap{0|1|2.5}` (web a61337844: zelazo-access.ts:101-107
+// oraz main.ts:5504-5511). Oczekiwanie wyprowadzone z reguly: kopalnia zelaza na zlozu w imperium,
+// odlewnia zelaza w ktoryms miescie ownera i zapas zelaza > 0 w magazynie panstwa (suma City.surowce
+// po miastach ownera). Sprawdzane jest zarowno wywolanie Rust, jak i wartosc z weba w wektorach.
+#[test]
+fn zelazo_key_matrix_e2e_kopalnia_odlewnia_zapas() {
+    let d = vectors();
+    let mut n = 0usize;
+    for sc in d["scenarios"].as_array().unwrap() {
+        let name = s(&sc["in"]["name"]);
+        let Some(rest) = name.strip_prefix("zm-kop") else {
+            continue;
+        };
+        let kop = rest.starts_with('1');
+        let odl = name
+            .split("-odl-")
+            .nth(1)
+            .unwrap()
+            .split("-zap")
+            .next()
+            .unwrap()
+            .to_string();
+        let zap: f64 = name.rsplit("-zap").next().unwrap().parse().unwrap();
+        let expected = kop && odl != "brak" && zap > 0.0;
+        let w = build_world(&sc["in"]);
+        let view = world_view(&w);
+        assert_eq!(
+            owner_has_native_resource_access(&view, 0, "zelazo"),
+            expected,
+            "{name}: zelazo (Rust)"
+        );
+        assert_eq!(
+            sc["out"]["native"]["0"]["zelazo"].as_bool().unwrap(),
+            expected,
+            "{name}: zelazo (web)"
+        );
+        n += 1;
+    }
+    assert_eq!(n, 18, "macierz zelazo: oczekiwano 18 scenariuszy");
 }
