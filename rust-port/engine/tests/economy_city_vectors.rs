@@ -10,6 +10,7 @@
 
 use std::collections::{HashMap, HashSet};
 
+use civ_engine::domain::city_growth::p6_7a::{city_population_cap, PopCapParams};
 use civ_engine::domain::economy_city_fns::{
     city_building_entries_from_built_ids, corruption_building_reduction, corruption_rate,
     production_progress, sum_building_happiness, sum_building_happiness_from_built_ids,
@@ -18,6 +19,10 @@ use civ_engine::domain::economy_city_fns::{
 use serde_json::Value;
 
 const FIXTURE: &str = include_str!("fixtures/economy_city_vectors_91dc998a.json");
+/// REPIN-EKONOMIA-F r5: te same 400 wejsc `cityPopulationCap` co w fixturze pinu, wyjscia z weba `origin/main`
+/// (web zmienil `cityPopulationCap` po pinie 91dc998a: clamp = akwedukt_max + 2 zamiast stalego 14; 78/400 wyjsc inne).
+/// Generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-F-FALA500-Q1/gen-ekonf-popcap-pinned-inputs.mjs`.
+const POPCAP_MAIN: &str = include_str!("p6_repin_ekon_f_vectors/popcap_pinned_inputs.json");
 
 fn parse_num(v: &Value) -> f64 {
     let s = v.as_str().expect("liczba musi byc stringiem");
@@ -78,6 +83,9 @@ fn vectors_match_pinned_web_economy() {
     let vectors = root["vectors"].as_array().expect("vectors");
     assert_eq!(root["count"].as_u64(), Some(vectors.len() as u64));
 
+    let popcap_main: Value = serde_json::from_str(POPCAP_MAIN).expect("popcap_pinned_inputs.json");
+    let popcap_main = popcap_main["vectors"].as_array().expect("vectors popcap");
+    assert_eq!(popcap_main.len(), 400);
     let mut counts: HashMap<&str, usize> = HashMap::new();
     for vec in vectors {
         let f = vec["fn"].as_str().expect("fn");
@@ -233,11 +241,27 @@ fn vectors_match_pinned_web_economy() {
                 );
             }
             "cityPopulationCap" => {
-                // REPIN-EKONOMIA-F: web `cityPopulationCap` zmienil sie po pinie 91dc998a (4. stopien Spichlerz II,
-                // clamp = akwedukt_max + 2 zamiast stalego 14) - wektory pinu przestaly byc oracle'em tej funkcji.
-                // Dowod nowej wersji: `p6_repin_ekon_f_popcap.rs` (wektory z web origin/main). Tu tylko liczymy
-                // wektory (kontrola kompletnosci fixture), bez porownywania wartosci.
-                let _ = (&input["akw"], &input["sp"], &input["akwMax"], out);
+                // Wejscia z fixtury pinu, OCZEKIWANIE z weba origin/main (`popcap_pinned_inputs.json`, ten sam indeks).
+                let n = counts["cityPopulationCap"] - 1;
+                let main = &popcap_main[n];
+                assert_eq!(
+                    &main["in"], input,
+                    "wejscie popcap #{n} rozjechane z fixtura pinu"
+                );
+                let params = PopCapParams {
+                    akwedukt_prog_ludnosci: parse_num(&input["akwProg"]),
+                    spichlerz_prog_ludnosci: parse_num(&input["spProg"]),
+                    spichlerz_ii_prog_ludnosci: None,
+                    akwedukt_max_ludnosci: parse_num(&input["akwMax"]),
+                };
+                let got = city_population_cap(
+                    input["akw"].as_bool().unwrap(),
+                    input["sp"].as_bool().unwrap(),
+                    &params,
+                    parse_num(&input["delta"]),
+                    false,
+                );
+                assert_num(got, &main["out"], &format!("cityPopulationCap {input}"));
             }
             other => panic!("nieznana funkcja w wektorach: {other}"),
         }

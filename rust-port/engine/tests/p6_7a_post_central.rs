@@ -17,9 +17,8 @@ use civ_engine::domain::city_growth::p6_7a::growth_v85::{
     PopulationChangeHooks, PostCentralGrowthOpts,
 };
 use civ_engine::domain::city_growth::p6_7a::{
-    apply_central_food_population_growth, apply_post_central_population_growth,
-    game_difficulty_from_web, GameDifficulty, GrowthCity, PopCapParams, PopulationMatrixResolved,
-    RationParams,
+    apply_post_central_population_growth_ext, game_difficulty_from_web, GameDifficulty, GrowthCity,
+    PopCapParams, PopulationMatrixResolved, PostCentralGrowthExt, RationParams,
 };
 use civ_engine::domain::recruitment::manpower::{
     refresh_manpower_after_pop_change, CivBonusPoborLite, ManpowerCity,
@@ -62,9 +61,9 @@ fn id_map<T>(v: &Value, f: impl Fn(&Value) -> T) -> BTreeMap<i64, T> {
 }
 
 #[test]
-#[ignore = "DLUG R-RUSTPORT-REPIN-VECTORS-E2E-POSTEKONF-Q1: wektor z web main, c5 manpower 16041 vs Rust 8041 (zmiana web poza zakresem F)"]
 fn post_central_growth_matches_web() {
     let data = load("post_central.json");
+    let civ_matrix = civ_engine::data::civilizations::parse_civ_matrix().expect("civ-matrix.json");
     let ration: RationParams =
         civ_engine::domain::city_growth::p6_7a::growth_v85::build_ration_params(
             &json!({}),
@@ -131,19 +130,32 @@ fn post_central_growth_matches_web() {
             exclude_hex_keys_by_city: Some(&exclude),
         };
         let mut rec = Recorder::default();
+        // Wektory pochodza z weba `origin/main`: `maxMult` bez wpisu w `manpowerMaxMultByOwnerId` to
+        // `civManpowerMatrixMults(civ).maxMult` (macierz cywilizacji; `legacyFallback` jest w webie IGNOROWANY,
+        // `manpower.ts:448-463`). Tryb legacy edb8fb56 (bonusy `bonus_pobor_pula` -> x0,5 dla Sumerow) dawal 8041 zamiast 16041.
+        let ext = PostCentralGrowthExt {
+            pin_matrix: Some(&civ_matrix),
+            ..PostCentralGrowthExt::default()
+        };
         match sc["via"].as_str().expect("via") {
-            "central2" => apply_central_food_population_growth(
-                &mut ef,
-                &mut cities,
-                &mut econ_state,
-                &opts,
-                &mut rec,
-            ),
-            _ => apply_post_central_population_growth(
+            // `apply_central_food_population_growth` deleguje do wrappera P6.7A (ext domyslny = tryb legacy edb8fb56),
+            // wiec obie sciezki idziemy przez `_ext` z `pin_matrix` (REPIN-EKONOMIA-F r5, zarzut FC r4 Z3).
+            "central2" => {
+                apply_post_central_population_growth_ext(
+                    &mut cities,
+                    &mut econ_state,
+                    &mut ef.per_owner,
+                    &opts,
+                    &ext,
+                    &mut rec,
+                );
+            }
+            _ => apply_post_central_population_growth_ext(
                 &mut cities,
                 &mut econ_state,
                 &mut ef.per_owner,
                 &opts,
+                &ext,
                 &mut rec,
             ),
         }

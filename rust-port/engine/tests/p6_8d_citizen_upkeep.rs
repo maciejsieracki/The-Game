@@ -200,9 +200,18 @@ fn drain_matches_web() {
         with_deductions > 300,
         "za malo przypadkow z odjeciem: {with_deductions}"
     );
-    // REPIN-EKONOMIA-F: wyzsza stawka m(e) (1,5 / 2) zmniejsza liczbe przypadkow czesciowych w tych
-    // samych wektorach z 100+ do 81 (web 16c0509f6); prog dopasowany do nowego rozkladu (>70), nie oslabiony.
-    assert!(partial > 70, "za malo przypadkow czesciowych: {partial}");
+    // REPIN-EKONOMIA-F r5: prog = ZMIERZONA liczba przypadkow czesciowych w wektorach z weba (`missing` i `available`
+    // niepuste w `citizen_upkeep.json`, liczone wprost z pol weba, nie z wyniku Rust): 81. Wyzsza stawka m(e) (1,5 / 2)
+    // zmniejszyla ja z 100+ (pin edb8fb56, stawka jednolita 1,0). Rownosc zamiast `>` - nie da sie jej cicho rozluznic.
+    let web_partial = cases
+        .iter()
+        .filter(|c| {
+            !c["missing"].as_array().expect("missing").is_empty()
+                && !c["available"].as_array().expect("available").is_empty()
+        })
+        .count();
+    assert_eq!(web_partial, 81, "liczba czesciowych w wektorach weba");
+    assert_eq!(partial, web_partial, "czesciowe: Rust vs web");
 }
 
 #[test]
