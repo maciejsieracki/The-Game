@@ -2,7 +2,7 @@ STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (WEB) — analiza + propozycja treści, bez zmian w kodzie gry
 TEMAT: R-WEB-BUILDING-CARDS-TOP5-ANALYSIS-Q1
 GOAL: Etap 2/5 kart — dla 43 budynków `gra/data/buildings.json` realne korzyści z dowodem, turniej TOP 5 (zamiast `top3`), „Co możesz teraz zrobić” CZYNNOŚĆ → KORZYŚĆ, lista martwych efektów, plan etapów 3–5.
-ZMIANY-COMMIT: commit Operatora r1 na gałęzi worktree (SHA w wiadomości końcowej Operatora; ten plik w tym samym commicie). Allowlista: `dyspozycje/analizy/karty-budynkow/**` (ANALIZA-KART-BUDYNKOW.md, budynki-top5.csv, turnieje/43 + README.md, narzedzia/bldata.py + gen.py), `dyspozycje/autobot/runs/R-WEB-BUILDING-CARDS-TOP5-ANALYSIS-Q1/01-operator-r1.md`. Zero zmian w `gra/**`.
+ZMIANY-COMMIT: 4886c8b5a (treść analizy + ten raport; baza 397f84f29); zapis SHA w raporcie — commit następny. Allowlista: `dyspozycje/analizy/karty-budynkow/**` (ANALIZA-KART-BUDYNKOW.md, budynki-top5.csv, turnieje/43 + README.md, narzedzia/bldata.py + gen.py), `dyspozycje/autobot/runs/R-WEB-BUILDING-CARDS-TOP5-ANALYSIS-Q1/01-operator-r1.md`. Zero zmian w `gra/**`.
 TESTY (=WERYFIKACJA):
 - Generator `python3 -I dyspozycje/analizy/karty-budynkow/narzedzia/gen.py <repo>`: OK; 43/43 budynki (asercja), 121 kandydatów, 149 pojedynków, 120 pozycji TOP, każdy `plik:linia` sprawdzony (`check_ev`).
 - 43/43: 40 z TOP 5 (5 pełnych, reszta tylko realne pozycje), 3 × NIE_USTALONO = budynek niedostępny (Wielka odlewnia, Wielka Kuźnia — epoka 4; Teatr — suppressed).
