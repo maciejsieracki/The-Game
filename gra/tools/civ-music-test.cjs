@@ -20,6 +20,7 @@
  *  K. Przywitanie jako lista (Zulusi): dwa rozne pliki, rotacja bez powtorzenia z rzedu,
  *     wstrzykiwany indeks, string nadal dziala, braki w liscie.
  *  L. 19 plikow PACK2: stale MD5 po przekodowaniu (transcode-pack2.sh w runie) i brak duplikatow MD5 w _civ/.
+ *  M. 19 plikow PACK2: dlugosci ffprobe (negocjacje >= 120 s, przywitania 30-70 s).
  *
  * Bramka (z gra/): node tools/civ-music-test.cjs
  */
@@ -179,7 +180,7 @@ const PACK2_MD5 = {
   "babilonia/babilonia_przywitanie.mp3": "b9cedda4a486126e8957175e129fb9ad",
   "celtowie/celtowie_negocjacje.mp3": "85270f26e7d6c5631f88e7efc71669a3",
   "celtowie/celtowie_przywitanie.mp3": "ca327d2b2eb1ab0b9520c4177507ebf4",
-  "fenicjanie/fenicjanie_negocjacje.mp3": "5d5afd4d60493f7980d4487d15b9c345",
+  "fenicjanie/fenicjanie_negocjacje.mp3": "aed2f5eae13ba30e8d1f56280dd5668b",
   "fenicjanie/fenicjanie_przywitanie.mp3": "eaafb8f9d366cf4169c52f9d8d476a88",
   "germanie/germanie_negocjacje.mp3": "19487d761dfafb37c4d703cdda41c639",
   "germanie/germanie_przywitanie.mp3": "c87cac116b9a433b6aec136a00d372b9",
@@ -200,6 +201,15 @@ const byHash = {};
 for (const [k, h] of Object.entries(md5)) (byHash[h] = byHash[h] || []).push(k);
 const dups = Object.values(byHash).filter((a) => a.length > 1);
 assert('L2 brak duplikatow MD5 w _civ/', dups.length === 0, dups);
+
+console.log('--- M. dlugosci PACK2 (ffprobe): negocjacje >= 2:00, przywitania 0:30-1:10');
+const { execFileSync } = require('child_process');
+const dur = (rel) => parseFloat(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path.join(MUSIC_DIR, rel)]).toString());
+for (const k of Object.keys(PACK2_MD5)) {
+  const d = dur(k);
+  if (k.includes('_negocjacje')) assert(`M ${k} >= 120 s`, d >= 120, d.toFixed(2));
+  else assert(`M ${k} 30-70 s`, d >= 30 && d <= 70, d.toFixed(2));
+}
 
 console.log(`\nWYNIK: ${pass} OK, ${fail} FAIL`);
 process.exit(fail ? 1 : 0);

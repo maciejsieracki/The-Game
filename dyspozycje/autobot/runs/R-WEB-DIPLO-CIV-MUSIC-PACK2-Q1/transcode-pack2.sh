@@ -14,5 +14,12 @@ for c in asyria babilonia celtowie fenicjanie germanie harappa hetyci slowianie;
   enc "$SRC/$c/${c}_negocjacje.mp3"  "$DST/$c/${c}_negocjacje.mp3"  64k
 done
 enc "$SRC/sumerowie/sumerowie_negocjacje.mp3" "$DST/sumer/sumer_negocjacje.mp3" 64k
+# WYJATEK R3 (obrona, ZALOZENIE do potwierdzenia wlasciciela): fenicjanie_negocjacje bez przycinania KONCOWEGO
+# (zrodlo 121,6 s, koncowa cisza 2,35 s; z przycinaniem 119,2 s < 2:00). Zostaje przycinanie poczatku (wzorzec).
+enc_fen() {
+  mkdir -p "$(dirname "$2")"
+  ffmpeg -nostdin -loglevel error -y -i "$1" -vn -map_metadata -1 -af "silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05" -c:a libmp3lame -b:a 64k -joint_stereo 1 "$2"
+}
+enc_fen "$SRC/fenicjanie/fenicjanie_negocjacje.mp3" "$DST/fenicjanie/fenicjanie_negocjacje.mp3"
 enc "$SRC/inkowie/inkowie_przywitanie.mp3"    "$DST/inkowie/inkowie_przywitanie.mp3" 96k
 enc "$SRC/zulusi/zulusi_przywitanie_2.mp3"    "$DST/zulusi/zulusi_przywitanie_2.mp3" 96k
