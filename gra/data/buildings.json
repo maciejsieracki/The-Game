@@ -1329,9 +1329,9 @@
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Pałac I",
-    "uwagi": "B-PALAC-TIER II (Brąz): bramka drewno+kamień; bonus ×1,5 względem I; upgrade→Pałac III. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    "uwagi": "B-PALAC-TIER II (Brąz): bramka drewno+kamień; bonus ×1,5 względem I; upgrade→Pałac III. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. FALA 560: -30% korupcji jak Palac I (economy.ts KORUPCJA_REDUKCJA_BUDYNKI).",
     "historia": "Wraz z rozwojem państw epoki brązu siedziby władców zyskały monumentalny charakter, czego najlepszym świadectwem są pałace mykeńskie i minojskie, jak słynny kompleks w Knossos na Krecie z jego labiryntem korytarzy i freskami przedstawiającymi skoki przez byki. Pałace te pełniły funkcję znacznie szerszą niż dzisiejsza rezydencja — były zarazem centrum administracyjnym, skarbcem, warsztatem rzemieślniczym i archiwum, gdzie na glinianych tabliczkach zapisywano pismem linearnym B szczegółowe rejestry zbiorów i podatków. Mykeński wanaks, władca-król, rządził z takiego kompleksu, kontrolując produkcję rolną i rzemieślniczą całego regionu poprzez rozbudowaną biurokrację pałacową. Grube mury cyklopowe otaczające niektóre z tych rezydencji, jak w Tirynsie czy Mykenach, świadczą o tym, że pałac musiał być jednocześnie twierdzą zdolną wytrzymać najazd w niespokojnych czasach późnej epoki brązu. Nagły upadek tej cywilizacji pałacowej około 1200 roku p.n.e., wciąż nie do końca wyjaśniony przez historyków, pogrążył region na wieki w okresie zwanym greckimi wiekami ciemnymi.",
-    "opis": "Pałac II to rozbudowana siedziba władzy, zastępująca pierwotny Pałac i dająca stały, wyższy wkład w kulturę i zadowolenie stolicy.",
+    "opis": "Pałac II to rozbudowana siedziba władzy, zastępująca pierwotny Pałac i dająca stały, wyższy wkład w kulturę i zadowolenie stolicy; jak Pałac I obniża korupcję stolicy o 30%.",
     "top3": [
       { "tytul": "Kultura i zadowolenie", "tekst": "Dodaje stałe 8 punktów Kultury i 3 punkty zadowolenia w stolicy, o 1,5 raza więcej niż Pałac I." },
       { "tytul": "Wymaga awansu z Pałacu I", "tekst": "Powstaje wyłącznie jako rozbudowa istniejącego Pałacu, zastępując go w tym samym mieście." },
@@ -1379,9 +1379,9 @@
     "utrzymanie": 5,
     "przyrostUtrzymania": 2,
     "wymagania": "upgrade Pałac II",
-    "uwagi": "B-PALAC-TIER III (Żelazo): bramka drewno+cegła; bonus ×2,25 względem I (×1,5²). LANCUCH W GORE: maksPoziom=1 (koniec lancucha, jak Pretorium) -- wartosc stala, epoki 4+ jeszcze nie ma.",
+    "uwagi": "B-PALAC-TIER III (Żelazo): bramka drewno+cegła; bonus ×2,25 względem I (×1,5²). LANCUCH W GORE: maksPoziom=1 (koniec lancucha, jak Pretorium) -- wartosc stala, epoki 4+ jeszcze nie ma. FALA 560: -30% korupcji jak Palac I (economy.ts KORUPCJA_REDUKCJA_BUDYNKI).",
     "historia": "Epoka żelaza przyniosła powstanie wielkich imperiów terytorialnych, których władcy wznosili pałace o rozmachu dotąd niespotykanym — jak asyryjski pałac Sargona II w Chorsabadzie strzeżony przez monumentalne rzeźby uskrzydlonych byków lamassu, czy późniejsza rezydencja perskich królów w Persepolis z jej rozległym tarasem audiencyjnym. Takie pałace projektowano tak, by onieśmielać przybyszów i poddanych już od pierwszego kroku — długie procesyjne schody, kolumnowe sale tronowe i reliefy przedstawiające podbite ludy składające dary miały jasno komunikować potęgę władcy każdemu, kto przekraczał ich progi. Rozbudowana biurokracja imperialna, obejmująca satrapów, skrybów i poborców podatkowych, operowała właśnie z takich ośrodków, koordynując zarządzanie terytoriami rozciągającymi się na tysiące kilometrów. Pałace tej epoki łączyły często funkcję świecką z religijną, umieszczając w swych murach kaplice i ołtarze poświęcone bogom opiekującym się dynastią panującą. Zniszczenie Persepolis przez wojska Aleksandra Wielkiego w 330 roku p.n.e. stało się symbolicznym końcem jednej z najpotężniejszych tradycji pałacowych starożytnego świata.",
-    "opis": "Pałac III to szczytowa forma siedziby władzy, dająca stały, najwyższy wkład w kulturę i zadowolenie stolicy w obecnym łańcuchu rozbudowy.",
+    "opis": "Pałac III to szczytowa forma siedziby władzy, dająca stały, najwyższy wkład w kulturę i zadowolenie stolicy w obecnym łańcuchu rozbudowy; jak Pałac I obniża korupcję stolicy o 30%.",
     "top3": [
       { "tytul": "Kultura i zadowolenie", "tekst": "Dodaje stałe 11 punktów Kultury i 5 punktów zadowolenia w stolicy, ponad dwukrotnie więcej niż Pałac I." },
       { "tytul": "Wymaga awansu z Pałacu II", "tekst": "Powstaje wyłącznie jako rozbudowa istniejącego Pałacu II, zastępując go w tym samym mieście." },
@@ -1968,17 +1968,17 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 1,
     "wymagania": "",
-    "uwagi": "3a: wczesna administracja — +porzadek, anty-korupcja; slabszy niz Sad/Pretorium (Kodeks prawa)",
+    "uwagi": "3a: wczesna administracja — +porzadek, anty-korupcja (Kodeks prawa). FALA 560 (R-WEB-CORRUPTION-REDUCTION-PALACE-TIERS-TRIBUNAL-Q1): -30% korupcji jak Sad/Pretorium (economy.ts KORUPCJA_REDUKCJA_BUDYNKI, addytywnie, sufit 0,60); slabszy niz Sad/Pretorium tylko w Prawie",
     "techUnlock": "Kodeks",
     "koszt_surowce": {
       "drewno": 30,
       "kamien": 40
     },
     "historia": "Trybun ludowy to urząd ustanowiony w Rzymie w 494 roku p.n.e. w wyniku secesji plebejuszy, mający chronić zwykłych obywateli przed nadużyciami władzy patrycjuszowskich urzędników poprzez prawo weta wobec decyzji senatu i konsulów. Osoba trybuna była nietykalna — sacrosanctitas — a jakikolwiek zamach na jego życie czy godność uznawano za świętokradztwo karane śmiercią, co miało zagwarantować mu odwagę w przeciwstawianiu się możnym. Miejsce, w którym trybun urzędował i przyjmował skargi obywateli, z czasem przekształciło się w rozbudowaną instytucję sądową rozstrzygającą spory sięgające poza pierwotny zakres ochrony plebejuszy. Późniejsze trybunały, jak Trybunał Koronny w Rzeczypospolitej powołany w 1578 roku, przejęły od Rzymian ideę niezależnego, objazdowego sądu wyższej instancji, wolnego od bezpośredniego wpływu monarchy. Napięcia między trybunami a senatem, szczególnie w czasach reform Grakchów w II wieku p.n.e., pokazały, jak łatwo instytucja stworzona do ochrony ludu mogła stać się areną gwałtownej walki politycznej.",
-    "opis": "Trybunał to wczesna forma administracji lokalnej, dająca porządek i ograniczająca korupcję, słabsza jednak niż Sąd czy Pretorium.",
+    "opis": "Trybunał to wczesna forma administracji lokalnej, dająca porządek i obniżająca korupcję w mieście o 30% — tak jak Sąd czy Pretorium, choć z mniejszym zasobem Prawa.",
     "top3": [
       { "tytul": "Dochód i zadowolenie", "tekst": "Zwiększa dochód pieniężny i zadowolenie mieszkańców, a wartość ta rośnie z każdym z dwóch poziomów budynku." },
-      { "tytul": "Wczesny porządek administracyjny", "tekst": "Ogranicza korupcję jeszcze zanim miasto zbuduje Sąd lub Pretorium." },
+      { "tytul": "Wczesny porządek administracyjny", "tekst": "Obniża korupcję w mieście o 30% jeszcze zanim miasto zbuduje Sąd lub Pretorium." },
       { "tytul": "Odblokowany przez Kodeks", "tekst": "Dostępny wcześnie, zaraz po zbadaniu technologii Kodeks." }
     ]
   },

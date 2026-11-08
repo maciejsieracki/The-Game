@@ -1,0 +1,105 @@
+{
+  "_opis": "R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1 — świadome korekty treści względem budynki-top5.csv (FC c828a978f, docs 1c5009f71). Każda korekta ma powód. Generator: gra/tools/gen-building-cards-top5.cjs.",
+  "_podzialPierwszyOk": {
+    "_opis": "Komórki CSV z więcej niż jednym separatorem „ — ”, dla których podział na PIERWSZYM separatorze jest poprawny (tytuł / zdanie). Pozostałe komórki wielo-separatorowe MUSZĄ mieć jawny `podzial` w korektach budynku — inaczej generator kończy się błędem.",
+    "Odlewnia brązu": ["Top3"],
+    "Cegielnia": ["Top1_GLOWNA"],
+    "Kuźnia żelaza": ["Top1_GLOWNA"],
+    "Warsztat oblężniczy": ["Top1_GLOWNA"],
+    "Pretorium": ["Top1_GLOWNA"]
+  },
+  "_martweFrazy": {
+    "_opis": "Efekty martwe / niedostępne z ANALIZA-KART-BUDYNKOW.md §8 (decyzja właściciela (4): ukryć z kart i z odwołań). Test building-cards-top5-test.cjs sprawdza, że żadna fraza nie występuje w treści karty danego budynku (bez Rysu historycznego). Wpisy Pałac II/III („−30% znika”) i Trybunał („nie zmniejsza korupcji”) z §8 są NIEAKTUALNE od FALI 560 (economy.ts:1226 KORUPCJA_REDUKCJA_BUDYNKI) — zamiast ukrycia karta pokazuje −30% korupcji (decyzja (5)).",
+    "kuznia": ["45%", "Wielk"],
+    "odlewnia_zelaza": ["Wielk"],
+    "spichlerz": ["zapasów armii", "50% zapasu"],
+    "spichlerz_ii": ["70% zapasu", "armię", "armii"],
+    "biblioteka": ["Obserwatorium", "Astronomi"],
+    "mennica": ["budynek_mennica_mnoznik", "waluta_mnoznik"],
+    "kuznia_zelaza": ["45%", "Wielk"],
+    "warsztat_oblezniczy": ["Katapult"],
+    "akademia": ["Teatr", "Amfiteatr", "mnożnik", "mnoznik"],
+    "akademia_wojskowa": ["elit"],
+    "*": ["Wielka odlewnia", "Wielka Kuźnia", "Teatr"]
+  },
+  "budynki": {
+    "Palisada drewniana": {
+      "podzial": { "Top2": ["Miasto trzeba oblegać — wróg nie wejdzie z marszu", "Miasto z umocnieniem przechodzi w tryb oblężenia; pustego miasta nie da się zająć jednym ruchem."] },
+      "powodPodzialu": "tytuł zawiera własny myślnik — podział na pierwszym separatorze uciąłby tytuł."
+    },
+    "Mury": {
+      "podzial": { "Top2": ["Miasto trzeba oblegać — wróg nie wejdzie z marszu", "Mury włączają tryb oblężenia (także gdy w mieście nie ma wojska)."] },
+      "powodPodzialu": "tytuł zawiera własny myślnik — podział na pierwszym separatorze uciąłby tytuł."
+    },
+    "Spichlerz Królewski": {
+      "opisKarty": "Spichlerz Królewski to rozbudowana wersja magazynu żywności, pozwalająca miastu utrzymać jeszcze większą populację.",
+      "powodOpisu": "decyzja (4): „i armię” w opisie buildings.json odwołuje się do limitu zapasów armii (econ-params.json:171 spichlerz_pojemnosc_zapasow_panstwa — brak konsumenta, §8). buildings.json poza allowlistą dla tego budynku — nadpisanie tylko na karcie."
+    },
+    "Warsztat oblężniczy": {
+      "opisKarty": "Warsztat oblężniczy to zaplecze do budowy ciężkiego sprzętu oblężniczego, wzmacniające jednostki, które odwiedziły miasto.",
+      "powodOpisu": "decyzja (4): opis buildings.json obiecuje „dostęp do Katapulty” — flaga maWarsztatOblezniczy to REZERWA (cities.ts:843-850), production.ts:1068-1076 jej nie sprawdza (§8). buildings.json poza allowlistą dla tego budynku — nadpisanie tylko na karcie."
+    },
+    "Akademia": {
+      "zmiany": [
+        { "z": "Top3", "tytul": "Asymilacja kultury +1% na turę (podbite miasta)", "zdanie": "Podbite miasto szybciej przyjmuje twoją kulturę.", "powod": "decyzja (4): zdanie CSV odwoływało się do Teatru („jak dawny Amfiteatr/Teatr”) — Teatr niedostępny (suppressed), odwołanie ukryte; dopisek „podbite miasta” wg założenia Q6-A." }
+      ]
+    },
+    "Biblioteka": {
+      "zmiany": [
+        { "z": "Top3", "tytul": "Asymilacja kultury +2% na turę (podbite miasta)", "powod": "założenie Q6-A: asymilacja zostaje w TOP z dopiskiem „podbite miasta”." }
+      ]
+    },
+    "Stela / Pomnik": {
+      "zmiany": [
+        { "z": "Top2", "tytul": "Asymilacja kultury +0,5% na turę (podbite miasta)", "powod": "założenie Q6-A." }
+      ]
+    },
+    "Sąd": {
+      "zmiany": [
+        { "z": "Top1_GLOWNA", "zdanie": "Zmniejsza straty z korupcji w mieście, w którym stoi; sumuje się z Pałacem, Pretorium i Trybunałem (łącznie maks. −60%).", "powod": "FALA 560: lista redukcji to Sąd, Pretorium, Pałac I–III i Trybunał, addytywnie z sufitem 0,60 (economy.ts:1226-1257)." },
+        { "z": "Top3", "tytul": "Asymilacja kultury +2% na turę (podbite miasta)", "powod": "założenie Q6-A." }
+      ]
+    },
+    "Łaźnia publiczna": {
+      "zmiany": [
+        { "z": "Top3", "tytul": "Asymilacja kultury +1% na turę (podbite miasta)", "powod": "założenie Q6-A." }
+      ]
+    },
+    "Pretorium": {
+      "zmiany": [
+        { "z": "Top1_GLOWNA", "zdanie": "Zmniejsza straty z korupcji w mieście, w którym stoi; sumuje się z Sądem i Trybunałem (łącznie maks. −60%).", "powod": "FALA 560: zdanie CSV „Jedyny — obok Sądu — budynek zmniejszający korupcję poza stolicą” stało się nieprawdziwe — Trybunał też daje −30% (economy.ts:1226)." }
+      ]
+    },
+    "Pałac": {
+      "zmiany": [
+        { "z": "Top2", "zdanie": "Zmniejsza straty z korupcji w mieście z Pałacem; redukcja zostaje po rozbudowie do Pałacu II i III.", "powod": "decyzja (5) / FALA 560: Pałac II i III mają tę samą redukcję −30% (economy.ts:1226-1232)." },
+        { "z": "Top3", "tytul": "Asymilacja kultury +2% na turę (podbite miasta)", "zdanie": "Miasto z Pałacem szybciej przyjmuje twoją kulturę.", "powod": "założenie Q6-A; zdanie ujednolicone z pozostałymi pozycjami asymilacji." }
+      ]
+    },
+    "Pałac II": {
+      "wstaw": [
+        { "przed": "Top2", "tytul": "−30% korupcji w stolicy (jak Pałac I)", "zdanie": "Rozbudowa zachowuje redukcję korupcji Pałacu I w mieście z Pałacem.", "dowod": "gra/src/game/economy.ts:1226-1232", "powod": "decyzja (5) / FALA 560: palac_ii w KORUPCJA_REDUKCJA_BUDYNKI (−30 pp, addytywnie, sufit 0,60)." }
+      ],
+      "zmiany": [
+        { "z": "Top3", "tytul": "Asymilacja kultury +2% na turę (podbite miasta)", "powod": "założenie Q6-A (dopisek zastępuje „(zachowana)” — zdanie mówi, że premia działa dalej)." }
+      ]
+    },
+    "Pałac III": {
+      "wstaw": [
+        { "przed": "Top2", "tytul": "−30% korupcji w stolicy (jak Pałac I)", "zdanie": "Najwyższy stopień Pałacu zachowuje redukcję korupcji w mieście z Pałacem.", "dowod": "gra/src/game/economy.ts:1226-1232", "powod": "decyzja (5) / FALA 560: palac_iii w KORUPCJA_REDUKCJA_BUDYNKI (−30 pp, addytywnie, sufit 0,60)." }
+      ],
+      "zmiany": [
+        { "z": "Top3", "tytul": "Asymilacja kultury +2% na turę (podbite miasta)", "powod": "założenie Q6-A." }
+      ]
+    },
+    "Trybunał": {
+      "wstaw": [
+        { "przed": "Top1_GLOWNA", "tytul": "−30% korupcji w mieście", "zdanie": "Zmniejsza straty z korupcji w dowolnym mieście, także w stolicy; sumuje się z Sądem i Pałacem (łącznie maks. −60%).", "dowod": "gra/src/game/economy.ts:1226-1257", "powod": "decyzja (5) / FALA 560: trybunal w KORUPCJA_REDUKCJA_BUDYNKI. Top1 = −30% korupcji spójnie z rozstrzygnięciem FC dla Sądu i Pretorium (§13: korupcja > Prawo)." }
+      ],
+      "cmz": [
+        { "czynnosc": "Zbuduj Trybunał", "korzysc": "obniżyć korupcję w mieście o 30% i dodać mu 17 pkt Prawa" }
+      ],
+      "powodCmz": "decyzja (5): CMZ z CSV mówił tylko o Prawie; od FALI 560 główną korzyścią jest −30% korupcji."
+    }
+  }
+}

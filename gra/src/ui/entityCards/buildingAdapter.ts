@@ -4,10 +4,13 @@
  * P-KARTA-PRZEBUDOWA-UKLAD-Q1 wg zaakceptowanego układu z `00-dispatch.md`).
  *
  * Kolejność `sections`: Wymagania (technologia/budynek-wymóg/dodatkowe warunki) → Opis
- * (proza, dziś zawsze pusta — brak danych) → [Rys historyczny, wstawiany przez
- * `renderer.ts::renderEntityCard` na stałym indeksie 2] → Top 3 (dziś zawsze pusty) →
- * Charakterystyka (BEZ poziomu — poziom w `headerChips`) → Efekty → Koszt budowy →
- * Koszt utrzymania → Poziomy. `headerChips` niesie Epokę/Poziom w nagłówku karty.
+ * (proza) → [Rys historyczny, wstawiany przez `renderer.ts::renderEntityCard` na stałym
+ * indeksie 2] → Top 5 (R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1, dane z
+ * `data/building-cards-top5.json`; dawniej „Top 3” z `buildings.json`) → Co możesz teraz
+ * zrobić (NOWA, CZYNNOŚĆ → KORZYŚĆ) → Charakterystyka (BEZ poziomu — poziom w
+ * `headerChips`) → Efekty → Koszt budowy → Koszt utrzymania → Poziomy. `headerChips`
+ * niesie Epokę/Poziom w nagłówku karty. Budynki niedostępne (Wielka odlewnia, Wielka
+ * Kuźnia, Teatr) mają kartę ukrytą w `registry.ts::resolveBuildingRow`.
  *
  * ŚWIADOMIE NIE tutaj (host — `cityPanel.ts::buildBuildingDetailCard` — dopełnia po
  * `renderEntityCard()`, dokładnie wzorem T3/T4 „adapter = treść niezależna od
@@ -34,6 +37,7 @@
  */
 import type { BuildingDef } from '../../data/loader';
 import buildingsData from '../../../data/buildings.json';
+import buildingCardsTop5Data from '../../../data/building-cards-top5.json';
 import { buildingIconSvg } from '../icons/brandAssets';
 import {
   buildingEffectAtLevel,
@@ -96,18 +100,59 @@ function historicalNoteOf(building: BuildingDef): string | undefined {
   return t !== '' ? t : undefined;
 }
 
-/** `opis`/`top3` (P-KARTA-PRZEBUDOWA-UKLAD-Q1) — pola NIE istnieją jeszcze w `BuildingDef`
- * (batche treści dopiszą je osobno, ten temat jest wyłącznie strukturalny — patrz
- * `00-dispatch.md` GOAL). Czytamy bezpiecznie spoza typowanego kształtu, wzorem
- * `historicalNoteOf` wyżej. Zwraca `undefined`/`[]` gdy dane brakują — sekcja renderuje
- * się wtedy pusta (renderer pomija puste sekcje), zero wymyślonej treści. */
-function descriptionOf(building: BuildingDef): string | undefined {
+// --- R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1: treść kart budynków z `data/building-cards-top5.json`
+// (generator `tools/gen-building-cards-top5.cjs` z `budynki-top5.csv`, FC c828a978f) — wzorem
+// etapu 1 (`technologyAdapter.ts` + `tech-cards-top5.json`). ---------------------------------
+
+/** Pozycja „Top 5” — tytuł z liczbą + jedno zdanie (decyzja właściciela (1)); `rodzaj`
+ * `warunek`/`rozbudowa` nigdy na Top1 (decyzja (3), pilnuje generator i test). */
+export interface BuildingTop5Item {
+  tytul: string;
+  liczba?: string;
+  zdanie: string;
+  rodzaj: 'efekt' | 'warunek' | 'rozbudowa';
+  dowod?: string;
+}
+/** „Co możesz teraz zrobić” — schemat CZYNNOŚĆ → KORZYŚĆ (decyzja (2)). */
+export interface BuildingCmzItem { czynnosc: string; korzysc: string }
+/** `ukryty` — budynek dziś niedostępny (decyzja (4)); `opisKarty` — opis bez odwołania do
+ * efektu martwego (nadpisuje `opis` z `buildings.json` WYŁĄCZNIE na karcie). */
+export interface BuildingCardContent {
+  top5: BuildingTop5Item[];
+  cmz: BuildingCmzItem[];
+  ukryty?: boolean;
+  opisKarty?: string;
+}
+
+const BUILDING_CARD_CONTENT = buildingCardsTop5Data as unknown as Record<string, BuildingCardContent | undefined>;
+
+/** Treść karty budynku albo `undefined`, gdy budynek nie ma wpisu (fallback na `top3`). */
+export function buildingCardContentOf(id: string): BuildingCardContent | undefined {
+  if (id.startsWith('_')) return undefined;
+  return BUILDING_CARD_CONTENT[id];
+}
+
+/** Jedno zdanie „Co możesz teraz zrobić”: „[CZYNNOŚĆ], aby [KORZYŚĆ].” — ten sam szablon co
+ * `technologyAdapter.ts::cmzSentence` (etap 1). */
+export function buildingCmzSentence(item: BuildingCmzItem): string {
+  return `${item.czynnosc}, aby ${item.korzysc}.`;
+}
+
+/** `opis` (P-KARTA-PRZEBUDOWA-UKLAD-Q1) — czytany spoza typowanego kształtu `BuildingDef`,
+ * wzorem `historicalNoteOf` wyżej. `opisKarty` z `building-cards-top5.json` ma pierwszeństwo
+ * (decyzja (4): opis bez odwołania do efektu martwego, np. Katapulta Warsztatu oblężniczego). */
+function descriptionOf(building: BuildingDef, content: BuildingCardContent | undefined): string | undefined {
+  const override = text(content?.opisKarty);
+  if (override !== '') return override;
   const t = text((building as unknown as Record<string, unknown>).opis);
   return t !== '' ? t : undefined;
 }
 
 interface Top3Entry { tytul?: unknown; tekst?: unknown }
 
+/** Dawne `top3` z `buildings.json` — WYŁĄCZNIE fallback dla budynku BEZ wpisu w
+ * `building-cards-top5.json` (dziś 0/43 — pilnuje `tools/building-cards-top5-test.cjs`).
+ * Pole `top3` zostaje w danych (konsument: `tools/emporion-building-test.cjs`). */
 function top3Of(building: BuildingDef): EntityCardRow[] {
   const raw = (building as unknown as Record<string, unknown>).top3;
   if (!Array.isArray(raw)) return [];
@@ -182,7 +227,8 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   // ============================================================================================
   // P-KARTA-PRZEBUDOWA-UKLAD-Q1 — układ zaakceptowany przez właściciela 2026-09-08 (patrz
   // `00-dispatch.md`): Nagłówek → Wymagania → Opis → [Rys historyczny, wspólny punkt
-  // pozycjonowania w renderer.ts] → Top 3 → Charakterystyka → Efekty → Koszt budowy →
+  // pozycjonowania w renderer.ts] → Top 5 → Co możesz teraz zrobić (R-WEB-BUILDING-CARDS-
+  // TOP5-IMPLEMENT-Q1) → Charakterystyka → Efekty → Koszt budowy →
   // Koszt utrzymania → Poziomy → Więcej informacji. Sekcje „Opis"/„Wymagania" MUSZĄ zostać
   // pierwsze dwie w tablicy `sections` (indeksy 0/1) — `renderEntityCard` wstawia Rys
   // historyczny na STAŁYM indeksie 2 tej listy, jednolicie dla wszystkich 5 kinds (patrz
@@ -222,7 +268,8 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   // przy budowie DOM, ale pozycja w tablicy zostaje zarezerwowana dla wspólnego punktu
   // wstawiania Rysu historycznego w rendererze). Zakaz wymyślania treści (dispatch) — dopóki
   // `opis` nie istnieje w danych, ta sekcja jest zawsze niewidoczna. -------------------------
-  const opis = descriptionOf(building);
+  const content = buildingCardContentOf(building.id);
+  const opis = descriptionOf(building, content);
   const descriptionSection: EntityCardSection = {
     key: 'description', title: 'Opis',
     rows: opis ? [{ label: '', value: opis }] : [],
@@ -231,9 +278,28 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
 
   const sections: EntityCardSection[] = [requirementsSection, descriptionSection];
 
-  // --- 5. TOP 3 — jeśli dane istnieją (dziś: 0/42, batch przyszłej fali) ---------------------
-  const top3 = top3Of(building);
-  if (top3.length > 0) sections.push({ key: 'top3', title: 'Top 3', rows: top3, layout: 'top3' });
+  // --- 5. TOP 5 (R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1, decyzja właściciela (1)) — indeks 2
+  // tablicy `sections`, więc `renderer.ts::renderEntityCard` (HISTORIA_SECTION_INDEX = 2,
+  // NIETKNIĘTY) stawia Rys historyczny tuż PRZED nią: Top 5 jest zawsze bezpośrednio po Rysie.
+  // Tylko realne pozycje (1–5, bez dopełniania); layout `top3` renderera numeruje dowolną
+  // liczbę pozycji. Budynek ukryty (decyzja (4)) nie ma treści — sekcja się nie renderuje. ---
+  const top5Rows: EntityCardRow[] = content
+    ? (content.ukryty ? [] : content.top5.slice(0, 5).map((item) => ({ label: item.tytul, value: item.zdanie })))
+    : top3Of(building);
+  if (top5Rows.length > 0) sections.push({ key: 'top5', title: 'Top 5', rows: top5Rows, layout: 'top3' });
+
+  // --- 5b. „Co możesz teraz zrobić” (NOWA, decyzja właściciela (2)) — zaraz po Top 5, maks. 3
+  // zdania „[CZYNNOŚĆ], aby [KORZYŚĆ].” z danych; ten sam wygląd co sekcja `actions` karty
+  // odkrycia (etap 1). Brak wpisu / budynek ukryty ⇒ brak sekcji (zero wymyślonej treści). ---
+  const actionRows: EntityCardRow[] = content && !content.ukryty
+    ? content.cmz.slice(0, 3).map((item) => ({ label: '', value: buildingCmzSentence(item) }))
+    : [];
+  if (actionRows.length > 0) {
+    sections.push({
+      key: 'actions', title: 'Co możesz teraz zrobić', rows: actionRows,
+      collapsible: true, openDefault: true, highlighted: true, layout: 'prose',
+    });
+  }
 
   // --- 6. CHARAKTERYSTYKA — BEZ poziomu (poziom przeniesiony do nagłówka, patrz `headerChips`
   // w `return` niżej) -------------------------------------------------------------------------
