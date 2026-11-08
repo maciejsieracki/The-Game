@@ -1,3 +1,9 @@
+## ROBOCZA bda1c719 -- 2026-11-06 -- FALA 549: auto-ulepszenia: kaskada etapow (trzoda i irygacja nie sa glodzone przez farmy) (testowa)
+
+- R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2: naprawa regresu z cf236dafc (2026-10-29): petla etapow E1..E6 w pickAutoImprovementsStaged konczyla sie na pierwszym etapie z pickami, wiec gdy obywatele przybywaja co ture farmy (E1) glodzily trzode (E3) i irygacje (E4). Teraz etap bez dalszych celow przechodzi w tej samej turze do nastepnego (farmy->trzoda->irygacja) z reszta budzetu; tury z niedoborem surowca i z wycinka lasu koncza etapy jak dawniej; trzoda poza rzeka dopuszczona (rzeka = priorytet); regula 'tylko pola obywateli' bez zmian; sonda etapu pomija miasta z efektywnym 0%
+- Weryfikacja: tsc 0, logic-test 213/213, autoimprove-pasture-irrigation-q2 17/0 (na starym kodzie 12/5), ai-food-improvement-priority-stages 13/0, autoimprove-irrigation-after-farms 42/0, autoimprove-stages-q1 299/0, vite build OK
+- Limity: NIE_ZMIERZONO: zachowanie po naprawie w zywej grze (pomiar 'post' po deployu), koszt wydajnosciowy dodatkowej sondy; przyczyna zera irygacji w pomiarze zywym przed naprawa (tech Gospodarka wodna)
+
 ## ROBOCZA 963d938c -- 2026-11-06 -- FALA 548: wojna epoki: marsz AI przed tura 40; utrzymanie wg trudnosci wlasciciela (testowa)
 
 - R-WEB-ERA-WAR-MARCH-BEFORE-40-Q1: wojna epoki Brazu/Zelaza przed tura 40 otwiera marsz i kontekst wojenny AI dla pary w aktywnej wojnie epoki (Kamien i zwykle wojny nadal pod bramka R1). R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1: utrzymanie wojska i budynkow wg poziomu trudnosci wlasciciela (miasto-panstwo wg cityStateDifficulty, AI i gracz wg menu), liczby balansu bez zmian
