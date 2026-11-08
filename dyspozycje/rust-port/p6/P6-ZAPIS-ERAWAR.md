@@ -41,8 +41,8 @@ Dług #8 z `P6-DYPLOMACJA-MULTIWAR.md` (wiersze `recordEraForcedWarParticipation
 
 ## Testy
 
-- `tests/p6_zapis_erawar_counts.rs` (10 testów): wektory `tests/p6_zapis_erawar_data/zapis.json` (26 przypadków z prawdziwych
-  funkcji weba: rebuild 5, restore 8, record 5 kroków kumulowanych, countFor 4, civKey 4) + zapis→odczyt, stary zapis,
+- `tests/p6_zapis_erawar_counts.rs` (11 testów): wektory `tests/p6_zapis_erawar_data/zapis.json` (28 przypadków z prawdziwych
+  funkcji weba: rebuild 5, restore 10, record 5 kroków kumulowanych, countFor 4, civKey 4) + zapis→odczyt, stary zapis,
   zapis z licznikami (bit-w-bit), pusta lista (= pusty licznik, nie odbudowa), zły typ → rebuild, niepoprawne wpisy pomijane,
   powtórzony klucz, ułamek pomijany (odstępstwo), napastnik == cel (+2).
 - `tests/p6_zapis_erawar_save.rs` (5 testów): round-trip przez pełny serde `SaveSnapshot`, stary zapis bez pola (brak klucza
@@ -53,8 +53,14 @@ Dług #8 z `P6-DYPLOMACJA-MULTIWAR.md` (wiersze `recordEraForcedWarParticipation
 ## ZAŁOŻENIA i ODSTĘPSTWA (do akceptacji)
 
 1. ODSTĘPSTWO: liczniki są `i64` (sygnatury `era_war_count_for` / `can_civ_join_era_forced_war` z r2 używają `i64` i nie
-   mogły zmienić się w tym temacie). Odczyt pomija wpisy z ułamkiem (web zachowałby np. `1.5`). Zapis web nigdy nie produkuje
-   ułamków (inkrement o 1), więc różnica nie dotyczy zapisów webowych. Wektor tego przypadku nie jest w fixture.
+   mogły zmienić się w tym temacie). Odczyt w Rust pomija wartości, których web by nie pominął:
+   (a) ułamki (web zachowałby np. `1.5`) - test `ulamek_jest_pomijany_swiadome_odstepstwo`, bez wektora w fixture;
+   (b) liczby całkowite o module > 2^53-1 (web zachowałby np. `1e20` albo `2^53`) - test
+   `liczby_poza_2_53_sa_pomijane_swiadome_odstepstwo`, bez wektora w fixture (weryfikacja Node 22.22: web zwraca `1e20`, Rust pomija).
+   Wartości, których Rust nie mieści w `i64`, mieszczą się w (b) (zakres bezpieczny ±(2^53-1) jest węższy niż `i64`).
+   Zapis web nigdy nie produkuje ułamków ani takich wartości (inkrement o 1), więc różnica nie dotyczy zapisów webowych.
+   Pozostałe przypadki z przeglądu r1 (wartość ujemna `-3`, `0`, `true` i zagnieżdżona tablica w `n`) są w fixture
+   jako wektory weba: ujemna i zero zachowane tak samo, `true` i tablica pomijane tak samo.
 2. ZAŁOŻENIE: bramka zapisu `isWarRulesMultiwarEnabled()` (web zapisuje pole tylko przy fladze ON) należy do wołającego budującego
    zapis; `SaveMeta` jej nie sprawdza. Odczyt NIE sprawdza flagi (zgodnie z webem: `restoreEraWarCounts` nie czyta flagi).
 3. ZAŁOŻENIE: `epochOf` zawsze zwraca liczbę. Web dla nieznanego ownera dałby klucz `"id:undefined"`; w grze `empireEpochForOwner`

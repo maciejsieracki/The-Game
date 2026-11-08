@@ -124,7 +124,7 @@ fn zapis_vectors_match_web() {
         }
     }
     assert_eq!(seen["rebuildEraWarCountsFromActivePairs"], 5);
-    assert_eq!(seen["restoreEraWarCounts"], 8);
+    assert_eq!(seen["restoreEraWarCounts"], 10);
     assert_eq!(seen["recordEraForcedWarParticipation"], 5);
     assert_eq!(seen["eraWarCountFor"], 4);
     assert_eq!(seen["eraWarCivKey"], 4);
@@ -228,6 +228,21 @@ fn ulamek_jest_pomijany_swiadome_odstepstwo() {
     let saved = json!([["1:2", 1.5], ["0:1", 2.0]]);
     let got = restore_era_war_counts(Some(&saved), &[], epoch_fn(&epochs));
     assert_eq!(render(&got), r#"[["0:1",2]]"#);
+}
+
+#[test]
+fn liczby_poza_2_53_sa_pomijane_swiadome_odstepstwo() {
+    // Web (zweryfikowane Node 22.22 na prawdziwym restoreEraWarCounts z origin/main 679ab078a)
+    // zachowuje 1e20 i 2^53 jako wartości. Rust odrzuca liczby całkowite o module > 2^53-1
+    // (P6-ZAPIS-ERAWAR.md, ODSTĘPSTWO nr 1). Zapisy web nie produkują takich wartości.
+    let epochs = epochs_fixture();
+    let saved = json!([
+        ["1:2", 1e20],
+        ["2:3", 9007199254740992i64],
+        ["0:1", 9007199254740991i64]
+    ]);
+    let got = restore_era_war_counts(Some(&saved), &[], epoch_fn(&epochs));
+    assert_eq!(render(&got), r#"[["0:1",9007199254740991]]"#);
 }
 
 #[test]
