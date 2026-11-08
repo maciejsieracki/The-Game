@@ -31,18 +31,22 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 3. **d** — Z Obróbką żelaza otwiera Sztukę wojenną — wygrane: 1, suma: 32
 4. **c** — Warsztat oblężniczy: +4 Pracy, +2 pieniądza — wygrane: 0, suma: 28
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: a > b > d > c (Obrona: b > a > d > c).
 
-- Top1 (GŁÓWNA KORZYŚĆ): Warsztat oblężniczy: +10% parametrów jednostek
-- Top2: Katapulta: ostrzał z 6 pól, 1000 HP
+Status: FINALNE (FC r1: trzeci turniej — zmiana kolejności względem Obrony: a > b > d > c)
+
+## 4. Wynik TOP 5 (FINALNY)
+
+- Top1 (GŁÓWNA KORZYŚĆ): Katapulta: ostrzał z 6 pól, 1000 HP
+- Top2: Warsztat oblężniczy: +10% parametrów jednostek
 - Top3: Z Obróbką żelaza otwiera Sztukę wojenną
 - Top4: Warsztat oblężniczy: +4 Pracy, +2 pieniądza
 - Top5: NIE_USTALONO — brak kolejnego realnego efektu w danych/kodzie (patrz Uwagi)
 
 ## 5. „Co możesz teraz zrobić" — wybór korzyści „w celu…" (mini-turniej per obiekt)
 
-- Rekrutuj Katapulty: kandydaci a(35) → wybrany **a** (najwyższa suma ważona).
-- Zbuduj Warsztat oblężniczy (obok Koszar): kandydaci b(41) → wybrany **b** (najwyższa suma ważona).
+- Rekrutuj Katapulty: kandydaci a(34) → wybrany **a** (najwyższa suma ważona).
+- Zbuduj Warsztat oblężniczy (obok Koszar): kandydaci b(33) → wybrany **b** (najwyższa suma ważona).
 - Wybierz kolejne badanie: kandydaci d(32) → wybrany **d** (najwyższa suma ważona).
 
 Obecnie na karcie:
@@ -53,8 +57,8 @@ Obecnie na karcie:
 
 Propozycja:
 
-- Zbuduj Warsztat oblężniczy (obok Koszar), aby wzmocnić jednostki o kolejne +10% (razem do +50%).
 - Rekrutuj Katapulty, aby burzyć mury z dystansu 6 pól.
+- Zbuduj Warsztat oblężniczy (obok Koszar), aby wzmocnić jednostki z tego miasta o kolejne +10% (z Koszarami razem +30%).
 - Wybierz kolejne badanie, aby dojść do Akademii wojskowej.
 
 ## 6. Uwagi

@@ -37,7 +37,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 4. **e** — Złoto w dyplomacji: 50 PN za sztukę — wygrane: 1, suma: 36
 5. **c** — Mennica: +3 pieniądza (+2 na poziom) — wygrane: 0, suma: 28
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: a > b > d > e > c (Obrona: a > b > d > e > c).
+
+Status: FINALNE (FC r1: trzeci turniej — zgodny z Obroną)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Mennica: ×1,5 podatku (handlu) w każdym mieście
 - Top2: Kopalnia złota: +10 handlu i +1 złota na turę

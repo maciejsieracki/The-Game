@@ -69,7 +69,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 8. **i** — Otwiera Wojskowość, Hutnictwo żelaza, Jeździectwo — wygrane: 1, suma: 34
 9. **h** — Wieża oblężnicza i Taran okuty — wygrane: 0, suma: 25
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: a > c > b > d > f (Obrona: a > c > b > d > f).
+
+Status: FINALNE (FC r1: trzeci turniej — zgodny z Obroną)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Awans do epoki Brązu: nowe budynki i wyższe ich poziomy
 - Top2: Odlewnia brązu: wytwarza brąz (ruda + drewno + cyna)

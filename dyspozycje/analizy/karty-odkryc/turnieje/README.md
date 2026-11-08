@@ -6,7 +6,7 @@
 | Garncarstwo | 9 | 36 | Spichlerz: limit ludności miasta 5 → 8 | WYSOKA | [garncarstwo.md](garncarstwo.md) |
 | Murarstwo | 7 | 21 | Kamieniołom: +50 kamienia na turę do magazynu | WYSOKA | [murarstwo.md](murarstwo.md) |
 | Rolnictwo | 4 | 6 | Farma: +3 żywności, +3 Pracy, +3 handlu na polu | WYSOKA | [rolnictwo.md](rolnictwo.md) |
-| Łowiectwo | 2 | 1 | Obóz łowiecki: +1 żywności, +1 pieniądza, +2 handlu | WYSOKA | [lowiectwo.md](lowiectwo.md) |
+| Łowiectwo | 2 | 1 | Obóz łowiecki: +1 żywności, +1 Pracy, +1 pieniądza, +2 handlu | WYSOKA | [lowiectwo.md](lowiectwo.md) |
 | Łucznictwo | 3 | 3 | Łucznik: zasięg 3 pola, Obrona 6 (Oszczepnik: 2 i 4) | WYSOKA | [lucznictwo.md](lucznictwo.md) |
 | Oswojenie zwierząt | 5 | 10 | Trzoda: +2 żywności, +4 Pracy, +3 handlu, bez złoża | WYSOKA | [oswojenie-zwierzat.md](oswojenie-zwierzat.md) |
 | Mistycyzm | 4 | 6 | Kamienne kręgi: szerzą religię +2% na turę | WYSOKA | [mistycyzm.md](mistycyzm.md) |
@@ -27,7 +27,7 @@
 | Astronomia | 1 | 0 | Obserwatorium (Biblioteka poz. 6) — dziś niedostępne | NIE_USTALONO | [astronomia.md](astronomia.md) |
 | Hutnictwo żelaza | 7 | 21 | Awans do epoki Żelaza: nowe budynki i wyższe ich poziomy | WYSOKA | [hutnictwo-zelaza.md](hutnictwo-zelaza.md) |
 | Inżynieria | 5 | 10 | Cytadela: +100% Obrony ponad Mury (razem +300%) | WYSOKA | [inzynieria.md](inzynieria.md) |
-| Oblężnictwo | 4 | 6 | Warsztat oblężniczy: +10% parametrów jednostek | WYSOKA | [obleznictwo.md](obleznictwo.md) |
+| Oblężnictwo | 4 | 6 | Katapulta: ostrzał z 6 pól, 1000 HP | WYSOKA | [obleznictwo.md](obleznictwo.md) |
 | Filozofia | 3 | 3 | Akademia: +20% Nauki (z Biblioteką razem +50%) | WYSOKA | [filozofia.md](filozofia.md) |
 | Prawo | 5 | 10 | Sąd: −30% korupcji w mieście | WYSOKA | [prawo.md](prawo.md) |
 | Drogi brukowane | 3 | 3 | Droga brukowana: ruch 5× szybszy (Droga: 3×) | WYSOKA | [drogi-brukowane.md](drogi-brukowane.md) |

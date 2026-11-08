@@ -52,7 +52,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 6. **c** — Stolarnia: +5 Pracy w mieście (+3 na poziom, maks. 3) — wygrane: 1, suma: 30
 7. **g** — Otwiera drogę do Żeglugi i Brązownictwa — wygrane: 0, suma: 28
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Tartak: +50 drewna na turę do magazynu państwa
 - Top2: Palisada: +100% Obrony obrońców miasta

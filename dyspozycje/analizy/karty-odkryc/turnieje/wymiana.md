@@ -59,7 +59,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 7. **f** — Targowisko jest warunkiem Mennicy i Emporionu — wygrane: 1, suma: 29
 8. **e** — Targowisko: +2 zdrowia miasta — wygrane: 0, suma: 27
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: a > c > d > g > b (Obrona: a > c > d > g > b).
+
+Status: FINALNE (FC r1: trzeci turniej — zgodny z Obroną)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Otwiera handel: bez Wymiany żadnych tras handlowych
 - Top2: Targowisko: +50% dochodu z tras handlowych miasta

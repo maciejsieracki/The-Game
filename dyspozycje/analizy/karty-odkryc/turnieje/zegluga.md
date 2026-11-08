@@ -52,7 +52,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 6. **b** — Port handlowy: +5 pieniądza i +1 Pracy — wygrane: 1, suma: 35
 7. **g** — Z Pismem otwiera Handel (Emporion, Magazyn) — wygrane: 0, suma: 32
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: a > d > f > c > e (Obrona: a > d > f > c > e).
+
+Status: FINALNE (FC r1: trzeci turniej — zgodny z Obroną)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Wojsko lądowe może wchodzić na wodę (zaokrętowanie)
 - Top2: Łodzie rybackie: +2 żywności, +3 Pracy, +3 handlu
@@ -66,7 +70,7 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 - Zbuduj Port handlowy w mieście nad wodą: kandydaci b(35), c(38) → wybrany **c** (najwyższa suma ważona).
 - Postaw Łodzie rybackie na ławicy: kandydaci d(50) → wybrany **d** (najwyższa suma ważona).
 - Zbuduj Galerę w mieście nad wodą: kandydaci e(38) → wybrany **e** (najwyższa suma ważona).
-- Wznieś cud Kamień Ha'amonga: kandydaci f(43) → wybrany **f** (najwyższa suma ważona).
+- Wznieś cud Kamień Ha'amonga: kandydaci f(41) → wybrany **f** (najwyższa suma ważona).
 - Wybierz kolejne badanie: kandydaci g(32) → wybrany **g** (najwyższa suma ważona).
 
 Obecnie na karcie:

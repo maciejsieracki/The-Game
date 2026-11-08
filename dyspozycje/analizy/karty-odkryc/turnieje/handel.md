@@ -37,7 +37,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 4. **a** — Emporion: +8 pieniądza (+4 na poziom) — wygrane: 1, suma: 35
 5. **d** — Magazyn: +1 Pracy i +1 pieniądza — wygrane: 0, suma: 25
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Magazyn: +20% pojemności magazynu państwa
 - Top2: Emporion: +1 trasa handlowa i premia 5% trasy

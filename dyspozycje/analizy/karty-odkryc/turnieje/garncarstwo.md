@@ -69,7 +69,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 8. **d** — Garncarnia: +10% żywności w mieście — wygrane: 1, suma: 33
 9. **i** — Otwiera Wymianę, Pismo, Religię i Brązownictwo — wygrane: 0, suma: 30
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Spichlerz: limit ludności miasta 5 → 8
 - Top2: Glinianka: +50 gliny na turę do magazynu państwa

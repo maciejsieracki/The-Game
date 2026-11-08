@@ -26,7 +26,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 2. **b** — Droga brukowana: +3 handlu na polu (Droga: +2) — wygrane: 1, suma: 34
 3. **c** — Z Hutnictwem otwiera Obróbkę żelaza — wygrane: 0, suma: 32
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Droga brukowana: ruch 5× szybszy (Droga: 3×)
 - Top2: Droga brukowana: +3 handlu na polu (Droga: +2)

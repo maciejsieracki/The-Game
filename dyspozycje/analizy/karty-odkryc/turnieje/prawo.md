@@ -37,7 +37,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 4. **c** — Sąd: +5 Kultury, +2 pieniądza, +2 zadowolenia — wygrane: 1, suma: 30
 5. **e** — Pretorium: +3 pieniądza, +5 Kultury, +2 Pracy — wygrane: 0, suma: 28
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: a > d > b > c > e (Obrona: a > d > b > c > e).
+
+Status: FINALNE (FC r1: trzeci turniej — zgodny z Obroną)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Sąd: −30% korupcji w mieście
 - Top2: Pretorium: −30% korupcji i 38 pkt Prawa w regionie
@@ -48,7 +52,7 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 ## 5. „Co możesz teraz zrobić" — wybór korzyści „w celu…" (mini-turniej per obiekt)
 
 - Zbuduj Sąd: kandydaci a(42) → wybrany **a** (najwyższa suma ważona).
-- Rozbuduj Dwór Zarządcy do Pretorium: kandydaci d(41) → wybrany **d** (najwyższa suma ważona).
+- Rozbuduj Dwór Zarządcy do Pretorium: kandydaci d(36) → wybrany **d** (najwyższa suma ważona).
 
 Obecnie na karcie:
 

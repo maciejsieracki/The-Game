@@ -39,7 +39,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 
 Reguła E1 (Top1 = korzyść od ręki dla każdej cywilizacji, bez kolejnego badania i bez wyścigu): d nie spełnia E1 → Top1 = **a** (najwyżej w rankingu spośród spełniających E1); pozostałe miejsca w kolejności turnieju.
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: a > d > b > c > e (Obrona: a > d > b > c > e).
+
+Status: FINALNE (FC r1: trzeci turniej — zgodny z Obroną)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Cytadela: +100% Obrony ponad Mury (razem +300%)
 - Top2: Cud Brama narodów: +15% dochodu z tras, +10 Wpływu
@@ -52,7 +56,7 @@ Reguła E1 (Top1 = korzyść od ręki dla każdej cywilizacji, bez kolejnego bad
 - Zbuduj Cytadelę (obok Murów): kandydaci a(41) → wybrany **a** (najwyższa suma ważona).
 - Zbuduj Basztę (obok Murów): kandydaci b(41) → wybrany **b** (najwyższa suma ważona).
 - Rozbuduj Port handlowy do Portu wielkiego: kandydaci c(33) → wybrany **c** (najwyższa suma ważona).
-- Wznieś cud Brama wszystkich narodów (z Wojskowością): kandydaci d(46) → wybrany **d** (najwyższa suma ważona).
+- Wznieś cud Brama wszystkich narodów (z Wojskowością): kandydaci d(44) → wybrany **d** (najwyższa suma ważona).
 - Wybierz kolejne badanie: kandydaci e(32) → wybrany **e** (najwyższa suma ważona).
 
 Obecnie na karcie:

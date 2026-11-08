@@ -22,7 +22,9 @@ Jeden kandydat — brak pojedynków.
 
 Reguła E1: żaden kandydat jej nie spełnia — Top1 zostaje wynikiem turnieju z zastrzeżeniem (Q7).
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Obserwatorium (Biblioteka poz. 6) — dziś niedostępne
 - Top2: NIE_USTALONO — brak kolejnego realnego efektu w danych/kodzie (patrz Uwagi)

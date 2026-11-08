@@ -26,7 +26,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 2. **b** — Łucznicy narodowi Egiptu i Sumeru: 40 HP zamiast 20 — wygrane: 1, suma: 31
 3. **c** — Łucznicy Brązu (nubijski, akadyjski, asyryjski) — z Koszarami — wygrane: 0, suma: 22
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Łucznik: zasięg 3 pola, Obrona 6 (Oszczepnik: 2 i 4)
 - Top2: Łucznicy narodowi Egiptu i Sumeru: 40 HP zamiast 20

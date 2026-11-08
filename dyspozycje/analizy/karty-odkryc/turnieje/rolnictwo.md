@@ -31,7 +31,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 3. **d** — Warunek Wymiany — klucza do tras handlowych — wygrane: 1, suma: 32
 4. **c** — Otwiera Gospodarkę wodną (Irygacja +5 żywności) — wygrane: 0, suma: 28
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Farma: +3 żywności, +3 Pracy, +3 handlu na polu
 - Top2: Tarasy (Chiny, Inkowie): +3 żywności na wzgórzu

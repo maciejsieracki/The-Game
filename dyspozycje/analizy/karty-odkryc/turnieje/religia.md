@@ -31,7 +31,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 3. **d** — Otwiera Kodeks, Filozofię, Astronomię — wygrane: 1, suma: 34
 4. **b** — Świątynia: +2 Kultury i +2 zadowolenia — wygrane: 0, suma: 30
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: a > c > d > b (Obrona: a > c > d > b).
+
+Status: FINALNE (FC r1: trzeci turniej — zgodny z Obroną)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Świątynia: szerzy religię +4% na turę
 - Top2: Cud narodowy: Stupa w Sanchi (Harappa)

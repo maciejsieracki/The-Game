@@ -31,7 +31,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 3. **b** — Rydwan konny: 360 HP, ruch 4 — wygrane: 1, suma: 28
 4. **d** — Rydwany i jeźdźcy narodowi (6 cywilizacji) — wygrane: 0, suma: 25
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Stadnina: +25 koni/turę — koszt 1 jednostki konnej
 - Top2: Konnica: Atak 12, 320 HP, ruch 4 (koszt: brąz i 25 koni)

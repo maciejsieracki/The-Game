@@ -52,7 +52,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 6. **g** — Koszary są warunkiem Warsztatu i Akademii wojskowej — wygrane: 1, suma: 29
 7. **c** — Koszary: +2 Pracy — wygrane: 0, suma: 25
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: a > b > d > e > f (Obrona: a > b > d > e > f).
+
+Status: FINALNE (FC r1: trzeci turniej — zgodny z Obroną)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Koszary: rekrutacja wojska epoki Brązu i Żelaza
 - Top2: Koszary: +20% parametrów bojowych jednostek

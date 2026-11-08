@@ -4,6 +4,7 @@ Uruchomienie: python3 -I gen.py <repo_root>"""
 import sys, os, json, csv, re, itertools, unicodedata
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from techdata import TECHS, ACT, NOTES
+from fc_final import FC_SCORES, FC_Q7
 
 ROOT = sys.argv[1]
 G = os.path.join(ROOT, 'gra')
@@ -155,6 +156,7 @@ tcount = {k: 0 for k in TEMPLATE_KEYS}
 
 rows = []
 ranks_all = {}
+FC_REPORT = []
 assert len(tech_rows) == 32 and set(TECHS) == {t['Technologia'] for t in tech_rows}, 'brak 32/32'
 NIE = 'NIE_USTALONO — brak kolejnego realnego efektu w danych/kodzie (patrz Uwagi)'
 long_txt = []
@@ -166,6 +168,23 @@ for t in tech_rows:
         if len(cnd['txt']) > 72: long_txt.append((name, cnd['txt'], len(cnd['txt'])))
     rank_t, wins, duels = tournament(cands)
     rank, e1_ok = order_top(rank_t)
+    rank_ob, cands_cmz = rank, cands
+    # ---- Final Control r1: trzeci, niezależny turniej (fc_final.py) — wynik FINALNY ----
+    status = 'FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)'
+    if name in FC_SCORES:
+        fcs = FC_SCORES[name]
+        assert set(fcs) == {c['id'] for c in TECHS[name]}, ('FC: niepełna lista kandydatów', name)
+        cands_fc = [apply_rules(dict(c, sc=fcs[c['id']][0])) for c in TECHS[name]]
+        rank_fc_t, wins_fc, duels_fc = tournament(cands_fc)
+        rank_fc, e1_fc = order_top(rank_fc_t)
+        ob5 = [c['id'] for c in rank[:5]]; fc5 = [c['id'] for c in rank_fc[:5]]
+        same_set = len(set(ob5) & set(fc5)); same_pos = sum(1 for a_, b_ in zip(ob5, fc5) if a_ == b_)
+        FC_REPORT.append(dict(name=name, ob=ob5, fc=fc5, same_set=same_set, same_pos=same_pos, n=min(5, len(ob5)),
+                              rank_t=rank_fc_t, wins=wins_fc, duels=duels_fc, cands=cands_fc, e1=e1_fc, fcs=fcs))
+        status = ('FINALNE (FC r1: trzeci turniej — ' + ('zgodny z Obroną' if ob5 == fc5 else 'zmiana kolejności względem Obrony: ' + ' > '.join(fc5)) + ')')
+        if name in FC_Q7:
+            status = 'FINALNE-WARUNKOWE (FC r1: trzeci turniej zgodny z Obroną; Top1 czeka na decyzję właściciela Q7 — żaden kandydat nie spełnia E1)'
+        rank, e1_ok, cands_cmz = rank_fc, e1_fc, cands_fc
     ranks_all[name] = rank
     cur = current_card(t)
     for line in cur['cmz']:
@@ -178,10 +197,12 @@ for t in tech_rows:
     top = [r['txt'] for r in rank[:5]] + [NIE] * (5 - min(5, len(rank)))
     # CMZ: per obiekt najlepszy cel
     best = {}
-    for cnd in cands:
+    for cnd in cands_cmz:
         if cnd['obj'] and cnd['cel'] and cnd['obj'] in ACT:
             k = cnd['obj']
-            if k not in best or (wsum(cnd['sc']), cnd['sc'][0]) > (wsum(best[k]['sc']), best[k]['sc'][0]):
+            # FC r1: remis rozstrzygany jak w pojedynku (SKALA, ZASIĘG, NOWA MECHANIKA)
+            key = lambda z: (wsum(z['sc']), z['sc'][0], z['sc'][3], z['sc'][1])
+            if k not in best or key(cnd) > key(best[k]):
                 best[k] = cnd
     # E1 także dla kolejności zdań: najpierw czynności z korzyścią od ręki dla każdej cywilizacji.
     cmz_items = sorted(best.values(), key=lambda c: (not top1_eligible(c), -wsum(c['sc']), -c['sc'][0]))
@@ -197,7 +218,8 @@ for t in tech_rows:
         Realne_efekty_z_dowodem=' | '.join(f"{c['txt']} [{ev_expand(c['ev'])}]" for c in cands),
         Kandydaci=' | '.join(f"{c['id']}) {c['txt']}" for c in cands),
         Wynik_turnieju=' > '.join(f"{c['id']}({wins[c['id']]}W/{wsum(c['sc'])}pkt)" for c in rank_t)
-                       + ('' if rank[0] is rank_t[0] else f" · Top1 wg reguły E1: {rank[0]['id']}")
+                       + ('' if rank_ob[0] is rank_t[0] else f" · Top1 wg reguły E1: {rank_ob[0]['id']}")
+                       + (f" · FC r1 (trzeci turniej, oceny FC): {' > '.join(c['id'] for c in rank[:5])}" if name in FC_SCORES else '')
                        + ('' if e1_ok else ' · E1: brak kandydata spełniającego E1'),
         Top1_GLOWNA=top[0], Top2=top[1], Top3=top[2], Top4=top[3], Top5=top[4],
         Dowod_plik_linia=' || '.join(f"Top{i+1}: {ev_expand(c['ev'])}" for i, c in enumerate(rank[:5])),
@@ -205,6 +227,7 @@ for t in tech_rows:
         Co_mozesz_zrobic_OBECNIE=' | '.join(cur['cmz']) if cur['cmz'] else '(sekcja pusta — niewyrenderowana)',
         Co_mozesz_zrobic_PROPOZYCJA=' | '.join(cmz),
         Pewnosc_CMZ=pew_cmz,
+        Status_TOP5=status,
         Uwagi=(NOTES.get(name, '') + ('' if e1_ok else ' E1 (Obrona r1): żaden kandydat nie daje korzyści od ręki każdej cywilizacji — Top1 zostaje wynikiem turnieju z tym zastrzeżeniem (Q7).')).strip(),
     ))
     # plik turnieju
@@ -226,16 +249,19 @@ for t in tech_rows:
     L += ['', '## 3. Ranking', '']
     for i, c in enumerate(rank_t):
         L.append(f"{i+1}. **{c['id']}** — {c['txt']} — wygrane: {wins[c['id']]}, suma: {wsum(c['sc'])}")
-    if rank[0] is not rank_t[0]:
-        L += ['', f"Reguła E1 (Top1 = korzyść od ręki dla każdej cywilizacji, bez kolejnego badania i bez wyścigu): {rank_t[0]['id']} nie spełnia E1 → Top1 = **{rank[0]['id']}** (najwyżej w rankingu spośród spełniających E1); pozostałe miejsca w kolejności turnieju."]
+    if rank_ob[0] is not rank_t[0]:
+        L += ['', f"Reguła E1 (Top1 = korzyść od ręki dla każdej cywilizacji, bez kolejnego badania i bez wyścigu): {rank_t[0]['id']} nie spełnia E1 → Top1 = **{rank_ob[0]['id']}** (najwyżej w rankingu spośród spełniających E1); pozostałe miejsca w kolejności turnieju."]
     if not e1_ok:
         L += ['', 'Reguła E1: żaden kandydat jej nie spełnia — Top1 zostaje wynikiem turnieju z zastrzeżeniem (Q7).']
-    L += ['', '## 4. Wynik TOP 5', '']
+    if name in FC_SCORES:
+        L += ['', f"Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). "
+                  f"FINALNA kolejność: {' > '.join(c['id'] for c in rank[:5])} (Obrona: {' > '.join(c['id'] for c in rank_ob[:5])})."]
+    L += ['', f"Status: {status}", '', '## 4. Wynik TOP 5 (FINALNY)', '']
     for i, x in enumerate(top):
         L.append(f"- Top{i+1}{' (GŁÓWNA KORZYŚĆ)' if i == 0 else ''}: {x}")
     L += ['', '## 5. „Co możesz teraz zrobić" — wybór korzyści „w celu…" (mini-turniej per obiekt)', '']
     objs = {}
-    for c in cands:
+    for c in cands_cmz:
         if c['obj'] and c['obj'] in ACT:
             objs.setdefault(c['obj'], []).append(c)
     for k, lst_ in objs.items():
@@ -252,7 +278,7 @@ for t in tech_rows:
 
 cols = ['Odkrycie', 'Epoka', 'Poziom', 'Obecnie_na_karcie', 'Realne_efekty_z_dowodem', 'Kandydaci', 'Wynik_turnieju',
         'Top1_GLOWNA', 'Top2', 'Top3', 'Top4', 'Top5', 'Dowod_plik_linia', 'Pewnosc',
-        'Co_mozesz_zrobic_OBECNIE', 'Co_mozesz_zrobic_PROPOZYCJA', 'Pewnosc_CMZ', 'Uwagi']
+        'Co_mozesz_zrobic_OBECNIE', 'Co_mozesz_zrobic_PROPOZYCJA', 'Pewnosc_CMZ', 'Status_TOP5', 'Uwagi']
 with open(os.path.join(OUT, 'odkrycia-top5.csv'), 'w', encoding='utf-8-sig', newline='') as f:
     wr = csv.DictWriter(f, fieldnames=cols, delimiter=';', quoting=csv.QUOTE_ALL, lineterminator='\n')
     wr.writeheader()
@@ -273,11 +299,39 @@ for r in rows:
     cmzt.append(f"| {r['Odkrycie']} | {'<br>'.join(r['Co_mozesz_zrobic_PROPOZYCJA'].split(' | '))} |")
 open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tables.md'), 'w', encoding='utf-8').write(
     '\n'.join(summary) + '\n\n' + '\n'.join(cmzt) + '\n')
+F = ['# Final Control r1 — trzeci, niezależny turniej', '',
+     'Zakres (DODATEK 1 pkt 4): odkrycia ze sporem po Obronie (Prawo — ziarnistość Z2; Łowiectwo, Mistycyzm, Religia, Matematyka, '
+     'Inżynieria, Oblężnictwo, Obróbka żelaza — Top1 zmieniony w Obronie, Z3; Koło — nowy kandydat Z4) oraz próbka 6 odkryć zgodnych '
+     '(Waluta/Mennica, Wymiana, Brązownictwo, Żegluga, Wojskowość, Budownictwo).', '',
+     'Metoda: te same kandydatury i dowody (`narzedzia/techdata.py`), WŁASNE oceny FC 0–5 (`narzedzia/fc_final.py`, z uzasadnieniem każdej oceny), '
+     'te same wagi 3/3/2/2/2/1, pojedynki każdy z każdym, reguły R-K1 i E1 (§1.3 analizy). Wynik FC jest FINALNY i trafia do CSV '
+     '(kolumna `Status_TOP5`). Pozostałe 16 odkryć: FINALNE bez trzeciego turnieju (zgodność Operator/Evaluator ≥ 3/5).', '',
+     '## Macierz zgodności Obrona → FC (TOP 5)', '',
+     '| Odkrycie | Top5 Obrony (ID) | Top5 FC (ID) | Zgodność zbioru | Zgodność pozycji | Werdykt |', '|---|---|---|---|---|---|']
+tot_set = tot_n = 0
+for r in FC_REPORT:
+    tot_set += r['same_set']; tot_n += r['n']
+    v = 'zgodny' if r['ob'] == r['fc'] else 'FC zmienia kolejność'
+    if r['name'] in FC_Q7: v += '; Top1 → Q7'
+    F.append(f"| {r['name']} | {' > '.join(r['ob'])} | {' > '.join(r['fc'])} | {r['same_set']}/{r['n']} | {r['same_pos']}/{r['n']} | {v} |")
+F += ['', f"Razem: zgodność zbioru {tot_set}/{tot_n}; identyczna kolejność w {sum(1 for r in FC_REPORT if r['ob'] == r['fc'])}/{len(FC_REPORT)} odkryciach.", '']
+for r in FC_REPORT:
+    F += [f"## {r['name']}", '', '| ID | Kandydat | S | N | B | Z | O | C | Suma | Uzasadnienie oceny FC |', '|---|---|---|---|---|---|---|---|---|---|']
+    for c in r['cands']:
+        F.append(f"| {c['id']} | {c['txt']} | " + ' | '.join(str(v) for v in c['sc']) + f" | {wsum(c['sc'])} | {r['fcs'][c['id']][1]}{' (R-K1: N=0, O≤1)' if c.get('rule') == 'R-K1' else ''} |")
+    F += [''] + [f"- {a} vs {b} → **{w}** — {why}." for a, b, w, why in r['duels']]
+    F += ['', 'Ranking FC: ' + ' > '.join(f"{c['id']}({r['wins'][c['id']]}W/{wsum(c['sc'])})" for c in r['rank_t'])
+          + ('' if r['e1'] else ' · E1: brak kandydata spełniającego E1 (Q7)'), '',
+          'FINALNE TOP 5 (po E1): ' + ' > '.join(r['fc']), '']
+open(os.path.join(OUT, 'turnieje', 'FC-trzeci-turniej.md'), 'w', encoding='utf-8').write('\n'.join(F))
+
 stats = dict(templates={k: (v, TEMPLATE_KEYS[k]) for k, v in tcount.items()},
              cands=sum(len(v) for v in TECHS.values()),
              duels=sum(len(v)*(len(v)-1)//2 for v in TECHS.values()),
              full5=sum(1 for v in TECHS.values() if len(v) >= 5),
              pew={p: sum(1 for r in rows if r['Pewnosc'] == p) for p in ('WYSOKA', 'SREDNIA', 'NIE_USTALONO')},
-             long=long_txt)
+             long=long_txt,
+             fc=dict(odkrycia=len(FC_REPORT), zgodnosc_zbioru=f"{tot_set}/{tot_n}",
+                     zmiany=[r['name'] for r in FC_REPORT if r['ob'] != r['fc']]))
 json.dump(stats, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'stats.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 print(json.dumps(stats, ensure_ascii=False, indent=1))

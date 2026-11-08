@@ -44,7 +44,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 5. **f** — Otwiera Matematykę, Kodeks, Handel, Filozofię — wygrane: 1, suma: 34
 6. **d** — Spichlerz Królewski: +3 żywności, +4 zadowolenia — wygrane: 0, suma: 28
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Biblioteka: +30% Nauki miasta
 - Top2: Spichlerz Królewski: limit ludności 8 → 12

@@ -37,7 +37,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 4. **e** — Warunek Wymiany — klucza do tras handlowych — wygrane: 1, suma: 32
 5. **d** — Otwiera Koło (Drogi, Rydwan) — wygrane: 0, suma: 30
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Trzoda: +2 żywności, +4 Pracy, +3 handlu, bez złoża
 - Top2: Lama (Inkowie): +3 Pracy także w górach i lesie

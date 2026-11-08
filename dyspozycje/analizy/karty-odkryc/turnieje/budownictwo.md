@@ -52,7 +52,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 6. **c** — Akwedukt: +4 zdrowia — wygrane: 1, suma: 30
 7. **d** — Akwedukt: +2 zadowolenia (+1 na poziom) — wygrane: 0, suma: 28
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: b > a > f > e > g (Obrona: b > a > f > e > g).
+
+Status: FINALNE (FC r1: trzeci turniej — zgodny z Obroną)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Akwedukt: limit ludności miasta do 20
 - Top2: Mury: +200% Obrony obrońców miasta

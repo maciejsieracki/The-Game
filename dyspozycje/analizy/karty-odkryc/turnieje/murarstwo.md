@@ -52,7 +52,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 6. **g** — Otwiera Brązownictwo i Budownictwo (Mury) — wygrane: 1, suma: 28
 7. **d** — Stela: +1 Kultury (+1 na poziom), bez utrzymania — wygrane: 0, suma: 26
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Kamieniołom: +50 kamienia na turę do magazynu
 - Top2: Każdy Warsztat kamieniarski: +10% kamienia w państwie

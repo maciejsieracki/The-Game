@@ -37,7 +37,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 4. **d** — Studnia jest warunkiem Akweduktu (limit 20) i Łaźni — wygrane: 1, suma: 34
 5. **c** — Studnia: +1 zadowolenia (+1 na poziom) — wygrane: 0, suma: 27
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Irygacja: +5 żywności, +2 Pracy, +2 handlu przy rzece
 - Top2: Studnia: +2 zdrowia i koniec kary −2 za brak wody

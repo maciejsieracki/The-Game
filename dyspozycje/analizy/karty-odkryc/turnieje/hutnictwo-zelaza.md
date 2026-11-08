@@ -52,7 +52,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 6. **e** — Kuźnia żelaza: kolejne +15% Pancerza (razem +30%) — wygrane: 1, suma: 38
 7. **g** — Z Drogami brukowanymi otwiera Obróbkę żelaza — wygrane: 0, suma: 32
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Awans do epoki Żelaza: nowe budynki i wyższe ich poziomy
 - Top2: Odlewnia żelaza: żelazo i brąz, +12 Pracy

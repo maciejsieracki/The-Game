@@ -22,7 +22,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 1. **a** — Łaźnia publiczna: +5 zdrowia miasta — wygrane: 1, suma: 38
 2. **b** — Łaźnia: +3 Kultury, +3 zadowolenia, +1 żywności — wygrane: 0, suma: 32
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Łaźnia publiczna: +5 zdrowia miasta
 - Top2: Łaźnia: +3 Kultury, +3 zadowolenia, +1 żywności

@@ -37,7 +37,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 4. **b** — Dwór Zarządcy: +2 pieniądza, +3 Kultury, +1 Pracy — wygrane: 1, suma: 28
 5. **d** — Trybunał: +1 pieniądza i +1 zadowolenia — wygrane: 0, suma: 27
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Trybunał: +17 pkt Prawa w każdym mieście
 - Top2: Dwór Zarządcy: 33 pkt Prawa w mieście regionalnym

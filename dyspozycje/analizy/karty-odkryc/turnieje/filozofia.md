@@ -26,7 +26,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 2. **b** — Akademia: +6 Nauki, +5 Kultury, +3 zadowolenia — wygrane: 1, suma: 33
 3. **c** — Otwiera Prawo i Medycynę — wygrane: 0, suma: 32
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Akademia: +20% Nauki (z Biblioteką razem +50%)
 - Top2: Akademia: +6 Nauki, +5 Kultury, +3 zadowolenia

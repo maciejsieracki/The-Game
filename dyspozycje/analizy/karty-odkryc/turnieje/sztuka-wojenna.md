@@ -22,7 +22,9 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 1. **a** — Akademia wojskowa: +20% parametrów (z Koszarami +40%) — wygrane: 1, suma: 46
 2. **b** — Akademia wojskowa: +3 Pracy, +2 pieniądza — wygrane: 0, suma: 23
 
-## 4. Wynik TOP 5
+Status: FINALNE (FC r1: zatwierdzone bez trzeciego turnieju — zgodność Operator/Evaluator ≥ 3/5, sporne pozycje rozstrzygnięte w Obronie)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Akademia wojskowa: +20% parametrów (z Koszarami +40%)
 - Top2: Akademia wojskowa: +3 Pracy, +2 pieniądza

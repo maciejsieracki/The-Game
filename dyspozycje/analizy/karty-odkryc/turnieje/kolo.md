@@ -37,7 +37,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 4. **b** — Droga: +2 handlu na polu — wygrane: 1, suma: 34
 5. **d** — Z Brązownictwem otwiera Jeździectwo (Konnica) — wygrane: 0, suma: 30
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: a > c > e > b > d (Obrona: a > c > e > b > d).
+
+Status: FINALNE (FC r1: trzeci turniej — zgodny z Obroną)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Droga: ruch po niej 3× szybszy
 - Top2: Rydwan (woły): Atak 12, 400 HP, bez Koszar
@@ -50,7 +54,7 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 - Połącz miasta Drogą: kandydaci a(59), b(34) → wybrany **a** (najwyższa suma ważona).
 - Rekrutuj Rydwan (woły): kandydaci c(46) → wybrany **c** (najwyższa suma ważona).
 - Wybierz kolejne badanie: kandydaci d(30) → wybrany **d** (najwyższa suma ważona).
-- Rekrutuj Wodza w stolicy: kandydaci e(42) → wybrany **e** (najwyższa suma ważona).
+- Rekrutuj Wodza w stolicy: kandydaci e(39) → wybrany **e** (najwyższa suma ważona).
 
 Obecnie na karcie:
 

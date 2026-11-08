@@ -128,7 +128,7 @@ TECHS['Rolnictwo'] = [
 ]
 
 TECHS['Łowiectwo'] = [
-    c('a', 'I:oboz', 'Obóz łowiecki: +1 żywności, +1 pieniądza, +2 handlu', 'zagospodarować las (+1 żywności, +1 pieniądza, +2 handlu)', 'TI:154', 2, 3, 4, 3, 3, 4),
+    c('a', 'I:oboz', 'Obóz łowiecki: +1 żywności, +1 Pracy, +1 pieniądza, +2 handlu', 'zagospodarować las (+1 żywności, +1 Pracy, +1 pieniądza, +2 handlu)', 'TI:154;TI:155-160;TE:223', 2, 3, 4, 3, 3, 4),
     c('b', 'T:next', 'Otwiera Łucznictwo (Łucznik)', 'dojść do Łuczników', 'T:82', 3, 3, 4, 2, 3, 4),
 ]
 
@@ -299,7 +299,7 @@ TECHS['Inżynieria'] = [
 
 TECHS['Oblężnictwo'] = [
     c('a', 'U:katapulta', 'Katapulta: ostrzał z 6 pól, 1000 HP', 'burzyć mury z dystansu 6 pól', 'U:3482', 3, 3, 4, 1, 2, 3),
-    c('b', 'B:warsztat', 'Warsztat oblężniczy: +10% parametrów jednostek', 'wzmocnić jednostki o kolejne +10% (razem do +50%)', 'B:1596;UB:23-33;UB:178', 3, 3, 4, 3, 2, 5),
+    c('b', 'B:warsztat', 'Warsztat oblężniczy: +10% parametrów jednostek', 'wzmocnić jednostki z tego miasta o kolejne +10% (z Koszarami razem +30%)', 'B:1596;UB:23-33;UB:178', 3, 3, 4, 3, 2, 5),
     c('c', 'B:warsztat', 'Warsztat oblężniczy: +4 Pracy, +2 pieniądza', None, 'B:1596', 2, 1, 2, 2, 3, 5),
     c('d', 'T:next', 'Z Obróbką żelaza otwiera Sztukę wojenną', 'dojść do Akademii wojskowej', 'T:449', 3, 3, 5, 4, 1, 3),
 ]

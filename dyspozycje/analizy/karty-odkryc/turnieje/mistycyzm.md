@@ -33,7 +33,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 
 Reguła E1 (Top1 = korzyść od ręki dla każdej cywilizacji, bez kolejnego badania i bez wyścigu): c nie spełnia E1 → Top1 = **b** (najwyżej w rankingu spośród spełniających E1); pozostałe miejsca w kolejności turnieju.
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: b > c > a > d (Obrona: b > c > a > d).
+
+Status: FINALNE (FC r1: trzeci turniej — zgodny z Obroną)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Kamienne kręgi: szerzą religię +2% na turę
 - Top2: Cud Wyrocznia: +3 Kultury, +3 Zaufania, +2 Wpływu
@@ -43,8 +47,8 @@ Reguła E1 (Top1 = korzyść od ręki dla każdej cywilizacji, bez kolejnego bad
 
 ## 5. „Co możesz teraz zrobić" — wybór korzyści „w celu…" (mini-turniej per obiekt)
 
-- Zbuduj Kamienne kręgi: kandydaci a(35), b(38) → wybrany **b** (najwyższa suma ważona).
-- Wznieś cud Wyrocznia: kandydaci c(46) → wybrany **c** (najwyższa suma ważona).
+- Zbuduj Kamienne kręgi: kandydaci a(35), b(35) → wybrany **b** (najwyższa suma ważona).
+- Wznieś cud Wyrocznia: kandydaci c(44) → wybrany **c** (najwyższa suma ważona).
 - Wybierz kolejne badanie: kandydaci d(26) → wybrany **d** (najwyższa suma ważona).
 
 Obecnie na karcie:

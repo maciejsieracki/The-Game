@@ -39,7 +39,11 @@ S=SKALA, N=NOWA MECHANIKA, B=BRAK ZASTĘPNIKA, Z=ZASIĘG, O=ODCZUWALNOŚĆ, C=CZ
 
 Reguła E1: żaden kandydat jej nie spełnia — Top1 zostaje wynikiem turnieju z zastrzeżeniem (Q7).
 
-## 4. Wynik TOP 5
+Final Control r1 — trzeci, niezależny turniej z własnymi ocenami FC: [FC-trzeci-turniej.md](FC-trzeci-turniej.md). FINALNA kolejność: d > e > c > a > b (Obrona: d > e > c > a > b).
+
+Status: FINALNE-WARUNKOWE (FC r1: trzeci turniej zgodny z Obroną; Top1 czeka na decyzję właściciela Q7 — żaden kandydat nie spełnia E1)
+
+## 4. Wynik TOP 5 (FINALNY)
 
 - Top1 (GŁÓWNA KORZYŚĆ): Cud narodowy: Posąg Peruna (Słowianie)
 - Top2: Z Oblężnictwem otwiera Sztukę wojenną
