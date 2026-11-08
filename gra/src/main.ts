@@ -612,6 +612,7 @@ import {
   ownerResourceCap,
   cityHasWaterAccess,
   militaryFoodConsumptionWithSpichlerz,
+  setArmyFoodUpkeepResolver,
   spichlerzSolArmyBonusActive,
   applyStolarniaDrewnoMapInflow,
   refreshEconomyFoodTotals,
@@ -6614,7 +6615,8 @@ async function boot(): Promise<void> {
      */
     function unitSufferingFields(u: RuntimeUnit) {
       const cywil = isCivilianUnit(u);
-      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      // R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1 (r2): karta jednostki pokazuje ułamek wg trudności WŁAŚCICIELA.
+      const efParams = buildEmpireFoodParams(data.econParams, effectiveGameDifficultyForOwner(u.ownerId));
       const gdParams = buildGoldDeficitParams(data.econParams, _menuDifficulty);
       const glod = !cywil && isArmyHungry(u.ownerId);
       const zloto = !cywil && isGoldDeficit(u.ownerId);
@@ -9046,6 +9048,23 @@ async function boot(): Promise<void> {
         typCityCopyOwners,
       );
     }
+    /**
+     * R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1: zużycie żywności armii (advanceEmpireFood,
+     * auto-wyżywienie, podgląd) wg poziomu trudności WŁAŚCICIELA jednostek -- tak jak
+     * utrzymanie w advanceCityEconomy (R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1). Miasto-państwo
+     * -> cityStateDifficulty, gracz/AI -> trudność menu (wynik dla nich bez zmian).
+     * Parametry per poziom są stałe (econ-params.json), więc cache po poziomie jest bezpieczny.
+     */
+    const _armyFoodUpkeepByLevel = new Map<GameDifficulty, ReturnType<typeof loadUpkeepParams>>();
+    setArmyFoodUpkeepResolver((oid: number) => {
+      const level = effectiveGameDifficultyForOwner(oid);
+      let cachedUpkeep = _armyFoodUpkeepByLevel.get(level);
+      if (!cachedUpkeep) {
+        cachedUpkeep = loadUpkeepParams(data.econParams, level);
+        _armyFoodUpkeepByLevel.set(level, cachedUpkeep);
+      }
+      return cachedUpkeep;
+    });
     /** N-1A: nazwa pierwszego miasta gracza z miasta_cywilizacji[0]. */
     let clusterPlayerStartCityName = playerStartCityName(data.civs, _menuCivId, data.cityNamesPools);
     /** Miasta-państwa tego samego typu — spawn po założeniu pierwszego miasta gracza. */
@@ -16710,7 +16729,8 @@ async function boot(): Promise<void> {
         .map(u => ({ hp: u.hp, hpMax: u.hpMax ?? getMaxHp(u.typeId) }));
       const turns = turnsUntilSiegeSurrender(city, {
         food,
-        hpFrac: buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaHpFrac,
+        // R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1 (r2): prognoza wg trudności WŁAŚCICIELA miasta.
+        hpFrac: buildEmpireFoodParams(data.econParams, effectiveGameDifficultyForOwner(city.ownerId)).glodWojskaHpFrac,
         garrison,
       });
       return {
@@ -33194,7 +33214,14 @@ async function boot(): Promise<void> {
     }
 
     // R-WEB-SIEGE-STARVATION-SURRENDER-Q1 (obrona r1, zarzut 2): ułamek HP/turę głodu dla panelu (zależny od trudności).
-    setSiegePanelStarveFracProvider(() => buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaHpFrac);
+    // R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1 (r2): ułamek dla panelu = trudność WŁAŚCICIELA aktywnie
+    // oblężonego miasta (brak aktywnego miasta -> trudność menu, bez wpływu na wynik).
+    setSiegePanelStarveFracProvider(() => {
+      const activeId = getActiveSiegeCityId();
+      const activeCity = activeId ? cities.find(c => c.id === activeId) : undefined;
+      const lvl = activeCity ? effectiveGameDifficultyForOwner(activeCity.ownerId) : _menuDifficulty;
+      return buildEmpireFoodParams(data.econParams, lvl).glodWojskaHpFrac;
+    });
 
     /** Oszacowanie Milicji dla panelu oblężenia: tylko z ukończonym budynkiem Garnizon i poza okresem odnowy. */
     setSiegePanelMilitiaEstimator((c: City) =>
@@ -36927,10 +36954,12 @@ async function boot(): Promise<void> {
 
             for (const tick of efTickResult.perOwner) {
               if (!tick.glodWojskaAtrycjaAktywna) continue;
+              // R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1: ułamek atrycji wg trudności właściciela
+              // (econ-params glod_wojska_hp_frac: easy 0,06 / normal 0,08 / hard 0,10).
               const starv = applyArmyStarvationHpLoss(
                 units,
                 tick.ownerId,
-                efParams.glodWojskaHpFrac,
+                buildEmpireFoodParams(data.econParams, effectiveGameDifficultyForOwner(tick.ownerId)).glodWojskaHpFrac,
                 (typeId) => unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {}),
               );
               if (tick.ownerId === 0) {
@@ -37136,12 +37165,16 @@ async function boot(): Promise<void> {
           try {
             // NAPRAWA PARYTETU TRUDNOŚCI (Maciej 2026-07-26): dawniej literał 0.08 tutaj
             // rozjeżdżał się z glod_wojska_hp_frac na łatwym/trudnym (6%/10%) — podpięty
-            // parametr, liczony RAZ dla całej tury (nie per miasto oblężone).
-            const glodWojskaHpFracOblezenie = buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaHpFrac;
+            // parametr. R-WEB-CITYSTATE-ARMY-FOOD-DIFFICULTY-Q1 (r2): ułamek liczony per miasto
+            // oblężone wg trudności WŁAŚCICIELA garnizonu (miasto-państwo -> cityStateDifficulty).
             for (const tick of econ.perCity) {
               if (!tick.oblegany) continue;
               const oblCity = cities.find(c => c.id === tick.cityId);
               if (!oblCity) continue;
+              const glodWojskaHpFracOblezenie = buildEmpireFoodParams(
+                data.econParams,
+                effectiveGameDifficultyForOwner(oblCity.ownerId),
+              ).glodWojskaHpFrac;
 
               const realGarnizonUnits = units.filter(
                 u => u.ownerId === oblCity.ownerId
