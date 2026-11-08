@@ -107,12 +107,35 @@ for (const s of dataEls) {
   elHashes.set(id, { h, mime });
   if (!srcByHash.has(h)) unknown.push(id);
 }
+// R-WEB-BUILD-SPLIT-AUDIO-SIDECAR-Q1: audio NIE jest w HTML, tylko w plikach-sąsiadach audio-pack-N.js
+// (`r["<klucz>"]="<base64>";` w rejestrze window.__CIV_AUDIO__), ładowanych <script src> przed bundlem.
+const packNames = fs.readdirSync(path.dirname(HTML)).filter((f) => /^audio-pack-\d+\.js$/.test(f))
+  .sort((a, b) => Number(/\d+/.exec(a)[0]) - Number(/\d+/.exec(b)[0]));
+const packSrcTags = [...html.matchAll(/<script src="(audio-pack-\d+\.js)"><\/script>/g)].map((m) => m[1]);
+const audioKeys = [];
+for (const name of packNames) {
+  const body = fs.readFileSync(path.join(path.dirname(HTML), name), 'latin1');
+  const re = /r\["([0-9a-f]+)"\]="([A-Za-z0-9+/=]*)";/g; let m;
+  while ((m = re.exec(body))) {
+    const id = 'civ-asset-' + m[1];
+    dataChars += m[2].length;
+    const h = sha(Buffer.from(m[2], 'base64'));
+    elHashes.set(id, { h, mime: 'audio/mpeg' });
+    audioKeys.push(m[1]);
+    if (!srcByHash.has(h)) unknown.push(id);
+  }
+}
+check('A3a HTML bez elementów danych audio; <script src> do wszystkich pakietów audio-pack-N.js, przed bundlem',
+  dataEls.every((s) => !/data-mime="audio\//.test(s.attrs)) && packNames.length > 0
+  && JSON.stringify(packSrcTags) === JSON.stringify(packNames)
+  && [...html.matchAll(/<script src="audio-pack-\d+\.js">/g)].every((m) => m.index < mainBundle.start),
+  { packNames, packSrcTags });
 check('A3 bajty każdego elementu = plik źródłowy (SHA-256, bez przekodowania)', badDecode === 0 && unknown.length === 0,
   { badDecode, unknown, dataChars });
 const covered = new Set([...elHashes.values()].map((v) => v.h));
 const missing = [...srcByHash.entries()].filter(([h]) => !covered.has(h)).map(([, f]) => f[0]);
-check('A4 każdy zasób źródłowy (unikalna treść) ma element', missing.length === 0,
-  { srcFiles: srcFiles.length, uniqueContents: srcByHash.size, elements: dataEls.length, missing });
+check('A4 każdy zasób źródłowy (unikalna treść) ma element (HTML) albo wpis w pakiecie audio', missing.length === 0,
+  { srcFiles: srcFiles.length, uniqueContents: srcByHash.size, elements: dataEls.length, audioKeys: audioKeys.length, missing });
 const mimeOk = [...elHashes.values()].every((v) => {
   const f = srcByHash.get(v.h); if (!f) return false;
   const ext = path.extname(f[0]).toLowerCase();
@@ -228,7 +251,7 @@ async function main() {
     check('B1 0 elementów danych w DOM po starcie', dom.dataLeft === 0, { dataLeft: dom.dataLeft });
     check('B2 obraz menu z blob: wczytany', !!dom.menuImg && dom.menuImg.src === 'blob:' && dom.menuImg.natural[0] > 0 && dom.menuImg.complete, dom.menuImg);
     const assetBlobs = dom.blobs.filter((b) => /^(audio\/mpeg|image\/png|image\/jpeg)$/.test(b.type));
-    check('B3 liczba blob: URL zasobów = liczba elementów danych', assetBlobs.length === dataEls.length, { blobs: assetBlobs.length, dataEls: dataEls.length, allBlobs: dom.blobs.length });
+    check('B3 liczba blob: URL zasobów = liczba elementów danych', assetBlobs.length === dataEls.length + audioKeys.length, { blobs: assetBlobs.length, dataEls: dataEls.length, audioKeys: audioKeys.length, allBlobs: dom.blobs.length });
 
     // C: pamięć — PRZED sprawdzeniami B4–B6 (te pobierają i dekodują wszystkie bloby, co chwilowo podbija pamięć)
     const client = await page.context().newCDPSession(page);

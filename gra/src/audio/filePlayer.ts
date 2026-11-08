@@ -547,24 +547,36 @@ function createPlaylist(
 // kolejnego utworu do katalogu wystarczy, zero zmian w kodzie.
 // ---------------------------------------------------------------------------
 
-const kamienModules = import.meta.glob('./utwory/kamien/*.mp3', {
+// AUDIO W PLIKACH-SASIADACH (R-WEB-BUILD-SPLIT-AUDIO-SIDECAR-Q1): w buildzie bajty mp3 leza w audio-pack-N.js obok
+// HTML (rejestr window.__CIV_AUDIO__). Gdy pliku-sasiada brak, modul zasobu zwraca pusty URL — odrzucamy go tu,
+// wiec brakujaca muzyka to po prostu pusta playlista (cichy fallback, zero bledow). W dev (Vite) URL-e sa pelne.
+function dropEmptyUrls(rec: Record<string, string>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const k of Object.keys(rec)) {
+    const u = rec[k];
+    if (typeof u === 'string' && u !== '') out[k] = u;
+  }
+  return out;
+}
+
+const kamienModules = dropEmptyUrls(import.meta.glob('./utwory/kamien/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const KAMIEN_URLS: readonly string[] = Object.keys(kamienModules).sort()
   .map((k) => kamienModules[k] as string);
 
-const brazModules = import.meta.glob('./utwory/braz/*.mp3', {
+const brazModules = dropEmptyUrls(import.meta.glob('./utwory/braz/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const BRAZ_URLS: readonly string[] = Object.keys(brazModules).sort()
   .map((k) => brazModules[k] as string);
 
-const introModules = import.meta.glob('./utwory/intro/*.mp3', {
+const introModules = dropEmptyUrls(import.meta.glob('./utwory/intro/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 // Intro: STAŁA kolejność (decyzja właściciela C-MUZ-Q6=A) — dramaturgia menu:
 // spokojne otwarcie, energiczne zamknięcie. Nowy utwór dorzucony do katalogu
 // NIE wskoczy sam we właściwe miejsce — dopisz go tutaj.
@@ -583,19 +595,19 @@ const INTRO_URLS: readonly string[] = INTRO_KOLEJNOSC
 // Dyplomacja: fallback w ./utwory/dyplomacja/*.mp3 (1 utwór, pętla); per-cywilizacja
 // w ./utwory/dyplomacja/<civId>/ (stała kolejność, 3× pod rząd każdy utwór — patrz
 // DYPLOMACJA_CIV_TRACK_ORDER). Wybór po civId w diplomacyPlaylistForCiv().
-const dyplomacjaModules = import.meta.glob('./utwory/dyplomacja/*.mp3', {
+const dyplomacjaModules = dropEmptyUrls(import.meta.glob('./utwory/dyplomacja/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const DYPLOMACJA_URLS: readonly string[] = Object.keys(dyplomacjaModules).sort()
   .map((k) => dyplomacjaModules[k] as string);
 
 // Per-cywilizacja: ./utwory/dyplomacja/<civId>/*.mp3 — stała kolejność, 3× pod rząd
 // każdy utwór, potem następny (A×3 → B×3 → A×3…), crossfade między przejściami.
-const dyplomacjaCivModules = import.meta.glob('./utwory/dyplomacja/*/*.mp3', {
+const dyplomacjaCivModules = dropEmptyUrls(import.meta.glob('./utwory/dyplomacja/*/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 
 /** Kolejność utworów per civId (klucz = typCywilizacji / ikonaId z civs.json). */
 const DYPLOMACJA_CIV_TRACK_ORDER: Readonly<Record<string, readonly string[]>> = {
@@ -626,28 +638,33 @@ const civDiplomacyPlaylistCache = new Map<string, FilePlaylist>();
 // MUZYKA CYWILIZACJI (przywitanie + negocjacje): manifest data/civ-music.json,
 // pliki w ./utwory/dyplomacja/_civ/<civId>/ (podkatalog `_civ` celowo poza
 // globem `dyplomacja/*/*.mp3` powyżej). Logika wyboru: civMusic.ts (czysta).
-const civMusicModules = import.meta.glob('./utwory/dyplomacja/_civ/*/*.mp3', {
+const civMusicModules = dropEmptyUrls(import.meta.glob('./utwory/dyplomacja/_civ/*/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const CIV_MUSIC_AVAILABLE: Record<string, string> = {};
 for (const k of Object.keys(civMusicModules)) {
   const m = k.match(/\/_civ\/([^/]+)\/([^/]+)$/);
   if (m) CIV_MUSIC_AVAILABLE[`${m[1]}/${m[2]}`] = civMusicModules[k] as string;
 }
-const civMusicPlaylistCache = new Map<string, FilePlaylist | null>();
+const civMusicPlaylistCache = new Map<string, FilePlaylist>();
 
 function getCivMusicPlaylist(civId: string): FilePlaylist | null {
-  if (civMusicPlaylistCache.has(civId)) return civMusicPlaylistCache.get(civId) ?? null;
-  let pl: FilePlaylist | null = null;
   try {
+    // Wybór przy KAŻDYM otwarciu rozmowy (rotacja listy przywitań); playlista
+    // cache'owana po zestawie URL-i, więc każde przywitanie ma własną playlistę.
     const sel = resolveCivDiplomacyTracks(civMusicManifest as CivMusicManifest, civId, CIV_MUSIC_AVAILABLE, DYPLOMACJA_URLS);
-    if (sel) pl = createPlaylist(sel.urls, 1, 'losowa', sel.leadCount);
+    if (!sel) return null;
+    const key = `${sel.leadCount}|${sel.urls.join('|')}`;
+    let pl = civMusicPlaylistCache.get(key) ?? null;
+    if (!pl) {
+      pl = createPlaylist(sel.urls, 1, 'losowa', sel.leadCount);
+      civMusicPlaylistCache.set(key, pl);
+    }
+    return pl;
   } catch {
-    pl = null; // bezpieczny fallback na dotychczasowy dźwięk dyplomacji
+    return null; // bezpieczny fallback na dotychczasowy dźwięk dyplomacji
   }
-  civMusicPlaylistCache.set(civId, pl);
-  return pl;
 }
 
 function getOrCreateCivDiplomacyPlaylist(civId: string): FilePlaylist | null {
@@ -660,31 +677,31 @@ function getOrCreateCivDiplomacyPlaylist(civId: string): FilePlaylist | null {
   return pl;
 }
 
-const preBattleModules = import.meta.glob('./utwory/prebattle/*.mp3', {
+const preBattleModules = dropEmptyUrls(import.meta.glob('./utwory/prebattle/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const PREBATTLE_URLS: readonly string[] = Object.keys(preBattleModules).sort()
   .map((k) => preBattleModules[k] as string);
 
-const bitwaModules = import.meta.glob('./utwory/bitwa/*.mp3', {
+const bitwaModules = dropEmptyUrls(import.meta.glob('./utwory/bitwa/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const BITWA_URLS: readonly string[] = Object.keys(bitwaModules).sort()
   .map((k) => bitwaModules[k] as string);
 
-const zwyciestwoModules = import.meta.glob('./utwory/zwyciestwo/*.mp3', {
+const zwyciestwoModules = dropEmptyUrls(import.meta.glob('./utwory/zwyciestwo/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const ZWYCIESTWO_URLS: readonly string[] = Object.keys(zwyciestwoModules).sort()
   .map((k) => zwyciestwoModules[k] as string);
 
-const porazkaModules = import.meta.glob('./utwory/porazka/*.mp3', {
+const porazkaModules = dropEmptyUrls(import.meta.glob('./utwory/porazka/*.mp3', {
   eager: true,
   import: 'default',
-}) as Record<string, string>;
+}) as Record<string, string>);
 const PORAZKA_URLS: readonly string[] = Object.keys(porazkaModules).sort()
   .map((k) => porazkaModules[k] as string);
 
@@ -716,7 +733,7 @@ export function diplomacyPlaylistForCiv(civId: string | undefined): FilePlaylist
 
 /** Wszystkie playlisty dyplomacji (fallback + per-civ) — do setVolume(). */
 export function allDiplomacyPlaylists(): readonly FilePlaylist[] {
-  const music = [...civMusicPlaylistCache.values()].filter((p): p is FilePlaylist => p !== null);
+  const music = [...civMusicPlaylistCache.values()];
   return [dyplomacjaPlaylist, ...civDiplomacyPlaylistCache.values(), ...music];
 }
 
