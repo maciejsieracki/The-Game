@@ -54,6 +54,7 @@ pub mod resource_production;
 pub mod rng;
 pub mod roads;
 mod session;
+pub mod siege_starvation;
 pub mod society_breakdown;
 pub mod start_position;
 mod state;
