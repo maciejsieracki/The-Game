@@ -43,4 +43,5 @@ Oczekiwane: kolumna pasture rośnie już w t3-5 równolegle do farm, `pastureOnF
 
 ## Zmiany/Commit
 Pliki (jawny git add): gra/src/game/auto-improvements.ts; gra/tools/autoimprove-pasture-irrigation-q2-{test,bisect,live-measure}.cjs; gra/tools/ai-food-improvement-priority-stages-test.cjs; ten katalog (01-operator-r2.md, evidence-live-pre-26miast.json).
+SHA kodu r2: 9420ae1da (baza f9af066aa), worktree-gałąź wf_37741b4b-310-1.
 NASTĘPNY KROK: Evaluator. DEPLOY/PUSH: NIE WYKONANO.
