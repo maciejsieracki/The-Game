@@ -635,19 +635,24 @@ for (const k of Object.keys(civMusicModules)) {
   const m = k.match(/\/_civ\/([^/]+)\/([^/]+)$/);
   if (m) CIV_MUSIC_AVAILABLE[`${m[1]}/${m[2]}`] = civMusicModules[k] as string;
 }
-const civMusicPlaylistCache = new Map<string, FilePlaylist | null>();
+const civMusicPlaylistCache = new Map<string, FilePlaylist>();
 
 function getCivMusicPlaylist(civId: string): FilePlaylist | null {
-  if (civMusicPlaylistCache.has(civId)) return civMusicPlaylistCache.get(civId) ?? null;
-  let pl: FilePlaylist | null = null;
   try {
+    // Wybór przy KAŻDYM otwarciu rozmowy (rotacja listy przywitań); playlista
+    // cache'owana po zestawie URL-i, więc każde przywitanie ma własną playlistę.
     const sel = resolveCivDiplomacyTracks(civMusicManifest as CivMusicManifest, civId, CIV_MUSIC_AVAILABLE, DYPLOMACJA_URLS);
-    if (sel) pl = createPlaylist(sel.urls, 1, 'losowa', sel.leadCount);
+    if (!sel) return null;
+    const key = `${sel.leadCount}|${sel.urls.join('|')}`;
+    let pl = civMusicPlaylistCache.get(key) ?? null;
+    if (!pl) {
+      pl = createPlaylist(sel.urls, 1, 'losowa', sel.leadCount);
+      civMusicPlaylistCache.set(key, pl);
+    }
+    return pl;
   } catch {
-    pl = null; // bezpieczny fallback na dotychczasowy dźwięk dyplomacji
+    return null; // bezpieczny fallback na dotychczasowy dźwięk dyplomacji
   }
-  civMusicPlaylistCache.set(civId, pl);
-  return pl;
 }
 
 function getOrCreateCivDiplomacyPlaylist(civId: string): FilePlaylist | null {
@@ -716,7 +721,7 @@ export function diplomacyPlaylistForCiv(civId: string | undefined): FilePlaylist
 
 /** Wszystkie playlisty dyplomacji (fallback + per-civ) — do setVolume(). */
 export function allDiplomacyPlaylists(): readonly FilePlaylist[] {
-  const music = [...civMusicPlaylistCache.values()].filter((p): p is FilePlaylist => p !== null);
+  const music = [...civMusicPlaylistCache.values()];
   return [dyplomacjaPlaylist, ...civDiplomacyPlaylistCache.values(), ...music];
 }
 
