@@ -1,3 +1,9 @@
+## ROBOCZA 07503d86 -- 2026-11-06 -- FALA 546: wojna epoki omija umowy poza sojuszem; rezerwa AI 10/3/0 (testowa)
+
+- R-WEB-ERA-WAR-IGNORE-TREATIES-Q1: wojna epoki (Kamien/Braz/Zelazo) nie jest blokowana przez NAP, blokade pokoju, umowy ani Relacje, blokuje ja tylko sojusz; zwykle wypowiedzenia respektuja NAP. R-WEB-AI-PURCHASE-RESERVE-3-10-0-Q1: rezerwa tur utrzymania przy zakupie jednostek przez AI Latwy 10 / Normalny 3 / Trudny 0
+- Weryfikacja: tsc 0, logic-test 213/213, era-war-ignore-treaties-test 22/0, ai-purchase-maintenance-reserve-test 56/0, vite build OK; ai-test 274/20 (te same 20 FAIL co baza)
+- Limity: NIE_ZMIERZONO: testy live w przegladarce wojny epoki; przyczyna braku wojny w zrzucie Brazu (NAP vs bramka R1 tura<40) niepotwierdzona
+
 ## ROBOCZA aa82dabe -- 2026-11-06 -- FALA 545: AI vs gracz: parytet suwaków, dyplomacji i miast-państw (testowa)
 
 - seed suwaków AI w T1 = 60/20/20 (suma 100%, wcześniej 60/60/20 normalizowane do 40/60/0); dyplomacja: jedna reguła skarbca dla gracza i AI (bez podłogi 0 tylko dla AI); miasta-państwa: zakup i zastępowanie jednostek na trudności właściciela jak produkcja; fallback ownerId===0 scalony w legacyEraForOwner

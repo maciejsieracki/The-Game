@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "aa82dabea782bf948c39f368756ccd85",
-  "bundleSha256": "aaad03cdeac119274bf4af845e186acaf50d15a53293ba8553cb02123d1fd8aa",
-  "bundleBytes": 85675444,
+  "bundleMd5": "07503d86b6d0097f1dc22ba3e65c6cce",
+  "bundleSha256": "9db89ef1ce73ac67799e061a81cc83141715c1f79a4667470571bf6d26e37899",
+  "bundleBytes": 85675648,
   "sourceSnapshot": {
-    "source": "PARFIX FC 801eb9852 na origin/main",
+    "source": "main a61337844 + FC 26228f4ba (ERAIGN) + FC 025119d79 (RES310)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 545: seed suwaków AI w T1 = 60/20/20 (suma 100%, wcześniej 60/60/20 normalizowane do 40/60/0); dyplomacja: jedna reguła skarbca dla gracza i AI (bez podłogi 0 tylko dla AI); miasta-państwa: zakup i zastępowanie jednostek na trudności właściciela jak produkcja; fallback ownerId===0 scalony w legacyEraForOwner"
+    "FALA 546: R-WEB-ERA-WAR-IGNORE-TREATIES-Q1: wojna epoki (Kamien/Braz/Zelazo) nie jest blokowana przez NAP, blokade pokoju, umowy ani Relacje, blokuje ja tylko sojusz; zwykle wypowiedzenia respektuja NAP. R-WEB-AI-PURCHASE-RESERVE-3-10-0-Q1: rezerwa tur utrzymania przy zakupie jednostek przez AI Latwy 10 / Normalny 3 / Trudny 0"
   ],
   "verification": [
-    "ai-player-parity-fixes 44/0 (12 asercji pada na bazie), logic-test 213/213, tsc 0, ai-test jak baza; FC PASS-WITH-NOTES"
+    "tsc 0, logic-test 213/213, era-war-ignore-treaties-test 22/0, ai-purchase-maintenance-reserve-test 56/0, vite build OK; ai-test 274/20 (te same 20 FAIL co baza)"
   ],
   "limits": [
-    "pomiar T2-T10 lustrem pętli suwaków, nie live; poprawka miast-państw tylko asercje statyczne + macierz funkcji; utrzymanie miast-państw w ticku nadal na globalnej trudności (osobny temat R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1)"
+    "NIE_ZMIERZONO: testy live w przegladarce wojny epoki; przyczyna braku wojny w zrzucie Brazu (NAP vs bramka R1 tura<40) niepotwierdzona"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-07T22:43:08",
+  "hubGeneratedAt": "2026-11-08T08:51:58",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "aa82dabea782bf948c39f368756ccd85",
-      "sizeBytes": 85675444
+      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
+      "sizeBytes": 85675648
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "aa82dabea782bf948c39f368756ccd85",
-      "sizeBytes": 85675444
+      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
+      "sizeBytes": 85675648
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "aa82dabea782bf948c39f368756ccd85",
-      "sizeBytes": 85675444
+      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
+      "sizeBytes": 85675648
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "aa82dabea782bf948c39f368756ccd85",
-      "sizeBytes": 85675444
+      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
+      "sizeBytes": 85675648
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "aa82dabea782bf948c39f368756ccd85",
-      "sizeBytes": 85675444
+      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
+      "sizeBytes": 85675648
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "aa82dabea782bf948c39f368756ccd85",
-      "sizeBytes": 85675444
+      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
+      "sizeBytes": 85675648
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "aa82dabea782bf948c39f368756ccd85",
-      "sizeBytes": 85675444
+      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
+      "sizeBytes": 85675648
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "aa82dabea782bf948c39f368756ccd85",
-      "sizeBytes": 85675444
+      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
+      "sizeBytes": 85675648
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "aa82dabea782bf948c39f368756ccd85",
-      "sizeBytes": 85675444
+      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
+      "sizeBytes": 85675648
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "aa82dabea782bf948c39f368756ccd85",
-      "sizeBytes": 85675444
+      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
+      "sizeBytes": 85675648
     }
   ],
-  "md5": "aa82dabea782bf948c39f368756ccd85",
+  "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
