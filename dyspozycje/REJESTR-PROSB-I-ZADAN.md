@@ -8930,3 +8930,9 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 
 ### SPECYFIKACJA WŁAŚCICIELA 2026-11-08: priorytety wojenne AI (obrona → odzyskanie → atak)
 „Własne terytorium” cywilizacji = wszystkie miasta, które STWORZYŁA, także te, które STRACIŁA. Kolejność: 1) obrona własnego terytorium, 2) odzyskanie utraconych miast, 3) dopiero atak na przeciwnika. Jeżeli armia idzie na inną cywilizację, a nasza jest atakowana i miasta są zajmowane — WSZYSTKIE armie wracają do obrony. → temat R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1 (w toku). Powiązane: R-WEB-AI-WAR-DEFEND-HOME-BEFORE-OFFENSE-Q1 (FALA ~498), R-WEB-AI-HOME-WAR-SEES-OWN-LAND-Q1 (FALA 550).
+
+## FALA 551 — AIDRA (2026-11-08)
+- Temat: R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1 (zlecenie właściciela: S1 obrona założonych, S2 odzyskanie założonych-utraconych, S3 utrzymanie zdobytych, potem atak; klasyfikacja per cywilizacja wg założyciela; brak mgły na terenie S1/S2/S3 po sprawdzeniu wojny i kontaktu).
+- FC PASS: kod 7f9eca8d5, dok. affc2dde5 (refs/keep/AIDRA-fc lokalnie — push refs/keep zwraca 403; gałąź web-wip/AIDRA wypchnięta). Main: 679ab078a, ROBOCZA MD5 0e9e32e1385dce8869124a8233ec3591 (zgodny z GitHub Raw).
+- Testy: AIDRA 55/0, defend-home 30/0, home-war 4/4, ai-fog 9/9, ai-test 289/0, logic 213/213, tsc 0. NIE_ZMIERZONO: gra na żywo w przeglądarce.
+- Ograniczenia: stare zapisy bez foundedBy → fallback capturedFromOwnerId; odbicie bez limitu dystansu (limit wieku 60 tur zostaje); przypadek B→C: dla B miasto przestaje być własne.
