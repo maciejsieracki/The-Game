@@ -135,6 +135,94 @@ fn pending_flag_surrenders_regardless_of_food() {
     let s = run(&city, &[], 3.0);
     assert!(s.surrender && s.hunger_started);
     assert!(!s.apply_attrition);
+    // Galaz pending nie liczy garnizonu: pola pomiarowe pozostaja puste (web: brak `hpFraction`/`startMaxHp`).
+    assert_eq!(s.hp_fraction, None);
+    assert_eq!(s.start_max_hp, None);
+    assert!(!s.record_start && !s.set_legacy_pending);
+}
+
+#[test]
+fn not_besieged_pending_flag_is_ignored() {
+    // Web: `oblegane !== true` wychodzi PRZED flaga pending -> pusty stan.
+    let city = SiegeStarvationCity {
+        oblegane: Some(false),
+        siege_capitulation_pending: Some(true),
+        siege_starve_start_max_hp: Some(10.0),
+    };
+    assert_eq!(run(&city, &[], 0.0), SiegeStarvationState::default());
+}
+
+#[test]
+fn nan_surrender_fraction_does_not_surrender() {
+    // Web (vektor z a61337844, Node 22): surrenderBelowFrac = NaN -> `??` nie wraca do domyslnej -> porownanie
+    // `hpFraction < NaN` = fałsz -> surrender=false. Wynik web: hpFraction 0, startMaxHp 10, surrender false.
+    let params = SiegeStarvationParams {
+        food: 0.0,
+        surrender_below_frac: Some(f64::NAN),
+    };
+    let s = siege_starvation_state(
+        &besieged(Some(10.0)),
+        &[unit("inf", Some(0.0))],
+        &params,
+        &max_hp,
+    );
+    assert!(s.apply_attrition && !s.surrender);
+    assert!(approx(s.hp_fraction, 0.0));
+    assert!(approx(s.start_max_hp, 10.0));
+}
+
+#[test]
+fn zero_threshold_empty_garrison_still_surrenders() {
+    // Web (vektor z a61337844, Node 22): frac 0 + pusty garnizon -> surrender=true (gałąź `count == 0`,
+    // nie porownanie z progiem). Bez tej gałęzi 0/start < 0 bylby fałszem.
+    let params = SiegeStarvationParams {
+        food: 0.0,
+        surrender_below_frac: Some(0.0),
+    };
+    let s = siege_starvation_state(&besieged(Some(10.0)), &[], &params, &max_hp);
+    assert!(s.apply_attrition && s.surrender);
+}
+
+#[test]
+fn zero_threshold_nonempty_garrison_does_not_surrender() {
+    // Kontrola do powyzszego: frac 0 przy zyjacym garnizonie -> 0 < 0 jest falszem -> miasto trzyma.
+    let params = SiegeStarvationParams {
+        food: 0.0,
+        surrender_below_frac: Some(0.0),
+    };
+    let s = siege_starvation_state(
+        &besieged(Some(10.0)),
+        &[unit("inf", Some(1.0))],
+        &params,
+        &max_hp,
+    );
+    assert!(!s.surrender);
+}
+
+#[test]
+fn hp_none_with_explicit_hp_max_counts_full() {
+    // Web `h = u.hp ?? max`: brak hp -> pelne maxHP z jawnego hpMax (nie z tabeli typów).
+    let u = SiegeGarrisonUnit {
+        hp: None,
+        hp_max: Some(4.0),
+        type_id: Some("pik".into()),
+    };
+    let t = garrison_hp_totals(&[u], &max_hp);
+    assert_eq!(t.count, 1);
+    assert!((t.hp - 4.0).abs() < 1e-12);
+    assert!((t.max_hp - 4.0).abs() < 1e-12);
+}
+
+#[test]
+fn infinite_hp_max_is_skipped_to_legacy() {
+    // Web `unitMax`: Number.isFinite(m) && m > 0 -> maxHP = Infinity odpada -> pominiete.
+    let u = SiegeGarrisonUnit {
+        hp: Some(1.0),
+        hp_max: Some(f64::INFINITY),
+        type_id: None,
+    };
+    let s = run(&besieged(None), &[u], 0.0);
+    assert!(s.set_legacy_pending && !s.record_start);
 }
 
 #[test]
