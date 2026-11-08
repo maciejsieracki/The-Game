@@ -1,3 +1,9 @@
+## ROBOCZA 0e9e32e1 -- 2026-11-06 -- FALA 551: AIDRA: priorytety wojenne AI (S1 obrona, S2 odzyskanie, S3 utrzymanie, potem atak) (testowa)
+
+- gra/src/game/{ai.ts,ai-war-home-defense.ts,cities.ts}, gra/src/main.ts: City.foundedBy (zalozyciel), klasyfikacja per cywilizacja, odwolanie armii do obrony, wyjatek mgly na terenie S1/S2/S3 po sprawdzeniu wojny i kontaktu
+- Weryfikacja: FC PASS 7f9eca8d5; test AIDRA 55/0, ai-war-defend-home 30/0, home-war-sees-own-land 4/4, ai-fog 9/9, ai-test 289/0, logic-test 213/213, tsc 0, vite build OK; bez weryfikacji w przegladarce
+- Limity: Stare zapisy bez foundedBy: fallback capturedFromOwnerId; odbicie bez limitu dystansu; brak testu na zywo
+
 ## ROBOCZA 0b310c4b -- 2026-11-06 -- FALA 550: AI: obrona wlasnej ziemi widzi wszystko; poprawki testow ai-zdobycie i ai-fog (testowa)
 
 - R-WEB-AI-HOME-WAR-SEES-OWN-LAND-Q1: AI broniaca wlasnego terytorium moze zaatakowac wroga na nim mimo mgly wojny (wyjatek w bramce 'Atak na niewidoczny cel' main.ts, tylko komendy AI; poza wlasnym terytorium mgla bez zmian; czlowiek bez zmian). R-WEB-AI-ZDOBYCIE-FOG-DIAG-Q1: poprawione fixtury i kotwice testow ai-zdobycie-miasta-adiacencja (96/96) i ai-fog (W2 przepisany, W2b nowy)
