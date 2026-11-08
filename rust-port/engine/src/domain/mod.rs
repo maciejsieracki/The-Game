@@ -18,6 +18,8 @@ pub mod civ_names;
 pub mod combat;
 pub mod diplomacy;
 pub mod diplomacy_aggressor;
+pub mod diplomacy_multiwar;
+pub mod diplomacy_nap_trust;
 pub mod diplomacy_tick_war_brake;
 pub mod diplomacy_truce;
 pub mod diplomacy_war_gates;

@@ -1,0 +1,1210 @@
+[
+ {
+  "fn": "napRelacjaProgEfektywny",
+  "in": {
+   "prog": "30",
+   "kara": false,
+   "agr": false,
+   "ease": "undefined"
+  },
+  "out": "30"
+ },
+ {
+  "fn": "napRelacjaProgEfektywny",
+  "in": {
+   "prog": "30",
+   "kara": true,
+   "agr": false,
+   "ease": "undefined"
+  },
+  "out": "50"
+ },
+ {
+  "fn": "napRelacjaProgEfektywny",
+  "in": {
+   "prog": "30",
+   "kara": false,
+   "agr": true,
+   "ease": "undefined"
+  },
+  "out": "45"
+ },
+ {
+  "fn": "napRelacjaProgEfektywny",
+  "in": {
+   "prog": "30",
+   "kara": true,
+   "agr": true,
+   "ease": "undefined"
+  },
+  "out": "65"
+ },
+ {
+  "fn": "napRelacjaProgEfektywny",
+  "in": {
+   "prog": "30",
+   "kara": true,
+   "agr": false,
+   "ease": "5"
+  },
+  "out": "45"
+ },
+ {
+  "fn": "napRelacjaProgEfektywny",
+  "in": {
+   "prog": "10",
+   "kara": false,
+   "agr": false,
+   "ease": "40"
+  },
+  "out": "0"
+ },
+ {
+  "fn": "napRelacjaProgEfektywny",
+  "in": {
+   "prog": "0",
+   "kara": false,
+   "agr": false,
+   "ease": "0"
+  },
+  "out": "0"
+ },
+ {
+  "fn": "napRelacjaProgEfektywny",
+  "in": {
+   "prog": "40",
+   "kara": false,
+   "agr": false,
+   "ease": "25.5"
+  },
+  "out": "14.5"
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": true
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Relacji 65 (masz 50; +20 za wspólną granicę, +15 za flagę agresora)",
+   "requirement": {
+    "kind": "stan",
+    "prog": "65",
+    "masz": "50"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 30,
+   "kara": false,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 30,
+   "kara": true,
+   "agr": true
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Relacji 65 (masz 50; +20 za wspólną granicę, +15 za flagę agresora)",
+   "requirement": {
+    "kind": "stan",
+    "prog": "65",
+    "masz": "50"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 0,
+   "progZauf": 30,
+   "kara": false,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 0,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 0,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 0,
+   "progZauf": 30,
+   "kara": true,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 0,
+   "kara": false,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 0,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 0,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 0,
+   "kara": true,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 49,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29) i Relacji 50 (masz 49; +20 za wspólną granicę)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 49,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 51,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 51,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 54,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 54,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 55,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 55,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 56,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 56,
+   "zauf": 29,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 29)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "29"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 49,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Relacji 50 (masz 49; +20 za wspólną granicę)",
+   "requirement": {
+    "kind": "stan",
+    "prog": "50",
+    "masz": "49"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 49,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 51,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 51,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 54,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 54,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 55,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 55,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 56,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 56,
+   "zauf": 30,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 49,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Relacji 50 (masz 49; +20 za wspólną granicę)",
+   "requirement": {
+    "kind": "stan",
+    "prog": "50",
+    "masz": "49"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 49,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 50,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 51,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 51,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 54,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 54,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 55,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 55,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 56,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": true,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 56,
+   "zauf": 31,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": true
+  },
+  "out": {
+   "locked": false,
+   "active": false,
+   "note": "",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": true,
+   "hasNap": false,
+   "rel": 100,
+   "zauf": 100,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowany — trwa wojna",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": true,
+   "rel": 0,
+   "zauf": 0,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": false
+  },
+  "out": {
+   "locked": false,
+   "active": true,
+   "note": "już zawarty",
+   "requirement": null
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 0,
+   "zauf": 0,
+   "progRel": 30,
+   "progZauf": 30,
+   "kara": false,
+   "agr": false
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 30 (masz 0) i Relacji 30 (masz 0)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "30",
+    "masz": "0"
+   }
+  }
+ },
+ {
+  "fn": "resolveDiplomacyActionLock2",
+  "in": {
+   "atWar": false,
+   "hasNap": false,
+   "rel": 20,
+   "zauf": 5,
+   "progRel": 10,
+   "progZauf": 10,
+   "kara": true,
+   "agr": true
+  },
+  "out": {
+   "locked": true,
+   "active": false,
+   "note": "zablokowana — wymaga Zaufania 10 (masz 5) i Relacji 45 (masz 20; +20 za wspólną granicę, +15 za flagę agresora)",
+   "requirement": {
+    "kind": "zaufanie",
+    "prog": "10",
+    "masz": "5"
+   }
+  }
+ }
+]
