@@ -193,3 +193,45 @@ pub fn siege_starvation_state(
         ..none
     }
 }
+
+/// Wspolrzedne miasta obleganego (web `city: { ownerId, q, r }` w `siegeDefenderUnits`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SiegeCityPos {
+    pub owner_id: i64,
+    pub q: i32,
+    pub r: i32,
+}
+
+/// Pozycja i stan jednostki dla [`siege_defender_units`] (pola czytane przez web: `ownerId`, `q`, `r`, `hp`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SiegeDefenderPos {
+    pub owner_id: i64,
+    pub q: i32,
+    pub r: i32,
+    /// Web `hp?: number` (`None` = pole nieustawione).
+    pub hp: Option<f64>,
+}
+
+/// Web `siegeDefenderUnits` (`siege-starvation.ts`, R-WEB-SIEGE-STARVATION-DURATION-REGRESS-Q1, FALA 555):
+/// obroncy = KAZDA wojskowa jednostka wlasciciela miasta stojaca na heksie miasta (niezaleznie od `inGarnizon`),
+/// bez cywilow i bez jednostek z `hp <= 0` (NaN nie jest odrzucany, jak w web: `NaN <= 0` = fałsz).
+///
+/// `pos` zwraca [`SiegeDefenderPos`] jednostki, `is_civilian` = web `isCivilian`. Kolejnosc wynikow = kolejnosc wejscia.
+pub fn siege_defender_units<T>(
+    units: &[T],
+    city: SiegeCityPos,
+    pos: impl Fn(&T) -> SiegeDefenderPos,
+    is_civilian: impl Fn(&T) -> bool,
+) -> Vec<&T> {
+    units
+        .iter()
+        .filter(|u| {
+            let p = pos(u);
+            p.owner_id == city.owner_id
+                && p.q == city.q
+                && p.r == city.r
+                && !is_civilian(u)
+                && !matches!(p.hp, Some(h) if h <= 0.0)
+        })
+        .collect()
+}

@@ -24,6 +24,7 @@ pub mod diplomacy_multiwar;
 pub mod diplomacy_multiwar_gate;
 pub mod diplomacy_multiwar_peace;
 pub mod diplomacy_nap_trust;
+pub mod diplomacy_rejection_cooldown;
 pub mod diplomacy_tick_war_brake;
 pub mod diplomacy_truce;
 pub mod diplomacy_war_gates;
