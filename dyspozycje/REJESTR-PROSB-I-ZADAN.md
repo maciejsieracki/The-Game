@@ -9071,3 +9071,8 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 - Testy: trybunal-card-happiness-display-test 128/0 (Chromium DOM; na starym adapterze 51 FAIL), building-happiness 14/0, plony-budynkow 68/0, building-cards-top5 1179/0, logic 213/213, ai-test 289/0, tsc 0. Dług sprzed zmiany: building-detail-card-entitycard-migration-test 54/1.
 - MD5 Gra-ROBOCZA.html b1a764852e895796daf1ce93106ebaf4 (Raw zgodne); pakiety audio bez zmian (5b990bc3…, 0a9a1047…, 9e88be9f…).
 - NIE_ZMIERZONO: zrzuty PNG; legacy formatery w cityPanel.ts (ok. l.6584/7721/9325) mogą nadal pokazywać surowe zadowolenie. Dług Rust: REPIN karty budynku.
+
+## 2026-11-08 — FALA 564: R-WEB-CITYPANEL-TECH-TILE-DEAD-EFFECTS-Q1 (ROBOCZA f2a1874c, main 60a18c60d)
+- Kafelek „Technologie” w panelu miasta: wspólny filtr martwych efektów (techDeadEffects.ts) współdzielony z kartą odkrycia. Ukryte: Teatr (Filozofia), Lazaret (Medycyna), Wielka odlewnia + Wielka Kuźnia (Obróbka żelaza). ZNANY STAN 5→3 wpisy (Katapulta ×2, „elit” zostają — realne odblokowania). FC ff230146f (kod c3b8604d7), 1 runda.
+- Testy: citypanel-tech-tile-dead-effects 17/0, building-cards-top5 1179/0, tech-cards-top5 594/0, tech-discovery-card-click 13/0, logic 213/213, ai-test 289/0, tsc 0. MD5 f2a1874cd1af8749f69ae05d24bb1afe (Raw zgodne; pakiety audio bez zmian).
+- DO DECYZJI WŁAŚCICIELA (ABC, nie zadano): czy skorygować `_martweFrazy` (warsztat_oblezniczy „Katapult”, akademia_wojskowa „elit”) — karta Warsztatu ukrywa Katapultę, kafelek Technologie ją pokazuje. Kosmetyka: osierocone „oba dla EKONOMIA” w tekstach danych — osobny temat danych. NIE_ZMIERZONO: render w Chromium (obejrzeć kafelek: Filozofia, Medycyna, Obróbka żelaza).
