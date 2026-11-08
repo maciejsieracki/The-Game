@@ -109,12 +109,13 @@ fn reserve_boundary_n_minus_1_n_n_plus_1_per_level() {
             upkeep_per_turn: Some(5.0),
             unit_upkeep_per_turn: Some(2.0),
         };
-        if r > 0.0 {
-            assert!(
-                !should_ai_purchase_unit(&mk(40.0 + prog - 1.0)),
-                "poziom {lvl}: N-1 powinno odrzucic"
-            );
-        }
+        // Dla r = 0 (poziom 3) N-1 = skarbiec 39 < cena 40: odrzucenie wynika z bramki ceny
+        // (rezerwa 0 * utrzymanie = 0 redukuje sie do treasury >= cena), wiec granica jest testowana
+        // takze dla poziomu 3 (poprzednia wersja pomijala ja guardem `if r > 0.0`).
+        assert!(
+            !should_ai_purchase_unit(&mk(40.0 + prog - 1.0)),
+            "poziom {lvl}: N-1 powinno odrzucic"
+        );
         assert!(
             should_ai_purchase_unit(&mk(40.0 + prog)),
             "poziom {lvl}: N powinno kupic"

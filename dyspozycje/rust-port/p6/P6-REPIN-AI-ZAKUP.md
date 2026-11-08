@@ -56,4 +56,6 @@ Wniosek: odpowiednik AI-zakupu w Rust NIE istnieje. Zgodnie z dispatchem portuj�
 2. `AiParams` wymaga 6 nowych kluczy (brak fallbacków webu `10/3/0` i `0/0/-2` w Rust; klucze są w pliku danych).
 3. `load_ai_purchase_reserve_params` przyjmuje poziom 1..=3; inne wartości → panic (web zwraca fallback).
 4. Liczby: JS `number` → `f64`. Wartości NaN nie są wektoryzowane.
-5. Dla poziomu 3 (`rezerwa = 0`) granica N-1 rezerwy degeneruje do bramki ceny (skarbiec < cena); granicę pokrywa przypadek N i N+1.
+5. Dla poziomu 3 (`rezerwa = 0`) granica N-1 (skarbiec 39 < cena 40) jest testowana również dla poziomu 3 (test `reserve_boundary_n_minus_1_n_n_plus_1_per_level`, bez guarda `r > 0`; poprawka zarzutu Evaluatora r1).
+6. ODSTEPSTWO OD ALLOWLISTY (zgloszone jawnie, do akceptacji Final Control): `rust-port/engine/src/data/economy_society_part2.rs` (+15 linii, 6 pol `AiParams`). Konieczne: `AiParams` ma `#[serde(deny_unknown_fields)]`, wiec bez pol 6 nowych kluczy z `ai-params.json` powoduje blad parsowania `parse_ai_params`. Zmiana addytywna.
+7. BASELINE (bramka startowa dispatchu) pozostaje NIE_ZMIERZONO: pomiar 0fd287721 wymagalby pelnej kompilacji ~115 binarek przy 3,5 GB wolnego miejsca. Zmiany addytywne (nowy modul, nowa binarka testowa, pola AiParams).
