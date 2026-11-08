@@ -40357,6 +40357,11 @@ async function boot(): Promise<void> {
                         enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                       } else if (cmd.type === 'oferuj_trybut_za_pokoj') {
                         enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                      } else if (cmd.type === 'oferuj_miasto_za_pokoj' || cmd.type === 'zada_miasto_za_pokoj') {
+                        // R-WEB-AI-LOSING-WAR-ASKS-PEACE-VS-PLAYER-Q1: komendy miasta za pokój (R-WEB-PEACE-CITY-CESSION-Q1 r3)
+                        // były generowane przez decideAIDiplomacy (z `continue`, więc zastępowały tryb/pokój), ale ten łańcuch
+                        // ich nie kierował na stół negocjacji -- przegrywająca AI z >= 3 miastami nigdy nie prosiła gracza o pokój.
+                        enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                       } else if (cmd.type === 'zaproponuj_sojusz') {
                         enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                       } else if (cmd.type === 'zaproponuj_handel') {
