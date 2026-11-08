@@ -1,3 +1,9 @@
+## ROBOCZA d3d105dc -- 2026-11-06 -- FALA 557: CITYCD: odrzucenie oferty miasta za pokoj ma wlasny cooldown (klucz miasto_za_pokoj) — nie blokuje zwyklego pokoju (testowa)
+
+- gra/src/main.ts (sprawdzenie i zapis odrzucenia), gra/src/game/diplomacy-proposals.ts (PendingNegotiation.rejectCooldownKey, opcjonalne), gra/src/game/diplomacy-rejection-cooldown.ts (typ RejectCooldownKey, helper rejectCooldownKeyFor — poza allowlista, zatwierdzone); dlugosc cooldownu bez zmian
+- Weryfikacja: FC PASS-WITH-NOTES e3ebccae2 (kod b8bd14e45 + obrona 38b32dd25); nowy test 28/0 (2 mutacje main.ts lapane), rejection-cooldown 14/0, diplomacy-proposal 190/190, ai-losing-war 12/0, weariness-peace 90/0, ai-test 289/0, logic 213/213, tsc 0, vite OK
+- Limity: Brak testu end-to-end handleNegotiationReject (zamkniecie w main.ts; test zrodlowy 6 miejsc); dedup hasPendingNegotiationForPair dalej na kluczu pokoj (oczekujaca propozycja pokoju blokuje oferte miasta i odwrotnie — osobny temat); brak przegladarki
+
 ## ROBOCZA d25c5084 -- 2026-11-06 -- FALA 556: AIPEACE: przegrywajaca AI (>=3 miasta) oferuje graczowi miasto za pokoj — oferta trafia na stol negocjacji (brakowala galezi dispatchu) (testowa)
 
 - gra/src/main.ts (+5 linii: galaz else-if w lancuchu targetId===0 dla oferuj_miasto_za_pokoj i zada_miasto_za_pokoj); progi i ai.ts bez zmian

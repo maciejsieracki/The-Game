@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "d25c5084f7aec15811941600066d1b80",
-  "bundleSha256": "48c77db0acc775849af76dd7f0d803b2745954f878665f3862442fb28bdb5ce2",
-  "bundleBytes": 85678404,
+  "bundleMd5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+  "bundleSha256": "42b5b21bff4d8110d9bfdc0e707c2208c6f30660cf1f978af4317766a971bdce",
+  "bundleBytes": 85678636,
   "sourceSnapshot": {
-    "source": "FC 75ab19443 (kod 41e574a76)",
+    "source": "FC e3ebccae2 (kod b8bd14e45)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 556: gra/src/main.ts (+5 linii: galaz else-if w lancuchu targetId===0 dla oferuj_miasto_za_pokoj i zada_miasto_za_pokoj); progi i ai.ts bez zmian"
+    "FALA 557: gra/src/main.ts (sprawdzenie i zapis odrzucenia), gra/src/game/diplomacy-proposals.ts (PendingNegotiation.rejectCooldownKey, opcjonalne), gra/src/game/diplomacy-rejection-cooldown.ts (typ RejectCooldownKey, helper rejectCooldownKeyFor — poza allowlista, zatwierdzone); dlugosc cooldownu bez zmian"
   ],
   "verification": [
-    "FC PASS-WITH-NOTES 75ab19443 (kod 41e574a76); nowy test 12/0 (mutant lapany), diplomacy-proposal 190/190 (mutacje 16/16), nearest-city-peace-2t PASS (mutacje 16/16), ai-war-weariness-peace 90/0, ai-test 289/0, logic 213/213, tsc 0, vite OK"
+    "FC PASS-WITH-NOTES e3ebccae2 (kod b8bd14e45 + obrona 38b32dd25); nowy test 28/0 (2 mutacje main.ts lapane), rejection-cooldown 14/0, diplomacy-proposal 190/190, ai-losing-war 12/0, weariness-peace 90/0, ai-test 289/0, logic 213/213, tsc 0, vite OK"
   ],
   "limits": [
-    "Brak weryfikacji w przegladarce (karta Miasto za pokoj na stole); zada_miasto_za_pokoj staje sie osiagalne (silna AI moze zadac miasta gracza; decyzja wlasciciela); wspolny cooldown odrzucenia z pokojem; zmeczenie wojna wobec gracza dopiero ~100 tur (decyzja 2026-11-03)"
+    "Brak testu end-to-end handleNegotiationReject (zamkniecie w main.ts; test zrodlowy 6 miejsc); dedup hasPendingNegotiationForPair dalej na kluczu pokoj (oczekujaca propozycja pokoju blokuje oferte miasta i odwrotnie — osobny temat); brak przegladarki"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-08T16:54:06",
+  "hubGeneratedAt": "2026-11-08T17:55:39",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "d25c5084f7aec15811941600066d1b80",
-      "sizeBytes": 85678404
+      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+      "sizeBytes": 85678636
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "d25c5084f7aec15811941600066d1b80",
-      "sizeBytes": 85678404
+      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+      "sizeBytes": 85678636
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "d25c5084f7aec15811941600066d1b80",
-      "sizeBytes": 85678404
+      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+      "sizeBytes": 85678636
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "d25c5084f7aec15811941600066d1b80",
-      "sizeBytes": 85678404
+      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+      "sizeBytes": 85678636
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "d25c5084f7aec15811941600066d1b80",
-      "sizeBytes": 85678404
+      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+      "sizeBytes": 85678636
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "d25c5084f7aec15811941600066d1b80",
-      "sizeBytes": 85678404
+      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+      "sizeBytes": 85678636
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "d25c5084f7aec15811941600066d1b80",
-      "sizeBytes": 85678404
+      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+      "sizeBytes": 85678636
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "d25c5084f7aec15811941600066d1b80",
-      "sizeBytes": 85678404
+      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+      "sizeBytes": 85678636
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "d25c5084f7aec15811941600066d1b80",
-      "sizeBytes": 85678404
+      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+      "sizeBytes": 85678636
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "d25c5084f7aec15811941600066d1b80",
-      "sizeBytes": 85678404
+      "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
+      "sizeBytes": 85678636
     }
   ],
-  "md5": "d25c5084f7aec15811941600066d1b80",
+  "md5": "d3d105dcfb37dfec9dbb896e41a95ab6",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
