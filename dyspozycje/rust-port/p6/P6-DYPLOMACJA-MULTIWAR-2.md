@@ -18,9 +18,33 @@ Generator wektorów: `dyspozycje/autobot/runs/R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-
 Bramki partii A: `cargo fmt --check` OK; `cargo clippy --all-targets -- -D warnings` OK;
 `cargo test --lib` 22/22; `p6_dyplo_multiwar2_eraign` 3/3; `p6_dyplo_multiwar_interciv` 2/2.
 
+## Zrobione (partia B, runda 3)
+
+Baza: `origin/rust-port/parity-v2` 707b50c41 (partia A zintegrowana). Pin webu bez zmian (5dd53e60f;
+`war-weariness.ts` i `war-weariness-params.json` nie zmieniły się od a61337844).
+
+| Symbol web (`gra/src/game/war-weariness.ts`) | Symbol Rust | Plik Rust | Wektory / testy |
+|---|---|---|---|
+| `runWarWearinessTick` (:~280) | `run_war_weariness_tick` + `WearinessTickEnv` | `domain/diplomacy_war_weariness_tick.rs` | `tests/p6_dyplo_multiwar2_tick_data/tick.json` (16 scenariuszy, 23 tury), `p6_dyplo_multiwar2_tick.rs` (5 testów) |
+| parametry `przegrywajacy` / `zmeczenie.progWzajemnyPokoj` (ofertaOdTurWojny, cooldown, ochrona, karencje, …) | `OFFER_PARAMS` (literały) | `domain/diplomacy_war_weariness_tick.rs` | jak wyżej |
+| `warWearinessLevel`, `loserDespair`, `despairStage`, `stageCityLimit`, `offerMultiplier`, `planEscalatedPeacePayment`, `stepPairState` | już zrobione w rundzie 2 / a61337844 | `diplomacy_multiwar.rs`, `diplomacy_multiwar_peace.rs` | `weariness.json`, `p6_dyplo_multiwar_gates`, `p6_dyplo_multiwar_peace` (zielone, nie zmieniane) |
+
+Generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-2-Q1/gen-weariness-tick.mts`
+(Node 22.22, `--experimental-strip-types`; loader `hooks.mjs`/`reg.mjs` dorzuca `.ts` do importów bez rozszerzenia
+i czyta `*.json` jako moduł — źródła weba bez zmian; wypakowanie `git archive origin/main gra/src gra/data` poza repo).
+
+Założenia partii B:
+- `price(winner, loser).balanceFor` (closure w TS) modelowane liniowo: `balance0 + slope * covered` (`PeacePriceQuote`); logika ticka nie zależy od postaci wyceny.
+- `d.log` porównywany jako liczba wywołań (tekst z `toFixed` pominięty).
+- `cityCountOf(loser)` dla brakującego klucza = 0 w teście (w TS `undefined`); wartość używana dopiero po wczesnych wyjściach, więc neutralna.
+- Wyjście awaryjne (`exhausted`) i `mustAccept` liczone jak w TS; `zwyciezcaMusiPrzyjac` = true.
+
+Mutanty ręczne (tick): M1 cooldown `<=` zabity; M2 brak `mustAccept` zabity; M3 brak wyczerpania zabity;
+M4 brak członu tolerancji zmęczenia zabity (test granicy); M5 bitwa w toku ignorowana zabity; M6 oferta od tury N+1 zabity;
+M7 `>` zamiast `>=` przy bilansie zabity (test granicy). 7/7 zabitych. Pełny mutation score ≥85% — NIE_ZMIERZONO.
+
 ## NIE zrobione (kolejne partie, NIE_ZMIERZONO)
 
-- (B) `runWarWearinessTick` + reszta `war-weariness.ts` / `war-weariness-params.json`.
 - (C) forced-peace AI↔AI: `registerAiPeaceRequest`, `isForcedPeaceDue`, `decideAiPeaceRequest`, `runAiAiPeaceTick` (`diplomacy-ai-forced-peace.ts`, `tury_do_pokoju_po_prosbie`).
 - (D) `diplomacy-siege-war-gate.ts`.
 - (E) case'y locks poza '2' (`diplomacy-locks.ts:244+`).

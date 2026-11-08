@@ -1,0 +1,2256 @@
+{
+ "_opis": "Wektory runWarWearinessTick (R-RUSTPORT-P6-DYPLOMACJA-MULTIWAR-2-Q1 partia B). Wejscia i wyniki z prawdziwego weba origin/main 5dd53e60f (war-weariness.ts). Pole logs = liczba wywolan d.log (tekst pominiety: toFixed).",
+ "_pin": "origin/main 5dd53e60f",
+ "_karencja_po_pokoju_tur": 40,
+ "scenarios": [
+  {
+   "name": "nie_wyrazni_nie_zmeczeni",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 50,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 50,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 50
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 50,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 50
+      }
+     },
+     "share": {
+      "1:2": 0.5,
+      "2:1": 0.5
+     },
+     "cities": {},
+     "price": {},
+     "assets": {},
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 50,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "none",
+       "level": 0.31,
+       "stage": 0,
+       "plan": null
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 0.31,
+       "stage": 0,
+       "rejectedOffers": 0,
+       "lastOfferTurn": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "zmeczenie_ponizej_progu_pokoju",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 130,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 130,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 10
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 130,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 10
+      }
+     },
+     "share": {
+      "1:2": 0.5,
+      "2:1": 0.5
+     },
+     "cities": {},
+     "price": {},
+     "assets": {},
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 130,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "none",
+       "level": 0.65,
+       "stage": 0,
+       "plan": null
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 0.65,
+       "stage": 0,
+       "rejectedOffers": 0,
+       "lastOfferTurn": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "wzajemne_wyczerpanie_bez_zaplaty",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 200,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 200
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 200
+      }
+     },
+     "share": {
+      "1:2": 0.5,
+      "2:1": 0.5
+     },
+     "cities": {},
+     "price": {},
+     "assets": {},
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 200,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "mutual_peace",
+       "level": 1,
+       "stage": 0,
+       "plan": null
+      }
+     ],
+     "pays": [],
+     "finalizes": [
+      {
+       "loser": 1,
+       "winner": 2,
+       "lockTurns": 40
+      }
+     ],
+     "logs": 1,
+     "store": []
+    }
+   ]
+  },
+  {
+   "name": "wyrazny_przegrany_za_wczesnie",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 5,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 5,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 5
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 5,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 5
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {},
+     "price": {},
+     "assets": {},
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 5,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "none",
+       "level": 0.025,
+       "stage": 0,
+       "plan": null
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 0.025,
+       "stage": 0,
+       "rejectedOffers": 0,
+       "lastOfferTurn": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "wyrazny_bez_strat_przed_25",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 20,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 20,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 20
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 20,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 20
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {},
+     "price": {},
+     "assets": {},
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 20,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "none",
+       "level": 0.1,
+       "stage": 0,
+       "plan": null
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 0.1,
+       "stage": 0,
+       "rejectedOffers": 0,
+       "lastOfferTurn": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "oferta_przyjeta_stopien1",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 30,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 30,
+       "lostA": 1,
+       "lostB": 0,
+       "turnsSinceCityChange": 30
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 30,
+       "lostA": 0,
+       "lostB": 1,
+       "turnsSinceCityChange": 30
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -100,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 200,
+        "pn": 200
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 50
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 60
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 30,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_accepted",
+       "level": 0.18,
+       "stage": 1,
+       "plan": {
+        "ids": [
+         "g1"
+        ],
+        "coveredPn": 150,
+        "full": true,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 0,
+         "miasto": 0
+        }
+       }
+      }
+     ],
+     "pays": [
+      {
+       "loser": 1,
+       "winner": 2,
+       "ids": [
+        "g1"
+       ],
+       "coveredPn": 150
+      }
+     ],
+     "finalizes": [
+      {
+       "loser": 1,
+       "winner": 2,
+       "lockTurns": 40
+      }
+     ],
+     "logs": 1,
+     "store": []
+    }
+   ]
+  },
+  {
+   "name": "oferta_odrzucona_cooldown_eskalacja",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 30,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 30,
+       "lostA": 1,
+       "lostB": 0,
+       "turnsSinceCityChange": 30
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 30,
+       "lostA": 0,
+       "lostB": 1,
+       "turnsSinceCityChange": 30
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -400,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 200,
+        "pn": 200
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 50
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 60
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    },
+    {
+     "turn": 31,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 31,
+       "lostA": 1,
+       "lostB": 0,
+       "turnsSinceCityChange": 31
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 31,
+       "lostA": 0,
+       "lostB": 1,
+       "turnsSinceCityChange": 31
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -400,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 200,
+        "pn": 200
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 50
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 60
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    },
+    {
+     "turn": 33,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 33,
+       "lostA": 1,
+       "lostB": 0,
+       "turnsSinceCityChange": 33
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 33,
+       "lostA": 0,
+       "lostB": 1,
+       "turnsSinceCityChange": 33
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -400,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 200,
+        "pn": 200
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 50
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 60
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    },
+    {
+     "turn": 36,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 36,
+       "lostA": 1,
+       "lostB": 0,
+       "turnsSinceCityChange": 36
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 36,
+       "lostA": 0,
+       "lostB": 1,
+       "turnsSinceCityChange": 36
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -400,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 200,
+        "pn": 200
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 50
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 60
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 30,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_rejected",
+       "level": 0.18,
+       "stage": 1,
+       "plan": {
+        "ids": [
+         "g1"
+        ],
+        "coveredPn": 150,
+        "full": true,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 0,
+         "miasto": 0
+        }
+       }
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 0.18,
+       "stage": 1,
+       "rejectedOffers": 1,
+       "lastOfferTurn": 30
+      }
+     ]
+    },
+    {
+     "turn": 31,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "none",
+       "level": 0.188,
+       "stage": 1,
+       "plan": null
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 0.188,
+       "stage": 1,
+       "rejectedOffers": 1,
+       "lastOfferTurn": 30
+      }
+     ]
+    },
+    {
+     "turn": 33,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_rejected",
+       "level": 0.20400000000000001,
+       "stage": 1,
+       "plan": {
+        "ids": [
+         "g1"
+        ],
+        "coveredPn": 180,
+        "full": true,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 0,
+         "miasto": 0
+        }
+       }
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 0.20400000000000001,
+       "stage": 1,
+       "rejectedOffers": 2,
+       "lastOfferTurn": 33
+      }
+     ]
+    },
+    {
+     "turn": 36,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_rejected",
+       "level": 0.22799999999999998,
+       "stage": 1,
+       "plan": {
+        "ids": [
+         "g1"
+        ],
+        "coveredPn": 200,
+        "full": false,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 0,
+         "miasto": 0
+        }
+       }
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 0.22799999999999998,
+       "stage": 1,
+       "rejectedOffers": 3,
+       "lastOfferTurn": 36
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "wyczerpanie_po_trzech_odrzuceniach",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 200,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 2,
+       "lostB": 0,
+       "turnsSinceCityChange": 200
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 0,
+       "lostB": 2,
+       "turnsSinceCityChange": 200
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -1000000,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 50,
+        "pn": 50
+       },
+       {
+        "kind": "surowiec_ilosc",
+        "id": "r1",
+        "amount": 10,
+        "pn": 30
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 80
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 120
+       },
+       {
+        "kind": "miasto",
+        "id": "c3",
+        "amount": 1,
+        "pn": 40
+       },
+       {
+        "kind": "miasto",
+        "id": "c4",
+        "amount": 1,
+        "pn": 500,
+        "forbidden": true
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    },
+    {
+     "turn": 203,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 203,
+       "lostA": 2,
+       "lostB": 0,
+       "turnsSinceCityChange": 203
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 203,
+       "lostA": 0,
+       "lostB": 2,
+       "turnsSinceCityChange": 203
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -1000000,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 50,
+        "pn": 50
+       },
+       {
+        "kind": "surowiec_ilosc",
+        "id": "r1",
+        "amount": 10,
+        "pn": 30
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 80
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 120
+       },
+       {
+        "kind": "miasto",
+        "id": "c3",
+        "amount": 1,
+        "pn": 40
+       },
+       {
+        "kind": "miasto",
+        "id": "c4",
+        "amount": 1,
+        "pn": 500,
+        "forbidden": true
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    },
+    {
+     "turn": 206,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 206,
+       "lostA": 2,
+       "lostB": 0,
+       "turnsSinceCityChange": 206
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 206,
+       "lostA": 0,
+       "lostB": 2,
+       "turnsSinceCityChange": 206
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -1000000,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 50,
+        "pn": 50
+       },
+       {
+        "kind": "surowiec_ilosc",
+        "id": "r1",
+        "amount": 10,
+        "pn": 30
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 80
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 120
+       },
+       {
+        "kind": "miasto",
+        "id": "c3",
+        "amount": 1,
+        "pn": 40
+       },
+       {
+        "kind": "miasto",
+        "id": "c4",
+        "amount": 1,
+        "pn": 500,
+        "forbidden": true
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    },
+    {
+     "turn": 209,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 209,
+       "lostA": 2,
+       "lostB": 0,
+       "turnsSinceCityChange": 209
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 209,
+       "lostA": 0,
+       "lostB": 2,
+       "turnsSinceCityChange": 209
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -1000000,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 50,
+        "pn": 50
+       },
+       {
+        "kind": "surowiec_ilosc",
+        "id": "r1",
+        "amount": 10,
+        "pn": 30
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 80
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 120
+       },
+       {
+        "kind": "miasto",
+        "id": "c3",
+        "amount": 1,
+        "pn": 40
+       },
+       {
+        "kind": "miasto",
+        "id": "c4",
+        "amount": 1,
+        "pn": 500,
+        "forbidden": true
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    },
+    {
+     "turn": 212,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 212,
+       "lostA": 2,
+       "lostB": 0,
+       "turnsSinceCityChange": 212
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 212,
+       "lostA": 0,
+       "lostB": 2,
+       "turnsSinceCityChange": 212
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -1000000,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 50,
+        "pn": 50
+       },
+       {
+        "kind": "surowiec_ilosc",
+        "id": "r1",
+        "amount": 10,
+        "pn": 30
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 80
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 120
+       },
+       {
+        "kind": "miasto",
+        "id": "c3",
+        "amount": 1,
+        "pn": 40
+       },
+       {
+        "kind": "miasto",
+        "id": "c4",
+        "amount": 1,
+        "pn": 500,
+        "forbidden": true
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 200,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_rejected",
+       "level": 1,
+       "stage": 3,
+       "plan": {
+        "ids": [
+         "g1",
+         "r1",
+         "c2",
+         "c1"
+        ],
+        "coveredPn": 280,
+        "full": true,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 1,
+         "miasto": 2
+        }
+       }
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 1,
+       "stage": 3,
+       "rejectedOffers": 1,
+       "lastOfferTurn": 200
+      }
+     ]
+    },
+    {
+     "turn": 203,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_rejected",
+       "level": 1,
+       "stage": 3,
+       "plan": {
+        "ids": [
+         "g1",
+         "r1",
+         "c2",
+         "c1"
+        ],
+        "coveredPn": 280,
+        "full": false,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 1,
+         "miasto": 2
+        }
+       }
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 1,
+       "stage": 3,
+       "rejectedOffers": 2,
+       "lastOfferTurn": 203
+      }
+     ]
+    },
+    {
+     "turn": 206,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_rejected",
+       "level": 1,
+       "stage": 3,
+       "plan": {
+        "ids": [
+         "g1",
+         "r1",
+         "c2",
+         "c1"
+        ],
+        "coveredPn": 280,
+        "full": false,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 1,
+         "miasto": 2
+        }
+       }
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 1,
+       "stage": 3,
+       "rejectedOffers": 3,
+       "lastOfferTurn": 206
+      }
+     ]
+    },
+    {
+     "turn": 209,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_accepted",
+       "level": 1,
+       "stage": 3,
+       "plan": {
+        "ids": [
+         "g1",
+         "r1",
+         "c2",
+         "c1"
+        ],
+        "coveredPn": 280,
+        "full": false,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 1,
+         "miasto": 2
+        }
+       }
+      }
+     ],
+     "pays": [
+      {
+       "loser": 1,
+       "winner": 2,
+       "ids": [
+        "g1",
+        "r1",
+        "c2",
+        "c1"
+       ],
+       "coveredPn": 280
+      }
+     ],
+     "finalizes": [
+      {
+       "loser": 1,
+       "winner": 2,
+       "lockTurns": 40
+      }
+     ],
+     "logs": 1,
+     "store": []
+    },
+    {
+     "turn": 212,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_rejected",
+       "level": 1,
+       "stage": 3,
+       "plan": {
+        "ids": [
+         "g1",
+         "r1",
+         "c2",
+         "c1"
+        ],
+        "coveredPn": 280,
+        "full": true,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 1,
+         "miasto": 2
+        }
+       }
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 1,
+       "stage": 3,
+       "rejectedOffers": 1,
+       "lastOfferTurn": 212
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "chroniony_przegrany_musi_przyjac",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 30,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 30,
+       "lostA": 1,
+       "lostB": 0,
+       "turnsSinceCityChange": 30
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 30,
+       "lostA": 0,
+       "lostB": 1,
+       "turnsSinceCityChange": 30
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 2,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 500,
+       "tolerancePn": 0,
+       "balance0": -100000,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 40,
+        "pn": 40
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 30
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 30,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_accepted",
+       "level": 0.18,
+       "stage": 1,
+       "plan": {
+        "ids": [
+         "g1"
+        ],
+        "coveredPn": 40,
+        "full": false,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 0,
+         "miasto": 0
+        }
+       }
+      }
+     ],
+     "pays": [
+      {
+       "loser": 1,
+       "winner": 2,
+       "ids": [
+        "g1"
+       ],
+       "coveredPn": 40
+      }
+     ],
+     "finalizes": [
+      {
+       "loser": 1,
+       "winner": 2,
+       "lockTurns": 100
+      }
+     ],
+     "logs": 1,
+     "store": []
+    }
+   ]
+  },
+  {
+   "name": "bitwa_w_toku_bez_miast",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 200,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 2,
+       "lostB": 0,
+       "turnsSinceCityChange": 200
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 0,
+       "lostB": 2,
+       "turnsSinceCityChange": 200
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -1000000,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 10,
+        "pn": 10
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 80
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 120
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": true
+    }
+   ],
+   "expect": [
+    {
+     "turn": 200,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_rejected",
+       "level": 1,
+       "stage": 3,
+       "plan": {
+        "ids": [
+         "g1"
+        ],
+        "coveredPn": 10,
+        "full": false,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 0,
+         "miasto": 0
+        }
+       }
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 1,
+       "stage": 3,
+       "rejectedOffers": 1,
+       "lastOfferTurn": 200
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "miasto_niedopuszczone_pominiete",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 200,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 2,
+       "lostB": 0,
+       "turnsSinceCityChange": 200
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 0,
+       "lostB": 2,
+       "turnsSinceCityChange": 200
+      }
+     },
+     "share": {
+      "1:2": 0.3,
+      "2:1": 0.7
+     },
+     "cities": {
+      "1": 6,
+      "2": 6
+     },
+     "price": {
+      "2:1": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -100,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "1:2": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 10,
+        "pn": 10
+       },
+       {
+        "kind": "miasto",
+        "id": "c1",
+        "amount": 1,
+        "pn": 80
+       },
+       {
+        "kind": "miasto",
+        "id": "c2",
+        "amount": 1,
+        "pn": 90
+       }
+      ]
+     },
+     "notOk": [
+      "c1"
+     ],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 200,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "offer_accepted",
+       "level": 1,
+       "stage": 3,
+       "plan": {
+        "ids": [
+         "g1",
+         "c2"
+        ],
+        "coveredPn": 100,
+        "full": false,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 0,
+         "miasto": 1
+        }
+       }
+      }
+     ],
+     "pays": [
+      {
+       "loser": 1,
+       "winner": 2,
+       "ids": [
+        "g1",
+        "c2"
+       ],
+       "coveredPn": 100
+      }
+     ],
+     "finalizes": [
+      {
+       "loser": 1,
+       "winner": 2,
+       "lockTurns": 40
+      }
+     ],
+     "logs": 1,
+     "store": []
+    }
+   ]
+  },
+  {
+   "name": "nowa_wojna_resetuje_stan",
+   "store0": [
+    {
+     "key": "1-2",
+     "state": {
+      "warStart": 10,
+      "peak": 0.9,
+      "stage": 2,
+      "rejectedOffers": 2,
+      "lastOfferTurn": 100
+     }
+    }
+   ],
+   "ticks": [
+    {
+     "turn": 43,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 40,
+       "turnsAtWar": 3,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 3
+      },
+      "2:1": {
+       "warStart": 40,
+       "turnsAtWar": 3,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 3
+      }
+     },
+     "share": {
+      "1:2": 0.5,
+      "2:1": 0.5
+     },
+     "cities": {},
+     "price": {},
+     "assets": {},
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 43,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "none",
+       "level": 0.015,
+       "stage": 0,
+       "plan": null
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 40,
+       "peak": 0.015,
+       "stage": 0,
+       "rejectedOffers": 0,
+       "lastOfferTurn": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "sprzatanie_nieaktywnych_par",
+   "store0": [
+    {
+     "key": "5-6",
+     "state": {
+      "warStart": 1,
+      "peak": 0.6,
+      "stage": 1,
+      "rejectedOffers": 0,
+      "lastOfferTurn": -1
+     }
+    },
+    {
+     "key": "1-2",
+     "state": {
+      "warStart": 0,
+      "peak": 0.23,
+      "stage": 0,
+      "rejectedOffers": 0,
+      "lastOfferTurn": -1
+     }
+    }
+   ],
+   "ticks": [
+    {
+     "turn": 40,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 40,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 40
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 40,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 40
+      }
+     },
+     "share": {
+      "1:2": 0.5,
+      "2:1": 0.5
+     },
+     "cities": {},
+     "price": {},
+     "assets": {},
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 40,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "none",
+       "level": 0.23,
+       "stage": 0,
+       "plan": null
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": 0.23,
+       "stage": 0,
+       "rejectedOffers": 0,
+       "lastOfferTurn": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "nan_tury_wojny",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 60,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": "NaN",
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": "NaN"
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": "NaN",
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": "NaN"
+      }
+     },
+     "share": {
+      "1:2": 0.5,
+      "2:1": 0.5
+     },
+     "cities": {},
+     "price": {},
+     "assets": {},
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 60,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "none",
+       "level": "NaN",
+       "stage": 0,
+       "plan": null
+      }
+     ],
+     "pays": [],
+     "finalizes": [],
+     "logs": 0,
+     "store": [
+      {
+       "key": "1-2",
+       "warStart": 0,
+       "peak": "NaN",
+       "stage": 0,
+       "rejectedOffers": 0,
+       "lastOfferTurn": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "nan_udzial_zwyciezca_b",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 200,
+     "pairs": [
+      [
+       1,
+       2
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 200
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 200
+      }
+     },
+     "share": {
+      "1:2": "NaN",
+      "2:1": "NaN"
+     },
+     "cities": {},
+     "price": {},
+     "assets": {},
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 200,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "mutual_peace",
+       "level": 1,
+       "stage": 0,
+       "plan": null
+      }
+     ],
+     "pays": [],
+     "finalizes": [
+      {
+       "loser": 2,
+       "winner": 1,
+       "lockTurns": 40
+      }
+     ],
+     "logs": 1,
+     "store": []
+    }
+   ]
+  },
+  {
+   "name": "dwie_pary_w_jednym_ticku",
+   "store0": [],
+   "ticks": [
+    {
+     "turn": 200,
+     "pairs": [
+      [
+       1,
+       2
+      ],
+      [
+       3,
+       4
+      ]
+     ],
+     "info": {
+      "1:2": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 200
+      },
+      "2:1": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 200
+      },
+      "3:4": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 200
+      },
+      "4:3": {
+       "warStart": 0,
+       "turnsAtWar": 200,
+       "lostA": 0,
+       "lostB": 0,
+       "turnsSinceCityChange": 200
+      }
+     },
+     "share": {
+      "1:2": 0.5,
+      "2:1": 0.5,
+      "3:4": 0.3,
+      "4:3": 0.7
+     },
+     "cities": {
+      "3": 6,
+      "4": 6
+     },
+     "price": {
+      "4:3": {
+       "requiredPn": 100,
+       "tolerancePn": 0,
+       "balance0": -100,
+       "slope": 1
+      }
+     },
+     "assets": {
+      "3:4": [
+       {
+        "kind": "zloto",
+        "id": "g1",
+        "amount": 200,
+        "pn": 200
+       }
+      ]
+     },
+     "notOk": [],
+     "battlePending": false
+    }
+   ],
+   "expect": [
+    {
+     "turn": 200,
+     "outcomes": [
+      {
+       "pairKey": "1-2",
+       "action": "mutual_peace",
+       "level": 1,
+       "stage": 0,
+       "plan": null
+      },
+      {
+       "pairKey": "3-4",
+       "action": "offer_accepted",
+       "level": 1,
+       "stage": 3,
+       "plan": {
+        "ids": [
+         "g1"
+        ],
+        "coveredPn": 200,
+        "full": false,
+        "histogram": {
+         "zloto": 1,
+         "surowiec_ilosc": 0,
+         "miasto": 0
+        }
+       }
+      }
+     ],
+     "pays": [
+      {
+       "loser": 3,
+       "winner": 4,
+       "ids": [
+        "g1"
+       ],
+       "coveredPn": 200
+      }
+     ],
+     "finalizes": [
+      {
+       "loser": 1,
+       "winner": 2,
+       "lockTurns": 40
+      },
+      {
+       "loser": 3,
+       "winner": 4,
+       "lockTurns": 40
+      }
+     ],
+     "logs": 2,
+     "store": []
+    }
+   ]
+  }
+ ]
+}

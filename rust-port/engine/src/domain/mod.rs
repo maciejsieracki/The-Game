@@ -26,6 +26,7 @@ pub mod diplomacy_tick_war_brake;
 pub mod diplomacy_truce;
 pub mod diplomacy_war_gates;
 pub mod diplomacy_war_peace_profile;
+pub mod diplomacy_war_weariness_tick;
 pub mod economy_city_fns;
 pub mod economy_city_params;
 pub mod economy_city_terrain;
