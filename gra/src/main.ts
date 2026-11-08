@@ -211,6 +211,8 @@ import {
   isAutoBudowaTryb,
   wasIndependentCityStateBeforeCapture,
   applyCapturePopulationLoss,
+  stampCityFounderOnCapture,
+  isCityLostOf,
   capturePopLossReportRow,
   type City,
   type BudowaFocus,
@@ -33661,6 +33663,7 @@ async function boot(): Promise<void> {
 
       const wonderWatchAnnex = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
       for (const city of csCities) {
+        stampCityFounderOnCapture(city, csOwnerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
         city.ownerId = annexerId;
         // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1: to samo gaszenie oznaczenia co na
         // ścieżkach zbrojnych — jedna funkcja, żeby ścieżki nie rozłączyły się przy kolejnej
@@ -34833,6 +34836,7 @@ async function boot(): Promise<void> {
         cityProd.set(city.id, sanitizeProductionQueue(toOwnerId, migrated.prod));
       }
       const wonderWatchCession = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
+      stampCityFounderOnCapture(city, fromOwnerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
       city.ownerId = toOwnerId;
       settleWonderTransfer(wonderWatchCession);
       seedCityOwnerDefaults(city);
@@ -37877,6 +37881,7 @@ async function boot(): Promise<void> {
                   const wonderWatchRebel = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
                   markCityRebellionStarted(city);
                   city.rebelState = true;
+                  stampCityFounderOnCapture(city, city.ownerId); // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1
                   city.ownerId = REBEL_FACTION_OWNER_ID;
                   settleWonderTransfer(wonderWatchRebel);
                   // B2 (Evaluator RUNDA 1: FAIL): przejście do rebeliantów musi zresetować
@@ -40835,7 +40840,11 @@ async function boot(): Promise<void> {
                   // Poza własnym terytorium mgła obowiązuje bez zmian. Ścieżka dotyczy wyłącznie komend AI
                   // (człowiek nie przechodzi tym blokiem).
                   const targetOnOwnTerritory = territoryOwnerAtLive(defender.q, defender.r) === ownerId;
-                  if (!targetOnOwnTerritory && !aiTargetVisibleForAction(
+                  // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: UTRACONE miasta (założone przeze mnie, dziś
+                  // cudze) też są „moim terytorium” — garnizon i jednostki przy nim są widoczne do odbicia.
+                  const targetNearLostCity = !targetOnOwnTerritory && cities.some(lc =>
+                    isCityLostOf(lc, ownerId) && hexDistance(defender.q, defender.r, lc.q, lc.r) <= 1);
+                  if (!targetOnOwnTerritory && !targetNearLostCity && !aiTargetVisibleForAction(
                     currentVisibleForOwner(ownerId), fogOn, defender.q, defender.r, keyOf,
                   )) {
                     console.warn(`[AI ${ownerId}] Atak na niewidoczny cel — pominięto`);

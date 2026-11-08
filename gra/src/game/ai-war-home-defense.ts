@@ -30,6 +30,7 @@
  */
 
 import type { RuntimeUnit } from '../units/setup';
+import { isCityLostOf } from './cities';
 
 // ---------------------------------------------------------------------------
 // Stale (dokumentowane progi)
@@ -51,7 +52,7 @@ export const HOME_WAR_DETACH_MARGIN = 1.25;
 export const HOME_WAR_PRESENT_RADIUS = 8;
 /** Najezdzcy w odleglosci <= tyle od siebie tworza jedno skupisko. */
 export const HOME_WAR_CLUSTER_LINK = 3;
-/** Odbijane miasto: najdalej tyle heksow od wlasnych jednostek/miast. */
+/** (Nieuzywane od R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: odbicie bez limitu odleglosci; stala zachowana.) */
 export const HOME_WAR_RECAPTURE_RADIUS = 16;
 /** Odbijane miasto: po tylu turach od pierwszego zauwazenia utraty przestaje byc "swieze". */
 export const HOME_WAR_RECAPTURE_MAX_AGE = 60;
@@ -79,12 +80,15 @@ export interface HomeWarCity {
   r: number;
   ownerId: number;
   capturedFromOwnerId?: number;
+  /** R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: twórca miasta (patrz cities.ts: cityFounderId). */
+  foundedBy?: number;
+  foundedByOwner?: boolean;
 }
 
 export type HomeWarOrder =
   | { unitId: string; kind: 'attack'; targetUnitId: string; task: 'p2' }
   | { unitId: string; kind: 'approach'; toQ: number; toR: number; task: 'p1' | 'p2'; targetCityId?: string }
-  | { unitId: string; kind: 'hold'; toQ: number; toR: number; cityId: string; task: 'p2' };
+  | { unitId: string; kind: 'hold'; toQ: number; toR: number; cityId: string; task: 'p1' | 'p2' };
 
 export interface HomeWarInput {
   ownerId: number;
@@ -104,6 +108,13 @@ export interface HomeWarInput {
   /** Jednostki, ktore w tej turze juz atakuja / wchodza na wrogie miasto -- nie ruszane. */
   lockedUnitIds: ReadonlySet<string>;
   isOwnTerritory: (q: number, r: number) => boolean;
+  /**
+   * R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: czy oblężenie miasta `cityId` kończy zagrożenie
+   * (miasto utracone albo należy do cywilizacji zagrażającej mojemu terytorium) -- takie oblężenie
+   * zostaje (wyjątek od odwołania). Inne oblężenia (cudze miasto z boku) są odwoływane do obrony.
+   * undefined = każde oblężenie zostaje (zachowanie sprzed tematu).
+   */
+  isRelevantSiege?: (cityId: string) => boolean;
   strengthOf: (u: RuntimeUnit) => number;
   /** Jednostka bojowa (nie cywil, nie zwiadowca). */
   isFieldUnit: (u: RuntimeUnit) => boolean;
@@ -244,7 +255,9 @@ export function planHomeWar(input: HomeWarInput): HomeWarPlan {
   const fieldStrengthTotal = field.reduce((s, u) => s + input.strengthOf(u), 0);
   const pool = new Map<string, RuntimeUnit>();
   for (const u of [...field].sort(cmpId)) {
-    if (u.ruchLeft > 0 && !input.lockedUnitIds.has(u.id) && !u.oblegaCityId) pool.set(u.id, u);
+    const holdsRelevantSiege = u.oblegaCityId !== undefined
+      && (input.isRelevantSiege === undefined || input.isRelevantSiege(u.oblegaCityId));
+    if (u.ruchLeft > 0 && !input.lockedUnitIds.has(u.id) && !holdsRelevantSiege) pool.set(u.id, u);
   }
 
   const initialPoolIds = new Set(pool.keys());
@@ -340,24 +353,22 @@ export function planHomeWar(input: HomeWarInput): HomeWarPlan {
   }
 
   // ---- P1: odbicie wlasnych utraconych miast ----
+  // "Utracone" = miasto ZALOZONE przeze mnie (twórca), dziś cudze -- także po wielu zmianach właściciela;
+  // zdobyte cudze miasto NIE jest "moje" (cities.ts: isCityLostOf).
   const lostAll = input.allCities.filter(c =>
-    c.ownerId !== input.ownerId && c.capturedFromOwnerId === input.ownerId
-    && input.canEngageOwner(c.ownerId));
+    isCityLostOf(c, input.ownerId) && input.canEngageOwner(c.ownerId));
   const lostIds = new Set(lostAll.map(c => c.id));
   if (mem && turn !== undefined) {
     for (const c of lostAll) if (!mem.lostSeen.has(c.id)) mem.lostSeen.set(c.id, turn);
     for (const k of [...mem.lostSeen.keys()]) if (!lostIds.has(k)) mem.lostSeen.delete(k);
   }
-  const anchorsOwn = [
-    ...field.map(u => ({ q: u.q, r: u.r })),
-    ...input.myCities.map(c => ({ q: c.q, r: c.r })),
-  ];
+  // Bez limitu odleglosci (spec. wlasciciela 2026-11-08: WSZYSTKIE armie wracaja, takze te daleko w marszu).
   const lost = lostAll.filter(c => {
     if (mem && turn !== undefined) {
       const seen = mem.lostSeen.get(c.id) ?? turn;
       if (turn - seen > HOME_WAR_RECAPTURE_MAX_AGE) return false;
     }
-    return anchorsOwn.some(a => input.distance(a.q, a.r, c.q, c.r) <= HOME_WAR_RECAPTURE_RADIUS);
+    return true;
   });
   if (lost.length > 0 && pool.size > 0) {
     const nearOwnCity = (c: HomeWarCity): number => input.myCities.length === 0 ? 0
@@ -371,8 +382,7 @@ export function planHomeWar(input: HomeWarInput): HomeWarPlan {
       u.ownerId === target.ownerId && input.isFieldUnit(u)
       && input.distance(u.q, u.r, target.q, target.r) <= 1);
     const defStrength = defenders.reduce((s, u) => s + input.strengthOf(u), 0);
-    const nearForce = field.filter(u =>
-      input.distance(u.q, u.r, target.q, target.r) <= HOME_WAR_RECAPTURE_RADIUS);
+    const nearForce = field;
     const nearStrength = nearForce.reduce((s, u) => s + input.strengthOf(u), 0);
     const ratio = defStrength > 0 ? nearStrength / defStrength : Infinity;
     const prev: ModeMemory | undefined = mem?.p1 && mem.p1.cityId === target.id
@@ -385,8 +395,7 @@ export function planHomeWar(input: HomeWarInput): HomeWarPlan {
     const rec = { cityId: target.id, mode: (go ? 'go' : 'wait') as 'go' | 'wait', ratio, assigned: 0 };
     plan.recapture = rec;
     if (go) {
-      const cands = [...pool.values()].filter(u =>
-        input.distance(u.q, u.r, target.q, target.r) <= HOME_WAR_RECAPTURE_RADIUS)
+      const cands = [...pool.values()]
         .sort((a, b) =>
           input.distance(a.q, a.r, target.q, target.r) - input.distance(b.q, b.r, target.q, target.r)
           || cmpId(a, b));
@@ -395,6 +404,19 @@ export function planHomeWar(input: HomeWarInput): HomeWarPlan {
         plan.orders.push({
           unitId: u.id, kind: 'approach', toQ: target.q, toR: target.r, task: 'p1', targetCityId: target.id,
         });
+        rec.assigned++;
+      }
+    } else if (input.myCities.length > 0) {
+      // Za slabi na odbicie: zbiorka w wlasnym miescie najblizszym utraconemu (bez ofensywy w tle).
+      let city = input.myCities[0]!;
+      let cd = Infinity;
+      for (const c of input.myCities) {
+        const d = input.distance(target.q, target.r, c.q, c.r);
+        if (d < cd || (d === cd && c.id < city.id)) { cd = d; city = c; }
+      }
+      for (const u of [...pool.values()]) {
+        pool.delete(u.id);
+        plan.orders.push({ unitId: u.id, kind: 'hold', toQ: city.q, toR: city.r, cityId: city.id, task: 'p1' });
         rec.assigned++;
       }
     }

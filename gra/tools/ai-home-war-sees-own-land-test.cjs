@@ -51,8 +51,8 @@ console.log('K1 okablowanie: wyjatek w bramce ataku AI (main.ts)');
     'attack gate must compute targetOnOwnTerritory from the defender hex and attacker ownerId',
   );
   const gateIdx = mainSrc.indexOf('const targetOnOwnTerritory = territoryOwnerAtLive(');
-  const fogIdx = mainSrc.indexOf("if (!targetOnOwnTerritory && !aiTargetVisibleForAction(", gateIdx);
-  assert.ok(fogIdx > gateIdx, 'fog gate must be guarded by !targetOnOwnTerritory');
+  const fogIdx = mainSrc.indexOf("if (!targetOnOwnTerritory && !targetNearLostCity && !aiTargetVisibleForAction(", gateIdx);
+  assert.ok(fogIdx > gateIdx, 'fog gate must be guarded by !targetOnOwnTerritory (and !targetNearLostCity, R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1)');
   const blockEnd = mainSrc.indexOf("console.warn(`[AI ${ownerId}] Atak na niewidoczny cel", fogIdx);
   assert.ok(blockEnd > fogIdx && blockEnd - fogIdx < 300, 'guarded fog gate must keep its console.warn and skip');
 }

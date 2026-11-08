@@ -42,7 +42,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City, CityPodzialHandlu } from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA, DEFAULT_PODZIAL_HANDLU }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA, DEFAULT_PODZIAL_HANDLU, isCityLostOf }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -3447,21 +3447,33 @@ function applyHomeWarPriorities(
   const isField = (u: RuntimeUnit): boolean => !isCivilianUnit(u) && !isScoutUnit(u);
   const enemyUnits = units.filter(u =>
     u.ownerId !== playerId && u.ownerId !== BARB && aiCanEngageOwner(opts, u.ownerId) && isField(u));
-  const hasLost = cities.some(c => c.ownerId !== playerId && c.capturedFromOwnerId === playerId);
+  const hasLost = cities.some(c => isCityLostOf(c, playerId));
   if (enemyUnits.length === 0 && !hasLost) return commands;
 
   const enemyCityHex = new Set(cities.filter(c => c.ownerId !== playerId).map(c => keyOf(c.q, c.r)));
-  const locked = new Set<string>();
-  for (const cmd of commands) {
-    if (cmd.type === 'attack') locked.add(cmd.unitId);
-    else if (cmd.type === 'move' && enemyCityHex.has(keyOf(cmd.toQ, cmd.toR))) locked.add(cmd.unitId);
-  }
   const nodes = opts.territoryNodes;
   const isOwnTerritory = (q: number, r: number): boolean => {
     if (nodes !== undefined && nodes.length > 0) return territoryOwnerAt(q, r, nodes) === playerId;
     return myCities.some(c =>
       hexDistance(q, r, c.q, c.r) <= cityTerritoryRadius({ q: c.q, r: c.r, pop: c.population, level: 1 }));
   };
+  // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: cywilizacje zagrazajace "mojemu" (zalozonemu) terytorium:
+  // maja wojsko na mojej ziemi albo trzymaja miasto przeze mnie zalozone. Tylko zdobycie ICH miasta
+  // (lub odbicie utraconego) konczy zagrozenie -- takie wejscie/oblezenie zostaje; reszta ofensywy
+  // (marsz na trzecia cywilizacje) jest odwolywana do obrony.
+  const threatOwners = new Set<number>();
+  for (const eu of enemyUnits) if (isOwnTerritory(eu.q, eu.r)) threatOwners.add(eu.ownerId);
+  for (const c of cities) if (isCityLostOf(c, playerId)) threatOwners.add(c.ownerId);
+  const cityById = new Map(cities.map(c => [c.id, c] as const));
+  const cityAtHex = new Map(cities.map(c => [keyOf(c.q, c.r), c] as const));
+  const endsThreat = (c: AICity | undefined): boolean =>
+    c !== undefined && c.ownerId !== playerId && (isCityLostOf(c, playerId) || threatOwners.has(c.ownerId));
+  const locked = new Set<string>();
+  for (const cmd of commands) {
+    if (cmd.type === 'attack') locked.add(cmd.unitId);
+    else if (cmd.type === 'move' && enemyCityHex.has(keyOf(cmd.toQ, cmd.toR))
+      && endsThreat(cityAtHex.get(keyOf(cmd.toQ, cmd.toR)))) locked.add(cmd.unitId);
+  }
   const plan = planHomeWar({
     ownerId: playerId,
     currentTurn: opts.currentTurn,
@@ -3473,6 +3485,7 @@ function applyHomeWarPriorities(
     canEngageOwner: o => aiCanEngageOwner(opts, o),
     lockedUnitIds: locked,
     isOwnTerritory,
+    isRelevantSiege: cityId => endsThreat(cityById.get(cityId)),
     strengthOf: u => aiUnitCombatStrength(u, data),
     isFieldUnit: isField,
     distance: hexDistance,

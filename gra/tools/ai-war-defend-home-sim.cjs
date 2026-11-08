@@ -20,7 +20,7 @@ function loadEngine(srcDir, tag) {
   const entry = path.resolve(__dirname, `.dh-${tag}-entry.ts`);
   const bundle = path.resolve(__dirname, `.dh-${tag}-bundle.cjs`);
   const J = (p) => JSON.stringify(path.join(src, p));
-  fs.writeFileSync(entry, `
+  const baseEntry = `
 export { decideAITurn, aiUnitCombatStrength } from ${J('game/ai')};
 export { decideBarbarianMoves, FALLBACK_BARB_PARAMS, BARBARIAN_OWNER_ID } from ${J('game/barbarians')};
 export { hexDistance, isCivilianUnit, computePath } from ${J('units/setup')};
@@ -28,11 +28,17 @@ export { truncatePathWithinBudget } from ${J('game/ai-move-range')};
 export { setArmyConsolidationOverride } from ${J('game/army-consolidation')};
 export { setWarAllInCapitalOverride } from ${J('game/warAllInCapital')};
 export { setHomeWarDefenseOverride, resetHomeWarMemory, planHomeWar } from ${J('game/ai-war-home-defense')};
-`, 'utf8');
-  esbuild.buildSync({
-    entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
-    outfile: bundle, absWorkingDir: GRA_ROOT, logLevel: 'silent',
-  });
+`;
+  // R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: pole tworcy miasta (cities.ts) -- brak w starszych drzewach (silnik PRZED).
+  const withFounder = baseEntry + `export { isCityLostOf, stampCityFounderOnCapture, cityFounderId } from ${J('game/cities')};\n`;
+  const build = (text) => {
+    fs.writeFileSync(entry, text, 'utf8');
+    esbuild.buildSync({
+      entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
+      outfile: bundle, absWorkingDir: GRA_ROOT, logLevel: 'silent',
+    });
+  };
+  try { build(withFounder); } catch (_) { build(baseEntry); }
   const eng = require(bundle);
   eng._files = [entry, bundle];
   return eng;
@@ -168,7 +174,9 @@ function simulate(state, o) {
       if (city && city.ownerId !== u.ownerId) {
         if (!atWar(u.ownerId, city.ownerId) || E.isCivilianUnit(u)) continue;
         const prev = city.ownerId;
-        city.capturedFromOwnerId = prev; city.ownerId = u.ownerId;
+        city.capturedFromOwnerId = prev;
+        if (E.stampCityFounderOnCapture) E.stampCityFounderOnCapture(city, prev); // tworca (cities.ts)
+        city.ownerId = u.ownerId;
         stats.captures++;
         const isRecapture = city.origOwner === u.ownerId;
         if (isRecapture) stats.recaptures++;
