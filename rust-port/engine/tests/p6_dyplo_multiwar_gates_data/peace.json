@@ -1,0 +1,10517 @@
+{
+ "sets": {
+  "mixed": [
+   {
+    "kind": "zloto",
+    "id": "zloto",
+    "amount": 100,
+    "pn": 100
+   },
+   {
+    "kind": "surowiec_ilosc",
+    "id": "wheat",
+    "amount": 10,
+    "pn": 50
+   },
+   {
+    "kind": "miasto",
+    "id": "c1",
+    "amount": 1,
+    "pn": 300
+   },
+   {
+    "kind": "miasto",
+    "id": "c2",
+    "amount": 1,
+    "pn": 120
+   },
+   {
+    "kind": "miasto",
+    "id": "c3",
+    "amount": 1,
+    "pn": 500,
+    "forbidden": true
+   }
+  ],
+  "resOnly": [
+   {
+    "kind": "surowiec_ilosc",
+    "id": "iron",
+    "amount": 5,
+    "pn": 40
+   },
+   {
+    "kind": "surowiec_ilosc",
+    "id": "stone",
+    "amount": 2,
+    "pn": 60
+   },
+   {
+    "kind": "surowiec_ilosc",
+    "id": "gems",
+    "amount": 1,
+    "pn": 60
+   },
+   {
+    "kind": "miasto",
+    "id": "b",
+    "amount": 1,
+    "pn": 100
+   },
+   {
+    "kind": "miasto",
+    "id": "a",
+    "amount": 1,
+    "pn": 100
+   }
+  ],
+  "twoGold": [
+   {
+    "kind": "zloto",
+    "id": "zloto",
+    "amount": 30,
+    "pn": 30
+   },
+   {
+    "kind": "zloto",
+    "id": "zloto2",
+    "amount": 500,
+    "pn": 500
+   },
+   {
+    "kind": "miasto",
+    "id": "m9",
+    "amount": 1,
+    "pn": 75
+   }
+  ],
+  "zeroGold": [
+   {
+    "kind": "zloto",
+    "id": "zloto",
+    "amount": 0,
+    "pn": 40
+   },
+   {
+    "kind": "zloto",
+    "id": "zloto2",
+    "amount": 50,
+    "pn": 0
+   },
+   {
+    "kind": "surowiec_ilosc",
+    "id": "x",
+    "amount": 3,
+    "pn": 20
+   },
+   {
+    "kind": "miasto",
+    "id": "m1",
+    "amount": 1,
+    "pn": 0
+   },
+   {
+    "kind": "miasto",
+    "id": "m2",
+    "amount": 1,
+    "pn": 90
+   }
+  ],
+  "cityOnly": [
+   {
+    "kind": "miasto",
+    "id": "z",
+    "amount": 1,
+    "pn": 260
+   },
+   {
+    "kind": "miasto",
+    "id": "y",
+    "amount": 1,
+    "pn": 200
+   },
+   {
+    "kind": "miasto",
+    "id": "x",
+    "amount": 1,
+    "pn": 90,
+    "forbidden": true
+   }
+  ],
+  "empty": []
+ },
+ "payment": [
+  {
+   "fn": "planPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "-5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0.4"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "50"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "50",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "50",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "50",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "50",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "50",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "50",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "50",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "50",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "50",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "50",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "50",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "50",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "100"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "100",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "100",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "100",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "100",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "100",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "100",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "101"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "250"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c2",
+      "amount": "1",
+      "pn": "120"
+     }
+    ],
+    "coveredPn": "270",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "100",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c2",
+      "amount": "1",
+      "pn": "120"
+     }
+    ],
+    "coveredPn": "270",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c2",
+      "amount": "1",
+      "pn": "120"
+     }
+    ],
+    "coveredPn": "270",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c2",
+      "amount": "1",
+      "pn": "120"
+     }
+    ],
+    "coveredPn": "270",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "100",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "399.5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     }
+    ],
+    "coveredPn": "450",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "250",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     }
+    ],
+    "coveredPn": "450",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     }
+    ],
+    "coveredPn": "450",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     }
+    ],
+    "coveredPn": "450",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "250",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "1000"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     }
+    ],
+    "coveredPn": "450",
+    "shortfallPn": "550",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "850",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     }
+    ],
+    "coveredPn": "450",
+    "shortfallPn": "550",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     },
+     {
+      "kind": "miasto",
+      "id": "c2",
+      "amount": "1",
+      "pn": "120"
+     }
+    ],
+    "coveredPn": "570",
+    "shortfallPn": "430",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     },
+     {
+      "kind": "miasto",
+      "id": "c2",
+      "amount": "1",
+      "pn": "120"
+     }
+    ],
+    "coveredPn": "570",
+    "shortfallPn": "430",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "850",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "5000"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     }
+    ],
+    "coveredPn": "450",
+    "shortfallPn": "4550",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "4850",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     }
+    ],
+    "coveredPn": "450",
+    "shortfallPn": "4550",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     },
+     {
+      "kind": "miasto",
+      "id": "c2",
+      "amount": "1",
+      "pn": "120"
+     }
+    ],
+    "coveredPn": "570",
+    "shortfallPn": "4430",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     },
+     {
+      "kind": "miasto",
+      "id": "c1",
+      "amount": "1",
+      "pn": "300"
+     },
+     {
+      "kind": "miasto",
+      "id": "c2",
+      "amount": "1",
+      "pn": "120"
+     }
+    ],
+    "coveredPn": "570",
+    "shortfallPn": "4430",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "mixed",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "100",
+      "pn": "100"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "wheat",
+      "amount": "10",
+      "pn": "50"
+     }
+    ],
+    "coveredPn": "150",
+    "shortfallPn": "4850",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "-5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0.4"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "50"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "60",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "100"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "101"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     }
+    ],
+    "coveredPn": "120",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "2",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "250"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "a",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     }
+    ],
+    "coveredPn": "160",
+    "shortfallPn": "90",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "a",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "a",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "a",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     }
+    ],
+    "coveredPn": "160",
+    "shortfallPn": "90",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "399.5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "140",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     }
+    ],
+    "coveredPn": "160",
+    "shortfallPn": "240",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "140",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     },
+     {
+      "kind": "miasto",
+      "id": "a",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "360",
+    "shortfallPn": "40",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     },
+     {
+      "kind": "miasto",
+      "id": "a",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "360",
+    "shortfallPn": "40",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     }
+    ],
+    "coveredPn": "160",
+    "shortfallPn": "240",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "1000"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "740",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     }
+    ],
+    "coveredPn": "160",
+    "shortfallPn": "840",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "740",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     },
+     {
+      "kind": "miasto",
+      "id": "a",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "360",
+    "shortfallPn": "640",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     },
+     {
+      "kind": "miasto",
+      "id": "a",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "360",
+    "shortfallPn": "640",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     }
+    ],
+    "coveredPn": "160",
+    "shortfallPn": "840",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "5000"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "4740",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     }
+    ],
+    "coveredPn": "160",
+    "shortfallPn": "4840",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "4740",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     },
+     {
+      "kind": "miasto",
+      "id": "a",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "360",
+    "shortfallPn": "4640",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     },
+     {
+      "kind": "miasto",
+      "id": "b",
+      "amount": "1",
+      "pn": "100"
+     },
+     {
+      "kind": "miasto",
+      "id": "a",
+      "amount": "1",
+      "pn": "100"
+     }
+    ],
+    "coveredPn": "360",
+    "shortfallPn": "4640",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "resOnly",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "gems",
+      "amount": "1",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "stone",
+      "amount": "2",
+      "pn": "60"
+     },
+     {
+      "kind": "surowiec_ilosc",
+      "id": "iron",
+      "amount": "5",
+      "pn": "40"
+     }
+    ],
+    "coveredPn": "160",
+    "shortfallPn": "4840",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "3",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "-5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0.4"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "1",
+      "pn": "1"
+     }
+    ],
+    "coveredPn": "1",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "50"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "20",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "20",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "100"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "70",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "70",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "101"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "71",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "71",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "250"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "145",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "220",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "145",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "145",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "145",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "220",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "399.5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "295",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "370",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "295",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "295",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "295",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "370",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "1000"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "895",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "970",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "895",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "895",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "895",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "970",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "5000"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "4895",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "4970",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "4895",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "4895",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     },
+     {
+      "kind": "miasto",
+      "id": "m9",
+      "amount": "1",
+      "pn": "75"
+     }
+    ],
+    "coveredPn": "105",
+    "shortfallPn": "4895",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "twoGold",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "zloto",
+      "id": "zloto",
+      "amount": "30",
+      "pn": "30"
+     }
+    ],
+    "coveredPn": "30",
+    "shortfallPn": "4970",
+    "full": false,
+    "histogram": {
+     "zloto": "1",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "-5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0.4"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "50"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "30",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "30",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "100"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "80",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "80",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "101"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "81",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "81",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "250"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "140",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "230",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "140",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "140",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "140",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "230",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "399.5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "290",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "380",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "290",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "290",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "290",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "380",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "1000"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "890",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "980",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "890",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "890",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "890",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "980",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "5000"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "4890",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "4980",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "4890",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "4890",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     },
+     {
+      "kind": "miasto",
+      "id": "m2",
+      "amount": "1",
+      "pn": "90"
+     }
+    ],
+    "coveredPn": "110",
+    "shortfallPn": "4890",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "zeroGold",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "surowiec_ilosc",
+      "id": "x",
+      "amount": "3",
+      "pn": "20"
+     }
+    ],
+    "coveredPn": "20",
+    "shortfallPn": "4980",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "1",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "-5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0.4"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "50"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "50",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "50",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "100"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "100",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "100",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "101"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "101",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "200",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "101",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "250"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "250",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "250",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "399.5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "140",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "400",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "140",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     },
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "460",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     },
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "460",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "400",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "1000"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "740",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "740",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     },
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "460",
+    "shortfallPn": "540",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     },
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "460",
+    "shortfallPn": "540",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "5000"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "4740",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "5000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     }
+    ],
+    "coveredPn": "260",
+    "shortfallPn": "4740",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "1"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     },
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "460",
+    "shortfallPn": "4540",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [
+     {
+      "kind": "miasto",
+      "id": "z",
+      "amount": "1",
+      "pn": "260"
+     },
+     {
+      "kind": "miasto",
+      "id": "y",
+      "amount": "1",
+      "pn": "200"
+     }
+    ],
+    "coveredPn": "460",
+    "shortfallPn": "4540",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "2"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "cityOnly",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "5000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "-5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "-5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "0",
+    "full": true,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0.4"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "0.4",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "50"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "50",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "50",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "50",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "50",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "50",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "50",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "50",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "100"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "100",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "100",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "100",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "100",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "100",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "100",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "100",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "101"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "101",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "101",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "101",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "101",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "101",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "101",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "101",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "250"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "250",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "250",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "250",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "250",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "250",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "250",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "250",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "399.5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "400",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "400",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "400",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "400",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "400",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "399.5",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "400",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "1000"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "1000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "1000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "NaN",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "NaN",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "5000"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "5000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "0"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "5000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "1"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "5000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "2"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "5000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "5"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "5000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  },
+  {
+   "fn": "planEscalatedPeacePayment",
+   "set": "empty",
+   "in": {
+    "requiredPn": "5000",
+    "maxCities": "NaN"
+   },
+   "out": {
+    "items": [],
+    "coveredPn": "0",
+    "shortfallPn": "5000",
+    "full": false,
+    "histogram": {
+     "zloto": "0",
+     "surowiec_ilosc": "0",
+     "miasto": "0"
+    }
+   }
+  }
+ ],
+ "stepPairState": [
+  {
+   "init": [],
+   "steps": [
+    {
+     "key": "k",
+     "warStart": "10",
+     "level": "0.3",
+     "out": {
+      "warStart": "10",
+      "peak": "0.3",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    },
+    {
+     "key": "k",
+     "warStart": "10",
+     "level": "0.1",
+     "out": {
+      "warStart": "10",
+      "peak": "0.3",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    },
+    {
+     "key": "k",
+     "warStart": "10",
+     "level": "0.7",
+     "out": {
+      "warStart": "10",
+      "peak": "0.7",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    },
+    {
+     "key": "k",
+     "warStart": "10",
+     "level": "0.2",
+     "out": {
+      "warStart": "10",
+      "peak": "0.7",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    }
+   ]
+  },
+  {
+   "init": [
+    {
+     "key": "k",
+     "warStart": "10",
+     "peak": "0.4",
+     "stage": "1",
+     "rejectedOffers": "2",
+     "lastOfferTurn": "150"
+    }
+   ],
+   "steps": [
+    {
+     "key": "k",
+     "warStart": "10",
+     "level": "0.3",
+     "out": {
+      "warStart": "10",
+      "peak": "0.4",
+      "stage": "1",
+      "rejectedOffers": "2",
+      "lastOfferTurn": "150"
+     }
+    },
+    {
+     "key": "k",
+     "warStart": "11",
+     "level": "0.2",
+     "out": {
+      "warStart": "11",
+      "peak": "0.2",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    },
+    {
+     "key": "k",
+     "warStart": "11",
+     "level": "0.6",
+     "out": {
+      "warStart": "11",
+      "peak": "0.6",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    },
+    {
+     "key": "k",
+     "warStart": "11",
+     "level": "NaN",
+     "out": {
+      "warStart": "11",
+      "peak": "NaN",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    },
+    {
+     "key": "k",
+     "warStart": "11",
+     "level": "0.9",
+     "out": {
+      "warStart": "11",
+      "peak": "NaN",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    }
+   ]
+  },
+  {
+   "init": [],
+   "steps": [
+    {
+     "key": "k",
+     "warStart": "NaN",
+     "level": "0.5",
+     "out": {
+      "warStart": "NaN",
+      "peak": "0.5",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    },
+    {
+     "key": "k",
+     "warStart": "NaN",
+     "level": "0.5",
+     "out": {
+      "warStart": "NaN",
+      "peak": "0.5",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    },
+    {
+     "key": "a",
+     "warStart": "3",
+     "level": "0",
+     "out": {
+      "warStart": "3",
+      "peak": "0",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    },
+    {
+     "key": "k",
+     "warStart": "3",
+     "level": "0.1",
+     "out": {
+      "warStart": "3",
+      "peak": "0.1",
+      "stage": "0",
+      "rejectedOffers": "0",
+      "lastOfferTurn": "-1"
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -28,7 +28,6 @@ const SNIP_SRC = [
 
 const stubs = {
   diplomacy: { deltaRelacjiSojusz: (flag) => (flag ? AGG.wplywNaAI.relacjaDeltaSojusz : 0) },
-  'diplomacy-ai-forced-peace': { planPeacePayment: () => { throw new Error('nie uzywane'); } },
 };
 const cache = new Map();
 
@@ -207,9 +206,85 @@ for (const o of napInputs) {
   });
 }
 
+// ---------- 4. planPeacePayment / planEscalatedPeacePayment (diplomacy-ai-forced-peace.ts:127, war-weariness.ts:121) ----------
+// R-RUSTPORT-P6 r3: prawdziwy modul weba (stub usuniety). Sety aktywow: zloto, surowce, miasta (forbidden, pn=0, NaN).
+const FP = loadSource(path.join(GAME, 'diplomacy-ai-forced-peace.ts'), fs.readFileSync(path.join(GAME, 'diplomacy-ai-forced-peace.ts'), 'utf8'));
+const peaceSets = {
+  mixed: [
+    { kind: 'zloto', id: 'zloto', amount: 100, pn: 100 },
+    { kind: 'surowiec_ilosc', id: 'wheat', amount: 10, pn: 50 },
+    { kind: 'miasto', id: 'c1', amount: 1, pn: 300 },
+    { kind: 'miasto', id: 'c2', amount: 1, pn: 120 },
+    { kind: 'miasto', id: 'c3', amount: 1, pn: 500, forbidden: true },
+  ],
+  resOnly: [
+    { kind: 'surowiec_ilosc', id: 'iron', amount: 5, pn: 40 },
+    { kind: 'surowiec_ilosc', id: 'stone', amount: 2, pn: 60 },
+    { kind: 'surowiec_ilosc', id: 'gems', amount: 1, pn: 60 },
+    { kind: 'miasto', id: 'b', amount: 1, pn: 100 },
+    { kind: 'miasto', id: 'a', amount: 1, pn: 100 },
+  ],
+  twoGold: [
+    { kind: 'zloto', id: 'zloto', amount: 30, pn: 30 },
+    { kind: 'zloto', id: 'zloto2', amount: 500, pn: 500 },
+    { kind: 'miasto', id: 'm9', amount: 1, pn: 75 },
+  ],
+  zeroGold: [
+    { kind: 'zloto', id: 'zloto', amount: 0, pn: 40 },
+    { kind: 'zloto', id: 'zloto2', amount: 50, pn: 0 },
+    { kind: 'surowiec_ilosc', id: 'x', amount: 3, pn: 20 },
+    { kind: 'miasto', id: 'm1', amount: 1, pn: 0 },
+    { kind: 'miasto', id: 'm2', amount: 1, pn: 90 },
+  ],
+  cityOnly: [
+    { kind: 'miasto', id: 'z', amount: 1, pn: 260 },
+    { kind: 'miasto', id: 'y', amount: 1, pn: 200 },
+    { kind: 'miasto', id: 'x', amount: 1, pn: 90, forbidden: true },
+  ],
+  empty: [],
+};
+const peaceReq = [0, -5, 0.4, 50, 100, 101, 250, 399.5, 1000, NaN, 5000];
+const peakOut = (plan) => ({
+  items: plan.items.map(it => ({ kind: it.kind, id: it.id, amount: S(it.amount), pn: S(it.pn) })),
+  coveredPn: S(plan.coveredPn), shortfallPn: S(plan.shortfallPn), full: plan.full === true,
+  histogram: { zloto: S(plan.histogram.zloto), surowiec_ilosc: S(plan.histogram.surowiec_ilosc), miasto: S(plan.histogram.miasto) },
+});
+const peaceCases = [];
+for (const [name, set] of Object.entries(peaceSets)) {
+  const assets = set.map(a => ({ ...a }));
+  for (const req of peaceReq) {
+    peaceCases.push({ fn: 'planPeacePayment', set: name, in: { requiredPn: S(req) },
+      out: peakOut(FP.planPeacePayment(req, set.map(a => ({ ...a })))) });
+    for (const mc of [0, 1, 2, 5, NaN]) {
+      peaceCases.push({ fn: 'planEscalatedPeacePayment', set: name, in: { requiredPn: S(req), maxCities: S(mc) },
+        out: peakOut(WW.planEscalatedPeacePayment(req, set.map(a => ({ ...a })), mc)) });
+    }
+  }
+}
+
+// stepPairState: sekwencja krokow na jednym store (war-weariness.ts:163).
+const stepCases = [];
+const stepSeqs = [
+  { init: [], steps: [['k', 10, 0.3], ['k', 10, 0.1], ['k', 10, 0.7], ['k', 10, 0.2]] },
+  { init: [['k', { warStart: 10, peak: 0.4, stage: 1, rejectedOffers: 2, lastOfferTurn: 150 }]],
+    steps: [['k', 10, 0.3], ['k', 11, 0.2], ['k', 11, 0.6], ['k', 11, NaN], ['k', 11, 0.9]] },
+  { init: [], steps: [['k', NaN, 0.5], ['k', NaN, 0.5], ['a', 3, 0], ['k', 3, 0.1]] },
+];
+for (const sq of stepSeqs) {
+  const store = new Map(sq.init.map(([k, v]) => [k, { ...v }]));
+  const steps = [];
+  for (const [key, ws, lvl] of sq.steps) {
+    const st = WW.stepPairState(store, key, ws, lvl);
+    steps.push({ key, warStart: S(ws), level: S(lvl),
+      out: { warStart: S(st.warStart), peak: S(st.peak), stage: S(st.stage), rejectedOffers: S(st.rejectedOffers), lastOfferTurn: S(st.lastOfferTurn) } });
+  }
+  stepCases.push({ init: sq.init.map(([k, v]) => ({ key: k, warStart: S(v.warStart), peak: S(v.peak), stage: S(v.stage), rejectedOffers: S(v.rejectedOffers), lastOfferTurn: S(v.lastOfferTurn) })), steps });
+}
+
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, 'weariness.json'), JSON.stringify(wwCases, null, 1) + '\n');
 fs.writeFileSync(path.join(OUT, 'era.json'), JSON.stringify(eraCases, null, 1) + '\n');
 fs.writeFileSync(path.join(OUT, 'nap.json'), JSON.stringify(napCases, null, 1) + '\n');
 try { fs.unlinkSync(NAPSNIP); } catch (e) { /* brak pliku */ }
-console.log('weariness', wwCases.length, 'era', eraCases.length, 'nap', napCases.length);
+fs.writeFileSync(path.join(OUT, 'peace.json'), JSON.stringify({ sets: peaceSets, payment: peaceCases, stepPairState: stepCases }, null, 1) + '\n');
+console.log('weariness', wwCases.length, 'era', eraCases.length, 'nap', napCases.length, 'peace', peaceCases.length, 'step', stepCases.length);

@@ -1,4 +1,4 @@
-# P6-DYPLOMACJA-MULTIWAR — tabela symboli (runda 2)
+# P6-DYPLOMACJA-MULTIWAR — tabela symboli (runda 3)
 
 Pin webu: `origin/main` = `a61337844` (`git archive a61337844 gra/src gra/data`).
 Baza Rust: `rust-port/parity-v2` = `c86c686bb`.
@@ -30,9 +30,10 @@ DO ZROBIENIA = w zakresie tematu, nie zrobione w rundzie 2; POZA ZAKRESEM = wg d
 | `stageCityLimit` | `war-weariness.ts:103` | `diplomacy_multiwar::stage_city_limit` | ZROBIONE |
 | `offerMultiplier` | `war-weariness.ts:110` | `diplomacy_multiwar::offer_multiplier` | ZROBIONE |
 | `WAR_WEARINESS_PARAMS` (zmeczenie / przegrywajacy / czlowiek.rabatCenyPokojuMax) | `war-weariness.ts:46` + `data/war-weariness-params.json` | `diplomacy_multiwar::WAR_WEARINESS_PARAMS` (literal) | ZROBIONE (podzbiór pól używanych przez funkcje czyste) |
-| `planEscalatedPeacePayment` | `war-weariness.ts:121` | — | DO ZROBIENIA (zależy od `planPeacePayment`) |
-| `stepPairState`, `runWarWearinessTick` | `war-weariness.ts:163`, `:216` | — | DO ZROBIENIA (stan pary + tick AI↔AI; zapis w save) |
-| `planPeacePayment` | `diplomacy-ai-forced-peace.ts:127` | — | DO ZROBIENIA (prerekwizyt dla weariness i forced-peace) |
+| `planEscalatedPeacePayment` | `war-weariness.ts:121` | `diplomacy_multiwar_peace::plan_escalated_peace_payment` | ZROBIONE (r3; wektory `peace.json`) |
+| `stepPairState` | `war-weariness.ts:163` | `diplomacy_multiwar_peace::step_pair_state` | ZROBIONE (r3; wektory sekwencji) |
+| `runWarWearinessTick` | `war-weariness.ts:216` | — | DO ZROBIENIA (r4; tick AI↔AI) |
+| `planPeacePayment` | `diplomacy-ai-forced-peace.ts:127` | `diplomacy_multiwar_peace::plan_peace_payment` | ZROBIONE (r3; wektory `peace.json`; mutant ceil->floor zabity) |
 | `diplomacy-ai-forced-peace.ts` (reszta: `registerAiPeaceRequest`, `isForcedPeaceDue`, `decideAiPeaceRequest`, `runAiAiPeaceTick`, …) | `:17`–`:275` | — | DO ZROBIENIA |
 | `napRelacjaProgEfektywny` | `diplomacy-proposals.ts:544` | `diplomacy_nap_trust::nap_relacja_prog_efektywny` | ZROBIONE |
 | `NAP_GRANICA_RELACJA_NARZUT` (= `SWEETENER_EASE_MAX_POINTS` = 20) | `diplomacy-proposals.ts:533`, `:521` | `diplomacy_nap_trust::NAP_GRANICA_RELACJA_NARZUT` | ZROBIONE |
@@ -60,6 +61,6 @@ DO ZROBIENIA = w zakresie tematu, nie zrobione w rundzie 2; POZA ZAKRESEM = wg d
 - Test: `rust-port/engine/tests/p6_dyplo_multiwar_gates.rs` (9 testów).
 - Mutacje ręczne (5 mutantów, każdy zabity): narzut granicy 20->19; fallback Zaufania 30->29; `stage == 2` -> `stage == 3`; próg udziału `>` -> `>=` w `loserDespair`. Pełnego narzędzia mutacyjnego nie uruchomiono.
 
-## Zakres niewykonany w rundzie 2 (do r3)
+## Zakres niewykonany po rundzie 3 (do r4)
 
 Wszystkie pozycje oznaczone DO ZROBIENIA powyżej: `planPeacePayment` + `diplomacy-ai-forced-peace` (w tym `planEscalatedPeacePayment`, `runWarWearinessTick`), `diplomacy-siege-war-gate`, `recordEraForcedWarParticipation`/`rebuildEraWarCountsFromActivePairs`/`restoreEraWarCounts` (zapis: pole licznika poza allowlistą — dług na temat #8), `evaluateInterCivWarGate`, `pickPlayerReferenceCity`, REPIN `war_rules_multiwar.rs`, `diplomacy_war_gates.rs`, `alliance_war_obligation.rs`, `diplomacy_tick_war_brake.rs`, `diplomacy_war_peace_profile.rs` wobec pinu `a61337844`.
