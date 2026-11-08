@@ -295,7 +295,7 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
         .collect();
     let scenarios = d["scenarios"].as_array().unwrap();
     assert!(
-        scenarios.len() >= 4600,
+        scenarios.len() >= 5100,
         "za malo scenariuszy: {}",
         scenarios.len()
     );

@@ -948,7 +948,7 @@ for (let i = 0; i < 260; i++) {
 // F8 (rcd-): przebieg `riverClearNoCitizenPass` wywolany BEZPOSREDNIO (flaga wewnetrzna) - bez etapow/KROKU 7, rozne tryby
 // wycinki i zestawy pol z obywatelami (w tym brak `getWorkedHexKeys`), limit na miasto i profile
 for (const mapIdx of [RV_A, RV_MIX, RV_NOPATH, RV_H, SPECIAL_BASE + 1]) for (const focus of FOODFOC) {
-  for (const [oi, o] of [{}, { offRiverClearing: true }, { riverForestClearingOnly: true }, { riverForestClearingOnly: true, offRiverClearing: true }, { riverClearNoCitizenMaxPerCity: 1 }, { riverClearNoCitizenMaxPerCity: 0 }, { riverClearNoCitizenMaxPerCity: 'NaN' }].entries()) {
+  for (const [oi, o] of [{}, { offRiverClearing: true }, { riverForestClearingOnly: true }, { riverForestClearingOnly: true, offRiverClearing: true }, { riverClearNoCitizenMaxPerCity: 1 }, { riverClearNoCitizenMaxPerCity: 0 }, { riverClearNoCitizenMaxPerCity: 'NaN' }, { riverClearNoCitizenMaxPerCity: 50 }, { offRiverClearing: true, riverClearNoCitizenMaxPerCity: 50 }].entries()) {
     for (const wk of ['none', 'empty', 'few']) {
       const fnx = wk === 'none' ? {} : { workedKeysByCity: { c1: wk === 'empty' ? [] : nearKeys(0, 0, 6, 0.2) } };
       add(mkSpec(`rcd-${mapIdx}-${focus}-${oi}-${wk}`, mapIdx, {
@@ -961,6 +961,72 @@ for (const mapIdx of [RV_A, RV_MIX, RV_NOPATH, RV_H, SPECIAL_BASE + 1]) for (con
       }));
     }
   }
+}
+
+// F3c (fhk-): zloze konia z kola fortu przy zapasie koni w magazynie (stadnina kwalifikuje sie bez zloza) i z raportem nadwyzki
+for (const fi of [[0], [0, 1], []]) for (const kon of [0, 49, 50, 200]) for (const rep of [false, true]) {
+  const cs = [rvc({ id: 'c1', population: 3, kon }), rvc({ id: 'c2', q: 4, r: 0, population: 3 })];
+  add(mkSpec(`fhk-${fi.join('')}-${kon}-${rep ? 'r' : 'n'}`, M_HORSE, {
+    cities: cs, praca: 6000,
+    territoryNodes: [...cs.map(c => ({ q: c.q, r: c.r, pop: c.population, level: 1, ownerId: 1 })), ...fi.map(i => fortNodesH[i])],
+    opts: { priorityOverride: ['stadnina', 'farma'], ...(rep ? { withSurplusReport: true, demandDriven: true } : {}) },
+  }));
+}
+
+// F3d (fhb-): duzy budzet + zapas koni (stadnina na KAZDYM kandydacie, takze extras z kola fortu) oraz brak kandydatow poza
+// extras (farmy wszedzie) z raportem nadwyzki - z i bez `getWorkedHexKeys` (blok filterWaitingKeys tylko z regula obywateli)
+for (const fi of [[0], [0, 1], [2], [0, 2]]) {
+  const cs = [rvc({ id: 'c1', population: 3, kon: 200 })];
+  add(mkSpec(`fhb-${fi.join('')}-big`, M_HORSE, {
+    cities: cs, praca: 400000,
+    territoryNodes: [{ q: 0, r: 0, pop: 3, level: 1, ownerId: 1 }, ...fi.map(i => fortNodesH[i])],
+    opts: { priorityOverride: ['stadnina'] },
+  }));
+  for (const wk of ['none', 'empty']) {
+    add(mkSpec(`fhb-${fi.join('')}-farms-${wk}`, M_HORSE, {
+      cities: [rvc({ id: 'c1', population: 3 })], praca: 6000,
+      placed: Object.fromEntries(disk(0, 0, 8).map(([q, r]) => [`${q},${r}`, ['farma']])),
+      territoryNodes: [{ q: 0, r: 0, pop: 3, level: 1, ownerId: 1 }, ...fi.map(i => fortNodesH[i])],
+      fn: wk === 'none' ? {} : { workedKeysByCity: { c1: [] } },
+      opts: { priorityOverride: ['farma'], withSurplusReport: true },
+    }));
+  }
+}
+
+// F9 (rk-): KROK 0 stawia wycinke rzeczna, etapy/sciezka zapasowa puste (cywilizacja blokuje reszte) -> drogi czekaja (foodAndFallbackDone=false)
+const KEEP_ONLY = new Set(['wyrab', 'droga', 'droga_brukowana']);
+const DENY_ALL_BUT_CLEAR = [...new Set([...A.AI_IMPROVEMENT_PRIORITY, ...A.ROAD_KEYS, 'wyrab', 'stadnina'])].filter(k => !KEEP_ONLY.has(k));
+for (const mapIdx of [RV_A, RV_MIX]) for (const praca of [6000, 40]) for (const keepRoads of [true, false]) {
+  add(mkSpec(`rk-${mapIdx}-${praca}-${keepRoads ? 'r' : 'n'}`, mapIdx, {
+    cities: [rvc({ id: 'c1', population: 4 }), rvc({ id: 'c2', q: 6, r: 0, population: 4 })], praca,
+    fn: { civDeny: keepRoads ? DENY_ALL_BUT_CLEAR : [...DENY_ALL_BUT_CLEAR, 'droga', 'droga_brukowana'] },
+    opts: { foodImprovementStages: true, demandDriven: true },
+  }));
+}
+// F10 (rn-): miasto nieetapowe (c2) stawia wycinke na heksach rzeki, ktore KROK 7 (c1, bez obywateli) tez by wybral - `record(normal)`
+for (const mapIdx of [RV_A, RV_MIX, RV_NOPATH]) for (const focus2 of ['zywnosc', 'zrownowazone']) for (const p2 of [0.6, 1.0]) {
+  add(mkSpec(`rn-${mapIdx}-${focus2}-${p2}`, mapIdx, {
+    cities: [rvc({ id: 'c1', population: 5, focus: 'zrownowazone' }), rvc({ id: 'c2', q: 2, r: 0, population: 5, focus: focus2 })], praca: 6000,
+    fn: { workedKeysByCity: { c1: [], c2: nearKeys(2, 0, 5, p2) }, focusByCity: { c1: 'zrownowazone', c2: focus2 } },
+    opts: { foodImprovementStages: { cities: ['c1'] }, demandDriven: true },
+  }));
+}
+
+// F11 (rb-): ciasny budzet - KROK 7 vs oczekujace cele (etap/sciezka zapasowa/niedobor) i wydatek miast nieetapowych
+for (const mapIdx of [RV_A, RV_MIX]) for (let praca = 10; praca <= 200; praca += 10) {
+  add(mkSpec(`rb1-${mapIdx}-${praca}`, mapIdx, {
+    cities: [rvc({ id: 'c1', population: 5, focus: 'zrownowazone' })], praca,
+    fn: { workedKeysByCity: { c1: [] } }, opts: { foodImprovementStages: true, demandDriven: true },
+  }));
+  add(mkSpec(`rb2-${mapIdx}-${praca}`, mapIdx, {
+    cities: [rvc({ id: 'c1', population: 5, focus: 'zrownowazone' }), rvc({ id: 'c2', q: 2, r: 0, population: 5, focus: 'zywnosc' })], praca,
+    fn: { workedKeysByCity: { c1: [], c2: nearKeys(2, 0, 4, 0.5) }, focusByCity: { c1: 'zrownowazone', c2: 'zywnosc' } },
+    opts: { foodImprovementStages: { cities: ['c1'] }, demandDriven: true },
+  }));
+  add(mkSpec(`rb3-${mapIdx}-${praca}`, mapIdx, {
+    cities: [rvc({ id: 'c1', population: 5, focus: 'zrownowazone' })], praca,
+    fn: { workedKeysByCity: { c1: nearKeys(0, 0, 3, 0.4) } }, opts: { foodImprovementStages: true, demandDriven: true, resourceDeficitKeys: ['kamien'] },
+  }));
 }
 
 // ---- helpery (P1) --------------------------------------------------------------------------

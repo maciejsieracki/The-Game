@@ -93,9 +93,9 @@ for (const n of NAKL) for (const z of ZLOZE) {
 // ---- auto-build-gate.ts ---------------------------------------------------------------------------------
 const gateOut = { pin: PIN, source: 'gra/src/game/auto-build-gate.ts', constants: { AUTO_BUILD_ENABLED_DEFAULT: gate.AUTO_BUILD_ENABLED_DEFAULT, AUTO_BUILD_DISABLED_HINT: gate.AUTO_BUILD_DISABLED_HINT }, cases: {} };
 const gc = (n) => (gateOut.cases[n] ??= []);
-for (const owner of [0, 1, 2, -1, 7]) for (const humans of [[], [0], [1], [0, 1], [2, 7], [-1]]) {
-  gc('isHumanSeatOwner').push({ owner, humans, out: gate.isHumanSeatOwner(owner, humans) });
-  for (const en of [true, false]) gc('isAutoBuildAllowedForOwner').push({ owner, humans, enabled: en, out: gate.isAutoBuildAllowedForOwner(owner, humans, en) });
+for (const owner of [0, 1, 2, -1, 7, NaN]) for (const humans of [[], [0], [1], [0, 1], [2, 7], [-1], [NaN], [1, NaN]]) {
+  gc('isHumanSeatOwner').push({ owner: enc(owner), humans: humans.map(enc), out: gate.isHumanSeatOwner(owner, humans) });
+  for (const en of [true, false]) gc('isAutoBuildAllowedForOwner').push({ owner: enc(owner), humans: humans.map(enc), enabled: en, out: gate.isAutoBuildAllowedForOwner(owner, humans, en) });
 }
 const RAWS = [true, false, 'true', 1, 0, null, undefined, {}, [], 'false', NaN];
 for (const raw of RAWS) {
