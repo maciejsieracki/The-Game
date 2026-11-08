@@ -53,7 +53,7 @@ import { buildingIconSvg, unitIconSvg, improvementIconSvg } from './icons/brandA
 import type { ImprovementKey } from '../render/improvements';
 import { buildEntityCardData, renderEntityCard, ENTITY_CARD_CSS, openEntityCard } from './entityCards/renderer';
 import { technologyIdFromName } from './entityCards/registry';
-import { techCardContentOf, cmzSentence } from './entityCards/technologyAdapter';
+import { techCardContentOf, cmzSentence, isDeadTechCardBuilding } from './entityCards/technologyAdapter';
 import type { EntityCardData, EntityCardAction } from './entityCards/types';
 
 type TechRow = {
@@ -356,11 +356,17 @@ background:rgba(232,216,138,.025);text-align:center;font-size:13px;color:#c8b898
 }
 
 function buildBody(tech: TechRow): { html: string } {
-  const buildings = (buildingsData as BuildingRow[]).filter(b => b.techUnlock === tech.Technologia);
-  const units = (unitsData as UnitRow[]).filter(u => u.Tech === tech.Technologia);
+  // Obrona r1 (Z4): ścieżka zapasowa ukrywa te same efekty martwe co `technologyAdapter.ts`
+  // (`ukryte` z `tech-cards-top5.json` + reguła budynków suppressed / epoka > 3).
+  const hidden = new Set(techCardContentOf(tech.Technologia)?.ukryte ?? []);
+  const buildings = (buildingsData as BuildingRow[]).filter(b => b.techUnlock === tech.Technologia
+    && !isDeadTechCardBuilding(b as unknown as { suppressed?: unknown; epokaWejscia?: unknown })
+    && !hidden.has(b.nazwa ?? b.id));
+  const units = (unitsData as UnitRow[]).filter(u => u.Tech === tech.Technologia && !hidden.has(u.Jednostka));
   const allTechs = (techData as unknown as { technologie: TechRow[] }).technologie;
-  const nextTechRows = allTechs.filter(t => list(t['Wymaga (prereq)']).includes(tech.Technologia));
-  const improvementNames = list(tech['Odblokowuje ulepszenie terenu']);
+  const nextTechRows = allTechs.filter(t => list(t['Wymaga (prereq)']).includes(tech.Technologia)
+    && !hidden.has(t.Technologia));
+  const improvementNames = list(tech['Odblokowuje ulepszenie terenu']).filter(n => !hidden.has(n));
   const resourceUnlocked = tech['Odblokowuje surowiec.'] || null;
   const requirements = list(tech['Wymaga (prereq)']);
 

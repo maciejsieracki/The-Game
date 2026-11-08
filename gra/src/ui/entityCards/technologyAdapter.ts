@@ -181,7 +181,15 @@ const CIV_NAME_BY_ID: Record<string, string> = Object.fromEntries(
 /** Budynek martwy dziś (Q3/Q4 właściciela — ukryć do czasu naprawy): `suppressed` (np. Teatr)
  * albo `epokaWejscia` powyżej grywalnej epoki (Wielka odlewnia, Wielka Kuźnia). */
 function isDeadBuilding(b: BuildingRow): boolean {
-  return b.suppressed === true || (b.epokaWejscia ?? 1) > MAX_GRYWALNA_EPOKA;
+  return isDeadTechCardBuilding(b);
+}
+
+/** Ta sama reguła dla ścieżki zapasowej `techDiscoveryNotice.ts` (Obrona r1, zarzut Z4):
+ * popup odkrycia nie może wypisywać budynków, które karta ukrywa. Typ strukturalny, bo
+ * `techDiscoveryNotice.ts` ma własny, węższy `BuildingRow`. */
+export function isDeadTechCardBuilding(b: { suppressed?: unknown; epokaWejscia?: unknown }): boolean {
+  const epoka = typeof b.epokaWejscia === 'number' ? b.epokaWejscia : 1;
+  return b.suppressed === true || epoka > MAX_GRYWALNA_EPOKA;
 }
 
 /** Cuda odblokowywane przez technologię — Q6 (założenie Operatora): sekcja „Cuda” z oznaczeniem

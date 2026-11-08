@@ -10,8 +10,9 @@
  *   [B] sekcja „Top 5 korzyści” istnieje i stoi BEZPOŚREDNIO po Rysie historycznym, ma 1–5
  *       pozycji zgodnych z danymi (tytuł + zdanie); wyjątek jawny: Astronomia (0 realnych
  *       efektów — jej jedyny efekt jest martwy i ukryty, decyzje Q2/Q3 właściciela);
- *   [C] „Co możesz teraz zrobić” = zdania CZYNNOŚĆ → KORZYŚĆ (regex „w celu|aby|żeby”) zgodne
- *       z danymi; zero szablonów „masła maślanego” i zero wiersza „Nie oznacza”;
+ *   [C] „Co możesz teraz zrobić” = zdania CZYNNOŚĆ → KORZYŚĆ złożone dokładnie z pól
+ *       `czynnosc`/`korzysc` (pola niepuste, różne, frazy ≥2 słowa, bez spójnika w polach);
+ *       zero szablonów „masła maślanego” i zero wiersza „Nie oznacza”;
  *   [D] efekty martwe (`ukryte`) nie pojawiają się w żadnej sekcji karty, brak słowa
  *       „niedostępn”; fallback na dawne szablony użyty 0 razy;
  *   [E] przypadki szczególne: Mennica ×1,50 + handel; Top1 Matematyki i Obróbki żelaza =
@@ -189,8 +190,24 @@ async function main() {
       check(`[C] ${name}: brak CMZ w danych ⇒ brak wierszy „Co możesz teraz zrobić”`, r.actionRowsAll === 0, r.actionRowsAll);
     } else {
       check(`[C] ${name}: CMZ zgodne z danymi (liczba zdań)`, r.cmz.length === exp.cmz.length, { got: r.cmz, exp: exp.cmz });
-      check(`[C] ${name}: każde zdanie CMZ w schemacie CZYNNOŚĆ → KORZYŚĆ`,
-        r.cmz.every((s) => /\b(w celu|aby|żeby)\b/.test(s)) && exp.cmz.every((c) => c.czynnosc.trim() && c.korzysc.trim()), r.cmz);
+      // Obrona r1 (Z5): sam regex „aby” jest tautologiczny (cmzSentence() zawsze wstawia „, aby ”),
+      // więc ochronę dają asercje na DANYCH i dokładne złożenie zdania z obu pól.
+      const cmzDataBad = exp.cmz.filter((c) => {
+        const cz = String(c.czynnosc || '').trim();
+        const ko = String(c.korzysc || '').trim();
+        return !cz || !ko || cz === ko
+          || cz.split(/\s+/).length < 2 || ko.split(/\s+/).length < 2 // czynność i korzyść to frazy, nie pojedyncze słowa
+          || !/^[A-ZĄĆĘŁŃÓŚŹŻ]/.test(cz) // czynność zaczyna zdanie
+          || /(^|\s)(aby|w celu|żeby)(\s|$)/i.test(cz) // spójnik należy do szablonu, nie do czynności
+          || /^(aby|w celu|żeby)(\s|$)/i.test(ko) // brak „aby aby”
+          || /[,.]$/.test(cz) || /\.$/.test(ko); // interpunkcję dokłada szablon
+      });
+      check(`[C] ${name}: dane CMZ — czynność i korzyść niepuste, różne, bez spójnika i interpunkcji szablonu`,
+        cmzDataBad.length === 0, cmzDataBad);
+      check(`[C] ${name}: każde zdanie CMZ = „<czynność>, aby <korzyść>.” złożone dokładnie z danych`,
+        r.cmz.length === exp.cmz.length
+          && r.cmz.every((s, i) => s.trim() === `${exp.cmz[i].czynnosc.trim()}, aby ${exp.cmz[i].korzysc.trim()}.`),
+        { got: r.cmz, exp: exp.cmz });
       check(`[C] ${name}: CMZ tylko z danych (brak dodatkowych wierszy szablonu)`, r.actionRowsAll === exp.cmz.length, r.actionRowsAll);
     }
     if (r.actionBadges > 0) fallbackUsed++;
