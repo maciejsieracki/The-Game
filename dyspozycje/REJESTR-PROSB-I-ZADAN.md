@@ -8982,3 +8982,6 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 
 ## 2026-11-08 — zgłoszenie: wojna epoki Brązu nie wypowiadana graczowi
 - Właściciel: są cywilizacje, które nie prowadzą wojen, a nikt nie wypowiada wojny graczowi mimo spełnionych przesłanek Brązu (trwa jeszcze wojna epoki Kamienia). Temat: R-WEB-ERA-WAR-BRONZE-NOT-DECLARED-DIAG-Q1 (Sonnet; diagnoza z dowodem; możliwe DECISION_REQUIRED). Sprostowanie wcześniejszej odpowiedzi: wojna epoki jest wyzwalana awansem AI do epoki (nie gracza); „może być celem” dotyczy puli celów, a nie gwarantuje ataku.
+
+## 2026-11-08 — zlecenie: przeanalizować karty odkryć (top-3 korzyści), potem budynki/jednostki/ulepszenia/CIVPEDIA
+- Właściciel: trzy kluczowe bonusy na kartach odkryć są źle dobrane; np. Mennica ma jasno mówić, że mnoży środki razy współczynnik (duża korzyść). Plan etapowy: (1) odkrycia (TEN temat: R-WEB-TECH-CARDS-TOP3-BENEFITS-ANALYSIS-Q1, analiza + tabela, bez zmian kodu, WSZYSTKIE ETAPY OPUS 5.5 na wyraźne polecenie właściciela), (2) budynki, (3) jednostki, (4) ulepszenia terenu, (5) aktualizacja CIVPEDII. Wdrożenie zmian kart dopiero po akceptacji tabeli przez właściciela.
