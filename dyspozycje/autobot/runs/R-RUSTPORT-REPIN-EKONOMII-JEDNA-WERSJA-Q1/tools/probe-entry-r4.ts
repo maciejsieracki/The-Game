@@ -1,0 +1,1 @@
+export { resourceProductionAmountForEra, territoryResourceYieldForImprovement, TERRITORY_YIELD_DEFAULT_AMOUNT } from '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/web-main/gra/src/game/terrain-improvements';

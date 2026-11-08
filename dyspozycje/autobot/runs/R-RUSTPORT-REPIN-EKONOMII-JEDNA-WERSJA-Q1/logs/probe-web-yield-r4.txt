@@ -1,0 +1,13 @@
+Uruchomienie: node tools/probe-web-yield-r4.mjs (esbuild z bundla web origin/main 247f1ef2a, plik gra/src/game/terrain-improvements.ts, funkcja territoryResourceYieldForImprovement; kolumny = era: undefined,0,1,2,3,4)
+DEFAULT_AMOUNT 10
+tartak           {"0":"drewno:50","1":"drewno:50","2":"drewno:75","3":"drewno:113","4":"drewno:50","undefined":"drewno:50"}
+kamieniolom      {"0":"kamien:50","1":"kamien:50","2":"kamien:75","3":"kamien:113","4":"kamien:50","undefined":"kamien:50"}
+glinianka        {"0":"glina:50","1":"glina:50","2":"glina:75","3":"glina:113","4":"glina:50","undefined":"glina:50"}
+kopalnia_miedzi  {"0":"ruda:20","1":"ruda:20","2":"ruda:30","3":"ruda:45","4":"ruda:20","undefined":"ruda:20"}
+kopalnia_zelaza  {"0":"ruda_zelaza:20","1":"ruda_zelaza:20","2":"ruda_zelaza:30","3":"ruda_zelaza:45","4":"ruda_zelaza:20","undefined":"ruda_zelaza:20"}
+kopalnia_cyny    {"0":"ruda_cyny:20","1":"ruda_cyny:20","2":"ruda_cyny:30","3":"ruda_cyny:45","4":"ruda_cyny:20","undefined":"ruda_cyny:20"}
+warzelnia_soli   {"0":"sol:50","1":"sol:50","2":"sol:75","3":"sol:113","4":"sol:50","undefined":"sol:50"}
+stadnina         {"0":"kon:25","1":"kon:25","2":"kon:38","3":"kon:56","4":"kon:25","undefined":"kon:25"}
+kopalnia_zlota   {"0":"zloto:1","1":"zloto:1","2":"zloto:2","3":"zloto:2","4":"zloto:1","undefined":"zloto:1"}
+farma            {"0":"null","1":"null","2":"null","3":"null","4":"null","undefined":"null"}
+resourceProductionAmountForEra(glinianka,50,2) = 75

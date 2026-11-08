@@ -85,3 +85,59 @@ nie przekroczony, ale bez baseline'u testów). Liczba `#[ignore]` w bazie: NIE_Z
 4. (D) Usunięcie martwych duplikatów — po rozszerzeniu allowlisty o `improvements.rs` i `resource_production.rs` (decyzja orkiestratora). 0 nowych `#[ignore]`.
 
 Zmiany zachowania (B1) traktować jako odstępstwo od „1:1 z webem" tylko jeśli web jest inny — tu web jest źródłem prawdy (A2 = web), więc B1 jest korektą do weba, a nie odstępstwem.
+
+## 8. Runda 4 (Operator r4, baza 0b37cf183, kod = 9612c0b8e) — pomiary i odpowiedzi na zarzuty FC r3
+
+### 8.1 Web origin/main 247f1ef2a — wartości wykonane (nie z czytania kodu)
+Źródło: `runs/R-RUSTPORT-REPIN-EKONOMII-JEDNA-WERSJA-Q1/tools/probe-web-yield-r4.mjs` (esbuild z `gra/src/game/terrain-improvements.ts`), log `logs/probe-web-yield-r4.log`.
+`territoryResourceYieldForImprovement` dla era = 1 / 2 / 3 (era 4 i brak = epoka 1):
+- tartak, kamieniołom, glinianka, warzelnia_soli (base 50): 50 / 75 / 113.
+- kopalnia_miedzi, _zelaza, _cyny (base 20): 20 / 30 / 45.
+- stadnina (base 25): 25 / 38 / 56. kopalnia_zlota (base 1): 1 / 2 / 2.
+- farma: null. `TERRITORY_YIELD_DEFAULT_AMOUNT` = 10.
+- `glinianka` era 2 = **75** (B1 w Rust daje 75 — zgodne). Stary wektor pinowany (pin 331ef699b) ma 50.
+
+Rust `resource_production_amount_for_era_all_producers` (improvements.rs:981) to ta sama formuła: `js_round(base × mnoznik^(era−epoka_min))`, mnożnik 1,5, epoka_min 1, epoka_max 3 (`data/derived/ulepszenia-reguly.json`), zbiór = `terytorium.ulepszenia` (9 kluczy). Wartości z tabeli wyliczone formułą, NIE uruchomione w Rust.
+
+### 8.2 Regeneracja wektorów (B2) — wynik: NIE domknięte, przyczyny zmierzone
+| Próba | Pin web | Zmiana generatora | Wynik testu `p6_empirefood_e2e` (B1) |
+|---|---|---|---|
+| a | 247f1ef2a (origin/main) | 1 linia: `computeSeaTradeBonusIncomeByCity(..., builtByCity)` (trade-routes.ts:1757) | 264/347 scenariuszy różni się od starego pliku; FAIL `ef-1 city23 pieniadz rust=18.0 web=17.0` |
+| b | 8769854ff (R-WEB-IMPROVEMENT-ERA-SCALING-Q1) | jak a, pin zmieniony | 320/347 różni się; FAIL `ef-0 popCap city3 rust=21.0 web=13.0`; **ta sama czerwień przy pre-B1 (707b50c41 turn_economy_territory.rs)** → NIE wina B1 |
+| c | 331ef699b (pin pliku) + JEDNA zmiana web: ERA_SCALED = 9 kluczy (hybryda) | patch w generatorze | FAIL `ef-1 city16 popCap rust=14.0 web=10.0` |
+| d (kontrola) | 331ef699b bez zmian | brak | generator NIE odtwarza pinowanego pliku: 113/347 scenariuszy różni się (głównie `food.popCap`) |
+
+Wnioski (dowody z tabeli):
+1. Czerwień empirefood po B1 względem STAREGO pliku jest realna, ale źródło to dług wektorów; po podmianie na web-wykonany origin/main wyskakuje rozbieżność pieniądza i popCap, których Rust nie ma. Te obszary (handel morski wymagający Portu 31acc1fff, popCap 339ae6f45/df197a377) NIE są w temacie i NIE są w allowliście.
+2. Generator w obecnej postaci nie jest powtarzalny na swoim pinie (próba d). Zanim wektory zostaną przyjęte, pipeline wymaga naprawy (dług D-R4-3).
+3. Nie przyjęto żadnego nowego pliku wektorów do repo. `rust-port/engine/tests/p6_empirefood_vectors/empirefood.json` przywrócony do 0b37cf183 (git diff pusty).
+
+### 8.3 Pin i „1:1 z origin/main" — ZAŁOŻENIA (zamiast pytania)
+- Z-R4-1: reguła surowców terytorium (9 kluczy, ×1,5/epokę, round) = 1:1 z origin/main, dowód 8.1 (wykonany web). Zakres 1:1 CAŁEGO weba: NIE w tym temacie.
+- Z-R4-2: rozbieżności popCap, pieniądza (handel morski), żywności między Rust a origin/main to dług poza tematem: D-R4-1 (lista: 38 commitów web dotykających trade-routes/turn-economy/terrain-improvements/wonders/economy od 331ef699b; w tym 31acc1fff, b1639645b, 339ae6f45, df197a377, 525dca82e, 9629cf9fe, 43c524b55). Do założenia jako osobne tematy po tym temacie.
+- Z-R4-3: generator `gen-p6-empirefood` wymaga naprawy powtarzalności (D-R4-3) przed kolejną regeneracją.
+
+### 8.4 Epoka w `economy_yield.rs` (C) — stan pomiaru, NIE wykonane w r4
+- Web: `economy.ts:468` `applyImprovementBonuses(out, impKeys, tile.wlascicielEra)`; pole ustawiane w `turn-economy.ts:602` i `okolica.ts:476` (`wlascicielEra: ownerEra`).
+- Rust: `economy_yield.rs:867` `apply_improvement_bonuses(&mut out, &keys)` — bez epoki (era = None = epoka 1). `apply_improvement_bonuses_era` (improvements.rs:912) już istnieje.
+- Zakres zmiany: pole `wlasciciel_era: Option<f64>` w `WorkedTileImpInput` (economy_yield.rs:~790) + 17 literałów w 5 plikach (turn_economy_loop.rs:586 — `owner_era_for(input, owner_id)` dostępne; turn_economy_territory.rs:149; economy_city_vectors_r3/r4.rs; p6_repin_d2_imp.rs).
+- Powód odłożenia: zmienia wynik produkcyjny dla epok 2–3 (plony ulepszeń i surowce), więc unieważnia obecne wektory p6_* (to samo co B2). Robione razem z B2 w r5, nie osobno.
+
+### 8.5 Duplikaty (D) — mapa wywołań i blokada allowlisty
+Trzy rodziny (git grep, baza 0b37cf183):
+- R1 `resource_production.rs` (u32): `resource_production_amount_for_era`, `territory_resource_yield_for_improvement`, `resolve_resource_production`. Stałe bazy (tartak 200, glina 50, rudy 20…), skalowanie tylko tartak/kamieniołom (3/2, 9/4). Wołający: `tests/resource_production.rs` (17 wystąpień), wewnętrznie `resource_production.rs` (11).
+- R2 `improvements.rs` `resource_production_amount_for_era` + `territory_resource_yield_for_improvement` (migawka: skalowanie wg `ulepszenia_skalowane` = tartak/kamieniołom). Wołający: `tests/p6_23_improvements.rs` (5), `tests/p6_repin_autoimpr_terrain.rs` (5), `tests/p6_adv_q2a_pipeline.rs` (2), `tests/parity_suite.rs` (2), `benches/engine_modules.rs` (2). W src: brak poza samym modułem.
+- R3 `improvements.rs` `*_all_producers` (9 kluczy): jedyny wołający w src to `turn_economy_territory.rs:226` (produkcja po B1).
+- Blokada: `tests/resource_production.rs`, `tests/parity_suite.rs`, `benches/engine_modules.rs` są POZA allowlistą (dozwolone tylko `p6_*`). Usunięcie R1/R2 wymaga ich edycji → decyzja orkiestratora o rozszerzeniu allowlisty (propozycja: dopisać te 3 pliki do r5). Bez tego D nie jest wykonalne.
+
+### 8.6 Bramki (świeże, 0b37cf183, kod niezmieniony)
+- `cargo fmt --check`: exit 0.
+- `cargo clippy --all-targets -- -D warnings`: exit 0 (log `logs/clippy-r4.log`).
+- Pięć binarek B1 (uruchomione ponownie): `p6_adv_q2a_pipeline` 2 FAIL (`advance_with_map_matches_running_web`, `direct_calls_with_fort_and_outpost_nodes_match_web`), `p6_adv_q4_pipeline` 1 FAIL (`city_loop_matches_running_web`), `p6_adv_q4_preview` 1 FAIL (`preview_pipeline_matches_running_web`), `p6_adv_q6_wire` 1 FAIL (`game_economy_wiring_matches_running_web`), `p6_empirefood_e2e` 1 FAIL (`ef-3 city01 surowce po.glina: rust=75.0 web=50.0`). Razem 6 FAIL — zgodnie z r3.
+- Pełny `cargo test` per binarka (300): NIE_ZMIERZONO w r4 (czas + dysk 2,8 GB). `p6_8i_pick` (>400 s): NIE_ZMIERZONO, nie zdiagnozowane.
+- Baseline pre-B1 (707b50c41) dla całej sumy: NIE_ZMIERZONO. Atrybucja r3 (5 binarek przechodzi pre-B1 ze STARYMI wektorami) — cytowana z r3, nie powtórzona.
+
+### 8.7 Stan na koniec r4
+- Kod Rust: bez zmian względem 9612c0b8e (B1). Wektory: bez zmian.
+- Dokumentacja i narzędzia: ten rozdział, `runs/.../tools/`, `runs/.../logs/`.
+- Następna runda (5/5, OSTATNIA): (a) decyzja orkiestratora: allowlista + 3 pliki wołające R1/R2; (b) naprawa powtarzalności generatora (D-R4-3); (c) B2 razem z C (`wlasciciel_era`) w jednym temacie; (d) D dopiero po zielonych bramkach. Jeśli r5 nie zamknie B2, temat kończy się LIMIT-5-EXCEEDED z listą D-R4-1..3 jako długi do osobnych tematów.
