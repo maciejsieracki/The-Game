@@ -1,0 +1,15 @@
+FAIL  P1 AI->gracz: 3 miasta, stolica NIE najblizsza -> cel = najblizsze miasto gracza  -> cel inny niz p-near: ["p-cap","p-cap","p-cap"]
+FAIL  P2 AI->gracz: lista celow = wszystkie 3 miasta gracza (nie 1)  -> cele: ["p-cap"]
+PASS  P3 AI->gracz: stolica JEST najblizszym miastem -> cel = stolica
+PASS  P4 AI->gracz: stolica jedynym miastem gracza -> cel = stolica
+FAIL  P5 AI->gracz: remis odleglosci -> slabiej broniony (pole defenders), potem nizsze id  -> bez obroncow: "p-up"
+PASS  P6 AI->gracz: brak wojny (engage=false) -> brak celow miast gracza
+PASS  Q1 AI->AI: 3 miasta wroga, stolica NIE najblizsza -> najblizsze
+PASS  R1 barbarzynca jako atakujacy: tylko stolica wroga (bez zmian)
+PASS  R2 barbarzynca jako CEL nie wchodzi w zasade najblizszego miasta (stolica)
+FAIL  R3 isNearestCityWarPair: AI->gracz TAK, AI->AI TAK, barbarzynca-atakujacy NIE, cel barbarzynca NIE  -> zle wartosci pary
+PASS  F1 flaga war-allin OFF: isWarAllInCapitalEnabled = false (sciezka legacy)
+PASS  W main.ts: buildWarCityTargets wolane z warAllInContextFor (flaga ON -> kontekst)
+
+ZESTAW: 8/12 PASS
+WYNIK: FAIL

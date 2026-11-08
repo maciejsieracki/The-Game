@@ -3,7 +3,9 @@
 // Decyzja właściciela (2026-11-03): cel ataku AI w wojnie z INNĄ AI = NAJBLIŻSZE miasto wroga (nie stolica).
 // „Najbliższe" liczy planWarAllInCapital od kotwicy grupy wojsk (nearestTarget, odległość heksowa); remis:
 // słabiej broniowane (pole `defenders`), potem niższe id. Stolica pozostaje celem tylko jeśli jest najbliższym miastem.
-// Gracz jako cel oraz barbarzyńcy jako atakujący -- bez zmian (tylko stolica).
+// R-WEB-AI-TARGET-NEAREST-CITY-NOT-CAPITAL-Q1 (2026-11-08, zgłoszenie właściciela): ta sama zasada obowiązuje
+// także, gdy AI atakuje GRACZA: cel = NAJBLIŻSZE miasto gracza (nie jego stolica). Barbarzyńcy jako atakujący
+// -- bez zmian (tylko stolica); barbarzyńcy nie są celem w tej liście (engage/ownerIds ich wykluczają).
 
 import type { WarCapitalTarget } from './warAllInCapital';
 
@@ -33,18 +35,17 @@ export interface BuildWarTargetsInput {
   capitalCityIdForOwner: (ownerId: number) => string | null;
 }
 
-/** Para (atakujący AI -> cel AI) objęta zasadą „najbliższe miasto". */
+/** Para (atakujący AI -> cel: AI lub GRACZ) objęta zasadą „najbliższe miasto". Barbarzyńca jako atakujący lub cel -- poza zasadą. */
 export function isNearestCityWarPair(
   selfOwnerId: number,
   targetOwnerId: number,
   isHuman: (ownerId: number) => boolean,
   isBarbarian: (ownerId: number) => boolean,
 ): boolean {
-  return !isHuman(selfOwnerId) && !isBarbarian(selfOwnerId)
-    && !isHuman(targetOwnerId) && !isBarbarian(targetOwnerId);
+  return !isHuman(selfOwnerId) && !isBarbarian(selfOwnerId) && !isBarbarian(targetOwnerId);
 }
 
-/** Lista celów dla planWarAllInCapital: AI->AI wszystkie miasta wroga (planer wybiera najbliższe), inaczej stolica. */
+/** Lista celów dla planWarAllInCapital: AI->(AI lub gracz) wszystkie miasta wroga (planer wybiera najbliższe), inaczej stolica. */
 export function buildWarCityTargets(inp: BuildWarTargetsInput): WarCapitalTarget[] {
   const targets: WarCapitalTarget[] = [];
   for (const o of inp.enemyOwnerIds) {

@@ -12,7 +12,8 @@
  *
  * GRACZ (czlowiek) NIE dostaje zadnych automatycznych rozkazow (poprawka wlasciciela):
  * modul jest wolany WYLACZNIE z decideAITurn (AI) i decideBarbarianMoves (barbarzyncy);
- * gracz moze byc tylko CELEM (jego stolica w `targets`).
+ * gracz moze byc tylko CELEM (w `targets`: wszystkie jego miasta gdy atakuje AI, patrz
+ * ai-war-target-select.ts; barbarzyncy -- tylko stolica).
  *
  * FLAGA WYLACZENIA: `WAR_ALLIN_CAPITAL_ENABLED = false` przywraca dotychczasowe zachowanie
  * (main.ts nie buduje wtedy kontekstu `warAllIn`, a ai.ts / barbarians.ts nie wolaja
