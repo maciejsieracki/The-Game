@@ -7,3 +7,15 @@ GOAL: SPECYFIKACJA WŁAŚCICIELA (2026-11-08, wiążąca; po FALA 550): „Dana 
 ---
 ## DODATEK (właściciel, 2026-11-08): „kontakt jest istotny” — OBOWIĄZKOWE OGRANICZENIE
 Pojęcie „własne terytorium / utracone miasta” NIE może dawać AI wiedzy ani możliwości działań wobec cywilizacji, z którą NIE MA kontaktu (diplomaticContactEstablishedSet, main.ts; pre_contact). Konkretnie: (1) odzyskiwanie utraconego miasta dotyczy wyłącznie właściciela, z którym AI ma kontakt i jest w stanie wojny (areEnemyOwners); jeśli miasto utracone na rzecz cywilizacji bez kontaktu/bez wojny — NIE twórz celu odzyskania poza istniejącymi regułami (opisz zachowanie w raporcie; nie ujawniaj pozycji nieznanych jednostek); (2) wyjątek mgły z FALA 550 (\`targetOnOwnTerritory\`, main.ts ~40837) stoi PO sprawdzeniu \`areEnemyOwners\` (wojna) — zachowaj tę kolejność, wyjątek nie może omijać wymogu wojny/kontaktu; (3) odwołanie armii do obrony reaguje na zagrożenie od cywilizacji w wojnie (i barbarzyńców), nie na „nieznanych”; (4) w raporcie dodaj sekcję „KONTAKT”: gdzie w każdej zmianie sprawdzany jest kontakt/wojna (plik:linia) i test: AI bez kontaktu z X nie dostaje celu ani widoczności X.
+
+## DODATEK 2 (właściciel, 2026-11-08): TRZY STANY WŁASNEGO TERYTORIUM — nadrzędny nad wcześniejszą definicją
+
+Trzy rozłączne stany (per cywilizacja, wg HISTORII założonych miast, nie wg bieżącego właściciela heksa):
+- **S1 WŁASNE ZAŁOŻONE** — miasto założone przez tę cywilizację i nadal jej. Priorytet 1: obrona.
+- **S2 ZAŁOŻONE, ALE UTRACONE** — założone przez nią, obecnie w cudzych rękach. Priorytet 2: odzyskanie.
+- **S3 WŁASNE, ALE NIE ZAŁOŻONE** — zdobyte miasto (założone przez kogo innego), które obecnie posiada. Priorytet 3: utrzymanie (po S1 i S2; dopiero potem atak ofensywny).
+Kolejność: S1 obrona → S2 odzyskanie → S3 utrzymanie → dopiero atak na przeciwnika.
+
+**Mgła wojny:** na terenie wszystkich trzech stanów (heksy/okolica miast S1, S2 i S3) NIE obowiązuje mgła wojny dla decyzji AI, a cywilizacja może atakować każdego wroga przebywającego na tym terenie. Rozszerz wyjątek FALA 550 (`targetOnOwnTerritory`) tak, by obejmował także tereny S2 (miasto utracone — heksy wokół niego) i S3, nie tylko bieżące heksy własne.
+**Granica (kontakt, bez zmian):** wyjątek stoi PO sprawdzeniu wojny (`areEnemyOwners`) — „każdego" = każdą cywilizację/barbarzyńców, z którymi jest wojna. Jeśli implementacja wymagałaby ataku także bez wojny — NIE rób tego, zgłoś jako DECISION_REQUIRED.
+Raport: tabela S1/S2/S3 (skąd historia założonych miast, jak liczony S3), plik:linia, testy na każdy stan i na kolejność priorytetów.
