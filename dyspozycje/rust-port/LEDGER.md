@@ -866,3 +866,6 @@ Pomiar dryfu piny `edb8fb56` i `91dc998a` → `4bbef081d` (gra/src/game + gra/da
 
 ## 2026-11-08 — R-RUSTPORT-REPIN-OBLEZENIE-ZDOBYCZE-Q1 partia 1 ZINTEGROWANA (2 rundy; FC PASS-WITH-NOTES, 7b75e9035)
 Fast-forward `parity-v2` c86c686bb → 7b75e9035. Nowy moduł `siege_starvation.rs` (czysta decyzja `siegeStarvationState`, 1:1 z weba a61337844), test `p6_oblezenie_glod` 29/0 (wg operatora), moduł jeszcze nie wywoływany w tiku. NIE_ZMIERZONO: baseline 2155/0 i cargo-mutants (dysk), pomiar symboli: wieża oblężnicza, aneksja miasta-państwa, wonder-transfer, siegeDefenders/siegeAi. Dalej: partie P2–P6 (enter-city, sortie, wonder-transfer, cap 500, aneksja) w kolejnych rundach tego samego ID.
+
+## 2026-11-08 — R-RUSTPORT-REPIN-EKONOMIA-F-STATESRC-REGEN-Q1 ZINTEGROWANE (1 runda; FC PASS-WITH-NOTES, 61a6e7ef6; merge 3a40d458e na parity-v2)
+Wektory `p6_state_src` zregenerowane z weba a61337844 (278 scenariuszy, pole `surowce`), nowy test e2e macierzy klucza żelaza (kopalnia × odlewnia × zapas, 18/18). Kod Rust bez zmian: defekt był w generatorze i `build_world`. cargo test p6_state_src 5/0, fmt/clippy 0. NIE_ZMIERZONO: pełny cargo test w jednym przebiegu (dysk). Dług: różnica złota (web `ownerHasZlotoAccessNow` dolicza zapas, Rust osobno w turn_economy_wire.rs:309-313), generatory FALA500 nie regenerowane.
