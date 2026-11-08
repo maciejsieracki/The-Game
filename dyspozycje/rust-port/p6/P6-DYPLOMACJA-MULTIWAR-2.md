@@ -152,3 +152,16 @@ Wycena LOC (bez portu):
 - G `forced-war-common.ts` 537 + `bronze` 250 + `iron` 284 + `stone` 134 + `waves` 293 = 1498 linii TS; brak `forced_war_*`; szacunek 700–1000 LOC → min. 2–3 partie ≤600 LOC (G1 common+waves+timer, G2 bronze+iron, G3 stone+podpięcie `is_war_treaty_blocked`).
 
 NIE zrobione w rundzie 5 (NIE_ZMIERZONO): D, E, port hunków F, G; pełny `cargo test` (391 plików) — NIE_ZMIERZONO (uruchomiono 5 binarek: lib, tick, balance, peace_ai, peace_helpers).
+
+### Obrona zarzutów FC r5 (commit 8f55a38fb)
+
+- Z1/Z2 PRZYJĘTE: `gen-balance.mts` rozszerzony o bazy `Infinity`, `-Infinity`, `NaN` i relację `NaN` (3276 wektorów z uruchomionego weba, Node 22 + hook TypeScript, `git archive origin/main gra/src gra/data` poza repo). Wartości nieskończone zapisane jako stringi (JSON.stringify zamienia je w `null`, co wykryto przy generowaniu i poprawiono w generatorze).
+- Wykryta rozbieżność (naprawiona): `treaty_base_fairness_gap` z `diplomacy.rs` używa `f64::max`, które gubi NaN, a web (`Math.max`) propaguje. Dodano w `diplomacy_war_weariness_tick.rs` `web_rel_mod_pct`, `web_effective_treaty_pn_required` i przepisano `web_balance_for` 1:1 z JS (`js_max`, `js_min`, `js_round`). `diplomacy.rs` NIE zmieniany (poza allowlistą).
+- Mutant L117/L148 `||`→`&&` (`web_required_pn`): dowód równoważności WYCOFANY (był błędny). Mutant zabity: `cargo test --test p6_dyplo_multiwar2_balance` → 2 FAILED (`balance_required_and_tolerance_match_web_vectors`, `non_finite_base_matches_web_rules`); plik przywrócony z git.
+- Z5 (liczby mutacji z logów): NIE_ZMIERZONO w całości (pełny ponowny przebieg 178 mutantów wymaga dysku; patrz BLOKADY). Ponownie zmierzony był tylko mutant L148.
+- Z6 PRZYJĘTE: piny z nagłówków modułów (tabela F wyżej) zamiast założonych 4bbef081d/a61337844. Wynik „0 hunków" dla `diplomacy_tick_war_brake` był fałszywy (+23/−0).
+- Z7 PRZYJĘTE jako odstępstwo oznaczone: `PeaceBalanceShape::Kinked` z komentarzem `ODSTEPSTWO OD WEBU` (test-double, nie wycena weba).
+- Z4 (pełny clippy/test): clippy `--lib` + 4 binarki testów (balance, tick, peace_ai, peace_helpers): `-D warnings` OK; `cargo fmt --check` OK; testy: lib 22/22, peace_ai 8/8, peace_helpers 4/4, tick 5/5, balance 5/5. Pełny `clippy --all-targets` i `cargo test` (391 plików) NIE_ZMIERZONO (dysk: wolne 1,6–4 GB wobec limitu 1,5 GB i 391 binarek).
+- Z3 PRZYJĘTE jako fakt procesowy: operator pracował przy 644 MB wolnego miejsca (próg 1,5 GB). Nie da się tego cofnąć; bramki z tej rundy powtórzono po poprawkach przy 2,6–4 GB wolnego.
+- Z8 (`evaluateInterCivWarGate` l.~123/156 zgodność hunka): wg diffu względem pinu `dc8a3adc` zmiana `eraTag`/`isEraForcedWarIgnoringR1` na l.156 JEST obecna w Rust (`diplomacy_multiwar_gate.rs`, `evaluate_inter_civ_war_gate`). Pełna zgodność semantyki NIE_ZMIERZONO.
+- Pozostaje NIE_ZMIERZONO: D, E, port hunków F (`brakeWarOutcome`, `isWarMarchOpenForPair`), G, pełny `cargo test`, pełny mutation score po poprawkach.
