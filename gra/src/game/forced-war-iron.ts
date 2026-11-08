@@ -1,3 +1,4 @@
+import { WAR_RULES_PARAMS } from './war-rules-multiwar';
 import {
   isRestingFromForcedWar,
   pickForcedWarTargetId,
@@ -25,7 +26,7 @@ import {
  *
  * R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1 (2026-09-03, ODWRACA poniższe zdanie z pierwszego
  * tematu): próg tury JEDNAK istnieje, analogicznie do Brązu —
- * `WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI` (25 tur od WEJŚCIA TEGO OWNERA w Żelazo, nie
+ * `WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI` (20 tur od WEJŚCIA TEGO OWNERA w Żelazo, nie
  * od startu gry) blokuje wybuch wojny zbyt szybko po awansie, tak samo jak w Brązie. Zdanie
  * poniżej („sztywny próg tury byłby tu bez sensu") było ŚWIADOMĄ decyzją poprzedniego tematu
  * (`R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1`) — zostaje jako ślad historii decyzji, NIE jako
@@ -113,7 +114,7 @@ export const WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
  * `forced-war-bronze.ts` — ALE mierzony od tury WEJŚCIA TEGO OWNERA w epokę Żelaza
  * (`ironEraEnterTurnByOwner` w main.ts, ustawiane w `syncOwnerEraFromResearch` w chwili
  * `isIronEraEntry`), NIE od startu gry ani od wejścia w Brąz — cywilizacje wchodzą w
- * Żelazo w bardzo różnych turach, więc "25 tur od początku epoki" musi być per-owner,
+ * Żelazo w bardzo różnych turach, więc "N tur od początku epoki" (N = 20, z JSON) musi być per-owner,
  * tak jak w Brązie.
  *
  * ŚWIADOMIE ZDEFINIOWANA LOKALNIE, nie zaimportowana z `forced-war-bronze.ts`: Brąz jest
@@ -122,11 +123,13 @@ export const WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
  * ma (oba pliki importują wyłącznie ze wspólnego `forced-war-common.ts`, nigdy jeden z
  * drugiego) — sprzeczną z jawną izolacją epok udokumentowaną w komentarzu nagłówkowym tego
  * pliku („osobny rejestr stanu w main.ts, żadne pole nie jest współdzielone"). Duplikacja
- * jednej liczby (25) jest tańsza niż nowa zależność między dwoma plikami epok, które mają
+ * jednej liczby (20) jest tańsza niż nowa zależność między dwoma plikami epok, które mają
  * pozostać niezależne (gdyby właściciel podał w przyszłości inny próg dla Żelaza, zmienia
  * się WYŁĄCZNIE ta jedna stała, bez ryzyka zmiany Brązu przy okazji).
  */
-export const WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI = 25;
+// R-WEB-ERA-DELAY-Q1 (decyzja właściciela 2026-11-08): próg 20 tur, wartość z JSON
+// (`eraForcedWarStartTurnsFromEra.iron` w data/war-rules-params.json); nie wpisywana na stałe.
+export const WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI: number = WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.iron;
 
 export interface IronForcedWarEligibilityInput {
   /** Czy owner to główna cywilizacja AI (NIE miasto-państwo, NIE gracz, NIE barbarzyńca). */

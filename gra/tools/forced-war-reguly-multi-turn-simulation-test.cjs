@@ -430,9 +430,10 @@ console.log('\n--- K5: próg startu -- Kamień tura 25, Brąz 25 tur od WŁASNEG
     if (picks.has(1) && firedA == null) firedA = turn;
     if (picks.has(2) && firedB == null) firedB = turn;
   }
-  eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 25, 'K5: stała progu Brązu = 25 tur od epoki');
-  eq(firedA, 35, 'K5: cywilizacja A weszła w Brąz w turze 10 -> pierwsza wojna wymuszona dokładnie w turze 35 (10+25)');
-  eq(firedB, 65, 'K5: cywilizacja B weszła w Brąz w turze 40 (30 tur PÓŹNIEJ niż A) -> pierwsza wojna w turze 65 (40+25), NIEZALEŻNIE od A');
+  // R-WEB-ERA-DELAY-Q1: próg Brązu 25 -> 20 tur od wejścia w epokę (decyzja właściciela 2026-11-08).
+  eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 20, 'K5: stała progu Brązu = 20 tur od epoki (R-WEB-ERA-DELAY-Q1)');
+  eq(firedA, 30, 'K5: cywilizacja A weszła w Brąz w turze 10 -> pierwsza wojna wymuszona dokładnie w turze 30 (10+20)');
+  eq(firedB, 60, 'K5: cywilizacja B weszła w Brąz w turze 40 (30 tur PÓŹNIEJ niż A) -> pierwsza wojna w turze 60 (40+20), NIEZALEŻNIE od A');
 }
 
 // =============================================================================
