@@ -222,6 +222,8 @@ fn available_production_matches_web_vectors() {
             civ_key,
             civ_unit_nacja: civ_nacja.as_deref(),
             city_has_coast_or_river: c["cityHasCoastOrRiver"].as_bool().unwrap_or(false),
+            // wektory sa sprzed R-WEB-MILL-RIVER-ONLY-GATE-Q1 (brak klucza `cityHasRiver`); `mlyn` nie ma definicji w danych.
+            city_has_river: c["cityHasRiver"].as_bool().unwrap_or(false),
             show_stock_gated_units: c["showStockGatedUnits"].as_bool().unwrap_or(false),
             show_resource_gated_buildings: c["showResourceGatedBuildings"]
                 .as_bool()

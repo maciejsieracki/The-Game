@@ -18,9 +18,9 @@
 //! (`Math.max(1, Math.min(10, era))`, `main.ts:2218`), rzutowanie `as i64`; Z-SS-5 `border_radius` = wstrzykniete
 //! `cityBorderRadius` (jak Z2 w `active_access.rs`).
 //!
-//! UWAGA 1:1 (znalezisko): web dla klucza `'zelazo'` wola `hasZelazoAccess(hasKopalniaZelazo, built)` z ARGUMENTEM
-//! `boolean` w miejscu `empireStock` (`main.ts:5101`); `zelazo-access.ts` traktuje `boolean` jak brak zapasu =>
-//! `hasStock=false` => natywny dostep do zelaza jest w webie ZAWSZE `false`. Port odtwarza to literalnie (nie "naprawia").
+//! REPIN-EKONOMIA-F (R-WEB-IRON-NATIVE-ACCESS-FIX-Q1, `main.ts:5506`): natywny dostep do zelaza to teraz
+//! `ownerHasNativeZelazoAccess(hasKopalnia, citySurowceSumForOwner, builtIds miast ownera)` (`zelazo-access.ts:101-107`) —
+//! dawna wada weba (`boolean` w miejscu `empireStock` => zawsze `false`) zostala w webie NAPRAWIONA i port ja odtwarza.
 
 use std::collections::{BTreeMap, HashMap};
 
@@ -30,8 +30,8 @@ use crate::domain::resource_access::active_access::{
     ResourceAccessOptions,
 };
 use crate::domain::resource_access::{
-    empire_has_kopalnia_na_zlozu_zelaza, empire_has_kopalnia_zlota, has_zelazo_access, HexZlozeMap,
-    Placed,
+    empire_has_kopalnia_na_zlozu_zelaza, empire_has_kopalnia_zlota, owner_has_native_zelazo_access,
+    HexZlozeMap, Placed,
 };
 use crate::domain::start_position::{
     city_has_piec_hutniczy, empire_has_kopalnia_miedzi, web_normalize_improvement_key,
@@ -136,6 +136,27 @@ fn owner_cities<'a>(
         })
 }
 
+/// Web `citySurowceSumForOwner(ownerId)` (`main.ts:3485`) = `sumCitySurowce(cities.filter(owner).map(c => c.surowce))`
+/// (`diplomacy-goods.ts:126-138`): suma `City.surowce` po miastach ownera; wartosci nieskonczone/NaN pomijane.
+pub fn city_surowce_sum_for_owner(
+    w: &StateSourcesWorld<'_>,
+    owner_id: i64,
+) -> BTreeMap<String, f64> {
+    let mut out: BTreeMap<String, f64> = BTreeMap::new();
+    for c in w.cities.iter().filter(|c| c.owner_id == owner_id) {
+        let Some(rec) = c.surowce.as_ref() else {
+            continue;
+        };
+        for (k, v) in rec {
+            if !v.is_finite() {
+                continue;
+            }
+            *out.entry(k.clone()).or_insert(0.0) += *v;
+        }
+    }
+    out
+}
+
 /// Web `ownerHasNativeResourceAccess(ownerId, key)` (`main.ts:5088-5121`), klucze:
 /// `braz`, `zelazo`, `cegla`, `zloto`, `kon` (inny klucz => galaz `kon`, jak web).
 pub fn owner_has_native_resource_access(
@@ -160,11 +181,13 @@ pub fn owner_has_native_resource_access(
             let zloze = hex_zloze_map(w, &own);
             let has_kopalnia =
                 empire_has_kopalnia_na_zlozu_zelaza(Some(view.as_slice()), Some(&zloze));
-            if !has_kopalnia {
-                return false;
-            }
-            // 1:1 z webem: `boolean` w miejscu `empireStock` => brak zapasu => `false` (zob. UWAGA w nagłówku).
-            owner_cities(w, owner_id).any(|(_, built)| has_zelazo_access(None, Some(built)))
+            // R-WEB-IRON-NATIVE-ACCESS-FIX-Q1 (`main.ts:5506`): zapas panstwa (`citySurowceSumForOwner`), nie boolean.
+            let stock = city_surowce_sum_for_owner(w, owner_id);
+            owner_has_native_zelazo_access(
+                has_kopalnia,
+                Some(&stock),
+                owner_cities(w, owner_id).map(|(_, built)| built),
+            )
         }
         "cegla" => {
             if !empire_has_glinianka(&own) {

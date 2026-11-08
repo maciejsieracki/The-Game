@@ -2833,6 +2833,11 @@ pub struct BuildingAvailRow {
     pub odblokowuje: Option<String>,
 }
 
+/// Web `RIVER_ONLY_BUILDING_IDS.has(id)` (`production.ts:172`): budynki wymagajace RZEKI w zasiegu miasta (tylko `mlyn`).
+pub fn is_river_only_building(building_id: &str) -> bool {
+    building_id == "mlyn"
+}
+
 /// Kontekst `availableProduction` (pola `AvailabilityContext` + argument `unlockedTechs`).
 #[derive(Debug, Clone)]
 pub struct ProductionAvailabilityCtx<'a> {
@@ -2852,6 +2857,9 @@ pub struct ProductionAvailabilityCtx<'a> {
     pub civ_unit_nacja: Option<&'a str>,
     /// web `ctx.cityHasCoastOrRiver`.
     pub city_has_coast_or_river: bool,
+    /// web `ctx.cityHasRiver` (R-WEB-MILL-RIVER-ONLY-GATE-Q1, `production.ts:531`): RZEKA w zasiegu miasta; brak = `false`
+    /// (`ctx.cityHasRiver !== true`).
+    pub city_has_river: bool,
     /// web `ctx.showStockGatedUnits`.
     pub show_stock_gated_units: bool,
     /// web `ctx.showResourceGatedBuildings`.
@@ -2956,6 +2964,10 @@ pub fn available_production(
             continue;
         }
         if is_water_access_building(id) && !ctx.city_has_coast_or_river {
+            continue;
+        }
+        // R-WEB-MILL-RIVER-ONLY-GATE-Q1 (`production.ts:1006`): mlyn wymaga RZEKI (morze/jezioro nie wystarcza).
+        if is_river_only_building(id) && !ctx.city_has_river {
             continue;
         }
         let gate = GateBuilding {

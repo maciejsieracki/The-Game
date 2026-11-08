@@ -209,6 +209,22 @@ pub fn has_zelazo_access(empire_stock: Option<&StockRecord>, built_ids: Option<&
     }
 }
 
+/// Web `ownerHasNativeZelazoAccess(hasKopalnia, empireStock, ownerCityBuiltIds)` (`zelazo-access.ts:101-107`,
+/// R-WEB-IRON-NATIVE-ACCESS-FIX-Q1): Kopalnia zelaza na zlozu gdziekolwiek w imperium ORAZ w ktoryms miescie ownera
+/// `hasZelazoAccess(empireStock, builtIds)` (Zelazo w magazynie panstwa + Odlewnia w TYM miescie).
+pub fn owner_has_native_zelazo_access<'a>(
+    has_kopalnia: bool,
+    empire_stock: Option<&StockRecord>,
+    owner_city_built_ids: impl IntoIterator<Item = &'a [String]>,
+) -> bool {
+    if !has_kopalnia {
+        return false;
+    }
+    owner_city_built_ids
+        .into_iter()
+        .any(|built| has_zelazo_access(empire_stock, Some(built)))
+}
+
 // ---------------------------------------------------------------------------------------------
 // zloto-access.ts
 // ---------------------------------------------------------------------------------------------

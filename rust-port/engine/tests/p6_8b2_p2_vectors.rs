@@ -669,6 +669,7 @@ fn buildable_and_purchasable_empty_input() {
         civ_key: None,
         civ_unit_nacja: None,
         city_has_coast_or_river: false,
+        city_has_river: false,
         show_stock_gated_units: true,
         show_resource_gated_buildings: true,
         alive_unit_type_names: &[],
