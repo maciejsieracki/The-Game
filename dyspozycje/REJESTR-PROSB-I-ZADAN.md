@@ -8936,3 +8936,6 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 - FC PASS: kod 7f9eca8d5, dok. affc2dde5 (refs/keep/AIDRA-fc lokalnie — push refs/keep zwraca 403; gałąź web-wip/AIDRA wypchnięta). Main: 679ab078a, ROBOCZA MD5 0e9e32e1385dce8869124a8233ec3591 (zgodny z GitHub Raw).
 - Testy: AIDRA 55/0, defend-home 30/0, home-war 4/4, ai-fog 9/9, ai-test 289/0, logic 213/213, tsc 0. NIE_ZMIERZONO: gra na żywo w przeglądarce.
 - Ograniczenia: stare zapisy bez foundedBy → fallback capturedFromOwnerId; odbicie bez limitu dystansu (limit wieku 60 tur zostaje); przypadek B→C: dla B miasto przestaje być własne.
+
+## 2026-11-08 — muzyka Celtów (zapowiedź właściciela)
+- Właściciel dokłada muzykę dla Celtów. Na razie tylko zapis; wdrożenie (kontynuacja R-WEB-DIPLO-CIV-MUSIC-Q1, FALA 539) dopiero na sygnał właściciela „mam cały pakiet”. Do tego czasu nic nie wdrażam.
