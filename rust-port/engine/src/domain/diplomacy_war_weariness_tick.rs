@@ -16,6 +16,7 @@
 //!
 //! JS-SEMANTYKA: `Math.max/min` propaguja NaN (`js_max`, `js_min`); porownania z NaN sa fałszywe jak w JS.
 
+use super::diplomacy::treaty_base_fairness_gap;
 use super::diplomacy_multiwar::{
     despair_stage, is_war_weary, js_max, js_min, loser_despair, offer_multiplier, stage_city_limit,
     war_weariness_level, WAR_WEARINESS_PARAMS,
@@ -80,9 +81,68 @@ pub struct PeacePriceQuote {
     pub slope: f64,
 }
 
+/// Web `GameDifficulty` (diplomacy-ai-offer-balance.ts) - tylko trzy progi używane przez wycenę pokoju.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WebDifficulty {
+    Easy,
+    Normal,
+    Hard,
+}
+
+/// Web `aiOfferTargetsZeroBalance(difficulty)`: wszystkie poza Łatwym.
+pub fn web_targets_zero_balance(d: WebDifficulty) -> bool {
+    d != WebDifficulty::Easy
+}
+
+/// Web `AI_OFFER_PW_BALANCE_TOLERANCE_PN` (`aiOfferPwSurplusTolerance`): Łatwy = +∞.
+pub fn web_pw_surplus_tolerance(d: WebDifficulty) -> f64 {
+    match d {
+        WebDifficulty::Easy => f64::INFINITY,
+        WebDifficulty::Normal => 5.0,
+        WebDifficulty::Hard => 2.0,
+    }
+}
+
+/// Web `peaceOfferAiOwnBilans(0, coveredPn, relTotal, basePn)` = `treatyBaseFairnessGap(basePn, 0, coveredPn, relTotal)`;
+/// 0 dla `basePn <= 0` (jak w TS, także dla NaN bazy: `NaN <= 0` jest fałszem).
+pub fn web_balance_for(base_pn: f64, rel_total: f64, covered_pn: f64) -> f64 {
+    if base_pn <= 0.0 {
+        return 0.0;
+    }
+    treaty_base_fairness_gap(base_pn, 0.0, covered_pn, rel_total)
+}
+
+/// Web `peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty)`: ile PW wymagać, by bilans AI wpadł w tolerancję.
+pub fn web_required_pn(base_pn: f64, rel_total: f64, d: WebDifficulty) -> f64 {
+    if !web_targets_zero_balance(d) || base_pn <= 0.0 {
+        return 0.0;
+    }
+    let bilans = web_balance_for(base_pn, rel_total, 0.0);
+    let tol = web_pw_surplus_tolerance(d);
+    if bilans >= -tol {
+        return 0.0;
+    }
+    (-tol - bilans).ceil()
+}
+
 impl PeacePriceQuote {
-    /// Web `balanceFor(coveredPn)`; model liniowy (patrz nagłówek).
+    /// Wycena `price(winner, loser)` z webowego closure (main.ts: `requiredPn`, `balanceFor`, `tolerancePn`).
+    /// `balanceFor(c) = balance0 + slope*c` jest DOKŁADNIE postacią `treatyBaseFairnessGap` w `coveredPn`:
+    /// współczynnik kierunkowy 1 dla `basePn > 0` (stała część = bilans przy 0 PW), 0 i wynik 0 dla `basePn <= 0`.
+    pub fn from_web(base_pn: f64, rel_total: f64, d: WebDifficulty) -> Self {
+        PeacePriceQuote {
+            required_pn: web_required_pn(base_pn, rel_total, d),
+            tolerance_pn: web_pw_surplus_tolerance(d),
+            balance0: web_balance_for(base_pn, rel_total, 0.0),
+            slope: if base_pn <= 0.0 { 0.0 } else { 1.0 },
+        }
+    }
+
+    /// Web `balanceFor(coveredPn)`. Przy `slope == 0` wynik to `balance0` także dla NaN (jak web: stała 0).
     pub fn balance_for(&self, covered_pn: f64) -> f64 {
+        if self.slope == 0.0 {
+            return self.balance0;
+        }
         self.balance0 + self.slope * covered_pn
     }
 }
