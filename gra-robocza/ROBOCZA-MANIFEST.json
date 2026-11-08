@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "07503d86b6d0097f1dc22ba3e65c6cce",
-  "bundleSha256": "9db89ef1ce73ac67799e061a81cc83141715c1f79a4667470571bf6d26e37899",
-  "bundleBytes": 85675648,
+  "bundleMd5": "fc22f55195d2975f9dedee56ef69ce2c",
+  "bundleSha256": "f7e61673bbee34f87be10e9e9a97d01d5b3a0a585c1b3e237d3b6b76053fb735",
+  "bundleBytes": 85676164,
   "sourceSnapshot": {
-    "source": "main a61337844 + FC 26228f4ba (ERAIGN) + FC 025119d79 (RES310)",
+    "source": "main a8823b16b + FC 3c16409df (ERADELAY)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 546: R-WEB-ERA-WAR-IGNORE-TREATIES-Q1: wojna epoki (Kamien/Braz/Zelazo) nie jest blokowana przez NAP, blokade pokoju, umowy ani Relacje, blokuje ja tylko sojusz; zwykle wypowiedzenia respektuja NAP. R-WEB-AI-PURCHASE-RESERVE-3-10-0-Q1: rezerwa tur utrzymania przy zakupie jednostek przez AI Latwy 10 / Normalny 3 / Trudny 0"
+    "FALA 547: R-WEB-ERA-WAR-DELAYS-Q1: Kamien zostaje pod bramka R1 (tura 40); wojna epoki Brazu i Zelaza wybucha 20 tur po wejsciu panstwa w epoke (parametr eraForcedWarStartTurnsFromEra w war-rules-params.json, wczesniej 25) i nie podlega bramce tury 40; zwykle wypowiedzenia nadal pod R1; odpoczynek i cooldown bez zmian; sojusz nadal blokuje wojne epoki"
   ],
   "verification": [
-    "tsc 0, logic-test 213/213, era-war-ignore-treaties-test 22/0, ai-purchase-maintenance-reserve-test 56/0, vite build OK; ai-test 274/20 (te same 20 FAIL co baza)"
+    "tsc 0, logic-test 213/213, era-war-delays-test 41/0, era-war-ignore-treaties 22/0, forced-war-bronze 48/0, forced-war-iron 55/0, multi-turn-simulation 48/0, ai-test 274/20 (=baza)"
   ],
   "limits": [
-    "NIE_ZMIERZONO: testy live w przegladarce wojny epoki; przyczyna braku wojny w zrzucie Brazu (NAP vs bramka R1 tura<40) niepotwierdzona"
+    "NIE_ZMIERZONO: dowod w grze (pelna petla main.ts w Chromium); LUKA: warAllInContextFor blokuje marsz AI przed tura 40 (wojna wybucha, marsz od tury 40) - osobny temat"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-08T08:51:58",
+  "hubGeneratedAt": "2026-11-08T10:26:58",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
-      "sizeBytes": 85675648
+      "md5": "fc22f55195d2975f9dedee56ef69ce2c",
+      "sizeBytes": 85676164
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
-      "sizeBytes": 85675648
+      "md5": "fc22f55195d2975f9dedee56ef69ce2c",
+      "sizeBytes": 85676164
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
-      "sizeBytes": 85675648
+      "md5": "fc22f55195d2975f9dedee56ef69ce2c",
+      "sizeBytes": 85676164
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
-      "sizeBytes": 85675648
+      "md5": "fc22f55195d2975f9dedee56ef69ce2c",
+      "sizeBytes": 85676164
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
-      "sizeBytes": 85675648
+      "md5": "fc22f55195d2975f9dedee56ef69ce2c",
+      "sizeBytes": 85676164
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
-      "sizeBytes": 85675648
+      "md5": "fc22f55195d2975f9dedee56ef69ce2c",
+      "sizeBytes": 85676164
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
-      "sizeBytes": 85675648
+      "md5": "fc22f55195d2975f9dedee56ef69ce2c",
+      "sizeBytes": 85676164
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
-      "sizeBytes": 85675648
+      "md5": "fc22f55195d2975f9dedee56ef69ce2c",
+      "sizeBytes": 85676164
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
-      "sizeBytes": 85675648
+      "md5": "fc22f55195d2975f9dedee56ef69ce2c",
+      "sizeBytes": 85676164
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
-      "sizeBytes": 85675648
+      "md5": "fc22f55195d2975f9dedee56ef69ce2c",
+      "sizeBytes": 85676164
     }
   ],
-  "md5": "07503d86b6d0097f1dc22ba3e65c6cce",
+  "md5": "fc22f55195d2975f9dedee56ef69ce2c",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

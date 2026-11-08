@@ -1,3 +1,9 @@
+## ROBOCZA fc22f551 -- 2026-11-06 -- FALA 547: wojna epoki Braz/Zelazo po 20 turach od wejscia w epoke, bez bramki tury 40 (testowa)
+
+- R-WEB-ERA-WAR-DELAYS-Q1: Kamien zostaje pod bramka R1 (tura 40); wojna epoki Brazu i Zelaza wybucha 20 tur po wejsciu panstwa w epoke (parametr eraForcedWarStartTurnsFromEra w war-rules-params.json, wczesniej 25) i nie podlega bramce tury 40; zwykle wypowiedzenia nadal pod R1; odpoczynek i cooldown bez zmian; sojusz nadal blokuje wojne epoki
+- Weryfikacja: tsc 0, logic-test 213/213, era-war-delays-test 41/0, era-war-ignore-treaties 22/0, forced-war-bronze 48/0, forced-war-iron 55/0, multi-turn-simulation 48/0, ai-test 274/20 (=baza)
+- Limity: NIE_ZMIERZONO: dowod w grze (pelna petla main.ts w Chromium); LUKA: warAllInContextFor blokuje marsz AI przed tura 40 (wojna wybucha, marsz od tury 40) - osobny temat
+
 ## ROBOCZA 07503d86 -- 2026-11-06 -- FALA 546: wojna epoki omija umowy poza sojuszem; rezerwa AI 10/3/0 (testowa)
 
 - R-WEB-ERA-WAR-IGNORE-TREATIES-Q1: wojna epoki (Kamien/Braz/Zelazo) nie jest blokowana przez NAP, blokade pokoju, umowy ani Relacje, blokuje ja tylko sojusz; zwykle wypowiedzenia respektuja NAP. R-WEB-AI-PURCHASE-RESERVE-3-10-0-Q1: rezerwa tur utrzymania przy zakupie jednostek przez AI Latwy 10 / Normalny 3 / Trudny 0
