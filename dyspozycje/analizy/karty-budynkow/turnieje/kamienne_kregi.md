@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **b** — +1 Kultury i +2 Szczęścia (rośnie z epoką) — wygrane: 1, suma: 35
 3. **c** — Warunek Świątyni (+4% religii na turę) — wygrane: 0, suma: 29
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Religia +2% na turę w mieście** — Przyspiesza szerzenie twojej religii w mieście (+3% łatwy, +1% trudny).
 - Top2: **+1 Kultury i +2 Szczęścia (rośnie z epoką)** — Po 1 Kultury i zadowolenia więcej z każdą epoką.

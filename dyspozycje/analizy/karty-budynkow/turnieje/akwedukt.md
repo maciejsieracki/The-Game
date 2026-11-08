@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **b** — +4 zdrowia w mieście — wygrane: 1, suma: 30
 3. **c** — +3 Szczęścia w mieście (rośnie z epoką) — wygrane: 0, suma: 28
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Limit ludności miasta do 20** — Najwyższy próg drabinki: bez budynku 5 → Spichlerz 8 → Spichlerz Królewski 12 → Akwedukt 20.
 - Top2: **+4 zdrowia w mieście** — Akwedukt liczy się też jako dostęp do świeżej wody.

@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **b** — +11 Kultury i +6 Szczęścia w stolicy — wygrane: 1, suma: 31
 3. **c** — Asymilacja kultury +2% na turę (zachowana) — wygrane: 0, suma: 31
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Prawo stolicy 45 → 55 pkt** — Najwyższy stopień Pałacu w obecnych epokach (+71 łatwy, +44 trudny).
 - Top2: **+11 Kultury i +6 Szczęścia w stolicy** — Ponad dwa razy więcej niż Pałac I.

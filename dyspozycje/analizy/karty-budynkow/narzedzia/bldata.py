@@ -14,8 +14,10 @@
 #   akcja = czynność następcza (tylko kind='next'), np. „Rozbuduj go do …” — wchodzi do CMZ
 # d(tytul, ev, powod, old=()) — efekt martwy/niedostępny: NIE w TOP 5, lista „ukryć do czasu naprawy”.
 
-def c(id, kind, tytul, tekst, cel, ev, S, N, B, Z, O, C, sr=False, old=(), akcja=None):
-    return dict(id=id, kind=kind, tytul=tytul, tekst=tekst, cel=cel, ev=ev, sc=(S, N, B, Z, O, C), sr=sr, old=tuple(old), akcja=akcja)
+#   war   = True → wartość efektu zależy od stanu gry, którego budynek sam nie zapewnia (np. „0 bez aktywnej
+#           trasy handlowej”, „0 bez nadwyżki Pracy i decyzji gracza”); reguła E1-B2 (Obrona r1): nie może być Top1, gdy budynek ma efekt własny bez warunku
+def c(id, kind, tytul, tekst, cel, ev, S, N, B, Z, O, C, sr=False, old=(), akcja=None, war=False):
+    return dict(id=id, kind=kind, tytul=tytul, tekst=tekst, cel=cel, ev=ev, sc=(S, N, B, Z, O, C), sr=sr, old=tuple(old), akcja=akcja, war=war)
 
 def d(tytul, ev, powod, old=()):
     return dict(tytul=tytul, ev=ev, powod=powod, old=tuple(old))
@@ -153,23 +155,23 @@ NOTES['cegielnia'] = 'Dzisiejszy top3 pomija +25% Pracy z terenu (econ-params.js
 # ---------------------------------------------------------------- Handel / pieniądz
 B['targowisko'] = [
     c('a', 'own', '+50% dochodu z tras handlowych miasta', 'Każda trasa handlowa tego miasta przynosi o połowę więcej (+62% łatwy, +38% trudny).',
-      'zwiększyć dochód z tras handlowych miasta o 50%', 'EP:278-284;MN:4194-4198', 4, 3, 4, 2, 3, 5),
+      'zwiększyć dochód z tras handlowych miasta o 50%', 'EP:278-284;MN:4194-4198', 4, 3, 4, 2, 3, 5, war=True),
     c('b', 'own', 'Zamiana Pracy na podatek 1:1 w całym państwie', 'Pierwsze Targowisko pozwala przelewać nadwyżkę Pracy na podatek w panelu państwa (tylko gracz).',
-      'przelewać nadwyżkę Pracy na podatek', 'WT:14-22;EP:341-347;MN:25922-25927', 1, 3, 4, 5, 4, 3),
+      'przelewać nadwyżkę Pracy na podatek', 'WT:14-22;EP:341-347;MN:25922-25927', 1, 3, 4, 5, 4, 3, war=True),
     c('c', 'own', '+1 trasa handlowa i premia 5% trasy', 'Miasto może utrzymać o jedną trasę więcej, a jedna jego trasa dostaje +5% dochodu.',
-      'otworzyć miastu kolejną trasę handlową', 'TR:908-921;TR:925-945;TR:1659', 3, 3, 3, 2, 3, 4),
+      'otworzyć miastu kolejną trasę handlową', 'TR:908-921;TR:925-945;TR:1659', 3, 3, 3, 2, 3, 4, war=True),
     c('d', 'own', '+5 pieniądza w mieście (8 w Brązie, 11 w Żelazie)', 'Stały dochód, rośnie o 3 z każdą epoką.', 'dać miastu 5 pieniądza', 'B:303;' + LVL, 3, 1, 2, 2, 4, 5, old=(1,)),
     c('e', 'own', '+2 zdrowia i +1 Szczęścia w mieście', 'Lepsze zaopatrzenie poprawia zdrowie i nastroje mieszkańców.', None, 'SP:24-30;TE:476-485;' + HAP, 1, 1, 2, 2, 4, 5),
     c('f', 'next', 'Warunek Mennicy (stolica) i Emporionu', 'Bez Targowiska w tym samym mieście nie zbudujesz Mennicy ani Emporionu.',
       'pomnożyć podatek wszystkich miast ×1,5', PRE, 4, 3, 4, 2, 2, 3, akcja='Zbuduj w stolicy Mennicę (Waluta)'),
 ]
-NOTES['targowisko'] = 'Pozycje 2–3 dzisiejszego top3 („Niski koszt wejścia”, „Otwiera Wymianę”) to masło maślane. Zamiana Pracy na podatek działa tylko dla gracza (work-tax.ts:20 isHumanOwner).'
+NOTES['targowisko'] = 'Pozycje 2–3 dzisiejszego top3 („Niski koszt wejścia”, „Otwiera Wymianę”) to masło maślane. Zamiana Pracy na podatek działa tylko dla gracza (work-tax.ts:20 isHumanOwner). Obrona r1 (zarzut Evaluatora 3): +50% z tras i slot trasy są warte 0 bez aktywnej trasy (dochód lądowej trasy 1–8 wg dystansu, econ-params.json dochody_ladowe) → reguła E1-B2; to samo dotyczy zamiany Pracy na podatek (0 bez nadwyżki Pracy i decyzji gracza, AI nie korzysta) → Top1 = +5 pieniądza. +2 zdrowia (turn-economy.ts:420,485) zostaje poza TOP 5 (29:27 z „Warunkiem Mennicy”); wchodzi automatycznie, jeśli właściciel w Q2 wybierze B.'
 
 B['port'] = [
     c('a', 'own', '+1 trasa handlowa i premia 5% trasy', 'Miasto portowe utrzymuje o jedną trasę więcej, a jedna trasa dostaje +5% dochodu.',
-      'otworzyć miastu kolejną trasę handlową', 'TR:908-921;TR:1659', 3, 3, 3, 2, 3, 4),
+      'otworzyć miastu kolejną trasę handlową', 'TR:908-921;TR:1659', 3, 3, 3, 2, 3, 4, war=True),
     c('b', 'own', '+5 pieniądza i +1 Pracy w mieście', 'Stały dochód miasta nad wodą.', 'dać miastu 5 pieniądza', 'B:361', 3, 1, 3, 2, 4, 5, old=(1,)),
-    c('c', 'own', '+1 pieniądza za każdą trasę morską ponad pierwszą', 'Premia morska należy się tylko miastu z Portem.', 'zarabiać na kolejnych trasach morskich', 'TR:1755-1772', 1, 3, 5, 2, 3, 4),
+    c('c', 'own', '+1 pieniądza za każdą trasę morską ponad pierwszą', 'Premia morska należy się tylko miastu z Portem.', 'zarabiać na kolejnych trasach morskich', 'TR:1755-1772', 1, 3, 5, 2, 3, 4, war=True),
     c('d', 'own', '+1 Szczęścia w mieście', 'Ryczałt Szczęścia za budynek szczęściodajny.', None, HAP, 1, 1, 1, 2, 4, 5),
     c('e', 'next', 'Rozbudowa do Portu wielkiego: +10 pieniądza', 'Po Inżynierii rozbudowa podwaja dochód portu.', 'podwoić dochód portu (+10 pieniądza)', 'B:409', 3, 2, 3, 2, 2, 5, old=(3,), akcja='Rozbuduj go do Portu wielkiego (Inżynieria)'),
 ]
@@ -193,7 +195,7 @@ NOTES['mennica'] = 'Realny współczynnik: econ-params.json:585-591 (easy 1,62 /
 
 B['emporion'] = [
     c('a', 'own', '+1 trasa handlowa i premia 5% trasy', 'Miasto utrzymuje o jedną trasę więcej, a kolejna trasa dostaje +5% dochodu.',
-      'otworzyć miastu kolejną trasę handlową', 'TR:908-921;TR:1659', 3, 3, 3, 2, 3, 4, old=(2, 3)),
+      'otworzyć miastu kolejną trasę handlową', 'TR:908-921;TR:1659', 3, 3, 3, 2, 3, 4, old=(2, 3), war=True),
     c('b', 'own', '+8 pieniądza w mieście', 'Większy dochód niż Targowisko (+5).', 'dać miastu 8 pieniądza', 'B:1095', 3, 1, 3, 2, 4, 5, old=(1,)),
 ]
 NOTES['emporion'] = 'Pole przyrost (4) martwe przy maksPoziom=1. Pozycje 2 i 3 dzisiejszego top3 opisują ten sam efekt (slot + 5%).'
@@ -211,24 +213,34 @@ B['spichlerz'] = [
       'podnieść limit ludności miasta z 5 do 8', 'EP:24-37;EC:1053', 5, 4, 4, 2, 4, 5, old=(3,)),
     c('b', 'own', '+1000 pojemności spichlerza państwa', 'Każdy Spichlerz zwiększa centralny zapas żywności państwa o 1000 (×2 na epokę).',
       'zwiększyć zapas żywności państwa o 1000', 'EF:175-192;BG:548', 3, 3, 4, 5, 4, 4),
-    c('c', 'own', 'Po wzroście miasto zachowuje 50% zapasu żywności', 'Bez Spichlerza zapas wzrostu zeruje się po każdym nowym mieszkańcu.',
-      'szybciej rosnąć (50% zapasu zostaje po wzroście)', 'EP:10-16;EC:1099;EC:1152', 3, 3, 5, 2, 3, 4),
+    c('c', 'own', '−25% kosztu racji żywnościowej w mieście', 'Mieszkańcy tego miasta zjadają o jedną czwartą mniej żywności ze spichlerza państwa (racje ×0,75).',
+      'obniżyć koszt racji miasta o 25%', 'BG:486-491;PG:206-223;TE:1671', 3, 3, 4, 2, 3, 4),
     c('d', 'own', '+2 żywności i +5 Szczęścia w mieście', 'Najwyższy ryczałt Szczęścia wśród budynków Kamienia.', None, 'B:458;' + HAP, 3, 1, 2, 2, 4, 5, old=(1,)),
     c('e', 'next', 'Rozbudowa do Spichlerza Królewskiego: limit 12', 'Po Piśmie i z dostępem do soli limit ludności rośnie do 12.',
       'podnieść limit ludności miasta z 8 do 12', 'B:505;EP:38-44', 4, 2, 3, 2, 2, 5, akcja='Rozbuduj go do Spichlerza Królewskiego (Pismo, sól)'),
+    c('f', 'own', '+5 zdrowia w mieście', 'Lepsze zdrowie przyspiesza wzrost ludności miasta.', None, 'BG:472-477;TE:2023', 2, 1, 2, 2, 3, 5),
+    c('g', 'own', '+1% wzrostu ludności na turę', 'Składnik „Spichlerz” w procencie wzrostu miasta.', None, 'BG:479-484;PG:262-277', 1, 1, 3, 2, 2, 4),
 ]
 COST_EXTRA['spichlerz'] = 'zużywa 25 Ceramiki na turę (econ-params.json:390-396, building-resource-gate.ts:335)'
-DEAD['spichlerz'] = [d('„pojemność zapasów armii 100 na Spichlerz”', 'EP:171-177', 'Klucz spichlerz_pojemnosc_zapasow_panstwa nie ma konsumenta w gra/src (grep) — nie pokazywać.')]
-NOTES['spichlerz'] = 'Pole przyrost martwe (maksPoziom=1). Pozycja 3 dzisiejszego top3 mówi o limicie ludności bez liczby.'
+DEAD['spichlerz'] = [d('„pojemność zapasów armii 100 na Spichlerz”', 'EP:171-177', 'Klucz spichlerz_pojemnosc_zapasow_panstwa nie ma konsumenta w gra/src (grep) — nie pokazywać.'),
+                     d('„po wzroście miasto zachowuje 50% zapasu żywności”', 'EC:1099;EC:1150-1155;PG:306-342',
+                       'Obrona r1: działa tylko w populationGrowth (economy.ts:1107), które nie ma wywołania w gra/src (grep „populationGrowth(”); żywy wzrost to applyFractionalGrowthV85 — ułamek wzrostu bez bufora, nic się nie zeruje ani nie zachowuje — nie pokazywać.')]
+NOTES['spichlerz'] = 'Pole przyrost martwe (maksPoziom=1). Pozycja 3 dzisiejszego top3 mówi o limicie ludności bez liczby. Obrona r1: premie −25% racji, +5 zdrowia, +1% wzrostu oraz plony działają tylko w turze, w której Ceramika jest opłacona (building-resource-gate.ts:451-470).'
 
 B['spichlerz_ii'] = [
     c('a', 'own', 'Limit ludności miasta 8 → 12', 'Spichlerz Królewski podnosi sufit miasta bez Akweduktu do 12 mieszkańców.',
       'podnieść limit ludności miasta z 8 do 12', 'EP:38-44;EC:1053', 4, 2, 3, 2, 3, 5, old=(3,)),
     c('b', 'own', '+1500 pojemności spichlerza państwa (zamiast 1000)', 'Większy wkład w centralny zapas żywności państwa.', None, 'EF:187;BG:549', 2, 1, 3, 5, 4, 4),
     c('c', 'own', '+3 żywności i +5 Szczęścia w mieście', 'O 1 żywności więcej niż Spichlerz.', None, 'B:505;' + HAP, 2, 1, 2, 2, 4, 5, old=(1,)),
+    c('d', 'own', '−50% kosztu racji żywnościowej (Spichlerz: −25%)', 'Mieszkańcy tego miasta zjadają o połowę mniej żywności ze spichlerza państwa (racje ×0,5).',
+      'obniżyć koszt racji miasta o połowę', 'BG:486-491;PG:206-223;TE:1671', 3, 2, 4, 2, 3, 4),
+    c('e', 'own', '+10 zdrowia w mieście (Spichlerz: +5)', 'Lepsze zdrowie przyspiesza wzrost ludności miasta.', None, 'BG:472-477;TE:2023', 2, 1, 2, 2, 3, 5),
+    c('f', 'own', '+2% wzrostu ludności na turę (Spichlerz: +1%)', 'Składnik „Spichlerz” w procencie wzrostu miasta.', None, 'BG:479-484;PG:262-277', 1, 1, 3, 2, 2, 4),
 ]
 COST_EXTRA['spichlerz_ii'] = 'zużywa 25 Soli i 25 Ceramiki na turę (econ-params.json:397-410)'
-NOTES['spichlerz_ii'] = 'Dzisiejsza pozycja 3 mówi „limit populacji i armii” bez liczb; limit armii nie ma pokrycia w kodzie (uwagi „cap armii 150” → realnie +1500 pojemności spichlerza państwa).'
+DEAD['spichlerz_ii'] = [d('„po wzroście miasto zachowuje 70% zapasu żywności”', 'EC:1150-1155;PG:306-342',
+                          'Obrona r1 (zarzut Evaluatora 1): stała 0,7 żyje tylko w populationGrowth (economy.ts:1107), które nie ma wywołania w gra/src (grep „populationGrowth(”); żywy wzrost to applyFractionalGrowthV85 bez bufora — nie pokazywać.')]
+NOTES['spichlerz_ii'] = 'Dzisiejsza pozycja 3 mówi „limit populacji i armii” bez liczb; limit armii nie ma pokrycia w kodzie (uwagi „cap armii 150” → realnie +1500 pojemności spichlerza państwa). Obrona r1: premie −50% racji, +10 zdrowia, +2% wzrostu działają tylko przy opłaconej Ceramice i Soli; bez Soli budynek daje premie Spichlerza (building-resource-gate.ts:465-469).'
 
 B['studnia'] = [
     c('a', 'own', '+2 zdrowia i koniec kary −2 za brak wody', 'Miasto bez rzeki dostaje czystą wodę: +2 zdrowia zamiast −2.',
@@ -269,8 +281,10 @@ B['swiatynia'] = [
     c('a', 'own', 'Religia +4% na turę w mieście', 'Dwa razy szybsze szerzenie religii niż Kamienne kręgi (+6% łatwy, +2% trudny).',
       'szerzyć swoją religię o 4% na turę', 'SP:581-587;CR:549', 3, 3, 4, 2, 3, 4, old=(2,)),
     c('b', 'own', '+2 Kultury i +3 Szczęścia (rośnie z epoką)', 'W epoce Żelaza +3 Kultury i +4 Szczęścia.', None, 'B:696;' + HAP + ';' + LVL, 2, 1, 2, 2, 4, 5, old=(1,)),
+    c('c', 'own', 'Religia sięga 2 sąsiednich miast na turę (zamiast 1)', 'Dominująca religia miasta co turę zyskuje wyznawcę w kolejnym mieście w zasięgu 3 heksów (+2 łatwy, 0 trudny).',
+      'szerzyć swoją religię na sąsiednie miasta', 'SP:504-510;CR:1064;MN:37700-37712', 2, 3, 4, 3, 2, 4, sr=True),
 ]
-NOTES['swiatynia'] = 'Pozycja 3 dzisiejszego top3 to warunek (Kamienne kręgi).'
+NOTES['swiatynia'] = 'Pozycja 3 dzisiejszego top3 to warunek (Kamienne kręgi). Obrona r1 (zarzut Evaluatora 2): dodano premię szerzenia na sąsiednie miasta — działa tylko, gdy religia jest w mieście dominująca (culture-religion.ts:1050-1053); na poziomie trudnym premia = 0 (society-params.json:507).'
 
 B['stela'] = [
     c('a', 'own', '+1 Kultury i +1 Szczęścia, bez utrzymania', 'Kultura rośnie o 1 z każdą epoką (do +3), a budynek nic nie kosztuje co turę.',

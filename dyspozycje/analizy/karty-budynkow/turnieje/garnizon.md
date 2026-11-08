@@ -28,7 +28,7 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 1. **a** — Milicja: 1 obrońca na mieszkańca przy ataku — wygrane: 1, suma: 50
 2. **b** — +25 pkt Prawa (35 w Brązie, 47 w Żelazie) — wygrane: 0, suma: 45
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Milicja: 1 obrońca na mieszkańca przy ataku** — Przy każdym ataku na miasto staje milicja w liczbie mieszkańców (połowa wręcz, połowa dystans), odnawia się po 5 turach.
 - Top2: **+25 pkt Prawa (35 w Brązie, 47 w Żelazie)** — Stałe Prawo niezależne od wojska stacjonującego w mieście.

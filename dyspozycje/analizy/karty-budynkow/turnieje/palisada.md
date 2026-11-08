@@ -28,7 +28,7 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 1. **a** — +100% Obrony obrońców miasta — wygrane: 1, suma: 47
 2. **b** — Miasto trzeba oblegać — wróg nie wejdzie z marszu — wygrane: 0, suma: 45
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+100% Obrony obrońców miasta** — Pierwsza fortyfikacja: podwaja obronę jednostek broniących miasta.
 - Top2: **Miasto trzeba oblegać — wróg nie wejdzie z marszu** — Miasto z umocnieniem przechodzi w tryb oblężenia; pustego miasta nie da się zająć jednym ruchem.

@@ -37,7 +37,7 @@ Liczba realnych efektów: 4 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 3. **b** — +10% żywności w mieście — wygrane: 1, suma: 33
 4. **c** — +3 Pracy w mieście (5 w Brązie, 7 w Żelazie) — wygrane: 0, suma: 30
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Wytwarza ceramikę: do 50 sztuk na turę** — Zamienia glinę i drewno w ceramikę; każdy Spichlerz zużywa jej 25 na turę.
 - Top2: **Otwiera Spichlerz w każdym mieście (limit 5 → 8)** — Jedna Garncarnia gdziekolwiek spełnia bramkę ceramiki Spichlerza w całym państwie.

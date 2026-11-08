@@ -37,7 +37,7 @@ Liczba realnych efektów: 4 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 3. **d** — Asymilacja kultury +2% na turę — wygrane: 1, suma: 33
 4. **c** — +5 Kultury, +2 pieniądza i +3 Szczęścia — wygrane: 0, suma: 30
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **−30% korupcji w mieście** — Zmniejsza straty z korupcji w mieście, w którym stoi.
 - Top2: **+19 pkt Prawa w mieście** — Dodatkowe Prawo ponad administrację (+25 łatwy, +16 trudny).

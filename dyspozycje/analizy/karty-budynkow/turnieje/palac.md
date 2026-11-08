@@ -41,7 +41,7 @@ S=SKALA(3), N=NOWA MECHANIKA(3), B=BRAK ZASTĘPNIKA(2), Z=ZASIĘG(2), O=ODCZUWAL
 4. **c** — +5 Kultury i +3 Szczęścia w stolicy — wygrane: 1, suma: 31
 5. **e** — Rozbudowa do Pałacu II: Prawo 45, Kultura 8 — wygrane: 0, suma: 25
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+35 pkt Prawa w stolicy** — Główne źródło Prawa stolicy (+45 łatwy, +28 trudny).
 - Top2: **−30% korupcji w stolicy** — Zmniejsza straty z korupcji w mieście z Pałacem.

@@ -28,7 +28,7 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 1. **a** — +1 Kultury i +1 Szczęścia, bez utrzymania — wygrane: 1, suma: 26
 2. **b** — Asymilacja kultury +0,5% na turę — wygrane: 0, suma: 25
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+1 Kultury i +1 Szczęścia, bez utrzymania** — Kultura rośnie o 1 z każdą epoką (do +3), a budynek nic nie kosztuje co turę.
 - Top2: **Asymilacja kultury +0,5% na turę** — Podbite miasto nieco szybciej przyjmuje twoją kulturę.

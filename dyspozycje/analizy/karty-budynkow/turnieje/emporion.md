@@ -8,7 +8,7 @@ Cena korzyści (nie jest kandydatem): budowa 50 Pracy, 80 drewno + 60 kamien, ut
 
 | ID | Rodzaj | Tytuł (z liczbą) | Zdanie | S | N | B | Z | O | C | Suma | Dowód |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| a | own | +1 trasa handlowa i premia 5% trasy | Miasto utrzymuje o jedną trasę więcej, a kolejna trasa dostaje +5% dochodu. | 3 | 3 | 3 | 2 | 3 | 4 | 38 | gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:1659 |
+| a | own | +1 trasa handlowa i premia 5% trasy | Miasto utrzymuje o jedną trasę więcej, a kolejna trasa dostaje +5% dochodu. | 3 | 3 | 3 | 2 | 3 | 4 | 38 | gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:1659 (E1-B2: efekt warunkowy) |
 | b | own | +8 pieniądza w mieście | Większy dochód niż Targowisko (+5). | 3 | 1 | 3 | 2 | 4 | 5 | 35 | gra/data/buildings.json:1095 |
 
 S=SKALA(3), N=NOWA MECHANIKA(3), B=BRAK ZASTĘPNIKA(2), Z=ZASIĘG(2), O=ODCZUWALNOŚĆ(2), C=CZYTELNOŚĆ(1); maks. 65. R-B1: kandydat „next” (warunek/rozbudowa) → N=0, O≤1.
@@ -28,10 +28,12 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 1. **a** — +1 trasa handlowa i premia 5% trasy — wygrane: 1, suma: 38
 2. **b** — +8 pieniądza w mieście — wygrane: 0, suma: 35
 
-## 5. TOP 5 (propozycja Operatora r1)
+Reguła E1-B: a to efekt warunkowy — 0 bez stanu gry, którego budynek nie zapewnia (E1-B2) → Top1 = **b** (najwyżej w rankingu efekt własny bez warunku).
 
-- Top1 (GŁÓWNA KORZYŚĆ): **+1 trasa handlowa i premia 5% trasy** — Miasto utrzymuje o jedną trasę więcej, a kolejna trasa dostaje +5% dochodu.
-- Top2: **+8 pieniądza w mieście** — Większy dochód niż Targowisko (+5).
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
+
+- Top1 (GŁÓWNA KORZYŚĆ): **+8 pieniądza w mieście** — Większy dochód niż Targowisko (+5).
+- Top2: **+1 trasa handlowa i premia 5% trasy** — Miasto utrzymuje o jedną trasę więcej, a kolejna trasa dostaje +5% dochodu.
 
 ## 6. Porównanie z dzisiejszym top3
 
@@ -43,7 +45,7 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 
 Dziś: sekcji brak na karcie budynku. Propozycja:
 
-- Zbuduj Emporion, aby otworzyć miastu kolejną trasę handlową.
+- Zbuduj Emporion, aby dać miastu 8 pieniądza.
 
 ## 8. Uwagi
 

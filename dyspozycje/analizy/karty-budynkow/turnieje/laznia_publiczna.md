@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **b** — +3 Kultury, +4 Szczęścia i +1 żywności — wygrane: 1, suma: 32
 3. **c** — Asymilacja kultury +1% na turę — wygrane: 0, suma: 27
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+5 zdrowia w mieście** — Najsilniejsze źródło zdrowia z budynku (+6 łatwy, +4 trudny).
 - Top2: **+3 Kultury, +4 Szczęścia i +1 żywności** — Termy poprawiają nastroje i kulturę miasta.

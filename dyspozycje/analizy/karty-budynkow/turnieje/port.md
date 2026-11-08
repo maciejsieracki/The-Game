@@ -8,9 +8,9 @@ Cena korzyści (nie jest kandydatem): budowa 30 Pracy, 60 drewno + 30 kamien, ut
 
 | ID | Rodzaj | Tytuł (z liczbą) | Zdanie | S | N | B | Z | O | C | Suma | Dowód |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| a | own | +1 trasa handlowa i premia 5% trasy | Miasto portowe utrzymuje o jedną trasę więcej, a jedna trasa dostaje +5% dochodu. | 3 | 3 | 3 | 2 | 3 | 4 | 38 | gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:1659 |
+| a | own | +1 trasa handlowa i premia 5% trasy | Miasto portowe utrzymuje o jedną trasę więcej, a jedna trasa dostaje +5% dochodu. | 3 | 3 | 3 | 2 | 3 | 4 | 38 | gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:1659 (E1-B2: efekt warunkowy) |
 | b | own | +5 pieniądza i +1 Pracy w mieście | Stały dochód miasta nad wodą. | 3 | 1 | 3 | 2 | 4 | 5 | 35 | gra/data/buildings.json:361 |
-| c | own | +1 pieniądza za każdą trasę morską ponad pierwszą | Premia morska należy się tylko miastu z Portem. | 1 | 3 | 5 | 2 | 3 | 4 | 36 | gra/src/game/trade-routes.ts:1755-1772 |
+| c | own | +1 pieniądza za każdą trasę morską ponad pierwszą | Premia morska należy się tylko miastu z Portem. | 1 | 3 | 5 | 2 | 3 | 4 | 36 | gra/src/game/trade-routes.ts:1755-1772 (E1-B2: efekt warunkowy) |
 | d | own | +1 Szczęścia w mieście | Ryczałt Szczęścia za budynek szczęściodajny. | 1 | 1 | 1 | 2 | 4 | 5 | 25 | gra/src/game/economy.ts:509-535 |
 | e | next (R-B1) | Rozbudowa do Portu wielkiego: +10 pieniądza | Po Inżynierii rozbudowa podwaja dochód portu. | 3 | 0 | 3 | 2 | 1 | 5 | 26 | gra/data/buildings.json:409 |
 
@@ -41,11 +41,13 @@ S=SKALA(3), N=NOWA MECHANIKA(3), B=BRAK ZASTĘPNIKA(2), Z=ZASIĘG(2), O=ODCZUWAL
 4. **e** — Rozbudowa do Portu wielkiego: +10 pieniądza — wygrane: 1, suma: 26
 5. **d** — +1 Szczęścia w mieście — wygrane: 0, suma: 25
 
-## 5. TOP 5 (propozycja Operatora r1)
+Reguła E1-B: a to efekt warunkowy — 0 bez stanu gry, którego budynek nie zapewnia (E1-B2) → Top1 = **b** (najwyżej w rankingu efekt własny bez warunku).
 
-- Top1 (GŁÓWNA KORZYŚĆ): **+1 trasa handlowa i premia 5% trasy** — Miasto portowe utrzymuje o jedną trasę więcej, a jedna trasa dostaje +5% dochodu.
-- Top2: **+1 pieniądza za każdą trasę morską ponad pierwszą** — Premia morska należy się tylko miastu z Portem.
-- Top3: **+5 pieniądza i +1 Pracy w mieście** — Stały dochód miasta nad wodą.
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
+
+- Top1 (GŁÓWNA KORZYŚĆ): **+5 pieniądza i +1 Pracy w mieście** — Stały dochód miasta nad wodą.
+- Top2: **+1 trasa handlowa i premia 5% trasy** — Miasto portowe utrzymuje o jedną trasę więcej, a jedna trasa dostaje +5% dochodu.
+- Top3: **+1 pieniądza za każdą trasę morską ponad pierwszą** — Premia morska należy się tylko miastu z Portem.
 - Top4: **Rozbudowa do Portu wielkiego: +10 pieniądza** — Po Inżynierii rozbudowa podwaja dochód portu.
 - Top5: **+1 Szczęścia w mieście** — Ryczałt Szczęścia za budynek szczęściodajny.
 
@@ -62,7 +64,7 @@ S=SKALA(3), N=NOWA MECHANIKA(3), B=BRAK ZASTĘPNIKA(2), Z=ZASIĘG(2), O=ODCZUWAL
 
 Dziś: sekcji brak na karcie budynku. Propozycja:
 
-- Zbuduj Port handlowy w mieście nad wodą, aby otworzyć miastu kolejną trasę handlową.
+- Zbuduj Port handlowy w mieście nad wodą, aby dać miastu 5 pieniądza.
 - Rozbuduj go do Portu wielkiego (Inżynieria), aby podwoić dochód portu (+10 pieniądza).
 
 ## 8. Uwagi

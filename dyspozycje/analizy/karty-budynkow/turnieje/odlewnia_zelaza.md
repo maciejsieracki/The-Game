@@ -28,7 +28,7 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 1. **a** — Wytapia żelazo: do 50 sztuk na turę (i nadal brąz) — wygrane: 1, suma: 57
 2. **b** — +12 Pracy i +1 pieniądza w mieście — wygrane: 0, suma: 33
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Wytapia żelazo: do 50 sztuk na turę (i nadal brąz)** — Zamienia rudę żelaza i drewno w żelazo dla wojska epoki Żelaza, a obok dalej wytapia brąz.
 - Top2: **+12 Pracy i +1 pieniądza w mieście** — Dwa razy więcej Pracy niż Odlewnia brązu.

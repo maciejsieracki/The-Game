@@ -28,7 +28,7 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 1. **a** — +20% parametrów jednostek (z Koszarami +40%) — wygrane: 1, suma: 46
 2. **b** — +3 Pracy i +2 pieniądza w mieście — wygrane: 0, suma: 23
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+20% parametrów jednostek (z Koszarami +40%)** — Sumuje się z Koszarami wprost; z Warsztatem oblężniczym razem +50%.
 - Top2: **+3 Pracy i +2 pieniądza w mieście** — Drobny dochód miasta.

@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **c** — Warunek badania Obróbki żelaza — wygrane: 1, suma: 32
 3. **b** — +8 Pracy i +2 pieniądza w mieście — wygrane: 0, suma: 30
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Pancerz jednostek do +30% (brąz + żelazo)** — Przejmuje +15% Kuźni brązu i dokłada własne +15% — trwale dla jednostek z miasta.
 - Top2: **Warunek badania Obróbki żelaza** — Bez Kuźni żelaza w państwie nie zbadasz Obróbki żelaza.

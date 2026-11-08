@@ -26,7 +26,7 @@ Liczba realnych efektów: 1 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 
 1. **a** — +100% Obrony ponad Mury (razem +300%) — wygrane: 0, suma: 41
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+100% Obrony ponad Mury (razem +300%)** — Cytadela stoi obok Murów i dokłada kolejne +100% obrony.
 

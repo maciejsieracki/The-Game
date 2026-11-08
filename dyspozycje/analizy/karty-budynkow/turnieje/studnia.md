@@ -37,7 +37,7 @@ Liczba realnych efektów: 4 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 3. **d** — Warunek badania Medycyny — wygrane: 1, suma: 32
 4. **b** — +2 Szczęścia w mieście (rośnie z epoką) — wygrane: 0, suma: 27
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+2 zdrowia i koniec kary −2 za brak wody** — Miasto bez rzeki dostaje czystą wodę: +2 zdrowia zamiast −2.
 - Top2: **Warunek Akweduktu (limit 20) i Łaźni** — Bez Studni w mieście nie zbudujesz Akweduktu ani Łaźni publicznej.

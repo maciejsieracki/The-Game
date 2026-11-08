@@ -26,7 +26,7 @@ Liczba realnych efektów: 0 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 
 —
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - NIE_USTALONO — budynek niedostępny
 

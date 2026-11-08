@@ -28,7 +28,7 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 1. **a** — +10% drewna w całym państwie — wygrane: 1, suma: 46
 2. **b** — +5 Pracy w mieście (8 w Brązie, 11 w Żelazie) — wygrane: 0, suma: 30
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+10% drewna w całym państwie** — Każda Stolarnia w dowolnym mieście zwiększa wydobycie drewna całego państwa o 10% (Stolarnie sumują się).
 - Top2: **+5 Pracy w mieście (8 w Brązie, 11 w Żelazie)** — Daje miastu 5 Pracy, a z każdą kolejną epoką o 3 więcej.

@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **b** — Miasto trzeba oblegać — wróg nie wejdzie z marszu — wygrane: 1, suma: 36
 3. **c** — Warunek Cytadeli i Baszty (razem +400%) — wygrane: 0, suma: 32
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+200% Obrony obrońców miasta** — Trzykrotna obrona jednostek broniących miasta; zastępuje +100% Palisady.
 - Top2: **Miasto trzeba oblegać — wróg nie wejdzie z marszu** — Mury włączają tryb oblężenia (także gdy w mieście nie ma wojska).

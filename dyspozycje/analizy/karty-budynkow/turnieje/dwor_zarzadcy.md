@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **c** — Rozbudowa do Pretorium: −30% korupcji i 38 Prawa — wygrane: 1, suma: 28
 3. **b** — +2 pieniądza, +3 Kultury i +1 Pracy — wygrane: 0, suma: 28
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Prawo miasta regionalnego 28 → 33 pkt** — Zastępuje Dom Starszyzny i daje więcej Prawa (+43 łatwy, +26 trudny).
 - Top2: **Rozbudowa do Pretorium: −30% korupcji i 38 Prawa** — Po Prawie ostatni stopień administracji regionalnej.

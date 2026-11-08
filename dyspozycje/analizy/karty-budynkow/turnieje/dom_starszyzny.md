@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **c** — Rozbudowa do Dworu Zarządcy: 33 pkt Prawa — wygrane: 1, suma: 25
 3. **b** — +1 Pracy, +1 pieniądza i +2 Kultury — wygrane: 0, suma: 25
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+28 pkt Prawa w mieście regionalnym** — Główne źródło Prawa miasta poza stolicą (+36 łatwy, +22 trudny).
 - Top2: **Rozbudowa do Dworu Zarządcy: 33 pkt Prawa** — Po Kodeksie Dom Starszyzny rośnie do Dworu Zarządcy.

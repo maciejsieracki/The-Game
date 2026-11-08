@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **b** — +6 Nauki, +5 Kultury i +4 Szczęścia — wygrane: 1, suma: 33
 3. **c** — Asymilacja kultury +1% na turę — wygrane: 0, suma: 27
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+20% Nauki miasta (z Biblioteką razem +50%)** — Druga premia procentowa do nauki, sumuje się z Biblioteką (+25% łatwy, +15% trudny).
 - Top2: **+6 Nauki, +5 Kultury i +4 Szczęścia** — Płaski dodatek ponad wkład Biblioteki.

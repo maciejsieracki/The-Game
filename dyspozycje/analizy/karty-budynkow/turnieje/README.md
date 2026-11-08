@@ -8,15 +8,15 @@
 | Odlewnia brązu | 4 | 6 | Wytapia brąz: do 50 sztuk na turę | WYSOKA | [odlewnia_brazu.md](odlewnia_brazu.md) |
 | Odlewnia żelaza | 2 | 1 | Wytapia żelazo: do 50 sztuk na turę (i nadal brąz) | WYSOKA | [odlewnia_zelaza.md](odlewnia_zelaza.md) |
 | Wielka odlewnia | 0 | 0 | NIE_USTALONO | NIE_USTALONO | [wielka_odlewnia.md](wielka_odlewnia.md) |
-| Targowisko (Rynek) | 6 | 15 | +50% dochodu z tras handlowych miasta | WYSOKA | [targowisko.md](targowisko.md) |
-| Port handlowy | 5 | 10 | +1 trasa handlowa i premia 5% trasy | WYSOKA | [port.md](port.md) |
+| Targowisko (Rynek) | 6 | 15 | +5 pieniądza w mieście (8 w Brązie, 11 w Żelazie) | WYSOKA | [targowisko.md](targowisko.md) |
+| Port handlowy | 5 | 10 | +5 pieniądza i +1 Pracy w mieście | WYSOKA | [port.md](port.md) |
 | Port wielki | 3 | 3 | +10 pieniądza i +2 Pracy w mieście (Port: +5) | WYSOKA | [port_wielki.md](port_wielki.md) |
-| Spichlerz | 5 | 10 | Limit ludności miasta 5 → 8 | WYSOKA | [spichlerz.md](spichlerz.md) |
-| Spichlerz Królewski | 3 | 3 | Limit ludności miasta 8 → 12 | WYSOKA | [spichlerz_ii.md](spichlerz_ii.md) |
+| Spichlerz | 7 | 21 | Limit ludności miasta 5 → 8 | WYSOKA | [spichlerz.md](spichlerz.md) |
+| Spichlerz Królewski | 6 | 15 | Limit ludności miasta 8 → 12 | WYSOKA | [spichlerz_ii.md](spichlerz_ii.md) |
 | Garncarnia | 4 | 6 | Wytwarza ceramikę: do 50 sztuk na turę | WYSOKA | [garncarnia.md](garncarnia.md) |
 | Cegielnia | 4 | 6 | Wytwarza cegłę: 50 cykli × 2 cegły na turę | WYSOKA | [cegielnia.md](cegielnia.md) |
 | Kamienne kręgi | 3 | 3 | Religia +2% na turę w mieście | WYSOKA | [kamienne_kregi.md](kamienne_kregi.md) |
-| Świątynia | 2 | 1 | Religia +4% na turę w mieście | WYSOKA | [swiatynia.md](swiatynia.md) |
+| Świątynia | 3 | 3 | Religia +4% na turę w mieście | SREDNIA | [swiatynia.md](swiatynia.md) |
 | Biblioteka | 5 | 10 | +30% Nauki miasta | WYSOKA | [biblioteka.md](biblioteka.md) |
 | Studnia | 4 | 6 | +2 zdrowia i koniec kary −2 za brak wody | WYSOKA | [studnia.md](studnia.md) |
 | Akwedukt | 3 | 3 | Limit ludności miasta do 20 | WYSOKA | [akwedukt.md](akwedukt.md) |
@@ -24,7 +24,7 @@
 | Palisada drewniana | 2 | 1 | +100% Obrony obrońców miasta | WYSOKA | [palisada.md](palisada.md) |
 | Mury | 3 | 3 | +200% Obrony obrońców miasta | WYSOKA | [mury.md](mury.md) |
 | Koszary | 4 | 6 | Rekrutacja wojska epoki Brązu i Żelaza | WYSOKA | [koszary.md](koszary.md) |
-| Emporion | 2 | 1 | +1 trasa handlowa i premia 5% trasy | WYSOKA | [emporion.md](emporion.md) |
+| Emporion | 2 | 1 | +8 pieniądza w mieście | WYSOKA | [emporion.md](emporion.md) |
 | Magazyn | 2 | 1 | +20% pojemności magazynu państwa | WYSOKA | [magazyn.md](magazyn.md) |
 | Stela / Pomnik | 2 | 1 | +1 Kultury i +1 Szczęścia, bez utrzymania | WYSOKA | [stela.md](stela.md) |
 | Pałac | 5 | 10 | +35 pkt Prawa w stolicy | WYSOKA | [palac.md](palac.md) |

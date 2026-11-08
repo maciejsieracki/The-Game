@@ -28,7 +28,7 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 1. **a** — +17 pkt Prawa w mieście — wygrane: 1, suma: 44
 2. **b** — +1 pieniądza i +2 Szczęścia (rośnie z epoką) — wygrane: 0, suma: 27
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+17 pkt Prawa w mieście** — Dowolne miasto, także stolica (+22 łatwy, +13 trudny).
 - Top2: **+1 pieniądza i +2 Szczęścia (rośnie z epoką)** — W epoce Żelaza +2 pieniądza i +3 Szczęścia.

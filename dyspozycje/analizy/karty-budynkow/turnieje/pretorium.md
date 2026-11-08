@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **b** — Prawo miasta 33 → 38 pkt — wygrane: 1, suma: 29
 3. **c** — +3 pieniądza, +5 Kultury i +2 Pracy — wygrane: 0, suma: 28
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **−30% korupcji w mieście regionalnym** — Jedyny — obok Sądu — budynek zmniejszający korupcję poza stolicą.
 - Top2: **Prawo miasta 33 → 38 pkt** — Najwięcej Prawa w łańcuchu administracji regionalnej (+50 łatwy, +31 trudny).

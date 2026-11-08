@@ -37,7 +37,7 @@ Liczba realnych efektów: 4 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 3. **c** — Warunek badania Pisma i Religii — wygrane: 1, suma: 38
 4. **d** — +4 Pracy w mieście (6 w Żelazie) — wygrane: 0, suma: 30
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Wytwarza cegłę: 50 cykli × 2 cegły na turę** — Zamienia 2 gliny i 1 drewno w 2 cegły; od epoki Brązu +50% bazy na epokę — cegła buduje budynki epoki Żelaza.
 - Top2: **+25% Pracy z terenu miasta** — Pola obrabiane przez miasto dają o jedną czwartą więcej Pracy (+31% łatwy, +19% trudny).

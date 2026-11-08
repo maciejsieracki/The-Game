@@ -37,7 +37,7 @@ Liczba realnych efektów: 4 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 3. **d** — Rozbudowa do Odlewni żelaza: żelazo i +12 Pracy — wygrane: 1, suma: 37
 4. **b** — +5 Pracy w mieście — wygrane: 0, suma: 30
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Wytapia brąz: do 50 sztuk na turę** — Zamienia rudę miedzi, drewno i cynę w brąz (50 cykli na turę, więcej w kolejnych epokach); brąz to koszt wojska epoki Brązu.
 - Top2: **Warunek badania Hutnictwa żelaza** — Bez Odlewni brązu w państwie nie zbadasz Hutnictwa żelaza (epoka Żelaza).

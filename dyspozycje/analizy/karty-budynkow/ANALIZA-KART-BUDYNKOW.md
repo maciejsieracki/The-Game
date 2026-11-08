@@ -29,9 +29,10 @@ SKALA 3 · NOWA MECHANIKA 3 · BRAK ZASTĘPNIKA 2 · ZASIĘG 2 · ODCZUWALNOŚĆ
 ### 1.3 Zasady turnieju
 
 - **Kandydaci:** wszystkie realne efekty z dowodem — plony (`baza`; przy `maksPoziom` > 1 z przyrostem na epokę, `production.ts:252-271`), premie procentowe (`econ-params.json`), limity (ludność, magazyn, Prawo), mechaniki (rekrutacja, tryb oblężenia, milicja, zamiana Pracy na podatek), ścieżki jednostek (`unit-building-bonuses.ts`), korupcja (`economy.ts:1225-1250`), zdrowie i Szczęście (`turn-economy.ts:476-498`, `economy.ts:509-535`), oraz warunki dalszych obiektów (`CITY_BUILDING_PREREQ`, `building-resource-gate.ts:110-121`; „wymagany budynek” badań, `tech.json` + `research.ts:154-180`; rozbudowy `upgradeFrom`).
-- **Pojedynki każdy z każdym**, rozstrzygnięcia remisów jak w etapie 1 (SKALA → ZASIĘG → NOWA MECHANIKA → kolejność). 121 kandydatów, 149 pojedynków.
+- **Pojedynki każdy z każdym**, rozstrzygnięcia remisów jak w etapie 1 (SKALA → ZASIĘG → NOWA MECHANIKA → kolejność). 127 kandydatów, 174 pojedynki (po Obronie r1; Operator r1: 121 / 149).
 - **R-B1 (odpowiednik R-K1):** kandydat „next” — budynek jako warunek innego budynku/badania albo rozbudowa — sam nic nie daje; korzyść ocenia karta obiektu docelowego → NOWA MECHANIKA = 0, ODCZUWALNOŚĆ ≤ 1. Może zająć Top2–Top5, jeśli jest realny (decyzja pkt 2), nigdy Top1.
 - **E1-B (decyzja pkt 4):** Top1 = najwyżej w rankingu efekt własny budynku, działający od ukończenia budowy (nie warunek, nie rozbudowa, nie efekt martwy). W r1 ani jeden budynek nie wymagał przesunięcia (Top1 turnieju zawsze był efektem własnym).
+- **E1-B2 (Obrona r1, zarzut Evaluatora 3):** efekt własny, którego wartość jest 0 bez stanu gry, jakiego budynek sam nie zapewnia (aktywna trasa handlowa; nadwyżka Pracy i decyzja gracza), nie jest korzyścią „od ręki” — Top1 tylko wtedy, gdy budynek nie ma innego efektu własnego. Flaga `war=True` w `bldata.py`; dotyczy Targowiska (trasy +50%, slot trasy, zamiana Pracy na podatek), Portu (slot trasy, premia morska) i Emporionu (slot trasy). Skutek: Top1 Targowiska = +5 pieniądza, Portu = +5 pieniądza, Emporionu = +8 pieniądza; efekty tras zostają w Top2–Top4.
 - **Ziarnistość = efekt** (etap 1, §4 pkt 9): płaskie plony jednego budynku łączone w jedną pozycję („+5 Kultury, +2 pieniądza i +3 Szczęścia”); różne mechaniki — osobno.
 - **Cena korzyści** (koszt budowy, utrzymanie, zużycie surowca — np. Mennica 1 Złota/turę, Spichlerz 25 Ceramiki/turę) nie jest kandydatem do TOP 5; stoi w Uwagach CSV i na górze pliku turnieju.
 - **Efekty martwe** (budynek z epoki 4, `suppressed`, pole bez konsumenta, opis niezgodny z kodem) nie wchodzą do turnieju; lista w §8.
@@ -97,7 +98,7 @@ Zdanie 1: czynność budowy tego budynku + najwyżej oceniony efekt własny z po
 
 ## 5. Wyniki — TOP 5 (43/43: 40 z TOP, 3 × NIE_USTALONO — budynek niedostępny)
 
-Pełne drabinki: `turnieje/<id>.md`; zdania i dowody `plik:linia` per pozycja: `budynki-top5.csv` (kolumny `Top1_GLOWNA`…`Top5`, `Dowod_plik_linia`). Status: **PROPOZYCJA OPERATORA r1** (do ślepego turnieju Evaluatora). Pozycji razem 120; 5 budynków ma pełne 5 pozycji, reszta mniej (tylko realne efekty).
+Pełne drabinki: `turnieje/<id>.md`; zdania i dowody `plik:linia` per pozycja: `budynki-top5.csv` (kolumny `Top1_GLOWNA`…`Top5`, `Dowod_plik_linia`). Status: **PROPOZYCJA OPERATORA r1 po OBRONIE r1** (do Final Control). Pozycji razem 123 (r1: 120); 6 budynków ma pełne 5 pozycji, reszta mniej (tylko realne efekty).
 
 <!-- TABELA_TOP -->
 
@@ -109,15 +110,15 @@ Pełne drabinki: `turnieje/<id>.md`; zdania i dowody `plik:linia` per pozycja: `
 | Odlewnia brązu | Wytapia brąz: do 50 sztuk na turę | Warunek badania Hutnictwa żelaza | Rozbudowa do Odlewni żelaza: żelazo i +12 Pracy | +5 Pracy w mieście | — |
 | Odlewnia żelaza | Wytapia żelazo: do 50 sztuk na turę (i nadal brąz) | +12 Pracy i +1 pieniądza w mieście | — | — | — |
 | Wielka odlewnia | NIE_USTALONO — niedostępny | — | — | — | — |
-| Targowisko (Rynek) | +50% dochodu z tras handlowych miasta | Zamiana Pracy na podatek 1:1 w całym państwie | +1 trasa handlowa i premia 5% trasy | +5 pieniądza w mieście (8 w Brązie, 11 w Żelazie) | Warunek Mennicy (stolica) i Emporionu |
-| Port handlowy | +1 trasa handlowa i premia 5% trasy | +1 pieniądza za każdą trasę morską ponad pierwszą | +5 pieniądza i +1 Pracy w mieście | Rozbudowa do Portu wielkiego: +10 pieniądza | +1 Szczęścia w mieście |
+| Targowisko (Rynek) | +5 pieniądza w mieście (8 w Brązie, 11 w Żelazie) | +50% dochodu z tras handlowych miasta | Zamiana Pracy na podatek 1:1 w całym państwie | +1 trasa handlowa i premia 5% trasy | Warunek Mennicy (stolica) i Emporionu |
+| Port handlowy | +5 pieniądza i +1 Pracy w mieście | +1 trasa handlowa i premia 5% trasy | +1 pieniądza za każdą trasę morską ponad pierwszą | Rozbudowa do Portu wielkiego: +10 pieniądza | +1 Szczęścia w mieście |
 | Port wielki | +10 pieniądza i +2 Pracy w mieście (Port: +5) | Zachowuje trasę handlową i premię morską Portu | +1 Szczęścia w mieście | — | — |
-| Spichlerz | Limit ludności miasta 5 → 8 | +1000 pojemności spichlerza państwa | Po wzroście miasto zachowuje 50% zapasu żywności | +2 żywności i +5 Szczęścia w mieście | Rozbudowa do Spichlerza Królewskiego: limit 12 |
-| Spichlerz Królewski | Limit ludności miasta 8 → 12 | +1500 pojemności spichlerza państwa (zamiast 1000) | +3 żywności i +5 Szczęścia w mieście | — | — |
+| Spichlerz | Limit ludności miasta 5 → 8 | +1000 pojemności spichlerza państwa | −25% kosztu racji żywnościowej w mieście | +2 żywności i +5 Szczęścia w mieście | Rozbudowa do Spichlerza Królewskiego: limit 12 |
+| Spichlerz Królewski | Limit ludności miasta 8 → 12 | −50% kosztu racji żywnościowej (Spichlerz: −25%) | +1500 pojemności spichlerza państwa (zamiast 1000) | +3 żywności i +5 Szczęścia w mieście | +10 zdrowia w mieście (Spichlerz: +5) |
 | Garncarnia | Wytwarza ceramikę: do 50 sztuk na turę | Otwiera Spichlerz w każdym mieście (limit 5 → 8) | +10% żywności w mieście | +3 Pracy w mieście (5 w Brązie, 7 w Żelazie) | — |
 | Cegielnia | Wytwarza cegłę: 50 cykli × 2 cegły na turę | +25% Pracy z terenu miasta | Warunek badania Pisma i Religii | +4 Pracy w mieście (6 w Żelazie) | — |
 | Kamienne kręgi | Religia +2% na turę w mieście | +1 Kultury i +2 Szczęścia (rośnie z epoką) | Warunek Świątyni (+4% religii na turę) | — | — |
-| Świątynia | Religia +4% na turę w mieście | +2 Kultury i +3 Szczęścia (rośnie z epoką) | — | — | — |
+| Świątynia | Religia +4% na turę w mieście | Religia sięga 2 sąsiednich miast na turę (zamiast 1) | +2 Kultury i +3 Szczęścia (rośnie z epoką) | — | — |
 | Biblioteka | +30% Nauki miasta | +3 Nauki i +2 Kultury (5 i 3 w Żelazie) | Asymilacja kultury +2% na turę | Warunek Akademii i badania Filozofii | +1 Szczęścia w mieście |
 | Studnia | +2 zdrowia i koniec kary −2 za brak wody | Warunek Akweduktu (limit 20) i Łaźni | Warunek badania Medycyny | +2 Szczęścia w mieście (rośnie z epoką) | — |
 | Akwedukt | Limit ludności miasta do 20 | +4 zdrowia w mieście | +3 Szczęścia w mieście (rośnie z epoką) | — | — |
@@ -125,7 +126,7 @@ Pełne drabinki: `turnieje/<id>.md`; zdania i dowody `plik:linia` per pozycja: `
 | Palisada drewniana | +100% Obrony obrońców miasta | Miasto trzeba oblegać — wróg nie wejdzie z marszu | — | — | — |
 | Mury | +200% Obrony obrońców miasta | Miasto trzeba oblegać — wróg nie wejdzie z marszu | Warunek Cytadeli i Baszty (razem +400%) | — | — |
 | Koszary | Rekrutacja wojska epoki Brązu i Żelaza | +20% parametrów bojowych jednostek (na stałe) | Warunek Warsztatu, Akademii wojskowej i 2 badań | +2 Pracy w mieście (3 w Żelazie) | — |
-| Emporion | +1 trasa handlowa i premia 5% trasy | +8 pieniądza w mieście | — | — | — |
+| Emporion | +8 pieniądza w mieście | +1 trasa handlowa i premia 5% trasy | — | — | — |
 | Magazyn | +20% pojemności magazynu państwa | +1 Pracy i +1 pieniądza (po 2 w Żelazie) | — | — | — |
 | Stela / Pomnik | +1 Kultury i +1 Szczęścia, bez utrzymania | Asymilacja kultury +0,5% na turę | — | — | — |
 | Pałac | +35 pkt Prawa w stolicy | −30% korupcji w stolicy | Asymilacja kultury +2% na turę | +5 Kultury i +3 Szczęścia w stolicy | Rozbudowa do Pałacu II: Prawo 45, Kultura 8 |
@@ -161,8 +162,8 @@ Pełne drabinki: `turnieje/<id>.md`; zdania i dowody `plik:linia` per pozycja: `
 | Odlewnia brązu | Zbuduj Odlewnię brązu, aby wytwarzać brąz potrzebny do wojska epoki Brązu.<br>Rozbuduj ją do Odlewni żelaza (Hutnictwo żelaza), aby wytwarzać także żelazo. |
 | Odlewnia żelaza | Rozbuduj Odlewnię brązu do Odlewni żelaza, aby wytwarzać żelazo dla wojska epoki Żelaza. |
 | Wielka odlewnia | NIE_USTALONO — budynek dziś niedostępny; sekcji nie pokazywać (karta do ukrycia). |
-| Targowisko (Rynek) | Zbuduj Targowisko, aby zwiększyć dochód z tras handlowych miasta o 50%.<br>Zbuduj w stolicy Mennicę (Waluta), aby pomnożyć podatek wszystkich miast ×1,5. |
-| Port handlowy | Zbuduj Port handlowy w mieście nad wodą, aby otworzyć miastu kolejną trasę handlową.<br>Rozbuduj go do Portu wielkiego (Inżynieria), aby podwoić dochód portu (+10 pieniądza). |
+| Targowisko (Rynek) | Zbuduj Targowisko, aby dać miastu 5 pieniądza.<br>Zbuduj w stolicy Mennicę (Waluta), aby pomnożyć podatek wszystkich miast ×1,5. |
+| Port handlowy | Zbuduj Port handlowy w mieście nad wodą, aby dać miastu 5 pieniądza.<br>Rozbuduj go do Portu wielkiego (Inżynieria), aby podwoić dochód portu (+10 pieniądza). |
 | Port wielki | Rozbuduj Port handlowy do Portu wielkiego, aby podwoić dochód portu (+10 pieniądza). |
 | Spichlerz | Zbuduj Spichlerz, aby podnieść limit ludności miasta z 5 do 8.<br>Rozbuduj go do Spichlerza Królewskiego (Pismo, sól), aby podnieść limit ludności miasta z 8 do 12. |
 | Spichlerz Królewski | Rozbuduj Spichlerz do Spichlerza Królewskiego, aby podnieść limit ludności miasta z 8 do 12. |
@@ -177,7 +178,7 @@ Pełne drabinki: `turnieje/<id>.md`; zdania i dowody `plik:linia` per pozycja: `
 | Palisada drewniana | Zbuduj Palisadę drewnianą, aby podwoić obronę miasta (+100% Obrony). |
 | Mury | Zbuduj Mury, aby potroić obronę miasta (+200% Obrony).<br>Zbuduj Cytadelę i Basztę (Inżynieria), aby podnieść obronę miasta do +400%. |
 | Koszary | Zbuduj Koszary, aby rekrutować wojsko epoki Brązu i Żelaza.<br>Zbuduj obok Akademię wojskową (Sztuka wojenna), aby wzmocnić jednostki o kolejne +20%. |
-| Emporion | Zbuduj Emporion, aby otworzyć miastu kolejną trasę handlową. |
+| Emporion | Zbuduj Emporion, aby dać miastu 8 pieniądza. |
 | Magazyn | Zbuduj Magazyn, aby zwiększyć pojemność magazynu państwa o 20%. |
 | Stela / Pomnik | Postaw Stelę, aby zyskać Kulturę bez kosztów utrzymania. |
 | Pałac | Zbuduj Pałac w stolicy, aby zapewnić stolicy 35 pkt Prawa.<br>Rozbuduj go do Pałacu II (epoka Brązu), aby podnieść Prawo stolicy do 45 i Kulturę do 8. |
@@ -218,12 +219,12 @@ Legenda: ZACHOWANE = ten sam efekt jest w nowym TOP 5 (z liczbą i poprawionym z
 | Targowisko (Rynek) | 1. Wzrost dochodu → ZACHOWANE (w nowym TOP 5)<br>2. Niski koszt wejścia → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane)<br>3. Otwiera Wymianę → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane) | +50% dochodu z tras handlowych miasta<br>Zamiana Pracy na podatek 1:1 w całym państwie<br>+1 trasa handlowa i premia 5% trasy<br>Warunek Mennicy (stolica) i Emporionu |
 | Port handlowy | 1. Wzrost dochodu → ZACHOWANE (w nowym TOP 5)<br>2. Wymaga dostępu do wody → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane)<br>3. Otwiera Żeglugę i dalszy rozwój → ZACHOWANE (w nowym TOP 5) | +1 trasa handlowa i premia 5% trasy<br>+1 pieniądza za każdą trasę morską ponad pierwszą<br>+1 Szczęścia w mieście |
 | Port wielki | 1. Wysoki dochód → ZACHOWANE (w nowym TOP 5)<br>2. Rozbudowa portu handlowego → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane)<br>3. Otwiera Inżynierię → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane) | Zachowuje trasę handlową i premię morską Portu<br>+1 Szczęścia w mieście |
-| Spichlerz | 1. Żywność i zadowolenie → ZACHOWANE (w nowym TOP 5)<br>2. Wymaga ceramiki → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane)<br>3. Podnosi limit populacji → ZACHOWANE (w nowym TOP 5) | +1000 pojemności spichlerza państwa<br>Po wzroście miasto zachowuje 50% zapasu żywności<br>Rozbudowa do Spichlerza Królewskiego: limit 12 |
-| Spichlerz Królewski | 1. Więcej żywności i zadowolenia → ZACHOWANE (w nowym TOP 5)<br>2. Wymaga ceramiki i soli → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane)<br>3. Wyższy limit populacji i armii → ZACHOWANE (w nowym TOP 5) | +1500 pojemności spichlerza państwa (zamiast 1000) |
+| Spichlerz | 1. Żywność i zadowolenie → ZACHOWANE (w nowym TOP 5)<br>2. Wymaga ceramiki → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane)<br>3. Podnosi limit populacji → ZACHOWANE (w nowym TOP 5) | +1000 pojemności spichlerza państwa<br>−25% kosztu racji żywnościowej w mieście<br>Rozbudowa do Spichlerza Królewskiego: limit 12 |
+| Spichlerz Królewski | 1. Więcej żywności i zadowolenia → ZACHOWANE (w nowym TOP 5)<br>2. Wymaga ceramiki i soli → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane)<br>3. Wyższy limit populacji i armii → ZACHOWANE (w nowym TOP 5) | −50% kosztu racji żywnościowej (Spichlerz: −25%)<br>+1500 pojemności spichlerza państwa (zamiast 1000)<br>+10 zdrowia w mieście (Spichlerz: +5) |
 | Garncarnia | 1. Wzrost Pracy → ZACHOWANE (w nowym TOP 5)<br>2. Wytapia ceramikę → ZACHOWANE (w nowym TOP 5)<br>3. Wymaga gliny i otwiera Garncarstwo → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane) | Otwiera Spichlerz w każdym mieście (limit 5 → 8)<br>+10% żywności w mieście |
 | Cegielnia | 1. Wzrost Pracy → ZACHOWANE (w nowym TOP 5)<br>2. Wytapia cegłę → ZACHOWANE (w nowym TOP 5)<br>3. Brama do Pisma → ZACHOWANE (w nowym TOP 5) | +25% Pracy z terenu miasta |
 | Kamienne kręgi | 1. Kultura i zadowolenie → ZACHOWANE (w nowym TOP 5)<br>2. Przyspiesza konwersję religijną → ZACHOWANE (w nowym TOP 5)<br>3. Otwiera Mistycyzm → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane) | Warunek Świątyni (+4% religii na turę) |
-| Świątynia | 1. Kultura i zadowolenie → ZACHOWANE (w nowym TOP 5)<br>2. Przyspiesza konwersję religijną → ZACHOWANE (w nowym TOP 5)<br>3. Wymaga Kamiennych kręgów → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane) | — |
+| Świątynia | 1. Kultura i zadowolenie → ZACHOWANE (w nowym TOP 5)<br>2. Przyspiesza konwersję religijną → ZACHOWANE (w nowym TOP 5)<br>3. Wymaga Kamiennych kręgów → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane) | Religia sięga 2 sąsiednich miast na turę (zamiast 1) |
 | Biblioteka | 1. Wzrost Nauki → ZACHOWANE (w nowym TOP 5)<br>2. Wzrost Kultury → ZACHOWANE (w nowym TOP 5)<br>3. Otwiera Pismo → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane) | +30% Nauki miasta<br>Asymilacja kultury +2% na turę<br>Warunek Akademii i badania Filozofii<br>+1 Szczęścia w mieście |
 | Studnia | 1. Wzrost zadowolenia → ZACHOWANE (w nowym TOP 5)<br>2. Otwiera drogę do Akweduktu → ZACHOWANE (w nowym TOP 5)<br>3. Otwiera Gospodarkę wodną → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane) | +2 zdrowia i koniec kary −2 za brak wody<br>Warunek badania Medycyny |
 | Akwedukt | 1. Wzrost zadowolenia → ZACHOWANE (w nowym TOP 5)<br>2. Wymaga Studni → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane)<br>3. Otwiera Budownictwo → USUNIĘTE — warunek/wymaganie/ogólnik (masło maślane) | Limit ludności miasta do 20<br>+4 zdrowia w mieście |
@@ -265,6 +266,8 @@ Legenda: ZACHOWANE = ten sam efekt jest w nowym TOP 5 (z liczbą i poprawionym z
 | Odlewnia żelaza | „Krok ku Wielkiej odlewni” | Wielka odlewnia ma epokaWejscia=4 — dziś niedostępna. | gra/data/buildings.json:253; gra/src/game/production.ts:966 |
 | Wielka odlewnia | Cały budynek (stal, +18 Pracy, +3 pieniądza) | epokaWejscia=4 (PARKOWANE), production.ts:966 blokuje budynki z epoki wyższej niż epoka miasta — w grze z 3 epokami nie da się go zbudować. | gra/data/buildings.json:253; gra/src/game/production.ts:966; gra/src/game/converters.ts:100-102 |
 | Spichlerz | „pojemność zapasów armii 100 na Spichlerz” | Klucz spichlerz_pojemnosc_zapasow_panstwa nie ma konsumenta w gra/src (grep) — nie pokazywać. | gra/data/econ-params.json:171-177 |
+| Spichlerz | „po wzroście miasto zachowuje 50% zapasu żywności” | Obrona r1: działa tylko w populationGrowth (economy.ts:1107), które nie ma wywołania w gra/src (grep „populationGrowth(”); żywy wzrost to applyFractionalGrowthV85 — ułamek wzrostu bez bufora, nic się nie zeruje ani nie zachowuje — nie pokazywać. | gra/src/game/economy.ts:1099; gra/src/game/economy.ts:1150-1155; gra/src/game/population-growth-v85.ts:306-342 |
+| Spichlerz Królewski | „po wzroście miasto zachowuje 70% zapasu żywności” | Obrona r1 (zarzut Evaluatora 1): stała 0,7 żyje tylko w populationGrowth (economy.ts:1107), które nie ma wywołania w gra/src (grep „populationGrowth(”); żywy wzrost to applyFractionalGrowthV85 bez bufora — nie pokazywać. | gra/src/game/economy.ts:1150-1155; gra/src/game/population-growth-v85.ts:306-342 |
 | Biblioteka | Obserwatorium (poziom 6, wymaga Astronomii) | maksPoziom Biblioteki = 2 — poziom 6 nieosiągalny; Astronomia nic nie odblokowuje. | gra/data/buildings.json:750; gra/data/buildings.json:797; gra/src/game/production.ts:252-271 |
 | Mennica | budynek_mennica_mnoznik / waluta_mnoznik (parametry legacy) | Opis w econ-params: „nieużywany przez bieżący kod” — nie pokazywać jako efektu. | gra/data/econ-params.json:313-319; gra/data/econ-params.json:334-340 |
 | Pałac II | −30% korupcji Pałacu I znika po rozbudowie | KORUPCJA_REDUKCJA_BUDYNKI zawiera tylko id „palac”, a rozbudowa usuwa je z listy budynków — Pałac II/III traci redukcję korupcji (prawdopodobny błąd, osobny temat). | gra/src/game/economy.ts:1226; gra/src/game/production.ts:820-838 |
@@ -314,7 +317,7 @@ Kolejne w rankingu: Trybunał (nieprawdziwe „ogranicza korupcję”), Targowis
 | Etap | Zakres (liczba pozycji w danych) | Punkt startowy | Szacunek |
 |---|---|---|---|
 | 3. Jednostki | 75 w `units.json` (pole `Top3` 75/75; 9 super-jednostek `Super-jednostka=TAK`) | `unitAdapter.ts` (sekcja Top 3 już jest); grupowanie po linii (`Rola (linia)`), wspólne efekty epoki (Koszary, brąz/żelazo, konie) | ~75 turniejów, ~5–7 kandydatów |
-| 4. Ulepszenia terenu | 23 w `terrain-improvements.json` (bez `_meta`) | brak pola TOP i sekcji w `improvementAdapter.ts`; źródło prawdy bramki: `terrain-improvements.json tech` | ~23 turnieje |
+| 4. Ulepszenia terenu | 22 w `terrain-improvements.json` (24 klucze główne bez `_meta` i `_miasto_zasieg_ref`; poprawka Obrony r1) | brak pola TOP i sekcji w `improvementAdapter.ts`; źródło prawdy bramki: `terrain-improvements.json tech` | ~22 turnieje |
 | 5. CIVPEDIA | aktualizacja `docs/encyklopedia/*` + bundle po akceptacji etapów 1–4 (opcjonalnie cuda: 19 w `wonders.json` `cuda` + 5 parkowanych, `wonderAdapter.ts` bez sekcji TOP) | — | 1 temat dokumentacyjny |
 | W2. Wdrożenie kart budynków | nowe treści `top3`→TOP 5 w `buildings.json` (43), tytuł sekcji „Top 5”, opcjonalna sekcja CMZ (Q1), ukrycie budynków niedostępnych (Q3), aktualizacja komentarza `buildingAdapter.ts:234` | po akceptacji tej tabeli i Q1–Q7 | 1 temat GAME (web) |
 
@@ -324,7 +327,7 @@ Kolejne w rankingu: Trybunał (nieprawdziwe „ogranicza korupcję”), Targowis
 
 - ZAŁOŻENIE: karta budynku nie ma sekcji „Co możesz teraz zrobić”, więc kolumna PROPOZYCJA to projekt nowej sekcji (Q1), a nie przepisanie istniejącej.
 - ZAŁOŻENIE: kandydaci „next” (warunki/rozbudowy) są realnymi korzyściami dalszymi i mogą zająć Top2–Top5 (R-B1); alternatywa w Q2.
-- ZAŁOŻENIE: Spichlerz Królewski — nie przypisano mu efektu „50% zapasu po wzroście” Spichlerza I, bo nie zweryfikowano, czy flaga `maSpichlerz` obejmuje `spichlerz_ii` (brak w TOP 5 zamiast zgadywania).
+- ROZSTRZYGNIĘTE w Obronie r1 (zastępuje założenie r1 o Spichlerzu Królewskim): „zachowanie 50% / 70% zapasu żywności po wzroście” żyje tylko w `populationGrowth` (`economy.ts:1107-1159`), które nie ma żadnego wywołania w `gra/src` (grep `populationGrowth(`; jedyne użycie to test `gra/tools/popcap-spichlerz2-akwedukt20-test.cjs` opisany jako „legacy”). Żywy wzrost to `applyFractionalGrowthV85` (`population-growth-v85.ts:306-342`, wołane z `population-growth-v85.ts:567` w `applyPostCentralPopulationGrowth`, które woła tura w `main.ts:38297`) — ułamek wzrostu bez bufora, nic się nie zeruje ani nie zachowuje. Oba efekty przeniesione do listy martwej (§8); w ich miejsce realne premie Spichlerzy z żywego kodu: koszt racji ×0,75 / ×0,5 (`building-resource-gate.ts:486-491`, `population-growth-v85.ts:206-223`), zdrowie +5 / +10 (`building-resource-gate.ts:472-477`, `turn-economy.ts:2023`), wzrost +1% / +2% (`building-resource-gate.ts:479-484`, `population-growth-v85.ts:262-277`).
 - Wartości dla normal; łańcuchy kumulacji (Koszary + Akademia wojskowa + Warsztat = +50%, Kuźnie +30%) z kodu (`unit-building-bonuses.ts:9-33`), bez testu w żywej grze.
 - **Zgodność Operator–Evaluator: NIE_ZMIERZONO w tej rundzie** — liczy ją Evaluator po własnym ślepym turnieju 43 budynków (macierz na 5 pozycji).
 - `.xlsx` nie powstał; CSV z BOM i `;` otwiera się w Excelu bezpośrednio.

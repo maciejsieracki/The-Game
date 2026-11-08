@@ -25,6 +25,7 @@ ALIAS = {
     'SB': 'gra/src/game/society-breakdown.ts', 'EF': 'gra/src/game/empire-food.ts',
     'WT': 'gra/src/game/work-tax.ts', 'SD': 'gra/src/game/siegeDefenders.ts', 'SG': 'gra/src/game/siege.ts',
     'MS': 'gra/src/game/mapSiegeDetect.ts', 'CH': 'gra/src/game/city-hex-movement.ts', 'CT': 'gra/src/game/cities.ts',
+    'PG': 'gra/src/game/population-growth-v85.ts',
 }
 _lines = {}
 def nlines(path):
@@ -67,8 +68,10 @@ def apply_rules(c):
 
 # E1-B (odpowiednik E1, decyzja właściciela pkt 4): Top1 = realna korzyść od ręki = efekt własny budynku
 # (kind 'own'), działający od ukończenia budowy, SKALA > 0. Nie: warunek/rozbudowa, efekt martwy.
-def top1_eligible(c):
-    return c['kind'] == 'own' and c['sc'][0] > 0
+# E1-B2 (Obrona r1, zarzut Evaluatora 3): efekt „war” (wartość 0 bez stanu gry, którego budynek sam nie
+# zapewnia, np. aktywnej trasy albo nadwyżki Pracy) nie jest korzyścią „od ręki” — Top1 tylko, gdy budynek nie ma innego efektu własnego.
+def top1_eligible(c, allow_war=False):
+    return c['kind'] == 'own' and c['sc'][0] > 0 and (allow_war or not c.get('war'))
 
 def tournament(cands):
     wins = {c['id']: 0 for c in cands}
@@ -82,7 +85,7 @@ def tournament(cands):
     return rank, wins, duels
 
 def order_top(rank):
-    el = [c for c in rank if top1_eligible(c)]
+    el = [c for c in rank if top1_eligible(c)] or [c for c in rank if top1_eligible(c, allow_war=True)]
     if not el:
         return rank, False
     return [el[0]] + [c for c in rank if c is not el[0]], True
@@ -160,7 +163,7 @@ for b in buildings:
         cmz = [f"{NIE} — budynek dziś niedostępny; sekcji nie pokazywać (karta do ukrycia)."]
     sr = any(c['sr'] for c in top)
     pew = NIE if not top else ('SREDNIA' if sr else 'WYSOKA')
-    status = 'PROPOZYCJA OPERATORA r1 — do ślepego turnieju Evaluatora' if top else 'NIE_USTALONO — budynek niedostępny w grze (ukryć kartę)'
+    status = 'PROPOZYCJA OPERATORA r1 + OBRONA r1 — do Final Control' if top else 'NIE_USTALONO — budynek niedostępny w grze (ukryć kartę)'
     dead_txt = ' | '.join(f"UKRYĆ: {x['tytul']} — {x['powod']} [{ev_expand(x['ev'])}]" for x in DEAD.get(bid, []))
     uw = ' '.join(filter(None, [NOTES.get(bid, ''), ('Martwe: ' + dead_txt) if dead_txt else '',
                                 f"Cena korzyści: {upkeep_text(b)}.", '' if e1 or not top else 'E1-B: brak efektu własnego.']))
@@ -188,7 +191,7 @@ for b in buildings:
          '|---|---|---|---|---|---|---|---|---|---|---|---|']
     for c in cands:
         L.append(f"| {c['id']} | {c['kind']}{' (R-B1)' if c.get('rule') else ''} | {c['tytul']} | {c['tekst']} | "
-                 + ' | '.join(str(v) for v in c['sc']) + f" | {wsum(c['sc'])} | {ev_expand(c['ev'])}{' (pewność ŚREDNIA)' if c['sr'] else ''} |")
+                 + ' | '.join(str(v) for v in c['sc']) + f" | {wsum(c['sc'])} | {ev_expand(c['ev'])}{' (pewność ŚREDNIA)' if c['sr'] else ''}{' (E1-B2: efekt warunkowy)' if c.get('war') else ''} |")
     if not cands:
         L.append('| — | — | brak realnych efektów — budynek niedostępny | — | | | | | | | | |')
     L += ['', 'S=SKALA(3), N=NOWA MECHANIKA(3), B=BRAK ZASTĘPNIKA(2), Z=ZASIĘG(2), O=ODCZUWALNOŚĆ(2), C=CZYTELNOŚĆ(1); maks. 65. '
@@ -204,8 +207,9 @@ for b in buildings:
     L += ['', '## 4. Ranking', '']
     L += [f"{i+1}. **{c['id']}** — {c['tytul']} — wygrane: {wins[c['id']]}, suma: {wsum(c['sc'])}" for i, c in enumerate(rank_t)] or ['—']
     if rank and rank_t and rank[0] is not rank_t[0]:
-        L += ['', f"Reguła E1-B: {rank_t[0]['id']} to warunek/rozbudowa → Top1 = **{rank[0]['id']}** (najwyżej w rankingu efekt własny)."]
-    L += ['', '## 5. TOP 5 (propozycja Operatora r1)', '']
+        why = 'efekt warunkowy — 0 bez stanu gry, którego budynek nie zapewnia (E1-B2)' if rank_t[0].get('war') else 'warunek/rozbudowa'
+        L += ['', f"Reguła E1-B: {rank_t[0]['id']} to {why} → Top1 = **{rank[0]['id']}** (najwyżej w rankingu efekt własny bez warunku)."]
+    L += ['', '## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)', '']
     L += [f"- Top{i+1}{' (GŁÓWNA KORZYŚĆ)' if i == 0 else ''}: **{c['tytul']}** — {c['tekst']}" for i, c in enumerate(top)] or [f"- {NIE} — budynek niedostępny"]
     L += ['', '## 6. Porównanie z dzisiejszym top3', '']
     L += [f"- {i}. „{t}” → {k}" for i, t, k in cmp]

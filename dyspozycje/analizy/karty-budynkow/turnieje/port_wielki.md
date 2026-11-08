@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **b** — Zachowuje trasę handlową i premię morską Portu — wygrane: 1, suma: 32
 3. **c** — +1 Szczęścia w mieście — wygrane: 0, suma: 25
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+10 pieniądza i +2 Pracy w mieście (Port: +5)** — Podwaja dochód Portu handlowego, który zastępuje.
 - Top2: **Zachowuje trasę handlową i premię morską Portu** — Po rozbudowie miasto nie traci slotu trasy ani +1 pieniądza za trasę morską.

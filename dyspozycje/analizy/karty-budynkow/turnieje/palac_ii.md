@@ -37,7 +37,7 @@ Liczba realnych efektów: 4 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 3. **c** — Asymilacja kultury +2% na turę (zachowana) — wygrane: 1, suma: 31
 4. **d** — Rozbudowa do Pałacu III: Prawo 55, Kultura 11 — wygrane: 0, suma: 25
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Prawo stolicy 35 → 45 pkt** — Wyższy stopień Pałacu daje więcej Prawa (+58 łatwy, +36 trudny).
 - Top2: **+8 Kultury i +4 Szczęścia w stolicy** — Półtora raza więcej niż Pałac I.

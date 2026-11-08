@@ -28,7 +28,7 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 1. **a** — ×1,5 podatku w każdym mieście państwa — wygrane: 1, suma: 61
 2. **b** — +3 pieniądza w stolicy (5 w Żelazie) — wygrane: 0, suma: 28
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **×1,5 podatku w każdym mieście państwa** — Mnoży podatek z handlu wszystkich miast przed podziałem na naukę, pieniądz i luksus (×1,62 łatwy, ×1,38 trudny); nie obejmuje tras.
 - Top2: **+3 pieniądza w stolicy (5 w Żelazie)** — Mały stały dochód stolicy.

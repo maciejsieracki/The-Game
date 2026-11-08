@@ -37,7 +37,7 @@ Liczba realnych efektów: 4 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 3. **d** — Warunek Warsztatu, Akademii wojskowej i 2 badań — wygrane: 1, suma: 34
 4. **c** — +2 Pracy w mieście (3 w Żelazie) — wygrane: 0, suma: 25
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **Rekrutacja wojska epoki Brązu i Żelaza** — Bez Koszar w mieście nie zrekrutujesz tam żadnej jednostki epoki Brązu ani Żelaza.
 - Top2: **+20% parametrów bojowych jednostek (na stałe)** — Jednostka zrekrutowana lub odwiedzająca miasto dostaje trwale +20% ataku, obrony i zdrowia (bez Pancerza).

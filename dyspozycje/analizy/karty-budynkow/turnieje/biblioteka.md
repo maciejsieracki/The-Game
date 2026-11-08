@@ -41,7 +41,7 @@ S=SKALA(3), N=NOWA MECHANIKA(3), B=BRAK ZASTĘPNIKA(2), Z=ZASIĘG(2), O=ODCZUWAL
 4. **e** — Warunek Akademii i badania Filozofii — wygrane: 1, suma: 32
 5. **d** — +1 Szczęścia w mieście — wygrane: 0, suma: 23
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+30% Nauki miasta** — Procentowa premia do całej nauki miasta (+37% łatwy, +23% trudny).
 - Top2: **+3 Nauki i +2 Kultury (5 i 3 w Żelazie)** — Płaski dodatek, rośnie z epoką.

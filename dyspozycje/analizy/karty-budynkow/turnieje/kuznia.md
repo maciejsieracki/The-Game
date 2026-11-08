@@ -32,7 +32,7 @@ Liczba realnych efektów: 3 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 2. **c** — Rozbudowa do Kuźni żelaza: Pancerz do +30% — wygrane: 1, suma: 30
 3. **b** — +6 Pracy i +1 pieniądza w mieście — wygrane: 0, suma: 30
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+15% Pancerza jednostek (na stałe)** — Jednostka zrekrutowana w tym mieście albo wchodząca do niego dostaje trwale +15% Pancerza.
 - Top2: **Rozbudowa do Kuźni żelaza: Pancerz do +30%** — Po Hutnictwie żelaza rozbudowa do Kuźni żelaza podnosi premię do +30% Pancerza.

@@ -28,7 +28,7 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 1. **a** — +20% pojemności magazynu państwa — wygrane: 1, suma: 49
 2. **b** — +1 Pracy i +1 pieniądza (po 2 w Żelazie) — wygrane: 0, suma: 25
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+20% pojemności magazynu państwa** — Każdy Magazyn zwiększa limit każdego surowca w całym państwie o 20% bazy (np. 50 000 → 60 000 w Kamieniu).
 - Top2: **+1 Pracy i +1 pieniądza (po 2 w Żelazie)** — Drobny dochód miasta, rośnie z epoką.

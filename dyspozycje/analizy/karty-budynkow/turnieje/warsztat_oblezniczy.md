@@ -28,7 +28,7 @@ Liczba realnych efektów: 2 (< 5) — zgodnie z decyzją właściciela (pkt 2) b
 1. **a** — +10% parametrów jednostek (z Koszarami +30%) — wygrane: 1, suma: 41
 2. **b** — +4 Pracy i +2 pieniądza w mieście — wygrane: 0, suma: 28
 
-## 5. TOP 5 (propozycja Operatora r1)
+## 5. TOP 5 (propozycja Operatora r1 po Obronie r1)
 
 - Top1 (GŁÓWNA KORZYŚĆ): **+10% parametrów jednostek (z Koszarami +30%)** — Trzecia warstwa ścieżki parametrów — sumuje się z Koszarami i Akademią wojskową (maks. +50%).
 - Top2: **+4 Pracy i +2 pieniądza w mieście** — Drobny dochód miasta.
