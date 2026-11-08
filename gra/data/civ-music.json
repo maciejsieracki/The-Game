@@ -1,10 +1,18 @@
 {
-  "_opis": "Muzyka cywilizacji w dyplomacji. civId (ikonaId z civs.json, np. grecy, sumer) -> greeting: plik przywitania (grany raz po otwarciu rozmowy), negotiation: lista plikow negocjacji (petla, kolejnosc losowa). Pliki leza w src/audio/utwory/dyplomacja/_civ/<civId>/. Brak greeting = rozmowa zaczyna od negocjacji; brak negotiation = po przywitaniu gra dotychczasowy utwor dyplomacji. Cywilizacja bez wpisu zachowuje dotychczasowy dzwiek. Dodanie cywilizacji = plik + wpis, bez zmian w kodzie.",
+  "_opis": "Muzyka cywilizacji w dyplomacji. civId (ikonaId z civs.json, np. grecy, sumer) -> greeting: plik przywitania ALBO LISTA przywitan (jedno na rozmowe, grane raz po otwarciu rozmowy; lista = uzywane zamiennie, rotacja po kolei per cywilizacja, nie to samo dwa razy z rzedu; stan w pamieci sesji), negotiation: lista plikow negocjacji (petla, kolejnosc losowa). Pliki leza w src/audio/utwory/dyplomacja/_civ/<civId>/. Brak greeting = rozmowa zaczyna od negocjacji; brak negotiation = po przywitaniu gra dotychczasowy utwor dyplomacji. Cywilizacja bez wpisu zachowuje dotychczasowy dzwiek. Dodanie cywilizacji = plik + wpis, bez zmian w kodzie. Stan: 15/15 cywilizacji (R-WEB-DIPLO-CIV-MUSIC-PACK2-Q1).",
   "grecy": { "greeting": "grecy_przywitanie.mp3", "negotiation": ["grecy_negocjacje.mp3"] },
   "rzymianie": { "greeting": "rzymianie_przywitanie.mp3", "negotiation": ["rzymianie_negocjacje.mp3"] },
   "chinczycy": { "greeting": "chinczycy_przywitanie.mp3", "negotiation": ["chinczycy_negocjacje.mp3"] },
-  "zulusi": { "greeting": "zulusi_przywitanie.mp3", "negotiation": ["zulusi_negocjacje.mp3"] },
+  "zulusi": { "greeting": ["zulusi_przywitanie.mp3", "zulusi_przywitanie_2.mp3"], "negotiation": ["zulusi_negocjacje.mp3"] },
   "egipt": { "greeting": "egipt_przywitanie.mp3", "negotiation": ["egipt_negocjacje.mp3"] },
-  "sumer": { "greeting": "sumer_przywitanie.mp3" },
-  "inkowie": { "negotiation": ["inkowie_negocjacje_1.mp3", "inkowie_negocjacje_2.mp3"] }
+  "sumer": { "greeting": "sumer_przywitanie.mp3", "negotiation": ["sumer_negocjacje.mp3"] },
+  "inkowie": { "greeting": "inkowie_przywitanie.mp3", "negotiation": ["inkowie_negocjacje_1.mp3", "inkowie_negocjacje_2.mp3"] },
+  "asyria": { "greeting": "asyria_przywitanie.mp3", "negotiation": ["asyria_negocjacje.mp3"] },
+  "babilonia": { "greeting": "babilonia_przywitanie.mp3", "negotiation": ["babilonia_negocjacje.mp3"] },
+  "celtowie": { "greeting": "celtowie_przywitanie.mp3", "negotiation": ["celtowie_negocjacje.mp3"] },
+  "fenicjanie": { "greeting": "fenicjanie_przywitanie.mp3", "negotiation": ["fenicjanie_negocjacje.mp3"] },
+  "germanie": { "greeting": "germanie_przywitanie.mp3", "negotiation": ["germanie_negocjacje.mp3"] },
+  "harappa": { "greeting": "harappa_przywitanie.mp3", "negotiation": ["harappa_negocjacje.mp3"] },
+  "hetyci": { "greeting": "hetyci_przywitanie.mp3", "negotiation": ["hetyci_negocjacje.mp3"] },
+  "slowianie": { "greeting": "slowianie_przywitanie.mp3", "negotiation": ["slowianie_negocjacje.mp3"] }
 }
