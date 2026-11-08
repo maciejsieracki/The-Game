@@ -344,6 +344,30 @@ fn js_math_semantics_nan_and_signed_zero() {
     assert!(js_clamp(0.5, f64::NAN, 1.0).is_nan(), "clamp z NaN dolnym = NaN");
 }
 
+/// Wartosci policzone w node 22 (ten sam silnik JS co web): `Number.isInteger(n) ? String(n) : n.toFixed(1)`.
+#[test]
+fn fmt_prog_matches_js_to_fixed_1() {
+    let cases: [(f64, &str); 14] = [
+        (0.1 + 0.2, "0.3"),
+        (0.25, "0.3"),
+        (29.5, "29.5"),
+        (-0.25, "-0.3"),
+        (29.25, "29.3"),
+        (0.05, "0.1"),
+        (0.35, "0.3"),
+        (1.45, "1.4"),
+        (-0.04, "-0.0"),
+        (f64::NAN, "NaN"),
+        (f64::INFINITY, "Infinity"),
+        (f64::NEG_INFINITY, "-Infinity"),
+        (29.0, "29"),
+        (-0.0, "0"),
+    ];
+    for (n, want) in cases {
+        assert_eq!(fmt_prog(n), want, "fmt_prog({n:?})");
+    }
+}
+
 #[test]
 fn nap_fallback_trust_is_fail_closed() {
     // progNapZaufanie nieobecne -> 30 (fail-closed), zaufanie 29 blokuje.
