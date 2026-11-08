@@ -9064,3 +9064,10 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 - MD5: Gra-ROBOCZA.html 143ef7300b7d3548e888dd6ed742fb33; audio-pack-1 5b990bc3…, -2 0a9a1047…, -3 9e88be9f… (GitHub Raw zgodne). Manifest ma pole `sidecars`. finalize2.sh = finalize + kopiowanie sąsiadów.
 - UWAGA DLA WŁAŚCICIELA: ROBOCZA to teraz Gra-ROBOCZA.html + 3 pliki audio-pack-*.js w tym samym folderze (gra-robocza/). Przy kopiowaniu gry brać cały komplet.
 - NIE_ZMIERZONO: pamięć procesu z sąsiadami; rotacja przywitań Zulusów w realnej grze; cisza 2,35 s na końcu pętli fenicjanie_negocjacje.
+
+## 2026-11-08 — FALA 563: R-WEB-TRYBUNAL-CARD-HAPPINESS-DISPLAY-Q1 (ROBOCZA b1a76485, main dd7254fa7)
+- Zgłoszenie właściciela: karta Trybunału „+2 Szczęścia” (TOP 5) vs „Zadowolenie +1 pkt/turę” (Plony i efekty). Diagnoza: błąd w karcie, nie w silniku — wiersz Zadowolenie brał surowe baza/przyrost bez ryczałtu +1 dla `dajeSzczescie:true`; silnik (`buildingHappinessAtLevel`) daje Trybunałowi L1 +2, L2 +3.
+- Naprawa (FC 9d0c5258b, 1 runda): buildingAdapter.ts liczy wiersz i skalę poziomów z silnika dla 19 budynków z dajeSzczescie (Targowisko, Port, Stela nie miały wiersza wcale). Liczby silnika/danych bez zmian.
+- Testy: trybunal-card-happiness-display-test 128/0 (Chromium DOM; na starym adapterze 51 FAIL), building-happiness 14/0, plony-budynkow 68/0, building-cards-top5 1179/0, logic 213/213, ai-test 289/0, tsc 0. Dług sprzed zmiany: building-detail-card-entitycard-migration-test 54/1.
+- MD5 Gra-ROBOCZA.html b1a764852e895796daf1ce93106ebaf4 (Raw zgodne); pakiety audio bez zmian (5b990bc3…, 0a9a1047…, 9e88be9f…).
+- NIE_ZMIERZONO: zrzuty PNG; legacy formatery w cityPanel.ts (ok. l.6584/7721/9325) mogą nadal pokazywać surowe zadowolenie. Dług Rust: REPIN karty budynku.
