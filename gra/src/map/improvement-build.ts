@@ -26,6 +26,7 @@ import terrainImprovements from '../../data/terrain-improvements.json';
 import {
   hexHasHorseDeposit,
   STADNINA_HORSE_COST,
+  STADNINA_FREE_FROM_ERA,
   isLivestockAllowed,
   isLivestockUnlockedForPlacement,
   livestockKeyFromImprovement,
@@ -1520,6 +1521,11 @@ export function getStadninaBuildBlockReason(state: ImprovementBuildState): strin
   }
   if (outside > 0 && inTerritory === 0) {
     return 'Złoże konia jest poza twoim terytorium — powiększ miasto albo postaw posterunek bliżej.';
+  }
+  // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: w epokach 1–2 magazyn koni NIE odblokowuje
+  // stadniny poza złożem (bramka epoki w isLivestockUnlockedForPlacement), więc komunikat nie może go sugerować.
+  if ((state.playerEra ?? 1) < STADNINA_FREE_FROM_ERA) {
+    return 'Wymagane złoże konia na twoim terytorium. Do epoki Żelaza stadnina stoi wyłącznie na złożu konia (poza złożem dopiero od epoki Żelaza).';
   }
   const stock = Math.floor(state.horseStockAvailable ?? 0);
   return `Wymagane złoże konia na twoim terytorium (albo ${STADNINA_HORSE_COST} koni w magazynie imperium, masz ${stock}).`;
