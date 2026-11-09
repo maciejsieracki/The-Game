@@ -1,3 +1,9 @@
+## ROBOCZA 17a57af1 -- 2026-11-06 -- FALA 578: Konnica i rydwany domyślnie na skrzydłach szyku (nie z przodu) (testowa)
+
+- R-WEB-ARMY-CAVALRY-FLANK-NOT-APPLIED-DEFAULT-Q1 (e9869a967)
+- Weryfikacja: tsc 0, battle-cavalry-flank-default 960 checks PASS, battle-initial-placement-runtime PASS, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO w przeglądarce; dług: placement fallback przy zablokowanych polach, REPIN Rust
+
 ## ROBOCZA 48bb2f40 -- 2026-11-06 -- FALA 577: Limit 1 Super-jednostki liczy cały stan cywilizacji (testowa)
 
 - R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1 (84844fc73)
