@@ -9087,3 +9087,8 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 - Stan Rust w chwili wstrzymania: parity-v2 = 43f4064b0 (plan WIRE zintegrowany); FORCED-WAR-MODULES G1–G3b zintegrowane; kolejka: W1–W8, G3c, REPIN karty budynku, OBLEZENIE P3–P5, #5, #6, D-R5-2. Otwarte decyzje web: _martweFrazy (Katapulta/elit) ABC niezadane.
 
 - 2026-11-09: Właściciel potwierdził: ROBOCZA z audio w plikach-sąsiadach (Gra-ROBOCZA.html + audio-pack-1/2/3.js w jednym katalogu, pobranie z GitHuba) „działa” — zamyka NIE_ZMIERZONO z FALA 562 dla pobrania i odtwarzania u właściciela. Dalej niesprawdzone: wariant POLE-BITWY (czy ma własne audio), rotacja przywitań Zulusów, cisza 2,35 s na końcu pętli Fenicjan.
+
+## 2026-11-09 — Decyzje właściciela (ABC)
+- Pasek dyplomacji: podpis „auto-uczciwa oferta” pod „SZYBKA WYMIANA” ZOSTAJE (opcja rekomendowana).
+- `_martweFrazy` (warsztat_oblezniczy „Katapult”, akademia_wojskowa „elit”): USUNĄĆ OBA wpisy — dopisane jako DODATEK 1 do R-WEB-CARDS-RESOURCE-PURPOSE-Q1.
+- Zasada: pytania do właściciela zadawać WYŁĄCZNIE jako pytania ABC (AskUserQuestion), z wadami/zaletami i radą — nie w treści odpowiedzi.
