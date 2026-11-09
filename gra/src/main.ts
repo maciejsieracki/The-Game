@@ -27172,6 +27172,8 @@ async function boot(): Promise<void> {
         player.zbadane = new Set(data.tech.map(t => t.Technologia as string));
       },
       setPlayerPracaPool: (n: number): void => { playerPracaPool = n; },
+      /** R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: ustawia epokę gracza (bramka stadniny poza złożem od epoki 3). */
+      setPlayerEra: (era: number): void => { player.era = era; },
       getPlacedLayers: (q: number, r: number): string[] => placedImprovements.get(`${q},${r}`) ?? [],
       applyBuildRequest: (req: ImprovementBuildRequest): void => applyBuildRequest(req),
       getToast: () => {
