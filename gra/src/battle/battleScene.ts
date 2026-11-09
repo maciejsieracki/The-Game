@@ -5280,11 +5280,11 @@ export class BattleScene {
         // used to reach from the slot up to the map mid-row, i.e. INTO the body's
         // rows. Now it is bounded by the body's row span (outer side up to 6 rows).
         const wingRowLo = topWing
-          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 6)
+          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 6, bodyMinRow === Infinity ? 0 : bodyMinRow - 5)
           : Math.max(bodyMaxRow === -Infinity ? PLAY_MID_ROW + 1 : bodyMaxRow + 1, idealRow[idx]! - 3);
         const wingRowHi = topWing
           ? Math.min(bodyMinRow === Infinity ? PLAY_MID_ROW - 1 : bodyMinRow - 1, idealRow[idx]! + 3)
-          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 6);
+          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 6, bodyMaxRow === -Infinity ? PLAY_ROW1 - 1 : bodyMaxRow + 5);
         const rowLo = mountedWing ? wingRowLo : playerDeploy
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : PLAY_ROW0;
@@ -16906,11 +16906,11 @@ export class BattleScene {
         const mountedWing = initialBattleRoleOf(bu) === 'mounted';
         const topWing = idealRow[idx]! < PLAY_MID_ROW;
         const wingRowLo = topWing
-          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 6)
+          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 6, bodyMinRow === Infinity ? 0 : bodyMinRow - 5)
           : Math.max(bodyMaxRow === -Infinity ? PLAY_MID_ROW + 1 : bodyMaxRow + 1, idealRow[idx]! - 3);
         const wingRowHi = topWing
           ? Math.min(bodyMinRow === Infinity ? PLAY_MID_ROW - 1 : bodyMinRow - 1, idealRow[idx]! + 3)
-          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 6);
+          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 6, bodyMaxRow === -Infinity ? PLAY_ROW1 - 1 : bodyMaxRow + 5);
         const rowLo = mountedWing ? wingRowLo : this.deployPhase && side === playerSide
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : 0;
