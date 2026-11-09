@@ -113,8 +113,8 @@ assert(sp.total > 0, 'Katapulta M_siege>0 (got ' + sp.total + ')');
 
 const wojsko = [hastati, hastati, byName['Falanga']];
 const sum = sumArmyFieldPower(wojsko);
-// Falanga = 52.5 (units.json fieldPower, ta sama kalibracja balansu co Hastati); 57.5 + 57.5 + 52.5.
-assert(sum === 57.5 + 57.5 + 52.5, 'sumArmyFieldPower 3 units (got ' + sum + ')');
+// Falanga = 58.5 (units.json fieldPower po DODATKU 2: Atak 7, Obrona 12, Przebicie 4; ta sama kalibracja co Hastati); 57.5 + 57.5 + 58.5.
+assert(sum === 57.5 + 57.5 + 58.5, 'sumArmyFieldPower 3 units (got ' + sum + ')');
 
 const cached = byName['Triari'];
 if (typeof cached.fieldPower === 'number') {

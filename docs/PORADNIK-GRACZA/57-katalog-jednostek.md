@@ -34,7 +34,7 @@ W grze jest **73** jednostki — standardowe (dla wielu cywilizacji), specjalne 
 | Rydwan (woły) | Brąz | Flanka | 30 | 1 | Koło | Standardowa | 52 | 0 | [Rydwan (woły)](../encyklopedia/jednostki/rydwan-wo-y.md) |
 | Konnica | Brąz | Flanka | 22 | 1 | Jeździectwo | Standardowa | 49 | 0 | [Konnica](../encyklopedia/jednostki/konnica.md) |
 | Galera | Brąz | Morska | 18 | 1 | Żegluga | Standardowa | 25 | 0 | [Galera](../encyklopedia/jednostki/galera.md) |
-| Falanga | Żelazo | Wręcz | 18 | 1 | Hutnictwo żelaza | Specjalna | 52.5 | 50 | [Falanga](../encyklopedia/jednostki/falanga.md) |
+| Falanga | Żelazo | Wręcz | 18 | 1 | Hutnictwo żelaza | Specjalna | 58.5 | 50 | [Falanga](../encyklopedia/jednostki/falanga.md) |
 | Hieros Lochos (Święty Zastęp) | Żelazo | Wręcz | 0 (super) | 1 | — | Super | 63 | 50 | [Hieros Lochos (Święty Zastęp)](../encyklopedia/jednostki/hieros-lochos-swiety-zastep.md) |
 | Hastati | Żelazo | Wręcz | 18 | 1 | Hutnictwo żelaza | Specjalna | 57.5 | 0 | [Hastati](../encyklopedia/jednostki/hastati.md) |
 | Triari | Żelazo | Wręcz | 18 (super) | 1 | Hutnictwo żelaza | Specjalna | 62 | 50 | [Triari](../encyklopedia/jednostki/triari.md) |
@@ -329,7 +329,7 @@ Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarb
 
 ### Falanga
 
-**Falanga** — wręcz, typ **Falangite**. Rekrutacja: **18** ¤ i **1** mieszkańców; technologia **Brązownictwo**. Utrzymanie **2** ¤/turę, **1** żywności/turę. Ruch na mapie: **1** heksów. Jednostka **specjalna** cywilizacji **Grecka**. Moc w polu: **45**. najlepsza Obrona frontalna / anty-szarża
+**Falanga** — wręcz, typ **Falangite**. Rekrutacja: **18** ¤ i **1** mieszkańców; technologia **Brązownictwo**. Utrzymanie **2** ¤/turę, **1** żywności/turę. Ruch na mapie: **1** heksów. Jednostka **specjalna** cywilizacji **Grecka**. Moc w polu: **58.5**. najlepsza Obrona frontalna / anty-szarża
 
 
 ### Przykład liczbowy
