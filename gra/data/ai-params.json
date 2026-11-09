@@ -723,5 +723,230 @@
     "wartosc": -2,
     "sekcja": "§5 Zakup jednostek",
     "opis": "R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1 (decyzja właściciela 2026-11-07, ABC=C), poziom Trudny: Minimalny dochód netto Złota/turę (przychód − utrzymanie wojska i budynków) PO zakupie; poniżej AI nie kupuje jednostki. Czytane w shouldAIPurchaseUnit (game/ai.ts). PLACEHOLDER do zatwierdzenia przez właściciela po pomiarze."
+  },
+  "sklad_armii_rzymianie_wrecz": {
+    "wartosc": 75,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Rzymianie — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_rzymianie_dystans": {
+    "wartosc": 15,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Rzymianie — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_rzymianie_konnica": {
+    "wartosc": 10,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Rzymianie — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_grecy_wrecz": {
+    "wartosc": 70,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Grecy — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_grecy_dystans": {
+    "wartosc": 20,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Grecy — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_grecy_konnica": {
+    "wartosc": 10,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Grecy — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_chinczycy_wrecz": {
+    "wartosc": 60,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Chińczycy — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_chinczycy_dystans": {
+    "wartosc": 20,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Chińczycy — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_chinczycy_konnica": {
+    "wartosc": 20,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Chińczycy — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_inkowie_wrecz": {
+    "wartosc": 65,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Inkowie — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_inkowie_dystans": {
+    "wartosc": 35,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Inkowie — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_inkowie_konnica": {
+    "wartosc": 0,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Inkowie — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_zulusi_wrecz": {
+    "wartosc": 60,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Zulusi — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_zulusi_dystans": {
+    "wartosc": 25,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Zulusi — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_zulusi_konnica": {
+    "wartosc": 15,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Zulusi — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_egipt_wrecz": {
+    "wartosc": 55,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Egipt — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_egipt_dystans": {
+    "wartosc": 35,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Egipt — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_egipt_konnica": {
+    "wartosc": 10,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Egipt — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_sumer_wrecz": {
+    "wartosc": 50,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Sumerowie — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_sumer_dystans": {
+    "wartosc": 35,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Sumerowie — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_sumer_konnica": {
+    "wartosc": 15,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Sumerowie — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_celtowie_wrecz": {
+    "wartosc": 65,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Celtowie — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_celtowie_dystans": {
+    "wartosc": 10,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Celtowie — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_celtowie_konnica": {
+    "wartosc": 25,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Celtowie — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_germanie_wrecz": {
+    "wartosc": 80,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Germanie — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_germanie_dystans": {
+    "wartosc": 15,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Germanie — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_germanie_konnica": {
+    "wartosc": 5,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Germanie — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_harappa_wrecz": {
+    "wartosc": 55,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Harappa — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_harappa_dystans": {
+    "wartosc": 35,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Harappa — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_harappa_konnica": {
+    "wartosc": 10,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Harappa — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_hetyci_wrecz": {
+    "wartosc": 60,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Hetyci — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_hetyci_dystans": {
+    "wartosc": 15,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Hetyci — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_hetyci_konnica": {
+    "wartosc": 25,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Hetyci — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_slowianie_wrecz": {
+    "wartosc": 70,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Słowianie — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_slowianie_dystans": {
+    "wartosc": 25,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Słowianie — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_slowianie_konnica": {
+    "wartosc": 5,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Słowianie — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_babilonia_wrecz": {
+    "wartosc": 50,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Babilonia — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_babilonia_dystans": {
+    "wartosc": 35,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Babilonia — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_babilonia_konnica": {
+    "wartosc": 15,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Babilonia — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_asyria_wrecz": {
+    "wartosc": 50,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Asyria — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_asyria_dystans": {
+    "wartosc": 30,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Asyria — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_asyria_konnica": {
+    "wartosc": 20,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Asyria — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_fenicjanie_wrecz": {
+    "wartosc": 55,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Fenicjanie — docelowy udział jednostek wręcz w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_fenicjanie_dystans": {
+    "wartosc": 35,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Fenicjanie — docelowy udział jednostek dystansowe (łucznicy, procarze, oszczepnicy) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "sklad_armii_fenicjanie_konnica": {
+    "wartosc": 10,
+    "sekcja": "§9 Skład armii",
+    "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Fenicjanie — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
   }
 }

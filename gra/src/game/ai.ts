@@ -92,6 +92,10 @@ import { workedHexCoordsForCity } from './turn-economy';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { CITY_BUILDING_PREREQ, cityBuildingPrereqMet } from './building-resource-gate';
 import { isBuildingSupersededByUpgrade, newestAvailableSameTypeUnit } from './production';
+import {
+  armyClassOfUnit, countArmyClasses, loadArmyCompositionTarget, planCompositionRecruitChain,
+  type CompositionUnitDef,
+} from './ai-army-composition';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
 import type { AiTargetMemoryEntry } from './ai-fog';
 import {
@@ -232,6 +236,17 @@ export interface AITurnOpts {
   rememberedTargets?: readonly AiTargetMemoryEntry[];
   /** Civilization type string (TypCywilizacji value) for archetype modifiers. */
   civType?: string;
+  /**
+   * R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1: id jednostek już opłaconych i czekających w kolejkach
+   * rekrutacji miast tego ownera (silnik je podaje; ai.ts ich nie widzi). Liczone do składu armii.
+   */
+  queuedRecruitUnitIds?: readonly string[];
+  /**
+   * R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1: scratch per decideAITurn — id jednostek wybranych do
+   * rekrutacji w TEJ turze przez wcześniejsze miasta (żeby kolejne miasta widziały zmieniony skład).
+   * decideAITurn zeruje i uzupełnia; chooseCityProduction tylko czyta.
+   */
+  armyCompositionPending?: string[];
   /**
    * Already-built building ids in each city (key = cityId).
    * Used to avoid queueing a building that is already present.
@@ -1850,6 +1865,53 @@ function isBorderCity(
 }
 
 /**
+ * R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1: podmienia wszystkich kandydatów-jednostki bojowe
+ * (Wojownik/Łucznik/awansowani) na łańcuch jednostek wg programu składu cywilizacji.
+ * Wynikowy wynik punktowy = max score usuniętych kandydatów (rywalizacja jednostka vs budynek
+ * bez zmian); kolejne ogniwa łańcucha dostają score malejący o 0.01 (fallbacki egzekucji).
+ * Brak celu dla cywilizacji (lub cel niepoprawny) -> bez zmian (legacy).
+ */
+function applyArmyCompositionProgram(
+  available: { id: string; score: number }[],
+  cityId: string,
+  allUnits: RuntimeUnit[],
+  playerId: number,
+  data: GameData,
+  opts: AITurnOpts,
+  buildingNames: ReadonlySet<string>,
+): { id: string; score: number }[] {
+  const target = loadArmyCompositionTarget(opts.civType, key => {
+    const entry = data.aiParams[key];
+    const v = entry !== undefined ? (entry['wartość'] ?? entry['wartosc']) : undefined;
+    return typeof v === 'number' ? v : undefined;
+  });
+  if (target === null) return available;
+  const defsByName = new Map<string, CompositionUnitDef>();
+  for (const u of data.units) defsByName.set(u.Jednostka, u);
+  const isCompositionCandidate = (id: string): boolean =>
+    !buildingNames.has(id) && armyClassOfUnit(defsByName.get(id)) !== null;
+  const removed = available.filter(c => isCompositionCandidate(c.id));
+  if (removed.length === 0) return available;
+  const topScore = Math.max(...removed.map(c => c.score));
+  const allowedUnits = data.units.filter(
+    u => armyClassOfUnit(u) !== null && opts.isProductionAllowed!(cityId, u.Jednostka),
+  );
+  const counts = countArmyClasses(
+    [
+      ...allUnits.filter(u => u.ownerId === playerId).map(u => u.typeId),
+      ...(opts.queuedRecruitUnitIds ?? []),
+      ...(opts.armyCompositionPending ?? []),
+    ],
+    defsByName,
+  );
+  const chain = planCompositionRecruitChain(target, counts, allowedUnits);
+  if (chain.length === 0) return available; // brak jakiejkolwiek dostępnej jednostki: legacy
+  const kept = available.filter(c => !isCompositionCandidate(c.id));
+  chain.forEach((id, i) => kept.push({ id, score: topScore - 0.01 * i }));
+  return kept;
+}
+
+/**
  * Returns the id of the building or unit this city should build next.
  * Priority based on Spec-AI §4 and archetype modifiers.
  * Returns null if nothing can be queued.
@@ -2335,6 +2397,14 @@ export function chooseCityProduction(
     if (buildingNames.has(c.id) && built.includes(c.id)) return false;
     return true;
   });
+
+  // R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1: program składu armii (wręcz / dystans / konnica+rydwany)
+  // per cywilizacja — podmienia kandydatów-jednostki bojowe na łańcuch wg deficytu klasy.
+  // PRZED filtrem isProductionAllowed: dawni kandydaci (Wojownik/Łucznik, Kamień) bywają poza
+  // oknem epoki (bieżąca + jedna niższa), a łańcuch składa się już wyłącznie z jednostek dozwolonych.
+  if (opts.isProductionAllowed && isMajorAiOwner(opts)) {
+    available = applyArmyCompositionProgram(available, cityId, allUnits, playerId, data, opts, buildingNames);
+  }
 
   if (opts.isProductionAllowed) {
     available = available.filter(c => opts.isProductionAllowed!(cityId, c.id));
@@ -3635,11 +3705,16 @@ function decideAITurnCore(
   // -------------------------------------------------------------------------
   // Step 2: PRODUCTION -- one build command per city
   // -------------------------------------------------------------------------
+  opts.armyCompositionPending = [];
   for (const city of myCities) {
     const buildId = chooseCityProduction(
       city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
     if (buildId !== null) {
+      // R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1: kolejne miasta tej tury widzą już wybraną jednostkę.
+      if (data.units.some(u => u.Jednostka === buildId && armyClassOfUnit(u) !== null)) {
+        opts.armyCompositionPending.push(buildId);
+      }
       // P-AI-MOC-GAP: dołącz fallbacki (odczyt NATYCHMIAST — kolejne miasto w tej
       // samej pętli nadpisze opts.lastProductionFallbackIds przy następnym wywołaniu).
       commands.push({
