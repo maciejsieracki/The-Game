@@ -38,3 +38,5 @@ BLOKADY: brak
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (ta sama gałąź/commit) -> Obrona -> Final Control -> integracja orkiestratora (sprawdzić merge-base --is-ancestor i diff --stat)
 DEPLOY/PUSH: NIE WYKONANO
+
+SHA-KOD: 9587c9201d774754fe3bbfdeb0fa64522c463ba6 (gałąź worktree-wf_84207e30-c60-1, rodzic 18b609dc3 = origin/main)
