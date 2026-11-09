@@ -51,4 +51,4 @@ D. Auto-pokój "2 miasta" (cap anty-podbój) także podlega regule; przy ujemnym
 - NIE WYKONANO: `tsc` (brak typescript w node_modules żadnego worktree) i build; main.ts sprawdzony tylko parsowaniem esbuild (OK). Brak testu w przeglądarce (temat logiczny, bez UI).
 
 ## COMMIT
-Zob. SHA poniżej (dopisany po commicie).
+Kod + testy + raport: 4eb423fcca60584d24c9b3670527e6a82cb9f50f (gałąź worktree-wf_4a28886c-7ad-1, baza 23871b38c = main po FALA 570, zawiera 512401eac). Dopisek SHA w raporcie wykonany kolejnym commitem docs-only.
