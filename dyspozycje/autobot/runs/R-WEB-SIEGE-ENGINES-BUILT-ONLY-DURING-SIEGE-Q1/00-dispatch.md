@@ -7,3 +7,6 @@ BAZA: origin/main (po FALA 584). Operator: SONNET 5.5 — uzasadnienie: nowy mec
 
 ## DODATEK 1 (2026-11-09) — ABC WŁAŚCICIELA POTWIERDZIŁ założenia (a–f) w całości
 (a) budowa wprost dowolnej odblokowanej badaniem machiny; (b) do progu 1/10 liczą się wszystkie jednostki armii OPRÓCZ machin; (c) zasoby ze skarbca i magazynu państwa; (e) AI podlega tym samym zasadom; (f) istniejące machiny w zapisach zostają. Założenia przestają być „do potwierdzenia”. Ignoruj pytania właściciela z innych tematów.
+
+## DODATEK 2 (2026-11-09) — doprecyzowanie właściciela
+Każde KOLEJNE pełne 10 jednostek armii (bez machin) pozwala wybudować kolejną jednostkę oblężniczą w turze: limit = floor(N/10) na turę. NIE MA górnego limitu liczby machin (ani stałego sufitu) — jest tylko dolny próg (N < 10 → 0 machin) i zasada przyrostu co 10 jednostek (N=10→1, 19→1, 20→2, 50→5, 100→10, 250→25). Test ma obejmować duże N (np. 100 i 250) i brak jakiegokolwiek stałego maksimum w kodzie/danych (parametr: „jednostek na machinę” = 10 w danych, nie magiczna liczba). Limit liczony od liczby jednostek armii w chwili budowy w tej turze (bez machin); zbudowane w tej turze machiny odejmują się od puli limitu tej tury.
