@@ -1,3 +1,9 @@
+## ROBOCZA b6cb2788 -- 2026-11-06 -- FALA 589: BATTLE-SKIP: pomiń do wyniku = ten sam wynik co AUTO; AI ulepsza jednostki wg zasad gracza (testowa)
+
+- BATSKIP b5aed5dfe + AIREPL af2e1cefb
+- Weryfikacja: testy tematów PASS, audio-sidecar PASS
+- Limity: battle-loot-test/weterani-test pre-existing FAIL; REPIN Rust
+
 ## ROBOCZA b06a7c4f -- 2026-11-06 -- FALA 588: Audiencja dyplomacji pokazuje liczbę rekrutów (bieżąca / maks.) obu stron (testowa)
 
 - R-WEB-DIPLO-PANEL-CIV-RECRUITS-LEVEL-Q1 (77dd059f1)
