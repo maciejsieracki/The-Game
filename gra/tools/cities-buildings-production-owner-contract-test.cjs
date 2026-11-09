@@ -237,10 +237,13 @@ equal(cancelCity.postepBudynkowUsuniete, { 'stone-house': 5 }, 'cancellation ban
 
 // 4. Upkeep starts only from the completed-building state and is charged once.
 const def = data.buildings[0];
-equal(buildingResourceUpkeep(def), { drewno: 2 }, 'queued/build definition resource upkeep basis (= zloto utrzymania 2, R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1)');
+// R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (r2): surowe utrzymanie Pieniadza (pole utrzymanie) na KAZDY surowiec z kosztu.
+const upkeepRawL1 = Math.floor(def.utrzymanie);
+const expectedResUpkeep = Object.fromEntries(Object.entries(def.koszt_surowce ?? {}).filter(([, v]) => v > 0).map(([k]) => [k, upkeepRawL1]));
+equal(buildingResourceUpkeep(def), expectedResUpkeep, 'queued/build definition resource upkeep basis (= surowe utrzymanie Pieniadza, R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 r2)');
 equal(totalBuildingResourceUpkeep([]), {}, 'queued item has no built upkeep');
-equal(totalBuildingResourceUpkeep([{ record: def, level: 1 }]), { drewno: 2 }, 'completed building has one resource upkeep');
-equal(totalBuildingResourceUpkeep([{ record: def, level: 1 }, { record: def, level: 1 }]), { drewno: 4 }, 'upkeep aggregation is explicit per built instance');
+equal(totalBuildingResourceUpkeep([{ record: def, level: 1 }]), expectedResUpkeep, 'completed building has one resource upkeep');
+equal(totalBuildingResourceUpkeep([{ record: def, level: 1 }, { record: def, level: 1 }]), Object.fromEntries(Object.entries(expectedResUpkeep).map(([k, v]) => [k, 2 * v])), 'upkeep aggregation is explicit per built instance');
 equal(buildingUpkeep(def, 1), 2, 'completed building gold upkeep uses canonical value');
 equal(totalBuildingUpkeep([{ record: def, level: 1 }]), 2, 'gold upkeep is charged once for one built instance');
 
@@ -285,7 +288,7 @@ equal(
       level: 1,
     })),
   ),
-  { drewno: 2 },
+  expectedResUpkeep,
   'save/load preserves the completed building upkeep basis',
 );
 negative('save/load disconnected queue progress', () => assert.equal(loaded.cityProd[city.id].postep, savedProd.postep + 1));

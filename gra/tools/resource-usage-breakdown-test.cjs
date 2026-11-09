@@ -243,9 +243,9 @@ async function main() {
     // Sanity na wejściu: buildingResourceUpkeep to BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE=5
     // SZT./TYP obecny w koszt_surowce (nie kwota kosztu) -- R-EKONOMIA-SUROWCE-SKALA-5X-Q1
     // (Maciej 2026-08-13), było 1.
-    // R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1: utrzymanie surowcowe = zloto utrzymania (utrzymanie 1 x FALA2 2 = 2) na KAZDY surowiec z kosztu.
-    eq(buildingsUpkeep.drewno, 4, 'buildings: 2 budynki mają "drewno" w koszt_surowce -> 2+2=4 (proporcjonalnie do Pieniądza, nie suma kwot 5+1)');
-    eq(buildingsUpkeep.kamien, 2, 'buildings: 1 budynek ma "kamien" w koszt_surowce -> 2 (zloto utrzymania)');
+    // R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (r2): utrzymanie surowcowe = surowe utrzymanie Pieniadza (pole utrzymanie, bez FALA2/epoki) na KAZDY surowiec z kosztu.
+    eq(buildingsUpkeep.drewno, 2, 'buildings: 2 budynki mają "drewno" w koszt_surowce -> 1+1=2 (surowe utrzymanie, nie suma kwot 5+1)');
+    eq(buildingsUpkeep.kamien, 1, 'buildings: 1 budynek ma "kamien" w koszt_surowce -> 1 (surowe utrzymanie 1)');
     assert(!('zelazo' in buildingsUpkeep), 'buildings: żaden budynek nie kosztuje żelaza -> brak klucza');
     eq(unitsUpkeep.zelazo, 2, 'units: Hastati utrzymanie 2 żelaza/turę');
     eq(unitsUpkeep.drewno, 4, 'units: Triarii utrzymanie 4 drewna/turę');
@@ -259,9 +259,9 @@ async function main() {
       const u = unitsUpkeep[key] ?? 0;
       eq(merged[key], b + u, `inwariant per klucz "${key}": merged = buildings + units (${b}+${u})`);
     }
-    eq(merged.drewno, 4 + 4, 'drewno: 4 (budynki) + 4 (wojsko, Triarii) = 8');
+    eq(merged.drewno, 2 + 4, 'drewno: 2 (budynki) + 4 (wojsko, Triarii) = 6');
     eq(merged.zelazo, 0 + 2, 'zelazo: 0 (budynki) + 2 (wojsko, Hastati) = 2');
-    eq(merged.kamien, 2 + 0, 'kamien: 2 (budynki) + 0 (wojsko) = 2');
+    eq(merged.kamien, 1 + 0, 'kamien: 1 (budynki) + 0 (wojsko) = 1');
   }
 
   // ===========================================================================
@@ -375,7 +375,7 @@ async function main() {
     // budynki/wojsko pokazane jako 0 mimo że przycisk już widoczny dzięki fallbackowi citizens).
     assert(
       fnWindow.includes('const ownerBuildingResUpkeep = buildingResourceUpkeepByOwner.get(ownerId)')
-        && fnWindow.includes('?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt, bdef => buildingLevelForOwnerBuilding(bdef, ownerId));'),
+        && fnWindow.includes('?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt, bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty));'),
       'E3: ownerBuildingResUpkeep czyta buildingResourceUpkeepByOwner.get(ownerId) Z FALLBACKIEM na previewOwnerBuildingResourceUpkeep (żywy przelicz gdy mapa jeszcze pusta po save-load)',
     );
     assert(
@@ -386,7 +386,7 @@ async function main() {
     // E3b/E4b: fallback musi czytać STAN ŻYWY (cityBuilt/units), nie jakąś zamrożoną kopię --
     // inaczej "fallback" pokazywałby dalej stare/puste dane.
     assert(
-      /previewOwnerBuildingResourceUpkeep\(ownerId,\s*cities,\s*data\.buildings,\s*cityBuilt,\s*bdef => buildingLevelForOwnerBuilding\(bdef, ownerId\)\)/.test(fnWindow),
+      /previewOwnerBuildingResourceUpkeep\(ownerId,\s*cities,\s*data\.buildings,\s*cityBuilt,\s*bdef => buildingLevelForOwnerBuilding\(bdef, ownerId\),\s*readBuildingResourceUpkeepRatio\(/.test(fnWindow),
       'E3b: fallback budynków woła z argumentami (ownerId, cities, data.buildings, cityBuilt) -- cityBuilt to ta sama mapa przywracana wprost z save w restoreGameFromSave, nie kopia sprzed load',
     );
     assert(
@@ -516,12 +516,12 @@ async function main() {
     // R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE
     // = 5 (bylo 1). c1: kuznia{zelazo:5,drewno:5} + tartak{drewno:5} = {zelazo:5,drewno:10};
     // c2: kuznia{zelazo:5,drewno:5}. owner 0 total = {zelazo:10, drewno:15}.
-    // R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1: utrzymanie 2 -> zloto 4 -> 4 szt. na kazdy surowiec z kosztu.
-    eq(owner0Buildings.zelazo, 8, 'I1: owner 0 (c1+c2, każde ma kuznia) -> zelazo = 4+4 = 8');
-    eq(owner0Buildings.drewno, 12, 'I2: owner 0 -> drewno = (kuznia 4 + tartak 4 w c1) + (kuznia 4 w c2) = 12');
+    // R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (r2): utrzymanie 2 -> 2 szt. na kazdy surowiec z kosztu.
+    eq(owner0Buildings.zelazo, 4, 'I1: owner 0 (c1+c2, każde ma kuznia) -> zelazo = 2+2 = 4');
+    eq(owner0Buildings.drewno, 6, 'I2: owner 0 -> drewno = (kuznia 2 + tartak 2 w c1) + (kuznia 2 w c2) = 6');
 
     const owner1Buildings = M.previewOwnerBuildingResourceUpkeep(1, cities, buildingCatalog, builtByCity);
-    eq(owner1Buildings.drewno, 4, 'I3: owner 1 (c3, tylko tartak) -> drewno = 4');
+    eq(owner1Buildings.drewno, 2, 'I3: owner 1 (c3, tylko tartak) -> drewno = 2');
     assert(!('zelazo' in owner1Buildings), 'I4: owner 1 nie ma kuzni -> brak klucza zelazo');
 
     const units = [
@@ -573,10 +573,10 @@ async function main() {
     const citizenDeductions = { zelazo: 4 }; // np. z fallbackowego computeCitizenResourceDrain (już testowane osobno, sekcja K).
 
     const usage = M.resourceUsageBreakdownFor('zelazo', citizenDeductions, ownerBuildingResUpkeep, ownerUnitResUpkeep);
-    eq(usage.buildings, 4, 'J1: zelazo.buildings = 4 (kuznia w c1, utrzymanie 2 -> zloto 4, niezależnie od kwoty 5 w koszt_surowce)');
+    eq(usage.buildings, 2, 'J1: zelazo.buildings = 2 (kuznia w c1, surowe utrzymanie 2, niezależnie od kwoty 5 w koszt_surowce)');
     eq(usage.citizens, 4, 'J2: zelazo.citizens = 4 (drenaż obywateli)');
     eq(usage.units, 3, 'J3: zelazo.units = 3 (Triarii utrzymanie żelaza)');
-    eq(M.resourceUsageTotal(usage), 11, 'J4: total = 4+4+3 = 11');
+    eq(M.resourceUsageTotal(usage), 9, 'J4: total = 4+2+3 = 9 (budynki 2 surowe utrzymanie)');
 
     const row = {
       id: 'zelazo', label: 'Żelazo', icon: '⚙️', stock: 20, ratePerTurn: 2, typ: 'przetworzony',
@@ -585,10 +585,10 @@ async function main() {
     const html = M.resUsageDetailsHtml(row);
     assert(html.length > 0, 'J5: HTML NIEPUSTY -- panel po save-load NIE jest myląco pusty (rdzeń naprawy zadania 2)');
     const parsed = parseUsageRows(html);
-    eq(parsed['Budynki (zapotrzebowanie)'], 4, 'J6: wiersz Budynki w wyrenderowanym HTML = 4 (parsowane z realnego wywołania, nie z tekstu źródła)');
+    eq(parsed['Budynki (zapotrzebowanie)'], 2, 'J6: wiersz Budynki w wyrenderowanym HTML = 2 (parsowane z realnego wywołania, nie z tekstu źródła)');
     eq(parsed['Obywatele (drenaż realny)'], 4, 'J7: wiersz Obywatele w wyrenderowanym HTML = 4');
     eq(parsed['Wojsko (zapotrzebowanie)'], 3, 'J8: wiersz Wojsko w wyrenderowanym HTML = 3');
-    eq(parsed['Suma rozbicia tej tury'], 11, 'J9: wiersz sumy w wyrenderowanym HTML = 11 (4+4+3), zgodny z resourceUsageTotal(usage) w J4');
+    eq(parsed['Suma rozbicia tej tury'], 9, 'J9: wiersz sumy w wyrenderowanym HTML = 9 (4+2+3), zgodny z resourceUsageTotal(usage) w J4');
   }
 
   // ===========================================================================

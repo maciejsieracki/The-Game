@@ -218,6 +218,7 @@ import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../gam
 import {
   buildingUpkeep,
   buildingResourceUpkeep,
+  readBuildingResourceUpkeepRatio,
   addResourceCosts,
   unitResourceUpkeep,
   canAffordUnitRecruitStock,
@@ -6747,13 +6748,23 @@ function formatResourceUpkeepText(
     .join(' · ');
 }
 
+/** R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1: współczynnik utrzymania surowcowego dla widoku (jak w ticku). */
+function buildingResourceUpkeepRatioForView(): number {
+  const d = gameData();
+  if (!d?.econParams) return 1;
+  return readBuildingResourceUpkeepRatio(
+    d.econParams as unknown as Parameters<typeof readBuildingResourceUpkeepRatio>[0],
+    cfg.difficulty ?? 'normal',
+  );
+}
+
 function buildingUpkeepDisplay(
   def: BuildingDef,
   level: number,
 ): { gold: number; resources: Record<string, number> } {
   return {
     gold: buildingUpkeep(def as unknown as BuildingRecord, level),
-    resources: buildingResourceUpkeep(def, level),
+    resources: buildingResourceUpkeep(def, level, buildingResourceUpkeepRatioForView()),
   };
 }
 
@@ -6766,7 +6777,7 @@ function sumOwnedBuildingsResourceUpkeep(
   for (const id of built) {
     const def = data.buildings.find(b => b.id === id);
     if (!def) continue;
-    addResourceCosts(out, buildingResourceUpkeep(def, city ? buildingOwnedLevel(def, city) : 1));
+    addResourceCosts(out, buildingResourceUpkeep(def, city ? buildingOwnedLevel(def, city) : 1, buildingResourceUpkeepRatioForView()));
   }
   return out;
 }

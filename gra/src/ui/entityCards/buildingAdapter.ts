@@ -46,7 +46,8 @@ import {
 } from '../../game/production';
 import type { BuildingCostPace } from '../../game/building-cost-tempo';
 import type { GameDifficulty } from '../../game/difficulty-cost';
-import { buildingUpkeep, buildingResourceUpkeep } from '../../game/economy-upkeep';
+import { buildingUpkeep, buildingResourceUpkeep, readBuildingResourceUpkeepRatio } from '../../game/economy-upkeep';
+import econParamsData from '../../../data/econ-params.json';
 import {
   BUILDING_HAPPINESS_BASE_PER_BUILDING,
   buildingGivesHappiness,
@@ -231,15 +232,35 @@ function formatYieldScaleRow(def: BuildingDef, baza: number, przyrost: number): 
 }
 
 /** 1:1 z `cityPanel.ts::formatBuildingUpkeepGridValue`, bez ikon inline (patrz wyżej). */
+/** Polskie odmiany (mianownik / 2-4 / dopełniacz-mnoga) dla liczebników przy utrzymaniu. */
+const UPKEEP_NOUN_FORMS: Record<string, [string, string, string]> = {
+  'pieniądz': ['Pieniądz', 'Pieniądze', 'Pieniędzy'],
+  'drewno': ['drewno', 'drewna', 'drewien'],
+  'kamień': ['kamień', 'kamienie', 'kamieni'],
+  'cegła': ['cegła', 'cegły', 'cegieł'],
+};
+
+function plUpkeepForm(n: number, forms: [string, string, string]): string {
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m100 >= 12 && m100 <= 14) return forms[2];
+  if (m10 === 1) return forms[0];
+  if (m10 >= 2 && m10 <= 4) return forms[1];
+  return forms[2];
+}
+
+/** Karta budynku: „2 Pieniądze, 2 drewna, 2 kamienie, 2 cegły / turę” (bez surowych id). */
 function formatUpkeepValue(gold: number, resources: Record<string, number>): string {
   if (gold === 0 && Object.keys(resources).length === 0) return 'utrzymanie zero';
   const parts: string[] = [];
-  if (gold > 0) parts.push(`${gold} Pieniądza`);
-  const resKeys = Object.keys(resources);
-  if (resKeys.length > 0) {
-    parts.push(resKeys.map((k) => `−${resources[k]} ${stockResourceLabel(k)}/t`).join(' · '));
+  if (gold > 0) parts.push(`${gold} ${plUpkeepForm(gold, UPKEEP_NOUN_FORMS['pieniądz'] ?? ['Pieniądz', 'Pieniądze', 'Pieniędzy'])}`);
+  for (const k of Object.keys(resources)) {
+    const n = resources[k] ?? 0;
+    const name = stockResourceLabel(k).toLowerCase();
+    const forms = UPKEEP_NOUN_FORMS[name];
+    parts.push(`${n} ${forms ? plUpkeepForm(n, forms) : name}`);
   }
-  return parts.join(' + ');
+  return `${parts.join(', ')} / turę`;
 }
 
 const DEFAULT_CITY_STATE: BuildingCardCityState = {
@@ -401,7 +422,10 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
 
   const upkeepLevel = cityState.hasCity ? displayLevel : 1;
   const upkeepGold = buildingUpkeep(building as unknown as BuildingRecord, upkeepLevel);
-  const upkeepResources = buildingResourceUpkeep(building, upkeepLevel);
+  const upkeepResources = buildingResourceUpkeep(building, upkeepLevel, readBuildingResourceUpkeepRatio(
+    econParamsData as unknown as Parameters<typeof readBuildingResourceUpkeepRatio>[0],
+    cityState.difficulty,
+  ));
   const upkeepCostRows: EntityCardRow[] = [
     { label: 'Co turę', value: formatUpkeepValue(upkeepGold, upkeepResources) },
   ];
