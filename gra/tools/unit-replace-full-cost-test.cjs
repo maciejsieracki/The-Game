@@ -109,15 +109,19 @@ console.log('\n== D. okablowanie (zrodlo) ==');
 const main = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
 const slice = (a, b) => main.slice(main.indexOf(a), main.indexOf(b, main.indexOf(a)));
 const perform = slice('function performUnitReplace(', 'function buildPlayerCityListEntries');
-assert(/unitReplaceFullCost\(/.test(perform) && /deductBuildingStockCostAcrossCities\(cities, u\.ownerId, fullCost\.stock\)/.test(perform) && /player\.skarbiec -= fullCost\.money/.test(perform),
-  'performUnitReplace (gracz): pobiera PELNY Pieniadz + surowiec z puli panstwa');
+// R-WEB-AI-UNIT-REPLACE-SAME-RULES-AS-PLAYER-Q1: mutacja i koszt zyja we WSPOLNYM module (executeUnitReplace),
+// wolanym i przez gracza (performUnitReplace), i przez AI (promoteAiUnitForEra).
+const execSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'unit-replace-execute.ts'), 'utf8');
+const execDepsSrc = slice('function unitReplaceExecuteDeps(', 'function performUnitReplace(');
+assert(/executeUnitReplace\(u, newTypeId, unitReplaceExecuteDeps\(u\.ownerId, true\)\)/.test(perform) && /deductBuildingStockCostAcrossCities\(cities, ownerId, cost\)/.test(execDepsSrc) && /player\.skarbiec = value/.test(execDepsSrc),
+  'performUnitReplace (gracz): pobiera PELNY Pieniadz + surowiec z puli panstwa (wspolny executeUnitReplace)');
 assert(!/Math\.max\(0, replaceUnitMoneyCost/.test(perform) && !/dopłat/i.test(perform), 'performUnitReplace: brak starej logiki "dopłaty"');
 assert(!/manpower|Manpower|UNIT_POPULATION_COST/.test(perform), 'performUnitReplace: nie dotyka Manpower/Ludnosci');
 {
-  const iMoneyGate = perform.indexOf('if (player.skarbiec < fullCost.money)');
-  const iStockGate = perform.indexOf('if (stockMissing)');
-  const iMutMoney = perform.indexOf('player.skarbiec -= fullCost.money');
-  const iMutStock = perform.indexOf('deductBuildingStockCostAcrossCities(cities, u.ownerId');
+  const iStockGate = execSrc.indexOf("reason: 'stock'");
+  const iMoneyGate = execSrc.indexOf("reason: 'money'");
+  const iMutMoney = execSrc.indexOf('deps.setTreasury(treasury - money)');
+  const iMutStock = execSrc.indexOf('deps.payStock(stock, unit)');
   assert(iStockGate > -1 && iMoneyGate > -1 && iStockGate < iMutMoney && iMoneyGate < iMutMoney && iMutMoney < iMutStock,
     'performUnitReplace: bramki surowca i Pieniadza PRZED jakakolwiek mutacja (kolejnosc w zrodle)');
 }
@@ -127,7 +131,7 @@ assert(/stockCost: target =>/.test(ai) && /canPayStock: cost =>/.test(ai) && /pa
 const promoSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'ai-era-unit-promotion.ts'), 'utf8');
 assert(!/deps\.(stockCost|canPayStock|payStock)\?\./.test(promoSrc) && !/stockCost\?\(|canPayStock\?\(|payStock\?\(/.test(promoSrc),
   'promoteAiUnitForEra: hooki surowcowe WYMAGANE (brak ?.-wywolan, ktore po cichu pomijaja koszt surowca)');
-assert(/stockCost:/.test(ai) && /canPayStock:/.test(ai) && /payStock:/.test(ai) && /deductBuildingStockCostAcrossCities/.test(ai), 'upgradeAiUnitsForEra: ta sama funkcja kosztu (Pieniadz + surowiec z puli)');
+assert(/stockCost:/.test(ai) && /canPayStock:/.test(ai) && /payStock:/.test(ai) && /unitReplaceExecuteDeps\(ownerId, false\)/.test(ai) && /deductBuildingStockCostAcrossCities/.test(execDepsSrc), 'upgradeAiUnitsForEra: ta sama funkcja kosztu (Pieniadz + surowiec z puli) co gracz');
 assert(/Zastąp specjalnie/.test(ai), 'AI: awans miedzy typami tylko wg tabeli "Zastąp specjalnie" (D3 = C)');
 const picker = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'ui', 'unitReplacePicker.ts'), 'utf8');
 assert(/Koszt = pełna rekrutacja nowej jednostki; zachowuje doświadczenie/.test(picker) && !/Dopłata = koszt nowej/.test(picker), 'UI: opis "Koszt = pełna rekrutacja nowej jednostki; zachowuje doświadczenie"');

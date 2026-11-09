@@ -1,3 +1,5 @@
+import { executeUnitReplace } from './unit-replace-execute';
+
 /** Runtime mutation shared by the AI era-upgrade path and focused integration tests. */
 export interface AiEraPromotableUnit {
   typeId: string;
@@ -30,6 +32,8 @@ export interface AiEraPromotionDeps<U extends AiEraPromotableUnit> {
   canPayStock(cost: Record<string, number>, unit: U): boolean;
   /** Pobiera `cost` z puli państwa (wołane dopiero po przejściu WSZYSTKICH bramek). */
   payStock(cost: Record<string, number>, unit: U): void;
+  /** Opcjonalna brama przed kosztem (limit Super-jednostki itp.) -- ta sama co u gracza. */
+  gateReason?(unit: U, newTypeId: string): string | null;
   currentTreasury(): number;
   setTreasury(value: number): void;
   oldMaxHp(unit: U, definition: AiEraPromotionTarget): number;
@@ -55,23 +59,18 @@ export function promoteAiUnitForEra<U extends AiEraPromotableUnit>(
   const target = deps.newestSameRole(unit, deps.candidates(unit));
   if (!target || deps.epochNumber(target.Epoka) <= deps.epochNumber(oldDefinition.Epoka)) return false;
 
-  const moneyCost = Math.max(0, deps.unitCost(target.Jednostka, unit));
-  const stockCost = deps.stockCost(target, unit);
-  const hasStockCost = Object.values(stockCost).some(amount => amount > 0);
-  const treasury = deps.currentTreasury();
-  if (treasury < moneyCost) return false;
-  if (hasStockCost && !deps.canPayStock(stockCost, unit)) return false;
-
-  const oldMaxHp = deps.oldMaxHp(unit, oldDefinition);
-  const newMaxHp = deps.newMaxHp(target, unit);
-  const oldHp = unit.hp ?? oldMaxHp;
-  unit.typeId = target.Jednostka;
-  unit.category = deps.category(target);
-  unit.hp = Math.max(1, Math.round(newMaxHp * (oldMaxHp > 0 ? oldHp / oldMaxHp : 1)));
-  unit.hpMax = newMaxHp;
-  unit.ruchLeft = 0;
-  unit.replaceUsedThisTurn = true;
-  if (moneyCost > 0) deps.setTreasury(treasury - moneyCost);
-  if (hasStockCost) deps.payStock(stockCost, unit);
-  return true;
+  const result = executeUnitReplace(unit, target.Jednostka, {
+    gateReason: (u, newTypeId) => deps.gateReason?.(u, newTypeId) ?? null,
+    moneyCost: (newTypeId, u) => Math.max(0, deps.unitCost(newTypeId, u)),
+    stockCost: (_newTypeId, u) => deps.stockCost(target, u),
+    canPayStock: (cost, u) => deps.canPayStock(cost, u),
+    payStock: (cost, u) => deps.payStock(cost, u),
+    currentTreasury: deps.currentTreasury,
+    setTreasury: deps.setTreasury,
+    oldMaxHp: u => deps.oldMaxHp(u, oldDefinition),
+    newMaxHp: u => deps.newMaxHp(target, u),
+    category: () => deps.category(target),
+    syncHpMax: true,
+  });
+  return result.ok;
 }

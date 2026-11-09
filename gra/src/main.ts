@@ -968,6 +968,8 @@ import { cityPopulationCap, loadEconParams, resolvePopulationCapMatrixDelta, sum
 import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
 import { attemptGeneralPurchase, canRecruitGeneral, canSpawnQueuedGeneral, planGeneralLimitDemotions, shouldAiBuyGeneral, generalFollowDestination, generalLimitForEra, nearestLivingGeneral, planDeferredGeneralMarchBatch, stoneGeneralUnitId } from './game/generals';
 import { promoteAiUnitForEra } from './game/ai-era-unit-promotion';
+import { executeUnitReplace, type UnitReplaceExecuteDeps } from './game/unit-replace-execute';
+import { aiUnitReplaceCap, planAiUnitReplaceOrder, aiReplaceKeepsArmyClass } from './game/ai-unit-replace-plan';
 import {
   unitReplaceFullCost, canAffordUnitReplace, unitReplaceStockMissingLabel, unitReplaceStockText, mergeStockPaid,
 } from './game/unit-replace-cost';
@@ -7351,13 +7353,43 @@ async function boot(): Promise<void> {
      * none, a strictly later-era special target from the table is used. */
     function upgradeAiUnitsForEra(ownerId: number): void {
       const techs = Array.from(unlockedTechSetForOwner(ownerId));
-      for (const u of units) {
-        if (u.ownerId !== ownerId) continue;
+      const execDeps = unitReplaceExecuteDeps(ownerId, false);
+      const territoryNodes = buildAllTerritoryNodes();
+      // Bezpośrednie zagrożenie: wrogie jednostki (wojna / barbarzyńcy) w promieniu 3 heksów od jednostki.
+      const hostilePositions: Array<{ q: number; r: number }> = [];
+      const hostileByOwner = new Map<number, boolean>();
+      for (const other of units) {
+        if (other.ownerId === ownerId) continue;
+        let hostile = hostileByOwner.get(other.ownerId);
+        if (hostile === undefined) {
+          hostile = isBarbarian(other.ownerId) || getDiploRelation(ownerId, other.ownerId).status === 'wojna';
+          hostileByOwner.set(other.ownerId, hostile);
+        }
+        if (hostile && !isCivilianUnit(other)) hostilePositions.push({ q: other.q, r: other.r });
+      }
+      const military = units.filter(u => u.ownerId === ownerId && !isCivilianUnit(u));
+      const cap = aiUnitReplaceCap(military.length);
+      const order = planAiUnitReplaceOrder(military, u => {
+        const def = lookupUnitDef(u.typeId);
+        const blocked = u.replaceUsedThisTurn === true
+          // Ta sama reguła zasięgu co u gracza: tylko własne terytorium.
+          || !isPlayerTerritoryHex(u.q, u.r, [], territoryNodes, ownerId)
+          // Bitwa / oblężenie / zaokrętowanie: nie ruszamy.
+          || u.oblegaCityId !== undefined || u.embarked === true
+          || hostilePositions.some(h => hexDistance(u.q, u.r, h.q, h.r) <= 3);
+        return { epoch: epochNumber(String(def?.Epoka ?? '')), power: unitAtak(def) + unitObrona(def), blocked };
+      });
+      let done = 0;
+      for (const u of order) {
+        if (done >= cap) break;
+        const before = u.typeId;
         promoteAiUnitForEra(u, {
           oldDefinition: unit => lookupUnitDef(unit.typeId),
           candidates: unit => availableReplacementsFor(unit.typeId, data, techs, unitReplaceCtx(unit))
             .map(item => data.units.find(def => def.Jednostka === item.id))
-            .filter((def): def is NonNullable<typeof def> => Boolean(def)),
+            .filter((def): def is NonNullable<typeof def> => Boolean(def))
+            // Skład armii AI (ARMY-COMPOSITION): zamiana zachowuje klasę wręcz/dystans/konnica.
+            .filter(def => aiReplaceKeepsArmyClass(lookupUnitDef(unit.typeId), def)),
           newestSameRole: (unit, candidates) => {
             const sameType = newestAvailableSameTypeUnit(
               unit.typeId, candidates.map(def => def.Jednostka), data.units,
@@ -7372,21 +7404,12 @@ async function boot(): Promise<void> {
               .sort((a, b) => epochNumber(String(b.Epoka)) - epochNumber(String(a.Epoka)))[0] ?? null;
           },
           epochNumber,
-          unitCost: (unitId, unit) => unitProductionItem(
-            unitId, data, civBonusyForOwnerId(ownerId), player.kosztJednostekPace ?? 'niski',
-            ownerId, effectiveGameDifficultyForOwner(ownerId),
-          )?.koszt ?? 0,
+          // Brama wspólna z graczem (limit Super-jednostki max 1, zapas surowca).
+          gateReason: (unit, newTypeId) => execDeps.gateReason(unit, newTypeId),
+          unitCost: (unitId, unit) => execDeps.moneyCost(unitId, unit),
           stockCost: target => unitStockCost(data.units.find(def => def.Jednostka === target.Jednostka)),
-          canPayStock: cost => canAffordUnitReplace(
-            { money: 0, stock: cost }, 0, ownerSurowcePoolFor(ownerId),
-          ),
-          payStock: (cost, unit) => {
-            deductBuildingStockCostAcrossCities(cities, ownerId, cost);
-            (unit as { stockPaid?: Record<string, number> }).stockPaid = mergeStockPaid(
-              (unit as { stockPaid?: Record<string, number> }).stockPaid, cost,
-            );
-            markCityStateDirty();
-          },
+          canPayStock: cost => execDeps.canPayStock(cost, u),
+          payStock: (cost, unit) => execDeps.payStock(cost, unit),
           currentTreasury: () => ownerTreasury(ownerId),
           setTreasury: value => setOwnerTreasury(ownerId, value),
           oldMaxHp: (unit, def) => effectiveRuntimeUnitMaxHp(unit, def),
@@ -7400,6 +7423,7 @@ async function boot(): Promise<void> {
             typeof target.Typ === 'string' ? target.Typ : undefined,
           ),
         });
+        if (u.typeId !== before) done++;
       }
     }
 
@@ -7938,67 +7962,78 @@ async function boot(): Promise<void> {
       });
     }
 
+    /**
+     * R-WEB-AI-UNIT-REPLACE-SAME-RULES-AS-PLAYER-Q1: WSPÓLNE zależności wykonania "Zastąp" dla gracza
+     * i AI (executeUnitReplace, game/unit-replace-execute.ts) -- jedna implementacja reguł:
+     * limit Super-jednostki, zapas surowca, PEŁNY koszt (Pieniądz + surowce z puli państwa), % HP.
+     */
+    function unitReplaceExecuteDeps(ownerId: number, humanTreasury: boolean): UnitReplaceExecuteDeps<RuntimeUnit> {
+      return {
+        gateReason: (u, newTypeId) => {
+          const newDef = lookupUnitDef(newTypeId);
+          if (!newDef) return 'nieznana jednostka';
+          // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: zamiana nie może dać drugiej sztuki Super-jednostki
+          // (żywa albo opłacona w kolejce któregokolwiek miasta) -- egzekucja po stronie wykonania.
+          const superMsg = superUnitLimitViolation(newDef, newTypeId, reservedUnitTypeNamesForOwner(ownerId), 1);
+          if (superMsg) return 'Zastąp: ' + superMsg;
+          // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: pozycja bez zapasu surowca nie do wyboru (także tu).
+          if (unitStockShortfallLabel(newDef, unitReplaceCtx(u).empireResourceStock)) {
+            return 'Zastąp: brak surowca dla ' + newTypeId;
+          }
+          return null;
+        },
+        // D1 = C (właściciel 2026-11-09): pełny koszt rekrutacji nowej jednostki -- Pieniądz + surowiec.
+        moneyCost: newTypeId => unitProductionItem(
+          newTypeId, data, civBonusyForOwnerId(ownerId), player.kosztJednostekPace ?? 'niski',
+          ownerId, humanTreasury ? _menuDifficulty : effectiveGameDifficultyForOwner(ownerId),
+        )?.koszt ?? 0,
+        stockCost: newTypeId => unitStockCost(lookupUnitDef(newTypeId)),
+        canPayStock: cost => !unitReplaceStockMissingLabel({ money: 0, stock: cost }, ownerSurowcePoolFor(ownerId)),
+        payStock: (cost, u) => {
+          deductBuildingStockCostAcrossCities(cities, ownerId, cost);
+          (u as { stockPaid?: Record<string, number> }).stockPaid = mergeStockPaid(
+            (u as { stockPaid?: Record<string, number> }).stockPaid, cost,
+          );
+          markCityStateDirty();
+        },
+        currentTreasury: () => (humanTreasury ? player.skarbiec : ownerTreasury(ownerId)),
+        setTreasury: value => {
+          if (humanTreasury) player.skarbiec = value;
+          else setOwnerTreasury(ownerId, value);
+        },
+        oldMaxHp: u => effectiveRuntimeUnitMaxHp(u, lookupUnitDef(u.typeId)),
+        newMaxHp: (u, newTypeId) => effectiveMaxHp(
+          unitHealth(lookupUnitDef(newTypeId)), unitParametryBonusFrac(u), veteranCombatBonusFrac(u),
+        ),
+        category: newTypeId => {
+          const newDef = lookupUnitDef(newTypeId);
+          return categoryOf(newTypeId, newDef['Rola (linia)'] ?? '', newDef['Super-jednostka'] === 'TAK', newDef['Typ']);
+        },
+        syncHpMax: !humanTreasury,
+      };
+    }
+
     /** Wykonaj zamianę jednostki `unitId` na `newTypeId` (runtime, po wyborze w modalu). */
     function performUnitReplace(unitId: string, newTypeId: string, quiet = false): boolean {
       const u = units.find(x => x.id === unitId);
       if (!u || u.ownerId !== 0) return false;
       if (!isUnitInPlayerTerritory(u)) return false;
       if (u.replaceUsedThisTurn) return false;
-      const newDef = lookupUnitDef(newTypeId);
-      if (!newDef) return false;
-      // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: zamiana nie może dać drugiej sztuki Super-jednostki
-      // (żywa albo opłacona w kolejce któregokolwiek miasta) -- egzekucja po stronie wykonania.
-      {
-        const superMsg = superUnitLimitViolation(newDef, newTypeId, reservedUnitTypeNamesForOwner(u.ownerId), 1);
-        if (superMsg) {
-          if (!quiet) showHintMessage('Zastąp: ' + superMsg, 3200);
-          return false;
+      if (!lookupUnitDef(newTypeId)) return false;
+
+      const result = executeUnitReplace(u, newTypeId, unitReplaceExecuteDeps(u.ownerId, true));
+      if (!result.ok) {
+        if (!quiet) {
+          if (result.reason === 'gate') showHintMessage(result.detail ?? 'Zastąp: niedostępne', 3200);
+          else if (result.reason === 'stock') {
+            showHintMessage('Zastąp: ' + (unitReplaceStockMissingLabel(
+              { money: result.money, stock: result.stock }, ownerSurowcePoolFor(u.ownerId)) ?? 'brak surowca'), 3000);
+          } else if (result.reason === 'money') {
+            showHintMessage('Zastąp: brak Pieniądza (' + result.money + ' 💰)', 3000);
+          }
         }
-      }
-      // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: pozycja bez zapasu surowca nie do wyboru (także tu).
-      if (unitStockShortfallLabel(newDef, unitReplaceCtx(u).empireResourceStock)) {
-        if (!quiet) showHintMessage('Zastąp: brak surowca dla ' + newTypeId, 3000);
         return false;
       }
-
-      // D1 = C (właściciel 2026-11-09): pełny koszt rekrutacji nowej jednostki -- Pieniądz + surowiec.
-      const fullCost = unitReplaceFullCost(newDef, replaceUnitMoneyCost(newTypeId));
-      const stockMissing = unitReplaceStockMissingLabel(fullCost, ownerSurowcePoolFor(u.ownerId));
-      if (stockMissing) {
-        if (!quiet) showHintMessage('Zastąp: ' + stockMissing, 3000);
-        return false;
-      }
-      if (player.skarbiec < fullCost.money) {
-        if (!quiet) showHintMessage('Zastąp: brak Pieniądza (' + fullCost.money + ' 💰)', 3000);
-        return false;
-      }
-
-      const oldDef = lookupUnitDef(u.typeId);
-      const oldMaxHp = effectiveRuntimeUnitMaxHp(u, oldDef);
-      const newMaxHp = effectiveMaxHp(
-        unitHealth(newDef),
-        unitParametryBonusFrac(u),
-        veteranCombatBonusFrac(u),
-      );
-      const oldHp = u.hp ?? oldMaxHp;
-      const newHp = Math.max(1, Math.round(newMaxHp * (oldMaxHp > 0 ? oldHp / oldMaxHp : 1)));
-
-      player.skarbiec -= fullCost.money;
-      if (Object.keys(fullCost.stock).length > 0) {
-        deductBuildingStockCostAcrossCities(cities, u.ownerId, fullCost.stock);
-        (u as { stockPaid?: Record<string, number> }).stockPaid = mergeStockPaid(
-          (u as { stockPaid?: Record<string, number> }).stockPaid, fullCost.stock,
-        );
-        markCityStateDirty();
-      }
-
-      const oldTypeId = u.typeId;
-      const isSuper = newDef['Super-jednostka'] === 'TAK';
-      u.typeId = newTypeId;
-      u.category = categoryOf(newTypeId, newDef['Rola (linia)'] ?? '', isSuper, newDef['Typ']);
-      u.hp = newHp;
-      u.ruchLeft = 0;
-      u.replaceUsedThisTurn = true;
 
       syncUnitsRender();
       refreshFog();
@@ -8008,8 +8043,9 @@ async function boot(): Promise<void> {
       // gracza) — pierwsze miasto gracza jako fallback (ten sam wzorzec co disbandPlayerUnit).
       const replaceCity = unitReplaceGarrisonCity(u) ?? cities.find(c => c.ownerId === 0);
       if (quiet) return true;
+      const fullCost = { money: result.money, stock: result.stock };
       showHintMessage(
-        oldTypeId + ' → ' + newTypeId
+        result.oldTypeId + ' → ' + newTypeId
           + ' (koszt ' + fullCost.money + ' 💰'
           + (unitReplaceStockText(fullCost) ? ' + ' + unitReplaceStockText(fullCost) : '') + ')'
           + (replaceCity ? (' — ' + replaceCity.name) : ''),
