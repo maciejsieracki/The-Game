@@ -14,6 +14,7 @@ import {
   wiarygodnoscTooltipDefPl,
   type FormalDiplomaticKind,
 } from '../game/diplomacy-display';
+import { WAR_RELATION_SCORE_CAP } from '../game/diplomacy';
 import {
   wiarygodnoscLabelPl,
   wiarygodnoscTooltipRozbiciePl,
@@ -674,6 +675,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-rel-row.relacja-total{margin-top:6px;border-top:1px dashed rgba(232,216,138,.12);padding-top:6px;}
 .da-rel-row.relacja-total .v{color:#e8d88a;font-weight:700;}
 .da-rel-sum-hint{font-size:0.58em;color:#6a6058;margin-left:4px;}
+.da-war-cap-note{font-size:0.8em;font-weight:600;color:#d9a05b;margin-left:6px;}
 .da-rbar.relacja-total{background:rgba(232,216,138,.12);}
 .da-rbar.relacja-total i{background:linear-gradient(90deg,#8a7050,#e8d88a);}
 .da-rbar{height:6px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden;margin-bottom:6px;border:1px solid rgba(0,0,0,.3);}
@@ -1272,8 +1274,9 @@ function stanceBadgeHtml(st: DiplomacyAudienceState): string {
 function warCapNoteHtml(st: DiplomacyAudienceState): string {
   if (!warRelationCapApplies(st.zaufanie, st.respekt, audienceAtWar(st))) return '';
   return ' <span class="da-war-cap-note" title="' + esc(
-    'Limit wojenny: w wojnie nastawienie nie może być przyjazne — etykieta ograniczona do „Wrogi”.',
-  ) + '">(limit wojenny 29)</span>';
+    'Limit wojenny: w wojnie suma Zaufania i Respektu nie może przekroczyć ' + WAR_RELATION_SCORE_CAP
+    + ' (nastawienie nie może być przyjazne — etykieta ograniczona do „Wrogi”). Wartości powyżej są prawdziwe.',
+  ) + '">(limit wojenny ' + WAR_RELATION_SCORE_CAP + ')</span>';
 }
 
 function personalityTagsHtml(tags: readonly string[] | undefined): string {
@@ -1539,7 +1542,7 @@ function relacjaTotalHtml(st: DiplomacyAudienceState): string {
     '<div class="da-rel-row relacja-total"' + tip + '>'
     + '<span>Relacja</span>'
     + '<span class="v">' + relTotal + ' / 200' + formatPerTurnDelta(st.relacjaDeltaPerTurn) + '</span>'
-    + '<span class="da-rel-sum-hint">(Zaufanie + Respekt)' + warCapNoteHtml(st) + '</span>'
+    + '<span class="da-rel-sum-hint">(Zaufanie + Respekt)</span>' + warCapNoteHtml(st)
     + '</div>'
     + '<div class="da-rbar relacja-total"><i style="width:' + pct + '%"></i></div>'
   );

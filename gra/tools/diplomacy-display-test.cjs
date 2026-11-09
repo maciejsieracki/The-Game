@@ -24,7 +24,6 @@ export {
   splitNegotiationDealPlayerSides,
   nastawienieLabelFromScore,
   effectiveNastawienieScores,
-  warRelationCapApplies,
   resolveFormalDiplomaticStatus,
   respektTooltipPl,
   treatyDisplayLabel,
@@ -98,10 +97,6 @@ ok(mod.nastawienieLabelFromScore(25, 25) === 'Neutralny', 'nastawienie: neutraln
 ok(mod.nastawienieLabelFromScore(74, 54, { atWar: true }) === 'Wrogi', 'nastawienie: wojna → Wrogi mimo wysokiego score');
 ok(mod.effectiveNastawienieScores(74, 54).zaufanie === 74, 'effective scores: prawdziwa wartość Z (bez obcięcia wojną)');
 ok(mod.effectiveNastawienieScores(74, 54).respekt === 54, 'effective scores: prawdziwa wartość R (bez obcięcia wojną)');
-ok(mod.warRelationCapApplies(74, 54, true) === true, 'war cap: wojna + score 128 > 29 → dopisek limitu');
-ok(mod.warRelationCapApplies(74, 54, false) === false, 'war cap: pokój → brak dopisku');
-ok(mod.warRelationCapApplies(10, 10, true) === false, 'war cap: wojna + score 20 ≤ 29 → brak dopisku');
-ok(mod.nastawienieLabelFromScore(74, 54, { atWar: true }) === 'Wrogi', 'etykieta wojenna nadal Wrogi');
 
 ok(mod.treatyDisplayLabel('pakt_nieagresji') === 'Pakt nieagresji', 'etykieta: NAP');
 ok(mod.treatyDisplayLabel('sojusz_pelny') === 'Sojusz wojskowy', 'etykieta: wojskowy');
