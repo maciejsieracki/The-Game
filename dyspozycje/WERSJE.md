@@ -1,3 +1,9 @@
+## ROBOCZA 291fba4b -- 2026-11-06 -- FALA 569: Zwrot surowców przy rozwiązaniu jednostki + auto-łączenie z wodzem (testowa)
+
+- R-WEB-DISBAND-REFUND-RESOURCES-Q1 (a322ea643): 100% surowców werbunku wraca do puli państwa przy rozwiązaniu (cap magazynu, hint); R-WEB-ARMY-FOLLOW-LEADER-AUTO-MERGE-NO-PROMPT-Q1 (8f6da5357): tryb Idź do wodza łączy bez monitu
+- Weryfikacja: tsc 0, logic 213/213, disband-refund 45/0, follow-leader 14/0, unit-stock-cost 58/0, manpower 71/0, recruitment-cost-50-wood 190/0, building-queue-refund 5/0, army-merge-bounce 4/0, audio-sidecar PASS
+- Limity: Chromium/hint na żywo NIE_ZMIERZONO; jednostki bez śladu stockPaid (startowe, stare zapisy, zdobyte) nie zwracają; hint w mianowniku; bankructwo nie zmieniane
+
 ## ROBOCZA 27b34f7b -- 2026-11-06 -- FALA 568: Terminologia: produkcja = podatek w katalogach, PORADNIKU i wiki (testowa)
 
 - R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (78ee714b2/cfe8a1bdd): cel surowców (cegła/ceramika/sól) na kartach, podatek zamiast złoto/pieniądz w katalogach i wikiBundle
