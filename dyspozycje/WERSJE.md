@@ -1,3 +1,9 @@
+## ROBOCZA 79ba238f -- 2026-11-06 -- FALA 573: Nowe koszty budowy: drewno + kamień + cegła wg epoki, Garncarstwo poziom 1 (testowa)
+
+- R-WEB-BUILDING-COSTS-ERA-RESOURCES-IMPL-Q1 (729e28ed6): koszt_surowce 32 budynków (Kamień: drewno=kamień; Brąz: drewno=kamień=cegła; Żelazo: cegła=kamień=drewno), Garncarstwo Poziom 2→1, wiki Garncarstwo, SPEC aneks
+- Weryfikacja: tsc 0, logic 213/213, building-cost-resource-availability 58/0, koszty-surowcowe 160/0, unit-epoch-cost 57/0, emporion 47/0, granary2 14/0, audio-sidecar PASS
+- Limity: Balans ekonomii i AI NIE_ZMIERZONO; Targowisko/Studnia/Kamienne kręgi wymagają kamienia bez Murarstwa w prereq (ABC czeka); utrzymanie surowcowe budynków stałe 5/typ — do zmiany w UPKEEP-RESOURCES; REPIN Rust (dane koszt_surowce + Poziom Garncarstwa)
+
 ## ROBOCZA 982acd2f -- 2026-11-06 -- FALA 572: Pokój AI↔AI: bilans nie może być ujemny dla żadnej AI (testowa)
 
 - R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (c8b4a18c9): próg minBilansPW=0 w trzech ścieżkach pokoju AI↔AI (runAiAiPeaceTick, runWarWearinessTick, auto-pokój po 2 miastach); gracz nadal może przyjąć ujemny
