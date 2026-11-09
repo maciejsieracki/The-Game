@@ -51,7 +51,6 @@ import {
 } from '../game/diplomacy-proposals';
 import type { ProposalPayload } from '../game/diplomacy-proposals';
 import {
-  audienceActionBarLockNote,
   audienceActionStatusNote,
   uiActionAllowsMultipleOwnOnTable,
 } from '../game/diplomacy-audience-actions';
@@ -948,17 +947,22 @@ ${DIPLO_1E_SHARED_CSS}
 @media (max-width:760px){.da-mainrow{flex-wrap:wrap;}.da-card{width:100%;flex:1 1 auto;}}
 
 /* ===== FAZA 3 pkt 8 — pasek szybkich akcji (SAME IKONY, 46×46) + „Szybka Umowa" ===== */
-.da-actionbar{display:flex;align-items:flex-end;gap:9px;justify-content:center;flex-wrap:wrap;padding-top:2px;}
-.da-abtn-cell{display:inline-flex;flex-direction:column;align-items:center;gap:2px;max-width:74px;}
-.da-abtn-note{font-size:0.5em;line-height:1.2;color:#e08a8a;text-align:center;max-width:70px;
-  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.da-actionbar{display:flex;align-items:flex-start;gap:8px 9px;justify-content:center;flex-wrap:wrap;padding-top:2px;}
+.da-abtn-cell{display:inline-flex;flex-direction:column;align-items:center;width:84px;flex:0 0 84px;}
+.da-abtn-cell--cta{width:auto;flex:0 0 auto;margin-left:6px;}
+.da-abtn-slot{height:52px;display:flex;align-items:center;justify-content:center;}
+.da-abtn-lbl{margin-top:4px;font-size:11px;line-height:1.2;font-weight:600;letter-spacing:.02em;color:#ffffff;
+  text-align:center;white-space:nowrap;}
+.da-abtn-cell.is-locked .da-abtn-lbl{color:#c9ced8;}
+.da-abtn .da-abtn-lock{position:absolute;right:-5px;top:-5px;width:13px;height:13px;padding:2px;border-radius:50%;
+  background:#0a0d14;border:1px solid rgba(201,206,216,.55);color:#c9ced8;}
 .da-ttip{position:relative;display:inline-flex;}
 .da-ttip>.da-ttip-lbl{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);opacity:0;
   pointer-events:none;transition:opacity .12s;white-space:nowrap;background:rgba(8,10,16,.96);
   border:1px solid rgba(232,216,138,.4);color:#e8d88a;padding:3px 9px;border-radius:6px;font-size:9.5px;
   font-weight:700;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 4px 12px rgba(0,0,0,.55);z-index:9;}
 .da-ttip:hover>.da-ttip-lbl{opacity:1;}
-.da-abtn{width:46px;height:46px;border-radius:10px;border:1px solid rgba(232,216,138,.3);
+.da-abtn{position:relative;width:46px;height:46px;border-radius:10px;border:1px solid rgba(232,216,138,.3);
   background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8d88a;display:flex;align-items:center;
   justify-content:center;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.4);}
 .da-abtn svg{width:19px;height:19px;}
@@ -1636,17 +1640,27 @@ const ACTION_BAR_SVG: Record<string, string> = {
 };
 
 /** Mapowanie przycisk paska → id akcji z siatki (data/diplomacy.json akcje_dyplomatyczne). */
-const ACTION_BAR_SPECS: ReadonlyArray<{ svg: keyof typeof ACTION_BAR_SVG; aid: string; label: string; extraCls?: string }> = [
-  { svg: 'war', aid: '11', label: 'Wypowiedz wojnę', extraCls: 'warbtn' },
-  { svg: 'peace', aid: '10', label: 'Zaproponuj pokój', extraCls: 'peacebtn' },
-  { svg: 'alliance', aid: '3', label: 'Sojusz' },
-  { svg: 'pact', aid: '2', label: 'Pakt o nieagresji' },
-  { svg: 'trade', aid: '5', label: TRAKTAT_HANDLOWY_LABEL },
-  { svg: 'trade', aid: '14', label: 'Umowa wymiany' },
-  { svg: 'gift', aid: '13', label: 'Przekaż dar' },
-  { svg: 'vassal', aid: '12', label: 'Wasalizacja' },
-  { svg: 'vassal', aid: '15', label: 'Wchłonięcie' },
+/**
+ * R-WEB-DIPLO-QUICK-ACTIONS-BAR-READABLE-Q1 — `short` to JEDNO słowo (≤ 12 znaków, bez
+ * wielokropka) wyświetlane pod ikoną. `label` (pełna nazwa) zostaje w hover-pigułce i aria
+ * dla odblokowanej akcji; pełny powód blokady idzie do title/aria (nigdy pod ikonę).
+ */
+const ACTION_BAR_SPECS: ReadonlyArray<{ svg: keyof typeof ACTION_BAR_SVG; aid: string; label: string; short: string; extraCls?: string }> = [
+  { svg: 'war', aid: '11', label: 'Wypowiedz wojnę', short: 'Wojna', extraCls: 'warbtn' },
+  { svg: 'peace', aid: '10', label: 'Zaproponuj pokój', short: 'Pokój', extraCls: 'peacebtn' },
+  { svg: 'alliance', aid: '3', label: 'Sojusz', short: 'Sojusz' },
+  { svg: 'pact', aid: '2', label: 'Pakt o nieagresji', short: 'Pakt' },
+  { svg: 'trade', aid: '5', label: TRAKTAT_HANDLOWY_LABEL, short: 'Handel' },
+  { svg: 'trade', aid: '14', label: 'Umowa wymiany', short: 'Wymiana' },
+  { svg: 'gift', aid: '13', label: 'Przekaż dar', short: 'Dar' },
+  { svg: 'vassal', aid: '12', label: 'Wasalizacja', short: 'Wasal' },
+  { svg: 'vassal', aid: '15', label: 'Wchłonięcie', short: 'Wchłonięcie' },
 ];
+
+/** Kłódka nakładana na zablokowany przycisk paska (stan sygnalizowany wizualnie, nie tekstem). */
+const ACTION_BAR_LOCK_SVG =
+  '<svg class="da-abtn-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">' +
+  '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>';
 
 /**
  * FAZA 3 pkt 8 — pasek szybkich akcji. SAME IKONY (46×46, bez podpisów), pełna nazwa
@@ -1664,18 +1678,19 @@ export function actionBarHtml(st: DiplomacyAudienceState): string {
     const enabled = action ? action.enabled : false;
     const isLocked = action ? (action.locked || !action.enabled) : true;
     const tip = enabled ? spec.label : (action?.lockNote || (isLocked ? action?.tooltip : undefined) || spec.label);
-    const lockNote = audienceActionBarLockNote(action);
-    const cls = 'da-abtn' + (spec.extraCls ? ' ' + spec.extraCls : '');
+    const cls = 'da-abtn' + (spec.extraCls ? ' ' + spec.extraCls : '') + (isLocked ? ' is-locked' : '');
     const actionIcon = dipBrandIconHtml(actionIconId(spec.aid), 24, 'da-action-ic') || ACTION_BAR_SVG[spec.svg];
     const visibleTip = enabled ? spec.label : (tip || spec.label);
     const btn =
       '<span class="da-ttip"><span class="da-ttip-lbl">' + esc(visibleTip) + '</span>' +
       '<button type="button" class="' + cls + '" data-aid="' + esc(spec.aid) + '"' +
-      (enabled ? '' : ' disabled') + ' title="' + esc(tip) + '" aria-label="' + esc(visibleTip) + '">' + actionIcon + '</button>' +
+      (enabled ? '' : ' disabled') + ' title="' + esc(tip) + '" aria-label="' + esc(visibleTip) + '">' +
+      actionIcon + (isLocked ? ACTION_BAR_LOCK_SVG : '') + '</button>' +
       '</span>';
     return (
-      '<span class="da-abtn-cell">' + btn +
-      (lockNote ? '<span class="da-abtn-note" title="' + esc(lockNote) + '">' + esc(lockNote) + '</span>' : '') +
+      '<span class="da-abtn-cell' + (isLocked ? ' is-locked' : '') + '">' +
+      '<span class="da-abtn-slot">' + btn + '</span>' +
+      '<span class="da-abtn-lbl">' + esc(spec.short) + '</span>' +
       '</span>'
     );
   }).join('');
@@ -1683,14 +1698,14 @@ export function actionBarHtml(st: DiplomacyAudienceState): string {
   const handel = byId.get('14');
   const handelEnabled = handel ? handel.enabled : false;
   const qdTitle = handelEnabled ? 'auto-uczciwa wymiana' : (handel?.lockNote || handel?.tooltip || 'Wymiana niedostępna');
-  const qdLockNote = handelEnabled ? '' : audienceActionBarLockNote(handel);
   const quickdealBtn =
     '<button type="button" class="da-quickdeal"' + (handelEnabled ? '' : ' disabled') +
     ' title="' + esc(qdTitle) + '" aria-label="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
-    '<span>SZYBKA WYMIANA<small>auto-uczciwa oferta</small></span></button>';
+    '<span>SZYBKA WYMIANA<small>auto-uczciwa oferta</small></span>' +
+    (handelEnabled ? '' : ACTION_BAR_LOCK_SVG) + '</button>';
   const quickdeal =
-    '<span class="da-abtn-cell">' + quickdealBtn +
-    (qdLockNote ? '<span class="da-abtn-note" title="' + esc(qdLockNote) + '">' + esc(qdLockNote) + '</span>' : '') +
+    '<span class="da-abtn-cell da-abtn-cell--cta' + (handelEnabled ? '' : ' is-locked') + '">' +
+    '<span class="da-abtn-slot">' + quickdealBtn + '</span>' +
     '</span>';
 
   return '<div class="da-actionbar">' + btns + quickdeal + '</div>';
