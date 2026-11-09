@@ -1,3 +1,9 @@
+## ROBOCZA 3614a4ba -- 2026-11-06 -- FALA 571: Zastąp za pełny koszt rekrutacji + poprawka listy ulepszeń (Trzoda/Owce) (testowa)
+
+- R-WEB-UNIT-REPLACE-COST-AND-PROMOTION-IMPL-Q1 (f4e1276fa): pełny koszt Pieniądz+surowiec, doświadczenie zachowane, Koszary jedną regułą, gracz i AI; R-WEB-TERRAIN-IMPROVE-FARM-MISSING-ON-HEX-Q1 (e25e9ad12): tooltip Trzoda/Owce/Lama zgodny z silnikiem (bramka epoki Inków)
+- Weryfikacja: tsc 0, logic 213/213, unit-replace-full-cost 40/0, ai-era-promotion 17/0, unit-replace 15+, farm-availability, citizen-auto-assign 11/0, hex-tooltip 65/0, audio-sidecar PASS
+- Limity: UI Zastąp w przeglądarce NIE_ZMIERZONO; ekonomia AI przy wejściu w epokę NIE_ZMIERZONO; luki zamienników (Zwiadowca/Galera/Procarz) i tabela awansów czekają na ABC; podpowiedź obywatela (tryb ręczny) w osobnym temacie
+
 ## ROBOCZA e4edbc4e -- 2026-11-06 -- FALA 570: Suwaki podatków: równa skala 0–100% (Nauka) (testowa)
 
 - R-WEB-TAX-SLIDER-DEFAULT-PANEL-NOT-EQUAL-Q1 (b6df1c162): max=100 dla Skarb/Nauka/Zamożność w panelu domyślnym i panelu miasta; limit Nauki 60% nadal w adjustHandelSplit
