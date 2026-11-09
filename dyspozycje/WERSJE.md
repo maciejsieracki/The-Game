@@ -1,3 +1,9 @@
+## ROBOCZA 15aa8dde -- 2026-11-06 -- FALA 566: TERM + TREAT: handel vs podatek w tekstach i korekta jezykowa kart; umowy wymiany surowcow w Aktywnych traktatach (testowa)
+
+- teksty gracza: produkcja pola/budynku/ulepszenia/technologii/cudu = podatek, handel tylko wymiana (40+ plikow, CIVPEDIA); korekta: klucz/bez ktorych; kolumna Aktywne traktaty: partner, towar, czestotliwosc, status ostatniej dostawy + powiadomienie o nieudanej dostawie
+- Weryfikacja: terminology-trade-vs-tax 777/0, diplo-active-treaties 15/0, tech-cards-top5 594/0, building-cards-top5 1179/0, cyclic-trade 53/0, quick-actions-labels 38/0, logic 213/213, ai-test 289/0, tsc 0
+- Limity: klasa C terminologii (podzial handlu, handelBrutto w tooltipie, mnoznik handlu w wiki, grupa Handel i pieniadz) NIE zmieniona - czeka na ABC; wymiana jednorazowa nie jest widoczna (decyzja ABC); zywa gra/Chromium NIE_ZMIERZONO
+
 ## ROBOCZA 05d8ce80 -- 2026-11-06 -- FALA 565: MUSERA + QABAR: muzyka kumulatywna po epokach; czytelny pasek szybkich decyzji dyplomacji (testowa)
 
 - muzyka tla: kamien / kamien+braz / kamien+braz+zelazo (katalog zelazo opcjonalny), awans epoki nie przerywa utworu (filePlayer.setTracks); pasek dyplomacji: jedno slowo pod ikona, biale etykiety, kłodka + powod w tooltipie

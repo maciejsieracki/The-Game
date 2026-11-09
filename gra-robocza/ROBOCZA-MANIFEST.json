@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "05d8ce803011cb24a9aaf8cd8f59193b",
-  "bundleSha256": "de179c171dd00cbe8bd4bcd162d4c0328b22b2988546d34562803e6f916f5b2e",
-  "bundleBytes": 14309009,
+  "bundleMd5": "15aa8dde8f2dea7a0f119a78489a86db",
+  "bundleSha256": "f9109a83e0b8d1a0082f49ae28eb22713eda4422c0ed8a6c59662b0c20dcaf3c",
+  "bundleBytes": 14311463,
   "sourceSnapshot": {
-    "source": "FC 463e73699 (QABAR c68fc8d50) + 95e70f0c0 (MUSERA c9f728ded)",
+    "source": "FC 7ba84a818 (kod 95a34365b) + 32f4e792d (kod 43699ae72)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 565: muzyka tla: kamien / kamien+braz / kamien+braz+zelazo (katalog zelazo opcjonalny), awans epoki nie przerywa utworu (filePlayer.setTracks); pasek dyplomacji: jedno slowo pod ikona, biale etykiety, kłodka + powod w tooltipie"
+    "FALA 566: teksty gracza: produkcja pola/budynku/ulepszenia/technologii/cudu = podatek, handel tylko wymiana (40+ plikow, CIVPEDIA); korekta: klucz/bez ktorych; kolumna Aktywne traktaty: partner, towar, czestotliwosc, status ostatniej dostawy + powiadomienie o nieudanej dostawie"
   ],
   "verification": [
-    "muzyka-era-cumulative 23/0, braz-era-playlist 42/0, era-live-e2e (Chromium) 13/0, menu-music 7/0 i 9/0, civ-music 100/0, diplo-quick-actions-labels 38/0, infografiki-tooltipy 12/0, logic 213/213, ai-test 289/0, tsc 0"
+    "terminology-trade-vs-tax 777/0, diplo-active-treaties 15/0, tech-cards-top5 594/0, building-cards-top5 1179/0, cyclic-trade 53/0, quick-actions-labels 38/0, logic 213/213, ai-test 289/0, tsc 0"
   ],
   "limits": [
-    "odsluch muzyki i tryb mutacyjny NIE_ZMIERZONO; pasek w realnej grze NIE_ZMIERZONO (tylko zrzut Chromium HTML); po obnizeniu epoki (zapis) grajacy utwor dogrywa sie"
+    "klasa C terminologii (podzial handlu, handelBrutto w tooltipie, mnoznik handlu w wiki, grupa Handel i pieniadz) NIE zmieniona - czeka na ABC; wymiana jednorazowa nie jest widoczna (decyzja ABC); zywa gra/Chromium NIE_ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-09T17:00:16",
+  "hubGeneratedAt": "2026-11-09T17:14:26",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "05d8ce803011cb24a9aaf8cd8f59193b",
-      "sizeBytes": 14309009
+      "md5": "15aa8dde8f2dea7a0f119a78489a86db",
+      "sizeBytes": 14311463
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "05d8ce803011cb24a9aaf8cd8f59193b",
-      "sizeBytes": 14309009
+      "md5": "15aa8dde8f2dea7a0f119a78489a86db",
+      "sizeBytes": 14311463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "05d8ce803011cb24a9aaf8cd8f59193b",
-      "sizeBytes": 14309009
+      "md5": "15aa8dde8f2dea7a0f119a78489a86db",
+      "sizeBytes": 14311463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "05d8ce803011cb24a9aaf8cd8f59193b",
-      "sizeBytes": 14309009
+      "md5": "15aa8dde8f2dea7a0f119a78489a86db",
+      "sizeBytes": 14311463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "05d8ce803011cb24a9aaf8cd8f59193b",
-      "sizeBytes": 14309009
+      "md5": "15aa8dde8f2dea7a0f119a78489a86db",
+      "sizeBytes": 14311463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "05d8ce803011cb24a9aaf8cd8f59193b",
-      "sizeBytes": 14309009
+      "md5": "15aa8dde8f2dea7a0f119a78489a86db",
+      "sizeBytes": 14311463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "05d8ce803011cb24a9aaf8cd8f59193b",
-      "sizeBytes": 14309009
+      "md5": "15aa8dde8f2dea7a0f119a78489a86db",
+      "sizeBytes": 14311463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "05d8ce803011cb24a9aaf8cd8f59193b",
-      "sizeBytes": 14309009
+      "md5": "15aa8dde8f2dea7a0f119a78489a86db",
+      "sizeBytes": 14311463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "05d8ce803011cb24a9aaf8cd8f59193b",
-      "sizeBytes": 14309009
+      "md5": "15aa8dde8f2dea7a0f119a78489a86db",
+      "sizeBytes": 14311463
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "05d8ce803011cb24a9aaf8cd8f59193b",
-      "sizeBytes": 14309009
+      "md5": "15aa8dde8f2dea7a0f119a78489a86db",
+      "sizeBytes": 14311463
     }
   ],
-  "md5": "05d8ce803011cb24a9aaf8cd8f59193b",
+  "md5": "15aa8dde8f2dea7a0f119a78489a86db",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
