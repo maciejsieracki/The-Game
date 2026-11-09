@@ -111,6 +111,10 @@ export interface DiplomacyAudienceState {
     detail?: string;
     sinceTurns?: number;
     breakPenaltyLabel?: string;
+    /** R-WEB-DIPLO-ACTIVE-TREATIES-RESOURCE-DEALS-Q1: wiersze cyklicznej wymiany surowców. */
+    exchanges?: readonly { text: string; status: 'ok' | 'fail' | 'pending'; statusText: string }[];
+    /** „co turę, pozostało N tur" / „co turę, bezterminowo". */
+    frequencyLabel?: string;
   }[];
   /**
    * J: JAWNY formalny status relacji (odrębny od nastawienia/tier). Odpowiada na
@@ -1871,6 +1875,13 @@ export function treatiesColumnHtml(
     else if (t.detail) metaParts.push(t.detail);
     const meta = metaParts.length > 0 ? '<div class="da-meta">' + esc(metaParts.join(' · ')) + '</div>' : '';
     const pen = t.breakPenaltyLabel ? '<div class="da-pen">kara zerwania: ' + esc(t.breakPenaltyLabel) + '</div>' : '';
+    /* R-WEB-DIPLO-ACTIVE-TREATIES-RESOURCE-DEALS-Q1: co, ile, jak często + status ostatniej dostawy. */
+    const exch = (t.exchanges ?? []).map(x =>
+      '<div class="da-meta da-exch" data-exch-status="' + x.status + '">' + esc(x.text) +
+      '<br><span class="da-exch-st" style="' + (x.status === 'fail' ? 'color:#ff8a80;font-weight:700' : '') + '">' +
+      esc(x.statusText) + '</span></div>',
+    ).join('');
+    const freq = t.frequencyLabel ? '<div class="da-meta da-freq">' + esc(t.frequencyLabel) + '</div>' : '';
     const dealId = t.id;
     const enabled = canBreak && !!dealId;
     const brkTitle = enabled
@@ -1878,7 +1889,7 @@ export function treatiesColumnHtml(
       : 'Zerwij traktat — niedostępne';
     return (
       '<div class="da-treaty">' + icon +
-        '<div><div class="da-nm">' + esc(t.label) + '</div>' + meta + pen + '</div>' +
+        '<div><div class="da-nm">' + esc(t.label) + '</div>' + meta + freq + exch + pen + '</div>' +
         /* Zaległość #2 — ikona rozerwanego ogniwa + podpis „Zerwij traktat" TYLKO na hover. */
         '<span class="da-ttip"><span class="da-ttip-lbl" style="bottom:34px">Zerwij traktat</span>' +
         '<button type="button" class="da-brk" data-deal-id="' + esc(dealId ?? '') + '"' +

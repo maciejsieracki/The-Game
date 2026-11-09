@@ -1181,9 +1181,11 @@ import {
   sameCultureCircle,
   treatyDisplayLabel,
   activeTreatyLabelsForPair,
+  resourceDisplayLabel,
   TRAKTAT_HANDLOWY_LABEL,
   type FormalDiplomaticKind,
 } from './game/diplomacy-display';
+import { cyclicDeliveryRecord, cyclicExchangeFrequencyLabel, cyclicExchangeLinesForDeal } from './game/diplomacy-cyclic-display';
 import {
   applyFogToPathPlan,
   executeMarchStep,
@@ -21767,16 +21769,25 @@ async function boot(): Promise<void> {
       detail?: string;
       sinceTurns?: number;
       breakPenaltyLabel?: string;
+      exchanges?: { text: string; status: 'ok' | 'fail' | 'pending'; statusText: string }[];
+      frequencyLabel?: string;
     }[] {
+      const partnerId = a === ME() ? b : a;
       return activeDeals
         .filter(d => dealInvolvesOwners(d, a, b))
-        .map(d => ({
-          id: d.id,
-          label: treatyDisplayLabel(d.rodzaj),
-          detail: d.wygasaTura !== null ? `wygasa t.${d.wygasaTura}` : undefined,
-          sinceTurns: d.zawartaTura !== undefined ? Math.max(0, turn - d.zawartaTura) : undefined,
-          breakPenaltyLabel: treatyBreakPenaltyLabel(d),
-        }));
+        .map(d => {
+          const exchanges = cyclicExchangeLinesForDeal(d, a === partnerId ? b : a, ownerDiploLabel(partnerId));
+          // (widz = strona różna od partnera; przy a===ME() partner to b, więc widz = a)
+          return {
+            id: d.id,
+            label: treatyDisplayLabel(d.rodzaj),
+            detail: d.wygasaTura !== null ? `wygasa t.${d.wygasaTura}` : undefined,
+            sinceTurns: d.zawartaTura !== undefined ? Math.max(0, turn - d.zawartaTura) : undefined,
+            breakPenaltyLabel: treatyBreakPenaltyLabel(d),
+            exchanges: exchanges.length > 0 ? exchanges : undefined,
+            frequencyLabel: exchanges.length > 0 ? cyclicExchangeFrequencyLabel(d.wygasaTura, turn) : undefined,
+          };
+        });
     }
 
     function syncRelationFromDeals(a: number, b: number): void {
@@ -22911,6 +22922,28 @@ async function boot(): Promise<void> {
         }
       } else {
         deal.handelCyklicznyKiedykolwiekNiedostarczono = true;
+      }
+
+      // R-WEB-DIPLO-ACTIVE-TREATIES-RESOURCE-DEALS-Q1: stan ostatniej dostawy do kolumny
+      // „Aktywne traktaty" + powiadomienie dyplomacji o nieudanej dostawie (tylko gdy gracz
+      // jest stroną). Tylko wyświetlanie — bez wpływu na zasady/liczby.
+      item.ostatniaDostawa = cyclicDeliveryRecord(turn, delivered, sellerAtFault, buyerAtFault);
+      if (!delivered && (isHuman(item.sellerOwnerId) || isHuman(item.buyerOwnerId))) {
+        const sellerName = ownerDiploLabel(item.sellerOwnerId);
+        const buyerName = ownerDiploLabel(item.buyerOwnerId);
+        const who = sellerAtFault
+          ? `brak surowca u dostawcy (${sellerName})`
+          : (buyerAtFault ? `brak środków na zapłatę u odbiorcy (${buyerName})` : 'druga część wymiany nie została dostarczona');
+        borderMarchEventLog.unshift({
+          id: `cyclic-trade-fail-${deal.id}-${item.surowiecKey}-t${turn}`,
+          icon: '\u{1F4E6}',
+          title: 'Dyplomacja: dostawa niezrealizowana',
+          subtitle: `${resourceDisplayLabel(item.surowiecKey)} ×${item.pakietyPerTura} (${sellerName} → ${buyerName}): ${who}`,
+          kind: 'diplo',
+          negative: true,
+          turnCreated: turn,
+        });
+        if (borderMarchEventLog.length > 8) borderMarchEventLog.length = 8;
       }
 
       // N6 -- liczniki kolejnych tur Z RZEDU, WYŁĄCZNIE per strona winna (nigdy strona gotowa).
