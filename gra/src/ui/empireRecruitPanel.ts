@@ -60,14 +60,14 @@ function ensureStyles(): void {
   st.id = STYLE_ID;
   st.textContent = `
 #${ROOT_ID}{position:fixed;top:84px;right:16px;z-index:330;width:min(380px,calc(100vw - 32px));max-height:calc(100vh - 140px);
-  display:flex;flex-direction:column;background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8e0c8;
+  display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8e0c8;
   border:1px solid rgba(232,216,138,.45);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.6);
   font:13px var(--civ-font-ui,system-ui,sans-serif);pointer-events:auto;}
 #${ROOT_ID} .erp-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;
   border-bottom:1px solid rgba(232,216,138,.25);}
 #${ROOT_ID} .erp-title{font-weight:700;color:#e8d88a;font-size:14px;}
 #${ROOT_ID} .erp-sub{padding:6px 12px 2px;font-size:11px;color:#9aa4b2;line-height:1.4;}
-#${ROOT_ID} .erp-list{overflow-y:auto;padding:4px 8px 8px;}
+#${ROOT_ID} .erp-list{flex:none;padding:4px 8px 8px;}
 #${ROOT_ID} .erp-row{display:flex;align-items:center;gap:8px;padding:6px 4px;border-top:1px solid #242c3a;}
 #${ROOT_ID} .erp-row:first-child{border-top:none;}
 #${ROOT_ID} .erp-info{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px;}
@@ -84,6 +84,7 @@ function ensureStyles(): void {
 #${ROOT_ID} .erp-qty input{width:42px;text-align:center;font:inherit;color:#e8e0c8;background:#0e131c;border:1px solid #49566a;border-radius:5px;padding:3px 2px;}
 #${ROOT_ID} .erp-go{border-color:rgba(232,216,138,.6);color:#e8d88a;font-weight:600;}
 #${ROOT_ID} .erp-all{padding:6px 12px;border-top:1px solid rgba(232,216,138,.2);}
+#${ROOT_ID} .erp-stick{position:sticky;top:0;z-index:2;background:#161c28;}
 #${ROOT_ID} .erp-all button{width:100%;border-color:rgba(232,216,138,.6);color:#e8d88a;font-weight:700;padding:6px 8px;}
 #${ROOT_ID} .erp-msg{padding:6px 12px 9px;font-size:12px;color:#e8d88a;min-height:1.2em;border-top:1px solid rgba(232,216,138,.2);}
 `;
@@ -114,21 +115,20 @@ function render(root: HTMLElement, force = true): void {
       + `<button type="button" class="erp-go" data-erp="go"${blocked || q <= 0 ? ' disabled' : ''}>Rekrutuj</button>`
       + `</div>`;
   }).join('');
-  const html = `<div class="erp-hd"><span class="erp-title">Rekrutacja — cała cywilizacja</span>`
+  const html = `<div class="erp-stick"><div class="erp-hd"><span class="erp-title">Rekrutacja — cała cywilizacja</span>`
     + `<button type="button" data-erp="close" aria-label="Zamknij">Zamknij</button></div>`
+    + `<div class="erp-all">${allBtn}</div></div>`
     + `<div class="erp-sub">Zamówienie rozkłada się równomiernie na miasta, które mogą produkować dany typ. `
     + `Pojedyncze „Rekrutuj” nie zeruje licznika. „Rekrutuj wszystkie” zamawia każdy typ z licznikiem &gt; 0 `
     + `i zeruje przyjęte pozycje.</div>`
-    + `<div class="erp-all">${allBtn}</div>`
     + `<div class="erp-list">${list || '<div class="erp-meta" style="padding:10px 4px">Brak dostępnych jednostek wojskowych.</div>'}</div>`
     + `<div class="erp-all">${allBtn}</div>`
     + `<div class="erp-msg" data-erp-msg role="status">${esc(lastMessage)}</div>`;
   if (!force && html === lastHtml) return; // updateHud woła często — bez zbędnej przebudowy DOM
   lastHtml = html;
-  const scroll = root.querySelector('.erp-list')?.scrollTop ?? 0;
+  const outerScroll = root.scrollTop; // jedyne przewijanie to zewnętrzne (cały panel)
   root.innerHTML = html;
-  const list2 = root.querySelector('.erp-list');
-  if (list2 && scroll > 0) list2.scrollTop = scroll;
+  root.scrollTop = outerScroll;
 }
 
 function onClick(ev: Event): void {
