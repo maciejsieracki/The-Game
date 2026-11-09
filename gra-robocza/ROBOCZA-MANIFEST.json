@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "7558ec530d200fe840fc98a214150d1f",
-  "bundleSha256": "be6bb9ab75b11889dd57462558691c28f31acb0bd083aa11360ce8e4b5a378ee",
-  "bundleBytes": 14347479,
+  "bundleMd5": "c893f4f5509901ea87636743b87e2112",
+  "bundleSha256": "c02f512ae48582bc75dff7093b1505128a1e2c1849775fb697593e93490e197e",
+  "bundleBytes": 14348055,
   "sourceSnapshot": {
-    "source": "FC c8ee037fb + ab4646dc6",
+    "source": "FC 0fbca7540",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 581: R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (c8ee037fb) + R-WEB-UNIT-REPLACE-ARMY-PANEL-SELECTS-GENERAL-Q1 (ab4646dc6)"
+    "FALA 582: R-WEB-TECH-IRON-GATING-IMPL-Q1 (0fbca7540)"
   ],
   "verification": [
-    "tsc 0, logic 213/213, building-upkeep-resources 48/0, upkeep 91/0, unit-replace-army-multi-select 36/36, unit-replace 15/15, unit-replace-full-cost 40/0, audio-sidecar PASS"
+    "tsc 0, logic 213/213, iron-gating-impl 130/0, tech-unlock-units 126/0, tech-cards-top5 594/0, building-tech-gate 91/0, ai-difficulty-bonus 97/0, super-unit-limit-one 40/0, audio-sidecar PASS"
   ],
   "limits": [
-    "NIE_ZMIERZONO w przeglądarce ani symulacja AI; dług REPIN Rust (building_costs.rs); podglądy HUD per owner"
+    "NIE_ZMIERZONO w grze/tempo AI; dług REPIN Rust (tech.json, units.json, tech-cards-top5), poradnik gracza z starymi bramkami"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-09T21:34:20",
+  "hubGeneratedAt": "2026-11-09T21:50:03",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7558ec530d200fe840fc98a214150d1f",
-      "sizeBytes": 14347479
+      "md5": "c893f4f5509901ea87636743b87e2112",
+      "sizeBytes": 14348055
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7558ec530d200fe840fc98a214150d1f",
-      "sizeBytes": 14347479
+      "md5": "c893f4f5509901ea87636743b87e2112",
+      "sizeBytes": 14348055
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "7558ec530d200fe840fc98a214150d1f",
-      "sizeBytes": 14347479
+      "md5": "c893f4f5509901ea87636743b87e2112",
+      "sizeBytes": 14348055
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "7558ec530d200fe840fc98a214150d1f",
-      "sizeBytes": 14347479
+      "md5": "c893f4f5509901ea87636743b87e2112",
+      "sizeBytes": 14348055
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "7558ec530d200fe840fc98a214150d1f",
-      "sizeBytes": 14347479
+      "md5": "c893f4f5509901ea87636743b87e2112",
+      "sizeBytes": 14348055
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "7558ec530d200fe840fc98a214150d1f",
-      "sizeBytes": 14347479
+      "md5": "c893f4f5509901ea87636743b87e2112",
+      "sizeBytes": 14348055
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "7558ec530d200fe840fc98a214150d1f",
-      "sizeBytes": 14347479
+      "md5": "c893f4f5509901ea87636743b87e2112",
+      "sizeBytes": 14348055
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "7558ec530d200fe840fc98a214150d1f",
-      "sizeBytes": 14347479
+      "md5": "c893f4f5509901ea87636743b87e2112",
+      "sizeBytes": 14348055
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "7558ec530d200fe840fc98a214150d1f",
-      "sizeBytes": 14347479
+      "md5": "c893f4f5509901ea87636743b87e2112",
+      "sizeBytes": 14348055
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "7558ec530d200fe840fc98a214150d1f",
-      "sizeBytes": 14347479
+      "md5": "c893f4f5509901ea87636743b87e2112",
+      "sizeBytes": 14348055
     }
   ],
-  "md5": "7558ec530d200fe840fc98a214150d1f",
+  "md5": "c893f4f5509901ea87636743b87e2112",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
