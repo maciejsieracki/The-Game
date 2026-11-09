@@ -16,7 +16,7 @@
  *     techu zostaja na samym drewnie).
  *  6. Tier-gating: Garncarstwo ma Poziom 1, a kazdy tech Kamienia o poziomie 2+ jest
  *     osiagalny (brak cyklu prereq w obrebie epoki).
- *  7. Luka kamienia przed Murarstwem: znane wyjatki (kamienne_kregi, targowisko, studnia)
+ *  7. Luka kamienia przed Murarstwem: znane wyjatki (kamienne_kregi, studnia)
  *     sa jawnie wypisane; kazda nowa luka = FAIL (decyzja wlasciciela wymagana).
  *
  * Run from gra/:  node tools/building-cost-resource-availability-test.cjs
@@ -121,7 +121,8 @@ for (const t of stone) {
 //    ktorych lancuch prereq NIE zawiera Murarstwa, to ZNANE, UDOKUMENTOWANE wyjatki
 //    czekajace na decyzje wlasciciela (dodac prereq Murarstwo albo zaakceptowac). Test
 //    pilnuje, by lista wyjatkow nie urosla bez swiadomej decyzji.
-const STONE_NO_MURARSTWO_EXCEPTIONS = ['kamienne_kregi', 'targowisko', 'studnia'];
+// R-WEB-DATA-TARGOWISKO-REMOVE-STONE-COST-Q1 (2026-11-09): Targowisko usunięte z wyjątków (koszt = samo drewno).
+const STONE_NO_MURARSTWO_EXCEPTIONS = ['kamienne_kregi', 'studnia'];
 const stoneAccess = techs.filter(t => /kamie/i.test(t['Dostęp do surowca.'] || '')).map(t => t.Technologia);
 ok(JSON.stringify(stoneAccess) === JSON.stringify(['Murarstwo']), `jedyny tech dostepu do kamienia to Murarstwo (ma: ${stoneAccess})`);
 const stoneEra1 = buildings.filter(b => b.epokaWejscia === 1 && cost(b).kamien > 0);
