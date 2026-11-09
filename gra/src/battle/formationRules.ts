@@ -18,7 +18,7 @@ export function classifyInitialBattleRole(input: {
   const haystack = `${category} ${name}`;
 
   if (input.commander) return 'commander';
-  if (category === 'konnica' || category === 'rydwan' ||
+  if (category === 'konnica' || category === 'rydwan' || type === 'mount' ||
       /konnic|jazd|jezdz|kawaler|rydwan|chariot|cavalry|horse/.test(name)) return 'mounted';
   if (type === 'siege' ||
       /taran|katapult|wieza oblezn|battering|catapult|siege tower/.test(name)) return 'siege';
