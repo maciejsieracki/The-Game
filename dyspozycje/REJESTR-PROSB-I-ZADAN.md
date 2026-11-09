@@ -9177,3 +9177,4 @@ Zgłoszenia właściciela z dnia (wszystkie zarejestrowane; ID = dyspozycje/auto
 - 2026-11-09 ZGŁOSZENIE WŁAŚCICIELA (zrzut): w zbiorczym panelu rekrutacji lista jednostek ma wewnętrzny suwak — pokazać wszystkie pozycje bez przewijania → temat R-WEB-UI-EMPIRE-RECRUIT-PANEL-NO-INNER-SCROLL-Q1 (dispatch zapisany, Haiku; start po FALA 576).
 - 2026-11-09 DECYZJA WŁAŚCICIELA: Falanga ma mieć Bonus vs Spearman +30% → temat R-WEB-DATA-FALANGA-BONUS-VS-SPEARMAN-30-Q1 (Haiku).
 - 2026-11-09 FALA 576 WDROŻONA NA ROBOCZĄ: RECRUIT-ALL (50f21fd3c) + TARGOWISKO (6b5255dec); main 12fa64c97. Dług REPIN Rust: Targowisko bez kamienia.
+- 2026-11-09 DODATEK właściciela do FALANGA: Obrona 12, Przebicie 4 (jak Thorakites), Bonus vs Spearman 30; zaktualizować wszystkie pola pochodne (fieldPower, meleeDefence, piercing, karty/wiki).
