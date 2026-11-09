@@ -8897,6 +8897,16 @@ export class BattleScene {
     else if (hitArc === 'rear') extraMorale += MORALE_REAR_HIT;
     if (!ranged && attacker.mounted && meleeCharge) extraMorale += MORALE_CHARGE_HIT;
 
+    return this._resolveBlowOutcome(attacker, defender, dmg, extraMorale);
+  }
+
+  /**
+   * Outcome of a landed blow (HP already reduced): death (HP <= 0 -> unit removed
+   * from the field at once, also for an already routed unit), rout-before-death
+   * (only for NON-lethal blows) or plain morale damage. Extracted from _singleBlow
+   * (R-WEB-BATTLE-DEAD-UNITS-NOT-REMOVED-FROM-FIELD-Q1) so it is testable headless.
+   */
+  private _resolveBlowOutcome(attacker: RuntimeBattleUnit, defender: RuntimeBattleUnit, dmg: number, extraMorale: number): number {
     // Death check for the target (one blow affects one unit). HP <= 0 kills it
     // outright (and shakes nearby allies). The old HP-fraction "Prog dezercji"
     // elimination is now handled by the MORALE pool below; a never-rout unit
@@ -8905,10 +8915,13 @@ export class BattleScene {
     // PEKA I UCIEKA zamiast ginac -- zmeczone jednostki rotuja, nie bija sie do
     // ostatniego. Tylko cios NIE lamiacy morale moze zabic od razu (nagla smierc
     // jeszcze niezlamanej jednostki). neverRout (berserk/"walczy do smierci") nie pekaja.
-    if (!defender.dead && !defender.fadingOut && !defender.routed && !defender.neverRout) {
+    // R-WEB-BATTLE-DEAD-UNITS-NOT-REMOVED-FROM-FIELD-Q1: cios, ktory sprowadza HP do 0,
+    // ZABIJA (jednostka znika z pola) -- nie ozywiamy jej do hp=1 tylko po to, by uciekala
+    // z pustym paskiem zdrowia. Rout-before-death dotyczy wylacznie ciosow NIEsmiertelnych.
+    if (!defender.dead && !defender.fadingOut && !defender.routed && !defender.neverRout
+        && defender.bu.hp > 0) {
       const projMorale = defender.morale - MORALE_HIT_LOSS_SCALE * (dmg / Math.max(1, defender.bu.maxHp)) - extraMorale;
       if (projMorale <= defender.fleeMorale) {
-        if (defender.bu.hp <= 0) { defender.bu.hp = 1; this._updateHpBar(defender); } // przezywa by uciec
         this._applyMoraleDamage(defender, dmg, extraMorale); // obniza morale (+flanka/tyl/szarza) -> _checkRout -> _startRout
         // FACTOR 3: blow that ROUTED the defender -> attacker GAINS morale.
         if (defender.routed) this._gainMorale(attacker, MORALE_KILL_GAIN);
@@ -8917,7 +8930,8 @@ export class BattleScene {
       }
     }
 
-    if (!defender.dead && !defender.fadingOut && !defender.routed) {
+    // Uciekajacy (routed) tez ginie przy HP <= 0 -- nie wolno mu zostac na polu z pustym paskiem.
+    if (!defender.dead && !defender.fadingOut && !defender.removed) {
       if (defender.bu.hp <= 0) {
         this.log.push('  -> ' + defender.bu.nazwa + ' wyeliminowany');
         this._startFade(defender);
