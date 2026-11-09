@@ -1,3 +1,9 @@
+## ROBOCZA 5f832422 -- 2026-11-06 -- FALA 584: Pasek ruchu na kartach armii (tooltip hexa): widoczny tor, Ruch: X z Y (testowa)
+
+- R-WEB-UI-ARMY-PANEL-CARD-MOVE-BAR-MISSING-Q1 (0ef47315b)
+- Weryfikacja: tsc 0, army-panel-card-move-bar 20/20, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO wizualnie; regresje army-merge-panel-* nie uruchomione
+
 ## ROBOCZA c893f4f5 -- 2026-11-06 -- FALA 582: Żelazo: Hutnictwo = surowiec/kopalnie, jednostki epoki Żelaza po Sztuce wojennej (testowa)
 
 - R-WEB-TECH-IRON-GATING-IMPL-Q1 (0fbca7540)
