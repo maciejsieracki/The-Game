@@ -7,6 +7,7 @@
 import matrixRaw from '../../data/civ-matrix.json';
 import paramsRaw from '../../data/diplomacy-war-peace-params.json';
 import aiParamsRaw from '../../data/ai-params.json';
+import { isWarWeary } from './war-weariness';
 
 /**
  * R10 (R-WEB-PEACE-RULES-Q1): klucz ai-params.json = baza progZdrowia (sygnał c, próg HP armii).
@@ -33,6 +34,7 @@ export interface WarPeaceParams {
     progSilyNiski: number; mnoznikSilyNiski: number; agresjaSrodek: number; wagaAgresja: number; podbojSrodek: number;
     wagaPodboj: number; mnoznikCywMin: number; mnoznikCywMax: number; turyBezOgraniczenAi: number;
   };
+  przewagaMilitarna: { prog: number; epsilon: number };
   hamulecRelacji: { progKryzysuMinusPunkty: number; bazaN: number; wagaProgWojny: number; minN: number; maxN: number };
 }
 
@@ -304,11 +306,53 @@ export function peaceCivPriceMultiplier(profile: WarPeaceProfile, params: WarPea
   return clampNum(raw, C.mnoznikCywMin, C.mnoznikCywMax);
 }
 
+export type MilitaryAdvantageClass = 'przewaga' | 'niedobor' | 'posrednia';
+
+/** Stosunek sily AI do sily drugiej strony z udzialu rw (0..1): rw/(1-rw). */
+export function militaryPowerRatio(rw: number): number {
+  if (!(rw > 0)) return 0;
+  if (rw >= 1) return Number.POSITIVE_INFINITY;
+  return rw / (1 - rw);
+}
+
+/**
+ * DODATEK 1 (wlasciciel 2026-11-09): klasa przewagi militarnej AI nad druga strona.
+ *  - 'przewaga': silniejsza o WIECEJ niz prog (stosunek > 1+prog) -> AI nie chce pokoju (poza zmeczeniem);
+ *  - 'niedobor': slabsza o CO NAJMNIEJ prog (stosunek <= 1-prog) -> AI moze proponowac pokoj;
+ *  - 'posrednia': reguly dotychczasowe.
+ * Prog w diplomacy-war-peace-params.json (przewagaMilitarna.prog), nie w kodzie.
+ */
+export function militaryAdvantageClass(rw: number, params: WarPeaceParams = WAR_PEACE_PARAMS): MilitaryAdvantageClass {
+  const { prog, epsilon } = params.przewagaMilitarna;
+  const ratio = militaryPowerRatio(rw);
+  if (ratio > 1 + prog + epsilon) return 'przewaga';
+  if (ratio <= 1 - prog + epsilon) return 'niedobor';
+  return 'posrednia';
+}
+
+/**
+ * Regula (a): AI z przewaga > prog nie chce pokoju, dopoki zmeczenie wojna (poziom >= progChetnosci
+ * z war-weariness-params.json) jej do tego nie zacheci. Zmeczenie zdejmuje blokade.
+ */
+export function peaceBlockedByMilitaryAdvantage(
+  rw: number,
+  wearinessLevel: number,
+  params: WarPeaceParams = WAR_PEACE_PARAMS,
+): boolean {
+  return militaryAdvantageClass(rw, params) === 'przewaga' && !isWarWeary(wearinessLevel);
+}
+
 export interface PeaceAiGateInput {
   /** Udział siły AI (0..1). */
   rw: number;
   turnsAtWar: number;
   lostCitiesInWar: number;
+  /**
+   * DODATEK 1: poziom zmeczenia wojna pary (0..1, warWearinessLevel). Podany TYLKO dla pokoju
+   * AI vs GRACZ -- wlacza regule przewagi >20% (odrzucenie pokoju do czasu zmeczenia).
+   * Brak pola (AI<->AI, stare wywolania) = regula nie dziala (zachowanie dotychczasowe).
+   */
+  wearinessLevel?: number;
 }
 
 export interface PeaceAiGateResult {
@@ -345,6 +389,13 @@ export function evaluatePeaceAiGate(
       verdict: 'too_early',
       priceMultiplier: 1,
       reason: `za wcześnie na pokój — AI wymaga co najmniej ${minTur} tur wojny (obecnie ${turns})`,
+    };
+  }
+  if (input.wearinessLevel !== undefined && peaceBlockedByMilitaryAdvantage(input.rw, input.wearinessLevel, params)) {
+    return {
+      verdict: 'stronger',
+      priceMultiplier: 1,
+      reason: `AI czuje się silniejsze (przewaga militarna większa niż ${Math.round(params.przewagaMilitarna.prog * 100)}%) — odrzuca pokój, dopóki nie zmęczy je wojna`,
     };
   }
   if (turns >= C.turyBezOgraniczenAi) {
