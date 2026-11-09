@@ -3,7 +3,7 @@ DOMAIN: GAME
 TEMAT: R-WEB-TERRAIN-IMPROVE-FARM-MISSING-ON-HEX-Q1
 GOAL: Usunąć regresję z rundy 1 (tooltip oferował Trzodę/Owce Inkom w epokach 1-2 wbrew silnikowi), poprawić komentarz w kodzie, dodać pokrycie testowe dla Inków w epokach 1, 2, 3. Decyzja ABC z DODATKU 1 pozostaje po stronie właściciela (kodu nie zmieniano).
 BAZA: ac2d90617b456bd23965428528db64460ff1a42d (commit operatora r1; w worktree gałąź r2-terrain-farm).
-ZMIANY/COMMIT: patrz sekcja COMMIT na końcu (SHA po commicie).
+ZMIANY/COMMIT: kod i testy 0edc54543e1395b3a1aa63fc688973d315e46857 (baza ac2d90617). Raport r2 dopisany w commicie kolejnym.
 Allowlista r2:
 - gra/src/ui/hexContextTooltip.ts (bramka isLivestockAllowed dla bydlo/owce + poprawiony komentarz + import)
 - gra/tools/terrain-improve-farm-availability-test.cjs (scenariusz Inkowie, epoki 1/2/3)
