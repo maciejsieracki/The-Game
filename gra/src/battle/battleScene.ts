@@ -3669,11 +3669,14 @@ export class BattleScene {
     if (this.deployPhase) this._endDeployPhase();
     if (!this.started) { this._skipInstantFallback(); return; }
     this.paused = false;
-    if (this._manualMode) this._toggleManualMode();          // AUTO: gra sama za obie strony
-    if (this._battleAwaitingOrders) this._kickoffBattleTurn();
+    // Tryb FF wlaczamy PRZED startem tury: kroki ruchu/ciosu zarejestrowane przez _raf() w pierwszej
+    // turze musza trafic do kolejki FF, a nie do prawdziwego requestAnimationFrame (inaczej pierwsza
+    // tura czekalaby do konca budzetu klatki FF i zuzywala ~64 s czasu bitwy).
     this._ffActive = true;
     this._ffVirtualMs = 0;
     this._ffQueue = [];
+    if (this._manualMode) this._toggleManualMode();          // AUTO: gra sama za obie strony
+    if (this._battleAwaitingOrders) this._kickoffBattleTurn();
     this.hint.textContent = 'Przewijanie bitwy do wyniku...';
   }
 
@@ -9363,7 +9366,7 @@ export class BattleScene {
    * czasu (timery + kroki animacji), az bitwa sie skonczy. Ten sam kod walki co zwykla gra.
    */
   private _runFastForward(): void {
-    const FF_STEP_MS = 120;                 // < MOVE_STEP_MS/ACT_GAP_MS: nie gubi kolejnosci akcji
+    const FF_STEP_MS = 16;                  // < MOVE_STEP_MS/ACT_GAP_MS: nie gubi kolejnosci akcji
     // Koniec bitwy wyznacza silnik (_checkEnd) tak jak w walce AUTO. Sufit FF_MAX_ROUNDS
     // (w turach) dotyczy tylko bitew, ktore silnik nie konczy (stan ustalony w oblezeniu).
     const wall0 = performance.now();

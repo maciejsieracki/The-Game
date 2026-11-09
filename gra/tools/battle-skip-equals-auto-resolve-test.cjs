@@ -97,12 +97,15 @@ function initDet(seed) {
   window.requestAnimationFrame = (cb) => { window.__rafQ.push(cb); return window.__rafQ.length; };
   window.cancelAnimationFrame = () => {};
   performance.now = () => { window.__fakeNow += 0.01; return window.__fakeNow; };
+  window.__framesRun = 0;
   window.__pumpFrames = (n) => {
     const bs = window.__lastBattleScene;
     for (let i = 0; i < n && !(bs && bs.finished); i++) {
+      window.__framesRun++;
       const q = window.__rafQ; window.__rafQ = [];
       window.__fakeNow += window.__dt || 16;
       for (const cb of q) cb(window.__fakeNow);
+      if (bs) { const tr = (window.__trace = window.__trace || []); if (!tr.length || tr[tr.length-1][0] !== bs.roundNo) tr.push([bs.roundNo, Math.round(bs.vNow - (window.__wskipT0||0)), window.__framesRun, bs.log.length]); }
     }
     return !!(bs && bs.finished);
   };
@@ -128,6 +131,7 @@ async function runOne(browser, distDir, mode, seed) {
     bs.renderer.render = () => {};                  // bez rysowania: tylko logika walki
     window.__dt = parseInt(window.__wskipDt || '16', 10);
     window.__wskipT0 = bs.vNow;
+    { let rn = bs.roundNo; window.__rtrace = []; Object.defineProperty(bs, 'roundNo', { get() { return rn; }, set(v) { rn = v; window.__rtrace.push([v, Math.round(bs.vNow - window.__wskipT0)]); }, configurable: true }); }
     window.__wskipDeploy = !!bs.deployPhase;
     if (mode === 'skip') {
       bs.skip();
@@ -154,12 +158,13 @@ async function runOne(browser, distDir, mode, seed) {
     const sd = bs._sideEndStats('def');
     return {
       winner: bs._endWinner, round: bs.roundNo, virtMs: Math.round(bs.vNow - window.__wskipT0),
-      deployAtStart: window.__wskipDeploy, ffVirtualMs: Math.round(bs._ffVirtualMs || 0),
+      deployAtStart: window.__wskipDeploy, framesRun: window.__framesRun, speedMul: bs.speedMul, ffVirtualMs: Math.round(bs._ffVirtualMs || 0),
       atk: { total: sa.total, lost: sa.lost, remaining: sa.remaining, hp: Math.round(sa.hp) },
       def: { total: sd.total, lost: sd.lost, remaining: sd.remaining, hp: Math.round(sd.hp) },
       logLines: bs.log.length, endText: (document.body.innerText.match(/Koniec bitwy|Zwyci[ęe]stwo|Pora[żz]ka/g) || []).slice(0, 3),
     };
   });
+  if (process.env.WSKIP_TRACE) console.log('DBG ' + JSON.stringify((await page.evaluate(() => window.__dbg || [])).slice(0,12))); if (process.env.WSKIP_TRACE) console.log('TRACE ' + mode + ' ' + JSON.stringify(await page.evaluate(() => window.__rtrace)));
   if (process.env.WSKIP_DUMP) {
     const lines = await page.evaluate(() => window.__lastBattleScene.log.slice());
     fs.writeFileSync(process.env.WSKIP_DUMP + '-' + mode + '.txt', lines.join('\n'), 'utf8');
@@ -200,6 +205,7 @@ async function partB() {
     check('B3 seed ' + seed + ': straty i HP calkowite po skip', [skip.atk, skip.def].every((x) => Number.isInteger(x.hp) && Number.isInteger(x.lost)), skip);
     check('B4 seed ' + seed + ': SKIP == AUTO (zwyciezca, straty, HP, tura)', key(skip) === key(auto1),
       { auto: key(auto1), skip: key(skip) });
+    check('B5 seed ' + seed + ': czas bitwy skip ~ auto (roznica <= 200 ms wirt., nie 3,5x)', Math.abs(skip.virtMs - auto1.virtMs) <= 200, { auto: auto1.virtMs, skip: skip.virtMs });
     console.log('INFO seed ' + seed + ' czas wirtualny: auto=' + auto1.virtMs + ' ms (tura ' + auto1.round + '), skip=' + skip.virtMs + ' ms (tura ' + skip.round + ')');
   }
   return rows.length ? 'DONE' : 'NIE_ZMIERZONO';
