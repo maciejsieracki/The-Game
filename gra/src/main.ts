@@ -142,7 +142,7 @@ import { setUnitUpgradeBadgeAssets } from './render/unitUpgradeBadges';
 import { leaderPortraitUrl, leaderName as leaderNameForCiv } from './ui/leaderPortraits';
 import {
   type ChronicleMap, type EliminationSpectacleData,
-  buildEliminationSpectacle, noteUnitProduced, noteBattleResult, noteCityCapture,
+  buildEliminationSpectacle, noteUnitProduced, noteBattleOutcome, noteCityCapture,
   noteEmpireSize, noteWonderBuilt, chronicleFor, newChronicle,
   serializeChronicles, restoreChronicles,
 } from './ui/eliminationSpectacle';
@@ -33188,9 +33188,17 @@ async function boot(): Promise<void> {
       // Milicja (poza units[]) nie jest liczona.
       if (chronAtkOwner !== undefined && chronDefOwner !== undefined) {
         const aliveIds = new Set(units.map(u => u.id));
-        const deadOf = (roster: RuntimeUnit[]): number =>
-          roster.filter(u => !isMilitiaUnit(u) && !aliveIds.has(u.id)).length;
-        noteBattleResult(civChronicleByOwner, chronAtkOwner, chronDefOwner, deadOf(atkRoster), deadOf(defRoster), turn);
+        // Straty liczone per właściciel KAŻDEJ jednostki rosteru (sojusznicy w jednej bitwie).
+        const deadByOwnerOf = (roster: RuntimeUnit[]): Map<number, number> => {
+          const m = new Map<number, number>();
+          for (const u of roster) {
+            if (isMilitiaUnit(u) || aliveIds.has(u.id)) continue;
+            m.set(u.ownerId, (m.get(u.ownerId) ?? 0) + 1);
+          }
+          return m;
+        };
+        noteBattleOutcome(civChronicleByOwner, chronAtkOwner, chronDefOwner,
+          deadByOwnerOf(atkRoster), deadByOwnerOf(defRoster), turn);
       }
       if (cityOnHex && fallenMilitia) {
         // R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: cala Milicja polegla => okres odnowy (tury globalne).
@@ -44999,7 +45007,9 @@ async function boot(): Promise<void> {
       if (savedAiBadana?.length) {
         for (const [oid, t] of savedAiBadana) aiBadanaByOwner.set(oid, t);
       }
-      zdobyczePowerByOwner.clear(); civChronicleByOwner.clear(); eliminationSpectacleByLabel.clear();
+      // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1 (runda 2, zarzut 1): BEZ czyszczenia civChronicleByOwner
+      // tutaj — kroniki zostały już odtworzone wyżej (ok. l. 44948); ponowny clear kasowałby je.
+      zdobyczePowerByOwner.clear(); eliminationSpectacleByLabel.clear();
       const savedZdobycze = saved.meta?.zdobyczePowerByOwner as Array<[number, number]> | undefined;
       if (savedZdobycze?.length) {
         for (const [oid, n] of savedZdobycze) zdobyczePowerByOwner.set(oid, n);

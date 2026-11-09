@@ -71,6 +71,14 @@ async function main() {
   ok(ch.get(0).battles === 2, 'bitwa właściciela z samym sobą ignorowana');
   M.noteBattleResult(ch, 0, 5, NaN, undefined, 12);
   ok(Number.isFinite(ch.get(0).lost) && Number.isFinite(ch.get(5).lost), 'NaN w stratach nie psuje liczników');
+  // Zarzut 4 (runda 2): sojusznicy w jednej bitwie — straty per właściciel jednostki.
+  const chA = new Map();
+  M.noteBattleOutcome(chA, 0, 5, new Map([[0, 2], [7, 3]]), new Map([[5, 1], [9, 4]]), 20);
+  ok(chA.get(0).lost === 2 && chA.get(7).lost === 3, 'bitwa wielostronna: straty sojusznika 7 przypisane 7, nie 0');
+  ok(chA.get(5).lost === 1 && chA.get(9).lost === 4, 'bitwa wielostronna: straty sojusznika 9 przypisane 9');
+  ok(chA.get(0).battles === 1 && chA.get(5).battles === 1 && chA.get(7).battles === 0, 'bitwa wielostronna: liczona raz dla pary głównej');
+  ok(chA.get(0).vs[5].b === 1 && chA.get(0).vs[5].l === 2 && chA.get(0).vs[5].k === 1, 'bitwa wielostronna: vs tylko dla pary głównej');
+  ok(chA.get(0).destroyed === 1 + 4 && chA.get(5).destroyed === 2 + 3, 'bitwa wielostronna: zniszczenia do głównego przeciwnika (ZAŁOŻENIE)');
   M.noteCityCapture(ch, 5, 0, 12);
   ok(ch.get(0).citiesTaken === 1 && ch.get(5).citiesLost === 1, 'zdobycie miasta: zdobyte/utracone');
   M.noteEmpireSize(ch, 5, 4, 20, 13); M.noteEmpireSize(ch, 5, 2, 9, 14);
@@ -185,7 +193,7 @@ async function main() {
   console.log('[7] main.ts — punkty zliczania');
   const main = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
   ok((main.match(/chronicleNoteProducedUnit\(units\[units\.length - 1\]\)/g) || []).length === 2, 'rekrutacja: oba miejsca narodzin jednostki');
-  ok(/noteBattleResult\(civChronicleByOwner, chronAtkOwner, chronDefOwner/.test(main), 'bitwa: noteBattleResult w applyMapBattleOutcome');
+  ok(/noteBattleOutcome\(civChronicleByOwner, chronAtkOwner, chronDefOwner/.test(main), 'bitwa: noteBattleOutcome w applyMapBattleOutcome');
   ok(/noteCityCapture\(civChronicleByOwner, oldOwner, atkOwner, turn\)/.test(main), 'zdobycie miasta (bitwa/szturm): noteCityCapture');
   ok(/noteCityCapture\(civChronicleByOwner, oldOwner, newOwner, turn\)/.test(main), 'zdobycie miasta (kapitulacja głodowa): noteCityCapture');
   ok(/noteWonderBuilt\(civChronicleByOwner, site\.ownerId, turn\)/.test(main), 'cud: noteWonderBuilt');
@@ -198,6 +206,16 @@ async function main() {
   ok(/spectacle: elim \? eliminationSpectacleByLabel\.get\(elim\)/.test(main) && /spectacle: info\.spectacle/.test(main), 'karta wydarzeń niesie ekran i przekazuje go do modalu');
   ok(/withSpectacle/.test(main), 'modal zdobycia (showCityCaptureNoticeDeferred) dostaje ekran');
   ok((main.match(/civChronicleByOwner\.clear\(\)/g) || []).length >= 6, 'kroniki czyszczone przy nowej grze / wczytaniu');
+  // Zarzut 1+2 (runda 2): w restoreGameFromSave nic nie kasuje kronik PO ich odtworzeniu.
+  const rgStart = main.indexOf('function restoreGameFromSave(');
+  const rgEnd = main.indexOf('\n    }\n', rgStart);
+  const rgBody = rgStart > 0 && rgEnd > rgStart ? main.slice(rgStart, rgEnd) : '';
+  const iRestore = rgBody.indexOf('restoreChronicles(civChronicleByOwner');
+  const iLegacy = rgBody.indexOf('newChronicle(undefined, true)');
+  const lastClear = rgBody.lastIndexOf('civChronicleByOwner.clear()');
+  ok(rgBody.length > 0 && iRestore > 0, 'restoreGameFromSave znaleziony (ciało wyizolowane)');
+  ok(lastClear >= 0 && lastClear < iRestore, 'wczytanie: civChronicleByOwner.clear() PRZED restoreChronicles');
+  ok(iLegacy > iRestore && rgBody.indexOf('civChronicleByOwner.clear()', iRestore) === -1, 'wczytanie: brak clear() po odtworzeniu kronik (także gałąź legacy)');
 
   fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE);
   console.log(`\n${pass} PASS, ${fail} FAIL`);

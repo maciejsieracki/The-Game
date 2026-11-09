@@ -92,22 +92,47 @@ export function noteUnitProduced(map: ChronicleMap, ownerId: number, turn?: numb
  * Wynik jednej bitwy: `atkDead`/`defDead` to liczba poległych jednostek po stronie
  * atakującego / obrońcy. Atrybucja per właściciel: poległych po stronie A zniszczyła strona B.
  */
-export function noteBattleResult(
+/**
+ * Bitwa wielostronna (rostery z sojusznikami): jedna bitwa liczona raz dla pary głównych
+ * właścicieli (pierwsza jednostka rosteru). Straty liczone PER WŁAŚCICIEL JEDNOSTKI
+ * (`lost` każdego sojusznika). Zniszczenia przeciwnika trafiają do głównego przeciwnika
+ * (ZAŁOŻENIE: bez logu zabójstw nie da się wskazać, który sojusznik zabił którą jednostkę);
+ * rekordy „vs” tylko dla pary głównej.
+ */
+export function noteBattleOutcome(
   map: ChronicleMap, atkOwner: number, defOwner: number,
-  atkDead: number, defDead: number, turn?: number,
+  atkDeadByOwner: ReadonlyMap<number, number>, defDeadByOwner: ReadonlyMap<number, number>,
+  turn?: number,
 ): void {
   if (atkOwner === defOwner) return;
   const a = chronicleFor(map, atkOwner, turn);
   const d = chronicleFor(map, defOwner, turn);
-  const ad = Math.max(0, Math.floor(atkDead) || 0);
-  const dd = Math.max(0, Math.floor(defDead) || 0);
   a.battles++; d.battles++;
-  a.lost += ad; d.destroyed += ad;
-  d.lost += dd; a.destroyed += dd;
   const av = vsOf(a, defOwner); const dv = vsOf(d, atkOwner);
   av.b++; dv.b++;
-  av.l += ad; dv.k += ad;
-  dv.l += dd; av.k += dd;
+  for (const [oid, raw] of atkDeadByOwner) {
+    const n = Math.max(0, Math.floor(raw) || 0);
+    if (n === 0) continue;
+    chronicleFor(map, oid, turn).lost += n;
+    d.destroyed += n;
+    if (oid === atkOwner) { av.l += n; dv.k += n; }
+  }
+  for (const [oid, raw] of defDeadByOwner) {
+    const n = Math.max(0, Math.floor(raw) || 0);
+    if (n === 0) continue;
+    chronicleFor(map, oid, turn).lost += n;
+    a.destroyed += n;
+    if (oid === defOwner) { dv.l += n; av.k += n; }
+  }
+}
+
+export function noteBattleResult(
+  map: ChronicleMap, atkOwner: number, defOwner: number,
+  atkDead: number, defDead: number, turn?: number,
+): void {
+  const ad = Math.max(0, Math.floor(atkDead) || 0);
+  const dd = Math.max(0, Math.floor(defDead) || 0);
+  noteBattleOutcome(map, atkOwner, defOwner, new Map([[atkOwner, ad]]), new Map([[defOwner, dd]]), turn);
 }
 
 export function noteCityCapture(map: ChronicleMap, oldOwner: number, newOwner: number, turn?: number): void {
