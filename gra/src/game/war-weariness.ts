@@ -10,6 +10,7 @@
 import paramsRaw from '../../data/war-weariness-params.json';
 import {
   planPeacePayment,
+  isAiAiPeaceBalanceAllowed,
   type PeaceAsset,
   type PeacePaymentPlan,
 } from './diplomacy-ai-forced-peace';
@@ -194,7 +195,7 @@ export interface WearinessTickDeps {
   /** Udział siły x w parze (x vs y). */
   shareOf: (x: number, y: number) => number;
   cityCountOf: (owner: number) => number;
-  price: (winner: number, loser: number) => { requiredPn: number; balanceFor: (coveredPn: number) => number; tolerancePn: number };
+  price: (winner: number, loser: number) => { requiredPn: number; balanceFor: (coveredPn: number) => number; tolerancePn: number; loserBalanceFor?: (coveredPn: number) => number };
   assets: (loser: number, winner: number, skipCityIds: ReadonlySet<string>) => PeaceAsset[];
   cityCessionOk: (cityId: string, loser: number, winner: number) => boolean;
   battlePending: boolean;
@@ -238,6 +239,9 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
       if (!isWarWeary(lvl, P)) { none(); continue; }
       // Równowaga sił: wzajemne wyczerpanie — pokój bez zapłaty, gdy obie strony dość zmęczone.
       if (lvl >= P.zmeczenie.progWzajemnyPokoj) {
+        // Regula nieujemnego bilansu AI↔AI (2026-11-09): pokoj bez zaplaty tez wymaga bilansu >= 0 u obu stron.
+        const pz = d.price(winner, loser);
+        if (!isAiAiPeaceBalanceAllowed(pz.balanceFor(0), pz.loserBalanceFor?.(0))) { none(); continue; }
         d.log?.(`pokój z wyczerpania AI${pr.a}↔AI${pr.b} (zmęczenie ${lvl.toFixed(2)}, tury wojny ${w.turnsAtWar})`);
         d.finalize(loser, winner, P.przegrywajacy.karencjaPoPokojuTur);
         d.store.delete(key);
@@ -282,7 +286,9 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     const mustAccept = protectedLoser && L.zwyciezcaMusiPrzyjac > 0;
     // Symetria: zmęczenie obniża wymagania zwycięzcy (zmęczona strona bierze mniej).
     const tol = price.tolerancePn + Math.max(0, L.tolerancjaZmeczenia) * lvl * Math.max(0, required);
-    if (mustAccept || exhausted || price.balanceFor(plan.coveredPn) >= -tol) {
+    // Regula nieujemnego bilansu AI↔AI (2026-11-09): ujemny bilans ktorejkolwiek AI blokuje pokoj takze przy ochronie/wyczerpaniu.
+    const balanceOk = isAiAiPeaceBalanceAllowed(price.balanceFor(plan.coveredPn), price.loserBalanceFor?.(plan.coveredPn));
+    if (balanceOk && (mustAccept || exhausted || price.balanceFor(plan.coveredPn) >= -tol)) {
       d.pay(loser, winner, plan);
       d.log?.(
         `pokój AI${loser}↔AI${winner} za cenę (stopień ${st.stage}${mustAccept ? ', ochrona przegrywającego' : exhausted ? ', wyczerpanie' : ''}, oferta #${st.rejectedOffers + 1}, zmęczenie ${lvl.toFixed(2)}); `
