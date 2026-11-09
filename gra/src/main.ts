@@ -595,6 +595,7 @@ import {
   stackGroupIdOf,
   stackRenderKey,
 } from './game/armyMerge';
+import { followLeaderAutoMergeDecision } from './game/army-follow-auto-merge';
 import { mergeCompletedAiRecruitment } from './game/army-concentration';
 import {
   resolveMapUnitCursor,
@@ -14208,6 +14209,63 @@ async function boot(): Promise<void> {
             name: 'Skład (' + arrivingUnits.length + ')',
           };
 
+      // R-WEB-ARMY-FOLLOW-LEADER-AUTO-MERGE-NO-PROMPT-Q1: jednostka w trybie „Idź do wodza”
+      // dotarła na heks wodza → scalenie BEZ monitu (ta sama funkcja scalania co po akceptacji).
+      // Limit armii blokuje scalenie: hint zamiast monitu, bez scalania. Ręczne najechanie
+      // jednostką bez trybu podążania zostaje z monitem (decyzja właściciela).
+      const followDecision = followLeaderAutoMergeDecision(units, arrivingUnits, existing, rep.q, rep.r, armyStackLimit());
+      if (followDecision === 'limit-blocked') {
+        showHintMessage('Nie dołączono do armii wodza: ' + stackLimitBlockMessage(armyStackLimit()), 3800);
+        refreshD1bHud();
+        flushDeferredMergePrompts();
+        return;
+      }
+      const applyMerge = (autoFollow: boolean): void => {
+        const garnizonMode = existing.every(x => x.inGarnizon === true);
+        // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: garnizon dziedziczony tylko na heksie
+        // WLASNEGO miasta (inaczej nowoprzybyli stawaliby sie niewybieralni).
+        // Runda 2: normalizeMergedFortify (armyMerge.ts) -- poza garnizonem miasta merge
+        // ZDEJMUJE tez fortyfikacje w polu (syncStackRuchLeft=MIN zerowal pule calej armii).
+        normalizeMergedFortify(onHex, garnizonMode && hasOwnCityAt(cities, rep.q, rep.r, rep.ownerId),
+          hasOwnCityAt(cities, rep.q, rep.r, rep.ownerId));
+        // BB2 (ECHO B): scalenie ujednolica tożsamość stosu — od teraz WSZYSCY
+        // na `onHex` (nowoprzybyli + rezydenci, niezależnie od poprzednich
+        // stackGroupId/fallbacków) są JEDNĄ armią z jedną, wspólną pulą ruchu.
+        assignSharedStackGroupId(onHex);
+        syncStackRuchLeft(onHex);
+        showHintMessage(
+          autoFollow
+            ? 'Dołączono do armii wodza'
+            : 'Połączono: ' + onHex.length + ' jedn. na (' + rep.q + ',' + rep.r + ')',
+          3200,
+        );
+        syncUnitsRender();
+        refreshFog();
+        const selRep = pickStackRepresentative(onHex, unitAttackScore);
+        if (selectedId !== null && movedSet.has(selectedId)) {
+          selectPlayerUnit(selRep.id);
+        } else if (selectedId === rep.id || movedSet.has(selectedId ?? '')) {
+          unitRenderer.setSelectionHex(rep.q, rep.r, rep.ownerId);
+          if (stackCanMove(selRep)) {
+            reachable = reachableWithMergeTargets(selRep);
+            unitRenderer.setHighlight(reachable);
+          } else {
+            reachable = new Set<string>();
+            unitRenderer.clearHighlight();
+          }
+        }
+        refreshD1bHud();
+        flushDeferredMergePrompts();
+        // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: panel scalenia się właśnie zamknął
+        // -- odblokuj ewentualne odłożone automatyczne preBattle (rzadki, ale możliwy
+        // odwrotny porządek: bitwa AI/barbarzyńców próbowała otworzyć się, gdy ten panel
+        // był już otwarty).
+        flushDeferredAutoPreBattle();
+      };
+      if (followDecision === 'merge') {
+        applyMerge(true);
+        return;
+      }
       showArmyMergePanel({
         hexLabel: '(' + rep.q + ',' + rep.r + ')',
         existing: existing.map(mergeUnitRow),
@@ -14215,46 +14273,7 @@ async function boot(): Promise<void> {
         arrivingCount: arrivingUnits.length,
         rejectFrom: { q: fromQ, r: fromR },
         moveCost,
-        onMerge: () => {
-          const garnizonMode = existing.every(x => x.inGarnizon === true);
-          // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: garnizon dziedziczony tylko na heksie
-          // WLASNEGO miasta (inaczej nowoprzybyli stawaliby sie niewybieralni).
-          // Runda 2: normalizeMergedFortify (armyMerge.ts) -- poza garnizonem miasta merge
-          // ZDEJMUJE tez fortyfikacje w polu (syncStackRuchLeft=MIN zerowal pule calej armii).
-          normalizeMergedFortify(onHex, garnizonMode && hasOwnCityAt(cities, rep.q, rep.r, rep.ownerId),
-            hasOwnCityAt(cities, rep.q, rep.r, rep.ownerId));
-          // BB2 (ECHO B): scalenie ujednolica tożsamość stosu — od teraz WSZYSCY
-          // na `onHex` (nowoprzybyli + rezydenci, niezależnie od poprzednich
-          // stackGroupId/fallbacków) są JEDNĄ armią z jedną, wspólną pulą ruchu.
-          assignSharedStackGroupId(onHex);
-          syncStackRuchLeft(onHex);
-          showHintMessage(
-            'Po\u0142\u0105czono: ' + onHex.length + ' jedn. na (' + rep.q + ',' + rep.r + ')',
-            3200,
-          );
-          syncUnitsRender();
-          refreshFog();
-          const selRep = pickStackRepresentative(onHex, unitAttackScore);
-          if (selectedId !== null && movedSet.has(selectedId)) {
-            selectPlayerUnit(selRep.id);
-          } else if (selectedId === rep.id || movedSet.has(selectedId ?? '')) {
-            unitRenderer.setSelectionHex(rep.q, rep.r, rep.ownerId);
-            if (stackCanMove(selRep)) {
-              reachable = reachableWithMergeTargets(selRep);
-              unitRenderer.setHighlight(reachable);
-            } else {
-              reachable = new Set<string>();
-              unitRenderer.clearHighlight();
-            }
-          }
-          refreshD1bHud();
-          flushDeferredMergePrompts();
-          // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: panel scalenia się właśnie zamknął
-          // -- odblokuj ewentualne odłożone automatyczne preBattle (rzadki, ale możliwy
-          // odwrotny porządek: bitwa AI/barbarzyńców próbowała otworzyć się, gdy ten panel
-          // był już otwarty).
-          flushDeferredAutoPreBattle();
-        },
+        onMerge: () => applyMerge(false),
         onSeparate: () => {
           // P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, ECHO A (Maciej 2026-08-09): cała
           // armia wraca RAZEM na heks startowy (fromQ,fromR) — NIE rozprasza się
