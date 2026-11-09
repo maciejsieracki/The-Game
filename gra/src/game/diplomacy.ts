@@ -164,8 +164,8 @@ export const DIPLOMACY_PARAMS = {
   urazyHistoryczne_zaufanie_perTura: -2,
 
   // ---- thresholds (progi akcji; sekcja C) ----
-  /** Zaufanie >= 91 required for SojuszWojskowy (przy równowadze sił >90%) */
-  progSojuszZaufanie:        91,
+  /** Zaufanie >= 90 required for SojuszWojskowy (Maciej 2026-11-09: 130 Relacji + 90 Zaufania; przy spełnieniu obu bramki siły nie blokują) */
+  progSojuszZaufanie:        90,
   /** Zaufanie >= 70 required for WymianaTechnologii */
   progWymianaTechZaufanie:   70,
   /** Respekt >= 70 required to demand Wasalizacja */
@@ -174,10 +174,12 @@ export const DIPLOMACY_PARAMS = {
   progWchloniecieRespekt:    90,
   /** Relacja < 30 = diplomacy nearly impossible */
   progMinimalnyRelacja:      30,
-  /** Relacja >= 151 = sojusz (Maciej 2026-06-30: powyżej 150) */
-  progSojuszRelacja:         151,
-  /** Twarda podłoga Relacji na dobrowolne umowy pozytywne (>150); premia siły nie obniża */
-  progUmowaMinRelacja:       151,
+  /** Relacja >= 130 = sojusz (Maciej 2026-11-09, wcześniej 151) */
+  progSojuszRelacja:         130,
+  /** Twarda podłoga Relacji na dobrowolne umowy pozytywne (= próg sojuszu 130); premia siły nie obniża */
+  progUmowaMinRelacja:       130,
+  /** Relacja >= 151 = AI proponuje NAP bezterminowy (wydzielone z progSojuszRelacja, runda 2 C) */
+  progNapBezterminowyRelacja: 151,
 
   // ---- starting values (wartosci startowe) ----
   startZaufanie: 20,
@@ -228,7 +230,7 @@ export const DIPLOMACY_PARAMS = {
   /** Bonus willingnessAlly gdy rozmówca silniejszy (AI słabsze — sojusz z hegemonem) */
   progSojuszPremiaSilniejszyInny:  0.20,
   /** aiDiplomacyStance.willingnessAlly min dla sojuszu */
-  progSojuszWillingnessMin:        0.68,
+  progSojuszWillingnessMin:        0.54,
   /** v1.3 — max podwyżka progów gdy respondent (AI) silniejszy od proponenta */
   progSojuszKaraSilniejszyMax:     0.40,
   /** v1.3 — wkład przewagi respondenta (1/milProponent − 1) × skok */
@@ -489,6 +491,7 @@ const DIPLO_RELATION_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
   'progMinimalnyRelacja',
   'progSojuszRelacja',
   'progUmowaMinRelacja',
+  'progNapBezterminowyRelacja',
   'progNapRelacja',
   'progGraniceRelacja',
   'progPoboczneHandel',
@@ -649,6 +652,25 @@ export function diplomacyAllianceMinZaufanie(
   return minZ;
 }
 
+/**
+ * R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1 (Maciej 2026-11-09): "rdzeń" sojuszu =
+ * Relacja >= progSojuszRelacja (130, po ulgach słodzika/delcie agresora, nie poniżej
+ * progUmowaMinRelacja) ORAZ Zaufanie >= progSojuszZaufanie (90, po ulgach słodzika). Gdy rdzeń
+ * spełniony, bramki SIŁY (hegemon, kara siły respondenta, słaby proponent) nie
+ * blokują sojuszu. GOTOWOŚĆ AI (willingnessAlly) zostaje (runda 2, decyzja A). Wiarygodność, wojna i duplikat traktatu nadal obowiązują.
+ */
+export function allianceCoreMet(
+  zaufanie: number,
+  score: number,
+  relThreshold: number,
+  params: DiplomacyParams = getEffectiveDiplomacyParams(),
+  zaufanieEase = 0,
+): boolean {
+  const minZ = Math.max(0, params.progSojuszZaufanie - zaufanieEase);
+  const minScore = diplomacyTreatyMinRelacja(relThreshold, params);
+  return zaufanie >= minZ && score >= minScore;
+}
+
 /** v1.3 — premia proponenta + kara respondenta + strefa hegmona (Maciej 2026-06-30). */
 export interface DiplomacyAllianceStrengthAdjust {
   ease: DiplomacyStrengthEase;
@@ -721,12 +743,12 @@ export const SISTER_ALLIANCE_THRESHOLD_SCALE: Record<'low' | 'normal' | 'strong'
  * diplomacyTreatyMinRelacja — Relacja < progMinimalnyRelacja = "dyplomacja prawie
  * niemożliwa", więc nawet zdyskontowany próg sojuszu nie może zejść poniżej tego dna).
  *
- * WAŻNE: `progUmowaMinRelacja` (globalnie 151 — "twarda podłoga na dobrowolne umowy,
+ * WAŻNE: `progUmowaMinRelacja` (globalnie 130 — "twarda podłoga na dobrowolne umowy,
  * premia siły NIE obniża") jest tu przeskalowany RAZEM z `progSojuszRelacja`
  * (do tej samej wartości). aiDiplomacyStance liczy próg sojuszu przez
  * diplomacyTreatyMinRelacja(adjustedThreshold, params) = max(params.progUmowaMinRelacja,
- * adjustedThreshold) — gdyby progUmowaMinRelacja został globalny (151), próg sojuszu
- * sióstr byłby ZAWSZE 151 niezależnie od skali (bug — obniżka nie miałaby efektu).
+ * adjustedThreshold) — gdyby progUmowaMinRelacja został globalny (130), próg sojuszu
+ * sióstr byłby ZAWSZE 130 niezależnie od skali (bug — obniżka nie miałaby efektu).
  * Dla par sióstr "twarda podłoga" to WŁAŚNIE ich własny, obniżony próg sojuszu.
  *
  * Nie zmienia `base` (immutable) ani globalnego getEffectiveDiplomacyParams().
@@ -1154,7 +1176,7 @@ export interface AIDiplomacyStance {
   willingnessTrade: number;
   /**
    * Willingness to form or accept a SojuszWojskowy.
-   * Requires Zaufanie >= progSojuszZaufanie (91) AND Relacja >= progSojuszRelacja (151).
+   * Requires Zaufanie >= progSojuszZaufanie (90) AND Relacja >= progSojuszRelacja (130).
    */
   willingnessAlly: number;
 }
@@ -1348,16 +1370,18 @@ export function aiDiplomacyStance(
     aiRespektShare,
     p,
   );
-  let minAllyZ = diplomacyAllianceMinZaufanie(adj, otherMilOverAi, p);
   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: wobec agresora (flaga aktywna) próg sojuszu wyżej o deltę z JSON.
   const agresorDeltaSojusz = deltaRelacjiSojusz(context.celAgresorAktywny === true);
+  // Runda 2 (B): rdzeń 130/90 pomija hegemona i karę siły (gotowość zostaje) — jak evaluateProposal.
+  const coreMet = allianceCoreMet(zaufanie, score, p.progSojuszRelacja + agresorDeltaSojusz, p);
+  let minAllyZ = diplomacyAllianceMinZaufanie(adj, otherMilOverAi, p);
   let minAllyScore = diplomacyTreatyMinRelacja(
     p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore + agresorDeltaSojusz,
     p,
   );
 
   let allyW = 0;
-  if (!adj.hegemonBlocksAlliance && zaufanie >= minAllyZ && score >= minAllyScore) {
+  if ((coreMet || (!adj.hegemonBlocksAlliance && zaufanie >= minAllyZ && score >= minAllyScore))) {
     const loyaltyBonus: number =
       aiPlayer.typCywilizacji === TypCywilizacji.Chinczycy ? 0.20
       : aiPlayer.typCywilizacji === TypCywilizacji.Inkowie ? 0.15
@@ -1374,7 +1398,7 @@ export function aiDiplomacyStance(
         0,
         1,
       );
-    } else if (aiMilOverOther > 1) {
+    } else if (aiMilOverOther > 1 && !coreMet) {
       // Hegemon / silniejsze AI — mniejsza motywacja sojuszu równoprawnego.
       allyW = clamp(allyW - adj.allyWPenalty, 0, 1);
     }
@@ -1482,8 +1506,8 @@ export const TIER_NAMES = ['Wojna', 'Wrogi', 'Neutralny', 'Przyjazny', 'Sojusz']
  *   0 = Wojna      (status === 'wojna', overrides score)
  *   1 = Wrogi      (score <  30  = DIPLOMACY_PARAMS.progMinimalnyRelacja)
  *   2 = Neutralny  (score <  60  -- fixed midpoint between progMinimalny/progSojusz)
- *   3 = Przyjazny  (score < 151  = DIPLOMACY_PARAMS.progSojuszRelacja)
- *   4 = Sojusz     (status === 'sojusz' overrides score; OR score >= 151)
+ *   3 = Przyjazny  (score < 130  = DIPLOMACY_PARAMS.progSojuszRelacja)
+ *   4 = Sojusz     (status === 'sojusz' overrides score; OR score >= 130)
  *
  * Status is SOVEREIGN over score:
  *   - 'wojna'  -> always 0, regardless of score
@@ -1496,8 +1520,8 @@ export function relationTier(rel: Relation): 0 | 1 | 2 | 3 | 4 {
   const s = relationScore(rel);
   if (s < DIPLOMACY_PARAMS.progMinimalnyRelacja) return 1; // Wrogi  (< 30)
   if (s < 60)                                    return 2; // Neutralny (< 60)
-  if (s < DIPLOMACY_PARAMS.progSojuszRelacja)    return 3; // Przyjazny (< 151)
-  return 4;                                                // Sojusz (>= 151)
+  if (s < DIPLOMACY_PARAMS.progSojuszRelacja)    return 3; // Przyjazny (< 130)
+  return 4;                                                // Sojusz (>= 130)
 }
 
 /**

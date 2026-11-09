@@ -197,7 +197,7 @@ console.log('1. sisterAllianceDiplomacyParams -- skale per poziom (low/normal/st
 
   // progUmowaMinRelacja MUSI byc przeskalowany RAZEM z progSojuszRelacja -- inaczej
   // diplomacyTreatyMinRelacja (wolane wewnatrz aiDiplomacyStance) wymusi globalna
-  // podloge 151 niezaleznie od skali, kasujac cala obnizke progu sojuszu siostr.
+  // podloge 130 niezaleznie od skali, kasujac cala obnizke progu sojuszu siostr.
   eq(pLow.progUmowaMinRelacja, relaczaLow, 'low: progUmowaMinRelacja rowny przeskalowanej progSojuszRelacja');
   eq(pNormal.progUmowaMinRelacja, relaczaNormal, 'normal: progUmowaMinRelacja rowny przeskalowanej progSojuszRelacja');
   eq(pStrong.progUmowaMinRelacja, relaczaStrong, 'strong: progUmowaMinRelacja rowny przeskalowanej progSojuszRelacja');
@@ -207,9 +207,9 @@ console.log('1. sisterAllianceDiplomacyParams -- skale per poziom (low/normal/st
   close(pStrong.progSojuszWillingnessMin, DIPLOMACY_PARAMS.progSojuszWillingnessMin * 0.15, 0.001, 'strong: progSojuszWillingnessMin x0.15');
 
   // Globalne DIPLOMACY_PARAMS NIE zmienione (immutable, brak efektu ubocznego).
-  eq(DIPLOMACY_PARAMS.progSojuszZaufanie, 91, 'DIPLOMACY_PARAMS.progSojuszZaufanie global niezmieniony');
-  eq(DIPLOMACY_PARAMS.progSojuszRelacja, 151, 'DIPLOMACY_PARAMS.progSojuszRelacja global niezmieniony');
-  eq(DIPLOMACY_PARAMS.progUmowaMinRelacja, 151, 'DIPLOMACY_PARAMS.progUmowaMinRelacja global niezmieniony');
+  eq(DIPLOMACY_PARAMS.progSojuszZaufanie, 90, 'DIPLOMACY_PARAMS.progSojuszZaufanie global niezmieniony');
+  eq(DIPLOMACY_PARAMS.progSojuszRelacja, 130, 'DIPLOMACY_PARAMS.progSojuszRelacja global niezmieniony');
+  eq(DIPLOMACY_PARAMS.progUmowaMinRelacja, 130, 'DIPLOMACY_PARAMS.progUmowaMinRelacja global niezmieniony');
 
   // Wyzsza trudnosc (strong) = latwiej sojusz siostr = prog NIZSZY niz normal < low.
   assert(pStrong.progSojuszZaufanie < pNormal.progSojuszZaufanie, 'strong < normal (Zaufanie)');
@@ -232,7 +232,7 @@ console.log('2. sisterAllianceEligible -- pelna ocena (willingness/sila) + wojna
   const ctxParity = { isMinorCiv: false, militaryRatio: 1, currentTurn: 10, turnsAtWar: 0 };
   const spNormal = sisterAllianceDiplomacyParams('normal', DIPLOMACY_PARAMS);
 
-  const relHigh = { zaufanie: 90, respekt: 50, status: 'pokoj' }; // relacja=140
+  const relHigh = { zaufanie: 85, respekt: 45, status: 'pokoj' }; // relacja=130, Zaufanie 85 < 90
   const relLow = { zaufanie: 10, respekt: 10, status: 'pokoj' };  // relacja=20
 
   eq(

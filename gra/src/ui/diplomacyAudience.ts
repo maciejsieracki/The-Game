@@ -67,7 +67,7 @@ export interface AudienceAction {
    * "brak kontaktu", ta bramka zostaje osobna — patrz buildAudienceActions).
    */
   locked?: boolean;
-  /** Notka w formacie makiety: „zablokowana — wymaga Zaufania 91 (masz 34)". */
+  /** Notka w formacie makiety: „zablokowana — wymaga Zaufania 90 (masz 34)". */
   lockNote?: string;
   /** Umowa/traktat już zawarta między stronami (stan `active` z makiety v1.1). */
   active?: boolean;

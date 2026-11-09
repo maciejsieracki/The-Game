@@ -9,6 +9,7 @@ import {
   diplomacyAllianceStrengthAdjust,
   diplomacyAllianceMinZaufanie,
   diplomacyTreatyMinRelacja,
+  allianceCoreMet,
   getEffectiveDiplomacyParams,
   relationScore,
   type AIDiplomacyContext,
@@ -843,7 +844,7 @@ function treatyPnGate(
  *    ZAKRES-Q1=A`):
  *     - `nap`/`sojusz_defensywny`/`sojusz_pelny`/`granice`/`wasal` mają REALNE,
  *       niezerowe progi Relacji/Zaufania/Respektu we własnym case'ie
- *       (progNapRelacja=110, progSojuszRelacja=151, progGraniceRelacja=100,
+ *       (progNapRelacja=110, progSojuszRelacja=130, progGraniceRelacja=100,
  *       progWasalizacjaRespekt=70) — przy pustym koszyku wystarczy im próg
  *       case'a; ochrona przed koszykiem nieuczciwym dla partnera (np. „daj mi
  *       coś za darmo w koszyku") zostaje w `treatyPnGate` (uruchamianym i tak
@@ -1191,27 +1192,36 @@ export function evaluateProposal(
       // (diplomacyProposerStrengthEase) — komponuje się z istniejącą ulgą, nie ją zastępuje.
       // diplomacyTreatyMinRelacja i tak nie zejdzie poniżej progUmowaMinRelacja (twarda podłoga).
       const sojuszEase = sweetenerEasePoints(payload, pnOpts);
-      const minZ = Math.max(0, diplomacyAllianceMinZaufanie(adj, milRatio, p) - sojuszEase);
-      const minScore = diplomacyTreatyMinRelacja(
-        p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase
-          + deltaRelacjiSojusz(proponentAgresor),
-        p,
+      // R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1: rdzeń 130 Relacji + 90 Zaufania
+      // (po słodziku/agresorze) wyłącza bramki siły (hegemon, kara siły, słaby proponent); gotowość AI zostaje (runda 2).
+      const relThresholdCore = p.progSojuszRelacja - sojuszEase + deltaRelacjiSojusz(proponentAgresor);
+      const coreMet = allianceCoreMet(relation.zaufanie, score, relThresholdCore, p, sojuszEase);
+      const minZ = coreMet
+        ? Math.max(0, p.progSojuszZaufanie - sojuszEase)
+        : Math.max(0, diplomacyAllianceMinZaufanie(adj, milRatio, p) - sojuszEase);
+      const minScore = coreMet
+        ? diplomacyTreatyMinRelacja(relThresholdCore, p)
+        : diplomacyTreatyMinRelacja(relThresholdCore - adj.ease.scoreThresholdDelta + adj.penaltyScore, p);
+      // Runda 2 (A): gotowość AI ZOSTAJE przy rdzeniu 130/90 — pomijamy tylko karę siły (penaltyAlly).
+      const minAlly = Math.max(
+        0,
+        p.progSojuszWillingnessMin - adj.ease.allyThresholdDelta + (coreMet ? 0 : adj.penaltyAlly),
       );
-      const minAlly = Math.max(0, p.progSojuszWillingnessMin - adj.ease.allyThresholdDelta + adj.penaltyAlly);
 
-      if (adj.hegemonBlocksAlliance) {
+      if (!coreMet && adj.hegemonBlocksAlliance) {
         return {
           accepted: false, pwBalance: -1,
           reason: 'Hegemon nie potrzebuje sojuszu — wola wobec słabszego to trybut lub wasalizacja',
         };
       }
       if (relation.zaufanie < minZ) {
-        return { accepted: false, pwBalance: -1, reason: `Zaufanie zbyt niskie (wymagane ≥ ${minZ})` };
+        return { accepted: false, pwBalance: -1, reason: `Sojusz wymaga Relacji ${minScore} i Zaufania ${minZ} (masz Zaufanie ${relation.zaufanie})` };
       }
       if (score < minScore) {
-        return { accepted: false, pwBalance: -1, reason: `Relacja ogólna zbyt niska na sojusz (≥ ${minScore})` };
+        return { accepted: false, pwBalance: -1, reason: `Sojusz wymaga Relacji ${minScore} i Zaufania ${minZ} (masz Relację ${score})` };
       }
       if (
+        !coreMet &&
         milRatio < p.progSojuszSlabyProponentMilRatio &&
         ctx.proposerRespekt <= ctx.responderRespekt &&
         score < p.progUmowaMinRelacja
@@ -1219,7 +1229,10 @@ export function evaluateProposal(
         return { accepted: false, pwBalance: -1, reason: 'Za słaby proponent bez pełnej relacji — sojusz nierealny' };
       }
       if (stance.willingnessAlly < minAlly) {
-        return { accepted: false, pwBalance: -1, reason: 'Brak gotowości do sojuszu' };
+        return {
+          accepted: false, pwBalance: -1,
+          reason: `Brak gotowości do sojuszu (gotowość ${stance.willingnessAlly.toFixed(2)}, wymagana ${minAlly.toFixed(2)})`,
+        };
       }
       if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, kind)) {
         return { accepted: false, pwBalance: -1, reason: 'Sojusz tego typu już istnieje' };

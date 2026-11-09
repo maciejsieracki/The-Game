@@ -130,6 +130,8 @@ export interface DiplomacyConfig {
   progMinimalnyRelacja: number;
   /** Prog Relacji ogolnej, od ktorego sojusze sa realistyczne (domyslnie 120). */
   progSojuszRelacja: number;
+  /** Relacja, od której AI proponuje pakt nieagresji bezterminowy zamiast 15 tur (151; wydzielone z progSojuszRelacja). */
+  progNapBezterminowyRelacja: number;
 
   // --- Globalne mnozniki (sekcja E) ---
   /** Mnoznik globalny Zaufania (domyslnie 1.0). */

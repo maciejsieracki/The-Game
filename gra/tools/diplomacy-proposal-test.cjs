@@ -211,12 +211,12 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
 }));
 ok(r.accepted && r.deal?.rodzaj === 'sojusz_pelny', 'sojusz pełny accept');
 
-// 4a Sojusz reject — Relacja dokładnie 150 (≤150)
+// 4a Sojusz reject — Relacja 129 (< 130, próg 2026-11-09)
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
-  relation: rel(95, 55),
+  relation: rel(95, 34),
   militaryRatio: 1,
 }));
-ok(!r.accepted, 'sojusz reject relacja 150');
+ok(!r.accepted, 'sojusz reject relacja 129');
 
 // 4b Sojusz reject — równowaga Zauf 75 (<91)
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
@@ -256,12 +256,12 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
 ok(r.accepted, 'sojusz gracz 3× silniejszy zauf 85 rel 151');
 
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
-  relation: rel(90, 60),
+  relation: rel(90, 39),
   militaryRatio: 3,
   proposerRespekt: 75,
   responderRespekt: 25,
 }));
-ok(!r.accepted, 'sojusz reject gracz 3× rel 150');
+ok(!r.accepted, 'sojusz reject gracz 3× rel 129');
 
 // 5c2 — gracz 2×: sojusz od 85 Zauf., Rel ≥151
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
@@ -281,12 +281,12 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
 ok(r.accepted, 'sojusz gracz 2× silniejszy zauf 85 rel 151');
 
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
-  relation: rel(85, 65),
+  relation: rel(85, 44),
   militaryRatio: 2,
   proposerRespekt: 67,
   responderRespekt: 33,
 }));
-ok(!r.accepted, 'sojusz reject gracz 2× rel 150');
+ok(!r.accepted, 'sojusz reject gracz 2× rel 129');
 
 // 5d Sojusz — gracz 2× silniejszy, wysokie zaufanie, Rel >150
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
@@ -304,7 +304,75 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
   proposerRespekt: 25,
   responderRespekt: 75,
 }));
-ok(!r.accepted && r.reason.includes('Hegemon'), 'sojusz reject hegemon AI 3× zauf 100');
+ok(r.accepted && r.deal?.rodzaj === 'sojusz_pelny', 'R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1: hegemon AI 3× zauf 100 rel 175 -> rdzeń 130/90 wyłącza bramkę siły (accept)');
+
+// 5d2 Hegemon — Zaufanie 89 (< 90) -> bramka siły nadal działa
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(89, 75),
+  militaryRatio: 0.33,
+  proposerRespekt: 25,
+  responderRespekt: 75,
+}));
+ok(!r.accepted && r.reason.includes('Hegemon'), 'hegemon AI 3×, zauf 89 rel 164: rdzeń niespełniony -> Hegemon blokuje');
+
+// 5d3 Hegemon — Relacja 129 (< 130), Zaufanie 100 -> bramka siły nadal działa
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(100, 29),
+  militaryRatio: 0.33,
+  proposerRespekt: 25,
+  responderRespekt: 75,
+}));
+ok(!r.accepted, 'hegemon AI 3×, zauf 100 rel 129: rdzeń niespełniony -> odrzucone');
+
+// 5d4 Dokładnie 130 / 90 przy hegemonie -> accept; komunikat blokady po polsku z progami
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(90, 40),
+  militaryRatio: 0.33,
+  proposerRespekt: 25,
+  responderRespekt: 75,
+}));
+ok(r.accepted, 'runda 3: hegemon AI 3×, dokładnie 90/130, Grecy (gotowość 0.64 >= próg 0.54) -> accept (bramka siły pominięta)');
+// runda 3: neutralna cywilizacja (0.54) przy równej sile przechodzi próg 0.54 (porównanie >=)
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(90, 40),
+  militaryRatio: 1,
+  proposerRespekt: 40,
+  responderRespekt: 60,
+  responderPlayer: { typCywilizacji: 'egipt' },
+  proposerPlayer: { typCywilizacji: 'rzymianie' },
+}));
+ok(r.accepted, 'runda 3: 130/90, równa siła, neutralny Egipt (gotowość 0.54 >= 0.54) -> accept: ' + r.reason);
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(90, 40),
+  militaryRatio: 0.33,
+  proposerRespekt: 25,
+  responderRespekt: 75,
+  responderPlayer: { typCywilizacji: 'chinczycy' },
+  proposerPlayer: { typCywilizacji: 'rzymianie' },
+}));
+ok(r.accepted, 'runda 2 (A): hegemon AI 3×, dokładnie 90/130, Chińczycy (bonus lojalności, gotowość >= 0.54) -> accept mimo hegemona (bramka siły pominięta)');
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(90, 40),
+  militaryRatio: 1,
+  proposerRespekt: 40,
+  responderRespekt: 60,
+  responderPlayer: { typCywilizacji: 'zulusi' },
+  proposerPlayer: { typCywilizacji: 'rzymianie' },
+}));
+ok(!r.accepted && r.reason.includes('Brak gotowości do sojuszu'), 'runda 2 (A): 130/90 + gotowość poniżej progu (Zulusi) -> odrzut: ' + r.reason);
+r = evaluateProposal(prop('sojusz_pelny'), ctx({ relation: rel(89, 41), militaryRatio: 1 }));
+ok(!r.accepted && /Relacji 130 i Zaufania 90/.test(r.reason) && /masz Zaufanie 89/.test(r.reason), 'komunikat blokady PL: ' + r.reason);
+r = evaluateProposal(prop('sojusz_pelny'), ctx({ relation: rel(90, 39), militaryRatio: 1 }));
+ok(!r.accepted && /Relacji 130 i Zaufania 90/.test(r.reason) && /masz Relację 129/.test(r.reason), 'komunikat blokady PL (Relacja): ' + r.reason);
+
+// 5d5 Słaby proponent (milRatio<0.5, Respekt<=) przy rdzeniu 130/90 -> accept
+r = evaluateProposal(prop('sojusz_defensywny'), ctx({
+  relation: rel(95, 40),
+  militaryRatio: 0.4,
+  proposerRespekt: 20,
+  responderRespekt: 80,
+}));
+ok(r.accepted, 'słaby proponent mil 0.4, zauf 95 rel 135 -> rdzeń wyłącza bramki siły');
 
 // 5e AI 2× silniejsze — wymaga bardzo wysokiego zaufania (minZ≈105)
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
@@ -313,7 +381,7 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
   proposerRespekt: 33,
   responderRespekt: 67,
 }));
-ok(!r.accepted, 'sojusz reject AI 2× zauf 100 (kara siły respondenta)');
+ok(r.accepted, 'AI 2× zauf 100 rel 167: rdzeń 130/90 wyłącza karę siły respondenta (accept)');
 
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
   relation: rel(50, 67),
