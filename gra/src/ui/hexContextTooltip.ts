@@ -22,6 +22,7 @@ import {
   isFarmBaseTerrain,
   isHexNearRiver,
   isImprovementBlockedOnForest,
+  isOwceBaseTerrain,
 } from '../map/improvement-build';
 import type { ImprovementKey } from '../render/improvements';
 // R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1: etykiety terenu z jednego źródła (map/terrain-names.ts).
@@ -419,9 +420,12 @@ function listTerrainPossibleImprovements(
     // ECHO właściciela uchylające regułę z 2026-07-21) — warunek terenu farmy egzekwuje
     // niżej `isFarmBaseTerrain`, ta linia jest drugą, niezależną bramką.
     if (isImprovementBlockedOnForest(key, nakladka)) continue;
-    if (key === 'bydlo' && nakladka !== Nakladka.ZlozeBydla) continue;
-    if (key === 'owce' && nakladka !== Nakladka.ZlozeOwiec) continue;
-    if (key === 'lama' && nakladka !== Nakladka.ZlozeLamy) continue;
+    // R-WEB-TERRAIN-IMPROVE-FARM-MISSING-ON-HEX-Q1: trzoda/owce/lama NIE wymagają złoża na heksie
+    // (R-WEB-AUTOIMPROVE-STAGES-Q1, decyzja właściciela 2026-10-31; silnik `createQualifier` pyta
+    // tylko o teren + terytorium + cywilizację). Dawne bramki `nakladka !== Zloze*` ukrywały je
+    // na golej Łące/Wzgórzach, choć budowa była możliwa -- tooltip nie może obiecywać MNIEJ niż silnik.
+    // Owce: ta sama baza terenu co silnik (Wzgórza, bez Lasu -- `isOwceBaseTerrain`).
+    if (key === 'owce' && !isOwceBaseTerrain(teren, nakladka)) continue;
     // N5 (P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA): stadnina wymaga złoża konia NA TYM
     // heksie -- silnik (createQualifier) dodatkowo pozwala budować stadninę BEZ złoża, gdy imperium
     // ma już odblokowane 'kon' gdzie indziej (isLivestockUnlockedForPlacement/empireUnlocks) -- to
