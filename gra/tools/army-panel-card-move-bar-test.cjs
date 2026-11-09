@@ -18,6 +18,8 @@ const UI = path.resolve(GRA, 'src', 'ui');
 const STACK = fs.readFileSync(path.resolve(UI, 'armyStackHud.ts'), 'utf8');
 const LIST = fs.readFileSync(path.resolve(UI, 'armyListHud.ts'), 'utf8');
 const CSS_HELPER = fs.readFileSync(path.resolve(UI, 'sideListHud.css.ts'), 'utf8');
+// Komponent z reklamacji właściciela: karty stosu w podpowiedzi hexa (hexContextTooltip).
+const HEX_TIP = fs.readFileSync(path.resolve(UI, 'hexContextTooltip.ts'), 'utf8');
 
 let failures = 0;
 function check(name, ok) {
@@ -60,6 +62,18 @@ check('lista armii: etykieta „Ruch” + wartość X/Y',
   /<span>Ruch<\/span><span class="al-bar-val">' \+ ruchVal \+ '\/' \+ a\.ruchMax/.test(LIST));
 check('lista armii: tor ruchu ma obwódkę inset (widoczny przy 0)',
   /\.civ-army-list-hud \.al-mvbar\{[^}]*box-shadow:inset 0 0 0 1px rgba\(111,176,240,\.28\)/.test(LIST));
+
+// 4. Karty stosu w podpowiedzi hexa (hexContextTooltip.ts) — komponent ze zrzutu.
+check('hexContextTooltip: pasek ruchu karty stosu ma podpowiedź „Ruch: X z Y”',
+  /buildUnitStackBarHtml\(movPct, 'mov', `Ruch: \$\{c\.ruchLeft\} z \$\{c\.ruchMax\}`\)/.test(HEX_TIP));
+check('hexContextTooltip: szerokość toru ruchu karty stosu = ruchLeft/ruchMax',
+  /const movPct = c\.ruchMax > 0 \? \(c\.ruchLeft \/ c\.ruchMax\) \* 100 : 0;/.test(HEX_TIP));
+check('hexContextTooltip: podpis karty stosu z etykietą „ruch X/Y”',
+  /sp-unit-stack-meta">\$\{Math\.round\(c\.hp\)\}\/\$\{c\.hpMax\} · ruch \$\{c\.ruchLeft\}\/\$\{c\.ruchMax\}</.test(HEX_TIP));
+check('hexContextTooltip: tor ruchu karty stosu ma obwódkę inset (widoczny przy 0)',
+  /\.sp-unit-stack-bar\{[^}]*box-shadow:inset 0 0 0 1px rgba\(111,176,240,\.28\)/.test(HEX_TIP));
+check('hexContextTooltip: pojedyncza jednostka — pasek ruchu z podpowiedzią',
+  /buildUnitStackBarHtml\(movPct, 'mov', `Ruch: \$\{u\.ruchLeft\} z \$\{u\.ruchMax\}`\)/.test(HEX_TIP));
 
 if (failures > 0) {
   console.error(`\n${failures} check(s) failed`);

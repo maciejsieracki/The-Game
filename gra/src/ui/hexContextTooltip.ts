@@ -735,9 +735,10 @@ function buildUnitExpandButtonHtml(expanded: boolean): string {
   return `<button type="button" class="sp-ctx-expand" data-sp-expand>${label}</button>`;
 }
 
-function buildUnitStackBarHtml(pct: number, kind: 'hp' | 'mov'): string {
+function buildUnitStackBarHtml(pct: number, kind: 'hp' | 'mov', title?: string): string {
   const width = Math.max(0, Math.min(100, Math.round(pct)));
-  return `<div class="sp-unit-stack-bar sp-unit-stack-bar-${kind}"><i style="width:${width}%"></i></div>`;
+  const titleAttr = title ? ` title="${title}"` : '';
+  return `<div class="sp-unit-stack-bar sp-unit-stack-bar-${kind}"${titleAttr}><i style="width:${width}%"></i></div>`;
 }
 
 /**
@@ -785,9 +786,9 @@ function buildUnitStackCardsHtml(
         : `<div class="sp-unit-stack-name">${esc(c.name)}</div>`)
       + '<div class="sp-unit-stack-bars">'
       + buildUnitStackBarHtml(hpPct, 'hp')
-      + buildUnitStackBarHtml(movPct, 'mov')
+      + buildUnitStackBarHtml(movPct, 'mov', `Ruch: ${c.ruchLeft} z ${c.ruchMax}`)
       + '</div>'
-      + `<div class="sp-unit-stack-meta">${Math.round(c.hp)}/${c.hpMax} · ${c.ruchLeft}/${c.ruchMax}</div>`
+      + `<div class="sp-unit-stack-meta">${Math.round(c.hp)}/${c.hpMax} · ruch ${c.ruchLeft}/${c.ruchMax}</div>`
       + '</div>';
   }
   return html + '</div>';
@@ -813,7 +814,7 @@ function buildUnitVitalsHtml(u: UnitContextTooltipInput): string {
     html += '<div class="sp-unit-vital-row">'
       + '<div class="sp-unit-vital-lbl"><span class="sp-unit-vital-l">Ruch</span>'
       + `<span class="sp-unit-vital-v">${u.ruchLeft}/${u.ruchMax}</span></div>`
-      + buildUnitStackBarHtml(movPct, 'mov')
+      + buildUnitStackBarHtml(movPct, 'mov', `Ruch: ${u.ruchLeft} z ${u.ruchMax}`)
       + '</div>';
   }
   return html + '</div>';
@@ -897,7 +898,7 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-stack-ic{font-size:18px;line-height:1;min-height:20px;}
 .sp-unit-stack-name{font-size:9px;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sp-unit-stack-bars{display:flex;flex-direction:column;gap:3px;margin-top:5px;padding:0 3px;}
-.sp-unit-stack-bar{height:4px;background:rgba(0,0,0,.38);border-radius:2px;overflow:hidden;}
+.sp-unit-stack-bar{height:4px;background:rgba(0,0,0,.38);border-radius:2px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(111,176,240,.28);}
 .sp-unit-stack-bar i{display:block;height:100%;border-radius:2px;}
 .sp-unit-stack-bar-hp i{background:linear-gradient(90deg,${VITALS_HP_DARK_CSS},${VITALS_HP_FULL_CSS});}
 .sp-unit-stack-bar-mov i{background:linear-gradient(90deg,${VITALS_MOVE_DARK_CSS},${VITALS_MOVE_FULL_CSS});}
