@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "2de57742f2894e33445d425c212064e3",
-  "bundleSha256": "497b89bfadb5c89f58a9d78a99197f18b3e0cc8835c543473ba4375cd3e3e673",
-  "bundleBytes": 14335108,
+  "bundleMd5": "a942760195c8c773cf11b9524cdc1733",
+  "bundleSha256": "80411b61f6cee4dfd6b9af9d165ddf1271833dcf06410fa3874b4b29a7e912ad",
+  "bundleBytes": 14335738,
   "sourceSnapshot": {
     "source": "FC merge",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 574: R-WEB-BATTLE-DEAD-UNITS-NOT-REMOVED-FROM-FIELD-Q1 (f59c78156): cios śmiertelny nie ustawia hp=1 (rout-before-death tylko przy hp>0), uciekająca jednostka trafiona do 0 ginie; logika _resolveBlowOutcome"
+    "FALA 575: R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1 (7b0b59d9c): epoka<3 tylko złoże konia, od Żelaza po odblokowaniu Konia bez złoża (gracz, AI, auto-ulepszenia, tooltip); R-WEB-DIPLO-ALLIANCE-BLOCKED-AT-TRUST-100-Q1 (138ed3e47): tier „Sojusz” tylko przy aktywnym traktacie (relationTierDisplay)"
   ],
   "verification": [
-    "tsc 0, logic 213/213, battle-dead-units-removed PASS, battle-dead-unit-disappearance PASS, walka-morale-przewaga-mocy 123/123, audio-sidecar PASS"
+    "tsc 0, logic 213/213, stadnina-early-eras 35/0 + ai-picker 19, kon-koszt 17/0, map-improvement-qualify 133/0, hex-tooltip-zloze 65/0, diplo-alliance-gate 15/0, diplomacy-locks 88/0, diplomacy 148/0, audio-sidecar PASS"
   ],
   "limits": [
-    "Chromium/wizualnie NIE_ZMIERZONO; battle-loot-test 4 FAIL istnieje na bazie; zmiana zamienia dawne ucieczki z hp=1 na realne zgony (większe straty) — NIE_ZMIERZONO balans"
+    "Progi sojuszu (130 + Zaufanie 90) w osobnym temacie; live test stadniny i tooltip-dedup NIE_ZMIERZONO; wpływ na AI konnicy NIE_ZMIERZONO; hex-tooltip-unlock-label-dedup 27/1 dług sprzed"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-09T19:34:27",
+  "hubGeneratedAt": "2026-11-09T19:48:56",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2de57742f2894e33445d425c212064e3",
-      "sizeBytes": 14335108
+      "md5": "a942760195c8c773cf11b9524cdc1733",
+      "sizeBytes": 14335738
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2de57742f2894e33445d425c212064e3",
-      "sizeBytes": 14335108
+      "md5": "a942760195c8c773cf11b9524cdc1733",
+      "sizeBytes": 14335738
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "2de57742f2894e33445d425c212064e3",
-      "sizeBytes": 14335108
+      "md5": "a942760195c8c773cf11b9524cdc1733",
+      "sizeBytes": 14335738
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "2de57742f2894e33445d425c212064e3",
-      "sizeBytes": 14335108
+      "md5": "a942760195c8c773cf11b9524cdc1733",
+      "sizeBytes": 14335738
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "2de57742f2894e33445d425c212064e3",
-      "sizeBytes": 14335108
+      "md5": "a942760195c8c773cf11b9524cdc1733",
+      "sizeBytes": 14335738
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "2de57742f2894e33445d425c212064e3",
-      "sizeBytes": 14335108
+      "md5": "a942760195c8c773cf11b9524cdc1733",
+      "sizeBytes": 14335738
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "2de57742f2894e33445d425c212064e3",
-      "sizeBytes": 14335108
+      "md5": "a942760195c8c773cf11b9524cdc1733",
+      "sizeBytes": 14335738
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "2de57742f2894e33445d425c212064e3",
-      "sizeBytes": 14335108
+      "md5": "a942760195c8c773cf11b9524cdc1733",
+      "sizeBytes": 14335738
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "2de57742f2894e33445d425c212064e3",
-      "sizeBytes": 14335108
+      "md5": "a942760195c8c773cf11b9524cdc1733",
+      "sizeBytes": 14335738
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "2de57742f2894e33445d425c212064e3",
-      "sizeBytes": 14335108
+      "md5": "a942760195c8c773cf11b9524cdc1733",
+      "sizeBytes": 14335738
     }
   ],
-  "md5": "2de57742f2894e33445d425c212064e3",
+  "md5": "a942760195c8c773cf11b9524cdc1733",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

@@ -1,3 +1,9 @@
+## ROBOCZA a9427601 -- 2026-11-06 -- FALA 575: Stadnina tylko na złożu konia w Kamieniu/Brązie + emblemat sojuszu spójny z listą (testowa)
+
+- R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1 (7b0b59d9c): epoka<3 tylko złoże konia, od Żelaza po odblokowaniu Konia bez złoża (gracz, AI, auto-ulepszenia, tooltip); R-WEB-DIPLO-ALLIANCE-BLOCKED-AT-TRUST-100-Q1 (138ed3e47): tier „Sojusz” tylko przy aktywnym traktacie (relationTierDisplay)
+- Weryfikacja: tsc 0, logic 213/213, stadnina-early-eras 35/0 + ai-picker 19, kon-koszt 17/0, map-improvement-qualify 133/0, hex-tooltip-zloze 65/0, diplo-alliance-gate 15/0, diplomacy-locks 88/0, diplomacy 148/0, audio-sidecar PASS
+- Limity: Progi sojuszu (130 + Zaufanie 90) w osobnym temacie; live test stadniny i tooltip-dedup NIE_ZMIERZONO; wpływ na AI konnicy NIE_ZMIERZONO; hex-tooltip-unlock-label-dedup 27/1 dług sprzed
+
 ## ROBOCZA 2de57742 -- 2026-11-06 -- FALA 574: Bitwa: jednostki z 0 HP znikają z pola (testowa)
 
 - R-WEB-BATTLE-DEAD-UNITS-NOT-REMOVED-FROM-FIELD-Q1 (f59c78156): cios śmiertelny nie ustawia hp=1 (rout-before-death tylko przy hp>0), uciekająca jednostka trafiona do 0 ginie; logika _resolveBlowOutcome
