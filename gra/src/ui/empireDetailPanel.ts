@@ -32,7 +32,7 @@ import { formatCompactNumber } from './formatCompactNumber';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
-import { HANDEL_PCT_STEP, MAX_PROCENT_NAUKA, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
+import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
 import type { CityPodzialHandlu, CityPodzialPracy } from '../game/cities';
 import {
   MAX_PROCENT_PULI_IMPERIUM,
@@ -108,7 +108,7 @@ function renderDefaultHandelSplitSection(): string {
     { key: 'procentNauka' as const, label: 'Nauka', cls: 'blue' },
     { key: 'procentLuksus' as const, label: 'Zamożność', cls: '' },
   ]) {
-    const maxVal = row.key === 'procentNauka' ? MAX_PROCENT_NAUKA : 100;
+    const maxVal = 100; // R-WEB-TAX-SLIDER-DEFAULT-PANEL-NOT-EQUAL-Q1: wspólna skala 0–100 (limit Nauki 60% egzekwuje adjustHandelSplit)
     h += `<div class="civ-emp-zrow" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:4px 0">`
       + `<label style="font-size:12px"><span class="${row.cls}">${row.label}</span></label>`
       + `<span data-pct="${row.key}"><b>${split[row.key]}%</b></span></div>`
@@ -1226,7 +1226,7 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
   for (const row of rows) {
     const pct = split[row.key];
     const amount = Math.round((baseAmount * pct) / 100);
-    const maxVal = row.key === 'procentNauka' ? MAX_PROCENT_NAUKA : 100;
+    const maxVal = 100; // R-WEB-TAX-SLIDER-DEFAULT-PANEL-NOT-EQUAL-Q1: wspólna skala 0–100 (limit Nauki 60% egzekwuje adjustHandelSplit)
     h += '<div>'
       + '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">'
       + `<span style="flex:1;font-size:12px;font-weight:600" class="civ-emp-slider-label ${row.cls}">${row.label}</span>`

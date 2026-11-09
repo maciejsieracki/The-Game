@@ -65,7 +65,6 @@ import {
   normalizePodzialHandlu,
   snapHandelPct,
   adjustHandelSplit,
-  MAX_PROCENT_NAUKA,
   clampPodzialPracyBudynkiPercent,
   procentPuliImperiumZBudynkow,
   MIN_PODZIAL_PRACY_BUDYNKI_PERCENT,
@@ -4799,7 +4798,7 @@ function appendPodzialHandlu(
     sliders.appendChild(row);
   };
   makeSlider('procentPieniadz', 'Skarb', resourceTextClass('skarbiec'));
-  makeSlider('procentNauka', 'Nauka', resourceTextClass('nauka'), 'slider-nauka', MAX_PROCENT_NAUKA);
+  makeSlider('procentNauka', 'Nauka', resourceTextClass('nauka'), 'slider-nauka');
   makeSlider('procentLuksus', HANDEL_ZAMOZNOSC_LABEL, 'happy');
   // R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej 2026-08-10): "Skarbiec i Nauka to JEDNA
   // grupa" -- JEDEN przycisk Indywidualne dla całego suwaka (Skarb+Nauka+Zamożność
