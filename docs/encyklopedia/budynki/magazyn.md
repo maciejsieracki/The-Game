@@ -15,16 +15,16 @@
 
 ## Wiki‑S
 
-**Magazyn** — budynek (Produkcja+Pieniadz), epoka Brąz. Koszt od **20** pracy, utrzymanie **1** ¤/t. Technologia **Handel**. **Dodatkowo (2026-07-24):** każdy zbudowany Magazyn w imperium podnosi o **+100** pojemność wspólnego magazynu surowców całego państwa (na każdy typ surowca).
+**Magazyn** — budynek (Produkcja+Podatek), epoka Brąz. Koszt od **20** pracy, utrzymanie **1** ¤/t. Technologia **Handel**. **Dodatkowo (2026-07-24):** każdy zbudowany Magazyn w imperium podnosi o **+100** pojemność wspólnego magazynu surowców całego państwa (na każdy typ surowca).
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Magazyn wzmacnia miasto w kategorii **Produkcja+Pieniadz**. Poziom 1: **+1 pracy** (+1 na poziom), **+1 złota** (+1 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**8** od poprzedniego), ale daje większy przyrost.
+Magazyn wzmacnia miasto w kategorii **Produkcja+Podatek**. Poziom 1: **+1 pracy** (+1 na poziom), **+1 podatku** (+1 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**8** od poprzedniego), ale daje większy przyrost.
 
-**Drugi efekt — pojemność magazynu surowców państwa (SUROW-CIV-01, 2026-07-24):** oprócz bonusu produkcji/złota, sama **obecność** wybudowanego Magazynu (dowolny poziom, w dowolnym mieście imperium) podnosi **cap** wspólnej puli surowców logistycznych (drewno, kamień, glina, ruda, ruda żelaza, cegła, ceramika, brąz, żelazo, stal) całego imperium:
+**Drugi efekt — pojemność magazynu surowców państwa (SUROW-CIV-01, 2026-07-24):** oprócz bonusu produkcji/podatku, sama **obecność** wybudowanego Magazynu (dowolny poziom, w dowolnym mieście imperium) podnosi **cap** wspólnej puli surowców logistycznych (drewno, kamień, glina, ruda, ruda żelaza, cegła, ceramika, brąz, żelazo, stal) całego imperium:
 
 - **Baza bez Magazynów:** **500** sztuk na typ surowca (civ-wide).
 - **+100** na typ surowca za **każdy** zbudowany Magazyn — addytywnie (2 Magazyny w 2 miastach = +200, nie ×2), poziom budynku nie ma znaczenia.
@@ -43,7 +43,7 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 - Ignorowanie utrzymania: 1 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
 - Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
 - Mylenie tego magazynu z zapasami **żywności** (Spichlerz) — to dwa osobne systemy z różnymi wzorami pojemności.
-**Powiązane:** Produkcja miejska · Utrzymanie · Produkcja+Pieniadz · Magazyn surowców państwa (Część III §21.5b, Część VIII §53.2)
+**Powiązane:** Produkcja miejska · Utrzymanie · Produkcja+Podatek · Magazyn surowców państwa (Część III §21.5b, Część VIII §53.2)
 
 ---
 
@@ -53,11 +53,11 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 20 | **2 tur** | +1 pracy, +1 złota | 1 ¤/t |
+| Poziom 1 | 20 | **2 tur** | +1 pracy, +1 podatku | 1 ¤/t |
 | Poziom 2 | 28 | **3 tur** | więcej (patrz niżej) | 1 ¤/t |
-| Poziom 3 | 36 | — | **+3 pracy, +3 złota** | 1 ¤/t |
+| Poziom 3 | 36 | — | **+3 pracy, +3 podatku** | 1 ¤/t |
 
-Przy +1 złota/t, utrzymanie 1 ¤/t → netto **+0 ¤/t**. Koszt 20 pracy przy 10/t ≈ **2 tur** pracy — złotem „zwraca się" po ok. **20 tur** (uproszczenie, bez inflacji).
+Przy +1 podatku/t, utrzymanie 1 ¤/t → netto **+0 ¤/t**. Koszt 20 pracy przy 10/t ≈ **2 tur** pracy — podatkiem „zwraca się" po ok. **20 tur** (uproszczenie, bez inflacji).
 
 **Przyspieszenie za złoto:** jeśli brakuje **0** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
 

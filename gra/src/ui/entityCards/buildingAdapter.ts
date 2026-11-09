@@ -172,7 +172,10 @@ function top3Of(building: BuildingDef): EntityCardRow[] {
 
 const YIELD_BRAND: { key: keyof BuildingDef['baza']; label: string }[] = [
   { key: 'praca', label: 'Praca' },
-  { key: 'pieniadz', label: 'Pieniądz' },
+  // R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 3): `baza.pieniadz` budynku wchodzi do bazy PODATKU
+  // (economy.ts:881-920 `handelBazowy = handelTerenu + pieniadzBudynkow`) — pieniądz powstaje dopiero
+  // po podziale podatku / w Mennicy. Klucz danych zostaje `pieniadz`, zmienia się tylko etykieta.
+  { key: 'pieniadz', label: 'Podatek' },
   { key: 'zywnosc', label: 'Żywność' },
   { key: 'nauka', label: 'Nauka' },
   { key: 'kultura', label: 'Kultura' },

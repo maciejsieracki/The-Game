@@ -11,7 +11,7 @@
       {
         "tytul": "+10% drewna w całym państwie",
         "liczba": "+10%",
-        "zdanie": "Każda Stolarnia w dowolnym mieście zwiększa wydobycie drewna całego państwa o 10% (Stolarnie sumują się).",
+        "zdanie": "Każda Stolarnia w dowolnym mieście zwiększa wydobycie drewna całego państwa o 10% (Stolarnie sumują się); drewno idzie na budowy i rekrutację.",
         "rodzaj": "efekt",
         "dowod": "gra/data/econ-params.json:285-291; gra/src/game/turn-economy.ts:1536"
       },
@@ -35,7 +35,7 @@
       {
         "tytul": "+10% kamienia w całym państwie",
         "liczba": "+10%",
-        "zdanie": "Każdy Warsztat kamieniarski zwiększa wydobycie kamienia całego państwa o 10% (warsztaty sumują się).",
+        "zdanie": "Każdy Warsztat kamieniarski zwiększa wydobycie kamienia całego państwa o 10% (warsztaty sumują się); kamień idzie na mury, świątynie i inne budowle.",
         "rodzaj": "efekt",
         "dowod": "gra/data/econ-params.json:292-298; gra/src/game/turn-economy.ts:1539"
       },
@@ -71,9 +71,9 @@
         "dowod": "gra/data/buildings.json:1398; gra/src/game/unit-building-bonuses.ts:9-21"
       },
       {
-        "tytul": "+6 Pracy i +1 pieniądza w mieście",
+        "tytul": "+6 Pracy i +1 podatku w mieście",
         "liczba": "+6",
-        "zdanie": "Stały dochód miasta niezależny od epoki.",
+        "zdanie": "Stały przychód Pracy i podatku niezależny od epoki.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:108"
       }
@@ -107,7 +107,7 @@
       {
         "tytul": "Rozbudowa do Odlewni żelaza: żelazo i +12 Pracy",
         "liczba": "+12",
-        "zdanie": "Po Hutnictwie żelaza rozbudowa daje drugi konwerter — żelazo.",
+        "zdanie": "Po Hutnictwie żelaza rozbudowa pozwala wytapiać także żelazo na wojsko epoki Żelaza.",
         "rodzaj": "rozbudowa",
         "dowod": "gra/data/buildings.json:204; gra/src/game/converters.ts:98-99"
       },
@@ -140,7 +140,7 @@
         "dowod": "gra/src/game/converters.ts:13; gra/src/game/converters.ts:98-99; gra/data/econ-params.json:369-375"
       },
       {
-        "tytul": "+12 Pracy i +1 pieniądza w mieście",
+        "tytul": "+12 Pracy i +1 podatku w mieście",
         "liczba": "+12",
         "zdanie": "Dwa razy więcej Pracy niż Odlewnia brązu.",
         "rodzaj": "efekt",
@@ -162,9 +162,9 @@
   "targowisko": {
     "top5": [
       {
-        "tytul": "+5 pieniądza w mieście (8 w Brązie, 11 w Żelazie)",
+        "tytul": "+5 podatku w mieście (8 w Brązie, 11 w Żelazie)",
         "liczba": "+5",
-        "zdanie": "Stały dochód, rośnie o 3 z każdą epoką.",
+        "zdanie": "Stały podatek budynku, rośnie o 3 z każdą epoką.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:303; gra/src/game/production.ts:252-271"
       },
@@ -198,7 +198,7 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Targowisko",
-        "korzysc": "dać miastu 5 pieniądza"
+        "korzysc": "dać miastu +5 podatku"
       },
       {
         "czynnosc": "Zbuduj w stolicy Mennicę (Waluta)",
@@ -209,9 +209,9 @@
   "port": {
     "top5": [
       {
-        "tytul": "+5 pieniądza i +1 Pracy w mieście",
+        "tytul": "+5 podatku i +1 Pracy w mieście",
         "liczba": "+5",
-        "zdanie": "Stały dochód miasta nad wodą.",
+        "zdanie": "Stały podatek miasta nad wodą.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:361"
       },
@@ -230,16 +230,16 @@
         "dowod": "gra/src/game/trade-routes.ts:1755-1772"
       },
       {
-        "tytul": "Rozbudowa do Portu wielkiego: +10 pieniądza",
+        "tytul": "Rozbudowa do Portu wielkiego: +10 podatku",
         "liczba": "+10",
-        "zdanie": "Po Inżynierii rozbudowa podwaja dochód portu.",
+        "zdanie": "Po Inżynierii rozbudowa podwaja podatek z portu.",
         "rodzaj": "rozbudowa",
         "dowod": "gra/data/buildings.json:409"
       },
       {
         "tytul": "+1 Szczęścia w mieście",
         "liczba": "+1",
-        "zdanie": "Ryczałt Szczęścia za budynek szczęściodajny.",
+        "zdanie": "Stały dodatek Szczęścia w mieście.",
         "rodzaj": "efekt",
         "dowod": "gra/src/game/economy.ts:509-535"
       }
@@ -247,33 +247,33 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Port handlowy w mieście nad wodą",
-        "korzysc": "dać miastu 5 pieniądza"
+        "korzysc": "dać miastu +5 podatku"
       },
       {
         "czynnosc": "Rozbuduj go do Portu wielkiego (Inżynieria)",
-        "korzysc": "podwoić dochód portu (+10 pieniądza)"
+        "korzysc": "podwoić podatek z portu (+10 podatku)"
       }
     ]
   },
   "port_wielki": {
     "top5": [
       {
-        "tytul": "+10 pieniądza i +2 Pracy w mieście (Port: +5)",
+        "tytul": "+10 podatku i +2 Pracy w mieście (Port: +5)",
         "liczba": "+10",
-        "zdanie": "Podwaja dochód Portu handlowego, który zastępuje.",
+        "zdanie": "Podwaja podatek z Portu handlowego, który zastępuje.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:409"
       },
       {
         "tytul": "Zachowuje trasę handlową i premię morską Portu",
-        "zdanie": "Po rozbudowie miasto nie traci slotu trasy ani +1 pieniądza za trasę morską.",
+        "zdanie": "Po rozbudowie miasto nie traci miejsca na trasę handlową ani premii +1 pieniądza za trasę morską.",
         "rodzaj": "efekt",
         "dowod": "gra/src/game/trade-routes.ts:908-921; gra/src/game/trade-routes.ts:208; gra/src/game/trade-routes.ts:1755-1772"
       },
       {
         "tytul": "+1 Szczęścia w mieście",
         "liczba": "+1",
-        "zdanie": "Ryczałt Szczęścia za budynek szczęściodajny.",
+        "zdanie": "Stały dodatek Szczęścia w mieście.",
         "rodzaj": "efekt",
         "dowod": "gra/src/game/economy.ts:509-535"
       }
@@ -281,7 +281,7 @@
     "cmz": [
       {
         "czynnosc": "Rozbuduj Port handlowy do Portu wielkiego",
-        "korzysc": "podwoić dochód portu (+10 pieniądza)"
+        "korzysc": "podwoić podatek z portu (+10 podatku)"
       }
     ]
   },
@@ -311,7 +311,7 @@
       {
         "tytul": "+2 żywności i +5 Szczęścia w mieście",
         "liczba": "+2",
-        "zdanie": "Najwyższy ryczałt Szczęścia wśród budynków Kamienia.",
+        "zdanie": "Najwięcej Szczęścia spośród budynków epoki Kamienia.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:458; gra/src/game/economy.ts:509-535"
       },
@@ -338,7 +338,7 @@
       {
         "tytul": "Limit ludności miasta 8 → 12",
         "liczba": "8 → 12",
-        "zdanie": "Spichlerz Królewski podnosi sufit miasta bez Akweduktu do 12 mieszkańców.",
+        "zdanie": "Spichlerz Królewski podnosi sufit miasta bez Akweduktu do 12 mieszkańców; zużywa 25 ceramiki i 25 soli na turę.",
         "rodzaj": "efekt",
         "dowod": "gra/data/econ-params.json:38-44; gra/src/game/economy.ts:1053"
       },
@@ -384,7 +384,7 @@
       {
         "tytul": "Wytwarza ceramikę: do 50 sztuk na turę",
         "liczba": "do 50",
-        "zdanie": "Zamienia glinę i drewno w ceramikę; każdy Spichlerz zużywa jej 25 na turę.",
+        "zdanie": "Zamienia glinę i drewno w ceramikę; każdy Spichlerz zużywa jej 25 na turę, a bez niej nie daje bonusów ludności.",
         "rodzaj": "efekt",
         "dowod": "gra/src/game/converters.ts:85; gra/data/econ-params.json:383-389; gra/data/econ-params.json:390-396"
       },
@@ -426,7 +426,7 @@
       {
         "tytul": "Wytwarza cegłę: 50 cykli × 2 cegły na turę",
         "liczba": "× 2",
-        "zdanie": "Zamienia 2 gliny i 1 drewno w 2 cegły; od epoki Brązu +50% bazy na epokę — cegła buduje budynki epoki Żelaza.",
+        "zdanie": "Zamienia 2 gliny i 1 drewno w 2 cegły (od epoki Brązu +50% bazy na epokę); cegła jest kosztem budowy Akademii, Sądu, Łaźni publicznej i Kuźni żelaza.",
         "rodzaj": "efekt",
         "dowod": "gra/src/game/converters.ts:11; gra/src/game/converters.ts:84; gra/data/econ-params.json:355-361"
       },
@@ -454,7 +454,7 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Cegielnię",
-        "korzysc": "wytwarzać cegłę na budynki epoki Żelaza"
+        "korzysc": "wytwarzać cegłę na Akademię, Sąd, Łaźnię publiczną i Kuźnię żelaza"
       }
     ]
   },
@@ -470,7 +470,7 @@
       {
         "tytul": "+1 Kultury i +2 Szczęścia (rośnie z epoką)",
         "liczba": "+1",
-        "zdanie": "Po 1 Kultury i zadowolenia więcej z każdą epoką.",
+        "zdanie": "Z każdą epoką dochodzi po 1 Kultury i zadowolenia.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:649; gra/src/game/economy.ts:509-535; gra/src/game/production.ts:252-271"
       },
@@ -555,7 +555,7 @@
       {
         "tytul": "+1 Szczęścia w mieście",
         "liczba": "+1",
-        "zdanie": "Ryczałt Szczęścia za budynek szczęściodajny.",
+        "zdanie": "Stały dodatek Szczęścia w mieście.",
         "rodzaj": "efekt",
         "dowod": "gra/src/game/economy.ts:509-535"
       }
@@ -595,7 +595,7 @@
       {
         "tytul": "+2 Szczęścia w mieście (rośnie z epoką)",
         "liczba": "+2",
-        "zdanie": "Ryczałt +1 i +1 zadowolenia na poziom.",
+        "zdanie": "Stałe +1 Szczęścia oraz +1 zadowolenia na każdy poziom.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:806; gra/src/game/economy.ts:509-535; gra/src/game/production.ts:252-271"
       }
@@ -616,7 +616,7 @@
       {
         "tytul": "Limit ludności miasta do 20",
         "liczba": "do 20",
-        "zdanie": "Najwyższy próg drabinki: bez budynku 5 → Spichlerz 8 → Spichlerz Królewski 12 → Akwedukt 20.",
+        "zdanie": "Najwyższy próg limitu ludności: bez budynku 5 → Spichlerz 8 → Spichlerz Królewski 12 → Akwedukt 20.",
         "rodzaj": "efekt",
         "dowod": "gra/data/econ-params.json:45-51; gra/src/game/economy.ts:1053"
       },
@@ -630,7 +630,7 @@
       {
         "tytul": "+3 Szczęścia w mieście (rośnie z epoką)",
         "liczba": "+3",
-        "zdanie": "Ryczałt +1 i +2 zadowolenia.",
+        "zdanie": "Stałe +1 Szczęścia oraz +2 zadowolenia.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:853; gra/src/game/economy.ts:509-535"
       }
@@ -652,9 +652,9 @@
         "dowod": "gra/data/econ-params.json:585-591; gra/src/game/economy.ts:644-653; gra/src/game/economy.ts:952-955; gra/src/game/economy.ts:962-967"
       },
       {
-        "tytul": "+3 pieniądza w stolicy (5 w Żelazie)",
+        "tytul": "+3 podatku w stolicy (5 w Żelazie)",
         "liczba": "+3",
-        "zdanie": "Mały stały dochód stolicy.",
+        "zdanie": "Niewielki stały przyrost podatku w stolicy.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:901; gra/src/game/production.ts:252-271"
       }
@@ -766,9 +766,9 @@
   "emporion": {
     "top5": [
       {
-        "tytul": "+8 pieniądza w mieście",
+        "tytul": "+8 podatku w mieście",
         "liczba": "+8",
-        "zdanie": "Większy dochód niż Targowisko (+5).",
+        "zdanie": "Więcej podatku niż Targowisko (+5).",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:1095"
       },
@@ -783,7 +783,7 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Emporion",
-        "korzysc": "dać miastu 8 pieniądza"
+        "korzysc": "dać miastu +8 podatku"
       }
     ]
   },
@@ -797,9 +797,9 @@
         "dowod": "gra/data/econ-params.json:613-619; gra/src/game/economy-upkeep.ts:398; gra/src/game/economy-upkeep.ts:431"
       },
       {
-        "tytul": "+1 Pracy i +1 pieniądza (po 2 w Żelazie)",
+        "tytul": "+1 Pracy i +1 podatku (po 2 w Żelazie)",
         "liczba": "+1",
-        "zdanie": "Drobny dochód miasta, rośnie z epoką.",
+        "zdanie": "Drobny przychód Pracy i podatku w mieście, rośnie z epoką.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:1154; gra/src/game/production.ts:252-271"
       }
@@ -985,7 +985,7 @@
         "dowod": "gra/data/tech.json:439; gra/src/game/research.ts:154-180"
       },
       {
-        "tytul": "+8 Pracy i +2 pieniądza w mieście",
+        "tytul": "+8 Pracy i +2 podatku w mieście",
         "liczba": "+8",
         "zdanie": "Więcej niż Kuźnia brązu (+6 i +1).",
         "rodzaj": "efekt",
@@ -1043,14 +1043,14 @@
       {
         "tytul": "+10% parametrów jednostek (z Koszarami +30%)",
         "liczba": "+10%",
-        "zdanie": "Trzecia warstwa ścieżki parametrów — sumuje się z Koszarami i Akademią wojskową (maks. +50%).",
+        "zdanie": "Kolejny stopień wzmocnienia jednostek — sumuje się z Koszarami i Akademią wojskową (razem maks. +50%).",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:1596; gra/src/game/unit-building-bonuses.ts:23-33; gra/src/game/unit-building-bonuses.ts:179-184"
       },
       {
-        "tytul": "+4 Pracy i +2 pieniądza w mieście",
+        "tytul": "+4 Pracy i +2 podatku w mieście",
         "liczba": "+4",
-        "zdanie": "Drobny dochód miasta.",
+        "zdanie": "Drobny stały przychód Pracy i podatku w mieście.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:1596"
       }
@@ -1058,10 +1058,9 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Warsztat oblężniczy",
-        "korzysc": "wzmocnić jednostki o kolejne +10%"
+        "korzysc": "wzmocnić jednostki o kolejne +10% i otworzyć dostęp do Katapulty"
       }
-    ],
-    "opisKarty": "Warsztat oblężniczy to zaplecze do budowy ciężkiego sprzętu oblężniczego, wzmacniające jednostki, które odwiedziły miasto."
+    ]
   },
   "akademia": {
     "top5": [
@@ -1123,9 +1122,9 @@
         "dowod": "gra/data/society-params.json:453-459; gra/src/game/culture-religion.ts:458; gra/src/game/conquest-stability.ts:63-72"
       },
       {
-        "tytul": "+5 Kultury, +2 pieniądza i +3 Szczęścia",
+        "tytul": "+5 Kultury, +2 podatku i +3 Szczęścia",
         "liczba": "+5",
-        "zdanie": "Stały dochód kultury i nastrojów.",
+        "zdanie": "Stały przyrost podatku, kultury i nastrojów.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:1742; gra/src/game/economy.ts:509-535"
       }
@@ -1154,9 +1153,9 @@
         "dowod": "gra/data/buildings.json:1838; gra/data/society-params.json:788-794"
       },
       {
-        "tytul": "+1 Pracy, +1 pieniądza i +2 Kultury",
+        "tytul": "+1 Pracy, +1 podatku i +2 Kultury",
         "liczba": "+1",
-        "zdanie": "Drobny dochód miasta.",
+        "zdanie": "Drobny stały przychód Pracy, podatku i Kultury w mieście.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:1790"
       }
@@ -1189,7 +1188,7 @@
         "dowod": "gra/data/buildings.json:1888; gra/src/game/economy.ts:1225-1250; gra/data/society-params.json:795-801"
       },
       {
-        "tytul": "+2 pieniądza, +3 Kultury i +1 Pracy",
+        "tytul": "+2 podatku, +3 Kultury i +1 Pracy",
         "liczba": "+2",
         "zdanie": "Więcej niż Dom Starszyzny (+1/+2/+1).",
         "rodzaj": "efekt",
@@ -1224,9 +1223,9 @@
         "dowod": "gra/data/society-params.json:795-801; gra/src/game/society-breakdown.ts:846-849"
       },
       {
-        "tytul": "+3 pieniądza, +5 Kultury i +2 Pracy",
+        "tytul": "+3 podatku, +5 Kultury i +2 Pracy",
         "liczba": "+3",
-        "zdanie": "Największy dochód w łańcuchu.",
+        "zdanie": "Najwięcej podatku w łańcuchu.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:1888"
       }
@@ -1255,9 +1254,9 @@
         "dowod": "gra/data/society-params.json:802-808; gra/src/game/society-breakdown.ts:850-853"
       },
       {
-        "tytul": "+1 pieniądza i +2 Szczęścia (rośnie z epoką)",
+        "tytul": "+1 podatku i +2 Szczęścia (rośnie z epoką)",
         "liczba": "+1",
-        "zdanie": "W epoce Żelaza +2 pieniądza i +3 Szczęścia.",
+        "zdanie": "W epoce Żelaza +2 podatku i +3 Szczęścia.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:1938; gra/src/game/economy.ts:509-535; gra/src/game/production.ts:252-271"
       }
@@ -1328,14 +1327,14 @@
       {
         "tytul": "+20% parametrów jednostek (z Koszarami +40%)",
         "liczba": "+20%",
-        "zdanie": "Sumuje się z Koszarami wprost; z Warsztatem oblężniczym razem +50%.",
+        "zdanie": "Sumuje się z Koszarami; z Warsztatem oblężniczym razem daje +50%.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:2082; gra/src/game/unit-building-bonuses.ts:23-33; gra/src/game/unit-building-bonuses.ts:179-184"
       },
       {
-        "tytul": "+3 Pracy i +2 pieniądza w mieście",
+        "tytul": "+3 Pracy i +2 podatku w mieście",
         "liczba": "+3",
-        "zdanie": "Drobny dochód miasta.",
+        "zdanie": "Drobny stały przychód Pracy i podatku w mieście.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:2082"
       }

@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Pretorium** — budynek administracyjny (Administracja), epoka Żelazo. **Tylko miasta regionalne** (nie stolica). Upgrade **Dworu Zarządcy**. Koszt **75** pracy + surowce, utrzymanie **3** ¤/t. Technologia **Prawo**. **Maks. 1 poziom.** **Prawo, Pieniądz, Kultura, Praca** — **bez** bonusu obrony i bez mnożnika podatkowego.
+**Pretorium** — budynek administracyjny (Administracja), epoka Żelazo. **Tylko miasta regionalne** (nie stolica). Upgrade **Dworu Zarządcy**. Koszt **75** pracy + surowce, utrzymanie **3** ¤/t. Technologia **Prawo**. **Maks. 1 poziom.** **Prawo, Podatek, Kultura, Praca** — **bez** bonusu obrony i bez mnożnika podatkowego.
 
 ---
 
@@ -26,7 +26,7 @@ Pretorium to **koniec łańcucha administracji** w mieście regionalnym (zastęp
 
 **Przyrost (poz. 1):**
 - **+2 Pracy/t**
-- **+3 Pieniądza/t**
+- **+3 podatku/t**
 - **+5 Kultury/t**
 
 **Główne źródło Prawa** miasta regionalnego (`prawo_pretorium`). Garnizon liczy się do Prawa osobno — Pretorium **nie** daje mu dodatkowego bonusu.
@@ -56,7 +56,7 @@ Po podboju lub rozrostie miasta regionalnego: Pretorium podnosi **Prawo** i stab
 | Statystyka | Pretorium poz. 1 |
 |------------|------------------|
 | Praca/t | +2 |
-| Pieniądz/t | +3 |
+| Podatek/t | +3 |
 | Kultura/t | +5 |
 | Obrona | **brak** |
 

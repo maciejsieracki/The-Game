@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Kuźnia brązu** — budynek (Produkcja+Wojsko), epoka Brąz. Koszt **30** pracy + surowce, utrzymanie **2** ¤/t. Technologia **Brązownictwo**. **Maks. 1 poziom.** Daje **+6 Pracy/t**, **+1 Pieniądza/t** oraz **+15% Pancerza** (ścieżka A) jednostkom, które **odwiedziły** to miasto.
+**Kuźnia brązu** — budynek (Produkcja+Wojsko), epoka Brąz. Koszt **30** pracy + surowce, utrzymanie **2** ¤/t. Technologia **Brązownictwo**. **Maks. 1 poziom.** Daje **+6 Pracy/t**, **+1 podatku/t** oraz **+15% Pancerza** (ścieżka A) jednostkom, które **odwiedziły** to miasto.
 
 ---
 
@@ -24,7 +24,7 @@
 ### Co robi
 Kuźnia brązu wzmacnia miasto na dwa sposoby:
 
-1. **Ekonomia miasta:** **+6 Pracy/t**, **+1 Pieniądza/t** (stały przyrost na turę).
+1. **Ekonomia miasta:** **+6 Pracy/t**, **+1 podatku/t** (stały przyrost na turę).
 2. **Ścieżka A — Pancerz:** **+15% Pancerza** dla jednostek, które **odwiedziły** to miasto po zbudowaniu kuźni (nie tylko przy produkcji). Kumuluje się z Kuźnią żelaza / Wielką Kuźnią (max **+45%** łącznie z łańcucha).
 
 **Maks. 1 poziom** — wyższy tier to **awans na Kuźnię żelaza** (upgrade), nie kolejne poziomy tej samej kuźni.

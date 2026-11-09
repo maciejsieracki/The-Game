@@ -25,7 +25,7 @@
 Warsztat oblężniczy:
 
 1. **Odblokowuje rekrutację Katapulty** w mieście (`maWarsztatOblezniczy`). **Taran** i **Wieża** to sprzęt oblężniczy budowany **podczas oblężenia**, nie w Warsztacie.
-2. **Ekonomia:** **+4 Pracy/t**, **+2 Pieniądza/t**
+2. **Ekonomia:** **+4 Pracy/t**, **+2 podatku/t**
 3. **Ścieżka B:** **+10% parametrów miękkich** po wizycie w mieście (kumuluje z Koszarami/Akademią wojskową do max **+50%**)
 
 **Maks. 1 poziom** — nie 10 poziomów ani mnożnik Daniny.

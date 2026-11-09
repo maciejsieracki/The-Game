@@ -1366,7 +1366,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - Wymaga dostępu do złota (kopalnia własna lub szlak handlowy) — bez dostępu mnożnik śpi, nazwa wraca na Daninę, budynek zostaje
 
 **49.3c.** Co jeszcze wchodzi do puli Daniny
-- Pieniądz z budynków i z zamiany Pracy przez Targowisko — trafia do puli Daniny, dzieli się suwakiem 60/20/20
+- Podatek z budynków i z zamiany Pracy przez Targowisko — trafia do puli Daniny, dzieli się suwakiem 60/20/20
 
 **49.4.** Strategie gracza — zarządzanie skarbcem
 - Wczesna gra: utrzymanie niskie, unikaj pustego skarbca przed wojnou

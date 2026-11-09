@@ -15,16 +15,16 @@
 
 ## Wiki‑S
 
-**Targowisko (Rynek)** — budynek (Pieniądz), epoka Kamień. Koszt od **25** pracy, utrzymanie **1** ¤/t. Technologia **Wymiana**. **Maks. 3 poziomy** (nazwy: Targowisko → Rynek → Giełda). Daje Pieniądz na turę i zwiększa dochód ze szlaków handlowych; nie mnoży lokalnego podatku miejskiego.
+**Targowisko (Rynek)** — budynek (Podatek), epoka Kamień. Koszt od **25** pracy, utrzymanie **1** ¤/t. Technologia **Wymiana**. **Maks. 3 poziomy** (nazwy: Targowisko → Rynek → Giełda). Daje podatek na turę i zwiększa dochód ze szlaków handlowych; nie mnoży lokalnego podatku miejskiego.
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Targowisko generuje **Pieniądz (¤) na turę** w mieście:
+Targowisko generuje **Podatek (¤) na turę** w mieście:
 
-| Poziom | Pieniądz/t |
+| Poziom | Podatek/t |
 |--------|------------|
 | 1 (Targowisko) | **+5** |
 | 2 (Rynek) | **+8** (+3) |
@@ -45,7 +45,7 @@ Wczesne miasto: Targowisko finansuje utrzymanie wojska i rush budowy. Awansuj do
 - Oczekiwanie premii do lokalnego podatku — procent Targowiska zwiększa dochód z tras handlowych.
 - Porównywanie z Portem — Port to handel morski, Targowisko to lokalny przychód miejski.
 
-**Powiązane:** Pieniądz · Danina miasta · Port handlowy
+**Powiązane:** Podatek · Danina miasta · Port handlowy
 
 ---
 

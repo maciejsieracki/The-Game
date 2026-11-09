@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Emporion** — budynek (Pieniądz), epoka Brąz. Koszt budowy **50** pracy, utrzymanie **2** ¤/t. Technologia **Handel**. Wymaga **Targowiska w tym samym mieście**. Maks. 1 poziom. Daje **8 ¤** na turę, daje dodatkowy slot linii handlowej i kwalifikuje trasę do premii **5%** handlu.
+**Emporion** — budynek (Podatek), epoka Brąz. Koszt budowy **50** pracy, utrzymanie **2** ¤/t. Technologia **Handel**. Wymaga **Targowiska w tym samym mieście**. Maks. 1 poziom. Daje **8 ¤** na turę, daje dodatkowy slot linii handlowej i kwalifikuje trasę do premii **5%** handlu.
 
 ---
 
@@ -24,7 +24,7 @@
 ### Co robi
 Emporion to większy odpowiednik Targowiska, ośrodek handlu dalekosiężnego:
 
-| Poziom | Pieniądz/t |
+| Poziom | Podatek/t |
 |--------|------------|
 | 1 (Emporion) | **+8** |
 
@@ -44,7 +44,7 @@ Emporion ma sens w mieście z już działającym Targowiskiem i kilkoma trasami 
 - Budowanie Emporionu bez Targowiska w mieście: budynek jest wtedy niedostępny na liście budowy.
 - Oczekiwanie dwóch osobnych premii 5% na jednej trasie: premia jest jedna, na trasę.
 
-**Powiązane:** Targowisko · Handel · Pieniądz · Port handlowy
+**Powiązane:** Targowisko · Handel · Podatek · Port handlowy
 
 ---
 

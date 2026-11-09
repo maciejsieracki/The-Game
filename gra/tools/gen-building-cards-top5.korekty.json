@@ -9,7 +9,7 @@
     "Pretorium": ["Top1_GLOWNA"]
   },
   "_martweFrazy": {
-    "_opis": "Efekty martwe / niedostępne z ANALIZA-KART-BUDYNKOW.md §8 (decyzja właściciela (4): ukryć z kart i z odwołań). Test building-cards-top5-test.cjs sprawdza, że żadna fraza nie występuje w treści karty danego budynku (bez Rysu historycznego). Wpisy Pałac II/III („−30% znika”) i Trybunał („nie zmniejsza korupcji”) z §8 są NIEAKTUALNE od FALI 560 (economy.ts:1226 KORUPCJA_REDUKCJA_BUDYNKI) — zamiast ukrycia karta pokazuje −30% korupcji (decyzja (5)).",
+    "_opis": "Efekty martwe / niedostępne z ANALIZA-KART-BUDYNKOW.md §8 (decyzja właściciela (4): ukryć z kart i z odwołań). Test building-cards-top5-test.cjs sprawdza, że żadna fraza nie występuje w treści karty danego budynku (bez Rysu historycznego). Usunięte w R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 1, decyzja właściciela ABC 2026-11-09): wpisy warsztat_oblezniczy („Katapult” — Katapulta to realna jednostka odblokowywana przez Warsztat oblężniczy, buildings.json:1637-1639, cities.ts:845-851) i akademia_wojskowa („elit” — realna bramka jednostek elit). Wpisy Pałac II/III („−30% znika”) i Trybunał („nie zmniejsza korupcji”) z §8 są NIEAKTUALNE od FALI 560 (economy.ts:1226 KORUPCJA_REDUKCJA_BUDYNKI) — zamiast ukrycia karta pokazuje −30% korupcji (decyzja (5)).",
     "kuznia": ["45%", "Wielk"],
     "odlewnia_zelaza": ["Wielk"],
     "spichlerz": ["zapasów armii", "50% zapasu"],
@@ -17,9 +17,7 @@
     "biblioteka": ["Obserwatorium", "Astronomi"],
     "mennica": ["budynek_mennica_mnoznik", "waluta_mnoznik"],
     "kuznia_zelaza": ["45%", "Wielk"],
-    "warsztat_oblezniczy": ["Katapult"],
     "akademia": ["Teatr", "Amfiteatr", "mnożnik", "mnoznik"],
-    "akademia_wojskowa": ["elit"],
     "*": ["Wielka odlewnia", "Wielka Kuźnia", "Teatr"]
   },
   "budynki": {
@@ -34,10 +32,6 @@
     "Spichlerz Królewski": {
       "opisKarty": "Spichlerz Królewski to rozbudowana wersja magazynu żywności, pozwalająca miastu utrzymać jeszcze większą populację.",
       "powodOpisu": "decyzja (4): „i armię” w opisie buildings.json odwołuje się do limitu zapasów armii (econ-params.json:171 spichlerz_pojemnosc_zapasow_panstwa — brak konsumenta, §8). buildings.json poza allowlistą dla tego budynku — nadpisanie tylko na karcie."
-    },
-    "Warsztat oblężniczy": {
-      "opisKarty": "Warsztat oblężniczy to zaplecze do budowy ciężkiego sprzętu oblężniczego, wzmacniające jednostki, które odwiedziły miasto.",
-      "powodOpisu": "decyzja (4): opis buildings.json obiecuje „dostęp do Katapulty” — flaga maWarsztatOblezniczy to REZERWA (cities.ts:843-850), production.ts:1068-1076 jej nie sprawdza (§8). buildings.json poza allowlistą dla tego budynku — nadpisanie tylko na karcie."
     },
     "Akademia": {
       "zmiany": [

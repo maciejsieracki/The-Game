@@ -29,6 +29,8 @@ const path = require('path');
 const crypto = require('crypto');
 // R-WEB-TERMINOLOGY-TRADE-VS-TAX-Q1: wspólne reguły „podatek vs handel” + korekta językowa tekstów z CSV.
 const { normalizeCsvText } = require('./terminology-trade-vs-tax.cjs');
+// R-WEB-CARDS-RESOURCE-PURPOSE-Q1: audytowalna warstwa korekt (do czego służy surowiec · język · podatek vs pieniądz).
+const { TECH: TECH_CORRECTIONS, applyCorrections } = require('./card-text-corrections.cjs');
 
 const GRA = path.resolve(__dirname, '..');
 const REPO = path.resolve(GRA, '..');
@@ -177,7 +179,8 @@ function generate(csvPath) {
   }
   for (const n of byName.keys()) if (!techs.some((t) => t.Technologia === n)) errors.push(`CSV: osierocony wiersz „${n}” (brak w tech.json)`);
   for (const n of Object.keys(zdania)) if (!n.startsWith('_') && !techs.some((t) => t.Technologia === n)) errors.push(`zdania: osierocony wpis „${n}”`);
-  return { out, errors };
+  const log = applyCorrections(out, TECH_CORRECTIONS, 'tech', errors, liczbaOf);
+  return { out, errors, log };
 }
 
 function main() {

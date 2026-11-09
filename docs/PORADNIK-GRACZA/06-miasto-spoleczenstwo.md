@@ -503,7 +503,7 @@ Domyślny podział **60/20/20** jest identyczny na wszystkich trzech poziomach t
 
 **Ustawienie osobno dla każdego miasta** — stolica może płacić więcej zamożności, kolonia więcej złota.
 
-**Co jeszcze wchodzi do tej puli:** Pieniądz z budynków (np. Targowisko) oraz Pieniądz z zamiany Pracy przez Targowisko **nie trafiają wprost do skarbca** — wpadają do puli Daniny netto miasta i dzielą się tym samym suwakiem 60/20/20 jak reszta.
+**Co jeszcze wchodzi do tej puli:** Podatek z budynków (np. Targowisko) oraz Podatek z zamiany Pracy przez Targowisko **nie trafiają wprost do skarbca** — wpadają do puli Daniny netto miasta i dzielą się tym samym suwakiem 60/20/20 jak reszta.
 
 **Nazwa zmienia się na Podatek:** gdy cywilizacja odkryje technologię **Waluta** i zbuduje **Mennicę w stolicy**, cały ten strumień (dla wszystkich miast tej cywilizacji) zmienia nazwę z **Danina** na **Podatek** — liczby się nie zmieniają, zmienia się tylko etykieta. Mennica dodatkowo wymaga **dostępu do złota** (własna Kopalnia złota albo szlak handlowy z posiadaczem złota) — bez dostępu mnożnik Mennicy „zasypia" i nazwa wraca na Daninę, choć budynek zostaje i budzi się sam po odzyskaniu dostępu (§49.5).
 
