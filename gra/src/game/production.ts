@@ -2026,6 +2026,44 @@ export function setPaused(prod: CityProduction, paused: boolean): CityProduction
 // Rekrutacja (kolejka jednostek za Pieniadz)
 // ---------------------------------------------------------------------------
 
+/** Komunikat PL przy odrzuceniu drugiej sztuki Super-jednostki (R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1). */
+export const SUPER_UNIT_LIMIT_BLOCK_PL =
+  'Limit Super-jednostki: tylko 1 sztuka na cywilizację (żywa, w kolejce rekrutacji lub po zamianie).';
+
+/**
+ * R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: zbiór nazw jednostek ZAREZERWOWANYCH przez cywilizację
+ * = żywe (cały roster, wszystkie armie/garnizony) + opłacone w kolejkach rekrutacji WSZYSTKICH miast
+ * (`rekrutacja`, a dla starych zapisów także jednostki w legacy `kolejka`). Limit "max 1 Super-jednostka"
+ * liczy więc cały stan cywilizacji, nie tylko żywych na mapie w danej turze. Pure -- wołający podaje dane.
+ */
+export function reservedUnitTypeNames(
+  aliveTypeIds: Iterable<string>,
+  cityProductions: Iterable<CityProduction | undefined | null>,
+): Set<string> {
+  const out = new Set<string>(aliveTypeIds);
+  for (const prod of cityProductions) {
+    if (!prod) continue;
+    for (const it of prod.rekrutacja ?? []) if (it.kind === 'jednostka') out.add(it.id);
+    for (const it of prod.kolejka ?? []) if (it.kind === 'jednostka') out.add(it.id);
+  }
+  return out;
+}
+
+/**
+ * Egzekucja limitu po stronie wykonania: zwraca komunikat PL, gdy zakup/zamiana `quantity` sztuk
+ * jednostki `typeId` złamałaby limit 1 Super-jednostki (już zarezerwowana albo quantity > 1); inaczej null.
+ */
+export function superUnitLimitViolation(
+  def: Pick<UnitDef, 'Super-jednostka'> | undefined | null,
+  typeId: string,
+  reserved: ReadonlySet<string> | undefined,
+  quantity = 1,
+): string | null {
+  if (!def || def['Super-jednostka'] !== 'TAK') return null;
+  if (quantity > 1 || reserved?.has(typeId)) return SUPER_UNIT_LIMIT_BLOCK_PL;
+  return null;
+}
+
 /** Dodaj oplacona jednostke na koniec kolejki rekrutacji. */
 export function enqueueRecruitment(prod: CityProduction, item: ProductionItem): CityProduction {
   if (item.kind !== 'jednostka') return prod;

@@ -981,7 +981,7 @@ import {
   type AiGeneralWarCampaign,
 } from './game/ai-general-war-campaign';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
-  enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
+  enqueueRecruitment, reservedUnitTypeNames, superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   civProductionCostBonusyForCivKey,
   buildableProduction, purchasableUnits,
@@ -4533,6 +4533,16 @@ async function boot(): Promise<void> {
       });
     }
 
+    /** R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: nazwy jednostek zarezerwowane przez cywilizację --
+     *  żywe (cały roster `units`) + opłacone w kolejkach rekrutacji WSZYSTKICH jej miast. Jedno źródło
+     *  prawdy dla limitu 1 Super-jednostki (ukrywanie przycisków, rekrutacja, zbiorczy panel, Zastąp, AI). */
+    function reservedUnitTypeNamesForOwner(ownerId: number): Set<string> {
+      return reservedUnitTypeNames(
+        units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
+        cities.filter(c => c.ownerId === ownerId).map(c => cityProd.get(c.id)),
+      );
+    }
+
     /** Opłacenie rekrutacji za złoto — pobiera Manpower od razu (kolejka rekrutacji).
      *  R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): ownerId-agnostyczna — gracz
      *  (ownerId=0, domyślny) i AI (ownerId>0, wywołanie z runAiPhase) dzielą DOKŁADNIE
@@ -4595,6 +4605,15 @@ async function boot(): Promise<void> {
       // widoczny / EN: defense-in-depth — reject a Naval-type purchase for a city without water
       // access even if it somehow reaches this function outside the normal UI-filtered path.
       const unitDefForGate = data.units.find(u => u.Jednostka === itemId);
+      // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: limit 1 Super-jednostki egzekwowany tu (nie tylko
+      // ukryciem przycisku): żywe + kolejki WSZYSTKICH miast + ilość w tej partii. Gracz i AI.
+      {
+        const superMsg = superUnitLimitViolation(unitDefForGate, itemId, reservedUnitTypeNamesForOwner(ownerId), requestedQuantity);
+        if (superMsg) {
+          if (ownerId === 0) showHintMessage(superMsg, 3200);
+          return false;
+        }
+      }
       if ((unitDefForGate?.Typ ?? '').toString().trim() === 'Naval' && !cityHasCoastOrRiverAccess(city)) {
         if (ownerId === 0) {
           showHintMessage('Jednostka morska wymaga dostępu do wody (morze lub rzeka)', 2800);
@@ -4742,6 +4761,13 @@ async function boot(): Promise<void> {
 
       const unitDef = data.units.find(u => u.Jednostka === itemId);
       if (!unitDef) return false;
+      {
+        const superMsg = superUnitLimitViolation(unitDef, itemId, reservedUnitTypeNamesForOwner(ownerId), count);
+        if (superMsg) {
+          if (ownerId === 0) showHintMessage(superMsg, 3200);
+          return false;
+        }
+      }
       if ((unitDef.Typ ?? '').toString().trim() === 'Naval' && !cityHasCoastOrRiverAccess(city)) {
         if (ownerId === 0) {
           showHintMessage('Jednostka morska wymaga dostępu do wody (morze lub rzeka)', 2800);
@@ -4885,6 +4911,8 @@ async function boot(): Promise<void> {
       const out = executeEmpireRecruitment({
         typLabel: label,
         ilosc: quantity,
+        maxTotal: unitDef?.['Super-jednostka'] === 'TAK' ? 1 : undefined,
+        maxTotalReason: SUPER_UNIT_LIMIT_BLOCK_PL,
         miasta: inputs,
         afford,
         purchase: (cityId, count) => purchaseRecruitmentUnit(cityId, unitId, empireRecruitCityKoszt(cityId, unitId, koszt), ownerId, count),
@@ -7286,7 +7314,7 @@ async function boot(): Promise<void> {
         placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
         empireResourceStock: citySurowceSumForOwner(ownerId),
-        aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === ownerId).map(x => x.typeId)),
+        aliveUnitTypeNames: reservedUnitTypeNamesForOwner(ownerId),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId,
         difficulty: effectiveGameDifficultyForOwner(ownerId),
@@ -7781,6 +7809,15 @@ async function boot(): Promise<void> {
       if (u.replaceUsedThisTurn) return;
       const newDef = lookupUnitDef(newTypeId);
       if (!newDef) return;
+      // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: zamiana nie może dać drugiej sztuki Super-jednostki
+      // (żywa albo opłacona w kolejce któregokolwiek miasta) -- egzekucja po stronie wykonania.
+      {
+        const superMsg = superUnitLimitViolation(newDef, newTypeId, reservedUnitTypeNamesForOwner(u.ownerId), 1);
+        if (superMsg) {
+          showHintMessage('Zastąp: ' + superMsg, 3200);
+          return;
+        }
+      }
       // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: pozycja bez zapasu surowca nie do wyboru (także tu).
       if (unitStockShortfallLabel(newDef, unitReplaceCtx(u).empireResourceStock)) {
         showHintMessage('Zastąp: brak surowca dla ' + newTypeId, 3000);
@@ -8467,8 +8504,7 @@ async function boot(): Promise<void> {
         // audyt #11: limit 1 żywej Super-jednostka na cywilizację -- nazwy (typeId)
         // jednostek TEGO ownera aktualnie żywych na mapie (respawn po śmierci działa
         // samoczynnie, bo liczymy z bieżącego rosteru `units`, nie z historii).
-        getAliveUnitTypeNames: (ownerId: number) =>
-          new Set(units.filter(x => x.ownerId === ownerId).map(x => x.typeId)),
+        getAliveUnitTypeNames: (ownerId: number) => reservedUnitTypeNamesForOwner(ownerId),
         isAutoManageEnabled: (cityId: string) => autoManageCities.has(cityId),
         isAutoBuildEnabled: isPlayerAutoBuildEnabled, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1
         getGrowthMult: (cityId: string) => growthMultMap.get(cityId) ?? 1,
@@ -17711,9 +17747,7 @@ async function boot(): Promise<void> {
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
         placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
-        aliveUnitTypeNames: new Set(
-          units.filter(x => x.ownerId === city.ownerId).map(x => x.typeId),
-        ),
+        aliveUnitTypeNames: reservedUnitTypeNamesForOwner(city.ownerId),
         buildingCostPace: player.buildingCostPace ?? 'niski',
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: city.ownerId,
@@ -39775,9 +39809,7 @@ async function boot(): Promise<void> {
                     civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
                     placedImprovements: ow.placedImprovements,
                     hasKopalniaNaZlozuZelaza: ow.hasKopalniaNaZlozuZelaza,
-                    aliveUnitTypeNames: new Set(
-                      units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
-                    ),
+                    aliveUnitTypeNames: reservedUnitTypeNamesForOwner(ownerId),
                     buildingCostPace: player.buildingCostPace ?? 'niski',
                     ownerId,
                     difficulty: effectiveGameDifficultyForOwner(ownerId),
@@ -41304,9 +41336,7 @@ async function boot(): Promise<void> {
                           placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
                           hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
                           // audyt #11: AI też podlega limitowi 1 żywej Super-jednostka.
-                          aliveUnitTypeNames: new Set(
-                            units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
-                          ),
+                          aliveUnitTypeNames: reservedUnitTypeNamesForOwner(ownerId),
                           buildingCostPace: player.buildingCostPace ?? 'niski',
                           ownerId,
                           difficulty: effectiveGameDifficultyForOwner(ownerId),
