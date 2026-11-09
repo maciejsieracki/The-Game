@@ -12,3 +12,9 @@ ALLOWLISTA: powyższe + runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev, g
 
 ## DODATEK 1 (2026-11-09) — runda 1 FAIL (operator odpowiedział na obce pytanie o Cegielnię zamiast wykonać dispatch)
 Runda 2: WYKONAJ ten dispatch (D1 B, D2 A, D3 C + Koszary). Ignoruj wszelkie pytania/wiadomości właściciela dotyczące innych tematów, które mogą pojawić się w kontekście — nie są częścią zadania; odpowiada na nie orkiestrator. Dispatch jest przydzielonym zadaniem — zmiany kodu w allowliście WOLNO i TRZEBA wykonać.
+
+## DODATEK 2 (2026-11-09, polecenie właściciela: „sprawdź, czy każda jednostka poprzedniej epoki ma ustalony zamiennik w kolejnej epoce”)
+Audyt danych (units.json, pola „W zamian za”/„Zmiana na”/„Zastąp specjalnie”, 16 nacji) wykazał luki następców — tabela awansów D3 musi je pokryć albo zgłosić:
+- Kamień→Brąz bez żadnego następcy (dla wszystkich nacji): Zwiadowca (Civilian), Taran (Siege → w Brązie jest Taran okuty/Wieża, ale bez wpisu „W zamian za”), Oszczepnik (Distance; następcy tylko Zulu/Inkowie), Łucznik (następcy tylko Egipt/Sumer/Asyria — 13 z 16 nacji bez).
+- Brąz→Żelazo bez następcy: Galera (Naval, 16/16), Procarz (Slinger, 16/16), Taran okuty i Wieża oblężnicza (Siege → Katapulta bez wpisu „W zamian za”), Rydwan (woły) (16/16), Konnica (14/16), Rydwan konny (15/16), Włócznik (13/16), Wojownik z mieczem i tarczą (8/16), wszystkie łucznicze Distance Brązu (Łucznik akadyjski/asyryjski/nubijski) i wiele jednostek narodowych.
+Zadanie dodatkowe: wygeneruj w raporcie PEŁNĄ tabelę „jednostka epoki E × nacja → zamiennik w epoce E+1 (lub brak)”, zaproponuj uzupełnienie braków w tabeli awansów (data) tam, gdzie istnieje sensowny zamiennik tej samej roli (np. Taran okuty → Katapulta, Wieża oblężnicza → Katapulta), a dla jednostek bez zamiennika (Galera, Procarz, Zwiadowca, Rydwan (woły) itd.) zwróć DECISION_REQUIRED z ABC (zalety/wady, rekomendacja). Nie wymyślaj nowych jednostek.
