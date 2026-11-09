@@ -9,6 +9,7 @@
  */
 
 import { armyClassOfUnit } from './ai-army-composition';
+import { shouldAIPurchaseUnit, type AiPurchaseReserveParams } from './ai';
 
 /** Maksymalny odsetek armii (jednostek wojskowych właściciela) zamienianych w JEDNEJ turze AI. */
 export const AI_UNIT_REPLACE_MAX_FRACTION = 0.1;
@@ -46,4 +47,36 @@ export function aiReplaceKeepsArmyClass(
   const a = armyClassOfUnit(oldDef);
   const b = armyClassOfUnit(newDef);
   return a === null || b === null || a === b;
+}
+
+/**
+ * R-WEB-AI-UNIT-REPLACE-SAME-RULES-AS-PLAYER-Q1 (r2, zarzut Evaluatora 1): zamiana AI płaci PEŁNY
+ * koszt, więc musi przejść TĘ SAMĄ regułę rezerwy utrzymania co zakup AI (shouldAIPurchaseUnit,
+ * R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1): po zapłaceniu skarbiec pokrywa `rezerwaTur` tur PEŁNEGO
+ * utrzymania, a dochód netto nie spada poniżej `minDochodNetto` (AI 10/3/0 tur, Łatwy/Normalny/Trudny).
+ * Zamiana nie zwiększa liczby jednostek, więc nie zużywa Manpower (hasManpower: true = brak bramki
+ * ludności, jak w promoteAiUnitForEra). Brak danych rezerwy (tura 1, brak przychodu z ticku) =
+ * zachowanie dawne: wystarczy skarbiec na cenę.
+ */
+export interface AiReplaceReserveInput {
+  treasury: number;
+  /** Pełny koszt Pieniądza nowej jednostki (ten sam, co pobierany przez executeUnitReplace). */
+  moneyCost: number;
+  reserve?: AiPurchaseReserveParams;
+  netIncomePerTurn?: number;
+  upkeepPerTurn?: number;
+  /** Przyrost utrzymania po zamianie (>= 0; oszczędność nie jest odejmowana = bezpieczniej). */
+  unitUpkeepPerTurn?: number;
+}
+
+export function aiReplaceReserveOk(inp: AiReplaceReserveInput): boolean {
+  return shouldAIPurchaseUnit({
+    treasury: inp.treasury,
+    goldCost: Math.max(0, inp.moneyCost),
+    hasManpower: true,
+    reserve: inp.reserve,
+    netIncomePerTurn: inp.netIncomePerTurn,
+    upkeepPerTurn: inp.upkeepPerTurn,
+    unitUpkeepPerTurn: inp.unitUpkeepPerTurn,
+  });
 }

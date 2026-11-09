@@ -15,7 +15,7 @@ const bundle = path.resolve(__dirname, '.ai-unit-replace-same-rules-bundle.cjs')
 fs.writeFileSync(entry, `
 export { executeUnitReplace } from '../src/game/unit-replace-execute';
 export { promoteAiUnitForEra } from '../src/game/ai-era-unit-promotion';
-export { aiUnitReplaceCap, planAiUnitReplaceOrder, aiReplaceKeepsArmyClass, AI_UNIT_REPLACE_MAX_FRACTION } from '../src/game/ai-unit-replace-plan';
+export { aiUnitReplaceCap, planAiUnitReplaceOrder, aiReplaceKeepsArmyClass, aiReplaceReserveOk, AI_UNIT_REPLACE_MAX_FRACTION } from '../src/game/ai-unit-replace-plan';
 export { unitReplaceFullCost, canAffordUnitReplace, mergeStockPaid } from '../src/game/unit-replace-cost';
 export { availableReplacementsFor, newestAvailableSameTypeUnit, unitProductionItem, epochNumber } from '../src/game/production';
 export { unitStockCost } from '../src/game/building-stock-cost';
@@ -160,6 +160,19 @@ assert(/oblegaCityId/.test(ai) && /hostilePositions/.test(ai), 'AI: nie rusza je
 assert(/aiReplaceKeepsArmyClass/.test(ai), 'AI: zachowanie klasy armii');
 assert(/ensureAiOwnerStartEra\(ownerId\);\s*if\s*\(!isCommandResume\)\s*upgradeAiUnitsForEra\(ownerId\);/.test(main), 'AI: raz na ture wlasciciela, nie przy wznowieniu komend');
 assert(!/effectiveGameDifficultyForOwner\(ownerId\)[^;]{0,60}\* *1\./.test(ai), 'AI: brak mnoznika uprzywilejowania trudnosci w zamianie');
+
+console.log('\n== I. regula rezerwy utrzymania AI przy zamianie (r2, zarzut Evaluatora 1) ==');
+const reserve = { rezerwaTur: 10, minDochodNetto: 3 };
+assert(M.aiReplaceReserveOk({ treasury: 1000, moneyCost: 50, reserve, netIncomePerTurn: 20, upkeepPerTurn: 10, unitUpkeepPerTurn: 0 }) === true, 'bogaty skarbiec: zamiana dozwolona');
+assert(M.aiReplaceReserveOk({ treasury: 100, moneyCost: 50, reserve, netIncomePerTurn: 20, upkeepPerTurn: 10, unitUpkeepPerTurn: 0 }) === false, 'skarbiec po zaplacie (50) < 10 tur utrzymania (100): ODRZUCONE');
+assert(M.aiReplaceReserveOk({ treasury: 40, moneyCost: 50, reserve, netIncomePerTurn: 20, upkeepPerTurn: 10, unitUpkeepPerTurn: 0 }) === false, 'skarbiec < cena: ODRZUCONE');
+assert(M.aiReplaceReserveOk({ treasury: 1000, moneyCost: 50, reserve, netIncomePerTurn: 2, upkeepPerTurn: 10, unitUpkeepPerTurn: 0 }) === false, 'dochod netto 2 < minimum 3: ODRZUCONE');
+assert(M.aiReplaceReserveOk({ treasury: 1000, moneyCost: 50, reserve, netIncomePerTurn: 20, upkeepPerTurn: 10, unitUpkeepPerTurn: 15 }) === true, 'przyrost utrzymania 15 liczony w netto (5 >= 3): dozwolone');
+assert(M.aiReplaceReserveOk({ treasury: 100, moneyCost: 50, reserve: undefined }) === true, 'brak danych rezerwy: dawna regula (cena)');
+assert(M.aiReplaceReserveOk({ treasury: 49, moneyCost: 50 }) === false, 'brak danych rezerwy: skarbiec < cena nadal ODRZUCONE');
+assert(/aiReplaceReserveOk\(\{/.test(ai) && /gateReason: \(unit, newTypeId\) => execDeps\.gateReason\(unit, newTypeId\) \?\? \(aiReplaceReserveOk/.test(ai), 'AI: brama zamiany = brama Super (wspolna) + regula rezerwy');
+assert(/aiPurchaseReserveInputs\(ownerId, newTypeId, unit\.typeId\)/.test(ai), 'AI: rezerwa liczona dla ZAMIANY (jedna jednostka zmienia typ, bez dodania)');
+assert(/replacesTypeId !== undefined|replacesTypeId === undefined/.test(main), 'aiPurchaseReserveInputs: gałąź zamiany');
 
 console.log(`\nai-unit-replace-same-rules: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(entry); fs.unlinkSync(bundle); } catch (_) { /* ignore */ }

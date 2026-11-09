@@ -969,7 +969,7 @@ import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
 import { attemptGeneralPurchase, canRecruitGeneral, canSpawnQueuedGeneral, planGeneralLimitDemotions, shouldAiBuyGeneral, generalFollowDestination, generalLimitForEra, nearestLivingGeneral, planDeferredGeneralMarchBatch, stoneGeneralUnitId } from './game/generals';
 import { promoteAiUnitForEra } from './game/ai-era-unit-promotion';
 import { executeUnitReplace, type UnitReplaceExecuteDeps } from './game/unit-replace-execute';
-import { aiUnitReplaceCap, planAiUnitReplaceOrder, aiReplaceKeepsArmyClass } from './game/ai-unit-replace-plan';
+import { aiUnitReplaceCap, planAiUnitReplaceOrder, aiReplaceKeepsArmyClass, aiReplaceReserveOk } from './game/ai-unit-replace-plan';
 import {
   unitReplaceFullCost, canAffordUnitReplace, unitReplaceStockMissingLabel, unitReplaceStockText, mergeStockPaid,
 } from './game/unit-replace-cost';
@@ -7404,8 +7404,13 @@ async function boot(): Promise<void> {
               .sort((a, b) => epochNumber(String(b.Epoka)) - epochNumber(String(a.Epoka)))[0] ?? null;
           },
           epochNumber,
-          // Brama wspólna z graczem (limit Super-jednostki max 1, zapas surowca).
-          gateReason: (unit, newTypeId) => execDeps.gateReason(unit, newTypeId),
+          // Brama wspólna z graczem (limit Super-jednostki max 1, zapas surowca) + reguła rezerwy
+          // utrzymania AI (ta sama co przy zakupie: 10/3/0 tur, min dochód netto) -- R-...-Q1 r2.
+          gateReason: (unit, newTypeId) => execDeps.gateReason(unit, newTypeId) ?? (aiReplaceReserveOk({
+            treasury: ownerTreasury(ownerId),
+            moneyCost: execDeps.moneyCost(newTypeId, unit),
+            ...aiPurchaseReserveInputs(ownerId, newTypeId, unit.typeId),
+          }) ? null : 'rezerwa utrzymania AI'),
           unitCost: (unitId, unit) => execDeps.moneyCost(unitId, unit),
           stockCost: target => unitStockCost(data.units.find(def => def.Jednostka === target.Jednostka)),
           canPayStock: cost => execDeps.canPayStock(cost, u),
@@ -33716,7 +33721,7 @@ async function boot(): Promise<void> {
      * i HUD: skarbiec += pieniadz - utrzymanieRazem). Utrzymanie nowej jednostki = różnica
      * previewOwnerUpkeep z i bez niej. Zwraca {} (dawna bramka) gdy brak przychodu z ticku.
      */
-    function aiPurchaseReserveInputs(ownerId: number, unitTypeId: string): {
+    function aiPurchaseReserveInputs(ownerId: number, unitTypeId: string, replacesTypeId?: string): {
       reserve?: ReturnType<typeof loadAiPurchaseReserveParams>;
       netIncomePerTurn?: number;
       upkeepPerTurn?: number;
@@ -33734,7 +33739,15 @@ async function boot(): Promise<void> {
         empireEpochForOwner, unlockedTechSetForOwner,
       );
       const before = preview(toEcon(own));
-      const after = preview(toEcon([...own, { typeId: unitTypeId }]));
+      // R-WEB-AI-UNIT-REPLACE-SAME-RULES-AS-PLAYER-Q1 (r2): zamiana NIE dodaje jednostki -- jedna
+      // jednostka tego typu zmienia typ na nowy (utrzymanie = różnica przed/po, jak przy zakupie).
+      const after = preview(toEcon(replacesTypeId === undefined
+        ? [...own, { typeId: unitTypeId }]
+        : (() => {
+          // Tylko JEDNA jednostka tego typu zmienia typ (nie wszystkie).
+          const idx = own.findIndex(u => u.typeId === replacesTypeId);
+          return own.map((u, i) => ({ typeId: i === idx ? unitTypeId : u.typeId }));
+        })()));
       return {
         reserve: loadAiPurchaseReserveParams(data, aiDiffLevelForOwner(ownerId)),
         netIncomePerTurn: income - before.utrzymanieRazem,
