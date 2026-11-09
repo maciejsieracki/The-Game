@@ -70,6 +70,18 @@ ok(B.relationTierDisplay({ zaufanie: 10, respekt: 10, status: 'neutralni' }, fal
 const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 ok(!/\brelationTier\(/.test(main), 'main.ts nie woła surowego relationTier(');
 ok((main.match(/relationTierDisplay\(rel, hasAllianceDealBetween\(/g) || []).length === 3, 'main.ts: 3 miejsca tieru UI przez relationTierDisplay');
+// C2) jedno źródło: emblemat (hasAllianceDealBetween) i lista „Sojusze" (sojuszPartners) używają tego samego predykatu
+// (strukturalnie, z tekstu main.ts — nie jest to test runtime UI; pełny test na żywo NIE_ZMIERZONO)
+const hadBody = (main.match(/function hasAllianceDealBetween\(a: number, b: number\): boolean \{\s*return ([^;]+);/) || [])[1] || '';
+const PRED = /activeDeals\.some\(d => dealInvolvesOwners\(d, a, b\) && isAllianceDealKind\(d\.rodzaj\)\)/;
+ok(PRED.test(hadBody), 'hasAllianceDealBetween: predykat = activeDeals.some(dealInvolvesOwners && isAllianceDealKind)');
+const sojIdx = main.indexOf('const sojuszPartners = new Set<number>();');
+const sojBlk = sojIdx >= 0 ? main.slice(sojIdx, sojIdx + 600) : '';
+ok(/for \(const d of activeDeals\)/.test(sojBlk) && /if \(isAllianceDealKind\(d\.rodzaj\)\) sojuszPartners\.add\(other\)/.test(sojBlk),
+  'lista Sojusze (sojuszPartners) czyta activeDeals przez isAllianceDealKind');
+// C3) hasSojusz w locku (dualGate) też z activeDeals + isAllianceDealKind
+ok(/const hasSojusz = activeDeals\.some\(\s*d => dealInvolvesOwners\(d, ME\(\), ownerId\) && isAllianceDealKind\(d\.rodzaj\),?\s*\)/.test(main),
+  'lock hasSojusz: activeDeals + isAllianceDealKind (ten sam predykat)');
 
 console.log(`diplo-alliance-gate-test: ${pass} PASS, ${fail} FAIL`);
 process.exit(fail ? 1 : 0);
