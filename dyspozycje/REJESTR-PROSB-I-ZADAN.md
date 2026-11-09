@@ -9179,3 +9179,6 @@ Zgłoszenia właściciela z dnia (wszystkie zarejestrowane; ID = dyspozycje/auto
 - 2026-11-09 FALA 576 WDROŻONA NA ROBOCZĄ: RECRUIT-ALL (50f21fd3c) + TARGOWISKO (6b5255dec); main 12fa64c97. Dług REPIN Rust: Targowisko bez kamienia.
 - 2026-11-09 DODATEK właściciela do FALANGA: Obrona 12, Przebicie 4 (jak Thorakites), Bonus vs Spearman 30; zaktualizować wszystkie pola pochodne (fieldPower, meleeDefence, piercing, karty/wiki).
 - 2026-11-09 DODATEK 2 właściciela do FALANGA: Atak 7 (dziś 6), Obrona 12, Przebicie 4, Bonus vs Spearman 30.
+- 2026-11-09 FALA 577 WDROŻONA NA ROBOCZĄ: SUPER-UNIT-LIMIT (84844fc73); main 60a355ba6, md5 48bb2f404a310f25ec37949be10d18ac (GitHub Raw zgodne, sidecary bez zmian).
+- 2026-11-09 ZGŁOSZENIE WŁAŚCICIELA: obwódka heksagonalna (7 hexów) w kolorze cywilizacji wokół generała, widoczna z daleka → R-WEB-UI-GENERAL-HEX-RING-OUTLINE-Q1 (dispatch zapisany, Haiku).
+- 2026-11-09 ZGŁOSZENIE WŁAŚCICIELA: żelazo i jednostki żelazne dostępne za wcześnie (Hutnictwo żelaza, poz. 6 epoki Brąz, daje surowiec + ~17 jednostek; Hieros Lochos bez techu); postulat: Obróbka żelaza = surowiec żelazo, Sztuka wojenna = rekrutacja jednostek epoki Żelazo → audyt R-WEB-TECH-IRON-GATING-AUDIT-Q1 (read-only), potem ABC. Uwaga właściciela: pracuje tylko 2 operatorów → uruchamiać do 4.
