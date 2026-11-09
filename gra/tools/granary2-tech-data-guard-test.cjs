@@ -83,8 +83,8 @@ function ok(c, m) {
   ok(sII && sII.techUnlock === 'Pismo',
     `spichlerz_ii.techUnlock powinien być 'Pismo' (jest: ${sII && sII.techUnlock})`);
   ok(sII && sII.epokaWejscia === 2, 'spichlerz_ii.epokaWejscia pozostaje 2');
-  ok(sII && sII.koszt_surowce && sII.koszt_surowce.drewno === 40 && sII.koszt_surowce.kamien === 50,
-    'koszt budowy Spichlerza II (drewno 40 / kamień 50) bez zmian');
+  ok(sII && sII.koszt_surowce && sII.koszt_surowce.drewno === 50 && sII.koszt_surowce.kamien === 50 && sII.koszt_surowce.cegla === 50,
+    'koszt budowy Spichlerza II (drewno = kamień = cegła = 50; R-WEB-BUILDING-COSTS-ERA-RESOURCES-IMPL-Q1)');
 }
 
 // ---------------------------------------------------------------------------

@@ -69,55 +69,82 @@ function ok(c, m) {
 }
 
 // ===========================================================================
-// A. Epoka Kamienia (epokaWejscia=1) -- wylacznie drewno, poza dwoma wyjatkami.
+// A. Epoka Kamienia (epokaWejscia=1) -- R-WEB-BUILDING-COSTS-ERA-RESOURCES-IMPL-Q1
+//    (decyzja wlasciciela 2026-11-09): budynki z technologii poziomu 2 i 3
+//    maja drewno = kamien (1:1, wieksza z dotychczasowych ilosci); reszta
+//    (poziom 1 i bez techu) zostaje wylacznie na drewnie.
 // ===========================================================================
 {
-  const KAMIEN_WYJATKI = new Set(['stela', 'kamienne_kregi']);
+  const DREWNO_KAMIEN = { kamieniarski: 30, stela: 30, kamienne_kregi: 40, targowisko: 30, studnia: 25 };
   const epoch1 = buildings.filter(b => b.epokaWejscia === 1);
   ok(epoch1.length > 0, 'sanity: sa budynki epoki Kamienia');
   for (const b of epoch1) {
-    const keys = Object.keys(b.koszt_surowce || {});
-    if (KAMIEN_WYJATKI.has(b.id)) {
-      ok(keys.length === 1 && keys[0] === 'kamien',
-        `${b.id} (wyjatek zatwierdzony): koszt_surowce = wylacznie kamien (ma: ${JSON.stringify(b.koszt_surowce)})`);
+    if (!b.koszt_surowce) continue; // Palac stolicy: bez kosztu surowcowego
+    const keys = Object.keys(b.koszt_surowce);
+    if (b.id in DREWNO_KAMIEN) {
+      const v = DREWNO_KAMIEN[b.id];
+      ok(keys.length === 2 && b.koszt_surowce.drewno === v && b.koszt_surowce.kamien === v,
+        `${b.id} (Kamien, tech poz. 2-3): drewno = kamien = ${v} (ma: ${JSON.stringify(b.koszt_surowce)})`);
     } else {
       ok(keys.length === 1 && keys[0] === 'drewno',
-        `${b.id} (epoka Kamienia): koszt_surowce = wylacznie drewno (ma: ${JSON.stringify(b.koszt_surowce)})`);
+        `${b.id} (epoka Kamienia, poziom 1/bez techu): koszt_surowce = wylacznie drewno (ma: ${JSON.stringify(b.koszt_surowce)})`);
     }
   }
-  ok(byId.get('stela').koszt_surowce.kamien === 6, 'Stela/Pomnik: kamien 6 (wyjatek)');
-  ok(byId.get('kamienne_kregi').koszt_surowce.kamien === 8, 'Kamienne kregi: kamien 8 (wyjatek)');
 }
 
 // ===========================================================================
-// B. Epoka Brazu (epokaWejscia=2) -- drewno + kamien, oba surowce, zaden inny.
+// B. Epoka Brazu (epokaWejscia=2) -- budynki dostepne dopiero PO Cegielni:
+//    drewno = kamien = cegla; budynki, ktore moga stanac PRZED Cegielnia
+//    (kuznia, odlewnia_brazu, port, koszary, palac_ii) i sama Cegielnia:
+//    drewno = kamien, BEZ cegly (brak petli Cegielni).
 // ===========================================================================
 {
+  const BEZ_CEGLY = new Set(['kuznia', 'odlewnia_brazu', 'port', 'koszary', 'palac_ii', 'cegielnia']);
   const epoch2 = buildings.filter(b => b.epokaWejscia === 2);
   ok(epoch2.length > 0, 'sanity: sa budynki epoki Brazu');
   for (const b of epoch2) {
-    const keys = new Set(Object.keys(b.koszt_surowce || {}));
-    ok(keys.size === 2 && keys.has('drewno') && keys.has('kamien'),
-      `${b.id} (epoka Brazu): koszt_surowce = drewno + kamien (ma: ${JSON.stringify(b.koszt_surowce)})`);
+    const ks = b.koszt_surowce || {};
+    const keys = new Set(Object.keys(ks));
+    if (BEZ_CEGLY.has(b.id)) {
+      ok(keys.size === 2 && keys.has('drewno') && keys.has('kamien') && ks.drewno === ks.kamien,
+        `${b.id} (Braz, przed/bez Cegielni): drewno = kamien, bez cegly (ma: ${JSON.stringify(ks)})`);
+    } else {
+      ok(keys.size === 3 && keys.has('drewno') && keys.has('kamien') && keys.has('cegla')
+        && ks.drewno === ks.kamien && ks.kamien === ks.cegla,
+        `${b.id} (epoka Brazu): drewno = kamien = cegla (ma: ${JSON.stringify(ks)})`);
+    }
+  }
+  const BRAZ_OCZEKIWANE = {
+    biblioteka: 30, spichlerz_ii: 50, swiatynia: 40, magazyn: 30, dwor_zarzadcy: 30,
+    trybunal: 40, mury: 80, akwedukt: 60, mennica: 40, emporion: 60,
+    kuznia: 30, odlewnia_brazu: 40, port: 30, koszary: 40, palac_ii: 50, cegielnia: 30,
+  };
+  for (const [id, v] of Object.entries(BRAZ_OCZEKIWANE)) {
+    ok(byId.get(id).koszt_surowce.kamien === v, `${id}: ilosc = dzisiejszy kamien ${v}`);
   }
 }
 
 // ===========================================================================
-// C. Epoka Zelaza (epokaWejscia=3) -- drewno + cegla; obrona i port -> drewno + kamien.
+// C. Epoka Zelaza (epokaWejscia=3,4) -- KAZDY budynek: cegla = kamien = drewno =
+//    dotychczasowa ilosc cegly (budynki bez cegly: Baszta, Cytadela/fort, Port
+//    wielki, Warsztat oblezniczy -- ZALOZENIE: cegla = dotychczasowy kamien).
 // ===========================================================================
 {
-  const OBRONA_I_PORT = new Set(['fort', 'baszta', 'warsztat_oblezniczy', 'port_wielki']);
-  const epoch3 = buildings.filter(b => b.epokaWejscia === 3);
-  ok(epoch3.length > 0, 'sanity: sa budynki epoki Zelaza');
-  for (const b of epoch3) {
-    const keys = new Set(Object.keys(b.koszt_surowce || {}));
-    if (OBRONA_I_PORT.has(b.id)) {
-      ok(keys.size === 2 && keys.has('drewno') && keys.has('kamien'),
-        `${b.id} (obrona/port, epoka Zelaza): koszt_surowce = drewno + kamien (ma: ${JSON.stringify(b.koszt_surowce)})`);
-    } else {
-      ok(keys.size === 2 && keys.has('drewno') && keys.has('cegla'),
-        `${b.id} (epoka Zelaza): koszt_surowce = drewno + cegla (ma: ${JSON.stringify(b.koszt_surowce)})`);
-    }
+  const BEZ_CEGLY_DOTYCHCZAS = { fort: 100, baszta: 100, port_wielki: 50, warsztat_oblezniczy: 50 };
+  const ZELAZO_OCZEKIWANE = {
+    akademia: 70, akademia_wojskowa: 70, kuznia_zelaza: 50, odlewnia_zelaza: 50, palac_iii: 70,
+    pretorium: 50, sad: 50, teatr: 50, laznia_publiczna: 60, wielka_kuznia: 80, wielka_odlewnia: 70,
+    ...BEZ_CEGLY_DOTYCHCZAS,
+  };
+  const epoch34 = buildings.filter(b => b.epokaWejscia >= 3);
+  ok(epoch34.length > 0, 'sanity: sa budynki epoki Zelaza');
+  for (const b of epoch34) {
+    const ks = b.koszt_surowce || {};
+    const keys = new Set(Object.keys(ks));
+    ok(keys.size === 3 && keys.has('drewno') && keys.has('kamien') && keys.has('cegla')
+      && ks.drewno === ks.kamien && ks.kamien === ks.cegla,
+      `${b.id} (epoka Zelaza): drewno = kamien = cegla (ma: ${JSON.stringify(ks)})`);
+    ok(ks.cegla === ZELAZO_OCZEKIWANE[b.id], `${b.id}: ilosc ${ZELAZO_OCZEKIWANE[b.id]} (ma: ${ks.cegla})`);
   }
 }
 
@@ -144,8 +171,8 @@ function ok(c, m) {
   ok(baszta.epokaWejscia === 3, 'Baszta: epoka Zelaza (epokaWejscia=3)');
   ok(baszta.lokalizacja === undefined, 'Baszta: brak pola lokalizacja (budowalna w stolicy i regionach)');
   const keys = new Set(Object.keys(baszta.koszt_surowce || {}));
-  ok(keys.size === 2 && keys.has('drewno') && keys.has('kamien'),
-    `Baszta: koszt_surowce drewno+kamien (budowla obronna epoki Zelaza), ma: ${JSON.stringify(baszta.koszt_surowce)}`);
+  ok(keys.size === 3 && keys.has('drewno') && keys.has('kamien') && keys.has('cegla'),
+    `Baszta: koszt_surowce drewno=kamien=cegla (epoka Zelaza, cegla = dotychczasowy kamien), ma: ${JSON.stringify(baszta.koszt_surowce)}`);
   ok(miastoParams.bonus_obrona_baszta_proc?.wartosc === 100,
     `miasto-params.json bonus_obrona_baszta_proc = 100 (ma: ${miastoParams.bonus_obrona_baszta_proc?.wartosc})`);
 }

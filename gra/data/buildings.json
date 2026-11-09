@@ -101,7 +101,8 @@
     ],
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
-      "drewno": 30
+      "drewno": 30,
+      "kamien": 30
     }
   },
   {
@@ -196,7 +197,7 @@
     ],
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
-      "drewno": 30,
+      "drewno": 40,
       "kamien": 40
     }
   },
@@ -245,7 +246,8 @@
     "techUnlock": "Hutnictwo żelaza",
     "upgradeFrom": "odlewnia_brazu",
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 50,
+      "kamien": 50,
       "cegla": 50
     }
   },
@@ -295,7 +297,8 @@
     "techUnlock": "Obróbka żelaza",
     "upgradeFrom": "odlewnia_zelaza",
     "koszt_surowce": {
-      "drewno": 60,
+      "drewno": 70,
+      "kamien": 70,
       "cegla": 70
     }
   },
@@ -354,7 +357,8 @@
     ],
     "techUnlock": "Wymiana",
     "koszt_surowce": {
-      "drewno": 30
+      "drewno": 30,
+      "kamien": 30
     }
   },
   {
@@ -401,7 +405,7 @@
     ],
     "techUnlock": "Żegluga",
     "koszt_surowce": {
-      "drewno": 60,
+      "drewno": 30,
       "kamien": 30
     }
   },
@@ -450,8 +454,9 @@
     "techUnlock": "Inżynieria",
     "upgradeFrom": "port",
     "koszt_surowce": {
-      "drewno": 60,
-      "kamien": 50
+      "drewno": 50,
+      "kamien": 50,
+      "cegla": 50
     }
   },
   {
@@ -546,8 +551,9 @@
     ],
     "techUnlock": "Pismo",
     "koszt_surowce": {
-      "drewno": 40,
-      "kamien": 50
+      "drewno": 50,
+      "kamien": 50,
+      "cegla": 50
     }
   },
   {
@@ -689,6 +695,7 @@
     ],
     "techUnlock": "Mistycyzm",
     "koszt_surowce": {
+      "drewno": 40,
       "kamien": 40
     }
   },
@@ -736,8 +743,9 @@
     ],
     "techUnlock": "Religia",
     "koszt_surowce": {
-      "drewno": 30,
-      "kamien": 40
+      "drewno": 40,
+      "kamien": 40,
+      "cegla": 40
     }
   },
   {
@@ -799,7 +807,8 @@
     },
     "koszt_surowce": {
       "drewno": 30,
-      "kamien": 30
+      "kamien": 30,
+      "cegla": 30
     }
   },
   {
@@ -846,7 +855,8 @@
     ],
     "techUnlock": "Gospodarka wodna",
     "koszt_surowce": {
-      "drewno": 25
+      "drewno": 25,
+      "kamien": 25
     }
   },
   {
@@ -893,8 +903,9 @@
     ],
     "techUnlock": "Budownictwo",
     "koszt_surowce": {
-      "drewno": 30,
-      "kamien": 60
+      "drewno": 60,
+      "kamien": 60,
+      "cegla": 60
     }
   },
   {
@@ -942,8 +953,9 @@
     "techUnlock": "Waluta",
     "lokalizacja": "stolica",
     "koszt_surowce": {
-      "drewno": 30,
-      "kamien": 40
+      "drewno": 40,
+      "kamien": 40,
+      "cegla": 40
     }
   },
   {
@@ -1039,8 +1051,9 @@
     "techUnlock": "Budownictwo",
     "odblokowuje": "maMur",
     "koszt_surowce": {
-      "drewno": 40,
-      "kamien": 80
+      "drewno": 80,
+      "kamien": 80,
+      "cegla": 80
     }
   },
   {
@@ -1146,8 +1159,9 @@
     ],
     "techUnlock": "Handel",
     "koszt_surowce": {
-      "drewno": 80,
-      "kamien": 60
+      "drewno": 60,
+      "kamien": 60,
+      "cegla": 60
     }
   },
   {
@@ -1194,8 +1208,9 @@
     ],
     "techUnlock": "Handel",
     "koszt_surowce": {
-      "drewno": 50,
-      "kamien": 30
+      "drewno": 30,
+      "kamien": 30,
+      "cegla": 30
     }
   },
   {
@@ -1242,6 +1257,7 @@
     ],
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
+      "drewno": 30,
       "kamien": 30
     }
   },
@@ -1390,7 +1406,8 @@
     "techUnlock": "-",
     "lokalizacja": "stolica",
     "koszt_surowce": {
-      "drewno": 50,
+      "drewno": 70,
+      "kamien": 70,
       "cegla": 70
     }
   },
@@ -1440,7 +1457,8 @@
     ],
     "techUnlock": "Hutnictwo żelaza",
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 50,
+      "kamien": 50,
       "cegla": 50
     }
   },
@@ -1483,7 +1501,8 @@
     "techUnlock": "Obróbka żelaza",
     "upgradeFrom": "kuznia_zelaza",
     "koszt_surowce": {
-      "drewno": 60,
+      "drewno": 80,
+      "kamien": 80,
       "cegla": 80
     },
     "historia": "Wielka kuźnia to warsztat metalurgiczny zdolny do wytopu stali w skali przemysłowej — przełomu, który starożytni hutnicy osiągali dzięki takim technikom jak indyjski tygiel wootz czy chińskie piece dmuchawowe zdolne do osiągania temperatur pozwalających na płynny wytop żelaza. Stal, twardsza i bardziej elastyczna od zwykłego żelaza, wymagała precyzyjnej kontroli zawartości węgla oraz wielokrotnego przekuwania, umiejętności przekazywanej z mistrza na ucznia przez pokolenia w zamkniętych cechach kowalskich. Miecze z damasceńskiej stali, słynące z charakterystycznego falistego wzoru i legendarnej ostrości, budziły grozę krzyżowców spotykających się z nimi na Bliskim Wschodzie. Rozwój takich hut wymagał zorganizowanego zaplecza — stałych dostaw rudy, węgla drzewnego i wykwalifikowanej siły roboczej — co czyniło je jednymi z pierwszych ośrodków protoprzemysłowych w historii. Panowanie nad sekretami produkcji wysokiej jakości stali dawało realną przewagę militarną, zmieniając losy niejednej kampanii wojennej.",
@@ -1532,8 +1551,9 @@
     "techUnlock": "Inżynieria",
     "odblokowuje": "maFort",
     "koszt_surowce": {
-      "drewno": 50,
-      "kamien": 100
+      "drewno": 100,
+      "kamien": 100,
+      "cegla": 100
     },
     "historia": "Cytadela to ufortyfikowany rdzeń miasta, odrębna twierdza wzniesiona wewnątrz lub obok murów miejskich, zdolna do samodzielnej obrony nawet po upadku reszty osady. Cytadela w Aleppo, wznosząca się na sztucznym wzgórzu ponad starym miastem, przetrwała oblężenia krzyżowców, Mongołów i licznych późniejszych najeźdźców dzięki potężnym murom i jedynej, starannie bronionej drodze dostępu. Podobną rolę pełniła cytadela kairska wzniesiona przez Saladyna, łącząca funkcje militarne z rezydencją władcy i skarbcem państwowym. Garnizony stacjonujące w cytadelach służyły też jako ostatnia linia kontroli nad zbuntowaną ludnością miejską, co czyniło te budowle równie użytecznymi przeciw wrogom zewnętrznym, co przeciw wewnętrznym niepokojom. Budowa cytadeli wymagała ogromnych nakładów kamienia i pracy, lecz jej istnienie potrafiło odstraszyć najeźdźcę jeszcze przed rozpoczęciem oblężenia.",
     "opis": "Cytadela to niezależna budowla obronna wznoszona obok Murów, wzmacniająca odporność miasta na atak i wymagająca wcześniej ukończonych fortyfikacji miejskich.",
@@ -1581,8 +1601,9 @@
     "techUnlock": "Inżynieria",
     "odblokowuje": "maBaszta",
     "koszt_surowce": {
-      "drewno": 50,
-      "kamien": 100
+      "drewno": 100,
+      "kamien": 100,
+      "cegla": 100
     },
     "historia": "Baszta to wysunięta wieża obronna wbudowana w linię murów miejskich, pozwalająca obrońcom razić nieprzyjaciela ogniem bocznym wzdłuż całej kurtyny muru, a nie tylko wprost przed sobą. Średniowieczne miasta europejskie otaczały się wieńcami baszt rozmieszczonych w regularnych odstępach, każda zdolna do niezależnej obrony nawet po przełamaniu sąsiednich odcinków muru. Wewnątrz baszt często mieściły się cechy rzemieślnicze odpowiedzialne za ich utrzymanie i obronę w razie ataku, co widać do dziś w nazwach zachowanych wież, takich jak baszta krawiecka czy baszta rzeźnicza. Strzelnice, dostosowane najpierw do łuków, a później do broni palnej, ewoluowały wraz z rozwojem uzbrojenia oblężniczego. Wraz z upowszechnieniem artylerii prochowej wysokie, wąskie baszty straciły przewagę na rzecz niższych, grubszych bastionów zdolnych wchłonąć uderzenie kul armatnich.",
     "opis": "Baszta to trzecia, niezależna budowla obronna miasta, dokładana obok Murów i Cytadeli, dodatkowo wzmacniająca odporność broniących się jednostek.",
@@ -1631,7 +1652,8 @@
     "odblokowuje": "maWarsztatOblezniczy",
     "koszt_surowce": {
       "drewno": 50,
-      "kamien": 50
+      "kamien": 50,
+      "cegla": 50
     },
     "historia": "Warsztat oblężniczy to miejsce, w którym budowano i konserwowano wielkie machiny wojenne służące do zdobywania ufortyfikowanych miast — trebusze, katapulty, tarany oraz ruchome wieże oblężnicze. Asyryjscy inżynierowie już w IX wieku p.n.e. konstruowali okute metalem tarany zdolne kruszyć mury glinianych miast Bliskiego Wschodu, a rzymscy legioniści przy oblężeniu Masady w 73 roku n.e. wznieśli ziemną rampę i wieże oblężnicze o rozmiarach dotąd niespotykanych. Budowa trebusza kontrwagowego, zdolnego miotać kilkusetkilogramowe pociski na setki metrów, wymagała precyzyjnych obliczeń ciesielskich i była zadaniem dla wyspecjalizowanych rzemieślników towarzyszących armii w kampanii. Chińscy inżynierowie wojskowi już w czasach dynastii Song opisywali w traktatach szczegółowe plany budowy takich urządzeń, traktując oblężniczą inżynierię jako odrębną dziedzinę wiedzy. Upowszechnienie artylerii prochowej w XV wieku, symbolicznie przypieczętowane zdobyciem Konstantynopola przez armaty sułtana Mehmeda II, uczyniło tradycyjne machiny oblężnicze przestarzałymi w ciągu jednego pokolenia.",
     "opis": "Warsztat oblężniczy to zaplecze do budowy ciężkiego sprzętu oblężniczego, wzmacniające jednostki stacjonujące w mieście i otwierające dostęp do Katapulty.",
@@ -1678,7 +1700,8 @@
     "uwagi": "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia to NIEZALEZNY budynek obok Biblioteki (nie zastepuje jej, upgradeFrom usuniety) -- oba stoja w miescie osobno. Nauka/Kultura rozdzielone (9=3+6, 7=2+5 wzgledem Biblioteki), zeby wklad Biblioteki nie liczyl sie dwa razy. Teatr nadal ukryty z produkcji i wliczony w Akademie (merge bez zmian, ABC-21 B).",
     "techUnlock": "Filozofia",
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 70,
+      "kamien": 70,
       "cegla": 70
     },
     "historia": "Akademia to nazwa wywodząca się od gaju poświęconego herosowi Akademosowi pod Atenami, gdzie w IV wieku p.n.e. Platon założył szkołę filozoficzną łączącą naukę o etyce, matematyce i polityce z życiem wspólnotowym uczniów. W przeciwieństwie do wcześniejszych, nieformalnych kręgów sofistów, Akademia Platońska posiadała ciągłość instytucjonalną, przetrwawszy pod kierownictwem kolejnych scholarchów niemal dziewięćset lat, aż do zamknięcia przez cesarza Justyniana w 529 roku. Nauczanie odbywało się poprzez dialog i wspólne dociekanie, a nie bierne przyswajanie gotowych twierdzeń, co czyniło Akademię wzorem dla późniejszych uniwersytetów średniowiecznej Europy. Wśród jej uczniów znalazł się Arystoteles, który spędził tam dwadzieścia lat, zanim założył własną szkołę, Liceum. Idea akademii jako miejsca systematycznego kształcenia elit intelektualnych odrodziła się w epoce renesansu we Florencji, gdzie na nowo połączono filozofię grecką z chrześcijańską teologią.",
@@ -1727,7 +1750,8 @@
     "techUnlock": "Filozofia",
     "suppressed": true,
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 50,
+      "kamien": 50,
       "cegla": 50
     },
     "historia": "Teatr grecki narodził się z religijnych obrzędów ku czci boga Dionizosa, podczas których chóry recytowały hymny zwane dytyrambami, zanim Ajschylos, Sofokles i Eurypides przekształcili te występy w pełnoprawny dramat sceniczny rozgrywany przed tysiącami widzów. Amfiteatr w Epidauros, wzniesiony w IV wieku p.n.e., słynął z akustyki tak doskonałej, że widz siedzący w ostatnim, trzydziestym czwartym rzędzie słyszał szept aktora ze sceny bez żadnego wzmocnienia. Rzymianie przejęli grecką formę teatru, dodając bardziej rozbudowaną scenografię oraz kryte zadaszenia chroniące widzów przed słońcem, a przedstawienia komediowe Plauta i Terencjusza cieszyły się ogromną popularnością wśród wszystkich warstw społecznych. Teatr pełnił też funkcję polityczną — ateńskie przedstawienia tragiczne były okazją do publicznej debaty nad sprawami wspólnoty, a maski aktorskie pozwalały jednemu wykonawcy grać kilka ról bez ujawniania tożsamości. Tradycja teatralna przetrwała upadek Cesarstwa Rzymskiego w formie okrojonej, by w pełni odrodzić się dopiero w renesansowej Europie.",
@@ -1775,7 +1799,8 @@
     "uwagi": "KULT-BUD-01: +5 kultura baza, +2% konwersji; redukuje korupcje; zadowolenie z praworz.",
     "techUnlock": "Prawo",
     "koszt_surowce": {
-      "drewno": 30,
+      "drewno": 50,
+      "kamien": 50,
       "cegla": 50
     },
     "historia": "Instytucja sądu jako miejsca publicznego rozstrzygania sporów sięga starożytnej Mezopotamii, gdzie już Kodeks Hammurabiego z około 1750 roku p.n.e. spisywał precyzyjne kary za konkretne przewinienia, wymagając od sędziów jawnego uzasadnienia wyroków przed zgromadzoną społecznością. W klasycznych Atenach sądy przysięgłych, zwane heliaja, liczyły nawet kilkuset obywateli losowanych spośród mieszkańców miasta, co miało chronić wyroki przed przekupstwem pojedynczego sędziego. Rzymskie prawo cywilne, skodyfikowane później w prawie justyniańskim, wprowadziło rozróżnienie między prawem publicznym a prywatnym, tworząc podstawy terminologii prawniczej używanej w Europie przez kolejne stulecia. Średniowieczne sądy grodzkie łączyły często funkcję wymiaru sprawiedliwości z administracją lokalną, a sędzia bywał jednocześnie poborcą podatków i zarządcą miejskich zapasów. Powstanie stałych budynków sądowych, oddzielonych od siedziby władcy, oznaczało stopniowe wyodrębnianie się władzy sądowniczej jako niezależnej gałęzi rządzenia.",
@@ -1874,7 +1899,8 @@
     "lokalizacja": "region",
     "koszt_surowce": {
       "drewno": 30,
-      "kamien": 30
+      "kamien": 30,
+      "cegla": 30
     },
     "historia": "Dwór zarządcy prowincji stanowił lokalny ośrodek władzy imperialnej, z którego namiestnik nadzorował pobór podatków, wymiar sprawiedliwości oraz utrzymanie porządku na powierzonym mu terytorium w imieniu odległego władcy centralnego. Perscy satrapowie, zarządzający rozległymi prowincjami imperium Achemenidów, dysponowali własnym dworem, skarbem i niekiedy nawet siłami zbrojnymi, co czyniło ich niemal małymi królami podlegającymi jedynie formalnie Wielkiemu Królowi w Persepolis. Chińscy gubernatorzy prowincji za czasów dynastii Han musieli składać cesarzowi regularne raporty ze stanu upraw i nastrojów społecznych w ramach systemu egzaminów urzędniczych poprzedzających objęcie stanowiska. Odległość od stolicy oznaczała w praktyce znaczną swobodę decyzyjną namiestnika, co regularnie prowadziło do napięć między lojalnością wobec centrum a pokusą budowania własnej, niezależnej bazy władzy. Dwory takie stawały się też ośrodkami lokalnej kultury, przyciągając rzemieślników, uczonych i kupców szukających patronatu możnego urzędnika.",
     "opis": "Dwór Zarządcy to drugi szczebel administracji miast regionalnych, zastępujący Dom Starszyzny i dający większy porządek prawny oraz produkcję.",
@@ -1923,7 +1949,8 @@
     "techUnlock": "Prawo",
     "lokalizacja": "region",
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 50,
+      "kamien": 50,
       "cegla": 50
     },
     "historia": "Pretorium to pierwotnie namiot lub kwatera dowódcy w rzymskim obozie wojskowym, ustawiana zawsze w centralnym punkcie obozu na przecięciu głównych dróg, skąd wódz mógł obserwować całość rozłożonych wokół legionów. Z czasem termin ten zaczął oznaczać także rezydencję namiestnika prowincji rzymskiej, budynek łączący funkcję sądową, administracyjną i reprezentacyjną — to właśnie w pretorium namiestnika Judei w Jerozolimie, według relacji ewangelicznych, odbył się proces Jezusa z Nazaretu. Archeolodzy odkryli pozostałości okazałych pretoriów w takich miastach jak Kartagina czy Trewir, gdzie mozaikowe posadzki i prywatne łaźnie świadczyły o wysokim statusie rezydujących tam urzędników. Pretorium pełniło również funkcję garnizonu, zapewniając namiestnikowi ochronę osobistą, zanim nazwa ta na stałe skojarzyła się ze słynną gwardią cesarską w samym Rzymie. Budynek ten symbolizował fizyczną obecność władzy imperialnej w odległych zakątkach rozległego państwa, przypominając mieszkańcom prowincji, komu podlegają.",
@@ -1971,8 +1998,9 @@
     "uwagi": "3a: wczesna administracja — +porzadek, anty-korupcja (Kodeks prawa). FALA 560 (R-WEB-CORRUPTION-REDUCTION-PALACE-TIERS-TRIBUNAL-Q1): -30% korupcji jak Sad/Pretorium (economy.ts KORUPCJA_REDUKCJA_BUDYNKI, addytywnie, sufit 0,60); slabszy niz Sad/Pretorium tylko w Prawie",
     "techUnlock": "Kodeks",
     "koszt_surowce": {
-      "drewno": 30,
-      "kamien": 40
+      "drewno": 40,
+      "kamien": 40,
+      "cegla": 40
     },
     "historia": "Trybun ludowy to urząd ustanowiony w Rzymie w 494 roku p.n.e. w wyniku secesji plebejuszy, mający chronić zwykłych obywateli przed nadużyciami władzy patrycjuszowskich urzędników poprzez prawo weta wobec decyzji senatu i konsulów. Osoba trybuna była nietykalna — sacrosanctitas — a jakikolwiek zamach na jego życie czy godność uznawano za świętokradztwo karane śmiercią, co miało zagwarantować mu odwagę w przeciwstawianiu się możnym. Miejsce, w którym trybun urzędował i przyjmował skargi obywateli, z czasem przekształciło się w rozbudowaną instytucję sądową rozstrzygającą spory sięgające poza pierwotny zakres ochrony plebejuszy. Późniejsze trybunały, jak Trybunał Koronny w Rzeczypospolitej powołany w 1578 roku, przejęły od Rzymian ideę niezależnego, objazdowego sądu wyższej instancji, wolnego od bezpośredniego wpływu monarchy. Napięcia między trybunami a senatem, szczególnie w czasach reform Grakchów w II wieku p.n.e., pokazały, jak łatwo instytucja stworzona do ochrony ludu mogła stać się areną gwałtownej walki politycznej.",
     "opis": "Trybunał to wczesna forma administracji lokalnej, dająca porządek i obniżająca korupcję w mieście o 30% — tak jak Sąd czy Pretorium, choć z mniejszym zasobem Prawa.",
@@ -2067,7 +2095,8 @@
     "uwagi": "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy — zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     "techUnlock": "Medycyna",
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 60,
+      "kamien": 60,
       "cegla": 60
     },
     "historia": "Rzymskie termy publiczne były znacznie więcej niż miejscem higieny osobistej — stanowiły centra życia towarzyskiego, gdzie obywatele niezależnie od majątku spędzali długie godziny, przechodząc kolejno przez zimne, letnie i gorące baseny, korzystając z sal do ćwiczeń, bibliotek oraz ogrodów. Termy Karakalli w Rzymie, mogące jednocześnie pomieścić kilka tysięcy kąpiących się, wykorzystywały zaawansowany system hipokaustów — podłóg podgrzewanych gorącym powietrzem krążącym w podziemnych kanałach, technologię wymagającą stałej obsługi dbającej o piece. Wstęp do term był zazwyczaj bardzo tani lub darmowy, finansowany przez możnych patronów lub samo państwo, co czyniło je jedną z niewielu przestrzeni, gdzie senator i rzemieślnik dzielili tę samą przestrzeń publiczną. Podobną tradycję kąpieli publicznych rozwinęły osmańskie hammamy, łączące rzymskie dziedzictwo term z rytuałami czystości islamu, wciąż aktywnie działające w wielu miastach Bliskiego Wschodu. Upadek zachodniego Cesarstwa Rzymskiego i zerwanie sieci akweduktów doprowadziły do stopniowego zaniku wielkich term publicznych w średniowiecznej Europie na kolejne stulecia.",
@@ -2115,7 +2144,8 @@
     "uwagi": "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia wojskowa to NIEZALEZNY budynek obok Koszar (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Praca rozdzielona (5=2+3 wzgledem Koszar), zeby wklad Koszar nie liczyl sie dwa razy. Mnoznik = +20% parametry miekkie (Sciezka B) -- TERAZ kumuluje sie z Koszarami wprost (oba obecne w miescie = +40%, razem z Warsztatem oblezniczym +50%); bramka elit UNITS.",
     "techUnlock": "Sztuka wojenna",
     "koszt_surowce": {
-      "drewno": 50,
+      "drewno": 70,
+      "kamien": 70,
       "cegla": 70
     },
     "historia": "Akademia wojskowa jako sformalizowana instytucja kształcąca oficerów w oderwaniu od praktyki bojowej na polu bitwy powstała stosunkowo późno — pruska Akademia Wojenna założona w 1810 roku z inicjatywy reformatorów takich jak Gerhard von Scharnhorst wprowadziła systematyczne nauczanie strategii, logistyki i taktyki jako odrębnej dyscypliny naukowej. Wcześniej oficerowie zdobywali umiejętności głównie poprzez służbę pod okiem doświadczonych dowódców lub, jak w przypadku janczarskiej szkoły Enderun w Imperium Osmańskim, poprzez wieloletnie, rygorystyczne szkolenie od dzieciństwa łączące musztrę z naukami humanistycznymi. Brytyjska Królewska Akademia Wojskowa w Sandhurst kładła nacisk na charakter przywódczy kadetów równie mocno co na wiedzę techniczną, wychodząc z założenia, że dowódca musi najpierw zyskać zaufanie podwładnych. Programy takich akademii obejmowały matematykę stosowaną do balistyki, inżynierię fortyfikacyjną oraz studia nad kampaniami historycznymi analizowanymi jako studia przypadków. Absolwenci akademii wojskowych, tworząc zawodowy korpus oficerski oddany raczej państwu niż osobie monarchy, odegrali kluczową rolę w kształtowaniu nowoczesnych, scentralizowanych armii narodowych XIX wieku.",

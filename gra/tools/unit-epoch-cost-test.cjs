@@ -173,7 +173,7 @@ try {
   eq(M.itemCost('budynek', ironBuilding.id, data, 1), 140, 'Iron building Work control');
   deepEq(M.buildingStockCost(stoneBuilding), { drewno: 50 }, 'Stone building stock control');
   deepEq(M.buildingStockCost(bronzeBuilding), { drewno: 120, kamien: 120 }, 'Bronze building stock control');
-  deepEq(M.buildingStockCost(ironBuilding), { drewno: 320, cegla: 400 }, 'Iron building stock control');
+  deepEq(M.buildingStockCost(ironBuilding), { drewno: 400, kamien: 400, cegla: 400 }, 'Iron building stock control (R-WEB-BUILDING-COSTS-ERA-RESOURCES-IMPL-Q1: drewno = kamień = cegła = 50 x2 x4)');
   eq(M.buildingUpkeep(stoneBuilding, 1), 2, 'Stone building gold upkeep control');
   eq(M.buildingUpkeep(bronzeBuilding, 1), 8, 'Bronze building gold upkeep control');
   eq(M.buildingUpkeep(ironBuilding, 1), 24, 'Iron building gold upkeep control');

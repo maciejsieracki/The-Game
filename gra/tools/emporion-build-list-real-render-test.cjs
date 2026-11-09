@@ -132,11 +132,14 @@ async function main() {
   });
 
   // Scenariusz: epoka 2 (Brąz), Emporion w katalogu; techs / budynki miasta / zapas surowców zmienne.
+  // R-WEB-BUILDING-COSTS-ERA-RESOURCES-IMPL-Q1: Emporion kosztuje drewno = kamień = cegła (60 x 4 = 240 każdego) —
+  // zapas cegły w scenariuszu = zapasowi kamienia.
   const run = async ({ techs, built, drewno, kamien }) => page.evaluate(({ techs, built, drewno, kamien }) => {
+    const cegla = kamien;
     const A = window.__api;
     const data = { units: A.units, buildings: A.buildings, civs: [], tech: [] };
     const city = { id: 'm1', name: 'Start', q: 0, r: 0, ownerId: 0, population: 3,
-      surowce: { drewno, kamien } };
+      surowce: { drewno, kamien, cegla } };
     const builtIds = built ? ['targowisko'] : [];
     A.configureCityPanel({
       data,
@@ -146,7 +149,7 @@ async function main() {
       getUnlockedTechs: () => techs,
       getBuiltBuildingIds: () => builtIds,
       getEmpireBuiltIds: () => builtIds,
-      getEmpireStock: () => ({ drewno, kamien }),
+      getEmpireStock: () => ({ drewno, kamien, cegla }),
       getCapitalCityId: () => city.id,
       getCityHasCoastOrRiver: () => true,
       onPurchaseBuilding: () => {},
