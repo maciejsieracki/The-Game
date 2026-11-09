@@ -1540,7 +1540,7 @@ import {
 import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import { buildWarCityTargets } from './game/ai-war-target-select';
 import {
-  registerAiPeaceRequest, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
+  registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
 import { runWarWearinessTick, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
@@ -34500,10 +34500,17 @@ async function boot(): Promise<void> {
           const basePn = treatyBasePnFromConfig(kind, kind === 'rozejm' ? { turns: TRUCE_DEFAULT_TURNS } : undefined);
           const relTotal = treatyEvalRelationTotal(getDiploRelation(winner, loser));
           const difficulty = effectiveGameDifficultyForOwner(winner);
-          const requiredPn = peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty);
+          // R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1: cena podniesiona tak, by bilans zwyciezcy doszedl do >= 0;
+          // bilans przegranego (zaplata = jego `aiGive`) liczony z jego relacji; ujemny u ktorejkolwiek AI blokuje pokoj.
+          const requiredPn = aiAiPeaceRequiredPn(
+            peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
+            peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
+          );
+          const loserRelTotal = treatyEvalRelationTotal(getDiploRelation(loser, winner));
           return {
             requiredPn,
             balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, basePn),
+            loserBalanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(coveredPn, 0, loserRelTotal, basePn),
             tolerancePn: aiOfferPwSurplusTolerance(difficulty),
           };
         },
@@ -34564,9 +34571,14 @@ async function boot(): Promise<void> {
           const basePn = treatyBasePnFromConfig('pokoj');
           const relTotal = treatyEvalRelationTotal(getDiploRelation(winner, loser));
           const difficulty = effectiveGameDifficultyForOwner(winner);
+          const loserRelTotal = treatyEvalRelationTotal(getDiploRelation(loser, winner));
           return {
-            requiredPn: peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
+            requiredPn: aiAiPeaceRequiredPn(
+              peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
+              peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
+            ),
             balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, basePn),
+            loserBalanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(coveredPn, 0, loserRelTotal, basePn),
             tolerancePn: aiOfferPwSurplusTolerance(difficulty),
           };
         },
@@ -34628,6 +34640,17 @@ async function boot(): Promise<void> {
       )) {
         regularWarCapturedByPairKey.set(pairKey, st);
         return;
+      }
+      // R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1: auto-pokoj bez zaplaty wymaga bilansu >= 0 u OBU AI.
+      {
+        const apBase = treatyBasePnFromConfig('pokoj');
+        const balOf = (self: number, other: number): number =>
+          peaceOfferAiOwnBilans(0, 0, treatyEvalRelationTotal(getDiploRelation(self, other)), apBase);
+        if (!isAiAiPeaceBalanceAllowed(balOf(ownerA, ownerB), balOf(ownerB, ownerA))) {
+          regularWarCapturedByPairKey.set(pairKey, st);
+          console.log(`[Dyplomacja] R-AI-PEACE-AI-AI-NONNEG: auto-pokój AI${ownerA}↔AI${ownerB} zablokowany (ujemny bilans PW)`);
+          return;
+        }
       }
       regularWarCapturedByPairKey.delete(pairKey);
       console.log(

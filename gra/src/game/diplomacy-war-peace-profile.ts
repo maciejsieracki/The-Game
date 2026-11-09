@@ -36,6 +36,8 @@ export interface WarPeaceParams {
   };
   przewagaMilitarna: { prog: number; epsilon: number };
   hamulecRelacji: { progKryzysuMinusPunkty: number; bazaN: number; wagaProgWojny: number; minN: number; maxN: number };
+  /** R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1: minimalny bilans PW KAZDEJ z dwoch AI przy pokoju AI↔AI. */
+  pokojAiAi: { minBilansPW: number };
 }
 
 export const WAR_PEACE_PARAMS = paramsRaw as unknown as WarPeaceParams;

@@ -182,12 +182,14 @@ function suite(E) {
   const tick = (h, turn) => E.peace.runAiAiPeaceTick(h.deps(turn));
   const reg = (h, turn, kind = 'pokoj') => P.registerAiPeaceRequest(h.store, '1_2', 1, 2, turn, kind);
 
-  t('B1 tick: prosba w T -> T i T+1 bez zaplaty = brak pokoju; T+2 = pokoj (platnosc maks. mozliwa = 0)', () => {
+  // R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (decyzja wlasciciela 2026-11-09): wymuszenie T+2 NIE omija ujemnego
+  // bilansu zwyciezcy -- B1/B4/B5/B12 zmienione z 'force przy niedoplacie' na 'wait' (pokoj AI<->AI zablokowany).
+  t('B1 tick: prosba w T, brak majatku (bilans zwyciezcy < 0) -> T+2 NIE wymusza pokoju (regula nieujemnego bilansu AI<->AI)', () => {
     const h = harness(); reg(h, 10);
     tick(h, 10); tick(h, 11);
     if (h.log.fin.length !== 0) return 'pokoj przed T+2';
     const o = tick(h, 12);
-    return (h.log.fin.length === 1 && o[0].action === 'force') || JSON.stringify(o.map(x => x.action));
+    return (h.log.fin.length === 0 && o[0].action === 'wait') || JSON.stringify(o.map(x => x.action));
   });
   t('B2 prosba rejestrowana raz (kolejne prosby nie odnawiaja licznika)', () => {
     const store = new Map();
@@ -203,14 +205,15 @@ function suite(E) {
       && h.log.pay.length === 1 && h.log.fin.length === 1 && h.log.pay[0].plan.histogram.zloto === 1
       && h.log.pay[0].plan.coveredPn === 500 && !h.store.has('1_2')) || JSON.stringify(o);
   });
-  t('B4 czesciowa zaplata: przed limitem zwyciezca odrzuca, w T+2 pokoj z cala dostepna zaplata', () => {
+  t('B4 czesciowa zaplata (bilans zwyciezcy po zaplacie < 0): odmowa takze w T+2 (brak wymuszenia)', () => {
     const h = harness({ assets: [gold(200)] }); reg(h, 10);
     const a = tick(h, 11)[0].action;
     const o = tick(h, 12)[0];
-    return (a === 'wait' && o.action === 'force' && h.log.pay[0].plan.coveredPn === 200 && h.log.pay[0].plan.shortfallPn === 300) || `${a}/${o.action}`;
+    return (a === 'wait' && o.action === 'wait' && h.log.pay.length === 0 && h.log.fin.length === 0) || `${a}/${o.action}`;
   });
   t('B5 cesja miasta gdy zloto nie wystarcza; stolica (forbidden) nigdy; niewykonalna cesja pomijana', () => {
-    const h = harness({ assets: [gold(100), city('capital', 900, true), city('c-small', 300), city('c-big', 800)],
+    // c-small 450 + zloto 100 >= 500 => bilans zwyciezcy >= 0 (regula nieujemnego bilansu AI<->AI 2026-11-09).
+    const h = harness({ assets: [gold(100), city('capital', 900, true), city('c-small', 450), city('c-big', 800)],
       cityOk: (id) => id !== 'c-big' }); reg(h, 10);
     const o = tick(h, 12)[0];
     const items = h.log.pay[0].plan.items.map(i => i.kind + ':' + i.id).join(',');
@@ -255,10 +258,13 @@ function suite(E) {
     tick(h, 10);
     return (h.log.priceKinds[0] === 'pokoj' && h.log.fin[0].kind === 'pokoj' && h.log.pay[0].plan.coveredPn === 500) || JSON.stringify(h.log.fin);
   });
-  t('B12 T+2 mimo trwajacej bitwy oczekujacej: pokoj wchodzi, ale bez cesji miast', () => {
+  t('B12 T+2 mimo bitwy oczekujacej: bez cesji miast; bilans zwyciezcy < 0 => pokoj NIE wchodzi; zloto 500 => force bez miasta', () => {
     const h = harness({ assets: [gold(100), city('c-small', 600)], battlePending: true }); reg(h, 10);
     const o = tick(h, 12)[0];
-    return (o.action === 'force' && h.log.fin.length === 1 && h.log.pay[0].plan.histogram.miasto === 0) || JSON.stringify(o.action);
+    const h2 = harness({ assets: [gold(500), city('c-small', 600)], battlePending: true, verdict: () => 'stronger' }); reg(h2, 10);
+    const o2 = tick(h2, 12)[0];
+    return (o.action === 'wait' && h.log.fin.length === 0 && o2.action === 'force' && h2.log.fin.length === 1
+      && h2.log.pay[0].plan.histogram.miasto === 0) || JSON.stringify([o.action, o2.action]);
   });
   t('B13 przegrany zweryfikowany: prosba pat (udzial > 0.45) nie jest rejestrowana; silniejszy prosacy w ticku -> prosba wygasa', () => {
     const regOk = P.isClearlyLosing(0.30) === true && P.isClearlyLosing(0.50) === false && P.isClearlyLosing(0.46) === false;

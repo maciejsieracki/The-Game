@@ -10,6 +10,7 @@
 // PURE: bez DOM / stanu gry. Wejścia podaje main.ts. Dotyczy wyłącznie par AI↔AI (gracz nie jest zmuszany).
 
 import aiParamsRaw from '../../data/ai-params.json';
+import warPeaceParamsRaw from '../../data/diplomacy-war-peace-params.json';
 
 const FALLBACK_TURNS = 2;
 
@@ -21,6 +22,42 @@ export function aiPeaceTurnsAfterRequest(raw: unknown = aiParamsRaw): number {
 }
 
 export const AI_PEACE_TURNS_AFTER_REQUEST: number = aiPeaceTurnsAfterRequest();
+
+// ---------------------------------------------------------------------------
+// R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (decyzja wlasciciela 2026-11-09, ABC D1):
+// pokoj/rozejm AI↔AI NIE moze zostac zawarty, gdy bilans PW ktorejkolwiek z dwoch AI jest ujemny.
+// (Pokoj proponowany GRACZOWI zostaje akceptowalny przy ujemnym bilansie gracza -- ta regula go nie dotyczy.)
+// Prog w pliku danych: diplomacy-war-peace-params.json -> pokojAiAi.minBilansPW (0).
+// ---------------------------------------------------------------------------
+
+/** Minimalny bilans PW (po zaplacie) kazdej z dwoch AI przy pokoju AI↔AI; z JSON. */
+export function aiAiPeaceMinBalance(raw: unknown = warPeaceParamsRaw): number {
+  const v = (raw as { pokojAiAi?: { minBilansPW?: unknown } }).pokojAiAi?.minBilansPW;
+  return typeof v === 'number' && Number.isFinite(v) ? v : 0;
+}
+
+export const AI_AI_PEACE_MIN_BALANCE: number = aiAiPeaceMinBalance();
+
+/** Czy pokoj AI↔AI jest dozwolony: bilans zwyciezcy I przegranego >= minBilans. Brak bilansu przegranego = nie sprawdzany. */
+export function isAiAiPeaceBalanceAllowed(
+  winnerBalancePn: number,
+  loserBalancePn: number | undefined,
+  minBalancePn: number = AI_AI_PEACE_MIN_BALANCE,
+): boolean {
+  if (!(winnerBalancePn >= minBalancePn)) return false;
+  if (loserBalancePn !== undefined && !(loserBalancePn >= minBalancePn)) return false;
+  return true;
+}
+
+/** Wymagana zaplata PW od przegranego, by bilans zwyciezcy doszedl do minBilans (nie mniej niz dotychczasowa cena). */
+export function aiAiPeaceRequiredPn(
+  baseRequiredPn: number,
+  winnerBalanceAtZeroPn: number,
+  minBalancePn: number = AI_AI_PEACE_MIN_BALANCE,
+): number {
+  const toMin = Math.ceil(minBalancePn - winnerBalanceAtZeroPn);
+  return Math.max(baseRequiredPn, toMin, 0);
+}
 
 /** Prośba o pokój: `requesterId` = przegrywający (prosi), `otherId` = zwycięzca (musi przyjąć). */
 export type AiPeaceKind = 'pokoj' | 'rozejm';
@@ -209,6 +246,10 @@ export interface AiPeaceDecisionInput {
   /** Werdykt bramki zwycięzcy (evaluatePeaceAiGate): 'ok' | 'too_early' | 'stronger'. */
   winnerGateVerdict: 'ok' | 'too_early' | 'stronger';
   limit?: number;
+  /** Bilans przegranego po zaplacie (jego wlasna wycena); brak = nie sprawdzany. Regula nieujemnego bilansu AI↔AI. */
+  loserBalanceAfterPn?: number;
+  /** Minimalny bilans AI↔AI (domyslnie z JSON). */
+  minBalancePn?: number;
 }
 
 /**
@@ -222,6 +263,10 @@ export function decideAiPeaceRequest(inp: AiPeaceDecisionInput): AiPeaceDecision
   const turnsSince = turnsSincePeaceRequest(inp.req, inp.turn);
   const balanceBefore = Math.round(inp.balanceBeforePn);
   const balanceAfter = Math.round(inp.balanceAfterPn);
+  // Regula wlasciciela 2026-11-09: ujemny bilans ktorejkolwiek AI blokuje pokoj -- takze po limicie tur (wymuszenie).
+  if (!isAiAiPeaceBalanceAllowed(inp.balanceAfterPn, inp.loserBalanceAfterPn, inp.minBalancePn)) {
+    return { action: 'wait', reason: 'ujemny bilans PW jednej z AI (pokoj AI↔AI zablokowany)', balanceBefore, balanceAfter, turnsSince };
+  }
   if (turnsSince >= limit) {
     return { action: 'force', reason: `limit ${limit} tur od prośby`, balanceBefore, balanceAfter, turnsSince };
   }
@@ -253,6 +298,8 @@ export interface AiPeaceTickDeps {
     requiredPn: number;
     balanceFor: (coveredPn: number) => number;
     tolerancePn: number;
+    /** Bilans przegranego po zaplacie `coveredPn` (jego wlasna wycena). Brak = nie sprawdzany. */
+    loserBalanceFor?: (coveredPn: number) => number;
   };
   assets: (loser: number, winner: number, skipCityIds: ReadonlySet<string>) => PeaceAsset[];
   /** Pre-kontrola wykonalności cesji miasta (planCityCession). */
@@ -308,6 +355,7 @@ export function runAiAiPeaceTick(d: AiPeaceTickDeps): AiPeaceTickOutcome[] {
       plan,
       balanceBeforePn: price.balanceFor(0),
       balanceAfterPn: price.balanceFor(plan.coveredPn),
+      loserBalanceAfterPn: price.loserBalanceFor?.(plan.coveredPn),
       tolerancePn: price.tolerancePn,
       winnerGateVerdict: d.gateVerdict(winner, loser),
       limit: d.limit,

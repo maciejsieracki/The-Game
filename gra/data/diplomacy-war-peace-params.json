@@ -98,5 +98,9 @@
     "wagaProgWojny": 0.5,
     "minN": 3,
     "maxN": 7
+  },
+  "pokojAiAi": {
+    "_opis": "R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (decyzja wlasciciela 2026-11-09): pokoj/rozejm miedzy DWIEMA cywilizacjami AI nie moze zostac zawarty, gdy bilans PW ktorejkolwiek z nich (po zaplacie) jest nizszy niz minBilansPW. Wyjatek gracza (pokoj zawsze do przyjecia przez gracza) NIE dotyczy tej sekcji.",
+    "minBilansPW": 0
   }
 }
