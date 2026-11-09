@@ -3,3 +3,5 @@ GOAL (zgłoszenie właściciela, zrzut Chińczycy: „Ludność: 98”): ludnoś
 Założenie do potwierdzenia przez Evaluatora: „jednostki pełne” = Manpower wyrażony w liczbie jednostek (zaokrąglenie w dół), jak w RECRLVL (77dd059f1, audiencja „Rekruci: bieżąca / maks.”); jeśli RECRLVL już liczy inaczej — zachować spójność i opisać.
 Operator: HAIKU 5.5. ALLOWLISTA: diplomacy-display.ts, ui/diploListHud.ts, ui/diplomacyAudience.ts, test, runs/<ID>/. Test + brak regresji diplomacy-display/RECRLVL testów. LEDGER (REPIN Rust UI). Zakaz: WERSJE.md, gra-robocza/, build/dev, git add -A, push/deploy.
 KONFLIKT: diplomacyAudience.ts wspólny z RESPECT-DISPLAY-TRUE-VALUE — start po jego FC lub scalić sekwencyjnie.
+
+DODATEK 1 (zrzut audiencji, właściciel): w audiencji „Rekruci” pokazuje surowy Manpower „77 460 / 196 000” — to NIE jest liczba pełnych jednostek. Wymagane: „Wolni rekruci” = ile pełnych jednostek można teraz zrekrutować (Manpower ÷ koszt Manpower typowej jednostki wojskowej epoki cywilizacji; opisać w tooltipie, jakiej jednostki) / maksimum; surowy Manpower można zostawić jako tooltip. Wiersz musi być także w karcie listy dyplomacji (tam dziś go brak). Obywatele osobno.
