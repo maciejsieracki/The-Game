@@ -26,8 +26,7 @@ import {
 } from './diplomacy-treaties';
 import { RodzajTraktatu } from '../types/diplomacy';
 import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
-import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
-import { warWearinessLevel, wearinessPeacePriceFactor } from './war-weariness';
+import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';import { warWearinessLevel, wearinessPeacePriceFactor } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -1306,6 +1305,12 @@ export function evaluateProposal(
             rw: ctx.warState.responderRw,
             turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
             lostCitiesInWar: Math.max(0, ctx.warState.lostCitiesResponder),
+            // DODATEK 1 (przewaga >20%): zmeczenie wojna zdejmuje blokade (ten sam wzor co wearyFactor nizej).
+            wearinessLevel: warWearinessLevel({
+              turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+              lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
+              turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
+            }),
           },
           r5Profile,
         );

@@ -58,6 +58,20 @@ function mutantPlugin(from, to, target = PROPOSALS) {
   };
 }
 
+
+// DODATEK 1 (R-WEB-DIPLO-PEACE-BALANCE-ACCEPT-DIAG-Q1): regula przewagi militarnej >20% jest testowana osobno
+// (diplo-peace-balance-accept-test.cjs). Ten test chroni reguly R3/R5 NIEZALEZNIE od niej, wiec bundle liczy
+// z wylaczonym progiem (przewagaMilitarna.prog = 1000 => klasa 'przewaga' nieosiagalna). Asercje bez zmian.
+const ADVANTAGE_OFF = {
+  name: 'advantage-off',
+  setup(build) {
+    build.onLoad({ filter: /diplomacy-war-peace-params\.json$/ }, async (args) => {
+      const j = JSON.parse(fs.readFileSync(args.path, 'utf8'));
+      j.przewagaMilitarna.prog = 1000;
+      return { contents: JSON.stringify(j), loader: 'json' };
+    });
+  },
+};
 async function buildBundle(outfile, plugins) {
   await esbuild.build({
     entryPoints: [ENTRY],
@@ -69,7 +83,7 @@ async function buildBundle(outfile, plugins) {
     absWorkingDir: GRA,
     loader: { '.ts': 'ts', '.json': 'json' },
     logLevel: 'silent',
-    plugins,
+    plugins: [...plugins, ADVANTAGE_OFF],
   });
 }
 

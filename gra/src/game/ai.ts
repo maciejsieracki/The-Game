@@ -70,7 +70,10 @@ import {
   type ResearchBuildingGate,
 } from './research';
 import { hexKeysWithinRadius } from './okolica';
-import { resolveWarPeaceProfile, aiPeaceSignals, isFeelingStronger, type WarPeaceProfile } from './diplomacy-war-peace-profile';
+import {
+  resolveWarPeaceProfile, aiPeaceSignals, isFeelingStronger, militaryAdvantageClass,
+  peaceBlockedByMilitaryAdvantage, type WarPeaceProfile,
+} from './diplomacy-war-peace-profile';
 import {
   AI_IMPROVEMENT_PRIORITY,
   IMPROVEMENT_FOR_DEFICIT,
@@ -6829,7 +6832,18 @@ export function decideAIDiplomacy(
     // evaluatePeaceAiGate do propozycji gracza; AI składa propozycję dopiero, gdy spełnia te same
     // warunki czasu wojny i nie czuje się silniejsza (ZAMIANA ZAŁOŻENIA F2 z rundy 3, zarzut 2:
     // poprzednio minTurWojny nie blokował propozycji AI, co dawało propozycję już w turze 1).
-    if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
+    // DODATEK 1 (R-WEB-DIPLO-PEACE-BALANCE-ACCEPT-DIAG-Q1, wlasciciel 2026-11-09), AI vs GRACZ:
+    // (a) przewaga militarna > prog (20%, diplomacy-war-peace-params.json) i brak zmeczenia wojna -> AI NIE proponuje pokoju;
+    // (b) slabsza o >= prog -> AI MOZE proponowac pokoj (sygnal 'f'); (c) pomiedzy -> reguly dotychczasowe.
+    // Miara sily = rw (objectivePower, jak wszystkie galezie pokoju). Zadanie miasta N1b wyzej NIE jest objete (ABC do orkiestratora).
+    const advantageVsHuman = rel.stanWojny && rel.partnerId === '0';
+    const aiAdvantageBlocksPeace = advantageVsHuman && peaceBlockedByMilitaryAdvantage(rw, wearyLevel);
+    const aiWeakerByAdvantageProg = advantageVsHuman && militaryAdvantageClass(rw) === 'niedobor';
+    if (aiWeakerByAdvantageProg) {
+      peaceSignals.reasons.push('f');
+      peaceSignals.wantsPeace = true;
+    }
+    if (!aiAdvantageBlocksPeace && rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
       komendy.push({
         type:     'zaproponuj_pokoj',
         targetId: rel.partnerId,
