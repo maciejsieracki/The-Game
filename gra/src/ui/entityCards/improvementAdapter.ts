@@ -90,7 +90,7 @@ const BONUS_LABEL: Record<string, string> = {
   zywnosc: 'Żywność',
   praca: 'Praca',
   handel: 'Podatek',
-  pieniadz: 'Pieniądz',
+  pieniadz: 'Podatek', // DODATEK 3: bonus.pieniadz ulepszenia wpada w TileYield.handel = podatek (terrain-improvements.ts:177)
   kamien: 'Kamień',
   drewno: 'Drewno',
 };
@@ -116,8 +116,19 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   if (hasValue(improvement.typ)) {
     charRows.push({ label: 'Typ', value: text(improvement.typ) });
   }
+  // R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 3): `handel` i `pieniadz` ulepszenia to jeden strumień
+  // PODATKU (terrain-improvements.ts:176-177) — jeden wiersz „Podatek” z sumą (np. Obóz łowiecki 2+1 = +3).
+  const podatekSuma = (typeof bonus.handel === 'number' ? bonus.handel : 0)
+    + (typeof bonus.pieniadz === 'number' ? bonus.pieniadz : 0);
+  let podatekDodany = false;
   for (const [k, v] of Object.entries(bonus)) {
     if (typeof v !== 'number' || v === 0) continue;
+    if (k === 'handel' || k === 'pieniadz') {
+      if (podatekDodany || podatekSuma === 0) continue;
+      podatekDodany = true;
+      charRows.push({ label: 'Podatek', value: `${podatekSuma > 0 ? '+' : ''}${podatekSuma}`, emphasize: true });
+      continue;
+    }
     charRows.push({ label: BONUS_LABEL[k] ?? k, value: `${v > 0 ? '+' : ''}${v}`, emphasize: true });
   }
   if (hasValue(improvement.bonus_obrona_proc)) {

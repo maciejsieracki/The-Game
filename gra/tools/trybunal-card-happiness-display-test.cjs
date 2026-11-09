@@ -19,7 +19,7 @@
  *       skala „Zadowolenie — skala poziomów” == silnik na każdym poziomie;
  *   [T] Trybunał: pozycja Top 5 „+1 pieniądza i +2 Szczęścia” zgodna z wierszem karty (L1=+2);
  *   [N] regres: budynek bez Szczęścia (dajeSzczescie=false, np. Mury) nie dostaje wiersza
- *       „Zadowolenie”; wiersz „Pieniądz” Trybunału nadal +1 na L1 (bez zmian);
+ *       „Zadowolenie”; wiersz „Podatek” (dawniej „Pieniądz”) Trybunału nadal +1 na L1 (bez zmian);
  *   [D] zakres: w danych nie ma budynku dajeSzczescie=false z niezerowym baza/przyrost.zadowolenie
  *       (inaczej adapter cicho pomijałby dane) — tylko kontrola, bez zmiany danych.
  *
@@ -207,9 +207,10 @@ async function main() {
         !!tryZad && !!topSzczescie && firstSigned(tryZad.value) === 2 && Number(topSzczescie[1]) === 2,
         { tryZad, tryTop });
 
-      // [N] regres: Pieniądz Trybunału nadal +1 na L1; budynek bez Szczęścia bez wiersza.
-      const tryPien = (tryL1.yieldRows || []).find((x) => x.label === 'Pieniądz');
-      check('[N] Trybunał „Pieniądz” L1 nadal +1 (bez regresu)', !!tryPien && firstSigned(tryPien.value) === 1, tryPien);
+      // [N] regres: wartość z `baza.pieniadz` Trybunału nadal +1 na L1; budynek bez Szczęścia bez wiersza.
+      // R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 3): wiersz nazywa się teraz „Podatek” (baza.pieniadz zasila podatek).
+      const tryPien = (tryL1.yieldRows || []).find((x) => x.label === 'Podatek');
+      check('[N] Trybunał „Podatek” (baza.pieniadz) L1 nadal +1 (bez regresu)', !!tryPien && firstSigned(tryPien.value) === 1, tryPien);
       const noHappy = buildings.find((b) => b.dajeSzczescie !== true && b.id === 'mury')
         || buildings.find((b) => b.dajeSzczescie !== true);
       if (noHappy) {

@@ -33,6 +33,8 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { parseCsv, liczbaOf } = require('./gen-tech-cards-top5.cjs');
+// R-WEB-CARDS-RESOURCE-PURPOSE-Q1: audytowalna warstwa korekt (do czego służy surowiec · język · podatek vs pieniądz).
+const { BUD: BUD_CORRECTIONS, applyCorrections } = require('./card-text-corrections.cjs');
 
 const GRA = path.resolve(__dirname, '..');
 const REPO = path.resolve(GRA, '..');
@@ -205,7 +207,8 @@ function generate(csvPath) {
   }
   for (const n of byName.keys()) if (!buildings.some((b) => b.nazwa === n)) errors.push(`CSV: osierocony wiersz „${n}” (brak w buildings.json)`);
   for (const n of Object.keys(kb)) if (!buildings.some((b) => b.nazwa === n)) errors.push(`korekty: osierocony wpis „${n}”`);
-  return { out, errors };
+  const log = applyCorrections(out, BUD_CORRECTIONS, 'budynki', errors, liczbaOf);
+  return { out, errors, log };
 }
 
 function main() {

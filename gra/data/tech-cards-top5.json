@@ -23,7 +23,7 @@
       {
         "tytul": "Każda Stolarnia: +10% drewna w całym państwie",
         "liczba": "+10%",
-        "zdanie": "Premia sumuje się z każdą postawioną Stolarnią i działa na drewno całego państwa.",
+        "zdanie": "Premia sumuje się z każdą postawioną Stolarnią i działa na drewno całego państwa (budowy i rekrutacja).",
         "dowod": "gra/data/econ-params.json:285; gra/src/game/turn-economy.ts:1536"
       },
       {
@@ -75,18 +75,18 @@
       },
       {
         "tytul": "Garncarnia: wytwarza ceramikę (glina + drewno)",
-        "zdanie": "Przerabia glinę i drewno na ceramikę, której potrzebuje Spichlerz.",
+        "zdanie": "Przerabia glinę i drewno na ceramikę; Spichlerz zużywa jej 25 na turę, a bez niej nie daje bonusów ludności.",
         "dowod": "gra/src/game/converters.ts:85; gra/data/buildings.json:554"
       },
       {
         "tytul": "Cegielnia: cegła (2 glina + 1 drewno → 2 cegły)",
-        "zdanie": "Cegielnia jest dostępna od epoki Brązu; cegła jest potrzebna m.in. do zbadania Pisma.",
+        "zdanie": "Cegielnia jest dostępna od epoki Brązu; cegła jest kosztem budowy m.in. Akademii, Sądu, Łaźni publicznej i Kuźni żelaza.",
         "dowod": "gra/src/game/converters.ts:84; gra/data/tech.json:196; gra/src/game/research.ts:180"
       },
       {
         "tytul": "Warzelnia soli: +50 soli na turę",
         "liczba": "+50",
-        "zdanie": "Ulepszenie na złożu soli; sól trafia do magazynu państwa.",
+        "zdanie": "Ulepszenie na złożu soli; sól trafia do magazynu państwa, a Spichlerz Królewski wymaga jej i zużywa 25 na turę — za to armia poza własnym terytorium zjada o połowę mniej żywności.",
         "dowod": "gra/data/terrain-improvements.json:251; gra/data/terrain-improvements.json:262"
       }
     ],
@@ -105,7 +105,7 @@
       },
       {
         "czynnosc": "Zaplanuj Cegielnię (dostępna od epoki Brązu)",
-        "korzysc": "wytwarzać cegłę i otworzyć badanie Pisma"
+        "korzysc": "wytwarzać cegłę (na Akademię, Sąd, Łaźnię i Kuźnię żelaza) i otworzyć badanie Pisma"
       }
     ],
     "ukryte": []
@@ -121,7 +121,7 @@
       {
         "tytul": "Każdy Warsztat kamieniarski: +10% kamienia w państwie",
         "liczba": "+10%",
-        "zdanie": "Premia sumuje się z każdym Warsztatem i działa na kamień całego państwa.",
+        "zdanie": "Premia sumuje się z każdym Warsztatem i działa na kamień całego państwa (mury, świątynie i inne budowle).",
         "dowod": "gra/data/econ-params.json:292; gra/src/game/turn-economy.ts:1539"
       },
       {
@@ -207,9 +207,9 @@
   "Łowiectwo": {
     "top5": [
       {
-        "tytul": "Obóz łowiecki: +1 żywności, +1 Pracy, +1 pieniądza, +2 podatku",
+        "tytul": "Obóz łowiecki: +1 żywności, +1 Pracy, +3 podatku",
         "liczba": "+1",
-        "zdanie": "Ulepszenie lasu — jedno pole daje naraz żywność, Pracę, pieniądz i podatek.",
+        "zdanie": "Ulepszenie lasu — jedno pole daje naraz żywność, Pracę i podatek.",
         "dowod": "gra/data/terrain-improvements.json:154; gra/data/terrain-improvements.json:155-160; gra/src/game/turn-economy.ts:223"
       },
       {
@@ -221,7 +221,7 @@
     "cmz": [
       {
         "czynnosc": "Postaw Obóz łowiecki w lesie z Tartakiem",
-        "korzysc": "zagospodarować las (+1 żywności, +1 Pracy, +1 pieniądza, +2 podatku)"
+        "korzysc": "zagospodarować las (+1 żywności, +1 Pracy, +3 podatku)"
       },
       {
         "czynnosc": "Wybierz kolejne badanie",
@@ -245,7 +245,7 @@
         "dowod": "gra/data/units.json:1853; gra/data/units.json:2223"
       },
       {
-        "tytul": "Łucznicy Brązu (nubijski, akadyjski, asyryjski) — z Koszarami",
+        "tytul": "Łucznicy Brązu (nubijski, akadyjski, asyryjski) wymagają Koszar",
         "zdanie": "Odmiany łuczników epoki Brązu rekrutujesz w mieście z Koszarami.",
         "dowod": "gra/data/units.json:2149; gra/data/units.json:2889; gra/data/units.json:3968; gra/src/game/production.ts:1075"
       }
@@ -354,8 +354,8 @@
   "Wymiana": {
     "top5": [
       {
-        "tytul": "Otwiera handel: bez Wymiany żadnych tras handlowych",
-        "zdanie": "Wymiana jest bramką całego handlu szlakowego — dopiero po niej wyznaczysz trasy handlowe.",
+        "tytul": "Otwiera handel: bez Wymiany nie ma tras handlowych",
+        "zdanie": "Wymiana jest warunkiem handlu — dopiero po niej wyznaczysz trasy handlowe.",
         "dowod": "gra/src/game/trade-routes.ts:1086-1093"
       },
       {
@@ -376,16 +376,16 @@
         "dowod": "gra/data/wonders.json:468-472"
       },
       {
-        "tytul": "Targowisko: +5 pieniądza (+3 na poziom, maks. 3)",
+        "tytul": "Targowisko: +5 podatku (+3 na poziom, maks. 3)",
         "liczba": "+5",
-        "zdanie": "Stały dochód budynku rośnie z każdym poziomem (do 3).",
+        "zdanie": "Podatek z budynku rośnie z każdym poziomem (do 3).",
         "dowod": "gra/data/buildings.json:303"
       }
     ],
     "cmz": [
       {
         "czynnosc": "Wyznacz trasy handlowe między miastami",
-        "korzysc": "zyskać nowe źródło dochodu — bez Wymiany handel szlakowy jest zablokowany"
+        "korzysc": "zyskać nowe źródło dochodu — bez Wymiany nie ma tras handlowych"
       },
       {
         "czynnosc": "Zbuduj Targowisko",
@@ -527,7 +527,7 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Odlewnię brązu",
-        "korzysc": "wytwarzać brąz — bez niego i bez Koszar brak wojska epoki Brązu"
+        "korzysc": "wytwarzać brąz (bez brązu i Koszar nie zrekrutujesz wojska epoki Brązu)"
       },
       {
         "czynnosc": "Postaw Kopalnię miedzi na złożu",
@@ -682,7 +682,7 @@
   "Jeździectwo": {
     "top5": [
       {
-        "tytul": "Stadnina: +25 koni/turę — koszt 1 jednostki konnej",
+        "tytul": "Stadnina: +25 koni na turę (tyle kosztuje 1 jednostka konna)",
         "liczba": "+25",
         "zdanie": "Ulepszenie na złożu koni; 25 koni to koszt rekrutacji jednej jednostki konnej.",
         "dowod": "gra/data/terrain-improvements.json:100; gra/data/terrain-improvements.json:109; gra/src/game/building-stock-cost.ts:362-369"
@@ -805,15 +805,15 @@
         "dowod": "gra/data/tech.json:308"
       },
       {
-        "tytul": "Emporion: +8 pieniądza (+4 na poziom)",
+        "tytul": "Emporion: +8 podatku (+4 na poziom)",
         "liczba": "+8",
-        "zdanie": "Stały dochód budynku rośnie z jego poziomem.",
+        "zdanie": "Podatek z budynku rośnie z jego poziomem.",
         "dowod": "gra/data/buildings.json:1095"
       },
       {
-        "tytul": "Magazyn: +1 Pracy i +1 pieniądza",
+        "tytul": "Magazyn: +1 Pracy i +1 podatku",
         "liczba": "+1",
-        "zdanie": "Drobny stały dochód Pracy i pieniądza w mieście.",
+        "zdanie": "Drobny stały przychód Pracy i podatku w mieście.",
         "dowod": "gra/data/buildings.json:1154"
       }
     ],
@@ -853,15 +853,15 @@
         "dowod": "gra/data/tech.json:393"
       },
       {
-        "tytul": "Dwór Zarządcy: +2 pieniądza, +3 Kultury, +1 Pracy",
+        "tytul": "Dwór Zarządcy: +2 podatku, +3 Kultury, +1 Pracy",
         "liczba": "+2",
-        "zdanie": "Stały dochód pieniądza, Kultury i Pracy w mieście regionalnym.",
+        "zdanie": "Stały przychód podatku, Kultury i Pracy w mieście regionalnym.",
         "dowod": "gra/data/buildings.json:1838"
       },
       {
-        "tytul": "Trybunał: +1 pieniądza i +1 zadowolenia",
+        "tytul": "Trybunał: +1 podatku i +1 zadowolenia",
         "liczba": "+1",
-        "zdanie": "Drobny dochód i zadowolenie w mieście z Trybunałem.",
+        "zdanie": "Drobny przychód podatku i zadowolenie w mieście z Trybunałem.",
         "dowod": "gra/data/buildings.json:1938"
       }
     ],
@@ -942,7 +942,7 @@
         "dowod": "gra/data/terrain-improvements.json:376; gra/data/terrain-improvements.json:385"
       },
       {
-        "tytul": "Złoto jest warunkiem Mennicy (zużywa 1 złota/turę)",
+        "tytul": "Złoto jest warunkiem Mennicy (zużywa 1 sztukę złota na turę)",
         "zdanie": "Mennica działa tylko przy dostępie do złota i zużywa 1 sztukę na turę.",
         "dowod": "gra/src/game/building-resource-gate.ts:75-76; gra/src/game/zloto-access.ts:31; gra/src/game/turn-economy.ts:1879-1894"
       },
@@ -952,16 +952,16 @@
         "dowod": "gra/data/econ-params.json:813"
       },
       {
-        "tytul": "Mennica: +3 pieniądza (+2 na poziom)",
+        "tytul": "Mennica: +3 podatku (+2 na poziom)",
         "liczba": "+3",
-        "zdanie": "Stały dochód pieniądza rośnie z poziomem Mennicy.",
+        "zdanie": "Podatek z budynku rośnie z poziomem Mennicy.",
         "dowod": "gra/data/buildings.json:901"
       }
     ],
     "cmz": [
       {
         "czynnosc": "Zbuduj Mennicę w stolicy (z Targowiskiem i dostępem do złota)",
-        "korzysc": "pomnożyć podatek wszystkich miast ×1,50 (pieniądz i nauka)"
+        "korzysc": "pomnożyć podatek wszystkich miast ×1,50 (a z podatku powstają pieniądz i nauka)"
       },
       {
         "czynnosc": "Postaw Kopalnię złota na złożu",
@@ -1049,9 +1049,9 @@
         "dowod": "gra/data/miasto-params.json:89; gra/src/game/city-defense.ts:73; gra/data/buildings.json:1547"
       },
       {
-        "tytul": "Port wielki: +10 pieniądza i +1 trasa handlowa",
+        "tytul": "Port wielki: +10 podatku i +1 trasa handlowa",
         "liczba": "+10",
-        "zdanie": "Rozbudowa Portu handlowego — więcej dochodu i dodatkowa trasa.",
+        "zdanie": "Rozbudowa Portu handlowego — więcej podatku i dodatkowa trasa handlowa.",
         "dowod": "gra/data/buildings.json:409; gra/src/game/trade-routes.ts:908-909"
       },
       {
@@ -1071,7 +1071,7 @@
       },
       {
         "czynnosc": "Rozbuduj Port handlowy do Portu wielkiego",
-        "korzysc": "podwoić dochód portu (+10 pieniądza)"
+        "korzysc": "podwoić podatek z portu (+10 podatku)"
       },
       {
         "czynnosc": "Wznieś cud Brama wszystkich narodów (z Wojskowością)",
@@ -1100,9 +1100,9 @@
         "dowod": "gra/data/tech.json:449"
       },
       {
-        "tytul": "Warsztat oblężniczy: +4 Pracy, +2 pieniądza",
+        "tytul": "Warsztat oblężniczy: +4 Pracy, +2 podatku",
         "liczba": "+4",
-        "zdanie": "Stały dochód Pracy i pieniądza w mieście z Warsztatem.",
+        "zdanie": "Stały przychód Pracy i podatku w mieście z Warsztatem.",
         "dowod": "gra/data/buildings.json:1596"
       }
     ],
@@ -1177,15 +1177,15 @@
         "dowod": "gra/data/society-params.json:809"
       },
       {
-        "tytul": "Sąd: +5 Kultury, +2 pieniądza, +2 zadowolenia",
+        "tytul": "Sąd: +5 Kultury, +2 podatku, +2 zadowolenia",
         "liczba": "+5",
-        "zdanie": "Stały dochód Kultury, pieniądza i zadowolenia.",
+        "zdanie": "Stały przychód Kultury, podatku i zadowolenia.",
         "dowod": "gra/data/buildings.json:1742; gra/data/society-params.json:453"
       },
       {
-        "tytul": "Pretorium: +3 pieniądza, +5 Kultury, +2 Pracy",
+        "tytul": "Pretorium: +3 podatku, +5 Kultury, +2 Pracy",
         "liczba": "+3",
-        "zdanie": "Stały dochód pieniądza, Kultury i Pracy w mieście regionalnym.",
+        "zdanie": "Stały przychód podatku, Kultury i Pracy w mieście regionalnym.",
         "dowod": "gra/data/buildings.json:1888"
       }
     ],
@@ -1300,9 +1300,9 @@
         "dowod": "gra/data/buildings.json:2082; gra/src/game/unit-building-bonuses.ts:23-33; gra/src/game/unit-building-bonuses.ts:178"
       },
       {
-        "tytul": "Akademia wojskowa: +3 Pracy, +2 pieniądza",
+        "tytul": "Akademia wojskowa: +3 Pracy, +2 podatku",
         "liczba": "+3",
-        "zdanie": "Stały dochód Pracy i pieniądza w mieście.",
+        "zdanie": "Stały przychód Pracy i podatku w mieście.",
         "dowod": "gra/data/buildings.json:2082"
       }
     ],

@@ -175,19 +175,19 @@ async function main() {
         }
       }
     }
-    // Stan po R-WEB-CITYPANEL-TECH-TILE-DEAD-EFFECTS-Q1 (2026-11-08): Teatr (Filozofia) ukryty
-    // wspólnym filtrem (efekt martwy wg tech-cards-top5 `ukryte` i reguły suppressed), usunięty z listy.
-    // Pozostałe 3 trafienia to FAŁSZYWE dopasowania frazy z `_martweFrazy` (korekty budynków), NIE
-    // efekty martwe w silniku: Katapulta to jednostka odblokowywana przez Warsztat oblężniczy
-    // (buildings.json:1637-1639, units.json Tech=Oblężnictwo, Top1 Oblężnictwa wg ANALIZA-KART-ODKRYC);
-    // „elitarnych” = realna bramka jednostek elit (uwagi Akademii wojskowej). Karty odkryć ich NIE
-    // ukrywają, więc kafelek też ich nie ukrywa (jeden filtr, bez rozjazdu). Ewentualna korekta
-    // `_martweFrazy` to osobna decyzja danych (poza allowlistą tego tematu).
-    const ZNANY_STAN_HOST = [
-      'akademia_wojskowa|Sztuka wojenna|Uwagi tech|elit',
-      'warsztat_oblezniczy|Oblężnictwo|Odblokowuje budynek|Katapult',
-      'warsztat_oblezniczy|Oblężnictwo|Uwagi tech|Katapult',
-    ];
+    // Stan po R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 1, decyzja właściciela ABC 2026-11-09):
+    // wpisy `_martweFrazy` warsztat_oblezniczy („Katapult”) i akademia_wojskowa („elit”) były BŁĘDEM
+    // DANYCH (Katapulta to realna jednostka odblokowywana przez Warsztat oblężniczy —
+    // buildings.json:1637-1639, cities.ts:845-851; „elitarne” to realna bramka jednostek) — usunięte
+    // z gen-building-cards-top5.korekty.json. Teraz karta budynku i kafelek „Technologie” pokazują to
+    // samo, a ZNANY STAN jest PUSTY: każde nowe trafienie frazy martwej w kafelku to regres.
+    // (Teatr/Filozofia ukryty wspólnym filtrem techDeadEffects.ts od R-WEB-CITYPANEL-TECH-TILE-DEAD-EFFECTS-Q1.)
+    const ZNANY_STAN_HOST = [];
+    check('[G] `_martweFrazy` nie zawiera już fałszywych wpisów Katapult/elit (DODATEK 1)',
+      !(martwe.warsztat_oblezniczy || []).includes('Katapult') && !(martwe.akademia_wojskowa || []).includes('elit'),
+      { warsztat_oblezniczy: martwe.warsztat_oblezniczy, akademia_wojskowa: martwe.akademia_wojskowa });
+    check('[G] karta Akademii wojskowej nie zawiera frazy „elit” (kafelek i karta spójne)',
+      !JSON.stringify(cards.akademia_wojskowa).includes('elit'));
     for (const h of [...hits].sort()) console.log('ZNANY STAN (host cityPanel, poza allowlistą): ' + h);
     const nowe = [...hits].filter((h) => !ZNANY_STAN_HOST.includes(h));
     const zniknely = ZNANY_STAN_HOST.filter((h) => !hits.has(h));

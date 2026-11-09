@@ -106,8 +106,12 @@ check('[A] hexContextTooltip: pole handel nazywa się „Podatek”', /key:\s*'h
 // ---------------------------------------------------------------- [B] klasa B zostaje
 const techAll = techStrings.map((x) => x[1]).join('\n');
 const bldAll = bldStrings.map((x) => x[1]).join('\n');
-check('[B] Wymiana: „Otwiera handel: bez Wymiany żadnych tras handlowych”', techStrings.some(([, t]) => t === 'Otwiera handel: bez Wymiany żadnych tras handlowych'));
-check('[B] Wymiana: „Wymiana jest bramką całego handlu szlakowego …”', techStrings.some(([, t]) => /Wymiana jest bramką całego handlu szlakowego/.test(t)));
+// R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 2): tytuł z poprzedniej rundy („bez Wymiany żadnych tras handlowych”)
+// był niepolski (brak orzeczenia) — wersja właściciela: „bez Wymiany nie ma tras handlowych”.
+check('[B] Wymiana: „Otwiera handel: bez Wymiany nie ma tras handlowych”', techStrings.some(([, t]) => t === 'Otwiera handel: bez Wymiany nie ma tras handlowych'));
+check('[B] Wymiana: stary tytuł „żadnych tras handlowych” nie wraca', !techStrings.some(([, t]) => /bez Wymiany żadnych tras/.test(t)));
+check('[B] Wymiana: „Wymiana jest warunkiem handlu — dopiero po niej wyznaczysz trasy handlowe.”', techStrings.some(([, t]) => t === 'Wymiana jest warunkiem handlu — dopiero po niej wyznaczysz trasy handlowe.'));
+check('[B] Wymiana: kalka „bramką całego handlu szlakowego” nie wraca', !techStrings.some(([, t]) => /bramką całego handlu szlakowego/.test(t)));
 check('[B] Wymiana: CMZ „Wyznacz trasy handlowe między miastami”', techCards['Wymiana'].cmz.some((c) => c.czynnosc === 'Wyznacz trasy handlowe między miastami'), techCards['Wymiana'].cmz);
 check('[B] Wymiana: „Targowisko: +50% dochodu z tras handlowych miasta”', techStrings.some(([, t]) => t === 'Targowisko: +50% dochodu z tras handlowych miasta'));
 check('[B] Wymiana: „Targowisko: +1 trasa handlowa i premia 5% trasy”', techStrings.some(([, t]) => t === 'Targowisko: +1 trasa handlowa i premia 5% trasy'));
@@ -157,7 +161,7 @@ check('[J] Lama: spójna nazwa ludu — „Lama (Inkowie)” + „tylko dla Ink�
 const title = (tech, re) => (techCards[tech].top5.find((i) => re.test(i.tytul)) || {}).tytul;
 check('[P] Farma', title('Rolnictwo', /^Farma/) === 'Farma: +3 żywności, +3 Pracy, +3 podatku na polu', title('Rolnictwo', /^Farma/));
 check('[P] Farma CMZ', techCards['Rolnictwo'].cmz.some((c) => c.korzysc === 'zyskać +3 żywności, +3 Pracy i +3 podatku z pola'), techCards['Rolnictwo'].cmz);
-check('[P] Obóz łowiecki', title('Łowiectwo', /^Obóz/) === 'Obóz łowiecki: +1 żywności, +1 Pracy, +1 pieniądza, +2 podatku', title('Łowiectwo', /^Obóz/));
+check('[P] Obóz łowiecki', title('Łowiectwo', /^Obóz/) === 'Obóz łowiecki: +1 żywności, +1 Pracy, +3 podatku', title('Łowiectwo', /^Obóz/));
 check('[P] Trzoda', title('Oswojenie zwierząt', /^Trzoda/) === 'Trzoda: +2 żywności, +4 Pracy, +3 podatku, bez złoża', title('Oswojenie zwierząt', /^Trzoda/));
 check('[P] Owce', title('Oswojenie zwierząt', /^Owce/) === 'Owce: +1 żywności, +2 Pracy, +2 podatku na wzgórzu', title('Oswojenie zwierząt', /^Owce/));
 check('[P] Owce — zdanie: „żywność, Praca i podatek z pól trudnych do uprawy”', techCards['Oswojenie zwierząt'].top5.some((i) => /żywność, Praca i podatek z pól trudnych do uprawy/.test(i.zdanie)));
