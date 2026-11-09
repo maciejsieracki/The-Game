@@ -8405,7 +8405,8 @@ export function mountCityRecruitmentCardsForArmy(cityId: string, host: HTMLEleme
   if (!city || !data || !isMeCity(city.ownerId)) return false;
   if (!document.getElementById(STYLE_ID)) ensureStyles();
   host.classList.add('civ-cs', 'civ-emp-mass-city-recruit-list');
-  renderPurchasableUnits(host, city, data, { w4: true, visibleRows: LIST_SCROLL_VISIBLE_CATALOG });
+  // R-WEB-UI-EMPIRE-RECRUIT-PANEL-NO-INNER-SCROLL-Q1: bez wewnętrznego suwaka listy (pełna wysokość).
+  renderPurchasableUnits(host, city, data, { w4: true, noInnerScroll: true });
   // R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1: ta sama „Kolejka rekrutacji:” co w panelu miasta
   // (uchwyt, ikona, koszt, ETA, ↑ ↓ ✕, przeciąganie) -- ten sam appendRecruitmentQueue.
   appendRecruitmentQueueForArmy(host, city);
@@ -9208,7 +9209,7 @@ function renderPurchasableUnits(
   mount: HTMLElement,
   city: City,
   data: GameData | null,
-  opts?: { visibleRows?: number; w4?: boolean; scrollFill?: boolean },
+  opts?: { visibleRows?: number; w4?: boolean; scrollFill?: boolean; noInnerScroll?: boolean },
 ): void {
   mount.innerHTML = '';
   const w4 = opts?.w4 === true;
@@ -9289,14 +9290,18 @@ function renderPurchasableUnits(
     mount.appendChild(pool);
   }
 
-  const scroll = createScrollList(
-    'list-scroll',
-    opts?.scrollFill
-      ? { fill: true }
-      : opts?.visibleRows != null
-        ? { visible: opts.visibleRows, rowEm: LIST_ROW_HEIGHT_COMPACT }
-        : { visible: LIST_SCROLL_VISIBLE_CATALOG, rowEm: LIST_ROW_HEIGHT_COMPACT },
-  );
+  // R-WEB-UI-EMPIRE-RECRUIT-PANEL-NO-INNER-SCROLL-Q1: w panelu armii/imperium (noInnerScroll)
+  // lista jednostek ma pełną wysokość — bez max-height i bez wewnętrznego suwaka; przewija się panel.
+  const scroll = opts?.noInnerScroll
+    ? el('div', 'unit-recruit-list-full')
+    : createScrollList(
+      'list-scroll',
+      opts?.scrollFill
+        ? { fill: true }
+        : opts?.visibleRows != null
+          ? { visible: opts.visibleRows, rowEm: LIST_ROW_HEIGHT_COMPACT }
+          : { visible: LIST_SCROLL_VISIBLE_CATALOG, rowEm: LIST_ROW_HEIGHT_COMPACT },
+    );
   for (const it of units) {
     appendUnitRecruitCompactRow(scroll, city, it, data, skarb);
   }
