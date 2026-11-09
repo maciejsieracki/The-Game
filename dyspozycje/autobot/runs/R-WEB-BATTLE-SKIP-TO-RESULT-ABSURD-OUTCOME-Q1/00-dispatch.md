@@ -1,0 +1,13 @@
+# R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1 — dispatch (2026-11-09) — START PO R-WEB-BATTLE-DEAD-UNITS-NOT-REMOVED-FROM-FIELD-Q1 (te same pliki battle/)
+
+GOAL (zgłoszenie właściciela, 4 zrzuty): przycisk „pomiń do wyniku” (ikona »» w scenie bitwy) daje ABSURDALNE wyniki:
+ - Zrzut A (po »»): „Zwycięstwo”, „Tura 0 · 00:00”, Twoje straty −0, Straty wroga −0, łupy +1472 Pieniądz +4600 Brąz — wynik „bez strat”, wygrana bez walki.
+ - Zrzut C (ta sama kategoria, po walce automatycznej/innej ścieżce): „Porażka”, „Tura 11 · 99:10”, straty −2443.1999999999925 i −1584.999999999996 (niesformatowane liczby zmiennoprzecinkowe), „Łupy 0”.
+ - Zrzut D „Szczegóły bitwy” (Tura 11 · 99:37, „zwycięstwo Chińczyków”): Grecy 3688 → 1610 ludzi po bitwie, Chińczycy 3162 → 1948; „ZNISZCZONE · 0” po obu stronach, „ROZBITE (ROUT) · 69 / 35”, same pozycje „HP 100% → X% · uciekli”.
+ Właściciel: „realny wynik wyglądał tak, przy walce automatycznej” (zrzuty C/D) — a »» (zrzut A) pokazuje zwycięstwo bez strat i z łupami. Skip-to-result musi dawać TEN SAM wynik co dokończenie walki automatycznej (ta sama symulacja do końca), nie osobną uproszczoną ścieżkę.
+BAZA: origin/main po deployu BATTLE-DEAD. Operator: SONNET 5.5 (uzasadnienie: silnik bitwy, wiele ścieżek wyniku, spójność strat/łupów/czasu).
+ZAKRES:
+1. Diagnoza: ścieżka „pomiń do wyniku” (battleScene.ts, battle*.ts, quickResolve/autoResolve/skipToResult) vs ścieżka walki automatycznej/ręcznej: dlaczego skip daje straty 0/0, „Tura 0 · 00:00”, łupy i „Zwycięstwo” (np. wywołanie wyniku przed symulacją, wartości domyślne, brak przeliczenia strat, zły obiekt wyniku). Dlaczego strony mają „Zniszczone 0” a ogromne „Rozbite” (ucieczka morale zamiast śmierci?) — ocena realności wyniku (wspólne z DEAD-UNITS).
+2. Naprawa: skip-to-result = dokończenie symulacji tym samym silnikiem (szybkie przewinięcie), te same straty/łupy/wynik/czas bitwy; poprawny numer tury i czas (Tura bieżąca, mm:ss realny), formatowanie liczb strat (liczby całkowite, separatory), brak NaN/float; wynik zapisywany na mapie raz.
+3. Test `gra/tools/battle-skip-equals-auto-resolve-test.cjs`: ten sam seed/armie → skip i dokończenie auto dają identyczny wynik (zwycięzca, straty, łupy); format liczb; tura/czas; regresje battle-* testów. Chromium jeśli dostępny, inaczej NIE_ZMIERZONO jawnie. Wpis LEDGER (REPIN Rust).
+ALLOWLISTA: gra/src/battle/*.ts, gra/src/ui/ (ekran wyniku/szczegółów bitwy), main.ts (tylko podpięcie wyniku), nowy test, runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev, git add -A, push/deploy. Ignoruj pytania właściciela z innych tematów pojawiające się w kontekście.
