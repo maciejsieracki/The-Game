@@ -66,7 +66,7 @@ assert(/count: n/.test(groupSrc) && /affordableCount/.test(groupSrc) && /totalMo
 assert(/performUnitReplace\(gu\.id, newTypeId, true\)/.test(groupSrc), 'zbiorcza zamiana wola performUnitReplace per jednostka (ruch/koszt/limity jak dotad)');
 assert(/index \+ 1 < groups\.length/.test(groupSrc), 'kolejne grupy typow -> kolejne okna wyboru');
 const performSrc = extractFn(main, 'performUnitReplace');
-assert(/quiet = false\): boolean/.test(performSrc) && /u\.ruchLeft = 0/.test(performSrc) && /replaceUsedThisTurn = true/.test(performSrc), 'performUnitReplace: zwraca boolean, zuzywa ruch i flage tury');
+assert(/quiet = false\): boolean/.test(performSrc) && /unit\.ruchLeft = 0/.test(fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'unit-replace-execute.ts'), 'utf8')) && /replaceUsedThisTurn = true/.test(fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'unit-replace-execute.ts'), 'utf8')), 'performUnitReplace: zwraca boolean, zuzywa ruch i flage tury');
 assert(!/isGeneral\s*=/.test(performSrc), 'zamiana nie rusza isGeneral -> wodz zachowuje role');
 assert(/replaceTargets.some\(unitReplaceEligible\)/.test(main), 'przycisk "Zastap" wyszarzony wg zaznaczonych, nie wg wybranej karty');
 
