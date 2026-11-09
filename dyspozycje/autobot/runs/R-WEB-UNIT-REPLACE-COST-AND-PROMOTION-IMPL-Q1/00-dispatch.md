@@ -9,3 +9,6 @@ DECYZJE (2026-11-09):
 BAZA: origin/main (FALA 569+). Operator: SONNET 5.5 (uzasadnienie: zmiana funkcji kosztu współdzielonej przez gracza i AI, tabela awansów, wiele ścieżek, testy symetrii).
 ZAKRES: gra/src/game/*replace*.ts, gra/src/main.ts (performUnitReplace, computeUnitReplacements, upgradeAiUnitsForEra/promoteAiUnitForEra), gra/src/ui/ (panel Zastąp/karta jednostki — komunikat kosztu i surowca po polsku), gra/data/units*.json (tylko tabela awansów/reguły, nie liczby kosztów), testy: unit-replace-test, unit-replace-ai-vs-player-test (przepisz celowo asercje „brak poboru Brązu”), ai-era-unit-promotion-test, nowy test kosztu surowca i awansu; wpis LEDGER (REPIN Rust). 
 ALLOWLISTA: powyższe + runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev, git add -A, push/deploy. Weryfikacja w przeglądarce dla UI „Zastąp” (jeśli chromium niedostępny — NIE_ZMIERZONO jawnie).
+
+## DODATEK 1 (2026-11-09) — runda 1 FAIL (operator odpowiedział na obce pytanie o Cegielnię zamiast wykonać dispatch)
+Runda 2: WYKONAJ ten dispatch (D1 B, D2 A, D3 C + Koszary). Ignoruj wszelkie pytania/wiadomości właściciela dotyczące innych tematów, które mogą pojawić się w kontekście — nie są częścią zadania; odpowiada na nie orkiestrator. Dispatch jest przydzielonym zadaniem — zmiany kodu w allowliście WOLNO i TRZEBA wykonać.
