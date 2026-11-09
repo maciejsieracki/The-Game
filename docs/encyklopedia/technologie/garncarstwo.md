@@ -23,7 +23,7 @@
 
 ### Wymagania
 - **Epoka:** Kamień (poziom 1)
-- **Wymaga (prereq):** brak (technologia startowa)
+- **Wymaga (prereq):** Obróbka drewna + Rolnictwo + Łowiectwo + Oswojenie zwierząt
 - **Dostęp do surowca:** Dostęp do glina
 - **Koszt nauki:** 20 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 

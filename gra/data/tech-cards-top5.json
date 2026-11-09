@@ -59,57 +59,6 @@
     ],
     "ukryte": []
   },
-  "Garncarstwo": {
-    "top5": [
-      {
-        "tytul": "Spichlerz: limit ludności miasta 5 → 8",
-        "liczba": "5 → 8",
-        "zdanie": "Spichlerz (wymaga ceramiki) pozwala miastu urosnąć z 5 do 8 mieszkańców.",
-        "dowod": "gra/data/econ-params.json:24; gra/data/econ-params.json:31; gra/src/game/economy.ts:1053; gra/data/buildings.json:458"
-      },
-      {
-        "tytul": "Glinianka: +50 gliny na turę do magazynu państwa",
-        "liczba": "+50",
-        "zdanie": "Ulepszenie na złożu gliny; glina idzie na ceramikę i cegłę.",
-        "dowod": "gra/data/terrain-improvements.json:118; gra/data/terrain-improvements.json:128"
-      },
-      {
-        "tytul": "Garncarnia: wytwarza ceramikę (glina + drewno)",
-        "zdanie": "Przerabia glinę i drewno na ceramikę; Spichlerz zużywa jej 25 na turę, a bez niej nie daje bonusów ludności.",
-        "dowod": "gra/src/game/converters.ts:85; gra/data/buildings.json:554"
-      },
-      {
-        "tytul": "Cegielnia: cegła (2 glina + 1 drewno → 2 cegły)",
-        "zdanie": "Cegielnia jest dostępna od epoki Brązu; cegła jest kosztem budowy Akademii, Sądu, Łaźni publicznej i Kuźni żelaza.",
-        "dowod": "gra/src/game/converters.ts:84; gra/data/tech.json:196; gra/src/game/research.ts:180"
-      },
-      {
-        "tytul": "Warzelnia soli: +50 soli na turę",
-        "liczba": "+50",
-        "zdanie": "Ulepszenie na złożu soli; sól trafia do magazynu państwa, a Spichlerz Królewski wymaga jej i zużywa 25 na turę; gdy sól wystarcza, armia poza własnym terytorium zjada o połowę mniej żywności.",
-        "dowod": "gra/data/terrain-improvements.json:251; gra/data/terrain-improvements.json:262"
-      }
-    ],
-    "cmz": [
-      {
-        "czynnosc": "Zbuduj Spichlerz (gdy masz ceramikę)",
-        "korzysc": "podnieść limit ludności miasta z 5 do 8"
-      },
-      {
-        "czynnosc": "Postaw Gliniankę na złożu gliny",
-        "korzysc": "wydobywać 50 gliny na turę"
-      },
-      {
-        "czynnosc": "Zbuduj Garncarnię przy dostępie do gliny",
-        "korzysc": "wytwarzać ceramikę potrzebną Spichlerzowi"
-      },
-      {
-        "czynnosc": "Zaplanuj Cegielnię (dostępna od epoki Brązu)",
-        "korzysc": "wytwarzać cegłę (na Akademię, Sąd, Łaźnię i Kuźnię żelaza) i otworzyć badanie Pisma"
-      }
-    ],
-    "ukryte": []
-  },
   "Murarstwo": {
     "top5": [
       {
@@ -305,6 +254,57 @@
       {
         "czynnosc": "Wybierz kolejne badanie",
         "korzysc": "dojść do Dróg i Rydwanów"
+      }
+    ],
+    "ukryte": []
+  },
+  "Garncarstwo": {
+    "top5": [
+      {
+        "tytul": "Spichlerz: limit ludności miasta 5 → 8",
+        "liczba": "5 → 8",
+        "zdanie": "Spichlerz (wymaga ceramiki) pozwala miastu urosnąć z 5 do 8 mieszkańców.",
+        "dowod": "gra/data/econ-params.json:24; gra/data/econ-params.json:31; gra/src/game/economy.ts:1053; gra/data/buildings.json:458"
+      },
+      {
+        "tytul": "Glinianka: +50 gliny na turę do magazynu państwa",
+        "liczba": "+50",
+        "zdanie": "Ulepszenie na złożu gliny; glina idzie na ceramikę i cegłę.",
+        "dowod": "gra/data/terrain-improvements.json:118; gra/data/terrain-improvements.json:128"
+      },
+      {
+        "tytul": "Garncarnia: wytwarza ceramikę (glina + drewno)",
+        "zdanie": "Przerabia glinę i drewno na ceramikę; Spichlerz zużywa jej 25 na turę, a bez niej nie daje bonusów ludności.",
+        "dowod": "gra/src/game/converters.ts:85; gra/data/buildings.json:554"
+      },
+      {
+        "tytul": "Cegielnia: cegła (2 glina + 1 drewno → 2 cegły)",
+        "zdanie": "Cegielnia jest dostępna od epoki Brązu; cegła jest kosztem budowy Akademii, Sądu, Łaźni publicznej i Kuźni żelaza.",
+        "dowod": "gra/src/game/converters.ts:84; gra/data/tech.json:196; gra/src/game/research.ts:180"
+      },
+      {
+        "tytul": "Warzelnia soli: +50 soli na turę",
+        "liczba": "+50",
+        "zdanie": "Ulepszenie na złożu soli; sól trafia do magazynu państwa, a Spichlerz Królewski wymaga jej i zużywa 25 na turę; gdy sól wystarcza, armia poza własnym terytorium zjada o połowę mniej żywności.",
+        "dowod": "gra/data/terrain-improvements.json:251; gra/data/terrain-improvements.json:262"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Spichlerz (gdy masz ceramikę)",
+        "korzysc": "podnieść limit ludności miasta z 5 do 8"
+      },
+      {
+        "czynnosc": "Postaw Gliniankę na złożu gliny",
+        "korzysc": "wydobywać 50 gliny na turę"
+      },
+      {
+        "czynnosc": "Zbuduj Garncarnię przy dostępie do gliny",
+        "korzysc": "wytwarzać ceramikę potrzebną Spichlerzowi"
+      },
+      {
+        "czynnosc": "Zaplanuj Cegielnię (dostępna od epoki Brązu)",
+        "korzysc": "wytwarzać cegłę (na Akademię, Sąd, Łaźnię i Kuźnię żelaza) i otworzyć badanie Pisma"
       }
     ],
     "ukryte": []
