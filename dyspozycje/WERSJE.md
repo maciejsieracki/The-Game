@@ -1,3 +1,9 @@
+## ROBOCZA 48bb2f40 -- 2026-11-06 -- FALA 577: Limit 1 Super-jednostki liczy cały stan cywilizacji (testowa)
+
+- R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1 (84844fc73)
+- Weryfikacja: tsc 0, logic 213/213, super-unit-limit-one 40/0, unit-replace-full-cost 40/0, empire-recruit-plan 17/0, recruit-list-visibility 9/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO w przeglądarce
+
 ## ROBOCZA cfb6e783 -- 2026-11-06 -- FALA 576: Panel rekrutacji: Rekrutuj wszystkie + Targowisko bez kamienia (testowa)
 
 - R-WEB-UI-EMPIRE-RECRUIT-PANEL-RECRUIT-ALL-Q1 (50f21fd3c): licznik domyślnie 0, dwa przyciski „Rekrutuj wszystkie”, reset udanych, komunikat PL; R-WEB-DATA-TARGOWISKO-REMOVE-STONE-COST-Q1 (6b5255dec): Targowisko samo drewno 30, Studnia i Kamienne kręgi z kamieniem
