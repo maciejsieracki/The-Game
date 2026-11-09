@@ -1,3 +1,9 @@
+## ROBOCZA 24ca2f05 -- 2026-11-06 -- FALA 579: Falanga: Atak 7, Obrona 12, Przebicie 4, bonus +30% vs Włócznik (testowa)
+
+- R-WEB-DATA-FALANGA-BONUS-VS-SPEARMAN-30-Q1 (0d328bfaa)
+- Weryfikacja: tsc 0, falanga-bonus 15/15, unit-power 6/0, unit-power-sort 13/0, combat-test 6/6, card-resource-purpose 102/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO w przeglądarce; tech-cards-top5-test (brak playwright); dług: REPIN Rust Falanga
+
 ## ROBOCZA 17a57af1 -- 2026-11-06 -- FALA 578: Konnica i rydwany domyślnie na skrzydłach szyku (nie z przodu) (testowa)
 
 - R-WEB-ARMY-CAVALRY-FLANK-NOT-APPLIED-DEFAULT-Q1 (e9869a967)
