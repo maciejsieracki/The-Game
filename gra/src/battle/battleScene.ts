@@ -2542,6 +2542,14 @@ export class BattleScene {
   private vTimers: { due: number; cb: () => void; id: number }[] = [];
   private vTimerSeq = 0;             // monotonic id for stable ordering of equal-due timers
 
+  // R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1: "Pomin do wyniku" = SZYBKIE PRZEWINIECIE
+  // tej samej symulacji (ten sam silnik co walka automatyczna), nie osobny uproszczony
+  // rachunek. W trybie FF kroki animacji (dawniej wymagajace osobnej klatki rAF) ida do
+  // kolejki _ffQueue, a petla klatki wykonuje wiele krokow wirtualnego czasu na klatke.
+  private _ffActive = false;
+  private _ffQueue: (() => void)[] = [];
+  private _ffVirtualMs = 0;
+
   // CHANGE2: master visibility toggle for ALL over-head stat bars (morale/ammo/
   // HP), flipped by the "H" key. Default true (bars shown). When false every
   // living unit's billboard bar GROUP is hidden; toggling back on restores it
@@ -3643,6 +3651,22 @@ export class BattleScene {
   }
 
   skip(): void {
+    if (this.finished || this._ffActive) return;
+    // R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1: ta sama symulacja co walka AUTO,
+    // tylko przewinieta (bez osobnego uproszczonego rachunku z zerowymi stratami).
+    if (this.deployPhase) this._endDeployPhase();
+    if (!this.started) { this._skipInstantFallback(); return; }
+    this.paused = false;
+    if (this._manualMode) this._toggleManualMode();          // AUTO: gra sama za obie strony
+    if (this._battleAwaitingOrders) this._kickoffBattleTurn();
+    this._ffActive = true;
+    this._ffVirtualMs = 0;
+    this._ffQueue = [];
+    this.hint.textContent = 'Przewijanie bitwy do wyniku...';
+  }
+
+  /** Awaryjny rachunek natychmiastowy (tylko gdy przewiniecie niemozliwe lub przekroczylo limit). */
+  private _skipInstantFallback(): void {
     if (this.finished) return;
     this.finished = true;
     // R1: "Pomin" nie rozgrywa wylomu -- machina oblezenicza w skladzie atakujacego
@@ -8693,7 +8717,7 @@ export class BattleScene {
       ru.group.position.set(x, baseY + hop, z);
       ru.hpBarGroup.position.set(x, baseY + HPBAR_Y, z);
       if (p < 1) {
-        requestAnimationFrame(step);
+        this._raf(step);
       } else {
         ru.group.position.set(to.x, toTopY, to.z);
         ru.hpBarGroup.position.set(to.x, toTopY + HPBAR_Y, to.z);
@@ -8701,7 +8725,7 @@ export class BattleScene {
         done();
       }
     };
-    requestAnimationFrame(step);
+    this._raf(step);
   }
 
   // -------------------------------------------------------------------------
@@ -9083,9 +9107,9 @@ export class BattleScene {
         });
         return;
       }
-      requestAnimationFrame(stepAnim);
+      this._raf(stepAnim);
     };
-    requestAnimationFrame(stepAnim);
+    this._raf(stepAnim);
   }
 
   // ---- Ranged: ONE shot with a flying projectile, single blow on landing ----
@@ -9178,6 +9202,13 @@ export class BattleScene {
       // Advance the speed-scaled virtual clock from the wall clock, THEN drive
       // every battle ticker off that virtual time so animations honour the
       // current speed multiplier (1x/2x/4x/8x) without breaking their shape.
+      if (this._ffActive && !this.paused) {
+        this.vLastWall = t;
+        this._runFastForward();
+        this._updateArmyMoraleBars();
+        this.renderer.render(this.scene, this.camera);
+        return;
+      }
       this._advanceVClock(t);
       // Drain the virtual-time scheduler BEFORE the per-frame tickers so newly
       // due actions are applied this frame (the speed fix -- see _drainTimers).
@@ -9308,6 +9339,43 @@ export class BattleScene {
    * _advanceVClock() by (wall delta) * speedMul.
    */
   private _now(): number { return this.vNow; }
+
+  /** requestAnimationFrame dla krokow przeplywu walki; w trybie FF (skip) wykonywane synchronicznie w petli FF. */
+  private _raf(cb: () => void): void {
+    if (this._ffActive) { this._ffQueue.push(cb); return; }
+    requestAnimationFrame(cb);
+  }
+
+  /**
+   * Przewija symulacje: do ~budzetu czasu zegara scianowego wykonuje kroki wirtualnego
+   * czasu (timery + kroki animacji), az bitwa sie skonczy. Ten sam kod walki co zwykla gra.
+   */
+  private _runFastForward(): void {
+    const FF_STEP_MS = 120;                 // < MOVE_STEP_MS/ACT_GAP_MS: nie gubi kolejnosci akcji
+    const FF_MAX_VIRTUAL_MS = 3 * 60 * 60 * 1000; // bezpiecznik: 3 h czasu bitwy
+    const wall0 = performance.now();
+    while (!this.finished && performance.now() - wall0 < 40) {
+      this.vNow += FF_STEP_MS;
+      this._ffVirtualMs += FF_STEP_MS;
+      this._drainTimers();
+      // Kolejka krokow: kroki moga dopisywac nowe kroki (kolejna klatka) -- bierzemy kopie.
+      const q = this._ffQueue;
+      this._ffQueue = [];
+      for (const cb of q) cb();
+      this._tickProjectiles(this.vNow);
+      this._tickFades(this.vNow);
+      if (this._ffVirtualMs > FF_MAX_VIRTUAL_MS) { this._ffFallbackInstant(); return; }
+    }
+  }
+
+  /** Bezpiecznik: symulacja nie skonczyla sie w limicie -- stary rachunek natychmiastowy. */
+  private _ffFallbackInstant(): void {
+    this._ffActive = false;
+    this._ffQueue = [];
+    this.vTimers.length = 0;
+    if (this.finished) return;
+    this._skipInstantFallback();
+  }
 
   /** Advance the virtual clock from the wall clock, scaled by speedMul. Called once per frame. */
   private _advanceVClock(wall: number): void {
@@ -10336,6 +10404,8 @@ export class BattleScene {
     this._endSurvivors = [];
     this.log = [];
     this.vTimers.length = 0;
+    this._ffActive = false;
+    this._ffQueue = [];
     this.engaged.clear();
     this._stallTurns = 0;
     this._stallSig = '';
@@ -10456,6 +10526,8 @@ export class BattleScene {
   }
 
   private _showEndScreen(winner: 'atakujacy' | 'obronca'): void {
+    this._ffActive = false;
+    this._ffQueue = [];
     if (this._endScreenShown) return;
     this._endScreenShown = true;
     this._hideEndDetails();
