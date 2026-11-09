@@ -165,9 +165,9 @@
   "Rolnictwo": {
     "top5": [
       {
-        "tytul": "Farma: +3 żywności, +3 Pracy, +3 handlu na polu",
+        "tytul": "Farma: +3 żywności, +3 Pracy, +3 podatku na polu",
         "liczba": "+3",
-        "zdanie": "Podstawowe ulepszenie łąki lub równiny — jedno pole daje naraz żywność, Pracę i handel.",
+        "zdanie": "Podstawowe ulepszenie łąki lub równiny — jedno pole daje naraz żywność, Pracę i podatek.",
         "dowod": "gra/data/terrain-improvements.json:12"
       },
       {
@@ -177,8 +177,8 @@
         "dowod": "gra/data/terrain-improvements.json:212"
       },
       {
-        "tytul": "Warunek Wymiany — klucza do tras handlowych",
-        "zdanie": "Rolnictwo jest jednym z trzech warunków Wymiany, bez której nie wyznaczysz żadnej trasy handlowej.",
+        "tytul": "Warunek Wymiany — klucz do tras handlowych",
+        "zdanie": "Rolnictwo jest jednym z trzech warunków Wymiany, bez których nie wyznaczysz żadnej trasy handlowej.",
         "dowod": "gra/data/tech.json:124; gra/src/game/trade-routes.ts:1093"
       },
       {
@@ -191,7 +191,7 @@
     "cmz": [
       {
         "czynnosc": "Postaw Farmę na łące lub równinie",
-        "korzysc": "zyskać +3 żywności, +3 Pracy i +3 handlu z pola"
+        "korzysc": "zyskać +3 żywności, +3 Pracy i +3 podatku z pola"
       },
       {
         "czynnosc": "Postaw Tarasy uprawne na wzgórzu (Chińczycy, Inkowie)",
@@ -207,9 +207,9 @@
   "Łowiectwo": {
     "top5": [
       {
-        "tytul": "Obóz łowiecki: +1 żywności, +1 Pracy, +1 pieniądza, +2 handlu",
+        "tytul": "Obóz łowiecki: +1 żywności, +1 Pracy, +1 pieniądza, +2 podatku",
         "liczba": "+1",
-        "zdanie": "Ulepszenie lasu — jedno pole daje naraz żywność, Pracę, pieniądz i handel.",
+        "zdanie": "Ulepszenie lasu — jedno pole daje naraz żywność, Pracę, pieniądz i podatek.",
         "dowod": "gra/data/terrain-improvements.json:154; gra/data/terrain-improvements.json:155-160; gra/src/game/turn-economy.ts:223"
       },
       {
@@ -221,7 +221,7 @@
     "cmz": [
       {
         "czynnosc": "Postaw Obóz łowiecki w lesie z Tartakiem",
-        "korzysc": "zagospodarować las (+1 żywności, +1 Pracy, +1 pieniądza, +2 handlu)"
+        "korzysc": "zagospodarować las (+1 żywności, +1 Pracy, +1 pieniądza, +2 podatku)"
       },
       {
         "czynnosc": "Wybierz kolejne badanie",
@@ -261,7 +261,7 @@
   "Oswojenie zwierząt": {
     "top5": [
       {
-        "tytul": "Trzoda: +2 żywności, +4 Pracy, +3 handlu, bez złoża",
+        "tytul": "Trzoda: +2 żywności, +4 Pracy, +3 podatku, bez złoża",
         "liczba": "+2",
         "zdanie": "Ulepszenie łąki lub równiny, które nie potrzebuje złoża — dużo Pracy z jednego pola.",
         "dowod": "gra/data/terrain-improvements.json:45"
@@ -273,14 +273,14 @@
         "dowod": "gra/data/terrain-improvements.json:81"
       },
       {
-        "tytul": "Owce: +1 żywności, +2 Pracy, +2 handlu na wzgórzu",
+        "tytul": "Owce: +1 żywności, +2 Pracy, +2 podatku na wzgórzu",
         "liczba": "+1",
-        "zdanie": "Ulepszenie wzgórza — żywność, Praca i handel z pól trudnych do uprawy.",
+        "zdanie": "Ulepszenie wzgórza — żywność, Praca i podatek z pól trudnych do uprawy.",
         "dowod": "gra/data/terrain-improvements.json:63"
       },
       {
-        "tytul": "Warunek Wymiany — klucza do tras handlowych",
-        "zdanie": "Oswojenie zwierząt jest jednym z trzech warunków Wymiany, bez której nie wyznaczysz żadnej trasy handlowej.",
+        "tytul": "Warunek Wymiany — klucz do tras handlowych",
+        "zdanie": "Oswojenie zwierząt jest jednym z trzech warunków Wymiany, bez których nie wyznaczysz żadnej trasy handlowej.",
         "dowod": "gra/data/tech.json:124; gra/src/game/trade-routes.ts:1093"
       },
       {
@@ -401,7 +401,7 @@
   "Gospodarka wodna": {
     "top5": [
       {
-        "tytul": "Irygacja: +5 żywności, +2 Pracy, +2 handlu przy rzece",
+        "tytul": "Irygacja: +5 żywności, +2 Pracy, +2 podatku przy rzece",
         "liczba": "+5",
         "zdanie": "Ulepszenie pola leżącego przy rzece — miasto rośnie szybciej.",
         "dowod": "gra/data/terrain-improvements.json:29; gra/src/game/improvement-tech.ts:39"
@@ -462,9 +462,9 @@
         "dowod": "gra/src/game/generals.ts:71-73; gra/src/main.ts:7304-7305; gra/data/units.json:19; gra/data/units.json:537"
       },
       {
-        "tytul": "Droga: +2 handlu na polu",
+        "tytul": "Droga: +2 podatku na polu",
         "liczba": "+2",
-        "zdanie": "Każde pole z Drogą daje dodatkowy handel.",
+        "zdanie": "Każde pole z Drogą daje dodatkowy podatek.",
         "dowod": "gra/data/terrain-improvements.json:288"
       },
       {
@@ -512,7 +512,7 @@
         "dowod": "gra/src/game/generals.ts:2-4"
       },
       {
-        "tytul": "Kopalnia miedzi: +20 rudy na turę, +5 handlu",
+        "tytul": "Kopalnia miedzi: +20 rudy na turę, +5 podatku",
         "liczba": "+20",
         "zdanie": "Ulepszenie na złożu miedzi — dostarcza rudę do wytopu brązu.",
         "dowod": "gra/data/terrain-improvements.json:322; gra/data/terrain-improvements.json:331"
@@ -552,9 +552,9 @@
         "dowod": "gra/src/game/embarkation.ts:25; gra/src/game/embarkation.ts:28-36"
       },
       {
-        "tytul": "Łodzie rybackie: +2 żywności, +3 Pracy, +3 handlu",
+        "tytul": "Łodzie rybackie: +2 żywności, +3 Pracy, +3 podatku",
         "liczba": "+2",
-        "zdanie": "Ulepszenie ławicy — morze daje żywność, Pracę i handel.",
+        "zdanie": "Ulepszenie ławicy — morze daje żywność, Pracę i podatek.",
         "dowod": "gra/data/terrain-improvements.json:234"
       },
       {
@@ -801,7 +801,7 @@
       },
       {
         "tytul": "Z Matematyką otwiera Walutę (Mennica)",
-        "zdanie": "Prowadzi do Mennicy, która mnoży handel (podatek) wszystkich miast.",
+        "zdanie": "Prowadzi do Mennicy, która mnoży podatek wszystkich miast.",
         "dowod": "gra/data/tech.json:308"
       },
       {
@@ -930,15 +930,15 @@
   "Waluta": {
     "top5": [
       {
-        "tytul": "Mennica: ×1,50 podatku (handlu) w każdym mieście",
+        "tytul": "Mennica: ×1,50 podatku w każdym mieście",
         "liczba": "×1,50",
-        "zdanie": "Jedna Mennica w stolicy (z Targowiskiem i dostępem do złota) mnoży handel netto każdego miasta, zanim podzielisz go na naukę, pieniądz i luksus.",
+        "zdanie": "Jedna Mennica w stolicy (z Targowiskiem i dostępem do złota) mnoży podatek netto każdego miasta, zanim podzielisz go na naukę, pieniądz i luksus.",
         "dowod": "gra/data/econ-params.json:585-591; gra/src/game/economy.ts:952-955; gra/src/game/economy.ts:962-967; gra/src/game/economy.ts:644-653"
       },
       {
-        "tytul": "Kopalnia złota: +10 handlu i +1 złota na turę",
+        "tytul": "Kopalnia złota: +10 podatku i +1 złota na turę",
         "liczba": "+10",
-        "zdanie": "Ulepszenie na złożu złota — daje handel i złoto potrzebne Mennicy.",
+        "zdanie": "Ulepszenie na złożu złota — daje podatek i złoto potrzebne Mennicy.",
         "dowod": "gra/data/terrain-improvements.json:376; gra/data/terrain-improvements.json:385"
       },
       {
@@ -965,7 +965,7 @@
       },
       {
         "czynnosc": "Postaw Kopalnię złota na złożu",
-        "korzysc": "zdobyć złoto (+10 handlu) i uruchomić Mennicę"
+        "korzysc": "zdobyć złoto (+10 podatku) i uruchomić Mennicę"
       }
     ],
     "ukryte": []
@@ -1210,9 +1210,9 @@
         "dowod": "gra/data/terrain-improvements.json:303; gra/src/map/road-movement.ts:29"
       },
       {
-        "tytul": "Droga brukowana: +3 handlu na polu (Droga: +2)",
+        "tytul": "Droga brukowana: +3 podatku na polu (Droga: +2)",
         "liczba": "+3",
-        "zdanie": "Każde pole z Drogą brukowaną daje więcej handlu niż zwykła Droga.",
+        "zdanie": "Każde pole z Drogą brukowaną daje więcej podatku niż zwykła Droga.",
         "dowod": "gra/data/terrain-improvements.json:303"
       },
       {

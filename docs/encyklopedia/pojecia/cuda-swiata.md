@@ -36,7 +36,7 @@ Cztery kategorie bonusów w `wonders.json`: **miasto** (yield/turę × KAŻDE mi
 
 ### Wygaśnięcie po „absolut"
 
-Domyślnie **absolut = epoka 6** (koniec Średniowiecza): od epoki absolut+1 wszystkie bonusy z JSON wygasają, ale **cud zostaje na mapie** jako ruina (nie jest niszczony). Utrzymanie spada do **50%** (zaokrąglone w dół, min. 0). Jedyny ocalały efekt: **+10 do handlu** (atrakcja turystyczna).
+Domyślnie **absolut = epoka 6** (koniec Średniowiecza): od epoki absolut+1 wszystkie bonusy z JSON wygasają, ale **cud zostaje na mapie** jako ruina (nie jest niszczony). Utrzymanie spada do **50%** (zaokrąglone w dół, min. 0). Jedyny ocalały efekt: **+10 do podatku** (atrakcja turystyczna).
 
 **Powiązane:** poszczególne karty cudów (Piramidy, Wyrocznia, Koloseum…) · [[Drzewko technologii]] (techUnlock cudu E)
 

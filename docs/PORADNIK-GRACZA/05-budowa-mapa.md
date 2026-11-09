@@ -197,7 +197,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 | Ulepszenie | Efekt poza plonami |
 |------------|-------------------|
-| **Droga** | Tańszy ruch wojska i handel na tym heksie |
+| **Droga** | Tańszy ruch wojska i dodatkowy podatek na tym heksie |
 | **Posterunek** | +50% obrona obozu; **+3 heksy** terytorium |
 | **Fort** | +100% obrona obozu; **+5 heksów** terytorium (promień 5) |
 

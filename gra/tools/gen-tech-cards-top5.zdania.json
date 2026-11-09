@@ -38,15 +38,15 @@
   },
   "Rolnictwo": {
     "top5": [
-      { "z": "Top1_GLOWNA", "zdanie": "Podstawowe ulepszenie łąki lub równiny — jedno pole daje naraz żywność, Pracę i handel." },
+      { "z": "Top1_GLOWNA", "zdanie": "Podstawowe ulepszenie łąki lub równiny — jedno pole daje naraz żywność, Pracę i podatek." },
       { "z": "Top2", "zdanie": "Ulepszenie tylko dla Chińczyków i Inków — pozwala uprawiać wzgórza." },
-      { "z": "Top3", "zdanie": "Rolnictwo jest jednym z trzech warunków Wymiany, bez której nie wyznaczysz żadnej trasy handlowej." },
+      { "z": "Top3", "zdanie": "Rolnictwo jest jednym z trzech warunków Wymiany, bez których nie wyznaczysz żadnej trasy handlowej." },
       { "z": "Top4", "zdanie": "Następne badanie daje Irygację na polach przy rzece." }
     ]
   },
   "Łowiectwo": {
     "top5": [
-      { "z": "Top1_GLOWNA", "zdanie": "Ulepszenie lasu — jedno pole daje naraz żywność, Pracę, pieniądz i handel." },
+      { "z": "Top1_GLOWNA", "zdanie": "Ulepszenie lasu — jedno pole daje naraz żywność, Pracę, pieniądz i podatek." },
       { "z": "Top2", "zdanie": "Następne badanie daje Łucznika — pierwszą jednostkę strzelającą z dystansu." }
     ]
   },
@@ -61,8 +61,8 @@
     "top5": [
       { "z": "Top1_GLOWNA", "zdanie": "Ulepszenie łąki lub równiny, które nie potrzebuje złoża — dużo Pracy z jednego pola." },
       { "z": "Top2", "zdanie": "Ulepszenie tylko dla Inków — zagospodarowuje pola w górach i w lesie." },
-      { "z": "Top3", "zdanie": "Ulepszenie wzgórza — żywność, Praca i handel z pól trudnych do uprawy." },
-      { "z": "Top4", "zdanie": "Oswojenie zwierząt jest jednym z trzech warunków Wymiany, bez której nie wyznaczysz żadnej trasy handlowej." },
+      { "z": "Top3", "zdanie": "Ulepszenie wzgórza — żywność, Praca i podatek z pól trudnych do uprawy." },
+      { "z": "Top4", "zdanie": "Oswojenie zwierząt jest jednym z trzech warunków Wymiany, bez których nie wyznaczysz żadnej trasy handlowej." },
       { "z": "Top5", "zdanie": "Następne badanie daje Drogi i Rydwan (woły)." }
     ]
   },
@@ -97,7 +97,7 @@
       { "z": "Top1_GLOWNA", "zdanie": "Wojska i jednostki cywilne przemieszczają się po Drodze trzy razy szybciej." },
       { "z": "Top2", "zdanie": "Silna jednostka uderzeniowa epoki Kamienia, której rekrutacja nie wymaga Koszar." },
       { "z": "Top3", "zdanie": "Wódz w epoce Kamienia jeździ Rydwanem (woły), więc jest wielokrotnie trwalszy." },
-      { "z": "Top4", "zdanie": "Każde pole z Drogą daje dodatkowy handel." },
+      { "z": "Top4", "zdanie": "Każde pole z Drogą daje dodatkowy podatek." },
       { "z": "Top5", "zdanie": "Razem z Brązownictwem prowadzi do Konnicy i Stadniny." }
     ]
   },
@@ -113,7 +113,7 @@
   "Żegluga": {
     "top5": [
       { "z": "Top1_GLOWNA", "zdanie": "Armia lądowa przepłynie morze lub rzekę bez budowy floty transportowej." },
-      { "z": "Top2", "zdanie": "Ulepszenie ławicy — morze daje żywność, Pracę i handel." },
+      { "z": "Top2", "zdanie": "Ulepszenie ławicy — morze daje żywność, Pracę i podatek." },
       { "z": "Top3", "zdanie": "Cud wyścigowy: może go wznieść każde państwo, ale stanie tylko raz na świecie." },
       { "z": "Top4", "zdanie": "Miasto nad wodą prowadzi dodatkową trasę handlową." },
       { "z": "Top5", "zdanie": "Pierwszy okręt wojenny; rekrutujesz go w mieście nad wodą z Koszarami." }
@@ -163,7 +163,7 @@
     "top5": [
       { "z": "Top1_GLOWNA", "zdanie": "Magazyn państwa mieści więcej surowców; premia sumuje się z każdym Magazynem." },
       { "z": "Top2", "zdanie": "Miasto z Emporionem prowadzi dodatkową trasę handlową." },
-      { "z": "Top3", "zdanie": "Prowadzi do Mennicy, która mnoży handel (podatek) wszystkich miast." },
+      { "z": "Top3", "zdanie": "Prowadzi do Mennicy, która mnoży podatek wszystkich miast." },
       { "z": "Top4", "zdanie": "Stały dochód budynku rośnie z jego poziomem." },
       { "z": "Top5", "zdanie": "Drobny stały dochód Pracy i pieniądza w mieście." }
     ]
@@ -188,8 +188,8 @@
   },
   "Waluta": {
     "top5": [
-      { "z": "Top1_GLOWNA", "tytul": "Mennica: ×1,50 podatku (handlu) w każdym mieście", "powodTytulu": "Dispatch: współczynnik zapisany jako ×1,50 (econ-params.json mennica_mnoznik_po_walucie.normal = 1.5, opis '×1,50').", "zdanie": "Jedna Mennica w stolicy (z Targowiskiem i dostępem do złota) mnoży handel netto każdego miasta, zanim podzielisz go na naukę, pieniądz i luksus." },
-      { "z": "Top2", "zdanie": "Ulepszenie na złożu złota — daje handel i złoto potrzebne Mennicy." },
+      { "z": "Top1_GLOWNA", "tytul": "Mennica: ×1,50 podatku w każdym mieście", "powodTytulu": "Dispatch: współczynnik zapisany jako ×1,50 (econ-params.json mennica_mnoznik_po_walucie.normal = 1.5, opis '×1,50').", "zdanie": "Jedna Mennica w stolicy (z Targowiskiem i dostępem do złota) mnoży podatek netto każdego miasta, zanim podzielisz go na naukę, pieniądz i luksus." },
+      { "z": "Top2", "zdanie": "Ulepszenie na złożu złota — daje podatek i złoto potrzebne Mennicy." },
       { "z": "Top3", "zdanie": "Mennica działa tylko przy dostępie do złota i zużywa 1 sztukę na turę." },
       { "z": "Top4", "zdanie": "Nadwyżkę złota wymienisz w negocjacjach z innymi państwami." },
       { "z": "Top5", "zdanie": "Stały dochód pieniądza rośnie z poziomem Mennicy." }
@@ -250,7 +250,7 @@
   "Drogi brukowane": {
     "top5": [
       { "z": "Top1_GLOWNA", "zdanie": "Przebudowa Drogi — wojska przemieszczają się po niej pięć razy szybciej." },
-      { "z": "Top2", "zdanie": "Każde pole z Drogą brukowaną daje więcej handlu niż zwykła Droga." },
+      { "z": "Top2", "zdanie": "Każde pole z Drogą brukowaną daje więcej podatku niż zwykła Droga." },
       { "z": "Top3", "zdanie": "Prowadzi do Obróbki żelaza i dalej do Sztuki wojennej." }
     ]
   },

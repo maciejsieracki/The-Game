@@ -15,7 +15,7 @@
  *       zero szablonów „masła maślanego” i zero wiersza „Nie oznacza”;
  *   [D] efekty martwe (`ukryte`) nie pojawiają się w żadnej sekcji karty, brak słowa
  *       „niedostępn”; fallback na dawne szablony użyty 0 razy;
- *   [E] przypadki szczególne: Mennica ×1,50 + handel; Top1 Matematyki i Obróbki żelaza =
+ *   [E] przypadki szczególne: Mennica ×1,50 + podatek; Top1 Matematyki i Obróbki żelaza =
  *       „Otwiera drogę do …”; ulepszenia z `terrain-improvements.json` (Kopalnie, Stadnina);
  *       sekcja „Cuda” z oznaczeniem narodowy/wyścig.
  * Opcjonalnie `--screens <katalog>` zapisuje zrzuty PNG 6 kart (Waluta, Wojskowość,
@@ -226,8 +226,11 @@ async function main() {
 
   // ---- [E] przypadki szczególne ------------------------------------------------------------
   const waluta = rendered['Waluta'];
-  check('[E] Waluta: pozycja Mennicy z „×1,50” i „handel”',
-    waluta.top5.some((i) => /Mennica/.test(i.tytul) && (i.tytul + ' ' + i.zdanie).includes('×1,50') && /handel/.test(i.tytul + ' ' + i.zdanie)), waluta.top5);
+  // R-WEB-TERMINOLOGY-TRADE-VS-TAX-Q1: Mennica mnoży PODATEK (nie „handel”) — oczekiwanie zaktualizowane
+  // do nowej terminologii (asercja nie osłabiona: nadal wymaga ×1,50 i nazwanego strumienia).
+  check('[E] Waluta: pozycja Mennicy z „×1,50” i „podatek” (bez „handel”)',
+    waluta.top5.some((i) => /Mennica/.test(i.tytul) && (i.tytul + ' ' + i.zdanie).includes('×1,50')
+      && /podat/.test(i.tytul + ' ' + i.zdanie) && !/handl|handel/.test(i.tytul + ' ' + i.zdanie)), waluta.top5);
   check('[E] Waluta: Top1 = Mennica ×1,50', /^Mennica: ×1,50/.test(waluta.top5[0].tytul), waluta.top5[0]);
   for (const n of ['Matematyka', 'Obróbka żelaza']) {
     check(`[E] ${n}: Top1 = jawne „Otwiera drogę do …” (Q7 właściciela)`, /^Otwiera drogę do /.test(rendered[n].top5[0].tytul), rendered[n].top5[0]);

@@ -34,7 +34,7 @@
         "jedyny_efekt": {
           "typ": "handel_turystyka",
           "wartosc": 10,
-          "opis": "+10 do handlu — cud jako atrakcja turystyczna (jedyny yield po absolut)"
+          "opis": "+10 do podatku — cud jako atrakcja turystyczna (jedyny yield po absolut)"
         }
       },
       "silnik": "player.era > absolut → wyłącz bonusy miasto/teren/hex/specjalne; zastosuj po_absolut.jedyny_efekt jeśli aktywny"
@@ -62,7 +62,7 @@
       "wzrost_ludnosci_procent": "Wzrost populacji we wszystkich miastach (%)",
       "jednorazowe": "Złoto przy zdarzeniu, darmowa jednostka, kultura z wydarzeń narracyjnych",
       "fortyfikacja_mapa": "Bonus obrony na heksach fortów (mapa, nie yield miasta)",
-      "handel_turystyka": "Po absolut: jedyny efekt wygasłego cudu — +N do handlu (atrakcja turystyczna)"
+      "handel_turystyka": "Po absolut: jedyny efekt wygasłego cudu — +N do podatku (atrakcja turystyczna)"
     },
     "bonus_zasieg": "hex = tylko pole cudu; teren = heksy danego typu w terytorium (plony → miasto właściciela pola). BEZ dzielnic / sasiad-dzielnica.",
     "bonus_teren": "Modyfikator pól w terytorium (nie × każde miasto — tylko heksy spełniające warunek).",

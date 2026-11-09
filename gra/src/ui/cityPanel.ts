@@ -3566,7 +3566,7 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
   const bandNote = el('div', 'dc-note');
   bandNote.style.fontStyle = 'normal';
   const bandExplain: Record<string, string> = {
-    lad: '≥90% Porządku — bonus do pracy i handlu. Miasto w pełni stabilne.',
+    lad: '≥90% Porządku — bonus do pracy i podatku. Miasto w pełni stabilne.',
     spokoj: '70–89% — normalna gra, bez kar i bez bonusów.',
     napiecie: '50–69% — lekkie napięcie: praca spada o ~5%. Czas reagować, zanim spadnie dalej.',
     niepokoj: '30–49% — wyraźne kary na plony, wolniejszy wzrost. Możliwy chip niepokojów.',

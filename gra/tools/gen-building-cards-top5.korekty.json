@@ -54,6 +54,11 @@
         { "z": "Top2", "tytul": "Asymilacja kultury +0,5% na turę (podbite miasta)", "powod": "założenie Q6-A." }
       ]
     },
+    "Mennica": {
+      "zmiany": [
+        { "z": "Top1_GLOWNA", "zdanie": "Mnoży podatek wszystkich miast przed podziałem na naukę, pieniądz i luksus (×1,62 łatwy, ×1,38 trudny); nie obejmuje tras.", "powod": "R-WEB-TERMINOLOGY-TRADE-VS-TAX-Q1: CSV pisał „podatek z handlu” — podatek z pól i budynków to nie handel (handel = wymiana: trasy, umowy, kosze); trasy Mennica pomija (econ-params.json:590)." }
+      ]
+    },
     "Sąd": {
       "zmiany": [
         { "z": "Top1_GLOWNA", "zdanie": "Zmniejsza straty z korupcji w mieście, w którym stoi; sumuje się z Pałacem, Pretorium i Trybunałem (łącznie maks. −60%).", "powod": "FALA 560: lista redukcji to Sąd, Pretorium, Pałac I–III i Trybunał, addytywnie z sufitem 0,60 (economy.ts:1226-1257)." },
