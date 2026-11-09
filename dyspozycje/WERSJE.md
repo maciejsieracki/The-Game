@@ -1,3 +1,9 @@
+## ROBOCZA 27b34f7b -- 2026-11-06 -- FALA 568: Terminologia: produkcja = podatek w katalogach, PORADNIKU i wiki (testowa)
+
+- R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (78ee714b2/cfe8a1bdd): cel surowców (cegła/ceramika/sól) na kartach, podatek zamiast złoto/pieniądz w katalogach i wikiBundle
+- Weryfikacja: tsc 0, logic 213/213, card-resource-purpose 102/0, building-cards-top5 1179/0, tech-cards-top5 594/0, terminology 779/0, civpedia-spojnosc 24/0, audio-sidecar PASS
+- Limity: Chromium NIE_ZMIERZONO (zmiany tekstowe); civpedia-karty-nazwa-przyciskiem 25/2 dług zastany (link Obróbka drewna); cuda zostają jako Pieniądz (klasa C)
+
 ## ROBOCZA 1868e3be -- 2026-11-06 -- FALA 567: Widowiskowy ekran eliminacji + reguła pokoju AI (przewaga 20%) (testowa)
 
 - R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1 (e33e2c964); R-WEB-DIPLO-PEACE-BALANCE-ACCEPT-DIAG-Q1 (512401eac)
