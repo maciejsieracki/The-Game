@@ -8309,7 +8309,8 @@ export function appendUnitRecruitCompactRow(
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
     mpCostLabel: formatManpowerCompact(mpCost),
-    maxQuantity: maxAffordableRecruitQuantity(city, item, mpCost, skarb, stockCost),
+    // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: Super-jednostka = max 1 sztuka w jednym zamówieniu.
+    maxQuantity: udef['Super-jednostka'] === 'TAK' ? 1 : maxAffordableRecruitQuantity(city, item, mpCost, skarb, stockCost),
     manpowerAvailable: mpAvailable,
     manpowerRequired: mpCost,
     stockChipsHtml: unitStockCostChipsHtml(udef, city),
