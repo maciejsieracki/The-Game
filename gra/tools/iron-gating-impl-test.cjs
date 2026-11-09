@@ -19,6 +19,7 @@ const BUNDLE = path.resolve(__dirname, '.iron-gating-impl-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export { availableProduction } from '../src/game/production';
 export { parsePrerequisites, canResearch, availableTechs } from '../src/game/research';
+export { chooseAIResearch } from '../src/game/ai';
 `, 'utf8');
 try {
   esbuild.buildSync({ entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
@@ -143,6 +144,48 @@ console.log('\n6. Badanie: Sztuka wojenna wymaga Hutnictwa i Obrobki (canResearc
   for (const miss of ['Oblężnictwo', 'Obróbka żelaza', 'Hutnictwo żelaza']) {
     assert(!M.canResearch(st(allBut.filter(n => n !== miss)), TECHS_DEF, SW), `bez ${miss} Sztuka wojenna NIE jest badalna`);
   }
+}
+
+console.log('\n7. AI: priorytet badan (chooseAIResearch) — Hutnictwo zachowuje dotychczasowa wage, niezalezna od tekstu jednostek');
+{
+  const hutPrereq = (hutDef => (hutDef['Wymaga (prereq)'] || '').split('+').map(s => s.trim()).filter(Boolean))(techDef('Hutnictwo żelaza'));
+  // Porownawczy kontrolny kafelek: Mury+Tartak (mid 30+70, floor 10, tie-break 30-11) = 129; early = 109.
+  const control = { Technologia: 'KONTROLA-Mury-Tartak', Epoka: 'Brąz', Poziom: 3, 'Wymaga (prereq)': null,
+    'Koszt nauki': 11, 'Odblokowuje budynek': 'Mury; Tartak' };
+  const hut = techDef('Hutnictwo żelaza');
+  const pickWith = (tech, opts) => M.chooseAIResearch([tech, control], hutPrereq, opts);
+  // Dotychczasowa waga Hutnictwa (mid): wojsko 80 + ekspansja 40 + podloga 10 = 130 > 129 -> wybór Hutnictwa.
+  assert(pickWith(hut, { myCitiesCount: 3 }) === 'Hutnictwo żelaza', 'mid (3 miasta): AI wybiera Hutnictwo zelaza przed kontrolą 129');
+  // Wczesna faza: 40 + 60 + 10 = 110 > 109.
+  assert(pickWith(hut, { myCitiesCount: 1 }) === 'Hutnictwo żelaza', 'early (1 miasto): AI wybiera Hutnictwo zelaza przed kontrolą 109');
+  // Zagrozenie: 100 + 40 + 10 = 150 > 129.
+  assert(pickWith(hut, { myCitiesCount: 3, underThreat: true }) === 'Hutnictwo żelaza', 'pod zagrozeniem: Hutnictwo zelaza wybrane');
+  // Niezaleznosc od tekstu: bez listy jednostek w opisie priorytet pozostaje ten sam.
+  const hutNoText = { ...hut, 'Odblokowuje budynek': '' };
+  assert(pickWith(hutNoText, { myCitiesCount: 3 }) === 'Hutnictwo żelaza', 'Hutnictwo bez tekstu „Odblokowuje” nadal wybierane (waga nie zalezy od opisu)');
+  // Sztuka wojenna dostaje wage z wojska/ekspansji dopiero po prereq (nie wybierana bez Hutnictwa i Obrobki).
+  const sw = techDef('Sztuka wojenna');
+  const swPick = M.chooseAIResearch([sw, control], ['Oblężnictwo', 'Hutnictwo żelaza'], { myCitiesCount: 3 });
+  assert(swPick !== 'Sztuka wojenna', 'AI nie wybiera Sztuki wojennej bez Obrobki zelaza (prereq)');
+  // Sztuka wojenna z komplet prereq: 80 + 40 + 10 + (30-koszt)>129? Sprawdzamy tylko, ze jest wybierana.
+  const swReady = M.chooseAIResearch([sw, control], ['Oblężnictwo', 'Hutnictwo żelaza', 'Obróbka żelaza'], { myCitiesCount: 3 });
+  assert(swReady === 'Sztuka wojenna', 'AI wybiera Sztuke wojenna po komplecie prereq (Oblezenictwo+Obrobka+Hutnictwo)', 'got=' + swReady);
+}
+{
+  // Symulacja zachlannego badania AI na prawdziwych danych: bez zawieszenia, Sztuka wojenna dosiegalna.
+  const done = new Set();
+  const order = [];
+  let stalled = false;
+  for (let i = 0; i < 200 && !done.has('Sztuka wojenna'); i++) {
+    const pick = M.chooseAIResearch(TECHS_DEF, done, { myCitiesCount: 3, techData: TECHS_DEF });
+    if (pick === null) { stalled = true; break; }
+    order.push(pick); done.add(pick);
+  }
+  assert(!stalled, 'symulacja badan AI nie zawiesza sie przed Sztuka wojenna', 'steps=' + order.length);
+  assert(done.has('Sztuka wojenna'), 'symulacja badan AI dochodzi do Sztuki wojennej', 'steps=' + order.length);
+  const iHut = order.indexOf('Hutnictwo żelaza'), iObr = order.indexOf('Obróbka żelaza'), iSW = order.indexOf('Sztuka wojenna');
+  assert(iHut >= 0 && iObr >= 0 && iHut < iSW && iObr < iSW, 'w symulacji Hutnictwo i Obrobka zelaza badane przed Sztuka wojenna', `H=${iHut} O=${iObr} SW=${iSW}`);
+  console.log('   (kolejnosc AI, pierwsze 40: ' + order.slice(0, 40).join(' -> ') + ')');
 }
 
 console.log(`\n[iron-gating-impl-test] ${passed} OK, ${failed} FAIL`);

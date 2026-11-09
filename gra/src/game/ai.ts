@@ -797,6 +797,14 @@ function scoreTech(
     score += underThreat ? 90 : (earlyPhase ? 70 : 50);
   }
 
+  // R-WEB-TECH-IRON-GATING-IMPL-Q1 (korekta r2): Hutnictwo żelaza nie wymienia już jednostek epoki Żelaza
+  // w „Odblokowuje budynek” (odblokowuje je Sztuka wojenna), więc dawne trafienia 'konnica'/'rydwan' zniknęły
+  // i Hutnictwo traciło wagę (+120). Jest kamieniem milowym do Epoki 3 i prereq Obróbki/Sztuki wojennej,
+  // więc zachowujemy dokładnie dotychczasową wagę (wojsko + ekspansja), niezależną od tekstu opisu.
+  if (tech.Technologia === 'Hutnictwo żelaza') {
+    score += (underThreat ? 100 : (earlyPhase ? 40 : 80)) + (earlyPhase ? 60 : 40);
+  }
+
   // Wojskowość: unlocks Koszary (important mid-game)
   if (tech.Technologia === 'Wojskowosc' || tech.Technologia === 'Wojskowość') score += underThreat ? 95 : (earlyPhase ? 35 : 75);
 
