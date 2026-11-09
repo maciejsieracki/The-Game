@@ -100,3 +100,31 @@ a przy okazji miasto bez złoża gliny nie zostaje w epoce Żelaza bez obrony i 
 | Utrzymanie | 2 pieniądze/turę | 3 pieniądze/turę | 4 pieniądze/turę |
 
 W dzisiejszej grze o trzech epokach Pancerz dobija do **30%** — Wielka Kuźnia należy do epoki klasycznej.
+
+---
+
+# ANEKS 2026-11-09 — R-WEB-BUILDING-COSTS-ERA-RESOURCES-IMPL-Q1 (decyzja właściciela)
+
+**Zastępuje** zasady epokowe z początku specyfikacji (Kamień = samo drewno; Brąz = drewno + kamień;
+Żelazo = drewno + cegła, obrona/port = drewno + kamień). Obowiązuje od tej zmiany; pilnują jej
+`gra/tools/koszty-surowcowe-test.cjs` (sekcje A–C) i `gra/tools/building-cost-resource-availability-test.cjs`.
+
+1. **Garncarstwo** (Kamień) przeniesione z poziomu 2 na **poziom 1** (`gra/data/tech.json`). Prereq bez zmian
+   („—”), więc brak cyklu; Wymiana i Brązownictwo zachowują prereq Garncarstwa. Tier-gating (`research.ts`,
+   `epochTierGateMet`) bez zmian w kodzie — poziom 2 Kamienia to teraz Murarstwo, Mistycyzm, Wymiana, Gospodarka wodna.
+2. **Kamień — budynki z technologii poziomu 2 i 3: drewno = kamień** (1:1, większa z dotychczasowych ilości):
+   Warsztat kamieniarski 30/30, Stela 30/30, Kamienne kręgi 40/40, Targowisko 30/30, Studnia 25/25.
+   Budynki poziomu 1 i bez techu zostają na samym drewnie.
+3. **Brąz — drewno = kamień = cegła = dotychczasowa ilość kamienia** (10 budynków dostępnych dopiero po Cegielni:
+   Biblioteka 30, Spichlerz II 50, Świątynia 40, Magazyn 30, Dwór Zarządcy 30, Trybunał 40, Mury 80, Akwedukt 60,
+   Mennica 40, Emporion 60 — Emporion nie figurował w tabeli projektu, potraktowany wg reguły).
+   **ZAŁOŻENIE (do potwierdzenia przez właściciela):** budynki, które mogą stanąć PRZED Cegielnią — Kuźnia brązu,
+   Odlewnia brązu, Port handlowy, Koszary, Pałac II — oraz sama Cegielnia: drewno = kamień (= dzisiejszy kamień),
+   **bez cegły** (reguła „surowiec nie wcześniej niż dostępny”, brak pętli Cegielni).
+4. **Żelazo (epoka 3 i 4) — cegła = kamień = drewno = dotychczasowa ilość cegły.** **ZAŁOŻENIE:** budynki bez
+   cegły dotąd (Baszta, Cytadela/fort, Port wielki, Warsztat oblężniczy): cegła = dotychczasowy kamień.
+5. **Utrzymanie surowcowe budynków** — mechanizm ISTNIEJE (`buildingResourceUpkeep`, `economy-upkeep.ts`): stała
+   `BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE` = 5 szt./turę za KAŻDY typ surowca obecny w `koszt_surowce`, niezależnie
+   od ilości. Dodanie typu do kosztu budowy dokłada więc automatycznie 5/turę tego surowca — tyle samo, ile płacą
+   dotychczasowe surowce budynku (reguła właściciela spełniona bez zmiany kodu). Skutek: +30 typów surowców
+   w 32 zmienionych budynkach = maks. +150 szt./turę, jeśli wszystkie stoją naraz.

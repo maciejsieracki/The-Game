@@ -108,8 +108,9 @@ if (stolarnia) {
 const wielkaOdlewnia = findBuilding('wielka_odlewnia');
 ok(!!wielkaOdlewnia, 'sanity: budynek "wielka_odlewnia" istnieje w buildings.json');
 if (wielkaOdlewnia) {
-  eq(wielkaOdlewnia.koszt_surowce && wielkaOdlewnia.koszt_surowce.drewno, 60,
-    'PRZYPIĘTE: wielka_odlewnia (epoka 4) koszt_surowce.drewno === 60 (x5, bylo 12)');
+  // R-WEB-BUILDING-COSTS-ERA-RESOURCES-IMPL-Q1 (2026-11-09): Żelazo — drewno = kamień = cegła = 70 (było drewno 60).
+  eq(wielkaOdlewnia.koszt_surowce && wielkaOdlewnia.koszt_surowce.drewno, 70,
+    'PRZYPIĘTE: wielka_odlewnia (epoka 4) koszt_surowce.drewno === 70 (drewno = cegła, decyzja 2026-11-09; x5 dawniej 60)');
   eq(wielkaOdlewnia.koszt_surowce && wielkaOdlewnia.koszt_surowce.cegla, 70,
     'PRZYPIĘTE: wielka_odlewnia (epoka 4) koszt_surowce.cegla === 70 (x5, bylo 14)');
 }

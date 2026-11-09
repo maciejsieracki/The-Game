@@ -7,7 +7,8 @@
  *   A. Wpis `emporion` istnieje i ma parametry z decyzji właściciela 2026-11-05:
  *      epokaWejscia 2 (Brąz), techUnlock 'Handel', kategoria/grupa jak Targowisko,
  *      kosztBudowy 50 / przyrostKosztu 20, utrzymanie 2, dajeSzczescie false,
- *      koszt_surowce {drewno 80, kamien 60}, maksPoziom 1.
+ *      koszt_surowce {drewno 60, kamien 60, cegla 60} (od R-WEB-BUILDING-COSTS-ERA-RESOURCES-IMPL-Q1;
+ *      wcześniej {drewno 80, kamien 60}), maksPoziom 1.
  *   B. Porównanie z Targowiskiem: Emporion jest droższy (koszt budowy, utrzymanie,
  *      baza.pieniadz), a przyrost pieniądza jest większy niż Targowiska.
  *   C. Technologia Handel (tech.json) odblokowuje Magazyn ORAZ Emporion.
@@ -78,7 +79,7 @@ if (emp) {
   eq(emp.przyrostUtrzymania, 1, 'przyrostUtrzymania');
   eq(emp.maksPoziom, 1, 'maksPoziom');
   eq(emp.dajeSzczescie, false, 'dajeSzczescie');
-  eq(JSON.stringify(emp.koszt_surowce), JSON.stringify({ drewno: 80, kamien: 60 }), 'koszt_surowce');
+  eq(JSON.stringify(emp.koszt_surowce), JSON.stringify({ drewno: 60, kamien: 60, cegla: 60 }), 'koszt_surowce (R-WEB-BUILDING-COSTS-ERA-RESOURCES-IMPL-Q1: drewno=kamien=cegla=60)');
   ok(Array.isArray(emp.top3) && emp.top3.length === 3, 'top3 ma 3 pozycje');
   ok(typeof emp.historia === 'string' && emp.historia.length > 50, 'historia niepusta');
   ok(typeof emp.opis === 'string' && emp.opis.length > 0, 'opis niepusty');
