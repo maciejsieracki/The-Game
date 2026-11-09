@@ -33,7 +33,7 @@ import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
 import { TerenBazowy } from '../types/hex';
 import { axialToWorld, HEX_R } from './hexutil';
-import { createGeneralHexRing, generalRingWorldWidth, GENERAL_RING_LIFT, type GeneralHexRing } from './generalHexRing';
+import { createGeneralHexRing, generalRingWorldWidth, generalRingY, GENERAL_RING_HEX_OFFSETS, type GeneralHexRing } from './generalHexRing';
 import {
   MAP_HEX_HIGHLIGHT_BASE_OPACITY,
 } from './buildHighlight';
@@ -6500,6 +6500,12 @@ export class UnitRenderer {
     if (obj) {
       obj.position.set(x, y, z);
     }
+    // R-WEB-UI-GENERAL-HEX-RING-OUTLINE-Q1: pas wodza podąża za żetonem w trakcie marszu (X/Z; wysokość pasa stała).
+    const gr = this.generalRings.get(id);
+    if (gr) {
+      gr.ring.mesh.position.x = x;
+      gr.ring.mesh.position.z = z;
+    }
   }
 
   /**
@@ -6915,10 +6921,10 @@ export class UnitRenderer {
     if (cur && cur.ownerId === unit.ownerId && cur.q === unit.q && cur.r === unit.r) return;
     if (cur) this._removeGeneralRing(unit.id);
     const ring = createGeneralHexRing(this._ringColorForOwner(unit.ownerId));
-    const hex = this.hexGrid.get(`${unit.q},${unit.r}`);
-    const topY = hex ? terrainTopY(hex) : 0;
+    // Wysokość = najwyższy teren spośród 7 hexów obrysu (pas nie tonie za wyższym sąsiadem).
+    const tops = GENERAL_RING_HEX_OFFSETS.map(([dq, dr]) => this.topYAt(unit.q + dq, unit.r + dr));
     const { x, z } = axialToWorld(unit.q, unit.r, HEX_R);
-    ring.mesh.position.set(x, topY + GENERAL_RING_LIFT, z);
+    ring.mesh.position.set(x, generalRingY(tops), z);
     ring.mesh.visible = this.tokens.get(unit.id)?.visible !== false;
     ring.mesh.userData['generalRingFor'] = unit.id;
     this.scene.add(ring.mesh);

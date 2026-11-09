@@ -211,3 +211,20 @@ export function generalRingWorldWidth(
   const worldPerPx = (2 * camDist * Math.tan((fovDeg * Math.PI) / 360)) / viewportH;
   return Math.max(GENERAL_RING_BASE_WIDTH, minPx * worldPerPx);
 }
+
+/**
+ * Wysokość płaszczyzny pasa (świat) nad terenem 7 hexów obrysu: najwyższy z ich wierzchołków
+ * terenu + odstęp. Pas leży PONAD sąsiednim wzgórzem/górą, więc nie jest przysłaniany przez teren
+ * z obrysu (bazowa wysokość wodza mogłaby leżeć niżej niż wyższy sąsiad).
+ * `topYs` — wysokości wierzchołka terenu dla 7 hexów (GENERAL_RING_HEX_OFFSETS); niepoprawne wartości są pomijane.
+ */
+export function generalRingY(topYs: ReadonlyArray<number>): number {
+  let top = 0;
+  let any = false;
+  for (const y of topYs) {
+    if (!Number.isFinite(y)) continue;
+    top = any ? Math.max(top, y) : y;
+    any = true;
+  }
+  return (any ? top : 0) + GENERAL_RING_LIFT;
+}

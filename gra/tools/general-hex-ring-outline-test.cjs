@@ -140,6 +140,14 @@ check('przy zbliżeniu pas ma bazową grubość świata', near(mod.generalRingWo
 check('grubość rośnie wraz z oddaleniem (skalowanie z zoomem)', mod.generalRingWorldWidth(800, FOV, VH) > mod.generalRingWorldWidth(400, FOV, VH));
 check('brak poprawnych danych kamery → bazowa grubość', mod.generalRingWorldWidth(0, FOV, VH) === mod.GENERAL_RING_BASE_WIDTH);
 
+// --- 6b. Wysokość pasa: nad najwyższym z 7 hexów obrysu (nie przysłaniany przez wyższego sąsiada) ---
+check('generalRingY: pas = najwyższy teren z 7 hexów + odstęp', near(mod.generalRingY([0.2, 0.5, 0.1, 0.38]), 0.5 + mod.GENERAL_RING_LIFT),
+  `y=${mod.generalRingY([0.2, 0.5, 0.1, 0.38])}`);
+check('generalRingY: wzgórze sąsiada wyżej niż wódz → pas nad wzgórzem', mod.generalRingY([0.06, 0.6]) > 0.6);
+check('generalRingY: brak danych → poziom 0 + odstęp', near(mod.generalRingY([]), mod.GENERAL_RING_LIFT));
+check('generalRingY: wartości niepoprawne (NaN) są pomijane', near(mod.generalRingY([NaN, 0.3]), 0.3 + mod.GENERAL_RING_LIFT));
+check('GENERAL_RING_HEX_OFFSETS: 7 hexów (środek + 6 sąsiadów)', mod.GENERAL_RING_HEX_OFFSETS.length === 7);
+
 // --- 7. Wiązanie w units.ts: obwódka tylko dla wodza, poza żetonem, z LOD ---
 const unitsSrc = fs.readFileSync(path.join(ROOT, 'src/render/units.ts'), 'utf8');
 check('units.ts: ring tworzony tylko gdy hasCommander (wczesny powrót bez wodza)',
@@ -148,6 +156,10 @@ check('units.ts: ring jest obiektem sceny, nie dzieckiem żetonu (brak scalania 
   /this\.scene\.add\(ring\.mesh\)/.test(unitsSrc) && !/group\.add\(ring/.test(unitsSrc));
 check('units.ts: widoczność pasa zgodna z żetonem (mgła / ukryty non-reprezentant)',
   /entry\.ring\.mesh\.visible = this\.tokens\.get\(id\)\?\.visible === true/.test(unitsSrc));
+check('units.ts: wysokość pasa z najwyższego z 7 hexów (generalRingY + topYAt), nie z jednego hexa',
+  /generalRingY\(tops\)/.test(unitsSrc) && /GENERAL_RING_HEX_OFFSETS\.map\(\(\[dq, dr\]\) => this\.topYAt\(unit\.q \+ dq, unit\.r \+ dr\)\)/.test(unitsSrc));
+check('units.ts: setTokenWorldPosition przesuwa pas wodza razem z żetonem (X/Z)',
+  /setTokenWorldPosition\(id: string[\s\S]*?generalRings\.get\(id\)[\s\S]*?ring\.mesh\.position\.x = x;[\s\S]*?ring\.mesh\.position\.z = z;/.test(unitsSrc));
 check('main.ts: LOD grubości pasa wołany w pętli renderu',
   /unitRenderer\.applyGeneralRingLod\(dist, camera\.fov, canvas\.clientHeight\)/.test(
     fs.readFileSync(path.join(ROOT, 'src/main.ts'), 'utf8')));
