@@ -1,3 +1,9 @@
+## ROBOCZA a6e383cc -- 2026-11-06 -- FALA 585: Sojusz: Relacja 130 + Zaufanie 90, AI proponuje wg tej reguły, próg gotowości AI 0,54, NAP bezterminowy od 151 (testowa)
+
+- R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1 (262d628f2)
+- Weryfikacja: tsc 0, ai-test 296/0, diplomacy-proposal 199/199, diplo-alliance-gate 18/0, diplomacy-test 148/0, city-state-alliance 74/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO w grze; dług: ulga słodzika vs gotowość, REPIN Rust; miasta-państwa dostają niższy próg (skala)
+
 ## ROBOCZA 5f832422 -- 2026-11-06 -- FALA 584: Pasek ruchu na kartach armii (tooltip hexa): widoczny tor, Ruch: X z Y (testowa)
 
 - R-WEB-UI-ARMY-PANEL-CARD-MOVE-BAR-MISSING-Q1 (0ef47315b)
