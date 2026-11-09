@@ -306,7 +306,7 @@ async function main() {
     const tooltipSrc = fs.readFileSync(TOOLTIP_SRC, 'utf8');
     // R-WEB-STADNINA-KONIE-STARE-ZAPISY-Q1: linia przepisana na wspólny predykat hexHasHorseDeposit
     // (nakladka ZlozeKonia LUB zloze==='konie' -- stare zapisy); semantyka dla nowych map bez zmian.
-    const STADNINA_NARROW_LINE = "if (key === 'stadnina' && !hexHasHorseDeposit({ nakladka, zloze })) continue;";
+    const STADNINA_NARROW_LINE = "if (key === 'stadnina' && !hexHasHorseDeposit({ nakladka, zloze })) {";
     assert(tooltipSrc.includes(STADNINA_NARROW_LINE),
       `hexContextTooltip.ts zawiera linię zawężającą stadninę do złoża konia: ${STADNINA_NARROW_LINE}`);
     // kopalnia_cyny -- linia istniała już PRZED tą naprawą (była martwym kodem), musi przetrwać.
@@ -325,7 +325,7 @@ async function main() {
   // ta sekcja pilnuje ("silnik zna stan gracza/imperium szerszy niż tooltip"), nadal jest
   // prawdziwa -- tylko urządzeniem dowodowym jest dziś `horseStockAvailable >= 50` (magazyn
   // imperium), nie pamięć "już gdzieś zbudowano stadninę".
-  console.log('\n[4] granica: horseStockAvailable (stan imperium, nie własność heksu) świadomie POMINIĘTA w tooltipie');
+  console.log('\n[4] R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: bramka epoki + stan imperium w tooltipie (flaga konImperialUnlocked)');
   {
     const hexCity = mkHex(0, 0, TB.Rownina, NK.Brak, undefined);
     // Heks testowy -- BEZ lokalnego złoża konia -- jedyny sposób, by silnik i tak pozwolił, to
@@ -345,17 +345,31 @@ async function main() {
       { q: 0, r: 0, pop: 5, level: 3, ownerId: 0 },
       { q: 10, r: 0, pop: 5, level: 3, ownerId: 0 },
     ];
-    const qualifies = buildImprovementQualifier({
-      map, cityNodes, territoryNodes, playerOwnerIdNum: 0, horseStockAvailable: 50,
+    const qualifiesEra3 = buildImprovementQualifier({
+      map, cityNodes, territoryNodes, playerOwnerIdNum: 0, horseStockAvailable: 50, playerEra: 3,
+    });
+    const qualifiesEra2 = buildImprovementQualifier({
+      map, cityNodes, territoryNodes, playerOwnerIdNum: 0, horseStockAvailable: 50, playerEra: 2,
     });
 
-    const engineAllowsViaEmpireStock = qualifies('stadnina', 10, 0);
-    assert(engineAllowsViaEmpireStock === true,
-      '[4] kontrola: SILNIK pozwala budować stadninę BEZ lokalnego złoża, bo magazyn imperium ma >= 50 \'kon\' (horseStockAvailable) -- to realne zachowanie createQualifier(), nie założenie');
+    // Epoka 3 (Żelaza) + Koń odblokowany (magazyn 50) -> silnik pozwala BEZ złoża.
+    assert(qualifiesEra3('stadnina', 10, 0) === true,
+      '[4] epoka 3 + magazyn 50: SILNIK pozwala budować stadninę BEZ lokalnego złoża (odblokowanie imperium od epoki Żelaza)');
+    // Epoka 2 -> silnik NIE pozwala bez złoża, mimo odblokowanego Konia.
+    assert(qualifiesEra2('stadnina', 10, 0) === false,
+      '[4] epoka 2 + magazyn 50: SILNIK NIE pozwala bez złoża konia na heksie (R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1)');
 
-    const tooltipShowsWithoutLocalDeposit = tooltipShows(hexNoDeposit, 'Stadnina');
-    assert(tooltipShowsWithoutLocalDeposit === false,
-      '[4] OCZEKIWANE (nie regresja): tooltip NIE pokazuje Stadniny na heksie bez lokalnego złoża, mimo że silnik by na to pozwolił -- horseStockAvailable to stan imperium, świadomie pominięty w hex-property-only tooltipie (jak terytorium/tech)');
+    // Tooltip BEZ flagi odblokowania -> nie pokazuje (stan imperium nieznany).
+    assert(tooltipShows(hexNoDeposit, 'Stadnina') === false,
+      '[4] tooltip bez flagi konImperialUnlocked NIE pokazuje Stadniny na heksie bez złoża');
+    // Tooltip Z flagą, epoka 3 -> pokazuje (zgodnie z silnikiem).
+    const htmlEra3 = buildHexContextTooltipHtml({ q: 10, r: 0, hex: hexNoDeposit, esc: (x) => x, currentEra: 3, konImperialUnlocked: true });
+    assert(possibleSection(htmlEra3).includes('<b>Stadnina</b>'),
+      '[4] tooltip: epoka 3 + konImperialUnlocked -> Stadnina na heksie bez złoża (zgodnie z silnikiem)');
+    // Tooltip Z flagą, epoka 2 -> NIE pokazuje (zgodnie z silnikiem).
+    const htmlEra2 = buildHexContextTooltipHtml({ q: 10, r: 0, hex: hexNoDeposit, esc: (x) => x, currentEra: 2, konImperialUnlocked: true });
+    assert(!possibleSection(htmlEra2).includes('<b>Stadnina</b>'),
+      '[4] tooltip: epoka 2 + konImperialUnlocked -> Stadnina NIE pokazana bez złoża (zgodnie z silnikiem)');
 
     // Kontrola: NA SAMYM hexDepositBuilt (z lokalnym złożem) tooltip i silnik zgadzają się --
     // granica dotyczy WYŁĄCZNIE braku lokalnego złoża + odblokowania gdzie indziej.

@@ -40,7 +40,7 @@ function mk(q, r, teren, nakladka, zloze) {
 function api(M, hexes, extra = {}) {
   const state = { map: { hexes, riverPaths: [], startPositions: [{ q: 0, r: 0 }] },
     cityNodes: [{ q: 0, r: 0, pop: 1, level: 1 }], territoryNodes: [{ q: 0, r: 0, pop: 1, level: 1, ownerId: 0 }],
-    playerOwnerIdNum: 0, playerCivArchetype: 'rzymianie', playerEra: 1, researchedTechs: new Set(['Jeździectwo']),
+    playerOwnerIdNum: 0, playerCivArchetype: 'rzymianie', playerEra: 3, researchedTechs: new Set(['Jeździectwo']),
     horseStockAvailable: 0, tradeRouteKonUnlocked: false, ...extra };
   return M.createImprovementBuildApi(state);
 }

@@ -1044,13 +1044,13 @@ function createQualifier(state: ImprovementBuildState) {
         terrainOk = FLAT_FARM.has(teren)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
       case 'owce':
         terrainOk = isOwceBaseTerrain(teren, nakladka)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
       // R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (2026-08-27): jw. — lama kwalifikuje się na
       // Wzgórzach/Górach niezależnie od nakładki Las (bramka cywilizacji Inków bez zmian).
@@ -1059,7 +1059,7 @@ function createQualifier(state: ImprovementBuildState) {
           && (TERRAIN_ALLOW.lama?.has(teren) ?? false)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
       // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (ECHO właściciela 2026-09-03): stadnina jest
       // ulepszeniem SUROWCOWYM (jak glinianka/tartak/kopalnie), nie pastwiskiem — nakładka
@@ -1074,7 +1074,7 @@ function createQualifier(state: ImprovementBuildState) {
         terrainOk = inPlayerTerritory(q, r)
           && (teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
       case 'droga':
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && isRoadQualified(q, r);
