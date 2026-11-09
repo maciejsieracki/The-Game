@@ -10,3 +10,11 @@ ZAKRES:
 4. Zweryfikuj też panel: czy sekcja „Ulepszenia postawione” poprawnie pokazuje oba (Farma + Trzoda na jednym heksie) i czy jest to dozwolone w danych.
 5. Test: `gra/tools/terrain-improve-farm-availability-test.cjs` (heks Łąka+rzeka+glina+trzoda; Łąka goła; Łąka+rzeka; wzgórze; las), plus istniejące testy ulepszeń/auto-ulepszeń.
 ALLOWLISTA: gra/src/game/terrain-improvement*.ts, gra/src/ui/ (panel heksa), gra/src/main.ts (tylko jeśli konieczne), gra/data/terrain-improvements.json (tylko reguły dostępności, nie plony), nowy test, runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev, git add -A, push/deploy.
+
+## DODATEK 1 (2026-11-09, zgłoszenie właściciela + zrzut — temat jeszcze niestartowany)
+Właściciel: wybudował Farmę obok rzeki, a automatyczne przydzielanie obywateli NIE przesuwa tam obywatela, choć produkcja żywności i pozostałych plonów byłaby wyższa; „coś jest nie tak z tymi heksami, na których nie można budować farm”. Zrzut: kilka heksów trawiastych przy rzece z ikonami obywateli (fioletowa sylwetka w żółtym kółku) — obok heksów z Farmą bez przypisanego obywatela.
+Dodatkowy zakres diagnozy:
+(a) Dlaczego auto-przydział obywateli (citizen auto-assign / „automatyzacja”) pomija heks z Farmą nad rzeką mimo wyższych plonów: porównaj wynik oceny heksu (score) z heksem zajętym; sprawdź wykluczenia (heks sąsiedzki/„sibling exclusion”, heks poza zasięgiem, heks bez ulepszenia „postawione” vs „w budowie”, rzeka jako blokada, cache wyniku, próg poprawy).
+(b) Czy ta sama przyczyna odpowiada za brak oferty Farmy na części heksów (wspólny predykat „heks nadaje się pod uprawę”?). Zgłoś wspólną przyczynę albo osobne.
+(c) Test: scenariusz Łąka+rzeka+Farma wolna vs heks zajęty o niższych plonach → auto-przydział przenosi obywatela, gdy zysk (żywność/praca/podatek wg profilu) jest wyższy; brak regresji AIMPQ/auto-improve testów.
+Ewentualne dodatkowe pliki allowlisty: gra/src/game/citizen-*.ts, auto-assign*, gra/tools/*citizen*-test.cjs.
