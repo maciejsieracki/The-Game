@@ -26,7 +26,7 @@ Falanga to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla **Grecka**.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 18 ¤, 1 mieszkańców
 - **Surowiec:** 5× żelazo
-- **Tech:** Hutnictwo żelaza
+- **Tech:** Sztuka wojenna
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 1 (mapa) / 3 (bitwa)
 - **Siła w polu:** 58.5

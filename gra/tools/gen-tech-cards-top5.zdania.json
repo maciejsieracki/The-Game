@@ -211,7 +211,7 @@
       { "z": "Top2", "zdanie": "Rozbudowa Odlewni brązu wytapia żelazo potrzebne najlepszemu wojsku." },
       { "z": "Top3", "zdanie": "Możesz mieć jednocześnie trzech wodzów." },
       { "z": "Top4", "zdanie": "Ulepszenie na złożu żelaza — dostarcza rudę do Odlewni żelaza." },
-      { "z": "Top5", "zdanie": "Narodowe jednostki epoki Żelaza rekrutujesz w mieście z Koszarami." }
+      { "z": "Top5", "zdanie": "Rozbudowa Kuźni brązu podnosi Pancerz jednostek — przygotowanie do armii epoki Żelaza." }
     ]
   },
   "Inżynieria": {
@@ -263,11 +263,11 @@
   },
   "Obróbka żelaza": {
     "top5": [
-      { "z": "Top2", "tytul": "Otwiera drogę do Sztuki wojennej (z Oblężnictwem)", "powodTytulu": "Q7 właściciela: Top1 = jawne 'Otwiera drogę do …'.", "zdanie": "Dla większości państw Obróbka żelaza nie daje korzyści od ręki — razem z Oblężnictwem prowadzi do Akademii wojskowej." },
-      { "z": "Top1_GLOWNA", "zdanie": "Cud narodowy tylko dla Słowian." },
-      { "z": "Top3", "zdanie": "Elitarne jednostki narodowe tylko dla Celtów i Germanów." }
+      { "z": "Top2", "tytul": "Otwiera drogę do Sztuki wojennej (z Oblężnictwem)", "powodTytulu": "Q7 właściciela: Top1 = jawne 'Otwiera drogę do …'.", "zdanie": "Dla większości państw Obróbka żelaza nie daje korzyści od ręki — razem z Oblężnictwem i Hutnictwem żelaza prowadzi do Sztuki wojennej: Akademii wojskowej i jednostek epoki Żelaza." },
+      { "z": "Top1_GLOWNA", "zdanie": "Cud narodowy tylko dla Słowian." }
     ],
     "pominiete": [
+      { "z": "Top3", "powod": "Decyzja właściciela 2026-11-09 (TECH-IRON-GATING-IMPL): jednostki epoki Żelaza (także Celtów i Germanów) odblokowuje Sztuka wojenna, nie Obróbka żelaza." },
       { "z": "Top4", "powod": "Q3/Q4 właściciela: Wielka odlewnia ma epokaWejscia 4 (production.ts:966) — efekt martwy, ukryty." },
       { "z": "Top5", "powod": "Q3/Q4 właściciela: Wielka Kuźnia ma epokaWejscia 4 (production.ts:966) — efekt martwy, ukryty." }
     ]
@@ -275,7 +275,8 @@
   "Sztuka wojenna": {
     "top5": [
       { "z": "Top1_GLOWNA", "zdanie": "Stawiasz ją obok Koszar — jednostki z miasta dostają kolejne +20% parametrów." },
-      { "z": "Top2", "zdanie": "Stały dochód Pracy i pieniądza w mieście." }
+      { "z": "Top2", "zdanie": "Stały dochód Pracy i pieniądza w mieście." },
+      { "z": "Top3", "zdanie": "Odblokowuje rekrutację wszystkich narodowych jednostek epoki Żelaza w mieście z Koszarami." }
     ]
   }
 }

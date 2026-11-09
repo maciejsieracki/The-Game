@@ -83,7 +83,7 @@ function assert(cond, msg, extra) {
   }
 }
 
-// Ctx: Rzym gracz w epoce Zelazo (3), Hutnictwo zelaza + Brazownictwo zbadane,
+// Ctx: Rzym gracz w epoce Zelazo (3), Hutnictwo zelaza + Sztuka wojenna + Brazownictwo zbadane,
 // bez bonusow cyw (civBonusy=[]) -- specTokens puste, wiec jednostki "Specjalna"
 // innych nacji i tak odpadaja na bramce Nacja. builtBuildingIds zawiera Odlewnie
 // zelaza + hasKopalniaNaZlozuZelaza=true (dec. wlasciciela 2026-07-19: jednostki
@@ -109,7 +109,7 @@ const RZYM_ZELAZO_CTX = {
   // z listy zamienników mimo ze test celowo symuluje gracza z pelnym dostepem do surowcow.
   empireResourceStock: { braz: 10, zelazo: 10, drewno: 10 },
 };
-const TECHS_ZELAZO = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];
+const TECHS_ZELAZO = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza', 'Sztuka wojenna'];
 
 console.log('\n[unit-replace-test] Running tests...\n');
 

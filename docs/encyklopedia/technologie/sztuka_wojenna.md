@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Sztuka wojenna** — epoka **Żelazo** (poziom 9), koszt **400** PN (tempo Szybka), wymaga: Oblężnictwo + Obróbka żelaza. Odblokowuje budynki: Akademia wojskowa.
+**Sztuka wojenna** — epoka **Żelazo** (poziom 9), koszt **400** PN (tempo Szybka), wymaga: Oblężnictwo + Obróbka żelaza + Hutnictwo żelaza. Odblokowuje budynki: Akademia wojskowa; jednostki: Falanga, Hieros Lochos (Święty Zastęp), Hastati, Triari, Gaesatae, Soldurii, Rydwan celtycki, Wojownik germański, Berserker germański, Konnica lancowa asyryjska, Konnica łucznicza asyryjska, Drużynnik, Jeździec z oszczepami, Garnizon Harappy, Gwardia hetycka, Piechota neobabilońska, Tyrski miecznik, Gwardia Tyreńska, Thorakites, Evocati, iButho z iklwa, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski.
 
 ---
 
@@ -23,13 +23,13 @@
 
 ### Wymagania
 - **Epoka:** Żelazo (poziom 9)
-- **Wymaga (prereq):** Oblężnictwo + Obróbka żelaza
+- **Wymaga (prereq):** Oblężnictwo + Obróbka żelaza + Hutnictwo żelaza
 - **Wymagany budynek:** Koszary
 - **Koszt nauki:** 400 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
 - **Budynki:** Akademia wojskowa
-- **Jednostki:** brak
+- **Jednostki:** Falanga, Hieros Lochos (Święty Zastęp), Hastati, Triari, Gaesatae, Soldurii, Rydwan celtycki, Wojownik germański, Berserker germański, Konnica lancowa asyryjska, Konnica łucznicza asyryjska, Drużynnik, Jeździec z oszczepami, Garnizon Harappy, Gwardia hetycka, Piechota neobabilońska, Tyrski miecznik, Gwardia Tyreńska, Thorakites, Evocati, iButho z iklwa, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski
 - **Ulepszenia terenu:** brak
 - **Surowce:** brak
 

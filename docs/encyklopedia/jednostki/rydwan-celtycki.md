@@ -26,7 +26,7 @@ Rydwan celtycki to jednostka typu **Flanka** z epoki **Żelazo**. Unikalna dla *
 ### Rekrutacja i utrzymanie
 - **Koszt:** 28 ¤, 1 mieszkańców
 - **Surowiec:** 1× żelazo
-- **Tech:** Hutnictwo żelaza
+- **Tech:** Sztuka wojenna
 - **Utrzymanie:** 3 ¤/t, 1 żywności/t
 - **Ruch:** 4 (mapa) / 6 (bitwa)
 - **Siła w polu:** 53

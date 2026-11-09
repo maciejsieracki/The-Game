@@ -48,7 +48,7 @@ const GRECJA_CTX = {
   placedImprovements: null, hasKopalniaNaZlozuZelaza: true,
   empireResourceStock: { braz: 50, zelazo: 100, drewno: 50 },
 };
-const TECHS = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];
+const TECHS = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza', 'Sztuka wojenna'];
 const CITY = { id: 'c1', ownerId: 0, q: 0, r: 0 };
 const idsOf = items => items.map(i => i.id);
 const prodWith = (...ids) => ({

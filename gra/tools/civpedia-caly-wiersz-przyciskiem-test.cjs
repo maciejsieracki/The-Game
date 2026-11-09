@@ -104,7 +104,7 @@ async function main() {
   check('fixture: "Łucznictwo" odblokowuje >=1 jednostkę', luknictwoUnits.length > 0, luknictwoUnits);
 
   const falanga = units.find((u) => u.Jednostka === 'Falanga');
-  check('fixture: "Falanga" (Tech=Hutnictwo żelaza) istnieje — regresja kind=unit', !!falanga && falanga.Tech === 'Hutnictwo żelaza');
+  check('fixture: "Falanga" (Tech=Sztuka wojenna) istnieje — regresja kind=unit', !!falanga && falanga.Tech === 'Sztuka wojenna');
 
   const drogaBrukowana = improvements['droga_brukowana'];
   check('fixture: "droga_brukowana" ma tech + upgradeFrom oba rozwiązywalne — regresja kind=improvement (2 linki na 1 karcie)',
@@ -511,13 +511,13 @@ async function main() {
     // =======================================================================
     const falangaSlug = await unitIdOf('Falanga');
     {
-      const expectedTechId = await techIdOf('Hutnictwo żelaza');
+      const expectedTechId = await techIdOf('Sztuka wojenna');
       const { rowInfo, hitEl, afterClick } = await clickRowLabelAndInspect('unit', falangaSlug, 'requirements', 'Technologia');
       check('[6] kind=unit ("Falanga"): wiersz "Technologia" istnieje', !rowInfo.error, rowInfo);
       if (!rowInfo.error) {
         check('[6] kind=unit: elementFromPoint w etykiecie NIE jest <button> (regresja — full-row fallback teraz też tutaj)',
           hitEl && hitEl.isButton === false, hitEl);
-        check('[6] kind=unit: klik w etykietę "Technologia" nadal otwiera technology/Hutnictwo żelaza',
+        check('[6] kind=unit: klik w etykietę "Technologia" nadal otwiera technology/Sztuka wojenna',
           afterClick.depthAfter === 2 && afterClick.cardTop && afterClick.cardTop.kind === 'technology' && afterClick.cardTop.id === expectedTechId,
           { expectedTechId, afterClick });
       }
