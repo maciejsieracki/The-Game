@@ -9,3 +9,6 @@ Falanga: OBRONA = 12 (dziś 10), PRZEBICIE = 4 (dziś 2; jak Thorakites), Bonus 
 
 ## DODATEK 2 (2026-11-09) — ATAK = 7
 Falanga finalnie: ATAK = 7 (dziś 6; zaktualizuj `Atak` i `meleeAttack`), OBRONA = 12, PRZEBICIE = 4, Bonus vs Spearman = 30. Pozostałe pola bez zmian. Przelicz `fieldPower` i wszystkie pochodne wg DODATKU 1.
+
+## DODATEK 3 (2026-11-09, runda 3) — BAZA: 4ed1b5a47 (gałąź/commit r2; sprawdź `git cat-file -t`, w razie braku `refs/keep` albo `web-wip/FALANGA`), raport FC r2: 22e476189 (03-final-control.md)
+Final Control r2 = FAIL z jednym punktem NAPRAW: `gra/data/tech-cards-top5.json:~1006` nadal mówi „Falanga (Obrona 10)”, a Obrona to teraz 12. Plik jest generowany z `dyspozycje/autobot/runs/R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1/zrodlo/odkrycia-top5.csv`: zmień tam 10→12, przegeneruj `gen-tech-cards-top5` i potwierdź `--check`. Allowlista rozszerzona o ten CSV i JSON. Reszta bez zmian (r2 zaakceptowana). Ignoruj pytania właściciela z innych tematów.
