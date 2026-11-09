@@ -13,3 +13,6 @@ ALLOWLISTA: gra/src/game/economy-upkeep.ts, gra/src/game/*upkeep*.ts, gra/src/ga
 
 ## DODATEK 1 (2026-11-09) — potwierdzenie właściciela
 Tabela kosztów budowy POTWIERDZONA w całości (wszystkie założenia: Magazyn/Port drewno = kamień, budynki bez cegły dziś: cegła = dzisiejszy kamień, budynki przed Cegielnią bez cegły). Utrzymanie surowcowe: proporcjonalnie do Pieniądza utrzymania, w tych samych surowcach co koszt budowy (1:1 jak w regule powyżej).
+
+## DODATEK 2 (2026-11-09) — wynik BLDCOST: mechanizm utrzymania surowcowego JUŻ ISTNIEJE
+economy-upkeep.ts:682-700 `buildingResourceUpkeep`: dla każdego typu surowca w `koszt_surowce` stała 5 szt./turę, NIEZALEŻNIE od ilości i od utrzymania Pieniądza. Decyzja właściciela: utrzymanie surowcowe PROPORCJONALNIE do utrzymania Pieniądza budynku (dla każdego surowca z kosztu budowy: tyle jednostek na turę, ile utrzymania w Pieniądzu). ZADANIE: zastąp stałą 5/typ regułą proporcjonalną (parametr/współczynnik w pliku danych, domyślnie 1:1 z `utrzymanie` + `przyrostUtrzymania`), HUD/karta/AI spójne, testy upkeep (73 istniejące) przepisane celowo, dług REPIN Rust. Baza: main po FALA 573 (BLDCOST).
