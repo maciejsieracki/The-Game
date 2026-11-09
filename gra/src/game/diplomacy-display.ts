@@ -10,6 +10,7 @@ import { clampRelationForWar, computeRespekt } from './diplomacy';
 import { RodzajTraktatu } from '../types/diplomacy';
 import type { ActiveDeal, TreatyKind } from './diplomacy-treaties';
 import { normalizeTreatyKind } from './diplomacy-treaties';
+import { formatFullNumber } from '../ui/formatCompactNumber';
 import type { BasketItem } from './diplomacy-pn-engine';
 import type { ProposalPayload } from './diplomacy-proposals';
 import {
@@ -621,6 +622,17 @@ export interface DiploPlayerSummaryInput {
   wiarygodnosc?: number;
   population?: number;
   armyCount?: number;
+  /** Rekruci w pełnych jednostkach werbu — bieżąca pula (floor, jak rekrutUnitEquivalents). */
+  recruitsUnits?: number;
+  /** Rekruci w pełnych jednostkach werbu — maksimum puli. */
+  recruitsUnitsMax?: number;
+}
+
+/** Wiersz „Rekruci: bieżąca / maks." w pełnych jednostkach werbu (bez zmiany audiencji). */
+export function formatRecruitsUnitsPart(current: number, max: number): string {
+  const cur = Math.max(0, Math.floor(current));
+  const mx = Math.max(0, Math.floor(max));
+  return `Rekruci: ${formatFullNumber(cur)} / ${formatFullNumber(mx)}`;
 }
 
 /** Linie statystyk gracza — spójne z kartami obcych cywilizacji (detail + meta). */
@@ -639,6 +651,9 @@ export function formatDiploPlayerSummaryLines(input: DiploPlayerSummaryInput): {
   }
   if (input.armyCount !== undefined) {
     detailParts.push(`Armia: ${input.armyCount}`);
+  }
+  if (input.recruitsUnits !== undefined && input.recruitsUnitsMax !== undefined) {
+    detailParts.push(formatRecruitsUnitsPart(input.recruitsUnits, input.recruitsUnitsMax));
   }
   const metaParts: string[] = [];
   if (input.wiarygodnosc !== undefined) {
@@ -659,6 +674,9 @@ export interface DiploCivListEntryInput {
   /** Ich strona — jak oni nas widzą (demografia + ich respekt wobec gracza). */
   theirPopulation?: number;
   theirArmyCount?: number;
+  /** Rekruci rozmówcy w pełnych jednostkach werbu: bieżąca pula / maksimum. */
+  theirRecruitsUnits?: number;
+  theirRecruitsUnitsMax?: number;
   theirRespektTowardPlayer?: number;
   /** Nasza strona — jak my ich widzimy. */
   ourRespektTowardThem?: number;
@@ -682,6 +700,9 @@ export function formatDiploCivListLines(input: DiploCivListEntryInput): {
   }
   if (input.theirArmyCount !== undefined) {
     theirParts.push(`Armia: ${input.theirArmyCount}`);
+  }
+  if (input.theirRecruitsUnits !== undefined && input.theirRecruitsUnitsMax !== undefined) {
+    theirParts.push(formatRecruitsUnitsPart(input.theirRecruitsUnits, input.theirRecruitsUnitsMax));
   }
   if (input.theirRespektTowardPlayer !== undefined) {
     theirParts.push(`Ich respekt: ${Math.round(input.theirRespektTowardPlayer)}`);
