@@ -97,7 +97,8 @@ const territoryNodes = Object.values(hexes).map(h => ({ q: h.coords.q, r: h.coor
 function qual(horseStockAvailable, tradeRouteKonUnlocked) {
   return M.buildImprovementQualifier({
     map, cityNodes, territoryNodes, playerOwnerIdNum: 0,
-    playerCivArchetype: 'rzym', playerEra: 1,
+    // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: poza złożem stadnina wymaga epoki >= 3
+    playerCivArchetype: 'rzym', playerEra: 3,
     horseStockAvailable, tradeRouteKonUnlocked,
   });
 }

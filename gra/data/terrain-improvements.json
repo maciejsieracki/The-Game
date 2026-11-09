@@ -108,7 +108,7 @@
     "surowiecOdblokowany_uwaga": "ABC-18: tylko na złożu konia + tech Jeździectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Koń do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 5/turę (było 1/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 25/turę (było 5/turę).",
     "surowiec_ilosc_tura": 25,
     "teren": "Łąka, Równina",
-    "warunek": "heks ze złożem konia w terytorium (albo po imperialnym odblokowaniu Konia — bez złoża); nakładka Lasu nie przeszkadza.",
+    "warunek": "heks ze złożem konia w terytorium; od epoki Żelaza (3) także bez złoża, po imperialnym odblokowaniu Konia; nakładka Lasu nie przeszkadza.",
     "koszt_praca": 28,
     "tech": "Jeździectwo",
     "odblokowuje": "Koń (jednostki konne)",

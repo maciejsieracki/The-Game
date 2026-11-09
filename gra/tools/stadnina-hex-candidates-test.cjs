@@ -79,7 +79,7 @@ function scenario(M) {
 function api(M, sc, extra = {}) {
   const state = {
     map: sc.map, cityNodes: sc.cityNodes, territoryNodes: sc.territoryNodes,
-    playerOwnerIdNum: 0, playerCivArchetype: 'rzymianie', playerEra: 1,
+    playerOwnerIdNum: 0, playerCivArchetype: 'rzymianie', playerEra: 3, // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1 (era>=3 dla ścieżki magazynu)
     researchedTechs: new Set(['Jeździectwo']),
     horseStockAvailable: 0, tradeRouteKonUnlocked: false, ...extra,
   };

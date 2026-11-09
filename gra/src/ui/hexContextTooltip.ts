@@ -43,7 +43,7 @@ import {
   hexHiddenDepositHint,
   labelsForImprovementUnlock,
 } from '../game/resource-access';
-import { isLamaDepositVisibleForCiv, isLivestockAllowed } from '../game/livestock-unlock';
+import { isLamaDepositVisibleForCiv, isLivestockAllowed, STADNINA_FREE_FROM_ERA } from '../game/livestock-unlock';
 import { hexHasHorseDeposit } from '../game/terrain-improvements';
 import { formatEntityDisplayName } from '../game/display-names';
 import type { DaninaLabel } from '../game/danina-nazwa';
@@ -404,6 +404,7 @@ function listTerrainPossibleImprovements(
   playerCivType?: string | null,
   map?: GameMap,
   ownerEra?: number,
+  konImperialUnlocked = false,
 ): string[] {
   const active = new Set(improvementKeysForHex(hex));
   const teren = hex.terenBazowy;
@@ -439,7 +440,13 @@ function listTerrainPossibleImprovements(
     // (isLivestockUnlockedForPlacement/empireUnlocks) -- that is player/empire state, not a hex
     // property, so it's deliberately SKIPPED here, same as territory/tech are skipped throughout
     // this function (see docstring above).
-    if (key === 'stadnina' && !hexHasHorseDeposit({ nakladka, zloze })) continue;
+    // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: poza złożem stadnina dopiero od
+    // epoki Żelaza (STADNINA_FREE_FROM_ERA) i tylko przy odblokowanym Koniu imperium (trasa LUB
+    // magazyn >= 50) -- ta sama bramka co isLivestockUnlockedForPlacement w silniku.
+    if (key === 'stadnina' && !hexHasHorseDeposit({ nakladka, zloze })) {
+      const offDepositOpen = (ownerEra ?? 99) >= STADNINA_FREE_FROM_ERA && konImperialUnlocked;
+      if (!offDepositOpen) continue;
+    }
     if (key === 'farma' && !isFarmBaseTerrain(teren, nakladka)) continue;
     if (key === 'tartak' && nakladka !== Nakladka.Las) continue;
     if (key === 'wyrab' && nakladka !== Nakladka.Las) continue;
@@ -509,6 +516,12 @@ export interface HexContextTooltipInput {
   hexWorkedForMagazyn?: boolean;
   currentEra?: number;
   /**
+   * R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: imperium ma odblokowany Koń
+   * (trasa handlowa LUB magazyn 'kon' >= 50) -- liczone przez wołającego (main.ts). Znaczy
+   * coś tylko od epoki Żelaza; w epokach 1–2 stadnina wymaga złoża konia na heksie.
+   */
+  konImperialUnlocked?: boolean;
+  /**
    * Etykieta strumienia podatkowego (zawsze "Podatek" od 2026-07-27); opcjonalna
    * dla kompatybilności wołających.
    */
@@ -525,7 +538,7 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   const resources = collectResourceLabels(hex, era, input.playerCivType);
   const built = builtImprovementKeys(hex);
   const implicitKeys = improvementKeysForHex(hex).filter(k => !built.includes(k));
-  const possible = listTerrainPossibleImprovements(hex, input.playerCivType, input.map, yieldEra);
+  const possible = listTerrainPossibleImprovements(hex, input.playerCivType, input.map, yieldEra, input.konImperialUnlocked ?? false);
 
   const lines: string[] = [];
 
