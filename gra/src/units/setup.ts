@@ -68,6 +68,13 @@ export interface RuntimeUnit {
   /** Mechanizm "Zastąp" (ZASTAP-JEDNOSTKI-PLAN.md): raz na turę na jednostkę.
    *  Resetowana na false na starcie tury gracza (main.ts, obok resetu ruchLeft). */
   replaceUsedThisTurn?: boolean;
+  /** R-WEB-DISBAND-REFUND-RESOURCES-Q1: surowce ZUŻYTE przy werbunku tej jednostki
+   *  (z puli państwa, = unitStockCost(def) w chwili ukończenia rekrutacji). Przy
+   *  rozwiązaniu jednostki gracza wracają w 100% do puli państwa. Brak pola (stare
+   *  zapisy, jednostki startowe, zdobyte, przekazane, barbarzyńcy) = nic nie wraca.
+   *  EN: stock consumed when this unit was recruited; returned 100% on disband.
+   *  Missing = no refund. */
+  stockPaid?: Record<string, number>;
   /** TEMAT #15 (Ludy Morza / embarkacja): jednostka LĄDOWA zaokrętowana na
    *  heksie wody (Morze/Wybrzeże). Ustawiane automatycznie po ruchu wg terenu
    *  docelowego (woda→true, ląd→false). Stare save'y bez pola = niezaokrętowana. */

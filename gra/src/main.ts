@@ -1002,7 +1002,7 @@ import {
 import {
   buildingStockCost, unitStockCost, canAffordBuildingStock,
   ownerResourceStockAll, deductBuildingStockCostAcrossCities, creditOwnerResourceStock,
-  missingStockFor, stockResourceLabel, EMPIRE_STOCK_RESOURCE_KEYS,
+  missingStockFor, stockResourceLabel, EMPIRE_STOCK_RESOURCE_KEYS, disbandStockRefund,
 } from './game/building-stock-cost';
 import { empireHasKopalniaNaZlozuZelaza, ownerHasNativeZelazoAccess } from './game/zelazo-access';
 import { empireHasKopalniaNaZlozuCyny, cityHasOdlewniaForCyna } from './game/cyna-access';
@@ -7170,6 +7170,18 @@ async function boot(): Promise<void> {
       const mpRefund = unitManpowerCostForType(u.typeId, ep, mpMults.maxMult, mpMults.costMult);
       refundManpowerToEmpire(cities, 0, ep, mpRefund, mpMults.maxMult);
 
+      // R-WEB-DISBAND-REFUND-RESOURCES-Q1: 100% surowców zużytych przy werbunku wraca do PUli
+      // PAŃSTWA (ten sam mechanizm co zwrot anulowanej rekrutacji, z capem magazynu jak
+      // przy produkcji). Pieniądz NIE wraca. Brak śladu (stockPaid) = zero zwrotu.
+      // EN: 100% of stock consumed at recruitment returns to the state pool (capped like
+      // production); gold is NOT refunded; no trace (stockPaid) = no refund.
+      const stockRefundCredited: Record<string, number> = {};
+      const stockRefundCap = ownerResourceCap(cities, cityBuilt, 0, data, _menuDifficulty, ep);
+      for (const [key, amt] of Object.entries(disbandStockRefund(u.stockPaid))) {
+        const credited = creditOwnerResourceStock(cities, 0, key, amt, stockRefundCap);
+        if (credited > 0) stockRefundCredited[key] = credited;
+      }
+
       const siegeCityId = u.oblegaCityId;
       const wasGarnizon = u.inGarnizon === true;
       const cityForGarnizon = cityAtUnit(u);
@@ -7204,8 +7216,11 @@ async function boot(): Promise<void> {
       refreshSiegeMarkers();
 
       const cityLabel = cityAtUnit(u)?.name ?? cities.find(c => c.ownerId === 0)?.name ?? 'imperium';
+      const stockRefundParts = Object.entries(stockRefundCredited)
+        .map(([key, amt]) => '+' + amt + ' ' + stockResourceLabel(key));
       showHintMessage(
-        u.typeId + ' rozwiązany — +' + formatManpowerCompact(mpRefund) + ' rekrutów → pula imperium (' + cityLabel + ')',
+        u.typeId + ' rozwiązany — +' + formatManpowerCompact(mpRefund) + ' rekrutów → pula imperium (' + cityLabel + ')'
+          + (stockRefundParts.length > 0 ? ' · zwrot surowców: ' + stockRefundParts.join(', ') : ''),
         4000,
       );
       refreshD1bHud();
@@ -38389,6 +38404,9 @@ async function boot(): Promise<void> {
                   ruchLeft: ruch,
                   pancerzBonusProc: recBirthProgress.pancerzBonusProc,
                   parametryBonusProc: recBirthProgress.parametryBonusProc,
+                  // R-WEB-DISBAND-REFUND-RESOURCES-Q1: ślad surowców zużytych przy werbunku
+                  // (ta sama unitStockCost co pobór w purchaseRecruitmentUnit) -- zwrot przy rozwiązaniu.
+                  ...(Object.keys(unitStockCost(def)).length > 0 ? { stockPaid: unitStockCost(def) } : {}),
                 });
                 chronicleNoteProducedUnit(units[units.length - 1]); // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1
                 // R-ARMIA-AI-SCALANIE-REKRUTACJA-Q1: only an AI-owned completed

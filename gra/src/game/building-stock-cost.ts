@@ -418,3 +418,23 @@ export function unitStockCost(
   }
   return out;
 }
+
+/**
+ * R-WEB-DISBAND-REFUND-RESOURCES-Q1: zwrot surowców przy ROZWIĄZANIU jednostki gracza.
+ * Zwraca 100% surowców zapisanych jako zużyte przy werbunku (`stockPaid`); pomija
+ * wpisy niedodatnie/niefinityjne. Brak śladu (undefined/{}) -> {} (zero zwrotu).
+ * Pure -- bez DOM. Pieniądz NIE wraca (ta funkcja zwraca wyłącznie surowce).
+ * EN: returns 100% of the stock recorded as consumed at recruitment; {} when no trace.
+ */
+export function disbandStockRefund(
+  stockPaid: Readonly<Record<string, number>> | null | undefined,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!stockPaid) return out;
+  for (const [key, amount] of Object.entries(stockPaid)) {
+    if (typeof amount === 'number' && Number.isFinite(amount) && amount > 0) {
+      out[key] = amount;
+    }
+  }
+  return out;
+}
