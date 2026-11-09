@@ -408,6 +408,13 @@
       "jednostka": "Ceramika/turę",
       "opis": "PYTANIE-84-B8 (Maciej 2026-07-27): Spichlerz Królewski zużywa Ceramikę ze skarbca co turę (obok Soli); brak Ceramiki → brak bonusu ludności w mieście. Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz ceramikaII; używany gdy miasto ma Spichlerz Królewski) → paySpichlerzDrainForCity (building-resource-gate.ts:418) oraz turn-economy.ts:1375, :1407, :1548, :2479. R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
     },
+    "utrzymanie_surowce_wspolczynnik": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "szt. surowca / 1 Pieniądz utrzymania / turę",
+      "opis": "R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (decyzja właściciela 2026-11-09): utrzymanie SUROWCOWE budynku jest proporcjonalne do jego utrzymania w Pieniądzu. Dla KAŻDEGO typu surowca z `koszt_surowce` (koszt budowy) budynek zużywa na turę floor(utrzymanie_Pieniądz(poziom) × ta wartość) sztuk; 1 = 1:1 (np. utrzymanie 2 Pieniądze i koszt drewno+kamień+cegła => 2 drewna + 2 kamienia + 2 cegły na turę). Pieniądz utrzymania zostaje bez zmian (surowce są DODATKOWO). Zastępuje dawną stałą 5 szt./typ. Czytane przez configureBuildingResourceUpkeepRatio (economy-upkeep.ts), wspólne dla ticka gracza i AI, podglądów i UI."
+    },
     "utrzymanie_budynek": {
       "easy": 1,
       "normal": 1,

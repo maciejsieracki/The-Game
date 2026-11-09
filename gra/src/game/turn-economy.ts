@@ -82,6 +82,7 @@ import {
   buildUnitUpkeepTable,
   upkeepBalance,
   totalBuildingResourceUpkeep,
+  readBuildingResourceUpkeepRatio,
   totalUnitResourceUpkeep,
   addResourceCosts,
   unitFoodPerTurn,
@@ -2411,6 +2412,13 @@ export function advanceCityEconomy(
     }
     return cached;
   };
+  // R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1: współczynnik utrzymania surowcowego budynków —
+  // czytany z danych dla trudności właściciela (ta sama reguła co upkeepParamsForOwner), a
+  // przekazywany jako argument do totalBuildingResourceUpkeep (bez stanu modułu).
+  const buildingResRatioForOwner = (oid: number): number => readBuildingResourceUpkeepRatio(
+    rawEconParams,
+    resolveOwnerUpkeepDifficulty ? resolveOwnerUpkeepDifficulty(oid) : difficulty,
+  );
   const storageParams = loadStorageParams(rawEconParams, difficulty);
   const rationParams = buildRationParams(rawEconParams, difficulty);
 
@@ -2966,6 +2974,7 @@ export function advanceCityEconomy(
     // nie przelicza od nowa (patrz JSDoc pól wyżej).
     const buildingsResUpkeep: Record<string, number> = totalBuildingResourceUpkeep(
       buildingsByOwner.get(oid) ?? [],
+      buildingResRatioForOwner(oid),
     );
     const unitsResUpkeep: Record<string, number> = totalUnitResourceUpkeep(ounits, typeId =>
       data.units.find(u => u.Jednostka === typeId),

@@ -1131,7 +1131,7 @@ import {
   villageEventHex,
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
 import { getCityResourceAccessForCity, getResourceAccessForCity } from './game/resource-access';
@@ -3783,7 +3783,7 @@ async function boot(): Promise<void> {
       // `units`) tymi samymi czystymi prymitywami silnika (`previewOwnerBuildingResourceUpkeep`/
       // `totalUnitResourceUpkeep`, economy-upkeep.ts — te same funkcje, które `turn-economy.ts`
       // woła wewnątrz ticku pod `totalBuildingResourceUpkeep`/`totalUnitResourceUpkeep`; budynki
-      // nie zależą od poziomu, patrz `buildingResourceUpkeep()` JSDoc — zero rozjazdu z tickiem).
+      // zależą od poziomu i współczynnika z danych, patrz `buildingResourceUpkeep()` w economy-upkeep.ts — zero rozjazdu z tickiem).
       // Wpis obecny, ale pusty `{}` (owner naprawdę nie ma dziś kosztu) NIE trafia w ten fallback
       // — `??` reaguje tylko na `undefined`, nie na pusty obiekt.
       // / EN: both maps are cleared on every save-load / new game (5 spots) and populated ONLY
@@ -3792,7 +3792,7 @@ async function boot(): Promise<void> {
       // Fix mirrors the citizenUpkeep fallback below: recompute on demand from live game state
       // using the exact same pure primitives the turn engine itself calls (no drift risk).
       const ownerBuildingResUpkeep = buildingResourceUpkeepByOwner.get(ownerId)
-        ?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt);
+        ?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt, bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty));
       const ownerUnitResUpkeep = unitResourceUpkeepByOwner.get(ownerId)
         ?? totalUnitResourceUpkeep(
           units.filter(u => u.ownerId === ownerId).map(u => ({ typeId: u.typeId })),
@@ -8436,9 +8436,20 @@ async function boot(): Promise<void> {
       );
     }
 
+    /** Poziom budynku wg epoki/techu właściciela — TA SAMA formuła co tick (turn-economy buildingsByOwner). */
+    function buildingLevelForOwnerBuilding(bdef: { epokaWejscia: number; maksPoziom: number; poziomTechGate?: unknown }, ownerId: number): number {
+      return buildingLevelForEpoch(
+        bdef.epokaWejscia,
+        empireEpochForOwner(ownerId),
+        bdef.maksPoziom,
+        (bdef.poziomTechGate as Record<string, string> | null | undefined) ?? null,
+        unlockedTechSetForOwner(ownerId),
+      );
+    }
+
     function buildingResourceUpkeepForCityId(cityId: string, ownerId: number): Record<string, number> {
       const builtIds = cityBuilt.get(cityId) ?? [];
-      return buildingResourceUpkeepForBuiltIds(builtIds, data.buildings);
+      return buildingResourceUpkeepForBuiltIds(builtIds, data.buildings, bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty));
     }
 
     function garrisonUpkeepForCity(city: City): number {
@@ -21223,6 +21234,8 @@ async function boot(): Promise<void> {
         0, playerCities, data.buildings, cityBuilt,
         playerEconUnitsForUpkeep,
         typeId => data.units.find(u => u.Jednostka === typeId),
+        bdef => buildingLevelForOwnerBuilding(bdef, 0),
+        readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty),
       );
       _lastBogactwoRate = playerEcon.pieniadz - bogactwoUpkeepPreview.utrzymanieRazem;
       // NAPRAWA HUD-PRACA (ten sam wzorzec, ta sama zgloszenie): "+N" przy Pracy
