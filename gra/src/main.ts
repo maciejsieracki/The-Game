@@ -8219,6 +8219,8 @@ async function boot(): Promise<void> {
           ),
           population: cities.filter(c => c.ownerId === otherId).reduce((s, c) => s + c.population, 0),
           armyCount: units.filter(u => u.ownerId === otherId).length,
+          recruitsUnits: diploListRecruitUnitsForOwner(otherId).cur,
+          recruitsUnitsMax: diploListRecruitUnitsForOwner(otherId).max,
           cultureLabel: civCultureLabelForKey(civKeyForOwner(otherId)),
           epochLabel: epochLabelForOwner(otherId),
           contactEstablished: diplomaticContactEstablishedSet().has(otherId),
@@ -8337,6 +8339,8 @@ async function boot(): Promise<void> {
         wiarygodnosc: getWiarygodnosc(ME()),
         population: playerCities.reduce((s, c) => s + c.population, 0),
         armyCount: units.filter(u => isMe(u.ownerId)).length,
+        recruitsUnits: diploListRecruitUnitsForOwner(ME()).cur,
+        recruitsUnitsMax: diploListRecruitUnitsForOwner(ME()).max,
       });
       return {
         name: ownerDiploLabel(ME()),
@@ -24354,6 +24358,21 @@ async function boot(): Promise<void> {
         max += cityManpowerMax(c.population, ep, maxMult);
       }
       return { rekruci: empirePoborTotals(cities, ownerId, ep, maxMult).rekruci, max };
+    }
+
+    /**
+     * R-WEB-DIPLO-CITIZENS-VS-RECRUITS-SEPARATE-Q1 (dodatek 2): uproszczona karta listy dyplomacji —
+     * „Rekruci" w PEŁNYCH jednostkach werbu (bieżąca / maks.), ta sama reguła co rekrutEkw
+     * (rekrutUnitEquivalents: floor(pula / koszt jednostki epoki)). Audiencja pozostaje bez zmian.
+     */
+    function diploListRecruitUnitsForOwner(ownerId: number): { cur: number; max: number } {
+      const ep = empireEpochForOwner(ownerId);
+      const costMult = civManpowerMultsForOwner(ownerId).costMult;
+      const pool = audienceRecruitsForOwner(ownerId);
+      return {
+        cur: rekrutUnitEquivalents(pool.rekruci, ep, costMult),
+        max: rekrutUnitEquivalents(pool.max, ep, costMult),
+      };
     }
 
     /**
