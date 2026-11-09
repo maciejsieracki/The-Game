@@ -183,6 +183,10 @@ export interface NewGameParams {
    * (auto-ulepszenia terenu + auto-budowa budynków). Domyślnie WYŁĄCZONA; AI bez zmian.
    * / EN: player build automation (default OFF). */
   autoBuildEnabled?: boolean;
+  /** R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: „Odkrywanie mapy klawiszem F (tryb testowy)”
+   * (domyślnie WYŁĄCZONA). Klawisz F działa tylko przy true; brak pola = wyłączona.
+   * / EN: F-key map reveal (test mode), default OFF. */
+  fogRevealKeyFEnabled?: boolean;
 }
 
 /**
@@ -675,6 +679,7 @@ const SETTING_GLYPHS: Record<string, string> = {
   deals_end_turn_gate: 'Ha',
   player_epoch_war: 'Wo',
   auto_build_enabled: 'Au',
+  fog_reveal_key_f: 'Mg',
   barbariansLevel: 'Ba',
   victory_mode: 'Zw',
   landFraction: 'Ld',
@@ -2042,7 +2047,7 @@ function renderSettStep(host: HTMLElement): void {
     'game_speed', 'player_epoch_war',
     'difficulty', 'barbariansLevel',
     'victory_mode', 'village_rewards_enabled',
-    'auto_build_enabled',
+    'auto_build_enabled', 'fog_reveal_key_f',
   ]);
   renderAiCivPicker(layout);
   host.appendChild(layout);
@@ -2185,6 +2190,7 @@ function buildParams(): NewGameParams {
     dealsEndTurnGate: settingValue('deals_end_turn_gate') !== 'Wyłączona',
     playerEpochWarEnabled: settingValue('player_epoch_war') !== 'Wyłączona',
     autoBuildEnabled: settingValue('auto_build_enabled') === 'Włączona',
+    fogRevealKeyFEnabled: settingValue('fog_reveal_key_f') === 'Włączone',
   };
 }
 
