@@ -82,6 +82,7 @@ import {
   buildUnitUpkeepTable,
   upkeepBalance,
   totalBuildingResourceUpkeep,
+  configureBuildingResourceUpkeepRatio,
   totalUnitResourceUpkeep,
   addResourceCosts,
   unitFoodPerTurn,
@@ -2288,6 +2289,7 @@ export function previewOwnerUpkeep(
 ): UpkeepBalance {
   const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
   const upkeepParams  = loadUpkeepParams(rawEconParams, difficulty);
+  configureBuildingResourceUpkeepRatio(rawEconParams, difficulty);
   const unitUpkeepTbl = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
 
   const buildings: BuildingInstanceLike[] = [];

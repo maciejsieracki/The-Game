@@ -237,10 +237,10 @@ equal(cancelCity.postepBudynkowUsuniete, { 'stone-house': 5 }, 'cancellation ban
 
 // 4. Upkeep starts only from the completed-building state and is charged once.
 const def = data.buildings[0];
-equal(buildingResourceUpkeep(def), { drewno: 5 }, 'queued/build definition resource upkeep basis');
+equal(buildingResourceUpkeep(def), { drewno: 2 }, 'queued/build definition resource upkeep basis (= zloto utrzymania 2, R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1)');
 equal(totalBuildingResourceUpkeep([]), {}, 'queued item has no built upkeep');
-equal(totalBuildingResourceUpkeep([{ record: def, level: 1 }]), { drewno: 5 }, 'completed building has one resource upkeep');
-equal(totalBuildingResourceUpkeep([{ record: def, level: 1 }, { record: def, level: 1 }]), { drewno: 10 }, 'upkeep aggregation is explicit per built instance');
+equal(totalBuildingResourceUpkeep([{ record: def, level: 1 }]), { drewno: 2 }, 'completed building has one resource upkeep');
+equal(totalBuildingResourceUpkeep([{ record: def, level: 1 }, { record: def, level: 1 }]), { drewno: 4 }, 'upkeep aggregation is explicit per built instance');
 equal(buildingUpkeep(def, 1), 2, 'completed building gold upkeep uses canonical value');
 equal(totalBuildingUpkeep([{ record: def, level: 1 }]), 2, 'gold upkeep is charged once for one built instance');
 
@@ -285,7 +285,7 @@ equal(
       level: 1,
     })),
   ),
-  { drewno: 5 },
+  { drewno: 2 },
   'save/load preserves the completed building upkeep basis',
 );
 negative('save/load disconnected queue progress', () => assert.equal(loaded.cityProd[city.id].postep, savedProd.postep + 1));

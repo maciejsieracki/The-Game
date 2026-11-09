@@ -399,8 +399,9 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   }
   sections.push({ key: 'cost-build', title: 'Koszt budowy', rows: buildCostRows });
 
-  const upkeepGold = buildingUpkeep(building as unknown as BuildingRecord, 1);
-  const upkeepResources = buildingResourceUpkeep(building);
+  const upkeepLevel = cityState.hasCity ? displayLevel : 1;
+  const upkeepGold = buildingUpkeep(building as unknown as BuildingRecord, upkeepLevel);
+  const upkeepResources = buildingResourceUpkeep(building, upkeepLevel);
   const upkeepCostRows: EntityCardRow[] = [
     { label: 'Co turę', value: formatUpkeepValue(upkeepGold, upkeepResources) },
   ];

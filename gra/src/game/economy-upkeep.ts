@@ -671,31 +671,55 @@ export function totalBuildingUpkeep(
 }
 
 /**
- * Ile sztuk/turę zużywa wybudowany budynek per typ surowca obecny w koszt_surowce
- * (build cost) — flat, NIEZALEŻNIE od kwoty kosztu budowy ani skalowania FALA.
- * R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5, było 1 — ten sam algorytm
- * (flat N/typ), tylko N przeskalowane; „utrzymanie surowcowe budynków” z zadania.
- * / EN: flat units/turn per resource TYPE present in koszt_surowce (build cost),
- * regardless of build-cost amount or FALA scaling — algorithm unchanged, only the
- * flat constant N is scaled ×5 (was 1).
+ * R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (decyzja właściciela 2026-11-09): utrzymanie
+ * SUROWCOWE budynku jest PROPORCJONALNE do jego utrzymania w Pieniądzu. Dla KAŻDEGO typu
+ * surowca obecnego w `koszt_surowce` (koszt budowy) budynek zużywa na turę
+ * `buildingUpkeep(budynek, poziom) × współczynnik` sztuk (Pieniądz utrzymania zostaje
+ * bez zmian — surowce są DODATKOWO). Współczynnik: econ-params.json
+ * `budynki.utrzymanie_surowce_wspolczynnik` (domyślnie 1 = 1:1), ustawiany przez
+ * `configureBuildingResourceUpkeepRatio` (jedno źródło dla ticka, podglądów i UI).
+ * Zastępuje dawną stałą 5 szt./typ (R-EKONOMIA-SUROWCE-SKALA-5X-Q1). Budynek z utrzymaniem
+ * Pieniądza 0 (Stela) albo bez `koszt_surowce` => brak utrzymania surowcowego.
+ * / EN: per-building resource upkeep = gold upkeep (at level) x ratio, for every resource
+ * type in the build cost; ratio from data (default 1).
  */
-export const BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE = 5;
+export const DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO = 1;
+let buildingResourceUpkeepRatio = DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO;
+
+/** Ustawia współczynnik z `budynki.utrzymanie_surowce_wspolczynnik` (brak/zły => 1). */
+export function configureBuildingResourceUpkeepRatio(
+  raw: RawEconParamsForUpkeep | null | undefined,
+  difficulty: Difficulty = 'normal',
+): number {
+  const v = readNum(raw?.budynki, 'utrzymanie_surowce_wspolczynnik', difficulty,
+    DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO);
+  buildingResourceUpkeepRatio = v >= 0 ? v : DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO;
+  return buildingResourceUpkeepRatio;
+}
+
+/** Bieżący współczynnik utrzymania surowcowego budynków. */
+export function getBuildingResourceUpkeepRatio(): number {
+  return buildingResourceUpkeepRatio;
+}
 
 /**
- * Per-turn resource upkeep for one building: BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE
- * units per resource TYPE present in koszt_surowce (build cost), regardless of
- * build-cost amount or FALA scaling. Empty / missing koszt_surowce => no resource upkeep.
+ * Per-turn resource upkeep for one building at `level`: for each resource type in
+ * koszt_surowce, floor(buildingUpkeep(budynek, level) × ratio) units. Gold upkeep 0 or
+ * empty / missing koszt_surowce => no resource upkeep.
  */
 export function buildingResourceUpkeep(
   building: { koszt_surowce?: BuildingStockCost | null } | null | undefined,
+  level = 1,
 ): Record<string, number> {
   const raw = building?.koszt_surowce;
   if (!raw || typeof raw !== 'object') return {};
+  const amount = Math.floor(
+    buildingUpkeep(building as unknown as BuildingRecord, level) * buildingResourceUpkeepRatio,
+  );
+  if (!(amount > 0)) return {};
   const out: Record<string, number> = {};
   for (const [k, v] of Object.entries(raw)) {
-    if (typeof v === 'number' && Number.isFinite(v) && v > 0) {
-      out[k] = BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE;
-    }
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) out[k] = amount;
   }
   return out;
 }
@@ -720,6 +744,7 @@ export function totalBuildingResourceUpkeep(
   for (const b of buildings) {
     addResourceCosts(out, buildingResourceUpkeep(
       b.record as { koszt_surowce?: BuildingStockCost | null },
+      b.level,
     ));
   }
   return out;
@@ -729,12 +754,13 @@ export function totalBuildingResourceUpkeep(
 export function buildingResourceUpkeepForBuiltIds(
   builtIds: readonly string[],
   buildingCatalog: ReadonlyArray<{ id: string; koszt_surowce?: BuildingStockCost | null }>,
+  levelFor?: (bdef: any) => number,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   for (const bid of builtIds) {
     const bdef = buildingCatalog.find(b => b.id === bid);
     if (!bdef) continue;
-    addResourceCosts(out, buildingResourceUpkeep(bdef));
+    addResourceCosts(out, buildingResourceUpkeep(bdef, levelFor ? levelFor(bdef) : 1));
   }
   return out;
 }
@@ -745,6 +771,7 @@ export function previewOwnerBuildingResourceUpkeep(
   cities: ReadonlyArray<{ id: string; ownerId: number }>,
   buildingCatalog: ReadonlyArray<{ id: string; koszt_surowce?: BuildingStockCost | null }>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
+  levelFor?: (bdef: any) => number,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   for (const city of cities) {
@@ -752,6 +779,7 @@ export function previewOwnerBuildingResourceUpkeep(
     addResourceCosts(out, buildingResourceUpkeepForBuiltIds(
       builtByCity.get(city.id) ?? [],
       buildingCatalog,
+      levelFor,
     ));
   }
   return out;
@@ -914,8 +942,9 @@ export function previewOwnerTotalResourceUpkeep(
   builtByCity: ReadonlyMap<string, readonly string[]>,
   units: ReadonlyArray<{ ownerId: number; typeId: string }>,
   resolveUnitDef: (typeId: string) => UnitResourceUpkeepSource | null | undefined,
+  levelFor?: (bdef: any) => number,
 ): Record<string, number> {
-  const out = previewOwnerBuildingResourceUpkeep(ownerId, cities, buildingCatalog, builtByCity);
+  const out = previewOwnerBuildingResourceUpkeep(ownerId, cities, buildingCatalog, builtByCity, levelFor);
   const ownerUnits = units.filter(u => u.ownerId === ownerId);
   addResourceCosts(out, totalUnitResourceUpkeep(ownerUnits, resolveUnitDef));
   return out;

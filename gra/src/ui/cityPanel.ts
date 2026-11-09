@@ -6753,19 +6753,20 @@ function buildingUpkeepDisplay(
 ): { gold: number; resources: Record<string, number> } {
   return {
     gold: buildingUpkeep(def as unknown as BuildingRecord, level),
-    resources: buildingResourceUpkeep(def),
+    resources: buildingResourceUpkeep(def, level),
   };
 }
 
 function sumOwnedBuildingsResourceUpkeep(
   built: readonly string[],
   data: GameData,
+  city?: City,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   for (const id of built) {
     const def = data.buildings.find(b => b.id === id);
     if (!def) continue;
-    addResourceCosts(out, buildingResourceUpkeep(def));
+    addResourceCosts(out, buildingResourceUpkeep(def, city ? buildingOwnedLevel(def, city) : 1));
   }
   return out;
 }
@@ -7929,7 +7930,7 @@ function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLD
     return card;
   }
   const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
-  const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
+  const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data, city);
   const summary = el('div', 'bld-owned-summary');
   summary.innerHTML =
     formatBuildingUpkeepTotalHtml(totalUpkeep, totalResUpkeep) +
@@ -9522,7 +9523,7 @@ function renderBuildingsOwned(
     : `<span>Budynki w mieście${built ? ' (' + built.length + ')' : ''}</span>${built ? '' : PH()}`;
   if (built && data && built.length > 0 && compact) {
     const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
-    const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
+    const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data, city);
     if (totalUpkeep === 0 && Object.keys(totalResUpkeep).length === 0) {
       titleHtml += `<span class="bld-owned-title-upkeep">· ${BUILDING_UPKEEP_ZERO_LABEL}</span>`;
     } else {
@@ -9538,7 +9539,7 @@ function renderBuildingsOwned(
     if (built.length === 0) { mount.appendChild(el('div', 'muted', '(brak)')); return; }
     if (!compact) {
       const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
-      const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
+      const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data, city);
       const summary = el('div', 'bld-owned-summary');
       summary.innerHTML = formatBuildingUpkeepTotalHtml(totalUpkeep, totalResUpkeep);
       mount.appendChild(summary);

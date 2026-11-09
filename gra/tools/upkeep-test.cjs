@@ -34,6 +34,7 @@ export {
   DEFAULT_UPKEEP_PARAMS, loadUpkeepParams,
   buildingUpkeep, totalBuildingUpkeep,
   buildingResourceUpkeep, totalBuildingResourceUpkeep, buildingResourceUpkeepForBuiltIds,
+  configureBuildingResourceUpkeepRatio, getBuildingResourceUpkeepRatio,
   DEFAULT_UNIT_UPKEEP_BY_CATEGORY, unitUpkeep, totalUnitUpkeep,
   buildUnitUpkeepTable, buildUnitFoodTable, unitFoodPerTurn,
   militaryFoodConsumption, upkeepBalance,
@@ -159,22 +160,62 @@ eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1), 0, 'ZAD1: budynek bez wpisu u
 // utrzymanie=NaN traktowane jak "brak wpisu" (nie moze wygenerowac NaN w wyniku)
 eq(U.buildingUpkeep({ utrzymanie: NaN, przyrostUtrzymania: 0 }, 1, 1), 2, 'ZAD1: utrzymanie=NaN traktowane jak brak wpisu -> flat default×2');
 
-// --- building resource upkeep (koszt_surowce -> BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE/turę
-//     per type -- R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13: 5/turę, było 1/turę) ---
-eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 5 } })), '{"drewno":5}', 'res upkeep: drewno build cost -> 5 drewno/t (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 1)');
-eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 40, kamien: 12 } })), '{"drewno":5,"kamien":5}', 'res upkeep: always 5 per type (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 1), not build amount');
-eq(JSON.stringify(U.buildingResourceUpkeep({})), '{}', 'res upkeep: no koszt_surowce -> empty');
-eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 0 } })), '{}', 'res upkeep: zero build cost -> no upkeep');
+// --- building resource upkeep: R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (Maciej 2026-11-09) ---
+// Utrzymanie surowcowe = buildingUpkeep(budynek, poziom) x wspolczynnik (domyslnie 1) dla KAZDEGO
+// surowca z koszt_surowce. Zastepuje stala 5 szt./typ. Rekord utrzymanie=2 => zloto 2*FALA2(2)=4.
+const B2 = { utrzymanie: 2, przyrostUtrzymania: 1, epokaWejscia: 1, koszt_surowce: { drewno: 40, kamien: 12, cegla: 3 } };
+eq(U.buildingUpkeep(B2, 1), 4, 'res upkeep: zloto utrzymania budynku L1 = 4 (baza dla surowcow)');
+eq(JSON.stringify(U.buildingResourceUpkeep(B2, 1)), '{"drewno":4,"kamien":4,"cegla":4}', 'res upkeep: kazdy surowiec z kosztu budowy = utrzymanie Pieniadza (1:1), nie kwota kosztu budowy');
+eq(JSON.stringify(U.buildingResourceUpkeep(B2)), '{"drewno":4,"kamien":4,"cegla":4}', 'res upkeep: domyslny poziom = 1');
+eq(JSON.stringify(U.buildingResourceUpkeep(B2, 3)), '{"drewno":8,"kamien":8,"cegla":8}', 'res upkeep: poziom 3 -> przyrost (2+1*2=4, x2 FALA2 = 8) tak jak zloto');
+eq(JSON.stringify(U.buildingResourceUpkeep({ utrzymanie: 3, epokaWejscia: 3, koszt_surowce: { drewno: 5 } }, 1)), '{"drewno":24}', 'res upkeep: mnoznik epoki 3 (x4) jak w zlocie: floor(3*2)*4 = 24');
+eq(JSON.stringify(U.buildingResourceUpkeep({ utrzymanie: 0, koszt_surowce: { drewno: 30, kamien: 30 } })), '{}', 'res upkeep: Stela (utrzymanie 0) -> brak utrzymania surowcowego');
+eq(JSON.stringify(U.buildingResourceUpkeep({ utrzymanie: 2 })), '{}', 'res upkeep: brak koszt_surowce -> empty (nawet z utrzymaniem Pieniadza)');
+eq(JSON.stringify(U.buildingResourceUpkeep({})), '{}', 'res upkeep: pusty rekord -> empty');
+eq(JSON.stringify(U.buildingResourceUpkeep({ utrzymanie: 2, koszt_surowce: { drewno: 0 } })), '{}', 'res upkeep: zero build cost -> no upkeep');
+eq(JSON.stringify(U.buildingResourceUpkeep(null)), '{}', 'res upkeep: null -> empty');
 const resBlds = [
-  { record: { koszt_surowce: { drewno: 5 } }, level: 1 },
-  { record: { koszt_surowce: { drewno: 8, kamien: 3 } }, level: 1 },
+  { record: { utrzymanie: 1, koszt_surowce: { drewno: 5 } }, level: 1 },
+  { record: { utrzymanie: 2, koszt_surowce: { drewno: 8, kamien: 3 } }, level: 1 },
   { record: {}, level: 1 },
 ];
-eq(JSON.stringify(U.totalBuildingResourceUpkeep(resBlds)), '{"drewno":10,"kamien":5}', 'res upkeep total: sum per type across buildings (2 budynki x drewno 5 = 10, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 2)');
+eq(JSON.stringify(U.totalBuildingResourceUpkeep(resBlds)), '{"drewno":6,"kamien":4}', 'res upkeep total: suma per surowiec (drewno 2+4, kamien 4)');
+eq(JSON.stringify(U.totalBuildingResourceUpkeep([{ record: B2, level: 3 }, { record: B2, level: 1 }])), '{"drewno":12,"kamien":12,"cegla":12}', 'res upkeep total: uwzglednia poziom instancji (8+4)');
 eq(JSON.stringify(U.buildingResourceUpkeepForBuiltIds(
   ['stolarnia', 'kamieniarski'],
-  [{ id: 'stolarnia', koszt_surowce: { drewno: 5 } }, { id: 'kamieniarski', koszt_surowce: { kamien: 4 } }],
-)), '{"drewno":5,"kamien":5}', 'res upkeep for built ids (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 1,1)');
+  [{ id: 'stolarnia', utrzymanie: 1, koszt_surowce: { drewno: 5 } }, { id: 'kamieniarski', utrzymanie: 1, koszt_surowce: { kamien: 4 } }],
+)), '{"drewno":2,"kamien":2}', 'res upkeep for built ids (utrzymanie 1 -> zloto 2)');
+eq(JSON.stringify(U.buildingResourceUpkeepForBuiltIds(['x'], [{ id: 'x', ...B2 }], () => 3)), '{"drewno":8,"kamien":8,"cegla":8}', 'res upkeep for built ids: levelFor');
+// wspolczynnik z danych (econ-params budynki.utrzymanie_surowce_wspolczynnik)
+eq(U.getBuildingResourceUpkeepRatio(), 1, 'ratio: domyslnie 1');
+U.configureBuildingResourceUpkeepRatio({ budynki: { utrzymanie_surowce_wspolczynnik: { easy: 0.5, normal: 2, hard: 3 } } }, 'normal');
+eq(JSON.stringify(U.buildingResourceUpkeep(B2, 1)), '{"drewno":8,"kamien":8,"cegla":8}', 'ratio 2: dwukrotnie');
+U.configureBuildingResourceUpkeepRatio({ budynki: { utrzymanie_surowce_wspolczynnik: { easy: 0.5, normal: 2, hard: 3 } } }, 'easy');
+eq(JSON.stringify(U.buildingResourceUpkeep(B2, 1)), '{"drewno":2,"kamien":2,"cegla":2}', 'ratio 0.5: floor(4*0.5)=2');
+U.configureBuildingResourceUpkeepRatio({}, 'normal');
+eq(U.getBuildingResourceUpkeepRatio(), 1, 'ratio: brak wpisu -> 1');
+// dane rzeczywiste: utrzymanie surowcowe = zloto na kazdy surowiec z kosztu budowy
+{
+  const realB = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'data', 'buildings.json'), 'utf8'));
+  const arr = Array.isArray(realB) ? realB : (realB.buildings || realB);
+  const econ = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'data', 'econ-params.json'), 'utf8'));
+  U.configureBuildingResourceUpkeepRatio(econ, 'normal');
+  eq(U.getBuildingResourceUpkeepRatio(), 1, 'dane: econ-params budynki.utrzymanie_surowce_wspolczynnik = 1');
+  const mury = arr.find(x => x.id === 'mury');
+  const g = U.buildingUpkeep(mury, 1);
+  eq(JSON.stringify(U.buildingResourceUpkeep(mury, 1)), JSON.stringify({ drewno: g, kamien: g, cegla: g }), 'dane: Mury -> po tyle drewna/kamienia/cegly ile Pieniadza (' + g + ')');
+  const stela = arr.find(x => x.id === 'stela');
+  eq(JSON.stringify(U.buildingResourceUpkeep(stela, 1)), '{}', 'dane: Stela bez utrzymania surowcowego');
+  let bad = 0;
+  for (const x of arr) {
+    const gold = U.buildingUpkeep(x, 1);
+    const res = U.buildingResourceUpkeep(x, 1);
+    const types = Object.keys(x.koszt_surowce || {}).filter(k => x.koszt_surowce[k] > 0);
+    const want = gold > 0 ? types.length : 0;
+    if (Object.keys(res).length !== want || Object.values(res).some(v => v !== gold)) bad++;
+  }
+  eq(bad, 0, 'dane: dla wszystkich ' + arr.length + ' budynkow utrzymanie surowcowe = zloto na kazdy surowiec z kosztu');
+}
 
 // s.6.2 unit upkeep: typeId table > category default > standard
 // R-STAWKI FALA1×FALA2: ×4 (R_STAWKI_FALA1_FALA2_MULT) vs JSON/category/base.

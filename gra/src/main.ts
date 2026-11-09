@@ -3792,7 +3792,7 @@ async function boot(): Promise<void> {
       // Fix mirrors the citizenUpkeep fallback below: recompute on demand from live game state
       // using the exact same pure primitives the turn engine itself calls (no drift risk).
       const ownerBuildingResUpkeep = buildingResourceUpkeepByOwner.get(ownerId)
-        ?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt);
+        ?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt, bdef => buildingLevelForOwnerBuilding(bdef, ownerId));
       const ownerUnitResUpkeep = unitResourceUpkeepByOwner.get(ownerId)
         ?? totalUnitResourceUpkeep(
           units.filter(u => u.ownerId === ownerId).map(u => ({ typeId: u.typeId })),
@@ -8436,9 +8436,20 @@ async function boot(): Promise<void> {
       );
     }
 
+    /** Poziom budynku wg epoki/techu właściciela — TA SAMA formuła co tick (turn-economy buildingsByOwner). */
+    function buildingLevelForOwnerBuilding(bdef: { epokaWejscia: number; maksPoziom: number; poziomTechGate?: unknown }, ownerId: number): number {
+      return buildingLevelForEpoch(
+        bdef.epokaWejscia,
+        empireEpochForOwner(ownerId),
+        bdef.maksPoziom,
+        (bdef.poziomTechGate as Record<string, string> | null | undefined) ?? null,
+        unlockedTechSetForOwner(ownerId),
+      );
+    }
+
     function buildingResourceUpkeepForCityId(cityId: string, ownerId: number): Record<string, number> {
       const builtIds = cityBuilt.get(cityId) ?? [];
-      return buildingResourceUpkeepForBuiltIds(builtIds, data.buildings);
+      return buildingResourceUpkeepForBuiltIds(builtIds, data.buildings, bdef => buildingLevelForOwnerBuilding(bdef, ownerId));
     }
 
     function garrisonUpkeepForCity(city: City): number {
@@ -21223,6 +21234,7 @@ async function boot(): Promise<void> {
         0, playerCities, data.buildings, cityBuilt,
         playerEconUnitsForUpkeep,
         typeId => data.units.find(u => u.Jednostka === typeId),
+        bdef => buildingLevelForOwnerBuilding(bdef, 0),
       );
       _lastBogactwoRate = playerEcon.pieniadz - bogactwoUpkeepPreview.utrzymanieRazem;
       // NAPRAWA HUD-PRACA (ten sam wzorzec, ta sama zgloszenie): "+N" przy Pracy
