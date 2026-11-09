@@ -26,7 +26,7 @@ Gaesatae to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Celtow
 ### Rekrutacja i utrzymanie
 - **Koszt:** 14 ¤, 1 mieszkańców
 - **Surowiec:** 3× stal
-- **Tech:** Obróbka żelaza
+- **Tech:** Sztuka wojenna
 - **Utrzymanie:** 1 ¤/t, 1 żywności/t
 - **Ruch:** 3 (mapa) / 5 (bitwa)
 - **Siła w polu:** 29.5

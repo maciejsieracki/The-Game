@@ -3,7 +3,7 @@
     "temat": "R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1",
     "generator": "gra/tools/gen-tech-cards-top5.cjs (+ gen-tech-cards-top5.zdania.json)",
     "zrodloCsv": "odkrycia-top5.csv (FC 58339997b, docs bdf44fd9d)",
-    "csvSha256": "50e2cebc6ca9ba9bbc0cbfb818ef16dcc41f3729c48193fb23a85a2e27ccba32",
+    "csvSha256": "f8ea0dabf2332ad936dc38390f9d44d9e5e9c7a67e4cf93f2a121b8f0856987e",
     "pola": "top5:[{tytul, liczba?, zdanie, dowod?}] · cmz:[{czynnosc, korzysc}] · ukryte:[nazwy efektów martwych ukrytych z karty]"
   },
   "Obróbka drewna": {
@@ -1003,9 +1003,10 @@
         "dowod": "gra/data/terrain-improvements.json:340; gra/data/terrain-improvements.json:349"
       },
       {
-        "tytul": "19 narodowych jednostek z żelaza, np. Falanga (Obrona 12)",
-        "zdanie": "Narodowe jednostki epoki Żelaza rekrutujesz w mieście z Koszarami.",
-        "dowod": "gra/data/units.json:743; gra/data/units.json:891; gra/src/game/production.ts:1075; gra/src/game/production.ts:1092"
+        "tytul": "Kuźnia żelaza: kolejne +15% Pancerza (razem +30%)",
+        "liczba": "+15%",
+        "zdanie": "Rozbudowa Kuźni brązu podnosi Pancerz jednostek — przygotowanie do armii epoki Żelaza.",
+        "dowod": "gra/data/buildings.json:1398; gra/src/game/unit-building-bonuses.ts:15-22"
       }
     ],
     "cmz": [
@@ -1022,8 +1023,8 @@
         "korzysc": "podnieść Pancerz jednostek do +30%"
       },
       {
-        "czynnosc": "Rekrutuj jednostki z żelaza (w mieście z Koszarami)",
-        "korzysc": "wystawić narodową piechotę epoki Żelaza (np. Falanga z Obroną 12)"
+        "czynnosc": "Zgromadź zapas żelaza w magazynie państwa",
+        "korzysc": "przygotować armię epoki Żelaza (jednostki odblokuje dopiero Sztuka wojenna)"
       }
     ],
     "ukryte": []
@@ -1262,28 +1263,19 @@
     "top5": [
       {
         "tytul": "Otwiera drogę do Sztuki wojennej (z Oblężnictwem)",
-        "zdanie": "Dla większości państw Obróbka żelaza nie daje korzyści od ręki — razem z Oblężnictwem prowadzi do Akademii wojskowej.",
+        "zdanie": "Dla większości państw Obróbka żelaza nie daje korzyści od ręki — razem z Oblężnictwem i Hutnictwem żelaza prowadzi do Sztuki wojennej: Akademii wojskowej i jednostek epoki Żelaza.",
         "dowod": "gra/data/tech.json:449"
       },
       {
         "tytul": "Cud narodowy: Posąg Peruna (Słowianie)",
         "zdanie": "Cud narodowy tylko dla Słowian.",
         "dowod": "gra/data/wonders.json:517-521"
-      },
-      {
-        "tytul": "Jednostki Celtów i Germanów, np. Berserker Atak 10",
-        "zdanie": "Elitarne jednostki narodowe tylko dla Celtów i Germanów.",
-        "dowod": "gra/data/units.json:2963; gra/data/units.json:3081; gra/data/units.json:3182; gra/data/units.json:3256"
       }
     ],
     "cmz": [
       {
         "czynnosc": "Wybierz kolejne badanie",
-        "korzysc": "dojść do Akademii wojskowej"
-      },
-      {
-        "czynnosc": "Rekrutuj jednostki narodowe",
-        "korzysc": "wystawić elitę Celtów i Germanów (np. Berserker z Atakiem 10)"
+        "korzysc": "dojść do Sztuki wojennej i jednostek epoki Żelaza"
       }
     ],
     "ukryte": [
@@ -1304,12 +1296,21 @@
         "liczba": "+3",
         "zdanie": "Stały przychód Pracy i podatku w mieście.",
         "dowod": "gra/data/buildings.json:2082"
+      },
+      {
+        "tytul": "24 jednostki epoki Żelaza, np. Falanga (Obrona 12)",
+        "zdanie": "Odblokowuje rekrutację wszystkich narodowych jednostek epoki Żelaza w mieście z Koszarami.",
+        "dowod": "gra/data/units.json; gra/src/game/production.ts:1063-1069"
       }
     ],
     "cmz": [
       {
         "czynnosc": "Zbuduj Akademię wojskową (obok Koszar)",
         "korzysc": "wzmocnić jednostki o kolejne +20% (razem do +50%)"
+      },
+      {
+        "czynnosc": "Rekrutuj jednostki epoki Żelaza (w mieście z Koszarami i zapasem żelaza)",
+        "korzysc": "wystawić narodową piechotę i jazdę (np. Falanga z Obroną 12)"
       }
     ],
     "ukryte": []

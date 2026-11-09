@@ -25,7 +25,7 @@
 Wojownik germański to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Germanie**.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 16 ¤, 1 mieszkańców
-- **Tech:** Obróbka żelaza
+- **Tech:** Sztuka wojenna
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 3 (mapa) / 4 (bitwa)
 - **Zasięg:** 2 heksów

@@ -118,7 +118,7 @@ console.log('\n1. purchasableUnits() -- kazdy ProductionItem(jednostka) ma niepu
         civBonusy: civUnitNacja === 'Grecja' ? civBonusyGrecja : [],
         empireResourceStock: { braz: 10, zelazo: 10, drewno: 10 },
       };
-      const techs = ['Łucznictwo', 'Obróbka drewna', 'Brązownictwo', 'Brazownictwo', 'Hutnictwo żelaza'];
+      const techs = ['Łucznictwo', 'Obróbka drewna', 'Brązownictwo', 'Brazownictwo', 'Hutnictwo żelaza', 'Sztuka wojenna'];
       const items = purchasableUnits({ id: 1, ownerId: 0 }, DATA, techs, ctx);
       for (const it of items) {
         totalChecked++;
@@ -142,7 +142,7 @@ console.log('\n2. availableReplacementsFor() -- kazdy zamiennik ma niepuste nazw
     builtBuildingIds: ['odlewnia_zelaza', 'koszary'],
     empireResourceStock: { braz: 10, zelazo: 10, drewno: 10 },
   };
-  const techs = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];
+  const techs = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza', 'Sztuka wojenna'];
   const items = availableReplacementsFor('Hastati', DATA, techs, ctx);
   assert(items.length > 0, 'lista zamiennikow niepusta (Hastati)');
   assert(items.every(it => nonBlank(it.nazwa)), 'kazdy zamiennik ma niepuste nazwa',
@@ -161,7 +161,7 @@ console.log('\n3. availableReplacementsFor() -- galaz B (pole "Zastąp specjalni
     builtBuildingIds: ['odlewnia_zelaza', 'koszary'],
     empireResourceStock: { braz: 10, zelazo: 10, drewno: 10 },
   };
-  const techs = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];
+  const techs = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza', 'Sztuka wojenna'];
   const items = availableReplacementsFor('Wojownik tyrreński', DATA, techs, ctx);
   const evocati = items.find(it => it.id === 'Evocati');
   assert(!!evocati, 'Evocati obecny w galezi B (pole "Zastąp specjalnie")', JSON.stringify(items.map(i => i.id)));
