@@ -9165,3 +9165,4 @@ Zgłoszenia właściciela z dnia (wszystkie zarejestrowane; ID = dyspozycje/auto
 - 2026-11-09 STADNINA FC PASS (edb873f80), ale merge z main = KONFLIKT hexContextTooltip.ts (FARMMISS w main) → runda 2 STADNINA (rebase przez Workflow); BLDCOST deploy FALA 573 osobno.
 - 2026-11-09 FALA 573 WDROŻONA NA ROBOCZĄ: BUILDING-COSTS-ERA-RESOURCES (729e28ed6); main 9f73fde3e. Dług Rust: REPIN koszt_surowce 32 budynków + Garncarstwo Poziom 1.
 - 2026-11-09 ZGŁOSZENIE WŁAŚCICIELA: awans/zastąpienie jednostek w armii — domyślnie zaznaczony generał i „Zastąp” działa tylko na nim, nie na innych jednostkach → temat R-WEB-UNIT-REPLACE-ARMY-PANEL-SELECTS-GENERAL-Q1 (dispatch zapisany, Sonnet; w kolejce).
+- 2026-11-09 FALA 574 WDROŻONA NA ROBOCZĄ: BATTLE-DEAD-UNITS (f59c78156); main 264aebdf7. Uwaga balans: realne zgony zamiast ucieczek z hp=1.
