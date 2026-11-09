@@ -39774,6 +39774,13 @@ async function boot(): Promise<void> {
               visibleHexes: aiVisibleHexes,
               rememberedTargets: rememberedAiTargets(aiTargetMemoryByOwner, ownerId),
               civType: aiOwnerCivMap.get(ownerId), // nacja AI z rostera civs.json
+              // R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1: jednostki już opłacone i czekające w kolejkach
+              // rekrutacji miast ownera (ai.ts ich nie widzi) — liczone do składu armii wg cywilizacji.
+              queuedRecruitUnitIds: cities
+                .filter(c => c.ownerId === ownerId)
+                .flatMap(c => (cityProd.get(c.id)?.rekrutacja ?? [])
+                  .filter(it => it.isGeneral !== true)
+                  .map(it => it.id)),
               poziomTrudnosci: aiDiffLevel,
               menuDifficulty: _menuDifficulty,
               // C-025/C-026 (2026-08-10) / R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B:
