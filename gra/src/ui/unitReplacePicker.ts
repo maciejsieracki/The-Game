@@ -33,11 +33,18 @@ export interface UnitReplaceOption {
    * tylko skarbcem, jak dotąd).
    */
   blockedReason?: string;
+  /** Zaznaczenie wielokrotne: łączny koszt dla wszystkich zaznaczonych jednostek tej grupy. */
+  totalMoneyCost?: number;
+  totalStockText?: string;
+  /** Zaznaczenie wielokrotne: ile jednostek grupy stać na zamianę (0..count). */
+  affordableCount?: number;
 }
 
 export interface UnitReplacePickerOptions {
   /** Nazwa bieżącej (zastępowanej) jednostki -- nagłówek modala. */
   unitName: string;
+  /** Liczba zaznaczonych jednostek grupy (>1 = zamiana zbiorcza). */
+  count?: number;
   options: readonly UnitReplaceOption[];
   /** Aktualny skarbiec gracza -- do wyszarzenia pozycji nie do sfinansowania. */
   skarb: number;
@@ -138,11 +145,14 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
   panel.className = 'civ-urp';
   panel.addEventListener('click', (e) => e.stopPropagation());
 
+  const count = Math.max(1, opts.count ?? 1);
+  const multi = count > 1;
   const hdr = document.createElement('div');
   hdr.className = 'civ-urp-hdr';
   hdr.innerHTML =
-    '<div><div class="civ-urp-title">Zastąp — ' + esc(opts.unitName) + '</div>' +
-    '<div class="civ-urp-sub">Koszt = pełna rekrutacja nowej jednostki; zachowuje doświadczenie · zużywa ruch tej tury</div></div>';
+    '<div><div class="civ-urp-title">Zastąp — ' + esc(opts.unitName) + (multi ? ' ×' + count : '') + '</div>' +
+    '<div class="civ-urp-sub">Koszt = pełna rekrutacja nowej jednostki; zachowuje doświadczenie · zużywa ruch tej tury'
+    + (multi ? ' · zastępuje zaznaczone: ' + count : '') + '</div></div>';
   hdr.appendChild(document.createRange().createContextualFragment(mapUnitCloseBtnHtml('Anuluj')));
   panel.appendChild(hdr);
   hdr.querySelector('.mu-close-btn')?.addEventListener('click', () => {
@@ -161,7 +171,10 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
   }
 
   for (const o of opts.options) {
-    const affordable = opts.skarb >= o.moneyCost && !o.blockedReason;
+    const affordCount = multi
+      ? Math.min(count, o.affordableCount ?? (opts.skarb >= o.moneyCost ? count : 0))
+      : (opts.skarb >= o.moneyCost ? 1 : 0);
+    const affordable = affordCount >= 1 && !o.blockedReason;
     const item = document.createElement('div');
     item.className = 'civ-urp-item' + (affordable ? '' : ' disabled');
     item.setAttribute('role', 'button');
@@ -189,7 +202,16 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
     cost.className = 'civ-urp-cost' + (noCost ? ' free' : affordable ? '' : ' short');
     cost.textContent = noCost
       ? 'bez kosztu'
-      : `${o.moneyCost} 💰` + (o.stockText ? ` + ${o.stockText}` : '');
+      : `${o.moneyCost} 💰` + (o.stockText ? ` + ${o.stockText}` : '') + (multi ? ' / szt.' : '');
+    if (multi && !noCost) {
+      const tm = o.totalMoneyCost ?? o.moneyCost * count;
+      const tt = o.totalStockText ? ` + ${o.totalStockText}` : '';
+      const tot = document.createElement('div');
+      tot.className = 'civ-urp-stats';
+      tot.textContent = `Razem ${count}: ${tm} 💰${tt}`
+        + (affordCount < count ? ` · stać na ${affordCount} z ${count}` : '');
+      body.appendChild(tot);
+    }
     if (o.blockedReason) {
       cost.title = o.blockedReason;
       item.title = o.blockedReason;

@@ -7761,7 +7761,124 @@ async function boot(): Promise<void> {
       return item?.koszt ?? 0;
     }
 
-    /** Otwórz modal wyboru zamiennika dla jednostki `u` (akcja "Zastąp" w ArmyStackHud). */
+    /**
+     * R-WEB-UNIT-REPLACE-ARMY-PANEL-SELECTS-GENERAL-Q1: cele akcji "Zastąp" na stosie `stack`.
+     * Źródłem prawdy jest ZBIÓR ZAZNACZONY checkboxami panelu armii (stackPickState) -- NIGDY
+     * zapamiętana selectedId / pierwsza karta (wódz). Bez zaznaczenia: jedyna jednostka stosu
+     * (stos 1-osobowy) albo brak celów (gracz ma najpierw zaznaczyć jednostki).
+     */
+    function unitReplaceTargetsOnStack(stack: readonly RuntimeUnit[]): RuntimeUnit[] {
+      const picked = pickedUnitsOnStack(stack);
+      if (picked.length > 0) return picked;
+      return stack.length === 1 ? [stack[0]!] : [];
+    }
+
+    function unitReplaceEligible(u: RuntimeUnit): boolean {
+      return u.ownerId === 0 && isUnitInPlayerTerritory(u) && u.replaceUsedThisTurn !== true
+        && computeUnitReplacements(u).length > 0;
+    }
+
+    /** Akcja "Zastąp" z panelu: działa na zaznaczonych jednostkach, grupami wg typu (wódz osobno). */
+    function openUnitReplaceForSelection(active: RuntimeUnit): void {
+      const stack = playerStackAt(active);
+      const targets = unitReplaceTargetsOnStack(stack);
+      if (targets.length === 0) {
+        showHintMessage('Zastąp: zaznacz w panelu armii jednostki do zastąpienia (pola wyboru).', 3200);
+        return;
+      }
+      const eligible = targets.filter(unitReplaceEligible);
+      if (eligible.length === 0) {
+        // Brak kwalifikujących się: komunikat przyczyny dla pierwszej zaznaczonej jednostki.
+        openUnitReplacePicker(targets[0]!);
+        return;
+      }
+      const groups = new Map<string, RuntimeUnit[]>();
+      for (const t of eligible) {
+        const key = (t.isGeneral === true ? 'G:' : 'U:') + t.typeId;
+        const g = groups.get(key);
+        if (g) g.push(t); else groups.set(key, [t]);
+      }
+      openUnitReplaceGroupPicker([...groups.values()], 0);
+    }
+
+    /** Pełny koszt rekrutacji nowej jednostki `typeId` razy `k` (Pieniądz + surowiec). */
+    function unitReplaceCostTimes(newDef: any, typeId: string, k: number): { money: number; stock: Record<string, number> } {
+      const one = unitReplaceFullCost(newDef, replaceUnitMoneyCost(typeId));
+      const stock: Record<string, number> = {};
+      for (const [key, amount] of Object.entries(one.stock)) stock[key] = amount * k;
+      return { money: one.money * k, stock };
+    }
+
+    /** Ile z `n` jednostek da się zastąpić na `typeId` przy aktualnym skarbcu i puli państwa. */
+    function unitReplaceAffordableCount(newDef: any, typeId: string, n: number, ownerId: number): number {
+      const pool = ownerSurowcePoolFor(ownerId);
+      let ok = 0;
+      for (let k = 1; k <= n; k++) {
+        const c = unitReplaceCostTimes(newDef, typeId, k);
+        if (player.skarbiec < c.money || unitReplaceStockMissingLabel(c, pool)) break;
+        ok = k;
+      }
+      return ok;
+    }
+
+    function openUnitReplaceGroupPicker(groups: RuntimeUnit[][], index: number): void {
+      const group = groups[index]?.filter(unitReplaceEligible) ?? [];
+      if (group.length === 0) {
+        if (index + 1 < groups.length) openUnitReplaceGroupPicker(groups, index + 1);
+        return;
+      }
+      const sample = group[0]!;
+      const n = group.length;
+      const ownerPool = ownerSurowcePoolFor(sample.ownerId);
+      const ordered = sortByUnitPowerDescending(
+        computeUnitReplacements(sample),
+        item => lookupUnitDef(item.id),
+      );
+      const label = (sample.isGeneral === true ? '★ Wódz: ' : '') + sample.typeId
+        + (groups.length > 1 ? ' (grupa ' + (index + 1) + '/' + groups.length + ')' : '');
+      showUnitReplacePicker({
+        unitName: label,
+        count: n,
+        skarb: player.skarbiec,
+        options: ordered.map(it => {
+          const udef = lookupUnitDef(it.id);
+          const unit = unitReplaceFullCost(udef, replaceUnitMoneyCost(it.id));
+          const total = unitReplaceCostTimes(udef, it.id, n);
+          const affordableCount = unitReplaceAffordableCount(udef, it.id, n, sample.ownerId);
+          return {
+            id: it.id,
+            name: it.nazwa,
+            icon: unitIconSvg(udef, it.id),
+            moneyCost: unit.money,
+            stockText: unitReplaceStockText(unit),
+            totalMoneyCost: total.money,
+            totalStockText: unitReplaceStockText(total),
+            affordableCount,
+            blockedReason: unitStockShortfallLabel(udef, unitReplaceCtx(sample).empireResourceStock)
+              ?? (affordableCount === 0 ? (unitReplaceStockMissingLabel(unit, ownerPool) ?? undefined) : undefined),
+            atk: unitAtak(udef),
+            def: unitObrona(udef),
+            hpMax: effectiveMaxHp(unitHealth(udef), unitParametryBonusFrac(sample), veteranCombatBonusFrac(sample)),
+          };
+        }),
+        onPick: (newTypeId) => {
+          let done = 0;
+          for (const gu of group) {
+            if (performUnitReplace(gu.id, newTypeId, true)) done++;
+            else break;
+          }
+          const failed = n - done;
+          showHintMessage(
+            'Zastąp: ' + sample.typeId + ' → ' + newTypeId + ' ×' + done
+              + (failed > 0 ? ' (nie zastąpiono ' + failed + ' z ' + n + ' — brak zasobów/limit)' : ''),
+            3800,
+          );
+          if (index + 1 < groups.length) openUnitReplaceGroupPicker(groups, index + 1);
+        },
+      });
+    }
+
+    /** Otwórz modal wyboru zamiennika dla jednostki `u` (pojedyncza jednostka; komunikaty przyczyn). */
     function openUnitReplacePicker(u: RuntimeUnit): void {
       if (u.ownerId !== 0) return;
       if (!isUnitInPlayerTerritory(u)) {
@@ -7811,38 +7928,38 @@ async function boot(): Promise<void> {
     }
 
     /** Wykonaj zamianę jednostki `unitId` na `newTypeId` (runtime, po wyborze w modalu). */
-    function performUnitReplace(unitId: string, newTypeId: string): void {
+    function performUnitReplace(unitId: string, newTypeId: string, quiet = false): boolean {
       const u = units.find(x => x.id === unitId);
-      if (!u || u.ownerId !== 0) return;
-      if (!isUnitInPlayerTerritory(u)) return;
-      if (u.replaceUsedThisTurn) return;
+      if (!u || u.ownerId !== 0) return false;
+      if (!isUnitInPlayerTerritory(u)) return false;
+      if (u.replaceUsedThisTurn) return false;
       const newDef = lookupUnitDef(newTypeId);
-      if (!newDef) return;
+      if (!newDef) return false;
       // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: zamiana nie może dać drugiej sztuki Super-jednostki
       // (żywa albo opłacona w kolejce któregokolwiek miasta) -- egzekucja po stronie wykonania.
       {
         const superMsg = superUnitLimitViolation(newDef, newTypeId, reservedUnitTypeNamesForOwner(u.ownerId), 1);
         if (superMsg) {
-          showHintMessage('Zastąp: ' + superMsg, 3200);
-          return;
+          if (!quiet) showHintMessage('Zastąp: ' + superMsg, 3200);
+          return false;
         }
       }
       // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: pozycja bez zapasu surowca nie do wyboru (także tu).
       if (unitStockShortfallLabel(newDef, unitReplaceCtx(u).empireResourceStock)) {
-        showHintMessage('Zastąp: brak surowca dla ' + newTypeId, 3000);
-        return;
+        if (!quiet) showHintMessage('Zastąp: brak surowca dla ' + newTypeId, 3000);
+        return false;
       }
 
       // D1 = C (właściciel 2026-11-09): pełny koszt rekrutacji nowej jednostki -- Pieniądz + surowiec.
       const fullCost = unitReplaceFullCost(newDef, replaceUnitMoneyCost(newTypeId));
       const stockMissing = unitReplaceStockMissingLabel(fullCost, ownerSurowcePoolFor(u.ownerId));
       if (stockMissing) {
-        showHintMessage('Zastąp: ' + stockMissing, 3000);
-        return;
+        if (!quiet) showHintMessage('Zastąp: ' + stockMissing, 3000);
+        return false;
       }
       if (player.skarbiec < fullCost.money) {
-        showHintMessage('Zastąp: brak Pieniądza (' + fullCost.money + ' 💰)', 3000);
-        return;
+        if (!quiet) showHintMessage('Zastąp: brak Pieniądza (' + fullCost.money + ' 💰)', 3000);
+        return false;
       }
 
       const oldDef = lookupUnitDef(u.typeId);
@@ -7879,6 +7996,7 @@ async function boot(): Promise<void> {
       // Etykieta miasta w toaście: garnizon jednostki, a poza miastem (całe terytorium
       // gracza) — pierwsze miasto gracza jako fallback (ten sam wzorzec co disbandPlayerUnit).
       const replaceCity = unitReplaceGarrisonCity(u) ?? cities.find(c => c.ownerId === 0);
+      if (quiet) return true;
       showHintMessage(
         oldTypeId + ' → ' + newTypeId
           + ' (koszt ' + fullCost.money + ' 💰'
@@ -7886,6 +8004,7 @@ async function boot(): Promise<void> {
           + (replaceCity ? (' — ' + replaceCity.name) : ''),
         3500,
       );
+      return true;
     }
 
     function buildPlayerCityListEntries(): CityListEntry[] {
@@ -24888,9 +25007,10 @@ async function boot(): Promise<void> {
         // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): dost\u0119pne w ca\u0142ym
         // terytorium gracza (decyzja w\u0142a\u015bciciela, nie tylko garnizon miasta),
         // jednostka jeszcze nie u\u017cy\u0142a akcji w tej turze, i istnieje >=1 zamiennik.
-        const replaceDisabled = !isUnitInPlayerTerritory(active)
-          || active.replaceUsedThisTurn === true
-          || computeUnitReplacements(active).length === 0;
+        const replaceTargets = unitReplaceTargetsOnStack(stack);
+        const replaceDisabled = replaceTargets.length > 0
+          ? !replaceTargets.some(unitReplaceEligible)
+          : false;
         actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
       }
       const splitDests = findSplitDestHexes(
@@ -25086,7 +25206,7 @@ async function boot(): Promise<void> {
       } else if (actionId === 'merge') {
         openMergePanelForSelected();
       } else if (actionId === 'replace') {
-        openUnitReplacePicker(u);
+        openUnitReplaceForSelection(u);
       } else if (actionId === 'sentry') {
         const enteringSentry = u.sentry !== true;
         if (enteringSentry) {
