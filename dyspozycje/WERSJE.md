@@ -1,3 +1,9 @@
+## ROBOCZA 05d8ce80 -- 2026-11-06 -- FALA 565: MUSERA + QABAR: muzyka kumulatywna po epokach; czytelny pasek szybkich decyzji dyplomacji (testowa)
+
+- muzyka tla: kamien / kamien+braz / kamien+braz+zelazo (katalog zelazo opcjonalny), awans epoki nie przerywa utworu (filePlayer.setTracks); pasek dyplomacji: jedno slowo pod ikona, biale etykiety, kłodka + powod w tooltipie
+- Weryfikacja: muzyka-era-cumulative 23/0, braz-era-playlist 42/0, era-live-e2e (Chromium) 13/0, menu-music 7/0 i 9/0, civ-music 100/0, diplo-quick-actions-labels 38/0, infografiki-tooltipy 12/0, logic 213/213, ai-test 289/0, tsc 0
+- Limity: odsluch muzyki i tryb mutacyjny NIE_ZMIERZONO; pasek w realnej grze NIE_ZMIERZONO (tylko zrzut Chromium HTML); po obnizeniu epoki (zapis) grajacy utwor dogrywa sie
+
 ## ROBOCZA f2a1874c -- 2026-11-06 -- FALA 564: CPTECH: kafelek Technologie w panelu miasta bez martwych efektow (wspolny filtr z karta odkrycia) (testowa)
 
 - nowy techDeadEffects.ts; cityPanel.ts, technologyAdapter.ts, techDiscoveryNotice.ts uzywaja wspolnego filtra; ukryte: Teatr (Filozofia), Lazaret (Medycyna), Wielka odlewnia i Wielka Kuznia (Obrobka zelaza); ZNANY STAN 5->3 wpisy
