@@ -230,7 +230,7 @@ export const DIPLOMACY_PARAMS = {
   /** Bonus willingnessAlly gdy rozmówca silniejszy (AI słabsze — sojusz z hegemonem) */
   progSojuszPremiaSilniejszyInny:  0.20,
   /** aiDiplomacyStance.willingnessAlly min dla sojuszu */
-  progSojuszWillingnessMin:        0.68,
+  progSojuszWillingnessMin:        0.54,
   /** v1.3 — max podwyżka progów gdy respondent (AI) silniejszy od proponenta */
   progSojuszKaraSilniejszyMax:     0.40,
   /** v1.3 — wkład przewagi respondenta (1/milProponent − 1) × skok */

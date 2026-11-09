@@ -331,7 +331,17 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
   proposerRespekt: 25,
   responderRespekt: 75,
 }));
-ok(!r.accepted && /Brak gotowości do sojuszu \(gotowość 0\.\d+, wymagana 0\.\d+\)/.test(r.reason), 'runda 2 (A): hegemon AI 3×, dokładnie 90/130, Grecy (gotowość ~0.64 < 0.68) -> gotowość ZOSTAJE: odrzut z czytelnym komunikatem: ' + r.reason);
+ok(r.accepted, 'runda 3: hegemon AI 3×, dokładnie 90/130, Grecy (gotowość 0.64 >= próg 0.54) -> accept (bramka siły pominięta)');
+// runda 3: neutralna cywilizacja (0.54) przy równej sile przechodzi próg 0.54 (porównanie >=)
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(90, 40),
+  militaryRatio: 1,
+  proposerRespekt: 40,
+  responderRespekt: 60,
+  responderPlayer: { typCywilizacji: 'egipt' },
+  proposerPlayer: { typCywilizacji: 'rzymianie' },
+}));
+ok(r.accepted, 'runda 3: 130/90, równa siła, neutralny Egipt (gotowość 0.54 >= 0.54) -> accept: ' + r.reason);
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
   relation: rel(90, 40),
   militaryRatio: 0.33,
@@ -340,7 +350,7 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
   responderPlayer: { typCywilizacji: 'chinczycy' },
   proposerPlayer: { typCywilizacji: 'rzymianie' },
 }));
-ok(r.accepted, 'runda 2 (A): hegemon AI 3×, dokładnie 90/130, Chińczycy (bonus lojalności, gotowość >= 0.68) -> accept mimo hegemona (bramka siły pominięta)');
+ok(r.accepted, 'runda 2 (A): hegemon AI 3×, dokładnie 90/130, Chińczycy (bonus lojalności, gotowość >= 0.54) -> accept mimo hegemona (bramka siły pominięta)');
 r = evaluateProposal(prop('sojusz_pelny'), ctx({
   relation: rel(90, 40),
   militaryRatio: 1,

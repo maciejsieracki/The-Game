@@ -54,7 +54,7 @@
     "progSojuszPremiaRespektSkok": 0.15,
     "progSojuszSlabyProponentMilRatio": 0.5,
     "progSojuszPremiaSilniejszyInny": 0.2,
-    "progSojuszWillingnessMin": 0.68,
+    "progSojuszWillingnessMin": 0.54,
     "progSojuszKaraSilniejszyMax": 0.4,
     "progSojuszKaraMilSkok": 0.15,
     "progSojuszKaraAllySkok": 0.18,
