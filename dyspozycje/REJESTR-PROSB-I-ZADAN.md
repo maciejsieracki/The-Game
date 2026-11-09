@@ -9109,3 +9109,6 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 ## 2026-11-09 — Decyzje właściciela (ABC): terminologia klasa C + wymiana jednorazowa
 - Wymiana „Jednorazowo”: PODPIS W FORMULARZU (bez nowego stanu; nie zmieniamy domyślnego trybu).
 - Klasa C: podział handlu w cityPanel i handelBrutto/Netto w tooltipach → „podatek”; wiki „Mnożnik handlu/waluty” → „Mnożnik podatku/waluty”; grupa „Handel i pieniądz” → „Podatek i pieniądz”. Temat: R-WEB-TERMINOLOGY-C-AND-ONESHOT-LABEL-Q1 (kolejka po CARDS-RESOURCE-PURPOSE).
+
+## 2026-11-09 — ZGŁOSZENIE (do wykonania): audyt poprawności języka polskiego
+- Właściciel: „przydałby się porządny audyt pod kątem prawidłowości języka polskiego w użyciu w opisach gry, kartach oraz w CIVPEDII.” Temat zarejestrowany jako R-WEB-POLISH-LANGUAGE-AUDIT-Q1 (dispatch szkic: dyspozycje/autobot/runs/R-WEB-POLISH-LANGUAGE-AUDIT-Q1/00-dispatch.md). STATUS: OTWARTE — NIE URUCHOMIONE; start po bieżącej kolejce tekstów (TERMINOLOGY-C, CARDS-RESOURCE-PURPOSE, UI-RAW-IDS) i przy dysku ≥ 4 GB. Zakres: opisy gry, karty (odkrycia/budynki/ulepszenia/jednostki/cuda), CIVPEDIA/wiki/poradniki, komunikaty UI. Dotychczasowe znaleziska jako przykłady: „klucza do tras”, „bez której”, „2 glina”, „Otwiera handel: bez Wymiany żadnych tras handlowych”, id w tekstach cudów.
