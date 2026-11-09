@@ -3,8 +3,10 @@
 // DWIE niezależne playlisty (własny stan, własna PARA <audio> A/B, różna
 // reguła powtórzeń):
 //
-//   - kamienPlaylist — muzyka epoki KAMIENIA w rozgrywce (utwory z
-//     ./utwory/kamien/): shuffle + KAŻDY UTWÓR 3x POD RZĄD, potem następny.
+//   - eraMusicPlaylist — muzyka tła rozgrywki, KUMULATYWNA po epokach (kamień;
+//     od brązu kamień+brąz; od żelaza kamień+brąz+żelazo — patrz eraTierUrls()
+//     / setEraMusicTier(); awans epoki dołącza utwory, nie przerywa grającego):
+//     shuffle + KAŻDY UTWÓR 3x POD RZĄD, potem następny.
 //     Sterowana przez router epok w muzyka-antyczna.ts (usesFilePlayer()).
 //   - introPlaylist — muzyka ekranów PRZED rozgrywką: menu główne, wybór
 //     cywilizacji, ustawienia (utwory z ./utwory/intro/): shuffle + KAŻDY
@@ -81,7 +83,7 @@
 //     ponownego gestu.
 //
 // API modułu (używane WYŁĄCZNIE przez muzyka-antyczna.ts):
-//   kamienPlaylist, introPlaylist — obiekty FilePlaylist:
+//   eraMusicPlaylist, introPlaylist — obiekty FilePlaylist:
 //     hasTracks() / start() / startWithFadeIn(fadeMs) / stop() / setVolume(v: 0..1) / isPlaying()
 // ============================================================================
 
@@ -122,6 +124,14 @@ export interface FilePlaylist {
    *  `leadCount`). No-op, gdy playlista gra. Użycie: muzyka cywilizacji w
    *  dyplomacji — każde otwarcie rozmowy zaczyna od przywitania. */
   rewind(): void;
+  /** Podmienia pulę utworów NA ŻYWO (playlista kumulatywna epok). Utwory,
+   *  które już były w puli, zachowują miejsce w bieżącej turze; NOWE
+   *  wsiadają w losowe miejsca jeszcze niezagranej reszty tury (shuffle
+   *  zachowany). Grający utwór NIE jest przerywany — dogrywa się (z resztą
+   *  powtórzeń) nawet wtedy, gdy nowa pula już go nie zawiera. */
+  setTracks(urls: readonly string[]): void;
+  /** Aktualna pula (kopia) — diagnostyka/testy. */
+  getTracks(): readonly string[];
 }
 
 /** Ta sama krzywa percepcyjna głośności co suwak w silniku syntezy (patrz
@@ -172,11 +182,14 @@ function buildShuffledQueue(trackCount: number, avoidFirst: number | null): numb
  *  (pętla negocjacji; 'losowa' tasuje wtedy tylko ogon). Gdy ogon pusty —
  *  pętla po całości (lead jest ignorowany). */
 function createPlaylist(
-  trackUrls: readonly string[],
+  initialUrls: readonly string[],
   repeatsPerTrack: number,
   kolejnosc: 'losowa' | 'stala' = 'losowa',
   leadCount = 0,
 ): FilePlaylist {
+  // Pula utworów jest zmienna TYLKO dla playlisty kumulatywnej (setTracks);
+  // pozostałe playlisty nigdy jej nie ruszają.
+  let trackUrls: readonly string[] = initialUrls;
   const els: [HTMLAudioElement | null, HTMLAudioElement | null] = [null, null];
   let activeIdx: 0 | 1 = 0;
   let queue: number[] = [];
@@ -535,7 +548,50 @@ function createPlaylist(
     repeatsLeft = repeatsPerTrack;
   }
 
-  return { hasTracks, start, startWithFadeIn, stop, setVolume, isPlaying, rewind };
+  /** Podmiana puli na żywo — patrz FilePlaylist.setTracks. Dedupe po URL;
+   *  kolejka (reszta tury) przemapowana po URL-ach, nowe utwory wstawione w
+   *  losowe miejsca reszty tury. Nie dotyka elementów <audio> ani crossfade. */
+  function setTracks(next: readonly string[]): void {
+    const nu = Array.from(new Set(next));
+    const old = trackUrls;
+    if (nu.length === old.length && nu.every((u, i) => u === old[i])) return;
+    const oldSet = new Set(old);
+    const idxOf = new Map<string, number>();
+    nu.forEach((u, i) => idxOf.set(u, i));
+    const curUrl = currentUrl();
+    const tail: number[] = [];
+    for (const qi of queue.slice(queuePos + 1)) {
+      const u = old[qi];
+      const ni = u === undefined ? undefined : idxOf.get(u);
+      if (ni !== undefined) tail.push(ni);
+    }
+    const fresh: number[] = [];
+    nu.forEach((u, i) => { if (!oldSet.has(u)) fresh.push(i); });
+    for (const f of shuffle(fresh)) {
+      tail.splice(Math.floor(Math.random() * (tail.length + 1)), 0, f);
+    }
+    trackUrls = nu;
+    if (queue.length === 0) return; // jeszcze nie startowała — kolejka powstanie z nowej puli
+    const curIdx = curUrl === null ? undefined : idxOf.get(curUrl);
+    if (curIdx !== undefined) {
+      queue = [curIdx, ...tail];
+      queuePos = 0;
+    } else if (playing) {
+      // Grający utwór wypadł z puli (zmniejszenie) — dogrywa się; selectNext()
+      // z repeatsLeft=1 i queuePos=-1 przejdzie na pierwszy element reszty.
+      queue = tail;
+      queuePos = -1;
+      repeatsLeft = 1;
+    } else {
+      queue = [];
+      queuePos = 0;
+      repeatsLeft = repeatsPerTrack;
+    }
+  }
+
+  function getTracks(): readonly string[] { return trackUrls.slice(); }
+
+  return { hasTracks, start, startWithFadeIn, stop, setVolume, isPlaying, rewind, setTracks, getTracks };
 }
 
 // ---------------------------------------------------------------------------
@@ -565,6 +621,13 @@ const kamienModules = dropEmptyUrls(import.meta.glob('./utwory/kamien/*.mp3', {
 }) as Record<string, string>);
 const KAMIEN_URLS: readonly string[] = Object.keys(kamienModules).sort()
   .map((k) => kamienModules[k] as string);
+
+const zelazoModules = dropEmptyUrls(import.meta.glob('./utwory/zelazo/*.mp3', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>);
+const ZELAZO_URLS: readonly string[] = Object.keys(zelazoModules).sort()
+  .map((k) => zelazoModules[k] as string);
 
 const brazModules = dropEmptyUrls(import.meta.glob('./utwory/braz/*.mp3', {
   eager: true,
@@ -705,13 +768,27 @@ const porazkaModules = dropEmptyUrls(import.meta.glob('./utwory/porazka/*.mp3', 
 const PORAZKA_URLS: readonly string[] = Object.keys(porazkaModules).sort()
   .map((k) => porazkaModules[k] as string);
 
-/** Kamień: shuffle + 3x pod rząd (~90 s/utwór), z crossfade 1,5 s na każdym
- *  przejściu (także między powtórzeniami). */
-export const kamienPlaylist: FilePlaylist = createPlaylist(KAMIEN_URLS, 3);
+/** Pula utworów epoki MUZYKI (1=kamień, 2=brąz, 3=żelazo) — KUMULATYWNA:
+ *  tier 1 = kamień; tier 2 = kamień + brąz; tier 3 = kamień + brąz + żelazo
+ *  (katalog utwory/zelazo/ może nie istnieć — wtedy tier 3 = tier 2; gdy
+ *  pojawią się w nim mp3, dołączą bez zmian w kodzie). Bez duplikatów. */
+export function eraTierUrls(tier: number): readonly string[] {
+  const all: string[] = [...KAMIEN_URLS];
+  if (tier >= 2) all.push(...BRAZ_URLS);
+  if (tier >= 3) all.push(...ZELAZO_URLS);
+  return Array.from(new Set(all));
+}
 
-/** Brąz (era>=2, dopóki kolejne epoki nie dostaną własnej playlisty): ten sam
- *  mechanizm co Kamień — shuffle + 3x pod rząd, crossfade 1,5 s. */
-export const brazPlaylist: FilePlaylist = createPlaylist(BRAZ_URLS, 3);
+/** Muzyka tła rozgrywki: JEDNA playlista kumulatywna po epokach (shuffle +
+ *  3x pod rząd, crossfade 1,5 s — parametry bez zmian). Awans epoki woła
+ *  setEraMusicTier(): nowe utwory dołączają do puli, bieżący nie jest
+ *  przerywany. */
+export const eraMusicPlaylist: FilePlaylist = createPlaylist(eraTierUrls(1), 3);
+
+/** Ustawia epokę muzyki (1..3, inne wartości przycięte) = przebudowa puli. */
+export function setEraMusicTier(tier: number): void {
+  eraMusicPlaylist.setTracks(eraTierUrls(Math.max(1, Math.min(3, Math.floor(tier)))));
+}
 
 /** Intro (ekrany przed rozgrywką): shuffle + 1x, z crossfade 1,5 s. */
 export const introPlaylist: FilePlaylist = createPlaylist(INTRO_URLS, 1, 'stala');
