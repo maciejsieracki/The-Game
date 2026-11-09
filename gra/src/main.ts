@@ -887,7 +887,7 @@ import {
   normalizeImprovementKey,
   isImprovementAllowedForCiv,
 } from './game/terrain-improvements';
-import { isLivestockAllowed, isLamaDepositVisibleForCiv, hexHasHorseDeposit } from './game/livestock-unlock';
+import { isLivestockAllowed, isLamaDepositVisibleForCiv, hexHasHorseDeposit, stadninaImperialKonUnlocked } from './game/livestock-unlock';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { cloneObject3DMaterialsForTransient, disposeTransientObject3D } from './render/transientObjectResources';
@@ -6668,6 +6668,12 @@ async function boot(): Promise<void> {
           : null,
         cityPopulation: cityOn?.population ?? null,
         currentEra: player.era,
+        // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: ta sama bramka Konia co silnik
+        // (horseStockAvailable/tradeRouteKonUnlocked przy buildImprovementState, main.ts ~15667).
+        konImperialUnlocked: stadninaImperialKonUnlocked(
+          hasTradeRouteResourceAccess(tradeRouteResourceGrants, 0, 'kon'),
+          citySurowceSumForOwner(0).kon ?? 0,
+        ),
         playerCivType: String(player.civType || _menuCivId || ''),
         daninaLabel: hexDaninaLabelAt(hexDetailHex.q, hexDetailHex.r),
         esc: hudHtmlEsc,
@@ -27181,6 +27187,8 @@ async function boot(): Promise<void> {
         player.zbadane = new Set(data.tech.map(t => t.Technologia as string));
       },
       setPlayerPracaPool: (n: number): void => { playerPracaPool = n; },
+      /** R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: ustawia epokę gracza (bramka stadniny poza złożem od epoki 3). */
+      setPlayerEra: (era: number): void => { player.era = era; },
       getPlacedLayers: (q: number, r: number): string[] => placedImprovements.get(`${q},${r}`) ?? [],
       applyBuildRequest: (req: ImprovementBuildRequest): void => applyBuildRequest(req),
       getToast: () => {

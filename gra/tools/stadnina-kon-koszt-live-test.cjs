@@ -132,6 +132,9 @@ async function main() {
     await page.evaluate(() => {
       window.__buildRequestTestDebug.unlockAllTech();
       window.__buildRequestTestDebug.setPlayerPracaPool(100000);
+      // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: sekcje B–E mierzą bramkę kosztu poza złożem,
+      // która od tego tematu wymaga epoki >= 3 (Żelaza). Bez tego test z epoki 1 blokowałby się na epoce, nie na koszcie.
+      window.__buildRequestTestDebug.setPlayerEra(3);
     });
 
     const hexes = await page.evaluate(() => window.__buildRequestTestDebug.findTestHexes());

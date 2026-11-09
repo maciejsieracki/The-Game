@@ -157,17 +157,38 @@ export const STADNINA_HORSE_COST = 50;
  * docs/encyklopedia/pojecia/szlaki-handlowe.md — "Dostęp do surowców przez trasę").
  * (Bramka cywilizacji/epoki jest osobno w isLivestockAllowed.)
  */
+/**
+ * R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1 (2026-11-09): od tej epoki (Żelaza)
+ * stadninę można postawić POZA złożem konia, o ile imperium ma odblokowany Koń (trasa handlowa
+ * albo magazyn >= STADNINA_HORSE_COST). W epokach 1–2 stadnina wymaga WYŁĄCZNIE złoża konia NA
+ * TYM heksie — odblokowanie imperium nie wystarcza. Liczba 3 = epoka Żelaza (dispatch właściciela).
+ */
+export const STADNINA_FREE_FROM_ERA = 3;
+
+/** Czy imperium ma odblokowany Koń na potrzeby stadniny POZA złożem (trasa LUB magazyn >= 50). */
+export function stadninaImperialKonUnlocked(
+  tradeRouteKonUnlocked: boolean,
+  horseStockAvailable: number,
+): boolean {
+  return tradeRouteKonUnlocked || horseStockAvailable >= STADNINA_HORSE_COST;
+}
+
+/**
+ * `era` (epoka gracza/właściciela) — opcjonalny dla zgodności wstecznej; brak = dawna reguła
+ * (bez bramki epoki). Silnik (createQualifier) i tooltip przekazują zawsze epokę.
+ */
 export function isLivestockUnlockedForPlacement(
   improvementKey: string,
   hex: { nakladka?: Nakladka; zloze?: string },
   tradeRouteKonUnlocked: boolean,
   horseStockAvailable: number,
+  era?: number,
 ): boolean {
   const norm = normalizeImprovementKey(improvementKey) ?? improvementKey;
   if (norm === 'stadnina') {
-    return hexHasHorseDeposit(hex)
-      || tradeRouteKonUnlocked
-      || horseStockAvailable >= STADNINA_HORSE_COST;
+    if (hexHasHorseDeposit(hex)) return true;
+    if (era !== undefined && era < STADNINA_FREE_FROM_ERA) return false;
+    return stadninaImperialKonUnlocked(tradeRouteKonUnlocked, horseStockAvailable);
   }
   return true; // bydlo/owce/lama — bez wymogu złoża
 }

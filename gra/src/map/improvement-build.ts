@@ -26,6 +26,7 @@ import terrainImprovements from '../../data/terrain-improvements.json';
 import {
   hexHasHorseDeposit,
   STADNINA_HORSE_COST,
+  STADNINA_FREE_FROM_ERA,
   isLivestockAllowed,
   isLivestockUnlockedForPlacement,
   livestockKeyFromImprovement,
@@ -1044,13 +1045,13 @@ function createQualifier(state: ImprovementBuildState) {
         terrainOk = FLAT_FARM.has(teren)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
       case 'owce':
         terrainOk = isOwceBaseTerrain(teren, nakladka)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
       // R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (2026-08-27): jw. — lama kwalifikuje się na
       // Wzgórzach/Górach niezależnie od nakładki Las (bramka cywilizacji Inków bez zmian).
@@ -1059,7 +1060,7 @@ function createQualifier(state: ImprovementBuildState) {
           && (TERRAIN_ALLOW.lama?.has(teren) ?? false)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
       // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (ECHO właściciela 2026-09-03): stadnina jest
       // ulepszeniem SUROWCOWYM (jak glinianka/tartak/kopalnie), nie pastwiskiem — nakładka
@@ -1074,7 +1075,7 @@ function createQualifier(state: ImprovementBuildState) {
         terrainOk = inPlayerTerritory(q, r)
           && (teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
       case 'droga':
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && isRoadQualified(q, r);
@@ -1520,6 +1521,11 @@ export function getStadninaBuildBlockReason(state: ImprovementBuildState): strin
   }
   if (outside > 0 && inTerritory === 0) {
     return 'Złoże konia jest poza twoim terytorium — powiększ miasto albo postaw posterunek bliżej.';
+  }
+  // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: w epokach 1–2 magazyn koni NIE odblokowuje
+  // stadniny poza złożem (bramka epoki w isLivestockUnlockedForPlacement), więc komunikat nie może go sugerować.
+  if ((state.playerEra ?? 1) < STADNINA_FREE_FROM_ERA) {
+    return 'Wymagane złoże konia na twoim terytorium. Do epoki Żelaza stadnina stoi wyłącznie na złożu konia (poza złożem dopiero od epoki Żelaza).';
   }
   const stock = Math.floor(state.horseStockAvailable ?? 0);
   return `Wymagane złoże konia na twoim terytorium (albo ${STADNINA_HORSE_COST} koni w magazynie imperium, masz ${stock}).`;

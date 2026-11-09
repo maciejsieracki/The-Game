@@ -132,7 +132,7 @@ const placedImprovements = new Map([['0,0', ['stadnina']]]);
 function qual() {
   return M.buildImprovementQualifier({
     map, cityNodes, territoryNodes, playerOwnerIdNum: 0,
-    playerCivArchetype: 'rzym', playerEra: 1, placedImprovements,
+    playerCivArchetype: 'rzym', playerEra: 3, placedImprovements, // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: era>=3
     horseStockAvailable: 50,
   });
 }
