@@ -10,3 +10,6 @@ ZAKRES (diagnoza + implementacja):
 4. Zapisy gry: migracja nie wymagana (reguła z danych); sprawdź.
 5. Testy: nowy `gra/tools/building-upkeep-resources-test.cjs` (wyliczenie, pobór, deficyt, AI), regresje economy-upkeep. Wpis LEDGER: REPIN Rust (building upkeep + building_costs.rs).
 ALLOWLISTA: gra/src/game/economy-upkeep.ts, gra/src/game/*upkeep*.ts, gra/src/game/ai-resource-needs.ts (tylko przy konieczności), gra/src/main.ts (HUD/pobór), gra/src/ui/ (karta budynku, panel miasta, HUD), gra/data/buildings.json (pole utrzymania surowcowego), gra/data/econ-params.json (parametry), testy, runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev, git add -A, push/deploy. Ignoruj pytania właściciela z innych tematów pojawiające się w kontekście.
+
+## DODATEK 1 (2026-11-09) — potwierdzenie właściciela
+Tabela kosztów budowy POTWIERDZONA w całości (wszystkie założenia: Magazyn/Port drewno = kamień, budynki bez cegły dziś: cegła = dzisiejszy kamień, budynki przed Cegielnią bez cegły). Utrzymanie surowcowe: proporcjonalnie do Pieniądza utrzymania, w tych samych surowcach co koszt budowy (1:1 jak w regule powyżej).
