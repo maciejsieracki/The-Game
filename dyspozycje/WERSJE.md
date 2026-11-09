@@ -1,3 +1,9 @@
+## ROBOCZA 7558ec53 -- 2026-11-06 -- FALA 581: Utrzymanie surowcowe budynków = utrzymanie w Pieniądzu; Zastąp w panelu armii działa na zaznaczonych jednostkach (testowa)
+
+- R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (c8ee037fb) + R-WEB-UNIT-REPLACE-ARMY-PANEL-SELECTS-GENERAL-Q1 (ab4646dc6)
+- Weryfikacja: tsc 0, logic 213/213, building-upkeep-resources 48/0, upkeep 91/0, unit-replace-army-multi-select 36/36, unit-replace 15/15, unit-replace-full-cost 40/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO w przeglądarce ani symulacja AI; dług REPIN Rust (building_costs.rs); podglądy HUD per owner
+
 ## ROBOCZA 1bf57e44 -- 2026-11-06 -- FALA 580: Obwódka heksagonalna wokół generała (7 hexów, kolor cywilizacji) (testowa)
 
 - R-WEB-UI-GENERAL-HEX-RING-OUTLINE-Q1 (1d216c7eb)
