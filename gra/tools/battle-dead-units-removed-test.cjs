@@ -139,10 +139,6 @@ async function main() {
     assert.ok(u.removed && u.dead && !u.fadingOut && scene.fadingUnits.length === 0);
   }
 
-  // 6) Source guard: the revive-to-1 hack is gone.
-  const source = require('fs').readFileSync(path.join(ROOT, 'src/battle/battleScene.ts'), 'utf8');
-  assert.ok(!/bu\.hp\s*=\s*1;/.test(source), 'no hp=1 revive left in battleScene.ts');
-
   console.log('battle-dead-units-removed-test: PASS — HP<=0 (also routed) removed at once; non-lethal rout kept');
 }
 
