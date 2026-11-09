@@ -1,0 +1,5 @@
+# R-WEB-DIPLO-CITIZENS-VS-RECRUITS-SEPARATE-Q1 — dispatch (2026-11-09)
+GOAL (zgłoszenie właściciela, zrzut Chińczycy: „Ludność: 98”): ludność (obywatele) i Manpower (rekruci) muszą być rozdzielone. W lewej liście dyplomacji (diploListHud.ts / diplomacy-display.ts ~638/681) i w audiencji pokazać OSOBNO: „Obywatele: N” (suma population miast) oraz „Wolni rekruci: X” (Manpower w pełnych jednostkach rekrutacji, bieżący / maks.). „Ludność” zmienić na „Obywatele” (nikt nie ma mylić z pulą rekrutacji). Dotyczy obu stron (nasza i ich).
+Założenie do potwierdzenia przez Evaluatora: „jednostki pełne” = Manpower wyrażony w liczbie jednostek (zaokrąglenie w dół), jak w RECRLVL (77dd059f1, audiencja „Rekruci: bieżąca / maks.”); jeśli RECRLVL już liczy inaczej — zachować spójność i opisać.
+Operator: HAIKU 5.5. ALLOWLISTA: diplomacy-display.ts, ui/diploListHud.ts, ui/diplomacyAudience.ts, test, runs/<ID>/. Test + brak regresji diplomacy-display/RECRLVL testów. LEDGER (REPIN Rust UI). Zakaz: WERSJE.md, gra-robocza/, build/dev, git add -A, push/deploy.
+KONFLIKT: diplomacyAudience.ts wspólny z RESPECT-DISPLAY-TRUE-VALUE — start po jego FC lub scalić sekwencyjnie.
