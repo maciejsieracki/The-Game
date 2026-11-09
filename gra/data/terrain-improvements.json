@@ -238,9 +238,9 @@
     "nazwa": "Łodzie rybackie",
     "epoka": 1,
     "bonus": {
-      "zywnosc": 2,
-      "praca": 3,
-      "handel": 3
+      "zywnosc": 6,
+      "praca": 6,
+      "handel": 6
     },
     "surowiecOdblokowany": null,
     "surowiecOdblokowany_uwaga": "ryby nie sa osobnym surowcem w resources.json v0.1; plony (zywnosc) jako substytut; DANE moze dodac klucz 'ryby' w przyszlosci",

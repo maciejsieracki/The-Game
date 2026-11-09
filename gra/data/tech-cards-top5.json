@@ -552,8 +552,8 @@
         "dowod": "gra/src/game/embarkation.ts:25; gra/src/game/embarkation.ts:28-36"
       },
       {
-        "tytul": "Łodzie rybackie: +2 żywności, +3 Pracy, +3 podatku",
-        "liczba": "+2",
+        "tytul": "Łodzie rybackie: +6 żywności, +6 Pracy, +6 podatku",
+        "liczba": "+6",
         "zdanie": "Ulepszenie ławicy — morze daje żywność, Pracę i podatek.",
         "dowod": "gra/data/terrain-improvements.json:234"
       },
@@ -582,7 +582,7 @@
       },
       {
         "czynnosc": "Postaw Łodzie rybackie na ławicy",
-        "korzysc": "wykorzystać morze (+2 żywności, +3 Pracy)"
+        "korzysc": "wykorzystać morze (+6 żywności, +6 Pracy)"
       },
       {
         "czynnosc": "Zbuduj Port handlowy w mieście nad wodą",
