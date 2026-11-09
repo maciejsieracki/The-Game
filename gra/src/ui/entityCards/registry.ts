@@ -68,6 +68,8 @@ export interface ImprovementRow {
   epoka?: number;
   bonus?: Record<string, number>;
   surowiecOdblokowany?: string | null;
+  /** R-WEB-CARDS-RESOURCE-PURPOSE-Q1: do czego służy surowiec ulepszenia (karta: wiersz „Do czego”). */
+  zastosowanie_surowca?: string | null;
   teren?: string;
   warunek?: string;
   koszt_praca?: number;

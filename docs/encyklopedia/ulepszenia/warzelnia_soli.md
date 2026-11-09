@@ -37,7 +37,7 @@ Ulepszenie **Warzelnia soli** na polu w **twoim terytorium**. Teren: złoże sol
 
 **Budowa:** **20 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **3 tur**.
 
-**Po ukończeniu:** heks daje +1 złoto/t, +1 żywność/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +1 podatku/t, +1 żywność/t (oprócz plonu bazowego terenu). Sól z warzelni trafia do magazynu państwa; Spichlerz Królewski wymaga jej i zużywa 25 soli na turę.
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+1**/t vs bez ulepszenia → **20 tur** na „odrobienie" 20 pracy (ignorując bazę pola).
 

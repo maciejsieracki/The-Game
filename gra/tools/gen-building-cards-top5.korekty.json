@@ -33,10 +33,6 @@
       "opisKarty": "Spichlerz Królewski to rozbudowana wersja magazynu żywności, pozwalająca miastu utrzymać jeszcze większą populację.",
       "powodOpisu": "decyzja (4): „i armię” w opisie buildings.json odwołuje się do limitu zapasów armii (econ-params.json:171 spichlerz_pojemnosc_zapasow_panstwa — brak konsumenta, §8). buildings.json poza allowlistą dla tego budynku — nadpisanie tylko na karcie."
     },
-    "Warsztat oblężniczy": {
-      "opisKarty": "Warsztat oblężniczy to zaplecze do budowy ciężkiego sprzętu oblężniczego, wzmacniające jednostki, które odwiedziły miasto.",
-      "powodOpisu": "decyzja (4): opis buildings.json obiecuje „dostęp do Katapulty” — flaga maWarsztatOblezniczy to REZERWA (cities.ts:843-850), production.ts:1068-1076 jej nie sprawdza (§8). buildings.json poza allowlistą dla tego budynku — nadpisanie tylko na karcie."
-    },
     "Akademia": {
       "zmiany": [
         { "z": "Top3", "tytul": "Asymilacja kultury +1% na turę (podbite miasta)", "zdanie": "Podbite miasto szybciej przyjmuje twoją kulturę.", "powod": "decyzja (4): zdanie CSV odwoływało się do Teatru („jak dawny Amfiteatr/Teatr”) — Teatr niedostępny (suppressed), odwołanie ukryte; dopisek „podbite miasta” wg założenia Q6-A." }

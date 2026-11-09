@@ -199,6 +199,11 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
       value: text(improvement.surowiecOdblokowany),
     });
   }
+  // R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 1): każdy surowiec ulepszenia mówi, do czego służy
+  // (dane: terrain-improvements.json `zastosowanie_surowca`, każde zdanie z dowodem w danych/silniku).
+  if (hasValue(improvement.zastosowanie_surowca)) {
+    resourceRows.push({ label: 'Do czego', value: text(improvement.zastosowanie_surowca) });
+  }
   if (hasValue(improvement.surowiec_ilosc_tura)) {
     resourceRows.push({ label: 'Produkcja surowca', value: `${text(improvement.surowiec_ilosc_tura)} / turę` });
   }

@@ -38,7 +38,7 @@ Droga brukowana wymagająca wcześniejszej Drogi).
 
 **Budowa:** **18 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **3 tur**.
 
-**Po ukończeniu:** heks daje +1 żywność/t, +1 złoto/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +1 żywność/t, +1 podatku/t (oprócz plonu bazowego terenu).
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+1**/t vs bez ulepszenia → **18 tur** na „odrobienie" 18 pracy (ignorując bazę pola).
 

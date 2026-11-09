@@ -58,7 +58,9 @@ check('[0] zebrano teksty kart (sanity)', TEXTS.length > 600, TEXTS.length);
 // ------------------------------------------------------------------ [R] zastosowanie surowca
 const RES_RE = /(cegł|ceramik|\bsól\b|\bsoli\b|żelaz|brąz|drewn|\bkamień\b|\bkamienia\b|glin|\brud[aęy]\b|\bkoni\b|złot)/i;
 const PRODUCTION_RE = /(wytwarza|wytapia|wytapiać|przerabia|zamienia|(glin|drewn|rud)[^→]*→|na turę|\/tur)/i;
-const PURPOSE_RE = /(dostarcza|potrzebn|służy|odblokowuj|koszt|daje|idzie|zużywa|buduje|wymaga|rekrutacj|wojsk|do wytopu|limit ludności|bonus)/i;
+// Zawężone (DODATEK 1 / zarzut właściciela): ogólne „daje”, „bonus”, „wojsk”, „koszt” nie wystarczą —
+// zdanie musi nazywać konkretne zastosowanie (budowa, rekrutacja, zużycie, wytop, limit ludności).
+const PURPOSE_RE = /(dostarcza|potrzebn|służy|odblokowuj|kosztem|koszt (budowy|rekrutacji|wojska|jednostk)|idzie na|idzie do|zużywa|wymaga|rekrutacj|do wytopu|wytapi|limit ludności)/i;
 
 let produkcyjne = 0;
 for (const src of ['tech', 'bud']) {
@@ -89,9 +91,9 @@ check('[R] cegła (Garncarstwo/Cegielnia): zdanie wymienia Akademię, Sąd, Ła�
 check('[R] cegła: fałszywe „cegła potrzebna do zbadania Pisma” NIE wraca (Pismo wymaga budynku Cegielni, nie cegły)',
   !TEXTS.some((t) => /cegł[^.;]*zbadania Pisma/i.test(t.text)));
 const cegielniaB = bldCards.cegielnia.top5[0];
-check('[R] cegła (karta Cegielni): koszt budowy budynków epoki Żelaza — wszystkie budynki z cegłą mają epokaWejscia 3',
-  /kosztem budowy budynków epoki Żelaza/.test(cegielniaB.zdanie)
-  && buildings.filter((b) => (b.koszt_surowce || {}).cegla && !b.suppressed).every((b) => b.epokaWejscia === 3 || b.id === 'wielka_odlewnia' || b.id === 'wielka_kuznia' || b.id === 'teatr'),
+check('[R] cegła (karta Cegielni): „cegła jest kosztem budowy m.in. Akademii, Sądu, Łaźni publicznej i Kuźni żelaza” (bez fałszywego „budynków epoki Żelaza”)',
+  /cegła jest kosztem budowy Akademii, Sądu, Łaźni publicznej i Kuźni żelaza\./.test(cegielniaB.zdanie) && !/epoki Żelaza/.test(cegielniaB.zdanie)
+  && JSON.stringify(buildings.filter((b) => (b.koszt_surowce || {}).cegla > 0 && b.epokaWejscia === 4).map((b) => b.id).sort()) === JSON.stringify(['wielka_kuznia', 'wielka_odlewnia']),
   buildings.filter((b) => (b.koszt_surowce || {}).cegla).map((b) => `${b.id}:${b.epokaWejscia}`));
 
 // Ceramika = zużycie Spichlerza (econ-params.json) ; sól = zużycie Spichlerza Królewskiego + bramka.
@@ -123,6 +125,45 @@ check('[R] drewno: karta Stolarni i odkrycia (Obróbka drewna) mówią o budowac
   /budowy i rekrutację/.test(bldCards.stolarnia.top5[0].zdanie) && /budowy i rekrutacja/.test(techCards['Obróbka drewna'].top5[2].zdanie));
 check('[R] kamień: karta Warsztatu kamieniarskiego i odkrycia (Murarstwo) mówią o murach i świątyniach',
   /mury, świątynie/.test(bldCards.kamieniarski.top5[0].zdanie) && /mury, świątynie/.test(techCards['Murarstwo'].top5[1].zdanie));
+
+// Pokrycie w danych dla brązu, żelaza, rudy, koni i złota (DODATEK 1: każde „do czego” ma źródło).
+const unitsBraz = units.filter((u) => u['Surowiec'] === 'Brąz').length;
+const unitsZelazo = units.filter((u) => u['Surowiec'] === 'Żelazo').length;
+check('[R] brąz: realnie kosztuje jednostki (units.json Surowiec=Brąz)', unitsBraz > 10, unitsBraz);
+check('[R] żelazo: realnie kosztuje jednostki epoki Żelaza (units.json Surowiec=Żelazo)', unitsZelazo > 10, unitsZelazo);
+const brazOdlewnia = techCards['Brązownictwo'].top5.find((i) => /^Odlewnia brązu/.test(i.tytul));
+check('[R] brąz (Odlewnia brązu): zdanie mówi, że brąz jest potrzebny do rekrutacji wojska', brazOdlewnia && /rekrutacji wojska/.test(brazOdlewnia.zdanie), brazOdlewnia);
+const zelazoOdlewnia = techCards['Hutnictwo żelaza'].top5.find((i) => /^Odlewnia żelaza/.test(i.tytul));
+check('[R] żelazo (Odlewnia żelaza): zdanie mówi, że żelazo jest potrzebne wojsku', zelazoOdlewnia && /żelazo potrzebne najlepszemu wojsku/.test(zelazoOdlewnia.zdanie), zelazoOdlewnia);
+const rudaMiedz = techCards['Brązownictwo'].top5.find((i) => /^Kopalnia miedzi/.test(i.tytul));
+check('[R] ruda (Kopalnia miedzi): zdanie mówi, że ruda idzie do wytopu brązu (converters.ts: Odlewnia brązu = 1 ruda + 1 drewno)',
+  rudaMiedz && /do wytopu brązu/.test(rudaMiedz.zdanie) && /1 ruda \+ 1 drewno/.test(fs.readFileSync(path.join(GRA, 'src/game/converters.ts'), 'utf8')), rudaMiedz);
+check('[R] koń: Stadnina mówi, że 25 koni to koszt rekrutacji jednostki konnej (building-stock-cost.ts MOUNT_UNIT_HORSE_STOCK_KEY)',
+  /25 koni to koszt rekrutacji/.test(techCards['Jeździectwo'].top5[0].zdanie)
+  && /MOUNT_UNIT_HORSE_STOCK_KEY/.test(fs.readFileSync(path.join(GRA, 'src/game/building-stock-cost.ts'), 'utf8')));
+check('[R] złoto: Mennica zużywa 1 sztukę złota na turę (src/game/zloto-access.ts:6) — zgodnie z kartą Waluty',
+  /zużywa 1 sztukę złota na turę/.test(techCards['Waluta'].top5[2].tytul) && /zużywa 1 Złoto\/turę/.test(fs.readFileSync(path.join(GRA, 'src/game/zloto-access.ts'), 'utf8')));
+// Ulepszenia terenu (surowcowe): każde „do czego” jest w danych (terrain-improvements.json zastosowanie_surowca → wiersz „Do czego”).
+const terrainImp = require(path.join(GRA, 'data/terrain-improvements.json'));
+const SUROWCOWE_ULEPSZENIA = ['glinianka', 'kamieniolom', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny', 'kopalnia_zlota', 'warzelnia_soli', 'tartak'];
+check('[R] ulepszenia terenu: 8 surowcowych ulepszeń ma pole zastosowanie_surowca (wiersz „Do czego” karty)',
+  SUROWCOWE_ULEPSZENIA.every((k) => terrainImp[k] && typeof terrainImp[k].zastosowanie_surowca === 'string' && terrainImp[k].zastosowanie_surowca.length > 20),
+  SUROWCOWE_ULEPSZENIA.filter((k) => !(terrainImp[k] && terrainImp[k].zastosowanie_surowca)));
+check('[R] ulepszenia terenu: adapter renderuje wiersz „Do czego” z zastosowanie_surowca',
+  /label: 'Do czego'/.test(fs.readFileSync(path.join(GRA, 'src/ui/entityCards/improvementAdapter.ts'), 'utf8')));
+check('[R] ulepszenia: „Największy dochód” nie wraca (Pretorium → „Najwięcej podatku”)', !TEXTS.some((t) => /Największy dochód/.test(t.text)));
+check('[R] Warsztat oblężniczy: nadpisanie karty („zaplecze… odwiedziły miasto”) usunięte — karta idzie z buildings.json (Katapulta)',
+  !/"Warsztat oblężniczy": \{/.test(fs.readFileSync(path.join(GRA, 'tools/gen-building-cards-top5.korekty.json'), 'utf8')));
+
+// Wiki (docs/encyklopedia): produkcja budynków i ulepszeń zasila PODATEK (klasa A), nie złoto.
+const wikiDir = path.join(GRA, '..', 'docs', 'encyklopedia');
+for (const rel of ['budynki/port.md', 'budynki/magazyn.md', 'budynki/sad.md', 'ulepszenia/warzelnia_soli.md', 'ulepszenia/oboz_lowiecki.md']) {
+  const txt = fs.readFileSync(path.join(wikiDir, rel), 'utf8');
+  check(`[A] wiki ${rel}: brak „+N złota/złoto” przy produkcji (klasa A → podatek)`, !/\+\d+ złot(a|o)\b/.test(txt), (txt.match(/\+\d+ złot\S*/g) || []));
+}
+check('[A] wiki budynki/port.md i magazyn.md: kategoria „Pieniadz” zamieniona na „Podatek”',
+  !/kategorii \*\*Pieniadz\*\*/.test(fs.readFileSync(path.join(wikiDir, 'budynki/port.md'), 'utf8'))
+  && !/kategorii \*\*Produkcja\+Pieniadz\*\*/.test(fs.readFileSync(path.join(wikiDir, 'budynki/magazyn.md'), 'utf8')));
 
 // ------------------------------------------------------------------ [A] podatek, nie pieniądz
 const C_WYJATKI = [

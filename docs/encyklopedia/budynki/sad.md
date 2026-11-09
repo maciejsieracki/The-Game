@@ -22,7 +22,7 @@
 ## Wiki‑M
 
 ### Co robi
-Sąd wzmacnia miasto w kategorii **Administracja**. Poziom 1: **+2 złota** (+1 na poziom), **+1 kultury** (+1 na poziom), **+2 pkt szczęścia** (+1 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**12** od poprzedniego), ale daje większy przyrost.
+Sąd wzmacnia miasto w kategorii **Administracja**. Poziom 1: **+2 podatku** (+1 na poziom), **+1 kultury** (+1 na poziom), **+2 pkt szczęścia** (+1 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**12** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 55 pracy
 - **Każdy kolejny poziom:** +12 pracy
@@ -45,11 +45,11 @@ Buduj **przed** przekroczeniem progu zagęszczenia (pop > 4) lub po podboju obce
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 55 | **6 tur** | +2 złota, +1 kultury, +2 pkt szczęścia | 2 ¤/t |
+| Poziom 1 | 55 | **6 tur** | +2 podatku, +1 kultury, +2 pkt szczęścia | 2 ¤/t |
 | Poziom 2 | 67 | **7 tur** | więcej (patrz niżej) | 2 ¤/t |
-| Poziom 3 | 79 | — | **+4 złota, +3 kultury, +4 pkt szczęścia** | 2 ¤/t |
+| Poziom 3 | 79 | — | **+4 podatku, +3 kultury, +4 pkt szczęścia** | 2 ¤/t |
 
-Przy +2 złota/t, utrzymanie 2 ¤/t → netto **+0 ¤/t**. Koszt 55 pracy przy 10/t ≈ **6 tur** pracy — złotem „zwraca się" po ok. **55 tur** (uproszczenie, bez inflacji).
+Przy +2 podatku/t, utrzymanie 2 ¤/t → netto **+0 ¤/t**. Koszt 55 pracy przy 10/t ≈ **6 tur** pracy — podatkiem „zwraca się" po ok. **55 tur** (uproszczenie, bez inflacji).
 
 **Przyspieszenie za złoto:** jeśli brakuje **35** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
 

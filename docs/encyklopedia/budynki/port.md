@@ -22,7 +22,7 @@
 ## Wiki‑M
 
 ### Co robi
-Port handlowy wzmacnia miasto w kategorii **Pieniadz**. Poziom 1: **+1 pracy** (+0 na poziom), **+5 złota** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
+Port handlowy wzmacnia miasto w kategorii **Podatek**. Poziom 1: **+1 pracy** (+0 na poziom), **+5 podatku** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 30 pracy
 - **Każdy kolejny poziom:** +10 pracy
@@ -45,11 +45,11 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 30 | **3 tur** | +1 pracy, +5 złota | 2 ¤/t |
+| Poziom 1 | 30 | **3 tur** | +1 pracy, +5 podatku | 2 ¤/t |
 | Poziom 2 | 40 | **4 tur** | więcej (patrz niżej) | 2 ¤/t |
-| Poziom 3 | 50 | — | **+1 pracy, +11 złota** | 2 ¤/t |
+| Poziom 3 | 50 | — | **+1 pracy, +11 podatku** | 2 ¤/t |
 
-Przy +5 złota/t, utrzymanie 2 ¤/t → netto **+3 ¤/t**. Koszt 30 pracy przy 10/t ≈ **3 tur** pracy — złotem „zwraca się" po ok. **10 tur** (uproszczenie, bez inflacji).
+Przy +5 podatku/t, utrzymanie 2 ¤/t → netto **+3 ¤/t**. Koszt 30 pracy przy 10/t ≈ **3 tur** pracy — podatkiem „zwraca się" po ok. **10 tur** (uproszczenie, bez inflacji).
 
 **Przyspieszenie za złoto:** jeśli brakuje **10** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
 

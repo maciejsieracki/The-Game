@@ -80,13 +80,13 @@
       },
       {
         "tytul": "Cegielnia: cegła (2 glina + 1 drewno → 2 cegły)",
-        "zdanie": "Cegielnia jest dostępna od epoki Brązu; cegła jest kosztem budowy m.in. Akademii, Sądu, Łaźni publicznej i Kuźni żelaza.",
+        "zdanie": "Cegielnia jest dostępna od epoki Brązu; cegła jest kosztem budowy Akademii, Sądu, Łaźni publicznej i Kuźni żelaza.",
         "dowod": "gra/src/game/converters.ts:84; gra/data/tech.json:196; gra/src/game/research.ts:180"
       },
       {
         "tytul": "Warzelnia soli: +50 soli na turę",
         "liczba": "+50",
-        "zdanie": "Ulepszenie na złożu soli; sól trafia do magazynu państwa, a Spichlerz Królewski wymaga jej i zużywa 25 na turę — za to armia poza własnym terytorium zjada o połowę mniej żywności.",
+        "zdanie": "Ulepszenie na złożu soli; sól trafia do magazynu państwa, a Spichlerz Królewski wymaga jej i zużywa 25 na turę; gdy sól wystarcza, armia poza własnym terytorium zjada o połowę mniej żywności.",
         "dowod": "gra/data/terrain-improvements.json:251; gra/data/terrain-improvements.json:262"
       }
     ],

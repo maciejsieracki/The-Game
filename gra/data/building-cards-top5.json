@@ -426,7 +426,7 @@
       {
         "tytul": "Wytwarza cegłę: 50 cykli × 2 cegły na turę",
         "liczba": "× 2",
-        "zdanie": "Zamienia 2 gliny i 1 drewno w 2 cegły (od epoki Brązu +50% bazy na epokę); cegła jest kosztem budowy budynków epoki Żelaza, takich jak Akademia, Sąd, Łaźnia publiczna czy Kuźnia żelaza.",
+        "zdanie": "Zamienia 2 gliny i 1 drewno w 2 cegły (od epoki Brązu +50% bazy na epokę); cegła jest kosztem budowy Akademii, Sądu, Łaźni publicznej i Kuźni żelaza.",
         "rodzaj": "efekt",
         "dowod": "gra/src/game/converters.ts:11; gra/src/game/converters.ts:84; gra/data/econ-params.json:355-361"
       },
@@ -454,7 +454,7 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Cegielnię",
-        "korzysc": "wytwarzać cegłę na Akademię, Sąd, Łaźnię publiczną i Kuźnię żelaza (budynki epoki Żelaza)"
+        "korzysc": "wytwarzać cegłę na Akademię, Sąd, Łaźnię publiczną i Kuźnię żelaza"
       }
     ]
   },
@@ -1058,10 +1058,9 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Warsztat oblężniczy",
-        "korzysc": "wzmocnić jednostki o kolejne +10%"
+        "korzysc": "wzmocnić jednostki o kolejne +10% i otworzyć dostęp do Katapulty"
       }
-    ],
-    "opisKarty": "Warsztat oblężniczy to zaplecze do budowy ciężkiego sprzętu oblężniczego, wzmacniające jednostki, które odwiedziły miasto."
+    ]
   },
   "akademia": {
     "top5": [
@@ -1226,7 +1225,7 @@
       {
         "tytul": "+3 podatku, +5 Kultury i +2 Pracy",
         "liczba": "+3",
-        "zdanie": "Największy dochód w łańcuchu.",
+        "zdanie": "Najwięcej podatku w łańcuchu.",
         "rodzaj": "efekt",
         "dowod": "gra/data/buildings.json:1888"
       }

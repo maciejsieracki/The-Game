@@ -124,6 +124,7 @@
       "handel": 2
     },
     "surowiecOdblokowany": "glina",
+    "zastosowanie_surowca": "Glina idzie do Cegielni (cegła na budowę m.in. Akademii i Sądu) i do Garncarni (ceramika dla Spichlerza).",
     "surowiecOdblokowany_uwaga": "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). NIE bonus.glina (2) -- osobne pola. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2 (Maciej 2026-08-13, B1): bonus.glina x5 → 10 (bylo 2) -- ten kanal (plon TileYield przez applyImprovementBonus) byl pominiety w Rundzie 1, ktora skalowala tylko surowiec_ilosc_tura wyzej.",
     "surowiec_ilosc_tura": 50,
     "teren": "złoże Gliny",
@@ -142,6 +143,7 @@
       "handel": 2
     },
     "surowiecOdblokowany": "kamien",
+    "zastosowanie_surowca": "Kamień idzie na budowę murów (80), akweduktu (60), świątyni (40) i innych budynków.",
     "surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; produkcja terytorialna bazowo 50/turę (epoka 1), skalowana +50% za epokę (50 / 75 / 113). Historia: R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (2026-08-13) = 50; commit 9175f031f (2026-09-09, Integracja PR #135 H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1) podniósł do 200 = REGRES; 2026-10-31 przywrócone 50 decyzją właściciela (R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1). ZAŁOŻENIE orkiestratora: skalowanie epoką z 9175f031f bez zmian.",
     "surowiec_ilosc_tura": 50,
     "teren": "Wzgórza, Góry (kamień)",
@@ -200,6 +202,7 @@
       "handel": 3
     },
     "surowiecOdblokowany": "drewno",
+    "zastosowanie_surowca": "Drewno idzie na budowy (np. Stolarnia 25, Port 60) i rekrutację jednostek (np. Wojownik 13).",
     "surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę). Historia: commit 9175f031f (2026-09-09, PR #135 wiring) podniósł do 200/turę = REGRES; 2026-10-31 przywrócone 50/turę decyzją właściciela (R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1). Skalowanie epoką (50 / 75 / 113) bez zmian.",
     "surowiec_ilosc_tura": 50,
     "teren": "Ląd w terytorium (łąka, lasy, wzgórza…)",
@@ -258,6 +261,7 @@
       "handel": 3
     },
     "surowiecOdblokowany": "sol",
+    "zastosowanie_surowca": "Sól trafia do magazynu państwa; Spichlerz Królewski wymaga jej i zużywa 25 na turę (econ-params.json:397-402).",
     "surowiecOdblokowany_uwaga": "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja Sól do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 Żywność, +1 Pieniądz) zostaje obok surowca_ilosc_tura. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę).",
     "surowiec_ilosc_tura": 50,
     "teren": "Wybrzeże, złoże soli (hex.zloze=sol)",
@@ -327,6 +331,7 @@
       "handel": 5
     },
     "surowiecOdblokowany": "ruda",
+    "zastosowanie_surowca": "Ruda miedzi idzie do Odlewni brązu, a brąz to koszt rekrutacji wojska epoki Brązu.",
     "surowiecOdblokowany_uwaga": "ruda miedzi (Odlewnia brązu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 4/turę (było 2/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 20/turę (było 4/turę).",
     "surowiec_ilosc_tura": 20,
     "teren": "Wzgórza, Góry, złoże miedzi (hex.zloze=miedz) lub legacy ZlozeRudy",
@@ -345,6 +350,7 @@
       "handel": 5
     },
     "surowiecOdblokowany": "ruda_zelaza",
+    "zastosowanie_surowca": "Ruda żelaza idzie do Odlewni żelaza, a żelazo to koszt rekrutacji wojska epoki Żelaza.",
     "surowiecOdblokowany_uwaga": "Ruda żelaza (Odlewnia żelaza); plon 2/t z kopalni_zelaza. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA = 2/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 4/turę (było 2/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 20/turę (było 4/turę).",
     "surowiec_ilosc_tura": 20,
     "teren": "Wzgórza, Góry, złoże żelaza (hex.zloze=zelazo)",
@@ -363,6 +369,7 @@
       "handel": 5
     },
     "surowiecOdblokowany": "ruda_cyny",
+    "zastosowanie_surowca": "Cyna idzie do Odlewni brązu, która z rudy miedzi, drewna i cyny wytapia brąz.",
     "surowiecOdblokowany_uwaga": "Ruda cyny (Odlewnia brązu — TRZECI input konwertera Brązu obok ruda+drewno). Ta sama stawka co Kopalnia miedzi/żelaza dziś (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13): 20/turę.",
     "surowiec_ilosc_tura": 20,
     "teren": "Wzgórza, Góry, złoże cyny (hex.zloze=cyna)",
@@ -381,6 +388,7 @@
       "handel": 10
     },
     "surowiecOdblokowany": "zloto",
+    "zastosowanie_surowca": "Złoto jest warunkiem Mennicy: Mennica zużywa 1 sztukę złota na turę (src/game/zloto-access.ts:6).",
     "surowiecOdblokowany_uwaga": "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Złoto do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/turę. Mennica zużywa 1 Złoto/turę ze skarbca przy mnożniku podatku→Pieniądz (U-13). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): Złoto ŚWIADOMIE WYŁĄCZONE z przeskalowania ×5 (waluta/handel, nie surowiec budowlany) — wartość BEZ ZMIAN.",
     "surowiec_ilosc_tura": 1,
     "teren": "Wzgórza, Góry, złoże złota (hex.zloze=zloto)",
