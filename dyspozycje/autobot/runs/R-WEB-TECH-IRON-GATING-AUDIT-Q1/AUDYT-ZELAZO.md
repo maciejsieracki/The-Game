@@ -19,6 +19,14 @@ Testów jednostkowych ani gry na żywo NIE uruchamiano — NIE_ZMIERZONO (audyt 
    (`awansDoEpoki` tylko 2 i 3). Realnie odblokowuje tylko 4 jednostki.
 3. **Sztuka wojenna** nie odblokowuje żadnej jednostki — tylko budynek Akademia wojskowa (wymaga Koszar w mieście).
 4. Jedyna jednostka epoki Żelaza bez bramki techu: **Hieros Lochos** (Tech `—`). Nadal wymaga epoki 3 (czyli Hutnictwa).
+5. **Bramki „wymagany budynek” (r2, korekta).** Obróbka żelaza wymaga zbudowanej **Kuźni żelaza** (`tech.json`, pole
+   „wymagany budynek”, egzekwowane przez `research.ts:buildingGateMet` i `main.ts:29525` w `canResearch`).
+   Kuźnia żelaza ma `techUnlock` = Hutnictwo i wymaga zapasu żelaza w magazynie państwa (`buildings.json`,
+   `wymaganySurowiec: zelazo`, `building-resource-gate.ts`). Zapas żelaza daje Odlewnia żelaza (Hutnictwo).
+   **Wniosek: przeniesienie Kopalni i Odlewni na Obróbkę przy zachowaniu wymogu „Kuźnia żelaza” dla Obróbki tworzy
+   CYKL** (§5c–§5d). Plan r1 (§5a, §6) jest tym samym wadliwy i zostaje WYCOFANY.
+6. Wariant bez cyklu istnieje: Obróbka wymaga Koszar (Wojskowość, Brąz) zamiast Kuźni żelaza, a Kopalnia i Odlewnia
+   przechodzą na Obróbkę (§6, wariant A). Wybór wariantu: §7 ABC 2.
 
 ## 1. Kopalnia żelaza i Odlewnia żelaza — kiedy żelazo trafia do magazynu
 
@@ -96,6 +104,10 @@ jednostek z epoki żelaza."
 
 ### 5a. Część pierwsza: żelazo ← Obróbka żelaza
 
+> **r2 (WYCOFANE):** poniższa propozycja zmiany `kuznia_zelaza.techUnlock` na Obróbkę tworzy cykl (§5d).
+> Obowiązuje wariant A z §6; `odlewnia_zelaza`/`kopalnia_zelaza` na Obróbkę są dopuszczalne wyłącznie razem ze
+> zmianą „wymagany budynek” Obróbki na Koszary.
+
 Zmiana danych (bez zmian kodu, jeśli bramki są czytane z JSON):
 - `terrain-improvements.json` → `kopalnia_zelaza.tech`: `Hutnictwo żelaza` → `Obróbka żelaza`;
 - `buildings.json` → `odlewnia_zelaza.techUnlock` i `kuznia_zelaza.techUnlock`: `Hutnictwo żelaza` → `Obróbka żelaza`.
@@ -131,36 +143,102 @@ Skutki i ryzyka:
   ikony techów (`ui/techIcons.ts`) bez zmian funkcjonalnych. Źródło `Technologie-drzewko.xlsx` nie było czytane.
 - Testy: nie sprawdzano, które testy zakładają Hutnictwo jako bramkę jednostek żelaznych (NIE_ZMIERZONO).
 
-## 6. Minimalny plan zmian (propozycja, NIE implementowane)
+## 5c. Bramki „wymagany budynek” w łańcuchu żelaza (r2, uzupełnienie)
 
-Zakres minimalny zgodny z postulatem:
-1. `units.json`: `Tech` = `Sztuka wojenna` dla 23 jednostek Hutnictwa/Obróbki i Hieros Lochos (lista w CSV).
-2. `terrain-improvements.json`: `kopalnia_zelaza.tech` = `Obróbka żelaza`.
-3. `buildings.json`: `odlewnia_zelaza.techUnlock` i `kuznia_zelaza.techUnlock` = `Obróbka żelaza`.
-4. `tech.json`: przenieść tekst „Odblokowuje” (Hutnictwo, Obróbka, Sztuka wojenna) zgodnie z 1–3; decyzja o `awansDoEpoki`.
-5. Testy: wyszukać asercje na Hutnictwo jako bramkę jednostek/Kopalni (NIE_ZMIERZONO) i poprawić.
+Źródło: `gra/data/tech.json` (pole „wymagany budynek” i „Wymaga (prereq)”), `gra/data/buildings.json`
+(`techUnlock`, `wymaganySurowiec`, `upgradeFrom`), `gra/src/game/research.ts` (`buildingGateMet`), `gra/src/game/building-resource-gate.ts`.
 
-Brak zmian kodu gry jest możliwy, bo bramki czytane są z danych (`production.ts`, `improvement-tech.ts`).
-Wyjątek: jeśli testy lub kod zakładają `Hutnictwo` jako tech Odlewni/Kopalni (np. `zelazo-access.ts`
-komentarze, `ai.ts`), to wymaga osobnego przeglądu.
+| Tech | Epoka | Prereq (tech) | Wymagany budynek (research) | Odblokowuje budynki / jednostki |
+|---|---|---|---|---|
+| Brązownictwo | Kamień | Garncarstwo + Murarstwo + Obróbka drewna | — | Odlewnia brązu, Kuźnia brązu |
+| Wojskowość | Brąz | Brązownictwo | — | Koszary (`koszary`, `techUnlock: Wojskowość`) |
+| Hutnictwo żelaza | Brąz (awans do epoki 3) | Brązownictwo | **Odlewnia brązu** | Odlewnia żelaza, Kuźnia żelaza, 19 jednostek |
+| Drogi brukowane | Żelazo | Inżynieria + Budownictwo | — | brak budynków |
+| Oblężnictwo | Żelazo | Matematyka + Wojskowość | **Koszary** | Warsztat oblężniczy, Katapulta |
+| Obróbka żelaza | Żelazo | Hutnictwo żelaza + Drogi brukowane | **Kuźnia żelaza** | Wielka odlewnia, Wielka Kuźnia (epoka 4, martwe), 4 jednostki |
+| Sztuka wojenna | Żelazo | Oblężnictwo + Obróbka żelaza | **Koszary** | Akademia wojskowa |
 
-Skutki dla drzewka technologii: Hutnictwo staje się wyłącznie kamieniem milowym epoki (jeśli awans zostanie), Obróbka
-otwiera surowiec, Sztuka wojenna otwiera armię Żelaza. Drzewko wymaga przebudowy kolumny „Odblokowuje”.
+Dodatkowe bramki budynków (warunek budowy, nie techu):
+- Kuźnia żelaza: `upgradeFrom: kuznia` (Kuźnia brązu w mieście) oraz `wymaganySurowiec: zelazo` = zapas żelaza > 0 w
+  magazynie państwa (`building-resource-gate.ts:empireLabelSatisfied`, sprawdzane przez zapas, nie przez tech).
+- Odlewnia żelaza: „upgrade Odlewni brązu” (bez bramki zapasu).
+- Kopalnia żelaza: tech z `terrain-improvements.json` (dziś Hutnictwo) + złoże żelaza na heksie.
 
-## 7. Pytania ABC do właściciela (do zadania przez orkiestratora)
+Wniosek: w łańcuchu żelaza jedna zależność tech→budynek zamyka cykl, gdy zapas żelaza zależy od tego samego techu:
+**Obróbka → Kuźnia żelaza (budynek) → zapas żelaza → Odlewnia/Kopalnia → Obróbka**.
 
-- ABC 1: Awans do epoki Żelaza (`awansDoEpoki: 3`) — zostaje na Hutnictwie żelaza, czy przenieść na Obróbkę albo Sztukę wojenną?
-  Rekomendacja: przenieść na Obróbkę (żelazo i epoka otwierają się razem), a Sztukę zostawić na jednostki.
-- ABC 2: Okno epoki Żelaza bez jednostek Żelaza do Sztuki wojennej (tylko Brąz + Katapulta). Akceptować opóźnienie czy dodać
-  część jednostek (np. Hastati, Falanga) pod Hutnictwo? Rekomendacja: pełny postulat, z decyzją o tymczasowej armii.
-- ABC 3: Wielka odlewnia i Wielka Kuźnia (`epokaWejscia: 4`) — przypisać do epoki 3 (dziś martwe), czy zostawić do wdrożenia
-  epoki 4 (temat `#57` wstrzymany)? Rekomendacja: zostawić, dopóki epoka 4 nie wraca, i oznaczyć w tabeli jako martwe.
-- ABC 4: Katapulta (Oblężnictwo) i Hieros Lochos — Katapulta zostaje na Oblężnictwie (rekomendacja), Hieros przechodzi na
-  Sztukę wojenną (usuwa dziś jedyną jednostkę Żelaza bez techu).
+## 5d. Cykl Kuźnia/Obróbka — dowód (r2)
 
-## 8. Zgodność i ograniczenia audytu
+Łańcuch przy wariancie r1 (Odlewnia, Kopalnia, Kuźnia → tech Obróbka):
+1. Obróbka wymaga zbudowanej Kuźni żelaza (`canResearch`, `buildingGateMet`).
+2. Kuźnia żelaza wymaga zapasu żelaza > 0 (`wymaganySurowiec: zelazo`).
+3. Zapas żelaza powstaje tylko z Odlewni żelaza (konwerter `odlewnia_zelaza__zelazo`) z rudy z Kopalni żelaza.
+4. Odlewnia i Kopalnia wymagają tech Obróbka (plan r1).
+5. Zatem Obróbka wymaga Obróbki. CYKL, nieosiągalne: Obróbka, Sztuka wojenna i wszystkie jednostki epoki Żelazo.
 
-- Zmiany w `gra/`: NIE. `WERSJE.md`: NIE. `git add -A`: NIE. Push i deploy: NIE.
-- Testy i gra na żywo: NIE_ZMIERZONO.
-- Wpływ na balans i AI: NIE_ZMIERZONO (brak symulacji); tylko wnioski z kodu i danych.
-- Rozbieżności danych wykryte przy audycie: (a) Triari/Evocati/Hieros nie są w opisie Hutnictwa w tech.json, (b) `kopalnia_zelaza.epoka = 3` nie jest sprawdzane osobno (działa przez tech Hutnictwo), (c) epoka 4 w buildings.json bez techu ustawiającego epokę 4.
+Wariant r1 zmieniający tylko Odlewnię (bez Kopalni) też jest cykliczny: zapas żelaza nadal wymaga Kopalni,
+a Obróbka i tak wymaga Kuźni. Samo przeniesienie Kuźni na Obróbkę też jest cykliczne (kroki 1–2).
+
+Wniosek: każdy wariant, w którym Obróbka dostaje żelazo (Kopalnia/Odlewnia), musi zmienić „wymagany budynek”
+Obróbki z Kuźni żelaza na budynek niezależny od żelaza.
+
+## 6. Minimalny plan zmian (r2, propozycja, NIE implementowane)
+
+Wariant A (rekomendowany, bez cyklu):
+1. `terrain-improvements.json`: `kopalnia_zelaza.tech` = `Obróbka żelaza` (z `Hutnictwo żelaza`).
+2. `buildings.json`: `odlewnia_zelaza.techUnlock` = `Obróbka żelaza` (z `Hutnictwo żelaza`).
+3. `tech.json`, tech „Obróbka żelaza”: „wymagany budynek” = `Koszary` (z `Kuźnia żelaza`).
+4. `buildings.json`: `kuznia_zelaza.techUnlock` POZOSTAJE `Hutnictwo żelaza` (nie zmieniać). Kuźnia i tak wymaga
+   zapasu żelaza, więc w praktyce otwiera się po Obróbce.
+5. `units.json`: `Tech` = `Sztuka wojenna` dla 23 jednostek (19 Hutnictwo, 4 Obróbka) i Hieros Lochos (`—`);
+   Katapulta zostaje na Oblężnictwie (lista w CSV).
+6. `tech.json`: teksty „Odblokowuje” Hutnictwa, Obróbki i Sztuki wojennej; decyzja o `awansDoEpoki` (ABC 1).
+7. Testy: lista plików z odniesieniami do „Hutnictwo żelaza”/„Obróbka żelaza” (§8) do przeglądu przy wdrożeniu.
+
+Sprawdzenie cyklu dla wariantu A (dane z §5c):
+- Obróbka wymaga: Hutnictwo (← Brązownictwo), Drogi brukowane (← Inżynieria + Budownictwo, bez budynku), Koszary (← Wojskowość, Brąz).
+- Kopalnia i Odlewnia (na Obróbce) wymagają Obróbki; Odlewnia nie wymaga Kuźni żelaza.
+- Kuźnia żelaza wymaga Hutnictwa (tech), Kuźni brązu (`upgradeFrom`) i zapasu żelaza (z Odlewni na Obróbce).
+- Brak krawędzi wracającej do Obróbki: Obróbka → {Hutnictwo, Drogi, Koszary}; żaden z tych węzłów nie wymaga Obróbki.
+- Sztuka wojenna: Oblężnictwo (← Wojskowość + Matematyka) + Obróbka + Koszary → brak cyklu.
+Zgodność z postulatem: żelazo ← Obróbka (tak); jednostki epoki Żelazo ← Sztuka wojenna (tak). Kuźnia żelaza
+nadal na Hutnictwie, więc jej dostęp zależy od zapasu żelaza, a nie od nowego techu.
+
+Wariant B (alternatywa): Obróbka wymaga `Kuźnia brązu` zamiast `Koszary`. Bez cyklu (Kuźnia brązu wymaga
+Brązownictwa i dostępu do miedzi). Mniej zmian w testach Koszar, ale zależność od miedzi.
+
+Wariant C (status quo dla żelaza): Kopalnia i Odlewnia zostają na Hutnictwie; przenieść tylko jednostki na Sztukę
+wojenną. Nie spełnia pierwszej części postulatu (żelazo nadal od Hutnictwa).
+
+Skutki (wariant A/B) dla balansu, AI i drzewka: żelazo przesuwa się za Drogi brukowane (koszt 680) i Obróbkę
+(poz. 9); w oknie epoki 3 pozostaje armia Brązu i Katapulta (ABC 3). AI: priorytety odlewni (`ai.ts:2263-2268`,
+`2642`) i kolejność badań. Rozmiar wpływu NIE_ZMIERZONO (brak symulacji i gry na żywo).
+
+## 7. Pytania ABC do właściciela (r2, do zadania przez orkiestratora)
+
+- ABC 1: Awans do epoki Żelaza (`awansDoEpoki: 3`) zostaje na Hutnictwie żelaza, czy przenieść na Obróbkę albo Sztukę wojenną?
+  Rekomendacja: Hutnictwo zostaje (epoka otwiera się wcześniej; żelazo i tak wchodzi z Obróbką).
+- ABC 2: Cykl Kuźnia/Obróbka — którą bramkę „wymagany budynek” Obróbki zmienić?
+  (A) Koszary — rekomendacja, spójne z Oblężnictwem i Sztuką wojenną, bez zależności od miedzi;
+  (B) Kuźnia brązu — motyw kowalski, ale wymaga dostępu do miedzi;
+  (C) nie zmieniać — żelazo zostaje na Hutnictwie (postulat niespełniony).
+- ABC 3: Okno epoki 3 bez jednostek Żelaza do Sztuki wojennej (tylko Brąz + Katapulta). Akceptować opóźnienie, czy
+  wyjąć część jednostek (np. Hastati, Falanga) pod Hutnictwo? Rekomendacja: pełny postulat z decyzją o tymczasowej armii.
+- ABC 4: Wielka odlewnia i Wielka Kuźnia (`epokaWejscia: 4`) — przypisać do epoki 3 (dziś martwe), czy zostawić do wdrożenia
+  epoki 4 (temat `#57` wstrzymany)? Rekomendacja: zostawić i oznaczyć jako martwe.
+- ABC 5: Katapulta (Oblężnictwo) zostaje na Oblężnictwie (rekomendacja); Hieros Lochos przechodzi na Sztukę wojenną.
+
+## 8. Zgodność, ograniczenia audytu i dług testowy (r2)
+
+- Zmiany w `gra/`: NIE. `WERSJE.md`: NIE. Staging, commit i push: tylko pliki w `dyspozycje/autobot/runs/R-WEB-TECH-IRON-GATING-AUDIT-Q1/`. Deploy: NIE.
+- Testy i gra na żywo: NIE_ZMIERZONO (r1 i r2 to audyt statyczny).
+- Wpływ na balans i AI: NIE_ZMIERZONO (brak symulacji).
+- Rozbieżności danych: (a) Triari/Evocati/Hieros nie są w opisie Hutnictwa w tech.json (opis, nie bramka);
+  (b) `kopalnia_zelaza.epoka = 3` nie jest sprawdzane osobno (działa przez tech Hutnictwo); (c) epoka 4 w buildings.json
+  bez techu ustawiającego epokę 4; (d) r1 pominął bramki „wymagany budynek” (korekta r2, §5c–§5d).
+- Testy odwołujące się do „Hutnictwo żelaza” lub „Obróbka żelaza” (grep `gra/tools/*.cjs`, r2): ok. 50 plików
+  (np. `tech-unlock-units-test.cjs`, `tech-cards-top5-test.cjs` — asercja „Kopalnia żelaza na karcie Hutnictwa”,
+  `building-tech-gate-test.cjs`, `unit-recruit-nazwa-test.cjs`, `autoimprove-live-hooks-test.cjs`,
+  `iron-native-access-fix-test.cjs`, `unit-epoch-cost-test.cjs`, `super-unit-limit-one-test.cjs`). Treść asercji
+  zbadano tylko dla próbki (dla pozostałych NIE_ZMIERZONO). Wariant A/B wymaga przeglądu tych testów przed wdrożeniem.
+- Kopia robocza `gra-robocza/srcKopiaMaster/game/braz-access.ts` nie była analizowana (NIE_ZMIERZONO).
