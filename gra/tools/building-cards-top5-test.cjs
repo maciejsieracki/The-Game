@@ -333,8 +333,9 @@ async function main() {
   const all = (id) => R(id).top5.map((i) => i.tytul + ' ' + i.zdanie).join(' | ');
   const t1 = (id) => R(id).top5[0].tytul + ' ' + R(id).top5[0].zdanie;
   check('[E] Mennica: Top1 z „×1,5”', /^×1,5\b/.test(R('mennica').top5[0].tytul), R('mennica').top5[0]);
-  check('[E] Mennica: Top1 = handel → pieniądz (mnoży podatek z handlu, część trafia w pieniądz)',
-    /handl/.test(t1('mennica')) && /pieniądz/.test(t1('mennica')), R('mennica').top5[0]);
+  // R-WEB-TERMINOLOGY-TRADE-VS-TAX-Q1: podatek z pól i budynków to nie handel — Top1 mówi „podatek”.
+  check('[E] Mennica: Top1 = podatek → pieniądz (mnoży podatek miast, część trafia w pieniądz; bez „handlu”)',
+    /podat/.test(t1('mennica')) && /pieniądz/.test(t1('mennica')) && !/handl|handel/.test(t1('mennica')), R('mennica').top5[0]);
   check('[E] Koszary: Top1 = bramka rekrutacji wojska epoki Brązu i Żelaza',
     /Rekrutacja/.test(R('koszary').top5[0].tytul) && /Brązu i Żelaza/.test(t1('koszary')), R('koszary').top5[0]);
   check('[E] Koszary: CMZ mówi o rekrutacji wojska epoki Brązu i Żelaza', R('koszary').cmz.some((s) => /rekrutować wojsko epoki Brązu i Żelaza/.test(s)), R('koszary').cmz);

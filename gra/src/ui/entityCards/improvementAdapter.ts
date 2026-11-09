@@ -89,7 +89,7 @@ function hasValue(value: unknown): boolean {
 const BONUS_LABEL: Record<string, string> = {
   zywnosc: 'Żywność',
   praca: 'Praca',
-  handel: 'Handel',
+  handel: 'Podatek',
   pieniadz: 'Pieniądz',
   kamien: 'Kamień',
   drewno: 'Drewno',

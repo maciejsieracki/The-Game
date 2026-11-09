@@ -647,7 +647,7 @@
       {
         "tytul": "×1,5 podatku w każdym mieście państwa",
         "liczba": "×1,5",
-        "zdanie": "Mnoży podatek z handlu wszystkich miast przed podziałem na naukę, pieniądz i luksus (×1,62 łatwy, ×1,38 trudny); nie obejmuje tras.",
+        "zdanie": "Mnoży podatek wszystkich miast przed podziałem na naukę, pieniądz i luksus (×1,62 łatwy, ×1,38 trudny); nie obejmuje tras.",
         "rodzaj": "efekt",
         "dowod": "gra/data/econ-params.json:585-591; gra/src/game/economy.ts:644-653; gra/src/game/economy.ts:952-955; gra/src/game/economy.ts:962-967"
       },

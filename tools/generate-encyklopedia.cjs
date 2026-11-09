@@ -123,7 +123,7 @@ function improvementExample(key, imp) {
   const bonusParts = [];
   if (imp.bonus) {
     for (const [k, v] of Object.entries(imp.bonus)) {
-      const lab = { zywnosc: 'żywność', praca: 'praca', handel: 'handel', pieniadz: 'złoto' }[k] || k;
+      const lab = { zywnosc: 'żywność', praca: 'praca', handel: 'podatek', pieniadz: 'złoto' }[k] || k;
       bonusParts.push(`+${v} ${lab}/t`);
     }
   }
@@ -374,7 +374,7 @@ function generateWonders() {
       `### Po absolut (koniec Średniowiecza)`,
       `- Bonusy wygasają; cud zostaje jako **ruina**.`,
       `- Utrzymanie spada do **50%** (decyzja D-CUD2).`,
-      `- Jedyny yield: **+10 handlu** (turystyka).`,
+      `- Jedyny yield: **+10 podatku** (turystyka).`,
     ].join('\n');
 
     const przyklad = `**Plan budowy:** stolica produkuje **12 pracy/t** na cuda (suwak pracy 70%). Cud **${koszt}** pracy → ok. **${Math.ceil(koszt / 12)} tur** bez rush.

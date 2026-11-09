@@ -32,7 +32,7 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ### Po absolut (koniec Średniowiecza)
 - Bonusy wygasają; cud zostaje jako **ruina**.
 - Utrzymanie spada do **50%** (decyzja D-CUD2).
-- Jedyny yield: **+10 handlu** (turystyka).
+- Jedyny yield: **+10 podatku** (turystyka).
 
 ---
 

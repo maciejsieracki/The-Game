@@ -293,11 +293,11 @@
     },
     "surowiecOdblokowany": null,
     "teren": "każdy przejezdny heks",
-    "warunek": "łączy TYLKO miasta i posterunki (MAPA pilnuje); ruch jednostek 3× szybszy (koszt wejścia ÷3); Handel (plon heksa) +2/turę",
+    "warunek": "łączy TYLKO miasta i posterunki (MAPA pilnuje); ruch jednostek 3× szybszy (koszt wejścia ÷3); Podatek (plon heksa) +2/turę",
     "koszt_praca": 15,
     "tech": "Koło",
     "odblokowuje": "",
-    "uwagi": "R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: Handel (plon heksa) 1→2/turę (było 1)",
+    "uwagi": "R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: Podatek (plon heksa) 1→2/turę (było 1)",
     "historia": "Najwcześniejsze drogi to zwykłe ubite ścieżki, wydeptane przez ludzi, zwierzęta juczne i pierwsze wozy, później utwardzane żwirem, drewnem lub warstwami ubitej gliny. Już w Mezopotamii i starożytnym Egipcie budowano proste trakty łączące osady i pola uprawne, a sieć dróg perskich (Droga Królewska, V wiek p.n.e.) umożliwiała szybki przepływ informacji i wojsk na tysiące kilometrów. Takie drogi nie miały jeszcze trwałej nawierzchni kamiennej, ale radykalnie skracały czas podróży i transportu towarów w porównaniu z marszem przez bezdroża. Ich budowa i utrzymanie — karczowanie, wyrównywanie terenu, usypywanie nasypów — było jednym z pierwszych wielkich przedsięwzięć infrastrukturalnych ludzkości, łączącym rozproszone osady w sieci wymiany handlowej."
   },
   "droga_brukowana": {
@@ -312,11 +312,11 @@
     "surowiecOdblokowany": null,
     "upgradeFrom": "droga",
     "teren": "hex z Drogi",
-    "warunek": "upgrade Drogi; ruch jednostek 5× szybszy (koszt wejścia ÷5); Handel (plon heksa) +3/turę; ta sama sieć dróg co Droga",
+    "warunek": "upgrade Drogi; ruch jednostek 5× szybszy (koszt wejścia ÷5); Podatek (plon heksa) +3/turę; ta sama sieć dróg co Droga",
     "koszt_praca": 25,
     "tech": "Drogi brukowane",
     "odblokowuje": "",
-    "uwagi": "T-TECH-9 Maciej 2026-07-04. R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: ruch z +2 (odejmowanie) na 5× szybszy (dzielenie); Handel (plon heksa) 2→3/turę (było 2)",
+    "uwagi": "T-TECH-9 Maciej 2026-07-04. R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: ruch z +2 (odejmowanie) na 5× szybszy (dzielenie); Podatek (plon heksa) 2→3/turę (było 2)",
     "historia": "Drogi brukowane, budowane z dopasowanych kamiennych płyt układanych na warstwach żwiru i piasku, to jeden ze szczytowych osiągnięć starożytnej inżynierii — najsłynniejszy przykład to sieć dróg rzymskich, licząca w szczycie imperium ponad 80 tysięcy kilometrów, z Via Appia (312 p.n.e.) jako pierwszą wielką arterią. Rzymianie budowali je w warstwach: fundament z grubego kamienia, warstwy żwiru i piasku, a na wierzchu dopasowane płyty bazaltowe lub granitowe, co dawało nawierzchnię trwałą przez stulecia i odporną na deszcze. Podobne technologie brukowania rozwinęły niezależnie Chiny za dynastii Qin i Han, budując drogi cesarskie łączące odległe prowincje. Brukowana nawierzchnia pozwalała na szybki, całoroczny przejazd wozów i wojsk niezależnie od pogody, co czyniło ją kluczowym narzędziem kontroli i administracji rozległych imperiów."
   },
   "kopalnia_miedzi": {
@@ -381,7 +381,7 @@
       "handel": 10
     },
     "surowiecOdblokowany": "zloto",
-    "surowiecOdblokowany_uwaga": "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Złoto do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/turę. Mennica zużywa 1 Złoto/turę ze skarbca przy mnożniku handlu→Pieniądz (U-13). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): Złoto ŚWIADOMIE WYŁĄCZONE z przeskalowania ×5 (waluta/handel, nie surowiec budowlany) — wartość BEZ ZMIAN.",
+    "surowiecOdblokowany_uwaga": "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Złoto do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/turę. Mennica zużywa 1 Złoto/turę ze skarbca przy mnożniku podatku→Pieniądz (U-13). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): Złoto ŚWIADOMIE WYŁĄCZONE z przeskalowania ×5 (waluta/handel, nie surowiec budowlany) — wartość BEZ ZMIAN.",
     "surowiec_ilosc_tura": 1,
     "teren": "Wzgórza, Góry, złoże złota (hex.zloze=zloto)",
     "warunek": "złoże złota — produkcja do magazynu państwa",

@@ -27,6 +27,8 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+// R-WEB-TERMINOLOGY-TRADE-VS-TAX-Q1: wspólne reguły „podatek vs handel” + korekta językowa tekstów z CSV.
+const { normalizeCsvText } = require('./terminology-trade-vs-tax.cjs');
 
 const GRA = path.resolve(__dirname, '..');
 const REPO = path.resolve(GRA, '..');
@@ -133,7 +135,9 @@ function generate(csvPath) {
       if (e.tytul && !e.powodTytulu) errors.push(`${name}: nadpisanie tytułu ${e.z} bez powodu`);
       if (!e.zdanie || !String(e.zdanie).trim()) errors.push(`${name}: ${e.z} bez zdania`);
       used.add(e.z);
-      const tytul = (e.tytul || csvTitle).trim();
+      // Tytuł z CSV przechodzi przez normalizację terminologii (A: „+N handlu” → „+N podatku”,
+      // korekta „— klucza” → „— klucz”); jawne nadpisanie `e.tytul` jest już redagowane ręcznie.
+      const tytul = (e.tytul || normalizeCsvText(csvTitle)).trim();
       const item = { tytul };
       const liczba = liczbaOf(tytul);
       if (liczba) item.liczba = liczba;
@@ -157,7 +161,7 @@ function generate(csvPath) {
       .map((b) => b.nazwa || b.id)
       .concat(z.ukryteDodatkowe || []);
 
-    let cmz = cmzOf(row.Co_mozesz_zrobic_PROPOZYCJA);
+    let cmz = cmzOf(normalizeCsvText(row.Co_mozesz_zrobic_PROPOZYCJA));
     for (const zm of z.cmzZamiany || []) {
       if (!zm.powod) errors.push(`${name}: zamiana CMZ „${zm.z}” bez powodu`);
       let hit = false;

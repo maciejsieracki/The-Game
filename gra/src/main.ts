@@ -5037,8 +5037,8 @@ async function boot(): Promise<void> {
           locationLabel: `${cityName} · Tura ${turn} · ${civLabel} — Ty`,
           bodyHtml: w ? wonderEffectsLabel(w) : '',
           noteHtml: w?.dostep === 'E'
-            ? `Ekskluzywny cud ${civLabel}. Bonusy aktywne do końca Średniowiecza, potem zostaje atrakcją (+10 handel, utrzymanie ÷2).`
-            : 'Wygraliśmy wyścig. Bonusy aktywne do końca Średniowiecza, potem zostaje atrakcją (+10 handel, utrzymanie ÷2).',
+            ? `Ekskluzywny cud ${civLabel}. Bonusy aktywne do końca Średniowiecza, potem zostaje atrakcją (+10 podatku, utrzymanie ÷2).`
+            : 'Wygraliśmy wyścig. Bonusy aktywne do końca Średniowiecza, potem zostaje atrakcją (+10 podatku, utrzymanie ÷2).',
           onShowOnMap: () => focusCameraOnWonder(wonderId),
         });
       } else if (city) {
