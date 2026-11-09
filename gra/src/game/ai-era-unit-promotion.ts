@@ -23,12 +23,13 @@ export interface AiEraPromotionDeps<U extends AiEraPromotableUnit> {
   epochNumber(epoch: unknown): number;
   /** Pełny koszt rekrutacji nowej jednostki w Pieniądzu (D1 = C: NIE różnica nowa - stara). */
   unitCost(unitId: string, unit: U): number;
-  /** Pełny koszt surowcowy nowej jednostki (unitStockCost); brak = bez kosztu surowcowego. */
-  stockCost?(target: AiEraPromotionTarget, unit: U): Record<string, number>;
+  /** Pełny koszt surowcowy nowej jednostki (unitStockCost); pusty obiekt = bez kosztu surowcowego.
+   *  Hooki surowcowe są WYMAGANE: opcjonalne pozwoliłyby po cichu pominąć koszt surowca. */
+  stockCost(target: AiEraPromotionTarget, unit: U): Record<string, number>;
   /** Czy pula państwa pokrywa `cost` (brak = zamiana pomijana, jak brak Pieniądza). */
-  canPayStock?(cost: Record<string, number>, unit: U): boolean;
+  canPayStock(cost: Record<string, number>, unit: U): boolean;
   /** Pobiera `cost` z puli państwa (wołane dopiero po przejściu WSZYSTKICH bramek). */
-  payStock?(cost: Record<string, number>, unit: U): void;
+  payStock(cost: Record<string, number>, unit: U): void;
   currentTreasury(): number;
   setTreasury(value: number): void;
   oldMaxHp(unit: U, definition: AiEraPromotionTarget): number;
@@ -55,11 +56,11 @@ export function promoteAiUnitForEra<U extends AiEraPromotableUnit>(
   if (!target || deps.epochNumber(target.Epoka) <= deps.epochNumber(oldDefinition.Epoka)) return false;
 
   const moneyCost = Math.max(0, deps.unitCost(target.Jednostka, unit));
-  const stockCost = deps.stockCost?.(target, unit) ?? {};
+  const stockCost = deps.stockCost(target, unit);
   const hasStockCost = Object.values(stockCost).some(amount => amount > 0);
   const treasury = deps.currentTreasury();
   if (treasury < moneyCost) return false;
-  if (hasStockCost && deps.canPayStock && !deps.canPayStock(stockCost, unit)) return false;
+  if (hasStockCost && !deps.canPayStock(stockCost, unit)) return false;
 
   const oldMaxHp = deps.oldMaxHp(unit, oldDefinition);
   const newMaxHp = deps.newMaxHp(target, unit);
@@ -71,6 +72,6 @@ export function promoteAiUnitForEra<U extends AiEraPromotableUnit>(
   unit.ruchLeft = 0;
   unit.replaceUsedThisTurn = true;
   if (moneyCost > 0) deps.setTreasury(treasury - moneyCost);
-  if (hasStockCost) deps.payStock?.(stockCost, unit);
+  if (hasStockCost) deps.payStock(stockCost, unit);
   return true;
 }

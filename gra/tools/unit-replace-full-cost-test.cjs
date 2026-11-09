@@ -83,6 +83,10 @@ const t0 = treasury; const p0 = { ...pool };
 assert(M.promoteAiUnitForEra(vet, aiDeps()), 'AI zamienia Wojownika (stac na pelny koszt)');
 assert(treasury === t0 - newMoney, `AI zaplacil PELNY Pieniadz nowej (${newMoney}), nie roznice`);
 assert(pool.braz === p0.braz - recruitStock.braz, `AI zuzyl PELNY Braz z puli panstwa (${recruitStock.braz})`);
+// symetria: AI pobiera DOKLADNIE to, co zwraca ta sama funkcja, ktorej uzywa gracz (performUnitReplace)
+const pcFull = M.unitReplaceFullCost(def(NEW), newMoney);
+assert(t0 - treasury === pcFull.money && Object.keys(pcFull.stock).every(k => p0[k] - pool[k] === pcFull.stock[k]),
+  'symetria gracz/AI: AI pobral dokladnie unitReplaceFullCost (Pieniadz + kazdy surowiec)');
 assert(vet.battlesSurvived === 3 && vet.pancerzBonusProc === 12 && vet.parametryBonusProc === 7 && vet.followGeneral === true && vet.stackGroupId === 'g1',
   'doswiadczenie/weteran/bonusy pancerza i parametrow/armia ZACHOWANE po zamianie');
 assert(vet.hp === 14 && vet.hpMax === 28, 'HP% zachowane (50%)');
@@ -109,8 +113,20 @@ assert(/unitReplaceFullCost\(/.test(perform) && /deductBuildingStockCostAcrossCi
   'performUnitReplace (gracz): pobiera PELNY Pieniadz + surowiec z puli panstwa');
 assert(!/Math\.max\(0, replaceUnitMoneyCost/.test(perform) && !/dopłat/i.test(perform), 'performUnitReplace: brak starej logiki "dopłaty"');
 assert(!/manpower|Manpower|UNIT_POPULATION_COST/.test(perform), 'performUnitReplace: nie dotyka Manpower/Ludnosci');
+{
+  const iMoneyGate = perform.indexOf('if (player.skarbiec < fullCost.money)');
+  const iStockGate = perform.indexOf('if (stockMissing)');
+  const iMutMoney = perform.indexOf('player.skarbiec -= fullCost.money');
+  const iMutStock = perform.indexOf('deductBuildingStockCostAcrossCities(cities, u.ownerId');
+  assert(iStockGate > -1 && iMoneyGate > -1 && iStockGate < iMutMoney && iMoneyGate < iMutMoney && iMutMoney < iMutStock,
+    'performUnitReplace: bramki surowca i Pieniadza PRZED jakakolwiek mutacja (kolejnosc w zrodle)');
+}
 assert(!/battlesSurvived\s*=|pancerzBonusProc\s*=|parametryBonusProc\s*=/.test(perform), 'performUnitReplace: nie zeruje doswiadczenia/bonusow');
 const ai = slice('function upgradeAiUnitsForEra(', 'function bestGeneralUnitForOwner');
+assert(/stockCost: target =>/.test(ai) && /canPayStock: cost =>/.test(ai) && /payStock: \(cost, unit\) =>/.test(ai), 'upgradeAiUnitsForEra: hooki surowcowe podane (wymagane przez promoteAiUnitForEra)');
+const promoSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'ai-era-unit-promotion.ts'), 'utf8');
+assert(!/deps\.(stockCost|canPayStock|payStock)\?\./.test(promoSrc) && !/stockCost\?\(|canPayStock\?\(|payStock\?\(/.test(promoSrc),
+  'promoteAiUnitForEra: hooki surowcowe WYMAGANE (brak ?.-wywolan, ktore po cichu pomijaja koszt surowca)');
 assert(/stockCost:/.test(ai) && /canPayStock:/.test(ai) && /payStock:/.test(ai) && /deductBuildingStockCostAcrossCities/.test(ai), 'upgradeAiUnitsForEra: ta sama funkcja kosztu (Pieniadz + surowiec z puli)');
 assert(/Zastąp specjalnie/.test(ai), 'AI: awans miedzy typami tylko wg tabeli "Zastąp specjalnie" (D3 = C)');
 const picker = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'ui', 'unitReplacePicker.ts'), 'utf8');
@@ -129,6 +145,19 @@ assert(/replaceAvailabilityCtxEmpireWide\(u\.ownerId\)/.test(ctxFn) && !/replace
   const garrisonCityOnly = M.availableReplacementsFor(OLD, data, ['Brązownictwo'], { ...base, builtBuildingIds: [] }).length;
   const empireUnion = M.availableReplacementsFor(OLD, data, ['Brązownictwo'], { ...base, builtBuildingIds: ['koszary'] }).length;
   assert(garrisonCityOnly === 0 && empireUnion > 0, 'regula dostepnosci: Koszary w DOWOLNYM miescie odblokowuja zamienniki (miasto bez Koszar nie blokuje)');
+}
+
+// --- F0. Taran okuty -> Katapulta (Zelazo) dla wszystkich nacji (audyt Dodatku 2) ----
+console.log('\n== F0. Taran okuty -> Katapulta w Zelazie, 16 nacji ==');
+{
+  const nations = [...new Set(units.map(u => u.Nacja).filter(Boolean))];
+  const techsIron = [...new Set(units.map(u => u.Tech).filter(t => t && t !== '-' && t !== '—'))];
+  const missing = nations.filter(nat => !M.availableReplacementsFor('Taran okuty', data, techsIron, {
+    epoch: 3, civUnitNacja: nat, civBonusy: [], builtBuildingIds: ['koszary', 'stajnia', 'warsztat', 'cegielnia', 'kuznia'],
+    empireResourceStock: { drewno: 9999, braz: 9999, zelazo: 9999, kon: 9999, kamien: 9999 }, kosztJednostekPace: 'niski',
+    difficulty: 'normal', ownerId: 0, aliveUnitTypeNames: new Set(), cityHasCoastOrRiver: true, cityHasRiver: true,
+  }).some(i => i.id === 'Katapulta'));
+  assert(nations.length === 16 && missing.length === 0, 'Taran okuty ma zamiennik Katapulta w Zelazie u 16/16 nacji' + (missing.length ? ' (brak: ' + missing.join(', ') + ')' : ''));
 }
 
 // --- F. D3 = C: awans miedzy typami przez "Zastąp specjalnie" -----------------
