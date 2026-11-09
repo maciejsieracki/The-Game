@@ -1394,6 +1394,7 @@ import {
 import { isWaterTerrain } from './units/setup';
 import { autoManageCity, pickAutoBuildItem, isBudowaListaUkonczonaForCity } from './game/auto-manage';
 import { isAutoBuildAllowedForOwner, autoBuildFromSaveMeta, autoBuildFromNewGameParam, AUTO_BUILD_ENABLED_DEFAULT } from './game/auto-build-gate';
+import { fogRevealKeyFFromNewGameParam, fogRevealKeyFFromSaveMeta, isFogRevealKeyFActive, FOG_REVEAL_KEY_F_DEFAULT } from './game/fog-reveal-key-f';
 import {
   AI_DIFFICULTY_BONUS_UNIT_TYPE,
   applyDifficultyCombatToUnitDef,
@@ -9939,6 +9940,13 @@ async function boot(): Promise<void> {
      * / EN: player build-automation master switch (default OFF); AI unaffected.
      */
     let autoBuildEnabled = AUTO_BUILD_ENABLED_DEFAULT;
+    /**
+     * R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1 (właściciel): „Odkrywanie mapy klawiszem F (tryb testowy)”.
+     * Klawisz F (pełne odkrycie/wyłączenie mgły) działa TYLKO gdy opcja ON. DOMYŚLNIE WYŁĄCZONA;
+     * zapis: meta.fogRevealKeyFEnabled; stary zapis (brak pola) = WYŁĄCZONA. Nie wpływa na AI.
+     * / EN: F-key map reveal gate (default OFF); affects only the keyboard shortcut.
+     */
+    let fogRevealKeyFEnabled = FOG_REVEAL_KEY_F_DEFAULT;
     /** Jedna bramka silnika i UI: czy automatyka budowy może działać dla ownera (AI zawsze tak). */
     function isAutoBuildAllowedFor(ownerId: number): boolean {
       return isAutoBuildAllowedForOwner(ownerId, humanSeats.humanOwnerIds, autoBuildEnabled);
@@ -36148,6 +36156,8 @@ async function boot(): Promise<void> {
           dealsEndTurnGate: dealsEndTurnGateEnabled,
           // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: automatyzacja budowy gracza trwa w zapisie.
           autoBuildEnabled,
+          // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: opcja klawisza F trwa w zapisie (brak pola = wyłączona).
+          fogRevealKeyFEnabled,
           // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): tylko przy fladze ON (OFF = bajty jak baza).
           ...(isWarEpochPlayerFirstEnabled() ? { playerEpochWarEnabled } : {}),
           rejectedOfferCooldowns: pruneExpiredRejectedOffers(rejectedOfferCooldowns, turn),
@@ -42694,6 +42704,8 @@ async function boot(): Promise<void> {
       if (e.code === 'KeyF' || e.key.toLowerCase() === 'f') {
         if (e.repeat) return;
         if (!FOG_DEV_SHORTCUTS) return;
+        // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: opcja wyłączona => F nic nie robi (bez komunikatu i bez preventDefault).
+        if (!isFogRevealKeyFActive(fogRevealKeyFEnabled)) return;
         if (galleryOn) return;
         e.preventDefault();
         toggleDevFogFull();
@@ -43639,6 +43651,8 @@ async function boot(): Promise<void> {
       dealsEndTurnGateEnabled = params.dealsEndTurnGate ?? true;
       // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: opcja z ekranu nowej gry (domyślnie WYŁĄCZONA).
       autoBuildEnabled = autoBuildFromNewGameParam(params.autoBuildEnabled);
+      // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: opcja klawisza F (domyślnie WYŁĄCZONA).
+      fogRevealKeyFEnabled = fogRevealKeyFFromNewGameParam(params.fogRevealKeyFEnabled);
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja z ekranu nowej gry (domyślnie ON).
       playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;
       resetEndTurnBlockers('doStartGame');
@@ -45842,6 +45856,8 @@ async function boot(): Promise<void> {
       dealsEndTurnGateEnabled = (saved.meta?.dealsEndTurnGate as boolean | undefined) === true;
       // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: stary zapis bez pola = WYŁĄCZONA.
       autoBuildEnabled = autoBuildFromSaveMeta(saved.meta?.autoBuildEnabled);
+      // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: stary zapis bez pola = WYŁĄCZONA.
+      fogRevealKeyFEnabled = fogRevealKeyFFromSaveMeta(saved.meta?.fogRevealKeyFEnabled);
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2) + R-WEB-ERA-WAR-LIVE-VERIFY-Q1: stary zapis BEZ pola = domyslna
       // wartosc nowej gry (true, jak `params.playerEpochWarEnabled ?? true`); jawny boolean z zapisu zostaje bez zmian.
       playerEpochWarEnabled = typeof saved.meta?.playerEpochWarEnabled === 'boolean' ? (saved.meta.playerEpochWarEnabled as boolean) : true;

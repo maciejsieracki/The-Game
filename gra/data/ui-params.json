@@ -312,6 +312,19 @@
           "Budynki i ulepszenia terenu budujesz ręcznie; przyciski „Auto” są niedostępne"
         ],
         "domyslny": 1
+      },
+      {
+        "key": "fog_reveal_key_f",
+        "label": "Odkrywanie mapy klawiszem F (tryb testowy)",
+        "opts": [
+          "Włączone",
+          "Wyłączone"
+        ],
+        "descs": [
+          "Klawisz F odkrywa całą mapę (wyłącza mgłę wojny) — tylko do testów",
+          "Klawisz F nic nie robi; mgła wojny działa normalnie"
+        ],
+        "domyslny": 1
       }
     ]
   }

@@ -25,6 +25,7 @@ const MAIN_GRID_ORDER = [
   'Poziom trudności', 'Barbarzyńcy',
   'Warunki zwycięstwa', 'Chatki z nagrodami',
   'Automatyzacja budowy', // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: 13. karta (główne ustawienia, nie zaawansowane)
+  'Odkrywanie mapy klawiszem F (tryb testowy)', // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: 14. karta (główne ustawienia)
 ];
 /** Kolejność okna zaawansowanych (13 pozycji, bez duplikatów z siatką). */
 const ADV_ORDER = [
@@ -94,7 +95,7 @@ window.__openWizard();
 
     // 1. Główna siatka: 12 kart w dokładnej kolejności, 2 kolumny wypełniane rzędami.
     const labels = (await page.locator('.civ-newgame .sett-grid .srow .sl').allTextContents()).map(x => x.trim());
-    assert.deepStrictEqual(labels, MAIN_GRID_ORDER, 'main grid shows 13 cards in the agreed left/right order');
+    assert.deepStrictEqual(labels, MAIN_GRID_ORDER, 'main grid shows 14 cards in the agreed left/right order');
     const rects = await page.locator('.civ-newgame .sett-grid .srow').evaluateAll(els => els.map(e => {
       const r = e.getBoundingClientRect(); return { x: r.x, y: r.y };
     }));
