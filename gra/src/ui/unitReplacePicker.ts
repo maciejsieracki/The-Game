@@ -45,6 +45,10 @@ export interface UnitReplacePickerOptions {
   unitName: string;
   /** Liczba zaznaczonych jednostek grupy (>1 = zamiana zbiorcza). */
   count?: number;
+  /** Podpis grupy typów, np. "grupa 1/2" (gdy zaznaczono więcej niż jeden typ). */
+  groupLabel?: string;
+  /** Uwaga o zaznaczonych jednostkach pominiętych (nie kwalifikują się). */
+  note?: string;
   options: readonly UnitReplaceOption[];
   /** Aktualny skarbiec gracza -- do wyszarzenia pozycji nie do sfinansowania. */
   skarb: number;
@@ -152,7 +156,9 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
   hdr.innerHTML =
     '<div><div class="civ-urp-title">Zastąp — ' + esc(opts.unitName) + (multi ? ' ×' + count : '') + '</div>' +
     '<div class="civ-urp-sub">Koszt = pełna rekrutacja nowej jednostki; zachowuje doświadczenie · zużywa ruch tej tury'
-    + (multi ? ' · zastępuje zaznaczone: ' + count : '') + '</div></div>';
+    + (multi ? ' · zastępuje zaznaczone: ' + count : '')
+    + (opts.groupLabel ? ' · ' + esc(opts.groupLabel) : '')
+    + (opts.note ? '<br>' + esc(opts.note) : '') + '</div></div>';
   hdr.appendChild(document.createRange().createContextualFragment(mapUnitCloseBtnHtml('Anuluj')));
   panel.appendChild(hdr);
   hdr.querySelector('.mu-close-btn')?.addEventListener('click', () => {

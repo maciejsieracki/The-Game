@@ -7798,7 +7798,11 @@ async function boot(): Promise<void> {
         const g = groups.get(key);
         if (g) g.push(t); else groups.set(key, [t]);
       }
-      openUnitReplaceGroupPicker([...groups.values()], 0);
+      const skipped = targets.length - eligible.length;
+      const note = skipped > 0
+        ? 'pominięto ' + skipped + ' z ' + targets.length + ' zaznaczonych (już zastąpione w tej turze lub brak zamienników)'
+        : '';
+      openUnitReplaceGroupPicker([...groups.values()], 0, note);
     }
 
     /** Pełny koszt rekrutacji nowej jednostki `typeId` razy `k` (Pieniądz + surowiec). */
@@ -7812,8 +7816,13 @@ async function boot(): Promise<void> {
     /** Ile z `n` jednostek da się zastąpić na `typeId` przy aktualnym skarbcu i puli państwa. */
     function unitReplaceAffordableCount(newDef: any, typeId: string, n: number, ownerId: number): number {
       const pool = ownerSurowcePoolFor(ownerId);
+      // Limit Super-jednostki (egzekwowany per sztuka w performUnitReplace): typ zablokowany -> 0,
+      // typ Super bez zajętego slotu -> najwyżej 1 zamiana w jednej serii.
+      const reserved = reservedUnitTypeNamesForOwner(ownerId);
+      if (superUnitLimitViolation(newDef, typeId, reserved, 1)) return 0;
+      const cap = superUnitLimitViolation(newDef, typeId, reserved, 2) ? 1 : n;
       let ok = 0;
-      for (let k = 1; k <= n; k++) {
+      for (let k = 1; k <= Math.min(n, cap); k++) {
         const c = unitReplaceCostTimes(newDef, typeId, k);
         if (player.skarbiec < c.money || unitReplaceStockMissingLabel(c, pool)) break;
         ok = k;
@@ -7821,7 +7830,7 @@ async function boot(): Promise<void> {
       return ok;
     }
 
-    function openUnitReplaceGroupPicker(groups: RuntimeUnit[][], index: number): void {
+    function openUnitReplaceGroupPicker(groups: RuntimeUnit[][], index: number, note = ''): void {
       const group = groups[index]?.filter(unitReplaceEligible) ?? [];
       if (group.length === 0) {
         if (index + 1 < groups.length) openUnitReplaceGroupPicker(groups, index + 1);
@@ -7834,11 +7843,12 @@ async function boot(): Promise<void> {
         computeUnitReplacements(sample),
         item => lookupUnitDef(item.id),
       );
-      const label = (sample.isGeneral === true ? '★ Wódz: ' : '') + sample.typeId
-        + (groups.length > 1 ? ' (grupa ' + (index + 1) + '/' + groups.length + ')' : '');
+      const label = (sample.isGeneral === true ? '★ Wódz: ' : '') + sample.typeId;
       showUnitReplacePicker({
         unitName: label,
         count: n,
+        groupLabel: groups.length > 1 ? 'grupa ' + (index + 1) + '/' + groups.length : undefined,
+        note: note || undefined,
         skarb: player.skarbiec,
         options: ordered.map(it => {
           const udef = lookupUnitDef(it.id);
@@ -7855,6 +7865,7 @@ async function boot(): Promise<void> {
             totalStockText: unitReplaceStockText(total),
             affordableCount,
             blockedReason: unitStockShortfallLabel(udef, unitReplaceCtx(sample).empireResourceStock)
+              ?? superUnitLimitViolation(udef, it.id, reservedUnitTypeNamesForOwner(sample.ownerId), 1)
               ?? (affordableCount === 0 ? (unitReplaceStockMissingLabel(unit, ownerPool) ?? undefined) : undefined),
             atk: unitAtak(udef),
             def: unitObrona(udef),

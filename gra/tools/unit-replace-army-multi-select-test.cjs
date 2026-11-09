@@ -29,9 +29,9 @@ function toJs(ts) { return esbuild.transformSync(ts, { loader: 'ts', target: 'no
 // Prawdziwe funkcje kosztu (bundle pure-logic).
 const entry = path.resolve(__dirname, '.unit-replace-multi-entry.ts');
 const bundle = path.resolve(__dirname, '.unit-replace-multi-bundle.cjs');
-fs.writeFileSync(entry, "export { unitReplaceFullCost, unitReplaceStockMissingLabel, unitReplaceStockText } from '../src/game/unit-replace-cost';\n", 'utf8');
+fs.writeFileSync(entry, "export { unitReplaceFullCost, unitReplaceStockMissingLabel, unitReplaceStockText } from '../src/game/unit-replace-cost';\nexport { superUnitLimitViolation } from '../src/game/production';\n", 'utf8');
 esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18', outfile: bundle, logLevel: 'silent' });
-const COST = require(bundle);
+const COST = require(bundle); // prawdziwe superUnitLimitViolation z production.ts (nie stub)
 try { fs.unlinkSync(entry); fs.unlinkSync(bundle); } catch (_) { /* ignore */ }
 
 // --- A. cele akcji: zaznaczenie, nie wodz ------------------------------------
@@ -73,6 +73,7 @@ assert(/replaceTargets.some\(unitReplaceEligible\)/.test(main), 'przycisk "Zasta
 // --- C. zbiorczy koszt / ile stac ----------------------------------------------
 console.log('\n== C. koszt zbiorczy i limit zasobow ==');
 const costSrc = extractFn(main, 'unitReplaceCostTimes') + extractFn(main, 'unitReplaceAffordableCount');
+let reservedSet = new Set();
 function affordCtx(skarb, pool) {
   const ctx = {
     player: { skarbiec: skarb },
@@ -80,6 +81,8 @@ function affordCtx(skarb, pool) {
     ownerSurowcePoolFor: () => pool,
     unitReplaceFullCost: (def, m) => ({ money: m, stock: { braz: 25 } }),
     unitReplaceStockMissingLabel: COST.unitReplaceStockMissingLabel,
+    superUnitLimitViolation: COST.superUnitLimitViolation,
+    reservedUnitTypeNamesForOwner: () => reservedSet,
   };
   vm.createContext(ctx);
   vm.runInContext(toJs(costSrc) + '\nthis.times = unitReplaceCostTimes; this.afford = unitReplaceAffordableCount;', ctx);
@@ -97,6 +100,16 @@ c = affordCtx(50, { braz: 1000 });
 assert(c.afford({}, 'X', 3, 0) === 0, 'brak Pieniadza -> 0 (pozycja wyszarzona)');
 c = affordCtx(1000, {});
 assert(c.afford({}, 'X', 2, 0) === 0, 'brak surowca -> 0');
+// Limit Super-jednostki w podgladzie (zgodnie z performUnitReplace: 1 sztuka na serie).
+const superDef = { 'Super-jednostka': 'TAK' };
+reservedSet = new Set();
+c = affordCtx(1000, { braz: 1000 });
+assert(c.afford(superDef, 'Super', 3, 0) === 1, 'Super-jednostka, slot wolny, n=3 -> najwyzej 1 (nie "stac na 3")');
+assert(c.afford({ 'Super-jednostka': 'NIE' }, 'Zwykly', 3, 0) === 3, 'zwykla jednostka bez limitu -> 3');
+reservedSet = new Set(['Super']);
+c = affordCtx(1000, { braz: 1000 });
+assert(c.afford(superDef, 'Super', 3, 0) === 0, 'Super-jednostka juz zywa/oplacona -> 0');
+reservedSet = new Set();
 
 // --- D. picker i aktualny tekst FALA 571 -----------------------------------------
 console.log('\n== D. picker ==');
@@ -105,6 +118,10 @@ assert(/stać na \$\{affordCount\} z \$\{count\}/.test(picker), 'picker: informa
 assert(/Koszt = pełna rekrutacja nowej jednostki/.test(picker), 'tekst FALA 571 ("pelna rekrutacja nowej jednostki")');
 assert(!/Dopłata/.test(picker) && !/bez dopłaty/.test(picker), 'stary tekst "Doplata = koszt nowej - koszt starej" / "bez doplaty" nieobecny w sciezce');
 assert(/Zastąp — ' \+ esc\(opts\.unitName\)/.test(picker), 'tytul okna z nazwa zaznaczonego typu (unitName = typ zaznaczonej jednostki)');
+assert(/groupLabel/.test(picker) && /opts\.groupLabel \?/.test(picker), 'podpis "grupa i/n" w podtytule (nie w tytule)');
+assert(/opts\.note \?/.test(picker), 'uwaga o pominietych zaznaczonych jednostkach renderowana w oknie');
+assert(!/unitName: label,[\s\S]{0,80}\(grupa/.test(main), 'w tytule nie ma "(grupa i/n)"');
+assert(/pominięto ' \+ skipped/.test(forSel), 'brak kwalifikujacych sie z zaznaczenia -> licznik pominietych w oknie');
 
 console.log(`\n[unit-replace-army-multi-select-test] ${failed === 0 ? 'WSZYSTKIE TESTY ZIELONE' : 'BLEDY'} (${passed}/${passed + failed})`);
 console.log('Chromium/live panel: NIE_ZMIERZONO (brak playwright/jsdom w piaskownicy; test pokrywa logike i okablowanie).');
