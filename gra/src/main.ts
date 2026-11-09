@@ -4866,7 +4866,7 @@ async function boot(): Promise<void> {
       });
     }
 
-    function orderEmpireRecruitment(unitId: string, quantity: number): { message: string; changed: boolean } {
+    function orderEmpireRecruitment(unitId: string, quantity: number): { message: string; changed: boolean; accepted: number } {
       const ownerId = ME();
       const firstCity = cities.find(c => c.ownerId === ownerId);
       const label = (firstCity ? recruitPanelPurchasableUnits(firstCity, data).find(it => it.id === unitId)?.nazwa : undefined) ?? unitId;
@@ -4890,7 +4890,7 @@ async function boot(): Promise<void> {
         purchase: (cityId, count) => purchaseRecruitmentUnit(cityId, unitId, empireRecruitCityKoszt(cityId, unitId, koszt), ownerId, count),
       });
       refreshEmpireRecruitPanel();
-      return { message: out.message, changed: out.changed };
+      return { message: out.message, changed: out.changed, accepted: out.accepted };
     }
 
     function empireRecruitCityKoszt(cityId: string, unitId: string, fallback: number): number {

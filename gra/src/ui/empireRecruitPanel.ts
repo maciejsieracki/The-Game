@@ -1,8 +1,12 @@
 /**
  * R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1 (część B) — panel „Rekrutacja — cała cywilizacja”.
  *
- * Jedno zamówienie dla całego państwa: przy każdym typie jednostki niezależny licznik (−/+/pole)
- * i własny przycisk „Rekrutuj”. Licznik NIE zeruje się po zamówieniu i nie dotyka innych typów.
+ * Jedno zamówienie dla całego państwa: przy każdym typie jednostki niezależny licznik (−/+/pole,
+ * domyślnie 0) i własny przycisk „Rekrutuj”. Licznik NIE zeruje się po pojedynczym „Rekrutuj”
+ * i nie dotyka innych typów.
+ * R-WEB-UI-EMPIRE-RECRUIT-PANEL-RECRUIT-ALL-Q1: przyciski „Rekrutuj wszystkie” (góra i dół panelu)
+ * zamawiają każdy typ z licznikiem > 0 przez TĘ SAMĄ ścieżkę `onOrder`. Typy przyjęte (w całości)
+ * wracają do 0; typy odrzucone lub przyjęte częściowo zachowują pozostałą liczbę do ponowienia.
  * Rozkład po miastach robi `game/empire-recruit-plan.ts` (wiring w main.ts); ten moduł to tylko UI.
  * Liczniki to stan UI sesji (poza zapisem gry) — zamówienia są zwykłymi wpisami kolejek miast.
  */
@@ -24,12 +28,14 @@ export interface EmpireRecruitUnitRow {
 export interface EmpireRecruitPanelCfg {
   getRows: () => EmpireRecruitUnitRow[];
   /** Wykonuje zamówienie; zwraca komunikat PL do pokazania w panelu. */
-  onOrder: (unitId: string, quantity: number) => { message: string; changed: boolean };
+  /** `accepted` = ile sztuk faktycznie przyjęto (do częściowego sukcesu w „Rekrutuj wszystkie”). */
+  onOrder: (unitId: string, quantity: number) => { message: string; changed: boolean; accepted?: number };
 }
 
 const ROOT_ID = 'civ-empire-recruit-panel';
 const STYLE_ID = 'civ-empire-recruit-panel-css';
 const MAX_QTY = 999;
+const DEFAULT_QTY = 0;
 
 /** Liczniki per typ jednostki (niezależne; przeżywają odświeżenia i zamknięcie panelu). */
 const drafts = new Map<string, number>();
@@ -37,11 +43,11 @@ let panelCfg: EmpireRecruitPanelCfg | null = null;
 let lastMessage = '';
 
 export function getEmpireRecruitDraft(unitId: string): number {
-  return drafts.get(unitId) ?? 1;
+  return drafts.get(unitId) ?? DEFAULT_QTY;
 }
 
 function clampQty(n: number): number {
-  return Number.isFinite(n) ? Math.min(MAX_QTY, Math.max(1, Math.round(n))) : 1;
+  return Number.isFinite(n) ? Math.min(MAX_QTY, Math.max(0, Math.round(n))) : 0;
 }
 
 function esc(s: string): string {
@@ -77,6 +83,8 @@ function ensureStyles(): void {
 #${ROOT_ID} .erp-qty button{width:24px;padding:3px 0;}
 #${ROOT_ID} .erp-qty input{width:42px;text-align:center;font:inherit;color:#e8e0c8;background:#0e131c;border:1px solid #49566a;border-radius:5px;padding:3px 2px;}
 #${ROOT_ID} .erp-go{border-color:rgba(232,216,138,.6);color:#e8d88a;font-weight:600;}
+#${ROOT_ID} .erp-all{padding:6px 12px;border-top:1px solid rgba(232,216,138,.2);}
+#${ROOT_ID} .erp-all button{width:100%;border-color:rgba(232,216,138,.6);color:#e8d88a;font-weight:700;padding:6px 8px;}
 #${ROOT_ID} .erp-msg{padding:6px 12px 9px;font-size:12px;color:#e8d88a;min-height:1.2em;border-top:1px solid rgba(232,216,138,.2);}
 `;
   document.head.appendChild(st);
@@ -87,6 +95,8 @@ let lastHtml = '';
 function render(root: HTMLElement, force = true): void {
   if (!panelCfg) return;
   const rows = panelCfg.getRows();
+  const total = rows.reduce((sum, r) => sum + getEmpireRecruitDraft(r.id), 0);
+  const allBtn = `<button type="button" class="erp-go-all" data-erp="go-all"${total <= 0 ? ' disabled' : ''}>Rekrutuj wszystkie</button>`;
   const list = rows.map(r => {
     const q = getEmpireRecruitDraft(r.id);
     const blocked = r.capableCities <= 0;
@@ -98,17 +108,19 @@ function render(root: HTMLElement, force = true): void {
     return `<div class="erp-row${blocked ? ' is-blocked' : ''}" data-unit="${esc(r.id)}">`
       + `<div class="erp-info"><span class="erp-name" title="${esc(r.label)}">${esc(r.label)}</span>`
       + `<span class="erp-meta">${meta}</span>${queuedLine}</div>`
-      + `<div class="erp-qty"><button type="button" data-erp="dec" aria-label="Zmniejsz liczbę ${esc(r.label)}"${q <= 1 ? ' disabled' : ''}>−</button>`
+      + `<div class="erp-qty"><button type="button" data-erp="dec" aria-label="Zmniejsz liczbę ${esc(r.label)}"${q <= 0 ? ' disabled' : ''}>−</button>`
       + `<input type="number" min="1" max="${MAX_QTY}" step="1" value="${q}" data-erp="qty" aria-label="Liczba ${esc(r.label)}">`
       + `<button type="button" data-erp="inc" aria-label="Zwiększ liczbę ${esc(r.label)}"${q >= MAX_QTY ? ' disabled' : ''}>+</button></div>`
-      + `<button type="button" class="erp-go" data-erp="go"${blocked ? ' disabled' : ''}>Rekrutuj</button>`
+      + `<button type="button" class="erp-go" data-erp="go"${blocked || q <= 0 ? ' disabled' : ''}>Rekrutuj</button>`
       + `</div>`;
   }).join('');
   const html = `<div class="erp-hd"><span class="erp-title">Rekrutacja — cała cywilizacja</span>`
     + `<button type="button" data-erp="close" aria-label="Zamknij">Zamknij</button></div>`
     + `<div class="erp-sub">Zamówienie rozkłada się równomiernie na miasta, które mogą produkować dany typ. `
     + `Liczniki są niezależne i nie zerują się po „Rekrutuj”.</div>`
+    + `<div class="erp-all">${allBtn}</div>`
     + `<div class="erp-list">${list || '<div class="erp-meta" style="padding:10px 4px">Brak dostępnych jednostek wojskowych.</div>'}</div>`
+    + `<div class="erp-all">${allBtn}</div>`
     + `<div class="erp-msg" data-erp-msg role="status">${esc(lastMessage)}</div>`;
   if (!force && html === lastHtml) return; // updateHud woła często — bez zbędnej przebudowy DOM
   lastHtml = html;
@@ -124,6 +136,7 @@ function onClick(ev: Event): void {
   if (!t || !root || !panelCfg) return;
   const act = t.getAttribute('data-erp');
   if (act === 'close') { closeEmpireRecruitPanel(); return; }
+  if (act === 'go-all') { orderAll(root); return; }
   const rowEl = t.closest('[data-unit]') as HTMLElement | null;
   const id = rowEl?.getAttribute('data-unit');
   if (!id) return;
@@ -135,6 +148,34 @@ function onClick(ev: Event): void {
     lastMessage = res.message;
     render(root); // licznik zostaje (draft nie jest ruszany)
   }
+}
+
+/**
+ * „Rekrutuj wszystkie”: zamawia każdy typ z licznikiem > 0 kolejno przez `onOrder` (ta sama ścieżka co
+ * pojedyncze „Rekrutuj”, więc koszt/limity/kolejność miast bez zmian; saldo odświeża się między typami).
+ * Udane typy → licznik 0; odrzucone → licznik bez zmian; częściowe → licznik = pozostałe sztuki.
+ */
+function orderAll(root: HTMLElement): void {
+  if (!panelCfg) return;
+  const todo = panelCfg.getRows()
+    .map(r => ({ id: r.id, label: r.label, q: getEmpireRecruitDraft(r.id) }))
+    .filter(x => x.q > 0);
+  if (todo.length === 0) return;
+  let okTypes = 0;
+  const failed: string[] = [];
+  for (const t of todo) {
+    const res = panelCfg.onOrder(t.id, t.q);
+    const accepted = res.accepted ?? (res.changed ? t.q : 0);
+    if (accepted >= t.q) { drafts.set(t.id, 0); okTypes++; }
+    else {
+      drafts.set(t.id, clampQty(t.q - accepted));
+      if (accepted > 0) okTypes++;
+      failed.push(`${t.label}: ${res.message}`);
+    }
+  }
+  const head = `Rekrutacja wszystkich: przyjęto ${okTypes} z ${todo.length} pozycji.`;
+  lastMessage = failed.length > 0 ? `${head} Nie przeszło — ${failed.join(' ')}` : head;
+  render(root);
 }
 
 function onInput(ev: Event): void {

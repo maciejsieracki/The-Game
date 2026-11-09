@@ -139,7 +139,7 @@ async function main() {
     check('meta i „w kolejkach” nie są ucinane (scrollWidth<=clientWidth) i mieszczą się w panelu', vis.length === 10 && vis.every(v => !v.clipped && v.inside), vis);
     check('„w kolejkach” w osobnej linii widoczne dla długiego typu', await row('Dluga').locator('.erp-queued').isVisible());
     await setQty('Wojownik', 5);
-    for (let i = 0; i < 3; i++) await row('Taran').locator('[data-erp="inc"]').click();
+    for (let i = 0; i < 4; i++) await row('Taran').locator('[data-erp="inc"]').click();
     check('niezależne liczniki: Wojownik 5, Taran 4', await qty('Wojownik') === 5 && await qty('Taran') === 4);
     await row('Wojownik').locator('[data-erp="dec"]').click();
     check('zmniejszenie Wojownika nie rusza Tarana', await qty('Wojownik') === 4 && await qty('Taran') === 4);
@@ -182,7 +182,7 @@ async function main() {
     // zarzut 4: nowa gra/wczytanie zamyka panel i czyści liczniki
     await page.evaluate(() => { window.__api.toggleEmpireRecruitPanel({ getRows: () => [], onOrder: () => ({ message: '', changed: false }) }); });
     await page.evaluate(() => window.__api.resetEmpireRecruitPanelSession());
-    check('reset sesji: panel zamknięty, liczniki wyczyszczone', await page.evaluate(() => !document.getElementById('civ-empire-recruit-panel') && window.__api.getEmpireRecruitDraft('Wojownik') === 1));
+    check('reset sesji: panel zamknięty, liczniki wyczyszczone (domyślnie 0)', await page.evaluate(() => !document.getElementById('civ-empire-recruit-panel') && window.__api.getEmpireRecruitDraft('Wojownik') === 0));
 
     // ---- CZĘŚĆ A: karta rekrutacji w mieście (przebudowa wierszy po „Rekrutuj”) ----
     await page.evaluate(({ unit }) => {
