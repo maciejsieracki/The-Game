@@ -981,7 +981,7 @@ import {
   type AiGeneralWarCampaign,
 } from './game/ai-general-war-campaign';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
-  enqueueRecruitment, reservedUnitTypeNames, superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
+  enqueueRecruitment, reservedUnitTypeNamesOfOwner, generalSyncTargets, superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   civProductionCostBonusyForCivKey,
   buildableProduction, purchasableUnits,
@@ -4537,10 +4537,7 @@ async function boot(): Promise<void> {
      *  żywe (cały roster `units`) + opłacone w kolejkach rekrutacji WSZYSTKICH jej miast. Jedno źródło
      *  prawdy dla limitu 1 Super-jednostki (ukrywanie przycisków, rekrutacja, zbiorczy panel, Zastąp, AI). */
     function reservedUnitTypeNamesForOwner(ownerId: number): Set<string> {
-      return reservedUnitTypeNames(
-        units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
-        cities.filter(c => c.ownerId === ownerId).map(c => cityProd.get(c.id)),
-      );
+      return reservedUnitTypeNamesOfOwner(ownerId, units, cities, c => cityProd.get(c));
     }
 
     /** Opłacenie rekrutacji za złoto — pobiera Manpower od razu (kolejka rekrutacji).
@@ -7550,8 +7547,14 @@ async function boot(): Promise<void> {
       const def = lookupUnitDef(best.id);
       if (!def) return;
       const nextHpMaxBase = unitHealth(def);
+      // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1 r2: synchronizacja form nie może wytworzyć drugiej
+      // Super-jednostki (wielu wodzów naraz) -- cel przechodzi tylko tyle razy, ile limit pozwala.
+      const ownGenerals = units.filter(g => g.ownerId === ownerId && g.isGeneral === true);
+      const syncTargets = new Set<RuntimeUnit>(generalSyncTargets(
+        ownGenerals, best.id, def, reservedUnitTypeNamesForOwner(ownerId),
+      ));
       for (const general of units) {
-        if (general.ownerId !== ownerId || general.isGeneral !== true || general.typeId === best.id) continue;
+        if (!syncTargets.has(general)) continue;
         const oldDef = lookupUnitDef(general.typeId);
         const oldHpMax = effectiveRuntimeUnitMaxHp(general, oldDef);
         const nextHpMax = effectiveMaxHp(

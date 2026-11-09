@@ -19,7 +19,7 @@ const ENTRY = path.resolve(__dirname, '.super-unit-limit-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.super-unit-limit-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export { availableProduction, availableReplacementsFor, reservedUnitTypeNames, superUnitLimitViolation,
-  enqueueRecruitment, SUPER_UNIT_LIMIT_BLOCK_PL } from '../src/game/production';
+  enqueueRecruitment, SUPER_UNIT_LIMIT_BLOCK_PL, reservedUnitTypeNamesOfOwner, generalSyncTargets } from '../src/game/production';
 export { executeEmpireRecruitment } from '../src/game/empire-recruit-plan';
 `, 'utf8');
 try {
@@ -151,6 +151,45 @@ console.log('\n8. Kontrola statyczna wpiecia w main.ts / cityPanel.ts (egzekucja
   assert(guards >= 3, 'guard w purchaseRecruitmentUnit, purchaseRecruitmentUnits i performUnitReplace', 'n=' + guards);
   assert(/maxTotal:\s*unitDef\?\.\['Super-jednostka'\] === 'TAK' \? 1/.test(main), 'zbiorczy panel: maxTotal=1 dla Super');
   assert(/udef\['Super-jednostka'\] === 'TAK' \? 1 : maxAffordableRecruitQuantity/.test(panel), 'licznik panelu miasta: max 1 dla Super');
+  assert(/reservedUnitTypeNamesOfOwner\(\s*ownerId,\s*units,\s*cities,\s*c => cityProd\.get\(c\)\s*\)/.test(main), 'reservedUnitTypeNamesForOwner deleguje do czystej funkcji (wlasciciel + miasta)');
+  assert(/syncTargets\.has\(general\)/.test(main) && /generalSyncTargets\(/.test(main), 'syncGeneralFormsForOwner przechodzi tylko przez generalSyncTargets');
+}
+
+console.log('\n9. (r2) Rezerwacja per wlasciciel: czyste dane z main.ts (roster + miasta + kolejki)');
+{
+  const cities = [
+    { id: 'A', ownerId: 0 }, { id: 'B', ownerId: 0 }, { id: 'E', ownerId: 1 },
+  ];
+  const prods = { A: undefined, B: prodWith(SUPER), E: prodWith(SUPER) };
+  const units = [
+    { ownerId: 0, typeId: 'Wojownik mykeński' },
+    { ownerId: 1, typeId: SUPER },
+  ];
+  const r0 = M.reservedUnitTypeNamesOfOwner(0, units, cities, id => prods[id]);
+  assert(r0.has(SUPER) && r0.has('Wojownik mykeński'), 'wlasciciel 0: kolejka miasta B (Super) rezerwuje, zywa zwykla tez');
+  const r1 = M.reservedUnitTypeNamesOfOwner(1, units, cities, id => prods[id]);
+  assert(r1.has(SUPER), 'wlasciciel 1: jego zywa Super i kolejka miasta E rezerwuja');
+  assert(!r1.has('Wojownik mykeński'), 'wlasciciel 1 nie widzi zywych jednostek wlasciciela 0');
+  const r2 = M.reservedUnitTypeNamesOfOwner(2, units, cities, id => prods[id]);
+  assert(r2.size === 0, 'wlasciciel bez jednostek i miast: pusta rezerwacja');
+  const rNoProd = M.reservedUnitTypeNamesOfOwner(0, [], cities, () => undefined);
+  assert(rNoProd.size === 0, 'brak produkcji (undefined) nie wywala i nie rezerwuje');
+}
+
+console.log('\n10. (r2) Synchronizacja form wodzow: Super przechodzi co najwyzej raz');
+{
+  const generals = [{ id: 'g1', typeId: 'Wojownik mykeński' }, { id: 'g2', typeId: 'Wojownik mykeński' }, { id: 'g3', typeId: 'Wojownik mykeński' }];
+  const superT = M.generalSyncTargets(generals, SUPER, superDef, new Set(['Wojownik mykeński']));
+  assert(superT.length === 1 && superT[0].id === 'g1', 'trzech wodzow, cel Super, brak Super w rezerwie: przechodzi tylko 1', String(superT.length));
+  const blockedT = M.generalSyncTargets(generals, SUPER, superDef, new Set([SUPER, 'Wojownik mykeński']));
+  assert(blockedT.length === 0, 'Super juz zarezerwowana: zadnego wodza nie przekształca', String(blockedT.length));
+  const plainT = M.generalSyncTargets(generals, 'Wojownik mykeński', plainDef, new Set());
+  assert(plainT.length === 0, 'cel = aktualny typ wodzow: brak przeksztalcen');
+  const other = M.generalSyncTargets(generals, 'Hoplita', plainDef, new Set());
+  assert(other.length === 3, 'zwykly cel: wszyscy trzej wodzowie (bez zmiany zachowania)');
+  const withSuper = [{ id: 's', typeId: SUPER }, { id: 'g', typeId: 'Wojownik mykeński' }];
+  const ts = M.generalSyncTargets(withSuper, SUPER, superDef, new Set([SUPER]));
+  assert(ts.length === 0, 'wodz juz bedacy Super nie jest przeksztalcany ponownie');
 }
 
 console.log(`\n[super-unit-limit-one-test] ${passed} OK, ${failed} FAIL`);
