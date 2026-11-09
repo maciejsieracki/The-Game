@@ -173,6 +173,73 @@ async function runOne(browser, distDir, mode, seed) {
   return { mode, seed, frames, errors, ...res };
 }
 
+
+// mode: 'fix' = skip() w trybie recznym w trakcie animacji rozkazu; 'control' = stare zachowanie
+// (natychmiastowe przejscie na AUTO przy busy) -- kontrola, ze test wykrywa duplikat aktywacji.
+async function runManualMid(browser, distDir, mode, seed) {
+  const page = await browser.newPage({ viewport: { width: 1024, height: 768 } });
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  await page.addInitScript(initDet, seed);
+  await page.goto('file://' + path.join(distDir, 'index.html') + '?playtest=' + (process.env.WSKIP_PT || 'bitwa-duza'), { waitUntil: 'load', timeout: 120000 });
+  for (let i = 0; i < 400; i++) {
+    const ready = await page.evaluate(() => { window.__pumpFrames(5); return !!window.__lastBattleScene; });
+    if (ready) break;
+    await page.waitForTimeout(50);
+  }
+  const setup = await page.evaluate(() => {
+    window.__dt = 16;
+    const bs = window.__lastBattleScene;
+    bs.renderer.render = () => {};
+    if (bs.deployPhase) bs._endDeployPhase();
+    if (!bs._manualMode) bs._toggleManualMode();
+    if (bs._battleAwaitingOrders) bs._battleAwaitingOrders = false;       // jak SPACJA: tura gracza trwa
+    const roster = bs._playerRoster().filter((u) => !u.dead && !u.routed && !bs._isCatapult(u.bu));
+    const dirSign = bs._deployPlayerSideOpt === 'atk' ? 1 : -1;
+    for (const u of roster) {
+      const col = u.q + dirSign; const row = u.r;
+      if (bs.occByKey.get(col + ',' + row) || bs.occByKey.get(col + '_' + row)) continue;
+      u.playerOrder = { type: 'move', col, row };
+      bs.__launches = [];
+      const orig = bs._launchAutoBatchResolution.bind(bs);
+      bs._launchAutoBatchResolution = (res, tok) => { bs.__launches.push({ id: res.unitId, round: bs.roundNo }); return orig(res, tok); };
+      bs._executeUnitsImmediate([u.bu.id]);
+      return { id: u.bu.id, busy: bs.busy, manual: bs._manualMode, acted: u.acted, round: bs.roundNo };
+    }
+    return { skipped: 'brak wolnego pola' };
+  });
+  if (setup.skipped || !setup.busy) { await page.close(); return { mode, setup, errors }; }
+  await page.evaluate(() => window.__pumpFrames(2));          // animacja ruchu w toku
+  const mid = await page.evaluate((mode) => {
+    const bs = window.__lastBattleScene;
+    const st = { busy: bs.busy, acted: bs._playerRoster().some((u) => u.acted) };
+    if (mode === 'fix') bs.skip();
+    else { bs._toggleManualMode(); bs._ffActive = true; bs._ffQueue = []; }   // stare zachowanie
+    return st;
+  }, mode);
+  let fin = false;
+  for (let i = 0; i < 40 && !fin; i++) fin = await page.evaluate(() => window.__pumpFrames(20000));
+  const res = await page.evaluate(([id, r0s]) => {
+    const bs = window.__lastBattleScene;
+    const r0 = bs.__launches.length ? bs.__launches[0].round : null;
+    return { finished: bs.finished, winner: bs._endWinner, launchesOfUnitInTurn1: bs.__launches.filter((l) => l.id === id && l.round === r0s).length, firstLaunchRound: r0 };
+  }, [setup.id, setup.round]);
+  await page.close();
+  return { mode, setup, mid, res, errors };
+}
+
+async function partD(browser, distDir) {
+  const fix = await runManualMid(browser, distDir, 'fix', 7);
+  console.log('MANUAL-MID ' + JSON.stringify(fix));
+  if (fix.setup.skipped || !fix.setup.busy) { console.log('NIE_ZMIERZONO: D (brak animacji rozkazu w trybie recznym): ' + JSON.stringify(fix.setup)); return; }
+  const ctl = await runManualMid(browser, distDir, 'control', 7);
+  console.log('MANUAL-MID ' + JSON.stringify(ctl));
+  check('D0 skip z trybu recznego w trakcie animacji: bitwa konczy sie, brak bledow JS', fix.res.finished === true && fix.errors.length === 0, fix);
+  check('D1 w chwili skip() trwa animacja rozkazu gracza (busy, acted=false)', fix.mid.busy === true && fix.mid.acted === false, fix.mid);
+  check('D2 jednostka z rozkazu NIE jest planowana drugi raz w AUTO w tej samej turze (brak duplikatu aktywacji w turze otwartej w chwili skip)', fix.res.launchesOfUnitInTurn1 === 0, fix.res);
+  check('D3 kontrola: stare zachowanie (natychmiastowe AUTO) daje duplikat -- test wykrywa regresje', ctl.res.launchesOfUnitInTurn1 >= 1, ctl.res);
+}
+
 async function partB() {
   let chromium;
   try { ({ chromium } = require(path.join(GRA, 'node_modules', 'playwright'))); }
@@ -184,6 +251,7 @@ async function partB() {
   const only = process.env.WSKIP_ONLY || '';   // 'auto' | 'skip' -- pojedynczy przebieg (limit czasu narzedzia)
   const rows = [];
   try {
+    if (!process.env.WSKIP_ONLY && !process.env.WSKIP_NO_D) await partD(browser, distDir);
     for (const seed of seeds) {
       if (only) {
         const r = await runOne(browser, distDir, only, seed);

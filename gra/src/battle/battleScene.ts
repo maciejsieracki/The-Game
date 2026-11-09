@@ -2555,6 +2555,7 @@ export class BattleScene {
   private _ffActive = false;
   private _ffQueue: (() => void)[] = [];
   private _ffVirtualMs = 0;
+  private _ffPendingAuto = false;      // skip() z trybu recznego w trakcie animacji: AUTO po dokonczeniu rozkazu
 
   // CHANGE2: master visibility toggle for ALL over-head stat bars (morale/ammo/
   // HP), flipped by the "H" key. Default true (bars shown). When false every
@@ -3675,9 +3676,19 @@ export class BattleScene {
     this._ffActive = true;
     this._ffVirtualMs = 0;
     this._ffQueue = [];
-    if (this._manualMode) this._toggleManualMode();          // AUTO: gra sama za obie strony
-    if (this._battleAwaitingOrders) this._kickoffBattleTurn();
+    // Tryb reczny w trakcie animacji rozkazu gracza (busy): jednostka wykonujaca rozkaz ma jeszcze
+    // acted=false, wiec natychmiastowe przejscie na AUTO zaplanowaloby ja drugi raz (duplikat
+    // aktywacji). Zamiast tego FF dokancza rozpoczety rozkaz (cala kolejke gracza) i dopiero
+    // wtedy przechodzi na AUTO (patrz _runFastForward).
+    this._ffPendingAuto = this._manualMode && this.busy;
+    if (!this._ffPendingAuto) this._ffEnterAuto();
     this.hint.textContent = 'Przewijanie bitwy do wyniku...';
+  }
+
+  /** Przejscie na AUTO przy skip(): gra sama za obie strony, start tury jesli czeka na rozkazy. */
+  private _ffEnterAuto(): void {
+    if (this._manualMode) this._toggleManualMode();
+    if (this._battleAwaitingOrders) this._kickoffBattleTurn();
   }
 
   /** Awaryjny rachunek natychmiastowy (tylko gdy przewiniecie niemozliwe lub przekroczylo limit). */
@@ -9372,6 +9383,7 @@ export class BattleScene {
     const wall0 = performance.now();
     while (!this.finished && performance.now() - wall0 < 40) {
       if (this.roundNo >= FF_MAX_ROUNDS) { this._ffRoundCapResult(); return; }
+      if (this._ffPendingAuto && !this.busy) { this._ffPendingAuto = false; this._ffEnterAuto(); }
       this.vNow += FF_STEP_MS;
       this._ffVirtualMs += FF_STEP_MS;
       // Kolejnosc jak w klatce AUTO (_startLoop): najpierw zegary i pociski/zaniki, potem

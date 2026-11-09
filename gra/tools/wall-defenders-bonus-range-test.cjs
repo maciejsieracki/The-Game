@@ -335,8 +335,10 @@ async function main() {
   const mutScene = {
     inside: [{ file: SCENE_REL, from: 'return fortificationDefenseBonusForUnit(\n      { side: u.side, onWallWalkway: u.onWallWalkway === true, q: u.q, siegeWallCol: this.siegeWallCol },',
       to: 'return fortificationDefenseBonusForUnit(\n      { side: u.side, onWallWalkway: u.onWallWalkway === true, q: u.q, siegeWallCol: -1 },' }],
-    skip: [{ file: SCENE_REL, from: '{ side: d.ru.side, onWallWalkway: defOnWall, q: d.ru.q, siegeWallCol },',
-      to: '{ side: d.ru.side, onWallWalkway: defOnWall, q: d.ru.q, siegeWallCol: -1 },' }],
+    // skip() nie wola juz computeInstantResult (przewija ta sama symulacje); snapshot bonusu muru dla
+    // "Pomin" bierze _wallBonusProcFor -- mutacja zeruje wartosc w tym snapshocie.
+    skip: [{ file: SCENE_REL, from: 'pct: this._wallBonusProcFor(u) }));',
+      to: 'pct: 0 }));' }],
     range: [{ file: SCENE_REL, from: 'if (this._isWallCrownShooter(ru)) ru.range = wallCrownShooterRange(ru.range);', to: '' }],
   };
   const dist = {};
