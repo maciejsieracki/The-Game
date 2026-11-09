@@ -22,6 +22,7 @@ import {
   isFarmBaseTerrain,
   isHexNearRiver,
   isImprovementBlockedOnForest,
+  isOwceBaseTerrain,
 } from '../map/improvement-build';
 import type { ImprovementKey } from '../render/improvements';
 // R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1: etykiety terenu z jednego źródła (map/terrain-names.ts).
@@ -42,7 +43,7 @@ import {
   hexHiddenDepositHint,
   labelsForImprovementUnlock,
 } from '../game/resource-access';
-import { isLamaDepositVisibleForCiv } from '../game/livestock-unlock';
+import { isLamaDepositVisibleForCiv, isLivestockAllowed } from '../game/livestock-unlock';
 import { hexHasHorseDeposit } from '../game/terrain-improvements';
 import { formatEntityDisplayName } from '../game/display-names';
 import type { DaninaLabel } from '../game/danina-nazwa';
@@ -419,9 +420,15 @@ function listTerrainPossibleImprovements(
     // ECHO właściciela uchylające regułę z 2026-07-21) — warunek terenu farmy egzekwuje
     // niżej `isFarmBaseTerrain`, ta linia jest drugą, niezależną bramką.
     if (isImprovementBlockedOnForest(key, nakladka)) continue;
-    if (key === 'bydlo' && nakladka !== Nakladka.ZlozeBydla) continue;
-    if (key === 'owce' && nakladka !== Nakladka.ZlozeOwiec) continue;
-    if (key === 'lama' && nakladka !== Nakladka.ZlozeLamy) continue;
+    // R-WEB-TERRAIN-IMPROVE-FARM-MISSING-ON-HEX-Q1: trzoda/owce/lama NIE wymagają złoża na heksie
+    // (R-WEB-AUTOIMPROVE-STAGES-Q1, decyzja właściciela 2026-10-31; silnik `createQualifier` pyta
+    // tylko o teren + terytorium + cywilizację). Dawne bramki `nakladka !== Zloze*` ukrywały je
+    // na golej Łące/Wzgórzach, choć budowa była możliwa. Tooltip ma być zgodny z silnikiem w obie
+    // strony: nie może obiecywać WIĘCEJ niż silnik (bramka cywilizacji/epoki z `isLivestockAllowed`,
+    // ta sama co `createQualifier`) ani MNIEJ (ukrywać to, co silnik dopuszcza).
+    // Owce: ta sama baza terenu co silnik (Wzgórza, bez Lasu -- `isOwceBaseTerrain`).
+    if (key === 'owce' && !isOwceBaseTerrain(teren, nakladka)) continue;
+    if ((key === 'bydlo' || key === 'owce') && !isLivestockAllowed(playerCivType, key, ownerEra ?? 1)) continue;
     // N5 (P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA): stadnina wymaga złoża konia NA TYM
     // heksie -- silnik (createQualifier) dodatkowo pozwala budować stadninę BEZ złoża, gdy imperium
     // ma już odblokowane 'kon' gdzie indziej (isLivestockUnlockedForPlacement/empireUnlocks) -- to

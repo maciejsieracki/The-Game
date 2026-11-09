@@ -110,9 +110,8 @@ assert(!/function buildRiverHexSet\(/.test(tooltipSrc), 'tooltip nie reimplement
 
 const REQUIRED_LINES = [
   // pre-istniejące (nie regresja tej naprawy, ale muszą przetrwać)
-  "if (key === 'bydlo' && nakladka !== Nakladka.ZlozeBydla) continue;",
-  "if (key === 'owce' && nakladka !== Nakladka.ZlozeOwiec) continue;",
-  "if (key === 'lama' && nakladka !== Nakladka.ZlozeLamy) continue;",
+  // R-WEB-TERRAIN-IMPROVE-FARM-MISSING-ON-HEX-Q1: trzoda/lama bez bramki zloza (jak silnik); owce tylko baza terenu.
+  "if (key === 'owce' && !isOwceBaseTerrain(teren, nakladka)) continue;",
   'if (isImprovementBlockedOnForest(key, nakladka)) continue;',
   "if (key === 'farma' && !isFarmBaseTerrain(teren, nakladka)) continue;",
   "if (key === 'tartak' && nakladka !== Nakladka.Las) continue;",
@@ -152,6 +151,7 @@ export {
   galleryTerrainEligible,
   hexHasClayDeposit,
   isFarmBaseTerrain,
+  isOwceBaseTerrain,
   isImprovementBlockedOnForest,
   hasAnimalDeposit,
 } from '../src/map/improvement-build';
@@ -188,6 +188,7 @@ const {
   galleryTerrainEligible,
   hexHasClayDeposit,
   isFarmBaseTerrain,
+  isOwceBaseTerrain,
   isImprovementBlockedOnForest,
   hasAnimalDeposit,
   Nakladka,
@@ -265,9 +266,7 @@ async function main() {
       if (!isImprovementAllowedForCiv(key, playerCivType)) continue;
       if (!galleryTerrainEligible(key, teren)) continue;
       if (!skip.has('forest') && isImprovementBlockedOnForest(key, nakladka)) continue;
-      if (!skip.has('bydlo') && key === 'bydlo' && nakladka !== Nakladka.ZlozeBydla) continue;
-      if (!skip.has('owce') && key === 'owce' && nakladka !== Nakladka.ZlozeOwiec) continue;
-      if (!skip.has('lama') && key === 'lama' && nakladka !== Nakladka.ZlozeLamy) continue;
+      if (!skip.has('owce') && key === 'owce' && !isOwceBaseTerrain(teren, nakladka)) continue;
       if (!skip.has('farma') && key === 'farma' && !isFarmBaseTerrain(teren, nakladka)) continue;
       if (!skip.has('tartak') && key === 'tartak' && nakladka !== Nakladka.Las) continue;
       if (!skip.has('wyrab') && key === 'wyrab' && nakladka !== Nakladka.Las) continue;
