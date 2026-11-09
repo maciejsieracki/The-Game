@@ -16,6 +16,8 @@
  *     techu zostaja na samym drewnie).
  *  6. Tier-gating: Garncarstwo ma Poziom 1, a kazdy tech Kamienia o poziomie 2+ jest
  *     osiagalny (brak cyklu prereq w obrebie epoki).
+ *  7. Luka kamienia przed Murarstwem: znane wyjatki (kamienne_kregi, targowisko, studnia)
+ *     sa jawnie wypisane; kazda nowa luka = FAIL (decyzja wlasciciela wymagana).
  *
  * Run from gra/:  node tools/building-cost-resource-availability-test.cjs
  */
@@ -113,6 +115,21 @@ for (const t of stone) {
     }
   }
 }
+
+// 7. Luka "kamien nie wczesniej niz dostepny" (zarzut Evaluatora r1): kamien jest dostepny
+//    dopiero z Murarstwem (jedyny tech "Dostep do kamien"). Budynki Kamienia z kamieniem,
+//    ktorych lancuch prereq NIE zawiera Murarstwa, to ZNANE, UDOKUMENTOWANE wyjatki
+//    czekajace na decyzje wlasciciela (dodac prereq Murarstwo albo zaakceptowac). Test
+//    pilnuje, by lista wyjatkow nie urosla bez swiadomej decyzji.
+const STONE_NO_MURARSTWO_EXCEPTIONS = ['kamienne_kregi', 'targowisko', 'studnia'];
+const stoneAccess = techs.filter(t => /kamie/i.test(t['Dostęp do surowca.'] || '')).map(t => t.Technologia);
+ok(JSON.stringify(stoneAccess) === JSON.stringify(['Murarstwo']), `jedyny tech dostepu do kamienia to Murarstwo (ma: ${stoneAccess})`);
+const stoneEra1 = buildings.filter(b => b.epokaWejscia === 1 && cost(b).kamien > 0);
+const actualGaps = stoneEra1
+  .filter(b => !closure(b.techUnlock).has('Murarstwo'))
+  .map(b => b.id).sort();
+ok(JSON.stringify(actualGaps) === JSON.stringify([...STONE_NO_MURARSTWO_EXCEPTIONS].sort()),
+  `budynki kamienia bez Murarstwa w lancuchu prereq = wyjatki udokumentowane [${STONE_NO_MURARSTWO_EXCEPTIONS.join(', ')}] (sa: [${actualGaps.join(', ')}])`);
 
 console.log(`building-cost-resource-availability-test: ${pass} pass, ${fail} fail`);
 process.exitCode = fail > 0 ? 1 : 0;
